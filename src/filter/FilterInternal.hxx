@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -27,6 +27,7 @@
 
 #include "AudioFormat.hxx"
 
+#include <assert.h>
 #include <stddef.h>
 
 struct AudioFormat;
@@ -36,9 +37,10 @@ class Filter {
 protected:
 	AudioFormat out_audio_format;
 
-	Filter() = default;
 	explicit Filter(AudioFormat _out_audio_format)
-		:out_audio_format(_out_audio_format) {}
+		:out_audio_format(_out_audio_format) {
+		assert(out_audio_format.IsValid());
+	}
 
 public:
 	virtual ~Filter() {}
@@ -51,15 +53,20 @@ public:
 	}
 
 	/**
+	 * Reset the filter's state, e.g. drop/flush buffers.
+	 */
+	virtual void Reset() {
+	}
+
+	/**
 	 * Filters a block of PCM data.
 	 *
 	 * Throws std::runtime_error on error.
 	 *
 	 * @param src the input buffer
-	 * @param error location to store the error occurring
 	 * @return the destination buffer on success (will be
 	 * invalidated by deleting this object or the next FilterPCM()
-	 * call)
+	 * or Reset() call)
 	 */
 	virtual ConstBuffer<void> FilterPCM(ConstBuffer<void> src) = 0;
 };

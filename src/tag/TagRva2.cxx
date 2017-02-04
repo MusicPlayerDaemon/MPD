@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -82,12 +82,12 @@ rva2_apply_data(ReplayGainInfo &rgi,
 	float volume_adjustment = rva2_float_volume_adjustment(data);
 
 	if (strcmp((const char *)id, "album") == 0)  {
-		rgi.tuples[REPLAY_GAIN_ALBUM].gain = volume_adjustment;
+		rgi.album.gain = volume_adjustment;
 	} else if (strcmp((const char *)id, "track") == 0) {
-		rgi.tuples[REPLAY_GAIN_TRACK].gain = volume_adjustment;
+		rgi.track.gain = volume_adjustment;
 	} else {
-		rgi.tuples[REPLAY_GAIN_ALBUM].gain = volume_adjustment;
-		rgi.tuples[REPLAY_GAIN_TRACK].gain = volume_adjustment;
+		rgi.album.gain = volume_adjustment;
+		rgi.track.gain = volume_adjustment;
 	}
 
 	return true;

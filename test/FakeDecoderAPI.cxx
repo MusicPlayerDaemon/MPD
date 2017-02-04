@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -21,6 +21,7 @@
 #include "FakeDecoderAPI.hxx"
 #include "decoder/DecoderAPI.hxx"
 #include "input/InputStream.hxx"
+#include "util/StringBuffer.hxx"
 #include "Compiler.h"
 
 #include <stdexcept>
@@ -29,114 +30,73 @@
 #include <stdio.h>
 
 void
-decoder_initialized(Decoder &decoder,
-		    const AudioFormat audio_format,
-		    gcc_unused bool seekable,
-		    SignedSongTime duration)
+FakeDecoder::Ready(const AudioFormat audio_format,
+		   gcc_unused bool seekable,
+		   SignedSongTime duration)
 {
-	struct audio_format_string af_string;
-
-	assert(!decoder.initialized);
+	assert(!initialized);
 	assert(audio_format.IsValid());
 
 	fprintf(stderr, "audio_format=%s duration=%f\n",
-		audio_format_to_string(audio_format, &af_string),
+		ToString(audio_format).c_str(),
 		duration.ToDoubleS());
 
-	decoder.initialized = true;
+	initialized = true;
 }
 
 DecoderCommand
-decoder_get_command(gcc_unused Decoder &decoder)
+FakeDecoder::GetCommand()
 {
 	return DecoderCommand::NONE;
 }
 
 void
-decoder_command_finished(gcc_unused Decoder &decoder)
+FakeDecoder::CommandFinished()
 {
 }
 
 SongTime
-decoder_seek_time(gcc_unused Decoder &decoder)
+FakeDecoder::GetSeekTime()
 {
 	return SongTime();
 }
 
 uint64_t
-decoder_seek_where_frame(gcc_unused Decoder &decoder)
+FakeDecoder::GetSeekFrame()
 {
 	return 1;
 }
 
 void
-decoder_seek_error(gcc_unused Decoder &decoder)
+FakeDecoder::SeekError()
 {
 }
 
 InputStreamPtr
-decoder_open_uri(Decoder &decoder, const char *uri)
+FakeDecoder::OpenUri(const char *uri)
 {
-	return InputStream::OpenReady(uri, decoder.mutex, decoder.cond);
+	return InputStream::OpenReady(uri, mutex, cond);
 }
 
 size_t
-decoder_read(gcc_unused Decoder *decoder,
-	     InputStream &is,
-	     void *buffer, size_t length)
+FakeDecoder::Read(InputStream &is, void *buffer, size_t length)
 {
 	try {
 		return is.LockRead(buffer, length);
-	} catch (const std::runtime_error &) {
+	} catch (const std::runtime_error &e) {
 		return 0;
 	}
 }
 
-bool
-decoder_read_full(Decoder *decoder, InputStream &is,
-		  void *_buffer, size_t size)
-{
-	uint8_t *buffer = (uint8_t *)_buffer;
-
-	while (size > 0) {
-		size_t nbytes = decoder_read(decoder, is, buffer, size);
-		if (nbytes == 0)
-			return false;
-
-		buffer += nbytes;
-		size -= nbytes;
-	}
-
-	return true;
-}
-
-bool
-decoder_skip(Decoder *decoder, InputStream &is, size_t size)
-{
-	while (size > 0) {
-		char buffer[1024];
-		size_t nbytes = decoder_read(decoder, is, buffer,
-					     std::min(sizeof(buffer), size));
-		if (nbytes == 0)
-			return false;
-
-		size -= nbytes;
-	}
-
-	return true;
-}
-
 void
-decoder_timestamp(gcc_unused Decoder &decoder,
-		  gcc_unused double t)
+FakeDecoder::SubmitTimestamp(gcc_unused double t)
 {
 }
 
 DecoderCommand
-decoder_data(gcc_unused Decoder &decoder,
-	     gcc_unused InputStream *is,
-	     const void *data, size_t datalen,
-	     gcc_unused uint16_t kbit_rate)
+FakeDecoder::SubmitData(gcc_unused InputStream *is,
+			const void *data, size_t datalen,
+			gcc_unused uint16_t kbit_rate)
 {
 	static uint16_t prev_kbit_rate;
 	if (kbit_rate != prev_kbit_rate) {
@@ -149,9 +109,8 @@ decoder_data(gcc_unused Decoder &decoder,
 }
 
 DecoderCommand
-decoder_tag(gcc_unused Decoder &decoder,
-	    gcc_unused InputStream *is,
-	    Tag &&tag)
+FakeDecoder::SubmitTag(gcc_unused InputStream *is,
+		       Tag &&tag)
 {
 	fprintf(stderr, "TAG: duration=%f\n", tag.duration.ToDoubleS());
 
@@ -161,23 +120,30 @@ decoder_tag(gcc_unused Decoder &decoder,
 	return DecoderCommand::NONE;
 }
 
-void
-decoder_replay_gain(gcc_unused Decoder &decoder,
-		    const ReplayGainInfo *rgi)
+static void
+DumpReplayGainTuple(const char *name, const ReplayGainTuple &tuple)
 {
-	const ReplayGainTuple *tuple = &rgi->tuples[REPLAY_GAIN_ALBUM];
-	if (tuple->IsDefined())
-		fprintf(stderr, "replay_gain[album]: gain=%f peak=%f\n",
-			tuple->gain, tuple->peak);
+	if (tuple.IsDefined())
+		fprintf(stderr, "replay_gain[%s]: gain=%f peak=%f\n",
+			name, tuple.gain, tuple.peak);
+}
 
-	tuple = &rgi->tuples[REPLAY_GAIN_TRACK];
-	if (tuple->IsDefined())
-		fprintf(stderr, "replay_gain[track]: gain=%f peak=%f\n",
-			tuple->gain, tuple->peak);
+static void
+DumpReplayGainInfo(const ReplayGainInfo &info)
+{
+	DumpReplayGainTuple("album", info.album);
+	DumpReplayGainTuple("track", info.track);
 }
 
 void
-decoder_mixramp(gcc_unused Decoder &decoder, gcc_unused MixRampInfo &&mix_ramp)
+FakeDecoder::SubmitReplayGain(const ReplayGainInfo *rgi)
+{
+	if (rgi != nullptr)
+		DumpReplayGainInfo(*rgi);
+}
+
+void
+FakeDecoder::SubmitMixRamp(gcc_unused MixRampInfo &&mix_ramp)
 {
 	fprintf(stderr, "MixRamp: start='%s' end='%s'\n",
 		mix_ramp.GetStart(), mix_ramp.GetEnd());

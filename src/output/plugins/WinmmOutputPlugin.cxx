@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -63,7 +63,7 @@ public:
 		return handle;
 	}
 
-	static WinmmOutput *Create(const ConfigBlock &block) {
+	static WinmmOutput *Create(EventLoop &, const ConfigBlock &block) {
 		return new WinmmOutput(block);
 	}
 
@@ -161,10 +161,10 @@ WinmmOutput::Open(AudioFormat &audio_format)
 		throw std::runtime_error("CreateEvent() failed");
 
 	switch (audio_format.format) {
-	case SampleFormat::S8:
 	case SampleFormat::S16:
 		break;
 
+	case SampleFormat::S8:
 	case SampleFormat::S24_P32:
 	case SampleFormat::S32:
 	case SampleFormat::FLOAT:

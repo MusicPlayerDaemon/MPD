@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -27,7 +27,7 @@
 #define OUTPUT_ALL_H
 
 #include "AudioFormat.hxx"
-#include "ReplayGainInfo.hxx"
+#include "ReplayGainMode.hxx"
 #include "Chrono.hxx"
 #include "Compiler.h"
 
@@ -39,9 +39,10 @@ class MusicBuffer;
 class MusicPipe;
 class EventLoop;
 class MixerListener;
+class AudioOutputClient;
 struct MusicChunk;
-struct PlayerControl;
 struct AudioOutput;
+struct ReplayGainConfig;
 
 class MultipleOutputs {
 	MixerListener &mixer_listener;
@@ -75,7 +76,9 @@ public:
 	MultipleOutputs(MixerListener &_mixer_listener);
 	~MultipleOutputs();
 
-	void Configure(EventLoop &event_loop, PlayerControl &pc);
+	void Configure(EventLoop &event_loop,
+		       const ReplayGainConfig &replay_gain_config,
+		       AudioOutputClient &client);
 
 	/**
 	 * Returns the total number of audio output devices, including
@@ -157,16 +160,6 @@ public:
 	unsigned Check();
 
 	/**
-	 * Checks if the size of the #MusicPipe is below the #threshold.  If
-	 * not, it attempts to synchronize with all output threads, and waits
-	 * until another #MusicChunk is finished.
-	 *
-	 * @param threshold the maximum number of chunks in the pipe
-	 * @return true if there are less than #threshold chunks in the pipe
-	 */
-	bool Wait(PlayerControl &pc, unsigned threshold);
-
-	/**
 	 * Puts all audio outputs into pause mode.  Most implementations will
 	 * simply close it then.
 	 */
@@ -244,19 +237,12 @@ private:
 	void AllowPlay();
 
 	/**
-	 * Resets the "reopen" flag on all audio devices.  MPD should
-	 * immediately retry to open the device instead of waiting for
-	 * the timeout when the user wants to start playback.
-	 */
-	void ResetReopen();
-
-	/**
 	 * Opens all output devices which are enabled, but closed.
 	 *
 	 * @return true if there is at least open output device which
 	 * is open
 	 */
-	bool Update();
+	bool Update(bool force);
 
 	/**
 	 * Has this chunk been consumed by all audio outputs?

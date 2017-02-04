@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -27,6 +27,8 @@
 #include "thread/Cond.hxx"
 #include "thread/Thread.hxx"
 #include "Chrono.hxx"
+#include "ReplayGainConfig.hxx"
+#include "ReplayGainMode.hxx"
 
 #include <exception>
 
@@ -89,8 +91,8 @@ struct DecoderControl {
 	 */
 	Cond &client_cond;
 
-	DecoderState state;
-	DecoderCommand command;
+	DecoderState state = DecoderState::STOP;
+	DecoderCommand command = DecoderCommand::NONE;
 
 	/**
 	 * The error that occurred in the decoder thread.  This
@@ -107,11 +109,16 @@ struct DecoderControl {
 	 * false, the DecoderThread may omit invoking Cond::signal(),
 	 * reducing the number of system calls.
 	 */
-	bool client_is_waiting;
+	bool client_is_waiting = false;
 
 	bool seek_error;
 	bool seekable;
 	SongTime seek_time;
+
+	/**
+	 * The "audio_output_format" setting.
+	 */
+	const AudioFormat configured_audio_format;
 
 	/** the format of the song file */
 	AudioFormat in_audio_format;
@@ -127,7 +134,7 @@ struct DecoderControl {
 	 * This is a duplicate, and must be freed when this attribute
 	 * is cleared.
 	 */
-	DetachedSong *song;
+	DetachedSong *song = nullptr;
 
 	/**
 	 * The initial seek position, e.g. to the start of a sub-track
@@ -156,8 +163,11 @@ struct DecoderControl {
 	 */
 	MusicPipe *pipe;
 
-	float replay_gain_db;
-	float replay_gain_prev_db;
+	const ReplayGainConfig replay_gain_config;
+	ReplayGainMode replay_gain_mode = ReplayGainMode::OFF;
+
+	float replay_gain_db = 0;
+	float replay_gain_prev_db = 0;
 
 	MixRampInfo mix_ramp, previous_mix_ramp;
 
@@ -165,7 +175,9 @@ struct DecoderControl {
 	 * @param _mutex see #mutex
 	 * @param _client_cond see #client_cond
 	 */
-	DecoderControl(Mutex &_mutex, Cond &_client_cond);
+	DecoderControl(Mutex &_mutex, Cond &_client_cond,
+		       const AudioFormat _configured_audio_format,
+		       const ReplayGainConfig &_replay_gain_config);
 	~DecoderControl();
 
 	/**
@@ -216,7 +228,7 @@ struct DecoderControl {
 
 	gcc_pure
 	bool LockIsIdle() const {
-		const ScopeLock protect(mutex);
+		const std::lock_guard<Mutex> protect(mutex);
 		return IsIdle();
 	}
 
@@ -226,7 +238,7 @@ struct DecoderControl {
 
 	gcc_pure
 	bool LockIsStarting() const {
-		const ScopeLock protect(mutex);
+		const std::lock_guard<Mutex> protect(mutex);
 		return IsStarting();
 	}
 
@@ -238,9 +250,18 @@ struct DecoderControl {
 
 	gcc_pure
 	bool LockHasFailed() const {
-		const ScopeLock protect(mutex);
+		const std::lock_guard<Mutex> protect(mutex);
 		return HasFailed();
 	}
+
+	/**
+	 * Transition this obejct from DecoderState::START to
+	 * DecoderState::DECODE.
+	 *
+	 * Caller must lock the object.
+	 */
+	void SetReady(const AudioFormat audio_format,
+		      bool _seekable, SignedSongTime _duration);
 
 	/**
 	 * Checks whether an error has occurred, and if so, rethrows
@@ -260,7 +281,7 @@ struct DecoderControl {
 	 * Like CheckRethrowError(), but locks and unlocks the object.
 	 */
 	void LockCheckRethrowError() const {
-		const ScopeLock protect(mutex);
+		const std::lock_guard<Mutex> protect(mutex);
 		CheckRethrowError();
 	}
 
@@ -288,7 +309,7 @@ struct DecoderControl {
 
 	gcc_pure
 	bool LockIsCurrentSong(const DetachedSong &_song) const {
-		const ScopeLock protect(mutex);
+		const std::lock_guard<Mutex> protect(mutex);
 		return IsCurrentSong(_song);
 	}
 
@@ -325,13 +346,13 @@ private:
 	 * object.
 	 */
 	void LockSynchronousCommand(DecoderCommand cmd) {
-		const ScopeLock protect(mutex);
+		const std::lock_guard<Mutex> protect(mutex);
 		ClearError();
 		SynchronousCommandLocked(cmd);
 	}
 
 	void LockAsynchronousCommand(DecoderCommand cmd) {
-		const ScopeLock protect(mutex);
+		const std::lock_guard<Mutex> protect(mutex);
 		command = cmd;
 		Signal();
 	}

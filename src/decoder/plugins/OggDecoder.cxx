@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -45,7 +45,7 @@ OggDecoder::LoadEndPacket(ogg_packet &packet) const
 	bool result;
 
 	{
-		DecoderReader reader(decoder, input_stream);
+		DecoderReader reader(client, input_stream);
 		OggSyncState sync2(reader);
 		OggStreamState stream2(GetSerialNo());
 		result = OggSeekFindEOS(sync2, stream2, packet,

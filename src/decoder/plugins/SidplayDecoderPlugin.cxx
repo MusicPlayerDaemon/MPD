@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -21,17 +21,15 @@
 #include "SidplayDecoderPlugin.hxx"
 #include "../DecoderAPI.hxx"
 #include "tag/TagHandler.hxx"
+#include "tag/TagBuilder.hxx"
+#include "DetachedSong.hxx"
 #include "fs/Path.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "util/Macros.hxx"
 #include "util/FormatString.hxx"
-#include "util/AllocatedString.hxx"
 #include "util/Domain.hxx"
 #include "system/ByteOrder.hxx"
-#include "system/FatalError.hxx"
 #include "Log.hxx"
-
-#include <string.h>
 
 #ifdef HAVE_SIDPLAYFP
 #include <sidplayfp/sidplayfp.h>
@@ -48,6 +46,9 @@
 #include <sidplay/utils/SidTuneMod.h>
 #include <sidplay/utils/SidDatabase.h>
 #endif
+
+#include <string.h>
+#include <stdio.h>
 
 #define SUBTUNE_PREFIX "tune_"
 
@@ -142,10 +143,13 @@ ParseContainerPath(Path path_fs)
 	return { path_fs.GetDirectoryName(), track };
 }
 
-#ifdef HAVE_SIDPLAYFP
-
+/**
+ * This is a template, because libsidplay requires SidTuneMod while
+ * libsidplayfp requires just a plain Sidtune.
+ */
+template<typename T>
 static SignedSongTime
-get_song_length(SidTune &tune)
+get_song_length(T &tune)
 {
 	assert(tune.getStatus());
 
@@ -159,27 +163,8 @@ get_song_length(SidTune &tune)
 	return SignedSongTime::FromS(length);
 }
 
-#else
-
-static SignedSongTime
-get_song_length(SidTuneMod &tune)
-{
-	assert(tune);
-
-	if (songlength_database == nullptr)
-		return SignedSongTime::Negative();
-
-	const auto length = songlength_database->length(tune);
-	if (length < 0)
-		return SignedSongTime::Negative();
-
-	return SignedSongTime::FromS(length);
-}
-
-#endif
-
 static void
-sidplay_file_decode(Decoder &decoder, Path path_fs)
+sidplay_file_decode(DecoderClient &client, Path path_fs)
 {
 	int channels;
 
@@ -337,7 +322,7 @@ sidplay_file_decode(Decoder &decoder, Path path_fs)
 	const AudioFormat audio_format(48000, SampleFormat::S16, channels);
 	assert(audio_format.IsValid());
 
-	decoder_initialized(decoder, audio_format, true, duration);
+	client.Ready(audio_format, true, duration);
 
 	/* .. and play */
 
@@ -366,14 +351,14 @@ sidplay_file_decode(Decoder &decoder, Path path_fs)
 		const size_t nbytes = result;
 #endif
 
-		decoder_timestamp(decoder, (double)player.time() / timebase);
+		client.SubmitTimestamp((double)player.time() / timebase);
 
-		cmd = decoder_data(decoder, nullptr, buffer, nbytes, 0);
+		cmd = client.SubmitData(nullptr, buffer, nbytes, 0);
 
 		if (cmd == DecoderCommand::SEEK) {
 			unsigned data_time = player.time();
 			unsigned target_time =
-				decoder_seek_time(decoder).ToScale(timebase);
+				client.GetSeekTime().ToScale(timebase);
 
 			/* can't rewind so return to zero and seek forward */
 			if(target_time<data_time) {
@@ -386,7 +371,7 @@ sidplay_file_decode(Decoder &decoder, Path path_fs)
 			       player.play(buffer, ARRAY_SIZE(buffer)) > 0)
 				data_time = player.time();
 
-			decoder_command_finished(decoder);
+			client.CommandFinished();
 		}
 
 		if (end > 0 && player.time() >= end)
@@ -408,6 +393,43 @@ GetInfoString(const SidTuneInfo &info, unsigned i)
 		? info.infoString[i]
 		: nullptr;
 #endif
+}
+
+static void
+ScanSidTuneInfo(const SidTuneInfo &info, unsigned track, unsigned n_tracks,
+		const TagHandler &handler, void *handler_ctx)
+{
+	/* title */
+	const char *title = GetInfoString(info, 0);
+	if (title == nullptr)
+		title = "";
+
+	if (n_tracks > 1) {
+		char tag_title[1024];
+		snprintf(tag_title, sizeof(tag_title),
+			 "%s (%u/%u)",
+			 title, track, n_tracks);
+		tag_handler_invoke_tag(handler, handler_ctx,
+				       TAG_TITLE, tag_title);
+	} else
+		tag_handler_invoke_tag(handler, handler_ctx, TAG_TITLE, title);
+
+	/* artist */
+	const char *artist = GetInfoString(info, 1);
+	if (artist != nullptr)
+		tag_handler_invoke_tag(handler, handler_ctx, TAG_ARTIST,
+				       artist);
+
+	/* date */
+	const char *date = GetInfoString(info, 2);
+	if (date != nullptr)
+		tag_handler_invoke_tag(handler, handler_ctx, TAG_DATE,
+				       date);
+
+	/* track */
+	char track_buffer[16];
+	sprintf(track_buffer, "%d", track);
+	tag_handler_invoke_tag(handler, handler_ctx, TAG_TRACK, track_buffer);
 }
 
 static bool
@@ -435,37 +457,7 @@ sidplay_scan_file(Path path_fs,
 	const unsigned n_tracks = info.songs;
 #endif
 
-	/* title */
-	const char *title = GetInfoString(info, 0);
-	if (title == nullptr)
-		title = "";
-
-	if (n_tracks > 1) {
-		char tag_title[1024];
-		snprintf(tag_title, sizeof(tag_title),
-			 "%s (%d/%u)",
-			 title, song_num, n_tracks);
-		tag_handler_invoke_tag(handler, handler_ctx,
-				       TAG_TITLE, tag_title);
-	} else
-		tag_handler_invoke_tag(handler, handler_ctx, TAG_TITLE, title);
-
-	/* artist */
-	const char *artist = GetInfoString(info, 1);
-	if (artist != nullptr)
-		tag_handler_invoke_tag(handler, handler_ctx, TAG_ARTIST,
-				       artist);
-
-	/* date */
-	const char *date = GetInfoString(info, 2);
-	if (date != nullptr)
-		tag_handler_invoke_tag(handler, handler_ctx, TAG_DATE,
-				       date);
-
-	/* track */
-	char track[16];
-	sprintf(track, "%d", song_num);
-	tag_handler_invoke_tag(handler, handler_ctx, TAG_TRACK, track);
+	ScanSidTuneInfo(info, song_num, n_tracks, handler, handler_ctx);
 
 	/* time */
 	const auto duration = get_song_length(tune);
@@ -476,12 +468,18 @@ sidplay_scan_file(Path path_fs,
 	return true;
 }
 
-static AllocatedString<>
-sidplay_container_scan(Path path_fs, const unsigned int tnum)
+static std::forward_list<DetachedSong>
+sidplay_container_scan(Path path_fs)
 {
-	SidTune tune(path_fs.c_str(), nullptr, true);
+	std::forward_list<DetachedSong> list;
+
+#ifdef HAVE_SIDPLAYFP
+	SidTune tune(path_fs.c_str());
+#else
+	SidTuneMod tune(path_fs.c_str());
+#endif
 	if (!tune.getStatus())
-		return nullptr;
+		return list;
 
 #ifdef HAVE_SIDPLAYFP
 	const SidTuneInfo &info = *tune.getInfo();
@@ -494,14 +492,26 @@ sidplay_container_scan(Path path_fs, const unsigned int tnum)
 	/* Don't treat sids containing a single tune
 		as containers */
 	if(!all_files_are_containers && n_tracks < 2)
-		return nullptr;
+		return list;
 
-	/* Construct container/tune path names, eg.
-		Delta.sid/tune_001.sid */
-	if (tnum <= n_tracks) {
-		return FormatString(SUBTUNE_PREFIX "%03u.sid", tnum);
-	} else
-		return nullptr;
+	TagBuilder tag_builder;
+
+	auto tail = list.before_begin();
+	for (unsigned i = 1; i <= n_tracks; ++i) {
+		tune.selectSong(i);
+
+		ScanSidTuneInfo(info, i, n_tracks,
+				add_tag_handler, &tag_builder);
+
+		char track_name[32];
+		/* Construct container/tune path names, eg.
+		   Delta.sid/tune_001.sid */
+		sprintf(track_name, SUBTUNE_PREFIX "%03u.sid", i);
+		tail = list.emplace_after(tail, track_name,
+					  tag_builder.Commit());
+	}
+
+	return list;
 }
 
 static const char *const sidplay_suffixes[] = {

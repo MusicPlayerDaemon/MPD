@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -64,7 +64,7 @@ InputStream::WaitReady()
 void
 InputStream::LockWaitReady()
 {
-	const ScopeLock protect(mutex);
+	const std::lock_guard<Mutex> protect(mutex);
 	WaitReady();
 }
 
@@ -96,14 +96,14 @@ InputStream::Seek(gcc_unused offset_type new_offset)
 void
 InputStream::LockSeek(offset_type _offset)
 {
-	const ScopeLock protect(mutex);
+	const std::lock_guard<Mutex> protect(mutex);
 	Seek(_offset);
 }
 
 void
 InputStream::LockSkip(offset_type _offset)
 {
-	const ScopeLock protect(mutex);
+	const std::lock_guard<Mutex> protect(mutex);
 	Skip(_offset);
 }
 
@@ -116,7 +116,7 @@ InputStream::ReadTag()
 Tag *
 InputStream::LockReadTag()
 {
-	const ScopeLock protect(mutex);
+	const std::lock_guard<Mutex> protect(mutex);
 	return ReadTag();
 }
 
@@ -135,7 +135,7 @@ InputStream::LockRead(void *ptr, size_t _size)
 #endif
 	assert(_size > 0);
 
-	const ScopeLock protect(mutex);
+	const std::lock_guard<Mutex> protect(mutex);
 	return Read(ptr, _size);
 }
 
@@ -164,13 +164,13 @@ InputStream::LockReadFull(void *ptr, size_t _size)
 #endif
 	assert(_size > 0);
 
-	const ScopeLock protect(mutex);
+	const std::lock_guard<Mutex> protect(mutex);
 	ReadFull(ptr, _size);
 }
 
 bool
 InputStream::LockIsEOF()
 {
-	const ScopeLock protect(mutex);
+	const std::lock_guard<Mutex> protect(mutex);
 	return IsEOF();
 }

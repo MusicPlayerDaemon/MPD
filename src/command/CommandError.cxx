@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -23,6 +23,7 @@
 #include "db/DatabaseError.hxx"
 #include "client/Response.hxx"
 #include "Log.hxx"
+#include "util/Exception.hxx"
 
 #include <system_error>
 
@@ -97,6 +98,8 @@ ToAck(std::exception_ptr ep)
 #endif
 	} catch (const std::system_error &e) {
 		return ACK_ERROR_SYSTEM;
+	} catch (const std::invalid_argument &e) {
+		return ACK_ERROR_ARG;
 #if defined(__GLIBCXX__) && __GLIBCXX__ < 20151204
 	} catch (const std::exception &e) {
 #else
@@ -120,12 +123,6 @@ ToAck(std::exception_ptr ep)
 void
 PrintError(Response &r, std::exception_ptr ep)
 {
-	try {
-		std::rethrow_exception(ep);
-	} catch (const std::exception &e) {
-		LogError(e);
-		r.Error(ToAck(ep), e.what());
-	} catch (...) {
-		r.Error(ACK_ERROR_UNKNOWN, "Unknown error");
-	}
+	LogError(ep);
+	r.Error(ToAck(ep), FullMessage(ep).c_str());
 }

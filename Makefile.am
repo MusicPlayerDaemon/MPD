@@ -76,7 +76,6 @@ libmpd_a_SOURCES = \
 	src/open.h \
 	src/poison.h \
 	src/notify.cxx src/notify.hxx \
-	src/AudioConfig.cxx src/AudioConfig.hxx \
 	src/protocol/Ack.cxx src/protocol/Ack.hxx \
 	src/protocol/ArgParser.cxx src/protocol/ArgParser.hxx \
 	src/protocol/Result.cxx src/protocol/Result.hxx \
@@ -99,9 +98,9 @@ libmpd_a_SOURCES = \
 	src/decoder/DecoderThread.cxx src/decoder/DecoderThread.hxx \
 	src/decoder/DecoderCommand.hxx \
 	src/decoder/DecoderControl.cxx src/decoder/DecoderControl.hxx \
-	src/decoder/DecoderAPI.cxx src/decoder/DecoderAPI.hxx \
+	src/decoder/Client.hxx \
 	src/decoder/DecoderPlugin.hxx \
-	src/decoder/DecoderInternal.cxx src/decoder/DecoderInternal.hxx \
+	src/decoder/Bridge.cxx src/decoder/Bridge.hxx \
 	src/decoder/DecoderPrint.cxx src/decoder/DecoderPrint.hxx \
 	src/filter/FilterConfig.cxx src/filter/FilterConfig.hxx \
 	src/filter/FilterPlugin.cxx src/filter/FilterPlugin.hxx \
@@ -166,7 +165,7 @@ libmpd_a_SOURCES = \
 	src/queue/PlaylistState.cxx src/queue/PlaylistState.hxx \
 	src/queue/Listener.hxx \
 	src/PluginUnavailable.hxx \
-	src/ReplayGainConfig.cxx src/ReplayGainConfig.hxx \
+	src/ReplayGainGlobal.cxx src/ReplayGainGlobal.hxx \
 	src/DetachedSong.cxx src/DetachedSong.hxx \
 	src/LocateUri.cxx src/LocateUri.hxx \
 	src/SongUpdate.cxx \
@@ -233,6 +232,15 @@ libmpd_a_SOURCES += \
 	src/db/Visitor.hxx \
 	src/db/Selection.cxx src/db/Selection.hxx
 endif
+
+CURL_SOURCES = \
+	src/lib/curl/Version.cxx src/lib/curl/Version.hxx \
+	src/lib/curl/Global.cxx src/lib/curl/Global.hxx \
+	src/lib/curl/Request.cxx src/lib/curl/Request.hxx \
+	src/lib/curl/Handler.hxx \
+	src/lib/curl/Easy.hxx \
+	src/lib/curl/Multi.hxx \
+	src/lib/curl/Slist.hxx
 
 UPNP_SOURCES = \
 	src/lib/upnp/Init.cxx src/lib/upnp/Init.hxx \
@@ -350,7 +358,7 @@ endif
 src/haiku/mpd.rsrc: src/haiku/mpd.rdef
 	$(RC) -o $@ $<
 
-if HAVE_HAIKU
+if ENABLE_HAIKU
 noinst_DATA = src/haiku/mpd.rdef
 
 EXTRA_src_mpd_DEPENDENCIES = src/haiku/mpd.rsrc
@@ -389,6 +397,7 @@ endif
 # Generic utility library
 
 libutil_a_SOURCES = \
+	src/util/Exception.cxx src/util/Exception.hxx \
 	src/util/RuntimeError.hxx \
 	src/util/Macros.hxx \
 	src/util/BindMethod.hxx \
@@ -406,6 +415,7 @@ libutil_a_SOURCES = \
 	src/util/CharUtil.hxx \
 	src/util/NumberParser.hxx \
 	src/util/MimeType.cxx src/util/MimeType.hxx \
+	src/util/StringBuffer.hxx \
 	src/util/StringPointer.hxx \
 	src/util/StringView.cxx src/util/StringView.hxx \
 	src/util/AllocatedString.cxx src/util/AllocatedString.hxx \
@@ -420,6 +430,7 @@ libutil_a_SOURCES = \
 	src/util/FormatString.cxx src/util/FormatString.hxx \
 	src/util/Tokenizer.cxx src/util/Tokenizer.hxx \
 	src/util/TextFile.hxx \
+	src/util/TimeParser.cxx src/util/TimeParser.hxx \
 	src/util/UriUtil.cxx src/util/UriUtil.hxx \
 	src/util/Manual.hxx \
 	src/util/RefCount.hxx \
@@ -457,6 +468,7 @@ libthread_a_SOURCES = \
 # Networking library
 
 libnet_a_SOURCES = \
+	src/net/Features.hxx \
 	src/net/ToString.cxx src/net/ToString.hxx \
 	src/net/Resolver.cxx src/net/Resolver.hxx \
 	src/net/StaticSocketAddress.cxx src/net/StaticSocketAddress.hxx \
@@ -528,6 +540,10 @@ ICU_LDADD = libicu.a $(ICU_LIBS)
 # PCM library
 
 libpcm_a_SOURCES = \
+	src/CheckAudioFormat.cxx src/CheckAudioFormat.hxx \
+	src/AudioFormat.cxx src/AudioFormat.hxx \
+	src/AudioParser.cxx src/AudioParser.hxx \
+	src/pcm/SampleFormat.cxx src/pcm/SampleFormat.hxx \
 	src/pcm/Traits.hxx \
 	src/pcm/Interleave.cxx src/pcm/Interleave.hxx \
 	src/pcm/PcmBuffer.cxx src/pcm/PcmBuffer.hxx \
@@ -564,6 +580,8 @@ PCM_LIBS = \
 
 if ENABLE_DSD
 libpcm_a_SOURCES += \
+	src/pcm/Dsd16.cxx src/pcm/Dsd16.hxx \
+	src/pcm/Dsd32.cxx src/pcm/Dsd32.hxx \
 	src/pcm/PcmDsd.cxx src/pcm/PcmDsd.hxx \
 	src/pcm/dsd2pcm/dsd2pcm.c src/pcm/dsd2pcm/dsd2pcm.h
 endif
@@ -602,7 +620,8 @@ libxiph_a_SOURCES += \
 	src/lib/xiph/OggStreamState.hxx
 endif
 
-XIPH_LIBS = libxiph.a
+XIPH_LIBS = libxiph.a \
+	$(OGG_LIBS)
 
 endif
 
@@ -688,6 +707,8 @@ libstorage_a_CPPFLAGS = $(AM_CPPFLAGS) \
 
 STORAGE_LIBS = \
 	libstorage.a \
+	$(CURL_LIBS) \
+	$(EXPAT_LIBS) \
 	$(NFS_LIBS) \
 	$(SMBCLIENT_LIBS)
 
@@ -701,6 +722,12 @@ if ENABLE_NFS
 libstorage_a_SOURCES += \
 	$(NFS_SOURCES) \
 	src/storage/plugins/NfsStorage.cxx src/storage/plugins/NfsStorage.hxx
+endif
+
+if ENABLE_WEBDAV
+libstorage_a_SOURCES += \
+	src/lib/expat/ExpatParser.cxx \
+	src/storage/plugins/CurlStorage.cxx src/storage/plugins/CurlStorage.hxx
 endif
 
 endif
@@ -850,9 +877,8 @@ ARCHIVE_LIBS =
 endif
 
 libbasic_a_SOURCES = \
-	src/CheckAudioFormat.cxx src/CheckAudioFormat.hxx \
-	src/AudioFormat.cxx src/AudioFormat.hxx \
-	src/AudioParser.cxx src/AudioParser.hxx \
+	src/ReplayGainConfig.hxx \
+	src/ReplayGainMode.cxx src/ReplayGainMode.hxx \
 	src/ReplayGainInfo.cxx src/ReplayGainInfo.hxx
 
 # configuration library
@@ -933,6 +959,7 @@ endif
 libdecoder_a_SOURCES = \
 	src/decoder/plugins/PcmDecoderPlugin.cxx \
 	src/decoder/plugins/PcmDecoderPlugin.hxx \
+	src/decoder/DecoderAPI.cxx src/decoder/DecoderAPI.hxx \
 	src/decoder/Reader.cxx src/decoder/Reader.hxx \
 	src/decoder/DecoderBuffer.cxx src/decoder/DecoderBuffer.hxx \
 	src/decoder/DecoderPlugin.cxx \
@@ -1342,6 +1369,7 @@ libinput_a_SOURCES = \
 	src/input/LocalOpen.cxx src/input/LocalOpen.hxx \
 	src/input/Offset.hxx \
 	src/input/InputStream.cxx src/input/InputStream.hxx \
+	src/input/Ptr.hxx \
 	src/input/InputPlugin.hxx \
 	src/input/Reader.cxx src/input/Reader.hxx \
 	src/input/TextInputStream.cxx src/input/TextInputStream.hxx \
@@ -1380,6 +1408,7 @@ if ENABLE_CURL
 libinput_a_SOURCES += \
 	src/input/IcyInputStream.cxx src/input/IcyInputStream.hxx \
 	src/input/plugins/CurlInputPlugin.cxx src/input/plugins/CurlInputPlugin.hxx \
+	$(CURL_SOURCES) \
 	src/IcyMetaDataParser.cxx src/IcyMetaDataParser.hxx
 endif
 
@@ -1415,9 +1444,11 @@ liboutput_plugins_a_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(AO_CFLAGS) \
 	$(ALSA_CFLAGS) \
 	$(JACK_CFLAGS) \
+	$(HAIKU_CFLAGS) \
 	$(OPENAL_CFLAGS) \
 	$(OPENSSL_CFLAGS) \
 	$(PULSE_CFLAGS) \
+	$(SNDIO_CFLAGS) \
 	$(SHOUT_CFLAGS)
 
 OUTPUT_LIBS = \
@@ -1427,15 +1458,21 @@ OUTPUT_LIBS = \
 	$(ALSA_LIBS) \
 	$(ROAR_LIBS) \
 	$(JACK_LIBS) \
+	$(HAIKU_LIBS) \
 	$(OPENAL_LIBS) \
+	$(SNDIO_LIBS) \
 	$(SHOUT_LIBS)
 
 OUTPUT_API_SRC = \
+	src/output/Client.hxx \
 	src/output/OutputAPI.hxx \
+	src/output/Internal.cxx \
 	src/output/Internal.hxx \
 	src/output/Wrapper.hxx \
 	src/output/Registry.cxx src/output/Registry.hxx \
 	src/output/MultipleOutputs.cxx src/output/MultipleOutputs.hxx \
+	src/output/SharedPipeConsumer.cxx src/output/SharedPipeConsumer.hxx \
+	src/output/Source.cxx src/output/Source.hxx \
 	src/output/OutputThread.cxx \
 	src/output/Domain.cxx src/output/Domain.hxx \
 	src/output/OutputControl.cxx \
@@ -1469,6 +1506,7 @@ libmixer_plugins_a_SOURCES = \
 	src/mixer/plugins/NullMixerPlugin.cxx \
 	src/mixer/plugins/SoftwareMixerPlugin.cxx \
 	src/mixer/plugins/SoftwareMixerPlugin.hxx
+
 libmixer_plugins_a_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(ALSA_CFLAGS) \
 	$(PULSE_CFLAGS)
@@ -1477,7 +1515,10 @@ if ENABLE_ALSA
 liboutput_plugins_a_SOURCES += \
 	src/output/plugins/AlsaOutputPlugin.cxx \
 	src/output/plugins/AlsaOutputPlugin.hxx
-libmixer_plugins_a_SOURCES += src/mixer/plugins/AlsaMixerPlugin.cxx
+libmixer_plugins_a_SOURCES += \
+	src/mixer/plugins/volume_mapping.h \
+	src/mixer/plugins/volume_mapping.c \
+	src/mixer/plugins/AlsaMixerPlugin.cxx
 endif
 
 if ANDROID
@@ -1510,18 +1551,18 @@ liboutput_plugins_a_SOURCES += \
 	src/output/plugins/FifoOutputPlugin.hxx
 endif
 
-if HAVE_SNDIO
+if ENABLE_SNDIO
 liboutput_plugins_a_SOURCES += \
 	src/output/plugins/SndioOutputPlugin.cxx \
 	src/output/plugins/SndioOutputPlugin.hxx
 endif
 
-if HAVE_HAIKU
+if ENABLE_HAIKU
 liboutput_plugins_a_SOURCES += \
 	src/output/plugins/HaikuOutputPlugin.cxx \
 	src/output/plugins/HaikuOutputPlugin.hxx
 libmixer_plugins_a_SOURCES += \
-	src/mixer/plugins/HaikuMixerPlugin.cxx src/mixer/plugins/HaikuMixerPlugin.hxx
+	src/mixer/plugins/HaikuMixerPlugin.cxx
 endif
 
 if ENABLE_PIPE_OUTPUT
@@ -1660,6 +1701,7 @@ endif
 
 if ENABLE_EXPAT
 libplaylist_plugins_a_SOURCES += \
+	src/lib/expat/StreamExpatParser.cxx \
 	src/lib/expat/ExpatParser.cxx src/lib/expat/ExpatParser.hxx \
 	src/playlist/plugins/XspfPlaylistPlugin.cxx \
 	src/playlist/plugins/XspfPlaylistPlugin.hxx \
@@ -1702,8 +1744,13 @@ FILTER_LIBS = \
 
 if HAVE_SYSTEMD
 systemdsystemunit_DATA = \
-	systemd/mpd.socket \
-	systemd/mpd.service
+	systemd/system/mpd.socket \
+	systemd/system/mpd.service
+endif
+
+if HAVE_SYSTEMD_USER
+systemduserunit_DATA = \
+	systemd/user/mpd.service
 endif
 
 
@@ -1749,6 +1796,7 @@ noinst_PROGRAMS = \
 	test/run_decoder \
 	test/read_tags \
 	test/ReadApeTags \
+	test/ContainerScan \
 	test/run_filter \
 	test/run_output \
 	test/run_convert \
@@ -1838,6 +1886,10 @@ test_run_storage_SOURCES = \
 	src/IOThread.cxx \
 	test/ScopeIOThread.hxx \
 	test/run_storage.cxx
+
+if ENABLE_WEBDAV
+test_run_storage_SOURCES += $(CURL_SOURCES)
+endif
 
 endif
 
@@ -1969,7 +2021,6 @@ test_dump_playlist_LDADD = \
 test_dump_playlist_SOURCES = test/dump_playlist.cxx \
 	test/FakeDecoderAPI.cxx test/FakeDecoderAPI.hxx \
 	test/ScopeIOThread.hxx \
-	$(DECODER_SRC) \
 	src/Log.cxx src/LogBackend.cxx \
 	src/IOThread.cxx \
 	src/TagSave.cxx \
@@ -1999,13 +2050,10 @@ test_run_decoder_LDADD = \
 test_run_decoder_SOURCES = test/run_decoder.cxx \
 	test/FakeDecoderAPI.cxx test/FakeDecoderAPI.hxx \
 	test/ScopeIOThread.hxx \
+	src/DetachedSong.cxx \
 	src/Log.cxx src/LogBackend.cxx \
 	src/IOThread.cxx \
-	src/ReplayGainInfo.cxx \
-	$(ARCHIVE_SRC) \
-	$(INPUT_SRC) \
-	$(TAG_SRC) \
-	$(DECODER_SRC)
+	src/ReplayGainInfo.cxx
 
 test_read_tags_LDADD = \
 	$(DECODER_LIBS) \
@@ -2024,10 +2072,10 @@ test_read_tags_LDADD = \
 test_read_tags_SOURCES = test/read_tags.cxx \
 	test/FakeDecoderAPI.cxx test/FakeDecoderAPI.hxx \
 	test/ScopeIOThread.hxx \
+	src/DetachedSong.cxx \
 	src/Log.cxx src/LogBackend.cxx \
 	src/IOThread.cxx \
-	src/ReplayGainInfo.cxx \
-	$(DECODER_SRC)
+	src/ReplayGainInfo.cxx
 
 test_ReadApeTags_LDADD = \
 	$(TAG_LIBS) \
@@ -2040,6 +2088,27 @@ test_ReadApeTags_LDADD = \
 test_ReadApeTags_SOURCES = \
 	src/Log.cxx src/LogBackend.cxx \
 	test/ReadApeTags.cxx
+
+test_ContainerScan_LDADD = \
+	$(DECODER_LIBS) \
+	libpcm.a \
+	$(INPUT_LIBS) \
+	$(ARCHIVE_LIBS) \
+	$(TAG_LIBS) \
+	libconf.a \
+	libbasic.a \
+	libevent.a \
+	libthread.a \
+	$(FS_LIBS) \
+	$(ICU_LDADD) \
+	libsystem.a \
+	libutil.a
+test_ContainerScan_SOURCES = test/ContainerScan.cxx \
+	src/DetachedSong.cxx \
+	src/SongSave.cxx src/TagSave.cxx \
+	src/Log.cxx src/LogBackend.cxx \
+	src/ReplayGainInfo.cxx \
+	$(DECODER_SRC)
 
 if ENABLE_ID3TAG
 test_dump_rva2_LDADD = \
@@ -2064,7 +2133,6 @@ test_run_filter_LDADD = \
 	libsystem.a \
 	libutil.a
 test_run_filter_SOURCES = test/run_filter.cxx \
-	test/FakeReplayGainConfig.cxx \
 	src/Log.cxx src/LogBackend.cxx \
 	src/filter/FilterPlugin.cxx src/filter/FilterRegistry.cxx
 
@@ -2088,8 +2156,7 @@ endif
 if ENABLE_VORBISENC
 noinst_PROGRAMS += test/test_vorbis_encoder
 test_test_vorbis_encoder_SOURCES = test/test_vorbis_encoder.cxx \
-	src/Log.cxx src/LogBackend.cxx \
-	$(ENCODER_SRC)
+	src/Log.cxx src/LogBackend.cxx
 test_test_vorbis_encoder_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(ENCODER_CFLAGS)
 test_test_vorbis_encoder_LDADD = $(MPD_LIBS) \
@@ -2160,7 +2227,6 @@ test_run_output_LDADD = $(MPD_LIBS) \
 	libthread.a \
 	libutil.a
 test_run_output_SOURCES = test/run_output.cxx \
-	test/FakeReplayGainConfig.cxx \
 	test/ScopeIOThread.hxx \
 	src/Log.cxx src/LogBackend.cxx \
 	src/IOThread.cxx \
@@ -2270,6 +2336,7 @@ test_test_icy_parser_LDADD = \
 endif
 
 test_test_pcm_SOURCES = \
+	test/TestAudioFormat.cxx test/TestAudioFormat.hxx \
 	test/test_pcm_util.hxx \
 	test/test_pcm_dither.cxx \
 	test/test_pcm_pack.cxx \
@@ -2422,7 +2489,7 @@ uninstall-local:
 	rm -f $(DESTDIR)$(docdir)/api/html/*.*
 
 upload: $(DOCBOOK_HTML) doc/api/html/index.html
-	rsync -vpruz --delete doc/ www.musicpd.org:/var/www/doc/ \
+	rsync -vpruz --delete doc/ www.musicpd.org:/var/www/mpd/doc/ \
 		--chmod=Dug+rwx,Do+rx,Fug+rw,Fo+r \
 		--include=protocol --include=protocol/** \
 		--include=user --include=user/** \
@@ -2444,7 +2511,7 @@ EXTRA_DIST = $(doc_DATA) autogen.sh \
 	$(wildcard $(srcdir)/scripts/*.rb) \
 	$(man_MANS) $(DOCBOOK_FILES) doc/mpdconf.example doc/doxygen.conf \
 	$(wildcard $(srcdir)/doc/include/*.xml) \
-	systemd/mpd.socket \
+	systemd/system/mpd.socket \
 	android/AndroidManifest.xml \
 	android/build.py \
 	android/custom_rules.xml \

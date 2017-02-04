@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -43,8 +43,10 @@ audio_output_state_save(BufferedOutputStream &os,
 {
 	for (unsigned i = 0, n = outputs.Size(); i != n; ++i) {
 		const AudioOutput &ao = outputs.Get(i);
+		const std::lock_guard<Mutex> lock(ao.mutex);
 
-		os.Format(AUDIO_DEVICE_STATE "%d:%s\n", ao.enabled, ao.name);
+		os.Format(AUDIO_DEVICE_STATE "%d:%s\n",
+			  ao.IsEnabled(), ao.GetName());
 	}
 }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -142,25 +142,24 @@ flac_decoder_initialize(FlacDecoder *data, FLAC__StreamDecoder *sd)
 static void
 flac_decoder_loop(FlacDecoder *data, FLAC__StreamDecoder *flac_dec)
 {
-	Decoder &decoder = *data->GetDecoder();
+	DecoderClient &client = *data->GetClient();
 
 	while (true) {
 		DecoderCommand cmd;
 		if (!data->tag.IsEmpty()) {
-			cmd = decoder_tag(decoder, data->GetInputStream(),
-					  std::move(data->tag));
+			cmd = client.SubmitTag(data->GetInputStream(),
+					       std::move(data->tag));
 			data->tag.Clear();
 		} else
-			cmd = decoder_get_command(decoder);
+			cmd = client.GetCommand();
 
 		if (cmd == DecoderCommand::SEEK) {
-			FLAC__uint64 seek_sample =
-				decoder_seek_where_frame(decoder);
+			FLAC__uint64 seek_sample = client.GetSeekFrame();
 			if (FLAC__stream_decoder_seek_absolute(flac_dec, seek_sample)) {
 				data->position = 0;
-				decoder_command_finished(decoder);
+				client.CommandFinished();
 			} else
-				decoder_seek_error(decoder);
+				client.SeekError();
 		} else if (cmd == DecoderCommand::STOP)
 			break;
 
@@ -198,7 +197,7 @@ flac_decoder_loop(FlacDecoder *data, FLAC__StreamDecoder *flac_dec)
 		}
 
 		if (!FLAC__stream_decoder_process_single(flac_dec) &&
-		    decoder_get_command(decoder) == DecoderCommand::NONE) {
+		    client.GetCommand() == DecoderCommand::NONE) {
 			/* a failure that was not triggered by a
 			   decoder command */
 			flacPrintErroredState(FLAC__stream_decoder_get_state(flac_dec));
@@ -264,7 +263,7 @@ FlacInitAndDecode(FlacDecoder &data, FLAC__StreamDecoder *sd, bool is_ogg)
 }
 
 static void
-flac_decode_internal(Decoder &decoder,
+flac_decode_internal(DecoderClient &client,
 		     InputStream &input_stream,
 		     bool is_ogg)
 {
@@ -272,15 +271,15 @@ flac_decode_internal(Decoder &decoder,
 	if (!flac_dec)
 		return;
 
-	FlacDecoder data(decoder, input_stream);
+	FlacDecoder data(client, input_stream);
 
 	FlacInitAndDecode(data, flac_dec.get(), is_ogg);
 }
 
 static void
-flac_decode(Decoder &decoder, InputStream &input_stream)
+flac_decode(DecoderClient &client, InputStream &input_stream)
 {
-	flac_decode_internal(decoder, input_stream, false);
+	flac_decode_internal(client, input_stream, false);
 }
 
 static bool
@@ -322,9 +321,9 @@ oggflac_scan_stream(InputStream &is,
 }
 
 static void
-oggflac_decode(Decoder &decoder, InputStream &input_stream)
+oggflac_decode(DecoderClient &client, InputStream &input_stream)
 {
-	if (ogg_codec_detect(&decoder, input_stream) != OGG_CODEC_FLAC)
+	if (ogg_codec_detect(&client, input_stream) != OGG_CODEC_FLAC)
 		return;
 
 	/* rewind the stream, because ogg_codec_detect() has
@@ -334,7 +333,7 @@ oggflac_decode(Decoder &decoder, InputStream &input_stream)
 	} catch (const std::runtime_error &) {
 	}
 
-	flac_decode_internal(decoder, input_stream, true);
+	flac_decode_internal(client, input_stream, true);
 }
 
 static const char *const oggflac_suffixes[] = { "ogg", "oga", nullptr };

@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -27,14 +27,13 @@
 
 #include <functional>
 
-static bool
+static void
 AddToQueue(Partition &partition, const LightSong &song)
 {
 	const Storage &storage = *partition.instance.storage;
 	partition.playlist.AppendSong(partition.pc,
 				      DatabaseDetachSong(storage,
 							 song));
-	return true;
 }
 
 void

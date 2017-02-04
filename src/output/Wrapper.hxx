@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -20,7 +20,10 @@
 #ifndef MPD_OUTPUT_WRAPPER_HXX
 #define MPD_OUTPUT_WRAPPER_HXX
 
+#include "Internal.hxx"
 #include "util/Cast.hxx"
+
+#include <chrono>
 
 struct ConfigBlock;
 
@@ -30,8 +33,9 @@ struct AudioOutputWrapper {
 		return ContainerCast(ao, &T::base);
 	}
 
-	static AudioOutput *Init(const ConfigBlock &block) {
-		T *t = T::Create(block);
+	static AudioOutput *Init(EventLoop &event_loop,
+				 const ConfigBlock &block) {
+		T *t = T::Create(event_loop, block);
 		return &t->base;
 	}
 
@@ -61,7 +65,7 @@ struct AudioOutputWrapper {
 	}
 
 	gcc_pure
-	static unsigned Delay(AudioOutput *ao) {
+	static std::chrono::steady_clock::duration Delay(AudioOutput *ao) {
 		T &t = Cast(*ao);
 		return t.Delay();
 	}

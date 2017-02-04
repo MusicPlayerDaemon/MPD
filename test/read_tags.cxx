@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -23,12 +23,12 @@
 #include "decoder/DecoderPlugin.hxx"
 #include "input/Init.hxx"
 #include "input/InputStream.hxx"
-#include "AudioFormat.hxx"
 #include "tag/TagHandler.hxx"
 #include "tag/Generic.hxx"
 #include "fs/Path.hxx"
 #include "thread/Cond.hxx"
 #include "Log.hxx"
+#include "util/ScopeExit.hxx"
 
 #include <stdexcept>
 
@@ -88,8 +88,11 @@ try {
 
 	const ScopeIOThread io_thread;
 
-	input_stream_global_init();
+	input_stream_global_init(io_thread_get());
+	AtScopeExit() { input_stream_global_finish(); };
+
 	decoder_plugin_init_all();
+	AtScopeExit() { decoder_plugin_deinit_all(); };
 
 	plugin = decoder_plugin_from_name(decoder_name);
 	if (plugin == NULL) {
@@ -97,26 +100,34 @@ try {
 		return EXIT_FAILURE;
 	}
 
-	bool success = plugin->ScanFile(path, print_handler, nullptr);
-	if (!success && plugin->scan_stream != NULL) {
-		Mutex mutex;
-		Cond cond;
-
-		auto is = InputStream::OpenReady(path.c_str(),
-						 mutex, cond);
-		success = plugin->ScanStream(*is, print_handler, nullptr);
+	bool success;
+	try {
+		success = plugin->ScanFile(path, print_handler, nullptr);
+	} catch (const std::exception &e) {
+		LogError(e);
+		success = false;
 	}
 
-	decoder_plugin_deinit_all();
-	input_stream_global_finish();
+	Mutex mutex;
+	Cond cond;
+	InputStreamPtr is;
+
+	if (!success && plugin->scan_stream != NULL) {
+		is = InputStream::OpenReady(path.c_str(), mutex, cond);
+		success = plugin->ScanStream(*is, print_handler, nullptr);
+	}
 
 	if (!success) {
 		fprintf(stderr, "Failed to read tags\n");
 		return EXIT_FAILURE;
 	}
 
-	if (empty)
-		ScanGenericTags(path, print_handler, nullptr);
+	if (empty) {
+		if (is)
+			ScanGenericTags(*is, print_handler, nullptr);
+		else
+			ScanGenericTags(path, print_handler, nullptr);
+	}
 
 	return 0;
 } catch (const std::exception &e) {

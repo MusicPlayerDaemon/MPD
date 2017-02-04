@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -42,7 +42,7 @@ struct ApeFooter {
 bool
 tag_ape_scan(InputStream &is, ApeTagCallback callback)
 try {
-	const ScopeLock protect(is.mutex);
+	const std::lock_guard<Mutex> protect(is.mutex);
 
 	if (!is.KnownSize() || !is.CheapSeeking())
 		return false;

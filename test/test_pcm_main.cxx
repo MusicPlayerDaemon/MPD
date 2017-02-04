@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,7 +17,9 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include "config.h"
 #include "test_pcm_all.hxx"
+#include "TestAudioFormat.hxx"
 #include "Compiler.h"
 
 #include <cppunit/extensions/TestFactoryRegistry.h>
@@ -33,6 +35,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(PcmFormatTest);
 CPPUNIT_TEST_SUITE_REGISTRATION(PcmMixTest);
 CPPUNIT_TEST_SUITE_REGISTRATION(PcmInterleaveTest);
 CPPUNIT_TEST_SUITE_REGISTRATION(PcmExportTest);
+CPPUNIT_TEST_SUITE_REGISTRATION(AudioFormatTest);
 
 int
 main(gcc_unused int argc, gcc_unused char **argv)

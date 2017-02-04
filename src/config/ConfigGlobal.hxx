@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -22,6 +22,8 @@
 
 #include "ConfigOption.hxx"
 #include "Compiler.h"
+
+#include <chrono>
 
 class Path;
 class AllocatedPath;
@@ -89,8 +91,28 @@ unsigned
 config_get_unsigned(enum ConfigOption option, unsigned default_value);
 
 gcc_pure
+static inline std::chrono::steady_clock::duration
+config_get_unsigned(ConfigOption option,
+		    std::chrono::steady_clock::duration default_value)
+{
+	// TODO: allow unit suffixes
+	auto u = config_get_unsigned(option, default_value.count());
+	return std::chrono::steady_clock::duration(u);
+}
+
+gcc_pure
 unsigned
 config_get_positive(enum ConfigOption option, unsigned default_value);
+
+gcc_pure
+static inline std::chrono::steady_clock::duration
+config_get_positive(ConfigOption option,
+		    std::chrono::steady_clock::duration default_value)
+{
+	// TODO: allow unit suffixes
+	auto u = config_get_positive(option, default_value.count());
+	return std::chrono::steady_clock::duration(u);
+}
 
 gcc_pure
 bool config_get_bool(enum ConfigOption option, bool default_value);

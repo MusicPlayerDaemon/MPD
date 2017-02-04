@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -23,100 +23,148 @@
 #include "input/InputStream.hxx"
 #include "CheckAudioFormat.hxx"
 #include "tag/TagHandler.hxx"
-#include "tag/ApeTag.hxx"
 #include "fs/Path.hxx"
-#include "util/Domain.hxx"
 #include "util/Macros.hxx"
 #include "util/Alloc.hxx"
 #include "util/ScopeExit.hxx"
-#include "Log.hxx"
+#include "util/RuntimeError.hxx"
 
 #include <wavpack/wavpack.h>
 
 #include <stdexcept>
+#include <memory>
 
 #include <assert.h>
-#include <stdio.h>
-#include <stdlib.h>
 
 #define ERRORLEN 80
 
-static constexpr Domain wavpack_domain("wavpack");
+#ifdef OPEN_DSD_AS_PCM
+/* libWavPack supports DSD since version 5 */
+  #ifdef ENABLE_DSD
+static constexpr int OPEN_DSD_FLAG = OPEN_DSD_NATIVE;
+  #else
+static constexpr int OPEN_DSD_FLAG = OPEN_DSD_AS_PCM;
+  #endif
+#else
+/* no DSD support in this libWavPack version */
+static constexpr int OPEN_DSD_FLAG = 0;
+#endif
 
-/** A pointer type for format converter function. */
-typedef void (*format_samples_t)(
-	int bytes_per_sample,
-	void *buffer, uint32_t count
-);
-
-/*
- * This function has been borrowed from the tiny player found on
- * wavpack.com. Modifications were required because mpd only handles
- * max 24-bit samples.
- */
-static void
-format_samples_int(int bytes_per_sample, void *buffer, uint32_t count)
+static WavpackContext *
+WavpackOpenInput(Path path, int flags, int norm_offset)
 {
-	int32_t *src = (int32_t *)buffer;
+	char error[ERRORLEN];
+	auto *wpc = WavpackOpenFileInput(path.c_str(), error,
+					 flags, norm_offset);
+	if (wpc == nullptr)
+		throw FormatRuntimeError("failed to open WavPack file \"%s\": %s",
+					 path.c_str(), error);
 
-	switch (bytes_per_sample) {
-	case 1: {
-		int8_t *dst = (int8_t *)buffer;
-		/*
-		 * The asserts like the following one are because we do the
-		 * formatting of samples within a single buffer. The size
-		 * of the output samples never can be greater than the size
-		 * of the input ones. Otherwise we would have an overflow.
-		 */
-		static_assert(sizeof(*dst) <= sizeof(*src), "Wrong size");
+	return wpc;
+}
 
-		/* pass through and align 8-bit samples */
-		while (count--) {
-			*dst++ = *src++;
-		}
-		break;
-	}
-	case 2: {
-		uint16_t *dst = (uint16_t *)buffer;
-		static_assert(sizeof(*dst) <= sizeof(*src), "Wrong size");
+#ifdef OPEN_DSD_AS_PCM
 
-		/* pass through and align 16-bit samples */
-		while (count--) {
-			*dst++ = *src++;
-		}
-		break;
-	}
+static WavpackContext *
+WavpackOpenInput(WavpackStreamReader64 *reader, void *wv_id, void *wvc_id,
+		 int flags, int norm_offset)
+{
+	char error[ERRORLEN];
+	auto *wpc = WavpackOpenFileInputEx64(reader, wv_id, wvc_id, error,
+					   flags, norm_offset);
+	if (wpc == nullptr)
+		throw FormatRuntimeError("failed to open WavPack stream: %s",
+					 error);
 
-	case 3:
-	case 4:
-		/* do nothing */
-		break;
-	}
+	return wpc;
+}
+
+#else
+
+static WavpackContext *
+WavpackOpenInput(WavpackStreamReader *reader, void *wv_id, void *wvc_id,
+		 int flags, int norm_offset)
+{
+	char error[ERRORLEN];
+	auto *wpc = WavpackOpenFileInputEx(reader, wv_id, wvc_id, error,
+					   flags, norm_offset);
+	if (wpc == nullptr)
+		throw FormatRuntimeError("failed to open WavPack stream: %s",
+					 error);
+
+	return wpc;
+}
+
+#endif
+
+gcc_pure
+static SignedSongTime
+GetDuration(WavpackContext *wpc)
+{
+#ifdef OPEN_DSD_AS_PCM
+	/* libWavPack 5 */
+	const auto n_samples = WavpackGetNumSamples64(wpc);
+	if (n_samples == -1)
+		/* unknown */
+		return SignedSongTime::Negative();
+#else
+	const uint32_t n_samples = WavpackGetNumSamples(wpc);
+	if (n_samples == uint32_t(-1))
+		/* unknown */
+		return SignedSongTime::Negative();
+#endif
+
+	return SongTime::FromScale<uint64_t>(n_samples,
+					     WavpackGetSampleRate(wpc));
 }
 
 /*
- * This function converts floating point sample data to 24-bit integer.
+ * Convert integer samples.
+ */
+template<typename T>
+static void
+format_samples_int(void *buffer, uint32_t count)
+{
+	int32_t *src = (int32_t *)buffer;
+	T *dst = (T *)buffer;
+	/*
+	 * The asserts like the following one are because we do the
+	 * formatting of samples within a single buffer. The size of
+	 * the output samples never can be greater than the size of
+	 * the input ones. Otherwise we would have an overflow.
+	 */
+	static_assert(sizeof(*dst) <= sizeof(*src), "Wrong size");
+
+	/* pass through and align samples */
+	std::copy_n(src, count, dst);
+}
+
+/*
+ * No conversion necessary.
  */
 static void
-format_samples_float(gcc_unused int bytes_per_sample, void *buffer,
-		     uint32_t count)
+format_samples_nop(gcc_unused void *buffer, gcc_unused uint32_t count)
 {
-	float *p = (float *)buffer;
-
-	while (count--) {
-		*p /= (1 << 23);
-		++p;
-	}
+	/* do nothing */
 }
 
 /**
  * Choose a MPD sample format from libwavpacks' number of bits.
  */
 static SampleFormat
-wavpack_bits_to_sample_format(bool is_float, int bytes_per_sample)
+wavpack_bits_to_sample_format(bool is_float,
+#if defined(OPEN_DSD_AS_PCM) && defined(ENABLE_DSD)
+			      bool is_dsd,
+#endif
+			      int bytes_per_sample)
 {
 	if (is_float)
 		return SampleFormat::FLOAT;
+
+#if defined(OPEN_DSD_AS_PCM) && defined(ENABLE_DSD)
+	if (is_dsd)
+		return SampleFormat::DSD;
+#endif
 
 	switch (bytes_per_sample) {
 	case 1:
@@ -141,26 +189,42 @@ wavpack_bits_to_sample_format(bool is_float, int bytes_per_sample)
  * Requires an already opened WavpackContext.
  */
 static void
-wavpack_decode(Decoder &decoder, WavpackContext *wpc, bool can_seek)
+wavpack_decode(DecoderClient &client, WavpackContext *wpc, bool can_seek)
 {
-	bool is_float = (WavpackGetMode(wpc) & MODE_FLOAT) != 0;
+	const bool is_float = (WavpackGetMode(wpc) & MODE_FLOAT) != 0;
+#if defined(OPEN_DSD_AS_PCM) && defined(ENABLE_DSD)
+	const bool is_dsd = (WavpackGetQualifyMode(wpc) & QMODE_DSD_AUDIO) != 0;
+#else
+	constexpr bool is_dsd = false;
+#endif
 	SampleFormat sample_format =
 		wavpack_bits_to_sample_format(is_float,
+#if defined(OPEN_DSD_AS_PCM) && defined(ENABLE_DSD)
+					      is_dsd,
+#endif
 					      WavpackGetBytesPerSample(wpc));
 
 	auto audio_format = CheckAudioFormat(WavpackGetSampleRate(wpc),
 					     sample_format,
-					     WavpackGetNumChannels(wpc));
+					     WavpackGetReducedChannels(wpc));
 
-	const format_samples_t format_samples = is_float
-		? format_samples_float
-		: format_samples_int;
+	auto *format_samples = format_samples_nop;
+	if (is_dsd)
+		format_samples = format_samples_int<uint8_t>;
+	else if (!is_float) {
+		switch (WavpackGetBytesPerSample(wpc)) {
+		case 1:
+			format_samples = format_samples_int<int8_t>;
+			break;
 
-	const auto total_time =
-		SongTime::FromScale<uint64_t>(WavpackGetNumSamples(wpc),
-					      audio_format.sample_rate);
+		case 2:
+			format_samples = format_samples_int<int16_t>;
+			break;
+		}
+	}
 
-	const int bytes_per_sample = WavpackGetBytesPerSample(wpc);
+	client.Ready(audio_format, can_seek, GetDuration(wpc));
+
 	const int output_sample_size = audio_format.GetFrameSize();
 
 	/* wavpack gives us all kind of samples in a 32-bit space */
@@ -168,21 +232,25 @@ wavpack_decode(Decoder &decoder, WavpackContext *wpc, bool can_seek)
 	const uint32_t samples_requested = ARRAY_SIZE(chunk) /
 		audio_format.channels;
 
-	decoder_initialized(decoder, audio_format, can_seek, total_time);
-
-	DecoderCommand cmd = decoder_get_command(decoder);
+	DecoderCommand cmd = client.GetCommand();
 	while (cmd != DecoderCommand::STOP) {
 		if (cmd == DecoderCommand::SEEK) {
 			if (can_seek) {
-				auto where = decoder_seek_where_frame(decoder);
-
-				if (WavpackSeekSample(wpc, where)) {
-					decoder_command_finished(decoder);
-				} else {
-					decoder_seek_error(decoder);
+				auto where = client.GetSeekFrame();
+#ifdef OPEN_DSD_AS_PCM
+				bool success = WavpackSeekSample64(wpc, where);
+#else
+				bool success = WavpackSeekSample(wpc, where);
+#endif
+				if (!success) {
+					/* seek errors are fatal */
+					client.SeekError();
+					break;
 				}
+
+				client.CommandFinished();
 			} else {
-				decoder_seek_error(decoder);
+				client.SeekError();
 			}
 		}
 
@@ -193,128 +261,12 @@ wavpack_decode(Decoder &decoder, WavpackContext *wpc, bool can_seek)
 
 		int bitrate = (int)(WavpackGetInstantBitrate(wpc) / 1000 +
 				    0.5);
-		format_samples(bytes_per_sample, chunk,
-			       samples_got * audio_format.channels);
+		format_samples(chunk, samples_got * audio_format.channels);
 
-		cmd = decoder_data(decoder, nullptr, chunk,
-				   samples_got * output_sample_size,
-				   bitrate);
+		cmd = client.SubmitData(nullptr, chunk,
+					samples_got * output_sample_size,
+					bitrate);
 	}
-}
-
-/**
- * Locate and parse a floating point tag.  Returns true if it was
- * found.
- */
-static bool
-wavpack_tag_float(WavpackContext *wpc, const char *key, float *value_r)
-{
-	char buffer[64];
-	if (WavpackGetTagItem(wpc, key, buffer, sizeof(buffer)) <= 0)
-		return false;
-
-	*value_r = atof(buffer);
-	return true;
-}
-
-static bool
-wavpack_replaygain(ReplayGainInfo &rgi,
-		   WavpackContext *wpc)
-{
-	rgi.Clear();
-
-	bool found = false;
-	found |= wavpack_tag_float(wpc, "replaygain_track_gain",
-				   &rgi.tuples[REPLAY_GAIN_TRACK].gain);
-	found |= wavpack_tag_float(wpc, "replaygain_track_peak",
-				   &rgi.tuples[REPLAY_GAIN_TRACK].peak);
-	found |= wavpack_tag_float(wpc, "replaygain_album_gain",
-				   &rgi.tuples[REPLAY_GAIN_ALBUM].gain);
-	found |= wavpack_tag_float(wpc, "replaygain_album_peak",
-				   &rgi.tuples[REPLAY_GAIN_ALBUM].peak);
-
-	return found;
-}
-
-static void
-wavpack_scan_tag_item(WavpackContext *wpc, const char *name,
-		      TagType type,
-		      const TagHandler &handler, void *handler_ctx)
-{
-	char buffer[1024];
-	int len = WavpackGetTagItem(wpc, name, buffer, sizeof(buffer));
-	if (len <= 0 || (unsigned)len >= sizeof(buffer))
-		return;
-
-	tag_handler_invoke_tag(handler, handler_ctx, type, buffer);
-
-}
-
-static void
-wavpack_scan_pair(WavpackContext *wpc, const char *name,
-		  const TagHandler &handler, void *handler_ctx)
-{
-	char buffer[8192];
-	int len = WavpackGetTagItem(wpc, name, buffer, sizeof(buffer));
-	if (len <= 0 || (unsigned)len >= sizeof(buffer))
-		return;
-
-	tag_handler_invoke_pair(handler, handler_ctx, name, buffer);
-}
-
-/*
- * Reads metainfo from the specified file.
- */
-static bool
-wavpack_scan_file(Path path_fs,
-		  const TagHandler &handler, void *handler_ctx)
-{
-	char error[ERRORLEN];
-	WavpackContext *wpc = WavpackOpenFileInput(path_fs.c_str(), error,
-						   OPEN_TAGS, 0);
-	if (wpc == nullptr) {
-		FormatError(wavpack_domain,
-			    "failed to open WavPack file \"%s\": %s",
-			    path_fs.c_str(), error);
-		return false;
-	}
-
-	const auto duration =
-		SongTime::FromScale<uint64_t>(WavpackGetNumSamples(wpc),
-					      WavpackGetSampleRate(wpc));
-	tag_handler_invoke_duration(handler, handler_ctx, duration);
-
-	/* the WavPack format implies APEv2 tags, which means we can
-	   reuse the mapping from tag_ape.c */
-
-	for (unsigned i = 0; i < TAG_NUM_OF_ITEM_TYPES; ++i) {
-		const char *name = tag_item_names[i];
-		if (name != nullptr)
-			wavpack_scan_tag_item(wpc, name, (TagType)i,
-					      handler, handler_ctx);
-	}
-
-	for (const struct tag_table *i = ape_tags; i->name != nullptr; ++i)
-		wavpack_scan_tag_item(wpc, i->name, i->type,
-				      handler, handler_ctx);
-
-	if (handler.pair != nullptr) {
-		char name[64];
-
-		for (int i = 0, n = WavpackGetNumTagItems(wpc);
-		     i < n; ++i) {
-			int len = WavpackGetTagItemIndexed(wpc, i, name,
-							   sizeof(name));
-			if (len <= 0 || (unsigned)len >= sizeof(name))
-				continue;
-
-			wavpack_scan_pair(wpc, name, handler, handler_ctx);
-		}
-	}
-
-	WavpackCloseFile(wpc);
-
-	return true;
 }
 
 /*
@@ -323,15 +275,72 @@ wavpack_scan_file(Path path_fs,
 
 /* This struct is needed for per-stream last_byte storage. */
 struct WavpackInput {
-	Decoder &decoder;
+	DecoderClient *const client;
 	InputStream &is;
 	/* Needed for push_back_byte() */
 	int last_byte;
 
-	constexpr WavpackInput(Decoder &_decoder, InputStream &_is)
-		:decoder(_decoder), is(_is), last_byte(EOF) {}
+	constexpr WavpackInput(DecoderClient *_client, InputStream &_is)
+		:client(_client), is(_is), last_byte(EOF) {}
 
 	int32_t ReadBytes(void *data, size_t bcount);
+
+	InputStream::offset_type GetPos() const {
+		return is.GetOffset();
+	}
+
+	int SetPosAbs(InputStream::offset_type pos) {
+		try {
+			is.LockSeek(pos);
+			return 0;
+		} catch (const std::runtime_error &) {
+			return -1;
+		}
+	}
+
+	int SetPosRel(InputStream::offset_type delta, int mode) {
+		offset_type offset = delta;
+		switch (mode) {
+		case SEEK_SET:
+			break;
+
+		case SEEK_CUR:
+			offset += is.GetOffset();
+			break;
+
+		case SEEK_END:
+			if (!is.KnownSize())
+				return -1;
+
+			offset += is.GetSize();
+			break;
+
+		default:
+			return -1;
+		}
+
+		return SetPosAbs(offset);
+	}
+
+	int PushBackByte(int c) {
+		if (last_byte == EOF) {
+			last_byte = c;
+			return c;
+		} else {
+			return EOF;
+		}
+	}
+
+	InputStream::offset_type GetLength() const {
+		if (!is.KnownSize())
+			return 0;
+
+		return is.GetSize();
+	}
+
+	bool CanSeek() const {
+		return is.IsSeekable();
+	}
 };
 
 /**
@@ -366,7 +375,7 @@ WavpackInput::ReadBytes(void *data, size_t bcount)
 	/* wavpack fails if we return a partial read, so we just wait
 	   until the buffer is full */
 	while (bcount > 0) {
-		size_t nbytes = decoder_read(&decoder, is, buf, bcount);
+		size_t nbytes = decoder_read(client, is, buf, bcount);
 		if (nbytes == 0) {
 			/* EOF, error or a decoder command */
 			break;
@@ -380,94 +389,104 @@ WavpackInput::ReadBytes(void *data, size_t bcount)
 	return i;
 }
 
+#ifdef OPEN_DSD_AS_PCM
+
+static int64_t
+wavpack_input_get_pos(void *id)
+{
+	WavpackInput &wpi = *wpin(id);
+	return wpi.GetPos();
+}
+
+static int
+wavpack_input_set_pos_abs(void *id, int64_t pos)
+{
+	WavpackInput &wpi = *wpin(id);
+	return wpi.SetPosAbs(pos);
+}
+
+static int
+wavpack_input_set_pos_rel(void *id, int64_t delta, int mode)
+{
+	WavpackInput &wpi = *wpin(id);
+	return wpi.SetPosRel(delta, mode);
+}
+
+#else
+
 static uint32_t
 wavpack_input_get_pos(void *id)
 {
 	WavpackInput &wpi = *wpin(id);
-
-	return wpi.is.GetOffset();
+	return wpi.GetPos();
 }
 
 static int
 wavpack_input_set_pos_abs(void *id, uint32_t pos)
 {
 	WavpackInput &wpi = *wpin(id);
-
-	try {
-		wpi.is.LockSeek(pos);
-		return 0;
-	} catch (const std::runtime_error &) {
-		return -1;
-	}
+	return wpi.SetPosAbs(pos);
 }
 
 static int
 wavpack_input_set_pos_rel(void *id, int32_t delta, int mode)
 {
 	WavpackInput &wpi = *wpin(id);
-	InputStream &is = wpi.is;
-
-	offset_type offset = delta;
-	switch (mode) {
-	case SEEK_SET:
-		break;
-
-	case SEEK_CUR:
-		offset += is.GetOffset();
-		break;
-
-	case SEEK_END:
-		if (!is.KnownSize())
-			return -1;
-
-		offset += is.GetSize();
-		break;
-
-	default:
-		return -1;
-	}
-
-	try {
-		wpi.is.LockSeek(offset);
-		return 0;
-	} catch (const std::runtime_error &) {
-		return -1;
-	}
+	return wpi.SetPosRel(delta, mode);
 }
+
+#endif
 
 static int
 wavpack_input_push_back_byte(void *id, int c)
 {
 	WavpackInput &wpi = *wpin(id);
-
-	if (wpi.last_byte == EOF) {
-		wpi.last_byte = c;
-		return c;
-	} else {
-		return EOF;
-	}
+	return wpi.PushBackByte(c);
 }
+
+#ifdef OPEN_DSD_AS_PCM
+
+static int64_t
+wavpack_input_get_length(void *id)
+{
+	WavpackInput &wpi = *wpin(id);
+	return wpi.GetLength();
+}
+
+#else
 
 static uint32_t
 wavpack_input_get_length(void *id)
 {
 	WavpackInput &wpi = *wpin(id);
-	InputStream &is = wpi.is;
-
-	if (!is.KnownSize())
-		return 0;
-
-	return is.GetSize();
+	return wpi.GetLength();
 }
+
+#endif
 
 static int
 wavpack_input_can_seek(void *id)
 {
 	WavpackInput &wpi = *wpin(id);
-	InputStream &is = wpi.is;
-
-	return is.IsSeekable();
+	return wpi.CanSeek();
 }
+
+#ifdef OPEN_DSD_AS_PCM
+
+static WavpackStreamReader64 mpd_is_reader = {
+	wavpack_input_read_bytes,
+	nullptr, /* write_bytes */
+	wavpack_input_get_pos,
+	wavpack_input_set_pos_abs,
+	wavpack_input_set_pos_rel,
+	wavpack_input_push_back_byte,
+	wavpack_input_get_length,
+	wavpack_input_can_seek,
+	nullptr, /* truncate_here */
+	nullptr, /* close */
+};
+
+#else
 
 static WavpackStreamReader mpd_is_reader = {
 	wavpack_input_read_bytes,
@@ -480,8 +499,10 @@ static WavpackStreamReader mpd_is_reader = {
 	nullptr /* no need to write edited tags */
 };
 
+#endif
+
 static InputStreamPtr
-wavpack_open_wvc(Decoder &decoder, const char *uri)
+wavpack_open_wvc(DecoderClient &client, const char *uri)
 {
 	/*
 	 * As we use dc->utf8url, this function will be bad for
@@ -496,7 +517,7 @@ wavpack_open_wvc(Decoder &decoder, const char *uri)
 	};
 
 	try {
-		return decoder_open_uri(decoder, uri);
+		return client.OpenUri(uri);
 	} catch (const std::runtime_error &) {
 		return nullptr;
 	}
@@ -506,68 +527,86 @@ wavpack_open_wvc(Decoder &decoder, const char *uri)
  * Decodes a stream.
  */
 static void
-wavpack_streamdecode(Decoder &decoder, InputStream &is)
+wavpack_streamdecode(DecoderClient &client, InputStream &is)
 {
-	int open_flags = OPEN_NORMALIZE;
+	int open_flags = OPEN_DSD_FLAG | OPEN_NORMALIZE;
 	bool can_seek = is.IsSeekable();
 
 	std::unique_ptr<WavpackInput> wvc;
-	auto is_wvc = wavpack_open_wvc(decoder, is.GetURI());
+	auto is_wvc = wavpack_open_wvc(client, is.GetURI());
 	if (is_wvc) {
 		open_flags |= OPEN_WVC;
-		can_seek &= wvc->is.IsSeekable();
+		can_seek &= is_wvc->IsSeekable();
 
-		wvc.reset(new WavpackInput(decoder, *is_wvc));
+		wvc.reset(new WavpackInput(&client, *is_wvc));
 	}
 
 	if (!can_seek) {
 		open_flags |= OPEN_STREAMING;
 	}
 
-	WavpackInput isp(decoder, is);
+	WavpackInput isp(&client, is);
 
-	char error[ERRORLEN];
-	WavpackContext *wpc =
-		WavpackOpenFileInputEx(&mpd_is_reader, &isp, wvc.get(),
-				       error, open_flags, 23);
-
-	if (wpc == nullptr) {
-		FormatError(wavpack_domain,
-			    "failed to open WavPack stream: %s", error);
-		return;
-	}
-
+	auto *wpc = WavpackOpenInput(&mpd_is_reader, &isp, wvc.get(),
+				     open_flags, 0);
 	AtScopeExit(wpc) {
 		WavpackCloseFile(wpc);
 	};
 
-	wavpack_decode(decoder, wpc, can_seek);
+	wavpack_decode(client, wpc, can_seek);
 }
 
 /*
  * Decodes a file.
  */
 static void
-wavpack_filedecode(Decoder &decoder, Path path_fs)
+wavpack_filedecode(DecoderClient &client, Path path_fs)
 {
-	char error[ERRORLEN];
-	WavpackContext *wpc = WavpackOpenFileInput(path_fs.c_str(), error,
-						   OPEN_TAGS | OPEN_WVC | OPEN_NORMALIZE,
-						   23);
-	if (wpc == nullptr) {
-		FormatWarning(wavpack_domain,
-			      "failed to open WavPack file \"%s\": %s",
-			      path_fs.c_str(), error);
-		return;
-	}
+	auto *wpc = WavpackOpenInput(path_fs,
+				     OPEN_DSD_FLAG | OPEN_NORMALIZE | OPEN_WVC,
+				     0);
+	AtScopeExit(wpc) {
+		WavpackCloseFile(wpc);
+	};
 
-	ReplayGainInfo rgi;
-	if (wavpack_replaygain(rgi, wpc))
-		decoder_replay_gain(decoder, &rgi);
+	wavpack_decode(client, wpc, true);
+}
 
-	wavpack_decode(decoder, wpc, true);
+/*
+ * Reads metainfo from the specified file.
+ */
+static bool
+wavpack_scan_file(Path path_fs,
+		  const TagHandler &handler, void *handler_ctx)
+{
+	auto *wpc = WavpackOpenInput(path_fs, OPEN_DSD_FLAG, 0);
+	AtScopeExit(wpc) {
+		WavpackCloseFile(wpc);
+	};
 
-	WavpackCloseFile(wpc);
+	const auto duration = GetDuration(wpc);
+	if (!duration.IsNegative())
+		tag_handler_invoke_duration(handler, handler_ctx, SongTime(duration));
+
+	return true;
+}
+
+static bool
+wavpack_scan_stream(InputStream &is,
+		    const TagHandler &handler, void *handler_ctx)
+{
+	WavpackInput isp(nullptr, is);
+	auto *wpc = WavpackOpenInput(&mpd_is_reader, &isp, nullptr,
+				     OPEN_DSD_FLAG, 0);
+	AtScopeExit(wpc) {
+		WavpackCloseFile(wpc);
+	};
+
+	const auto duration = GetDuration(wpc);
+	if (!duration.IsNegative())
+		tag_handler_invoke_duration(handler, handler_ctx, SongTime(duration));
+
+	return true;
 }
 
 static char const *const wavpack_suffixes[] = {
@@ -587,7 +626,7 @@ const struct DecoderPlugin wavpack_decoder_plugin = {
 	wavpack_streamdecode,
 	wavpack_filedecode,
 	wavpack_scan_file,
-	nullptr,
+	wavpack_scan_stream,
 	nullptr,
 	wavpack_suffixes,
 	wavpack_mime_types

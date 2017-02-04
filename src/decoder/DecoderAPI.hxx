@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -30,6 +30,7 @@
 // IWYU pragma: begin_exports
 
 #include "check.h"
+#include "Client.hxx"
 #include "input/Ptr.hxx"
 #include "DecoderCommand.hxx"
 #include "DecoderPlugin.hxx"
@@ -44,87 +45,14 @@
 
 #include <stdint.h>
 
+class DecoderClient;
+
 /**
  * Throw an instance of this class to stop decoding the current song
  * (successfully).  It can be used to jump out of all of a decoder's
  * stack frames.
  */
 class StopDecoder {};
-
-/**
- * Notify the player thread that it has finished initialization and
- * that it has read the song's meta data.
- *
- * @param decoder the decoder object
- * @param audio_format the audio format which is going to be sent to
- * decoder_data()
- * @param seekable true if the song is seekable
- * @param duration the total duration of this song; negative if
- * unknown
- */
-void
-decoder_initialized(Decoder &decoder,
-		    AudioFormat audio_format,
-		    bool seekable, SignedSongTime duration);
-
-/**
- * Determines the pending decoder command.
- *
- * @param decoder the decoder object
- * @return the current command, or DecoderCommand::NONE if there is no
- * command pending
- */
-gcc_pure
-DecoderCommand
-decoder_get_command(Decoder &decoder);
-
-/**
- * Called by the decoder when it has performed the requested command
- * (dc->command).  This function resets dc->command and wakes up the
- * player thread.
- *
- * @param decoder the decoder object
- */
-void
-decoder_command_finished(Decoder &decoder);
-
-/**
- * Call this when you have received the DecoderCommand::SEEK command.
- *
- * @param decoder the decoder object
- * @return the destination position for the seek in milliseconds
- */
-gcc_pure
-SongTime
-decoder_seek_time(Decoder &decoder);
-
-/**
- * Call this when you have received the DecoderCommand::SEEK command.
- *
- * @param decoder the decoder object
- * @return the destination position for the seek in frames
- */
-gcc_pure
-uint64_t
-decoder_seek_where_frame(Decoder &decoder);
-
-/**
- * Call this instead of decoder_command_finished() when seeking has
- * failed.
- *
- * @param decoder the decoder object
- */
-void
-decoder_seek_error(Decoder &decoder);
-
-/**
- * Open a new #InputStream and wait until it's ready.  Can get
- * cancelled by DecoderCommand::STOP (returns nullptr).
- *
- * Throws std::runtime_error on error.
- */
-InputStreamPtr
-decoder_open_uri(Decoder &decoder, const char *uri);
 
 /**
  * Blocking read from the input stream.
@@ -137,11 +65,11 @@ decoder_open_uri(Decoder &decoder, const char *uri);
  * occurs: end of file; error; command (like SEEK or STOP).
  */
 size_t
-decoder_read(Decoder *decoder, InputStream &is,
+decoder_read(DecoderClient *decoder, InputStream &is,
 	     void *buffer, size_t length);
 
 static inline size_t
-decoder_read(Decoder &decoder, InputStream &is,
+decoder_read(DecoderClient &decoder, InputStream &is,
 	     void *buffer, size_t length)
 {
 	return decoder_read(&decoder, is, buffer, length);
@@ -155,7 +83,7 @@ decoder_read(Decoder &decoder, InputStream &is,
  * data
  */
 bool
-decoder_read_full(Decoder *decoder, InputStream &is,
+decoder_read_full(DecoderClient *decoder, InputStream &is,
 		  void *buffer, size_t size);
 
 /**
@@ -164,75 +92,6 @@ decoder_read_full(Decoder *decoder, InputStream &is,
  * @return true on success, false on error or command
  */
 bool
-decoder_skip(Decoder *decoder, InputStream &is, size_t size);
-
-/**
- * Sets the time stamp for the next data chunk [seconds].  The MPD
- * core automatically counts it up, and a decoder plugin only needs to
- * use this function if it thinks that adding to the time stamp based
- * on the buffer size won't work.
- */
-void
-decoder_timestamp(Decoder &decoder, double t);
-
-/**
- * This function is called by the decoder plugin when it has
- * successfully decoded block of input data.
- *
- * @param decoder the decoder object
- * @param is an input stream which is buffering while we are waiting
- * for the player
- * @param data the source buffer
- * @param length the number of bytes in the buffer
- * @return the current command, or DecoderCommand::NONE if there is no
- * command pending
- */
-DecoderCommand
-decoder_data(Decoder &decoder, InputStream *is,
-	     const void *data, size_t length,
-	     uint16_t kbit_rate);
-
-static inline DecoderCommand
-decoder_data(Decoder &decoder, InputStream &is,
-	     const void *data, size_t length,
-	     uint16_t kbit_rate)
-{
-	return decoder_data(decoder, &is, data, length, kbit_rate);
-}
-
-/**
- * This function is called by the decoder plugin when it has
- * successfully decoded a tag.
- *
- * @param is an input stream which is buffering while we are waiting
- * for the player
- * @param tag the tag to send
- * @return the current command, or DecoderCommand::NONE if there is no
- * command pending
- */
-DecoderCommand
-decoder_tag(Decoder &decoder, InputStream *is, Tag &&tag);
-
-static inline DecoderCommand
-decoder_tag(Decoder &decoder, InputStream &is, Tag &&tag)
-{
-	return decoder_tag(decoder, &is, std::move(tag));
-}
-
-/**
- * Set replay gain values for the following chunks.
- *
- * @param replay_gain_info the replay_gain_info object; may be nullptr
- * to invalidate the previous replay gain values
- */
-void
-decoder_replay_gain(Decoder &decoder,
-		    const ReplayGainInfo *replay_gain_info);
-
-/**
- * Store MixRamp tags.
- */
-void
-decoder_mixramp(Decoder &decoder, MixRampInfo &&mix_ramp);
+decoder_skip(DecoderClient *decoder, InputStream &is, size_t size);
 
 #endif

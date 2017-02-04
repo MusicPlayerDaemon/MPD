@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -29,14 +29,6 @@ io_thread_init();
 
 void
 io_thread_start();
-
-/**
- * Run the I/O event loop synchronously in the current thread.  This
- * can be called instead of io_thread_start().  For testing purposes
- * only.
- */
-void
-io_thread_run();
 
 /**
  * Ask the I/O thread to quit, but does not wait for it.  Usually, you

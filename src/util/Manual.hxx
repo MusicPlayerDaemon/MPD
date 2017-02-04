@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Max Kellermann <max@duempel.org>
+ * Copyright (C) 2013 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -35,10 +35,6 @@
 #include <new>
 #include <utility>
 
-#if GCC_OLDER_THAN(4,8)
-#include <type_traits>
-#endif
-
 #include <assert.h>
 
 #if CLANG_OR_GCC_VERSION(4,7)
@@ -54,7 +50,7 @@
  */
 template<class T>
 class Manual {
-	gcc_alignas(T, 8)
+	alignas(T)
 	char data[sizeof(T)];
 
 #ifndef NDEBUG

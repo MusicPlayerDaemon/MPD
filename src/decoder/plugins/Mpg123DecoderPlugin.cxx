@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -116,7 +116,7 @@ AddTagItem(TagBuilder &tag, TagType type, const mpg123_string *s)
 }
 
 static void
-mpd_mpg123_id3v2_tag(Decoder &decoder, const mpg123_id3v2 &id3v2)
+mpd_mpg123_id3v2_tag(DecoderClient &client, const mpg123_id3v2 &id3v2)
 {
 	TagBuilder tag;
 
@@ -129,11 +129,11 @@ mpd_mpg123_id3v2_tag(Decoder &decoder, const mpg123_id3v2 &id3v2)
 	for (size_t i = 0, n = id3v2.comments; i < n; ++i)
 		AddTagItem(tag, TAG_COMMENT, id3v2.comment_list[i].text);
 
-	decoder_tag(decoder, nullptr, tag.Commit());
+	client.SubmitTag(nullptr, tag.Commit());
 }
 
 static void
-mpd_mpg123_id3v2_extras(Decoder &decoder, const mpg123_id3v2 &id3v2)
+mpd_mpg123_id3v2_extras(DecoderClient &client, const mpg123_id3v2 &id3v2)
 {
 	ReplayGainInfo replay_gain;
 	replay_gain.Clear();
@@ -154,21 +154,21 @@ mpd_mpg123_id3v2_extras(Decoder &decoder, const mpg123_id3v2 &id3v2)
 	}
 
 	if (found_replay_gain)
-		decoder_replay_gain(decoder, &replay_gain);
+		client.SubmitReplayGain(&replay_gain);
 
 	if (found_mixramp)
-		decoder_mixramp(decoder, std::move(mix_ramp));
+		client.SubmitMixRamp(std::move(mix_ramp));
 }
 
 static void
-mpd_mpg123_id3v2(Decoder &decoder, const mpg123_id3v2 &id3v2)
+mpd_mpg123_id3v2(DecoderClient &client, const mpg123_id3v2 &id3v2)
 {
-	mpd_mpg123_id3v2_tag(decoder, id3v2);
-	mpd_mpg123_id3v2_extras(decoder, id3v2);
+	mpd_mpg123_id3v2_tag(client, id3v2);
+	mpd_mpg123_id3v2_extras(client, id3v2);
 }
 
 static void
-mpd_mpg123_meta(Decoder &decoder, mpg123_handle *const handle)
+mpd_mpg123_meta(DecoderClient &client, mpg123_handle *const handle)
 {
 	if ((mpg123_meta_check(handle) & MPG123_NEW_ID3) == 0)
 		return;
@@ -179,11 +179,11 @@ mpd_mpg123_meta(Decoder &decoder, mpg123_handle *const handle)
 		return;
 
 	if (v2 != nullptr)
-		mpd_mpg123_id3v2(decoder, *v2);
+		mpd_mpg123_id3v2(client, *v2);
 }
 
 static void
-mpd_mpg123_file_decode(Decoder &decoder, Path path_fs)
+mpd_mpg123_file_decode(DecoderClient &client, Path path_fs)
 {
 	/* open the file */
 
@@ -210,7 +210,7 @@ mpd_mpg123_file_decode(Decoder &decoder, Path path_fs)
 		SongTime::FromScale<uint64_t>(num_samples,
 					      audio_format.sample_rate);
 
-	decoder_initialized(decoder, audio_format, true, duration);
+	client.Ready(audio_format, true, duration);
 
 	struct mpg123_frameinfo info;
 	if (mpg123_info(handle, &info) != MPG123_OK) {
@@ -232,7 +232,7 @@ mpd_mpg123_file_decode(Decoder &decoder, Path path_fs)
 	DecoderCommand cmd;
 	do {
 		/* read metadata */
-		mpd_mpg123_meta(decoder, handle);
+		mpd_mpg123_meta(client, handle);
 
 		/* decode */
 
@@ -257,16 +257,16 @@ mpd_mpg123_file_decode(Decoder &decoder, Path path_fs)
 
 		/* send to MPD */
 
-		cmd = decoder_data(decoder, nullptr, buffer, nbytes, info.bitrate);
+		cmd = client.SubmitData(nullptr, buffer, nbytes, info.bitrate);
 
 		if (cmd == DecoderCommand::SEEK) {
-			off_t c = decoder_seek_where_frame(decoder);
+			off_t c = client.GetSeekFrame();
 			c = mpg123_seek(handle, c, SEEK_SET);
 			if (c < 0)
-				decoder_seek_error(decoder);
+				client.SeekError();
 			else {
-				decoder_command_finished(decoder);
-				decoder_timestamp(decoder, c/(double)audio_format.sample_rate);
+				client.CommandFinished();
+				client.SubmitTimestamp(c / (double)audio_format.sample_rate);
 			}
 
 			cmd = DecoderCommand::NONE;

@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -427,14 +427,15 @@ Queue::SetPriority(unsigned position, uint8_t priority, int after_order,
 
 		if (_order < (unsigned)after_order) {
 			/* the specified song has been played already
-			   - enqueue it only if its priority has just
-			   become bigger than the current one's */
+			   - enqueue it only if its priority has been
+			   increased and is now bigger than the
+			   current one's */
 
 			const unsigned after_position =
 				OrderToPosition(after_order);
 			const Item *after_item =
 				&items[after_position];
-			if (old_priority > after_item->priority ||
+			if (priority <= old_priority ||
 			    priority <= after_item->priority)
 				/* priority hasn't become bigger */
 				return true;

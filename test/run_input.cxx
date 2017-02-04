@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -38,6 +38,27 @@
 #include <unistd.h>
 #include <stdlib.h>
 
+class GlobalInit {
+	const ScopeIOThread io_thread;
+
+public:
+	GlobalInit() {
+		config_global_init();
+#ifdef ENABLE_ARCHIVE
+		archive_plugin_init_all();
+#endif
+		input_stream_global_init(io_thread_get());
+	}
+
+	~GlobalInit() {
+		input_stream_global_finish();
+#ifdef ENABLE_ARCHIVE
+		archive_plugin_deinit_all();
+#endif
+		config_global_finish();
+	}
+};
+
 static void
 tag_save(FILE *file, const Tag &tag)
 {
@@ -50,7 +71,7 @@ tag_save(FILE *file, const Tag &tag)
 static int
 dump_input_stream(InputStream *is)
 {
-	const ScopeLock protect(is->mutex);
+	const std::lock_guard<Mutex> protect(is->mutex);
 
 	/* print meta data */
 
@@ -91,37 +112,14 @@ try {
 
 	/* initialize MPD */
 
-	config_global_init();
-
-	const ScopeIOThread io_thread;
-
-#ifdef ENABLE_ARCHIVE
-	archive_plugin_init_all();
-#endif
-
-	input_stream_global_init();
+	const GlobalInit init;
 
 	/* open the stream and dump it */
 
-	int ret;
-	{
-		Mutex mutex;
-		Cond cond;
-		auto is = InputStream::OpenReady(argv[1], mutex, cond);
-		ret = dump_input_stream(is.get());
-	}
-
-	/* deinitialize everything */
-
-	input_stream_global_finish();
-
-#ifdef ENABLE_ARCHIVE
-	archive_plugin_deinit_all();
-#endif
-
-	config_global_finish();
-
-	return ret;
+	Mutex mutex;
+	Cond cond;
+	auto is = InputStream::OpenReady(argv[1], mutex, cond);
+	return dump_input_stream(is.get());
 } catch (const std::exception &e) {
 	LogError(e);
 	return EXIT_FAILURE;

@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -20,12 +20,15 @@
 #ifndef MPD_PLAYER_CONTROL_HXX
 #define MPD_PLAYER_CONTROL_HXX
 
+#include "output/Client.hxx"
 #include "AudioFormat.hxx"
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
 #include "thread/Thread.hxx"
 #include "CrossFade.hxx"
 #include "Chrono.hxx"
+#include "ReplayGainConfig.hxx"
+#include "ReplayGainMode.hxx"
 
 #include <exception>
 
@@ -94,7 +97,7 @@ struct player_status {
 	SongTime elapsed_time;
 };
 
-struct PlayerControl {
+struct PlayerControl final : AudioOutputClient {
 	PlayerListener &listener;
 
 	MultipleOutputs &outputs;
@@ -102,6 +105,11 @@ struct PlayerControl {
 	const unsigned buffer_chunks;
 
 	const unsigned buffered_before_play;
+
+	/**
+	 * The "audio_output_format" setting.
+	 */
+	const AudioFormat configured_audio_format;
 
 	/**
 	 * The handle of the player thread.
@@ -125,10 +133,10 @@ struct PlayerControl {
 	 */
 	Cond client_cond;
 
-	PlayerCommand command;
-	PlayerState state;
+	PlayerCommand command = PlayerCommand::NONE;
+	PlayerState state = PlayerState::STOP;
 
-	PlayerError error_type;
+	PlayerError error_type = PlayerError::NONE;
 
 	/**
 	 * The error that occurred in the player thread.  This
@@ -148,7 +156,7 @@ struct PlayerControl {
 	 * Protected by #mutex.  Set by the PlayerThread and consumed
 	 * by the main thread.
 	 */
-	DetachedSong *tagged_song;
+	DetachedSong *tagged_song = nullptr;
 
 	uint16_t bit_rate;
 	AudioFormat audio_format;
@@ -161,13 +169,16 @@ struct PlayerControl {
 	 * This is a duplicate, and must be freed when this attribute
 	 * is cleared.
 	 */
-	DetachedSong *next_song;
+	DetachedSong *next_song = nullptr;
 
 	SongTime seek_time;
 
 	CrossFadeSettings cross_fade;
 
-	double total_play_time;
+	const ReplayGainConfig replay_gain_config;
+	ReplayGainMode replay_gain_mode = ReplayGainMode::OFF;
+
+	double total_play_time = 0;
 
 	/**
 	 * If this flag is set, then the player will be auto-paused at
@@ -176,12 +187,14 @@ struct PlayerControl {
 	 * This is a copy of the queue's "single" flag most of the
 	 * time.
 	 */
-	bool border_pause;
+	bool border_pause = false;
 
 	PlayerControl(PlayerListener &_listener,
 		      MultipleOutputs &_outputs,
 		      unsigned buffer_chunks,
-		      unsigned buffered_before_play);
+		      unsigned buffered_before_play,
+		      AudioFormat _configured_audio_format,
+		      const ReplayGainConfig &_replay_gain_config);
 	~PlayerControl();
 
 	/**
@@ -211,7 +224,7 @@ struct PlayerControl {
 	 * this function.
 	 */
 	void LockSignal() {
-		const ScopeLock protect(mutex);
+		const std::lock_guard<Mutex> protect(mutex);
 		Signal();
 	}
 
@@ -264,8 +277,25 @@ struct PlayerControl {
 	}
 
 	void LockCommandFinished() {
-		const ScopeLock protect(mutex);
+		const std::lock_guard<Mutex> protect(mutex);
 		CommandFinished();
+	}
+
+	/**
+	 * Checks if the size of the #MusicPipe is below the #threshold.  If
+	 * not, it attempts to synchronize with all output threads, and waits
+	 * until another #MusicChunk is finished.
+	 *
+	 * Caller must lock the mutex.
+	 *
+	 * @param threshold the maximum number of chunks in the pipe
+	 * @return true if there are less than #threshold chunks in the pipe
+	 */
+	bool WaitOutputConsumed(unsigned threshold);
+
+	bool LockWaitOutputConsumed(unsigned threshold) {
+		const std::lock_guard<Mutex> protect(mutex);
+		return WaitOutputConsumed(threshold);
 	}
 
 private:
@@ -303,7 +333,7 @@ private:
 	 * object.
 	 */
 	void LockSynchronousCommand(PlayerCommand cmd) {
-		const ScopeLock protect(mutex);
+		const std::lock_guard<Mutex> protect(mutex);
 		SynchronousCommand(cmd);
 	}
 
@@ -339,6 +369,17 @@ public:
 	 */
 	void LockSetBorderPause(bool border_pause);
 
+	bool ApplyBorderPause() {
+		if (border_pause)
+			state = PlayerState::PAUSE;
+		return border_pause;
+	}
+
+	bool LockApplyBorderPause() {
+		const std::lock_guard<Mutex> lock(mutex);
+		return ApplyBorderPause();
+	}
+
 	void Kill();
 
 	gcc_pure
@@ -358,6 +399,22 @@ public:
 	void SetError(PlayerError type, std::exception_ptr &&_error);
 
 	/**
+	 * Set the error and set state to PlayerState::PAUSE.
+	 */
+	void SetOutputError(std::exception_ptr &&_error) {
+		SetError(PlayerError::OUTPUT, std::move(_error));
+
+		/* pause: the user may resume playback as soon as an
+		   audio output becomes available */
+		state = PlayerState::PAUSE;
+	}
+
+	void LockSetOutputError(std::exception_ptr &&_error) {
+		const std::lock_guard<Mutex> lock(mutex);
+		SetOutputError(std::move(_error));
+	}
+
+	/**
 	 * Checks whether an error has occurred, and if so, rethrows
 	 * it.
 	 *
@@ -372,7 +429,7 @@ public:
 	 * Like CheckRethrowError(), but locks and unlocks the object.
 	 */
 	void LockCheckRethrowError() const {
-		const ScopeLock protect(mutex);
+		const std::lock_guard<Mutex> protect(mutex);
 		CheckRethrowError();
 	}
 
@@ -405,7 +462,7 @@ public:
 	 * Like ReadTaggedSong(), but locks and unlocks the object.
 	 */
 	DetachedSong *LockReadTaggedSong() {
-		const ScopeLock protect(mutex);
+		const std::lock_guard<Mutex> protect(mutex);
 		return ReadTaggedSong();
 	}
 
@@ -463,8 +520,22 @@ public:
 		return cross_fade.mixramp_delay;
 	}
 
+	void LockSetReplayGainMode(ReplayGainMode _mode) {
+		const std::lock_guard<Mutex> protect(mutex);
+		replay_gain_mode = _mode;
+	}
+
 	double GetTotalPlayTime() const {
 		return total_play_time;
+	}
+
+	/* virtual methods from AudioOutputClient */
+	void ChunksConsumed() override {
+		LockSignal();
+	}
+
+	void ApplyEnabled() override {
+		LockUpdateAudio();
 	}
 };
 

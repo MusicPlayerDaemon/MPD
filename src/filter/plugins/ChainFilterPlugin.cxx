@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -24,6 +24,7 @@
 #include "filter/FilterRegistry.hxx"
 #include "AudioFormat.hxx"
 #include "util/ConstBuffer.hxx"
+#include "util/StringBuffer.hxx"
 #include "util/RuntimeError.hxx"
 
 #include <memory>
@@ -61,6 +62,7 @@ public:
 	}
 
 	/* virtual methods from class Filter */
+	void Reset() override;
 	ConstBuffer<void> FilterPCM(ConstBuffer<void> src) override;
 };
 
@@ -107,10 +109,9 @@ PreparedChainFilter::Child::Open(const AudioFormat &prev_audio_format)
 	if (conv_audio_format != prev_audio_format) {
 		delete new_filter;
 
-		struct audio_format_string s;
 		throw FormatRuntimeError("Audio format not supported by filter '%s': %s",
 					 name,
-					 audio_format_to_string(prev_audio_format, &s));
+					 ToString(prev_audio_format).c_str());
 	}
 
 	return new_filter;
@@ -130,6 +131,13 @@ PreparedChainFilter::Open(AudioFormat &in_audio_format)
 	return chain.release();
 }
 
+void
+ChainFilter::Reset()
+{
+	for (auto &child : children)
+		child.filter->Reset();
+}
+
 ConstBuffer<void>
 ChainFilter::FilterPCM(ConstBuffer<void> src)
 {
@@ -143,7 +151,7 @@ ChainFilter::FilterPCM(ConstBuffer<void> src)
 	return src;
 }
 
-const struct filter_plugin chain_filter_plugin = {
+const FilterPlugin chain_filter_plugin = {
 	"chain",
 	chain_filter_init,
 };

@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -30,8 +30,9 @@
 #include "Instance.hxx"
 #include "Idle.hxx"
 #include "AudioFormat.hxx"
-#include "ReplayGainConfig.hxx"
+#include "util/StringBuffer.hxx"
 #include "util/ScopeExit.hxx"
+#include "util/Exception.hxx"
 
 #ifdef ENABLE_DATABASE
 #include "db/update/Service.hxx"
@@ -171,13 +172,9 @@ handle_status(Client &client, gcc_unused Request args, Response &r)
 			r.Format("duration: %1.3f\n",
 				 player_status.total_time.ToDoubleS());
 
-		if (player_status.audio_format.IsDefined()) {
-			struct audio_format_string af_string;
-
+		if (player_status.audio_format.IsDefined())
 			r.Format(COMMAND_STATUS_AUDIO ": %s\n",
-				 audio_format_to_string(player_status.audio_format,
-							&af_string));
-		}
+				 ToString(player_status.audio_format).c_str());
 	}
 
 #ifdef ENABLE_DATABASE
@@ -193,10 +190,9 @@ handle_status(Client &client, gcc_unused Request args, Response &r)
 
 	try {
 		client.player_control.LockCheckRethrowError();
-	} catch (const std::exception &e) {
-		r.Format(COMMAND_STATUS_ERROR ": %s\n", e.what());
 	} catch (...) {
-		r.Format(COMMAND_STATUS_ERROR ": unknown\n");
+		r.Format(COMMAND_STATUS_ERROR ": %s\n",
+			 FullMessage(std::current_exception()).c_str());
 	}
 
 	song = playlist.GetNextPosition();
@@ -263,7 +259,7 @@ handle_random(Client &client, Request args, gcc_unused Response &r)
 {
 	bool status = args.ParseBool(0);
 	client.partition.SetRandom(status);
-	client.partition.outputs.SetReplayGainMode(replay_gain_get_real_mode(client.partition.GetRandom()));
+	client.partition.UpdateEffectiveReplayGainMode();
 	return CommandResult::OK;
 }
 
@@ -331,22 +327,19 @@ handle_mixrampdelay(Client &client, Request args, gcc_unused Response &r)
 }
 
 CommandResult
-handle_replay_gain_mode(Client &client, Request args, Response &r)
+handle_replay_gain_mode(Client &client, Request args, Response &)
 {
-	if (!replay_gain_set_mode_string(args.front())) {
-		r.Error(ACK_ERROR_ARG, "Unrecognized replay gain mode");
-		return CommandResult::ERROR;
-	}
-
-	client.partition.outputs.SetReplayGainMode(replay_gain_get_real_mode(client.playlist.queue.random));
+	auto new_mode = FromString(args.front());
+	client.partition.SetReplayGainMode(new_mode);
 	client.partition.EmitIdle(IDLE_OPTIONS);
 	return CommandResult::OK;
 }
 
 CommandResult
-handle_replay_gain_status(gcc_unused Client &client, gcc_unused Request args,
+handle_replay_gain_status(Client &client, gcc_unused Request args,
 			  Response &r)
 {
-	r.Format("replay_gain_mode: %s\n", replay_gain_get_mode_string());
+	r.Format("replay_gain_mode: %s\n",
+		 ToString(client.partition.replay_gain_mode));
 	return CommandResult::OK;
 }

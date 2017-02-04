@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -97,7 +97,7 @@ GetInfo(const char *path)
 	struct stat st;
 
 	{
-		const ScopeLock protect(smbclient_mutex);
+		const std::lock_guard<Mutex> protect(smbclient_mutex);
 		if (smbc_stat(path, &st) != 0)
 			throw MakeErrno("Failed to access file");
 	}
@@ -132,7 +132,7 @@ SmbclientStorage::OpenDirectory(const char *uri_utf8)
 	int handle;
 
 	{
-		const ScopeLock protect(smbclient_mutex);
+		const std::lock_guard<Mutex> protect(smbclient_mutex);
 		handle = smbc_opendir(mapped.c_str());
 		if (handle < 0)
 			throw MakeErrno("Failed to open directory");
@@ -160,7 +160,7 @@ SmbclientDirectoryReader::~SmbclientDirectoryReader()
 const char *
 SmbclientDirectoryReader::Read()
 {
-	const ScopeLock protect(smbclient_mutex);
+	const std::lock_guard<Mutex> protect(smbclient_mutex);
 
 	struct smbc_dirent *e;
 	while ((e = smbc_readdir(handle)) != nullptr) {
@@ -182,12 +182,12 @@ SmbclientDirectoryReader::GetInfo(gcc_unused bool follow)
 static Storage *
 CreateSmbclientStorageURI(gcc_unused EventLoop &event_loop, const char *base)
 {
-	if (memcmp(base, "smb://", 6) != 0)
+	if (strncmp(base, "smb://", 6) != 0)
 		return nullptr;
 
 	SmbclientInit();
 
-	const ScopeLock protect(smbclient_mutex);
+	const std::lock_guard<Mutex> protect(smbclient_mutex);
 	SMBCCTX *ctx = smbc_new_context();
 	if (ctx == nullptr)
 		throw MakeErrno("smbc_new_context() failed");

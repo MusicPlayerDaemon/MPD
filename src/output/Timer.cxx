@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -20,48 +20,45 @@
 #include "config.h"
 #include "Timer.hxx"
 #include "AudioFormat.hxx"
-#include "system/Clock.hxx"
 
 #include <limits>
 
 #include <assert.h>
 
 Timer::Timer(const AudioFormat af)
-	: time(0),
-	  started(false),
-	 rate(af.sample_rate * af.GetFrameSize())
+	:rate(af.sample_rate * af.GetFrameSize())
 {
 }
 
 void Timer::Start()
 {
-	time = MonotonicClockUS();
+	time = Now();
 	started = true;
 }
 
 void Timer::Reset()
 {
-	time = 0;
 	started = false;
 }
 
-void Timer::Add(int size)
+void
+Timer::Add(size_t size)
 {
 	assert(started);
 
 	// (size samples) / (rate samples per second) = duration seconds
 	// duration seconds * 1000000 = duration us
-	time += ((uint64_t)size * 1000000) / rate;
+	time += Time(((uint64_t)size * Time::period::den) / (Time::period::num * rate));
 }
 
-unsigned Timer::GetDelay() const
+std::chrono::steady_clock::duration
+Timer::GetDelay() const
 {
-	int64_t delay = (int64_t)(time - MonotonicClockUS()) / 1000;
-	if (delay < 0)
-		return 0;
+	assert(started);
 
-	if (delay > std::numeric_limits<int>::max())
-		delay = std::numeric_limits<int>::max();
+	const auto delay = time - Now();
+	if (delay < Time::zero())
+		return Time::zero();
 
-	return delay;
+	return std::chrono::duration_cast<std::chrono::steady_clock::duration>(delay);
 }

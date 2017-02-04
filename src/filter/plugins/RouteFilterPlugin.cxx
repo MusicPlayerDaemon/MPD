@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -272,7 +272,7 @@ RouteFilter::FilterPCM(ConstBuffer<void> src)
 	return { result, result_size };
 }
 
-const struct filter_plugin route_filter_plugin = {
+const FilterPlugin route_filter_plugin = {
 	"route",
 	route_filter_init,
 };

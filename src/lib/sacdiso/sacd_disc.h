@@ -1,6 +1,6 @@
 /*
 * MPD SACD Decoder plugin
-* Copyright (c) 2016 Maxim V.Anisiutkin <maxim.anisiutkin@gmail.com>
+* Copyright (c) 2017 Maxim V.Anisiutkin <maxim.anisiutkin@gmail.com>
 *
 * This module partially uses code from SACD Ripper http://code.google.com/p/sacd-ripper/ project
 *
@@ -21,6 +21,8 @@
 
 #ifndef _SACD_DISC_H_INCLUDED
 #define _SACD_DISC_H_INCLUDED
+
+#include "config.h"
 
 #include <cstdint>
 
@@ -79,7 +81,7 @@ public:
 	uint64_t get_offset();
 	double get_duration();
 	double get_duration(uint32_t track_index);
-    void get_info(uint32_t track_index, const struct TagHandler& handler, void* handler_ctx);
+	void get_info(uint32_t track_index, const struct TagHandler& handler, void* handler_ctx);
 	uint32_t get_track_length_lsn();
 	bool is_dst();
 	void set_emaster(bool emaster);

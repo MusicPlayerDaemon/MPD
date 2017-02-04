@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -22,13 +22,9 @@
 
 #include "check.h"
 #include "Compiler.h"
+#include "ReplayGainMode.hxx"
 
-enum ReplayGainMode {
-	REPLAY_GAIN_AUTO = -2,
-	REPLAY_GAIN_OFF,
-	REPLAY_GAIN_ALBUM,
-	REPLAY_GAIN_TRACK,
-};
+struct ReplayGainConfig;
 
 struct ReplayGainTuple {
 	float gain;
@@ -44,28 +40,26 @@ struct ReplayGainTuple {
 	}
 
 	gcc_pure
-	float CalculateScale(float preamp, float missing_preamp,
-			     bool peak_limit) const;
+	float CalculateScale(const ReplayGainConfig &config) const;
 };
 
 struct ReplayGainInfo {
-	ReplayGainTuple tuples[2];
+	ReplayGainTuple track, album;
 
 	constexpr bool IsDefined() const {
-		return tuples[REPLAY_GAIN_ALBUM].IsDefined() ||
-			tuples[REPLAY_GAIN_TRACK].IsDefined();
+		return track.IsDefined() || album.IsDefined();
+	}
+
+	const ReplayGainTuple &Get(ReplayGainMode mode) const {
+		return mode == ReplayGainMode::ALBUM
+			? (album.IsDefined() ? album : track)
+			: (track.IsDefined() ? track : album);
 	}
 
 	void Clear() {
-		tuples[REPLAY_GAIN_ALBUM].Clear();
-		tuples[REPLAY_GAIN_TRACK].Clear();
+		track.Clear();
+		album.Clear();
 	}
-
-	/**
-	 * Attempt to auto-complete missing data.  In particular, if
-	 * album information is missing, track gain is used.
-	 */
-	void Complete();
 };
 
 #endif

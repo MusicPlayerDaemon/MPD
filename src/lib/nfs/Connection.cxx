@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -33,7 +33,8 @@ extern "C" {
 
 #include <poll.h> /* for POLLIN, POLLOUT */
 
-static constexpr unsigned NFS_MOUNT_TIMEOUT = 60;
+static constexpr std::chrono::steady_clock::duration NFS_MOUNT_TIMEOUT =
+	std::chrono::minutes(1);
 
 inline void
 NfsConnection::CancellableCallback::Stat(nfs_context *ctx,
@@ -395,6 +396,17 @@ NfsConnection::ScheduleSocket()
 	assert(GetEventLoop().IsInside());
 	assert(context != nullptr);
 
+	const int which_events = nfs_which_events(context);
+
+	if (which_events == POLLOUT && SocketMonitor::IsDefined())
+		/* kludge: if libnfs asks only for POLLOUT, it means
+		   that it is currently waiting for the connect() to
+		   finish - rpc_reconnect_requeue() may have been
+		   called from inside nfs_service(); we must now
+		   unregister the old socket and register the new one
+		   instead */
+		SocketMonitor::Steal();
+
 	if (!SocketMonitor::IsDefined()) {
 		int _fd = nfs_get_fd(context);
 		if (_fd < 0)
@@ -404,7 +416,8 @@ NfsConnection::ScheduleSocket()
 		SocketMonitor::Open(_fd);
 	}
 
-	SocketMonitor::Schedule(libnfs_to_events(nfs_which_events(context)));
+	SocketMonitor::Schedule(libnfs_to_events(which_events)
+				| SocketMonitor::HANGUP);
 }
 
 inline int
@@ -441,10 +454,14 @@ NfsConnection::OnSocketReady(unsigned flags)
 	bool closed = false;
 
 	const bool was_mounted = mount_finished;
-	if (!mount_finished)
+	if (!mount_finished || (flags & SocketMonitor::HANGUP) != 0)
 		/* until the mount is finished, the NFS client may use
 		   various sockets, therefore we unregister and
 		   re-register it each time */
+		/* also re-register the socket if we got a HANGUP,
+		   which is a sure sign that libnfs will close the
+		   socket, which can lead to a race condition if
+		   epoll_ctl() is called later */
 		SocketMonitor::Steal();
 
 	const int result = Service(flags);
@@ -541,7 +558,7 @@ NfsConnection::MountInternal()
 	postponed_mount_error = std::exception_ptr();
 	mount_finished = false;
 
-	TimeoutMonitor::ScheduleSeconds(NFS_MOUNT_TIMEOUT);
+	TimeoutMonitor::Schedule(NFS_MOUNT_TIMEOUT);
 
 #ifndef NDEBUG
 	in_service = false;

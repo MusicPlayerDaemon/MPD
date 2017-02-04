@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -27,7 +27,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-struct Decoder;
+class DecoderClient;
 class InputStream;
 
 /**
@@ -36,7 +36,7 @@ class InputStream;
  * read it.  It will automatically handle shifting the buffer.
  */
 class DecoderBuffer {
-	Decoder *const decoder;
+	DecoderClient *const client;
 	InputStream &is;
 
 	DynamicFifoBuffer<uint8_t> buffer;
@@ -45,14 +45,14 @@ public:
 	/**
 	 * Creates a new buffer.
 	 *
-	 * @param _decoder the decoder object, used for decoder_read(),
+	 * @param _client the decoder client, used for decoder_read(),
 	 * may be nullptr
 	 * @param _is the input stream object where we should read from
 	 * @param _size the maximum size of the buffer
 	 */
-	DecoderBuffer(Decoder *_decoder, InputStream &_is,
+	DecoderBuffer(DecoderClient *_client, InputStream &_is,
 		      size_t _size)
-		:decoder(_decoder), is(_is), buffer(_size) {}
+		:client(_client), is(_is), buffer(_size) {}
 
 	const InputStream &GetStream() const {
 		return is;

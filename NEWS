@@ -1,4 +1,55 @@
-ver 0.20 (not yet released)
+ver 0.21 (not yet released)
+
+ver 0.20.4 (2017/02/01)
+* input
+  - nfs: fix freeze after reconnect
+* output
+  - sndio: work around a libroar C++ incompatibility
+* workaround for GCC 4.9 "constexpr" bug
+* fix FreeBSD build failure
+
+ver 0.20.3 (2017/01/25)
+* protocol
+  - "playlistadd" creates new playlist if it does not exist, as documented
+* database
+  - proxy: fix error "terminate called after throwing ..."
+  - proxy: make connect errors during startup non-fatal
+* neighbor
+  - upnp: fix premature expiry
+* replay gain: don't reset ReplayGain levels when unpausing playback
+* silence surround channels when converting from stereo
+* use shortcuts such as "dsd64" in log messages
+
+ver 0.20.2 (2017/01/15)
+* input
+  - alsa: fix crash bug
+  - alsa: fix buffer overruns
+* decoder
+  - flac: add options "probesize" and "analyzeduration"
+* resampler
+  - libsamplerate: reset state after seeking
+* output
+  - fix static noise after changing to a different audio format
+  - alsa: fix the DSD_U32 sample rate
+  - alsa: fix the DSD_U32 byte order
+  - alsa: support DSD_U16
+  - recorder: fix error "Failed to create : No such file or directory"
+* playlist
+  - cue: fix skipping songs
+
+ver 0.20.1 (2017/01/09)
+* input
+  - curl: fix crash bug
+  - curl: fix freeze bug
+* decoder
+  - wavpack: fix crash bug
+* storage
+  - curl: new storage plugin for WebDAV (work in progress)
+* mixer
+  - alsa: normalize displayed volume according to human perception
+* fix crash with volume_normalization enabled
+
+ver 0.20 (2017/01/04)
 * protocol
   - "commands" returns playlist commands only if playlist_directory configured
   - "search"/"find" have a "window" parameter
@@ -7,6 +58,8 @@ ver 0.20 (not yet released)
   - drop the "file:///" prefix for absolute file paths
   - add range parameter to command "plchanges" and "plchangesposid"
   - send verbose error message to client
+* input
+  - curl: fix memory leak
 * tags
   - ape, ogg: drop support for non-standard tag "album artist"
     affected filetypes: vorbis, flac, opus & all files with ape2 tags
@@ -21,9 +74,15 @@ ver 0.20 (not yet released)
   - ffmpeg: support ReplayGain and MixRamp
   - ffmpeg: support stream tags
   - gme: add option "accuracy"
+  - gme: provide the TRACK tag
+  - gme: faster scanning
   - mad: reduce memory usage while scanning tags
   - mpcdec: read the bit rate
   - pcm: support audio/L16 (RFC 2586) and audio/x-mpd-float
+  - sidplay: faster scanning
+  - wavpack: large file support
+  - wavpack: support DSD (WavPack 5)
+  - wavpack: archive support
 * playlist
   - cue: don't skip pregap
   - embcue: fix last track
@@ -44,7 +103,9 @@ ver 0.20 (not yet released)
   - new block "resampler" in configuration file
     replacing the old "samplerate_converter" setting
   - soxr: allow multi-threaded resampling
-* reset song priority on playback
+* player
+  - reset song priority on playback
+  - reduce xruns
 * write database and state file atomically
 * always write UTF-8 to the log file.
 * remove dependency on GLib
@@ -53,11 +114,26 @@ ver 0.20 (not yet released)
   - proxy: add TCP keepalive option
 * update
   - apply .mpdignore matches to subdirectories
+* switch the code base to C++14
+  - GCC 4.9 or clang 3.4 (or newer) recommended
 
-ver 0.19.20 (not yet released)
+ver 0.19.21 (2016/12/13)
+* decoder
+  - ffmpeg: fix crash bug
+* fix unit test failure after recent "setprio" change
+* systemd: add user unit
+
+ver 0.19.20 (2016/12/09)
+* protocol
+  - "setprio" re-enqueues old song if priority has been raised
 * decoder
   - ffmpeg: ignore empty packets
+  - pcm: fix corruption bug with partial frames (after short read)
   - sidplay: fix playback speed with libsidplayfp
+* output
+  - winmm: fix 8 bit playback
+* fix gcc 7.0 -Wimplicit-fallthrough
+* systemd: paranoid security settings
 
 ver 0.19.19 (2016/08/23)
 * decoder

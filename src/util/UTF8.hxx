@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2014 Max Kellermann <max@duempel.org>
+ * Copyright (C) 2011-2014 Max Kellermann <max.kellermann@gmail.com>
  * http://www.musicpd.org
  *
  * Redistribution and use in source and binary forms, with or without

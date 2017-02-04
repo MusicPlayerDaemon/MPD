@@ -164,21 +164,6 @@ QueuePriorityTest::TestPriority()
 
 	check_descending_priority(&queue, current_order + 1);
 
-	/* priority=60 for the old prio50 item; must not be moved,
-	   because it's before the current song, and it's status
-	   hasn't changed (it was already higher before) */
-
-	unsigned c_order = 0;
-	unsigned c_position = queue.OrderToPosition(c_order);
-	CPPUNIT_ASSERT_EQUAL(50u, unsigned(queue.items[c_position].priority));
-	queue.SetPriority(c_position, 60, current_order);
-
-	current_order = queue.PositionToOrder(current_position);
-	CPPUNIT_ASSERT_EQUAL(3u, current_order);
-
-	c_order = queue.PositionToOrder(c_position);
-	CPPUNIT_ASSERT_EQUAL(0u, c_order);
-
 	/* move the prio=20 item back */
 
 	a_order = queue.PositionToOrder(a_position);

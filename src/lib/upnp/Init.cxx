@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -48,7 +48,7 @@ DoInit()
 void
 UpnpGlobalInit()
 {
-	const ScopeLock protect(upnp_init_mutex);
+	const std::lock_guard<Mutex> protect(upnp_init_mutex);
 
 	if (upnp_ref == 0)
 		DoInit();
@@ -59,7 +59,7 @@ UpnpGlobalInit()
 void
 UpnpGlobalFinish()
 {
-	const ScopeLock protect(upnp_init_mutex);
+	const std::lock_guard<Mutex> protect(upnp_init_mutex);
 
 	assert(upnp_ref > 0);
 

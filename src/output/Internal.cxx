@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,8 +18,13 @@
  */
 
 #include "config.h"
-#include "ReplayGainConfig.hxx"
+#include "Internal.hxx"
 
-float replay_gain_preamp = 1.0;
-float replay_gain_missing_preamp = 1.0;
-bool replay_gain_limit = true;
+bool
+AudioOutput::IsChunkConsumed(const MusicChunk &chunk) const
+{
+	if (!open)
+		return true;
+
+	return source.IsChunkConsumed(chunk);
+}

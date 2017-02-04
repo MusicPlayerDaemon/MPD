@@ -1,9 +1,9 @@
 AC_PREREQ(2.60)
 
-AC_INIT(mpd, 0.20, musicpd-dev-team@lists.sourceforge.net)
+AC_INIT(mpd, 0.21, musicpd-dev-team@lists.sourceforge.net)
 
 VERSION_MAJOR=0
-VERSION_MINOR=20
+VERSION_MINOR=21
 VERSION_REVISION=0
 VERSION_EXTRA=0
 
@@ -51,6 +51,22 @@ if test "x$with_systemdsystemunitdir" != xno; then
 	AC_SUBST([systemdsystemunitdir], [$with_systemdsystemunitdir])
 fi
 AM_CONDITIONAL(HAVE_SYSTEMD, [test -n "$with_systemdsystemunitdir" -a "x$with_systemdsystemunitdir" != xno ])
+
+AC_ARG_WITH([systemduserunitdir],
+	    AS_HELP_STRING([--with-systemduserunitdir=DIR], [Directory for systemd service files]),
+	    [], [with_systemduserunitdir=no])
+if test "x$with_systemduserunitdir" = xyes; then
+	AC_MSG_CHECKING(for systemd)
+	with_systemduserunitdir=$($PKG_CONFIG --variable=systemduserunitdir systemd)
+	if test -z "$with_systemduserunitdir"; then
+		AC_MSG_ERROR([Failed to detect systemd])
+	fi
+	AC_MSG_RESULT([$with_systemduserunitdir])
+fi
+if test "x$with_systemduserunitdir" != xno; then
+	AC_SUBST([systemduserunitdir], [$with_systemduserunitdir])
+fi
+AM_CONDITIONAL(HAVE_SYSTEMD_USER, [test -n "$with_systemduserunitdir" -a "x$with_systemduserunitdir" != xno ])
 
 dnl ---------------------------------------------------------------------------
 dnl Declare Variables
@@ -186,14 +202,7 @@ dnl ---------------------------------------------------------------------------
 dnl Language Checks
 dnl ---------------------------------------------------------------------------
 
-AC_CXX_COMPILE_STDCXX_0X
-if test "$ax_cv_cxx_compile_cxx0x_native" != yes; then
-	if test "$ax_cv_cxx_compile_cxx0x_gxx" = yes; then
-	   	AM_CXXFLAGS="$AM_CXXFLAGS -std=gnu++0x"
-	elif test "$ax_cv_cxx_compile_cxx0x_cxx" = yes; then
-	   	AM_CXXFLAGS="$AM_CXXFLAGS -std=c++0x"
-	fi
-fi
+AX_CXX_COMPILE_STDCXX_14([noext], [mandatory])
 
 dnl ---------------------------------------------------------------------------
 dnl Header/Library Checks
@@ -333,16 +342,6 @@ AC_ARG_ENABLE(fifo,
 	AS_HELP_STRING([--disable-fifo],
 		[disable support for writing audio to a FIFO (default: enable)]),,
 	enable_fifo=yes)
-
-AC_ARG_ENABLE(sndio,
-	AS_HELP_STRING([--enable-sndio],
-		[enable support for sndio output plugin (default: auto)]),,
-	enable_sndio=auto)
-
-AC_ARG_ENABLE(haiku,
-	AS_HELP_STRING([--enable-haiku],
-		[enable the Haiku output plugin (default: auto)]),,
-	enable_haiku=auto)
 
 AC_ARG_ENABLE(httpd-output,
 	AS_HELP_STRING([--enable-httpd-output],
@@ -563,7 +562,7 @@ dnl -------------------------------- libmpdclient ------------------------------
 MPD_ENABLE_AUTO_PKG_DEPENDS(libmpdclient, LIBMPDCLIENT,
 	[libmpdclient >= 2.2],
 	[MPD client library], [libmpdclient not found], [],
-	[enable_database], [Cannot use --enable-libmpdclient with --disable-database])
+	[enable_database], [Database support is disabled])
 
 dnl -------------------------------- expat --------------------------------
 MPD_ENABLE_AUTO_PKG(expat, EXPAT, [expat],
@@ -732,6 +731,19 @@ MPD_ENABLE_AUTO_PKG(mms, MMS, [libmms >= 0.4],
 	[libmms mms:// protocol support], [libmms not found])
 
 dnl ---------------------------------------------------------------------------
+dnl Storage Plugins
+dnl ---------------------------------------------------------------------------
+
+MPD_ENABLE_AUTO(webdav, WEBDAV, [WebDAV storage plugin],
+	[WebDAV requires libcurl and libexpat],
+	[auto],
+	[if test x$enable_curl = xyes && test x$enable_expat = xyes; then
+		found_webdav=yes
+	else
+		found_webdav=no
+	fi])
+
+dnl ---------------------------------------------------------------------------
 dnl Playlist Plugins
 dnl ---------------------------------------------------------------------------
 
@@ -794,18 +806,14 @@ AM_CONDITIONAL(ENABLE_BZIP2_TEST, test x$BZIP2 != xno)
 
 dnl ---------------------------------- libupnp ---------------------------------
 
-if test x$enable_expat = xno; then
-	if test x$enable_upnp = xauto; then
-		AC_MSG_WARN([expat disabled -- disabling UPnP])
-		enable_upnp=no
-	elif test x$enable_upnp = xyes; then
-		AC_MSG_ERROR([expat disabled -- required for UPnP])
-	fi
-fi
-
 MPD_ENABLE_AUTO_PKG_DEPENDS(upnp, UPNP, [libupnp],
 	[UPnP client support], [libupnp not found], [],
-	[enable_database], [Cannot use --enable-upnp with --disable-database])
+	[enable_database], [Database support is disabled], [
+		MPD_DEPENDS([enable_upnp], [enable_expat],
+			[UPnP client support],
+			[UPnP requires expat])
+	]
+)
 
 dnl --------------------------------- libzzip ---------------------------------
 MPD_ENABLE_AUTO_PKG(zzip, ZZIP, [zziplib >= 0.13],
@@ -1146,31 +1154,16 @@ MPD_DEFINE_CONDITIONAL(enable_fifo, HAVE_FIFO,
 	[support for writing audio to a FIFO])
 
 dnl ----------------------------------- SNDIO ----------------------------------
-if test x$enable_sndio = xauto; then
-	AC_CHECK_HEADER(sndio.h,
-		[enable_sndio=yes],
-		[enable_sndio=no;AC_MSG_WARN([sndio.h not found -- disabling support for sndio output])])
-fi
-
-if test x$enable_sndio = xyes; then
-	AC_DEFINE(HAVE_SNDIO,1,[Define for compiling sndio support])
-	LIBS="$LIBS -lsndio"
-fi
-
-AM_CONDITIONAL(HAVE_SNDIO, test x$enable_sndio = xyes)
+MPD_ENABLE_AUTO_HEADER([sndio], [SNDIO], [sndio.h],
+	[-lsndio], [],
+	[sndio output plugin],
+	[libsndio not found])
 
 dnl ----------------------------------- Haiku ---------------------------------
-if test x$enable_haiku = xauto; then
-	AC_CHECK_HEADER(media/MediaDefs.h,
-		[enable_haiku=yes],
-		[enable_haiku=no])
-fi
-if test x$enable_haiku = xyes; then
-	AC_DEFINE(HAVE_HAIKU,1,[Define for compiling Haiku support])
-	LIBS="$LIBS -lbe -lmedia"
-fi
-
-AM_CONDITIONAL(HAVE_HAIKU, test x$enable_haiku = xyes)
+MPD_ENABLE_AUTO_HEADER([haiku], [HAIKU], [media/MediaDefs.h],
+	[-lbe -lmedia], [],
+	[Haiku output plugin],
+	[Haiku headers not found])
 
 dnl ------------------------------- HTTPD Output ------------------------------
 if test x$enable_httpd_output = xauto; then
@@ -1538,7 +1531,8 @@ dnl Generate files
 dnl ---------------------------------------------------------------------------
 AC_CONFIG_FILES(Makefile)
 AC_CONFIG_FILES(doc/doxygen.conf)
-AC_CONFIG_FILES(systemd/mpd.service)
+AC_CONFIG_FILES(systemd/system/mpd.service)
+AC_CONFIG_FILES(systemd/user/mpd.service)
 AC_OUTPUT
 
 echo 'MPD is ready for compilation, type "make" to begin.'

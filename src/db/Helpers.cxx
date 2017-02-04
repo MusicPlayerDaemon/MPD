@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -67,15 +67,13 @@ StatsVisitTag(DatabaseStats &stats, StringSet &artists, StringSet &albums,
 	}
 }
 
-static bool
+static void
 StatsVisitSong(DatabaseStats &stats, StringSet &artists, StringSet &albums,
 	       const LightSong &song)
 {
 	++stats.song_count;
 
 	StatsVisitTag(stats, artists, albums, *song.tag);
-
-	return true;
 }
 
 DatabaseStats

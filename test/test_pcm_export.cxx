@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -34,6 +34,9 @@ PcmExportTest::TestShift8()
 
 	PcmExport::Params params;
 	params.shift8 = true;
+
+	CPPUNIT_ASSERT_EQUAL(params.CalcOutputSampleRate(42u), 42u);
+	CPPUNIT_ASSERT_EQUAL(params.CalcInputSampleRate(42u), 42u);
 
 	PcmExport e;
 	e.Open(SampleFormat::S24_P32, 2, params);
@@ -71,6 +74,9 @@ PcmExportTest::TestPack24()
 	PcmExport::Params params;
 	params.pack24 = true;
 
+	CPPUNIT_ASSERT_EQUAL(params.CalcOutputSampleRate(42u), 42u);
+	CPPUNIT_ASSERT_EQUAL(params.CalcInputSampleRate(42u), 42u);
+
 	PcmExport e;
 	e.Open(SampleFormat::S24_P32, 2, params);
 
@@ -97,6 +103,9 @@ PcmExportTest::TestReverseEndian()
 	PcmExport::Params params;
 	params.reverse_endian = true;
 
+	CPPUNIT_ASSERT_EQUAL(params.CalcOutputSampleRate(42u), 42u);
+	CPPUNIT_ASSERT_EQUAL(params.CalcInputSampleRate(42u), 42u);
+
 	PcmExport e;
 	e.Open(SampleFormat::S8, 2, params);
 
@@ -118,6 +127,37 @@ PcmExportTest::TestReverseEndian()
 #ifdef ENABLE_DSD
 
 void
+PcmExportTest::TestDsdU16()
+{
+	static constexpr uint8_t src[] = {
+		0x01, 0x23, 0x45, 0x67,
+		0x89, 0xab, 0xcd, 0xef,
+		0x11, 0x22, 0x33, 0x44,
+		0x55, 0x66, 0x77, 0x88,
+	};
+
+	static constexpr uint16_t expected[] = {
+		0x0145, 0x2367,
+		0x89cd, 0xabef,
+		0x1133, 0x2244,
+		0x5577, 0x6688,
+	};
+
+	PcmExport::Params params;
+	params.dsd_u16 = true;
+
+	CPPUNIT_ASSERT_EQUAL(params.CalcOutputSampleRate(705600u), 352800u);
+	CPPUNIT_ASSERT_EQUAL(params.CalcInputSampleRate(352800u), 705600u);
+
+	PcmExport e;
+	e.Open(SampleFormat::DSD, 2, params);
+
+	auto dest = e.Export({src, sizeof(src)});
+	CPPUNIT_ASSERT_EQUAL(sizeof(expected), dest.size);
+	CPPUNIT_ASSERT(memcmp(dest.data, expected, dest.size) == 0);
+}
+
+void
 PcmExportTest::TestDsdU32()
 {
 	static constexpr uint8_t src[] = {
@@ -128,14 +168,17 @@ PcmExportTest::TestDsdU32()
 	};
 
 	static constexpr uint32_t expected[] = {
-		0xcd894501,
-		0xefab6723,
-		0x77553311,
-		0x88664422,
+		0x014589cd,
+		0x2367abef,
+		0x11335577,
+		0x22446688,
 	};
 
 	PcmExport::Params params;
 	params.dsd_u32 = true;
+
+	CPPUNIT_ASSERT_EQUAL(params.CalcOutputSampleRate(705600u), 176400u);
+	CPPUNIT_ASSERT_EQUAL(params.CalcInputSampleRate(176400u), 705600u);
 
 	PcmExport e;
 	e.Open(SampleFormat::DSD, 2, params);
@@ -162,6 +205,9 @@ PcmExportTest::TestDop()
 
 	PcmExport::Params params;
 	params.dop = true;
+
+	CPPUNIT_ASSERT_EQUAL(params.CalcOutputSampleRate(705600u), 352800u);
+	CPPUNIT_ASSERT_EQUAL(params.CalcInputSampleRate(352800u), 705600u);
 
 	PcmExport e;
 	e.Open(SampleFormat::DSD, 2, params);
@@ -192,6 +238,9 @@ TestAlsaChannelOrder51()
 	PcmExport::Params params;
 	params.alsa_channel_order = true;
 
+	CPPUNIT_ASSERT_EQUAL(params.CalcOutputSampleRate(42u), 42u);
+	CPPUNIT_ASSERT_EQUAL(params.CalcInputSampleRate(42u), 42u);
+
 	PcmExport e;
 	e.Open(F, 6, params);
 
@@ -218,6 +267,9 @@ TestAlsaChannelOrder71()
 
 	PcmExport::Params params;
 	params.alsa_channel_order = true;
+
+	CPPUNIT_ASSERT_EQUAL(params.CalcOutputSampleRate(42u), 42u);
+	CPPUNIT_ASSERT_EQUAL(params.CalcInputSampleRate(42u), 42u);
 
 	PcmExport e;
 	e.Open(F, 8, params);

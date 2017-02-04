@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -23,7 +23,6 @@
 #include "Base.hxx"
 #include "Connection.hxx"
 #include "event/Call.hxx"
-#include "IOThread.hxx"
 #include "util/StringCompare.hxx"
 
 #include <utility>
@@ -34,7 +33,7 @@
 #include <sys/stat.h>
 
 NfsFileReader::NfsFileReader()
-	:DeferredMonitor(io_thread_get()), state(State::INITIAL)
+	:DeferredMonitor(nfs_get_event_loop()), state(State::INITIAL)
 {
 }
 
@@ -86,7 +85,7 @@ NfsFileReader::CancelOrClose()
 void
 NfsFileReader::DeferClose()
 {
-	BlockingCall(io_thread_get(), [this](){ Close(); });
+	BlockingCall(GetEventLoop(), [this](){ Close(); });
 }
 
 void

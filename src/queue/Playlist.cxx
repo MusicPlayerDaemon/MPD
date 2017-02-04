@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -310,7 +310,7 @@ playlist::SetRandom(PlayerControl &pc, bool status)
 			   playlist is played after that */
 			unsigned current_order =
 				queue.PositionToOrder(current_position);
-			queue.SwapOrders(0, current_order);
+			queue.MoveOrder(current_order, 0);
 			current = 0;
 		} else
 			current = -1;

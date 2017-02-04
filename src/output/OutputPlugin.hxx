@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -22,6 +22,8 @@
 
 #include "Compiler.h"
 
+#include <chrono>
+
 #include <stddef.h>
 
 struct ConfigBlock;
@@ -29,6 +31,7 @@ struct AudioFormat;
 struct Tag;
 struct AudioOutput;
 struct MixerPlugin;
+class EventLoop;
 
 /**
  * A plugin which controls an audio output device.
@@ -54,7 +57,7 @@ struct AudioOutputPlugin {
 	 * @param param the configuration section, or nullptr if there is
 	 * no configuration
 	 */
-	AudioOutput *(*init)(const ConfigBlock &block);
+	AudioOutput *(*init)(EventLoop &event_loop, const ConfigBlock &block);
 
 	/**
 	 * Free resources allocated by this device.
@@ -97,9 +100,9 @@ struct AudioOutputPlugin {
 	 * instead of doing a sleep inside the plugin, because this
 	 * allows MPD to listen to commands meanwhile.
 	 *
-	 * @return the number of milliseconds to wait
+	 * @return the duration to wait
 	 */
-	unsigned (*delay)(AudioOutput *data);
+	std::chrono::steady_clock::duration (*delay)(AudioOutput *data);
 
 	/**
 	 * Display metadata for the next chunk.  Optional method,
@@ -160,41 +163,42 @@ ao_plugin_test_default_device(const AudioOutputPlugin *plugin)
 
 gcc_malloc
 AudioOutput *
-ao_plugin_init(const AudioOutputPlugin *plugin,
+ao_plugin_init(EventLoop &event_loop,
+	       const AudioOutputPlugin &plugin,
 	       const ConfigBlock &block);
 
 void
 ao_plugin_finish(AudioOutput *ao);
 
 void
-ao_plugin_enable(AudioOutput *ao);
+ao_plugin_enable(AudioOutput &ao);
 
 void
-ao_plugin_disable(AudioOutput *ao);
+ao_plugin_disable(AudioOutput &ao);
 
 void
-ao_plugin_open(AudioOutput *ao, AudioFormat &audio_format);
+ao_plugin_open(AudioOutput &ao, AudioFormat &audio_format);
 
 void
-ao_plugin_close(AudioOutput *ao);
+ao_plugin_close(AudioOutput &ao);
 
 gcc_pure
-unsigned
-ao_plugin_delay(AudioOutput *ao);
+std::chrono::steady_clock::duration
+ao_plugin_delay(AudioOutput &ao);
 
 void
-ao_plugin_send_tag(AudioOutput *ao, const Tag &tag);
+ao_plugin_send_tag(AudioOutput &ao, const Tag &tag);
 
 size_t
-ao_plugin_play(AudioOutput *ao, const void *chunk, size_t size);
+ao_plugin_play(AudioOutput &ao, const void *chunk, size_t size);
 
 void
-ao_plugin_drain(AudioOutput *ao);
+ao_plugin_drain(AudioOutput &ao);
 
 void
-ao_plugin_cancel(AudioOutput *ao);
+ao_plugin_cancel(AudioOutput &ao);
 
 bool
-ao_plugin_pause(AudioOutput *ao);
+ao_plugin_pause(AudioOutput &ao);
 
 #endif

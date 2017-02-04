@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -149,14 +149,14 @@ VorbisDecoder::OnOggBeginning(const ogg_packet &_packet)
 }
 
 static void
-vorbis_send_comments(Decoder &decoder, InputStream &is,
+vorbis_send_comments(DecoderClient &client, InputStream &is,
 		     char **comments)
 {
 	Tag *tag = vorbis_comments_to_tag(comments);
 	if (!tag)
 		return;
 
-	decoder_tag(decoder, is, std::move(*tag));
+	client.SubmitTag(is, std::move(*tag));
 	delete tag;
 }
 
@@ -175,8 +175,7 @@ VorbisDecoder::SubmitInit()
 						      audio_format.sample_rate)
 		: SignedSongTime::Negative();
 
-	decoder_initialized(decoder, audio_format,
-			    eos_granulepos > 0, duration);
+	client.Ready(audio_format, eos_granulepos > 0, duration);
 }
 
 bool
@@ -212,9 +211,9 @@ VorbisDecoder::SubmitSomePcm()
 	vorbis_synthesis_read(&dsp, n_frames);
 
 	const size_t nbytes = n_frames * frame_size;
-	auto cmd = decoder_data(decoder, input_stream,
-				buffer, nbytes,
-				0);
+	auto cmd = client.SubmitData(input_stream,
+				     buffer, nbytes,
+				     0);
 	if (cmd != DecoderCommand::NONE)
 		throw cmd;
 
@@ -249,11 +248,11 @@ VorbisDecoder::OnOggPacket(const ogg_packet &_packet)
 		} else
 			SubmitInit();
 
-		vorbis_send_comments(decoder, input_stream, vc.user_comments);
+		vorbis_send_comments(client, input_stream, vc.user_comments);
 
 		ReplayGainInfo rgi;
 		if (vorbis_comments_to_replay_gain(rgi, vc.user_comments))
-			decoder_replay_gain(decoder, &rgi);
+			client.SubmitReplayGain(&rgi);
 	} else {
 		if (!dsp_initialized) {
 			dsp_initialized = true;
@@ -265,7 +264,7 @@ VorbisDecoder::OnOggPacket(const ogg_packet &_packet)
 		if (vorbis_synthesis(&block, &packet) != 0) {
 			/* ignore bad packets, but give the MPD core a
 			   chance to stop us */
-			auto cmd = decoder_get_command(decoder);
+			auto cmd = client.GetCommand();
 			if (cmd != DecoderCommand::NONE)
 				throw cmd;
 			return;
@@ -278,8 +277,7 @@ VorbisDecoder::OnOggPacket(const ogg_packet &_packet)
 
 #ifndef HAVE_TREMOR
 		if (packet.granulepos > 0)
-			decoder_timestamp(decoder,
-					  vorbis_granule_time(&dsp, packet.granulepos));
+			client.SubmitTimestamp(vorbis_granule_time(&dsp, packet.granulepos));
 #endif
 	}
 }
@@ -301,10 +299,10 @@ vorbis_init(gcc_unused const ConfigBlock &block)
 }
 
 static void
-vorbis_stream_decode(Decoder &decoder,
+vorbis_stream_decode(DecoderClient &client,
 		     InputStream &input_stream)
 {
-	if (ogg_codec_detect(&decoder, input_stream) != OGG_CODEC_VORBIS)
+	if (ogg_codec_detect(&client, input_stream) != OGG_CODEC_VORBIS)
 		return;
 
 	/* rewind the stream, because ogg_codec_detect() has
@@ -314,7 +312,7 @@ vorbis_stream_decode(Decoder &decoder,
 	} catch (const std::runtime_error &) {
 	}
 
-	DecoderReader reader(decoder, input_stream);
+	DecoderReader reader(client, input_stream);
 	VorbisDecoder d(reader);
 
 	while (true) {
@@ -323,10 +321,10 @@ vorbis_stream_decode(Decoder &decoder,
 			break;
 		} catch (DecoderCommand cmd) {
 			if (cmd == DecoderCommand::SEEK) {
-				if (d.Seek(decoder_seek_where_frame(decoder)))
-					decoder_command_finished(decoder);
+				if (d.Seek(client.GetSeekFrame()))
+					client.CommandFinished();
 				else
-					decoder_seek_error(decoder);
+					client.SeekError();
 			} else if (cmd != DecoderCommand::NONE)
 				break;
 		}

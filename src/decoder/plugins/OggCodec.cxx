@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -28,13 +28,13 @@
 #include <string.h>
 
 enum ogg_codec
-ogg_codec_detect(Decoder *decoder, InputStream &is)
+ogg_codec_detect(DecoderClient *client, InputStream &is)
 {
 	/* oggflac detection based on code in ogg123 and this post
 	 * http://lists.xiph.org/pipermail/flac/2004-December/000393.html
 	 * ogg123 trunk still doesn't have this patch as of June 2005 */
 	unsigned char buf[41];
-	size_t r = decoder_read(decoder, is, buf, sizeof(buf));
+	size_t r = decoder_read(client, is, buf, sizeof(buf));
 	if (r < sizeof(buf) || memcmp(buf, "OggS", 4) != 0)
 		return OGG_CODEC_UNKNOWN;
 

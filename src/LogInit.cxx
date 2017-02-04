@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -24,12 +24,10 @@
 #include "config/Param.hxx"
 #include "config/ConfigGlobal.hxx"
 #include "config/ConfigOption.hxx"
-#include "system/FatalError.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "fs/FileSystem.hxx"
 #include "util/Domain.hxx"
 #include "util/RuntimeError.hxx"
-#include "system/FatalError.hxx"
 #include "system/Error.hxx"
 
 #include <assert.h>
@@ -47,16 +45,16 @@ static constexpr Domain log_domain("log");
 
 #ifndef ANDROID
 
-static int out_fd;
+static int out_fd = -1;
 static AllocatedPath out_path = AllocatedPath::Null();
 
 static void redirect_logs(int fd)
 {
 	assert(fd >= 0);
 	if (dup2(fd, STDOUT_FILENO) < 0)
-		FatalSystemError("Failed to dup2 stdout");
+		throw MakeErrno("Failed to dup2 stdout");
 	if (dup2(fd, STDERR_FILENO) < 0)
-		FatalSystemError("Failed to dup2 stderr");
+		throw MakeErrno("Failed to dup2 stderr");
 }
 
 static int
@@ -98,10 +96,9 @@ parse_log_level(const char *value, int line)
 		return LOG_LEVEL_SECURE;
 	else if (0 == strcmp(value, "verbose"))
 		return LogLevel::DEBUG;
-	else {
-		FormatFatalError("unknown log level \"%s\" at line %d",
-				 value, line);
-	}
+	else
+		throw FormatRuntimeError("unknown log level \"%s\" at line %d",
+					 value, line);
 }
 
 #endif
@@ -133,7 +130,9 @@ log_init(bool verbose, bool use_stdout)
 		SetLogThreshold(parse_log_level(param->value.c_str(),
 						param->line));
 
-	if (!use_stdout) {
+	if (use_stdout) {
+		out_fd = STDOUT_FILENO;
+	} else {
 		const auto *param = config_get_param(ConfigOption::LOG_FILE);
 		if (param == nullptr) {
 			/* no configuration: default to syslog (if
@@ -174,12 +173,10 @@ log_deinit(void)
 #endif
 }
 
-void setup_log_output(bool use_stdout)
+void setup_log_output()
 {
-#ifdef ANDROID
-	(void)use_stdout;
-#else
-	if (use_stdout)
+#ifndef ANDROID
+	if (out_fd == STDOUT_FILENO)
 		return;
 
 	fflush(nullptr);

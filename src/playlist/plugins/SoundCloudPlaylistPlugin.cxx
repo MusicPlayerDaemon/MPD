@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -232,14 +232,13 @@ soundcloud_parse_json(const char *url, yajl_handle hand,
 try {
 	auto input_stream = InputStream::OpenReady(url, mutex, cond);
 
-	const ScopeLock protect(mutex);
+	const std::lock_guard<Mutex> protect(mutex);
 
 	yajl_status stat;
 	bool done = false;
 
 	while (!done) {
-		char buffer[4096];
-		unsigned char *ubuffer = (unsigned char *)buffer;
+		unsigned char buffer[4096];
 		const size_t nbytes =
 			input_stream->Read(buffer, sizeof(buffer));
 		if (nbytes == 0)
@@ -248,10 +247,10 @@ try {
 		if (done) {
 			stat = yajl_complete_parse(hand);
 		} else
-			stat = yajl_parse(hand, ubuffer, nbytes);
+			stat = yajl_parse(hand, buffer, nbytes);
 
 		if (stat != yajl_status_ok) {
-			unsigned char *str = yajl_get_error(hand, 1, ubuffer, nbytes);
+			unsigned char *str = yajl_get_error(hand, 1, buffer, nbytes);
 			LogError(soundcloud_domain, (const char *)str);
 			yajl_free_error(hand, str);
 			break;
@@ -274,31 +273,31 @@ try {
 static SongEnumerator *
 soundcloud_open_uri(const char *uri, Mutex &mutex, Cond &cond)
 {
-	assert(memcmp(uri, "soundcloud://", 13) == 0);
+	assert(strncmp(uri, "soundcloud://", 13) == 0);
 	uri += 13;
 
 	char *u = nullptr;
-	if (memcmp(uri, "track/", 6) == 0) {
+	if (strncmp(uri, "track/", 6) == 0) {
 		const char *rest = uri + 6;
 		u = xstrcatdup("https://api.soundcloud.com/tracks/",
 			       rest, ".json?client_id=",
 			       soundcloud_config.apikey.c_str());
-	} else if (memcmp(uri, "playlist/", 9) == 0) {
+	} else if (strncmp(uri, "playlist/", 9) == 0) {
 		const char *rest = uri + 9;
 		u = xstrcatdup("https://api.soundcloud.com/playlists/",
 			       rest, ".json?client_id=",
 			       soundcloud_config.apikey.c_str());
-	} else if (memcmp(uri, "user/", 5) == 0) {
+	} else if (strncmp(uri, "user/", 5) == 0) {
 		const char *rest = uri + 5;
 		u = xstrcatdup("https://api.soundcloud.com/users/",
 			       rest, "/tracks.json?client_id=",
 			       soundcloud_config.apikey.c_str());
-	} else if (memcmp(uri, "search/", 7) == 0) {
+	} else if (strncmp(uri, "search/", 7) == 0) {
 		const char *rest = uri + 7;
 		u = xstrcatdup("https://api.soundcloud.com/tracks.json?q=",
 			       rest, "&client_id=",
 			       soundcloud_config.apikey.c_str());
-	} else if (memcmp(uri, "url/", 4) == 0) {
+	} else if (strncmp(uri, "url/", 4) == 0) {
 		const char *rest = uri + 4;
 		/* Translate to soundcloud resolver call. libcurl will automatically
 		   follow the redirect to the right resource. */

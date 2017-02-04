@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -20,6 +20,7 @@
 #include "config.h" /* must be first for large file support */
 #include "Walk.hxx"
 #include "UpdateDomain.hxx"
+#include "DetachedSong.hxx"
 #include "db/DatabaseLock.hxx"
 #include "db/plugins/simple/Directory.hxx"
 #include "db/plugins/simple/Song.hxx"
@@ -28,8 +29,6 @@
 #include "decoder/DecoderList.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "storage/FileInfo.hxx"
-#include "tag/TagHandler.hxx"
-#include "tag/TagBuilder.hxx"
 #include "Log.hxx"
 #include "util/AllocatedString.hxx"
 
@@ -61,11 +60,10 @@ UpdateWalk::MakeDirectoryIfModified(Directory &parent, const char *name,
 static bool
 SupportsContainerSuffix(const DecoderPlugin &plugin, const char *suffix)
 {
-	if (strcmp(plugin.name, "dsdiff") == 0 && plugin.SupportsSuffix(suffix)) {
-		if (!plugin.container_scan(Path::Null(), 0).IsNull()) {
-			return false;
-		}
-	}
+	if (plugin.container_scan != nullptr)
+		if (strcmp(plugin.name, "dsdiff") == 0 && plugin.SupportsSuffix(suffix))
+			if (plugin.container_scan(Path::Null()).empty())
+				return false;
 
 	return plugin.container_scan != nullptr &&
 		plugin.SupportsSuffix(suffix);
@@ -76,11 +74,11 @@ UpdateWalk::UpdateContainerFile(Directory &directory,
 				const char *name, const char *suffix,
 				const StorageFileInfo &info)
 {
-	std::vector<const DecoderPlugin *> plugins;
+	std::list<const DecoderPlugin *> plugins;
 	for (unsigned i = 0; decoder_plugins[i] != nullptr; ++i)
 		if (decoder_plugins_enabled[i] && SupportsContainerSuffix(*decoder_plugins[i], suffix))
 			plugins.push_back(decoder_plugins[i]);
-	if (plugins.size() == 0)
+	if (plugins.empty())
 		return false;
 
 	Directory *contdir;
@@ -97,50 +95,46 @@ UpdateWalk::UpdateContainerFile(Directory &directory,
 	const auto pathname = storage.MapFS(contdir->GetPath());
 	if (pathname.IsNull()) {
 		/* not a local file: skip, because the container API
-		   supports only local files */
+			 supports only local files */
 		editor.LockDeleteDirectory(contdir);
 		return false;
 	}
 
-	unsigned int tnum_total = 0;
-	for (unsigned i = 0; i < plugins.size(); ++i) {
-		const DecoderPlugin &plugin = *plugins[i];
-		AllocatedString<> vtrack = nullptr;
-		unsigned int tnum = 0;
-		TagBuilder tag_builder;
-		while ((vtrack = plugin.container_scan(pathname, ++tnum)) != nullptr) {
-			Song *song = Song::NewFile(vtrack.c_str(), *contdir);
+	unsigned int track_count = 0;
+	for (auto plugin : plugins) {
+		try {
+			auto v = plugin->container_scan(pathname);
 
-			// shouldn't be necessary but it's there..
-			song->mtime = info.mtime;
-
-			const auto vtrack_fs = AllocatedPath::FromUTF8(vtrack.c_str());
-			// TODO: check vtrack_fs.IsNull()
-
-			const auto child_path_fs = AllocatedPath::Build(pathname,
-									vtrack_fs);
-			plugin.ScanFile(child_path_fs,
-					add_tag_handler, &tag_builder);
-
-			tag_builder.Commit(song->tag);
-
-			{
-				const ScopeDatabaseLock protect;
-				contdir->AddSong(song);
+			if (v.empty()) {
+				continue;
 			}
 
-			modified = true;
+			for (auto &vtrack : v) {
+				Song *song = Song::NewFrom(std::move(vtrack), *contdir);
 
-			FormatDefault(update_domain, "added %s/%s",
-							directory.GetPath(), vtrack.c_str());
+				// shouldn't be necessary but it's there..
+				song->mtime = info.mtime;
 
-			tnum_total++;
+				FormatDefault(update_domain, "added %s/%s", contdir->GetPath(), song->uri);
+
+				{
+					const ScopeDatabaseLock protect;
+					contdir->AddSong(song);
+					track_count++;
+				}
+
+				modified = true;
+			}
+		}
+		catch (const std::runtime_error &e) {
+			LogError(e);
 		}
 	}
 
-	if (tnum_total == 0) {
+	if (track_count == 0) {
 		editor.LockDeleteDirectory(contdir);
 		return false;
-	} else
-		return true;
+	}
+
+	return true;
 }

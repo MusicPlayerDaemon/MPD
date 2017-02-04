@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -28,6 +28,7 @@
 #include "pcm/Volume.hxx"
 #include "mixer/MixerControl.hxx"
 #include "util/ConstBuffer.hxx"
+#include "util/StringBuffer.hxx"
 #include "system/FatalError.hxx"
 #include "Log.hxx"
 
@@ -62,7 +63,6 @@ load_filter(const char *name)
 
 int main(int argc, char **argv)
 try {
-	struct audio_format_string af_string;
 	char buffer[4096];
 
 	if (argc < 3 || argc > 4) {
@@ -97,7 +97,7 @@ try {
 	const AudioFormat out_audio_format = filter->GetOutAudioFormat();
 
 	fprintf(stderr, "audio_format=%s\n",
-		audio_format_to_string(out_audio_format, &af_string));
+		ToString(out_audio_format).c_str());
 
 	/* play */
 

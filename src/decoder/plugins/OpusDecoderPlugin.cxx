@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -93,7 +93,7 @@ public:
 	~MPDOpusDecoder();
 
 	/**
-	 * Has decoder_initialized() been called yet?
+	 * Has DecoderClient::Ready() been called yet?
 	 */
 	bool IsInitialized() const {
 		return previous_channels != 0;
@@ -175,14 +175,13 @@ MPDOpusDecoder::OnOggBeginning(const ogg_packet &packet)
 	previous_channels = channels;
 	const AudioFormat audio_format(opus_sample_rate,
 				       SampleFormat::S16, channels);
-	decoder_initialized(decoder, audio_format,
-			    eos_granulepos > 0, duration);
+	client.Ready(audio_format, eos_granulepos > 0, duration);
 	frame_size = audio_format.GetFrameSize();
 
 	output_buffer = new opus_int16[opus_output_buffer_frames
 				       * audio_format.channels];
 
-	auto cmd = decoder_get_command(decoder);
+	auto cmd = client.GetCommand();
 	if (cmd != DecoderCommand::NONE)
 		throw cmd;
 }
@@ -213,10 +212,10 @@ MPDOpusDecoder::HandleTags(const ogg_packet &packet)
 			 &rgi,
 			 add_tag_handler, &tag_builder) &&
 	    !tag_builder.IsEmpty()) {
-		decoder_replay_gain(decoder, &rgi);
+		client.SubmitReplayGain(&rgi);
 
 		Tag tag = tag_builder.Commit();
-		auto cmd = decoder_tag(decoder, input_stream, std::move(tag));
+		auto cmd = client.SubmitTag(input_stream, std::move(tag));
 		if (cmd != DecoderCommand::NONE)
 			throw cmd;
 	}
@@ -238,16 +237,15 @@ MPDOpusDecoder::HandleAudio(const ogg_packet &packet)
 
 	if (nframes > 0) {
 		const size_t nbytes = nframes * frame_size;
-		auto cmd = decoder_data(decoder, input_stream,
-					output_buffer, nbytes,
-					0);
+		auto cmd = client.SubmitData(input_stream,
+					     output_buffer, nbytes,
+					     0);
 		if (cmd != DecoderCommand::NONE)
 			throw cmd;
 
 		if (packet.granulepos > 0)
-			decoder_timestamp(decoder,
-					  double(packet.granulepos)
-					  / opus_sample_rate);
+			client.SubmitTimestamp(double(packet.granulepos)
+					       / opus_sample_rate);
 	}
 }
 
@@ -269,10 +267,10 @@ MPDOpusDecoder::Seek(uint64_t where_frame)
 }
 
 static void
-mpd_opus_stream_decode(Decoder &decoder,
+mpd_opus_stream_decode(DecoderClient &client,
 		       InputStream &input_stream)
 {
-	if (ogg_codec_detect(&decoder, input_stream) != OGG_CODEC_OPUS)
+	if (ogg_codec_detect(&client, input_stream) != OGG_CODEC_OPUS)
 		return;
 
 	/* rewind the stream, because ogg_codec_detect() has
@@ -282,7 +280,7 @@ mpd_opus_stream_decode(Decoder &decoder,
 	} catch (const std::runtime_error &) {
 	}
 
-	DecoderReader reader(decoder, input_stream);
+	DecoderReader reader(client, input_stream);
 
 	MPDOpusDecoder d(reader);
 
@@ -292,10 +290,10 @@ mpd_opus_stream_decode(Decoder &decoder,
 			break;
 		} catch (DecoderCommand cmd) {
 			if (cmd == DecoderCommand::SEEK) {
-				if (d.Seek(decoder_seek_where_frame(decoder)))
-					decoder_command_finished(decoder);
+				if (d.Seek(client.GetSeekFrame()))
+					client.CommandFinished();
 				else
-					decoder_seek_error(decoder);
+					client.SeekError();
 			} else if (cmd != DecoderCommand::NONE)
 				break;
 		}

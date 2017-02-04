@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -32,6 +32,7 @@
 #include <vector>
 #include <string>
 #include <memory>
+#include <chrono>
 
 class ContentDirectoryService;
 
@@ -56,12 +57,12 @@ class UPnPDeviceDirectory final : UpnpCallback {
 	struct DiscoveredTask {
 		std::string url;
 		std::string device_id;
-		unsigned expires; // Seconds valid
+		std::chrono::steady_clock::duration expires;
 
 		DiscoveredTask(const Upnp_Discovery *disco)
 			:url(disco->Location),
 			 device_id(disco->DeviceId),
-			 expires(disco->Expires) {}
+			 expires(std::chrono::seconds(disco->Expires)) {}
 	};
 
 	/**
@@ -75,16 +76,17 @@ class UPnPDeviceDirectory final : UpnpCallback {
 		UPnPDevice device;
 
 		/**
-		 * The MonotonicClockS() time stamp when this device
-		 * expires.
+		 * The time stamp when this device expires.
 		 */
-		unsigned expires;
+		std::chrono::steady_clock::time_point expires;
 
 		ContentDirectoryDescriptor() = default;
 
 		ContentDirectoryDescriptor(std::string &&_id,
-					   unsigned last, int exp)
-			:id(std::move(_id)), expires(last + exp + 20) {}
+					   std::chrono::steady_clock::time_point last,
+					   std::chrono::steady_clock::duration exp)
+			:id(std::move(_id)),
+			 expires(last + exp + std::chrono::seconds(20)) {}
 
 		void Parse(const std::string &url, const char *description) {
 			device.Parse(url, description);
@@ -103,12 +105,12 @@ class UPnPDeviceDirectory final : UpnpCallback {
 	 * called delay because it's the base of a random delay that
 	 * the devices apply to avoid responding all at the same time.
 	 */
-	int search_timeout;
+	int search_timeout = 2;
 
 	/**
-	 * The MonotonicClockS() time stamp of the last search.
+	 * The time stamp of the last search.
 	 */
-	unsigned last_search;
+	std::chrono::steady_clock::time_point last_search = std::chrono::steady_clock::time_point();
 
 public:
 	UPnPDeviceDirectory(UpnpClient_Handle _handle,

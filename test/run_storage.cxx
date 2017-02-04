@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -67,8 +67,13 @@ Ls(Storage &storage, const char *path)
 			break;
 		}
 
-		char mtime[32];
-		strftime(mtime, sizeof(mtime), "%F", gmtime(&info.mtime));
+		char mtime_buffer[32];
+		const char *mtime = "          ";
+		if (info.mtime > 0) {
+			strftime(mtime_buffer, sizeof(mtime_buffer), "%F",
+				 gmtime(&info.mtime));
+			mtime = mtime_buffer;
+		}
 
 		printf("%s %10llu %s %s\n",
 		       type, (unsigned long long)info.size,

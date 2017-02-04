@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -103,7 +103,7 @@ SmbclientNeighborExplorer::Close()
 NeighborExplorer::List
 SmbclientNeighborExplorer::GetList() const
 {
-	const ScopeLock protect(mutex);
+	const std::lock_guard<Mutex> protect(mutex);
 	/*
 	List list;
 	for (const auto &i : servers)
@@ -172,7 +172,7 @@ static NeighborExplorer::List
 DetectServers()
 {
 	NeighborExplorer::List list;
-	const ScopeLock protect(smbclient_mutex);
+	const std::lock_guard<Mutex> protect(smbclient_mutex);
 	ReadServers(list, "smb://");
 	return list;
 }
@@ -251,7 +251,7 @@ SmbclientNeighborExplorer::ThreadFunc()
 			break;
 
 		// TODO: sleep for how long?
-		cond.timed_wait(mutex, 10000);
+		cond.timed_wait(mutex, std::chrono::seconds(10));
 	}
 
 	mutex.unlock();

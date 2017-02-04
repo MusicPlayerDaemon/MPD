@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -23,7 +23,6 @@
 #include "check.h"
 #include "Reader.hxx"
 #include "util/StaticFifoBuffer.hxx"
-#include "lib/zlib/Error.hxx"
 #include "Compiler.h"
 
 #include <zlib.h>
@@ -34,7 +33,7 @@
 class GunzipReader final : public Reader {
 	Reader &next;
 
-	bool eof;
+	bool eof = false;
 
 	z_stream z;
 
@@ -44,7 +43,7 @@ public:
 	/**
 	 * Construct the filter.
 	 */
-	GunzipReader(Reader &_next) throw(ZlibError);
+	explicit GunzipReader(Reader &_next);
 
 	~GunzipReader() {
 		inflateEnd(&z);

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2016 The Music Player Daemon Project
+ * Copyright (C) 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -29,6 +29,8 @@
 #include "input/InputStream.hxx"
 #include "CheckAudioFormat.hxx"
 #include "tag/TagHandler.hxx"
+#include "tag/TagBuilder.hxx"
+#include "DetachedSong.hxx"
 #include "fs/Path.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "thread/Cond.hxx"
@@ -93,14 +95,14 @@ get_subsong(const char* path) {
 	if (length > 0) {
 		const char* ptr = path + length + 1;
 		char area = '\0';
-		unsigned track = 0;
+		unsigned track_index = 0;
 		char suffix[4];
-		sscanf(ptr, SACD_TRACKXXX_FMT, &area, &track, suffix);
+		sscanf(ptr, SACD_TRACKXXX_FMT, &area, &track_index, suffix);
 		if (area == 'M') {
-			track += sacd_reader->get_tracks(AREA_TWOCH);
+			track_index += sacd_reader->get_tracks(AREA_TWOCH);
 		}
-		track--;
-		return track;
+		track_index--;
+		return track_index;
 	}
 	return 0;
 }
@@ -136,11 +138,13 @@ sacdiso_update_toc(const char* path) {
 		sacd_media = new sacd_media_stream_t();
 		if (!sacd_media) {
 			LogError(sacdiso_domain, "new sacd_media_file_t() failed");
+			sacd_uri.clear();
 			return false;
 		}
 		sacd_reader = new sacd_disc_t;
 		if (!sacd_reader) {
 			LogError(sacdiso_domain, "new sacd_disc_t() failed");
+			sacd_uri.clear();
 			return false;
 		}
 		if (!sacd_media->open(path)) {
@@ -149,10 +153,12 @@ sacdiso_update_toc(const char* path) {
 			err += path;
 			err += "') failed";
 			LogWarning(sacdiso_domain, err.c_str());
+			sacd_uri.clear();
 			return false;
 		}
 		if (!sacd_reader->open(sacd_media)) {
 			//LogWarning(sacdiso_domain, "sacd_reader->open(...) failed");
+			sacd_uri.clear();
 			return false;
 		}
 		if (!param_tags_path.empty() || param_tags_with_iso) {
@@ -167,6 +173,16 @@ sacdiso_update_toc(const char* path) {
 	}
 	sacd_uri = curr_uri;
 	return true;
+}
+
+static void
+sacdiso_scan_info(unsigned track, unsigned track_index, const TagHandler& handler, void* handler_ctx) {
+	string tag_value = to_string(track + 1);
+	tag_handler_invoke_tag(handler, handler_ctx, TAG_TRACK, tag_value.c_str());
+	tag_handler_invoke_duration(handler, handler_ctx, SongTime::FromS(sacd_reader->get_duration(track)));
+	if (!sacd_metabase || (sacd_metabase && !sacd_metabase->get_info(track_index, handler, handler_ctx))) {
+		sacd_reader->get_info(track, handler, handler_ctx);
+	}
 }
 
 static bool
@@ -194,35 +210,35 @@ sacdiso_finish() {
 	sacdiso_update_toc(nullptr);
 }
 
-static AllocatedString<>
-sacdiso_container_scan(Path path_fs, const unsigned int tnum) {
+static std::forward_list<DetachedSong>
+sacdiso_container_scan(Path path_fs) {
+	std::forward_list<DetachedSong> list;
 	if (!sacdiso_update_toc(path_fs.c_str())) {
-		return nullptr;
+		return list;
 	}
+	TagBuilder tag_builder;
+	auto tail = list.before_begin();
+	const char* suffix = uri_get_suffix(path_fs.c_str());
+	char track_name[64];
 	unsigned twoch_count = sacd_reader->get_tracks(AREA_TWOCH);
 	unsigned mulch_count = sacd_reader->get_tracks(AREA_MULCH);
-	unsigned track = tnum - 1;
-	if (param_playable_area == AREA_MULCH) {
-		track += twoch_count;
-	}
-	if (track < twoch_count) {
+	if (twoch_count > 0 && param_playable_area != AREA_MULCH) {
 		sacd_reader->select_area(AREA_TWOCH);
-	}
-	else {
-		if (param_playable_area == AREA_TWOCH) {
-			return nullptr;
-		}
-		track -= twoch_count;
-		if (track < mulch_count) {
-			sacd_reader->select_area(AREA_MULCH);
-		}
-		else {
-			return nullptr;
+		for (unsigned track = 0; track < twoch_count; track++) {
+			sacdiso_scan_info(track, track, add_tag_handler, &tag_builder);
+			sprintf(track_name, SACD_TRACKXXX_FMT, '2', track + 1, suffix);
+			tail = list.emplace_after(tail, track_name, tag_builder.Commit());
 		}
 	}
-	char area = sacd_reader->get_channels() > 2 ? 'M' : '2';
-	const char* suffix = uri_get_suffix(path_fs.c_str());
-	return FormatString(SACD_TRACKXXX_FMT, area, track + 1, suffix);
+	if (mulch_count > 0 && param_playable_area != AREA_TWOCH) {
+		sacd_reader->select_area(AREA_MULCH);
+		for (unsigned track = 0; track < mulch_count; track++) {
+			sacdiso_scan_info(track, track + twoch_count, add_tag_handler, &tag_builder);
+			sprintf(track_name, SACD_TRACKXXX_FMT, 'M', track + 1, suffix);
+			tail = list.emplace_after(tail, track_name, tag_builder.Commit());
+		}
+	}
+	return list;
 }
 
 static void
@@ -233,7 +249,7 @@ bit_reverse_buffer(uint8_t* p, uint8_t* end) {
 }
 
 static void
-sacdiso_file_decode(Decoder& decoder, Path path_fs) {
+sacdiso_file_decode(DecoderClient &client, Path path_fs) {
 	string path_container = get_container_path(path_fs.c_str());
 	if (!sacdiso_update_toc(path_container.c_str())) {
 		return;
@@ -243,16 +259,19 @@ sacdiso_file_decode(Decoder& decoder, Path path_fs) {
 	// initialize reader
 	sacd_reader->set_emaster(param_edited_master);
 	unsigned twoch_count = sacd_reader->get_tracks(AREA_TWOCH);
+	unsigned mulch_count = sacd_reader->get_tracks(AREA_MULCH);
 	if (track < twoch_count) {
-		if (!sacd_reader->select_track(track, AREA_TWOCH, 0)) {
+		sacd_reader->select_area(AREA_TWOCH);
+		if (!sacd_reader->select_track(track, AREA_TWOCH)) {
 			LogError(sacdiso_domain, "cannot select track in stereo area");
 			return;
 		}
 	}
 	else {
 		track -= twoch_count;
-		if (track < sacd_reader->get_tracks(AREA_MULCH)) {
-			if (!sacd_reader->select_track(track, AREA_MULCH, 0)) {
+		if (track < mulch_count) {
+			sacd_reader->select_area(AREA_MULCH);
+			if (!sacd_reader->select_track(track, AREA_MULCH)) {
 				LogError(sacdiso_domain, "cannot select track in multichannel area");
 				return;
 			}
@@ -271,7 +290,7 @@ sacdiso_file_decode(Decoder& decoder, Path path_fs) {
 	// initialize decoder
 	AudioFormat audio_format = CheckAudioFormat(dsd_samplerate / 8, SampleFormat::DSD, dsd_channels);
 	SongTime songtime = SongTime::FromS(sacd_reader->get_duration(track));
-	decoder_initialized(decoder, audio_format, true, songtime);
+	client.Ready(audio_format, true, songtime);
 
 	// play
 	uint8_t* dsd_data;
@@ -279,7 +298,7 @@ sacdiso_file_decode(Decoder& decoder, Path path_fs) {
 	size_t dsd_size = 0;
 	size_t dst_size = 0;
 	dst_decoder_t* dst_decoder = nullptr;
-	DecoderCommand cmd = decoder_get_command(decoder);
+	auto cmd = client.GetCommand();
 	for (;;) {
 		int slot_nr = dst_decoder ? dst_decoder->get_slot_nr() : 0;
 		dsd_data = dsd_buf.data() + dsd_buf_size * slot_nr;
@@ -314,7 +333,7 @@ sacdiso_file_decode(Decoder& decoder, Path path_fs) {
 					if (param_lsbitfirst) {
 						bit_reverse_buffer(dsd_data, dsd_data + dsd_size);
 					}
-					cmd = decoder_data(decoder, nullptr, dsd_data, dsd_size, dsd_samplerate / 1000);
+					cmd = client.SubmitData(nullptr, dsd_data, dsd_size, dsd_samplerate / 1000);
 				}
 			}
 		}
@@ -331,7 +350,7 @@ sacdiso_file_decode(Decoder& decoder, Path path_fs) {
 					if (param_lsbitfirst) {
 						bit_reverse_buffer(dsd_data, dsd_data + dsd_size);
 					}
-					cmd = decoder_data(decoder, nullptr, dsd_data, dsd_size, dsd_samplerate / 1000);
+					cmd = client.SubmitData(nullptr, dsd_data, dsd_size, dsd_samplerate / 1000);
 					if (cmd == DecoderCommand::STOP || cmd == DecoderCommand::SEEK) {
 						break;
 					}
@@ -346,14 +365,14 @@ sacdiso_file_decode(Decoder& decoder, Path path_fs) {
 			break;
 		}
 		if (cmd == DecoderCommand::SEEK) {
-			double seconds = decoder_seek_time(decoder).ToDoubleS();
+			double seconds = client.GetSeekTime().ToDoubleS();
 			if (sacd_reader->seek(seconds)) {
-				decoder_command_finished(decoder);
+				client.CommandFinished();
 			}
 			else {
-				decoder_seek_error(decoder);
+				client.SeekError();
 			}
-			cmd = decoder_get_command(decoder);
+			cmd = client.GetCommand();
 		}
 	}
 	if (dst_decoder) {
@@ -363,7 +382,7 @@ sacdiso_file_decode(Decoder& decoder, Path path_fs) {
 }
 
 static bool
-sacdiso_scan_file(Path path_fs, const struct TagHandler& handler, void* handler_ctx) {
+sacdiso_scan_file(Path path_fs, const TagHandler& handler, void* handler_ctx) {
 	string path_container = get_container_path(path_fs.c_str());
 	if (path_container.empty()) {
 		return false;
@@ -371,8 +390,8 @@ sacdiso_scan_file(Path path_fs, const struct TagHandler& handler, void* handler_
 	if (!sacdiso_update_toc(path_container.c_str())) {
 		return false;
 	}
-	unsigned track = get_subsong(path_fs.c_str());
-	unsigned track_sacd = track; // pass correct track to sacd_metabase
+	unsigned track_index = get_subsong(path_fs.c_str());
+	unsigned track = track_index;
 	unsigned twoch_count = sacd_reader->get_tracks(AREA_TWOCH);
 	unsigned mulch_count = sacd_reader->get_tracks(AREA_MULCH);
 	if (track < twoch_count) {
@@ -388,12 +407,7 @@ sacdiso_scan_file(Path path_fs, const struct TagHandler& handler, void* handler_
 			return false;
 		}
 	}
-	string tag_value = to_string(track + 1);
-	tag_handler_invoke_tag(handler, handler_ctx, TAG_TRACK, tag_value.c_str());
-	tag_handler_invoke_duration(handler, handler_ctx, SongTime::FromS(sacd_reader->get_duration(track)));
-	if (!sacd_metabase || (sacd_metabase && !sacd_metabase->get_info(track_sacd, handler, handler_ctx))) {
-		sacd_reader->get_info(track, handler, handler_ctx);
-	}
+	sacdiso_scan_info(track, track_index, handler, handler_ctx);
 	return true;
 }
 

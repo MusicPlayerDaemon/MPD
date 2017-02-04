@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -19,32 +19,25 @@
 
 #include "config.h"
 #include "ReplayGainInfo.hxx"
+#include "ReplayGainConfig.hxx"
 
 #include <math.h>
 
 float
-ReplayGainTuple::CalculateScale(float preamp, float missing_preamp,
-				bool peak_limit) const
+ReplayGainTuple::CalculateScale(const ReplayGainConfig &config) const
 {
 	float scale;
 
 	if (IsDefined()) {
 		scale = pow(10.0, gain / 20.0);
-		scale *= preamp;
+		scale *= config.preamp;
 		if (scale > 15.0)
 			scale = 15.0;
 
-		if (peak_limit && scale * peak > 1.0)
+		if (config.limit && scale * peak > 1.0)
 			scale = 1.0 / peak;
 	} else
-		scale = missing_preamp;
+		scale = config.missing_preamp;
 
 	return scale;
-}
-
-void
-ReplayGainInfo::Complete()
-{
-	if (!tuples[REPLAY_GAIN_ALBUM].IsDefined())
-		tuples[REPLAY_GAIN_ALBUM] = tuples[REPLAY_GAIN_TRACK];
 }

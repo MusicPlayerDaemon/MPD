@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -21,28 +21,18 @@
 #define PCM_EXPORT_HXX
 
 #include "check.h"
+#include "SampleFormat.hxx"
 #include "PcmBuffer.hxx"
-#include "AudioFormat.hxx"
 
 template<typename T> struct ConstBuffer;
+struct AudioFormat;
 
 /**
  * An object that handles export of PCM samples to some instance
  * outside of MPD.  It has a few more options to tweak the binary
  * representation which are not supported by the pcm_convert library.
  */
-struct PcmExport {
-	struct Params {
-		bool alsa_channel_order = false;
-#ifdef ENABLE_DSD
-		bool dsd_u32 = false;
-		bool dop = false;
-#endif
-		bool shift8 = false;
-		bool pack24 = false;
-		bool reverse_endian = false;
-	};
-
+class PcmExport {
 	/**
 	 * This buffer is used to reorder channels.
 	 *
@@ -91,6 +81,11 @@ struct PcmExport {
 
 #ifdef ENABLE_DSD
 	/**
+	 * Convert DSD (U8) to DSD_U16?
+	 */
+	bool dsd_u16;
+
+	/**
 	 * Convert DSD (U8) to DSD_U32?
 	 */
 	bool dsd_u32;
@@ -121,6 +116,34 @@ struct PcmExport {
 	 */
 	uint8_t reverse_endian;
 
+public:
+	struct Params {
+		bool alsa_channel_order = false;
+#ifdef ENABLE_DSD
+		bool dsd_u16 = false;
+		bool dsd_u32 = false;
+		bool dop = false;
+#endif
+		bool shift8 = false;
+		bool pack24 = false;
+		bool reverse_endian = false;
+
+		/**
+		 * Calculate the output sample rate, given a specific input
+		 * sample rate.  Usually, both are the same; however, with
+		 * DSD_U32, four input bytes (= 4 * 8 bits) are combined to
+		 * one output word (32 bits), dividing the sample rate by 4.
+		 */
+		gcc_pure
+		unsigned CalcOutputSampleRate(unsigned input_sample_rate) const;
+
+		/**
+		 * The inverse of CalcOutputSampleRate().
+		 */
+		gcc_pure
+		unsigned CalcInputSampleRate(unsigned output_sample_rate) const;
+	};
+
 	/**
 	 * Open the object.
 	 *
@@ -133,6 +156,12 @@ struct PcmExport {
 	 */
 	void Open(SampleFormat sample_format, unsigned channels,
 		  Params params);
+
+	/**
+	 * Reset the filter's state, e.g. drop/flush buffers.
+	 */
+	void Reset() {
+	}
 
 	/**
 	 * Calculate the size of one output frame.

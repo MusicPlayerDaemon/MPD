@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -108,8 +108,8 @@ public:
 	bool Unmount(const char *uri);
 
 	/* virtual methods from class Database */
-	virtual void Open() override;
-	virtual void Close() override;
+	void Open() override;
+	void Close() override;
 
 	const LightSong *GetSong(const char *uri_utf8) const override;
 	void ReturnSong(const LightSong *song) const override;
@@ -125,7 +125,7 @@ public:
 
 	DatabaseStats GetStats(const DatabaseSelection &selection) const override;
 
-	virtual time_t GetUpdateStamp() const override {
+	time_t GetUpdateStamp() const override {
 		return mtime;
 	}
 

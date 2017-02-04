@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -27,19 +27,37 @@
 Partition::Partition(Instance &_instance,
 		     unsigned max_length,
 		     unsigned buffer_chunks,
-		     unsigned buffered_before_play)
+		     unsigned buffered_before_play,
+		     AudioFormat configured_audio_format,
+		     const ReplayGainConfig &replay_gain_config)
 	:instance(_instance),
 	 global_events(instance.event_loop, BIND_THIS_METHOD(OnGlobalEvent)),
 	 playlist(max_length, *this),
 	 outputs(*this),
-	 pc(*this, outputs, buffer_chunks, buffered_before_play)
+	 pc(*this, outputs, buffer_chunks, buffered_before_play,
+	    configured_audio_format, replay_gain_config)
 {
+	UpdateEffectiveReplayGainMode();
 }
 
 void
 Partition::EmitIdle(unsigned mask)
 {
 	instance.EmitIdle(mask);
+}
+
+void
+Partition::UpdateEffectiveReplayGainMode()
+{
+	auto mode = replay_gain_mode;
+	if (mode == ReplayGainMode::AUTO)
+	    mode = playlist.queue.random
+		    ? ReplayGainMode::TRACK
+		    : ReplayGainMode::ALBUM;
+
+	pc.LockSetReplayGainMode(mode);
+
+	outputs.SetReplayGainMode(mode);
 }
 
 #ifdef ENABLE_DATABASE

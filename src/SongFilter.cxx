@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -25,8 +25,11 @@
 #include "util/ConstBuffer.hxx"
 #include "util/StringAPI.hxx"
 #include "util/ASCII.hxx"
+#include "util/TimeParser.hxx"
 #include "util/UriUtil.hxx"
 #include "lib/icu/Collate.hxx"
+
+#include <stdexcept>
 
 #include <assert.h>
 #include <stdlib.h>
@@ -180,24 +183,6 @@ SongFilter::~SongFilter()
 	/* this destructor exists here just so it won't get inlined */
 }
 
-#if !defined(__GLIBC__) && !defined(WIN32)
-
-/**
- * Determine the time zone offset in a portable way.
- */
-gcc_const
-static time_t
-GetTimeZoneOffset()
-{
-	time_t t = 1234567890;
-	struct tm tm;
-	tm.tm_isdst = 0;
-	gmtime_r(&t, &tm);
-	return t - mktime(&tm);
-}
-
-#endif
-
 gcc_pure
 static time_t
 ParseTimeStamp(const char *s)
@@ -210,26 +195,13 @@ ParseTimeStamp(const char *s)
 		/* it's an integral UNIX time stamp */
 		return (time_t)value;
 
-#ifdef WIN32
-	/* TODO: emulate strptime()? */
-	return 0;
-#else
-	/* try ISO 8601 */
-
-	struct tm tm;
-	const char *end = strptime(s, "%FT%TZ", &tm);
-	if (end == nullptr || *end != 0)
+	try {
+		/* try ISO 8601 */
+		const auto t = ParseTimePoint(s, "%FT%TZ");
+		return std::chrono::system_clock::to_time_t(t);
+	} catch (const std::runtime_error &) {
 		return 0;
-
-#ifdef __GLIBC__
-	/* timegm() is a GNU extension */
-	return timegm(&tm);
-#else
-	tm.tm_isdst = 0;
-	return mktime(&tm) + GetTimeZoneOffset();
-#endif /* !__GLIBC__ */
-
-#endif /* !WIN32 */
+	}
 }
 
 bool

@@ -65,7 +65,7 @@ public:
 		CPPUNIT_ASSERT(ris != sis);
 		CPPUNIT_ASSERT(ris != nullptr);
 
-		const ScopeLock protect(mutex);
+		const std::lock_guard<Mutex> protect(mutex);
 
 		ris->Update();
 		CPPUNIT_ASSERT(ris->IsReady());

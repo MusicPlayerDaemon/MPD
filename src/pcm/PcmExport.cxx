@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -19,12 +19,15 @@
 
 #include "config.h"
 #include "PcmExport.hxx"
+#include "AudioFormat.hxx"
 #include "Order.hxx"
 #include "PcmPack.hxx"
 #include "util/ByteReverse.hxx"
 #include "util/ConstBuffer.hxx"
 
 #ifdef ENABLE_DSD
+#include "Dsd16.hxx"
+#include "Dsd32.hxx"
 #include "PcmDsd.hxx"
 #include "PcmDop.hxx"
 #endif
@@ -41,8 +44,14 @@ PcmExport::Open(SampleFormat sample_format, unsigned _channels,
 		: SampleFormat::UNDEFINED;
 
 #ifdef ENABLE_DSD
-	assert(!params.dsd_u32 || !params.dop);
+	assert((params.dsd_u16 + params.dsd_u32 + params.dop) <= 1);
 	assert(!params.dop || audio_valid_channel_count(_channels));
+
+	dsd_u16 = params.dsd_u16 && sample_format == SampleFormat::DSD;
+	if (dsd_u16)
+		/* after the conversion to DSD_U16, the DSD samples
+		   are stuffed inside fake 16 bit samples */
+		sample_format = SampleFormat::S16;
 
 	dsd_u32 = params.dsd_u32 && sample_format == SampleFormat::DSD;
 	if (dsd_u32)
@@ -55,8 +64,6 @@ PcmExport::Open(SampleFormat sample_format, unsigned _channels,
 		/* after the conversion to DoP, the DSD
 		   samples are stuffed inside fake 24 bit samples */
 		sample_format = SampleFormat::S24_P32;
-#else
-	(void)_channels;
 #endif
 
 	shift8 = params.shift8 && sample_format == SampleFormat::S24_P32;
@@ -84,6 +91,9 @@ PcmExport::GetFrameSize(const AudioFormat &audio_format) const
 		return audio_format.channels * 3;
 
 #ifdef ENABLE_DSD
+	if (dsd_u16)
+		return channels * 2;
+
 	if (dsd_u32)
 		return channels * 4;
 
@@ -98,6 +108,46 @@ PcmExport::GetFrameSize(const AudioFormat &audio_format) const
 	return audio_format.GetFrameSize();
 }
 
+unsigned
+PcmExport::Params::CalcOutputSampleRate(unsigned sample_rate) const
+{
+#ifdef ENABLE_DSD
+	if (dsd_u16)
+		/* DSD_U16 combines two 8-bit "samples" in one 16-bit
+		   "sample" */
+		sample_rate /= 2;
+
+	if (dsd_u32)
+		/* DSD_U32 combines four 8-bit "samples" in one 32-bit
+		   "sample" */
+		sample_rate /= 4;
+
+	if (dop)
+		/* DoP packs two 8-bit "samples" in one 24-bit
+		   "sample" */
+		sample_rate /= 2;
+#endif
+
+	return sample_rate;
+}
+
+unsigned
+PcmExport::Params::CalcInputSampleRate(unsigned sample_rate) const
+{
+#ifdef ENABLE_DSD
+	if (dsd_u16)
+		sample_rate *= 2;
+
+	if (dsd_u32)
+		sample_rate *= 4;
+
+	if (dop)
+		sample_rate *= 2;
+#endif
+
+	return sample_rate;
+}
+
 ConstBuffer<void>
 PcmExport::Export(ConstBuffer<void> data)
 {
@@ -106,6 +156,11 @@ PcmExport::Export(ConstBuffer<void> data)
 					  alsa_channel_order, channels);
 
 #ifdef ENABLE_DSD
+	if (dsd_u16)
+		data = Dsd8To16(dop_buffer, channels,
+				ConstBuffer<uint8_t>::FromVoid(data))
+			.ToVoid();
+
 	if (dsd_u32)
 		data = Dsd8To32(dop_buffer, channels,
 				ConstBuffer<uint8_t>::FromVoid(data))

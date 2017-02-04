@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -19,8 +19,6 @@
 
 #include "config.h"
 #include "Loop.hxx"
-
-#include "system/Clock.hxx"
 #include "TimeoutMonitor.hxx"
 #include "SocketMonitor.hxx"
 #include "IdleMonitor.hxx"
@@ -29,13 +27,7 @@
 #include <algorithm>
 
 EventLoop::EventLoop()
-	:SocketMonitor(*this),
-	 now_ms(::MonotonicClockMS()),
-	 quit(false), busy(true),
-#ifndef NDEBUG
-	 virgin(true),
-#endif
-	 thread(ThreadId::Null())
+	:SocketMonitor(*this)
 {
 	SocketMonitor::Open(wake_fd.Get());
 	SocketMonitor::Schedule(SocketMonitor::READ);
@@ -98,13 +90,13 @@ EventLoop::RemoveIdle(IdleMonitor &i)
 }
 
 void
-EventLoop::AddTimer(TimeoutMonitor &t, unsigned ms)
+EventLoop::AddTimer(TimeoutMonitor &t, std::chrono::steady_clock::duration d)
 {
 	/* can't use IsInsideOrVirgin() here because libavahi-client
 	   modifies the timeout during avahi_client_free() */
 	assert(IsInsideOrNull());
 
-	timers.insert(TimerRecord(t, now_ms + ms));
+	timers.insert(TimerRecord(t, now + d));
 	again = true;
 }
 
@@ -119,6 +111,19 @@ EventLoop::CancelTimer(TimeoutMonitor &t)
 			return;
 		}
 	}
+}
+
+/**
+ * Convert the given timeout specification to a milliseconds integer,
+ * to be used by functions like poll() and epoll_wait().  Any negative
+ * value (= never times out) is translated to the magic value -1.
+ */
+static constexpr int
+ExportTimeoutMS(std::chrono::steady_clock::duration timeout)
+{
+	return timeout >= timeout.zero()
+		? int(std::chrono::duration_cast<std::chrono::milliseconds>(timeout).count())
+		: -1;
 }
 
 void
@@ -137,21 +142,21 @@ EventLoop::Run()
 	assert(busy);
 
 	do {
-		now_ms = ::MonotonicClockMS();
+		now = std::chrono::steady_clock::now();
 		again = false;
 
 		/* invoke timers */
 
-		int timeout_ms;
+		std::chrono::steady_clock::duration timeout;
 		while (true) {
 			auto i = timers.begin();
 			if (i == timers.end()) {
-				timeout_ms = -1;
+				timeout = std::chrono::steady_clock::duration(-1);
 				break;
 			}
 
-			timeout_ms = i->due_ms - now_ms;
-			if (timeout_ms > 0)
+			timeout = i->due - now;
+			if (timeout > timeout.zero())
 				break;
 
 			TimeoutMonitor &m = i->timer;
@@ -190,9 +195,9 @@ EventLoop::Run()
 
 		/* wait for new event */
 
-		poll_group.ReadEvents(poll_result, timeout_ms);
+		poll_group.ReadEvents(poll_result, ExportTimeoutMS(timeout));
 
-		now_ms = ::MonotonicClockMS();
+		now = std::chrono::steady_clock::now();
 
 		mutex.lock();
 		busy = true;
@@ -249,7 +254,7 @@ EventLoop::AddDeferred(DeferredMonitor &d)
 void
 EventLoop::RemoveDeferred(DeferredMonitor &d)
 {
-	const ScopeLock protect(mutex);
+	const std::lock_guard<Mutex> protect(mutex);
 
 	if (!d.pending) {
 		assert(std::find(deferred.begin(),

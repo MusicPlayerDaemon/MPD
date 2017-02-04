@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -22,17 +22,14 @@
 
 #include "Compiler.h"
 
+#include <forward_list>
+
 struct ConfigBlock;
 class InputStream;
 struct TagHandler;
 class Path;
-template<typename T> class AllocatedString;
-
-/**
- * Opaque handle which the decoder plugin passes to the functions in
- * this header.
- */
-struct Decoder;
+class DecoderClient;
+class DetachedSong;
 
 struct DecoderPlugin {
 	const char *name;
@@ -60,14 +57,14 @@ struct DecoderPlugin {
 	 * possible, it is recommended to implement this method,
 	 * because it is more versatile.
 	 */
-	void (*stream_decode)(Decoder &decoder, InputStream &is);
+	void (*stream_decode)(DecoderClient &client, InputStream &is);
 
 	/**
 	 * Decode a local file.
 	 *
 	 * Either implement this method or stream_decode().
 	 */
-	void (*file_decode)(Decoder &decoder, Path path_fs);
+	void (*file_decode)(DecoderClient &client, Path path_fs);
 
 	/**
 	 * Scan metadata of a file.
@@ -90,14 +87,13 @@ struct DecoderPlugin {
 	/**
 	 * @brief Return a "virtual" filename for subtracks in
 	 * container formats like flac
-	 * @param const char* pathname full pathname for the file on fs
-	 * @param const unsigned int tnum track number
+	 * @param path_fs full pathname for the file on fs
 	 *
-	 * @return nullptr if there are no multiple files
-	 * a filename for every single track according to tnum (param 2)
+	 * @return an empty list if there are no multiple files
+	 * a filename for every single track;
 	 * do not include full pathname here, just the "virtual" file
 	 */
-	AllocatedString<char> (*container_scan)(Path path_fs, unsigned tnum);
+	std::forward_list<DetachedSong> (*container_scan)(Path path_fs);
 
 	/* last element in these arrays must always be a nullptr: */
 	const char *const*suffixes;
@@ -127,16 +123,16 @@ struct DecoderPlugin {
 	/**
 	 * Decode a stream.
 	 */
-	void StreamDecode(Decoder &decoder, InputStream &is) const {
-		stream_decode(decoder, is);
+	void StreamDecode(DecoderClient &client, InputStream &is) const {
+		stream_decode(client, is);
 	}
 
 	/**
 	 * Decode a file.
 	 */
 	template<typename P>
-	void FileDecode(Decoder &decoder, P path_fs) const {
-		file_decode(decoder, path_fs);
+	void FileDecode(DecoderClient &client, P path_fs) const {
+		file_decode(client, path_fs);
 	}
 
 	/**

@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -51,14 +51,14 @@ audiofile_init(const ConfigBlock &)
 }
 
 struct AudioFileInputStream {
-	Decoder *const decoder;
+	DecoderClient *const client;
 	InputStream &is;
 
 	size_t Read(void *buffer, size_t size) {
 		/* libaudiofile does not like partial reads at all,
 		   and will abort playback; therefore always force full
 		   reads */
-		return decoder_read_full(decoder, is, buffer, size)
+		return decoder_read_full(client, is, buffer, size)
 			? size
 			: 0;
 	}
@@ -181,14 +181,14 @@ audiofile_setup_sample_format(AFfilehandle af_fp)
 }
 
 static void
-audiofile_stream_decode(Decoder &decoder, InputStream &is)
+audiofile_stream_decode(DecoderClient &client, InputStream &is)
 {
 	if (!is.IsSeekable() || !is.KnownSize()) {
 		LogWarning(audiofile_domain, "not seekable");
 		return;
 	}
 
-	AudioFileInputStream afis{&decoder, is};
+	AudioFileInputStream afis{&client, is};
 	AFvirtualfile *const vf = setup_virtual_fops(afis);
 
 	const AFfilehandle fh = afOpenVirtualFile(vf, "r", nullptr);
@@ -210,7 +210,7 @@ audiofile_stream_decode(Decoder &decoder, InputStream &is)
 	const unsigned frame_size = (unsigned)
 		afGetVirtualFrameSize(fh, AF_DEFAULT_TRACK, true);
 
-	decoder_initialized(decoder, audio_format, true, total_time);
+	client.Ready(audio_format, true, total_time);
 
 	DecoderCommand cmd;
 	do {
@@ -223,15 +223,15 @@ audiofile_stream_decode(Decoder &decoder, InputStream &is)
 		if (nframes <= 0)
 			break;
 
-		cmd = decoder_data(decoder, nullptr,
-				   chunk, nframes * frame_size,
-				   kbit_rate);
+		cmd = client.SubmitData(nullptr,
+					chunk, nframes * frame_size,
+					kbit_rate);
 
 		if (cmd == DecoderCommand::SEEK) {
-			AFframecount frame = decoder_seek_where_frame(decoder);
+			AFframecount frame = client.GetSeekFrame();
 			afSeekFrame(fh, AF_DEFAULT_TRACK, frame);
 
-			decoder_command_finished(decoder);
+			client.CommandFinished();
 			cmd = DecoderCommand::NONE;
 		}
 	} while (cmd == DecoderCommand::NONE);

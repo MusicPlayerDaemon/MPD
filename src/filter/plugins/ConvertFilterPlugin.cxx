@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -52,13 +52,15 @@ public:
 
 	void Set(const AudioFormat &_out_audio_format);
 
+	void Reset() override {
+		state.Reset();
+	}
+
 	ConstBuffer<void> FilterPCM(ConstBuffer<void> src) override;
 };
 
 class PreparedConvertFilter final : public PreparedFilter {
 public:
-	void Set(const AudioFormat &_out_audio_format);
-
 	Filter *Open(AudioFormat &af) override;
 };
 
@@ -125,7 +127,7 @@ ConvertFilter::FilterPCM(ConstBuffer<void> src)
 	return state.Convert(src);
 }
 
-const struct filter_plugin convert_filter_plugin = {
+const FilterPlugin convert_filter_plugin = {
 	"convert",
 	convert_filter_init,
 };

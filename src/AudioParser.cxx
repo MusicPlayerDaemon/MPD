@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -136,6 +136,26 @@ ParseAudioFormat(const char *src, bool mask)
 {
 	AudioFormat dest;
 	dest.Clear();
+
+	if (strncmp(src, "dsd", 3) == 0) {
+		/* allow format specifications such as "dsd64" which
+		   implies the sample rate */
+
+		char *endptr;
+		auto dsd = strtoul(src + 3, &endptr, 10);
+		if (endptr > src + 3 && *endptr == ':' &&
+		    dsd >= 32 && dsd <= 4096 && dsd % 2 == 0) {
+			dest.sample_rate = dsd * 44100 / 8;
+			dest.format = SampleFormat::DSD;
+
+			src = endptr + 1;
+			dest.channels = ParseChannelCount(src, mask, &src);
+			if (*src != 0)
+				throw FormatRuntimeError("Extra data after channel count: %s", src);
+
+			return dest;
+		}
+	}
 
 	/* parse sample rate */
 

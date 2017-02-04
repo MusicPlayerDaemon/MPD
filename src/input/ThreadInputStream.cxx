@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -29,7 +29,7 @@
 ThreadInputStream::~ThreadInputStream()
 {
 	{
-		const ScopeLock lock(mutex);
+		const std::lock_guard<Mutex> lock(mutex);
 		close = true;
 		wake_cond.signal();
 	}
@@ -62,7 +62,7 @@ ThreadInputStream::ThreadFunc()
 {
 	FormatThreadName("input:%s", plugin);
 
-	const ScopeLock lock(mutex);
+	const std::lock_guard<Mutex> lock(mutex);
 
 	try {
 		Open();

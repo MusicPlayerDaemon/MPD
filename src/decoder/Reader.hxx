@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -24,7 +24,7 @@
 #include "fs/io/Reader.hxx"
 #include "Compiler.h"
 
-struct Decoder;
+class DecoderClient;
 class InputStream;
 
 /**
@@ -32,15 +32,15 @@ class InputStream;
  * interface.
  */
 class DecoderReader final : public Reader {
-	Decoder &decoder;
+	DecoderClient &client;
 	InputStream &is;
 
 public:
-	DecoderReader(Decoder &_decoder, InputStream &_is)
-		:decoder(_decoder), is(_is) {}
+	DecoderReader(DecoderClient &_client, InputStream &_is)
+		:client(_client), is(_is) {}
 
-	Decoder &GetDecoder() {
-		return decoder;
+	DecoderClient &GetClient() {
+		return client;
 	}
 
 	InputStream &GetInputStream() {

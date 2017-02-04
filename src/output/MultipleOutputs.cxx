@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -19,17 +19,16 @@
 
 #include "config.h"
 #include "MultipleOutputs.hxx"
-#include "player/Control.hxx"
 #include "Internal.hxx"
 #include "Domain.hxx"
 #include "MusicBuffer.hxx"
 #include "MusicPipe.hxx"
 #include "MusicChunk.hxx"
-#include "system/FatalError.hxx"
 #include "config/Block.hxx"
 #include "config/ConfigGlobal.hxx"
 #include "config/ConfigOption.hxx"
 #include "notify.hxx"
+#include "util/RuntimeError.hxx"
 
 #include <stdexcept>
 
@@ -43,38 +42,43 @@ MultipleOutputs::MultipleOutputs(MixerListener &_mixer_listener)
 
 MultipleOutputs::~MultipleOutputs()
 {
-	for (auto i : outputs) {
-		i->LockDisableWait();
-		i->Finish();
-	}
+	/* parallel destruction */
+	for (auto i : outputs)
+		i->BeginDestroy();
+	for (auto i : outputs)
+		i->FinishDestroy();
 }
 
 static AudioOutput *
-LoadOutput(EventLoop &event_loop, MixerListener &mixer_listener,
-	   PlayerControl &pc, const ConfigBlock &block)
+LoadOutput(EventLoop &event_loop,
+	   const ReplayGainConfig &replay_gain_config,
+	   MixerListener &mixer_listener,
+	   AudioOutputClient &client, const ConfigBlock &block)
 try {
-	return audio_output_new(event_loop, block,
+	return audio_output_new(event_loop, replay_gain_config, block,
 				mixer_listener,
-				pc);
+				client);
 } catch (const std::runtime_error &e) {
 	if (block.line > 0)
-		FormatFatalError("line %i: %s",
-				 block.line,
-				 e.what());
+		std::throw_with_nested(FormatRuntimeError("Failed to configure output in line %i",
+							  block.line));
 	else
-		FatalError(e.what());
+		throw;
 }
 
 void
-MultipleOutputs::Configure(EventLoop &event_loop, PlayerControl &pc)
+MultipleOutputs::Configure(EventLoop &event_loop,
+			   const ReplayGainConfig &replay_gain_config,
+			   AudioOutputClient &client)
 {
 	for (const auto *param = config_get_block(ConfigBlockOption::AUDIO_OUTPUT);
 	     param != nullptr; param = param->next) {
-		auto output = LoadOutput(event_loop, mixer_listener,
-					 pc, *param);
-		if (FindByName(output->name) != nullptr)
-			FormatFatalError("output devices with identical "
-					 "names: %s", output->name);
+		auto output = LoadOutput(event_loop, replay_gain_config,
+					 mixer_listener,
+					 client, *param);
+		if (FindByName(output->GetName()) != nullptr)
+			throw FormatRuntimeError("output devices with identical "
+						 "names: %s", output->GetName());
 
 		outputs.push_back(output);
 	}
@@ -82,8 +86,9 @@ MultipleOutputs::Configure(EventLoop &event_loop, PlayerControl &pc)
 	if (outputs.empty()) {
 		/* auto-detect device */
 		const ConfigBlock empty;
-		auto output = LoadOutput(event_loop, mixer_listener,
-					 pc, empty);
+		auto output = LoadOutput(event_loop, replay_gain_config,
+					 mixer_listener,
+					 client, empty);
 		outputs.push_back(output);
 	}
 }
@@ -92,7 +97,7 @@ AudioOutput *
 MultipleOutputs::FindByName(const char *name) const
 {
 	for (auto i : outputs)
-		if (strcmp(i->name, name) == 0)
+		if (strcmp(i->GetName(), name) == 0)
 			return i;
 
 	return nullptr;
@@ -101,19 +106,16 @@ MultipleOutputs::FindByName(const char *name) const
 void
 MultipleOutputs::EnableDisable()
 {
+	/* parallel execution */
+
 	for (auto ao : outputs) {
-		bool enabled;
+		const std::lock_guard<Mutex> lock(ao->mutex);
+		ao->EnableDisableAsync();
+	}
 
-		ao->mutex.lock();
-		enabled = ao->really_enabled;
-		ao->mutex.unlock();
-
-		if (ao->enabled != enabled) {
-			if (ao->enabled)
-				ao->LockEnableWait();
-			else
-				ao->LockDisableWait();
-		}
+	for (auto ao : outputs) {
+		const std::lock_guard<Mutex> lock(ao->mutex);
+		ao->WaitForCommand();
 	}
 }
 
@@ -121,7 +123,7 @@ bool
 MultipleOutputs::AllFinished() const
 {
 	for (auto ao : outputs) {
-		const ScopeLock protect(ao->mutex);
+		const std::lock_guard<Mutex> protect(ao->mutex);
 		if (ao->IsOpen() && !ao->IsCommandFinished())
 			return false;
 	}
@@ -143,23 +145,8 @@ MultipleOutputs::AllowPlay()
 		ao->LockAllowPlay();
 }
 
-static void
-audio_output_reset_reopen(AudioOutput *ao)
-{
-	const ScopeLock protect(ao->mutex);
-
-	ao->fail_timer.Reset();
-}
-
-void
-MultipleOutputs::ResetReopen()
-{
-	for (auto ao : outputs)
-		audio_output_reset_reopen(ao);
-}
-
 bool
-MultipleOutputs::Update()
+MultipleOutputs::Update(bool force)
 {
 	bool ret = false;
 
@@ -167,7 +154,7 @@ MultipleOutputs::Update()
 		return false;
 
 	for (auto ao : outputs)
-		ret = ao->LockUpdate(input_audio_format, *pipe)
+		ret = ao->LockUpdate(input_audio_format, *pipe, force)
 			|| ret;
 
 	return ret;
@@ -188,7 +175,7 @@ MultipleOutputs::Play(MusicChunk *chunk)
 	assert(chunk != nullptr);
 	assert(chunk->CheckFormat(input_audio_format));
 
-	if (!Update())
+	if (!Update(false))
 		/* TODO: obtain real error */
 		throw std::runtime_error("Failed to open audio output");
 
@@ -222,16 +209,21 @@ MultipleOutputs::Open(const AudioFormat audio_format,
 
 	input_audio_format = audio_format;
 
-	ResetReopen();
 	EnableDisable();
-	Update();
+	Update(true);
+
+	std::exception_ptr first_error;
 
 	for (auto ao : outputs) {
-		if (ao->enabled)
+		const std::lock_guard<Mutex> lock(ao->mutex);
+
+		if (ao->IsEnabled())
 			enabled = true;
 
-		if (ao->open)
+		if (ao->IsOpen())
 			ret = true;
+		else if (!first_error)
+			first_error = ao->GetLastError();
 	}
 
 	if (!enabled) {
@@ -241,51 +233,27 @@ MultipleOutputs::Open(const AudioFormat audio_format,
 	} else if (!ret) {
 		/* close all devices if there was an error */
 		Close();
-		/* TODO: obtain real error */
-		throw std::runtime_error("Failed to open audio output");
+
+		if (first_error)
+			/* we have details, so throw that */
+			std::rethrow_exception(first_error);
+		else
+			throw std::runtime_error("Failed to open audio output");
 	}
-}
-
-/**
- * Has the specified audio output already consumed this chunk?
- */
-gcc_pure
-static bool
-chunk_is_consumed_in(const AudioOutput *ao,
-		     gcc_unused const MusicPipe *pipe,
-		     const MusicChunk *chunk)
-{
-	if (!ao->open)
-		return true;
-
-	if (ao->current_chunk == nullptr)
-		return false;
-
-	assert(chunk == ao->current_chunk ||
-	       pipe->Contains(ao->current_chunk));
-
-	if (chunk != ao->current_chunk) {
-		assert(chunk->next != nullptr);
-		return true;
-	}
-
-	return ao->current_chunk_finished && chunk->next == nullptr;
 }
 
 bool
 MultipleOutputs::IsChunkConsumed(const MusicChunk *chunk) const
 {
-	for (auto ao : outputs) {
-		const ScopeLock protect(ao->mutex);
-		if (!chunk_is_consumed_in(ao, pipe, chunk))
+	for (auto ao : outputs)
+		if (!ao->LockIsChunkConsumed(*chunk))
 			return false;
-	}
 
 	return true;
 }
 
 inline void
-MultipleOutputs::ClearTailChunk(gcc_unused const MusicChunk *chunk,
+MultipleOutputs::ClearTailChunk(const MusicChunk *chunk,
 				bool *locked)
 {
 	assert(chunk->next == nullptr);
@@ -297,16 +265,14 @@ MultipleOutputs::ClearTailChunk(gcc_unused const MusicChunk *chunk,
 		/* this mutex will be unlocked by the caller when it's
 		   ready */
 		ao->mutex.lock();
-		locked[i] = ao->open;
+		locked[i] = ao->IsOpen();
 
 		if (!locked[i]) {
 			ao->mutex.unlock();
 			continue;
 		}
 
-		assert(ao->current_chunk == chunk);
-		assert(ao->current_chunk_finished);
-		ao->current_chunk = nullptr;
+		ao->ClearTailChunk(*chunk);
 	}
 }
 
@@ -358,26 +324,10 @@ MultipleOutputs::Check()
 	return 0;
 }
 
-bool
-MultipleOutputs::Wait(PlayerControl &pc, unsigned threshold)
-{
-	pc.Lock();
-
-	if (Check() < threshold) {
-		pc.Unlock();
-		return true;
-	}
-
-	pc.Wait();
-	pc.Unlock();
-
-	return Check() < threshold;
-}
-
 void
 MultipleOutputs::Pause()
 {
-	Update();
+	Update(false);
 
 	for (auto ao : outputs)
 		ao->LockPauseAsync();

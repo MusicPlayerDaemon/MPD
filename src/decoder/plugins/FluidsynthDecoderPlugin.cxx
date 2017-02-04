@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -87,7 +87,7 @@ fluidsynth_init(const ConfigBlock &block)
 }
 
 static void
-fluidsynth_file_decode(Decoder &decoder, Path path_fs)
+fluidsynth_file_decode(DecoderClient &client, Path path_fs)
 {
 	char setting_sample_rate[] = "synth.sample-rate";
 	/*
@@ -160,8 +160,7 @@ fluidsynth_file_decode(Decoder &decoder, Path path_fs)
 	   MPD core */
 
 	const AudioFormat audio_format(sample_rate, SampleFormat::S16, 2);
-	decoder_initialized(decoder, audio_format, false,
-			    SignedSongTime::Negative());
+	client.Ready(audio_format, false, SignedSongTime::Negative());
 
 	DecoderCommand cmd;
 	while (fluid_player_get_status(player) == FLUID_PLAYER_PLAYING) {
@@ -177,8 +176,7 @@ fluidsynth_file_decode(Decoder &decoder, Path path_fs)
 		if (ret != 0)
 			break;
 
-		cmd = decoder_data(decoder, nullptr, buffer, sizeof(buffer),
-				   0);
+		cmd = client.SubmitData(nullptr, buffer, sizeof(buffer), 0);
 		if (cmd != DecoderCommand::NONE)
 			break;
 	}

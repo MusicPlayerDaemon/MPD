@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -71,20 +71,19 @@ path_getfather(const std::string &s)
 
 std::list<std::string>
 stringToTokens(const std::string &str,
-	       const char *delims, bool skipinit)
+	       const char delim)
 {
 	std::list<std::string> tokens;
 
-	std::string::size_type startPos = 0;
+	std::string::size_type startPos = str.find_first_not_of(delim, 0);
 
 	// Skip initial delims, return empty if this eats all.
-	if (skipinit &&
-	    (startPos = str.find_first_not_of(delims, 0)) == std::string::npos)
+	if (startPos == std::string::npos)
 		return tokens;
 
 	while (startPos < str.size()) {
 		// Find next delimiter or end of string (end of token)
-		auto pos = str.find_first_of(delims, startPos);
+		auto pos = str.find_first_of(delim, startPos);
 
 		// Add token to the vector and adjust start
 		if (pos == std::string::npos) {

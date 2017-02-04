@@ -151,7 +151,7 @@ apt-get install g++ \
         <application>systemd</application> unit files: a "service"
         unit and a "socket" unit.  These will only be installed when
         <application>MPD</application> was configured with
-        <parameter>--with-systemdsystemunitdir=/lib/systemd</parameter>.
+        <parameter>--with-systemdsystemunitdir=/lib/systemd/system</parameter>.
       </para>
 
       <para>
@@ -167,10 +167,78 @@ systemctl start mpd.socket</programlisting>
         <varname>port</varname> settings.
       </para>
     </section>
+
+    <section id="systemd_user">
+      <title><filename>systemd</filename> user unit</title>
+
+      <para>
+        You can launch <application>MPD</application> as a
+        <filename>systemd</filename> user unit.  The service file will
+        only be installed when <application>MPD</application> was
+        configured with
+        <parameter>--with-systemduserunitdir=/usr/lib/systemd/user</parameter>
+        or
+        <parameter>--with-systemduserunitdir=$HOME/.local/share/systemd/user</parameter>.
+      </para>
+
+      <para>
+        Once the user unit is installed, you can start and stop
+        <application>MPD</application> like any other service:
+      </para>
+
+      <programlisting>systemctl --user start mpd</programlisting>
+
+      <para>
+        To auto-start <application>MPD</application> upon login, type:
+      </para>
+
+      <programlisting>systemctl --user enable mpd</programlisting>
+    </section>
   </chapter>
 
   <chapter id="config">
     <title>Configuration</title>
+
+    <section id="config_file">
+      <title>The Configuration File</title>
+
+      <para>
+        <application>MPD</application> reads its configuration from a
+        text file.  Usually, that is
+        <filename>/etc/mpd.conf</filename>, unless a different path is
+        specified on the command line.  If you run
+        <application>MPD</application> as a user daemon (and not as a
+        system daemon), the configuration is read from
+        <filename>$XDG_CONFIG_HOME/mpd/mpd.conf</filename> (usually
+        <filename>~/.config/mpd/mpd.conf</filename>).
+      </para>
+
+      <para>
+        Each line in the configuration file contains a setting name
+        and its value, e.g.:
+      </para>
+
+      <programlisting>connection_timeout "5"</programlisting>
+
+      <para>
+        For settings which specify a filesystem path, the tilde is
+        expanded:
+      </para>
+
+      <programlisting>music_directory "~/Music"</programlisting>
+
+      <para>
+        Some of the settings are grouped in blocks with curly braces,
+        e.g. per-plugin settings:
+      </para>
+
+      <programlisting>audio_output {
+    type "alsa"
+    name "My ALSA output"
+    device "iec958:CARD=Intel,DEV=0"
+    mixer_control "PCM"
+}</programlisting>
+    </section>
 
     <section id="config_music_directory">
       <title>Configuring the music directory</title>
@@ -454,8 +522,8 @@ systemctl start mpd.socket</programlisting>
       </para>
 
       <para>
-        To configure an audio output manually, add an
-        <varname>audio_output</varname> block to
+        To configure an audio output manually, add one or more
+        <varname>audio_output</varname> blocks to
         <filename>mpd.conf</filename>:
       </para>
 
@@ -508,10 +576,11 @@ systemctl start mpd.socket</programlisting>
               </entry>
               <entry>
                 <para>
-                  Always open the audio output with the specified audio
-                  format (samplerate:bits:channels), regardless of the
-                  format of the input file.  This is optional for most
-                  plugins.
+                  Always open the audio output with the specified
+                  audio format
+                  (<replaceable>samplerate:bits:channels</replaceable>),
+                  regardless of the format of the input file.  This is
+                  optional for most plugins.
                 </para>
                 <para>
                   Any of the three attributes may be an asterisk to
@@ -528,7 +597,20 @@ systemctl start mpd.socket</programlisting>
                   24 bit integer samples padded to 32 bit),
                   <varname>32</varname> (signed 32 bit integer
                   samples), <varname>f</varname> (32 bit floating
-                  point, -1.0 to 1.0).
+                  point, -1.0 to 1.0), "<varname>dsd</varname>" means
+                  DSD (Direct Stream Digital).  For DSD, there are
+                  special cases such as "<varname>dsd64</varname>",
+                  which allows you to omit the sample rate
+                  (e.g. <parameter>dsd512:2</parameter> for stereo
+                  DSD512, i.e. 22.5792 MHz).
+                </para>
+                <para>
+                  The sample rate is special for DSD:
+                  <application>MPD</application> counts the number of
+                  bytes, not bits.  Thus, a DSD "bit" rate of 22.5792
+                  MHz (DSD512) is 2822400 from
+                  <application>MPD</application>'s point of view
+                  (44100*512/8).
                 </para>
               </entry>
             </row>
@@ -540,7 +622,9 @@ systemctl start mpd.socket</programlisting>
               <entry>
                 Specifies whether this audio output is enabled when
                 <application>MPD</application> is started.  By
-                default, all audio outputs are enabled.
+                default, all audio outputs are enabled.  This is just
+                the default setting when there is no state file; with
+                a state file, the previous state is restored.
               </entry>
             </row>
             <row>
@@ -584,8 +668,10 @@ systemctl start mpd.socket</programlisting>
                 linkend="pulse_output">PulseAudio</link>), the
                 software mixer, the "null" mixer
                 (<parameter>null</parameter>; allows setting the
-                volume, but with no effect) or no mixer
-                (<parameter>none</parameter>).  By default, the
+                volume, but with no effect; this can be used as a
+                trick to implement an <link
+                linkend="external_mixer">external mixer</link>) or no
+                mixer (<parameter>none</parameter>).  By default, the
                 hardware mixer is used for devices which support it,
                 and none for the others.
               </entry>
@@ -670,9 +756,11 @@ systemctl start mpd.socket</programlisting>
       <title>Configuring playlist plugins</title>
 
       <para>
-        Playlist plugins are used to load remote playlists.  This is
-        not related to <application>MPD</application>'s playlist
-        directory.
+        Playlist plugins are used to load remote playlists (protocol
+        commands <command>load</command>,
+        <command>listplaylist</command> and
+        <command>listplaylistinfo</command>).  This is not related to
+        <application>MPD</application>'s playlist directory.
       </para>
 
       <para>
@@ -1185,6 +1273,19 @@ database {
         offer an interface to edit the queue.
       </para>
     </section>
+
+    <section id="stored_playlists">
+      <title>Stored Playlists</title>
+
+      <para>
+        Stored playlists are some kind of secondary playlists which
+        can be created, saved, edited and deleted by the client.  They
+        are addressed by their names.  Its contents can be loaded into
+        the queue, to be played back.  The
+        <varname>playlist_directory</varname> setting specifies where
+        those playlists are stored.
+      </para>
+    </section>
   </chapter>
 
   <chapter id="advanced_usage">
@@ -1357,6 +1458,291 @@ buffer_size: 16384</programlisting>
     </section>
   </chapter>
 
+  <chapter id="client_hacks">
+    <title>Client Hacks</title>
+
+    <section id="external_mixer">
+      <title>External Mixer</title>
+
+      <para>
+        The setting '<varname>mixer_type</varname>
+        "<parameter>null</parameter>"' asks
+        <application>MPD</application> to pretend that there is a
+        mixer, but not actually do something.  This allows you to
+        implement a <application>MPD</application> client which
+        listens for <varname>mixer</varname> events, queries the
+        current (fake) volume, and uses it to program an external
+        mixer.  For example, your client can forward this setting to
+        your amplifier.
+      </para>
+    </section>
+  </chapter>
+
+  <chapter id="troubleshooting">
+    <title>Troubleshooting</title>
+
+    <section id="troubleshooting_start">
+      <title>Where to start</title>
+
+      <para>
+        Make sure you have the latest <application>MPD</application>
+        version (via <command>mpd --version</command>, not
+        <command>mpc version</command>).  All the time, bugs are found
+        and fixed, and your problem might be a bug that is fixed
+        already.  Do not ask for help unless you have the latest
+        <application>MPD</application> version.  The most common
+        excuse is when your distribution ships an old
+        <application>MPD</application> version - in that case, please
+        ask your distribution for help, and not the
+        <application>MPD</application> project.
+      </para>
+
+      <para>
+        Check the log file.  Configure '<varname>log_level</varname>
+        "<parameter>verbose</parameter>"' or pass
+        <parameter>--verbose</parameter> to <filename>mpd</filename>.
+      </para>
+
+      <para>
+        Sometimes, it is helpful to run <application>MPD</application>
+        in a terminal and follow what happens.  This is how to do it:
+      </para>
+
+      <programlisting>mpd --stdout --no-daemon --verbose</programlisting>
+    </section>
+
+    <section id="support">
+      <title>Support</title>
+
+      <section id="help">
+        <title>Getting Help</title>
+
+        <para>
+          The <application>MPD</application> project runs <ulink
+          url="https://forum.musicpd.org/">a forum</ulink> and an IRC
+          channel (<varname>#mpd</varname> on Freenode) for requesting
+          help.  Visit <ulink url="https://www.musicpd.org/help/">the
+          <application>MPD</application> help page</ulink> for details
+          on how to get help.
+        </para>
+      </section>
+
+      <section id="faq">
+        <title>Common Problems</title>
+
+        <qandaset defaultlabel='qanda'>
+          <qandadiv>
+            <title>Database</title>
+
+            <qandaentry>
+              <question>
+                <para>
+                  I can't see my music in the
+                  <application>MPD</application> database!
+                </para>
+              </question>
+              <answer>
+                <itemizedlist>
+                  <listitem>
+                    <para>
+                      Check your <varname>music_directory</varname>
+                      setting.
+                    </para>
+                  </listitem>
+                </itemizedlist>
+                <itemizedlist>
+                  <listitem>
+                    <para>
+                      Does the <application>MPD</application> user
+                      have read permission on all music files, and
+                      read+execute permission on all music directories
+                      (and all of their parent directories)?
+                    </para>
+                  </listitem>
+                </itemizedlist>
+                <itemizedlist>
+                  <listitem>
+                    <para>
+                      Did you update the database?  (<command>mpc
+                      update</command>)
+                    </para>
+                  </listitem>
+                </itemizedlist>
+                <itemizedlist>
+                  <listitem>
+                    <para>
+                      Did you enable all relevant decoder plugins at
+                      compile time?  <command>mpd --version</command>
+                      will tell you.
+                    </para>
+                  </listitem>
+                </itemizedlist>
+              </answer>
+            </qandaentry>
+
+            <qandaentry>
+              <question>
+                <para>
+                  <application>MPD</application> doesn't read ID3
+                  tags!
+                </para>
+              </question>
+              <answer>
+                <para>
+                  You probably compiled <application>MPD</application>
+                  without <filename>libid3tag</filename>.
+                  <command>mpd --version</command> will tell you.
+                </para>
+              </answer>
+            </qandaentry>
+          </qandadiv>
+
+          <qandadiv>
+            <title>Playback</title>
+
+            <qandaentry>
+              <question>
+                <para>I can't hear music on my client!</para>
+              </question>
+              <answer>
+                <para>
+                  That problem usually follows a misunderstanding of the
+                  nature of <application>MPD</application>.
+                  <application>MPD</application> is a remote-controlled
+                  music player, not a music distribution system.
+                  Usually, the speakers are connected to the box where
+                  <application>MPD</application> runs, and the
+                  <application>MPD</application> client only sends
+                  control commands, but the client does not actually
+                  play your music.
+                </para>
+
+                <para>
+                  <application>MPD</application> has output plugins
+                  which allow hearing music on a remote host (such as
+                  <link
+                      linkend="httpd_output"><varname>httpd</varname></link>),
+                  but that is not <application>MPD</application>'s
+                  primary design goal.
+                </para>
+              </answer>
+            </qandaentry>
+
+            <qandaentry>
+              <question>
+                <para>"Device or resource busy"</para>
+              </question>
+              <answer>
+                <para>
+                  This ALSA error means that another program uses your
+                  sound hardware exclusively.  You can stop that
+                  program to allow <application>MPD</application> to
+                  use it.
+                </para>
+                <para>
+                  Sometimes, this other program is
+                  <application>PulseAudio</application>, which can
+                  multiplex sound from several applications, to allow
+                  them to share your sound chip.  In this case, it
+                  might be a good idea for <link
+                  linkend="pulse_output"><application>MPD</application>
+                  to use <application>PulseAudio</application></link>
+                  as well, instead of using ALSA directly.
+                </para>
+              </answer>
+            </qandaentry>
+          </qandadiv>
+        </qandaset>
+      </section>
+    </section>
+
+    <section id="bugs">
+      <title>Reporting Bugs</title>
+
+      <para>
+        If you believe you found a bug in
+        <application>MPD</application>, report it on <ulink
+        url="https://bugs.musicpd.org/my_view_page.php">the bug
+        tracker</ulink>.
+      </para>
+
+      <para>
+        Your bug report should contain:
+      </para>
+
+      <itemizedlist>
+        <listitem>
+          <para>
+            the output of <command>mpd --version</command>
+          </para>
+        </listitem>
+
+        <listitem>
+          <para>
+            your <link linkend="config_file">configuration file</link>
+            (<filename>mpd.conf</filename>)
+          </para>
+        </listitem>
+
+        <listitem>
+          <para>
+            relevant portions of the log file (--verbose)
+          </para>
+        </listitem>
+
+        <listitem>
+          <para>
+            be clear about what you expect MPD to do, and what is
+            actually happening
+          </para>
+        </listitem>
+      </itemizedlist>
+
+      <section id="crash">
+        <title><application>MPD</application> crashes</title>
+
+        <para>
+          All <application>MPD</application> crashes are bugs which
+          must be fixed by a developer, and you should write a bug
+          report.  (Many crash bugs are caused by codec libraries
+          used by <application>MPD</application>, and then that
+          library must be fixed; but in any case, the
+          <application>MPD</application> bug tracker is a good place
+          to report it first if you don't know.)
+        </para>
+
+        <para>
+          A crash bug report needs to contain a "backtrace".
+        </para>
+
+        <para>
+          First of all, your <application>MPD</application> executable
+          must not be "stripped" (i.e. debug information deleted).
+          The executables shipped with Linux distributions are usually
+          stripped, but some have so-called "debug" packages (package
+          <filename>mpd-dbg</filename> or
+          <filename>mpd-dbgsym</filename> on Debian,
+          <filename>mpd-debug</filename> on other distributions).
+          Make sure this package is installed.
+        </para>
+
+        <para>
+          You can extract the backtrace from a core dump, or by
+          running <application>MPD</application> in a debugger, e.g.:
+        </para>
+
+        <programlisting>gdb --args mpd --stdout --no-daemon --verbose
+run</programlisting>
+
+        <para>
+          As soon as you have reproduced the crash, type
+          "<command>bt</command>" on the <filename>gdb</filename>
+          command prompt.  Copy the output to your bug report.
+        </para>
+      </section>
+    </section>
+  </chapter>
+
   <chapter id="plugin_reference">
     <title>Plugin reference</title>
 
@@ -1430,6 +1816,13 @@ buffer_size: 16384</programlisting>
           database.
         </para>
 
+        <para>
+          Note that unless overridden by the below settings (e.g. by
+          setting them to a blank value), general curl configuration
+          from environment variables such as http_proxy or specified
+          in ~/.curlrc will be in effect.
+        </para>
+
         <informaltable>
           <tgroup cols="2">
             <thead>
@@ -1498,11 +1891,23 @@ buffer_size: 16384</programlisting>
         </para>
       </section>
 
+      <section id="curl_storage">
+        <title><varname>curl</varname></title>
+
+        <para>
+          A WebDAV client using <filename>libcurl</filename>.  It is
+          used when <varname>music_directory</varname> contains a
+          <parameter>http://</parameter> or
+          <parameter>https://</parameter> URI, for example
+          "<parameter>https://the.server/dav/</parameter>".
+        </para>
+      </section>
+
       <section id="smbclient_storage">
         <title><varname>smbclient</varname></title>
 
         <para>
-          Load music files from a SMB/CIFS server.  It used used when
+          Load music files from a SMB/CIFS server.  It is used when
           <varname>music_directory</varname> contains a
           <parameter>smb://</parameter> URI, for example
           "<parameter>smb://myfileserver/Music</parameter>".
@@ -1513,7 +1918,7 @@ buffer_size: 16384</programlisting>
         <title><varname>nfs</varname></title>
 
         <para>
-          Load music files from a NFS server.  It used used when
+          Load music files from a NFS server.  It is used when
           <varname>music_directory</varname> contains a
           <parameter>nfs://</parameter> URI according to <ulink
           url="http://tools.ietf.org/html/rfc2224">RFC2224</ulink>,
@@ -1690,6 +2095,21 @@ buffer_size: 16384</programlisting>
         </informaltable>
       </section>
 
+      <section id="ffmpeg_input">
+        <title><varname>ffmpeg</varname></title>
+
+        <para>
+          Access to various network protocols implemented by the
+          <application>FFmpeg</application> library:
+          <filename>gopher://</filename>,
+          <filename>rtp://</filename>,
+          <filename>rtsp://</filename>,
+          <filename>rtmp://</filename>,
+          <filename>rtmpt://</filename>,
+          <filename>rtmps://</filename>
+        </para>
+      </section>
+
       <section>
         <title><varname>file</varname></title>
 
@@ -1753,6 +2173,114 @@ buffer_size: 16384</programlisting>
 
     <section id="decoder_plugins">
       <title>Decoder plugins</title>
+
+      <section id="adplug_decoder">
+        <title><varname>adplug</varname></title>
+
+        <para>
+          Decodes AdLib files.
+        </para>
+
+        <informaltable>
+          <tgroup cols="2">
+            <thead>
+              <row>
+                <entry>Setting</entry>
+                <entry>Description</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>
+                  <varname>sample_rate</varname>
+                  <parameter></parameter>
+                </entry>
+                <entry>
+                  The sample rate that shall be synthesized by the
+                  plugin.  Defaults to 48000.
+                </entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
+      </section>
+
+      <section id="audiofile_decoder">
+        <title><varname>audiofile</varname></title>
+
+        <para>
+          Decodes WAV and AIFF files using
+          <filename>libaudiofile</filename>.
+        </para>
+      </section>
+
+      <section id="faad_decoder">
+        <title><varname>faad</varname></title>
+
+        <para>
+          Decodes AAC files using <filename>libfaad</filename>.
+        </para>
+      </section>
+
+      <section id="ffmpeg_decoder">
+        <title><varname>ffmpeg</varname></title>
+
+        <para>
+          Decodes various codecs using
+          <application>FFmpeg</application>.
+        </para>
+
+        <informaltable>
+          <tgroup cols="2">
+            <thead>
+              <row>
+                <entry>Setting</entry>
+                <entry>Description</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>
+                  <varname>analyzeduration</varname>
+                  <parameter>VALUE</parameter>
+                </entry>
+                <entry>
+                  Sets the FFmpeg muxer option
+                  <varname>analyzeduration</varname>, which specifies
+                  how many microseconds are analyzed to probe the
+                  input.  The <ulink
+                  url="https://ffmpeg.org/ffmpeg-formats.html">FFmpeg
+                  formats documentation</ulink> has more information.
+                </entry>
+              </row>
+
+              <row>
+                <entry>
+                  <varname>probesize</varname>
+                  <parameter>VALUE</parameter>
+                </entry>
+                <entry>
+                  Sets the FFmpeg muxer option
+                  <varname>probesize</varname>, which specifies
+                  probing size in bytes, i.e. the size of the data to
+                  analyze to get stream information.  The <ulink
+                  url="https://ffmpeg.org/ffmpeg-formats.html">FFmpeg
+                  formats documentation</ulink> has more information.
+                </entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
+      </section>
+
+      <section id="flac_decoder">
+        <title><varname>flac</varname></title>
+
+        <para>
+          Decodes FLAC files using
+          <application>libFLAC</application>.
+        </para>
+      </section>
 
       <section id="dsdiff_decoder">
         <title><varname>dsdiff</varname></title>
@@ -1866,6 +2394,14 @@ buffer_size: 16384</programlisting>
         </informaltable>
       </section>
 
+      <section id="mad_decoder">
+        <title><varname>mad</varname></title>
+
+        <para>
+          Decodes MP3 files using <application>libmad</application>.
+        </para>
+      </section>
+
       <section>
         <title><varname>mikmod</varname></title>
 
@@ -1938,6 +2474,23 @@ buffer_size: 16384</programlisting>
         </informaltable>
       </section>
 
+      <section id="mpcdec_decoder">
+        <title><varname>mpcdec</varname></title>
+
+        <para>
+          Decodes Musepack files using
+          <application>libmpcdec</application>.
+        </para>
+      </section>
+
+      <section id="mpg123_decoder">
+        <title><varname>mpg123</varname></title>
+
+        <para>
+          Decodes MP3 files using <application>libmpg123</application>.
+        </para>
+      </section>
+
       <section>
         <title><varname>pcm</varname></title>
 
@@ -2005,6 +2558,33 @@ buffer_size: 16384</programlisting>
             </tbody>
           </tgroup>
         </informaltable>
+      </section>
+
+      <section id="sndfile_decoder">
+        <title><varname>sndfile</varname></title>
+
+        <para>
+          Decodes WAV and AIFF files using
+          <filename>libsndfile</filename>.
+        </para>
+      </section>
+
+      <section id="vorbis_decoder">
+        <title><varname>vorbis</varname></title>
+
+        <para>
+          Decodes Ogg-Vorbis files using
+          <application>libvorbis</application>.
+        </para>
+      </section>
+
+      <section id="wavpack_decoder">
+        <title><varname>wavpack</varname></title>
+
+        <para>
+          Decodes WavPack files using
+          <application>libwavpack</application>.
+        </para>
       </section>
 
       <section>
@@ -3637,6 +4217,22 @@ buffer_size: 16384</programlisting>
       <title>Playlist plugins</title>
 
       <section>
+        <title><varname>asx</varname></title>
+
+        <para>
+          Reads <filename>.asx</filename> playlist files.
+        </para>
+      </section>
+
+      <section>
+        <title><varname>cue</varname></title>
+
+        <para>
+          Reads <filename>.cue</filename> files.
+        </para>
+      </section>
+
+      <section>
         <title><varname>embcue</varname></title>
 
         <para>
@@ -3661,11 +4257,59 @@ buffer_size: 16384</programlisting>
       </section>
 
       <section>
+        <title><varname>flac</varname></title>
+
+        <para>
+          Reads the <varname>cuesheet</varname> metablock from a FLAC
+          file.
+        </para>
+      </section>
+
+      <section>
         <title><varname>pls</varname></title>
 
         <para>
           Reads <filename>.pls</filename> playlist files.
         </para>
+      </section>
+
+      <section>
+        <title><varname>rss</varname></title>
+
+        <para>
+          Reads music links from <filename>.rss</filename> files.
+        </para>
+      </section>
+
+      <section>
+        <title><varname>soundcloud</varname></title>
+
+        <para>
+          Download playlist from SoundCloud.  It accepts URIs starting
+          with <filename>soundcloud://</filename>.
+        </para>
+
+        <informaltable>
+          <tgroup cols="2">
+            <thead>
+              <row>
+                <entry>Setting</entry>
+                <entry>Description</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>
+                  <varname>apikey</varname>
+                  <parameter>KEY</parameter>
+                </entry>
+                <entry>
+                  An API key to access the SoundCloud servers.
+                </entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
       </section>
 
       <section>

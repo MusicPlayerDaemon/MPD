@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -20,6 +20,7 @@
 #include "config.h"
 #include "SolarisOutputPlugin.hxx"
 #include "../OutputAPI.hxx"
+#include "../Wrapper.hxx"
 #include "system/fd_util.h"
 #include "system/Error.hxx"
 
@@ -49,7 +50,9 @@ struct audio_info {
 
 #endif
 
-struct SolarisOutput {
+class SolarisOutput {
+	friend struct AudioOutputWrapper<SolarisOutput>;
+
 	AudioOutput base;
 
 	/* configuration */
@@ -60,6 +63,17 @@ struct SolarisOutput {
 	explicit SolarisOutput(const ConfigBlock &block)
 		:base(solaris_output_plugin, block),
 		 device(block.GetBlockValue("device", "/dev/audio")) {}
+
+public:
+	static SolarisOutput *Create(EventLoop &, const ConfigBlock &block) {
+		return new SolarisOutput(block);
+	}
+
+	void Open(AudioFormat &audio_format);
+	void Close();
+
+	size_t Play(const void *chunk, size_t size);
+	void Cancel();
 };
 
 static bool
@@ -71,25 +85,9 @@ solaris_output_test_default_device(void)
 		access("/dev/audio", W_OK) == 0;
 }
 
-static AudioOutput *
-solaris_output_init(const ConfigBlock &block)
+void
+SolarisOutput::Open(AudioFormat &audio_format)
 {
-	SolarisOutput *so = new SolarisOutput(block);
-	return &so->base;
-}
-
-static void
-solaris_output_finish(AudioOutput *ao)
-{
-	SolarisOutput *so = (SolarisOutput *)ao;
-
-	delete so;
-}
-
-static void
-solaris_output_open(AudioOutput *ao, AudioFormat &audio_format)
-{
-	SolarisOutput *so = (SolarisOutput *)ao;
 	struct audio_info info;
 	int ret, flags;
 
@@ -99,23 +97,23 @@ solaris_output_open(AudioOutput *ao, AudioFormat &audio_format)
 
 	/* open the device in non-blocking mode */
 
-	so->fd = open_cloexec(so->device, O_WRONLY|O_NONBLOCK, 0);
-	if (so->fd < 0)
+	fd = open_cloexec(device, O_WRONLY|O_NONBLOCK, 0);
+	if (fd < 0)
 		throw FormatErrno("Failed to open %s",
-				  so->device);
+				  device);
 
 	/* restore blocking mode */
 
-	flags = fcntl(so->fd, F_GETFL);
+	flags = fcntl(fd, F_GETFL);
 	if (flags > 0 && (flags & O_NONBLOCK) != 0)
-		fcntl(so->fd, F_SETFL, flags & ~O_NONBLOCK);
+		fcntl(fd, F_SETFL, flags & ~O_NONBLOCK);
 
 	/* configure the audio device */
 
-	ret = ioctl(so->fd, AUDIO_GETINFO, &info);
+	ret = ioctl(fd, AUDIO_GETINFO, &info);
 	if (ret < 0) {
 		const int e = errno;
-		close(so->fd);
+		close(fd);
 		throw MakeErrno(e, "AUDIO_GETINFO failed");
 	}
 
@@ -124,57 +122,52 @@ solaris_output_open(AudioOutput *ao, AudioFormat &audio_format)
 	info.play.precision = 16;
 	info.play.encoding = AUDIO_ENCODING_LINEAR;
 
-	ret = ioctl(so->fd, AUDIO_SETINFO, &info);
+	ret = ioctl(fd, AUDIO_SETINFO, &info);
 	if (ret < 0) {
 		const int e = errno;
-		close(so->fd);
+		close(fd);
 		throw MakeErrno(e, "AUDIO_SETINFO failed");
 	}
 }
 
-static void
-solaris_output_close(AudioOutput *ao)
+void
+SolarisOutput::Close()
 {
-	SolarisOutput *so = (SolarisOutput *)ao;
-
-	close(so->fd);
+	close(fd);
 }
 
-static size_t
-solaris_output_play(AudioOutput *ao, const void *chunk, size_t size)
+size_t
+SolarisOutput::Play(const void *chunk, size_t size)
 {
-	SolarisOutput *so = (SolarisOutput *)ao;
-	ssize_t nbytes;
-
-	nbytes = write(so->fd, chunk, size);
+	ssize_t nbytes = write(fd, chunk, size);
 	if (nbytes <= 0)
 		throw MakeErrno("Write failed");
 
 	return nbytes;
 }
 
-static void
-solaris_output_cancel(AudioOutput *ao)
+void
+SolarisOutput::Cancel()
 {
-	SolarisOutput *so = (SolarisOutput *)ao;
-
-	ioctl(so->fd, I_FLUSH);
+	ioctl(fd, I_FLUSH);
 }
+
+typedef AudioOutputWrapper<SolarisOutput> Wrapper;
 
 const struct AudioOutputPlugin solaris_output_plugin = {
 	"solaris",
 	solaris_output_test_default_device,
-	solaris_output_init,
-	solaris_output_finish,
+	&Wrapper::Init,
+	&Wrapper::Finish,
 	nullptr,
 	nullptr,
-	solaris_output_open,
-	solaris_output_close,
+	&Wrapper::Open,
+	&Wrapper::Close,
 	nullptr,
 	nullptr,
-	solaris_output_play,
+	&Wrapper::Play,
 	nullptr,
-	solaris_output_cancel,
+	&Wrapper::Cancel,
 	nullptr,
 	nullptr,
 };

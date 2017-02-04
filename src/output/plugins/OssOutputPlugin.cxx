@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -89,7 +89,8 @@ public:
 		:base(oss_output_plugin, block),
 		 fd(-1), device(_device) {}
 
-	static OssOutput *Create(const ConfigBlock &block);
+	static OssOutput *Create(EventLoop &event_loop,
+				 const ConfigBlock &block);
 
 #ifdef AFMT_S24_PACKED
 	void Enable() {
@@ -226,7 +227,7 @@ oss_open_default()
 }
 
 inline OssOutput *
-OssOutput::Create(const ConfigBlock &block)
+OssOutput::Create(EventLoop &, const ConfigBlock &block)
 {
 	const char *device = block.GetBlockValue("device");
 	if (device != nullptr)
@@ -659,6 +660,10 @@ OssOutput::Cancel()
 		ioctl(fd, SNDCTL_DSP_RESET, 0);
 		DoClose();
 	}
+
+#ifdef AFMT_S24_PACKED
+	pcm_export->Reset();
+#endif
 }
 
 inline size_t

@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -20,12 +20,6 @@
 #ifndef MPD_INPUT_PLUGIN_HXX
 #define MPD_INPUT_PLUGIN_HXX
 
-#include "thread/Mutex.hxx"
-#include "thread/Cond.hxx"
-
-#include <stddef.h>
-#include <stdint.h>
-
 #ifdef WIN32
 #include <windows.h>
 /* damn you, windows.h! */
@@ -35,8 +29,10 @@
 #endif
 
 struct ConfigBlock;
+class Mutex;
+class Cond;
+class EventLoop;
 class InputStream;
-struct Tag;
 
 struct InputPlugin {
 	const char *name;
@@ -49,7 +45,7 @@ struct InputPlugin {
 	 *
 	 * Throws std::runtime_error on (fatal) error.
 	 */
-	void (*init)(const ConfigBlock &block);
+	void (*init)(EventLoop &event_loop, const ConfigBlock &block);
 
 	/**
 	 * Global deinitialization.  Called once before MPD shuts

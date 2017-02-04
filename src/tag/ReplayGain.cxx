@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -33,16 +33,16 @@ ParseReplayGainTagTemplate(ReplayGainInfo &info, const T t)
 	const char *value;
 
 	if ((value = t["replaygain_track_gain"]) != nullptr) {
-		info.tuples[REPLAY_GAIN_TRACK].gain = atof(value);
+		info.track.gain = atof(value);
 		return true;
 	} else if ((value = t["replaygain_album_gain"]) != nullptr) {
-		info.tuples[REPLAY_GAIN_ALBUM].gain = atof(value);
+		info.album.gain = atof(value);
 		return true;
 	} else if ((value = t["replaygain_track_peak"]) != nullptr) {
-		info.tuples[REPLAY_GAIN_TRACK].peak = atof(value);
+		info.track.peak = atof(value);
 		return true;
 	} else if ((value = t["replaygain_album_peak"]) != nullptr) {
-		info.tuples[REPLAY_GAIN_ALBUM].peak = atof(value);
+		info.album.peak = atof(value);
 		return true;
 	} else
 		return false;

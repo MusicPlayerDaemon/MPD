@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -29,7 +29,8 @@
  * update_enqueue().  This increases the probability that updates can
  * be bundled.
  */
-static constexpr unsigned INOTIFY_UPDATE_DELAY_S = 5;
+static constexpr std::chrono::steady_clock::duration INOTIFY_UPDATE_DELAY =
+	std::chrono::seconds(5);
 
 void
 InotifyQueue::OnTimeout()
@@ -42,7 +43,7 @@ InotifyQueue::OnTimeout()
 		id = update.Enqueue(uri_utf8, false);
 		if (id == 0) {
 			/* retry later */
-			ScheduleSeconds(INOTIFY_UPDATE_DELAY_S);
+			Schedule(INOTIFY_UPDATE_DELAY);
 			return;
 		}
 
@@ -68,7 +69,7 @@ path_in(const char *path, const char *possible_parent)
 void
 InotifyQueue::Enqueue(const char *uri_utf8)
 {
-	ScheduleSeconds(INOTIFY_UPDATE_DELAY_S);
+	Schedule(INOTIFY_UPDATE_DELAY);
 
 	for (auto i = queue.begin(), end = queue.end(); i != end;) {
 		const char *current_uri = i->c_str();

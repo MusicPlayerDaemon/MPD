@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -20,11 +20,16 @@
 #ifndef MPD_REPLAY_GAIN_FILTER_PLUGIN_HXX
 #define MPD_REPLAY_GAIN_FILTER_PLUGIN_HXX
 
-#include "ReplayGainInfo.hxx"
+#include "ReplayGainMode.hxx"
 
 class Filter;
 class PreparedFilter;
 class Mixer;
+struct ReplayGainConfig;
+struct ReplayGainInfo;
+
+PreparedFilter *
+NewReplayGainFilter(const ReplayGainConfig &config);
 
 /**
  * Enables or disables the hardware mixer for applying replay gain.
@@ -35,7 +40,7 @@ class Mixer;
  * (including).
  */
 void
-replay_gain_filter_set_mixer(PreparedFilter *_filter, Mixer *mixer,
+replay_gain_filter_set_mixer(PreparedFilter &_filter, Mixer *mixer,
 			     unsigned base);
 
 /**
@@ -45,9 +50,9 @@ replay_gain_filter_set_mixer(PreparedFilter *_filter, Mixer *mixer,
  * gain data is available for the current song
  */
 void
-replay_gain_filter_set_info(Filter *filter, const ReplayGainInfo *info);
+replay_gain_filter_set_info(Filter &filter, const ReplayGainInfo *info);
 
 void
-replay_gain_filter_set_mode(Filter *filter, ReplayGainMode mode);
+replay_gain_filter_set_mode(Filter &filter, ReplayGainMode mode);
 
 #endif

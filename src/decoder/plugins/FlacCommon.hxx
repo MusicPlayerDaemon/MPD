@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -32,7 +32,7 @@
 
 struct FlacDecoder : public FlacInput {
 	/**
-	 * Has decoder_initialized() been called yet?
+	 * Has DecoderClient::Ready() been called yet?
 	 */
 	bool initialized = false;
 
@@ -51,11 +51,11 @@ struct FlacDecoder : public FlacInput {
 
 	Tag tag;
 
-	FlacDecoder(Decoder &_decoder, InputStream &_input_stream)
-		:FlacInput(_input_stream, &_decoder) {}
+	FlacDecoder(DecoderClient &_client, InputStream &_input_stream)
+		:FlacInput(_input_stream, &_client) {}
 
 	/**
-	 * Wrapper for decoder_initialized().
+	 * Wrapper for DecoderClient::Ready().
 	 */
 	bool Initialize(unsigned sample_rate, unsigned bits_per_sample,
 			unsigned channels, FLAC__uint64 total_frames);
@@ -77,7 +77,7 @@ private:
 	void OnVorbisComment(const FLAC__StreamMetadata_VorbisComment &vc);
 
 	/**
-	 * This function attempts to call decoder_initialized() in case there
+	 * This function attempts to call DecoderClient::Ready() in case there
 	 * was no STREAMINFO block.  This is allowed for nonseekable streams,
 	 * where the server sends us only a part of the file, without
 	 * providing the STREAMINFO block from the beginning of the file

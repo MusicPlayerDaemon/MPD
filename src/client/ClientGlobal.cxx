@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -25,14 +25,16 @@
 #define CLIENT_MAX_COMMAND_LIST_DEFAULT		(2048*1024)
 #define CLIENT_MAX_OUTPUT_BUFFER_SIZE_DEFAULT	(8192*1024)
 
-int client_timeout;
+std::chrono::steady_clock::duration client_timeout;
 size_t client_max_command_list_size;
 size_t client_max_output_buffer_size;
 
 void client_manager_init(void)
 {
-	client_timeout = config_get_positive(ConfigOption::CONN_TIMEOUT,
-					     CLIENT_TIMEOUT_DEFAULT);
+	unsigned client_timeout_s = config_get_positive(ConfigOption::CONN_TIMEOUT,
+							CLIENT_TIMEOUT_DEFAULT);
+	client_timeout = std::chrono::seconds(client_timeout_s);
+
 	client_max_command_list_size =
 		config_get_positive(ConfigOption::MAX_COMMAND_LIST_SIZE,
 				    CLIENT_MAX_COMMAND_LIST_DEFAULT / 1024)

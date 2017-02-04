@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -26,6 +26,7 @@
 #define MPD_OUTPUT_HTTPD_INTERNAL_H
 
 #include "HttpdClient.hxx"
+#include "output/Wrapper.hxx"
 #include "output/Internal.hxx"
 #include "output/Timer.hxx"
 #include "thread/Mutex.hxx"
@@ -49,6 +50,8 @@ class Encoder;
 struct Tag;
 
 class HttpdOutput final : ServerSocket, DeferredMonitor {
+	friend struct AudioOutputWrapper<HttpdOutput>;
+
 	AudioOutput base;
 
 	/**
@@ -152,9 +155,8 @@ public:
 	HttpdOutput(EventLoop &_loop, const ConfigBlock &block);
 	~HttpdOutput();
 
-	operator AudioOutput *() {
-		return &base;
-	}
+	static HttpdOutput *Create(EventLoop &event_loop,
+				   const ConfigBlock &block);
 
 #if CLANG_OR_GCC_VERSION(4,7)
 	constexpr
@@ -167,6 +169,14 @@ public:
 
 	void Bind();
 	void Unbind();
+
+	void Enable() {
+		Bind();
+	}
+
+	void Disable() {
+		Unbind();
+	}
 
 	/**
 	 * Caller must lock the mutex.
@@ -200,7 +210,7 @@ public:
 	 */
 	gcc_pure
 	bool LockHasClients() const {
-		const ScopeLock protect(mutex);
+		const std::lock_guard<Mutex> protect(mutex);
 		return HasClients();
 	}
 
@@ -218,7 +228,7 @@ public:
 	void SendHeader(HttpdClient &client) const;
 
 	gcc_pure
-	unsigned Delay() const;
+	std::chrono::steady_clock::duration Delay() const;
 
 	/**
 	 * Reads data from the encoder (as much as available) and
@@ -248,6 +258,9 @@ public:
 	size_t Play(const void *chunk, size_t size);
 
 	void CancelAllClients();
+
+	void Cancel();
+	bool Pause();
 
 private:
 	virtual void RunDeferred() override;

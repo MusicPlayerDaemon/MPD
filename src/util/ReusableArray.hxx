@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Max Kellermann <max@duempel.org>
+ * Copyright (C) 2013-2017 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -30,9 +30,11 @@
 #ifndef REUSABLE_ARRAY_HXX
 #define REUSABLE_ARRAY_HXX
 
-#include <stddef.h>
-
 #include "Compiler.h"
+
+#include <utility>
+
+#include <stddef.h>
 
 /**
  * Manager for a temporary array which grows as needed.  This attempts
@@ -44,17 +46,28 @@
  */
 template<typename T, size_t M=1>
 class ReusableArray {
-	T *buffer;
-	size_t capacity;
+	T *buffer = nullptr;
+	size_t capacity = 0;
 
 public:
-	ReusableArray():buffer(nullptr), capacity(0) {}
+	ReusableArray() = default;
 
-	ReusableArray(const ReusableArray &other) = delete;
-	ReusableArray &operator=(const ReusableArray &other) = delete;
+	ReusableArray(ReusableArray &&src)
+		:buffer(std::exchange(src.buffer, nullptr)),
+		 capacity(std::exchange(src.capacity, 0)) {}
+
+	ReusableArray &operator=(const ReusableArray &&src) {
+		std::swap(buffer, src.buffer);
+		std::swap(capacity, src.capacity);
+		return *this;
+	}
 
 	~ReusableArray() {
 		delete[] buffer;
+	}
+
+	size_t GetCapacity() const {
+		return capacity;
 	}
 
 	/**

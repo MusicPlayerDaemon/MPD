@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -22,9 +22,9 @@
 #include "../DecoderAPI.hxx"
 #include "input/InputStream.hxx"
 #include "tag/TagHandler.hxx"
-#include "system/FatalError.hxx"
 #include "util/WritableBuffer.hxx"
 #include "util/Domain.hxx"
+#include "util/RuntimeError.hxx"
 #include "Log.hxx"
 
 #include <libmodplug/modplug.h>
@@ -45,14 +45,14 @@ modplug_decoder_init(const ConfigBlock &block)
 {
 	modplug_loop_count = block.GetBlockValue("loop_count", 0);
 	if (modplug_loop_count < -1)
-		FormatFatalError("Invalid loop count in line %d: %i",
-				 block.line, modplug_loop_count);
+		throw FormatRuntimeError("Invalid loop count in line %d: %i",
+					 block.line, modplug_loop_count);
 
 	return true;
 }
 
 static WritableBuffer<uint8_t>
-mod_loadfile(Decoder *decoder, InputStream &is)
+mod_loadfile(DecoderClient *client, InputStream &is)
 {
 	//known/unknown size, preallocate array, lets read in chunks
 
@@ -83,7 +83,7 @@ mod_loadfile(Decoder *decoder, InputStream &is)
 	uint8_t *p = buffer.begin();
 
 	while (true) {
-		size_t ret = decoder_read(decoder, is, p, end - p);
+		size_t ret = decoder_read(client, is, p, end - p);
 		if (ret == 0) {
 			if (is.LockIsEOF())
 				/* end of file */
@@ -112,9 +112,9 @@ mod_loadfile(Decoder *decoder, InputStream &is)
 }
 
 static ModPlugFile *
-LoadModPlugFile(Decoder *decoder, InputStream &is)
+LoadModPlugFile(DecoderClient *client, InputStream &is)
 {
-	const auto buffer = mod_loadfile(decoder, is);
+	const auto buffer = mod_loadfile(client, is);
 	if (buffer.IsNull()) {
 		LogWarning(modplug_domain, "could not load stream");
 		return nullptr;
@@ -126,7 +126,7 @@ LoadModPlugFile(Decoder *decoder, InputStream &is)
 }
 
 static void
-mod_decode(Decoder &decoder, InputStream &is)
+mod_decode(DecoderClient &client, InputStream &is)
 {
 	ModPlug_Settings settings;
 	int ret;
@@ -142,7 +142,7 @@ mod_decode(Decoder &decoder, InputStream &is)
 	/* insert more setting changes here */
 	ModPlug_SetSettings(&settings);
 
-	ModPlugFile *f = LoadModPlugFile(&decoder, is);
+	ModPlugFile *f = LoadModPlugFile(&client, is);
 	if (f == nullptr) {
 		LogWarning(modplug_domain, "could not decode stream");
 		return;
@@ -151,9 +151,8 @@ mod_decode(Decoder &decoder, InputStream &is)
 	static constexpr AudioFormat audio_format(44100, SampleFormat::S16, 2);
 	assert(audio_format.IsValid());
 
-	decoder_initialized(decoder, audio_format,
-			    is.IsSeekable(),
-			    SongTime::FromMS(ModPlug_GetLength(f)));
+	client.Ready(audio_format, is.IsSeekable(),
+		     SongTime::FromMS(ModPlug_GetLength(f)));
 
 	DecoderCommand cmd;
 	do {
@@ -161,13 +160,13 @@ mod_decode(Decoder &decoder, InputStream &is)
 		if (ret <= 0)
 			break;
 
-		cmd = decoder_data(decoder, nullptr,
-				   audio_buffer, ret,
-				   0);
+		cmd = client.SubmitData(nullptr,
+					audio_buffer, ret,
+					0);
 
 		if (cmd == DecoderCommand::SEEK) {
-			ModPlug_Seek(f, decoder_seek_time(decoder).ToMS());
-			decoder_command_finished(decoder);
+			ModPlug_Seek(f, client.GetSeekTime().ToMS());
+			client.CommandFinished();
 		}
 
 	} while (cmd != DecoderCommand::STOP);

@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -54,7 +54,7 @@ null_filter_init(gcc_unused const ConfigBlock &block)
 	return new PreparedNullFilter();
 }
 
-const struct filter_plugin null_filter_plugin = {
+const FilterPlugin null_filter_plugin = {
 	"null",
 	null_filter_init,
 };

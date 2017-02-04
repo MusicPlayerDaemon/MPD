@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -23,16 +23,15 @@
 
 #include <string.h>
 
-const struct filter_plugin *const filter_plugins[] = {
+static const FilterPlugin *const filter_plugins[] = {
 	&null_filter_plugin,
 	&route_filter_plugin,
 	&normalize_filter_plugin,
 	&volume_filter_plugin,
-	&replay_gain_filter_plugin,
 	nullptr,
 };
 
-const struct filter_plugin *
+const FilterPlugin *
 filter_plugin_by_name(const char *name)
 {
 	for (unsigned i = 0; filter_plugins[i] != nullptr; ++i)

@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -37,7 +37,8 @@ public:
 		:base(null_output_plugin, block),
 		 sync(block.GetBlockValue("sync", true)) {}
 
-	static NullOutput *Create(const ConfigBlock &block);
+	static NullOutput *Create(EventLoop &event_loop,
+				  const ConfigBlock &block);
 
 	void Open(AudioFormat &audio_format) {
 		if (sync)
@@ -49,10 +50,10 @@ public:
 			delete timer;
 	}
 
-	unsigned Delay() const {
+	std::chrono::steady_clock::duration Delay() const {
 		return sync && timer->IsStarted()
 			? timer->GetDelay()
-			: 0;
+			: std::chrono::steady_clock::duration::zero();
 	}
 
 	size_t Play(gcc_unused const void *chunk, size_t size) {
@@ -72,7 +73,7 @@ public:
 };
 
 inline NullOutput *
-NullOutput::Create(const ConfigBlock &block)
+NullOutput::Create(EventLoop &, const ConfigBlock &block)
 {
 	return new NullOutput(block);
 }

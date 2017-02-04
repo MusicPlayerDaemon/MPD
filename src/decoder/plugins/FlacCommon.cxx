@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -52,9 +52,9 @@ FlacDecoder::Initialize(unsigned sample_rate, unsigned bits_per_sample,
 						      audio_format.sample_rate)
 		: SignedSongTime::Negative();
 
-	decoder_initialized(*GetDecoder(), audio_format,
-			    GetInputStream().IsSeekable(),
-			    duration);
+	GetClient()->Ready(audio_format,
+			   GetInputStream().IsSeekable(),
+			   duration);
 
 	initialized = true;
 	return true;
@@ -77,9 +77,9 @@ FlacDecoder::OnVorbisComment(const FLAC__StreamMetadata_VorbisComment &vc)
 {
 	ReplayGainInfo rgi;
 	if (flac_parse_replay_gain(rgi, vc))
-		decoder_replay_gain(*GetDecoder(), &rgi);
+		GetClient()->SubmitReplayGain(&rgi);
 
-	decoder_mixramp(*GetDecoder(), flac_parse_mixramp(vc));
+	GetClient()->SubmitMixRamp(flac_parse_mixramp(vc));
 
 	tag = flac_vorbis_comments_to_tag(&vc);
 }
@@ -148,9 +148,9 @@ FlacDecoder::OnWrite(const FLAC__Frame &frame,
 	unsigned bit_rate = nbytes * 8 * frame.header.sample_rate /
 		(1000 * frame.header.blocksize);
 
-	auto cmd = decoder_data(*GetDecoder(), GetInputStream(),
-				data.data, data.size,
-				bit_rate);
+	auto cmd = GetClient()->SubmitData(GetInputStream(),
+					   data.data, data.size,
+					   bit_rate);
 	switch (cmd) {
 	case DecoderCommand::NONE:
 	case DecoderCommand::START:

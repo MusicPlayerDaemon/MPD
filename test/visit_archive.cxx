@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -35,8 +35,29 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+class GlobalInit {
+	const ScopeIOThread io_thread;
+
+public:
+	GlobalInit() {
+		config_global_init();
+#ifdef ENABLE_ARCHIVE
+		archive_plugin_init_all();
+#endif
+		input_stream_global_init(io_thread_get());
+	}
+
+	~GlobalInit() {
+		input_stream_global_finish();
+#ifdef ENABLE_ARCHIVE
+		archive_plugin_deinit_all();
+#endif
+		config_global_finish();
+	}
+};
+
 class MyArchiveVisitor final : public ArchiveVisitor {
- public:
+public:
 	virtual void VisitArchiveEntry(const char *path_utf8) override {
 		printf("%s\n", path_utf8);
 	}
@@ -55,13 +76,7 @@ try {
 
 	/* initialize MPD */
 
-	config_global_init();
-
-	const ScopeIOThread io_thread;
-
-	archive_plugin_init_all();
-
-	input_stream_global_init();
+	const GlobalInit init;
 
 	/* open the archive and dump it */
 
@@ -78,14 +93,6 @@ try {
 	MyArchiveVisitor visitor;
 	file->Visit(visitor);
 	file->Close();
-
-	/* deinitialize everything */
-
-	input_stream_global_finish();
-
-	archive_plugin_deinit_all();
-
-	config_global_finish();
 
 	return result;
 } catch (const std::exception &e) {

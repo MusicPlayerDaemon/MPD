@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -39,7 +39,8 @@ class PipeOutput {
 	PipeOutput(const ConfigBlock &block);
 
 public:
-	static PipeOutput *Create(const ConfigBlock &block);
+	static PipeOutput *Create(EventLoop &event_loop,
+				  const ConfigBlock &block);
 
 	void Open(AudioFormat &audio_format);
 
@@ -59,7 +60,7 @@ PipeOutput::PipeOutput(const ConfigBlock &block)
 }
 
 inline PipeOutput *
-PipeOutput::Create(const ConfigBlock &block)
+PipeOutput::Create(EventLoop &, const ConfigBlock &block)
 {
 	return new PipeOutput(block);
 }

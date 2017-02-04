@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -105,7 +105,7 @@ AllocatedString<char>
 IcuConverter::ToUTF8(const char *s) const
 {
 #ifdef HAVE_ICU
-	const ScopeLock protect(mutex);
+	const std::lock_guard<Mutex> protect(mutex);
 
 	ucnv_resetToUnicode(converter);
 
@@ -133,7 +133,7 @@ AllocatedString<char>
 IcuConverter::FromUTF8(const char *s) const
 {
 #ifdef HAVE_ICU
-	const ScopeLock protect(mutex);
+	const std::lock_guard<Mutex> protect(mutex);
 
 	const auto u = UCharFromUTF8(s);
 

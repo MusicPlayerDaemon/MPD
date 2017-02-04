@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -40,13 +40,13 @@ sndfile_init(gcc_unused const ConfigBlock &block)
 }
 
 struct SndfileInputStream {
-	Decoder *const decoder;
+	DecoderClient *const client;
 	InputStream &is;
 
 	size_t Read(void *buffer, size_t size) {
 		/* libsndfile chokes on partial reads; therefore
 		   always force full reads */
-		return decoder_read_full(decoder, is, buffer, size)
+		return decoder_read_full(client, is, buffer, size)
 			? size
 			: 0;
 	}
@@ -186,13 +186,13 @@ sndfile_read_frames(SNDFILE *sf, SampleFormat format,
 }
 
 static void
-sndfile_stream_decode(Decoder &decoder, InputStream &is)
+sndfile_stream_decode(DecoderClient &client, InputStream &is)
 {
 	SF_INFO info;
 
 	info.format = 0;
 
-	SndfileInputStream sis{&decoder, is};
+	SndfileInputStream sis{&client, is};
 	SNDFILE *const sf = sf_open_virtual(&vio, SFM_READ, &info, &sis);
 	if (sf == nullptr) {
 		FormatWarning(sndfile_domain, "sf_open_virtual() failed: %s",
@@ -205,8 +205,7 @@ sndfile_stream_decode(Decoder &decoder, InputStream &is)
 				 sndfile_sample_format(info),
 				 info.channels);
 
-	decoder_initialized(decoder, audio_format, info.seekable,
-			    sndfile_duration(info));
+	client.Ready(audio_format, info.seekable, sndfile_duration(info));
 
 	char buffer[16384];
 
@@ -222,16 +221,16 @@ sndfile_stream_decode(Decoder &decoder, InputStream &is)
 		if (num_frames <= 0)
 			break;
 
-		cmd = decoder_data(decoder, is,
-				   buffer, num_frames * frame_size,
-				   0);
+		cmd = client.SubmitData(is,
+					buffer, num_frames * frame_size,
+					0);
 		if (cmd == DecoderCommand::SEEK) {
-			sf_count_t c = decoder_seek_where_frame(decoder);
+			sf_count_t c = client.GetSeekFrame();
 			c = sf_seek(sf, c, SEEK_SET);
 			if (c < 0)
-				decoder_seek_error(decoder);
+				client.SeekError();
 			else
-				decoder_command_finished(decoder);
+				client.CommandFinished();
 			cmd = DecoderCommand::NONE;
 		}
 	} while (cmd == DecoderCommand::NONE);

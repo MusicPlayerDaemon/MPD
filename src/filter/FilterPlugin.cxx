@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -27,7 +27,7 @@
 #include <assert.h>
 
 PreparedFilter *
-filter_new(const struct filter_plugin *plugin, const ConfigBlock &block)
+filter_new(const FilterPlugin *plugin, const ConfigBlock &block)
 {
 	assert(plugin != nullptr);
 
@@ -41,7 +41,7 @@ filter_configured_new(const ConfigBlock &block)
 	if (plugin_name == nullptr)
 		throw std::runtime_error("No filter plugin specified");
 
-	const filter_plugin *plugin = filter_plugin_by_name(plugin_name);
+	const auto *plugin = filter_plugin_by_name(plugin_name);
 	if (plugin == nullptr)
 		throw FormatRuntimeError("No such filter plugin: %s",
 					 plugin_name);

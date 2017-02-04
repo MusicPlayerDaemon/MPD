@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -24,9 +24,21 @@
 
 #include <exception>
 
+/**
+ * Callbacks for an asynchronous libnfs operation.
+ *
+ * Note that no callback is invoked for cancelled operations.
+ */
 class NfsCallback {
 public:
+	/**
+	 * The operation completed successfully.
+	 */
 	virtual void OnNfsCallback(unsigned status, void *data) = 0;
+
+	/**
+	 * An error has occurred.
+	 */
 	virtual void OnNfsError(std::exception_ptr &&e) = 0;
 };
 

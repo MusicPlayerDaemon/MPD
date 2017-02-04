@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2013 Max Kellermann <max@duempel.org>
+ * Copyright (C) 2009-2013 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -32,6 +32,8 @@
 
 #include "CriticalSection.hxx"
 
+#include <chrono>
+
 /**
  * Wrapper for a CONDITION_VARIABLE, backend for the Cond class.
  */
@@ -54,9 +56,17 @@ public:
 		WakeAllConditionVariable(&cond);
 	}
 
+private:
 	bool timed_wait(CriticalSection &mutex, DWORD timeout_ms) {
 		return SleepConditionVariableCS(&cond, &mutex.critical_section,
 						timeout_ms);
+	}
+
+public:
+	bool timed_wait(CriticalSection &mutex,
+			std::chrono::steady_clock::duration timeout) {
+		auto timeout_ms = std::chrono::duration_cast<std::chrono::milliseconds>(timeout).count();
+		return timed_wait(mutex, timeout_ms);
 	}
 
 	void wait(CriticalSection &mutex) {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -106,7 +106,7 @@ static constexpr Domain cdio_domain("cdio");
 static bool default_reverse_endian;
 
 static void
-input_cdio_init(const ConfigBlock &block)
+input_cdio_init(EventLoop &, const ConfigBlock &block)
 {
 	const char *value = block.GetBlockValue("default_byte_order");
 	if (value != nullptr) {

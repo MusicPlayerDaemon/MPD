@@ -1,6 +1,6 @@
 /*
 * MPD SACD Decoder plugin
-* Copyright (c) 2016 Maxim V.Anisiutkin <maxim.anisiutkin@gmail.com>
+* Copyright (c) 2017 Maxim V.Anisiutkin <maxim.anisiutkin@gmail.com>
 *
 * This module partially uses code from SACD Ripper http://code.google.com/p/sacd-ripper/ project
 *
@@ -19,17 +19,8 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#include "config.h"
-
+#include <iconv.h>
 #include <string>
-
-#define HAVE_GLIB 1
-
-#ifdef HAVE_GLIB
-#include <glib.h>
-#endif
-
-//#include <math.h>
 #include <malloc.h>
 #include <string.h>
 #include "sacd_disc.h"
@@ -73,25 +64,25 @@ static codepage_id_t codepage_ids[] = {
 };
 
 static inline string charset_convert(const char* instring, size_t insize, uint8_t codepage_index) {
-	char* conv_string = nullptr;
 	string utf8_string;
-#ifdef HAVE_GLIB
-	const char* codepage_name = nullptr;
 	if (codepage_index < sizeof(codepage_ids) / sizeof(*codepage_ids)) {
-		codepage_name = codepage_ids[codepage_index].name;
+		const char* codepage_name = codepage_ids[codepage_index].name;
+		iconv_t conv = iconv_open("UTF-8", codepage_name);
+		if (conv != (iconv_t)-1) {
+			size_t utf8_size = 3 * insize;
+			utf8_string.resize(utf8_size);
+			const char* inbuf = instring;
+			size_t inbytesleft = insize;
+			const char* outbuf = utf8_string.data();
+			size_t outbytesleft = utf8_string.size();
+			if (iconv(conv, const_cast<char**>(&inbuf), &inbytesleft, const_cast<char**>(&outbuf), &outbytesleft) != (size_t)-1) {
+				utf8_string.resize(utf8_size - outbytesleft);
+				return utf8_string;
+			}
+			iconv_close(conv);
+		}
 	}
-	gsize bytes_read = 0;
-	gsize bytes_written = 0;
-	GError* error = nullptr;
-	conv_string = g_convert(instring, insize, "UTF-8", codepage_name, &bytes_read, &bytes_written, &error);
-	if (conv_string != nullptr) {
-		utf8_string = conv_string;
-		g_free(conv_string);
-	}
-#endif
-	if (conv_string == nullptr) {
-		utf8_string = instring;
-	}
+	utf8_string = instring;
 	return utf8_string;
 }
 

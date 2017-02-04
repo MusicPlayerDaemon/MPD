@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -20,13 +20,15 @@
 #ifndef MPD_TIMER_HXX
 #define MPD_TIMER_HXX
 
-#include <stdint.h>
+#include <chrono>
 
 struct AudioFormat;
 
 class Timer {
-	uint64_t time;
-	bool started;
+	typedef std::chrono::microseconds Time;
+
+	Time time;
+	bool started = false;
 	const int rate;
 public:
 	explicit Timer(AudioFormat af);
@@ -36,12 +38,17 @@ public:
 	void Start();
 	void Reset();
 
-	void Add(int size);
+	void Add(size_t size);
 
 	/**
-	 * Returns the number of milliseconds to sleep to get back to sync.
+	 * Returns the duration to sleep to get back to sync.
 	 */
-	unsigned GetDelay() const;
+	std::chrono::steady_clock::duration GetDelay() const;
+
+private:
+	static Time Now() {
+		return std::chrono::duration_cast<Time>(std::chrono::steady_clock::now().time_since_epoch());
+	}
 };
 
 #endif

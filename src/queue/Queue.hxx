@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -283,6 +283,11 @@ struct Queue {
 	}
 
 	/**
+	 * Moves a song to a new position in the "order" list.
+	 */
+	void MoveOrder(unsigned from_order, unsigned to_order);
+
+	/**
 	 * Moves a song to a new position.
 	 */
 	void MovePostion(unsigned from, unsigned to);
@@ -350,11 +355,6 @@ struct Queue {
 			      uint8_t priority, int after_order);
 
 private:
-	/**
-	 * Moves a song to a new position in the "order" list.
-	 */
-	void MoveOrder(unsigned from_order, unsigned to_order);
-
 	void MoveItemTo(unsigned from, unsigned to) {
 		unsigned from_id = items[from].id;
 

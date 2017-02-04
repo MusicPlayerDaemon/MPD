@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -27,6 +27,7 @@
 #include "util/Domain.hxx"
 #include "util/Macros.hxx"
 #include "util/Clamp.hxx"
+#include "util/ScopeExit.hxx"
 #include "Log.hxx"
 
 #include <mpc/mpcdec.h>
@@ -37,10 +38,10 @@
 
 struct mpc_decoder_data {
 	InputStream &is;
-	Decoder *decoder;
+	DecoderClient *client;
 
-	mpc_decoder_data(InputStream &_is, Decoder *_decoder)
-		:is(_is), decoder(_decoder) {}
+	mpc_decoder_data(InputStream &_is, DecoderClient *_client)
+		:is(_is), client(_client) {}
 };
 
 static constexpr Domain mpcdec_domain("mpcdec");
@@ -54,7 +55,7 @@ mpc_read_cb(mpc_reader *reader, void *ptr, mpc_int32_t size)
 	struct mpc_decoder_data *data =
 		(struct mpc_decoder_data *)reader->data;
 
-	return decoder_read(data->decoder, data->is, ptr, size);
+	return decoder_read(data->client, data->is, ptr, size);
 }
 
 static mpc_bool_t
@@ -138,9 +139,9 @@ mpc_to_mpd_buffer(MpcdecSampleTraits::pointer_type dest,
 }
 
 static void
-mpcdec_decode(Decoder &mpd_decoder, InputStream &is)
+mpcdec_decode(DecoderClient &client, InputStream &is)
 {
-	mpc_decoder_data data(is, &mpd_decoder);
+	mpc_decoder_data data(is, &client);
 
 	mpc_reader reader;
 	reader.read = mpc_read_cb;
@@ -152,11 +153,13 @@ mpcdec_decode(Decoder &mpd_decoder, InputStream &is)
 
 	mpc_demux *demux = mpc_demux_init(&reader);
 	if (demux == nullptr) {
-		if (decoder_get_command(mpd_decoder) != DecoderCommand::STOP)
+		if (client.GetCommand() != DecoderCommand::STOP)
 			LogWarning(mpcdec_domain,
 				   "Not a valid musepack stream");
 		return;
 	}
+
+	AtScopeExit(demux) { mpc_demux_exit(demux); };
 
 	mpc_streaminfo info;
 	mpc_demux_get_info(demux, &info);
@@ -167,30 +170,28 @@ mpcdec_decode(Decoder &mpd_decoder, InputStream &is)
 
 	ReplayGainInfo rgi;
 	rgi.Clear();
-	rgi.tuples[REPLAY_GAIN_ALBUM].gain = MPC_OLD_GAIN_REF  - (info.gain_album  / 256.);
-	rgi.tuples[REPLAY_GAIN_ALBUM].peak = pow(10, info.peak_album / 256. / 20) / 32767;
-	rgi.tuples[REPLAY_GAIN_TRACK].gain = MPC_OLD_GAIN_REF  - (info.gain_title  / 256.);
-	rgi.tuples[REPLAY_GAIN_TRACK].peak = pow(10, info.peak_title / 256. / 20) / 32767;
+	rgi.album.gain = MPC_OLD_GAIN_REF  - (info.gain_album  / 256.);
+	rgi.album.peak = pow(10, info.peak_album / 256. / 20) / 32767;
+	rgi.track.gain = MPC_OLD_GAIN_REF  - (info.gain_title  / 256.);
+	rgi.track.peak = pow(10, info.peak_title / 256. / 20) / 32767;
 
-	decoder_replay_gain(mpd_decoder, &rgi);
+	client.SubmitReplayGain(&rgi);
 
-	decoder_initialized(mpd_decoder, audio_format,
-			    is.IsSeekable(),
-			    SongTime::FromS(mpc_streaminfo_get_length(&info)));
+	client.Ready(audio_format, is.IsSeekable(),
+		     SongTime::FromS(mpc_streaminfo_get_length(&info)));
 
 	DecoderCommand cmd = DecoderCommand::NONE;
 	do {
 		if (cmd == DecoderCommand::SEEK) {
-			mpc_int64_t where =
-				decoder_seek_where_frame(mpd_decoder);
+			mpc_int64_t where = client.GetSeekFrame();
 			bool success;
 
 			success = mpc_demux_seek_sample(demux, where)
 				== MPC_STATUS_OK;
 			if (success)
-				decoder_command_finished(mpd_decoder);
+				client.CommandFinished();
 			else
-				decoder_seek_error(mpd_decoder);
+				client.SeekError();
 		}
 
 		MPC_SAMPLE_FORMAT sample_buffer[MPC_DECODER_BUFFER_LENGTH];
@@ -215,12 +216,10 @@ mpcdec_decode(Decoder &mpd_decoder, InputStream &is)
 		long bit_rate = unsigned(frame.bits) * audio_format.sample_rate
 			/ (1000 * frame.samples);
 
-		cmd = decoder_data(mpd_decoder, is,
-				   chunk, ret * sizeof(chunk[0]),
-				   bit_rate);
+		cmd = client.SubmitData(is,
+					chunk, ret * sizeof(chunk[0]),
+					bit_rate);
 	} while (cmd != DecoderCommand::STOP);
-
-	mpc_demux_exit(demux);
 }
 
 static SignedSongTime
@@ -240,9 +239,10 @@ mpcdec_get_file_duration(InputStream &is)
 	if (demux == nullptr)
 		return SignedSongTime::Negative();
 
+	AtScopeExit(demux) { mpc_demux_exit(demux); };
+
 	mpc_streaminfo info;
 	mpc_demux_get_info(demux, &info);
-	mpc_demux_exit(demux);
 
 	return SongTime::FromS(mpc_streaminfo_get_length(&info));
 }

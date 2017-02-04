@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -20,18 +20,9 @@
 #ifndef MPD_CHRONO_HXX
 #define MPD_CHRONO_HXX
 
-#include "Compiler.h"
-
 #include <chrono>
 #include <utility>
 #include <cstdint>
-
-#if GCC_OLDER_THAN(4,7)
-/* std::chrono::duration operators are "constexpr" since gcc 4.7 */
-#define chrono_constexpr gcc_pure
-#else
-#define chrono_constexpr constexpr
-#endif
 
 /**
  * A time stamp within a song.  Granularity is 1 millisecond and the
@@ -108,11 +99,11 @@ public:
 		return count() > 0;
 	}
 
-	chrono_constexpr SongTime operator+(const SongTime &other) const {
+	constexpr SongTime operator+(const SongTime &other) const {
 		return SongTime(*(const Base *)this + (const Base &)other);
 	}
 
-	chrono_constexpr SongTime operator-(const SongTime &other) const {
+	constexpr SongTime operator-(const SongTime &other) const {
 		return SongTime(*(const Base *)this - (const Base &)other);
 	}
 };
@@ -212,15 +203,13 @@ public:
 		return count() < 0;
 	}
 
-	chrono_constexpr SignedSongTime operator+(const SignedSongTime &other) const {
+	constexpr SignedSongTime operator+(const SignedSongTime &other) const {
 		return SignedSongTime(*(const Base *)this + (const Base &)other);
 	}
 
-	chrono_constexpr SignedSongTime operator-(const SignedSongTime &other) const {
+	constexpr SignedSongTime operator-(const SignedSongTime &other) const {
 		return SignedSongTime(*(const Base *)this - (const Base &)other);
 	}
 };
-
-#undef chrono_constexpr
 
 #endif

@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -20,7 +20,6 @@
 #include "config.h"
 #include "Discovery.hxx"
 #include "ContentDirectoryService.hxx"
-#include "system/Clock.hxx"
 #include "Log.hxx"
 #include "util/ScopeExit.hxx"
 #include "util/RuntimeError.hxx"
@@ -75,7 +74,7 @@ AnnounceLostUPnP(UPnPDiscoveryListener &listener, const UPnPDevice &device)
 inline void
 UPnPDeviceDirectory::LockAdd(ContentDirectoryDescriptor &&d)
 {
-	const ScopeLock protect(mutex);
+	const std::lock_guard<Mutex> protect(mutex);
 
 	for (auto &i : directories) {
 		if (i.id == d.id) {
@@ -93,7 +92,7 @@ UPnPDeviceDirectory::LockAdd(ContentDirectoryDescriptor &&d)
 inline void
 UPnPDeviceDirectory::LockRemove(const std::string &id)
 {
-	const ScopeLock protect(mutex);
+	const std::lock_guard<Mutex> protect(mutex);
 
 	for (auto i = directories.begin(), end = directories.end();
 	     i != end; ++i) {
@@ -132,7 +131,8 @@ UPnPDeviceDirectory::Explore()
 
 		// Update or insert the device
 		ContentDirectoryDescriptor d(std::move(tsk->device_id),
-					     MonotonicClockS(), tsk->expires);
+					     std::chrono::steady_clock::now(),
+					     tsk->expires);
 
 		try {
 			d.Parse(tsk->url, buf);
@@ -209,7 +209,7 @@ UPnPDeviceDirectory::Invoke(Upnp_EventType et, void *evp)
 void
 UPnPDeviceDirectory::ExpireDevices()
 {
-	const unsigned now = MonotonicClockS();
+	const auto now = std::chrono::steady_clock::now();
 	bool didsomething = false;
 
 	for (auto it = directories.begin();
@@ -230,8 +230,7 @@ UPnPDeviceDirectory::UPnPDeviceDirectory(UpnpClient_Handle _handle,
 					 UPnPDiscoveryListener *_listener)
 	:handle(_handle),
 	 listener(_listener),
-	 queue("DiscoveredQueue"),
-	 search_timeout(2), last_search(0)
+	 queue("DiscoveredQueue")
 {
 }
 
@@ -252,8 +251,8 @@ UPnPDeviceDirectory::Start()
 void
 UPnPDeviceDirectory::Search()
 {
-	const unsigned now = MonotonicClockS();
-	if (now - last_search < 10)
+	const auto now = std::chrono::steady_clock::now();
+	if (now - last_search < std::chrono::seconds(10))
 		return;
 	last_search = now;
 
@@ -274,7 +273,7 @@ UPnPDeviceDirectory::Search()
 std::vector<ContentDirectoryService>
 UPnPDeviceDirectory::GetDirectories()
 {
-	const ScopeLock protect(mutex);
+	const std::lock_guard<Mutex> protect(mutex);
 
 	ExpireDevices();
 
@@ -294,7 +293,7 @@ UPnPDeviceDirectory::GetDirectories()
 ContentDirectoryService
 UPnPDeviceDirectory::GetServer(const char *friendly_name)
 {
-	const ScopeLock protect(mutex);
+	const std::lock_guard<Mutex> protect(mutex);
 
 	ExpireDevices();
 

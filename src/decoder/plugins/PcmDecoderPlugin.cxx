@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -25,18 +25,36 @@
 #include "system/ByteOrder.hxx"
 #include "util/Domain.hxx"
 #include "util/ByteReverse.hxx"
+#include "util/StaticFifoBuffer.hxx"
 #include "util/NumberParser.hxx"
 #include "util/MimeType.hxx"
 #include "Log.hxx"
 
 #include <stdexcept>
 
+#include <assert.h>
 #include <string.h>
 
 static constexpr Domain pcm_decoder_domain("pcm_decoder");
 
+template<typename B>
+static bool
+FillBuffer(DecoderClient &client, InputStream &is, B &buffer)
+{
+	buffer.Shift();
+	auto w = buffer.Write();
+	assert(!w.IsEmpty());
+
+	size_t nbytes = decoder_read(client, is, w.data, w.size);
+	if (nbytes == 0 && is.LockIsEOF())
+		return false;
+
+	buffer.Append(nbytes);
+	return true;
+}
+
 static void
-pcm_stream_decode(Decoder &decoder, InputStream &is)
+pcm_stream_decode(DecoderClient &client, InputStream &is)
 {
 	AudioFormat audio_format = {
 		44100,
@@ -125,39 +143,42 @@ pcm_stream_decode(Decoder &decoder, InputStream &is)
 						      audio_format.sample_rate)
 		: SignedSongTime::Negative();
 
-	decoder_initialized(decoder, audio_format,
-			    is.IsSeekable(), total_time);
+	client.Ready(audio_format, is.IsSeekable(), total_time);
+
+	StaticFifoBuffer<uint8_t, 4096> buffer;
 
 	DecoderCommand cmd;
 	do {
-		char buffer[4096];
-
-		size_t nbytes = decoder_read(decoder, is,
-					     buffer, sizeof(buffer));
-
-		if (nbytes == 0 && is.LockIsEOF())
+		if (!FillBuffer(client, is, buffer))
 			break;
+
+		auto r = buffer.Read();
+		/* round down to the nearest frame size, because we
+		   must not pass partial frames to
+		   DecoderClient::SubmitData() */
+		r.size -= r.size % frame_size;
+		buffer.Consume(r.size);
 
 		if (reverse_endian)
 			/* make sure we deliver samples in host byte order */
-			reverse_bytes_16((uint16_t *)buffer,
-					 (uint16_t *)buffer,
-					 (uint16_t *)(buffer + nbytes));
+			reverse_bytes_16((uint16_t *)r.data,
+					 (uint16_t *)r.data,
+					 (uint16_t *)(r.data + r.size));
 
-		cmd = nbytes > 0
-			? decoder_data(decoder, is,
-				       buffer, nbytes, 0)
-			: decoder_get_command(decoder);
+		cmd = !r.IsEmpty()
+			? client.SubmitData(is, r.data, r.size, 0)
+			: client.GetCommand();
 		if (cmd == DecoderCommand::SEEK) {
-			uint64_t frame = decoder_seek_where_frame(decoder);
+			uint64_t frame = client.GetSeekFrame();
 			offset_type offset = frame * frame_size;
 
 			try {
 				is.LockSeek(offset);
-				decoder_command_finished(decoder);
+				buffer.Clear();
+				client.CommandFinished();
 			} catch (const std::runtime_error &e) {
 				LogError(e);
-				decoder_seek_error(decoder);
+				client.SeekError();
 			}
 
 			cmd = DecoderCommand::NONE;

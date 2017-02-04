@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -52,11 +52,11 @@ class WorkQueue {
 
 	// Status
 	// Worker threads having called exit
-	unsigned n_workers_exited;
-	bool ok;
+	unsigned n_workers_exited = 0;
+	bool ok = false;
 
-	unsigned n_threads;
-	pthread_t *threads;
+	unsigned n_threads = 0;
+	pthread_t *threads = nullptr;
 
 	// Synchronization
 	std::queue<T> queue;
@@ -68,17 +68,17 @@ public:
 	/** Create a WorkQueue
 	 * @param _name for message printing
 	 */
-	WorkQueue(const char *_name)
-		:name(_name),
-		 n_workers_exited(0),
-		 ok(false),
-		 n_threads(0), threads(nullptr)
+	explicit WorkQueue(const char *_name)
+		:name(_name)
 	{
 	}
 
 	~WorkQueue() {
 		setTerminateAndWait();
 	}
+
+	WorkQueue(const WorkQueue &) = delete;
+	WorkQueue &operator=(const WorkQueue &) = delete;
 
 	/** Start the worker threads.
 	 *
@@ -90,13 +90,14 @@ public:
 	 */
 	bool start(unsigned nworkers, void *(*workproc)(void *), void *arg)
 	{
-		const ScopeLock protect(mutex);
+		const std::lock_guard<Mutex> protect(mutex);
 
 		assert(nworkers > 0);
 		assert(!ok);
 		assert(n_threads == 0);
 		assert(threads == nullptr);
 
+		ok = true;
 		n_threads = nworkers;
 		threads = new pthread_t[n_threads];
 
@@ -109,7 +110,6 @@ public:
 			}
 		}
 
-		ok = true;
 		return true;
 	}
 
@@ -120,7 +120,7 @@ public:
 	template<typename U>
 	bool put(U &&u)
 	{
-		const ScopeLock protect(mutex);
+		const std::lock_guard<Mutex> protect(mutex);
 
 		queue.emplace(std::forward<U>(u));
 
@@ -135,7 +135,7 @@ public:
 	 */
 	void setTerminateAndWait()
 	{
-		const ScopeLock protect(mutex);
+		const std::lock_guard<Mutex> protect(mutex);
 
 		// Wait for all worker threads to have called workerExit()
 		ok = false;
@@ -166,7 +166,7 @@ public:
 	 */
 	bool take(T &tp)
 	{
-		const ScopeLock protect(mutex);
+		const std::lock_guard<Mutex> protect(mutex);
 
 		if (!ok)
 			return false;
@@ -192,7 +192,7 @@ public:
 	 */
 	void workerExit()
 	{
-		const ScopeLock protect(mutex);
+		const std::lock_guard<Mutex> protect(mutex);
 
 		n_workers_exited++;
 		ok = false;

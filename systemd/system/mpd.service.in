@@ -14,6 +14,15 @@ LimitRTTIME=infinity
 # disallow writing to /usr, /bin, /sbin, ...
 ProtectSystem=yes
 
+# more paranoid security settings
+NoNewPrivileges=yes
+ProtectKernelTunables=yes
+ProtectControlGroups=yes
+ProtectKernelModules=yes
+# AF_NETLINK is required by libsmbclient, or it will exit() .. *sigh*
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX AF_NETLINK
+RestrictNamespaces=yes
+
 [Install]
 WantedBy=multi-user.target
 Also=mpd.socket

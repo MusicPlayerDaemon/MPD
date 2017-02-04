@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * Copyright (C) 2010-2011 Philipp 'ph3-der-loewe' Schafft
  * Copyright (C) 2010-2011 Hans-Kristian 'maister' Arntzen
  *
@@ -58,6 +58,10 @@ public:
 		return &base;
 	}
 
+	static RoarOutput *Create(EventLoop &, const ConfigBlock &block) {
+		return new RoarOutput(block);
+	}
+
 	void Open(AudioFormat &audio_format);
 	void Close();
 
@@ -92,7 +96,7 @@ RoarOutput::RoarOutput(const ConfigBlock &block)
 inline int
 RoarOutput::GetVolume() const
 {
-	const ScopeLock protect(mutex);
+	const std::lock_guard<Mutex> protect(mutex);
 
 	if (vss == nullptr || !alive)
 		return -1;
@@ -116,7 +120,7 @@ RoarOutput::SetVolume(unsigned volume)
 {
 	assert(volume <= 100);
 
-	const ScopeLock protect(mutex);
+	const std::lock_guard<Mutex> protect(mutex);
 	if (vss == nullptr || !alive)
 		throw std::runtime_error("closed");
 
@@ -131,12 +135,6 @@ void
 roar_output_set_volume(RoarOutput &roar, unsigned volume)
 {
 	roar.SetVolume(volume);
-}
-
-static AudioOutput *
-roar_init(const ConfigBlock &block)
-{
-	return *new RoarOutput(block);
 }
 
 static void
@@ -177,7 +175,7 @@ roar_use_audio_format(struct roar_audio_info *info,
 inline void
 RoarOutput::Open(AudioFormat &audio_format)
 {
-	const ScopeLock protect(mutex);
+	const std::lock_guard<Mutex> protect(mutex);
 
 	if (roar_simple_connect(&con,
 				host.empty() ? nullptr : host.c_str(),
@@ -201,7 +199,7 @@ RoarOutput::Open(AudioFormat &audio_format)
 inline void
 RoarOutput::Close()
 {
-	const ScopeLock protect(mutex);
+	const std::lock_guard<Mutex> protect(mutex);
 
 	alive = false;
 
@@ -214,7 +212,7 @@ RoarOutput::Close()
 inline void
 RoarOutput::Cancel()
 {
-	const ScopeLock protect(mutex);
+	const std::lock_guard<Mutex> protect(mutex);
 
 	if (vss == nullptr)
 		return;
@@ -306,7 +304,7 @@ RoarOutput::SendTag(const Tag &tag)
 	if (vss == nullptr)
 		return;
 
-	const ScopeLock protect(mutex);
+	const std::lock_guard<Mutex> protect(mutex);
 
 	size_t cnt = 0;
 	struct roar_keyval vals[32];
@@ -348,26 +346,19 @@ RoarOutput::SendTag(const Tag &tag)
 	roar_vs_meta(vss, vals, cnt, &(err));
 }
 
-static void
-roar_send_tag(AudioOutput *ao, const Tag &meta)
-{
-	RoarOutput *self = (RoarOutput *)ao;
-	self->SendTag(meta);
-}
-
 typedef AudioOutputWrapper<RoarOutput> Wrapper;
 
 const struct AudioOutputPlugin roar_output_plugin = {
 	"roar",
 	nullptr,
-	roar_init,
+	&Wrapper::Init,
 	&Wrapper::Finish,
 	nullptr,
 	nullptr,
 	&Wrapper::Open,
 	&Wrapper::Close,
 	nullptr,
-	roar_send_tag,
+	&Wrapper::SendTag,
 	&Wrapper::Play,
 	nullptr,
 	&Wrapper::Cancel,

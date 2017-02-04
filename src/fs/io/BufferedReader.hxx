@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -35,14 +35,13 @@ class BufferedReader {
 
 	DynamicFifoBuffer<char> buffer;
 
-	bool eof;
+	bool eof = false;
 
-	unsigned line_number;
+	unsigned line_number = 0;
 
 public:
-	BufferedReader(Reader &_reader)
-		:reader(_reader), buffer(4096), eof(false),
-		 line_number(0) {}
+	explicit BufferedReader(Reader &_reader)
+		:reader(_reader), buffer(4096) {}
 
 	/**
 	 * Reset the internal state.  Should be called after rewinding

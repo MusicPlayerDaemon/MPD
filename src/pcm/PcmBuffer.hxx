@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -40,7 +40,7 @@ public:
 
 	/**
 	 * Get the buffer, and guarantee a minimum size.  This buffer becomes
-	 * invalid with the next pcm_buffer_get() call.
+	 * invalid with the next Get() call.
 	 *
 	 * This function will never return nullptr, even if size is
 	 * zero, because the PCM library uses the nullptr return value

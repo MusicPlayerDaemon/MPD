@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -21,37 +21,15 @@
 #define MPD_REPLAY_GAIN_CONFIG_HXX
 
 #include "check.h"
-#include "ReplayGainInfo.hxx"
-#include "Compiler.h"
 
-extern ReplayGainMode replay_gain_mode;
-extern float replay_gain_preamp;
-extern float replay_gain_missing_preamp;
-extern bool replay_gain_limit;
+struct ReplayGainConfig {
+	static constexpr bool DEFAULT_LIMIT = true;
 
-void
-replay_gain_global_init();
+	float preamp = 1.0;
 
-/**
- * Returns the current replay gain mode as a machine-readable string.
- */
-gcc_pure
-const char *
-replay_gain_get_mode_string();
+	float missing_preamp = 1.0;
 
-/**
- * Sets the replay gain mode, parsed from a string.
- *
- * @return true on success, false if the string could not be parsed
- */
-bool
-replay_gain_set_mode_string(const char *p);
-
-/**
-  * Returns the "real" mode according to the "auto" setting"
-  */
-gcc_pure
-ReplayGainMode
-replay_gain_get_real_mode(bool random_mode);
+	bool limit = DEFAULT_LIMIT;
+};
 
 #endif

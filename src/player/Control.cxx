@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -21,6 +21,7 @@
 #include "Control.hxx"
 #include "Idle.hxx"
 #include "DetachedSong.hxx"
+#include "output/MultipleOutputs.hxx"
 
 #include <algorithm>
 
@@ -29,17 +30,14 @@
 PlayerControl::PlayerControl(PlayerListener &_listener,
 			     MultipleOutputs &_outputs,
 			     unsigned _buffer_chunks,
-			     unsigned _buffered_before_play)
+			     unsigned _buffered_before_play,
+			     AudioFormat _configured_audio_format,
+			     const ReplayGainConfig &_replay_gain_config)
 	:listener(_listener), outputs(_outputs),
 	 buffer_chunks(_buffer_chunks),
 	 buffered_before_play(_buffered_before_play),
-	 command(PlayerCommand::NONE),
-	 state(PlayerState::STOP),
-	 error_type(PlayerError::NONE),
-	 tagged_song(nullptr),
-	 next_song(nullptr),
-	 total_play_time(0),
-	 border_pause(false)
+	 configured_audio_format(_configured_audio_format),
+	 replay_gain_config(_replay_gain_config)
 {
 }
 
@@ -49,12 +47,24 @@ PlayerControl::~PlayerControl()
 	delete tagged_song;
 }
 
+bool
+PlayerControl::WaitOutputConsumed(unsigned threshold)
+{
+	bool result = outputs.Check() < threshold;
+	if (!result && command == PlayerCommand::NONE) {
+		Wait();
+		result = outputs.Check() < threshold;
+	}
+
+	return result;
+}
+
 void
 PlayerControl::Play(DetachedSong *song)
 {
 	assert(song != nullptr);
 
-	const ScopeLock protect(mutex);
+	const std::lock_guard<Mutex> protect(mutex);
 	SeekLocked(song, SongTime::zero());
 
 	if (state == PlayerState::PAUSE)
@@ -108,14 +118,14 @@ PlayerControl::PauseLocked()
 void
 PlayerControl::LockPause()
 {
-	const ScopeLock protect(mutex);
+	const std::lock_guard<Mutex> protect(mutex);
 	PauseLocked();
 }
 
 void
 PlayerControl::LockSetPause(bool pause_flag)
 {
-	const ScopeLock protect(mutex);
+	const std::lock_guard<Mutex> protect(mutex);
 
 	switch (state) {
 	case PlayerState::STOP:
@@ -136,7 +146,7 @@ PlayerControl::LockSetPause(bool pause_flag)
 void
 PlayerControl::LockSetBorderPause(bool _border_pause)
 {
-	const ScopeLock protect(mutex);
+	const std::lock_guard<Mutex> protect(mutex);
 	border_pause = _border_pause;
 }
 
@@ -145,7 +155,7 @@ PlayerControl::LockGetStatus()
 {
 	player_status status;
 
-	const ScopeLock protect(mutex);
+	const std::lock_guard<Mutex> protect(mutex);
 	SynchronousCommand(PlayerCommand::REFRESH);
 
 	status.state = state;
@@ -173,14 +183,14 @@ PlayerControl::SetError(PlayerError type, std::exception_ptr &&_error)
 void
 PlayerControl::LockClearError()
 {
-	const ScopeLock protect(mutex);
+	const std::lock_guard<Mutex> protect(mutex);
 	ClearError();
 }
 
 void
 PlayerControl::LockSetTaggedSong(const DetachedSong &song)
 {
-	const ScopeLock protect(mutex);
+	const std::lock_guard<Mutex> protect(mutex);
 	delete tagged_song;
 	tagged_song = new DetachedSong(song);
 }
@@ -197,7 +207,7 @@ PlayerControl::LockEnqueueSong(DetachedSong *song)
 {
 	assert(song != nullptr);
 
-	const ScopeLock protect(mutex);
+	const std::lock_guard<Mutex> protect(mutex);
 	EnqueueSongLocked(song);
 }
 
@@ -236,7 +246,7 @@ PlayerControl::LockSeek(DetachedSong *song, SongTime t)
 	assert(song != nullptr);
 
 	{
-		const ScopeLock protect(mutex);
+		const std::lock_guard<Mutex> protect(mutex);
 		SeekLocked(song, t);
 	}
 

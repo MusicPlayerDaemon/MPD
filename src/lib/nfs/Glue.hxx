@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -23,13 +23,21 @@
 #include "check.h"
 #include "Compiler.h"
 
+class EventLoop;
 class NfsConnection;
 
 void
-nfs_init();
+nfs_init(EventLoop &event_loop);
 
 void
 nfs_finish();
+
+/**
+ * Return the EventLoop that was passed to nfs_init().
+ */
+gcc_const
+EventLoop &
+nfs_get_event_loop();
 
 gcc_pure
 NfsConnection &

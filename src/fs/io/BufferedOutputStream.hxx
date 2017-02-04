@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -44,7 +44,7 @@ class BufferedOutputStream {
 	DynamicFifoBuffer<char> buffer;
 
 public:
-	BufferedOutputStream(OutputStream &_os)
+	explicit BufferedOutputStream(OutputStream &_os)
 		:os(_os), buffer(32768) {}
 
 	void Write(const void *data, size_t size);

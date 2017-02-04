@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -20,7 +20,6 @@
 #include "config.h"
 #include "PcmConvert.hxx"
 #include "ConfiguredResampler.hxx"
-#include "AudioFormat.hxx"
 #include "util/ConstBuffer.hxx"
 
 #include <assert.h>
@@ -114,6 +113,17 @@ PcmConvert::Close()
 #ifndef NDEBUG
 	src_format.Clear();
 	dest_format.Clear();
+#endif
+}
+
+void
+PcmConvert::Reset()
+{
+	if (enable_resampler)
+		resampler.Reset();
+
+#ifdef ENABLE_DSD
+	dsd.Reset();
 #endif
 }
 

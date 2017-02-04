@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -44,8 +44,6 @@ pcm_dsd_to_dop(PcmBuffer &buffer, unsigned channels,
 	       ConstBuffer<uint8_t> _src)
 {
 	assert(audio_valid_channel_count(channels));
-	assert(!_src.IsNull());
-	assert(_src.size > 0);
 	assert(_src.size % channels == 0);
 
 	const unsigned num_src_samples = _src.size;

@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -93,7 +93,8 @@ public:
 	gcc_const
 	static bool TestDefaultDevice();
 
-	static PulseOutput *Create(const ConfigBlock &block);
+	static PulseOutput *Create(EventLoop &event_loop,
+				   const ConfigBlock &block);
 
 	void Enable();
 	void Disable();
@@ -101,7 +102,7 @@ public:
 	void Open(AudioFormat &audio_format);
 	void Close();
 
-	unsigned Delay();
+	std::chrono::steady_clock::duration Delay();
 	size_t Play(const void *chunk, size_t size);
 	void Cancel();
 	bool Pause();
@@ -415,7 +416,7 @@ PulseOutput::SetupContext()
 }
 
 PulseOutput *
-PulseOutput::Create(const ConfigBlock &block)
+PulseOutput::Create(EventLoop &, const ConfigBlock &block)
 {
 	return new PulseOutput(block);
 }
@@ -740,16 +741,16 @@ PulseOutput::StreamPause(bool pause)
 				     "pa_stream_cork() has failed");
 }
 
-inline unsigned
+inline std::chrono::steady_clock::duration
 PulseOutput::Delay()
 {
 	Pulse::LockGuard lock(mainloop);
 
-	unsigned result = 0;
+	auto result = std::chrono::steady_clock::duration::zero();
 	if (base.pause && pa_stream_is_corked(stream) &&
 	    pa_stream_get_state(stream) == PA_STREAM_READY)
 		/* idle while paused */
-		result = 1000;
+		result = std::chrono::seconds(1);
 
 	return result;
 }

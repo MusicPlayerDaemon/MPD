@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -120,24 +120,6 @@ spl_map_to_fs(const char *name_utf8)
 				    "Bad playlist name");
 
 	return path_fs;
-}
-
-/**
- * Throw an exception for the current errno.
- */
-static void
-ThrowPlaylistErrno()
-{
-	switch (errno) {
-	case ENOENT:
-		throw PlaylistError(PlaylistResult::NO_SUCH_LIST,
-				    "No such playlist");
-
-	default:
-		throw std::system_error(std::error_code(errno,
-							std::system_category()),
-					"Error");
-	}
 }
 
 static bool
@@ -353,7 +335,7 @@ try {
 	const auto path_fs = spl_map_to_fs(utf8path);
 	assert(!path_fs.IsNull());
 
-	FileOutputStream fos(path_fs, FileOutputStream::Mode::APPEND_EXISTING);
+	FileOutputStream fos(path_fs, FileOutputStream::Mode::APPEND_OR_CREATE);
 
 	if (fos.Tell() / (MPD_PATH_MAX + 1) >= playlist_max_length)
 		throw PlaylistError(PlaylistResult::TOO_LARGE,
@@ -384,16 +366,19 @@ spl_append_uri(const char *utf8file,
 static void
 spl_rename_internal(Path from_path_fs, Path to_path_fs)
 {
-	if (!FileExists(from_path_fs))
-		throw PlaylistError(PlaylistResult::NO_SUCH_LIST,
-				    "No such playlist");
-
 	if (FileExists(to_path_fs))
 		throw PlaylistError(PlaylistResult::LIST_EXISTS,
 				    "Playlist exists already");
 
-	if (!RenameFile(from_path_fs, to_path_fs))
-		ThrowPlaylistErrno();
+	try {
+		RenameFile(from_path_fs, to_path_fs);
+	} catch (const std::system_error &e) {
+		if (IsFileNotFound(e))
+			throw PlaylistError(PlaylistResult::NO_SUCH_LIST,
+					    "No such playlist");
+		else
+			throw;
+	}
 
 	idle_add(IDLE_STORED_PLAYLIST);
 }

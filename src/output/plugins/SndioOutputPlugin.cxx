@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -24,7 +24,15 @@
 #include "util/Domain.hxx"
 #include "Log.hxx"
 
+/* work around a C++ incompatibility if the sndio API is emulated by
+   libroar: libroar's "struct roar_service_stream" has a member named
+   "new", which is an illegal identifier in C++ */
+#define new new_
+
 #include <sndio.h>
+
+/* undo the libroar workaround */
+#undef new
 
 #include <stdexcept>
 
@@ -47,11 +55,11 @@ class SndioOutput {
 public:
 	SndioOutput(const ConfigBlock &block);
 
-	static SndioOutput *Create(const ConfigBlock &block);
+	static SndioOutput *Create(EventLoop &event_loop,
+				   const ConfigBlock &block);
 
 	void Open(AudioFormat &audio_format);
 	void Close();
-	unsigned Delay() const;
 	size_t Play(const void *chunk, size_t size);
 	void Cancel();
 };
@@ -65,7 +73,7 @@ SndioOutput::SndioOutput(const ConfigBlock &block)
 }
 
 SndioOutput *
-SndioOutput::Create(const ConfigBlock &block)
+SndioOutput::Create(EventLoop &, const ConfigBlock &block)
 {
 	return new SndioOutput(block);
 }

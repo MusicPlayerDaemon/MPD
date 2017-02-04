@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -74,7 +74,7 @@ public:
 		 server(std::move(_server)),
 		 export_name(std::move(_export_name)),
 		 state(State::INITIAL) {
-		nfs_init();
+		nfs_init(_loop);
 	}
 
 	~NfsStorage() {
@@ -102,14 +102,14 @@ public:
 		assert(state == State::CONNECTING);
 
 		SetState(State::DELAY, std::move(e));
-		TimeoutMonitor::ScheduleSeconds(60);
+		TimeoutMonitor::Schedule(std::chrono::minutes(1));
 	}
 
 	void OnNfsConnectionDisconnected(std::exception_ptr e) final {
 		assert(state == State::READY);
 
 		SetState(State::DELAY, std::move(e));
-		TimeoutMonitor::ScheduleSeconds(5);
+		TimeoutMonitor::Schedule(std::chrono::seconds(5));
 	}
 
 	/* virtual methods from DeferredMonitor */
@@ -133,7 +133,7 @@ private:
 	void SetState(State _state) {
 		assert(GetEventLoop().IsInside());
 
-		const ScopeLock protect(mutex);
+		const std::lock_guard<Mutex> protect(mutex);
 		state = _state;
 		cond.broadcast();
 	}
@@ -141,7 +141,7 @@ private:
 	void SetState(State _state, std::exception_ptr &&e) {
 		assert(GetEventLoop().IsInside());
 
-		const ScopeLock protect(mutex);
+		const std::lock_guard<Mutex> protect(mutex);
 		state = _state;
 		last_exception = std::move(e);
 		cond.broadcast();
@@ -164,7 +164,7 @@ private:
 	}
 
 	void WaitConnected() {
-		const ScopeLock protect(mutex);
+		const std::lock_guard<Mutex> protect(mutex);
 
 		while (true) {
 			switch (state) {
@@ -389,7 +389,7 @@ NfsStorage::OpenDirectory(const char *uri_utf8)
 static Storage *
 CreateNfsStorageURI(EventLoop &event_loop, const char *base)
 {
-	if (memcmp(base, "nfs://", 6) != 0)
+	if (strncmp(base, "nfs://", 6) != 0)
 		return nullptr;
 
 	const char *p = base + 6;

@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,9 +17,10 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_DECODER_INTERNAL_HXX
-#define MPD_DECODER_INTERNAL_HXX
+#ifndef MPD_DECODER_BRIDGE_HXX
+#define MPD_DECODER_BRIDGE_HXX
 
+#include "Client.hxx"
 #include "ReplayGainInfo.hxx"
 
 #include <exception>
@@ -29,7 +30,12 @@ struct MusicChunk;
 struct DecoderControl;
 struct Tag;
 
-struct Decoder {
+/**
+ * A bridge between the #DecoderClient interface and the MPD core
+ * (#DecoderControl, #MusicPipe etc.).
+ */
+class DecoderBridge final : public DecoderClient {
+public:
 	DecoderControl &dc;
 
 	/**
@@ -58,9 +64,8 @@ struct Decoder {
 	bool initial_seek_running = false;
 
 	/**
-	 * This flag is set by decoder_seek_time(), and checked by
-	 * decoder_command_finished().  It is used to clean up after
-	 * seeking.
+	 * This flag is set by GetSeekTime(), and checked by
+	 * CommandFinished().  It is used to clean up after seeking.
 	 */
 	bool seeking = false;
 
@@ -78,7 +83,7 @@ struct Decoder {
 	Tag *decoder_tag = nullptr;
 
 	/** the chunk currently being written to */
-	MusicChunk *chunk = nullptr;
+	MusicChunk *current_chunk = nullptr;
 
 	ReplayGainInfo replay_gain_info;
 
@@ -94,12 +99,22 @@ struct Decoder {
 	 */
 	std::exception_ptr error;
 
-	Decoder(DecoderControl &_dc, bool _initial_seek_pending, Tag *_tag)
+	DecoderBridge(DecoderControl &_dc, bool _initial_seek_pending,
+		      Tag *_tag)
 		:dc(_dc),
 		 initial_seek_pending(_initial_seek_pending),
 		 song_tag(_tag) {}
 
-	~Decoder();
+	~DecoderBridge();
+
+	/**
+	 * Should be read operation be cancelled?  That is the case when the
+	 * player thread has sent a command such as "STOP".
+	 *
+	 * Caller must lock the #DecoderControl object.
+	 */
+	gcc_pure
+	bool CheckCancelRead() const;
 
 	/**
 	 * Returns the current chunk the decoder writes to, or allocates a new
@@ -115,6 +130,47 @@ struct Decoder {
 	 * Caller must not lock the #DecoderControl object.
 	 */
 	void FlushChunk();
+
+	/* virtual methods from DecoderClient */
+	void Ready(AudioFormat audio_format,
+		   bool seekable, SignedSongTime duration) override;
+	DecoderCommand GetCommand() override;
+	void CommandFinished() override;
+	SongTime GetSeekTime() override;
+	uint64_t GetSeekFrame() override;
+	void SeekError() override;
+	InputStreamPtr OpenUri(const char *uri) override;
+	size_t Read(InputStream &is, void *buffer, size_t length) override;
+	void SubmitTimestamp(double t) override;
+	DecoderCommand SubmitData(InputStream *is,
+				  const void *data, size_t length,
+				  uint16_t kbit_rate) override;
+	DecoderCommand SubmitTag(InputStream *is, Tag &&tag) override ;
+	void SubmitReplayGain(const ReplayGainInfo *replay_gain_info) override;
+	void SubmitMixRamp(MixRampInfo &&mix_ramp) override;
+
+private:
+	/**
+	 * Checks if we need an "initial seek".  If so, then the
+	 * initial seek is prepared, and the function returns true.
+	 */
+	bool PrepareInitialSeek();
+
+	/**
+	 * Returns the current decoder command.  May return a
+	 * "virtual" synthesized command, e.g. to seek to the
+	 * beginning of the CUE track.
+	 */
+	DecoderCommand GetVirtualCommand();
+	DecoderCommand LockGetVirtualCommand();
+
+	/**
+	 * Sends a #Tag as-is to the #MusicPipe.  Flushes the current
+	 * chunk (DecoderBridge::chunk) if there is one.
+	 */
+	DecoderCommand DoSendTag(const Tag &tag);
+
+	bool UpdateStreamTag(InputStream *is);
 };
 
 #endif

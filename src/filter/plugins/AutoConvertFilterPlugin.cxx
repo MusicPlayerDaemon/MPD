@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -45,7 +45,15 @@ class AutoConvertFilter final : public Filter {
 public:
 	AutoConvertFilter(std::unique_ptr<Filter> &&_filter,
 			  std::unique_ptr<Filter> &&_convert)
-		:filter(std::move(_filter)), convert(std::move(_convert)) {}
+		:Filter(_filter->GetOutAudioFormat()),
+		 filter(std::move(_filter)), convert(std::move(_convert)) {}
+
+	void Reset() override {
+		filter->Reset();
+
+		if (convert)
+			convert->Reset();
+	}
 
 	ConstBuffer<void> FilterPCM(ConstBuffer<void> src) override;
 };
@@ -92,11 +100,8 @@ PreparedAutoConvertFilter::Open(AudioFormat &in_audio_format)
 ConstBuffer<void>
 AutoConvertFilter::FilterPCM(ConstBuffer<void> src)
 {
-	if (convert != nullptr) {
+	if (convert != nullptr)
 		src = convert->FilterPCM(src);
-		if (src.IsNull())
-			return nullptr;
-	}
 
 	return filter->FilterPCM(src);
 }

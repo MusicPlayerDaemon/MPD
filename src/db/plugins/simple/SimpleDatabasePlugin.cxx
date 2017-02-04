@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -289,6 +289,8 @@ SimpleDatabase::Visit(const DatabaseSelection &selection,
 				const LightSong song2 = song->Export();
 				if (selection.Match(song2))
 					visit_song(song2);
+
+				return;
 			}
 		}
 	}

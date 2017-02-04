@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -37,6 +37,14 @@ bool uri_has_scheme(const char *uri);
 gcc_pure
 std::string
 uri_get_scheme(const char *uri);
+
+/**
+ * Returns the URI path (including the query string) or nullptr if the
+ * given URI has no path.
+ */
+gcc_pure gcc_nonnull_all
+const char *
+uri_get_path(const char *uri);
 
 gcc_pure
 const char *

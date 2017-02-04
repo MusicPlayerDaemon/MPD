@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -27,6 +27,7 @@
 #include "mixer/Listener.hxx"
 #include "player/Control.hxx"
 #include "player/Listener.hxx"
+#include "ReplayGainMode.hxx"
 #include "Chrono.hxx"
 #include "Compiler.h"
 
@@ -52,10 +53,14 @@ struct Partition final : QueueListener, PlayerListener, MixerListener {
 
 	PlayerControl pc;
 
+	ReplayGainMode replay_gain_mode = ReplayGainMode::OFF;
+
 	Partition(Instance &_instance,
 		  unsigned max_length,
 		  unsigned buffer_chunks,
-		  unsigned buffered_before_play);
+		  unsigned buffered_before_play,
+		  AudioFormat configured_audio_format,
+		  const ReplayGainConfig &replay_gain_config);
 
 	void EmitGlobalEvent(unsigned mask) {
 		global_events.OrMask(mask);
@@ -175,6 +180,17 @@ struct Partition final : QueueListener, PlayerListener, MixerListener {
 	void SetConsume(bool new_value) {
 		playlist.SetConsume(new_value);
 	}
+
+	void SetReplayGainMode(ReplayGainMode mode) {
+		replay_gain_mode = mode;
+		UpdateEffectiveReplayGainMode();
+	}
+
+	/**
+	 * Publishes the effective #ReplayGainMode to all subsystems.
+	 * #ReplayGainMode::AUTO is substituted.
+	 */
+	void UpdateEffectiveReplayGainMode();
 
 #ifdef ENABLE_DATABASE
 	/**

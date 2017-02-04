@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -21,104 +21,6 @@
 
 #ifdef WIN32
 #include <windows.h>
-#elif defined(__APPLE__)
-#include <mach/mach_time.h>
-#else
-#include <time.h>
-#ifndef CLOCK_MONOTONIC
-#include <sys/time.h>
-#endif
-#endif
-
-unsigned
-MonotonicClockS(void)
-{
-#ifdef WIN32
-	return GetTickCount() / 1000;
-#elif defined(__APPLE__) /* OS X does not define CLOCK_MONOTONIC */
-	static mach_timebase_info_data_t base;
-	if (base.denom == 0)
-		(void)mach_timebase_info(&base);
-
-	return (unsigned)(((double)mach_absolute_time() * base.numer / 1000)
-			  / base.denom / 1000000);
-#elif defined(CLOCK_MONOTONIC)
-	struct timespec ts;
-	clock_gettime(CLOCK_MONOTONIC, &ts);
-	return ts.tv_sec;
-#else
-	/* we have no monotonic clock, fall back to time() */
-	return time(nullptr);
-#endif
-}
-
-unsigned
-MonotonicClockMS(void)
-{
-#ifdef WIN32
-	return GetTickCount();
-#elif defined(__APPLE__) /* OS X does not define CLOCK_MONOTONIC */
-	static mach_timebase_info_data_t base;
-	if (base.denom == 0)
-		(void)mach_timebase_info(&base);
-
-	return (unsigned)(((double)mach_absolute_time() * base.numer)
-			  / base.denom / 1000000);
-#elif defined(CLOCK_MONOTONIC)
-	struct timespec ts;
-	clock_gettime(CLOCK_MONOTONIC, &ts);
-	return ts.tv_sec * 1000 + ts.tv_nsec / 1000000;
-#else
-	/* we have no monotonic clock, fall back to gettimeofday() */
-	struct timeval tv;
-	gettimeofday(&tv, 0);
-	return tv.tv_sec * 1000 + tv.tv_usec / 1000;
-#endif
-}
-
-uint64_t
-MonotonicClockUS(void)
-{
-#ifdef WIN32
-	LARGE_INTEGER l_value, l_frequency;
-
-	if (!QueryPerformanceCounter(&l_value) ||
-	    !QueryPerformanceFrequency(&l_frequency))
-		return 0;
-
-	uint64_t value = l_value.QuadPart;
-	uint64_t frequency = l_frequency.QuadPart;
-
-	if (frequency > 1000000) {
-		value *= 10000;
-		value /= frequency / 100;
-	} else if (frequency < 1000000) {
-		value *= 10000;
-		value /= frequency;
-		value *= 100;
-	}
-
-	return value;
-#elif defined(__APPLE__) /* OS X does not define CLOCK_MONOTONIC */
-	static mach_timebase_info_data_t base;
-	if (base.denom == 0)
-		(void)mach_timebase_info(&base);
-
-	return (uint64_t)(((double)mach_absolute_time() * base.numer)
-		/ base.denom / 1000);
-#elif defined(CLOCK_MONOTONIC)
-	struct timespec ts;
-	clock_gettime(CLOCK_MONOTONIC, &ts);
-	return (uint64_t)ts.tv_sec * 1000000 + (uint64_t)(ts.tv_nsec / 1000);
-#else
-	/* we have no monotonic clock, fall back to gettimeofday() */
-	struct timeval tv;
-	gettimeofday(&tv, 0);
-	return (uint64_t)tv.tv_sec * 1000 + (uint64_t)tv.tv_usec;
-#endif
-}
-
-#ifdef WIN32
 
 gcc_const
 static unsigned

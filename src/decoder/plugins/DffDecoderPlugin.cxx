@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2016 The Music Player Daemon Project
+ * Copyright (C) 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -28,6 +28,8 @@
 #include "input/InputStream.hxx"
 #include "CheckAudioFormat.hxx"
 #include "tag/TagHandler.hxx"
+#include "tag/TagBuilder.hxx"
+#include "DetachedSong.hxx"
 #include "fs/Path.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "thread/Cond.hxx"
@@ -90,14 +92,14 @@ get_subsong(const char* path) {
 	if (length > 0) {
 		const char* ptr = path + length + 1;
 		char area = '\0';
-		unsigned track = 0;
+		unsigned track_index = 0;
 		char suffix[4];
-		sscanf(ptr, DSDIFF_TRACKXXX_FMT, &area, &track, suffix);
+		sscanf(ptr, DSDIFF_TRACKXXX_FMT, &area, &track_index, suffix);
 		if (area == 'M') {
-			track += sacd_reader->get_tracks(AREA_TWOCH);
+			track_index += sacd_reader->get_tracks(AREA_TWOCH);
 		}
-		track--;
-		return track;
+		track_index--;
+		return track_index;
 	}
 	return 0;
 }
@@ -153,6 +155,16 @@ dsdiff_update_toc(const char* path) {
 	return true;
 }
 
+static void
+dsdiff_scan_info(unsigned track, const TagHandler& handler, void* handler_ctx) {
+	string tag_value = to_string(track + 1);
+	tag_handler_invoke_tag(handler, handler_ctx, TAG_TRACK, tag_value.c_str());
+	tag_handler_invoke_duration(handler, handler_ctx, SongTime::FromS(sacd_reader->get_duration(track)));
+	sacd_reader->get_info(track, handler, handler_ctx);
+	auto track_format = sacd_reader->is_dst() ? "DST" : "DSD";
+	tag_handler_invoke_pair(handler, handler_ctx, "codec", track_format);
+}
+
 static bool
 dsdiff_init(const ConfigBlock& block) {
 	param_dstdec_threads = block.GetBlockValue("dstdec_threads", DST_DECODER_THREADS);
@@ -177,42 +189,44 @@ dsdiff_finish() {
 	dsdiff_update_toc(nullptr);
 }
 
-static AllocatedString<>
-dsdiff_container_scan(Path path_fs, const unsigned int tnum) {
+static std::forward_list<DetachedSong>
+dsdiff_container_scan(Path path_fs) {
+	std::forward_list<DetachedSong> list;
 	if (path_fs.IsNull()) {
-		return param_single_track ? AllocatedString<>::Empty() : AllocatedString<>::Null();
+		if (!param_single_track) {
+			list.emplace_after(list.before_begin(), "multitrack_dsdiff");
+		}
+		return list;
 	}
 	if (!dsdiff_update_toc(path_fs.c_str())) {
-		return nullptr;
+		return list;
 	}
+	TagBuilder tag_builder;
+	auto tail = list.before_begin();
+	const char* suffix = uri_get_suffix(path_fs.c_str());
+	char track_name[64];
 	unsigned twoch_count = sacd_reader->get_tracks(AREA_TWOCH);
 	unsigned mulch_count = sacd_reader->get_tracks(AREA_MULCH);
-	if (twoch_count + mulch_count == 1) {
-		return nullptr;
+	if (twoch_count + mulch_count < 2) {
+		return list;
 	}
-	unsigned track = tnum - 1;
-	if (param_playable_area == AREA_MULCH) {
-		track += twoch_count;
-	}
-	if (track < twoch_count) {
+	if (twoch_count > 0 && param_playable_area != AREA_MULCH) {
 		sacd_reader->select_area(AREA_TWOCH);
-	}
-	else {
-		if (param_playable_area == AREA_TWOCH) {
-			return nullptr;
-		}
-		track -= twoch_count;
-		if (track < mulch_count) {
-			sacd_reader->select_area(AREA_MULCH);
-		}
-		else {
-			return nullptr;
+		for (unsigned track = 0; track < twoch_count; track++) {
+			dsdiff_scan_info(track, add_tag_handler, &tag_builder);
+			sprintf(track_name, DSDIFF_TRACKXXX_FMT, '2', track + 1, suffix);
+			tail = list.emplace_after(tail, track_name, tag_builder.Commit());
 		}
 	}
-	char area = sacd_reader->get_channels() > 2 ? 'M' : '2';
-	const char* suffix = uri_get_suffix(path_fs.c_str());
-	return FormatString(DSDIFF_TRACKXXX_FMT, area, track + 1, suffix);
-	return nullptr;
+	if (mulch_count > 0 && param_playable_area != AREA_TWOCH) {
+		sacd_reader->select_area(AREA_MULCH);
+		for (unsigned track = 0; track < mulch_count; track++) {
+			dsdiff_scan_info(track, add_tag_handler, &tag_builder);
+			sprintf(track_name, DSDIFF_TRACKXXX_FMT, 'M', track + twoch_count + 1, suffix);
+			tail = list.emplace_after(tail, track_name, tag_builder.Commit());
+		}
+	}
+	return list;
 }
 
 static void
@@ -223,7 +237,7 @@ bit_reverse_buffer(uint8_t* p, uint8_t* end) {
 }
 
 static void
-dsdiff_file_decode(Decoder& decoder, Path path_fs) {
+dsdiff_file_decode(DecoderClient &client, Path path_fs) {
 	string path_container = get_container_path(path_fs.c_str());
 	if (!dsdiff_update_toc(path_container.c_str())) {
 		return;
@@ -262,7 +276,7 @@ dsdiff_file_decode(Decoder& decoder, Path path_fs) {
 	// initialize decoder
 	AudioFormat audio_format = CheckAudioFormat(dsd_samplerate / 8, SampleFormat::DSD, dsd_channels);
 	SongTime songtime = SongTime::FromS(sacd_reader->get_duration(track));
-	decoder_initialized(decoder, audio_format, true, songtime);
+	client.Ready(audio_format, true, songtime);
 
 	// play
 	uint8_t* dsd_data;
@@ -270,7 +284,7 @@ dsdiff_file_decode(Decoder& decoder, Path path_fs) {
 	size_t dsd_size = 0;
 	size_t dst_size = 0;
 	dst_decoder_t* dst_decoder = nullptr;
-	DecoderCommand cmd = decoder_get_command(decoder);
+	auto cmd = client.GetCommand();
 	for (;;) {
 		int slot_nr = dst_decoder ? dst_decoder->get_slot_nr() : 0;
 		dsd_data = dsd_buf.data() + dsd_buf_size * slot_nr;
@@ -305,7 +319,7 @@ dsdiff_file_decode(Decoder& decoder, Path path_fs) {
 					if (param_lsbitfirst) {
 						bit_reverse_buffer(dsd_data, dsd_data + dsd_size);
 					}
-					cmd = decoder_data(decoder, nullptr, dsd_data, dsd_size, dsd_samplerate / 1000);
+					cmd = client.SubmitData(nullptr, dsd_data, dsd_size, dsd_samplerate / 1000);
 				}
 			}
 		}
@@ -322,7 +336,7 @@ dsdiff_file_decode(Decoder& decoder, Path path_fs) {
 					if (param_lsbitfirst) {
 						bit_reverse_buffer(dsd_data, dsd_data + dsd_size);
 					}
-					cmd = decoder_data(decoder, nullptr, dsd_data, dsd_size, dsd_samplerate / 1000);
+					cmd = client.SubmitData(nullptr, dsd_data, dsd_size, dsd_samplerate / 1000);
 					if (cmd == DecoderCommand::STOP || cmd == DecoderCommand::SEEK) {
 						break;
 					}
@@ -337,14 +351,14 @@ dsdiff_file_decode(Decoder& decoder, Path path_fs) {
 			break;
 		}
 		if (cmd == DecoderCommand::SEEK) {
-			double seconds = decoder_seek_time(decoder).ToDoubleS();
+			double seconds = client.GetSeekTime().ToDoubleS();
 			if (sacd_reader->seek(seconds)) {
-				decoder_command_finished(decoder);
+				client.CommandFinished();
 			}
 			else {
-				decoder_seek_error(decoder);
+				client.SeekError();
 			}
-			cmd = decoder_get_command(decoder);
+			cmd = client.GetCommand();
 		}
 	}
 	if (dst_decoder) {
@@ -356,10 +370,7 @@ dsdiff_file_decode(Decoder& decoder, Path path_fs) {
 static bool
 dsdiff_scan_file(Path path_fs, const struct TagHandler& handler, void* handler_ctx) {
 	string path_container = get_container_path(path_fs.c_str());
-	if (path_container.empty()) {
-		return false;
-	}
-	if (!dsdiff_update_toc(path_container.c_str())) {
+	if (path_container.empty() || !dsdiff_update_toc(path_container.c_str())) {
 		return false;
 	}
 	unsigned twoch_count = sacd_reader->get_tracks(AREA_TWOCH);
@@ -378,13 +389,7 @@ dsdiff_scan_file(Path path_fs, const struct TagHandler& handler, void* handler_c
 			return false;
 		}
 	}
-	string tag_value = to_string(track + 1);
-	tag_handler_invoke_tag(handler, handler_ctx, TAG_TRACK, tag_value.c_str());
-	double duration = sacd_reader->get_duration(track);
-	tag_handler_invoke_duration(handler, handler_ctx, SongTime::FromS(duration));
-	sacd_reader->get_info(track, handler, handler_ctx);
-	const char* track_format = sacd_reader->is_dst() ? "DST" : "DSD";
-	tag_handler_invoke_pair(handler, handler_ctx, "codec", track_format);
+	dsdiff_scan_info(track, handler, handler_ctx);
 	return true;
 }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -21,9 +21,9 @@
 #include "MikmodDecoderPlugin.hxx"
 #include "../DecoderAPI.hxx"
 #include "tag/TagHandler.hxx"
-#include "system/FatalError.hxx"
 #include "fs/Path.hxx"
 #include "util/Domain.hxx"
+#include "util/RuntimeError.hxx"
 #include "Log.hxx"
 
 #include <mikmod.h>
@@ -116,8 +116,8 @@ mikmod_decoder_init(const ConfigBlock &block)
 	mikmod_loop = block.GetBlockValue("loop", false);
 	mikmod_sample_rate = block.GetBlockValue("sample_rate", 44100u);
 	if (!audio_valid_sample_rate(mikmod_sample_rate))
-		FormatFatalError("Invalid sample rate in line %d: %u",
-				 block.line, mikmod_sample_rate);
+		throw FormatRuntimeError("Invalid sample rate in line %d: %u",
+					 block.line, mikmod_sample_rate);
 
 	md_device = 0;
 	md_reverb = 0;
@@ -147,7 +147,7 @@ mikmod_decoder_finish(void)
 }
 
 static void
-mikmod_decoder_file_decode(Decoder &decoder, Path path_fs)
+mikmod_decoder_file_decode(DecoderClient &client, Path path_fs)
 {
 	/* deconstify the path because libmikmod wants a non-const
 	   string pointer */
@@ -170,15 +170,14 @@ mikmod_decoder_file_decode(Decoder &decoder, Path path_fs)
 	const AudioFormat audio_format(mikmod_sample_rate, SampleFormat::S16, 2);
 	assert(audio_format.IsValid());
 
-	decoder_initialized(decoder, audio_format, false,
-			    SignedSongTime::Negative());
+	client.Ready(audio_format, false, SignedSongTime::Negative());
 
 	Player_Start(handle);
 
 	DecoderCommand cmd = DecoderCommand::NONE;
 	while (cmd == DecoderCommand::NONE && Player_Active()) {
 		ret = VC_WriteBytes(buffer, sizeof(buffer));
-		cmd = decoder_data(decoder, nullptr, buffer, ret, 0);
+		cmd = client.SubmitData(nullptr, buffer, ret, 0);
 	}
 
 	Player_Stop();

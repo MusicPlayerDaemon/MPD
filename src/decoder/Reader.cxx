@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -24,5 +24,5 @@
 size_t
 DecoderReader::Read(void *data, size_t size)
 {
-	return decoder_read(&decoder, is, data, size);
+	return decoder_read(client, is, data, size);
 }

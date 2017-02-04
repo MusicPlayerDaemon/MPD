@@ -5,7 +5,7 @@
 <book>
   <title>The Music Player Daemon - Developer's Manual</title>
 
-  <chapter>
+  <chapter id="introduction">
     <title>Introduction</title>
 
     <para>
@@ -21,7 +21,7 @@
     </para>
   </chapter>
 
-  <chapter>
+  <chapter id="code_style">
     <title>Code Style</title>
 
     <itemizedlist>
@@ -40,9 +40,35 @@
 
       <listitem>
         <para>
-          the code should be C++11 compliant, and must compile with
-          <application>GCC</application> 4.7 and
-          <application>clang</application> 3.2
+          comment your code, document your APIs
+        </para>
+      </listitem>
+
+      <listitem>
+        <para>
+          the code should be C++14 compliant, and must compile with
+          <application>GCC</application> 4.9 and
+          <application>clang</application> 3.4
+        </para>
+      </listitem>
+
+      <listitem>
+        <para>
+          report error conditions with C++ exceptions, preferable
+          derived from <varname>std::runtime_error</varname>
+        </para>
+      </listitem>
+
+      <listitem>
+        <para>
+          all code must be exception-safe
+        </para>
+      </listitem>
+
+      <listitem>
+        <para>
+          classes and functions names use CamelCase; variables are
+          lower-case with words separated by underscore
         </para>
       </listitem>
 
@@ -52,9 +78,9 @@
         </para>
 
         <programlisting lang="C">static inline int
-foo(const char *abc, int xyz)
+Foo(const char *abc, int xyz)
 {
-        if (abc == NULL) {
+        if (abc == nullptr) {
                 LogWarning("Foo happened!");
                 return -1;
         }
@@ -66,7 +92,7 @@ foo(const char *abc, int xyz)
     </itemizedlist>
   </chapter>
 
-  <chapter>
+  <chapter id="hacking">
     <title>Hacking The Source</title>
 
     <para>
@@ -151,7 +177,7 @@ foo(const char *abc, int xyz)
     </section>
   </chapter>
 
-  <chapter>
+  <chapter id="submitting_patches">
     <title>Submitting Patches</title>
 
     <para>
@@ -167,9 +193,16 @@ foo(const char *abc, int xyz)
       url="http://git.musicpd.org/account-policy.html">an account on
       git.musicpd.org</ulink>, but any public git repository will do.
     </para>
+
+    <para>
+      There is <ulink url="https://github.com/MaxKellermann/MPD">a
+      mirror of the <application>MPD</application> git repository on
+      GitHub</ulink>, and you can use that as well to submit pull
+      requests.
+    </para>
   </chapter>
 
-  <chapter>
+  <chapter id="tools">
     <title>Development Tools</title>
 
     <section>

@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -53,10 +53,10 @@ const AudioOutputPlugin *const audio_output_plugins[] = {
 #ifdef HAVE_FIFO
 	&fifo_output_plugin,
 #endif
-#ifdef HAVE_SNDIO
+#ifdef ENABLE_SNDIO
 	&sndio_output_plugin,
 #endif
-#ifdef HAVE_HAIKU
+#ifdef ENABLE_HAIKU
 	&haiku_output_plugin,
 #endif
 #ifdef ENABLE_PIPE_OUTPUT

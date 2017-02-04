@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -45,7 +45,7 @@ output_mixer_get_volume(const AudioOutput &ao)
 	} catch (const std::runtime_error &e) {
 		FormatError(e,
 			    "Failed to read mixer for '%s'",
-			    ao.name);
+			    ao.GetName());
 		return -1;
 	}
 }
@@ -88,7 +88,7 @@ output_mixer_set_volume(AudioOutput &ao, unsigned volume)
 	} catch (const std::runtime_error &e) {
 		FormatError(e,
 			    "Failed to set mixer for '%s'",
-			    ao.name);
+			    ao.GetName());
 		return false;
 	}
 }

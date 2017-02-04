@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -34,6 +34,7 @@
 #include "tag/TagBuilder.hxx"
 #include "tag/Tag.hxx"
 #include "util/ScopeExit.hxx"
+#include "util/RuntimeError.hxx"
 #include "protocol/Ack.hxx"
 #include "event/SocketMonitor.hxx"
 #include "event/IdleMonitor.hxx"
@@ -46,7 +47,7 @@
 #include <string>
 #include <list>
 
-class LibmpdclientError final : std::runtime_error {
+class LibmpdclientError final : public std::runtime_error {
 	enum mpd_error code;
 
 public:
@@ -108,8 +109,8 @@ public:
 	static Database *Create(EventLoop &loop, DatabaseListener &listener,
 				const ConfigBlock &block);
 
-	virtual void Open() override;
-	virtual void Close() override;
+	void Open() override;
+	void Close() override;
 	const LightSong *GetSong(const char *uri_utf8) const override;
 	void ReturnSong(const LightSong *song) const override;
 
@@ -126,7 +127,7 @@ public:
 
 	unsigned Update(const char *uri_utf8, bool discard) override;
 
-	virtual time_t GetUpdateStamp() const override {
+	time_t GetUpdateStamp() const override {
 		return update_stamp;
 	}
 
@@ -138,10 +139,10 @@ private:
 	void Disconnect();
 
 	/* virtual methods from SocketMonitor */
-	virtual bool OnSocketReady(unsigned flags) override;
+	bool OnSocketReady(unsigned flags) override;
 
 	/* virtual methods from IdleMonitor */
-	virtual void OnIdle() override;
+	void OnIdle() override;
 };
 
 static constexpr struct {
@@ -345,9 +346,15 @@ ProxyDatabase::Create(EventLoop &loop, DatabaseListener &listener,
 void
 ProxyDatabase::Open()
 {
-	Connect();
-
 	update_stamp = 0;
+
+	try {
+		Connect();
+	} catch (const std::runtime_error &error) {
+		/* this error is non-fatal, because this plugin will
+		   attempt to reconnect again automatically */
+		LogError(error);
+	}
 }
 
 void
@@ -371,7 +378,10 @@ ProxyDatabase::Connect()
 		mpd_connection_free(connection);
 		connection = nullptr;
 
-		throw;
+		std::throw_with_nested(host.empty()
+				       ? std::runtime_error("Failed to connect to remote MPD")
+				       : FormatRuntimeError("Failed to connect to remote MPD '%s'",
+							    host.c_str()));
 	}
 
 #if LIBMPDCLIENT_CHECK_VERSION(2, 10, 0)

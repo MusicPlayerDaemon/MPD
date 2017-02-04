@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright 2003-2017 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -73,12 +73,16 @@ public:
 	 * @param _buffer a buffer allocated with HugeAllocate(); the
 	 * destructor will free it using HugeFree()
 	 */
-	AsyncInputStream(const char *_url,
+	AsyncInputStream(EventLoop &event_loop, const char *_url,
 			 Mutex &_mutex, Cond &_cond,
 			 size_t _buffer_size,
 			 size_t _resume_at);
 
 	virtual ~AsyncInputStream();
+
+	EventLoop &GetEventLoop() {
+		return deferred_resume.GetEventLoop();
+	}
 
 	/* virtual methods from InputStream */
 	void Check() final;
