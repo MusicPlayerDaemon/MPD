@@ -95,6 +95,8 @@ DecoderControl::Start(DetachedSong *_song,
 		      SongTime _start_time, SongTime _end_time,
 		      MusicBuffer &_buffer, MusicPipe &_pipe)
 {
+	const std::lock_guard<Mutex> protect(mutex);
+
 	assert(_song != nullptr);
 	assert(_pipe.IsEmpty());
 
@@ -105,7 +107,8 @@ DecoderControl::Start(DetachedSong *_song,
 	buffer = &_buffer;
 	pipe = &_pipe;
 
-	LockSynchronousCommand(DecoderCommand::START);
+	ClearError();
+	SynchronousCommandLocked(DecoderCommand::START);
 }
 
 void
@@ -127,6 +130,8 @@ DecoderControl::Stop()
 void
 DecoderControl::Seek(SongTime t)
 {
+	const std::lock_guard<Mutex> protect(mutex);
+
 	assert(state != DecoderState::START);
 	assert(state != DecoderState::ERROR);
 
@@ -149,7 +154,7 @@ DecoderControl::Seek(SongTime t)
 
 	seek_time = t;
 	seek_error = false;
-	LockSynchronousCommand(DecoderCommand::SEEK);
+	SynchronousCommandLocked(DecoderCommand::SEEK);
 
 	if (seek_error)
 		throw std::runtime_error("Decoder failed to seek");
