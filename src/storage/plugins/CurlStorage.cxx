@@ -151,41 +151,6 @@ private:
 };
 
 /**
- * A helper class which feeds a (foreign) memory buffer into the
- * CURLOPT_READFUNCTION.
- */
-class CurlRequestBody {
-	ConstBuffer<char> data;
-
-public:
-	explicit CurlRequestBody(ConstBuffer<void> _data)
-		:data(ConstBuffer<char>::FromVoid(_data)) {}
-
-	explicit constexpr CurlRequestBody(StringView _data)
-		:data(_data) {}
-
-	template<typename T>
-	CurlRequestBody(CurlRequest &request, T _data)
-		:CurlRequestBody(_data) {
-		request.SetOption(CURLOPT_READFUNCTION, Callback);
-		request.SetOption(CURLOPT_READDATA, this);
-	}
-
-private:
-	size_t Read(char *buffer, size_t size) {
-		size_t n = std::min(size, data.size);
-		std::copy_n(data.begin(), n, buffer);
-		return n;
-	}
-
-	static size_t Callback(char *buffer, size_t size, size_t nitems,
-			       void *instream) {
-		auto &rb = *(CurlRequestBody *)instream;
-		return rb.Read(buffer, size * nitems);
-	}
-};
-
-/**
  * The (relevant) contents of a "<D:response>" element.
  */
 struct DavResponse {
@@ -253,7 +218,6 @@ ParseU64(const char *s, size_t length)
  */
 class PropfindOperation : BlockingHttpRequest, CommonExpatParser {
 	CurlSlist request_headers;
-	CurlRequestBody request_body;
 
 	enum class State {
 		ROOT,
@@ -270,13 +234,7 @@ class PropfindOperation : BlockingHttpRequest, CommonExpatParser {
 public:
 	PropfindOperation(CurlGlobal &_curl, const char *_uri, unsigned depth)
 		:BlockingHttpRequest(_curl, _uri),
-		 CommonExpatParser(ExpatNamespaceSeparator{'|'}),
-		 request_body(request,
-			      "<?xml version=\"1.0\"?>\n"
-			      "<a:propfind xmlns:a=\"DAV:\">"
-			      "<a:prop><a:getcontenttype/></a:prop>"
-			      "<a:prop><a:getcontentlength/></a:prop>"
-			      "</a:propfind>")
+		 CommonExpatParser(ExpatNamespaceSeparator{'|'})
 	{
 		request.SetOption(CURLOPT_CUSTOMREQUEST, "PROPFIND");
 
@@ -285,6 +243,13 @@ public:
 		request_headers.Append(buffer);
 
 		request.SetOption(CURLOPT_HTTPHEADER, request_headers.Get());
+
+		request.SetOption(CURLOPT_POSTFIELDS,
+				  "<?xml version=\"1.0\"?>\n"
+				  "<a:propfind xmlns:a=\"DAV:\">"
+				  "<a:prop><a:getcontenttype/></a:prop>"
+				  "<a:prop><a:getcontentlength/></a:prop>"
+				  "</a:propfind>");
 
 		// TODO: send request body
 	}
