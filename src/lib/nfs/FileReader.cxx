@@ -213,6 +213,9 @@ NfsFileReader::StatCallback(const struct stat *st)
 
 	state = State::IDLE;
 
+	if (1==1)
+		return;
+
 	OnNfsFileOpen(st->st_size);
 }
 
