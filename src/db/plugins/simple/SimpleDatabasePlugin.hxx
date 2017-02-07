@@ -120,7 +120,7 @@ public:
 		   VisitPlaylist visit_playlist) const override;
 
 	void VisitUniqueTags(const DatabaseSelection &selection,
-			     TagType tag_type, tag_mask_t group_mask,
+			     TagType tag_type, TagMask group_mask,
 			     VisitTag visit_tag) const override;
 
 	DatabaseStats GetStats(const DatabaseSelection &selection) const override;

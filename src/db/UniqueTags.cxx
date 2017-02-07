@@ -21,13 +21,14 @@
 #include "Interface.hxx"
 #include "LightSong.hxx"
 #include "tag/Set.hxx"
+#include "tag/Mask.hxx"
 
 #include <functional>
 
 #include <assert.h>
 
 static void
-CollectTags(TagSet &set, TagType tag_type, tag_mask_t group_mask,
+CollectTags(TagSet &set, TagType tag_type, TagMask group_mask,
 	    const LightSong &song)
 {
 	assert(song.tag != nullptr);
@@ -38,7 +39,7 @@ CollectTags(TagSet &set, TagType tag_type, tag_mask_t group_mask,
 
 void
 VisitUniqueTags(const Database &db, const DatabaseSelection &selection,
-		TagType tag_type, tag_mask_t group_mask,
+		TagType tag_type, TagMask group_mask,
 		VisitTag visit_tag)
 {
 	TagSet set;

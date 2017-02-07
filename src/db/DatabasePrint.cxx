@@ -27,6 +27,7 @@
 #include "client/Response.hxx"
 #include "Partition.hxx"
 #include "tag/Tag.hxx"
+#include "tag/Mask.hxx"
 #include "LightSong.hxx"
 #include "LightDirectory.hxx"
 #include "PlaylistInfo.hxx"
@@ -202,7 +203,7 @@ PrintUniqueTag(Response &r, TagType tag_type,
 
 void
 PrintUniqueTags(Response &r, Partition &partition,
-		unsigned type, tag_mask_t group_mask,
+		unsigned type, TagMask group_mask,
 		const SongFilter *filter)
 {
 	const Database &db = partition.GetDatabaseOrThrow();

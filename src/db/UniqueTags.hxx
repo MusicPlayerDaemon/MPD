@@ -22,14 +22,14 @@
 
 #include "Visitor.hxx"
 #include "tag/Type.h"
-#include "tag/Mask.hxx"
 
+class TagMask;
 class Database;
 struct DatabaseSelection;
 
 void
 VisitUniqueTags(const Database &db, const DatabaseSelection &selection,
-		TagType tag_type, tag_mask_t group_mask,
+		TagType tag_type, TagMask group_mask,
 		VisitTag visit_tag);
 
 #endif

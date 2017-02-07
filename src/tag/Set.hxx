@@ -22,11 +22,12 @@
 
 #include "Compiler.h"
 #include "Tag.hxx"
-#include "Mask.hxx"
 
 #include <set>
 
 #include <string.h>
+
+class TagMask;
 
 /**
  * Helper class for #TagSet which compares two #Tag objects.
@@ -59,15 +60,15 @@ struct TagLess {
 class TagSet : public std::set<Tag, TagLess> {
 public:
 	void InsertUnique(const Tag &tag,
-			  TagType type, tag_mask_t group_mask);
+			  TagType type, TagMask group_mask);
 
 private:
 	void InsertUnique(const Tag &src, TagType type, const char *value,
-			  tag_mask_t group_mask);
+			  TagMask group_mask);
 
 	bool CheckUnique(TagType dest_type,
 			 const Tag &tag, TagType src_type,
-			 tag_mask_t group_mask);
+			 TagMask group_mask);
 };
 
 #endif

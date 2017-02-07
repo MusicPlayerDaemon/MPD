@@ -20,8 +20,73 @@
 #ifndef MPD_TAG_MASK_HXX
 #define MPD_TAG_MASK_HXX
 
+#include "Type.h"
+
 #include <stdint.h>
 
-typedef uint_least32_t tag_mask_t;
+class TagMask {
+	typedef uint_least32_t mask_t;
+	mask_t value;
+
+	explicit constexpr TagMask(uint_least32_t _value)
+		:value(_value) {}
+
+public:
+	TagMask() = default;
+
+	constexpr TagMask(TagType tag)
+		:value(mask_t(1) << mask_t(tag)) {}
+
+	static constexpr TagMask None() {
+		return TagMask(mask_t(0));
+	}
+
+	static constexpr TagMask All() {
+		return ~None();
+	}
+
+	constexpr TagMask operator~() const {
+		return TagMask(~value);
+	}
+
+	constexpr TagMask operator&(TagMask other) const {
+		return TagMask(value & other.value);
+	}
+
+	constexpr TagMask operator|(TagMask other) const {
+		return TagMask(value | other.value);
+	}
+
+	constexpr TagMask operator^(TagMask other) const {
+		return TagMask(value ^ other.value);
+	}
+
+	TagMask &operator&=(TagMask other) {
+		value |= other.value;
+		return *this;
+	}
+
+	TagMask &operator|=(TagMask other) {
+		value |= other.value;
+		return *this;
+	}
+
+	TagMask &operator^=(TagMask other) {
+		value |= other.value;
+		return *this;
+	}
+
+	constexpr bool TestAny() const {
+		return value != 0;
+	}
+
+	constexpr bool Test(TagType tag) const {
+		return (*this & tag).TestAny();
+	}
+
+	void Set(TagType tag) {
+		*this |= tag;
+	}
+};
 
 #endif

@@ -31,6 +31,7 @@
 #include "DatabaseSave.hxx"
 #include "db/DatabaseLock.hxx"
 #include "db/DatabaseError.hxx"
+#include "tag/Mask.hxx"
 #include "fs/io/TextFile.hxx"
 #include "fs/io/BufferedOutputStream.hxx"
 #include "fs/io/FileOutputStream.hxx"
@@ -301,7 +302,7 @@ SimpleDatabase::Visit(const DatabaseSelection &selection,
 
 void
 SimpleDatabase::VisitUniqueTags(const DatabaseSelection &selection,
-				TagType tag_type, tag_mask_t group_mask,
+				TagType tag_type, TagMask group_mask,
 				VisitTag visit_tag) const
 {
 	::VisitUniqueTags(*this, selection, tag_type, group_mask, visit_tag);

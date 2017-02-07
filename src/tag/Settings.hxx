@@ -24,20 +24,20 @@
 #include "Type.h"
 #include "Compiler.h"
 
-extern tag_mask_t global_tag_mask;
-
-gcc_const
-static inline bool
-IsTagEnabled(unsigned tag)
-{
-	return global_tag_mask & (1u << tag);
-}
+extern TagMask global_tag_mask;
 
 gcc_const
 static inline bool
 IsTagEnabled(TagType tag)
 {
-	return IsTagEnabled(unsigned(tag));
+	return global_tag_mask.Test(tag);
+}
+
+gcc_const
+static inline bool
+IsTagEnabled(unsigned tag)
+{
+	return IsTagEnabled(TagType(tag));
 }
 
 #endif

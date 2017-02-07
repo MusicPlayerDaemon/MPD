@@ -20,8 +20,7 @@
 #ifndef MPD_DB_PRINT_H
 #define MPD_DB_PRINT_H
 
-#include "tag/Mask.hxx"
-
+class TagMask;
 class SongFilter;
 struct DatabaseSelection;
 struct Partition;
@@ -44,7 +43,7 @@ db_selection_print(Response &r, Partition &partition,
 
 void
 PrintUniqueTags(Response &r, Partition &partition,
-		unsigned type, tag_mask_t group_mask,
+		unsigned type, TagMask group_mask,
 		const SongFilter *filter);
 
 #endif

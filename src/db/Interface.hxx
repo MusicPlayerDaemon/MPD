@@ -22,7 +22,6 @@
 
 #include "Visitor.hxx"
 #include "tag/Type.h"
-#include "tag/Mask.hxx"
 #include "Compiler.h"
 
 #include <time.h>
@@ -31,6 +30,7 @@ struct DatabasePlugin;
 struct DatabaseStats;
 struct DatabaseSelection;
 struct LightSong;
+class TagMask;
 
 class Database {
 	const DatabasePlugin &plugin;
@@ -103,7 +103,7 @@ public:
 	 * Visit all unique tag values.
 	 */
 	virtual void VisitUniqueTags(const DatabaseSelection &selection,
-				     TagType tag_type, tag_mask_t group_mask,
+				     TagType tag_type, TagMask group_mask,
 				     VisitTag visit_tag) const = 0;
 
 	gcc_pure
