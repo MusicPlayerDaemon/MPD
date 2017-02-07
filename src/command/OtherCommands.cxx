@@ -97,7 +97,8 @@ print_tag(TagType type, const char *value, void *ctx)
 {
 	auto &r = *(Response *)ctx;
 
-	tag_print(r, type, value);
+	if (r.GetClient().tag_mask.Test(type))
+		tag_print(r, type, value);
 }
 
 CommandResult

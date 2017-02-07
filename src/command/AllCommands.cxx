@@ -187,7 +187,7 @@ static constexpr struct command commands[] = {
 	{ "subscribe", PERMISSION_READ, 1, 1, handle_subscribe },
 	{ "swap", PERMISSION_CONTROL, 2, 2, handle_swap },
 	{ "swapid", PERMISSION_CONTROL, 2, 2, handle_swapid },
-	{ "tagtypes", PERMISSION_READ, 0, 0, handle_tagtypes },
+	{ "tagtypes", PERMISSION_READ, 0, -1, handle_tagtypes },
 	{ "toggleoutput", PERMISSION_ADMIN, 1, 1, handle_toggleoutput },
 #ifdef ENABLE_DATABASE
 	{ "unmount", PERMISSION_ADMIN, 1, 1, handle_unmount },

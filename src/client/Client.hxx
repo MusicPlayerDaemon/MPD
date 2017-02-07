@@ -23,6 +23,7 @@
 #include "check.h"
 #include "ClientMessage.hxx"
 #include "command/CommandListBuilder.hxx"
+#include "tag/Mask.hxx"
 #include "event/FullyBufferedSocket.hxx"
 #include "event/TimeoutMonitor.hxx"
 #include "Compiler.h"
@@ -69,6 +70,11 @@ public:
 
 	/** idle flags that the client wants to receive */
 	unsigned idle_subscriptions;
+
+	/**
+	 * The tags this client is interested in.
+	 */
+	TagMask tag_mask = TagMask::All();
 
 	/**
 	 * A list of channel names this client is subscribed to.

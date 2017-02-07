@@ -22,11 +22,13 @@
 
 #include "check.h"
 #include "protocol/Ack.hxx"
+#include "Compiler.h"
 
 #include <stddef.h>
 #include <stdarg.h>
 
 class Client;
+class TagMask;
 
 class Response {
 	Client &client;
@@ -58,6 +60,13 @@ public:
 	const Client &GetClient() const {
 		return client;
 	}
+
+	/**
+	 * Accessor for Client::tag_mask.  Can be used if caller wants
+	 * to avoid including Client.hxx.
+	 */
+	gcc_pure
+	TagMask GetTagMask() const;
 
 	void SetCommand(const char *_command) {
 		command = _command;

@@ -196,8 +196,9 @@ PrintUniqueTag(Response &r, TagType tag_type,
 	assert(value != nullptr);
 	tag_print(r, tag_type, value);
 
+	const auto tag_mask = r.GetTagMask();
 	for (const auto &item : tag)
-		if (item.type != tag_type)
+		if (item.type != tag_type && tag_mask.Test(item.type))
 			tag_print(r, item.type, item.value);
 }
 

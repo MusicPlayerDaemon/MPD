@@ -40,8 +40,10 @@ tag_print(Response &r, TagType type, const char *value)
 void
 tag_print_values(Response &r, const Tag &tag)
 {
+	const auto tag_mask = r.GetTagMask();
 	for (const auto &i : tag)
-		tag_print(r, i.type, i.value);
+		if (tag_mask.Test(i.type))
+			tag_print(r, i.type, i.value);
 }
 
 void
