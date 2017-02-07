@@ -49,6 +49,16 @@ public:
 	Response(const Response &) = delete;
 	Response &operator=(const Response &) = delete;
 
+	/**
+	 * Returns a const reference to the associated #Client object.
+	 * This should only be used to access a client's settings, to
+	 * determine how to format the response.  For this reason, the
+	 * returned reference is "const".
+	 */
+	const Client &GetClient() const {
+		return client;
+	}
+
 	void SetCommand(const char *_command) {
 		command = _command;
 	}
