@@ -41,7 +41,7 @@ void
 tag_print_values(Response &r, const Tag &tag)
 {
 	for (const auto &i : tag)
-		r.Format("%s: %s\n", tag_item_names[i.type], i.value);
+		tag_print(r, i.type, i.value);
 }
 
 void

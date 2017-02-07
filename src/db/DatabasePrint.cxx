@@ -23,6 +23,7 @@
 #include "SongFilter.hxx"
 #include "SongPrint.hxx"
 #include "TimePrint.hxx"
+#include "TagPrint.hxx"
 #include "client/Response.hxx"
 #include "Partition.hxx"
 #include "tag/Tag.hxx"
@@ -192,12 +193,11 @@ PrintUniqueTag(Response &r, TagType tag_type,
 {
 	const char *value = tag.GetValue(tag_type);
 	assert(value != nullptr);
-	r.Format("%s: %s\n", tag_item_names[tag_type], value);
+	tag_print(r, tag_type, value);
 
 	for (const auto &item : tag)
 		if (item.type != tag_type)
-			r.Format("%s: %s\n",
-				 tag_item_names[item.type], item.value);
+			tag_print(r, item.type, item.value);
 }
 
 void

@@ -25,6 +25,7 @@
 #include "client/Response.hxx"
 #include "LightSong.hxx"
 #include "tag/Tag.hxx"
+#include "TagPrint.hxx"
 
 #include <functional>
 #include <map>
@@ -57,7 +58,7 @@ Print(Response &r, TagType group, const TagCountMap &m)
 	assert(unsigned(group) < TAG_NUM_OF_ITEM_TYPES);
 
 	for (const auto &i : m) {
-		r.Format("%s: %s\n", tag_item_names[group], i.first.c_str());
+		tag_print(r, group, i.first.c_str());
 		PrintSearchStats(r, i.second);
 	}
 }
