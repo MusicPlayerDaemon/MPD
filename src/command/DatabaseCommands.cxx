@@ -67,6 +67,16 @@ handle_match(Client &client, Request args, Response &r, bool fold_case)
 	} else
 		window.SetAll();
 
+	TagType sort = TAG_NUM_OF_ITEM_TYPES;
+	if (args.size >= 2 && StringIsEqual(args[args.size - 2], "sort")) {
+		sort = tag_name_parse_i(args.back());
+		if (sort == TAG_NUM_OF_ITEM_TYPES)
+			throw ProtocolError(ACK_ERROR_ARG, "Unknown sort tag");
+
+		args.pop_back();
+		args.pop_back();
+	}
+
 	SongFilter filter;
 	if (!filter.Parse(args, fold_case)) {
 		r.Error(ACK_ERROR_ARG, "incorrect arguments");
@@ -77,6 +87,7 @@ handle_match(Client &client, Request args, Response &r, bool fold_case)
 
 	db_selection_print(r, client.partition,
 			   selection, true, false,
+			   sort,
 			   window.start, window.end);
 	return CommandResult::OK;
 }

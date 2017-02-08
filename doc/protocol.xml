@@ -1590,6 +1590,7 @@ OK
               <arg choice="req"><replaceable>TYPE</replaceable></arg>
               <arg choice="req"><replaceable>WHAT</replaceable></arg>
               <arg choice="opt"><replaceable>...</replaceable></arg>
+              <arg choice="opt">sort <replaceable>TYPE</replaceable></arg>
               <arg choice="opt">window <replaceable>START</replaceable>:<replaceable>END</replaceable></arg>
             </cmdsynopsis>
           </term>
@@ -1634,6 +1635,18 @@ OK
 
             <para>
               <varname>WHAT</varname> is what to find.
+            </para>
+
+            <para>
+              <varname>sort</varname> sorts the result by the
+              specified tag.  Without <varname>sort</varname>, the
+              order is undefined.  Only the first tag value will be
+              used, if multiple of the same type exist.  To sort by
+              "Artist", "Album" or "AlbumArtist", you should specify
+              "ArtistSort", "AlbumSort" or "AlbumArtistSort" instead.
+              These will automatically fall back to the former if
+              "*Sort" doesn't exist.  "AlbumArtist" falls back to just
+              "Artist".
             </para>
 
             <para>
@@ -1833,6 +1846,7 @@ OK
               <arg choice="req"><replaceable>TYPE</replaceable></arg>
               <arg choice="req"><replaceable>WHAT</replaceable></arg>
               <arg choice="opt"><replaceable>...</replaceable></arg>
+              <arg choice="opt">sort <replaceable>TYPE</replaceable></arg>
               <arg choice="opt">window <replaceable>START</replaceable>:<replaceable>END</replaceable></arg>
             </cmdsynopsis>
           </term>

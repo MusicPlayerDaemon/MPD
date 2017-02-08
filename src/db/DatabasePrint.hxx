@@ -20,6 +20,9 @@
 #ifndef MPD_DB_PRINT_H
 #define MPD_DB_PRINT_H
 
+#include <stdint.h>
+
+enum TagType : uint8_t;
 class TagMask;
 class SongFilter;
 struct DatabaseSelection;
@@ -39,6 +42,7 @@ void
 db_selection_print(Response &r, Partition &partition,
 		   const DatabaseSelection &selection,
 		   bool full, bool base,
+		   TagType sort,
 		   unsigned window_start, unsigned window_end);
 
 void

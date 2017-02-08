@@ -142,6 +142,15 @@ struct Tag {
 	gcc_pure
 	bool HasType(TagType type) const;
 
+	/**
+	 * Returns a value for sorting on the specified type, with
+	 * automatic fallbacks to the next best tag type
+	 * (e.g. #TAG_ALBUM_ARTIST falls back to #TAG_ARTIST).  If
+	 * there is no such value, returns an empty string.
+	 */
+	gcc_pure
+	const char *GetSortValue(TagType type) const;
+
 	class const_iterator {
 		friend struct Tag;
 		const TagItem *const*cursor;
