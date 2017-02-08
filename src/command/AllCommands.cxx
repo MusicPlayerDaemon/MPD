@@ -31,6 +31,7 @@
 #include "OutputCommands.hxx"
 #include "MessageCommands.hxx"
 #include "NeighborCommands.hxx"
+#include "ClientCommands.hxx"
 #include "OtherCommands.hxx"
 #include "Permission.hxx"
 #include "tag/Type.h"

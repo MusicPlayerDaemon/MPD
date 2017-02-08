@@ -33,13 +33,7 @@ CommandResult
 handle_decoders(Client &client, Request request, Response &response);
 
 CommandResult
-handle_tagtypes(Client &client, Request request, Response &response);
-
-CommandResult
 handle_kill(Client &client, Request request, Response &response);
-
-CommandResult
-handle_close(Client &client, Request request, Response &response);
 
 CommandResult
 handle_listfiles(Client &client, Request request, Response &response);
@@ -61,12 +55,6 @@ handle_volume(Client &client, Request request, Response &response);
 
 CommandResult
 handle_stats(Client &client, Request request, Response &response);
-
-CommandResult
-handle_ping(Client &client, Request request, Response &response);
-
-CommandResult
-handle_password(Client &client, Request request, Response &response);
 
 CommandResult
 handle_config(Client &client, Request request, Response &response);

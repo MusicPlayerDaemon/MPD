@@ -90,6 +90,7 @@ libmpd_a_SOURCES = \
 	src/command/FileCommands.cxx src/command/FileCommands.hxx \
 	src/command/OutputCommands.cxx src/command/OutputCommands.hxx \
 	src/command/MessageCommands.cxx src/command/MessageCommands.hxx \
+	src/command/ClientCommands.cxx src/command/ClientCommands.hxx \
 	src/command/OtherCommands.cxx src/command/OtherCommands.hxx \
 	src/command/CommandListBuilder.cxx src/command/CommandListBuilder.hxx \
 	src/Idle.cxx src/Idle.hxx \

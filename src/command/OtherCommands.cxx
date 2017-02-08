@@ -39,7 +39,6 @@
 #include "util/StringAPI.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "Stats.hxx"
-#include "Permission.hxx"
 #include "PlaylistFile.hxx"
 #include "db/PlaylistVector.hxx"
 #include "client/Client.hxx"
@@ -87,25 +86,10 @@ handle_decoders(gcc_unused Client &client, gcc_unused Request args,
 }
 
 CommandResult
-handle_tagtypes(gcc_unused Client &client, gcc_unused Request request,
-		Response &r)
-{
-	tag_print_types(r);
-	return CommandResult::OK;
-}
-
-CommandResult
 handle_kill(gcc_unused Client &client, gcc_unused Request request,
 	    gcc_unused Response &r)
 {
 	return CommandResult::KILL;
-}
-
-CommandResult
-handle_close(gcc_unused Client &client, gcc_unused Request args,
-	     gcc_unused Response &r)
-{
-	return CommandResult::FINISH;
 }
 
 static void
@@ -381,27 +365,6 @@ CommandResult
 handle_stats(Client &client, gcc_unused Request args, Response &r)
 {
 	stats_print(r, client.partition);
-	return CommandResult::OK;
-}
-
-CommandResult
-handle_ping(gcc_unused Client &client, gcc_unused Request args,
-	    gcc_unused Response &r)
-{
-	return CommandResult::OK;
-}
-
-CommandResult
-handle_password(Client &client, Request args, Response &r)
-{
-	unsigned permission = 0;
-	if (getPermissionFromPassword(args.front(), &permission) < 0) {
-		r.Error(ACK_ERROR_PASSWORD, "incorrect password");
-		return CommandResult::ERROR;
-	}
-
-	client.SetPermission(permission);
-
 	return CommandResult::OK;
 }
 
