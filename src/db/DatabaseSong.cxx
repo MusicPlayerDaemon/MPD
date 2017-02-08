@@ -23,6 +23,7 @@
 #include "Interface.hxx"
 #include "DetachedSong.hxx"
 #include "storage/StorageInterface.hxx"
+#include "util/ScopeExit.hxx"
 
 #include <assert.h>
 
@@ -46,8 +47,7 @@ DatabaseDetachSong(const Database &db, const Storage &storage, const char *uri)
 	const LightSong *tmp = db.GetSong(uri);
 	assert(tmp != nullptr);
 
-	DetachedSong *song = new DetachedSong(DatabaseDetachSong(storage,
-								 *tmp));
-	db.ReturnSong(tmp);
-	return song;
+	AtScopeExit(&db, tmp) { db.ReturnSong(tmp); };
+
+	return new DetachedSong(DatabaseDetachSong(storage, *tmp));
 }
