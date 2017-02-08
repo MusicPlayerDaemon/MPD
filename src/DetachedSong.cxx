@@ -24,7 +24,7 @@
 #include "fs/Traits.hxx"
 
 DetachedSong::DetachedSong(const LightSong &other)
-	:uri(other.GetURI().c_str()),
+	:uri(other.GetURI()),
 	 real_uri(other.real_uri != nullptr ? other.real_uri : ""),
 	 tag(*other.tag),
 	 mtime(other.mtime),
