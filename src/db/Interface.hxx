@@ -69,8 +69,13 @@ public:
          * Look up a song (including tag data) in the database.  When
          * you don't need this anymore, call ReturnSong().
 	 *
+	 * Throws std::runtime_error (or its derivative
+	 * #DatabaseError) on error.  "Not found" is an error that
+	 * throws DatabaseErrorCode::NOT_FOUND.
+	 *
 	 * @param uri_utf8 the URI of the song within the music
 	 * directory (UTF-8)
+	 * @return a pointer that must be released with ReturnSong()
 	 */
 	virtual const LightSong *GetSong(const char *uri_utf8) const = 0;
 
