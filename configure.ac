@@ -988,7 +988,7 @@ AM_CONDITIONAL(ENABLE_VORBIS_DECODER, test x$enable_vorbis = xyes || test x$enab
 dnl --------------------------------- sidplay ---------------------------------
 if test x$enable_sidplay != xno; then
 	dnl Check for libsidplayfp first
-	PKG_CHECK_MODULES([SIDPLAY], [libsidplayfp libsidutils],
+	PKG_CHECK_MODULES([SIDPLAY], [libsidplayfp >= 1.8.0 libsidutils],
 		[found_sidplayfp=yes],
 		[found_sidplayfp=no])
 	found_sidplay=$found_sidplayfp
