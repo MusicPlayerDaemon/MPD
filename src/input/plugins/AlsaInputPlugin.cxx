@@ -181,7 +181,7 @@ AlsaInputStream::PrepareSockets()
 	}
 
 	int count = snd_pcm_poll_descriptors_count(capture_handle);
-	if (count < 0) {
+	if (count <= 0) {
 		ClearSocketList();
 		return std::chrono::steady_clock::duration(-1);
 	}

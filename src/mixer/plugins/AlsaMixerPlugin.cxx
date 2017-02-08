@@ -102,7 +102,7 @@ AlsaMixerMonitor::PrepareSockets()
 	}
 
 	int count = snd_mixer_poll_descriptors_count(mixer);
-	if (count < 0)
+	if (count <= 0)
 		count = 0;
 
 	struct pollfd *pfds = pfd_buffer.Get(count);
