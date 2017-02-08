@@ -79,8 +79,6 @@ class DetachedSong {
 	explicit DetachedSong(const LightSong &other);
 
 public:
-	explicit DetachedSong(const DetachedSong &) = default;
-
 	explicit DetachedSong(const char *_uri)
 		:uri(_uri) {}
 
@@ -94,8 +92,6 @@ public:
 	DetachedSong(U &&_uri, Tag &&_tag)
 		:uri(std::forward<U>(_uri)),
 		 tag(std::move(_tag)) {}
-
-	DetachedSong(DetachedSong &&) = default;
 
 	~DetachedSong();
 
