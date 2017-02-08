@@ -100,6 +100,7 @@
 #define gcc_visibility_hidden __attribute__((visibility("hidden")))
 #define gcc_visibility_default __attribute__((visibility("default")))
 
+#define gcc_noinline __attribute__((noinline))
 #define gcc_always_inline __attribute__((always_inline))
 
 #else
@@ -127,6 +128,7 @@
 #define gcc_visibility_hidden
 #define gcc_visibility_default
 
+#define gcc_noinline
 #define gcc_always_inline inline
 
 #endif
