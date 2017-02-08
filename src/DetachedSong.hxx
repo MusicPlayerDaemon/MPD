@@ -98,7 +98,8 @@ public:
 	 */
 	explicit DetachedSong(const LightSong &other);
 
-	~DetachedSong();
+	gcc_noinline
+	~DetachedSong() = default;
 
 	/* these are declared because the user-defined destructor
 	   above prevents them from being generated implicitly */

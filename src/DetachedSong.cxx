@@ -31,11 +31,6 @@ DetachedSong::DetachedSong(const LightSong &other)
 	 start_time(other.start_time),
 	 end_time(other.end_time) {}
 
-DetachedSong::~DetachedSong()
-{
-	/* this destructor exists here just so it won't  inlined */
-}
-
 bool
 DetachedSong::IsRemote() const
 {
