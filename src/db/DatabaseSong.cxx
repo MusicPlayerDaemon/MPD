@@ -41,7 +41,7 @@ DatabaseDetachSong(const Storage &storage, const LightSong &song)
 	return detached;
 }
 
-DetachedSong *
+DetachedSong
 DatabaseDetachSong(const Database &db, const Storage &storage, const char *uri)
 {
 	const LightSong *tmp = db.GetSong(uri);
@@ -49,5 +49,5 @@ DatabaseDetachSong(const Database &db, const Storage &storage, const char *uri)
 
 	AtScopeExit(&db, tmp) { db.ReturnSong(tmp); };
 
-	return new DetachedSong(DatabaseDetachSong(storage, *tmp));
+	return DatabaseDetachSong(storage, *tmp);
 }

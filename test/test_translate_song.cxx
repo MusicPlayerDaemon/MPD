@@ -107,15 +107,15 @@ MakeTag2c()
 static const char *uri1 = "/foo/bar.ogg";
 static const char *uri2 = "foo/bar.ogg";
 
-DetachedSong *
+DetachedSong
 DatabaseDetachSong(gcc_unused const Database &db,
 		   gcc_unused const Storage &_storage,
 		   const char *uri)
 {
 	if (strcmp(uri, uri2) == 0)
-		return new DetachedSong(uri, MakeTag2a());
+		return DetachedSong(uri, MakeTag2a());
 
-	return nullptr;
+	throw std::runtime_error("No such song");
 }
 
 bool

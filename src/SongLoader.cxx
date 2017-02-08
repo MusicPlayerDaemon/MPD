@@ -41,7 +41,7 @@ SongLoader::LoadFromDatabase(const char *uri) const
 {
 #ifdef ENABLE_DATABASE
 	if (db != nullptr)
-		return DatabaseDetachSong(*db, *storage, uri);
+		return new DetachedSong(DatabaseDetachSong(*db, *storage, uri));
 #else
 	(void)uri;
 #endif
