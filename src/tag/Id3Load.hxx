@@ -28,8 +28,7 @@ class InputStream;
 /**
  * Loads the ID3 tags from the #InputStream into a libid3tag object.
  *
- * @return nullptr on error or if no ID3 tag was found in the file (no
- * Error will be set)
+ * @return nullptr on error or if no ID3 tag was found in the file
  */
 UniqueId3Tag
 tag_id3_load(InputStream &is);
