@@ -256,6 +256,9 @@ UPNP_SOURCES = \
 	src/lib/upnp/WorkQueue.hxx \
 	src/lib/upnp/Action.hxx
 
+ALSA_SOURCES = \
+	src/lib/alsa/NonBlock.cxx src/lib/alsa/NonBlock.hxx
+
 #
 # Android native library
 #
@@ -1294,6 +1297,7 @@ INPUT_LIBS = \
 
 if ENABLE_ALSA
 libinput_a_SOURCES += \
+	$(ALSA_SOURCES) \
 	src/input/plugins/AlsaInputPlugin.cxx \
 	src/input/plugins/AlsaInputPlugin.hxx
 INPUT_LIBS += $(ALSA_LIBS)
@@ -1412,6 +1416,7 @@ liboutput_plugins_a_SOURCES += \
 	src/output/plugins/AlsaOutputPlugin.cxx \
 	src/output/plugins/AlsaOutputPlugin.hxx
 libmixer_plugins_a_SOURCES += \
+	$(ALSA_SOURCES) \
 	src/mixer/plugins/volume_mapping.h \
 	src/mixer/plugins/volume_mapping.c \
 	src/mixer/plugins/AlsaMixerPlugin.cxx

@@ -26,6 +26,7 @@
 
 #include "config.h"
 #include "AlsaInputPlugin.hxx"
+#include "lib/alsa/NonBlock.hxx"
 #include "../InputPlugin.hxx"
 #include "../AsyncInputStream.hxx"
 #include "event/Call.hxx"
@@ -177,20 +178,7 @@ AlsaInputStream::PrepareSockets()
 		return std::chrono::steady_clock::duration(-1);
 	}
 
-	int count = snd_pcm_poll_descriptors_count(capture_handle);
-	if (count <= 0) {
-		ClearSocketList();
-		return std::chrono::steady_clock::duration(-1);
-	}
-
-	struct pollfd *pfds = pfd_buffer.Get(count);
-
-	count = snd_pcm_poll_descriptors(capture_handle, pfds, count);
-	if (count < 0)
-		count = 0;
-
-	ReplaceSocketList(pfds, count);
-	return std::chrono::steady_clock::duration(-1);
+	return PrepareAlsaPcmSockets(*this, capture_handle, pfd_buffer);
 }
 
 void
