@@ -359,8 +359,7 @@ void
 spl_append_uri(const char *utf8file,
 	       const SongLoader &loader, const char *url)
 {
-	std::unique_ptr<DetachedSong> song(loader.LoadSong(url));
-	spl_append_song(utf8file, *song);
+	spl_append_song(utf8file, loader.LoadSong(url));
 }
 
 static void

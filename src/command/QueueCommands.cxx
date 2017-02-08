@@ -43,11 +43,9 @@
 static void
 AddUri(Client &client, const LocatedUri &uri)
 {
-	std::unique_ptr<DetachedSong> song(SongLoader(client).LoadSong(uri));
-	assert(song);
-
 	auto &partition = client.partition;
-	partition.playlist.AppendSong(partition.pc, std::move(*song));
+	partition.playlist.AppendSong(partition.pc,
+				      SongLoader(client).LoadSong(uri));
 }
 
 static CommandResult

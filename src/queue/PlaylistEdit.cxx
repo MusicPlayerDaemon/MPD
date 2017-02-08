@@ -125,8 +125,7 @@ unsigned
 playlist::AppendURI(PlayerControl &pc, const SongLoader &loader,
 		    const char *uri)
 {
-	std::unique_ptr<DetachedSong> song(loader.LoadSong(uri));
-	return AppendSong(pc, std::move(*song));
+	return AppendSong(pc, loader.LoadSong(uri));
 }
 
 void
