@@ -18,7 +18,7 @@
  */
 
 #include "Set.hxx"
-#include "TagBuilder.hxx"
+#include "Builder.hxx"
 #include "Settings.hxx"
 
 #include <assert.h>

@@ -30,7 +30,7 @@
 #include "SongPrint.hxx"
 #include "TagPrint.hxx"
 #include "TagStream.hxx"
-#include "tag/TagHandler.hxx"
+#include "tag/Handler.hxx"
 #include "TimePrint.hxx"
 #include "decoder/DecoderPrint.hxx"
 #include "ls.hxx"

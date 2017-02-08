@@ -20,7 +20,7 @@
 #ifndef MPD_ICY_META_DATA_SERVER_HXX
 #define MPD_ICY_META_DATA_SERVER_HXX
 
-#include "tag/TagType.h"
+#include "tag/Type.h"
 
 struct Tag;
 class Page;

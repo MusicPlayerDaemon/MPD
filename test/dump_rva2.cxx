@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "tag/Id3Load.hxx"
-#include "tag/TagRva2.hxx"
+#include "tag/Rva2.hxx"
 #include "ReplayGainInfo.hxx"
 #include "config/ConfigGlobal.hxx"
 #include "thread/Mutex.hxx"

@@ -33,7 +33,7 @@
 #include "CheckAudioFormat.hxx"
 #include "util/bit_reverse.h"
 #include "system/ByteOrder.hxx"
-#include "tag/TagHandler.hxx"
+#include "tag/Handler.hxx"
 #include "DsdLib.hxx"
 #include "Log.hxx"
 

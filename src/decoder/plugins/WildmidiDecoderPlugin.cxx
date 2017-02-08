@@ -20,7 +20,7 @@
 #include "config.h"
 #include "WildmidiDecoderPlugin.hxx"
 #include "../DecoderAPI.hxx"
-#include "tag/TagHandler.hxx"
+#include "tag/Handler.hxx"
 #include "util/Domain.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "fs/FileSystem.hxx"

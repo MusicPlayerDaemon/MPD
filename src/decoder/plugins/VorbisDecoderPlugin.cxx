@@ -32,7 +32,7 @@
 #include "util/Macros.hxx"
 #include "util/ScopeExit.hxx"
 #include "CheckAudioFormat.hxx"
-#include "tag/TagHandler.hxx"
+#include "tag/Handler.hxx"
 #include "Log.hxx"
 
 #ifndef HAVE_TREMOR

@@ -23,7 +23,7 @@
 #include "input/InputStream.hxx"
 #include "CheckAudioFormat.hxx"
 #include "pcm/Traits.hxx"
-#include "tag/TagHandler.hxx"
+#include "tag/Handler.hxx"
 #include "util/Domain.hxx"
 #include "util/Macros.hxx"
 #include "util/Clamp.hxx"

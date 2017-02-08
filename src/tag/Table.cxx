@@ -17,7 +17,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "TagTable.hxx"
+#include "Table.hxx"
 #include "util/ASCII.hxx"
 
 #include <string.h>

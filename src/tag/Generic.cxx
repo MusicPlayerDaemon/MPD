@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "Generic.hxx"
-#include "TagId3.hxx"
+#include "Id3Scan.hxx"
 #include "ApeTag.hxx"
 #include "fs/Path.hxx"
 #include "thread/Mutex.hxx"

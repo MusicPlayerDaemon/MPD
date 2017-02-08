@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#include "TagConfig.hxx"
+#include "Config.hxx"
 #include "Settings.hxx"
 #include "Tag.hxx"
 #include "config/ConfigGlobal.hxx"

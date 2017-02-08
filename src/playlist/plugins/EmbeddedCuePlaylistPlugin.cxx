@@ -28,7 +28,7 @@
 #include "../PlaylistPlugin.hxx"
 #include "../SongEnumerator.hxx"
 #include "../cue/CueParser.hxx"
-#include "tag/TagHandler.hxx"
+#include "tag/Handler.hxx"
 #include "tag/Generic.hxx"
 #include "DetachedSong.hxx"
 #include "TagFile.hxx"

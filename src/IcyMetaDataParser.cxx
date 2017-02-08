@@ -20,7 +20,7 @@
 #include "config.h"
 #include "IcyMetaDataParser.hxx"
 #include "tag/Tag.hxx"
-#include "tag/TagBuilder.hxx"
+#include "tag/Builder.hxx"
 #include "util/Domain.hxx"
 #include "util/StringView.hxx"
 #include "Log.hxx"

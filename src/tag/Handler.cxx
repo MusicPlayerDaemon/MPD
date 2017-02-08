@@ -18,8 +18,8 @@
  */
 
 #include "config.h"
-#include "TagHandler.hxx"
-#include "TagBuilder.hxx"
+#include "Handler.hxx"
+#include "Builder.hxx"
 #include "util/ASCII.hxx"
 
 #include <stdio.h>

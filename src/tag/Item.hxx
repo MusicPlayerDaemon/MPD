@@ -20,7 +20,7 @@
 #ifndef MPD_TAG_ITEM_HXX
 #define MPD_TAG_ITEM_HXX
 
-#include "TagType.h"
+#include "Type.h"
 
 /**
  * One tag value.  It is a mapping of #TagType to am arbitrary string

@@ -29,7 +29,7 @@
 #include "../InputPlugin.hxx"
 #include "config/ConfigGlobal.hxx"
 #include "config/Block.hxx"
-#include "tag/TagBuilder.hxx"
+#include "tag/Builder.hxx"
 #include "event/Call.hxx"
 #include "event/Loop.hxx"
 #include "thread/Cond.hxx"

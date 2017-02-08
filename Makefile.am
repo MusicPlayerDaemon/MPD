@@ -905,18 +905,18 @@ TAG_LIBS = \
 	$(ID3TAG_LIBS)
 
 libtag_a_SOURCES =\
-	src/tag/TagType.h \
+	src/tag/Type.h \
 	src/tag/Tag.cxx src/tag/Tag.hxx \
-	src/tag/TagBuilder.cxx src/tag/TagBuilder.hxx \
-	src/tag/TagItem.hxx \
-	src/tag/TagHandler.cxx src/tag/TagHandler.hxx \
+	src/tag/Builder.cxx src/tag/Builder.hxx \
+	src/tag/Item.hxx \
+	src/tag/Handler.cxx src/tag/Handler.hxx \
 	src/tag/Mask.hxx \
 	src/tag/Settings.cxx src/tag/Settings.hxx \
-	src/tag/TagConfig.cxx src/tag/TagConfig.hxx \
-	src/tag/TagNames.c \
-	src/tag/TagString.cxx src/tag/TagString.hxx \
-	src/tag/TagPool.cxx src/tag/TagPool.hxx \
-	src/tag/TagTable.cxx src/tag/TagTable.hxx \
+	src/tag/Config.cxx src/tag/Config.hxx \
+	src/tag/Names.c \
+	src/tag/FixString.cxx src/tag/FixString.hxx \
+	src/tag/Pool.cxx src/tag/Pool.hxx \
+	src/tag/Table.cxx src/tag/Table.hxx \
 	src/tag/Set.cxx src/tag/Set.hxx \
 	src/tag/Format.cxx src/tag/Format.hxx \
 	src/tag/VorbisComment.cxx src/tag/VorbisComment.hxx \
@@ -931,8 +931,8 @@ if ENABLE_ID3TAG
 libtag_a_SOURCES += \
 	src/tag/Id3Load.cxx src/tag/Id3Load.hxx \
 	src/tag/Id3Unique.hxx \
-	src/tag/TagId3.cxx src/tag/TagId3.hxx \
-	src/tag/TagRva2.cxx src/tag/TagRva2.hxx \
+	src/tag/Id3Scan.cxx src/tag/Id3Scan.hxx \
+	src/tag/Rva2.cxx src/tag/Rva2.hxx \
 	src/tag/Riff.cxx src/tag/Riff.hxx \
 	src/tag/Aiff.cxx src/tag/Aiff.hxx
 endif

@@ -18,11 +18,11 @@
  */
 
 #include "config.h"
-#include "TagId3.hxx"
+#include "Id3Scan.hxx"
 #include "Id3Load.hxx"
-#include "TagHandler.hxx"
-#include "TagTable.hxx"
-#include "TagBuilder.hxx"
+#include "Handler.hxx"
+#include "Table.hxx"
+#include "Builder.hxx"
 #include "util/Alloc.hxx"
 #include "util/ScopeExit.hxx"
 #include "util/StringUtil.hxx"

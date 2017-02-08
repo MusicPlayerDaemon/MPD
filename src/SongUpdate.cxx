@@ -26,7 +26,7 @@
 #include "util/UriUtil.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "fs/FileInfo.hxx"
-#include "tag/TagBuilder.hxx"
+#include "tag/Builder.hxx"
 #include "TagFile.hxx"
 #include "TagStream.hxx"
 

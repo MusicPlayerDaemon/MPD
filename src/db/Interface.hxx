@@ -21,7 +21,7 @@
 #define MPD_DATABASE_INTERFACE_HXX
 
 #include "Visitor.hxx"
-#include "tag/TagType.h"
+#include "tag/Type.h"
 #include "tag/Mask.hxx"
 #include "Compiler.h"
 

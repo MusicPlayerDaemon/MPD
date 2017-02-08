@@ -7,7 +7,7 @@
 #include "DetachedSong.hxx"
 #include "SongLoader.hxx"
 #include "client/Client.hxx"
-#include "tag/TagBuilder.hxx"
+#include "tag/Builder.hxx"
 #include "tag/Tag.hxx"
 #include "util/Domain.hxx"
 #include "fs/AllocatedPath.hxx"

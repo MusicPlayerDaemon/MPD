@@ -20,7 +20,7 @@
 #ifndef MPD_TAG_TABLE_HXX
 #define MPD_TAG_TABLE_HXX
 
-#include "TagType.h"
+#include "Type.h"
 #include "Compiler.h"
 
 struct tag_table {

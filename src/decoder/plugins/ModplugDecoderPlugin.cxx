@@ -21,7 +21,7 @@
 #include "ModplugDecoderPlugin.hxx"
 #include "../DecoderAPI.hxx"
 #include "input/InputStream.hxx"
-#include "tag/TagHandler.hxx"
+#include "tag/Handler.hxx"
 #include "util/WritableBuffer.hxx"
 #include "util/Domain.hxx"
 #include "util/RuntimeError.hxx"

@@ -32,7 +32,7 @@
 #include "client/ClientList.hxx"
 #include "command/AllCommands.hxx"
 #include "Partition.hxx"
-#include "tag/TagConfig.hxx"
+#include "tag/Config.hxx"
 #include "ReplayGainGlobal.hxx"
 #include "Idle.hxx"
 #include "Log.hxx"

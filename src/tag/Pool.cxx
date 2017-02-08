@@ -18,8 +18,8 @@
  */
 
 #include "config.h"
-#include "TagPool.hxx"
-#include "TagItem.hxx"
+#include "Pool.hxx"
+#include "Item.hxx"
 #include "util/Cast.hxx"
 #include "util/VarSize.hxx"
 #include "util/StringView.hxx"

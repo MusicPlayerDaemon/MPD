@@ -20,7 +20,7 @@
 #ifndef MPD_TAG_POOL_HXX
 #define MPD_TAG_POOL_HXX
 
-#include "TagType.h"
+#include "Type.h"
 #include "thread/Mutex.hxx"
 
 extern Mutex tag_pool_lock;

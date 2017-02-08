@@ -28,7 +28,7 @@
 #include "PlaylistError.hxx"
 #include "DetachedSong.hxx"
 #include "tag/Tag.hxx"
-#include "tag/TagBuilder.hxx"
+#include "tag/Builder.hxx"
 
 void
 playlist::AddSongIdTag(unsigned id, TagType tag_type, const char *value)

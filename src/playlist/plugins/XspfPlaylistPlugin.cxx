@@ -23,7 +23,7 @@
 #include "../MemorySongEnumerator.hxx"
 #include "DetachedSong.hxx"
 #include "input/InputStream.hxx"
-#include "tag/TagBuilder.hxx"
+#include "tag/Builder.hxx"
 #include "util/StringView.hxx"
 #include "lib/expat/ExpatParser.hxx"
 #include "Log.hxx"

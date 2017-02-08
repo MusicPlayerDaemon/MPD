@@ -19,8 +19,8 @@
 
 #include "config.h"
 #include "Tag.hxx"
-#include "TagPool.hxx"
-#include "TagBuilder.hxx"
+#include "Pool.hxx"
+#include "Builder.hxx"
 #include "util/ASCII.hxx"
 
 #include <assert.h>

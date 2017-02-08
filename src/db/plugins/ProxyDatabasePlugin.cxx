@@ -31,7 +31,7 @@
 #include "SongFilter.hxx"
 #include "Compiler.h"
 #include "config/Block.hxx"
-#include "tag/TagBuilder.hxx"
+#include "tag/Builder.hxx"
 #include "tag/Tag.hxx"
 #include "util/ScopeExit.hxx"
 #include "util/RuntimeError.hxx"

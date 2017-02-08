@@ -21,7 +21,7 @@
 #define MPD_TAG_SETTINGS_HXX
 
 #include "Mask.hxx"
-#include "TagType.h"
+#include "Type.h"
 #include "Compiler.h"
 
 extern tag_mask_t global_tag_mask;

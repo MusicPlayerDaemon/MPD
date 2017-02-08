@@ -21,8 +21,8 @@
 #include "ApeTag.hxx"
 #include "ApeLoader.hxx"
 #include "Tag.hxx"
-#include "TagTable.hxx"
-#include "TagHandler.hxx"
+#include "Table.hxx"
+#include "Handler.hxx"
 #include "util/StringView.hxx"
 
 #include <string>

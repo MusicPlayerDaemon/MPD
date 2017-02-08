@@ -21,7 +21,7 @@
 #include "PlaylistSong.hxx"
 #include "SongLoader.hxx"
 #include "tag/Tag.hxx"
-#include "tag/TagBuilder.hxx"
+#include "tag/Builder.hxx"
 #include "fs/Traits.hxx"
 #include "util/UriUtil.hxx"
 #include "DetachedSong.hxx"

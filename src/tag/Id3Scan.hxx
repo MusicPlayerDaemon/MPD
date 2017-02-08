@@ -17,8 +17,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_TAG_ID3_HXX
-#define MPD_TAG_ID3_HXX
+#ifndef MPD_TAG_ID3_SCAN_HXX
+#define MPD_TAG_ID3_SCAN_HXX
 
 #include "check.h"
 

@@ -23,7 +23,7 @@
 #include "decoder/DecoderPlugin.hxx"
 #include "input/Init.hxx"
 #include "input/InputStream.hxx"
-#include "tag/TagHandler.hxx"
+#include "tag/Handler.hxx"
 #include "tag/Generic.hxx"
 #include "fs/Path.hxx"
 #include "thread/Cond.hxx"

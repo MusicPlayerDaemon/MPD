@@ -33,7 +33,7 @@
 #include "NeighborCommands.hxx"
 #include "OtherCommands.hxx"
 #include "Permission.hxx"
-#include "tag/TagType.h"
+#include "tag/Type.h"
 #include "Partition.hxx"
 #include "client/Client.hxx"
 #include "client/Response.hxx"

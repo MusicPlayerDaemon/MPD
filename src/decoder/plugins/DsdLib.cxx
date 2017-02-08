@@ -27,7 +27,7 @@
 #include "DsdLib.hxx"
 #include "../DecoderAPI.hxx"
 #include "input/InputStream.hxx"
-#include "tag/TagId3.hxx"
+#include "tag/Id3Scan.hxx"
 
 #ifdef ENABLE_ID3TAG
 #include <id3tag.h>
