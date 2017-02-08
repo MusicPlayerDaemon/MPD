@@ -76,8 +76,6 @@ class DetachedSong {
 	 */
 	SongTime end_time = SongTime::zero();
 
-	explicit DetachedSong(const LightSong &other);
-
 public:
 	explicit DetachedSong(const char *_uri)
 		:uri(_uri) {}
@@ -92,6 +90,13 @@ public:
 	DetachedSong(U &&_uri, Tag &&_tag)
 		:uri(std::forward<U>(_uri)),
 		 tag(std::move(_tag)) {}
+
+	/**
+	 * Copy data from a #LightSong instance.  Usually, you should
+	 * call DatabaseDetachSong() instead, which initializes
+	 * #real_uri properly using Storage::MapUTF8().
+	 */
+	explicit DetachedSong(const LightSong &other);
 
 	~DetachedSong();
 
