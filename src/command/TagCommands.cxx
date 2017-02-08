@@ -22,7 +22,7 @@
 #include "Request.hxx"
 #include "client/Client.hxx"
 #include "client/Response.hxx"
-#include "tag/Tag.hxx"
+#include "tag/ParseName.hxx"
 #include "Partition.hxx"
 #include "util/ConstBuffer.hxx"
 

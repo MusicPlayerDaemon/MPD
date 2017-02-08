@@ -196,22 +196,4 @@ struct Tag {
 	}
 };
 
-/**
- * Parse the string, and convert it into a #TagType.  Returns
- * #TAG_NUM_OF_ITEM_TYPES if the string could not be recognized.
- */
-gcc_pure
-TagType
-tag_name_parse(const char *name);
-
-/**
- * Parse the string, and convert it into a #TagType.  Returns
- * #TAG_NUM_OF_ITEM_TYPES if the string could not be recognized.
- *
- * Case does not matter.
- */
-gcc_pure
-TagType
-tag_name_parse_i(const char *name);
-
 #endif

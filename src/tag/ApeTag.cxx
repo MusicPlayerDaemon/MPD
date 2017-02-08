@@ -20,7 +20,7 @@
 #include "config.h"
 #include "ApeTag.hxx"
 #include "ApeLoader.hxx"
-#include "Tag.hxx"
+#include "ParseName.hxx"
 #include "Table.hxx"
 #include "Handler.hxx"
 #include "util/StringView.hxx"

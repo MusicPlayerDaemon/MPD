@@ -28,7 +28,7 @@
 #include "CommandError.hxx"
 #include "client/Client.hxx"
 #include "client/Response.hxx"
-#include "tag/Tag.hxx"
+#include "tag/ParseName.hxx"
 #include "util/ConstBuffer.hxx"
 #include "util/StringAPI.hxx"
 #include "SongFilter.hxx"

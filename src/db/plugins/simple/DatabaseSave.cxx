@@ -24,7 +24,7 @@
 #include "DirectorySave.hxx"
 #include "fs/io/BufferedOutputStream.hxx"
 #include "fs/io/TextFile.hxx"
-#include "tag/Tag.hxx"
+#include "tag/ParseName.hxx"
 #include "tag/Settings.hxx"
 #include "fs/Charset.hxx"
 #include "util/StringCompare.hxx"

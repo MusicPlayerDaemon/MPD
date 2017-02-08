@@ -20,7 +20,7 @@
 #include "config.h"
 #include "Config.hxx"
 #include "Settings.hxx"
-#include "Tag.hxx"
+#include "ParseName.hxx"
 #include "config/ConfigGlobal.hxx"
 #include "config/ConfigOption.hxx"
 #include "system/FatalError.hxx"

@@ -19,10 +19,10 @@
 
 #include "config.h"
 #include "CueParser.hxx"
+#include "tag/ParseName.hxx"
 #include "util/Alloc.hxx"
 #include "util/StringUtil.hxx"
 #include "util/CharUtil.hxx"
-#include "tag/Tag.hxx"
 
 #include <assert.h>
 #include <string.h>

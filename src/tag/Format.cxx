@@ -20,6 +20,7 @@
 #include "config.h"
 #include "Format.hxx"
 #include "Tag.hxx"
+#include "ParseName.hxx"
 #include "util/format.h"
 #include "util/StringUtil.hxx"
 

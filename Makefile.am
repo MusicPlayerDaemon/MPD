@@ -913,6 +913,7 @@ libtag_a_SOURCES =\
 	src/tag/Mask.hxx \
 	src/tag/Settings.cxx src/tag/Settings.hxx \
 	src/tag/Config.cxx src/tag/Config.hxx \
+	src/tag/ParseName.cxx src/tag/ParseName.hxx \
 	src/tag/Names.c \
 	src/tag/FixString.cxx src/tag/FixString.hxx \
 	src/tag/Pool.cxx src/tag/Pool.hxx \

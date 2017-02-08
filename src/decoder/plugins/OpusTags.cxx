@@ -22,7 +22,7 @@
 #include "OpusReader.hxx"
 #include "lib/xiph/XiphTags.hxx"
 #include "tag/Handler.hxx"
-#include "tag/Tag.hxx"
+#include "tag/ParseName.hxx"
 #include "ReplayGainInfo.hxx"
 
 #include <stdint.h>
