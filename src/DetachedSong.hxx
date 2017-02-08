@@ -104,6 +104,7 @@ public:
 	   above prevents them from being generated implicitly */
 	explicit DetachedSong(const DetachedSong &) = default;
 	DetachedSong(DetachedSong &&) = default;
+	DetachedSong &operator=(DetachedSong &&) = default;
 
 	gcc_pure
 	const char *GetURI() const {
