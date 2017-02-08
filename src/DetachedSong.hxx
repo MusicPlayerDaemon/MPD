@@ -108,6 +108,9 @@ public:
 	DetachedSong &operator=(DetachedSong &&) = default;
 
 	gcc_pure
+	explicit operator LightSong() const;
+
+	gcc_pure
 	const char *GetURI() const {
 		return uri.c_str();
 	}

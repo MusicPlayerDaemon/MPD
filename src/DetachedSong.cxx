@@ -31,6 +31,19 @@ DetachedSong::DetachedSong(const LightSong &other)
 	 start_time(other.start_time),
 	 end_time(other.end_time) {}
 
+DetachedSong::operator LightSong() const
+{
+	LightSong result;
+	result.directory = nullptr;
+	result.uri = uri.c_str();
+	result.real_uri = real_uri.empty() ? nullptr : real_uri.c_str();
+	result.tag = &tag;
+	result.mtime = mtime;
+	result.start_time = start_time;
+	result.end_time = end_time;
+	return result;
+}
+
 bool
 DetachedSong::IsRemote() const
 {
