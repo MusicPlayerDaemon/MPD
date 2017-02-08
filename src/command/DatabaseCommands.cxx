@@ -134,7 +134,7 @@ handle_searchaddpl(Client &client, Request args, Response &r)
 
 	const Database &db = client.GetDatabaseOrThrow();
 
-	search_add_to_playlist(db, *client.GetStorage(),
+	search_add_to_playlist(db, client.GetStorage(),
 			       "", playlist, &filter);
 	return CommandResult::OK;
 }

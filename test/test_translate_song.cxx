@@ -109,7 +109,7 @@ static const char *uri2 = "foo/bar.ogg";
 
 DetachedSong
 DatabaseDetachSong(gcc_unused const Database &db,
-		   gcc_unused const Storage &_storage,
+		   gcc_unused const Storage *_storage,
 		   const char *uri)
 {
 	if (strcmp(uri, uri2) == 0)

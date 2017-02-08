@@ -33,7 +33,7 @@ class DetachedSong;
  */
 gcc_pure
 DetachedSong
-DatabaseDetachSong(const Storage &storage, const LightSong &song);
+DatabaseDetachSong(const Storage *storage, const LightSong &song);
 
 /**
  * Look up a song in the database and convert it to a #DetachedSong
@@ -43,7 +43,7 @@ DatabaseDetachSong(const Storage &storage, const LightSong &song);
  */
 gcc_pure
 DetachedSong
-DatabaseDetachSong(const Database &db, const Storage &storage,
+DatabaseDetachSong(const Database &db, const Storage *storage,
 		   const char *uri);
 
 #endif

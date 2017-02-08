@@ -166,7 +166,7 @@ handle_playlistadd(Client &client, Request args, gcc_unused Response &r)
 #ifdef ENABLE_DATABASE
 		const Database &db = client.GetDatabaseOrThrow();
 
-		search_add_to_playlist(db, *client.GetStorage(),
+		search_add_to_playlist(db, client.GetStorage(),
 				       uri, playlist, nullptr);
 #else
 		r.Error(ACK_ERROR_NO_EXIST, "directory or file not found");

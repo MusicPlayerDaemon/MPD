@@ -30,7 +30,7 @@
 static void
 AddToQueue(Partition &partition, const LightSong &song)
 {
-	const Storage &storage = *partition.instance.storage;
+	const auto *storage = partition.instance.storage;
 	partition.playlist.AppendSong(partition.pc,
 				      DatabaseDetachSong(storage,
 							 song));

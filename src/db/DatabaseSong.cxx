@@ -28,21 +28,21 @@
 #include <assert.h>
 
 DetachedSong
-DatabaseDetachSong(const Storage &storage, const LightSong &song)
+DatabaseDetachSong(const Storage *storage, const LightSong &song)
 {
 	DetachedSong detached(song);
 	assert(detached.IsInDatabase());
 
-	if (!detached.HasRealURI()) {
+	if (!detached.HasRealURI() && storage != nullptr) {
 		const auto uri = song.GetURI();
-		detached.SetRealURI(storage.MapUTF8(uri.c_str()));
+		detached.SetRealURI(storage->MapUTF8(uri.c_str()));
 	}
 
 	return detached;
 }
 
 DetachedSong
-DatabaseDetachSong(const Database &db, const Storage &storage, const char *uri)
+DatabaseDetachSong(const Database &db, const Storage *storage, const char *uri)
 {
 	const LightSong *tmp = db.GetSong(uri);
 	assert(tmp != nullptr);
