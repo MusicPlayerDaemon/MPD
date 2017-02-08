@@ -100,6 +100,11 @@ public:
 
 	~DetachedSong();
 
+	/* these are declared because the user-defined destructor
+	   above prevents them from being generated implicitly */
+	explicit DetachedSong(const DetachedSong &) = default;
+	DetachedSong(DetachedSong &&) = default;
+
 	gcc_pure
 	const char *GetURI() const {
 		return uri.c_str();
