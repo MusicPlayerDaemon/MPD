@@ -96,7 +96,19 @@ class MultiSocketMonitor : IdleMonitor, TimeoutMonitor
 
 	friend class SingleFD;
 
-	bool ready, refresh;
+	/**
+	 * DispatchSockets() should be called.
+	 */
+	bool ready;
+
+	/**
+	 * PrepareSockets() should be called.
+	 *
+	 * Note that this doesn't need to be initialized by the
+	 * constructor; this class is activated with the first
+	 * InvalidateSockets() call, which initializes this flag.
+	 */
+	bool refresh;
 
 	std::forward_list<SingleFD> fds;
 
@@ -121,12 +133,19 @@ public:
 		IdleMonitor::Schedule();
 	}
 
+	/**
+	 * Add one socket to the list of monitored sockets.
+	 *
+	 * May only be called from PrepareSockets().
+	 */
 	void AddSocket(int fd, unsigned events) {
 		fds.emplace_front(*this, fd, events);
 	}
 
 	/**
 	 * Remove all sockets.
+	 *
+	 * May only be called from PrepareSockets().
 	 */
 	void ClearSocketList();
 
@@ -135,6 +154,8 @@ public:
 	 * each one; its return value is the events bit mask.  A
 	 * return value of 0 means the socket will be removed from the
 	 * list.
+	 *
+	 * May only be called from PrepareSockets().
 	 */
 	template<typename E>
 	void UpdateSocketList(E &&e) {
@@ -157,15 +178,26 @@ public:
 	/**
 	 * Replace the socket list with the given file descriptors.
 	 * The given pollfd array will be modified by this method.
+	 *
+	 * May only be called from PrepareSockets().
 	 */
 	void ReplaceSocketList(pollfd *pfds, unsigned n);
 #endif
 
 protected:
 	/**
+	 * Override this method and update the socket registrations.
+	 * To do that, call AddSocket(), ClearSocketList(),
+	 * UpdateSocketList() and ReplaceSocketList().
+	 *
 	 * @return timeout or a negative value for no timeout
 	 */
 	virtual std::chrono::steady_clock::duration PrepareSockets() = 0;
+
+	/**
+	 * At least one socket is ready or the timeout has expired.
+	 * This method should be used to perform I/O.
+	 */
 	virtual void DispatchSockets() = 0;
 
 private:
