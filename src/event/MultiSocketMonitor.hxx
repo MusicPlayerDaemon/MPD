@@ -99,7 +99,7 @@ class MultiSocketMonitor : IdleMonitor, TimeoutMonitor
 	/**
 	 * DispatchSockets() should be called.
 	 */
-	bool ready;
+	bool ready = false;
 
 	/**
 	 * PrepareSockets() should be called.

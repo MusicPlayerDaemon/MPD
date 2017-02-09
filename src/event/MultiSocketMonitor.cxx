@@ -28,7 +28,7 @@
 #endif
 
 MultiSocketMonitor::MultiSocketMonitor(EventLoop &_loop)
-	:IdleMonitor(_loop), TimeoutMonitor(_loop), ready(false) {
+	:IdleMonitor(_loop), TimeoutMonitor(_loop) {
 }
 
 MultiSocketMonitor::~MultiSocketMonitor()
