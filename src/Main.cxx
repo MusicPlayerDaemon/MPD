@@ -519,7 +519,7 @@ try {
 
 	command_init();
 
-	instance->partition->outputs.Configure(instance->event_loop,
+	instance->partition->outputs.Configure(io_thread_get(),
 					       config.replay_gain,
 					       instance->partition->pc);
 	instance->partition->UpdateEffectiveReplayGainMode();
