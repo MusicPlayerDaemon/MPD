@@ -98,12 +98,8 @@ public:
 	}
 
 	~AlsaInputStream() {
-		/* ClearSocketList must be called from within the
-		   IOThread; if we don't do it manually here, the
-		   ~MultiSocketMonitor() will do it in the current
-		   thread */
 		BlockingCall(MultiSocketMonitor::GetEventLoop(), [this](){
-				ClearSocketList();
+				MultiSocketMonitor::Reset();
 			});
 
 		snd_pcm_close(capture_handle);

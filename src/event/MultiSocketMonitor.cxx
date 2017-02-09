@@ -31,9 +31,15 @@ MultiSocketMonitor::MultiSocketMonitor(EventLoop &_loop)
 	:IdleMonitor(_loop), TimeoutMonitor(_loop) {
 }
 
-MultiSocketMonitor::~MultiSocketMonitor()
+void
+MultiSocketMonitor::Reset()
 {
-	// TODO
+	assert(GetEventLoop().IsInsideOrNull());
+
+	fds.clear();
+	IdleMonitor::Cancel();
+	TimeoutMonitor::Cancel();
+	ready = refresh = false;
 }
 
 void

@@ -119,11 +119,26 @@ public:
 	static constexpr unsigned HANGUP = SocketMonitor::HANGUP;
 
 	MultiSocketMonitor(EventLoop &_loop);
-	~MultiSocketMonitor();
 
 	using IdleMonitor::GetEventLoop;
 
-public:
+	/**
+	 * Clear the socket list and disable all #EventLoop
+	 * registrations.  Run this in the #EventLoop thread before
+	 * destroying this object.
+	 *
+	 * Later, this object can be reused and reactivated by calling
+	 * InvalidateSockets().
+	 *
+	 * Note that this class doesn't have a destructor which calls
+	 * this method, because this would be racy and thus pointless:
+	 * at the time ~MultiSocketMonitor() is called, our virtual
+	 * methods have been morphed to be pure again, and in the
+	 * meantime the #EventLoop thread could invoke those pure
+	 * methods.
+	 */
+	void Reset();
+
 	/**
 	 * Invalidate the socket list.  A call to PrepareSockets() is
 	 * scheduled which will then update the list.
