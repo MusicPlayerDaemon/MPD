@@ -99,12 +99,8 @@ public:
 	}
 
 	~AlsaInputStream() {
-		/* ClearSocketList must be called from within the
-		   IOThread; if we don't do it manually here, the
-		   ~MultiSocketMonitor() will do it in the current
-		   thread */
 		BlockingCall(MultiSocketMonitor::GetEventLoop(), [this](){
-				ClearSocketList();
+				MultiSocketMonitor::Reset();
 			});
 
 		snd_pcm_close(capture_handle);
@@ -182,7 +178,7 @@ AlsaInputStream::PrepareSockets()
 	}
 
 	int count = snd_pcm_poll_descriptors_count(capture_handle);
-	if (count < 0) {
+	if (count <= 0) {
 		ClearSocketList();
 		return std::chrono::steady_clock::duration(-1);
 	}
