@@ -3,6 +3,8 @@ ver 0.20.5 (not yet released)
   - id3: fix memory leak on corrupt ID3 tags
 * decoder
   - sidplay: don't require libsidutils when building with libsidplayfp
+* mixer
+  - alsa: fix crash bug
 
 ver 0.20.4 (2017/02/01)
 * input

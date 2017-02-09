@@ -23,6 +23,7 @@
 #include "output/OutputAPI.hxx"
 #include "event/MultiSocketMonitor.hxx"
 #include "event/DeferredMonitor.hxx"
+#include "event/Call.hxx"
 #include "util/ASCII.hxx"
 #include "util/ReusableArray.hxx"
 #include "util/Domain.hxx"
@@ -51,6 +52,12 @@ public:
 		:MultiSocketMonitor(_loop), DeferredMonitor(_loop),
 		 mixer(_mixer) {
 		DeferredMonitor::Schedule();
+	}
+
+	~AlsaMixerMonitor() {
+		BlockingCall(MultiSocketMonitor::GetEventLoop(), [this](){
+				MultiSocketMonitor::Reset();
+			});
 	}
 
 private:
