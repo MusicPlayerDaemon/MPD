@@ -79,7 +79,7 @@ private:
 void
 BlockingCall(EventLoop &loop, std::function<void()> &&f)
 {
-	if (loop.IsInside()) {
+	if (loop.IsInsideOrNull()) {
 		/* we're already inside the loop - we can simply call
 		   the function */
 		f();
