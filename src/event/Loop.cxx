@@ -222,8 +222,9 @@ EventLoop::Run()
 #ifndef NDEBUG
 	assert(busy);
 	assert(thread.IsInside());
-	thread = ThreadId::Null();
 #endif
+
+	thread = ThreadId::Null();
 }
 
 void
