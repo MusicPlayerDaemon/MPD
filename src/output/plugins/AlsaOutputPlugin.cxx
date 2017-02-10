@@ -32,7 +32,6 @@
 #include "event/MultiSocketMonitor.hxx"
 #include "event/DeferredMonitor.hxx"
 #include "event/Call.hxx"
-#include "IOThread.hxx"
 #include "Log.hxx"
 
 #include <alsa/asoundlib.h>
@@ -429,9 +428,9 @@ AlsaOutput::AlsaOutput(EventLoop &loop, const ConfigBlock &block)
 }
 
 inline AlsaOutput *
-AlsaOutput::Create(EventLoop &, const ConfigBlock &block)
+AlsaOutput::Create(EventLoop &event_loop, const ConfigBlock &block)
 {
-	return new AlsaOutput(io_thread_get(), block);
+	return new AlsaOutput(event_loop, block);
 }
 
 inline void
