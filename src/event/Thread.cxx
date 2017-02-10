@@ -17,24 +17,45 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_IO_THREAD_HXX
-#define MPD_IO_THREAD_HXX
-
-#include "Compiler.h"
-
-class EventLoop;
+#include "config.h"
+#include "Thread.hxx"
+#include "thread/Name.hxx"
 
 void
-io_thread_init();
+EventThread::Start()
+{
+	assert(!thread.IsDefined());
+
+	const std::lock_guard<Mutex> protect(mutex);
+	thread.Start(ThreadFunc, this);
+}
 
 void
-io_thread_start();
+EventThread::Stop()
+{
+	if (thread.IsDefined()) {
+		event_loop.Break();
+		thread.Join();
+	}
+}
 
 void
-io_thread_deinit();
+EventThread::ThreadFunc()
+{
+	SetThreadName("io");
 
-gcc_const
-EventLoop &
-io_thread_get();
+	/* lock+unlock to synchronize with io_thread_start(), to be
+	   sure that io.thread is set */
+	mutex.lock();
+	mutex.unlock();
 
-#endif
+	event_loop.Run();
+};
+
+void
+EventThread::ThreadFunc(void *arg)
+{
+	auto &et = *(EventThread *)arg;
+
+	et.ThreadFunc();
+};

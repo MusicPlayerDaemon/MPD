@@ -17,24 +17,45 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_IO_THREAD_HXX
-#define MPD_IO_THREAD_HXX
+#ifndef MPD_EVENT_THREAD_HXX
+#define MPD_EVENT_THREAD_HXX
 
-#include "Compiler.h"
+#include "check.h"
+#include "Loop.hxx"
+#include "thread/Thread.hxx"
+#include "thread/Mutex.hxx"
 
-class EventLoop;
+/**
+ * A thread which runs an #EventLoop.
+ */
+class EventThread final {
+	Mutex mutex;
 
-void
-io_thread_init();
+	EventLoop event_loop;
 
-void
-io_thread_start();
+	Thread thread;
 
-void
-io_thread_deinit();
+public:
+	EventLoop &GetEventLoop() {
+		return event_loop;
+	}
 
-gcc_const
-EventLoop &
-io_thread_get();
+	void Start();
 
-#endif
+	/**
+	 * Ask the thread to stop, but does not wait for it.  Usually,
+	 * you don't need to call this function, because Stop()
+	 * includes this.
+	 */
+	void StopAsync() {
+		event_loop.Break();
+	}
+
+	void Stop();
+
+private:
+	void ThreadFunc();
+	static void ThreadFunc(void *arg);
+};
+
+#endif /* MAIN_NOTIFY_H */

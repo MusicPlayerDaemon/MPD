@@ -517,6 +517,7 @@ libevent_a_SOURCES = \
 	src/event/MultiSocketMonitor.cxx src/event/MultiSocketMonitor.hxx \
 	src/event/ServerSocket.cxx src/event/ServerSocket.hxx \
 	src/event/Call.hxx src/event/Call.cxx \
+	src/event/Thread.cxx src/event/Thread.hxx \
 	src/event/Loop.cxx src/event/Loop.hxx
 
 # UTF-8 library
