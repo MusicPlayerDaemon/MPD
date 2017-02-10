@@ -98,7 +98,6 @@ private:
 
 	/* the update thread */
 	void Task();
-	static void Task(void *ctx);
 
 	void StartThread(UpdateQueueItem &&i);
 

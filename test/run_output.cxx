@@ -44,6 +44,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+void AudioOutput::Task() {}
+
 class DummyAudioOutputClient final : public AudioOutputClient {
 public:
 	/* virtual methods from AudioOutputClient */

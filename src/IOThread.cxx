@@ -27,12 +27,17 @@
 
 #include <assert.h>
 
-static struct {
+static struct IOThread {
 	Mutex mutex;
 	Cond cond;
 
 	EventLoop *loop;
 	Thread thread;
+
+	IOThread():thread(BIND_THIS_METHOD(Run)) {}
+
+private:
+	void Run() noexcept;
 } io;
 
 void
@@ -44,15 +49,15 @@ io_thread_run(void)
 	io.loop->Run();
 }
 
-static void
-io_thread_func(gcc_unused void *arg)
+inline void
+IOThread::Run() noexcept
 {
 	SetThreadName("io");
 
 	/* lock+unlock to synchronize with io_thread_start(), to be
 	   sure that io.thread is set */
-	io.mutex.lock();
-	io.mutex.unlock();
+	mutex.lock();
+	mutex.unlock();
 
 	io_thread_run();
 }
@@ -73,7 +78,7 @@ io_thread_start()
 	assert(!io.thread.IsDefined());
 
 	const std::lock_guard<Mutex> protect(io.mutex);
-	io.thread.Start(io_thread_func, nullptr);
+	io.thread.Start();
 }
 
 void

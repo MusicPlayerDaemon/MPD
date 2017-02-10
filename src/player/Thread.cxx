@@ -1147,91 +1147,89 @@ do_play(PlayerControl &pc, DecoderControl &dc,
 	player.Run();
 }
 
-static void
-player_task(void *arg)
+void
+PlayerControl::RunThread()
 {
-	PlayerControl &pc = *(PlayerControl *)arg;
-
 	SetThreadName("player");
 
-	DecoderControl dc(pc.mutex, pc.cond,
-			  pc.configured_audio_format,
-			  pc.replay_gain_config);
+	DecoderControl dc(mutex, cond,
+			  configured_audio_format,
+			  replay_gain_config);
 	decoder_thread_start(dc);
 
-	MusicBuffer buffer(pc.buffer_chunks);
+	MusicBuffer buffer(buffer_chunks);
 
-	pc.Lock();
+	Lock();
 
 	while (1) {
-		switch (pc.command) {
+		switch (command) {
 		case PlayerCommand::SEEK:
 		case PlayerCommand::QUEUE:
-			assert(pc.next_song != nullptr);
+			assert(next_song != nullptr);
 
-			pc.Unlock();
-			do_play(pc, dc, buffer);
-			pc.listener.OnPlayerSync();
-			pc.Lock();
+			Unlock();
+			do_play(*this, dc, buffer);
+			listener.OnPlayerSync();
+			Lock();
 			break;
 
 		case PlayerCommand::STOP:
-			pc.Unlock();
-			pc.outputs.Cancel();
-			pc.Lock();
+			Unlock();
+			outputs.Cancel();
+			Lock();
 
 			/* fall through */
 
 		case PlayerCommand::PAUSE:
-			delete pc.next_song;
-			pc.next_song = nullptr;
+			delete next_song;
+			next_song = nullptr;
 
-			pc.CommandFinished();
+			CommandFinished();
 			break;
 
 		case PlayerCommand::CLOSE_AUDIO:
-			pc.Unlock();
+			Unlock();
 
-			pc.outputs.Release();
+			outputs.Release();
 
-			pc.Lock();
-			pc.CommandFinished();
+			Lock();
+			CommandFinished();
 
 			assert(buffer.IsEmptyUnsafe());
 
 			break;
 
 		case PlayerCommand::UPDATE_AUDIO:
-			pc.Unlock();
-			pc.outputs.EnableDisable();
-			pc.Lock();
-			pc.CommandFinished();
+			Unlock();
+			outputs.EnableDisable();
+			Lock();
+			CommandFinished();
 			break;
 
 		case PlayerCommand::EXIT:
-			pc.Unlock();
+			Unlock();
 
 			dc.Quit();
 
-			pc.outputs.Close();
+			outputs.Close();
 
-			pc.LockCommandFinished();
+			LockCommandFinished();
 			return;
 
 		case PlayerCommand::CANCEL:
-			delete pc.next_song;
-			pc.next_song = nullptr;
+			delete next_song;
+			next_song = nullptr;
 
-			pc.CommandFinished();
+			CommandFinished();
 			break;
 
 		case PlayerCommand::REFRESH:
 			/* no-op when not playing */
-			pc.CommandFinished();
+			CommandFinished();
 			break;
 
 		case PlayerCommand::NONE:
-			pc.Wait();
+			Wait();
 			break;
 		}
 	}
@@ -1242,5 +1240,5 @@ StartPlayerThread(PlayerControl &pc)
 {
 	assert(!pc.thread.IsDefined());
 
-	pc.thread.Start(player_task, &pc);
+	pc.thread.Start();
 }

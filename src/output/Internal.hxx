@@ -515,7 +515,6 @@ private:
 	 * The OutputThread.
 	 */
 	void Task();
-	static void Task(void *arg);
 };
 
 /**

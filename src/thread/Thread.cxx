@@ -25,13 +25,10 @@
 #include "java/Global.hxx"
 #endif
 
-bool
-Thread::Start(void (*_f)(void *ctx), void *_ctx)
+void
+Thread::Start()
 {
 	assert(!IsDefined());
-
-	f = _f;
-	ctx = _ctx;
 
 #ifdef _WIN32
 	handle = ::CreateThread(nullptr, 0, ThreadProc, this, 0, &id);
@@ -56,8 +53,6 @@ Thread::Start(void (*_f)(void *ctx), void *_ctx)
 	creating = false;
 #endif
 #endif
-
-	return true;
 }
 
 void
@@ -89,7 +84,7 @@ Thread::Run()
 #endif
 #endif
 
-	f(ctx);
+	f();
 
 #ifdef ANDROID
 	Java::DetachCurrentThread();

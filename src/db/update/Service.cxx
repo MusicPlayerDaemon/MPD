@@ -43,6 +43,7 @@ UpdateService::UpdateService(EventLoop &_loop, SimpleDatabase &_db,
 	:DeferredMonitor(_loop),
 	 db(_db), storage(_storage),
 	 listener(_listener),
+	 update_thread(BIND_THIS_METHOD(Task)),
 	 update_task_id(0),
 	 walk(nullptr)
 {
@@ -141,13 +142,6 @@ UpdateService::Task()
 }
 
 void
-UpdateService::Task(void *ctx)
-{
-	UpdateService &service = *(UpdateService *)ctx;
-	return service.Task();
-}
-
-void
 UpdateService::StartThread(UpdateQueueItem &&i)
 {
 	assert(GetEventLoop().IsInsideOrNull());
@@ -158,7 +152,7 @@ UpdateService::StartThread(UpdateQueueItem &&i)
 	next = std::move(i);
 	walk = new UpdateWalk(GetEventLoop(), listener, *next.storage);
 
-	update_thread.Start(Task, this);
+	update_thread.Start();
 
 	FormatDebug(update_domain,
 		    "spawned thread for update job id %i", next.id);

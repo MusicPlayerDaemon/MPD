@@ -537,6 +537,9 @@ public:
 	void ApplyEnabled() override {
 		LockUpdateAudio();
 	}
+
+private:
+	void RunThread();
 };
 
 #endif

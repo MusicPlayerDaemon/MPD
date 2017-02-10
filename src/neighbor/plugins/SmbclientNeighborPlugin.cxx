@@ -69,7 +69,8 @@ class SmbclientNeighborExplorer final : public NeighborExplorer {
 
 public:
 	SmbclientNeighborExplorer(NeighborListener &_listener)
-		:NeighborExplorer(_listener) {}
+		:NeighborExplorer(_listener),
+		 thread(BIND_THIS_METHOD(ThreadFunc)) {}
 
 	/* virtual methods from class NeighborExplorer */
 	void Open() override;
@@ -79,14 +80,13 @@ public:
 private:
 	void Run();
 	void ThreadFunc();
-	static void ThreadFunc(void *ctx);
 };
 
 void
 SmbclientNeighborExplorer::Open()
 {
 	quit = false;
-	thread.Start(ThreadFunc, this);
+	thread.Start();
 }
 
 void
@@ -239,6 +239,8 @@ SmbclientNeighborExplorer::Run()
 inline void
 SmbclientNeighborExplorer::ThreadFunc()
 {
+	SetThreadName("smbclient");
+
 	mutex.lock();
 
 	while (!quit) {
@@ -255,15 +257,6 @@ SmbclientNeighborExplorer::ThreadFunc()
 	}
 
 	mutex.unlock();
-}
-
-void
-SmbclientNeighborExplorer::ThreadFunc(void *ctx)
-{
-	SetThreadName("smbclient");
-
-	SmbclientNeighborExplorer &e = *(SmbclientNeighborExplorer *)ctx;
-	e.ThreadFunc();
 }
 
 static NeighborExplorer *
