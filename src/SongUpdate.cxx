@@ -151,7 +151,7 @@ DetachedSong::LoadFile(Path path)
 	if (!tag_file_scan(path, tag_builder))
 		return false;
 
-	mtime = fi.GetModificationTime();
+	mtime = std::chrono::system_clock::to_time_t(fi.GetModificationTime());
 	tag_builder.Commit(tag);
 	return true;
 }

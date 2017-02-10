@@ -157,7 +157,7 @@ SimpleDatabase::Load()
 
 	FileInfo fi;
 	if (GetFileInfo(path, fi))
-		mtime = fi.GetModificationTime();
+		mtime = std::chrono::system_clock::to_time_t(fi.GetModificationTime());
 }
 
 void
@@ -358,7 +358,7 @@ SimpleDatabase::Save()
 
 	FileInfo fi;
 	if (GetFileInfo(path, fi))
-		mtime = fi.GetModificationTime();
+		mtime = std::chrono::system_clock::to_time_t(fi.GetModificationTime());
 }
 
 void

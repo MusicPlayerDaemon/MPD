@@ -148,7 +148,7 @@ LoadPlaylistFileInfo(PlaylistInfo &info,
 		return false;
 
 	info.name = std::move(name_utf8);
-	info.mtime = fi.GetModificationTime();
+	info.mtime = std::chrono::system_clock::to_time_t(fi.GetModificationTime());
 	return true;
 }
 
