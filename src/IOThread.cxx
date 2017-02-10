@@ -20,7 +20,6 @@
 #include "config.h"
 #include "IOThread.hxx"
 #include "thread/Mutex.hxx"
-#include "thread/Cond.hxx"
 #include "thread/Thread.hxx"
 #include "thread/Name.hxx"
 #include "event/Loop.hxx"
@@ -29,7 +28,6 @@
 
 static struct {
 	Mutex mutex;
-	Cond cond;
 
 	EventLoop *loop;
 	Thread thread;
