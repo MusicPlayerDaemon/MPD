@@ -297,6 +297,7 @@ AudioOutput::PlayChunk()
 		try {
 			const ScopeUnlock unlock(mutex);
 			nbytes = ao_plugin_play(*this, data.data, data.size);
+			assert(nbytes <= data.size);
 		} catch (const std::runtime_error &e) {
 			FormatError(e, "\"%s\" [%s] failed to play",
 				    name, plugin.name);
