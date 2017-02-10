@@ -37,6 +37,7 @@ PlayerControl::PlayerControl(PlayerListener &_listener,
 	 buffer_chunks(_buffer_chunks),
 	 buffered_before_play(_buffered_before_play),
 	 configured_audio_format(_configured_audio_format),
+	 thread(BIND_THIS_METHOD(RunThread)),
 	 replay_gain_config(_replay_gain_config)
 {
 }

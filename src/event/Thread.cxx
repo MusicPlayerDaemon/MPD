@@ -26,7 +26,7 @@ EventThread::Start()
 {
 	assert(!thread.IsDefined());
 
-	thread.Start(ThreadFunc, this);
+	thread.Start();
 }
 
 void
@@ -39,17 +39,9 @@ EventThread::Stop()
 }
 
 void
-EventThread::ThreadFunc()
+EventThread::Run()
 {
 	SetThreadName("io");
 
 	event_loop.Run();
-};
-
-void
-EventThread::ThreadFunc(void *arg)
-{
-	auto &et = *(EventThread *)arg;
-
-	et.ThreadFunc();
-};
+}

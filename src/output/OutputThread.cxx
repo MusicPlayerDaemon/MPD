@@ -398,7 +398,7 @@ AudioOutput::Pause()
 	pause = false;
 }
 
-inline void
+void
 AudioOutput::Task()
 {
 	FormatThreadName("output:%s", name);
@@ -515,16 +515,9 @@ AudioOutput::Task()
 }
 
 void
-AudioOutput::Task(void *arg)
-{
-	AudioOutput *ao = (AudioOutput *)arg;
-	ao->Task();
-}
-
-void
 AudioOutput::StartThread()
 {
 	assert(command == Command::NONE);
 
-	thread.Start(Task, this);
+	thread.Start();
 }

@@ -33,6 +33,9 @@ class EventThread final {
 	Thread thread;
 
 public:
+	EventThread()
+		:thread(BIND_THIS_METHOD(Run)) {}
+
 	~EventThread() {
 		Stop();
 	}
@@ -55,8 +58,7 @@ public:
 	void Stop();
 
 private:
-	void ThreadFunc();
-	static void ThreadFunc(void *arg);
+	void Run();
 };
 
 #endif /* MAIN_NOTIFY_H */
