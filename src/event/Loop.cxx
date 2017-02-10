@@ -46,6 +46,9 @@ EventLoop::~EventLoop()
 void
 EventLoop::Break()
 {
+	if (quit)
+		return;
+
 	quit = true;
 	wake_fd.Write();
 }
