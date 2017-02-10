@@ -36,7 +36,6 @@
 #include "db/plugins/simple/SimpleDatabasePlugin.hxx"
 #include "db/update/Service.hxx"
 #include "TimePrint.hxx"
-#include "IOThread.hxx"
 #include "Idle.hxx"
 
 #include <memory>
@@ -107,9 +106,10 @@ handle_listfiles_storage(Response &r, Storage &storage, const char *uri)
 }
 
 CommandResult
-handle_listfiles_storage(Response &r, const char *uri)
+handle_listfiles_storage(Client &client, Response &r, const char *uri)
 {
-	std::unique_ptr<Storage> storage(CreateStorageURI(io_thread_get(), uri));
+	auto &event_loop = client.partition.instance.io_thread.GetEventLoop();
+	std::unique_ptr<Storage> storage(CreateStorageURI(event_loop, uri));
 	if (storage == nullptr) {
 		r.Error(ACK_ERROR_ARG, "Unrecognized storage URI");
 		return CommandResult::ERROR;
@@ -195,7 +195,8 @@ handle_mount(Client &client, Request args, Response &r)
 		return CommandResult::ERROR;
 	}
 
-	Storage *storage = CreateStorageURI(io_thread_get(), remote_uri);
+	auto &event_loop = client.partition.instance.io_thread.GetEventLoop();
+	Storage *storage = CreateStorageURI(event_loop, remote_uri);
 	if (storage == nullptr) {
 		r.Error(ACK_ERROR_ARG, "Unrecognized storage URI");
 		return CommandResult::ERROR;

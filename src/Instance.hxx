@@ -22,6 +22,7 @@
 
 #include "check.h"
 #include "event/Loop.hxx"
+#include "event/Thread.hxx"
 #include "event/MaskMonitor.hxx"
 #include "Compiler.h"
 
@@ -64,6 +65,8 @@ struct Instance final
 	public NeighborListener
 #endif
 {
+	EventThread io_thread;
+
 	MaskMonitor idle_monitor;
 
 #ifdef ENABLE_NEIGHBOR_PLUGINS

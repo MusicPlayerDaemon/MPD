@@ -33,8 +33,4 @@ io_thread_start();
 void
 io_thread_deinit();
 
-gcc_const
-EventLoop &
-io_thread_get();
-
 #endif

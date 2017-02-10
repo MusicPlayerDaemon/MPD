@@ -39,7 +39,6 @@
 #include "LogInit.hxx"
 #include "input/Init.hxx"
 #include "event/Loop.hxx"
-#include "IOThread.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "fs/Config.hxx"
 #include "playlist/PlaylistRegistry.hxx"
@@ -161,9 +160,9 @@ glue_mapper_init()
 #ifdef ENABLE_DATABASE
 
 static void
-InitStorage()
+InitStorage(EventLoop &event_loop)
 {
-	Storage *storage = CreateConfiguredStorage(io_thread_get());
+	Storage *storage = CreateConfiguredStorage(event_loop);
 	if (storage == nullptr)
 		return;
 
@@ -186,7 +185,7 @@ glue_db_init_and_load(void)
 		return true;
 
 	if (instance->database->GetPlugin().flags & DatabasePlugin::FLAG_REQUIRE_STORAGE) {
-		InitStorage();
+		InitStorage(instance->io_thread.GetEventLoop());
 
 		if (instance->storage == nullptr) {
 			delete instance->database;
@@ -421,7 +420,6 @@ try {
 	IcuInit();
 
 	winsock_init();
-	io_thread_init();
 	config_global_init();
 
 #ifdef ANDROID
@@ -453,7 +451,8 @@ try {
 
 #ifdef ENABLE_NEIGHBOR_PLUGINS
 	instance->neighbors = new NeighborGlue();
-	instance->neighbors->Init(io_thread_get(), *instance);
+	instance->neighbors->Init(instance->io_thread.GetEventLoop(),
+				  *instance);
 
 	if (instance->neighbors->IsEmpty()) {
 		delete instance->neighbors;
@@ -519,13 +518,13 @@ try {
 
 	command_init();
 
-	instance->partition->outputs.Configure(io_thread_get(),
+	instance->partition->outputs.Configure(instance->io_thread.GetEventLoop(),
 					       config.replay_gain,
 					       instance->partition->pc);
 	instance->partition->UpdateEffectiveReplayGainMode();
 
 	client_manager_init();
-	input_stream_global_init(io_thread_get());
+	input_stream_global_init(instance->io_thread.GetEventLoop());
 	playlist_list_global_init();
 
 #ifdef ENABLE_DAEMON
@@ -538,7 +537,7 @@ try {
 	SignalHandlersInit(instance->event_loop);
 #endif
 
-	io_thread_start();
+	instance->io_thread.Start();
 
 #ifdef ENABLE_NEIGHBOR_PLUGINS
 	if (instance->neighbors != nullptr)
@@ -660,7 +659,7 @@ try {
 	archive_plugin_deinit_all();
 #endif
 	config_global_finish();
-	io_thread_deinit();
+	instance->io_thread.Stop();
 #ifndef ANDROID
 	SignalHandlersFinish();
 #endif

@@ -51,11 +51,3 @@ io_thread_deinit(void)
 	delete io_thread;
 	io_thread = nullptr;
 }
-
-EventLoop &
-io_thread_get()
-{
-	assert(io_thread != nullptr);
-
-	return io_thread->GetEventLoop();
-}

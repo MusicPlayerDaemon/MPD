@@ -117,7 +117,8 @@ handle_listfiles(Client &client, Request args, Response &r)
 	case LocatedUri::Type::ABSOLUTE:
 #ifdef ENABLE_DATABASE
 		/* use storage plugin to list remote directory */
-		return handle_listfiles_storage(r, located_uri.canonical_uri);
+		return handle_listfiles_storage(client, r,
+						located_uri.canonical_uri);
 #else
 		r.Error(ACK_ERROR_NO_EXIST, "No database");
 		return CommandResult::ERROR;

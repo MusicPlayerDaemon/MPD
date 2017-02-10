@@ -129,7 +129,6 @@ libmpd_a_SOURCES = \
 	src/Log.cxx src/Log.hxx src/LogV.hxx \
 	src/LogLevel.hxx \
 	src/ls.cxx src/ls.hxx \
-	src/IOThread.cxx src/IOThread.hxx \
 	src/Instance.cxx src/Instance.hxx \
 	src/win32/Win32Main.cxx \
 	src/MixRampInfo.hxx \

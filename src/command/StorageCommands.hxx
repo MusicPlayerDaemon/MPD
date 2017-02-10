@@ -31,7 +31,7 @@ CommandResult
 handle_listfiles_storage(Response &r, Storage &storage, const char *uri);
 
 CommandResult
-handle_listfiles_storage(Response &r, const char *uri);
+handle_listfiles_storage(Client &client, Response &r, const char *uri);
 
 CommandResult
 handle_listmounts(Client &client, Request request, Response &response);
