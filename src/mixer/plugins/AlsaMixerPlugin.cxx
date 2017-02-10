@@ -57,6 +57,7 @@ public:
 	~AlsaMixerMonitor() {
 		BlockingCall(MultiSocketMonitor::GetEventLoop(), [this](){
 				MultiSocketMonitor::Reset();
+				DeferredMonitor::Cancel();
 			});
 	}
 

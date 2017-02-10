@@ -100,6 +100,7 @@ public:
 	~AlsaInputStream() {
 		BlockingCall(MultiSocketMonitor::GetEventLoop(), [this](){
 				MultiSocketMonitor::Reset();
+				DeferredMonitor::Cancel();
 			});
 
 		snd_pcm_close(capture_handle);
