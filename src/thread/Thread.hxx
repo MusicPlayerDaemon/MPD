@@ -93,6 +93,8 @@ public:
 	void Join();
 
 private:
+	void Run();
+
 #ifdef WIN32
 	static DWORD WINAPI ThreadProc(LPVOID ctx);
 #else
