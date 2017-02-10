@@ -76,6 +76,26 @@ Thread::Join()
 #endif
 }
 
+inline void
+Thread::Run()
+{
+#ifndef WIN32
+#ifndef NDEBUG
+	/* this works around a race condition that causes an assertion
+	   failure due to IsInside() spuriously returning false right
+	   after the thread has been created, and the calling thread
+	   hasn't initialised "defined" yet */
+	defined = true;
+#endif
+#endif
+
+	f(ctx);
+
+#ifdef ANDROID
+	Java::DetachCurrentThread();
+#endif
+}
+
 #ifdef _WIN32
 
 DWORD WINAPI
@@ -83,7 +103,7 @@ Thread::ThreadProc(LPVOID ctx)
 {
 	Thread &thread = *(Thread *)ctx;
 
-	thread.f(thread.ctx);
+	thread.Run();
 	return 0;
 }
 
@@ -94,19 +114,7 @@ Thread::ThreadProc(void *ctx)
 {
 	Thread &thread = *(Thread *)ctx;
 
-#ifndef NDEBUG
-	/* this works around a race condition that causes an assertion
-	   failure due to IsInside() spuriously returning false right
-	   after the thread has been created, and the calling thread
-	   hasn't initialised "defined" yet */
-	thread.defined = true;
-#endif
-
-	thread.f(thread.ctx);
-
-#ifdef ANDROID
-	Java::DetachCurrentThread();
-#endif
+	thread.Run();
 
 	return nullptr;
 }
