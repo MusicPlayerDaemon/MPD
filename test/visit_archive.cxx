@@ -20,7 +20,7 @@
 #include "config.h"
 #include "tag/Tag.hxx"
 #include "config/ConfigGlobal.hxx"
-#include "ScopeIOThread.hxx"
+#include "event/Thread.hxx"
 #include "input/Init.hxx"
 #include "archive/ArchiveList.hxx"
 #include "archive/ArchivePlugin.hxx"
@@ -36,15 +36,16 @@
 #include <stdio.h>
 
 class GlobalInit {
-	const ScopeIOThread io_thread;
+	EventThread io_thread;
 
 public:
 	GlobalInit() {
+		io_thread.Start();
 		config_global_init();
 #ifdef ENABLE_ARCHIVE
 		archive_plugin_init_all();
 #endif
-		input_stream_global_init(io_thread_get());
+		input_stream_global_init(io_thread.GetEventLoop());
 	}
 
 	~GlobalInit() {

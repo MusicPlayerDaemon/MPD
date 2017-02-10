@@ -1786,8 +1786,6 @@ test_run_storage_LDADD = \
 	libutil.a
 test_run_storage_SOURCES = \
 	src/Log.cxx src/LogBackend.cxx \
-	src/IOThread.cxx \
-	test/ScopeIOThread.hxx \
 	test/run_storage.cxx
 
 if ENABLE_WEBDAV
@@ -1808,16 +1806,13 @@ test_run_input_LDADD = \
 	libsystem.a \
 	libutil.a
 test_run_input_SOURCES = test/run_input.cxx \
-	test/ScopeIOThread.hxx \
 	src/Log.cxx src/LogBackend.cxx \
-	src/IOThread.cxx \
 	src/TagSave.cxx
 
 if ENABLE_NEIGHBOR_PLUGINS
 
 test_run_neighbor_explorer_SOURCES = \
 	src/Log.cxx src/LogBackend.cxx \
-	src/IOThread.cxx \
 	test/run_neighbor_explorer.cxx
 test_run_neighbor_explorer_LDADD = $(AM_LDADD) \
 	$(NEIGHBOR_LIBS) \
@@ -1852,9 +1847,7 @@ test_visit_archive_LDADD = \
 	libsystem.a \
 	libutil.a
 test_visit_archive_SOURCES = test/visit_archive.cxx \
-	test/ScopeIOThread.hxx \
 	src/Log.cxx src/LogBackend.cxx \
-	src/IOThread.cxx \
 	src/input/Open.cxx
 
 endif
@@ -1900,9 +1893,7 @@ test_dump_text_file_LDADD = \
 	libthread.a \
 	libutil.a
 test_dump_text_file_SOURCES = test/dump_text_file.cxx \
-	test/ScopeIOThread.hxx \
-	src/Log.cxx src/LogBackend.cxx \
-	src/IOThread.cxx
+	src/Log.cxx src/LogBackend.cxx
 
 test_dump_playlist_LDADD = \
 	$(PLAYLIST_LIBS) \
@@ -1923,9 +1914,7 @@ test_dump_playlist_LDADD = \
 	libpcm.a
 test_dump_playlist_SOURCES = test/dump_playlist.cxx \
 	test/FakeDecoderAPI.cxx test/FakeDecoderAPI.hxx \
-	test/ScopeIOThread.hxx \
 	src/Log.cxx src/LogBackend.cxx \
-	src/IOThread.cxx \
 	src/TagSave.cxx \
 	src/TagFile.cxx \
 	src/DetachedSong.cxx
@@ -1952,10 +1941,8 @@ test_run_decoder_LDADD = \
 	libutil.a
 test_run_decoder_SOURCES = test/run_decoder.cxx \
 	test/FakeDecoderAPI.cxx test/FakeDecoderAPI.hxx \
-	test/ScopeIOThread.hxx \
 	src/DetachedSong.cxx \
 	src/Log.cxx src/LogBackend.cxx \
-	src/IOThread.cxx \
 	src/ReplayGainInfo.cxx
 
 test_read_tags_LDADD = \
@@ -1974,10 +1961,8 @@ test_read_tags_LDADD = \
 	libutil.a
 test_read_tags_SOURCES = test/read_tags.cxx \
 	test/FakeDecoderAPI.cxx test/FakeDecoderAPI.hxx \
-	test/ScopeIOThread.hxx \
 	src/DetachedSong.cxx \
 	src/Log.cxx src/LogBackend.cxx \
-	src/IOThread.cxx \
 	src/ReplayGainInfo.cxx
 
 test_ReadApeTags_LDADD = \
@@ -2130,9 +2115,7 @@ test_run_output_LDADD = $(MPD_LIBS) \
 	libthread.a \
 	libutil.a
 test_run_output_SOURCES = test/run_output.cxx \
-	test/ScopeIOThread.hxx \
 	src/Log.cxx src/LogBackend.cxx \
-	src/IOThread.cxx \
 	src/output/Domain.cxx \
 	src/output/Init.cxx src/output/Finish.cxx src/output/Registry.cxx \
 	src/output/OutputPlugin.cxx \
