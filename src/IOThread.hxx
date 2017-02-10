@@ -45,11 +45,4 @@ gcc_const
 EventLoop &
 io_thread_get();
 
-/**
- * Is the current thread the I/O thread?
- */
-gcc_pure
-bool
-io_thread_inside();
-
 #endif

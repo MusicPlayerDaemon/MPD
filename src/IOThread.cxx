@@ -100,9 +100,3 @@ io_thread_get()
 
 	return *io.loop;
 }
-
-bool
-io_thread_inside(void)
-{
-	return io.thread.IsInside();
-}
