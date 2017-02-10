@@ -26,7 +26,6 @@ EventThread::Start()
 {
 	assert(!thread.IsDefined());
 
-	const std::lock_guard<Mutex> protect(mutex);
 	thread.Start(ThreadFunc, this);
 }
 
@@ -43,11 +42,6 @@ void
 EventThread::ThreadFunc()
 {
 	SetThreadName("io");
-
-	/* lock+unlock to synchronize with io_thread_start(), to be
-	   sure that io.thread is set */
-	mutex.lock();
-	mutex.unlock();
 
 	event_loop.Run();
 };

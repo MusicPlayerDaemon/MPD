@@ -23,14 +23,11 @@
 #include "check.h"
 #include "Loop.hxx"
 #include "thread/Thread.hxx"
-#include "thread/Mutex.hxx"
 
 /**
  * A thread which runs an #EventLoop.
  */
 class EventThread final {
-	Mutex mutex;
-
 	EventLoop event_loop;
 
 	Thread thread;
