@@ -89,7 +89,7 @@ public:
 #endif
 	}
 
-	bool Start(void (*f)(void *ctx), void *ctx);
+	void Start(void (*f)(void *ctx), void *ctx);
 	void Join();
 
 private:

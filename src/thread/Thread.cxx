@@ -25,7 +25,7 @@
 #include "java/Global.hxx"
 #endif
 
-bool
+void
 Thread::Start(void (*_f)(void *ctx), void *_ctx)
 {
 	assert(!IsDefined());
@@ -56,8 +56,6 @@ Thread::Start(void (*_f)(void *ctx), void *_ctx)
 	creating = false;
 #endif
 #endif
-
-	return true;
 }
 
 void
