@@ -36,6 +36,10 @@ class EventThread final {
 	Thread thread;
 
 public:
+	~EventThread() {
+		Stop();
+	}
+
 	EventLoop &GetEventLoop() {
 		return event_loop;
 	}
