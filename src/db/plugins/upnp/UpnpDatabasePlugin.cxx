@@ -477,7 +477,8 @@ VisitObject(const UPnPDirObject &object, const char *uri,
 
 	case UPnPDirObject::Type::CONTAINER:
 		if (visit_directory)
-			visit_directory(LightDirectory(uri, 0));
+			visit_directory(LightDirectory(uri,
+						       std::chrono::system_clock::time_point::min()));
 		break;
 
 	case UPnPDirObject::Type::ITEM:
@@ -582,7 +583,8 @@ UpnpDatabase::Visit(const DatabaseSelection &selection,
 	if (vpath.empty()) {
 		for (const auto &server : discovery->GetDirectories()) {
 			if (visit_directory) {
-				const LightDirectory d(server.getFriendlyName(), 0);
+				const LightDirectory d(server.getFriendlyName(),
+						       std::chrono::system_clock::time_point::min());
 				visit_directory(d);
 			}
 

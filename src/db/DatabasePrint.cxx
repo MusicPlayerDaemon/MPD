@@ -66,7 +66,7 @@ PrintDirectoryFull(Response &r, bool base, const LightDirectory &directory)
 	if (!directory.IsRoot()) {
 		PrintDirectoryURI(r, base, directory);
 
-		if (directory.mtime > 0)
+		if (!IsNegative(directory.mtime))
 			time_print(r, "Last-Modified", directory.mtime);
 	}
 }

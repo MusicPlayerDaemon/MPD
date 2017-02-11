@@ -39,13 +39,14 @@ struct Tag;
 struct LightDirectory {
 	const char *uri;
 
-	time_t mtime;
+	std::chrono::system_clock::time_point mtime;
 
-	constexpr LightDirectory(const char *_uri, time_t _mtime)
+	constexpr LightDirectory(const char *_uri,
+				 std::chrono::system_clock::time_point _mtime)
 		:uri(_uri), mtime(_mtime) {}
 
 	static constexpr LightDirectory Root() noexcept {
-		return LightDirectory("", 0);
+		return LightDirectory("", std::chrono::system_clock::time_point::min());
 	}
 
 	bool IsRoot() const noexcept {

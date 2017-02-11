@@ -562,10 +562,13 @@ Visit(struct mpd_connection *connection,
       VisitPlaylist visit_playlist)
 {
 	const char *path = mpd_directory_get_path(directory);
+
+	std::chrono::system_clock::time_point mtime =
+		std::chrono::system_clock::time_point::min();
 #if LIBMPDCLIENT_CHECK_VERSION(2,9,0)
-	time_t mtime = mpd_directory_get_last_modified(directory);
-#else
-	time_t mtime = 0;
+	time_t _mtime = mpd_directory_get_last_modified(directory);
+	if (_mtime > 0)
+		mtime = std::chrono::system_clock::from_time_t(_mtime);
 #endif
 
 	if (visit_directory)

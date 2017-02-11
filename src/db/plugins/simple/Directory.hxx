@@ -85,7 +85,10 @@ struct Directory {
 	PlaylistVector playlists;
 
 	Directory *const parent;
-	time_t mtime = 0;
+
+	std::chrono::system_clock::time_point mtime =
+		std::chrono::system_clock::time_point::min();
+
 	uint64_t inode = 0, device = 0;
 
 	const std::string path;

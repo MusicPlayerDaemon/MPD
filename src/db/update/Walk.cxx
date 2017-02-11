@@ -382,7 +382,7 @@ UpdateWalk::UpdateDirectory(Directory &directory,
 		UpdateDirectoryChild(directory, child_exclude_list, name_utf8, info2);
 	}
 
-	directory.mtime = std::chrono::system_clock::to_time_t(info.mtime);
+	directory.mtime = info.mtime;
 
 	return true;
 }
