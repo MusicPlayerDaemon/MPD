@@ -50,6 +50,14 @@ struct StorageFileInfo {
 	 */
 	unsigned device, inode;
 
+	StorageFileInfo() = default;
+
+	explicit constexpr StorageFileInfo(Type _type)
+		:type(_type),
+		 size(0),
+		 mtime(0),
+		 device(0), inode(0) {}
+
 	constexpr bool IsRegular() const {
 		return type == Type::REGULAR;
 	}

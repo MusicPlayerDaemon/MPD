@@ -399,11 +399,8 @@ class HttpGetInfoOperation final : public PropfindOperation {
 
 public:
 	HttpGetInfoOperation(CurlGlobal &curl, const char *uri)
-		:PropfindOperation(curl, uri, 0) {
-		info.type = StorageFileInfo::Type::OTHER;
-		info.size = 0;
-		info.mtime = 0;
-		info.device = info.inode = 0;
+		:PropfindOperation(curl, uri, 0),
+		 info(StorageFileInfo::Type::OTHER) {
 	}
 
 	const StorageFileInfo &Perform() {
@@ -424,7 +421,6 @@ protected:
 		info.mtime = !IsNegative(r.mtime)
 			? std::chrono::system_clock::to_time_t(r.mtime)
 			: 0;
-		info.device = info.inode = 0;
 	}
 };
 
@@ -514,14 +510,13 @@ protected:
 		entries.emplace_front(std::string(name.data, name.size));
 
 		auto &info = entries.front().info;
-		info.type = r.collection
-			? StorageFileInfo::Type::DIRECTORY
-			: StorageFileInfo::Type::REGULAR;
+		info = StorageFileInfo(r.collection
+				       ? StorageFileInfo::Type::DIRECTORY
+				       : StorageFileInfo::Type::REGULAR);
 		info.size = r.length;
 		info.mtime = !IsNegative(r.mtime)
 			? std::chrono::system_clock::to_time_t(r.mtime)
 			: 0;
-		info.device = info.inode = 0;
 	}
 };
 
