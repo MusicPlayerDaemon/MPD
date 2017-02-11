@@ -24,7 +24,7 @@
 #include "tag/Type.h"
 #include "Compiler.h"
 
-#include <time.h>
+#include <chrono>
 
 struct DatabasePlugin;
 struct DatabaseStats;
@@ -129,10 +129,10 @@ public:
 
 	/**
 	 * Returns the time stamp of the last database update.
-	 * Returns 0 if that is not not known/available.
+	 * Returns a negative value if that is not not known/available.
 	 */
 	gcc_pure
-	virtual time_t GetUpdateStamp() const = 0;
+	virtual std::chrono::system_clock::time_point GetUpdateStamp() const = 0;
 };
 
 #endif

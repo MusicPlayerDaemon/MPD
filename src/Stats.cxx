@@ -28,6 +28,7 @@
 #include "db/Stats.hxx"
 #include "system/Clock.hxx"
 #include "Log.hxx"
+#include "util/ChronoUtil.hxx"
 
 #include <chrono>
 
@@ -101,10 +102,10 @@ db_stats_print(Response &r, const Database &db)
 		 stats.song_count,
 		 total_duration_s);
 
-	const time_t update_stamp = db.GetUpdateStamp();
-	if (update_stamp > 0)
+	const auto update_stamp = db.GetUpdateStamp();
+	if (!IsNegative(update_stamp))
 		r.Format("db_update: %lu\n",
-			 (unsigned long)update_stamp);
+			 (unsigned long)std::chrono::system_clock::to_time_t(update_stamp));
 }
 
 #endif

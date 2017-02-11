@@ -157,7 +157,7 @@ SimpleDatabase::Load()
 
 	FileInfo fi;
 	if (GetFileInfo(path, fi))
-		mtime = std::chrono::system_clock::to_time_t(fi.GetModificationTime());
+		mtime = fi.GetModificationTime();
 }
 
 void
@@ -166,7 +166,7 @@ SimpleDatabase::Open()
 	assert(prefixed_light_song == nullptr);
 
 	root = Directory::NewRoot();
-	mtime = 0;
+	mtime = std::chrono::system_clock::time_point::min();
 
 #ifndef NDEBUG
 	borrowed_song_count = 0;
@@ -358,7 +358,7 @@ SimpleDatabase::Save()
 
 	FileInfo fi;
 	if (GetFileInfo(path, fi))
-		mtime = std::chrono::system_clock::to_time_t(fi.GetModificationTime());
+		mtime = fi.GetModificationTime();
 }
 
 void
