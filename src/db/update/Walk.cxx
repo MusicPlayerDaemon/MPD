@@ -192,7 +192,7 @@ UpdateWalk::UpdatePlaylistFile(Directory &directory,
 	if (!playlist_suffix_supported(suffix))
 		return false;
 
-	PlaylistInfo pi(name, std::chrono::system_clock::to_time_t(info.mtime));
+	PlaylistInfo pi(name, info.mtime);
 
 	const ScopeDatabaseLock protect;
 	if (directory.playlists.UpdateOrInsert(std::move(pi)))

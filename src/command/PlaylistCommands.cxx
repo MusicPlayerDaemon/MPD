@@ -37,6 +37,7 @@
 #include "fs/AllocatedPath.hxx"
 #include "util/UriUtil.hxx"
 #include "util/ConstBuffer.hxx"
+#include "util/ChronoUtil.hxx"
 
 bool
 playlist_commands_available() noexcept
@@ -50,7 +51,7 @@ print_spl_list(Response &r, const PlaylistVector &list)
 	for (const auto &i : list) {
 		r.Format("playlist: %s\n", i.name.c_str());
 
-		if (i.mtime > 0)
+		if (!IsNegative(i.mtime))
 			time_print(r, "Last-Modified", i.mtime);
 	}
 }

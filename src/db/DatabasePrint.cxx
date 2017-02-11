@@ -34,6 +34,7 @@
 #include "PlaylistInfo.hxx"
 #include "Interface.hxx"
 #include "fs/Traits.hxx"
+#include "util/ChronoUtil.hxx"
 
 #include <functional>
 
@@ -134,7 +135,7 @@ PrintPlaylistFull(Response &r, bool base,
 	print_playlist_in_directory(r, base,
 				    &directory, playlist.name.c_str());
 
-	if (playlist.mtime > 0)
+	if (!IsNegative(playlist.mtime))
 		time_print(r, "Last-Modified", playlist.mtime);
 }
 

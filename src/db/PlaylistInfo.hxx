@@ -24,8 +24,7 @@
 #include "Compiler.h"
 
 #include <string>
-
-#include <sys/time.h>
+#include <chrono>
 
 /**
  * A directory entry pointing to a playlist file.
@@ -36,7 +35,12 @@ struct PlaylistInfo {
 	 */
 	std::string name;
 
-	time_t mtime;
+	/**
+	 * The time stamp of the last file modification.  A negative
+	 * value means that this is unknown/unavailable.
+	 */
+	std::chrono::system_clock::time_point mtime =
+		std::chrono::system_clock::time_point::min();
 
 	class CompareName {
 		const char *const name;
@@ -53,7 +57,8 @@ struct PlaylistInfo {
 	PlaylistInfo() = default;
 
 	template<typename N>
-	PlaylistInfo(N &&_name, time_t _mtime)
+	explicit PlaylistInfo(N &&_name,
+			      std::chrono::system_clock::time_point _mtime=std::chrono::system_clock::time_point::min())
 		:name(std::forward<N>(_name)), mtime(_mtime) {}
 
 	PlaylistInfo(const PlaylistInfo &other) = delete;

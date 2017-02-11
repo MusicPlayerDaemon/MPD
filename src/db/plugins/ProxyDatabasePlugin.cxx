@@ -603,8 +603,12 @@ Visit(const struct mpd_playlist *playlist,
 	if (!visit_playlist)
 		return;
 
+	time_t mtime = mpd_playlist_get_last_modified(playlist);
+
 	PlaylistInfo p(mpd_playlist_get_path(playlist),
-		       mpd_playlist_get_last_modified(playlist));
+		       mtime > 0
+		       ? std::chrono::system_clock::from_time_t(mtime)
+		       : std::chrono::system_clock::time_point::min());
 
 	visit_playlist(p, LightDirectory::Root());
 }
