@@ -85,8 +85,8 @@ struct Directory {
 	PlaylistVector playlists;
 
 	Directory *parent;
-	time_t mtime;
-	unsigned inode, device;
+	time_t mtime = 0;
+	unsigned inode = 0, device = 0;
 
 	std::string path;
 
@@ -94,7 +94,7 @@ struct Directory {
 	 * If this is not nullptr, then this directory does not really
 	 * exist, but is a mount point for another #Database.
 	 */
-	Database *mounted_database;
+	Database *mounted_database = nullptr;
 
 public:
 	Directory(std::string &&_path_utf8, Directory *_parent);
