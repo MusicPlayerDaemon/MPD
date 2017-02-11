@@ -84,11 +84,11 @@ struct Directory {
 
 	PlaylistVector playlists;
 
-	Directory *parent;
+	Directory *const parent;
 	time_t mtime = 0;
 	unsigned inode = 0, device = 0;
 
-	std::string path;
+	const std::string path;
 
 	/**
 	 * If this is not nullptr, then this directory does not really
