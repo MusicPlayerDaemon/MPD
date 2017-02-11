@@ -111,7 +111,7 @@ GetInfo(const char *path)
 		info.type = StorageFileInfo::Type::OTHER;
 
 	info.size = st.st_size;
-	info.mtime = st.st_mtime;
+	info.mtime = std::chrono::system_clock::from_time_t(st.st_mtime);
 	info.device = st.st_dev;
 	info.inode = st.st_ino;
 	return info;

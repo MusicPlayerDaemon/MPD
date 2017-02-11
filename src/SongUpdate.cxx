@@ -88,7 +88,7 @@ Song::UpdateFile(Storage &storage)
 			return false;
 	}
 
-	mtime = info.mtime;
+	mtime = std::chrono::system_clock::to_time_t(info.mtime);
 	tag_builder.Commit(tag);
 	return true;
 }

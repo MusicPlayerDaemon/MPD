@@ -137,7 +137,7 @@ UpdateWalk::UpdateArchiveFile(Directory &parent, const char *name,
 {
 	Directory *directory = LockFindChild(parent, name);
 
-	if (directory != nullptr && directory->mtime == info.mtime &&
+	if (directory != nullptr && directory->mtime == std::chrono::system_clock::to_time_t(info.mtime) &&
 	    !walk_discard)
 		/* MPD has already scanned the archive, and it hasn't
 		   changed since - don't consider updating it */
@@ -173,7 +173,7 @@ UpdateWalk::UpdateArchiveFile(Directory &parent, const char *name,
 		directory->device = DEVICE_INARCHIVE;
 	}
 
-	directory->mtime = info.mtime;
+	directory->mtime = std::chrono::system_clock::to_time_t(info.mtime);
 
 	UpdateArchiveVisitor visitor(*this, *file, directory);
 	file->Visit(visitor);

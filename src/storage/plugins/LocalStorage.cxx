@@ -86,7 +86,7 @@ Stat(Path path, bool follow)
 		info.type = StorageFileInfo::Type::OTHER;
 
 	info.size = src.GetSize();
-	info.mtime = std::chrono::system_clock::to_time_t(src.GetModificationTime());
+	info.mtime = src.GetModificationTime();
 #ifdef WIN32
 	info.device = info.inode = 0;
 #else

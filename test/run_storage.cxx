@@ -23,6 +23,7 @@
 #include "storage/Registry.hxx"
 #include "storage/StorageInterface.hxx"
 #include "storage/FileInfo.hxx"
+#include "util/ChronoUtil.hxx"
 
 #include <memory>
 #include <stdexcept>
@@ -69,9 +70,10 @@ Ls(Storage &storage, const char *path)
 
 		char mtime_buffer[32];
 		const char *mtime = "          ";
-		if (info.mtime > 0) {
+		if (!IsNegative(info.mtime)) {
+			time_t t = std::chrono::system_clock::to_time_t(info.mtime);
 			strftime(mtime_buffer, sizeof(mtime_buffer), "%F",
-				 gmtime(&info.mtime));
+				 gmtime(&t));
 			mtime = mtime_buffer;
 		}
 

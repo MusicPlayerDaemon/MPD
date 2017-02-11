@@ -24,6 +24,7 @@
 #include "Request.hxx"
 #include "CommandError.hxx"
 #include "util/UriUtil.hxx"
+#include "util/ChronoUtil.hxx"
 #include "util/ConstBuffer.hxx"
 #include "fs/Traits.hxx"
 #include "client/Client.hxx"
@@ -88,7 +89,7 @@ handle_listfiles_storage(Response &r, StorageDirectoryReader &reader)
 			break;
 		}
 
-		if (info.mtime != 0)
+		if (!IsNegative(info.mtime))
 			time_print(r, "Last-Modified", info.mtime);
 	}
 }

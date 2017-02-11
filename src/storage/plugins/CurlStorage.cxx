@@ -418,9 +418,7 @@ protected:
 			? StorageFileInfo::Type::DIRECTORY
 			: StorageFileInfo::Type::REGULAR;
 		info.size = r.length;
-		info.mtime = !IsNegative(r.mtime)
-			? std::chrono::system_clock::to_time_t(r.mtime)
-			: 0;
+		info.mtime = r.mtime;
 	}
 };
 
@@ -514,9 +512,7 @@ protected:
 				       ? StorageFileInfo::Type::DIRECTORY
 				       : StorageFileInfo::Type::REGULAR);
 		info.size = r.length;
-		info.mtime = !IsNegative(r.mtime)
-			? std::chrono::system_clock::to_time_t(r.mtime)
-			: 0;
+		info.mtime = r.mtime;
 	}
 };
 
