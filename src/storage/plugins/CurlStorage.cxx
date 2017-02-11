@@ -33,6 +33,7 @@
 #include "event/DeferredMonitor.hxx"
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
+#include "util/ChronoUtil.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/StringCompare.hxx"
 #include "util/TimeParser.hxx"
@@ -420,7 +421,7 @@ protected:
 			? StorageFileInfo::Type::DIRECTORY
 			: StorageFileInfo::Type::REGULAR;
 		info.size = r.length;
-		info.mtime = r.mtime > std::chrono::system_clock::time_point()
+		info.mtime = !IsNegative(r.mtime)
 			? std::chrono::system_clock::to_time_t(r.mtime)
 			: 0;
 		info.device = info.inode = 0;
@@ -517,7 +518,7 @@ protected:
 			? StorageFileInfo::Type::DIRECTORY
 			: StorageFileInfo::Type::REGULAR;
 		info.size = r.length;
-		info.mtime = r.mtime > std::chrono::system_clock::time_point()
+		info.mtime = !IsNegative(r.mtime)
 			? std::chrono::system_clock::to_time_t(r.mtime)
 			: 0;
 		info.device = info.inode = 0;

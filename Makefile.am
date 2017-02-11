@@ -405,6 +405,7 @@ libutil_a_SOURCES = \
 	src/util/Macros.hxx \
 	src/util/BindMethod.hxx \
 	src/util/Cast.hxx \
+	src/util/Chrono.hxx \
 	src/util/Clamp.hxx \
 	src/util/DeleteDisposer.hxx \
 	src/util/Alloc.cxx src/util/Alloc.hxx \
