@@ -1211,6 +1211,12 @@ AlsaOutput::Play(const void *chunk, size_t size)
 		   snd_pcm_writei() */
 		UnlockActivate();
 
+		/* check the error again, because a new one may have
+		   been set while our mutex was unlocked in
+		   UnlockActivate() */
+		if (error)
+			std::rethrow_exception(error);
+
 		/* wait for the DispatchSockets() to make room in the
 		   ring_buffer */
 		cond.wait(mutex);
