@@ -32,6 +32,7 @@
 #include "MessageCommands.hxx"
 #include "NeighborCommands.hxx"
 #include "ClientCommands.hxx"
+#include "PartitionCommands.hxx"
 #include "OtherCommands.hxx"
 #include "Permission.hxx"
 #include "tag/Type.h"
@@ -119,6 +120,7 @@ static constexpr struct command commands[] = {
 #ifdef ENABLE_NEIGHBOR_PLUGINS
 	{ "listneighbors", PERMISSION_READ, 0, 0, handle_listneighbors },
 #endif
+	{ "listpartitions", PERMISSION_READ, 0, 0, handle_listpartitions },
 	{ "listplaylist", PERMISSION_READ, 1, 1, handle_listplaylist },
 	{ "listplaylistinfo", PERMISSION_READ, 1, 1, handle_listplaylistinfo },
 	{ "listplaylists", PERMISSION_READ, 0, 0, handle_listplaylists },

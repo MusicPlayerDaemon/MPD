@@ -2350,6 +2350,35 @@ OK
       </variablelist>
     </section>
 
+    <section id="partition_commands">
+      <title>Partition commands</title>
+
+      <para>
+        These commands allow a client to inspect and manage
+        "partitions".  A partition is one frontend of a multi-player
+        MPD process: it has separate queue, player and outputs.  A
+        client is assigned to one partition at a time.
+      </para>
+
+      <variablelist>
+        <varlistentry id="command_listpartitions">
+          <term>
+            <cmdsynopsis>
+              <command>listpartitions</command>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              Print a list of partitions.  Each partition starts with
+              a <varname>partition</varname> keyword and the
+              partition's name, followed by information about the
+              partition.
+            </para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+    </section>
+
     <section id="output_commands">
       <title>Audio output devices</title>
 
