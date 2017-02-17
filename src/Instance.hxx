@@ -89,10 +89,10 @@ struct Instance final
 
 	Partition *partition;
 
-	StateFile *state_file;
+	StateFile *state_file = nullptr;
 
 	Instance()
-		:idle_monitor(event_loop, BIND_THIS_METHOD(OnIdle)), state_file(nullptr) {}
+		:idle_monitor(event_loop, BIND_THIS_METHOD(OnIdle)) {}
 
 	/**
 	 * Initiate shutdown.  Wrapper for EventLoop::Break().
