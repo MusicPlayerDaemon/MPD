@@ -377,6 +377,12 @@
               </listitem>
               <listitem>
                 <para>
+                  <returnvalue>partition</returnvalue>: a partition
+                  was added, removed or changed
+                </para>
+              </listitem>
+              <listitem>
+                <para>
                     <returnvalue>sticker</returnvalue>: the sticker database
                     has been modified.
                 </para>

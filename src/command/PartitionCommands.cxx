@@ -22,6 +22,7 @@
 #include "Request.hxx"
 #include "Instance.hxx"
 #include "Partition.hxx"
+#include "IdleFlags.hxx"
 #include "client/Client.hxx"
 #include "client/Response.hxx"
 #include "player/Thread.hxx"
@@ -101,6 +102,8 @@ handle_newpartition(Client &client, Request request, Response &response)
 	partition.UpdateEffectiveReplayGainMode();
 	StartPlayerThread(partition.pc);
 	partition.pc.LockUpdateAudio();
+
+	instance.EmitIdle(IDLE_PARTITION);
 
 	return CommandResult::OK;
 }
