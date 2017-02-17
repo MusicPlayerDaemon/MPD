@@ -29,4 +29,7 @@ class Response;
 CommandResult
 handle_listpartitions(Client &client, Request request, Response &response);
 
+CommandResult
+handle_newpartition(Client &client, Request request, Response &response);
+
 #endif

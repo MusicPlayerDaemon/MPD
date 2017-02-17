@@ -24,6 +24,8 @@
 #include "Partition.hxx"
 #include "client/Client.hxx"
 #include "client/Response.hxx"
+#include "player/Thread.hxx"
+#include "util/CharUtil.hxx"
 
 CommandResult
 handle_listpartitions(Client &client, Request, Response &r)
@@ -31,6 +33,74 @@ handle_listpartitions(Client &client, Request, Response &r)
 	for (const auto &partition : client.partition.instance.partitions) {
 		r.Format("partition: %s\n", partition.name.c_str());
 	}
+
+	return CommandResult::OK;
+}
+
+static constexpr bool
+IsValidPartitionChar(char ch)
+{
+	return IsAlphaNumericASCII(ch) || ch == '-' || ch == '_';
+}
+
+gcc_pure
+static bool
+IsValidPartitionName(const char *name)
+{
+	do {
+		if (!IsValidPartitionChar(*name))
+			return false;
+	} while (*++name != 0);
+
+	return true;
+}
+
+gcc_pure
+static bool
+HasPartitionNamed(const Instance &instance, const char *name)
+{
+	for (const auto &partition : instance.partitions)
+		if (partition.name == name)
+			return true;
+
+	return false;
+}
+
+CommandResult
+handle_newpartition(Client &client, Request request, Response &response)
+{
+	const char *name = request.front();
+	if (!IsValidPartitionName(name)) {
+		response.Error(ACK_ERROR_ARG, "bad name");
+		return CommandResult::ERROR;
+	}
+
+	auto &instance = client.partition.instance;
+	if (HasPartitionNamed(instance, name)) {
+		response.Error(ACK_ERROR_EXIST, "name already exists");
+		return CommandResult::ERROR;
+	}
+
+	if (instance.partitions.size() >= 16) {
+		/* arbitrary limit for now */
+		response.Error(ACK_ERROR_UNKNOWN, "too many partitions");
+		return CommandResult::ERROR;
+	}
+
+	instance.partitions.emplace_back(instance, name,
+					 // TODO: use real configuration
+					 16384,
+					 1024,
+					 128,
+					 AudioFormat::Undefined(),
+					 ReplayGainConfig());
+	auto &partition = instance.partitions.back();
+	partition.outputs.AddNullOutput(instance.io_thread.GetEventLoop(),
+					ReplayGainConfig(),
+					partition.pc);
+	partition.UpdateEffectiveReplayGainMode();
+	StartPlayerThread(partition.pc);
+	partition.pc.LockUpdateAudio();
 
 	return CommandResult::OK;
 }

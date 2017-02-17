@@ -2376,6 +2376,20 @@ OK
             </para>
           </listitem>
         </varlistentry>
+
+        <varlistentry id="command_newpartition">
+          <term>
+            <cmdsynopsis>
+              <command>newpartition</command>
+              <arg choice="req"><replaceable>NAME</replaceable></arg>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              Create a new partition.
+            </para>
+          </listitem>
+        </varlistentry>
       </variablelist>
     </section>
 
