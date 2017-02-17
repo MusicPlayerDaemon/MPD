@@ -34,6 +34,11 @@
 
 #include <stdexcept>
 
+Instance::Instance()
+	:idle_monitor(event_loop, BIND_THIS_METHOD(OnIdle))
+{
+}
+
 #ifdef ENABLE_DATABASE
 
 const Database &
