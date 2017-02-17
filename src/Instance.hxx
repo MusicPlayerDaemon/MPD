@@ -38,6 +38,8 @@ class Storage;
 class UpdateService;
 #endif
 
+#include <list>
+
 class ClientList;
 struct Partition;
 class StateFile;
@@ -87,7 +89,7 @@ struct Instance final
 
 	ClientList *client_list;
 
-	Partition *partition;
+	std::list<Partition> partitions;
 
 	StateFile *state_file = nullptr;
 

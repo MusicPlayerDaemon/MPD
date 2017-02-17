@@ -20,6 +20,7 @@
 #include "config.h"
 #include "PartitionCommands.hxx"
 #include "Request.hxx"
+#include "Instance.hxx"
 #include "Partition.hxx"
 #include "client/Client.hxx"
 #include "client/Response.hxx"
@@ -27,6 +28,9 @@
 CommandResult
 handle_listpartitions(Client &client, Request, Response &r)
 {
-	r.Format("partition: %s\n", client.partition.name.c_str());
+	for (const auto &partition : client.partition.instance.partitions) {
+		r.Format("partition: %s\n", partition.name.c_str());
+	}
+
 	return CommandResult::OK;
 }

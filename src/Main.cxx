@@ -265,7 +265,7 @@ glue_state_file_init()
 				    StateFile::DEFAULT_INTERVAL);
 
 	instance->state_file = new StateFile(std::move(path_fs), interval,
-					     *instance->partition,
+					     instance->partitions.front(),
 					     instance->event_loop);
 	instance->state_file->Read();
 }
@@ -352,18 +352,19 @@ initialize_decoder_and_player(const ReplayGainConfig &replay_gain_config)
 		}
 	}
 
-	instance->partition = new Partition(*instance,
-					    "default",
-					    max_length,
-					    buffered_chunks,
-					    buffered_before_play,
-					    configured_audio_format,
-					    replay_gain_config);
+	instance->partitions.emplace_back(*instance,
+					  "default",
+					  max_length,
+					  buffered_chunks,
+					  buffered_before_play,
+					  configured_audio_format,
+					  replay_gain_config);
+	auto &partition = instance->partitions.back();
 
 	try {
 		param = config_get_param(ConfigOption::REPLAYGAIN);
 		if (param != nullptr)
-			instance->partition->replay_gain_mode =
+			partition.replay_gain_mode =
 				FromString(param->value.c_str());
 	} catch (...) {
 		std::throw_with_nested(FormatRuntimeError("Failed to parse line %i",
@@ -467,7 +468,7 @@ try {
 
 	initialize_decoder_and_player(config.replay_gain);
 
-	listen_global_init(instance->event_loop, *instance->partition);
+	listen_global_init(instance->event_loop, instance->partitions.front());
 
 #ifdef ENABLE_DAEMON
 	daemonize_set_user();
@@ -519,10 +520,12 @@ try {
 
 	command_init();
 
-	instance->partition->outputs.Configure(instance->io_thread.GetEventLoop(),
-					       config.replay_gain,
-					       instance->partition->pc);
-	instance->partition->UpdateEffectiveReplayGainMode();
+	for (auto &partition : instance->partitions) {
+		partition.outputs.Configure(instance->io_thread.GetEventLoop(),
+					    config.replay_gain,
+					    partition.pc);
+		partition.UpdateEffectiveReplayGainMode();
+	}
 
 	client_manager_init();
 	input_stream_global_init(instance->io_thread.GetEventLoop());
@@ -547,7 +550,8 @@ try {
 
 	ZeroconfInit(instance->event_loop);
 
-	StartPlayerThread(instance->partition->pc);
+	for (auto &partition : instance->partitions)
+		StartPlayerThread(partition.pc);
 
 #ifdef ENABLE_DATABASE
 	if (create_db) {
@@ -582,7 +586,8 @@ try {
 
 	/* enable all audio outputs (if not already done by
 	   playlist_state_restore() */
-	instance->partition->pc.LockUpdateAudio();
+	for (auto &partition : instance->partitions)
+		partition.pc.LockUpdateAudio();
 
 #ifdef WIN32
 	win32_app_started();
@@ -617,7 +622,9 @@ try {
 		delete instance->state_file;
 	}
 
-	instance->partition->pc.Kill();
+	for (auto &partition : instance->partitions)
+		partition.pc.Kill();
+
 	ZeroconfDeinit();
 	listen_global_finish();
 	delete instance->client_list;
@@ -653,7 +660,7 @@ try {
 
 	DeinitFS();
 
-	delete instance->partition;
+	instance->partitions.clear();
 	command_finish();
 	decoder_plugin_deinit_all();
 #ifdef ENABLE_ARCHIVE
