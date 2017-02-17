@@ -31,6 +31,8 @@
 #include "Chrono.hxx"
 #include "Compiler.h"
 
+#include <string>
+
 struct Instance;
 class MultipleOutputs;
 class SongLoader;
@@ -45,6 +47,8 @@ struct Partition final : QueueListener, PlayerListener, MixerListener {
 
 	Instance &instance;
 
+	const std::string name;
+
 	MaskMonitor global_events;
 
 	struct playlist playlist;
@@ -56,6 +60,7 @@ struct Partition final : QueueListener, PlayerListener, MixerListener {
 	ReplayGainMode replay_gain_mode = ReplayGainMode::OFF;
 
 	Partition(Instance &_instance,
+		  const char *_name,
 		  unsigned max_length,
 		  unsigned buffer_chunks,
 		  unsigned buffered_before_play,

@@ -353,6 +353,7 @@ initialize_decoder_and_player(const ReplayGainConfig &replay_gain_config)
 	}
 
 	instance->partition = new Partition(*instance,
+					    "default",
 					    max_length,
 					    buffered_chunks,
 					    buffered_before_play,

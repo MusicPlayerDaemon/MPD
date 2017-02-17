@@ -20,11 +20,13 @@
 #include "config.h"
 #include "PartitionCommands.hxx"
 #include "Request.hxx"
+#include "Partition.hxx"
+#include "client/Client.hxx"
 #include "client/Response.hxx"
 
 CommandResult
-handle_listpartitions(Client &, Request, Response &r)
+handle_listpartitions(Client &client, Request, Response &r)
 {
-	r.Write("partition: default\n");
+	r.Format("partition: %s\n", client.partition.name.c_str());
 	return CommandResult::OK;
 }
