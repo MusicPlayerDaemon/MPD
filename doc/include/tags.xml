@@ -55,7 +55,8 @@
 
   <listitem>
     <para>
-      <varname>track</varname>: the track number within the album.
+      <varname>track</varname>: the decimal track number within the
+      album.
     </para>
   </listitem>
 
@@ -103,7 +104,8 @@
 
   <listitem>
     <para>
-      <varname>disc</varname>: the disc number in a multi-disc album.
+      <varname>disc</varname>: the decimal disc number in a multi-disc
+      album.
     </para>
   </listitem>
 
