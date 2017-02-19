@@ -19,9 +19,6 @@
 
 #include "config.h"
 #include "Page.hxx"
-#include "util/Alloc.hxx"
-
-#include <new>
 
 #include <assert.h>
 #include <string.h>
@@ -30,9 +27,7 @@
 Page *
 Page::Create(size_t size)
 {
-	void *p = xalloc(sizeof(Page) + size -
-			 sizeof(Page::data));
-	return ::new(p) Page(size);
+	return new Page(size);
 }
 
 Page *
@@ -41,7 +36,7 @@ Page::Copy(const void *data, size_t size)
 	assert(data != nullptr);
 
 	Page *page = Create(size);
-	memcpy(page->data, data, size);
+	memcpy(&page->buffer.front(), data, size);
 	return page;
 }
 
@@ -50,10 +45,8 @@ Page::Unref()
 {
 	bool unused = ref.Decrement();
 
-	if (unused) {
-		this->Page::~Page();
-		free(this);
-	}
+	if (unused)
+		delete this;
 
 	return unused;
 }

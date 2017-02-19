@@ -26,6 +26,7 @@
 #define MPD_PAGE_HXX
 
 #include "util/RefCount.hxx"
+#include "util/AllocatedArray.hxx"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -44,18 +45,13 @@ class Page {
 	 */
 	RefCount ref;
 
-	/**
-	 * The size of this buffer in bytes.
-	 */
-	const size_t size;
-
-	/**
-	 * Dynamic array containing the buffer data.
-	 */
-	uint8_t data[sizeof(long)];
+	AllocatedArray<uint8_t> buffer;
 
 protected:
-	Page(size_t _size):size(_size) {}
+	explicit Page(size_t _size):buffer(_size) {}
+	explicit Page(AllocatedArray<uint8_t> &&_buffer)
+		:buffer(std::move(_buffer)) {}
+
 	~Page() = default;
 
 	/**
@@ -91,11 +87,11 @@ public:
 	bool Unref();
 
 	size_t GetSize() const {
-		return size;
+		return buffer.size();
 	}
 
 	const uint8_t *GetData() const {
-		return data;
+		return &buffer.front();
 	}
 };
 
