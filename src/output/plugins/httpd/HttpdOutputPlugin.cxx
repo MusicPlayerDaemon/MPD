@@ -348,7 +348,7 @@ HttpdOutput::BroadcastFromEncoder()
 	PagePtr page;
 	while ((page = ReadPage()) != nullptr) {
 		const std::lock_guard<Mutex> lock(mutex);
-		pages.push(std::move(page));
+		pages.emplace(std::move(page));
 		empty = false;
 	}
 
