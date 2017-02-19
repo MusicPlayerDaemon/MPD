@@ -10,6 +10,8 @@ ver 0.20.5 (not yet released)
   - id3: fix memory leak on corrupt ID3 tags
 * decoder
   - sidplay: don't require libsidutils when building with libsidplayfp
+* output
+  - httpd: fix two buffer overflows in IcyMetaData length calculation
 * mixer
   - alsa: fix crash bug
 
