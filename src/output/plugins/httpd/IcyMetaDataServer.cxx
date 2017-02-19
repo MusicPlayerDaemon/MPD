@@ -60,7 +60,11 @@ icy_server_metadata_string(const char *stream_title, const char* stream_url)
 {
 	// The leading n is a placeholder for the length information
 	auto icy_metadata = FormatString("nStreamTitle='%s';"
-					 "StreamUrl='%s';",
+					 "StreamUrl='%s';"
+					 /* pad 15 spaces just in case
+					    the length needs to be
+					    rounded up */
+					 "               ",
 					 stream_title,
 					 stream_url);
 
@@ -68,7 +72,7 @@ icy_server_metadata_string(const char *stream_title, const char* stream_url)
 
 	meta_length--; // subtract placeholder
 
-	meta_length = meta_length / 16 + 1;
+	meta_length = meta_length / 16;
 
 	icy_metadata[0] = meta_length;
 
