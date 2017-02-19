@@ -341,10 +341,12 @@ HttpdOutput::BroadcastFromEncoder()
 		const std::lock_guard<Mutex> lock(mutex);
 		while (!pages.empty())
 			cond.wait(mutex);
+	}
 
-		PagePtr page;
-		while ((page = ReadPage()) != nullptr)
-			pages.push(page);
+	PagePtr page;
+	while ((page = ReadPage()) != nullptr) {
+		const std::lock_guard<Mutex> lock(mutex);
+		pages.push(std::move(page));
 	}
 
 	DeferredMonitor::Schedule();
