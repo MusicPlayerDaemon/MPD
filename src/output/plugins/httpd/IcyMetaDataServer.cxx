@@ -68,7 +68,7 @@ icy_server_metadata_string(const char *stream_title, const char* stream_url)
 
 	meta_length--; // subtract placeholder
 
-	meta_length = ((int)meta_length / 16) + 1;
+	meta_length = meta_length / 16 + 1;
 
 	icy_metadata[0] = meta_length;
 
