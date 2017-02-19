@@ -364,8 +364,9 @@
               </listitem>
               <listitem>
                 <para>
-                  <returnvalue>output</returnvalue>: an audio output has
-                  been enabled or disabled
+                  <returnvalue>output</returnvalue>: an audio output
+                  has been added, removed or modified (e.g. renamed,
+                  enabled or disabled)
                 </para>
               </listitem>
               <listitem>
