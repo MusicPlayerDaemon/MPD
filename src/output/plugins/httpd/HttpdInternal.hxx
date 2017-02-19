@@ -44,7 +44,6 @@ struct ConfigBlock;
 class EventLoop;
 class ServerSocket;
 class HttpdClient;
-class Page;
 class PreparedEncoder;
 class Encoder;
 struct Tag;
@@ -102,12 +101,12 @@ private:
 	/**
 	 * The header page, which is sent to every client on connect.
 	 */
-	Page *header;
+	PagePtr header;
 
 	/**
 	 * The metadata, which is sent to every client.
 	 */
-	Page *metadata;
+	PagePtr metadata;
 
 	/**
 	 * The page queue, i.e. pages from the encoder to be
@@ -115,7 +114,7 @@ private:
 	 * pass pages from the OutputThread to the IOThread.  It is
 	 * protected by #mutex, and removing signals #cond.
 	 */
-	std::queue<Page *, std::list<Page *>> pages;
+	std::queue<PagePtr, std::list<PagePtr>> pages;
 
  public:
 	/**
@@ -234,14 +233,14 @@ public:
 	 * Reads data from the encoder (as much as available) and
 	 * returns it as a new #page object.
 	 */
-	Page *ReadPage();
+	PagePtr ReadPage();
 
 	/**
 	 * Broadcasts a page struct to all clients.
 	 *
 	 * Mutext must not be locked.
 	 */
-	void BroadcastPage(Page *page);
+	void BroadcastPage(PagePtr page);
 
 	/**
 	 * Broadcasts data from the encoder to all clients.

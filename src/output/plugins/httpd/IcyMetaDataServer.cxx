@@ -19,7 +19,6 @@
 
 #include "config.h"
 #include "IcyMetaDataServer.hxx"
-#include "Page.hxx"
 #include "tag/Tag.hxx"
 #include "util/FormatString.hxx"
 #include "util/AllocatedString.hxx"
@@ -82,7 +81,7 @@ icy_server_metadata_string(const char *stream_title, const char* stream_url)
 	return icy_metadata;
 }
 
-Page *
+PagePtr
 icy_server_metadata_page(const Tag &tag, const TagType *types)
 {
 	const char *tag_items[TAG_NUM_OF_ITEM_TYPES];
@@ -113,5 +112,6 @@ icy_server_metadata_page(const Tag &tag, const TagType *types)
 	if (icy_string.IsNull())
 		return nullptr;
 
-	return Page::Copy(icy_string.c_str(), uint8_t(icy_string[0]) * 16 + 1);
+	return std::make_shared<Page>(icy_string.c_str(),
+				      uint8_t(icy_string[0]) * 16 + 1);
 }

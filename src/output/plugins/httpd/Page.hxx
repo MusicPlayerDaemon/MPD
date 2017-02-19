@@ -17,16 +17,12 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-/** \file
- *
- * This is a library which manages reference counted buffers.
- */
-
 #ifndef MPD_PAGE_HXX
 #define MPD_PAGE_HXX
 
-#include "util/RefCount.hxx"
 #include "util/AllocatedArray.hxx"
+
+#include <memory>
 
 #include <stddef.h>
 #include <stdint.h>
@@ -37,54 +33,14 @@
  * instances hold references to one buffer.
  */
 class Page {
-	/**
-	 * The number of references to this buffer.  This library uses
-	 * atomic functions to access it, i.e. no locks are required.
-	 * As soon as this attribute reaches zero, the buffer is
-	 * freed.
-	 */
-	RefCount ref;
-
 	AllocatedArray<uint8_t> buffer;
 
-protected:
+public:
 	explicit Page(size_t _size):buffer(_size) {}
 	explicit Page(AllocatedArray<uint8_t> &&_buffer)
 		:buffer(std::move(_buffer)) {}
 
-	~Page() = default;
-
-	/**
-	 * Allocates a new #Page object, without filling the data
-	 * element.
-	 */
-	static Page *Create(size_t size);
-
-public:
-	/**
-	 * Creates a new #page object, and copies data from the
-	 * specified buffer.  It is initialized with a reference count
-	 * of 1.
-	 *
-	 * @param data the source buffer
-	 * @param size the size of the source buffer
-	 */
-	static Page *Copy(const void *data, size_t size);
-
-	/**
-	 * Increases the reference counter.
-	 */
-	void Ref() {
-		ref.Increment();
-	}
-
-	/**
-	 * Decreases the reference counter.  If it reaches zero, the #page is
-	 * freed.
-	 *
-	 * @return true if the #page has been freed
-	 */
-	bool Unref();
+	Page(const void *data, size_t size);
 
 	size_t GetSize() const {
 		return buffer.size();
@@ -94,5 +50,7 @@ public:
 		return &buffer.front();
 	}
 };
+
+typedef std::shared_ptr<Page> PagePtr;
 
 #endif

@@ -20,6 +20,7 @@
 #ifndef MPD_OUTPUT_HTTPD_CLIENT_HXX
 #define MPD_OUTPUT_HTTPD_CLIENT_HXX
 
+#include "Page.hxx"
 #include "event/BufferedSocket.hxx"
 #include "Compiler.h"
 
@@ -32,7 +33,6 @@
 #include <stddef.h>
 
 class HttpdOutput;
-class Page;
 
 class HttpdClient final
 	: BufferedSocket,
@@ -59,7 +59,7 @@ class HttpdClient final
 	/**
 	 * A queue of #Page objects to be sent to the client.
 	 */
-	std::queue<Page *, std::list<Page *>> pages;
+	std::queue<PagePtr, std::list<PagePtr>> pages;
 
 	/**
 	 * The sum of all page sizes in #pages.
@@ -69,7 +69,7 @@ class HttpdClient final
 	/**
 	 * The #page which is currently being sent to the client.
 	 */
-	Page *current_page;
+	PagePtr current_page;
 
 	/**
 	 * The amount of bytes which were already sent from
@@ -113,7 +113,7 @@ class HttpdClient final
 	/**
 	 * The metadata as #Page which is currently being sent to the client.
 	 */
-	Page *metadata;
+	PagePtr metadata;
 
 	/*
 	 * The amount of bytes which were already sent from the metadata.
@@ -178,12 +178,12 @@ public:
 	/**
 	 * Appends a page to the client's queue.
 	 */
-	void PushPage(Page *page);
+	void PushPage(PagePtr page);
 
 	/**
 	 * Sends the passed metadata.
 	 */
-	void PushMetaData(Page *page);
+	void PushMetaData(PagePtr page);
 
 private:
 	void ClearQueue();

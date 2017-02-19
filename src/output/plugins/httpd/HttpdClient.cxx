@@ -33,16 +33,6 @@
 
 HttpdClient::~HttpdClient()
 {
-	if (state == RESPONSE) {
-		if (current_page != nullptr)
-			current_page->Unref();
-
-		ClearQueue();
-	}
-
-	if (metadata)
-		metadata->Unref();
-
 	if (IsDefined())
 		BufferedSocket::Close();
 }
@@ -217,15 +207,13 @@ HttpdClient::ClearQueue()
 	assert(state == RESPONSE);
 
 	while (!pages.empty()) {
-		Page *page = pages.front();
-		pages.pop();
-
 #ifndef NDEBUG
+		auto &page = pages.front();
 		assert(queue_size >= page->GetSize());
 		queue_size -= page->GetSize();
 #endif
 
-		page->Unref();
+		pages.pop();
 	}
 
 	assert(queue_size == 0);
@@ -372,8 +360,7 @@ HttpdClient::TryWrite()
 			metadata_fill += nbytes;
 
 		if (current_position >= current_page->GetSize()) {
-			current_page->Unref();
-			current_page = nullptr;
+			current_page.reset();
 
 			if (pages.empty())
 				/* all pages are sent: remove the
@@ -386,7 +373,7 @@ HttpdClient::TryWrite()
 }
 
 void
-HttpdClient::PushPage(Page *page)
+HttpdClient::PushPage(PagePtr page)
 {
 	if (state != RESPONSE)
 		/* the client is still writing the HTTP request */
@@ -398,25 +385,18 @@ HttpdClient::PushPage(Page *page)
 		ClearQueue();
 	}
 
-	page->Ref();
-	pages.push(page);
 	queue_size += page->GetSize();
+	pages.emplace(std::move(page));
 
 	ScheduleWrite();
 }
 
 void
-HttpdClient::PushMetaData(Page *page)
+HttpdClient::PushMetaData(PagePtr page)
 {
 	assert(page != nullptr);
 
-	if (metadata) {
-		metadata->Unref();
-		metadata = nullptr;
-	}
-
-	page->Ref();
-	metadata = page;
+	metadata = std::move(page);
 	metadata_sent = false;
 }
 

@@ -24,29 +24,8 @@
 #include <string.h>
 #include <stdlib.h>
 
-Page *
-Page::Create(size_t size)
+Page::Page(const void *data, size_t size)
+	:buffer(size)
 {
-	return new Page(size);
-}
-
-Page *
-Page::Copy(const void *data, size_t size)
-{
-	assert(data != nullptr);
-
-	Page *page = Create(size);
-	memcpy(&page->buffer.front(), data, size);
-	return page;
-}
-
-bool
-Page::Unref()
-{
-	bool unused = ref.Decrement();
-
-	if (unused)
-		delete this;
-
-	return unused;
+	memcpy(&buffer.front(), data, size);
 }
