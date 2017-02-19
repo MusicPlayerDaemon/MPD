@@ -325,9 +325,10 @@ HttpdOutput::BroadcastPage(PagePtr page)
 {
 	assert(page != nullptr);
 
-	mutex.lock();
-	pages.emplace(std::move(page));
-	mutex.unlock();
+	{
+		const std::lock_guard<Mutex> lock(mutex);
+		pages.emplace(std::move(page));
+	}
 
 	DeferredMonitor::Schedule();
 }
@@ -336,15 +337,15 @@ void
 HttpdOutput::BroadcastFromEncoder()
 {
 	/* synchronize with the IOThread */
-	mutex.lock();
-	while (!pages.empty())
-		cond.wait(mutex);
+	{
+		const std::lock_guard<Mutex> lock(mutex);
+		while (!pages.empty())
+			cond.wait(mutex);
 
-	PagePtr page;
-	while ((page = ReadPage()) != nullptr)
-		pages.push(page);
-
-	mutex.unlock();
+		PagePtr page;
+		while ((page = ReadPage()) != nullptr)
+			pages.push(page);
+	}
 
 	DeferredMonitor::Schedule();
 }
