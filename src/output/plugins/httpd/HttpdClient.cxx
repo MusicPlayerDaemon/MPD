@@ -221,8 +221,8 @@ HttpdClient::ClearQueue()
 		pages.pop();
 
 #ifndef NDEBUG
-		assert(queue_size >= page->size);
-		queue_size -= page->size;
+		assert(queue_size >= page->GetSize());
+		queue_size -= page->GetSize();
 #endif
 
 		page->Unref();
@@ -246,16 +246,17 @@ HttpdClient::CancelQueue()
 ssize_t
 HttpdClient::TryWritePage(const Page &page, size_t position)
 {
-	assert(position < page.size);
+	assert(position < page.GetSize());
 
-	return Write(page.data + position, page.size - position);
+	return Write(page.GetData() + position,
+		     page.GetSize() - position);
 }
 
 ssize_t
 HttpdClient::TryWritePageN(const Page &page, size_t position, ssize_t n)
 {
 	return n >= 0
-		? Write(page.data + position, n)
+		? Write(page.GetData() + position, n)
 		: TryWritePage(page, position);
 }
 
@@ -263,7 +264,7 @@ ssize_t
 HttpdClient::GetBytesTillMetaData() const
 {
 	if (metadata_requested &&
-	    current_page->size - current_position > metaint - metadata_fill)
+	    current_page->GetSize() - current_position > metaint - metadata_fill)
 		return metaint - metadata_fill;
 
 	return -1;
@@ -289,8 +290,8 @@ HttpdClient::TryWrite()
 		pages.pop();
 		current_position = 0;
 
-		assert(queue_size >= current_page->size);
-		queue_size -= current_page->size;
+		assert(queue_size >= current_page->GetSize());
+		queue_size -= current_page->GetSize();
 	}
 
 	const ssize_t bytes_to_write = GetBytesTillMetaData();
@@ -316,7 +317,7 @@ HttpdClient::TryWrite()
 
 			metadata_current_position += nbytes;
 
-			if (metadata->size - metadata_current_position == 0) {
+			if (metadata->GetSize() - metadata_current_position == 0) {
 				metadata_fill = 0;
 				metadata_current_position = 0;
 				metadata_sent = true;
@@ -365,12 +366,12 @@ HttpdClient::TryWrite()
 		}
 
 		current_position += nbytes;
-		assert(current_position <= current_page->size);
+		assert(current_position <= current_page->GetSize());
 
 		if (metadata_requested)
 			metadata_fill += nbytes;
 
-		if (current_position >= current_page->size) {
+		if (current_position >= current_page->GetSize()) {
 			current_page->Unref();
 			current_page = nullptr;
 
@@ -399,7 +400,7 @@ HttpdClient::PushPage(Page *page)
 
 	page->Ref();
 	pages.push(page);
-	queue_size += page->size;
+	queue_size += page->GetSize();
 
 	ScheduleWrite();
 }

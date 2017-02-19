@@ -44,7 +44,6 @@ class Page {
 	 */
 	RefCount ref;
 
-public:
 	/**
 	 * The size of this buffer in bytes.
 	 */
@@ -90,6 +89,14 @@ public:
 	 * @return true if the #page has been freed
 	 */
 	bool Unref();
+
+	size_t GetSize() const {
+		return size;
+	}
+
+	const uint8_t *GetData() const {
+		return data;
+	}
 };
 
 #endif
