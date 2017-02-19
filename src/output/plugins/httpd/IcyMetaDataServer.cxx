@@ -113,5 +113,5 @@ icy_server_metadata_page(const Tag &tag, const TagType *types)
 	if (icy_string.IsNull())
 		return nullptr;
 
-	return Page::Copy(icy_string.c_str(), (icy_string[0] * 16) + 1);
+	return Page::Copy(icy_string.c_str(), uint8_t(icy_string[0]) * 16 + 1);
 }
