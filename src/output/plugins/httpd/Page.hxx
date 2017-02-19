@@ -28,6 +28,7 @@
 #include "util/RefCount.hxx"
 
 #include <stddef.h>
+#include <stdint.h>
 
 /**
  * A dynamically allocated buffer which keeps track of its reference
@@ -52,7 +53,7 @@ public:
 	/**
 	 * Dynamic array containing the buffer data.
 	 */
-	unsigned char data[sizeof(long)];
+	uint8_t data[sizeof(long)];
 
 protected:
 	Page(size_t _size):size(_size) {}
