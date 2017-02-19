@@ -271,6 +271,8 @@ HttpdOutput::Close()
 	delete timer;
 
 	BlockingCall(GetEventLoop(), [this](){
+			DeferredMonitor::Cancel();
+
 			const std::lock_guard<Mutex> protect(mutex);
 			open = false;
 			clients.clear_and_dispose(DeleteDisposer());
