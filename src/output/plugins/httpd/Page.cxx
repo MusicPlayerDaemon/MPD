@@ -45,17 +45,6 @@ Page::Copy(const void *data, size_t size)
 	return page;
 }
 
-Page *
-Page::Concat(const Page &a, const Page &b)
-{
-	Page *page = Create(a.size + b.size);
-
-	memcpy(page->data, a.data, a.size);
-	memcpy(page->data + a.size, b.data, b.size);
-
-	return page;
-}
-
 bool
 Page::Unref()
 {

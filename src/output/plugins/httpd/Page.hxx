@@ -77,14 +77,6 @@ public:
 	static Page *Copy(const void *data, size_t size);
 
 	/**
-	 * Concatenates two pages to a new page.
-	 *
-	 * @param a the first page
-	 * @param b the second page, which is appended
-	 */
-	static Page *Concat(const Page &a, const Page &b);
-
-	/**
 	 * Increases the reference counter.
 	 */
 	void Ref() {
