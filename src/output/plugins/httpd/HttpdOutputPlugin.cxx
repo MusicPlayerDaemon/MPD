@@ -343,13 +343,17 @@ HttpdOutput::BroadcastFromEncoder()
 			cond.wait(mutex);
 	}
 
+	bool empty = true;
+
 	PagePtr page;
 	while ((page = ReadPage()) != nullptr) {
 		const std::lock_guard<Mutex> lock(mutex);
 		pages.push(std::move(page));
+		empty = false;
 	}
 
-	DeferredMonitor::Schedule();
+	if (!empty)
+		DeferredMonitor::Schedule();
 }
 
 inline void
