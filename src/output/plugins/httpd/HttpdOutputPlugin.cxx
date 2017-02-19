@@ -266,14 +266,13 @@ HttpdOutput::Open(AudioFormat &audio_format)
 inline void
 HttpdOutput::Close()
 {
-	const std::lock_guard<Mutex> protect(mutex);
-
 	assert(open);
-	open = false;
 
 	delete timer;
 
 	BlockingCall(GetEventLoop(), [this](){
+			const std::lock_guard<Mutex> protect(mutex);
+			open = false;
 			clients.clear_and_dispose(DeleteDisposer());
 		});
 
