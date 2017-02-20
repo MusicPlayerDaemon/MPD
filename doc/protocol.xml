@@ -2368,6 +2368,20 @@ OK
       </para>
 
       <variablelist>
+        <varlistentry id="command_partition">
+          <term>
+            <cmdsynopsis>
+              <command>partition</command>
+              <arg choice="req"><replaceable>NAME</replaceable></arg>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              Switch the client to a different partition.
+            </para>
+          </listitem>
+        </varlistentry>
+
         <varlistentry id="command_listpartitions">
           <term>
             <cmdsynopsis>

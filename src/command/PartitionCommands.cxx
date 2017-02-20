@@ -29,6 +29,21 @@
 #include "util/CharUtil.hxx"
 
 CommandResult
+handle_partition(Client &client, Request request, Response &response)
+{
+	const char *name = request.front();
+	auto &instance = client.GetInstance();
+	auto *partition = instance.FindPartition(name);
+	if (partition == nullptr) {
+		response.Error(ACK_ERROR_NO_EXIST, "partition does not exist");
+		return CommandResult::ERROR;
+	}
+
+	client.SetPartition(*partition);
+	return CommandResult::OK;
+}
+
+CommandResult
 handle_listpartitions(Client &client, Request, Response &r)
 {
 	for (const auto &partition : client.GetInstance().partitions) {

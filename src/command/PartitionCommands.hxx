@@ -27,6 +27,9 @@ class Request;
 class Response;
 
 CommandResult
+handle_partition(Client &client, Request request, Response &response);
+
+CommandResult
 handle_listpartitions(Client &client, Request request, Response &response);
 
 CommandResult
