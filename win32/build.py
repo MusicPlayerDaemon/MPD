@@ -7,8 +7,13 @@ configure_args = sys.argv[1:]
 
 x64 = False
 
-if len(configure_args) > 0 and configure_args[0] == '--64':
-    x64 = True
+while len(configure_args) > 0:
+    arg = configure_args[0]
+    if arg == '--64':
+        x64 = True
+    else:
+        break
+    configure_args.pop(0)
 
 if x64:
     host_arch = 'x86_64-w64-mingw32'
