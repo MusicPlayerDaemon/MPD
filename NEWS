@@ -1,4 +1,4 @@
-ver 0.20.5 (not yet released)
+ver 0.20.5 (2017/02/20)
 * tags
   - id3: fix memory leak on corrupt ID3 tags
 * decoder
