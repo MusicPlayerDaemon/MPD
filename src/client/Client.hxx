@@ -41,6 +41,8 @@ class SocketAddress;
 class EventLoop;
 class Path;
 struct Partition;
+struct PlayerControl;
+struct playlist;
 class Database;
 class Storage;
 
@@ -49,8 +51,6 @@ class Client final
 	  public boost::intrusive::list_base_hook<boost::intrusive::link_mode<boost::intrusive::normal_link>> {
 public:
 	Partition &partition;
-	struct playlist &playlist;
-	struct PlayerControl &player_control;
 
 	unsigned permission;
 
@@ -186,6 +186,12 @@ public:
 	 * @param path_fs the absolute path name in filesystem encoding
 	 */
 	void AllowFile(Path path_fs) const;
+
+	gcc_pure
+	playlist &GetPlaylist();
+
+	gcc_pure
+	PlayerControl &GetPlayerControl();
 
 	/**
 	 * Wrapper for Instance::GetDatabase().

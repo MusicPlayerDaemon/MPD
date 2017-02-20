@@ -86,18 +86,20 @@ handle_stop(Client &client, gcc_unused Request args, gcc_unused Response &r)
 CommandResult
 handle_currentsong(Client &client, gcc_unused Request args, Response &r)
 {
-	playlist_print_current(r, client.playlist);
+	playlist_print_current(r, client.GetPlaylist());
 	return CommandResult::OK;
 }
 
 CommandResult
 handle_pause(Client &client, Request args, gcc_unused Response &r)
 {
+	auto &pc = client.GetPlayerControl();
+
 	if (!args.IsEmpty()) {
 		bool pause_flag = args.ParseBool(0);
-		client.player_control.LockSetPause(pause_flag);
+		pc.LockSetPause(pause_flag);
 	} else
-		client.player_control.LockPause();
+		pc.LockPause();
 
 	return CommandResult::OK;
 }
@@ -105,10 +107,12 @@ handle_pause(Client &client, Request args, gcc_unused Response &r)
 CommandResult
 handle_status(Client &client, gcc_unused Request args, Response &r)
 {
+	auto &pc = client.GetPlayerControl();
+
 	const char *state = nullptr;
 	int song;
 
-	const auto player_status = client.player_control.LockGetStatus();
+	const auto player_status = pc.LockGetStatus();
 
 	switch (player_status.state) {
 	case PlayerState::STOP:
@@ -122,7 +126,7 @@ handle_status(Client &client, gcc_unused Request args, Response &r)
 		break;
 	}
 
-	const playlist &playlist = client.playlist;
+	const playlist &playlist = client.GetPlaylist();
 	r.Format("volume: %i\n"
 		 COMMAND_STATUS_REPEAT ": %i\n"
 		 COMMAND_STATUS_RANDOM ": %i\n"
@@ -139,16 +143,16 @@ handle_status(Client &client, gcc_unused Request args, Response &r)
 		 playlist.GetConsume(),
 		 (unsigned long)playlist.GetVersion(),
 		 playlist.GetLength(),
-		 client.player_control.GetMixRampDb(),
+		 pc.GetMixRampDb(),
 		 state);
 
-	if (client.player_control.GetCrossFade() > 0)
+	if (pc.GetCrossFade() > 0)
 		r.Format(COMMAND_STATUS_CROSSFADE ": %i\n",
-			 int(client.player_control.GetCrossFade() + 0.5));
+			 int(pc.GetCrossFade() + 0.5));
 
-	if (client.player_control.GetMixRampDelay() > 0)
+	if (pc.GetMixRampDelay() > 0)
 		r.Format(COMMAND_STATUS_MIXRAMPDELAY ": %f\n",
-			 client.player_control.GetMixRampDelay());
+			 pc.GetMixRampDelay());
 
 	song = playlist.GetCurrentPosition();
 	if (song >= 0) {
@@ -189,7 +193,7 @@ handle_status(Client &client, gcc_unused Request args, Response &r)
 #endif
 
 	try {
-		client.player_control.LockCheckRethrowError();
+		pc.LockCheckRethrowError();
 	} catch (...) {
 		r.Format(COMMAND_STATUS_ERROR ": %s\n",
 			 FullMessage(std::current_exception()).c_str());
@@ -207,7 +211,7 @@ handle_status(Client &client, gcc_unused Request args, Response &r)
 CommandResult
 handle_next(Client &client, gcc_unused Request args, gcc_unused Response &r)
 {
-	playlist &playlist = client.playlist;
+	playlist &playlist = client.GetPlaylist();
 
 	/* single mode is not considered when this is user who
 	 * wants to change song. */
@@ -267,7 +271,7 @@ CommandResult
 handle_clearerror(Client &client, gcc_unused Request args,
 		  gcc_unused Response &r)
 {
-	client.player_control.LockClearError();
+	client.GetPlayerControl().LockClearError();
 	return CommandResult::OK;
 }
 
@@ -306,7 +310,7 @@ CommandResult
 handle_crossfade(Client &client, Request args, gcc_unused Response &r)
 {
 	unsigned xfade_time = args.ParseUnsigned(0);
-	client.player_control.SetCrossFade(xfade_time);
+	client.GetPlayerControl().SetCrossFade(xfade_time);
 	return CommandResult::OK;
 }
 
@@ -314,7 +318,7 @@ CommandResult
 handle_mixrampdb(Client &client, Request args, gcc_unused Response &r)
 {
 	float db = args.ParseFloat(0);
-	client.player_control.SetMixRampDb(db);
+	client.GetPlayerControl().SetMixRampDb(db);
 	return CommandResult::OK;
 }
 
@@ -322,7 +326,7 @@ CommandResult
 handle_mixrampdelay(Client &client, Request args, gcc_unused Response &r)
 {
 	float delay_secs = args.ParseFloat(0);
-	client.player_control.SetMixRampDelay(delay_secs);
+	client.GetPlayerControl().SetMixRampDelay(delay_secs);
 	return CommandResult::OK;
 }
 

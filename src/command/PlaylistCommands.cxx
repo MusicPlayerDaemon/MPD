@@ -58,7 +58,7 @@ print_spl_list(Response &r, const PlaylistVector &list)
 CommandResult
 handle_save(Client &client, Request args, gcc_unused Response &r)
 {
-	spl_save_playlist(args.front(), client.playlist);
+	spl_save_playlist(args.front(), client.GetPlaylist());
 	return CommandResult::OK;
 }
 
@@ -72,8 +72,8 @@ handle_load(Client &client, Request args, gcc_unused Response &r)
 	const SongLoader loader(client);
 	playlist_open_into_queue(args.front(),
 				 range.start, range.end,
-				 client.playlist,
-				 client.player_control, loader);
+				 client.GetPlaylist(),
+				 client.GetPlayerControl(), loader);
 	return CommandResult::OK;
 }
 

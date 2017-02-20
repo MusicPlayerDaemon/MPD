@@ -25,6 +25,18 @@
 
 const Domain client_domain("client");
 
+playlist &
+Client::GetPlaylist()
+{
+	return partition.playlist;
+}
+
+PlayerControl &
+Client::GetPlayerControl()
+{
+	return partition.pc;
+}
+
 #ifdef ENABLE_DATABASE
 
 const Database *
