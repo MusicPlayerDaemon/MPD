@@ -11,6 +11,8 @@ while len(configure_args) > 0:
     arg = configure_args[0]
     if arg == '--64':
         x64 = True
+    elif arg == '--32':
+        x64 = False
     else:
         break
     configure_args.pop(0)
