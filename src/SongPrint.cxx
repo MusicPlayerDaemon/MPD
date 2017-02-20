@@ -76,14 +76,11 @@ song_print_uri(Response &r, Partition &partition,
 	song_print_uri(r, partition, song.GetURI(), base);
 }
 
-void
-song_print_info(Response &r, Partition &partition,
-		const LightSong &song, bool base)
+static void
+PrintRange(Response &r, SongTime start_time, SongTime end_time)
 {
-	song_print_uri(r, partition, song, base);
-
-	const unsigned start_ms = song.start_time.ToMS();
-	const unsigned end_ms = song.end_time.ToMS();
+	const unsigned start_ms = start_time.ToMS();
+	const unsigned end_ms = end_time.ToMS();
 
 	if (end_ms > 0)
 		r.Format("Range: %u.%03u-%u.%03u\n",
@@ -95,6 +92,15 @@ song_print_info(Response &r, Partition &partition,
 		r.Format("Range: %u.%03u-\n",
 			 start_ms / 1000,
 			 start_ms % 1000);
+}
+
+void
+song_print_info(Response &r, Partition &partition,
+		const LightSong &song, bool base)
+{
+	song_print_uri(r, partition, song, base);
+
+	PrintRange(r, song.start_time, song.end_time);
 
 	if (song.mtime > 0)
 		time_print(r, "Last-Modified", song.mtime);
@@ -108,19 +114,7 @@ song_print_info(Response &r, Partition &partition,
 {
 	song_print_uri(r, partition, song, base);
 
-	const unsigned start_ms = song.GetStartTime().ToMS();
-	const unsigned end_ms = song.GetEndTime().ToMS();
-
-	if (end_ms > 0)
-		r.Format("Range: %u.%03u-%u.%03u\n",
-			 start_ms / 1000,
-			 start_ms % 1000,
-			 end_ms / 1000,
-			 end_ms % 1000);
-	else if (start_ms > 0)
-		r.Format("Range: %u.%03u-\n",
-			 start_ms / 1000,
-			 start_ms % 1000);
+	PrintRange(r, song.GetStartTime(), song.GetEndTime());
 
 	if (song.GetLastModified() > 0)
 		time_print(r, "Last-Modified", song.GetLastModified());
