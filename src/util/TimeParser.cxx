@@ -60,6 +60,8 @@ ParseTimePoint(const char *s, const char *format)
 
 #ifdef WIN32
 	/* TODO: emulate strptime()? */
+	(void)s;
+	(void)format;
 	throw std::runtime_error("Time parsing not implemented on Windows");
 #else
 	struct tm tm;
