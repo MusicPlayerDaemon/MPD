@@ -106,6 +106,13 @@ struct Instance final
 		idle_monitor.OrMask(mask);
 	}
 
+	/**
+	 * Find a #Partition with the given name.  Returns nullptr if
+	 * no such partition was found.
+	 */
+	gcc_pure
+	Partition *FindPartition(const char *name);
+
 #ifdef ENABLE_DATABASE
 	/**
 	 * Returns the global #Database instance.  May return nullptr

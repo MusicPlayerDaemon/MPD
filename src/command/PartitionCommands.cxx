@@ -58,13 +58,9 @@ IsValidPartitionName(const char *name)
 
 gcc_pure
 static bool
-HasPartitionNamed(const Instance &instance, const char *name)
+HasPartitionNamed(Instance &instance, const char *name)
 {
-	for (const auto &partition : instance.partitions)
-		if (partition.name == name)
-			return true;
-
-	return false;
+	return instance.FindPartition(name) != nullptr;
 }
 
 CommandResult

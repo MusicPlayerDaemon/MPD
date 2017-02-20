@@ -39,6 +39,16 @@ Instance::Instance()
 {
 }
 
+Partition *
+Instance::FindPartition(const char *name)
+{
+	for (auto &partition : partitions)
+		if (partition.name == name)
+			return &partition;
+
+	return nullptr;
+}
+
 #ifdef ENABLE_DATABASE
 
 const Database &
