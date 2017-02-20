@@ -5,7 +5,7 @@ import sys, subprocess
 
 configure_args = sys.argv[1:]
 
-x64 = False
+x64 = True
 
 while len(configure_args) > 0:
     arg = configure_args[0]
