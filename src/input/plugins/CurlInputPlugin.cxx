@@ -398,7 +398,7 @@ CurlInputStream::SeekInternal(offset_type new_offset)
 	/* send the "Range" header */
 
 	if (offset > 0) {
-		sprintf(range, "%lld-", (long long)offset);
+		sprintf(range, "%llu-", (unsigned long long)offset);
 		request->SetOption(CURLOPT_RANGE, range);
 	}
 }
