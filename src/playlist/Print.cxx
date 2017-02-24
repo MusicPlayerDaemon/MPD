@@ -31,7 +31,7 @@
 #include "Instance.hxx"
 
 static void
-playlist_provider_print(Response &r, Partition &partition,
+playlist_provider_print(Response &r,
 			const SongLoader &loader,
 			const char *uri,
 			SongEnumerator &e, bool detail)
@@ -45,11 +45,11 @@ playlist_provider_print(Response &r, Partition &partition,
 		if (playlist_check_translate_song(*song, base_uri.c_str(),
 						  loader) &&
 		    detail)
-			song_print_info(r, partition, *song);
+			song_print_info(r, *song);
 		else
 			/* fallback if no detail was requested or no
 			   detail was available */
-			song_print_uri(r, partition, *song);
+			song_print_uri(r, *song);
 	}
 }
 
@@ -61,6 +61,10 @@ playlist_file_print(Response &r, Partition &partition,
 	Mutex mutex;
 	Cond cond;
 
+#ifndef ENABLE_DATABASE
+	(void)partition;
+#endif
+
 	SongEnumerator *playlist = playlist_open_any(uri,
 #ifdef ENABLE_DATABASE
 						     partition.instance.storage,
@@ -69,7 +73,7 @@ playlist_file_print(Response &r, Partition &partition,
 	if (playlist == nullptr)
 		return false;
 
-	playlist_provider_print(r, partition, loader, uri, *playlist, detail);
+	playlist_provider_print(r, loader, uri, *playlist, detail);
 	delete playlist;
 	return true;
 }

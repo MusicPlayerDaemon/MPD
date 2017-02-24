@@ -188,7 +188,7 @@ handle_deleteid(Client &client, Request args, gcc_unused Response &r)
 CommandResult
 handle_playlist(Client &client, gcc_unused Request args, Response &r)
 {
-	playlist_print_uris(r, client.partition, client.playlist);
+	playlist_print_uris(r, client.playlist);
 	return CommandResult::OK;
 }
 
@@ -212,8 +212,7 @@ handle_plchanges(Client &client, Request args, Response &r)
 {
 	uint32_t version = ParseCommandArgU32(args.front());
 	RangeArg range = args.ParseOptional(1, RangeArg::All());
-	playlist_print_changes_info(r, client.partition,
-				    client.playlist, version,
+	playlist_print_changes_info(r, client.playlist, version,
 				    range.start, range.end);
 	return CommandResult::OK;
 }
@@ -233,7 +232,7 @@ handle_playlistinfo(Client &client, Request args, Response &r)
 {
 	RangeArg range = args.ParseOptional(0, RangeArg::All());
 
-	playlist_print_info(r, client.partition, client.playlist,
+	playlist_print_info(r, client.playlist,
 			    range.start, range.end);
 	return CommandResult::OK;
 }
@@ -243,10 +242,9 @@ handle_playlistid(Client &client, Request args, Response &r)
 {
 	if (!args.IsEmpty()) {
 		unsigned id = args.ParseUnsigned(0);
-		playlist_print_id(r, client.partition,
-				  client.playlist, id);
+		playlist_print_id(r, client.playlist, id);
 	} else {
-		playlist_print_info(r, client.partition, client.playlist,
+		playlist_print_info(r, client.playlist,
 				    0, std::numeric_limits<unsigned>::max());
 	}
 
@@ -263,7 +261,7 @@ handle_playlist_match(Client &client, Request args, Response &r,
 		return CommandResult::ERROR;
 	}
 
-	playlist_print_find(r, client.partition, client.playlist, filter);
+	playlist_print_find(r, client.playlist, filter);
 	return CommandResult::OK;
 }
 

@@ -33,24 +33,13 @@
 #define SONG_FILE "file: "
 
 static void
-song_print_uri(Response &r, Partition &partition, const char *uri, bool base)
+song_print_uri(Response &r, const char *uri, bool base)
 {
 	std::string allocated;
 
 	if (base) {
 		uri = PathTraitsUTF8::GetBase(uri);
 	} else {
-#ifdef ENABLE_DATABASE
-		const Storage *storage = partition.instance.storage;
-		if (storage != nullptr) {
-			const char *suffix = storage->MapToRelativeUTF8(uri);
-			if (suffix != nullptr)
-				uri = suffix;
-		}
-#else
-		(void)partition;
-#endif
-
 		allocated = uri_remove_auth(uri);
 		if (!allocated.empty())
 			uri = allocated.c_str();
@@ -60,20 +49,18 @@ song_print_uri(Response &r, Partition &partition, const char *uri, bool base)
 }
 
 void
-song_print_uri(Response &r, Partition &partition,
-	       const LightSong &song, bool base)
+song_print_uri(Response &r, const LightSong &song, bool base)
 {
 	if (!base && song.directory != nullptr)
 		r.Format(SONG_FILE "%s/%s\n", song.directory, song.uri);
 	else
-		song_print_uri(r, partition, song.uri, base);
+		song_print_uri(r, song.uri, base);
 }
 
 void
-song_print_uri(Response &r, Partition &partition,
-	       const DetachedSong &song, bool base)
+song_print_uri(Response &r, const DetachedSong &song, bool base)
 {
-	song_print_uri(r, partition, song.GetURI(), base);
+	song_print_uri(r, song.GetURI(), base);
 }
 
 static void
@@ -95,10 +82,9 @@ PrintRange(Response &r, SongTime start_time, SongTime end_time)
 }
 
 void
-song_print_info(Response &r, Partition &partition,
-		const LightSong &song, bool base)
+song_print_info(Response &r, const LightSong &song, bool base)
 {
-	song_print_uri(r, partition, song, base);
+	song_print_uri(r, song, base);
 
 	PrintRange(r, song.start_time, song.end_time);
 
@@ -109,10 +95,9 @@ song_print_info(Response &r, Partition &partition,
 }
 
 void
-song_print_info(Response &r, Partition &partition,
-		const DetachedSong &song, bool base)
+song_print_info(Response &r, const DetachedSong &song, bool base)
 {
-	song_print_uri(r, partition, song, base);
+	song_print_uri(r, song, base);
 
 	PrintRange(r, song.GetStartTime(), song.GetEndTime());
 
