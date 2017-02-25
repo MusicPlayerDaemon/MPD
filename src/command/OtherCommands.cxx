@@ -329,7 +329,7 @@ handle_setvol(Client &client, Request args, Response &r)
 {
 	unsigned level = args.ParseUnsigned(0, 100);
 
-	if (!volume_level_change(client.partition.outputs, level)) {
+	if (!volume_level_change(client.GetPartition().outputs, level)) {
 		r.Error(ACK_ERROR_SYSTEM, "problems setting volume");
 		return CommandResult::ERROR;
 	}
@@ -342,7 +342,9 @@ handle_volume(Client &client, Request args, Response &r)
 {
 	int relative = args.ParseInt(0, -100, 100);
 
-	const int old_volume = volume_level_get(client.partition.outputs);
+	auto &outputs = client.GetPartition().outputs;
+
+	const int old_volume = volume_level_get(outputs);
 	if (old_volume < 0) {
 		r.Error(ACK_ERROR_SYSTEM, "No mixer");
 		return CommandResult::ERROR;
@@ -355,7 +357,7 @@ handle_volume(Client &client, Request args, Response &r)
 		new_volume = 100;
 
 	if (new_volume != old_volume &&
-	    !volume_level_change(client.partition.outputs, new_volume)) {
+	    !volume_level_change(outputs, new_volume)) {
 		r.Error(ACK_ERROR_SYSTEM, "problems setting volume");
 		return CommandResult::ERROR;
 	}
@@ -366,7 +368,7 @@ handle_volume(Client &client, Request args, Response &r)
 CommandResult
 handle_stats(Client &client, gcc_unused Request args, Response &r)
 {
-	stats_print(r, client.partition);
+	stats_print(r, client.GetPartition());
 	return CommandResult::OK;
 }
 

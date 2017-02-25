@@ -161,7 +161,7 @@ handle_sticker(Client &client, Request args, Response &r)
 	}
 
 	if (StringIsEqual(args[1], "song"))
-		return handle_sticker_song(r, client.partition, args);
+		return handle_sticker_song(r, client.GetPartition(), args);
 	else {
 		r.Error(ACK_ERROR_ARG, "unknown sticker domain");
 		return CommandResult::ERROR;

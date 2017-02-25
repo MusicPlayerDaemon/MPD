@@ -67,7 +67,7 @@ handle_load(Client &client, Request args, gcc_unused Response &r)
 {
 	RangeArg range = args.ParseOptional(1, RangeArg::All());
 
-	const ScopeBulkEdit bulk_edit(client.partition);
+	const ScopeBulkEdit bulk_edit(client.GetPartition());
 
 	const SongLoader loader(client);
 	playlist_open_into_queue(args.front(),
@@ -82,8 +82,8 @@ handle_listplaylist(Client &client, Request args, Response &r)
 {
 	const char *const name = args.front();
 
-	if (playlist_file_print(r, client.partition, SongLoader(client),
-				 name, false))
+	if (playlist_file_print(r, client.GetPartition(), SongLoader(client),
+				name, false))
 		return CommandResult::OK;
 
 	throw PlaylistError::NoSuchList();
@@ -94,7 +94,7 @@ handle_listplaylistinfo(Client &client, Request args, Response &r)
 {
 	const char *const name = args.front();
 
-	if (playlist_file_print(r, client.partition, SongLoader(client),
+	if (playlist_file_print(r, client.GetPartition(), SongLoader(client),
 				name, true))
 		return CommandResult::OK;
 

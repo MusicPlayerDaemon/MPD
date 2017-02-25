@@ -63,7 +63,7 @@ handle_play(Client &client, Request args, gcc_unused Response &r)
 {
 	int song = args.ParseOptional(0, -1);
 
-	client.partition.PlayPosition(song);
+	client.GetPartition().PlayPosition(song);
 	return CommandResult::OK;
 }
 
@@ -72,14 +72,14 @@ handle_playid(Client &client, Request args, gcc_unused Response &r)
 {
 	int id = args.ParseOptional(0, -1);
 
-	client.partition.PlayId(id);
+	client.GetPartition().PlayId(id);
 	return CommandResult::OK;
 }
 
 CommandResult
 handle_stop(Client &client, gcc_unused Request args, gcc_unused Response &r)
 {
-	client.partition.Stop();
+	client.GetPartition().Stop();
 	return CommandResult::OK;
 }
 
@@ -136,7 +136,7 @@ handle_status(Client &client, gcc_unused Request args, Response &r)
 		 COMMAND_STATUS_PLAYLIST_LENGTH ": %i\n"
 		 COMMAND_STATUS_MIXRAMPDB ": %f\n"
 		 COMMAND_STATUS_STATE ": %s\n",
-		 volume_level_get(client.partition.outputs),
+		 volume_level_get(client.GetPartition().outputs),
 		 playlist.GetRepeat(),
 		 playlist.GetRandom(),
 		 playlist.GetSingle(),
@@ -222,7 +222,7 @@ handle_next(Client &client, gcc_unused Request args, gcc_unused Response &r)
 		playlist.queue.single = single;
 	};
 
-	client.partition.PlayNext();
+	client.GetPartition().PlayNext();
 	return CommandResult::OK;
 }
 
@@ -230,7 +230,7 @@ CommandResult
 handle_previous(Client &client, gcc_unused Request args,
 		gcc_unused Response &r)
 {
-	client.partition.PlayPrevious();
+	client.GetPartition().PlayPrevious();
 	return CommandResult::OK;
 }
 
@@ -238,7 +238,7 @@ CommandResult
 handle_repeat(Client &client, Request args, gcc_unused Response &r)
 {
 	bool status = args.ParseBool(0);
-	client.partition.SetRepeat(status);
+	client.GetPartition().SetRepeat(status);
 	return CommandResult::OK;
 }
 
@@ -246,7 +246,7 @@ CommandResult
 handle_single(Client &client, Request args, gcc_unused Response &r)
 {
 	bool status = args.ParseBool(0);
-	client.partition.SetSingle(status);
+	client.GetPartition().SetSingle(status);
 	return CommandResult::OK;
 }
 
@@ -254,7 +254,7 @@ CommandResult
 handle_consume(Client &client, Request args, gcc_unused Response &r)
 {
 	bool status = args.ParseBool(0);
-	client.partition.SetConsume(status);
+	client.GetPartition().SetConsume(status);
 	return CommandResult::OK;
 }
 
@@ -262,8 +262,9 @@ CommandResult
 handle_random(Client &client, Request args, gcc_unused Response &r)
 {
 	bool status = args.ParseBool(0);
-	client.partition.SetRandom(status);
-	client.partition.UpdateEffectiveReplayGainMode();
+	auto &partition = client.GetPartition();
+	partition.SetRandom(status);
+	partition.UpdateEffectiveReplayGainMode();
 	return CommandResult::OK;
 }
 
@@ -281,7 +282,7 @@ handle_seek(Client &client, Request args, gcc_unused Response &r)
 	unsigned song = args.ParseUnsigned(0);
 	SongTime seek_time = args.ParseSongTime(1);
 
-	client.partition.SeekSongPosition(song, seek_time);
+	client.GetPartition().SeekSongPosition(song, seek_time);
 	return CommandResult::OK;
 }
 
@@ -291,7 +292,7 @@ handle_seekid(Client &client, Request args, gcc_unused Response &r)
 	unsigned id = args.ParseUnsigned(0);
 	SongTime seek_time = args.ParseSongTime(1);
 
-	client.partition.SeekSongId(id, seek_time);
+	client.GetPartition().SeekSongId(id, seek_time);
 	return CommandResult::OK;
 }
 
@@ -302,7 +303,7 @@ handle_seekcur(Client &client, Request args, gcc_unused Response &r)
 	bool relative = *p == '+' || *p == '-';
 	SignedSongTime seek_time = ParseCommandArgSignedSongTime(p);
 
-	client.partition.SeekCurrent(seek_time, relative);
+	client.GetPartition().SeekCurrent(seek_time, relative);
 	return CommandResult::OK;
 }
 
@@ -334,8 +335,9 @@ CommandResult
 handle_replay_gain_mode(Client &client, Request args, Response &)
 {
 	auto new_mode = FromString(args.front());
-	client.partition.SetReplayGainMode(new_mode);
-	client.partition.EmitIdle(IDLE_OPTIONS);
+	auto &partition = client.GetPartition();
+	partition.SetReplayGainMode(new_mode);
+	partition.EmitIdle(IDLE_OPTIONS);
 	return CommandResult::OK;
 }
 
@@ -344,6 +346,6 @@ handle_replay_gain_status(Client &client, gcc_unused Request args,
 			  Response &r)
 {
 	r.Format("replay_gain_mode: %s\n",
-		 ToString(client.partition.replay_gain_mode));
+		 ToString(client.GetPartition().replay_gain_mode));
 	return CommandResult::OK;
 }

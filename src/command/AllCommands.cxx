@@ -262,7 +262,7 @@ PrintUnavailableCommands(Response &r, unsigned permission)
 static CommandResult
 handle_commands(Client &client, gcc_unused Request request, Response &r)
 {
-	return PrintAvailableCommands(r, client.partition,
+	return PrintAvailableCommands(r, client.GetPartition(),
 				      client.GetPermission());
 }
 

@@ -41,7 +41,7 @@ CommandResult
 handle_listfiles_db(Client &client, Response &r, const char *uri)
 {
 	const DatabaseSelection selection(uri, false);
-	db_selection_print(r, client.partition,
+	db_selection_print(r, client.GetPartition(),
 			   selection, false, true);
 	return CommandResult::OK;
 }
@@ -50,7 +50,7 @@ CommandResult
 handle_lsinfo2(Client &client, const char *uri, Response &r)
 {
 	const DatabaseSelection selection(uri, false);
-	db_selection_print(r, client.partition,
+	db_selection_print(r, client.GetPartition(),
 			   selection, true, false);
 	return CommandResult::OK;
 }
@@ -85,7 +85,7 @@ handle_match(Client &client, Request args, Response &r, bool fold_case)
 
 	const DatabaseSelection selection("", true, &filter);
 
-	db_selection_print(r, client.partition,
+	db_selection_print(r, client.GetPartition(),
 			   selection, true, false,
 			   sort,
 			   window.start, window.end);
@@ -113,10 +113,11 @@ handle_match_add(Client &client, Request args, Response &r, bool fold_case)
 		return CommandResult::ERROR;
 	}
 
-	const ScopeBulkEdit bulk_edit(client.partition);
+	auto &partition = client.GetPartition();
+	const ScopeBulkEdit bulk_edit(partition);
 
 	const DatabaseSelection selection("", true, &filter);
-	AddFromDatabase(client.partition, selection);
+	AddFromDatabase(partition, selection);
 	return CommandResult::OK;
 }
 
@@ -173,7 +174,7 @@ handle_count(Client &client, Request args, Response &r)
 		return CommandResult::ERROR;
 	}
 
-	PrintSongCount(r, client.partition, "", &filter, group);
+	PrintSongCount(r, client.GetPartition(), "", &filter, group);
 	return CommandResult::OK;
 }
 
@@ -183,7 +184,7 @@ handle_listall(Client &client, Request args, Response &r)
 	/* default is root directory */
 	const auto uri = args.GetOptional(0, "");
 
-	db_selection_print(r, client.partition,
+	db_selection_print(r, client.GetPartition(),
 			   DatabaseSelection(uri, true),
 			   false, false);
 	return CommandResult::OK;
@@ -248,7 +249,7 @@ handle_list(Client &client, Request args, Response &r)
 		return CommandResult::ERROR;
 	}
 
-	PrintUniqueTags(r, client.partition,
+	PrintUniqueTags(r, client.GetPartition(),
 			tagType, group_mask, filter.get());
 	return CommandResult::OK;
 }
@@ -259,7 +260,7 @@ handle_listallinfo(Client &client, Request args, Response &r)
 	/* default is root directory */
 	const auto uri = args.GetOptional(0, "");
 
-	db_selection_print(r, client.partition,
+	db_selection_print(r, client.GetPartition(),
 			   DatabaseSelection(uri, true),
 			   true, false);
 	return CommandResult::OK;

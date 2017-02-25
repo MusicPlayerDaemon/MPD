@@ -32,7 +32,7 @@ handle_enableoutput(Client &client, Request args, Response &r)
 	assert(args.size == 1);
 	unsigned device = args.ParseUnsigned(0);
 
-	if (!audio_output_enable_index(client.partition.outputs, device)) {
+	if (!audio_output_enable_index(client.GetPartition().outputs, device)) {
 		r.Error(ACK_ERROR_NO_EXIST, "No such audio output");
 		return CommandResult::ERROR;
 	}
@@ -46,7 +46,7 @@ handle_disableoutput(Client &client, Request args, Response &r)
 	assert(args.size == 1);
 	unsigned device = args.ParseUnsigned(0);
 
-	if (!audio_output_disable_index(client.partition.outputs, device)) {
+	if (!audio_output_disable_index(client.GetPartition().outputs, device)) {
 		r.Error(ACK_ERROR_NO_EXIST, "No such audio output");
 		return CommandResult::ERROR;
 	}
@@ -60,7 +60,7 @@ handle_toggleoutput(Client &client, Request args, Response &r)
 	assert(args.size == 1);
 	unsigned device = args.ParseUnsigned(0);
 
-	if (!audio_output_toggle_index(client.partition.outputs, device)) {
+	if (!audio_output_toggle_index(client.GetPartition().outputs, device)) {
 		r.Error(ACK_ERROR_NO_EXIST, "No such audio output");
 		return CommandResult::ERROR;
 	}
@@ -73,6 +73,6 @@ handle_devices(Client &client, gcc_unused Request args, Response &r)
 {
 	assert(args.IsEmpty());
 
-	printAudioDevices(r, client.partition.outputs);
+	printAudioDevices(r, client.GetPartition().outputs);
 	return CommandResult::OK;
 }
