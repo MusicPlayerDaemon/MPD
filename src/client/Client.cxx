@@ -28,19 +28,19 @@ const Domain client_domain("client");
 Instance &
 Client::GetInstance()
 {
-	return partition.instance;
+	return partition->instance;
 }
 
 playlist &
 Client::GetPlaylist()
 {
-	return partition.playlist;
+	return partition->playlist;
 }
 
 PlayerControl &
 Client::GetPlayerControl()
 {
-	return partition.pc;
+	return partition->pc;
 }
 
 #ifdef ENABLE_DATABASE
@@ -48,19 +48,19 @@ Client::GetPlayerControl()
 const Database *
 Client::GetDatabase() const
 {
-	return partition.instance.GetDatabase();
+	return partition->instance.GetDatabase();
 }
 
 const Database &
 Client::GetDatabaseOrThrow() const
 {
-	return partition.instance.GetDatabaseOrThrow();
+	return partition->instance.GetDatabaseOrThrow();
 }
 
 const Storage *
 Client::GetStorage() const
 {
-	return partition.instance.storage;
+	return partition->instance.storage;
 }
 
 #endif

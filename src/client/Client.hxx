@@ -50,7 +50,7 @@ class Storage;
 class Client final
 	: FullyBufferedSocket, TimeoutMonitor,
 	  public boost::intrusive::list_base_hook<boost::intrusive::link_mode<boost::intrusive::normal_link>> {
-	Partition &partition;
+	Partition *partition;
 
 public:
 	unsigned permission;
@@ -189,7 +189,7 @@ public:
 	void AllowFile(Path path_fs) const;
 
 	Partition &GetPartition() {
-		return partition;
+		return *partition;
 	}
 
 	gcc_pure

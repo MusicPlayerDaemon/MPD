@@ -41,7 +41,7 @@ Client::Subscribe(const char *channel)
 
 	++num_subscriptions;
 
-	partition.EmitIdle(IDLE_SUBSCRIPTION);
+	partition->EmitIdle(IDLE_SUBSCRIPTION);
 
 	return Client::SubscribeResult::OK;
 }
@@ -58,7 +58,7 @@ Client::Unsubscribe(const char *channel)
 	subscriptions.erase(i);
 	--num_subscriptions;
 
-	partition.EmitIdle(IDLE_SUBSCRIPTION);
+	partition->EmitIdle(IDLE_SUBSCRIPTION);
 
 	assert((num_subscriptions == 0) ==
 	       subscriptions.empty());
