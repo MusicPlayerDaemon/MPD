@@ -192,6 +192,12 @@ public:
 		return *partition;
 	}
 
+	void SetPartition(Partition &new_partition) {
+		partition = &new_partition;
+
+		// TODO: set various idle flags?
+	}
+
 	gcc_pure
 	Instance &GetInstance();
 
