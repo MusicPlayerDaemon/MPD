@@ -109,7 +109,7 @@ handle_listfiles_storage(Response &r, Storage &storage, const char *uri)
 CommandResult
 handle_listfiles_storage(Client &client, Response &r, const char *uri)
 {
-	auto &event_loop = client.partition.instance.io_thread.GetEventLoop();
+	auto &event_loop = client.GetInstance().io_thread.GetEventLoop();
 	std::unique_ptr<Storage> storage(CreateStorageURI(event_loop, uri));
 	if (storage == nullptr) {
 		r.Error(ACK_ERROR_ARG, "Unrecognized storage URI");
@@ -148,7 +148,7 @@ print_storage_uri(Client &client, Response &r, const Storage &storage)
 CommandResult
 handle_listmounts(Client &client, gcc_unused Request args, Response &r)
 {
-	Storage *_composite = client.partition.instance.storage;
+	Storage *_composite = client.GetInstance().storage;
 	if (_composite == nullptr) {
 		r.Error(ACK_ERROR_NO_EXIST, "No database");
 		return CommandResult::ERROR;
@@ -170,7 +170,9 @@ handle_listmounts(Client &client, gcc_unused Request args, Response &r)
 CommandResult
 handle_mount(Client &client, Request args, Response &r)
 {
-	Storage *_composite = client.partition.instance.storage;
+	auto &instance = client.GetInstance();
+
+	Storage *_composite = instance.storage;
 	if (_composite == nullptr) {
 		r.Error(ACK_ERROR_NO_EXIST, "No database");
 		return CommandResult::ERROR;
@@ -196,7 +198,7 @@ handle_mount(Client &client, Request args, Response &r)
 		return CommandResult::ERROR;
 	}
 
-	auto &event_loop = client.partition.instance.io_thread.GetEventLoop();
+	auto &event_loop = instance.io_thread.GetEventLoop();
 	Storage *storage = CreateStorageURI(event_loop, remote_uri);
 	if (storage == nullptr) {
 		r.Error(ACK_ERROR_ARG, "Unrecognized storage URI");
@@ -207,7 +209,7 @@ handle_mount(Client &client, Request args, Response &r)
 	client.partition.EmitIdle(IDLE_MOUNT);
 
 #ifdef ENABLE_DATABASE
-	Database *_db = client.partition.instance.database;
+	Database *_db = instance.database;
 	if (_db != nullptr && _db->IsPlugin(simple_db_plugin)) {
 		SimpleDatabase &db = *(SimpleDatabase *)_db;
 
@@ -230,7 +232,9 @@ handle_mount(Client &client, Request args, Response &r)
 CommandResult
 handle_unmount(Client &client, Request args, Response &r)
 {
-	Storage *_composite = client.partition.instance.storage;
+	auto &instance = client.GetInstance();
+
+	Storage *_composite = instance.storage;
 	if (_composite == nullptr) {
 		r.Error(ACK_ERROR_NO_EXIST, "No database");
 		return CommandResult::ERROR;
@@ -246,13 +250,13 @@ handle_unmount(Client &client, Request args, Response &r)
 	}
 
 #ifdef ENABLE_DATABASE
-	if (client.partition.instance.update != nullptr)
+	if (instance.update != nullptr)
 		/* ensure that no database update will attempt to work
 		   with the database/storage instances we're about to
 		   destroy here */
-		client.partition.instance.update->CancelMount(local_uri);
+		instance.update->CancelMount(local_uri);
 
-	Database *_db = client.partition.instance.database;
+	Database *_db = instance.database;
 	if (_db != nullptr && _db->IsPlugin(simple_db_plugin)) {
 		SimpleDatabase &db = *(SimpleDatabase *)_db;
 

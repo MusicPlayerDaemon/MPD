@@ -31,7 +31,7 @@
 CommandResult
 handle_listpartitions(Client &client, Request, Response &r)
 {
-	for (const auto &partition : client.partition.instance.partitions) {
+	for (const auto &partition : client.GetInstance().partitions) {
 		r.Format("partition: %s\n", partition.name.c_str());
 	}
 
@@ -76,7 +76,7 @@ handle_newpartition(Client &client, Request request, Response &response)
 		return CommandResult::ERROR;
 	}
 
-	auto &instance = client.partition.instance;
+	auto &instance = client.GetInstance();
 	if (HasPartitionNamed(instance, name)) {
 		response.Error(ACK_ERROR_EXIST, "name already exists");
 		return CommandResult::ERROR;

@@ -182,7 +182,7 @@ handle_status(Client &client, gcc_unused Request args, Response &r)
 	}
 
 #ifdef ENABLE_DATABASE
-	const UpdateService *update_service = client.partition.instance.update;
+	const UpdateService *update_service = client.GetInstance().update;
 	unsigned updateJobId = update_service != nullptr
 		? update_service->GetId()
 		: 0;

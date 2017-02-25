@@ -40,6 +40,7 @@
 class SocketAddress;
 class EventLoop;
 class Path;
+struct Instance;
 struct Partition;
 struct PlayerControl;
 struct playlist;
@@ -186,6 +187,9 @@ public:
 	 * @param path_fs the absolute path name in filesystem encoding
 	 */
 	void AllowFile(Path path_fs) const;
+
+	gcc_pure
+	Instance &GetInstance();
 
 	gcc_pure
 	playlist &GetPlaylist();

@@ -25,6 +25,12 @@
 
 const Domain client_domain("client");
 
+Instance &
+Client::GetInstance()
+{
+	return partition.instance;
+}
+
 playlist &
 Client::GetPlaylist()
 {

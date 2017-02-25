@@ -126,11 +126,11 @@ handle_listfiles(Client &client, Request args, Response &r)
 
 	case LocatedUri::Type::RELATIVE:
 #ifdef ENABLE_DATABASE
-		if (client.partition.instance.storage != nullptr)
+		if (client.GetInstance().storage != nullptr)
 			/* if we have a storage instance, obtain a list of
 			   files from it */
 			return handle_listfiles_storage(r,
-							*client.partition.instance.storage,
+							*client.GetInstance().storage,
 							uri);
 
 		/* fall back to entries from database if we have no storage */
@@ -295,11 +295,11 @@ handle_update(Client &client, Request args, Response &r, bool discard)
 		}
 	}
 
-	UpdateService *update = client.partition.instance.update;
+	UpdateService *update = client.GetInstance().update;
 	if (update != nullptr)
 		return handle_update(r, *update, path, discard);
 
-	Database *db = client.partition.instance.database;
+	Database *db = client.GetInstance().database;
 	if (db != nullptr)
 		return handle_update(r, *db, path, discard);
 #else
