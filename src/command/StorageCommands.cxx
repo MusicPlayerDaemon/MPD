@@ -206,7 +206,7 @@ handle_mount(Client &client, Request args, Response &r)
 	}
 
 	composite.Mount(local_uri, storage);
-	client.partition.EmitIdle(IDLE_MOUNT);
+	instance.EmitIdle(IDLE_MOUNT);
 
 #ifdef ENABLE_DATABASE
 	Database *_db = instance.database;
@@ -222,7 +222,7 @@ handle_mount(Client &client, Request args, Response &r)
 
 		// TODO: call Instance::OnDatabaseModified()?
 		// TODO: trigger database update?
-		client.partition.EmitIdle(IDLE_DATABASE);
+		instance.EmitIdle(IDLE_DATABASE);
 	}
 #endif
 
@@ -262,7 +262,7 @@ handle_unmount(Client &client, Request args, Response &r)
 
 		if (db.Unmount(local_uri))
 			// TODO: call Instance::OnDatabaseModified()?
-			client.partition.EmitIdle(IDLE_DATABASE);
+			instance.EmitIdle(IDLE_DATABASE);
 	}
 #endif
 
@@ -271,7 +271,7 @@ handle_unmount(Client &client, Request args, Response &r)
 		return CommandResult::ERROR;
 	}
 
-	client.partition.EmitIdle(IDLE_MOUNT);
+	instance.EmitIdle(IDLE_MOUNT);
 
 	return CommandResult::OK;
 }
