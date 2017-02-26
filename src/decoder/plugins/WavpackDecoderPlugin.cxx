@@ -34,6 +34,8 @@
 #include <stdexcept>
 #include <memory>
 
+#include <cstdlib>
+
 #include <assert.h>
 
 #define ERRORLEN 80
