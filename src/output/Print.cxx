@@ -32,7 +32,7 @@ void
 printAudioDevices(Response &r, const MultipleOutputs &outputs)
 {
 	for (unsigned i = 0, n = outputs.Size(); i != n; ++i) {
-		const AudioOutput &ao = outputs.Get(i);
+		const auto &ao = outputs.Get(i);
 
 		r.Format("outputid: %i\n"
 			 "outputname: %s\n"

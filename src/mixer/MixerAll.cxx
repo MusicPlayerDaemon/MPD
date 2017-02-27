@@ -31,12 +31,12 @@
 #include <assert.h>
 
 static int
-output_mixer_get_volume(const AudioOutput &ao)
+output_mixer_get_volume(const AudioOutputControl &ao)
 {
-	if (!ao.enabled)
+	if (!ao.IsEnabled())
 		return -1;
 
-	Mixer *mixer = ao.mixer;
+	auto *mixer = ao.GetMixer();
 	if (mixer == nullptr)
 		return -1;
 
@@ -56,7 +56,7 @@ MultipleOutputs::GetVolume() const
 	unsigned ok = 0;
 	int total = 0;
 
-	for (auto ao : outputs) {
+	for (auto *ao : outputs) {
 		int volume = output_mixer_get_volume(*ao);
 		if (volume >= 0) {
 			total += volume;
@@ -71,14 +71,14 @@ MultipleOutputs::GetVolume() const
 }
 
 static bool
-output_mixer_set_volume(AudioOutput &ao, unsigned volume)
+output_mixer_set_volume(AudioOutputControl &ao, unsigned volume)
 {
 	assert(volume <= 100);
 
-	if (!ao.enabled)
+	if (!ao.IsEnabled())
 		return false;
 
-	Mixer *mixer = ao.mixer;
+	auto *mixer = ao.GetMixer();
 	if (mixer == nullptr)
 		return false;
 
@@ -99,7 +99,7 @@ MultipleOutputs::SetVolume(unsigned volume)
 	assert(volume <= 100);
 
 	bool success = false;
-	for (auto ao : outputs)
+	for (auto *ao : outputs)
 		success = output_mixer_set_volume(*ao, volume)
 			|| success;
 
@@ -107,12 +107,12 @@ MultipleOutputs::SetVolume(unsigned volume)
 }
 
 static int
-output_mixer_get_software_volume(const AudioOutput &ao)
+output_mixer_get_software_volume(const AudioOutputControl &ao)
 {
-	if (!ao.enabled)
+	if (!ao.IsEnabled())
 		return -1;
 
-	Mixer *mixer = ao.mixer;
+	auto *mixer = ao.GetMixer();
 	if (mixer == nullptr || !mixer->IsPlugin(software_mixer_plugin))
 		return -1;
 
@@ -125,7 +125,7 @@ MultipleOutputs::GetSoftwareVolume() const
 	unsigned ok = 0;
 	int total = 0;
 
-	for (auto ao : outputs) {
+	for (auto *ao : outputs) {
 		int volume = output_mixer_get_software_volume(*ao);
 		if (volume >= 0) {
 			total += volume;
@@ -144,8 +144,8 @@ MultipleOutputs::SetSoftwareVolume(unsigned volume)
 {
 	assert(volume <= PCM_VOLUME_1);
 
-	for (auto ao : outputs) {
-		const auto mixer = ao->mixer;
+	for (auto *ao : outputs) {
+		auto *mixer = ao->GetMixer();
 
 		if (mixer != nullptr &&
 		    (&mixer->plugin == &software_mixer_plugin ||

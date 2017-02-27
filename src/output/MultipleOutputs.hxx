@@ -26,6 +26,7 @@
 #ifndef OUTPUT_ALL_H
 #define OUTPUT_ALL_H
 
+#include "Control.hxx"
 #include "AudioFormat.hxx"
 #include "ReplayGainMode.hxx"
 #include "Chrono.hxx"
@@ -47,7 +48,7 @@ struct ReplayGainConfig;
 class MultipleOutputs {
 	MixerListener &mixer_listener;
 
-	std::vector<AudioOutput *> outputs;
+	std::vector<AudioOutputControl *> outputs;
 
 	AudioFormat input_audio_format = AudioFormat::Undefined();
 
@@ -96,13 +97,13 @@ public:
 	/**
 	 * Returns the "i"th audio output device.
 	 */
-	const AudioOutput &Get(unsigned i) const {
+	const AudioOutputControl &Get(unsigned i) const {
 		assert(i < Size());
 
 		return *outputs[i];
 	}
 
-	AudioOutput &Get(unsigned i) {
+	AudioOutputControl &Get(unsigned i) {
 		assert(i < Size());
 
 		return *outputs[i];
@@ -113,7 +114,7 @@ public:
 	 * Returns nullptr if the name does not exist.
 	 */
 	gcc_pure
-	AudioOutput *FindByName(const char *name) const;
+	AudioOutputControl *FindByName(const char *name);
 
 	/**
 	 * Checks the "enabled" flag of all audio outputs, and if one has

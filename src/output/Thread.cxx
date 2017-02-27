@@ -18,6 +18,7 @@
  */
 
 #include "config.h"
+#include "Control.hxx"
 #include "Internal.hxx"
 #include "Client.hxx"
 #include "OutputAPI.hxx"
