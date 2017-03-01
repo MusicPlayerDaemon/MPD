@@ -87,9 +87,14 @@ class AndroidNdkToolchain:
         self.is_armv7 = self.is_arm and 'armv7' in self.cflags
         self.is_windows = False
 
-        libstdcxx_path = os.path.join(ndk_path, 'sources/cxx-stl/gnu-libstdc++', gcc_version)
-        libstdcxx_cppflags = '-isystem ' + os.path.join(libstdcxx_path, 'include') + ' -isystem ' + os.path.join(libstdcxx_path, 'libs', android_abi, 'include')
-        libstdcxx_ldadd = os.path.join(libstdcxx_path, 'libs', android_abi, 'libgnustl_static.a')
+        libcxx_path = os.path.join(ndk_path, 'sources/cxx-stl/llvm-libc++')
+        libcxx_libs_path = os.path.join(libcxx_path, 'libs', android_abi)
+
+        libstdcxx_cppflags = '-nostdinc++ -isystem ' + os.path.join(libcxx_path, 'include') + ' -isystem ' + os.path.join(ndk_path, 'sources/android/support/include')
+        libstdcxx_ldadd = os.path.join(libcxx_libs_path, 'libc++_static.a') + ' ' + os.path.join(libcxx_libs_path, 'libc++abi.a')
+
+        if self.is_armv7:
+            libstdcxx_ldadd += ' ' + os.path.join(libcxx_libs_path, 'libunwind.a')
 
         if use_cxx:
             self.libs += ' ' + libstdcxx_ldadd
