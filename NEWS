@@ -1,4 +1,6 @@
 ver 0.20.6 (not yet released)
+* decoder
+  - mpcdec: fix crash (division by zero) after seeking
 
 ver 0.20.5 (2017/02/20)
 * tags

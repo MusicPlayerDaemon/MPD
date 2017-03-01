@@ -207,6 +207,15 @@ mpcdec_decode(DecoderClient &client, InputStream &is)
 		if (frame.bits == -1)
 			break;
 
+		if (frame.samples <= 0) {
+			/* empty frame - this has been observed to
+			   happen spuriously after seeking; skip this
+			   obscure frame, and hope libmpcdec
+			   recovers */
+			cmd = client.GetCommand();
+			continue;
+		}
+
 		mpc_uint32_t ret = frame.samples;
 		ret *= info.channels;
 
