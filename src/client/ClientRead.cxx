@@ -52,7 +52,7 @@ Client::OnSocketInput(void *data, size_t length)
 		break;
 
 	case CommandResult::KILL:
-		partition.instance.Shutdown();
+		partition->instance.Shutdown();
 		Close();
 		return InputResult::CLOSED;
 

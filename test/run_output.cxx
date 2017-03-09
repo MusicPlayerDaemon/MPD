@@ -26,8 +26,7 @@
 #include "config/ConfigOption.hxx"
 #include "Idle.hxx"
 #include "Main.hxx"
-#include "event/Loop.hxx"
-#include "ScopeIOThread.hxx"
+#include "event/Thread.hxx"
 #include "fs/Path.hxx"
 #include "AudioParser.hxx"
 #include "ReplayGainConfig.hxx"
@@ -43,6 +42,8 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
+
+void AudioOutput::Task() {}
 
 class DummyAudioOutputClient final : public AudioOutputClient {
 public:
@@ -136,14 +137,14 @@ try {
 	config_global_init();
 	ReadConfigFile(config_path);
 
-	EventLoop event_loop;
-
-	const ScopeIOThread io_thread;
+	EventThread io_thread;
+	io_thread.Start();
 
 	/* initialize the audio output */
 
 	DummyAudioOutputClient client;
-	AudioOutput *ao = load_audio_output(event_loop, client, argv[2]);
+	AudioOutput *ao = load_audio_output(io_thread.GetEventLoop(), client,
+					    argv[2]);
 
 	/* parse the audio format */
 

@@ -26,7 +26,7 @@
 #include "config/Block.hxx"
 #include "fs/io/StdioOutputStream.hxx"
 #include "tag/Tag.hxx"
-#include "tag/TagBuilder.hxx"
+#include "tag/Builder.hxx"
 #include "Log.hxx"
 
 #include <memory>

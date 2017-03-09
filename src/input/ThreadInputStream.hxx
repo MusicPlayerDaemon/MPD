@@ -73,6 +73,7 @@ public:
 			  size_t _buffer_size)
 		:InputStream(_uri, _mutex, _cond),
 		 plugin(_plugin),
+		 thread(BIND_THIS_METHOD(ThreadFunc)),
 		 buffer_size(_buffer_size) {}
 
 	virtual ~ThreadInputStream();
@@ -138,7 +139,6 @@ protected:
 
 private:
 	void ThreadFunc();
-	static void ThreadFunc(void *ctx);
 };
 
 #endif

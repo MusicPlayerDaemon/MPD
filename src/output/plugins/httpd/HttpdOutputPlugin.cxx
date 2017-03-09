@@ -90,9 +90,6 @@ HttpdOutput::HttpdOutput(EventLoop &_loop, const ConfigBlock &block)
 
 HttpdOutput::~HttpdOutput()
 {
-	if (metadata != nullptr)
-		metadata->Unref();
-
 	delete prepared_encoder;
 }
 
@@ -147,13 +144,11 @@ HttpdOutput::RunDeferred()
 	const std::lock_guard<Mutex> protect(mutex);
 
 	while (!pages.empty()) {
-		Page *page = pages.front();
+		PagePtr page = std::move(pages.front());
 		pages.pop();
 
 		for (auto &client : clients)
 			client.PushPage(page);
-
-		page->Unref();
 	}
 
 	/* wake up the client that may be waiting for the queue to be
@@ -204,7 +199,7 @@ HttpdOutput::OnAccept(int fd, SocketAddress address, gcc_unused int uid)
 	}
 }
 
-Page *
+PagePtr
 HttpdOutput::ReadPage()
 {
 	if (unflushed_input >= 65536) {
@@ -235,7 +230,7 @@ HttpdOutput::ReadPage()
 	if (size == 0)
 		return nullptr;
 
-	return Page::Copy(buffer, size);
+	return std::make_shared<Page>(buffer, size);
 }
 
 inline void
@@ -271,19 +266,19 @@ HttpdOutput::Open(AudioFormat &audio_format)
 inline void
 HttpdOutput::Close()
 {
-	const std::lock_guard<Mutex> protect(mutex);
-
 	assert(open);
-	open = false;
 
 	delete timer;
 
 	BlockingCall(GetEventLoop(), [this](){
+			DeferredMonitor::Cancel();
+
+			const std::lock_guard<Mutex> protect(mutex);
+			open = false;
 			clients.clear_and_dispose(DeleteDisposer());
 		});
 
-	if (header != nullptr)
-		header->Unref();
+	header.reset();
 
 	delete encoder;
 }
@@ -326,14 +321,14 @@ HttpdOutput::Delay() const
 }
 
 void
-HttpdOutput::BroadcastPage(Page *page)
+HttpdOutput::BroadcastPage(PagePtr page)
 {
 	assert(page != nullptr);
 
-	mutex.lock();
-	pages.push(page);
-	page->Ref();
-	mutex.unlock();
+	{
+		const std::lock_guard<Mutex> lock(mutex);
+		pages.emplace(std::move(page));
+	}
 
 	DeferredMonitor::Schedule();
 }
@@ -342,17 +337,23 @@ void
 HttpdOutput::BroadcastFromEncoder()
 {
 	/* synchronize with the IOThread */
-	mutex.lock();
-	while (!pages.empty())
-		cond.wait(mutex);
+	{
+		const std::lock_guard<Mutex> lock(mutex);
+		while (!pages.empty())
+			cond.wait(mutex);
+	}
 
-	Page *page;
-	while ((page = ReadPage()) != nullptr)
-		pages.push(page);
+	bool empty = true;
 
-	mutex.unlock();
+	PagePtr page;
+	while ((page = ReadPage()) != nullptr) {
+		const std::lock_guard<Mutex> lock(mutex);
+		pages.emplace(std::move(page));
+		empty = false;
+	}
 
-	DeferredMonitor::Schedule();
+	if (!empty)
+		DeferredMonitor::Schedule();
 }
 
 inline void
@@ -418,18 +419,13 @@ HttpdOutput::SendTag(const Tag &tag)
 		   used as the new "header" page, which is sent to all
 		   new clients */
 
-		Page *page = ReadPage();
+		auto page = ReadPage();
 		if (page != nullptr) {
-			if (header != nullptr)
-				header->Unref();
-			header = page;
+			header = std::move(page);
 			BroadcastPage(page);
 		}
 	} else {
 		/* use Icy-Metadata */
-
-		if (metadata != nullptr)
-			metadata->Unref();
 
 		static constexpr TagType types[] = {
 			TAG_ALBUM, TAG_ARTIST, TAG_TITLE,
@@ -451,9 +447,8 @@ HttpdOutput::CancelAllClients()
 	const std::lock_guard<Mutex> protect(mutex);
 
 	while (!pages.empty()) {
-		Page *page = pages.front();
+		PagePtr page = std::move(pages.front());
 		pages.pop();
-		page->Unref();
 	}
 
 	for (auto &client : clients)

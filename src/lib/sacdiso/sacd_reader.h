@@ -1,6 +1,6 @@
 /*
 * MPD SACD Decoder plugin
-* Copyright (c) 2016 Maxim V.Anisiutkin <maxim.anisiutkin@gmail.com>
+* Copyright (c) 2017 Maxim V.Anisiutkin <maxim.anisiutkin@gmail.com>
 *
 * This program is free software; you can redistribute it and/or
 * modify it under the terms of the GNU Lesser General Public
@@ -20,7 +20,7 @@
 #ifndef _SACD_READER_H_INCLUDED
 #define _SACD_READER_H_INCLUDED
 
-#include "tag/TagHandler.hxx"
+#include "tag/Handler.hxx"
 #include "sacd_media.h"
 
 enum area_id_e {AREA_BOTH = 0, AREA_TWOCH = 1, AREA_MULCH = 2};

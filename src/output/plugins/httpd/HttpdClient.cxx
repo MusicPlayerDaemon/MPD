@@ -33,16 +33,6 @@
 
 HttpdClient::~HttpdClient()
 {
-	if (state == RESPONSE) {
-		if (current_page != nullptr)
-			current_page->Unref();
-
-		ClearQueue();
-	}
-
-	if (metadata)
-		metadata->Unref();
-
 	if (IsDefined())
 		BufferedSocket::Close();
 }
@@ -217,15 +207,13 @@ HttpdClient::ClearQueue()
 	assert(state == RESPONSE);
 
 	while (!pages.empty()) {
-		Page *page = pages.front();
-		pages.pop();
-
 #ifndef NDEBUG
-		assert(queue_size >= page->size);
-		queue_size -= page->size;
+		auto &page = pages.front();
+		assert(queue_size >= page->GetSize());
+		queue_size -= page->GetSize();
 #endif
 
-		page->Unref();
+		pages.pop();
 	}
 
 	assert(queue_size == 0);
@@ -246,16 +234,17 @@ HttpdClient::CancelQueue()
 ssize_t
 HttpdClient::TryWritePage(const Page &page, size_t position)
 {
-	assert(position < page.size);
+	assert(position < page.GetSize());
 
-	return Write(page.data + position, page.size - position);
+	return Write(page.GetData() + position,
+		     page.GetSize() - position);
 }
 
 ssize_t
 HttpdClient::TryWritePageN(const Page &page, size_t position, ssize_t n)
 {
 	return n >= 0
-		? Write(page.data + position, n)
+		? Write(page.GetData() + position, n)
 		: TryWritePage(page, position);
 }
 
@@ -263,7 +252,7 @@ ssize_t
 HttpdClient::GetBytesTillMetaData() const
 {
 	if (metadata_requested &&
-	    current_page->size - current_position > metaint - metadata_fill)
+	    current_page->GetSize() - current_position > metaint - metadata_fill)
 		return metaint - metadata_fill;
 
 	return -1;
@@ -289,8 +278,8 @@ HttpdClient::TryWrite()
 		pages.pop();
 		current_position = 0;
 
-		assert(queue_size >= current_page->size);
-		queue_size -= current_page->size;
+		assert(queue_size >= current_page->GetSize());
+		queue_size -= current_page->GetSize();
 	}
 
 	const ssize_t bytes_to_write = GetBytesTillMetaData();
@@ -316,7 +305,7 @@ HttpdClient::TryWrite()
 
 			metadata_current_position += nbytes;
 
-			if (metadata->size - metadata_current_position == 0) {
+			if (metadata->GetSize() - metadata_current_position == 0) {
 				metadata_fill = 0;
 				metadata_current_position = 0;
 				metadata_sent = true;
@@ -365,14 +354,13 @@ HttpdClient::TryWrite()
 		}
 
 		current_position += nbytes;
-		assert(current_position <= current_page->size);
+		assert(current_position <= current_page->GetSize());
 
 		if (metadata_requested)
 			metadata_fill += nbytes;
 
-		if (current_position >= current_page->size) {
-			current_page->Unref();
-			current_page = nullptr;
+		if (current_position >= current_page->GetSize()) {
+			current_page.reset();
 
 			if (pages.empty())
 				/* all pages are sent: remove the
@@ -385,7 +373,7 @@ HttpdClient::TryWrite()
 }
 
 void
-HttpdClient::PushPage(Page *page)
+HttpdClient::PushPage(PagePtr page)
 {
 	if (state != RESPONSE)
 		/* the client is still writing the HTTP request */
@@ -397,25 +385,18 @@ HttpdClient::PushPage(Page *page)
 		ClearQueue();
 	}
 
-	page->Ref();
-	pages.push(page);
-	queue_size += page->size;
+	queue_size += page->GetSize();
+	pages.emplace(std::move(page));
 
 	ScheduleWrite();
 }
 
 void
-HttpdClient::PushMetaData(Page *page)
+HttpdClient::PushMetaData(PagePtr page)
 {
 	assert(page != nullptr);
 
-	if (metadata) {
-		metadata->Unref();
-		metadata = nullptr;
-	}
-
-	page->Ref();
-	metadata = page;
+	metadata = std::move(page);
 	metadata_sent = false;
 }
 

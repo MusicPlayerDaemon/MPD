@@ -22,8 +22,8 @@
 #include "lib/upnp/Util.hxx"
 #include "lib/expat/ExpatParser.hxx"
 #include "Tags.hxx"
-#include "tag/TagBuilder.hxx"
-#include "tag/TagTable.hxx"
+#include "tag/Builder.hxx"
+#include "tag/Table.hxx"
 #include "util/NumberParser.hxx"
 #include "util/StringView.hxx"
 

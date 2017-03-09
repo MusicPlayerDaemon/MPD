@@ -29,7 +29,7 @@
 #include "config/ConfigGlobal.hxx"
 #include "config/Param.hxx"
 #include "config/Block.hxx"
-#include "tag/TagConfig.hxx"
+#include "tag/Config.hxx"
 #include "fs/Path.hxx"
 #include "event/Loop.hxx"
 #include "Log.hxx"

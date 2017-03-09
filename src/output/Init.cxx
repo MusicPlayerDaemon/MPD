@@ -51,7 +51,8 @@
 
 AudioOutput::AudioOutput(const AudioOutputPlugin &_plugin,
 			 const ConfigBlock &block)
-	:plugin(_plugin)
+	:plugin(_plugin),
+	 thread(BIND_THIS_METHOD(Task))
 {
 	assert(plugin.finish != nullptr);
 	assert(plugin.open != nullptr);

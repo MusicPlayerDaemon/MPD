@@ -35,7 +35,7 @@
 #include "util/bit_reverse.h"
 #include "system/ByteOrder.hxx"
 #include "DsdLib.hxx"
-#include "tag/TagHandler.hxx"
+#include "tag/Handler.hxx"
 #include "Log.hxx"
 
 #include <string.h>

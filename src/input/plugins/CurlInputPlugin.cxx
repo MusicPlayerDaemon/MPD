@@ -29,7 +29,7 @@
 #include "../InputPlugin.hxx"
 #include "config/ConfigGlobal.hxx"
 #include "config/Block.hxx"
-#include "tag/TagBuilder.hxx"
+#include "tag/Builder.hxx"
 #include "event/Call.hxx"
 #include "event/Loop.hxx"
 #include "thread/Cond.hxx"
@@ -400,7 +400,12 @@ CurlInputStream::SeekInternal(offset_type new_offset)
 	/* send the "Range" header */
 
 	if (offset > 0) {
-		sprintf(range, "%lld-", (long long)offset);
+#ifdef WIN32
+		// TODO: what can we use on Windows to format 64 bit?
+		sprintf(range, "%lu-", (long)offset);
+#else
+		sprintf(range, "%llu-", (unsigned long long)offset);
+#endif
 		request->SetOption(CURLOPT_RANGE, range);
 	}
 }

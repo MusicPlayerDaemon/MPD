@@ -22,7 +22,8 @@
 
 #include "check.h"
 
-#include <time.h>
+#include <chrono>
+
 #include <stdint.h>
 
 struct StorageFileInfo {
@@ -40,15 +41,24 @@ struct StorageFileInfo {
 	uint64_t size;
 
 	/**
-	 * The modification time.  0 means unknown / not applicable.
+	 * The modification time.  A negative value means unknown /
+	 * not applicable.
 	 */
-	time_t mtime;
+	std::chrono::system_clock::time_point mtime;
 
 	/**
 	 * Device id and inode number.  0 means unknown / not
 	 * applicable.
 	 */
 	unsigned device, inode;
+
+	StorageFileInfo() = default;
+
+	explicit constexpr StorageFileInfo(Type _type)
+		:type(_type),
+		 size(0),
+		 mtime(std::chrono::system_clock::time_point::min()),
+		 device(0), inode(0) {}
 
 	constexpr bool IsRegular() const {
 		return type == Type::REGULAR;

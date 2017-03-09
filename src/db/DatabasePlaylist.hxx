@@ -28,7 +28,7 @@ class SongFilter;
 
 gcc_nonnull(3,4)
 void
-search_add_to_playlist(const Database &db, const Storage &storage,
+search_add_to_playlist(const Database &db, const Storage *storage,
 		       const char *uri, const char *path_utf8,
 		       const SongFilter *filter);
 

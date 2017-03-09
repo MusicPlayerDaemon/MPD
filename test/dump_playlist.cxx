@@ -25,7 +25,7 @@
 #include "config/ConfigGlobal.hxx"
 #include "decoder/DecoderList.hxx"
 #include "input/Init.hxx"
-#include "ScopeIOThread.hxx"
+#include "event/Thread.hxx"
 #include "playlist/PlaylistRegistry.hxx"
 #include "playlist/PlaylistPlugin.hxx"
 #include "fs/Path.hxx"
@@ -64,9 +64,10 @@ try {
 
 	ReadConfigFile(config_path);
 
-	const ScopeIOThread io_thread;
+	EventThread io_thread;
+	io_thread.Start();
 
-	input_stream_global_init(io_thread_get());
+	input_stream_global_init(io_thread.GetEventLoop());
 	playlist_list_global_init();
 	decoder_plugin_init_all();
 

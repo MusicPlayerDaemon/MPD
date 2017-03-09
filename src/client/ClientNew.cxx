@@ -45,8 +45,7 @@ Client::Client(EventLoop &_loop, Partition &_partition,
 	       int _fd, int _uid, int _num)
 	:FullyBufferedSocket(_fd, _loop, 16384, client_max_output_buffer_size),
 	 TimeoutMonitor(_loop),
-	 partition(_partition),
-	 playlist(partition.playlist), player_control(partition.pc),
+	 partition(&_partition),
 	 permission(getDefaultPermissions()),
 	 uid(_uid),
 	 num(_num),
@@ -108,7 +107,7 @@ client_new(EventLoop &loop, Partition &partition,
 void
 Client::Close()
 {
-	partition.instance.client_list->Remove(*this);
+	partition->instance.client_list->Remove(*this);
 
 	SetExpired();
 

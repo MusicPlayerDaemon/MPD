@@ -96,7 +96,19 @@ class MultiSocketMonitor : IdleMonitor, TimeoutMonitor
 
 	friend class SingleFD;
 
-	bool ready, refresh;
+	/**
+	 * DispatchSockets() should be called.
+	 */
+	bool ready = false;
+
+	/**
+	 * PrepareSockets() should be called.
+	 *
+	 * Note that this doesn't need to be initialized by the
+	 * constructor; this class is activated with the first
+	 * InvalidateSockets() call, which initializes this flag.
+	 */
+	bool refresh;
 
 	std::forward_list<SingleFD> fds;
 
@@ -107,11 +119,26 @@ public:
 	static constexpr unsigned HANGUP = SocketMonitor::HANGUP;
 
 	MultiSocketMonitor(EventLoop &_loop);
-	~MultiSocketMonitor();
 
 	using IdleMonitor::GetEventLoop;
 
-public:
+	/**
+	 * Clear the socket list and disable all #EventLoop
+	 * registrations.  Run this in the #EventLoop thread before
+	 * destroying this object.
+	 *
+	 * Later, this object can be reused and reactivated by calling
+	 * InvalidateSockets().
+	 *
+	 * Note that this class doesn't have a destructor which calls
+	 * this method, because this would be racy and thus pointless:
+	 * at the time ~MultiSocketMonitor() is called, our virtual
+	 * methods have been morphed to be pure again, and in the
+	 * meantime the #EventLoop thread could invoke those pure
+	 * methods.
+	 */
+	void Reset();
+
 	/**
 	 * Invalidate the socket list.  A call to PrepareSockets() is
 	 * scheduled which will then update the list.
@@ -121,12 +148,19 @@ public:
 		IdleMonitor::Schedule();
 	}
 
+	/**
+	 * Add one socket to the list of monitored sockets.
+	 *
+	 * May only be called from PrepareSockets().
+	 */
 	void AddSocket(int fd, unsigned events) {
 		fds.emplace_front(*this, fd, events);
 	}
 
 	/**
 	 * Remove all sockets.
+	 *
+	 * May only be called from PrepareSockets().
 	 */
 	void ClearSocketList();
 
@@ -135,6 +169,8 @@ public:
 	 * each one; its return value is the events bit mask.  A
 	 * return value of 0 means the socket will be removed from the
 	 * list.
+	 *
+	 * May only be called from PrepareSockets().
 	 */
 	template<typename E>
 	void UpdateSocketList(E &&e) {
@@ -157,15 +193,26 @@ public:
 	/**
 	 * Replace the socket list with the given file descriptors.
 	 * The given pollfd array will be modified by this method.
+	 *
+	 * May only be called from PrepareSockets().
 	 */
 	void ReplaceSocketList(pollfd *pfds, unsigned n);
 #endif
 
 protected:
 	/**
+	 * Override this method and update the socket registrations.
+	 * To do that, call AddSocket(), ClearSocketList(),
+	 * UpdateSocketList() and ReplaceSocketList().
+	 *
 	 * @return timeout or a negative value for no timeout
 	 */
 	virtual std::chrono::steady_clock::duration PrepareSockets() = 0;
+
+	/**
+	 * At least one socket is ready or the timeout has expired.
+	 * This method should be used to perform I/O.
+	 */
 	virtual void DispatchSockets() = 0;
 
 private:

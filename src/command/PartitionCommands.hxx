@@ -17,31 +17,22 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_TAG_ITEM_HXX
-#define MPD_TAG_ITEM_HXX
+#ifndef MPD_PARTITION_COMMANDS_HXX
+#define MPD_PARTITION_COMMANDS_HXX
 
-#include "TagType.h"
+#include "CommandResult.hxx"
 
-/**
- * One tag value.  It is a mapping of #TagType to am arbitrary string
- * value.  Each tag can have multiple items of one tag type (although
- * few clients support that).
- */
-struct TagItem {
-	/** the type of this item */
-	TagType type;
+class Client;
+class Request;
+class Response;
 
-	/**
-	 * the value of this tag; this is a variable length string
-	 */
-	char value[1];
+CommandResult
+handle_partition(Client &client, Request request, Response &response);
 
-	TagItem() = default;
-	TagItem(const TagItem &other) = delete;
-	TagItem &operator=(const TagItem &other) = delete;
-};
+CommandResult
+handle_listpartitions(Client &client, Request request, Response &response);
 
-static_assert(sizeof(TagItem) == 2, "Unexpected size");
-static_assert(alignof(TagItem) == 1, "Unexpected alignment");
+CommandResult
+handle_newpartition(Client &client, Request request, Response &response);
 
 #endif

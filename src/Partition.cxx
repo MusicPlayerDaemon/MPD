@@ -25,12 +25,14 @@
 #include "IdleFlags.hxx"
 
 Partition::Partition(Instance &_instance,
+		     const char *_name,
 		     unsigned max_length,
 		     unsigned buffer_chunks,
 		     unsigned buffered_before_play,
 		     AudioFormat configured_audio_format,
 		     const ReplayGainConfig &replay_gain_config)
 	:instance(_instance),
+	 name(_name),
 	 global_events(instance.event_loop, BIND_THIS_METHOD(OnGlobalEvent)),
 	 playlist(max_length, *this),
 	 outputs(*this),

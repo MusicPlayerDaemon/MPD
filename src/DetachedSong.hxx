@@ -76,11 +76,7 @@ class DetachedSong {
 	 */
 	SongTime end_time = SongTime::zero();
 
-	explicit DetachedSong(const LightSong &other);
-
 public:
-	explicit DetachedSong(const DetachedSong &) = default;
-
 	explicit DetachedSong(const char *_uri)
 		:uri(_uri) {}
 
@@ -95,9 +91,24 @@ public:
 		:uri(std::forward<U>(_uri)),
 		 tag(std::move(_tag)) {}
 
-	DetachedSong(DetachedSong &&) = default;
+	/**
+	 * Copy data from a #LightSong instance.  Usually, you should
+	 * call DatabaseDetachSong() instead, which initializes
+	 * #real_uri properly using Storage::MapUTF8().
+	 */
+	explicit DetachedSong(const LightSong &other);
 
-	~DetachedSong();
+	gcc_noinline
+	~DetachedSong() = default;
+
+	/* these are declared because the user-defined destructor
+	   above prevents them from being generated implicitly */
+	explicit DetachedSong(const DetachedSong &) = default;
+	DetachedSong(DetachedSong &&) = default;
+	DetachedSong &operator=(DetachedSong &&) = default;
+
+	gcc_pure
+	explicit operator LightSong() const;
 
 	gcc_pure
 	const char *GetURI() const {

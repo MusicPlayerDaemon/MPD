@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#include "TagRva2.hxx"
+#include "Rva2.hxx"
 #include "ReplayGainInfo.hxx"
 
 #include <id3tag.h>

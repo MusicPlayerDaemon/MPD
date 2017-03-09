@@ -19,42 +19,10 @@
 
 #include "config.h"
 #include "Tag.hxx"
-#include "TagPool.hxx"
-#include "TagBuilder.hxx"
-#include "util/ASCII.hxx"
+#include "Pool.hxx"
+#include "Builder.hxx"
 
 #include <assert.h>
-#include <string.h>
-
-TagType
-tag_name_parse(const char *name)
-{
-	assert(name != nullptr);
-
-	for (unsigned i = 0; i < TAG_NUM_OF_ITEM_TYPES; ++i) {
-		assert(tag_item_names[i] != nullptr);
-
-		if (strcmp(name, tag_item_names[i]) == 0)
-			return (TagType)i;
-	}
-
-	return TAG_NUM_OF_ITEM_TYPES;
-}
-
-TagType
-tag_name_parse_i(const char *name)
-{
-	assert(name != nullptr);
-
-	for (unsigned i = 0; i < TAG_NUM_OF_ITEM_TYPES; ++i) {
-		assert(tag_item_names[i] != nullptr);
-
-		if (StringEqualsCaseASCII(name, tag_item_names[i]))
-			return (TagType)i;
-	}
-
-	return TAG_NUM_OF_ITEM_TYPES;
-}
 
 void
 Tag::Clear()
@@ -127,4 +95,69 @@ bool
 Tag::HasType(TagType type) const
 {
 	return GetValue(type) != nullptr;
+}
+
+static TagType
+DecaySort(TagType type)
+{
+	switch (type) {
+	case TAG_ARTIST_SORT:
+		return TAG_ARTIST;
+
+	case TAG_ALBUM_SORT:
+		return TAG_ALBUM;
+
+	case TAG_ALBUM_ARTIST_SORT:
+		return TAG_ALBUM_ARTIST;
+
+	default:
+		return TAG_NUM_OF_ITEM_TYPES;
+	}
+}
+
+static TagType
+Fallback(TagType type)
+{
+	switch (type) {
+	case TAG_ALBUM_ARTIST:
+		return TAG_ARTIST;
+
+	case TAG_MUSICBRAINZ_ALBUMARTISTID:
+		return TAG_MUSICBRAINZ_ARTISTID;
+
+	default:
+		return TAG_NUM_OF_ITEM_TYPES;
+	}
+}
+
+const char *
+Tag::GetSortValue(TagType type) const
+{
+	const char *value = GetValue(type);
+	if (value != nullptr)
+		return value;
+
+	/* try without *_SORT */
+	const auto no_sort_type = DecaySort(type);
+	if (no_sort_type != TAG_NUM_OF_ITEM_TYPES) {
+		value = GetValue(no_sort_type);
+		if (value != nullptr)
+			return value;
+	}
+
+	/* fall back from TAG_ALBUM_ARTIST to TAG_ALBUM */
+
+	type = Fallback(type);
+	if (type != TAG_NUM_OF_ITEM_TYPES)
+		return GetSortValue(type);
+
+	if (no_sort_type != TAG_NUM_OF_ITEM_TYPES) {
+		type = Fallback(no_sort_type);
+		if (type != TAG_NUM_OF_ITEM_TYPES)
+			return GetSortValue(type);
+	}
+
+	/* finally fall back to empty string */
+
+	return "";
 }

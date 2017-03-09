@@ -17,17 +17,15 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-/** \file
- *
- * This is a library which manages reference counted buffers.
- */
-
 #ifndef MPD_PAGE_HXX
 #define MPD_PAGE_HXX
 
-#include "util/RefCount.hxx"
+#include "util/AllocatedArray.hxx"
+
+#include <memory>
 
 #include <stddef.h>
+#include <stdint.h>
 
 /**
  * A dynamically allocated buffer which keeps track of its reference
@@ -35,68 +33,24 @@
  * instances hold references to one buffer.
  */
 class Page {
-	/**
-	 * The number of references to this buffer.  This library uses
-	 * atomic functions to access it, i.e. no locks are required.
-	 * As soon as this attribute reaches zero, the buffer is
-	 * freed.
-	 */
-	RefCount ref;
+	AllocatedArray<uint8_t> buffer;
 
 public:
-	/**
-	 * The size of this buffer in bytes.
-	 */
-	const size_t size;
+	explicit Page(size_t _size):buffer(_size) {}
+	explicit Page(AllocatedArray<uint8_t> &&_buffer)
+		:buffer(std::move(_buffer)) {}
 
-	/**
-	 * Dynamic array containing the buffer data.
-	 */
-	unsigned char data[sizeof(long)];
+	Page(const void *data, size_t size);
 
-protected:
-	Page(size_t _size):size(_size) {}
-	~Page() = default;
-
-	/**
-	 * Allocates a new #Page object, without filling the data
-	 * element.
-	 */
-	static Page *Create(size_t size);
-
-public:
-	/**
-	 * Creates a new #page object, and copies data from the
-	 * specified buffer.  It is initialized with a reference count
-	 * of 1.
-	 *
-	 * @param data the source buffer
-	 * @param size the size of the source buffer
-	 */
-	static Page *Copy(const void *data, size_t size);
-
-	/**
-	 * Concatenates two pages to a new page.
-	 *
-	 * @param a the first page
-	 * @param b the second page, which is appended
-	 */
-	static Page *Concat(const Page &a, const Page &b);
-
-	/**
-	 * Increases the reference counter.
-	 */
-	void Ref() {
-		ref.Increment();
+	size_t GetSize() const {
+		return buffer.size();
 	}
 
-	/**
-	 * Decreases the reference counter.  If it reaches zero, the #page is
-	 * freed.
-	 *
-	 * @return true if the #page has been freed
-	 */
-	bool Unref();
+	const uint8_t *GetData() const {
+		return &buffer.front();
+	}
 };
+
+typedef std::shared_ptr<Page> PagePtr;
 
 #endif

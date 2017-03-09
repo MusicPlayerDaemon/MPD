@@ -21,16 +21,16 @@
 #define MPD_DATABASE_INTERFACE_HXX
 
 #include "Visitor.hxx"
-#include "tag/TagType.h"
-#include "tag/Mask.hxx"
+#include "tag/Type.h"
 #include "Compiler.h"
 
-#include <time.h>
+#include <chrono>
 
 struct DatabasePlugin;
 struct DatabaseStats;
 struct DatabaseSelection;
 struct LightSong;
+class TagMask;
 
 class Database {
 	const DatabasePlugin &plugin;
@@ -69,8 +69,13 @@ public:
          * Look up a song (including tag data) in the database.  When
          * you don't need this anymore, call ReturnSong().
 	 *
+	 * Throws std::runtime_error (or its derivative
+	 * #DatabaseError) on error.  "Not found" is an error that
+	 * throws DatabaseErrorCode::NOT_FOUND.
+	 *
 	 * @param uri_utf8 the URI of the song within the music
 	 * directory (UTF-8)
+	 * @return a pointer that must be released with ReturnSong()
 	 */
 	virtual const LightSong *GetSong(const char *uri_utf8) const = 0;
 
@@ -103,7 +108,7 @@ public:
 	 * Visit all unique tag values.
 	 */
 	virtual void VisitUniqueTags(const DatabaseSelection &selection,
-				     TagType tag_type, tag_mask_t group_mask,
+				     TagType tag_type, TagMask group_mask,
 				     VisitTag visit_tag) const = 0;
 
 	gcc_pure
@@ -124,10 +129,10 @@ public:
 
 	/**
 	 * Returns the time stamp of the last database update.
-	 * Returns 0 if that is not not known/available.
+	 * Returns a negative value if that is not not known/available.
 	 */
 	gcc_pure
-	virtual time_t GetUpdateStamp() const = 0;
+	virtual std::chrono::system_clock::time_point GetUpdateStamp() const = 0;
 };
 
 #endif

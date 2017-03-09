@@ -148,7 +148,7 @@ LoadPlaylistFileInfo(PlaylistInfo &info,
 		return false;
 
 	info.name = std::move(name_utf8);
-	info.mtime = fi.GetModificationTime();
+	info.mtime = std::chrono::system_clock::to_time_t(fi.GetModificationTime());
 	return true;
 }
 
@@ -359,8 +359,7 @@ void
 spl_append_uri(const char *utf8file,
 	       const SongLoader &loader, const char *url)
 {
-	std::unique_ptr<DetachedSong> song(loader.LoadSong(url));
-	spl_append_song(utf8file, *song);
+	spl_append_song(utf8file, loader.LoadSong(url));
 }
 
 static void

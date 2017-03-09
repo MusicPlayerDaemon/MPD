@@ -19,92 +19,35 @@
 
 #include "config.h"
 #include "IOThread.hxx"
-#include "thread/Mutex.hxx"
-#include "thread/Cond.hxx"
-#include "thread/Thread.hxx"
-#include "thread/Name.hxx"
-#include "event/Loop.hxx"
+#include "event/Thread.hxx"
 
 #include <assert.h>
 
-static struct {
-	Mutex mutex;
-	Cond cond;
-
-	EventLoop *loop;
-	Thread thread;
-} io;
-
-static void
-io_thread_run(void)
-{
-	assert(io_thread_inside());
-	assert(io.loop != nullptr);
-
-	io.loop->Run();
-}
-
-static void
-io_thread_func(gcc_unused void *arg)
-{
-	SetThreadName("io");
-
-	/* lock+unlock to synchronize with io_thread_start(), to be
-	   sure that io.thread is set */
-	io.mutex.lock();
-	io.mutex.unlock();
-
-	io_thread_run();
-}
+static EventThread *io_thread;
 
 void
 io_thread_init(void)
 {
-	assert(io.loop == nullptr);
-	assert(!io.thread.IsDefined());
+	assert(io_thread == nullptr);
 
-	io.loop = new EventLoop();
+	io_thread = new EventThread();
 }
 
 void
 io_thread_start()
 {
-	assert(io.loop != nullptr);
-	assert(!io.thread.IsDefined());
+	assert(io_thread != nullptr);
 
-	const std::lock_guard<Mutex> protect(io.mutex);
-	io.thread.Start(io_thread_func, nullptr);
-}
-
-void
-io_thread_quit(void)
-{
-	assert(io.loop != nullptr);
-
-	io.loop->Break();
+	io_thread->Start();
 }
 
 void
 io_thread_deinit(void)
 {
-	if (io.thread.IsDefined()) {
-		io_thread_quit();
-		io.thread.Join();
-	}
+	if (io_thread == nullptr)
+		return;
 
-	delete io.loop;
-}
-
-EventLoop &
-io_thread_get()
-{
-	assert(io.loop != nullptr);
-
-	return *io.loop;
-}
-
-bool
-io_thread_inside(void)
-{
-	return io.thread.IsInside();
+	io_thread->Stop();
+	delete io_thread;
+	io_thread = nullptr;
 }

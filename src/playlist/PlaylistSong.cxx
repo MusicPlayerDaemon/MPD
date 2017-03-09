@@ -21,7 +21,7 @@
 #include "PlaylistSong.hxx"
 #include "SongLoader.hxx"
 #include "tag/Tag.hxx"
-#include "tag/TagBuilder.hxx"
+#include "tag/Builder.hxx"
 #include "fs/Traits.hxx"
 #include "util/UriUtil.hxx"
 #include "DetachedSong.hxx"
@@ -44,25 +44,17 @@ merge_song_metadata(DetachedSong &add, const DetachedSong &base)
 
 static bool
 playlist_check_load_song(DetachedSong &song, const SongLoader &loader)
-{
-	DetachedSong *tmp;
+try {
+	DetachedSong tmp = loader.LoadSong(song.GetURI());
 
-	try {
-		tmp = loader.LoadSong(song.GetURI());
-	} catch (const std::runtime_error &) {
-		return false;
-	}
+	song.SetURI(tmp.GetURI());
+	if (!song.HasRealURI() && tmp.HasRealURI())
+		song.SetRealURI(tmp.GetRealURI());
 
-	if (tmp == nullptr)
-		return false;
-
-	song.SetURI(tmp->GetURI());
-	if (!song.HasRealURI() && tmp->HasRealURI())
-		song.SetRealURI(tmp->GetRealURI());
-
-	merge_song_metadata(song, *tmp);
-	delete tmp;
+	merge_song_metadata(song, tmp);
 	return true;
+} catch (const std::runtime_error &) {
+	return false;
 }
 
 bool

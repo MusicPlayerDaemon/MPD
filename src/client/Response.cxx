@@ -23,6 +23,12 @@
 #include "util/FormatString.hxx"
 #include "util/AllocatedString.hxx"
 
+TagMask
+Response::GetTagMask() const
+{
+	return GetClient().tag_mask;
+}
+
 bool
 Response::Write(const void *data, size_t length)
 {

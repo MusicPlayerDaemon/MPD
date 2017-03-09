@@ -30,7 +30,7 @@
 #include "SongPrint.hxx"
 #include "TagPrint.hxx"
 #include "TagStream.hxx"
-#include "tag/TagHandler.hxx"
+#include "tag/Handler.hxx"
 #include "TimePrint.hxx"
 #include "decoder/DecoderPrint.hxx"
 #include "ls.hxx"
@@ -39,7 +39,6 @@
 #include "util/StringAPI.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "Stats.hxx"
-#include "Permission.hxx"
 #include "PlaylistFile.hxx"
 #include "db/PlaylistVector.hxx"
 #include "client/Client.hxx"
@@ -87,25 +86,10 @@ handle_decoders(gcc_unused Client &client, gcc_unused Request args,
 }
 
 CommandResult
-handle_tagtypes(gcc_unused Client &client, gcc_unused Request request,
-		Response &r)
-{
-	tag_print_types(r);
-	return CommandResult::OK;
-}
-
-CommandResult
 handle_kill(gcc_unused Client &client, gcc_unused Request request,
 	    gcc_unused Response &r)
 {
 	return CommandResult::KILL;
-}
-
-CommandResult
-handle_close(gcc_unused Client &client, gcc_unused Request args,
-	     gcc_unused Response &r)
-{
-	return CommandResult::FINISH;
 }
 
 static void
@@ -113,7 +97,8 @@ print_tag(TagType type, const char *value, void *ctx)
 {
 	auto &r = *(Response *)ctx;
 
-	tag_print(r, type, value);
+	if (r.GetClient().tag_mask.Test(type))
+		tag_print(r, type, value);
 }
 
 CommandResult
@@ -132,7 +117,8 @@ handle_listfiles(Client &client, Request args, Response &r)
 	case LocatedUri::Type::ABSOLUTE:
 #ifdef ENABLE_DATABASE
 		/* use storage plugin to list remote directory */
-		return handle_listfiles_storage(r, located_uri.canonical_uri);
+		return handle_listfiles_storage(client, r,
+						located_uri.canonical_uri);
 #else
 		r.Error(ACK_ERROR_NO_EXIST, "No database");
 		return CommandResult::ERROR;
@@ -140,11 +126,11 @@ handle_listfiles(Client &client, Request args, Response &r)
 
 	case LocatedUri::Type::RELATIVE:
 #ifdef ENABLE_DATABASE
-		if (client.partition.instance.storage != nullptr)
+		if (client.GetInstance().storage != nullptr)
 			/* if we have a storage instance, obtain a list of
 			   files from it */
 			return handle_listfiles_storage(r,
-							*client.partition.instance.storage,
+							*client.GetInstance().storage,
 							uri);
 
 		/* fall back to entries from database if we have no storage */
@@ -207,7 +193,7 @@ handle_lsinfo_relative(Client &client, Response &r, const char *uri)
 }
 
 static CommandResult
-handle_lsinfo_path(Client &client, Response &r,
+handle_lsinfo_path(Client &, Response &r,
 		   const char *path_utf8, Path path_fs)
 {
 	DetachedSong song(path_utf8);
@@ -216,7 +202,7 @@ handle_lsinfo_path(Client &client, Response &r,
 		return CommandResult::ERROR;
 	}
 
-	song_print_info(r, client.partition, song);
+	song_print_info(r, song);
 	return CommandResult::OK;
 }
 
@@ -309,11 +295,11 @@ handle_update(Client &client, Request args, Response &r, bool discard)
 		}
 	}
 
-	UpdateService *update = client.partition.instance.update;
+	UpdateService *update = client.GetInstance().update;
 	if (update != nullptr)
 		return handle_update(r, *update, path, discard);
 
-	Database *db = client.partition.instance.database;
+	Database *db = client.GetInstance().database;
 	if (db != nullptr)
 		return handle_update(r, *db, path, discard);
 #else
@@ -343,7 +329,7 @@ handle_setvol(Client &client, Request args, Response &r)
 {
 	unsigned level = args.ParseUnsigned(0, 100);
 
-	if (!volume_level_change(client.partition.outputs, level)) {
+	if (!volume_level_change(client.GetPartition().outputs, level)) {
 		r.Error(ACK_ERROR_SYSTEM, "problems setting volume");
 		return CommandResult::ERROR;
 	}
@@ -356,7 +342,9 @@ handle_volume(Client &client, Request args, Response &r)
 {
 	int relative = args.ParseInt(0, -100, 100);
 
-	const int old_volume = volume_level_get(client.partition.outputs);
+	auto &outputs = client.GetPartition().outputs;
+
+	const int old_volume = volume_level_get(outputs);
 	if (old_volume < 0) {
 		r.Error(ACK_ERROR_SYSTEM, "No mixer");
 		return CommandResult::ERROR;
@@ -369,7 +357,7 @@ handle_volume(Client &client, Request args, Response &r)
 		new_volume = 100;
 
 	if (new_volume != old_volume &&
-	    !volume_level_change(client.partition.outputs, new_volume)) {
+	    !volume_level_change(outputs, new_volume)) {
 		r.Error(ACK_ERROR_SYSTEM, "problems setting volume");
 		return CommandResult::ERROR;
 	}
@@ -380,28 +368,7 @@ handle_volume(Client &client, Request args, Response &r)
 CommandResult
 handle_stats(Client &client, gcc_unused Request args, Response &r)
 {
-	stats_print(r, client.partition);
-	return CommandResult::OK;
-}
-
-CommandResult
-handle_ping(gcc_unused Client &client, gcc_unused Request args,
-	    gcc_unused Response &r)
-{
-	return CommandResult::OK;
-}
-
-CommandResult
-handle_password(Client &client, Request args, Response &r)
-{
-	unsigned permission = 0;
-	if (getPermissionFromPassword(args.front(), &permission) < 0) {
-		r.Error(ACK_ERROR_PASSWORD, "incorrect password");
-		return CommandResult::ERROR;
-	}
-
-	client.SetPermission(permission);
-
+	stats_print(r, client.GetPartition());
 	return CommandResult::OK;
 }
 

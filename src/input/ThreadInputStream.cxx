@@ -54,10 +54,10 @@ ThreadInputStream::Start()
 	assert(p != nullptr);
 
 	buffer = new CircularBuffer<uint8_t>((uint8_t *)p, buffer_size);
-	thread.Start(ThreadFunc, this);
+	thread.Start();
 }
 
-inline void
+void
 ThreadInputStream::ThreadFunc()
 {
 	FormatThreadName("input:%s", plugin);
@@ -105,13 +105,6 @@ ThreadInputStream::ThreadFunc()
 	}
 
 	Close();
-}
-
-void
-ThreadInputStream::ThreadFunc(void *ctx)
-{
-	ThreadInputStream &tis = *(ThreadInputStream *)ctx;
-	tis.ThreadFunc();
 }
 
 void

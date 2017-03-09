@@ -58,7 +58,7 @@ print_spl_list(Response &r, const PlaylistVector &list)
 CommandResult
 handle_save(Client &client, Request args, gcc_unused Response &r)
 {
-	spl_save_playlist(args.front(), client.playlist);
+	spl_save_playlist(args.front(), client.GetPlaylist());
 	return CommandResult::OK;
 }
 
@@ -67,13 +67,13 @@ handle_load(Client &client, Request args, gcc_unused Response &r)
 {
 	RangeArg range = args.ParseOptional(1, RangeArg::All());
 
-	const ScopeBulkEdit bulk_edit(client.partition);
+	const ScopeBulkEdit bulk_edit(client.GetPartition());
 
 	const SongLoader loader(client);
 	playlist_open_into_queue(args.front(),
 				 range.start, range.end,
-				 client.playlist,
-				 client.player_control, loader);
+				 client.GetPlaylist(),
+				 client.GetPlayerControl(), loader);
 	return CommandResult::OK;
 }
 
@@ -82,8 +82,8 @@ handle_listplaylist(Client &client, Request args, Response &r)
 {
 	const char *const name = args.front();
 
-	if (playlist_file_print(r, client.partition, SongLoader(client),
-				 name, false))
+	if (playlist_file_print(r, client.GetPartition(), SongLoader(client),
+				name, false))
 		return CommandResult::OK;
 
 	throw PlaylistError::NoSuchList();
@@ -94,7 +94,7 @@ handle_listplaylistinfo(Client &client, Request args, Response &r)
 {
 	const char *const name = args.front();
 
-	if (playlist_file_print(r, client.partition, SongLoader(client),
+	if (playlist_file_print(r, client.GetPartition(), SongLoader(client),
 				name, true))
 		return CommandResult::OK;
 
@@ -166,7 +166,7 @@ handle_playlistadd(Client &client, Request args, gcc_unused Response &r)
 #ifdef ENABLE_DATABASE
 		const Database &db = client.GetDatabaseOrThrow();
 
-		search_add_to_playlist(db, *client.GetStorage(),
+		search_add_to_playlist(db, client.GetStorage(),
 				       uri, playlist, nullptr);
 #else
 		r.Error(ACK_ERROR_NO_EXIST, "directory or file not found");

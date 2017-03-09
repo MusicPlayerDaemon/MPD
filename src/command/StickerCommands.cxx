@@ -33,7 +33,6 @@
 
 struct sticker_song_find_data {
 	Response &r;
-	Partition &partition;
 	const char *name;
 };
 
@@ -44,7 +43,7 @@ sticker_song_find_print_cb(const LightSong &song, const char *value,
 	struct sticker_song_find_data *data =
 		(struct sticker_song_find_data *)user_data;
 
-	song_print_uri(data->r, data->partition, song);
+	song_print_uri(data->r, song);
 	sticker_print_value(data->r, data->name, value);
 }
 
@@ -137,7 +136,6 @@ handle_sticker_song(Response &r, Partition &partition, Request args)
 
 		struct sticker_song_find_data data = {
 			r,
-			partition,
 			args[3],
 		};
 
@@ -163,7 +161,7 @@ handle_sticker(Client &client, Request args, Response &r)
 	}
 
 	if (StringIsEqual(args[1], "song"))
-		return handle_sticker_song(r, client.partition, args);
+		return handle_sticker_song(r, client.GetPartition(), args);
 	else {
 		r.Error(ACK_ERROR_ARG, "unknown sticker domain");
 		return CommandResult::ERROR;

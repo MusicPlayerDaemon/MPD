@@ -90,6 +90,8 @@ libmpd_a_SOURCES = \
 	src/command/FileCommands.cxx src/command/FileCommands.hxx \
 	src/command/OutputCommands.cxx src/command/OutputCommands.hxx \
 	src/command/MessageCommands.cxx src/command/MessageCommands.hxx \
+	src/command/ClientCommands.cxx src/command/ClientCommands.hxx \
+	src/command/PartitionCommands.cxx src/command/PartitionCommands.hxx \
 	src/command/OtherCommands.cxx src/command/OtherCommands.hxx \
 	src/command/CommandListBuilder.cxx src/command/CommandListBuilder.hxx \
 	src/Idle.cxx src/Idle.hxx \
@@ -128,7 +130,6 @@ libmpd_a_SOURCES = \
 	src/Log.cxx src/Log.hxx src/LogV.hxx \
 	src/LogLevel.hxx \
 	src/ls.cxx src/ls.hxx \
-	src/IOThread.cxx src/IOThread.hxx \
 	src/Instance.cxx src/Instance.hxx \
 	src/win32/Win32Main.cxx \
 	src/MixRampInfo.hxx \
@@ -254,6 +255,9 @@ UPNP_SOURCES = \
 	src/lib/upnp/UniqueIxml.hxx \
 	src/lib/upnp/WorkQueue.hxx \
 	src/lib/upnp/Action.hxx
+
+ALSA_SOURCES = \
+	src/lib/alsa/NonBlock.cxx src/lib/alsa/NonBlock.hxx
 
 #
 # Android native library
@@ -402,6 +406,7 @@ libutil_a_SOURCES = \
 	src/util/Macros.hxx \
 	src/util/BindMethod.hxx \
 	src/util/Cast.hxx \
+	src/util/Chrono.hxx \
 	src/util/Clamp.hxx \
 	src/util/DeleteDisposer.hxx \
 	src/util/Alloc.cxx src/util/Alloc.hxx \
@@ -513,6 +518,7 @@ libevent_a_SOURCES = \
 	src/event/MultiSocketMonitor.cxx src/event/MultiSocketMonitor.hxx \
 	src/event/ServerSocket.cxx src/event/ServerSocket.hxx \
 	src/event/Call.hxx src/event/Call.cxx \
+	src/event/Thread.cxx src/event/Thread.hxx \
 	src/event/Loop.cxx src/event/Loop.hxx
 
 # UTF-8 library
@@ -905,18 +911,19 @@ TAG_LIBS = \
 	$(ID3TAG_LIBS)
 
 libtag_a_SOURCES =\
-	src/tag/TagType.h \
+	src/tag/Type.h \
 	src/tag/Tag.cxx src/tag/Tag.hxx \
-	src/tag/TagBuilder.cxx src/tag/TagBuilder.hxx \
-	src/tag/TagItem.hxx \
-	src/tag/TagHandler.cxx src/tag/TagHandler.hxx \
+	src/tag/Builder.cxx src/tag/Builder.hxx \
+	src/tag/Item.hxx \
+	src/tag/Handler.cxx src/tag/Handler.hxx \
 	src/tag/Mask.hxx \
 	src/tag/Settings.cxx src/tag/Settings.hxx \
-	src/tag/TagConfig.cxx src/tag/TagConfig.hxx \
-	src/tag/TagNames.c \
-	src/tag/TagString.cxx src/tag/TagString.hxx \
-	src/tag/TagPool.cxx src/tag/TagPool.hxx \
-	src/tag/TagTable.cxx src/tag/TagTable.hxx \
+	src/tag/Config.cxx src/tag/Config.hxx \
+	src/tag/ParseName.cxx src/tag/ParseName.hxx \
+	src/tag/Names.c \
+	src/tag/FixString.cxx src/tag/FixString.hxx \
+	src/tag/Pool.cxx src/tag/Pool.hxx \
+	src/tag/Table.cxx src/tag/Table.hxx \
 	src/tag/Set.cxx src/tag/Set.hxx \
 	src/tag/Format.cxx src/tag/Format.hxx \
 	src/tag/VorbisComment.cxx src/tag/VorbisComment.hxx \
@@ -931,8 +938,8 @@ if ENABLE_ID3TAG
 libtag_a_SOURCES += \
 	src/tag/Id3Load.cxx src/tag/Id3Load.hxx \
 	src/tag/Id3Unique.hxx \
-	src/tag/TagId3.cxx src/tag/TagId3.hxx \
-	src/tag/TagRva2.cxx src/tag/TagRva2.hxx \
+	src/tag/Id3Scan.cxx src/tag/Id3Scan.hxx \
+	src/tag/Rva2.cxx src/tag/Rva2.hxx \
 	src/tag/Riff.cxx src/tag/Riff.hxx \
 	src/tag/Aiff.cxx src/tag/Aiff.hxx
 endif
@@ -1398,6 +1405,7 @@ INPUT_LIBS = \
 
 if ENABLE_ALSA
 libinput_a_SOURCES += \
+	$(ALSA_SOURCES) \
 	src/input/plugins/AlsaInputPlugin.cxx \
 	src/input/plugins/AlsaInputPlugin.hxx
 INPUT_LIBS += $(ALSA_LIBS)
@@ -1513,9 +1521,11 @@ libmixer_plugins_a_CPPFLAGS = $(AM_CPPFLAGS) \
 
 if ENABLE_ALSA
 liboutput_plugins_a_SOURCES += \
+	$(ALSA_SOURCES) \
 	src/output/plugins/AlsaOutputPlugin.cxx \
 	src/output/plugins/AlsaOutputPlugin.hxx
 libmixer_plugins_a_SOURCES += \
+	$(ALSA_SOURCES) \
 	src/mixer/plugins/volume_mapping.h \
 	src/mixer/plugins/volume_mapping.c \
 	src/mixer/plugins/AlsaMixerPlugin.cxx
@@ -1883,8 +1893,6 @@ test_run_storage_LDADD = \
 	libutil.a
 test_run_storage_SOURCES = \
 	src/Log.cxx src/LogBackend.cxx \
-	src/IOThread.cxx \
-	test/ScopeIOThread.hxx \
 	test/run_storage.cxx
 
 if ENABLE_WEBDAV
@@ -1905,16 +1913,13 @@ test_run_input_LDADD = \
 	libsystem.a \
 	libutil.a
 test_run_input_SOURCES = test/run_input.cxx \
-	test/ScopeIOThread.hxx \
 	src/Log.cxx src/LogBackend.cxx \
-	src/IOThread.cxx \
 	src/TagSave.cxx
 
 if ENABLE_NEIGHBOR_PLUGINS
 
 test_run_neighbor_explorer_SOURCES = \
 	src/Log.cxx src/LogBackend.cxx \
-	src/IOThread.cxx \
 	test/run_neighbor_explorer.cxx
 test_run_neighbor_explorer_LDADD = $(AM_LDADD) \
 	$(NEIGHBOR_LIBS) \
@@ -1949,9 +1954,7 @@ test_visit_archive_LDADD = \
 	libsystem.a \
 	libutil.a
 test_visit_archive_SOURCES = test/visit_archive.cxx \
-	test/ScopeIOThread.hxx \
 	src/Log.cxx src/LogBackend.cxx \
-	src/IOThread.cxx \
 	src/input/Open.cxx
 
 endif
@@ -1997,9 +2000,7 @@ test_dump_text_file_LDADD = \
 	libthread.a \
 	libutil.a
 test_dump_text_file_SOURCES = test/dump_text_file.cxx \
-	test/ScopeIOThread.hxx \
-	src/Log.cxx src/LogBackend.cxx \
-	src/IOThread.cxx
+	src/Log.cxx src/LogBackend.cxx
 
 test_dump_playlist_LDADD = \
 	$(PLAYLIST_LIBS) \
@@ -2020,9 +2021,7 @@ test_dump_playlist_LDADD = \
 	libpcm.a
 test_dump_playlist_SOURCES = test/dump_playlist.cxx \
 	test/FakeDecoderAPI.cxx test/FakeDecoderAPI.hxx \
-	test/ScopeIOThread.hxx \
 	src/Log.cxx src/LogBackend.cxx \
-	src/IOThread.cxx \
 	src/TagSave.cxx \
 	src/TagFile.cxx \
 	src/DetachedSong.cxx
@@ -2049,10 +2048,8 @@ test_run_decoder_LDADD = \
 	libutil.a
 test_run_decoder_SOURCES = test/run_decoder.cxx \
 	test/FakeDecoderAPI.cxx test/FakeDecoderAPI.hxx \
-	test/ScopeIOThread.hxx \
 	src/DetachedSong.cxx \
 	src/Log.cxx src/LogBackend.cxx \
-	src/IOThread.cxx \
 	src/ReplayGainInfo.cxx
 
 test_read_tags_LDADD = \
@@ -2071,10 +2068,8 @@ test_read_tags_LDADD = \
 	libutil.a
 test_read_tags_SOURCES = test/read_tags.cxx \
 	test/FakeDecoderAPI.cxx test/FakeDecoderAPI.hxx \
-	test/ScopeIOThread.hxx \
 	src/DetachedSong.cxx \
 	src/Log.cxx src/LogBackend.cxx \
-	src/IOThread.cxx \
 	src/ReplayGainInfo.cxx
 
 test_ReadApeTags_LDADD = \
@@ -2227,9 +2222,7 @@ test_run_output_LDADD = $(MPD_LIBS) \
 	libthread.a \
 	libutil.a
 test_run_output_SOURCES = test/run_output.cxx \
-	test/ScopeIOThread.hxx \
 	src/Log.cxx src/LogBackend.cxx \
-	src/IOThread.cxx \
 	src/output/Domain.cxx \
 	src/output/Init.cxx src/output/Finish.cxx src/output/Registry.cxx \
 	src/output/OutputPlugin.cxx \

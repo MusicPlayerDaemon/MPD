@@ -20,7 +20,7 @@
 #ifndef MPD_TAG_BUILDER_HXX
 #define MPD_TAG_BUILDER_HXX
 
-#include "TagType.h"
+#include "Type.h"
 #include "Chrono.hxx"
 #include "Compiler.h"
 

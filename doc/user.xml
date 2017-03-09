@@ -135,6 +135,91 @@ apt-get install g++ \
       </para>
 
       <programlisting>make install</programlisting>
+
+      <section id="windows_build">
+        <title>Compiling for Windows</title>
+
+        <para>
+          Even though it does not "feel" like a Windows application,
+          <application>MPD</application> works well under Windows.
+          Its build process follows the "Linux style", and may seem
+          awkward for Windows people (who are not used to compiling
+          their software, anyway).
+        </para>
+
+        <para>
+          Basically, there are three ways to compile
+          <application>MPD</application> for Windows:
+        </para>
+
+        <orderedlist>
+          <listitem>
+            <para>
+              Build on Windows for Windows.  All you need to do is
+              described above already: configure and make.
+            </para>
+
+            <para>
+              For Windows users, this is kind of unusual, because few
+              Windows users have a GNU toolchain and a UNIX shell
+              installed.
+            </para>
+          </listitem>
+
+          <listitem>
+            <para>
+              Build on Linux for Windows.  This is described above
+              already: configure and make.  You need the <ulink
+              url="https://mingw-w64.org/"><application>mingw-w64</application>
+              cross compiler</ulink>.  Pass
+              <parameter>--host=i686-w64-mingw32</parameter> (32 bit)
+              or <parameter>--host=x86_64-w64-mingw32</parameter> (64
+              bit) to configure.
+            </para>
+
+            <para>
+              This is somewhat natural for Linux users.  Many
+              distributions have <application>mingw-w64</application>
+              packages.  The remaining difficulty here is installing
+              all the external libraries.  And
+              <application>MPD</application> usually needs many,
+              making this method cumbersome for the casual user.
+            </para>
+          </listitem>
+
+          <listitem>
+            <para>
+              Build on Linux for Windows using the
+              <application>MPD</application>'s library build script.
+            </para>
+          </listitem>
+        </orderedlist>
+
+        <para>
+          This section is about the latter.
+        </para>
+
+        <para>
+          Just like with the native build, unpack the
+          <application>MPD</application> source tarball and change
+          into the directory.  Then, instead of
+          <command>./configure</command>, type:
+        </para>
+
+        <programlisting>./win32/build.py --64</programlisting>
+
+        <para>
+          This downloads various library sources, and then configures
+          and builds <application>MPD</application> (for x64; to build
+          a 32 bit binary, pass <parameter>--32</parameter>).  The
+          resulting EXE files is linked statically, i.e. it contains
+          all the libraries already, and you do not need carry DLLs
+          around.  It is large, but easy to use.  If you wish to have
+          a small <filename>mpd.exe</filename> with DLLs, you need to
+          compile manually, without the <filename>build.py</filename>
+          script.
+        </para>
+      </section>
     </section>
 
     <section id="systemd_socket">

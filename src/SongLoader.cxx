@@ -36,12 +36,12 @@ SongLoader::SongLoader(const Client &_client)
 
 #endif
 
-DetachedSong *
+DetachedSong
 SongLoader::LoadFromDatabase(const char *uri) const
 {
 #ifdef ENABLE_DATABASE
 	if (db != nullptr)
-		return DatabaseDetachSong(*db, *storage, uri);
+		return DatabaseDetachSong(*db, storage, uri);
 #else
 	(void)uri;
 #endif
@@ -49,7 +49,7 @@ SongLoader::LoadFromDatabase(const char *uri) const
 	throw PlaylistError(PlaylistResult::NO_SUCH_SONG, "No database");
 }
 
-DetachedSong *
+DetachedSong
 SongLoader::LoadFile(const char *path_utf8, Path path_fs) const
 {
 #ifdef ENABLE_DATABASE
@@ -66,15 +66,15 @@ SongLoader::LoadFile(const char *path_utf8, Path path_fs) const
 	if (!song.LoadFile(path_fs))
 		throw PlaylistError::NoSuchSong();
 
-	return new DetachedSong(std::move(song));
+	return song;
 }
 
-DetachedSong *
+DetachedSong
 SongLoader::LoadSong(const LocatedUri &located_uri) const
 {
 	switch (located_uri.type) {
 	case LocatedUri::Type::ABSOLUTE:
-		return new DetachedSong(located_uri.canonical_uri);
+		return DetachedSong(located_uri.canonical_uri);
 
 	case LocatedUri::Type::RELATIVE:
 		return LoadFromDatabase(located_uri.canonical_uri);
@@ -86,7 +86,7 @@ SongLoader::LoadSong(const LocatedUri &located_uri) const
 	gcc_unreachable();
 }
 
-DetachedSong *
+DetachedSong
 SongLoader::LoadSong(const char *uri_utf8) const
 {
 #if !CLANG_CHECK_VERSION(3,6)

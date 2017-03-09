@@ -46,6 +46,9 @@ EventLoop::~EventLoop()
 void
 EventLoop::Break()
 {
+	if (quit)
+		return;
+
 	quit = true;
 	wake_fd.Write();
 }
@@ -181,17 +184,17 @@ EventLoop::Run()
 
 		/* try to handle DeferredMonitors without WakeFD
 		   overhead */
-		mutex.lock();
-		HandleDeferred();
-		busy = false;
-		const bool _again = again;
-		mutex.unlock();
+		{
+			const std::lock_guard<Mutex> lock(mutex);
+			HandleDeferred();
+			busy = false;
 
-		if (_again)
-			/* re-evaluate timers because one of the
-			   IdleMonitors may have added a new
-			   timeout */
-			continue;
+			if (again)
+				/* re-evaluate timers because one of
+				   the IdleMonitors may have added a
+				   new timeout */
+				continue;
+		}
 
 		/* wait for new event */
 
@@ -199,9 +202,10 @@ EventLoop::Run()
 
 		now = std::chrono::steady_clock::now();
 
-		mutex.lock();
-		busy = true;
-		mutex.unlock();
+		{
+			const std::lock_guard<Mutex> lock(mutex);
+			busy = true;
+		}
 
 		/* invoke sockets */
 		for (int i = 0; i < poll_result.GetSize(); ++i) {
@@ -222,30 +226,32 @@ EventLoop::Run()
 #ifndef NDEBUG
 	assert(busy);
 	assert(thread.IsInside());
-	thread = ThreadId::Null();
 #endif
+
+	thread = ThreadId::Null();
 }
 
 void
 EventLoop::AddDeferred(DeferredMonitor &d)
 {
-	mutex.lock();
-	if (d.pending) {
-		mutex.unlock();
-		return;
+	bool must_wake;
+
+	{
+		const std::lock_guard<Mutex> lock(mutex);
+		if (d.pending)
+			return;
+
+		assert(std::find(deferred.begin(),
+				 deferred.end(), &d) == deferred.end());
+
+		/* we don't need to wake up the EventLoop if another
+		   DeferredMonitor has already done it */
+		must_wake = !busy && deferred.empty();
+
+		d.pending = true;
+		deferred.push_back(&d);
+		again = true;
 	}
-
-	assert(std::find(deferred.begin(),
-			 deferred.end(), &d) == deferred.end());
-
-	/* we don't need to wake up the EventLoop if another
-	   DeferredMonitor has already done it */
-	const bool must_wake = !busy && deferred.empty();
-
-	d.pending = true;
-	deferred.push_back(&d);
-	again = true;
-	mutex.unlock();
 
 	if (must_wake)
 		wake_fd.Write();
@@ -280,9 +286,8 @@ EventLoop::HandleDeferred()
 		deferred.pop_front();
 		m.pending = false;
 
-		mutex.unlock();
+		const ScopeUnlock unlock(mutex);
 		m.RunDeferred();
-		mutex.lock();
 	}
 }
 
@@ -293,9 +298,8 @@ EventLoop::OnSocketReady(gcc_unused unsigned flags)
 
 	wake_fd.Read();
 
-	mutex.lock();
+	const std::lock_guard<Mutex> lock(mutex);
 	HandleDeferred();
-	mutex.unlock();
 
 	return true;
 }

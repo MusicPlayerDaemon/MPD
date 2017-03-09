@@ -22,7 +22,7 @@
 
 #include "check.h"
 #include "DetachedSong.hxx"
-#include "tag/TagBuilder.hxx"
+#include "tag/Builder.hxx"
 #include "Compiler.h"
 
 #include <string>

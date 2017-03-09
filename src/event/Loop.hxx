@@ -212,12 +212,16 @@ public:
 	}
 #endif
 
-#ifndef NDEBUG
+	/**
+	 * Like IsInside(), but also returns true if the thread has
+	 * already ended (or was not started yet).  This is useful for
+	 * code which may run during startup or shutdown, when events
+	 * are not yet/anymore handled.
+	 */
 	gcc_pure
 	bool IsInsideOrNull() const {
 		return thread.IsNull() || thread.IsInside();
 	}
-#endif
 };
 
 #endif /* MAIN_NOTIFY_H */

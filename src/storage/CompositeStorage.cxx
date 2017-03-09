@@ -86,12 +86,7 @@ CompositeDirectoryReader::GetInfo(bool follow)
 
 	assert(current != names.end());
 
-	StorageFileInfo info;
-	info.type = StorageFileInfo::Type::DIRECTORY;
-	info.mtime = 0;
-	info.device = 0;
-	info.inode = 0;
-	return info;
+	return StorageFileInfo(StorageFileInfo::Type::DIRECTORY);
 }
 
 static std::string
@@ -280,14 +275,8 @@ CompositeStorage::GetInfo(const char *uri, bool follow)
 	}
 
 	const Directory *directory = f.directory->Find(f.uri);
-	if (directory != nullptr) {
-		StorageFileInfo info;
-		info.type = StorageFileInfo::Type::DIRECTORY;
-		info.mtime = 0;
-		info.device = 0;
-		info.inode = 0;
-		return info;
-	}
+	if (directory != nullptr)
+		return StorageFileInfo(StorageFileInfo::Type::DIRECTORY);
 
 	if (error)
 		std::rethrow_exception(error);

@@ -28,7 +28,8 @@
 #include "CommandError.hxx"
 #include "client/Client.hxx"
 #include "client/Response.hxx"
-#include "tag/Tag.hxx"
+#include "tag/ParseName.hxx"
+#include "tag/Mask.hxx"
 #include "util/ConstBuffer.hxx"
 #include "util/StringAPI.hxx"
 #include "SongFilter.hxx"
@@ -40,7 +41,7 @@ CommandResult
 handle_listfiles_db(Client &client, Response &r, const char *uri)
 {
 	const DatabaseSelection selection(uri, false);
-	db_selection_print(r, client.partition,
+	db_selection_print(r, client.GetPartition(),
 			   selection, false, true);
 	return CommandResult::OK;
 }
@@ -49,7 +50,7 @@ CommandResult
 handle_lsinfo2(Client &client, const char *uri, Response &r)
 {
 	const DatabaseSelection selection(uri, false);
-	db_selection_print(r, client.partition,
+	db_selection_print(r, client.GetPartition(),
 			   selection, true, false);
 	return CommandResult::OK;
 }
@@ -66,6 +67,16 @@ handle_match(Client &client, Request args, Response &r, bool fold_case)
 	} else
 		window.SetAll();
 
+	TagType sort = TAG_NUM_OF_ITEM_TYPES;
+	if (args.size >= 2 && StringIsEqual(args[args.size - 2], "sort")) {
+		sort = tag_name_parse_i(args.back());
+		if (sort == TAG_NUM_OF_ITEM_TYPES)
+			throw ProtocolError(ACK_ERROR_ARG, "Unknown sort tag");
+
+		args.pop_back();
+		args.pop_back();
+	}
+
 	SongFilter filter;
 	if (!filter.Parse(args, fold_case)) {
 		r.Error(ACK_ERROR_ARG, "incorrect arguments");
@@ -74,8 +85,9 @@ handle_match(Client &client, Request args, Response &r, bool fold_case)
 
 	const DatabaseSelection selection("", true, &filter);
 
-	db_selection_print(r, client.partition,
+	db_selection_print(r, client.GetPartition(),
 			   selection, true, false,
+			   sort,
 			   window.start, window.end);
 	return CommandResult::OK;
 }
@@ -101,10 +113,11 @@ handle_match_add(Client &client, Request args, Response &r, bool fold_case)
 		return CommandResult::ERROR;
 	}
 
-	const ScopeBulkEdit bulk_edit(client.partition);
+	auto &partition = client.GetPartition();
+	const ScopeBulkEdit bulk_edit(partition);
 
 	const DatabaseSelection selection("", true, &filter);
-	AddFromDatabase(client.partition, selection);
+	AddFromDatabase(partition, selection);
 	return CommandResult::OK;
 }
 
@@ -133,7 +146,7 @@ handle_searchaddpl(Client &client, Request args, Response &r)
 
 	const Database &db = client.GetDatabaseOrThrow();
 
-	search_add_to_playlist(db, *client.GetStorage(),
+	search_add_to_playlist(db, client.GetStorage(),
 			       "", playlist, &filter);
 	return CommandResult::OK;
 }
@@ -161,7 +174,7 @@ handle_count(Client &client, Request args, Response &r)
 		return CommandResult::ERROR;
 	}
 
-	PrintSongCount(r, client.partition, "", &filter, group);
+	PrintSongCount(r, client.GetPartition(), "", &filter, group);
 	return CommandResult::OK;
 }
 
@@ -171,7 +184,7 @@ handle_listall(Client &client, Request args, Response &r)
 	/* default is root directory */
 	const auto uri = args.GetOptional(0, "");
 
-	db_selection_print(r, client.partition,
+	db_selection_print(r, client.GetPartition(),
 			   DatabaseSelection(uri, true),
 			   false, false);
 	return CommandResult::OK;
@@ -191,7 +204,7 @@ handle_list(Client &client, Request args, Response &r)
 	}
 
 	std::unique_ptr<SongFilter> filter;
-	tag_mask_t group_mask = 0;
+	TagMask group_mask = TagMask::None();
 
 	if (args.size == 1) {
 		/* for compatibility with < 0.12.0 */
@@ -216,7 +229,7 @@ handle_list(Client &client, Request args, Response &r)
 			return CommandResult::ERROR;
 		}
 
-		group_mask |= tag_mask_t(1) << unsigned(gt);
+		group_mask |= gt;
 
 		args.pop_back();
 		args.pop_back();
@@ -231,12 +244,12 @@ handle_list(Client &client, Request args, Response &r)
 	}
 
 	if (tagType < TAG_NUM_OF_ITEM_TYPES &&
-	    group_mask & (tag_mask_t(1) << tagType)) {
+	    group_mask.Test(TagType(tagType))) {
 		r.Error(ACK_ERROR_ARG, "Conflicting group");
 		return CommandResult::ERROR;
 	}
 
-	PrintUniqueTags(r, client.partition,
+	PrintUniqueTags(r, client.GetPartition(),
 			tagType, group_mask, filter.get());
 	return CommandResult::OK;
 }
@@ -247,7 +260,7 @@ handle_listallinfo(Client &client, Request args, Response &r)
 	/* default is root directory */
 	const auto uri = args.GetOptional(0, "");
 
-	db_selection_print(r, client.partition,
+	db_selection_print(r, client.GetPartition(),
 			   DatabaseSelection(uri, true),
 			   true, false);
 	return CommandResult::OK;

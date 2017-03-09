@@ -17,20 +17,25 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_SCOPE_IO_THREAD_HXX
-#define MPD_SCOPE_IO_THREAD_HXX
+#ifndef MPD_CLIENT_COMMANDS_HXX
+#define MPD_CLIENT_COMMANDS_HXX
 
-#include "IOThread.hxx"
+#include "CommandResult.hxx"
 
-struct ScopeIOThread {
-	ScopeIOThread() {
-		io_thread_init();
-		io_thread_start();
-	}
+class Client;
+class Request;
+class Response;
 
-	~ScopeIOThread() {
-		io_thread_deinit();
-	}
-};
+CommandResult
+handle_close(Client &client, Request request, Response &response);
+
+CommandResult
+handle_ping(Client &client, Request request, Response &response);
+
+CommandResult
+handle_password(Client &client, Request request, Response &response);
+
+CommandResult
+handle_tagtypes(Client &client, Request request, Response &response);
 
 #endif

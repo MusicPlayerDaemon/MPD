@@ -99,9 +99,16 @@ RelativePathImpl(typename Traits::const_pointer_type base,
 		return nullptr;
 
 	if (*other != 0) {
-		if (!Traits::IsSeparator(*other))
+		if (!Traits::IsSeparator(*other)) {
+			if (*base != 0 && Traits::IsSeparator(other[-1]))
+				/* "other" has no more slash, but the
+				   matching base ended with a slash:
+				   enough to detect a match */
+				return other;
+
 			/* mismatch */
 			return nullptr;
+		}
 
 		/* skip remaining path separators */
 		do {

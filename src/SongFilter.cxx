@@ -21,7 +21,7 @@
 #include "SongFilter.hxx"
 #include "db/LightSong.hxx"
 #include "DetachedSong.hxx"
-#include "tag/Tag.hxx"
+#include "tag/ParseName.hxx"
 #include "util/ConstBuffer.hxx"
 #include "util/StringAPI.hxx"
 #include "util/ASCII.hxx"

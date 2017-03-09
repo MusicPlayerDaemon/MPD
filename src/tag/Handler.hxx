@@ -21,7 +21,7 @@
 #define MPD_TAG_HANDLER_HXX
 
 #include "check.h"
-#include "TagType.h"
+#include "Type.h"
 #include "Chrono.hxx"
 
 #include <assert.h>

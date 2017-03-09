@@ -67,6 +67,9 @@ static constexpr unsigned IDLE_NEIGHBOR = 0x800;
 /** the mount list has changed */
 static constexpr unsigned IDLE_MOUNT = 0x1000;
 
+/** the partition list has changed */
+static constexpr unsigned IDLE_PARTITION = 0x2000;
+
 /**
  * Get idle names
  */

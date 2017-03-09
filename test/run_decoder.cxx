@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#include "ScopeIOThread.hxx"
+#include "event/Thread.hxx"
 #include "decoder/DecoderList.hxx"
 #include "decoder/DecoderPlugin.hxx"
 #include "FakeDecoderAPI.hxx"
@@ -46,9 +46,10 @@ try {
 	const char *const decoder_name = argv[1];
 	const char *const uri = argv[2];
 
-	const ScopeIOThread io_thread;
+	EventThread io_thread;
+	io_thread.Start();
 
-	input_stream_global_init(io_thread_get());
+	input_stream_global_init(io_thread.GetEventLoop());
 
 	decoder_plugin_init_all();
 

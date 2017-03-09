@@ -42,6 +42,7 @@ static const char *const idle_names[] = {
 	"message",
 	"neighbor",
 	"mount",
+	"partition",
 	nullptr
 };
 

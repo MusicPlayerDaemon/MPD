@@ -33,17 +33,15 @@
 #define SONG_TIME "Time: "
 
 void
-playlist_print_uris(Response &r, Partition &partition,
-		    const playlist &playlist)
+playlist_print_uris(Response &r, const playlist &playlist)
 {
 	const Queue &queue = playlist.queue;
 
-	queue_print_uris(r, partition, queue, 0, queue.GetLength());
+	queue_print_uris(r, queue, 0, queue.GetLength());
 }
 
 void
-playlist_print_info(Response &r, Partition &partition,
-		    const playlist &playlist,
+playlist_print_info(Response &r, const playlist &playlist,
 		    unsigned start, unsigned end)
 {
 	const Queue &queue = playlist.queue;
@@ -56,11 +54,11 @@ playlist_print_info(Response &r, Partition &partition,
 		/* an invalid "start" offset is fatal */
 		throw PlaylistError::BadRange();
 
-	queue_print_info(r, partition, queue, start, end);
+	queue_print_info(r, queue, start, end);
 }
 
 void
-playlist_print_id(Response &r, Partition &partition, const playlist &playlist,
+playlist_print_id(Response &r, const playlist &playlist,
 		  unsigned id)
 {
 	int position;
@@ -70,38 +68,34 @@ playlist_print_id(Response &r, Partition &partition, const playlist &playlist,
 		/* no such song */
 		throw PlaylistError::NoSuchSong();
 
-	playlist_print_info(r, partition,
-			    playlist, position, position + 1);
+	playlist_print_info(r, playlist, position, position + 1);
 }
 
 bool
-playlist_print_current(Response &r, Partition &partition,
-		       const playlist &playlist)
+playlist_print_current(Response &r, const playlist &playlist)
 {
 	int current_position = playlist.GetCurrentPosition();
 	if (current_position < 0)
 		return false;
 
-	queue_print_info(r, partition, playlist.queue,
+	queue_print_info(r, playlist.queue,
 			 current_position, current_position + 1);
 	return true;
 }
 
 void
-playlist_print_find(Response &r, Partition &partition,
-		    const playlist &playlist,
+playlist_print_find(Response &r, const playlist &playlist,
 		    const SongFilter &filter)
 {
-	queue_find(r, partition, playlist.queue, filter);
+	queue_find(r, playlist.queue, filter);
 }
 
 void
-playlist_print_changes_info(Response &r, Partition &partition,
-			    const playlist &playlist,
+playlist_print_changes_info(Response &r, const playlist &playlist,
 			    uint32_t version,
 			    unsigned start, unsigned end)
 {
-	queue_print_changes_info(r, partition, playlist.queue, version,
+	queue_print_changes_info(r, playlist.queue, version,
 				 start, end);
 }
 

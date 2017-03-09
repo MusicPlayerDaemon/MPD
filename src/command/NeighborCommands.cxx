@@ -23,7 +23,6 @@
 #include "client/Client.hxx"
 #include "client/Response.hxx"
 #include "Instance.hxx"
-#include "Partition.hxx"
 #include "neighbor/Glue.hxx"
 #include "neighbor/Info.hxx"
 
@@ -39,7 +38,7 @@ CommandResult
 handle_listneighbors(Client &client, gcc_unused Request args, Response &r)
 {
 	const NeighborGlue *const neighbors =
-		client.partition.instance.neighbors;
+		client.GetInstance().neighbors;
 	if (neighbors == nullptr) {
 		r.Error(ACK_ERROR_UNKNOWN, "No neighbor plugin configured");
 		return CommandResult::ERROR;

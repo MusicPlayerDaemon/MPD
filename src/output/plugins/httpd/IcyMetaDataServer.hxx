@@ -20,10 +20,10 @@
 #ifndef MPD_ICY_META_DATA_SERVER_HXX
 #define MPD_ICY_META_DATA_SERVER_HXX
 
-#include "tag/TagType.h"
+#include "Page.hxx"
+#include "tag/Type.h"
 
 struct Tag;
-class Page;
 template<typename T> class AllocatedString;
 
 AllocatedString<char>
@@ -31,7 +31,7 @@ icy_server_metadata_header(const char *name,
 			   const char *genre, const char *url,
 			   const char *content_type, int metaint);
 
-Page *
+PagePtr
 icy_server_metadata_page(const Tag &tag, const TagType *types);
 
 #endif

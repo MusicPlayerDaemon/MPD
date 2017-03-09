@@ -23,6 +23,7 @@
 #include "check.h"
 #include "ClientMessage.hxx"
 #include "command/CommandListBuilder.hxx"
+#include "tag/Mask.hxx"
 #include "event/FullyBufferedSocket.hxx"
 #include "event/TimeoutMonitor.hxx"
 #include "Compiler.h"
@@ -39,18 +40,19 @@
 class SocketAddress;
 class EventLoop;
 class Path;
+struct Instance;
 struct Partition;
+struct PlayerControl;
+struct playlist;
 class Database;
 class Storage;
 
 class Client final
 	: FullyBufferedSocket, TimeoutMonitor,
 	  public boost::intrusive::list_base_hook<boost::intrusive::link_mode<boost::intrusive::normal_link>> {
-public:
-	Partition &partition;
-	struct playlist &playlist;
-	struct PlayerControl &player_control;
+	Partition *partition;
 
+public:
 	unsigned permission;
 
 	/** the uid of the client process, or -1 if unknown */
@@ -69,6 +71,11 @@ public:
 
 	/** idle flags that the client wants to receive */
 	unsigned idle_subscriptions;
+
+	/**
+	 * The tags this client is interested in.
+	 */
+	TagMask tag_mask = TagMask::All();
 
 	/**
 	 * A list of channel names this client is subscribed to.
@@ -181,6 +188,25 @@ public:
 	 */
 	void AllowFile(Path path_fs) const;
 
+	Partition &GetPartition() {
+		return *partition;
+	}
+
+	void SetPartition(Partition &new_partition) {
+		partition = &new_partition;
+
+		// TODO: set various idle flags?
+	}
+
+	gcc_pure
+	Instance &GetInstance();
+
+	gcc_pure
+	playlist &GetPlaylist();
+
+	gcc_pure
+	PlayerControl &GetPlayerControl();
+
 	/**
 	 * Wrapper for Instance::GetDatabase().
 	 */
@@ -198,12 +224,12 @@ public:
 
 private:
 	/* virtual methods from class BufferedSocket */
-	virtual InputResult OnSocketInput(void *data, size_t length) override;
+	InputResult OnSocketInput(void *data, size_t length) override;
 	void OnSocketError(std::exception_ptr ep) override;
-	virtual void OnSocketClosed() override;
+	void OnSocketClosed() override;
 
 	/* virtual methods from class TimeoutMonitor */
-	virtual void OnTimeout() override;
+	void OnTimeout() override;
 };
 
 void

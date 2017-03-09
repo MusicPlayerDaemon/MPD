@@ -18,11 +18,13 @@
  */
 
 #include "config.h"
+#include "lib/alsa/NonBlock.hxx"
 #include "mixer/MixerInternal.hxx"
 #include "mixer/Listener.hxx"
 #include "output/OutputAPI.hxx"
 #include "event/MultiSocketMonitor.hxx"
 #include "event/DeferredMonitor.hxx"
+#include "event/Call.hxx"
 #include "util/ASCII.hxx"
 #include "util/ReusableArray.hxx"
 #include "util/Domain.hxx"
@@ -51,6 +53,13 @@ public:
 		:MultiSocketMonitor(_loop), DeferredMonitor(_loop),
 		 mixer(_mixer) {
 		DeferredMonitor::Schedule();
+	}
+
+	~AlsaMixerMonitor() {
+		BlockingCall(MultiSocketMonitor::GetEventLoop(), [this](){
+				MultiSocketMonitor::Reset();
+				DeferredMonitor::Cancel();
+			});
 	}
 
 private:
@@ -101,18 +110,7 @@ AlsaMixerMonitor::PrepareSockets()
 		return std::chrono::steady_clock::duration(-1);
 	}
 
-	int count = snd_mixer_poll_descriptors_count(mixer);
-	if (count < 0)
-		count = 0;
-
-	struct pollfd *pfds = pfd_buffer.Get(count);
-
-	count = snd_mixer_poll_descriptors(mixer, pfds, count);
-	if (count < 0)
-		count = 0;
-
-	ReplaceSocketList(pfds, count);
-	return std::chrono::steady_clock::duration(-1);
+	return PrepareAlsaMixerSockets(*this, mixer, pfd_buffer);
 }
 
 void

@@ -17,24 +17,31 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_TAG_POOL_HXX
-#define MPD_TAG_POOL_HXX
-
-#include "TagType.h"
-#include "thread/Mutex.hxx"
-
-extern Mutex tag_pool_lock;
-
-struct TagItem;
-struct StringView;
-
-TagItem *
-tag_pool_get_item(TagType type, StringView value);
-
-TagItem *
-tag_pool_dup_item(TagItem *item);
+#include "config.h"
+#include "Thread.hxx"
+#include "thread/Name.hxx"
 
 void
-tag_pool_put_item(TagItem *item);
+EventThread::Start()
+{
+	assert(!thread.IsDefined());
 
-#endif
+	thread.Start();
+}
+
+void
+EventThread::Stop()
+{
+	if (thread.IsDefined()) {
+		event_loop.Break();
+		thread.Join();
+	}
+}
+
+void
+EventThread::Run()
+{
+	SetThreadName("io");
+
+	event_loop.Run();
+}

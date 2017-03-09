@@ -43,7 +43,7 @@ UpdateWalk::MakeDirectoryIfModified(Directory &parent, const char *name,
 		if (directory->IsMount())
 			return nullptr;
 
-		if (directory->mtime == info.mtime && !walk_discard) {
+		if (directory->mtime == std::chrono::system_clock::to_time_t(info.mtime) && !walk_discard) {
 			/* not modified */
 			return nullptr;
 		}
@@ -53,7 +53,7 @@ UpdateWalk::MakeDirectoryIfModified(Directory &parent, const char *name,
 	}
 
 	directory = parent.MakeChild(name);
-	directory->mtime = info.mtime;
+	directory->mtime = std::chrono::system_clock::to_time_t(info.mtime);
 	return directory;
 }
 
@@ -113,7 +113,7 @@ UpdateWalk::UpdateContainerFile(Directory &directory,
 				Song *song = Song::NewFrom(std::move(vtrack), *contdir);
 
 				// shouldn't be necessary but it's there..
-				song->mtime = info.mtime;
+				song->mtime = std::chrono::system_clock::to_time_t(info.mtime);
 
 				FormatDefault(update_domain, "added %s/%s", contdir->GetPath(), song->uri);
 

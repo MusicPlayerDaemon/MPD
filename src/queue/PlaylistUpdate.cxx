@@ -37,14 +37,13 @@ UpdatePlaylistSong(const Database &db, DetachedSong &song)
 	try {
 		original = db.GetSong(song.GetURI());
 	} catch (const std::runtime_error &e) {
-		return false;
-	}
-
-	if (original == nullptr)
 		/* not found - shouldn't happen, because the update
 		   thread should ensure that all stale Song instances
 		   have been purged */
 		return false;
+	}
+
+	assert(original != nullptr);
 
 	if (original->mtime == song.GetLastModified()) {
 		/* not modified */

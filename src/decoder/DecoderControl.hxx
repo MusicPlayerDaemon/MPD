@@ -415,6 +415,9 @@ public:
 	 * mixramp_start/mixramp_end.
 	 */
 	void CycleMixRamp();
+
+private:
+	void RunThread();
 };
 
 #endif

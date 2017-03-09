@@ -33,6 +33,7 @@
 #include "event/DeferredMonitor.hxx"
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
+#include "util/ChronoUtil.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/StringCompare.hxx"
 #include "util/TimeParser.hxx"
@@ -151,41 +152,6 @@ private:
 };
 
 /**
- * A helper class which feeds a (foreign) memory buffer into the
- * CURLOPT_READFUNCTION.
- */
-class CurlRequestBody {
-	ConstBuffer<char> data;
-
-public:
-	explicit CurlRequestBody(ConstBuffer<void> _data)
-		:data(ConstBuffer<char>::FromVoid(_data)) {}
-
-	explicit constexpr CurlRequestBody(StringView _data)
-		:data(_data) {}
-
-	template<typename T>
-	CurlRequestBody(CurlRequest &request, T _data)
-		:CurlRequestBody(_data) {
-		request.SetOption(CURLOPT_READFUNCTION, Callback);
-		request.SetOption(CURLOPT_READDATA, this);
-	}
-
-private:
-	size_t Read(char *buffer, size_t size) {
-		size_t n = std::min(size, data.size);
-		std::copy_n(data.begin(), n, buffer);
-		return n;
-	}
-
-	static size_t Callback(char *buffer, size_t size, size_t nitems,
-			       void *instream) {
-		auto &rb = *(CurlRequestBody *)instream;
-		return rb.Read(buffer, size * nitems);
-	}
-};
-
-/**
  * The (relevant) contents of a "<D:response>" element.
  */
 struct DavResponse {
@@ -253,7 +219,6 @@ ParseU64(const char *s, size_t length)
  */
 class PropfindOperation : BlockingHttpRequest, CommonExpatParser {
 	CurlSlist request_headers;
-	CurlRequestBody request_body;
 
 	enum class State {
 		ROOT,
@@ -270,13 +235,7 @@ class PropfindOperation : BlockingHttpRequest, CommonExpatParser {
 public:
 	PropfindOperation(CurlGlobal &_curl, const char *_uri, unsigned depth)
 		:BlockingHttpRequest(_curl, _uri),
-		 CommonExpatParser(ExpatNamespaceSeparator{'|'}),
-		 request_body(request,
-			      "<?xml version=\"1.0\"?>\n"
-			      "<a:propfind xmlns:a=\"DAV:\">"
-			      "<a:prop><a:getcontenttype/></a:prop>"
-			      "<a:prop><a:getcontentlength/></a:prop>"
-			      "</a:propfind>")
+		 CommonExpatParser(ExpatNamespaceSeparator{'|'})
 	{
 		request.SetOption(CURLOPT_CUSTOMREQUEST, "PROPFIND");
 
@@ -285,6 +244,13 @@ public:
 		request_headers.Append(buffer);
 
 		request.SetOption(CURLOPT_HTTPHEADER, request_headers.Get());
+
+		request.SetOption(CURLOPT_POSTFIELDS,
+				  "<?xml version=\"1.0\"?>\n"
+				  "<a:propfind xmlns:a=\"DAV:\">"
+				  "<a:prop><a:getcontenttype/></a:prop>"
+				  "<a:prop><a:getcontentlength/></a:prop>"
+				  "</a:propfind>");
 
 		// TODO: send request body
 	}
@@ -433,11 +399,8 @@ class HttpGetInfoOperation final : public PropfindOperation {
 
 public:
 	HttpGetInfoOperation(CurlGlobal &curl, const char *uri)
-		:PropfindOperation(curl, uri, 0) {
-		info.type = StorageFileInfo::Type::OTHER;
-		info.size = 0;
-		info.mtime = 0;
-		info.device = info.inode = 0;
+		:PropfindOperation(curl, uri, 0),
+		 info(StorageFileInfo::Type::OTHER) {
 	}
 
 	const StorageFileInfo &Perform() {
@@ -455,10 +418,7 @@ protected:
 			? StorageFileInfo::Type::DIRECTORY
 			: StorageFileInfo::Type::REGULAR;
 		info.size = r.length;
-		info.mtime = r.mtime > std::chrono::system_clock::time_point()
-			? std::chrono::system_clock::to_time_t(r.mtime)
-			: 0;
-		info.device = info.inode = 0;
+		info.mtime = r.mtime;
 	}
 };
 
@@ -548,14 +508,11 @@ protected:
 		entries.emplace_front(std::string(name.data, name.size));
 
 		auto &info = entries.front().info;
-		info.type = r.collection
-			? StorageFileInfo::Type::DIRECTORY
-			: StorageFileInfo::Type::REGULAR;
+		info = StorageFileInfo(r.collection
+				       ? StorageFileInfo::Type::DIRECTORY
+				       : StorageFileInfo::Type::REGULAR);
 		info.size = r.length;
-		info.mtime = r.mtime > std::chrono::system_clock::time_point()
-			? std::chrono::system_clock::to_time_t(r.mtime)
-			: 0;
-		info.device = info.inode = 0;
+		info.mtime = r.mtime;
 	}
 };
 

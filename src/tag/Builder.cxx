@@ -18,10 +18,10 @@
  */
 
 #include "config.h"
-#include "TagBuilder.hxx"
+#include "Builder.hxx"
 #include "Settings.hxx"
-#include "TagPool.hxx"
-#include "TagString.hxx"
+#include "Pool.hxx"
+#include "FixString.hxx"
 #include "Tag.hxx"
 #include "util/WritableBuffer.hxx"
 #include "util/StringView.hxx"

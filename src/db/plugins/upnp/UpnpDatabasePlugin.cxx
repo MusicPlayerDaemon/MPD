@@ -33,8 +33,9 @@
 #include "db/LightSong.hxx"
 #include "db/Stats.hxx"
 #include "config/Block.hxx"
-#include "tag/TagBuilder.hxx"
-#include "tag/TagTable.hxx"
+#include "tag/Builder.hxx"
+#include "tag/Table.hxx"
+#include "tag/Mask.hxx"
 #include "fs/Traits.hxx"
 #include "Log.hxx"
 #include "SongFilter.hxx"
@@ -88,13 +89,13 @@ public:
 		   VisitPlaylist visit_playlist) const override;
 
 	void VisitUniqueTags(const DatabaseSelection &selection,
-			     TagType tag_type, tag_mask_t group_mask,
+			     TagType tag_type, TagMask group_mask,
 			     VisitTag visit_tag) const override;
 
 	DatabaseStats GetStats(const DatabaseSelection &selection) const override;
 
-	time_t GetUpdateStamp() const override {
-		return 0;
+	std::chrono::system_clock::time_point GetUpdateStamp() const override {
+		return std::chrono::system_clock::time_point::min();
 	}
 
 private:
@@ -605,7 +606,7 @@ UpnpDatabase::Visit(const DatabaseSelection &selection,
 
 void
 UpnpDatabase::VisitUniqueTags(const DatabaseSelection &selection,
-			      TagType tag, gcc_unused tag_mask_t group_mask,
+			      TagType tag, gcc_unused TagMask group_mask,
 			      VisitTag visit_tag) const
 {
 	// TODO: use group_mask

@@ -33,10 +33,10 @@
  * @param end the index of the last song (excluding)
  */
 static void
-queue_print_song_info(Response &r, Partition &partition, const Queue &queue,
+queue_print_song_info(Response &r, const Queue &queue,
 		      unsigned position)
 {
-	song_print_info(r, partition, queue.Get(position));
+	song_print_info(r, queue.Get(position));
 	r.Format("Pos: %u\nId: %u\n",
 		 position, queue.PositionToId(position));
 
@@ -46,18 +46,18 @@ queue_print_song_info(Response &r, Partition &partition, const Queue &queue,
 }
 
 void
-queue_print_info(Response &r, Partition &partition, const Queue &queue,
+queue_print_info(Response &r, const Queue &queue,
 		 unsigned start, unsigned end)
 {
 	assert(start <= end);
 	assert(end <= queue.GetLength());
 
 	for (unsigned i = start; i < end; ++i)
-		queue_print_song_info(r, partition, queue, i);
+		queue_print_song_info(r, queue, i);
 }
 
 void
-queue_print_uris(Response &r, Partition &partition, const Queue &queue,
+queue_print_uris(Response &r, const Queue &queue,
 		 unsigned start, unsigned end)
 {
 	assert(start <= end);
@@ -65,12 +65,12 @@ queue_print_uris(Response &r, Partition &partition, const Queue &queue,
 
 	for (unsigned i = start; i < end; ++i) {
 		r.Format("%i:", i);
-		song_print_uri(r, partition, queue.Get(i));
+		song_print_uri(r, queue.Get(i));
 	}
 }
 
 void
-queue_print_changes_info(Response &r, Partition &partition, const Queue &queue,
+queue_print_changes_info(Response &r, const Queue &queue,
 			 uint32_t version,
 			 unsigned start, unsigned end)
 {
@@ -84,7 +84,7 @@ queue_print_changes_info(Response &r, Partition &partition, const Queue &queue,
 
 	for (unsigned i = start; i < end; i++)
 		if (queue.IsNewerAtPosition(i, version))
-			queue_print_song_info(r, partition, queue, i);
+			queue_print_song_info(r, queue, i);
 }
 
 void
@@ -107,13 +107,13 @@ queue_print_changes_position(Response &r, const Queue &queue,
 }
 
 void
-queue_find(Response &r, Partition &partition, const Queue &queue,
+queue_find(Response &r, const Queue &queue,
 	   const SongFilter &filter)
 {
 	for (unsigned i = 0; i < queue.GetLength(); i++) {
 		const DetachedSong &song = queue.Get(i);
 
 		if (filter.Match(song))
-			queue_print_song_info(r, partition, queue, i);
+			queue_print_song_info(r, queue, i);
 	}
 }

@@ -1,4 +1,19 @@
 ver 0.21 (not yet released)
+* protocol
+  - "tagtypes" can be used to hide tags
+  - "find" and "search" can sort
+* output
+  - alsa: non-blocking mode
+
+ver 0.20.5 (2017/02/20)
+* tags
+  - id3: fix memory leak on corrupt ID3 tags
+* decoder
+  - sidplay: don't require libsidutils when building with libsidplayfp
+* output
+  - httpd: fix two buffer overflows in IcyMetaData length calculation
+* mixer
+  - alsa: fix crash bug
 
 ver 0.20.4 (2017/02/01)
 * input

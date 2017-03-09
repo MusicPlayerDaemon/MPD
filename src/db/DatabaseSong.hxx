@@ -33,17 +33,17 @@ class DetachedSong;
  */
 gcc_pure
 DetachedSong
-DatabaseDetachSong(const Storage &storage, const LightSong &song);
+DatabaseDetachSong(const Storage *storage, const LightSong &song);
 
 /**
  * Look up a song in the database and convert it to a #DetachedSong
- * instance.  The caller is responsible for freeing it.
+ * instance.
  *
- * @return nullptr on error
+ * Throws std::runtime_error on error.
  */
-gcc_malloc gcc_nonnull_all
-DetachedSong *
-DatabaseDetachSong(const Database &db, const Storage &storage,
+gcc_pure
+DetachedSong
+DatabaseDetachSong(const Database &db, const Storage *storage,
 		   const char *uri);
 
 #endif

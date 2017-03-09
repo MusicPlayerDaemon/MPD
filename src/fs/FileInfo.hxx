@@ -24,13 +24,15 @@
 #include "Path.hxx"
 #include "system/Error.hxx"
 
-#include <stdint.h>
-
 #ifdef WIN32
 #include <fileapi.h>
 #else
 #include <sys/stat.h>
 #endif
+
+#include <chrono>
+
+#include <stdint.h>
 
 #ifdef WIN32
 
@@ -45,6 +47,13 @@ FileTimeToTimeT(FILETIME ft)
 {
 	return (ConstructUint64(ft.dwLowDateTime, ft.dwHighDateTime)
 		- 116444736000000000) / 10000000;
+}
+
+static std::chrono::system_clock::time_point
+FileTimeToChrono(FILETIME ft)
+{
+	// TODO: eliminate the time_t roundtrip, preserve sub-second resolution
+	return std::chrono::system_clock::from_time_t(FileTimeToTimeT(ft));
 }
 
 #endif
@@ -100,11 +109,11 @@ public:
 #endif
 	}
 
-	time_t GetModificationTime() const {
+	std::chrono::system_clock::time_point GetModificationTime() const {
 #ifdef WIN32
-		return FileTimeToTimeT(data.ftLastWriteTime);
+		return FileTimeToChrono(data.ftLastWriteTime);
 #else
-		return st.st_mtime;
+		return std::chrono::system_clock::from_time_t(st.st_mtime);
 #endif
 	}
 

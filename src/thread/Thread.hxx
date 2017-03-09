@@ -21,6 +21,7 @@
 #define MPD_THREAD_HXX
 
 #include "check.h"
+#include "util/BindMethod.hxx"
 #include "Compiler.h"
 
 #ifdef WIN32
@@ -32,6 +33,9 @@
 #include <assert.h>
 
 class Thread {
+	typedef BoundMethod<void()> Function;
+	const Function f;
+
 #ifdef WIN32
 	HANDLE handle = nullptr;
 	DWORD id;
@@ -49,11 +53,8 @@ class Thread {
 #endif
 #endif
 
-	void (*f)(void *ctx);
-	void *ctx;
-
 public:
-	Thread() = default;
+	explicit Thread(Function _f):f(_f) {}
 
 	Thread(const Thread &) = delete;
 
@@ -89,10 +90,12 @@ public:
 #endif
 	}
 
-	bool Start(void (*f)(void *ctx), void *ctx);
+	void Start();
 	void Join();
 
 private:
+	void Run();
+
 #ifdef WIN32
 	static DWORD WINAPI ThreadProc(LPVOID ctx);
 #else

@@ -18,9 +18,9 @@
  */
 
 #include "config.h"
-#include "TagConfig.hxx"
+#include "Config.hxx"
 #include "Settings.hxx"
-#include "Tag.hxx"
+#include "ParseName.hxx"
 #include "config/ConfigGlobal.hxx"
 #include "config/ConfigOption.hxx"
 #include "system/FatalError.hxx"
@@ -37,7 +37,7 @@ TagLoadConfig()
 	if (value == nullptr)
 		return;
 
-	global_tag_mask = 0;
+	global_tag_mask = TagMask::None();
 
 	if (StringEqualsCaseASCII(value, "none"))
 		return;
@@ -60,7 +60,7 @@ TagLoadConfig()
 				FormatFatalError("error parsing metadata item \"%s\"",
 						 c);
 
-			global_tag_mask |= tag_mask_t(1) << unsigned(type);
+			global_tag_mask |= type;
 
 			s++;
 			c = s;

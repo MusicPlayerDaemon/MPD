@@ -31,9 +31,11 @@
 #include "OutputCommands.hxx"
 #include "MessageCommands.hxx"
 #include "NeighborCommands.hxx"
+#include "ClientCommands.hxx"
+#include "PartitionCommands.hxx"
 #include "OtherCommands.hxx"
 #include "Permission.hxx"
-#include "tag/TagType.h"
+#include "tag/Type.h"
 #include "Partition.hxx"
 #include "client/Client.hxx"
 #include "client/Response.hxx"
@@ -118,6 +120,7 @@ static constexpr struct command commands[] = {
 #ifdef ENABLE_NEIGHBOR_PLUGINS
 	{ "listneighbors", PERMISSION_READ, 0, 0, handle_listneighbors },
 #endif
+	{ "listpartitions", PERMISSION_READ, 0, 0, handle_listpartitions },
 	{ "listplaylist", PERMISSION_READ, 1, 1, handle_listplaylist },
 	{ "listplaylistinfo", PERMISSION_READ, 1, 1, handle_listplaylistinfo },
 	{ "listplaylists", PERMISSION_READ, 0, 0, handle_listplaylists },
@@ -130,9 +133,11 @@ static constexpr struct command commands[] = {
 #endif
 	{ "move", PERMISSION_CONTROL, 2, 2, handle_move },
 	{ "moveid", PERMISSION_CONTROL, 2, 2, handle_moveid },
+	{ "newpartition", PERMISSION_ADMIN, 1, 1, handle_newpartition },
 	{ "next", PERMISSION_CONTROL, 0, 0, handle_next },
 	{ "notcommands", PERMISSION_NONE, 0, 0, handle_not_commands },
 	{ "outputs", PERMISSION_READ, 0, 0, handle_devices },
+	{ "partition", PERMISSION_READ, 1, 1, handle_partition },
 	{ "password", PERMISSION_NONE, 1, 1, handle_password },
 	{ "pause", PERMISSION_CONTROL, 0, 1, handle_pause },
 	{ "ping", PERMISSION_NONE, 0, 0, handle_ping },
@@ -186,7 +191,7 @@ static constexpr struct command commands[] = {
 	{ "subscribe", PERMISSION_READ, 1, 1, handle_subscribe },
 	{ "swap", PERMISSION_CONTROL, 2, 2, handle_swap },
 	{ "swapid", PERMISSION_CONTROL, 2, 2, handle_swapid },
-	{ "tagtypes", PERMISSION_READ, 0, 0, handle_tagtypes },
+	{ "tagtypes", PERMISSION_READ, 0, -1, handle_tagtypes },
 	{ "toggleoutput", PERMISSION_ADMIN, 1, 1, handle_toggleoutput },
 #ifdef ENABLE_DATABASE
 	{ "unmount", PERMISSION_ADMIN, 1, 1, handle_unmount },
@@ -258,7 +263,7 @@ PrintUnavailableCommands(Response &r, unsigned permission)
 static CommandResult
 handle_commands(Client &client, gcc_unused Request request, Response &r)
 {
-	return PrintAvailableCommands(r, client.partition,
+	return PrintAvailableCommands(r, client.GetPartition(),
 				      client.GetPermission());
 }
 

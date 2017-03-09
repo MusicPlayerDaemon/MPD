@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "Tags.hxx"
-#include "tag/TagTable.hxx"
+#include "tag/Table.hxx"
 
 const struct tag_table upnp_tags[] = {
 	{ "upnp:artist", TAG_ARTIST },

@@ -22,8 +22,8 @@
 
 #include "config.h"
 #include "FfmpegMetaData.hxx"
-#include "tag/TagTable.hxx"
-#include "tag/TagHandler.hxx"
+#include "tag/Table.hxx"
+#include "tag/Handler.hxx"
 
 extern "C" {
 #include <libavutil/dict.h>

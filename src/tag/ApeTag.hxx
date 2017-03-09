@@ -20,7 +20,7 @@
 #ifndef MPD_APE_TAG_HXX
 #define MPD_APE_TAG_HXX
 
-#include "TagTable.hxx"
+#include "Table.hxx"
 
 class InputStream;
 struct TagHandler;

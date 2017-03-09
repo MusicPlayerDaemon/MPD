@@ -59,15 +59,7 @@
 
       <para>
         All data between the client and the server is encoded in
-        UTF-8. (Note: In UTF-8 all standard ansi characters, 0-127 are
-        the same as in standard ansi encoding.  Also, no ansi character
-        appears in any multi-byte characters.  So, you can use
-        standard C functions like <function>strlen</function>, and
-        <function>strcpy</function> just fine with UTF-8 encoded
-        strings. For example: <returnvalue>OK</returnvalue> encoded in
-        UTF-8 is simply <returnvalue>OK</returnvalue>.  For more
-        information on UTF-8:
-        <ulink url="http://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8"/>)
+        UTF-8.
       </para>
     </section>
 
@@ -372,8 +364,9 @@
               </listitem>
               <listitem>
                 <para>
-                  <returnvalue>output</returnvalue>: an audio output has
-                  been enabled or disabled
+                  <returnvalue>output</returnvalue>: an audio output
+                  has been added, removed or modified (e.g. renamed,
+                  enabled or disabled)
                 </para>
               </listitem>
               <listitem>
@@ -381,6 +374,12 @@
                   <returnvalue>options</returnvalue>: options like
                   <option>repeat</option>, <option>random</option>,
                   <option>crossfade</option>, replay gain
+                </para>
+              </listitem>
+              <listitem>
+                <para>
+                  <returnvalue>partition</returnvalue>: a partition
+                  was added, removed or changed
                 </para>
               </listitem>
               <listitem>
@@ -1598,6 +1597,7 @@ OK
               <arg choice="req"><replaceable>TYPE</replaceable></arg>
               <arg choice="req"><replaceable>WHAT</replaceable></arg>
               <arg choice="opt"><replaceable>...</replaceable></arg>
+              <arg choice="opt">sort <replaceable>TYPE</replaceable></arg>
               <arg choice="opt">window <replaceable>START</replaceable>:<replaceable>END</replaceable></arg>
             </cmdsynopsis>
           </term>
@@ -1642,6 +1642,18 @@ OK
 
             <para>
               <varname>WHAT</varname> is what to find.
+            </para>
+
+            <para>
+              <varname>sort</varname> sorts the result by the
+              specified tag.  Without <varname>sort</varname>, the
+              order is undefined.  Only the first tag value will be
+              used, if multiple of the same type exist.  To sort by
+              "Artist", "Album" or "AlbumArtist", you should specify
+              "ArtistSort", "AlbumSort" or "AlbumArtistSort" instead.
+              These will automatically fall back to the former if
+              "*Sort" doesn't exist.  "AlbumArtist" falls back to just
+              "Artist".
             </para>
 
             <para>
@@ -1841,6 +1853,7 @@ OK
               <arg choice="req"><replaceable>TYPE</replaceable></arg>
               <arg choice="req"><replaceable>WHAT</replaceable></arg>
               <arg choice="opt"><replaceable>...</replaceable></arg>
+              <arg choice="opt">sort <replaceable>TYPE</replaceable></arg>
               <arg choice="opt">window <replaceable>START</replaceable>:<replaceable>END</replaceable></arg>
             </cmdsynopsis>
           </term>
@@ -2252,6 +2265,152 @@ OK
             </para>
           </listitem>
         </varlistentry>
+
+        <varlistentry id="command_tagtypes">
+          <term>
+            <cmdsynopsis>
+              <command>tagtypes</command>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              Shows a list of available tag types.  It is an
+              intersection of the <varname>metadata_to_use</varname>
+              setting and this client's tag mask.
+            </para>
+
+            <para>
+              About the tag mask: each client can decide to disable
+              any number of tag types, which will be omitted from
+              responses to this client.  That is a good idea, because
+              it makes responses smaller.  The following
+              <command>tagtypes</command> sub commands configure this
+              list.
+            </para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry id="command_tagtypes_disable">
+          <term>
+            <cmdsynopsis>
+              <command>tagtypes</command>
+              <arg choice="plain">disable</arg>
+              <arg choice="req" rep="repeat"><replaceable>NAME</replaceable></arg>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              Remove one or more tags from the list of tag types the
+              client is interested in.  These will be omitted from
+              responses to this client.
+            </para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry id="command_tagtypes_enable">
+          <term>
+            <cmdsynopsis>
+              <command>tagtypes</command>
+              <arg choice="plain">enable</arg>
+              <arg choice="req" rep="repeat"><replaceable>NAME</replaceable></arg>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              Re-enable one or more tags from the list of tag types
+              for this client.  These will no longer be hidden from
+              responses to this client.
+            </para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry id="command_tagtypes_clear">
+          <term>
+            <cmdsynopsis>
+              <command>tagtypes</command>
+              <arg choice="plain">clear</arg>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              Clear the list of tag types this client is interested
+              in.  This means that <application>MPD</application> will
+              not send any tags to this client.
+            </para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry id="command_tagtypes_all">
+          <term>
+            <cmdsynopsis>
+              <command>tagtypes</command>
+              <arg choice="plain">all</arg>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              Announce that this client is interested in all tag
+              types.  This is the default setting for new clients.
+            </para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+    </section>
+
+    <section id="partition_commands">
+      <title>Partition commands</title>
+
+      <para>
+        These commands allow a client to inspect and manage
+        "partitions".  A partition is one frontend of a multi-player
+        MPD process: it has separate queue, player and outputs.  A
+        client is assigned to one partition at a time.
+      </para>
+
+      <variablelist>
+        <varlistentry id="command_partition">
+          <term>
+            <cmdsynopsis>
+              <command>partition</command>
+              <arg choice="req"><replaceable>NAME</replaceable></arg>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              Switch the client to a different partition.
+            </para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry id="command_listpartitions">
+          <term>
+            <cmdsynopsis>
+              <command>listpartitions</command>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              Print a list of partitions.  Each partition starts with
+              a <varname>partition</varname> keyword and the
+              partition's name, followed by information about the
+              partition.
+            </para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry id="command_newpartition">
+          <term>
+            <cmdsynopsis>
+              <command>newpartition</command>
+              <arg choice="req"><replaceable>NAME</replaceable></arg>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              Create a new partition.
+            </para>
+          </listitem>
+        </varlistentry>
       </variablelist>
     </section>
 
@@ -2407,18 +2566,6 @@ OK
             <para>
               Shows which commands the current user does not have
               access to.
-            </para>
-          </listitem>
-        </varlistentry>
-        <varlistentry id="command_tagtypes">
-          <term>
-            <cmdsynopsis>
-              <command>tagtypes</command>
-            </cmdsynopsis>
-          </term>
-          <listitem>
-            <para>
-              Shows a list of available song metadata.
             </para>
           </listitem>
         </varlistentry>

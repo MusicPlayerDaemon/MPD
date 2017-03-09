@@ -23,7 +23,7 @@
 #include "../SongEnumerator.hxx"
 #include "DetachedSong.hxx"
 #include "tag/Tag.hxx"
-#include "tag/TagBuilder.hxx"
+#include "tag/Builder.hxx"
 #include "util/StringUtil.hxx"
 #include "util/StringCompare.hxx"
 #include "input/TextInputStream.hxx"

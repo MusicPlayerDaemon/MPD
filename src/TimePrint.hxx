@@ -20,6 +20,8 @@
 #ifndef MPD_TIME_PRINT_HXX
 #define MPD_TIME_PRINT_HXX
 
+#include <chrono>
+
 #include <time.h>
 
 class Response;
@@ -29,5 +31,12 @@ class Response;
  */
 void
 time_print(Response &r, const char *name, time_t t);
+
+inline void
+time_print(Response &r, const char *name,
+	   std::chrono::system_clock::time_point t)
+{
+	time_print(r, name, std::chrono::system_clock::to_time_t(t));
+}
 
 #endif

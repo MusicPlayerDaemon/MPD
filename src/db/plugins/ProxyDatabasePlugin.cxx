@@ -31,8 +31,9 @@
 #include "SongFilter.hxx"
 #include "Compiler.h"
 #include "config/Block.hxx"
-#include "tag/TagBuilder.hxx"
+#include "tag/Builder.hxx"
 #include "tag/Tag.hxx"
+#include "tag/Mask.hxx"
 #include "util/ScopeExit.hxx"
 #include "util/RuntimeError.hxx"
 #include "protocol/Ack.hxx"
@@ -88,7 +89,7 @@ class ProxyDatabase final : public Database, SocketMonitor, IdleMonitor {
 	struct mpd_connection *connection;
 
 	/* this is mutable because GetStats() must be "const" */
-	mutable time_t update_stamp;
+	mutable std::chrono::system_clock::time_point update_stamp;
 
 	/**
 	 * The libmpdclient idle mask that was removed from the other
@@ -120,14 +121,14 @@ public:
 		   VisitPlaylist visit_playlist) const override;
 
 	void VisitUniqueTags(const DatabaseSelection &selection,
-			     TagType tag_type, tag_mask_t group_mask,
+			     TagType tag_type, TagMask group_mask,
 			     VisitTag visit_tag) const override;
 
 	DatabaseStats GetStats(const DatabaseSelection &selection) const override;
 
 	unsigned Update(const char *uri_utf8, bool discard) override;
 
-	time_t GetUpdateStamp() const override {
+	std::chrono::system_clock::time_point GetUpdateStamp() const override {
 		return update_stamp;
 	}
 
@@ -346,7 +347,7 @@ ProxyDatabase::Create(EventLoop &loop, DatabaseListener &listener,
 void
 ProxyDatabase::Open()
 {
-	update_stamp = 0;
+	update_stamp = std::chrono::system_clock::time_point::min();
 
 	try {
 		Connect();
@@ -756,7 +757,7 @@ ProxyDatabase::Visit(const DatabaseSelection &selection,
 void
 ProxyDatabase::VisitUniqueTags(const DatabaseSelection &selection,
 			       TagType tag_type,
-			       gcc_unused tag_mask_t group_mask,
+			       gcc_unused TagMask group_mask,
 			       VisitTag visit_tag) const
 {
 	// TODO: eliminate the const_cast
@@ -817,7 +818,7 @@ ProxyDatabase::GetStats(const DatabaseSelection &selection) const
 	if (stats2 == nullptr)
 		ThrowError(connection);
 
-	update_stamp = (time_t)mpd_stats_get_db_update_time(stats2);
+	update_stamp = std::chrono::system_clock::from_time_t(mpd_stats_get_db_update_time(stats2));
 
 	DatabaseStats stats;
 	stats.song_count = mpd_stats_get_number_of_songs(stats2);

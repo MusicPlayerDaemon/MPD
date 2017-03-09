@@ -23,7 +23,6 @@
 #include <stdint.h>
 
 struct playlist;
-struct Partition;
 class SongFilter;
 class Response;
 
@@ -31,8 +30,7 @@ class Response;
  * Sends the whole playlist to the client, song URIs only.
  */
 void
-playlist_print_uris(Response &r, Partition &partition,
-		    const playlist &playlist);
+playlist_print_uris(Response &r, const playlist &playlist);
 
 /**
  * Sends a range of the playlist to the client, including all known
@@ -43,8 +41,7 @@ playlist_print_uris(Response &r, Partition &partition,
  * Throws #PlaylistError if the range is invalid.
  */
 void
-playlist_print_info(Response &r, Partition &partition,
-		    const playlist &playlist,
+playlist_print_info(Response &r, const playlist &playlist,
 		    unsigned start, unsigned end);
 
 /**
@@ -53,8 +50,7 @@ playlist_print_info(Response &r, Partition &partition,
  * Throws #PlaylistError if the range is invalid.
  */
 void
-playlist_print_id(Response &r, Partition &partition,
-		  const playlist &playlist, unsigned id);
+playlist_print_id(Response &r, const playlist &playlist, unsigned id);
 
 /**
  * Sends the current song to the client.
@@ -62,23 +58,20 @@ playlist_print_id(Response &r, Partition &partition,
  * @return true on success, false if there is no current song
  */
 bool
-playlist_print_current(Response &r, Partition &partition,
-		       const playlist &playlist);
+playlist_print_current(Response &r, const playlist &playlist);
 
 /**
  * Find songs in the playlist.
  */
 void
-playlist_print_find(Response &r, Partition &partition,
-		    const playlist &playlist,
+playlist_print_find(Response &r, const playlist &playlist,
 		    const SongFilter &filter);
 
 /**
  * Print detailed changes since the specified playlist version.
  */
 void
-playlist_print_changes_info(Response &r, Partition &partition,
-			    const playlist &playlist,
+playlist_print_changes_info(Response &r, const playlist &playlist,
 			    uint32_t version,
 			    unsigned start, unsigned end);
 

@@ -517,30 +517,28 @@ try {
 	dc.client_cond.signal();
 }
 
-static void
-decoder_task(void *arg)
+void
+DecoderControl::RunThread()
 {
-	DecoderControl &dc = *(DecoderControl *)arg;
-
 	SetThreadName("decoder");
 
-	const std::lock_guard<Mutex> protect(dc.mutex);
+	const std::lock_guard<Mutex> protect(mutex);
 
 	do {
-		assert(dc.state == DecoderState::STOP ||
-		       dc.state == DecoderState::ERROR);
+		assert(state == DecoderState::STOP ||
+		       state == DecoderState::ERROR);
 
-		switch (dc.command) {
+		switch (command) {
 		case DecoderCommand::START:
-			dc.CycleMixRamp();
-			dc.replay_gain_prev_db = dc.replay_gain_db;
-			dc.replay_gain_db = 0;
+			CycleMixRamp();
+			replay_gain_prev_db = replay_gain_db;
+			replay_gain_db = 0;
 
-			decoder_run(dc);
+			decoder_run(*this);
 
-			if (dc.state == DecoderState::ERROR) {
+			if (state == DecoderState::ERROR) {
 				try {
-					std::rethrow_exception(dc.error);
+					std::rethrow_exception(error);
 				} catch (const std::exception &e) {
 					LogError(e);
 				} catch (...) {
@@ -556,20 +554,20 @@ decoder_task(void *arg)
 			/* we need to clear the pipe here; usually the
 			   PlayerThread is responsible, but it is not
 			   aware that the decoder has finished */
-			dc.pipe->Clear(*dc.buffer);
+			pipe->Clear(*buffer);
 
-			decoder_run(dc);
+			decoder_run(*this);
 			break;
 
 		case DecoderCommand::STOP:
-			dc.CommandFinishedLocked();
+			CommandFinishedLocked();
 			break;
 
 		case DecoderCommand::NONE:
-			dc.Wait();
+			Wait();
 			break;
 		}
-	} while (dc.command != DecoderCommand::NONE || !dc.quit);
+	} while (command != DecoderCommand::NONE || !quit);
 }
 
 void
@@ -578,5 +576,5 @@ decoder_thread_start(DecoderControl &dc)
 	assert(!dc.thread.IsDefined());
 
 	dc.quit = false;
-	dc.thread.Start(decoder_task, &dc);
+	dc.thread.Start();
 }

@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#include "TagType.h"
+#include "Type.h"
 
 const char *const tag_item_names[TAG_NUM_OF_ITEM_TYPES] = {
 	[TAG_ARTIST] = "Artist",

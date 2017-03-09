@@ -18,12 +18,13 @@
  */
 
 #include "config.h"
-#include "TagId3.hxx"
+#include "Id3Scan.hxx"
 #include "Id3Load.hxx"
-#include "TagHandler.hxx"
-#include "TagTable.hxx"
-#include "TagBuilder.hxx"
+#include "Handler.hxx"
+#include "Table.hxx"
+#include "Builder.hxx"
 #include "util/Alloc.hxx"
+#include "util/ScopeExit.hxx"
 #include "util/StringUtil.hxx"
 #include "Log.hxx"
 
@@ -78,11 +79,9 @@ import_id3_string(const id3_ucs4_t *ucs4)
 	if (gcc_unlikely(utf8 == nullptr))
 		return nullptr;
 
-	id3_utf8_t *utf8_stripped = (id3_utf8_t *)
-		xstrdup(Strip((char *)utf8));
-	free(utf8);
+	AtScopeExit(utf8) { free(utf8); };
 
-	return utf8_stripped;
+	return (id3_utf8_t *)xstrdup(Strip((char *)utf8));
 }
 
 /**
@@ -126,9 +125,10 @@ tag_id3_import_text_frame(const struct id3_frame *frame,
 		if (utf8 == nullptr)
 			continue;
 
+		AtScopeExit(utf8) { free(utf8); };
+
 		tag_handler_invoke_tag(handler, handler_ctx,
 				       type, (const char *)utf8);
-		free(utf8);
 	}
 }
 
@@ -177,8 +177,9 @@ tag_id3_import_comment_frame(const struct id3_frame *frame, TagType type,
 	if (utf8 == nullptr)
 		return;
 
+	AtScopeExit(utf8) { free(utf8); };
+
 	tag_handler_invoke_tag(handler, handler_ctx, type, (const char *)utf8);
-	free(utf8);
 }
 
 /**
@@ -236,22 +237,23 @@ tag_id3_import_musicbrainz(struct id3_tag *id3_tag,
 		if (name == nullptr)
 			continue;
 
+		AtScopeExit(name) { free(name); };
+
 		id3_utf8_t *value = tag_id3_getstring(frame, 2);
 		if (value == nullptr)
 			continue;
+
+		AtScopeExit(value) { free(value); };
 
 		tag_handler_invoke_pair(handler, handler_ctx,
 					(const char *)name,
 					(const char *)value);
 
 		TagType type = tag_id3_parse_txxx_name((const char*)name);
-		free(name);
 
 		if (type != TAG_NUM_OF_ITEM_TYPES)
 			tag_handler_invoke_tag(handler, handler_ctx,
 					       type, (const char*)value);
-
-		free(value);
 	}
 }
 

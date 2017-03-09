@@ -80,6 +80,10 @@ public:
 		       const ReplayGainConfig &replay_gain_config,
 		       AudioOutputClient &client);
 
+	void AddNullOutput(EventLoop &event_loop,
+			   const ReplayGainConfig &replay_gain_config,
+			   AudioOutputClient &client);
+
 	/**
 	 * Returns the total number of audio output devices, including
 	 * those which are disabled right now.

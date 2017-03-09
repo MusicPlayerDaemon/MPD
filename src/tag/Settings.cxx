@@ -19,4 +19,4 @@
 
 #include "Settings.hxx"
 
-tag_mask_t global_tag_mask = (tag_mask_t)-1 & ~(1 << TAG_COMMENT);
+TagMask global_tag_mask = TagMask::All() & ~TagMask(TAG_COMMENT);

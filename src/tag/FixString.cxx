@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#include "TagString.hxx"
+#include "FixString.hxx"
 #include "util/Alloc.hxx"
 #include "util/WritableBuffer.hxx"
 #include "util/StringView.hxx"

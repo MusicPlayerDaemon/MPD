@@ -50,7 +50,7 @@ class SimpleDatabase : public Database {
 
 	Directory *root;
 
-	time_t mtime;
+	std::chrono::system_clock::time_point mtime;
 
 	/**
 	 * A buffer for GetSong() when prefixing the #LightSong
@@ -88,7 +88,7 @@ public:
 	 * Returns true if there is a valid database file on the disk.
 	 */
 	bool FileExists() const {
-		return mtime > 0;
+		return mtime >= std::chrono::system_clock::time_point(std::chrono::system_clock::duration::zero());
 	}
 
 	/**
@@ -120,12 +120,12 @@ public:
 		   VisitPlaylist visit_playlist) const override;
 
 	void VisitUniqueTags(const DatabaseSelection &selection,
-			     TagType tag_type, tag_mask_t group_mask,
+			     TagType tag_type, TagMask group_mask,
 			     VisitTag visit_tag) const override;
 
 	DatabaseStats GetStats(const DatabaseSelection &selection) const override;
 
-	time_t GetUpdateStamp() const override {
+	std::chrono::system_clock::time_point GetUpdateStamp() const override {
 		return mtime;
 	}
 

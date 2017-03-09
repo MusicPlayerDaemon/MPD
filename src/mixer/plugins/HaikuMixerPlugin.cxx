@@ -25,6 +25,8 @@
 #include "output/plugins/HaikuOutputPlugin.hxx"
 #include "Compiler.h"
 
+#include "util/RuntimeError.hxx"
+
 class HaikuMixer final : public Mixer {
 	/** the base mixer class */
 	HaikuOutput &self;
@@ -35,36 +37,34 @@ public:
 		 self(_output) {}
 
 	/* virtual methods from class Mixer */
-	virtual bool Open(gcc_unused Error &error) override {
-		return true;
+	virtual void Open() override {
 	}
 
 	virtual void Close() override {
 	}
 
-	virtual int GetVolume(Error &error) override;
-	virtual bool SetVolume(unsigned volume, Error &error) override;
+	virtual int GetVolume() override;
+	virtual void SetVolume(unsigned volume) override;
 };
 
 static Mixer *
 haiku_mixer_init(gcc_unused EventLoop &event_loop, AudioOutput &ao,
 		MixerListener &listener,
-		gcc_unused const ConfigBlock &block,
-		gcc_unused Error &error)
+		gcc_unused const ConfigBlock &block)
 {
 	return new HaikuMixer((HaikuOutput &)ao, listener);
 }
 
 int
-HaikuMixer::GetVolume(gcc_unused Error &error)
+HaikuMixer::GetVolume()
 {
 	return haiku_output_get_volume(self);
 }
 
-bool
-HaikuMixer::SetVolume(unsigned volume, gcc_unused Error &error)
+void
+HaikuMixer::SetVolume(unsigned volume)
 {
-	return haiku_output_set_volume(self, volume);
+	haiku_output_set_volume(self, volume);
 }
 
 const MixerPlugin haiku_mixer_plugin = {

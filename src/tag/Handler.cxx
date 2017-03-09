@@ -18,8 +18,8 @@
  */
 
 #include "config.h"
-#include "TagHandler.hxx"
-#include "TagBuilder.hxx"
+#include "Handler.hxx"
+#include "Builder.hxx"
 #include "util/ASCII.hxx"
 
 #include <stdio.h>
@@ -44,7 +44,7 @@ add_tag_tag(TagType type, const char *value, void *ctx)
 		unsigned n = strtoul(value, &end, 10);
 		if (value != end) {
 			char s[21];
-			if (snprintf(s, 21, "%u", n) >= 0)
+			if (snprintf(s, 21, "%u", n) > 0)
 				tag.AddItem(type, s);
 		}
 	} else

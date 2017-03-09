@@ -24,6 +24,7 @@
 #include "../Wrapper.hxx"
 #include "mixer/MixerList.hxx"
 #include "util/Domain.hxx"
+#include "system/Error.hxx"
 #include "Log.hxx"
 
 #include <AppFileInfo.h>
