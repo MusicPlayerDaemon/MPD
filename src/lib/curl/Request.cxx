@@ -168,13 +168,23 @@ CurlRequest::Done(CURLcode result)
 	}
 }
 
+gcc_pure
+static bool
+IsResponseBoundaryHeader(StringView s)
+{
+	return s.size > 5 && (memcmp(s.data, "HTTP/", 5) == 0 ||
+			      /* the proprietary "ICY 200 OK" is
+				 emitted by Shoutcast */
+			      memcmp(s.data, "ICY 2", 5) == 0);
+}
+
 inline void
 CurlRequest::HeaderFunction(StringView s)
 {
 	if (state > State::HEADERS)
 		return;
 
-	if (s.size > 5 && memcmp(s.data, "HTTP/", 5) == 0) {
+	if (IsResponseBoundaryHeader(s)) {
 		/* this is the boundary to a new response, for example
 		   after a redirect */
 		headers.clear();

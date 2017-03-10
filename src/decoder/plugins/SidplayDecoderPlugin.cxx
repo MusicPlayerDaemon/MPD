@@ -50,6 +50,10 @@
 #include <string.h>
 #include <stdio.h>
 
+#ifdef HAVE_SIDPLAYFP
+#define LIBSIDPLAYFP_VERSION GCC_MAKE_VERSION(LIBSIDPLAYFP_VERSION_MAJ, LIBSIDPLAYFP_VERSION_MIN, LIBSIDPLAYFP_VERSION_LEV)
+#endif
+
 #define SUBTUNE_PREFIX "tune_"
 
 static constexpr Domain sidplay_domain("sidplay");
@@ -285,7 +289,11 @@ sidplay_file_decode(DecoderClient &client, Path path_fs)
 #endif
 
 #ifdef HAVE_SIDPLAYFP
+#if LIBSIDPLAYFP_VERSION >= GCC_MAKE_VERSION(1,8,0)
 	const bool stereo = tune.getInfo()->sidChips() >= 2;
+#else
+	const bool stereo = tune.getInfo()->isStereo();
+#endif
 #else
 	const bool stereo = tune.isStereo();
 #endif

@@ -235,7 +235,7 @@ decoder_run_stream_fallback(DecoderBridge &bridge, InputStream &is)
 {
 	const struct DecoderPlugin *plugin;
 
-#ifdef HAVE_FFMPEG
+#ifdef ENABLE_FFMPEG
 	plugin = decoder_plugin_from_name("ffmpeg");
 #else
 	plugin = decoder_plugin_from_name("mad");
