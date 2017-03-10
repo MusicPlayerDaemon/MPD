@@ -172,7 +172,10 @@ gcc_pure
 static bool
 IsResponseBoundaryHeader(StringView s)
 {
-	return s.size > 5 && memcmp(s.data, "HTTP/", 5) == 0;
+	return s.size > 5 && (memcmp(s.data, "HTTP/", 5) == 0 ||
+			      /* the proprietary "ICY 200 OK" is
+				 emitted by Shoutcast */
+			      memcmp(s.data, "ICY 2", 5) == 0);
 }
 
 inline void

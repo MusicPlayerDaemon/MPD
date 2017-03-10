@@ -1,4 +1,6 @@
 ver 0.20.6 (not yet released)
+* input
+  - curl: fix headers after HTTP redirect to Shoutcast server
 * decoder
   - ffmpeg: re-enable as fallback
   - mpcdec: fix crash (division by zero) after seeking
