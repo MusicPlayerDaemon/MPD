@@ -2,6 +2,7 @@ ver 0.20.6 (not yet released)
 * decoder
   - ffmpeg: re-enable as fallback
   - mpcdec: fix crash (division by zero) after seeking
+  - sidplay: make compatible with libsidplayfp < 1.8
 * workaround for GCC 4.9.4 / libstdc++ bug (build failure)
 
 ver 0.20.5 (2017/02/20)
