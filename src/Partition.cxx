@@ -141,9 +141,9 @@ Partition::OnMixerVolumeChanged(gcc_unused Mixer &mixer, gcc_unused int volume)
 void
 Partition::OnGlobalEvent(unsigned mask)
 {
-	if ((mask & TAG_MODIFIED) != 0)
-		TagModified();
-
 	if ((mask & SYNC_WITH_PLAYER) != 0)
 		SyncWithPlayer();
+
+	if ((mask & TAG_MODIFIED) != 0)
+		TagModified();
 }
