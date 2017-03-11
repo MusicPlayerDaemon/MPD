@@ -5,6 +5,16 @@ ver 0.21 (not yet released)
 * output
   - alsa: non-blocking mode
 
+ver 0.20.6 (2017/03/10)
+* input
+  - curl: fix headers after HTTP redirect to Shoutcast server
+* decoder
+  - ffmpeg: re-enable as fallback
+  - mpcdec: fix crash (division by zero) after seeking
+  - sidplay: make compatible with libsidplayfp < 1.8
+* fix stream tags after automatic song change
+* workaround for GCC 4.9.4 / libstdc++ bug (build failure)
+
 ver 0.20.5 (2017/02/20)
 * tags
   - id3: fix memory leak on corrupt ID3 tags

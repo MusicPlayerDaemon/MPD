@@ -56,7 +56,7 @@ public:
 		:buffer(std::exchange(src.buffer, nullptr)),
 		 capacity(std::exchange(src.capacity, 0)) {}
 
-	ReusableArray &operator=(const ReusableArray &&src) {
+	ReusableArray &operator=(ReusableArray &&src) {
 		std::swap(buffer, src.buffer);
 		std::swap(capacity, src.capacity);
 		return *this;
