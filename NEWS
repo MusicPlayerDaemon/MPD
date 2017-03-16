@@ -1,3 +1,5 @@
+ver 0.20.7 (not yet released)
+
 ver 0.20.6 (2017/03/10)
 * input
   - curl: fix headers after HTTP redirect to Shoutcast server
