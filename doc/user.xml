@@ -4080,7 +4080,7 @@ run</programlisting>
                     (logical "and") can be used to select portions of
                     the format string depending on the existing tag
                     values.  Example:
-                    <parameter>~/.mpd/recorder/[%title|%name%].ogg</parameter>
+                    <parameter>~/.mpd/recorder/[%title%|%name%].ogg</parameter>
                     (use the "name" tag if no title exists)
                   </para>
                 </entry>
