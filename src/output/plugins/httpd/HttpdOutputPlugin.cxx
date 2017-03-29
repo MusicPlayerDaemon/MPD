@@ -421,7 +421,7 @@ HttpdOutput::SendTag(const Tag &tag)
 
 		auto page = ReadPage();
 		if (page != nullptr) {
-			header = std::move(page);
+			header = page;
 			BroadcastPage(page);
 		}
 	} else {
