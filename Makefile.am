@@ -257,6 +257,7 @@ UPNP_SOURCES = \
 	src/lib/upnp/Action.hxx
 
 ALSA_SOURCES = \
+	src/lib/alsa/Version.cxx src/lib/alsa/Version.hxx \
 	src/lib/alsa/NonBlock.cxx src/lib/alsa/NonBlock.hxx
 
 #
