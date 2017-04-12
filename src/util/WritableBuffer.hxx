@@ -99,6 +99,13 @@ struct WritableBuffer {
 	constexpr WritableBuffer(pointer_type _data, size_type _size)
 		:data(_data), size(_size) {}
 
+	/**
+	 * Convert array to WritableBuffer instance.
+	 */
+	template<size_type _size>
+	constexpr WritableBuffer(T (&_data)[_size])
+		:data(_data), size(_size) {}
+
 	constexpr static WritableBuffer Null() {
 		return { nullptr, 0 };
 	}
