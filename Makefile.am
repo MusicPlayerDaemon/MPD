@@ -1378,7 +1378,7 @@ OUTPUT_API_SRC = \
 	src/output/Source.cxx src/output/Source.hxx \
 	src/output/OutputThread.cxx \
 	src/output/Domain.cxx src/output/Domain.hxx \
-	src/output/OutputControl.cxx \
+	src/output/Control.cxx src/output/Control.hxx \
 	src/output/OutputState.cxx src/output/OutputState.hxx \
 	src/output/OutputPrint.cxx src/output/OutputPrint.hxx \
 	src/output/OutputCommand.cxx src/output/OutputCommand.hxx \
