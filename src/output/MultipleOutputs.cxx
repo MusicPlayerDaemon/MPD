@@ -138,7 +138,7 @@ MultipleOutputs::AllFinished() const
 {
 	for (auto ao : outputs) {
 		const std::lock_guard<Mutex> protect(ao->mutex);
-		if (ao->IsOpen() && !ao->IsCommandFinished())
+		if (ao->IsBusy())
 			return false;
 	}
 

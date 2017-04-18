@@ -316,6 +316,13 @@ public:
 	/**
 	 * Caller must lock the mutex.
 	 */
+	bool IsBusy() const {
+		return IsOpen() && !IsCommandFinished();
+	}
+
+	/**
+	 * Caller must lock the mutex.
+	 */
 	const std::exception_ptr &GetLastError() const {
 		return last_error;
 	}
