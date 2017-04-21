@@ -2,6 +2,8 @@ ver 0.21 (not yet released)
 * protocol
   - "tagtypes" can be used to hide tags
   - "find" and "search" can sort
+* tags
+  - new tag "OriginalDate"
 * output
   - alsa: non-blocking mode
 

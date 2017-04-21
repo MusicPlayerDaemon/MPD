@@ -395,6 +395,7 @@ HaikuOutput::SendTag(const Tag &tag)
 			break;
 		case TAG_GENRE:
 		case TAG_DATE:
+		case TAG_ORIGINAL_DATE:
 		case TAG_PERFORMER:
 		case TAG_COMMENT:
 		case TAG_DISC:

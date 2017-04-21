@@ -32,6 +32,7 @@ const char *const tag_item_names[TAG_NUM_OF_ITEM_TYPES] = {
 	[TAG_NAME] = "Name",
 	[TAG_GENRE] = "Genre",
 	[TAG_DATE] = "Date",
+	[TAG_ORIGINAL_DATE] = "OriginalDate",
 	[TAG_COMPOSER] = "Composer",
 	[TAG_PERFORMER] = "Performer",
 	[TAG_COMMENT] = "Comment",

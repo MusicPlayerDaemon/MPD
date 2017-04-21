@@ -55,6 +55,10 @@
 #define ID3_FRAME_ALBUM_ARTIST "TPE2"
 #endif
 
+#ifndef ID3_FRAME_ORIGINAL_RELEASE_DATE
+#define ID3_FRAME_ORIGINAL_RELEASE_DATE "TDOR"
+#endif
+
 gcc_pure
 static id3_utf8_t *
 tag_id3_getstring(const struct id3_frame *frame, unsigned i)
@@ -316,6 +320,8 @@ scan_id3_tag(struct id3_tag *tag,
 	tag_id3_import_text(tag, ID3_FRAME_TRACK, TAG_TRACK,
 			    handler, handler_ctx);
 	tag_id3_import_text(tag, ID3_FRAME_YEAR, TAG_DATE,
+			    handler, handler_ctx);
+	tag_id3_import_text(tag, ID3_FRAME_ORIGINAL_RELEASE_DATE, TAG_ORIGINAL_DATE,
 			    handler, handler_ctx);
 	tag_id3_import_text(tag, ID3_FRAME_GENRE, TAG_GENRE,
 			    handler, handler_ctx);
