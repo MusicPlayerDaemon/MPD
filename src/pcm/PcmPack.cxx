@@ -89,9 +89,6 @@ ReadS24(const uint8_t *src)
 void
 pcm_unpack_24(int32_t *dest, const uint8_t *src, const uint8_t *src_end)
 {
-	/* duplicate loop to help the compiler's optimizer (constant
-	   parameter to the unpack_sample() inline function) */
-
 	while (src < src_end) {
 		*dest++ = ReadS24(src);
 		src += 3;
