@@ -21,6 +21,7 @@
 #include "PcmDecoderPlugin.hxx"
 #include "../DecoderAPI.hxx"
 #include "CheckAudioFormat.hxx"
+#include "pcm/PcmPack.hxx"
 #include "input/InputStream.hxx"
 #include "system/ByteOrder.hxx"
 #include "util/Domain.hxx"
@@ -67,12 +68,17 @@ pcm_stream_decode(DecoderClient &client, InputStream &is)
 
 	const bool l16 = mime != nullptr &&
 		GetMimeTypeBase(mime) == "audio/L16";
+	const bool l24 = mime != nullptr &&
+		GetMimeTypeBase(mime) == "audio/L24";
 	const bool is_float = mime != nullptr &&
 		GetMimeTypeBase(mime) == "audio/x-mpd-float";
-	if (l16 || is_float) {
+	if (l16 || l24 || is_float) {
 		audio_format.sample_rate = 0;
 		audio_format.channels = 1;
 	}
+
+	if (l24)
+		audio_format.format = SampleFormat::S24_P32;
 
 	const bool reverse_endian = (l16 && IsLittleEndian()) ||
 		(mime != nullptr &&
@@ -149,6 +155,10 @@ pcm_stream_decode(DecoderClient &client, InputStream &is)
 
 	StaticFifoBuffer<uint8_t, 4096> buffer;
 
+	/* a buffer for pcm_unpack_24be() large enough to hold the
+	   results for a full source buffer */
+	int32_t unpack_buffer[buffer.GetCapacity() / 3];
+
 	DecoderCommand cmd;
 	do {
 		if (!FillBuffer(client, is, buffer))
@@ -166,6 +176,14 @@ pcm_stream_decode(DecoderClient &client, InputStream &is)
 			reverse_bytes_16((uint16_t *)r.data,
 					 (uint16_t *)r.data,
 					 (uint16_t *)(r.data + r.size));
+		else if (l24) {
+			/* convert big-endian packed 24 bit
+			   (audio/L24) to native-endian 24 bit (in 32
+			   bit integers) */
+			pcm_unpack_24be(unpack_buffer, r.begin(), r.end());
+			r.data = (uint8_t *)&unpack_buffer[0];
+			r.size = (r.size / 3) * 4;
+		}
 
 		cmd = !r.IsEmpty()
 			? client.SubmitData(is, r.data, r.size, 0)
@@ -191,6 +209,9 @@ pcm_stream_decode(DecoderClient &client, InputStream &is)
 static const char *const pcm_mime_types[] = {
 	/* RFC 2586 */
 	"audio/L16",
+
+	/* RFC 3190 */
+	"audio/L24",
 
 	/* MPD-specific: float32 native-endian */
 	"audio/x-mpd-float",
