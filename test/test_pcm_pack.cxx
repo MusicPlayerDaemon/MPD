@@ -70,3 +70,23 @@ PcmPackTest::TestUnpack24()
 		CPPUNIT_ASSERT_EQUAL(s, dest[i]);
 	}
 }
+
+void
+PcmPackTest::TestUnpack24BE()
+{
+	constexpr unsigned N = 509;
+	const auto src = TestDataBuffer<uint8_t, N * 3>();
+
+	int32_t dest[N];
+	pcm_unpack_24be(dest, src.begin(), src.end());
+
+	for (unsigned i = 0; i < N; ++i) {
+		int32_t s;
+		s = (src[i * 3] << 16) | (src[i * 3 + 1] << 8)
+			| src[i * 3 + 2];
+		if (s & 0x800000)
+			s |= 0xff000000;
+
+		CPPUNIT_ASSERT_EQUAL(s, dest[i]);
+	}
+}

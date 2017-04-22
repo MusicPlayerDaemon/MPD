@@ -49,4 +49,11 @@ pcm_pack_24(uint8_t *dest, const int32_t *src, const int32_t *src_end);
 void
 pcm_unpack_24(int32_t *dest, const uint8_t *src, const uint8_t *src_end);
 
+/**
+ * Like pcm_unpack_24(), but assume the source byte order is
+ * big-endian.  The destination byte order ia always native.
+ */
+void
+pcm_unpack_24be(int32_t *dest, const uint8_t *src, const uint8_t *src_end);
+
 #endif

@@ -94,3 +94,12 @@ pcm_unpack_24(int32_t *dest, const uint8_t *src, const uint8_t *src_end)
 		src += 3;
 	}
 }
+
+void
+pcm_unpack_24be(int32_t *dest, const uint8_t *src, const uint8_t *src_end)
+{
+	while (src < src_end) {
+		*dest++ = ReadS24BE(src);
+		src += 3;
+	}
+}
