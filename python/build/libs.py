@@ -36,8 +36,8 @@ flac = AutotoolsProject(
 )
 
 zlib = ZlibProject(
-    'http://zlib.net/zlib-1.2.8.tar.xz',
-    '28f1205d8dd2001f26fec1e8c2cebe37',
+    'http://zlib.net/zlib-1.2.11.tar.xz',                                       
+    '85adef240c5f370b308da8c938951a68',
     'lib/libz.a',
 )
 
