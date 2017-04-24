@@ -1165,6 +1165,55 @@ systemctl start mpd.socket</programlisting>
           </tgroup>
         </informaltable>
       </section>
+
+      <section id="zeroconf">
+        <title>Zeroconf</title>
+
+        <para>
+          If Zeroconf support (<ulink
+          url="http://avahi.org/">Avahi</ulink> or Apple's Bonjour)
+          was enabled at compile time with
+          <parameter>--with-zeroconf=...</parameter>, MPD can announce
+          its presence on the network.  The following settings control
+          this feature:
+        </para>
+
+        <informaltable>
+          <tgroup cols="2">
+            <thead>
+              <row>
+                <entry>Setting</entry>
+                <entry>Description</entry>
+              </row>
+            </thead>
+            <tbody>
+
+              <row>
+                <entry>
+                  <varname>zeroconf_enabled</varname>
+                  <parameter>yes|no</parameter>
+                </entry>
+                <entry>
+                  Enables or disables this feature.  Default is
+                  <parameter>yes</parameter>.
+                </entry>
+              </row>
+
+              <row>
+                <entry>
+                  <varname>zeroconf_name</varname>
+                  <parameter>NAME</parameter>
+                </entry>
+                <entry>
+                  The service name to publish via Zeroconf.  The
+                  default is "<parameter>Music Player</parameter>".
+                </entry>
+              </row>
+
+            </tbody>
+          </tgroup>
+        </informaltable>
+      </section>
     </section>
   </chapter>
 
