@@ -81,7 +81,7 @@ pcm_stream_decode(DecoderClient &client, InputStream &is)
 	if (is_float)
 		audio_format.format = SampleFormat::FLOAT;
 
-	{
+	if (mime != nullptr) {
 		const auto mime_parameters = ParseMimeTypeParameters(mime);
 
 		/* MIME type parameters according to RFC 2586 */
