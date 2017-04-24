@@ -136,10 +136,11 @@ pcm_stream_decode(DecoderClient &client, InputStream &is)
 		return;
 	}
 
-	const auto frame_size = audio_format.GetFrameSize();
+	const auto out_frame_size = audio_format.GetFrameSize();
+	const auto in_frame_size = out_frame_size;
 
 	const auto total_time = is.KnownSize()
-		? SignedSongTime::FromScale<uint64_t>(is.GetSize() / frame_size,
+		? SignedSongTime::FromScale<uint64_t>(is.GetSize() / in_frame_size,
 						      audio_format.sample_rate)
 		: SignedSongTime::Negative();
 
@@ -156,7 +157,7 @@ pcm_stream_decode(DecoderClient &client, InputStream &is)
 		/* round down to the nearest frame size, because we
 		   must not pass partial frames to
 		   DecoderClient::SubmitData() */
-		r.size -= r.size % frame_size;
+		r.size -= r.size % in_frame_size;
 		buffer.Consume(r.size);
 
 		if (reverse_endian)
@@ -170,7 +171,7 @@ pcm_stream_decode(DecoderClient &client, InputStream &is)
 			: client.GetCommand();
 		if (cmd == DecoderCommand::SEEK) {
 			uint64_t frame = client.GetSeekFrame();
-			offset_type offset = frame * frame_size;
+			offset_type offset = frame * in_frame_size;
 
 			try {
 				is.LockSeek(offset);
