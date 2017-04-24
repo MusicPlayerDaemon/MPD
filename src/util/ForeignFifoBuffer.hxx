@@ -144,7 +144,7 @@ public:
 
 	/**
 	 * Prepares writing.  Returns a buffer range which may be written.
-	 * When you are finished, call append().
+	 * When you are finished, call Append().
 	 */
 	Range Write() {
 		if (IsEmpty())
@@ -172,7 +172,7 @@ public:
 
 	/**
 	 * Expands the tail of the buffer, after data has been written to
-	 * the buffer returned by write().
+	 * the buffer returned by Write().
 	 */
 	void Append(size_type n) {
 		assert(tail <= capacity);
