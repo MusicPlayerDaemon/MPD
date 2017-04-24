@@ -43,7 +43,8 @@ FillBuffer(DecoderClient &client, InputStream &is, B &buffer)
 {
 	buffer.Shift();
 	auto w = buffer.Write();
-	assert(!w.IsEmpty());
+	if (w.IsEmpty())
+		return true;
 
 	size_t nbytes = decoder_read(client, is, w.data, w.size);
 	if (nbytes == 0 && is.LockIsEOF())
