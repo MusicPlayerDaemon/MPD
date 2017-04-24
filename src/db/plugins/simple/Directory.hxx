@@ -86,7 +86,7 @@ struct Directory {
 
 	Directory *const parent;
 	time_t mtime = 0;
-	unsigned inode = 0, device = 0;
+	uint64_t inode = 0, device = 0;
 
 	const std::string path;
 
