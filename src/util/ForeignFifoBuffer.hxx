@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2014 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright (C) 2003-2017 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -57,15 +57,15 @@ public:
 	typedef typename Range::const_pointer_type const_pointer_type;
 
 protected:
-	size_type head, tail, capacity;
+	size_type head = 0, tail = 0, capacity;
 	T *data;
 
 public:
 	explicit constexpr ForeignFifoBuffer(std::nullptr_t n)
-		:head(0), tail(0), capacity(0), data(n) {}
+		:capacity(0), data(n) {}
 
 	constexpr ForeignFifoBuffer(T *_data, size_type _capacity)
-		:head(0), tail(0), capacity(_capacity), data(_data) {}
+		:capacity(_capacity), data(_data) {}
 
 	ForeignFifoBuffer(ForeignFifoBuffer &&src)
 		:head(src.head), tail(src.tail),

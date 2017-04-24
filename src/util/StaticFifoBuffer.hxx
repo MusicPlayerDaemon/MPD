@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2014 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright (C) 2003-2017 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -52,13 +52,10 @@ public:
 	typedef WritableBuffer<T> Range;
 
 protected:
-	size_type head, tail;
+	size_type head = 0, tail = 0;
 	T data[size];
 
 public:
-	constexpr
-	StaticFifoBuffer():head(0), tail(0) {}
-
 	void Shift() {
 		if (head == 0)
 			return;
