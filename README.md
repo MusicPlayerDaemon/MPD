@@ -7,7 +7,8 @@ server's audio device.  The daemon stores info about all available music,
 and this info can be easily searched and retrieved.  Player control, info
 retrieval, and playlist management can all be managed remotely.
 
-For basic installation information see the INSTALL file.
+For basic installation instructions
+[read the manual](https://www.musicpd.org/doc/user/install.html).
 
 # Users
 

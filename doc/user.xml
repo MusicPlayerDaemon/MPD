@@ -80,8 +80,35 @@
 cd mpd-version</programlisting>
 
       <para>
-        Make sure that all the required libraries and build tools are
-        installed.  The <filename>INSTALL</filename> file has a list.
+        In any case, you need:
+      </para>
+
+      <itemizedlist>
+        <listitem>
+          <para>
+            a C++14 compiler (e.g. <ulink
+            url="http://gcc.gnu.org/">gcc 4.9</ulink> or <ulink
+            url="http://clang.llvm.org/">clang 3.9</ulink>)
+          </para>
+        </listitem>
+
+        <listitem>
+          <para>
+            <ulink url="http://www.boost.org/">Boost 1.46</ulink>
+          </para>
+        </listitem>
+
+        <listitem>
+          <para>
+            <ulink url="https://www.freedesktop.org/wiki/Software/pkg-config/">pkg-config</ulink>
+          </para>
+        </listitem>
+      </itemizedlist>
+
+      <para>
+        Each plugin usually needs a codec library, which you also need
+        to install.  Check the plugin reference for details about
+        required libraries.
       </para>
 
       <para>
@@ -2161,7 +2188,9 @@ run</programlisting>
         <title><varname>cdio_paranoia</varname></title>
 
         <para>
-          Plays audio CDs.  The URI has the form:
+          Plays audio CDs using <ulink
+          url="http://www.gnu.org/software/libcdio/"><filename>libcdio</filename></ulink>.
+          The URI has the form:
           "<filename>cdda://[DEVICE][/TRACK]</filename>".  The
           simplest form <filename>cdda://</filename> plays the whole
           disc in the default drive.
@@ -2197,7 +2226,8 @@ run</programlisting>
         <title><varname>curl</varname></title>
 
         <para>
-          Opens remote files or streams over HTTP.
+          Opens remote files or streams over HTTP using <ulink
+          url="http://curl.haxx.se/"><filename>libcurl</filename></ulink>.
         </para>
 
         <para>
@@ -2290,7 +2320,8 @@ run</programlisting>
         <title><varname>mms</varname></title>
 
         <para>
-          Plays streams with the MMS protocol.
+          Plays streams with the MMS protocol using <ulink
+          url="https://launchpad.net/libmms"><filename>libmms</filename></ulink>.
         </para>
       </section>
 
@@ -2346,7 +2377,8 @@ run</programlisting>
         <title><varname>adplug</varname></title>
 
         <para>
-          Decodes AdLib files.
+          Decodes AdLib files using <ulink
+          url="http://adplug.sourceforge.net/">libadplug</ulink>.
         </para>
 
         <informaltable>
@@ -2377,8 +2409,8 @@ run</programlisting>
         <title><varname>audiofile</varname></title>
 
         <para>
-          Decodes WAV and AIFF files using
-          <filename>libaudiofile</filename>.
+          Decodes WAV and AIFF files using <ulink
+          url="http://audiofile.68k.org/"><filename>libaudiofile</filename></ulink>.
         </para>
       </section>
 
@@ -2386,7 +2418,8 @@ run</programlisting>
         <title><varname>faad</varname></title>
 
         <para>
-          Decodes AAC files using <filename>libfaad</filename>.
+          Decodes AAC files using <ulink
+          url="http://www.audiocoding.com/"><filename>libfaad</filename></ulink>.
         </para>
       </section>
 
@@ -2394,8 +2427,8 @@ run</programlisting>
         <title><varname>ffmpeg</varname></title>
 
         <para>
-          Decodes various codecs using
-          <application>FFmpeg</application>.
+          Decodes various codecs using <ulink
+          url="https://ffmpeg.org/"><application>FFmpeg</application></ulink>.
         </para>
 
         <informaltable>
@@ -2446,7 +2479,7 @@ run</programlisting>
 
         <para>
           Decodes FLAC files using
-          <application>libFLAC</application>.
+          <ulink url="https://xiph.org/flac/"><application>libFLAC</application></ulink>.
         </para>
       </section>
 
@@ -2566,7 +2599,8 @@ run</programlisting>
         <title><varname>mad</varname></title>
 
         <para>
-          Decodes MP3 files using <application>libmad</application>.
+          Decodes MP3 files using <ulink
+          url="http://www.underbit.com/products/mad/"><application>libmad</application></ulink>.
         </para>
       </section>
 
@@ -2646,8 +2680,8 @@ run</programlisting>
         <title><varname>mpcdec</varname></title>
 
         <para>
-          Decodes Musepack files using
-          <application>libmpcdec</application>.
+          Decodes Musepack files using <ulink
+          url="http://www.musepack.net/"><application>libmpcdec</application></ulink>.
         </para>
       </section>
 
@@ -2655,7 +2689,17 @@ run</programlisting>
         <title><varname>mpg123</varname></title>
 
         <para>
-          Decodes MP3 files using <application>libmpg123</application>.
+          Decodes MP3 files using <ulink
+          url="http://www.mpg123.de/"><application>libmpg123</application></ulink>.
+        </para>
+      </section>
+
+      <section id="opus_decoder">
+        <title><varname>opus</varname></title>
+
+        <para>
+          Decodes Opus files using <ulink
+          url="http://www.opus-codec.org/"><application>libopus</application></ulink>.
         </para>
       </section>
 
@@ -2675,8 +2719,8 @@ run</programlisting>
         <title><varname>sidplay</varname></title>
 
         <para>
-          C64 SID decoder based on
-          <application>libsidplay</application>.
+          C64 SID decoder based on <ulink
+          url="http://sidplay2.sourceforge.net/"><application>libsidplay</application></ulink>.
         </para>
 
         <informaltable>
@@ -2732,8 +2776,8 @@ run</programlisting>
         <title><varname>sndfile</varname></title>
 
         <para>
-          Decodes WAV and AIFF files using
-          <filename>libsndfile</filename>.
+          Decodes WAV and AIFF files using <ulink
+          url="http://www.mega-nerd.com/libsndfile/"><filename>libsndfile</filename></ulink>.
         </para>
       </section>
 
@@ -2741,8 +2785,8 @@ run</programlisting>
         <title><varname>vorbis</varname></title>
 
         <para>
-          Decodes Ogg-Vorbis files using
-          <application>libvorbis</application>.
+          Decodes Ogg-Vorbis files using <ulink
+          url="http://www.xiph.org/ogg/vorbis/"><application>libvorbis</application></ulink>.
         </para>
       </section>
 
@@ -2751,7 +2795,7 @@ run</programlisting>
 
         <para>
           Decodes WavPack files using
-          <application>libwavpack</application>.
+          <ulink url="http://www.wavpack.com/"><application>libwavpack</application></ulink>.
         </para>
       </section>
 
@@ -3575,7 +3619,7 @@ run</programlisting>
         </informaltable>
       </section>
 
-      <section>
+      <section id="jack_output">
         <title><varname>jack</varname></title>
 
         <para>
@@ -3855,7 +3899,7 @@ run</programlisting>
         </informaltable>
       </section>
 
-      <section>
+      <section id="openal_output">
         <title><varname>openal</varname></title>
 
         <para>
@@ -4006,7 +4050,7 @@ run</programlisting>
         <para>
           The <varname>pulse</varname> plugin connects to a <ulink
           url="http://www.freedesktop.org/wiki/Software/PulseAudio/"><application>PulseAudio</application></ulink>
-          server.
+          server.  Requires <filename>libpulse</filename>.
         </para>
 
         <informaltable>
@@ -4194,7 +4238,8 @@ run</programlisting>
           url="http://www.shoutcast.com/"><application>ShoutCast</application></ulink>
           or <ulink
           url="http://icecast.org/"><application>IceCast</application></ulink>
-          server.  It forwards tags to this server.
+          server using <filename>libshout</filename>.  It forwards
+          tags to this server.
         </para>
 
         <para>
