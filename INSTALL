@@ -117,9 +117,6 @@ For AdLib playback.
 Optional Miscellaneous Dependencies
 -----------------------------------
 
-Avahi - http://www.avahi.org/
-For Zeroconf support.
-
 libsamplerate - http://www.mega-nerd.com/SRC/
 For advanced samplerate conversions.
 
