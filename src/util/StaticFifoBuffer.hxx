@@ -56,6 +56,10 @@ protected:
 	T data[size];
 
 public:
+	constexpr size_type GetCapacity() const {
+		return size;
+	}
+
 	void Shift() {
 		if (head == 0)
 			return;
