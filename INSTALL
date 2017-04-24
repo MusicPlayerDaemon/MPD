@@ -126,9 +126,6 @@ For playing HTTP streams.
 libmms - https://launchpad.net/libmms
 For playing MMS streams.
 
-SQLite - http://www.sqlite.org/
-For the sticker database.
-
 libcdio - http://www.gnu.org/software/libcdio/
 For playing audio CDs.
 

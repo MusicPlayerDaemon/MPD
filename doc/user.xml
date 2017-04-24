@@ -1035,6 +1035,40 @@ systemctl start mpd.socket</programlisting>
         </informaltable>
       </section>
 
+      <section id="stickers">
+        <title>The Sticker Database</title>
+
+        <para>
+          "Stickers" are pieces of information attached to songs.
+          Some clients use them to store ratings and other volatile
+          data.  This feature requires <ulink
+          url="http://www.sqlite.org/">SQLite</ulink>, compile-time
+          configure option <parameter>--enable-sqlite</parameter>.
+        </para>
+
+        <informaltable>
+          <tgroup cols="2">
+            <thead>
+              <row>
+                <entry>Setting</entry>
+                <entry>Description</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>
+                  <varname>sticker_file</varname>
+                  <parameter>PATH</parameter>
+                </entry>
+                <entry>
+                  The location of the sticker database.
+                </entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
+      </section>
+
       <section>
         <title>Resource Limitations</title>
 
