@@ -30,6 +30,7 @@
 #include "output/Internal.hxx"
 #include "output/Timer.hxx"
 #include "thread/Mutex.hxx"
+#include "thread/Cond.hxx"
 #include "event/ServerSocket.hxx"
 #include "event/DeferredMonitor.hxx"
 #include "util/Cast.hxx"

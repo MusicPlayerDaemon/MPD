@@ -38,7 +38,9 @@ static constexpr PeriodClock::Duration REOPEN_AFTER = std::chrono::seconds(10);
 struct notify audio_output_client_notify;
 
 AudioOutputControl::AudioOutputControl(AudioOutput *_output)
-	:output(_output), mutex(output->mutex)
+	:output(_output),
+	 thread(BIND_THIS_METHOD(Task)),
+	 mutex(output->mutex)
 {
 }
 
@@ -91,20 +93,8 @@ AudioOutputControl::IsOpen() const
 	return output->IsOpen();
 }
 
-bool
-AudioOutputControl::IsBusy() const
-{
-	return output->IsBusy();
-}
-
-const std::exception_ptr &
-AudioOutputControl::GetLastError() const
-{
-	return output->GetLastError();
-}
-
 void
-AudioOutput::WaitForCommand()
+AudioOutputControl::WaitForCommand()
 {
 	while (!IsCommandFinished()) {
 		mutex.unlock();
@@ -114,13 +104,7 @@ AudioOutput::WaitForCommand()
 }
 
 void
-AudioOutputControl::WaitForCommand()
-{
-	output->WaitForCommand();
-}
-
-void
-AudioOutput::CommandAsync(Command cmd)
+AudioOutputControl::CommandAsync(Command cmd)
 {
 	assert(IsCommandFinished());
 
@@ -129,28 +113,28 @@ AudioOutput::CommandAsync(Command cmd)
 }
 
 void
-AudioOutput::CommandWait(Command cmd)
+AudioOutputControl::CommandWait(Command cmd)
 {
 	CommandAsync(cmd);
 	WaitForCommand();
 }
 
 void
-AudioOutput::LockCommandWait(Command cmd)
+AudioOutputControl::LockCommandWait(Command cmd)
 {
 	const std::lock_guard<Mutex> protect(mutex);
 	CommandWait(cmd);
 }
 
 void
-AudioOutput::EnableAsync()
+AudioOutputControl::EnableAsync()
 {
 	if (!thread.IsDefined()) {
-		if (plugin.enable == nullptr) {
+		if (output->plugin.enable == nullptr) {
 			/* don't bother to start the thread now if the
 			   device doesn't even have a enable() method;
 			   just assign the variable and we're done */
-			really_enabled = true;
+			output->really_enabled = true;
 			return;
 		}
 
@@ -161,15 +145,15 @@ AudioOutput::EnableAsync()
 }
 
 void
-AudioOutput::DisableAsync()
+AudioOutputControl::DisableAsync()
 {
 	if (!thread.IsDefined()) {
-		if (plugin.disable == nullptr)
-			really_enabled = false;
+		if (output->plugin.disable == nullptr)
+			output->really_enabled = false;
 		else
 			/* if there's no thread yet, the device cannot
 			   be enabled */
-			assert(!really_enabled);
+			assert(!output->really_enabled);
 
 		return;
 	}
@@ -180,27 +164,27 @@ AudioOutput::DisableAsync()
 void
 AudioOutputControl::EnableDisableAsync()
 {
-	output->EnableDisableAsync();
-}
+	if (output->enabled == output->really_enabled)
+		return;
 
-void
-AudioOutputControl::LockPauseAsync()
-{
-	output->LockPauseAsync();
+	if (output->enabled)
+		EnableAsync();
+	else
+		DisableAsync();
 }
 
 inline bool
-AudioOutput::Open(const AudioFormat audio_format, const MusicPipe &mp)
+AudioOutputControl::Open(const AudioFormat audio_format, const MusicPipe &mp)
 {
 	assert(allow_play);
 	assert(audio_format.IsValid());
 
 	fail_timer.Reset();
 
-	if (open && audio_format == request.audio_format) {
-		assert(request.pipe == &mp || (always_on && pause));
+	if (output->open && audio_format == request.audio_format) {
+		assert(request.pipe == &mp || (output->always_on && output->pause));
 
-		if (!pause)
+		if (!output->pause)
 			/* already open, already the right parameters
 			   - nothing needs to be done */
 			return true;
@@ -213,13 +197,14 @@ AudioOutput::Open(const AudioFormat audio_format, const MusicPipe &mp)
 		StartThread();
 
 	CommandWait(Command::OPEN);
-	const bool open2 = open;
+	const bool open2 = output->open;
 
-	if (open2 && mixer != nullptr) {
+	if (open2 && output->mixer != nullptr) {
 		try {
-			mixer_open(mixer);
+			mixer_open(output->mixer);
 		} catch (const std::runtime_error &e) {
-			FormatError(e, "Failed to open mixer for '%s'", name);
+			FormatError(e, "Failed to open mixer for '%s'",
+				    GetName());
 		}
 	}
 
@@ -227,29 +212,29 @@ AudioOutput::Open(const AudioFormat audio_format, const MusicPipe &mp)
 }
 
 void
-AudioOutput::CloseWait()
+AudioOutputControl::CloseWait()
 {
 	assert(allow_play);
 
-	if (mixer != nullptr)
-		mixer_auto_close(mixer);
+	if (output->mixer != nullptr)
+		mixer_auto_close(output->mixer);
 
-	assert(!open || !fail_timer.IsDefined());
+	assert(!output->open || !fail_timer.IsDefined());
 
-	if (open)
+	if (output->open)
 		CommandWait(Command::CLOSE);
 	else
 		fail_timer.Reset();
 }
 
 bool
-AudioOutput::LockUpdate(const AudioFormat audio_format,
-			const MusicPipe &mp,
-			bool force)
+AudioOutputControl::LockUpdate(const AudioFormat audio_format,
+			       const MusicPipe &mp,
+			       bool force)
 {
 	const std::lock_guard<Mutex> protect(mutex);
 
-	if (enabled && really_enabled) {
+	if (output->enabled && output->really_enabled) {
 		if (force || !fail_timer.IsDefined() ||
 		    fail_timer.Check(REOPEN_AFTER * 1000)) {
 			return Open(audio_format, mp);
@@ -258,26 +243,6 @@ AudioOutput::LockUpdate(const AudioFormat audio_format,
 		CloseWait();
 
 	return false;
-}
-
-void
-AudioOutputControl::LockRelease()
-{
-	output->LockRelease();
-}
-
-void
-AudioOutputControl::LockCloseWait()
-{
-	output->LockCloseWait();
-}
-
-bool
-AudioOutputControl::LockUpdate(const AudioFormat audio_format,
-			       const MusicPipe &mp,
-			       bool force)
-{
-	return output->LockUpdate(audio_format, mp, force);
 }
 
 bool
@@ -293,7 +258,7 @@ AudioOutputControl::ClearTailChunk(const MusicChunk &chunk)
 }
 
 void
-AudioOutput::LockPlay()
+AudioOutputControl::LockPlay()
 {
 	const std::lock_guard<Mutex> protect(mutex);
 
@@ -306,13 +271,13 @@ AudioOutput::LockPlay()
 }
 
 void
-AudioOutput::LockPauseAsync()
+AudioOutputControl::LockPauseAsync()
 {
-	if (mixer != nullptr && plugin.pause == nullptr)
+	if (output->mixer != nullptr && output->plugin.pause == nullptr)
 		/* the device has no pause mode: close the mixer,
 		   unless its "global" flag is set (checked by
 		   mixer_auto_close()) */
-		mixer_auto_close(mixer);
+		mixer_auto_close(output->mixer);
 
 	const std::lock_guard<Mutex> protect(mutex);
 
@@ -322,7 +287,7 @@ AudioOutput::LockPauseAsync()
 }
 
 void
-AudioOutput::LockDrainAsync()
+AudioOutputControl::LockDrainAsync()
 {
 	const std::lock_guard<Mutex> protect(mutex);
 
@@ -332,7 +297,7 @@ AudioOutput::LockDrainAsync()
 }
 
 void
-AudioOutput::LockCancelAsync()
+AudioOutputControl::LockCancelAsync()
 {
 	const std::lock_guard<Mutex> protect(mutex);
 
@@ -343,7 +308,7 @@ AudioOutput::LockCancelAsync()
 }
 
 void
-AudioOutput::LockAllowPlay()
+AudioOutputControl::LockAllowPlay()
 {
 	const std::lock_guard<Mutex> protect(mutex);
 
@@ -353,18 +318,18 @@ AudioOutput::LockAllowPlay()
 }
 
 void
-AudioOutput::LockRelease()
+AudioOutputControl::LockRelease()
 {
-	if (always_on)
+	if (output->always_on)
 		LockPauseAsync();
 	else
 		LockCloseWait();
 }
 
 void
-AudioOutput::LockCloseWait()
+AudioOutputControl::LockCloseWait()
 {
-	assert(!open || !fail_timer.IsDefined());
+	assert(!output->open || !fail_timer.IsDefined());
 
 	const std::lock_guard<Mutex> protect(mutex);
 	CloseWait();
@@ -377,7 +342,7 @@ AudioOutputControl::SetReplayGainMode(ReplayGainMode _mode)
 }
 
 void
-AudioOutput::StopThread()
+AudioOutputControl::StopThread()
 {
 	assert(thread.IsDefined());
 	assert(allow_play);
@@ -391,6 +356,12 @@ AudioOutput::BeginDestroy()
 {
 	if (mixer != nullptr)
 		mixer_auto_close(mixer);
+}
+
+void
+AudioOutputControl::BeginDestroy()
+{
+	output->BeginDestroy();
 
 	if (thread.IsDefined()) {
 		const std::lock_guard<Mutex> protect(mutex);
@@ -399,47 +370,17 @@ AudioOutput::BeginDestroy()
 }
 
 void
-AudioOutputControl::BeginDestroy()
-{
-	output->BeginDestroy();
-}
-
-void
 AudioOutput::FinishDestroy()
 {
-	if (thread.IsDefined())
-		thread.Join();
-
 	audio_output_free(this);
 }
 
 void
 AudioOutputControl::FinishDestroy()
 {
+	if (thread.IsDefined())
+		thread.Join();
+
 	output->FinishDestroy();
 	output = nullptr;
-}
-
-void
-AudioOutputControl::LockPlay()
-{
-	output->LockPlay();
-}
-
-void
-AudioOutputControl::LockDrainAsync()
-{
-	output->LockDrainAsync();
-}
-
-void
-AudioOutputControl::LockCancelAsync()
-{
-	output->LockCancelAsync();
-}
-
-void
-AudioOutputControl::LockAllowPlay()
-{
-	output->LockAllowPlay();
 }

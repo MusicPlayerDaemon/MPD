@@ -28,8 +28,6 @@
 AudioOutput::~AudioOutput()
 {
 	assert(!open);
-	assert(!fail_timer.IsDefined());
-	assert(!thread.IsDefined());
 
 	if (mixer != nullptr)
 		mixer_free(mixer);
@@ -43,8 +41,6 @@ void
 audio_output_free(AudioOutput *ao)
 {
 	assert(!ao->IsOpen());
-	assert(!ao->fail_timer.IsDefined());
-	assert(!ao->thread.IsDefined());
 
 	ao_plugin_finish(ao);
 }

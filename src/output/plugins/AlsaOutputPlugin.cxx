@@ -26,6 +26,7 @@
 #include "mixer/MixerList.hxx"
 #include "pcm/PcmExport.hxx"
 #include "system/ByteOrder.hxx"
+#include "thread/Cond.hxx"
 #include "util/Manual.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/Domain.hxx"

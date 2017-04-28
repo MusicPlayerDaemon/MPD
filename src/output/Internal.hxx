@@ -21,15 +21,9 @@
 #define MPD_OUTPUT_INTERNAL_HXX
 
 #include "Source.hxx"
-#include "SharedPipeConsumer.hxx"
 #include "AudioFormat.hxx"
 #include "filter/Observer.hxx"
 #include "thread/Mutex.hxx"
-#include "thread/Cond.hxx"
-#include "thread/Thread.hxx"
-#include "system/PeriodClock.hxx"
-
-#include <exception>
 
 class PreparedFilter;
 class MusicPipe;
@@ -43,30 +37,6 @@ struct AudioOutputPlugin;
 struct ReplayGainConfig;
 
 struct AudioOutput {
-	enum class Command {
-		NONE,
-		ENABLE,
-		DISABLE,
-
-		/**
-		 * Open the output, or reopen it if it is already
-		 * open, adjusting for input #AudioFormat changes.
-		 */
-		OPEN,
-
-		CLOSE,
-		PAUSE,
-
-		/**
-		 * Drains the internal (hardware) buffers of the device.  This
-		 * operation may take a while to complete.
-		 */
-		DRAIN,
-
-		CANCEL,
-		KILL
-	};
-
 	/**
 	 * The device's configured display name.
 	 */
@@ -125,37 +95,6 @@ struct AudioOutput {
 	bool pause = false;
 
 	/**
-	 * When this flag is set, the output thread will not do any
-	 * playback.  It will wait until the flag is cleared.
-	 *
-	 * This is used to synchronize the "clear" operation on the
-	 * shared music pipe during the CANCEL command.
-	 */
-	bool allow_play = true;
-
-	/**
-	 * True while the OutputThread is inside ao_play().  This
-	 * means the PlayerThread does not need to wake up the
-	 * OutputThread when new chunks are added to the MusicPipe,
-	 * because the OutputThread is already watching that.
-	 */
-	bool in_playback_loop = false;
-
-	/**
-	 * Has the OutputThread been woken up to play more chunks?
-	 * This is set by audio_output_play() and reset by ao_play()
-	 * to reduce the number of duplicate wakeups.
-	 */
-	bool woken_for_play = false;
-
-	/**
-	 * If not nullptr, the device has failed, and this timer is used
-	 * to estimate how long it should stay disabled (unless
-	 * explicitly reopened with "play").
-	 */
-	PeriodClock fail_timer;
-
-	/**
 	 * The configured audio format.
 	 */
 	AudioFormat config_audio_format;
@@ -210,41 +149,9 @@ struct AudioOutput {
 	FilterObserver convert_filter;
 
 	/**
-	 * The thread handle, or nullptr if the output thread isn't
-	 * running.
-	 */
-	Thread thread;
-
-	/**
-	 * The next command to be performed by the output thread.
-	 */
-	Command command = Command::NONE;
-
-	/**
-	 * Additional data for #command.  Protected by #mutex.
-	 */
-	struct Request {
-		/**
-		 * The #AudioFormat requested by #Command::OPEN.
-		 */
-		AudioFormat audio_format;
-
-		/**
-		 * The #MusicPipe passed to #Command::OPEN.
-		 */
-		const MusicPipe *pipe;
-	} request;
-
-	/**
 	 * This mutex protects #open, #fail_timer, #pipe.
 	 */
 	mutable Mutex mutex;
-
-	/**
-	 * This condition object wakes up the output thread after
-	 * #command has been set.
-	 */
-	Cond cond;
 
 	/**
 	 * The PlayerControl object which "owns" this output.  This
@@ -256,14 +163,6 @@ struct AudioOutput {
 	 * Source of audio data.
 	 */
 	AudioOutputSource source;
-
-	/**
-	 * The error that occurred in the output thread.  It is
-	 * cleared whenever the output is opened successfully.
-	 *
-	 * Protected by #mutex.
-	 */
-	std::exception_ptr last_error;
 
 	/**
 	 * Throws #std::runtime_error on error.
@@ -281,9 +180,6 @@ public:
 		   const ReplayGainConfig &replay_gain_config,
 		   MixerListener &mixer_listener,
 		   const ConfigBlock &block);
-
-	void StartThread();
-	void StopThread();
 
 	void BeginDestroy();
 	void FinishDestroy();
@@ -306,136 +202,9 @@ public:
 		return open;
 	}
 
-	/**
-	 * Caller must lock the mutex.
-	 */
-	bool IsCommandFinished() const {
-		return command == Command::NONE;
-	}
-
-	/**
-	 * Caller must lock the mutex.
-	 */
-	bool IsBusy() const {
-		return IsOpen() && !IsCommandFinished();
-	}
-
-	/**
-	 * Caller must lock the mutex.
-	 */
-	const std::exception_ptr &GetLastError() const {
-		return last_error;
-	}
-
-	/**
-	 * Waits for command completion.
-	 *
-	 * Caller must lock the mutex.
-	 */
-	void WaitForCommand();
-
-	/**
-	 * Sends a command, but does not wait for completion.
-	 *
-	 * Caller must lock the mutex.
-	 */
-	void CommandAsync(Command cmd);
-
-	/**
-	 * Sends a command to the #AudioOutput object and waits for
-	 * completion.
-	 *
-	 * Caller must lock the mutex.
-	 */
-	void CommandWait(Command cmd);
-
-	/**
-	 * Lock the #AudioOutput object and execute the command
-	 * synchronously.
-	 */
-	void LockCommandWait(Command cmd);
-
-	/**
-	 * Enables the device, but don't wait for completion.
-	 *
-	 * Caller must lock the mutex.
-	 */
-	void EnableAsync();
-
-	/**
-	 * Disables the device, but don't wait for completion.
-	 *
-	 * Caller must lock the mutex.
-	 */
-	void DisableAsync();
-
-	/**
-	 * Attempt to enable or disable the device as specified by the
-	 * #enabled attribute; attempt to sync it with #really_enabled
-	 * (wrapper for EnableAsync() or DisableAsync()).
-	 *
-	 * Caller must lock the mutex.
-	 */
-	void EnableDisableAsync() {
-		if (enabled == really_enabled)
-			return;
-
-		if (enabled)
-			EnableAsync();
-		else
-			DisableAsync();
-	}
-
-	void LockPauseAsync();
-
-	/**
-	 * Same LockCloseWait(), but expects the lock to be
-	 * held by the caller.
-	 */
-	void CloseWait();
-	void LockCloseWait();
-
-	/**
-	 * Closes the audio output, but if the "always_on" flag is set, put it
-	 * into pause mode instead.
-	 */
-	void LockRelease();
-
 	void SetReplayGainMode(ReplayGainMode _mode) {
 		source.SetReplayGainMode(_mode);
 	}
-
-	/**
-	 * Caller must lock the mutex.
-	 */
-	bool Open(const AudioFormat audio_format, const MusicPipe &mp);
-
-	/**
-	 * Opens or closes the device, depending on the "enabled"
-	 * flag.
-	 *
-	 * @param force true to ignore the #fail_timer
-	 * @return true if the device is open
-	 */
-	bool LockUpdate(const AudioFormat audio_format,
-			const MusicPipe &mp,
-			bool force);
-
-	void LockPlay();
-
-	void LockDrainAsync();
-
-	/**
-	 * Clear the "allow_play" flag and send the "CANCEL" command
-	 * asynchronously.  To finish the operation, the caller has to
-	 * call LockAllowPlay().
-	 */
-	void LockCancelAsync();
-
-	/**
-	 * Set the "allow_play" and signal the thread.
-	 */
-	void LockAllowPlay();
 
 	/**
 	 * Did we already consumed this chunk?
@@ -455,9 +224,6 @@ public:
 		source.ClearTailChunk(chunk);
 	}
 
-private:
-	void CommandFinished();
-
 	/**
 	 * Throws #std::runtime_error on error.
 	 */
@@ -468,8 +234,11 @@ private:
 	/**
 	 * Throws #std::runtime_error on error.
 	 */
-	void Open();
+	void Open(AudioFormat audio_format, const MusicPipe &pipe);
 
+	void Close(bool drain);
+
+private:
 	/**
 	 * Invoke OutputPlugin::open() and configure the
 	 * #ConvertFilter.
@@ -479,8 +248,6 @@ private:
 	 * Caller must not lock the mutex.
 	 */
 	void OpenOutputAndConvert(AudioFormat audio_format);
-
-	void Close(bool drain);
 
 	/**
 	 * Close the output plugin.
@@ -494,37 +261,13 @@ private:
 	 */
 	void CloseFilter();
 
-	/**
-	 * Wait until the output's delay reaches zero.
-	 *
-	 * @return true if playback should be continued, false if a
-	 * command was issued
-	 */
-	bool WaitForDelay();
-
-	bool FillSourceOrClose();
-
-	bool PlayChunk();
-
-	/**
-	 * Plays all remaining chunks, until the tail of the pipe has
-	 * been reached (and no more chunks are queued), or until a
-	 * command is received.
-	 *
-	 * @return true if at least one chunk has been available,
-	 * false if the tail of the pipe was already reached
-	 */
-	bool Play();
-
+public:
 	void BeginPause();
 	bool IteratePause();
 
-	void Pause();
-
-	/**
-	 * The OutputThread.
-	 */
-	void Task();
+	void EndPause() {
+		pause = false;
+	}
 };
 
 /**

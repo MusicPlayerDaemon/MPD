@@ -25,6 +25,7 @@
 #include "AndroidSimpleBufferQueue.hxx"
 #include "../../OutputAPI.hxx"
 #include "../../Wrapper.hxx"
+#include "thread/Cond.hxx"
 #include "util/Macros.hxx"
 #include "util/Domain.hxx"
 #include "system/ByteOrder.hxx"
