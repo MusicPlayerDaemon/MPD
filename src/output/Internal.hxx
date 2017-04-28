@@ -516,6 +516,9 @@ private:
 	 */
 	bool Play();
 
+	void BeginPause();
+	bool IteratePause();
+
 	void Pause();
 
 	/**

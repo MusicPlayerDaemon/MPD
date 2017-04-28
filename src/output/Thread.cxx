@@ -365,7 +365,7 @@ AudioOutput::Play()
 }
 
 inline void
-AudioOutput::Pause()
+AudioOutput::BeginPause()
 {
 	{
 		const ScopeUnlock unlock(mutex);
@@ -373,26 +373,40 @@ AudioOutput::Pause()
 	}
 
 	pause = true;
+}
+
+inline bool
+AudioOutput::IteratePause()
+{
+	bool success;
+
+	try {
+		const ScopeUnlock unlock(mutex);
+		success = ao_plugin_pause(*this);
+	} catch (const std::runtime_error &e) {
+		FormatError(e, "\"%s\" [%s] failed to pause",
+			    name, plugin.name);
+		success = false;
+	}
+
+	if (!success)
+		Close(false);
+
+	return success;
+}
+
+inline void
+AudioOutput::Pause()
+{
+	BeginPause();
 	CommandFinished();
 
 	do {
 		if (!WaitForDelay())
 			break;
 
-		bool success;
-		try {
-			const ScopeUnlock unlock(mutex);
-			success = ao_plugin_pause(*this);
-		} catch (const std::runtime_error &e) {
-			FormatError(e, "\"%s\" [%s] failed to pause",
-				    name, plugin.name);
-			success = false;
-		}
-
-		if (!success) {
-			Close(false);
+		if (!IteratePause())
 			break;
-		}
 	} while (command == Command::NONE);
 
 	pause = false;
