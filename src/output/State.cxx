@@ -23,7 +23,7 @@
  */
 
 #include "config.h"
-#include "OutputState.hxx"
+#include "State.hxx"
 #include "MultipleOutputs.hxx"
 #include "Internal.hxx"
 #include "Domain.hxx"

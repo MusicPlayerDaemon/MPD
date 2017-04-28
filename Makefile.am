@@ -1376,11 +1376,11 @@ OUTPUT_API_SRC = \
 	src/output/MultipleOutputs.cxx src/output/MultipleOutputs.hxx \
 	src/output/SharedPipeConsumer.cxx src/output/SharedPipeConsumer.hxx \
 	src/output/Source.cxx src/output/Source.hxx \
-	src/output/OutputThread.cxx \
+	src/output/Thread.cxx \
 	src/output/Domain.cxx src/output/Domain.hxx \
 	src/output/Control.cxx src/output/Control.hxx \
-	src/output/OutputState.cxx src/output/OutputState.hxx \
-	src/output/OutputPrint.cxx src/output/OutputPrint.hxx \
+	src/output/State.cxx src/output/State.hxx \
+	src/output/Print.cxx src/output/Print.hxx \
 	src/output/OutputCommand.cxx src/output/OutputCommand.hxx \
 	src/output/OutputPlugin.cxx src/output/OutputPlugin.hxx \
 	src/output/Finish.cxx \

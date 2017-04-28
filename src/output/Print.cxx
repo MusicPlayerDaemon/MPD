@@ -23,7 +23,7 @@
  */
 
 #include "config.h"
-#include "OutputPrint.hxx"
+#include "Print.hxx"
 #include "MultipleOutputs.hxx"
 #include "Internal.hxx"
 #include "client/Response.hxx"

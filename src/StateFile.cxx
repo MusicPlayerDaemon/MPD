@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "StateFile.hxx"
-#include "output/OutputState.hxx"
+#include "output/State.hxx"
 #include "queue/PlaylistState.hxx"
 #include "fs/io/TextFile.hxx"
 #include "fs/io/FileOutputStream.hxx"
