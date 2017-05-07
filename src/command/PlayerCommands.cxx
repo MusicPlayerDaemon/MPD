@@ -77,6 +77,24 @@ handle_playid(Client &client, Request args, gcc_unused Response &r)
 }
 
 CommandResult
+handle_playnext(Client &client, Request args, gcc_unused Response &r)
+{
+	int song = args.ParseInt(0);
+
+	client.partition.PlayNextPosition(song);
+	return CommandResult::OK;
+}
+
+CommandResult
+handle_playnextid(Client &client, Request args, gcc_unused Response &r)
+{
+	int id = args.ParseInt(0);
+
+	client.partition.PlayNextId(id);
+	return CommandResult::OK;
+}
+
+CommandResult
 handle_stop(Client &client, gcc_unused Request args, gcc_unused Response &r)
 {
 	client.GetPartition().Stop();

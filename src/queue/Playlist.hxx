@@ -283,12 +283,22 @@ public:
 	/**
 	 * Throws std::runtime_error or #Error on error.
 	 */
+	void PlayNextPosition(PlayerControl &pc, int position);
+
+	/**
+	 * Throws std::runtime_error or #Error on error.
+	 */
 	void PlayOrder(PlayerControl &pc, unsigned order);
 
 	/**
 	 * Throws std::runtime_error or #Error on error.
 	 */
 	void PlayId(PlayerControl &pc, int id);
+
+	/**
+	 * Throws std::runtime_error or #Error on error.
+	 */
+	void PlayNextId(PlayerControl &pc, int id);
 
 	/**
 	 * Throws std::runtime_error or #Error on error.

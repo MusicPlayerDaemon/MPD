@@ -106,6 +106,17 @@ playlist::PlayPosition(PlayerControl &pc, int song)
 }
 
 void
+playlist::PlayNextPosition(PlayerControl &pc, int song)
+{
+	pc.LockClearError();
+
+	if (!queue.IsValidPosition(song))
+		throw PlaylistError::BadRange();
+
+	queue.SetNextPosition(song);
+}
+
+void
 playlist::PlayId(PlayerControl &pc, int id)
 {
 	if (id == -1) {
@@ -118,6 +129,16 @@ playlist::PlayId(PlayerControl &pc, int id)
 		throw PlaylistError::NoSuchSong();
 
 	PlayPosition(pc, song);
+}
+
+void
+playlist::PlayNextId(PlayerControl &pc, int id)
+{
+	int song = queue.IdToPosition(id);
+	if (song < 0)
+		throw PlaylistError::NoSuchSong();
+
+	PlayNextPosition(pc, song);
 }
 
 void

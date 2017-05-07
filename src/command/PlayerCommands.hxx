@@ -33,6 +33,12 @@ CommandResult
 handle_playid(Client &client, Request request, Response &response);
 
 CommandResult
+handle_playnext(Client &client, Request request, Response &response);
+
+CommandResult
+handle_playnextid(Client &client, Request request, Response &response);
+
+CommandResult
 handle_stop(Client &client, Request request, Response &response);
 
 CommandResult
