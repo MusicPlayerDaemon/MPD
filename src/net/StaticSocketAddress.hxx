@@ -49,7 +49,7 @@ private:
 public:
 	StaticSocketAddress() = default;
 
-	StaticSocketAddress &operator=(SocketAddress other);
+	StaticSocketAddress &operator=(SocketAddress other) noexcept;
 
 	operator SocketAddress() const {
 		return SocketAddress(reinterpret_cast<const struct sockaddr *>(&address),

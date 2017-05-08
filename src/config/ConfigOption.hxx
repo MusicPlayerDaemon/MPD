@@ -102,13 +102,13 @@ enum class ConfigBlockOption {
  */
 gcc_pure
 enum ConfigOption
-ParseConfigOptionName(const char *name);
+ParseConfigOptionName(const char *name) noexcept;
 
 /**
  * @return #ConfigOption::MAX if not found
  */
 gcc_pure
 enum ConfigBlockOption
-ParseConfigBlockOptionName(const char *name);
+ParseConfigBlockOptionName(const char *name) noexcept;
 
 #endif

@@ -91,29 +91,29 @@ private:
 	};
 
 	gcc_pure
-	iterator Find(reference_type p) {
+	iterator Find(reference_type p) noexcept {
 		return std::find_if(list.begin(), list.end(), MatchPointer(p));
 	}
 
 	gcc_pure
-	const_iterator Find(const_reference_type p) const {
+	const_iterator Find(const_reference_type p) const noexcept {
 		return std::find_if(list.begin(), list.end(), MatchPointer(p));
 	}
 
 	gcc_pure
-	iterator Find(CT &c) {
+	iterator Find(CT &c) noexcept {
 		return list.iterator_to(c);
 	}
 
 	gcc_pure
-	const_iterator Find(const CT &c) const {
+	const_iterator Find(const CT &c) const noexcept {
 		return list.iterator_to(c);
 	}
 
 public:
 #ifndef NDEBUG
 	gcc_pure
-	bool IsEmpty() const {
+	bool IsEmpty() const noexcept {
 		for (const auto &c : list)
 			if (!c.IsCancelled())
 				return false;
@@ -123,7 +123,7 @@ public:
 #endif
 
 	gcc_pure
-	bool Contains(const_reference_type p) const {
+	bool Contains(const_reference_type p) const noexcept {
 		return Find(p) != list.end();
 	}
 
@@ -151,7 +151,7 @@ public:
 		i->Cancel();
 	}
 
-	CT &Get(reference_type p) {
+	CT &Get(reference_type p) noexcept {
 		auto i = Find(p);
 		assert(i != list.end());
 

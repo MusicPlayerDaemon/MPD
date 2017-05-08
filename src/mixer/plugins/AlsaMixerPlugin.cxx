@@ -201,7 +201,8 @@ AlsaMixer::~AlsaMixer()
 
 gcc_pure
 static snd_mixer_elem_t *
-alsa_mixer_lookup_elem(snd_mixer_t *handle, const char *name, unsigned idx)
+alsa_mixer_lookup_elem(snd_mixer_t *handle,
+		       const char *name, unsigned idx) noexcept
 {
 	for (snd_mixer_elem_t *elem = snd_mixer_first_elem(handle);
 	     elem != nullptr; elem = snd_mixer_elem_next(elem)) {

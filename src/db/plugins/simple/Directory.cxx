@@ -65,7 +65,7 @@ Directory::Delete()
 }
 
 const char *
-Directory::GetName() const
+Directory::GetName() const noexcept
 {
 	assert(!IsRoot());
 
@@ -89,7 +89,7 @@ Directory::CreateChild(const char *name_utf8)
 }
 
 const Directory *
-Directory::FindChild(const char *name) const
+Directory::FindChild(const char *name) const noexcept
 {
 	assert(holding_db_lock());
 
@@ -101,7 +101,7 @@ Directory::FindChild(const char *name) const
 }
 
 void
-Directory::PruneEmpty()
+Directory::PruneEmpty() noexcept
 {
 	assert(holding_db_lock());
 
@@ -118,7 +118,7 @@ Directory::PruneEmpty()
 }
 
 Directory::LookupResult
-Directory::LookupDirectory(const char *uri)
+Directory::LookupDirectory(const char *uri) noexcept
 {
 	assert(holding_db_lock());
 	assert(uri != nullptr);
@@ -173,7 +173,7 @@ Directory::AddSong(Song *song)
 }
 
 void
-Directory::RemoveSong(Song *song)
+Directory::RemoveSong(Song *song) noexcept
 {
 	assert(holding_db_lock());
 	assert(song != nullptr);
@@ -183,7 +183,7 @@ Directory::RemoveSong(Song *song)
 }
 
 const Song *
-Directory::FindSong(const char *name_utf8) const
+Directory::FindSong(const char *name_utf8) const noexcept
 {
 	assert(holding_db_lock());
 	assert(name_utf8 != nullptr);
@@ -200,13 +200,13 @@ Directory::FindSong(const char *name_utf8) const
 
 gcc_pure
 static bool
-directory_cmp(const Directory &a, const Directory &b)
+directory_cmp(const Directory &a, const Directory &b) noexcept
 {
 	return IcuCollate(a.path.c_str(), b.path.c_str()) < 0;
 }
 
 void
-Directory::Sort()
+Directory::Sort() noexcept
 {
 	assert(holding_db_lock());
 
@@ -261,7 +261,7 @@ Directory::Walk(bool recursive, const SongFilter *filter,
 }
 
 LightDirectory
-Directory::Export() const
+Directory::Export() const noexcept
 {
 	return LightDirectory(GetPath(), mtime);
 }

@@ -75,14 +75,14 @@ InputStream::LockWaitReady()
  */
 gcc_pure
 static bool
-ExpensiveSeeking(const char *uri)
+ExpensiveSeeking(const char *uri) noexcept
 {
 	return StringStartsWith(uri, "http://") ||
 		StringStartsWith(uri, "https://");
 }
 
 bool
-InputStream::CheapSeeking() const
+InputStream::CheapSeeking() const noexcept
 {
 	return IsSeekable() && !ExpensiveSeeking(uri.c_str());
 }
@@ -121,7 +121,7 @@ InputStream::LockReadTag()
 }
 
 bool
-InputStream::IsAvailable()
+InputStream::IsAvailable() noexcept
 {
 	return true;
 }
@@ -169,7 +169,7 @@ InputStream::LockReadFull(void *ptr, size_t _size)
 }
 
 bool
-InputStream::LockIsEOF()
+InputStream::LockIsEOF() noexcept
 {
 	const std::lock_guard<Mutex> protect(mutex);
 	return IsEOF();

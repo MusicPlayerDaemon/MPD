@@ -40,7 +40,7 @@
 gcc_pure
 static bool
 CheckDecoderPlugin(const DecoderPlugin &plugin,
-		   const char *suffix, const char *mime)
+		   const char *suffix, const char *mime) noexcept
 {
 	return (mime != nullptr && plugin.SupportsMimeType(mime)) ||
 		(suffix != nullptr && plugin.SupportsSuffix(suffix));

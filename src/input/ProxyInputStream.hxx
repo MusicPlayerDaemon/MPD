@@ -46,9 +46,9 @@ public:
 	void Check() override;
 	void Update() override;
 	void Seek(offset_type new_offset) override;
-	bool IsEOF() override;
+	bool IsEOF() noexcept override;
 	Tag *ReadTag() override;
-	bool IsAvailable() override;
+	bool IsAvailable() noexcept override;
 	size_t Read(void *ptr, size_t read_size) override;
 
 protected:

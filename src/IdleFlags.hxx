@@ -70,8 +70,9 @@ static constexpr unsigned IDLE_MOUNT = 0x1000;
 /**
  * Get idle names
  */
+gcc_const
 const char*const*
-idle_get_names();
+idle_get_names() noexcept;
 
 /**
  * Parse an idle name and return its mask.  Returns 0 if the given
@@ -79,6 +80,6 @@ idle_get_names();
  */
 gcc_nonnull_all gcc_pure
 unsigned
-idle_parse_name(const char *name);
+idle_parse_name(const char *name) noexcept;
 
 #endif

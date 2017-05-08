@@ -24,14 +24,14 @@
 #include <string.h>
 
 bool
-StringStartsWith(const wchar_t *haystack, const wchar_t *needle)
+StringStartsWith(const wchar_t *haystack, const wchar_t *needle) noexcept
 {
 	const size_t length = StringLength(needle);
 	return StringIsEqual(haystack, needle, length);
 }
 
 bool
-StringEndsWith(const wchar_t *haystack, const wchar_t *needle)
+StringEndsWith(const wchar_t *haystack, const wchar_t *needle) noexcept
 {
 	const size_t haystack_length = StringLength(haystack);
 	const size_t needle_length = StringLength(needle);
@@ -41,7 +41,7 @@ StringEndsWith(const wchar_t *haystack, const wchar_t *needle)
 }
 
 const wchar_t *
-StringAfterPrefix(const wchar_t *string, const wchar_t *prefix)
+StringAfterPrefix(const wchar_t *string, const wchar_t *prefix) noexcept
 {
 #if !CLANG_CHECK_VERSION(3,6)
 	/* disabled on clang due to -Wtautological-pointer-compare */
@@ -56,7 +56,7 @@ StringAfterPrefix(const wchar_t *string, const wchar_t *prefix)
 }
 
 const wchar_t *
-FindStringSuffix(const wchar_t *p, const wchar_t *suffix)
+FindStringSuffix(const wchar_t *p, const wchar_t *suffix) noexcept
 {
 	const size_t p_length = StringLength(p);
 	const size_t suffix_length = StringLength(suffix);

@@ -67,7 +67,7 @@ flac_parse_mixramp(const FLAC__StreamMetadata_VorbisComment &vc)
  */
 static const char *
 flac_comment_value(const FLAC__StreamMetadata_VorbisComment_Entry *entry,
-		   const char *name)
+		   const char *name) noexcept
 {
 	return vorbis_comment_value((const char *)entry->entry, name);
 }
@@ -126,7 +126,7 @@ flac_scan_comments(const FLAC__StreamMetadata_VorbisComment *comment,
 
 gcc_pure
 static inline SongTime
-flac_duration(const FLAC__StreamMetadata_StreamInfo *stream_info)
+flac_duration(const FLAC__StreamMetadata_StreamInfo *stream_info) noexcept
 {
 	assert(stream_info->sample_rate > 0);
 

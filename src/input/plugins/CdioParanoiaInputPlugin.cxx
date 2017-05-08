@@ -96,7 +96,7 @@ class CdioParanoiaInputStream final : public InputStream {
 	}
 
 	/* virtual methods from InputStream */
-	bool IsEOF() override;
+	bool IsEOF() noexcept override;
 	size_t Read(void *ptr, size_t size) override;
 	void Seek(offset_type offset) override;
 };
@@ -340,7 +340,7 @@ CdioParanoiaInputStream::Read(void *ptr, size_t length)
 }
 
 bool
-CdioParanoiaInputStream::IsEOF()
+CdioParanoiaInputStream::IsEOF() noexcept
 {
 	return lsn_from + lsn_relofs > lsn_to;
 }

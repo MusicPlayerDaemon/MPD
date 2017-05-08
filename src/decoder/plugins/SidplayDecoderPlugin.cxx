@@ -116,7 +116,7 @@ struct SidplayContainerPath {
 
 gcc_pure
 static unsigned
-ParseSubtuneName(const char *base)
+ParseSubtuneName(const char *base) noexcept
 {
 	if (memcmp(base, SUBTUNE_PREFIX, sizeof(SUBTUNE_PREFIX) - 1) != 0)
 		return 0;
@@ -390,7 +390,7 @@ sidplay_file_decode(DecoderClient &client, Path path_fs)
 
 gcc_pure
 static const char *
-GetInfoString(const SidTuneInfo &info, unsigned i)
+GetInfoString(const SidTuneInfo &info, unsigned i) noexcept
 {
 #ifdef HAVE_SIDPLAYFP
 	return info.numberOfInfoStrings() > i

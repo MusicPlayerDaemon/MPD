@@ -27,6 +27,6 @@ struct Tag;
 
 gcc_malloc gcc_nonnull_all
 char *
-FormatTag(const Tag &tag, const char *format);
+FormatTag(const Tag &tag, const char *format) noexcept;
 
 #endif

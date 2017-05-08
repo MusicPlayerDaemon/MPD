@@ -23,14 +23,14 @@
 
 gcc_const
 static bool
-valid_channel_char(const char ch)
+valid_channel_char(const char ch) noexcept
 {
 	return IsAlphaNumericASCII(ch) ||
 		ch == '_' || ch == '-' || ch == '.' || ch == ':';
 }
 
 bool
-client_message_valid_channel_name(const char *name)
+client_message_valid_channel_name(const char *name) noexcept
 {
 	do {
 		if (!valid_channel_char(*name))

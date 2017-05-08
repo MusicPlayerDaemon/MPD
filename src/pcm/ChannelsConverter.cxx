@@ -57,7 +57,7 @@ PcmChannelsConverter::Close()
 }
 
 ConstBuffer<void>
-PcmChannelsConverter::Convert(ConstBuffer<void> src)
+PcmChannelsConverter::Convert(ConstBuffer<void> src) noexcept
 {
 	switch (format) {
 	case SampleFormat::UNDEFINED:

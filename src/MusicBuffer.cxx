@@ -23,19 +23,19 @@
 
 #include <assert.h>
 
-MusicBuffer::MusicBuffer(unsigned num_chunks)
+MusicBuffer::MusicBuffer(unsigned num_chunks) noexcept
 	:buffer(num_chunks) {
 }
 
 MusicChunk *
-MusicBuffer::Allocate()
+MusicBuffer::Allocate() noexcept
 {
 	const std::lock_guard<Mutex> protect(mutex);
 	return buffer.Allocate();
 }
 
 void
-MusicBuffer::Return(MusicChunk *chunk)
+MusicBuffer::Return(MusicChunk *chunk) noexcept
 {
 	assert(chunk != nullptr);
 

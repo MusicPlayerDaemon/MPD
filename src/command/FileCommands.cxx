@@ -44,7 +44,7 @@
 
 gcc_pure
 static bool
-SkipNameFS(PathTraitsFS::const_pointer_type name_fs)
+SkipNameFS(PathTraitsFS::const_pointer_type name_fs) noexcept
 {
 	return name_fs[0] == '.' &&
 		(name_fs[1] == 0 ||
@@ -53,7 +53,7 @@ SkipNameFS(PathTraitsFS::const_pointer_type name_fs)
 
 gcc_pure
 static bool
-skip_path(Path name_fs)
+skip_path(Path name_fs) noexcept
 {
 	return name_fs.HasNewline();
 }
@@ -107,7 +107,7 @@ handle_listfiles_local(Response &r, Path path_fs)
 
 gcc_pure
 static bool
-IsValidName(const char *p)
+IsValidName(const char *p) noexcept
 {
 	if (!IsAlphaASCII(*p))
 		return false;
@@ -123,7 +123,7 @@ IsValidName(const char *p)
 
 gcc_pure
 static bool
-IsValidValue(const char *p)
+IsValidValue(const char *p) noexcept
 {
 	while (*p) {
 		const char ch = *p++;

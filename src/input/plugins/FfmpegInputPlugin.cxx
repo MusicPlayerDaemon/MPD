@@ -59,7 +59,7 @@ struct FfmpegInputStream final : public InputStream {
 	}
 
 	/* virtual methods from InputStream */
-	bool IsEOF() override;
+	bool IsEOF() noexcept override;
 	size_t Read(void *ptr, size_t size) override;
 	void Seek(offset_type offset) override;
 };
@@ -118,7 +118,7 @@ FfmpegInputStream::Read(void *ptr, size_t read_size)
 }
 
 bool
-FfmpegInputStream::IsEOF()
+FfmpegInputStream::IsEOF() noexcept
 {
 	return eof;
 }

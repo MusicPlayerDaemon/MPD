@@ -32,7 +32,7 @@
 #include <string.h>
 
 bool
-SocketAddress::operator==(SocketAddress other) const
+SocketAddress::operator==(SocketAddress other) const noexcept
 {
 	return size == other.size && memcmp(address, other.address, size) == 0;
 }

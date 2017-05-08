@@ -305,10 +305,10 @@ struct DecoderControl {
 	 * Caller must lock the object.
 	 */
 	gcc_pure
-	bool IsCurrentSong(const DetachedSong &_song) const;
+	bool IsCurrentSong(const DetachedSong &_song) const noexcept;
 
 	gcc_pure
-	bool LockIsCurrentSong(const DetachedSong &_song) const {
+	bool LockIsCurrentSong(const DetachedSong &_song) const noexcept {
 		const std::lock_guard<Mutex> protect(mutex);
 		return IsCurrentSong(_song);
 	}

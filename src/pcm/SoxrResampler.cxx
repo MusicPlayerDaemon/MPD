@@ -56,7 +56,7 @@ static constexpr struct {
 
 gcc_const
 static const char *
-soxr_quality_name(unsigned long recipe)
+soxr_quality_name(unsigned long recipe) noexcept
 {
 	for (const auto *i = soxr_quality_table;; ++i) {
 		assert(i->name != nullptr);
@@ -68,7 +68,7 @@ soxr_quality_name(unsigned long recipe)
 
 gcc_pure
 static unsigned long
-soxr_parse_quality(const char *quality)
+soxr_parse_quality(const char *quality) noexcept
 {
 	if (quality == nullptr)
 		return SOXR_DEFAULT_RECIPE;

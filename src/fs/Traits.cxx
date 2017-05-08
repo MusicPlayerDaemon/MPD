@@ -114,50 +114,51 @@ RelativePathImpl(typename Traits::const_pointer_type base,
 
 PathTraitsFS::string
 PathTraitsFS::Build(const_pointer_type a, size_t a_size,
-		    const_pointer_type b, size_t b_size)
+		    const_pointer_type b, size_t b_size) noexcept
 {
 	return BuildPathImpl<PathTraitsFS>(a, a_size, b, b_size);
 }
 
 PathTraitsFS::const_pointer_type
-PathTraitsFS::GetBase(PathTraitsFS::const_pointer_type p)
+PathTraitsFS::GetBase(PathTraitsFS::const_pointer_type p) noexcept
 {
 	return GetBasePathImpl<PathTraitsFS>(p);
 }
 
 PathTraitsFS::string
-PathTraitsFS::GetParent(PathTraitsFS::const_pointer_type p)
+PathTraitsFS::GetParent(PathTraitsFS::const_pointer_type p) noexcept
 {
 	return GetParentPathImpl<PathTraitsFS>(p);
 }
 
 PathTraitsFS::const_pointer_type
-PathTraitsFS::Relative(const_pointer_type base, const_pointer_type other)
+PathTraitsFS::Relative(const_pointer_type base, const_pointer_type other) noexcept
 {
 	return RelativePathImpl<PathTraitsFS>(base, other);
 }
 
 PathTraitsUTF8::string
 PathTraitsUTF8::Build(const_pointer_type a, size_t a_size,
-		      const_pointer_type b, size_t b_size)
+		      const_pointer_type b, size_t b_size) noexcept
 {
 	return BuildPathImpl<PathTraitsUTF8>(a, a_size, b, b_size);
 }
 
 PathTraitsUTF8::const_pointer_type
-PathTraitsUTF8::GetBase(const_pointer_type p)
+PathTraitsUTF8::GetBase(const_pointer_type p) noexcept
 {
 	return GetBasePathImpl<PathTraitsUTF8>(p);
 }
 
 PathTraitsUTF8::string
-PathTraitsUTF8::GetParent(const_pointer_type p)
+PathTraitsUTF8::GetParent(const_pointer_type p) noexcept
 {
 	return GetParentPathImpl<PathTraitsUTF8>(p);
 }
 
 PathTraitsUTF8::const_pointer_type
-PathTraitsUTF8::Relative(const_pointer_type base, const_pointer_type other)
+PathTraitsUTF8::Relative(const_pointer_type base,
+			 const_pointer_type other) noexcept
 {
 	return RelativePathImpl<PathTraitsUTF8>(base, other);
 }

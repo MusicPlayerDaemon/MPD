@@ -33,6 +33,6 @@ nfs_finish();
 
 gcc_pure
 NfsConnection &
-nfs_get_connection(const char *server, const char *export_name);
+nfs_get_connection(const char *server, const char *export_name) noexcept;
 
 #endif

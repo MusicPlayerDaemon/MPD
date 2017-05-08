@@ -109,7 +109,7 @@ public:
 	 * Returns nullptr if the name does not exist.
 	 */
 	gcc_pure
-	AudioOutput *FindByName(const char *name) const;
+	AudioOutput *FindByName(const char *name) const noexcept;
 
 	/**
 	 * Checks the "enabled" flag of all audio outputs, and if one has
@@ -195,7 +195,7 @@ public:
 	 * 0..100).  Returns -1 if no mixer can be queried.
 	 */
 	gcc_pure
-	int GetVolume() const;
+	int GetVolume() const noexcept;
 
 	/**
 	 * Sets the volume on all available mixers.
@@ -203,7 +203,7 @@ public:
 	 * @param volume the volume (range 0..100)
 	 * @return true on success, false on failure
 	 */
-	bool SetVolume(unsigned volume);
+	bool SetVolume(unsigned volume) noexcept;
 
 	/**
 	 * Similar to GetVolume(), but gets the volume only for
@@ -211,7 +211,7 @@ public:
 	 * function fails if no software mixer is configured.
 	 */
 	gcc_pure
-	int GetSoftwareVolume() const;
+	int GetSoftwareVolume() const noexcept;
 
 	/**
 	 * Similar to SetVolume(), but sets the volume only for
@@ -219,7 +219,7 @@ public:
 	 * function cannot fail, because the underlying software
 	 * mixers cannot fail either.
 	 */
-	void SetSoftwareVolume(unsigned volume);
+	void SetSoftwareVolume(unsigned volume) noexcept;
 
 private:
 	/**
@@ -227,9 +227,9 @@ private:
 	 * command.
 	 */
 	gcc_pure
-	bool AllFinished() const;
+	bool AllFinished() const noexcept;
 
-	void WaitAll();
+	void WaitAll() noexcept;
 
 	/**
 	 * Signals all audio outputs which are open.
@@ -247,7 +247,7 @@ private:
 	/**
 	 * Has this chunk been consumed by all audio outputs?
 	 */
-	bool IsChunkConsumed(const MusicChunk *chunk) const;
+	bool IsChunkConsumed(const MusicChunk *chunk) const noexcept;
 
 	/**
 	 * There's only one chunk left in the pipe (#pipe), and all

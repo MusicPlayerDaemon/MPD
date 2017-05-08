@@ -55,7 +55,7 @@ public:
 };
 
 const FilterPlugin *
-filter_plugin_by_name(gcc_unused const char *name)
+filter_plugin_by_name(gcc_unused const char *name) noexcept
 {
 	assert(false);
 	return NULL;

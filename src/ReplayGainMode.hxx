@@ -36,7 +36,7 @@ enum class ReplayGainMode : uint8_t {
  */
 gcc_pure
 const char *
-ToString(ReplayGainMode mode);
+ToString(ReplayGainMode mode) noexcept;
 
 /**
  * Parse a string to a #ReplayGainMode.  Throws std::runtime_error on

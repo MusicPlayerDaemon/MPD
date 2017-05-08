@@ -248,7 +248,7 @@ try {
 /* we don't look at "." / ".." nor files with newlines in their name */
 gcc_pure
 static bool
-skip_path(const char *name_utf8)
+skip_path(const char *name_utf8) noexcept
 {
 	return strchr(name_utf8, '\n') != nullptr;
 }
@@ -256,7 +256,7 @@ skip_path(const char *name_utf8)
 gcc_pure
 bool
 UpdateWalk::SkipSymlink(const Directory *directory,
-			const char *utf8_name) const
+			const char *utf8_name) const noexcept
 {
 #ifndef WIN32
 	const auto path_fs = storage.MapChildFS(directory->GetPath(),

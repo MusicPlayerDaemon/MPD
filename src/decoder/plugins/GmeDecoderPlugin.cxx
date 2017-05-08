@@ -74,7 +74,7 @@ gme_plugin_init(gcc_unused const ConfigBlock &block)
 
 gcc_pure
 static unsigned
-ParseSubtuneName(const char *base)
+ParseSubtuneName(const char *base) noexcept
 {
 	if (memcmp(base, SUBTUNE_PREFIX, sizeof(SUBTUNE_PREFIX) - 1) != 0)
 		return 0;

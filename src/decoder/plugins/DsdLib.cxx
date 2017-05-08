@@ -39,7 +39,7 @@
 #include <stdlib.h>
 
 bool
-DsdId::Equals(const char *s) const
+DsdId::Equals(const char *s) const noexcept
 {
 	assert(s != nullptr);
 	assert(strlen(s) == sizeof(value));
@@ -95,7 +95,7 @@ dsdlib_skip(DecoderClient *client, InputStream &is,
 }
 
 bool
-dsdlib_valid_freq(uint32_t samplefreq)
+dsdlib_valid_freq(uint32_t samplefreq) noexcept
 {
 	switch (samplefreq) {
 	case 2822400: /* DSD64, 64xFs, Fs = 44.100kHz */

@@ -36,7 +36,7 @@ const NeighborPlugin *const neighbor_plugins[] = {
 };
 
 const NeighborPlugin *
-GetNeighborPluginByName(const char *name)
+GetNeighborPluginByName(const char *name) noexcept
 {
 	for (auto i = neighbor_plugins; *i != nullptr; ++i)
 		if (strcmp((*i)->name, name) == 0)

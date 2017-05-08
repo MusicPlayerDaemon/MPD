@@ -168,7 +168,7 @@ public:
 	bool SendResponse();
 
 	gcc_pure
-	ssize_t GetBytesTillMetaData() const;
+	ssize_t GetBytesTillMetaData() const noexcept;
 
 	ssize_t TryWritePage(const Page &page, size_t position);
 	ssize_t TryWritePageN(const Page &page, size_t position, ssize_t n);

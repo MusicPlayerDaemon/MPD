@@ -38,7 +38,7 @@ const DatabasePlugin *const database_plugins[] = {
 };
 
 const DatabasePlugin *
-GetDatabasePluginByName(const char *name)
+GetDatabasePluginByName(const char *name) noexcept
 {
 	for (auto i = database_plugins; *i != nullptr; ++i)
 		if (strcmp((*i)->name, name) == 0)

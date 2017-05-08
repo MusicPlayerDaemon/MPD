@@ -98,14 +98,14 @@ public:
 	 * Feed a text line from the CUE file into the parser.  Call
 	 * Get() after this to see if a song has been finished.
 	 */
-	void Feed(const char *line);
+	void Feed(const char *line) noexcept;
 
 	/**
 	 * Tell the parser that the end of the file has been reached.  Call
 	 * Get() after this to see if a song has been finished.
 	 * This procedure must be done twice!
 	 */
-	void Finish();
+	void Finish() noexcept;
 
 	/**
 	 * Check if a song was finished by the last Feed() or Finish()
@@ -114,20 +114,20 @@ public:
 	 * @return a song object that must be freed by the caller, or NULL if
 	 * no song was finished at this time
 	 */
-	std::unique_ptr<DetachedSong> Get();
+	std::unique_ptr<DetachedSong> Get() noexcept;
 
 private:
 	gcc_pure
-	TagBuilder *GetCurrentTag();
+	TagBuilder *GetCurrentTag() noexcept;
 
 	/**
 	 * Commit the current song.  It will be moved to "previous",
 	 * so the next song may soon edit its end time (using the next
 	 * song's start time).
 	 */
-	void Commit();
+	void Commit() noexcept;
 
-	void Feed2(char *p);
+	void Feed2(char *p) noexcept;
 };
 
 #endif

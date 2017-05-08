@@ -101,11 +101,11 @@ struct ConfigBlock {
 	}
 
 	gcc_nonnull_all gcc_pure
-	const BlockParam *GetBlockParam(const char *_name) const;
+	const BlockParam *GetBlockParam(const char *_name) const noexcept;
 
 	gcc_pure
 	const char *GetBlockValue(const char *name,
-				  const char *default_value=nullptr) const;
+				  const char *default_value=nullptr) const noexcept;
 
 	/**
 	 * Same as config_get_path(), but looks up the setting in the

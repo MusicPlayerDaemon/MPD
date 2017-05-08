@@ -28,7 +28,7 @@ AutoGunzipReader::~AutoGunzipReader()
 
 gcc_pure
 static bool
-IsGzip(const uint8_t data[4])
+IsGzip(const uint8_t data[4]) noexcept
 {
 	return data[0] == 0x1f && data[1] == 0x8b && data[2] == 0x08 &&
 		(data[3] & 0xe0) == 0;

@@ -170,7 +170,8 @@ decoder_file_decode(const DecoderPlugin &plugin,
 
 gcc_pure
 static bool
-decoder_check_plugin_mime(const DecoderPlugin &plugin, const InputStream &is)
+decoder_check_plugin_mime(const DecoderPlugin &plugin,
+			  const InputStream &is) noexcept
 {
 	assert(plugin.stream_decode != nullptr);
 
@@ -181,7 +182,8 @@ decoder_check_plugin_mime(const DecoderPlugin &plugin, const InputStream &is)
 
 gcc_pure
 static bool
-decoder_check_plugin_suffix(const DecoderPlugin &plugin, const char *suffix)
+decoder_check_plugin_suffix(const DecoderPlugin &plugin,
+			    const char *suffix) noexcept
 {
 	assert(plugin.stream_decode != nullptr);
 
@@ -191,7 +193,7 @@ decoder_check_plugin_suffix(const DecoderPlugin &plugin, const char *suffix)
 gcc_pure
 static bool
 decoder_check_plugin(const DecoderPlugin &plugin, const InputStream &is,
-		     const char *suffix)
+		     const char *suffix) noexcept
 {
 	return plugin.stream_decode != nullptr &&
 		(decoder_check_plugin_mime(plugin, is) ||

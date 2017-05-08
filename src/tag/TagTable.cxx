@@ -28,7 +28,7 @@
  * in the table.
  */
 TagType
-tag_table_lookup(const struct tag_table *table, const char *name)
+tag_table_lookup(const struct tag_table *table, const char *name) noexcept
 {
 	for (; table->name != nullptr; ++table)
 		if (strcmp(name, table->name) == 0)
@@ -43,7 +43,7 @@ tag_table_lookup(const struct tag_table *table, const char *name)
  * in the table.
  */
 TagType
-tag_table_lookup_i(const struct tag_table *table, const char *name)
+tag_table_lookup_i(const struct tag_table *table, const char *name) noexcept
 {
 	for (; table->name != nullptr; ++table)
 		if (StringEqualsCaseASCII(name, table->name))
@@ -53,7 +53,7 @@ tag_table_lookup_i(const struct tag_table *table, const char *name)
 }
 
 const char *
-tag_table_lookup(const tag_table *table, TagType type)
+tag_table_lookup(const tag_table *table, TagType type) noexcept
 {
 	for (; table->name != nullptr; ++table)
 		if (table->type == type)

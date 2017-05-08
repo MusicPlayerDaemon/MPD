@@ -32,6 +32,6 @@ extern const NeighborPlugin *const neighbor_plugins[];
 
 gcc_pure
 const NeighborPlugin *
-GetNeighborPluginByName(const char *name);
+GetNeighborPluginByName(const char *name) noexcept;
 
 #endif

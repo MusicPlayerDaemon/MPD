@@ -75,7 +75,7 @@ public:
 		chunk = nullptr;
 	}
 
-	const MusicChunk *Get();
+	const MusicChunk *Get() noexcept;
 
 	void Consume(gcc_unused const MusicChunk &_chunk) {
 		assert(chunk != nullptr);
@@ -85,9 +85,9 @@ public:
 	}
 
 	gcc_pure
-	bool IsConsumed(const MusicChunk &_chunk) const;
+	bool IsConsumed(const MusicChunk &_chunk) const noexcept;
 
-	void ClearTail(gcc_unused const MusicChunk &_chunk) {
+	void ClearTail(gcc_unused const MusicChunk &_chunk) noexcept {
 		assert(chunk == &_chunk);
 		assert(consumed);
 		chunk = nullptr;

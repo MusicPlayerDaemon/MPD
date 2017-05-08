@@ -89,7 +89,8 @@ print_supported_uri_schemes(Response &r)
 	}
 }
 
-bool uri_supported_scheme(const char *uri)
+bool
+uri_supported_scheme(const char *uri) noexcept
 {
 	const char *const*urlPrefixes = remoteUrlPrefixes;
 

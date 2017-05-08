@@ -28,7 +28,7 @@ const Domain client_domain("client");
 #ifdef ENABLE_DATABASE
 
 const Database *
-Client::GetDatabase() const
+Client::GetDatabase() const noexcept
 {
 	return partition.instance.GetDatabase();
 }
@@ -40,7 +40,7 @@ Client::GetDatabaseOrThrow() const
 }
 
 const Storage *
-Client::GetStorage() const
+Client::GetStorage() const noexcept
 {
 	return partition.instance.storage;
 }

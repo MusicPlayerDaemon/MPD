@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2015 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright (C) 2011-2017 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -53,7 +53,7 @@
 #ifdef HAVE_UN
 
 static std::string
-LocalAddressToString(const struct sockaddr_un &s_un, size_t size)
+LocalAddressToString(const struct sockaddr_un &s_un, size_t size) noexcept
 {
 	const size_t prefix_size = (size_t)
 		((struct sockaddr_un *)nullptr)->sun_path;
@@ -83,7 +83,7 @@ LocalAddressToString(const struct sockaddr_un &s_un, size_t size)
 
 gcc_pure
 static bool
-IsV4Mapped(SocketAddress address)
+IsV4Mapped(SocketAddress address) noexcept
 {
 	if (address.GetFamily() != AF_INET6)
 		return false;
@@ -96,7 +96,7 @@ IsV4Mapped(SocketAddress address)
  * Convert "::ffff:127.0.0.1" to "127.0.0.1".
  */
 static SocketAddress
-UnmapV4(SocketAddress src, struct sockaddr_in &buffer)
+UnmapV4(SocketAddress src, struct sockaddr_in &buffer) noexcept
 {
 	assert(IsV4Mapped(src));
 
@@ -113,7 +113,7 @@ UnmapV4(SocketAddress src, struct sockaddr_in &buffer)
 #endif
 
 std::string
-ToString(SocketAddress address)
+ToString(SocketAddress address) noexcept
 {
 #ifdef HAVE_UN
 	if (address.GetFamily() == AF_UNIX)

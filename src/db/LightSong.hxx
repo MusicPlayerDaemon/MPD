@@ -76,7 +76,7 @@ struct LightSong {
 	SongTime end_time;
 
 	gcc_pure
-	std::string GetURI() const {
+	std::string GetURI() const noexcept {
 		if (directory == nullptr)
 			return std::string(uri);
 
@@ -87,7 +87,7 @@ struct LightSong {
 	}
 
 	gcc_pure
-	SignedSongTime GetDuration() const;
+	SignedSongTime GetDuration() const noexcept;
 };
 
 #endif

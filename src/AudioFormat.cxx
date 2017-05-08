@@ -24,7 +24,7 @@
 #include <stdio.h>
 
 void
-AudioFormat::ApplyMask(AudioFormat mask)
+AudioFormat::ApplyMask(AudioFormat mask) noexcept
 {
 	assert(IsValid());
 	assert(mask.IsMaskValid());
@@ -42,7 +42,7 @@ AudioFormat::ApplyMask(AudioFormat mask)
 }
 
 StringBuffer<24>
-ToString(const AudioFormat af)
+ToString(const AudioFormat af) noexcept
 {
 	StringBuffer<24> buffer;
 

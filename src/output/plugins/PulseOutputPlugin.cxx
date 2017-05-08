@@ -90,7 +90,6 @@ public:
 		Signal();
 	}
 
-	gcc_const
 	static bool TestDefaultDevice();
 
 	static PulseOutput *Create(const ConfigBlock &block);

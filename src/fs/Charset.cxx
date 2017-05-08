@@ -57,7 +57,7 @@ SetFSCharset(const char *charset)
 #endif
 
 void
-DeinitFSCharset()
+DeinitFSCharset() noexcept
 {
 #ifdef HAVE_ICU_CONVERTER
 	delete fs_converter;
@@ -66,7 +66,7 @@ DeinitFSCharset()
 }
 
 const char *
-GetFSCharset()
+GetFSCharset() noexcept
 {
 #ifdef HAVE_FS_CHARSET
 	return fs_charset.empty() ? "UTF-8" : fs_charset.c_str();

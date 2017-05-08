@@ -96,7 +96,7 @@ io_thread_deinit(void)
 }
 
 EventLoop &
-io_thread_get()
+io_thread_get() noexcept
 {
 	assert(io.loop != nullptr);
 
@@ -104,7 +104,7 @@ io_thread_get()
 }
 
 bool
-io_thread_inside(void)
+io_thread_inside() noexcept
 {
 	return io.thread.IsInside();
 }

@@ -160,7 +160,7 @@ public:
 	};
 
 	gcc_pure
-	bool IsSubscribed(const char *channel_name) const {
+	bool IsSubscribed(const char *channel_name) const noexcept {
 		return subscriptions.find(channel_name) != subscriptions.end();
 	}
 
@@ -186,7 +186,7 @@ public:
 	 * Wrapper for Instance::GetDatabase().
 	 */
 	gcc_pure
-	const Database *GetDatabase() const;
+	const Database *GetDatabase() const noexcept;
 
 	/**
 	 * Wrapper for Instance::GetDatabaseOrThrow().
@@ -195,7 +195,7 @@ public:
 	const Database &GetDatabaseOrThrow() const;
 
 	gcc_pure
-	const Storage *GetStorage() const;
+	const Storage *GetStorage() const noexcept;
 
 private:
 	/* virtual methods from class BufferedSocket */

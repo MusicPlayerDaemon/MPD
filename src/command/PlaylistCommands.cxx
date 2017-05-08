@@ -39,7 +39,7 @@
 #include "util/ConstBuffer.hxx"
 
 bool
-playlist_commands_available()
+playlist_commands_available() noexcept
 {
 	return !map_spl_path().IsNull();
 }

@@ -124,6 +124,6 @@ sample_format_size(SampleFormat format)
  */
 gcc_pure gcc_malloc
 const char *
-sample_format_to_string(SampleFormat format);
+sample_format_to_string(SampleFormat format) noexcept;
 
 #endif

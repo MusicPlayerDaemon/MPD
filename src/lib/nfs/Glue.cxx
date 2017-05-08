@@ -50,7 +50,7 @@ nfs_finish()
 }
 
 NfsConnection &
-nfs_get_connection(const char *server, const char *export_name)
+nfs_get_connection(const char *server, const char *export_name) noexcept
 {
 	assert(in_use > 0);
 	assert(io_thread_inside());

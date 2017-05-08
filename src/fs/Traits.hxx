@@ -124,7 +124,7 @@ struct PathTraitsFS {
 	 * The return value points inside the given string.
 	 */
 	gcc_pure gcc_nonnull_all
-	static const_pointer_type GetBase(const_pointer_type p);
+	static const_pointer_type GetBase(const_pointer_type p) noexcept;
 
 	/**
 	 * Determine the "parent" file name of the given native path.
@@ -132,7 +132,7 @@ struct PathTraitsFS {
 	 * separator in the given input string.
 	 */
 	gcc_pure gcc_nonnull_all
-	static string GetParent(const_pointer_type p);
+	static string GetParent(const_pointer_type p) noexcept;
 
 	/**
 	 * Determine the relative part of the given path to this
@@ -142,7 +142,7 @@ struct PathTraitsFS {
 	 */
 	gcc_pure gcc_nonnull_all
 	static const_pointer_type Relative(const_pointer_type base,
-					   const_pointer_type other);
+					   const_pointer_type other) noexcept;
 
 	/**
 	 * Constructs the path from the given components.
@@ -152,10 +152,10 @@ struct PathTraitsFS {
 	 */
 	gcc_pure gcc_nonnull_all
 	static string Build(const_pointer_type a, size_t a_size,
-			    const_pointer_type b, size_t b_size);
+			    const_pointer_type b, size_t b_size) noexcept;
 
 	gcc_pure gcc_nonnull_all
-	static string Build(const_pointer_type a, const_pointer_type b) {
+	static string Build(const_pointer_type a, const_pointer_type b) noexcept {
 		return Build(a, GetLength(a), b, GetLength(b));
 	}
 };
@@ -224,7 +224,7 @@ struct PathTraitsUTF8 {
 	 * The return value points inside the given string.
 	 */
 	gcc_pure gcc_nonnull_all
-	static const_pointer_type GetBase(const_pointer_type p);
+	static const_pointer_type GetBase(const_pointer_type p) noexcept;
 
 	/**
 	 * Determine the "parent" file name of the given UTF-8 path.
@@ -232,7 +232,7 @@ struct PathTraitsUTF8 {
 	 * separator in the given input string.
 	 */
 	gcc_pure gcc_nonnull_all
-	static string GetParent(const_pointer_type p);
+	static string GetParent(const_pointer_type p) noexcept;
 
 	/**
 	 * Determine the relative part of the given path to this
@@ -242,7 +242,7 @@ struct PathTraitsUTF8 {
 	 */
 	gcc_pure gcc_nonnull_all
 	static const_pointer_type Relative(const_pointer_type base,
-					   const_pointer_type other);
+					   const_pointer_type other) noexcept;
 
 	/**
 	 * Constructs the path from the given components.
@@ -252,7 +252,7 @@ struct PathTraitsUTF8 {
 	 */
 	gcc_pure gcc_nonnull_all
 	static string Build(const_pointer_type a, size_t a_size,
-			    const_pointer_type b, size_t b_size);
+			    const_pointer_type b, size_t b_size) noexcept;
 
 	gcc_pure gcc_nonnull_all
 	static string Build(const_pointer_type a, const_pointer_type b) {

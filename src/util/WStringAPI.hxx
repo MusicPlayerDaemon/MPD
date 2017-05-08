@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2015 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright (C) 2010-2017 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -36,70 +36,70 @@
 
 gcc_pure gcc_nonnull_all
 static inline size_t
-StringLength(const wchar_t *p)
+StringLength(const wchar_t *p) noexcept
 {
 	return wcslen(p);
 }
 
 gcc_pure gcc_nonnull_all
 static inline const wchar_t *
-StringFind(const wchar_t *haystack, const wchar_t *needle)
+StringFind(const wchar_t *haystack, const wchar_t *needle) noexcept
 {
 	return wcsstr(haystack, needle);
 }
 
 gcc_pure gcc_nonnull_all
 static inline const wchar_t *
-StringFind(const wchar_t *haystack, wchar_t needle, size_t size)
+StringFind(const wchar_t *haystack, wchar_t needle, size_t size) noexcept
 {
 	return wmemchr(haystack, needle, size);
 }
 
 gcc_pure gcc_nonnull_all
 static inline wchar_t *
-StringFind(wchar_t *haystack, wchar_t needle, size_t size)
+StringFind(wchar_t *haystack, wchar_t needle, size_t size) noexcept
 {
 	return wmemchr(haystack, needle, size);
 }
 
 gcc_pure gcc_nonnull_all
 static inline const wchar_t *
-StringFind(const wchar_t *haystack, wchar_t needle)
+StringFind(const wchar_t *haystack, wchar_t needle) noexcept
 {
 	return wcschr(haystack, needle);
 }
 
 gcc_pure gcc_nonnull_all
 static inline wchar_t *
-StringFind(wchar_t *haystack, wchar_t needle)
+StringFind(wchar_t *haystack, wchar_t needle) noexcept
 {
 	return wcschr(haystack, needle);
 }
 
 gcc_pure gcc_nonnull_all
 static inline const wchar_t *
-StringFindLast(const wchar_t *haystack, wchar_t needle)
+StringFindLast(const wchar_t *haystack, wchar_t needle) noexcept
 {
 	return wcsrchr(haystack, needle);
 }
 
 gcc_pure gcc_nonnull_all
 static inline wchar_t *
-StringFindLast(wchar_t *haystack, wchar_t needle)
+StringFindLast(wchar_t *haystack, wchar_t needle) noexcept
 {
 	return wcsrchr(haystack, needle);
 }
 
 gcc_nonnull_all
 static inline void
-UnsafeCopyString(wchar_t *dest, const wchar_t *src)
+UnsafeCopyString(wchar_t *dest, const wchar_t *src) noexcept
 {
 	wcscpy(dest, src);
 }
 
 gcc_nonnull_all
 static inline wchar_t *
-UnsafeCopyStringP(wchar_t *dest, const wchar_t *src)
+UnsafeCopyStringP(wchar_t *dest, const wchar_t *src) noexcept
 {
 #if defined(WIN32) || defined(__BIONIC__) || defined(__OpenBSD__) || \
 	defined(__NetBSD__)
@@ -119,7 +119,7 @@ UnsafeCopyStringP(wchar_t *dest, const wchar_t *src)
  */
 gcc_pure gcc_nonnull_all
 static inline bool
-StringIsEqual(const wchar_t *str1, const wchar_t *str2)
+StringIsEqual(const wchar_t *str1, const wchar_t *str2) noexcept
 {
 	return wcscmp(str1, str2) == 0;
 }
@@ -129,7 +129,7 @@ StringIsEqual(const wchar_t *str1, const wchar_t *str2)
  */
 gcc_pure gcc_nonnull_all
 static inline bool
-StringIsEqual(const wchar_t *a, const wchar_t *b, size_t length)
+StringIsEqual(const wchar_t *a, const wchar_t *b, size_t length) noexcept
 {
 	return wcsncmp(a, b, length) == 0;
 }

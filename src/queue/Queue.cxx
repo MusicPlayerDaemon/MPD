@@ -43,7 +43,7 @@ Queue::~Queue()
 }
 
 int
-Queue::GetNextOrder(unsigned _order) const
+Queue::GetNextOrder(unsigned _order) const noexcept
 {
 	assert(_order < length);
 
@@ -60,7 +60,7 @@ Queue::GetNextOrder(unsigned _order) const
 }
 
 void
-Queue::IncrementVersion()
+Queue::IncrementVersion() noexcept
 {
 	static unsigned long max = ((uint32_t) 1 << 31) - 1;
 
@@ -75,7 +75,7 @@ Queue::IncrementVersion()
 }
 
 void
-Queue::ModifyAtOrder(unsigned _order)
+Queue::ModifyAtOrder(unsigned _order) noexcept
 {
 	assert(_order < length);
 
@@ -103,7 +103,7 @@ Queue::Append(DetachedSong &&song, uint8_t priority)
 }
 
 void
-Queue::SwapPositions(unsigned position1, unsigned position2)
+Queue::SwapPositions(unsigned position1, unsigned position2) noexcept
 {
 	unsigned id1 = items[position1].id;
 	unsigned id2 = items[position2].id;
@@ -118,7 +118,7 @@ Queue::SwapPositions(unsigned position1, unsigned position2)
 }
 
 void
-Queue::MovePostion(unsigned from, unsigned to)
+Queue::MovePostion(unsigned from, unsigned to) noexcept
 {
 	const Item tmp = items[from];
 
@@ -154,7 +154,7 @@ Queue::MovePostion(unsigned from, unsigned to)
 }
 
 void
-Queue::MoveRange(unsigned start, unsigned end, unsigned to)
+Queue::MoveRange(unsigned start, unsigned end, unsigned to) noexcept
 {
 	Item tmp[end - start];
 	// Copy the original block [start,end-1]
@@ -196,7 +196,7 @@ Queue::MoveRange(unsigned start, unsigned end, unsigned to)
 }
 
 void
-Queue::MoveOrder(unsigned from_order, unsigned to_order)
+Queue::MoveOrder(unsigned from_order, unsigned to_order) noexcept
 {
 	assert(from_order < length);
 	assert(to_order <= length);
@@ -215,7 +215,7 @@ Queue::MoveOrder(unsigned from_order, unsigned to_order)
 }
 
 void
-Queue::DeletePosition(unsigned position)
+Queue::DeletePosition(unsigned position) noexcept
 {
 	assert(position < length);
 
@@ -248,7 +248,7 @@ Queue::DeletePosition(unsigned position)
 }
 
 void
-Queue::Clear()
+Queue::Clear() noexcept
 {
 	for (unsigned i = 0; i < length; i++) {
 		Item *item = &items[i];
@@ -262,7 +262,8 @@ Queue::Clear()
 }
 
 static void
-queue_sort_order_by_priority(Queue *queue, unsigned start, unsigned end)
+queue_sort_order_by_priority(Queue *queue,
+			     unsigned start, unsigned end) noexcept
 {
 	assert(queue != nullptr);
 	assert(queue->random);
@@ -370,7 +371,7 @@ Queue::ShuffleRange(unsigned start, unsigned end)
 
 unsigned
 Queue::FindPriorityOrder(unsigned start_order, uint8_t priority,
-			 unsigned exclude_order) const
+			 unsigned exclude_order) const noexcept
 {
 	assert(random);
 	assert(start_order <= length);
@@ -386,7 +387,7 @@ Queue::FindPriorityOrder(unsigned start_order, uint8_t priority,
 }
 
 unsigned
-Queue::CountSamePriority(unsigned start_order, uint8_t priority) const
+Queue::CountSamePriority(unsigned start_order, uint8_t priority) const noexcept
 {
 	assert(random);
 	assert(start_order <= length);

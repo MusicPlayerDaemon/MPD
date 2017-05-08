@@ -41,7 +41,7 @@
  */
 gcc_const
 static time_t
-GetTimeZoneOffset()
+GetTimeZoneOffset() noexcept
 {
 	time_t t = 1234567890;
 	struct tm tm;

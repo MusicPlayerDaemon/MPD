@@ -86,7 +86,7 @@ public:
 	 * Checks if the specified chunk is enqueued in the music pipe.
 	 */
 	gcc_pure
-	bool Contains(const MusicChunk *chunk) const;
+	bool Contains(const MusicChunk *chunk) const noexcept;
 #endif
 
 	/**

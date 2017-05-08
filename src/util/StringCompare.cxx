@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2015 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright (C) 2013-2017 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -30,7 +30,7 @@
 #include "StringCompare.hxx"
 
 bool
-StringEndsWith(const char *haystack, const char *needle)
+StringEndsWith(const char *haystack, const char *needle) noexcept
 {
 	const size_t haystack_length = strlen(haystack);
 	const size_t needle_length = strlen(needle);
@@ -41,7 +41,7 @@ StringEndsWith(const char *haystack, const char *needle)
 }
 
 const char *
-FindStringSuffix(const char *p, const char *suffix)
+FindStringSuffix(const char *p, const char *suffix) noexcept
 {
 	const size_t p_length = strlen(p);
 	const size_t suffix_length = strlen(suffix);

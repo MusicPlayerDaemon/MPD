@@ -87,9 +87,9 @@ public:
 
 	StorageDirectoryReader *OpenDirectory(const char *uri_utf8) override;
 
-	std::string MapUTF8(const char *uri_utf8) const override;
+	std::string MapUTF8(const char *uri_utf8) const noexcept override;
 
-	const char *MapToRelativeUTF8(const char *uri_utf8) const override;
+	const char *MapToRelativeUTF8(const char *uri_utf8) const noexcept override;
 
 	/* virtual methods from NfsLease */
 	void OnNfsConnectionReady() final {
@@ -223,7 +223,7 @@ UriToNfsPath(const char *_uri_utf8)
 }
 
 std::string
-NfsStorage::MapUTF8(const char *uri_utf8) const
+NfsStorage::MapUTF8(const char *uri_utf8) const noexcept
 {
 	assert(uri_utf8 != nullptr);
 
@@ -234,7 +234,7 @@ NfsStorage::MapUTF8(const char *uri_utf8) const
 }
 
 const char *
-NfsStorage::MapToRelativeUTF8(const char *uri_utf8) const
+NfsStorage::MapToRelativeUTF8(const char *uri_utf8) const noexcept
 {
 	return PathTraitsUTF8::Relative(base.c_str(), uri_utf8);
 }
@@ -291,7 +291,7 @@ NfsStorage::GetInfo(const char *uri_utf8, gcc_unused bool follow)
 
 gcc_pure
 static bool
-SkipNameFS(const char *name)
+SkipNameFS(const char *name) noexcept
 {
 	return name[0] == '.' &&
 		(name[1] == 0 ||

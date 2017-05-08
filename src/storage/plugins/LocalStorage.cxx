@@ -61,11 +61,11 @@ public:
 
 	StorageDirectoryReader *OpenDirectory(const char *uri_utf8) override;
 
-	std::string MapUTF8(const char *uri_utf8) const override;
+	std::string MapUTF8(const char *uri_utf8) const noexcept override;
 
-	AllocatedPath MapFS(const char *uri_utf8) const override;
+	AllocatedPath MapFS(const char *uri_utf8) const noexcept override;
 
-	const char *MapToRelativeUTF8(const char *uri_utf8) const override;
+	const char *MapToRelativeUTF8(const char *uri_utf8) const noexcept override;
 
 private:
 	AllocatedPath MapFSOrThrow(const char *uri_utf8) const;
@@ -97,7 +97,7 @@ Stat(Path path, bool follow)
 }
 
 std::string
-LocalStorage::MapUTF8(const char *uri_utf8) const
+LocalStorage::MapUTF8(const char *uri_utf8) const noexcept
 {
 	assert(uri_utf8 != nullptr);
 
@@ -120,7 +120,7 @@ LocalStorage::MapFSOrThrow(const char *uri_utf8) const
 }
 
 AllocatedPath
-LocalStorage::MapFS(const char *uri_utf8) const
+LocalStorage::MapFS(const char *uri_utf8) const noexcept
 {
 	try {
 		return MapFSOrThrow(uri_utf8);
@@ -130,7 +130,7 @@ LocalStorage::MapFS(const char *uri_utf8) const
 }
 
 const char *
-LocalStorage::MapToRelativeUTF8(const char *uri_utf8) const
+LocalStorage::MapToRelativeUTF8(const char *uri_utf8) const noexcept
 {
 	return PathTraitsUTF8::Relative(base_utf8.c_str(), uri_utf8);
 }
@@ -149,7 +149,7 @@ LocalStorage::OpenDirectory(const char *uri_utf8)
 
 gcc_pure
 static bool
-SkipNameFS(PathTraitsFS::const_pointer_type name_fs)
+SkipNameFS(PathTraitsFS::const_pointer_type name_fs) noexcept
 {
 	return name_fs[0] == '.' &&
 		(name_fs[1] == 0 ||

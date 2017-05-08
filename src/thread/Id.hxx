@@ -71,7 +71,7 @@ public:
 	 * Return the current thread's id .
 	 */
 	gcc_pure
-	static const ThreadId GetCurrent() {
+	static const ThreadId GetCurrent() noexcept {
 #ifdef WIN32
 		return ::GetCurrentThreadId();
 #else
@@ -91,7 +91,7 @@ public:
 	/**
 	 * Check if this thread is the current thread.
 	 */
-	bool IsInside() const {
+	bool IsInside() const noexcept {
 		return *this == GetCurrent();
 	}
 };

@@ -48,11 +48,11 @@ ReadConfigFile(Path path);
 
 gcc_pure
 const ConfigParam *
-config_get_param(enum ConfigOption option);
+config_get_param(enum ConfigOption option) noexcept;
 
 gcc_pure
 const ConfigBlock *
-config_get_block(enum ConfigBlockOption option);
+config_get_block(enum ConfigBlockOption option) noexcept;
 
 /**
  * Find a block with a matching attribute.
@@ -74,7 +74,8 @@ config_find_block(ConfigBlockOption option, const char *key, const char *value);
 
 gcc_pure
 const char *
-config_get_string(enum ConfigOption option, const char *default_value=nullptr);
+config_get_string(enum ConfigOption option,
+		  const char *default_value=nullptr) noexcept;
 
 /**
  * Returns an optional configuration variable which contains an

@@ -34,19 +34,19 @@ DatabaseSelection::DatabaseSelection(const char *_uri, bool _recursive,
 }
 
 bool
-DatabaseSelection::IsEmpty() const
+DatabaseSelection::IsEmpty() const noexcept
 {
 	return uri.empty() && (filter == nullptr || filter->IsEmpty());
 }
 
 bool
-DatabaseSelection::HasOtherThanBase() const
+DatabaseSelection::HasOtherThanBase() const noexcept
 {
 	return filter != nullptr && filter->HasOtherThanBase();
 }
 
 bool
-DatabaseSelection::Match(const LightSong &song) const
+DatabaseSelection::Match(const LightSong &song) const noexcept
 {
 	return filter == nullptr || filter->Match(song);
 }

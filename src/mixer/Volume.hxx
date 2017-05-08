@@ -26,11 +26,11 @@ class MultipleOutputs;
 class BufferedOutputStream;
 
 void
-InvalidateHardwareVolume();
+InvalidateHardwareVolume() noexcept;
 
 gcc_pure
 int
-volume_level_get(const MultipleOutputs &outputs);
+volume_level_get(const MultipleOutputs &outputs) noexcept;
 
 bool
 volume_level_change(MultipleOutputs &outputs, unsigned volume);
@@ -49,6 +49,6 @@ save_sw_volume_state(BufferedOutputStream &os);
  */
 gcc_pure
 unsigned
-sw_volume_state_get_hash();
+sw_volume_state_get_hash() noexcept;
 
 #endif

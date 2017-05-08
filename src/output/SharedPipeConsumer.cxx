@@ -23,7 +23,7 @@
 #include "MusicPipe.hxx"
 
 const MusicChunk *
-SharedPipeConsumer::Get()
+SharedPipeConsumer::Get() noexcept
 {
 	if (chunk != nullptr) {
 		if (!consumed)
@@ -42,7 +42,7 @@ SharedPipeConsumer::Get()
 }
 
 bool
-SharedPipeConsumer::IsConsumed(const MusicChunk &_chunk) const
+SharedPipeConsumer::IsConsumed(const MusicChunk &_chunk) const noexcept
 {
 	if (chunk == nullptr)
 		return false;

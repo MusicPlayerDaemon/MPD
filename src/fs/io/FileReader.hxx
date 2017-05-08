@@ -90,7 +90,7 @@ public:
 	FileInfo GetFileInfo() const;
 
 	gcc_pure
-	uint64_t GetSize() const {
+	uint64_t GetSize() const noexcept {
 #ifdef WIN32
 		LARGE_INTEGER size;
 		return GetFileSizeEx(handle, &size)
@@ -102,7 +102,7 @@ public:
 	}
 
 	gcc_pure
-	uint64_t GetPosition() const {
+	uint64_t GetPosition() const noexcept {
 #ifdef WIN32
 		LARGE_INTEGER zero;
 		zero.QuadPart = 0;

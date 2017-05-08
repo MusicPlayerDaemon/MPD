@@ -29,7 +29,7 @@
 
 gcc_pure
 static const char *
-FindInvalidUTF8(const char *p, const char *const end)
+FindInvalidUTF8(const char *p, const char *const end) noexcept
 {
 	while (p < end) {
 		const size_t s = SequenceLengthUTF8(*p);

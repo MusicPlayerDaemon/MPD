@@ -23,6 +23,6 @@
 #include "Song.hxx"
 
 void
-song_list_sort(SongList &songs);
+song_list_sort(SongList &songs) noexcept;
 
 #endif

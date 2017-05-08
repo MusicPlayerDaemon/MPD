@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2015 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright (C) 2013-2017 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -45,14 +45,14 @@ StringIsEmpty(const char *string)
 
 gcc_pure gcc_nonnull_all
 static inline bool
-StringStartsWith(const char *haystack, StringView needle)
+StringStartsWith(const char *haystack, StringView needle) noexcept
 {
 	return strncmp(haystack, needle.data, needle.size) == 0;
 }
 
 gcc_pure
 bool
-StringEndsWith(const char *haystack, const char *needle);
+StringEndsWith(const char *haystack, const char *needle) noexcept;
 
 /**
  * Returns the portion of the string after a prefix.  If the string
@@ -61,7 +61,7 @@ StringEndsWith(const char *haystack, const char *needle);
  */
 gcc_pure gcc_nonnull_all
 static inline const char *
-StringAfterPrefix(const char *haystack, StringView needle)
+StringAfterPrefix(const char *haystack, StringView needle) noexcept
 {
 	return StringStartsWith(haystack, needle)
 		? haystack + needle.size
@@ -74,6 +74,6 @@ StringAfterPrefix(const char *haystack, StringView needle)
  */
 gcc_pure
 const char *
-FindStringSuffix(const char *p, const char *suffix);
+FindStringSuffix(const char *p, const char *suffix) noexcept;
 
 #endif

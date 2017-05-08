@@ -22,7 +22,7 @@
 #include "AllocatedPath.hxx"
 
 AllocatedPath
-Path::GetDirectoryName() const
+Path::GetDirectoryName() const noexcept
 {
 	return AllocatedPath::FromFS(PathTraitsFS::GetParent(c_str()));
 }

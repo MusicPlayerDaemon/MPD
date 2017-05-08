@@ -32,11 +32,11 @@ void
 IcuCollateInit();
 
 void
-IcuCollateFinish();
+IcuCollateFinish() noexcept;
 
 gcc_pure gcc_nonnull_all
 int
-IcuCollate(const char *a, const char *b);
+IcuCollate(const char *a, const char *b) noexcept;
 
 gcc_pure gcc_nonnull_all
 AllocatedString<char>

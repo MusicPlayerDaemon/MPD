@@ -28,14 +28,14 @@ extern tag_mask_t global_tag_mask;
 
 gcc_const
 static inline bool
-IsTagEnabled(unsigned tag)
+IsTagEnabled(unsigned tag) noexcept
 {
 	return global_tag_mask & (1u << tag);
 }
 
 gcc_const
 static inline bool
-IsTagEnabled(TagType tag)
+IsTagEnabled(TagType tag) noexcept
 {
 	return IsTagEnabled(unsigned(tag));
 }

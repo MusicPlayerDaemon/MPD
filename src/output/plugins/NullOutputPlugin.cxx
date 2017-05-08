@@ -49,7 +49,7 @@ public:
 			delete timer;
 	}
 
-	std::chrono::steady_clock::duration Delay() const {
+	std::chrono::steady_clock::duration Delay() const noexcept {
 		return sync && timer->IsStarted()
 			? timer->GetDelay()
 			: std::chrono::steady_clock::duration::zero();

@@ -45,7 +45,7 @@ extern ThreadId db_mutex_holder;
  */
 gcc_pure
 static inline bool
-holding_db_lock(void)
+holding_db_lock() noexcept
 {
 	return db_mutex_holder.IsInside();
 }

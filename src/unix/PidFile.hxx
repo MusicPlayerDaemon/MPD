@@ -88,7 +88,7 @@ public:
 
 gcc_pure
 static inline pid_t
-ReadPidFile(Path path)
+ReadPidFile(Path path) noexcept
 {
 	int fd = OpenFile(path, O_RDONLY, 0);
 	if (fd < 0)

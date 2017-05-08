@@ -317,7 +317,7 @@ private:
 	 * To be called from the main thread.  Caller must lock the
 	 * object.
 	 */
-	void SynchronousCommand(PlayerCommand cmd) {
+	void SynchronousCommand(PlayerCommand cmd) noexcept {
 		assert(command == PlayerCommand::NONE);
 
 		command = cmd;
@@ -332,7 +332,7 @@ private:
 	 * To be called from the main thread.  This method locks the
 	 * object.
 	 */
-	void LockSynchronousCommand(PlayerCommand cmd) {
+	void LockSynchronousCommand(PlayerCommand cmd) noexcept {
 		const std::lock_guard<Mutex> protect(mutex);
 		SynchronousCommand(cmd);
 	}
@@ -383,7 +383,7 @@ public:
 	void Kill();
 
 	gcc_pure
-	player_status LockGetStatus();
+	player_status LockGetStatus() noexcept;
 
 	PlayerState GetState() const {
 		return state;

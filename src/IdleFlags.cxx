@@ -46,13 +46,13 @@ static const char *const idle_names[] = {
 };
 
 const char*const*
-idle_get_names(void)
+idle_get_names() noexcept
 {
         return idle_names;
 }
 
 unsigned
-idle_parse_name(const char *name)
+idle_parse_name(const char *name) noexcept
 {
 #if !CLANG_CHECK_VERSION(3,6)
 	/* disabled on clang due to -Wtautological-pointer-compare */

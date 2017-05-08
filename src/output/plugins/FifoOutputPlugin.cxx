@@ -66,7 +66,7 @@ public:
 	void Open(AudioFormat &audio_format);
 	void Close();
 
-	std::chrono::steady_clock::duration Delay() const;
+	std::chrono::steady_clock::duration Delay() const noexcept;
 	size_t Play(const void *chunk, size_t size);
 	void Cancel();
 };
@@ -205,7 +205,7 @@ FifoOutput::Cancel()
 }
 
 inline std::chrono::steady_clock::duration
-FifoOutput::Delay() const
+FifoOutput::Delay() const noexcept
 {
 	return timer->IsStarted()
 		? timer->GetDelay()

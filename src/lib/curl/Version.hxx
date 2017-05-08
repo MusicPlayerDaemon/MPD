@@ -34,6 +34,6 @@
 
 gcc_const
 bool
-IsCurlOlderThan(unsigned version_num);
+IsCurlOlderThan(unsigned version_num) noexcept;
 
 #endif

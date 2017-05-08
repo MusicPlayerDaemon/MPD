@@ -63,7 +63,7 @@ struct AudioOutputWrapper {
 	}
 
 	gcc_pure
-	static std::chrono::steady_clock::duration Delay(AudioOutput *ao) {
+	static std::chrono::steady_clock::duration Delay(AudioOutput *ao) noexcept {
 		T &t = Cast(*ao);
 		return t.Delay();
 	}

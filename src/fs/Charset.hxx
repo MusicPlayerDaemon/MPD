@@ -33,7 +33,7 @@
  */
 gcc_const
 const char *
-GetFSCharset();
+GetFSCharset() noexcept;
 
 /**
  * Throws std::runtime_error on error.
@@ -42,7 +42,7 @@ void
 SetFSCharset(const char *charset);
 
 void
-DeinitFSCharset();
+DeinitFSCharset() noexcept;
 
 /**
  * Convert the path to UTF-8.

@@ -20,6 +20,8 @@
 #ifndef MPD_MIXER_TYPE_HXX
 #define MPD_MIXER_TYPE_HXX
 
+#include "Compiler.h"
+
 enum class MixerType {
 	/** parser error */
 	UNKNOWN,
@@ -44,7 +46,8 @@ enum class MixerType {
  * a #MixerType value; #MixerType::UNKNOWN means #input could not be
  * parsed
  */
+gcc_pure
 MixerType
-mixer_type_parse(const char *input);
+mixer_type_parse(const char *input) noexcept;
 
 #endif

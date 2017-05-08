@@ -345,7 +345,7 @@ HttpdOutput::SendHeader(HttpdClient &client) const
 }
 
 inline std::chrono::steady_clock::duration
-HttpdOutput::Delay() const
+HttpdOutput::Delay() const noexcept
 {
 	if (!LockHasClients() && base.pause) {
 		/* if there's no client and this output is paused,
@@ -366,7 +366,7 @@ HttpdOutput::Delay() const
 }
 
 static std::chrono::steady_clock::duration
-httpd_output_delay(AudioOutput *ao)
+httpd_output_delay(AudioOutput *ao) noexcept
 {
 	HttpdOutput *httpd = HttpdOutput::Cast(ao);
 

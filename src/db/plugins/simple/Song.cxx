@@ -77,7 +77,7 @@ Song::Free()
 }
 
 std::string
-Song::GetURI() const
+Song::GetURI() const noexcept
 {
 	assert(*uri);
 
@@ -96,7 +96,7 @@ Song::GetURI() const
 }
 
 LightSong
-Song::Export() const
+Song::Export() const noexcept
 {
 	LightSong dest;
 	dest.directory = parent->IsRoot()

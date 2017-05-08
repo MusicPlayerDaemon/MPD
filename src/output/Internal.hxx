@@ -436,10 +436,10 @@ public:
 	 * Caller must lock the mutex.
 	 */
 	gcc_pure
-	bool IsChunkConsumed(const MusicChunk &chunk) const;
+	bool IsChunkConsumed(const MusicChunk &chunk) const noexcept;
 
 	gcc_pure
-	bool LockIsChunkConsumed(const MusicChunk &chunk) {
+	bool LockIsChunkConsumed(const MusicChunk &chunk) noexcept {
 		const std::lock_guard<Mutex> protect(mutex);
 		return IsChunkConsumed(chunk);
 	}

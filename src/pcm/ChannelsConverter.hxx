@@ -75,7 +75,7 @@ public:
 	 * @return the destination buffer
 	 */
 	gcc_pure
-	ConstBuffer<void> Convert(ConstBuffer<void> src);
+	ConstBuffer<void> Convert(ConstBuffer<void> src) noexcept;
 };
 
 #endif

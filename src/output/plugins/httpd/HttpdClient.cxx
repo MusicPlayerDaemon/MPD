@@ -260,7 +260,7 @@ HttpdClient::TryWritePageN(const Page &page, size_t position, ssize_t n)
 }
 
 ssize_t
-HttpdClient::GetBytesTillMetaData() const
+HttpdClient::GetBytesTillMetaData() const noexcept
 {
 	if (metadata_requested &&
 	    current_page->size - current_position > metaint - metadata_fill)

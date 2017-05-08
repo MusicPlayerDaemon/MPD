@@ -73,7 +73,7 @@ CreateConfiguredStorage(EventLoop &event_loop)
 }
 
 bool
-IsStorageConfigured()
+IsStorageConfigured() noexcept
 {
 	return config_get_string(ConfigOption::MUSIC_DIR) != nullptr;
 }

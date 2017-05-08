@@ -68,7 +68,7 @@ ConfigBlock::~ConfigBlock()
 }
 
 const BlockParam *
-ConfigBlock::GetBlockParam(const char *name) const
+ConfigBlock::GetBlockParam(const char *name) const noexcept
 {
 	for (const auto &i : block_params) {
 		if (i.name == name) {
@@ -81,7 +81,8 @@ ConfigBlock::GetBlockParam(const char *name) const
 }
 
 const char *
-ConfigBlock::GetBlockValue(const char *name, const char *default_value) const
+ConfigBlock::GetBlockValue(const char *name,
+			   const char *default_value) const noexcept
 {
 	const BlockParam *bp = GetBlockParam(name);
 	if (bp == nullptr)

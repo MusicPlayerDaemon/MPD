@@ -107,7 +107,7 @@ cue_parse_rem(char *p, TagBuilder &tag)
 }
 
 TagBuilder *
-CueParser::GetCurrentTag()
+CueParser::GetCurrentTag() noexcept
 {
 	if (state == HEADER)
 		return &header_tag;
@@ -139,7 +139,7 @@ cue_parse_position(const char *p)
 }
 
 void
-CueParser::Commit()
+CueParser::Commit() noexcept
 {
 	/* the caller of this library must call cue_parser_get() often
 	   enough */
@@ -158,7 +158,7 @@ CueParser::Commit()
 }
 
 void
-CueParser::Feed2(char *p)
+CueParser::Feed2(char *p) noexcept
 {
 	assert(!end);
 	assert(p != nullptr);
@@ -260,7 +260,7 @@ CueParser::Feed2(char *p)
 }
 
 void
-CueParser::Feed(const char *line)
+CueParser::Feed(const char *line) noexcept
 {
 	assert(!end);
 	assert(line != nullptr);
@@ -271,7 +271,7 @@ CueParser::Feed(const char *line)
 }
 
 void
-CueParser::Finish()
+CueParser::Finish() noexcept
 {
 	if (end)
 		/* has already been called, ignore */
@@ -282,7 +282,7 @@ CueParser::Finish()
 }
 
 std::unique_ptr<DetachedSong>
-CueParser::Get()
+CueParser::Get() noexcept
 {
 	if (finished == nullptr && end) {
 		/* cue_parser_finish() has been called already:

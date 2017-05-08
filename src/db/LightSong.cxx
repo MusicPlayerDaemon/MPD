@@ -21,7 +21,7 @@
 #include "tag/Tag.hxx"
 
 SignedSongTime
-LightSong::GetDuration() const
+LightSong::GetDuration() const noexcept
 {
 	SongTime a = start_time, b = end_time;
 	if (!b.IsPositive()) {

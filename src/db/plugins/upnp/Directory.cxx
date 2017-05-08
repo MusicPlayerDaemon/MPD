@@ -39,7 +39,7 @@ UPnPDirContent::~UPnPDirContent()
 
 gcc_pure
 static UPnPDirObject::ItemClass
-ParseItemClass(StringView name)
+ParseItemClass(StringView name) noexcept
 {
 	if (name.EqualsLiteral("object.item.audioItem.musicTrack"))
 		return UPnPDirObject::ItemClass::MUSIC;
@@ -51,7 +51,7 @@ ParseItemClass(StringView name)
 
 gcc_pure
 static SignedSongTime
-ParseDuration(const char *duration)
+ParseDuration(const char *duration) noexcept
 {
 	char *endptr;
 
@@ -81,7 +81,7 @@ ParseDuration(const char *duration)
  */
 gcc_pure
 static std::string &&
-TitleToPathSegment(std::string &&s)
+TitleToPathSegment(std::string &&s) noexcept
 {
 	std::replace(s.begin(), s.end(), '/', '_');
 	return std::move(s);

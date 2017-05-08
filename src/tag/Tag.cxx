@@ -27,7 +27,7 @@
 #include <string.h>
 
 TagType
-tag_name_parse(const char *name)
+tag_name_parse(const char *name) noexcept
 {
 	assert(name != nullptr);
 
@@ -42,7 +42,7 @@ tag_name_parse(const char *name)
 }
 
 TagType
-tag_name_parse_i(const char *name)
+tag_name_parse_i(const char *name) noexcept
 {
 	assert(name != nullptr);
 
@@ -112,7 +112,7 @@ Tag::MergeReplace(Tag *base, Tag *add)
 }
 
 const char *
-Tag::GetValue(TagType type) const
+Tag::GetValue(TagType type) const noexcept
 {
 	assert(type < TAG_NUM_OF_ITEM_TYPES);
 
@@ -124,7 +124,7 @@ Tag::GetValue(TagType type) const
 }
 
 bool
-Tag::HasType(TagType type) const
+Tag::HasType(TagType type) const noexcept
 {
 	return GetValue(type) != nullptr;
 }

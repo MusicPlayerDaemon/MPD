@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2015 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright (C) 2010-2017 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -40,70 +40,70 @@
 
 gcc_pure gcc_nonnull_all
 static inline size_t
-StringLength(const char *p)
+StringLength(const char *p) noexcept
 {
 	return strlen(p);
 }
 
 gcc_pure gcc_nonnull_all
 static inline const char *
-StringFind(const char *haystack, const char *needle)
+StringFind(const char *haystack, const char *needle) noexcept
 {
 	return strstr(haystack, needle);
 }
 
 gcc_pure gcc_nonnull_all
 static inline char *
-StringFind(char *haystack, char needle, size_t size)
+StringFind(char *haystack, char needle, size_t size) noexcept
 {
 	return (char *)memchr(haystack, needle, size);
 }
 
 gcc_pure gcc_nonnull_all
 static inline const char *
-StringFind(const char *haystack, char needle, size_t size)
+StringFind(const char *haystack, char needle, size_t size) noexcept
 {
 	return (const char *)memchr(haystack, needle, size);
 }
 
 gcc_pure gcc_nonnull_all
 static inline const char *
-StringFind(const char *haystack, char needle)
+StringFind(const char *haystack, char needle) noexcept
 {
 	return strchr(haystack, needle);
 }
 
 gcc_pure gcc_nonnull_all
 static inline char *
-StringFind(char *haystack, char needle)
+StringFind(char *haystack, char needle) noexcept
 {
 	return strchr(haystack, needle);
 }
 
 gcc_pure gcc_nonnull_all
 static inline const char *
-StringFindLast(const char *haystack, char needle)
+StringFindLast(const char *haystack, char needle) noexcept
 {
 	return strrchr(haystack, needle);
 }
 
 gcc_pure gcc_nonnull_all
 static inline char *
-StringFindLast(char *haystack, char needle)
+StringFindLast(char *haystack, char needle) noexcept
 {
 	return strrchr(haystack, needle);
 }
 
 gcc_nonnull_all
 static inline void
-UnsafeCopyString(char *dest, const char *src)
+UnsafeCopyString(char *dest, const char *src) noexcept
 {
 	strcpy(dest, src);
 }
 
 gcc_nonnull_all
 static inline char *
-UnsafeCopyStringP(char *dest, const char *src)
+UnsafeCopyStringP(char *dest, const char *src) noexcept
 {
 #if defined(WIN32) || defined(__BIONIC__)
   /* emulate stpcpy() */
@@ -119,7 +119,7 @@ UnsafeCopyStringP(char *dest, const char *src)
  */
 gcc_pure gcc_nonnull_all
 static inline bool
-StringIsEqual(const char *a, const char *b)
+StringIsEqual(const char *a, const char *b) noexcept
 {
 	return strcmp(a, b) == 0;
 }
@@ -129,7 +129,7 @@ StringIsEqual(const char *a, const char *b)
  */
 gcc_pure gcc_nonnull_all
 static inline bool
-StringIsEqual(const char *a, const char *b, size_t length)
+StringIsEqual(const char *a, const char *b, size_t length) noexcept
 {
 	return strncmp(a, b, length) == 0;
 }
