@@ -68,7 +68,6 @@ struct AudioOutputWrapper {
 		return t.Delay();
 	}
 
-	gcc_pure
 	static void SendTag(AudioOutput *ao, const Tag &tag) {
 		T &t = Cast(*ao);
 		t.SendTag(tag);
@@ -89,7 +88,6 @@ struct AudioOutputWrapper {
 		t.Cancel();
 	}
 
-	gcc_pure
 	static bool Pause(AudioOutput *ao) {
 		T &t = Cast(*ao);
 		return t.Pause();

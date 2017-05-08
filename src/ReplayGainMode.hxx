@@ -42,7 +42,6 @@ ToString(ReplayGainMode mode) noexcept;
  * Parse a string to a #ReplayGainMode.  Throws std::runtime_error on
  * error.
  */
-gcc_pure
 ReplayGainMode
 FromString(const char *s);
 

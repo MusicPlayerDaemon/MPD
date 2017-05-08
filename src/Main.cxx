@@ -130,7 +130,6 @@ struct Config {
 	ReplayGainConfig replay_gain;
 };
 
-gcc_const
 static Config
 LoadConfig()
 {

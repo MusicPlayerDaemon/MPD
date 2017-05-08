@@ -71,7 +71,6 @@ private:
 	AllocatedPath MapFSOrThrow(const char *uri_utf8) const;
 };
 
-gcc_pure
 static StorageFileInfo
 Stat(Path path, bool follow)
 {

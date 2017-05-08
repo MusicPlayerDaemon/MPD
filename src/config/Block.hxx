@@ -44,13 +44,10 @@ struct BlockParam {
 	BlockParam(const char *_name, const char *_value, int _line=-1)
 		:name(_name), value(_value), line(_line), used(false) {}
 
-	gcc_pure
 	int GetIntValue() const;
 
-	gcc_pure
 	unsigned GetUnsignedValue() const;
 
-	gcc_pure
 	bool GetBoolValue() const;
 };
 
@@ -116,13 +113,10 @@ struct ConfigBlock {
 	AllocatedPath GetPath(const char *name,
 			      const char *default_value=nullptr) const;
 
-	gcc_pure
 	int GetBlockValue(const char *name, int default_value) const;
 
-	gcc_pure
 	unsigned GetBlockValue(const char *name, unsigned default_value) const;
 
-	gcc_pure
 	bool GetBlockValue(const char *name, bool default_value) const;
 };
 

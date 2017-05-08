@@ -159,7 +159,7 @@ public:
 	 * Convert a UTF-8 C string to an #AllocatedPath instance.
 	 * Throws a std::runtime_error on error.
 	 */
-	gcc_pure gcc_nonnull_all
+	gcc_nonnull_all
 	static AllocatedPath FromUTF8Throw(const char *path_utf8);
 
 	/**

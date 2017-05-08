@@ -129,7 +129,6 @@ ConfigBlock::GetBlockValue(const char *name, unsigned default_value) const
 	return bp->GetUnsignedValue();
 }
 
-gcc_pure
 bool
 ConfigBlock::GetBlockValue(const char *name, bool default_value) const
 {

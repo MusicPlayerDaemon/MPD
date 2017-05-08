@@ -57,7 +57,6 @@ locate_parse_type(const char *str) noexcept
 	return tag_name_parse_i(str);
 }
 
-gcc_pure
 static AllocatedString<>
 ImportString(const char *p, bool fold_case)
 {

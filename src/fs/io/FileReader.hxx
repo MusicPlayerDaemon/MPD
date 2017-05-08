@@ -86,7 +86,6 @@ public:
 
 	void Close();
 
-	gcc_pure
 	FileInfo GetFileInfo() const;
 
 	gcc_pure

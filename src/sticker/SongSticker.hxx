@@ -21,7 +21,6 @@
 #define MPD_SONG_STICKER_HXX
 
 #include "Match.hxx"
-#include "Compiler.h"
 
 #include <string>
 
@@ -34,7 +33,6 @@ class Database;
  *
  * Throws #SqliteError on error.
  */
-gcc_pure
 std::string
 sticker_song_get_value(const LightSong &song, const char *name);
 

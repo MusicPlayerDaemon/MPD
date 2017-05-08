@@ -61,18 +61,9 @@ config_get_block(enum ConfigBlockOption option) noexcept;
  * @param key the attribute name
  * @param value the expected attribute value
  */
-gcc_pure
 const ConfigBlock *
 config_find_block(ConfigBlockOption option, const char *key, const char *value);
 
-/* Note on gcc_pure: Some of the functions declared pure are not
-   really pure in strict sense.  They have side effect such that they
-   validate parameter's value and signal an error if it's invalid.
-   However, if the argument was already validated or we don't care
-   about the argument at all, this may be ignored so in the end, we
-   should be fine with calling those functions pure.  */
-
-gcc_pure
 const char *
 config_get_string(enum ConfigOption option,
 		  const char *default_value=nullptr) noexcept;
@@ -87,11 +78,9 @@ config_get_string(enum ConfigOption option,
 AllocatedPath
 config_get_path(enum ConfigOption option);
 
-gcc_pure
 unsigned
 config_get_unsigned(enum ConfigOption option, unsigned default_value);
 
-gcc_pure
 static inline std::chrono::steady_clock::duration
 config_get_unsigned(ConfigOption option,
 		    std::chrono::steady_clock::duration default_value)
@@ -101,11 +90,9 @@ config_get_unsigned(ConfigOption option,
 	return std::chrono::steady_clock::duration(u);
 }
 
-gcc_pure
 unsigned
 config_get_positive(enum ConfigOption option, unsigned default_value);
 
-gcc_pure
 static inline std::chrono::steady_clock::duration
 config_get_positive(ConfigOption option,
 		    std::chrono::steady_clock::duration default_value)
@@ -115,7 +102,6 @@ config_get_positive(ConfigOption option,
 	return std::chrono::steady_clock::duration(u);
 }
 
-gcc_pure
 bool config_get_bool(enum ConfigOption option, bool default_value);
 
 #endif

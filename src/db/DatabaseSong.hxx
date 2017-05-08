@@ -31,7 +31,6 @@ class DetachedSong;
  * "Detach" the #Song object, i.e. convert it to a #DetachedSong
  * instance.
  */
-gcc_pure
 DetachedSong
 DatabaseDetachSong(const Storage &storage, const LightSong &song);
 

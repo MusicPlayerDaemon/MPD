@@ -74,7 +74,6 @@ static int shout_init_count;
 
 static constexpr Domain shout_output_domain("shout_output");
 
-gcc_pure
 static const char *
 require_block_string(const ConfigBlock &block, const char *name)
 {

@@ -28,6 +28,7 @@
  */
 
 #include "TimeParser.hxx"
+#include "Compiler.h"
 
 #include <stdexcept>
 

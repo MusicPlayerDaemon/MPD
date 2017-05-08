@@ -191,7 +191,6 @@ public:
 	/**
 	 * Wrapper for Instance::GetDatabaseOrThrow().
 	 */
-	gcc_pure
 	const Database &GetDatabaseOrThrow() const;
 
 	gcc_pure

@@ -1,6 +1,7 @@
 ver 0.20.7 (not yet released)
 * database
   - simple: fix false positive directory loop detection with NFS
+* fix random crashes when compiled with clang
 
 ver 0.20.6 (2017/03/10)
 * input
