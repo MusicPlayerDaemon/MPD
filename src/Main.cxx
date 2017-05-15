@@ -121,6 +121,9 @@ static constexpr size_t KILOBYTE = 1024;
 static constexpr size_t MEGABYTE = 1024 * KILOBYTE;
 
 static constexpr size_t DEFAULT_BUFFER_SIZE = 4 * MEGABYTE;
+static constexpr size_t MIN_BUFFER_SIZE = std::max(CHUNK_SIZE * 32,
+						   64 * KILOBYTE);
+
 static constexpr unsigned DEFAULT_BUFFER_BEFORE_PLAY = 10;
 
 #ifdef ANDROID
@@ -310,6 +313,13 @@ initialize_decoder_and_player(const ReplayGainConfig &replay_gain_config)
 					 "positive integer, line %i",
 					 param->value.c_str(), param->line);
 		buffer_size = tmp * KILOBYTE;
+
+		if (buffer_size < MIN_BUFFER_SIZE) {
+			FormatWarning(config_domain, "buffer size %lu is too small, using %lu bytes instead",
+				      (unsigned long)buffer_size,
+				      (unsigned long)MIN_BUFFER_SIZE);
+			buffer_size = MIN_BUFFER_SIZE;
+		}
 	} else
 		buffer_size = DEFAULT_BUFFER_SIZE;
 
