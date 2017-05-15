@@ -340,6 +340,19 @@ initialize_decoder_and_player(const ReplayGainConfig &replay_gain_config)
 					 "than 100 percent, line %i",
 					 param->value.c_str(), param->line);
 		}
+
+		if (perc > 80) {
+			/* this upper limit should avoid deadlocks
+			   which can occur because the DecoderThread
+			   cannot ever fill the music buffer to
+			   exactly 100%; a few chunks always need to
+			   be available to generate silence in
+			   Player::SendSilence() */
+			FormatError(config_domain,
+				    "buffer_before_play is too large (%f%%), capping at 80%%; please fix your configuration",
+				    perc);
+			perc = 80;
+		}
 	} else
 		perc = DEFAULT_BUFFER_BEFORE_PLAY;
 
