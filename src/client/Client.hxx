@@ -188,24 +188,24 @@ public:
 	 */
 	void AllowFile(Path path_fs) const;
 
-	Partition &GetPartition() {
+	Partition &GetPartition() noexcept {
 		return *partition;
 	}
 
-	void SetPartition(Partition &new_partition) {
+	void SetPartition(Partition &new_partition) noexcept {
 		partition = &new_partition;
 
 		// TODO: set various idle flags?
 	}
 
 	gcc_pure
-	Instance &GetInstance();
+	Instance &GetInstance() noexcept;
 
 	gcc_pure
-	playlist &GetPlaylist();
+	playlist &GetPlaylist() noexcept;
 
 	gcc_pure
-	PlayerControl &GetPlayerControl();
+	PlayerControl &GetPlayerControl() noexcept;
 
 	/**
 	 * Wrapper for Instance::GetDatabase().

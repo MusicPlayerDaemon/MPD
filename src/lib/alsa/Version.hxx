@@ -37,6 +37,6 @@ MakeAlsaVersion(uint_least32_t major, uint_least32_t minor,
  */
 gcc_const
 uint_least32_t
-GetRuntimeAlsaVersion();
+GetRuntimeAlsaVersion() noexcept;
 
 #endif

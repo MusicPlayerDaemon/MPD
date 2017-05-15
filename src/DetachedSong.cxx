@@ -31,7 +31,7 @@ DetachedSong::DetachedSong(const LightSong &other)
 	 start_time(other.start_time),
 	 end_time(other.end_time) {}
 
-DetachedSong::operator LightSong() const
+DetachedSong::operator LightSong() const noexcept
 {
 	LightSong result;
 	result.directory = nullptr;

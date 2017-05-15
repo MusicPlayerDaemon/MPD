@@ -23,7 +23,7 @@
 
 gcc_pure
 static uint_least32_t
-ParseAlsaVersion(const char *p)
+ParseAlsaVersion(const char *p) noexcept
 {
 	char *endptr;
 	unsigned long major, minor = 0, subminor = 0;
@@ -42,7 +42,7 @@ ParseAlsaVersion(const char *p)
 }
 
 uint_least32_t
-GetRuntimeAlsaVersion()
+GetRuntimeAlsaVersion() noexcept
 {
 	const char *version = snd_asoundlib_version();
 	if (version == nullptr)

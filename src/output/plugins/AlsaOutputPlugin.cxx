@@ -1009,7 +1009,7 @@ MaybeDmix(snd_pcm_type_t type)
 
 gcc_pure
 static bool
-MaybeDmix(snd_pcm_t *pcm)
+MaybeDmix(snd_pcm_t *pcm) noexcept
 {
 	return MaybeDmix(snd_pcm_type(pcm));
 }

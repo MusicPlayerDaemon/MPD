@@ -111,7 +111,7 @@ struct Instance final
 	 * no such partition was found.
 	 */
 	gcc_pure
-	Partition *FindPartition(const char *name);
+	Partition *FindPartition(const char *name) noexcept;
 
 #ifdef ENABLE_DATABASE
 	/**

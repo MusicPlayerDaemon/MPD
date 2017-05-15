@@ -108,7 +108,7 @@ public:
 	DetachedSong &operator=(DetachedSong &&) = default;
 
 	gcc_pure
-	explicit operator LightSong() const;
+	explicit operator LightSong() const noexcept;
 
 	gcc_pure
 	const char *GetURI() const noexcept {

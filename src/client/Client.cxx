@@ -26,19 +26,19 @@
 const Domain client_domain("client");
 
 Instance &
-Client::GetInstance()
+Client::GetInstance() noexcept
 {
 	return partition->instance;
 }
 
 playlist &
-Client::GetPlaylist()
+Client::GetPlaylist() noexcept
 {
 	return partition->playlist;
 }
 
 PlayerControl &
-Client::GetPlayerControl()
+Client::GetPlayerControl() noexcept
 {
 	return partition->pc;
 }
