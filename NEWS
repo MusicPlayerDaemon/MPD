@@ -1,4 +1,4 @@
-ver 0.20.7 (not yet released)
+ver 0.20.7 (2017/05/15)
 * database
   - simple: fix false positive directory loop detection with NFS
 * enforce a reasonable minimum audio_buffer_size setting
