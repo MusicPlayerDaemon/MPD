@@ -117,7 +117,10 @@
 
 #include <limits.h>
 
-static constexpr unsigned DEFAULT_BUFFER_SIZE = 4096;
+static constexpr size_t KILOBYTE = 1024;
+static constexpr size_t MEGABYTE = 1024 * KILOBYTE;
+
+static constexpr size_t DEFAULT_BUFFER_SIZE = 4 * MEGABYTE;
 static constexpr unsigned DEFAULT_BUFFER_BEFORE_PLAY = 10;
 
 #ifdef ANDROID
@@ -306,11 +309,9 @@ initialize_decoder_and_player(const ReplayGainConfig &replay_gain_config)
 			FormatFatalError("buffer size \"%s\" is not a "
 					 "positive integer, line %i",
 					 param->value.c_str(), param->line);
-		buffer_size = tmp;
+		buffer_size = tmp * KILOBYTE;
 	} else
 		buffer_size = DEFAULT_BUFFER_SIZE;
-
-	buffer_size *= 1024;
 
 	const unsigned buffered_chunks = buffer_size / CHUNK_SIZE;
 
