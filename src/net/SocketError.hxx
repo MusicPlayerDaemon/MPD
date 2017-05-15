@@ -33,7 +33,7 @@ typedef int socket_error_t;
 
 gcc_pure
 static inline socket_error_t
-GetSocketError()
+GetSocketError() noexcept
 {
 #ifdef WIN32
 	return WSAGetLastError();
@@ -44,7 +44,7 @@ GetSocketError()
 
 gcc_const
 static inline bool
-IsSocketErrorAgain(socket_error_t code)
+IsSocketErrorAgain(socket_error_t code) noexcept
 {
 #ifdef WIN32
 	return code == WSAEINPROGRESS;
@@ -55,7 +55,7 @@ IsSocketErrorAgain(socket_error_t code)
 
 gcc_const
 static inline bool
-IsSocketErrorInterruped(socket_error_t code)
+IsSocketErrorInterruped(socket_error_t code) noexcept
 {
 #ifdef WIN32
 	return code == WSAEINTR;
@@ -66,7 +66,7 @@ IsSocketErrorInterruped(socket_error_t code)
 
 gcc_const
 static inline bool
-IsSocketErrorClosed(socket_error_t code)
+IsSocketErrorClosed(socket_error_t code) noexcept
 {
 #ifdef WIN32
 	return code == WSAECONNRESET;
@@ -88,11 +88,7 @@ class SocketErrorMessage {
 #endif
 
 public:
-#ifdef WIN32
-	explicit SocketErrorMessage(socket_error_t code=GetSocketError());
-#else
-	explicit SocketErrorMessage(socket_error_t code=GetSocketError());
-#endif
+	explicit SocketErrorMessage(socket_error_t code=GetSocketError()) noexcept;
 
 	operator const char *() const {
 		return msg;
@@ -101,7 +97,7 @@ public:
 
 gcc_const
 static inline std::system_error
-MakeSocketError(socket_error_t code, const char *msg)
+MakeSocketError(socket_error_t code, const char *msg) noexcept
 {
 #ifdef WIN32
 	return MakeLastError(code, msg);
@@ -112,7 +108,7 @@ MakeSocketError(socket_error_t code, const char *msg)
 
 gcc_pure
 static inline std::system_error
-MakeSocketError(const char *msg)
+MakeSocketError(const char *msg) noexcept
 {
 	return MakeSocketError(GetSocketError(), msg);
 }

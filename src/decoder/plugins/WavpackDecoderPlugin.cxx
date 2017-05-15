@@ -101,7 +101,7 @@ WavpackOpenInput(WavpackStreamReader *reader, void *wv_id, void *wvc_id,
 
 gcc_pure
 static SignedSongTime
-GetDuration(WavpackContext *wpc)
+GetDuration(WavpackContext *wpc) noexcept
 {
 #ifdef OPEN_DSD_AS_PCM
 	/* libWavPack 5 */

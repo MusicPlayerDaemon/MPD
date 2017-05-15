@@ -40,7 +40,7 @@
 
 const char *
 config_get_string(gcc_unused enum ConfigOption option,
-		  const char *default_value)
+		  const char *default_value) noexcept
 {
 	return default_value;
 }

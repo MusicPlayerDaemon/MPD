@@ -21,7 +21,7 @@
 #include "Internal.hxx"
 
 bool
-AudioOutput::IsChunkConsumed(const MusicChunk &chunk) const
+AudioOutput::IsChunkConsumed(const MusicChunk &chunk) const noexcept
 {
 	if (!open)
 		return true;

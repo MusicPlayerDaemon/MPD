@@ -9,9 +9,12 @@ ver 0.21 (not yet released)
 * output
   - alsa: non-blocking mode
 
-ver 0.20.7 (not yet released)
+ver 0.20.7 (2017/05/15)
 * database
   - simple: fix false positive directory loop detection with NFS
+* enforce a reasonable minimum audio_buffer_size setting
+* cap buffer_before_play at 80% to prevent deadlock
+* fix random crashes when compiled with clang
 
 ver 0.20.6 (2017/03/10)
 * input

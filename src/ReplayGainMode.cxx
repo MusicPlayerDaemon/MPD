@@ -25,7 +25,7 @@
 #include <string.h>
 
 const char *
-ToString(ReplayGainMode mode)
+ToString(ReplayGainMode mode) noexcept
 {
 	switch (mode) {
 	case ReplayGainMode::AUTO:

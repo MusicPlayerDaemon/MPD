@@ -93,7 +93,7 @@ NeighborGlue::Close()
 }
 
 NeighborGlue::List
-NeighborGlue::GetList() const
+NeighborGlue::GetList() const noexcept
 {
 	List result;
 

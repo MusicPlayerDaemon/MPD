@@ -26,7 +26,7 @@
 #include <assert.h>
 
 PlaylistVector::iterator
-PlaylistVector::find(const char *name)
+PlaylistVector::find(const char *name) noexcept
 {
 	assert(holding_db_lock());
 	assert(name != nullptr);

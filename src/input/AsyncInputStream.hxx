@@ -86,10 +86,10 @@ public:
 
 	/* virtual methods from InputStream */
 	void Check() final;
-	bool IsEOF() final;
+	bool IsEOF() noexcept final;
 	void Seek(offset_type new_offset) final;
 	Tag *ReadTag() final;
-	bool IsAvailable() final;
+	bool IsAvailable() noexcept final;
 	size_t Read(void *ptr, size_t read_size) final;
 
 protected:

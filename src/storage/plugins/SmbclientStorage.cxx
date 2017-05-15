@@ -69,13 +69,13 @@ public:
 
 	StorageDirectoryReader *OpenDirectory(const char *uri_utf8) override;
 
-	std::string MapUTF8(const char *uri_utf8) const override;
+	std::string MapUTF8(const char *uri_utf8) const noexcept override;
 
-	const char *MapToRelativeUTF8(const char *uri_utf8) const override;
+	const char *MapToRelativeUTF8(const char *uri_utf8) const noexcept override;
 };
 
 std::string
-SmbclientStorage::MapUTF8(const char *uri_utf8) const
+SmbclientStorage::MapUTF8(const char *uri_utf8) const noexcept
 {
 	assert(uri_utf8 != nullptr);
 
@@ -86,7 +86,7 @@ SmbclientStorage::MapUTF8(const char *uri_utf8) const
 }
 
 const char *
-SmbclientStorage::MapToRelativeUTF8(const char *uri_utf8) const
+SmbclientStorage::MapToRelativeUTF8(const char *uri_utf8) const noexcept
 {
 	return PathTraitsUTF8::Relative(base.c_str(), uri_utf8);
 }
@@ -143,7 +143,7 @@ SmbclientStorage::OpenDirectory(const char *uri_utf8)
 
 gcc_pure
 static bool
-SkipNameFS(const char *name)
+SkipNameFS(const char *name) noexcept
 {
 	return name[0] == '.' &&
 		(name[1] == 0 ||

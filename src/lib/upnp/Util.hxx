@@ -26,17 +26,17 @@
 #include <list>
 
 void
-trimstring(std::string &s, const char *ws = " \t\n");
+trimstring(std::string &s, const char *ws = " \t\n") noexcept;
 
 std::string
-path_getfather(const std::string &s);
+path_getfather(const std::string &s) noexcept;
 
 gcc_pure
 std::list<std::string>
-stringToTokens(const std::string &str, char delim);
+stringToTokens(const std::string &str, char delim) noexcept;
 
 template <class T>
 bool
-csvToStrings(const char *s, T &tokens);
+csvToStrings(const char *s, T &tokens) noexcept;
 
 #endif /* _UPNPP_H_X_INCLUDED_ */

@@ -112,14 +112,14 @@ ffmpeg_finish()
 
 gcc_pure
 static const AVCodecParameters &
-GetCodecParameters(const AVStream &stream)
+GetCodecParameters(const AVStream &stream) noexcept
 {
 	return *stream.codecpar;
 }
 
 gcc_pure
 static AVSampleFormat
-GetSampleFormat(const AVCodecParameters &codec_params)
+GetSampleFormat(const AVCodecParameters &codec_params) noexcept
 {
 	return AVSampleFormat(codec_params.format);
 }
@@ -128,14 +128,14 @@ GetSampleFormat(const AVCodecParameters &codec_params)
 
 gcc_pure
 static const AVCodecContext &
-GetCodecParameters(const AVStream &stream)
+GetCodecParameters(const AVStream &stream) noexcept
 {
 	return *stream.codec;
 }
 
 gcc_pure
 static AVSampleFormat
-GetSampleFormat(const AVCodecContext &codec_context)
+GetSampleFormat(const AVCodecContext &codec_context) noexcept
 {
 	return codec_context.sample_fmt;
 }
@@ -144,14 +144,14 @@ GetSampleFormat(const AVCodecContext &codec_context)
 
 gcc_pure
 static bool
-IsAudio(const AVStream &stream)
+IsAudio(const AVStream &stream) noexcept
 {
 	return GetCodecParameters(stream).codec_type == AVMEDIA_TYPE_AUDIO;
 }
 
 gcc_pure
 static int
-ffmpeg_find_audio_stream(const AVFormatContext &format_context)
+ffmpeg_find_audio_stream(const AVFormatContext &format_context) noexcept
 {
 	for (unsigned i = 0; i < format_context.nb_streams; ++i)
 		if (IsAudio(*format_context.streams[i]))
@@ -220,7 +220,7 @@ copy_interleave_frame(const AVCodecContext &codec_context,
  */
 gcc_pure
 static int64_t
-StreamRelativePts(const AVPacket &packet, const AVStream &stream)
+StreamRelativePts(const AVPacket &packet, const AVStream &stream) noexcept
 {
 	auto pts = packet.pts;
 	if (pts < 0 || pts == int64_t(AV_NOPTS_VALUE))
@@ -237,7 +237,7 @@ StreamRelativePts(const AVPacket &packet, const AVStream &stream)
 gcc_pure
 static uint64_t
 PtsToPcmFrame(uint64_t pts, const AVStream &stream,
-	      const AVCodecContext &codec_context)
+	      const AVCodecContext &codec_context) noexcept
 {
 	return av_rescale_q(pts, stream.time_base, codec_context.time_base);
 }
@@ -437,7 +437,7 @@ ffmpeg_send_packet(DecoderClient &client, InputStream &is,
 
 gcc_const
 static SampleFormat
-ffmpeg_sample_format(enum AVSampleFormat sample_fmt)
+ffmpeg_sample_format(enum AVSampleFormat sample_fmt) noexcept
 {
 	switch (sample_fmt) {
 	case AV_SAMPLE_FMT_S16:

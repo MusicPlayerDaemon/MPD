@@ -111,7 +111,7 @@ struct MusicChunk {
 	 * specified audio_format.
 	 */
 	gcc_pure
-	bool CheckFormat(AudioFormat audio_format) const;
+	bool CheckFormat(AudioFormat audio_format) const noexcept;
 #endif
 
 	/**
@@ -127,7 +127,7 @@ struct MusicChunk {
 	 */
 	WritableBuffer<void> Write(AudioFormat af,
 				   SongTime data_time,
-				   uint16_t bit_rate);
+				   uint16_t bit_rate) noexcept;
 
 	/**
 	 * Increases the length of the chunk after the caller has written to
@@ -138,7 +138,7 @@ struct MusicChunk {
 	 * @param length the number of bytes which were appended
 	 * @return true if the chunk is full
 	 */
-	bool Expand(AudioFormat af, size_t length);
+	bool Expand(AudioFormat af, size_t length) noexcept;
 };
 
 #endif

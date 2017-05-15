@@ -153,13 +153,13 @@ public:
 	 * Returns return a "nulled" instance on error.
 	 */
 	gcc_pure gcc_nonnull_all
-	static AllocatedPath FromUTF8(const char *path_utf8);
+	static AllocatedPath FromUTF8(const char *path_utf8) noexcept;
 
 	/**
 	 * Convert a UTF-8 C string to an #AllocatedPath instance.
 	 * Throws a std::runtime_error on error.
 	 */
-	gcc_pure gcc_nonnull_all
+	gcc_nonnull_all
 	static AllocatedPath FromUTF8Throw(const char *path_utf8);
 
 	/**
@@ -244,14 +244,14 @@ public:
 	 * (#IsNull returns true).
 	 */
 	gcc_pure
-	std::string ToUTF8() const;
+	std::string ToUTF8() const noexcept;
 
 	/**
 	 * Gets directory name of this path.
 	 * Returns a "nulled" instance on error.
 	 */
 	gcc_pure
-	AllocatedPath GetDirectoryName() const;
+	AllocatedPath GetDirectoryName() const noexcept;
 
 	/**
 	 * Determine the relative part of the given path to this
@@ -260,17 +260,17 @@ public:
 	 * nullptr on mismatch.
 	 */
 	gcc_pure
-	const_pointer_type Relative(Path other_fs) const {
+	const_pointer_type Relative(Path other_fs) const noexcept {
 		return PathTraitsFS::Relative(c_str(), other_fs.c_str());
 	}
 
 	/**
 	 * Chop trailing directory separators.
 	 */
-	void ChopSeparators();
+	void ChopSeparators() noexcept;
 
 	gcc_pure
-	bool IsAbsolute() const {
+	bool IsAbsolute() const noexcept {
 		return PathTraitsFS::IsAbsolute(c_str());
 	}
 };

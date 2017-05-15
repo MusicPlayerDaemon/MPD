@@ -30,8 +30,9 @@
 
 #include <assert.h>
 
+gcc_pure
 static int
-output_mixer_get_volume(const AudioOutputControl &ao)
+output_mixer_get_volume(const AudioOutputControl &ao) noexcept
 {
 	if (!ao.IsEnabled())
 		return -1;
@@ -51,7 +52,7 @@ output_mixer_get_volume(const AudioOutputControl &ao)
 }
 
 int
-MultipleOutputs::GetVolume() const
+MultipleOutputs::GetVolume() const noexcept
 {
 	unsigned ok = 0;
 	int total = 0;
@@ -71,7 +72,7 @@ MultipleOutputs::GetVolume() const
 }
 
 static bool
-output_mixer_set_volume(AudioOutputControl &ao, unsigned volume)
+output_mixer_set_volume(AudioOutputControl &ao, unsigned volume) noexcept
 {
 	assert(volume <= 100);
 
@@ -94,7 +95,7 @@ output_mixer_set_volume(AudioOutputControl &ao, unsigned volume)
 }
 
 bool
-MultipleOutputs::SetVolume(unsigned volume)
+MultipleOutputs::SetVolume(unsigned volume) noexcept
 {
 	assert(volume <= 100);
 
@@ -107,7 +108,7 @@ MultipleOutputs::SetVolume(unsigned volume)
 }
 
 static int
-output_mixer_get_software_volume(const AudioOutputControl &ao)
+output_mixer_get_software_volume(const AudioOutputControl &ao) noexcept
 {
 	if (!ao.IsEnabled())
 		return -1;
@@ -120,7 +121,7 @@ output_mixer_get_software_volume(const AudioOutputControl &ao)
 }
 
 int
-MultipleOutputs::GetSoftwareVolume() const
+MultipleOutputs::GetSoftwareVolume() const noexcept
 {
 	unsigned ok = 0;
 	int total = 0;
@@ -140,7 +141,7 @@ MultipleOutputs::GetSoftwareVolume() const
 }
 
 void
-MultipleOutputs::SetSoftwareVolume(unsigned volume)
+MultipleOutputs::SetSoftwareVolume(unsigned volume) noexcept
 {
 	assert(volume <= PCM_VOLUME_1);
 

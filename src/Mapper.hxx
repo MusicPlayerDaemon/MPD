@@ -37,7 +37,7 @@ void
 mapper_init(AllocatedPath &&playlist_dir);
 
 void
-mapper_finish();
+mapper_finish() noexcept;
 
 #ifdef ENABLE_DATABASE
 
@@ -48,7 +48,7 @@ mapper_finish();
  */
 gcc_pure
 AllocatedPath
-map_uri_fs(const char *uri);
+map_uri_fs(const char *uri) noexcept;
 
 /**
  * Maps a file system path (relative to the music directory or
@@ -60,7 +60,7 @@ map_uri_fs(const char *uri);
  */
 gcc_pure
 std::string
-map_fs_to_utf8(Path path_fs);
+map_fs_to_utf8(Path path_fs) noexcept;
 
 #endif
 
@@ -69,7 +69,7 @@ map_fs_to_utf8(Path path_fs);
  */
 gcc_const
 const AllocatedPath &
-map_spl_path();
+map_spl_path() noexcept;
 
 /**
  * Maps a playlist name (without the ".m3u" suffix) to a file system
@@ -79,6 +79,6 @@ map_spl_path();
  */
 gcc_pure
 AllocatedPath
-map_spl_utf8_to_fs(const char *name);
+map_spl_utf8_to_fs(const char *name) noexcept;
 
 #endif

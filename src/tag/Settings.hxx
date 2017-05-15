@@ -28,14 +28,14 @@ extern TagMask global_tag_mask;
 
 gcc_const
 static inline bool
-IsTagEnabled(TagType tag)
+IsTagEnabled(TagType tag) noexcept
 {
 	return global_tag_mask.Test(tag);
 }
 
 gcc_const
 static inline bool
-IsTagEnabled(unsigned tag)
+IsTagEnabled(unsigned tag) noexcept
 {
 	return IsTagEnabled(TagType(tag));
 }

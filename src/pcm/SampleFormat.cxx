@@ -22,7 +22,7 @@
 #include <assert.h>
 
 const char *
-sample_format_to_string(SampleFormat format)
+sample_format_to_string(SampleFormat format) noexcept
 {
 	switch (format) {
 	case SampleFormat::UNDEFINED:

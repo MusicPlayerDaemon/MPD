@@ -45,7 +45,7 @@
  */
 gcc_const
 static size_t
-AlignToPageSize(size_t size)
+AlignToPageSize(size_t size) noexcept
 {
 	static const long page_size = sysconf(_SC_PAGESIZE);
 	if (page_size <= 0)

@@ -81,7 +81,7 @@ public:
 	 *
 	 * Throws std::runtime_error on error.
 	 */
-	gcc_pure gcc_nonnull_all
+	gcc_nonnull_all
 	AllocatedString<char> ToUTF8(const char *s) const;
 
 	/**
@@ -89,7 +89,7 @@ public:
 	 *
 	 * Throws std::runtime_error on error.
 	 */
-	gcc_pure gcc_nonnull_all
+	gcc_nonnull_all
 	AllocatedString<char> FromUTF8(const char *s) const;
 };
 

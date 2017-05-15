@@ -32,6 +32,6 @@ extern const DatabasePlugin *const database_plugins[];
 
 gcc_pure
 const DatabasePlugin *
-GetDatabasePluginByName(const char *name);
+GetDatabasePluginByName(const char *name) noexcept;
 
 #endif

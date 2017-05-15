@@ -168,13 +168,13 @@ struct DecoderPlugin {
 	 * Does the plugin announce the specified file name suffix?
 	 */
 	gcc_pure gcc_nonnull_all
-	bool SupportsSuffix(const char *suffix) const;
+	bool SupportsSuffix(const char *suffix) const noexcept;
 
 	/**
 	 * Does the plugin announce the specified MIME type?
 	 */
 	gcc_pure gcc_nonnull_all
-	bool SupportsMimeType(const char *mime_type) const;
+	bool SupportsMimeType(const char *mime_type) const noexcept;
 };
 
 #endif

@@ -119,7 +119,7 @@ struct JackOutput {
 	 * on all channels.
 	 */
 	gcc_pure
-	jack_nframes_t GetAvailable() const;
+	jack_nframes_t GetAvailable() const noexcept;
 
 	void Process(jack_nframes_t nframes);
 
@@ -128,7 +128,7 @@ struct JackOutput {
 	 */
 	size_t WriteSamples(const float *src, size_t n_frames);
 
-	std::chrono::steady_clock::duration Delay() const {
+	std::chrono::steady_clock::duration Delay() const noexcept {
 		return base.pause && pause && !shutdown
 			? std::chrono::seconds(1)
 			: std::chrono::steady_clock::duration::zero();
@@ -215,7 +215,7 @@ JackOutput::JackOutput(const ConfigBlock &block)
 }
 
 inline jack_nframes_t
-JackOutput::GetAvailable() const
+JackOutput::GetAvailable() const noexcept
 {
 	size_t min = jack_ringbuffer_read_space(ringbuffer[0]);
 

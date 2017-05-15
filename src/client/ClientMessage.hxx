@@ -53,6 +53,6 @@ public:
 
 gcc_pure
 bool
-client_message_valid_channel_name(const char *name);
+client_message_valid_channel_name(const char *name) noexcept;
 
 #endif

@@ -29,7 +29,7 @@
  */
 gcc_pure
 TagType
-tag_name_parse(const char *name);
+tag_name_parse(const char *name) noexcept;
 
 /**
  * Parse the string, and convert it into a #TagType.  Returns
@@ -39,6 +39,6 @@ tag_name_parse(const char *name);
  */
 gcc_pure
 TagType
-tag_name_parse_i(const char *name);
+tag_name_parse_i(const char *name) noexcept;
 
 #endif

@@ -54,7 +54,7 @@ PcmFormatConverter::Open(SampleFormat _src_format, SampleFormat _dest_format)
 }
 
 void
-PcmFormatConverter::Close()
+PcmFormatConverter::Close() noexcept
 {
 #ifndef NDEBUG
 	src_format = SampleFormat::UNDEFINED;
@@ -63,7 +63,7 @@ PcmFormatConverter::Close()
 }
 
 ConstBuffer<void>
-PcmFormatConverter::Convert(ConstBuffer<void> src)
+PcmFormatConverter::Convert(ConstBuffer<void> src) noexcept
 {
 	switch (dest_format) {
 	case SampleFormat::UNDEFINED:

@@ -32,7 +32,7 @@ static constexpr Domain cross_fade_domain("cross_fade");
 
 gcc_pure
 static float
-mixramp_interpolate(const char *ramp_list, float required_db)
+mixramp_interpolate(const char *ramp_list, float required_db) noexcept
 {
 	float last_db = 0, last_secs = 0;
 	bool have_last = false;
@@ -91,7 +91,7 @@ CrossFadeSettings::Calculate(SignedSongTime total_time,
 			     const char *mixramp_start, const char *mixramp_prev_end,
 			     const AudioFormat af,
 			     const AudioFormat old_format,
-			     unsigned max_chunks) const
+			     unsigned max_chunks) const noexcept
 {
 	unsigned int chunks = 0;
 	float chunks_f;

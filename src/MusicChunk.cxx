@@ -31,7 +31,7 @@ MusicChunk::~MusicChunk()
 
 #ifndef NDEBUG
 bool
-MusicChunk::CheckFormat(const AudioFormat other_format) const
+MusicChunk::CheckFormat(const AudioFormat other_format) const noexcept
 {
 	assert(other_format.IsValid());
 
@@ -41,7 +41,7 @@ MusicChunk::CheckFormat(const AudioFormat other_format) const
 
 WritableBuffer<void>
 MusicChunk::Write(const AudioFormat af,
-		  SongTime data_time, uint16_t _bit_rate)
+		  SongTime data_time, uint16_t _bit_rate) noexcept
 {
 	assert(CheckFormat(af));
 	assert(length == 0 || audio_format.IsValid());
@@ -64,7 +64,7 @@ MusicChunk::Write(const AudioFormat af,
 }
 
 bool
-MusicChunk::Expand(const AudioFormat af, size_t _length)
+MusicChunk::Expand(const AudioFormat af, size_t _length) noexcept
 {
 	const size_t frame_size = af.GetFrameSize();
 

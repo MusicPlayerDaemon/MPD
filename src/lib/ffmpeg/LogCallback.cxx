@@ -34,7 +34,7 @@ extern "C" {
 
 gcc_const
 static LogLevel
-FfmpegImportLogLevel(int level)
+FfmpegImportLogLevel(int level) noexcept
 {
 	if (level <= AV_LOG_FATAL)
 		return LogLevel::ERROR;

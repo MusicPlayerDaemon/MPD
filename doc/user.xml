@@ -1857,7 +1857,7 @@ buffer_size: 16384</programlisting>
       <para>
         If you believe you found a bug in
         <application>MPD</application>, report it on <ulink
-        url="https://bugs.musicpd.org/my_view_page.php">the bug
+        url="https://github.com/MusicPlayerDaemon/MPD/issues/">the bug
         tracker</ulink>.
       </para>
 

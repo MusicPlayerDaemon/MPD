@@ -60,7 +60,7 @@ class CompositeStorage final : public Storage {
 		}
 
 		gcc_pure
-		const Directory *Find(const char *uri) const;
+		const Directory *Find(const char *uri) const noexcept;
 
 		Directory &Make(const char *uri);
 
@@ -69,7 +69,7 @@ class CompositeStorage final : public Storage {
 
 		gcc_pure
 		bool MapToRelativeUTF8(std::string &buffer,
-				       const char *uri) const;
+				       const char *uri) const noexcept;
 	};
 
 	struct FindResult {
@@ -89,7 +89,7 @@ class CompositeStorage final : public Storage {
 	mutable std::string relative_buffer;
 
 public:
-	CompositeStorage();
+	CompositeStorage() noexcept;
 	virtual ~CompositeStorage();
 
 	/**
@@ -101,7 +101,7 @@ public:
 	 * value is being used.
 	 */
 	gcc_pure gcc_nonnull_all
-	Storage *GetMount(const char *uri);
+	Storage *GetMount(const char *uri) noexcept;
 
 	/**
 	 * Call the given function for each mounted storage, including
@@ -123,11 +123,11 @@ public:
 
 	StorageDirectoryReader *OpenDirectory(const char *uri) override;
 
-	std::string MapUTF8(const char *uri) const override;
+	std::string MapUTF8(const char *uri) const noexcept override;
 
-	AllocatedPath MapFS(const char *uri) const override;
+	AllocatedPath MapFS(const char *uri) const noexcept override;
 
-	const char *MapToRelativeUTF8(const char *uri) const override;
+	const char *MapToRelativeUTF8(const char *uri) const noexcept override;
 
 private:
 	template<typename T>
@@ -159,7 +159,7 @@ private:
 	 * the URI was used).
 	 */
 	gcc_pure
-	FindResult FindStorage(const char *uri) const;
+	FindResult FindStorage(const char *uri) const noexcept;
 
 	const char *MapToRelativeUTF8(const Directory &directory,
 				      const char *uri) const;

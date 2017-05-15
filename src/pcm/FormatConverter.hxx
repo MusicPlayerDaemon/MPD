@@ -65,18 +65,16 @@ public:
 	/**
 	 * Closes the object.  After that, you may call Open() again.
 	 */
-	void Close();
+	void Close() noexcept;
 
 	/**
 	 * Convert a block of PCM data.
-	 *
-	 * Throws std::runtime_error on error.
 	 *
 	 * @param src the input buffer
 	 * @return the destination buffer
 	 */
 	gcc_pure
-	ConstBuffer<void> Convert(ConstBuffer<void> src);
+	ConstBuffer<void> Convert(ConstBuffer<void> src) noexcept;
 };
 
 #endif

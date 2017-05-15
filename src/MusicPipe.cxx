@@ -25,7 +25,7 @@
 #ifndef NDEBUG
 
 bool
-MusicPipe::Contains(const MusicChunk *chunk) const
+MusicPipe::Contains(const MusicChunk *chunk) const noexcept
 {
 	const std::lock_guard<Mutex> protect(mutex);
 

@@ -128,7 +128,6 @@ struct Instance final
 	 * DatabaseError if this MPD configuration has no database (no
 	 * music_directory was configured).
 	 */
-	gcc_pure
 	const Database &GetDatabaseOrThrow() const;
 #endif
 

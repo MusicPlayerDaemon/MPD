@@ -34,7 +34,7 @@
  */
 gcc_nonnull_all
 char *
-CopyString(char *dest, const char *src, size_t size);
+CopyString(char *dest, const char *src, size_t size) noexcept;
 
 /**
  * Returns a pointer to the first non-whitespace character in the
@@ -42,32 +42,32 @@ CopyString(char *dest, const char *src, size_t size);
  */
 gcc_pure
 const char *
-StripLeft(const char *p);
+StripLeft(const char *p) noexcept;
 
 gcc_pure
 static inline char *
-StripLeft(char *p)
+StripLeft(char *p) noexcept
 {
 	return const_cast<char *>(StripLeft((const char *)p));
 }
 
 gcc_pure
 const char *
-StripLeft(const char *p, const char *end);
+StripLeft(const char *p, const char *end) noexcept;
 
 /**
  * Determine the string's end as if it was stripped on the right side.
  */
 gcc_pure
 const char *
-StripRight(const char *p, const char *end);
+StripRight(const char *p, const char *end) noexcept;
 
 /**
  * Determine the string's end as if it was stripped on the right side.
  */
 gcc_pure
 static inline char *
-StripRight(char *p, char *end)
+StripRight(char *p, char *end) noexcept
 {
 	return const_cast<char *>(StripRight((const char *)p,
 					     (const char *)end));
@@ -79,20 +79,20 @@ StripRight(char *p, char *end)
  */
 gcc_pure
 size_t
-StripRight(const char *p, size_t length);
+StripRight(const char *p, size_t length) noexcept;
 
 /**
  * Strip trailing whitespace by null-terminating the string.
  */
 void
-StripRight(char *p);
+StripRight(char *p) noexcept;
 
 /**
  * Skip whitespace at the beginning and terminate the string after the
  * last non-whitespace character.
  */
 char *
-Strip(char *p);
+Strip(char *p) noexcept;
 
 /**
  * Checks whether a string array contains the specified string.
@@ -104,7 +104,8 @@ Strip(char *p);
  */
 gcc_pure
 bool
-StringArrayContainsCase(const char *const*haystack, const char *needle);
+StringArrayContainsCase(const char *const*haystack,
+			const char *needle) noexcept;
 
 /**
  * Convert the specified ASCII string (0x00..0x7f) to upper case.
@@ -112,6 +113,6 @@ StringArrayContainsCase(const char *const*haystack, const char *needle);
  * @param size the destination buffer size
  */
 void
-ToUpperASCII(char *dest, const char *src, size_t size);
+ToUpperASCII(char *dest, const char *src, size_t size) noexcept;
 
 #endif

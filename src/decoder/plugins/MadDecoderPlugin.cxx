@@ -71,7 +71,7 @@ static bool gapless_playback;
 
 gcc_const
 static SongTime
-ToSongTime(mad_timer_t t)
+ToSongTime(mad_timer_t t) noexcept
 {
 	return SongTime::FromMS(mad_timer_count(t, MAD_UNITS_MILLISECONDS));
 }
@@ -155,10 +155,10 @@ struct MadDecoder {
 	enum mp3_action DecodeNextFrame();
 
 	gcc_pure
-	offset_type ThisFrameOffset() const;
+	offset_type ThisFrameOffset() const noexcept;
 
 	gcc_pure
-	offset_type RestIncludingThisFrame() const;
+	offset_type RestIncludingThisFrame() const noexcept;
 
 	/**
 	 * Attempt to calulcate the length of the song from filesize
@@ -177,7 +177,7 @@ struct MadDecoder {
 	}
 
 	gcc_pure
-	long TimeToFrame(SongTime t) const;
+	long TimeToFrame(SongTime t) const noexcept;
 
 	void UpdateTimerNextFrame();
 
@@ -291,7 +291,7 @@ parse_id3_replay_gain_info(ReplayGainInfo &rgi,
 #ifdef ENABLE_ID3TAG
 gcc_pure
 static MixRampInfo
-parse_id3_mixramp(struct id3_tag *tag)
+parse_id3_mixramp(struct id3_tag *tag) noexcept
 {
 	MixRampInfo result;
 
@@ -710,7 +710,7 @@ mp3_frame_duration(const struct mad_frame *frame)
 }
 
 inline offset_type
-MadDecoder::ThisFrameOffset() const
+MadDecoder::ThisFrameOffset() const noexcept
 {
 	auto offset = input_stream.GetOffset();
 
@@ -723,7 +723,7 @@ MadDecoder::ThisFrameOffset() const
 }
 
 inline offset_type
-MadDecoder::RestIncludingThisFrame() const
+MadDecoder::RestIncludingThisFrame() const noexcept
 {
 	return input_stream.GetSize() - ThisFrameOffset();
 }
@@ -846,7 +846,7 @@ mad_decoder_total_file_time(InputStream &is)
 }
 
 long
-MadDecoder::TimeToFrame(SongTime t) const
+MadDecoder::TimeToFrame(SongTime t) const noexcept
 {
 	unsigned long i;
 

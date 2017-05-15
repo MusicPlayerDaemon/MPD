@@ -57,12 +57,12 @@ public:
 	PeakBuffer &operator=(const PeakBuffer &) = delete;
 
 	gcc_pure
-	bool IsEmpty() const;
+	bool IsEmpty() const noexcept;
 
 	gcc_pure
-	WritableBuffer<void> Read() const;
+	WritableBuffer<void> Read() const noexcept;
 
-	void Consume(size_t length);
+	void Consume(size_t length) noexcept;
 
 	bool Append(const void *data, size_t length);
 };

@@ -101,7 +101,7 @@ static_assert(n_config_block_templates == unsigned(ConfigBlockOption::MAX),
 gcc_pure
 static inline unsigned
 ParseConfigTemplateName(const ConfigTemplate templates[], unsigned count,
-			const char *name)
+			const char *name) noexcept
 {
 	unsigned i = 0;
 	for (; i < count; ++i)
@@ -112,7 +112,7 @@ ParseConfigTemplateName(const ConfigTemplate templates[], unsigned count,
 }
 
 ConfigOption
-ParseConfigOptionName(const char *name)
+ParseConfigOptionName(const char *name) noexcept
 {
 	return ConfigOption(ParseConfigTemplateName(config_param_templates,
 						    n_config_param_templates,
@@ -120,7 +120,7 @@ ParseConfigOptionName(const char *name)
 }
 
 ConfigBlockOption
-ParseConfigBlockOptionName(const char *name)
+ParseConfigBlockOptionName(const char *name) noexcept
 {
 	return ConfigBlockOption(ParseConfigTemplateName(config_block_templates,
 							 n_config_block_templates,

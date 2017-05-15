@@ -31,7 +31,7 @@
 
 gcc_pure
 static TagType
-ParseOpusTagName(const char *name)
+ParseOpusTagName(const char *name) noexcept
 {
 	TagType type = tag_name_parse_i(name);
 	if (type != TAG_NUM_OF_ITEM_TYPES)

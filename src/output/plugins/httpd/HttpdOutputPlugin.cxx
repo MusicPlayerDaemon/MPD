@@ -300,7 +300,7 @@ HttpdOutput::SendHeader(HttpdClient &client) const
 }
 
 inline std::chrono::steady_clock::duration
-HttpdOutput::Delay() const
+HttpdOutput::Delay() const noexcept
 {
 	if (!LockHasClients() && base.pause) {
 		/* if there's no client and this output is paused,

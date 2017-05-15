@@ -124,7 +124,7 @@ struct AudioFormat {
 		return !(*this == other);
 	}
 
-	void ApplyMask(AudioFormat mask);
+	void ApplyMask(AudioFormat mask) noexcept;
 
 	gcc_pure
 	AudioFormat WithMask(AudioFormat mask) const {
@@ -223,6 +223,6 @@ AudioFormat::GetTimeToSize() const
  */
 gcc_const
 StringBuffer<24>
-ToString(AudioFormat af);
+ToString(AudioFormat af) noexcept;
 
 #endif

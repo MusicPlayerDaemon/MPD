@@ -80,19 +80,19 @@ public:
 		}
 
 		gcc_pure gcc_nonnull(2)
-		bool StringMatch(const char *s) const;
+		bool StringMatch(const char *s) const noexcept;
 
 		gcc_pure
-		bool Match(const TagItem &tag_item) const;
+		bool Match(const TagItem &tag_item) const noexcept;
 
 		gcc_pure
-		bool Match(const Tag &tag) const;
+		bool Match(const Tag &tag) const noexcept;
 
 		gcc_pure
-		bool Match(const DetachedSong &song) const;
+		bool Match(const DetachedSong &song) const noexcept;
 
 		gcc_pure
-		bool Match(const LightSong &song) const;
+		bool Match(const LightSong &song) const noexcept;
 	};
 
 private:
@@ -112,20 +112,20 @@ public:
 	bool Parse(ConstBuffer<const char *> args, bool fold_case=false);
 
 	gcc_pure
-	bool Match(const Tag &tag) const;
+	bool Match(const Tag &tag) const noexcept;
 
 	gcc_pure
-	bool Match(const DetachedSong &song) const;
+	bool Match(const DetachedSong &song) const noexcept;
 
 	gcc_pure
-	bool Match(const LightSong &song) const;
+	bool Match(const LightSong &song) const noexcept;
 
-	const std::list<Item> &GetItems() const {
+	const std::list<Item> &GetItems() const noexcept {
 		return items;
 	}
 
 	gcc_pure
-	bool IsEmpty() const {
+	bool IsEmpty() const noexcept {
 		return items.empty();
 	}
 
@@ -133,7 +133,7 @@ public:
 	 * Is there at least one item with "fold case" enabled?
 	 */
 	gcc_pure
-	bool HasFoldCase() const {
+	bool HasFoldCase() const noexcept {
 		for (const auto &i : items)
 			if (i.GetFoldCase())
 				return true;
@@ -145,14 +145,14 @@ public:
 	 * Does this filter contain constraints other than "base"?
 	 */
 	gcc_pure
-	bool HasOtherThanBase() const;
+	bool HasOtherThanBase() const noexcept;
 
 	/**
 	 * Returns the "base" specification (if there is one) or
 	 * nullptr.
 	 */
 	gcc_pure
-	const char *GetBase() const;
+	const char *GetBase() const noexcept;
 };
 
 /**
@@ -160,6 +160,6 @@ public:
  */
 gcc_pure
 unsigned
-locate_parse_type(const char *str);
+locate_parse_type(const char *str) noexcept;
 
 #endif

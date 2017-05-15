@@ -40,7 +40,7 @@
 
 gcc_const
 static const char *
-DeviceToTypeString(unsigned device)
+DeviceToTypeString(unsigned device) noexcept
 {
 	switch (device) {
 	case DEVICE_INARCHIVE:
@@ -56,7 +56,7 @@ DeviceToTypeString(unsigned device)
 
 gcc_pure
 static unsigned
-ParseTypeString(const char *type)
+ParseTypeString(const char *type) noexcept
 {
 	if (strcmp(type, "archive") == 0)
 		return DEVICE_INARCHIVE;

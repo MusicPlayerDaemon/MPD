@@ -25,8 +25,6 @@
 #ifndef MPD_AUDIO_PARSER_HXX
 #define MPD_AUDIO_PARSER_HXX
 
-#include "Compiler.h"
-
 struct AudioFormat;
 
 /**
@@ -38,7 +36,6 @@ struct AudioFormat;
  * @param src the input string
  * @param mask if true, then "*" is allowed for any number of items
  */
-gcc_pure
 AudioFormat
 ParseAudioFormat(const char *src, bool mask);
 

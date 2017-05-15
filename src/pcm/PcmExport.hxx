@@ -135,13 +135,13 @@ public:
 		 * one output word (32 bits), dividing the sample rate by 4.
 		 */
 		gcc_pure
-		unsigned CalcOutputSampleRate(unsigned input_sample_rate) const;
+		unsigned CalcOutputSampleRate(unsigned input_sample_rate) const noexcept;
 
 		/**
 		 * The inverse of CalcOutputSampleRate().
 		 */
 		gcc_pure
-		unsigned CalcInputSampleRate(unsigned output_sample_rate) const;
+		unsigned CalcInputSampleRate(unsigned output_sample_rate) const noexcept;
 	};
 
 	/**
@@ -167,7 +167,7 @@ public:
 	 * Calculate the size of one output frame.
 	 */
 	gcc_pure
-	size_t GetFrameSize(const AudioFormat &audio_format) const;
+	size_t GetFrameSize(const AudioFormat &audio_format) const noexcept;
 
 	/**
 	 * Export a PCM buffer.
@@ -183,7 +183,7 @@ public:
 	 * pcm_export() source buffer.
 	 */
 	gcc_pure
-	size_t CalcSourceSize(size_t dest_size) const;
+	size_t CalcSourceSize(size_t dest_size) const noexcept;
 };
 
 #endif

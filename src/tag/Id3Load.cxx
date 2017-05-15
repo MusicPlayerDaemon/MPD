@@ -33,7 +33,7 @@ static constexpr size_t ID3V1_SIZE = 128;
 
 gcc_pure
 static inline bool
-tag_is_id3v1(struct id3_tag *tag)
+tag_is_id3v1(struct id3_tag *tag) noexcept
 {
 	return (id3_tag_options(tag, 0, 0) & ID3_TAG_OPTION_ID3V1) != 0;
 }

@@ -232,13 +232,13 @@ struct Queue {
 	 * @return the next order number, or -1 to stop playback
 	 */
 	gcc_pure
-	int GetNextOrder(unsigned order) const;
+	int GetNextOrder(unsigned order) const noexcept;
 
 	/**
 	 * Increments the queue's version number.  This handles integer
 	 * overflow well.
 	 */
-	void IncrementVersion();
+	void IncrementVersion() noexcept;
 
 	/**
 	 * Marks the specified song as "modified".  Call
@@ -256,7 +256,7 @@ struct Queue {
 	 * IncrementVersion() after all modifications have been made.
 	 * number.
 	 */
-	void ModifyAtOrder(unsigned order);
+	void ModifyAtOrder(unsigned order) noexcept;
 
 	/**
 	 * Appends a song to the queue and returns its position.  Prior to
@@ -273,7 +273,7 @@ struct Queue {
 	/**
 	 * Swaps two songs, addressed by their position.
 	 */
-	void SwapPositions(unsigned position1, unsigned position2);
+	void SwapPositions(unsigned position1, unsigned position2) noexcept;
 
 	/**
 	 * Swaps two songs, addressed by their order number.
@@ -285,27 +285,27 @@ struct Queue {
 	/**
 	 * Moves a song to a new position in the "order" list.
 	 */
-	void MoveOrder(unsigned from_order, unsigned to_order);
+	void MoveOrder(unsigned from_order, unsigned to_order) noexcept;
 
 	/**
 	 * Moves a song to a new position.
 	 */
-	void MovePostion(unsigned from, unsigned to);
+	void MovePostion(unsigned from, unsigned to) noexcept;
 
 	/**
 	 * Moves a range of songs to a new position.
 	 */
-	void MoveRange(unsigned start, unsigned end, unsigned to);
+	void MoveRange(unsigned start, unsigned end, unsigned to) noexcept;
 
 	/**
 	 * Removes a song from the playlist.
 	 */
-	void DeletePosition(unsigned position);
+	void DeletePosition(unsigned position) noexcept;
 
 	/**
 	 * Removes all songs from the playlist.
 	 */
-	void Clear();
+	void Clear() noexcept;
 
 	/**
 	 * Initializes the "order" array, and restores "normal" order.
@@ -369,11 +369,11 @@ private:
 	 */
 	gcc_pure
 	unsigned FindPriorityOrder(unsigned start_order, uint8_t priority,
-				   unsigned exclude_order) const;
+				   unsigned exclude_order) const noexcept;
 
 	gcc_pure
 	unsigned CountSamePriority(unsigned start_order,
-				   uint8_t priority) const;
+				   uint8_t priority) const noexcept;
 };
 
 #endif

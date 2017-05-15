@@ -77,7 +77,7 @@ static constexpr Domain roar_output_domain("roar_output");
 
 gcc_pure
 static int
-GetConfiguredRole(const ConfigBlock &block)
+GetConfiguredRole(const ConfigBlock &block) noexcept
 {
 	const char *role = block.GetBlockValue("role");
 	return role != nullptr

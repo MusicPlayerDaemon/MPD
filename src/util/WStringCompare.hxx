@@ -42,20 +42,20 @@ StringIsEmpty(const wchar_t *string)
 
 gcc_pure
 bool
-StringStartsWith(const wchar_t *haystack, const wchar_t *needle);
+StringStartsWith(const wchar_t *haystack, const wchar_t *needle) noexcept;
 
 gcc_pure
 bool
-StringEndsWith(const wchar_t *haystack, const wchar_t *needle);
+StringEndsWith(const wchar_t *haystack, const wchar_t *needle) noexcept;
 
 /**
  * Returns the portion of the string after a prefix.  If the string
  * does not begin with the specified prefix, this function returns
  * nullptr.
  */
-gcc_nonnull_all
+gcc_pure gcc_nonnull_all
 const wchar_t *
-StringAfterPrefix(const wchar_t *string, const wchar_t *prefix);
+StringAfterPrefix(const wchar_t *string, const wchar_t *prefix) noexcept;
 
 /**
  * Check if the given string ends with the specified suffix.  If yes,
@@ -63,6 +63,6 @@ StringAfterPrefix(const wchar_t *string, const wchar_t *prefix);
  */
 gcc_pure
 const wchar_t *
-FindStringSuffix(const wchar_t *p, const wchar_t *suffix);
+FindStringSuffix(const wchar_t *p, const wchar_t *suffix) noexcept;
 
 #endif

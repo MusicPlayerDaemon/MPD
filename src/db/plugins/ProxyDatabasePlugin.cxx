@@ -220,7 +220,7 @@ ProxySong::ProxySong(const mpd_song *song)
 
 gcc_const
 static enum mpd_tag_type
-Convert(TagType tag_type)
+Convert(TagType tag_type) noexcept
 {
 	for (auto i = &tag_table[0]; i->d != TAG_NUM_OF_ITEM_TYPES; ++i)
 		if (i->d == tag_type)
@@ -578,7 +578,7 @@ Visit(struct mpd_connection *connection,
 
 gcc_pure
 static bool
-Match(const SongFilter *filter, const LightSong &song)
+Match(const SongFilter *filter, const LightSong &song) noexcept
 {
 	return filter == nullptr || filter->Match(song);
 }
@@ -721,7 +721,7 @@ SearchSongs(struct mpd_connection *connection,
  */
 gcc_pure
 static bool
-ServerSupportsSearchBase(const struct mpd_connection *connection)
+ServerSupportsSearchBase(const struct mpd_connection *connection) noexcept
 {
 #if LIBMPDCLIENT_CHECK_VERSION(2,9,0)
 	return mpd_connection_cmp_server_version(connection, 0, 18, 0) >= 0;

@@ -133,14 +133,14 @@ struct Tag {
 	 * nullptr if none is present in this tag object.
 	 */
 	gcc_pure
-	const char *GetValue(TagType type) const;
+	const char *GetValue(TagType type) const noexcept;
 
 	/**
 	 * Checks whether the tag contains one or more items with
 	 * the specified type.
 	 */
 	gcc_pure
-	bool HasType(TagType type) const;
+	bool HasType(TagType type) const noexcept;
 
 	/**
 	 * Returns a value for sorting on the specified type, with

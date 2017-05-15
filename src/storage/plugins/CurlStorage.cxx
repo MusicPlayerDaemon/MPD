@@ -65,13 +65,13 @@ public:
 
 	StorageDirectoryReader *OpenDirectory(const char *uri_utf8) override;
 
-	std::string MapUTF8(const char *uri_utf8) const override;
+	std::string MapUTF8(const char *uri_utf8) const noexcept override;
 
-	const char *MapToRelativeUTF8(const char *uri_utf8) const override;
+	const char *MapToRelativeUTF8(const char *uri_utf8) const noexcept override;
 };
 
 std::string
-CurlStorage::MapUTF8(const char *uri_utf8) const
+CurlStorage::MapUTF8(const char *uri_utf8) const noexcept
 {
 	assert(uri_utf8 != nullptr);
 
@@ -84,7 +84,7 @@ CurlStorage::MapUTF8(const char *uri_utf8) const
 }
 
 const char *
-CurlStorage::MapToRelativeUTF8(const char *uri_utf8) const
+CurlStorage::MapToRelativeUTF8(const char *uri_utf8) const noexcept
 {
 	// TODO: escape/unescape?
 
@@ -435,7 +435,7 @@ CurlStorage::GetInfo(const char *uri_utf8, gcc_unused bool follow)
 
 gcc_pure
 static const char *
-UriPathOrSlash(const char *uri)
+UriPathOrSlash(const char *uri) noexcept
 {
 	const char *path = uri_get_path(uri);
 	if (path == nullptr)

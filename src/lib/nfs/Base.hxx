@@ -41,6 +41,6 @@ nfs_set_base(const char *server, const char *export_name);
  */
 gcc_pure
 const char *
-nfs_check_base(const char *server, const char *path);
+nfs_check_base(const char *server, const char *path) noexcept;
 
 #endif

@@ -89,7 +89,7 @@ audio_output_detect()
  */
 gcc_pure
 static MixerType
-audio_output_mixer_type(const ConfigBlock &block)
+audio_output_mixer_type(const ConfigBlock &block) noexcept
 {
 	/* read the local "mixer_type" setting */
 	const char *p = block.GetBlockValue("mixer_type");

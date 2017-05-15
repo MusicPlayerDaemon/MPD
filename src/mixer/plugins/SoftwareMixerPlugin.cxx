@@ -71,7 +71,7 @@ software_mixer_init(gcc_unused EventLoop &event_loop,
 
 gcc_const
 static unsigned
-PercentVolumeToSoftwareVolume(unsigned volume)
+PercentVolumeToSoftwareVolume(unsigned volume) noexcept
 {
 	assert(volume <= 100);
 

@@ -152,7 +152,7 @@ PlayerControl::LockSetBorderPause(bool _border_pause)
 }
 
 player_status
-PlayerControl::LockGetStatus()
+PlayerControl::LockGetStatus() noexcept
 {
 	player_status status;
 

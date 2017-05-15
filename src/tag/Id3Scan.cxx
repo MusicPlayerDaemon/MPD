@@ -61,7 +61,7 @@
 
 gcc_pure
 static id3_utf8_t *
-tag_id3_getstring(const struct id3_frame *frame, unsigned i)
+tag_id3_getstring(const struct id3_frame *frame, unsigned i) noexcept
 {
 	id3_field *field = id3_frame_field(frame, i);
 	if (field == nullptr)
@@ -207,7 +207,7 @@ tag_id3_import_comment(struct id3_tag *tag, const char *id, TagType type,
  */
 gcc_pure
 static TagType
-tag_id3_parse_txxx_name(const char *name)
+tag_id3_parse_txxx_name(const char *name) noexcept
 {
 	static constexpr struct tag_table txxx_tags[] = {
 		{ "ALBUMARTISTSORT", TAG_ALBUM_ARTIST_SORT },

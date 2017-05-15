@@ -123,7 +123,7 @@ public:
 	 * transfer newline characters).
 	 */
 	gcc_pure
-	bool HasNewline() const {
+	bool HasNewline() const noexcept {
 		return PathTraitsFS::Find(c_str(), '\n') != nullptr;
 	}
 
@@ -133,14 +133,14 @@ public:
 	 * (#IsNull returns true).
 	 */
 	gcc_pure
-	std::string ToUTF8() const;
+	std::string ToUTF8() const noexcept;
 
 	/**
 	 * Determine the "base" file name.
 	 * The return value points inside this object.
 	 */
 	gcc_pure
-	Path GetBase() const {
+	Path GetBase() const noexcept {
 		return FromFS(PathTraitsFS::GetBase(c_str()));
 	}
 
@@ -149,7 +149,7 @@ public:
 	 * Returns a "nulled" instance on error.
 	 */
 	gcc_pure
-	AllocatedPath GetDirectoryName() const;
+	AllocatedPath GetDirectoryName() const noexcept;
 
 	/**
 	 * Determine the relative part of the given path to this
@@ -158,17 +158,17 @@ public:
 	 * nullptr on mismatch.
 	 */
 	gcc_pure
-	const_pointer_type Relative(Path other_fs) const {
+	const_pointer_type Relative(Path other_fs) const noexcept {
 		return PathTraitsFS::Relative(c_str(), other_fs.c_str());
 	}
 
 	gcc_pure
-	bool IsAbsolute() const {
+	bool IsAbsolute() const noexcept {
 		return PathTraitsFS::IsAbsolute(c_str());
 	}
 
 	gcc_pure
-	const_pointer_type GetSuffix() const;
+	const_pointer_type GetSuffix() const noexcept;
 };
 
 #endif

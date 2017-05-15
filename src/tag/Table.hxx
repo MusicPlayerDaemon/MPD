@@ -36,7 +36,7 @@ struct tag_table {
  */
 gcc_pure
 TagType
-tag_table_lookup(const tag_table *table, const char *name);
+tag_table_lookup(const tag_table *table, const char *name) noexcept;
 
 /**
  * Looks up a string in a tag translation table (case insensitive).
@@ -45,7 +45,7 @@ tag_table_lookup(const tag_table *table, const char *name);
  */
 gcc_pure
 TagType
-tag_table_lookup_i(const tag_table *table, const char *name);
+tag_table_lookup_i(const tag_table *table, const char *name) noexcept;
 
 /**
  * Looks up a #TagType in a tag translation table and returns its
@@ -54,6 +54,6 @@ tag_table_lookup_i(const tag_table *table, const char *name);
  */
 gcc_pure
 const char *
-tag_table_lookup(const tag_table *table, TagType type);
+tag_table_lookup(const tag_table *table, TagType type) noexcept;
 
 #endif

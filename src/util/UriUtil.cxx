@@ -39,7 +39,7 @@ IsValidSchemeChar(char ch)
 
 gcc_pure
 static bool
-IsValidScheme(StringView p)
+IsValidScheme(StringView p) noexcept
 {
 	if (p.IsEmpty() || !IsValidSchemeStart(p.front()))
 		return false;
@@ -57,7 +57,7 @@ IsValidScheme(StringView p)
  */
 gcc_pure
 static const char *
-uri_after_scheme(const char *uri)
+uri_after_scheme(const char *uri) noexcept
 {
 	if (uri[0] == '/' && uri[1] == '/' && uri[2] != '/')
 		return uri + 2;
@@ -70,13 +70,14 @@ uri_after_scheme(const char *uri)
 		: nullptr;
 }
 
-bool uri_has_scheme(const char *uri)
+bool
+uri_has_scheme(const char *uri) noexcept
 {
 	return strstr(uri, "://") != nullptr;
 }
 
 std::string
-uri_get_scheme(const char *uri)
+uri_get_scheme(const char *uri) noexcept
 {
 	const char *end = strstr(uri, "://");
 	if (end == nullptr)
@@ -86,7 +87,7 @@ uri_get_scheme(const char *uri)
 }
 
 const char *
-uri_get_path(const char *uri)
+uri_get_path(const char *uri) noexcept
 {
 	const char *ap = uri_after_scheme(uri);
 	if (ap != nullptr)
@@ -97,7 +98,7 @@ uri_get_path(const char *uri)
 
 /* suffixes should be ascii only characters */
 const char *
-uri_get_suffix(const char *uri)
+uri_get_suffix(const char *uri) noexcept
 {
 	const char *suffix = strrchr(uri, '.');
 	if (suffix == nullptr || suffix == uri ||
@@ -113,7 +114,7 @@ uri_get_suffix(const char *uri)
 }
 
 const char *
-uri_get_suffix(const char *uri, UriSuffixBuffer &buffer)
+uri_get_suffix(const char *uri, UriSuffixBuffer &buffer) noexcept
 {
 	const char *suffix = uri_get_suffix(uri);
 	if (suffix == nullptr)
@@ -130,7 +131,7 @@ uri_get_suffix(const char *uri, UriSuffixBuffer &buffer)
 }
 
 static const char *
-verify_uri_segment(const char *p)
+verify_uri_segment(const char *p) noexcept
 {
 	unsigned dots = 0;
 	while (*p == '.') {
@@ -146,7 +147,7 @@ verify_uri_segment(const char *p)
 }
 
 bool
-uri_safe_local(const char *uri)
+uri_safe_local(const char *uri) noexcept
 {
 	while (true) {
 		uri = verify_uri_segment(uri);
@@ -164,7 +165,7 @@ uri_safe_local(const char *uri)
 
 gcc_pure
 static const char *
-SkipUriScheme(const char *uri)
+SkipUriScheme(const char *uri) noexcept
 {
 	const char *const schemes[] = { "http://", "https://", "ftp://" };
 	for (auto scheme : schemes) {
@@ -177,7 +178,7 @@ SkipUriScheme(const char *uri)
 }
 
 std::string
-uri_remove_auth(const char *uri)
+uri_remove_auth(const char *uri) noexcept
 {
 	const char *auth = SkipUriScheme(uri);
 	if (auth == nullptr)
@@ -201,7 +202,7 @@ uri_remove_auth(const char *uri)
 }
 
 bool
-uri_is_child(const char *parent, const char *child)
+uri_is_child(const char *parent, const char *child) noexcept
 {
 #if !CLANG_CHECK_VERSION(3,6)
 	/* disabled on clang due to -Wtautological-pointer-compare */
@@ -216,13 +217,13 @@ uri_is_child(const char *parent, const char *child)
 
 
 bool
-uri_is_child_or_same(const char *parent, const char *child)
+uri_is_child_or_same(const char *parent, const char *child) noexcept
 {
 	return strcmp(parent, child) == 0 || uri_is_child(parent, child);
 }
 
 std::string
-uri_apply_base(const std::string &uri, const std::string &base)
+uri_apply_base(const std::string &uri, const std::string &base) noexcept
 {
 	if (uri.front() == '/') {
 		/* absolute path: replace the whole URI path in base */

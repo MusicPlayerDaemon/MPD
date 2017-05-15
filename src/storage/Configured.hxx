@@ -40,6 +40,6 @@ CreateConfiguredStorage(EventLoop &event_loop);
  */
 gcc_const
 bool
-IsStorageConfigured();
+IsStorageConfigured() noexcept;
 
 #endif

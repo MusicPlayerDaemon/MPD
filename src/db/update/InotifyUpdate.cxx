@@ -62,10 +62,10 @@ struct WatchDirectory {
 	WatchDirectory &operator=(const WatchDirectory &) = delete;
 
 	gcc_pure
-	unsigned GetDepth() const;
+	unsigned GetDepth() const noexcept;
 
 	gcc_pure
-	AllocatedPath GetUriFS() const;
+	AllocatedPath GetUriFS() const noexcept;
 };
 
 static InotifySource *inotify_source;
@@ -132,7 +132,7 @@ remove_watch_directory(WatchDirectory *directory)
 }
 
 AllocatedPath
-WatchDirectory::GetUriFS() const
+WatchDirectory::GetUriFS() const noexcept
 {
 	if (parent == nullptr)
 		return AllocatedPath::Null();
@@ -225,7 +225,7 @@ recursive_watch_subdirectories(WatchDirectory *directory,
 
 gcc_pure
 unsigned
-WatchDirectory::GetDepth() const
+WatchDirectory::GetDepth() const noexcept
 {
 	const WatchDirectory *d = this;
 	unsigned depth = 0;
@@ -331,7 +331,7 @@ mpd_inotify_init(EventLoop &loop, Storage &storage, UpdateService &update,
 }
 
 void
-mpd_inotify_finish(void)
+mpd_inotify_finish(void) noexcept
 {
 	if (inotify_source == nullptr)
 		return;

@@ -45,19 +45,19 @@ DetachedSong::operator LightSong() const
 }
 
 bool
-DetachedSong::IsRemote() const
+DetachedSong::IsRemote() const noexcept
 {
 	return uri_has_scheme(GetRealURI());
 }
 
 bool
-DetachedSong::IsAbsoluteFile() const
+DetachedSong::IsAbsoluteFile() const noexcept
 {
 	return PathTraitsUTF8::IsAbsolute(GetRealURI());
 }
 
 bool
-DetachedSong::IsInDatabase() const
+DetachedSong::IsInDatabase() const noexcept
 {
 	/* here, we use GetURI() and not GetRealURI() because
 	   GetRealURI() is never relative */
@@ -67,7 +67,7 @@ DetachedSong::IsInDatabase() const
 }
 
 SignedSongTime
-DetachedSong::GetDuration() const
+DetachedSong::GetDuration() const noexcept
 {
 	SongTime a = start_time, b = end_time;
 	if (!b.IsPositive()) {

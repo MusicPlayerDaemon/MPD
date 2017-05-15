@@ -28,7 +28,7 @@
 
 gcc_pure
 static char *
-FindSlash(char *p, size_t i)
+FindSlash(char *p, size_t i) noexcept
 {
 	for (; i > 0; --i)
 		if (p[i] == '/')
@@ -39,7 +39,7 @@ FindSlash(char *p, size_t i)
 
 gcc_pure
 static const char *
-FindSuffix(const char *p, const char *i)
+FindSuffix(const char *p, const char *i) noexcept
 {
 	for (; i > p; --i) {
 		if (*i == '.')

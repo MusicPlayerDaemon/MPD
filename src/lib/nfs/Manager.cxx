@@ -38,7 +38,7 @@ NfsManager::ManagedConnection::OnNfsConnectionError(std::exception_ptr &&e)
 
 inline bool
 NfsManager::Compare::operator()(const LookupKey a,
-				const ManagedConnection &b) const
+				const ManagedConnection &b) const noexcept
 {
 	int result = strcmp(a.server, b.GetServer());
 	if (result != 0)
@@ -50,7 +50,7 @@ NfsManager::Compare::operator()(const LookupKey a,
 
 inline bool
 NfsManager::Compare::operator()(const ManagedConnection &a,
-				const LookupKey b) const
+				const LookupKey b) const noexcept
 {
 	int result = strcmp(a.GetServer(), b.server);
 	if (result != 0)
@@ -62,7 +62,7 @@ NfsManager::Compare::operator()(const ManagedConnection &a,
 
 inline bool
 NfsManager::Compare::operator()(const ManagedConnection &a,
-				const ManagedConnection &b) const
+				const ManagedConnection &b) const noexcept
 {
 	int result = strcmp(a.GetServer(), b.GetServer());
 	if (result != 0)
@@ -82,7 +82,7 @@ NfsManager::~NfsManager()
 }
 
 NfsConnection &
-NfsManager::GetConnection(const char *server, const char *export_name)
+NfsManager::GetConnection(const char *server, const char *export_name) noexcept
 {
 	assert(server != nullptr);
 	assert(export_name != nullptr);

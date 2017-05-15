@@ -29,7 +29,7 @@
 #include <string>
 
 bool
-neighbor_commands_available(const Instance &instance)
+neighbor_commands_available(const Instance &instance) noexcept
 {
 	return instance.neighbors != nullptr;
 }

@@ -49,7 +49,6 @@ static std::map<std::string, unsigned> permission_passwords;
 
 static unsigned permission_default;
 
-gcc_pure
 static unsigned
 ParsePermission(const char *p)
 {

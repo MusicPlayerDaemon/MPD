@@ -65,7 +65,6 @@ public:
 	 * it).  Throws std::runtime_error if not enough data is
 	 * available.
 	 */
-	gcc_pure
 	void *ReadFull(size_t size);
 
 	void Consume(size_t n) {

@@ -148,7 +148,7 @@ sndfile_duration(const SF_INFO &info)
 
 gcc_pure
 static SampleFormat
-sndfile_sample_format(const SF_INFO &info)
+sndfile_sample_format(const SF_INFO &info) noexcept
 {
 	switch (info.format & SF_FORMAT_SUBMASK) {
 	case SF_FORMAT_PCM_S8:

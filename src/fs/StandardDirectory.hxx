@@ -26,45 +26,51 @@
 /**
  * Obtains configuration directory for the current user.
  */
-AllocatedPath GetUserConfigDir();
+AllocatedPath
+GetUserConfigDir() noexcept;
 
 /**
  * Obtains music directory for the current user.
  */
-AllocatedPath GetUserMusicDir();
+AllocatedPath
+GetUserMusicDir() noexcept;
 
 /**
  * Obtains cache directory for the current user.
  */
 gcc_pure
 AllocatedPath
-GetUserCacheDir();
+GetUserCacheDir() noexcept;
 
 #ifdef WIN32
 
 /**
  * Obtains system configuration directory.
  */
-AllocatedPath GetSystemConfigDir();
+AllocatedPath
+GetSystemConfigDir() noexcept;
 
 /**
  * Obtains application application base directory.
  * Application base directory is a directory that contains 'bin' folder
  * for current executable.
  */
-AllocatedPath GetAppBaseDir();
+AllocatedPath
+GetAppBaseDir() noexcept;
 
 #else
 
 /**
  * Obtains home directory for the current user.
  */
-AllocatedPath GetHomeDir();
+AllocatedPath
+GetHomeDir() noexcept;
 
 /**
  * Obtains home directory for the specified user.
  */
-AllocatedPath GetHomeDir(const char *user_name);
+AllocatedPath
+GetHomeDir(const char *user_name) noexcept;
 
 #endif
 

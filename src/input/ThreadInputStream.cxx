@@ -117,7 +117,7 @@ ThreadInputStream::Check()
 }
 
 bool
-ThreadInputStream::IsAvailable()
+ThreadInputStream::IsAvailable() noexcept
 {
 	assert(!thread.IsInside());
 
@@ -151,7 +151,7 @@ ThreadInputStream::Read(void *ptr, size_t read_size)
 }
 
 bool
-ThreadInputStream::IsEOF()
+ThreadInputStream::IsEOF() noexcept
 {
 	assert(!thread.IsInside());
 

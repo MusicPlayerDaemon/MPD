@@ -123,7 +123,7 @@ PcmVolume::Open(SampleFormat _format)
 }
 
 ConstBuffer<void>
-PcmVolume::Apply(ConstBuffer<void> src)
+PcmVolume::Apply(ConstBuffer<void> src) noexcept
 {
 	if (volume == PCM_VOLUME_1)
 		return src;

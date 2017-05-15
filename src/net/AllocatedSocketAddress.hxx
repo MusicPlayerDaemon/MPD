@@ -140,11 +140,11 @@ public:
 	 * begins with a '@', then the rest specifies an "abstract" local
 	 * address.
 	 */
-	void SetLocal(const char *path);
+	void SetLocal(const char *path) noexcept;
 #endif
 
 private:
-	void SetSize(size_type new_size);
+	void SetSize(size_type new_size) noexcept;
 };
 
 #endif

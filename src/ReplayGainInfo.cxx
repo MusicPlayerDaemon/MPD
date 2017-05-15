@@ -24,7 +24,7 @@
 #include <math.h>
 
 float
-ReplayGainTuple::CalculateScale(const ReplayGainConfig &config) const
+ReplayGainTuple::CalculateScale(const ReplayGainConfig &config) const noexcept
 {
 	float scale;
 

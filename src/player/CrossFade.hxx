@@ -66,7 +66,7 @@ struct CrossFadeSettings {
 			   const char *mixramp_start,
 			   const char *mixramp_prev_end,
 			   AudioFormat af, AudioFormat old_format,
-			   unsigned max_chunks) const;
+			   unsigned max_chunks) const noexcept;
 };
 
 #endif

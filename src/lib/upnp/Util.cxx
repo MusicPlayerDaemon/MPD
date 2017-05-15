@@ -23,7 +23,7 @@
 
 /** Get rid of white space at both ends */
 void
-trimstring(std::string &s, const char *ws)
+trimstring(std::string &s, const char *ws) noexcept
 {
 	auto pos = s.find_first_not_of(ws);
 	if (pos == std::string::npos) {
@@ -38,14 +38,14 @@ trimstring(std::string &s, const char *ws)
 }
 
 static void
-path_catslash(std::string &s)
+path_catslash(std::string &s) noexcept
 {
 	if (s.empty() || s.back() != '/')
 		s += '/';
 }
 
 std::string
-path_getfather(const std::string &s)
+path_getfather(const std::string &s) noexcept
 {
 	std::string father = s;
 
@@ -71,7 +71,7 @@ path_getfather(const std::string &s)
 
 std::list<std::string>
 stringToTokens(const std::string &str,
-	       const char delim)
+	       const char delim) noexcept
 {
 	std::list<std::string> tokens;
 
@@ -105,7 +105,7 @@ stringToTokens(const std::string &str,
 
 template <class T>
 bool
-csvToStrings(const char *s, T &tokens)
+csvToStrings(const char *s, T &tokens) noexcept
 {
 	assert(tokens.empty());
 
@@ -132,4 +132,4 @@ csvToStrings(const char *s, T &tokens)
 	}
 }
 
-template bool csvToStrings<std::list<std::string>>(const char *, std::list<std::string> &);
+template bool csvToStrings<std::list<std::string>>(const char *, std::list<std::string> &) noexcept;

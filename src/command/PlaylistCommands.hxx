@@ -29,7 +29,7 @@ class Response;
 
 gcc_const
 bool
-playlist_commands_available();
+playlist_commands_available() noexcept;
 
 CommandResult
 handle_save(Client &client, Request request, Response &response);

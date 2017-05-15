@@ -169,7 +169,7 @@ ReadServers(NeighborExplorer::List &list, const char *uri)
 
 gcc_pure
 static NeighborExplorer::List
-DetectServers()
+DetectServers() noexcept
 {
 	NeighborExplorer::List list;
 	const std::lock_guard<Mutex> protect(smbclient_mutex);
@@ -181,7 +181,7 @@ gcc_pure
 static NeighborExplorer::List::const_iterator
 FindBeforeServerByURI(NeighborExplorer::List::const_iterator prev,
 		      NeighborExplorer::List::const_iterator end,
-		      const std::string &uri)
+		      const std::string &uri) noexcept
 {
 	for (auto i = std::next(prev); i != end; prev = i, i = std::next(prev))
 		if (i->uri == uri)

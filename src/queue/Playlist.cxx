@@ -92,7 +92,7 @@ playlist::QueuedSongStarted(PlayerControl &pc)
 }
 
 const DetachedSong *
-playlist::GetQueuedSong() const
+playlist::GetQueuedSong() const noexcept
 {
 	return playing && queued >= 0
 		? &queue.GetOrder(queued)
@@ -323,7 +323,7 @@ playlist::SetRandom(PlayerControl &pc, bool status)
 }
 
 int
-playlist::GetCurrentPosition() const
+playlist::GetCurrentPosition() const noexcept
 {
 	return current >= 0
 		? queue.OrderToPosition(current)
@@ -331,7 +331,7 @@ playlist::GetCurrentPosition() const
 }
 
 int
-playlist::GetNextPosition() const
+playlist::GetNextPosition() const noexcept
 {
 	if (current < 0)
 		return -1;

@@ -261,7 +261,7 @@ public:
 	 * Determines whether seeking is cheap.  This is true for local files.
 	 */
 	gcc_pure
-	bool CheapSeeking() const;
+	bool CheapSeeking() const noexcept;
 
 	/**
 	 * Seeks to the specified position in the stream.  This will most
@@ -308,14 +308,14 @@ public:
 	 * The caller must lock the mutex.
 	 */
 	gcc_pure
-	virtual bool IsEOF() = 0;
+	virtual bool IsEOF() noexcept = 0;
 
 	/**
 	 * Wrapper for IsEOF() which locks and unlocks the mutex; the
 	 * caller must not be holding it already.
 	 */
 	gcc_pure
-	bool LockIsEOF();
+	bool LockIsEOF() noexcept;
 
 	/**
 	 * Reads the tag from the stream.
@@ -343,7 +343,7 @@ public:
 	 * The caller must lock the mutex.
 	 */
 	gcc_pure
-	virtual bool IsAvailable();
+	virtual bool IsAvailable() noexcept;
 
 	/**
 	 * Reads data from the stream into the caller-supplied buffer.

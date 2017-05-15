@@ -93,9 +93,9 @@ public:
 	}
 
 	gcc_pure
-	bool operator==(const SocketAddress other) const;
+	bool operator==(const SocketAddress other) const noexcept;
 
-	bool operator!=(const SocketAddress other) const {
+	bool operator!=(const SocketAddress other) const noexcept {
 		return !(*this == other);
 	}
 };

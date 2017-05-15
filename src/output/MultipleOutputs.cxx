@@ -108,7 +108,7 @@ MultipleOutputs::AddNullOutput(EventLoop &event_loop,
 }
 
 AudioOutputControl *
-MultipleOutputs::FindByName(const char *name)
+MultipleOutputs::FindByName(const char *name) noexcept
 {
 	for (auto *i : outputs)
 		if (strcmp(i->GetName(), name) == 0)
@@ -134,7 +134,7 @@ MultipleOutputs::EnableDisable()
 }
 
 bool
-MultipleOutputs::AllFinished() const
+MultipleOutputs::AllFinished() const noexcept
 {
 	for (auto *ao : outputs) {
 		const std::lock_guard<Mutex> protect(ao->mutex);
@@ -146,7 +146,7 @@ MultipleOutputs::AllFinished() const
 }
 
 void
-MultipleOutputs::WaitAll()
+MultipleOutputs::WaitAll() noexcept
 {
 	while (!AllFinished())
 		audio_output_client_notify.Wait();
@@ -257,7 +257,7 @@ MultipleOutputs::Open(const AudioFormat audio_format,
 }
 
 bool
-MultipleOutputs::IsChunkConsumed(const MusicChunk *chunk) const
+MultipleOutputs::IsChunkConsumed(const MusicChunk *chunk) const noexcept
 {
 	for (auto *ao : outputs)
 		if (!ao->LockIsChunkConsumed(*chunk))

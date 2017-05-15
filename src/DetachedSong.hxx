@@ -111,7 +111,7 @@ public:
 	explicit operator LightSong() const;
 
 	gcc_pure
-	const char *GetURI() const {
+	const char *GetURI() const noexcept {
 		return uri.c_str();
 	}
 
@@ -125,7 +125,7 @@ public:
 	 * displayed URI?
 	 */
 	gcc_pure
-	bool HasRealURI() const {
+	bool HasRealURI() const noexcept {
 		return !real_uri.empty();
 	}
 
@@ -134,7 +134,7 @@ public:
 	 * GetURI().
 	 */
 	gcc_pure
-	const char *GetRealURI() const {
+	const char *GetRealURI() const noexcept {
 		return (HasRealURI() ? real_uri : uri).c_str();
 	}
 
@@ -148,19 +148,19 @@ public:
 	 * song.
 	 */
 	gcc_pure
-	bool IsSame(const DetachedSong &other) const {
+	bool IsSame(const DetachedSong &other) const noexcept {
 		return uri == other.uri &&
 			start_time == other.start_time &&
 			end_time == other.end_time;
 	}
 
 	gcc_pure gcc_nonnull_all
-	bool IsURI(const char *other_uri) const {
+	bool IsURI(const char *other_uri) const noexcept {
 		return uri == other_uri;
 	}
 
 	gcc_pure
-	bool IsRemote() const;
+	bool IsRemote() const noexcept;
 
 	gcc_pure
 	bool IsFile() const {
@@ -168,10 +168,10 @@ public:
 	}
 
 	gcc_pure
-	bool IsAbsoluteFile() const;
+	bool IsAbsoluteFile() const noexcept;
 
 	gcc_pure
-	bool IsInDatabase() const;
+	bool IsInDatabase() const noexcept;
 
 	const Tag &GetTag() const {
 		return tag;
@@ -226,7 +226,7 @@ public:
 	}
 
 	gcc_pure
-	SignedSongTime GetDuration() const;
+	SignedSongTime GetDuration() const noexcept;
 
 	/**
 	 * Update the #tag and #mtime.

@@ -75,7 +75,7 @@ DecoderControl::SetReady(const AudioFormat audio_format,
 }
 
 bool
-DecoderControl::IsCurrentSong(const DetachedSong &_song) const
+DecoderControl::IsCurrentSong(const DetachedSong &_song) const noexcept
 {
 	switch (state) {
 	case DecoderState::STOP:

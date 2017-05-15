@@ -149,7 +149,7 @@ FormatErrno(const char *fmt, Args&&... args)
 
 gcc_pure
 static inline bool
-IsFileNotFound(const std::system_error &e)
+IsFileNotFound(const std::system_error &e) noexcept
 {
 #ifdef WIN32
 	return e.code().category() == std::system_category() &&
@@ -162,7 +162,7 @@ IsFileNotFound(const std::system_error &e)
 
 gcc_pure
 static inline bool
-IsPathNotFound(const std::system_error &e)
+IsPathNotFound(const std::system_error &e) noexcept
 {
 #ifdef WIN32
 	return e.code().category() == std::system_category() &&
@@ -175,7 +175,7 @@ IsPathNotFound(const std::system_error &e)
 
 gcc_pure
 static inline bool
-IsAccessDenied(const std::system_error &e)
+IsAccessDenied(const std::system_error &e) noexcept
 {
 #ifdef WIN32
 	return e.code().category() == std::system_category() &&

@@ -64,11 +64,11 @@ public:
 	ExpatParser &operator=(const ExpatParser &) = delete;
 
 	void SetElementHandler(XML_StartElementHandler start,
-			       XML_EndElementHandler end) {
+			       XML_EndElementHandler end) noexcept {
 		XML_SetElementHandler(parser, start, end);
 	}
 
-	void SetCharacterDataHandler(XML_CharacterDataHandler charhndl) {
+	void SetCharacterDataHandler(XML_CharacterDataHandler charhndl) noexcept {
 		XML_SetCharacterDataHandler(parser, charhndl);
 	}
 
@@ -78,11 +78,11 @@ public:
 
 	gcc_pure
 	static const char *GetAttribute(const XML_Char **atts,
-					const char *name);
+					const char *name) noexcept;
 
 	gcc_pure
 	static const char *GetAttributeCase(const XML_Char **atts,
-					    const char *name);
+					    const char *name) noexcept;
 };
 
 /**
@@ -114,13 +114,13 @@ public:
 
 	gcc_pure
 	static const char *GetAttribute(const XML_Char **atts,
-					const char *name) {
+					const char *name) noexcept {
 		return ExpatParser::GetAttribute(atts, name);
 	}
 
 	gcc_pure
 	static const char *GetAttributeCase(const XML_Char **atts,
-					    const char *name) {
+					    const char *name) noexcept {
 		return ExpatParser::GetAttributeCase(atts, name);
 	}
 

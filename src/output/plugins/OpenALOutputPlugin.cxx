@@ -59,7 +59,7 @@ class OpenALOutput {
 	void Close();
 
 	gcc_pure
-	std::chrono::steady_clock::duration Delay() const {
+	std::chrono::steady_clock::duration Delay() const noexcept {
 		return filled < NUM_BUFFERS || HasProcessed()
 			? std::chrono::steady_clock::duration::zero()
 			/* we don't know exactly how long we must wait

@@ -205,7 +205,6 @@ struct Partition final : QueueListener, PlayerListener, MixerListener {
 	 */
 	const Database *GetDatabase() const;
 
-	gcc_pure
 	const Database &GetDatabaseOrThrow() const;
 
 	/**

@@ -43,7 +43,7 @@ const StoragePlugin *const storage_plugins[] = {
 };
 
 const StoragePlugin *
-GetStoragePluginByName(const char *name)
+GetStoragePluginByName(const char *name) noexcept
 {
 	for (auto i = storage_plugins; *i != nullptr; ++i) {
 		const StoragePlugin &plugin = **i;

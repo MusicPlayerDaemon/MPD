@@ -80,7 +80,7 @@ Tag::MergeReplace(Tag *base, Tag *add)
 }
 
 const char *
-Tag::GetValue(TagType type) const
+Tag::GetValue(TagType type) const noexcept
 {
 	assert(type < TAG_NUM_OF_ITEM_TYPES);
 
@@ -92,7 +92,7 @@ Tag::GetValue(TagType type) const
 }
 
 bool
-Tag::HasType(TagType type) const
+Tag::HasType(TagType type) const noexcept
 {
 	return GetValue(type) != nullptr;
 }
