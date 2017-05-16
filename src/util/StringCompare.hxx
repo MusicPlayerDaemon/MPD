@@ -38,7 +38,7 @@
 #endif
 
 static inline bool
-StringIsEmpty(const char *string)
+StringIsEmpty(const char *string) noexcept
 {
 	return *string == 0;
 }

@@ -140,7 +140,7 @@ StringIsEqual(const char *a, const char *b, size_t length) noexcept
  */
 gcc_malloc gcc_nonnull_all
 static inline char *
-DuplicateString(const char *p)
+DuplicateString(const char *p) noexcept
 {
 	return strdup(p);
 }
