@@ -30,6 +30,8 @@
 #ifndef CONCAT_STRING_HXX
 #define CONCAT_STRING_HXX
 
+#include <algorithm>
+
 #include <string.h>
 
 template<typename... Args>
@@ -58,7 +60,7 @@ template<>
 void
 StringCat(char *p, const size_t *lengths, const char *a)
 {
-	memcpy(p, a, *lengths);
+	std::copy_n(a, *lengths, p);
 }
 
 #endif
