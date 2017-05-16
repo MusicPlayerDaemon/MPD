@@ -424,6 +424,7 @@ libutil_a_SOURCES = \
 	src/util/StringBuffer.hxx \
 	src/util/StringPointer.hxx \
 	src/util/StringView.cxx src/util/StringView.hxx \
+	src/util/ConcatString.hxx \
 	src/util/AllocatedString.cxx src/util/AllocatedString.hxx \
 	src/util/StringUtil.cxx src/util/StringUtil.hxx \
 	src/util/StringCompare.cxx src/util/StringCompare.hxx \

@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "Alloc.hxx"
+#include "ConcatString.hxx"
 
 #include <stdlib.h>
 #include <string.h>
@@ -74,35 +75,6 @@ xstrndup(const char *s, size_t n)
 #endif
 
 	return p;
-}
-
-template<typename... Args>
-static inline size_t
-FillLengths(size_t *lengths, const char *a, Args&&... args)
-{
-	return FillLengths(lengths, a) + FillLengths(lengths + 1, args...);
-}
-
-template<>
-inline size_t
-FillLengths(size_t *lengths, const char *a)
-{
-	return *lengths = strlen(a);
-}
-
-template<typename... Args>
-static inline void
-StringCat(char *p, const size_t *lengths, const char *a, Args&&... args)
-{
-	StringCat(p, lengths, a);
-	StringCat(p + *lengths, lengths + 1, args...);
-}
-
-template<>
-inline void
-StringCat(char *p, const size_t *lengths, const char *a)
-{
-	memcpy(p, a, *lengths);
 }
 
 template<typename... Args>
