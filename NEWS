@@ -1,6 +1,7 @@
 ver 0.20.8 (not yet released)
 * output
   - osx: fix build failure due to missing "noexcept"
+* fix build failure with GCC 4.x
 
 ver 0.20.7 (2017/05/15)
 * database
