@@ -670,7 +670,7 @@ osx_output_play(AudioOutput *ao, const void *chunk, size_t size)
 }
 
 static std::chrono::steady_clock::duration
-osx_output_delay(AudioOutput *ao)
+osx_output_delay(AudioOutput *ao) noexcept
 {
 	OSXOutput *od = (OSXOutput *)ao;
 	return od->ring_buffer->write_available()

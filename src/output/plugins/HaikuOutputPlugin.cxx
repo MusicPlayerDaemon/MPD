@@ -79,7 +79,7 @@ public:
 	size_t Play(const void *chunk, size_t size);
 	void Cancel();
 
-	std::chrono::steady_clock::duration Delay();
+	std::chrono::steady_clock::duration Delay() noexcept;
 
 	void FillBuffer(void* _buffer, size_t size,
 		gcc_unused const media_raw_audio_format& _format);
@@ -309,7 +309,7 @@ HaikuOutput::Play(const void *chunk, size_t size)
 }
 
 inline std::chrono::steady_clock::duration
-HaikuOutput::Delay()
+HaikuOutput::Delay() noexcept
 {
 	unsigned delay = buffer_filled ? 0 : buffer_delay;
 

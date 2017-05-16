@@ -96,7 +96,7 @@ public:
 	void Open(AudioFormat &audio_format);
 	void Close();
 
-	std::chrono::steady_clock::duration Delay() {
+	std::chrono::steady_clock::duration Delay() noexcept {
 		return pause && !cancel
 			? std::chrono::milliseconds(100)
 			: std::chrono::steady_clock::duration::zero();
