@@ -94,6 +94,12 @@ StringFindLast(char *haystack, char needle) noexcept
 	return strrchr(haystack, needle);
 }
 
+static inline char *
+StringToken(char *str, const char *delim) noexcept
+{
+	return strtok(str, delim);
+}
+
 gcc_nonnull_all
 static inline void
 UnsafeCopyString(char *dest, const char *src) noexcept
@@ -132,6 +138,27 @@ static inline bool
 StringIsEqual(const char *a, const char *b, size_t length) noexcept
 {
 	return strncmp(a, b, length) == 0;
+}
+
+gcc_pure gcc_nonnull_all
+static inline bool
+StringIsEqualIgnoreCase(const char *a, const char *b) noexcept
+{
+	return strcasecmp(a, b) == 0;
+}
+
+gcc_pure gcc_nonnull_all
+static inline bool
+StringIsEqualIgnoreCase(const char *a, const char *b, size_t size) noexcept
+{
+	return strncasecmp(a, b, size) == 0;
+}
+
+gcc_pure gcc_nonnull_all
+static inline int
+StringCollate(const char *a, const char *b) noexcept
+{
+	return strcoll(a, b);
 }
 
 /**
