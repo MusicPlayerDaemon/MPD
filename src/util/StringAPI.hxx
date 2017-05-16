@@ -106,11 +106,11 @@ static inline char *
 UnsafeCopyStringP(char *dest, const char *src) noexcept
 {
 #if defined(WIN32) || defined(__BIONIC__)
-  /* emulate stpcpy() */
-  UnsafeCopyString(dest, src);
-  return dest + StringLength(dest);
+	/* emulate stpcpy() */
+	UnsafeCopyString(dest, src);
+	return dest + StringLength(dest);
 #else
-  return stpcpy(dest, src);
+	return stpcpy(dest, src);
 #endif
 }
 

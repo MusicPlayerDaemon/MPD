@@ -40,7 +40,7 @@
 static inline bool
 StringIsEmpty(const char *string)
 {
-  return *string == 0;
+	return *string == 0;
 }
 
 gcc_pure gcc_nonnull_all
