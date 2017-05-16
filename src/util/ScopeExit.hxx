@@ -30,8 +30,6 @@
 #ifndef SCOPE_EXIT_HXX
 #define SCOPE_EXIT_HXX
 
-#include "Compiler.h"
-
 #include <utility>
 
 /**
