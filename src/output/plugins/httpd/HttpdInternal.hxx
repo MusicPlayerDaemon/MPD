@@ -158,10 +158,7 @@ public:
 	static HttpdOutput *Create(EventLoop &event_loop,
 				   const ConfigBlock &block);
 
-#if CLANG_OR_GCC_VERSION(4,7)
-	constexpr
-#endif
-	static HttpdOutput *Cast(AudioOutput *ao) {
+	static constexpr HttpdOutput *Cast(AudioOutput *ao) {
 		return &ContainerCast(*ao, &HttpdOutput::base);
 	}
 

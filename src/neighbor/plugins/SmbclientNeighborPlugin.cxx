@@ -212,14 +212,7 @@ SmbclientNeighborExplorer::Run()
 			prev = i;
 		} else {
 			/* can't see it anymore: move to "lost" */
-#if CLANG_OR_GCC_VERSION(4,7)
 			lost.splice_after(lost.before_begin(), list, prev);
-#else
-			/* the forward_list::splice_after() lvalue
-			   reference overload is missing in gcc 4.6 */
-			lost.emplace_front(std::move(*i));
-			list.erase_after(prev);
-#endif
 		}
 	}
 

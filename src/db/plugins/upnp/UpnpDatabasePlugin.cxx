@@ -625,11 +625,7 @@ UpnpDatabase::VisitUniqueTags(const DatabaseSelection &selection,
 
 			const char *value = dirent.tag.GetValue(tag);
 			if (value != nullptr) {
-#if CLANG_OR_GCC_VERSION(4,8)
 				values.emplace(value);
-#else
-				values.insert(value);
-#endif
 			}
 		}
 	}

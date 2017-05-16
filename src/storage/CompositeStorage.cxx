@@ -130,13 +130,8 @@ CompositeStorage::Directory::Make(const char *uri)
 	Directory *directory = this;
 	while (*uri != 0) {
 		const std::string name = NextSegment(uri);
-#if CLANG_OR_GCC_VERSION(4,8)
 		auto i = directory->children.emplace(std::move(name),
 						     Directory());
-#else
-		auto i = directory->children.insert(std::make_pair(std::move(name),
-								   Directory()));
-#endif
 		directory = &i.first->second;
 	}
 

@@ -46,19 +46,11 @@ StatsVisitTag(DatabaseStats &stats, StringSet &artists, StringSet &albums,
 	for (const auto &item : tag) {
 		switch (item.type) {
 		case TAG_ARTIST:
-#if CLANG_OR_GCC_VERSION(4,8)
 			artists.emplace(item.value);
-#else
-			artists.insert(item.value);
-#endif
 			break;
 
 		case TAG_ALBUM:
-#if CLANG_OR_GCC_VERSION(4,8)
 			albums.emplace(item.value);
-#else
-			albums.insert(item.value);
-#endif
 			break;
 
 		default:

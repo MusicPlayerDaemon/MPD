@@ -76,11 +76,7 @@ TagSet::InsertUnique(const Tag &src, TagType type, const char *value,
 	else
 		builder.AddItem(type, value);
 	CopyTagMask(builder, src, group_mask);
-#if CLANG_OR_GCC_VERSION(4,8)
 	emplace(builder.Commit());
-#else
-	insert(builder.Commit());
-#endif
 }
 
 bool
