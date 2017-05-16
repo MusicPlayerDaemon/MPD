@@ -49,18 +49,18 @@ FillLengths(size_t *lengths, const char *a)
 }
 
 template<typename... Args>
-void
+char *
 StringCat(char *p, const size_t *lengths, const char *a, Args&&... args)
 {
-	StringCat(p, lengths, a);
-	StringCat(p + *lengths, lengths + 1, args...);
+	return StringCat(StringCat(p, lengths, a),
+			 lengths + 1, args...);
 }
 
 template<>
-void
+char *
 StringCat(char *p, const size_t *lengths, const char *a)
 {
-	std::copy_n(a, *lengths, p);
+	return std::copy_n(a, *lengths, p);
 }
 
 #endif

@@ -88,8 +88,7 @@ t_xstrcatdup(Args&&... args)
 	const size_t total = FillLengths(lengths, args...);
 
 	char *p = (char *)xalloc(total + 1);
-	StringCat(p, lengths, args...);
-	p[total] = 0;
+	*StringCat(p, lengths, args...) = 0;
 	return p;
 }
 
