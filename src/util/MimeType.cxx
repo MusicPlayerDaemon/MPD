@@ -23,7 +23,7 @@
 #include <string.h>
 
 std::string
-GetMimeTypeBase(const char *s)
+GetMimeTypeBase(const char *s) noexcept
 {
 	const char *semicolon = strchr(s, ';');
 	return semicolon != nullptr
@@ -32,7 +32,7 @@ GetMimeTypeBase(const char *s)
 }
 
 std::map<std::string, std::string>
-ParseMimeTypeParameters(const char *s)
+ParseMimeTypeParameters(const char *s) noexcept
 {
 	std::map<std::string, std::string> result;
 
