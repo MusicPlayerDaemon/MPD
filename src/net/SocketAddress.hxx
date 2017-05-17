@@ -59,29 +59,30 @@ private:
 public:
 	SocketAddress() = default;
 
-	constexpr SocketAddress(std::nullptr_t):address(nullptr), size(0) {}
+	constexpr SocketAddress(std::nullptr_t) noexcept
+		:address(nullptr), size(0) {}
 
 	constexpr SocketAddress(const struct sockaddr *_address,
-				size_type _size)
+				size_type _size) noexcept
 		:address(_address), size(_size) {}
 
-	static constexpr SocketAddress Null() {
+	static constexpr SocketAddress Null() noexcept {
 		return nullptr;
 	}
 
-	constexpr bool IsNull() const {
+	constexpr bool IsNull() const noexcept {
 		return address == nullptr;
 	}
 
-	const struct sockaddr *GetAddress() const {
+	const struct sockaddr *GetAddress() const noexcept {
 		return address;
 	}
 
-	constexpr size_type GetSize() const {
+	constexpr size_type GetSize() const noexcept {
 		return size;
 	}
 
-	constexpr int GetFamily() const {
+	constexpr int GetFamily() const noexcept {
 		return address->sa_family;
 	}
 
@@ -89,7 +90,7 @@ public:
 	 * Does the object have a well-defined address?  Check !IsNull()
 	 * before calling this method.
 	 */
-	bool IsDefined() const {
+	bool IsDefined() const noexcept {
 		return GetFamily() != AF_UNSPEC;
 	}
 
@@ -98,7 +99,7 @@ public:
 	 * Extract the port number.  Returns 0 if not applicable.
 	 */
 	gcc_pure
-	unsigned GetPort() const;
+	unsigned GetPort() const noexcept;
 #endif
 
 	gcc_pure

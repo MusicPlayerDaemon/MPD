@@ -49,7 +49,7 @@ SocketAddress::operator==(SocketAddress other) const noexcept
 #ifdef HAVE_TCP
 
 unsigned
-SocketAddress::GetPort() const
+SocketAddress::GetPort() const noexcept
 {
 	if (IsNull())
 		return 0;
