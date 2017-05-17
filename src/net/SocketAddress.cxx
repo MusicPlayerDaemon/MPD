@@ -48,6 +48,14 @@ SocketAddress::operator==(SocketAddress other) const noexcept
 
 #ifdef HAVE_TCP
 
+bool
+SocketAddress::IsV6Any() const noexcept
+{
+    return GetFamily() == AF_INET6 &&
+	    memcmp(&((const struct sockaddr_in6 *)(const void *)GetAddress())->sin6_addr,
+		   &in6addr_any, sizeof(in6addr_any)) == 0;
+}
+
 unsigned
 SocketAddress::GetPort() const noexcept
 {
