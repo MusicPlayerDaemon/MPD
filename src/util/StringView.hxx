@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2015 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright (C) 2013-2017 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -90,6 +90,13 @@ struct StringView : ConstBuffer<char> {
 	bool StartsWith(StringView needle) const noexcept {
 		return size >= needle.size &&
 			memcmp(data, needle.data, needle.size) == 0;
+	}
+
+	gcc_pure
+	bool EndsWith(StringView needle) const noexcept {
+		return size >= needle.size &&
+			memcmp(data + size - needle.size,
+			       needle.data, needle.size) == 0;
 	}
 
 	gcc_pure
