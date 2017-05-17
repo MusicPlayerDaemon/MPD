@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2015 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright (C) 2012-2017 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -34,6 +34,14 @@
 
 #include <string.h>
 
+#ifdef HAVE_TCP
+#ifdef WIN32
+#include <ws2tcpip.h>
+#else
+#include <netinet/in.h>
+#endif
+#endif
+
 StaticSocketAddress &
 StaticSocketAddress::operator=(SocketAddress other) noexcept
 {
@@ -41,3 +49,29 @@ StaticSocketAddress::operator=(SocketAddress other) noexcept
 	memcpy(&address, other.GetAddress(), size);
 	return *this;
 }
+
+#ifdef HAVE_TCP
+
+bool
+StaticSocketAddress::SetPort(unsigned port)
+{
+	switch (GetFamily()) {
+	case AF_INET:
+		{
+			auto &a = (struct sockaddr_in &)address;
+			a.sin_port = htons(port);
+			return true;
+		}
+
+	case AF_INET6:
+		{
+			auto &a = (struct sockaddr_in6 &)address;
+			a.sin6_port = htons(port);
+			return true;
+		}
+	}
+
+	return false;
+}
+
+#endif
