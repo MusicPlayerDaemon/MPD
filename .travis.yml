@@ -25,10 +25,9 @@ before_install:
 install:
   # C++14
   - sudo apt-get install -qq g++-5
-  - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-5 90
-  - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-5 90
 
 script:
+  - export CC=gcc-5 CXX=g++-5
   - ./autogen.sh
   - ./configure --enable-test
   - make
