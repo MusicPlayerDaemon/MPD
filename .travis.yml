@@ -14,9 +14,6 @@ env:
   global:
     - MAKEFLAGS="-j2"
 
-compiler:
-  - gcc
-
 before_install:
   # C++14
   - test "$TRAVIS_OS_NAME" != "linux" || sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
