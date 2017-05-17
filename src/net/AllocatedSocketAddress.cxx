@@ -45,7 +45,7 @@
 #endif
 
 AllocatedSocketAddress &
-AllocatedSocketAddress::operator=(SocketAddress src)
+AllocatedSocketAddress::operator=(SocketAddress src) noexcept
 {
 	if (src.IsNull()) {
 		Clear();
