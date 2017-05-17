@@ -10,6 +10,10 @@ addons:
 os:
   - linux
 
+env:
+  global:
+    - MAKEFLAGS="-j2"
+
 compiler:
   - gcc
 
