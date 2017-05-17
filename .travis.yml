@@ -2,16 +2,16 @@ dist: trusty
 language: cpp
 
 addons:
-    apt:
-        packages:
-            - libcppunit-dev
-            - libboost-dev
+  apt:
+    packages:
+      - libcppunit-dev
+      - libboost-dev
 
 os:
-    - linux
+  - linux
 
 compiler:
-    - gcc
+  - gcc
 
 before_install:
   # C++14
@@ -25,7 +25,7 @@ install:
   - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-5 90
 
 script:
-    - ./autogen.sh
-    - ./configure --enable-test
-    - make
-    - make check
+  - ./autogen.sh
+  - ./configure --enable-test
+  - make
+  - make check
