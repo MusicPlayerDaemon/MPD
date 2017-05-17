@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2015 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright (C) 2012-2017 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -30,6 +30,7 @@
 #ifndef SOCKET_ADDRESS_HXX
 #define SOCKET_ADDRESS_HXX
 
+#include "Features.hxx"
 #include "Compiler.h"
 
 #include <cstddef>
@@ -91,6 +92,14 @@ public:
 	bool IsDefined() const {
 		return GetFamily() != AF_UNSPEC;
 	}
+
+#ifdef HAVE_TCP
+	/**
+	 * Extract the port number.  Returns 0 if not applicable.
+	 */
+	gcc_pure
+	unsigned GetPort() const;
+#endif
 
 	gcc_pure
 	bool operator==(const SocketAddress other) const noexcept;
