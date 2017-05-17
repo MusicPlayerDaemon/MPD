@@ -45,18 +45,17 @@ public:
 	typedef SocketAddress::size_type size_type;
 
 private:
-	struct sockaddr *address;
-	size_type size;
+	struct sockaddr *address = nullptr;
+	size_type size = 0;
 
 	AllocatedSocketAddress(struct sockaddr *_address,
 			       size_type _size)
 		:address(_address), size(_size) {}
 
 public:
-	AllocatedSocketAddress():address(nullptr), size(0) {}
+	AllocatedSocketAddress() = default;
 
-	explicit AllocatedSocketAddress(SocketAddress src)
-		:address(nullptr), size(0) {
+	explicit AllocatedSocketAddress(SocketAddress src) {
 		*this = src;
 	}
 
