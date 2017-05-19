@@ -24,8 +24,9 @@ install:
   - test "$TRAVIS_OS_NAME" != "linux" || sudo apt-get install -qq g++-5
 
 script:
+  - OPTIONS="--enable-test"
   - test "$TRAVIS_OS_NAME" != "linux" || export CC=gcc-5 CXX=g++-5
   - ./autogen.sh
-  - ./configure --disable-silent-rules --disable-dependency-tracking --enable-test
+  - ./configure --disable-silent-rules --disable-dependency-tracking $OPTIONS
   - make
   - make check
