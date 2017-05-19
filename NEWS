@@ -1,4 +1,4 @@
-ver 0.20.8 (not yet released)
+ver 0.20.8 (2017/05/19)
 * output
   - osx: fix build failure due to missing "noexcept"
 * playlist
