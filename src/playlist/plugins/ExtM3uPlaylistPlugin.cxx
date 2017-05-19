@@ -146,6 +146,7 @@ static const char *const extm3u_suffixes[] = {
 
 static const char *const extm3u_mime_types[] = {
 	"audio/x-mpegurl",
+	"audio/mpegurl",
 	nullptr
 };
 

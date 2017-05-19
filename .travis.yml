@@ -2,30 +2,35 @@ dist: trusty
 language: cpp
 
 addons:
-    apt:
-        packages:
-            - libcppunit-dev
-            - libboost-dev
+  apt:
+    packages:
+      - libcppunit-dev
+      - libboost-dev
 
 os:
-    - linux
+  - linux
+  - osx
 
-compiler:
-    - gcc
+env:
+  global:
+    - MAKEFLAGS="-j2"
 
 before_install:
   # C++14
-  - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
-  - sudo apt-get update -qq
+  - test "$TRAVIS_OS_NAME" != "linux" || sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+  - test "$TRAVIS_OS_NAME" != "linux" || sudo apt-get update -qq
+  - test "$TRAVIS_OS_NAME" != "osx" || brew update
 
 install:
   # C++14
-  - sudo apt-get install -qq g++-5
-  - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-5 90
-  - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-5 90
+  - test "$TRAVIS_OS_NAME" != "linux" || sudo apt-get install -qq g++-5
+  - test "$TRAVIS_OS_NAME" != "osx" || brew install cppunit
 
 script:
-    - ./autogen.sh
-    - ./configure --enable-test
-    - make
-    - make check
+  - OPTIONS="--enable-test"
+  - test "$TRAVIS_OS_NAME" != "linux" || export CC=gcc-5 CXX=g++-5
+  - test "$TRAVIS_OS_NAME" != "osx" || OPTIONS="$OPTIONS --enable-osx"
+  - ./autogen.sh
+  - ./configure --disable-silent-rules --disable-dependency-tracking $OPTIONS
+  - make
+  - make check
