@@ -26,6 +26,6 @@ install:
 script:
   - test "$TRAVIS_OS_NAME" != "linux" || export CC=gcc-5 CXX=g++-5
   - ./autogen.sh
-  - ./configure --enable-test
+  - ./configure --disable-silent-rules --disable-dependency-tracking --enable-test
   - make
   - make check
