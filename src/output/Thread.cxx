@@ -270,7 +270,7 @@ try {
 inline bool
 AudioOutputControl::PlayChunk()
 {
-	if (output->tags) {
+	if (tags) {
 		const auto *tag = output->source.ReadTag();
 		if (tag != nullptr) {
 			const ScopeUnlock unlock(mutex);

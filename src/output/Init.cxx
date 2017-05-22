@@ -171,10 +171,6 @@ AudioOutput::Configure(const ConfigBlock &block)
 		config_audio_format.Clear();
 	}
 
-	tags = block.GetBlockValue("tags", true);
-	always_on = block.GetBlockValue("always_on", false);
-	enabled = block.GetBlockValue("enabled", true);
-
 	/* set up the filter chain */
 
 	prepared_filter = filter_chain_new();

@@ -25,6 +25,7 @@
 #include "mixer/MixerControl.hxx"
 #include "notify.hxx"
 #include "filter/plugins/ReplayGainFilterPlugin.hxx"
+#include "config/Block.hxx"
 #include "Log.hxx"
 
 #include <stdexcept>
@@ -47,7 +48,9 @@ AudioOutputControl::AudioOutputControl(AudioOutput *_output)
 void
 AudioOutputControl::Configure(const ConfigBlock &block)
 {
-	(void)block;
+	tags = block.GetBlockValue("tags", true);
+	always_on = block.GetBlockValue("always_on", false);
+	enabled = block.GetBlockValue("enabled", true);
 }
 
 const char *
@@ -69,20 +72,14 @@ AudioOutputControl::GetMixer() const
 }
 
 bool
-AudioOutputControl::IsEnabled() const
-{
-	return output->IsEnabled();
-}
-
-bool
 AudioOutputControl::LockSetEnabled(bool new_value)
 {
 	const std::lock_guard<Mutex> protect(mutex);
 
-	if (new_value == output->enabled)
+	if (new_value == enabled)
 		return false;
 
-	output->enabled = new_value;
+	enabled = new_value;
 	return true;
 }
 
@@ -90,7 +87,7 @@ bool
 AudioOutputControl::LockToggleEnabled()
 {
 	const std::lock_guard<Mutex> protect(mutex);
-	return output->enabled = !output->enabled;
+	return enabled = !enabled;
 }
 
 bool
@@ -170,10 +167,10 @@ AudioOutputControl::DisableAsync()
 void
 AudioOutputControl::EnableDisableAsync()
 {
-	if (output->enabled == output->really_enabled)
+	if (enabled == output->really_enabled)
 		return;
 
-	if (output->enabled)
+	if (enabled)
 		EnableAsync();
 	else
 		DisableAsync();
@@ -188,7 +185,7 @@ AudioOutputControl::Open(const AudioFormat audio_format, const MusicPipe &mp)
 	fail_timer.Reset();
 
 	if (output->open && audio_format == request.audio_format) {
-		assert(request.pipe == &mp || (output->always_on && output->pause));
+		assert(request.pipe == &mp || (always_on && output->pause));
 
 		if (!output->pause)
 			/* already open, already the right parameters
@@ -240,7 +237,7 @@ AudioOutputControl::LockUpdate(const AudioFormat audio_format,
 {
 	const std::lock_guard<Mutex> protect(mutex);
 
-	if (output->enabled && output->really_enabled) {
+	if (enabled && output->really_enabled) {
 		if (force || !fail_timer.IsDefined() ||
 		    fail_timer.Check(REOPEN_AFTER * 1000)) {
 			return Open(audio_format, mp);
@@ -326,7 +323,7 @@ AudioOutputControl::LockAllowPlay()
 void
 AudioOutputControl::LockRelease()
 {
-	if (output->always_on)
+	if (always_on)
 		LockPauseAsync();
 	else
 		LockCloseWait();

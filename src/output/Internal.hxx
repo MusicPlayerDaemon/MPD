@@ -55,24 +55,6 @@ struct AudioOutput {
 	Mixer *mixer = nullptr;
 
 	/**
-	 * Will this output receive tags from the decoder?  The
-	 * default is true, but it may be configured to false to
-	 * suppress sending tags to the output.
-	 */
-	bool tags;
-
-	/**
-	 * Shall this output always play something (i.e. silence),
-	 * even when playback is stopped?
-	 */
-	bool always_on;
-
-	/**
-	 * Has the user enabled this device?
-	 */
-	bool enabled = true;
-
-	/**
 	 * Is this device actually enabled, i.e. the "enable" method
 	 * has succeeded?
 	 */
@@ -186,13 +168,6 @@ public:
 
 	const char *GetName() const {
 		return name;
-	}
-
-	/**
-	 * Caller must lock the mutex.
-	 */
-	bool IsEnabled() const {
-		return enabled;
 	}
 
 	/**

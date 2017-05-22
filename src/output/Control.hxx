@@ -120,6 +120,24 @@ class AudioOutputControl {
 	} command = Command::NONE;
 
 	/**
+	 * Will this output receive tags from the decoder?  The
+	 * default is true, but it may be configured to false to
+	 * suppress sending tags to the output.
+	 */
+	bool tags;
+
+	/**
+	 * Shall this output always play something (i.e. silence),
+	 * even when playback is stopped?
+	 */
+	bool always_on;
+
+	/**
+	 * Has the user enabled this device?
+	 */
+	bool enabled = true;
+
+	/**
 	 * When this flag is set, the output thread will not do any
 	 * playback.  It will wait until the flag is cleared.
 	 *
@@ -172,8 +190,12 @@ public:
 	gcc_pure
 	Mixer *GetMixer() const;
 
-	gcc_pure
-	bool IsEnabled() const;
+	/**
+	 * Caller must lock the mutex.
+	 */
+	bool IsEnabled() const {
+		return enabled;
+	}
 
 	/**
 	 * @return true if the value has been modified
