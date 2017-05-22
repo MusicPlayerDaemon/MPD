@@ -385,12 +385,8 @@ AudioOutputControl::InternalPlay() noexcept
 inline void
 AudioOutput::BeginPause() noexcept
 {
-	{
-		const ScopeUnlock unlock(mutex);
-		ao_plugin_cancel(*this);
-	}
-
-	pause = true;
+	const ScopeUnlock unlock(mutex);
+	ao_plugin_cancel(*this);
 }
 
 inline bool
@@ -417,6 +413,8 @@ inline void
 AudioOutputControl::InternalPause() noexcept
 {
 	output->BeginPause();
+	pause = true;
+
 	CommandFinished();
 
 	do {
@@ -427,6 +425,7 @@ AudioOutputControl::InternalPause() noexcept
 			break;
 	} while (command == Command::NONE);
 
+	pause = false;
 	output->EndPause();
 
 	skip_delay = true;

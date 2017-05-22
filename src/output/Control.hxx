@@ -144,6 +144,12 @@ class AudioOutputControl {
 	bool enabled = true;
 
 	/**
+	 * Is the device paused?  i.e. the output thread is in the
+	 * ao_pause() loop.
+	 */
+	bool pause = false;
+
+	/**
 	 * When this flag is set, the output thread will not do any
 	 * playback.  It will wait until the flag is cleared.
 	 *

@@ -70,12 +70,6 @@ struct AudioOutput {
 	bool open = false;
 
 	/**
-	 * Is the device paused?  i.e. the output thread is in the
-	 * ao_pause() loop.
-	 */
-	bool pause = false;
-
-	/**
 	 * The configured audio format.
 	 */
 	AudioFormat config_audio_format;
@@ -234,7 +228,6 @@ public:
 	bool IteratePause() noexcept;
 
 	void EndPause() noexcept{
-		pause = false;
 	}
 };
 

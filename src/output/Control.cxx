@@ -181,9 +181,9 @@ AudioOutputControl::Open(const AudioFormat audio_format,
 	fail_timer.Reset();
 
 	if (output->open && audio_format == request.audio_format) {
-		assert(request.pipe == &mp || (always_on && output->pause));
+		assert(request.pipe == &mp || (always_on && pause));
 
-		if (!output->pause)
+		if (!pause)
 			/* already open, already the right parameters
 			   - nothing needs to be done */
 			return true;
