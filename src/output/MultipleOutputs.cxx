@@ -75,7 +75,18 @@ LoadOutputControl(EventLoop &event_loop,
 	auto *output = LoadOutput(event_loop, replay_gain_config,
 				  mixer_listener,
 				  client, block);
-	return new AudioOutputControl(output);
+	auto *control = new AudioOutputControl(output);
+
+	try {
+		control->Configure(block);
+	} catch (...) {
+		control->BeginDestroy();
+		control->FinishDestroy();
+		delete control;
+		throw;
+	}
+
+	return control;
 }
 
 void

@@ -38,6 +38,7 @@
 enum class ReplayGainMode : uint8_t;
 struct AudioOutput;
 struct MusicChunk;
+struct ConfigBlock;
 class MusicPipe;
 class Mutex;
 class Mixer;
@@ -157,6 +158,11 @@ public:
 
 	AudioOutputControl(const AudioOutputControl &) = delete;
 	AudioOutputControl &operator=(const AudioOutputControl &) = delete;
+
+	/**
+	 * Throws #std::runtime_error on error.
+	 */
+	void Configure(const ConfigBlock &block);
 
 	gcc_pure
 	const char *GetName() const;

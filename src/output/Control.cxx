@@ -44,6 +44,12 @@ AudioOutputControl::AudioOutputControl(AudioOutput *_output)
 {
 }
 
+void
+AudioOutputControl::Configure(const ConfigBlock &block)
+{
+	(void)block;
+}
+
 const char *
 AudioOutputControl::GetName() const
 {
