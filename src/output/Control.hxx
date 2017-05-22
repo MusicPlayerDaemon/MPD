@@ -20,6 +20,7 @@
 #ifndef MPD_OUTPUT_CONTROL_HXX
 #define MPD_OUTPUT_CONTROL_HXX
 
+#include "Source.hxx"
 #include "AudioFormat.hxx"
 #include "thread/Thread.hxx"
 #include "thread/Cond.hxx"
@@ -55,6 +56,11 @@ class AudioOutputControl {
 	 * object is needed to signal command completion.
 	 */
 	AudioOutputClient &client;
+
+	/**
+	 * Source of audio data.
+	 */
+	AudioOutputSource source;
 
 	/**
 	 * The error that occurred in the output thread.  It is
@@ -327,7 +333,9 @@ public:
 	 */
 	void LockRelease() noexcept;
 
-	void SetReplayGainMode(ReplayGainMode _mode) noexcept;
+	void SetReplayGainMode(ReplayGainMode _mode) noexcept {
+		source.SetReplayGainMode(_mode);
+	}
 
 	/**
 	 * Caller must lock the mutex.
@@ -345,10 +353,20 @@ public:
 			const MusicPipe &mp,
 			bool force) noexcept;
 
+	/**
+	 * Did we already consumed this chunk?
+	 *
+	 * Caller must lock the mutex.
+	 */
+	gcc_pure
+	bool IsChunkConsumed(const MusicChunk &chunk) const noexcept;
+
 	gcc_pure
 	bool LockIsChunkConsumed(const MusicChunk &chunk) const noexcept;
 
-	void ClearTailChunk(const MusicChunk &chunk) noexcept;
+	void ClearTailChunk(const MusicChunk &chunk) {
+		source.ClearTailChunk(chunk);
+	}
 
 	void LockPlay() noexcept;
 	void LockDrainAsync() noexcept;

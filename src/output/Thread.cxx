@@ -217,7 +217,6 @@ AudioOutputControl::InternalOpen(const AudioFormat in_audio_format,
 
 	try {
 		try {
-			auto &source = output->source;
 			f = source.Open(in_audio_format, pipe,
 					output->prepared_replay_gain_filter,
 					output->prepared_other_replay_gain_filter,
@@ -230,7 +229,7 @@ AudioOutputControl::InternalOpen(const AudioFormat in_audio_format,
 		try {
 			output->Open(f);
 		} catch (...) {
-			output->source.Close();
+			source.Close();
 			throw;
 		}
 	} catch (const std::runtime_error &e) {
@@ -253,7 +252,7 @@ AudioOutputControl::InternalClose(bool drain) noexcept
 		return;
 
 	output->Close(drain);
-	output->source.Close();
+	source.Close();
 }
 
 void
@@ -307,7 +306,7 @@ AudioOutputControl::WaitForDelay() noexcept
 bool
 AudioOutputControl::FillSourceOrClose()
 try {
-	return output->source.Fill(mutex);
+	return source.Fill(mutex);
 } catch (const std::runtime_error &e) {
 	FormatError(e, "Failed to filter for output \"%s\" [%s]",
 		    GetName(), output->plugin.name);
@@ -324,7 +323,7 @@ inline bool
 AudioOutputControl::PlayChunk() noexcept
 {
 	if (tags) {
-		const auto *tag = output->source.ReadTag();
+		const auto *tag = source.ReadTag();
 		if (tag != nullptr) {
 			const ScopeUnlock unlock(mutex);
 			try {
@@ -337,7 +336,7 @@ AudioOutputControl::PlayChunk() noexcept
 	}
 
 	while (command == Command::NONE) {
-		const auto data = output->source.PeekData();
+		const auto data = source.PeekData();
 		if (data.IsEmpty())
 			break;
 
@@ -372,7 +371,7 @@ AudioOutputControl::PlayChunk() noexcept
 
 		assert(nbytes % output->out_audio_format.GetFrameSize() == 0);
 
-		output->source.ConsumeData(nbytes);
+		source.ConsumeData(nbytes);
 	}
 
 	return true;
@@ -457,8 +456,10 @@ AudioOutputControl::InternalPause() noexcept
 		if (!WaitForDelay())
 			break;
 
-		if (!output->IteratePause())
+		if (!output->IteratePause()) {
+			source.Close();
 			break;
+		}
 	} while (command == Command::NONE);
 
 	pause = false;
@@ -535,7 +536,7 @@ AudioOutputControl::Task()
 			continue;
 
 		case Command::CANCEL:
-			output->source.Cancel();
+			source.Cancel();
 
 			if (output->open) {
 				const ScopeUnlock unlock(mutex);
@@ -547,7 +548,7 @@ AudioOutputControl::Task()
 
 		case Command::KILL:
 			InternalDisable();
-			output->source.Cancel();
+			source.Cancel();
 			CommandFinished();
 			return;
 		}

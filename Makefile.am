@@ -1370,7 +1370,6 @@ OUTPUT_LIBS = \
 OUTPUT_API_SRC = \
 	src/output/Client.hxx \
 	src/output/OutputAPI.hxx \
-	src/output/Internal.cxx \
 	src/output/Internal.hxx \
 	src/output/Wrapper.hxx \
 	src/output/Registry.cxx src/output/Registry.hxx \

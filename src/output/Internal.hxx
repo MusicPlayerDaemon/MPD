@@ -20,7 +20,6 @@
 #ifndef MPD_OUTPUT_INTERNAL_HXX
 #define MPD_OUTPUT_INTERNAL_HXX
 
-#include "Source.hxx"
 #include "AudioFormat.hxx"
 #include "filter/Observer.hxx"
 #include "thread/Mutex.hxx"
@@ -123,11 +122,6 @@ struct AudioOutput {
 	mutable Mutex mutex;
 
 	/**
-	 * Source of audio data.
-	 */
-	AudioOutputSource source;
-
-	/**
 	 * Throws #std::runtime_error on error.
 	 */
 	AudioOutput(const AudioOutputPlugin &_plugin,
@@ -156,28 +150,6 @@ public:
 	 */
 	bool IsOpen() const {
 		return open;
-	}
-
-	void SetReplayGainMode(ReplayGainMode _mode) noexcept {
-		source.SetReplayGainMode(_mode);
-	}
-
-	/**
-	 * Did we already consumed this chunk?
-	 *
-	 * Caller must lock the mutex.
-	 */
-	gcc_pure
-	bool IsChunkConsumed(const MusicChunk &chunk) const noexcept;
-
-	gcc_pure
-	bool LockIsChunkConsumed(const MusicChunk &chunk) noexcept {
-		const std::lock_guard<Mutex> protect(mutex);
-		return IsChunkConsumed(chunk);
-	}
-
-	void ClearTailChunk(const MusicChunk &chunk) {
-		source.ClearTailChunk(chunk);
 	}
 
 	/**

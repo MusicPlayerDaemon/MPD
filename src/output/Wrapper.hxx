@@ -26,6 +26,7 @@
 #include <chrono>
 
 struct ConfigBlock;
+struct Tag;
 
 template<class T>
 struct AudioOutputWrapper {

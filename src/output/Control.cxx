@@ -245,15 +245,19 @@ AudioOutputControl::LockUpdate(const AudioFormat audio_format,
 }
 
 bool
-AudioOutputControl::LockIsChunkConsumed(const MusicChunk &chunk) const noexcept
+AudioOutputControl::IsChunkConsumed(const MusicChunk &chunk) const noexcept
 {
-	return output->LockIsChunkConsumed(chunk);
+	if (!output->open)
+		return true;
+
+	return source.IsChunkConsumed(chunk);
 }
 
-void
-AudioOutputControl::ClearTailChunk(const MusicChunk &chunk) noexcept
+bool
+AudioOutputControl::LockIsChunkConsumed(const MusicChunk &chunk) const noexcept
 {
-	output->ClearTailChunk(chunk);
+	const std::lock_guard<Mutex> protect(mutex);
+	return IsChunkConsumed(chunk);
 }
 
 void
@@ -332,12 +336,6 @@ AudioOutputControl::LockCloseWait() noexcept
 
 	const std::lock_guard<Mutex> protect(mutex);
 	CloseWait();
-}
-
-void
-AudioOutputControl::SetReplayGainMode(ReplayGainMode _mode) noexcept
-{
-	return output->SetReplayGainMode(_mode);
 }
 
 void
