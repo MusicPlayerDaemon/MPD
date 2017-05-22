@@ -203,6 +203,22 @@ AudioOutput::OpenOutputAndConvert(AudioFormat desired_audio_format)
 	}
 }
 
+inline void
+AudioOutputControl::InternalOpen(const AudioFormat audio_format,
+				 const MusicPipe &pipe) noexcept
+{
+	last_error = nullptr;
+	fail_timer.Reset();
+
+	try {
+		output->Open(audio_format, pipe);
+	} catch (const std::runtime_error &e) {
+		LogError(e);
+		fail_timer.Update();
+		last_error = std::current_exception();
+	}
+}
+
 void
 AudioOutput::Close(bool drain)
 {
@@ -452,18 +468,7 @@ AudioOutputControl::Task()
 			break;
 
 		case Command::OPEN:
-			last_error = nullptr;
-			fail_timer.Reset();
-
-			try {
-				output->Open(request.audio_format,
-					     *request.pipe);
-			} catch (const std::runtime_error &e) {
-				LogError(e);
-				fail_timer.Update();
-				last_error = std::current_exception();
-			}
-
+			InternalOpen(request.audio_format, *request.pipe);
 			CommandFinished();
 			break;
 

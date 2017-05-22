@@ -340,6 +340,12 @@ public:
 
 private:
 	/**
+	 * Runs inside the OutputThread.  Handles exceptions.
+	 */
+	void InternalOpen(AudioFormat audio_format,
+			  const MusicPipe &pipe) noexcept;
+
+	/**
 	 * Wait until the output's delay reaches zero.
 	 *
 	 * @return true if playback should be continued, false if a
