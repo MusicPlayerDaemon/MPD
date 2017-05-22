@@ -51,6 +51,12 @@ class AudioOutputControl {
 	AudioOutput *output;
 
 	/**
+	 * The PlayerControl object which "owns" this output.  This
+	 * object is needed to signal command completion.
+	 */
+	AudioOutputClient &client;
+
+	/**
 	 * The error that occurred in the output thread.  It is
 	 * cleared whenever the output is opened successfully.
 	 *
@@ -164,7 +170,7 @@ class AudioOutputControl {
 public:
 	Mutex &mutex;
 
-	explicit AudioOutputControl(AudioOutput *_output);
+	AudioOutputControl(AudioOutput *_output, AudioOutputClient &_client);
 
 #ifndef NDEBUG
 	~AudioOutputControl() {
@@ -185,7 +191,9 @@ public:
 	gcc_pure
 	const char *GetName() const noexcept;
 
-	AudioOutputClient &GetClient() noexcept;
+	AudioOutputClient &GetClient() noexcept {
+		return client;
+	}
 
 	gcc_pure
 	Mixer *GetMixer() const noexcept;

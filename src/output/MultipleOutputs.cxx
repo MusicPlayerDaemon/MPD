@@ -53,11 +53,10 @@ static AudioOutput *
 LoadOutput(EventLoop &event_loop,
 	   const ReplayGainConfig &replay_gain_config,
 	   MixerListener &mixer_listener,
-	   AudioOutputClient &client, const ConfigBlock &block)
+	   const ConfigBlock &block)
 try {
 	return audio_output_new(event_loop, replay_gain_config, block,
-				mixer_listener,
-				client);
+				mixer_listener);
 } catch (const std::runtime_error &e) {
 	if (block.line > 0)
 		std::throw_with_nested(FormatRuntimeError("Failed to configure output in line %i",
@@ -74,8 +73,8 @@ LoadOutputControl(EventLoop &event_loop,
 {
 	auto *output = LoadOutput(event_loop, replay_gain_config,
 				  mixer_listener,
-				  client, block);
-	auto *control = new AudioOutputControl(output);
+				  block);
+	auto *control = new AudioOutputControl(output, client);
 
 	try {
 		control->Configure(block);

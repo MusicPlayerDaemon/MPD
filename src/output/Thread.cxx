@@ -365,7 +365,7 @@ AudioOutputControl::Play() noexcept
 			   give it a chance to refill the pipe before
 			   it runs empty */
 			const ScopeUnlock unlock(mutex);
-			output->client->ChunksConsumed();
+			client.ChunksConsumed();
 			n = 0;
 		}
 
@@ -374,7 +374,7 @@ AudioOutputControl::Play() noexcept
 	} while (FillSourceOrClose());
 
 	const ScopeUnlock unlock(mutex);
-	output->client->ChunksConsumed();
+	client.ChunksConsumed();
 
 	return true;
 }

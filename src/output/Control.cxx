@@ -38,8 +38,9 @@ static constexpr PeriodClock::Duration REOPEN_AFTER = std::chrono::seconds(10);
 
 struct notify audio_output_client_notify;
 
-AudioOutputControl::AudioOutputControl(AudioOutput *_output)
-	:output(_output),
+AudioOutputControl::AudioOutputControl(AudioOutput *_output,
+				       AudioOutputClient &_client)
+	:output(_output), client(_client),
 	 thread(BIND_THIS_METHOD(Task)),
 	 mutex(output->mutex)
 {
@@ -57,12 +58,6 @@ const char *
 AudioOutputControl::GetName() const noexcept
 {
 	return output->GetName();
-}
-
-AudioOutputClient &
-AudioOutputControl::GetClient() noexcept
-{
-	return *output->client;
 }
 
 Mixer *

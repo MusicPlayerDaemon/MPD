@@ -30,7 +30,6 @@ class MusicPipe;
 class EventLoop;
 class Mixer;
 class MixerListener;
-class AudioOutputClient;
 struct MusicChunk;
 struct ConfigBlock;
 struct AudioOutputPlugin;
@@ -134,12 +133,6 @@ struct AudioOutput {
 	 * This mutex protects #open, #fail_timer, #pipe.
 	 */
 	mutable Mutex mutex;
-
-	/**
-	 * The PlayerControl object which "owns" this output.  This
-	 * object is needed to signal command completion.
-	 */
-	AudioOutputClient *client;
 
 	/**
 	 * Source of audio data.
@@ -258,8 +251,7 @@ AudioOutput *
 audio_output_new(EventLoop &event_loop,
 		 const ReplayGainConfig &replay_gain_config,
 		 const ConfigBlock &block,
-		 MixerListener &mixer_listener,
-		 AudioOutputClient &client);
+		 MixerListener &mixer_listener);
 
 void
 audio_output_free(AudioOutput *ao) noexcept;

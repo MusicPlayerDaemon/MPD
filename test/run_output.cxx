@@ -20,7 +20,6 @@
 #include "config.h"
 #include "output/Internal.hxx"
 #include "output/OutputPlugin.hxx"
-#include "output/Client.hxx"
 #include "config/Param.hxx"
 #include "config/ConfigGlobal.hxx"
 #include "config/ConfigOption.hxx"
@@ -43,16 +42,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-class DummyAudioOutputClient final : public AudioOutputClient {
-public:
-	/* virtual methods from AudioOutputClient */
-	void ChunksConsumed() override {
-	}
-
-	void ApplyEnabled() override {
-	}
-};
-
 const FilterPlugin *
 filter_plugin_by_name(gcc_unused const char *name) noexcept
 {
@@ -61,8 +50,7 @@ filter_plugin_by_name(gcc_unused const char *name) noexcept
 }
 
 static AudioOutput *
-load_audio_output(EventLoop &event_loop, AudioOutputClient &client,
-		  const char *name)
+load_audio_output(EventLoop &event_loop, const char *name)
 {
 	const auto *param = config_find_block(ConfigBlockOption::AUDIO_OUTPUT,
 					      "name", name);
@@ -71,8 +59,7 @@ load_audio_output(EventLoop &event_loop, AudioOutputClient &client,
 					 name);
 
 	return audio_output_new(event_loop, ReplayGainConfig(), *param,
-				*(MixerListener *)nullptr,
-				client);
+				*(MixerListener *)nullptr);
 }
 
 static void
@@ -140,9 +127,7 @@ try {
 
 	/* initialize the audio output */
 
-	DummyAudioOutputClient client;
-	AudioOutput *ao = load_audio_output(io_thread.GetEventLoop(), client,
-					    argv[2]);
+	AudioOutput *ao = load_audio_output(io_thread.GetEventLoop(), argv[2]);
 
 	/* parse the audio format */
 
