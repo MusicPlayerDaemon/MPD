@@ -126,10 +126,10 @@ MultipleOutputs::AddNullOutput(EventLoop &event_loop,
 	ConfigBlock block;
 	block.AddBlockParam("type", "null");
 
-	auto output = LoadOutput(event_loop, replay_gain_config,
-				 mixer_listener,
-				 client, block);
-	outputs.push_back(new AudioOutputControl(output));
+	auto *output = LoadOutputControl(event_loop, replay_gain_config,
+					 mixer_listener,
+					 client, block);
+	outputs.push_back(output);
 }
 
 AudioOutputControl *
