@@ -54,25 +54,25 @@ AudioOutputControl::Configure(const ConfigBlock &block)
 }
 
 const char *
-AudioOutputControl::GetName() const
+AudioOutputControl::GetName() const noexcept
 {
 	return output->GetName();
 }
 
 AudioOutputClient &
-AudioOutputControl::GetClient()
+AudioOutputControl::GetClient() noexcept
 {
 	return *output->client;
 }
 
 Mixer *
-AudioOutputControl::GetMixer() const
+AudioOutputControl::GetMixer() const noexcept
 {
 	return output->mixer;
 }
 
 bool
-AudioOutputControl::LockSetEnabled(bool new_value)
+AudioOutputControl::LockSetEnabled(bool new_value) noexcept
 {
 	const std::lock_guard<Mutex> protect(mutex);
 
@@ -84,20 +84,20 @@ AudioOutputControl::LockSetEnabled(bool new_value)
 }
 
 bool
-AudioOutputControl::LockToggleEnabled()
+AudioOutputControl::LockToggleEnabled() noexcept
 {
 	const std::lock_guard<Mutex> protect(mutex);
 	return enabled = !enabled;
 }
 
 bool
-AudioOutputControl::IsOpen() const
+AudioOutputControl::IsOpen() const noexcept
 {
 	return output->IsOpen();
 }
 
 void
-AudioOutputControl::WaitForCommand()
+AudioOutputControl::WaitForCommand() noexcept
 {
 	while (!IsCommandFinished()) {
 		mutex.unlock();
@@ -107,7 +107,7 @@ AudioOutputControl::WaitForCommand()
 }
 
 void
-AudioOutputControl::CommandAsync(Command cmd)
+AudioOutputControl::CommandAsync(Command cmd) noexcept
 {
 	assert(IsCommandFinished());
 
@@ -116,14 +116,14 @@ AudioOutputControl::CommandAsync(Command cmd)
 }
 
 void
-AudioOutputControl::CommandWait(Command cmd)
+AudioOutputControl::CommandWait(Command cmd) noexcept
 {
 	CommandAsync(cmd);
 	WaitForCommand();
 }
 
 void
-AudioOutputControl::LockCommandWait(Command cmd)
+AudioOutputControl::LockCommandWait(Command cmd) noexcept
 {
 	const std::lock_guard<Mutex> protect(mutex);
 	CommandWait(cmd);
@@ -148,7 +148,7 @@ AudioOutputControl::EnableAsync()
 }
 
 void
-AudioOutputControl::DisableAsync()
+AudioOutputControl::DisableAsync() noexcept
 {
 	if (!thread.IsDefined()) {
 		if (output->plugin.disable == nullptr)
@@ -177,7 +177,8 @@ AudioOutputControl::EnableDisableAsync()
 }
 
 inline bool
-AudioOutputControl::Open(const AudioFormat audio_format, const MusicPipe &mp)
+AudioOutputControl::Open(const AudioFormat audio_format,
+			 const MusicPipe &mp) noexcept
 {
 	assert(allow_play);
 	assert(audio_format.IsValid());
@@ -215,7 +216,7 @@ AudioOutputControl::Open(const AudioFormat audio_format, const MusicPipe &mp)
 }
 
 void
-AudioOutputControl::CloseWait()
+AudioOutputControl::CloseWait() noexcept
 {
 	assert(allow_play);
 
@@ -233,7 +234,7 @@ AudioOutputControl::CloseWait()
 bool
 AudioOutputControl::LockUpdate(const AudioFormat audio_format,
 			       const MusicPipe &mp,
-			       bool force)
+			       bool force) noexcept
 {
 	const std::lock_guard<Mutex> protect(mutex);
 
@@ -249,19 +250,19 @@ AudioOutputControl::LockUpdate(const AudioFormat audio_format,
 }
 
 bool
-AudioOutputControl::LockIsChunkConsumed(const MusicChunk &chunk) const
+AudioOutputControl::LockIsChunkConsumed(const MusicChunk &chunk) const noexcept
 {
 	return output->LockIsChunkConsumed(chunk);
 }
 
 void
-AudioOutputControl::ClearTailChunk(const MusicChunk &chunk)
+AudioOutputControl::ClearTailChunk(const MusicChunk &chunk) noexcept
 {
 	output->ClearTailChunk(chunk);
 }
 
 void
-AudioOutputControl::LockPlay()
+AudioOutputControl::LockPlay() noexcept
 {
 	const std::lock_guard<Mutex> protect(mutex);
 
@@ -274,7 +275,7 @@ AudioOutputControl::LockPlay()
 }
 
 void
-AudioOutputControl::LockPauseAsync()
+AudioOutputControl::LockPauseAsync() noexcept
 {
 	if (output->mixer != nullptr && output->plugin.pause == nullptr)
 		/* the device has no pause mode: close the mixer,
@@ -290,7 +291,7 @@ AudioOutputControl::LockPauseAsync()
 }
 
 void
-AudioOutputControl::LockDrainAsync()
+AudioOutputControl::LockDrainAsync() noexcept
 {
 	const std::lock_guard<Mutex> protect(mutex);
 
@@ -300,7 +301,7 @@ AudioOutputControl::LockDrainAsync()
 }
 
 void
-AudioOutputControl::LockCancelAsync()
+AudioOutputControl::LockCancelAsync() noexcept
 {
 	const std::lock_guard<Mutex> protect(mutex);
 
@@ -311,7 +312,7 @@ AudioOutputControl::LockCancelAsync()
 }
 
 void
-AudioOutputControl::LockAllowPlay()
+AudioOutputControl::LockAllowPlay() noexcept
 {
 	const std::lock_guard<Mutex> protect(mutex);
 
@@ -321,7 +322,7 @@ AudioOutputControl::LockAllowPlay()
 }
 
 void
-AudioOutputControl::LockRelease()
+AudioOutputControl::LockRelease() noexcept
 {
 	if (always_on)
 		LockPauseAsync();
@@ -330,7 +331,7 @@ AudioOutputControl::LockRelease()
 }
 
 void
-AudioOutputControl::LockCloseWait()
+AudioOutputControl::LockCloseWait() noexcept
 {
 	assert(!output->open || !fail_timer.IsDefined());
 
@@ -339,13 +340,13 @@ AudioOutputControl::LockCloseWait()
 }
 
 void
-AudioOutputControl::SetReplayGainMode(ReplayGainMode _mode)
+AudioOutputControl::SetReplayGainMode(ReplayGainMode _mode) noexcept
 {
 	return output->SetReplayGainMode(_mode);
 }
 
 void
-AudioOutputControl::StopThread()
+AudioOutputControl::StopThread() noexcept
 {
 	assert(thread.IsDefined());
 	assert(allow_play);
@@ -355,14 +356,14 @@ AudioOutputControl::StopThread()
 }
 
 void
-AudioOutput::BeginDestroy()
+AudioOutput::BeginDestroy() noexcept
 {
 	if (mixer != nullptr)
 		mixer_auto_close(mixer);
 }
 
 void
-AudioOutputControl::BeginDestroy()
+AudioOutputControl::BeginDestroy() noexcept
 {
 	output->BeginDestroy();
 
@@ -373,13 +374,13 @@ AudioOutputControl::BeginDestroy()
 }
 
 void
-AudioOutput::FinishDestroy()
+AudioOutput::FinishDestroy() noexcept
 {
 	audio_output_free(this);
 }
 
 void
-AudioOutputControl::FinishDestroy()
+AudioOutputControl::FinishDestroy() noexcept
 {
 	if (thread.IsDefined())
 		thread.Join();

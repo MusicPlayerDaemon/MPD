@@ -32,7 +32,7 @@ ao_plugin_init(EventLoop &event_loop,
 }
 
 void
-ao_plugin_finish(AudioOutput *ao)
+ao_plugin_finish(AudioOutput *ao) noexcept
 {
 	ao->plugin.finish(ao);
 }
@@ -45,7 +45,7 @@ ao_plugin_enable(AudioOutput &ao)
 }
 
 void
-ao_plugin_disable(AudioOutput &ao)
+ao_plugin_disable(AudioOutput &ao) noexcept
 {
 	if (ao.plugin.disable != nullptr)
 		ao.plugin.disable(&ao);
@@ -58,7 +58,7 @@ ao_plugin_open(AudioOutput &ao, AudioFormat &audio_format)
 }
 
 void
-ao_plugin_close(AudioOutput &ao)
+ao_plugin_close(AudioOutput &ao) noexcept
 {
 	ao.plugin.close(&ao);
 }
@@ -92,7 +92,7 @@ ao_plugin_drain(AudioOutput &ao)
 }
 
 void
-ao_plugin_cancel(AudioOutput &ao)
+ao_plugin_cancel(AudioOutput &ao) noexcept
 {
 	if (ao.plugin.cancel != nullptr)
 		ao.plugin.cancel(&ao);

@@ -183,72 +183,72 @@ public:
 	void Configure(const ConfigBlock &block);
 
 	gcc_pure
-	const char *GetName() const;
+	const char *GetName() const noexcept;
 
-	AudioOutputClient &GetClient();
+	AudioOutputClient &GetClient() noexcept;
 
 	gcc_pure
-	Mixer *GetMixer() const;
+	Mixer *GetMixer() const noexcept;
 
 	/**
 	 * Caller must lock the mutex.
 	 */
-	bool IsEnabled() const {
+	bool IsEnabled() const noexcept {
 		return enabled;
 	}
 
 	/**
 	 * @return true if the value has been modified
 	 */
-	bool LockSetEnabled(bool new_value);
+	bool LockSetEnabled(bool new_value) noexcept;
 
 	/**
 	 * @return the new "enabled" value
 	 */
-	bool LockToggleEnabled();
+	bool LockToggleEnabled() noexcept;
 
 	gcc_pure
-	bool IsOpen() const;
+	bool IsOpen() const noexcept;
 
 	/**
 	 * Caller must lock the mutex.
 	 */
-	bool IsBusy() const {
+	bool IsBusy() const noexcept {
 		return IsOpen() && !IsCommandFinished();
 	}
 
 	/**
 	 * Caller must lock the mutex.
 	 */
-	const std::exception_ptr &GetLastError() const {
+	const std::exception_ptr &GetLastError() const noexcept {
 		return last_error;
 	}
 
 	void StartThread();
-	void StopThread();
+	void StopThread() noexcept;
 
 	/**
 	 * Caller must lock the mutex.
 	 */
-	bool IsCommandFinished() const {
+	bool IsCommandFinished() const noexcept {
 		return command == Command::NONE;
 	}
 
-	void CommandFinished();
+	void CommandFinished() noexcept;
 
 	/**
 	 * Waits for command completion.
 	 *
 	 * Caller must lock the mutex.
 	 */
-	void WaitForCommand();
+	void WaitForCommand() noexcept;
 
 	/**
 	 * Sends a command, but does not wait for completion.
 	 *
 	 * Caller must lock the mutex.
 	 */
-	void CommandAsync(Command cmd);
+	void CommandAsync(Command cmd) noexcept;
 
 	/**
 	 * Sends a command to the #AudioOutput object and waits for
@@ -256,16 +256,16 @@ public:
 	 *
 	 * Caller must lock the mutex.
 	 */
-	void CommandWait(Command cmd);
+	void CommandWait(Command cmd) noexcept;
 
 	/**
 	 * Lock the #AudioOutput object and execute the command
 	 * synchronously.
 	 */
-	void LockCommandWait(Command cmd);
+	void LockCommandWait(Command cmd) noexcept;
 
-	void BeginDestroy();
-	void FinishDestroy();
+	void BeginDestroy() noexcept;
+	void FinishDestroy() noexcept;
 
 	/**
 	 * Enables the device, but don't wait for completion.
@@ -279,7 +279,7 @@ public:
 	 *
 	 * Caller must lock the mutex.
 	 */
-	void DisableAsync();
+	void DisableAsync() noexcept;
 
 	/**
 	 * Attempt to enable or disable the device as specified by the
@@ -289,23 +289,23 @@ public:
 	 * Caller must lock the mutex.
 	 */
 	void EnableDisableAsync();
-	void LockPauseAsync();
+	void LockPauseAsync() noexcept;
 
-	void CloseWait();
-	void LockCloseWait();
+	void CloseWait() noexcept;
+	void LockCloseWait() noexcept;
 
 	/**
 	 * Closes the audio output, but if the "always_on" flag is set, put it
 	 * into pause mode instead.
 	 */
-	void LockRelease();
+	void LockRelease() noexcept;
 
-	void SetReplayGainMode(ReplayGainMode _mode);
+	void SetReplayGainMode(ReplayGainMode _mode) noexcept;
 
 	/**
 	 * Caller must lock the mutex.
 	 */
-	bool Open(const AudioFormat audio_format, const MusicPipe &mp);
+	bool Open(AudioFormat audio_format, const MusicPipe &mp) noexcept;
 
 	/**
 	 * Opens or closes the device, depending on the "enabled"
@@ -316,27 +316,27 @@ public:
 	 */
 	bool LockUpdate(const AudioFormat audio_format,
 			const MusicPipe &mp,
-			bool force);
+			bool force) noexcept;
 
 	gcc_pure
-	bool LockIsChunkConsumed(const MusicChunk &chunk) const;
+	bool LockIsChunkConsumed(const MusicChunk &chunk) const noexcept;
 
-	void ClearTailChunk(const MusicChunk &chunk);
+	void ClearTailChunk(const MusicChunk &chunk) noexcept;
 
-	void LockPlay();
-	void LockDrainAsync();
+	void LockPlay() noexcept;
+	void LockDrainAsync() noexcept;
 
 	/**
 	 * Clear the "allow_play" flag and send the "CANCEL" command
 	 * asynchronously.  To finish the operation, the caller has to
 	 * call LockAllowPlay().
 	 */
-	void LockCancelAsync();
+	void LockCancelAsync() noexcept;
 
 	/**
 	 * Set the "allow_play" and signal the thread.
 	 */
-	void LockAllowPlay();
+	void LockAllowPlay() noexcept;
 
 private:
 	/**
@@ -351,11 +351,11 @@ private:
 	 * @return true if playback should be continued, false if a
 	 * command was issued
 	 */
-	bool WaitForDelay();
+	bool WaitForDelay() noexcept;
 
 	bool FillSourceOrClose();
 
-	bool PlayChunk();
+	bool PlayChunk() noexcept;
 
 	/**
 	 * Plays all remaining chunks, until the tail of the pipe has
@@ -365,9 +365,9 @@ private:
 	 * @return true if at least one chunk has been available,
 	 * false if the tail of the pipe was already reached
 	 */
-	bool Play();
+	bool Play() noexcept;
 
-	void Pause();
+	void Pause() noexcept;
 
 	/**
 	 * The OutputThread.

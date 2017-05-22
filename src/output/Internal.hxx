@@ -163,8 +163,8 @@ public:
 		   MixerListener &mixer_listener,
 		   const ConfigBlock &block);
 
-	void BeginDestroy();
-	void FinishDestroy();
+	void BeginDestroy() noexcept;
+	void FinishDestroy() noexcept;
 
 	const char *GetName() const {
 		return name;
@@ -177,7 +177,7 @@ public:
 		return open;
 	}
 
-	void SetReplayGainMode(ReplayGainMode _mode) {
+	void SetReplayGainMode(ReplayGainMode _mode) noexcept {
 		source.SetReplayGainMode(_mode);
 	}
 
@@ -204,14 +204,14 @@ public:
 	 */
 	void Enable();
 
-	void Disable();
+	void Disable() noexcept;
 
 	/**
 	 * Throws #std::runtime_error on error.
 	 */
 	void Open(AudioFormat audio_format, const MusicPipe &pipe);
 
-	void Close(bool drain);
+	void Close(bool drain) noexcept;
 
 private:
 	/**
@@ -229,18 +229,18 @@ private:
 	 *
 	 * Mutex must not be locked.
 	 */
-	void CloseOutput(bool drain);
+	void CloseOutput(bool drain) noexcept;
 
 	/**
 	 * Mutex must not be locked.
 	 */
-	void CloseFilter();
+	void CloseFilter() noexcept;
 
 public:
-	void BeginPause();
-	bool IteratePause();
+	void BeginPause() noexcept;
+	bool IteratePause() noexcept;
 
-	void EndPause() {
+	void EndPause() noexcept{
 		pause = false;
 	}
 };
@@ -262,6 +262,6 @@ audio_output_new(EventLoop &event_loop,
 		 AudioOutputClient &client);
 
 void
-audio_output_free(AudioOutput *ao);
+audio_output_free(AudioOutput *ao) noexcept;
 
 #endif

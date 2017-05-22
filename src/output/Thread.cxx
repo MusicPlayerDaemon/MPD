@@ -48,7 +48,7 @@
 #include <string.h>
 
 void
-AudioOutputControl::CommandFinished()
+AudioOutputControl::CommandFinished() noexcept
 {
 	assert(command != Command::NONE);
 	command = Command::NONE;
@@ -75,7 +75,7 @@ AudioOutput::Enable()
 }
 
 inline void
-AudioOutput::Disable()
+AudioOutput::Disable() noexcept
 {
 	if (open)
 		Close(false);
@@ -89,7 +89,7 @@ AudioOutput::Disable()
 }
 
 void
-AudioOutput::CloseFilter()
+AudioOutput::CloseFilter() noexcept
 {
 	if (mixer != nullptr && mixer->IsPlugin(software_mixer_plugin))
 		software_mixer_set_filter(*mixer, nullptr);
@@ -220,7 +220,7 @@ AudioOutputControl::InternalOpen(const AudioFormat audio_format,
 }
 
 void
-AudioOutput::Close(bool drain)
+AudioOutput::Close(bool drain) noexcept
 {
 	assert(open);
 
@@ -236,7 +236,7 @@ AudioOutput::Close(bool drain)
 }
 
 inline void
-AudioOutput::CloseOutput(bool drain)
+AudioOutput::CloseOutput(bool drain) noexcept
 {
 	if (drain)
 		ao_plugin_drain(*this);
@@ -253,7 +253,7 @@ AudioOutput::CloseOutput(bool drain)
  * was issued
  */
 inline bool
-AudioOutputControl::WaitForDelay()
+AudioOutputControl::WaitForDelay() noexcept
 {
 	while (true) {
 		const auto delay = ao_plugin_delay(*output);
@@ -284,7 +284,7 @@ try {
 }
 
 inline bool
-AudioOutputControl::PlayChunk()
+AudioOutputControl::PlayChunk() noexcept
 {
 	if (tags) {
 		const auto *tag = output->source.ReadTag();
@@ -340,7 +340,7 @@ AudioOutputControl::PlayChunk()
 }
 
 inline bool
-AudioOutputControl::Play()
+AudioOutputControl::Play() noexcept
 {
 	if (!FillSourceOrClose())
 		/* no chunk available */
@@ -380,7 +380,7 @@ AudioOutputControl::Play()
 }
 
 inline void
-AudioOutput::BeginPause()
+AudioOutput::BeginPause() noexcept
 {
 	{
 		const ScopeUnlock unlock(mutex);
@@ -391,7 +391,7 @@ AudioOutput::BeginPause()
 }
 
 inline bool
-AudioOutput::IteratePause()
+AudioOutput::IteratePause() noexcept
 {
 	bool success;
 
@@ -411,7 +411,7 @@ AudioOutput::IteratePause()
 }
 
 inline void
-AudioOutputControl::Pause()
+AudioOutputControl::Pause() noexcept
 {
 	output->BeginPause();
 	CommandFinished();

@@ -119,7 +119,7 @@ class AudioOutputSource {
 	ConstBuffer<uint8_t> pending_data;
 
 public:
-	void SetReplayGainMode(ReplayGainMode _mode) {
+	void SetReplayGainMode(ReplayGainMode _mode) noexcept {
 		replay_gain_mode = _mode;
 	}
 

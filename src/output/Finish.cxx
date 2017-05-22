@@ -38,7 +38,7 @@ AudioOutput::~AudioOutput()
 }
 
 void
-audio_output_free(AudioOutput *ao)
+audio_output_free(AudioOutput *ao) noexcept
 {
 	assert(!ao->IsOpen());
 
