@@ -167,6 +167,13 @@ class AudioOutputControl {
 	 */
 	bool woken_for_play = false;
 
+	/**
+	 * If this flag is set, then the next WaitForDelay() call is
+	 * skipped.  This is used to avoid delays after resuming
+	 * playback.
+	 */
+	bool skip_delay;
+
 public:
 	Mutex &mutex;
 

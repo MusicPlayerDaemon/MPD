@@ -209,6 +209,7 @@ AudioOutputControl::InternalOpen(const AudioFormat audio_format,
 {
 	last_error = nullptr;
 	fail_timer.Reset();
+	skip_delay = true;
 
 	try {
 		output->Open(audio_format, pipe);
@@ -304,7 +305,9 @@ AudioOutputControl::PlayChunk() noexcept
 		if (data.IsEmpty())
 			break;
 
-		if (!WaitForDelay())
+		if (skip_delay)
+			skip_delay = false;
+		else if (!WaitForDelay())
 			break;
 
 		size_t nbytes;
@@ -425,6 +428,8 @@ AudioOutputControl::InternalPause() noexcept
 	} while (command == Command::NONE);
 
 	output->EndPause();
+
+	skip_delay = true;
 }
 
 void

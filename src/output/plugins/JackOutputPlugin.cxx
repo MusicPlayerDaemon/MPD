@@ -129,7 +129,7 @@ struct JackOutput {
 	size_t WriteSamples(const float *src, size_t n_frames);
 
 	std::chrono::steady_clock::duration Delay() const noexcept {
-		return base.pause && pause && !shutdown
+		return pause && !shutdown
 			? std::chrono::seconds(1)
 			: std::chrono::steady_clock::duration::zero();
 	}
