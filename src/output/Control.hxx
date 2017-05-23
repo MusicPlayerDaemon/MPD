@@ -370,12 +370,17 @@ private:
 	 * been reached (and no more chunks are queued), or until a
 	 * command is received.
 	 *
+	 * Runs inside the OutputThread.  Handles exceptions.
+	 *
 	 * @return true if at least one chunk has been available,
 	 * false if the tail of the pipe was already reached
 	 */
-	bool Play() noexcept;
+	bool InternalPlay() noexcept;
 
-	void Pause() noexcept;
+	/**
+	 * Runs inside the OutputThread.  Handles exceptions.
+	 */
+	void InternalPause() noexcept;
 
 	/**
 	 * The OutputThread.

@@ -340,7 +340,7 @@ AudioOutputControl::PlayChunk() noexcept
 }
 
 inline bool
-AudioOutputControl::Play() noexcept
+AudioOutputControl::InternalPlay() noexcept
 {
 	if (!FillSourceOrClose())
 		/* no chunk available */
@@ -411,7 +411,7 @@ AudioOutput::IteratePause() noexcept
 }
 
 inline void
-AudioOutputControl::Pause() noexcept
+AudioOutputControl::InternalPause() noexcept
 {
 	output->BeginPause();
 	CommandFinished();
@@ -488,7 +488,7 @@ AudioOutputControl::Task()
 				break;
 			}
 
-			Pause();
+			InternalPause();
 			/* don't "break" here: this might cause
 			   Play() to be called when command==CLOSE
 			   ends the paused state - "continue" checks
@@ -522,7 +522,7 @@ AudioOutputControl::Task()
 			return;
 		}
 
-		if (output->open && allow_play && Play())
+		if (output->open && allow_play && InternalPlay())
 			/* don't wait for an event if there are more
 			   chunks in the pipe */
 			continue;
