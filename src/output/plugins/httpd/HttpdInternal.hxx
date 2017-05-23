@@ -60,6 +60,8 @@ class HttpdOutput final : ServerSocket, DeferredMonitor {
 	 */
 	bool open;
 
+	bool pause;
+
 	/**
 	 * The configured encoder plugin.
 	 */
