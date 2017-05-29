@@ -1,4 +1,5 @@
 ver 0.20.9 (not yet released)
+* fix byte order detection on FreeBSD/aarch64
 
 ver 0.20.8 (2017/05/19)
 * output
