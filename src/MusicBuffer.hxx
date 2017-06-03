@@ -60,7 +60,7 @@ public:
 	 * music_buffer_new().
 	 */
 	gcc_pure
-	unsigned GetSize() const {
+	unsigned GetSize() const noexcept {
 		return buffer.GetCapacity();
 	}
 

@@ -42,25 +42,27 @@ public:
 		return chain;
 	}
 
-	bool Read(const char *path) {
+	bool Read(const char *path) noexcept {
 		return ::FLAC__metadata_chain_read(chain, path);
 	}
 
-	bool Read(FLAC__IOHandle handle, FLAC__IOCallbacks callbacks) {
+	bool Read(FLAC__IOHandle handle,
+		  FLAC__IOCallbacks callbacks) noexcept {
 		return ::FLAC__metadata_chain_read_with_callbacks(chain,
 								  handle,
 								  callbacks);
 	}
 
-	bool Read(InputStream &is) {
+	bool Read(InputStream &is) noexcept {
 		return Read(::ToFlacIOHandle(is), ::GetFlacIOCallbacks(is));
 	}
 
-	bool ReadOgg(const char *path) {
+	bool ReadOgg(const char *path) noexcept {
 		return ::FLAC__metadata_chain_read_ogg(chain, path);
 	}
 
-	bool ReadOgg(FLAC__IOHandle handle, FLAC__IOCallbacks callbacks) {
+	bool ReadOgg(FLAC__IOHandle handle,
+		     FLAC__IOCallbacks callbacks) noexcept {
 		return ::FLAC__metadata_chain_read_ogg_with_callbacks(chain,
 								      handle,
 								      callbacks);
@@ -71,12 +73,12 @@ public:
 	}
 
 	gcc_pure
-	FLAC__Metadata_ChainStatus GetStatus() const {
+	FLAC__Metadata_ChainStatus GetStatus() const noexcept {
 		return ::FLAC__metadata_chain_status(chain);
 	}
 
 	gcc_pure
-	const char *GetStatusString() const {
+	const char *GetStatusString() const noexcept {
 		return FLAC__Metadata_ChainStatusString[GetStatus()];
 	}
 
@@ -99,12 +101,12 @@ public:
 		::FLAC__metadata_iterator_delete(iterator);
 	}
 
-	bool Next() {
+	bool Next() noexcept {
 		return ::FLAC__metadata_iterator_next(iterator);
 	}
 
 	gcc_pure
-	FLAC__StreamMetadata *GetBlock() {
+	FLAC__StreamMetadata *GetBlock() noexcept {
 		return ::FLAC__metadata_iterator_get_block(iterator);
 	}
 };

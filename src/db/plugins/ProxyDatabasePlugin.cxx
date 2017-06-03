@@ -127,7 +127,7 @@ public:
 
 	unsigned Update(const char *uri_utf8, bool discard) override;
 
-	time_t GetUpdateStamp() const override {
+	time_t GetUpdateStamp() const noexcept override {
 		return update_stamp;
 	}
 

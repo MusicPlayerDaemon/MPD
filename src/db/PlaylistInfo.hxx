@@ -45,7 +45,7 @@ struct PlaylistInfo {
 		constexpr CompareName(const char *_name):name(_name) {}
 
 		gcc_pure
-		bool operator()(const PlaylistInfo &pi) const {
+		bool operator()(const PlaylistInfo &pi) const noexcept {
 			return pi.name.compare(name) == 0;
 		}
 	};

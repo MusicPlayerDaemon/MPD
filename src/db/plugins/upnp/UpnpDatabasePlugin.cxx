@@ -93,7 +93,7 @@ public:
 
 	DatabaseStats GetStats(const DatabaseSelection &selection) const override;
 
-	time_t GetUpdateStamp() const override {
+	time_t GetUpdateStamp() const noexcept override {
 		return 0;
 	}
 

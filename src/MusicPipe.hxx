@@ -77,7 +77,7 @@ public:
 	 * audio_format.
 	 */
 	gcc_pure
-	bool CheckFormat(AudioFormat other) const {
+	bool CheckFormat(AudioFormat other) const noexcept {
 		return !audio_format.IsDefined() ||
 			audio_format == other;
 	}
@@ -94,37 +94,37 @@ public:
 	 * nullptr if the pipe is empty.
 	 */
 	gcc_pure
-	const MusicChunk *Peek() const {
+	const MusicChunk *Peek() const noexcept {
 		return head;
 	}
 
 	/**
 	 * Removes the first chunk from the head, and returns it.
 	 */
-	MusicChunk *Shift();
+	MusicChunk *Shift() noexcept;
 
 	/**
 	 * Clears the whole pipe and returns the chunks to the buffer.
 	 *
 	 * @param buffer the buffer object to return the chunks to
 	 */
-	void Clear(MusicBuffer &buffer);
+	void Clear(MusicBuffer &buffer) noexcept;
 
 	/**
 	 * Pushes a chunk to the tail of the pipe.
 	 */
-	void Push(MusicChunk *chunk);
+	void Push(MusicChunk *chunk) noexcept;
 
 	/**
 	 * Returns the number of chunks currently in this pipe.
 	 */
 	gcc_pure
-	unsigned GetSize() const {
+	unsigned GetSize() const noexcept {
 		return size;
 	}
 
 	gcc_pure
-	bool IsEmpty() const {
+	bool IsEmpty() const noexcept {
 		return GetSize() == 0;
 	}
 };

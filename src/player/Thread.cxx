@@ -247,7 +247,7 @@ private:
 	 * finished.
 	 */
 	gcc_pure
-	bool IsDecoderAtCurrentSong() const {
+	bool IsDecoderAtCurrentSong() const noexcept {
 		assert(pipe != nullptr);
 
 		return dc.pipe == pipe;
@@ -259,7 +259,7 @@ private:
 	 * switched to that song yet.
 	 */
 	gcc_pure
-	bool IsDecoderAtNextSong() const {
+	bool IsDecoderAtNextSong() const noexcept {
 		return dc.pipe != nullptr && !IsDecoderAtCurrentSong();
 	}
 

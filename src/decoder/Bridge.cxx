@@ -277,7 +277,7 @@ DecoderBridge::Ready(const AudioFormat audio_format,
 }
 
 DecoderCommand
-DecoderBridge::GetCommand()
+DecoderBridge::GetCommand() noexcept
 {
 	return LockGetVirtualCommand();
 }
@@ -326,7 +326,7 @@ DecoderBridge::CommandFinished()
 }
 
 SongTime
-DecoderBridge::GetSeekTime()
+DecoderBridge::GetSeekTime() noexcept
 {
 	assert(dc.pipe != nullptr);
 
@@ -341,7 +341,7 @@ DecoderBridge::GetSeekTime()
 }
 
 uint64_t
-DecoderBridge::GetSeekFrame()
+DecoderBridge::GetSeekFrame() noexcept
 {
 	return GetSeekTime().ToScale<uint64_t>(dc.in_audio_format.sample_rate);
 }

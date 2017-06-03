@@ -92,7 +92,7 @@ public:
 	 * elements (which may not be the number of characters).
 	 */
 	gcc_pure
-	size_t length() const {
+	size_t length() const noexcept {
 		assert(!IsNull());
 
 		return PathTraitsFS::GetLength(c_str());
@@ -104,7 +104,7 @@ public:
 	 * instance ends.
 	 */
 	gcc_pure
-	const_pointer_type c_str() const {
+	const_pointer_type c_str() const noexcept {
 		return Base::c_str();
 	}
 
@@ -113,7 +113,7 @@ public:
 	 * null-terminated.
 	 */
 	gcc_pure
-	const_pointer_type data() const {
+	const_pointer_type data() const noexcept {
 		return c_str();
 	}
 

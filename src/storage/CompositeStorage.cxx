@@ -149,7 +149,7 @@ CompositeStorage::Directory::Make(const char *uri)
 }
 
 bool
-CompositeStorage::Directory::Unmount()
+CompositeStorage::Directory::Unmount() noexcept
 {
 	if (storage == nullptr)
 		return false;
@@ -160,7 +160,7 @@ CompositeStorage::Directory::Unmount()
 }
 
 bool
-CompositeStorage::Directory::Unmount(const char *uri)
+CompositeStorage::Directory::Unmount(const char *uri) noexcept
 {
 	if (StringIsEmpty(uri))
 		return Unmount();

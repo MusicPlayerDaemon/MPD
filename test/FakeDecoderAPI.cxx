@@ -45,7 +45,7 @@ FakeDecoder::Ready(const AudioFormat audio_format,
 }
 
 DecoderCommand
-FakeDecoder::GetCommand()
+FakeDecoder::GetCommand() noexcept
 {
 	return DecoderCommand::NONE;
 }
@@ -56,13 +56,13 @@ FakeDecoder::CommandFinished()
 }
 
 SongTime
-FakeDecoder::GetSeekTime()
+FakeDecoder::GetSeekTime() noexcept
 {
 	return SongTime();
 }
 
 uint64_t
-FakeDecoder::GetSeekFrame()
+FakeDecoder::GetSeekFrame() noexcept
 {
 	return 1;
 }

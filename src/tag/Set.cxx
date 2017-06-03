@@ -67,7 +67,7 @@ CopyTagMask(TagBuilder &dest, const Tag &src, tag_mask_t mask)
 
 void
 TagSet::InsertUnique(const Tag &src, TagType type, const char *value,
-		     tag_mask_t group_mask)
+		     tag_mask_t group_mask) noexcept
 {
 	TagBuilder builder;
 	if (value == nullptr)
@@ -85,7 +85,7 @@ TagSet::InsertUnique(const Tag &src, TagType type, const char *value,
 bool
 TagSet::CheckUnique(TagType dest_type,
 		    const Tag &tag, TagType src_type,
-		    tag_mask_t group_mask)
+		    tag_mask_t group_mask) noexcept
 {
 	bool found = false;
 
@@ -101,7 +101,7 @@ TagSet::CheckUnique(TagType dest_type,
 
 void
 TagSet::InsertUnique(const Tag &tag,
-		     TagType type, tag_mask_t group_mask)
+		     TagType type, tag_mask_t group_mask) noexcept
 {
 	static_assert(sizeof(group_mask) * 8 >= TAG_NUM_OF_ITEM_TYPES,
 		      "Mask is too small");

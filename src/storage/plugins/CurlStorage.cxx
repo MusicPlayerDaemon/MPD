@@ -511,7 +511,7 @@ private:
 	 * to the base file name.
 	 */
 	gcc_pure
-	StringView HrefToEscapedName(const char *href) const {
+	StringView HrefToEscapedName(const char *href) const noexcept {
 		const char *path = uri_get_path(href);
 		if (path == nullptr)
 			return nullptr;

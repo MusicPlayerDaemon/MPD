@@ -64,67 +64,67 @@ struct StringView : ConstBuffer<char> {
 		return StringView("", size_t(0));
 	}
 
-	void SetEmpty() {
+	void SetEmpty() noexcept {
 		data = "";
 		size = 0;
 	}
 
 	gcc_pure
-	pointer_type Find(char ch) const {
+	pointer_type Find(char ch) const noexcept {
 		return (pointer_type)memchr(data, ch, size);
 	}
 
-	StringView &operator=(std::nullptr_t) {
+	StringView &operator=(std::nullptr_t) noexcept {
 		data = nullptr;
 		size = 0;
 		return *this;
 	}
 
-	StringView &operator=(pointer_type _data) {
+	StringView &operator=(pointer_type _data) noexcept {
 		data = _data;
 		size = _data != nullptr ? strlen(_data) : 0;
 		return *this;
 	}
 
 	gcc_pure
-	bool StartsWith(StringView needle) const {
+	bool StartsWith(StringView needle) const noexcept {
 		return size >= needle.size &&
 			memcmp(data, needle.data, needle.size) == 0;
 	}
 
 	gcc_pure
-	bool Equals(StringView other) const {
+	bool Equals(StringView other) const noexcept {
 		return size == other.size &&
 			memcmp(data, other.data, size) == 0;
 	}
 
 	template<size_t n>
-	bool EqualsLiteral(const char (&other)[n]) const {
+	bool EqualsLiteral(const char (&other)[n]) const noexcept {
 		return Equals(Literal(other));
 	}
 
 	gcc_pure
-	bool EqualsIgnoreCase(StringView other) const {
+	bool EqualsIgnoreCase(StringView other) const noexcept {
 		return size == other.size &&
 			strncasecmp(data, other.data, size) == 0;
 	}
 
 	template<size_t n>
-	bool EqualsLiteralIgnoreCase(const char (&other)[n]) const {
+	bool EqualsLiteralIgnoreCase(const char (&other)[n]) const noexcept {
 		return EqualsIgnoreCase(Literal(other));
 	}
 
 	/**
 	 * Skip all whitespace at the beginning.
 	 */
-	void StripLeft();
+	void StripLeft() noexcept;
 
 	/**
 	 * Skip all whitespace at the end.
 	 */
-	void StripRight();
+	void StripRight() noexcept;
 
-	void Strip() {
+	void Strip() noexcept {
 		StripLeft();
 		StripRight();
 	}

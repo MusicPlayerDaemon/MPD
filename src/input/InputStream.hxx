@@ -184,20 +184,20 @@ public:
 	void LockWaitReady();
 
 	gcc_pure
-	bool HasMimeType() const {
+	bool HasMimeType() const noexcept {
 		assert(ready);
 
 		return !mime.empty();
 	}
 
 	gcc_pure
-	const char *GetMimeType() const {
+	const char *GetMimeType() const noexcept {
 		assert(ready);
 
 		return mime.empty() ? nullptr : mime.c_str();
 	}
 
-	void ClearMimeType() {
+	void ClearMimeType() noexcept {
 		mime.clear();
 	}
 
@@ -215,35 +215,35 @@ public:
 	}
 
 	gcc_pure
-	bool KnownSize() const {
+	bool KnownSize() const noexcept {
 		assert(ready);
 
 		return size != UNKNOWN_SIZE;
 	}
 
 	gcc_pure
-	offset_type GetSize() const {
+	offset_type GetSize() const noexcept {
 		assert(ready);
 		assert(KnownSize());
 
 		return size;
 	}
 
-	void AddOffset(offset_type delta) {
+	void AddOffset(offset_type delta) noexcept {
 		assert(ready);
 
 		offset += delta;
 	}
 
 	gcc_pure
-	offset_type GetOffset() const {
+	offset_type GetOffset() const noexcept {
 		assert(ready);
 
 		return offset;
 	}
 
 	gcc_pure
-	offset_type GetRest() const {
+	offset_type GetRest() const noexcept {
 		assert(ready);
 		assert(KnownSize());
 
@@ -251,7 +251,7 @@ public:
 	}
 
 	gcc_pure
-	bool IsSeekable() const {
+	bool IsSeekable() const noexcept {
 		assert(ready);
 
 		return seekable;

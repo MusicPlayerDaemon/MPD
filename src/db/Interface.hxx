@@ -126,7 +126,7 @@ public:
 	 * Returns 0 if that is not not known/available.
 	 */
 	gcc_pure
-	virtual time_t GetUpdateStamp() const = 0;
+	virtual time_t GetUpdateStamp() const noexcept = 0;
 };
 
 #endif

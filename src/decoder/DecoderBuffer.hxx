@@ -54,11 +54,11 @@ public:
 		      size_t _size)
 		:client(_client), is(_is), buffer(_size) {}
 
-	const InputStream &GetStream() const {
+	const InputStream &GetStream() const noexcept {
 		return is;
 	}
 
-	void Clear() {
+	void Clear() noexcept {
 		buffer.Clear();
 	}
 
@@ -75,7 +75,7 @@ public:
 	 * How many bytes are stored in the buffer?
 	 */
 	gcc_pure
-	size_t GetAvailable() const {
+	size_t GetAvailable() const noexcept {
 		return buffer.GetAvailable();
 	}
 
@@ -84,7 +84,7 @@ public:
 	 * you have to call Consume() to do that.  The returned buffer
 	 * becomes invalid after a Fill() or a Consume() call.
 	 */
-	ConstBuffer<void> Read() const {
+	ConstBuffer<void> Read() const noexcept {
 		auto r = buffer.Read();
 		return { r.data, r.size };
 	}
@@ -102,7 +102,7 @@ public:
 	 *
 	 * @param nbytes the number of bytes to consume
 	 */
-	void Consume(size_t nbytes) {
+	void Consume(size_t nbytes) noexcept {
 		buffer.Consume(nbytes);
 	}
 

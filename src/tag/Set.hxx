@@ -33,7 +33,7 @@
  */
 struct TagLess {
 	gcc_pure
-	bool operator()(const Tag &a, const Tag &b) const {
+	bool operator()(const Tag &a, const Tag &b) const noexcept {
 		if (a.num_items != b.num_items)
 			return a.num_items < b.num_items;
 
@@ -59,15 +59,15 @@ struct TagLess {
 class TagSet : public std::set<Tag, TagLess> {
 public:
 	void InsertUnique(const Tag &tag,
-			  TagType type, tag_mask_t group_mask);
+			  TagType type, tag_mask_t group_mask) noexcept;
 
 private:
 	void InsertUnique(const Tag &src, TagType type, const char *value,
-			  tag_mask_t group_mask);
+			  tag_mask_t group_mask) noexcept;
 
 	bool CheckUnique(TagType dest_type,
 			 const Tag &tag, TagType src_type,
-			 tag_mask_t group_mask);
+			 tag_mask_t group_mask) noexcept;
 };
 
 #endif

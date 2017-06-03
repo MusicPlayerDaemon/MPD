@@ -76,7 +76,7 @@ public:
 				const ConfigBlock &block);
 
 	gcc_pure
-	Directory &GetRoot() {
+	Directory &GetRoot() noexcept {
 		assert(root != NULL);
 
 		return *root;
@@ -125,7 +125,7 @@ public:
 
 	DatabaseStats GetStats(const DatabaseSelection &selection) const override;
 
-	time_t GetUpdateStamp() const override {
+	time_t GetUpdateStamp() const noexcept override {
 		return mtime;
 	}
 

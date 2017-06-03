@@ -31,14 +31,14 @@
 #include "CharUtil.hxx"
 
 void
-StringView::StripLeft()
+StringView::StripLeft() noexcept
 {
 	while (!IsEmpty() && IsWhitespaceOrNull(front()))
 		pop_front();
 }
 
 void
-StringView::StripRight()
+StringView::StripRight() noexcept
 {
 	while (!IsEmpty() && IsWhitespaceOrNull(back()))
 		pop_back();

@@ -152,7 +152,7 @@ public:
 	bool IsRemote() const noexcept;
 
 	gcc_pure
-	bool IsFile() const {
+	bool IsFile() const noexcept {
 		return !IsRemote();
 	}
 
@@ -162,11 +162,11 @@ public:
 	gcc_pure
 	bool IsInDatabase() const noexcept;
 
-	const Tag &GetTag() const {
+	const Tag &GetTag() const noexcept {
 		return tag;
 	}
 
-	Tag &WritableTag() {
+	Tag &WritableTag() noexcept {
 		return tag;
 	}
 

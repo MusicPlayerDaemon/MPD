@@ -114,12 +114,12 @@ public:
 	std::list<std::string> getSearchCapabilities(UpnpClient_Handle handle) const;
 
 	gcc_pure
-	std::string GetURI() const {
+	std::string GetURI() const noexcept {
 		return "upnp://" + m_deviceId + "/" + m_serviceType;
 	}
 
 	/** Retrieve the "friendly name" for this server, useful for display. */
-	const char *getFriendlyName() const {
+	const char *getFriendlyName() const noexcept {
 		return m_friendlyName.c_str();
 	}
 };
