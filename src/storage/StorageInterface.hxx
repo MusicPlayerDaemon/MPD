@@ -39,7 +39,6 @@ public:
 	/**
 	 * Throws #std::runtime_error on error.
 	 */
-	gcc_pure
 	virtual StorageFileInfo GetInfo(bool follow) = 0;
 };
 
@@ -52,7 +51,6 @@ public:
 	/**
 	 * Throws #std::runtime_error on error.
 	 */
-	gcc_pure
 	virtual StorageFileInfo GetInfo(const char *uri_utf8, bool follow) = 0;
 
 	/**

@@ -2,6 +2,7 @@ ver 0.20.9 (not yet released)
 * decoder
   - ffmpeg: support *.adx
 * fix byte order detection on FreeBSD/aarch64
+* fix more random crashes when compiled with clang
 
 ver 0.20.8 (2017/05/19)
 * output

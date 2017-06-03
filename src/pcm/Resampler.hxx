@@ -63,11 +63,12 @@ public:
 	/**
 	 * Resamples a block of PCM data.
 	 *
+	 * Throws std::runtime_error on error.
+	 *
 	 * @param src the input buffer
 	 * @return the destination buffer (will be invalidated by
 	 * filter_close() or filter_filter())
 	 */
-	gcc_pure
 	virtual ConstBuffer<void> Resample(ConstBuffer<void> src) = 0;
 };
 

@@ -106,7 +106,6 @@ public:
 				     TagType tag_type, tag_mask_t group_mask,
 				     VisitTag visit_tag) const = 0;
 
-	gcc_pure
 	virtual DatabaseStats GetStats(const DatabaseSelection &selection) const = 0;
 
 	/**
