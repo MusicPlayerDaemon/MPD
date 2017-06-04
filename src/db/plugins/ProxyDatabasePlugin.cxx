@@ -128,7 +128,7 @@ public:
 
 	unsigned Update(const char *uri_utf8, bool discard) override;
 
-	std::chrono::system_clock::time_point GetUpdateStamp() const override {
+	std::chrono::system_clock::time_point GetUpdateStamp() const noexcept override {
 		return update_stamp;
 	}
 

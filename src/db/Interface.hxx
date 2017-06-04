@@ -111,7 +111,6 @@ public:
 				     TagType tag_type, TagMask group_mask,
 				     VisitTag visit_tag) const = 0;
 
-	gcc_pure
 	virtual DatabaseStats GetStats(const DatabaseSelection &selection) const = 0;
 
 	/**
@@ -132,7 +131,7 @@ public:
 	 * Returns a negative value if that is not not known/available.
 	 */
 	gcc_pure
-	virtual std::chrono::system_clock::time_point GetUpdateStamp() const = 0;
+	virtual std::chrono::system_clock::time_point GetUpdateStamp() const noexcept = 0;
 };
 
 #endif

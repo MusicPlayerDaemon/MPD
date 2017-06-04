@@ -147,16 +147,16 @@ public:
 	~NfsConnection();
 
 	gcc_pure
-	const char *GetServer() const {
+	const char *GetServer() const noexcept {
 		return server.c_str();
 	}
 
 	gcc_pure
-	const char *GetExportName() const {
+	const char *GetExportName() const noexcept {
 		return export_name.c_str();
 	}
 
-	EventLoop &GetEventLoop() {
+	EventLoop &GetEventLoop() noexcept {
 		return SocketMonitor::GetEventLoop();
 	}
 

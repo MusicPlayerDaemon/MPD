@@ -90,7 +90,7 @@ public:
 	 * those which are disabled right now.
 	 */
 	gcc_pure
-	unsigned Size() const {
+	unsigned Size() const noexcept {
 		return outputs.size();
 	}
 
@@ -191,7 +191,7 @@ public:
 	 * finished yet.
 	 */
 	gcc_pure
-	SignedSongTime GetElapsedTime() const {
+	SignedSongTime GetElapsedTime() const noexcept {
 		return elapsed_time;
 	}
 

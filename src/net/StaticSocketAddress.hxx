@@ -51,43 +51,43 @@ public:
 
 	StaticSocketAddress &operator=(SocketAddress other) noexcept;
 
-	operator SocketAddress() const {
+	operator SocketAddress() const noexcept {
 		return SocketAddress(reinterpret_cast<const struct sockaddr *>(&address),
 				     size);
 	}
 
-	struct sockaddr *GetAddress() {
+	struct sockaddr *GetAddress() noexcept {
 		return reinterpret_cast<struct sockaddr *>(&address);
 	}
 
-	const struct sockaddr *GetAddress() const {
+	const struct sockaddr *GetAddress() const noexcept {
 		return reinterpret_cast<const struct sockaddr *>(&address);
 	}
 
-	constexpr size_type GetCapacity() const {
+	constexpr size_type GetCapacity() const noexcept {
 		return sizeof(address);
 	}
 
-	size_type GetSize() const {
+	size_type GetSize() const noexcept {
 		return size;
 	}
 
-	void SetSize(size_type _size) {
+	void SetSize(size_type _size) noexcept {
 		assert(_size > 0);
 		assert(size_t(_size) <= sizeof(address));
 
 		size = _size;
 	}
 
-	int GetFamily() const {
+	int GetFamily() const noexcept {
 		return address.ss_family;
 	}
 
-	bool IsDefined() const {
+	bool IsDefined() const noexcept {
 		return GetFamily() != AF_UNSPEC;
 	}
 
-	void Clear() {
+	void Clear() noexcept {
 		address.ss_family = AF_UNSPEC;
 	}
 
@@ -108,11 +108,11 @@ public:
 #endif
 
 	gcc_pure
-	bool operator==(SocketAddress other) const {
+	bool operator==(SocketAddress other) const noexcept {
 		return (SocketAddress)*this == other;
 	}
 
-	bool operator!=(SocketAddress &other) const {
+	bool operator!=(SocketAddress &other) const noexcept {
 		return !(*this == other);
 	}
 };

@@ -199,7 +199,7 @@ public:
 	 * Are we currently running inside this EventLoop's thread?
 	 */
 	gcc_pure
-	bool IsInside() const {
+	bool IsInside() const noexcept {
 		assert(!thread.IsNull());
 
 		return thread.IsInside();
@@ -207,7 +207,7 @@ public:
 
 #ifndef NDEBUG
 	gcc_pure
-	bool IsInsideOrVirgin() const {
+	bool IsInsideOrVirgin() const noexcept {
 		return virgin || IsInside();
 	}
 #endif
@@ -219,7 +219,7 @@ public:
 	 * are not yet/anymore handled.
 	 */
 	gcc_pure
-	bool IsInsideOrNull() const {
+	bool IsInsideOrNull() const noexcept {
 		return thread.IsNull() || thread.IsInside();
 	}
 };

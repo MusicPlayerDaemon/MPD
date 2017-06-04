@@ -200,7 +200,7 @@ public:
 	 * Caller must lock the mutex.
 	 */
 	gcc_pure
-	bool HasClients() const {
+	bool HasClients() const noexcept {
 		return !clients.empty();
 	}
 
@@ -208,7 +208,7 @@ public:
 	 * Check whether there is at least one client.
 	 */
 	gcc_pure
-	bool LockHasClients() const {
+	bool LockHasClients() const noexcept {
 		const std::lock_guard<Mutex> protect(mutex);
 		return HasClients();
 	}

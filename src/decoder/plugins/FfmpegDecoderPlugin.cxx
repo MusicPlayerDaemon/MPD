@@ -881,7 +881,8 @@ ffmpeg_scan_stream(InputStream &is,
  * more formats.
  */
 static const char *const ffmpeg_suffixes[] = {
-	"16sv", "3g2", "3gp", "4xm", "8svx", "aa3", "aac", "ac3", "afc", "aif",
+	"16sv", "3g2", "3gp", "4xm", "8svx",
+	"aa3", "aac", "ac3", "adx", "afc", "aif",
 	"aifc", "aiff", "al", "alaw", "amr", "anim", "apc", "ape", "asf",
 	"atrac", "au", "aud", "avi", "avm2", "avs", "bap", "bfi", "c93", "cak",
 	"cin", "cmv", "cpk", "daud", "dct", "divx", "dts", "dv", "dvd", "dxa",
@@ -934,6 +935,7 @@ static const char *const ffmpeg_mime_types[] = {
 	"audio/x-16sv",
 	"audio/x-aac",
 	"audio/x-ac3",
+	"audio/x-adx",
 	"audio/x-aiff"
 	"audio/x-alaw",
 	"audio/x-au",

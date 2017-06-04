@@ -9,6 +9,12 @@ ver 0.21 (not yet released)
 * output
   - alsa: non-blocking mode
 
+ver 0.20.9 (2017/06/04)
+* decoder
+  - ffmpeg: support *.adx
+* fix byte order detection on FreeBSD/aarch64
+* fix more random crashes when compiled with clang
+
 ver 0.20.8 (2017/05/19)
 * output
   - osx: fix build failure due to missing "noexcept"

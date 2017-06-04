@@ -54,7 +54,7 @@ public:
 #endif
 
 	gcc_pure
-	bool Check(const char *name_fs) const {
+	bool Check(const char *name_fs) const noexcept {
 #ifdef HAVE_FNMATCH
 		return fnmatch(pattern.c_str(), name_fs, 0) == 0;
 #elif defined(WIN32)

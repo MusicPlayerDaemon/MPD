@@ -127,7 +127,7 @@ struct AudioFormat {
 	void ApplyMask(AudioFormat mask) noexcept;
 
 	gcc_pure
-	AudioFormat WithMask(AudioFormat mask) const {
+	AudioFormat WithMask(AudioFormat mask) const noexcept {
 		AudioFormat result = *this;
 		result.ApplyMask(mask);
 		return result;

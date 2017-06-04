@@ -43,12 +43,12 @@ class UpnpNeighborExplorer final
 		Server(const Server &) = delete;
 
 		gcc_pure
-		bool operator==(const Server &other) const {
+		bool operator==(const Server &other) const noexcept {
 			return name == other.name;
 		}
 
 		gcc_pure
-		NeighborInfo Export() const {
+		NeighborInfo Export() const noexcept {
 			return { "smb://" + name + "/", comment };
 		}
 	};

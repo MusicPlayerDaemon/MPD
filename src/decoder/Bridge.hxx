@@ -134,10 +134,10 @@ public:
 	/* virtual methods from DecoderClient */
 	void Ready(AudioFormat audio_format,
 		   bool seekable, SignedSongTime duration) override;
-	DecoderCommand GetCommand() override;
+	DecoderCommand GetCommand() noexcept override;
 	void CommandFinished() override;
-	SongTime GetSeekTime() override;
-	uint64_t GetSeekFrame() override;
+	SongTime GetSeekTime() noexcept override;
+	uint64_t GetSeekFrame() noexcept override;
 	void SeekError() override;
 	InputStreamPtr OpenUri(const char *uri) override;
 	size_t Read(InputStream &is, void *buffer, size_t length) override;

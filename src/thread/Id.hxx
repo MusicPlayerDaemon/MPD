@@ -53,7 +53,7 @@ public:
 #endif
 
 	gcc_const
-	static ThreadId Null() {
+	static ThreadId Null() noexcept {
 #ifdef WIN32
 		return 0;
 #else
@@ -63,7 +63,7 @@ public:
 	}
 
 	gcc_pure
-	bool IsNull() const {
+	bool IsNull() const noexcept {
 		return *this == Null();
 	}
 
@@ -80,7 +80,7 @@ public:
 	}
 
 	gcc_pure
-	bool operator==(const ThreadId &other) const {
+	bool operator==(const ThreadId &other) const noexcept {
 #ifdef WIN32
 		return id == other.id;
 #else

@@ -82,7 +82,7 @@ public:
 	 * Returns true if the object contains any information.
 	 */
 	gcc_pure
-	bool IsDefined() const {
+	bool IsDefined() const noexcept {
 		return !duration.IsNegative() || has_playlist || !IsEmpty();
 	}
 

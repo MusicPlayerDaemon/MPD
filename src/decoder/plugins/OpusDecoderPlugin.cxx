@@ -52,14 +52,14 @@ static constexpr unsigned opus_output_buffer_frames = opus_sample_rate / 4;
 
 gcc_pure
 static bool
-IsOpusHead(const ogg_packet &packet)
+IsOpusHead(const ogg_packet &packet) noexcept
 {
 	return packet.bytes >= 8 && memcmp(packet.packet, "OpusHead", 8) == 0;
 }
 
 gcc_pure
 static bool
-IsOpusTags(const ogg_packet &packet)
+IsOpusTags(const ogg_packet &packet) noexcept
 {
 	return packet.bytes >= 8 && memcmp(packet.packet, "OpusTags", 8) == 0;
 }

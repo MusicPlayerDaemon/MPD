@@ -162,14 +162,14 @@ struct Queue {
 	}
 
 	gcc_pure
-	unsigned OrderToPosition(unsigned _order) const {
+	unsigned OrderToPosition(unsigned _order) const noexcept {
 		assert(_order < length);
 
 		return order[_order];
 	}
 
 	gcc_pure
-	unsigned PositionToOrder(unsigned position) const {
+	unsigned PositionToOrder(unsigned position) const noexcept {
 		assert(position < length);
 
 		for (unsigned i = 0;; ++i) {
@@ -181,7 +181,7 @@ struct Queue {
 	}
 
 	gcc_pure
-	uint8_t GetPriorityAtPosition(unsigned position) const {
+	uint8_t GetPriorityAtPosition(unsigned position) const noexcept {
 		assert(position < length);
 
 		return items[position].priority;

@@ -82,12 +82,12 @@ struct ConfigBlock {
 	 * object that was synthesized and not loaded from a
 	 * configuration file.
 	 */
-	bool IsNull() const {
+	bool IsNull() const noexcept {
 		return line < 0;
 	}
 
 	gcc_pure
-	bool IsEmpty() const {
+	bool IsEmpty() const noexcept {
 		return block_params.empty();
 	}
 

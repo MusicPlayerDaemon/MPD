@@ -55,7 +55,7 @@ class CompositeStorage final : public Storage {
 		~Directory();
 
 		gcc_pure
-		bool IsEmpty() const {
+		bool IsEmpty() const noexcept {
 			return storage == nullptr && children.empty();
 		}
 
@@ -64,8 +64,8 @@ class CompositeStorage final : public Storage {
 
 		Directory &Make(const char *uri);
 
-		bool Unmount();
-		bool Unmount(const char *uri);
+		bool Unmount() noexcept;
+		bool Unmount(const char *uri) noexcept;
 
 		gcc_pure
 		bool MapToRelativeUTF8(std::string &buffer,

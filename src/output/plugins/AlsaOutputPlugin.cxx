@@ -285,7 +285,7 @@ public:
 	}
 
 	gcc_pure
-	const char *GetDevice() {
+	const char *GetDevice() const noexcept {
 		return device.empty() ? default_device : device.c_str();
 	}
 

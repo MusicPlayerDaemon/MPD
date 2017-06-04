@@ -63,7 +63,7 @@ public:
 	 */
 	static int SocketFunction(CURL *easy,
 				  curl_socket_t s, int action,
-				  void *userp, void *socketp);
+				  void *userp, void *socketp) noexcept;
 
 	virtual bool OnSocketReady(unsigned flags) override;
 
@@ -75,7 +75,7 @@ private:
 	}
 
 	gcc_const
-	static unsigned CurlPollToFlags(int action) {
+	static unsigned CurlPollToFlags(int action) noexcept {
 		switch (action) {
 		case CURL_POLL_NONE:
 			return 0;
@@ -108,7 +108,7 @@ CurlGlobal::CurlGlobal(EventLoop &_loop)
 int
 CurlSocket::SocketFunction(gcc_unused CURL *easy,
 			   curl_socket_t s, int action,
-			   void *userp, void *socketp) {
+			   void *userp, void *socketp) noexcept {
 	auto &global = *(CurlGlobal *)userp;
 	CurlSocket *cs = (CurlSocket *)socketp;
 

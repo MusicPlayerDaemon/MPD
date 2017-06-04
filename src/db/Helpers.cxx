@@ -29,7 +29,7 @@
 
 struct StringLess {
 	gcc_pure
-	bool operator()(const char *a, const char *b) const {
+	bool operator()(const char *a, const char *b) const noexcept {
 		return strcmp(a, b) < 0;
 	}
 };

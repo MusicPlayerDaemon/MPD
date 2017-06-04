@@ -106,7 +106,7 @@ public:
 	}
 
 	gcc_pure
-	bool IsExpired() const {
+	bool IsExpired() const noexcept {
 		return !FullyBufferedSocket::IsDefined();
 	}
 

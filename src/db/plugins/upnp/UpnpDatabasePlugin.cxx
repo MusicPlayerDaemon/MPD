@@ -94,7 +94,7 @@ public:
 
 	DatabaseStats GetStats(const DatabaseSelection &selection) const override;
 
-	std::chrono::system_clock::time_point GetUpdateStamp() const override {
+	std::chrono::system_clock::time_point GetUpdateStamp() const noexcept override {
 		return std::chrono::system_clock::time_point::min();
 	}
 

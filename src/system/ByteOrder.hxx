@@ -52,6 +52,15 @@
 #    define IS_LITTLE_ENDIAN false
 #    define IS_BIG_ENDIAN true
 #  endif
+#elif defined(__BYTE_ORDER__)
+/* GCC-specific macros */
+#  if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+#    define IS_LITTLE_ENDIAN true
+#    define IS_BIG_ENDIAN false
+#  else
+#    define IS_LITTLE_ENDIAN false
+#    define IS_BIG_ENDIAN true
+#  endif
 #else
 /* generic compile-time check */
 #  include <endian.h>

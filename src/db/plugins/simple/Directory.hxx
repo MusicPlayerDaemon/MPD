@@ -187,7 +187,7 @@ public:
 	}
 
 	gcc_pure
-	const char *GetPath() const {
+	const char *GetPath() const noexcept {
 		return path.c_str();
 	}
 
