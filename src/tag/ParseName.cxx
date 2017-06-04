@@ -25,7 +25,7 @@
 #include <string.h>
 
 TagType
-tag_name_parse(const char *name)
+tag_name_parse(const char *name) noexcept
 {
 	assert(name != nullptr);
 
@@ -40,7 +40,7 @@ tag_name_parse(const char *name)
 }
 
 TagType
-tag_name_parse_i(const char *name)
+tag_name_parse_i(const char *name) noexcept
 {
 	assert(name != nullptr);
 

@@ -59,7 +59,7 @@ class OpenALOutput {
 	void Close();
 
 	gcc_pure
-	std::chrono::steady_clock::duration Delay() const {
+	std::chrono::steady_clock::duration Delay() const noexcept {
 		return filled < NUM_BUFFERS || HasProcessed()
 			? std::chrono::steady_clock::duration::zero()
 			/* we don't know exactly how long we must wait
@@ -74,19 +74,19 @@ class OpenALOutput {
 
 private:
 	gcc_pure
-	ALint GetSourceI(ALenum param) const {
+	ALint GetSourceI(ALenum param) const noexcept {
 		ALint value;
 		alGetSourcei(source, param, &value);
 		return value;
 	}
 
 	gcc_pure
-	bool HasProcessed() const {
+	bool HasProcessed() const noexcept {
 		return GetSourceI(AL_BUFFERS_PROCESSED) > 0;
 	}
 
 	gcc_pure
-	bool IsPlaying() const {
+	bool IsPlaying() const noexcept {
 		return GetSourceI(AL_SOURCE_STATE) == AL_PLAYING;
 	}
 

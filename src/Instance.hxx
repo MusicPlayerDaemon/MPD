@@ -111,7 +111,7 @@ struct Instance final
 	 * no such partition was found.
 	 */
 	gcc_pure
-	Partition *FindPartition(const char *name);
+	Partition *FindPartition(const char *name) noexcept;
 
 #ifdef ENABLE_DATABASE
 	/**
@@ -128,7 +128,6 @@ struct Instance final
 	 * DatabaseError if this MPD configuration has no database (no
 	 * music_directory was configured).
 	 */
-	gcc_pure
 	const Database &GetDatabaseOrThrow() const;
 #endif
 

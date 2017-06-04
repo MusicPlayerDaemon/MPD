@@ -24,7 +24,7 @@
 #include <assert.h>
 
 bool
-DecoderPlugin::SupportsSuffix(const char *suffix) const
+DecoderPlugin::SupportsSuffix(const char *suffix) const noexcept
 {
 #if !CLANG_CHECK_VERSION(3,6)
 	/* disabled on clang due to -Wtautological-pointer-compare */
@@ -36,7 +36,7 @@ DecoderPlugin::SupportsSuffix(const char *suffix) const
 }
 
 bool
-DecoderPlugin::SupportsMimeType(const char *mime_type) const
+DecoderPlugin::SupportsMimeType(const char *mime_type) const noexcept
 {
 #if !CLANG_CHECK_VERSION(3,6)
 	/* disabled on clang due to -Wtautological-pointer-compare */

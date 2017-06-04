@@ -77,7 +77,7 @@ static constexpr Domain roar_output_domain("roar_output");
 
 gcc_pure
 static int
-GetConfiguredRole(const ConfigBlock &block)
+GetConfiguredRole(const ConfigBlock &block) noexcept
 {
 	const char *role = block.GetBlockValue("role");
 	return role != nullptr
@@ -287,8 +287,6 @@ roar_tag_convert(TagType type, bool *is_uuid)
 		case TAG_MUSICBRAINZ_ALBUMID:
 		case TAG_MUSICBRAINZ_ALBUMARTISTID:
 		case TAG_MUSICBRAINZ_TRACKID:
-			*is_uuid = true;
-			return "HASH";
 		case TAG_MUSICBRAINZ_RELEASETRACKID:
 			*is_uuid = true;
 			return "HASH";

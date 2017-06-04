@@ -25,7 +25,7 @@
 #include <string.h>
 
 const char *
-vorbis_comment_value(const char *entry, const char *name)
+vorbis_comment_value(const char *entry, const char *name) noexcept
 {
 	assert(entry != nullptr);
 	assert(name != nullptr);

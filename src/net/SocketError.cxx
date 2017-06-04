@@ -25,7 +25,7 @@
 
 #ifdef WIN32
 
-SocketErrorMessage::SocketErrorMessage(socket_error_t code)
+SocketErrorMessage::SocketErrorMessage(socket_error_t code) noexcept
 {
 #ifdef _UNICODE
 	wchar_t buffer[ARRAY_SIZE(msg)];
@@ -56,7 +56,7 @@ SocketErrorMessage::SocketErrorMessage(socket_error_t code)
 
 #else
 
-SocketErrorMessage::SocketErrorMessage(socket_error_t code)
+SocketErrorMessage::SocketErrorMessage(socket_error_t code) noexcept
 	:msg(strerror(code)) {}
 
 #endif

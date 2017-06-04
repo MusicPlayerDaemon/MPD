@@ -123,10 +123,10 @@ struct Song {
 	 * location within the music directory.
 	 */
 	gcc_pure
-	std::string GetURI() const;
+	std::string GetURI() const noexcept;
 
 	gcc_pure
-	LightSong Export() const;
+	LightSong Export() const noexcept;
 };
 
 typedef boost::intrusive::list<Song,

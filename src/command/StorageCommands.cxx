@@ -45,7 +45,7 @@
 
 gcc_pure
 static bool
-skip_path(const char *name_utf8)
+skip_path(const char *name_utf8) noexcept
 {
 	return strchr(name_utf8, '\n') != nullptr;
 }

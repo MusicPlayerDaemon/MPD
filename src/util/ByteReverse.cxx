@@ -25,7 +25,8 @@
 
 void
 reverse_bytes_16(uint16_t *gcc_restrict dest,
-		 const uint16_t *gcc_restrict src, const uint16_t *src_end)
+		 const uint16_t *gcc_restrict src,
+		 const uint16_t *src_end) noexcept
 {
 	assert(dest != nullptr);
 	assert(src != nullptr);
@@ -39,7 +40,8 @@ reverse_bytes_16(uint16_t *gcc_restrict dest,
 
 void
 reverse_bytes_32(uint32_t *gcc_restrict dest,
-		 const uint32_t *gcc_restrict src, const uint32_t *src_end)
+		 const uint32_t *gcc_restrict src,
+		 const uint32_t *src_end) noexcept
 {
 	assert(dest != nullptr);
 	assert(src != nullptr);
@@ -53,7 +55,8 @@ reverse_bytes_32(uint32_t *gcc_restrict dest,
 
 void
 reverse_bytes_64(uint64_t *gcc_restrict dest,
-		 const uint64_t *gcc_restrict src, const uint64_t *src_end)
+		 const uint64_t *gcc_restrict src,
+		 const uint64_t *src_end) noexcept
 {
 	assert(dest != nullptr);
 	assert(src != nullptr);
@@ -67,7 +70,7 @@ reverse_bytes_64(uint64_t *gcc_restrict dest,
 
 static void
 reverse_bytes_linear(uint8_t *gcc_restrict dest,
-		     const uint8_t *gcc_restrict src, size_t n)
+		     const uint8_t *gcc_restrict src, size_t n) noexcept
 {
 	src += n;
 
@@ -78,7 +81,7 @@ reverse_bytes_linear(uint8_t *gcc_restrict dest,
 static void
 reverse_bytes_generic(uint8_t *gcc_restrict dest,
 		      const uint8_t *gcc_restrict src, const uint8_t *src_end,
-		      size_t frame_size)
+		      size_t frame_size) noexcept
 {
 	assert(dest != nullptr);
 	assert(src != nullptr);
@@ -96,7 +99,7 @@ reverse_bytes_generic(uint8_t *gcc_restrict dest,
 void
 reverse_bytes(uint8_t *gcc_restrict dest,
 	      const uint8_t *gcc_restrict src, const uint8_t *src_end,
-	      size_t frame_size)
+	      size_t frame_size) noexcept
 {
 	assert(dest != nullptr);
 	assert(src != nullptr);

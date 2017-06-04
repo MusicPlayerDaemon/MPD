@@ -28,7 +28,7 @@
 #endif
 
 AllocatedString<>
-FormatStringV(const char *fmt, va_list args)
+FormatStringV(const char *fmt, va_list args) noexcept
 {
 #ifndef WIN32
 	va_list tmp;
@@ -62,7 +62,7 @@ FormatStringV(const char *fmt, va_list args)
 }
 
 AllocatedString<>
-FormatString(const char *fmt, ...)
+FormatString(const char *fmt, ...) noexcept
 {
 	va_list args;
 	va_start(args, fmt);

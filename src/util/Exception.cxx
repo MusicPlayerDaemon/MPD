@@ -32,7 +32,7 @@
 #include <stdexcept>
 
 std::string
-FullMessage(std::exception_ptr ep)
+FullMessage(std::exception_ptr ep) noexcept
 {
 	try {
 		std::rethrow_exception(ep);

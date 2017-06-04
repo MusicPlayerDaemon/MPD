@@ -71,7 +71,6 @@ struct ConfigParam {
 	 *
 	 * Throws #std::runtime_error on error.
 	 */
-	gcc_pure
 	AllocatedPath GetPath() const;
 };
 

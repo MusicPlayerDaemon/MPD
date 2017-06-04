@@ -39,6 +39,6 @@ extern const FilterPlugin volume_filter_plugin;
 
 gcc_pure
 const FilterPlugin *
-filter_plugin_by_name(const char *name);
+filter_plugin_by_name(const char *name) noexcept;
 
 #endif

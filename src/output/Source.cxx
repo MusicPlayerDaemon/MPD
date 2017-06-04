@@ -60,7 +60,7 @@ AudioOutputSource::Open(AudioFormat audio_format, const MusicPipe &_pipe,
 }
 
 void
-AudioOutputSource::Close()
+AudioOutputSource::Close() noexcept
 {
 	assert(in_audio_format.IsValid());
 	in_audio_format.Clear();
@@ -71,7 +71,7 @@ AudioOutputSource::Close()
 }
 
 void
-AudioOutputSource::Cancel()
+AudioOutputSource::Cancel() noexcept
 {
 	current_chunk = nullptr;
 	pipe.Cancel();
@@ -114,7 +114,7 @@ try {
 }
 
 void
-AudioOutputSource::CloseFilter()
+AudioOutputSource::CloseFilter() noexcept
 {
 	delete replay_gain_filter_instance;
 	replay_gain_filter_instance = nullptr;

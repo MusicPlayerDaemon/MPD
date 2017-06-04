@@ -38,7 +38,7 @@ nfs_init(EventLoop &event_loop)
 }
 
 void
-nfs_finish()
+nfs_finish() noexcept
 {
 	assert(in_use > 0);
 
@@ -49,7 +49,7 @@ nfs_finish()
 }
 
 EventLoop &
-nfs_get_event_loop()
+nfs_get_event_loop() noexcept
 {
 	assert(in_use > 0);
 
@@ -57,7 +57,7 @@ nfs_get_event_loop()
 }
 
 NfsConnection &
-nfs_get_connection(const char *server, const char *export_name)
+nfs_get_connection(const char *server, const char *export_name) noexcept
 {
 	assert(in_use > 0);
 

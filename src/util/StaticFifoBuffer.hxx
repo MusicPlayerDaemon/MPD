@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2014 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright (C) 2003-2017 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -52,12 +52,13 @@ public:
 	typedef WritableBuffer<T> Range;
 
 protected:
-	size_type head, tail;
+	size_type head = 0, tail = 0;
 	T data[size];
 
 public:
-	constexpr
-	StaticFifoBuffer():head(0), tail(0) {}
+	constexpr size_type GetCapacity() const {
+		return size;
+	}
 
 	void Shift() {
 		if (head == 0)
@@ -87,7 +88,7 @@ public:
 
 	/**
 	 * Prepares writing.  Returns a buffer range which may be written.
-	 * When you are finished, call append().
+	 * When you are finished, call Append().
 	 */
 	Range Write() {
 		if (IsEmpty())
@@ -100,7 +101,7 @@ public:
 
 	/**
 	 * Expands the tail of the buffer, after data has been written to
-	 * the buffer returned by write().
+	 * the buffer returned by Write().
 	 */
 	void Append(size_type n) {
 		assert(tail <= size);

@@ -227,29 +227,29 @@ struct DecoderControl {
 	}
 
 	gcc_pure
-	bool LockIsIdle() const {
+	bool LockIsIdle() const noexcept {
 		const std::lock_guard<Mutex> protect(mutex);
 		return IsIdle();
 	}
 
-	bool IsStarting() const {
+	bool IsStarting() const noexcept {
 		return state == DecoderState::START;
 	}
 
 	gcc_pure
-	bool LockIsStarting() const {
+	bool LockIsStarting() const noexcept {
 		const std::lock_guard<Mutex> protect(mutex);
 		return IsStarting();
 	}
 
-	bool HasFailed() const {
+	bool HasFailed() const noexcept {
 		assert(command == DecoderCommand::NONE);
 
 		return state == DecoderState::ERROR;
 	}
 
 	gcc_pure
-	bool LockHasFailed() const {
+	bool LockHasFailed() const noexcept {
 		const std::lock_guard<Mutex> protect(mutex);
 		return HasFailed();
 	}
@@ -305,10 +305,10 @@ struct DecoderControl {
 	 * Caller must lock the object.
 	 */
 	gcc_pure
-	bool IsCurrentSong(const DetachedSong &_song) const;
+	bool IsCurrentSong(const DetachedSong &_song) const noexcept;
 
 	gcc_pure
-	bool LockIsCurrentSong(const DetachedSong &_song) const {
+	bool LockIsCurrentSong(const DetachedSong &_song) const noexcept {
 		const std::lock_guard<Mutex> protect(mutex);
 		return IsCurrentSong(_song);
 	}

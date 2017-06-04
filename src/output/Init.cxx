@@ -51,8 +51,7 @@
 
 AudioOutput::AudioOutput(const AudioOutputPlugin &_plugin,
 			 const ConfigBlock &block)
-	:plugin(_plugin),
-	 thread(BIND_THIS_METHOD(Task))
+	:plugin(_plugin)
 {
 	assert(plugin.finish != nullptr);
 	assert(plugin.open != nullptr);
@@ -90,7 +89,7 @@ audio_output_detect()
  */
 gcc_pure
 static MixerType
-audio_output_mixer_type(const ConfigBlock &block)
+audio_output_mixer_type(const ConfigBlock &block) noexcept
 {
 	/* read the local "mixer_type" setting */
 	const char *p = block.GetBlockValue("mixer_type");
@@ -171,10 +170,6 @@ AudioOutput::Configure(const ConfigBlock &block)
 
 		config_audio_format.Clear();
 	}
-
-	tags = block.GetBlockValue("tags", true);
-	always_on = block.GetBlockValue("always_on", false);
-	enabled = block.GetBlockValue("enabled", true);
 
 	/* set up the filter chain */
 
@@ -270,8 +265,7 @@ AudioOutput *
 audio_output_new(EventLoop &event_loop,
 		 const ReplayGainConfig &replay_gain_config,
 		 const ConfigBlock &block,
-		 MixerListener &mixer_listener,
-		 AudioOutputClient &client)
+		 MixerListener &mixer_listener)
 {
 	const AudioOutputPlugin *plugin;
 
@@ -307,6 +301,5 @@ audio_output_new(EventLoop &event_loop,
 		throw;
 	}
 
-	ao->client = &client;
 	return ao;
 }

@@ -85,8 +85,8 @@ public:
 
 	/* virtual methods from InputStream */
 	void Check() override final;
-	bool IsEOF() override final;
-	bool IsAvailable() override final;
+	bool IsEOF() noexcept final;
+	bool IsAvailable() noexcept final;
 	size_t Read(void *ptr, size_t size) override final;
 
 protected:

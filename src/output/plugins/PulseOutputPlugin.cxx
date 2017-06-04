@@ -61,6 +61,8 @@ class PulseOutput {
 
 	size_t writable;
 
+	bool pause;
+
 	explicit PulseOutput(const ConfigBlock &block);
 
 public:
@@ -90,7 +92,6 @@ public:
 		Signal();
 	}
 
-	gcc_const
 	static bool TestDefaultDevice();
 
 	static PulseOutput *Create(EventLoop &event_loop,
@@ -102,7 +103,7 @@ public:
 	void Open(AudioFormat &audio_format);
 	void Close();
 
-	std::chrono::steady_clock::duration Delay();
+	std::chrono::steady_clock::duration Delay() noexcept;
 	size_t Play(const void *chunk, size_t size);
 	void Cancel();
 	bool Pause();
@@ -675,6 +676,8 @@ PulseOutput::Open(AudioFormat &audio_format)
 		throw MakePulseError(context,
 				     "pa_stream_connect_playback() has failed");
 	}
+
+	pause = false;
 }
 
 inline void
@@ -724,13 +727,13 @@ PulseOutput::WaitStream()
 }
 
 void
-PulseOutput::StreamPause(bool pause)
+PulseOutput::StreamPause(bool _pause)
 {
 	assert(mainloop != nullptr);
 	assert(context != nullptr);
 	assert(stream != nullptr);
 
-	pa_operation *o = pa_stream_cork(stream, pause,
+	pa_operation *o = pa_stream_cork(stream, _pause,
 					 pulse_output_stream_success_cb, this);
 	if (o == nullptr)
 		throw MakePulseError(context,
@@ -742,12 +745,12 @@ PulseOutput::StreamPause(bool pause)
 }
 
 inline std::chrono::steady_clock::duration
-PulseOutput::Delay()
+PulseOutput::Delay() noexcept
 {
 	Pulse::LockGuard lock(mainloop);
 
 	auto result = std::chrono::steady_clock::duration::zero();
-	if (base.pause && pa_stream_is_corked(stream) &&
+	if (pause && pa_stream_is_corked(stream) &&
 	    pa_stream_get_state(stream) == PA_STREAM_READY)
 		/* idle while paused */
 		result = std::chrono::seconds(1);
@@ -762,6 +765,8 @@ PulseOutput::Play(const void *chunk, size_t size)
 	assert(stream != nullptr);
 
 	Pulse::LockGuard lock(mainloop);
+
+	pause = false;
 
 	/* check if the stream is (already) connected */
 
@@ -836,6 +841,8 @@ PulseOutput::Pause()
 	assert(stream != nullptr);
 
 	Pulse::LockGuard lock(mainloop);
+
+	pause = true;
 
 	/* check if the stream is (already/still) connected */
 

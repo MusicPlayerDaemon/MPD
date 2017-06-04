@@ -37,7 +37,7 @@ public:
 	 * @param strip strip the first part and left-strip the second
 	 * part?
 	 */
-	DivideString(const char *s, char separator, bool strip=false);
+	DivideString(const char *s, char separator, bool strip=false) noexcept;
 
 	~DivideString() {
 		delete[] first;

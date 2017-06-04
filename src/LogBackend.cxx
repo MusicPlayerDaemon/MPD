@@ -36,7 +36,7 @@
 #include <android/log.h>
 
 static int
-ToAndroidLogLevel(LogLevel log_level)
+ToAndroidLogLevel(LogLevel log_level) noexcept
 {
 	switch (log_level) {
 	case LogLevel::DEBUG:
@@ -68,13 +68,13 @@ static bool enable_syslog;
 #endif
 
 void
-SetLogThreshold(LogLevel _threshold)
+SetLogThreshold(LogLevel _threshold) noexcept
 {
 	log_threshold = _threshold;
 }
 
 void
-EnableLogTimestamp()
+EnableLogTimestamp() noexcept
 {
 #ifdef HAVE_SYSLOG
 	assert(!enable_syslog);
@@ -84,7 +84,8 @@ EnableLogTimestamp()
 	enable_timestamp = true;
 }
 
-static const char *log_date(void)
+static const char *
+log_date() noexcept
 {
 	static constexpr size_t LOG_DATE_BUF_SIZE = 16;
 	static char buf[LOG_DATE_BUF_SIZE];
@@ -98,7 +99,7 @@ static const char *log_date(void)
  * characters.
  */
 static int
-chomp_length(const char *p)
+chomp_length(const char *p) noexcept
 {
 	size_t length = strlen(p);
 	return StripRight(p, length);
@@ -106,8 +107,9 @@ chomp_length(const char *p)
 
 #ifdef HAVE_SYSLOG
 
+gcc_const
 static int
-ToSysLogLevel(LogLevel log_level)
+ToSysLogLevel(LogLevel log_level) noexcept
 {
 	switch (log_level) {
 	case LogLevel::DEBUG:
@@ -131,7 +133,7 @@ ToSysLogLevel(LogLevel log_level)
 }
 
 static void
-SysLog(const Domain &domain, LogLevel log_level, const char *message)
+SysLog(const Domain &domain, LogLevel log_level, const char *message) noexcept
 {
 	syslog(ToSysLogLevel(log_level), "%s: %.*s",
 	       domain.GetName(),
@@ -139,14 +141,14 @@ SysLog(const Domain &domain, LogLevel log_level, const char *message)
 }
 
 void
-LogInitSysLog()
+LogInitSysLog() noexcept
 {
 	openlog(PACKAGE, 0, LOG_DAEMON);
 	enable_syslog = true;
 }
 
 void
-LogFinishSysLog()
+LogFinishSysLog() noexcept
 {
 	if (enable_syslog)
 		closelog();
@@ -155,7 +157,7 @@ LogFinishSysLog()
 #endif
 
 static void
-FileLog(const Domain &domain, const char *message)
+FileLog(const Domain &domain, const char *message) noexcept
 {
 	fprintf(stderr, "%s%s: %.*s\n",
 		enable_timestamp ? log_date() : "",
@@ -172,7 +174,7 @@ FileLog(const Domain &domain, const char *message)
 #endif /* !ANDROID */
 
 void
-Log(const Domain &domain, LogLevel level, const char *msg)
+Log(const Domain &domain, LogLevel level, const char *msg) noexcept
 {
 #ifdef ANDROID
 	__android_log_print(ToAndroidLogLevel(level), "MPD",

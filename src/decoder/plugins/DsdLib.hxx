@@ -34,7 +34,7 @@ struct DsdId {
 	char value[4];
 
 	gcc_pure
-	bool Equals(const char *s) const;
+	bool Equals(const char *s) const noexcept;
 };
 
 class DsdUint64 {
@@ -72,7 +72,7 @@ dsdlib_skip(DecoderClient *client, InputStream &is,
  **/
 gcc_const
 bool
-dsdlib_valid_freq(uint32_t samplefreq);
+dsdlib_valid_freq(uint32_t samplefreq) noexcept;
 
 /**
  * Add tags from ID3 tag. All tags commonly found in the ID3 tags of

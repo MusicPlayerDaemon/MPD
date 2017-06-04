@@ -32,7 +32,8 @@ class Response;
  * uri_has_scheme() first.
  */
 gcc_pure
-bool uri_supported_scheme(const char *url);
+bool
+uri_supported_scheme(const char *url) noexcept;
 
 /**
  * Send a list of supported URI schemes to the client.  This is the

@@ -124,7 +124,7 @@ MakeContinuation(unsigned char value)
 }
 
 bool
-ValidateUTF8(const char *p)
+ValidateUTF8(const char *p) noexcept
 {
 	for (; *p != 0; ++p) {
 		unsigned char ch = *p;
@@ -167,7 +167,7 @@ ValidateUTF8(const char *p)
 }
 
 size_t
-SequenceLengthUTF8(char ch)
+SequenceLengthUTF8(char ch) noexcept
 {
 	if (IsASCII(ch))
 		return 1;
@@ -196,14 +196,14 @@ SequenceLengthUTF8(char ch)
 template<size_t L>
 struct CheckSequenceUTF8 {
 	gcc_pure
-	bool operator()(const char *p) const {
+	bool operator()(const char *p) const noexcept {
 		return IsContinuation(*p) && CheckSequenceUTF8<L-1>()(p + 1);
 	}
 };
 
 template<>
 struct CheckSequenceUTF8<0u> {
-	constexpr bool operator()(gcc_unused const char *p) const {
+	constexpr bool operator()(gcc_unused const char *p) const noexcept {
 		return true;
 	}
 };
@@ -211,7 +211,7 @@ struct CheckSequenceUTF8<0u> {
 template<size_t L>
 gcc_pure
 static size_t
-InnerSequenceLengthUTF8(const char *p)
+InnerSequenceLengthUTF8(const char *p) noexcept
 {
 	return CheckSequenceUTF8<L>()(p)
 		? L + 1
@@ -219,7 +219,7 @@ InnerSequenceLengthUTF8(const char *p)
 }
 
 size_t
-SequenceLengthUTF8(const char *p)
+SequenceLengthUTF8(const char *p) noexcept
 {
 	const unsigned char ch = *p++;
 
@@ -246,8 +246,9 @@ SequenceLengthUTF8(const char *p)
 		return 0;
 }
 
+gcc_pure
 static const char *
-FindNonASCIIOrZero(const char *p)
+FindNonASCIIOrZero(const char *p) noexcept
 {
   while (*p != 0 && IsASCII(*p))
     ++p;
@@ -256,7 +257,7 @@ FindNonASCIIOrZero(const char *p)
 
 const char *
 Latin1ToUTF8(const char *gcc_restrict src, char *gcc_restrict buffer,
-	     size_t buffer_size)
+	     size_t buffer_size) noexcept
 {
 	const char *p = FindNonASCIIOrZero(src);
 	if (*p == 0)
@@ -294,7 +295,7 @@ Latin1ToUTF8(const char *gcc_restrict src, char *gcc_restrict buffer,
 }
 
 char *
-UnicodeToUTF8(unsigned ch, char *q)
+UnicodeToUTF8(unsigned ch, char *q) noexcept
 {
   if (gcc_likely(ch < 0x80)) {
     *q++ = (char)ch;
@@ -331,7 +332,7 @@ UnicodeToUTF8(unsigned ch, char *q)
 }
 
 size_t
-LengthUTF8(const char *p)
+LengthUTF8(const char *p) noexcept
 {
 	/* this is a very naive implementation: it does not do any
 	   verification, it just counts the bytes that are not a UTF-8

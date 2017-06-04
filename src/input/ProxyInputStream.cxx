@@ -70,7 +70,7 @@ ProxyInputStream::Seek(offset_type new_offset)
 }
 
 bool
-ProxyInputStream::IsEOF()
+ProxyInputStream::IsEOF() noexcept
 {
 	return input.IsEOF();
 }
@@ -82,7 +82,7 @@ ProxyInputStream::ReadTag()
 }
 
 bool
-ProxyInputStream::IsAvailable()
+ProxyInputStream::IsAvailable() noexcept
 {
 	return input.IsAvailable();
 }

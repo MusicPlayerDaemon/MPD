@@ -69,7 +69,7 @@ sticker_global_finish();
  */
 gcc_const
 bool
-sticker_enabled();
+sticker_enabled() noexcept;
 
 /**
  * Returns one value from an object's sticker record.  Returns an
@@ -125,7 +125,7 @@ sticker_free(Sticker *sticker);
  */
 gcc_pure
 const char *
-sticker_get_value(const Sticker &sticker, const char *name);
+sticker_get_value(const Sticker &sticker, const char *name) noexcept;
 
 /**
  * Iterates over all sticker items in a sticker.

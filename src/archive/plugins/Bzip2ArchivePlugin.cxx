@@ -93,7 +93,7 @@ public:
 	~Bzip2InputStream();
 
 	/* virtual methods from InputStream */
-	bool IsEOF() override;
+	bool IsEOF() noexcept override;
 	size_t Read(void *ptr, size_t size) override;
 
 private:
@@ -205,7 +205,7 @@ Bzip2InputStream::Read(void *ptr, size_t length)
 }
 
 bool
-Bzip2InputStream::IsEOF()
+Bzip2InputStream::IsEOF() noexcept
 {
 	return eof;
 }

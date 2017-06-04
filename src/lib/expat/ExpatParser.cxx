@@ -32,7 +32,7 @@ ExpatParser::Parse(const char *data, size_t length, bool is_final)
 
 const char *
 ExpatParser::GetAttribute(const XML_Char **atts,
-			  const char *name)
+			  const char *name) noexcept
 {
 	for (unsigned i = 0; atts[i] != nullptr; i += 2)
 		if (strcmp(atts[i], name) == 0)
@@ -43,7 +43,7 @@ ExpatParser::GetAttribute(const XML_Char **atts,
 
 const char *
 ExpatParser::GetAttributeCase(const XML_Char **atts,
-			      const char *name)
+			      const char *name) noexcept
 {
 	for (unsigned i = 0; atts[i] != nullptr; i += 2)
 		if (StringEqualsCaseASCII(atts[i], name))

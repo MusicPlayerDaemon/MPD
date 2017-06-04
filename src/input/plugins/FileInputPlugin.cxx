@@ -45,7 +45,7 @@ public:
 
 	/* virtual methods from InputStream */
 
-	bool IsEOF() override {
+	bool IsEOF() noexcept override {
 		return GetOffset() >= GetSize();
 	}
 

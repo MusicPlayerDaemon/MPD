@@ -116,7 +116,7 @@ struct ZzipInputStream final : public InputStream {
 	}
 
 	/* virtual methods from InputStream */
-	bool IsEOF() override;
+	bool IsEOF() noexcept override;
 	size_t Read(void *ptr, size_t size) override;
 	void Seek(offset_type offset) override;
 };
@@ -147,7 +147,7 @@ ZzipInputStream::Read(void *ptr, size_t read_size)
 }
 
 bool
-ZzipInputStream::IsEOF()
+ZzipInputStream::IsEOF() noexcept
 {
 	return offset_type(zzip_tell(file)) == size;
 }

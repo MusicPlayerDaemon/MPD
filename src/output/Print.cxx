@@ -17,9 +17,26 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_OUTPUT_CONTROL_HXX
-#define MPD_OUTPUT_CONTROL_HXX
+/*
+ * Protocol specific code for the audio output library.
+ *
+ */
 
-struct AudioOutput;
+#include "config.h"
+#include "Print.hxx"
+#include "MultipleOutputs.hxx"
+#include "Internal.hxx"
+#include "client/Response.hxx"
 
-#endif
+void
+printAudioDevices(Response &r, const MultipleOutputs &outputs)
+{
+	for (unsigned i = 0, n = outputs.Size(); i != n; ++i) {
+		const auto &ao = outputs.Get(i);
+
+		r.Format("outputid: %i\n"
+			 "outputname: %s\n"
+			 "outputenabled: %i\n",
+			 i, ao.GetName(), ao.IsEnabled());
+	}
+}

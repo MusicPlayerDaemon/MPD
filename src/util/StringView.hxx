@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2015 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright (C) 2013-2017 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -37,94 +37,101 @@
 struct StringView : ConstBuffer<char> {
 	StringView() = default;
 
-	constexpr StringView(pointer_type _data, size_type _size)
+	constexpr StringView(pointer_type _data, size_type _size) noexcept
 		:ConstBuffer<char>(_data, _size) {}
 
-	constexpr StringView(pointer_type _begin, pointer_type _end)
+	constexpr StringView(pointer_type _begin, pointer_type _end) noexcept
 		:ConstBuffer<char>(_begin, _end - _begin) {}
 
-	StringView(pointer_type _data)
+	StringView(pointer_type _data) noexcept
 		:ConstBuffer<char>(_data,
 				   _data != nullptr ? strlen(_data) : 0) {}
 
-	constexpr StringView(std::nullptr_t n)
+	constexpr StringView(std::nullptr_t n) noexcept
 		:ConstBuffer<char>(n) {}
 
-	static constexpr StringView Empty() {
+	static constexpr StringView Empty() noexcept {
 		return StringView("", size_t(0));
 	}
 
 	template<size_t n>
-	static constexpr StringView Literal(const char (&_data)[n]) {
+	static constexpr StringView Literal(const char (&_data)[n]) noexcept {
 		static_assert(n > 0, "");
 		return {_data, n - 1};
 	}
 
-	static constexpr StringView Literal() {
+	static constexpr StringView Literal() noexcept {
 		return StringView("", size_t(0));
 	}
 
-	void SetEmpty() {
+	void SetEmpty() noexcept {
 		data = "";
 		size = 0;
 	}
 
 	gcc_pure
-	pointer_type Find(char ch) const {
+	pointer_type Find(char ch) const noexcept {
 		return (pointer_type)memchr(data, ch, size);
 	}
 
-	StringView &operator=(std::nullptr_t) {
+	StringView &operator=(std::nullptr_t) noexcept {
 		data = nullptr;
 		size = 0;
 		return *this;
 	}
 
-	StringView &operator=(pointer_type _data) {
+	StringView &operator=(pointer_type _data) noexcept {
 		data = _data;
 		size = _data != nullptr ? strlen(_data) : 0;
 		return *this;
 	}
 
 	gcc_pure
-	bool StartsWith(StringView needle) const {
+	bool StartsWith(StringView needle) const noexcept {
 		return size >= needle.size &&
 			memcmp(data, needle.data, needle.size) == 0;
 	}
 
 	gcc_pure
-	bool Equals(StringView other) const {
+	bool EndsWith(StringView needle) const noexcept {
+		return size >= needle.size &&
+			memcmp(data + size - needle.size,
+			       needle.data, needle.size) == 0;
+	}
+
+	gcc_pure
+	bool Equals(StringView other) const noexcept {
 		return size == other.size &&
 			memcmp(data, other.data, size) == 0;
 	}
 
 	template<size_t n>
-	bool EqualsLiteral(const char (&other)[n]) const {
+	bool EqualsLiteral(const char (&other)[n]) const noexcept {
 		return Equals(Literal(other));
 	}
 
 	gcc_pure
-	bool EqualsIgnoreCase(StringView other) const {
+	bool EqualsIgnoreCase(StringView other) const noexcept {
 		return size == other.size &&
 			strncasecmp(data, other.data, size) == 0;
 	}
 
 	template<size_t n>
-	bool EqualsLiteralIgnoreCase(const char (&other)[n]) const {
+	bool EqualsLiteralIgnoreCase(const char (&other)[n]) const noexcept {
 		return EqualsIgnoreCase(Literal(other));
 	}
 
 	/**
 	 * Skip all whitespace at the beginning.
 	 */
-	void StripLeft();
+	void StripLeft() noexcept;
 
 	/**
 	 * Skip all whitespace at the end.
 	 */
-	void StripRight();
+	void StripRight() noexcept;
 
-	void Strip() {
+	void Strip() noexcept {
 		StripLeft();
 		StripRight();
 	}

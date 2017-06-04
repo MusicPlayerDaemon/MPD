@@ -44,6 +44,6 @@
  * (and not a list with an empty string).
  */
 std::forward_list<std::string>
-SplitString(const char *s, char separator, bool strip=true);
+SplitString(const char *s, char separator, bool strip=true) noexcept;
 
 #endif

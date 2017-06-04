@@ -109,7 +109,7 @@ CompositeStorage::Directory::~Directory()
 }
 
 const CompositeStorage::Directory *
-CompositeStorage::Directory::Find(const char *uri) const
+CompositeStorage::Directory::Find(const char *uri) const noexcept
 {
 	const Directory *directory = this;
 	while (*uri != 0) {
@@ -130,13 +130,8 @@ CompositeStorage::Directory::Make(const char *uri)
 	Directory *directory = this;
 	while (*uri != 0) {
 		const std::string name = NextSegment(uri);
-#if CLANG_OR_GCC_VERSION(4,8)
 		auto i = directory->children.emplace(std::move(name),
 						     Directory());
-#else
-		auto i = directory->children.insert(std::make_pair(std::move(name),
-								   Directory()));
-#endif
 		directory = &i.first->second;
 	}
 
@@ -144,7 +139,7 @@ CompositeStorage::Directory::Make(const char *uri)
 }
 
 bool
-CompositeStorage::Directory::Unmount()
+CompositeStorage::Directory::Unmount() noexcept
 {
 	if (storage == nullptr)
 		return false;
@@ -155,7 +150,7 @@ CompositeStorage::Directory::Unmount()
 }
 
 bool
-CompositeStorage::Directory::Unmount(const char *uri)
+CompositeStorage::Directory::Unmount(const char *uri) noexcept
 {
 	if (StringIsEmpty(uri))
 		return Unmount();
@@ -175,7 +170,7 @@ CompositeStorage::Directory::Unmount(const char *uri)
 
 bool
 CompositeStorage::Directory::MapToRelativeUTF8(std::string &buffer,
-					       const char *uri) const
+					       const char *uri) const noexcept
 {
 	if (storage != nullptr) {
 		const char *result = storage->MapToRelativeUTF8(uri);
@@ -197,7 +192,7 @@ CompositeStorage::Directory::MapToRelativeUTF8(std::string &buffer,
 	return false;
 }
 
-CompositeStorage::CompositeStorage()
+CompositeStorage::CompositeStorage() noexcept
 {
 }
 
@@ -206,7 +201,7 @@ CompositeStorage::~CompositeStorage()
 }
 
 Storage *
-CompositeStorage::GetMount(const char *uri)
+CompositeStorage::GetMount(const char *uri) noexcept
 {
 	const std::lock_guard<Mutex> protect(mutex);
 
@@ -238,7 +233,7 @@ CompositeStorage::Unmount(const char *uri)
 }
 
 CompositeStorage::FindResult
-CompositeStorage::FindStorage(const char *uri) const
+CompositeStorage::FindStorage(const char *uri) const noexcept
 {
 	FindResult result{&root, uri};
 
@@ -311,7 +306,7 @@ CompositeStorage::OpenDirectory(const char *uri)
 }
 
 std::string
-CompositeStorage::MapUTF8(const char *uri) const
+CompositeStorage::MapUTF8(const char *uri) const noexcept
 {
 	const std::lock_guard<Mutex> protect(mutex);
 
@@ -323,7 +318,7 @@ CompositeStorage::MapUTF8(const char *uri) const
 }
 
 AllocatedPath
-CompositeStorage::MapFS(const char *uri) const
+CompositeStorage::MapFS(const char *uri) const noexcept
 {
 	const std::lock_guard<Mutex> protect(mutex);
 
@@ -335,7 +330,7 @@ CompositeStorage::MapFS(const char *uri) const
 }
 
 const char *
-CompositeStorage::MapToRelativeUTF8(const char *uri) const
+CompositeStorage::MapToRelativeUTF8(const char *uri) const noexcept
 {
 	const std::lock_guard<Mutex> protect(mutex);
 

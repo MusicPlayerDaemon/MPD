@@ -54,7 +54,7 @@
 
 gcc_const
 static enum ack
-ToAck(PlaylistResult result)
+ToAck(PlaylistResult result) noexcept
 {
 	switch (result) {
 	case PlaylistResult::SUCCESS:
@@ -90,7 +90,7 @@ ToAck(PlaylistResult result)
 #ifdef ENABLE_DATABASE
 gcc_const
 static enum ack
-ToAck(DatabaseErrorCode code)
+ToAck(DatabaseErrorCode code) noexcept
 {
 	switch (code) {
 	case DatabaseErrorCode::DISABLED:
@@ -107,7 +107,7 @@ ToAck(DatabaseErrorCode code)
 
 gcc_pure
 static enum ack
-ToAck(std::exception_ptr ep)
+ToAck(std::exception_ptr ep) noexcept
 {
 	try {
 		std::rethrow_exception(ep);

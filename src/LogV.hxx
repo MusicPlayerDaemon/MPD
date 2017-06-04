@@ -25,6 +25,7 @@
 #include <stdarg.h>
 
 void
-LogFormatV(const Domain &domain, LogLevel level, const char *fmt, va_list ap);
+LogFormatV(const Domain &domain, LogLevel level,
+	   const char *fmt, va_list ap) noexcept;
 
 #endif /* LOG_H */

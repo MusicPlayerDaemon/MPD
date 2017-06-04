@@ -76,7 +76,7 @@ public:
 				const ConfigBlock &block);
 
 	gcc_pure
-	Directory &GetRoot() {
+	Directory &GetRoot() noexcept {
 		assert(root != NULL);
 
 		return *root;
@@ -125,7 +125,7 @@ public:
 
 	DatabaseStats GetStats(const DatabaseSelection &selection) const override;
 
-	std::chrono::system_clock::time_point GetUpdateStamp() const override {
+	std::chrono::system_clock::time_point GetUpdateStamp() const noexcept override {
 		return mtime;
 	}
 

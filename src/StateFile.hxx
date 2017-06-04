@@ -67,14 +67,14 @@ private:
 	/**
 	 * Save the current state versions for use with IsModified().
 	 */
-	void RememberVersions();
+	void RememberVersions() noexcept;
 
 	/**
 	 * Check if MPD's state was modified since the last
 	 * RememberVersions() call.
 	 */
 	gcc_pure
-	bool IsModified() const;
+	bool IsModified() const noexcept;
 
 	/* virtual methods from TimeoutMonitor */
 	void OnTimeout() override;

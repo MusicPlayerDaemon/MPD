@@ -170,7 +170,7 @@ CurlRequest::Done(CURLcode result)
 
 gcc_pure
 static bool
-IsResponseBoundaryHeader(StringView s)
+IsResponseBoundaryHeader(StringView s) noexcept
 {
 	return s.size > 5 && (memcmp(s.data, "HTTP/", 5) == 0 ||
 			      /* the proprietary "ICY 200 OK" is

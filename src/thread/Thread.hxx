@@ -78,7 +78,7 @@ public:
 	 * Check if this thread is the current thread.
 	 */
 	gcc_pure
-	bool IsInside() const {
+	bool IsInside() const noexcept {
 #ifdef WIN32
 		return GetCurrentThreadId() == id;
 #else

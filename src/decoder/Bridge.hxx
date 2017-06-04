@@ -114,7 +114,7 @@ public:
 	 * Caller must lock the #DecoderControl object.
 	 */
 	gcc_pure
-	bool CheckCancelRead() const;
+	bool CheckCancelRead() const noexcept;
 
 	/**
 	 * Returns the current chunk the decoder writes to, or allocates a new
@@ -122,7 +122,7 @@ public:
 	 *
 	 * @return the chunk, or NULL if we have received a decoder command
 	 */
-	MusicChunk *GetChunk();
+	MusicChunk *GetChunk() noexcept;
 
 	/**
 	 * Flushes the current chunk.
@@ -134,10 +134,10 @@ public:
 	/* virtual methods from DecoderClient */
 	void Ready(AudioFormat audio_format,
 		   bool seekable, SignedSongTime duration) override;
-	DecoderCommand GetCommand() override;
+	DecoderCommand GetCommand() noexcept override;
 	void CommandFinished() override;
-	SongTime GetSeekTime() override;
-	uint64_t GetSeekFrame() override;
+	SongTime GetSeekTime() noexcept override;
+	uint64_t GetSeekFrame() noexcept override;
 	void SeekError() override;
 	InputStreamPtr OpenUri(const char *uri) override;
 	size_t Read(InputStream &is, void *buffer, size_t length) override;
@@ -161,8 +161,8 @@ private:
 	 * "virtual" synthesized command, e.g. to seek to the
 	 * beginning of the CUE track.
 	 */
-	DecoderCommand GetVirtualCommand();
-	DecoderCommand LockGetVirtualCommand();
+	DecoderCommand GetVirtualCommand() noexcept;
+	DecoderCommand LockGetVirtualCommand() noexcept;
 
 	/**
 	 * Sends a #Tag as-is to the #MusicPipe.  Flushes the current

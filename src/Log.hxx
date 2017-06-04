@@ -28,94 +28,94 @@
 class Domain;
 
 void
-Log(const Domain &domain, LogLevel level, const char *msg);
+Log(const Domain &domain, LogLevel level, const char *msg) noexcept;
 
 gcc_printf(3,4)
 void
-LogFormat(const Domain &domain, LogLevel level, const char *fmt, ...);
+LogFormat(const Domain &domain, LogLevel level, const char *fmt, ...) noexcept;
 
 static inline void
-LogDebug(const Domain &domain, const char *msg)
+LogDebug(const Domain &domain, const char *msg) noexcept
 {
 	Log(domain, LogLevel::DEBUG, msg);
 }
 
 gcc_printf(2,3)
 void
-FormatDebug(const Domain &domain, const char *fmt, ...);
+FormatDebug(const Domain &domain, const char *fmt, ...) noexcept;
 
 static inline void
-LogInfo(const Domain &domain, const char *msg)
+LogInfo(const Domain &domain, const char *msg) noexcept
 {
 	Log(domain, LogLevel::INFO, msg);
 }
 
 gcc_printf(2,3)
 void
-FormatInfo(const Domain &domain, const char *fmt, ...);
+FormatInfo(const Domain &domain, const char *fmt, ...) noexcept;
 
 static inline void
-LogDefault(const Domain &domain, const char *msg)
+LogDefault(const Domain &domain, const char *msg) noexcept
 {
 	Log(domain, LogLevel::DEFAULT, msg);
 }
 
 gcc_printf(2,3)
 void
-FormatDefault(const Domain &domain, const char *fmt, ...);
+FormatDefault(const Domain &domain, const char *fmt, ...) noexcept;
 
 static inline void
-LogWarning(const Domain &domain, const char *msg)
+LogWarning(const Domain &domain, const char *msg) noexcept
 {
 	Log(domain, LogLevel::WARNING, msg);
 }
 
 gcc_printf(2,3)
 void
-FormatWarning(const Domain &domain, const char *fmt, ...);
+FormatWarning(const Domain &domain, const char *fmt, ...) noexcept;
 
 static inline void
-LogError(const Domain &domain, const char *msg)
+LogError(const Domain &domain, const char *msg) noexcept
 {
 	Log(domain, LogLevel::ERROR, msg);
 }
 
 void
-LogError(const std::exception &e);
+LogError(const std::exception &e) noexcept;
 
 void
-LogError(const std::exception &e, const char *msg);
-
-gcc_printf(2,3)
-void
-FormatError(const std::exception &e, const char *fmt, ...);
-
-void
-LogError(const std::exception_ptr &ep);
-
-void
-LogError(const std::exception_ptr &ep, const char *msg);
+LogError(const std::exception &e, const char *msg) noexcept;
 
 gcc_printf(2,3)
 void
-FormatError(const std::exception_ptr &ep, const char *fmt, ...);
+FormatError(const std::exception &e, const char *fmt, ...) noexcept;
+
+void
+LogError(const std::exception_ptr &ep) noexcept;
+
+void
+LogError(const std::exception_ptr &ep, const char *msg) noexcept;
 
 gcc_printf(2,3)
 void
-FormatError(const Domain &domain, const char *fmt, ...);
+FormatError(const std::exception_ptr &ep, const char *fmt, ...) noexcept;
+
+gcc_printf(2,3)
+void
+FormatError(const Domain &domain, const char *fmt, ...) noexcept;
 
 void
-LogErrno(const Domain &domain, int e, const char *msg);
+LogErrno(const Domain &domain, int e, const char *msg) noexcept;
 
 void
-LogErrno(const Domain &domain, const char *msg);
+LogErrno(const Domain &domain, const char *msg) noexcept;
 
 gcc_printf(3,4)
 void
-FormatErrno(const Domain &domain, int e, const char *fmt, ...);
+FormatErrno(const Domain &domain, int e, const char *fmt, ...) noexcept;
 
 gcc_printf(2,3)
 void
-FormatErrno(const Domain &domain, const char *fmt, ...);
+FormatErrno(const Domain &domain, const char *fmt, ...) noexcept;
 
 #endif /* LOG_H */

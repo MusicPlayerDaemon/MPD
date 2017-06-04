@@ -78,7 +78,7 @@ public:
 private:
 	gcc_pure
 	bool SkipSymlink(const Directory *directory,
-			 const char *utf8_name) const;
+			 const char *utf8_name) const noexcept;
 
 	void RemoveExcludedFromDirectory(Directory &directory,
 					 const ExcludeList &exclude_list);

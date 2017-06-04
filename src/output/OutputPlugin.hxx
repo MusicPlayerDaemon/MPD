@@ -102,7 +102,7 @@ struct AudioOutputPlugin {
 	 *
 	 * @return the duration to wait
 	 */
-	std::chrono::steady_clock::duration (*delay)(AudioOutput *data);
+	std::chrono::steady_clock::duration (*delay)(AudioOutput *data) noexcept;
 
 	/**
 	 * Display metadata for the next chunk.  Optional method,
@@ -168,23 +168,23 @@ ao_plugin_init(EventLoop &event_loop,
 	       const ConfigBlock &block);
 
 void
-ao_plugin_finish(AudioOutput *ao);
+ao_plugin_finish(AudioOutput *ao) noexcept;
 
 void
 ao_plugin_enable(AudioOutput &ao);
 
 void
-ao_plugin_disable(AudioOutput &ao);
+ao_plugin_disable(AudioOutput &ao) noexcept;
 
 void
 ao_plugin_open(AudioOutput &ao, AudioFormat &audio_format);
 
 void
-ao_plugin_close(AudioOutput &ao);
+ao_plugin_close(AudioOutput &ao) noexcept;
 
 gcc_pure
 std::chrono::steady_clock::duration
-ao_plugin_delay(AudioOutput &ao);
+ao_plugin_delay(AudioOutput &ao) noexcept;
 
 void
 ao_plugin_send_tag(AudioOutput &ao, const Tag &tag);
@@ -196,7 +196,7 @@ void
 ao_plugin_drain(AudioOutput &ao);
 
 void
-ao_plugin_cancel(AudioOutput &ao);
+ao_plugin_cancel(AudioOutput &ao) noexcept;
 
 bool
 ao_plugin_pause(AudioOutput &ao);

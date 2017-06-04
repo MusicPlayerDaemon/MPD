@@ -22,7 +22,7 @@
 
 #include <string.h>
 
-DivideString::DivideString(const char *s, char separator, bool strip)
+DivideString::DivideString(const char *s, char separator, bool strip) noexcept
 	:first(nullptr)
 {
 	const char *x = strchr(s, separator);

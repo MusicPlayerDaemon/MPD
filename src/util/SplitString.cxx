@@ -34,7 +34,7 @@
 #include <string.h>
 
 std::forward_list<std::string>
-SplitString(const char *s, char separator, bool strip)
+SplitString(const char *s, char separator, bool strip) noexcept
 {
 	if (strip)
 		s = StripLeft(s);

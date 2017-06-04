@@ -135,7 +135,7 @@ class NfsConnection : SocketMonitor, TimeoutMonitor, DeferredMonitor {
 public:
 	gcc_nonnull_all
 	NfsConnection(EventLoop &_loop,
-		      const char *_server, const char *_export_name)
+		      const char *_server, const char *_export_name) noexcept
 		:SocketMonitor(_loop), TimeoutMonitor(_loop),
 		 DeferredMonitor(_loop),
 		 server(_server), export_name(_export_name),
@@ -147,16 +147,16 @@ public:
 	~NfsConnection();
 
 	gcc_pure
-	const char *GetServer() const {
+	const char *GetServer() const noexcept {
 		return server.c_str();
 	}
 
 	gcc_pure
-	const char *GetExportName() const {
+	const char *GetExportName() const noexcept {
 		return export_name.c_str();
 	}
 
-	EventLoop &GetEventLoop() {
+	EventLoop &GetEventLoop() noexcept {
 		return SocketMonitor::GetEventLoop();
 	}
 

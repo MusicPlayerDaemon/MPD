@@ -37,7 +37,7 @@ struct FloatToIntegerSampleConvert {
 	static constexpr SV factor = 1 << (DstTraits::BITS - 1);
 
 	gcc_const
-	static DV Convert(SV src) {
+	static DV Convert(SV src) noexcept {
 		return PcmClamp<F, Traits>(SL(src * factor));
 	}
 };
@@ -56,7 +56,7 @@ struct IntegerToFloatSampleConvert {
 	static constexpr DV factor = 0.5 / (1 << (SrcTraits::BITS - 2));
 
 	gcc_const
-	static DV Convert(SV src) {
+	static DV Convert(SV src) noexcept {
 		return DV(src) * factor;
 	}
 };

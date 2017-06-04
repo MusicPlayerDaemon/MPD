@@ -35,7 +35,7 @@ extern const StoragePlugin *const storage_plugins[];
 
 gcc_nonnull_all gcc_pure
 const StoragePlugin *
-GetStoragePluginByName(const char *name);
+GetStoragePluginByName(const char *name) noexcept;
 
 gcc_nonnull_all gcc_malloc
 Storage *

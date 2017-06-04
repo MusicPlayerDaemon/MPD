@@ -140,7 +140,7 @@ struct ConstBuffer {
 
 	template<typename U>
 	gcc_pure
-	bool Contains(U &&u) const {
+	bool Contains(U &&u) const noexcept {
 		for (const auto &i : *this)
 			if (u == i)
 				return true;

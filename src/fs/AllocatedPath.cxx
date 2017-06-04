@@ -29,7 +29,7 @@
 AllocatedPath::~AllocatedPath() {}
 
 AllocatedPath
-AllocatedPath::FromUTF8(const char *path_utf8)
+AllocatedPath::FromUTF8(const char *path_utf8) noexcept
 {
 #if defined(HAVE_FS_CHARSET) || defined(WIN32)
 	try {
@@ -53,13 +53,13 @@ AllocatedPath::FromUTF8Throw(const char *path_utf8)
 }
 
 AllocatedPath
-AllocatedPath::GetDirectoryName() const
+AllocatedPath::GetDirectoryName() const noexcept
 {
 	return FromFS(PathTraitsFS::GetParent(c_str()));
 }
 
 std::string
-AllocatedPath::ToUTF8() const
+AllocatedPath::ToUTF8() const noexcept
 {
 	try {
 		return ::PathToUTF8(c_str());
@@ -69,7 +69,7 @@ AllocatedPath::ToUTF8() const
 }
 
 void
-AllocatedPath::ChopSeparators()
+AllocatedPath::ChopSeparators() noexcept
 {
 	size_t l = length();
 	const auto *p = data();

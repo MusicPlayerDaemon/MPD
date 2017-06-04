@@ -112,7 +112,7 @@ public:
 	 * Apply the volume level.
 	 */
 	gcc_pure
-	ConstBuffer<void> Apply(ConstBuffer<void> src);
+	ConstBuffer<void> Apply(ConstBuffer<void> src) noexcept;
 };
 
 #endif

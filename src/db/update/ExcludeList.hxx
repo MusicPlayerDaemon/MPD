@@ -50,7 +50,7 @@ public:
 		:parent(&_parent) {}
 
 	gcc_pure
-	bool IsEmpty() const {
+	bool IsEmpty() const noexcept {
 #ifdef HAVE_CLASS_GLOB
 		return ((parent == nullptr) || parent->IsEmpty()) && patterns.empty();
 #else
@@ -62,13 +62,13 @@ public:
 	/**
 	 * Loads and parses a .mpdignore file.
 	 */
-	bool LoadFile(Path path_fs);
+	bool LoadFile(Path path_fs) noexcept;
 
 	/**
 	 * Checks whether one of the patterns in the .mpdignore file matches
 	 * the specified file name.
 	 */
-	bool Check(Path name_fs) const;
+	bool Check(Path name_fs) const noexcept;
 };
 
 

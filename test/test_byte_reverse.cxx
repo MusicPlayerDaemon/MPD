@@ -49,9 +49,9 @@ CPPUNIT_TEST_SUITE_REGISTRATION(ByteReverseTest);
 void
 ByteReverseTest::TestByteReverse2()
 {
-	static const char src[] alignas(uint16_t) = "123456";
+	alignas(uint16_t) static const char src[] = "123456";
 	static const char result[] = "214365";
-	static uint8_t dest[ARRAY_SIZE(src)] alignas(uint16_t);
+	alignas(uint16_t)static uint8_t dest[ARRAY_SIZE(src)];
 
 	reverse_bytes(dest, (const uint8_t *)src,
 		      (const uint8_t *)(src + ARRAY_SIZE(src) - 1), 2);
@@ -73,9 +73,9 @@ ByteReverseTest::TestByteReverse3()
 void
 ByteReverseTest::TestByteReverse4()
 {
-	static const char src[] alignas(uint32_t) = "12345678";
+	alignas(uint32_t) static const char src[] = "12345678";
 	static const char result[] = "43218765";
-	static uint8_t dest[ARRAY_SIZE(src)] alignas(uint32_t);
+	alignas(uint32_t) static uint8_t dest[ARRAY_SIZE(src)];
 
 	reverse_bytes(dest, (const uint8_t *)src,
 		      (const uint8_t *)(src + ARRAY_SIZE(src) - 1), 4);

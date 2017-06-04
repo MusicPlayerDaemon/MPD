@@ -36,8 +36,8 @@ flac = AutotoolsProject(
 )
 
 zlib = ZlibProject(
-    'http://zlib.net/zlib-1.2.8.tar.xz',
-    '28f1205d8dd2001f26fec1e8c2cebe37',
+    'http://zlib.net/zlib-1.2.11.tar.xz',
+    '4ff941449631ace0d4d203e3483be9dbc9da454084111f97ea0a2114e19bf066',
     'lib/libz.a',
 )
 
@@ -58,8 +58,8 @@ libmad = AutotoolsProject(
 )
 
 ffmpeg = FfmpegProject(
-    'http://ffmpeg.org/releases/ffmpeg-3.2.4.tar.xz',
-    '6e38ff14f080c98b58cf5967573501b8cb586e3a173b591f3807d8f0660daf7a',
+    'http://ffmpeg.org/releases/ffmpeg-3.3.1.tar.xz',
+    'b702a7fc656ac23e276b8c823a2f646e4e6f6309bb2788435a708e69bea98f2f',
     'lib/libavcodec.a',
     [
         '--disable-shared', '--enable-static',
@@ -82,8 +82,8 @@ ffmpeg = FfmpegProject(
 )
 
 curl = AutotoolsProject(
-    'http://curl.haxx.se/download/curl-7.52.1.tar.lzma',
-    '44286d4b825936e2430fc44ad730ce899afb736a5d328cbb8b5d42462f3f2365',
+    'http://curl.haxx.se/download/curl-7.54.0.tar.lzma',
+    'cd6aa6039f13e0b06e0a93e1b93754f6dc07f444812bb6c32be75a8f28c4070a',
     'lib/libcurl.a',
     [
         '--disable-shared', '--enable-static',
@@ -103,7 +103,7 @@ curl = AutotoolsProject(
 )
 
 boost = BoostProject(
-    'http://downloads.sourceforge.net/project/boost/boost/1.63.0/boost_1_63_0.tar.bz2',
-    'beae2529f759f6b3bf3f4969a19c2e9d6f0c503edcb2de4a61d1428519fcb3b0',
+    'http://downloads.sourceforge.net/project/boost/boost/1.64.0/boost_1_64_0.tar.bz2',
+    '7bcc5caace97baa948931d712ea5f37038dbb1c5d89b43ad4def4ed7cb683332',
     'include/boost/version.hpp',
 )

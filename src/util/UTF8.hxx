@@ -40,7 +40,7 @@
  */
 gcc_pure gcc_nonnull_all
 bool
-ValidateUTF8(const char *p);
+ValidateUTF8(const char *p) noexcept;
 
 /**
  * @return the number of the sequence beginning with the given
@@ -48,7 +48,7 @@ ValidateUTF8(const char *p);
  */
 gcc_const
 size_t
-SequenceLengthUTF8(char ch);
+SequenceLengthUTF8(char ch) noexcept;
 
 /**
  * @return the number of the first sequence in the given string, or 0
@@ -56,7 +56,7 @@ SequenceLengthUTF8(char ch);
  */
 gcc_pure
 size_t
-SequenceLengthUTF8(const char *p);
+SequenceLengthUTF8(const char *p) noexcept;
 
 /**
  * Convert the specified string from ISO-8859-1 to UTF-8.
@@ -67,7 +67,7 @@ SequenceLengthUTF8(const char *p);
  */
 gcc_pure  gcc_nonnull_all
 const char *
-Latin1ToUTF8(const char *src, char *buffer, size_t buffer_size);
+Latin1ToUTF8(const char *src, char *buffer, size_t buffer_size) noexcept;
 
 /**
  * Convert the specified Unicode character to UTF-8 and write it to
@@ -77,7 +77,7 @@ Latin1ToUTF8(const char *src, char *buffer, size_t buffer_size);
  */
 gcc_nonnull_all
 char *
-UnicodeToUTF8(unsigned ch, char *buffer);
+UnicodeToUTF8(unsigned ch, char *buffer) noexcept;
 
 /**
  * Returns the number of characters in the string.  This is different
@@ -85,6 +85,6 @@ UnicodeToUTF8(unsigned ch, char *buffer);
  */
 gcc_pure gcc_nonnull_all
 size_t
-LengthUTF8(const char *p);
+LengthUTF8(const char *p) noexcept;
 
 #endif

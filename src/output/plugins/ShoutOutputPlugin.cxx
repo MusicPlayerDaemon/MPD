@@ -64,7 +64,7 @@ struct ShoutOutput final {
 	void Open(AudioFormat &audio_format);
 	void Close();
 
-	std::chrono::steady_clock::duration Delay() const;
+	std::chrono::steady_clock::duration Delay() const noexcept;
 	void SendTag(const Tag &tag);
 	size_t Play(const void *chunk, size_t size);
 	void Cancel();
@@ -75,7 +75,6 @@ static int shout_init_count;
 
 static constexpr Domain shout_output_domain("shout_output");
 
-gcc_pure
 static const char *
 require_block_string(const ConfigBlock &block, const char *name)
 {
@@ -362,7 +361,7 @@ ShoutOutput::Open(AudioFormat &audio_format)
 }
 
 std::chrono::steady_clock::duration
-ShoutOutput::Delay() const
+ShoutOutput::Delay() const noexcept
 {
 	int delay = shout_delay(shout_conn);
 	if (delay < 0)

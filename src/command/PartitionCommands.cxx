@@ -61,7 +61,7 @@ IsValidPartitionChar(char ch)
 
 gcc_pure
 static bool
-IsValidPartitionName(const char *name)
+IsValidPartitionName(const char *name) noexcept
 {
 	do {
 		if (!IsValidPartitionChar(*name))
@@ -73,7 +73,7 @@ IsValidPartitionName(const char *name)
 
 gcc_pure
 static bool
-HasPartitionNamed(Instance &instance, const char *name)
+HasPartitionNamed(Instance &instance, const char *name) noexcept
 {
 	return instance.FindPartition(name) != nullptr;
 }

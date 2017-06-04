@@ -48,12 +48,12 @@ class SmbclientNeighborExplorer final : public NeighborExplorer {
 		Server(const Server &) = delete;
 
 		gcc_pure
-		bool operator==(const Server &other) const {
+		bool operator==(const Server &other) const noexcept {
 			return name == other.name;
 		}
 
 		gcc_pure
-		NeighborInfo Export() const {
+		NeighborInfo Export() const noexcept {
 			return { "smb://" + name + "/", comment };
 		}
 	};
@@ -169,7 +169,7 @@ ReadServers(NeighborExplorer::List &list, const char *uri)
 
 gcc_pure
 static NeighborExplorer::List
-DetectServers()
+DetectServers() noexcept
 {
 	NeighborExplorer::List list;
 	const std::lock_guard<Mutex> protect(smbclient_mutex);
@@ -181,7 +181,7 @@ gcc_pure
 static NeighborExplorer::List::const_iterator
 FindBeforeServerByURI(NeighborExplorer::List::const_iterator prev,
 		      NeighborExplorer::List::const_iterator end,
-		      const std::string &uri)
+		      const std::string &uri) noexcept
 {
 	for (auto i = std::next(prev); i != end; prev = i, i = std::next(prev))
 		if (i->uri == uri)
@@ -212,14 +212,7 @@ SmbclientNeighborExplorer::Run()
 			prev = i;
 		} else {
 			/* can't see it anymore: move to "lost" */
-#if CLANG_OR_GCC_VERSION(4,7)
 			lost.splice_after(lost.before_begin(), list, prev);
-#else
-			/* the forward_list::splice_after() lvalue
-			   reference overload is missing in gcc 4.6 */
-			lost.emplace_front(std::move(*i));
-			list.erase_after(prev);
-#endif
 		}
 	}
 

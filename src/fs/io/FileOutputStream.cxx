@@ -78,7 +78,7 @@ FileOutputStream::OpenAppend(bool create)
 }
 
 uint64_t
-FileOutputStream::Tell() const
+FileOutputStream::Tell() const noexcept
 {
 	LONG high = 0;
 	DWORD low = SetFilePointer(handle, 0, &high, FILE_CURRENT);
@@ -184,7 +184,7 @@ FileOutputStream::OpenAppend(bool create)
 }
 
 uint64_t
-FileOutputStream::Tell() const
+FileOutputStream::Tell() const noexcept
 {
 	return fd.Tell();
 }

@@ -20,11 +20,13 @@
 #include "config.h"
 #include "AlsaOutputPlugin.hxx"
 #include "lib/alsa/NonBlock.hxx"
+#include "lib/alsa/Version.hxx"
 #include "../OutputAPI.hxx"
 #include "../Wrapper.hxx"
 #include "mixer/MixerList.hxx"
 #include "pcm/PcmExport.hxx"
 #include "system/ByteOrder.hxx"
+#include "thread/Cond.hxx"
 #include "util/Manual.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/Domain.hxx"
@@ -106,6 +108,17 @@ class AlsaOutput final
 	 * The size of one period, in number of frames.
 	 */
 	snd_pcm_uframes_t period_frames;
+
+	/**
+	 * Is this a buggy alsa-lib version, which needs a workaround
+	 * for the snd_pcm_drain() bug always returning -EAGAIN?  See
+	 * alsa-lib commits fdc898d41135 and e4377b16454f for details.
+	 * This bug was fixed in alsa-lib version 1.1.4.
+	 *
+	 * The workaround is to re-enable blocking mode for the
+	 * snd_pcm_drain() call.
+	 */
+	bool work_around_drain_bug;
 
 	/**
 	 * After Open(), has this output been activated by a Play()
@@ -272,7 +285,7 @@ public:
 	}
 
 	gcc_pure
-	const char *GetDevice() {
+	const char *GetDevice() const noexcept {
 		return device.empty() ? default_device : device.c_str();
 	}
 
@@ -470,7 +483,7 @@ alsa_test_default_device()
  */
 gcc_const
 static snd_pcm_format_t
-ToAlsaPcmFormat(SampleFormat sample_format)
+ToAlsaPcmFormat(SampleFormat sample_format) noexcept
 {
 	switch (sample_format) {
 	case SampleFormat::UNDEFINED:
@@ -508,7 +521,7 @@ ToAlsaPcmFormat(SampleFormat sample_format)
  * SND_PCM_FORMAT_UNKNOWN if the format cannot be byte-swapped.
  */
 static snd_pcm_format_t
-ByteSwapAlsaPcmFormat(snd_pcm_format_t fmt)
+ByteSwapAlsaPcmFormat(snd_pcm_format_t fmt) noexcept
 {
 	switch (fmt) {
 	case SND_PCM_FORMAT_S16_LE: return SND_PCM_FORMAT_S16_BE;
@@ -988,6 +1001,19 @@ AlsaOutput::SetupOrDop(AudioFormat &audio_format, PcmExport::Params &params)
 #endif
 }
 
+static constexpr bool
+MaybeDmix(snd_pcm_type_t type)
+{
+	return type == SND_PCM_TYPE_DMIX || type == SND_PCM_TYPE_PLUG;
+}
+
+gcc_pure
+static bool
+MaybeDmix(snd_pcm_t *pcm) noexcept
+{
+	return MaybeDmix(snd_pcm_type(pcm));
+}
+
 inline void
 AlsaOutput::Open(AudioFormat &audio_format)
 {
@@ -1011,6 +1037,9 @@ AlsaOutput::Open(AudioFormat &audio_format)
 		std::throw_with_nested(FormatRuntimeError("Error opening ALSA device \"%s\"",
 							  GetDevice()));
 	}
+
+	work_around_drain_bug = MaybeDmix(pcm) &&
+		GetRuntimeAlsaVersion() < MakeAlsaVersion(1, 1, 4);
 
 	snd_pcm_nonblock(pcm, 1);
 
@@ -1117,6 +1146,14 @@ AlsaOutput::DrainInternal()
 	}
 
 	/* .. and finally drain the ALSA hardware buffer */
+
+	if (work_around_drain_bug) {
+		snd_pcm_nonblock(pcm, 0);
+		bool result = snd_pcm_drain(pcm) != -EAGAIN;
+		snd_pcm_nonblock(pcm, 1);
+		return result;
+	}
+
 	return snd_pcm_drain(pcm) != -EAGAIN;
 }
 

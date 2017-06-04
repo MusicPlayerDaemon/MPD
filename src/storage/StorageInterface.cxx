@@ -23,14 +23,14 @@
 #include "fs/Traits.hxx"
 
 AllocatedPath
-Storage::MapFS(gcc_unused const char *uri_utf8) const
+Storage::MapFS(gcc_unused const char *uri_utf8) const noexcept
 {
 	return AllocatedPath::Null();
 }
 
 AllocatedPath
 Storage::MapChildFS(const char *uri_utf8,
-		    const char *child_utf8) const
+		    const char *child_utf8) const noexcept
 {
 	const auto uri2 = PathTraitsUTF8::Build(uri_utf8, child_utf8);
 	return MapFS(uri2.c_str());

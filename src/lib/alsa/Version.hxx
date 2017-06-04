@@ -17,26 +17,26 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-/*
- * Protocol specific code for the audio output library.
- *
- */
+#ifndef MPD_ALSA_VERSION_HXX
+#define MPD_ALSA_VERSION_HXX
 
-#include "config.h"
-#include "OutputPrint.hxx"
-#include "MultipleOutputs.hxx"
-#include "Internal.hxx"
-#include "client/Response.hxx"
+#include "Compiler.h"
 
-void
-printAudioDevices(Response &r, const MultipleOutputs &outputs)
+#include <stdint.h>
+
+static constexpr uint_least32_t
+MakeAlsaVersion(uint_least32_t major, uint_least32_t minor,
+		uint_least32_t subminor)
 {
-	for (unsigned i = 0, n = outputs.Size(); i != n; ++i) {
-		const AudioOutput &ao = outputs.Get(i);
-
-		r.Format("outputid: %i\n"
-			 "outputname: %s\n"
-			 "outputenabled: %i\n",
-			 i, ao.GetName(), ao.IsEnabled());
-	}
+	return (major << 16) | (minor << 8) | subminor;
 }
+
+/**
+ * Wrapper for snd_asoundlib_version() which translates the resulting
+ * string to an integer constructed with MakeAlsaVersion().
+ */
+gcc_const
+uint_least32_t
+GetRuntimeAlsaVersion() noexcept;
+
+#endif

@@ -25,7 +25,7 @@
 #ifndef NDEBUG
 
 bool
-MusicPipe::Contains(const MusicChunk *chunk) const
+MusicPipe::Contains(const MusicChunk *chunk) const noexcept
 {
 	const std::lock_guard<Mutex> protect(mutex);
 
@@ -39,7 +39,7 @@ MusicPipe::Contains(const MusicChunk *chunk) const
 #endif
 
 MusicChunk *
-MusicPipe::Shift()
+MusicPipe::Shift() noexcept
 {
 	const std::lock_guard<Mutex> protect(mutex);
 
@@ -73,7 +73,7 @@ MusicPipe::Shift()
 }
 
 void
-MusicPipe::Clear(MusicBuffer &buffer)
+MusicPipe::Clear(MusicBuffer &buffer) noexcept
 {
 	MusicChunk *chunk;
 
@@ -82,7 +82,7 @@ MusicPipe::Clear(MusicBuffer &buffer)
 }
 
 void
-MusicPipe::Push(MusicChunk *chunk)
+MusicPipe::Push(MusicChunk *chunk) noexcept
 {
 	assert(!chunk->IsEmpty());
 	assert(chunk->length == 0 || chunk->audio_format.IsValid());

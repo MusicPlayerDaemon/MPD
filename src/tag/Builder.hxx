@@ -82,7 +82,7 @@ public:
 	 * Returns true if the object contains any information.
 	 */
 	gcc_pure
-	bool IsDefined() const {
+	bool IsDefined() const noexcept {
 		return !duration.IsNegative() || has_playlist || !IsEmpty();
 	}
 
@@ -124,7 +124,7 @@ public:
 	 * the specified type.
 	 */
 	gcc_pure
-	bool HasType(TagType type) const;
+	bool HasType(TagType type) const noexcept;
 
 	/**
 	 * Copy attributes and items from the other object that do not
@@ -161,12 +161,12 @@ public:
 	/**
 	 * Removes all tag items.
 	 */
-	void RemoveAll();
+	void RemoveAll() noexcept;
 
 	/**
 	 * Removes all tag items of the specified type.
 	 */
-	void RemoveType(TagType type);
+	void RemoveType(TagType type) noexcept;
 
 private:
 	gcc_nonnull_all

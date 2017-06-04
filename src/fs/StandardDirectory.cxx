@@ -202,7 +202,8 @@ ParseConfigLine(char *line, const char *dir_name, AllocatedPath &result_dir)
 	return true;
 }
 
-static AllocatedPath GetUserDir(const char *name)
+static AllocatedPath
+GetUserDir(const char *name) noexcept
 try {
 	auto result = AllocatedPath::Null();
 	auto config_dir = GetUserConfigDir();
@@ -222,7 +223,8 @@ try {
 
 #endif
 
-AllocatedPath GetUserConfigDir()
+AllocatedPath
+GetUserConfigDir() noexcept
 {
 #if defined(WIN32)
 	return GetStandardDir(CSIDL_LOCAL_APPDATA);
@@ -246,7 +248,8 @@ AllocatedPath GetUserConfigDir()
 #endif
 }
 
-AllocatedPath GetUserMusicDir()
+AllocatedPath
+GetUserMusicDir() noexcept
 {
 #if defined(WIN32)
 	return GetStandardDir(CSIDL_MYMUSIC);	
@@ -259,7 +262,8 @@ AllocatedPath GetUserMusicDir()
 #endif
 }
 
-AllocatedPath GetUserCacheDir()
+AllocatedPath
+GetUserCacheDir() noexcept
 {
 #ifdef USE_XDG
 	// Check for $XDG_CACHE_HOME
@@ -285,12 +289,14 @@ AllocatedPath GetUserCacheDir()
 
 #ifdef WIN32
 
-AllocatedPath GetSystemConfigDir()
+AllocatedPath
+GetSystemConfigDir() noexcept
 {
 	return GetStandardDir(CSIDL_COMMON_APPDATA);
 }
 
-AllocatedPath GetAppBaseDir()
+AllocatedPath
+GetAppBaseDir() noexcept
 {
 	std::array<PathTraitsFS::value_type, MAX_PATH> app;
 	auto ret = GetModuleFileName(nullptr, app.data(), app.size());
@@ -309,7 +315,8 @@ AllocatedPath GetAppBaseDir()
 
 #else
 
-AllocatedPath GetHomeDir()
+AllocatedPath
+GetHomeDir() noexcept
 {
 #ifndef ANDROID
 	auto home = getenv("HOME");
@@ -322,7 +329,8 @@ AllocatedPath GetHomeDir()
 	return AllocatedPath::Null();
 }
 
-AllocatedPath GetHomeDir(const char *user_name)
+AllocatedPath
+GetHomeDir(const char *user_name) noexcept
 {
 #ifdef ANDROID
 	(void)user_name;

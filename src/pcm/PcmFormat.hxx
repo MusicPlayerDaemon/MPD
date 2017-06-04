@@ -40,7 +40,7 @@ class PcmDither;
 gcc_pure
 ConstBuffer<int16_t>
 pcm_convert_to_16(PcmBuffer &buffer, PcmDither &dither,
-		  SampleFormat src_format, ConstBuffer<void> src);
+		  SampleFormat src_format, ConstBuffer<void> src) noexcept;
 
 /**
  * Converts PCM samples to 24 bit (32 bit alignment).
@@ -52,7 +52,7 @@ pcm_convert_to_16(PcmBuffer &buffer, PcmDither &dither,
 gcc_pure
 ConstBuffer<int32_t>
 pcm_convert_to_24(PcmBuffer &buffer,
-		  SampleFormat src_format, ConstBuffer<void> src);
+		  SampleFormat src_format, ConstBuffer<void> src) noexcept;
 
 /**
  * Converts PCM samples to 32 bit.
@@ -64,7 +64,7 @@ pcm_convert_to_24(PcmBuffer &buffer,
 gcc_pure
 ConstBuffer<int32_t>
 pcm_convert_to_32(PcmBuffer &buffer,
-		  SampleFormat src_format, ConstBuffer<void> src);
+		  SampleFormat src_format, ConstBuffer<void> src) noexcept;
 
 /**
  * Converts PCM samples to 32 bit floating point.
@@ -76,6 +76,6 @@ pcm_convert_to_32(PcmBuffer &buffer,
 gcc_pure
 ConstBuffer<float>
 pcm_convert_to_float(PcmBuffer &buffer,
-		     SampleFormat src_format, ConstBuffer<void> src);
+		     SampleFormat src_format, ConstBuffer<void> src) noexcept;
 
 #endif

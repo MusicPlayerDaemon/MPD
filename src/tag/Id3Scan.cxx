@@ -55,9 +55,13 @@
 #define ID3_FRAME_ALBUM_ARTIST "TPE2"
 #endif
 
+#ifndef ID3_FRAME_ORIGINAL_RELEASE_DATE
+#define ID3_FRAME_ORIGINAL_RELEASE_DATE "TDOR"
+#endif
+
 gcc_pure
 static id3_utf8_t *
-tag_id3_getstring(const struct id3_frame *frame, unsigned i)
+tag_id3_getstring(const struct id3_frame *frame, unsigned i) noexcept
 {
 	id3_field *field = id3_frame_field(frame, i);
 	if (field == nullptr)
@@ -203,7 +207,7 @@ tag_id3_import_comment(struct id3_tag *tag, const char *id, TagType type,
  */
 gcc_pure
 static TagType
-tag_id3_parse_txxx_name(const char *name)
+tag_id3_parse_txxx_name(const char *name) noexcept
 {
 	static constexpr struct tag_table txxx_tags[] = {
 		{ "ALBUMARTISTSORT", TAG_ALBUM_ARTIST_SORT },
@@ -316,6 +320,8 @@ scan_id3_tag(struct id3_tag *tag,
 	tag_id3_import_text(tag, ID3_FRAME_TRACK, TAG_TRACK,
 			    handler, handler_ctx);
 	tag_id3_import_text(tag, ID3_FRAME_YEAR, TAG_DATE,
+			    handler, handler_ctx);
+	tag_id3_import_text(tag, ID3_FRAME_ORIGINAL_RELEASE_DATE, TAG_ORIGINAL_DATE,
 			    handler, handler_ctx);
 	tag_id3_import_text(tag, ID3_FRAME_GENRE, TAG_GENRE,
 			    handler, handler_ctx);

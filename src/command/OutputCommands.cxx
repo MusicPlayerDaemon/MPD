@@ -20,7 +20,7 @@
 #include "config.h"
 #include "OutputCommands.hxx"
 #include "Request.hxx"
-#include "output/OutputPrint.hxx"
+#include "output/Print.hxx"
 #include "output/OutputCommand.hxx"
 #include "client/Client.hxx"
 #include "client/Response.hxx"

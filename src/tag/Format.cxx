@@ -54,7 +54,7 @@ IsUnsafeChar(char ch)
 
 gcc_pure
 static bool
-HasUnsafeChar(const char *s)
+HasUnsafeChar(const char *s) noexcept
 {
 	for (; *s; ++s)
 		if (IsUnsafeChar(*s))
@@ -64,7 +64,7 @@ HasUnsafeChar(const char *s)
 }
 
 static const char *
-SanitizeString(const char *s, char *buffer, size_t buffer_size)
+SanitizeString(const char *s, char *buffer, size_t buffer_size) noexcept
 {
 	/* skip leading dots to avoid generating "../" sequences */
 	while (*s == '.')
@@ -80,7 +80,7 @@ SanitizeString(const char *s, char *buffer, size_t buffer_size)
 
 gcc_pure gcc_nonnull_all
 static const char *
-TagGetter(const void *object, const char *name)
+TagGetter(const void *object, const char *name) noexcept
 {
 	const auto &_ctx = *(const FormatTagContext *)object;
 	auto &ctx = const_cast<FormatTagContext &>(_ctx);
@@ -127,7 +127,7 @@ TagGetter(const void *object, const char *name)
 }
 
 char *
-FormatTag(const Tag &tag, const char *format)
+FormatTag(const Tag &tag, const char *format) noexcept
 {
 	FormatTagContext ctx(tag);
 	return format_object(format, &ctx, TagGetter);

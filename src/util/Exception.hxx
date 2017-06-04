@@ -38,6 +38,6 @@
  * exceptions (if any).
  */
 std::string
-FullMessage(std::exception_ptr ep);
+FullMessage(std::exception_ptr ep) noexcept;
 
 #endif

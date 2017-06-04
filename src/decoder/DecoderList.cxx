@@ -126,7 +126,7 @@ static constexpr unsigned num_decoder_plugins =
 bool decoder_plugins_enabled[num_decoder_plugins];
 
 const struct DecoderPlugin *
-decoder_plugin_from_name(const char *name)
+decoder_plugin_from_name(const char *name) noexcept
 {
 	return decoder_plugins_find([=](const DecoderPlugin &plugin){
 			return strcmp(plugin.name, name) == 0;
@@ -162,7 +162,7 @@ void decoder_plugin_deinit_all(void)
 }
 
 bool
-decoder_plugins_supports_suffix(const char *suffix)
+decoder_plugins_supports_suffix(const char *suffix) noexcept
 {
 	return decoder_plugins_try([suffix](const DecoderPlugin &plugin){
 			return plugin.SupportsSuffix(suffix);

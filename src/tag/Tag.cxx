@@ -25,7 +25,7 @@
 #include <assert.h>
 
 void
-Tag::Clear()
+Tag::Clear() noexcept
 {
 	duration = SignedSongTime::Negative();
 	has_playlist = false;
@@ -80,7 +80,7 @@ Tag::MergeReplace(Tag *base, Tag *add)
 }
 
 const char *
-Tag::GetValue(TagType type) const
+Tag::GetValue(TagType type) const noexcept
 {
 	assert(type < TAG_NUM_OF_ITEM_TYPES);
 
@@ -92,13 +92,13 @@ Tag::GetValue(TagType type) const
 }
 
 bool
-Tag::HasType(TagType type) const
+Tag::HasType(TagType type) const noexcept
 {
 	return GetValue(type) != nullptr;
 }
 
 static TagType
-DecaySort(TagType type)
+DecaySort(TagType type) noexcept
 {
 	switch (type) {
 	case TAG_ARTIST_SORT:
@@ -116,7 +116,7 @@ DecaySort(TagType type)
 }
 
 static TagType
-Fallback(TagType type)
+Fallback(TagType type) noexcept
 {
 	switch (type) {
 	case TAG_ALBUM_ARTIST:
@@ -131,7 +131,7 @@ Fallback(TagType type)
 }
 
 const char *
-Tag::GetSortValue(TagType type) const
+Tag::GetSortValue(TagType type) const noexcept
 {
 	const char *value = GetValue(type);
 	if (value != nullptr)

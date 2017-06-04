@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "StateFile.hxx"
-#include "output/OutputState.hxx"
+#include "output/State.hxx"
 #include "queue/PlaylistState.hxx"
 #include "fs/io/TextFile.hxx"
 #include "fs/io/FileOutputStream.hxx"
@@ -50,7 +50,7 @@ StateFile::StateFile(AllocatedPath &&_path,
 }
 
 void
-StateFile::RememberVersions()
+StateFile::RememberVersions() noexcept
 {
 	prev_volume_version = sw_volume_state_get_hash();
 	prev_output_version = audio_output_state_get_version();
@@ -59,7 +59,7 @@ StateFile::RememberVersions()
 }
 
 bool
-StateFile::IsModified() const
+StateFile::IsModified() const noexcept
 {
 	return prev_volume_version != sw_volume_state_get_hash() ||
 		prev_output_version != audio_output_state_get_version() ||

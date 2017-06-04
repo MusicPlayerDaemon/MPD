@@ -26,19 +26,19 @@
 const Domain client_domain("client");
 
 Instance &
-Client::GetInstance()
+Client::GetInstance() noexcept
 {
 	return partition->instance;
 }
 
 playlist &
-Client::GetPlaylist()
+Client::GetPlaylist() noexcept
 {
 	return partition->playlist;
 }
 
 PlayerControl &
-Client::GetPlayerControl()
+Client::GetPlayerControl() noexcept
 {
 	return partition->pc;
 }
@@ -46,7 +46,7 @@ Client::GetPlayerControl()
 #ifdef ENABLE_DATABASE
 
 const Database *
-Client::GetDatabase() const
+Client::GetDatabase() const noexcept
 {
 	return partition->instance.GetDatabase();
 }
@@ -58,7 +58,7 @@ Client::GetDatabaseOrThrow() const
 }
 
 const Storage *
-Client::GetStorage() const
+Client::GetStorage() const noexcept
 {
 	return partition->instance.storage;
 }

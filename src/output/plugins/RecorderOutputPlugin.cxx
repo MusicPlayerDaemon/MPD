@@ -98,7 +98,7 @@ class RecorderOutput {
 
 private:
 	gcc_pure
-	bool HasDynamicPath() const {
+	bool HasDynamicPath() const noexcept {
 		return !format_path.empty();
 	}
 

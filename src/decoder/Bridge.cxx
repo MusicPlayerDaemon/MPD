@@ -54,7 +54,7 @@ DecoderBridge::~DecoderBridge()
 }
 
 bool
-DecoderBridge::CheckCancelRead() const
+DecoderBridge::CheckCancelRead() const noexcept
 {
 	if (error)
 		/* this translates to DecoderCommand::STOP */
@@ -78,7 +78,7 @@ DecoderBridge::CheckCancelRead() const
  * one.
  */
 static DecoderCommand
-need_chunks(DecoderControl &dc)
+need_chunks(DecoderControl &dc) noexcept
 {
 	if (dc.command == DecoderCommand::NONE)
 		dc.Wait();
@@ -87,14 +87,14 @@ need_chunks(DecoderControl &dc)
 }
 
 static DecoderCommand
-LockNeedChunks(DecoderControl &dc)
+LockNeedChunks(DecoderControl &dc) noexcept
 {
 	const std::lock_guard<Mutex> protect(dc.mutex);
 	return need_chunks(dc);
 }
 
 MusicChunk *
-DecoderBridge::GetChunk()
+DecoderBridge::GetChunk() noexcept
 {
 	DecoderCommand cmd;
 
@@ -177,7 +177,7 @@ DecoderBridge::PrepareInitialSeek()
 }
 
 DecoderCommand
-DecoderBridge::GetVirtualCommand()
+DecoderBridge::GetVirtualCommand() noexcept
 {
 	if (error)
 		/* an error has occurred: stop the decoder plugin */
@@ -192,7 +192,7 @@ DecoderBridge::GetVirtualCommand()
 }
 
 DecoderCommand
-DecoderBridge::LockGetVirtualCommand()
+DecoderBridge::LockGetVirtualCommand() noexcept
 {
 	const std::lock_guard<Mutex> protect(dc.mutex);
 	return GetVirtualCommand();
@@ -277,7 +277,7 @@ DecoderBridge::Ready(const AudioFormat audio_format,
 }
 
 DecoderCommand
-DecoderBridge::GetCommand()
+DecoderBridge::GetCommand() noexcept
 {
 	return LockGetVirtualCommand();
 }
@@ -326,7 +326,7 @@ DecoderBridge::CommandFinished()
 }
 
 SongTime
-DecoderBridge::GetSeekTime()
+DecoderBridge::GetSeekTime() noexcept
 {
 	assert(dc.pipe != nullptr);
 
@@ -341,7 +341,7 @@ DecoderBridge::GetSeekTime()
 }
 
 uint64_t
-DecoderBridge::GetSeekFrame()
+DecoderBridge::GetSeekFrame() noexcept
 {
 	return GetSeekTime().ToScale<uint64_t>(dc.in_audio_format.sample_rate);
 }

@@ -101,7 +101,7 @@ public:
 	}
 
 	gcc_pure
-	uint64_t Tell() const;
+	uint64_t Tell() const noexcept;
 
 	/* virtual methods from class OutputStream */
 	void Write(const void *data, size_t size) override;

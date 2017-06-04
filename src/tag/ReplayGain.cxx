@@ -60,7 +60,7 @@ ParseReplayGainTag(ReplayGainInfo &info, const char *name, const char *value)
 		const char *value;
 
 		gcc_pure
-		const char *operator[](const char *n) const {
+		const char *operator[](const char *n) const noexcept {
 			return StringEqualsCaseASCII(name, n)
 				? value
 				: nullptr;
@@ -77,7 +77,7 @@ ParseReplayGainVorbis(ReplayGainInfo &info, const char *entry)
 		const char *entry;
 
 		gcc_pure
-		const char *operator[](const char *n) const {
+		const char *operator[](const char *n) const noexcept {
 			return vorbis_comment_value(entry, n);
 		}
 	};

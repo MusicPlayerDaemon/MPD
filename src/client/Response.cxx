@@ -24,7 +24,7 @@
 #include "util/AllocatedString.hxx"
 
 TagMask
-Response::GetTagMask() const
+Response::GetTagMask() const noexcept
 {
 	return GetClient().tag_mask;
 }

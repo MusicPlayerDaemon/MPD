@@ -392,7 +392,7 @@ oss_setup_sample_rate(int fd, AudioFormat &audio_format)
  */
 gcc_const
 static int
-sample_format_to_oss(SampleFormat format)
+sample_format_to_oss(SampleFormat format) noexcept
 {
 	switch (format) {
 	case SampleFormat::UNDEFINED:
@@ -431,7 +431,7 @@ sample_format_to_oss(SampleFormat format)
  */
 gcc_const
 static SampleFormat
-sample_format_from_oss(int format)
+sample_format_from_oss(int format) noexcept
 {
 	switch (format) {
 	case AFMT_S8:

@@ -58,14 +58,14 @@
 #endif
 
 bool
-FileDescriptor::Open(const char *pathname, int flags, mode_t mode)
+FileDescriptor::Open(const char *pathname, int flags, mode_t mode) noexcept
 {
 	fd = ::open(pathname, flags | O_NOCTTY | O_CLOEXEC, mode);
 	return IsDefined();
 }
 
 bool
-FileDescriptor::OpenReadOnly(const char *pathname)
+FileDescriptor::OpenReadOnly(const char *pathname) noexcept
 {
 	return Open(pathname, O_RDONLY);
 }
@@ -73,13 +73,13 @@ FileDescriptor::OpenReadOnly(const char *pathname)
 #ifndef WIN32
 
 bool
-FileDescriptor::OpenNonBlocking(const char *pathname)
+FileDescriptor::OpenNonBlocking(const char *pathname) noexcept
 {
 	return Open(pathname, O_RDWR | O_NONBLOCK);
 }
 
 bool
-FileDescriptor::CreatePipe(FileDescriptor &r, FileDescriptor &w)
+FileDescriptor::CreatePipe(FileDescriptor &r, FileDescriptor &w) noexcept
 {
 	int fds[2];
 
@@ -99,7 +99,7 @@ FileDescriptor::CreatePipe(FileDescriptor &r, FileDescriptor &w)
 }
 
 void
-FileDescriptor::SetNonBlocking()
+FileDescriptor::SetNonBlocking() noexcept
 {
 	assert(IsDefined());
 
@@ -108,7 +108,7 @@ FileDescriptor::SetNonBlocking()
 }
 
 void
-FileDescriptor::SetBlocking()
+FileDescriptor::SetBlocking() noexcept
 {
 	assert(IsDefined());
 
@@ -121,7 +121,7 @@ FileDescriptor::SetBlocking()
 #ifdef USE_EVENTFD
 
 bool
-FileDescriptor::CreateEventFD(unsigned initval)
+FileDescriptor::CreateEventFD(unsigned initval) noexcept
 {
 	fd = ::eventfd(initval, EFD_NONBLOCK|EFD_CLOEXEC);
 	return fd >= 0;
@@ -132,7 +132,7 @@ FileDescriptor::CreateEventFD(unsigned initval)
 #ifdef USE_SIGNALFD
 
 bool
-FileDescriptor::CreateSignalFD(const sigset_t *mask)
+FileDescriptor::CreateSignalFD(const sigset_t *mask) noexcept
 {
 	int new_fd = ::signalfd(fd, mask, SFD_NONBLOCK|SFD_CLOEXEC);
 	if (new_fd < 0)
@@ -147,7 +147,7 @@ FileDescriptor::CreateSignalFD(const sigset_t *mask)
 #ifdef HAVE_INOTIFY_INIT
 
 bool
-FileDescriptor::CreateInotify()
+FileDescriptor::CreateInotify() noexcept
 {
 #ifdef HAVE_INOTIFY_INIT1
 	int new_fd = inotify_init1(IN_CLOEXEC|IN_NONBLOCK);
@@ -168,7 +168,7 @@ FileDescriptor::CreateInotify()
 #endif
 
 bool
-FileDescriptor::Rewind()
+FileDescriptor::Rewind() noexcept
 {
 	assert(IsDefined());
 
@@ -176,7 +176,7 @@ FileDescriptor::Rewind()
 }
 
 off_t
-FileDescriptor::GetSize() const
+FileDescriptor::GetSize() const noexcept
 {
 	struct stat st;
 	return ::fstat(fd, &st) >= 0
@@ -187,7 +187,7 @@ FileDescriptor::GetSize() const
 #ifndef WIN32
 
 int
-FileDescriptor::Poll(short events, int timeout) const
+FileDescriptor::Poll(short events, int timeout) const noexcept
 {
 	assert(IsDefined());
 
@@ -201,13 +201,13 @@ FileDescriptor::Poll(short events, int timeout) const
 }
 
 int
-FileDescriptor::WaitReadable(int timeout) const
+FileDescriptor::WaitReadable(int timeout) const noexcept
 {
 	return Poll(POLLIN, timeout);
 }
 
 int
-FileDescriptor::WaitWritable(int timeout) const
+FileDescriptor::WaitWritable(int timeout) const noexcept
 {
 	return Poll(POLLOUT, timeout);
 }

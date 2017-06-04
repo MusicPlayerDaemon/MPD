@@ -31,7 +31,6 @@ class DetachedSong;
  * "Detach" the #Song object, i.e. convert it to a #DetachedSong
  * instance.
  */
-gcc_pure
 DetachedSong
 DatabaseDetachSong(const Storage *storage, const LightSong &song);
 
@@ -41,7 +40,6 @@ DatabaseDetachSong(const Storage *storage, const LightSong &song);
  *
  * Throws std::runtime_error on error.
  */
-gcc_pure
 DetachedSong
 DatabaseDetachSong(const Database &db, const Storage *storage,
 		   const char *uri);

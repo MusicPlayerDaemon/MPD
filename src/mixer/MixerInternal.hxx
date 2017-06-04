@@ -84,7 +84,6 @@ public:
 	 * @return the current volume (0..100 including) or -1 if
 	 * unavailable
 	 */
-	gcc_pure
 	virtual int GetVolume() = 0;
 
 	/**

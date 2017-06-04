@@ -66,6 +66,7 @@ static const char *const m3u_suffixes[] = {
 
 static const char *const m3u_mime_types[] = {
 	"audio/x-mpegurl",
+	"audio/mpegurl",
 	nullptr
 };
 

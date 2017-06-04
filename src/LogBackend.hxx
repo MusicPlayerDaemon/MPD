@@ -24,15 +24,15 @@
 #include "LogLevel.hxx"
 
 void
-SetLogThreshold(LogLevel _threshold);
+SetLogThreshold(LogLevel _threshold) noexcept;
 
 void
-EnableLogTimestamp();
+EnableLogTimestamp() noexcept;
 
 void
-LogInitSysLog();
+LogInitSysLog() noexcept;
 
 void
-LogFinishSysLog();
+LogFinishSysLog() noexcept;
 
 #endif /* LOG_H */

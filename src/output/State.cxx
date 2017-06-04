@@ -23,7 +23,7 @@
  */
 
 #include "config.h"
-#include "OutputState.hxx"
+#include "State.hxx"
 #include "MultipleOutputs.hxx"
 #include "Internal.hxx"
 #include "Domain.hxx"
@@ -42,7 +42,7 @@ audio_output_state_save(BufferedOutputStream &os,
 			const MultipleOutputs &outputs)
 {
 	for (unsigned i = 0, n = outputs.Size(); i != n; ++i) {
-		const AudioOutput &ao = outputs.Get(i);
+		const auto &ao = outputs.Get(i);
 		const std::lock_guard<Mutex> lock(ao.mutex);
 
 		os.Format(AUDIO_DEVICE_STATE "%d:%s\n",
@@ -70,14 +70,14 @@ audio_output_state_read(const char *line, MultipleOutputs &outputs)
 		return true;
 
 	name = endptr + 1;
-	AudioOutput *ao = outputs.FindByName(name);
+	auto *ao = outputs.FindByName(name);
 	if (ao == NULL) {
 		FormatDebug(output_domain,
 			    "Ignoring device state for '%s'", name);
 		return true;
 	}
 
-	ao->enabled = false;
+	ao->LockSetEnabled(false);
 	return true;
 }
 

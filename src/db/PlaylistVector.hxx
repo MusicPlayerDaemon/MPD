@@ -31,7 +31,7 @@ protected:
 	 * Caller must lock the #db_mutex.
 	 */
 	gcc_pure
-	iterator find(const char *name);
+	iterator find(const char *name) noexcept;
 
 public:
 	using std::list<PlaylistInfo>::empty;

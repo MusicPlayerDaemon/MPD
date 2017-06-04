@@ -29,7 +29,7 @@
  * the string as-is.
  */
 std::string
-GetMimeTypeBase(const char *s);
+GetMimeTypeBase(const char *s) noexcept;
 
 /**
  * Parse the parameters from a MIME type string.  Parameters are
@@ -38,6 +38,6 @@ GetMimeTypeBase(const char *s);
  * "foo/bar; param1=value1; param2=value2"
  */
 std::map<std::string, std::string>
-ParseMimeTypeParameters(const char *s);
+ParseMimeTypeParameters(const char *s) noexcept;
 
 #endif

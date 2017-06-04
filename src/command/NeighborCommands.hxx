@@ -30,7 +30,7 @@ class Response;
 
 gcc_pure
 bool
-neighbor_commands_available(const Instance &instance);
+neighbor_commands_available(const Instance &instance) noexcept;
 
 CommandResult
 handle_listneighbors(Client &client, Request request, Response &response);

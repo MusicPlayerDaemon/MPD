@@ -18,6 +18,7 @@
  */
 
 #include "config.h"
+#include "Control.hxx"
 #include "Internal.hxx"
 #include "Client.hxx"
 #include "OutputAPI.hxx"
@@ -47,7 +48,7 @@
 #include <string.h>
 
 void
-AudioOutput::CommandFinished()
+AudioOutputControl::CommandFinished() noexcept
 {
 	assert(command != Command::NONE);
 	command = Command::NONE;
@@ -74,7 +75,7 @@ AudioOutput::Enable()
 }
 
 inline void
-AudioOutput::Disable()
+AudioOutput::Disable() noexcept
 {
 	if (open)
 		Close(false);
@@ -88,7 +89,7 @@ AudioOutput::Disable()
 }
 
 void
-AudioOutput::CloseFilter()
+AudioOutput::CloseFilter() noexcept
 {
 	if (mixer != nullptr && mixer->IsPlugin(software_mixer_plugin))
 		software_mixer_set_filter(*mixer, nullptr);
@@ -97,11 +98,9 @@ AudioOutput::CloseFilter()
 }
 
 inline void
-AudioOutput::Open()
+AudioOutput::Open(AudioFormat audio_format, const MusicPipe &pipe)
 {
-	assert(request.audio_format.IsValid());
-
-	fail_timer.Reset();
+	assert(audio_format.IsValid());
 
 	/* enable the device (just in case the last enable has failed) */
 	Enable();
@@ -109,7 +108,7 @@ AudioOutput::Open()
 	AudioFormat f;
 
 	try {
-		f = source.Open(request.audio_format, *request.pipe,
+		f = source.Open(audio_format, pipe,
 				prepared_replay_gain_filter,
 				prepared_other_replay_gain_filter,
 				prepared_filter);
@@ -204,8 +203,25 @@ AudioOutput::OpenOutputAndConvert(AudioFormat desired_audio_format)
 	}
 }
 
+inline void
+AudioOutputControl::InternalOpen(const AudioFormat audio_format,
+				 const MusicPipe &pipe) noexcept
+{
+	last_error = nullptr;
+	fail_timer.Reset();
+	skip_delay = true;
+
+	try {
+		output->Open(audio_format, pipe);
+	} catch (const std::runtime_error &e) {
+		LogError(e);
+		fail_timer.Update();
+		last_error = std::current_exception();
+	}
+}
+
 void
-AudioOutput::Close(bool drain)
+AudioOutput::Close(bool drain) noexcept
 {
 	assert(open);
 
@@ -221,7 +237,7 @@ AudioOutput::Close(bool drain)
 }
 
 inline void
-AudioOutput::CloseOutput(bool drain)
+AudioOutput::CloseOutput(bool drain) noexcept
 {
 	if (drain)
 		ao_plugin_drain(*this);
@@ -238,10 +254,10 @@ AudioOutput::CloseOutput(bool drain)
  * was issued
  */
 inline bool
-AudioOutput::WaitForDelay()
+AudioOutputControl::WaitForDelay() noexcept
 {
 	while (true) {
-		const auto delay = ao_plugin_delay(*this);
+		const auto delay = ao_plugin_delay(*output);
 		if (delay <= std::chrono::steady_clock::duration::zero())
 			return true;
 
@@ -253,14 +269,14 @@ AudioOutput::WaitForDelay()
 }
 
 bool
-AudioOutput::FillSourceOrClose()
+AudioOutputControl::FillSourceOrClose()
 try {
-	return source.Fill(mutex);
+	return output->source.Fill(mutex);
 } catch (const std::runtime_error &e) {
 	FormatError(e, "Failed to filter for output \"%s\" [%s]",
-		    name, plugin.name);
+		    GetName(), output->plugin.name);
 
-	Close(false);
+	output->Close(false);
 
 	/* don't automatically reopen this device for 10
 	   seconds */
@@ -269,44 +285,46 @@ try {
 }
 
 inline bool
-AudioOutput::PlayChunk()
+AudioOutputControl::PlayChunk() noexcept
 {
 	if (tags) {
-		const auto *tag = source.ReadTag();
+		const auto *tag = output->source.ReadTag();
 		if (tag != nullptr) {
 			const ScopeUnlock unlock(mutex);
 			try {
-				ao_plugin_send_tag(*this, *tag);
+				ao_plugin_send_tag(*output, *tag);
 			} catch (const std::runtime_error &e) {
 				FormatError(e, "Failed to send tag to \"%s\" [%s]",
-					    name, plugin.name);
+					    GetName(), output->plugin.name);
 			}
 		}
 	}
 
 	while (command == Command::NONE) {
-		const auto data = source.PeekData();
+		const auto data = output->source.PeekData();
 		if (data.IsEmpty())
 			break;
 
-		if (!WaitForDelay())
+		if (skip_delay)
+			skip_delay = false;
+		else if (!WaitForDelay())
 			break;
 
 		size_t nbytes;
 
 		try {
 			const ScopeUnlock unlock(mutex);
-			nbytes = ao_plugin_play(*this, data.data, data.size);
+			nbytes = ao_plugin_play(*output, data.data, data.size);
 			assert(nbytes <= data.size);
 		} catch (const std::runtime_error &e) {
 			FormatError(e, "\"%s\" [%s] failed to play",
-				    name, plugin.name);
+				    GetName(), output->plugin.name);
 
 			nbytes = 0;
 		}
 
 		if (nbytes == 0) {
-			Close(false);
+			output->Close(false);
 
 			/* don't automatically reopen this device for
 			   10 seconds */
@@ -316,16 +334,16 @@ AudioOutput::PlayChunk()
 			return false;
 		}
 
-		assert(nbytes % out_audio_format.GetFrameSize() == 0);
+		assert(nbytes % output->out_audio_format.GetFrameSize() == 0);
 
-		source.ConsumeData(nbytes);
+		output->source.ConsumeData(nbytes);
 	}
 
 	return true;
 }
 
 inline bool
-AudioOutput::Play()
+AudioOutputControl::InternalPlay() noexcept
 {
 	if (!FillSourceOrClose())
 		/* no chunk available */
@@ -350,7 +368,7 @@ AudioOutput::Play()
 			   give it a chance to refill the pipe before
 			   it runs empty */
 			const ScopeUnlock unlock(mutex);
-			client->ChunksConsumed();
+			client.ChunksConsumed();
 			n = 0;
 		}
 
@@ -359,49 +377,64 @@ AudioOutput::Play()
 	} while (FillSourceOrClose());
 
 	const ScopeUnlock unlock(mutex);
-	client->ChunksConsumed();
+	client.ChunksConsumed();
 
 	return true;
 }
 
 inline void
-AudioOutput::Pause()
+AudioOutput::BeginPause() noexcept
 {
-	{
+	const ScopeUnlock unlock(mutex);
+	ao_plugin_cancel(*this);
+}
+
+inline bool
+AudioOutput::IteratePause() noexcept
+{
+	bool success;
+
+	try {
 		const ScopeUnlock unlock(mutex);
-		ao_plugin_cancel(*this);
+		success = ao_plugin_pause(*this);
+	} catch (const std::runtime_error &e) {
+		FormatError(e, "\"%s\" [%s] failed to pause",
+			    name, plugin.name);
+		success = false;
 	}
 
+	if (!success)
+		Close(false);
+
+	return success;
+}
+
+inline void
+AudioOutputControl::InternalPause() noexcept
+{
+	output->BeginPause();
 	pause = true;
+
 	CommandFinished();
 
 	do {
 		if (!WaitForDelay())
 			break;
 
-		bool success;
-		try {
-			const ScopeUnlock unlock(mutex);
-			success = ao_plugin_pause(*this);
-		} catch (const std::runtime_error &e) {
-			FormatError(e, "\"%s\" [%s] failed to pause",
-				    name, plugin.name);
-			success = false;
-		}
-
-		if (!success) {
-			Close(false);
+		if (!output->IteratePause())
 			break;
-		}
 	} while (command == Command::NONE);
 
 	pause = false;
+	output->EndPause();
+
+	skip_delay = true;
 }
 
 void
-AudioOutput::Task()
+AudioOutputControl::Task()
 {
-	FormatThreadName("output:%s", name);
+	FormatThreadName("output:%s", GetName());
 
 	try {
 		SetThreadRealtime();
@@ -423,7 +456,7 @@ AudioOutput::Task()
 			last_error = nullptr;
 
 			try {
-				Enable();
+				output->Enable();
 			} catch (const std::runtime_error &e) {
 				LogError(e);
 				fail_timer.Update();
@@ -434,32 +467,23 @@ AudioOutput::Task()
 			break;
 
 		case Command::DISABLE:
-			Disable();
+			output->Disable();
 			CommandFinished();
 			break;
 
 		case Command::OPEN:
-			last_error = nullptr;
-
-			try {
-				Open();
-			} catch (const std::runtime_error &e) {
-				LogError(e);
-				fail_timer.Update();
-				last_error = std::current_exception();
-			}
-
+			InternalOpen(request.audio_format, *request.pipe);
 			CommandFinished();
 			break;
 
 		case Command::CLOSE:
-			if (open)
-				Close(false);
+			if (IsOpen())
+				output->Close(false);
 			CommandFinished();
 			break;
 
 		case Command::PAUSE:
-			if (!open) {
+			if (!output->open) {
 				/* the output has failed after
 				   audio_output_all_pause() has
 				   submitted the PAUSE command; bail
@@ -468,7 +492,7 @@ AudioOutput::Task()
 				break;
 			}
 
-			Pause();
+			InternalPause();
 			/* don't "break" here: this might cause
 			   Play() to be called when command==CLOSE
 			   ends the paused state - "continue" checks
@@ -476,46 +500,46 @@ AudioOutput::Task()
 			continue;
 
 		case Command::DRAIN:
-			if (open) {
+			if (output->open) {
 				const ScopeUnlock unlock(mutex);
-				ao_plugin_drain(*this);
+				ao_plugin_drain(*output);
 			}
 
 			CommandFinished();
 			continue;
 
 		case Command::CANCEL:
-			source.Cancel();
+			output->source.Cancel();
 
-			if (open) {
+			if (output->open) {
 				const ScopeUnlock unlock(mutex);
-				ao_plugin_cancel(*this);
+				ao_plugin_cancel(*output);
 			}
 
 			CommandFinished();
 			continue;
 
 		case Command::KILL:
-			Disable();
-			source.Cancel();
+			output->Disable();
+			output->source.Cancel();
 			CommandFinished();
 			return;
 		}
 
-		if (open && allow_play && Play())
+		if (output->open && allow_play && InternalPlay())
 			/* don't wait for an event if there are more
 			   chunks in the pipe */
 			continue;
 
 		if (command == Command::NONE) {
 			woken_for_play = false;
-			cond.wait(mutex);
+			cond.wait(output->mutex);
 		}
 	}
 }
 
 void
-AudioOutput::StartThread()
+AudioOutputControl::StartThread()
 {
 	assert(command == Command::NONE);
 

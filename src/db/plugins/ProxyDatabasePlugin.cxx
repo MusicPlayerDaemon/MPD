@@ -128,7 +128,7 @@ public:
 
 	unsigned Update(const char *uri_utf8, bool discard) override;
 
-	std::chrono::system_clock::time_point GetUpdateStamp() const override {
+	std::chrono::system_clock::time_point GetUpdateStamp() const noexcept override {
 		return update_stamp;
 	}
 
@@ -158,6 +158,9 @@ static constexpr struct {
 	{ TAG_NAME, MPD_TAG_NAME },
 	{ TAG_GENRE, MPD_TAG_GENRE },
 	{ TAG_DATE, MPD_TAG_DATE },
+#if LIBMPDCLIENT_CHECK_VERSION(2,12,0)
+	{ TAG_ORIGINAL_DATE, MPD_TAG_ORIGINAL_DATE },
+#endif
 	{ TAG_COMPOSER, MPD_TAG_COMPOSER },
 	{ TAG_PERFORMER, MPD_TAG_PERFORMER },
 	{ TAG_COMMENT, MPD_TAG_COMMENT },
@@ -217,7 +220,7 @@ ProxySong::ProxySong(const mpd_song *song)
 
 gcc_const
 static enum mpd_tag_type
-Convert(TagType tag_type)
+Convert(TagType tag_type) noexcept
 {
 	for (auto i = &tag_table[0]; i->d != TAG_NUM_OF_ITEM_TYPES; ++i)
 		if (i->d == tag_type)
@@ -575,7 +578,7 @@ Visit(struct mpd_connection *connection,
 
 gcc_pure
 static bool
-Match(const SongFilter *filter, const LightSong &song)
+Match(const SongFilter *filter, const LightSong &song) noexcept
 {
 	return filter == nullptr || filter->Match(song);
 }
@@ -718,7 +721,7 @@ SearchSongs(struct mpd_connection *connection,
  */
 gcc_pure
 static bool
-ServerSupportsSearchBase(const struct mpd_connection *connection)
+ServerSupportsSearchBase(const struct mpd_connection *connection) noexcept
 {
 #if LIBMPDCLIENT_CHECK_VERSION(2,9,0)
 	return mpd_connection_cmp_server_version(connection, 0, 18, 0) >= 0;

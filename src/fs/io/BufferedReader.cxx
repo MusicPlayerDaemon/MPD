@@ -67,7 +67,7 @@ BufferedReader::ReadFull(size_t size)
 }
 
 size_t
-BufferedReader::ReadFromBuffer(WritableBuffer<void> dest)
+BufferedReader::ReadFromBuffer(WritableBuffer<void> dest) noexcept
 {
 	auto src = Read();
 	size_t nbytes = std::min(src.size, dest.size);

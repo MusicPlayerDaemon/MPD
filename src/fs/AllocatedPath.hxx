@@ -77,12 +77,12 @@ public:
 	 * @see IsNull()
 	 */
 	gcc_const
-	static AllocatedPath Null() {
+	static AllocatedPath Null() noexcept {
 		return AllocatedPath(nullptr);
 	}
 
 	gcc_pure
-	operator Path() const {
+	operator Path() const noexcept {
 		return Path::FromFS(c_str());
 	}
 
@@ -90,36 +90,39 @@ public:
 	 * Join two path components with the path separator.
 	 */
 	gcc_pure gcc_nonnull_all
-	static AllocatedPath Build(const_pointer_type a, const_pointer_type b) {
+	static AllocatedPath Build(const_pointer_type a,
+				   const_pointer_type b) noexcept {
 		return Build(a, PathTraitsFS::GetLength(a),
 			     b, PathTraitsFS::GetLength(b));
 	}
 
 	gcc_pure gcc_nonnull_all
-	static AllocatedPath Build(Path a, const_pointer_type b) {
+	static AllocatedPath Build(Path a, const_pointer_type b) noexcept {
 		return Build(a.c_str(), b);
 	}
 
 	gcc_pure gcc_nonnull_all
-	static AllocatedPath Build(Path a, Path b) {
+	static AllocatedPath Build(Path a, Path b) noexcept {
 		return Build(a, b.c_str());
 	}
 
 	gcc_pure gcc_nonnull_all
-	static AllocatedPath Build(const_pointer_type a, const AllocatedPath &b) {
+	static AllocatedPath Build(const_pointer_type a,
+				   const AllocatedPath &b) noexcept {
 		return Build(a, PathTraitsFS::GetLength(a),
 			     b.value.c_str(), b.value.size());
 	}
 
 	gcc_pure gcc_nonnull_all
-	static AllocatedPath Build(const AllocatedPath &a, const_pointer_type b) {
+	static AllocatedPath Build(const AllocatedPath &a,
+				   const_pointer_type b) noexcept {
 		return Build(a.value.c_str(), a.value.size(),
 			     b, PathTraitsFS::GetLength(b));
 	}
 
 	gcc_pure
 	static AllocatedPath Build(const AllocatedPath &a,
-				   const AllocatedPath &b) {
+				   const AllocatedPath &b) noexcept {
 		return Build(a.value.c_str(), a.value.size(),
 			     b.value.c_str(), b.value.size());
 	}
@@ -129,13 +132,13 @@ public:
 	 * character set to a #Path instance.
 	 */
 	gcc_pure
-	static AllocatedPath FromFS(const_pointer_type fs) {
+	static AllocatedPath FromFS(const_pointer_type fs) noexcept {
 		return AllocatedPath(fs);
 	}
 
 	gcc_pure
 	static AllocatedPath FromFS(const_pointer_type _begin,
-				    const_pointer_type _end) {
+				    const_pointer_type _end) noexcept {
 		return AllocatedPath(_begin, _end);
 	}
 
@@ -144,7 +147,7 @@ public:
 	 * character set to a #Path instance.
 	 */
 	gcc_pure
-	static AllocatedPath FromFS(string &&fs) {
+	static AllocatedPath FromFS(string &&fs) noexcept {
 		return AllocatedPath(std::move(fs));
 	}
 
@@ -153,13 +156,13 @@ public:
 	 * Returns return a "nulled" instance on error.
 	 */
 	gcc_pure gcc_nonnull_all
-	static AllocatedPath FromUTF8(const char *path_utf8);
+	static AllocatedPath FromUTF8(const char *path_utf8) noexcept;
 
 	/**
 	 * Convert a UTF-8 C string to an #AllocatedPath instance.
 	 * Throws a std::runtime_error on error.
 	 */
-	gcc_pure gcc_nonnull_all
+	gcc_nonnull_all
 	static AllocatedPath FromUTF8Throw(const char *path_utf8);
 
 	/**
@@ -176,12 +179,12 @@ public:
 	}
 
 	gcc_pure
-	bool operator==(const AllocatedPath &other) const {
+	bool operator==(const AllocatedPath &other) const noexcept {
 		return value == other.value;
 	}
 
 	gcc_pure
-	bool operator!=(const AllocatedPath &other) const {
+	bool operator!=(const AllocatedPath &other) const noexcept {
 		return value != other.value;
 	}
 
@@ -197,7 +200,7 @@ public:
 	 * Check if this is a "nulled" instance.  A "nulled" instance
 	 * must not be used.
 	 */
-	bool IsNull() const {
+	bool IsNull() const noexcept {
 		return value.empty();
 	}
 
@@ -206,7 +209,7 @@ public:
 	 *
 	 * @see IsNull()
 	 */
-	void SetNull() {
+	void SetNull() noexcept {
 		value.clear();
 	}
 
@@ -215,7 +218,7 @@ public:
 	 * elements (which may not be the number of characters).
 	 */
 	gcc_pure
-	size_t length() const {
+	size_t length() const noexcept {
 		return value.length();
 	}
 
@@ -225,7 +228,7 @@ public:
 	 * instance ends.
 	 */
 	gcc_pure
-	const_pointer_type c_str() const {
+	const_pointer_type c_str() const noexcept {
 		return value.c_str();
 	}
 
@@ -234,7 +237,7 @@ public:
 	 * null-terminated.
 	 */
 	gcc_pure
-	const_pointer_type data() const {
+	const_pointer_type data() const noexcept {
 		return value.data();
 	}
 
@@ -244,14 +247,14 @@ public:
 	 * (#IsNull returns true).
 	 */
 	gcc_pure
-	std::string ToUTF8() const;
+	std::string ToUTF8() const noexcept;
 
 	/**
 	 * Gets directory name of this path.
 	 * Returns a "nulled" instance on error.
 	 */
 	gcc_pure
-	AllocatedPath GetDirectoryName() const;
+	AllocatedPath GetDirectoryName() const noexcept;
 
 	/**
 	 * Determine the relative part of the given path to this
@@ -260,17 +263,17 @@ public:
 	 * nullptr on mismatch.
 	 */
 	gcc_pure
-	const_pointer_type Relative(Path other_fs) const {
+	const_pointer_type Relative(Path other_fs) const noexcept {
 		return PathTraitsFS::Relative(c_str(), other_fs.c_str());
 	}
 
 	/**
 	 * Chop trailing directory separators.
 	 */
-	void ChopSeparators();
+	void ChopSeparators() noexcept;
 
 	gcc_pure
-	bool IsAbsolute() const {
+	bool IsAbsolute() const noexcept {
 		return PathTraitsFS::IsAbsolute(c_str());
 	}
 };

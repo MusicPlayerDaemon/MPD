@@ -39,7 +39,7 @@
 #define LOCATE_TAG_ANY_KEY      "any"
 
 unsigned
-locate_parse_type(const char *str)
+locate_parse_type(const char *str) noexcept
 {
 	if (StringEqualsCaseASCII(str, LOCATE_TAG_FILE_KEY) ||
 	    StringEqualsCaseASCII(str, LOCATE_TAG_FILE_KEY_OLD))
@@ -57,7 +57,6 @@ locate_parse_type(const char *str)
 	return tag_name_parse_i(str);
 }
 
-gcc_pure
 static AllocatedString<>
 ImportString(const char *p, bool fold_case)
 {
@@ -78,7 +77,7 @@ SongFilter::Item::Item(unsigned _tag, time_t _time)
 }
 
 bool
-SongFilter::Item::StringMatch(const char *s) const
+SongFilter::Item::StringMatch(const char *s) const noexcept
 {
 #if !CLANG_CHECK_VERSION(3,6)
 	/* disabled on clang due to -Wtautological-pointer-compare */
@@ -97,14 +96,14 @@ SongFilter::Item::StringMatch(const char *s) const
 }
 
 bool
-SongFilter::Item::Match(const TagItem &item) const
+SongFilter::Item::Match(const TagItem &item) const noexcept
 {
 	return (tag == LOCATE_TAG_ANY_TYPE || (unsigned)item.type == tag) &&
 		StringMatch(item.value);
 }
 
 bool
-SongFilter::Item::Match(const Tag &_tag) const
+SongFilter::Item::Match(const Tag &_tag) const noexcept
 {
 	bool visited_types[TAG_NUM_OF_ITEM_TYPES];
 	std::fill_n(visited_types, size_t(TAG_NUM_OF_ITEM_TYPES), false);
@@ -140,7 +139,7 @@ SongFilter::Item::Match(const Tag &_tag) const
 }
 
 bool
-SongFilter::Item::Match(const DetachedSong &song) const
+SongFilter::Item::Match(const DetachedSong &song) const noexcept
 {
 	if (tag == LOCATE_TAG_BASE_TYPE)
 		return uri_is_child_or_same(value.c_str(), song.GetURI());
@@ -155,7 +154,7 @@ SongFilter::Item::Match(const DetachedSong &song) const
 }
 
 bool
-SongFilter::Item::Match(const LightSong &song) const
+SongFilter::Item::Match(const LightSong &song) const noexcept
 {
 	if (tag == LOCATE_TAG_BASE_TYPE) {
 		const auto uri = song.GetURI();
@@ -185,7 +184,7 @@ SongFilter::~SongFilter()
 
 gcc_pure
 static time_t
-ParseTimeStamp(const char *s)
+ParseTimeStamp(const char *s) noexcept
 {
 	assert(s != nullptr);
 
@@ -246,7 +245,7 @@ SongFilter::Parse(ConstBuffer<const char *> args, bool fold_case)
 }
 
 bool
-SongFilter::Match(const DetachedSong &song) const
+SongFilter::Match(const DetachedSong &song) const noexcept
 {
 	for (const auto &i : items)
 		if (!i.Match(song))
@@ -256,7 +255,7 @@ SongFilter::Match(const DetachedSong &song) const
 }
 
 bool
-SongFilter::Match(const LightSong &song) const
+SongFilter::Match(const LightSong &song) const noexcept
 {
 	for (const auto &i : items)
 		if (!i.Match(song))
@@ -266,7 +265,7 @@ SongFilter::Match(const LightSong &song) const
 }
 
 bool
-SongFilter::HasOtherThanBase() const
+SongFilter::HasOtherThanBase() const noexcept
 {
 	for (const auto &i : items)
 		if (i.GetTag() != LOCATE_TAG_BASE_TYPE)
@@ -276,7 +275,7 @@ SongFilter::HasOtherThanBase() const
 }
 
 const char *
-SongFilter::GetBase() const
+SongFilter::GetBase() const noexcept
 {
 	for (const auto &i : items)
 		if (i.GetTag() == LOCATE_TAG_BASE_TYPE)

@@ -32,7 +32,7 @@
 #include <errno.h>
 
 bool
-GetInfo(Storage &storage, const char *uri_utf8, StorageFileInfo &info)
+GetInfo(Storage &storage, const char *uri_utf8, StorageFileInfo &info) noexcept
 try {
 	info = storage.GetInfo(uri_utf8, true);
 	return true;
@@ -42,7 +42,7 @@ try {
 }
 
 bool
-GetInfo(StorageDirectoryReader &reader, StorageFileInfo &info)
+GetInfo(StorageDirectoryReader &reader, StorageFileInfo &info) noexcept
 try {
 	info = reader.GetInfo(true);
 	return true;
@@ -52,7 +52,7 @@ try {
 }
 
 bool
-DirectoryExists(Storage &storage, const Directory &directory)
+DirectoryExists(Storage &storage, const Directory &directory) noexcept
 {
 	StorageFileInfo info;
 
@@ -79,7 +79,7 @@ GetDirectoryChildInfo(Storage &storage, const Directory &directory,
 
 bool
 directory_child_is_regular(Storage &storage, const Directory &directory,
-			   const char *name_utf8)
+			   const char *name_utf8) noexcept
 try {
 	return GetDirectoryChildInfo(storage, directory, name_utf8)
 		.IsRegular();
@@ -89,7 +89,7 @@ try {
 
 bool
 directory_child_access(Storage &storage, const Directory &directory,
-		       const char *name, int mode)
+		       const char *name, int mode) noexcept
 {
 #ifdef WIN32
 	/* CheckAccess() is useless on WIN32 */

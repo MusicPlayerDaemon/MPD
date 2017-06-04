@@ -29,6 +29,6 @@
  */
 gcc_pure
 const char *
-vorbis_comment_value(const char *entry, const char *name);
+vorbis_comment_value(const char *entry, const char *name) noexcept;
 
 #endif

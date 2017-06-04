@@ -119,7 +119,7 @@ class AudioOutputSource {
 	ConstBuffer<uint8_t> pending_data;
 
 public:
-	void SetReplayGainMode(ReplayGainMode _mode) {
+	void SetReplayGainMode(ReplayGainMode _mode) noexcept {
 		replay_gain_mode = _mode;
 	}
 
@@ -138,8 +138,8 @@ public:
 			 PreparedFilter *prepared_other_replay_gain_filter,
 			 PreparedFilter *prepared_filter);
 
-	void Close();
-	void Cancel();
+	void Close() noexcept;
+	void Cancel() noexcept;
 
 	/**
 	 * Ensure that ReadTag() or PeekData() return any input.
@@ -181,13 +181,13 @@ public:
 	 */
 	void ConsumeData(size_t nbytes) noexcept;
 
-	bool IsChunkConsumed(const MusicChunk &chunk) const {
+	bool IsChunkConsumed(const MusicChunk &chunk) const  noexcept {
 		assert(IsOpen());
 
 		return pipe.IsConsumed(chunk);
 	}
 
-	void ClearTailChunk(const MusicChunk &chunk) {
+	void ClearTailChunk(const MusicChunk &chunk) noexcept {
 		pipe.ClearTail(chunk);
 	}
 
@@ -197,7 +197,7 @@ private:
 			PreparedFilter *prepared_other_replay_gain_filter,
 			PreparedFilter *prepared_filter);
 
-	void CloseFilter();
+	void CloseFilter() noexcept;
 
 	ConstBuffer<void> GetChunkData(const MusicChunk &chunk,
 				       Filter *replay_gain_filter,

@@ -40,11 +40,13 @@ class PcmPackTest : public CppUnit::TestFixture {
 	CPPUNIT_TEST_SUITE(PcmPackTest);
 	CPPUNIT_TEST(TestPack24);
 	CPPUNIT_TEST(TestUnpack24);
+	CPPUNIT_TEST(TestUnpack24BE);
 	CPPUNIT_TEST_SUITE_END();
 
 public:
 	void TestPack24();
 	void TestUnpack24();
+	void TestUnpack24BE();
 };
 
 class PcmChannelsTest : public CppUnit::TestFixture {

@@ -41,7 +41,7 @@ extern "C" {
  */
 gcc_const
 static inline double
-FfmpegTimeToDouble(int64_t t, const AVRational time_base)
+FfmpegTimeToDouble(int64_t t, const AVRational time_base) noexcept
 {
 	assert(t != (int64_t)AV_NOPTS_VALUE);
 
@@ -64,7 +64,7 @@ RatioToAVRational()
  */
 gcc_const
 static inline SongTime
-FromFfmpegTime(int64_t t, const AVRational time_base)
+FromFfmpegTime(int64_t t, const AVRational time_base) noexcept
 {
 	assert(t != (int64_t)AV_NOPTS_VALUE);
 
@@ -77,7 +77,7 @@ FromFfmpegTime(int64_t t, const AVRational time_base)
  */
 gcc_const
 static inline SignedSongTime
-FromFfmpegTimeChecked(int64_t t, const AVRational time_base)
+FromFfmpegTimeChecked(int64_t t, const AVRational time_base) noexcept
 {
 	return t != (int64_t)AV_NOPTS_VALUE
 		? SignedSongTime(FromFfmpegTime(t, time_base))
@@ -89,7 +89,7 @@ FromFfmpegTimeChecked(int64_t t, const AVRational time_base)
  */
 gcc_const
 static inline int64_t
-ToFfmpegTime(SongTime t, const AVRational time_base)
+ToFfmpegTime(SongTime t, const AVRational time_base) noexcept
 {
 	return av_rescale_q(t.count(),
 			    RatioToAVRational<SongTime::period>(),

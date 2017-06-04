@@ -24,7 +24,7 @@
 #include <string.h>
 
 MixerType
-mixer_type_parse(const char *input)
+mixer_type_parse(const char *input) noexcept
 {
 	assert(input != NULL);
 

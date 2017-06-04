@@ -2,8 +2,32 @@ ver 0.21 (not yet released)
 * protocol
   - "tagtypes" can be used to hide tags
   - "find" and "search" can sort
+* tags
+  - new tag "OriginalDate"
+* decoder
+  - pcm: support audio/L24 (RFC 3190)
 * output
   - alsa: non-blocking mode
+
+ver 0.20.9 (2017/06/04)
+* decoder
+  - ffmpeg: support *.adx
+* fix byte order detection on FreeBSD/aarch64
+* fix more random crashes when compiled with clang
+
+ver 0.20.8 (2017/05/19)
+* output
+  - osx: fix build failure due to missing "noexcept"
+* playlist
+  - m3u: support MIME type `audio/mpegurl`
+* fix build failure with GCC 4.x
+
+ver 0.20.7 (2017/05/15)
+* database
+  - simple: fix false positive directory loop detection with NFS
+* enforce a reasonable minimum audio_buffer_size setting
+* cap buffer_before_play at 80% to prevent deadlock
+* fix random crashes when compiled with clang
 
 ver 0.20.6 (2017/03/10)
 * input

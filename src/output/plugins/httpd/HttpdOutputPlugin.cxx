@@ -261,6 +261,7 @@ HttpdOutput::Open(AudioFormat &audio_format)
 	timer = new Timer(audio_format);
 
 	open = true;
+	pause = false;
 }
 
 inline void
@@ -300,9 +301,9 @@ HttpdOutput::SendHeader(HttpdClient &client) const
 }
 
 inline std::chrono::steady_clock::duration
-HttpdOutput::Delay() const
+HttpdOutput::Delay() const noexcept
 {
-	if (!LockHasClients() && base.pause) {
+	if (!LockHasClients() && pause) {
 		/* if there's no client and this output is paused,
 		   then httpd_output_pause() will not do anything, it
 		   will not fill the buffer and it will not update the
@@ -369,6 +370,8 @@ HttpdOutput::EncodeAndPlay(const void *chunk, size_t size)
 inline size_t
 HttpdOutput::Play(const void *chunk, size_t size)
 {
+	pause = false;
+
 	if (LockHasClients())
 		EncodeAndPlay(chunk, size);
 
@@ -382,6 +385,8 @@ HttpdOutput::Play(const void *chunk, size_t size)
 bool
 HttpdOutput::Pause()
 {
+	pause = true;
+
 	if (LockHasClients()) {
 		static const char silence[1020] = { 0 };
 		Play(silence, sizeof(silence));
@@ -421,7 +426,7 @@ HttpdOutput::SendTag(const Tag &tag)
 
 		auto page = ReadPage();
 		if (page != nullptr) {
-			header = std::move(page);
+			header = page;
 			BroadcastPage(page);
 		}
 	} else {

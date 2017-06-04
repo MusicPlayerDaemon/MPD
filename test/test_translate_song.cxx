@@ -26,13 +26,13 @@
 #include <stdio.h>
 
 void
-Log(const Domain &domain, gcc_unused LogLevel level, const char *msg)
+Log(const Domain &domain, gcc_unused LogLevel level, const char *msg) noexcept
 {
 	fprintf(stderr, "[%s] %s\n", domain.GetName(), msg);
 }
 
 bool
-uri_supported_scheme(const char *uri)
+uri_supported_scheme(const char *uri) noexcept
 {
 	return strncmp(uri, "http://", 7) == 0;
 }
@@ -130,13 +130,13 @@ DetachedSong::LoadFile(Path path)
 }
 
 const Database *
-Client::GetDatabase() const
+Client::GetDatabase() const noexcept
 {
 	return reinterpret_cast<const Database *>(this);
 }
 
 const Storage *
-Client::GetStorage() const
+Client::GetStorage() const noexcept
 {
 	return ::storage;
 }

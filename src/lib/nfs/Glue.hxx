@@ -30,17 +30,17 @@ void
 nfs_init(EventLoop &event_loop);
 
 void
-nfs_finish();
+nfs_finish() noexcept;
 
 /**
  * Return the EventLoop that was passed to nfs_init().
  */
 gcc_const
 EventLoop &
-nfs_get_event_loop();
+nfs_get_event_loop() noexcept;
 
 gcc_pure
 NfsConnection &
-nfs_get_connection(const char *server, const char *export_name);
+nfs_get_connection(const char *server, const char *export_name) noexcept;
 
 #endif

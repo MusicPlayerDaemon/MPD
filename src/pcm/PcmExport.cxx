@@ -84,7 +84,7 @@ PcmExport::Open(SampleFormat sample_format, unsigned _channels,
 }
 
 size_t
-PcmExport::GetFrameSize(const AudioFormat &audio_format) const
+PcmExport::GetFrameSize(const AudioFormat &audio_format) const noexcept
 {
 	if (pack24)
 		/* packed 24 bit samples (3 bytes per sample) */
@@ -109,7 +109,7 @@ PcmExport::GetFrameSize(const AudioFormat &audio_format) const
 }
 
 unsigned
-PcmExport::Params::CalcOutputSampleRate(unsigned sample_rate) const
+PcmExport::Params::CalcOutputSampleRate(unsigned sample_rate) const noexcept
 {
 #ifdef ENABLE_DSD
 	if (dsd_u16)
@@ -132,7 +132,7 @@ PcmExport::Params::CalcOutputSampleRate(unsigned sample_rate) const
 }
 
 unsigned
-PcmExport::Params::CalcInputSampleRate(unsigned sample_rate) const
+PcmExport::Params::CalcInputSampleRate(unsigned sample_rate) const noexcept
 {
 #ifdef ENABLE_DSD
 	if (dsd_u16)
@@ -209,7 +209,7 @@ PcmExport::Export(ConstBuffer<void> data)
 }
 
 size_t
-PcmExport::CalcSourceSize(size_t size) const
+PcmExport::CalcSourceSize(size_t size) const noexcept
 {
 	if (pack24)
 		/* 32 bit to 24 bit conversion (4 to 3 bytes) */

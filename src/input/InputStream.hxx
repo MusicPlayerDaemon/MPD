@@ -184,20 +184,20 @@ public:
 	void LockWaitReady();
 
 	gcc_pure
-	bool HasMimeType() const {
+	bool HasMimeType() const noexcept {
 		assert(ready);
 
 		return !mime.empty();
 	}
 
 	gcc_pure
-	const char *GetMimeType() const {
+	const char *GetMimeType() const noexcept {
 		assert(ready);
 
 		return mime.empty() ? nullptr : mime.c_str();
 	}
 
-	void ClearMimeType() {
+	void ClearMimeType() noexcept {
 		mime.clear();
 	}
 
@@ -215,35 +215,35 @@ public:
 	}
 
 	gcc_pure
-	bool KnownSize() const {
+	bool KnownSize() const noexcept {
 		assert(ready);
 
 		return size != UNKNOWN_SIZE;
 	}
 
 	gcc_pure
-	offset_type GetSize() const {
+	offset_type GetSize() const noexcept {
 		assert(ready);
 		assert(KnownSize());
 
 		return size;
 	}
 
-	void AddOffset(offset_type delta) {
+	void AddOffset(offset_type delta) noexcept {
 		assert(ready);
 
 		offset += delta;
 	}
 
 	gcc_pure
-	offset_type GetOffset() const {
+	offset_type GetOffset() const noexcept {
 		assert(ready);
 
 		return offset;
 	}
 
 	gcc_pure
-	offset_type GetRest() const {
+	offset_type GetRest() const noexcept {
 		assert(ready);
 		assert(KnownSize());
 
@@ -251,7 +251,7 @@ public:
 	}
 
 	gcc_pure
-	bool IsSeekable() const {
+	bool IsSeekable() const noexcept {
 		assert(ready);
 
 		return seekable;
@@ -261,7 +261,7 @@ public:
 	 * Determines whether seeking is cheap.  This is true for local files.
 	 */
 	gcc_pure
-	bool CheapSeeking() const;
+	bool CheapSeeking() const noexcept;
 
 	/**
 	 * Seeks to the specified position in the stream.  This will most
@@ -308,14 +308,14 @@ public:
 	 * The caller must lock the mutex.
 	 */
 	gcc_pure
-	virtual bool IsEOF() = 0;
+	virtual bool IsEOF() noexcept = 0;
 
 	/**
 	 * Wrapper for IsEOF() which locks and unlocks the mutex; the
 	 * caller must not be holding it already.
 	 */
 	gcc_pure
-	bool LockIsEOF();
+	bool LockIsEOF() noexcept;
 
 	/**
 	 * Reads the tag from the stream.
@@ -343,7 +343,7 @@ public:
 	 * The caller must lock the mutex.
 	 */
 	gcc_pure
-	virtual bool IsAvailable();
+	virtual bool IsAvailable() noexcept;
 
 	/**
 	 * Reads data from the stream into the caller-supplied buffer.

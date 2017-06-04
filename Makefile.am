@@ -257,6 +257,7 @@ UPNP_SOURCES = \
 	src/lib/upnp/Action.hxx
 
 ALSA_SOURCES = \
+	src/lib/alsa/Version.cxx src/lib/alsa/Version.hxx \
 	src/lib/alsa/NonBlock.cxx src/lib/alsa/NonBlock.hxx
 
 #
@@ -423,6 +424,7 @@ libutil_a_SOURCES = \
 	src/util/StringBuffer.hxx \
 	src/util/StringPointer.hxx \
 	src/util/StringView.cxx src/util/StringView.hxx \
+	src/util/ConcatString.hxx \
 	src/util/AllocatedString.cxx src/util/AllocatedString.hxx \
 	src/util/StringUtil.cxx src/util/StringUtil.hxx \
 	src/util/StringCompare.cxx src/util/StringCompare.hxx \
@@ -1481,11 +1483,11 @@ OUTPUT_API_SRC = \
 	src/output/MultipleOutputs.cxx src/output/MultipleOutputs.hxx \
 	src/output/SharedPipeConsumer.cxx src/output/SharedPipeConsumer.hxx \
 	src/output/Source.cxx src/output/Source.hxx \
-	src/output/OutputThread.cxx \
+	src/output/Thread.cxx \
 	src/output/Domain.cxx src/output/Domain.hxx \
-	src/output/OutputControl.cxx \
-	src/output/OutputState.cxx src/output/OutputState.hxx \
-	src/output/OutputPrint.cxx src/output/OutputPrint.hxx \
+	src/output/Control.cxx src/output/Control.hxx \
+	src/output/State.cxx src/output/State.hxx \
+	src/output/Print.cxx src/output/Print.hxx \
 	src/output/OutputCommand.cxx src/output/OutputCommand.hxx \
 	src/output/OutputPlugin.cxx src/output/OutputPlugin.hxx \
 	src/output/Finish.cxx \

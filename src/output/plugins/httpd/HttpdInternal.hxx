@@ -30,6 +30,7 @@
 #include "output/Internal.hxx"
 #include "output/Timer.hxx"
 #include "thread/Mutex.hxx"
+#include "thread/Cond.hxx"
 #include "event/ServerSocket.hxx"
 #include "event/DeferredMonitor.hxx"
 #include "util/Cast.hxx"
@@ -58,6 +59,8 @@ class HttpdOutput final : ServerSocket, DeferredMonitor {
 	 * connections.
 	 */
 	bool open;
+
+	bool pause;
 
 	/**
 	 * The configured encoder plugin.
@@ -157,10 +160,7 @@ public:
 	static HttpdOutput *Create(EventLoop &event_loop,
 				   const ConfigBlock &block);
 
-#if CLANG_OR_GCC_VERSION(4,7)
-	constexpr
-#endif
-	static HttpdOutput *Cast(AudioOutput *ao) {
+	static constexpr HttpdOutput *Cast(AudioOutput *ao) {
 		return &ContainerCast(*ao, &HttpdOutput::base);
 	}
 
@@ -200,7 +200,7 @@ public:
 	 * Caller must lock the mutex.
 	 */
 	gcc_pure
-	bool HasClients() const {
+	bool HasClients() const noexcept {
 		return !clients.empty();
 	}
 
@@ -208,7 +208,7 @@ public:
 	 * Check whether there is at least one client.
 	 */
 	gcc_pure
-	bool LockHasClients() const {
+	bool LockHasClients() const noexcept {
 		const std::lock_guard<Mutex> protect(mutex);
 		return HasClients();
 	}
@@ -227,7 +227,7 @@ public:
 	void SendHeader(HttpdClient &client) const;
 
 	gcc_pure
-	std::chrono::steady_clock::duration Delay() const;
+	std::chrono::steady_clock::duration Delay() const noexcept;
 
 	/**
 	 * Reads data from the encoder (as much as available) and

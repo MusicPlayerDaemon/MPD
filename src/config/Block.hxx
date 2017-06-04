@@ -44,13 +44,10 @@ struct BlockParam {
 	BlockParam(const char *_name, const char *_value, int _line=-1)
 		:name(_name), value(_value), line(_line), used(false) {}
 
-	gcc_pure
 	int GetIntValue() const;
 
-	gcc_pure
 	unsigned GetUnsignedValue() const;
 
-	gcc_pure
 	bool GetBoolValue() const;
 };
 
@@ -85,12 +82,12 @@ struct ConfigBlock {
 	 * object that was synthesized and not loaded from a
 	 * configuration file.
 	 */
-	bool IsNull() const {
+	bool IsNull() const noexcept {
 		return line < 0;
 	}
 
 	gcc_pure
-	bool IsEmpty() const {
+	bool IsEmpty() const noexcept {
 		return block_params.empty();
 	}
 
@@ -101,11 +98,11 @@ struct ConfigBlock {
 	}
 
 	gcc_nonnull_all gcc_pure
-	const BlockParam *GetBlockParam(const char *_name) const;
+	const BlockParam *GetBlockParam(const char *_name) const noexcept;
 
 	gcc_pure
 	const char *GetBlockValue(const char *name,
-				  const char *default_value=nullptr) const;
+				  const char *default_value=nullptr) const noexcept;
 
 	/**
 	 * Same as config_get_path(), but looks up the setting in the
@@ -116,13 +113,10 @@ struct ConfigBlock {
 	AllocatedPath GetPath(const char *name,
 			      const char *default_value=nullptr) const;
 
-	gcc_pure
 	int GetBlockValue(const char *name, int default_value) const;
 
-	gcc_pure
 	unsigned GetBlockValue(const char *name, unsigned default_value) const;
 
-	gcc_pure
 	bool GetBlockValue(const char *name, bool default_value) const;
 };
 

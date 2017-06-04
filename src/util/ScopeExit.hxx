@@ -30,8 +30,6 @@
 #ifndef SCOPE_EXIT_HXX
 #define SCOPE_EXIT_HXX
 
-#include "Compiler.h"
-
 #include <utility>
 
 /**
@@ -45,7 +43,7 @@ public:
 	explicit ScopeExitGuard(F &&f):F(std::forward<F>(f)) {}
 
 	ScopeExitGuard(ScopeExitGuard &&src)
-		:F(std::move(src)) {
+		:F(std::move(src)), enabled(src.enabled) {
 		src.enabled = false;
 	}
 

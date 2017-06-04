@@ -71,7 +71,7 @@ public:
 	 * plugins.
 	 */
 	gcc_pure
-	List GetList() const;
+	List GetList() const noexcept;
 };
 
 #endif

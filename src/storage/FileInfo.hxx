@@ -50,7 +50,7 @@ struct StorageFileInfo {
 	 * Device id and inode number.  0 means unknown / not
 	 * applicable.
 	 */
-	unsigned device, inode;
+	uint64_t device, inode;
 
 	StorageFileInfo() = default;
 

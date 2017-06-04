@@ -56,7 +56,7 @@ InotifyQueue::OnTimeout()
 
 gcc_pure
 static bool
-path_in(const char *path, const char *possible_parent)
+path_in(const char *path, const char *possible_parent) noexcept
 {
 	if (StringIsEmpty(path))
 		return true;
