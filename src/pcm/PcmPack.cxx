@@ -61,7 +61,7 @@ ConstructS24(uint8_t low, uint8_t mid, uint8_t high)
  */
 gcc_pure
 static int32_t
-ReadS24LE(const uint8_t *src)
+ReadS24LE(const uint8_t *src) noexcept
 {
 	return ConstructS24(src[0], src[1], src[2]);
 }
@@ -71,7 +71,7 @@ ReadS24LE(const uint8_t *src)
  */
 gcc_pure
 static int32_t
-ReadS24BE(const uint8_t *src)
+ReadS24BE(const uint8_t *src) noexcept
 {
 	return ConstructS24(src[2], src[1], src[0]);
 }
@@ -81,7 +81,7 @@ ReadS24BE(const uint8_t *src)
  */
 gcc_pure
 static int32_t
-ReadS24(const uint8_t *src)
+ReadS24(const uint8_t *src) noexcept
 {
 	return IsBigEndian() ? ReadS24BE(src) : ReadS24LE(src);
 }

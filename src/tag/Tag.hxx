@@ -85,7 +85,7 @@ struct Tag {
 	 * Similar to the move operator, but move only the #TagItem
 	 * array.
 	 */
-	void MoveItemsFrom(Tag &&other) {
+	void MoveItemsFrom(Tag &&other) noexcept {
 		std::swap(items, other.items);
 		std::swap(num_items, other.num_items);
 	}
@@ -94,21 +94,21 @@ struct Tag {
 	 * Returns true if the tag contains no items.  This ignores
 	 * the "duration" attribute.
 	 */
-	bool IsEmpty() const {
+	bool IsEmpty() const noexcept {
 		return num_items == 0;
 	}
 
 	/**
 	 * Returns true if the tag contains any information.
 	 */
-	bool IsDefined() const {
+	bool IsDefined() const noexcept {
 		return !IsEmpty() || !duration.IsNegative();
 	}
 
 	/**
 	 * Clear everything, as if this was a new Tag object.
 	 */
-	void Clear();
+	void Clear() noexcept;
 
 	/**
 	 * Merges the data from two tags.  If both tags share data for the
@@ -149,7 +149,7 @@ struct Tag {
 	 * there is no such value, returns an empty string.
 	 */
 	gcc_pure
-	const char *GetSortValue(TagType type) const;
+	const char *GetSortValue(TagType type) const noexcept;
 
 	class const_iterator {
 		friend struct Tag;

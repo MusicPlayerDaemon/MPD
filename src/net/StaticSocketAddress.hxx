@@ -96,7 +96,7 @@ public:
 	 * Extract the port number.  Returns 0 if not applicable.
 	 */
 	gcc_pure
-	unsigned GetPort() const {
+	unsigned GetPort() const noexcept {
 		return ((SocketAddress)*this).GetPort();
 	}
 
@@ -104,7 +104,7 @@ public:
 	 * @return true on success, false if this address cannot have
 	 * a port number
 	 */
-	bool SetPort(unsigned port);
+	bool SetPort(unsigned port) noexcept;
 #endif
 
 	gcc_pure

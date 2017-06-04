@@ -9,7 +9,7 @@
 #include <cppunit/extensions/HelperMacros.h>
 
 Tag::Tag(const Tag &) {}
-void Tag::Clear() {}
+void Tag::Clear() noexcept {}
 
 static void
 check_descending_priority(const Queue *queue,

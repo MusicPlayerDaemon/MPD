@@ -53,7 +53,7 @@ StaticSocketAddress::operator=(SocketAddress other) noexcept
 #ifdef HAVE_TCP
 
 bool
-StaticSocketAddress::SetPort(unsigned port)
+StaticSocketAddress::SetPort(unsigned port) noexcept
 {
 	switch (GetFamily()) {
 	case AF_INET:

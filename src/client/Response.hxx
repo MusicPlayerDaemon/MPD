@@ -66,7 +66,7 @@ public:
 	 * to avoid including Client.hxx.
 	 */
 	gcc_pure
-	TagMask GetTagMask() const;
+	TagMask GetTagMask() const noexcept;
 
 	void SetCommand(const char *_command) {
 		command = _command;
