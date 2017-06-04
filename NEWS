@@ -1,4 +1,4 @@
-ver 0.20.9 (not yet released)
+ver 0.20.9 (2017/06/04)
 * decoder
   - ffmpeg: support *.adx
 * fix byte order detection on FreeBSD/aarch64
