@@ -37,7 +37,7 @@ public:
 	void Open() override {
 	}
 
-	void Close() override {
+	void Close() noexcept override {
 	}
 
 	int GetVolume() override {

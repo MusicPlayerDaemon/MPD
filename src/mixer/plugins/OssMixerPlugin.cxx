@@ -59,7 +59,7 @@ public:
 
 	/* virtual methods from class Mixer */
 	void Open() override;
-	void Close() override;
+	void Close() noexcept override;
 	int GetVolume() override;
 	void SetVolume(unsigned volume) override;
 };
@@ -105,7 +105,7 @@ oss_mixer_init(gcc_unused EventLoop &event_loop, gcc_unused AudioOutput &ao,
 }
 
 void
-OssMixer::Close()
+OssMixer::Close() noexcept
 {
 	assert(device_fd >= 0);
 

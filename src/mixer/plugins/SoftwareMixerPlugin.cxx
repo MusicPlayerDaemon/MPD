@@ -50,7 +50,7 @@ public:
 	void Open() override {
 	}
 
-	virtual void Close() override {
+	void Close() noexcept override {
 	}
 
 	int GetVolume() override {

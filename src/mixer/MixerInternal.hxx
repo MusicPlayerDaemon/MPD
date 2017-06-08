@@ -51,14 +51,15 @@ public:
 	bool failed = false;
 
 public:
-	explicit Mixer(const MixerPlugin &_plugin, MixerListener &_listener)
+	explicit Mixer(const MixerPlugin &_plugin,
+		       MixerListener &_listener) noexcept
 		:plugin(_plugin), listener(_listener) {}
 
 	Mixer(const Mixer &) = delete;
 
 	virtual ~Mixer() {}
 
-	bool IsPlugin(const MixerPlugin &other) const {
+	bool IsPlugin(const MixerPlugin &other) const noexcept {
 		return &plugin == &other;
 	}
 
@@ -72,7 +73,7 @@ public:
 	/**
 	 * Close mixer device
 	 */
-	virtual void Close() = 0;
+	virtual void Close() noexcept = 0;
 
 	/**
 	 * Reads the current volume.
