@@ -23,9 +23,9 @@
 class Filter;
 
 unsigned
-volume_filter_get(const Filter *filter);
+volume_filter_get(const Filter *filter) noexcept;
 
 void
-volume_filter_set(Filter *filter, unsigned volume);
+volume_filter_set(Filter *filter, unsigned volume) noexcept;
 
 #endif

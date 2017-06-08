@@ -37,11 +37,11 @@ public:
 		pv.Open(out_audio_format.format);
 	}
 
-	unsigned GetVolume() const {
+	unsigned GetVolume() const noexcept {
 		return pv.GetVolume();
 	}
 
-	void SetVolume(unsigned _volume) {
+	void SetVolume(unsigned _volume) noexcept {
 		pv.SetVolume(_volume);
 	}
 
@@ -81,7 +81,7 @@ const FilterPlugin volume_filter_plugin = {
 };
 
 unsigned
-volume_filter_get(const Filter *_filter)
+volume_filter_get(const Filter *_filter) noexcept
 {
 	const VolumeFilter *filter =
 		(const VolumeFilter *)_filter;
@@ -90,7 +90,7 @@ volume_filter_get(const Filter *_filter)
 }
 
 void
-volume_filter_set(Filter *_filter, unsigned volume)
+volume_filter_set(Filter *_filter, unsigned volume) noexcept
 {
 	VolumeFilter *filter = (VolumeFilter *)_filter;
 

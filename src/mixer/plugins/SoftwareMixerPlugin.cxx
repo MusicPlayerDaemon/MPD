@@ -44,7 +44,7 @@ public:
 	{
 	}
 
-	void SetFilter(Filter *_filter);
+	void SetFilter(Filter *_filter) noexcept;
 
 	/* virtual methods from class Mixer */
 	void Open() override {
@@ -101,7 +101,7 @@ const MixerPlugin software_mixer_plugin = {
 };
 
 inline void
-SoftwareMixer::SetFilter(Filter *_filter)
+SoftwareMixer::SetFilter(Filter *_filter) noexcept
 {
 	filter = _filter;
 
@@ -111,7 +111,7 @@ SoftwareMixer::SetFilter(Filter *_filter)
 }
 
 void
-software_mixer_set_filter(Mixer &mixer, Filter *filter)
+software_mixer_set_filter(Mixer &mixer, Filter *filter) noexcept
 {
 	SoftwareMixer &sm = (SoftwareMixer &)mixer;
 	sm.SetFilter(filter);
