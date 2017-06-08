@@ -197,6 +197,22 @@ AudioOutput::OpenOutputAndConvert(AudioFormat desired_audio_format)
 	}
 }
 
+inline bool
+AudioOutputControl::InternalEnable() noexcept
+{
+	last_error = nullptr;
+
+	try {
+		output->Enable();
+		return true;
+	} catch (const std::runtime_error &e) {
+		LogError(e);
+		fail_timer.Update();
+		last_error = std::current_exception();
+		return false;
+	}
+}
+
 inline void
 AudioOutputControl::InternalDisable() noexcept
 {
@@ -210,14 +226,15 @@ inline void
 AudioOutputControl::InternalOpen(const AudioFormat audio_format,
 				 const MusicPipe &pipe) noexcept
 {
+	/* enable the device (just in case the last enable has failed) */
+	if (!InternalEnable())
+		return;
+
 	last_error = nullptr;
 	fail_timer.Reset();
 	skip_delay = true;
 
 	try {
-		/* enable the device (just in case the last enable has failed) */
-		output->Enable();
-
 		output->Open(audio_format, pipe);
 	} catch (const std::runtime_error &e) {
 		LogError(e);
@@ -459,16 +476,7 @@ AudioOutputControl::Task()
 			break;
 
 		case Command::ENABLE:
-			last_error = nullptr;
-
-			try {
-				output->Enable();
-			} catch (const std::runtime_error &e) {
-				LogError(e);
-				fail_timer.Update();
-				last_error = std::current_exception();
-			}
-
+			InternalEnable();
 			CommandFinished();
 			break;
 

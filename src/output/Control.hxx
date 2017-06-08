@@ -362,6 +362,13 @@ public:
 private:
 	/**
 	 * Runs inside the OutputThread.  Handles exceptions.
+	 *
+	 * @return true on success
+	 */
+	bool InternalEnable() noexcept;
+
+	/**
+	 * Runs inside the OutputThread.  Handles exceptions.
 	 */
 	void InternalDisable() noexcept;
 
