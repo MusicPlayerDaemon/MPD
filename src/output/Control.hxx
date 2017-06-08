@@ -23,6 +23,7 @@
 #include "Source.hxx"
 #include "AudioFormat.hxx"
 #include "thread/Thread.hxx"
+#include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
 #include "system/PeriodClock.hxx"
 #include "Compiler.h"
@@ -203,7 +204,10 @@ class AudioOutputControl {
 	bool skip_delay;
 
 public:
-	Mutex &mutex;
+	/**
+	 * This mutex protects #open, #fail_timer, #pipe.
+	 */
+	mutable Mutex mutex;
 
 	AudioOutputControl(AudioOutput *_output, AudioOutputClient &_client);
 

@@ -480,7 +480,7 @@ AudioOutputControl::Task()
 
 		if (command == Command::NONE) {
 			woken_for_play = false;
-			cond.wait(output->mutex);
+			cond.wait(mutex);
 		}
 	}
 }

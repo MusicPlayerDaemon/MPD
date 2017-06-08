@@ -22,7 +22,6 @@
 
 #include "AudioFormat.hxx"
 #include "filter/Observer.hxx"
-#include "thread/Mutex.hxx"
 
 class PreparedFilter;
 class MusicPipe;
@@ -105,11 +104,6 @@ struct AudioOutput {
 	 * for this audio output.
 	 */
 	FilterObserver convert_filter;
-
-	/**
-	 * This mutex protects #open, #fail_timer, #pipe.
-	 */
-	mutable Mutex mutex;
 
 	/**
 	 * Throws #std::runtime_error on error.
