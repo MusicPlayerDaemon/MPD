@@ -190,7 +190,7 @@ public:
 	/**
 	 * Throws #std::runtime_error on error.
 	 */
-	void Open(AudioFormat audio_format, const MusicPipe &pipe);
+	void Open(AudioFormat in_audio_format);
 
 	void Close(bool drain) noexcept;
 

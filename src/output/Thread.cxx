@@ -81,31 +81,17 @@ AudioOutput::CloseFilter() noexcept
 {
 	if (mixer != nullptr && mixer->IsPlugin(software_mixer_plugin))
 		software_mixer_set_filter(*mixer, nullptr);
-
-	source.Close();
 }
 
 inline void
-AudioOutput::Open(const AudioFormat in_audio_format, const MusicPipe &pipe)
+AudioOutput::Open(const AudioFormat in_audio_format)
 {
 	assert(in_audio_format.IsValid());
-
-	AudioFormat f;
-
-	try {
-		f = source.Open(in_audio_format, pipe,
-				prepared_replay_gain_filter,
-				prepared_other_replay_gain_filter,
-				prepared_filter);
-	} catch (const std::runtime_error &e) {
-		std::throw_with_nested(FormatRuntimeError("Failed to open filter for \"%s\" [%s]",
-							  name, plugin.name));
-	}
 
 	if (mixer != nullptr && mixer->IsPlugin(software_mixer_plugin))
 		software_mixer_set_filter(*mixer, volume_filter.Get());
 
-	const auto cf = f.WithMask(config_audio_format);
+	const auto cf = in_audio_format.WithMask(config_audio_format);
 
 	if (open && cf != filter_audio_format) {
 		/* if the filter's output format changes, the output
@@ -125,7 +111,7 @@ AudioOutput::Open(const AudioFormat in_audio_format, const MusicPipe &pipe)
 		}
 
 		open = true;
-	} else if (f != out_audio_format) {
+	} else if (in_audio_format != out_audio_format) {
 		/* reconfigure the final ConvertFilter for its new
 		   input AudioFormat */
 
@@ -138,12 +124,6 @@ AudioOutput::Open(const AudioFormat in_audio_format, const MusicPipe &pipe)
 								  name, plugin.name));
 		}
 	}
-
-	if (f != in_audio_format || f != out_audio_format)
-		FormatDebug(output_domain, "converting in=%s -> f=%s -> out=%s",
-			    ToString(in_audio_format).c_str(),
-			    ToString(f).c_str(),
-			    ToString(out_audio_format).c_str());
 }
 
 void
@@ -222,7 +202,7 @@ AudioOutputControl::InternalDisable() noexcept
 }
 
 inline void
-AudioOutputControl::InternalOpen(const AudioFormat audio_format,
+AudioOutputControl::InternalOpen(const AudioFormat in_audio_format,
 				 const MusicPipe &pipe) noexcept
 {
 	/* enable the device (just in case the last enable has failed) */
@@ -233,13 +213,37 @@ AudioOutputControl::InternalOpen(const AudioFormat audio_format,
 	fail_timer.Reset();
 	skip_delay = true;
 
+	AudioFormat f;
+
 	try {
-		output->Open(audio_format, pipe);
+		try {
+			auto &source = output->source;
+			f = source.Open(in_audio_format, pipe,
+					output->prepared_replay_gain_filter,
+					output->prepared_other_replay_gain_filter,
+					output->prepared_filter);
+		} catch (const std::runtime_error &e) {
+			std::throw_with_nested(FormatRuntimeError("Failed to open filter for \"%s\" [%s]",
+								  GetName(), output->plugin.name));
+		}
+
+		try {
+			output->Open(f);
+		} catch (...) {
+			output->source.Close();
+			throw;
+		}
 	} catch (const std::runtime_error &e) {
 		LogError(e);
 		fail_timer.Update();
 		last_error = std::current_exception();
 	}
+
+	if (f != in_audio_format || f != output->out_audio_format)
+		FormatDebug(output_domain, "converting in=%s -> f=%s -> out=%s",
+			    ToString(in_audio_format).c_str(),
+			    ToString(f).c_str(),
+			    ToString(output->out_audio_format).c_str());
 }
 
 inline void
@@ -249,6 +253,7 @@ AudioOutputControl::InternalClose(bool drain) noexcept
 		return;
 
 	output->Close(drain);
+	output->source.Close();
 }
 
 void
