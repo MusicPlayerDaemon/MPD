@@ -77,9 +77,6 @@ AudioOutput::Enable()
 inline void
 AudioOutput::Disable() noexcept
 {
-	if (open)
-		Close(false);
-
 	if (really_enabled) {
 		really_enabled = false;
 
@@ -206,6 +203,9 @@ AudioOutput::OpenOutputAndConvert(AudioFormat desired_audio_format)
 inline void
 AudioOutputControl::InternalDisable() noexcept
 {
+	if (output->open)
+		output->Close(false);
+
 	output->Disable();
 }
 
