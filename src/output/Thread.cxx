@@ -84,44 +84,47 @@ AudioOutput::CloseFilter() noexcept
 }
 
 inline void
-AudioOutput::Open(const AudioFormat in_audio_format)
+AudioOutputControl::InternalOpen2(const AudioFormat in_audio_format)
 {
 	assert(in_audio_format.IsValid());
 
-	if (mixer != nullptr && mixer->IsPlugin(software_mixer_plugin))
-		software_mixer_set_filter(*mixer, volume_filter.Get());
+	if (output->mixer != nullptr &&
+	    output->mixer->IsPlugin(software_mixer_plugin))
+		software_mixer_set_filter(*output->mixer,
+					  output->volume_filter.Get());
 
-	const auto cf = in_audio_format.WithMask(config_audio_format);
+	const auto cf = in_audio_format.WithMask(output->config_audio_format);
 
-	if (open && cf != filter_audio_format) {
+	if (open && cf != output->filter_audio_format) {
 		/* if the filter's output format changes, the output
 		   must be reopened as well */
-		CloseOutput(true);
+		output->CloseOutput(true);
 		open = false;
 	}
 
-	filter_audio_format = cf;
+	output->filter_audio_format = cf;
 
 	if (!open) {
 		try {
-			OpenOutputAndConvert(filter_audio_format);
+			output->OpenOutputAndConvert(output->filter_audio_format);
 		} catch (...) {
-			CloseFilter();
+			output->CloseFilter();
 			throw;
 		}
 
 		open = true;
-	} else if (in_audio_format != out_audio_format) {
+	} else if (in_audio_format != output->out_audio_format) {
 		/* reconfigure the final ConvertFilter for its new
 		   input AudioFormat */
 
 		try {
-			convert_filter_set(convert_filter.Get(),
-					   out_audio_format);
+			convert_filter_set(output->convert_filter.Get(),
+					   output->out_audio_format);
 		} catch (const std::runtime_error &e) {
-			Close(false);
+			open = false;
+			output->Close(false);
 			std::throw_with_nested(FormatRuntimeError("Failed to convert for \"%s\" [%s]",
-								  name, plugin.name));
+								  GetName(), output->plugin.name));
 		}
 	}
 }
@@ -227,7 +230,7 @@ AudioOutputControl::InternalOpen(const AudioFormat in_audio_format,
 		}
 
 		try {
-			output->Open(f);
+			InternalOpen2(f);
 		} catch (...) {
 			source.Close();
 			throw;
@@ -251,6 +254,7 @@ AudioOutputControl::InternalClose(bool drain) noexcept
 	if (!IsOpen())
 		return;
 
+	open = false;
 	output->Close(drain);
 	source.Close();
 }
@@ -258,10 +262,6 @@ AudioOutputControl::InternalClose(bool drain) noexcept
 void
 AudioOutput::Close(bool drain) noexcept
 {
-	assert(open);
-
-	open = false;
-
 	const ScopeUnlock unlock(mutex);
 
 	CloseOutput(drain);
@@ -438,9 +438,6 @@ AudioOutput::IteratePause() noexcept
 		success = false;
 	}
 
-	if (!success)
-		Close(false);
-
 	return success;
 }
 
@@ -457,6 +454,8 @@ AudioOutputControl::InternalPause() noexcept
 			break;
 
 		if (!output->IteratePause()) {
+			open = false;
+			output->Close(false);
 			source.Close();
 			break;
 		}
@@ -510,7 +509,7 @@ AudioOutputControl::Task()
 			break;
 
 		case Command::PAUSE:
-			if (!output->open) {
+			if (!open) {
 				/* the output has failed after
 				   audio_output_all_pause() has
 				   submitted the PAUSE command; bail
@@ -527,7 +526,7 @@ AudioOutputControl::Task()
 			continue;
 
 		case Command::DRAIN:
-			if (output->open) {
+			if (open) {
 				const ScopeUnlock unlock(mutex);
 				ao_plugin_drain(*output);
 			}
@@ -538,7 +537,7 @@ AudioOutputControl::Task()
 		case Command::CANCEL:
 			source.Cancel();
 
-			if (output->open) {
+			if (open) {
 				const ScopeUnlock unlock(mutex);
 				ao_plugin_cancel(*output);
 			}
@@ -553,7 +552,7 @@ AudioOutputControl::Task()
 			return;
 		}
 
-		if (output->open && allow_play && InternalPlay())
+		if (open && allow_play && InternalPlay())
 			/* don't wait for an event if there are more
 			   chunks in the pipe */
 			continue;

@@ -53,16 +53,6 @@ struct AudioOutput {
 	Mixer *mixer = nullptr;
 
 	/**
-	 * Is the device (already) open and functional?
-	 *
-	 * This attribute may only be modified by the output thread.
-	 * It is protected with #mutex: write accesses inside the
-	 * output thread and read accesses outside of it may only be
-	 * performed while the lock is held.
-	 */
-	bool open = false;
-
-	/**
 	 * The configured audio format.
 	 */
 	AudioFormat config_audio_format;
@@ -146,27 +136,14 @@ public:
 	}
 
 	/**
-	 * Caller must lock the mutex.
-	 */
-	bool IsOpen() const {
-		return open;
-	}
-
-	/**
 	 * Throws #std::runtime_error on error.
 	 */
 	void Enable();
 
 	void Disable() noexcept;
 
-	/**
-	 * Throws #std::runtime_error on error.
-	 */
-	void Open(AudioFormat in_audio_format);
-
 	void Close(bool drain) noexcept;
 
-private:
 	/**
 	 * Invoke OutputPlugin::open() and configure the
 	 * #ConvertFilter.
@@ -189,7 +166,6 @@ private:
 	 */
 	void CloseFilter() noexcept;
 
-public:
 	void BeginPause() noexcept;
 	bool IteratePause() noexcept;
 

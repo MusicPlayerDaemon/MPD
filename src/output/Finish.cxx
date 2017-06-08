@@ -27,8 +27,6 @@
 
 AudioOutput::~AudioOutput()
 {
-	assert(!open);
-
 	if (mixer != nullptr)
 		mixer_free(mixer);
 
@@ -40,7 +38,5 @@ AudioOutput::~AudioOutput()
 void
 audio_output_free(AudioOutput *ao) noexcept
 {
-	assert(!ao->IsOpen());
-
 	ao_plugin_finish(ao);
 }

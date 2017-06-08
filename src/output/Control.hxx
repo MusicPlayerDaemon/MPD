@@ -156,6 +156,16 @@ class AudioOutputControl {
 	bool really_enabled = false;
 
 	/**
+	 * Is the device (already) open and functional?
+	 *
+	 * This attribute may only be modified by the output thread.
+	 * It is protected with #mutex: write accesses inside the
+	 * output thread and read accesses outside of it may only be
+	 * performed while the lock is held.
+	 */
+	bool open = false;
+
+	/**
 	 * Is the device paused?  i.e. the output thread is in the
 	 * ao_pause() loop.
 	 */
@@ -202,6 +212,7 @@ public:
 		assert(!fail_timer.IsDefined());
 		assert(!thread.IsDefined());
 		assert(output == nullptr);
+		assert(!open);
 	}
 #endif
 
@@ -240,8 +251,12 @@ public:
 	 */
 	bool LockToggleEnabled() noexcept;
 
-	gcc_pure
-	bool IsOpen() const noexcept;
+	/**
+	 * Caller must lock the mutex.
+	 */
+	bool IsOpen() const noexcept {
+		return open;
+	}
 
 	/**
 	 * Caller must lock the mutex.
@@ -336,6 +351,11 @@ public:
 	void SetReplayGainMode(ReplayGainMode _mode) noexcept {
 		source.SetReplayGainMode(_mode);
 	}
+
+	/**
+	 * Throws #std::runtime_error on error.
+	 */
+	void InternalOpen2(AudioFormat in_audio_format);
 
 	/**
 	 * Caller must lock the mutex.

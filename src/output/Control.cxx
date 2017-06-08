@@ -85,12 +85,6 @@ AudioOutputControl::LockToggleEnabled() noexcept
 	return enabled = !enabled;
 }
 
-bool
-AudioOutputControl::IsOpen() const noexcept
-{
-	return output->IsOpen();
-}
-
 void
 AudioOutputControl::WaitForCommand() noexcept
 {
@@ -180,7 +174,7 @@ AudioOutputControl::Open(const AudioFormat audio_format,
 
 	fail_timer.Reset();
 
-	if (output->open && audio_format == request.audio_format) {
+	if (open && audio_format == request.audio_format) {
 		assert(request.pipe == &mp || (always_on && pause));
 
 		if (!pause)
@@ -196,7 +190,7 @@ AudioOutputControl::Open(const AudioFormat audio_format,
 		StartThread();
 
 	CommandWait(Command::OPEN);
-	const bool open2 = output->open;
+	const bool open2 = open;
 
 	if (open2 && output->mixer != nullptr) {
 		try {
@@ -218,9 +212,9 @@ AudioOutputControl::CloseWait() noexcept
 	if (output->mixer != nullptr)
 		mixer_auto_close(output->mixer);
 
-	assert(!output->open || !fail_timer.IsDefined());
+	assert(!open || !fail_timer.IsDefined());
 
-	if (output->open)
+	if (open)
 		CommandWait(Command::CLOSE);
 	else
 		fail_timer.Reset();
@@ -247,7 +241,7 @@ AudioOutputControl::LockUpdate(const AudioFormat audio_format,
 bool
 AudioOutputControl::IsChunkConsumed(const MusicChunk &chunk) const noexcept
 {
-	if (!output->open)
+	if (!open)
 		return true;
 
 	return source.IsChunkConsumed(chunk);
@@ -332,7 +326,7 @@ AudioOutputControl::LockRelease() noexcept
 void
 AudioOutputControl::LockCloseWait() noexcept
 {
-	assert(!output->open || !fail_timer.IsDefined());
+	assert(!open || !fail_timer.IsDefined());
 
 	const std::lock_guard<Mutex> protect(mutex);
 	CloseWait();
