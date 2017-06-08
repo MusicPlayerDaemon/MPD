@@ -144,6 +144,12 @@ class AudioOutputControl {
 	bool enabled = true;
 
 	/**
+	 * Is this device actually enabled, i.e. the "enable" method
+	 * has succeeded?
+	 */
+	bool really_enabled = false;
+
+	/**
 	 * Is the device paused?  i.e. the output thread is in the
 	 * ao_pause() loop.
 	 */

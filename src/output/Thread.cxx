@@ -60,9 +60,6 @@ AudioOutputControl::CommandFinished() noexcept
 inline void
 AudioOutput::Enable()
 {
-	if (really_enabled)
-		return;
-
 	try {
 		const ScopeUnlock unlock(mutex);
 		ao_plugin_enable(*this);
@@ -70,19 +67,13 @@ AudioOutput::Enable()
 		std::throw_with_nested(FormatRuntimeError("Failed to enable output \"%s\" [%s]",
 							  name, plugin.name));
 	}
-
-	really_enabled = true;
 }
 
 inline void
 AudioOutput::Disable() noexcept
 {
-	if (really_enabled) {
-		really_enabled = false;
-
-		const ScopeUnlock unlock(mutex);
-		ao_plugin_disable(*this);
-	}
+	const ScopeUnlock unlock(mutex);
+	ao_plugin_disable(*this);
 }
 
 void
@@ -200,10 +191,15 @@ AudioOutput::OpenOutputAndConvert(AudioFormat desired_audio_format)
 inline bool
 AudioOutputControl::InternalEnable() noexcept
 {
+	if (really_enabled)
+		/* already enabled */
+		return true;
+
 	last_error = nullptr;
 
 	try {
 		output->Enable();
+		really_enabled = true;
 		return true;
 	} catch (const std::runtime_error &e) {
 		LogError(e);
@@ -216,9 +212,13 @@ AudioOutputControl::InternalEnable() noexcept
 inline void
 AudioOutputControl::InternalDisable() noexcept
 {
+	if (!really_enabled)
+		return;
+
 	if (output->open)
 		output->Close(false);
 
+	really_enabled = false;
 	output->Disable();
 }
 

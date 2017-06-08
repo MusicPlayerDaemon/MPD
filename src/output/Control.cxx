@@ -132,7 +132,7 @@ AudioOutputControl::EnableAsync()
 			/* don't bother to start the thread now if the
 			   device doesn't even have a enable() method;
 			   just assign the variable and we're done */
-			output->really_enabled = true;
+			really_enabled = true;
 			return;
 		}
 
@@ -147,11 +147,11 @@ AudioOutputControl::DisableAsync() noexcept
 {
 	if (!thread.IsDefined()) {
 		if (output->plugin.disable == nullptr)
-			output->really_enabled = false;
+			really_enabled = false;
 		else
 			/* if there's no thread yet, the device cannot
 			   be enabled */
-			assert(!output->really_enabled);
+			assert(!really_enabled);
 
 		return;
 	}
@@ -162,7 +162,7 @@ AudioOutputControl::DisableAsync() noexcept
 void
 AudioOutputControl::EnableDisableAsync()
 {
-	if (enabled == output->really_enabled)
+	if (enabled == really_enabled)
 		return;
 
 	if (enabled)
@@ -233,7 +233,7 @@ AudioOutputControl::LockUpdate(const AudioFormat audio_format,
 {
 	const std::lock_guard<Mutex> protect(mutex);
 
-	if (enabled && output->really_enabled) {
+	if (enabled && really_enabled) {
 		if (force || !fail_timer.IsDefined() ||
 		    fail_timer.Check(REOPEN_AFTER * 1000)) {
 			return Open(audio_format, mp);

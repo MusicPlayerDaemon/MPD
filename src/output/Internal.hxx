@@ -54,12 +54,6 @@ struct AudioOutput {
 	Mixer *mixer = nullptr;
 
 	/**
-	 * Is this device actually enabled, i.e. the "enable" method
-	 * has succeeded?
-	 */
-	bool really_enabled = false;
-
-	/**
 	 * Is the device (already) open and functional?
 	 *
 	 * This attribute may only be modified by the output thread.
