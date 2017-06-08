@@ -99,9 +99,6 @@ AudioOutput::Open(AudioFormat audio_format, const MusicPipe &pipe)
 {
 	assert(audio_format.IsValid());
 
-	/* enable the device (just in case the last enable has failed) */
-	Enable();
-
 	AudioFormat f;
 
 	try {
@@ -218,6 +215,9 @@ AudioOutputControl::InternalOpen(const AudioFormat audio_format,
 	skip_delay = true;
 
 	try {
+		/* enable the device (just in case the last enable has failed) */
+		output->Enable();
+
 		output->Open(audio_format, pipe);
 	} catch (const std::runtime_error &e) {
 		LogError(e);
