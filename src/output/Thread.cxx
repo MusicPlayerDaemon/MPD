@@ -86,14 +86,14 @@ AudioOutput::CloseFilter() noexcept
 }
 
 inline void
-AudioOutput::Open(const AudioFormat audio_format, const MusicPipe &pipe)
+AudioOutput::Open(const AudioFormat in_audio_format, const MusicPipe &pipe)
 {
-	assert(audio_format.IsValid());
+	assert(in_audio_format.IsValid());
 
 	AudioFormat f;
 
 	try {
-		f = source.Open(audio_format, pipe,
+		f = source.Open(in_audio_format, pipe,
 				prepared_replay_gain_filter,
 				prepared_other_replay_gain_filter,
 				prepared_filter);
@@ -139,9 +139,9 @@ AudioOutput::Open(const AudioFormat audio_format, const MusicPipe &pipe)
 		}
 	}
 
-	if (f != source.GetInputAudioFormat() || f != out_audio_format)
+	if (f != in_audio_format || f != out_audio_format)
 		FormatDebug(output_domain, "converting in=%s -> f=%s -> out=%s",
-			    ToString(source.GetInputAudioFormat()).c_str(),
+			    ToString(in_audio_format).c_str(),
 			    ToString(f).c_str(),
 			    ToString(out_audio_format).c_str());
 }
