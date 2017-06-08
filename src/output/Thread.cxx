@@ -86,7 +86,7 @@ AudioOutput::CloseFilter() noexcept
 }
 
 inline void
-AudioOutput::Open(AudioFormat audio_format, const MusicPipe &pipe)
+AudioOutput::Open(const AudioFormat audio_format, const MusicPipe &pipe)
 {
 	assert(audio_format.IsValid());
 
