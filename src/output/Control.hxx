@@ -385,6 +385,11 @@ private:
 			  const MusicPipe &pipe) noexcept;
 
 	/**
+	 * Runs inside the OutputThread.
+	 */
+	void InternalClose(bool drain) noexcept;
+
+	/**
 	 * Wait until the output's delay reaches zero.
 	 *
 	 * @return true if playback should be continued, false if a
