@@ -97,13 +97,13 @@ AudioOutput::Open(const AudioFormat in_audio_format, const MusicPipe &pipe)
 				prepared_replay_gain_filter,
 				prepared_other_replay_gain_filter,
 				prepared_filter);
-
-		if (mixer != nullptr && mixer->IsPlugin(software_mixer_plugin))
-			software_mixer_set_filter(*mixer, volume_filter.Get());
 	} catch (const std::runtime_error &e) {
 		std::throw_with_nested(FormatRuntimeError("Failed to open filter for \"%s\" [%s]",
 							  name, plugin.name));
 	}
+
+	if (mixer != nullptr && mixer->IsPlugin(software_mixer_plugin))
+		software_mixer_set_filter(*mixer, volume_filter.Get());
 
 	const auto cf = f.WithMask(config_audio_format);
 
