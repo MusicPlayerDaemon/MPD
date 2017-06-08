@@ -204,6 +204,12 @@ AudioOutput::OpenOutputAndConvert(AudioFormat desired_audio_format)
 }
 
 inline void
+AudioOutputControl::InternalDisable() noexcept
+{
+	output->Disable();
+}
+
+inline void
 AudioOutputControl::InternalOpen(const AudioFormat audio_format,
 				 const MusicPipe &pipe) noexcept
 {
@@ -467,7 +473,7 @@ AudioOutputControl::Task()
 			break;
 
 		case Command::DISABLE:
-			output->Disable();
+			InternalDisable();
 			CommandFinished();
 			break;
 
@@ -520,7 +526,7 @@ AudioOutputControl::Task()
 			continue;
 
 		case Command::KILL:
-			output->Disable();
+			InternalDisable();
 			output->source.Cancel();
 			CommandFinished();
 			return;
