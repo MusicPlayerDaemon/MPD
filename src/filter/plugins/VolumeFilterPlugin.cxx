@@ -50,8 +50,6 @@ public:
 };
 
 class PreparedVolumeFilter final : public PreparedFilter {
-	PcmVolume pv;
-
 public:
 	/* virtual methods from class Filter */
 	Filter *Open(AudioFormat &af) override;
