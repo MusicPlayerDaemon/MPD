@@ -42,19 +42,17 @@ public:
 	/**
 	 * Is the mixer device currently open?
 	 */
-	bool open;
+	bool open = false;
 
 	/**
 	 * Has this mixer failed, and should not be reopened
 	 * automatically?
 	 */
-	bool failed;
+	bool failed = false;
 
 public:
 	explicit Mixer(const MixerPlugin &_plugin, MixerListener &_listener)
-		:plugin(_plugin), listener(_listener),
-		 open(false),
-		 failed(false) {}
+		:plugin(_plugin), listener(_listener) {}
 
 	Mixer(const Mixer &) = delete;
 
