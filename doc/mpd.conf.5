@@ -146,7 +146,9 @@ only FLAC, Ogg Vorbis, Musepack, and MP3 (through ID3v2 ReplayGain tags, not
 APEv2) are supported.
 .TP
 .B replaygain_preamp <\-15 to 15>
-This is the gain (in dB) applied to songs with ReplayGain tags.
+This setting enables on-the-fly normalization volume adjustment. This will
+result in the volume of all playing audio to be adjusted so the output has equal
+"loudness". This setting is disabled by default.
 .TP
 .B volume_normalization <yes or no>
 If yes, mpd will normalize the volume of songs as they play.  The default is no.
