@@ -113,7 +113,7 @@ cd mpd-version</programlisting>
 
       <para>
         For example, the following installs a fairly complete list of
-        build dependencies on Debian Wheezy:
+        build dependencies on Debian Jessie:
       </para>
 
       <programlisting>
@@ -137,7 +137,7 @@ apt-get install g++ \
   libupnp-dev \
   libavahi-client-dev \
   libsqlite3-dev \
-  libsystemd-daemon-dev libwrap0-dev \
+  libsystemd-dev libwrap0-dev \
   libcppunit-dev xmlto \
   libboost-dev \
   libicu-dev
