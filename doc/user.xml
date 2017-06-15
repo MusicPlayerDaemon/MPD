@@ -113,7 +113,7 @@ cd mpd-version</programlisting>
 
       <para>
         For example, the following installs a fairly complete list of
-        build dependencies on Debian Wheezy:
+        build dependencies on Debian Jessie:
       </para>
 
       <programlisting>
@@ -125,19 +125,20 @@ apt-get install g++ \
   libmpcdec-dev libwavpack-dev libwildmidi-dev \
   libsidplay2-dev libsidutils-dev libresid-builder-dev \
   libavcodec-dev libavformat-dev \
-  libmp3lame-dev \
+  libmp3lame-dev libtwolame-dev libshine-dev \
   libsamplerate0-dev libsoxr-dev \
   libbz2-dev libcdio-paranoia-dev libiso9660-dev libmms-dev \
   libzzip-dev \
   libcurl4-gnutls-dev libyajl-dev libexpat-dev \
   libasound2-dev libao-dev libjack-jackd2-dev libopenal-dev \
   libpulse-dev libroar-dev libshout3-dev \
+  libsndio-dev \
   libmpdclient-dev \
   libnfs-dev libsmbclient-dev \
   libupnp-dev \
   libavahi-client-dev \
   libsqlite3-dev \
-  libsystemd-daemon-dev libwrap0-dev \
+  libsystemd-dev libwrap0-dev \
   libcppunit-dev xmlto \
   libboost-dev \
   libicu-dev

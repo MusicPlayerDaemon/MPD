@@ -9,6 +9,8 @@ ver 0.21 (not yet released)
 * output
   - alsa: non-blocking mode
 
+ver 0.20.10 (not yet released)
+
 ver 0.20.9 (2017/06/04)
 * decoder
   - ffmpeg: support *.adx
