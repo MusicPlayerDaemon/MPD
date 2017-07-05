@@ -25,7 +25,7 @@
 #include "Builder.hxx"
 #include "util/Alloc.hxx"
 #include "util/ScopeExit.hxx"
-#include "util/StringUtil.hxx"
+#include "util/StringStrip.hxx"
 #include "Log.hxx"
 
 #include <id3tag.h>

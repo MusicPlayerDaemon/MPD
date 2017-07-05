@@ -26,7 +26,7 @@
 #include "system/FatalError.hxx"
 #include "util/Alloc.hxx"
 #include "util/ASCII.hxx"
-#include "util/StringUtil.hxx"
+#include "util/StringStrip.hxx"
 
 #include <stdlib.h>
 

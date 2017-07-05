@@ -25,64 +25,6 @@
 #include <stddef.h>
 
 /**
- * Returns a pointer to the first non-whitespace character in the
- * string, or to the end of the string.
- */
-gcc_pure
-const char *
-StripLeft(const char *p) noexcept;
-
-gcc_pure
-static inline char *
-StripLeft(char *p) noexcept
-{
-	return const_cast<char *>(StripLeft((const char *)p));
-}
-
-gcc_pure
-const char *
-StripLeft(const char *p, const char *end) noexcept;
-
-/**
- * Determine the string's end as if it was stripped on the right side.
- */
-gcc_pure
-const char *
-StripRight(const char *p, const char *end) noexcept;
-
-/**
- * Determine the string's end as if it was stripped on the right side.
- */
-gcc_pure
-static inline char *
-StripRight(char *p, char *end) noexcept
-{
-	return const_cast<char *>(StripRight((const char *)p,
-					     (const char *)end));
-}
-
-/**
- * Determine the string's length as if it was stripped on the right
- * side.
- */
-gcc_pure
-size_t
-StripRight(const char *p, size_t length) noexcept;
-
-/**
- * Strip trailing whitespace by null-terminating the string.
- */
-void
-StripRight(char *p) noexcept;
-
-/**
- * Skip whitespace at the beginning and terminate the string after the
- * last non-whitespace character.
- */
-char *
-Strip(char *p) noexcept;
-
-/**
  * Checks whether a string array contains the specified string.
  *
  * @param haystack a NULL terminated list of strings

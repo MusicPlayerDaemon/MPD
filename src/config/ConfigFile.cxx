@@ -24,7 +24,7 @@
 #include "Block.hxx"
 #include "ConfigTemplates.hxx"
 #include "util/Tokenizer.hxx"
-#include "util/StringUtil.hxx"
+#include "util/StringStrip.hxx"
 #include "util/Domain.hxx"
 #include "util/RuntimeError.hxx"
 #include "fs/Path.hxx"

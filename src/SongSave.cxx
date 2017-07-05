@@ -27,7 +27,7 @@
 #include "tag/ParseName.hxx"
 #include "tag/Tag.hxx"
 #include "tag/Builder.hxx"
-#include "util/StringUtil.hxx"
+#include "util/StringStrip.hxx"
 #include "util/RuntimeError.hxx"
 
 #include <string.h>

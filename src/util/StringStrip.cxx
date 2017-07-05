@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2016 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright (C) 2009-2017 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -27,34 +27,59 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "SplitString.hxx"
-#include "IterableSplitString.hxx"
 #include "StringStrip.hxx"
+#include "CharUtil.hxx"
 
 #include <string.h>
 
-std::forward_list<std::string>
-SplitString(const char *s, char separator, bool strip) noexcept
+const char *
+StripLeft(const char *p) noexcept
 {
-	if (strip)
-		s = StripLeft(s);
+	while (IsWhitespaceNotNull(*p))
+		++p;
 
-	std::forward_list<std::string> list;
-	if (*s == 0)
-		return list;
+	return p;
+}
 
-	auto i = list.before_begin();
+const char *
+StripLeft(const char *p, const char *end) noexcept
+{
+	while (p < end && IsWhitespaceOrNull(*p))
+		++p;
 
-	for (auto value : IterableSplitString(s, separator)) {
-		const char *begin = value.begin(), *end = value.end();
+	return p;
+}
 
-		if (strip) {
-			begin = StripLeft(begin, end);
-			end = StripRight(begin, end);
-		}
+const char *
+StripRight(const char *p, const char *end) noexcept
+{
+	while (end > p && IsWhitespaceOrNull(end[-1]))
+		--end;
 
-		i = list.emplace_after(i, begin, end);
-	}
+	return end;
+}
 
-	return list;
+size_t
+StripRight(const char *p, size_t length) noexcept
+{
+	while (length > 0 && IsWhitespaceOrNull(p[length - 1]))
+		--length;
+
+	return length;
+}
+
+void
+StripRight(char *p) noexcept
+{
+	size_t old_length = strlen(p);
+	size_t new_length = StripRight(p, old_length);
+	p[new_length] = 0;
+}
+
+char *
+Strip(char *p) noexcept
+{
+	p = StripLeft(p);
+	StripRight(p);
+	return p;
 }

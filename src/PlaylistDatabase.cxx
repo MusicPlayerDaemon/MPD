@@ -22,7 +22,7 @@
 #include "db/PlaylistVector.hxx"
 #include "fs/io/TextFile.hxx"
 #include "fs/io/BufferedOutputStream.hxx"
-#include "util/StringUtil.hxx"
+#include "util/StringStrip.hxx"
 #include "util/RuntimeError.hxx"
 
 #include <string.h>

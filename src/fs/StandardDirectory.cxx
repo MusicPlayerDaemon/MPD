@@ -39,7 +39,7 @@
 #endif
 
 #ifdef USE_XDG
-#include "util/StringUtil.hxx"
+#include "util/StringStrip.hxx"
 #include "util/StringCompare.hxx"
 #include "io/TextFile.hxx"
 #include <string.h>

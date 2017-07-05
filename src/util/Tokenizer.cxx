@@ -30,7 +30,7 @@
 #include "config.h"
 #include "Tokenizer.hxx"
 #include "CharUtil.hxx"
-#include "StringUtil.hxx"
+#include "StringStrip.hxx"
 
 #include <stdexcept>
 

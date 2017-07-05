@@ -21,7 +21,7 @@
 #include "LogBackend.hxx"
 #include "Log.hxx"
 #include "util/Domain.hxx"
-#include "util/StringUtil.hxx"
+#include "util/StringStrip.hxx"
 
 #include <assert.h>
 #include <stdio.h>

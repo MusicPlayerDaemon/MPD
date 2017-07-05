@@ -33,7 +33,7 @@
 #include "Version.hxx"
 #include "Handler.hxx"
 #include "util/RuntimeError.hxx"
-#include "util/StringUtil.hxx"
+#include "util/StringStrip.hxx"
 #include "util/StringView.hxx"
 #include "util/CharUtil.hxx"
 
