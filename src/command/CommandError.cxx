@@ -147,5 +147,5 @@ void
 PrintError(Response &r, std::exception_ptr ep)
 {
 	LogError(ep);
-	r.Error(ToAck(ep), FullMessage(ep).c_str());
+	r.Error(ToAck(ep), GetFullMessage(ep).c_str());
 }

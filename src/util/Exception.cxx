@@ -32,7 +32,7 @@
 #include <stdexcept>
 
 std::string
-FullMessage(std::exception_ptr ep) noexcept
+GetFullMessage(std::exception_ptr ep) noexcept
 {
 	try {
 		std::rethrow_exception(ep);
@@ -42,7 +42,7 @@ FullMessage(std::exception_ptr ep) noexcept
 			return e.what();
 		} catch (...) {
 			return std::string(e.what()) + "; " +
-				FullMessage(std::current_exception());
+				GetFullMessage(std::current_exception());
 		}
 	}
 

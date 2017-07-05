@@ -196,7 +196,7 @@ handle_status(Client &client, gcc_unused Request args, Response &r)
 		pc.LockCheckRethrowError();
 	} catch (...) {
 		r.Format(COMMAND_STATUS_ERROR ": %s\n",
-			 FullMessage(std::current_exception()).c_str());
+			 GetFullMessage(std::current_exception()).c_str());
 	}
 
 	song = playlist.GetNextPosition();
