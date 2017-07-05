@@ -30,14 +30,12 @@
 #ifndef MPD_MANUAL_HXX
 #define MPD_MANUAL_HXX
 
-#include "Compiler.h"
-
 #include <new>
 #include <utility>
 
 #include <assert.h>
 
-#if CLANG_OR_GCC_VERSION(4,7)
+#if defined(__GNUC__) || defined(__clang__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wstrict-aliasing"
 #endif
@@ -118,7 +116,7 @@ public:
 	}
 };
 
-#if CLANG_OR_GCC_VERSION(4,7)
+#if defined(__GNUC__) || defined(__clang__)
 #pragma GCC diagnostic pop
 #endif
 
