@@ -36,3 +36,14 @@ AllocatedString<char>::Duplicate(const_pointer_type src)
 {
 	return Duplicate(src, StringLength(src));
 }
+
+#ifdef _UNICODE
+
+template<>
+AllocatedString<wchar_t>
+AllocatedString<wchar_t>::Duplicate(const_pointer_type src)
+{
+	return Duplicate(src, StringLength(src));
+}
+
+#endif
