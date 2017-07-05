@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright (C) 2016-2017 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -32,7 +32,8 @@
 #include <stdexcept>
 
 std::string
-GetFullMessage(std::exception_ptr ep) noexcept
+GetFullMessage(std::exception_ptr ep,
+	       const char *fallback, const char *separator) noexcept
 {
 	try {
 		std::rethrow_exception(ep);
@@ -41,10 +42,11 @@ GetFullMessage(std::exception_ptr ep) noexcept
 			std::rethrow_if_nested(e);
 			return e.what();
 		} catch (...) {
-			return std::string(e.what()) + "; " +
-				GetFullMessage(std::current_exception());
+			return std::string(e.what()) + separator +
+				GetFullMessage(std::current_exception(),
+					       fallback, separator);
 		}
 	}
 
-	return std::string("Unknown error");
+	return fallback;
 }

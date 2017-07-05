@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright (C) 2016-2017 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -38,6 +38,8 @@
  * exceptions (if any).
  */
 std::string
-GetFullMessage(std::exception_ptr ep) noexcept;
+GetFullMessage(std::exception_ptr ep,
+	       const char *fallback="Unknown exception",
+	       const char *separator="; ") noexcept;
 
 #endif
