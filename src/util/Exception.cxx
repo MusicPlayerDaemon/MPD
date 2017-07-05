@@ -44,6 +44,8 @@ GetFullMessage(std::exception_ptr ep,
 				GetFullMessage(std::current_exception(),
 					       fallback, separator);
 		}
+	} catch (const std::nested_exception &ne) {
+		return GetFullMessage(ne.nested_ptr(), fallback, separator);
 	}
 
 	return fallback;
