@@ -235,6 +235,20 @@ struct WritableBuffer {
 		data += n;
 		size -= n;
 	}
+
+	/**
+	 * Move the front pointer to the given address, and adjust the
+	 * size attribute to retain the old end address.
+	 */
+	void MoveFront(pointer_type new_data) {
+#ifndef NDEBUG
+		assert(IsNull() == (new_data == nullptr));
+		assert(new_data <= end());
+#endif
+
+		size = end() - new_data;
+		data = new_data;
+	}
 };
 
 #endif
