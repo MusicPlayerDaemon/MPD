@@ -29,8 +29,6 @@
 
 #include "Exception.hxx"
 
-#include <stdexcept>
-
 std::string
 GetFullMessage(std::exception_ptr ep,
 	       const char *fallback, const char *separator) noexcept
