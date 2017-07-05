@@ -44,6 +44,6 @@
  */
 gcc_nonnull_all
 char *
-CopyString(char *dest, const char *src, size_t size) noexcept;
+CopyTruncateString(char *dest, const char *src, size_t size) noexcept;
 
 #endif

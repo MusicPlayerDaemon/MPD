@@ -143,7 +143,7 @@ parse_cdio_uri(struct cdio_uri *dest, const char *src)
 	const char *slash = strrchr(src, '/');
 	if (slash == nullptr) {
 		/* play the whole CD in the specified drive */
-		CopyString(dest->device, src, sizeof(dest->device));
+		CopyTruncateString(dest->device, src, sizeof(dest->device));
 		dest->track = -1;
 		return true;
 	}

@@ -101,10 +101,10 @@ icy_server_metadata_page(const Tag &tag, const TagType *types)
 	stream_title[0] =  '\0';
 
 	while (p < end && item <= last_item) {
-		p = CopyString(p, tag_items[item++], end - p);
+		p = CopyTruncateString(p, tag_items[item++], end - p);
 
 		if (item <= last_item)
-			p = CopyString(p, " - ", end - p);
+			p = CopyTruncateString(p, " - ", end - p);
 	}
 
 	const auto icy_string = icy_server_metadata_string(stream_title, "");

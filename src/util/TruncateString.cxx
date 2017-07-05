@@ -34,8 +34,8 @@
 #include <string.h>
 
 char *
-CopyString(char *gcc_restrict dest, const char *gcc_restrict src,
-	   size_t size) noexcept
+CopyTruncateString(char *gcc_restrict dest, const char *gcc_restrict src,
+		   size_t size) noexcept
 {
 	size_t length = strlen(src);
 	if (length >= size)
