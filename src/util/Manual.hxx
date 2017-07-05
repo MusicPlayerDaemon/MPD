@@ -27,8 +27,8 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MPD_MANUAL_HXX
-#define MPD_MANUAL_HXX
+#ifndef MANUAL_HXX
+#define MANUAL_HXX
 
 #include <new>
 #include <utility>
