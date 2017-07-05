@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2011 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright (C) 2009-2017 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -27,18 +27,21 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "String.hxx"
-#include "util/TruncateString.hxx"
+#include "TruncateString.hxx"
+
+#include <algorithm>
+
+#include <string.h>
 
 char *
-Java::String::CopyTo(JNIEnv *env, jstring value,
-		     char *buffer, size_t max_size)
+CopyString(char *gcc_restrict dest, const char *gcc_restrict src,
+	   size_t size) noexcept
 {
-	const char *p = env->GetStringUTFChars(value, nullptr);
-	if (p == nullptr)
-		return nullptr;
+	size_t length = strlen(src);
+	if (length >= size)
+		length = size - 1;
 
-	char *result = CopyString(buffer, p, max_size);
-	env->ReleaseStringUTFChars(value, p);
-	return result;
+	char *p = std::copy_n(src, length, dest);
+	*p = '\0';
+	return p;
 }

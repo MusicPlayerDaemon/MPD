@@ -25,7 +25,7 @@
 #include "CdioParanoiaInputPlugin.hxx"
 #include "../InputStream.hxx"
 #include "../InputPlugin.hxx"
-#include "util/StringUtil.hxx"
+#include "util/TruncateString.hxx"
 #include "util/StringCompare.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/Domain.hxx"

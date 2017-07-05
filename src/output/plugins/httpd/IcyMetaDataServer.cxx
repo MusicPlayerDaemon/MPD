@@ -22,7 +22,7 @@
 #include "tag/Tag.hxx"
 #include "util/FormatString.hxx"
 #include "util/AllocatedString.hxx"
-#include "util/StringUtil.hxx"
+#include "util/TruncateString.hxx"
 #include "util/Macros.hxx"
 
 #include <string.h>

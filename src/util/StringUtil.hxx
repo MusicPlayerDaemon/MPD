@@ -25,18 +25,6 @@
 #include <stddef.h>
 
 /**
- * Copy a string.  If the buffer is too small, then the string is
- * truncated.  This is a safer version of strncpy().
- *
- * @param size the size of the destination buffer (including the null
- * terminator)
- * @return a pointer to the null terminator
- */
-gcc_nonnull_all
-char *
-CopyString(char *dest, const char *src, size_t size) noexcept;
-
-/**
  * Returns a pointer to the first non-whitespace character in the
  * string, or to the end of the string.
  */

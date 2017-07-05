@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2011 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright (C) 2009-2017 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -27,18 +27,23 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "String.hxx"
-#include "util/TruncateString.hxx"
+#ifndef TRUNCATE_STRING_HXX
+#define TRUNCATE_STRING_HXX
 
+#include "Compiler.h"
+
+#include <stddef.h>
+
+/**
+ * Copy a string.  If the buffer is too small, then the string is
+ * truncated.  This is a safer version of strncpy().
+ *
+ * @param size the size of the destination buffer (including the null
+ * terminator)
+ * @return a pointer to the null terminator
+ */
+gcc_nonnull_all
 char *
-Java::String::CopyTo(JNIEnv *env, jstring value,
-		     char *buffer, size_t max_size)
-{
-	const char *p = env->GetStringUTFChars(value, nullptr);
-	if (p == nullptr)
-		return nullptr;
+CopyString(char *dest, const char *src, size_t size) noexcept;
 
-	char *result = CopyString(buffer, p, max_size);
-	env->ReleaseStringUTFChars(value, p);
-	return result;
-}
+#endif

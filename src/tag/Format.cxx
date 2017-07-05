@@ -22,7 +22,7 @@
 #include "Tag.hxx"
 #include "ParseName.hxx"
 #include "util/format.h"
-#include "util/StringUtil.hxx"
+#include "util/TruncateString.hxx"
 
 #include <algorithm>
 

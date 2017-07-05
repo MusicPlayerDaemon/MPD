@@ -21,23 +21,8 @@
 #include "CharUtil.hxx"
 #include "ASCII.hxx"
 
-#include <algorithm>
-
 #include <assert.h>
 #include <string.h>
-
-char *
-CopyString(char *gcc_restrict dest, const char *gcc_restrict src,
-	   size_t size) noexcept
-{
-	size_t length = strlen(src);
-	if (length >= size)
-		length = size - 1;
-
-	char *p = std::copy_n(src, length, dest);
-	*p = '\0';
-	return p;
-}
 
 const char *
 StripLeft(const char *p) noexcept

@@ -426,6 +426,7 @@ libutil_a_SOURCES = \
 	src/util/StringView.cxx src/util/StringView.hxx \
 	src/util/ConcatString.hxx \
 	src/util/AllocatedString.cxx src/util/AllocatedString.hxx \
+	src/util/TruncateString.cxx src/util/TruncateString.hxx \
 	src/util/StringUtil.cxx src/util/StringUtil.hxx \
 	src/util/StringCompare.cxx src/util/StringCompare.hxx \
 	src/util/WStringCompare.cxx src/util/WStringCompare.hxx \
