@@ -30,20 +30,27 @@
 #include "Exception.hxx"
 
 std::string
+GetFullMessage(const std::exception &e,
+	       const char *fallback, const char *separator) noexcept
+{
+	try {
+		std::rethrow_if_nested(e);
+		return e.what();
+	} catch (...) {
+		return std::string(e.what()) + separator +
+			GetFullMessage(std::current_exception(),
+				       fallback, separator);
+	}
+}
+
+std::string
 GetFullMessage(std::exception_ptr ep,
 	       const char *fallback, const char *separator) noexcept
 {
 	try {
 		std::rethrow_exception(ep);
 	} catch (const std::exception &e) {
-		try {
-			std::rethrow_if_nested(e);
-			return e.what();
-		} catch (...) {
-			return std::string(e.what()) + separator +
-				GetFullMessage(std::current_exception(),
-					       fallback, separator);
-		}
+		return GetFullMessage(e, fallback, separator);
 	} catch (const std::nested_exception &ne) {
 		return GetFullMessage(ne.nested_ptr(), fallback, separator);
 	}

@@ -34,6 +34,15 @@
 #include <string>
 
 /**
+ * Obtain the full concatenated message of an exception and its nested
+ * chain.
+ */
+std::string
+GetFullMessage(const std::exception &e,
+	       const char *fallback="Unknown exception",
+	       const char *separator="; ") noexcept;
+
+/**
  * Extract the full message of a C++ exception, considering its nested
  * exceptions (if any).
  */
