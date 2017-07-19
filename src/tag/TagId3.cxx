@@ -20,6 +20,7 @@
 #include "config.h"
 #include "TagId3.hxx"
 #include "Id3Load.hxx"
+#include "Id3MusicBrainz.hxx"
 #include "TagHandler.hxx"
 #include "TagTable.hxx"
 #include "TagBuilder.hxx"
@@ -205,19 +206,8 @@ gcc_pure
 static TagType
 tag_id3_parse_txxx_name(const char *name) noexcept
 {
-	static constexpr struct tag_table txxx_tags[] = {
-		{ "ALBUMARTISTSORT", TAG_ALBUM_ARTIST_SORT },
-		{ "MusicBrainz Artist Id", TAG_MUSICBRAINZ_ARTISTID },
-		{ "MusicBrainz Album Id", TAG_MUSICBRAINZ_ALBUMID },
-		{ "MusicBrainz Album Artist Id",
-		  TAG_MUSICBRAINZ_ALBUMARTISTID },
-		{ "MusicBrainz Track Id", TAG_MUSICBRAINZ_TRACKID },
-		{ "MusicBrainz Release Track Id",
-		  TAG_MUSICBRAINZ_RELEASETRACKID },
-		{ nullptr, TAG_NUM_OF_ITEM_TYPES }
-	};
 
-	return tag_table_lookup(txxx_tags, name);
+	return tag_table_lookup(musicbrainz_txxx_tags, name);
 }
 
 /**
