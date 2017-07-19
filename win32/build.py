@@ -76,6 +76,7 @@ thirdparty_libs = [
     flac,
     zlib,
     libid3tag,
+    liblame,
     ffmpeg,
     curl,
     boost,
