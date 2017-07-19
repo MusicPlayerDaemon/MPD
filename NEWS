@@ -1,4 +1,6 @@
 ver 0.20.10 (not yet released)
+* decoder
+  - ffmpeg: support MusicBrainz ID3v2 tags
 
 ver 0.20.9 (2017/06/04)
 * decoder
