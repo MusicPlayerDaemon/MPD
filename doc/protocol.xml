@@ -403,6 +403,15 @@
                 </para>
               </listitem>
             </itemizedlist>
+
+            <para>
+              Change events accumulate, even while the connection is
+              not in "idle" mode; no events gets lost while the client
+              is doing something else with the connection.  If an
+              event had already occurred since the last call, the new
+              <command>idle</command> command will return immediately.
+            </para>
+
             <para>
               While a client is waiting for <command>idle</command>
               results, the server disables timeouts, allowing a client
