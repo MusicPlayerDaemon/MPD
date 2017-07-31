@@ -57,6 +57,17 @@ libmad = AutotoolsProject(
     autogen=True,
 )
 
+liblame = AutotoolsProject(
+    'http://downloads.sourceforge.net/project/lame/lame/3.99/lame-3.99.5.tar.gz',
+    '24346b4158e4af3bd9f2e194bb23eb473c75fb7377011523353196b19b9a23ff',
+    'lib/libmp3lame.a',
+    [
+        '--disable-shared', '--enable-static',
+        '--disable-gtktest', '--disable-analyzer-hooks',
+        '--disable-decoder', '--disable-frontend',
+    ],
+)
+
 ffmpeg = FfmpegProject(
     'http://ffmpeg.org/releases/ffmpeg-3.3.2.tar.xz',
     '1998de1ab32616cbf2ff86efc3f1f26e76805ec5dc51e24c041c79edd8262785',

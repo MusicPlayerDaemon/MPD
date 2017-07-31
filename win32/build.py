@@ -76,6 +76,7 @@ thirdparty_libs = [
     flac,
     zlib,
     libid3tag,
+    liblame,
     ffmpeg,
     curl,
     boost,
@@ -111,6 +112,10 @@ configure = [
     '--disable-icu',
 
 ] + configure_args
+
+from build.cmdline import concatenate_cmdline_variables
+configure = concatenate_cmdline_variables(configure,
+    set(('CFLAGS', 'CXXFLAGS', 'CPPFLAGS', 'LDFLAGS', 'LIBS')))
 
 subprocess.check_call(configure, env=toolchain.env)
 subprocess.check_call(['/usr/bin/make', '--quiet', '-j12'], env=toolchain.env)

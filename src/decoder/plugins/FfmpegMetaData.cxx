@@ -24,6 +24,7 @@
 #include "FfmpegMetaData.hxx"
 #include "tag/Table.hxx"
 #include "tag/Handler.hxx"
+#include "tag/Id3MusicBrainz.hxx"
 
 extern "C" {
 #include <libavutil/dict.h>
@@ -72,6 +73,11 @@ FfmpegScanDictionary(AVDictionary *dict,
 				      handler, handler_ctx);
 
 		for (const struct tag_table *i = ffmpeg_tags;
+		     i->name != nullptr; ++i)
+			FfmpegScanTag(i->type, dict, i->name,
+				      handler, handler_ctx);
+
+		for (const struct tag_table *i = musicbrainz_txxx_tags;
 		     i->name != nullptr; ++i)
 			FfmpegScanTag(i->type, dict, i->name,
 				      handler, handler_ctx);

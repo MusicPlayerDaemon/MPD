@@ -934,6 +934,7 @@ libtag_a_SOURCES =\
 	src/tag/ReplayGain.cxx src/tag/ReplayGain.hxx \
 	src/tag/MixRamp.cxx src/tag/MixRamp.hxx \
 	src/tag/Generic.cxx src/tag/Generic.hxx \
+	src/tag/Id3MusicBrainz.cxx src/tag/Id3MusicBrainz.hxx \
 	src/tag/ApeLoader.cxx src/tag/ApeLoader.hxx \
 	src/tag/ApeReplayGain.cxx src/tag/ApeReplayGain.hxx \
 	src/tag/ApeTag.cxx src/tag/ApeTag.hxx
