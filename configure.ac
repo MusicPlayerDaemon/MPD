@@ -343,6 +343,11 @@ AC_ARG_ENABLE(fifo,
 		[disable support for writing audio to a FIFO (default: enable)]),,
 	enable_fifo=yes)
 
+AC_ARG_ENABLE(htsp,
+    AS_HELP_STRING([--enable-htsp],
+        [enable TVHeadend htsp source support]),,
+    [enable_htsp=yes])
+
 AC_ARG_ENABLE(httpd-output,
 	AS_HELP_STRING([--enable-httpd-output],
 		[enables the HTTP server output]),,
@@ -662,6 +667,10 @@ fi
 
 AM_CONDITIONAL(HAVE_ZEROCONF, test x$with_zeroconf != xno)
 AM_CONDITIONAL(HAVE_BONJOUR, test x$with_zeroconf = xbonjour)
+
+dnl ----------------------------------- HTSP ----------------------------------
+
+AM_CONDITIONAL(ENABLE_HTSP, test x$enable_htsp = xyes)
 
 dnl ---------------------------------------------------------------------------
 dnl Sticker Database

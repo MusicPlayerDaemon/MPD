@@ -1,0 +1,3 @@
+[submodule "vendor/pvr.hts"]
+	path = vendor/pvr.hts
+	url = https://github.com/kodi-pvr/pvr.hts.git

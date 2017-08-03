@@ -260,6 +260,14 @@ ALSA_SOURCES = \
 	src/lib/alsa/Version.cxx src/lib/alsa/Version.hxx \
 	src/lib/alsa/NonBlock.cxx src/lib/alsa/NonBlock.hxx
 
+if ENABLE_HTSP
+libmpd_a_SOURCES += \
+	src/lib/libhts/htsbuf.c src/lib/libhts/htsmsg_binary.c \
+	src/lib/libhts/htsmsg.c src/lib/libhts/htsstr.c \
+	src/lib/libhts/net_posix.c src/lib/libhts/sha1.c
+endif
+# TODO: if Windows -> net_windows
+
 #
 # Android native library
 #
