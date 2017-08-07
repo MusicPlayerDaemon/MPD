@@ -425,6 +425,11 @@ private:
 	/**
 	 * Runs inside the OutputThread.
 	 */
+	void InternalClose(bool drain) noexcept;
+
+	/**
+	 * Runs inside the OutputThread.
+	 */
 	void InternalCheckClose(bool drain) noexcept;
 
 	/**

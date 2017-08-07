@@ -172,14 +172,20 @@ AudioOutputControl::InternalOpen(const AudioFormat in_audio_format,
 }
 
 inline void
-AudioOutputControl::InternalCheckClose(bool drain) noexcept
+AudioOutputControl::InternalClose(bool drain) noexcept
 {
-	if (!IsOpen())
-		return;
+	assert(IsOpen());
 
 	open = false;
 	output->Close(drain);
 	source.Close();
+}
+
+inline void
+AudioOutputControl::InternalCheckClose(bool drain) noexcept
+{
+	if (IsOpen())
+		InternalClose(drain);
 }
 
 /**
@@ -211,7 +217,7 @@ try {
 	FormatError(e, "Failed to filter for output \"%s\" [%s]",
 		    GetName(), output->plugin.name);
 
-	InternalCheckClose(false);
+	InternalClose(false);
 
 	/* don't automatically reopen this device for 10
 	   seconds */
@@ -259,7 +265,7 @@ AudioOutputControl::PlayChunk() noexcept
 		}
 
 		if (nbytes == 0) {
-			InternalCheckClose(false);
+			InternalClose(false);
 
 			/* don't automatically reopen this device for
 			   10 seconds */
@@ -330,9 +336,7 @@ AudioOutputControl::InternalPause() noexcept
 			break;
 
 		if (!output->IteratePause()) {
-			open = false;
-			output->Close(false);
-			source.Close();
+			InternalClose(false);
 			break;
 		}
 	} while (command == Command::NONE);
