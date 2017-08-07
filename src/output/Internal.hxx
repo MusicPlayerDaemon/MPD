@@ -163,6 +163,11 @@ public:
 	/**
 	 * Mutex must not be locked.
 	 */
+	void OpenSoftwareMixer() noexcept;
+
+	/**
+	 * Mutex must not be locked.
+	 */
 	void CloseSoftwareMixer() noexcept;
 
 	void BeginPause() noexcept;

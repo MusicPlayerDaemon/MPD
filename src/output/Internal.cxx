@@ -99,6 +99,13 @@ AudioOutput::CloseOutput(bool drain) noexcept
 }
 
 void
+AudioOutput::OpenSoftwareMixer() noexcept
+{
+	if (mixer != nullptr && mixer->IsPlugin(software_mixer_plugin))
+		software_mixer_set_filter(*mixer, volume_filter.Get());
+}
+
+void
 AudioOutput::CloseSoftwareMixer() noexcept
 {
 	if (mixer != nullptr && mixer->IsPlugin(software_mixer_plugin))

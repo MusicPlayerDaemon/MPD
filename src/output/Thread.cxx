@@ -26,7 +26,6 @@
 #include "notify.hxx"
 #include "filter/plugins/ConvertFilterPlugin.hxx"
 #include "mixer/MixerInternal.hxx"
-#include "mixer/plugins/SoftwareMixerPlugin.hxx"
 #include "thread/Util.hxx"
 #include "thread/Slack.hxx"
 #include "thread/Name.hxx"
@@ -53,10 +52,7 @@ AudioOutputControl::InternalOpen2(const AudioFormat in_audio_format)
 {
 	assert(in_audio_format.IsValid());
 
-	if (output->mixer != nullptr &&
-	    output->mixer->IsPlugin(software_mixer_plugin))
-		software_mixer_set_filter(*output->mixer,
-					  output->volume_filter.Get());
+	output->OpenSoftwareMixer();
 
 	const auto cf = in_audio_format.WithMask(output->config_audio_format);
 
