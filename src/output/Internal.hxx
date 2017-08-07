@@ -143,6 +143,8 @@ public:
 	 */
 	void Close(bool drain) noexcept;
 
+	void ConfigureConvertFilter();
+
 	/**
 	 * Invoke OutputPlugin::open() and configure the
 	 * #ConvertFilter.

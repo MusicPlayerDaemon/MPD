@@ -46,6 +46,17 @@ AudioOutput::Disable() noexcept
 }
 
 void
+AudioOutput::ConfigureConvertFilter()
+{
+	try {
+		convert_filter_set(convert_filter.Get(), out_audio_format);
+	} catch (const std::runtime_error &e) {
+		std::throw_with_nested(FormatRuntimeError("Failed to convert for \"%s\" [%s]",
+							  name, plugin.name));
+	}
+}
+
+void
 AudioOutput::OpenOutputAndConvert(AudioFormat desired_audio_format)
 {
 	out_audio_format = desired_audio_format;
@@ -63,7 +74,7 @@ AudioOutput::OpenOutputAndConvert(AudioFormat desired_audio_format)
 		    ToString(out_audio_format).c_str());
 
 	try {
-		convert_filter_set(convert_filter.Get(), out_audio_format);
+		ConfigureConvertFilter();
 	} catch (const std::runtime_error &e) {
 		ao_plugin_close(*this);
 
@@ -82,8 +93,7 @@ AudioOutput::OpenOutputAndConvert(AudioFormat desired_audio_format)
 			return;
 		}
 
-		std::throw_with_nested(FormatRuntimeError("Failed to convert for \"%s\" [%s]",
-							  name, plugin.name));
+		throw;
 	}
 }
 

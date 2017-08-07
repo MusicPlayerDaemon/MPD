@@ -24,7 +24,6 @@
 #include "OutputPlugin.hxx"
 #include "Domain.hxx"
 #include "notify.hxx"
-#include "filter/plugins/ConvertFilterPlugin.hxx"
 #include "mixer/MixerInternal.hxx"
 #include "thread/Util.hxx"
 #include "thread/Slack.hxx"
@@ -73,8 +72,7 @@ AudioOutputControl::InternalOpen2(const AudioFormat in_audio_format)
 		   input AudioFormat */
 
 		try {
-			convert_filter_set(output->convert_filter.Get(),
-					   output->out_audio_format);
+			output->ConfigureConvertFilter();
 		} catch (const std::runtime_error &e) {
 			open = false;
 
@@ -83,8 +81,7 @@ AudioOutputControl::InternalOpen2(const AudioFormat in_audio_format)
 				output->CloseOutput(false);
 			}
 
-			std::throw_with_nested(FormatRuntimeError("Failed to convert for \"%s\" [%s]",
-								  GetName(), output->plugin.name));
+			throw;
 		}
 	}
 
