@@ -425,7 +425,7 @@ private:
 	/**
 	 * Runs inside the OutputThread.
 	 */
-	void InternalClose(bool drain) noexcept;
+	void InternalCheckClose(bool drain) noexcept;
 
 	/**
 	 * Wait until the output's delay reaches zero.

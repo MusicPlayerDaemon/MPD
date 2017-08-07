@@ -121,7 +121,7 @@ AudioOutputControl::InternalDisable() noexcept
 	if (!really_enabled)
 		return;
 
-	InternalClose(false);
+	InternalCheckClose(false);
 
 	really_enabled = false;
 	output->Disable();
@@ -172,7 +172,7 @@ AudioOutputControl::InternalOpen(const AudioFormat in_audio_format,
 }
 
 inline void
-AudioOutputControl::InternalClose(bool drain) noexcept
+AudioOutputControl::InternalCheckClose(bool drain) noexcept
 {
 	if (!IsOpen())
 		return;
@@ -211,7 +211,7 @@ try {
 	FormatError(e, "Failed to filter for output \"%s\" [%s]",
 		    GetName(), output->plugin.name);
 
-	InternalClose(false);
+	InternalCheckClose(false);
 
 	/* don't automatically reopen this device for 10
 	   seconds */
@@ -259,7 +259,7 @@ AudioOutputControl::PlayChunk() noexcept
 		}
 
 		if (nbytes == 0) {
-			InternalClose(false);
+			InternalCheckClose(false);
 
 			/* don't automatically reopen this device for
 			   10 seconds */
@@ -380,7 +380,7 @@ AudioOutputControl::Task()
 			break;
 
 		case Command::CLOSE:
-			InternalClose(false);
+			InternalCheckClose(false);
 			CommandFinished();
 			break;
 
