@@ -433,6 +433,12 @@ private:
 	 * Runs inside the OutputThread.
 	 * Caller must lock the mutex.
 	 */
+	void InternalCloseOutput(bool drain) noexcept;
+
+	/**
+	 * Runs inside the OutputThread.
+	 * Caller must lock the mutex.
+	 */
 	void InternalClose(bool drain) noexcept;
 
 	/**

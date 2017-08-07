@@ -60,14 +60,10 @@ AudioOutputControl::InternalOpen2(const AudioFormat in_audio_format)
 
 	const auto cf = in_audio_format.WithMask(output->config_audio_format);
 
-	if (open && cf != output->filter_audio_format) {
+	if (open && cf != output->filter_audio_format)
 		/* if the filter's output format changes, the output
 		   must be reopened as well */
-		open = false;
-
-		const ScopeUnlock unlock(mutex);
-		output->CloseOutput(true);
-	}
+		InternalCloseOutput(true);
 
 	output->filter_audio_format = cf;
 
@@ -173,6 +169,17 @@ AudioOutputControl::InternalOpen(const AudioFormat in_audio_format,
 			    ToString(in_audio_format).c_str(),
 			    ToString(f).c_str(),
 			    ToString(output->out_audio_format).c_str());
+}
+
+inline void
+AudioOutputControl::InternalCloseOutput(bool drain) noexcept
+{
+	assert(IsOpen());
+
+	open = false;
+
+	const ScopeUnlock unlock(mutex);
+	output->CloseOutput(drain);
 }
 
 inline void
