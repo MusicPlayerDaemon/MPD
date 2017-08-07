@@ -127,16 +127,12 @@ AudioOutput::BeginPause() noexcept
 bool
 AudioOutput::IteratePause() noexcept
 {
-	bool success;
-
 	try {
 		const ScopeUnlock unlock(mutex);
-		success = ao_plugin_pause(*this);
+		return ao_plugin_pause(*this);
 	} catch (const std::runtime_error &e) {
 		FormatError(e, "\"%s\" [%s] failed to pause",
 			    name, plugin.name);
-		success = false;
+		return false;
 	}
-
-	return success;
 }
