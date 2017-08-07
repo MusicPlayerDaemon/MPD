@@ -42,7 +42,7 @@ struct WinmmBuffer {
 class WinmmOutput {
 	friend struct AudioOutputWrapper<WinmmOutput>;
 
-	FilteredAudioOutput base;
+	AudioOutput base;
 
 	const UINT device_id;
 	HWAVEOUT handle;
@@ -148,7 +148,7 @@ get_device_id(const char *device_name)
 }
 
 WinmmOutput::WinmmOutput(const ConfigBlock &block)
-	:base(winmm_output_plugin, block),
+	:base(winmm_output_plugin),
 	 device_id(get_device_id(block.GetBlockValue("device")))
 {
 }

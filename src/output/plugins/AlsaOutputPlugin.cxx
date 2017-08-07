@@ -64,7 +64,7 @@ class AlsaOutput final
 
 	friend struct AudioOutputWrapper<AlsaOutput>;
 
-	FilteredAudioOutput base;
+	AudioOutput base;
 
 	Manual<PcmExport> pcm_export;
 
@@ -414,7 +414,7 @@ static constexpr Domain alsa_output_domain("alsa_output");
 
 AlsaOutput::AlsaOutput(EventLoop &loop, const ConfigBlock &block)
 	:MultiSocketMonitor(loop), DeferredMonitor(loop),
-	 base(alsa_output_plugin, block),
+	 base(alsa_output_plugin),
 	 device(block.GetBlockValue("device", "")),
 #ifdef ENABLE_DSD
 	 dop(block.GetBlockValue("dop", false) ||

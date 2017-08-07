@@ -40,7 +40,7 @@ static unsigned ao_output_ref;
 class AoOutput {
 	friend struct AudioOutputWrapper<AoOutput>;
 
-	FilteredAudioOutput base;
+	AudioOutput base;
 
 	const size_t write_size;
 	int driver;
@@ -95,7 +95,7 @@ MakeAoError()
 }
 
 AoOutput::AoOutput(const ConfigBlock &block)
-	:base(ao_output_plugin, block),
+	:base(ao_output_plugin),
 	 write_size(block.GetBlockValue("write_size", 1024u))
 {
 	if (ao_output_ref == 0) {

@@ -39,7 +39,7 @@ class OpenALOutput {
 	/* should be enough for buffer size = 2048 */
 	static constexpr unsigned NUM_BUFFERS = 16;
 
-	FilteredAudioOutput base;
+	AudioOutput base;
 
 	const char *device_name;
 	ALCdevice *device;
@@ -138,7 +138,7 @@ OpenALOutput::SetupContext()
 }
 
 OpenALOutput::OpenALOutput(const ConfigBlock &block)
-	:base(openal_output_plugin, block),
+	:base(openal_output_plugin),
 	 device_name(block.GetBlockValue("device"))
 {
 	if (device_name == nullptr)

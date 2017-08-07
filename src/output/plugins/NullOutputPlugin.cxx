@@ -26,7 +26,7 @@
 class NullOutput {
 	friend struct AudioOutputWrapper<NullOutput>;
 
-	FilteredAudioOutput base;
+	AudioOutput base;
 
 	const bool sync;
 
@@ -34,7 +34,7 @@ class NullOutput {
 
 public:
 	NullOutput(const ConfigBlock &block)
-		:base(null_output_plugin, block),
+		:base(null_output_plugin),
 		 sync(block.GetBlockValue("sync", true)) {}
 
 	static NullOutput *Create(EventLoop &event_loop,

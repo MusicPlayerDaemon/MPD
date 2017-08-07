@@ -39,7 +39,7 @@
 class RoarOutput {
 	friend struct AudioOutputWrapper<RoarOutput>;
 
-	FilteredAudioOutput base;
+	AudioOutput base;
 
 	const std::string host, name;
 
@@ -54,7 +54,7 @@ class RoarOutput {
 public:
 	RoarOutput(const ConfigBlock &block);
 
-	operator FilteredAudioOutput *() {
+	operator AudioOutput *() {
 		return &base;
 	}
 
@@ -86,7 +86,7 @@ GetConfiguredRole(const ConfigBlock &block) noexcept
 }
 
 RoarOutput::RoarOutput(const ConfigBlock &block)
-	:base(roar_output_plugin, block),
+	:base(roar_output_plugin),
 	 host(block.GetBlockValue("server", "")),
 	 name(block.GetBlockValue("name", "MPD")),
 	 role(GetConfiguredRole(block))

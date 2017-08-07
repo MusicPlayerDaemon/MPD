@@ -48,7 +48,7 @@ class HaikuOutput {
 	friend int haiku_output_get_volume(HaikuOutput &haiku);
 	friend bool haiku_output_set_volume(HaikuOutput &haiku, unsigned volume);
 
-	FilteredAudioOutput base;
+	AudioOutput base;
 
 	size_t write_size;
 
@@ -66,7 +66,7 @@ class HaikuOutput {
 
 public:
 	HaikuOutput(const ConfigBlock &block)
-		:base(haiku_output_plugin, block),
+		:base(haiku_output_plugin),
 		 /* XXX: by default we should let the MediaKit propose the buffer size */
 		 write_size(block.GetBlockValue("write_size", 4096u)) {}
 

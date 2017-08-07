@@ -47,7 +47,7 @@
 class PulseOutput {
 	friend struct AudioOutputWrapper<PulseOutput>;
 
-	FilteredAudioOutput base;
+	AudioOutput base;
 
 	const char *name;
 	const char *server;
@@ -179,7 +179,7 @@ private:
 };
 
 PulseOutput::PulseOutput(const ConfigBlock &block)
-	:base(pulse_output_plugin, block),
+	:base(pulse_output_plugin),
 	 name(block.GetBlockValue("name", "mpd_pulse")),
 	 server(block.GetBlockValue("server")),
 	 sink(block.GetBlockValue("sink"))

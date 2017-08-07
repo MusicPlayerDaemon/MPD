@@ -18,19 +18,17 @@
  */
 
 #include "config.h"
-#include "output/Filtered.hxx"
+#include "output/Interface.hxx"
+#include "output/Registry.hxx"
 #include "output/OutputPlugin.hxx"
 #include "config/Param.hxx"
 #include "config/ConfigGlobal.hxx"
 #include "config/ConfigOption.hxx"
-#include "Idle.hxx"
-#include "Main.hxx"
+#include "config/Block.hxx"
 #include "event/Thread.hxx"
 #include "fs/Path.hxx"
 #include "AudioParser.hxx"
-#include "ReplayGainConfig.hxx"
 #include "pcm/PcmConvert.hxx"
-#include "filter/FilterRegistry.hxx"
 #include "util/StringBuffer.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/ScopeExit.hxx"
@@ -42,28 +40,29 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-const FilterPlugin *
-filter_plugin_by_name(gcc_unused const char *name) noexcept
-{
-	assert(false);
-	return NULL;
-}
-
-static FilteredAudioOutput *
+static AudioOutput *
 load_audio_output(EventLoop &event_loop, const char *name)
 {
-	const auto *param = config_find_block(ConfigBlockOption::AUDIO_OUTPUT,
+	const auto *block = config_find_block(ConfigBlockOption::AUDIO_OUTPUT,
 					      "name", name);
-	if (param == NULL)
-		throw FormatRuntimeError("No such configured audio output: %s\n",
+	if (block == nullptr)
+		throw FormatRuntimeError("No such configured audio output: %s",
 					 name);
 
-	return audio_output_new(event_loop, ReplayGainConfig(), *param,
-				*(MixerListener *)nullptr);
+	const char *plugin_name = block->GetBlockValue("type");
+	if (plugin_name == nullptr)
+		throw std::runtime_error("Missing \"type\" configuration");
+
+	const auto *plugin = AudioOutputPlugin_get(plugin_name);
+	if (plugin == nullptr)
+		throw FormatRuntimeError("No such audio output plugin: %s",
+					 plugin_name);
+
+	return ao_plugin_init(event_loop, *plugin, *block);
 }
 
 static void
-run_output(FilteredAudioOutput &ao, AudioFormat audio_format)
+run_output(AudioOutput &ao, AudioFormat audio_format)
 {
 	/* open the audio output */
 
@@ -140,8 +139,7 @@ try {
 
 	/* cleanup and exit */
 
-	ao->BeginDestroy();
-	ao->FinishDestroy();
+	ao_plugin_finish(ao);
 
 	config_global_finish();
 

@@ -43,7 +43,7 @@ class SlesOutput {
 	static constexpr unsigned N_BUFFERS = 3;
 	static constexpr size_t BUFFER_SIZE = 65536;
 
-	FilteredAudioOutput base;
+	AudioOutput base;
 
 	SLES::Object engine_object, mix_object, play_object;
 	SLES::Play play;
@@ -87,9 +87,9 @@ class SlesOutput {
 	uint8_t buffers[N_BUFFERS][BUFFER_SIZE];
 
 public:
-	SlesOutput(const ConfigBlock &block);
+	SlesOutput();
 
-	operator FilteredAudioOutput *() {
+	operator AudioOutput *() {
 		return &base;
 	}
 
@@ -129,8 +129,8 @@ private:
 
 static constexpr Domain sles_domain("sles");
 
-SlesOutput::SlesOutput(const ConfigBlock &block)
-	:base(sles_output_plugin, block)
+SlesOutput::SlesOutput()
+	:base(sles_output_plugin)
 {
 }
 
@@ -416,9 +416,9 @@ sles_test_default_device()
 }
 
 inline SlesOutput *
-SlesOutput::Create(EventLoop &, const ConfigBlock &block)
+SlesOutput::Create(EventLoop &, const ConfigBlock &)
 {
-	return new SlesOutput(block);
+	return new SlesOutput();
 }
 
 typedef AudioOutputWrapper<SlesOutput> Wrapper;

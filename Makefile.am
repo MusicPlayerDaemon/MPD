@@ -1373,6 +1373,7 @@ OUTPUT_LIBS = \
 OUTPUT_API_SRC = \
 	src/output/Client.hxx \
 	src/output/OutputAPI.hxx \
+	src/output/Interface.hxx \
 	src/output/Filtered.cxx src/output/Filtered.hxx \
 	src/output/Wrapper.hxx \
 	src/output/Registry.cxx src/output/Registry.hxx \
@@ -2105,11 +2106,10 @@ test_run_convert_LDADD = \
 	libutil.a
 
 test_run_output_LDADD = $(MPD_LIBS) \
-	$(PCM_LIBS) \
 	$(OUTPUT_LIBS) \
 	$(ENCODER_LIBS) \
 	libmixer_plugins.a \
-	$(FILTER_LIBS) \
+	$(PCM_LIBS) \
 	$(TAG_LIBS) \
 	libconf.a \
 	libbasic.a \
@@ -2123,13 +2123,10 @@ test_run_output_LDADD = $(MPD_LIBS) \
 test_run_output_SOURCES = test/run_output.cxx \
 	src/Log.cxx src/LogBackend.cxx \
 	src/output/Domain.cxx \
-	src/output/Init.cxx src/output/Finish.cxx src/output/Registry.cxx \
+	src/output/Registry.cxx \
 	src/output/OutputPlugin.cxx \
 	src/mixer/MixerControl.cxx \
-	src/mixer/MixerType.cxx \
-	src/filter/FilterPlugin.cxx \
-	src/filter/FilterConfig.cxx \
-	src/filter/Observer.cxx
+	src/mixer/MixerType.cxx
 
 test_read_mixer_LDADD = \
 	libpcm.a \

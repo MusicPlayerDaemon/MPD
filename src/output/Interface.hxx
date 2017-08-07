@@ -17,33 +17,33 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "config.h"
-#include "Filtered.hxx"
-#include "OutputPlugin.hxx"
-#include "mixer/MixerControl.hxx"
-#include "filter/FilterInternal.hxx"
+#ifndef MPD_AUDIO_OUTPUT_INTERFACE_HXX
+#define MPD_AUDIO_OUTPUT_INTERFACE_HXX
 
-FilteredAudioOutput::~FilteredAudioOutput()
-{
-	if (mixer != nullptr)
-		mixer_free(mixer);
+struct AudioOutputPlugin;
+struct FilteredAudioOutput;
 
-	delete prepared_replay_gain_filter;
-	delete prepared_other_replay_gain_filter;
-	delete prepared_filter;
+struct AudioOutput {
+	/**
+	 * The plugin which implements this output device.
+	 */
+	const AudioOutputPlugin &plugin;
 
-	ao_plugin_finish(output);
-}
+	FilteredAudioOutput *parent;
 
-void
-FilteredAudioOutput::BeginDestroy() noexcept
-{
-	if (mixer != nullptr)
-		mixer_auto_close(mixer);
-}
+	bool need_fully_defined_audio_format = false;
 
-void
-FilteredAudioOutput::FinishDestroy() noexcept
-{
-	ao_plugin_finish(output);
-}
+	AudioOutput(const AudioOutputPlugin &_plugin)
+		:plugin(_plugin) {}
+
+	/**
+	 * Plugins shall call this method if they require an
+	 * "audio_format" setting which evaluates
+	 * AudioFormat::IsFullyDefined().
+	 */
+	void NeedFullyDefinedAudioFormat() {
+		need_fully_defined_audio_format = true;
+	}
+};
+
+#endif

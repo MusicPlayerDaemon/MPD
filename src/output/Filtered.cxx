@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "Filtered.hxx"
+#include "Interface.hxx"
 #include "OutputPlugin.hxx"
 #include "Domain.hxx"
 #include "Log.hxx"
@@ -31,22 +32,22 @@
 bool
 FilteredAudioOutput::SupportsEnableDisable() const noexcept
 {
-	assert((plugin.enable == nullptr) == (plugin.disable == nullptr));
+	assert((output->plugin.enable == nullptr) == (output->plugin.disable == nullptr));
 
-	return plugin.enable != nullptr;
+	return output->plugin.enable != nullptr;
 }
 
 bool
 FilteredAudioOutput::SupportsPause() const noexcept
 {
-	return plugin.pause != nullptr;
+	return output->plugin.pause != nullptr;
 }
 
 void
 FilteredAudioOutput::Enable()
 {
 	try {
-		ao_plugin_enable(*this);
+		ao_plugin_enable(*output);
 	} catch (const std::runtime_error &e) {
 		std::throw_with_nested(FormatRuntimeError("Failed to enable output %s",
 							  GetLogName()));
@@ -56,7 +57,7 @@ FilteredAudioOutput::Enable()
 void
 FilteredAudioOutput::Disable() noexcept
 {
-	ao_plugin_disable(*this);
+	ao_plugin_disable(*output);
 }
 
 void
@@ -76,7 +77,7 @@ FilteredAudioOutput::OpenOutputAndConvert(AudioFormat desired_audio_format)
 	out_audio_format = desired_audio_format;
 
 	try {
-		ao_plugin_open(*this, out_audio_format);
+		ao_plugin_open(*output, out_audio_format);
 	} catch (const std::runtime_error &e) {
 		std::throw_with_nested(FormatRuntimeError("Failed to open %s",
 							  GetLogName()));
@@ -90,7 +91,7 @@ FilteredAudioOutput::OpenOutputAndConvert(AudioFormat desired_audio_format)
 	try {
 		ConfigureConvertFilter();
 	} catch (const std::runtime_error &e) {
-		ao_plugin_close(*this);
+		ao_plugin_close(*output);
 
 		if (out_audio_format.format == SampleFormat::DSD) {
 			/* if the audio output supports DSD, but not
@@ -119,7 +120,7 @@ FilteredAudioOutput::CloseOutput(bool drain) noexcept
 	else
 		Cancel();
 
-	ao_plugin_close(*this);
+	ao_plugin_close(*output);
 }
 
 void
@@ -148,31 +149,31 @@ FilteredAudioOutput::Close(bool drain) noexcept
 std::chrono::steady_clock::duration
 FilteredAudioOutput::Delay() noexcept
 {
-	return ao_plugin_delay(*this);
+	return ao_plugin_delay(*output);
 }
 
 void
 FilteredAudioOutput::SendTag(const Tag &tag)
 {
-	ao_plugin_send_tag(*this, tag);
+	ao_plugin_send_tag(*output, tag);
 }
 
 size_t
 FilteredAudioOutput::Play(const void *data, size_t size)
 {
-	return ao_plugin_play(*this, data, size);
+	return ao_plugin_play(*output, data, size);
 }
 
 void
 FilteredAudioOutput::Drain()
 {
-	ao_plugin_drain(*this);
+	ao_plugin_drain(*output);
 }
 
 void
 FilteredAudioOutput::Cancel() noexcept
 {
-	ao_plugin_cancel(*this);
+	ao_plugin_cancel(*output);
 }
 
 void
@@ -185,7 +186,7 @@ bool
 FilteredAudioOutput::IteratePause() noexcept
 {
 	try {
-		return ao_plugin_pause(*this);
+		return ao_plugin_pause(*output);
 	} catch (const std::runtime_error &e) {
 		FormatError(e, "Failed to pause %s",
 			    GetLogName());

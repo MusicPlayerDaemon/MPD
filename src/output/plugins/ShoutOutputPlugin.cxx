@@ -40,7 +40,7 @@
 static constexpr unsigned DEFAULT_CONN_TIMEOUT = 2;
 
 struct ShoutOutput final {
-	FilteredAudioOutput base;
+	AudioOutput base;
 
 	shout_t *shout_conn;
 	shout_metadata_t *shout_meta;
@@ -113,7 +113,7 @@ ShoutSetAudioInfo(shout_t *shout_conn, const AudioFormat &audio_format)
 }
 
 ShoutOutput::ShoutOutput(const ConfigBlock &block)
-	:base(shout_output_plugin, block),
+	:base(shout_output_plugin),
 	 shout_conn(shout_new()),
 	 shout_meta(shout_metadata_new())
 {

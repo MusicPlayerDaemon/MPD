@@ -50,23 +50,19 @@
 #define AUDIO_OUTPUT_FORMAT	"format"
 #define AUDIO_FILTERS		"filters"
 
-FilteredAudioOutput::FilteredAudioOutput(const AudioOutputPlugin &_plugin,
+FilteredAudioOutput::FilteredAudioOutput(AudioOutput &_output,
 					 const ConfigBlock &block)
-	:plugin(_plugin)
+	:output(&_output)
 {
+#ifndef NDEBUG
+	const auto &plugin = output->plugin;
 	assert(plugin.finish != nullptr);
 	assert(plugin.open != nullptr);
 	assert(plugin.close != nullptr);
 	assert(plugin.play != nullptr);
+#endif
 
 	Configure(block);
-}
-
-void
-FilteredAudioOutput::NeedFullyDefinedAudioFormat()
-{
-	if (!config_audio_format.IsFullyDefined())
-		throw std::runtime_error("Need full audio format specification");
 }
 
 static const AudioOutputPlugin *
@@ -176,7 +172,7 @@ FilteredAudioOutput::Configure(const ConfigBlock &block)
 	{
 		char buffer[64];
 		snprintf(buffer, sizeof(buffer), "\"%s\" (%s)",
-			 name, plugin.name);
+			 name, output->plugin.name);
 		log_name = buffer;
 	}
 
@@ -211,6 +207,9 @@ FilteredAudioOutput::Setup(EventLoop &event_loop,
 			   MixerListener &mixer_listener,
 			   const ConfigBlock &block)
 {
+	if (output->need_fully_defined_audio_format &&
+	    !config_audio_format.IsFullyDefined())
+		throw std::runtime_error("Need full audio format specification");
 
 	/* create the replay_gain filter */
 
@@ -234,7 +233,7 @@ FilteredAudioOutput::Setup(EventLoop &event_loop,
 
 	try {
 		mixer = audio_output_load_mixer(event_loop, *this, block,
-						plugin.mixer_plugin,
+						output->plugin.mixer_plugin,
 						*prepared_filter,
 						mixer_listener);
 	} catch (const std::runtime_error &e) {
@@ -295,13 +294,22 @@ audio_output_new(EventLoop &event_loop,
 	auto *ao = ao_plugin_init(event_loop, *plugin, block);
 	assert(ao != nullptr);
 
+	FilteredAudioOutput *f;
+
 	try {
-		ao->Setup(event_loop, replay_gain_config,
-			  mixer_listener, block);
+		f = new FilteredAudioOutput(*ao, block);
 	} catch (...) {
 		ao_plugin_finish(ao);
 		throw;
 	}
 
-	return ao;
+	try {
+		f->Setup(event_loop, replay_gain_config,
+			 mixer_listener, block);
+	} catch (...) {
+		delete f;
+		throw;
+	}
+
+	return f;
 }

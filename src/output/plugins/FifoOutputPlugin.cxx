@@ -37,7 +37,7 @@
 class FifoOutput {
 	friend struct AudioOutputWrapper<FifoOutput>;
 
-	FilteredAudioOutput base;
+	AudioOutput base;
 
 	const AllocatedPath path;
 	std::string path_utf8;
@@ -75,7 +75,7 @@ public:
 static constexpr Domain fifo_output_domain("fifo_output");
 
 FifoOutput::FifoOutput(const ConfigBlock &block)
-	:base(fifo_output_plugin, block),
+	:base(fifo_output_plugin),
 	 path(block.GetPath("path"))
 {
 	if (path.IsNull())

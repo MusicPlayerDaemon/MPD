@@ -20,78 +20,79 @@
 #ifndef MPD_OUTPUT_WRAPPER_HXX
 #define MPD_OUTPUT_WRAPPER_HXX
 
-#include "Filtered.hxx"
+#include "Interface.hxx"
 #include "util/Cast.hxx"
 
 #include <chrono>
 
 struct ConfigBlock;
+struct AudioFormat;
 struct Tag;
 
 template<class T>
 struct AudioOutputWrapper {
-	static T &Cast(FilteredAudioOutput &ao) {
+	static T &Cast(AudioOutput &ao) {
 		return ContainerCast(ao, &T::base);
 	}
 
-	static FilteredAudioOutput *Init(EventLoop &event_loop,
+	static AudioOutput *Init(EventLoop &event_loop,
 					 const ConfigBlock &block) {
 		T *t = T::Create(event_loop, block);
 		return &t->base;
 	}
 
-	static void Finish(FilteredAudioOutput *ao) {
+	static void Finish(AudioOutput *ao) {
 		T *t = &Cast(*ao);
 		delete t;
 	}
 
-	static void Enable(FilteredAudioOutput *ao) {
+	static void Enable(AudioOutput *ao) {
 		T &t = Cast(*ao);
 		t.Enable();
 	}
 
-	static void Disable(FilteredAudioOutput *ao) {
+	static void Disable(AudioOutput *ao) {
 		T &t = Cast(*ao);
 		t.Disable();
 	}
 
-	static void Open(FilteredAudioOutput *ao, AudioFormat &audio_format) {
+	static void Open(AudioOutput *ao, AudioFormat &audio_format) {
 		T &t = Cast(*ao);
 		t.Open(audio_format);
 	}
 
-	static void Close(FilteredAudioOutput *ao) {
+	static void Close(AudioOutput *ao) {
 		T &t = Cast(*ao);
 		t.Close();
 	}
 
 	gcc_pure
-	static std::chrono::steady_clock::duration Delay(FilteredAudioOutput *ao) noexcept {
+	static std::chrono::steady_clock::duration Delay(AudioOutput *ao) noexcept {
 		T &t = Cast(*ao);
 		return t.Delay();
 	}
 
-	static void SendTag(FilteredAudioOutput *ao, const Tag &tag) {
+	static void SendTag(AudioOutput *ao, const Tag &tag) {
 		T &t = Cast(*ao);
 		t.SendTag(tag);
 	}
 
-	static size_t Play(FilteredAudioOutput *ao, const void *chunk, size_t size) {
+	static size_t Play(AudioOutput *ao, const void *chunk, size_t size) {
 		T &t = Cast(*ao);
 		return t.Play(chunk, size);
 	}
 
-	static void Drain(FilteredAudioOutput *ao) {
+	static void Drain(AudioOutput *ao) {
 		T &t = Cast(*ao);
 		t.Drain();
 	}
 
-	static void Cancel(FilteredAudioOutput *ao) {
+	static void Cancel(AudioOutput *ao) {
 		T &t = Cast(*ao);
 		t.Cancel();
 	}
 
-	static bool Pause(FilteredAudioOutput *ao) {
+	static bool Pause(AudioOutput *ao) {
 		T &t = Cast(*ao);
 		return t.Pause();
 	}

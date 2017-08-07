@@ -63,7 +63,7 @@
 class OssOutput {
 	friend struct AudioOutputWrapper<OssOutput>;
 
-	FilteredAudioOutput base;
+	AudioOutput base;
 
 #ifdef AFMT_S24_PACKED
 	Manual<PcmExport> pcm_export;
@@ -85,8 +85,8 @@ class OssOutput {
 	int oss_format;
 
 public:
-	OssOutput(const ConfigBlock &block, const char *_device=nullptr)
-		:base(oss_output_plugin, block),
+	explicit OssOutput(const char *_device=nullptr)
+		:base(oss_output_plugin),
 		 fd(-1), device(_device) {}
 
 	static OssOutput *Create(EventLoop &event_loop,
@@ -192,11 +192,10 @@ oss_open_default()
 	int err[ARRAY_SIZE(default_devices)];
 	enum oss_stat ret[ARRAY_SIZE(default_devices)];
 
-	const ConfigBlock empty;
 	for (int i = ARRAY_SIZE(default_devices); --i >= 0; ) {
 		ret[i] = oss_stat_device(default_devices[i], &err[i]);
 		if (ret[i] == OSS_STAT_NO_ERROR)
-			return new OssOutput(empty, default_devices[i]);
+			return new OssOutput(default_devices[i]);
 	}
 
 	for (int i = ARRAY_SIZE(default_devices); --i >= 0; ) {
@@ -231,7 +230,7 @@ OssOutput::Create(EventLoop &, const ConfigBlock &block)
 {
 	const char *device = block.GetBlockValue("device");
 	if (device != nullptr)
-		return new OssOutput(block, device);
+		return new OssOutput(device);
 
 	return oss_open_default();
 }

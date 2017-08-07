@@ -47,7 +47,7 @@ static constexpr Domain sndio_output_domain("sndio_output");
 
 class SndioOutput {
 	friend struct AudioOutputWrapper<SndioOutput>;
-	FilteredAudioOutput base;
+	AudioOutput base;
 	const char *const device;
 	const unsigned buffer_time; /* in ms */
 	struct sio_hdl *sio_hdl;
@@ -65,7 +65,7 @@ public:
 };
 
 SndioOutput::SndioOutput(const ConfigBlock &block)
-	:base(sndio_output_plugin, block),
+	:base(sndio_output_plugin),
 	 device(block.GetBlockValue("device", SIO_DEVANY)),
 	 buffer_time(block.GetBlockValue("buffer_time",
 					 MPD_SNDIO_BUFFER_TIME_MS))

@@ -31,7 +31,7 @@
 class PipeOutput {
 	friend struct AudioOutputWrapper<PipeOutput>;
 
-	FilteredAudioOutput base;
+	AudioOutput base;
 
 	const std::string cmd;
 	FILE *fh;
@@ -52,7 +52,7 @@ public:
 };
 
 PipeOutput::PipeOutput(const ConfigBlock &block)
-	:base(pipe_output_plugin, block),
+	:base(pipe_output_plugin),
 	 cmd(block.GetBlockValue("command", ""))
 {
 	if (cmd.empty())

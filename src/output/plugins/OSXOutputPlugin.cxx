@@ -36,7 +36,7 @@
 #include <memory>
 
 struct OSXOutput {
-	FilteredAudioOutput base;
+	AudioOutput base;
 
 	/* configuration settings */
 	OSType component_subtype;
@@ -80,7 +80,7 @@ osx_output_test_default_device(void)
 }
 
 OSXOutput::OSXOutput(const ConfigBlock &block)
-	:base(osx_output_plugin, block)
+	:base(osx_output_plugin)
 {
 	const char *device = block.GetBlockValue("device");
 
@@ -103,7 +103,7 @@ OSXOutput::OSXOutput(const ConfigBlock &block)
 	sync_sample_rate = block.GetBlockValue("sync_sample_rate", false);
 }
 
-static FilteredAudioOutput *
+static AudioOutput *
 osx_output_init(EventLoop &, const ConfigBlock &block)
 {
 	OSXOutput *oo = new OSXOutput(block);
@@ -128,7 +128,7 @@ osx_output_init(EventLoop &, const ConfigBlock &block)
 }
 
 static void
-osx_output_finish(FilteredAudioOutput *ao)
+osx_output_finish(AudioOutput *ao)
 {
 	OSXOutput *oo = (OSXOutput *)ao;
 
@@ -514,7 +514,7 @@ osx_render(void *vdata,
 }
 
 static void
-osx_output_enable(FilteredAudioOutput *ao)
+osx_output_enable(AudioOutput *ao)
 {
 	char errormsg[1024];
 	OSXOutput *oo = (OSXOutput *)ao;
@@ -550,7 +550,7 @@ osx_output_enable(FilteredAudioOutput *ao)
 }
 
 static void
-osx_output_disable(FilteredAudioOutput *ao)
+osx_output_disable(AudioOutput *ao)
 {
 	OSXOutput *oo = (OSXOutput *)ao;
 
@@ -562,7 +562,7 @@ osx_output_disable(FilteredAudioOutput *ao)
 }
 
 static void
-osx_output_close(FilteredAudioOutput *ao)
+osx_output_close(AudioOutput *ao)
 {
 	OSXOutput *od = (OSXOutput *)ao;
 
@@ -573,7 +573,7 @@ osx_output_close(FilteredAudioOutput *ao)
 }
 
 static void
-osx_output_open(FilteredAudioOutput *ao, AudioFormat &audio_format)
+osx_output_open(AudioOutput *ao, AudioFormat &audio_format)
 {
 	char errormsg[1024];
 	OSXOutput *od = (OSXOutput *)ao;
@@ -663,14 +663,14 @@ osx_output_open(FilteredAudioOutput *ao, AudioFormat &audio_format)
 }
 
 static size_t
-osx_output_play(FilteredAudioOutput *ao, const void *chunk, size_t size)
+osx_output_play(AudioOutput *ao, const void *chunk, size_t size)
 {
 	OSXOutput *od = (OSXOutput *)ao;
 	return od->ring_buffer->push((uint8_t *)chunk, size);
 }
 
 static std::chrono::steady_clock::duration
-osx_output_delay(FilteredAudioOutput *ao) noexcept
+osx_output_delay(AudioOutput *ao) noexcept
 {
 	OSXOutput *od = (OSXOutput *)ao;
 	return od->ring_buffer->write_available()

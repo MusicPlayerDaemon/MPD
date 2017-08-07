@@ -45,7 +45,7 @@ static constexpr Domain recorder_domain("recorder");
 class RecorderOutput {
 	friend struct AudioOutputWrapper<RecorderOutput>;
 
-	FilteredAudioOutput base;
+	AudioOutput base;
 
 	/**
 	 * The configured encoder plugin.
@@ -114,7 +114,7 @@ private:
 };
 
 RecorderOutput::RecorderOutput(const ConfigBlock &block)
-	:base(recorder_output_plugin, block)
+	:base(recorder_output_plugin)
 {
 	/* read configuration */
 

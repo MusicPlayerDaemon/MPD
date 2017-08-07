@@ -53,7 +53,7 @@ struct audio_info {
 class SolarisOutput {
 	friend struct AudioOutputWrapper<SolarisOutput>;
 
-	FilteredAudioOutput base;
+	AudioOutput base;
 
 	/* configuration */
 	const char *const device;
@@ -61,7 +61,7 @@ class SolarisOutput {
 	int fd;
 
 	explicit SolarisOutput(const ConfigBlock &block)
-		:base(solaris_output_plugin, block),
+		:base(solaris_output_plugin),
 		 device(block.GetBlockValue("device", "/dev/audio")) {}
 
 public:

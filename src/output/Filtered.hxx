@@ -33,7 +33,7 @@ class Mixer;
 class MixerListener;
 struct MusicChunk;
 struct ConfigBlock;
-struct AudioOutputPlugin;
+struct AudioOutput;
 struct ReplayGainConfig;
 struct Tag;
 
@@ -54,7 +54,7 @@ public:
 	/**
 	 * The plugin which implements this output device.
 	 */
-	const AudioOutputPlugin &plugin;
+	AudioOutput *const output;
 
 	/**
 	 * The #mixer object associated with this audio output device.
@@ -120,17 +120,10 @@ public:
 	/**
 	 * Throws #std::runtime_error on error.
 	 */
-	FilteredAudioOutput(const AudioOutputPlugin &_plugin,
+	FilteredAudioOutput(AudioOutput &_output,
 			    const ConfigBlock &block);
 
 	~FilteredAudioOutput();
-
-	/**
-	 * Plugins shall call this method if they require an
-	 * "audio_format" setting which evaluates
-	 * AudioFormat::IsFullyDefined().
-	 */
-	void NeedFullyDefinedAudioFormat();
 
 private:
 	void Configure(const ConfigBlock &block);
