@@ -342,13 +342,6 @@ AudioOutputControl::StopThread() noexcept
 }
 
 void
-AudioOutput::BeginDestroy() noexcept
-{
-	if (mixer != nullptr)
-		mixer_auto_close(mixer);
-}
-
-void
 AudioOutputControl::BeginDestroy() noexcept
 {
 	output->BeginDestroy();
@@ -357,12 +350,6 @@ AudioOutputControl::BeginDestroy() noexcept
 		const std::lock_guard<Mutex> protect(mutex);
 		CommandAsync(Command::KILL);
 	}
-}
-
-void
-AudioOutput::FinishDestroy() noexcept
-{
-	audio_output_free(this);
 }
 
 void

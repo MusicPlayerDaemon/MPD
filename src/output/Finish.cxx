@@ -40,3 +40,16 @@ audio_output_free(AudioOutput *ao) noexcept
 {
 	ao_plugin_finish(ao);
 }
+
+void
+AudioOutput::BeginDestroy() noexcept
+{
+	if (mixer != nullptr)
+		mixer_auto_close(mixer);
+}
+
+void
+AudioOutput::FinishDestroy() noexcept
+{
+	audio_output_free(this);
+}
