@@ -23,8 +23,6 @@
 #include "mixer/MixerControl.hxx"
 #include "filter/FilterInternal.hxx"
 
-#include <assert.h>
-
 AudioOutput::~AudioOutput()
 {
 	if (mixer != nullptr)
@@ -33,12 +31,6 @@ AudioOutput::~AudioOutput()
 	delete prepared_replay_gain_filter;
 	delete prepared_other_replay_gain_filter;
 	delete prepared_filter;
-}
-
-void
-audio_output_free(AudioOutput *ao) noexcept
-{
-	ao_plugin_finish(ao);
 }
 
 void
@@ -51,5 +43,5 @@ AudioOutput::BeginDestroy() noexcept
 void
 AudioOutput::FinishDestroy() noexcept
 {
-	audio_output_free(this);
+	ao_plugin_finish(this);
 }

@@ -187,7 +187,4 @@ audio_output_new(EventLoop &event_loop,
 		 const ConfigBlock &block,
 		 MixerListener &mixer_listener);
 
-void
-audio_output_free(AudioOutput *ao) noexcept;
-
 #endif
