@@ -108,8 +108,6 @@ AudioOutput::CloseFilter() noexcept
 void
 AudioOutput::Close(bool drain) noexcept
 {
-	const ScopeUnlock unlock(mutex);
-
 	CloseOutput(drain);
 	CloseFilter();
 

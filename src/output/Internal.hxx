@@ -142,6 +142,11 @@ public:
 
 	void Disable() noexcept;
 
+	/**
+	 * Invoke OutputPlugin::close().
+	 *
+	 * Caller must not lock the mutex.
+	 */
 	void Close(bool drain) noexcept;
 
 	/**

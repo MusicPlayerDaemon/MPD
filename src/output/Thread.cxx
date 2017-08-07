@@ -87,7 +87,12 @@ AudioOutputControl::InternalOpen2(const AudioFormat in_audio_format)
 					   output->out_audio_format);
 		} catch (const std::runtime_error &e) {
 			open = false;
-			output->Close(false);
+
+			{
+				const ScopeUnlock unlock(mutex);
+				output->Close(false);
+			}
+
 			std::throw_with_nested(FormatRuntimeError("Failed to convert for \"%s\" [%s]",
 								  GetName(), output->plugin.name));
 		}
@@ -194,7 +199,12 @@ AudioOutputControl::InternalClose(bool drain) noexcept
 	assert(IsOpen());
 
 	open = false;
-	output->Close(drain);
+
+	{
+		const ScopeUnlock unlock(mutex);
+		output->Close(drain);
+	}
+
 	source.Close();
 }
 
