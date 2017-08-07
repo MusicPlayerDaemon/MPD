@@ -99,7 +99,7 @@ AudioOutput::CloseOutput(bool drain) noexcept
 }
 
 void
-AudioOutput::CloseFilter() noexcept
+AudioOutput::CloseSoftwareMixer() noexcept
 {
 	if (mixer != nullptr && mixer->IsPlugin(software_mixer_plugin))
 		software_mixer_set_filter(*mixer, nullptr);
@@ -109,7 +109,7 @@ void
 AudioOutput::Close(bool drain) noexcept
 {
 	CloseOutput(drain);
-	CloseFilter();
+	CloseSoftwareMixer();
 
 	FormatDebug(output_domain, "closed plugin=%s name=\"%s\"",
 		    plugin.name, name);

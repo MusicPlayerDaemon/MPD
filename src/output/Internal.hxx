@@ -163,7 +163,7 @@ public:
 	/**
 	 * Mutex must not be locked.
 	 */
-	void CloseFilter() noexcept;
+	void CloseSoftwareMixer() noexcept;
 
 	void BeginPause() noexcept;
 	bool IteratePause() noexcept;

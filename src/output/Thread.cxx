@@ -73,7 +73,7 @@ AudioOutputControl::InternalOpen2(const AudioFormat in_audio_format)
 			output->OpenOutputAndConvert(output->filter_audio_format);
 		} catch (...) {
 			const ScopeUnlock unlock(mutex);
-			output->CloseFilter();
+			output->CloseSoftwareMixer();
 			throw;
 		}
 
