@@ -7,7 +7,7 @@
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will  useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -140,7 +140,8 @@ try {
 
 	/* cleanup and exit */
 
-	audio_output_free(ao);
+	ao->BeginDestroy();
+	ao->FinishDestroy();
 
 	config_global_finish();
 
