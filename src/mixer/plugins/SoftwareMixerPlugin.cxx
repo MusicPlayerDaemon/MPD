@@ -20,12 +20,8 @@
 #include "config.h"
 #include "SoftwareMixerPlugin.hxx"
 #include "mixer/MixerInternal.hxx"
-#include "filter/FilterPlugin.hxx"
-#include "filter/FilterRegistry.hxx"
-#include "filter/FilterInternal.hxx"
 #include "filter/plugins/VolumeFilterPlugin.hxx"
 #include "pcm/Volume.hxx"
-#include "config/Block.hxx"
 
 #include <assert.h>
 #include <math.h>
