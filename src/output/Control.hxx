@@ -353,6 +353,8 @@ public:
 	}
 
 	/**
+	 * Caller must lock the mutex.
+	 *
 	 * Throws #std::runtime_error on error.
 	 */
 	void InternalOpen2(AudioFormat in_audio_format);
@@ -405,30 +407,37 @@ public:
 
 private:
 	/**
-	 * Runs inside the OutputThread.  Handles exceptions.
+	 * Runs inside the OutputThread.
+	 * Caller must lock the mutex.
+	 * Handles exceptions.
 	 *
 	 * @return true on success
 	 */
 	bool InternalEnable() noexcept;
 
 	/**
-	 * Runs inside the OutputThread.  Handles exceptions.
+	 * Runs inside the OutputThread.
+	 * Caller must lock the mutex.
 	 */
 	void InternalDisable() noexcept;
 
 	/**
-	 * Runs inside the OutputThread.  Handles exceptions.
+	 * Runs inside the OutputThread.
+	 * Caller must lock the mutex.
+	 * Handles exceptions.
 	 */
 	void InternalOpen(AudioFormat audio_format,
 			  const MusicPipe &pipe) noexcept;
 
 	/**
 	 * Runs inside the OutputThread.
+	 * Caller must lock the mutex.
 	 */
 	void InternalClose(bool drain) noexcept;
 
 	/**
 	 * Runs inside the OutputThread.
+	 * Caller must lock the mutex.
 	 */
 	void InternalCheckClose(bool drain) noexcept;
 
@@ -440,8 +449,14 @@ private:
 	 */
 	bool WaitForDelay() noexcept;
 
+	/**
+	 * Caller must lock the mutex.
+	 */
 	bool FillSourceOrClose();
 
+	/**
+	 * Caller must lock the mutex.
+	 */
 	bool PlayChunk() noexcept;
 
 	/**
@@ -449,7 +464,9 @@ private:
 	 * been reached (and no more chunks are queued), or until a
 	 * command is received.
 	 *
-	 * Runs inside the OutputThread.  Handles exceptions.
+	 * Runs inside the OutputThread.
+	 * Caller must lock the mutex.
+	 * Handles exceptions.
 	 *
 	 * @return true if at least one chunk has been available,
 	 * false if the tail of the pipe was already reached
@@ -457,7 +474,9 @@ private:
 	bool InternalPlay() noexcept;
 
 	/**
-	 * Runs inside the OutputThread.  Handles exceptions.
+	 * Runs inside the OutputThread.
+	 * Caller must lock the mutex.
+	 * Handles exceptions.
 	 */
 	void InternalPause() noexcept;
 
