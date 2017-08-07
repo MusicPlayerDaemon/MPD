@@ -343,7 +343,11 @@ AudioOutputControl::InternalPlay() noexcept
 inline void
 AudioOutputControl::InternalPause() noexcept
 {
-	output->BeginPause();
+	{
+		const ScopeUnlock unlock(mutex);
+		output->BeginPause();
+	}
+
 	pause = true;
 
 	CommandFinished();
@@ -352,14 +356,24 @@ AudioOutputControl::InternalPause() noexcept
 		if (!WaitForDelay())
 			break;
 
-		if (!output->IteratePause()) {
+		bool success;
+		{
+			const ScopeUnlock unlock(mutex);
+			success = output->IteratePause();
+		}
+
+		if (!success) {
 			InternalClose(false);
 			break;
 		}
 	} while (command == Command::NONE);
 
 	pause = false;
-	output->EndPause();
+
+	{
+		const ScopeUnlock unlock(mutex);
+		output->EndPause();
+	}
 
 	skip_delay = true;
 }
