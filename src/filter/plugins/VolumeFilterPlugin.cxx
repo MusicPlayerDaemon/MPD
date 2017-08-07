@@ -78,6 +78,12 @@ const FilterPlugin volume_filter_plugin = {
 	volume_filter_init,
 };
 
+PreparedFilter *
+volume_filter_prepare() noexcept
+{
+	return new PreparedVolumeFilter();
+}
+
 unsigned
 volume_filter_get(const Filter *_filter) noexcept
 {

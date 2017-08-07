@@ -33,6 +33,7 @@
 #include "filter/plugins/AutoConvertFilterPlugin.hxx"
 #include "filter/plugins/ReplayGainFilterPlugin.hxx"
 #include "filter/plugins/ChainFilterPlugin.hxx"
+#include "filter/plugins/VolumeFilterPlugin.hxx"
 #include "config/ConfigError.hxx"
 #include "config/ConfigGlobal.hxx"
 #include "config/Block.hxx"
@@ -106,12 +107,6 @@ audio_output_mixer_type(const ConfigBlock &block) noexcept
 						  "hardware"));
 }
 
-static PreparedFilter *
-CreateVolumeFilter()
-{
-	return filter_new(&volume_filter_plugin, ConfigBlock());
-}
-
 static Mixer *
 audio_output_load_mixer(EventLoop &event_loop, AudioOutput &ao,
 			const ConfigBlock &block,
@@ -144,7 +139,7 @@ audio_output_load_mixer(EventLoop &event_loop, AudioOutput &ao,
 		assert(mixer != nullptr);
 
 		filter_chain_append(filter_chain, "software_mixer",
-				    ao.volume_filter.Set(CreateVolumeFilter()));
+				    ao.volume_filter.Set(volume_filter_prepare()));
 		return mixer;
 	}
 
