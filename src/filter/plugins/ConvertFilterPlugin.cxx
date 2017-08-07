@@ -132,6 +132,12 @@ const FilterPlugin convert_filter_plugin = {
 	convert_filter_init,
 };
 
+PreparedFilter *
+convert_filter_prepare() noexcept
+{
+	return new PreparedConvertFilter();
+}
+
 Filter *
 convert_filter_new(const AudioFormat in_audio_format,
 		   const AudioFormat out_audio_format)

@@ -20,8 +20,12 @@
 #ifndef MPD_CONVERT_FILTER_PLUGIN_HXX
 #define MPD_CONVERT_FILTER_PLUGIN_HXX
 
+class PreparedFilter;
 class Filter;
 struct AudioFormat;
+
+PreparedFilter *
+convert_filter_prepare() noexcept;
 
 Filter *
 convert_filter_new(AudioFormat in_audio_format,

@@ -31,6 +31,7 @@
 #include "filter/FilterPlugin.hxx"
 #include "filter/FilterRegistry.hxx"
 #include "filter/plugins/AutoConvertFilterPlugin.hxx"
+#include "filter/plugins/ConvertFilterPlugin.hxx"
 #include "filter/plugins/ReplayGainFilterPlugin.hxx"
 #include "filter/plugins/ChainFilterPlugin.hxx"
 #include "filter/plugins/VolumeFilterPlugin.hxx"
@@ -249,11 +250,8 @@ AudioOutput::Setup(EventLoop &event_loop,
 
 	/* the "convert" filter must be the last one in the chain */
 
-	auto *f = filter_new(&convert_filter_plugin, ConfigBlock());
-	assert(f != nullptr);
-
 	filter_chain_append(*prepared_filter, "convert",
-			    convert_filter.Set(f));
+			    convert_filter.Set(convert_filter_prepare()));
 }
 
 AudioOutput *
