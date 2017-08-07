@@ -23,7 +23,7 @@
 #include "mixer/MixerControl.hxx"
 #include "filter/FilterInternal.hxx"
 
-AudioOutput::~AudioOutput()
+FilteredAudioOutput::~FilteredAudioOutput()
 {
 	if (mixer != nullptr)
 		mixer_free(mixer);
@@ -34,14 +34,14 @@ AudioOutput::~AudioOutput()
 }
 
 void
-AudioOutput::BeginDestroy() noexcept
+FilteredAudioOutput::BeginDestroy() noexcept
 {
 	if (mixer != nullptr)
 		mixer_auto_close(mixer);
 }
 
 void
-AudioOutput::FinishDestroy() noexcept
+FilteredAudioOutput::FinishDestroy() noexcept
 {
 	ao_plugin_finish(this);
 }

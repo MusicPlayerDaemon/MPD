@@ -47,7 +47,7 @@ static constexpr Domain sndio_output_domain("sndio_output");
 
 class SndioOutput {
 	friend struct AudioOutputWrapper<SndioOutput>;
-	AudioOutput base;
+	FilteredAudioOutput base;
 	const char *const device;
 	const unsigned buffer_time; /* in ms */
 	struct sio_hdl *sio_hdl;

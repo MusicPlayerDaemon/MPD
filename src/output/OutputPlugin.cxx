@@ -21,7 +21,7 @@
 #include "OutputPlugin.hxx"
 #include "Internal.hxx"
 
-AudioOutput *
+FilteredAudioOutput *
 ao_plugin_init(EventLoop &event_loop,
 	       const AudioOutputPlugin &plugin,
 	       const ConfigBlock &block)
@@ -32,39 +32,39 @@ ao_plugin_init(EventLoop &event_loop,
 }
 
 void
-ao_plugin_finish(AudioOutput *ao) noexcept
+ao_plugin_finish(FilteredAudioOutput *ao) noexcept
 {
 	ao->plugin.finish(ao);
 }
 
 void
-ao_plugin_enable(AudioOutput &ao)
+ao_plugin_enable(FilteredAudioOutput &ao)
 {
 	if (ao.plugin.enable != nullptr)
 		ao.plugin.enable(&ao);
 }
 
 void
-ao_plugin_disable(AudioOutput &ao) noexcept
+ao_plugin_disable(FilteredAudioOutput &ao) noexcept
 {
 	if (ao.plugin.disable != nullptr)
 		ao.plugin.disable(&ao);
 }
 
 void
-ao_plugin_open(AudioOutput &ao, AudioFormat &audio_format)
+ao_plugin_open(FilteredAudioOutput &ao, AudioFormat &audio_format)
 {
 	ao.plugin.open(&ao, audio_format);
 }
 
 void
-ao_plugin_close(AudioOutput &ao) noexcept
+ao_plugin_close(FilteredAudioOutput &ao) noexcept
 {
 	ao.plugin.close(&ao);
 }
 
 std::chrono::steady_clock::duration
-ao_plugin_delay(AudioOutput &ao) noexcept
+ao_plugin_delay(FilteredAudioOutput &ao) noexcept
 {
 	return ao.plugin.delay != nullptr
 		? ao.plugin.delay(&ao)
@@ -72,34 +72,34 @@ ao_plugin_delay(AudioOutput &ao) noexcept
 }
 
 void
-ao_plugin_send_tag(AudioOutput &ao, const Tag &tag)
+ao_plugin_send_tag(FilteredAudioOutput &ao, const Tag &tag)
 {
 	if (ao.plugin.send_tag != nullptr)
 		ao.plugin.send_tag(&ao, tag);
 }
 
 size_t
-ao_plugin_play(AudioOutput &ao, const void *chunk, size_t size)
+ao_plugin_play(FilteredAudioOutput &ao, const void *chunk, size_t size)
 {
 	return ao.plugin.play(&ao, chunk, size);
 }
 
 void
-ao_plugin_drain(AudioOutput &ao)
+ao_plugin_drain(FilteredAudioOutput &ao)
 {
 	if (ao.plugin.drain != nullptr)
 		ao.plugin.drain(&ao);
 }
 
 void
-ao_plugin_cancel(AudioOutput &ao) noexcept
+ao_plugin_cancel(FilteredAudioOutput &ao) noexcept
 {
 	if (ao.plugin.cancel != nullptr)
 		ao.plugin.cancel(&ao);
 }
 
 bool
-ao_plugin_pause(AudioOutput &ao)
+ao_plugin_pause(FilteredAudioOutput &ao)
 {
 	return ao.plugin.pause != nullptr && ao.plugin.pause(&ao);
 }

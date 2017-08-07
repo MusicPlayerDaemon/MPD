@@ -43,7 +43,7 @@ static constexpr unsigned MAX_PORTS = 16;
 static constexpr size_t jack_sample_size = sizeof(jack_default_audio_sample_t);
 
 struct JackOutput {
-	AudioOutput base;
+	FilteredAudioOutput base;
 
 	/**
 	 * libjack options passed to jack_client_open().
@@ -443,7 +443,7 @@ JackOutput::Disable()
 	}
 }
 
-static AudioOutput *
+static FilteredAudioOutput *
 mpd_jack_init(EventLoop &, const ConfigBlock &block)
 {
 	jack_set_error_function(mpd_jack_error);

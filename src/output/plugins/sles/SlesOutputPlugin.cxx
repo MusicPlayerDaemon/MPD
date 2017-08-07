@@ -43,7 +43,7 @@ class SlesOutput {
 	static constexpr unsigned N_BUFFERS = 3;
 	static constexpr size_t BUFFER_SIZE = 65536;
 
-	AudioOutput base;
+	FilteredAudioOutput base;
 
 	SLES::Object engine_object, mix_object, play_object;
 	SLES::Play play;
@@ -89,7 +89,7 @@ class SlesOutput {
 public:
 	SlesOutput(const ConfigBlock &block);
 
-	operator AudioOutput *() {
+	operator FilteredAudioOutput *() {
 		return &base;
 	}
 

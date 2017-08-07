@@ -173,7 +173,7 @@ AlsaMixer::Configure(const ConfigBlock &block)
 }
 
 static Mixer *
-alsa_mixer_init(EventLoop &event_loop, gcc_unused AudioOutput &ao,
+alsa_mixer_init(EventLoop &event_loop, gcc_unused FilteredAudioOutput &ao,
 		MixerListener &listener,
 		const ConfigBlock &block)
 {

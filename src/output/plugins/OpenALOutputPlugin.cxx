@@ -39,7 +39,7 @@ class OpenALOutput {
 	/* should be enough for buffer size = 2048 */
 	static constexpr unsigned NUM_BUFFERS = 16;
 
-	AudioOutput base;
+	FilteredAudioOutput base;
 
 	const char *device_name;
 	ALCdevice *device;

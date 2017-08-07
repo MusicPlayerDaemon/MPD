@@ -38,7 +38,7 @@
 #include <stdint.h>
 
 enum class ReplayGainMode : uint8_t;
-struct AudioOutput;
+struct FilteredAudioOutput;
 struct MusicChunk;
 struct ConfigBlock;
 class MusicPipe;
@@ -50,7 +50,7 @@ class AudioOutputClient;
  * Controller for an #AudioOutput and its output thread.
  */
 class AudioOutputControl {
-	AudioOutput *output;
+	FilteredAudioOutput *output;
 
 	/**
 	 * The PlayerControl object which "owns" this output.  This
@@ -209,7 +209,8 @@ public:
 	 */
 	mutable Mutex mutex;
 
-	AudioOutputControl(AudioOutput *_output, AudioOutputClient &_client);
+	AudioOutputControl(FilteredAudioOutput *_output,
+			   AudioOutputClient &_client);
 
 #ifndef NDEBUG
 	~AudioOutputControl() {
@@ -303,16 +304,14 @@ public:
 	void CommandAsync(Command cmd) noexcept;
 
 	/**
-	 * Sends a command to the #AudioOutput object and waits for
-	 * completion.
+	 * Sends a command to the object and waits for completion.
 	 *
 	 * Caller must lock the mutex.
 	 */
 	void CommandWait(Command cmd) noexcept;
 
 	/**
-	 * Lock the #AudioOutput object and execute the command
-	 * synchronously.
+	 * Lock the object and execute the command synchronously.
 	 */
 	void LockCommandWait(Command cmd) noexcept;
 

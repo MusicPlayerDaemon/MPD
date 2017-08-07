@@ -28,7 +28,7 @@
 #define MPD_MIXER_PLUGIN_HXX
 
 struct ConfigBlock;
-struct AudioOutput;
+struct FilteredAudioOutput;
 class Mixer;
 class MixerListener;
 class EventLoop;
@@ -39,11 +39,11 @@ struct MixerPlugin {
 	 *
 	 * Throws std::runtime_error on error.
 	 *
-	 * @param ao the associated AudioOutput
+	 * @param ao the associated #AudioOutput
 	 * @param param the configuration section
 	 * @return a mixer object
 	 */
-	Mixer *(*init)(EventLoop &event_loop, AudioOutput &ao,
+	Mixer *(*init)(EventLoop &event_loop, FilteredAudioOutput &ao,
 		       MixerListener &listener,
 		       const ConfigBlock &block);
 

@@ -51,7 +51,7 @@ try {
 	EventLoop event_loop;
 
 	Mixer *mixer = mixer_new(event_loop, alsa_mixer_plugin,
-				 *(AudioOutput *)nullptr,
+				 *(FilteredAudioOutput *)nullptr,
 				 *(MixerListener *)nullptr,
 				 ConfigBlock());
 

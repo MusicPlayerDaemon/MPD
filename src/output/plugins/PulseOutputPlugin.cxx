@@ -47,7 +47,7 @@
 class PulseOutput {
 	friend struct AudioOutputWrapper<PulseOutput>;
 
-	AudioOutput base;
+	FilteredAudioOutput base;
 
 	const char *name;
 	const char *server;

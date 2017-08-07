@@ -51,7 +51,7 @@ public:
 
 static Mixer *
 null_mixer_init(gcc_unused EventLoop &event_loop,
-		gcc_unused AudioOutput &ao,
+		gcc_unused FilteredAudioOutput &ao,
 		MixerListener &listener,
 		gcc_unused const ConfigBlock &block)
 {

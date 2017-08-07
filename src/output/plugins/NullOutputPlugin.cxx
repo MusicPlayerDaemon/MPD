@@ -26,7 +26,7 @@
 class NullOutput {
 	friend struct AudioOutputWrapper<NullOutput>;
 
-	AudioOutput base;
+	FilteredAudioOutput base;
 
 	const bool sync;
 

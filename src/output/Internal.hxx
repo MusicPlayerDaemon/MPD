@@ -33,7 +33,7 @@ struct ConfigBlock;
 struct AudioOutputPlugin;
 struct ReplayGainConfig;
 
-struct AudioOutput {
+struct FilteredAudioOutput {
 	/**
 	 * The device's configured display name.
 	 */
@@ -108,10 +108,10 @@ struct AudioOutput {
 	/**
 	 * Throws #std::runtime_error on error.
 	 */
-	AudioOutput(const AudioOutputPlugin &_plugin,
-		    const ConfigBlock &block);
+	FilteredAudioOutput(const AudioOutputPlugin &_plugin,
+			    const ConfigBlock &block);
 
-	~AudioOutput();
+	~FilteredAudioOutput();
 
 private:
 	void Configure(const ConfigBlock &block);
@@ -188,7 +188,7 @@ extern struct notify audio_output_client_notify;
 /**
  * Throws #std::runtime_error on error.
  */
-AudioOutput *
+FilteredAudioOutput *
 audio_output_new(EventLoop &event_loop,
 		 const ReplayGainConfig &replay_gain_config,
 		 const ConfigBlock &block,

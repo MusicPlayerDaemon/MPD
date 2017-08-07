@@ -40,7 +40,7 @@ static unsigned ao_output_ref;
 class AoOutput {
 	friend struct AudioOutputWrapper<AoOutput>;
 
-	AudioOutput base;
+	FilteredAudioOutput base;
 
 	const size_t write_size;
 	int driver;

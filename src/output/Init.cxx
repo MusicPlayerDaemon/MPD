@@ -50,8 +50,8 @@
 #define AUDIO_OUTPUT_FORMAT	"format"
 #define AUDIO_FILTERS		"filters"
 
-AudioOutput::AudioOutput(const AudioOutputPlugin &_plugin,
-			 const ConfigBlock &block)
+FilteredAudioOutput::FilteredAudioOutput(const AudioOutputPlugin &_plugin,
+					 const ConfigBlock &block)
 	:plugin(_plugin)
 {
 	assert(plugin.finish != nullptr);
@@ -108,7 +108,7 @@ audio_output_mixer_type(const ConfigBlock &block) noexcept
 }
 
 static Mixer *
-audio_output_load_mixer(EventLoop &event_loop, AudioOutput &ao,
+audio_output_load_mixer(EventLoop &event_loop, FilteredAudioOutput &ao,
 			const ConfigBlock &block,
 			const MixerPlugin *plugin,
 			PreparedFilter &filter_chain,
@@ -148,7 +148,7 @@ audio_output_load_mixer(EventLoop &event_loop, AudioOutput &ao,
 }
 
 void
-AudioOutput::Configure(const ConfigBlock &block)
+FilteredAudioOutput::Configure(const ConfigBlock &block)
 {
 	if (!block.IsNull()) {
 		name = block.GetBlockValue(AUDIO_OUTPUT_NAME);
@@ -192,10 +192,10 @@ AudioOutput::Configure(const ConfigBlock &block)
 }
 
 inline void
-AudioOutput::Setup(EventLoop &event_loop,
-		   const ReplayGainConfig &replay_gain_config,
-		   MixerListener &mixer_listener,
-		   const ConfigBlock &block)
+FilteredAudioOutput::Setup(EventLoop &event_loop,
+			   const ReplayGainConfig &replay_gain_config,
+			   MixerListener &mixer_listener,
+			   const ConfigBlock &block)
 {
 
 	/* create the replay_gain filter */
@@ -249,7 +249,7 @@ AudioOutput::Setup(EventLoop &event_loop,
 			    convert_filter.Set(convert_filter_prepare()));
 }
 
-AudioOutput *
+FilteredAudioOutput *
 audio_output_new(EventLoop &event_loop,
 		 const ReplayGainConfig &replay_gain_config,
 		 const ConfigBlock &block,
@@ -278,7 +278,7 @@ audio_output_new(EventLoop &event_loop,
 			      plugin->name);
 	}
 
-	AudioOutput *ao = ao_plugin_init(event_loop, *plugin, block);
+	auto *ao = ao_plugin_init(event_loop, *plugin, block);
 	assert(ao != nullptr);
 
 	try {

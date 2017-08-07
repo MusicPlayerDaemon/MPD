@@ -45,7 +45,7 @@ static constexpr Domain recorder_domain("recorder");
 class RecorderOutput {
 	friend struct AudioOutputWrapper<RecorderOutput>;
 
-	AudioOutput base;
+	FilteredAudioOutput base;
 
 	/**
 	 * The configured encoder plugin.

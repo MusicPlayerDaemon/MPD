@@ -29,7 +29,7 @@
 #include "util/StringBuffer.hxx"
 
 void
-AudioOutput::Enable()
+FilteredAudioOutput::Enable()
 {
 	try {
 		ao_plugin_enable(*this);
@@ -40,13 +40,13 @@ AudioOutput::Enable()
 }
 
 void
-AudioOutput::Disable() noexcept
+FilteredAudioOutput::Disable() noexcept
 {
 	ao_plugin_disable(*this);
 }
 
 void
-AudioOutput::ConfigureConvertFilter()
+FilteredAudioOutput::ConfigureConvertFilter()
 {
 	try {
 		convert_filter_set(convert_filter.Get(), out_audio_format);
@@ -57,7 +57,7 @@ AudioOutput::ConfigureConvertFilter()
 }
 
 void
-AudioOutput::OpenOutputAndConvert(AudioFormat desired_audio_format)
+FilteredAudioOutput::OpenOutputAndConvert(AudioFormat desired_audio_format)
 {
 	out_audio_format = desired_audio_format;
 
@@ -98,7 +98,7 @@ AudioOutput::OpenOutputAndConvert(AudioFormat desired_audio_format)
 }
 
 void
-AudioOutput::CloseOutput(bool drain) noexcept
+FilteredAudioOutput::CloseOutput(bool drain) noexcept
 {
 	if (drain)
 		ao_plugin_drain(*this);
@@ -109,21 +109,21 @@ AudioOutput::CloseOutput(bool drain) noexcept
 }
 
 void
-AudioOutput::OpenSoftwareMixer() noexcept
+FilteredAudioOutput::OpenSoftwareMixer() noexcept
 {
 	if (mixer != nullptr && mixer->IsPlugin(software_mixer_plugin))
 		software_mixer_set_filter(*mixer, volume_filter.Get());
 }
 
 void
-AudioOutput::CloseSoftwareMixer() noexcept
+FilteredAudioOutput::CloseSoftwareMixer() noexcept
 {
 	if (mixer != nullptr && mixer->IsPlugin(software_mixer_plugin))
 		software_mixer_set_filter(*mixer, nullptr);
 }
 
 void
-AudioOutput::Close(bool drain) noexcept
+FilteredAudioOutput::Close(bool drain) noexcept
 {
 	CloseOutput(drain);
 	CloseSoftwareMixer();
@@ -133,13 +133,13 @@ AudioOutput::Close(bool drain) noexcept
 }
 
 void
-AudioOutput::BeginPause() noexcept
+FilteredAudioOutput::BeginPause() noexcept
 {
 	ao_plugin_cancel(*this);
 }
 
 bool
-AudioOutput::IteratePause() noexcept
+FilteredAudioOutput::IteratePause() noexcept
 {
 	try {
 		return ao_plugin_pause(*this);

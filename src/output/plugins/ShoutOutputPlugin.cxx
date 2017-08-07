@@ -40,7 +40,7 @@
 static constexpr unsigned DEFAULT_CONN_TIMEOUT = 2;
 
 struct ShoutOutput final {
-	AudioOutput base;
+	FilteredAudioOutput base;
 
 	shout_t *shout_conn;
 	shout_metadata_t *shout_meta;

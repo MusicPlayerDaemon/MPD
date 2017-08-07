@@ -49,7 +49,7 @@ MultipleOutputs::~MultipleOutputs()
 		i->FinishDestroy();
 }
 
-static AudioOutput *
+static FilteredAudioOutput *
 LoadOutput(EventLoop &event_loop,
 	   const ReplayGainConfig &replay_gain_config,
 	   MixerListener &mixer_listener,

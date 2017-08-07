@@ -42,7 +42,7 @@ struct WinmmBuffer {
 class WinmmOutput {
 	friend struct AudioOutputWrapper<WinmmOutput>;
 
-	AudioOutput base;
+	FilteredAudioOutput base;
 
 	const UINT device_id;
 	HWAVEOUT handle;

@@ -63,7 +63,7 @@
 class OssOutput {
 	friend struct AudioOutputWrapper<OssOutput>;
 
-	AudioOutput base;
+	FilteredAudioOutput base;
 
 #ifdef AFMT_S24_PACKED
 	Manual<PcmExport> pcm_export;

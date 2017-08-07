@@ -37,7 +37,7 @@
 class FifoOutput {
 	friend struct AudioOutputWrapper<FifoOutput>;
 
-	AudioOutput base;
+	FilteredAudioOutput base;
 
 	const AllocatedPath path;
 	std::string path_utf8;

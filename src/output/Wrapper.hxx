@@ -30,68 +30,68 @@ struct Tag;
 
 template<class T>
 struct AudioOutputWrapper {
-	static T &Cast(AudioOutput &ao) {
+	static T &Cast(FilteredAudioOutput &ao) {
 		return ContainerCast(ao, &T::base);
 	}
 
-	static AudioOutput *Init(EventLoop &event_loop,
-				 const ConfigBlock &block) {
+	static FilteredAudioOutput *Init(EventLoop &event_loop,
+					 const ConfigBlock &block) {
 		T *t = T::Create(event_loop, block);
 		return &t->base;
 	}
 
-	static void Finish(AudioOutput *ao) {
+	static void Finish(FilteredAudioOutput *ao) {
 		T *t = &Cast(*ao);
 		delete t;
 	}
 
-	static void Enable(AudioOutput *ao) {
+	static void Enable(FilteredAudioOutput *ao) {
 		T &t = Cast(*ao);
 		t.Enable();
 	}
 
-	static void Disable(AudioOutput *ao) {
+	static void Disable(FilteredAudioOutput *ao) {
 		T &t = Cast(*ao);
 		t.Disable();
 	}
 
-	static void Open(AudioOutput *ao, AudioFormat &audio_format) {
+	static void Open(FilteredAudioOutput *ao, AudioFormat &audio_format) {
 		T &t = Cast(*ao);
 		t.Open(audio_format);
 	}
 
-	static void Close(AudioOutput *ao) {
+	static void Close(FilteredAudioOutput *ao) {
 		T &t = Cast(*ao);
 		t.Close();
 	}
 
 	gcc_pure
-	static std::chrono::steady_clock::duration Delay(AudioOutput *ao) noexcept {
+	static std::chrono::steady_clock::duration Delay(FilteredAudioOutput *ao) noexcept {
 		T &t = Cast(*ao);
 		return t.Delay();
 	}
 
-	static void SendTag(AudioOutput *ao, const Tag &tag) {
+	static void SendTag(FilteredAudioOutput *ao, const Tag &tag) {
 		T &t = Cast(*ao);
 		t.SendTag(tag);
 	}
 
-	static size_t Play(AudioOutput *ao, const void *chunk, size_t size) {
+	static size_t Play(FilteredAudioOutput *ao, const void *chunk, size_t size) {
 		T &t = Cast(*ao);
 		return t.Play(chunk, size);
 	}
 
-	static void Drain(AudioOutput *ao) {
+	static void Drain(FilteredAudioOutput *ao) {
 		T &t = Cast(*ao);
 		t.Drain();
 	}
 
-	static void Cancel(AudioOutput *ao) {
+	static void Cancel(FilteredAudioOutput *ao) {
 		T &t = Cast(*ao);
 		t.Cancel();
 	}
 
-	static bool Pause(AudioOutput *ao) {
+	static bool Pause(FilteredAudioOutput *ao) {
 		T &t = Cast(*ao);
 		return t.Pause();
 	}

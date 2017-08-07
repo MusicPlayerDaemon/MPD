@@ -31,7 +31,7 @@
 class PipeOutput {
 	friend struct AudioOutputWrapper<PipeOutput>;
 
-	AudioOutput base;
+	FilteredAudioOutput base;
 
 	const std::string cmd;
 	FILE *fh;

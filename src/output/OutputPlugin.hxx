@@ -29,7 +29,7 @@
 struct ConfigBlock;
 struct AudioFormat;
 struct Tag;
-struct AudioOutput;
+struct FilteredAudioOutput;
 struct MixerPlugin;
 class EventLoop;
 
@@ -57,12 +57,12 @@ struct AudioOutputPlugin {
 	 * @param param the configuration section, or nullptr if there is
 	 * no configuration
 	 */
-	AudioOutput *(*init)(EventLoop &event_loop, const ConfigBlock &block);
+	FilteredAudioOutput *(*init)(EventLoop &event_loop, const ConfigBlock &block);
 
 	/**
 	 * Free resources allocated by this device.
 	 */
-	void (*finish)(AudioOutput *data);
+	void (*finish)(FilteredAudioOutput *data);
 
 	/**
 	 * Enable the device.  This may allocate resources, preparing
@@ -70,13 +70,13 @@ struct AudioOutputPlugin {
 	 *
 	 * Throws #std::runtime_error on error.
 	 */
-	void (*enable)(AudioOutput *data);
+	void (*enable)(FilteredAudioOutput *data);
 
 	/**
 	 * Disables the device.  It is closed before this method is
 	 * called.
 	 */
-	void (*disable)(AudioOutput *data);
+	void (*disable)(FilteredAudioOutput *data);
 
 	/**
 	 * Really open the device.
@@ -86,12 +86,12 @@ struct AudioOutputPlugin {
 	 * @param audio_format the audio format in which data is going
 	 * to be delivered; may be modified by the plugin
 	 */
-	void (*open)(AudioOutput *data, AudioFormat &audio_format);
+	void (*open)(FilteredAudioOutput *data, AudioFormat &audio_format);
 
 	/**
 	 * Close the device.
 	 */
-	void (*close)(AudioOutput *data);
+	void (*close)(FilteredAudioOutput *data);
 
 	/**
 	 * Returns a positive number if the output thread shall further
@@ -102,13 +102,13 @@ struct AudioOutputPlugin {
 	 *
 	 * @return the duration to wait
 	 */
-	std::chrono::steady_clock::duration (*delay)(AudioOutput *data) noexcept;
+	std::chrono::steady_clock::duration (*delay)(FilteredAudioOutput *data) noexcept;
 
 	/**
 	 * Display metadata for the next chunk.  Optional method,
 	 * because not all devices can display metadata.
 	 */
-	void (*send_tag)(AudioOutput *data, const Tag &tag);
+	void (*send_tag)(FilteredAudioOutput *data, const Tag &tag);
 
 	/**
 	 * Play a chunk of audio data.
@@ -117,19 +117,19 @@ struct AudioOutputPlugin {
 	 *
 	 * @return the number of bytes played
 	 */
-	size_t (*play)(AudioOutput *data,
+	size_t (*play)(FilteredAudioOutput *data,
 		       const void *chunk, size_t size);
 
 	/**
 	 * Wait until the device has finished playing.
 	 */
-	void (*drain)(AudioOutput *data);
+	void (*drain)(FilteredAudioOutput *data);
 
 	/**
 	 * Try to cancel data which may still be in the device's
 	 * buffers.
 	 */
-	void (*cancel)(AudioOutput *data);
+	void (*cancel)(FilteredAudioOutput *data);
 
 	/**
 	 * Pause the device.  If supported, it may perform a special
@@ -142,7 +142,7 @@ struct AudioOutputPlugin {
 	 * @return false on error (output will be closed by caller),
 	 * true for continue to pause
 	 */
-	bool (*pause)(AudioOutput *data);
+	bool (*pause)(FilteredAudioOutput *data);
 
 	/**
 	 * The mixer plugin associated with this output plugin.  This
@@ -162,43 +162,43 @@ ao_plugin_test_default_device(const AudioOutputPlugin *plugin)
 }
 
 gcc_malloc
-AudioOutput *
+FilteredAudioOutput *
 ao_plugin_init(EventLoop &event_loop,
 	       const AudioOutputPlugin &plugin,
 	       const ConfigBlock &block);
 
 void
-ao_plugin_finish(AudioOutput *ao) noexcept;
+ao_plugin_finish(FilteredAudioOutput *ao) noexcept;
 
 void
-ao_plugin_enable(AudioOutput &ao);
+ao_plugin_enable(FilteredAudioOutput &ao);
 
 void
-ao_plugin_disable(AudioOutput &ao) noexcept;
+ao_plugin_disable(FilteredAudioOutput &ao) noexcept;
 
 void
-ao_plugin_open(AudioOutput &ao, AudioFormat &audio_format);
+ao_plugin_open(FilteredAudioOutput &ao, AudioFormat &audio_format);
 
 void
-ao_plugin_close(AudioOutput &ao) noexcept;
+ao_plugin_close(FilteredAudioOutput &ao) noexcept;
 
 gcc_pure
 std::chrono::steady_clock::duration
-ao_plugin_delay(AudioOutput &ao) noexcept;
+ao_plugin_delay(FilteredAudioOutput &ao) noexcept;
 
 void
-ao_plugin_send_tag(AudioOutput &ao, const Tag &tag);
+ao_plugin_send_tag(FilteredAudioOutput &ao, const Tag &tag);
 
 size_t
-ao_plugin_play(AudioOutput &ao, const void *chunk, size_t size);
+ao_plugin_play(FilteredAudioOutput &ao, const void *chunk, size_t size);
 
 void
-ao_plugin_drain(AudioOutput &ao);
+ao_plugin_drain(FilteredAudioOutput &ao);
 
 void
-ao_plugin_cancel(AudioOutput &ao) noexcept;
+ao_plugin_cancel(FilteredAudioOutput &ao) noexcept;
 
 bool
-ao_plugin_pause(AudioOutput &ao);
+ao_plugin_pause(FilteredAudioOutput &ao);
 
 #endif

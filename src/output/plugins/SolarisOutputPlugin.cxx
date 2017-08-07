@@ -53,7 +53,7 @@ struct audio_info {
 class SolarisOutput {
 	friend struct AudioOutputWrapper<SolarisOutput>;
 
-	AudioOutput base;
+	FilteredAudioOutput base;
 
 	/* configuration */
 	const char *const device;

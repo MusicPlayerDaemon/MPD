@@ -49,7 +49,7 @@ filter_plugin_by_name(gcc_unused const char *name) noexcept
 	return NULL;
 }
 
-static AudioOutput *
+static FilteredAudioOutput *
 load_audio_output(EventLoop &event_loop, const char *name)
 {
 	const auto *param = config_find_block(ConfigBlockOption::AUDIO_OUTPUT,
@@ -63,7 +63,7 @@ load_audio_output(EventLoop &event_loop, const char *name)
 }
 
 static void
-run_output(AudioOutput &ao, AudioFormat audio_format)
+run_output(FilteredAudioOutput &ao, AudioFormat audio_format)
 {
 	/* open the audio output */
 
@@ -127,7 +127,7 @@ try {
 
 	/* initialize the audio output */
 
-	AudioOutput *ao = load_audio_output(io_thread.GetEventLoop(), argv[2]);
+	auto *ao = load_audio_output(io_thread.GetEventLoop(), argv[2]);
 
 	/* parse the audio format */
 

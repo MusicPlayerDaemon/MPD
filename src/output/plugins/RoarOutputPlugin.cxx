@@ -39,7 +39,7 @@
 class RoarOutput {
 	friend struct AudioOutputWrapper<RoarOutput>;
 
-	AudioOutput base;
+	FilteredAudioOutput base;
 
 	const std::string host, name;
 
@@ -54,7 +54,7 @@ class RoarOutput {
 public:
 	RoarOutput(const ConfigBlock &block);
 
-	operator AudioOutput *() {
+	operator FilteredAudioOutput *() {
 		return &base;
 	}
 

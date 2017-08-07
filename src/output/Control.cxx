@@ -38,7 +38,7 @@ static constexpr PeriodClock::Duration REOPEN_AFTER = std::chrono::seconds(10);
 
 struct notify audio_output_client_notify;
 
-AudioOutputControl::AudioOutputControl(AudioOutput *_output,
+AudioOutputControl::AudioOutputControl(FilteredAudioOutput *_output,
 				       AudioOutputClient &_client)
 	:output(_output), client(_client),
 	 thread(BIND_THIS_METHOD(Task))

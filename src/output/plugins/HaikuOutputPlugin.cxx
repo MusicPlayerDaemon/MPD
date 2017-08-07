@@ -48,7 +48,7 @@ class HaikuOutput {
 	friend int haiku_output_get_volume(HaikuOutput &haiku);
 	friend bool haiku_output_set_volume(HaikuOutput &haiku, unsigned volume);
 
-	AudioOutput base;
+	FilteredAudioOutput base;
 
 	size_t write_size;
 

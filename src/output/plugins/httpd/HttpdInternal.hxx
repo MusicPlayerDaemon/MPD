@@ -52,7 +52,7 @@ struct Tag;
 class HttpdOutput final : ServerSocket, DeferredMonitor {
 	friend struct AudioOutputWrapper<HttpdOutput>;
 
-	AudioOutput base;
+	FilteredAudioOutput base;
 
 	/**
 	 * True if the audio output is open and accepts client
@@ -160,7 +160,7 @@ public:
 	static HttpdOutput *Create(EventLoop &event_loop,
 				   const ConfigBlock &block);
 
-	static constexpr HttpdOutput *Cast(AudioOutput *ao) {
+	static constexpr HttpdOutput *Cast(FilteredAudioOutput *ao) {
 		return &ContainerCast(*ao, &HttpdOutput::base);
 	}
 

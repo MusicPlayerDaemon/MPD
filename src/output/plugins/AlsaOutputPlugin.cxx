@@ -64,7 +64,7 @@ class AlsaOutput final
 
 	friend struct AudioOutputWrapper<AlsaOutput>;
 
-	AudioOutput base;
+	FilteredAudioOutput base;
 
 	Manual<PcmExport> pcm_export;
 
