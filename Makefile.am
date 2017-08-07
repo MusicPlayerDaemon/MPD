@@ -1636,6 +1636,7 @@ libfilter_plugins_a_SOURCES = \
 	src/filter/plugins/ConvertFilterPlugin.hxx \
 	src/filter/plugins/RouteFilterPlugin.cxx \
 	src/filter/plugins/NormalizeFilterPlugin.cxx \
+	src/filter/plugins/NormalizeFilterPlugin.hxx \
 	src/filter/plugins/ReplayGainFilterPlugin.cxx \
 	src/filter/plugins/ReplayGainFilterPlugin.hxx \
 	src/filter/plugins/VolumeFilterPlugin.cxx \

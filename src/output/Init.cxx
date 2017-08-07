@@ -28,13 +28,12 @@
 #include "mixer/MixerType.hxx"
 #include "mixer/MixerControl.hxx"
 #include "mixer/plugins/SoftwareMixerPlugin.hxx"
-#include "filter/FilterPlugin.hxx"
-#include "filter/FilterRegistry.hxx"
 #include "filter/plugins/AutoConvertFilterPlugin.hxx"
 #include "filter/plugins/ConvertFilterPlugin.hxx"
 #include "filter/plugins/ReplayGainFilterPlugin.hxx"
 #include "filter/plugins/ChainFilterPlugin.hxx"
 #include "filter/plugins/VolumeFilterPlugin.hxx"
+#include "filter/plugins/NormalizeFilterPlugin.hxx"
 #include "config/ConfigError.hxx"
 #include "config/ConfigGlobal.hxx"
 #include "config/Block.hxx"
@@ -175,12 +174,8 @@ AudioOutput::Configure(const ConfigBlock &block)
 	/* create the normalization filter (if configured) */
 
 	if (config_get_bool(ConfigOption::VOLUME_NORMALIZATION, false)) {
-		auto *normalize_filter =
-			filter_new(&normalize_filter_plugin, ConfigBlock());
-		assert(normalize_filter != nullptr);
-
 		filter_chain_append(*prepared_filter, "normalize",
-				    autoconvert_filter_new(normalize_filter));
+				    autoconvert_filter_new(normalize_filter_prepare()));
 	}
 
 	try {
