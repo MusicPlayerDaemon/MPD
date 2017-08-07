@@ -104,7 +104,11 @@ AudioOutputControl::InternalEnable() noexcept
 	last_error = nullptr;
 
 	try {
-		output->Enable();
+		{
+			const ScopeUnlock unlock(mutex);
+			output->Enable();
+		}
+
 		really_enabled = true;
 		return true;
 	} catch (const std::runtime_error &e) {
@@ -124,6 +128,8 @@ AudioOutputControl::InternalDisable() noexcept
 	InternalCheckClose(false);
 
 	really_enabled = false;
+
+	const ScopeUnlock unlock(mutex);
 	output->Disable();
 }
 

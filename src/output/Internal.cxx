@@ -32,7 +32,6 @@ void
 AudioOutput::Enable()
 {
 	try {
-		const ScopeUnlock unlock(mutex);
 		ao_plugin_enable(*this);
 	} catch (const std::runtime_error &e) {
 		std::throw_with_nested(FormatRuntimeError("Failed to enable output \"%s\" [%s]",
@@ -43,7 +42,6 @@ AudioOutput::Enable()
 void
 AudioOutput::Disable() noexcept
 {
-	const ScopeUnlock unlock(mutex);
 	ao_plugin_disable(*this);
 }
 
