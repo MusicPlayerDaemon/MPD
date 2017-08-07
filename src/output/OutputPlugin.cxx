@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "OutputPlugin.hxx"
-#include "Internal.hxx"
+#include "Filtered.hxx"
 
 FilteredAudioOutput *
 ao_plugin_init(EventLoop &event_loop,

@@ -17,8 +17,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_OUTPUT_INTERNAL_HXX
-#define MPD_OUTPUT_INTERNAL_HXX
+#ifndef MPD_FILTERED_AUDIO_OUTPUT_HXX
+#define MPD_FILTERED_AUDIO_OUTPUT_HXX
 
 #include "AudioFormat.hxx"
 #include "filter/Observer.hxx"

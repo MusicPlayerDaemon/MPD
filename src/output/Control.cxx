@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "Control.hxx"
-#include "Internal.hxx"
+#include "Filtered.hxx"
 #include "OutputPlugin.hxx"
 #include "Domain.hxx"
 #include "mixer/MixerControl.hxx"

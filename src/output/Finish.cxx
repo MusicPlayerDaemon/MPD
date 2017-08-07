@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#include "Internal.hxx"
+#include "Filtered.hxx"
 #include "OutputPlugin.hxx"
 #include "mixer/MixerControl.hxx"
 #include "filter/FilterInternal.hxx"

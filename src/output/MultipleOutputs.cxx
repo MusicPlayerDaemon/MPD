@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "MultipleOutputs.hxx"
-#include "Internal.hxx"
+#include "Filtered.hxx"
 #include "Domain.hxx"
 #include "MusicBuffer.hxx"
 #include "MusicPipe.hxx"

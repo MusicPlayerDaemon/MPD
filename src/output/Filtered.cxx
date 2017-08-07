@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#include "Internal.hxx"
+#include "Filtered.hxx"
 #include "OutputPlugin.hxx"
 #include "Domain.hxx"
 #include "Log.hxx"

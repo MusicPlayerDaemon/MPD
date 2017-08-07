@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#include "output/Internal.hxx"
+#include "output/Filtered.hxx"
 #include "output/OutputPlugin.hxx"
 #include "config/Param.hxx"
 #include "config/ConfigGlobal.hxx"

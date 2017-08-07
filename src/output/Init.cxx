@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#include "Internal.hxx"
+#include "Filtered.hxx"
 #include "Registry.hxx"
 #include "Domain.hxx"
 #include "OutputAPI.hxx"

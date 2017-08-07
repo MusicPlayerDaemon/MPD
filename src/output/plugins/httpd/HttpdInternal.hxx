@@ -27,7 +27,7 @@
 
 #include "HttpdClient.hxx"
 #include "output/Wrapper.hxx"
-#include "output/Internal.hxx"
+#include "output/Filtered.hxx"
 #include "output/Timer.hxx"
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"

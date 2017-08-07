@@ -25,7 +25,7 @@
 #include "config.h"
 #include "Print.hxx"
 #include "MultipleOutputs.hxx"
-#include "Internal.hxx"
+#include "Filtered.hxx"
 #include "client/Response.hxx"
 
 void
