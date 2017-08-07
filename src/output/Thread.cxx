@@ -52,8 +52,6 @@ AudioOutputControl::InternalOpen2(const AudioFormat in_audio_format)
 {
 	assert(in_audio_format.IsValid());
 
-	output->OpenSoftwareMixer();
-
 	const auto cf = in_audio_format.WithMask(output->config_audio_format);
 
 	if (open && cf != output->filter_audio_format)
@@ -64,13 +62,9 @@ AudioOutputControl::InternalOpen2(const AudioFormat in_audio_format)
 	output->filter_audio_format = cf;
 
 	if (!open) {
-		try {
+		{
 			const ScopeUnlock unlock(mutex);
 			output->OpenOutputAndConvert(output->filter_audio_format);
-		} catch (...) {
-			const ScopeUnlock unlock(mutex);
-			output->CloseSoftwareMixer();
-			throw;
 		}
 
 		open = true;
@@ -86,12 +80,17 @@ AudioOutputControl::InternalOpen2(const AudioFormat in_audio_format)
 
 			{
 				const ScopeUnlock unlock(mutex);
-				output->Close(false);
+				output->CloseOutput(false);
 			}
 
 			std::throw_with_nested(FormatRuntimeError("Failed to convert for \"%s\" [%s]",
 								  GetName(), output->plugin.name));
 		}
+	}
+
+	{
+		const ScopeUnlock unlock(mutex);
+		output->OpenSoftwareMixer();
 	}
 }
 
