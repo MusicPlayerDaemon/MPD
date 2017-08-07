@@ -63,16 +63,20 @@ AudioOutputControl::InternalOpen2(const AudioFormat in_audio_format)
 	if (open && cf != output->filter_audio_format) {
 		/* if the filter's output format changes, the output
 		   must be reopened as well */
-		output->CloseOutput(true);
 		open = false;
+
+		const ScopeUnlock unlock(mutex);
+		output->CloseOutput(true);
 	}
 
 	output->filter_audio_format = cf;
 
 	if (!open) {
 		try {
+			const ScopeUnlock unlock(mutex);
 			output->OpenOutputAndConvert(output->filter_audio_format);
 		} catch (...) {
+			const ScopeUnlock unlock(mutex);
 			output->CloseFilter();
 			throw;
 		}
