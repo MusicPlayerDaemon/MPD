@@ -69,6 +69,9 @@ struct ShoutOutput final {
 	size_t Play(const void *chunk, size_t size);
 	void Cancel();
 	bool Pause();
+
+private:
+	void WritePage();
 };
 
 static int shout_init_count;
@@ -278,22 +281,26 @@ HandleShoutError(shout_t *shout_conn, int err)
 	}
 }
 
-static bool
-write_page(ShoutOutput *sd)
+static void
+EncoderToShout(shout_t *shout_conn, Encoder &encoder,
+	       unsigned char *buffer, size_t buffer_size)
 {
-	assert(sd->encoder != nullptr);
-
 	while (true) {
-		size_t nbytes = sd->encoder->Read(sd->buffer,
-						  sizeof(sd->buffer));
+		size_t nbytes = encoder.Read(buffer, buffer_size);
 		if (nbytes == 0)
-			return true;
+			return;
 
-		int err = shout_send(sd->shout_conn, sd->buffer, nbytes);
-		HandleShoutError(sd->shout_conn, err);
+		int err = shout_send(shout_conn, buffer, nbytes);
+		HandleShoutError(shout_conn, err);
 	}
+}
 
-	return true;
+void
+ShoutOutput::WritePage()
+{
+	assert(encoder != nullptr);
+
+	EncoderToShout(shout_conn, *encoder, buffer, sizeof(buffer));
 }
 
 void
@@ -301,7 +308,7 @@ ShoutOutput::Close()
 {
 	try {
 		encoder->End();
-		write_page(this);
+		WritePage();
 	} catch (const std::runtime_error &) {
 		/* ignore */
 	}
@@ -347,7 +354,7 @@ ShoutOutput::Open(AudioFormat &audio_format)
 		encoder = prepared_encoder->Open(audio_format);
 
 		try {
-			write_page(this);
+			WritePage();
 		} catch (const std::runtime_error &) {
 			delete encoder;
 			throw;
@@ -372,7 +379,7 @@ size_t
 ShoutOutput::Play(const void *chunk, size_t size)
 {
 	encoder->Write(chunk, size);
-	write_page(this);
+	WritePage();
 	return size;
 }
 
@@ -383,7 +390,7 @@ ShoutOutput::Pause()
 
 	try {
 		encoder->Write(silence, sizeof(silence));
-		write_page(this);
+		WritePage();
 	} catch (const std::runtime_error &) {
 		return false;
 	}
@@ -424,7 +431,7 @@ ShoutOutput::SendTag(const Tag &tag)
 		/* encoder plugin supports stream tags */
 
 		encoder->PreTag();
-		write_page(this);
+		WritePage();
 		encoder->SendTag(tag);
 	} else {
 		/* no stream tag support: fall back to icy-metadata */
@@ -439,7 +446,7 @@ ShoutOutput::SendTag(const Tag &tag)
 		}
 	}
 
-	write_page(this);
+	WritePage();
 }
 
 typedef AudioOutputWrapper<ShoutOutput> Wrapper;
