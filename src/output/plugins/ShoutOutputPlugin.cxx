@@ -224,8 +224,6 @@ ShoutOutput::ShoutOutput(const ConfigBlock &block)
 	if (value != nullptr && shout_set_url(shout_conn, value))
 		throw std::runtime_error(shout_get_error(shout_conn));
 
-	ShoutSetAudioInfo(shout_conn, audio_format);
-
 	{
 		char temp[11];
 		if (quality >= -1.0) {
@@ -357,6 +355,7 @@ ShoutOutput::Open(AudioFormat &audio_format)
 	encoder = prepared_encoder->Open(audio_format);
 
 	try {
+		ShoutSetAudioInfo(shout_conn, audio_format);
 		ShoutOpen(shout_conn);
 		WritePage();
 	} catch (...) {
