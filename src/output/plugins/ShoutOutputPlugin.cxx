@@ -257,7 +257,7 @@ ShoutOutput::Create(EventLoop &, const ConfigBlock &block)
 }
 
 static void
-handle_shout_error(ShoutOutput *sd, int err)
+HandleShoutError(shout_t *shout_conn, int err)
 {
 	switch (err) {
 	case SHOUTERR_SUCCESS:
@@ -266,15 +266,15 @@ handle_shout_error(ShoutOutput *sd, int err)
 	case SHOUTERR_UNCONNECTED:
 	case SHOUTERR_SOCKET:
 		throw FormatRuntimeError("Lost shout connection to %s:%i: %s",
-					 shout_get_host(sd->shout_conn),
-					 shout_get_port(sd->shout_conn),
-					 shout_get_error(sd->shout_conn));
+					 shout_get_host(shout_conn),
+					 shout_get_port(shout_conn),
+					 shout_get_error(shout_conn));
 
 	default:
 		throw FormatRuntimeError("connection to %s:%i error: %s",
-					 shout_get_host(sd->shout_conn),
-					 shout_get_port(sd->shout_conn),
-					 shout_get_error(sd->shout_conn));
+					 shout_get_host(shout_conn),
+					 shout_get_port(shout_conn),
+					 shout_get_error(shout_conn));
 	}
 }
 
@@ -290,7 +290,7 @@ write_page(ShoutOutput *sd)
 			return true;
 
 		int err = shout_send(sd->shout_conn, sd->buffer, nbytes);
-		handle_shout_error(sd, err);
+		HandleShoutError(sd->shout_conn, err);
 	}
 
 	return true;
