@@ -151,8 +151,8 @@ AudioOutputControl::InternalOpen(const AudioFormat in_audio_format,
 					output->prepared_other_replay_gain_filter,
 					output->prepared_filter);
 		} catch (const std::runtime_error &e) {
-			std::throw_with_nested(FormatRuntimeError("Failed to open filter for \"%s\" [%s]",
-								  GetName(), output->plugin.name));
+			std::throw_with_nested(FormatRuntimeError("Failed to open filter for %s",
+								  GetLogName()));
 		}
 
 		try {
@@ -233,8 +233,7 @@ AudioOutputControl::FillSourceOrClose()
 try {
 	return source.Fill(mutex);
 } catch (const std::runtime_error &e) {
-	FormatError(e, "Failed to filter for output \"%s\" [%s]",
-		    GetName(), output->plugin.name);
+	FormatError(e, "Failed to filter for %s", GetLogName());
 
 	InternalClose(false);
 
@@ -254,8 +253,8 @@ AudioOutputControl::PlayChunk() noexcept
 			try {
 				ao_plugin_send_tag(*output, *tag);
 			} catch (const std::runtime_error &e) {
-				FormatError(e, "Failed to send tag to \"%s\" [%s]",
-					    GetName(), output->plugin.name);
+				FormatError(e, "Failed to send tag to %s",
+					    GetLogName());
 			}
 		}
 	}
@@ -277,9 +276,7 @@ AudioOutputControl::PlayChunk() noexcept
 			nbytes = ao_plugin_play(*output, data.data, data.size);
 			assert(nbytes <= data.size);
 		} catch (const std::runtime_error &e) {
-			FormatError(e, "\"%s\" [%s] failed to play",
-				    GetName(), output->plugin.name);
-
+			FormatError(e, "Failed to play on %s", GetLogName());
 			nbytes = 0;
 		}
 

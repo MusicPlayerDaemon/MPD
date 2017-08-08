@@ -23,6 +23,8 @@
 #include "AudioFormat.hxx"
 #include "filter/Observer.hxx"
 
+#include <string>
+
 class PreparedFilter;
 class MusicPipe;
 class EventLoop;
@@ -39,6 +41,14 @@ struct FilteredAudioOutput {
 	 */
 	const char *name;
 
+private:
+	/**
+	 * A string describing this devicee in log messages.  It is
+	 * usually in the form "NAME (PLUGIN)".
+	 */
+	std::string log_name;
+
+public:
 	/**
 	 * The plugin which implements this output device.
 	 */
@@ -127,6 +137,10 @@ public:
 
 	const char *GetName() const {
 		return name;
+	}
+
+	const char *GetLogName() const noexcept {
+		return log_name.c_str();
 	}
 
 	/**

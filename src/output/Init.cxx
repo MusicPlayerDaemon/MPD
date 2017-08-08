@@ -166,6 +166,13 @@ FilteredAudioOutput::Configure(const ConfigBlock &block)
 		config_audio_format.Clear();
 	}
 
+	{
+		char buffer[64];
+		snprintf(buffer, sizeof(buffer), "\"%s\" (%s)",
+			 name, plugin.name);
+		log_name = buffer;
+	}
+
 	/* set up the filter chain */
 
 	prepared_filter = filter_chain_new();

@@ -232,6 +232,9 @@ public:
 	gcc_pure
 	const char *GetName() const noexcept;
 
+	gcc_pure
+	const char *GetLogName() const noexcept;
+
 	AudioOutputClient &GetClient() noexcept {
 		return client;
 	}

@@ -59,6 +59,12 @@ AudioOutputControl::GetName() const noexcept
 	return output->GetName();
 }
 
+const char *
+AudioOutputControl::GetLogName() const noexcept
+{
+	return output->GetLogName();
+}
+
 Mixer *
 AudioOutputControl::GetMixer() const noexcept
 {

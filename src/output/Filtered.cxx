@@ -34,8 +34,8 @@ FilteredAudioOutput::Enable()
 	try {
 		ao_plugin_enable(*this);
 	} catch (const std::runtime_error &e) {
-		std::throw_with_nested(FormatRuntimeError("Failed to enable output \"%s\" [%s]",
-							  name, plugin.name));
+		std::throw_with_nested(FormatRuntimeError("Failed to enable output %s",
+							  GetLogName()));
 	}
 }
 
@@ -51,8 +51,8 @@ FilteredAudioOutput::ConfigureConvertFilter()
 	try {
 		convert_filter_set(convert_filter.Get(), out_audio_format);
 	} catch (const std::runtime_error &e) {
-		std::throw_with_nested(FormatRuntimeError("Failed to convert for \"%s\" [%s]",
-							  name, plugin.name));
+		std::throw_with_nested(FormatRuntimeError("Failed to convert for %s",
+							  GetLogName()));
 	}
 }
 
@@ -64,13 +64,13 @@ FilteredAudioOutput::OpenOutputAndConvert(AudioFormat desired_audio_format)
 	try {
 		ao_plugin_open(*this, out_audio_format);
 	} catch (const std::runtime_error &e) {
-		std::throw_with_nested(FormatRuntimeError("Failed to open \"%s\" [%s]",
-							  name, plugin.name));
+		std::throw_with_nested(FormatRuntimeError("Failed to open %s",
+							  GetLogName()));
 	}
 
 	FormatDebug(output_domain,
-		    "opened plugin=%s name=\"%s\" audio_format=%s",
-		    plugin.name, name,
+		    "opened %s audio_format=%s",
+		    GetLogName(),
 		    ToString(out_audio_format).c_str());
 
 	try {
@@ -128,8 +128,7 @@ FilteredAudioOutput::Close(bool drain) noexcept
 	CloseOutput(drain);
 	CloseSoftwareMixer();
 
-	FormatDebug(output_domain, "closed plugin=%s name=\"%s\"",
-		    plugin.name, name);
+	FormatDebug(output_domain, "closed %s", GetLogName());
 }
 
 void
@@ -144,8 +143,8 @@ FilteredAudioOutput::IteratePause() noexcept
 	try {
 		return ao_plugin_pause(*this);
 	} catch (const std::runtime_error &e) {
-		FormatError(e, "\"%s\" [%s] failed to pause",
-			    name, plugin.name);
+		FormatError(e, "Failed to pause %s",
+			    GetLogName());
 		return false;
 	}
 }
