@@ -125,6 +125,13 @@ public:
 
 	~FilteredAudioOutput();
 
+	/**
+	 * Plugins shall call this method if they require an
+	 * "audio_format" setting which evaluates
+	 * AudioFormat::IsFullyDefined().
+	 */
+	void NeedFullyDefinedAudioFormat();
+
 private:
 	void Configure(const ConfigBlock &block);
 

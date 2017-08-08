@@ -117,9 +117,7 @@ ShoutOutput::ShoutOutput(const ConfigBlock &block)
 	 shout_conn(shout_new()),
 	 shout_meta(shout_metadata_new())
 {
-	const AudioFormat audio_format = base.config_audio_format;
-	if (!audio_format.IsFullyDefined())
-		throw std::runtime_error("Need full audio format specification");
+	base.NeedFullyDefinedAudioFormat();
 
 	const char *host = require_block_string(block, "host");
 	const char *mount = require_block_string(block, "mount");

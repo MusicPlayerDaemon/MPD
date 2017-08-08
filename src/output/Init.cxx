@@ -62,6 +62,13 @@ FilteredAudioOutput::FilteredAudioOutput(const AudioOutputPlugin &_plugin,
 	Configure(block);
 }
 
+void
+FilteredAudioOutput::NeedFullyDefinedAudioFormat()
+{
+	if (!config_audio_format.IsFullyDefined())
+		throw std::runtime_error("Need full audio format specification");
+}
+
 static const AudioOutputPlugin *
 audio_output_detect()
 {
