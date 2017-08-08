@@ -100,6 +100,18 @@ shout_encoder_plugin_get(const char *name)
 	return encoder_plugin_get(name);
 }
 
+static void
+ShoutSetAudioInfo(shout_t *shout_conn, const AudioFormat &audio_format)
+{
+	char temp[11];
+
+	snprintf(temp, sizeof(temp), "%u", audio_format.channels);
+	shout_set_audio_info(shout_conn, SHOUT_AI_CHANNELS, temp);
+
+	snprintf(temp, sizeof(temp), "%u", audio_format.sample_rate);
+	shout_set_audio_info(shout_conn, SHOUT_AI_SAMPLERATE, temp);
+}
+
 ShoutOutput::ShoutOutput(const ConfigBlock &block)
 	:base(shout_output_plugin, block),
 	 shout_conn(shout_new()),
@@ -212,16 +224,10 @@ ShoutOutput::ShoutOutput(const ConfigBlock &block)
 	if (value != nullptr && shout_set_url(shout_conn, value))
 		throw std::runtime_error(shout_get_error(shout_conn));
 
+	ShoutSetAudioInfo(shout_conn, audio_format);
+
 	{
 		char temp[11];
-
-		snprintf(temp, sizeof(temp), "%u", audio_format.channels);
-		shout_set_audio_info(shout_conn, SHOUT_AI_CHANNELS, temp);
-
-		snprintf(temp, sizeof(temp), "%u", audio_format.sample_rate);
-
-		shout_set_audio_info(shout_conn, SHOUT_AI_SAMPLERATE, temp);
-
 		if (quality >= -1.0) {
 			snprintf(temp, sizeof(temp), "%2.2f", quality);
 			shout_set_audio_info(shout_conn, SHOUT_AI_QUALITY,
