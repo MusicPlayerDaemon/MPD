@@ -146,6 +146,18 @@ public:
 	}
 
 	/**
+	 * Does the plugin support enabling/disabling a device?
+	 */
+	gcc_pure
+	bool SupportsEnableDisable() const noexcept;
+
+	/**
+	 * Does the plugin support pausing a device?
+	 */
+	gcc_pure
+	bool SupportsPause() const noexcept;
+
+	/**
 	 * Throws #std::runtime_error on error.
 	 */
 	void Enable();

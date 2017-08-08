@@ -20,7 +20,6 @@
 #include "config.h"
 #include "Control.hxx"
 #include "Filtered.hxx"
-#include "OutputPlugin.hxx"
 #include "Domain.hxx"
 #include "mixer/MixerControl.hxx"
 #include "notify.hxx"
@@ -127,7 +126,7 @@ void
 AudioOutputControl::EnableAsync()
 {
 	if (!thread.IsDefined()) {
-		if (output->plugin.enable == nullptr) {
+		if (!output->SupportsEnableDisable()) {
 			/* don't bother to start the thread now if the
 			   device doesn't even have a enable() method;
 			   just assign the variable and we're done */
@@ -145,7 +144,7 @@ void
 AudioOutputControl::DisableAsync() noexcept
 {
 	if (!thread.IsDefined()) {
-		if (output->plugin.disable == nullptr)
+		if (!output->SupportsEnableDisable())
 			really_enabled = false;
 		else
 			/* if there's no thread yet, the device cannot
@@ -275,7 +274,7 @@ AudioOutputControl::LockPlay() noexcept
 void
 AudioOutputControl::LockPauseAsync() noexcept
 {
-	if (output->mixer != nullptr && output->plugin.pause == nullptr)
+	if (output->mixer != nullptr && !output->SupportsPause())
 		/* the device has no pause mode: close the mixer,
 		   unless its "global" flag is set (checked by
 		   mixer_auto_close()) */

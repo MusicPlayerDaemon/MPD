@@ -28,6 +28,20 @@
 #include "util/RuntimeError.hxx"
 #include "util/StringBuffer.hxx"
 
+bool
+FilteredAudioOutput::SupportsEnableDisable() const noexcept
+{
+	assert((plugin.enable == nullptr) == (plugin.disable == nullptr));
+
+	return plugin.enable != nullptr;
+}
+
+bool
+FilteredAudioOutput::SupportsPause() const noexcept
+{
+	return plugin.pause != nullptr;
+}
+
 void
 FilteredAudioOutput::Enable()
 {
