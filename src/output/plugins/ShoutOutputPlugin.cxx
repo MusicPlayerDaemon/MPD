@@ -299,16 +299,14 @@ write_page(ShoutOutput *sd)
 void
 ShoutOutput::Close()
 {
-	if (encoder != nullptr) {
-		try {
-			encoder->End();
-			write_page(this);
-		} catch (const std::runtime_error &) {
-			/* ignore */
-		}
-
-		delete encoder;
+	try {
+		encoder->End();
+		write_page(this);
+	} catch (const std::runtime_error &) {
+		/* ignore */
 	}
+
+	delete encoder;
 
 	if (shout_get_connected(shout_conn) != SHOUTERR_UNCONNECTED &&
 	    shout_close(shout_conn) != SHOUTERR_SUCCESS) {
