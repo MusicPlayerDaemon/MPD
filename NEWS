@@ -14,6 +14,7 @@ ver 0.20.10 (not yet released)
   - ffmpeg: support MusicBrainz ID3v2 tags
 * tags
   - aiff: fix FORM chunk size endianess (is big-endian)
+* fix crash on Windows
 
 ver 0.20.9 (2017/06/04)
 * decoder
