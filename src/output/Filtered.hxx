@@ -24,6 +24,7 @@
 #include "filter/Observer.hxx"
 
 #include <string>
+#include <chrono>
 
 class PreparedFilter;
 class MusicPipe;
@@ -34,6 +35,7 @@ struct MusicChunk;
 struct ConfigBlock;
 struct AudioOutputPlugin;
 struct ReplayGainConfig;
+struct Tag;
 
 struct FilteredAudioOutput {
 	/**
@@ -185,6 +187,16 @@ public:
 	 * Mutex must not be locked.
 	 */
 	void CloseSoftwareMixer() noexcept;
+
+	gcc_pure
+	std::chrono::steady_clock::duration Delay() noexcept;
+
+	void SendTag(const Tag &tag);
+
+	size_t Play(const void *data, size_t size);
+
+	void Drain();
+	void Cancel() noexcept;
 
 	void BeginPause() noexcept;
 	bool IteratePause() noexcept;

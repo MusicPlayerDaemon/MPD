@@ -101,9 +101,9 @@ void
 FilteredAudioOutput::CloseOutput(bool drain) noexcept
 {
 	if (drain)
-		ao_plugin_drain(*this);
+		Drain();
 	else
-		ao_plugin_cancel(*this);
+		Cancel();
 
 	ao_plugin_close(*this);
 }
@@ -131,10 +131,40 @@ FilteredAudioOutput::Close(bool drain) noexcept
 	FormatDebug(output_domain, "closed %s", GetLogName());
 }
 
+std::chrono::steady_clock::duration
+FilteredAudioOutput::Delay() noexcept
+{
+	return ao_plugin_delay(*this);
+}
+
+void
+FilteredAudioOutput::SendTag(const Tag &tag)
+{
+	ao_plugin_send_tag(*this, tag);
+}
+
+size_t
+FilteredAudioOutput::Play(const void *data, size_t size)
+{
+	return ao_plugin_play(*this, data, size);
+}
+
+void
+FilteredAudioOutput::Drain()
+{
+	ao_plugin_drain(*this);
+}
+
+void
+FilteredAudioOutput::Cancel() noexcept
+{
+	ao_plugin_cancel(*this);
+}
+
 void
 FilteredAudioOutput::BeginPause() noexcept
 {
-	ao_plugin_cancel(*this);
+	Cancel();
 }
 
 bool

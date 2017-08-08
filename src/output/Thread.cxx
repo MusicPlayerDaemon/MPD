@@ -21,7 +21,6 @@
 #include "Control.hxx"
 #include "Filtered.hxx"
 #include "Client.hxx"
-#include "OutputPlugin.hxx"
 #include "Domain.hxx"
 #include "notify.hxx"
 #include "mixer/MixerInternal.hxx"
@@ -217,7 +216,7 @@ inline bool
 AudioOutputControl::WaitForDelay() noexcept
 {
 	while (true) {
-		const auto delay = ao_plugin_delay(*output);
+		const auto delay = output->Delay();
 		if (delay <= std::chrono::steady_clock::duration::zero())
 			return true;
 
@@ -251,7 +250,7 @@ AudioOutputControl::PlayChunk() noexcept
 		if (tag != nullptr) {
 			const ScopeUnlock unlock(mutex);
 			try {
-				ao_plugin_send_tag(*output, *tag);
+				output->SendTag(*tag);
 			} catch (const std::runtime_error &e) {
 				FormatError(e, "Failed to send tag to %s",
 					    GetLogName());
@@ -273,7 +272,7 @@ AudioOutputControl::PlayChunk() noexcept
 
 		try {
 			const ScopeUnlock unlock(mutex);
-			nbytes = ao_plugin_play(*output, data.data, data.size);
+			nbytes = output->Play(data.data, data.size);
 			assert(nbytes <= data.size);
 		} catch (const std::runtime_error &e) {
 			FormatError(e, "Failed to play on %s", GetLogName());
@@ -438,7 +437,7 @@ AudioOutputControl::Task()
 		case Command::DRAIN:
 			if (open) {
 				const ScopeUnlock unlock(mutex);
-				ao_plugin_drain(*output);
+				output->Drain();
 			}
 
 			CommandFinished();
@@ -449,7 +448,7 @@ AudioOutputControl::Task()
 
 			if (open) {
 				const ScopeUnlock unlock(mutex);
-				ao_plugin_cancel(*output);
+				output->Cancel();
 			}
 
 			CommandFinished();
