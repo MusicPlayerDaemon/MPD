@@ -348,19 +348,13 @@ ShoutOpen(shout_t *shout_conn)
 void
 ShoutOutput::Open(AudioFormat &audio_format)
 {
-	ShoutOpen(shout_conn);
+	encoder = prepared_encoder->Open(audio_format);
 
 	try {
-		encoder = prepared_encoder->Open(audio_format);
-
-		try {
-			WritePage();
-		} catch (const std::runtime_error &) {
-			delete encoder;
-			throw;
-		}
-	} catch (const std::runtime_error &) {
-		shout_close(shout_conn);
+		ShoutOpen(shout_conn);
+		WritePage();
+	} catch (...) {
+		delete encoder;
 		throw;
 	}
 }
