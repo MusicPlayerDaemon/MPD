@@ -330,25 +330,25 @@ ShoutOutput::Cancel()
 }
 
 static void
-shout_connect(ShoutOutput *sd)
+ShoutOpen(shout_t *shout_conn)
 {
-	switch (shout_open(sd->shout_conn)) {
+	switch (shout_open(shout_conn)) {
 	case SHOUTERR_SUCCESS:
 	case SHOUTERR_CONNECTED:
 		break;
 
 	default:
 		throw FormatRuntimeError("problem opening connection to shout server %s:%i: %s",
-					 shout_get_host(sd->shout_conn),
-					 shout_get_port(sd->shout_conn),
-					 shout_get_error(sd->shout_conn));
+					 shout_get_host(shout_conn),
+					 shout_get_port(shout_conn),
+					 shout_get_error(shout_conn));
 	}
 }
 
 void
 ShoutOutput::Open(AudioFormat &audio_format)
 {
-	shout_connect(this);
+	ShoutOpen(shout_conn);
 
 	try {
 		encoder = prepared_encoder->Open(audio_format);
