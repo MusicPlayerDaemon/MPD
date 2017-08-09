@@ -33,7 +33,7 @@ class Mixer;
 class MixerListener;
 struct MusicChunk;
 struct ConfigBlock;
-struct AudioOutput;
+class AudioOutput;
 struct ReplayGainConfig;
 struct Tag;
 

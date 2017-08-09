@@ -22,7 +22,7 @@
 
 struct AudioOutputPlugin;
 
-struct AudioOutput {
+class AudioOutput {
 	/**
 	 * The plugin which implements this output device.
 	 */
@@ -30,8 +30,17 @@ struct AudioOutput {
 
 	bool need_fully_defined_audio_format = false;
 
+public:
 	AudioOutput(const AudioOutputPlugin &_plugin)
 		:plugin(_plugin) {}
+
+	const AudioOutputPlugin &GetPlugin() const {
+		return plugin;
+	}
+
+	bool GetNeedFullyDefinedAudioFormat() const {
+		return need_fully_defined_audio_format;
+	}
 
 	/**
 	 * Plugins shall call this method if they require an

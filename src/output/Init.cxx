@@ -55,7 +55,7 @@ FilteredAudioOutput::FilteredAudioOutput(AudioOutput &_output,
 	:output(&_output)
 {
 #ifndef NDEBUG
-	const auto &plugin = output->plugin;
+	const auto &plugin = output->GetPlugin();
 	assert(plugin.finish != nullptr);
 	assert(plugin.open != nullptr);
 	assert(plugin.close != nullptr);
@@ -172,7 +172,7 @@ FilteredAudioOutput::Configure(const ConfigBlock &block)
 	{
 		char buffer[64];
 		snprintf(buffer, sizeof(buffer), "\"%s\" (%s)",
-			 name, output->plugin.name);
+			 name, output->GetPlugin().name);
 		log_name = buffer;
 	}
 
@@ -207,7 +207,7 @@ FilteredAudioOutput::Setup(EventLoop &event_loop,
 			   MixerListener &mixer_listener,
 			   const ConfigBlock &block)
 {
-	if (output->need_fully_defined_audio_format &&
+	if (output->GetNeedFullyDefinedAudioFormat() &&
 	    !config_audio_format.IsFullyDefined())
 		throw std::runtime_error("Need full audio format specification");
 
@@ -233,7 +233,7 @@ FilteredAudioOutput::Setup(EventLoop &event_loop,
 
 	try {
 		mixer = audio_output_load_mixer(event_loop, *this, block,
-						output->plugin.mixer_plugin,
+						output->GetPlugin().mixer_plugin,
 						*prepared_filter,
 						mixer_listener);
 	} catch (const std::runtime_error &e) {

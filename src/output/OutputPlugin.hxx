@@ -29,7 +29,7 @@
 struct ConfigBlock;
 struct AudioFormat;
 struct Tag;
-struct AudioOutput;
+class AudioOutput;
 struct MixerPlugin;
 class EventLoop;
 

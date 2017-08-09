@@ -32,15 +32,15 @@
 bool
 FilteredAudioOutput::SupportsEnableDisable() const noexcept
 {
-	assert((output->plugin.enable == nullptr) == (output->plugin.disable == nullptr));
+	assert((output->GetPlugin().enable == nullptr) == (output->GetPlugin().disable == nullptr));
 
-	return output->plugin.enable != nullptr;
+	return output->GetPlugin().enable != nullptr;
 }
 
 bool
 FilteredAudioOutput::SupportsPause() const noexcept
 {
-	return output->plugin.pause != nullptr;
+	return output->GetPlugin().pause != nullptr;
 }
 
 void
