@@ -20,7 +20,6 @@
 #include "config.h"
 #include "JackOutputPlugin.hxx"
 #include "../OutputAPI.hxx"
-#include "../Wrapper.hxx"
 #include "config/ConfigError.hxx"
 #include "util/ScopeExit.hxx"
 #include "util/ConstBuffer.hxx"
@@ -42,9 +41,7 @@ static constexpr unsigned MAX_PORTS = 16;
 
 static constexpr size_t jack_sample_size = sizeof(jack_default_audio_sample_t);
 
-struct JackOutput {
-	AudioOutput base;
-
+struct JackOutput final : AudioOutput {
 	/**
 	 * libjack options passed to jack_client_open().
 	 */
@@ -99,12 +96,12 @@ struct JackOutput {
 		shutdown = true;
 	}
 
-	void Enable();
-	void Disable();
+	void Enable() override;
+	void Disable() noexcept override;
 
-	void Open(AudioFormat &new_audio_format);
+	void Open(AudioFormat &new_audio_format) override;
 
-	void Close() {
+	void Close() noexcept override {
 		Stop();
 	}
 
@@ -128,15 +125,15 @@ struct JackOutput {
 	 */
 	size_t WriteSamples(const float *src, size_t n_frames);
 
-	std::chrono::steady_clock::duration Delay() const noexcept {
+	std::chrono::steady_clock::duration Delay() const noexcept override {
 		return pause && !shutdown
 			? std::chrono::seconds(1)
 			: std::chrono::steady_clock::duration::zero();
 	}
 
-	size_t Play(const void *chunk, size_t size);
+	size_t Play(const void *chunk, size_t size) override;
 
-	bool Pause();
+	bool Pause() noexcept override;
 };
 
 static constexpr Domain jack_output_domain("jack_output");
@@ -162,7 +159,7 @@ parse_port_list(const char *source, std::string dest[])
 }
 
 JackOutput::JackOutput(const ConfigBlock &block)
-	:base(jack_output_plugin),
+	:AudioOutput(FLAG_ENABLE_DISABLE|FLAG_PAUSE),
 	 name(block.GetBlockValue("client_name", nullptr)),
 	 server_name(block.GetBlockValue("server_name", nullptr))
 {
@@ -430,7 +427,7 @@ JackOutput::Enable()
 }
 
 inline void
-JackOutput::Disable()
+JackOutput::Disable() noexcept
 {
 	if (client != nullptr)
 		Disconnect();
@@ -452,8 +449,7 @@ mpd_jack_init(EventLoop &, const ConfigBlock &block)
 	jack_set_info_function(mpd_jack_info);
 #endif
 
-	auto *jd = new JackOutput(block);
-	return &jd->base;
+	return new JackOutput(block);
 }
 
 /**
@@ -663,7 +659,7 @@ JackOutput::Play(const void *chunk, size_t size)
 }
 
 inline bool
-JackOutput::Pause()
+JackOutput::Pause() noexcept
 {
 	if (shutdown)
 		return false;
@@ -673,22 +669,9 @@ JackOutput::Pause()
 	return true;
 }
 
-typedef AudioOutputWrapper<JackOutput> Wrapper;
-
 const struct AudioOutputPlugin jack_output_plugin = {
 	"jack",
 	mpd_jack_test_default_device,
 	mpd_jack_init,
-	&Wrapper::Finish,
-	&Wrapper::Enable,
-	&Wrapper::Disable,
-	&Wrapper::Open,
-	&Wrapper::Close,
-	&Wrapper::Delay,
-	nullptr,
-	&Wrapper::Play,
-	nullptr,
-	nullptr,
-	&Wrapper::Pause,
 	nullptr,
 };

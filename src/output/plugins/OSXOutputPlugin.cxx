@@ -35,9 +35,7 @@
 
 #include <memory>
 
-struct OSXOutput {
-	AudioOutput base;
-
+struct OSXOutput final : AudioOutput {
 	/* configuration settings */
 	OSType component_subtype;
 	/* only applicable with kAudioUnitSubType_HALOutput */
@@ -53,6 +51,18 @@ struct OSXOutput {
 	boost::lockfree::spsc_queue<uint8_t> *ring_buffer;
 
 	OSXOutput(const ConfigBlock &block);
+
+	static AudioOutput *Create(EventLoop &, const ConfigBlock &block);
+
+private:
+	void Enable() override;
+	void Disable() noexcept override;
+
+	void Open(AudioFormat &audio_format) override;
+	void Close() noexcept override;
+
+	std::chrono::steady_clock::duration Delay() const noexcept override;
+	size_t Play(const void *chunk, size_t size) override;
 };
 
 static constexpr Domain osx_output_domain("osx_output");
@@ -80,7 +90,7 @@ osx_output_test_default_device(void)
 }
 
 OSXOutput::OSXOutput(const ConfigBlock &block)
-	:base(osx_output_plugin)
+	:AudioOutput(FLAG_ENABLE_DISABLE)
 {
 	const char *device = block.GetBlockValue("device");
 
@@ -103,8 +113,8 @@ OSXOutput::OSXOutput(const ConfigBlock &block)
 	sync_sample_rate = block.GetBlockValue("sync_sample_rate", false);
 }
 
-static AudioOutput *
-osx_output_init(EventLoop &, const ConfigBlock &block)
+AudioOutput *
+OSXOutput::Create(EventLoop &, const ConfigBlock &block)
 {
 	OSXOutput *oo = new OSXOutput(block);
 
@@ -124,15 +134,7 @@ osx_output_init(EventLoop &, const ConfigBlock &block)
 				   &dev_id);
 	oo->dev_id = dev_id;
 
-	return &oo->base;
-}
-
-static void
-osx_output_finish(AudioOutput *ao)
-{
-	OSXOutput *oo = (OSXOutput *)ao;
-
-	delete oo;
+	return oo;
 }
 
 static void
@@ -513,15 +515,14 @@ osx_render(void *vdata,
  	return noErr;
 }
 
-static void
-osx_output_enable(AudioOutput *ao)
+void
+OSXOutput::Enable()
 {
 	char errormsg[1024];
-	OSXOutput *oo = (OSXOutput *)ao;
 
 	AudioComponentDescription desc;
 	desc.componentType = kAudioUnitType_Output;
-	desc.componentSubType = oo->component_subtype;
+	desc.componentSubType = component_subtype;
 	desc.componentManufacturer = kAudioUnitManufacturer_Apple;
 	desc.componentFlags = 0;
 	desc.componentFlagsMask = 0;
@@ -530,7 +531,7 @@ osx_output_enable(AudioOutput *ao)
 	if (comp == 0)
 		throw std::runtime_error("Error finding OS X component");
 
-	OSStatus status = AudioComponentInstanceNew(comp, &oo->au);
+	OSStatus status = AudioComponentInstanceNew(comp, &au);
 	if (status != noErr) {
 		osx_os_status_to_cstring(status, errormsg, sizeof(errormsg));
 		throw FormatRuntimeError("Unable to open OS X component: %s",
@@ -538,105 +539,97 @@ osx_output_enable(AudioOutput *ao)
 	}
 
 	try {
-		osx_output_set_device(oo);
+		osx_output_set_device(this);
 	} catch (...) {
-		AudioComponentInstanceDispose(oo->au);
+		AudioComponentInstanceDispose(au);
 		throw;
 	}
 
-	if (oo->hog_device) {
-		osx_output_hog_device(oo->dev_id, true);
-	}
+	if (hog_device)
+		osx_output_hog_device(dev_id, true);
 }
 
-static void
-osx_output_disable(AudioOutput *ao)
+void
+OSXOutput::Disable() noexcept
 {
-	OSXOutput *oo = (OSXOutput *)ao;
+	AudioComponentInstanceDispose(au);
 
-	AudioComponentInstanceDispose(oo->au);
-
-	if (oo->hog_device) {
-		osx_output_hog_device(oo->dev_id, false);
-	}
+	if (hog_device)
+		osx_output_hog_device(dev_id, false);
 }
 
-static void
-osx_output_close(AudioOutput *ao)
+void
+OSXOutput::Close() noexcept
 {
-	OSXOutput *od = (OSXOutput *)ao;
+	AudioOutputUnitStop(au);
+	AudioUnitUninitialize(au);
 
-	AudioOutputUnitStop(od->au);
-	AudioUnitUninitialize(od->au);
-
-	delete od->ring_buffer;
+	delete ring_buffer;
 }
 
-static void
-osx_output_open(AudioOutput *ao, AudioFormat &audio_format)
+void
+OSXOutput::Open(AudioFormat &audio_format)
 {
 	char errormsg[1024];
-	OSXOutput *od = (OSXOutput *)ao;
 
-	memset(&od->asbd, 0, sizeof(od->asbd));
-	od->asbd.mSampleRate = audio_format.sample_rate;
-	od->asbd.mFormatID = kAudioFormatLinearPCM;
-	od->asbd.mFormatFlags = kLinearPCMFormatFlagIsSignedInteger;
+	memset(&asbd, 0, sizeof(asbd));
+	asbd.mSampleRate = audio_format.sample_rate;
+	asbd.mFormatID = kAudioFormatLinearPCM;
+	asbd.mFormatFlags = kLinearPCMFormatFlagIsSignedInteger;
 
 	switch (audio_format.format) {
 	case SampleFormat::S8:
-		od->asbd.mBitsPerChannel = 8;
+		asbd.mBitsPerChannel = 8;
 		break;
 
 	case SampleFormat::S16:
-		od->asbd.mBitsPerChannel = 16;
+		asbd.mBitsPerChannel = 16;
 		break;
 
 	case SampleFormat::S32:
-		od->asbd.mBitsPerChannel = 32;
+		asbd.mBitsPerChannel = 32;
 		break;
 
 	default:
 		audio_format.format = SampleFormat::S32;
-		od->asbd.mBitsPerChannel = 32;
+		asbd.mBitsPerChannel = 32;
 		break;
 	}
 
 	if (IsBigEndian())
-		od->asbd.mFormatFlags |= kLinearPCMFormatFlagIsBigEndian;
+		asbd.mFormatFlags |= kLinearPCMFormatFlagIsBigEndian;
 
-	od->asbd.mBytesPerPacket = audio_format.GetFrameSize();
-	od->asbd.mFramesPerPacket = 1;
-	od->asbd.mBytesPerFrame = od->asbd.mBytesPerPacket;
-	od->asbd.mChannelsPerFrame = audio_format.channels;
+	asbd.mBytesPerPacket = audio_format.GetFrameSize();
+	asbd.mFramesPerPacket = 1;
+	asbd.mBytesPerFrame = asbd.mBytesPerPacket;
+	asbd.mChannelsPerFrame = audio_format.channels;
 
-	if (od->sync_sample_rate) {
-		osx_output_sync_device_sample_rate(od->dev_id, od->asbd);
-	}
+	if (sync_sample_rate)
+		osx_output_sync_device_sample_rate(dev_id, asbd);
 
 	OSStatus status =
-		AudioUnitSetProperty(od->au, kAudioUnitProperty_StreamFormat,
+		AudioUnitSetProperty(au, kAudioUnitProperty_StreamFormat,
 				     kAudioUnitScope_Input, 0,
-				     &od->asbd,
-				     sizeof(od->asbd));
+				     &asbd,
+				     sizeof(asbd));
 	if (status != noErr)
 		throw std::runtime_error("Unable to set format on OS X device");
 
 	AURenderCallbackStruct callback;
 	callback.inputProc = osx_render;
-	callback.inputProcRefCon = od;
+	callback.inputProcRefCon = this;
 
 	status =
-		AudioUnitSetProperty(od->au,
+		AudioUnitSetProperty(au,
 				     kAudioUnitProperty_SetRenderCallback,
 				     kAudioUnitScope_Input, 0,
 				     &callback, sizeof(callback));
 	if (status != noErr) {
-		AudioComponentInstanceDispose(od->au);
+		AudioComponentInstanceDispose(au);
 		throw std::runtime_error("unable to set callback for OS X audio unit");
 	}
 
-	status = AudioUnitInitialize(od->au);
+	status = AudioUnitInitialize(au);
 	if (status != noErr) {
 		osx_os_status_to_cstring(status, errormsg, sizeof(errormsg));
 		throw FormatRuntimeError("Unable to initialize OS X audio unit: %s",
@@ -644,36 +637,34 @@ osx_output_open(AudioOutput *ao, AudioFormat &audio_format)
 	}
 
 	UInt32 buffer_frame_size = 1;
-	status = osx_output_set_buffer_size(od->au, od->asbd, &buffer_frame_size);
+	status = osx_output_set_buffer_size(au, asbd, &buffer_frame_size);
 	if (status != noErr) {
 		osx_os_status_to_cstring(status, errormsg, sizeof(errormsg));
 		throw FormatRuntimeError("Unable to set frame size: %s",
 					 errormsg);
 	}
 
-	od->ring_buffer = new boost::lockfree::spsc_queue<uint8_t>(buffer_frame_size);
+	ring_buffer = new boost::lockfree::spsc_queue<uint8_t>(buffer_frame_size);
 
-	status = AudioOutputUnitStart(od->au);
+	status = AudioOutputUnitStart(au);
 	if (status != 0) {
-		AudioUnitUninitialize(od->au);
+		AudioUnitUninitialize(au);
 		osx_os_status_to_cstring(status, errormsg, sizeof(errormsg));
 		throw FormatRuntimeError("unable to start audio output: %s",
 					 errormsg);
 	}
 }
 
-static size_t
-osx_output_play(AudioOutput *ao, const void *chunk, size_t size)
+size_t
+OSXOutput::Play(const void *chunk, size_t size)
 {
-	OSXOutput *od = (OSXOutput *)ao;
-	return od->ring_buffer->push((uint8_t *)chunk, size);
+	return ring_buffer->push((uint8_t *)chunk, size);
 }
 
-static std::chrono::steady_clock::duration
-osx_output_delay(AudioOutput *ao) noexcept
+std::chrono::steady_clock::duration
+OSXOutput::Delay() const noexcept
 {
-	OSXOutput *od = (OSXOutput *)ao;
-	return od->ring_buffer->write_available()
+	return ring_buffer->write_available()
 		? std::chrono::steady_clock::duration::zero()
 		: std::chrono::milliseconds(25);
 }
@@ -681,17 +672,6 @@ osx_output_delay(AudioOutput *ao) noexcept
 const struct AudioOutputPlugin osx_output_plugin = {
 	"osx",
 	osx_output_test_default_device,
-	osx_output_init,
-	osx_output_finish,
-	osx_output_enable,
-	osx_output_disable,
-	osx_output_open,
-	osx_output_close,
-	osx_output_delay,
-	nullptr,
-	osx_output_play,
-	nullptr,
-	nullptr,
-	nullptr,
+	&OSXOutput::Create,
 	nullptr,
 };

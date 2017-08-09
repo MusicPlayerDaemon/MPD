@@ -20,7 +20,6 @@
 #include "config.h"
 #include "OssOutputPlugin.hxx"
 #include "../OutputAPI.hxx"
-#include "../Wrapper.hxx"
 #include "mixer/MixerList.hxx"
 #include "system/fd_util.h"
 #include "system/Error.hxx"
@@ -60,11 +59,7 @@
 #include "util/Manual.hxx"
 #endif
 
-class OssOutput {
-	friend struct AudioOutputWrapper<OssOutput>;
-
-	AudioOutput base;
-
+class OssOutput final : AudioOutput {
 #ifdef AFMT_S24_PACKED
 	Manual<PcmExport> pcm_export;
 #endif
@@ -84,32 +79,38 @@ class OssOutput {
 	 */
 	int oss_format;
 
+#ifdef AFMT_S24_PACKED
+	static constexpr unsigned oss_flags = FLAG_ENABLE_DISABLE;
+#else
+	static constexpr unsigned oss_flags = 0;
+#endif
+
 public:
 	explicit OssOutput(const char *_device=nullptr)
-		:base(oss_output_plugin),
+		:AudioOutput(oss_flags),
 		 fd(-1), device(_device) {}
 
-	static OssOutput *Create(EventLoop &event_loop,
-				 const ConfigBlock &block);
+	static AudioOutput *Create(EventLoop &event_loop,
+				   const ConfigBlock &block);
 
 #ifdef AFMT_S24_PACKED
-	void Enable() {
+	void Enable() override {
 		pcm_export.Construct();
 	}
 
-	void Disable() {
+	void Disable() noexcept override {
 		pcm_export.Destruct();
 	}
 #endif
 
-	void Open(AudioFormat &audio_format);
+	void Open(AudioFormat &audio_format) override;
 
-	void Close() {
+	void Close() noexcept override {
 		DoClose();
 	}
 
-	size_t Play(const void *chunk, size_t size);
-	void Cancel();
+	size_t Play(const void *chunk, size_t size) override;
+	void Cancel() noexcept override;
 
 private:
 	/**
@@ -225,7 +226,7 @@ oss_open_default()
 	throw std::runtime_error("error trying to open default OSS device");
 }
 
-inline OssOutput *
+AudioOutput *
 OssOutput::Create(EventLoop &, const ConfigBlock &block)
 {
 	const char *device = block.GetBlockValue("device");
@@ -637,7 +638,7 @@ try {
 	throw;
 }
 
-inline void
+void
 OssOutput::Open(AudioFormat &_audio_format)
 try {
 	fd = open_cloexec(device, O_WRONLY, 0);
@@ -652,8 +653,8 @@ try {
 	throw;
 }
 
-inline void
-OssOutput::Cancel()
+void
+OssOutput::Cancel() noexcept
 {
 	if (fd >= 0) {
 		ioctl(fd, SNDCTL_DSP_RESET, 0);
@@ -665,7 +666,7 @@ OssOutput::Cancel()
 #endif
 }
 
-inline size_t
+size_t
 OssOutput::Play(const void *chunk, size_t size)
 {
 	ssize_t ret;
@@ -698,28 +699,9 @@ OssOutput::Play(const void *chunk, size_t size)
 	}
 }
 
-typedef AudioOutputWrapper<OssOutput> Wrapper;
-
 const struct AudioOutputPlugin oss_output_plugin = {
 	"oss",
 	oss_output_test_default_device,
-	&Wrapper::Init,
-	&Wrapper::Finish,
-#ifdef AFMT_S24_PACKED
-	&Wrapper::Enable,
-	&Wrapper::Disable,
-#else
-	nullptr,
-	nullptr,
-#endif
-	&Wrapper::Open,
-	&Wrapper::Close,
-	nullptr,
-	nullptr,
-	&Wrapper::Play,
-	nullptr,
-	&Wrapper::Cancel,
-	nullptr,
-
+	OssOutput::Create,
 	&oss_mixer_plugin,
 };

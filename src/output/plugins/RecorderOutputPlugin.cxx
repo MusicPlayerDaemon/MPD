@@ -20,7 +20,6 @@
 #include "config.h"
 #include "RecorderOutputPlugin.hxx"
 #include "../OutputAPI.hxx"
-#include "../Wrapper.hxx"
 #include "tag/Format.hxx"
 #include "encoder/ToOutputStream.hxx"
 #include "encoder/EncoderInterface.hxx"
@@ -42,11 +41,7 @@
 
 static constexpr Domain recorder_domain("recorder");
 
-class RecorderOutput {
-	friend struct AudioOutputWrapper<RecorderOutput>;
-
-	AudioOutput base;
-
+class RecorderOutput final : AudioOutput {
 	/**
 	 * The configured encoder plugin.
 	 */
@@ -81,20 +76,23 @@ class RecorderOutput {
 		delete prepared_encoder;
 	}
 
-	static RecorderOutput *Create(EventLoop &event_loop,
-				      const ConfigBlock &block);
+public:
+	static AudioOutput *Create(EventLoop &, const ConfigBlock &block) {
+		return new RecorderOutput(block);
+	}
 
-	void Open(AudioFormat &audio_format);
-	void Close();
+private:
+	void Open(AudioFormat &audio_format) override;
+	void Close() noexcept override;
 
 	/**
 	 * Writes pending data from the encoder to the output file.
 	 */
 	void EncoderToFile();
 
-	void SendTag(const Tag &tag);
+	void SendTag(const Tag &tag) override;
 
-	size_t Play(const void *chunk, size_t size);
+	size_t Play(const void *chunk, size_t size) override;
 
 private:
 	gcc_pure
@@ -114,7 +112,7 @@ private:
 };
 
 RecorderOutput::RecorderOutput(const ConfigBlock &block)
-	:base(recorder_output_plugin)
+	:AudioOutput(0)
 {
 	/* read configuration */
 
@@ -141,12 +139,6 @@ RecorderOutput::RecorderOutput(const ConfigBlock &block)
 	prepared_encoder = encoder_init(*encoder_plugin, block);
 }
 
-RecorderOutput *
-RecorderOutput::Create(EventLoop &, const ConfigBlock &block)
-{
-	return new RecorderOutput(block);
-}
-
 inline void
 RecorderOutput::EncoderToFile()
 {
@@ -155,7 +147,7 @@ RecorderOutput::EncoderToFile()
 	EncoderToOutputStream(*file, *encoder);
 }
 
-inline void
+void
 RecorderOutput::Open(AudioFormat &audio_format)
 {
 	/* create the output file */
@@ -227,8 +219,8 @@ RecorderOutput::Commit()
 	delete file;
 }
 
-inline void
-RecorderOutput::Close()
+void
+RecorderOutput::Close() noexcept
 {
 	if (file == nullptr) {
 		/* not currently encoding to a file; nothing needs to
@@ -305,7 +297,7 @@ RecorderOutput::ReopenFormat(AllocatedPath &&new_path)
 		    path.ToUTF8().c_str());
 }
 
-inline void
+void
 RecorderOutput::SendTag(const Tag &tag)
 {
 	if (HasDynamicPath()) {
@@ -347,7 +339,7 @@ RecorderOutput::SendTag(const Tag &tag)
 	encoder->SendTag(tag);
 }
 
-inline size_t
+size_t
 RecorderOutput::Play(const void *chunk, size_t size)
 {
 	if (file == nullptr) {
@@ -365,22 +357,9 @@ RecorderOutput::Play(const void *chunk, size_t size)
 	return size;
 }
 
-typedef AudioOutputWrapper<RecorderOutput> Wrapper;
-
 const struct AudioOutputPlugin recorder_output_plugin = {
 	"recorder",
 	nullptr,
-	&Wrapper::Init,
-	&Wrapper::Finish,
-	nullptr,
-	nullptr,
-	&Wrapper::Open,
-	&Wrapper::Close,
-	nullptr,
-	&Wrapper::SendTag,
-	&Wrapper::Play,
-	nullptr,
-	nullptr,
-	nullptr,
+	&RecorderOutput::Create,
 	nullptr,
 };

@@ -20,7 +20,6 @@
 #include "config.h"
 #include "WinmmOutputPlugin.hxx"
 #include "../OutputAPI.hxx"
-#include "../Wrapper.hxx"
 #include "pcm/PcmBuffer.hxx"
 #include "mixer/MixerList.hxx"
 #include "fs/AllocatedPath.hxx"
@@ -39,11 +38,7 @@ struct WinmmBuffer {
 	WAVEHDR hdr;
 };
 
-class WinmmOutput {
-	friend struct AudioOutputWrapper<WinmmOutput>;
-
-	AudioOutput base;
-
+class WinmmOutput final : AudioOutput {
 	const UINT device_id;
 	HWAVEOUT handle;
 
@@ -63,16 +58,17 @@ public:
 		return handle;
 	}
 
-	static WinmmOutput *Create(EventLoop &, const ConfigBlock &block) {
+	static AudioOutput *Create(EventLoop &, const ConfigBlock &block) {
 		return new WinmmOutput(block);
 	}
 
-	void Open(AudioFormat &audio_format);
-	void Close();
+private:
+	void Open(AudioFormat &audio_format) override;
+	void Close() noexcept override;
 
-	size_t Play(const void *chunk, size_t size);
-	void Drain();
-	void Cancel();
+	size_t Play(const void *chunk, size_t size) override;
+	void Drain() override;
+	void Cancel() noexcept override;
 
 private:
 	/**
@@ -82,7 +78,7 @@ private:
 
 	void DrainAllBuffers();
 
-	void Stop();
+	void Stop() noexcept;
 
 };
 
@@ -148,7 +144,7 @@ get_device_id(const char *device_name)
 }
 
 WinmmOutput::WinmmOutput(const ConfigBlock &block)
-	:base(winmm_output_plugin),
+	:AudioOutput(0),
 	 device_id(get_device_id(block.GetBlockValue("device")))
 {
 }
@@ -202,7 +198,7 @@ WinmmOutput::Open(AudioFormat &audio_format)
 }
 
 void
-WinmmOutput::Close()
+WinmmOutput::Close() noexcept
 {
 	for (auto &i : buffers)
 		i.buffer.Clear();
@@ -291,7 +287,7 @@ WinmmOutput::DrainAllBuffers()
 }
 
 void
-WinmmOutput::Stop()
+WinmmOutput::Stop() noexcept
 {
 	waveOutReset(handle);
 
@@ -311,27 +307,14 @@ WinmmOutput::Drain()
 }
 
 void
-WinmmOutput::Cancel()
+WinmmOutput::Cancel() noexcept
 {
 	Stop();
 }
 
-typedef AudioOutputWrapper<WinmmOutput> Wrapper;
-
 const struct AudioOutputPlugin winmm_output_plugin = {
 	"winmm",
 	winmm_output_test_default_device,
-	&Wrapper::Init,
-	&Wrapper::Finish,
-	nullptr,
-	nullptr,
-	&Wrapper::Open,
-	&Wrapper::Close,
-	nullptr,
-	nullptr,
-	&Wrapper::Play,
-	&Wrapper::Drain,
-	&Wrapper::Cancel,
-	nullptr,
+	WinmmOutput::Create,
 	&winmm_mixer_plugin,
 };

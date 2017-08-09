@@ -23,6 +23,7 @@
 #include "AudioFormat.hxx"
 #include "filter/Observer.hxx"
 
+#include <memory>
 #include <string>
 #include <chrono>
 
@@ -31,6 +32,7 @@ class MusicPipe;
 class EventLoop;
 class Mixer;
 class MixerListener;
+struct MixerPlugin;
 struct MusicChunk;
 struct ConfigBlock;
 class AudioOutput;
@@ -38,6 +40,8 @@ struct ReplayGainConfig;
 struct Tag;
 
 struct FilteredAudioOutput {
+	const char *const plugin_name;
+
 	/**
 	 * The device's configured display name.
 	 */
@@ -54,7 +58,7 @@ public:
 	/**
 	 * The plugin which implements this output device.
 	 */
-	AudioOutput *const output;
+	std::unique_ptr<AudioOutput> output;
 
 	/**
 	 * The #mixer object associated with this audio output device.
@@ -120,7 +124,8 @@ public:
 	/**
 	 * Throws #std::runtime_error on error.
 	 */
-	FilteredAudioOutput(AudioOutput &_output,
+	FilteredAudioOutput(const char *_plugin_name,
+			    std::unique_ptr<AudioOutput> &&_output,
 			    const ConfigBlock &block);
 
 	~FilteredAudioOutput();
@@ -131,6 +136,7 @@ private:
 public:
 	void Setup(EventLoop &event_loop,
 		   const ReplayGainConfig &replay_gain_config,
+		   const MixerPlugin *mixer_plugin,
 		   MixerListener &mixer_listener,
 		   const ConfigBlock &block);
 

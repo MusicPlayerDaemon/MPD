@@ -24,7 +24,6 @@
 #include "Play.hxx"
 #include "AndroidSimpleBufferQueue.hxx"
 #include "../../OutputAPI.hxx"
-#include "../../Wrapper.hxx"
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
 #include "util/Macros.hxx"
@@ -37,13 +36,9 @@
 
 #include <stdexcept>
 
-class SlesOutput {
-	friend struct AudioOutputWrapper<SlesOutput>;
-
+class SlesOutput final : AudioOutput  {
 	static constexpr unsigned N_BUFFERS = 3;
 	static constexpr size_t BUFFER_SIZE = 65536;
-
-	AudioOutput base;
 
 	SLES::Object engine_object, mix_object, play_object;
 	SLES::Play play;
@@ -86,30 +81,28 @@ class SlesOutput {
 	 */
 	uint8_t buffers[N_BUFFERS][BUFFER_SIZE];
 
-public:
-	SlesOutput();
+	SlesOutput():AudioOutput(FLAG_PAUSE) {}
 
-	operator AudioOutput *() {
-		return &base;
+public:
+	static AudioOutput *Create(EventLoop &, const ConfigBlock &) {
+		return new SlesOutput();
 	}
 
-	static SlesOutput *Create(EventLoop &event_loop,
-				  const ConfigBlock &block);
+private:
+	void Open(AudioFormat &audio_format) override;
+	void Close() noexcept override;
 
-	void Open(AudioFormat &audio_format);
-	void Close();
-
-	std::chrono::steady_clock::duration Delay() noexcept {
+	std::chrono::steady_clock::duration Delay() const noexcept override {
 		return pause && !cancel
 			? std::chrono::milliseconds(100)
 			: std::chrono::steady_clock::duration::zero();
 	}
 
-	size_t Play(const void *chunk, size_t size);
+	size_t Play(const void *chunk, size_t size) override;
 
-	void Drain();
-	void Cancel();
-	bool Pause();
+	void Drain() override;
+	void Cancel() noexcept override;
+	bool Pause() noexcept override;
 
 private:
 	void PlayedCallback();
@@ -129,12 +122,7 @@ private:
 
 static constexpr Domain sles_domain("sles");
 
-SlesOutput::SlesOutput()
-	:base(sles_output_plugin)
-{
-}
-
-inline void
+void
 SlesOutput::Open(AudioFormat &audio_format)
 {
 	SLresult result;
@@ -300,8 +288,8 @@ SlesOutput::Open(AudioFormat &audio_format)
 	audio_format.format = SampleFormat::S16;
 }
 
-inline void
-SlesOutput::Close()
+void
+SlesOutput::Close() noexcept
 {
 	play.SetPlayState(SL_PLAYSTATE_STOPPED);
 	play_object.Destroy();
@@ -309,7 +297,7 @@ SlesOutput::Close()
 	engine_object.Destroy();
 }
 
-inline size_t
+size_t
 SlesOutput::Play(const void *chunk, size_t size)
 {
 	cancel = false;
@@ -348,7 +336,7 @@ SlesOutput::Play(const void *chunk, size_t size)
 	return nbytes;
 }
 
-inline void
+void
 SlesOutput::Drain()
 {
 	const std::lock_guard<Mutex> protect(mutex);
@@ -359,8 +347,8 @@ SlesOutput::Drain()
 		cond.wait(mutex);
 }
 
-inline void
-SlesOutput::Cancel()
+void
+SlesOutput::Cancel() noexcept
 {
 	pause = true;
 	cancel = true;
@@ -379,8 +367,8 @@ SlesOutput::Cancel()
 	filled = 0;
 }
 
-inline bool
-SlesOutput::Pause()
+bool
+SlesOutput::Pause() noexcept
 {
 	cancel = false;
 
@@ -415,28 +403,9 @@ sles_test_default_device()
 	return true;
 }
 
-inline SlesOutput *
-SlesOutput::Create(EventLoop &, const ConfigBlock &)
-{
-	return new SlesOutput();
-}
-
-typedef AudioOutputWrapper<SlesOutput> Wrapper;
-
 const struct AudioOutputPlugin sles_output_plugin = {
 	"sles",
 	sles_test_default_device,
-	&Wrapper::Init,
-	&Wrapper::Finish,
-	nullptr,
-	nullptr,
-	&Wrapper::Open,
-	&Wrapper::Close,
-	&Wrapper::Delay,
-	nullptr,
-	&Wrapper::Play,
-	&Wrapper::Drain,
-	&Wrapper::Cancel,
-	&Wrapper::Pause,
+	SlesOutput::Create,
 	nullptr,
 };

@@ -50,8 +50,8 @@ const Domain httpd_output_domain("httpd_output");
 
 inline
 HttpdOutput::HttpdOutput(EventLoop &_loop, const ConfigBlock &block)
-	:ServerSocket(_loop), DeferredMonitor(_loop),
-	 base(httpd_output_plugin),
+	:AudioOutput(FLAG_ENABLE_DISABLE|FLAG_PAUSE),
+	 ServerSocket(_loop), DeferredMonitor(_loop),
 	 encoder(nullptr), unflushed_input(0),
 	 metadata(nullptr)
 {
@@ -111,12 +111,6 @@ HttpdOutput::Unbind()
 	BlockingCall(GetEventLoop(), [this](){
 			ServerSocket::Close();
 		});
-}
-
-HttpdOutput *
-HttpdOutput::Create(EventLoop &event_loop, const ConfigBlock &block)
-{
-	return new HttpdOutput(event_loop, block);
 }
 
 /**
@@ -246,7 +240,7 @@ HttpdOutput::OpenEncoder(AudioFormat &audio_format)
 	unflushed_input = 0;
 }
 
-inline void
+void
 HttpdOutput::Open(AudioFormat &audio_format)
 {
 	assert(!open);
@@ -264,8 +258,8 @@ HttpdOutput::Open(AudioFormat &audio_format)
 	pause = false;
 }
 
-inline void
-HttpdOutput::Close()
+void
+HttpdOutput::Close() noexcept
 {
 	assert(open);
 
@@ -300,7 +294,7 @@ HttpdOutput::SendHeader(HttpdClient &client) const
 		client.PushPage(header);
 }
 
-inline std::chrono::steady_clock::duration
+std::chrono::steady_clock::duration
 HttpdOutput::Delay() const noexcept
 {
 	if (!LockHasClients() && pause) {
@@ -367,7 +361,7 @@ HttpdOutput::EncodeAndPlay(const void *chunk, size_t size)
 	BroadcastFromEncoder();
 }
 
-inline size_t
+size_t
 HttpdOutput::Play(const void *chunk, size_t size)
 {
 	pause = false;
@@ -383,7 +377,7 @@ HttpdOutput::Play(const void *chunk, size_t size)
 }
 
 bool
-HttpdOutput::Pause()
+HttpdOutput::Pause() noexcept
 {
 	pause = true;
 
@@ -395,7 +389,7 @@ HttpdOutput::Pause()
 	return true;
 }
 
-inline void
+void
 HttpdOutput::SendTag(const Tag &tag)
 {
 	if (encoder->ImplementsTag()) {
@@ -463,29 +457,16 @@ HttpdOutput::CancelAllClients()
 }
 
 void
-HttpdOutput::Cancel()
+HttpdOutput::Cancel() noexcept
 {
 	BlockingCall(GetEventLoop(), [this](){
 			CancelAllClients();
 		});
 }
 
-typedef AudioOutputWrapper<HttpdOutput> Wrapper;
-
 const struct AudioOutputPlugin httpd_output_plugin = {
 	"httpd",
 	nullptr,
-	&Wrapper::Init,
-	&Wrapper::Finish,
-	&Wrapper::Enable,
-	&Wrapper::Disable,
-	&Wrapper::Open,
-	&Wrapper::Close,
-	&Wrapper::Delay,
-	&Wrapper::SendTag,
-	&Wrapper::Play,
-	nullptr,
-	&Wrapper::Cancel,
-	&Wrapper::Pause,
+	&HttpdOutput::Create,
 	nullptr,
 };

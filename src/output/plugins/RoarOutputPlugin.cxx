@@ -21,7 +21,6 @@
 #include "config.h"
 #include "RoarOutputPlugin.hxx"
 #include "../OutputAPI.hxx"
-#include "../Wrapper.hxx"
 #include "mixer/MixerList.hxx"
 #include "thread/Mutex.hxx"
 #include "util/Domain.hxx"
@@ -36,11 +35,7 @@
 #include <roaraudio.h>
 #undef new
 
-class RoarOutput {
-	friend struct AudioOutputWrapper<RoarOutput>;
-
-	AudioOutput base;
-
+class RoarOutput final : AudioOutput {
 	const std::string host, name;
 
 	roar_vs_t * vss;
@@ -54,23 +49,20 @@ class RoarOutput {
 public:
 	RoarOutput(const ConfigBlock &block);
 
-	operator AudioOutput *() {
-		return &base;
-	}
-
-	static RoarOutput *Create(EventLoop &, const ConfigBlock &block) {
+	static AudioOutput *Create(EventLoop &, const ConfigBlock &block) {
 		return new RoarOutput(block);
 	}
 
-	void Open(AudioFormat &audio_format);
-	void Close();
-
-	void SendTag(const Tag &tag);
-	size_t Play(const void *chunk, size_t size);
-	void Cancel();
-
 	int GetVolume() const;
 	void SetVolume(unsigned volume);
+
+private:
+	void Open(AudioFormat &audio_format) override;
+	void Close() noexcept override;
+
+	void SendTag(const Tag &tag) override;
+	size_t Play(const void *chunk, size_t size) override;
+	void Cancel() noexcept override;
 };
 
 static constexpr Domain roar_output_domain("roar_output");
@@ -86,7 +78,7 @@ GetConfiguredRole(const ConfigBlock &block) noexcept
 }
 
 RoarOutput::RoarOutput(const ConfigBlock &block)
-	:base(roar_output_plugin),
+	:AudioOutput(0),
 	 host(block.GetBlockValue("server", "")),
 	 name(block.GetBlockValue("name", "MPD")),
 	 role(GetConfiguredRole(block))
@@ -172,7 +164,7 @@ roar_use_audio_format(struct roar_audio_info *info,
 	}
 }
 
-inline void
+void
 RoarOutput::Open(AudioFormat &audio_format)
 {
 	const std::lock_guard<Mutex> protect(mutex);
@@ -196,8 +188,8 @@ RoarOutput::Open(AudioFormat &audio_format)
 	alive = true;
 }
 
-inline void
-RoarOutput::Close()
+void
+RoarOutput::Close() noexcept
 {
 	const std::lock_guard<Mutex> protect(mutex);
 
@@ -209,8 +201,8 @@ RoarOutput::Close()
 	roar_disconnect(&con);
 }
 
-inline void
-RoarOutput::Cancel()
+void
+RoarOutput::Cancel() noexcept
 {
 	const std::lock_guard<Mutex> protect(mutex);
 
@@ -237,7 +229,7 @@ RoarOutput::Cancel()
 	alive = true;
 }
 
-inline size_t
+size_t
 RoarOutput::Play(const void *chunk, size_t size)
 {
 	if (vss == nullptr)
@@ -296,7 +288,7 @@ roar_tag_convert(TagType type, bool *is_uuid)
 	}
 }
 
-inline void
+void
 RoarOutput::SendTag(const Tag &tag)
 {
 	if (vss == nullptr)
@@ -344,22 +336,9 @@ RoarOutput::SendTag(const Tag &tag)
 	roar_vs_meta(vss, vals, cnt, &(err));
 }
 
-typedef AudioOutputWrapper<RoarOutput> Wrapper;
-
 const struct AudioOutputPlugin roar_output_plugin = {
 	"roar",
 	nullptr,
-	&Wrapper::Init,
-	&Wrapper::Finish,
-	nullptr,
-	nullptr,
-	&Wrapper::Open,
-	&Wrapper::Close,
-	nullptr,
-	&Wrapper::SendTag,
-	&Wrapper::Play,
-	nullptr,
-	&Wrapper::Cancel,
-	nullptr,
+	&RoarOutput::Create,
 	&roar_mixer_plugin,
 };

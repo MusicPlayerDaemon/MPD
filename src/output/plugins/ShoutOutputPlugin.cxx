@@ -20,7 +20,6 @@
 #include "config.h"
 #include "ShoutOutputPlugin.hxx"
 #include "../OutputAPI.hxx"
-#include "../Wrapper.hxx"
 #include "encoder/EncoderInterface.hxx"
 #include "encoder/EncoderPlugin.hxx"
 #include "encoder/EncoderList.hxx"
@@ -39,9 +38,7 @@
 
 static constexpr unsigned DEFAULT_CONN_TIMEOUT = 2;
 
-struct ShoutOutput final {
-	AudioOutput base;
-
+struct ShoutOutput final : AudioOutput {
 	shout_t *shout_conn;
 	shout_metadata_t *shout_meta;
 
@@ -58,17 +55,17 @@ struct ShoutOutput final {
 	explicit ShoutOutput(const ConfigBlock &block);
 	~ShoutOutput();
 
-	static ShoutOutput *Create(EventLoop &event_loop,
+	static AudioOutput *Create(EventLoop &event_loop,
 				   const ConfigBlock &block);
 
-	void Open(AudioFormat &audio_format);
-	void Close();
+	void Open(AudioFormat &audio_format) override;
+	void Close() noexcept override;
 
-	std::chrono::steady_clock::duration Delay() const noexcept;
-	void SendTag(const Tag &tag);
-	size_t Play(const void *chunk, size_t size);
-	void Cancel();
-	bool Pause();
+	std::chrono::steady_clock::duration Delay() const noexcept override;
+	void SendTag(const Tag &tag) override;
+	size_t Play(const void *chunk, size_t size) override;
+	void Cancel() noexcept override;
+	bool Pause() noexcept override;
 
 private:
 	void WritePage();
@@ -113,11 +110,11 @@ ShoutSetAudioInfo(shout_t *shout_conn, const AudioFormat &audio_format)
 }
 
 ShoutOutput::ShoutOutput(const ConfigBlock &block)
-	:base(shout_output_plugin),
+	:AudioOutput(FLAG_PAUSE),
 	 shout_conn(shout_new()),
 	 shout_meta(shout_metadata_new())
 {
-	base.NeedFullyDefinedAudioFormat();
+	NeedFullyDefinedAudioFormat();
 
 	const char *host = require_block_string(block, "host");
 	const char *mount = require_block_string(block, "mount");
@@ -250,7 +247,7 @@ ShoutOutput::~ShoutOutput()
 	delete prepared_encoder;
 }
 
-ShoutOutput *
+AudioOutput *
 ShoutOutput::Create(EventLoop &, const ConfigBlock &block)
 {
 	if (shout_init_count == 0)
@@ -306,7 +303,7 @@ ShoutOutput::WritePage()
 }
 
 void
-ShoutOutput::Close()
+ShoutOutput::Close() noexcept
 {
 	try {
 		encoder->End();
@@ -326,7 +323,7 @@ ShoutOutput::Close()
 }
 
 void
-ShoutOutput::Cancel()
+ShoutOutput::Cancel() noexcept
 {
 	/* needs to be implemented for shout */
 }
@@ -381,7 +378,7 @@ ShoutOutput::Play(const void *chunk, size_t size)
 }
 
 bool
-ShoutOutput::Pause()
+ShoutOutput::Pause() noexcept
 {
 	static char silence[1020];
 
@@ -446,22 +443,9 @@ ShoutOutput::SendTag(const Tag &tag)
 	WritePage();
 }
 
-typedef AudioOutputWrapper<ShoutOutput> Wrapper;
-
 const struct AudioOutputPlugin shout_output_plugin = {
 	"shout",
 	nullptr,
-	&Wrapper::Init,
-	&Wrapper::Finish,
-	nullptr,
-	nullptr,
-	&Wrapper::Open,
-	&Wrapper::Close,
-	&Wrapper::Delay,
-	&Wrapper::SendTag,
-	&Wrapper::Play,
-	nullptr,
-	&Wrapper::Cancel,
-	&Wrapper::Pause,
+	&ShoutOutput::Create,
 	nullptr,
 };

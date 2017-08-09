@@ -20,7 +20,6 @@
 #include "config.h"
 #include "SolarisOutputPlugin.hxx"
 #include "../OutputAPI.hxx"
-#include "../Wrapper.hxx"
 #include "system/FileDescriptor.hxx"
 #include "system/Error.hxx"
 
@@ -50,30 +49,27 @@ struct audio_info {
 
 #endif
 
-class SolarisOutput {
-	friend struct AudioOutputWrapper<SolarisOutput>;
-
-	AudioOutput base;
-
+class SolarisOutput final : AudioOutput {
 	/* configuration */
 	const char *const device;
 
 	FileDescriptor fd;
 
 	explicit SolarisOutput(const ConfigBlock &block)
-		:base(solaris_output_plugin),
+		:AudioOutput(0),
 		 device(block.GetBlockValue("device", "/dev/audio")) {}
 
 public:
-	static SolarisOutput *Create(EventLoop &, const ConfigBlock &block) {
+	static AudioOutput *Create(EventLoop &, const ConfigBlock &block) {
 		return new SolarisOutput(block);
 	}
 
-	void Open(AudioFormat &audio_format);
-	void Close();
+private:
+	void Open(AudioFormat &audio_format) override;
+	void Close() noexcept override;
 
-	size_t Play(const void *chunk, size_t size);
-	void Cancel();
+	size_t Play(const void *chunk, size_t size) override;
+	void Cancel() noexcept override;
 };
 
 static bool
@@ -128,7 +124,7 @@ SolarisOutput::Open(AudioFormat &audio_format)
 }
 
 void
-SolarisOutput::Close()
+SolarisOutput::Close() noexcept
 {
 	fd.Close();
 }
@@ -144,27 +140,14 @@ SolarisOutput::Play(const void *chunk, size_t size)
 }
 
 void
-SolarisOutput::Cancel()
+SolarisOutput::Cancel() noexcept
 {
 	ioctl(fd.Get(), I_FLUSH);
 }
 
-typedef AudioOutputWrapper<SolarisOutput> Wrapper;
-
 const struct AudioOutputPlugin solaris_output_plugin = {
 	"solaris",
 	solaris_output_test_default_device,
-	&Wrapper::Init,
-	&Wrapper::Finish,
-	nullptr,
-	nullptr,
-	&Wrapper::Open,
-	&Wrapper::Close,
-	nullptr,
-	nullptr,
-	&Wrapper::Play,
-	nullptr,
-	&Wrapper::Cancel,
-	nullptr,
+	&SolarisOutput::Create,
 	nullptr,
 };

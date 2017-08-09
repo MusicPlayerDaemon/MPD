@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "Filtered.hxx"
-#include "OutputPlugin.hxx"
+#include "Interface.hxx"
 #include "mixer/MixerControl.hxx"
 #include "filter/FilterInternal.hxx"
 
@@ -31,8 +31,6 @@ FilteredAudioOutput::~FilteredAudioOutput()
 	delete prepared_replay_gain_filter;
 	delete prepared_other_replay_gain_filter;
 	delete prepared_filter;
-
-	ao_plugin_finish(output);
 }
 
 void
@@ -45,5 +43,5 @@ FilteredAudioOutput::BeginDestroy() noexcept
 void
 FilteredAudioOutput::FinishDestroy() noexcept
 {
-	ao_plugin_finish(output);
+	output.reset();
 }

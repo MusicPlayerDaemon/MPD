@@ -34,13 +34,15 @@
 #include "util/ScopeExit.hxx"
 #include "Log.hxx"
 
+#include <memory>
+
 #include <assert.h>
 #include <string.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
 
-static AudioOutput *
+static std::unique_ptr<AudioOutput>
 load_audio_output(EventLoop &event_loop, const char *name)
 {
 	const auto *block = config_find_block(ConfigBlockOption::AUDIO_OUTPUT,
@@ -58,7 +60,8 @@ load_audio_output(EventLoop &event_loop, const char *name)
 		throw FormatRuntimeError("No such audio output plugin: %s",
 					 plugin_name);
 
-	return ao_plugin_init(event_loop, *plugin, *block);
+	return std::unique_ptr<AudioOutput>(ao_plugin_init(event_loop, *plugin,
+							   *block));
 }
 
 static void
@@ -66,11 +69,11 @@ run_output(AudioOutput &ao, AudioFormat audio_format)
 {
 	/* open the audio output */
 
-	ao_plugin_enable(ao);
-	AtScopeExit(&ao) { ao_plugin_disable(ao); };
+	ao.Enable();
+	AtScopeExit(&ao) { ao.Disable(); };
 
-	ao_plugin_open(ao, audio_format);
-	AtScopeExit(&ao) { ao_plugin_close(ao); };
+	ao.Open(audio_format);
+	AtScopeExit(&ao) { ao.Close(); };
 
 	fprintf(stderr, "audio_format=%s\n",
 		ToString(audio_format).c_str());
@@ -93,8 +96,7 @@ run_output(AudioOutput &ao, AudioFormat audio_format)
 
 		size_t play_length = (length / frame_size) * frame_size;
 		if (play_length > 0) {
-			size_t consumed = ao_plugin_play(ao,
-							 buffer, play_length);
+			size_t consumed = ao.Play(buffer, play_length);
 
 			assert(consumed <= length);
 			assert(consumed % frame_size == 0);
@@ -126,7 +128,7 @@ try {
 
 	/* initialize the audio output */
 
-	auto *ao = load_audio_output(io_thread.GetEventLoop(), argv[2]);
+	auto ao = load_audio_output(io_thread.GetEventLoop(), argv[2]);
 
 	/* parse the audio format */
 
@@ -139,7 +141,7 @@ try {
 
 	/* cleanup and exit */
 
-	ao_plugin_finish(ao);
+	ao.reset();
 
 	config_global_finish();
 

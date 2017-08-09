@@ -50,18 +50,11 @@
 #define AUDIO_OUTPUT_FORMAT	"format"
 #define AUDIO_FILTERS		"filters"
 
-FilteredAudioOutput::FilteredAudioOutput(AudioOutput &_output,
+FilteredAudioOutput::FilteredAudioOutput(const char *_plugin_name,
+					 std::unique_ptr<AudioOutput> &&_output,
 					 const ConfigBlock &block)
-	:output(&_output)
+	:plugin_name(_plugin_name), output(std::move(_output))
 {
-#ifndef NDEBUG
-	const auto &plugin = output->GetPlugin();
-	assert(plugin.finish != nullptr);
-	assert(plugin.open != nullptr);
-	assert(plugin.close != nullptr);
-	assert(plugin.play != nullptr);
-#endif
-
 	Configure(block);
 }
 
@@ -172,7 +165,7 @@ FilteredAudioOutput::Configure(const ConfigBlock &block)
 	{
 		char buffer[64];
 		snprintf(buffer, sizeof(buffer), "\"%s\" (%s)",
-			 name, output->GetPlugin().name);
+			 name, plugin_name);
 		log_name = buffer;
 	}
 
@@ -204,6 +197,7 @@ FilteredAudioOutput::Configure(const ConfigBlock &block)
 inline void
 FilteredAudioOutput::Setup(EventLoop &event_loop,
 			   const ReplayGainConfig &replay_gain_config,
+			   const MixerPlugin *mixer_plugin,
 			   MixerListener &mixer_listener,
 			   const ConfigBlock &block)
 {
@@ -233,7 +227,7 @@ FilteredAudioOutput::Setup(EventLoop &event_loop,
 
 	try {
 		mixer = audio_output_load_mixer(event_loop, *this, block,
-						output->GetPlugin().mixer_plugin,
+						mixer_plugin,
 						*prepared_filter,
 						mixer_listener);
 	} catch (const std::runtime_error &e) {
@@ -291,20 +285,15 @@ audio_output_new(EventLoop &event_loop,
 			      plugin->name);
 	}
 
-	auto *ao = ao_plugin_init(event_loop, *plugin, block);
+	std::unique_ptr<AudioOutput> ao(ao_plugin_init(event_loop, *plugin,
+						       block));
 	assert(ao != nullptr);
 
-	FilteredAudioOutput *f;
-
-	try {
-		f = new FilteredAudioOutput(*ao, block);
-	} catch (...) {
-		ao_plugin_finish(ao);
-		throw;
-	}
+	auto *f = new FilteredAudioOutput(plugin->name, std::move(ao), block);
 
 	try {
 		f->Setup(event_loop, replay_gain_config,
+			 plugin->mixer_plugin,
 			 mixer_listener, block);
 	} catch (...) {
 		delete f;
