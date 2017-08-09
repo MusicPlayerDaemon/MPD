@@ -21,15 +21,12 @@
 #define MPD_AUDIO_OUTPUT_INTERFACE_HXX
 
 struct AudioOutputPlugin;
-struct FilteredAudioOutput;
 
 struct AudioOutput {
 	/**
 	 * The plugin which implements this output device.
 	 */
 	const AudioOutputPlugin &plugin;
-
-	FilteredAudioOutput *parent;
 
 	bool need_fully_defined_audio_format = false;
 
