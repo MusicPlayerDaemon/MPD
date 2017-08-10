@@ -202,7 +202,8 @@ SocketDescriptor::SetOption(int level, int name,
 {
 	assert(IsDefined());
 
-	return setsockopt(fd, level, name, value, size) == 0;
+	/* on Windows, setsockopt() wants "const char *" */
+	return setsockopt(fd, level, name, (const char *)value, size) == 0;
 }
 
 #ifdef __linux__
