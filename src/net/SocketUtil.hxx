@@ -49,7 +49,4 @@ socket_bind_listen(int domain, int type, int protocol,
 		   SocketAddress address,
 		   int backlog);
 
-int
-socket_keepalive(int fd);
-
 #endif

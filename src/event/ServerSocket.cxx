@@ -158,7 +158,7 @@ OneServerSocket::Accept() noexcept
 		return;
 	}
 
-	if (socket_keepalive(peer_fd.Get())) {
+	if (!peer_fd.SetKeepAlive()) {
 		const SocketErrorMessage msg;
 		FormatError(server_socket_domain,
 			    "Could not set TCP keepalive option: %s",

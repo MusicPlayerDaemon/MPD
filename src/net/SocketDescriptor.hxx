@@ -141,6 +141,7 @@ public:
 		return SetOption(level, name, &value, sizeof(value));
 	}
 
+	bool SetKeepAlive(bool value=true);
 	bool SetReuseAddress(bool value=true);
 
 #ifdef __linux__

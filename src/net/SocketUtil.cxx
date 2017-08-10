@@ -49,12 +49,3 @@ socket_bind_listen(int domain, int type, int protocol,
 
 	return fd;
 }
-
-int
-socket_keepalive(int fd)
-{
-	const int reuse = 1;
-
-	return setsockopt(fd, SOL_SOCKET, SO_KEEPALIVE,
-			  (const char *)&reuse, sizeof(reuse));
-}
