@@ -64,6 +64,14 @@ public:
 		return fd >= 0;
 	}
 
+#ifndef _WIN32
+	/**
+	 * Ask the kernel whether this is a valid file descriptor.
+	 */
+	gcc_pure
+	bool IsValid() const noexcept;
+#endif
+
 	/**
 	 * Returns the file descriptor.  This may only be called if
 	 * IsDefined() returns true.

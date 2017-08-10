@@ -57,6 +57,16 @@
 #define O_CLOEXEC 0
 #endif
 
+#ifndef _WIN32
+
+bool
+FileDescriptor::IsValid() const noexcept
+{
+	return IsDefined() && fcntl(fd, F_GETFL) >= 0;
+}
+
+#endif
+
 bool
 FileDescriptor::Open(const char *pathname, int flags, mode_t mode) noexcept
 {
