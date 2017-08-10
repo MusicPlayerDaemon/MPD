@@ -24,6 +24,7 @@
 #include "net/SocketAddress.hxx"
 #include "net/SocketUtil.hxx"
 #include "net/SocketError.hxx"
+#include "net/UniqueSocketDescriptor.hxx"
 #include "net/Resolver.hxx"
 #include "net/ToString.hxx"
 #include "event/SocketMonitor.hxx"
@@ -185,9 +186,9 @@ OneServerSocket::Open()
 {
 	assert(!IsDefined());
 
-	int _fd = socket_bind_listen(address.GetFamily(),
-				     SOCK_STREAM, 0,
-				     address, 5);
+	auto _fd = socket_bind_listen(address.GetFamily(),
+				      SOCK_STREAM, 0,
+				      address, 5);
 
 #ifdef HAVE_UN
 	/* allow everybody to connect */
@@ -198,7 +199,7 @@ OneServerSocket::Open()
 
 	/* register in the EventLoop */
 
-	SetFD(_fd);
+	SetFD(_fd.Steal());
 }
 
 ServerSocket::ServerSocket(EventLoop &_loop)

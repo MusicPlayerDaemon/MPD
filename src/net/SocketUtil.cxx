@@ -21,44 +21,30 @@
 #include "SocketUtil.hxx"
 #include "SocketAddress.hxx"
 #include "SocketError.hxx"
-#include "system/fd_util.h"
+#include "UniqueSocketDescriptor.hxx"
 
-int
+UniqueSocketDescriptor
 socket_bind_listen(int domain, int type, int protocol,
 		   SocketAddress address,
 		   int backlog)
 {
-	int fd, ret;
 	const int reuse = 1;
 
-	fd = socket_cloexec_nonblock(domain, type, protocol);
-	if (fd < 0)
+	UniqueSocketDescriptor fd;
+	if (!fd.CreateNonBlock(domain, type, protocol))
 		throw MakeSocketError("Failed to create socket");
 
-	ret = setsockopt(fd, SOL_SOCKET, SO_REUSEADDR,
-			 (const char *) &reuse, sizeof(reuse));
-	if (ret < 0) {
-		auto error = GetSocketError();
-		close_socket(fd);
-		throw MakeSocketError(error, "setsockopt() failed");
-	}
+	if (!fd.SetReuseAddress())
+		throw MakeSocketError("setsockopt() failed");
 
-	ret = bind(fd, address.GetAddress(), address.GetSize());
-	if (ret < 0) {
-		auto error = GetSocketError();
-		close_socket(fd);
-		throw MakeSocketError(error, "Failed to bind socket");
-	}
+	if (!fd.Bind(address))
+		throw MakeSocketError("Failed to bind socket");
 
-	ret = listen(fd, backlog);
-	if (ret < 0) {
-		auto error = GetSocketError();
-		close_socket(fd);
-		throw MakeSocketError(error, "Failed to listen on socket");
-	}
+	if (!fd.Listen(backlog))
+		throw MakeSocketError("Failed to listen on socket");
 
 #if defined(HAVE_STRUCT_UCRED) && defined(SO_PASSCRED)
-	setsockopt(fd, SOL_SOCKET, SO_PASSCRED,
+	setsockopt(fd.Get(), SOL_SOCKET, SO_PASSCRED,
 		   (const char *) &reuse, sizeof(reuse));
 #endif
 
