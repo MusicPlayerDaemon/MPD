@@ -55,13 +55,6 @@ int
 fd_set_cloexec(int fd, bool enable);
 
 /**
- * Wrapper for open(), which sets the CLOEXEC flag (atomically if
- * supported by the OS).
- */
-int
-open_cloexec(const char *path_fs, int flags, int mode);
-
-/**
  * Wrapper for pipe(), which sets the CLOEXEC flag (atomically if
  * supported by the OS).
  *

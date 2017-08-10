@@ -102,26 +102,6 @@ fd_set_nonblock(int fd)
 }
 
 int
-open_cloexec(const char *path_fs, int flags, int mode)
-{
-	int fd;
-
-#ifdef O_CLOEXEC
-	flags |= O_CLOEXEC;
-#endif
-
-#ifdef O_NOCTTY
-	flags |= O_NOCTTY;
-#endif
-
-	fd = open(path_fs, flags, mode);
-	if (fd >= 0)
-		fd_set_cloexec(fd, true);
-
-	return fd;
-}
-
-int
 pipe_cloexec_nonblock(int fd[2])
 {
 #ifdef WIN32
