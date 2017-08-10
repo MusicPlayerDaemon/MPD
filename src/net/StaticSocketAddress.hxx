@@ -79,6 +79,13 @@ public:
 		size = _size;
 	}
 
+	/**
+	 * Set the size to the maximum value for this class.
+	 */
+	void SetMaxSize() {
+		SetSize(GetCapacity());
+	}
+
 	int GetFamily() const noexcept {
 		return address.ss_family;
 	}
