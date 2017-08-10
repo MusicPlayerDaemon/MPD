@@ -120,7 +120,7 @@ public:
 		return (SocketAddress)*this == other;
 	}
 
-	bool operator!=(SocketAddress &other) const noexcept {
+	bool operator!=(SocketAddress other) const noexcept {
 		return !(*this == other);
 	}
 };
