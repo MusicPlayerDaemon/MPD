@@ -74,6 +74,17 @@ FileDescriptor::Open(const char *pathname, int flags, mode_t mode) noexcept
 	return IsDefined();
 }
 
+#ifdef _WIN32
+
+bool
+FileDescriptor::Open(const wchar_t *pathname, int flags, mode_t mode) noexcept
+{
+	fd = ::_wopen(pathname, flags | O_NOCTTY | O_CLOEXEC, mode);
+	return IsDefined();
+}
+
+#endif
+
 bool
 FileDescriptor::OpenReadOnly(const char *pathname) noexcept
 {
