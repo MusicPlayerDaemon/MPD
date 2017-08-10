@@ -78,6 +78,8 @@ fd_set_cloexec(int fd, bool enable)
 #endif
 }
 
+#ifndef WIN32
+
 /**
  * Enables non-blocking mode for the specified file descriptor.  On
  * WIN32, this function only works for sockets.
@@ -100,6 +102,8 @@ fd_set_nonblock(int fd)
 	return fcntl(fd, F_SETFL, flags | O_NONBLOCK);
 #endif
 }
+
+#endif
 
 int
 pipe_cloexec_nonblock(int fd[2])
@@ -125,15 +129,5 @@ pipe_cloexec_nonblock(int fd[2])
 	}
 
 	return ret;
-#endif
-}
-
-int
-close_socket(int fd)
-{
-#ifdef WIN32
-	return closesocket(fd);
-#else
-	return close(fd);
 #endif
 }

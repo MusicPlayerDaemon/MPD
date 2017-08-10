@@ -64,12 +64,6 @@ fd_set_cloexec(int fd, bool enable);
 int
 pipe_cloexec_nonblock(int fd[2]);
 
-/**
- * Portable wrapper for close(); use closesocket() on WIN32/WinSock.
- */
-int
-close_socket(int fd);
-
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
