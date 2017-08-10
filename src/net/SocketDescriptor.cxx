@@ -206,13 +206,13 @@ SocketDescriptor::SetOption(int level, int name,
 	return setsockopt(fd, level, name, (const char *)value, size) == 0;
 }
 
-#ifdef __linux__
-
 bool
 SocketDescriptor::SetReuseAddress(bool value)
 {
 	return SetBoolOption(SOL_SOCKET, SO_REUSEADDR, value);
 }
+
+#ifdef __linux__
 
 #ifdef SO_REUSEPORT
 

@@ -141,8 +141,9 @@ public:
 		return SetOption(level, name, &value, sizeof(value));
 	}
 
-#ifdef __linux__
 	bool SetReuseAddress(bool value=true);
+
+#ifdef __linux__
 	bool SetReusePort(bool value=true);
 	bool SetFreeBind(bool value=true);
 	bool SetNoDelay(bool value=true);
