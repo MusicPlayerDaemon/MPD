@@ -21,7 +21,7 @@
 #define MPD_EVENT_FD_HXX
 
 #include "check.h"
-#include "FileDescriptor.hxx"
+#include "UniqueFileDescriptor.hxx"
 
 /**
  * A class that wraps eventfd().
@@ -29,16 +29,10 @@
  * Errors in the constructor are fatal.
  */
 class EventFD {
-	FileDescriptor fd;
+	UniqueFileDescriptor fd;
 
 public:
 	EventFD();
-	~EventFD() {
-		fd.Close();
-	}
-
-	EventFD(const EventFD &other) = delete;
-	EventFD &operator=(const EventFD &other) = delete;
 
 	int Get() const {
 		return fd.Get();
