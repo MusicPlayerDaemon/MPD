@@ -149,26 +149,6 @@ pipe_cloexec_nonblock(int fd[2])
 }
 
 int
-socket_cloexec_nonblock(int domain, int type, int protocol)
-{
-	int fd;
-
-#if defined(SOCK_CLOEXEC) && defined(SOCK_NONBLOCK)
-	fd = socket(domain, type | SOCK_CLOEXEC | SOCK_NONBLOCK, protocol);
-	if (fd >= 0 || errno != EINVAL)
-		return fd;
-#endif
-
-	fd = socket(domain, type, protocol);
-	if (fd >= 0) {
-		fd_set_cloexec(fd, true);
-		fd_set_nonblock(fd);
-	}
-
-	return fd;
-}
-
-int
 accept_cloexec_nonblock(int fd, struct sockaddr *address,
 			size_t *address_length_r)
 {
