@@ -56,6 +56,14 @@ public:
 				     size);
 	}
 
+	operator struct sockaddr *() noexcept {
+		return reinterpret_cast<struct sockaddr *>(&address);
+	}
+
+	operator const struct sockaddr *() const noexcept {
+		return reinterpret_cast<const struct sockaddr *>(&address);
+	}
+
 	struct sockaddr *GetAddress() noexcept {
 		return reinterpret_cast<struct sockaddr *>(&address);
 	}
