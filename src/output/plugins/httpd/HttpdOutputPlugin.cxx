@@ -182,15 +182,11 @@ HttpdOutput::OnAccept(int fd, SocketAddress address, gcc_unused int uid)
 
 	const std::lock_guard<Mutex> protect(mutex);
 
-	if (fd >= 0) {
-		/* can we allow additional client */
-		if (open && (clients_max == 0 || clients.size() < clients_max))
-			AddClient(fd);
-		else
-			close_socket(fd);
-	} else if (fd < 0 && errno != EINTR) {
-		LogErrno(httpd_output_domain, "accept() failed");
-	}
+	/* can we allow additional client */
+	if (open && (clients_max == 0 || clients.size() < clients_max))
+		AddClient(fd);
+	else
+		close_socket(fd);
 }
 
 PagePtr
