@@ -82,7 +82,7 @@ AllocatedSocketAddress::SetLocal(const char *path) noexcept
 	struct sockaddr_un *sun;
 	SetSize(sizeof(*sun) - sizeof(sun->sun_path) + path_length);
 	sun = (struct sockaddr_un *)address;
-	sun->sun_family = AF_UNIX;
+	sun->sun_family = AF_LOCAL;
 	memcpy(sun->sun_path, path, path_length);
 
 	if (is_abstract)

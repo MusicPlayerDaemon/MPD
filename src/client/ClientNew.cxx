@@ -65,7 +65,7 @@ client_new(EventLoop &loop, Partition &partition,
 	assert(fd >= 0);
 
 #ifdef HAVE_LIBWRAP
-	if (address.GetFamily() != AF_UNIX) {
+	if (address.GetFamily() != AF_LOCAL) {
 		// TODO: shall we obtain the program name from argv[0]?
 		const char *progname = "mpd";
 

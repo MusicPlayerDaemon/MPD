@@ -42,7 +42,7 @@
 #include <errno.h>
 
 #ifdef HAVE_LIBWRAP
-#include <sys/socket.h> /* needed for AF_UNIX */
+#include <sys/socket.h> /* needed for AF_LOCAL */
 #include <tcpd.h>
 #endif
 
@@ -157,7 +157,7 @@ HttpdOutput::OnAccept(int fd, SocketAddress address, gcc_unused int uid)
 	   connected */
 
 #ifdef HAVE_LIBWRAP
-	if (address.GetFamily() != AF_UNIX) {
+	if (address.GetFamily() != AF_LOCAL) {
 		const auto hostaddr = ToString(address);
 		// TODO: shall we obtain the program name from argv[0]?
 		const char *progname = "mpd";

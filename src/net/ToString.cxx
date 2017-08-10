@@ -116,7 +116,7 @@ std::string
 ToString(SocketAddress address) noexcept
 {
 #ifdef HAVE_UN
-	if (address.GetFamily() == AF_UNIX)
+	if (address.GetFamily() == AF_LOCAL)
 		/* return path of UNIX domain sockets */
 		return LocalAddressToString(*(const sockaddr_un *)address.GetAddress(),
 					    address.GetSize());
