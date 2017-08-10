@@ -28,8 +28,6 @@ socket_bind_listen(int domain, int type, int protocol,
 		   SocketAddress address,
 		   int backlog)
 {
-	const int reuse = 1;
-
 	UniqueSocketDescriptor fd;
 	if (!fd.CreateNonBlock(domain, type, protocol))
 		throw MakeSocketError("Failed to create socket");
@@ -44,8 +42,9 @@ socket_bind_listen(int domain, int type, int protocol,
 		throw MakeSocketError("Failed to listen on socket");
 
 #if defined(HAVE_STRUCT_UCRED) && defined(SO_PASSCRED)
+	const int pass_cred = 1;
 	setsockopt(fd.Get(), SOL_SOCKET, SO_PASSCRED,
-		   (const char *) &reuse, sizeof(reuse));
+		   (const char *) &pass_cred, sizeof(pass_cred));
 #endif
 
 	return fd;
