@@ -124,7 +124,7 @@ SocketDescriptor::CreateNonBlock(int domain, int type, int protocol)
 	if (!Create(domain, type, protocol))
 		return false;
 
-#ifndef __linux__
+#ifndef SOCK_NONBLOCK
 	SetNonBlocking();
 #endif
 
