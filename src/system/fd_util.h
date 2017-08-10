@@ -65,14 +65,6 @@ int
 pipe_cloexec_nonblock(int fd[2]);
 
 /**
- * Wrapper for accept(), which sets the CLOEXEC and the NONBLOCK flags
- * (atomically if supported by the OS).
- */
-int
-accept_cloexec_nonblock(int fd, struct sockaddr *address,
-			size_t *address_length_r);
-
-/**
  * Portable wrapper for close(); use closesocket() on WIN32/WinSock.
  */
 int

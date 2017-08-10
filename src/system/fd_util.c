@@ -129,34 +129,6 @@ pipe_cloexec_nonblock(int fd[2])
 }
 
 int
-accept_cloexec_nonblock(int fd, struct sockaddr *address,
-			size_t *address_length_r)
-{
-	int ret;
-	socklen_t address_length = *address_length_r;
-
-#ifdef HAVE_ACCEPT4
-	ret = accept4(fd, address, &address_length,
-		      SOCK_CLOEXEC|SOCK_NONBLOCK);
-	if (ret >= 0 || errno != ENOSYS) {
-		if (ret >= 0)
-			*address_length_r = address_length;
-
-		return ret;
-	}
-#endif
-
-	ret = accept(fd, address, &address_length);
-	if (ret >= 0) {
-		fd_set_cloexec(ret, true);
-		fd_set_nonblock(ret);
-		*address_length_r = address_length;
-	}
-
-	return ret;
-}
-
-int
 close_socket(int fd)
 {
 #ifdef WIN32
