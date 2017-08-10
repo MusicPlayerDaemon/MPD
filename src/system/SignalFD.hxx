@@ -21,7 +21,7 @@
 #define MPD_SIGNAL_FD_HXX
 
 #include "check.h"
-#include "FileDescriptor.hxx"
+#include "UniqueFileDescriptor.hxx"
 
 #include <signal.h>
 
@@ -29,24 +29,18 @@
  * A class that wraps signalfd().
  */
 class SignalFD {
-	FileDescriptor fd;
+	UniqueFileDescriptor fd;
 
 public:
-	SignalFD():fd(-1) {}
-	~SignalFD() {
-		Close();
-	}
-
-	SignalFD(const SignalFD &other) = delete;
-	SignalFD &operator=(const SignalFD &other) = delete;
-
 	/**
 	 * Create the signalfd or update its mask.
 	 *
 	 * All errors are fatal.
 	 */
 	void Create(const sigset_t &mask);
-	void Close();
+	void Close() {
+		fd.Close();
+	}
 
 	int Get() const {
 		return fd.Get();
