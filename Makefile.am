@@ -484,6 +484,8 @@ libnet_a_SOURCES = \
 	src/net/AllocatedSocketAddress.cxx src/net/AllocatedSocketAddress.hxx \
 	src/net/SocketAddress.cxx src/net/SocketAddress.hxx \
 	src/net/SocketUtil.cxx src/net/SocketUtil.hxx \
+	src/net/SocketDescriptor.cxx src/net/SocketDescriptor.hxx \
+	src/net/UniqueSocketDescriptor.hxx \
 	src/net/SocketError.cxx src/net/SocketError.hxx
 
 # System library

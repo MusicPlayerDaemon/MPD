@@ -39,6 +39,8 @@
  * An OO wrapper for struct sockaddr_storage.
  */
 class StaticSocketAddress {
+	friend class SocketDescriptor;
+
 public:
 	typedef SocketAddress::size_type size_type;
 
