@@ -118,19 +118,21 @@ audio_output_load_mixer(EventLoop &event_loop, FilteredAudioOutput &ao,
 		return nullptr;
 
 	case MixerType::NULL_:
-		return mixer_new(event_loop, null_mixer_plugin, ao, listener,
+		return mixer_new(event_loop, null_mixer_plugin,
+				 *ao.output, listener,
 				 block);
 
 	case MixerType::HARDWARE:
 		if (plugin == nullptr)
 			return nullptr;
 
-		return mixer_new(event_loop, *plugin, ao, listener,
+		return mixer_new(event_loop, *plugin,
+				 *ao.output, listener,
 				 block);
 
 	case MixerType::SOFTWARE:
-		mixer = mixer_new(event_loop, software_mixer_plugin, ao,
-				  listener,
+		mixer = mixer_new(event_loop, software_mixer_plugin,
+				  *ao.output, listener,
 				  ConfigBlock());
 		assert(mixer != nullptr);
 

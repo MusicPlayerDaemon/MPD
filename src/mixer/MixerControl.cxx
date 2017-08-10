@@ -25,7 +25,7 @@
 
 Mixer *
 mixer_new(EventLoop &event_loop,
-	  const MixerPlugin &plugin, FilteredAudioOutput &ao,
+	  const MixerPlugin &plugin, AudioOutput &ao,
 	  MixerListener &listener,
 	  const ConfigBlock &block)
 {

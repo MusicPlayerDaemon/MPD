@@ -45,7 +45,7 @@ public:
 };
 
 static Mixer *
-roar_mixer_init(gcc_unused EventLoop &event_loop, FilteredAudioOutput &ao,
+roar_mixer_init(gcc_unused EventLoop &event_loop, AudioOutput &ao,
 		MixerListener &listener,
 		gcc_unused const ConfigBlock &block)
 {

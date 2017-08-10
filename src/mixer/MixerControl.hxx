@@ -27,7 +27,7 @@
 
 class Mixer;
 class EventLoop;
-struct FilteredAudioOutput;
+class AudioOutput;
 struct MixerPlugin;
 class MixerListener;
 struct ConfigBlock;
@@ -37,7 +37,7 @@ struct ConfigBlock;
  */
 Mixer *
 mixer_new(EventLoop &event_loop, const MixerPlugin &plugin,
-	  FilteredAudioOutput &ao,
+	  AudioOutput &ao,
 	  MixerListener &listener,
 	  const ConfigBlock &block);
 

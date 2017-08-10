@@ -28,7 +28,7 @@
 #define MPD_MIXER_PLUGIN_HXX
 
 struct ConfigBlock;
-struct FilteredAudioOutput;
+class AudioOutput;
 class Mixer;
 class MixerListener;
 class EventLoop;
@@ -43,7 +43,7 @@ struct MixerPlugin {
 	 * @param param the configuration section
 	 * @return a mixer object
 	 */
-	Mixer *(*init)(EventLoop &event_loop, FilteredAudioOutput &ao,
+	Mixer *(*init)(EventLoop &event_loop, AudioOutput &ao,
 		       MixerListener &listener,
 		       const ConfigBlock &block);
 

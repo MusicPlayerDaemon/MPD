@@ -161,7 +161,7 @@ pulse_mixer_on_change(PulseMixer &pm,
 }
 
 static Mixer *
-pulse_mixer_init(gcc_unused EventLoop &event_loop, FilteredAudioOutput &ao,
+pulse_mixer_init(gcc_unused EventLoop &event_loop, AudioOutput &ao,
 		 MixerListener &listener,
 		 gcc_unused const ConfigBlock &block)
 {
