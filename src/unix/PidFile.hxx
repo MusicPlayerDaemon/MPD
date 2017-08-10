@@ -38,7 +38,7 @@ public:
 		if (path.IsNull())
 			return;
 
-		fd = OpenFile(path, O_WRONLY|O_CREAT|O_TRUNC, 0666);
+		fd = OpenFile(path, O_WRONLY|O_CREAT|O_TRUNC, 0666).Steal();
 		if (fd < 0) {
 			const std::string utf8 = path.ToUTF8();
 			FormatFatalSystemError("Failed to create pid file \"%s\"",
@@ -90,14 +90,14 @@ gcc_pure
 static inline pid_t
 ReadPidFile(Path path) noexcept
 {
-	int fd = OpenFile(path, O_RDONLY, 0);
-	if (fd < 0)
+	auto fd = OpenFile(path, O_RDONLY, 0);
+	if (!fd.IsDefined())
 		return -1;
 
 	pid_t pid = -1;
 
 	char buffer[32];
-	auto nbytes = read(fd, buffer, sizeof(buffer) - 1);
+	auto nbytes = fd.Read(buffer, sizeof(buffer) - 1);
 	if (nbytes > 0) {
 		buffer[nbytes] = 0;
 
@@ -107,7 +107,6 @@ ReadPidFile(Path path) noexcept
 			pid = value;
 	}
 
-	close(fd);
 	return pid;
 }
 

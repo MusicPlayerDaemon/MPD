@@ -22,9 +22,8 @@
 
 #include "check.h"
 #include "Traits.hxx"
-#include "system/fd_util.h"
-
 #include "Path.hxx"
+#include "system/UniqueFileDescriptor.hxx"
 
 #ifdef WIN32
 #include <fileapi.h>
@@ -53,14 +52,12 @@ FOpen(Path file, PathTraitsFS::const_pointer_type mode)
 /**
  * Wrapper for open_cloexec() that uses #Path names.
  */
-static inline int
+static inline UniqueFileDescriptor
 OpenFile(Path file, int flags, int mode)
 {
-#ifdef WIN32
-	return _topen(file.c_str(), flags, mode);
-#else
-	return open_cloexec(file.c_str(), flags, mode);
-#endif
+	UniqueFileDescriptor fd;
+	fd.Open(file.c_str(), flags, mode);
+	return fd;
 }
 
 /*

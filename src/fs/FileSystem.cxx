@@ -22,6 +22,7 @@
 #include "AllocatedPath.hxx"
 #include "Limits.hxx"
 #include "system/Error.hxx"
+#include "system/fd_util.h"
 
 #include <errno.h>
 #include <fcntl.h>
