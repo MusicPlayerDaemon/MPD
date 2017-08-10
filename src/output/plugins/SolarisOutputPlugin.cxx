@@ -21,7 +21,7 @@
 #include "SolarisOutputPlugin.hxx"
 #include "../OutputAPI.hxx"
 #include "../Wrapper.hxx"
-#include "system/fd_util.h"
+#include "system/FileDescriptor.hxx"
 #include "system/Error.hxx"
 
 #include <sys/stropts.h>
@@ -58,7 +58,7 @@ class SolarisOutput {
 	/* configuration */
 	const char *const device;
 
-	int fd;
+	FileDescriptor fd;
 
 	explicit SolarisOutput(const ConfigBlock &block)
 		:base(solaris_output_plugin),
@@ -89,7 +89,7 @@ void
 SolarisOutput::Open(AudioFormat &audio_format)
 {
 	struct audio_info info;
-	int ret, flags;
+	int ret;
 
 	/* support only 16 bit mono/stereo for now; nothing else has
 	   been tested */
@@ -97,23 +97,20 @@ SolarisOutput::Open(AudioFormat &audio_format)
 
 	/* open the device in non-blocking mode */
 
-	fd = open_cloexec(device, O_WRONLY|O_NONBLOCK, 0);
-	if (fd < 0)
+	if (!fd.Open(device, O_WRONLY|O_NONBLOCK))
 		throw FormatErrno("Failed to open %s",
 				  device);
 
 	/* restore blocking mode */
 
-	flags = fcntl(fd, F_GETFL);
-	if (flags > 0 && (flags & O_NONBLOCK) != 0)
-		fcntl(fd, F_SETFL, flags & ~O_NONBLOCK);
+	fd.SetBlocking();
 
 	/* configure the audio device */
 
-	ret = ioctl(fd, AUDIO_GETINFO, &info);
+	ret = ioctl(fd.Get(), AUDIO_GETINFO, &info);
 	if (ret < 0) {
 		const int e = errno;
-		close(fd);
+		fd.Close();
 		throw MakeErrno(e, "AUDIO_GETINFO failed");
 	}
 
@@ -122,10 +119,10 @@ SolarisOutput::Open(AudioFormat &audio_format)
 	info.play.precision = 16;
 	info.play.encoding = AUDIO_ENCODING_LINEAR;
 
-	ret = ioctl(fd, AUDIO_SETINFO, &info);
+	ret = ioctl(fd.Get(), AUDIO_SETINFO, &info);
 	if (ret < 0) {
 		const int e = errno;
-		close(fd);
+		fd.Close();
 		throw MakeErrno(e, "AUDIO_SETINFO failed");
 	}
 }
@@ -133,13 +130,13 @@ SolarisOutput::Open(AudioFormat &audio_format)
 void
 SolarisOutput::Close()
 {
-	close(fd);
+	fd.Close();
 }
 
 size_t
 SolarisOutput::Play(const void *chunk, size_t size)
 {
-	ssize_t nbytes = write(fd, chunk, size);
+	ssize_t nbytes = fd.Write(chunk, size);
 	if (nbytes <= 0)
 		throw MakeErrno("Write failed");
 
@@ -149,7 +146,7 @@ SolarisOutput::Play(const void *chunk, size_t size)
 void
 SolarisOutput::Cancel()
 {
-	ioctl(fd, I_FLUSH);
+	ioctl(fd.Get(), I_FLUSH);
 }
 
 typedef AudioOutputWrapper<SolarisOutput> Wrapper;
