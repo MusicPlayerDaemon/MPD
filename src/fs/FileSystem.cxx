@@ -22,7 +22,6 @@
 #include "AllocatedPath.hxx"
 #include "Limits.hxx"
 #include "system/Error.hxx"
-#include "system/fd_util.h"
 
 #include <errno.h>
 #include <fcntl.h>
@@ -73,11 +72,9 @@ TruncateFile(Path path)
 
 	CloseHandle(h);
 #else
-	int fd = open_cloexec(path.c_str(), O_WRONLY|O_TRUNC, 0);
-	if (fd < 0)
+	UniqueFileDescriptor fd;
+	if (!fd.Open(path.c_str(), O_WRONLY|O_TRUNC))
 		throw FormatErrno("Failed to truncate %s", path.c_str());
-
-	close(fd);
 #endif
 }
 
