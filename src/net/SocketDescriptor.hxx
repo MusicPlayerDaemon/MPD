@@ -78,7 +78,9 @@ public:
 #endif
 
 	using FileDescriptor::IsDefined;
+#ifndef _WIN32
 	using FileDescriptor::IsValid;
+#endif
 	using FileDescriptor::Get;
 	using FileDescriptor::Set;
 	using FileDescriptor::Steal;
