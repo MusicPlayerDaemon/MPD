@@ -125,10 +125,12 @@ public:
 	 */
 	bool CreateNonBlock(int domain, int type, int protocol);
 
+#ifndef _WIN32
 	static bool CreateSocketPair(int domain, int type, int protocol,
 				     SocketDescriptor &a, SocketDescriptor &b);
 	static bool CreateSocketPairNonBlock(int domain, int type, int protocol,
 					     SocketDescriptor &a, SocketDescriptor &b);
+#endif
 
 	int GetError();
 
