@@ -181,6 +181,17 @@ SocketDescriptor::GetError()
 		: errno;
 }
 
+#ifdef _WIN32
+
+bool
+SocketDescriptor::SetNonBlocking() noexcept
+{
+	u_long val = 1;
+	return ioctlsocket(fd, FIONBIO, &val) == 0;
+}
+
+#endif
+
 bool
 SocketDescriptor::SetOption(int level, int name,
 			    const void *value, size_t size)
