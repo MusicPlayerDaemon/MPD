@@ -185,7 +185,8 @@ HttpdClient::SendResponse()
 	return true;
 }
 
-HttpdClient::HttpdClient(HttpdOutput &_httpd, int _fd, EventLoop &_loop,
+HttpdClient::HttpdClient(HttpdOutput &_httpd, SocketDescriptor _fd,
+			 EventLoop &_loop,
 			 bool _metadata_supported)
 	:BufferedSocket(_fd, _loop),
 	 httpd(_httpd),

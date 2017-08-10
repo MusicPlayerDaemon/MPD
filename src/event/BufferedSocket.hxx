@@ -38,7 +38,7 @@ class BufferedSocket : protected SocketMonitor {
 	StaticFifoBuffer<uint8_t, 8192> input;
 
 public:
-	BufferedSocket(int _fd, EventLoop &_loop)
+	BufferedSocket(SocketDescriptor _fd, EventLoop &_loop)
 		:SocketMonitor(_fd, _loop) {
 		ScheduleRead();
 	}

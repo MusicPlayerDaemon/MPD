@@ -57,9 +57,9 @@ MultiSocketMonitor::ReplaceSocketList(pollfd *pfds, unsigned n)
 {
 	pollfd *const end = pfds + n;
 
-	UpdateSocketList([pfds, end](int fd) -> unsigned {
+	UpdateSocketList([pfds, end](SocketDescriptor fd) -> unsigned {
 			auto i = std::find_if(pfds, end, [fd](const struct pollfd &pfd){
-					return pfd.fd == fd;
+					return pfd.fd == fd.Get();
 				});
 			if (i == end)
 				return 0;
@@ -71,7 +71,7 @@ MultiSocketMonitor::ReplaceSocketList(pollfd *pfds, unsigned n)
 
 	for (auto i = pfds; i != end; ++i)
 		if (i->events != 0)
-			AddSocket(i->fd, i->events);
+			AddSocket(SocketDescriptor(i->fd), i->events);
 }
 
 #endif

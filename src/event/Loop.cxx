@@ -29,7 +29,7 @@
 EventLoop::EventLoop()
 	:SocketMonitor(*this)
 {
-	SocketMonitor::Open(wake_fd.Get());
+	SocketMonitor::Open(SocketDescriptor(wake_fd.Get()));
 	SocketMonitor::Schedule(SocketMonitor::READ);
 }
 

@@ -413,7 +413,7 @@ NfsConnection::ScheduleSocket()
 			return;
 
 		_fd.EnableCloseOnExec();
-		SocketMonitor::Open(_fd.Get());
+		SocketMonitor::Open(_fd);
 	}
 
 	SocketMonitor::Schedule(libnfs_to_events(which_events)

@@ -22,6 +22,7 @@
 
 #include "check.h"
 #include "PollGroup.hxx"
+#include "net/SocketDescriptor.hxx"
 
 #include <type_traits>
 
@@ -52,7 +53,7 @@ class EventLoop;
  * as thread-safe.
  */
 class SocketMonitor {
-	int fd;
+	SocketDescriptor fd;
 	EventLoop &loop;
 
 	/**
@@ -71,7 +72,7 @@ public:
 	SocketMonitor(EventLoop &_loop)
 		:fd(-1), loop(_loop), scheduled_flags(0) {}
 
-	SocketMonitor(int _fd, EventLoop &_loop)
+	SocketMonitor(SocketDescriptor _fd, EventLoop &_loop)
 		:fd(_fd), loop(_loop), scheduled_flags(0) {}
 
 	~SocketMonitor();
@@ -81,22 +82,22 @@ public:
 	}
 
 	bool IsDefined() const {
-		return fd >= 0;
+		return fd.IsDefined();
 	}
 
-	int Get() const {
+	SocketDescriptor Get() const {
 		assert(IsDefined());
 
 		return fd;
 	}
 
-	void Open(int _fd);
+	void Open(SocketDescriptor _fd);
 
 	/**
 	 * "Steal" the socket descriptor.  This abandons the socket
 	 * and returns it.
 	 */
-	int Steal();
+	SocketDescriptor Steal();
 
 	/**
 	 * Somebody has closed the socket.  Unregister this object.

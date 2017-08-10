@@ -52,7 +52,7 @@ public:
 private:
 	void OnAccept(int fd, SocketAddress address, int uid) override {
 		client_new(GetEventLoop(), partition,
-			   fd, address, uid);
+			   SocketDescriptor(fd), address, uid);
 	}
 };
 

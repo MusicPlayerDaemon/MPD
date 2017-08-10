@@ -32,7 +32,7 @@ class FullyBufferedSocket : protected BufferedSocket, private IdleMonitor {
 	PeakBuffer output;
 
 public:
-	FullyBufferedSocket(int _fd, EventLoop &_loop,
+	FullyBufferedSocket(SocketDescriptor _fd, EventLoop &_loop,
 			    size_t normal_size, size_t peak_size=0)
 		:BufferedSocket(_fd, _loop), IdleMonitor(_loop),
 		 output(normal_size, peak_size) {

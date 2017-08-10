@@ -45,7 +45,7 @@ class CurlSocket final : SocketMonitor {
 	CurlGlobal &global;
 
 public:
-	CurlSocket(CurlGlobal &_global, EventLoop &_loop, int _fd)
+	CurlSocket(CurlGlobal &_global, EventLoop &_loop, SocketDescriptor _fd)
 		:SocketMonitor(_fd, _loop), global(_global) {}
 
 	~CurlSocket() {
@@ -120,7 +120,8 @@ CurlSocket::SocketFunction(gcc_unused CURL *easy,
 	}
 
 	if (cs == nullptr) {
-		cs = new CurlSocket(global, global.GetEventLoop(), s);
+		cs = new CurlSocket(global, global.GetEventLoop(),
+				    SocketDescriptor(s));
 		global.Assign(s, *cs);
 	} else {
 #ifdef USE_EPOLL
@@ -147,7 +148,7 @@ CurlSocket::OnSocketReady(unsigned flags)
 {
 	assert(GetEventLoop().IsInside());
 
-	global.SocketAction(Get(), FlagsToCurlCSelect(flags));
+	global.SocketAction(Get().Get(), FlagsToCurlCSelect(flags));
 	return true;
 }
 

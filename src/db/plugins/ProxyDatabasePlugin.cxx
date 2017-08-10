@@ -398,7 +398,7 @@ ProxyDatabase::Connect()
 	idle_received = unsigned(-1);
 	is_idle = false;
 
-	SocketMonitor::Open(mpd_async_get_fd(mpd_connection_get_async(connection)));
+	SocketMonitor::Open(SocketDescriptor(mpd_async_get_fd(mpd_connection_get_async(connection))));
 	IdleMonitor::Schedule();
 }
 

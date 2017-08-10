@@ -56,7 +56,7 @@ public:
 	SignalMonitor(EventLoop &_loop)
 		:SocketMonitor(_loop) {
 #ifndef USE_SIGNALFD
-		SocketMonitor::Open(fd.Get());
+		SocketMonitor::Open(SocketDescriptor(fd.Get()));
 		SocketMonitor::ScheduleRead();
 #endif
 	}
@@ -70,7 +70,7 @@ public:
 		fd.Create(mask);
 
 		if (!was_open) {
-			SocketMonitor::Open(fd.Get());
+			SocketMonitor::Open(SocketDescriptor(fd.Get()));
 			SocketMonitor::ScheduleRead();
 		}
 	}

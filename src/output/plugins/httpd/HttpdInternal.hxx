@@ -206,7 +206,7 @@ public:
 		return HasClients();
 	}
 
-	void AddClient(int fd);
+	void AddClient(SocketDescriptor fd);
 
 	/**
 	 * Removes a client from the httpd_output.clients linked list.

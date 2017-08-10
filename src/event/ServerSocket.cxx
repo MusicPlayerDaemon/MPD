@@ -108,7 +108,7 @@ public:
 		return ::ToString(address);
 	}
 
-	void SetFD(int _fd) noexcept {
+	void SetFD(SocketDescriptor _fd) noexcept {
 		SocketMonitor::Open(_fd);
 		SocketMonitor::ScheduleRead();
 	}
@@ -150,28 +150,23 @@ inline void
 OneServerSocket::Accept() noexcept
 {
 	StaticSocketAddress peer_address;
-	size_t peer_address_length = sizeof(peer_address);
-	int peer_fd =
-		accept_cloexec_nonblock(Get(), peer_address.GetAddress(),
-					&peer_address_length);
-	if (peer_fd < 0) {
+	auto peer_fd = Get().AcceptNonBlock(peer_address);
+	if (!peer_fd.IsDefined()) {
 		const SocketErrorMessage msg;
 		FormatError(server_socket_domain,
 			    "accept() failed: %s", (const char *)msg);
 		return;
 	}
 
-	peer_address.SetSize(peer_address_length);
-
-	if (socket_keepalive(peer_fd)) {
+	if (socket_keepalive(peer_fd.Get())) {
 		const SocketErrorMessage msg;
 		FormatError(server_socket_domain,
 			    "Could not set TCP keepalive option: %s",
 			    (const char *)msg);
 	}
 
-	parent.OnAccept(peer_fd, peer_address,
-			get_remote_uid(peer_fd));
+	parent.OnAccept(peer_fd.Get(), peer_address,
+			get_remote_uid(peer_fd.Get()));
 }
 
 bool
@@ -199,7 +194,7 @@ OneServerSocket::Open()
 
 	/* register in the EventLoop */
 
-	SetFD(_fd.Steal());
+	SetFD(_fd.Release());
 }
 
 ServerSocket::ServerSocket(EventLoop &_loop)
@@ -296,17 +291,15 @@ ServerSocket::AddAddress(AllocatedSocketAddress &&address)
 }
 
 void
-ServerSocket::AddFD(int fd)
+ServerSocket::AddFD(int _fd)
 {
-	assert(fd >= 0);
+	assert(_fd >= 0);
 
-	StaticSocketAddress address;
-	socklen_t address_length = sizeof(address);
-	if (getsockname(fd, address.GetAddress(),
-			&address_length) < 0)
+	SocketDescriptor fd(_fd);
+
+	StaticSocketAddress address = fd.GetLocalAddress();
+	if (!address.IsDefined())
 		throw MakeSocketError("Failed to get socket address");
-
-	address.SetSize(address_length);
 
 	OneServerSocket &s = AddAddress(address);
 	s.SetFD(fd);

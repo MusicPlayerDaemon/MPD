@@ -42,7 +42,7 @@
 static const char GREETING[] = "OK MPD " PROTOCOL_VERSION "\n";
 
 Client::Client(EventLoop &_loop, Partition &_partition,
-	       int _fd, int _uid, int _num)
+	       SocketDescriptor _fd, int _uid, int _num)
 	:FullyBufferedSocket(_fd, _loop, 16384, client_max_output_buffer_size),
 	 TimeoutMonitor(_loop),
 	 partition(&_partition),
@@ -57,12 +57,12 @@ Client::Client(EventLoop &_loop, Partition &_partition,
 
 void
 client_new(EventLoop &loop, Partition &partition,
-	   int fd, SocketAddress address, int uid)
+	   SocketDescriptor fd, SocketAddress address, int uid)
 {
 	static unsigned int next_client_num;
 	const auto remote = ToString(address);
 
-	assert(fd >= 0);
+	assert(fd.IsDefined());
 
 #ifdef HAVE_LIBWRAP
 	if (address.GetFamily() != AF_LOCAL) {
@@ -70,7 +70,7 @@ client_new(EventLoop &loop, Partition &partition,
 		const char *progname = "mpd";
 
 		struct request_info req;
-		request_init(&req, RQ_FILE, fd, RQ_DAEMON, progname, 0);
+		request_init(&req, RQ_FILE, fd.Get(), RQ_DAEMON, progname, 0);
 
 		fromhost(&req);
 
@@ -80,7 +80,7 @@ client_new(EventLoop &loop, Partition &partition,
 				      "libwrap refused connection (libwrap=%s) from %s",
 				      progname, remote.c_str());
 
-			close_socket(fd);
+			fd.Close();
 			return;
 		}
 	}
@@ -89,14 +89,14 @@ client_new(EventLoop &loop, Partition &partition,
 	ClientList &client_list = *partition.instance.client_list;
 	if (client_list.IsFull()) {
 		LogWarning(client_domain, "Max connections reached");
-		close_socket(fd);
+		fd.Close();
 		return;
 	}
 
 	Client *client = new Client(loop, partition, fd, uid,
 				    next_client_num++);
 
-	(void)send(fd, GREETING, sizeof(GREETING) - 1, 0);
+	(void)fd.Write(GREETING, sizeof(GREETING) - 1);
 
 	client_list.Add(*client);
 

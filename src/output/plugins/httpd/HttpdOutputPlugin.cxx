@@ -118,7 +118,7 @@ HttpdOutput::Unbind()
  * HttpdOutput.clients linked list.
  */
 inline void
-HttpdOutput::AddClient(int fd)
+HttpdOutput::AddClient(SocketDescriptor fd)
 {
 	auto *client = new HttpdClient(*this, fd, GetEventLoop(),
 				       !encoder->ImplementsTag());
@@ -184,7 +184,7 @@ HttpdOutput::OnAccept(int fd, SocketAddress address, gcc_unused int uid)
 
 	/* can we allow additional client */
 	if (open && (clients_max == 0 || clients.size() < clients_max))
-		AddClient(fd);
+		AddClient(SocketDescriptor(fd));
 	else
 		close_socket(fd);
 }

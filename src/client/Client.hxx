@@ -94,7 +94,7 @@ public:
 	std::list<ClientMessage> messages;
 
 	Client(EventLoop &loop, Partition &partition,
-	       int fd, int uid, int num);
+	       SocketDescriptor fd, int uid, int num);
 
 	~Client() {
 		if (FullyBufferedSocket::IsDefined())
@@ -236,7 +236,7 @@ client_manager_init();
 
 void
 client_new(EventLoop &loop, Partition &partition,
-	   int fd, SocketAddress address, int uid);
+	   SocketDescriptor fd, SocketAddress address, int uid);
 
 /**
  * Write a printf-like formatted string to the client.
