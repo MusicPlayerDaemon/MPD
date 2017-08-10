@@ -38,6 +38,7 @@
 #include <stddef.h>
 
 class SocketAddress;
+class UniqueSocketDescriptor;
 class EventLoop;
 class Path;
 struct Instance;
@@ -94,7 +95,7 @@ public:
 	std::list<ClientMessage> messages;
 
 	Client(EventLoop &loop, Partition &partition,
-	       SocketDescriptor fd, int uid, int num);
+	       UniqueSocketDescriptor &&fd, int uid, int num);
 
 	~Client() {
 		if (FullyBufferedSocket::IsDefined())
@@ -236,7 +237,7 @@ client_manager_init();
 
 void
 client_new(EventLoop &loop, Partition &partition,
-	   SocketDescriptor fd, SocketAddress address, int uid);
+	   UniqueSocketDescriptor &&fd, SocketAddress address, int uid);
 
 /**
  * Write a printf-like formatted string to the client.

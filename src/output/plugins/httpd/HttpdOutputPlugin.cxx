@@ -25,6 +25,7 @@
 #include "encoder/EncoderInterface.hxx"
 #include "encoder/EncoderPlugin.hxx"
 #include "encoder/EncoderList.hxx"
+#include "net/UniqueSocketDescriptor.hxx"
 #include "net/SocketAddress.hxx"
 #include "net/ToString.hxx"
 #include "Page.hxx"
@@ -118,9 +119,9 @@ HttpdOutput::Unbind()
  * HttpdOutput.clients linked list.
  */
 inline void
-HttpdOutput::AddClient(SocketDescriptor fd)
+HttpdOutput::AddClient(UniqueSocketDescriptor &&fd)
 {
-	auto *client = new HttpdClient(*this, fd, GetEventLoop(),
+	auto *client = new HttpdClient(*this, std::move(fd), GetEventLoop(),
 				       !encoder->ImplementsTag());
 	clients.push_front(*client);
 
@@ -151,7 +152,8 @@ HttpdOutput::RunDeferred()
 }
 
 void
-HttpdOutput::OnAccept(int fd, SocketAddress address, gcc_unused int uid)
+HttpdOutput::OnAccept(UniqueSocketDescriptor &&fd,
+		      SocketAddress address, gcc_unused int uid)
 {
 	/* the listener socket has become readable - a client has
 	   connected */
@@ -163,7 +165,7 @@ HttpdOutput::OnAccept(int fd, SocketAddress address, gcc_unused int uid)
 		const char *progname = "mpd";
 
 		struct request_info req;
-		request_init(&req, RQ_FILE, fd, RQ_DAEMON, progname, 0);
+		request_init(&req, RQ_FILE, fd.Get(), RQ_DAEMON, progname, 0);
 
 		fromhost(&req);
 
@@ -172,7 +174,6 @@ HttpdOutput::OnAccept(int fd, SocketAddress address, gcc_unused int uid)
 			FormatWarning(httpd_output_domain,
 				      "libwrap refused connection (libwrap=%s) from %s",
 				      progname, hostaddr.c_str());
-			close_socket(fd);
 			return;
 		}
 	}
@@ -184,9 +185,7 @@ HttpdOutput::OnAccept(int fd, SocketAddress address, gcc_unused int uid)
 
 	/* can we allow additional client */
 	if (open && (clients_max == 0 || clients.size() < clients_max))
-		AddClient(SocketDescriptor(fd));
-	else
-		close_socket(fd);
+		AddClient(std::move(fd));
 }
 
 PagePtr

@@ -150,7 +150,7 @@ inline void
 OneServerSocket::Accept() noexcept
 {
 	StaticSocketAddress peer_address;
-	auto peer_fd = Get().AcceptNonBlock(peer_address);
+	UniqueSocketDescriptor peer_fd(Get().AcceptNonBlock(peer_address));
 	if (!peer_fd.IsDefined()) {
 		const SocketErrorMessage msg;
 		FormatError(server_socket_domain,
@@ -165,7 +165,7 @@ OneServerSocket::Accept() noexcept
 			    (const char *)msg);
 	}
 
-	parent.OnAccept(peer_fd.Get(), peer_address,
+	parent.OnAccept(std::move(peer_fd), peer_address,
 			get_remote_uid(peer_fd.Get()));
 }
 

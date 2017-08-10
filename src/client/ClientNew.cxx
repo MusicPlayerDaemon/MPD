@@ -23,6 +23,7 @@
 #include "Partition.hxx"
 #include "Instance.hxx"
 #include "system/fd_util.h"
+#include "net/UniqueSocketDescriptor.hxx"
 #include "net/SocketAddress.hxx"
 #include "net/ToString.hxx"
 #include "Permission.hxx"
@@ -42,8 +43,9 @@
 static const char GREETING[] = "OK MPD " PROTOCOL_VERSION "\n";
 
 Client::Client(EventLoop &_loop, Partition &_partition,
-	       SocketDescriptor _fd, int _uid, int _num)
-	:FullyBufferedSocket(_fd, _loop, 16384, client_max_output_buffer_size),
+	       UniqueSocketDescriptor &&_fd, int _uid, int _num)
+	:FullyBufferedSocket(_fd.Release(), _loop,
+			     16384, client_max_output_buffer_size),
 	 TimeoutMonitor(_loop),
 	 partition(&_partition),
 	 permission(getDefaultPermissions()),
@@ -57,7 +59,7 @@ Client::Client(EventLoop &_loop, Partition &_partition,
 
 void
 client_new(EventLoop &loop, Partition &partition,
-	   SocketDescriptor fd, SocketAddress address, int uid)
+	   UniqueSocketDescriptor &&fd, SocketAddress address, int uid)
 {
 	static unsigned int next_client_num;
 	const auto remote = ToString(address);
@@ -80,7 +82,6 @@ client_new(EventLoop &loop, Partition &partition,
 				      "libwrap refused connection (libwrap=%s) from %s",
 				      progname, remote.c_str());
 
-			fd.Close();
 			return;
 		}
 	}
@@ -89,14 +90,13 @@ client_new(EventLoop &loop, Partition &partition,
 	ClientList &client_list = *partition.instance.client_list;
 	if (client_list.IsFull()) {
 		LogWarning(client_domain, "Max connections reached");
-		fd.Close();
 		return;
 	}
 
-	Client *client = new Client(loop, partition, fd, uid,
-				    next_client_num++);
-
 	(void)fd.Write(GREETING, sizeof(GREETING) - 1);
+
+	Client *client = new Client(loop, partition, std::move(fd), uid,
+				    next_client_num++);
 
 	client_list.Add(*client);
 

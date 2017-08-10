@@ -24,6 +24,7 @@
 
 class SocketAddress;
 class AllocatedSocketAddress;
+class UniqueSocketDescriptor;
 class EventLoop;
 class AllocatedPath;
 class OneServerSocket;
@@ -116,7 +117,8 @@ public:
 	void Close();
 
 protected:
-	virtual void OnAccept(int fd, SocketAddress address, int uid) = 0;
+	virtual void OnAccept(UniqueSocketDescriptor &&fd,
+			      SocketAddress address, int uid) = 0;
 };
 
 #endif

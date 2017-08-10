@@ -32,6 +32,7 @@
 
 #include <stddef.h>
 
+class UniqueSocketDescriptor;
 class HttpdOutput;
 
 class HttpdClient final
@@ -131,7 +132,8 @@ public:
 	 * @param httpd the HTTP output device
 	 * @param _fd the socket file descriptor
 	 */
-	HttpdClient(HttpdOutput &httpd, SocketDescriptor _fd, EventLoop &_loop,
+	HttpdClient(HttpdOutput &httpd, UniqueSocketDescriptor &&_fd,
+		    EventLoop &_loop,
 		    bool _metadata_supported);
 
 	/**

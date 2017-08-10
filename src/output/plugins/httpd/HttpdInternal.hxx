@@ -206,7 +206,7 @@ public:
 		return HasClients();
 	}
 
-	void AddClient(SocketDescriptor fd);
+	void AddClient(UniqueSocketDescriptor &&fd);
 
 	/**
 	 * Removes a client from the httpd_output.clients linked list.
@@ -257,7 +257,8 @@ public:
 private:
 	virtual void RunDeferred() override;
 
-	void OnAccept(int fd, SocketAddress address, int uid) override;
+	void OnAccept(UniqueSocketDescriptor &&fd,
+		      SocketAddress address, int uid) override;
 };
 
 extern const class Domain httpd_output_domain;
