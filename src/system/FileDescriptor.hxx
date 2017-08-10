@@ -180,6 +180,9 @@ public:
 
 	int WaitReadable(int timeout) const noexcept;
 	int WaitWritable(int timeout) const noexcept;
+
+	gcc_pure
+	bool IsReadyForWriting() const noexcept;
 #endif
 };
 

@@ -222,4 +222,10 @@ FileDescriptor::WaitWritable(int timeout) const noexcept
 	return Poll(POLLOUT, timeout);
 }
 
+bool
+FileDescriptor::IsReadyForWriting() const noexcept
+{
+	return WaitWritable(0) > 0;
+}
+
 #endif
