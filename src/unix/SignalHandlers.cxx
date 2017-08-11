@@ -26,7 +26,7 @@
 #include "Log.hxx"
 #include "LogInit.hxx"
 #include "event/Loop.hxx"
-#include "system/FatalError.hxx"
+#include "system/Error.hxx"
 #include "util/Domain.hxx"
 
 #include <signal.h>
@@ -44,7 +44,7 @@ static void
 x_sigaction(int signum, const struct sigaction *act)
 {
 	if (sigaction(signum, act, NULL) < 0)
-		FatalSystemError("sigaction() failed");
+		throw MakeErrno("sigaction() failed");
 }
 
 static void
