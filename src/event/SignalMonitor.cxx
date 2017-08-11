@@ -24,7 +24,7 @@
 
 #include "SocketMonitor.hxx"
 #include "util/Manual.hxx"
-#include "system/FatalError.hxx"
+#include "system/Error.hxx"
 
 #ifdef USE_SIGNALFD
 #include "system/SignalFD.hxx"
@@ -141,7 +141,7 @@ static void
 x_sigaction(int signum, const struct sigaction &act)
 {
 	if (sigaction(signum, &act, nullptr) < 0)
-		FatalSystemError("sigaction() failed");
+		throw MakeErrno("sigaction() failed");
 }
 
 #endif
@@ -184,7 +184,7 @@ SignalMonitorRegister(int signo, SignalHandler handler)
 	sigaddset(&signal_mask, signo);
 
 	if (sigprocmask(SIG_BLOCK, &signal_mask, nullptr) < 0)
-		FatalSystemError("sigprocmask() failed");
+		throw MakeErrno("sigprocmask() failed");
 
 	monitor->Update(signal_mask);
 #else
