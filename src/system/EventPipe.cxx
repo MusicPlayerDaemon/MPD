@@ -21,6 +21,7 @@
 #include "EventPipe.hxx"
 #include "system/fd_util.h"
 #include "system/FatalError.hxx"
+#include "util/ScopeExit.hxx"
 #include "Compiler.h"
 
 #include <assert.h>
@@ -107,6 +108,10 @@ static bool PoorSocketPair(int fd[2])
 	if (listen_socket == INVALID_SOCKET)
 		return false;
 
+	AtScopeExit(listen_socket) {
+		closesocket(listen_socket);
+	};
+
 	sockaddr_in address;
 	std::memset(&address, 0, sizeof(address));
 	address.sin_family = AF_INET;
@@ -116,31 +121,24 @@ static bool PoorSocketPair(int fd[2])
 		       reinterpret_cast<sockaddr*>(&address),
 		       sizeof(address));
 
-	if (ret < 0) {
-		SafeCloseSocket(listen_socket);
+	if (ret < 0)
 		return false;
-	}
 
 	ret = listen(listen_socket, 1);
 
-	if (ret < 0) {
-		SafeCloseSocket(listen_socket);
+	if (ret < 0)
 		return false;
-	}
 
 	int address_len = sizeof(address);
 	ret = getsockname(listen_socket,
 			  reinterpret_cast<sockaddr*>(&address),
 			  &address_len);
 
-	if (ret < 0) {
-		SafeCloseSocket(listen_socket);
+	if (ret < 0)
 		return false;
-	}
 
 	SOCKET socket0 = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (socket0 == INVALID_SOCKET) {
-		SafeCloseSocket(listen_socket);
 		return false;
 	}
 
@@ -149,19 +147,15 @@ static bool PoorSocketPair(int fd[2])
 		      sizeof(address));
 
 	if (ret < 0) {
-		SafeCloseSocket(listen_socket);
 		SafeCloseSocket(socket0);
 		return false;
 	}
 
 	SOCKET socket1 = accept(listen_socket, nullptr, nullptr);
 	if (socket1 == INVALID_SOCKET) {
-		SafeCloseSocket(listen_socket);
 		SafeCloseSocket(socket0);
 		return false;
 	}
-
-	SafeCloseSocket(listen_socket);
 
 	u_long non_block = 1;
 	if (ioctlsocket(socket0, FIONBIO, &non_block) < 0
