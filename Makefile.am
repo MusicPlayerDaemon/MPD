@@ -482,6 +482,7 @@ libnet_a_SOURCES = \
 	src/net/Resolver.cxx src/net/Resolver.hxx \
 	src/net/StaticSocketAddress.cxx src/net/StaticSocketAddress.hxx \
 	src/net/AllocatedSocketAddress.cxx src/net/AllocatedSocketAddress.hxx \
+	src/net/IPv4Address.cxx src/net/IPv4Address.hxx \
 	src/net/SocketAddress.cxx src/net/SocketAddress.hxx \
 	src/net/SocketUtil.cxx src/net/SocketUtil.hxx \
 	src/net/SocketDescriptor.cxx src/net/SocketDescriptor.hxx \

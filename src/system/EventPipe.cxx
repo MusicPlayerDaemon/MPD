@@ -28,9 +28,9 @@
 #include <unistd.h>
 
 #ifdef WIN32
-#include <ws2tcpip.h>
+#include "net/IPv4Address.hxx"
+
 #include <winsock2.h>
-#include <cstring> /* for memset() */
 #endif
 
 #ifdef WIN32
@@ -112,14 +112,10 @@ static bool PoorSocketPair(int fd[2])
 		closesocket(listen_socket);
 	};
 
-	sockaddr_in address;
-	std::memset(&address, 0, sizeof(address));
-	address.sin_family = AF_INET;
-	address.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+	IPv4Address address(IPv4Address::Loopback(), 0);
 
 	int ret = bind(listen_socket,
-		       reinterpret_cast<sockaddr*>(&address),
-		       sizeof(address));
+		       SocketAddress(address).GetAddress(), sizeof(address));
 
 	if (ret < 0)
 		return false;

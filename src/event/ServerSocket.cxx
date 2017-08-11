@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "ServerSocket.hxx"
+#include "net/IPv4Address.hxx"
 #include "net/StaticSocketAddress.hxx"
 #include "net/AllocatedSocketAddress.hxx"
 #include "net/SocketAddress.hxx"
@@ -48,7 +49,6 @@
 #include <ws2tcpip.h>
 #include <winsock.h>
 #else
-#include <netinet/in.h>
 #include <sys/socket.h>
 #include <netdb.h>
 #endif
@@ -310,13 +310,7 @@ ServerSocket::AddFD(int _fd)
 inline void
 ServerSocket::AddPortIPv4(unsigned port)
 {
-	struct sockaddr_in sin;
-	memset(&sin, 0, sizeof(sin));
-	sin.sin_port = htons(port);
-	sin.sin_family = AF_INET;
-	sin.sin_addr.s_addr = INADDR_ANY;
-
-	AddAddress({(const sockaddr *)&sin, sizeof(sin)});
+	AddAddress(IPv4Address(port));
 }
 
 #ifdef HAVE_IPV6
