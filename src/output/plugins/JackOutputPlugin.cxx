@@ -96,15 +96,6 @@ struct JackOutput final : AudioOutput {
 		shutdown = true;
 	}
 
-	void Enable() override;
-	void Disable() noexcept override;
-
-	void Open(AudioFormat &new_audio_format) override;
-
-	void Close() noexcept override {
-		Stop();
-	}
-
 	/**
 	 * Throws #std::runtime_error on error.
 	 */
@@ -124,6 +115,17 @@ struct JackOutput final : AudioOutput {
 	 * @return the number of frames that were written
 	 */
 	size_t WriteSamples(const float *src, size_t n_frames);
+
+	/* virtual methods from class AudioOutput */
+
+	void Enable() override;
+	void Disable() noexcept override;
+
+	void Open(AudioFormat &new_audio_format) override;
+
+	void Close() noexcept override {
+		Stop();
+	}
 
 	std::chrono::steady_clock::duration Delay() const noexcept override {
 		return pause && !shutdown
