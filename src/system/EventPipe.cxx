@@ -20,7 +20,7 @@
 #include "config.h"
 #include "EventPipe.hxx"
 #include "system/fd_util.h"
-#include "system/FatalError.hxx"
+#include "system/Error.hxx"
 #include "util/ScopeExit.hxx"
 #include "Compiler.h"
 
@@ -29,23 +29,23 @@
 
 #ifdef WIN32
 #include "net/IPv4Address.hxx"
+#include "net/SocketError.hxx"
 
 #include <winsock2.h>
 #endif
 
 #ifdef WIN32
-static bool PoorSocketPair(int fd[2]);
+static void PoorSocketPair(int fd[2]);
 #endif
 
 EventPipe::EventPipe()
 {
 #ifdef WIN32
-	bool success = PoorSocketPair(fds);
+	PoorSocketPair(fds);
 #else
-	bool success = pipe_cloexec_nonblock(fds) >= 0;
+	if (pipe_cloexec_nonblock(fds) < 0)
+		throw MakeErrno("pipe() has failed");
 #endif
-	if (!success)
-		FatalSystemError("pipe() has failed");
 }
 
 EventPipe::~EventPipe()
@@ -96,17 +96,18 @@ static void SafeCloseSocket(SOCKET s)
 }
 
 /* Our poor man's socketpair() implementation
- * Due to limited protocol/address family support and primitive error handling
+ * Due to limited protocol/address family support
  * it's better to keep this as a private implementation detail of EventPipe
  * rather than wide-available API.
  */
-static bool PoorSocketPair(int fd[2])
+static void
+PoorSocketPair(int fd[2])
 {
 	assert (fd != nullptr);
 
 	SOCKET listen_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (listen_socket == INVALID_SOCKET)
-		return false;
+		throw MakeSocketError("Failed to create socket");
 
 	AtScopeExit(listen_socket) {
 		closesocket(listen_socket);
@@ -116,27 +117,23 @@ static bool PoorSocketPair(int fd[2])
 
 	int ret = bind(listen_socket,
 		       SocketAddress(address).GetAddress(), sizeof(address));
-
 	if (ret < 0)
-		return false;
+		throw MakeSocketError("Failed to create socket");
 
 	ret = listen(listen_socket, 1);
-
 	if (ret < 0)
-		return false;
+		throw MakeSocketError("Failed to listen on socket");
 
 	int address_len = sizeof(address);
 	ret = getsockname(listen_socket,
 			  reinterpret_cast<sockaddr*>(&address),
 			  &address_len);
-
 	if (ret < 0)
-		return false;
+		throw MakeSocketError("Failed to obtain socket bind address");
 
 	SOCKET socket0 = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-	if (socket0 == INVALID_SOCKET) {
-		return false;
-	}
+	if (socket0 == INVALID_SOCKET)
+		throw MakeSocketError("Failed to create socket");
 
 	ret = connect(socket0,
 		      reinterpret_cast<sockaddr*>(&address),
@@ -144,13 +141,13 @@ static bool PoorSocketPair(int fd[2])
 
 	if (ret < 0) {
 		SafeCloseSocket(socket0);
-		return false;
+		throw MakeSocketError("Failed to connect socket");
 	}
 
 	SOCKET socket1 = accept(listen_socket, nullptr, nullptr);
 	if (socket1 == INVALID_SOCKET) {
 		SafeCloseSocket(socket0);
-		return false;
+		throw MakeSocketError("Failed to accept connection");
 	}
 
 	u_long non_block = 1;
@@ -158,13 +155,11 @@ static bool PoorSocketPair(int fd[2])
 	    || ioctlsocket(socket1, FIONBIO, &non_block) < 0) {
 		SafeCloseSocket(socket0);
 		SafeCloseSocket(socket1);
-		return false;
+		throw MakeSocketError("Failed to enable non-blocking mode on socket");
 	}
 
 	fd[0] = static_cast<int>(socket0);
 	fd[1] = static_cast<int>(socket1);
-
-	return true;
 }
 
 #endif
