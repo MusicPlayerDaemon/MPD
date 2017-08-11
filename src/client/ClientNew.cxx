@@ -39,7 +39,7 @@
 #include <tcpd.h>
 #endif
 
-static const char GREETING[] = "OK MPD " PROTOCOL_VERSION "\n";
+static constexpr char GREETING[] = "OK MPD " PROTOCOL_VERSION "\n";
 
 Client::Client(EventLoop &_loop, Partition &_partition,
 	       UniqueSocketDescriptor &&_fd, int _uid, int _num)
