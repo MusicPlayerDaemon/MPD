@@ -23,10 +23,10 @@
 #include "ParseName.hxx"
 #include "config/ConfigGlobal.hxx"
 #include "config/ConfigOption.hxx"
-#include "system/FatalError.hxx"
 #include "util/Alloc.hxx"
 #include "util/ASCII.hxx"
 #include "util/StringStrip.hxx"
+#include "util/RuntimeError.hxx"
 
 #include <stdlib.h>
 
@@ -57,8 +57,8 @@ TagLoadConfig()
 
 			const auto type = tag_name_parse_i(c);
 			if (type == TAG_NUM_OF_ITEM_TYPES)
-				FormatFatalError("error parsing metadata item \"%s\"",
-						 c);
+				throw FormatRuntimeError("error parsing metadata item \"%s\"",
+							 c);
 
 			global_tag_mask |= type;
 
