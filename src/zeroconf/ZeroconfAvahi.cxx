@@ -22,8 +22,8 @@
 #include "AvahiPoll.hxx"
 #include "ZeroconfInternal.hxx"
 #include "Listen.hxx"
-#include "system/FatalError.hxx"
 #include "util/Domain.hxx"
+#include "util/RuntimeError.hxx"
 #include "Log.hxx"
 
 #include <avahi-client/client.h>
@@ -240,7 +240,7 @@ AvahiInit(EventLoop &loop, const char *serviceName)
 	LogDebug(avahi_domain, "Initializing interface");
 
 	if (!avahi_is_valid_service_name(serviceName))
-		FormatFatalError("Invalid zeroconf_name \"%s\"", serviceName);
+		throw FormatRuntimeError("Invalid zeroconf_name \"%s\"", serviceName);
 
 	avahi_name = avahi_strdup(serviceName);
 
