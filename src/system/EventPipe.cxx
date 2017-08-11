@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "EventPipe.hxx"
-#include "system/fd_util.h"
+#include "FileDescriptor.hxx"
 #include "system/Error.hxx"
 #include "util/ScopeExit.hxx"
 #include "Compiler.h"
@@ -43,8 +43,12 @@ EventPipe::EventPipe()
 #ifdef WIN32
 	PoorSocketPair(fds);
 #else
-	if (pipe_cloexec_nonblock(fds) < 0)
+	FileDescriptor r, w;
+	if (!FileDescriptor::CreatePipeNonBlock(r, w))
 		throw MakeErrno("pipe() has failed");
+
+	fds[0] = r.Steal();
+	fds[1] = r.Steal();
 #endif
 }
 
