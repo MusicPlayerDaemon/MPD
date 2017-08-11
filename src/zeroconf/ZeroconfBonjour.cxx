@@ -37,7 +37,8 @@ class BonjourMonitor final : public SocketMonitor {
 
 public:
 	BonjourMonitor(EventLoop &_loop, DNSServiceRef _service_ref)
-		:SocketMonitor(DNSServiceRefSockFD(_service_ref), _loop),
+		:SocketMonitor(SocketDescriptor(DNSServiceRefSockFD(_service_ref)),
+			       _loop),
 		 service_ref(_service_ref) {
 		ScheduleRead();
 	}
