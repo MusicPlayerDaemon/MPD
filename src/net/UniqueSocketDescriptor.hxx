@@ -79,6 +79,13 @@ public:
 	/**
 	 * @return an "undefined" instance on error
 	 */
+	UniqueSocketDescriptor AcceptNonBlock() const {
+		return UniqueSocketDescriptor(SocketDescriptor::AcceptNonBlock());
+	}
+
+	/**
+	 * @return an "undefined" instance on error
+	 */
 	UniqueSocketDescriptor AcceptNonBlock(StaticSocketAddress &address) const {
 		return UniqueSocketDescriptor(SocketDescriptor::AcceptNonBlock(address));
 	}

@@ -173,6 +173,7 @@ public:
 	bool Listen(int backlog);
 
 	SocketDescriptor Accept();
+	SocketDescriptor AcceptNonBlock() const;
 	SocketDescriptor AcceptNonBlock(StaticSocketAddress &address) const;
 
 	bool Connect(SocketAddress address);

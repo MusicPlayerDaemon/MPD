@@ -69,6 +69,20 @@ SocketDescriptor::Accept()
 }
 
 SocketDescriptor
+SocketDescriptor::AcceptNonBlock() const
+{
+#ifdef HAVE_ACCEPT4
+	int connection_fd = ::accept4(Get(), nullptr, nullptr,
+				      SOCK_CLOEXEC|SOCK_NONBLOCK);
+#else
+	int connection_fd = ::accept(Get(), nullptr, nullptr);
+	if (connection_fd >= 0)
+		SocketDescriptor(connection_fd).SetNonBlocking();
+#endif
+	return SocketDescriptor(connection_fd);
+}
+
+SocketDescriptor
 SocketDescriptor::AcceptNonBlock(StaticSocketAddress &address) const
 {
 	address.SetMaxSize();
