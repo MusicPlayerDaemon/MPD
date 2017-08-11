@@ -90,9 +90,9 @@ struct JackOutput final : AudioOutput {
 	/**
 	 * Disconnect the JACK client.
 	 */
-	void Disconnect();
+	void Disconnect() noexcept;
 
-	void Shutdown() {
+	void Shutdown() noexcept {
 		shutdown = true;
 	}
 
@@ -100,7 +100,7 @@ struct JackOutput final : AudioOutput {
 	 * Throws #std::runtime_error on error.
 	 */
 	void Start();
-	void Stop();
+	void Stop() noexcept;
 
 	/**
 	 * Determine the number of frames guaranteed to be available
@@ -377,7 +377,7 @@ mpd_jack_info(const char *msg)
 #endif
 
 void
-JackOutput::Disconnect()
+JackOutput::Disconnect() noexcept
 {
 	assert(client != nullptr);
 
@@ -458,7 +458,7 @@ mpd_jack_init(EventLoop &, const ConfigBlock &block)
  * Stops the playback on the JACK connection.
  */
 void
-JackOutput::Stop()
+JackOutput::Stop() noexcept
 {
 	if (client == nullptr)
 		return;
