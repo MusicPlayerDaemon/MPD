@@ -115,6 +115,9 @@ public:
 	static bool CreatePipe(FileDescriptor &r, FileDescriptor &w) noexcept;
 
 #ifndef _WIN32
+	static bool CreatePipeNonBlock(FileDescriptor &r,
+				       FileDescriptor &w) noexcept;
+
 	/**
 	 * Enable non-blocking mode on this file descriptor.
 	 */

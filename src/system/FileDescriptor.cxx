@@ -125,6 +125,33 @@ FileDescriptor::CreatePipe(FileDescriptor &r, FileDescriptor &w) noexcept
 
 #ifndef _WIN32
 
+bool
+FileDescriptor::CreatePipeNonBlock(FileDescriptor &r,
+				   FileDescriptor &w) noexcept
+{
+	int fds[2];
+
+#ifdef HAVE_PIPE2
+	const int flags = O_CLOEXEC|O_NONBLOCK;
+	const int result = pipe2(fds, flags);
+#else
+	const int result = pipe(fds);
+#endif
+
+	if (result < 0)
+		return false;
+
+	r = FileDescriptor(fds[0]);
+	w = FileDescriptor(fds[1]);
+
+#ifndef HAVE_PIPE2
+	r.SetNonBlocking();
+	w.SetNonBlocking();
+#endif
+
+	return true;
+}
+
 void
 FileDescriptor::SetNonBlocking() noexcept
 {
