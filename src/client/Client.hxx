@@ -64,11 +64,11 @@ public:
 	const unsigned int num;	/* client number */
 
 	/** is this client waiting for an "idle" response? */
-	bool idle_waiting;
+	bool idle_waiting = false;
 
 	/** idle flags pending on this client, to be sent as soon as
 	    the client enters "idle" */
-	unsigned idle_flags;
+	unsigned idle_flags = 0;
 
 	/** idle flags that the client wants to receive */
 	unsigned idle_subscriptions;
@@ -87,7 +87,7 @@ public:
 	 * The number of subscriptions in #subscriptions.  Used to
 	 * limit the number of subscriptions.
 	 */
-	unsigned num_subscriptions;
+	unsigned num_subscriptions = 0;
 
 	/**
 	 * A list of messages this client has received.

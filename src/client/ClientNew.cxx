@@ -49,9 +49,7 @@ Client::Client(EventLoop &_loop, Partition &_partition,
 	 partition(&_partition),
 	 permission(getDefaultPermissions()),
 	 uid(_uid),
-	 num(_num),
-	 idle_waiting(false), idle_flags(0),
-	 num_subscriptions(0)
+	 num(_num)
 {
 	TimeoutMonitor::Schedule(client_timeout);
 }
