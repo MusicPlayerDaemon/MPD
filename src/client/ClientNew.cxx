@@ -22,7 +22,6 @@
 #include "ClientList.hxx"
 #include "Partition.hxx"
 #include "Instance.hxx"
-#include "system/fd_util.h"
 #include "net/UniqueSocketDescriptor.hxx"
 #include "net/SocketAddress.hxx"
 #include "net/ToString.hxx"

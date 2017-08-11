@@ -497,7 +497,6 @@ libsystem_a_SOURCES = \
 	src/system/FatalError.cxx src/system/FatalError.hxx \
 	src/system/FileDescriptor.cxx src/system/FileDescriptor.hxx \
 	src/system/UniqueFileDescriptor.hxx \
-	src/system/fd_util.c src/system/fd_util.h \
 	src/system/EventPipe.cxx src/system/EventPipe.hxx \
 	src/system/EventFD.cxx src/system/EventFD.hxx \
 	src/system/SignalFD.cxx src/system/SignalFD.hxx \

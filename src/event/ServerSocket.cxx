@@ -29,7 +29,6 @@
 #include "net/Resolver.hxx"
 #include "net/ToString.hxx"
 #include "event/SocketMonitor.hxx"
-#include "system/fd_util.h"
 #include "fs/AllocatedPath.hxx"
 #include "fs/FileSystem.hxx"
 #include "util/RuntimeError.hxx"

@@ -20,7 +20,6 @@
 #include "config.h"
 #include "SocketMonitor.hxx"
 #include "Loop.hxx"
-#include "system/fd_util.h"
 
 #include <assert.h>
 

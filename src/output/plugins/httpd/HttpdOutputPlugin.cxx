@@ -30,7 +30,6 @@
 #include "net/ToString.hxx"
 #include "Page.hxx"
 #include "IcyMetaDataServer.hxx"
-#include "system/fd_util.h"
 #include "event/Call.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/Domain.hxx"
