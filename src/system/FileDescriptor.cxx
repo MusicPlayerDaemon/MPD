@@ -99,6 +99,8 @@ FileDescriptor::OpenNonBlocking(const char *pathname) noexcept
 	return Open(pathname, O_RDWR | O_NONBLOCK);
 }
 
+#endif
+
 bool
 FileDescriptor::CreatePipe(FileDescriptor &r, FileDescriptor &w) noexcept
 {
@@ -107,6 +109,8 @@ FileDescriptor::CreatePipe(FileDescriptor &r, FileDescriptor &w) noexcept
 #ifdef HAVE_PIPE2
 	const int flags = O_CLOEXEC;
 	const int result = pipe2(fds, flags);
+#elif defined(_WIN32)
+	const int result = _pipe(fds, 512, _O_BINARY);
 #else
 	const int result = pipe(fds);
 #endif
@@ -118,6 +122,8 @@ FileDescriptor::CreatePipe(FileDescriptor &r, FileDescriptor &w) noexcept
 	w = FileDescriptor(fds[1]);
 	return true;
 }
+
+#ifndef _WIN32
 
 void
 FileDescriptor::SetNonBlocking() noexcept
