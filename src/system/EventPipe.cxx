@@ -29,9 +29,9 @@
 
 #ifdef WIN32
 #include "net/IPv4Address.hxx"
+#include "net/StaticSocketAddress.hxx"
+#include "net/UniqueSocketDescriptor.hxx"
 #include "net/SocketError.hxx"
-
-#include <winsock2.h>
 #endif
 
 #ifdef WIN32
@@ -88,13 +88,6 @@ EventPipe::Write()
 
 #ifdef WIN32
 
-static void SafeCloseSocket(SOCKET s)
-{
-	int error = WSAGetLastError();
-	closesocket(s);
-	WSASetLastError(error);
-}
-
 /* Our poor man's socketpair() implementation
  * Due to limited protocol/address family support
  * it's better to keep this as a private implementation detail of EventPipe
@@ -105,61 +98,29 @@ PoorSocketPair(int fd[2])
 {
 	assert (fd != nullptr);
 
-	SOCKET listen_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-	if (listen_socket == INVALID_SOCKET)
+	UniqueSocketDescriptor listen_socket;
+	if (!listen_socket.CreateNonBlock(AF_INET, SOCK_STREAM, IPPROTO_TCP))
 		throw MakeSocketError("Failed to create socket");
 
-	AtScopeExit(listen_socket) {
-		closesocket(listen_socket);
-	};
-
-	IPv4Address address(IPv4Address::Loopback(), 0);
-
-	int ret = bind(listen_socket,
-		       SocketAddress(address).GetAddress(), sizeof(address));
-	if (ret < 0)
+	if (!listen_socket.Bind(IPv4Address(IPv4Address::Loopback(), 0)))
 		throw MakeSocketError("Failed to create socket");
 
-	ret = listen(listen_socket, 1);
-	if (ret < 0)
+	if (!listen_socket.Listen(1))
 		throw MakeSocketError("Failed to listen on socket");
 
-	int address_len = sizeof(address);
-	ret = getsockname(listen_socket,
-			  reinterpret_cast<sockaddr*>(&address),
-			  &address_len);
-	if (ret < 0)
-		throw MakeSocketError("Failed to obtain socket bind address");
-
-	SOCKET socket0 = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-	if (socket0 == INVALID_SOCKET)
+	UniqueSocketDescriptor socket0;
+	if (!socket0.CreateNonBlock(AF_INET, SOCK_STREAM, IPPROTO_TCP))
 		throw MakeSocketError("Failed to create socket");
 
-	ret = connect(socket0,
-		      reinterpret_cast<sockaddr*>(&address),
-		      sizeof(address));
-
-	if (ret < 0) {
-		SafeCloseSocket(socket0);
+	if (!socket0.Connect(listen_socket.GetLocalAddress()))
 		throw MakeSocketError("Failed to connect socket");
-	}
 
-	SOCKET socket1 = accept(listen_socket, nullptr, nullptr);
-	if (socket1 == INVALID_SOCKET) {
-		SafeCloseSocket(socket0);
+	auto socket1 = listen_socket.AcceptNonBlock();
+	if (!socket1.IsDefined())
 		throw MakeSocketError("Failed to accept connection");
-	}
 
-	u_long non_block = 1;
-	if (ioctlsocket(socket0, FIONBIO, &non_block) < 0
-	    || ioctlsocket(socket1, FIONBIO, &non_block) < 0) {
-		SafeCloseSocket(socket0);
-		SafeCloseSocket(socket1);
-		throw MakeSocketError("Failed to enable non-blocking mode on socket");
-	}
-
-	fd[0] = static_cast<int>(socket0);
-	fd[1] = static_cast<int>(socket1);
+	fd[0] = socket0.Steal();
+	fd[1] = socket1.Steal();
 }
 
 #endif
