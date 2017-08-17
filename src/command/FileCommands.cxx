@@ -266,12 +266,12 @@ find_stream_art(const char *directory, Mutex &mutex, Cond &cond)
 static CommandResult
 read_stream_art(Response &r, const char *uri, size_t offset)
 {
-	const char *art_directory = PathTraitsUTF8::GetParent(uri).c_str();
+	std::string art_directory = PathTraitsUTF8::GetParent(uri);
 
 	Mutex mutex;
 	Cond cond;
 
-	InputStreamPtr is = find_stream_art(art_directory, mutex, cond);
+	InputStreamPtr is = find_stream_art(art_directory.c_str(), mutex, cond);
 
 	if (is == nullptr) {
 		r.Error(ACK_ERROR_NO_EXIST, "No file exists");
