@@ -48,7 +48,7 @@ EventPipe::EventPipe()
 		throw MakeErrno("pipe() has failed");
 
 	fds[0] = r.Steal();
-	fds[1] = r.Steal();
+	fds[1] = w.Steal();
 #endif
 }
 
