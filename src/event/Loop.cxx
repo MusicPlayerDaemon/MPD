@@ -27,8 +27,8 @@
 
 #include <algorithm>
 
-EventLoop::EventLoop()
-	:SocketMonitor(*this)
+EventLoop::EventLoop(ThreadId _thread)
+	:SocketMonitor(*this), thread(_thread)
 {
 	SocketMonitor::Open(SocketDescriptor(wake_fd.Get()));
 }
@@ -52,7 +52,7 @@ EventLoop::Break()
 bool
 EventLoop::Abandon(int _fd, SocketMonitor &m)
 {
-	assert(IsInsideOrVirgin());
+	assert(IsInside());
 
 	poll_result.Clear(&m);
 	return poll_group.Abandon(_fd);
@@ -61,7 +61,7 @@ EventLoop::Abandon(int _fd, SocketMonitor &m)
 bool
 EventLoop::RemoveFD(int _fd, SocketMonitor &m)
 {
-	assert(IsInsideOrNull());
+	assert(IsInside());
 
 	poll_result.Clear(&m);
 	return poll_group.Remove(_fd);
@@ -70,7 +70,7 @@ EventLoop::RemoveFD(int _fd, SocketMonitor &m)
 void
 EventLoop::AddIdle(IdleMonitor &i)
 {
-	assert(IsInsideOrVirgin());
+	assert(IsInside());
 	assert(std::find(idle.begin(), idle.end(), &i) == idle.end());
 
 	idle.push_back(&i);
@@ -80,7 +80,7 @@ EventLoop::AddIdle(IdleMonitor &i)
 void
 EventLoop::RemoveIdle(IdleMonitor &i)
 {
-	assert(IsInsideOrVirgin());
+	assert(IsInside());
 
 	auto it = std::find(idle.begin(), idle.end(), &i);
 	assert(it != idle.end());
@@ -91,9 +91,7 @@ EventLoop::RemoveIdle(IdleMonitor &i)
 void
 EventLoop::AddTimer(TimeoutMonitor &t, std::chrono::steady_clock::duration d)
 {
-	/* can't use IsInsideOrVirgin() here because libavahi-client
-	   modifies the timeout during avahi_client_free() */
-	assert(IsInsideOrNull());
+	assert(IsInside());
 
 	timers.insert(TimerRecord(t, now + d));
 	again = true;
@@ -102,7 +100,7 @@ EventLoop::AddTimer(TimeoutMonitor &t, std::chrono::steady_clock::duration d)
 void
 EventLoop::CancelTimer(TimeoutMonitor &t)
 {
-	assert(IsInsideOrNull());
+	assert(IsInside());
 
 	for (auto i = timers.begin(), end = timers.end(); i != end; ++i) {
 		if (&i->timer == &t) {
@@ -128,15 +126,10 @@ ExportTimeoutMS(std::chrono::steady_clock::duration timeout)
 void
 EventLoop::Run()
 {
-	assert(thread.IsNull());
-	assert(virgin);
+	if (thread.IsNull())
+		thread = ThreadId::GetCurrent();
 
-#ifndef NDEBUG
-	virgin = false;
-#endif
-
-	thread = ThreadId::GetCurrent();
-
+	assert(IsInside());
 	assert(!quit);
 	assert(busy);
 
@@ -226,8 +219,6 @@ EventLoop::Run()
 	assert(busy);
 	assert(thread.IsInside());
 #endif
-
-	thread = ThreadId::Null();
 }
 
 void

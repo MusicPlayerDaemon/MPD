@@ -34,7 +34,7 @@ class EventThread final {
 
 public:
 	EventThread()
-		:thread(BIND_THIS_METHOD(Run)) {}
+		:event_loop(ThreadId::Null()), thread(BIND_THIS_METHOD(Run)) {}
 
 	~EventThread() {
 		Stop();

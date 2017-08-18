@@ -62,7 +62,7 @@ UpdateService::~UpdateService()
 void
 UpdateService::CancelAllAsync()
 {
-	assert(GetEventLoop().IsInsideOrNull());
+	assert(GetEventLoop().IsInside());
 
 	queue.Clear();
 
@@ -144,7 +144,7 @@ UpdateService::Task()
 void
 UpdateService::StartThread(UpdateQueueItem &&i)
 {
-	assert(GetEventLoop().IsInsideOrNull());
+	assert(GetEventLoop().IsInside());
 	assert(walk == nullptr);
 
 	modified = false;
@@ -170,7 +170,7 @@ UpdateService::GenerateId()
 unsigned
 UpdateService::Enqueue(const char *path, bool discard)
 {
-	assert(GetEventLoop().IsInsideOrNull());
+	assert(GetEventLoop().IsInside());
 
 	/* determine which (mounted) database will be updated and what
 	   storage will be scanned */

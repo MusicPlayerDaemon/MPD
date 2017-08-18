@@ -34,7 +34,7 @@ MultiSocketMonitor::MultiSocketMonitor(EventLoop &_loop)
 void
 MultiSocketMonitor::Reset()
 {
-	assert(GetEventLoop().IsInsideOrNull());
+	assert(GetEventLoop().IsInside());
 
 	fds.clear();
 	IdleMonitor::Cancel();
@@ -45,7 +45,7 @@ MultiSocketMonitor::Reset()
 void
 MultiSocketMonitor::ClearSocketList()
 {
-	assert(GetEventLoop().IsInsideOrNull());
+	assert(GetEventLoop().IsInside());
 
 	fds.clear();
 }
