@@ -1766,6 +1766,7 @@ test_DumpDatabase_LDADD = \
 	$(TAG_LIBS) \
 	libconf.a \
 	libevent.a \
+	libthread.a \
 	$(FS_LIBS) \
 	libsystem.a \
 	$(ICU_LDADD) \

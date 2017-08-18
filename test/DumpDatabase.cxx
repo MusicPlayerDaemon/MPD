@@ -31,7 +31,7 @@
 #include "config/Block.hxx"
 #include "tag/Config.hxx"
 #include "fs/Path.hxx"
-#include "event/Loop.hxx"
+#include "event/Thread.hxx"
 #include "Log.hxx"
 #include "util/ScopeExit.hxx"
 
@@ -44,13 +44,20 @@ using std::endl;
 #include <stdlib.h>
 
 class GlobalInit {
+	EventThread io_thread;
+
 public:
 	GlobalInit() {
+		io_thread.Start();
 		config_global_init();
 	}
 
 	~GlobalInit() {
 		config_global_finish();
+	}
+
+	EventLoop &GetEventLoop() {
+		return io_thread.GetEventLoop();
 	}
 };
 
@@ -121,7 +128,6 @@ try {
 
 	TagLoadConfig();
 
-	EventLoop event_loop;
 	MyDatabaseListener database_listener;
 
 	/* do it */
@@ -131,7 +137,8 @@ try {
 	if (path != nullptr)
 		block.AddBlockParam("path", path->value.c_str(), path->line);
 
-	Database *db = plugin->create(event_loop, database_listener, block);
+	Database *db = plugin->create(init.GetEventLoop(),
+				      database_listener, block);
 
 	AtScopeExit(db) { delete db; };
 
