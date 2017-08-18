@@ -23,6 +23,7 @@
 #include "SocketMonitor.hxx"
 #include "IdleMonitor.hxx"
 #include "DeferredMonitor.hxx"
+#include "util/ScopeExit.hxx"
 
 #include <algorithm>
 
@@ -30,17 +31,12 @@ EventLoop::EventLoop()
 	:SocketMonitor(*this)
 {
 	SocketMonitor::Open(SocketDescriptor(wake_fd.Get()));
-	SocketMonitor::Schedule(SocketMonitor::READ);
 }
 
 EventLoop::~EventLoop()
 {
 	assert(idle.empty());
 	assert(timers.empty());
-
-	/* this is necessary to get a well-defined destruction
-	   order */
-	SocketMonitor::Cancel();
 }
 
 void
@@ -143,6 +139,9 @@ EventLoop::Run()
 
 	assert(!quit);
 	assert(busy);
+
+	SocketMonitor::Schedule(SocketMonitor::READ);
+	AtScopeExit(this) { SocketMonitor::Cancel(); };
 
 	do {
 		now = std::chrono::steady_clock::now();
