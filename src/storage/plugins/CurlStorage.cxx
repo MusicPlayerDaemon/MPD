@@ -23,6 +23,7 @@
 #include "storage/StorageInterface.hxx"
 #include "storage/FileInfo.hxx"
 #include "storage/MemoryDirectoryReader.hxx"
+#include "lib/curl/Init.hxx"
 #include "lib/curl/Global.hxx"
 #include "lib/curl/Slist.hxx"
 #include "lib/curl/Request.hxx"
@@ -49,16 +50,12 @@
 class CurlStorage final : public Storage {
 	const std::string base;
 
-	CurlGlobal *const curl;
+	CurlInit curl;
 
 public:
 	CurlStorage(EventLoop &_loop, const char *_base)
 		:base(_base),
-		 curl(new CurlGlobal(_loop)) {}
-
-	~CurlStorage() {
-		BlockingCall(curl->GetEventLoop(), [this](){ delete curl; });
-	}
+		 curl(_loop) {}
 
 	/* virtual methods from class Storage */
 	StorageFileInfo GetInfo(const char *uri_utf8, bool follow) override;

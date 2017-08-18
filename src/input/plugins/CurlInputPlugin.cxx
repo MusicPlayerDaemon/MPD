@@ -21,6 +21,7 @@
 #include "CurlInputPlugin.hxx"
 #include "lib/curl/Easy.hxx"
 #include "lib/curl/Global.hxx"
+#include "lib/curl/Init.hxx"
 #include "lib/curl/Request.hxx"
 #include "lib/curl/Handler.hxx"
 #include "lib/curl/Slist.hxx"
@@ -132,7 +133,7 @@ static unsigned proxy_port;
 
 static bool verify_peer, verify_host;
 
-static CurlGlobal *curl_global;
+static CurlInit *curl_init;
 
 static constexpr Domain curl_domain("curl");
 
@@ -165,7 +166,7 @@ CurlInputStream::FreeEasyIndirect()
 {
 	BlockingCall(GetEventLoop(), [this](){
 			FreeEasy();
-			curl_global->InvalidateSockets();
+			(*curl_init)->InvalidateSockets();
 		});
 }
 
@@ -286,9 +287,12 @@ CurlInputStream::OnError(std::exception_ptr e)
 static void
 input_curl_init(EventLoop &event_loop, const ConfigBlock &block)
 {
-	CURLcode code = curl_global_init(CURL_GLOBAL_ALL);
-	if (code != CURLE_OK)
-		throw PluginUnavailable(curl_easy_strerror(code));
+	try {
+		curl_init = new CurlInit(event_loop);
+	} catch (const std::runtime_error &e) {
+		LogError(e);
+		throw PluginUnavailable(e.what());
+	}
 
 	const auto version_info = curl_version_info(CURLVERSION_FIRST);
 	if (version_info != nullptr) {
@@ -316,28 +320,15 @@ input_curl_init(EventLoop &event_loop, const ConfigBlock &block)
 
 	verify_peer = block.GetBlockValue("verify_peer", true);
 	verify_host = block.GetBlockValue("verify_host", true);
-
-	try {
-		curl_global = new CurlGlobal(event_loop);
-	} catch (const std::runtime_error &e) {
-		LogError(e);
-		curl_slist_free_all(http_200_aliases);
-		curl_global_cleanup();
-		throw PluginUnavailable("curl_multi_init() failed");
-	}
 }
 
 static void
 input_curl_finish(void)
 {
-	BlockingCall(curl_global->GetEventLoop(), [](){
-			delete curl_global;
-		});
+	delete curl_init;
 
 	curl_slist_free_all(http_200_aliases);
 	http_200_aliases = nullptr;
-
-	curl_global_cleanup();
 }
 
 CurlInputStream::~CurlInputStream()
@@ -348,7 +339,7 @@ CurlInputStream::~CurlInputStream()
 void
 CurlInputStream::InitEasy()
 {
-	request = new CurlRequest(*curl_global, GetURI(), *this);
+	request = new CurlRequest(**curl_init, GetURI(), *this);
 
 	request->SetOption(CURLOPT_HTTP200ALIASES, http_200_aliases);
 	request->SetOption(CURLOPT_FOLLOWLOCATION, 1l);
@@ -425,7 +416,7 @@ CurlInputStream::DoSeek(offset_type new_offset)
 inline InputStream *
 CurlInputStream::Open(const char *url, Mutex &mutex, Cond &cond)
 {
-	CurlInputStream *c = new CurlInputStream(curl_global->GetEventLoop(),
+	CurlInputStream *c = new CurlInputStream((*curl_init)->GetEventLoop(),
 						 url, mutex, cond);
 
 	try {
