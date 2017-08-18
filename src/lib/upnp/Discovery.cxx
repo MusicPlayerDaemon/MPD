@@ -39,7 +39,7 @@ static bool
 isCDService(const char *st) noexcept
 {
 	constexpr size_t sz = sizeof(ContentDirectorySType) - 3;
-	return memcmp(ContentDirectorySType, st, sz) == 0;
+	return strncmp(ContentDirectorySType, st, sz) == 0;
 }
 
 // The type of device we're asking for in search
@@ -50,7 +50,7 @@ static bool
 isMSDevice(const char *st) noexcept
 {
 	constexpr size_t sz = sizeof(MediaServerDType) - 3;
-	return memcmp(MediaServerDType, st, sz) == 0;
+	return strncmp(MediaServerDType, st, sz) == 0;
 }
 
 static void
