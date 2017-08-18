@@ -29,6 +29,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+class GlobalInit {
+public:
+	GlobalInit() {
+		config_global_init();
+	}
+
+	~GlobalInit() {
+		config_global_finish();
+	}
+};
+
 class MyNeighborListener final : public NeighborListener {
  public:
 	/* virtual methods from class NeighborListener */
@@ -53,14 +64,14 @@ try {
 
 	const Path config_path = Path::FromFS(argv[1]);
 
-	/* read configuration file (mpd.conf) */
-
-	config_global_init();
-	ReadConfigFile(config_path);
-
 	/* initialize the core */
 
+	GlobalInit init;
 	EventLoop loop;
+
+	/* read configuration file (mpd.conf) */
+
+	ReadConfigFile(config_path);
 
 	/* initialize neighbor plugins */
 

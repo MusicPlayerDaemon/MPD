@@ -43,6 +43,17 @@ using std::endl;
 
 #include <stdlib.h>
 
+class GlobalInit {
+public:
+	GlobalInit() {
+		config_global_init();
+	}
+
+	~GlobalInit() {
+		config_global_finish();
+	}
+};
+
 #ifdef ENABLE_UPNP
 #include "input/InputStream.hxx"
 size_t
@@ -104,8 +115,7 @@ try {
 
 	/* initialize MPD */
 
-	config_global_init();
-	AtScopeExit() { config_global_finish(); };
+	GlobalInit init;
 
 	ReadConfigFile(config_path);
 
