@@ -1507,6 +1507,8 @@ liboutput_plugins_a_SOURCES += \
 	src/output/plugins/OSXOutputPlugin.cxx \
 	src/output/plugins/OSXOutputPlugin.hxx
 endif
+libmixer_plugins_a_SOURCES += \
+	src/mixer/plugins/OSXMixerPlugin.cxx
 
 if ENABLE_PULSE
 liboutput_plugins_a_SOURCES += \
