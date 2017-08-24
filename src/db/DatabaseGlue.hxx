@@ -35,7 +35,8 @@ class Database;
  * @param block the database configuration block
  */
 Database *
-DatabaseGlobalInit(EventLoop &loop, DatabaseListener &listener,
+DatabaseGlobalInit(EventLoop &main_event_loop,
+		   DatabaseListener &listener,
 		   const ConfigBlock &block);
 
 #endif

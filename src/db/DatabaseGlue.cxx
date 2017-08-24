@@ -26,7 +26,8 @@
 #include "DatabasePlugin.hxx"
 
 Database *
-DatabaseGlobalInit(EventLoop &loop, DatabaseListener &listener,
+DatabaseGlobalInit(EventLoop &main_event_loop,
+		   DatabaseListener &listener,
 		   const ConfigBlock &block)
 {
 	const char *plugin_name =
@@ -38,7 +39,7 @@ DatabaseGlobalInit(EventLoop &loop, DatabaseListener &listener,
 					 plugin_name);
 
 	try {
-		return plugin->create(loop, listener, block);
+		return plugin->create(main_event_loop, listener, block);
 	} catch (...) {
 		std::throw_with_nested(FormatRuntimeError("Failed to initialize database plugin '%s'",
 							  plugin_name));
