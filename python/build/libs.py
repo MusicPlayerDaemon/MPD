@@ -19,8 +19,8 @@ libvorbis = AutotoolsProject(
 )
 
 opus = AutotoolsProject(
-    'http://downloads.xiph.org/releases/opus/opus-1.1.4.tar.gz',
-    '9122b6b380081dd2665189f97bfd777f04f92dc3ab6698eea1dbb27ad59d8692',
+    'https://archive.mozilla.org/pub/opus/opus-1.2.1.tar.gz',
+    'cfafd339ccd9c5ef8d6ab15d7e1a412c054bf4cb4ecbbbcc78c12ef2def70732',
     'lib/libopus.a',
     ['--disable-shared', '--enable-static'],
 )
@@ -69,8 +69,8 @@ liblame = AutotoolsProject(
 )
 
 ffmpeg = FfmpegProject(
-    'http://ffmpeg.org/releases/ffmpeg-3.3.2.tar.xz',
-    '1998de1ab32616cbf2ff86efc3f1f26e76805ec5dc51e24c041c79edd8262785',
+    'http://ffmpeg.org/releases/ffmpeg-3.3.3.tar.xz',
+    'd2a9002cdc6b533b59728827186c044ad02ba64841f1b7cd6c21779875453a1e',
     'lib/libavcodec.a',
     [
         '--disable-shared', '--enable-static',
@@ -93,8 +93,8 @@ ffmpeg = FfmpegProject(
 )
 
 curl = AutotoolsProject(
-    'http://curl.haxx.se/download/curl-7.54.1.tar.lzma',
-    '2b7af34d4900887e0b4e0a9f545b9511ff774d07151ae4976485060d3e1bdb6e',
+    'http://curl.haxx.se/download/curl-7.55.1.tar.xz',
+    '3eafca6e84ecb4af5f35795dee84e643d5428287e88c041122bb8dac18676bb7',
     'lib/libcurl.a',
     [
         '--disable-shared', '--enable-static',
@@ -114,7 +114,7 @@ curl = AutotoolsProject(
 )
 
 boost = BoostProject(
-    'http://downloads.sourceforge.net/project/boost/boost/1.64.0/boost_1_64_0.tar.bz2',
-    '7bcc5caace97baa948931d712ea5f37038dbb1c5d89b43ad4def4ed7cb683332',
+    'http://downloads.sourceforge.net/project/boost/boost/1.65.0/boost_1_65_0.tar.bz2',
+    'ea26712742e2fb079c2a566a31f3266973b76e38222b9f88b387e3c8b2f9902c',
     'include/boost/version.hpp',
 )
