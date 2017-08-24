@@ -138,6 +138,7 @@ try {
 		block.AddBlockParam("path", path->value.c_str(), path->line);
 
 	Database *db = plugin->create(init.GetEventLoop(),
+				      init.GetEventLoop(),
 				      database_listener, block);
 
 	AtScopeExit(db) { delete db; };

@@ -36,6 +36,7 @@ class Database;
  */
 Database *
 DatabaseGlobalInit(EventLoop &main_event_loop,
+		   EventLoop &io_event_loop,
 		   DatabaseListener &listener,
 		   const ConfigBlock &block);
 

@@ -27,6 +27,7 @@
 
 Database *
 DatabaseGlobalInit(EventLoop &main_event_loop,
+		   EventLoop &io_event_loop,
 		   DatabaseListener &listener,
 		   const ConfigBlock &block)
 {
@@ -39,7 +40,8 @@ DatabaseGlobalInit(EventLoop &main_event_loop,
 					 plugin_name);
 
 	try {
-		return plugin->create(main_event_loop, listener, block);
+		return plugin->create(main_event_loop, io_event_loop,
+				      listener, block);
 	} catch (...) {
 		std::throw_with_nested(FormatRuntimeError("Failed to initialize database plugin '%s'",
 							  plugin_name));

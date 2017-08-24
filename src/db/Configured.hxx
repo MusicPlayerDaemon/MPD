@@ -34,7 +34,7 @@ class Database;
  * Throws #std::runtime_error on error.
  */
 Database *
-CreateConfiguredDatabase(EventLoop &main_event_loop,
+CreateConfiguredDatabase(EventLoop &main_event_loop, EventLoop &io_event_loop,
 			 DatabaseListener &listener);
 
 #endif

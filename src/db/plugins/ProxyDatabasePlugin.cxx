@@ -107,7 +107,9 @@ public:
 	ProxyDatabase(EventLoop &_loop, DatabaseListener &_listener,
 		      const ConfigBlock &block);
 
-	static Database *Create(EventLoop &loop, DatabaseListener &listener,
+	static Database *Create(EventLoop &main_event_loop,
+				EventLoop &io_event_loop,
+				DatabaseListener &listener,
 				const ConfigBlock &block);
 
 	void Open() override;
@@ -345,7 +347,8 @@ ProxyDatabase::ProxyDatabase(EventLoop &_loop, DatabaseListener &_listener,
 }
 
 Database *
-ProxyDatabase::Create(EventLoop &loop, DatabaseListener &listener,
+ProxyDatabase::Create(EventLoop &loop, EventLoop &,
+		      DatabaseListener &listener,
 		      const ConfigBlock &block)
 {
 	return new ProxyDatabase(loop, listener, block);

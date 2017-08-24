@@ -28,7 +28,7 @@
 #include "util/RuntimeError.hxx"
 
 Database *
-CreateConfiguredDatabase(EventLoop &main_event_loop,
+CreateConfiguredDatabase(EventLoop &main_event_loop, EventLoop &io_event_loop,
 			 DatabaseListener &listener)
 {
 	const auto *param = config_get_block(ConfigBlockOption::DATABASE);
@@ -39,12 +39,12 @@ CreateConfiguredDatabase(EventLoop &main_event_loop,
 					 param->line, path->line);
 
 	if (param != nullptr)
-		return DatabaseGlobalInit(main_event_loop,
+		return DatabaseGlobalInit(main_event_loop, io_event_loop,
 					  listener, *param);
 	else if (path != nullptr) {
 		ConfigBlock block(path->line);
 		block.AddBlockParam("path", path->value.c_str(), path->line);
-		return DatabaseGlobalInit(main_event_loop,
+		return DatabaseGlobalInit(main_event_loop, io_event_loop,
 					  listener, block);
 	} else {
 		/* if there is no override, use the cache directory */
@@ -61,7 +61,7 @@ CreateConfiguredDatabase(EventLoop &main_event_loop,
 
 		ConfigBlock block;
 		block.AddBlockParam("path", db_file_utf8.c_str(), -1);
-		return DatabaseGlobalInit(main_event_loop,
+		return DatabaseGlobalInit(main_event_loop, io_event_loop,
 					  listener, block);
 	}
 }

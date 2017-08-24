@@ -72,7 +72,9 @@ class SimpleDatabase : public Database {
 	SimpleDatabase(AllocatedPath &&_path, bool _compress);
 
 public:
-	static Database *Create(EventLoop &loop, DatabaseListener &listener,
+	static Database *Create(EventLoop &main_event_loop,
+				EventLoop &io_event_loop,
+				DatabaseListener &listener,
 				const ConfigBlock &block);
 
 	gcc_pure

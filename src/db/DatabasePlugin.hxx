@@ -49,8 +49,11 @@ struct DatabasePlugin {
 	 *
 	 * @param main_event_loop the #EventLoop running in the same
 	 * thread which invokes #Database methods
+	 * @param io_event_loop the #EventLoop running on the
+	 * #EventThread, i.e. the one used for background I/O
 	 */
 	Database *(*create)(EventLoop &main_event_loop,
+			    EventLoop &io_event_loop,
 			    DatabaseListener &listener,
 			    const ConfigBlock &block);
 

@@ -75,7 +75,9 @@ class UpnpDatabase : public Database {
 public:
 	UpnpDatabase():Database(upnp_db_plugin) {}
 
-	static Database *Create(EventLoop &loop, DatabaseListener &listener,
+	static Database *Create(EventLoop &main_event_loop,
+				EventLoop &io_event_loop,
+				DatabaseListener &listener,
 				const ConfigBlock &block);
 
 	void Open() override;
@@ -138,7 +140,7 @@ private:
 };
 
 Database *
-UpnpDatabase::Create(gcc_unused EventLoop &loop,
+UpnpDatabase::Create(EventLoop &, EventLoop &,
 		     gcc_unused DatabaseListener &listener,
 		     const ConfigBlock &)
 {
