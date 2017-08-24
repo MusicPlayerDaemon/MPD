@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright (C) 2013-2017 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -27,17 +27,15 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MPD_MANUAL_HXX
-#define MPD_MANUAL_HXX
-
-#include "Compiler.h"
+#ifndef MANUAL_HXX
+#define MANUAL_HXX
 
 #include <new>
 #include <utility>
 
 #include <assert.h>
 
-#if CLANG_OR_GCC_VERSION(4,7)
+#if defined(__GNUC__) || defined(__clang__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wstrict-aliasing"
 #endif
@@ -54,12 +52,11 @@ class Manual {
 	char data[sizeof(T)];
 
 #ifndef NDEBUG
-	bool initialized;
+	bool initialized = false;
 #endif
 
 public:
 #ifndef NDEBUG
-	Manual():initialized(false) {}
 	~Manual() {
 		assert(!initialized);
 	}
@@ -119,7 +116,7 @@ public:
 	}
 };
 
-#if CLANG_OR_GCC_VERSION(4,7)
+#if defined(__GNUC__) || defined(__clang__)
 #pragma GCC diagnostic pop
 #endif
 

@@ -25,11 +25,11 @@
 #include "encoder/EncoderInterface.hxx"
 #include "encoder/EncoderPlugin.hxx"
 #include "encoder/EncoderList.hxx"
+#include "net/UniqueSocketDescriptor.hxx"
 #include "net/SocketAddress.hxx"
 #include "net/ToString.hxx"
 #include "Page.hxx"
 #include "IcyMetaDataServer.hxx"
-#include "system/fd_util.h"
 #include "event/Call.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/Domain.hxx"
@@ -42,7 +42,7 @@
 #include <errno.h>
 
 #ifdef HAVE_LIBWRAP
-#include <sys/socket.h> /* needed for AF_UNIX */
+#include <sys/socket.h> /* needed for AF_LOCAL */
 #include <tcpd.h>
 #endif
 
@@ -50,8 +50,8 @@ const Domain httpd_output_domain("httpd_output");
 
 inline
 HttpdOutput::HttpdOutput(EventLoop &_loop, const ConfigBlock &block)
-	:ServerSocket(_loop), DeferredMonitor(_loop),
-	 base(httpd_output_plugin, block),
+	:AudioOutput(FLAG_ENABLE_DISABLE|FLAG_PAUSE),
+	 ServerSocket(_loop), DeferredMonitor(_loop),
 	 encoder(nullptr), unflushed_input(0),
 	 metadata(nullptr)
 {
@@ -113,20 +113,14 @@ HttpdOutput::Unbind()
 		});
 }
 
-HttpdOutput *
-HttpdOutput::Create(EventLoop &event_loop, const ConfigBlock &block)
-{
-	return new HttpdOutput(event_loop, block);
-}
-
 /**
  * Creates a new #HttpdClient object and adds it into the
  * HttpdOutput.clients linked list.
  */
 inline void
-HttpdOutput::AddClient(int fd)
+HttpdOutput::AddClient(UniqueSocketDescriptor &&fd)
 {
-	auto *client = new HttpdClient(*this, fd, GetEventLoop(),
+	auto *client = new HttpdClient(*this, std::move(fd), GetEventLoop(),
 				       !encoder->ImplementsTag());
 	clients.push_front(*client);
 
@@ -157,19 +151,20 @@ HttpdOutput::RunDeferred()
 }
 
 void
-HttpdOutput::OnAccept(int fd, SocketAddress address, gcc_unused int uid)
+HttpdOutput::OnAccept(UniqueSocketDescriptor &&fd,
+		      SocketAddress address, gcc_unused int uid)
 {
 	/* the listener socket has become readable - a client has
 	   connected */
 
 #ifdef HAVE_LIBWRAP
-	if (address.GetFamily() != AF_UNIX) {
+	if (address.GetFamily() != AF_LOCAL) {
 		const auto hostaddr = ToString(address);
 		// TODO: shall we obtain the program name from argv[0]?
 		const char *progname = "mpd";
 
 		struct request_info req;
-		request_init(&req, RQ_FILE, fd, RQ_DAEMON, progname, 0);
+		request_init(&req, RQ_FILE, fd.Get(), RQ_DAEMON, progname, 0);
 
 		fromhost(&req);
 
@@ -178,7 +173,6 @@ HttpdOutput::OnAccept(int fd, SocketAddress address, gcc_unused int uid)
 			FormatWarning(httpd_output_domain,
 				      "libwrap refused connection (libwrap=%s) from %s",
 				      progname, hostaddr.c_str());
-			close_socket(fd);
 			return;
 		}
 	}
@@ -188,15 +182,9 @@ HttpdOutput::OnAccept(int fd, SocketAddress address, gcc_unused int uid)
 
 	const std::lock_guard<Mutex> protect(mutex);
 
-	if (fd >= 0) {
-		/* can we allow additional client */
-		if (open && (clients_max == 0 || clients.size() < clients_max))
-			AddClient(fd);
-		else
-			close_socket(fd);
-	} else if (fd < 0 && errno != EINTR) {
-		LogErrno(httpd_output_domain, "accept() failed");
-	}
+	/* can we allow additional client */
+	if (open && (clients_max == 0 || clients.size() < clients_max))
+		AddClient(std::move(fd));
 }
 
 PagePtr
@@ -246,7 +234,7 @@ HttpdOutput::OpenEncoder(AudioFormat &audio_format)
 	unflushed_input = 0;
 }
 
-inline void
+void
 HttpdOutput::Open(AudioFormat &audio_format)
 {
 	assert(!open);
@@ -264,8 +252,8 @@ HttpdOutput::Open(AudioFormat &audio_format)
 	pause = false;
 }
 
-inline void
-HttpdOutput::Close()
+void
+HttpdOutput::Close() noexcept
 {
 	assert(open);
 
@@ -300,7 +288,7 @@ HttpdOutput::SendHeader(HttpdClient &client) const
 		client.PushPage(header);
 }
 
-inline std::chrono::steady_clock::duration
+std::chrono::steady_clock::duration
 HttpdOutput::Delay() const noexcept
 {
 	if (!LockHasClients() && pause) {
@@ -367,7 +355,7 @@ HttpdOutput::EncodeAndPlay(const void *chunk, size_t size)
 	BroadcastFromEncoder();
 }
 
-inline size_t
+size_t
 HttpdOutput::Play(const void *chunk, size_t size)
 {
 	pause = false;
@@ -383,7 +371,7 @@ HttpdOutput::Play(const void *chunk, size_t size)
 }
 
 bool
-HttpdOutput::Pause()
+HttpdOutput::Pause() noexcept
 {
 	pause = true;
 
@@ -395,7 +383,7 @@ HttpdOutput::Pause()
 	return true;
 }
 
-inline void
+void
 HttpdOutput::SendTag(const Tag &tag)
 {
 	if (encoder->ImplementsTag()) {
@@ -463,29 +451,16 @@ HttpdOutput::CancelAllClients()
 }
 
 void
-HttpdOutput::Cancel()
+HttpdOutput::Cancel() noexcept
 {
 	BlockingCall(GetEventLoop(), [this](){
 			CancelAllClients();
 		});
 }
 
-typedef AudioOutputWrapper<HttpdOutput> Wrapper;
-
 const struct AudioOutputPlugin httpd_output_plugin = {
 	"httpd",
 	nullptr,
-	&Wrapper::Init,
-	&Wrapper::Finish,
-	&Wrapper::Enable,
-	&Wrapper::Disable,
-	&Wrapper::Open,
-	&Wrapper::Close,
-	&Wrapper::Delay,
-	&Wrapper::SendTag,
-	&Wrapper::Play,
-	nullptr,
-	&Wrapper::Cancel,
-	&Wrapper::Pause,
+	&HttpdOutput::Create,
 	nullptr,
 };

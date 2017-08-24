@@ -30,7 +30,7 @@
 #include <string.h>
 
 AudioFormat
-AudioOutputSource::Open(AudioFormat audio_format, const MusicPipe &_pipe,
+AudioOutputSource::Open(const AudioFormat audio_format, const MusicPipe &_pipe,
 			PreparedFilter *prepared_replay_gain_filter,
 			PreparedFilter *prepared_other_replay_gain_filter,
 			PreparedFilter *prepared_filter)

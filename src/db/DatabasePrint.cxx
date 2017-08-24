@@ -34,6 +34,7 @@
 #include "PlaylistInfo.hxx"
 #include "Interface.hxx"
 #include "fs/Traits.hxx"
+#include "util/ChronoUtil.hxx"
 
 #include <functional>
 
@@ -65,7 +66,7 @@ PrintDirectoryFull(Response &r, bool base, const LightDirectory &directory)
 	if (!directory.IsRoot()) {
 		PrintDirectoryURI(r, base, directory);
 
-		if (directory.mtime > 0)
+		if (!IsNegative(directory.mtime))
 			time_print(r, "Last-Modified", directory.mtime);
 	}
 }
@@ -134,7 +135,7 @@ PrintPlaylistFull(Response &r, bool base,
 	print_playlist_in_directory(r, base,
 				    &directory, playlist.name.c_str());
 
-	if (playlist.mtime > 0)
+	if (!IsNegative(playlist.mtime))
 		time_print(r, "Last-Modified", playlist.mtime);
 }
 

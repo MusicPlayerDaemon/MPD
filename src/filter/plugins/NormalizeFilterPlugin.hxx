@@ -17,37 +17,14 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "config.h"
-#include "IOThread.hxx"
-#include "event/Thread.hxx"
+#ifndef MPD_NORMALIZE_FILTER_PLUGIN_HXX
+#define MPD_NORMALIZE_FILTER_PLUGIN_HXX
 
-#include <assert.h>
+class PreparedFilter;
+class Filter;
+struct AudioFormat;
 
-static EventThread *io_thread;
+PreparedFilter *
+normalize_filter_prepare() noexcept;
 
-void
-io_thread_init(void)
-{
-	assert(io_thread == nullptr);
-
-	io_thread = new EventThread();
-}
-
-void
-io_thread_start()
-{
-	assert(io_thread != nullptr);
-
-	io_thread->Start();
-}
-
-void
-io_thread_deinit(void)
-{
-	if (io_thread == nullptr)
-		return;
-
-	io_thread->Stop();
-	delete io_thread;
-	io_thread = nullptr;
-}
+#endif

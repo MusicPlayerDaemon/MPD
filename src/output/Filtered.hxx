@@ -17,34 +17,48 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_OUTPUT_INTERNAL_HXX
-#define MPD_OUTPUT_INTERNAL_HXX
+#ifndef MPD_FILTERED_AUDIO_OUTPUT_HXX
+#define MPD_FILTERED_AUDIO_OUTPUT_HXX
 
-#include "Source.hxx"
 #include "AudioFormat.hxx"
 #include "filter/Observer.hxx"
-#include "thread/Mutex.hxx"
+
+#include <memory>
+#include <string>
+#include <chrono>
 
 class PreparedFilter;
 class MusicPipe;
 class EventLoop;
 class Mixer;
 class MixerListener;
+struct MixerPlugin;
 struct MusicChunk;
 struct ConfigBlock;
-struct AudioOutputPlugin;
+class AudioOutput;
 struct ReplayGainConfig;
+struct Tag;
 
-struct AudioOutput {
+struct FilteredAudioOutput {
+	const char *const plugin_name;
+
 	/**
 	 * The device's configured display name.
 	 */
 	const char *name;
 
+private:
+	/**
+	 * A string describing this devicee in log messages.  It is
+	 * usually in the form "NAME (PLUGIN)".
+	 */
+	std::string log_name;
+
+public:
 	/**
 	 * The plugin which implements this output device.
 	 */
-	const AudioOutputPlugin &plugin;
+	std::unique_ptr<AudioOutput> output;
 
 	/**
 	 * The #mixer object associated with this audio output device.
@@ -52,22 +66,6 @@ struct AudioOutput {
 	 * configured.
 	 */
 	Mixer *mixer = nullptr;
-
-	/**
-	 * Is this device actually enabled, i.e. the "enable" method
-	 * has succeeded?
-	 */
-	bool really_enabled = false;
-
-	/**
-	 * Is the device (already) open and functional?
-	 *
-	 * This attribute may only be modified by the output thread.
-	 * It is protected with #mutex: write accesses inside the
-	 * output thread and read accesses outside of it may only be
-	 * performed while the lock is held.
-	 */
-	bool open = false;
 
 	/**
 	 * The configured audio format.
@@ -124,22 +122,13 @@ struct AudioOutput {
 	FilterObserver convert_filter;
 
 	/**
-	 * This mutex protects #open, #fail_timer, #pipe.
-	 */
-	mutable Mutex mutex;
-
-	/**
-	 * Source of audio data.
-	 */
-	AudioOutputSource source;
-
-	/**
 	 * Throws #std::runtime_error on error.
 	 */
-	AudioOutput(const AudioOutputPlugin &_plugin,
-		    const ConfigBlock &block);
+	FilteredAudioOutput(const char *_plugin_name,
+			    std::unique_ptr<AudioOutput> &&_output,
+			    const ConfigBlock &block);
 
-	~AudioOutput();
+	~FilteredAudioOutput();
 
 private:
 	void Configure(const ConfigBlock &block);
@@ -147,6 +136,7 @@ private:
 public:
 	void Setup(EventLoop &event_loop,
 		   const ReplayGainConfig &replay_gain_config,
+		   const MixerPlugin *mixer_plugin,
 		   MixerListener &mixer_listener,
 		   const ConfigBlock &block);
 
@@ -157,34 +147,21 @@ public:
 		return name;
 	}
 
-	/**
-	 * Caller must lock the mutex.
-	 */
-	bool IsOpen() const {
-		return open;
-	}
-
-	void SetReplayGainMode(ReplayGainMode _mode) noexcept {
-		source.SetReplayGainMode(_mode);
+	const char *GetLogName() const noexcept {
+		return log_name.c_str();
 	}
 
 	/**
-	 * Did we already consumed this chunk?
-	 *
-	 * Caller must lock the mutex.
+	 * Does the plugin support enabling/disabling a device?
 	 */
 	gcc_pure
-	bool IsChunkConsumed(const MusicChunk &chunk) const noexcept;
+	bool SupportsEnableDisable() const noexcept;
 
+	/**
+	 * Does the plugin support pausing a device?
+	 */
 	gcc_pure
-	bool LockIsChunkConsumed(const MusicChunk &chunk) noexcept {
-		const std::lock_guard<Mutex> protect(mutex);
-		return IsChunkConsumed(chunk);
-	}
-
-	void ClearTailChunk(const MusicChunk &chunk) {
-		source.ClearTailChunk(chunk);
-	}
+	bool SupportsPause() const noexcept;
 
 	/**
 	 * Throws #std::runtime_error on error.
@@ -194,13 +171,14 @@ public:
 	void Disable() noexcept;
 
 	/**
-	 * Throws #std::runtime_error on error.
+	 * Invoke OutputPlugin::close().
+	 *
+	 * Caller must not lock the mutex.
 	 */
-	void Open(AudioFormat audio_format, const MusicPipe &pipe);
-
 	void Close(bool drain) noexcept;
 
-private:
+	void ConfigureConvertFilter();
+
 	/**
 	 * Invoke OutputPlugin::open() and configure the
 	 * #ConvertFilter.
@@ -221,9 +199,23 @@ private:
 	/**
 	 * Mutex must not be locked.
 	 */
-	void CloseFilter() noexcept;
+	void OpenSoftwareMixer() noexcept;
 
-public:
+	/**
+	 * Mutex must not be locked.
+	 */
+	void CloseSoftwareMixer() noexcept;
+
+	gcc_pure
+	std::chrono::steady_clock::duration Delay() noexcept;
+
+	void SendTag(const Tag &tag);
+
+	size_t Play(const void *data, size_t size);
+
+	void Drain();
+	void Cancel() noexcept;
+
 	void BeginPause() noexcept;
 	bool IteratePause() noexcept;
 
@@ -240,13 +232,10 @@ extern struct notify audio_output_client_notify;
 /**
  * Throws #std::runtime_error on error.
  */
-AudioOutput *
+FilteredAudioOutput *
 audio_output_new(EventLoop &event_loop,
 		 const ReplayGainConfig &replay_gain_config,
 		 const ConfigBlock &block,
 		 MixerListener &mixer_listener);
-
-void
-audio_output_free(AudioOutput *ao) noexcept;
 
 #endif

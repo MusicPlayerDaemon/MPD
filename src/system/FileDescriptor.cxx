@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2015 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright (C) 2012-2017 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -57,12 +57,33 @@
 #define O_CLOEXEC 0
 #endif
 
+#ifndef _WIN32
+
+bool
+FileDescriptor::IsValid() const noexcept
+{
+	return IsDefined() && fcntl(fd, F_GETFL) >= 0;
+}
+
+#endif
+
 bool
 FileDescriptor::Open(const char *pathname, int flags, mode_t mode) noexcept
 {
 	fd = ::open(pathname, flags | O_NOCTTY | O_CLOEXEC, mode);
 	return IsDefined();
 }
+
+#ifdef _WIN32
+
+bool
+FileDescriptor::Open(const wchar_t *pathname, int flags, mode_t mode) noexcept
+{
+	fd = ::_wopen(pathname, flags | O_NOCTTY | O_CLOEXEC, mode);
+	return IsDefined();
+}
+
+#endif
 
 bool
 FileDescriptor::OpenReadOnly(const char *pathname) noexcept
@@ -78,6 +99,8 @@ FileDescriptor::OpenNonBlocking(const char *pathname) noexcept
 	return Open(pathname, O_RDWR | O_NONBLOCK);
 }
 
+#endif
+
 bool
 FileDescriptor::CreatePipe(FileDescriptor &r, FileDescriptor &w) noexcept
 {
@@ -85,6 +108,31 @@ FileDescriptor::CreatePipe(FileDescriptor &r, FileDescriptor &w) noexcept
 
 #ifdef HAVE_PIPE2
 	const int flags = O_CLOEXEC;
+	const int result = pipe2(fds, flags);
+#elif defined(_WIN32)
+	const int result = _pipe(fds, 512, _O_BINARY);
+#else
+	const int result = pipe(fds);
+#endif
+
+	if (result < 0)
+		return false;
+
+	r = FileDescriptor(fds[0]);
+	w = FileDescriptor(fds[1]);
+	return true;
+}
+
+#ifndef _WIN32
+
+bool
+FileDescriptor::CreatePipeNonBlock(FileDescriptor &r,
+				   FileDescriptor &w) noexcept
+{
+	int fds[2];
+
+#ifdef HAVE_PIPE2
+	const int flags = O_CLOEXEC|O_NONBLOCK;
 	const int result = pipe2(fds, flags);
 #else
 	const int result = pipe(fds);
@@ -95,6 +143,12 @@ FileDescriptor::CreatePipe(FileDescriptor &r, FileDescriptor &w) noexcept
 
 	r = FileDescriptor(fds[0]);
 	w = FileDescriptor(fds[1]);
+
+#ifndef HAVE_PIPE2
+	r.SetNonBlocking();
+	w.SetNonBlocking();
+#endif
+
 	return true;
 }
 
@@ -114,6 +168,24 @@ FileDescriptor::SetBlocking() noexcept
 
 	int flags = fcntl(fd, F_GETFL);
 	fcntl(fd, F_SETFL, flags & ~O_NONBLOCK);
+}
+
+void
+FileDescriptor::EnableCloseOnExec() noexcept
+{
+	assert(IsDefined());
+
+	const int old_flags = fcntl(fd, F_GETFD, 0);
+	fcntl(fd, F_SETFD, old_flags | FD_CLOEXEC);
+}
+
+void
+FileDescriptor::DisableCloseOnExec() noexcept
+{
+	assert(IsDefined());
+
+	const int old_flags = fcntl(fd, F_GETFD, 0);
+	fcntl(fd, F_SETFD, old_flags & ~FD_CLOEXEC);
 }
 
 #endif
@@ -210,6 +282,12 @@ int
 FileDescriptor::WaitWritable(int timeout) const noexcept
 {
 	return Poll(POLLOUT, timeout);
+}
+
+bool
+FileDescriptor::IsReadyForWriting() const noexcept
+{
+	return WaitWritable(0) > 0;
 }
 
 #endif

@@ -32,13 +32,6 @@ SignalFD::Create(const sigset_t &mask)
 		FatalSystemError("signalfd() failed");
 }
 
-void
-SignalFD::Close()
-{
-	if (fd.IsDefined())
-		fd.Close();
-}
-
 int
 SignalFD::Read()
 {

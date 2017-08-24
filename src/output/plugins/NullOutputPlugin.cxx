@@ -20,43 +20,41 @@
 #include "config.h"
 #include "NullOutputPlugin.hxx"
 #include "../OutputAPI.hxx"
-#include "../Wrapper.hxx"
 #include "../Timer.hxx"
 
-class NullOutput {
-	friend struct AudioOutputWrapper<NullOutput>;
-
-	AudioOutput base;
-
+class NullOutput final  : AudioOutput {
 	const bool sync;
 
 	Timer *timer;
 
 public:
 	NullOutput(const ConfigBlock &block)
-		:base(null_output_plugin, block),
+		:AudioOutput(0),
 		 sync(block.GetBlockValue("sync", true)) {}
 
-	static NullOutput *Create(EventLoop &event_loop,
-				  const ConfigBlock &block);
+	static AudioOutput *Create(EventLoop &,
+				   const ConfigBlock &block) {
+		return new NullOutput(block);
+	}
 
-	void Open(AudioFormat &audio_format) {
+private:
+	void Open(AudioFormat &audio_format) override {
 		if (sync)
 			timer = new Timer(audio_format);
 	}
 
-	void Close() {
+	void Close() noexcept override {
 		if (sync)
 			delete timer;
 	}
 
-	std::chrono::steady_clock::duration Delay() const noexcept {
+	std::chrono::steady_clock::duration Delay() const noexcept override {
 		return sync && timer->IsStarted()
 			? timer->GetDelay()
 			: std::chrono::steady_clock::duration::zero();
 	}
 
-	size_t Play(gcc_unused const void *chunk, size_t size) {
+	size_t Play(gcc_unused const void *chunk, size_t size) override {
 		if (sync) {
 			if (!timer->IsStarted())
 				timer->Start();
@@ -66,34 +64,15 @@ public:
 		return size;
 	}
 
-	void Cancel() {
+	void Cancel() noexcept override {
 		if (sync)
 			timer->Reset();
 	}
 };
 
-inline NullOutput *
-NullOutput::Create(EventLoop &, const ConfigBlock &block)
-{
-	return new NullOutput(block);
-}
-
-typedef AudioOutputWrapper<NullOutput> Wrapper;
-
 const struct AudioOutputPlugin null_output_plugin = {
 	"null",
 	nullptr,
-	&Wrapper::Init,
-	&Wrapper::Finish,
-	nullptr,
-	nullptr,
-	&Wrapper::Open,
-	&Wrapper::Close,
-	&Wrapper::Delay,
-	nullptr,
-	&Wrapper::Play,
-	nullptr,
-	&Wrapper::Cancel,
-	nullptr,
+	&NullOutput::Create,
 	nullptr,
 };

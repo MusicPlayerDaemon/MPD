@@ -22,7 +22,7 @@
 #include "Lease.hxx"
 #include "Callback.hxx"
 #include "event/Loop.hxx"
-#include "system/fd_util.h"
+#include "net/SocketDescriptor.hxx"
 #include "util/RuntimeError.hxx"
 
 extern "C" {
@@ -408,11 +408,11 @@ NfsConnection::ScheduleSocket()
 		SocketMonitor::Steal();
 
 	if (!SocketMonitor::IsDefined()) {
-		int _fd = nfs_get_fd(context);
-		if (_fd < 0)
+		SocketDescriptor _fd(nfs_get_fd(context));
+		if (!_fd.IsDefined())
 			return;
 
-		fd_set_cloexec(_fd, true);
+		_fd.EnableCloseOnExec();
 		SocketMonitor::Open(_fd);
 	}
 

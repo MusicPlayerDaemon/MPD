@@ -22,8 +22,8 @@
 #include "../PlaylistPlugin.hxx"
 #include "../SongEnumerator.hxx"
 #include "DetachedSong.hxx"
-#include "util/StringUtil.hxx"
 #include "input/TextInputStream.hxx"
+#include "util/StringStrip.hxx"
 
 class M3uPlaylist final : public SongEnumerator {
 	TextInputStream tis;

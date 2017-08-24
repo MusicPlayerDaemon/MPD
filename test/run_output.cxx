@@ -7,7 +7,7 @@
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will  useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -18,23 +18,23 @@
  */
 
 #include "config.h"
-#include "output/Internal.hxx"
+#include "output/Interface.hxx"
+#include "output/Registry.hxx"
 #include "output/OutputPlugin.hxx"
 #include "config/Param.hxx"
 #include "config/ConfigGlobal.hxx"
 #include "config/ConfigOption.hxx"
-#include "Idle.hxx"
-#include "Main.hxx"
+#include "config/Block.hxx"
 #include "event/Thread.hxx"
 #include "fs/Path.hxx"
 #include "AudioParser.hxx"
-#include "ReplayGainConfig.hxx"
 #include "pcm/PcmConvert.hxx"
-#include "filter/FilterRegistry.hxx"
 #include "util/StringBuffer.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/ScopeExit.hxx"
 #include "Log.hxx"
+
+#include <memory>
 
 #include <assert.h>
 #include <string.h>
@@ -42,24 +42,26 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-const FilterPlugin *
-filter_plugin_by_name(gcc_unused const char *name) noexcept
-{
-	assert(false);
-	return NULL;
-}
-
-static AudioOutput *
+static std::unique_ptr<AudioOutput>
 load_audio_output(EventLoop &event_loop, const char *name)
 {
-	const auto *param = config_find_block(ConfigBlockOption::AUDIO_OUTPUT,
+	const auto *block = config_find_block(ConfigBlockOption::AUDIO_OUTPUT,
 					      "name", name);
-	if (param == NULL)
-		throw FormatRuntimeError("No such configured audio output: %s\n",
+	if (block == nullptr)
+		throw FormatRuntimeError("No such configured audio output: %s",
 					 name);
 
-	return audio_output_new(event_loop, ReplayGainConfig(), *param,
-				*(MixerListener *)nullptr);
+	const char *plugin_name = block->GetBlockValue("type");
+	if (plugin_name == nullptr)
+		throw std::runtime_error("Missing \"type\" configuration");
+
+	const auto *plugin = AudioOutputPlugin_get(plugin_name);
+	if (plugin == nullptr)
+		throw FormatRuntimeError("No such audio output plugin: %s",
+					 plugin_name);
+
+	return std::unique_ptr<AudioOutput>(ao_plugin_init(event_loop, *plugin,
+							   *block));
 }
 
 static void
@@ -67,11 +69,11 @@ run_output(AudioOutput &ao, AudioFormat audio_format)
 {
 	/* open the audio output */
 
-	ao_plugin_enable(ao);
-	AtScopeExit(&ao) { ao_plugin_disable(ao); };
+	ao.Enable();
+	AtScopeExit(&ao) { ao.Disable(); };
 
-	ao_plugin_open(ao, audio_format);
-	AtScopeExit(&ao) { ao_plugin_close(ao); };
+	ao.Open(audio_format);
+	AtScopeExit(&ao) { ao.Close(); };
 
 	fprintf(stderr, "audio_format=%s\n",
 		ToString(audio_format).c_str());
@@ -94,8 +96,7 @@ run_output(AudioOutput &ao, AudioFormat audio_format)
 
 		size_t play_length = (length / frame_size) * frame_size;
 		if (play_length > 0) {
-			size_t consumed = ao_plugin_play(ao,
-							 buffer, play_length);
+			size_t consumed = ao.Play(buffer, play_length);
 
 			assert(consumed <= length);
 			assert(consumed % frame_size == 0);
@@ -127,7 +128,7 @@ try {
 
 	/* initialize the audio output */
 
-	AudioOutput *ao = load_audio_output(io_thread.GetEventLoop(), argv[2]);
+	auto ao = load_audio_output(io_thread.GetEventLoop(), argv[2]);
 
 	/* parse the audio format */
 
@@ -140,7 +141,7 @@ try {
 
 	/* cleanup and exit */
 
-	audio_output_free(ao);
+	ao.reset();
 
 	config_global_finish();
 

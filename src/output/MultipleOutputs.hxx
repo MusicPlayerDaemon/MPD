@@ -42,7 +42,6 @@ class EventLoop;
 class MixerListener;
 class AudioOutputClient;
 struct MusicChunk;
-struct AudioOutput;
 struct ReplayGainConfig;
 
 class MultipleOutputs {

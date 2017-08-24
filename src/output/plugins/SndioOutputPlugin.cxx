@@ -20,7 +20,6 @@
 #include "config.h"
 #include "SndioOutputPlugin.hxx"
 #include "../OutputAPI.hxx"
-#include "../Wrapper.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
 
@@ -45,9 +44,7 @@ static constexpr unsigned MPD_SNDIO_BUFFER_TIME_MS = 250;
 
 static constexpr Domain sndio_output_domain("sndio_output");
 
-class SndioOutput {
-	friend struct AudioOutputWrapper<SndioOutput>;
-	AudioOutput base;
+class SndioOutput final : AudioOutput {
 	const char *const device;
 	const unsigned buffer_time; /* in ms */
 	struct sio_hdl *sio_hdl;
@@ -55,27 +52,23 @@ class SndioOutput {
 public:
 	SndioOutput(const ConfigBlock &block);
 
-	static SndioOutput *Create(EventLoop &event_loop,
-				   const ConfigBlock &block);
+	static AudioOutput *Create(EventLoop &,
+				   const ConfigBlock &block) {
+		return new SndioOutput(block);
+	}
 
-	void Open(AudioFormat &audio_format);
-	void Close();
-	size_t Play(const void *chunk, size_t size);
-	void Cancel();
+private:
+	void Open(AudioFormat &audio_format) override;
+	void Close() noexcept override;
+	size_t Play(const void *chunk, size_t size) override;
 };
 
 SndioOutput::SndioOutput(const ConfigBlock &block)
-	:base(sndio_output_plugin, block),
+	:AudioOutput(0),
 	 device(block.GetBlockValue("device", SIO_DEVANY)),
 	 buffer_time(block.GetBlockValue("buffer_time",
 					 MPD_SNDIO_BUFFER_TIME_MS))
 {
-}
-
-SndioOutput *
-SndioOutput::Create(EventLoop &, const ConfigBlock &block)
-{
-	return new SndioOutput(block);
 }
 
 static bool
@@ -154,7 +147,7 @@ SndioOutput::Open(AudioFormat &audio_format)
 }
 
 void
-SndioOutput::Close()
+SndioOutput::Close()  noexcept
 {
 	sio_close(sio_hdl);
 }
@@ -170,22 +163,9 @@ SndioOutput::Play(const void *chunk, size_t size)
 	return n;
 }
 
-typedef AudioOutputWrapper<SndioOutput> Wrapper;
-
 const struct AudioOutputPlugin sndio_output_plugin = {
 	"sndio",
 	sndio_test_default_device,
-	&Wrapper::Init,
-	&Wrapper::Finish,
-	nullptr,
-	nullptr,
-	&Wrapper::Open,
-	&Wrapper::Close,
-	nullptr,
-	nullptr,
-	&Wrapper::Play,
-	nullptr,
-	nullptr,
-	nullptr,
+	&SndioOutput::Create,
 	nullptr,
 };

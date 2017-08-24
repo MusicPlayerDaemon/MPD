@@ -36,8 +36,11 @@
 #include "fs/AllocatedPath.hxx"
 #include "fs/FileInfo.hxx"
 #include "fs/DirectoryReader.hxx"
+#include "input/InputStream.hxx"
 #include "LocateUri.hxx"
 #include "TimePrint.hxx"
+#include "thread/Mutex.hxx"
+#include "thread/Cond.hxx"
 
 #include <assert.h>
 #include <inttypes.h> /* for PRIu64 */
@@ -233,3 +236,114 @@ handle_read_comments(Client &client, Request args, Response &r)
 
 	gcc_unreachable();
 }
+
+/**
+ * Searches for the files listed in #artnames in the UTF8 folder
+ * URI #directory. This can be a local path or protocol-based
+ * URI that #InputStream supports. Returns the first successfully
+ * opened file or #nullptr on failure.
+ */
+static InputStreamPtr
+find_stream_art(const char *directory, Mutex &mutex, Cond &cond)
+{
+	static constexpr char const * art_names[] = {
+		"cover.png",
+		"cover.jpg",
+		"cover.tiff",
+		"cover.bmp"
+	};
+
+	for(const auto name: art_names) {
+		std::string art_file = PathTraitsUTF8::Build(directory, name);
+
+		try {
+			return InputStream::OpenReady(art_file.c_str(), mutex, cond);
+		} catch (const std::exception &e) {}
+	}
+	return nullptr;
+}
+
+static CommandResult
+read_stream_art(Response &r, const char *uri, size_t offset)
+{
+	std::string art_directory = PathTraitsUTF8::GetParent(uri);
+
+	Mutex mutex;
+	Cond cond;
+
+	InputStreamPtr is = find_stream_art(art_directory.c_str(), mutex, cond);
+
+	if (is == nullptr) {
+		r.Error(ACK_ERROR_NO_EXIST, "No file exists");
+		return CommandResult::ERROR;
+	}
+	if (!is->KnownSize()) {
+		r.Error(ACK_ERROR_NO_EXIST, "Cannot get size for stream");
+		return CommandResult::ERROR;
+	}
+
+	const size_t art_file_size = is->GetSize();
+
+	constexpr size_t CHUNK_SIZE = 8192;
+	uint8_t buffer[CHUNK_SIZE];
+	size_t read_size;
+
+	is->Seek(offset);
+	read_size = is->Read(&buffer, CHUNK_SIZE);
+
+	r.Format("size: %" PRIu64 "\n"
+			 "binary: %u\n",
+			 art_file_size,
+			 read_size
+			 );
+
+	r.Write(buffer, read_size);
+	r.Write("\n");
+
+	return CommandResult::OK;
+}
+
+#ifdef ENABLE_DATABASE
+static CommandResult
+read_db_art(Client &client, Response &r, const char *uri, const uint64_t offset)
+{
+	const Storage *storage = client.GetStorage();
+	if (storage == nullptr) {
+		r.Error(ACK_ERROR_NO_EXIST, "No database");
+		return CommandResult::ERROR;
+	}
+	std::string uri2 = storage->MapUTF8(uri);
+	return read_stream_art(r, uri2.c_str(), offset);
+}
+#endif
+
+CommandResult
+handle_album_art(Client &client, Request args, Response &r)
+{
+	assert(args.size == 2);
+
+	const char *uri = args.front();
+	size_t offset = args.ParseUnsigned(1);
+
+	const auto located_uri = LocateUri(uri, &client
+#ifdef ENABLE_DATABASE
+					   , nullptr
+#endif
+					   );
+
+	switch (located_uri.type) {
+	case LocatedUri::Type::ABSOLUTE:
+	case LocatedUri::Type::PATH:
+		return read_stream_art(r, located_uri.canonical_uri, offset);
+	case LocatedUri::Type::RELATIVE:
+#ifdef ENABLE_DATABASE
+		return read_db_art(client, r, located_uri.canonical_uri, offset);
+#else
+		r.Error(ACK_ERROR_NO_EXIST, "Database disabled");
+		return CommandResult::ERROR;
+#endif
+	}
+	r.Error(ACK_ERROR_NO_EXIST, "No art file exists");
+	return CommandResult::ERROR;
+}
+

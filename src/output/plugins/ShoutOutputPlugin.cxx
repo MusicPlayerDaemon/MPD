@@ -20,7 +20,6 @@
 #include "config.h"
 #include "ShoutOutputPlugin.hxx"
 #include "../OutputAPI.hxx"
-#include "../Wrapper.hxx"
 #include "encoder/EncoderInterface.hxx"
 #include "encoder/EncoderPlugin.hxx"
 #include "encoder/EncoderList.hxx"
@@ -39,9 +38,7 @@
 
 static constexpr unsigned DEFAULT_CONN_TIMEOUT = 2;
 
-struct ShoutOutput final {
-	AudioOutput base;
-
+struct ShoutOutput final : AudioOutput {
 	shout_t *shout_conn;
 	shout_metadata_t *shout_meta;
 
@@ -58,17 +55,20 @@ struct ShoutOutput final {
 	explicit ShoutOutput(const ConfigBlock &block);
 	~ShoutOutput();
 
-	static ShoutOutput *Create(EventLoop &event_loop,
+	static AudioOutput *Create(EventLoop &event_loop,
 				   const ConfigBlock &block);
 
-	void Open(AudioFormat &audio_format);
-	void Close();
+	void Open(AudioFormat &audio_format) override;
+	void Close() noexcept override;
 
-	std::chrono::steady_clock::duration Delay() const noexcept;
-	void SendTag(const Tag &tag);
-	size_t Play(const void *chunk, size_t size);
-	void Cancel();
-	bool Pause();
+	std::chrono::steady_clock::duration Delay() const noexcept override;
+	void SendTag(const Tag &tag) override;
+	size_t Play(const void *chunk, size_t size) override;
+	void Cancel() noexcept override;
+	bool Pause() noexcept override;
+
+private:
+	void WritePage();
 };
 
 static int shout_init_count;
@@ -97,14 +97,24 @@ shout_encoder_plugin_get(const char *name)
 	return encoder_plugin_get(name);
 }
 
+static void
+ShoutSetAudioInfo(shout_t *shout_conn, const AudioFormat &audio_format)
+{
+	char temp[11];
+
+	snprintf(temp, sizeof(temp), "%u", audio_format.channels);
+	shout_set_audio_info(shout_conn, SHOUT_AI_CHANNELS, temp);
+
+	snprintf(temp, sizeof(temp), "%u", audio_format.sample_rate);
+	shout_set_audio_info(shout_conn, SHOUT_AI_SAMPLERATE, temp);
+}
+
 ShoutOutput::ShoutOutput(const ConfigBlock &block)
-	:base(shout_output_plugin, block),
+	:AudioOutput(FLAG_PAUSE),
 	 shout_conn(shout_new()),
 	 shout_meta(shout_metadata_new())
 {
-	const AudioFormat audio_format = base.config_audio_format;
-	if (!audio_format.IsFullyDefined())
-		throw std::runtime_error("Need full audio format specification");
+	NeedFullyDefinedAudioFormat();
 
 	const char *host = require_block_string(block, "host");
 	const char *mount = require_block_string(block, "mount");
@@ -211,14 +221,6 @@ ShoutOutput::ShoutOutput(const ConfigBlock &block)
 
 	{
 		char temp[11];
-
-		snprintf(temp, sizeof(temp), "%u", audio_format.channels);
-		shout_set_audio_info(shout_conn, SHOUT_AI_CHANNELS, temp);
-
-		snprintf(temp, sizeof(temp), "%u", audio_format.sample_rate);
-
-		shout_set_audio_info(shout_conn, SHOUT_AI_SAMPLERATE, temp);
-
 		if (quality >= -1.0) {
 			snprintf(temp, sizeof(temp), "%2.2f", quality);
 			shout_set_audio_info(shout_conn, SHOUT_AI_QUALITY,
@@ -245,7 +247,7 @@ ShoutOutput::~ShoutOutput()
 	delete prepared_encoder;
 }
 
-ShoutOutput *
+AudioOutput *
 ShoutOutput::Create(EventLoop &, const ConfigBlock &block)
 {
 	if (shout_init_count == 0)
@@ -257,7 +259,7 @@ ShoutOutput::Create(EventLoop &, const ConfigBlock &block)
 }
 
 static void
-handle_shout_error(ShoutOutput *sd, int err)
+HandleShoutError(shout_t *shout_conn, int err)
 {
 	switch (err) {
 	case SHOUTERR_SUCCESS:
@@ -266,49 +268,51 @@ handle_shout_error(ShoutOutput *sd, int err)
 	case SHOUTERR_UNCONNECTED:
 	case SHOUTERR_SOCKET:
 		throw FormatRuntimeError("Lost shout connection to %s:%i: %s",
-					 shout_get_host(sd->shout_conn),
-					 shout_get_port(sd->shout_conn),
-					 shout_get_error(sd->shout_conn));
+					 shout_get_host(shout_conn),
+					 shout_get_port(shout_conn),
+					 shout_get_error(shout_conn));
 
 	default:
 		throw FormatRuntimeError("connection to %s:%i error: %s",
-					 shout_get_host(sd->shout_conn),
-					 shout_get_port(sd->shout_conn),
-					 shout_get_error(sd->shout_conn));
+					 shout_get_host(shout_conn),
+					 shout_get_port(shout_conn),
+					 shout_get_error(shout_conn));
 	}
 }
 
-static bool
-write_page(ShoutOutput *sd)
+static void
+EncoderToShout(shout_t *shout_conn, Encoder &encoder,
+	       unsigned char *buffer, size_t buffer_size)
 {
-	assert(sd->encoder != nullptr);
-
 	while (true) {
-		size_t nbytes = sd->encoder->Read(sd->buffer,
-						  sizeof(sd->buffer));
+		size_t nbytes = encoder.Read(buffer, buffer_size);
 		if (nbytes == 0)
-			return true;
+			return;
 
-		int err = shout_send(sd->shout_conn, sd->buffer, nbytes);
-		handle_shout_error(sd, err);
+		int err = shout_send(shout_conn, buffer, nbytes);
+		HandleShoutError(shout_conn, err);
 	}
-
-	return true;
 }
 
 void
-ShoutOutput::Close()
+ShoutOutput::WritePage()
 {
-	if (encoder != nullptr) {
-		try {
-			encoder->End();
-			write_page(this);
-		} catch (const std::runtime_error &) {
-			/* ignore */
-		}
+	assert(encoder != nullptr);
 
-		delete encoder;
+	EncoderToShout(shout_conn, *encoder, buffer, sizeof(buffer));
+}
+
+void
+ShoutOutput::Close() noexcept
+{
+	try {
+		encoder->End();
+		WritePage();
+	} catch (const std::runtime_error &) {
+		/* ignore */
 	}
+
+	delete encoder;
 
 	if (shout_get_connected(shout_conn) != SHOUTERR_UNCONNECTED &&
 	    shout_close(shout_conn) != SHOUTERR_SUCCESS) {
@@ -319,43 +323,38 @@ ShoutOutput::Close()
 }
 
 void
-ShoutOutput::Cancel()
+ShoutOutput::Cancel() noexcept
 {
 	/* needs to be implemented for shout */
 }
 
 static void
-shout_connect(ShoutOutput *sd)
+ShoutOpen(shout_t *shout_conn)
 {
-	switch (shout_open(sd->shout_conn)) {
+	switch (shout_open(shout_conn)) {
 	case SHOUTERR_SUCCESS:
 	case SHOUTERR_CONNECTED:
 		break;
 
 	default:
 		throw FormatRuntimeError("problem opening connection to shout server %s:%i: %s",
-					 shout_get_host(sd->shout_conn),
-					 shout_get_port(sd->shout_conn),
-					 shout_get_error(sd->shout_conn));
+					 shout_get_host(shout_conn),
+					 shout_get_port(shout_conn),
+					 shout_get_error(shout_conn));
 	}
 }
 
 void
 ShoutOutput::Open(AudioFormat &audio_format)
 {
-	shout_connect(this);
+	encoder = prepared_encoder->Open(audio_format);
 
 	try {
-		encoder = prepared_encoder->Open(audio_format);
-
-		try {
-			write_page(this);
-		} catch (const std::runtime_error &) {
-			delete encoder;
-			throw;
-		}
-	} catch (const std::runtime_error &) {
-		shout_close(shout_conn);
+		ShoutSetAudioInfo(shout_conn, audio_format);
+		ShoutOpen(shout_conn);
+		WritePage();
+	} catch (...) {
+		delete encoder;
 		throw;
 	}
 }
@@ -374,18 +373,18 @@ size_t
 ShoutOutput::Play(const void *chunk, size_t size)
 {
 	encoder->Write(chunk, size);
-	write_page(this);
+	WritePage();
 	return size;
 }
 
 bool
-ShoutOutput::Pause()
+ShoutOutput::Pause() noexcept
 {
 	static char silence[1020];
 
 	try {
 		encoder->Write(silence, sizeof(silence));
-		write_page(this);
+		WritePage();
 	} catch (const std::runtime_error &) {
 		return false;
 	}
@@ -426,7 +425,7 @@ ShoutOutput::SendTag(const Tag &tag)
 		/* encoder plugin supports stream tags */
 
 		encoder->PreTag();
-		write_page(this);
+		WritePage();
 		encoder->SendTag(tag);
 	} else {
 		/* no stream tag support: fall back to icy-metadata */
@@ -441,25 +440,12 @@ ShoutOutput::SendTag(const Tag &tag)
 		}
 	}
 
-	write_page(this);
+	WritePage();
 }
-
-typedef AudioOutputWrapper<ShoutOutput> Wrapper;
 
 const struct AudioOutputPlugin shout_output_plugin = {
 	"shout",
 	nullptr,
-	&Wrapper::Init,
-	&Wrapper::Finish,
-	nullptr,
-	nullptr,
-	&Wrapper::Open,
-	&Wrapper::Close,
-	&Wrapper::Delay,
-	&Wrapper::SendTag,
-	&Wrapper::Play,
-	nullptr,
-	&Wrapper::Cancel,
-	&Wrapper::Pause,
+	&ShoutOutput::Create,
 	nullptr,
 };

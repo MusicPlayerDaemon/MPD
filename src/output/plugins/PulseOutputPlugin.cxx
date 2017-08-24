@@ -24,7 +24,6 @@
 #include "lib/pulse/LogError.hxx"
 #include "lib/pulse/LockGuard.hxx"
 #include "../OutputAPI.hxx"
-#include "../Wrapper.hxx"
 #include "mixer/MixerList.hxx"
 #include "mixer/plugins/PulseMixerPlugin.hxx"
 #include "Log.hxx"
@@ -44,11 +43,7 @@
 
 #define MPD_PULSE_NAME "Music Player Daemon"
 
-class PulseOutput {
-	friend struct AudioOutputWrapper<PulseOutput>;
-
-	AudioOutput base;
-
+class PulseOutput final : AudioOutput {
 	const char *name;
 	const char *server;
 	const char *sink;
@@ -94,19 +89,21 @@ public:
 
 	static bool TestDefaultDevice();
 
-	static PulseOutput *Create(EventLoop &event_loop,
-				   const ConfigBlock &block);
+	static AudioOutput *Create(EventLoop &,
+				   const ConfigBlock &block) {
+		return new PulseOutput(block);
+	}
 
-	void Enable();
-	void Disable();
+	void Enable() override;
+	void Disable() noexcept override;
 
-	void Open(AudioFormat &audio_format);
-	void Close();
+	void Open(AudioFormat &audio_format) override;
+	void Close() noexcept override;
 
-	std::chrono::steady_clock::duration Delay() noexcept;
-	size_t Play(const void *chunk, size_t size);
-	void Cancel();
-	bool Pause();
+	std::chrono::steady_clock::duration Delay() const noexcept override;
+	size_t Play(const void *chunk, size_t size) override;
+	void Cancel() noexcept override;
+	bool Pause() noexcept override;
 
 private:
 	/**
@@ -179,7 +176,7 @@ private:
 };
 
 PulseOutput::PulseOutput(const ConfigBlock &block)
-	:base(pulse_output_plugin, block),
+	:AudioOutput(FLAG_ENABLE_DISABLE|FLAG_PAUSE),
 	 name(block.GetBlockValue("name", "mpd_pulse")),
 	 server(block.GetBlockValue("server")),
 	 sink(block.GetBlockValue("sink"))
@@ -416,13 +413,7 @@ PulseOutput::SetupContext()
 	}
 }
 
-PulseOutput *
-PulseOutput::Create(EventLoop &, const ConfigBlock &block)
-{
-	return new PulseOutput(block);
-}
-
-inline void
+void
 PulseOutput::Enable()
 {
 	assert(mainloop == nullptr);
@@ -458,8 +449,8 @@ PulseOutput::Enable()
 	pa_threaded_mainloop_unlock(mainloop);
 }
 
-inline void
-PulseOutput::Disable()
+void
+PulseOutput::Disable() noexcept
 {
 	assert(mainloop != nullptr);
 
@@ -607,7 +598,7 @@ PulseOutput::SetupStream(const pa_sample_spec &ss)
 				     pulse_output_stream_write_cb, this);
 }
 
-inline void
+void
 PulseOutput::Open(AudioFormat &audio_format)
 {
 	assert(mainloop != nullptr);
@@ -680,8 +671,8 @@ PulseOutput::Open(AudioFormat &audio_format)
 	pause = false;
 }
 
-inline void
-PulseOutput::Close()
+void
+PulseOutput::Close() noexcept
 {
 	assert(mainloop != nullptr);
 
@@ -744,8 +735,8 @@ PulseOutput::StreamPause(bool _pause)
 				     "pa_stream_cork() has failed");
 }
 
-inline std::chrono::steady_clock::duration
-PulseOutput::Delay() noexcept
+std::chrono::steady_clock::duration
+PulseOutput::Delay() const noexcept
 {
 	Pulse::LockGuard lock(mainloop);
 
@@ -758,7 +749,7 @@ PulseOutput::Delay() noexcept
 	return result;
 }
 
-inline size_t
+size_t
 PulseOutput::Play(const void *chunk, size_t size)
 {
 	assert(mainloop != nullptr);
@@ -807,8 +798,8 @@ PulseOutput::Play(const void *chunk, size_t size)
 	return size;
 }
 
-inline void
-PulseOutput::Cancel()
+void
+PulseOutput::Cancel() noexcept
 {
 	assert(mainloop != nullptr);
 	assert(stream != nullptr);
@@ -834,8 +825,8 @@ PulseOutput::Cancel()
 	pulse_wait_for_operation(mainloop, o);
 }
 
-inline bool
-PulseOutput::Pause()
+bool
+PulseOutput::Pause() noexcept
 {
 	assert(mainloop != nullptr);
 	assert(stream != nullptr);
@@ -875,23 +866,9 @@ pulse_output_test_default_device(void)
 	return PulseOutput::TestDefaultDevice();
 }
 
-typedef AudioOutputWrapper<PulseOutput> Wrapper;
-
 const struct AudioOutputPlugin pulse_output_plugin = {
 	"pulse",
 	pulse_output_test_default_device,
-	&Wrapper::Init,
-	&Wrapper::Finish,
-	&Wrapper::Enable,
-	&Wrapper::Disable,
-	&Wrapper::Open,
-	&Wrapper::Close,
-	&Wrapper::Delay,
-	nullptr,
-	&Wrapper::Play,
-	nullptr,
-	&Wrapper::Cancel,
-	&Wrapper::Pause,
-
+	PulseOutput::Create,
 	&pulse_mixer_plugin,
 };

@@ -50,9 +50,10 @@ public:
 		:ServerSocket(_loop), partition(_partition) {}
 
 private:
-	void OnAccept(int fd, SocketAddress address, int uid) override {
+	void OnAccept(UniqueSocketDescriptor &&fd,
+		      SocketAddress address, int uid) override {
 		client_new(GetEventLoop(), partition,
-			   fd, address, uid);
+			   std::move(fd), address, uid);
 	}
 };
 

@@ -21,75 +21,7 @@
 #include "CharUtil.hxx"
 #include "ASCII.hxx"
 
-#include <algorithm>
-
 #include <assert.h>
-#include <string.h>
-
-char *
-CopyString(char *gcc_restrict dest, const char *gcc_restrict src,
-	   size_t size) noexcept
-{
-	size_t length = strlen(src);
-	if (length >= size)
-		length = size - 1;
-
-	char *p = std::copy_n(src, length, dest);
-	*p = '\0';
-	return p;
-}
-
-const char *
-StripLeft(const char *p) noexcept
-{
-	while (IsWhitespaceNotNull(*p))
-		++p;
-
-	return p;
-}
-
-const char *
-StripLeft(const char *p, const char *end) noexcept
-{
-	while (p < end && IsWhitespaceOrNull(*p))
-		++p;
-
-	return p;
-}
-
-const char *
-StripRight(const char *p, const char *end) noexcept
-{
-	while (end > p && IsWhitespaceOrNull(end[-1]))
-		--end;
-
-	return end;
-}
-
-size_t
-StripRight(const char *p, size_t length) noexcept
-{
-	while (length > 0 && IsWhitespaceOrNull(p[length - 1]))
-		--length;
-
-	return length;
-}
-
-void
-StripRight(char *p) noexcept
-{
-	size_t old_length = strlen(p);
-	size_t new_length = StripRight(p, old_length);
-	p[new_length] = 0;
-}
-
-char *
-Strip(char *p) noexcept
-{
-	p = StripLeft(p);
-	StripRight(p);
-	return p;
-}
 
 bool
 StringArrayContainsCase(const char *const*haystack,

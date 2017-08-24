@@ -236,6 +236,7 @@ endif
 
 CURL_SOURCES = \
 	src/lib/curl/Version.cxx src/lib/curl/Version.hxx \
+	src/lib/curl/Init.cxx src/lib/curl/Init.hxx \
 	src/lib/curl/Global.cxx src/lib/curl/Global.hxx \
 	src/lib/curl/Request.cxx src/lib/curl/Request.hxx \
 	src/lib/curl/Handler.hxx \
@@ -426,6 +427,8 @@ libutil_a_SOURCES = \
 	src/util/StringView.cxx src/util/StringView.hxx \
 	src/util/ConcatString.hxx \
 	src/util/AllocatedString.cxx src/util/AllocatedString.hxx \
+	src/util/TruncateString.cxx src/util/TruncateString.hxx \
+	src/util/StringStrip.cxx src/util/StringStrip.hxx \
 	src/util/StringUtil.cxx src/util/StringUtil.hxx \
 	src/util/StringCompare.cxx src/util/StringCompare.hxx \
 	src/util/WStringCompare.cxx src/util/WStringCompare.hxx \
@@ -480,8 +483,11 @@ libnet_a_SOURCES = \
 	src/net/Resolver.cxx src/net/Resolver.hxx \
 	src/net/StaticSocketAddress.cxx src/net/StaticSocketAddress.hxx \
 	src/net/AllocatedSocketAddress.cxx src/net/AllocatedSocketAddress.hxx \
+	src/net/IPv4Address.cxx src/net/IPv4Address.hxx \
 	src/net/SocketAddress.cxx src/net/SocketAddress.hxx \
 	src/net/SocketUtil.cxx src/net/SocketUtil.hxx \
+	src/net/SocketDescriptor.cxx src/net/SocketDescriptor.hxx \
+	src/net/UniqueSocketDescriptor.hxx \
 	src/net/SocketError.cxx src/net/SocketError.hxx
 
 # System library
@@ -491,7 +497,7 @@ libsystem_a_SOURCES = \
 	src/system/Error.hxx \
 	src/system/FatalError.cxx src/system/FatalError.hxx \
 	src/system/FileDescriptor.cxx src/system/FileDescriptor.hxx \
-	src/system/fd_util.c src/system/fd_util.h \
+	src/system/UniqueFileDescriptor.hxx \
 	src/system/EventPipe.cxx src/system/EventPipe.hxx \
 	src/system/EventFD.cxx src/system/EventFD.hxx \
 	src/system/SignalFD.cxx src/system/SignalFD.hxx \
@@ -932,6 +938,7 @@ libtag_a_SOURCES =\
 	src/tag/ReplayGain.cxx src/tag/ReplayGain.hxx \
 	src/tag/MixRamp.cxx src/tag/MixRamp.hxx \
 	src/tag/Generic.cxx src/tag/Generic.hxx \
+	src/tag/Id3MusicBrainz.cxx src/tag/Id3MusicBrainz.hxx \
 	src/tag/ApeLoader.cxx src/tag/ApeLoader.hxx \
 	src/tag/ApeReplayGain.cxx src/tag/ApeReplayGain.hxx \
 	src/tag/ApeTag.cxx src/tag/ApeTag.hxx
@@ -1476,9 +1483,8 @@ OUTPUT_LIBS = \
 OUTPUT_API_SRC = \
 	src/output/Client.hxx \
 	src/output/OutputAPI.hxx \
-	src/output/Internal.cxx \
-	src/output/Internal.hxx \
-	src/output/Wrapper.hxx \
+	src/output/Interface.hxx \
+	src/output/Filtered.cxx src/output/Filtered.hxx \
 	src/output/Registry.cxx src/output/Registry.hxx \
 	src/output/MultipleOutputs.cxx src/output/MultipleOutputs.hxx \
 	src/output/SharedPipeConsumer.cxx src/output/SharedPipeConsumer.hxx \
@@ -1607,6 +1613,8 @@ liboutput_plugins_a_SOURCES += \
 	src/output/plugins/OSXOutputPlugin.cxx \
 	src/output/plugins/OSXOutputPlugin.hxx
 endif
+libmixer_plugins_a_SOURCES += \
+	src/mixer/plugins/OSXMixerPlugin.cxx
 
 if ENABLE_PULSE
 liboutput_plugins_a_SOURCES += \
@@ -1740,6 +1748,7 @@ libfilter_plugins_a_SOURCES = \
 	src/filter/plugins/ConvertFilterPlugin.hxx \
 	src/filter/plugins/RouteFilterPlugin.cxx \
 	src/filter/plugins/NormalizeFilterPlugin.cxx \
+	src/filter/plugins/NormalizeFilterPlugin.hxx \
 	src/filter/plugins/ReplayGainFilterPlugin.cxx \
 	src/filter/plugins/ReplayGainFilterPlugin.hxx \
 	src/filter/plugins/VolumeFilterPlugin.cxx \
@@ -1865,6 +1874,7 @@ test_DumpDatabase_LDADD = \
 	$(TAG_LIBS) \
 	libconf.a \
 	libevent.a \
+	libthread.a \
 	$(FS_LIBS) \
 	libsystem.a \
 	$(ICU_LDADD) \
@@ -2208,11 +2218,10 @@ test_run_convert_LDADD = \
 	libutil.a
 
 test_run_output_LDADD = $(MPD_LIBS) \
-	$(PCM_LIBS) \
 	$(OUTPUT_LIBS) \
 	$(ENCODER_LIBS) \
 	libmixer_plugins.a \
-	$(FILTER_LIBS) \
+	$(PCM_LIBS) \
 	$(TAG_LIBS) \
 	libconf.a \
 	libbasic.a \
@@ -2226,13 +2235,10 @@ test_run_output_LDADD = $(MPD_LIBS) \
 test_run_output_SOURCES = test/run_output.cxx \
 	src/Log.cxx src/LogBackend.cxx \
 	src/output/Domain.cxx \
-	src/output/Init.cxx src/output/Finish.cxx src/output/Registry.cxx \
+	src/output/Registry.cxx \
 	src/output/OutputPlugin.cxx \
 	src/mixer/MixerControl.cxx \
-	src/mixer/MixerType.cxx \
-	src/filter/FilterPlugin.cxx \
-	src/filter/FilterConfig.cxx \
-	src/filter/Observer.cxx
+	src/mixer/MixerType.cxx
 
 test_read_mixer_LDADD = \
 	libpcm.a \

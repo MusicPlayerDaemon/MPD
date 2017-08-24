@@ -135,7 +135,7 @@ class Player {
 	/**
 	 * The current audio format for the audio outputs.
 	 */
-	AudioFormat play_audio_format;
+	AudioFormat play_audio_format = AudioFormat::Undefined();
 
 	/**
 	 * The time stamp of the chunk most recently sent to the

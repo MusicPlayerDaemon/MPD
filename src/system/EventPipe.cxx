@@ -19,32 +19,37 @@
 
 #include "config.h"
 #include "EventPipe.hxx"
-#include "system/fd_util.h"
-#include "system/FatalError.hxx"
+#include "FileDescriptor.hxx"
+#include "system/Error.hxx"
+#include "util/ScopeExit.hxx"
 #include "Compiler.h"
 
 #include <assert.h>
 #include <unistd.h>
 
 #ifdef WIN32
-#include <ws2tcpip.h>
-#include <winsock2.h>
-#include <cstring> /* for memset() */
+#include "net/IPv4Address.hxx"
+#include "net/StaticSocketAddress.hxx"
+#include "net/UniqueSocketDescriptor.hxx"
+#include "net/SocketError.hxx"
 #endif
 
 #ifdef WIN32
-static bool PoorSocketPair(int fd[2]);
+static void PoorSocketPair(int fd[2]);
 #endif
 
 EventPipe::EventPipe()
 {
 #ifdef WIN32
-	bool success = PoorSocketPair(fds);
+	PoorSocketPair(fds);
 #else
-	bool success = pipe_cloexec_nonblock(fds) >= 0;
+	FileDescriptor r, w;
+	if (!FileDescriptor::CreatePipeNonBlock(r, w))
+		throw MakeErrno("pipe() has failed");
+
+	fds[0] = r.Steal();
+	fds[1] = w.Steal();
 #endif
-	if (!success)
-		FatalSystemError("pipe() has failed");
 }
 
 EventPipe::~EventPipe()
@@ -87,94 +92,39 @@ EventPipe::Write()
 
 #ifdef WIN32
 
-static void SafeCloseSocket(SOCKET s)
-{
-	int error = WSAGetLastError();
-	closesocket(s);
-	WSASetLastError(error);
-}
-
 /* Our poor man's socketpair() implementation
- * Due to limited protocol/address family support and primitive error handling
+ * Due to limited protocol/address family support
  * it's better to keep this as a private implementation detail of EventPipe
  * rather than wide-available API.
  */
-static bool PoorSocketPair(int fd[2])
+static void
+PoorSocketPair(int fd[2])
 {
 	assert (fd != nullptr);
 
-	SOCKET listen_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-	if (listen_socket == INVALID_SOCKET)
-		return false;
+	UniqueSocketDescriptor listen_socket;
+	if (!listen_socket.CreateNonBlock(AF_INET, SOCK_STREAM, IPPROTO_TCP))
+		throw MakeSocketError("Failed to create socket");
 
-	sockaddr_in address;
-	std::memset(&address, 0, sizeof(address));
-	address.sin_family = AF_INET;
-	address.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+	if (!listen_socket.Bind(IPv4Address(IPv4Address::Loopback(), 0)))
+		throw MakeSocketError("Failed to create socket");
 
-	int ret = bind(listen_socket,
-		       reinterpret_cast<sockaddr*>(&address),
-		       sizeof(address));
+	if (!listen_socket.Listen(1))
+		throw MakeSocketError("Failed to listen on socket");
 
-	if (ret < 0) {
-		SafeCloseSocket(listen_socket);
-		return false;
-	}
+	UniqueSocketDescriptor socket0;
+	if (!socket0.CreateNonBlock(AF_INET, SOCK_STREAM, IPPROTO_TCP))
+		throw MakeSocketError("Failed to create socket");
 
-	ret = listen(listen_socket, 1);
+	if (!socket0.Connect(listen_socket.GetLocalAddress()))
+		throw MakeSocketError("Failed to connect socket");
 
-	if (ret < 0) {
-		SafeCloseSocket(listen_socket);
-		return false;
-	}
+	auto socket1 = listen_socket.AcceptNonBlock();
+	if (!socket1.IsDefined())
+		throw MakeSocketError("Failed to accept connection");
 
-	int address_len = sizeof(address);
-	ret = getsockname(listen_socket,
-			  reinterpret_cast<sockaddr*>(&address),
-			  &address_len);
-
-	if (ret < 0) {
-		SafeCloseSocket(listen_socket);
-		return false;
-	}
-
-	SOCKET socket0 = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-	if (socket0 == INVALID_SOCKET) {
-		SafeCloseSocket(listen_socket);
-		return false;
-	}
-
-	ret = connect(socket0,
-		      reinterpret_cast<sockaddr*>(&address),
-		      sizeof(address));
-
-	if (ret < 0) {
-		SafeCloseSocket(listen_socket);
-		SafeCloseSocket(socket0);
-		return false;
-	}
-
-	SOCKET socket1 = accept(listen_socket, nullptr, nullptr);
-	if (socket1 == INVALID_SOCKET) {
-		SafeCloseSocket(listen_socket);
-		SafeCloseSocket(socket0);
-		return false;
-	}
-
-	SafeCloseSocket(listen_socket);
-
-	u_long non_block = 1;
-	if (ioctlsocket(socket0, FIONBIO, &non_block) < 0
-	    || ioctlsocket(socket1, FIONBIO, &non_block) < 0) {
-		SafeCloseSocket(socket0);
-		SafeCloseSocket(socket1);
-		return false;
-	}
-
-	fd[0] = static_cast<int>(socket0);
-	fd[1] = static_cast<int>(socket1);
-
-	return true;
+	fd[0] = socket0.Steal();
+	fd[1] = socket1.Steal();
 }
 
 #endif

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2015 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright (C) 2012-2017 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -33,12 +33,18 @@
 #include "check.h"
 #include "Compiler.h"
 
+#include <utility>
+
 #include <assert.h>
 #include <unistd.h>
 #include <sys/types.h>
 
 #ifdef USE_SIGNALFD
 #include <signal.h>
+#endif
+
+#ifdef _WIN32
+#include <wchar.h>
 #endif
 
 /**
@@ -62,6 +68,14 @@ public:
 		return fd >= 0;
 	}
 
+#ifndef _WIN32
+	/**
+	 * Ask the kernel whether this is a valid file descriptor.
+	 */
+	gcc_pure
+	bool IsValid() const noexcept;
+#endif
+
 	/**
 	 * Returns the file descriptor.  This may only be called if
 	 * IsDefined() returns true.
@@ -75,11 +89,7 @@ public:
 	}
 
 	int Steal() noexcept {
-		assert(IsDefined());
-
-		int _fd = fd;
-		fd = -1;
-		return _fd;
+		return std::exchange(fd, -1);
 	}
 
 	void SetUndefined() noexcept {
@@ -91,12 +101,22 @@ public:
 	}
 
 	bool Open(const char *pathname, int flags, mode_t mode=0666) noexcept;
+
+#ifdef _WIN32
+	bool Open(const wchar_t *pathname, int flags, mode_t mode=0666) noexcept;
+#endif
+
 	bool OpenReadOnly(const char *pathname) noexcept;
 
 #ifndef WIN32
 	bool OpenNonBlocking(const char *pathname) noexcept;
+#endif
 
 	static bool CreatePipe(FileDescriptor &r, FileDescriptor &w) noexcept;
+
+#ifndef _WIN32
+	static bool CreatePipeNonBlock(FileDescriptor &r,
+				       FileDescriptor &w) noexcept;
 
 	/**
 	 * Enable non-blocking mode on this file descriptor.
@@ -107,6 +127,18 @@ public:
 	 * Enable blocking mode on this file descriptor.
 	 */
 	void SetBlocking() noexcept;
+
+	/**
+	 * Auto-close this file descriptor when a new program is
+	 * executed.
+	 */
+	void EnableCloseOnExec() noexcept;
+
+	/**
+	 * Do not auto-close this file descriptor when a new program
+	 * is executed.
+	 */
+	void DisableCloseOnExec() noexcept;
 
 	/**
 	 * Duplicate the file descriptor onto the given file descriptor.
@@ -174,6 +206,9 @@ public:
 
 	int WaitReadable(int timeout) const noexcept;
 	int WaitWritable(int timeout) const noexcept;
+
+	gcc_pure
+	bool IsReadyForWriting() const noexcept;
 #endif
 };
 

@@ -63,7 +63,7 @@ public:
 		uri = uri2.c_str();
 		real_uri = real_uri2.c_str();
 		tag = &tag2;
-		mtime = 0;
+		mtime = std::chrono::system_clock::time_point::min();
 		start_time = end_time = SongTime::zero();
 	}
 };
@@ -314,7 +314,7 @@ visitSong(const UPnPDirObject &meta, const char *path,
 	song.uri = path;
 	song.real_uri = meta.url.c_str();
 	song.tag = &meta.tag;
-	song.mtime = 0;
+	song.mtime = std::chrono::system_clock::time_point::min();
 	song.start_time = song.end_time = SongTime::zero();
 
 	if (selection.Match(song))
@@ -477,7 +477,8 @@ VisitObject(const UPnPDirObject &object, const char *uri,
 
 	case UPnPDirObject::Type::CONTAINER:
 		if (visit_directory)
-			visit_directory(LightDirectory(uri, 0));
+			visit_directory(LightDirectory(uri,
+						       std::chrono::system_clock::time_point::min()));
 		break;
 
 	case UPnPDirObject::Type::ITEM:
@@ -582,7 +583,8 @@ UpnpDatabase::Visit(const DatabaseSelection &selection,
 	if (vpath.empty()) {
 		for (const auto &server : discovery->GetDirectories()) {
 			if (visit_directory) {
-				const LightDirectory d(server.getFriendlyName(), 0);
+				const LightDirectory d(server.getFriendlyName(),
+						       std::chrono::system_clock::time_point::min());
 				visit_directory(d);
 			}
 

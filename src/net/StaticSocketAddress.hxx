@@ -39,6 +39,8 @@
  * An OO wrapper for struct sockaddr_storage.
  */
 class StaticSocketAddress {
+	friend class SocketDescriptor;
+
 public:
 	typedef SocketAddress::size_type size_type;
 
@@ -54,6 +56,14 @@ public:
 	operator SocketAddress() const noexcept {
 		return SocketAddress(reinterpret_cast<const struct sockaddr *>(&address),
 				     size);
+	}
+
+	operator struct sockaddr *() noexcept {
+		return reinterpret_cast<struct sockaddr *>(&address);
+	}
+
+	operator const struct sockaddr *() const noexcept {
+		return reinterpret_cast<const struct sockaddr *>(&address);
 	}
 
 	struct sockaddr *GetAddress() noexcept {
@@ -79,6 +89,13 @@ public:
 		size = _size;
 	}
 
+	/**
+	 * Set the size to the maximum value for this class.
+	 */
+	void SetMaxSize() {
+		SetSize(GetCapacity());
+	}
+
 	int GetFamily() const noexcept {
 		return address.ss_family;
 	}
@@ -88,6 +105,7 @@ public:
 	}
 
 	void Clear() noexcept {
+		size = sizeof(address.ss_family);
 		address.ss_family = AF_UNSPEC;
 	}
 
@@ -112,7 +130,7 @@ public:
 		return (SocketAddress)*this == other;
 	}
 
-	bool operator!=(SocketAddress &other) const noexcept {
+	bool operator!=(SocketAddress other) const noexcept {
 		return !(*this == other);
 	}
 };

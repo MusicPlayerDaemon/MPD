@@ -19,8 +19,8 @@ libvorbis = AutotoolsProject(
 )
 
 opus = AutotoolsProject(
-    'http://downloads.xiph.org/releases/opus/opus-1.1.4.tar.gz',
-    '9122b6b380081dd2665189f97bfd777f04f92dc3ab6698eea1dbb27ad59d8692',
+    'https://archive.mozilla.org/pub/opus/opus-1.2.1.tar.gz',
+    'cfafd339ccd9c5ef8d6ab15d7e1a412c054bf4cb4ecbbbcc78c12ef2def70732',
     'lib/libopus.a',
     ['--disable-shared', '--enable-static'],
 )
@@ -57,9 +57,20 @@ libmad = AutotoolsProject(
     autogen=True,
 )
 
+liblame = AutotoolsProject(
+    'http://downloads.sourceforge.net/project/lame/lame/3.99/lame-3.99.5.tar.gz',
+    '24346b4158e4af3bd9f2e194bb23eb473c75fb7377011523353196b19b9a23ff',
+    'lib/libmp3lame.a',
+    [
+        '--disable-shared', '--enable-static',
+        '--disable-gtktest', '--disable-analyzer-hooks',
+        '--disable-decoder', '--disable-frontend',
+    ],
+)
+
 ffmpeg = FfmpegProject(
-    'http://ffmpeg.org/releases/ffmpeg-3.3.1.tar.xz',
-    'b702a7fc656ac23e276b8c823a2f646e4e6f6309bb2788435a708e69bea98f2f',
+    'http://ffmpeg.org/releases/ffmpeg-3.3.3.tar.xz',
+    'd2a9002cdc6b533b59728827186c044ad02ba64841f1b7cd6c21779875453a1e',
     'lib/libavcodec.a',
     [
         '--disable-shared', '--enable-static',
@@ -82,8 +93,8 @@ ffmpeg = FfmpegProject(
 )
 
 curl = AutotoolsProject(
-    'http://curl.haxx.se/download/curl-7.54.0.tar.lzma',
-    'cd6aa6039f13e0b06e0a93e1b93754f6dc07f444812bb6c32be75a8f28c4070a',
+    'http://curl.haxx.se/download/curl-7.55.1.tar.xz',
+    '3eafca6e84ecb4af5f35795dee84e643d5428287e88c041122bb8dac18676bb7',
     'lib/libcurl.a',
     [
         '--disable-shared', '--enable-static',
@@ -103,7 +114,7 @@ curl = AutotoolsProject(
 )
 
 boost = BoostProject(
-    'http://downloads.sourceforge.net/project/boost/boost/1.64.0/boost_1_64_0.tar.bz2',
-    '7bcc5caace97baa948931d712ea5f37038dbb1c5d89b43ad4def4ed7cb683332',
+    'http://downloads.sourceforge.net/project/boost/boost/1.65.0/boost_1_65_0.tar.bz2',
+    'ea26712742e2fb079c2a566a31f3266973b76e38222b9f88b387e3c8b2f9902c',
     'include/boost/version.hpp',
 )

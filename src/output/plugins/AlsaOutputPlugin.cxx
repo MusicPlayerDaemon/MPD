@@ -22,10 +22,10 @@
 #include "lib/alsa/NonBlock.hxx"
 #include "lib/alsa/Version.hxx"
 #include "../OutputAPI.hxx"
-#include "../Wrapper.hxx"
 #include "mixer/MixerList.hxx"
 #include "pcm/PcmExport.hxx"
 #include "system/ByteOrder.hxx"
+#include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
 #include "util/Manual.hxx"
 #include "util/RuntimeError.hxx"
@@ -59,11 +59,7 @@ static constexpr unsigned MPD_ALSA_BUFFER_TIME_US = 500000;
 static constexpr unsigned MPD_ALSA_RETRY_NR = 5;
 
 class AlsaOutput final
-	: MultiSocketMonitor, DeferredMonitor {
-
-	friend struct AudioOutputWrapper<AlsaOutput>;
-
-	AudioOutput base;
+	: AudioOutput, MultiSocketMonitor, DeferredMonitor {
 
 	Manual<PcmExport> pcm_export;
 
@@ -289,20 +285,22 @@ public:
 		return device.empty() ? default_device : device.c_str();
 	}
 
-	static AlsaOutput *Create(EventLoop &event_loop,
-				  const ConfigBlock &block);
-
-	void Enable();
-	void Disable();
-
-	void Open(AudioFormat &audio_format);
-	void Close();
-
-	size_t Play(const void *chunk, size_t size);
-	void Drain();
-	void Cancel();
+	static AudioOutput *Create(EventLoop &event_loop,
+				   const ConfigBlock &block) {
+		return new AlsaOutput(event_loop, block);
+	}
 
 private:
+	void Enable() override;
+	void Disable() noexcept override;
+
+	void Open(AudioFormat &audio_format) override;
+	void Close() noexcept override;
+
+	size_t Play(const void *chunk, size_t size) override;
+	void Drain() override;
+	void Cancel() noexcept override;
+
 	/**
 	 * Set up the snd_pcm_t object which was opened by the caller.
 	 * Set up the configured settings and the audio format.
@@ -412,8 +410,8 @@ private:
 static constexpr Domain alsa_output_domain("alsa_output");
 
 AlsaOutput::AlsaOutput(EventLoop &loop, const ConfigBlock &block)
-	:MultiSocketMonitor(loop), DeferredMonitor(loop),
-	 base(alsa_output_plugin, block),
+	:AudioOutput(FLAG_ENABLE_DISABLE),
+	 MultiSocketMonitor(loop), DeferredMonitor(loop),
 	 device(block.GetBlockValue("device", "")),
 #ifdef ENABLE_DSD
 	 dop(block.GetBlockValue("dop", false) ||
@@ -440,20 +438,14 @@ AlsaOutput::AlsaOutput(EventLoop &loop, const ConfigBlock &block)
 #endif
 }
 
-inline AlsaOutput *
-AlsaOutput::Create(EventLoop &event_loop, const ConfigBlock &block)
-{
-	return new AlsaOutput(event_loop, block);
-}
-
-inline void
+void
 AlsaOutput::Enable()
 {
 	pcm_export.Construct();
 }
 
-inline void
-AlsaOutput::Disable()
+void
+AlsaOutput::Disable() noexcept
 {
 	pcm_export.Destruct();
 }
@@ -1014,7 +1006,7 @@ MaybeDmix(snd_pcm_t *pcm) noexcept
 	return MaybeDmix(snd_pcm_type(pcm));
 }
 
-inline void
+void
 AlsaOutput::Open(AudioFormat &audio_format)
 {
 	int err = snd_pcm_open(&pcm, GetDevice(),
@@ -1157,7 +1149,7 @@ AlsaOutput::DrainInternal()
 	return snd_pcm_drain(pcm) != -EAGAIN;
 }
 
-inline void
+void
 AlsaOutput::Drain()
 {
 	const std::lock_guard<Mutex> lock(mutex);
@@ -1182,8 +1174,8 @@ AlsaOutput::CancelInternal()
 	ClearRingBuffer();
 }
 
-inline void
-AlsaOutput::Cancel()
+void
+AlsaOutput::Cancel() noexcept
 {
 	if (!active) {
 		/* early cancel, quick code path without thread
@@ -1201,8 +1193,8 @@ AlsaOutput::Cancel()
 		});
 }
 
-inline void
-AlsaOutput::Close()
+void
+AlsaOutput::Close() noexcept
 {
 	/* make sure the I/O thread isn't inside DispatchSockets() */
 	BlockingCall(MultiSocketMonitor::GetEventLoop(), [this](){
@@ -1216,7 +1208,7 @@ AlsaOutput::Close()
 	delete[] silence;
 }
 
-inline size_t
+size_t
 AlsaOutput::Play(const void *chunk, size_t size)
 {
 	assert(size > 0);
@@ -1330,23 +1322,9 @@ try {
 	cond.signal();
 }
 
-typedef AudioOutputWrapper<AlsaOutput> Wrapper;
-
 const struct AudioOutputPlugin alsa_output_plugin = {
 	"alsa",
 	alsa_test_default_device,
-	&Wrapper::Init,
-	&Wrapper::Finish,
-	&Wrapper::Enable,
-	&Wrapper::Disable,
-	&Wrapper::Open,
-	&Wrapper::Close,
-	nullptr,
-	nullptr,
-	&Wrapper::Play,
-	&Wrapper::Drain,
-	&Wrapper::Cancel,
-	nullptr,
-
+	&AlsaOutput::Create,
 	&alsa_mixer_plugin,
 };

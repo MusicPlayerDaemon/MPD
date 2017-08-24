@@ -402,6 +402,15 @@
                 </para>
               </listitem>
             </itemizedlist>
+
+            <para>
+              Change events accumulate, even while the connection is
+              not in "idle" mode; no events gets lost while the client
+              is doing something else with the connection.  If an
+              event had already occurred since the last call, the new
+              <command>idle</command> command will return immediately.
+            </para>
+
             <para>
               While a client is waiting for <command>idle</command>
               results, the server disables timeouts, allowing a client
@@ -1564,6 +1573,42 @@ OK
       <title>The music database</title>
 
       <variablelist>
+        <varlistentry id="album_art">
+          <term>
+            <cmdsynopsis>
+              <command>albumart</command>
+              <arg choice="req"><replaceable>URI</replaceable></arg>
+              <arg choice="req"><replaceable>OFFSET</replaceable></arg>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              Searches the directory the file <varname>URI</varname>
+              resides in and attempts to return a chunk of an album
+              art image file at offset <varname>OFFSET</varname>.
+            </para>
+            <para>
+              Uses the filename "cover" with any of ".png, .jpg,
+              .tiff, .bmp".
+            </para>
+            <para>
+              Returns the file size and actual number
+              of bytes read at the requested offset, followed
+              by the chunk requested as raw bytes, then a
+              newline and the completion code.
+            </para>
+            <para>
+              Example:
+            </para>
+
+            <programlisting>albumart
+size: 1024768
+binary: 8192
+&lt;8192 bytes&gt;
+OK
+</programlisting>
+          </listitem>
+        </varlistentry>
 
         <varlistentry id="command_count">
           <term>

@@ -15,8 +15,6 @@ src/CommandLine.hxx
 src/Compiler.h
 src/DetachedSong.cxx
 src/DetachedSong.hxx
-src/IOThread.cxx
-src/IOThread.hxx
 src/IcyMetaDataParser.cxx
 src/IcyMetaDataParser.hxx
 src/Idle.cxx
@@ -458,6 +456,7 @@ src/filter/plugins/ChainFilterPlugin.hxx
 src/filter/plugins/ConvertFilterPlugin.cxx
 src/filter/plugins/ConvertFilterPlugin.hxx
 src/filter/plugins/NormalizeFilterPlugin.cxx
+src/filter/plugins/NormalizeFilterPlugin.hxx
 src/filter/plugins/NullFilterPlugin.cxx
 src/filter/plugins/ReplayGainFilterPlugin.cxx
 src/filter/plugins/ReplayGainFilterPlugin.hxx
@@ -574,6 +573,8 @@ src/lib/curl/Easy.hxx
 src/lib/curl/Global.cxx
 src/lib/curl/Global.hxx
 src/lib/curl/Handler.hxx
+src/lib/curl/Init.cxx
+src/lib/curl/Init.hxx
 src/lib/curl/Multi.hxx
 src/lib/curl/Request.cxx
 src/lib/curl/Request.hxx
@@ -768,6 +769,7 @@ src/mixer/Volume.hxx
 src/mixer/plugins/AlsaMixerPlugin.cxx
 src/mixer/plugins/HaikuMixerPlugin.cxx
 src/mixer/plugins/NullMixerPlugin.cxx
+src/mixer/plugins/OSXMixerPlugin.cxx
 src/mixer/plugins/OssMixerPlugin.cxx
 src/mixer/plugins/PulseMixerPlugin.cxx
 src/mixer/plugins/PulseMixerPlugin.hxx
@@ -792,10 +794,14 @@ src/neighbor/plugins/UpnpNeighborPlugin.hxx
 src/net/AllocatedSocketAddress.cxx
 src/net/AllocatedSocketAddress.hxx
 src/net/Features.hxx
+src/net/IPv4Address.cxx
+src/net/IPv4Address.hxx
 src/net/Resolver.cxx
 src/net/Resolver.hxx
 src/net/SocketAddress.cxx
 src/net/SocketAddress.hxx
+src/net/SocketDescriptor.cxx
+src/net/SocketDescriptor.hxx
 src/net/SocketError.cxx
 src/net/SocketError.hxx
 src/net/SocketUtil.cxx
@@ -804,6 +810,7 @@ src/net/StaticSocketAddress.cxx
 src/net/StaticSocketAddress.hxx
 src/net/ToString.cxx
 src/net/ToString.hxx
+src/net/UniqueSocketDescriptor.hxx
 src/notify.cxx
 src/notify.hxx
 src/open.h
@@ -812,10 +819,11 @@ src/output/Control.cxx
 src/output/Control.hxx
 src/output/Domain.cxx
 src/output/Domain.hxx
+src/output/Filtered.cxx
+src/output/Filtered.hxx
 src/output/Finish.cxx
 src/output/Init.cxx
-src/output/Internal.cxx
-src/output/Internal.hxx
+src/output/Interface.hxx
 src/output/MultipleOutputs.cxx
 src/output/MultipleOutputs.hxx
 src/output/OutputAPI.hxx
@@ -836,7 +844,6 @@ src/output/State.hxx
 src/output/Thread.cxx
 src/output/Timer.cxx
 src/output/Timer.hxx
-src/output/Wrapper.hxx
 src/output/plugins/AlsaOutputPlugin.cxx
 src/output/plugins/AlsaOutputPlugin.hxx
 src/output/plugins/AoOutputPlugin.cxx
@@ -1062,8 +1069,7 @@ src/system/FileDescriptor.hxx
 src/system/PeriodClock.hxx
 src/system/SignalFD.cxx
 src/system/SignalFD.hxx
-src/system/fd_util.c
-src/system/fd_util.h
+src/system/UniqueFileDescriptor.hxx
 src/tag/Aiff.cxx
 src/tag/Aiff.hxx
 src/tag/ApeLoader.cxx
@@ -1086,6 +1092,8 @@ src/tag/Handler.cxx
 src/tag/Handler.hxx
 src/tag/Id3Load.cxx
 src/tag/Id3Load.hxx
+src/tag/Id3MusicBrainz.cxx
+src/tag/Id3MusicBrainz.hxx
 src/tag/Id3Scan.cxx
 src/tag/Id3Scan.hxx
 src/tag/Id3Unique.hxx
@@ -1187,6 +1195,8 @@ src/util/StringBuffer.hxx
 src/util/StringCompare.cxx
 src/util/StringCompare.hxx
 src/util/StringPointer.hxx
+src/util/StringStrip.cxx
+src/util/StringStrip.hxx
 src/util/StringUtil.cxx
 src/util/StringUtil.hxx
 src/util/StringView.cxx
@@ -1196,6 +1206,8 @@ src/util/TimeParser.cxx
 src/util/TimeParser.hxx
 src/util/Tokenizer.cxx
 src/util/Tokenizer.hxx
+src/util/TruncateString.cxx
+src/util/TruncateString.hxx
 src/util/UTF8.cxx
 src/util/UTF8.hxx
 src/util/UriUtil.cxx

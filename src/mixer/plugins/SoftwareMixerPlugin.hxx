@@ -30,6 +30,6 @@ class Filter;
  * volume_filter_set().
  */
 void
-software_mixer_set_filter(Mixer &mixer, Filter *filter);
+software_mixer_set_filter(Mixer &mixer, Filter *filter) noexcept;
 
 #endif

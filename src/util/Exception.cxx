@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright (C) 2016-2017 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -29,22 +29,45 @@
 
 #include "Exception.hxx"
 
-#include <stdexcept>
+template<typename T>
+static void
+AppendNestedMessage(std::string &result, T &&e,
+		    const char *fallback, const char *separator) noexcept
+{
+	try {
+		std::rethrow_if_nested(std::forward<T>(e));
+	} catch (const std::exception &nested) {
+		result += separator;
+		result += nested.what();
+		AppendNestedMessage(result, nested, fallback, separator);
+	} catch (const std::nested_exception &ne) {
+		AppendNestedMessage(result, ne, fallback, separator);
+	} catch (...) {
+		result += separator;
+		result += fallback;
+	}
+}
 
 std::string
-FullMessage(std::exception_ptr ep) noexcept
+GetFullMessage(const std::exception &e,
+	       const char *fallback, const char *separator) noexcept
+{
+	std::string result = e.what();
+	AppendNestedMessage(result, e, fallback, separator);
+	return result;
+}
+
+std::string
+GetFullMessage(std::exception_ptr ep,
+	       const char *fallback, const char *separator) noexcept
 {
 	try {
 		std::rethrow_exception(ep);
 	} catch (const std::exception &e) {
-		try {
-			std::rethrow_if_nested(e);
-			return e.what();
-		} catch (...) {
-			return std::string(e.what()) + "; " +
-				FullMessage(std::current_exception());
-		}
+		return GetFullMessage(e, fallback, separator);
+	} catch (const std::nested_exception &ne) {
+		return GetFullMessage(ne.nested_ptr(), fallback, separator);
+	} catch (...) {
+		return fallback;
 	}
-
-	return std::string("Unknown error");
 }

@@ -18,6 +18,7 @@
  */
 
 #include "config.h"
+#include "NormalizeFilterPlugin.hxx"
 #include "filter/FilterPlugin.hxx"
 #include "filter/FilterInternal.hxx"
 #include "filter/FilterRegistry.hxx"
@@ -80,3 +81,9 @@ const FilterPlugin normalize_filter_plugin = {
 	"normalize",
 	normalize_filter_init,
 };
+
+PreparedFilter *
+normalize_filter_prepare() noexcept
+{
+	return new PreparedNormalizeFilter();
+}

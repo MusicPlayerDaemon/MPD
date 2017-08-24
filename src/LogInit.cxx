@@ -62,7 +62,7 @@ open_log_file(void)
 {
 	assert(!out_path.IsNull());
 
-	return OpenFile(out_path, O_CREAT | O_WRONLY | O_APPEND, 0666);
+	return OpenFile(out_path, O_CREAT | O_WRONLY | O_APPEND, 0666).Steal();
 }
 
 static void

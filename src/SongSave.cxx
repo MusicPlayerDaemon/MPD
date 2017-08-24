@@ -27,7 +27,8 @@
 #include "tag/ParseName.hxx"
 #include "tag/Tag.hxx"
 #include "tag/Builder.hxx"
-#include "util/StringUtil.hxx"
+#include "util/ChronoUtil.hxx"
+#include "util/StringStrip.hxx"
 #include "util/RuntimeError.hxx"
 
 #include <string.h>
@@ -54,7 +55,9 @@ song_save(BufferedOutputStream &os, const Song &song)
 
 	tag_save(os, song.tag);
 
-	os.Format(SONG_MTIME ": %li\n", (long)song.mtime);
+	if (!IsNegative(song.mtime))
+		os.Format(SONG_MTIME ": %li\n",
+			  (long)std::chrono::system_clock::to_time_t(song.mtime));
 	os.Format(SONG_END "\n");
 }
 
@@ -67,7 +70,9 @@ song_save(BufferedOutputStream &os, const DetachedSong &song)
 
 	tag_save(os, song.GetTag());
 
-	os.Format(SONG_MTIME ": %li\n", (long)song.GetLastModified());
+	if (!IsNegative(song.GetLastModified()))
+		os.Format(SONG_MTIME ": %li\n",
+			  (long)std::chrono::system_clock::to_time_t(song.GetLastModified()));
 	os.Format(SONG_END "\n");
 }
 
@@ -99,7 +104,7 @@ song_load(TextFile &file, const char *uri)
 		} else if (strcmp(line, "Playlist") == 0) {
 			tag.SetHasPlaylist(strcmp(value, "yes") == 0);
 		} else if (strcmp(line, SONG_MTIME) == 0) {
-			song->SetLastModified(atoi(value));
+			song->SetLastModified(std::chrono::system_clock::from_time_t(atoi(value)));
 		} else if (strcmp(line, "Range") == 0) {
 			char *endptr;
 

@@ -22,7 +22,7 @@
 #include "Tag.hxx"
 #include "ParseName.hxx"
 #include "util/format.h"
-#include "util/StringUtil.hxx"
+#include "util/TruncateString.hxx"
 
 #include <algorithm>
 
@@ -73,7 +73,7 @@ SanitizeString(const char *s, char *buffer, size_t buffer_size) noexcept
 	if (!HasUnsafeChar(s))
 		return s;
 
-	char *end = CopyString(buffer, s, buffer_size);
+	char *end = CopyTruncateString(buffer, s, buffer_size);
 	std::replace_if(buffer, end, IsUnsafeChar, ' ');
 	return buffer;
 }

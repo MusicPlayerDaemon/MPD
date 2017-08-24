@@ -20,7 +20,6 @@
 #include "config.h"
 #include "AoOutputPlugin.hxx"
 #include "../OutputAPI.hxx"
-#include "../Wrapper.hxx"
 #include "system/Error.hxx"
 #include "util/DivideString.hxx"
 #include "util/SplitString.hxx"
@@ -37,11 +36,7 @@ static ao_sample_format OUR_AO_FORMAT_INITIALIZER;
 
 static unsigned ao_output_ref;
 
-class AoOutput {
-	friend struct AudioOutputWrapper<AoOutput>;
-
-	AudioOutput base;
-
+class AoOutput final : AudioOutput {
 	const size_t write_size;
 	int driver;
 	ao_option *options = nullptr;
@@ -51,14 +46,14 @@ class AoOutput {
 	~AoOutput();
 
 public:
-	static AoOutput *Create(EventLoop &, const ConfigBlock &block) {
+	static AudioOutput *Create(EventLoop &, const ConfigBlock &block) {
 		return new AoOutput(block);
 	}
 
-	void Open(AudioFormat &audio_format);
-	void Close();
+	void Open(AudioFormat &audio_format) override;
+	void Close() noexcept override;
 
-	size_t Play(const void *chunk, size_t size);
+	size_t Play(const void *chunk, size_t size) override;
 };
 
 static constexpr Domain ao_output_domain("ao_output");
@@ -95,7 +90,7 @@ MakeAoError()
 }
 
 AoOutput::AoOutput(const ConfigBlock &block)
-	:base(ao_output_plugin, block),
+	:AudioOutput(0),
 	 write_size(block.GetBlockValue("write_size", 1024u))
 {
 	if (ao_output_ref == 0) {
@@ -177,7 +172,7 @@ AoOutput::Open(AudioFormat &audio_format)
 }
 
 void
-AoOutput::Close()
+AoOutput::Close() noexcept
 {
 	ao_close(device);
 }
@@ -199,22 +194,9 @@ AoOutput::Play(const void *chunk, size_t size)
 	return size;
 }
 
-typedef AudioOutputWrapper<AoOutput> Wrapper;
-
 const struct AudioOutputPlugin ao_output_plugin = {
 	"ao",
 	nullptr,
-	&Wrapper::Init,
-	&Wrapper::Finish,
-	nullptr,
-	nullptr,
-	&Wrapper::Open,
-	&Wrapper::Close,
-	nullptr,
-	nullptr,
-	&Wrapper::Play,
-	nullptr,
-	nullptr,
-	nullptr,
+	&AoOutput::Create,
 	nullptr,
 };

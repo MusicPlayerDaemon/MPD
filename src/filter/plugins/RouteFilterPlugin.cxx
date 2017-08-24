@@ -48,7 +48,7 @@
 #include "filter/FilterRegistry.hxx"
 #include "pcm/PcmBuffer.hxx"
 #include "pcm/Silence.hxx"
-#include "util/StringUtil.hxx"
+#include "util/StringStrip.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/ConstBuffer.hxx"
 #include "util/WritableBuffer.hxx"

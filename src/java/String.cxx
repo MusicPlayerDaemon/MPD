@@ -28,7 +28,7 @@
  */
 
 #include "String.hxx"
-#include "util/StringUtil.hxx"
+#include "util/TruncateString.hxx"
 
 char *
 Java::String::CopyTo(JNIEnv *env, jstring value,
@@ -38,7 +38,7 @@ Java::String::CopyTo(JNIEnv *env, jstring value,
 	if (p == nullptr)
 		return nullptr;
 
-	char *result = CopyString(buffer, p, max_size);
+	char *result = CopyTruncateString(buffer, p, max_size);
 	env->ReleaseStringUTFChars(value, p);
 	return result;
 }

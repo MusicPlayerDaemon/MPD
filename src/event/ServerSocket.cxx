@@ -19,15 +19,16 @@
 
 #include "config.h"
 #include "ServerSocket.hxx"
+#include "net/IPv4Address.hxx"
 #include "net/StaticSocketAddress.hxx"
 #include "net/AllocatedSocketAddress.hxx"
 #include "net/SocketAddress.hxx"
 #include "net/SocketUtil.hxx"
 #include "net/SocketError.hxx"
+#include "net/UniqueSocketDescriptor.hxx"
 #include "net/Resolver.hxx"
 #include "net/ToString.hxx"
 #include "event/SocketMonitor.hxx"
-#include "system/fd_util.h"
 #include "fs/AllocatedPath.hxx"
 #include "fs/FileSystem.hxx"
 #include "util/RuntimeError.hxx"
@@ -47,7 +48,6 @@
 #include <ws2tcpip.h>
 #include <winsock.h>
 #else
-#include <netinet/in.h>
 #include <sys/socket.h>
 #include <netdb.h>
 #endif
@@ -107,7 +107,7 @@ public:
 		return ::ToString(address);
 	}
 
-	void SetFD(int _fd) noexcept {
+	void SetFD(SocketDescriptor _fd) noexcept {
 		SocketMonitor::Open(_fd);
 		SocketMonitor::ScheduleRead();
 	}
@@ -149,28 +149,23 @@ inline void
 OneServerSocket::Accept() noexcept
 {
 	StaticSocketAddress peer_address;
-	size_t peer_address_length = sizeof(peer_address);
-	int peer_fd =
-		accept_cloexec_nonblock(Get(), peer_address.GetAddress(),
-					&peer_address_length);
-	if (peer_fd < 0) {
+	UniqueSocketDescriptor peer_fd(Get().AcceptNonBlock(peer_address));
+	if (!peer_fd.IsDefined()) {
 		const SocketErrorMessage msg;
 		FormatError(server_socket_domain,
 			    "accept() failed: %s", (const char *)msg);
 		return;
 	}
 
-	peer_address.SetSize(peer_address_length);
-
-	if (socket_keepalive(peer_fd)) {
+	if (!peer_fd.SetKeepAlive()) {
 		const SocketErrorMessage msg;
 		FormatError(server_socket_domain,
 			    "Could not set TCP keepalive option: %s",
 			    (const char *)msg);
 	}
 
-	parent.OnAccept(peer_fd, peer_address,
-			get_remote_uid(peer_fd));
+	parent.OnAccept(std::move(peer_fd), peer_address,
+			get_remote_uid(peer_fd.Get()));
 }
 
 bool
@@ -185,9 +180,9 @@ OneServerSocket::Open()
 {
 	assert(!IsDefined());
 
-	int _fd = socket_bind_listen(address.GetFamily(),
-				     SOCK_STREAM, 0,
-				     address, 5);
+	auto _fd = socket_bind_listen(address.GetFamily(),
+				      SOCK_STREAM, 0,
+				      address, 5);
 
 #ifdef HAVE_UN
 	/* allow everybody to connect */
@@ -198,7 +193,7 @@ OneServerSocket::Open()
 
 	/* register in the EventLoop */
 
-	SetFD(_fd);
+	SetFD(_fd.Release());
 }
 
 ServerSocket::ServerSocket(EventLoop &_loop)
@@ -295,17 +290,15 @@ ServerSocket::AddAddress(AllocatedSocketAddress &&address)
 }
 
 void
-ServerSocket::AddFD(int fd)
+ServerSocket::AddFD(int _fd)
 {
-	assert(fd >= 0);
+	assert(_fd >= 0);
 
-	StaticSocketAddress address;
-	socklen_t address_length = sizeof(address);
-	if (getsockname(fd, address.GetAddress(),
-			&address_length) < 0)
+	SocketDescriptor fd(_fd);
+
+	StaticSocketAddress address = fd.GetLocalAddress();
+	if (!address.IsDefined())
 		throw MakeSocketError("Failed to get socket address");
-
-	address.SetSize(address_length);
 
 	OneServerSocket &s = AddAddress(address);
 	s.SetFD(fd);
@@ -316,13 +309,7 @@ ServerSocket::AddFD(int fd)
 inline void
 ServerSocket::AddPortIPv4(unsigned port)
 {
-	struct sockaddr_in sin;
-	memset(&sin, 0, sizeof(sin));
-	sin.sin_port = htons(port);
-	sin.sin_family = AF_INET;
-	sin.sin_addr.s_addr = INADDR_ANY;
-
-	AddAddress({(const sockaddr *)&sin, sizeof(sin)});
+	AddAddress(IPv4Address(port));
 }
 
 #ifdef HAVE_IPV6

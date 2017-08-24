@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "MultipleOutputs.hxx"
-#include "Internal.hxx"
+#include "Filtered.hxx"
 #include "Domain.hxx"
 #include "MusicBuffer.hxx"
 #include "MusicPipe.hxx"
@@ -49,7 +49,7 @@ MultipleOutputs::~MultipleOutputs()
 		i->FinishDestroy();
 }
 
-static AudioOutput *
+static FilteredAudioOutput *
 LoadOutput(EventLoop &event_loop,
 	   const ReplayGainConfig &replay_gain_config,
 	   MixerListener &mixer_listener,

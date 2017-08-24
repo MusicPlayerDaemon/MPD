@@ -48,7 +48,7 @@ private:
 	AvahiWatchEvent received;
 
 public:
-	AvahiWatch(int _fd, AvahiWatchEvent _event,
+	AvahiWatch(SocketDescriptor _fd, AvahiWatchEvent _event,
 		   AvahiWatchCallback _callback, void *_userdata,
 		   EventLoop &_loop)
 		:SocketMonitor(_fd, _loop),
@@ -72,7 +72,7 @@ public:
 protected:
 	virtual bool OnSocketReady(unsigned flags) {
 		received = ToAvahiWatchEvent(flags);
-		callback(this, Get(), received, userdata);
+		callback(this, Get().Get(), received, userdata);
 		received = AvahiWatchEvent(0);
 		return true;
 	}
@@ -132,7 +132,7 @@ MyAvahiPoll::WatchNew(const AvahiPoll *api, int fd, AvahiWatchEvent event,
 		      AvahiWatchCallback callback, void *userdata) {
 	const MyAvahiPoll &poll = *(const MyAvahiPoll *)api;
 
-	return new AvahiWatch(fd, event, callback, userdata,
+	return new AvahiWatch(SocketDescriptor(fd), event, callback, userdata,
 			      poll.event_loop);
 }
 

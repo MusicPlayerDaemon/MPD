@@ -24,9 +24,9 @@
 #include "Compiler.h"
 
 #include <list>
+#include <chrono>
 
 #include <stdint.h>
-#include <time.h>
 
 /**
  * Limit the search to files within the given directory.
@@ -55,12 +55,12 @@ public:
 		/**
 		 * For #LOCATE_TAG_MODIFIED_SINCE
 		 */
-		time_t time;
+		std::chrono::system_clock::time_point time;
 
 	public:
 		gcc_nonnull(3)
 		Item(unsigned tag, const char *value, bool fold_case=false);
-		Item(unsigned tag, time_t time);
+		Item(unsigned tag, std::chrono::system_clock::time_point time);
 
 		Item(const Item &other) = delete;
 		Item(Item &&) = default;

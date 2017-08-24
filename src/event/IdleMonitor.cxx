@@ -26,7 +26,7 @@
 void
 IdleMonitor::Cancel()
 {
-	assert(loop.IsInsideOrNull());
+	assert(loop.IsInside());
 
 	if (!IsActive())
 		return;
@@ -38,7 +38,7 @@ IdleMonitor::Cancel()
 void
 IdleMonitor::Schedule()
 {
-	assert(loop.IsInsideOrVirgin());
+	assert(loop.IsInside());
 
 	if (IsActive())
 		/* already scheduled */

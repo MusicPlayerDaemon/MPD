@@ -28,6 +28,7 @@
 #include "fs/NarrowPath.hxx"
 #include "fs/io/TextFile.hxx"
 #include "system/Error.hxx"
+#include "util/StringStrip.hxx"
 #include "Log.hxx"
 
 #include <stdexcept>

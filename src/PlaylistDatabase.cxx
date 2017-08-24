@@ -22,7 +22,8 @@
 #include "db/PlaylistVector.hxx"
 #include "fs/io/TextFile.hxx"
 #include "fs/io/BufferedOutputStream.hxx"
-#include "util/StringUtil.hxx"
+#include "util/StringStrip.hxx"
+#include "util/ChronoUtil.hxx"
 #include "util/RuntimeError.hxx"
 
 #include <string.h>
@@ -31,17 +32,19 @@
 void
 playlist_vector_save(BufferedOutputStream &os, const PlaylistVector &pv)
 {
-	for (const PlaylistInfo &pi : pv)
-		os.Format(PLAYLIST_META_BEGIN "%s\n"
-			  "mtime: %li\n"
-			  "playlist_end\n",
-			  pi.name.c_str(), (long)pi.mtime);
+	for (const PlaylistInfo &pi : pv) {
+		os.Format(PLAYLIST_META_BEGIN "%s\n", pi.name.c_str());
+		if (!IsNegative(pi.mtime))
+			os.Format("mtime: %li\n",
+				  (long)std::chrono::system_clock::to_time_t(pi.mtime));
+		os.Write("playlist_end\n");
+	}
 }
 
 void
 playlist_metadata_load(TextFile &file, PlaylistVector &pv, const char *name)
 {
-	PlaylistInfo pm(name, 0);
+	PlaylistInfo pm(name);
 
 	char *line, *colon;
 	const char *value;
@@ -57,7 +60,7 @@ playlist_metadata_load(TextFile &file, PlaylistVector &pv, const char *name)
 		value = StripLeft(colon);
 
 		if (strcmp(line, "mtime") == 0)
-			pm.mtime = strtol(value, nullptr, 10);
+			pm.mtime = std::chrono::system_clock::from_time_t(strtol(value, nullptr, 10));
 		else
 			throw FormatRuntimeError("unknown line in db: %s",
 						 line);

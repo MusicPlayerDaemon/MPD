@@ -98,14 +98,6 @@ class EventLoop final : SocketMonitor
 	 */
 	bool busy = true;
 
-#ifndef NDEBUG
-	/**
-	 * True if Run() was never called.  This is used for assert()
-	 * calls.
-	 */
-	bool virgin = true;
-#endif
-
 	PollGroup poll_group;
 	PollResult poll_result;
 
@@ -115,7 +107,9 @@ class EventLoop final : SocketMonitor
 	ThreadId thread = ThreadId::Null();
 
 public:
-	EventLoop();
+	explicit EventLoop(ThreadId _thread);
+	EventLoop():EventLoop(ThreadId::GetCurrent()) {}
+
 	~EventLoop();
 
 	/**
@@ -135,7 +129,7 @@ public:
 	void Break();
 
 	bool AddFD(int _fd, unsigned flags, SocketMonitor &m) {
-		assert(thread.IsNull() || thread.IsInside());
+		assert(IsInside());
 
 		return poll_group.Add(_fd, flags, &m);
 	}
@@ -200,27 +194,7 @@ public:
 	 */
 	gcc_pure
 	bool IsInside() const noexcept {
-		assert(!thread.IsNull());
-
 		return thread.IsInside();
-	}
-
-#ifndef NDEBUG
-	gcc_pure
-	bool IsInsideOrVirgin() const noexcept {
-		return virgin || IsInside();
-	}
-#endif
-
-	/**
-	 * Like IsInside(), but also returns true if the thread has
-	 * already ended (or was not started yet).  This is useful for
-	 * code which may run during startup or shutdown, when events
-	 * are not yet/anymore handled.
-	 */
-	gcc_pure
-	bool IsInsideOrNull() const noexcept {
-		return thread.IsNull() || thread.IsInside();
 	}
 };
 

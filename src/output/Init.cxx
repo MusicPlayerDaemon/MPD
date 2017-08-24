@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#include "Internal.hxx"
+#include "Filtered.hxx"
 #include "Registry.hxx"
 #include "Domain.hxx"
 #include "OutputAPI.hxx"
@@ -28,11 +28,12 @@
 #include "mixer/MixerType.hxx"
 #include "mixer/MixerControl.hxx"
 #include "mixer/plugins/SoftwareMixerPlugin.hxx"
-#include "filter/FilterPlugin.hxx"
-#include "filter/FilterRegistry.hxx"
 #include "filter/plugins/AutoConvertFilterPlugin.hxx"
+#include "filter/plugins/ConvertFilterPlugin.hxx"
 #include "filter/plugins/ReplayGainFilterPlugin.hxx"
 #include "filter/plugins/ChainFilterPlugin.hxx"
+#include "filter/plugins/VolumeFilterPlugin.hxx"
+#include "filter/plugins/NormalizeFilterPlugin.hxx"
 #include "config/ConfigError.hxx"
 #include "config/ConfigGlobal.hxx"
 #include "config/Block.hxx"
@@ -49,15 +50,11 @@
 #define AUDIO_OUTPUT_FORMAT	"format"
 #define AUDIO_FILTERS		"filters"
 
-AudioOutput::AudioOutput(const AudioOutputPlugin &_plugin,
-			 const ConfigBlock &block)
-	:plugin(_plugin)
+FilteredAudioOutput::FilteredAudioOutput(const char *_plugin_name,
+					 std::unique_ptr<AudioOutput> &&_output,
+					 const ConfigBlock &block)
+	:plugin_name(_plugin_name), output(std::move(_output))
 {
-	assert(plugin.finish != nullptr);
-	assert(plugin.open != nullptr);
-	assert(plugin.close != nullptr);
-	assert(plugin.play != nullptr);
-
 	Configure(block);
 }
 
@@ -106,14 +103,8 @@ audio_output_mixer_type(const ConfigBlock &block) noexcept
 						  "hardware"));
 }
 
-static PreparedFilter *
-CreateVolumeFilter()
-{
-	return filter_new(&volume_filter_plugin, ConfigBlock());
-}
-
 static Mixer *
-audio_output_load_mixer(EventLoop &event_loop, AudioOutput &ao,
+audio_output_load_mixer(EventLoop &event_loop, FilteredAudioOutput &ao,
 			const ConfigBlock &block,
 			const MixerPlugin *plugin,
 			PreparedFilter &filter_chain,
@@ -127,24 +118,26 @@ audio_output_load_mixer(EventLoop &event_loop, AudioOutput &ao,
 		return nullptr;
 
 	case MixerType::NULL_:
-		return mixer_new(event_loop, null_mixer_plugin, ao, listener,
+		return mixer_new(event_loop, null_mixer_plugin,
+				 *ao.output, listener,
 				 block);
 
 	case MixerType::HARDWARE:
 		if (plugin == nullptr)
 			return nullptr;
 
-		return mixer_new(event_loop, *plugin, ao, listener,
+		return mixer_new(event_loop, *plugin,
+				 *ao.output, listener,
 				 block);
 
 	case MixerType::SOFTWARE:
-		mixer = mixer_new(event_loop, software_mixer_plugin, ao,
-				  listener,
+		mixer = mixer_new(event_loop, software_mixer_plugin,
+				  *ao.output, listener,
 				  ConfigBlock());
 		assert(mixer != nullptr);
 
 		filter_chain_append(filter_chain, "software_mixer",
-				    ao.volume_filter.Set(CreateVolumeFilter()));
+				    ao.volume_filter.Set(volume_filter_prepare()));
 		return mixer;
 	}
 
@@ -153,7 +146,7 @@ audio_output_load_mixer(EventLoop &event_loop, AudioOutput &ao,
 }
 
 void
-AudioOutput::Configure(const ConfigBlock &block)
+FilteredAudioOutput::Configure(const ConfigBlock &block)
 {
 	if (!block.IsNull()) {
 		name = block.GetBlockValue(AUDIO_OUTPUT_NAME);
@@ -171,6 +164,13 @@ AudioOutput::Configure(const ConfigBlock &block)
 		config_audio_format.Clear();
 	}
 
+	{
+		char buffer[64];
+		snprintf(buffer, sizeof(buffer), "\"%s\" (%s)",
+			 name, plugin_name);
+		log_name = buffer;
+	}
+
 	/* set up the filter chain */
 
 	prepared_filter = filter_chain_new();
@@ -179,12 +179,8 @@ AudioOutput::Configure(const ConfigBlock &block)
 	/* create the normalization filter (if configured) */
 
 	if (config_get_bool(ConfigOption::VOLUME_NORMALIZATION, false)) {
-		auto *normalize_filter =
-			filter_new(&normalize_filter_plugin, ConfigBlock());
-		assert(normalize_filter != nullptr);
-
 		filter_chain_append(*prepared_filter, "normalize",
-				    autoconvert_filter_new(normalize_filter));
+				    autoconvert_filter_new(normalize_filter_prepare()));
 	}
 
 	try {
@@ -201,11 +197,15 @@ AudioOutput::Configure(const ConfigBlock &block)
 }
 
 inline void
-AudioOutput::Setup(EventLoop &event_loop,
-		   const ReplayGainConfig &replay_gain_config,
-		   MixerListener &mixer_listener,
-		   const ConfigBlock &block)
+FilteredAudioOutput::Setup(EventLoop &event_loop,
+			   const ReplayGainConfig &replay_gain_config,
+			   const MixerPlugin *mixer_plugin,
+			   MixerListener &mixer_listener,
+			   const ConfigBlock &block)
 {
+	if (output->GetNeedFullyDefinedAudioFormat() &&
+	    !config_audio_format.IsFullyDefined())
+		throw std::runtime_error("Need full audio format specification");
 
 	/* create the replay_gain filter */
 
@@ -229,7 +229,7 @@ AudioOutput::Setup(EventLoop &event_loop,
 
 	try {
 		mixer = audio_output_load_mixer(event_loop, *this, block,
-						plugin.mixer_plugin,
+						mixer_plugin,
 						*prepared_filter,
 						mixer_listener);
 	} catch (const std::runtime_error &e) {
@@ -254,14 +254,11 @@ AudioOutput::Setup(EventLoop &event_loop,
 
 	/* the "convert" filter must be the last one in the chain */
 
-	auto *f = filter_new(&convert_filter_plugin, ConfigBlock());
-	assert(f != nullptr);
-
 	filter_chain_append(*prepared_filter, "convert",
-			    convert_filter.Set(f));
+			    convert_filter.Set(convert_filter_prepare()));
 }
 
-AudioOutput *
+FilteredAudioOutput *
 audio_output_new(EventLoop &event_loop,
 		 const ReplayGainConfig &replay_gain_config,
 		 const ConfigBlock &block,
@@ -290,16 +287,20 @@ audio_output_new(EventLoop &event_loop,
 			      plugin->name);
 	}
 
-	AudioOutput *ao = ao_plugin_init(event_loop, *plugin, block);
+	std::unique_ptr<AudioOutput> ao(ao_plugin_init(event_loop, *plugin,
+						       block));
 	assert(ao != nullptr);
 
+	auto *f = new FilteredAudioOutput(plugin->name, std::move(ao), block);
+
 	try {
-		ao->Setup(event_loop, replay_gain_config,
-			  mixer_listener, block);
+		f->Setup(event_loop, replay_gain_config,
+			 plugin->mixer_plugin,
+			 mixer_listener, block);
 	} catch (...) {
-		ao_plugin_finish(ao);
+		delete f;
 		throw;
 	}
 
-	return ao;
+	return f;
 }

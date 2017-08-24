@@ -25,6 +25,7 @@
 #include "Page.hxx"
 #include "IcyMetaDataServer.hxx"
 #include "net/SocketError.hxx"
+#include "net/UniqueSocketDescriptor.hxx"
 #include "Log.hxx"
 
 #include <assert.h>
@@ -185,9 +186,10 @@ HttpdClient::SendResponse()
 	return true;
 }
 
-HttpdClient::HttpdClient(HttpdOutput &_httpd, int _fd, EventLoop &_loop,
+HttpdClient::HttpdClient(HttpdOutput &_httpd, UniqueSocketDescriptor &&_fd,
+			 EventLoop &_loop,
 			 bool _metadata_supported)
-	:BufferedSocket(_fd, _loop),
+	:BufferedSocket(_fd.Release(), _loop),
 	 httpd(_httpd),
 	 state(REQUEST),
 	 queue_size(0),

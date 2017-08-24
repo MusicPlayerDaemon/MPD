@@ -22,7 +22,7 @@
 #include "Partition.hxx"
 #include "Instance.hxx"
 #include "event/Loop.hxx"
-#include "util/StringUtil.hxx"
+#include "util/StringStrip.hxx"
 
 #include <string.h>
 

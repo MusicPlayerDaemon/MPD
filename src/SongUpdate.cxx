@@ -88,7 +88,7 @@ Song::UpdateFile(Storage &storage)
 			return false;
 	}
 
-	mtime = std::chrono::system_clock::to_time_t(info.mtime);
+	mtime = info.mtime;
 	tag_builder.Commit(tag);
 	return true;
 }
@@ -151,7 +151,7 @@ DetachedSong::LoadFile(Path path)
 	if (!tag_file_scan(path, tag_builder))
 		return false;
 
-	mtime = std::chrono::system_clock::to_time_t(fi.GetModificationTime());
+	mtime = fi.GetModificationTime();
 	tag_builder.Commit(tag);
 	return true;
 }
@@ -171,7 +171,7 @@ DetachedSong::Update()
 		if (!tag_stream_scan(uri.c_str(), tag_builder))
 			return false;
 
-		mtime = 0;
+		mtime = std::chrono::system_clock::time_point::min();
 		tag_builder.Commit(tag);
 		return true;
 	} else

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright (C) 2016-2017 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -30,14 +30,89 @@
 #ifndef EXCEPTION_HXX
 #define EXCEPTION_HXX
 
+#include "Compiler.h"
+
 #include <exception>
 #include <string>
+
+/**
+ * Throws the specified exception.  There is an overload for
+ * std::exception_ptr which throws the contained exception instead of
+ * the std::exception_ptr itself.
+ */
+template<typename T>
+gcc_noreturn
+inline void
+ThrowException(T &&t)
+{
+	throw t;
+}
+
+gcc_noreturn
+inline void
+ThrowException(std::exception_ptr ep)
+{
+	std::rethrow_exception(ep);
+}
+
+/**
+ * Create a nested exception, wrapping #ep inside (a copy of) #t.
+ */
+template<typename T>
+inline std::exception_ptr
+NestException(std::exception_ptr ep, T &&t) noexcept
+{
+	try {
+		std::rethrow_exception(ep);
+	} catch (...) {
+		try {
+			std::throw_with_nested(std::forward<T>(t));
+		} catch (...) {
+			return std::current_exception();
+		}
+	}
+}
+
+/**
+ * Find an instance of #T in the nested exception chain, and rethrow
+ * it.  Does nothing of no such instance was found.
+ */
+template<typename T>
+inline void
+FindRetrowNested(std::exception_ptr ep)
+{
+	try {
+		std::rethrow_exception(ep);
+	} catch (const T &t) {
+		throw;
+	} catch (const std::exception &e) {
+		try {
+			std::rethrow_if_nested(e);
+		} catch (...) {
+			FindRetrowNested<T>(std::current_exception());
+		}
+	} catch (const std::nested_exception &ne) {
+		FindRetrowNested<T>(ne.nested_ptr());
+	} catch (...) {
+	}
+}
+
+/**
+ * Obtain the full concatenated message of an exception and its nested
+ * chain.
+ */
+std::string
+GetFullMessage(const std::exception &e,
+	       const char *fallback="Unknown exception",
+	       const char *separator="; ") noexcept;
 
 /**
  * Extract the full message of a C++ exception, considering its nested
  * exceptions (if any).
  */
 std::string
-FullMessage(std::exception_ptr ep) noexcept;
+GetFullMessage(std::exception_ptr ep,
+	       const char *fallback="Unknown exception",
+	       const char *separator="; ") noexcept;
 
 #endif

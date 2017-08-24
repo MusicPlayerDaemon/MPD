@@ -42,25 +42,24 @@ public:
 	/**
 	 * Is the mixer device currently open?
 	 */
-	bool open;
+	bool open = false;
 
 	/**
 	 * Has this mixer failed, and should not be reopened
 	 * automatically?
 	 */
-	bool failed;
+	bool failed = false;
 
 public:
-	explicit Mixer(const MixerPlugin &_plugin, MixerListener &_listener)
-		:plugin(_plugin), listener(_listener),
-		 open(false),
-		 failed(false) {}
+	explicit Mixer(const MixerPlugin &_plugin,
+		       MixerListener &_listener) noexcept
+		:plugin(_plugin), listener(_listener) {}
 
 	Mixer(const Mixer &) = delete;
 
 	virtual ~Mixer() {}
 
-	bool IsPlugin(const MixerPlugin &other) const {
+	bool IsPlugin(const MixerPlugin &other) const noexcept {
 		return &plugin == &other;
 	}
 
@@ -74,7 +73,7 @@ public:
 	/**
 	 * Close mixer device
 	 */
-	virtual void Close() = 0;
+	virtual void Close() noexcept = 0;
 
 	/**
 	 * Reads the current volume.

@@ -28,6 +28,7 @@
 #include "TagPrint.hxx"
 #include "client/Response.hxx"
 #include "fs/Traits.hxx"
+#include "util/ChronoUtil.hxx"
 #include "util/UriUtil.hxx"
 
 #define SONG_FILE "file: "
@@ -88,7 +89,7 @@ song_print_info(Response &r, const LightSong &song, bool base)
 
 	PrintRange(r, song.start_time, song.end_time);
 
-	if (song.mtime > 0)
+	if (!IsNegative(song.mtime))
 		time_print(r, "Last-Modified", song.mtime);
 
 	tag_print(r, *song.tag);
@@ -101,7 +102,7 @@ song_print_info(Response &r, const DetachedSong &song, bool base)
 
 	PrintRange(r, song.GetStartTime(), song.GetEndTime());
 
-	if (song.GetLastModified() > 0)
+	if (!IsNegative(song.GetLastModified()))
 		time_print(r, "Last-Modified", song.GetLastModified());
 
 	tag_print_values(r, song.GetTag());

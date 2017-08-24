@@ -29,7 +29,7 @@
 
 #include "SplitString.hxx"
 #include "IterableSplitString.hxx"
-#include "StringUtil.hxx"
+#include "StringStrip.hxx"
 
 #include <string.h>
 

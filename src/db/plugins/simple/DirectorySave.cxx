@@ -26,6 +26,7 @@
 #include "PlaylistDatabase.hxx"
 #include "fs/io/TextFile.hxx"
 #include "fs/io/BufferedOutputStream.hxx"
+#include "util/ChronoUtil.hxx"
 #include "util/StringCompare.hxx"
 #include "util/NumberParser.hxx"
 #include "util/RuntimeError.hxx"
@@ -74,9 +75,9 @@ directory_save(BufferedOutputStream &os, const Directory &directory)
 		if (type != nullptr)
 			os.Format(DIRECTORY_TYPE "%s\n", type);
 
-		if (directory.mtime != 0)
+		if (!IsNegative(directory.mtime))
 			os.Format(DIRECTORY_MTIME "%lu\n",
-				  (unsigned long)directory.mtime);
+				  (unsigned long)std::chrono::system_clock::to_time_t(directory.mtime));
 
 		os.Format("%s%s\n", DIRECTORY_BEGIN, directory.GetPath());
 	}
@@ -102,7 +103,9 @@ ParseLine(Directory &directory, const char *line)
 {
 	const char *p;
 	if ((p = StringAfterPrefix(line, DIRECTORY_MTIME))) {
-		directory.mtime = ParseUint64(p);
+		const auto mtime = ParseUint64(p);
+		if (mtime > 0)
+			directory.mtime = std::chrono::system_clock::from_time_t(mtime);
 	} else if ((p = StringAfterPrefix(line, DIRECTORY_TYPE))) {
 		directory.device = ParseTypeString(p);
 	} else

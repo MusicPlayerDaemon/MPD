@@ -20,9 +20,8 @@
 #include "config.h"
 #include "OssOutputPlugin.hxx"
 #include "../OutputAPI.hxx"
-#include "../Wrapper.hxx"
 #include "mixer/MixerList.hxx"
-#include "system/fd_util.h"
+#include "system/UniqueFileDescriptor.hxx"
 #include "system/Error.hxx"
 #include "util/ConstBuffer.hxx"
 #include "util/Domain.hxx"
@@ -60,16 +59,12 @@
 #include "util/Manual.hxx"
 #endif
 
-class OssOutput {
-	friend struct AudioOutputWrapper<OssOutput>;
-
-	AudioOutput base;
-
+class OssOutput final : AudioOutput {
 #ifdef AFMT_S24_PACKED
 	Manual<PcmExport> pcm_export;
 #endif
 
-	int fd;
+	FileDescriptor fd = FileDescriptor::Undefined();
 	const char *device;
 
 	/**
@@ -84,32 +79,38 @@ class OssOutput {
 	 */
 	int oss_format;
 
-public:
-	OssOutput(const ConfigBlock &block, const char *_device=nullptr)
-		:base(oss_output_plugin, block),
-		 fd(-1), device(_device) {}
+#ifdef AFMT_S24_PACKED
+	static constexpr unsigned oss_flags = FLAG_ENABLE_DISABLE;
+#else
+	static constexpr unsigned oss_flags = 0;
+#endif
 
-	static OssOutput *Create(EventLoop &event_loop,
-				 const ConfigBlock &block);
+public:
+	explicit OssOutput(const char *_device=nullptr)
+		:AudioOutput(oss_flags),
+		 device(_device) {}
+
+	static AudioOutput *Create(EventLoop &event_loop,
+				   const ConfigBlock &block);
 
 #ifdef AFMT_S24_PACKED
-	void Enable() {
+	void Enable() override {
 		pcm_export.Construct();
 	}
 
-	void Disable() {
+	void Disable() noexcept override {
 		pcm_export.Destruct();
 	}
 #endif
 
-	void Open(AudioFormat &audio_format);
+	void Open(AudioFormat &audio_format) override;
 
-	void Close() {
+	void Close() noexcept override {
 		DoClose();
 	}
 
-	size_t Play(const void *chunk, size_t size);
-	void Cancel();
+	size_t Play(const void *chunk, size_t size) override;
+	void Cancel() noexcept override;
 
 private:
 	/**
@@ -168,15 +169,10 @@ static const char *const default_devices[] = { "/dev/sound/dsp", "/dev/dsp" };
 static bool
 oss_output_test_default_device(void)
 {
-	int fd, i;
-
-	for (i = ARRAY_SIZE(default_devices); --i >= 0; ) {
-		fd = open_cloexec(default_devices[i], O_WRONLY, 0);
-
-		if (fd >= 0) {
-			close(fd);
+	for (int i = ARRAY_SIZE(default_devices); --i >= 0; ) {
+		UniqueFileDescriptor fd;
+		if (fd.Open(default_devices[i], O_WRONLY, 0))
 			return true;
-		}
 
 		FormatErrno(oss_output_domain,
 			    "Error opening OSS device \"%s\"",
@@ -192,11 +188,10 @@ oss_open_default()
 	int err[ARRAY_SIZE(default_devices)];
 	enum oss_stat ret[ARRAY_SIZE(default_devices)];
 
-	const ConfigBlock empty;
 	for (int i = ARRAY_SIZE(default_devices); --i >= 0; ) {
 		ret[i] = oss_stat_device(default_devices[i], &err[i]);
 		if (ret[i] == OSS_STAT_NO_ERROR)
-			return new OssOutput(empty, default_devices[i]);
+			return new OssOutput(default_devices[i]);
 	}
 
 	for (int i = ARRAY_SIZE(default_devices); --i >= 0; ) {
@@ -226,12 +221,12 @@ oss_open_default()
 	throw std::runtime_error("error trying to open default OSS device");
 }
 
-inline OssOutput *
+AudioOutput *
 OssOutput::Create(EventLoop &, const ConfigBlock &block)
 {
 	const char *device = block.GetBlockValue("device");
 	if (device != nullptr)
-		return new OssOutput(block, device);
+		return new OssOutput(device);
 
 	return oss_open_default();
 }
@@ -239,9 +234,8 @@ OssOutput::Create(EventLoop &, const ConfigBlock &block)
 void
 OssOutput::DoClose()
 {
-	if (fd >= 0)
-		close(fd);
-	fd = -1;
+	if (fd.IsDefined())
+		fd.Close();
 }
 
 /**
@@ -258,14 +252,14 @@ enum oss_setup_result {
  * returned.  Any other failure throws std::runtime_error.
  */
 static enum oss_setup_result
-oss_try_ioctl_r(int fd, unsigned long request, int *value_r,
+oss_try_ioctl_r(FileDescriptor fd, unsigned long request, int *value_r,
 		const char *msg)
 {
-	assert(fd >= 0);
+	assert(fd.IsDefined());
 	assert(value_r != nullptr);
 	assert(msg != nullptr);
 
-	int ret = ioctl(fd, request, value_r);
+	int ret = ioctl(fd.Get(), request, value_r);
 	if (ret >= 0)
 		return SUCCESS;
 
@@ -281,7 +275,7 @@ oss_try_ioctl_r(int fd, unsigned long request, int *value_r,
  * returned.  Any other failure throws std::runtime_error.
  */
 static enum oss_setup_result
-oss_try_ioctl(int fd, unsigned long request, int value,
+oss_try_ioctl(FileDescriptor fd, unsigned long request, int value,
 	      const char *msg)
 {
 	return oss_try_ioctl_r(fd, request, &value, msg);
@@ -294,7 +288,7 @@ oss_try_ioctl(int fd, unsigned long request, int value,
  * Throws #std::runtime_error on error.
  */
 static void
-oss_setup_channels(int fd, AudioFormat &audio_format)
+oss_setup_channels(FileDescriptor fd, AudioFormat &audio_format)
 {
 	const char *const msg = "Failed to set channel count";
 	int channels = audio_format.channels;
@@ -343,7 +337,7 @@ oss_setup_channels(int fd, AudioFormat &audio_format)
  * Throws #std::runtime_error on error.
  */
 static void
-oss_setup_sample_rate(int fd, AudioFormat &audio_format)
+oss_setup_sample_rate(FileDescriptor fd, AudioFormat &audio_format)
 {
 	const char *const msg = "Failed to set sample rate";
 	int sample_rate = audio_format.sample_rate;
@@ -467,7 +461,7 @@ sample_format_from_oss(int format) noexcept
  * error
  */
 static enum oss_setup_result
-oss_probe_sample_format(int fd, SampleFormat sample_format,
+oss_probe_sample_format(FileDescriptor fd, SampleFormat sample_format,
 			SampleFormat *sample_format_r,
 			int *oss_format_r
 #ifdef AFMT_S24_PACKED
@@ -523,7 +517,7 @@ oss_probe_sample_format(int fd, SampleFormat sample_format,
  * specified format is not supported.
  */
 static void
-oss_setup_sample_format(int fd, AudioFormat &audio_format,
+oss_setup_sample_format(FileDescriptor fd, AudioFormat &audio_format,
 			int *oss_format_r
 #ifdef AFMT_S24_PACKED
 			, PcmExport &pcm_export
@@ -601,10 +595,9 @@ OssOutput::Setup(AudioFormat &_audio_format)
 inline void
 OssOutput::Reopen()
 try {
-	assert(fd < 0);
+	assert(!fd.IsDefined());
 
-	fd = open_cloexec(device, O_WRONLY, 0);
-	if (fd < 0)
+	if (!fd.Open(device, O_WRONLY))
 		throw FormatErrno("Error opening OSS device \"%s\"", device);
 
 	enum oss_setup_result result;
@@ -638,11 +631,10 @@ try {
 	throw;
 }
 
-inline void
+void
 OssOutput::Open(AudioFormat &_audio_format)
 try {
-	fd = open_cloexec(device, O_WRONLY, 0);
-	if (fd < 0)
+	if (!fd.Open(device, O_WRONLY))
 		throw FormatErrno("Error opening OSS device \"%s\"", device);
 
 	Setup(_audio_format);
@@ -653,11 +645,11 @@ try {
 	throw;
 }
 
-inline void
-OssOutput::Cancel()
+void
+OssOutput::Cancel() noexcept
 {
-	if (fd >= 0) {
-		ioctl(fd, SNDCTL_DSP_RESET, 0);
+	if (fd.IsDefined()) {
+		ioctl(fd.Get(), SNDCTL_DSP_RESET, 0);
 		DoClose();
 	}
 
@@ -666,7 +658,7 @@ OssOutput::Cancel()
 #endif
 }
 
-inline size_t
+size_t
 OssOutput::Play(const void *chunk, size_t size)
 {
 	ssize_t ret;
@@ -674,7 +666,7 @@ OssOutput::Play(const void *chunk, size_t size)
 	assert(size > 0);
 
 	/* reopen the device since it was closed by dropBufferedAudio */
-	if (fd < 0)
+	if (!fd.IsDefined())
 		Reopen();
 
 #ifdef AFMT_S24_PACKED
@@ -686,7 +678,7 @@ OssOutput::Play(const void *chunk, size_t size)
 	assert(size > 0);
 
 	while (true) {
-		ret = write(fd, chunk, size);
+		ret = fd.Write(chunk, size);
 		if (ret > 0) {
 #ifdef AFMT_S24_PACKED
 			ret = pcm_export->CalcSourceSize(ret);
@@ -699,28 +691,9 @@ OssOutput::Play(const void *chunk, size_t size)
 	}
 }
 
-typedef AudioOutputWrapper<OssOutput> Wrapper;
-
 const struct AudioOutputPlugin oss_output_plugin = {
 	"oss",
 	oss_output_test_default_device,
-	&Wrapper::Init,
-	&Wrapper::Finish,
-#ifdef AFMT_S24_PACKED
-	&Wrapper::Enable,
-	&Wrapper::Disable,
-#else
-	nullptr,
-	nullptr,
-#endif
-	&Wrapper::Open,
-	&Wrapper::Close,
-	nullptr,
-	nullptr,
-	&Wrapper::Play,
-	nullptr,
-	&Wrapper::Cancel,
-	nullptr,
-
+	OssOutput::Create,
 	&oss_mixer_plugin,
 };

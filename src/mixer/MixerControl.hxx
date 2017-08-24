@@ -27,7 +27,7 @@
 
 class Mixer;
 class EventLoop;
-struct AudioOutput;
+class AudioOutput;
 struct MixerPlugin;
 class MixerListener;
 struct ConfigBlock;
@@ -36,7 +36,8 @@ struct ConfigBlock;
  * Throws std::runtime_error on error.
  */
 Mixer *
-mixer_new(EventLoop &event_loop, const MixerPlugin &plugin, AudioOutput &ao,
+mixer_new(EventLoop &event_loop, const MixerPlugin &plugin,
+	  AudioOutput &ao,
 	  MixerListener &listener,
 	  const ConfigBlock &block);
 

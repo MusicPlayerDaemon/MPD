@@ -40,7 +40,7 @@ public:
 	virtual void Open() override {
 	}
 
-	virtual void Close() override {
+	void Close() noexcept override {
 	}
 
 	virtual int GetVolume() override;

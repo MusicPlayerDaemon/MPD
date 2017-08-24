@@ -26,7 +26,7 @@
 #include "DetachedSong.hxx"
 #include "tag/Builder.hxx"
 #include "util/ASCII.hxx"
-#include "util/StringUtil.hxx"
+#include "util/StringStrip.hxx"
 #include "util/DivideString.hxx"
 
 #include <string>

@@ -17,14 +17,9 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "config.h"
-#include "Internal.hxx"
+#ifndef MPD_TAG_ID3MUSICBRAINZ_HXX
+#define MPD_TAG_ID3MUSICBRAINZ_HXX
 
-bool
-AudioOutput::IsChunkConsumed(const MusicChunk &chunk) const noexcept
-{
-	if (!open)
-		return true;
+extern const struct tag_table musicbrainz_txxx_tags[];
 
-	return source.IsChunkConsumed(chunk);
-}
+#endif

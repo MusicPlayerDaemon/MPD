@@ -23,7 +23,7 @@
 // IWYU pragma: begin_exports
 
 #include "OutputPlugin.hxx"
-#include "Internal.hxx"
+#include "Interface.hxx"
 #include "AudioFormat.hxx"
 #include "tag/Tag.hxx"
 #include "config/Block.hxx"

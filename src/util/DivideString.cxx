@@ -18,7 +18,7 @@
  */
 
 #include "DivideString.hxx"
-#include "StringUtil.hxx"
+#include "StringStrip.hxx"
 
 #include <string.h>
 

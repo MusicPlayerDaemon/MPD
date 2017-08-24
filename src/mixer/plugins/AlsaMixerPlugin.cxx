@@ -95,7 +95,7 @@ public:
 
 	/* virtual methods from class Mixer */
 	void Open() override;
-	void Close() override;
+	void Close() noexcept override;
 	int GetVolume() override;
 	void SetVolume(unsigned volume) override;
 };
@@ -252,7 +252,7 @@ AlsaMixer::Open()
 }
 
 void
-AlsaMixer::Close()
+AlsaMixer::Close() noexcept
 {
 	assert(handle != nullptr);
 

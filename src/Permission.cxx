@@ -22,7 +22,7 @@
 #include "config/Param.hxx"
 #include "config/ConfigGlobal.hxx"
 #include "config/ConfigOption.hxx"
-#include "system/FatalError.hxx"
+#include "util/RuntimeError.hxx"
 
 #include <algorithm>
 #include <map>
@@ -56,7 +56,7 @@ ParsePermission(const char *p)
 		if (strcmp(p, i->name) == 0)
 			return i->value;
 
-	FormatFatalError("unknown permission \"%s\"", p);
+	throw FormatRuntimeError("unknown permission \"%s\"", p);
 }
 
 static unsigned parsePermissions(const char *string)
@@ -102,11 +102,11 @@ void initPermissions(void)
 				       PERMISSION_PASSWORD_CHAR);
 
 			if (separator == NULL)
-				FormatFatalError("\"%c\" not found in password string "
-						 "\"%s\", line %i",
-						 PERMISSION_PASSWORD_CHAR,
-						 param->value.c_str(),
-						 param->line);
+				throw FormatRuntimeError("\"%c\" not found in password string "
+							 "\"%s\", line %i",
+							 PERMISSION_PASSWORD_CHAR,
+							 param->value.c_str(),
+							 param->line);
 
 			std::string password(param->value.c_str(), separator);
 

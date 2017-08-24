@@ -22,6 +22,7 @@
 #include "db/LightSong.hxx"
 #include "DetachedSong.hxx"
 #include "tag/ParseName.hxx"
+#include "util/ChronoUtil.hxx"
 #include "util/ConstBuffer.hxx"
 #include "util/StringAPI.hxx"
 #include "util/ASCII.hxx"
@@ -71,7 +72,8 @@ SongFilter::Item::Item(unsigned _tag, const char *_value, bool _fold_case)
 {
 }
 
-SongFilter::Item::Item(unsigned _tag, time_t _time)
+SongFilter::Item::Item(unsigned _tag,
+		       std::chrono::system_clock::time_point _time)
 	:tag(_tag), value(nullptr), time(_time)
 {
 }
@@ -183,8 +185,8 @@ SongFilter::~SongFilter()
 }
 
 gcc_pure
-static time_t
-ParseTimeStamp(const char *s) noexcept
+static std::chrono::system_clock::time_point
+ParseTimeStamp(const char *s)
 {
 	assert(s != nullptr);
 
@@ -192,14 +194,13 @@ ParseTimeStamp(const char *s) noexcept
 	unsigned long long value = strtoull(s, &endptr, 10);
 	if (*endptr == 0 && endptr > s)
 		/* it's an integral UNIX time stamp */
-		return (time_t)value;
+		return std::chrono::system_clock::from_time_t((time_t)value);
 
 	try {
 		/* try ISO 8601 */
-		const auto t = ParseTimePoint(s, "%FT%TZ");
-		return std::chrono::system_clock::to_time_t(t);
+		return ParseTimePoint(s, "%FT%TZ");
 	} catch (const std::runtime_error &) {
-		return 0;
+		return std::chrono::system_clock::time_point::min();
 	}
 }
 
@@ -219,8 +220,8 @@ SongFilter::Parse(const char *tag_string, const char *value, bool fold_case)
 	}
 
 	if (tag == LOCATE_TAG_MODIFIED_SINCE) {
-		time_t t = ParseTimeStamp(value);
-		if (t == 0)
+		const auto t = ParseTimeStamp(value);
+		if (IsNegative(t))
 			return false;
 
 		items.push_back(Item(tag, t));

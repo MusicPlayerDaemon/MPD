@@ -32,6 +32,7 @@ extern const MixerPlugin software_mixer_plugin;
 extern const MixerPlugin alsa_mixer_plugin;
 extern const MixerPlugin haiku_mixer_plugin;
 extern const MixerPlugin oss_mixer_plugin;
+extern const MixerPlugin osx_mixer_plugin;
 extern const MixerPlugin roar_mixer_plugin;
 extern const MixerPlugin pulse_mixer_plugin;
 extern const MixerPlugin winmm_mixer_plugin;

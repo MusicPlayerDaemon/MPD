@@ -20,7 +20,6 @@
 #include "config.h"
 #include "SocketMonitor.hxx"
 #include "Loop.hxx"
-#include "system/fd_util.h"
 
 #include <assert.h>
 
@@ -46,25 +45,22 @@ SocketMonitor::~SocketMonitor()
 }
 
 void
-SocketMonitor::Open(int _fd)
+SocketMonitor::Open(SocketDescriptor _fd)
 {
-	assert(fd < 0);
-	assert(_fd >= 0);
+	assert(!fd.IsDefined());
+	assert(_fd.IsDefined());
 
 	fd = _fd;
 }
 
-int
+SocketDescriptor
 SocketMonitor::Steal()
 {
 	assert(IsDefined());
 
 	Cancel();
 
-	int result = fd;
-	fd = -1;
-
-	return result;
+	return std::exchange(fd, SocketDescriptor::Undefined());
 }
 
 void
@@ -72,15 +68,14 @@ SocketMonitor::Abandon()
 {
 	assert(IsDefined());
 
-	int old_fd = fd;
-	fd = -1;
-	loop.Abandon(old_fd, *this);
+	loop.Abandon(std::exchange(fd, SocketDescriptor::Undefined()).Get(),
+		     *this);
 }
 
 void
 SocketMonitor::Close()
 {
-	close_socket(Steal());
+	Steal().Close();
 }
 
 void
@@ -92,11 +87,11 @@ SocketMonitor::Schedule(unsigned flags)
 		return;
 
 	if (scheduled_flags == 0)
-		loop.AddFD(fd, flags, *this);
+		loop.AddFD(fd.Get(), flags, *this);
 	else if (flags == 0)
-		loop.RemoveFD(fd, *this);
+		loop.RemoveFD(fd.Get(), *this);
 	else
-		loop.ModifyFD(fd, flags, *this);
+		loop.ModifyFD(fd.Get(), flags, *this);
 
 	scheduled_flags = flags;
 }
@@ -111,7 +106,7 @@ SocketMonitor::Read(void *data, size_t length)
 	flags |= MSG_DONTWAIT;
 #endif
 
-	return recv(Get(), (char *)data, length, flags);
+	return recv(Get().Get(), (char *)data, length, flags);
 }
 
 SocketMonitor::ssize_t
@@ -127,5 +122,5 @@ SocketMonitor::Write(const void *data, size_t length)
 	flags |= MSG_DONTWAIT;
 #endif
 
-	return send(Get(), (const char *)data, length, flags);
+	return send(Get().Get(), (const char *)data, length, flags);
 }

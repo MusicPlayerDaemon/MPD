@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2014 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright (C) 2013-2017 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -44,6 +44,7 @@ struct WritableBuffer;
 template<>
 struct WritableBuffer<void> {
 	typedef size_t size_type;
+	typedef void value_type;
 	typedef void *pointer_type;
 	typedef const void *const_pointer_type;
 	typedef pointer_type iterator;
@@ -80,6 +81,7 @@ struct WritableBuffer<void> {
 template<typename T>
 struct WritableBuffer {
 	typedef size_t size_type;
+	typedef T value_type;
 	typedef T &reference_type;
 	typedef const T &const_reference_type;
 	typedef T *pointer_type;
@@ -95,6 +97,13 @@ struct WritableBuffer {
 	constexpr WritableBuffer(std::nullptr_t):data(nullptr), size(0) {}
 
 	constexpr WritableBuffer(pointer_type _data, size_type _size)
+		:data(_data), size(_size) {}
+
+	/**
+	 * Convert array to WritableBuffer instance.
+	 */
+	template<size_type _size>
+	constexpr WritableBuffer(T (&_data)[_size])
 		:data(_data), size(_size) {}
 
 	constexpr static WritableBuffer Null() {
@@ -225,6 +234,20 @@ struct WritableBuffer {
 
 		data += n;
 		size -= n;
+	}
+
+	/**
+	 * Move the front pointer to the given address, and adjust the
+	 * size attribute to retain the old end address.
+	 */
+	void MoveFront(pointer_type new_data) {
+#ifndef NDEBUG
+		assert(IsNull() == (new_data == nullptr));
+		assert(new_data <= end());
+#endif
+
+		size = end() - new_data;
+		data = new_data;
 	}
 };
 

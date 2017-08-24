@@ -25,7 +25,7 @@
 #include "CdioParanoiaInputPlugin.hxx"
 #include "../InputStream.hxx"
 #include "../InputPlugin.hxx"
-#include "util/StringUtil.hxx"
+#include "util/TruncateString.hxx"
 #include "util/StringCompare.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/Domain.hxx"
@@ -143,7 +143,7 @@ parse_cdio_uri(struct cdio_uri *dest, const char *src)
 	const char *slash = strrchr(src, '/');
 	if (slash == nullptr) {
 		/* play the whole CD in the specified drive */
-		CopyString(dest->device, src, sizeof(dest->device));
+		CopyTruncateString(dest->device, src, sizeof(dest->device));
 		dest->track = -1;
 		return true;
 	}

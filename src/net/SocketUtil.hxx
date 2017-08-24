@@ -26,6 +26,7 @@
 #ifndef MPD_SOCKET_UTIL_HXX
 #define MPD_SOCKET_UTIL_HXX
 
+class UniqueSocketDescriptor;
 class SocketAddress;
 
 /**
@@ -43,12 +44,9 @@ class SocketAddress;
  * ignore errors
  * @return the socket file descriptor
  */
-int
+UniqueSocketDescriptor
 socket_bind_listen(int domain, int type, int protocol,
 		   SocketAddress address,
 		   int backlog);
-
-int
-socket_keepalive(int fd);
 
 #endif

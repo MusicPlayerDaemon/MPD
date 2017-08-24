@@ -37,11 +37,11 @@ public:
 		pv.Open(out_audio_format.format);
 	}
 
-	unsigned GetVolume() const {
+	unsigned GetVolume() const noexcept {
 		return pv.GetVolume();
 	}
 
-	void SetVolume(unsigned _volume) {
+	void SetVolume(unsigned _volume) noexcept {
 		pv.SetVolume(_volume);
 	}
 
@@ -50,8 +50,6 @@ public:
 };
 
 class PreparedVolumeFilter final : public PreparedFilter {
-	PcmVolume pv;
-
 public:
 	/* virtual methods from class Filter */
 	Filter *Open(AudioFormat &af) override;
@@ -80,8 +78,14 @@ const FilterPlugin volume_filter_plugin = {
 	volume_filter_init,
 };
 
+PreparedFilter *
+volume_filter_prepare() noexcept
+{
+	return new PreparedVolumeFilter();
+}
+
 unsigned
-volume_filter_get(const Filter *_filter)
+volume_filter_get(const Filter *_filter) noexcept
 {
 	const VolumeFilter *filter =
 		(const VolumeFilter *)_filter;
@@ -90,7 +94,7 @@ volume_filter_get(const Filter *_filter)
 }
 
 void
-volume_filter_set(Filter *_filter, unsigned volume)
+volume_filter_set(Filter *_filter, unsigned volume) noexcept
 {
 	VolumeFilter *filter = (VolumeFilter *)_filter;
 

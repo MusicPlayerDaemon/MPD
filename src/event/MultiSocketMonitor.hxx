@@ -59,13 +59,14 @@ class MultiSocketMonitor : IdleMonitor, TimeoutMonitor
 		unsigned revents;
 
 	public:
-		SingleFD(MultiSocketMonitor &_multi, int _fd, unsigned events)
+		SingleFD(MultiSocketMonitor &_multi, SocketDescriptor _fd,
+			 unsigned events)
 			:SocketMonitor(_fd, _multi.GetEventLoop()),
 			multi(_multi), revents(0) {
 			Schedule(events);
 		}
 
-		int GetFD() const {
+		SocketDescriptor GetFD() const {
 			return SocketMonitor::Get();
 		}
 
@@ -153,7 +154,7 @@ public:
 	 *
 	 * May only be called from PrepareSockets().
 	 */
-	void AddSocket(int fd, unsigned events) {
+	void AddSocket(SocketDescriptor fd, unsigned events) {
 		fds.emplace_front(*this, fd, events);
 	}
 

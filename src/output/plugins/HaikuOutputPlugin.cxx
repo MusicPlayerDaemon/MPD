@@ -21,7 +21,6 @@
 #include "config.h"
 #include "HaikuOutputPlugin.hxx"
 #include "../OutputAPI.hxx"
-#include "../Wrapper.hxx"
 #include "mixer/MixerList.hxx"
 #include "util/Domain.hxx"
 #include "system/Error.hxx"
@@ -43,12 +42,9 @@
 
 #define UTF8_PLAY "\xE2\x96\xB6"
 
-class HaikuOutput {
-	friend struct AudioOutputWrapper<HaikuOutput>;
+class HaikuOutput final: AudioOutput {
 	friend int haiku_output_get_volume(HaikuOutput &haiku);
 	friend bool haiku_output_set_volume(HaikuOutput &haiku, unsigned volume);
-
-	AudioOutput base;
 
 	size_t write_size;
 
@@ -66,27 +62,28 @@ class HaikuOutput {
 
 public:
 	HaikuOutput(const ConfigBlock &block)
-		:base(haiku_output_plugin, block),
+		:AudioOutput(0),
 		 /* XXX: by default we should let the MediaKit propose the buffer size */
 		 write_size(block.GetBlockValue("write_size", 4096u)) {}
 
 	~HaikuOutput();
 
-	static HaikuOutput *Create(EventLoop &event_loop,
+	static AudioOutput *Create(EventLoop &event_loop,
 				   const ConfigBlock &block);
 
-	void Open(AudioFormat &audio_format);
-	void Close();
+private:
+	void Open(AudioFormat &audio_format) override;
+	void Close() noexcept override;
 
-	size_t Play(const void *chunk, size_t size);
-	void Cancel();
+	size_t Play(const void *chunk, size_t size) override;
+	void Cancel() noexcept override;
 
-	std::chrono::steady_clock::duration Delay() noexcept;
+	std::chrono::steady_clock::duration Delay() const noexcept override;
 
 	void FillBuffer(void* _buffer, size_t size,
 		gcc_unused const media_raw_audio_format& _format);
 
-	void SendTag(const Tag &tag);
+	void SendTag(const Tag &tag) override;
 };
 
 static constexpr Domain haiku_output_domain("haiku_output");
@@ -120,7 +117,7 @@ haiku_test_default_device(void)
 
 }
 
-inline HaikuOutput *
+inline AudioOutput *
 HaikuOutput::Create(EventLoop &, const ConfigBlock &block)
 {
 	initialize_application();
@@ -129,7 +126,7 @@ HaikuOutput::Create(EventLoop &, const ConfigBlock &block)
 }
 
 void
-HaikuOutput::Close()
+HaikuOutput::Close() noexcept
 {
 	sound_player->SetHasData(false);
 	delete_sem(new_buffer);
@@ -138,8 +135,6 @@ HaikuOutput::Close()
 	delete sound_player;
 	sound_player = nullptr;
 }
-
-
 
 HaikuOutput::~HaikuOutput()
 {
@@ -186,7 +181,7 @@ HaikuOutput::FillBuffer(void* _buffer, size_t size,
 	}
 }
 
-inline void
+void
 HaikuOutput::Open(AudioFormat &audio_format)
 {
 	status_t err;
@@ -265,7 +260,7 @@ HaikuOutput::Open(AudioFormat &audio_format)
 	sound_player->SetHasData(false);
 }
 
-inline size_t
+size_t
 HaikuOutput::Play(const void *chunk, size_t size)
 {
 	BSoundPlayer* const soundPlayer = sound_player;
@@ -311,7 +306,7 @@ HaikuOutput::Play(const void *chunk, size_t size)
 }
 
 inline std::chrono::steady_clock::duration
-HaikuOutput::Delay() noexcept
+HaikuOutput::Delay() const noexcept
 {
 	unsigned delay = buffer_filled ? 0 : buffer_delay;
 
@@ -324,7 +319,7 @@ HaikuOutput::Delay() noexcept
 	return std::chrono::steady_clock::duration::zero();
 }
 
-inline void
+void
 HaikuOutput::SendTag(const Tag &tag)
 {
 	status_t err;
@@ -468,18 +463,6 @@ typedef AudioOutputWrapper<HaikuOutput> Wrapper;
 const struct AudioOutputPlugin haiku_output_plugin = {
 	"haiku",
 	haiku_test_default_device,
-	&Wrapper::Init,
-	&Wrapper::Finish,
-	nullptr,
-	nullptr,
-	&Wrapper::Open,
-	&Wrapper::Close,
-	&Wrapper::Delay,
-	&Wrapper::SendTag,
-	&Wrapper::Play,
-	nullptr,
-	nullptr,
-	nullptr,
-
+	&HaikuOutput::Create,
 	&haiku_mixer_plugin,
 };

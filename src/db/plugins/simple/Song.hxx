@@ -70,7 +70,11 @@ struct Song {
 	 */
 	Directory *const parent;
 
-	time_t mtime;
+	/**
+	 * The time stamp of the last file modification.  A negative
+	 * value means that this is unknown/unavailable.
+	 */
+	std::chrono::system_clock::time_point mtime;
 
 	/**
 	 * Start of this sub-song within the file.

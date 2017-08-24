@@ -9,6 +9,16 @@ ver 0.21 (not yet released)
 * output
   - alsa: non-blocking mode
 
+ver 0.20.10 (2017/08/24)
+* decoder
+  - ffmpeg: support MusicBrainz ID3v2 tags
+* tags
+  - aiff: fix FORM chunk size endianess (is big-endian)
+* mixer
+  - osx: add a mixer for OSX.
+* fix crash when resuming playback before decoder is ready
+* fix crash on Windows
+
 ver 0.20.9 (2017/06/04)
 * decoder
   - ffmpeg: support *.adx

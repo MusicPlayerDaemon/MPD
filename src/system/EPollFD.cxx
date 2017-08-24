@@ -20,7 +20,7 @@
 #include "config.h"
 #ifdef USE_EPOLL
 #include "EPollFD.hxx"
-#include "FatalError.hxx"
+#include "Error.hxx"
 
 #ifdef __BIONIC__
 
@@ -41,7 +41,7 @@ EPollFD::EPollFD()
 	:fd(::epoll_create1(EPOLL_CLOEXEC))
 {
 	if (fd < 0)
-		FatalSystemError("epoll_create1() failed");
+		throw MakeErrno("epoll_create1() failed");
 }
 
 #endif /* USE_EPOLL */

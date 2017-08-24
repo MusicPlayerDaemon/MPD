@@ -57,7 +57,7 @@ FormatStringV(const char *fmt, va_list args) noexcept
 	const size_t length = strlen(buffer);
 	char *p = new char[length + 1];
 	memcpy(p, buffer, length + 1);
-	return AllocatedString<>::Donate(buffer);
+	return AllocatedString<>::Donate(p);
 #endif
 }
 

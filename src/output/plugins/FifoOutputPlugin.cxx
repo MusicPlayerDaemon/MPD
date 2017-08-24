@@ -20,7 +20,6 @@
 #include "config.h"
 #include "FifoOutputPlugin.hxx"
 #include "../OutputAPI.hxx"
-#include "../Wrapper.hxx"
 #include "../Timer.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "fs/FileSystem.hxx"
@@ -34,11 +33,7 @@
 #include <errno.h>
 #include <unistd.h>
 
-class FifoOutput {
-	friend struct AudioOutputWrapper<FifoOutput>;
-
-	AudioOutput base;
-
+class FifoOutput final : AudioOutput {
 	const AllocatedPath path;
 	std::string path_utf8;
 
@@ -54,9 +49,12 @@ public:
 		CloseFifo();
 	}
 
-	static FifoOutput *Create(EventLoop &event_loop,
-				  const ConfigBlock &block);
+	static AudioOutput *Create(EventLoop &,
+				   const ConfigBlock &block) {
+		return new FifoOutput(block);
+	}
 
+private:
 	void Create();
 	void Check();
 	void Delete();
@@ -64,18 +62,18 @@ public:
 	void OpenFifo();
 	void CloseFifo();
 
-	void Open(AudioFormat &audio_format);
-	void Close();
+	void Open(AudioFormat &audio_format) override;
+	void Close() noexcept override;
 
-	std::chrono::steady_clock::duration Delay() const noexcept;
-	size_t Play(const void *chunk, size_t size);
-	void Cancel();
+	std::chrono::steady_clock::duration Delay() const noexcept override;
+	size_t Play(const void *chunk, size_t size) override;
+	void Cancel() noexcept override;
 };
 
 static constexpr Domain fifo_output_domain("fifo_output");
 
 FifoOutput::FifoOutput(const ConfigBlock &block)
-	:base(fifo_output_plugin, block),
+	:AudioOutput(0),
 	 path(block.GetPath("path"))
 {
 	if (path.IsNull())
@@ -155,24 +153,18 @@ FifoOutput::OpenFifo()
 try {
 	Check();
 
-	input = OpenFile(path, O_RDONLY|O_NONBLOCK|O_BINARY, 0);
+	input = OpenFile(path, O_RDONLY|O_NONBLOCK|O_BINARY, 0).Steal();
 	if (input < 0)
 		throw FormatErrno("Could not open FIFO \"%s\" for reading",
 				  path_utf8.c_str());
 
-	output = OpenFile(path, O_WRONLY|O_NONBLOCK|O_BINARY, 0);
+	output = OpenFile(path, O_WRONLY|O_NONBLOCK|O_BINARY, 0).Steal();
 	if (output < 0)
 		throw FormatErrno("Could not open FIFO \"%s\" for writing",
 				  path_utf8.c_str());
 } catch (...) {
 	CloseFifo();
 	throw;
-}
-
-inline FifoOutput *
-FifoOutput::Create(EventLoop &, const ConfigBlock &block)
-{
-	return new FifoOutput(block);
 }
 
 void
@@ -182,13 +174,13 @@ FifoOutput::Open(AudioFormat &audio_format)
 }
 
 void
-FifoOutput::Close()
+FifoOutput::Close() noexcept
 {
 	delete timer;
 }
 
-inline void
-FifoOutput::Cancel()
+void
+FifoOutput::Cancel() noexcept
 {
 	timer->Reset();
 
@@ -205,7 +197,7 @@ FifoOutput::Cancel()
 	}
 }
 
-inline std::chrono::steady_clock::duration
+std::chrono::steady_clock::duration
 FifoOutput::Delay() const noexcept
 {
 	return timer->IsStarted()
@@ -213,7 +205,7 @@ FifoOutput::Delay() const noexcept
 		: std::chrono::steady_clock::duration::zero();
 }
 
-inline size_t
+size_t
 FifoOutput::Play(const void *chunk, size_t size)
 {
 	if (!timer->IsStarted())
@@ -241,22 +233,9 @@ FifoOutput::Play(const void *chunk, size_t size)
 	}
 }
 
-typedef AudioOutputWrapper<FifoOutput> Wrapper;
-
 const struct AudioOutputPlugin fifo_output_plugin = {
 	"fifo",
 	nullptr,
-	&Wrapper::Init,
-	&Wrapper::Finish,
-	nullptr,
-	nullptr,
-	&Wrapper::Open,
-	&Wrapper::Close,
-	&Wrapper::Delay,
-	nullptr,
-	&Wrapper::Play,
-	nullptr,
-	&Wrapper::Cancel,
-	nullptr,
+	&FifoOutput::Create,
 	nullptr,
 };

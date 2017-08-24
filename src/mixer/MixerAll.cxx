@@ -22,7 +22,7 @@
 #include "MixerControl.hxx"
 #include "MixerInternal.hxx"
 #include "MixerList.hxx"
-#include "output/Internal.hxx"
+#include "output/Filtered.hxx"
 #include "pcm/Volume.hxx"
 #include "Log.hxx"
 

@@ -20,12 +20,16 @@
 #ifndef MPD_VOLUME_FILTER_PLUGIN_HXX
 #define MPD_VOLUME_FILTER_PLUGIN_HXX
 
+class PreparedFilter;
 class Filter;
 
+PreparedFilter *
+volume_filter_prepare() noexcept;
+
 unsigned
-volume_filter_get(const Filter *filter);
+volume_filter_get(const Filter *filter) noexcept;
 
 void
-volume_filter_set(Filter *filter, unsigned volume);
+volume_filter_set(Filter *filter, unsigned volume) noexcept;
 
 #endif

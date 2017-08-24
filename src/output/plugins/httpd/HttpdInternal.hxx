@@ -26,8 +26,7 @@
 #define MPD_OUTPUT_HTTPD_INTERNAL_H
 
 #include "HttpdClient.hxx"
-#include "output/Wrapper.hxx"
-#include "output/Internal.hxx"
+#include "output/Interface.hxx"
 #include "output/Timer.hxx"
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
@@ -49,11 +48,7 @@ class PreparedEncoder;
 class Encoder;
 struct Tag;
 
-class HttpdOutput final : ServerSocket, DeferredMonitor {
-	friend struct AudioOutputWrapper<HttpdOutput>;
-
-	AudioOutput base;
-
+class HttpdOutput final : AudioOutput, ServerSocket, DeferredMonitor {
 	/**
 	 * True if the audio output is open and accepts client
 	 * connections.
@@ -157,11 +152,9 @@ public:
 	HttpdOutput(EventLoop &_loop, const ConfigBlock &block);
 	~HttpdOutput();
 
-	static HttpdOutput *Create(EventLoop &event_loop,
-				   const ConfigBlock &block);
-
-	static constexpr HttpdOutput *Cast(AudioOutput *ao) {
-		return &ContainerCast(*ao, &HttpdOutput::base);
+	static AudioOutput *Create(EventLoop &event_loop,
+				   const ConfigBlock &block) {
+		return new HttpdOutput(event_loop, block);
 	}
 
 	using DeferredMonitor::GetEventLoop;
@@ -169,11 +162,11 @@ public:
 	void Bind();
 	void Unbind();
 
-	void Enable() {
+	void Enable() override {
 		Bind();
 	}
 
-	void Disable() {
+	void Disable() noexcept override {
 		Unbind();
 	}
 
@@ -187,12 +180,12 @@ public:
 	/**
 	 * Caller must lock the mutex.
 	 */
-	void Open(AudioFormat &audio_format);
+	void Open(AudioFormat &audio_format) override;
 
 	/**
 	 * Caller must lock the mutex.
 	 */
-	void Close();
+	void Close() noexcept override;
 
 	/**
 	 * Check whether there is at least one client.
@@ -213,7 +206,7 @@ public:
 		return HasClients();
 	}
 
-	void AddClient(int fd);
+	void AddClient(UniqueSocketDescriptor &&fd);
 
 	/**
 	 * Removes a client from the httpd_output.clients linked list.
@@ -227,7 +220,7 @@ public:
 	void SendHeader(HttpdClient &client) const;
 
 	gcc_pure
-	std::chrono::steady_clock::duration Delay() const noexcept;
+	std::chrono::steady_clock::duration Delay() const noexcept override;
 
 	/**
 	 * Reads data from the encoder (as much as available) and
@@ -252,19 +245,20 @@ public:
 	 */
 	void EncodeAndPlay(const void *chunk, size_t size);
 
-	void SendTag(const Tag &tag);
+	void SendTag(const Tag &tag) override;
 
-	size_t Play(const void *chunk, size_t size);
+	size_t Play(const void *chunk, size_t size) override;
 
 	void CancelAllClients();
 
-	void Cancel();
-	bool Pause();
+	void Cancel() noexcept override;
+	bool Pause() noexcept override;
 
 private:
 	virtual void RunDeferred() override;
 
-	void OnAccept(int fd, SocketAddress address, int uid) override;
+	void OnAccept(UniqueSocketDescriptor &&fd,
+		      SocketAddress address, int uid) override;
 };
 
 extern const class Domain httpd_output_domain;
