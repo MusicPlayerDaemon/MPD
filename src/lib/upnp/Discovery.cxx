@@ -313,11 +313,10 @@ UPnPDeviceDirectory::GetDirectories()
 	ExpireDevices();
 
 	std::vector<ContentDirectoryService> out;
-	for (auto dit = directories.begin();
-	     dit != directories.end(); dit++) {
-		for (const auto &service : dit->device.services) {
+	for (const auto &descriptor : directories) {
+		for (const auto &service : descriptor.device.services) {
 			if (isCDService(service.serviceType.c_str())) {
-				out.emplace_back(dit->device, service);
+				out.emplace_back(descriptor.device, service);
 			}
 		}
 	}
