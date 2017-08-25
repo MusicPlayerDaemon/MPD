@@ -26,6 +26,7 @@
 #include "lib/curl/Handler.hxx"
 #include "lib/curl/Request.hxx"
 #include "thread/Mutex.hxx"
+#include "event/DeferredMonitor.hxx"
 #include "Compiler.h"
 
 #include <upnp/upnp.h>
@@ -83,7 +84,7 @@ class UPnPDeviceDirectory final : UpnpCallback {
 
 	class Downloader final
 		: public boost::intrusive::list_base_hook<boost::intrusive::link_mode<boost::intrusive::normal_link>>,
-		CurlResponseHandler {
+		DeferredMonitor, CurlResponseHandler {
 
 		UPnPDeviceDirectory &parent;
 
@@ -99,10 +100,16 @@ class UPnPDeviceDirectory final : UpnpCallback {
 		Downloader(UPnPDeviceDirectory &_parent,
 			   const Upnp_Discovery &disco);
 
-		void Start();
+		void Start() {
+			DeferredMonitor::Schedule();
+		}
+
 		void Destroy();
 
 	private:
+		/* virtual methods from DeferredMonitor */
+		void RunDeferred() override;
+
 		/* virtual methods from CurlResponseHandler */
 		void OnHeaders(unsigned status,
 			       std::multimap<std::string, std::string> &&headers) override;

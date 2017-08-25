@@ -22,7 +22,6 @@
 #include "ContentDirectoryService.hxx"
 #include "Log.hxx"
 #include "lib/curl/Global.hxx"
-#include "event/Call.hxx"
 #include "util/DeleteDisposer.hxx"
 #include "util/ScopeExit.hxx"
 #include "util/RuntimeError.hxx"
@@ -34,7 +33,7 @@
 
 UPnPDeviceDirectory::Downloader::Downloader(UPnPDeviceDirectory &_parent,
 					    const Upnp_Discovery &disco)
-	:parent(_parent),
+	:DeferredMonitor(_parent.GetEventLoop()), parent(_parent),
 	 id(disco.DeviceId), url(disco.Location),
 	 expires(std::chrono::seconds(disco.Expires)),
 	 request(*parent.curl, url.c_str(), *this)
@@ -43,20 +42,16 @@ UPnPDeviceDirectory::Downloader::Downloader(UPnPDeviceDirectory &_parent,
 }
 
 void
-UPnPDeviceDirectory::Downloader::Start()
-{
-	auto &event_loop = parent.GetEventLoop();
-
-	BlockingCall(event_loop, [this](){
-			request.Start();
-		});
-}
-
-void
 UPnPDeviceDirectory::Downloader::Destroy()
 {
 	parent.downloaders.erase_and_dispose(parent.downloaders.iterator_to(*this),
 					     DeleteDisposer());
+}
+
+void
+UPnPDeviceDirectory::Downloader::RunDeferred()
+{
+	request.Start();
 }
 
 void
