@@ -267,8 +267,6 @@ UPnPDeviceDirectory::UPnPDeviceDirectory(EventLoop &event_loop,
 
 UPnPDeviceDirectory::~UPnPDeviceDirectory()
 {
-	/* this destructor exists here just so it won't get inlined */
-
 	BlockingCall(curl->GetEventLoop(), [this](){
 			downloaders.clear_and_dispose(DeleteDisposer());
 		});
