@@ -64,13 +64,13 @@ public:
 
 	/* virtual methods from class NeighborExplorer */
 	void Open() override;
-	virtual void Close() override;
-	virtual List GetList() const override;
+	void Close() override;
+	List GetList() const override;
 
 private:
 	/* virtual methods from class UPnPDiscoveryListener */
-	virtual void FoundUPnP(const ContentDirectoryService &service) override;
-	virtual void LostUPnP(const ContentDirectoryService &service) override;
+	void FoundUPnP(const ContentDirectoryService &service) override;
+	void LostUPnP(const ContentDirectoryService &service) override;
 };
 
 void

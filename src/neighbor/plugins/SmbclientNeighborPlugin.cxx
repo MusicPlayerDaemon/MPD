@@ -74,8 +74,8 @@ public:
 
 	/* virtual methods from class NeighborExplorer */
 	void Open() override;
-	virtual void Close() override;
-	virtual List GetList() const override;
+	void Close() override;
+	List GetList() const override;
 
 private:
 	void Run();
