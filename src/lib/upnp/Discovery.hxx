@@ -143,6 +143,8 @@ public:
 	UPnPDeviceDirectory(const UPnPDeviceDirectory &) = delete;
 	UPnPDeviceDirectory& operator=(const UPnPDeviceDirectory &) = delete;
 
+	EventLoop &GetEventLoop();
+
 	void Start();
 
 	/** Retrieve the directory services currently seen on the network */

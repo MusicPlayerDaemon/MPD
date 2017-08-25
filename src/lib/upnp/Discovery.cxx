@@ -45,7 +45,7 @@ UPnPDeviceDirectory::Downloader::Downloader(UPnPDeviceDirectory &_parent,
 void
 UPnPDeviceDirectory::Downloader::Start()
 {
-	auto &event_loop = parent.curl->GetEventLoop();
+	auto &event_loop = parent.GetEventLoop();
 
 	BlockingCall(event_loop, [this](){
 			request.Start();
@@ -187,7 +187,7 @@ UPnPDeviceDirectory::OnAlive(Upnp_Discovery *disco)
 		try {
 			downloader->Start();
 		} catch (...) {
-			BlockingCall(curl->GetEventLoop(), [downloader](){
+			BlockingCall(GetEventLoop(), [downloader](){
 					downloader->Destroy();
 				});
 
@@ -267,9 +267,15 @@ UPnPDeviceDirectory::UPnPDeviceDirectory(EventLoop &event_loop,
 
 UPnPDeviceDirectory::~UPnPDeviceDirectory()
 {
-	BlockingCall(curl->GetEventLoop(), [this](){
+	BlockingCall(GetEventLoop(), [this](){
 			downloaders.clear_and_dispose(DeleteDisposer());
 		});
+}
+
+inline EventLoop &
+UPnPDeviceDirectory::GetEventLoop()
+{
+	return curl->GetEventLoop();
 }
 
 void
