@@ -64,8 +64,8 @@ public:
 
 	/* virtual methods from class NeighborExplorer */
 	void Open() override;
-	void Close() override;
-	List GetList() const override;
+	void Close() noexcept override;
+	List GetList() const noexcept override;
 
 private:
 	/* virtual methods from class UPnPDiscoveryListener */
@@ -91,14 +91,14 @@ UpnpNeighborExplorer::Open()
 }
 
 void
-UpnpNeighborExplorer::Close()
+UpnpNeighborExplorer::Close() noexcept
 {
 	delete discovery;
 	UpnpClientGlobalFinish();
 }
 
 NeighborExplorer::List
-UpnpNeighborExplorer::GetList() const
+UpnpNeighborExplorer::GetList() const noexcept
 {
 	std::vector<ContentDirectoryService> tmp;
 

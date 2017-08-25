@@ -61,12 +61,12 @@ public:
 	/**
          * Stop exploring.
 	 */
-	virtual void Close() = 0;
+	virtual void Close() noexcept = 0;
 
 	/**
 	 * Obtain a list of currently known neighbors.
 	 */
-	virtual List GetList() const = 0;
+	virtual List GetList() const noexcept = 0;
 };
 
 #endif
