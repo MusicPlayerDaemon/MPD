@@ -246,15 +246,12 @@ UPnPDeviceDirectory::ExpireDevices()
 	const auto now = std::chrono::steady_clock::now();
 	bool didsomething = false;
 
-	for (auto it = directories.begin();
-	     it != directories.end();) {
-		if (now > it->expires) {
-			it = directories.erase(it);
-			didsomething = true;
-		} else {
-			it++;
-		}
-	}
+	directories.remove_if([now, &didsomething](const ContentDirectoryDescriptor &d){
+			bool expired = now > d.expires;
+			if (expired)
+				didsomething = true;
+			return expired;
+		});
 
 	if (didsomething)
 		Search();
