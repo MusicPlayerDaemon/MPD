@@ -515,7 +515,6 @@ libevent_a_SOURCES = \
 	src/event/PollResultGeneric.hxx \
 	src/event/SignalMonitor.hxx src/event/SignalMonitor.cxx \
 	src/event/TimerEvent.hxx src/event/TimerEvent.cxx \
-	src/event/TimeoutMonitor.hxx \
 	src/event/IdleMonitor.hxx src/event/IdleMonitor.cxx \
 	src/event/DeferredMonitor.hxx src/event/DeferredMonitor.cxx \
 	src/event/DeferredCall.hxx \
