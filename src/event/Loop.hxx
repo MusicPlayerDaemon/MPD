@@ -28,6 +28,9 @@
 #include "thread/Mutex.hxx"
 #include "WakeFD.hxx"
 #include "SocketMonitor.hxx"
+#include "TimeoutMonitor.hxx"
+
+#include <boost/intrusive/set.hpp>
 
 #include <chrono>
 #include <list>
@@ -50,22 +53,23 @@ class DeferredMonitor;
  */
 class EventLoop final : SocketMonitor
 {
-	struct TimerRecord {
-		TimeoutMonitor &timer;
-
-		explicit constexpr TimerRecord(TimeoutMonitor &_timer)
-			:timer(_timer) {}
-
-		gcc_pure
-		std::chrono::steady_clock::time_point GetDue() const noexcept;
-
-		gcc_pure
-		bool operator<(const TimerRecord &other) const noexcept;
-	};
-
 	WakeFD wake_fd;
 
-	std::multiset<TimerRecord> timers;
+	struct TimerCompare {
+		constexpr bool operator()(const TimeoutMonitor &a,
+					  const TimeoutMonitor &b) const {
+			return a.due < b.due;
+		}
+	};
+
+	typedef boost::intrusive::multiset<TimeoutMonitor,
+					   boost::intrusive::member_hook<TimeoutMonitor,
+									 TimeoutMonitor::TimerSetHook,
+									 &TimeoutMonitor::timer_set_hook>,
+					   boost::intrusive::compare<TimerCompare>,
+					   boost::intrusive::constant_time_size<false>> TimerSet;
+	TimerSet timers;
+
 	std::list<IdleMonitor *> idle;
 
 	Mutex mutex;

@@ -22,6 +22,8 @@
 
 #include "check.h"
 
+#include <boost/intrusive/set_hook.hpp>
+
 #include <chrono>
 
 class EventLoop;
@@ -37,6 +39,9 @@ class EventLoop;
 class TimeoutMonitor {
 	friend class EventLoop;
 
+	typedef boost::intrusive::set_member_hook<> TimerSetHook;
+	TimerSetHook timer_set_hook;
+
 	EventLoop &loop;
 
 	/**
@@ -45,11 +50,9 @@ class TimeoutMonitor {
 	 */
 	std::chrono::steady_clock::time_point due;
 
-	bool active;
-
 public:
 	TimeoutMonitor(EventLoop &_loop)
-		:loop(_loop), active(false) {
+		:loop(_loop) {
 	}
 
 	~TimeoutMonitor() {
@@ -61,7 +64,7 @@ public:
 	}
 
 	bool IsActive() const {
-		return active;
+		return timer_set_hook.is_linked();
 	}
 
 	void Schedule(std::chrono::steady_clock::duration d);
@@ -71,7 +74,9 @@ protected:
 	virtual void OnTimeout() = 0;
 
 private:
-	void Run();
+	void Run() {
+		OnTimeout();
+	}
 };
 
 #endif /* MAIN_NOTIFY_H */

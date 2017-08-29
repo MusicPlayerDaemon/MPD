@@ -24,10 +24,8 @@
 void
 TimeoutMonitor::Cancel()
 {
-	if (IsActive()) {
-		active = false;
+	if (IsActive())
 		loop.CancelTimer(*this);
-	}
 }
 
 void
@@ -35,13 +33,5 @@ TimeoutMonitor::Schedule(std::chrono::steady_clock::duration d)
 {
 	Cancel();
 
-	active = true;
 	loop.AddTimer(*this, d);
-}
-
-void
-TimeoutMonitor::Run()
-{
-	active = false;
-	OnTimeout();
 }

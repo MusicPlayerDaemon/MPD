@@ -19,25 +19,12 @@
 
 #include "config.h"
 #include "Loop.hxx"
-#include "TimeoutMonitor.hxx"
 #include "SocketMonitor.hxx"
 #include "IdleMonitor.hxx"
 #include "DeferredMonitor.hxx"
 #include "util/ScopeExit.hxx"
 
 #include <algorithm>
-
-inline std::chrono::steady_clock::time_point
-EventLoop::TimerRecord::GetDue() const noexcept
-{
-	return timer.due;
-}
-
-inline bool
-EventLoop::TimerRecord::operator<(const TimerRecord &other) const noexcept
-{
-	return timer.due < other.timer.due;
-}
 
 EventLoop::EventLoop(ThreadId _thread)
 	:SocketMonitor(*this), thread(_thread)
@@ -106,7 +93,7 @@ EventLoop::AddTimer(TimeoutMonitor &t, std::chrono::steady_clock::duration d)
 	assert(IsInside());
 
 	t.due = now + d;
-	timers.insert(TimerRecord(t));
+	timers.insert(t);
 	again = true;
 }
 
@@ -115,12 +102,7 @@ EventLoop::CancelTimer(TimeoutMonitor &t)
 {
 	assert(IsInside());
 
-	for (auto i = timers.begin(), end = timers.end(); i != end; ++i) {
-		if (&i->timer == &t) {
-			timers.erase(i);
-			return;
-		}
-	}
+	timers.erase(timers.iterator_to(t));
 }
 
 /**
@@ -163,11 +145,11 @@ EventLoop::Run()
 				break;
 			}
 
-			timeout = i->GetDue() - now;
+			TimeoutMonitor &m = *i;
+			timeout = m.due - now;
 			if (timeout > timeout.zero())
 				break;
 
-			TimeoutMonitor &m = i->timer;
 			timers.erase(i);
 
 			m.Run();
