@@ -22,6 +22,8 @@
 
 #include "check.h"
 
+#include <boost/intrusive/list_hook.hpp>
+
 class EventLoop;
 
 /**
@@ -35,13 +37,14 @@ class EventLoop;
 class IdleMonitor {
 	friend class EventLoop;
 
-	EventLoop &loop;
+	typedef boost::intrusive::list_member_hook<> ListHook;
+	ListHook list_hook;
 
-	bool active;
+	EventLoop &loop;
 
 public:
 	IdleMonitor(EventLoop &_loop)
-		:loop(_loop), active(false) {}
+		:loop(_loop) {}
 
 	~IdleMonitor() {
 #ifndef NDEBUG
@@ -57,7 +60,7 @@ public:
 	}
 
 	bool IsActive() const {
-		return active;
+		return list_hook.is_linked();
 	}
 
 	void Schedule();

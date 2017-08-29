@@ -29,16 +29,13 @@
 #include "WakeFD.hxx"
 #include "SocketMonitor.hxx"
 #include "TimeoutMonitor.hxx"
+#include "IdleMonitor.hxx"
+#include "DeferredMonitor.hxx"
 
 #include <boost/intrusive/set.hpp>
+#include <boost/intrusive/list.hpp>
 
 #include <chrono>
-#include <list>
-#include <set>
-
-class TimeoutMonitor;
-class IdleMonitor;
-class DeferredMonitor;
 
 #include <assert.h>
 
@@ -70,10 +67,21 @@ class EventLoop final : SocketMonitor
 					   boost::intrusive::constant_time_size<false>> TimerSet;
 	TimerSet timers;
 
-	std::list<IdleMonitor *> idle;
+	typedef boost::intrusive::list<IdleMonitor,
+				       boost::intrusive::member_hook<IdleMonitor,
+								     IdleMonitor::ListHook,
+								     &IdleMonitor::list_hook>,
+				       boost::intrusive::constant_time_size<false>> IdleList;
+	IdleList idle;
 
 	Mutex mutex;
-	std::list<DeferredMonitor *> deferred;
+
+	typedef boost::intrusive::list<DeferredMonitor,
+				       boost::intrusive::member_hook<DeferredMonitor,
+								     DeferredMonitor::ListHook,
+								     &DeferredMonitor::list_hook>,
+				       boost::intrusive::constant_time_size<false>> DeferredList;
+	DeferredList deferred;
 
 	std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
 

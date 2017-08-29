@@ -24,8 +24,6 @@
 #include "DeferredMonitor.hxx"
 #include "util/ScopeExit.hxx"
 
-#include <algorithm>
-
 EventLoop::EventLoop(ThreadId _thread)
 	:SocketMonitor(*this), thread(_thread)
 {
@@ -70,9 +68,8 @@ void
 EventLoop::AddIdle(IdleMonitor &i)
 {
 	assert(IsInside());
-	assert(std::find(idle.begin(), idle.end(), &i) == idle.end());
 
-	idle.push_back(&i);
+	idle.push_back(i);
 	again = true;
 }
 
@@ -81,10 +78,7 @@ EventLoop::RemoveIdle(IdleMonitor &i)
 {
 	assert(IsInside());
 
-	auto it = std::find(idle.begin(), idle.end(), &i);
-	assert(it != idle.end());
-
-	idle.erase(it);
+	idle.erase(idle.iterator_to(i));
 }
 
 void
@@ -161,7 +155,7 @@ EventLoop::Run()
 		/* invoke idle */
 
 		while (!idle.empty()) {
-			IdleMonitor &m = *idle.front();
+			IdleMonitor &m = idle.front();
 			idle.pop_front();
 			m.Run();
 
@@ -223,18 +217,14 @@ EventLoop::AddDeferred(DeferredMonitor &d)
 
 	{
 		const std::lock_guard<Mutex> lock(mutex);
-		if (d.pending)
+		if (d.IsPending())
 			return;
-
-		assert(std::find(deferred.begin(),
-				 deferred.end(), &d) == deferred.end());
 
 		/* we don't need to wake up the EventLoop if another
 		   DeferredMonitor has already done it */
 		must_wake = !busy && deferred.empty();
 
-		d.pending = true;
-		deferred.push_back(&d);
+		deferred.push_back(d);
 		again = true;
 	}
 
@@ -247,29 +237,18 @@ EventLoop::RemoveDeferred(DeferredMonitor &d)
 {
 	const std::lock_guard<Mutex> protect(mutex);
 
-	if (!d.pending) {
-		assert(std::find(deferred.begin(),
-				 deferred.end(), &d) == deferred.end());
-		return;
-	}
-
-	d.pending = false;
-
-	auto i = std::find(deferred.begin(), deferred.end(), &d);
-	assert(i != deferred.end());
-
-	deferred.erase(i);
+	if (!d.IsPending())
+		deferred.erase(deferred.iterator_to(d));
 }
 
 void
 EventLoop::HandleDeferred()
 {
 	while (!deferred.empty() && !quit) {
-		DeferredMonitor &m = *deferred.front();
-		assert(m.pending);
+		DeferredMonitor &m = deferred.front();
+		assert(m.IsPending());
 
 		deferred.pop_front();
-		m.pending = false;
 
 		const ScopeUnlock unlock(mutex);
 		m.RunDeferred();
