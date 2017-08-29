@@ -34,7 +34,7 @@
 #include "event/Loop.hxx"
 #include "event/Call.hxx"
 #include "event/DeferredMonitor.hxx"
-#include "event/TimeoutMonitor.hxx"
+#include "event/TimerEvent.hxx"
 #include "util/StringCompare.hxx"
 
 extern "C" {
@@ -49,7 +49,7 @@ extern "C" {
 #include <fcntl.h>
 
 class NfsStorage final
-	: public Storage, NfsLease, DeferredMonitor, TimeoutMonitor {
+	: public Storage, NfsLease, DeferredMonitor {
 
 	enum class State {
 		INITIAL, CONNECTING, READY, DELAY,
@@ -61,6 +61,8 @@ class NfsStorage final
 
 	NfsConnection *connection;
 
+	TimerEvent reconnect_timer;
+
 	Mutex mutex;
 	Cond cond;
 	State state;
@@ -69,10 +71,11 @@ class NfsStorage final
 public:
 	NfsStorage(EventLoop &_loop, const char *_base,
 		   std::string &&_server, std::string &&_export_name)
-		:DeferredMonitor(_loop), TimeoutMonitor(_loop),
+		:DeferredMonitor(_loop),
 		 base(_base),
 		 server(std::move(_server)),
 		 export_name(std::move(_export_name)),
+		 reconnect_timer(_loop, BIND_THIS_METHOD(OnReconnectTimer)),
 		 state(State::INITIAL) {
 		nfs_init(_loop);
 	}
@@ -102,14 +105,14 @@ public:
 		assert(state == State::CONNECTING);
 
 		SetState(State::DELAY, std::move(e));
-		TimeoutMonitor::Schedule(std::chrono::minutes(1));
+		reconnect_timer.Schedule(std::chrono::minutes(1));
 	}
 
 	void OnNfsConnectionDisconnected(std::exception_ptr e) final {
 		assert(state == State::READY);
 
 		SetState(State::DELAY, std::move(e));
-		TimeoutMonitor::Schedule(std::chrono::seconds(5));
+		reconnect_timer.Schedule(std::chrono::seconds(5));
 	}
 
 	/* virtual methods from DeferredMonitor */
@@ -118,8 +121,8 @@ public:
 			Connect();
 	}
 
-	/* virtual methods from TimeoutMonitor */
-	void OnTimeout() final {
+	/* callback for #reconnect_timer */
+	void OnReconnectTimer() {
 		assert(state == State::DELAY);
 
 		Connect();
@@ -203,7 +206,7 @@ private:
 			break;
 
 		case State::DELAY:
-			TimeoutMonitor::Cancel();
+			reconnect_timer.Cancel();
 			SetState(State::INITIAL);
 			break;
 		}
