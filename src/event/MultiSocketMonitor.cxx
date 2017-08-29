@@ -28,7 +28,8 @@
 #endif
 
 MultiSocketMonitor::MultiSocketMonitor(EventLoop &_loop)
-	:IdleMonitor(_loop), TimeoutMonitor(_loop) {
+	:IdleMonitor(_loop),
+	 timeout_event(_loop, BIND_THIS_METHOD(OnTimeout)) {
 }
 
 void
@@ -38,7 +39,7 @@ MultiSocketMonitor::Reset()
 
 	fds.clear();
 	IdleMonitor::Cancel();
-	TimeoutMonitor::Cancel();
+	timeout_event.Cancel();
 	ready = refresh = false;
 }
 
@@ -81,9 +82,9 @@ MultiSocketMonitor::Prepare()
 {
 	const auto timeout = PrepareSockets();
 	if (timeout >= timeout.zero())
-		TimeoutMonitor::Schedule(timeout);
+		timeout_event.Schedule(timeout);
 	else
-		TimeoutMonitor::Cancel();
+		timeout_event.Cancel();
 
 }
 

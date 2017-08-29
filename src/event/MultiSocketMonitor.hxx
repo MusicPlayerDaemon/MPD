@@ -22,7 +22,7 @@
 
 #include "check.h"
 #include "IdleMonitor.hxx"
-#include "TimeoutMonitor.hxx"
+#include "TimerEvent.hxx"
 #include "SocketMonitor.hxx"
 #include "Compiler.h"
 
@@ -51,7 +51,7 @@ class EventLoop;
  * In PrepareSockets(), use UpdateSocketList() and AddSocket().
  * DispatchSockets() will be called if at least one socket is ready.
  */
-class MultiSocketMonitor : IdleMonitor, TimeoutMonitor
+class MultiSocketMonitor : IdleMonitor
 {
 	class SingleFD final : public SocketMonitor {
 		MultiSocketMonitor &multi;
@@ -96,6 +96,8 @@ class MultiSocketMonitor : IdleMonitor, TimeoutMonitor
 	};
 
 	friend class SingleFD;
+
+	TimerEvent timeout_event;
 
 	/**
 	 * DispatchSockets() should be called.
@@ -224,7 +226,7 @@ private:
 
 	void Prepare();
 
-	virtual void OnTimeout() final {
+	void OnTimeout() {
 		SetReady();
 		IdleMonitor::Schedule();
 	}
