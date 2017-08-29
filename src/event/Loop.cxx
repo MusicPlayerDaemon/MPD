@@ -237,7 +237,7 @@ EventLoop::RemoveDeferred(DeferredMonitor &d)
 {
 	const std::lock_guard<Mutex> protect(mutex);
 
-	if (!d.IsPending())
+	if (d.IsPending())
 		deferred.erase(deferred.iterator_to(d));
 }
 
