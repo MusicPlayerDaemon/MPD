@@ -39,6 +39,12 @@ class TimeoutMonitor {
 
 	EventLoop &loop;
 
+	/**
+	 * When is this timer due?  This is only valid if #active is
+	 * true.
+	 */
+	std::chrono::steady_clock::time_point due;
+
 	bool active;
 
 public:

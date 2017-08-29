@@ -27,6 +27,18 @@
 
 #include <algorithm>
 
+inline std::chrono::steady_clock::time_point
+EventLoop::TimerRecord::GetDue() const noexcept
+{
+	return timer.due;
+}
+
+inline bool
+EventLoop::TimerRecord::operator<(const TimerRecord &other) const noexcept
+{
+	return timer.due < other.timer.due;
+}
+
 EventLoop::EventLoop(ThreadId _thread)
 	:SocketMonitor(*this), thread(_thread)
 {
@@ -93,7 +105,8 @@ EventLoop::AddTimer(TimeoutMonitor &t, std::chrono::steady_clock::duration d)
 {
 	assert(IsInside());
 
-	timers.insert(TimerRecord(t, now + d));
+	t.due = now + d;
+	timers.insert(TimerRecord(t));
 	again = true;
 }
 
@@ -150,7 +163,7 @@ EventLoop::Run()
 				break;
 			}
 
-			timeout = i->due - now;
+			timeout = i->GetDue() - now;
 			if (timeout > timeout.zero())
 				break;
 

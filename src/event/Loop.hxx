@@ -51,21 +51,16 @@ class DeferredMonitor;
 class EventLoop final : SocketMonitor
 {
 	struct TimerRecord {
-		/**
-		 * Projected monotonic_clock_ms() value when this
-		 * timer is due.
-		 */
-		const std::chrono::steady_clock::time_point due;
-
 		TimeoutMonitor &timer;
 
-		constexpr TimerRecord(TimeoutMonitor &_timer,
-				      std::chrono::steady_clock::time_point _due)
-			:due(_due), timer(_timer) {}
+		explicit constexpr TimerRecord(TimeoutMonitor &_timer)
+			:timer(_timer) {}
 
-		bool operator<(const TimerRecord &other) const {
-			return due < other.due;
-		}
+		gcc_pure
+		std::chrono::steady_clock::time_point GetDue() const noexcept;
+
+		gcc_pure
+		bool operator<(const TimerRecord &other) const noexcept;
 	};
 
 	WakeFD wake_fd;
