@@ -66,10 +66,6 @@ class EventLoop final : SocketMonitor
 		bool operator<(const TimerRecord &other) const {
 			return due < other.due;
 		}
-
-		bool IsDue(std::chrono::steady_clock::time_point _now) const {
-			return _now >= due;
-		}
 	};
 
 	WakeFD wake_fd;
