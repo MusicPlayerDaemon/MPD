@@ -42,9 +42,9 @@ constexpr std::chrono::steady_clock::duration StateFile::DEFAULT_INTERVAL;
 StateFile::StateFile(AllocatedPath &&_path,
 		     std::chrono::steady_clock::duration _interval,
 		     Partition &_partition, EventLoop &_loop)
-	:TimeoutMonitor(_loop),
-	 path(std::move(_path)), path_utf8(path.ToUTF8()),
+	:path(std::move(_path)), path_utf8(path.ToUTF8()),
 	 interval(_interval),
+	 timer_event(_loop, BIND_THIS_METHOD(OnTimeout)),
 	 partition(_partition)
 {
 }
@@ -137,8 +137,8 @@ try {
 void
 StateFile::CheckModified()
 {
-	if (!IsActive() && IsModified())
-		Schedule(interval);
+	if (!timer_event.IsActive() && IsModified())
+		timer_event.Schedule(interval);
 }
 
 void
