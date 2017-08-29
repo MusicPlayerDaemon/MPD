@@ -33,7 +33,7 @@ static constexpr std::chrono::steady_clock::duration INOTIFY_UPDATE_DELAY =
 	std::chrono::seconds(5);
 
 void
-InotifyQueue::OnTimeout()
+InotifyQueue::OnDelay()
 {
 	unsigned id;
 
@@ -43,7 +43,7 @@ InotifyQueue::OnTimeout()
 		id = update.Enqueue(uri_utf8, false);
 		if (id == 0) {
 			/* retry later */
-			Schedule(INOTIFY_UPDATE_DELAY);
+			delay_event.Schedule(INOTIFY_UPDATE_DELAY);
 			return;
 		}
 
@@ -69,7 +69,7 @@ path_in(const char *path, const char *possible_parent) noexcept
 void
 InotifyQueue::Enqueue(const char *uri_utf8)
 {
-	Schedule(INOTIFY_UPDATE_DELAY);
+	delay_event.Schedule(INOTIFY_UPDATE_DELAY);
 
 	for (auto i = queue.begin(), end = queue.end(); i != end;) {
 		const char *current_uri = i->c_str();
