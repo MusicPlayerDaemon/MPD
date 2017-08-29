@@ -25,7 +25,7 @@
 #include "command/CommandListBuilder.hxx"
 #include "tag/Mask.hxx"
 #include "event/FullyBufferedSocket.hxx"
-#include "event/TimeoutMonitor.hxx"
+#include "event/TimerEvent.hxx"
 #include "Compiler.h"
 
 #include <boost/intrusive/link_mode.hpp>
@@ -49,8 +49,10 @@ class Database;
 class Storage;
 
 class Client final
-	: FullyBufferedSocket, TimeoutMonitor,
+	: FullyBufferedSocket,
 	  public boost::intrusive::list_base_hook<boost::intrusive::link_mode<boost::intrusive::normal_link>> {
+	TimerEvent timeout_event;
+
 	Partition *partition;
 
 public:
@@ -228,8 +230,8 @@ private:
 	void OnSocketError(std::exception_ptr ep) override;
 	void OnSocketClosed() override;
 
-	/* virtual methods from class TimeoutMonitor */
-	void OnTimeout() override;
+	/* callback for TimerEvent */
+	void OnTimeout();
 };
 
 void
