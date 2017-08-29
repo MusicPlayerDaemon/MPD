@@ -22,6 +22,7 @@
 #include "ContentDirectoryService.hxx"
 #include "Log.hxx"
 #include "lib/curl/Global.hxx"
+#include "event/Call.hxx"
 #include "util/DeleteDisposer.hxx"
 #include "util/ScopeExit.hxx"
 #include "util/RuntimeError.hxx"
