@@ -82,7 +82,7 @@ EventLoop::RemoveIdle(IdleMonitor &i)
 }
 
 void
-EventLoop::AddTimer(TimeoutMonitor &t, std::chrono::steady_clock::duration d)
+EventLoop::AddTimer(TimerEvent &t, std::chrono::steady_clock::duration d)
 {
 	assert(IsInside());
 
@@ -92,7 +92,7 @@ EventLoop::AddTimer(TimeoutMonitor &t, std::chrono::steady_clock::duration d)
 }
 
 void
-EventLoop::CancelTimer(TimeoutMonitor &t)
+EventLoop::CancelTimer(TimerEvent &t)
 {
 	assert(IsInside());
 
@@ -139,14 +139,14 @@ EventLoop::Run()
 				break;
 			}
 
-			TimeoutMonitor &m = *i;
-			timeout = m.due - now;
+			TimerEvent &t = *i;
+			timeout = t.due - now;
 			if (timeout > timeout.zero())
 				break;
 
 			timers.erase(i);
 
-			m.Run();
+			t.Run();
 
 			if (quit)
 				return;

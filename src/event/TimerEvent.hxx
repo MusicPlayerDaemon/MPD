@@ -17,11 +17,11 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_SOCKET_TIMEOUT_MONITOR_HXX
-#define MPD_SOCKET_TIMEOUT_MONITOR_HXX
+#ifndef MPD_TIMER_EVENT_HXX
+#define MPD_TIMER_EVENT_HXX
 
 #include "check.h"
-#include "TimerEvent.hxx"
+#include "util/BindMethod.hxx"
 
 #include <boost/intrusive/set_hook.hpp>
 
@@ -30,43 +30,53 @@
 class EventLoop;
 
 /**
- * This class monitors a timeout.  Use Schedule() to begin the timeout
- * or Cancel() to cancel it.
+ * This class invokes a callback function after a certain amount of
+ * time.  Use Schedule() to start the timer or Cancel() to cancel it.
  *
  * This class is not thread-safe, all methods must be called from the
  * thread that runs the #EventLoop, except where explicitly documented
  * as thread-safe.
  */
-class TimeoutMonitor {
-	TimerEvent timer;
+class TimerEvent final {
+	friend class EventLoop;
+
+	typedef boost::intrusive::set_member_hook<> TimerSetHook;
+	TimerSetHook timer_set_hook;
+
+	EventLoop &loop;
+
+	typedef BoundMethod<void()> Callback;
+	const Callback callback;
+
+	/**
+	 * When is this timer due?  This is only valid if IsActive()
+	 * returns true.
+	 */
+	std::chrono::steady_clock::time_point due;
 
 public:
-	TimeoutMonitor(EventLoop &_loop)
-		:timer(_loop, BIND_THIS_METHOD(Run)) {
+	TimerEvent(EventLoop &_loop, Callback _callback)
+		:loop(_loop), callback(_callback) {
+	}
+
+	~TimerEvent() {
+		Cancel();
 	}
 
 	EventLoop &GetEventLoop() {
-		return timer.GetEventLoop();
+		return loop;
 	}
 
 	bool IsActive() const {
-		return timer.IsActive();
+		return timer_set_hook.is_linked();
 	}
 
-	void Schedule(std::chrono::steady_clock::duration d) {
-		timer.Schedule(d);
-	}
-
-	void Cancel() {
-		timer.Cancel();
-	}
-
-protected:
-	virtual void OnTimeout() = 0;
+	void Schedule(std::chrono::steady_clock::duration d);
+	void Cancel();
 
 private:
 	void Run() {
-		OnTimeout();
+		callback();
 	}
 };
 

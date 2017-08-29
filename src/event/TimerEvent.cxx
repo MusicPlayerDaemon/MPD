@@ -18,18 +18,18 @@
  */
 
 #include "config.h"
-#include "TimeoutMonitor.hxx"
+#include "TimerEvent.hxx"
 #include "Loop.hxx"
 
 void
-TimeoutMonitor::Cancel()
+TimerEvent::Cancel()
 {
 	if (IsActive())
 		loop.CancelTimer(*this);
 }
 
 void
-TimeoutMonitor::Schedule(std::chrono::steady_clock::duration d)
+TimerEvent::Schedule(std::chrono::steady_clock::duration d)
 {
 	Cancel();
 

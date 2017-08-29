@@ -28,7 +28,7 @@
 #include "thread/Mutex.hxx"
 #include "WakeFD.hxx"
 #include "SocketMonitor.hxx"
-#include "TimeoutMonitor.hxx"
+#include "TimerEvent.hxx"
 #include "IdleMonitor.hxx"
 #include "DeferredMonitor.hxx"
 
@@ -46,23 +46,23 @@
  * thread that runs it, except where explicitly documented as
  * thread-safe.
  *
- * @see SocketMonitor, MultiSocketMonitor, TimeoutMonitor, IdleMonitor
+ * @see SocketMonitor, MultiSocketMonitor, TimerEvent, IdleMonitor
  */
 class EventLoop final : SocketMonitor
 {
 	WakeFD wake_fd;
 
 	struct TimerCompare {
-		constexpr bool operator()(const TimeoutMonitor &a,
-					  const TimeoutMonitor &b) const {
+		constexpr bool operator()(const TimerEvent &a,
+					  const TimerEvent &b) const {
 			return a.due < b.due;
 		}
 	};
 
-	typedef boost::intrusive::multiset<TimeoutMonitor,
-					   boost::intrusive::member_hook<TimeoutMonitor,
-									 TimeoutMonitor::TimerSetHook,
-									 &TimeoutMonitor::timer_set_hook>,
+	typedef boost::intrusive::multiset<TimerEvent,
+					   boost::intrusive::member_hook<TimerEvent,
+									 TimerEvent::TimerSetHook,
+									 &TimerEvent::timer_set_hook>,
 					   boost::intrusive::compare<TimerCompare>,
 					   boost::intrusive::constant_time_size<false>> TimerSet;
 	TimerSet timers;
@@ -155,9 +155,9 @@ public:
 	void AddIdle(IdleMonitor &i);
 	void RemoveIdle(IdleMonitor &i);
 
-	void AddTimer(TimeoutMonitor &t,
+	void AddTimer(TimerEvent &t,
 		      std::chrono::steady_clock::duration d);
-	void CancelTimer(TimeoutMonitor &t);
+	void CancelTimer(TimerEvent &t);
 
 	/**
 	 * Schedule a call to DeferredMonitor::RunDeferred().
