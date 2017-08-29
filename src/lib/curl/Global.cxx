@@ -96,7 +96,8 @@ private:
 };
 
 CurlGlobal::CurlGlobal(EventLoop &_loop)
-	:TimeoutMonitor(_loop), DeferredMonitor(_loop)
+	:DeferredMonitor(_loop),
+	 timeout_event(_loop, BIND_THIS_METHOD(OnTimeout))
 {
 	multi.SetOption(CURLMOPT_SOCKETFUNCTION, CurlSocket::SocketFunction);
 	multi.SetOption(CURLMOPT_SOCKETDATA, this);
@@ -222,7 +223,7 @@ inline void
 CurlGlobal::UpdateTimeout(long timeout_ms)
 {
 	if (timeout_ms < 0) {
-		TimeoutMonitor::Cancel();
+		timeout_event.Cancel();
 		return;
 	}
 
@@ -233,7 +234,7 @@ CurlGlobal::UpdateTimeout(long timeout_ms)
 		   of 10ms. */
 		timeout_ms = 10;
 
-	TimeoutMonitor::Schedule(std::chrono::milliseconds(timeout_ms));
+	timeout_event.Schedule(std::chrono::milliseconds(timeout_ms));
 }
 
 int
