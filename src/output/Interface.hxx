@@ -141,7 +141,10 @@ public:
 	 * @return false on error (output will be closed by caller),
 	 * true for continue to pause
 	 */
-	virtual bool Pause() noexcept { return true; }
+	virtual bool Pause() noexcept {
+		/* fail because this method is not implemented */
+		return false;
+	}
 };
 
 #endif
