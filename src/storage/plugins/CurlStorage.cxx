@@ -270,11 +270,6 @@ private:
 		if (status != 207)
 			throw FormatRuntimeError("Status %d from WebDAV server; expected \"207 Multi-Status\"",
 						 status);
-
-		auto i = headers.find("content-type");
-		if (i == headers.end() ||
-		    strncmp(i->second.c_str(), "text/xml", 8) != 0)
-			throw std::runtime_error("Unexpected Content-Type from WebDAV server");
 	}
 
 	void OnData(ConstBuffer<void> _data) final {
