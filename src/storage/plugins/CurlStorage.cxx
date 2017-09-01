@@ -251,7 +251,7 @@ gcc_pure
 static bool
 IsXmlContentType(const char *content_type) noexcept
 {
-	return strncmp(content_type, "text/xml", 8) == 0;
+	return StringStartsWith(content_type, "text/xml");
 }
 
 gcc_pure
