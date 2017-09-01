@@ -1,4 +1,6 @@
 ver 0.20.11 (not yet released)
+* storage
+  - curl: support Content-Type application/xml
 
 ver 0.20.10 (2017/08/24)
 * decoder
