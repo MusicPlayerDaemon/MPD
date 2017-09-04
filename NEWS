@@ -9,6 +9,10 @@ ver 0.21 (not yet released)
 * output
   - alsa: non-blocking mode
 
+ver 0.20.11 (not yet released)
+* storage
+  - curl: support Content-Type application/xml
+
 ver 0.20.10 (2017/08/24)
 * decoder
   - ffmpeg: support MusicBrainz ID3v2 tags
