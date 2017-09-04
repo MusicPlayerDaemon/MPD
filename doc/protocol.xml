@@ -445,7 +445,9 @@
               <listitem>
                 <para>
                   <varname>volume</varname>:
-                  <returnvalue>0-100</returnvalue>
+                  <returnvalue>0-100</returnvalue> or
+                  <returnvalue>-1</returnvalue> if the volume cannot
+                  be determined
                 </para>
               </listitem>
               <listitem>
