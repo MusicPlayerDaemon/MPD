@@ -2991,6 +2991,60 @@ run</programlisting>
         </informaltable>
       </section>
 
+      <section id="opus_encoder">
+        <title><varname>opus</varname></title>
+
+        <para>
+          Encodes into <ulink
+          url="http://www.opus-codec.org/">Ogg Opus</ulink>.
+        </para>
+
+        <informaltable>
+          <tgroup cols="2">
+            <thead>
+              <row>
+                <entry>Setting</entry>
+                <entry>Description</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>
+                  <varname>bitrate</varname>
+                </entry>
+                <entry>
+                  Sets the data rate in bit per second.  The special
+                  value "auto" lets <application>libopus</application>
+                  choose a rate (which is the default), and "max" uses
+                  the maximum possible data rate.
+                </entry>
+              </row>
+
+              <row>
+                <entry>
+                  <varname>complexity</varname>
+                </entry>
+                <entry>
+                  Sets the <ulink
+                  url="https://wiki.xiph.org/OpusFAQ#What_is_the_complexity_of_Opus.3F">Opus
+                  complexity</ulink>.
+                </entry>
+              </row>
+
+              <row>
+                <entry>
+                  <varname>signal</varname>
+                </entry>
+                <entry>
+                  Sets the Opus signal type.  Valid values are "auto"
+                  (the default), "voice" and "music".
+                </entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
+      </section>
+
       <section id="vorbis_encoder">
         <title><varname>vorbis</varname></title>
 
