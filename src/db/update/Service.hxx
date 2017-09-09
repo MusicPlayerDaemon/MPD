@@ -46,13 +46,13 @@ class UpdateService final : DeferredMonitor {
 
 	static constexpr unsigned update_task_id_max = 1 << 15;
 
-	unsigned update_task_id;
+	unsigned update_task_id = 0;
 
 	UpdateQueue queue;
 
 	UpdateQueueItem next;
 
-	UpdateWalk *walk;
+	UpdateWalk *walk = nullptr;
 
 public:
 	UpdateService(EventLoop &_loop, SimpleDatabase &_db,
