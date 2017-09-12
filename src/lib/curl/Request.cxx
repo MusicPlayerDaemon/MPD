@@ -199,7 +199,8 @@ CurlRequest::HeaderFunction(StringView s)
 		return;
 
 	std::string name(header, value);
-	std::transform(name.begin(), name.end(), name.begin(), ToLowerASCII);
+	std::transform(name.begin(), name.end(), name.begin(),
+		       static_cast<char(*)(char)>(ToLowerASCII));
 
 	/* skip the colon */
 
