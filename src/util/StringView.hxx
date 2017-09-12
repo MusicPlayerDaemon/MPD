@@ -38,17 +38,17 @@ struct StringView : ConstBuffer<char> {
 	StringView() = default;
 
 	constexpr StringView(pointer_type _data, size_type _size) noexcept
-		:ConstBuffer<char>(_data, _size) {}
+		:ConstBuffer(_data, _size) {}
 
 	constexpr StringView(pointer_type _begin, pointer_type _end) noexcept
-		:ConstBuffer<char>(_begin, _end - _begin) {}
+		:ConstBuffer(_begin, _end - _begin) {}
 
 	StringView(pointer_type _data) noexcept
-		:ConstBuffer<char>(_data,
-				   _data != nullptr ? strlen(_data) : 0) {}
+		:ConstBuffer(_data,
+			     _data != nullptr ? strlen(_data) : 0) {}
 
 	constexpr StringView(std::nullptr_t n) noexcept
-		:ConstBuffer<char>(n) {}
+		:ConstBuffer(n) {}
 
 	static constexpr StringView Empty() noexcept {
 		return StringView("", size_t(0));
