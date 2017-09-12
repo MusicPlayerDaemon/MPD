@@ -112,12 +112,18 @@ struct BasicStringView : ConstBuffer<T> {
 
 struct StringView : BasicStringView<char> {
 	using BasicStringView::BasicStringView;
+
+	constexpr StringView(BasicStringView<value_type> src) noexcept
+		:BasicStringView(src) {}
 };
 
 #ifdef _UNICODE
 
 struct WStringView : BasicStringView<wchar_t> {
 	using BasicStringView::BasicStringView;
+
+	constexpr WStringView(BasicStringView<value_type> src) noexcept
+		:BasicStringView(src) {}
 };
 
 #endif
