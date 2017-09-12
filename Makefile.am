@@ -425,6 +425,8 @@ libutil_a_SOURCES = \
 	src/util/StringBuffer.hxx \
 	src/util/StringPointer.hxx \
 	src/util/StringView.cxx src/util/StringView.hxx \
+	src/util/WStringView.hxx \
+	src/util/TStringView.hxx \
 	src/util/ConcatString.hxx \
 	src/util/AllocatedString.cxx src/util/AllocatedString.hxx \
 	src/util/TruncateString.cxx src/util/TruncateString.hxx \

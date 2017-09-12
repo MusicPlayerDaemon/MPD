@@ -117,31 +117,4 @@ struct StringView : BasicStringView<char> {
 		:BasicStringView(src) {}
 };
 
-#ifdef _UNICODE
-
-struct WStringView : BasicStringView<wchar_t> {
-	using BasicStringView::BasicStringView;
-
-	constexpr WStringView(BasicStringView<value_type> src) noexcept
-		:BasicStringView(src) {}
-};
-
-struct TStringView : WStringView {
-	using WStringView::WStringView;
-
-	constexpr TStringView(WStringView src) noexcept
-		:WStringView(src) {}
-};
-
-#else
-
-struct TStringView : StringView {
-	using StringView::StringView;
-
-	constexpr TStringView(StringView src) noexcept
-		:StringView(src) {}
-};
-
-#endif
-
 #endif
