@@ -33,50 +33,65 @@
 #include "ConstBuffer.hxx"
 #include "StringAPI.hxx"
 
-struct StringView : ConstBuffer<char> {
-	StringView() = default;
+template<typename T>
+struct BasicStringView : ConstBuffer<T> {
+	typedef typename ConstBuffer<T>::size_type size_type;
+	typedef typename ConstBuffer<T>::value_type value_type;
+	typedef typename ConstBuffer<T>::pointer_type pointer_type;
 
-	constexpr StringView(pointer_type _data, size_type _size) noexcept
-		:ConstBuffer(_data, _size) {}
+	using ConstBuffer<T>::data;
+	using ConstBuffer<T>::size;
 
-	constexpr StringView(pointer_type _begin, pointer_type _end) noexcept
-		:ConstBuffer(_begin, _end - _begin) {}
+	BasicStringView() = default;
 
-	StringView(pointer_type _data) noexcept
-		:ConstBuffer(_data,
-			     _data != nullptr ? StringLength(_data) : 0) {}
+	constexpr BasicStringView(pointer_type _data, size_type _size) noexcept
+		:ConstBuffer<T>(_data, _size) {}
 
-	constexpr StringView(std::nullptr_t n) noexcept
-		:ConstBuffer(n) {}
+	constexpr BasicStringView(pointer_type _begin,
+				  pointer_type _end) noexcept
+		:ConstBuffer<T>(_begin, _end - _begin) {}
+
+	BasicStringView(pointer_type _data) noexcept
+		:ConstBuffer<T>(_data,
+				_data != nullptr ? StringLength(_data) : 0) {}
+
+	constexpr BasicStringView(std::nullptr_t n) noexcept
+		:ConstBuffer<T>(n) {}
+
+	using ConstBuffer<T>::IsEmpty;
+	using ConstBuffer<T>::front;
+	using ConstBuffer<T>::back;
+	using ConstBuffer<T>::pop_front;
+	using ConstBuffer<T>::pop_back;
 
 	gcc_pure
 	pointer_type Find(value_type ch) const noexcept {
-		return StringFind(data, ch, size);
+		return StringFind(data, ch, this->size);
 	}
 
 	gcc_pure
-	bool StartsWith(StringView needle) const noexcept {
-		return size >= needle.size &&
+	bool StartsWith(BasicStringView<T> needle) const noexcept {
+		return this->size >= needle.size &&
 			StringIsEqual(data, needle.data, needle.size);
 	}
 
 	gcc_pure
-	bool EndsWith(StringView needle) const noexcept {
-		return size >= needle.size &&
-			StringIsEqual(data + size - needle.size,
+	bool EndsWith(BasicStringView<T> needle) const noexcept {
+		return this->size >= needle.size &&
+			StringIsEqual(data + this->size - needle.size,
 				      needle.data, needle.size);
 	}
 
 	gcc_pure
-	bool Equals(StringView other) const noexcept {
-		return size == other.size &&
-			StringIsEqual(data, other.data, size);
+	bool Equals(BasicStringView<T> other) const noexcept {
+		return this->size == other.size &&
+			StringIsEqual(data, other.data, this->size);
 	}
 
 	gcc_pure
-	bool EqualsIgnoreCase(StringView other) const noexcept {
-		return size == other.size &&
-			StringIsEqualIgnoreCase(data, other.data, size);
+	bool EqualsIgnoreCase(BasicStringView<T> other) const noexcept {
+		return this->size == other.size &&
+			StringIsEqualIgnoreCase(data, other.data, this->size);
 	}
 
 	/**
@@ -93,6 +108,10 @@ struct StringView : ConstBuffer<char> {
 		StripLeft();
 		StripRight();
 	}
+};
+
+struct StringView : BasicStringView<char> {
+	using BasicStringView::BasicStringView;
 };
 
 #endif

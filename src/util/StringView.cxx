@@ -30,16 +30,20 @@
 #include "StringView.hxx"
 #include "CharUtil.hxx"
 
+template<typename T>
 void
-StringView::StripLeft() noexcept
+BasicStringView<T>::StripLeft() noexcept
 {
 	while (!IsEmpty() && IsWhitespaceOrNull(front()))
 		pop_front();
 }
 
+template<typename T>
 void
-StringView::StripRight() noexcept
+BasicStringView<T>::StripRight() noexcept
 {
 	while (!IsEmpty() && IsWhitespaceOrNull(back()))
 		pop_back();
 }
+
+template struct BasicStringView<char>;
