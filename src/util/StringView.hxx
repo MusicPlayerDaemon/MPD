@@ -54,16 +54,6 @@ struct StringView : ConstBuffer<char> {
 		return StringView("", size_t(0));
 	}
 
-	template<size_t n>
-	static constexpr StringView Literal(const char (&_data)[n]) noexcept {
-		static_assert(n > 0, "");
-		return {_data, n - 1};
-	}
-
-	static constexpr StringView Literal() noexcept {
-		return StringView("", size_t(0));
-	}
-
 	void SetEmpty() noexcept {
 		data = "";
 		size = 0;
@@ -105,20 +95,10 @@ struct StringView : ConstBuffer<char> {
 			memcmp(data, other.data, size) == 0;
 	}
 
-	template<size_t n>
-	bool EqualsLiteral(const char (&other)[n]) const noexcept {
-		return Equals(Literal(other));
-	}
-
 	gcc_pure
 	bool EqualsIgnoreCase(StringView other) const noexcept {
 		return size == other.size &&
 			strncasecmp(data, other.data, size) == 0;
-	}
-
-	template<size_t n>
-	bool EqualsLiteralIgnoreCase(const char (&other)[n]) const noexcept {
-		return EqualsIgnoreCase(Literal(other));
 	}
 
 	/**
