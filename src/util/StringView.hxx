@@ -49,15 +49,6 @@ struct StringView : ConstBuffer<char> {
 	constexpr StringView(std::nullptr_t n) noexcept
 		:ConstBuffer(n) {}
 
-	static constexpr StringView Empty() noexcept {
-		return StringView("", size_t(0));
-	}
-
-	void SetEmpty() noexcept {
-		data = "";
-		size = 0;
-	}
-
 	gcc_pure
 	pointer_type Find(value_type ch) const noexcept {
 		return StringFind(data, ch, size);

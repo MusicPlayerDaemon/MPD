@@ -230,7 +230,7 @@ void
 TagBuilder::AddEmptyItem(TagType type)
 {
 	tag_pool_lock.lock();
-	auto i = tag_pool_get_item(type, StringView::Empty());
+	auto i = tag_pool_get_item(type, "");
 	tag_pool_lock.unlock();
 
 	items.push_back(i);
