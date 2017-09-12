@@ -18,17 +18,6 @@
  */
 
 #include "WStringCompare.hxx"
-#include "WStringAPI.hxx"
-
-#include <assert.h>
-#include <string.h>
-
-bool
-StringStartsWith(const wchar_t *haystack, const wchar_t *needle) noexcept
-{
-	const size_t length = StringLength(needle);
-	return StringIsEqual(haystack, needle, length);
-}
 
 bool
 StringEndsWith(const wchar_t *haystack, const wchar_t *needle) noexcept
@@ -38,21 +27,6 @@ StringEndsWith(const wchar_t *haystack, const wchar_t *needle) noexcept
 
 	return haystack_length >= needle_length &&
 		StringIsEqual(haystack + haystack_length - needle_length, needle);
-}
-
-const wchar_t *
-StringAfterPrefix(const wchar_t *string, const wchar_t *prefix) noexcept
-{
-#if !CLANG_CHECK_VERSION(3,6)
-	/* disabled on clang due to -Wtautological-pointer-compare */
-	assert(string != nullptr);
-	assert(prefix != nullptr);
-#endif
-
-	size_t prefix_length = StringLength(prefix);
-	return StringIsEqual(string, prefix, prefix_length)
-		? string + prefix_length
-		: nullptr;
 }
 
 const wchar_t *
