@@ -60,7 +60,7 @@ struct StringView : ConstBuffer<char> {
 	}
 
 	gcc_pure
-	pointer_type Find(char ch) const noexcept {
+	pointer_type Find(value_type ch) const noexcept {
 		return (pointer_type)memchr(data, ch, size);
 	}
 
