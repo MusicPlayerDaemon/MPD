@@ -114,4 +114,12 @@ struct StringView : BasicStringView<char> {
 	using BasicStringView::BasicStringView;
 };
 
+#ifdef _UNICODE
+
+struct WStringView : BasicStringView<wchar_t> {
+	using BasicStringView::BasicStringView;
+};
+
+#endif
+
 #endif

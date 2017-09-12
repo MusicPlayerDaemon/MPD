@@ -47,3 +47,7 @@ BasicStringView<T>::StripRight() noexcept
 }
 
 template struct BasicStringView<char>;
+
+#ifdef _UNICODE
+template struct BasicStringView<wchar_t>;
+#endif
