@@ -64,18 +64,6 @@ struct StringView : ConstBuffer<char> {
 		return (pointer_type)memchr(data, ch, size);
 	}
 
-	StringView &operator=(std::nullptr_t) noexcept {
-		data = nullptr;
-		size = 0;
-		return *this;
-	}
-
-	StringView &operator=(pointer_type _data) noexcept {
-		data = _data;
-		size = _data != nullptr ? strlen(_data) : 0;
-		return *this;
-	}
-
 	gcc_pure
 	bool StartsWith(StringView needle) const noexcept {
 		return size >= needle.size &&
