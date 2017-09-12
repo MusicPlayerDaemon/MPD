@@ -31,8 +31,7 @@
 #define STRING_VIEW_HXX
 
 #include "ConstBuffer.hxx"
-
-#include <string.h>
+#include "StringAPI.hxx"
 
 struct StringView : ConstBuffer<char> {
 	StringView() = default;
@@ -45,7 +44,7 @@ struct StringView : ConstBuffer<char> {
 
 	StringView(pointer_type _data) noexcept
 		:ConstBuffer(_data,
-			     _data != nullptr ? strlen(_data) : 0) {}
+			     _data != nullptr ? StringLength(_data) : 0) {}
 
 	constexpr StringView(std::nullptr_t n) noexcept
 		:ConstBuffer(n) {}
@@ -61,32 +60,32 @@ struct StringView : ConstBuffer<char> {
 
 	gcc_pure
 	pointer_type Find(value_type ch) const noexcept {
-		return (pointer_type)memchr(data, ch, size);
+		return StringFind(data, ch, size);
 	}
 
 	gcc_pure
 	bool StartsWith(StringView needle) const noexcept {
 		return size >= needle.size &&
-			memcmp(data, needle.data, needle.size) == 0;
+			StringIsEqual(data, needle.data, needle.size);
 	}
 
 	gcc_pure
 	bool EndsWith(StringView needle) const noexcept {
 		return size >= needle.size &&
-			memcmp(data + size - needle.size,
-			       needle.data, needle.size) == 0;
+			StringIsEqual(data + size - needle.size,
+				      needle.data, needle.size);
 	}
 
 	gcc_pure
 	bool Equals(StringView other) const noexcept {
 		return size == other.size &&
-			memcmp(data, other.data, size) == 0;
+			StringIsEqual(data, other.data, size);
 	}
 
 	gcc_pure
 	bool EqualsIgnoreCase(StringView other) const noexcept {
 		return size == other.size &&
-			strncasecmp(data, other.data, size) == 0;
+			StringIsEqualIgnoreCase(data, other.data, size);
 	}
 
 	/**
