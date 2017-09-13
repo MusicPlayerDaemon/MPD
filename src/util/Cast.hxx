@@ -85,7 +85,7 @@ ContainerAttributeOffset(const A C::*p)
  */
 template<class C, class A>
 static inline constexpr C &
-ContainerCast(A &a, A C::*member)
+ContainerCast(A &a, const A C::*member)
 {
 	return *OffsetCast<C, A>(&a, ContainerAttributeOffset<C, A>(member));
 }
@@ -95,7 +95,7 @@ ContainerCast(A &a, A C::*member)
  */
 template<class C, class A>
 static inline constexpr const C &
-ContainerCast(const A &a, A C::*member)
+ContainerCast(const A &a, const A C::*member)
 {
 	return *OffsetCast<const C, const A>(&a, ContainerAttributeOffset<C, A>(member));
 }
