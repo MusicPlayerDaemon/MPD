@@ -170,7 +170,7 @@ public:
 #endif
 
 	/**
-	 * Close the file descriptor.  It is legal to call it on an
+	 * Close the file descriptor.  It should not be called on an
 	 * "undefined" object.  After this call, IsDefined() is guaranteed
 	 * to return false, and this object may be reused.
 	 */
