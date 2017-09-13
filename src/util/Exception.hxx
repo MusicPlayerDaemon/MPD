@@ -107,8 +107,8 @@ GetFullMessage(const std::exception &e,
 	       const char *separator="; ") noexcept;
 
 /**
- * Extract the full message of a C++ exception, considering its nested
- * exceptions (if any).
+ * Obtain the full concatenated message of an exception and its nested
+ * chain.
  */
 std::string
 GetFullMessage(std::exception_ptr ep,
