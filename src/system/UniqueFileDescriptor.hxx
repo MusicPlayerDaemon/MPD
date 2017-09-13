@@ -117,18 +117,6 @@ public:
 	using FileDescriptor::CreateInotify;
 #endif
 
-#ifdef HAVE_EVENTFD
-	using FileDescriptor::CreateEventFD;
-#endif
-
-#ifdef HAVE_SIGNALFD
-	using FileDescriptor::CreateSignalFD;
-#endif
-
-#ifdef HAVE_INOTIFY
-	using FileDescriptor::CreateInotify;
-#endif
-
 	bool Close() {
 		return IsDefined() && FileDescriptor::Close();
 	}
