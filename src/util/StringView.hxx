@@ -113,6 +113,7 @@ struct BasicStringView : ConstBuffer<T> {
 struct StringView : BasicStringView<char> {
 	using BasicStringView::BasicStringView;
 
+	StringView() = default;
 	constexpr StringView(BasicStringView<value_type> src) noexcept
 		:BasicStringView(src) {}
 };

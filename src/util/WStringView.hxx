@@ -35,6 +35,7 @@
 struct WStringView : BasicStringView<wchar_t> {
 	using BasicStringView::BasicStringView;
 
+	WStringView() = default;
 	constexpr WStringView(BasicStringView<value_type> src) noexcept
 		:BasicStringView(src) {}
 };

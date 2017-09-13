@@ -36,6 +36,7 @@
 struct TStringView : WStringView {
 	using WStringView::WStringView;
 
+	TStringView() = default;
 	constexpr TStringView(WStringView src) noexcept
 		:WStringView(src) {}
 };
@@ -46,6 +47,7 @@ struct TStringView : WStringView {
 struct TStringView : StringView {
 	using StringView::StringView;
 
+	TStringView() = default;
 	constexpr TStringView(StringView src) noexcept
 		:StringView(src) {}
 };
