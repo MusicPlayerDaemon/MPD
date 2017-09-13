@@ -33,7 +33,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
-#ifndef WIN32
+#ifndef _WIN32
 #include <poll.h>
 #endif
 
@@ -91,7 +91,7 @@ FileDescriptor::OpenReadOnly(const char *pathname) noexcept
 	return Open(pathname, O_RDONLY);
 }
 
-#ifndef WIN32
+#ifndef _WIN32
 
 bool
 FileDescriptor::OpenNonBlocking(const char *pathname) noexcept
@@ -256,7 +256,7 @@ FileDescriptor::GetSize() const noexcept
 		: -1;
 }
 
-#ifndef WIN32
+#ifndef _WIN32
 
 int
 FileDescriptor::Poll(short events, int timeout) const noexcept
