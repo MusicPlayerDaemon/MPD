@@ -50,7 +50,8 @@
 /**
  * An OO wrapper for a UNIX file descriptor.
  *
- * This class is unmanaged and trivial.
+ * This class is unmanaged and trivial; for a managed version, see
+ * #UniqueFileDescriptor.
  */
 class FileDescriptor {
 protected:
