@@ -34,7 +34,8 @@
  * A disposer for boost::intrusive that invokes the "delete" operator
  * on the given pointer.
  */
-struct DeleteDisposer {
+class DeleteDisposer {
+public:
 	template<typename T>
 	void operator()(T *t) {
 		delete t;
