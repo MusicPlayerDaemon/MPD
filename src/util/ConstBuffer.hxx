@@ -27,8 +27,8 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CONST_BUFFER_HPP
-#define CONST_BUFFER_HPP
+#ifndef CONST_BUFFER_HXX
+#define CONST_BUFFER_HXX
 
 #include "Compiler.h"
 

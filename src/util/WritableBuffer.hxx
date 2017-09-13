@@ -27,8 +27,8 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WRITABLE_BUFFER_HPP
-#define WRITABLE_BUFFER_HPP
+#ifndef WRITABLE_BUFFER_HXX
+#define WRITABLE_BUFFER_HXX
 
 #include "Compiler.h"
 
