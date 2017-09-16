@@ -17,9 +17,28 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include "../OutputAPI.hxx"
+
 #ifndef MPD_SNDIO_OUTPUT_PLUGIN_HXX
 #define MPD_SNDIO_OUTPUT_PLUGIN_HXX
 
 extern const struct AudioOutputPlugin sndio_output_plugin;
+
+class SndioOutput final : AudioOutput {
+	const char *const device;
+	const unsigned buffer_time; /* in ms */
+	struct sio_hdl *sio_hdl;
+
+public:
+	SndioOutput(const ConfigBlock &block);
+
+	static AudioOutput *Create(EventLoop &,
+				   const ConfigBlock &block);
+
+private:
+	void Open(AudioFormat &audio_format) override;
+	void Close() noexcept override;
+	size_t Play(const void *chunk, size_t size) override;
+};
 
 #endif

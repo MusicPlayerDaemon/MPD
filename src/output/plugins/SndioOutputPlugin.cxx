@@ -19,7 +19,6 @@
 
 #include "config.h"
 #include "SndioOutputPlugin.hxx"
-#include "../OutputAPI.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
 
@@ -44,31 +43,17 @@ static constexpr unsigned MPD_SNDIO_BUFFER_TIME_MS = 250;
 
 static constexpr Domain sndio_output_domain("sndio_output");
 
-class SndioOutput final : AudioOutput {
-	const char *const device;
-	const unsigned buffer_time; /* in ms */
-	struct sio_hdl *sio_hdl;
-
-public:
-	SndioOutput(const ConfigBlock &block);
-
-	static AudioOutput *Create(EventLoop &,
-				   const ConfigBlock &block) {
-		return new SndioOutput(block);
-	}
-
-private:
-	void Open(AudioFormat &audio_format) override;
-	void Close() noexcept override;
-	size_t Play(const void *chunk, size_t size) override;
-};
-
 SndioOutput::SndioOutput(const ConfigBlock &block)
 	:AudioOutput(0),
 	 device(block.GetBlockValue("device", SIO_DEVANY)),
 	 buffer_time(block.GetBlockValue("buffer_time",
 					 MPD_SNDIO_BUFFER_TIME_MS))
 {
+}
+
+AudioOutput *
+SndioOutput::Create(EventLoop &, const ConfigBlock &block) {
+	return new SndioOutput(block);
 }
 
 static bool
