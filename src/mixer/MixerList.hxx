@@ -36,5 +36,6 @@ extern const MixerPlugin osx_mixer_plugin;
 extern const MixerPlugin roar_mixer_plugin;
 extern const MixerPlugin pulse_mixer_plugin;
 extern const MixerPlugin winmm_mixer_plugin;
+extern const MixerPlugin sndio_mixer_plugin;
 
 #endif

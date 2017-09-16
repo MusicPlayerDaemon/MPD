@@ -1469,6 +1469,7 @@ if ENABLE_SNDIO
 liboutput_plugins_a_SOURCES += \
 	src/output/plugins/SndioOutputPlugin.cxx \
 	src/output/plugins/SndioOutputPlugin.hxx
+libmixer_plugins_a_SOURCES += src/mixer/plugins/SndioMixerPlugin.cxx
 endif
 
 if ENABLE_HAIKU
