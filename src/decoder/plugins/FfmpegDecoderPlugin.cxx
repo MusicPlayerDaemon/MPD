@@ -712,7 +712,9 @@ FfmpegDecode(DecoderClient &client, InputStream &input,
 #endif
 
 	const SignedSongTime total_time =
-		FromFfmpegTimeChecked(av_stream.duration, av_stream.time_base);
+		(av_stream.duration != (int64_t)AV_NOPTS_VALUE)
+		? FromFfmpegTimeChecked(av_stream.duration, av_stream.time_base)
+		: FromFfmpegTimeChecked(format_context.duration, AV_TIME_BASE_Q);
 
 	client.Ready(audio_format, input.IsSeekable(), total_time);
 
@@ -838,10 +840,15 @@ FfmpegScanStream(AVFormatContext &format_context,
 		return false;
 
 	const AVStream &stream = *format_context.streams[audio_stream];
-	if (stream.duration != (int64_t)AV_NOPTS_VALUE)
+	if (stream.duration != (int64_t)AV_NOPTS_VALUE){
 		tag_handler_invoke_duration(handler, handler_ctx,
-					    FromFfmpegTime(stream.duration,
-							   stream.time_base));
+									FromFfmpegTime(stream.duration,
+												   stream.time_base));
+	} else if (format_context.duration != (int64_t)AV_NOPTS_VALUE){
+		tag_handler_invoke_duration(handler, handler_ctx,
+									FromFfmpegTime(format_context.duration,
+												   AV_TIME_BASE_Q));
+	}
 
 	FfmpegScanMetadata(format_context, audio_stream, handler, handler_ctx);
 
