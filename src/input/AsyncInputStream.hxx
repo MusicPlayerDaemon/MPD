@@ -46,22 +46,22 @@ class AsyncInputStream : public InputStream {
 	CircularBuffer<uint8_t> buffer;
 	const size_t resume_at;
 
-	bool open;
+	bool open = true;
 
 	/**
 	 * Is the connection currently paused?  That happens when the
 	 * buffer was getting too large.  It will be unpaused when the
 	 * buffer is below the threshold again.
 	 */
-	bool paused;
+	bool paused = false;
 
-	SeekState seek_state;
+	SeekState seek_state = SeekState::NONE;
 
 	/**
 	 * The #Tag object ready to be requested via
 	 * InputStream::ReadTag().
 	 */
-	Tag *tag;
+	Tag *tag = nullptr;
 
 	offset_type seek_offset;
 
