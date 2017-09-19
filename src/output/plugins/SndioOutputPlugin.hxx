@@ -18,10 +18,12 @@
  */
 
 #include "../OutputAPI.hxx"
-#include "mixer/Listener.hxx"
 
 #ifndef MPD_SNDIO_OUTPUT_PLUGIN_HXX
 #define MPD_SNDIO_OUTPUT_PLUGIN_HXX
+
+class Mixer;
+class MixerListener;
 
 extern const struct AudioOutputPlugin sndio_output_plugin;
 

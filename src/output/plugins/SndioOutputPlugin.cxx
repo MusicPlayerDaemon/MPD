@@ -20,6 +20,7 @@
 #include "config.h"
 #include "SndioOutputPlugin.hxx"
 #include "mixer/MixerList.hxx"
+#include "mixer/Listener.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
 
