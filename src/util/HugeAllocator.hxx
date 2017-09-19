@@ -121,7 +121,7 @@ class HugeAllocation {
 public:
 	HugeAllocation() = default;
 
-	HugeAllocation(size_t _size)
+	explicit HugeAllocation(size_t _size)
 		:data(HugeAllocate(_size)), size(_size) {}
 
 	HugeAllocation(HugeAllocation &&src) noexcept
