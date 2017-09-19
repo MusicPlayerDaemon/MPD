@@ -17,10 +17,10 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "../OutputAPI.hxx"
-
 #ifndef MPD_SNDIO_OUTPUT_PLUGIN_HXX
 #define MPD_SNDIO_OUTPUT_PLUGIN_HXX
+
+#include "../OutputAPI.hxx"
 
 class Mixer;
 class MixerListener;
