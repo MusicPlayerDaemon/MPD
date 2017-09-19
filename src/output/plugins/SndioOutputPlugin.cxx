@@ -66,16 +66,14 @@ SndioOutput::Create(EventLoop &, const ConfigBlock &block) {
 static bool
 sndio_test_default_device()
 {
-	struct sio_hdl *sio_hdl;
-
-	sio_hdl = sio_open(SIO_DEVANY, SIO_PLAY, 0);
-	if (!sio_hdl) {
+	auto *hdl = sio_open(SIO_DEVANY, SIO_PLAY, 0);
+	if (!hdl) {
 		FormatError(sndio_output_domain,
-		            "Error opening default sndio device");
+			    "Error opening default sndio device");
 		return false;
 	}
 
-	sio_close(sio_hdl);
+	sio_close(hdl);
 	return true;
 }
 
@@ -85,8 +83,8 @@ SndioOutput::Open(AudioFormat &audio_format)
 	struct sio_par par;
 	unsigned bits, rate, chans;
 
-	sio_hdl = sio_open(device, SIO_PLAY, 0);
-	if (!sio_hdl)
+	hdl = sio_open(device, SIO_PLAY, 0);
+	if (!hdl)
 		throw std::runtime_error("Failed to open default sndio device");
 
 	switch (audio_format.format) {
@@ -116,9 +114,9 @@ SndioOutput::Open(AudioFormat &audio_format)
 	par.le = SIO_LE_NATIVE;
 	par.appbufsz = rate * buffer_time / 1000;
 
-	if (!sio_setpar(sio_hdl, &par) ||
-	    !sio_getpar(sio_hdl, &par)) {
-		sio_close(sio_hdl);
+	if (!sio_setpar(hdl, &par) ||
+	    !sio_getpar(hdl, &par)) {
+		sio_close(hdl);
 		throw std::runtime_error("Failed to set/get audio params");
 	}
 
@@ -128,21 +126,21 @@ SndioOutput::Open(AudioFormat &audio_format)
 	    par.pchan != chans ||
 	    par.sig != 1 ||
 	    par.le != SIO_LE_NATIVE) {
-		sio_close(sio_hdl);
+		sio_close(hdl);
 		throw std::runtime_error("Requested audio params cannot be satisfied");
 	}
 
 	// Set volume after opening fresh audio stream which does
 	// know nothing about previous audio streams.
-	sio_setvol(sio_hdl, raw_volume);
+	sio_setvol(hdl, raw_volume);
 	// sio_onvol returns 0 if no volume knob is available.
 	// This is the case on raw audio devices rather than
 	// the sndiod audio server.
-	if (sio_onvol(sio_hdl, VolumeCallback, this) == 0)
+	if (sio_onvol(hdl, VolumeCallback, this) == 0)
 		raw_volume = -1;
 
-	if (!sio_start(sio_hdl)) {
-		sio_close(sio_hdl);
+	if (!sio_start(hdl)) {
+		sio_close(hdl);
 		throw std::runtime_error("Failed to start audio device");
 	}
 }
@@ -150,7 +148,7 @@ SndioOutput::Open(AudioFormat &audio_format)
 void
 SndioOutput::Close()  noexcept
 {
-	sio_close(sio_hdl);
+	sio_close(hdl);
 }
 
 size_t
@@ -158,15 +156,16 @@ SndioOutput::Play(const void *chunk, size_t size)
 {
 	size_t n;
 
-	n = sio_write(sio_hdl, chunk, size);
-	if (n == 0 && sio_eof(sio_hdl) != 0)
+	n = sio_write(hdl, chunk, size);
+	if (n == 0 && sio_eof(hdl) != 0)
 		throw std::runtime_error("sndio write failed");
 	return n;
 }
 
 void
-SndioOutput::SetVolume(unsigned int volume) {
-	sio_setvol(sio_hdl, volume * SIO_MAXVOL / 100);
+SndioOutput::SetVolume(unsigned int volume)
+{
+	sio_setvol(hdl, volume * SIO_MAXVOL / 100);
 }
 
 static inline unsigned int

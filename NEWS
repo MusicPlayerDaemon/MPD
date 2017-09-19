@@ -12,6 +12,8 @@ ver 0.21 (not yet released)
 ver 0.20.11 (not yet released)
 * storage
   - curl: support Content-Type application/xml
+* decoder
+  - ffmpeg: more reliable song duration
 
 ver 0.20.10 (2017/08/24)
 * decoder
