@@ -69,10 +69,6 @@ protected:
 	std::exception_ptr postponed_exception;
 
 public:
-	/**
-	 * @param _buffer a buffer allocated with HugeAllocate(); the
-	 * destructor will free it using HugeFree()
-	 */
 	AsyncInputStream(EventLoop &event_loop, const char *_url,
 			 Mutex &_mutex, Cond &_cond,
 			 size_t _buffer_size,
