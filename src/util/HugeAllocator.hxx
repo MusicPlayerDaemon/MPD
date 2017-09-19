@@ -125,9 +125,7 @@ public:
 		:data(HugeAllocate(_size)), size(_size) {}
 
 	HugeAllocation(HugeAllocation &&src) noexcept
-		:data(src.data), size(src.size) {
-		src.data = nullptr;
-	}
+		:data(std::exchange(src.data, nullptr)), size(src.size) {}
 
 	~HugeAllocation() {
 		if (data != nullptr)
