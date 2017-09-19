@@ -8,6 +8,8 @@ ver 0.21 (not yet released)
   - pcm: support audio/L24 (RFC 3190)
 * output
   - alsa: non-blocking mode
+* mixer
+  - sndio: new mixer plugin
 
 ver 0.20.11 (not yet released)
 * storage
