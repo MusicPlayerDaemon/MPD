@@ -53,6 +53,8 @@ ThreadInputStream::Start()
 	void *p = HugeAllocate(buffer_size);
 	assert(p != nullptr);
 
+	HugeForkCow(p, buffer_size, false);
+
 	buffer = new CircularBuffer<uint8_t>((uint8_t *)p, buffer_size);
 	thread.Start();
 }

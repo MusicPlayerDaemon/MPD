@@ -74,6 +74,8 @@ public:
 		:n_max(_count),
 		 data((Slice *)HugeAllocate(CalcAllocationSize())) {
 		assert(n_max > 0);
+
+		HugeForkCow(data, CalcAllocationSize(), false);
 	}
 
 	~SliceBuffer() {

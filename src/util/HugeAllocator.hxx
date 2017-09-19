@@ -57,6 +57,13 @@ void
 HugeFree(void *p, size_t size) noexcept;
 
 /**
+ * Control whether this allocation is copied to newly forked child
+ * processes.  Disabling that makes forking a little bit cheaper.
+ */
+void
+HugeForkCow(void *p, size_t size, bool enable) noexcept;
+
+/**
  * Discard any data stored in the allocation and give the memory back
  * to the kernel.  After returning, the allocation still exists and
  * can be reused at any time, but its contents are undefined.
@@ -78,6 +85,11 @@ static inline void
 HugeFree(void *p, gcc_unused size_t size) noexcept
 {
 	VirtualFree(p, 0, MEM_RELEASE);
+}
+
+static inline void
+HugeForkCow(void *, size_t, bool) noexcept
+{
 }
 
 static inline void
@@ -104,6 +116,11 @@ HugeFree(void *_p, size_t) noexcept
 {
 	auto *p = (uint8_t *)_p;
 	delete[] p;
+}
+
+static inline void
+HugeForkCow(void *, size_t, bool) noexcept
+{
 }
 
 static inline void
@@ -138,6 +155,10 @@ public:
 		std::swap(data, src.data);
 		std::swap(size, src.size);
 		return *this;
+	}
+
+	void ForkCow(bool enable) noexcept {
+		HugeForkCow(data, size, enable);
 	}
 
 	void Discard() noexcept {

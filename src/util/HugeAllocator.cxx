@@ -73,12 +73,6 @@ HugeAllocate(size_t size)
 	madvise(p, size, MADV_HUGEPAGE);
 #endif
 
-#ifdef MADV_DONTFORK
-	/* just in case MPD needs to fork, don't copy this allocation
-	   to the child process, to reduce overhead */
-	madvise(p, size, MADV_DONTFORK);
-#endif
-
 	return p;
 }
 
@@ -86,6 +80,15 @@ void
 HugeFree(void *p, size_t size) noexcept
 {
 	munmap(p, AlignToPageSize(size));
+}
+
+void
+HugeForkCow(void *p, size_t size, bool enable) noexcept
+{
+#ifdef MADV_DONTFORK
+	madvise(p, AlignToPageSize(size),
+		enable ? MADV_DOFORK : MADV_DONTFORK);
+#endif
 }
 
 void

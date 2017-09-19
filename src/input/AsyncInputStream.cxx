@@ -38,7 +38,10 @@ AsyncInputStream::AsyncInputStream(EventLoop &event_loop, const char *_url,
 	 deferred_seek(event_loop, BIND_THIS_METHOD(DeferredSeek)),
 	 allocation(_buffer_size),
 	 buffer((uint8_t *)allocation.get(), _buffer_size),
-	 resume_at(_resume_at) {}
+	 resume_at(_resume_at)
+{
+	allocation.ForkCow(false);
+}
 
 AsyncInputStream::~AsyncInputStream()
 {
