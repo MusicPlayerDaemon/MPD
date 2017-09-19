@@ -42,6 +42,8 @@
  * Allocate a huge amount of memory.  This will be done in a way that
  * allows giving the memory back to the kernel as soon as we don't
  * need it anymore.  On the downside, this call is expensive.
+ *
+ * Throws std::bad_alloc on error
  */
 gcc_malloc
 void *
