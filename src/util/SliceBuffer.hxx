@@ -51,19 +51,19 @@ class SliceBuffer {
 	 * avoid page faulting on the new allocation, so the kernel
 	 * does not need to reserve physical memory pages.
 	 */
-	unsigned n_initialized;
+	unsigned n_initialized = 0;
 
 	/**
 	 * The number of slices currently allocated.
 	 */
-	unsigned n_allocated;
+	unsigned n_allocated = 0;
 
 	Slice *const data;
 
 	/**
 	 * Pointer to the first free element in the chain.
 	 */
-	Slice *available;
+	Slice *available = nullptr;
 
 	size_t CalcAllocationSize() const {
 		return n_max * sizeof(Slice);
@@ -71,9 +71,8 @@ class SliceBuffer {
 
 public:
 	SliceBuffer(unsigned _count)
-		:n_max(_count), n_initialized(0), n_allocated(0),
-		 data((Slice *)HugeAllocate(CalcAllocationSize())),
-		 available(nullptr) {
+		:n_max(_count),
+		 data((Slice *)HugeAllocate(CalcAllocationSize())) {
 		assert(n_max > 0);
 	}
 
