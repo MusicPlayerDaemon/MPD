@@ -17,37 +17,39 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "config.h"
-#include "Selection.hxx"
-#include "SongFilter.hxx"
+#ifndef MPD_ICU_COMPARE_HXX
+#define MPD_ICU_COMPARE_HXX
 
-DatabaseSelection::DatabaseSelection(const char *_uri, bool _recursive,
-				     const SongFilter *_filter)
-	:uri(_uri), recursive(_recursive), filter(_filter)
-{
-	/* optimization: if the caller didn't specify a base URI, pick
-	   the one from SongFilter */
-	if (uri.empty() && filter != nullptr) {
-		auto base = filter->GetBase();
-		if (base != nullptr)
-			uri = base;
+#include "check.h"
+#include "Compiler.h"
+#include "util/AllocatedString.hxx"
+
+/**
+ * This class can compare one string ("needle") with lots of other
+ * strings ("haystacks") efficiently, ignoring case.  With some
+ * configurations, it can prepare a case-folded version of the needle.
+ */
+class IcuCompare {
+	AllocatedString<> needle;
+
+public:
+	IcuCompare():needle(nullptr) {}
+
+	explicit IcuCompare(const char *needle) noexcept;
+
+	IcuCompare(IcuCompare &&) = default;
+	IcuCompare &operator=(IcuCompare &&) = default;
+
+	gcc_pure
+	operator bool() const noexcept {
+		return !needle.IsNull();
 	}
-}
 
-bool
-DatabaseSelection::IsEmpty() const noexcept
-{
-	return uri.empty() && (filter == nullptr || filter->IsEmpty());
-}
+	gcc_pure
+	bool operator==(const char *haystack) const noexcept;
 
-bool
-DatabaseSelection::HasOtherThanBase() const noexcept
-{
-	return filter != nullptr && filter->HasOtherThanBase();
-}
+	gcc_pure
+	bool IsIn(const char *haystack) const noexcept;
+};
 
-bool
-DatabaseSelection::Match(const LightSong &song) const noexcept
-{
-	return filter == nullptr || filter->Match(song);
-}
+#endif

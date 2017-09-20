@@ -28,7 +28,7 @@
 #include "util/ASCII.hxx"
 #include "util/TimeParser.hxx"
 #include "util/UriUtil.hxx"
-#include "lib/icu/Collate.hxx"
+#include "lib/icu/CaseFold.hxx"
 
 #include <stdexcept>
 
@@ -58,17 +58,10 @@ locate_parse_type(const char *str) noexcept
 	return tag_name_parse_i(str);
 }
 
-static AllocatedString<>
-ImportString(const char *p, bool fold_case)
-{
-	return fold_case
-		? IcuCaseFold(p)
-		: AllocatedString<>::Duplicate(p);
-}
-
 SongFilter::Item::Item(unsigned _tag, const char *_value, bool _fold_case)
-	:tag(_tag), fold_case(_fold_case),
-	 value(ImportString(_value, _fold_case))
+	:tag(_tag),
+	 value(AllocatedString<>::Duplicate(_value)),
+	 fold_case(_fold_case ? IcuCompare(value.c_str()) : IcuCompare())
 {
 }
 
@@ -89,9 +82,7 @@ SongFilter::Item::StringMatch(const char *s) const noexcept
 	assert(tag != LOCATE_TAG_MODIFIED_SINCE);
 
 	if (fold_case) {
-		const auto folded = IcuCaseFold(s);
-		assert(!folded.IsNull());
-		return StringFind(folded.c_str(), value.c_str()) != nullptr;
+		return fold_case.IsIn(s);
 	} else {
 		return StringIsEqual(s, value.c_str());
 	}

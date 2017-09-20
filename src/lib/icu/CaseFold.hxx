@@ -17,37 +17,22 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "config.h"
-#include "Selection.hxx"
-#include "SongFilter.hxx"
+#ifndef MPD_ICU_CASE_FOLD_HXX
+#define MPD_ICU_CASE_FOLD_HXX
 
-DatabaseSelection::DatabaseSelection(const char *_uri, bool _recursive,
-				     const SongFilter *_filter)
-	:uri(_uri), recursive(_recursive), filter(_filter)
-{
-	/* optimization: if the caller didn't specify a base URI, pick
-	   the one from SongFilter */
-	if (uri.empty() && filter != nullptr) {
-		auto base = filter->GetBase();
-		if (base != nullptr)
-			uri = base;
-	}
-}
+#include "check.h"
 
-bool
-DatabaseSelection::IsEmpty() const noexcept
-{
-	return uri.empty() && (filter == nullptr || filter->IsEmpty());
-}
+#if defined(HAVE_ICU) || defined(_WIN32)
+#define HAVE_ICU_CASE_FOLD
 
-bool
-DatabaseSelection::HasOtherThanBase() const noexcept
-{
-	return filter != nullptr && filter->HasOtherThanBase();
-}
+#include "Compiler.h"
 
-bool
-DatabaseSelection::Match(const LightSong &song) const noexcept
-{
-	return filter == nullptr || filter->Match(song);
-}
+template<typename T> class AllocatedString;
+
+gcc_nonnull_all
+AllocatedString<char>
+IcuCaseFold(const char *src) noexcept;
+
+#endif
+
+#endif

@@ -17,6 +17,7 @@ ver 0.20.11 (not yet released)
   - curl: support Content-Type application/xml
 * decoder
   - ffmpeg: more reliable song duration
+* fix case insensitive search without libicu
 
 ver 0.20.10 (2017/08/24)
 * decoder
