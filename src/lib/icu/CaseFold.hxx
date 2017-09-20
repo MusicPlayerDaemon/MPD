@@ -17,23 +17,16 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_ICU_COLLATE_HXX
-#define MPD_ICU_COLLATE_HXX
+#ifndef MPD_ICU_CASE_FOLD_HXX
+#define MPD_ICU_CASE_FOLD_HXX
 
 #include "check.h"
 #include "Compiler.h"
 
-/**
- * Throws #std::runtime_error on error.
- */
-void
-IcuCollateInit();
+template<typename T> class AllocatedString;
 
-void
-IcuCollateFinish() noexcept;
-
-gcc_pure gcc_nonnull_all
-int
-IcuCollate(const char *a, const char *b) noexcept;
+gcc_nonnull_all
+AllocatedString<char>
+IcuCaseFold(const char *src);
 
 #endif

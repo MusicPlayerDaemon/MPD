@@ -27,7 +27,7 @@
 #include "util/ASCII.hxx"
 #include "util/TimeParser.hxx"
 #include "util/UriUtil.hxx"
-#include "lib/icu/Collate.hxx"
+#include "lib/icu/CaseFold.hxx"
 
 #include <stdexcept>
 
