@@ -24,18 +24,43 @@
 
 #include <string.h>
 
+#ifdef HAVE_ICU_CASE_FOLD
+
 IcuCompare::IcuCompare(const char *_needle) noexcept
 	:needle(IcuCaseFold(_needle)) {}
+
+#else
+
+IcuCompare::IcuCompare(const char *_needle) noexcept
+	:needle(AllocatedString<>::Duplicate(_needle)) {}
+
+#endif
 
 bool
 IcuCompare::operator==(const char *haystack) const noexcept
 {
+#ifdef HAVE_ICU_CASE_FOLD
 	return StringIsEqual(IcuCaseFold(haystack).c_str(), needle.c_str());
+#else
+	return strcasecmp(haystack, needle.c_str());
+#endif
 }
 
 bool
 IcuCompare::IsIn(const char *haystack) const noexcept
 {
+#ifdef HAVE_ICU_CASE_FOLD
 	return StringFind(IcuCaseFold(haystack).c_str(),
 			  needle.c_str()) != nullptr;
+#elif defined(HAVE_STRCASESTR)
+	return strcasestr(haystack, needle.c_str()) != nullptr;
+#else
+	/* poor man's strcasestr() */
+	for (const size_t length = strlen(needle.c_str());
+	     *haystack != 0; ++haystack)
+		if (strncasecmp(haystack, needle.c_str(), length) == 0)
+			return true;
+
+	return false;
+#endif
 }
