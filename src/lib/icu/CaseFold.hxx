@@ -27,6 +27,6 @@ template<typename T> class AllocatedString;
 
 gcc_nonnull_all
 AllocatedString<char>
-IcuCaseFold(const char *src);
+IcuCaseFold(const char *src) noexcept;
 
 #endif
