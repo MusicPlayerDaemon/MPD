@@ -146,7 +146,6 @@ AllocatedString<>
 IcuCaseFold(const char *src)
 try {
 #ifdef HAVE_ICU
-	assert(collator != nullptr);
 #if !CLANG_CHECK_VERSION(3,6)
 	/* disabled on clang due to -Wtautological-pointer-compare */
 	assert(src != nullptr);
