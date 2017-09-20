@@ -21,16 +21,18 @@
 #define MPD_ICU_CASE_FOLD_HXX
 
 #include "check.h"
-#include "Compiler.h"
 
 #if defined(HAVE_ICU) || defined(_WIN32)
 #define HAVE_ICU_CASE_FOLD
-#endif
+
+#include "Compiler.h"
 
 template<typename T> class AllocatedString;
 
 gcc_nonnull_all
 AllocatedString<char>
 IcuCaseFold(const char *src) noexcept;
+
+#endif
 
 #endif

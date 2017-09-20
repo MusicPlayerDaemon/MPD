@@ -19,6 +19,9 @@
 
 #include "config.h"
 #include "CaseFold.hxx"
+
+#ifdef HAVE_ICU_CASE_FOLD
+
 #include "util/AllocatedString.hxx"
 
 #ifdef HAVE_ICU
@@ -90,22 +93,10 @@ try {
 	return WideCharToMultiByte(CP_UTF8, buffer.get());
 
 #else
-	size_t size = strlen(src) + 1;
-	std::unique_ptr<char[]> buffer(new char[size]);
-	size_t nbytes = strxfrm(buffer.get(), src, size);
-	if (nbytes >= size) {
-		/* buffer too small - reallocate and try again */
-		buffer.reset();
-		size = nbytes + 1;
-		buffer.reset(new char[size]);
-		nbytes = strxfrm(buffer.get(), src, size);
-	}
-
-	assert(nbytes < size);
-	assert(buffer[nbytes] == 0);
-
-	return AllocatedString<>::Donate(buffer.release());
+#error not implemented
 #endif
 } catch (const std::runtime_error &) {
 	return AllocatedString<>::Duplicate(src);
 }
+
+#endif /* HAVE_ICU_CASE_FOLD */
