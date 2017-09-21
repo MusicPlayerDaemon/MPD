@@ -133,51 +133,6 @@ HugeDiscard(void *, size_t) noexcept
 #endif
 
 /**
- * Automatic huge memory allocation management.
- */
-class HugeAllocation {
-	WritableBuffer<void> buffer = nullptr;
-
-public:
-	HugeAllocation() = default;
-
-	explicit HugeAllocation(size_t _size)
-		:buffer(HugeAllocate(_size)) {}
-
-	HugeAllocation(HugeAllocation &&src) noexcept
-		:buffer(std::exchange(src.buffer, nullptr)) {}
-
-	~HugeAllocation() {
-		if (buffer != nullptr)
-			HugeFree(buffer.data, buffer.size);
-	}
-
-	HugeAllocation &operator=(HugeAllocation &&src) noexcept {
-		std::swap(buffer, src.buffer);
-		return *this;
-	}
-
-	void ForkCow(bool enable) noexcept {
-		HugeForkCow(buffer.data, buffer.size, enable);
-	}
-
-	void Discard() noexcept {
-		HugeDiscard(buffer.data, buffer.size);
-	}
-
-	void reset() noexcept {
-		if (buffer != nullptr) {
-			HugeFree(buffer.data, buffer.size);
-			buffer = nullptr;
-		}
-	}
-
-	void *get() noexcept {
-		return buffer.data;
-	}
-};
-
-/**
  * Automatic memory management for a dynamic array in "huge" memory.
  */
 template<typename T>
