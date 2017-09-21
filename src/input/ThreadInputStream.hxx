@@ -24,12 +24,12 @@
 #include "InputStream.hxx"
 #include "thread/Thread.hxx"
 #include "thread/Cond.hxx"
+#include "util/HugeAllocator.hxx"
+#include "util/CircularBuffer.hxx"
 
 #include <exception>
 
 #include <stdint.h>
-
-template<typename T> class CircularBuffer;
 
 /**
  * Helper class for moving InputStream implementations with blocking
@@ -54,8 +54,9 @@ class ThreadInputStream : public InputStream {
 
 	std::exception_ptr postponed_exception;
 
-	const size_t buffer_size;
-	CircularBuffer<uint8_t> *buffer = nullptr;
+	HugeArray<uint8_t> allocation;
+
+	CircularBuffer<uint8_t> buffer;
 
 	/**
 	 * Shall the stream be closed?
