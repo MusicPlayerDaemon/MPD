@@ -41,7 +41,7 @@ class AsyncInputStream : public InputStream {
 	DeferredCall deferred_resume;
 	DeferredCall deferred_seek;
 
-	HugeAllocation allocation;
+	HugeArray<uint8_t> allocation;
 
 	CircularBuffer<uint8_t> buffer;
 	const size_t resume_at;
