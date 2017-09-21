@@ -17,8 +17,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_EVENT_DEFERRED_CALL_HXX
-#define MPD_EVENT_DEFERRED_CALL_HXX
+#ifndef MPD_DEFER_EVENT_HXX
+#define MPD_DEFER_EVENT_HXX
 
 #include "check.h"
 #include "DeferredMonitor.hxx"
@@ -29,19 +29,19 @@
  *
  * This class is thread-safe.
  */
-class DeferredCall final : DeferredMonitor {
+class DeferEvent final : DeferredMonitor {
 	typedef BoundMethod<void()> Callback;
 	const Callback callback;
 
 public:
-	DeferredCall(EventLoop &_loop, Callback _callback)
+	DeferEvent(EventLoop &_loop, Callback _callback)
 		:DeferredMonitor(_loop), callback(_callback) {}
 
 	using DeferredMonitor::GetEventLoop;
 	using DeferredMonitor::Schedule;
 	using DeferredMonitor::Cancel;
 
-protected:
+private:
 	void RunDeferred() override {
 		callback();
 	}

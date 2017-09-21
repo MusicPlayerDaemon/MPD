@@ -21,7 +21,7 @@
 #define MPD_ASYNC_INPUT_STREAM_HXX
 
 #include "InputStream.hxx"
-#include "event/DeferredCall.hxx"
+#include "event/DeferEvent.hxx"
 #include "util/HugeAllocator.hxx"
 #include "util/CircularBuffer.hxx"
 
@@ -38,8 +38,8 @@ class AsyncInputStream : public InputStream {
 		NONE, SCHEDULED, PENDING
 	};
 
-	DeferredCall deferred_resume;
-	DeferredCall deferred_seek;
+	DeferEvent deferred_resume;
+	DeferEvent deferred_seek;
 
 	HugeArray<uint8_t> allocation;
 
@@ -167,7 +167,7 @@ protected:
 private:
 	void Resume();
 
-	/* for DeferredCall */
+	/* for DeferEvent */
 	void DeferredResume() noexcept;
 	void DeferredSeek() noexcept;
 };
