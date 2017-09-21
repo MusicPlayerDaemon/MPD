@@ -26,7 +26,7 @@
 #include "lib/curl/Handler.hxx"
 #include "lib/curl/Request.hxx"
 #include "thread/Mutex.hxx"
-#include "event/DeferredMonitor.hxx"
+#include "event/DeferEvent.hxx"
 #include "Compiler.h"
 
 #include <upnp/upnp.h>
@@ -84,7 +84,9 @@ class UPnPDeviceDirectory final : UpnpCallback {
 
 	class Downloader final
 		: public boost::intrusive::list_base_hook<boost::intrusive::link_mode<boost::intrusive::normal_link>>,
-		DeferredMonitor, CurlResponseHandler {
+		CurlResponseHandler {
+
+		DeferEvent defer_start_event;
 
 		UPnPDeviceDirectory &parent;
 
@@ -101,14 +103,15 @@ class UPnPDeviceDirectory final : UpnpCallback {
 			   const Upnp_Discovery &disco);
 
 		void Start() {
-			DeferredMonitor::Schedule();
+			defer_start_event.Schedule();
 		}
 
 		void Destroy();
 
 	private:
-		/* virtual methods from DeferredMonitor */
-		void RunDeferred() override;
+		void OnDeferredStart() {
+			request.Start();
+		}
 
 		/* virtual methods from CurlResponseHandler */
 		void OnHeaders(unsigned status,

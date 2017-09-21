@@ -34,7 +34,9 @@
 
 UPnPDeviceDirectory::Downloader::Downloader(UPnPDeviceDirectory &_parent,
 					    const Upnp_Discovery &disco)
-	:DeferredMonitor(_parent.GetEventLoop()), parent(_parent),
+	:defer_start_event(_parent.GetEventLoop(),
+			   BIND_THIS_METHOD(OnDeferredStart)),
+	 parent(_parent),
 	 id(disco.DeviceId), url(disco.Location),
 	 expires(std::chrono::seconds(disco.Expires)),
 	 request(*parent.curl, url.c_str(), *this)
@@ -47,12 +49,6 @@ UPnPDeviceDirectory::Downloader::Destroy()
 {
 	parent.downloaders.erase_and_dispose(parent.downloaders.iterator_to(*this),
 					     DeleteDisposer());
-}
-
-void
-UPnPDeviceDirectory::Downloader::RunDeferred()
-{
-	request.Start();
 }
 
 void
