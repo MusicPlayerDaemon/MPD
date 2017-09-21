@@ -119,6 +119,16 @@ struct WritableBuffer {
 	}
 
 	/**
+	 * Cast a WritableBuffer<void> to a WritableBuffer<T>,
+	 * rounding down to the next multiple of T's size.
+	 */
+	static constexpr WritableBuffer<T> FromVoidFloor(WritableBuffer<void> other) {
+		static_assert(sizeof(T) > 0, "Empty base type");
+		return WritableBuffer<T>(pointer_type(other.data),
+					 other.size / sizeof(T));
+	}
+
+	/**
 	 * Cast a WritableBuffer<void> to a WritableBuffer<T>.  A "void"
 	 * buffer records its size in bytes, and when casting to "T",
 	 * the assertion below ensures that the size is a multiple of
@@ -128,12 +138,10 @@ struct WritableBuffer {
 	constexpr
 #endif
 	static WritableBuffer<T> FromVoid(WritableBuffer<void> other) {
-		static_assert(sizeof(T) > 0, "Empty base type");
 #ifndef NDEBUG
 		assert(other.size % sizeof(T) == 0);
 #endif
-		return WritableBuffer<T>(pointer_type(other.data),
-				      other.size / sizeof(T));
+		return FromVoidFloor(other);
 	}
 
 	constexpr WritableBuffer<void> ToVoid() const {
