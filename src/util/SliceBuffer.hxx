@@ -72,7 +72,7 @@ class SliceBuffer {
 public:
 	SliceBuffer(unsigned _count)
 		:n_max(_count),
-		 data((Slice *)HugeAllocate(CalcAllocationSize())) {
+		 data((Slice *)HugeAllocate(CalcAllocationSize()).data) {
 		assert(n_max > 0);
 
 		HugeForkCow(data, CalcAllocationSize(), false);

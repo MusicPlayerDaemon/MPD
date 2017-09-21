@@ -30,6 +30,7 @@
 #ifndef HUGE_ALLOCATOR_HXX
 #define HUGE_ALLOCATOR_HXX
 
+#include "WritableBuffer.hxx"
 #include "Compiler.h"
 
 #include <utility>
@@ -44,9 +45,12 @@
  * need it anymore.  On the downside, this call is expensive.
  *
  * Throws std::bad_alloc on error
+ *
+ * @returns the allocated buffer with a size which may be rounded up
+ * (to the next page size), so callers can take advantage of this
+ * allocation overhead
  */
-gcc_malloc
-void *
+WritableBuffer<void>
 HugeAllocate(size_t size);
 
 /**
@@ -77,8 +81,7 @@ HugeDiscard(void *p, size_t size) noexcept;
 #elif defined(WIN32)
 #include <windows.h>
 
-gcc_malloc
-void *
+WritableBuffer<void>
 HugeAllocate(size_t size);
 
 static inline void
@@ -104,11 +107,10 @@ HugeDiscard(void *p, size_t size) noexcept
 
 #include <stdint.h>
 
-gcc_malloc
-static inline void *
+WritableBuffer<void>
 HugeAllocate(size_t size)
 {
-	return new uint8_t[size];
+	return {new uint8_t[size], size};
 }
 
 static inline void
@@ -134,46 +136,44 @@ HugeDiscard(void *, size_t) noexcept
  * Automatic huge memory allocation management.
  */
 class HugeAllocation {
-	void *data = nullptr;
-	size_t size;
+	WritableBuffer<void> buffer = nullptr;
 
 public:
 	HugeAllocation() = default;
 
 	explicit HugeAllocation(size_t _size)
-		:data(HugeAllocate(_size)), size(_size) {}
+		:buffer(HugeAllocate(_size)) {}
 
 	HugeAllocation(HugeAllocation &&src) noexcept
-		:data(std::exchange(src.data, nullptr)), size(src.size) {}
+		:buffer(std::exchange(src.buffer, nullptr)) {}
 
 	~HugeAllocation() {
-		if (data != nullptr)
-			HugeFree(data, size);
+		if (buffer != nullptr)
+			HugeFree(buffer.data, buffer.size);
 	}
 
 	HugeAllocation &operator=(HugeAllocation &&src) noexcept {
-		std::swap(data, src.data);
-		std::swap(size, src.size);
+		std::swap(buffer, src.buffer);
 		return *this;
 	}
 
 	void ForkCow(bool enable) noexcept {
-		HugeForkCow(data, size, enable);
+		HugeForkCow(buffer.data, buffer.size, enable);
 	}
 
 	void Discard() noexcept {
-		HugeDiscard(data, size);
+		HugeDiscard(buffer.data, buffer.size);
 	}
 
 	void reset() noexcept {
-		if (data != nullptr) {
-			HugeFree(data, size);
-			data = nullptr;
+		if (buffer != nullptr) {
+			HugeFree(buffer.data, buffer.size);
+			buffer = nullptr;
 		}
 	}
 
 	void *get() noexcept {
-		return data;
+		return buffer.data;
 	}
 };
 

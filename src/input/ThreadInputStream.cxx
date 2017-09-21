@@ -50,12 +50,13 @@ ThreadInputStream::Start()
 {
 	assert(buffer == nullptr);
 
-	void *p = HugeAllocate(buffer_size);
-	assert(p != nullptr);
+	auto allocation = HugeAllocate(buffer_size);
+	assert(allocation != nullptr);
 
-	HugeForkCow(p, buffer_size, false);
+	HugeForkCow(allocation.data, allocation.size, false);
 
-	buffer = new CircularBuffer<uint8_t>((uint8_t *)p, buffer_size);
+	buffer = new CircularBuffer<uint8_t>((uint8_t *)allocation.data,
+					     allocation.size);
 	thread.Start();
 }
 
