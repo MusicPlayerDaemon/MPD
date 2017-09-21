@@ -70,11 +70,7 @@ class ThreadInputStream : public InputStream {
 public:
 	ThreadInputStream(const char *_plugin,
 			  const char *_uri, Mutex &_mutex, Cond &_cond,
-			  size_t _buffer_size)
-		:InputStream(_uri, _mutex, _cond),
-		 plugin(_plugin),
-		 thread(BIND_THIS_METHOD(ThreadFunc)),
-		 buffer_size(_buffer_size) {}
+			  size_t _buffer_size);
 
 	virtual ~ThreadInputStream();
 
