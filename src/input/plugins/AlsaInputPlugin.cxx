@@ -38,7 +38,7 @@
 
 #include "Log.hxx"
 #include "event/MultiSocketMonitor.hxx"
-#include "event/DeferredMonitor.hxx"
+#include "event/DeferEvent.hxx"
 
 #include <alsa/asoundlib.h>
 
@@ -59,7 +59,7 @@ static constexpr size_t ALSA_RESUME_AT = ALSA_MAX_BUFFERED / 2;
 
 class AlsaInputStream final
 	: public AsyncInputStream,
-	  MultiSocketMonitor, DeferredMonitor {
+	  MultiSocketMonitor {
 
 	/**
 	 * The configured name of the ALSA device.
@@ -71,18 +71,21 @@ class AlsaInputStream final
 
 	ReusableArray<pollfd> pfd_buffer;
 
+	DeferEvent defer_invalidate_sockets;
+
 public:
-	AlsaInputStream(EventLoop &loop,
+	AlsaInputStream(EventLoop &_loop,
 			const char *_uri, Mutex &_mutex, Cond &_cond,
 			const char *_device,
 			snd_pcm_t *_handle, int _frame_size)
-		:AsyncInputStream(loop, _uri, _mutex, _cond,
+		:AsyncInputStream(_loop, _uri, _mutex, _cond,
 				  ALSA_MAX_BUFFERED, ALSA_RESUME_AT),
-		 MultiSocketMonitor(loop),
-		 DeferredMonitor(loop),
+		 MultiSocketMonitor(_loop),
 		 device(_device),
 		 capture_handle(_handle),
-		 frame_size(_frame_size)
+		 frame_size(_frame_size),
+		 defer_invalidate_sockets(_loop,
+					  BIND_THIS_METHOD(InvalidateSockets))
 	{
 		assert(_uri != nullptr);
 		assert(_handle != nullptr);
@@ -95,13 +98,13 @@ public:
 
 		snd_pcm_start(capture_handle);
 
-		DeferredMonitor::Schedule();
+		defer_invalidate_sockets.Schedule();
 	}
 
 	~AlsaInputStream() {
 		BlockingCall(MultiSocketMonitor::GetEventLoop(), [this](){
 				MultiSocketMonitor::Reset();
-				DeferredMonitor::Cancel();
+				defer_invalidate_sockets.Cancel();
 			});
 
 		snd_pcm_close(capture_handle);
@@ -135,11 +138,7 @@ private:
 	int Recover(int err);
 
 	void SafeInvalidateSockets() {
-		DeferredMonitor::Schedule();
-	}
-
-	virtual void RunDeferred() override {
-		InvalidateSockets();
+		defer_invalidate_sockets.Schedule();
 	}
 
 	virtual std::chrono::steady_clock::duration PrepareSockets() override;
