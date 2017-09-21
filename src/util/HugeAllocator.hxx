@@ -177,4 +177,112 @@ public:
 	}
 };
 
+/**
+ * Automatic memory management for a dynamic array in "huge" memory.
+ */
+template<typename T>
+class HugeArray {
+	typedef WritableBuffer<T> Buffer;
+	Buffer buffer{nullptr};
+
+public:
+	typedef typename Buffer::size_type size_type;
+	typedef typename Buffer::value_type value_type;
+	typedef typename Buffer::reference_type reference;
+	typedef typename Buffer::const_reference_type const_reference;
+	typedef typename Buffer::iterator iterator;
+	typedef typename Buffer::const_iterator const_iterator;
+
+	constexpr HugeArray() = default;
+
+	explicit HugeArray(size_type _size)
+		:buffer(Buffer::FromVoidFloor(HugeAllocate(sizeof(value_type) * _size))) {}
+
+	constexpr HugeArray(HugeArray &&other)
+		:buffer(std::exchange(other.buffer, nullptr)) {}
+
+	~HugeArray() {
+		if (buffer != nullptr) {
+			auto v = buffer.ToVoid();
+			HugeFree(v.data, v.size);
+		}
+	}
+
+	HugeArray &operator=(HugeArray &&other) {
+		std::swap(buffer, other.buffer);
+		return *this;
+	}
+
+	void ForkCow(bool enable) noexcept {
+		auto v = buffer.ToVoid();
+		HugeForkCow(v.data, v.size, enable);
+	}
+
+	void Discard() noexcept {
+		auto v = buffer.ToVoid();
+		HugeDiscard(v.data, v.size);
+	}
+
+	constexpr bool operator==(std::nullptr_t) const {
+		return buffer == nullptr;
+	}
+
+	constexpr bool operator!=(std::nullptr_t) const {
+		return buffer != nullptr;
+	}
+
+	/**
+	 * Returns the number of allocated elements.
+	 */
+	constexpr size_type size() const {
+		return buffer.size;
+	}
+
+	reference front() {
+		return buffer.front();
+	}
+
+	const_reference front() const {
+		return buffer.front();
+	}
+
+	reference back() {
+		return buffer.back();
+	}
+
+	const_reference back() const {
+		return buffer.back();
+	}
+
+	/**
+	 * Returns one element.  No bounds checking.
+	 */
+	reference operator[](size_type i) {
+		return buffer[i];
+	}
+
+	/**
+	 * Returns one constant element.  No bounds checking.
+	 */
+	const_reference operator[](size_type i) const {
+		return buffer[i];
+	}
+
+	iterator begin() {
+		return buffer.begin();
+	}
+
+	constexpr const_iterator begin() const {
+		return buffer.cbegin();
+	}
+
+	iterator end() {
+		return buffer.end();
+	}
+
+	constexpr const_iterator end() const {
+		return buffer.cend();
+	}
+};
+
 #endif
