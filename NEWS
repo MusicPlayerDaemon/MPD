@@ -5,6 +5,7 @@ ver 0.21 (not yet released)
 * tags
   - new tag "OriginalDate"
 * decoder
+  - gme: try loading m3u sidecar files
   - pcm: support audio/L24 (RFC 3190)
 * output
   - alsa: non-blocking mode
