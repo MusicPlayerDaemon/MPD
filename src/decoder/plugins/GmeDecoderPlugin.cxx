@@ -27,6 +27,7 @@
 #include "tag/Builder.hxx"
 #include "fs/Path.hxx"
 #include "fs/AllocatedPath.hxx"
+#include "fs/FileSystem.hxx"
 #include "util/ScopeExit.hxx"
 #include "util/FormatString.hxx"
 #include "util/UriUtil.hxx"
@@ -126,7 +127,14 @@ LoadGmeAndM3u(GmeContainerPath container) {
 	std::string m3u_path(path,suffix);
 	m3u_path += "m3u";
 
-	gme_load_m3u(emu,m3u_path.c_str());
+    /*
+     * Some GME formats lose metadata if you attempt to
+     * load a non-existant M3U file, so check that one
+     * exists before loading.
+     */
+	if(FileExists(Path::FromFS(m3u_path.c_str()))) {
+		gme_load_m3u(emu,m3u_path.c_str());
+	}
 	return emu;
 }
 
