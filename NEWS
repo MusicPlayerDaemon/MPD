@@ -5,6 +5,7 @@ ver 0.20.11 (not yet released)
   - ffmpeg: more reliable song duration
   - gme: fix track numbering
 * fix case insensitive search without libicu
+* fix endless loop when accessing malformed file names in ZIP files
 
 ver 0.20.10 (2017/08/24)
 * decoder
