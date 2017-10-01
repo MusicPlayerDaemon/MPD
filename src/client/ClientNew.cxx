@@ -45,13 +45,13 @@ Client::Client(EventLoop &_loop, Partition &_partition,
 	       UniqueSocketDescriptor &&_fd, int _uid, int _num)
 	:FullyBufferedSocket(_fd.Release(), _loop,
 			     16384, client_max_output_buffer_size),
-	 TimeoutMonitor(_loop),
+	 timeout_event(_loop, BIND_THIS_METHOD(OnTimeout)),
 	 partition(&_partition),
 	 permission(getDefaultPermissions()),
 	 uid(_uid),
 	 num(_num)
 {
-	TimeoutMonitor::Schedule(client_timeout);
+	timeout_event.Schedule(client_timeout);
 }
 
 void

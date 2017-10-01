@@ -55,7 +55,7 @@ AlignToPageSize(size_t size) noexcept
 	return (size + ps - 1) / ps * ps;
 }
 
-void *
+WritableBuffer<void>
 HugeAllocate(size_t size)
 {
 	size = AlignToPageSize(size);
@@ -73,19 +73,22 @@ HugeAllocate(size_t size)
 	madvise(p, size, MADV_HUGEPAGE);
 #endif
 
-#ifdef MADV_DONTFORK
-	/* just in case MPD needs to fork, don't copy this allocation
-	   to the child process, to reduce overhead */
-	madvise(p, size, MADV_DONTFORK);
-#endif
-
-	return p;
+	return {p, size};
 }
 
 void
 HugeFree(void *p, size_t size) noexcept
 {
 	munmap(p, AlignToPageSize(size));
+}
+
+void
+HugeForkCow(void *p, size_t size, bool enable) noexcept
+{
+#ifdef MADV_DONTFORK
+	madvise(p, AlignToPageSize(size),
+		enable ? MADV_DOFORK : MADV_DONTFORK);
+#endif
 }
 
 void
@@ -98,7 +101,7 @@ HugeDiscard(void *p, size_t size) noexcept
 
 #elif defined(WIN32)
 
-void *
+WritableBuffer<void>
 HugeAllocate(size_t size)
 {
 	// TODO: use MEM_LARGE_PAGES
@@ -108,7 +111,8 @@ HugeAllocate(size_t size)
 	if (p == nullptr)
 		throw std::bad_alloc();
 
-	return p;
+	// TODO: round size up to the page size
+	return {p, size};
 }
 
 #endif

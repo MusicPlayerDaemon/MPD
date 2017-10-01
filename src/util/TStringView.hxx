@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2015 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright (C) 2013-2017 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -27,27 +27,31 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "StringView.hxx"
-#include "CharUtil.hxx"
-
-template<typename T>
-void
-BasicStringView<T>::StripLeft() noexcept
-{
-	while (!IsEmpty() && IsWhitespaceOrNull(front()))
-		pop_front();
-}
-
-template<typename T>
-void
-BasicStringView<T>::StripRight() noexcept
-{
-	while (!IsEmpty() && IsWhitespaceOrNull(back()))
-		pop_back();
-}
-
-template struct BasicStringView<char>;
+#ifndef TSTRING_VIEW_HXX
+#define TSTRING_VIEW_HXX
 
 #ifdef _UNICODE
-template struct BasicStringView<wchar_t>;
+#include "WStringView.hxx"
+
+struct TStringView : WStringView {
+	using WStringView::WStringView;
+
+	TStringView() = default;
+	constexpr TStringView(WStringView src) noexcept
+		:WStringView(src) {}
+};
+
+#else
+#include "StringView.hxx"
+
+struct TStringView : StringView {
+	using StringView::StringView;
+
+	TStringView() = default;
+	constexpr TStringView(StringView src) noexcept
+		:StringView(src) {}
+};
+
+#endif
+
 #endif

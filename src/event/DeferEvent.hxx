@@ -17,27 +17,34 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_DATABASE_GLUE_HXX
-#define MPD_DATABASE_GLUE_HXX
+#ifndef MPD_DEFER_EVENT_HXX
+#define MPD_DEFER_EVENT_HXX
 
-#include "Compiler.h"
-
-struct ConfigBlock;
-class EventLoop;
-class DatabaseListener;
-class Database;
+#include "check.h"
+#include "DeferredMonitor.hxx"
+#include "util/BindMethod.hxx"
 
 /**
- * Initialize the database library.
+ * Invoke a method call in the #EventLoop.
  *
- * Throws #std::runtime_error on error.
- *
- * @param block the database configuration block
+ * This class is thread-safe.
  */
-Database *
-DatabaseGlobalInit(EventLoop &main_event_loop,
-		   EventLoop &io_event_loop,
-		   DatabaseListener &listener,
-		   const ConfigBlock &block);
+class DeferEvent final : DeferredMonitor {
+	typedef BoundMethod<void()> Callback;
+	const Callback callback;
+
+public:
+	DeferEvent(EventLoop &_loop, Callback _callback)
+		:DeferredMonitor(_loop), callback(_callback) {}
+
+	using DeferredMonitor::GetEventLoop;
+	using DeferredMonitor::Schedule;
+	using DeferredMonitor::Cancel;
+
+private:
+	void RunDeferred() override {
+		callback();
+	}
+};
 
 #endif

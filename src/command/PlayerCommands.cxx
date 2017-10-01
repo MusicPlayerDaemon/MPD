@@ -127,8 +127,12 @@ handle_status(Client &client, gcc_unused Request args, Response &r)
 	}
 
 	const playlist &playlist = client.GetPlaylist();
-	r.Format("volume: %i\n"
-		 COMMAND_STATUS_REPEAT ": %i\n"
+
+	const auto volume = volume_level_get(client.GetPartition().outputs);
+	if (volume >= 0)
+		r.Format("volume: %i\n", volume);
+
+	r.Format(COMMAND_STATUS_REPEAT ": %i\n"
 		 COMMAND_STATUS_RANDOM ": %i\n"
 		 COMMAND_STATUS_SINGLE ": %i\n"
 		 COMMAND_STATUS_CONSUME ": %i\n"
@@ -136,7 +140,6 @@ handle_status(Client &client, gcc_unused Request args, Response &r)
 		 COMMAND_STATUS_PLAYLIST_LENGTH ": %i\n"
 		 COMMAND_STATUS_MIXRAMPDB ": %f\n"
 		 COMMAND_STATUS_STATE ": %s\n",
-		 volume_level_get(client.GetPartition().outputs),
 		 playlist.GetRepeat(),
 		 playlist.GetRandom(),
 		 playlist.GetSingle(),

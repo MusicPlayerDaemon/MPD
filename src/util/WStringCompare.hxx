@@ -30,6 +30,8 @@
 #ifndef WSTRING_COMPARE_HXX
 #define WSTRING_COMPARE_HXX
 
+#include "WStringView.hxx"
+#include "WStringAPI.hxx"
 #include "Compiler.h"
 
 #include <wchar.h>
@@ -40,9 +42,12 @@ StringIsEmpty(const wchar_t *string) noexcept
 	return *string == 0;
 }
 
-gcc_pure
-bool
-StringStartsWith(const wchar_t *haystack, const wchar_t *needle) noexcept;
+gcc_pure gcc_nonnull_all
+static inline bool
+StringStartsWith(const wchar_t *haystack, WStringView needle) noexcept
+{
+	return StringIsEqual(haystack, needle.data, needle.size);
+}
 
 gcc_pure
 bool
@@ -54,8 +59,13 @@ StringEndsWith(const wchar_t *haystack, const wchar_t *needle) noexcept;
  * nullptr.
  */
 gcc_pure gcc_nonnull_all
-const wchar_t *
-StringAfterPrefix(const wchar_t *string, const wchar_t *prefix) noexcept;
+static inline const wchar_t *
+StringAfterPrefix(const wchar_t *haystack, WStringView needle) noexcept
+{
+	return StringStartsWith(haystack, needle)
+		? haystack + needle.size
+		: nullptr;
+}
 
 /**
  * Check if the given string ends with the specified suffix.  If yes,

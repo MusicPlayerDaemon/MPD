@@ -103,7 +103,7 @@ public:
 	std::chrono::steady_clock::duration Delay() const noexcept override;
 	size_t Play(const void *chunk, size_t size) override;
 	void Cancel() noexcept override;
-	bool Pause() noexcept override;
+	bool Pause() override;
 
 private:
 	/**
@@ -826,7 +826,7 @@ PulseOutput::Cancel() noexcept
 }
 
 bool
-PulseOutput::Pause() noexcept
+PulseOutput::Pause()
 {
 	assert(mainloop != nullptr);
 	assert(stream != nullptr);

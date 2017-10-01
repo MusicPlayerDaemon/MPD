@@ -20,7 +20,7 @@
 #include "config.h"
 #include "AvahiPoll.hxx"
 #include "event/SocketMonitor.hxx"
-#include "event/TimeoutMonitor.hxx"
+#include "event/TimerEvent.hxx"
 
 static unsigned
 FromAvahiWatchEvent(AvahiWatchEvent e)
@@ -84,8 +84,9 @@ TimevalToChrono(const timeval &tv)
 	return std::chrono::seconds(tv.tv_sec) + std::chrono::microseconds(tv.tv_usec);
 }
 
-struct AvahiTimeout final : private TimeoutMonitor {
-private:
+struct AvahiTimeout final {
+	TimerEvent timer;
+
 	const AvahiTimeoutCallback callback;
 	void *const userdata;
 
@@ -93,25 +94,25 @@ public:
 	AvahiTimeout(const struct timeval *tv,
 		     AvahiTimeoutCallback _callback, void *_userdata,
 		     EventLoop &_loop)
-		:TimeoutMonitor(_loop),
+		:timer(_loop, BIND_THIS_METHOD(OnTimeout)),
 		 callback(_callback), userdata(_userdata) {
 		if (tv != nullptr)
-			Schedule(TimevalToChrono(*tv));
+			timer.Schedule(TimevalToChrono(*tv));
 	}
 
 	static void TimeoutUpdate(AvahiTimeout *t, const struct timeval *tv) {
 		if (tv != nullptr)
-			t->Schedule(TimevalToChrono(*tv));
+			t->timer.Schedule(TimevalToChrono(*tv));
 		else
-			t->Cancel();
+			t->timer.Cancel();
 	}
 
 	static void TimeoutFree(AvahiTimeout *t) {
 		delete t;
 	}
 
-protected:
-	virtual void OnTimeout() {
+private:
+	void OnTimeout() {
 		callback(this, userdata);
 	}
 };

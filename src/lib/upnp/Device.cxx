@@ -115,7 +115,7 @@ UPnPDevice::Parse(const std::string &url, const char *description)
 			// ???
 			URLBase = url;
 		} else {
-			auto hostslash = url.find_first_of("/", 7);
+			auto hostslash = url.find('/', 7);
 			if (hostslash == std::string::npos || hostslash == url.size()-1) {
 				URLBase = url;
 			} else {

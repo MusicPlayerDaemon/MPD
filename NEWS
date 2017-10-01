@@ -5,9 +5,20 @@ ver 0.21 (not yet released)
 * tags
   - new tag "OriginalDate"
 * decoder
+  - gme: try loading m3u sidecar files
   - pcm: support audio/L24 (RFC 3190)
 * output
   - alsa: non-blocking mode
+  - sndio: remove support for the broken RoarAudio sndio emulation
+* mixer
+  - sndio: new mixer plugin
+
+ver 0.20.11 (not yet released)
+* storage
+  - curl: support Content-Type application/xml
+* decoder
+  - ffmpeg: more reliable song duration
+* fix case insensitive search without libicu
 
 ver 0.20.10 (2017/08/24)
 * decoder

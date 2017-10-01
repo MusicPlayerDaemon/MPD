@@ -17,27 +17,22 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_DATABASE_GLUE_HXX
-#define MPD_DATABASE_GLUE_HXX
+#ifndef MPD_ICU_CASE_FOLD_HXX
+#define MPD_ICU_CASE_FOLD_HXX
+
+#include "check.h"
+
+#if defined(HAVE_ICU) || defined(_WIN32)
+#define HAVE_ICU_CASE_FOLD
 
 #include "Compiler.h"
 
-struct ConfigBlock;
-class EventLoop;
-class DatabaseListener;
-class Database;
+template<typename T> class AllocatedString;
 
-/**
- * Initialize the database library.
- *
- * Throws #std::runtime_error on error.
- *
- * @param block the database configuration block
- */
-Database *
-DatabaseGlobalInit(EventLoop &main_event_loop,
-		   EventLoop &io_event_loop,
-		   DatabaseListener &listener,
-		   const ConfigBlock &block);
+gcc_nonnull_all
+AllocatedString<char>
+IcuCaseFold(const char *src) noexcept;
+
+#endif
 
 #endif

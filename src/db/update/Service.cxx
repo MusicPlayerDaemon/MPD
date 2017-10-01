@@ -43,9 +43,7 @@ UpdateService::UpdateService(EventLoop &_loop, SimpleDatabase &_db,
 	:DeferredMonitor(_loop),
 	 db(_db), storage(_storage),
 	 listener(_listener),
-	 update_thread(BIND_THIS_METHOD(Task)),
-	 update_task_id(0),
-	 walk(nullptr)
+	 update_thread(BIND_THIS_METHOD(Task))
 {
 }
 

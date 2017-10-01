@@ -74,8 +74,8 @@ public:
 
 	/* virtual methods from class NeighborExplorer */
 	void Open() override;
-	virtual void Close() override;
-	virtual List GetList() const override;
+	void Close() noexcept override;
+	List GetList() const noexcept override;
 
 private:
 	void Run();
@@ -90,7 +90,7 @@ SmbclientNeighborExplorer::Open()
 }
 
 void
-SmbclientNeighborExplorer::Close()
+SmbclientNeighborExplorer::Close() noexcept
 {
 	mutex.lock();
 	quit = true;
@@ -101,7 +101,7 @@ SmbclientNeighborExplorer::Close()
 }
 
 NeighborExplorer::List
-SmbclientNeighborExplorer::GetList() const
+SmbclientNeighborExplorer::GetList() const noexcept
 {
 	const std::lock_guard<Mutex> protect(mutex);
 	/*

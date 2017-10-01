@@ -254,7 +254,6 @@ UPNP_SOURCES = \
 	src/lib/upnp/Callback.hxx \
 	src/lib/upnp/Util.cxx src/lib/upnp/Util.hxx \
 	src/lib/upnp/UniqueIxml.hxx \
-	src/lib/upnp/WorkQueue.hxx \
 	src/lib/upnp/Action.hxx
 
 ALSA_SOURCES = \
@@ -420,11 +419,14 @@ libutil_a_SOURCES = \
 	src/util/ASCII.hxx \
 	src/util/UTF8.cxx src/util/UTF8.hxx \
 	src/util/CharUtil.hxx \
+	src/util/WCharUtil.hxx \
 	src/util/NumberParser.hxx \
 	src/util/MimeType.cxx src/util/MimeType.hxx \
 	src/util/StringBuffer.hxx \
 	src/util/StringPointer.hxx \
 	src/util/StringView.cxx src/util/StringView.hxx \
+	src/util/WStringView.hxx \
+	src/util/TStringView.hxx \
 	src/util/ConcatString.hxx \
 	src/util/AllocatedString.cxx src/util/AllocatedString.hxx \
 	src/util/TruncateString.cxx src/util/TruncateString.hxx \
@@ -515,10 +517,10 @@ libevent_a_SOURCES = \
 	src/event/PollGroupWinSelect.hxx src/event/PollGroupWinSelect.cxx \
 	src/event/PollResultGeneric.hxx \
 	src/event/SignalMonitor.hxx src/event/SignalMonitor.cxx \
-	src/event/TimeoutMonitor.hxx src/event/TimeoutMonitor.cxx \
+	src/event/TimerEvent.hxx src/event/TimerEvent.cxx \
 	src/event/IdleMonitor.hxx src/event/IdleMonitor.cxx \
 	src/event/DeferredMonitor.hxx src/event/DeferredMonitor.cxx \
-	src/event/DeferredCall.hxx \
+	src/event/DeferEvent.hxx \
 	src/event/MaskMonitor.hxx src/event/MaskMonitor.cxx \
 	src/event/SocketMonitor.cxx src/event/SocketMonitor.hxx \
 	src/event/BufferedSocket.cxx src/event/BufferedSocket.hxx \
@@ -532,6 +534,8 @@ libevent_a_SOURCES = \
 # UTF-8 library
 
 libicu_a_SOURCES = \
+	src/lib/icu/CaseFold.cxx src/lib/icu/CaseFold.hxx \
+	src/lib/icu/Compare.cxx src/lib/icu/Compare.hxx \
 	src/lib/icu/Collate.cxx src/lib/icu/Collate.hxx \
 	src/lib/icu/Converter.cxx src/lib/icu/Converter.hxx
 
@@ -1573,6 +1577,7 @@ if ENABLE_SNDIO
 liboutput_plugins_a_SOURCES += \
 	src/output/plugins/SndioOutputPlugin.cxx \
 	src/output/plugins/SndioOutputPlugin.hxx
+libmixer_plugins_a_SOURCES += src/mixer/plugins/SndioMixerPlugin.cxx
 endif
 
 if ENABLE_HAIKU
@@ -1890,9 +1895,14 @@ test_DumpDatabase_SOURCES = test/DumpDatabase.cxx \
 	src/DetachedSong.cxx \
 	src/TagSave.cxx \
 	src/SongFilter.cxx
+test_DumpDatabase_CPPFLAGS = $(AM_CPPFLAGS)
 
 if ENABLE_UPNP
-test_DumpDatabase_SOURCES += src/lib/expat/ExpatParser.cxx
+test_DumpDatabase_SOURCES += \
+	$(CURL_SOURCES) \
+	src/lib/expat/ExpatParser.cxx
+test_DumpDatabase_CPPFLAGS += $(CURL_CFLAGS)
+test_DumpDatabase_LDADD += $(CURL_LIBS)
 endif
 
 test_run_storage_LDADD = \

@@ -135,7 +135,7 @@ struct JackOutput final : AudioOutput {
 
 	size_t Play(const void *chunk, size_t size) override;
 
-	bool Pause() noexcept override;
+	bool Pause() override;
 };
 
 static constexpr Domain jack_output_domain("jack_output");
@@ -661,7 +661,7 @@ JackOutput::Play(const void *chunk, size_t size)
 }
 
 inline bool
-JackOutput::Pause() noexcept
+JackOutput::Pause()
 {
 	if (shutdown)
 		return false;

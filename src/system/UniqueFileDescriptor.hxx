@@ -100,6 +100,7 @@ public:
 	using FileDescriptor::EnableCloseOnExec;
 	using FileDescriptor::DisableCloseOnExec;
 	using FileDescriptor::Duplicate;
+	using FileDescriptor::CheckDuplicate;
 
 	static bool CreatePipe(FileDescriptor &r, FileDescriptor &w);
 #endif
@@ -113,18 +114,6 @@ public:
 #endif
 
 #ifdef HAVE_INOTIFY_INIT
-	using FileDescriptor::CreateInotify;
-#endif
-
-#ifdef HAVE_EVENTFD
-	using FileDescriptor::CreateEventFD;
-#endif
-
-#ifdef HAVE_SIGNALFD
-	using FileDescriptor::CreateSignalFD;
-#endif
-
-#ifdef HAVE_INOTIFY
 	using FileDescriptor::CreateInotify;
 #endif
 

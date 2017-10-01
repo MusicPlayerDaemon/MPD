@@ -140,8 +140,14 @@ public:
 	 *
 	 * @return false on error (output will be closed by caller),
 	 * true for continue to pause
+	 *
+	 * Instead of returning false, the method may throw an
+	 * exception, which will be logged.
 	 */
-	virtual bool Pause() noexcept { return true; }
+	virtual bool Pause() {
+		/* fail because this method is not implemented */
+		return false;
+	}
 };
 
 #endif

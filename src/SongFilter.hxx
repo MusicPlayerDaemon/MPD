@@ -20,6 +20,7 @@
 #ifndef MPD_SONG_FILTER_HXX
 #define MPD_SONG_FILTER_HXX
 
+#include "lib/icu/Compare.hxx"
 #include "util/AllocatedString.hxx"
 #include "Compiler.h"
 
@@ -48,9 +49,12 @@ public:
 	class Item {
 		uint8_t tag;
 
-		bool fold_case;
-
 		AllocatedString<> value;
+
+		/**
+		 * This value is only set if case folding is enabled.
+		 */
+		IcuCompare fold_case;
 
 		/**
 		 * For #LOCATE_TAG_MODIFIED_SINCE

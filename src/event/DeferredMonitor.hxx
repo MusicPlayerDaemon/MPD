@@ -22,6 +22,8 @@
 
 #include "check.h"
 
+#include <boost/intrusive/list_hook.hpp>
+
 class EventLoop;
 
 /**
@@ -30,14 +32,16 @@ class EventLoop;
  * This class is thread-safe.
  */
 class DeferredMonitor {
-	EventLoop &loop;
-
 	friend class EventLoop;
-	bool pending;
+
+	typedef boost::intrusive::list_member_hook<> ListHook;
+	ListHook list_hook;
+
+	EventLoop &loop;
 
 public:
 	DeferredMonitor(EventLoop &_loop)
-		:loop(_loop), pending(false) {}
+		:loop(_loop) {}
 
 	~DeferredMonitor() {
 		Cancel();
@@ -50,8 +54,13 @@ public:
 	void Schedule();
 	void Cancel();
 
+private:
+	bool IsPending() const {
+		return list_hook.is_linked();
+	}
+
 protected:
 	virtual void RunDeferred() = 0;
 };
 
-#endif /* MAIN_NOTIFY_H */
+#endif

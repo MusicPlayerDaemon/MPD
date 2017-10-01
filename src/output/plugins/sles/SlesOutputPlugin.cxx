@@ -102,7 +102,7 @@ private:
 
 	void Drain() override;
 	void Cancel() noexcept override;
-	bool Pause() noexcept override;
+	bool Pause() override;
 
 private:
 	void PlayedCallback();
@@ -368,7 +368,7 @@ SlesOutput::Cancel() noexcept
 }
 
 bool
-SlesOutput::Pause() noexcept
+SlesOutput::Pause()
 {
 	cancel = false;
 
@@ -378,10 +378,8 @@ SlesOutput::Pause() noexcept
 	pause = true;
 
 	SLresult result = play.SetPlayState(SL_PLAYSTATE_PAUSED);
-	if (result != SL_RESULT_SUCCESS) {
-		FormatError(sles_domain, "Play.SetPlayState(PAUSED) failed");
-		return false;
-	}
+	if (result != SL_RESULT_SUCCESS)
+		throw std::runtime_error("Play.SetPlayState(PAUSED) failed");
 
 	return true;
 }

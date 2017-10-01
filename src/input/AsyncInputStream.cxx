@@ -37,12 +37,11 @@ AsyncInputStream::AsyncInputStream(EventLoop &event_loop, const char *_url,
 	 deferred_resume(event_loop, BIND_THIS_METHOD(DeferredResume)),
 	 deferred_seek(event_loop, BIND_THIS_METHOD(DeferredSeek)),
 	 allocation(_buffer_size),
-	 buffer((uint8_t *)allocation.get(), _buffer_size),
-	 resume_at(_resume_at),
-	 open(true),
-	 paused(false),
-	 seek_state(SeekState::NONE),
-	 tag(nullptr) {}
+	 buffer(&allocation.front(), allocation.size()),
+	 resume_at(_resume_at)
+{
+	allocation.ForkCow(false);
+}
 
 AsyncInputStream::~AsyncInputStream()
 {
@@ -54,8 +53,7 @@ AsyncInputStream::~AsyncInputStream()
 void
 AsyncInputStream::SetTag(Tag *_tag) noexcept
 {
-	delete tag;
-	tag = _tag;
+	delete std::exchange(tag, _tag);
 }
 
 void
@@ -81,11 +79,9 @@ AsyncInputStream::Resume()
 void
 AsyncInputStream::Check()
 {
-	if (postponed_exception) {
-		auto e = std::move(postponed_exception);
-		postponed_exception = std::exception_ptr();
-		std::rethrow_exception(e);
-	}
+	if (postponed_exception)
+		std::rethrow_exception(std::exchange(postponed_exception,
+						     std::exception_ptr()));
 }
 
 bool
@@ -158,9 +154,7 @@ AsyncInputStream::SeekDone() noexcept
 Tag *
 AsyncInputStream::ReadTag()
 {
-	Tag *result = tag;
-	tag = nullptr;
-	return result;
+	return std::exchange(tag, nullptr);
 }
 
 bool

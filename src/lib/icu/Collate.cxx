@@ -23,8 +23,6 @@
 
 #ifdef HAVE_ICU
 #include "Util.hxx"
-#include "util/AllocatedArray.hxx"
-#include "util/ConstBuffer.hxx"
 #include "util/RuntimeError.hxx"
 
 #include <unicode/ucol.h>
@@ -140,71 +138,4 @@ IcuCollate(const char *a, const char *b) noexcept
 #else
 	return strcoll(a, b);
 #endif
-}
-
-AllocatedString<>
-IcuCaseFold(const char *src)
-try {
-#ifdef HAVE_ICU
-	assert(collator != nullptr);
-#if !CLANG_CHECK_VERSION(3,6)
-	/* disabled on clang due to -Wtautological-pointer-compare */
-	assert(src != nullptr);
-#endif
-
-	const auto u = UCharFromUTF8(src);
-	if (u.IsNull())
-		return AllocatedString<>::Duplicate(src);
-
-	AllocatedArray<UChar> folded(u.size() * 2u);
-
-	UErrorCode error_code = U_ZERO_ERROR;
-	size_t folded_length = u_strFoldCase(folded.begin(), folded.size(),
-					     u.begin(), u.size(),
-					     U_FOLD_CASE_DEFAULT,
-					     &error_code);
-	if (folded_length == 0 || error_code != U_ZERO_ERROR)
-		return AllocatedString<>::Duplicate(src);
-
-	folded.SetSize(folded_length);
-	return UCharToUTF8({folded.begin(), folded.size()});
-
-#elif defined(WIN32)
-	const auto u = MultiByteToWideChar(CP_UTF8, src);
-
-	const int size = LCMapStringEx(LOCALE_NAME_INVARIANT,
-				       LCMAP_SORTKEY|LINGUISTIC_IGNORECASE,
-				       u.c_str(), -1, nullptr, 0,
-				       nullptr, nullptr, 0);
-	if (size <= 0)
-		return AllocatedString<>::Duplicate(src);
-
-	std::unique_ptr<wchar_t[]> buffer(new wchar_t[size]);
-	if (LCMapStringEx(LOCALE_NAME_INVARIANT,
-			  LCMAP_SORTKEY|LINGUISTIC_IGNORECASE,
-			  u.c_str(), -1, buffer.get(), size,
-			  nullptr, nullptr, 0) <= 0)
-		return AllocatedString<>::Duplicate(src);
-
-	return WideCharToMultiByte(CP_UTF8, buffer.get());
-
-#else
-	size_t size = strlen(src) + 1;
-	std::unique_ptr<char[]> buffer(new char[size]);
-	size_t nbytes = strxfrm(buffer.get(), src, size);
-	if (nbytes >= size) {
-		/* buffer too small - reallocate and try again */
-		buffer.reset();
-		size = nbytes + 1;
-		buffer.reset(new char[size]);
-		nbytes = strxfrm(buffer.get(), src, size);
-	}
-
-	assert(nbytes < size);
-	assert(buffer[nbytes] == 0);
-
-	return AllocatedString<>::Donate(buffer.release());
-#endif
-} catch (const std::runtime_error &) {
-	return AllocatedString<>::Duplicate(src);
 }

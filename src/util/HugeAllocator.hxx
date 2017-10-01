@@ -30,6 +30,7 @@
 #ifndef HUGE_ALLOCATOR_HXX
 #define HUGE_ALLOCATOR_HXX
 
+#include "WritableBuffer.hxx"
 #include "Compiler.h"
 
 #include <utility>
@@ -42,9 +43,14 @@
  * Allocate a huge amount of memory.  This will be done in a way that
  * allows giving the memory back to the kernel as soon as we don't
  * need it anymore.  On the downside, this call is expensive.
+ *
+ * Throws std::bad_alloc on error
+ *
+ * @returns the allocated buffer with a size which may be rounded up
+ * (to the next page size), so callers can take advantage of this
+ * allocation overhead
  */
-gcc_malloc
-void *
+WritableBuffer<void>
 HugeAllocate(size_t size);
 
 /**
@@ -53,6 +59,13 @@ HugeAllocate(size_t size);
  */
 void
 HugeFree(void *p, size_t size) noexcept;
+
+/**
+ * Control whether this allocation is copied to newly forked child
+ * processes.  Disabling that makes forking a little bit cheaper.
+ */
+void
+HugeForkCow(void *p, size_t size, bool enable) noexcept;
 
 /**
  * Discard any data stored in the allocation and give the memory back
@@ -68,14 +81,18 @@ HugeDiscard(void *p, size_t size) noexcept;
 #elif defined(WIN32)
 #include <windows.h>
 
-gcc_malloc
-void *
+WritableBuffer<void>
 HugeAllocate(size_t size);
 
 static inline void
 HugeFree(void *p, gcc_unused size_t size) noexcept
 {
 	VirtualFree(p, 0, MEM_RELEASE);
+}
+
+static inline void
+HugeForkCow(void *, size_t, bool) noexcept
+{
 }
 
 static inline void
@@ -90,11 +107,10 @@ HugeDiscard(void *p, size_t size) noexcept
 
 #include <stdint.h>
 
-gcc_malloc
-static inline void *
+WritableBuffer<void>
 HugeAllocate(size_t size)
 {
-	return new uint8_t[size];
+	return {new uint8_t[size], size};
 }
 
 static inline void
@@ -105,6 +121,11 @@ HugeFree(void *_p, size_t) noexcept
 }
 
 static inline void
+HugeForkCow(void *, size_t, bool) noexcept
+{
+}
+
+static inline void
 HugeDiscard(void *, size_t) noexcept
 {
 }
@@ -112,47 +133,110 @@ HugeDiscard(void *, size_t) noexcept
 #endif
 
 /**
- * Automatic huge memory allocation management.
+ * Automatic memory management for a dynamic array in "huge" memory.
  */
-class HugeAllocation {
-	void *data = nullptr;
-	size_t size;
+template<typename T>
+class HugeArray {
+	typedef WritableBuffer<T> Buffer;
+	Buffer buffer{nullptr};
 
 public:
-	HugeAllocation() = default;
+	typedef typename Buffer::size_type size_type;
+	typedef typename Buffer::value_type value_type;
+	typedef typename Buffer::reference_type reference;
+	typedef typename Buffer::const_reference_type const_reference;
+	typedef typename Buffer::iterator iterator;
+	typedef typename Buffer::const_iterator const_iterator;
 
-	HugeAllocation(size_t _size)
-		:data(HugeAllocate(_size)), size(_size) {}
+	constexpr HugeArray() = default;
 
-	HugeAllocation(HugeAllocation &&src) noexcept
-		:data(src.data), size(src.size) {
-		src.data = nullptr;
-	}
+	explicit HugeArray(size_type _size)
+		:buffer(Buffer::FromVoidFloor(HugeAllocate(sizeof(value_type) * _size))) {}
 
-	~HugeAllocation() {
-		if (data != nullptr)
-			HugeFree(data, size);
-	}
+	constexpr HugeArray(HugeArray &&other)
+		:buffer(std::exchange(other.buffer, nullptr)) {}
 
-	HugeAllocation &operator=(HugeAllocation &&src) noexcept {
-		std::swap(data, src.data);
-		std::swap(size, src.size);
-		return *this;
-	}
-
-	void Discard() noexcept {
-		HugeDiscard(data, size);
-	}
-
-	void reset() noexcept {
-		if (data != nullptr) {
-			HugeFree(data, size);
-			data = nullptr;
+	~HugeArray() {
+		if (buffer != nullptr) {
+			auto v = buffer.ToVoid();
+			HugeFree(v.data, v.size);
 		}
 	}
 
-	void *get() noexcept {
-		return data;
+	HugeArray &operator=(HugeArray &&other) {
+		std::swap(buffer, other.buffer);
+		return *this;
+	}
+
+	void ForkCow(bool enable) noexcept {
+		auto v = buffer.ToVoid();
+		HugeForkCow(v.data, v.size, enable);
+	}
+
+	void Discard() noexcept {
+		auto v = buffer.ToVoid();
+		HugeDiscard(v.data, v.size);
+	}
+
+	constexpr bool operator==(std::nullptr_t) const {
+		return buffer == nullptr;
+	}
+
+	constexpr bool operator!=(std::nullptr_t) const {
+		return buffer != nullptr;
+	}
+
+	/**
+	 * Returns the number of allocated elements.
+	 */
+	constexpr size_type size() const {
+		return buffer.size;
+	}
+
+	reference front() {
+		return buffer.front();
+	}
+
+	const_reference front() const {
+		return buffer.front();
+	}
+
+	reference back() {
+		return buffer.back();
+	}
+
+	const_reference back() const {
+		return buffer.back();
+	}
+
+	/**
+	 * Returns one element.  No bounds checking.
+	 */
+	reference operator[](size_type i) {
+		return buffer[i];
+	}
+
+	/**
+	 * Returns one constant element.  No bounds checking.
+	 */
+	const_reference operator[](size_type i) const {
+		return buffer[i];
+	}
+
+	iterator begin() {
+		return buffer.begin();
+	}
+
+	constexpr const_iterator begin() const {
+		return buffer.cbegin();
+	}
+
+	iterator end() {
+		return buffer.end();
+	}
+
+	constexpr const_iterator end() const {
+		return buffer.cend();
 	}
 };
 

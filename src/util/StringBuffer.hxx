@@ -27,8 +27,8 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef STRING_BUFFER_HPP
-#define STRING_BUFFER_HPP
+#ifndef STRING_BUFFER_HXX
+#define STRING_BUFFER_HXX
 
 #include <array>
 

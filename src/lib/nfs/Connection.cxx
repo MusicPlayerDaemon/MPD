@@ -359,8 +359,8 @@ NfsConnection::DestroyContext()
 #endif
 
 	if (!mount_finished) {
-		assert(TimeoutMonitor::IsActive());
-		TimeoutMonitor::Cancel();
+		assert(mount_timeout_event.IsActive());
+		mount_timeout_event.Cancel();
 	}
 
 	/* cancel pending DeferredMonitor that was scheduled to notify
@@ -525,8 +525,8 @@ NfsConnection::MountCallback(int status, gcc_unused nfs_context *nfs,
 
 	mount_finished = true;
 
-	assert(TimeoutMonitor::IsActive() || in_destroy);
-	TimeoutMonitor::Cancel();
+	assert(mount_timeout_event.IsActive() || in_destroy);
+	mount_timeout_event.Cancel();
 
 	if (status < 0) {
 		auto e = FormatRuntimeError("nfs_mount_async() failed: %s",
@@ -558,7 +558,7 @@ NfsConnection::MountInternal()
 	postponed_mount_error = std::exception_ptr();
 	mount_finished = false;
 
-	TimeoutMonitor::Schedule(NFS_MOUNT_TIMEOUT);
+	mount_timeout_event.Schedule(NFS_MOUNT_TIMEOUT);
 
 #ifndef NDEBUG
 	in_service = false;
@@ -619,7 +619,7 @@ NfsConnection::BroadcastError(std::exception_ptr &&e)
 }
 
 void
-NfsConnection::OnTimeout()
+NfsConnection::OnMountTimeout()
 {
 	assert(GetEventLoop().IsInside());
 	assert(!mount_finished);

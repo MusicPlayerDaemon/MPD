@@ -65,7 +65,7 @@ struct ShoutOutput final : AudioOutput {
 	void SendTag(const Tag &tag) override;
 	size_t Play(const void *chunk, size_t size) override;
 	void Cancel() noexcept override;
-	bool Pause() noexcept override;
+	bool Pause() override;
 
 private:
 	void WritePage();
@@ -378,16 +378,12 @@ ShoutOutput::Play(const void *chunk, size_t size)
 }
 
 bool
-ShoutOutput::Pause() noexcept
+ShoutOutput::Pause()
 {
 	static char silence[1020];
 
-	try {
-		encoder->Write(silence, sizeof(silence));
-		WritePage();
-	} catch (const std::runtime_error &) {
-		return false;
-	}
+	encoder->Write(silence, sizeof(silence));
+	WritePage();
 
 	return true;
 }

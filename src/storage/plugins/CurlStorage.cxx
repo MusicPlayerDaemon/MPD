@@ -210,6 +210,22 @@ ParseU64(const char *s, size_t length)
 	return ParseU64(std::string(s, length).c_str());
 }
 
+gcc_pure
+static bool
+IsXmlContentType(const char *content_type) noexcept
+{
+	return StringStartsWith(content_type, "text/xml") ||
+		StringStartsWith(content_type, "application/xml");
+}
+
+gcc_pure
+static bool
+IsXmlContentType(const std::multimap<std::string, std::string> &headers) noexcept
+{
+	auto i = headers.find("content-type");
+	return i != headers.end() && IsXmlContentType(i->second.c_str());
+}
+
 /**
  * A WebDAV PROPFIND request.  Each "response" element will be passed
  * to OnDavResponse() (to be implemented by a derived class).
@@ -271,9 +287,7 @@ private:
 			throw FormatRuntimeError("Status %d from WebDAV server; expected \"207 Multi-Status\"",
 						 status);
 
-		auto i = headers.find("content-type");
-		if (i == headers.end() ||
-		    strncmp(i->second.c_str(), "text/xml", 8) != 0)
+		if (!IsXmlContentType(headers))
 			throw std::runtime_error("Unexpected Content-Type from WebDAV server");
 	}
 

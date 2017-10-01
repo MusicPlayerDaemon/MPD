@@ -27,8 +27,8 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef STATIC_FIFO_BUFFER_HPP
-#define STATIC_FIFO_BUFFER_HPP
+#ifndef STATIC_FIFO_BUFFER_HXX
+#define STATIC_FIFO_BUFFER_HXX
 
 #include "WritableBuffer.hxx"
 

@@ -310,7 +310,7 @@ input {
 #audio_output {
 #	type		"sndio"
 #	name		"sndio output"
-#	mixer_type	"software"
+#	mixer_type	"hardware"
 #}
 #
 # An example of an OS X output:

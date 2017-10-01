@@ -53,21 +53,24 @@ class UpnpNeighborExplorer final
 		}
 	};
 
+	EventLoop &event_loop;
+
 	UPnPDeviceDirectory *discovery;
 
 public:
-	UpnpNeighborExplorer(NeighborListener &_listener)
-		:NeighborExplorer(_listener) {}
+	UpnpNeighborExplorer(EventLoop &_event_loop,
+			     NeighborListener &_listener)
+		:NeighborExplorer(_listener), event_loop(_event_loop) {}
 
 	/* virtual methods from class NeighborExplorer */
 	void Open() override;
-	virtual void Close() override;
-	virtual List GetList() const override;
+	void Close() noexcept override;
+	List GetList() const noexcept override;
 
 private:
 	/* virtual methods from class UPnPDiscoveryListener */
-	virtual void FoundUPnP(const ContentDirectoryService &service) override;
-	virtual void LostUPnP(const ContentDirectoryService &service) override;
+	void FoundUPnP(const ContentDirectoryService &service) override;
+	void LostUPnP(const ContentDirectoryService &service) override;
 };
 
 void
@@ -76,7 +79,7 @@ UpnpNeighborExplorer::Open()
 	UpnpClient_Handle handle;
 	UpnpClientGlobalInit(handle);
 
-	discovery = new UPnPDeviceDirectory(handle, this);
+	discovery = new UPnPDeviceDirectory(event_loop, handle, this);
 
 	try {
 		discovery->Start();
@@ -88,14 +91,14 @@ UpnpNeighborExplorer::Open()
 }
 
 void
-UpnpNeighborExplorer::Close()
+UpnpNeighborExplorer::Close() noexcept
 {
 	delete discovery;
 	UpnpClientGlobalFinish();
 }
 
 NeighborExplorer::List
-UpnpNeighborExplorer::GetList() const
+UpnpNeighborExplorer::GetList() const noexcept
 {
 	std::vector<ContentDirectoryService> tmp;
 
@@ -126,11 +129,11 @@ UpnpNeighborExplorer::LostUPnP(const ContentDirectoryService &service)
 }
 
 static NeighborExplorer *
-upnp_neighbor_create(gcc_unused EventLoop &loop,
+upnp_neighbor_create(EventLoop &event_loop,
 		     NeighborListener &listener,
 		     gcc_unused const ConfigBlock &block)
 {
-	return new UpnpNeighborExplorer(listener);
+	return new UpnpNeighborExplorer(event_loop, listener);
 }
 
 const NeighborPlugin upnp_neighbor_plugin = {

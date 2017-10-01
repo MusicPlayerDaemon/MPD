@@ -28,14 +28,14 @@
 #include "thread/Mutex.hxx"
 #include "WakeFD.hxx"
 #include "SocketMonitor.hxx"
+#include "TimerEvent.hxx"
+#include "IdleMonitor.hxx"
+#include "DeferredMonitor.hxx"
+
+#include <boost/intrusive/set.hpp>
+#include <boost/intrusive/list.hpp>
 
 #include <chrono>
-#include <list>
-#include <set>
-
-class TimeoutMonitor;
-class IdleMonitor;
-class DeferredMonitor;
 
 #include <assert.h>
 
@@ -46,39 +46,42 @@ class DeferredMonitor;
  * thread that runs it, except where explicitly documented as
  * thread-safe.
  *
- * @see SocketMonitor, MultiSocketMonitor, TimeoutMonitor, IdleMonitor
+ * @see SocketMonitor, MultiSocketMonitor, TimerEvent, IdleMonitor
  */
 class EventLoop final : SocketMonitor
 {
-	struct TimerRecord {
-		/**
-		 * Projected monotonic_clock_ms() value when this
-		 * timer is due.
-		 */
-		const std::chrono::steady_clock::time_point due;
+	WakeFD wake_fd;
 
-		TimeoutMonitor &timer;
-
-		constexpr TimerRecord(TimeoutMonitor &_timer,
-				      std::chrono::steady_clock::time_point _due)
-			:due(_due), timer(_timer) {}
-
-		bool operator<(const TimerRecord &other) const {
-			return due < other.due;
-		}
-
-		bool IsDue(std::chrono::steady_clock::time_point _now) const {
-			return _now >= due;
+	struct TimerCompare {
+		constexpr bool operator()(const TimerEvent &a,
+					  const TimerEvent &b) const {
+			return a.due < b.due;
 		}
 	};
 
-	WakeFD wake_fd;
+	typedef boost::intrusive::multiset<TimerEvent,
+					   boost::intrusive::member_hook<TimerEvent,
+									 TimerEvent::TimerSetHook,
+									 &TimerEvent::timer_set_hook>,
+					   boost::intrusive::compare<TimerCompare>,
+					   boost::intrusive::constant_time_size<false>> TimerSet;
+	TimerSet timers;
 
-	std::multiset<TimerRecord> timers;
-	std::list<IdleMonitor *> idle;
+	typedef boost::intrusive::list<IdleMonitor,
+				       boost::intrusive::member_hook<IdleMonitor,
+								     IdleMonitor::ListHook,
+								     &IdleMonitor::list_hook>,
+				       boost::intrusive::constant_time_size<false>> IdleList;
+	IdleList idle;
 
 	Mutex mutex;
-	std::list<DeferredMonitor *> deferred;
+
+	typedef boost::intrusive::list<DeferredMonitor,
+				       boost::intrusive::member_hook<DeferredMonitor,
+								     DeferredMonitor::ListHook,
+								     &DeferredMonitor::list_hook>,
+				       boost::intrusive::constant_time_size<false>> DeferredList;
+	DeferredList deferred;
 
 	std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
 
@@ -152,9 +155,9 @@ public:
 	void AddIdle(IdleMonitor &i);
 	void RemoveIdle(IdleMonitor &i);
 
-	void AddTimer(TimeoutMonitor &t,
+	void AddTimer(TimerEvent &t,
 		      std::chrono::steady_clock::duration d);
-	void CancelTimer(TimeoutMonitor &t);
+	void CancelTimer(TimerEvent &t);
 
 	/**
 	 * Schedule a call to DeferredMonitor::RunDeferred().

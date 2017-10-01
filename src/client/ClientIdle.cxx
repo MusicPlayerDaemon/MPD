@@ -42,7 +42,7 @@ Client::IdleNotify()
 
 	Write("OK\n");
 
-	TimeoutMonitor::Schedule(client_timeout);
+	timeout_event.Schedule(client_timeout);
 }
 
 void
@@ -69,7 +69,7 @@ Client::IdleWait(unsigned flags)
 		return true;
 	} else {
 		/* disable timeouts while in "idle" */
-		TimeoutMonitor::Cancel();
+		timeout_event.Cancel();
 		return false;
 	}
 }

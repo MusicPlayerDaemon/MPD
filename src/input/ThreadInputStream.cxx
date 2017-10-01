@@ -20,11 +20,22 @@
 #include "config.h"
 #include "ThreadInputStream.hxx"
 #include "thread/Name.hxx"
-#include "util/CircularBuffer.hxx"
-#include "util/HugeAllocator.hxx"
 
 #include <assert.h>
 #include <string.h>
+
+ThreadInputStream::ThreadInputStream(const char *_plugin,
+				     const char *_uri,
+				     Mutex &_mutex, Cond &_cond,
+				     size_t _buffer_size)
+	:InputStream(_uri, _mutex, _cond),
+	 plugin(_plugin),
+	 thread(BIND_THIS_METHOD(ThreadFunc)),
+	 allocation(_buffer_size),
+	 buffer(&allocation.front(), allocation.size())
+{
+	allocation.ForkCow(false);
+}
 
 ThreadInputStream::~ThreadInputStream()
 {
@@ -38,22 +49,12 @@ ThreadInputStream::~ThreadInputStream()
 
 	thread.Join();
 
-	if (buffer != nullptr) {
-		buffer->Clear();
-		HugeFree(buffer->Write().data, buffer_size);
-		delete buffer;
-	}
+	buffer.Clear();
 }
 
 void
 ThreadInputStream::Start()
 {
-	assert(buffer == nullptr);
-
-	void *p = HugeAllocate(buffer_size);
-	assert(p != nullptr);
-
-	buffer = new CircularBuffer<uint8_t>((uint8_t *)p, buffer_size);
 	thread.Start();
 }
 
@@ -78,7 +79,7 @@ ThreadInputStream::ThreadFunc()
 	while (!close) {
 		assert(!postponed_exception);
 
-		auto w = buffer->Write();
+		auto w = buffer.Write();
 		if (w.IsEmpty()) {
 			wake_cond.wait(mutex);
 		} else {
@@ -100,7 +101,7 @@ ThreadInputStream::ThreadFunc()
 				break;
 			}
 
-			buffer->Append(nbytes);
+			buffer.Append(nbytes);
 		}
 	}
 
@@ -121,7 +122,7 @@ ThreadInputStream::IsAvailable() noexcept
 {
 	assert(!thread.IsInside());
 
-	return !buffer->IsEmpty() || eof || postponed_exception;
+	return !buffer.IsEmpty() || eof || postponed_exception;
 }
 
 inline size_t
@@ -133,11 +134,11 @@ ThreadInputStream::Read(void *ptr, size_t read_size)
 		if (postponed_exception)
 			std::rethrow_exception(postponed_exception);
 
-		auto r = buffer->Read();
+		auto r = buffer.Read();
 		if (!r.IsEmpty()) {
 			size_t nbytes = std::min(read_size, r.size);
 			memcpy(ptr, r.data, nbytes);
-			buffer->Consume(nbytes);
+			buffer.Consume(nbytes);
 			wake_cond.broadcast();
 			offset += nbytes;
 			return nbytes;

@@ -30,7 +30,6 @@
 #ifndef SYSTEM_ERROR_HXX
 #define SYSTEM_ERROR_HXX
 
-#include "util/StringUtil.hxx"
 #include "Compiler.h"
 
 #include <system_error>
@@ -40,7 +39,8 @@
 
 template<typename... Args>
 static inline std::system_error
-FormatSystemError(std::error_code code, const char *fmt, Args&&... args)
+FormatSystemError(std::error_code code, const char *fmt,
+		  Args&&... args) noexcept
 {
 	char buffer[1024];
 	snprintf(buffer, sizeof(buffer), fmt, std::forward<Args>(args)...);
@@ -52,21 +52,21 @@ FormatSystemError(std::error_code code, const char *fmt, Args&&... args)
 #include <windows.h>
 
 static inline std::system_error
-MakeLastError(DWORD code, const char *msg)
+MakeLastError(DWORD code, const char *msg) noexcept
 {
 	return std::system_error(std::error_code(code, std::system_category()),
 				 msg);
 }
 
 static inline std::system_error
-MakeLastError(const char *msg)
+MakeLastError(const char *msg) noexcept
 {
 	return MakeLastError(GetLastError(), msg);
 }
 
 template<typename... Args>
 static inline std::system_error
-FormatLastError(DWORD code, const char *fmt, Args&&... args)
+FormatLastError(DWORD code, const char *fmt, Args&&... args) noexcept
 {
 	char buffer[512];
 	const auto end = buffer + sizeof(buffer);
@@ -84,7 +84,7 @@ FormatLastError(DWORD code, const char *fmt, Args&&... args)
 
 template<typename... Args>
 static inline std::system_error
-FormatLastError(const char *fmt, Args&&... args)
+FormatLastError(const char *fmt, Args&&... args) noexcept
 {
 	return FormatLastError(GetLastError(), fmt,
 			       std::forward<Args>(args)...);
@@ -104,7 +104,7 @@ FormatLastError(const char *fmt, Args&&... args)
  * @see https://stackoverflow.com/questions/28746372/system-error-categories-and-standard-system-error-codes
  */
 static inline const std::error_category &
-ErrnoCategory()
+ErrnoCategory() noexcept
 {
 #ifdef WIN32
 	/* on Windows, the generic_category() is used for errno
@@ -118,21 +118,21 @@ ErrnoCategory()
 }
 
 static inline std::system_error
-MakeErrno(int code, const char *msg)
+MakeErrno(int code, const char *msg) noexcept
 {
 	return std::system_error(std::error_code(code, ErrnoCategory()),
 				 msg);
 }
 
 static inline std::system_error
-MakeErrno(const char *msg)
+MakeErrno(const char *msg) noexcept
 {
 	return MakeErrno(errno, msg);
 }
 
 template<typename... Args>
 static inline std::system_error
-FormatErrno(int code, const char *fmt, Args&&... args)
+FormatErrno(int code, const char *fmt, Args&&... args) noexcept
 {
 	char buffer[512];
 	snprintf(buffer, sizeof(buffer),
@@ -142,7 +142,7 @@ FormatErrno(int code, const char *fmt, Args&&... args)
 
 template<typename... Args>
 static inline std::system_error
-FormatErrno(const char *fmt, Args&&... args)
+FormatErrno(const char *fmt, Args&&... args) noexcept
 {
 	return FormatErrno(errno, fmt, std::forward<Args>(args)...);
 }

@@ -50,7 +50,8 @@
 /**
  * An OO wrapper for a UNIX file descriptor.
  *
- * This class is unmanaged and trivial.
+ * This class is unmanaged and trivial; for a managed version, see
+ * #UniqueFileDescriptor.
  */
 class FileDescriptor {
 protected:
@@ -108,7 +109,7 @@ public:
 
 	bool OpenReadOnly(const char *pathname) noexcept;
 
-#ifndef WIN32
+#ifndef _WIN32
 	bool OpenNonBlocking(const char *pathname) noexcept;
 #endif
 
@@ -146,6 +147,14 @@ public:
 	bool Duplicate(int new_fd) const noexcept {
 		return ::dup2(Get(), new_fd) == 0;
 	}
+
+	/**
+	 * Similar to Duplicate(), but if destination and source file
+	 * descriptor are equal, clear the close-on-exec flag.  Use
+	 * this method to inject file descriptors into a new child
+	 * process, to be used by a newly executed program.
+	 */
+	bool CheckDuplicate(int new_fd) noexcept;
 #endif
 
 #ifdef USE_EVENTFD
@@ -161,7 +170,7 @@ public:
 #endif
 
 	/**
-	 * Close the file descriptor.  It is legal to call it on an
+	 * Close the file descriptor.  It should not be called on an
 	 * "undefined" object.  After this call, IsDefined() is guaranteed
 	 * to return false, and this object may be reused.
 	 */
@@ -201,7 +210,7 @@ public:
 		return ::write(fd, buffer, length);
 	}
 
-#ifndef WIN32
+#ifndef _WIN32
 	int Poll(short events, int timeout) const noexcept;
 
 	int WaitReadable(int timeout) const noexcept;

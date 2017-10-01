@@ -252,7 +252,7 @@ public:
 	void CancelAllClients();
 
 	void Cancel() noexcept override;
-	bool Pause() noexcept override;
+	bool Pause() override;
 
 private:
 	virtual void RunDeferred() override;

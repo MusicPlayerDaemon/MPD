@@ -23,8 +23,6 @@
 #include "check.h"
 #include "Compiler.h"
 
-template<typename T> class AllocatedString;
-
 /**
  * Throws #std::runtime_error on error.
  */
@@ -37,9 +35,5 @@ IcuCollateFinish() noexcept;
 gcc_pure gcc_nonnull_all
 int
 IcuCollate(const char *a, const char *b) noexcept;
-
-gcc_nonnull_all
-AllocatedString<char>
-IcuCaseFold(const char *src);
 
 #endif

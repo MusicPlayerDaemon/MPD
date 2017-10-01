@@ -27,8 +27,8 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CONST_BUFFER_HPP
-#define CONST_BUFFER_HPP
+#ifndef CONST_BUFFER_HXX
+#define CONST_BUFFER_HXX
 
 #include "Compiler.h"
 
@@ -76,6 +76,14 @@ struct ConstBuffer<void> {
 		return data == nullptr;
 	}
 
+	constexpr bool operator==(std::nullptr_t) const {
+		return data == nullptr;
+	}
+
+	constexpr bool operator!=(std::nullptr_t) const {
+		return data != nullptr;
+	}
+
 	constexpr bool IsEmpty() const {
 		return size == 0;
 	}
@@ -117,6 +125,16 @@ struct ConstBuffer {
 	}
 
 	/**
+	 * Cast a ConstBuffer<void> to a ConstBuffer<T>, rounding down
+	 * to the next multiple of T's size.
+	 */
+	static constexpr ConstBuffer<T> FromVoidFloor(ConstBuffer<void> other) {
+		static_assert(sizeof(T) > 0, "Empty base type");
+		return ConstBuffer<T>(pointer_type(other.data),
+				      other.size / sizeof(T));
+	}
+
+	/**
 	 * Cast a ConstBuffer<void> to a ConstBuffer<T>.  A "void"
 	 * buffer records its size in bytes, and when casting to "T",
 	 * the assertion below ensures that the size is a multiple of
@@ -126,12 +144,10 @@ struct ConstBuffer {
 	constexpr
 #endif
 	static ConstBuffer<T> FromVoid(ConstBuffer<void> other) {
-		static_assert(sizeof(T) > 0, "Empty base type");
 #ifndef NDEBUG
 		assert(other.size % sizeof(T) == 0);
 #endif
-		return ConstBuffer<T>(pointer_type(other.data),
-				      other.size / sizeof(T));
+		return FromVoidFloor(other);
 	}
 
 	constexpr ConstBuffer<void> ToVoid() const {
@@ -141,6 +157,14 @@ struct ConstBuffer {
 
 	constexpr bool IsNull() const {
 		return data == nullptr;
+	}
+
+	constexpr bool operator==(std::nullptr_t) const {
+		return data == nullptr;
+	}
+
+	constexpr bool operator!=(std::nullptr_t) const {
+		return data != nullptr;
 	}
 
 	constexpr bool IsEmpty() const {

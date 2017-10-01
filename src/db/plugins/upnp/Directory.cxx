@@ -41,9 +41,9 @@ gcc_pure
 static UPnPDirObject::ItemClass
 ParseItemClass(StringView name) noexcept
 {
-	if (name.EqualsLiteral("object.item.audioItem.musicTrack"))
+	if (name.Equals("object.item.audioItem.musicTrack"))
 		return UPnPDirObject::ItemClass::MUSIC;
-	else if (name.EqualsLiteral("object.item.playlistItem"))
+	else if (name.Equals("object.item.playlistItem"))
 		return UPnPDirObject::ItemClass::PLAYLIST;
 	else
 		return UPnPDirObject::ItemClass::UNKNOWN;

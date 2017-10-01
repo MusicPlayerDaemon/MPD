@@ -20,7 +20,7 @@
 #ifndef MPD_STATE_FILE_HXX
 #define MPD_STATE_FILE_HXX
 
-#include "event/TimeoutMonitor.hxx"
+#include "event/TimerEvent.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "Compiler.h"
 
@@ -31,11 +31,12 @@ struct Partition;
 class OutputStream;
 class BufferedOutputStream;
 
-class StateFile final : private TimeoutMonitor {
+class StateFile final {
 	const AllocatedPath path;
 	const std::string path_utf8;
 
 	const std::chrono::steady_clock::duration interval;
+	TimerEvent timer_event;
 
 	Partition &partition;
 
@@ -76,8 +77,8 @@ private:
 	gcc_pure
 	bool IsModified() const noexcept;
 
-	/* virtual methods from TimeoutMonitor */
-	void OnTimeout() override;
+	/* callback for #timer_event */
+	void OnTimeout();
 };
 
 #endif /* STATE_FILE_H */

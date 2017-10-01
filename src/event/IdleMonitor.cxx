@@ -31,7 +31,6 @@ IdleMonitor::Cancel()
 	if (!IsActive())
 		return;
 
-	active = false;
 	loop.RemoveIdle(*this);
 }
 
@@ -44,7 +43,6 @@ IdleMonitor::Schedule()
 		/* already scheduled */
 		return;
 
-	active = true;
 	loop.AddIdle(*this);
 }
 
@@ -52,9 +50,6 @@ void
 IdleMonitor::Run()
 {
 	assert(loop.IsInside());
-
-	assert(active);
-	active = false;
 
 	OnIdle();
 }

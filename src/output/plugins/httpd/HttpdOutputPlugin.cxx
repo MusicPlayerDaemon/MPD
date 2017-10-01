@@ -371,7 +371,7 @@ HttpdOutput::Play(const void *chunk, size_t size)
 }
 
 bool
-HttpdOutput::Pause() noexcept
+HttpdOutput::Pause()
 {
 	pause = true;
 

@@ -134,6 +134,25 @@ StringIsEqual(const wchar_t *a, const wchar_t *b, size_t length) noexcept
 	return wcsncmp(a, b, length) == 0;
 }
 
+#ifdef _WIN32
+
+gcc_pure gcc_nonnull_all
+static inline bool
+StringIsEqualIgnoreCase(const wchar_t *a, const wchar_t *b) noexcept
+{
+	return _wcsicmp(a, b) == 0;
+}
+
+gcc_pure gcc_nonnull_all
+static inline bool
+StringIsEqualIgnoreCase(const wchar_t *a, const wchar_t *b,
+			size_t size) noexcept
+{
+	return _wcsnicmp(a, b, size) == 0;
+}
+
+#endif
+
 #ifndef __BIONIC__
 
 gcc_malloc gcc_nonnull_all

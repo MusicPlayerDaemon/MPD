@@ -100,6 +100,14 @@ public:
 		return buffer.IsNull();
 	}
 
+	constexpr bool operator==(std::nullptr_t) const {
+		return buffer == nullptr;
+	}
+
+	constexpr bool operator!=(std::nullptr_t) const {
+		return buffer != nullptr;
+	}
+
 	/**
 	 * Returns true if no memory was allocated so far.
 	 */

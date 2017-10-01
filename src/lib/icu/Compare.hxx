@@ -17,34 +17,39 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_EVENT_DEFERRED_CALL_HXX
-#define MPD_EVENT_DEFERRED_CALL_HXX
+#ifndef MPD_ICU_COMPARE_HXX
+#define MPD_ICU_COMPARE_HXX
 
 #include "check.h"
-#include "DeferredMonitor.hxx"
-#include "util/BindMethod.hxx"
+#include "Compiler.h"
+#include "util/AllocatedString.hxx"
 
 /**
- * Invoke a method call in the #EventLoop.
- *
- * This class is thread-safe.
+ * This class can compare one string ("needle") with lots of other
+ * strings ("haystacks") efficiently, ignoring case.  With some
+ * configurations, it can prepare a case-folded version of the needle.
  */
-class DeferredCall final : DeferredMonitor {
-	typedef BoundMethod<void()> Callback;
-	const Callback callback;
+class IcuCompare {
+	AllocatedString<> needle;
 
 public:
-	DeferredCall(EventLoop &_loop, Callback _callback)
-		:DeferredMonitor(_loop), callback(_callback) {}
+	IcuCompare():needle(nullptr) {}
 
-	using DeferredMonitor::GetEventLoop;
-	using DeferredMonitor::Schedule;
-	using DeferredMonitor::Cancel;
+	explicit IcuCompare(const char *needle) noexcept;
 
-protected:
-	void RunDeferred() override {
-		callback();
+	IcuCompare(IcuCompare &&) = default;
+	IcuCompare &operator=(IcuCompare &&) = default;
+
+	gcc_pure
+	operator bool() const noexcept {
+		return !needle.IsNull();
 	}
+
+	gcc_pure
+	bool operator==(const char *haystack) const noexcept;
+
+	gcc_pure
+	bool IsIn(const char *haystack) const noexcept;
 };
 
 #endif

@@ -27,6 +27,7 @@
 #include "tag/Builder.hxx"
 #include "fs/Path.hxx"
 #include "fs/AllocatedPath.hxx"
+#include "fs/FileSystem.hxx"
 #include "util/ScopeExit.hxx"
 #include "util/FormatString.hxx"
 #include "util/UriUtil.hxx"
@@ -105,16 +106,46 @@ ParseContainerPath(Path path_fs)
 	return { path_fs.GetDirectoryName(), track - 1 };
 }
 
+static Music_Emu*
+LoadGmeAndM3u(GmeContainerPath container) {
+
+	const char *path = container.path.c_str();
+	const char *suffix = uri_get_suffix(path);
+
+	Music_Emu *emu;
+	const char *gme_err =
+		gme_open_file(path, &emu, GME_SAMPLE_RATE);
+	if (gme_err != nullptr) {
+		LogWarning(gme_domain, gme_err);
+		return nullptr;
+	}
+
+	if(suffix == nullptr) {
+		return emu;
+	}
+
+	std::string m3u_path(path,suffix);
+	m3u_path += "m3u";
+
+    /*
+     * Some GME formats lose metadata if you attempt to
+     * load a non-existant M3U file, so check that one
+     * exists before loading.
+     */
+	if(FileExists(Path::FromFS(m3u_path.c_str()))) {
+		gme_load_m3u(emu,m3u_path.c_str());
+	}
+	return emu;
+}
+
+
 static void
 gme_file_decode(DecoderClient &client, Path path_fs)
 {
 	const auto container = ParseContainerPath(path_fs);
 
-	Music_Emu *emu;
-	const char *gme_err =
-		gme_open_file(container.path.c_str(), &emu, GME_SAMPLE_RATE);
-	if (gme_err != nullptr) {
-		LogWarning(gme_domain, gme_err);
+	Music_Emu *emu = LoadGmeAndM3u(container);
+	if(emu == nullptr) {
 		return;
 	}
 
@@ -129,7 +160,7 @@ gme_file_decode(DecoderClient &client, Path path_fs)
 #endif
 
 	gme_info_t *ti;
-	gme_err = gme_track_info(emu, &ti, container.track);
+	const char *gme_err = gme_track_info(emu, &ti, container.track);
 	if (gme_err != nullptr) {
 		LogWarning(gme_domain, gme_err);
 		return;
@@ -255,11 +286,8 @@ gme_scan_file(Path path_fs,
 {
 	const auto container = ParseContainerPath(path_fs);
 
-	Music_Emu *emu;
-	const char *gme_err =
-		gme_open_file(container.path.c_str(), &emu, GME_SAMPLE_RATE);
-	if (gme_err != nullptr) {
-		LogWarning(gme_domain, gme_err);
+	Music_Emu *emu = LoadGmeAndM3u(container);
+	if(emu == nullptr) {
 		return false;
 	}
 
@@ -272,12 +300,10 @@ static std::forward_list<DetachedSong>
 gme_container_scan(Path path_fs)
 {
 	std::forward_list<DetachedSong> list;
+	const auto container = ParseContainerPath(path_fs);
 
-	Music_Emu *emu;
-	const char *gme_err = gme_open_file(path_fs.c_str(), &emu,
-					    GME_SAMPLE_RATE);
-	if (gme_err != nullptr) {
-		LogWarning(gme_domain, gme_err);
+	Music_Emu *emu = LoadGmeAndM3u(container);
+	if(emu == nullptr) {
 		return list;
 	}
 
@@ -293,13 +319,13 @@ gme_container_scan(Path path_fs)
 	TagBuilder tag_builder;
 
 	auto tail = list.before_begin();
-	for (unsigned i = 1; i <= num_songs; ++i) {
+	for (unsigned i = 0; i < num_songs; ++i) {
 		ScanMusicEmu(emu, i,
 			     add_tag_handler, &tag_builder);
 
 		char track_name[64];
 		snprintf(track_name, sizeof(track_name),
-			 SUBTUNE_PREFIX "%03u.%s", i, subtune_suffix);
+			 SUBTUNE_PREFIX "%03u.%s", i+1, subtune_suffix);
 		tail = list.emplace_after(tail, track_name,
 					  tag_builder.Commit());
 	}
