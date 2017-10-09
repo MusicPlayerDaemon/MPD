@@ -24,7 +24,7 @@ class MakeProject(Project):
         return ['--quiet', self.install_target]
 
     def make(self, toolchain, wd, args):
-        subprocess.check_call(['/usr/bin/make'] + args,
+        subprocess.check_call(['make'] + args,
                               cwd=wd, env=toolchain.env)
 
     def build_make(self, toolchain, wd, install=True):
