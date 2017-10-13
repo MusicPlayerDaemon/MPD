@@ -24,7 +24,7 @@
 #include "util/ScopeExit.hxx"
 #include "util/RuntimeError.hxx"
 
-#include <upnp/upnptools.h>
+#include <upnptools.h>
 
 #include <stdlib.h>
 #include <string.h>

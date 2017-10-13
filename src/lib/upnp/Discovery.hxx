@@ -27,7 +27,7 @@
 #include "thread/Mutex.hxx"
 #include "Compiler.h"
 
-#include <upnp/upnp.h>
+#include <upnp.h>
 
 #include <list>
 #include <vector>

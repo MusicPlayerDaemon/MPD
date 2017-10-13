@@ -754,6 +754,7 @@ libneighbor_a_SOURCES = \
 	src/neighbor/NeighborPlugin.hxx
 
 libneighbor_a_CPPFLAGS = $(AM_CPPFLAGS) \
+	$(UPNP_CFLAGS) \
 	$(SMBCLIENT_CFLAGS)
 
 if ENABLE_SMBCLIENT
@@ -803,6 +804,8 @@ libdb_plugins_a_SOURCES = \
 	src/db/plugins/simple/PrefixedLightSong.hxx \
 	src/db/plugins/simple/SimpleDatabasePlugin.cxx \
 	src/db/plugins/simple/SimpleDatabasePlugin.hxx
+libdb_plugins_a_CPPFLAGS = $(AM_CPPFLAGS) \
+	$(UPNP_CFLAGS)
 
 if ENABLE_LIBMPDCLIENT
 libdb_plugins_a_SOURCES += \

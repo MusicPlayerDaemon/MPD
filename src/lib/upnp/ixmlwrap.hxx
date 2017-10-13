@@ -17,7 +17,7 @@
 #ifndef _IXMLWRAP_H_INCLUDED_
 #define _IXMLWRAP_H_INCLUDED_
 
-#include <upnp/ixml.h>
+#include <ixml.h>
 
 #include <string>
 

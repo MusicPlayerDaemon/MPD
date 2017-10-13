@@ -20,7 +20,7 @@
 #ifndef MPD_UPNP_UNIQUE_XML_HXX
 #define MPD_UPNP_UNIQUE_XML_HXX
 
-#include <upnp/ixml.h>
+#include <ixml.h>
 
 #include <memory>
 

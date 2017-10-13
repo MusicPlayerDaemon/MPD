@@ -22,9 +22,9 @@
 #include "thread/Mutex.hxx"
 #include "util/RuntimeError.hxx"
 
-#include <upnp/upnp.h>
-#include <upnp/upnptools.h>
-#include <upnp/ixml.h>
+#include <upnp.h>
+#include <upnptools.h>
+#include <ixml.h>
 
 #include <assert.h>
 
