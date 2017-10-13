@@ -30,7 +30,7 @@
 #include "event/DeferEvent.hxx"
 #include "Compiler.h"
 
-#include <upnp/upnp.h>
+#include <upnp.h>
 
 #include <boost/intrusive/list.hpp>
 

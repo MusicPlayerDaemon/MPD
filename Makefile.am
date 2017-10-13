@@ -792,6 +792,7 @@ libneighbor_a_SOURCES += \
 NEIGHBOR_LIBS += \
 	$(EXPAT_LIBS) \
 	$(UPNP_LIBS)
+libneighbor_a_CXXFLAGS = $(UPNP_CFLAGS)
 endif
 
 endif
@@ -843,6 +844,7 @@ libdb_plugins_a_SOURCES += \
 DB_LIBS += \
 	$(EXPAT_LIBS) \
 	$(UPNP_LIBS)
+libdb_plugins_a_CXXFLAGS = $(UPNP_CFLAGS)
 endif
 
 endif
