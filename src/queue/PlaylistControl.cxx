@@ -56,6 +56,24 @@ playlist::Stop(PlayerControl &pc)
 	}
 }
 
+unsigned
+playlist::MoveOrderToCurrent(unsigned old_order)
+{
+	if (!queue.random)
+		/* no-op because there is no order list */
+		return old_order;
+
+	const unsigned destination_order = playing
+		? (unsigned)current
+		: 0;
+
+	/* swap the new song with the previous "current" one, so
+	   playback continues as planned */
+	queue.SwapOrders(old_order, destination_order);
+
+	return destination_order;
+}
+
 void
 playlist::PlayPosition(PlayerControl &pc, int song)
 {
@@ -90,13 +108,7 @@ playlist::PlayPosition(PlayerControl &pc, int song)
 			   number, because random mode is enabled */
 			i = queue.PositionToOrder(song);
 
-		if (!playing)
-			current = 0;
-
-		/* swap the new song with the previous "current" one,
-		   so playback continues as planned */
-		queue.SwapOrders(i, current);
-		i = current;
+		i = MoveOrderToCurrent(i);
 	}
 
 	stop_on_error = false;

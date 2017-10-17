@@ -356,6 +356,18 @@ public:
 	}
 
 	void SetConsume(bool new_value);
+
+private:
+	/**
+	 * Prepare a manual song change: move the given song to the
+	 * current playback order.  This is done to avoid skipping
+	 * upcoming songs in the order list.  The newly selected song
+	 * shall be inserted in the order list, and the rest shall be
+	 * played after that as previously planned.
+	 *
+	 * @return the new order number of the given song
+	 */
+	unsigned MoveOrderToCurrent(unsigned old_order);
 };
 
 #endif
