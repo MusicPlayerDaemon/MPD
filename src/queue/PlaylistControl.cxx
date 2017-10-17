@@ -63,15 +63,21 @@ playlist::MoveOrderToCurrent(unsigned old_order)
 		/* no-op because there is no order list */
 		return old_order;
 
-	const unsigned destination_order = playing
-		? (unsigned)current
-		: 0;
-
-	/* swap the new song with the previous "current" one, so
-	   playback continues as planned */
-	queue.SwapOrders(old_order, destination_order);
-
-	return destination_order;
+	if (playing) {
+		/* already playing: move the specified song after the
+		   current one (because the current one has already
+		   been playing and shall not be played again) */
+		return queue.MoveOrderAfter(old_order, current);
+	} else if (current >= 0) {
+		/* not playing: move the specified song before the
+		   current one, so it will be played eventually */
+		return queue.MoveOrderBefore(old_order, current);
+	} else {
+		/* not playing anything: move the specified song to
+		   the front */
+		queue.SwapOrders(old_order, 0);
+		return 0;
+	}
 }
 
 void
