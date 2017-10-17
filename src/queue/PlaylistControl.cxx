@@ -223,6 +223,8 @@ playlist::SeekSongOrder(PlayerControl &pc, unsigned i, SongTime seek_time)
 		/* seeking is not within the current song - prepare
 		   song change */
 
+		i = MoveOrderToCurrent(i);
+
 		playing = true;
 		current = i;
 
