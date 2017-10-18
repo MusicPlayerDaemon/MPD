@@ -284,8 +284,28 @@ struct Queue {
 
 	/**
 	 * Moves a song to a new position in the "order" list.
+	 *
+	 * @return to_order
 	 */
-	void MoveOrder(unsigned from_order, unsigned to_order) noexcept;
+	unsigned MoveOrder(unsigned from_order, unsigned to_order) noexcept;
+
+	/**
+	 * Moves a song to a new position in the "order" list before
+	 * the given one.
+	 *
+	 * @return the new order number of the given "from" song
+	 */
+	unsigned MoveOrderBefore(unsigned from_order,
+				 unsigned to_order) noexcept;
+
+	/**
+	 * Moves a song to a new position in the "order" list after
+	 * the given one.
+	 *
+	 * @return the new order number of the given "from" song
+	 */
+	unsigned MoveOrderAfter(unsigned from_order,
+				unsigned to_order) noexcept;
 
 	/**
 	 * Moves a song to a new position.

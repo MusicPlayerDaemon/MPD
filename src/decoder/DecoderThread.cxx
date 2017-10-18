@@ -508,6 +508,7 @@ try {
 	decoder_run_song(dc, song, uri_utf8, path_fs);
 } catch (...) {
 	dc.state = DecoderState::ERROR;
+	dc.command = DecoderCommand::NONE;
 	dc.error = std::current_exception();
 	dc.client_cond.signal();
 }
