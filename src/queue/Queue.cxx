@@ -215,6 +215,24 @@ Queue::MoveOrder(unsigned from_order, unsigned to_order) noexcept
 	return to_order;
 }
 
+unsigned
+Queue::MoveOrderBefore(unsigned from_order, unsigned to_order) noexcept
+{
+	/* if "from_order" comes before "to_order", then the new
+	   position is "to_order-1"; otherwise the "to_order" song is
+	   moved one ahead */
+	return MoveOrder(from_order, to_order - (from_order < to_order));
+}
+
+unsigned
+Queue::MoveOrderAfter(unsigned from_order, unsigned to_order) noexcept
+{
+	/* if "from_order" comes after "to_order", then the new
+	   position is "to_order+1"; otherwise the "to_order" song is
+	   moved one back */
+	return MoveOrder(from_order, to_order + (from_order > to_order));
+}
+
 void
 Queue::DeletePosition(unsigned position) noexcept
 {
