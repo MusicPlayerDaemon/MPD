@@ -195,7 +195,7 @@ Queue::MoveRange(unsigned start, unsigned end, unsigned to) noexcept
 	}
 }
 
-void
+unsigned
 Queue::MoveOrder(unsigned from_order, unsigned to_order) noexcept
 {
 	assert(from_order < length);
@@ -212,6 +212,7 @@ Queue::MoveOrder(unsigned from_order, unsigned to_order) noexcept
 	}
 
 	order[to_order] = from_position;
+	return to_order;
 }
 
 void

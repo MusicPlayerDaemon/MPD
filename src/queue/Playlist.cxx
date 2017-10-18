@@ -310,8 +310,7 @@ playlist::SetRandom(PlayerControl &pc, bool status)
 			   playlist is played after that */
 			unsigned current_order =
 				queue.PositionToOrder(current_position);
-			queue.MoveOrder(current_order, 0);
-			current = 0;
+			current = queue.MoveOrder(current_order, 0);
 		} else
 			current = -1;
 	} else
