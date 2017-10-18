@@ -35,6 +35,12 @@
 
 #include <stdexcept>
 
+static void
+playlist_print_path(BufferedOutputStream &os, const Path path)
+{
+	os.Format("%s\n", NarrowPath(path).c_str());
+}
+
 void
 playlist_print_song(BufferedOutputStream &os, const DetachedSong &song)
 {
@@ -44,7 +50,7 @@ playlist_print_song(BufferedOutputStream &os, const DetachedSong &song)
 
 	try {
 		const auto uri_fs = AllocatedPath::FromUTF8Throw(uri_utf8);
-		os.Format("%s\n", NarrowPath(uri_fs).c_str());
+		playlist_print_path(os, uri_fs);
 	} catch (const std::runtime_error &) {
 	}
 }
@@ -63,7 +69,7 @@ playlist_print_uri(BufferedOutputStream &os, const char *uri)
 			AllocatedPath::FromUTF8Throw(uri);
 
 		if (!path.IsNull())
-			os.Format("%s\n", NarrowPath(path).c_str());
+			playlist_print_path(os, path);
 	} catch (const std::runtime_error &) {
 	}
 }
