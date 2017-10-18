@@ -28,7 +28,6 @@
 #include "fs/AllocatedPath.hxx"
 #include "fs/Traits.hxx"
 #include "fs/FileSystem.hxx"
-#include "fs/NarrowPath.hxx"
 #include "fs/io/FileOutputStream.hxx"
 #include "fs/io/BufferedOutputStream.hxx"
 #include "util/UriUtil.hxx"
@@ -38,7 +37,14 @@
 static void
 playlist_print_path(BufferedOutputStream &os, const Path path)
 {
-	os.Format("%s\n", NarrowPath(path).c_str());
+#ifdef _UNICODE
+	/* on Windows, playlists always contain UTF-8, because its
+	   "narrow" charset (i.e. CP_ACP) is incapable of storing all
+	   Unicode paths */
+	os.Format("%s\n", path.ToUTF8().c_str());
+#else
+	os.Format("%s\n", path.c_str());
+#endif
 }
 
 void

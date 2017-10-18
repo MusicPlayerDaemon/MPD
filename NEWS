@@ -6,6 +6,7 @@ ver 0.20.11 (not yet released)
   - gme: fix track numbering
 * improve random song order when switching songs manually
 * fix case insensitive search without libicu
+* fix Unicode file names in playlists on Windows
 * fix endless loop when accessing malformed file names in ZIP files
 
 ver 0.20.10 (2017/08/24)
