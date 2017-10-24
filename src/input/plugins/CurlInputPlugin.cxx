@@ -64,7 +64,6 @@ static const size_t CURL_RESUME_AT = 384 * 1024;
 struct CurlInputStream final : public AsyncInputStream, CurlResponseHandler {
 	/* some buffers which were passed to libcurl, which we have
 	   too free */
-	char range[32];
 	CurlSlist request_headers;
 
 	CurlRequest *request = nullptr;
@@ -398,6 +397,7 @@ CurlInputStream::SeekInternal(offset_type new_offset)
 	/* send the "Range" header */
 
 	if (offset > 0) {
+		char range[32];
 #ifdef WIN32
 		// TODO: what can we use on Windows to format 64 bit?
 		sprintf(range, "%lu-", (long)offset);
