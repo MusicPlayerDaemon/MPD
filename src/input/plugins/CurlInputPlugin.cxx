@@ -409,7 +409,6 @@ CurlInputStream::SeekInternal(offset_type new_offset)
 	}
 
 	InitEasy();
-	StartRequest();
 
 	/* send the "Range" header */
 
@@ -423,6 +422,8 @@ CurlInputStream::SeekInternal(offset_type new_offset)
 #endif
 		request->SetOption(CURLOPT_RANGE, range);
 	}
+
+	StartRequest();
 }
 
 void
