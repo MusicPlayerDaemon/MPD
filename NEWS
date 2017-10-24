@@ -1,3 +1,5 @@
+ver 0.20.12 (not yet released)
+
 ver 0.20.11 (2017/10/18)
 * storage
   - curl: support Content-Type application/xml
