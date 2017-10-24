@@ -85,7 +85,18 @@ struct CurlInputStream final : public AsyncInputStream, CurlResponseHandler {
 
 	static InputStream *Open(const char *url, Mutex &mutex, Cond &cond);
 
+	/**
+	 * Create and initialize a new #CurlRequest instance.  After
+	 * this, you may add more request headers and set options.  To
+	 * actually start the request, call StartRequest().
+	 */
 	void InitEasy();
+
+	/**
+	 * Start the request after having called InitEasy().  After
+	 * this, you must not set any CURL options.
+	 */
+	void StartRequest();
 
 	/**
 	 * Frees the current "libcurl easy" handle, and everything
@@ -371,6 +382,11 @@ CurlInputStream::InitEasy()
 
 	request_headers.Clear();
 	request_headers.Append("Icy-Metadata: 1");
+}
+
+void
+CurlInputStream::StartRequest()
+{
 	request->SetOption(CURLOPT_HTTPHEADER, request_headers.Get());
 
 	request->Start();
@@ -393,6 +409,7 @@ CurlInputStream::SeekInternal(offset_type new_offset)
 	}
 
 	InitEasy();
+	StartRequest();
 
 	/* send the "Range" header */
 
@@ -428,6 +445,7 @@ CurlInputStream::Open(const char *url, Mutex &mutex, Cond &cond)
 	try {
 		BlockingCall(io_thread_get(), [c](){
 				c->InitEasy();
+				c->StartRequest();
 			});
 	} catch (...) {
 		delete c;
