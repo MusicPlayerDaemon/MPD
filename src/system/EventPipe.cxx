@@ -113,11 +113,13 @@ PoorSocketPair(int fd[2])
 		throw MakeSocketError("Failed to listen on socket");
 
 	UniqueSocketDescriptor socket0;
-	if (!socket0.CreateNonBlock(AF_INET, SOCK_STREAM, IPPROTO_TCP))
+	if (!socket0.Create(AF_INET, SOCK_STREAM, IPPROTO_TCP))
 		throw MakeSocketError("Failed to create socket");
 
 	if (!socket0.Connect(listen_socket.GetLocalAddress()))
 		throw MakeSocketError("Failed to connect socket");
+
+	socket0.SetNonBlocking();
 
 	auto socket1 = listen_socket.AcceptNonBlock();
 	if (!socket1.IsDefined())
