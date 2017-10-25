@@ -1,6 +1,8 @@
 ver 0.20.12 (not yet released)
 * input
   - curl: fix seeking
+* player
+  - log message when decoder is too slow
 
 ver 0.20.11 (2017/10/18)
 * storage

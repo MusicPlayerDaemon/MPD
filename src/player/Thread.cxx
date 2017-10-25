@@ -32,6 +32,7 @@
 #include "output/MultipleOutputs.hxx"
 #include "tag/Tag.hxx"
 #include "Idle.hxx"
+#include "system/PeriodClock.hxx"
 #include "util/Domain.hxx"
 #include "thread/Name.hxx"
 #include "Log.hxx"
@@ -145,6 +146,8 @@ class Player {
 	 * precisely.
 	 */
 	SongTime elapsed_time;
+
+	PeriodClock throttle_silence_log;
 
 public:
 	Player(PlayerControl &_pc, DecoderControl &_dc,
@@ -934,6 +937,8 @@ Player::SongBorder()
 {
 	FormatDefault(player_domain, "played \"%s\"", song->GetURI());
 
+	throttle_silence_log.Reset();
+
 	ReplacePipe(dc.pipe);
 
 	pc.outputs.SongBorder();
@@ -1095,6 +1100,10 @@ Player::Run()
 			/* the decoder is too busy and hasn't provided
 			   new PCM data in time: send silence (if the
 			   output pipe is empty) */
+
+			if (throttle_silence_log.CheckUpdate(std::chrono::seconds(5)))
+				FormatWarning(player_domain, "Decoder is too slow; playing silence to avoid xrun");
+
 			if (!SendSilence())
 				break;
 		}
