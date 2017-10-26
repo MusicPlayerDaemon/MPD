@@ -3457,6 +3457,28 @@ run</programlisting>
                   option at your own risk.
                 </entry>
               </row>
+
+              <row>
+                <entry>
+                  <varname>allowed_formats</varname>
+                  <parameter>F1 F2 ...</parameter>
+                </entry>
+                <entry>
+                  <para>
+                    Specifies a list of allowed audio formats, separated
+                    by a space.  All items may contain asterisks as a
+                    wild card, and may be followed by
+                    "<parameter>=dop</parameter>" to enable DoP (DSD
+                    over PCM) for this particular format.  The first
+                    matching format is used, and if none matches, MPD
+                    chooses the best fallback of this list.
+                  </para>
+                  <para>
+                    Example: "<parameter>96000:16:* 192000:24:*
+                    dsd64:*=dop *:dsd:*</parameter>".
+                  </para>
+                </entry>
+              </row>
             </tbody>
           </tgroup>
         </informaltable>

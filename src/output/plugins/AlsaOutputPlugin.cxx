@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "AlsaOutputPlugin.hxx"
+#include "lib/alsa/AllowedFormat.hxx"
 #include "lib/alsa/HwSetup.hxx"
 #include "lib/alsa/NonBlock.hxx"
 #include "lib/alsa/PeriodBuffer.hxx"
@@ -32,6 +33,7 @@
 #include "util/RuntimeError.hxx"
 #include "util/Domain.hxx"
 #include "util/ConstBuffer.hxx"
+#include "util/StringView.hxx"
 #include "event/MultiSocketMonitor.hxx"
 #include "event/DeferredMonitor.hxx"
 #include "event/Call.hxx"
@@ -42,6 +44,7 @@
 #include <boost/lockfree/spsc_queue.hpp>
 
 #include <string>
+#include <forward_list>
 
 static const char default_device[] = "default";
 
@@ -64,7 +67,7 @@ class AlsaOutput final
 	 *
 	 * @see http://dsd-guide.com/dop-open-standard
 	 */
-	const bool dop;
+	const bool dop_setting;
 #endif
 
 	/** libasound's buffer_time setting (in microseconds) */
@@ -75,6 +78,8 @@ class AlsaOutput final
 
 	/** the mode flags passed to snd_pcm_open */
 	int mode = 0;
+
+	std::forward_list<Alsa::AllowedFormat> allowed_formats;
 
 	/** the libasound PCM device handle */
 	snd_pcm_t *pcm;
@@ -202,7 +207,11 @@ private:
 		      PcmExport::Params &params);
 #endif
 
-	void SetupOrDop(AudioFormat &audio_format, PcmExport::Params &params);
+	void SetupOrDop(AudioFormat &audio_format, PcmExport::Params &params
+#ifdef ENABLE_DSD
+			, bool dop
+#endif
+			);
 
 	/**
 	 * Activate the output by registering the sockets in the
@@ -302,9 +311,9 @@ AlsaOutput::AlsaOutput(EventLoop &loop, const ConfigBlock &block)
 	 MultiSocketMonitor(loop), DeferredMonitor(loop),
 	 device(block.GetBlockValue("device", "")),
 #ifdef ENABLE_DSD
-	 dop(block.GetBlockValue("dop", false) ||
-	     /* legacy name from MPD 0.18 and older: */
-	     block.GetBlockValue("dsd_usb", false)),
+	 dop_setting(block.GetBlockValue("dop", false) ||
+		     /* legacy name from MPD 0.18 and older: */
+		     block.GetBlockValue("dsd_usb", false)),
 #endif
 	 buffer_time(block.GetBlockValue("buffer_time",
 					 MPD_ALSA_BUFFER_TIME_US)),
@@ -324,6 +333,11 @@ AlsaOutput::AlsaOutput(EventLoop &loop, const ConfigBlock &block)
 	if (!block.GetBlockValue("auto_format", true))
 		mode |= SND_PCM_NO_AUTO_FORMAT;
 #endif
+
+	const char *allowed_formats_string =
+		block.GetBlockValue("allowed_formats", nullptr);
+	if (allowed_formats_string != nullptr)
+		allowed_formats = Alsa::AllowedFormat::ParseList(allowed_formats_string);
 }
 
 void
@@ -430,7 +444,6 @@ inline void
 AlsaOutput::SetupDop(const AudioFormat audio_format,
 		     PcmExport::Params &params)
 {
-	assert(dop);
 	assert(audio_format.format == SampleFormat::DSD);
 
 	/* pass 24 bit to AlsaSetup() */
@@ -462,7 +475,11 @@ AlsaOutput::SetupDop(const AudioFormat audio_format,
 #endif
 
 inline void
-AlsaOutput::SetupOrDop(AudioFormat &audio_format, PcmExport::Params &params)
+AlsaOutput::SetupOrDop(AudioFormat &audio_format, PcmExport::Params &params
+#ifdef ENABLE_DSD
+		       , bool dop
+#endif
+		       )
 {
 #ifdef ENABLE_DSD
 	std::exception_ptr dop_error;
@@ -506,9 +523,34 @@ MaybeDmix(snd_pcm_t *pcm) noexcept
 	return MaybeDmix(snd_pcm_type(pcm));
 }
 
+static const Alsa::AllowedFormat &
+BestMatch(const std::forward_list<Alsa::AllowedFormat> &haystack,
+	  const AudioFormat &needle)
+{
+	assert(!haystack.empty());
+
+	for (const auto &i : haystack)
+		if (needle.MatchMask(i.format))
+			return i;
+
+	return haystack.front();
+}
+
 void
 AlsaOutput::Open(AudioFormat &audio_format)
 {
+#ifdef ENABLE_DSD
+	bool dop = dop_setting;
+#endif
+
+	if (!allowed_formats.empty()) {
+		const auto &a = BestMatch(allowed_formats, audio_format);
+		audio_format.ApplyMask(a.format);
+#ifdef ENABLE_DSD
+		dop = a.dop;
+#endif
+	}
+
 	int err = snd_pcm_open(&pcm, GetDevice(),
 			       SND_PCM_STREAM_PLAYBACK, mode);
 	if (err < 0)
@@ -523,7 +565,11 @@ AlsaOutput::Open(AudioFormat &audio_format)
 	params.alsa_channel_order = true;
 
 	try {
-		SetupOrDop(audio_format, params);
+		SetupOrDop(audio_format, params
+#ifdef ENABLE_DSD
+			   , dop
+#endif
+			   );
 	} catch (...) {
 		snd_pcm_close(pcm);
 		std::throw_with_nested(FormatRuntimeError("Error opening ALSA device \"%s\"",

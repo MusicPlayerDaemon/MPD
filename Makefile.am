@@ -258,6 +258,7 @@ UPNP_SOURCES = \
 
 ALSA_SOURCES = \
 	src/lib/alsa/Version.cxx src/lib/alsa/Version.hxx \
+	src/lib/alsa/AllowedFormat.cxx src/lib/alsa/AllowedFormat.hxx \
 	src/lib/alsa/HwSetup.cxx src/lib/alsa/HwSetup.hxx \
 	src/lib/alsa/Format.hxx \
 	src/lib/alsa/PeriodBuffer.hxx \
