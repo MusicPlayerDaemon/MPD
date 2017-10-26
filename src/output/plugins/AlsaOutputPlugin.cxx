@@ -680,13 +680,13 @@ AlsaTryFormat(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
  * Configure a sample format, and probe other formats if that fails.
  */
 static int
-AlsaSetupFormat(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
-		AudioFormat &audio_format,
-		PcmExport::Params &params)
+AlsaSetupSampleFormat(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
+		      SampleFormat &sample_format,
+		      PcmExport::Params &params)
 {
 	/* try the input format first */
 
-	int err = AlsaTryFormat(pcm, hwparams, audio_format.format, params);
+	int err = AlsaTryFormat(pcm, hwparams, sample_format, params);
 
 	/* if unsupported by the hardware, try other formats */
 
@@ -702,12 +702,12 @@ AlsaSetupFormat(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
 	     err == -EINVAL && probe_formats[i] != SampleFormat::UNDEFINED;
 	     ++i) {
 		const SampleFormat mpd_format = probe_formats[i];
-		if (mpd_format == audio_format.format)
+		if (mpd_format == sample_format)
 			continue;
 
 		err = AlsaTryFormat(pcm, hwparams, mpd_format, params);
 		if (err == 0)
-			audio_format.format = mpd_format;
+			sample_format = mpd_format;
 	}
 
 	return err;
@@ -742,7 +742,8 @@ AlsaSetupHw(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
 		throw FormatRuntimeError("snd_pcm_hw_params_set_access() failed: %s",
 					 snd_strerror(-err));
 
-	err = AlsaSetupFormat(pcm, hwparams, audio_format, params);
+	err = AlsaSetupSampleFormat(pcm, hwparams,
+				    audio_format.format, params);
 	if (err < 0)
 		throw FormatRuntimeError("Failed to configure format %s: %s",
 					 sample_format_to_string(audio_format.format),
