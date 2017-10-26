@@ -155,12 +155,12 @@ public:
 	 * @param channels the number of channels; ignored unless dop is set
 	 */
 	void Open(SampleFormat sample_format, unsigned channels,
-		  Params params);
+		  Params params) noexcept;
 
 	/**
 	 * Reset the filter's state, e.g. drop/flush buffers.
 	 */
-	void Reset() {
+	void Reset() noexcept {
 	}
 
 	/**
@@ -175,7 +175,7 @@ public:
 	 * @param src the source PCM buffer
 	 * @return the destination buffer (may be a pointer to the source buffer)
 	 */
-	ConstBuffer<void> Export(ConstBuffer<void> src);
+	ConstBuffer<void> Export(ConstBuffer<void> src) noexcept;
 
 	/**
 	 * Converts the number of consumed bytes from the pcm_export()

@@ -34,7 +34,7 @@
 
 void
 PcmExport::Open(SampleFormat sample_format, unsigned _channels,
-		Params params)
+		Params params) noexcept
 {
 	assert(audio_valid_sample_format(sample_format));
 
@@ -149,7 +149,7 @@ PcmExport::Params::CalcInputSampleRate(unsigned sample_rate) const noexcept
 }
 
 ConstBuffer<void>
-PcmExport::Export(ConstBuffer<void> data)
+PcmExport::Export(ConstBuffer<void> data) noexcept
 {
 	if (alsa_channel_order != SampleFormat::UNDEFINED)
 		data = ToAlsaChannelOrder(order_buffer, data,
