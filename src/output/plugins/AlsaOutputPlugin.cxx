@@ -165,7 +165,7 @@ class AlsaOutput final
 		PeriodBuffer(const PeriodBuffer &) = delete;
 		PeriodBuffer &operator=(const PeriodBuffer &) = delete;
 
-		void Allocate(size_t n_frames, size_t frame_size) {
+		void Allocate(size_t n_frames, size_t frame_size) noexcept {
 			capacity = n_frames * frame_size;
 
 			/* reserve space for one more (partial) frame,
@@ -176,29 +176,29 @@ class AlsaOutput final
 			head = tail = 0;
 		}
 
-		void Free() {
+		void Free() noexcept {
 			delete[] buffer;
 		}
 
-		bool IsEmpty() const {
+		bool IsEmpty() const noexcept {
 			return head == tail;
 		}
 
-		bool IsFull() const {
+		bool IsFull() const noexcept {
 			return tail >= capacity;
 		}
 
-		uint8_t *GetTail() {
+		uint8_t *GetTail() noexcept {
 			return buffer + tail;
 		}
 
-		size_t GetSpaceBytes() const {
+		size_t GetSpaceBytes() const noexcept {
 			assert(tail <= capacity);
 
 			return capacity - tail;
 		}
 
-		void AppendBytes(size_t n) {
+		void AppendBytes(size_t n) noexcept {
 			assert(n <= capacity);
 			assert(tail <= capacity - n);
 
@@ -206,7 +206,7 @@ class AlsaOutput final
 		}
 
 		void FillWithSilence(const uint8_t *_silence,
-				     const size_t frame_size) {
+				     const size_t frame_size) noexcept {
 			size_t partial_frame = tail % frame_size;
 			auto *dest = GetTail() - partial_frame;
 
@@ -219,15 +219,15 @@ class AlsaOutput final
 			tail = capacity + partial_frame;
 		}
 
-		const uint8_t *GetHead() const {
+		const uint8_t *GetHead() const noexcept {
 			return buffer + head;
 		}
 
-		snd_pcm_uframes_t GetFrames(size_t frame_size) const {
+		snd_pcm_uframes_t GetFrames(size_t frame_size) const noexcept {
 			return (tail - head) / frame_size;
 		}
 
-		void ConsumeBytes(size_t n) {
+		void ConsumeBytes(size_t n) noexcept {
 			head += n;
 
 			assert(head <= capacity);
@@ -241,19 +241,19 @@ class AlsaOutput final
 			}
 		}
 
-		void ConsumeFrames(snd_pcm_uframes_t n, size_t frame_size) {
+		void ConsumeFrames(snd_pcm_uframes_t n, size_t frame_size) noexcept {
 			ConsumeBytes(n * frame_size);
 		}
 
-		snd_pcm_uframes_t GetPeriodPosition(size_t frame_size) const {
+		snd_pcm_uframes_t GetPeriodPosition(size_t frame_size) const noexcept {
 			return head / frame_size;
 		}
 
-		void Rewind() {
+		void Rewind() noexcept {
 			head = 0;
 		}
 
-		void Clear() {
+		void Clear() noexcept {
 			head = tail = 0;
 		}
 	};
@@ -277,7 +277,7 @@ class AlsaOutput final
 public:
 	AlsaOutput(EventLoop &loop, const ConfigBlock &block);
 
-	~AlsaOutput() {
+	~AlsaOutput() noexcept {
 		/* free libasound's config cache */
 		snd_config_update_free_global();
 	}
@@ -324,7 +324,7 @@ private:
 	 * has no effect; nothing will be played, and no code will be
 	 * run on #EventLoop's thread.
 	 */
-	void Activate() {
+	void Activate() noexcept {
 		if (active)
 			return;
 
@@ -336,7 +336,7 @@ private:
 	 * Wrapper for Activate() which unlocks our mutex.  Call this
 	 * if you're holding the mutex.
 	 */
-	void UnlockActivate() {
+	void UnlockActivate() noexcept {
 		if (active)
 			return;
 
@@ -344,12 +344,12 @@ private:
 		Activate();
 	}
 
-	void ClearRingBuffer() {
+	void ClearRingBuffer() noexcept {
 		std::array<uint8_t, 1024> buffer;
 		while (ring_buffer->pop(&buffer.front(), buffer.size())) {}
 	}
 
-	int Recover(int err);
+	int Recover(int err) noexcept;
 
 	/**
 	 * Drain all buffers.  To be run in #EventLoop's thread.
@@ -357,15 +357,15 @@ private:
 	 * @return true if draining is complete, false if this method
 	 * needs to be called again later
 	 */
-	bool DrainInternal();
+	bool DrainInternal() noexcept;
 
 	/**
 	 * Stop playback immediately, dropping all buffers.  To be run
 	 * in #EventLoop's thread.
 	 */
-	void CancelInternal();
+	void CancelInternal() noexcept;
 
-	void CopyRingToPeriodBuffer() {
+	void CopyRingToPeriodBuffer() noexcept {
 		if (period_buffer.IsFull())
 			return;
 
@@ -382,7 +382,7 @@ private:
 		cond.signal();
 	}
 
-	snd_pcm_sframes_t WriteFromPeriodBuffer() {
+	snd_pcm_sframes_t WriteFromPeriodBuffer() noexcept {
 		assert(!period_buffer.IsEmpty());
 
 		auto frames_written = snd_pcm_writei(pcm, period_buffer.GetHead(),
@@ -394,7 +394,7 @@ private:
 		return frames_written;
 	}
 
-	bool LockHasError() const {
+	bool LockHasError() const noexcept {
 		const std::lock_guard<Mutex> lock(mutex);
 		return !!error;
 	}
@@ -1066,7 +1066,7 @@ AlsaOutput::Open(AudioFormat &audio_format)
 }
 
 inline int
-AlsaOutput::Recover(int err)
+AlsaOutput::Recover(int err) noexcept
 {
 	if (err == -EPIPE) {
 		FormatDebug(alsa_output_domain,
@@ -1110,7 +1110,7 @@ AlsaOutput::Recover(int err)
 }
 
 inline bool
-AlsaOutput::DrainInternal()
+AlsaOutput::DrainInternal() noexcept
 {
 	if (snd_pcm_state(pcm) != SND_PCM_STATE_RUNNING) {
 		CancelInternal();
@@ -1167,7 +1167,7 @@ AlsaOutput::Drain()
 }
 
 inline void
-AlsaOutput::CancelInternal()
+AlsaOutput::CancelInternal() noexcept
 {
 	must_prepare = true;
 
