@@ -90,10 +90,12 @@ class AlsaOutput final
 	/** the libasound PCM device handle */
 	snd_pcm_t *pcm;
 
+#ifndef NDEBUG
 	/**
 	 * The size of one audio frame passed to method play().
 	 */
 	size_t in_frame_size;
+#endif
 
 	/**
 	 * The size of one audio frame passed to libasound.
@@ -1044,7 +1046,9 @@ AlsaOutput::Open(AudioFormat &audio_format)
 			 audio_format.channels,
 			 params);
 
+#ifndef NDEBUG
 	in_frame_size = audio_format.GetFrameSize();
+#endif
 	out_frame_size = pcm_export->GetFrameSize(audio_format);
 
 	drain = false;
