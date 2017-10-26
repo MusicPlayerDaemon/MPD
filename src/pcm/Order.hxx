@@ -32,6 +32,6 @@ template<typename T> struct ConstBuffer;
  */
 ConstBuffer<void>
 ToAlsaChannelOrder(PcmBuffer &buffer, ConstBuffer<void> src,
-		   SampleFormat sample_format, unsigned channels);
+		   SampleFormat sample_format, unsigned channels) noexcept;
 
 #endif
