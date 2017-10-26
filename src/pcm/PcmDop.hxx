@@ -34,6 +34,6 @@ template<typename T> struct ConstBuffer;
  */
 ConstBuffer<uint32_t>
 pcm_dsd_to_dop(PcmBuffer &buffer, unsigned channels,
-	       ConstBuffer<uint8_t> src);
+	       ConstBuffer<uint8_t> src) noexcept;
 
 #endif
