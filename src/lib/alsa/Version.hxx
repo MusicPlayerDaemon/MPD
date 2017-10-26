@@ -26,7 +26,7 @@
 
 static constexpr uint_least32_t
 MakeAlsaVersion(uint_least32_t major, uint_least32_t minor,
-		uint_least32_t subminor)
+		uint_least32_t subminor) noexcept
 {
 	return (major << 16) | (minor << 8) | subminor;
 }
