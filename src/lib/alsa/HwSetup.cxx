@@ -176,11 +176,14 @@ SetupSampleFormat(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
 	return err;
 }
 
-void
-SetupHw(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
+HwResult
+SetupHw(snd_pcm_t *pcm,
 	unsigned buffer_time, unsigned period_time,
 	AudioFormat &audio_format, PcmExport::Params &params)
 {
+	snd_pcm_hw_params_t *hwparams;
+	snd_pcm_hw_params_alloca(&hwparams);
+
 	int err;
 	unsigned int period_time_ro = period_time;
 
@@ -285,6 +288,26 @@ SetupHw(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
 	if (err < 0)
 		throw FormatRuntimeError("snd_pcm_hw_params() failed: %s",
 					 snd_strerror(-err));
+
+	HwResult result;
+
+	err = snd_pcm_hw_params_get_format(hwparams, &result.format);
+	if (err < 0)
+		throw FormatRuntimeError("snd_pcm_hw_params_get_format() failed: %s",
+					 snd_strerror(-err));
+
+	err = snd_pcm_hw_params_get_buffer_size(hwparams, &result.buffer_size);
+	if (err < 0)
+		throw FormatRuntimeError("snd_pcm_hw_params_get_buffer_size() failed: %s",
+					 snd_strerror(-err));
+
+	err = snd_pcm_hw_params_get_period_size(hwparams, &result.period_size,
+						nullptr);
+	if (err < 0)
+		throw FormatRuntimeError("snd_pcm_hw_params_get_period_size() failed: %s",
+					 snd_strerror(-err));
+
+	return result;
 }
 
 } // namespace Alsa

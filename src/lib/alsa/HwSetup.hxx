@@ -29,6 +29,11 @@ struct AudioFormat;
 
 namespace Alsa {
 
+struct HwResult {
+	snd_pcm_format_t format;
+	snd_pcm_uframes_t buffer_size, period_size;
+};
+
 /**
  * Wrapper for snd_pcm_hw_params().
  *
@@ -38,8 +43,8 @@ namespace Alsa {
  * by this function
  * @param params to be modified by this function
  */
-void
-SetupHw(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
+HwResult
+SetupHw(snd_pcm_t *pcm,
 	unsigned buffer_time, unsigned period_time,
 	AudioFormat &audio_format, PcmExport::Params &params);
 

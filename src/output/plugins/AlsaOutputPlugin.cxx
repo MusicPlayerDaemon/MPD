@@ -392,38 +392,22 @@ inline void
 AlsaOutput::Setup(AudioFormat &audio_format,
 		  PcmExport::Params &params)
 {
-	snd_pcm_hw_params_t *hwparams;
-	snd_pcm_hw_params_alloca(&hwparams);
+	const auto hw_result = Alsa::SetupHw(pcm,
+					     buffer_time, period_time,
+					     audio_format, params);
 
-	Alsa::SetupHw(pcm, hwparams,
-		      buffer_time, period_time,
-		      audio_format, params);
-
-	snd_pcm_format_t format;
-	if (snd_pcm_hw_params_get_format(hwparams, &format) == 0)
-		FormatDebug(alsa_output_domain,
-			    "format=%s (%s)", snd_pcm_format_name(format),
-			    snd_pcm_format_description(format));
-
-	snd_pcm_uframes_t alsa_buffer_size;
-	int err = snd_pcm_hw_params_get_buffer_size(hwparams, &alsa_buffer_size);
-	if (err < 0)
-		throw FormatRuntimeError("snd_pcm_hw_params_get_buffer_size() failed: %s",
-					 snd_strerror(-err));
-
-	snd_pcm_uframes_t alsa_period_size;
-	err = snd_pcm_hw_params_get_period_size(hwparams, &alsa_period_size,
-						nullptr);
-	if (err < 0)
-		throw FormatRuntimeError("snd_pcm_hw_params_get_period_size() failed: %s",
-					 snd_strerror(-err));
-
-	AlsaSetupSw(pcm, alsa_buffer_size - alsa_period_size,
-		    alsa_period_size);
+	FormatDebug(alsa_output_domain, "format=%s (%s)",
+		    snd_pcm_format_name(hw_result.format),
+		    snd_pcm_format_description(hw_result.format));
 
 	FormatDebug(alsa_output_domain, "buffer_size=%u period_size=%u",
-		    (unsigned)alsa_buffer_size, (unsigned)alsa_period_size);
+		    (unsigned)hw_result.buffer_size,
+		    (unsigned)hw_result.period_size);
 
+	AlsaSetupSw(pcm, hw_result.buffer_size - hw_result.period_size,
+		    hw_result.period_size);
+
+	auto alsa_period_size = hw_result.period_size;
 	if (alsa_period_size == 0)
 		/* this works around a SIGFPE bug that occurred when
 		   an ALSA driver indicated period_size==0; this
@@ -435,7 +419,7 @@ AlsaOutput::Setup(AudioFormat &audio_format,
 	period_frames = alsa_period_size;
 
 	silence = new uint8_t[snd_pcm_frames_to_bytes(pcm, alsa_period_size)];
-	snd_pcm_format_set_silence(format, silence,
+	snd_pcm_format_set_silence(hw_result.format, silence,
 				   alsa_period_size * audio_format.channels);
 
 }
