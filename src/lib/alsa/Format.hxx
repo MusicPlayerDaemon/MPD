@@ -28,6 +28,16 @@
 
 #include <assert.h>
 
+#if SND_LIB_VERSION >= 0x1001c
+/* alsa-lib supports DSD since version 1.0.27.1 */
+#define HAVE_ALSA_DSD
+#endif
+
+#if SND_LIB_VERSION >= 0x1001d
+/* alsa-lib supports DSD_U32 since version 1.0.29 */
+#define HAVE_ALSA_DSD_U32
+#endif
+
 /**
  * Convert MPD's #SampleFormat enum to libasound's snd_pcm_format_t
  * enum.  Returns SND_PCM_FORMAT_UNKNOWN if there is no according ALSA

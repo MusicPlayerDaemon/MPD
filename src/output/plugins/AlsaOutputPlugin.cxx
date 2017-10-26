@@ -44,16 +44,6 @@
 
 #include <string>
 
-#if SND_LIB_VERSION >= 0x1001c
-/* alsa-lib supports DSD since version 1.0.27.1 */
-#define HAVE_ALSA_DSD
-#endif
-
-#if SND_LIB_VERSION >= 0x1001d
-/* alsa-lib supports DSD_U32 since version 1.0.29 */
-#define HAVE_ALSA_DSD_U32
-#endif
-
 static const char default_device[] = "default";
 
 static constexpr unsigned MPD_ALSA_BUFFER_TIME_US = 500000;
