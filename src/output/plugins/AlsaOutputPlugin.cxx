@@ -56,8 +56,6 @@ static const char default_device[] = "default";
 
 static constexpr unsigned MPD_ALSA_BUFFER_TIME_US = 500000;
 
-static constexpr unsigned MPD_ALSA_RETRY_NR = 5;
-
 class AlsaOutput final
 	: AudioOutput, MultiSocketMonitor, DeferredMonitor {
 
@@ -730,10 +728,8 @@ AlsaSetupHw(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
 	    AudioFormat &audio_format, PcmExport::Params &params)
 {
 	int err;
-	unsigned retry = MPD_ALSA_RETRY_NR;
 	unsigned int period_time_ro = period_time;
 
-configure_hw:
 	/* configure HW params */
 	err = snd_pcm_hw_params_any(pcm, hwparams);
 	if (err < 0)
@@ -831,15 +827,9 @@ configure_hw:
 	}
 
 	err = snd_pcm_hw_params(pcm, hwparams);
-	if (err == -EPIPE && --retry > 0 && period_time_ro > 0) {
-		period_time_ro = period_time_ro >> 1;
-		goto configure_hw;
-	} else if (err < 0)
+	if (err < 0)
 		throw FormatRuntimeError("snd_pcm_hw_params() failed: %s",
 					 snd_strerror(-err));
-	if (retry != MPD_ALSA_RETRY_NR)
-		FormatDebug(alsa_output_domain,
-			    "ALSA period_time set to %d", period_time);
 }
 
 /**
