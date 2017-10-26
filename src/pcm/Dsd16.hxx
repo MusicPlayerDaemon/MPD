@@ -31,6 +31,7 @@ class PcmBuffer;
  * Convert DSD_U8 to DSD_U16 (native endian, oldest bits in MSB).
  */
 ConstBuffer<uint16_t>
-Dsd8To16(PcmBuffer &buffer, unsigned channels, ConstBuffer<uint8_t> src);
+Dsd8To16(PcmBuffer &buffer, unsigned channels,
+	 ConstBuffer<uint8_t> src) noexcept;
 
 #endif

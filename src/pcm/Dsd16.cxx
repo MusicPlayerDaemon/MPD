@@ -26,7 +26,7 @@
  * Construct a 16 bit integer from two bytes.
  */
 static constexpr inline uint16_t
-Construct16(uint8_t a, uint8_t b)
+Construct16(uint8_t a, uint8_t b) noexcept
 {
 	/* "a" is the oldest byte, which must be in the most
 	   significant byte */
@@ -35,13 +35,14 @@ Construct16(uint8_t a, uint8_t b)
 }
 
 static constexpr inline uint16_t
-Dsd8To16Sample(const uint8_t *src, unsigned channels)
+Dsd8To16Sample(const uint8_t *src, unsigned channels) noexcept
 {
 	return Construct16(src[0], src[channels]);
 }
 
 ConstBuffer<uint16_t>
-Dsd8To16(PcmBuffer &buffer, unsigned channels, ConstBuffer<uint8_t> _src)
+Dsd8To16(PcmBuffer &buffer, unsigned channels,
+	 ConstBuffer<uint8_t> _src) noexcept
 {
 	const size_t in_frames = _src.size / channels;
 	const size_t out_frames = in_frames / 2;
