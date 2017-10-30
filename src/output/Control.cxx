@@ -190,8 +190,14 @@ AudioOutputControl::Open(const AudioFormat audio_format,
 	request.audio_format = audio_format;
 	request.pipe = &mp;
 
-	if (!thread.IsDefined())
-		StartThread();
+	if (!thread.IsDefined()) {
+		try {
+			StartThread();
+		} catch (...) {
+			LogError(std::current_exception());
+			return false;
+		}
+	}
 
 	CommandWait(Command::OPEN);
 	const bool open2 = open;
