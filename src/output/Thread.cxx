@@ -260,8 +260,10 @@ AudioOutputControl::PlayChunk() noexcept
 
 	while (command == Command::NONE) {
 		const auto data = source.PeekData();
-		if (data.IsEmpty())
+		if (data.IsEmpty()) {
+			source.ConsumeData(0);
 			break;
+		}
 
 		if (skip_delay)
 			skip_delay = false;
