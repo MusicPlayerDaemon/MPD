@@ -5,6 +5,8 @@ ver 0.20.12 (not yet released)
   - vorbis: fix Tremor support
 * player
   - log message when decoder is too slow
+* output
+  - fix hanging playback with soxr resampler
 
 ver 0.20.11 (2017/10/18)
 * storage

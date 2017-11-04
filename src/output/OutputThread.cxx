@@ -271,16 +271,15 @@ try {
 inline bool
 AudioOutput::PlayChunk()
 {
-	if (tags) {
-		const auto *tag = source.ReadTag();
-		if (tag != nullptr) {
-			const ScopeUnlock unlock(mutex);
-			try {
-				ao_plugin_send_tag(this, *tag);
-			} catch (const std::runtime_error &e) {
-				FormatError(e, "Failed to send tag to \"%s\" [%s]",
-					    name, plugin.name);
-			}
+	// ensure pending tags are flushed in all cases
+	const auto *tag = source.ReadTag();
+	if (tags && tag != nullptr) {
+		const ScopeUnlock unlock(mutex);
+		try {
+			ao_plugin_send_tag(this, *tag);
+		} catch (const std::runtime_error &e) {
+			FormatError(e, "Failed to send tag to \"%s\" [%s]",
+				    name, plugin.name);
 		}
 	}
 
