@@ -66,7 +66,6 @@ static const size_t CURL_RESUME_AT = 384 * 1024;
 struct CurlInputStream final : public AsyncInputStream, CurlResponseHandler {
 	/* some buffers which were passed to libcurl, which we have
 	   too free */
-	char range[32];
 	CurlSlist request_headers;
 
 	CurlRequest *request = nullptr;
@@ -89,7 +88,18 @@ struct CurlInputStream final : public AsyncInputStream, CurlResponseHandler {
 
 	static InputStream *Open(const char *url, Mutex &mutex, Cond &cond);
 
+	/**
+	 * Create and initialize a new #CurlRequest instance.  After
+	 * this, you may add more request headers and set options.  To
+	 * actually start the request, call StartRequest().
+	 */
 	void InitEasy();
+
+	/**
+	 * Start the request after having called InitEasy().  After
+	 * this, you must not set any CURL options.
+	 */
+	void StartRequest();
 
 	/**
 	 * Frees the current "libcurl easy" handle, and everything
@@ -365,6 +375,11 @@ CurlInputStream::InitEasy()
 
 	request_headers.Clear();
 	request_headers.Append("Icy-Metadata: 1");
+}
+
+void
+CurlInputStream::StartRequest()
+{
 	request->SetOption(CURLOPT_HTTPHEADER, request_headers.Get());
 
 	request->Start();
@@ -391,6 +406,7 @@ CurlInputStream::SeekInternal(offset_type new_offset)
 	/* send the "Range" header */
 
 	if (offset > 0) {
+		char range[32];
 #ifdef WIN32
 		// TODO: what can we use on Windows to format 64 bit?
 		sprintf(range, "%lu-", (long)offset);
@@ -399,6 +415,8 @@ CurlInputStream::SeekInternal(offset_type new_offset)
 #endif
 		request->SetOption(CURLOPT_RANGE, range);
 	}
+
+	StartRequest();
 }
 
 void
@@ -422,6 +440,7 @@ CurlInputStream::Open(const char *url, Mutex &mutex, Cond &cond)
 	try {
 		BlockingCall(c->GetEventLoop(), [c](){
 				c->InitEasy();
+				c->StartRequest();
 			});
 	} catch (...) {
 		delete c;
