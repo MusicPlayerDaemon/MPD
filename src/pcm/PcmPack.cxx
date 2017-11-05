@@ -21,7 +21,7 @@
 #include "system/ByteOrder.hxx"
 
 static void
-pack_sample(uint8_t *dest, const int32_t *src0)
+pack_sample(uint8_t *dest, const int32_t *src0) noexcept
 {
 	const uint8_t *src = (const uint8_t *)src0;
 
@@ -34,7 +34,7 @@ pack_sample(uint8_t *dest, const int32_t *src0)
 }
 
 void
-pcm_pack_24(uint8_t *dest, const int32_t *src, const int32_t *src_end)
+pcm_pack_24(uint8_t *dest, const int32_t *src, const int32_t *src_end) noexcept
 {
 	/* duplicate loop to help the compiler's optimizer (constant
 	   parameter to the pack_sample() inline function) */
@@ -49,7 +49,7 @@ pcm_pack_24(uint8_t *dest, const int32_t *src, const int32_t *src_end)
  * Construct a signed 24 bit integer from three bytes into a int32_t.
  */
 static constexpr int32_t
-ConstructS24(uint8_t low, uint8_t mid, uint8_t high)
+ConstructS24(uint8_t low, uint8_t mid, uint8_t high) noexcept
 {
 	return int32_t(low) | (int32_t(mid) << 8) | (int32_t(high) << 16) |
 		/* extend the sign bit */
@@ -87,7 +87,8 @@ ReadS24(const uint8_t *src) noexcept
 }
 
 void
-pcm_unpack_24(int32_t *dest, const uint8_t *src, const uint8_t *src_end)
+pcm_unpack_24(int32_t *dest,
+	      const uint8_t *src, const uint8_t *src_end) noexcept
 {
 	while (src < src_end) {
 		*dest++ = ReadS24(src);
@@ -96,7 +97,8 @@ pcm_unpack_24(int32_t *dest, const uint8_t *src, const uint8_t *src_end)
 }
 
 void
-pcm_unpack_24be(int32_t *dest, const uint8_t *src, const uint8_t *src_end)
+pcm_unpack_24be(int32_t *dest,
+		const uint8_t *src, const uint8_t *src_end) noexcept
 {
 	while (src < src_end) {
 		*dest++ = ReadS24BE(src);

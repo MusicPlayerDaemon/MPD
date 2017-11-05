@@ -2,6 +2,7 @@ ver 0.21 (not yet released)
 * protocol
   - "tagtypes" can be used to hide tags
   - "find" and "search" can sort
+  - close connection when client sends HTTP request
 * tags
   - new tag "OriginalDate"
 * decoder
@@ -13,12 +14,16 @@ ver 0.21 (not yet released)
 * mixer
   - sndio: new mixer plugin
 
-ver 0.20.11 (not yet released)
+ver 0.20.11 (2017/10/18)
 * storage
   - curl: support Content-Type application/xml
 * decoder
   - ffmpeg: more reliable song duration
+  - gme: fix track numbering
+* improve random song order when switching songs manually
 * fix case insensitive search without libicu
+* fix Unicode file names in playlists on Windows
+* fix endless loop when accessing malformed file names in ZIP files
 
 ver 0.20.10 (2017/08/24)
 * decoder

@@ -17,23 +17,37 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_PCM_DOP_HXX
-#define MPD_PCM_DOP_HXX
+#ifndef MPD_ALSA_HW_SETUP_HXX
+#define MPD_ALSA_HW_SETUP_HXX
 
 #include "check.h"
+#include "pcm/PcmExport.hxx"
 
-#include <stdint.h>
+#include <alsa/asoundlib.h>
 
-class PcmBuffer;
-template<typename T> struct ConstBuffer;
+struct AudioFormat;
+
+namespace Alsa {
+
+struct HwResult {
+	snd_pcm_format_t format;
+	snd_pcm_uframes_t buffer_size, period_size;
+};
 
 /**
- * Pack DSD 1 bit samples into (padded) 24 bit PCM samples for
- * playback over USB, according to the DoP standard:
- * http://dsd-guide.com/dop-open-standard
+ * Wrapper for snd_pcm_hw_params().
+ *
+ * @param buffer_time the configured buffer time, or 0 if not configured
+ * @param period_time the configured period time, or 0 if not configured
+ * @param audio_format an #AudioFormat to be configured (or modified)
+ * by this function
+ * @param params to be modified by this function
  */
-ConstBuffer<uint32_t>
-pcm_dsd_to_dop(PcmBuffer &buffer, unsigned channels,
-	       ConstBuffer<uint8_t> src) noexcept;
+HwResult
+SetupHw(snd_pcm_t *pcm,
+	unsigned buffer_time, unsigned period_time,
+	AudioFormat &audio_format, PcmExport::Params &params);
+
+} // namespace Alsa
 
 #endif

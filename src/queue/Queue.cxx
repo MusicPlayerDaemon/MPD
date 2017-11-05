@@ -195,7 +195,7 @@ Queue::MoveRange(unsigned start, unsigned end, unsigned to) noexcept
 	}
 }
 
-void
+unsigned
 Queue::MoveOrder(unsigned from_order, unsigned to_order) noexcept
 {
 	assert(from_order < length);
@@ -212,6 +212,25 @@ Queue::MoveOrder(unsigned from_order, unsigned to_order) noexcept
 	}
 
 	order[to_order] = from_position;
+	return to_order;
+}
+
+unsigned
+Queue::MoveOrderBefore(unsigned from_order, unsigned to_order) noexcept
+{
+	/* if "from_order" comes before "to_order", then the new
+	   position is "to_order-1"; otherwise the "to_order" song is
+	   moved one ahead */
+	return MoveOrder(from_order, to_order - (from_order < to_order));
+}
+
+unsigned
+Queue::MoveOrderAfter(unsigned from_order, unsigned to_order) noexcept
+{
+	/* if "from_order" comes after "to_order", then the new
+	   position is "to_order+1"; otherwise the "to_order" song is
+	   moved one back */
+	return MoveOrder(from_order, to_order + (from_order > to_order));
 }
 
 void

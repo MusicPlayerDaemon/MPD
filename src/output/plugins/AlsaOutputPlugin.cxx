@@ -19,12 +19,13 @@
 
 #include "config.h"
 #include "AlsaOutputPlugin.hxx"
+#include "lib/alsa/HwSetup.hxx"
 #include "lib/alsa/NonBlock.hxx"
+#include "lib/alsa/PeriodBuffer.hxx"
 #include "lib/alsa/Version.hxx"
 #include "../OutputAPI.hxx"
 #include "mixer/MixerList.hxx"
 #include "pcm/PcmExport.hxx"
-#include "system/ByteOrder.hxx"
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
 #include "util/Manual.hxx"
@@ -42,21 +43,9 @@
 
 #include <string>
 
-#if SND_LIB_VERSION >= 0x1001c
-/* alsa-lib supports DSD since version 1.0.27.1 */
-#define HAVE_ALSA_DSD
-#endif
-
-#if SND_LIB_VERSION >= 0x1001d
-/* alsa-lib supports DSD_U32 since version 1.0.29 */
-#define HAVE_ALSA_DSD_U32
-#endif
-
 static const char default_device[] = "default";
 
 static constexpr unsigned MPD_ALSA_BUFFER_TIME_US = 500000;
-
-static constexpr unsigned MPD_ALSA_RETRY_NR = 5;
 
 class AlsaOutput final
 	: AudioOutput, MultiSocketMonitor, DeferredMonitor {
@@ -90,10 +79,12 @@ class AlsaOutput final
 	/** the libasound PCM device handle */
 	snd_pcm_t *pcm;
 
+#ifndef NDEBUG
 	/**
 	 * The size of one audio frame passed to method play().
 	 */
 	size_t in_frame_size;
+#endif
 
 	/**
 	 * The size of one audio frame passed to libasound.
@@ -153,110 +144,7 @@ class AlsaOutput final
 	 */
 	boost::lockfree::spsc_queue<uint8_t> *ring_buffer;
 
-	class PeriodBuffer {
-		size_t capacity, head, tail;
-
-		uint8_t *buffer;
-
-	public:
-		PeriodBuffer() = default;
-		PeriodBuffer(const PeriodBuffer &) = delete;
-		PeriodBuffer &operator=(const PeriodBuffer &) = delete;
-
-		void Allocate(size_t n_frames, size_t frame_size) {
-			capacity = n_frames * frame_size;
-
-			/* reserve space for one more (partial) frame,
-			   to be able to fill the buffer with silence,
-			   after moving an unfinished frame to the
-			   end */
-			buffer = new uint8_t[capacity + frame_size - 1];
-			head = tail = 0;
-		}
-
-		void Free() {
-			delete[] buffer;
-		}
-
-		bool IsEmpty() const {
-			return head == tail;
-		}
-
-		bool IsFull() const {
-			return tail >= capacity;
-		}
-
-		uint8_t *GetTail() {
-			return buffer + tail;
-		}
-
-		size_t GetSpaceBytes() const {
-			assert(tail <= capacity);
-
-			return capacity - tail;
-		}
-
-		void AppendBytes(size_t n) {
-			assert(n <= capacity);
-			assert(tail <= capacity - n);
-
-			tail += n;
-		}
-
-		void FillWithSilence(const uint8_t *_silence,
-				     const size_t frame_size) {
-			size_t partial_frame = tail % frame_size;
-			auto *dest = GetTail() - partial_frame;
-
-			/* move the partial frame to the end */
-			std::copy(dest, GetTail(), buffer + capacity);
-
-			size_t silence_size = capacity - tail - partial_frame;
-			std::copy_n(_silence, silence_size, dest);
-
-			tail = capacity + partial_frame;
-		}
-
-		const uint8_t *GetHead() const {
-			return buffer + head;
-		}
-
-		snd_pcm_uframes_t GetFrames(size_t frame_size) const {
-			return (tail - head) / frame_size;
-		}
-
-		void ConsumeBytes(size_t n) {
-			head += n;
-
-			assert(head <= capacity);
-
-			if (head >= capacity) {
-				tail -= head;
-				/* copy the partial frame (if any)
-				   back to the beginning */
-				std::copy_n(GetHead(), tail, buffer);
-				head = 0;
-			}
-		}
-
-		void ConsumeFrames(snd_pcm_uframes_t n, size_t frame_size) {
-			ConsumeBytes(n * frame_size);
-		}
-
-		snd_pcm_uframes_t GetPeriodPosition(size_t frame_size) const {
-			return head / frame_size;
-		}
-
-		void Rewind() {
-			head = 0;
-		}
-
-		void Clear() {
-			head = tail = 0;
-		}
-	};
-
-	PeriodBuffer period_buffer;
+	Alsa::PeriodBuffer period_buffer;
 
 	/**
 	 * Protects #cond, #error, #drain.
@@ -275,7 +163,7 @@ class AlsaOutput final
 public:
 	AlsaOutput(EventLoop &loop, const ConfigBlock &block);
 
-	~AlsaOutput() {
+	~AlsaOutput() noexcept {
 		/* free libasound's config cache */
 		snd_config_update_free_global();
 	}
@@ -322,7 +210,7 @@ private:
 	 * has no effect; nothing will be played, and no code will be
 	 * run on #EventLoop's thread.
 	 */
-	void Activate() {
+	void Activate() noexcept {
 		if (active)
 			return;
 
@@ -334,7 +222,7 @@ private:
 	 * Wrapper for Activate() which unlocks our mutex.  Call this
 	 * if you're holding the mutex.
 	 */
-	void UnlockActivate() {
+	void UnlockActivate() noexcept {
 		if (active)
 			return;
 
@@ -342,12 +230,12 @@ private:
 		Activate();
 	}
 
-	void ClearRingBuffer() {
+	void ClearRingBuffer() noexcept {
 		std::array<uint8_t, 1024> buffer;
 		while (ring_buffer->pop(&buffer.front(), buffer.size())) {}
 	}
 
-	int Recover(int err);
+	int Recover(int err) noexcept;
 
 	/**
 	 * Drain all buffers.  To be run in #EventLoop's thread.
@@ -355,15 +243,15 @@ private:
 	 * @return true if draining is complete, false if this method
 	 * needs to be called again later
 	 */
-	bool DrainInternal();
+	bool DrainInternal() noexcept;
 
 	/**
 	 * Stop playback immediately, dropping all buffers.  To be run
 	 * in #EventLoop's thread.
 	 */
-	void CancelInternal();
+	void CancelInternal() noexcept;
 
-	void CopyRingToPeriodBuffer() {
+	void CopyRingToPeriodBuffer() noexcept {
 		if (period_buffer.IsFull())
 			return;
 
@@ -380,7 +268,7 @@ private:
 		cond.signal();
 	}
 
-	snd_pcm_sframes_t WriteFromPeriodBuffer() {
+	snd_pcm_sframes_t WriteFromPeriodBuffer() noexcept {
 		assert(!period_buffer.IsEmpty());
 
 		auto frames_written = snd_pcm_writei(pcm, period_buffer.GetHead(),
@@ -392,7 +280,7 @@ private:
 		return frames_written;
 	}
 
-	bool LockHasError() const {
+	bool LockHasError() const noexcept {
 		const std::lock_guard<Mutex> lock(mutex);
 		return !!error;
 	}
@@ -469,378 +357,6 @@ alsa_test_default_device()
 }
 
 /**
- * Convert MPD's #SampleFormat enum to libasound's snd_pcm_format_t
- * enum.  Returns SND_PCM_FORMAT_UNKNOWN if there is no according ALSA
- * PCM format.
- */
-gcc_const
-static snd_pcm_format_t
-ToAlsaPcmFormat(SampleFormat sample_format) noexcept
-{
-	switch (sample_format) {
-	case SampleFormat::UNDEFINED:
-		return SND_PCM_FORMAT_UNKNOWN;
-
-	case SampleFormat::DSD:
-#ifdef HAVE_ALSA_DSD
-		return SND_PCM_FORMAT_DSD_U8;
-#else
-		return SND_PCM_FORMAT_UNKNOWN;
-#endif
-
-	case SampleFormat::S8:
-		return SND_PCM_FORMAT_S8;
-
-	case SampleFormat::S16:
-		return SND_PCM_FORMAT_S16;
-
-	case SampleFormat::S24_P32:
-		return SND_PCM_FORMAT_S24;
-
-	case SampleFormat::S32:
-		return SND_PCM_FORMAT_S32;
-
-	case SampleFormat::FLOAT:
-		return SND_PCM_FORMAT_FLOAT;
-	}
-
-	assert(false);
-	gcc_unreachable();
-}
-
-/**
- * Determine the byte-swapped PCM format.  Returns
- * SND_PCM_FORMAT_UNKNOWN if the format cannot be byte-swapped.
- */
-static snd_pcm_format_t
-ByteSwapAlsaPcmFormat(snd_pcm_format_t fmt) noexcept
-{
-	switch (fmt) {
-	case SND_PCM_FORMAT_S16_LE: return SND_PCM_FORMAT_S16_BE;
-	case SND_PCM_FORMAT_S24_LE: return SND_PCM_FORMAT_S24_BE;
-	case SND_PCM_FORMAT_S32_LE: return SND_PCM_FORMAT_S32_BE;
-	case SND_PCM_FORMAT_S16_BE: return SND_PCM_FORMAT_S16_LE;
-	case SND_PCM_FORMAT_S24_BE: return SND_PCM_FORMAT_S24_LE;
-
-	case SND_PCM_FORMAT_S24_3BE:
-		return SND_PCM_FORMAT_S24_3LE;
-
-	case SND_PCM_FORMAT_S24_3LE:
-		return SND_PCM_FORMAT_S24_3BE;
-
-	case SND_PCM_FORMAT_S32_BE: return SND_PCM_FORMAT_S32_LE;
-
-#ifdef HAVE_ALSA_DSD_U32
-	case SND_PCM_FORMAT_DSD_U16_LE:
-		return SND_PCM_FORMAT_DSD_U16_BE;
-
-	case SND_PCM_FORMAT_DSD_U16_BE:
-		return SND_PCM_FORMAT_DSD_U16_LE;
-
-	case SND_PCM_FORMAT_DSD_U32_LE:
-		return SND_PCM_FORMAT_DSD_U32_BE;
-
-	case SND_PCM_FORMAT_DSD_U32_BE:
-		return SND_PCM_FORMAT_DSD_U32_LE;
-#endif
-
-	default: return SND_PCM_FORMAT_UNKNOWN;
-	}
-}
-
-/**
- * Check if there is a "packed" version of the give PCM format.
- * Returns SND_PCM_FORMAT_UNKNOWN if not.
- */
-static snd_pcm_format_t
-PackAlsaPcmFormat(snd_pcm_format_t fmt)
-{
-	switch (fmt) {
-	case SND_PCM_FORMAT_S24_LE:
-		return SND_PCM_FORMAT_S24_3LE;
-
-	case SND_PCM_FORMAT_S24_BE:
-		return SND_PCM_FORMAT_S24_3BE;
-
-	default:
-		return SND_PCM_FORMAT_UNKNOWN;
-	}
-}
-
-/**
- * Attempts to configure the specified sample format.  On failure,
- * fall back to the packed version.
- */
-static int
-AlsaTryFormatOrPacked(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
-		      snd_pcm_format_t fmt, PcmExport::Params &params)
-{
-	int err = snd_pcm_hw_params_set_format(pcm, hwparams, fmt);
-	if (err == 0)
-		params.pack24 = false;
-
-	if (err != -EINVAL)
-		return err;
-
-	fmt = PackAlsaPcmFormat(fmt);
-	if (fmt == SND_PCM_FORMAT_UNKNOWN)
-		return -EINVAL;
-
-	err = snd_pcm_hw_params_set_format(pcm, hwparams, fmt);
-	if (err == 0)
-		params.pack24 = true;
-
-	return err;
-}
-
-/**
- * Attempts to configure the specified sample format, and tries the
- * reversed host byte order if was not supported.
- */
-static int
-AlsaTryFormatOrByteSwap(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
-			snd_pcm_format_t fmt,
-			PcmExport::Params &params)
-{
-	int err = AlsaTryFormatOrPacked(pcm, hwparams, fmt, params);
-	if (err == 0)
-		params.reverse_endian = false;
-
-	if (err != -EINVAL)
-		return err;
-
-	fmt = ByteSwapAlsaPcmFormat(fmt);
-	if (fmt == SND_PCM_FORMAT_UNKNOWN)
-		return -EINVAL;
-
-	err = AlsaTryFormatOrPacked(pcm, hwparams, fmt, params);
-	if (err == 0)
-		params.reverse_endian = true;
-
-	return err;
-}
-
-/**
- * Attempts to configure the specified sample format.  On DSD_U8
- * failure, attempt to switch to DSD_U32 or DSD_U16.
- */
-static int
-AlsaTryFormatDsd(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
-		 snd_pcm_format_t fmt, PcmExport::Params &params)
-{
-	int err = AlsaTryFormatOrByteSwap(pcm, hwparams, fmt, params);
-
-#if defined(ENABLE_DSD) && defined(HAVE_ALSA_DSD_U32)
-	if (err == 0) {
-		params.dsd_u16 = false;
-		params.dsd_u32 = false;
-	}
-
-	if (err == -EINVAL && fmt == SND_PCM_FORMAT_DSD_U8) {
-		/* attempt to switch to DSD_U32 */
-		fmt = IsLittleEndian()
-			? SND_PCM_FORMAT_DSD_U32_LE
-			: SND_PCM_FORMAT_DSD_U32_BE;
-		err = AlsaTryFormatOrByteSwap(pcm, hwparams, fmt, params);
-		if (err == 0)
-			params.dsd_u32 = true;
-		else
-			fmt = SND_PCM_FORMAT_DSD_U8;
-	}
-
-	if (err == -EINVAL && fmt == SND_PCM_FORMAT_DSD_U8) {
-		/* attempt to switch to DSD_U16 */
-		fmt = IsLittleEndian()
-			? SND_PCM_FORMAT_DSD_U16_LE
-			: SND_PCM_FORMAT_DSD_U16_BE;
-		err = AlsaTryFormatOrByteSwap(pcm, hwparams, fmt, params);
-		if (err == 0)
-			params.dsd_u16 = true;
-		else
-			fmt = SND_PCM_FORMAT_DSD_U8;
-	}
-#endif
-
-	return err;
-}
-
-static int
-AlsaTryFormat(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
-	      SampleFormat sample_format,
-	      PcmExport::Params &params)
-{
-	snd_pcm_format_t alsa_format = ToAlsaPcmFormat(sample_format);
-	if (alsa_format == SND_PCM_FORMAT_UNKNOWN)
-		return -EINVAL;
-
-	return AlsaTryFormatDsd(pcm, hwparams, alsa_format, params);
-}
-
-/**
- * Configure a sample format, and probe other formats if that fails.
- */
-static int
-AlsaSetupFormat(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
-		AudioFormat &audio_format,
-		PcmExport::Params &params)
-{
-	/* try the input format first */
-
-	int err = AlsaTryFormat(pcm, hwparams, audio_format.format, params);
-
-	/* if unsupported by the hardware, try other formats */
-
-	static constexpr SampleFormat probe_formats[] = {
-		SampleFormat::S24_P32,
-		SampleFormat::S32,
-		SampleFormat::S16,
-		SampleFormat::S8,
-		SampleFormat::UNDEFINED,
-	};
-
-	for (unsigned i = 0;
-	     err == -EINVAL && probe_formats[i] != SampleFormat::UNDEFINED;
-	     ++i) {
-		const SampleFormat mpd_format = probe_formats[i];
-		if (mpd_format == audio_format.format)
-			continue;
-
-		err = AlsaTryFormat(pcm, hwparams, mpd_format, params);
-		if (err == 0)
-			audio_format.format = mpd_format;
-	}
-
-	return err;
-}
-
-/**
- * Wrapper for snd_pcm_hw_params().
- *
- * @param buffer_time the configured buffer time, or 0 if not configured
- * @param period_time the configured period time, or 0 if not configured
- * @param audio_format an #AudioFormat to be configured (or modified)
- * by this function
- * @param params to be modified by this function
- */
-static void
-AlsaSetupHw(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
-	    unsigned buffer_time, unsigned period_time,
-	    AudioFormat &audio_format, PcmExport::Params &params)
-{
-	int err;
-	unsigned retry = MPD_ALSA_RETRY_NR;
-	unsigned int period_time_ro = period_time;
-
-configure_hw:
-	/* configure HW params */
-	err = snd_pcm_hw_params_any(pcm, hwparams);
-	if (err < 0)
-		throw FormatRuntimeError("snd_pcm_hw_params_any() failed: %s",
-					 snd_strerror(-err));
-
-	err = snd_pcm_hw_params_set_access(pcm, hwparams,
-					   SND_PCM_ACCESS_RW_INTERLEAVED);
-	if (err < 0)
-		throw FormatRuntimeError("snd_pcm_hw_params_set_access() failed: %s",
-					 snd_strerror(-err));
-
-	err = AlsaSetupFormat(pcm, hwparams, audio_format, params);
-	if (err < 0)
-		throw FormatRuntimeError("Failed to configure format %s: %s",
-					 sample_format_to_string(audio_format.format),
-					 snd_strerror(-err));
-
-	unsigned int channels = audio_format.channels;
-	err = snd_pcm_hw_params_set_channels_near(pcm, hwparams,
-						  &channels);
-	if (err < 0)
-		throw FormatRuntimeError("Failed to configure %i channels: %s",
-					 (int)audio_format.channels,
-					 snd_strerror(-err));
-
-	audio_format.channels = (int8_t)channels;
-
-	const unsigned requested_sample_rate =
-		params.CalcOutputSampleRate(audio_format.sample_rate);
-	unsigned output_sample_rate = requested_sample_rate;
-
-	err = snd_pcm_hw_params_set_rate_near(pcm, hwparams,
-					      &output_sample_rate, nullptr);
-	if (err < 0)
-		throw FormatRuntimeError("Failed to configure sample rate %u Hz: %s",
-					 requested_sample_rate,
-					 snd_strerror(-err));
-
-	if (output_sample_rate == 0)
-		throw FormatRuntimeError("Failed to configure sample rate %u Hz",
-					 audio_format.sample_rate);
-
-	if (output_sample_rate != requested_sample_rate)
-		audio_format.sample_rate = params.CalcInputSampleRate(output_sample_rate);
-
-	snd_pcm_uframes_t buffer_size_min, buffer_size_max;
-	snd_pcm_hw_params_get_buffer_size_min(hwparams, &buffer_size_min);
-	snd_pcm_hw_params_get_buffer_size_max(hwparams, &buffer_size_max);
-	unsigned buffer_time_min, buffer_time_max;
-	snd_pcm_hw_params_get_buffer_time_min(hwparams, &buffer_time_min, 0);
-	snd_pcm_hw_params_get_buffer_time_max(hwparams, &buffer_time_max, 0);
-	FormatDebug(alsa_output_domain, "buffer: size=%u..%u time=%u..%u",
-		    (unsigned)buffer_size_min, (unsigned)buffer_size_max,
-		    buffer_time_min, buffer_time_max);
-
-	snd_pcm_uframes_t period_size_min, period_size_max;
-	snd_pcm_hw_params_get_period_size_min(hwparams, &period_size_min, 0);
-	snd_pcm_hw_params_get_period_size_max(hwparams, &period_size_max, 0);
-	unsigned period_time_min, period_time_max;
-	snd_pcm_hw_params_get_period_time_min(hwparams, &period_time_min, 0);
-	snd_pcm_hw_params_get_period_time_max(hwparams, &period_time_max, 0);
-	FormatDebug(alsa_output_domain, "period: size=%u..%u time=%u..%u",
-		    (unsigned)period_size_min, (unsigned)period_size_max,
-		    period_time_min, period_time_max);
-
-	if (buffer_time > 0) {
-		err = snd_pcm_hw_params_set_buffer_time_near(pcm, hwparams,
-							     &buffer_time, nullptr);
-		if (err < 0)
-			throw FormatRuntimeError("snd_pcm_hw_params_set_buffer_time_near() failed: %s",
-						 snd_strerror(-err));
-	} else {
-		err = snd_pcm_hw_params_get_buffer_time(hwparams, &buffer_time,
-							nullptr);
-		if (err < 0)
-			buffer_time = 0;
-	}
-
-	if (period_time_ro == 0 && buffer_time >= 10000) {
-		period_time_ro = period_time = buffer_time / 4;
-
-		FormatDebug(alsa_output_domain,
-			    "default period_time = buffer_time/4 = %u/4 = %u",
-			    buffer_time, period_time);
-	}
-
-	if (period_time_ro > 0) {
-		period_time = period_time_ro;
-		err = snd_pcm_hw_params_set_period_time_near(pcm, hwparams,
-							     &period_time, nullptr);
-		if (err < 0)
-			throw FormatRuntimeError("snd_pcm_hw_params_set_period_time_near() failed: %s",
-						 snd_strerror(-err));
-	}
-
-	err = snd_pcm_hw_params(pcm, hwparams);
-	if (err == -EPIPE && --retry > 0 && period_time_ro > 0) {
-		period_time_ro = period_time_ro >> 1;
-		goto configure_hw;
-	} else if (err < 0)
-		throw FormatRuntimeError("snd_pcm_hw_params() failed: %s",
-					 snd_strerror(-err));
-	if (retry != MPD_ALSA_RETRY_NR)
-		FormatDebug(alsa_output_domain,
-			    "ALSA period_time set to %d", period_time);
-}
-
-/**
  * Wrapper for snd_pcm_sw_params().
  */
 static void
@@ -876,38 +392,22 @@ inline void
 AlsaOutput::Setup(AudioFormat &audio_format,
 		  PcmExport::Params &params)
 {
-	snd_pcm_hw_params_t *hwparams;
-	snd_pcm_hw_params_alloca(&hwparams);
+	const auto hw_result = Alsa::SetupHw(pcm,
+					     buffer_time, period_time,
+					     audio_format, params);
 
-	AlsaSetupHw(pcm, hwparams,
-		    buffer_time, period_time,
-		    audio_format, params);
-
-	snd_pcm_format_t format;
-	if (snd_pcm_hw_params_get_format(hwparams, &format) == 0)
-		FormatDebug(alsa_output_domain,
-			    "format=%s (%s)", snd_pcm_format_name(format),
-			    snd_pcm_format_description(format));
-
-	snd_pcm_uframes_t alsa_buffer_size;
-	int err = snd_pcm_hw_params_get_buffer_size(hwparams, &alsa_buffer_size);
-	if (err < 0)
-		throw FormatRuntimeError("snd_pcm_hw_params_get_buffer_size() failed: %s",
-					 snd_strerror(-err));
-
-	snd_pcm_uframes_t alsa_period_size;
-	err = snd_pcm_hw_params_get_period_size(hwparams, &alsa_period_size,
-						nullptr);
-	if (err < 0)
-		throw FormatRuntimeError("snd_pcm_hw_params_get_period_size() failed: %s",
-					 snd_strerror(-err));
-
-	AlsaSetupSw(pcm, alsa_buffer_size - alsa_period_size,
-		    alsa_period_size);
+	FormatDebug(alsa_output_domain, "format=%s (%s)",
+		    snd_pcm_format_name(hw_result.format),
+		    snd_pcm_format_description(hw_result.format));
 
 	FormatDebug(alsa_output_domain, "buffer_size=%u period_size=%u",
-		    (unsigned)alsa_buffer_size, (unsigned)alsa_period_size);
+		    (unsigned)hw_result.buffer_size,
+		    (unsigned)hw_result.period_size);
 
+	AlsaSetupSw(pcm, hw_result.buffer_size - hw_result.period_size,
+		    hw_result.period_size);
+
+	auto alsa_period_size = hw_result.period_size;
 	if (alsa_period_size == 0)
 		/* this works around a SIGFPE bug that occurred when
 		   an ALSA driver indicated period_size==0; this
@@ -919,7 +419,7 @@ AlsaOutput::Setup(AudioFormat &audio_format,
 	period_frames = alsa_period_size;
 
 	silence = new uint8_t[snd_pcm_frames_to_bytes(pcm, alsa_period_size)];
-	snd_pcm_format_set_silence(format, silence,
+	snd_pcm_format_set_silence(hw_result.format, silence,
 				   alsa_period_size * audio_format.channels);
 
 }
@@ -1044,7 +544,9 @@ AlsaOutput::Open(AudioFormat &audio_format)
 			 audio_format.channels,
 			 params);
 
+#ifndef NDEBUG
 	in_frame_size = audio_format.GetFrameSize();
+#endif
 	out_frame_size = pcm_export->GetFrameSize(audio_format);
 
 	drain = false;
@@ -1062,7 +564,7 @@ AlsaOutput::Open(AudioFormat &audio_format)
 }
 
 inline int
-AlsaOutput::Recover(int err)
+AlsaOutput::Recover(int err) noexcept
 {
 	if (err == -EPIPE) {
 		FormatDebug(alsa_output_domain,
@@ -1106,7 +608,7 @@ AlsaOutput::Recover(int err)
 }
 
 inline bool
-AlsaOutput::DrainInternal()
+AlsaOutput::DrainInternal() noexcept
 {
 	if (snd_pcm_state(pcm) != SND_PCM_STATE_RUNNING) {
 		CancelInternal();
@@ -1163,7 +665,7 @@ AlsaOutput::Drain()
 }
 
 inline void
-AlsaOutput::CancelInternal()
+AlsaOutput::CancelInternal() noexcept
 {
 	must_prepare = true;
 

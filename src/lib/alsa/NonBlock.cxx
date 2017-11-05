@@ -23,7 +23,7 @@
 
 std::chrono::steady_clock::duration
 PrepareAlsaPcmSockets(MultiSocketMonitor &m, snd_pcm_t *pcm,
-		      ReusableArray<pollfd> &pfd_buffer)
+		      ReusableArray<pollfd> &pfd_buffer) noexcept
 {
 	int count = snd_pcm_poll_descriptors_count(pcm);
 	if (count <= 0) {
@@ -43,7 +43,7 @@ PrepareAlsaPcmSockets(MultiSocketMonitor &m, snd_pcm_t *pcm,
 
 std::chrono::steady_clock::duration
 PrepareAlsaMixerSockets(MultiSocketMonitor &m, snd_mixer_t *mixer,
-			ReusableArray<pollfd> &pfd_buffer)
+			ReusableArray<pollfd> &pfd_buffer) noexcept
 {
 	int count = snd_mixer_poll_descriptors_count(mixer);
 	if (count <= 0) {

@@ -27,16 +27,16 @@ struct TwoPointers {
 	V *dest;
 	const V *src;
 
-	TwoPointers<V> &CopyOne() {
+	TwoPointers<V> &CopyOne() noexcept {
 		*dest++ = *src++;
 		return *this;
 	}
 
-	TwoPointers<V> &CopyTwo() {
+	TwoPointers<V> &CopyTwo() noexcept {
 		return CopyOne().CopyOne();
 	}
 
-	TwoPointers<V> &SwapTwoPairs() {
+	TwoPointers<V> &SwapTwoPairs() noexcept {
 		*dest++ = src[2];
 		*dest++ = src[3];
 		*dest++ = src[0];
@@ -45,12 +45,12 @@ struct TwoPointers {
 		return *this;
 	}
 
-	TwoPointers<V> &ToAlsa51() {
+	TwoPointers<V> &ToAlsa51() noexcept {
 		return CopyTwo() // left+right
 			.SwapTwoPairs(); // center, LFE, surround left+right
 	}
 
-	TwoPointers<V> &ToAlsa71() {
+	TwoPointers<V> &ToAlsa71() noexcept {
 		return ToAlsa51()
 			.CopyTwo(); // side left+right
 	}
@@ -58,7 +58,7 @@ struct TwoPointers {
 
 template<typename V>
 static void
-ToAlsaChannelOrder51(V *dest, const V *src, size_t n)
+ToAlsaChannelOrder51(V *dest, const V *src, size_t n) noexcept
 {
 	TwoPointers<V> p{dest, src};
 	for (size_t i = 0; i != n; ++i)
@@ -67,7 +67,7 @@ ToAlsaChannelOrder51(V *dest, const V *src, size_t n)
 
 template<typename V>
 static inline ConstBuffer<V>
-ToAlsaChannelOrder51(PcmBuffer &buffer, ConstBuffer<V> src)
+ToAlsaChannelOrder51(PcmBuffer &buffer, ConstBuffer<V> src) noexcept
 {
 	auto dest = buffer.GetT<V>(src.size);
 	ToAlsaChannelOrder51(dest, src.data, src.size / 6);
@@ -76,7 +76,7 @@ ToAlsaChannelOrder51(PcmBuffer &buffer, ConstBuffer<V> src)
 
 template<typename V>
 static void
-ToAlsaChannelOrder71(V *dest, const V *src, size_t n)
+ToAlsaChannelOrder71(V *dest, const V *src, size_t n) noexcept
 {
 	TwoPointers<V> p{dest, src};
 	for (size_t i = 0; i != n; ++i)
@@ -85,7 +85,7 @@ ToAlsaChannelOrder71(V *dest, const V *src, size_t n)
 
 template<typename V>
 static inline ConstBuffer<V>
-ToAlsaChannelOrder71(PcmBuffer &buffer, ConstBuffer<V> src)
+ToAlsaChannelOrder71(PcmBuffer &buffer, ConstBuffer<V> src) noexcept
 {
 	auto dest = buffer.GetT<V>(src.size);
 	ToAlsaChannelOrder71(dest, src.data, src.size / 6);
@@ -94,7 +94,8 @@ ToAlsaChannelOrder71(PcmBuffer &buffer, ConstBuffer<V> src)
 
 template<typename V>
 static ConstBuffer<V>
-ToAlsaChannelOrderT(PcmBuffer &buffer, ConstBuffer<V> src, unsigned channels)
+ToAlsaChannelOrderT(PcmBuffer &buffer, ConstBuffer<V> src,
+		    unsigned channels) noexcept
 {
 	switch (channels) {
 	case 6: // 5.1
@@ -110,7 +111,7 @@ ToAlsaChannelOrderT(PcmBuffer &buffer, ConstBuffer<V> src, unsigned channels)
 
 ConstBuffer<void>
 ToAlsaChannelOrder(PcmBuffer &buffer, ConstBuffer<void> src,
-		   SampleFormat sample_format, unsigned channels)
+		   SampleFormat sample_format, unsigned channels) noexcept
 {
 	switch (sample_format) {
 	case SampleFormat::UNDEFINED:

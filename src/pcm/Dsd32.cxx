@@ -26,7 +26,7 @@
  * Construct a 32 bit integer from four bytes.
  */
 static constexpr inline uint32_t
-Construct32(uint8_t a, uint8_t b, uint8_t c, uint8_t d)
+Construct32(uint8_t a, uint8_t b, uint8_t c, uint8_t d) noexcept
 {
 	/* "a" is the oldest byte, which must be in the most
 	   significant byte */
@@ -36,14 +36,15 @@ Construct32(uint8_t a, uint8_t b, uint8_t c, uint8_t d)
 }
 
 static constexpr inline uint32_t
-Dsd8To32Sample(const uint8_t *src, unsigned channels)
+Dsd8To32Sample(const uint8_t *src, unsigned channels) noexcept
 {
 	return Construct32(src[0], src[channels],
 			   src[2 * channels], src[3 * channels]);
 }
 
 ConstBuffer<uint32_t>
-Dsd8To32(PcmBuffer &buffer, unsigned channels, ConstBuffer<uint8_t> _src)
+Dsd8To32(PcmBuffer &buffer, unsigned channels,
+	 ConstBuffer<uint8_t> _src) noexcept
 {
 	const size_t in_frames = _src.size / channels;
 	const size_t out_frames = in_frames / 4;

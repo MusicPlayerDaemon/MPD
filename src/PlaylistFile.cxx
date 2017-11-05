@@ -207,13 +207,12 @@ try {
 			continue;
 
 #ifdef _UNICODE
-		wchar_t buffer[MAX_PATH];
-		auto result = MultiByteToWideChar(CP_ACP, 0, s, -1,
-						  buffer, ARRAY_SIZE(buffer));
-		if (result <= 0)
+		/* on Windows, playlists always contain UTF-8, because
+		   its "narrow" charset (i.e. CP_ACP) is incapable of
+		   storing all Unicode paths */
+		const auto path = AllocatedPath::FromUTF8(s);
+		if (path.IsNull())
 			continue;
-
-		const Path path = Path::FromFS(buffer);
 #else
 		const Path path = Path::FromFS(s);
 #endif
