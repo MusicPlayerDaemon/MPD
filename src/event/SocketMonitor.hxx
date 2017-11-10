@@ -61,7 +61,7 @@ public:
 
 	typedef std::make_signed<size_t>::type ssize_t;
 
-	SocketMonitor(EventLoop &_loop)
+	explicit SocketMonitor(EventLoop &_loop)
 		:loop(_loop) {}
 
 	SocketMonitor(SocketDescriptor _fd, EventLoop &_loop)
