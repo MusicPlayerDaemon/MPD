@@ -31,7 +31,7 @@
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
 #include "event/ServerSocket.hxx"
-#include "event/DeferredMonitor.hxx"
+#include "event/DeferEvent.hxx"
 #include "util/Cast.hxx"
 #include "Compiler.h"
 
@@ -48,7 +48,7 @@ class PreparedEncoder;
 class Encoder;
 struct Tag;
 
-class HttpdOutput final : AudioOutput, ServerSocket, DeferredMonitor {
+class HttpdOutput final : AudioOutput, ServerSocket {
 	/**
 	 * True if the audio output is open and accepts client
 	 * connections.
@@ -114,6 +114,8 @@ private:
 	 */
 	std::queue<PagePtr, std::list<PagePtr>> pages;
 
+	DeferEvent defer_broadcast;
+
  public:
 	/**
 	 * The configured name.
@@ -157,7 +159,7 @@ public:
 		return new HttpdOutput(event_loop, block);
 	}
 
-	using DeferredMonitor::GetEventLoop;
+	using ServerSocket::GetEventLoop;
 
 	void Bind();
 	void Unbind();
@@ -255,7 +257,8 @@ public:
 	bool Pause() override;
 
 private:
-	virtual void RunDeferred() override;
+	/* DeferEvent callback */
+	void OnDeferredBroadcast() noexcept;
 
 	void OnAccept(UniqueSocketDescriptor fd,
 		      SocketAddress address, int uid) override;

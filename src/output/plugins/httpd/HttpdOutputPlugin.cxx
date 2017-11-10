@@ -51,7 +51,8 @@ const Domain httpd_output_domain("httpd_output");
 inline
 HttpdOutput::HttpdOutput(EventLoop &_loop, const ConfigBlock &block)
 	:AudioOutput(FLAG_ENABLE_DISABLE|FLAG_PAUSE),
-	 ServerSocket(_loop), DeferredMonitor(_loop)
+	 ServerSocket(_loop),
+	 defer_broadcast(_loop, BIND_THIS_METHOD(OnDeferredBroadcast))
 {
 	/* read configuration */
 	name = block.GetBlockValue("name", "Set name in config");
@@ -128,7 +129,7 @@ HttpdOutput::AddClient(UniqueSocketDescriptor fd)
 }
 
 void
-HttpdOutput::RunDeferred()
+HttpdOutput::OnDeferredBroadcast() noexcept
 {
 	/* this method runs in the IOThread; it broadcasts pages from
 	   our own queue to all clients */
@@ -258,7 +259,7 @@ HttpdOutput::Close() noexcept
 	delete timer;
 
 	BlockingCall(GetEventLoop(), [this](){
-			DeferredMonitor::Cancel();
+			defer_broadcast.Cancel();
 
 			const std::lock_guard<Mutex> protect(mutex);
 			open = false;
@@ -317,7 +318,7 @@ HttpdOutput::BroadcastPage(PagePtr page)
 		pages.emplace(std::move(page));
 	}
 
-	DeferredMonitor::Schedule();
+	defer_broadcast.Schedule();
 }
 
 void
@@ -340,7 +341,7 @@ HttpdOutput::BroadcastFromEncoder()
 	}
 
 	if (!empty)
-		DeferredMonitor::Schedule();
+		defer_broadcast.Schedule();
 }
 
 inline void
