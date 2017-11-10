@@ -46,7 +46,7 @@ class HttpdClient final
 	/**
 	 * The current state of the client.
 	 */
-	enum {
+	enum class State {
 		/** reading the request line */
 		REQUEST,
 
@@ -55,7 +55,7 @@ class HttpdClient final
 
 		/** sending the HTTP response */
 		RESPONSE,
-	} state = REQUEST;
+	} state = State::REQUEST;
 
 	/**
 	 * A queue of #Page objects to be sent to the client.
@@ -160,7 +160,7 @@ public:
 	bool HandleLine(const char *line);
 
 	/**
-	 * Switch the client to the "RESPONSE" state.
+	 * Switch the client to #State::RESPONSE.
 	 */
 	void BeginResponse();
 

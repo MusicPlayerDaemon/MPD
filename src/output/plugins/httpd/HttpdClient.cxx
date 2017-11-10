@@ -54,9 +54,9 @@ HttpdClient::LockClose()
 void
 HttpdClient::BeginResponse()
 {
-	assert(state != RESPONSE);
+	assert(state != State::RESPONSE);
 
-	state = RESPONSE;
+	state = State::RESPONSE;
 	current_page = nullptr;
 
 	if (!head_method)
@@ -69,9 +69,9 @@ HttpdClient::BeginResponse()
 bool
 HttpdClient::HandleLine(const char *line)
 {
-	assert(state != RESPONSE);
+	assert(state != State::RESPONSE);
 
-	if (state == REQUEST) {
+	if (state == State::REQUEST) {
 		if (memcmp(line, "HEAD /", 6) == 0) {
 			line += 6;
 			head_method = true;
@@ -96,7 +96,7 @@ HttpdClient::HandleLine(const char *line)
 		}
 
 		/* after the request line, request headers follow */
-		state = HEADERS;
+		state = State::HEADERS;
 		return true;
 	} else {
 		if (*line == 0) {
@@ -137,7 +137,7 @@ HttpdClient::SendResponse()
 	AllocatedString<> allocated = nullptr;
 	const char *response;
 
-	assert(state == RESPONSE);
+	assert(state == State::RESPONSE);
 
 	if (dlna_streaming_requested) {
 		snprintf(buffer, sizeof(buffer),
@@ -198,7 +198,7 @@ HttpdClient::HttpdClient(HttpdOutput &_httpd, UniqueSocketDescriptor _fd,
 void
 HttpdClient::ClearQueue()
 {
-	assert(state == RESPONSE);
+	assert(state == State::RESPONSE);
 
 	while (!pages.empty()) {
 #ifndef NDEBUG
@@ -216,7 +216,7 @@ HttpdClient::ClearQueue()
 void
 HttpdClient::CancelQueue()
 {
-	if (state != RESPONSE)
+	if (state != State::RESPONSE)
 		return;
 
 	ClearQueue();
@@ -257,7 +257,7 @@ HttpdClient::TryWrite()
 {
 	const std::lock_guard<Mutex> protect(httpd.mutex);
 
-	assert(state == RESPONSE);
+	assert(state == State::RESPONSE);
 
 	if (current_page == nullptr) {
 		if (pages.empty()) {
@@ -369,7 +369,7 @@ HttpdClient::TryWrite()
 void
 HttpdClient::PushPage(PagePtr page)
 {
-	if (state != RESPONSE)
+	if (state != State::RESPONSE)
 		/* the client is still writing the HTTP request */
 		return;
 
@@ -410,7 +410,7 @@ HttpdClient::OnSocketReady(unsigned flags) noexcept
 BufferedSocket::InputResult
 HttpdClient::OnSocketInput(void *data, size_t length)
 {
-	if (state == RESPONSE) {
+	if (state == State::RESPONSE) {
 		LogWarning(httpd_output_domain,
 			   "unexpected input from client");
 		LockClose();
@@ -435,7 +435,7 @@ HttpdClient::OnSocketInput(void *data, size_t length)
 		return InputResult::CLOSED;
 	}
 
-	if (state == RESPONSE) {
+	if (state == State::RESPONSE) {
 		if (!SendResponse())
 			return InputResult::CLOSED;
 
