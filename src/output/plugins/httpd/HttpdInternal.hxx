@@ -61,7 +61,7 @@ class HttpdOutput final : AudioOutput, ServerSocket, DeferredMonitor {
 	 * The configured encoder plugin.
 	 */
 	PreparedEncoder *prepared_encoder = nullptr;
-	Encoder *encoder;
+	Encoder *encoder = nullptr;
 
 	/**
 	 * Number of bytes which were fed into the encoder, without
@@ -69,7 +69,7 @@ class HttpdOutput final : AudioOutput, ServerSocket, DeferredMonitor {
 	 * whether MPD should manually flush the encoder, to avoid
 	 * buffer underruns in the client.
 	 */
-	size_t unflushed_input;
+	size_t unflushed_input = 0;
 
 public:
 	/**

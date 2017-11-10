@@ -51,9 +51,7 @@ const Domain httpd_output_domain("httpd_output");
 inline
 HttpdOutput::HttpdOutput(EventLoop &_loop, const ConfigBlock &block)
 	:AudioOutput(FLAG_ENABLE_DISABLE|FLAG_PAUSE),
-	 ServerSocket(_loop), DeferredMonitor(_loop),
-	 encoder(nullptr), unflushed_input(0),
-	 metadata(nullptr)
+	 ServerSocket(_loop), DeferredMonitor(_loop)
 {
 	/* read configuration */
 	name = block.GetBlockValue("name", "Set name in config");

@@ -55,7 +55,7 @@ class HttpdClient final
 
 		/** sending the HTTP response */
 		RESPONSE,
-	} state;
+	} state = REQUEST;
 
 	/**
 	 * A queue of #Page objects to be sent to the client.
@@ -65,7 +65,7 @@ class HttpdClient final
 	/**
 	 * The sum of all page sizes in #pages.
 	 */
-	size_t queue_size;
+	size_t queue_size = 0;
 
 	/**
 	 * The #page which is currently being sent to the client.
@@ -81,12 +81,12 @@ class HttpdClient final
 	/**
 	 * Is this a HEAD request?
 	 */
-	bool head_method;
+	bool head_method = false;
 
 	/**
          * If DLNA streaming was an option.
          */
-	bool dlna_streaming_requested;
+	bool dlna_streaming_requested = false;
 
 	/* ICY */
 
@@ -99,17 +99,17 @@ class HttpdClient final
 	/**
 	 * If we should sent icy metadata.
 	 */
-	bool metadata_requested;
+	bool metadata_requested = false;
 
 	/**
 	 * If the current metadata was already sent to the client.
 	 */
-	bool metadata_sent;
+	bool metadata_sent = false;
 
 	/**
 	 * The amount of streaming data between each metadata block
 	 */
-	unsigned metaint;
+	unsigned metaint = 8192; /*TODO: just a std value */
 
 	/**
 	 * The metadata as #Page which is currently being sent to the client.
@@ -119,13 +119,13 @@ class HttpdClient final
 	/*
 	 * The amount of bytes which were already sent from the metadata.
 	 */
-	size_t metadata_current_position;
+	size_t metadata_current_position = 0;
 
 	/**
 	 * The amount of streaming data sent to the client
 	 * since the last icy information was sent.
 	 */
-	unsigned metadata_fill;
+	unsigned metadata_fill = 0;
 
 public:
 	/**

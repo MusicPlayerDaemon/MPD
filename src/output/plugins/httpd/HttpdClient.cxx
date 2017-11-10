@@ -191,15 +191,7 @@ HttpdClient::HttpdClient(HttpdOutput &_httpd, UniqueSocketDescriptor _fd,
 			 bool _metadata_supported)
 	:BufferedSocket(_fd.Release(), _loop),
 	 httpd(_httpd),
-	 state(REQUEST),
-	 queue_size(0),
-	 head_method(false),
-	 dlna_streaming_requested(false),
-	 metadata_supported(_metadata_supported),
-	 metadata_requested(false), metadata_sent(true),
-	 metaint(8192), /*TODO: just a std value */
-	 metadata(nullptr),
-	 metadata_current_position(0), metadata_fill(0)
+	 metadata_supported(_metadata_supported)
 {
 }
 
