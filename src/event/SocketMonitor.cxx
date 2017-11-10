@@ -95,32 +95,3 @@ SocketMonitor::Schedule(unsigned flags) noexcept
 
 	scheduled_flags = flags;
 }
-
-SocketMonitor::ssize_t
-SocketMonitor::Read(void *data, size_t length) noexcept
-{
-	assert(IsDefined());
-
-	int flags = 0;
-#ifdef MSG_DONTWAIT
-	flags |= MSG_DONTWAIT;
-#endif
-
-	return recv(GetSocket().Get(), (char *)data, length, flags);
-}
-
-SocketMonitor::ssize_t
-SocketMonitor::Write(const void *data, size_t length) noexcept
-{
-	assert(IsDefined());
-
-	int flags = 0;
-#ifdef MSG_NOSIGNAL
-	flags |= MSG_NOSIGNAL;
-#endif
-#ifdef MSG_DONTWAIT
-	flags |= MSG_DONTWAIT;
-#endif
-
-	return send(GetSocket().Get(), (const char *)data, length, flags);
-}

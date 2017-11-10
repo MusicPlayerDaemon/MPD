@@ -173,7 +173,7 @@ HttpdClient::SendResponse()
 		response = buffer;
 	}
 
-	ssize_t nbytes = SocketMonitor::Write(response, strlen(response));
+	ssize_t nbytes = GetSocket().Write(response, strlen(response));
 	if (gcc_unlikely(nbytes < 0)) {
 		const SocketErrorMessage msg;
 		FormatWarning(httpd_output_domain,
@@ -238,15 +238,15 @@ HttpdClient::TryWritePage(const Page &page, size_t position)
 {
 	assert(position < page.GetSize());
 
-	return Write(page.GetData() + position,
-		     page.GetSize() - position);
+	return GetSocket().Write(page.GetData() + position,
+				 page.GetSize() - position);
 }
 
 ssize_t
 HttpdClient::TryWritePageN(const Page &page, size_t position, ssize_t n)
 {
 	return n >= 0
-		? Write(page.GetData() + position, n)
+		? GetSocket().Write(page.GetData() + position, n)
 		: TryWritePage(page, position);
 }
 
@@ -315,7 +315,7 @@ HttpdClient::TryWrite()
 		} else {
 			char empty_data = 0;
 
-			ssize_t nbytes = Write(&empty_data, 1);
+			ssize_t nbytes = GetSocket().Write(&empty_data, 1);
 			if (nbytes < 0) {
 				auto e = GetSocketError();
 				if (IsSocketErrorAgain(e))

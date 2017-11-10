@@ -45,7 +45,6 @@ public:
 
 	using SocketMonitor::IsDefined;
 	using SocketMonitor::Close;
-	using SocketMonitor::Write;
 
 private:
 	ssize_t DirectRead(void *data, size_t length);

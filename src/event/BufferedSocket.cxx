@@ -27,7 +27,7 @@
 BufferedSocket::ssize_t
 BufferedSocket::DirectRead(void *data, size_t length)
 {
-	const auto nbytes = SocketMonitor::Read((char *)data, length);
+	const auto nbytes = GetSocket().Read((char *)data, length);
 	if (gcc_likely(nbytes > 0))
 		return nbytes;
 

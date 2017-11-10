@@ -126,9 +126,6 @@ public:
 		Schedule(GetScheduledFlags() & ~WRITE);
 	}
 
-	ssize_t Read(void *data, size_t length) noexcept;
-	ssize_t Write(const void *data, size_t length) noexcept;
-
 protected:
 	/**
 	 * @return false if the socket has been closed
