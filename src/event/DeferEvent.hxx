@@ -30,7 +30,7 @@
  * This class is thread-safe.
  */
 class DeferEvent final : DeferredMonitor {
-	typedef BoundMethod<void()> Callback;
+	typedef BoundMethod<void() noexcept> Callback;
 	const Callback callback;
 
 public:
@@ -42,7 +42,7 @@ public:
 	using DeferredMonitor::Cancel;
 
 private:
-	void RunDeferred() override {
+	void RunDeferred() noexcept override {
 		callback();
 	}
 };
