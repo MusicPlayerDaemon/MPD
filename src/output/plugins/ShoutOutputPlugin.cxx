@@ -117,34 +117,6 @@ ShoutOutput::ShoutOutput(const ConfigBlock &block)
 
 	const char *user = block.GetBlockValue("user", "source");
 
-	float quality = -2.0;
-	int bitrate = -1;
-
-	const char *value = block.GetBlockValue("quality");
-	if (value != nullptr) {
-		char *test;
-		quality = strtod(value, &test);
-
-		if (*test != '\0' || quality < -1.0 || quality > 10.0)
-			throw FormatRuntimeError("shout quality \"%s\" is not a number in the "
-						 "range -1 to 10",
-						 value);
-
-		if (block.GetBlockValue("bitrate") != nullptr)
-			throw std::runtime_error("quality and bitrate are "
-						 "both defined");
-	} else {
-		value = block.GetBlockValue("bitrate");
-		if (value == nullptr)
-			throw std::runtime_error("neither bitrate nor quality defined");
-
-		char *test;
-		bitrate = strtol(value, &test, 10);
-
-		if (*test != '\0' || bitrate <= 0)
-			throw std::runtime_error("bitrate must be a positive integer");
-	}
-
 	const char *const mime_type = prepared_encoder->GetMimeType();
 
 	unsigned shout_format;
@@ -154,7 +126,7 @@ ShoutOutput::ShoutOutput(const ConfigBlock &block)
 		shout_format = SHOUT_FORMAT_OGG;
 
 	unsigned protocol;
-	value = block.GetBlockValue("protocol");
+	const char *value = block.GetBlockValue("protocol");
 	if (value != nullptr) {
 		if (0 == strcmp(value, "shoutcast") &&
 		    !StringIsEqual(mime_type, "audio/mpeg"))
@@ -202,18 +174,13 @@ ShoutOutput::ShoutOutput(const ConfigBlock &block)
 	if (value != nullptr && shout_set_url(shout_conn, value))
 		throw std::runtime_error(shout_get_error(shout_conn));
 
-	{
-		char temp[11];
-		if (quality >= -1.0) {
-			snprintf(temp, sizeof(temp), "%2.2f", quality);
-			shout_set_audio_info(shout_conn, SHOUT_AI_QUALITY,
-					     temp);
-		} else {
-			snprintf(temp, sizeof(temp), "%d", bitrate);
-			shout_set_audio_info(shout_conn, SHOUT_AI_BITRATE,
-					     temp);
-		}
-	}
+	value = block.GetBlockValue("quality");
+	if (value != nullptr)
+		shout_set_audio_info(shout_conn, SHOUT_AI_QUALITY, value);
+
+	value = block.GetBlockValue("bitrate");
+	if (value != nullptr)
+		shout_set_audio_info(shout_conn, SHOUT_AI_BITRATE, value);
 }
 
 ShoutOutput::~ShoutOutput()
