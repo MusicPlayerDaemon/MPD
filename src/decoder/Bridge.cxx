@@ -496,7 +496,7 @@ DecoderBridge::SubmitData(InputStream *is,
 				     SongTime::FromS(timestamp) -
 				     dc.song->GetStartTime(),
 				     kbit_rate);
-		if (dest.IsEmpty()) {
+		if (dest.empty()) {
 			/* the chunk is full, flush it */
 			FlushChunk();
 			continue;

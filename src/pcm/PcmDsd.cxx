@@ -48,7 +48,7 @@ ConstBuffer<float>
 PcmDsd::ToFloat(unsigned channels, ConstBuffer<uint8_t> src)
 {
 	assert(!src.IsNull());
-	assert(!src.IsEmpty());
+	assert(!src.empty());
 	assert(src.size % channels == 0);
 	assert(channels <= dsd2pcm.max_size());
 

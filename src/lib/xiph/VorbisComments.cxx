@@ -71,7 +71,7 @@ vorbis_scan_comment(const char *comment,
 {
 	if (handler.pair != nullptr) {
 		const DivideString split(comment, '=');
-		if (split.IsDefined() && !split.IsEmpty())
+		if (split.IsDefined() && !split.empty())
 			tag_handler_invoke_pair(handler, handler_ctx,
 						split.GetFirst(),
 						split.GetSecond());
@@ -104,7 +104,7 @@ vorbis_comments_to_tag(char **comments)
 {
 	TagBuilder tag_builder;
 	vorbis_comments_scan(comments, add_tag_handler, &tag_builder);
-	return tag_builder.IsEmpty()
+	return tag_builder.empty()
 		? nullptr
 		: tag_builder.CommitNew();
 }

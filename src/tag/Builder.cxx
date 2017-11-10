@@ -191,7 +191,7 @@ TagBuilder::Complement(const Tag &other)
 inline void
 TagBuilder::AddItemInternal(TagType type, StringView value)
 {
-	assert(!value.IsEmpty());
+	assert(!value.empty());
 
 	auto f = FixTagString(value);
 	if (!f.IsNull())
@@ -209,7 +209,7 @@ TagBuilder::AddItemInternal(TagType type, StringView value)
 void
 TagBuilder::AddItem(TagType type, StringView value)
 {
-	if (value.IsEmpty() || !IsTagEnabled(type))
+	if (value.empty() || !IsTagEnabled(type))
 		return;
 
 	AddItemInternal(type, value);

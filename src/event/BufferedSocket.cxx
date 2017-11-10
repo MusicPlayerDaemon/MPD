@@ -53,7 +53,7 @@ BufferedSocket::ReadToBuffer()
 	assert(IsDefined());
 
 	const auto buffer = input.Write();
-	assert(!buffer.IsEmpty());
+	assert(!buffer.empty());
 
 	const auto nbytes = DirectRead(buffer.data, buffer.size);
 	if (nbytes > 0)
@@ -69,7 +69,7 @@ BufferedSocket::ResumeInput()
 
 	while (true) {
 		const auto buffer = input.Read();
-		if (buffer.IsEmpty()) {
+		if (buffer.empty()) {
 			ScheduleRead();
 			return true;
 		}

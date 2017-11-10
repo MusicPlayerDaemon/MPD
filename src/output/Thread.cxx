@@ -259,7 +259,7 @@ AudioOutputControl::PlayChunk() noexcept
 
 	while (command == Command::NONE) {
 		const auto data = source.PeekData();
-		if (data.IsEmpty())
+		if (data.empty())
 			break;
 
 		if (skip_delay)

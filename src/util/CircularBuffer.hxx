@@ -90,7 +90,7 @@ public:
 		return capacity;
 	}
 
-	constexpr bool IsEmpty() const {
+	constexpr bool empty() const {
 		return head == tail;
 	}
 

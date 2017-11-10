@@ -801,7 +801,7 @@ ProxyDatabase::VisitUniqueTags(const DatabaseSelection &selection,
 		TagBuilder tag;
 		tag.AddItem(tag_type, pair->value);
 
-		if (tag.IsEmpty())
+		if (tag.empty())
 			/* if no tag item has been added, then the
 			   given value was not acceptable
 			   (e.g. empty); forcefully insert an empty

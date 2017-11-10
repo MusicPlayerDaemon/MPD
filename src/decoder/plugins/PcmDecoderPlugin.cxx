@@ -44,7 +44,7 @@ FillBuffer(DecoderClient &client, InputStream &is, B &buffer)
 {
 	buffer.Shift();
 	auto w = buffer.Write();
-	if (w.IsEmpty())
+	if (w.empty())
 		return true;
 
 	size_t nbytes = decoder_read(client, is, w.data, w.size);
@@ -185,7 +185,7 @@ pcm_stream_decode(DecoderClient &client, InputStream &is)
 			r.size = (r.size / 3) * 4;
 		}
 
-		cmd = !r.IsEmpty()
+		cmd = !r.empty()
 			? client.SubmitData(is, r.data, r.size, 0)
 			: client.GetCommand();
 		if (cmd == DecoderCommand::SEEK) {

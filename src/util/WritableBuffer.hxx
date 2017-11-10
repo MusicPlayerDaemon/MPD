@@ -76,7 +76,7 @@ struct WritableBuffer<void> {
 		return data != nullptr;
 	}
 
-	constexpr bool IsEmpty() const {
+	constexpr bool empty() const {
 		return size == 0;
 	}
 };
@@ -161,7 +161,7 @@ struct WritableBuffer {
 		return data != nullptr;
 	}
 
-	constexpr bool IsEmpty() const {
+	constexpr bool empty() const {
 		return size == 0;
 	}
 
@@ -201,7 +201,7 @@ struct WritableBuffer {
 #endif
 	reference_type front() const {
 #ifndef NDEBUG
-		assert(!IsEmpty());
+		assert(!empty());
 #endif
 		return data[0];
 	}
@@ -215,7 +215,7 @@ struct WritableBuffer {
 #endif
 	reference_type back() const {
 #ifndef NDEBUG
-		assert(!IsEmpty());
+		assert(!empty());
 #endif
 		return data[size - 1];
 	}
@@ -225,7 +225,7 @@ struct WritableBuffer {
 	 * not actually modify the buffer).  Buffer must not be empty.
 	 */
 	void pop_front() {
-		assert(!IsEmpty());
+		assert(!empty());
 
 		++data;
 		--size;
@@ -236,7 +236,7 @@ struct WritableBuffer {
 	 * not actually modify the buffer).  Buffer must not be empty.
 	 */
 	void pop_back() {
-		assert(!IsEmpty());
+		assert(!empty());
 
 		--size;
 	}

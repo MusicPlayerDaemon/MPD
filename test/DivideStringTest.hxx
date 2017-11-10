@@ -23,7 +23,7 @@ public:
 		constexpr char input[] = "foo.bar";
 		const DivideString ds(input, '.');
 		CPPUNIT_ASSERT(ds.IsDefined());
-		CPPUNIT_ASSERT(!ds.IsEmpty());
+		CPPUNIT_ASSERT(!ds.empty());
 		CPPUNIT_ASSERT_EQUAL(0, strcmp(ds.GetFirst(), "foo"));
 		CPPUNIT_ASSERT_EQUAL(input + 4, ds.GetSecond());
 	}
@@ -32,7 +32,7 @@ public:
 		constexpr char input[] = ".bar";
 		const DivideString ds(input, '.');
 		CPPUNIT_ASSERT(ds.IsDefined());
-		CPPUNIT_ASSERT(ds.IsEmpty());
+		CPPUNIT_ASSERT(ds.empty());
 		CPPUNIT_ASSERT_EQUAL(0, strcmp(ds.GetFirst(), ""));
 		CPPUNIT_ASSERT_EQUAL(input + 1, ds.GetSecond());
 	}
@@ -47,7 +47,7 @@ public:
 		constexpr char input[] = " foo\t.\nbar\r";
 		const DivideString ds(input, '.', true);
 		CPPUNIT_ASSERT(ds.IsDefined());
-		CPPUNIT_ASSERT(!ds.IsEmpty());
+		CPPUNIT_ASSERT(!ds.empty());
 		CPPUNIT_ASSERT_EQUAL(0, strcmp(ds.GetFirst(), "foo"));
 		CPPUNIT_ASSERT_EQUAL(input + 7, ds.GetSecond());
 	}

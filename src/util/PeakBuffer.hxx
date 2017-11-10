@@ -57,7 +57,7 @@ public:
 	PeakBuffer &operator=(const PeakBuffer &) = delete;
 
 	gcc_pure
-	bool IsEmpty() const noexcept;
+	bool empty() const noexcept;
 
 	gcc_pure
 	WritableBuffer<void> Read() const noexcept;

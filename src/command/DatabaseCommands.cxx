@@ -169,7 +169,7 @@ handle_count(Client &client, Request args, Response &r)
 	}
 
 	SongFilter filter;
-	if (!args.IsEmpty() && !filter.Parse(args, false)) {
+	if (!args.empty() && !filter.Parse(args, false)) {
 		r.Error(ACK_ERROR_ARG, "incorrect arguments");
 		return CommandResult::ERROR;
 	}
@@ -235,7 +235,7 @@ handle_list(Client &client, Request args, Response &r)
 		args.pop_back();
 	}
 
-	if (!args.IsEmpty()) {
+	if (!args.empty()) {
 		filter.reset(new SongFilter());
 		if (!filter->Parse(args, false)) {
 			r.Error(ACK_ERROR_ARG, "not able to parse args");

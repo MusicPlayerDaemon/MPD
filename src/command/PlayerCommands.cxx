@@ -95,7 +95,7 @@ handle_pause(Client &client, Request args, gcc_unused Response &r)
 {
 	auto &pc = client.GetPlayerControl();
 
-	if (!args.IsEmpty()) {
+	if (!args.empty()) {
 		bool pause_flag = args.ParseBool(0);
 		pc.LockSetPause(pause_flag);
 	} else

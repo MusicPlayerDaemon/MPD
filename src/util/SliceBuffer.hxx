@@ -79,7 +79,7 @@ public:
 		return buffer.size();
 	}
 
-	bool IsEmpty() const {
+	bool empty() const {
 		return n_allocated == 0;
 	}
 

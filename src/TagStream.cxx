@@ -94,7 +94,7 @@ tag_stream_scan(InputStream &is, TagBuilder &builder)
 	if (!tag_stream_scan(is, full_tag_handler, &builder))
 		return false;
 
-	if (builder.IsEmpty())
+	if (builder.empty())
 		ScanGenericTags(is, full_tag_handler, &builder);
 
 	return true;

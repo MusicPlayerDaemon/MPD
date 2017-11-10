@@ -80,7 +80,7 @@ ThreadInputStream::ThreadFunc()
 		assert(!postponed_exception);
 
 		auto w = buffer.Write();
-		if (w.IsEmpty()) {
+		if (w.empty()) {
 			wake_cond.wait(mutex);
 		} else {
 			size_t nbytes;
@@ -122,7 +122,7 @@ ThreadInputStream::IsAvailable() noexcept
 {
 	assert(!thread.IsInside());
 
-	return !buffer.IsEmpty() || eof || postponed_exception;
+	return !buffer.empty() || eof || postponed_exception;
 }
 
 inline size_t
@@ -135,7 +135,7 @@ ThreadInputStream::Read(void *ptr, size_t read_size)
 			std::rethrow_exception(postponed_exception);
 
 		auto r = buffer.Read();
-		if (!r.IsEmpty()) {
+		if (!r.empty()) {
 			size_t nbytes = std::min(read_size, r.size);
 			memcpy(ptr, r.data, nbytes);
 			buffer.Consume(nbytes);

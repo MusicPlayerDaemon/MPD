@@ -52,7 +52,7 @@ FullyBufferedSocket::Flush()
 	assert(IsDefined());
 
 	const auto data = output.Read();
-	if (data.IsEmpty()) {
+	if (data.empty()) {
 		IdleMonitor::Cancel();
 		CancelWrite();
 		return true;
@@ -64,7 +64,7 @@ FullyBufferedSocket::Flush()
 
 	output.Consume(nbytes);
 
-	if (output.IsEmpty()) {
+	if (output.empty()) {
 		IdleMonitor::Cancel();
 		CancelWrite();
 	}
@@ -80,7 +80,7 @@ FullyBufferedSocket::Write(const void *data, size_t length)
 	if (length == 0)
 		return true;
 
-	const bool was_empty = output.IsEmpty();
+	const bool was_empty = output.empty();
 
 	if (!output.Append(data, length)) {
 		OnSocketError(std::make_exception_ptr(std::runtime_error("Output buffer is full")));
@@ -96,7 +96,7 @@ bool
 FullyBufferedSocket::OnSocketReady(unsigned flags)
 {
 	if (flags & WRITE) {
-		assert(!output.IsEmpty());
+		assert(!output.empty());
 		assert(!IdleMonitor::IsActive());
 
 		if (!Flush())
@@ -112,6 +112,6 @@ FullyBufferedSocket::OnSocketReady(unsigned flags)
 void
 FullyBufferedSocket::OnIdle()
 {
-	if (Flush() && !output.IsEmpty())
+	if (Flush() && !output.empty())
 		ScheduleWrite();
 }

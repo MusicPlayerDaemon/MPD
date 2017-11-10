@@ -617,7 +617,7 @@ FfmpegCheckTag(DecoderClient &client, InputStream &is,
 
 	TagBuilder tag;
 	FfmpegScanTag(format_context, audio_stream, tag);
-	if (!tag.IsEmpty())
+	if (!tag.empty())
 		client.SubmitTag(is, tag.Commit());
 }
 

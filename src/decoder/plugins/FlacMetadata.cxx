@@ -97,7 +97,7 @@ flac_scan_comment(const FLAC__StreamMetadata_VorbisComment_Entry *entry,
 	if (handler.pair != nullptr) {
 		const char *comment = (const char *)entry->entry;
 		const DivideString split(comment, '=');
-		if (split.IsDefined() && !split.IsEmpty())
+		if (split.IsDefined() && !split.empty())
 			tag_handler_invoke_pair(handler, handler_ctx,
 						split.GetFirst(),
 						split.GetSecond());

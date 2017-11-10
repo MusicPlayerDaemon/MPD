@@ -127,7 +127,7 @@ adts_song_duration(DecoderBuffer &buffer)
 
 		if (frames == 0) {
 			auto data = ConstBuffer<uint8_t>::FromVoid(buffer.Read());
-			assert(!data.IsEmpty());
+			assert(!data.empty());
 			assert(frame_length <= data.size);
 
 			sample_rate = adts_sample_rates[(data.data[2] & 0x3c) >> 2];
@@ -255,7 +255,7 @@ faad_decoder_init(NeAACDecHandle decoder, DecoderBuffer &buffer,
 		  AudioFormat &audio_format)
 {
 	auto data = ConstBuffer<uint8_t>::FromVoid(buffer.Read());
-	if (data.IsEmpty())
+	if (data.empty())
 		throw std::runtime_error("Empty file");
 
 	uint8_t channels;
@@ -283,7 +283,7 @@ faad_decoder_decode(NeAACDecHandle decoder, DecoderBuffer &buffer,
 		    NeAACDecFrameInfo *frame_info)
 {
 	auto data = ConstBuffer<uint8_t>::FromVoid(buffer.Read());
-	if (data.IsEmpty())
+	if (data.empty())
 		return nullptr;
 
 	return NeAACDecDecode(decoder, frame_info,

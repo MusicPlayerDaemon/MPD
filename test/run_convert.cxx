@@ -62,7 +62,7 @@ try {
 	while (true) {
 		{
 			const auto dest = buffer.Write();
-			assert(!dest.IsEmpty());
+			assert(!dest.empty());
 
 			ssize_t nbytes = read(0, dest.data, dest.size);
 			if (nbytes <= 0)
@@ -72,10 +72,10 @@ try {
 		}
 
 		auto src = buffer.Read();
-		assert(!src.IsEmpty());
+		assert(!src.empty());
 
 		src.size -= src.size % in_frame_size;
-		if (src.IsEmpty())
+		if (src.empty())
 			continue;
 
 		buffer.Consume(src.size);

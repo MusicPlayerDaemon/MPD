@@ -78,7 +78,7 @@ public:
 		head = tail = 0;
 	}
 
-	bool IsEmpty() const {
+	bool empty() const {
 		return head == tail;
 	}
 
@@ -91,7 +91,7 @@ public:
 	 * When you are finished, call Append().
 	 */
 	Range Write() {
-		if (IsEmpty())
+		if (empty())
 			Clear();
 		else if (tail == size)
 			Shift();

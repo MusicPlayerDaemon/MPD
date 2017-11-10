@@ -76,7 +76,7 @@ handle_unsubscribe(Client &client, Request args, Response &r)
 CommandResult
 handle_channels(Client &client, gcc_unused Request args, Response &r)
 {
-	assert(args.IsEmpty());
+	assert(args.empty());
 
 	std::set<std::string> channels;
 	for (const auto &c : *client.GetInstance().client_list)
@@ -93,7 +93,7 @@ CommandResult
 handle_read_messages(Client &client,
 		     gcc_unused Request args, Response &r)
 {
-	assert(args.IsEmpty());
+	assert(args.empty());
 
 	while (!client.messages.empty()) {
 		const ClientMessage &msg = client.messages.front();

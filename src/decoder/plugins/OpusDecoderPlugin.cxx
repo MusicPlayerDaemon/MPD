@@ -211,7 +211,7 @@ MPDOpusDecoder::HandleTags(const ogg_packet &packet)
 	if (ScanOpusTags(packet.packet, packet.bytes,
 			 &rgi,
 			 add_tag_handler, &tag_builder) &&
-	    !tag_builder.IsEmpty()) {
+	    !tag_builder.empty()) {
 		client.SubmitReplayGain(&rgi);
 
 		Tag tag = tag_builder.Commit();

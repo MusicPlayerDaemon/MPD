@@ -25,7 +25,7 @@ bool
 DecoderBuffer::Fill()
 {
 	auto w = buffer.Write();
-	if (w.IsEmpty())
+	if (w.empty())
 		/* buffer is full */
 		return false;
 

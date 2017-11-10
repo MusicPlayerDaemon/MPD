@@ -88,7 +88,7 @@ bool
 AsyncInputStream::IsEOF() noexcept
 {
 	return (KnownSize() && offset >= size) ||
-		(!open && buffer.IsEmpty());
+		(!open && buffer.empty());
 }
 
 void
@@ -108,7 +108,7 @@ AsyncInputStream::Seek(offset_type new_offset)
 
 	while (new_offset > offset) {
 		auto r = buffer.Read();
-		if (r.IsEmpty())
+		if (r.empty())
 			break;
 
 		const size_t nbytes =
@@ -162,7 +162,7 @@ AsyncInputStream::IsAvailable() noexcept
 {
 	return postponed_exception ||
 		IsEOF() ||
-		!buffer.IsEmpty();
+		!buffer.empty();
 }
 
 size_t
@@ -176,7 +176,7 @@ AsyncInputStream::Read(void *ptr, size_t read_size)
 		Check();
 
 		r = buffer.Read();
-		if (!r.IsEmpty() || IsEOF())
+		if (!r.empty() || IsEOF())
 			break;
 
 		cond.wait(mutex);
@@ -209,7 +209,7 @@ void
 AsyncInputStream::AppendToBuffer(const void *data, size_t append_size) noexcept
 {
 	auto w = buffer.Write();
-	assert(!w.IsEmpty());
+	assert(!w.empty());
 
 	size_t nbytes = std::min(w.size, append_size);
 	memcpy(w.data, data, nbytes);
@@ -218,7 +218,7 @@ AsyncInputStream::AppendToBuffer(const void *data, size_t append_size) noexcept
 	const size_t remaining = append_size - nbytes;
 	if (remaining > 0) {
 		w = buffer.Write();
-		assert(!w.IsEmpty());
+		assert(!w.empty());
 		assert(w.size >= remaining);
 
 		memcpy(w.data, (const uint8_t *)data + nbytes, remaining);
