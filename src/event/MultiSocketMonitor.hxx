@@ -31,14 +31,6 @@
 
 #include <assert.h>
 
-#ifdef WIN32
-/* ERROR is a WIN32 macro that poisons our namespace; this is a kludge
-   to allow us to use it anyway */
-#ifdef ERROR
-#undef ERROR
-#endif
-#endif
-
 #ifndef WIN32
 struct pollfd;
 #endif
