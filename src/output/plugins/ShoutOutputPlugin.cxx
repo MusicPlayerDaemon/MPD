@@ -339,27 +339,12 @@ ShoutOutput::Pause()
 static void
 shout_tag_to_metadata(const Tag &tag, char *dest, size_t size)
 {
-	char artist[size];
-	char title[size];
+	const char *artist = tag.GetValue(TAG_ARTIST);
+	const char *title = tag.GetValue(TAG_TITLE);
 
-	artist[0] = 0;
-	title[0] = 0;
-
-	for (const auto &item : tag) {
-		switch (item.type) {
-		case TAG_ARTIST:
-			strncpy(artist, item.value, size);
-			break;
-		case TAG_TITLE:
-			strncpy(title, item.value, size);
-			break;
-
-		default:
-			break;
-		}
-	}
-
-	snprintf(dest, size, "%s - %s", artist, title);
+	snprintf(dest, size, "%s - %s",
+		 artist != nullptr ? artist : "",
+		 title != nullptr ? title : "");
 }
 
 void
