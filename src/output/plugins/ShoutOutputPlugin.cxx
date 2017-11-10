@@ -46,9 +46,6 @@ struct ShoutOutput final : AudioOutput {
 	std::unique_ptr<PreparedEncoder> prepared_encoder;
 	Encoder *encoder;
 
-	float quality = -2.0;
-	int bitrate = -1;
-
 	int timeout = DEFAULT_CONN_TIMEOUT;
 
 	uint8_t buffer[32768];
@@ -119,6 +116,9 @@ ShoutOutput::ShoutOutput(const ConfigBlock &block)
 	bool is_public = block.GetBlockValue("public", false);
 
 	const char *user = block.GetBlockValue("user", "source");
+
+	float quality = -2.0;
+	int bitrate = -1;
 
 	const char *value = block.GetBlockValue("quality");
 	if (value != nullptr) {
