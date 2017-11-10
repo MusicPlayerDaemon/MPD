@@ -23,7 +23,7 @@
 #include "check.h"
 #include "Lease.hxx"
 #include "Callback.hxx"
-#include "event/DeferredMonitor.hxx"
+#include "event/DeferEvent.hxx"
 #include "Compiler.h"
 
 #include <string>
@@ -43,7 +43,7 @@ class NfsConnection;
  * To get started, derive your class from it and implement the pure
  * virtual methods, construct an instance, and call Open().
  */
-class NfsFileReader : NfsLease, NfsCallback, DeferredMonitor {
+class NfsFileReader : NfsLease, NfsCallback {
 	enum class State {
 		INITIAL,
 		DEFER,
@@ -63,11 +63,15 @@ class NfsFileReader : NfsLease, NfsCallback, DeferredMonitor {
 
 	nfsfh *fh;
 
+	DeferEvent defer_open;
+
 public:
 	NfsFileReader();
 	~NfsFileReader();
 
-	using DeferredMonitor::GetEventLoop;
+	EventLoop &GetEventLoop() noexcept {
+		return defer_open.GetEventLoop();
+	}
 
 	void Close();
 	void DeferClose();
@@ -146,8 +150,8 @@ private:
 	void OnNfsCallback(unsigned status, void *data) final;
 	void OnNfsError(std::exception_ptr &&e) final;
 
-	/* virtual methods from DeferredMonitor */
-	void RunDeferred() final;
+	/* DeferEvent callback */
+	void OnDeferredOpen() noexcept;
 };
 
 #endif

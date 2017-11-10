@@ -33,7 +33,7 @@
 #include <sys/stat.h>
 
 NfsFileReader::NfsFileReader()
-	:DeferredMonitor(nfs_get_event_loop())
+	:defer_open(nfs_get_event_loop(), BIND_THIS_METHOD(OnDeferredOpen))
 {
 }
 
@@ -50,7 +50,7 @@ NfsFileReader::Close()
 
 	if (state == State::DEFER) {
 		state = State::INITIAL;
-		DeferredMonitor::Cancel();
+		defer_open.Cancel();
 		return;
 	}
 
@@ -122,7 +122,7 @@ NfsFileReader::Open(const char *uri)
 	}
 
 	state = State::DEFER;
-	DeferredMonitor::Schedule();
+	defer_open.Schedule();
 }
 
 void
@@ -272,7 +272,7 @@ NfsFileReader::OnNfsError(std::exception_ptr &&e)
 }
 
 void
-NfsFileReader::RunDeferred()
+NfsFileReader::OnDeferredOpen() noexcept
 {
 	assert(state == State::DEFER);
 

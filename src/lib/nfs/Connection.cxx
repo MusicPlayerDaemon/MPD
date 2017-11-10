@@ -196,7 +196,7 @@ NfsConnection::AddLease(NfsLease &lease)
 
 	new_leases.push_back(&lease);
 
-	DeferredMonitor::Schedule();
+	defer_new_lease.Schedule();
 }
 
 void
@@ -363,9 +363,9 @@ NfsConnection::DestroyContext()
 		mount_timeout_event.Cancel();
 	}
 
-	/* cancel pending DeferredMonitor that was scheduled to notify
+	/* cancel pending DeferEvent that was scheduled to notify
 	   new leases */
-	DeferredMonitor::Cancel();
+	defer_new_lease.Cancel();
 
 	if (SocketMonitor::IsDefined())
 		SocketMonitor::Steal();
@@ -631,7 +631,7 @@ NfsConnection::OnMountTimeout()
 }
 
 void
-NfsConnection::RunDeferred()
+NfsConnection::RunDeferred() noexcept
 {
 	assert(GetEventLoop().IsInside());
 

@@ -23,7 +23,7 @@
 #include "Cancellable.hxx"
 #include "event/SocketMonitor.hxx"
 #include "event/TimerEvent.hxx"
-#include "event/DeferredMonitor.hxx"
+#include "event/DeferEvent.hxx"
 
 #include <string>
 #include <list>
@@ -39,7 +39,7 @@ class NfsLease;
 /**
  * An asynchronous connection to a NFS server.
  */
-class NfsConnection : SocketMonitor, DeferredMonitor {
+class NfsConnection : SocketMonitor {
 	class CancellableCallback : public CancellablePointer<NfsCallback> {
 		NfsConnection &connection;
 
@@ -91,6 +91,7 @@ class NfsConnection : SocketMonitor, DeferredMonitor {
 		void Callback(int err, void *data);
 	};
 
+	DeferEvent defer_new_lease;
 	TimerEvent mount_timeout_event;
 
 	std::string server, export_name;
@@ -139,7 +140,7 @@ public:
 	NfsConnection(EventLoop &_loop,
 		      const char *_server, const char *_export_name) noexcept
 		:SocketMonitor(_loop),
-		 DeferredMonitor(_loop),
+		 defer_new_lease(_loop, BIND_THIS_METHOD(RunDeferred)),
 		 mount_timeout_event(_loop, BIND_THIS_METHOD(OnMountTimeout)),
 		 server(_server), export_name(_export_name),
 		 context(nullptr) {}
@@ -235,8 +236,8 @@ private:
 	/* callback for #mount_timeout_event */
 	void OnMountTimeout();
 
-	/* virtual methods from DeferredMonitor */
-	virtual void RunDeferred() override;
+	/* DeferEvent callback */
+	void RunDeferred() noexcept;
 };
 
 #endif
