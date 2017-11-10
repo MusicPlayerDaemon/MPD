@@ -21,8 +21,7 @@
 #include "ShoutOutputPlugin.hxx"
 #include "../OutputAPI.hxx"
 #include "encoder/EncoderInterface.hxx"
-#include "encoder/EncoderPlugin.hxx"
-#include "encoder/EncoderList.hxx"
+#include "encoder/Configured.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/Domain.hxx"
 #include "util/StringAPI.hxx"
@@ -88,17 +87,6 @@ require_block_string(const ConfigBlock &block, const char *name)
 	return value;
 }
 
-static const EncoderPlugin *
-shout_encoder_plugin_get(const char *name)
-{
-	if (strcmp(name, "ogg") == 0)
-		name = "vorbis";
-	else if (strcmp(name, "mp3") == 0)
-		name = "lame";
-
-	return encoder_plugin_get(name);
-}
-
 static void
 ShoutSetAudioInfo(shout_t *shout_conn, const AudioFormat &audio_format)
 {
@@ -114,7 +102,8 @@ ShoutSetAudioInfo(shout_t *shout_conn, const AudioFormat &audio_format)
 ShoutOutput::ShoutOutput(const ConfigBlock &block)
 	:AudioOutput(FLAG_PAUSE),
 	 shout_conn(shout_new()),
-	 shout_meta(shout_metadata_new())
+	 shout_meta(shout_metadata_new()),
+	 prepared_encoder(CreateConfiguredEncoder(block, true))
 {
 	NeedFullyDefinedAudioFormat();
 
@@ -155,16 +144,6 @@ ShoutOutput::ShoutOutput(const ConfigBlock &block)
 		if (*test != '\0' || bitrate <= 0)
 			throw std::runtime_error("bitrate must be a positive integer");
 	}
-
-	const char *encoding = block.GetBlockValue("encoder", nullptr);
-	if (encoding == nullptr)
-		encoding = block.GetBlockValue("encoding", "vorbis");
-	const auto encoder_plugin = shout_encoder_plugin_get(encoding);
-	if (encoder_plugin == nullptr)
-		throw FormatRuntimeError("couldn't find shout encoder plugin \"%s\"",
-					 encoding);
-
-	prepared_encoder.reset(encoder_init(*encoder_plugin, block));
 
 	const char *const mime_type = prepared_encoder->GetMimeType();
 

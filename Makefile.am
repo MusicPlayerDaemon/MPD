@@ -1198,6 +1198,7 @@ ENCODER_LIBS = \
 	$(VORBISENC_LIBS)
 
 libencoder_plugins_a_SOURCES = \
+	src/encoder/Configured.cxx src/encoder/Configured.hxx \
 	src/encoder/EncoderAPI.hxx \
 	src/encoder/EncoderInterface.hxx \
 	src/encoder/EncoderPlugin.hxx \

@@ -23,15 +23,13 @@
 #include "HttpdClient.hxx"
 #include "output/OutputAPI.hxx"
 #include "encoder/EncoderInterface.hxx"
-#include "encoder/EncoderPlugin.hxx"
-#include "encoder/EncoderList.hxx"
+#include "encoder/Configured.hxx"
 #include "net/UniqueSocketDescriptor.hxx"
 #include "net/SocketAddress.hxx"
 #include "net/ToString.hxx"
 #include "Page.hxx"
 #include "IcyMetaDataServer.hxx"
 #include "event/Call.hxx"
-#include "util/RuntimeError.hxx"
 #include "util/Domain.hxx"
 #include "util/DeleteDisposer.hxx"
 #include "Log.hxx"
@@ -52,6 +50,7 @@ inline
 HttpdOutput::HttpdOutput(EventLoop &_loop, const ConfigBlock &block)
 	:AudioOutput(FLAG_ENABLE_DISABLE|FLAG_PAUSE),
 	 ServerSocket(_loop),
+	 prepared_encoder(CreateConfiguredEncoder(block)),
 	 defer_broadcast(_loop, BIND_THIS_METHOD(OnDeferredBroadcast))
 {
 	/* read configuration */
@@ -60,12 +59,6 @@ HttpdOutput::HttpdOutput(EventLoop &_loop, const ConfigBlock &block)
 	website = block.GetBlockValue("website", "Set website in config");
 
 	unsigned port = block.GetBlockValue("port", 8000u);
-
-	const char *encoder_name =
-		block.GetBlockValue("encoder", "vorbis");
-	const auto encoder_plugin = encoder_plugin_get(encoder_name);
-	if (encoder_plugin == nullptr)
-		throw FormatRuntimeError("No such encoder: %s", encoder_name);
 
 	clients_max = block.GetBlockValue("max_clients", 0u);
 
@@ -76,10 +69,6 @@ HttpdOutput::HttpdOutput(EventLoop &_loop, const ConfigBlock &block)
 		AddHost(bind_to_address, port);
 	else
 		AddPort(port);
-
-	/* initialize encoder */
-
-	prepared_encoder.reset(encoder_init(*encoder_plugin, block));
 
 	/* determine content type */
 	content_type = prepared_encoder->GetMimeType();

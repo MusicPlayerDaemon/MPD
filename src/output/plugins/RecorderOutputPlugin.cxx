@@ -23,14 +23,12 @@
 #include "tag/Format.hxx"
 #include "encoder/ToOutputStream.hxx"
 #include "encoder/EncoderInterface.hxx"
-#include "encoder/EncoderPlugin.hxx"
-#include "encoder/EncoderList.hxx"
+#include "encoder/Configured.hxx"
 #include "config/ConfigError.hxx"
 #include "config/ConfigPath.hxx"
 #include "Log.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "fs/io/FileOutputStream.hxx"
-#include "util/RuntimeError.hxx"
 #include "util/Domain.hxx"
 #include "util/ScopeExit.hxx"
 
@@ -109,15 +107,10 @@ private:
 };
 
 RecorderOutput::RecorderOutput(const ConfigBlock &block)
-	:AudioOutput(0)
+	:AudioOutput(0),
+	 prepared_encoder(CreateConfiguredEncoder(block))
 {
 	/* read configuration */
-
-	const char *encoder_name =
-		block.GetBlockValue("encoder", "vorbis");
-	const auto encoder_plugin = encoder_plugin_get(encoder_name);
-	if (encoder_plugin == nullptr)
-		throw FormatRuntimeError("No such encoder: %s", encoder_name);
 
 	path = block.GetPath("path");
 
@@ -130,10 +123,6 @@ RecorderOutput::RecorderOutput(const ConfigBlock &block)
 
 	if (!path.IsNull() && fmt != nullptr)
 		throw std::runtime_error("Cannot have both 'path' and 'format_path'");
-
-	/* initialize encoder */
-
-	prepared_encoder.reset(encoder_init(*encoder_plugin, block));
 }
 
 inline void
