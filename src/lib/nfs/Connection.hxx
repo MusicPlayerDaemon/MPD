@@ -230,7 +230,7 @@ private:
 	int Service(unsigned flags);
 
 	/* virtual methods from SocketMonitor */
-	virtual bool OnSocketReady(unsigned flags) override;
+	bool OnSocketReady(unsigned flags) noexcept override;
 
 	/* callback for #mount_timeout_event */
 	void OnMountTimeout();

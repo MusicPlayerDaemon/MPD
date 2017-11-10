@@ -32,7 +32,7 @@
 #include <limits.h>
 
 bool
-InotifySource::OnSocketReady(gcc_unused unsigned flags)
+InotifySource::OnSocketReady(gcc_unused unsigned flags) noexcept
 {
 	uint8_t buffer[4096];
 	static_assert(sizeof(buffer) >= sizeof(struct inotify_event) + NAME_MAX + 1,

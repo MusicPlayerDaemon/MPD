@@ -403,7 +403,7 @@ HttpdClient::PushMetaData(PagePtr page)
 }
 
 bool
-HttpdClient::OnSocketReady(unsigned flags)
+HttpdClient::OnSocketReady(unsigned flags) noexcept
 {
 	if (!BufferedSocket::OnSocketReady(flags))
 		return false;

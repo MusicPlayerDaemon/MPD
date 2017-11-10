@@ -80,7 +80,7 @@ class MultiSocketMonitor : IdleMonitor
 		}
 
 	protected:
-		virtual bool OnSocketReady(unsigned flags) override {
+		bool OnSocketReady(unsigned flags) noexcept override {
 			revents = flags;
 			multi.SetReady();
 			return true;

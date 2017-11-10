@@ -99,7 +99,7 @@ BufferedSocket::ResumeInput()
 }
 
 bool
-BufferedSocket::OnSocketReady(unsigned flags)
+BufferedSocket::OnSocketReady(unsigned flags) noexcept
 {
 	assert(IsDefined());
 

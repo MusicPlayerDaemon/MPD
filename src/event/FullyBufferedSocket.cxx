@@ -93,7 +93,7 @@ FullyBufferedSocket::Write(const void *data, size_t length)
 }
 
 bool
-FullyBufferedSocket::OnSocketReady(unsigned flags)
+FullyBufferedSocket::OnSocketReady(unsigned flags) noexcept
 {
 	if (flags & WRITE) {
 		assert(!output.empty());

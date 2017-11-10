@@ -115,7 +115,7 @@ public:
 	void Accept() noexcept;
 
 private:
-	virtual bool OnSocketReady(unsigned flags) override;
+	bool OnSocketReady(unsigned flags) noexcept override;
 };
 
 static constexpr Domain server_socket_domain("server_socket");
@@ -169,7 +169,7 @@ OneServerSocket::Accept() noexcept
 }
 
 bool
-OneServerSocket::OnSocketReady(gcc_unused unsigned flags)
+OneServerSocket::OnSocketReady(gcc_unused unsigned flags) noexcept
 {
 	Accept();
 	return true;

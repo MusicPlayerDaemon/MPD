@@ -191,7 +191,9 @@ private:
 	void ClearQueue();
 
 protected:
-	virtual bool OnSocketReady(unsigned flags) override;
+	/* virtual methods from class SocketMonitor */
+	bool OnSocketReady(unsigned flags) noexcept override;
+
 	virtual InputResult OnSocketInput(void *data, size_t length) override;
 	void OnSocketError(std::exception_ptr ep) override;
 	virtual void OnSocketClosed() override;

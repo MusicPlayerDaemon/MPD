@@ -446,7 +446,7 @@ NfsConnection::Service(unsigned flags)
 }
 
 bool
-NfsConnection::OnSocketReady(unsigned flags)
+NfsConnection::OnSocketReady(unsigned flags) noexcept
 {
 	assert(GetEventLoop().IsInside());
 	assert(deferred_close.empty());

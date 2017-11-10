@@ -188,7 +188,7 @@ private:
 	 */
 	void HandleDeferred();
 
-	virtual bool OnSocketReady(unsigned flags) override;
+	bool OnSocketReady(unsigned flags) noexcept override;
 
 public:
 

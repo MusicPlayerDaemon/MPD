@@ -142,7 +142,7 @@ private:
 	void Disconnect();
 
 	/* virtual methods from SocketMonitor */
-	bool OnSocketReady(unsigned flags) override;
+	bool OnSocketReady(unsigned flags) noexcept override;
 
 	/* virtual methods from IdleMonitor */
 	void OnIdle() override;
@@ -459,7 +459,7 @@ ProxyDatabase::Disconnect()
 }
 
 bool
-ProxyDatabase::OnSocketReady(gcc_unused unsigned flags)
+ProxyDatabase::OnSocketReady(gcc_unused unsigned flags) noexcept
 {
 	assert(connection != nullptr);
 

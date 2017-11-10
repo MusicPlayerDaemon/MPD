@@ -30,7 +30,7 @@
 #endif
 
 void
-SocketMonitor::Dispatch(unsigned flags)
+SocketMonitor::Dispatch(unsigned flags) noexcept
 {
 	flags &= GetScheduledFlags();
 
@@ -38,14 +38,14 @@ SocketMonitor::Dispatch(unsigned flags)
 		Cancel();
 }
 
-SocketMonitor::~SocketMonitor()
+SocketMonitor::~SocketMonitor() noexcept
 {
 	if (IsDefined())
 		Cancel();
 }
 
 void
-SocketMonitor::Open(SocketDescriptor _fd)
+SocketMonitor::Open(SocketDescriptor _fd) noexcept
 {
 	assert(!fd.IsDefined());
 	assert(_fd.IsDefined());
@@ -54,7 +54,7 @@ SocketMonitor::Open(SocketDescriptor _fd)
 }
 
 SocketDescriptor
-SocketMonitor::Steal()
+SocketMonitor::Steal() noexcept
 {
 	assert(IsDefined());
 
@@ -64,7 +64,7 @@ SocketMonitor::Steal()
 }
 
 void
-SocketMonitor::Abandon()
+SocketMonitor::Abandon() noexcept
 {
 	assert(IsDefined());
 
@@ -73,13 +73,13 @@ SocketMonitor::Abandon()
 }
 
 void
-SocketMonitor::Close()
+SocketMonitor::Close() noexcept
 {
 	Steal().Close();
 }
 
 void
-SocketMonitor::Schedule(unsigned flags)
+SocketMonitor::Schedule(unsigned flags) noexcept
 {
 	assert(IsDefined());
 
@@ -97,7 +97,7 @@ SocketMonitor::Schedule(unsigned flags)
 }
 
 SocketMonitor::ssize_t
-SocketMonitor::Read(void *data, size_t length)
+SocketMonitor::Read(void *data, size_t length) noexcept
 {
 	assert(IsDefined());
 
@@ -110,7 +110,7 @@ SocketMonitor::Read(void *data, size_t length)
 }
 
 SocketMonitor::ssize_t
-SocketMonitor::Write(const void *data, size_t length)
+SocketMonitor::Write(const void *data, size_t length) noexcept
 {
 	assert(IsDefined());
 

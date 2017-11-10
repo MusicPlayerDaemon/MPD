@@ -65,7 +65,7 @@ public:
 				  curl_socket_t s, int action,
 				  void *userp, void *socketp) noexcept;
 
-	virtual bool OnSocketReady(unsigned flags) override;
+	bool OnSocketReady(unsigned flags) noexcept override;
 
 private:
 	static constexpr int FlagsToCurlCSelect(unsigned flags) {
@@ -145,7 +145,7 @@ CurlSocket::SocketFunction(gcc_unused CURL *easy,
 }
 
 bool
-CurlSocket::OnSocketReady(unsigned flags)
+CurlSocket::OnSocketReady(unsigned flags) noexcept
 {
 	assert(GetEventLoop().IsInside());
 
