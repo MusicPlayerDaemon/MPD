@@ -91,11 +91,6 @@ public:
 	 */
 	SocketDescriptor Steal() noexcept;
 
-	/**
-	 * Somebody has closed the socket.  Unregister this object.
-	 */
-	void Abandon() noexcept;
-
 	void Close() noexcept;
 
 	unsigned GetScheduledFlags() const noexcept {

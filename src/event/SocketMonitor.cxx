@@ -64,15 +64,6 @@ SocketMonitor::Steal() noexcept
 }
 
 void
-SocketMonitor::Abandon() noexcept
-{
-	assert(IsDefined());
-
-	loop.Abandon(std::exchange(fd, SocketDescriptor::Undefined()).Get(),
-		     *this);
-}
-
-void
 SocketMonitor::Close() noexcept
 {
 	Steal().Close();
