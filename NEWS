@@ -10,6 +10,7 @@ ver 0.21 (not yet released)
   - pcm: support audio/L24 (RFC 3190)
 * output
   - alsa: non-blocking mode
+  - shout: support the Shine encoder plugin
   - sndio: remove support for the broken RoarAudio sndio emulation
 * mixer
   - sndio: new mixer plugin

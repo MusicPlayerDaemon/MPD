@@ -25,6 +25,7 @@
 #include "encoder/EncoderList.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/Domain.hxx"
+#include "util/StringAPI.hxx"
 #include "Log.hxx"
 
 #include <shout/shout.h>
@@ -165,8 +166,10 @@ ShoutOutput::ShoutOutput(const ConfigBlock &block)
 
 	prepared_encoder.reset(encoder_init(*encoder_plugin, block));
 
+	const char *const mime_type = prepared_encoder->GetMimeType();
+
 	unsigned shout_format;
-	if (strcmp(encoding, "mp3") == 0 || strcmp(encoding, "lame") == 0)
+	if (StringIsEqual(mime_type, "audio/mpeg"))
 		shout_format = SHOUT_FORMAT_MP3;
 	else
 		shout_format = SHOUT_FORMAT_OGG;
@@ -175,9 +178,9 @@ ShoutOutput::ShoutOutput(const ConfigBlock &block)
 	value = block.GetBlockValue("protocol");
 	if (value != nullptr) {
 		if (0 == strcmp(value, "shoutcast") &&
-		    0 != strcmp(encoding, "mp3"))
+		    !StringIsEqual(mime_type, "audio/mpeg"))
 			throw FormatRuntimeError("you cannot stream \"%s\" to shoutcast, use mp3",
-						 encoding);
+						 mime_type);
 		else if (0 == strcmp(value, "shoutcast"))
 			protocol = SHOUT_PROTOCOL_ICY;
 		else if (0 == strcmp(value, "icecast1"))
