@@ -138,6 +138,7 @@ struct WritableBuffer {
 	constexpr
 #endif
 	static WritableBuffer<T> FromVoid(WritableBuffer<void> other) {
+		static_assert(sizeof(T) > 0, "Empty base type");
 #ifndef NDEBUG
 		assert(other.size % sizeof(T) == 0);
 #endif

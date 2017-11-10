@@ -144,6 +144,7 @@ struct ConstBuffer {
 	constexpr
 #endif
 	static ConstBuffer<T> FromVoid(ConstBuffer<void> other) {
+		static_assert(sizeof(T) > 0, "Empty base type");
 #ifndef NDEBUG
 		assert(other.size % sizeof(T) == 0);
 #endif
