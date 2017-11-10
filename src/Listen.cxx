@@ -24,6 +24,7 @@
 #include "config/ConfigGlobal.hxx"
 #include "config/ConfigOption.hxx"
 #include "net/SocketAddress.hxx"
+#include "net/UniqueSocketDescriptor.hxx"
 #include "event/ServerSocket.hxx"
 #include "system/Error.hxx"
 #include "util/RuntimeError.hxx"
@@ -50,7 +51,7 @@ public:
 		:ServerSocket(_loop), partition(_partition) {}
 
 private:
-	void OnAccept(UniqueSocketDescriptor &&fd,
+	void OnAccept(UniqueSocketDescriptor fd,
 		      SocketAddress address, int uid) override {
 		client_new(GetEventLoop(), partition,
 			   std::move(fd), address, uid);

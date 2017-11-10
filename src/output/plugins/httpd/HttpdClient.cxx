@@ -186,7 +186,7 @@ HttpdClient::SendResponse()
 	return true;
 }
 
-HttpdClient::HttpdClient(HttpdOutput &_httpd, UniqueSocketDescriptor &&_fd,
+HttpdClient::HttpdClient(HttpdOutput &_httpd, UniqueSocketDescriptor _fd,
 			 EventLoop &_loop,
 			 bool _metadata_supported)
 	:BufferedSocket(_fd.Release(), _loop),

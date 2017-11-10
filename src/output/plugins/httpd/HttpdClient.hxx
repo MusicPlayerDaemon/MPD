@@ -132,7 +132,7 @@ public:
 	 * @param httpd the HTTP output device
 	 * @param _fd the socket file descriptor
 	 */
-	HttpdClient(HttpdOutput &httpd, UniqueSocketDescriptor &&_fd,
+	HttpdClient(HttpdOutput &httpd, UniqueSocketDescriptor _fd,
 		    EventLoop &_loop,
 		    bool _metadata_supported);
 

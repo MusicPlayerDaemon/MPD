@@ -118,7 +118,7 @@ HttpdOutput::Unbind()
  * HttpdOutput.clients linked list.
  */
 inline void
-HttpdOutput::AddClient(UniqueSocketDescriptor &&fd)
+HttpdOutput::AddClient(UniqueSocketDescriptor fd)
 {
 	auto *client = new HttpdClient(*this, std::move(fd), GetEventLoop(),
 				       !encoder->ImplementsTag());
@@ -151,7 +151,7 @@ HttpdOutput::RunDeferred()
 }
 
 void
-HttpdOutput::OnAccept(UniqueSocketDescriptor &&fd,
+HttpdOutput::OnAccept(UniqueSocketDescriptor fd,
 		      SocketAddress address, gcc_unused int uid)
 {
 	/* the listener socket has become readable - a client has

@@ -117,7 +117,7 @@ public:
 	void Close();
 
 protected:
-	virtual void OnAccept(UniqueSocketDescriptor &&fd,
+	virtual void OnAccept(UniqueSocketDescriptor fd,
 			      SocketAddress address, int uid) = 0;
 };
 
