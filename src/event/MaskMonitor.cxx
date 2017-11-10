@@ -24,11 +24,11 @@ void
 MaskMonitor::OrMask(unsigned new_mask)
 {
 	if (pending_mask.fetch_or(new_mask) == 0)
-		DeferredMonitor::Schedule();
+		defer.Schedule();
 }
 
 void
-MaskMonitor::RunDeferred()
+MaskMonitor::RunDeferred() noexcept
 {
 	const unsigned mask = pending_mask.exchange(0);
 	if (mask != 0)
