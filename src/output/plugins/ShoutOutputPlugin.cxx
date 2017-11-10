@@ -24,6 +24,7 @@
 #include "encoder/Configured.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/Domain.hxx"
+#include "util/ScopeExit.hxx"
 #include "util/StringAPI.hxx"
 #include "Log.hxx"
 
@@ -41,7 +42,6 @@ static constexpr unsigned DEFAULT_CONN_TIMEOUT = 2;
 
 struct ShoutOutput final : AudioOutput {
 	shout_t *shout_conn;
-	shout_metadata_t *shout_meta;
 
 	std::unique_ptr<PreparedEncoder> prepared_encoder;
 	Encoder *encoder;
@@ -99,7 +99,6 @@ ShoutSetAudioInfo(shout_t *shout_conn, const AudioFormat &audio_format)
 ShoutOutput::ShoutOutput(const ConfigBlock &block)
 	:AudioOutput(FLAG_PAUSE),
 	 shout_conn(shout_new()),
-	 shout_meta(shout_metadata_new()),
 	 prepared_encoder(CreateConfiguredEncoder(block, true))
 {
 	NeedFullyDefinedAudioFormat();
@@ -185,8 +184,6 @@ ShoutOutput::ShoutOutput(const ConfigBlock &block)
 
 ShoutOutput::~ShoutOutput()
 {
-	if (shout_meta != nullptr)
-		shout_metadata_free(shout_meta);
 	if (shout_conn != nullptr)
 		shout_free(shout_conn);
 
@@ -358,12 +355,15 @@ ShoutOutput::SendTag(const Tag &tag)
 		encoder->SendTag(tag);
 	} else {
 		/* no stream tag support: fall back to icy-metadata */
+
+		const auto meta = shout_metadata_new();
+		AtScopeExit(meta) { shout_metadata_free(meta); };
+
 		char song[1024];
 		shout_tag_to_metadata(tag, song, sizeof(song));
 
-		shout_metadata_add(shout_meta, "song", song);
-		if (SHOUTERR_SUCCESS != shout_set_metadata(shout_conn,
-							   shout_meta)) {
+		shout_metadata_add(meta, "song", song);
+		if (SHOUTERR_SUCCESS != shout_set_metadata(shout_conn, meta)) {
 			LogWarning(shout_output_domain,
 				   "error setting shout metadata");
 		}
