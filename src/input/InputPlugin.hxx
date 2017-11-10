@@ -20,14 +20,6 @@
 #ifndef MPD_INPUT_PLUGIN_HXX
 #define MPD_INPUT_PLUGIN_HXX
 
-#ifdef WIN32
-#include <windows.h>
-/* damn you, windows.h! */
-#ifdef ERROR
-#undef ERROR
-#endif
-#endif
-
 struct ConfigBlock;
 class Mutex;
 class Cond;
