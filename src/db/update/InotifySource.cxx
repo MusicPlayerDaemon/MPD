@@ -38,7 +38,7 @@ InotifySource::OnSocketReady(gcc_unused unsigned flags) noexcept
 	static_assert(sizeof(buffer) >= sizeof(struct inotify_event) + NAME_MAX + 1,
 		      "inotify buffer too small");
 
-	auto ifd = Get().ToFileDescriptor();
+	auto ifd = GetSocket().ToFileDescriptor();
 	ssize_t nbytes = ifd.Read(buffer, sizeof(buffer));
 	if (nbytes < 0)
 		FatalSystemError("Failed to read from inotify");
@@ -90,7 +90,7 @@ InotifySource::InotifySource(EventLoop &_loop,
 int
 InotifySource::Add(const char *path_fs, unsigned mask)
 {
-	auto ifd = Get().ToFileDescriptor();
+	auto ifd = GetSocket().ToFileDescriptor();
 	int wd = inotify_add_watch(ifd.Get(), path_fs, mask);
 	if (wd < 0)
 		throw MakeErrno("inotify_add_watch() has failed");
@@ -101,7 +101,7 @@ InotifySource::Add(const char *path_fs, unsigned mask)
 void
 InotifySource::Remove(unsigned wd)
 {
-	auto ifd = Get().ToFileDescriptor();
+	auto ifd = GetSocket().ToFileDescriptor();
 	int ret = inotify_rm_watch(ifd.Get(), wd);
 	if (ret < 0 && errno != EINVAL)
 		LogErrno(inotify_domain, "inotify_rm_watch() has failed");

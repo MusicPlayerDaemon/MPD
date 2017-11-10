@@ -58,8 +58,8 @@ class MultiSocketMonitor : IdleMonitor
 			Schedule(events);
 		}
 
-		SocketDescriptor GetFD() const {
-			return SocketMonitor::Get();
+		SocketDescriptor GetSocket() const {
+			return SocketMonitor::GetSocket();
 		}
 
 		unsigned GetEvents() const {
@@ -174,7 +174,7 @@ public:
 		     i != end; i = std::next(prev)) {
 			assert(i->GetEvents() != 0);
 
-			unsigned events = e(i->GetFD());
+			unsigned events = e(i->GetSocket());
 			if (events != 0) {
 				i->SetEvents(events);
 				prev = i;

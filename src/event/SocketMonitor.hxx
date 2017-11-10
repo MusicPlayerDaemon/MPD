@@ -77,7 +77,7 @@ public:
 		return fd.IsDefined();
 	}
 
-	SocketDescriptor Get() const noexcept {
+	SocketDescriptor GetSocket() const noexcept {
 		assert(IsDefined());
 
 		return fd;

@@ -106,7 +106,7 @@ SocketMonitor::Read(void *data, size_t length) noexcept
 	flags |= MSG_DONTWAIT;
 #endif
 
-	return recv(Get().Get(), (char *)data, length, flags);
+	return recv(GetSocket().Get(), (char *)data, length, flags);
 }
 
 SocketMonitor::ssize_t
@@ -122,5 +122,5 @@ SocketMonitor::Write(const void *data, size_t length) noexcept
 	flags |= MSG_DONTWAIT;
 #endif
 
-	return send(Get().Get(), (const char *)data, length, flags);
+	return send(GetSocket().Get(), (const char *)data, length, flags);
 }

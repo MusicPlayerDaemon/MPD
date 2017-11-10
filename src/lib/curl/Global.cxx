@@ -149,7 +149,7 @@ CurlSocket::OnSocketReady(unsigned flags) noexcept
 {
 	assert(GetEventLoop().IsInside());
 
-	global.SocketAction(Get().Get(), FlagsToCurlCSelect(flags));
+	global.SocketAction(GetSocket().Get(), FlagsToCurlCSelect(flags));
 	return true;
 }
 
