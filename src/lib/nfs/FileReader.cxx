@@ -33,7 +33,7 @@
 #include <sys/stat.h>
 
 NfsFileReader::NfsFileReader()
-	:DeferredMonitor(nfs_get_event_loop()), state(State::INITIAL)
+	:DeferredMonitor(nfs_get_event_loop())
 {
 }
 

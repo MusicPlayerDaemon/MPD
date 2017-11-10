@@ -54,7 +54,7 @@ class NfsFileReader : NfsLease, NfsCallback, DeferredMonitor {
 		IDLE,
 	};
 
-	State state;
+	State state = State::INITIAL;
 
 	std::string server, export_name;
 	const char *path;

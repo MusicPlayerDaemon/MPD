@@ -65,7 +65,7 @@ class NfsStorage final
 
 	Mutex mutex;
 	Cond cond;
-	State state;
+	State state = State::INITIAL;
 	std::exception_ptr last_exception;
 
 public:
@@ -75,8 +75,7 @@ public:
 		 base(_base),
 		 server(std::move(_server)),
 		 export_name(std::move(_export_name)),
-		 reconnect_timer(_loop, BIND_THIS_METHOD(OnReconnectTimer)),
-		 state(State::INITIAL) {
+		 reconnect_timer(_loop, BIND_THIS_METHOD(OnReconnectTimer)) {
 		nfs_init(_loop);
 	}
 
