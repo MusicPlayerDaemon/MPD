@@ -79,17 +79,12 @@ HttpdOutput::HttpdOutput(EventLoop &_loop, const ConfigBlock &block)
 
 	/* initialize encoder */
 
-	prepared_encoder = encoder_init(*encoder_plugin, block);
+	prepared_encoder.reset(encoder_init(*encoder_plugin, block));
 
 	/* determine content type */
 	content_type = prepared_encoder->GetMimeType();
 	if (content_type == nullptr)
 		content_type = "application/octet-stream";
-}
-
-HttpdOutput::~HttpdOutput()
-{
-	delete prepared_encoder;
 }
 
 inline void

@@ -35,6 +35,7 @@
 #include "util/ScopeExit.hxx"
 
 #include <stdexcept>
+#include <memory>
 
 #include <assert.h>
 #include <stdlib.h>
@@ -45,7 +46,7 @@ class RecorderOutput final : AudioOutput {
 	/**
 	 * The configured encoder plugin.
 	 */
-	PreparedEncoder *prepared_encoder = nullptr;
+	std::unique_ptr<PreparedEncoder> prepared_encoder;
 	Encoder *encoder;
 
 	/**
@@ -71,10 +72,6 @@ class RecorderOutput final : AudioOutput {
 	FileOutputStream *file;
 
 	RecorderOutput(const ConfigBlock &block);
-
-	~RecorderOutput() {
-		delete prepared_encoder;
-	}
 
 public:
 	static AudioOutput *Create(EventLoop &, const ConfigBlock &block) {
@@ -136,7 +133,7 @@ RecorderOutput::RecorderOutput(const ConfigBlock &block)
 
 	/* initialize encoder */
 
-	prepared_encoder = encoder_init(*encoder_plugin, block);
+	prepared_encoder.reset(encoder_init(*encoder_plugin, block));
 }
 
 inline void

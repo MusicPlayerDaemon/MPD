@@ -39,6 +39,7 @@
 
 #include <queue>
 #include <list>
+#include <memory>
 
 struct ConfigBlock;
 class EventLoop;
@@ -60,7 +61,7 @@ class HttpdOutput final : AudioOutput, ServerSocket {
 	/**
 	 * The configured encoder plugin.
 	 */
-	PreparedEncoder *prepared_encoder = nullptr;
+	std::unique_ptr<PreparedEncoder> prepared_encoder;
 	Encoder *encoder = nullptr;
 
 	/**
@@ -152,7 +153,6 @@ private:
 
 public:
 	HttpdOutput(EventLoop &_loop, const ConfigBlock &block);
-	~HttpdOutput();
 
 	static AudioOutput *Create(EventLoop &event_loop,
 				   const ConfigBlock &block) {

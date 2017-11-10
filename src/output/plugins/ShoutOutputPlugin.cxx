@@ -30,6 +30,7 @@
 #include <shout/shout.h>
 
 #include <stdexcept>
+#include <memory>
 
 #include <assert.h>
 #include <stdlib.h>
@@ -42,7 +43,7 @@ struct ShoutOutput final : AudioOutput {
 	shout_t *shout_conn;
 	shout_metadata_t *shout_meta;
 
-	PreparedEncoder *prepared_encoder = nullptr;
+	std::unique_ptr<PreparedEncoder> prepared_encoder;
 	Encoder *encoder;
 
 	float quality = -2.0;
@@ -162,7 +163,7 @@ ShoutOutput::ShoutOutput(const ConfigBlock &block)
 		throw FormatRuntimeError("couldn't find shout encoder plugin \"%s\"",
 					 encoding);
 
-	prepared_encoder = encoder_init(*encoder_plugin, block);
+	prepared_encoder.reset(encoder_init(*encoder_plugin, block));
 
 	unsigned shout_format;
 	if (strcmp(encoding, "mp3") == 0 || strcmp(encoding, "lame") == 0)
@@ -243,8 +244,6 @@ ShoutOutput::~ShoutOutput()
 	shout_init_count--;
 	if (shout_init_count == 0)
 		shout_shutdown();
-
-	delete prepared_encoder;
 }
 
 AudioOutput *
