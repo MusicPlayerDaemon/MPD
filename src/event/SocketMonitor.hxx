@@ -45,13 +45,13 @@ class EventLoop;
  * as thread-safe.
  */
 class SocketMonitor {
-	SocketDescriptor fd;
+	SocketDescriptor fd = SocketDescriptor::Undefined();
 	EventLoop &loop;
 
 	/**
 	 * A bit mask of events that is currently registered in the EventLoop.
 	 */
-	unsigned scheduled_flags;
+	unsigned scheduled_flags = 0;
 
 public:
 	static constexpr unsigned READ = PollGroup::READ;
@@ -62,10 +62,10 @@ public:
 	typedef std::make_signed<size_t>::type ssize_t;
 
 	SocketMonitor(EventLoop &_loop)
-		:fd(-1), loop(_loop), scheduled_flags(0) {}
+		:loop(_loop) {}
 
 	SocketMonitor(SocketDescriptor _fd, EventLoop &_loop)
-		:fd(_fd), loop(_loop), scheduled_flags(0) {}
+		:fd(_fd), loop(_loop) {}
 
 	~SocketMonitor();
 
