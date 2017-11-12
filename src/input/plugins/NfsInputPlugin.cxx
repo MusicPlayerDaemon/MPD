@@ -72,9 +72,9 @@ protected:
 
 private:
 	/* virtual methods from NfsFileReader */
-	void OnNfsFileOpen(uint64_t size) override;
-	void OnNfsFileRead(const void *data, size_t size) override;
-	void OnNfsFileError(std::exception_ptr &&e) override;
+	void OnNfsFileOpen(uint64_t size) noexcept override;
+	void OnNfsFileRead(const void *data, size_t size) noexcept override;
+	void OnNfsFileError(std::exception_ptr &&e) noexcept override;
 };
 
 void
@@ -141,7 +141,7 @@ NfsInputStream::DoSeek(offset_type new_offset)
 }
 
 void
-NfsInputStream::OnNfsFileOpen(uint64_t _size)
+NfsInputStream::OnNfsFileOpen(uint64_t _size) noexcept
 {
 	const std::lock_guard<Mutex> protect(mutex);
 
@@ -161,7 +161,7 @@ NfsInputStream::OnNfsFileOpen(uint64_t _size)
 }
 
 void
-NfsInputStream::OnNfsFileRead(const void *data, size_t data_size)
+NfsInputStream::OnNfsFileRead(const void *data, size_t data_size) noexcept
 {
 	const std::lock_guard<Mutex> protect(mutex);
 	assert(!IsBufferFull());
@@ -174,7 +174,7 @@ NfsInputStream::OnNfsFileRead(const void *data, size_t data_size)
 }
 
 void
-NfsInputStream::OnNfsFileError(std::exception_ptr &&e)
+NfsInputStream::OnNfsFileError(std::exception_ptr &&e) noexcept
 {
 	const std::lock_guard<Mutex> protect(mutex);
 
@@ -211,7 +211,7 @@ input_nfs_init(EventLoop &event_loop, const ConfigBlock &)
 }
 
 static void
-input_nfs_finish()
+input_nfs_finish() noexcept
 {
 	nfs_finish();
 }

@@ -95,20 +95,20 @@ public:
 	const char *MapToRelativeUTF8(const char *uri_utf8) const noexcept override;
 
 	/* virtual methods from NfsLease */
-	void OnNfsConnectionReady() final {
+	void OnNfsConnectionReady() noexcept final {
 		assert(state == State::CONNECTING);
 
 		SetState(State::READY);
 	}
 
-	void OnNfsConnectionFailed(std::exception_ptr e) final {
+	void OnNfsConnectionFailed(std::exception_ptr e) noexcept final {
 		assert(state == State::CONNECTING);
 
 		SetState(State::DELAY, std::move(e));
 		reconnect_timer.Schedule(std::chrono::minutes(1));
 	}
 
-	void OnNfsConnectionDisconnected(std::exception_ptr e) final {
+	void OnNfsConnectionDisconnected(std::exception_ptr e) noexcept final {
 		assert(state == State::READY);
 
 		SetState(State::DELAY, std::move(e));
@@ -129,11 +129,11 @@ public:
 	}
 
 private:
-	EventLoop &GetEventLoop() {
+	EventLoop &GetEventLoop() noexcept {
 		return defer_connect.GetEventLoop();
 	}
 
-	void SetState(State _state) {
+	void SetState(State _state) noexcept {
 		assert(GetEventLoop().IsInside());
 
 		const std::lock_guard<Mutex> protect(mutex);
@@ -141,7 +141,7 @@ private:
 		cond.broadcast();
 	}
 
-	void SetState(State _state, std::exception_ptr &&e) {
+	void SetState(State _state, std::exception_ptr &&e) noexcept {
 		assert(GetEventLoop().IsInside());
 
 		const std::lock_guard<Mutex> protect(mutex);
@@ -150,7 +150,7 @@ private:
 		cond.broadcast();
 	}
 
-	void Connect() {
+	void Connect() noexcept {
 		assert(state != State::READY);
 		assert(GetEventLoop().IsInside());
 
@@ -161,7 +161,7 @@ private:
 		SetState(State::CONNECTING);
 	}
 
-	void EnsureConnected() {
+	void EnsureConnected() noexcept {
 		if (state != State::READY)
 			Connect();
 	}
@@ -191,7 +191,7 @@ private:
 		}
 	}
 
-	void Disconnect() {
+	void Disconnect() noexcept {
 		assert(GetEventLoop().IsInside());
 
 		switch (state) {
@@ -243,7 +243,7 @@ NfsStorage::MapToRelativeUTF8(const char *uri_utf8) const noexcept
 }
 
 static void
-Copy(StorageFileInfo &info, const struct stat &st)
+Copy(StorageFileInfo &info, const struct stat &st) noexcept
 {
 	if (S_ISREG(st.st_mode))
 		info.type = StorageFileInfo::Type::REGULAR;
@@ -275,7 +275,7 @@ protected:
 		connection.Stat(path, *this);
 	}
 
-	void HandleResult(gcc_unused unsigned status, void *data) override {
+	void HandleResult(gcc_unused unsigned status, void *data) noexcept override {
 		Copy(info, *(const struct stat *)data);
 	}
 };
@@ -343,7 +343,8 @@ protected:
 		connection.OpenDirectory(path, *this);
 	}
 
-	void HandleResult(gcc_unused unsigned status, void *data) override {
+	void HandleResult(gcc_unused unsigned status,
+			  void *data) noexcept override {
 		struct nfsdir *const dir = (struct nfsdir *)data;
 
 		CollectEntries(dir);

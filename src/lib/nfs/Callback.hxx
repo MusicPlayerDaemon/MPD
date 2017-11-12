@@ -34,12 +34,12 @@ public:
 	/**
 	 * The operation completed successfully.
 	 */
-	virtual void OnNfsCallback(unsigned status, void *data) = 0;
+	virtual void OnNfsCallback(unsigned status, void *data) noexcept = 0;
 
 	/**
 	 * An error has occurred.
 	 */
-	virtual void OnNfsError(std::exception_ptr &&e) = 0;
+	virtual void OnNfsError(std::exception_ptr &&e) noexcept = 0;
 };
 
 #endif

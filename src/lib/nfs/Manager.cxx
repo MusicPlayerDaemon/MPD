@@ -26,7 +26,7 @@
 #include <string.h>
 
 void
-NfsManager::ManagedConnection::OnNfsConnectionError(std::exception_ptr &&e)
+NfsManager::ManagedConnection::OnNfsConnectionError(std::exception_ptr &&e) noexcept
 {
 	FormatError(e, "NFS error on %s:%s", GetServer(), GetExportName());
 
@@ -72,7 +72,7 @@ NfsManager::Compare::operator()(const ManagedConnection &a,
 	return result < 0;
 }
 
-NfsManager::~NfsManager()
+NfsManager::~NfsManager() noexcept
 {
 	assert(GetEventLoop().IsInside());
 
@@ -102,7 +102,7 @@ NfsManager::GetConnection(const char *server, const char *export_name) noexcept
 }
 
 void
-NfsManager::CollectGarbage()
+NfsManager::CollectGarbage() noexcept
 {
 	assert(GetEventLoop().IsInside());
 

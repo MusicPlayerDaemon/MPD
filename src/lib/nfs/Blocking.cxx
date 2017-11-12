@@ -42,7 +42,7 @@ BlockingNfsOperation::Run()
 }
 
 void
-BlockingNfsOperation::OnNfsConnectionReady()
+BlockingNfsOperation::OnNfsConnectionReady() noexcept
 {
 	try {
 		Start();
@@ -54,21 +54,21 @@ BlockingNfsOperation::OnNfsConnectionReady()
 }
 
 void
-BlockingNfsOperation::OnNfsConnectionFailed(std::exception_ptr e)
+BlockingNfsOperation::OnNfsConnectionFailed(std::exception_ptr e) noexcept
 {
 	error = std::move(e);
 	LockSetFinished();
 }
 
 void
-BlockingNfsOperation::OnNfsConnectionDisconnected(std::exception_ptr e)
+BlockingNfsOperation::OnNfsConnectionDisconnected(std::exception_ptr e) noexcept
 {
 	error = std::move(e);
 	LockSetFinished();
 }
 
 void
-BlockingNfsOperation::OnNfsCallback(unsigned status, void *data)
+BlockingNfsOperation::OnNfsCallback(unsigned status, void *data) noexcept
 {
 	connection.RemoveLease(*this);
 
@@ -77,7 +77,7 @@ BlockingNfsOperation::OnNfsCallback(unsigned status, void *data)
 }
 
 void
-BlockingNfsOperation::OnNfsError(std::exception_ptr &&e)
+BlockingNfsOperation::OnNfsError(std::exception_ptr &&e) noexcept
 {
 	connection.RemoveLease(*this);
 
