@@ -21,7 +21,7 @@
 #include "Loop.hxx"
 #include "SocketMonitor.hxx"
 #include "IdleMonitor.hxx"
-#include "DeferredMonitor.hxx"
+#include "DeferEvent.hxx"
 #include "util/ScopeExit.hxx"
 
 EventLoop::EventLoop(ThreadId _thread)
@@ -163,7 +163,7 @@ EventLoop::Run()
 				return;
 		}
 
-		/* try to handle DeferredMonitors without WakeFD
+		/* try to handle DeferEvents without WakeFD
 		   overhead */
 		{
 			const std::lock_guard<Mutex> lock(mutex);
@@ -211,7 +211,7 @@ EventLoop::Run()
 }
 
 void
-EventLoop::AddDeferred(DeferredMonitor &d)
+EventLoop::AddDeferred(DeferEvent &d) noexcept
 {
 	bool must_wake;
 
@@ -221,7 +221,7 @@ EventLoop::AddDeferred(DeferredMonitor &d)
 			return;
 
 		/* we don't need to wake up the EventLoop if another
-		   DeferredMonitor has already done it */
+		   DeferEvent has already done it */
 		must_wake = !busy && deferred.empty();
 
 		deferred.push_back(d);
@@ -233,7 +233,7 @@ EventLoop::AddDeferred(DeferredMonitor &d)
 }
 
 void
-EventLoop::RemoveDeferred(DeferredMonitor &d)
+EventLoop::RemoveDeferred(DeferEvent &d) noexcept
 {
 	const std::lock_guard<Mutex> protect(mutex);
 
@@ -245,7 +245,7 @@ void
 EventLoop::HandleDeferred()
 {
 	while (!deferred.empty() && !quit) {
-		DeferredMonitor &m = deferred.front();
+		auto &m = deferred.front();
 		assert(m.IsPending());
 
 		deferred.pop_front();

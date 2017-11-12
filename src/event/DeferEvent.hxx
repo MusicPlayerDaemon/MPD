@@ -21,28 +21,49 @@
 #define MPD_DEFER_EVENT_HXX
 
 #include "check.h"
-#include "DeferredMonitor.hxx"
 #include "util/BindMethod.hxx"
+
+#include <boost/intrusive/list_hook.hpp>
+
+class EventLoop;
 
 /**
  * Invoke a method call in the #EventLoop.
  *
  * This class is thread-safe.
  */
-class DeferEvent final : DeferredMonitor {
+class DeferEvent final {
+	friend class EventLoop;
+
+	typedef boost::intrusive::list_member_hook<> ListHook;
+	ListHook list_hook;
+
+	EventLoop &loop;
+
 	typedef BoundMethod<void() noexcept> Callback;
 	const Callback callback;
 
 public:
-	DeferEvent(EventLoop &_loop, Callback _callback)
-		:DeferredMonitor(_loop), callback(_callback) {}
+	DeferEvent(EventLoop &_loop, Callback _callback) noexcept
+		:loop(_loop), callback(_callback) {}
 
-	using DeferredMonitor::GetEventLoop;
-	using DeferredMonitor::Schedule;
-	using DeferredMonitor::Cancel;
+	~DeferEvent() noexcept {
+		Cancel();
+	}
+
+	EventLoop &GetEventLoop() noexcept {
+		return loop;
+	}
+
+	void Schedule() noexcept;
+	void Cancel() noexcept;
 
 private:
-	void RunDeferred() noexcept override {
+	bool IsPending() const noexcept {
+		return list_hook.is_linked();
+	}
+
+	void RunDeferred() noexcept {
 		callback();
 	}
 };
