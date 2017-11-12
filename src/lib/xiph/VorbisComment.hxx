@@ -31,26 +31,26 @@ class VorbisComment {
 	vorbis_comment vc;
 
 public:
-	VorbisComment() {
+	VorbisComment() noexcept {
 		vorbis_comment_init(&vc);
 	}
 
-	~VorbisComment() {
+	~VorbisComment() noexcept {
 		vorbis_comment_clear(&vc);
 	}
 
 	VorbisComment(const VorbisComment &) = delete;
 	VorbisComment &operator=(const VorbisComment &) = delete;
 
-	operator vorbis_comment &() {
+	operator vorbis_comment &() noexcept {
 		return vc;
 	}
 
-	operator vorbis_comment *() {
+	operator vorbis_comment *() noexcept {
 		return &vc;
 	}
 
-	void AddTag(const char *tag, const char *contents) {
+	void AddTag(const char *tag, const char *contents) noexcept {
 		vorbis_comment_add_tag(&vc, tag, contents);
 	}
 };

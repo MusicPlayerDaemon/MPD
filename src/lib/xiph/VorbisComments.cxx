@@ -29,7 +29,7 @@
 #include "util/DivideString.hxx"
 
 bool
-vorbis_comments_to_replay_gain(ReplayGainInfo &rgi, char **comments)
+vorbis_comments_to_replay_gain(ReplayGainInfo &rgi, char **comments) noexcept
 {
 	rgi.Clear();
 
@@ -100,7 +100,7 @@ vorbis_comments_scan(char **comments,
 }
 
 Tag *
-vorbis_comments_to_tag(char **comments)
+vorbis_comments_to_tag(char **comments) noexcept
 {
 	TagBuilder tag_builder;
 	vorbis_comments_scan(comments, add_tag_handler, &tag_builder);

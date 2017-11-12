@@ -26,7 +26,7 @@
 static std::atomic_uint next_ogg_serial;
 
 int
-GenerateOggSerial()
+GenerateOggSerial() noexcept
 {
 	unsigned serial = ++next_ogg_serial;
 	if (gcc_unlikely(serial < 16)) {
