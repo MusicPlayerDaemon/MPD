@@ -35,7 +35,7 @@
 #include "util/ConstBuffer.hxx"
 #include "util/StringView.hxx"
 #include "event/MultiSocketMonitor.hxx"
-#include "event/DeferredMonitor.hxx"
+#include "event/DeferEvent.hxx"
 #include "event/Call.hxx"
 #include "Log.hxx"
 
@@ -51,7 +51,9 @@ static const char default_device[] = "default";
 static constexpr unsigned MPD_ALSA_BUFFER_TIME_US = 500000;
 
 class AlsaOutput final
-	: AudioOutput, MultiSocketMonitor, DeferredMonitor {
+	: AudioOutput, MultiSocketMonitor {
+
+	DeferEvent defer_invalidate_sockets;
 
 	Manual<PcmExport> pcm_export;
 
@@ -224,7 +226,7 @@ private:
 			return;
 
 		active = true;
-		DeferredMonitor::Schedule();
+		defer_invalidate_sockets.Schedule();
 	}
 
 	/**
@@ -294,11 +296,6 @@ private:
 		return !!error;
 	}
 
-	/* virtual methods from class DeferredMonitor */
-	virtual void RunDeferred() override {
-		InvalidateSockets();
-	}
-
 	/* virtual methods from class MultiSocketMonitor */
 	virtual std::chrono::steady_clock::duration PrepareSockets() override;
 	virtual void DispatchSockets() override;
@@ -306,9 +303,10 @@ private:
 
 static constexpr Domain alsa_output_domain("alsa_output");
 
-AlsaOutput::AlsaOutput(EventLoop &loop, const ConfigBlock &block)
+AlsaOutput::AlsaOutput(EventLoop &_loop, const ConfigBlock &block)
 	:AudioOutput(FLAG_ENABLE_DISABLE),
-	 MultiSocketMonitor(loop), DeferredMonitor(loop),
+	 MultiSocketMonitor(_loop),
+	 defer_invalidate_sockets(_loop, BIND_THIS_METHOD(InvalidateSockets)),
 	 device(block.GetBlockValue("device", "")),
 #ifdef ENABLE_DSD
 	 dop_setting(block.GetBlockValue("dop", false) ||
@@ -747,7 +745,7 @@ AlsaOutput::Close() noexcept
 	/* make sure the I/O thread isn't inside DispatchSockets() */
 	BlockingCall(MultiSocketMonitor::GetEventLoop(), [this](){
 			MultiSocketMonitor::Reset();
-			DeferredMonitor::Cancel();
+			defer_invalidate_sockets.Cancel();
 		});
 
 	period_buffer.Free();

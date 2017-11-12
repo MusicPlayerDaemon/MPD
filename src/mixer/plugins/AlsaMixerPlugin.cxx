@@ -23,7 +23,7 @@
 #include "mixer/Listener.hxx"
 #include "output/OutputAPI.hxx"
 #include "event/MultiSocketMonitor.hxx"
-#include "event/DeferredMonitor.hxx"
+#include "event/DeferEvent.hxx"
 #include "event/Call.hxx"
 #include "util/ASCII.hxx"
 #include "util/ReusableArray.hxx"
@@ -43,30 +43,30 @@ extern "C" {
 #define VOLUME_MIXER_ALSA_CONTROL_DEFAULT	"PCM"
 static constexpr unsigned VOLUME_MIXER_ALSA_INDEX_DEFAULT = 0;
 
-class AlsaMixerMonitor final : MultiSocketMonitor, DeferredMonitor {
+class AlsaMixerMonitor final : MultiSocketMonitor {
+	DeferEvent defer_invalidate_sockets;
+
 	snd_mixer_t *mixer;
 
 	ReusableArray<pollfd> pfd_buffer;
 
 public:
 	AlsaMixerMonitor(EventLoop &_loop, snd_mixer_t *_mixer)
-		:MultiSocketMonitor(_loop), DeferredMonitor(_loop),
+		:MultiSocketMonitor(_loop),
+		 defer_invalidate_sockets(_loop,
+					  BIND_THIS_METHOD(InvalidateSockets)),
 		 mixer(_mixer) {
-		DeferredMonitor::Schedule();
+		defer_invalidate_sockets.Schedule();
 	}
 
 	~AlsaMixerMonitor() {
 		BlockingCall(MultiSocketMonitor::GetEventLoop(), [this](){
 				MultiSocketMonitor::Reset();
-				DeferredMonitor::Cancel();
+				defer_invalidate_sockets.Cancel();
 			});
 	}
 
 private:
-	virtual void RunDeferred() override {
-		InvalidateSockets();
-	}
-
 	virtual std::chrono::steady_clock::duration PrepareSockets() override;
 	virtual void DispatchSockets() override;
 };
