@@ -43,10 +43,10 @@ class IdleMonitor {
 	EventLoop &loop;
 
 public:
-	IdleMonitor(EventLoop &_loop)
+	explicit IdleMonitor(EventLoop &_loop) noexcept
 		:loop(_loop) {}
 
-	~IdleMonitor() {
+	~IdleMonitor() noexcept {
 #ifndef NDEBUG
 		/* this check is redundant, it is only here to avoid
 		   the assertion in Cancel() */
@@ -55,22 +55,22 @@ public:
 			Cancel();
 	}
 
-	EventLoop &GetEventLoop() const {
+	EventLoop &GetEventLoop() const noexcept {
 		return loop;
 	}
 
-	bool IsActive() const {
+	bool IsActive() const noexcept {
 		return list_hook.is_linked();
 	}
 
-	void Schedule();
-	void Cancel();
+	void Schedule() noexcept;
+	void Cancel() noexcept;
 
 protected:
-	virtual void OnIdle() = 0;
+	virtual void OnIdle() noexcept = 0;
 
 private:
-	void Run();
+	void Run() noexcept;
 };
 
 #endif /* MAIN_NOTIFY_H */

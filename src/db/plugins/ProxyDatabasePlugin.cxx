@@ -145,7 +145,7 @@ private:
 	bool OnSocketReady(unsigned flags) noexcept override;
 
 	/* virtual methods from IdleMonitor */
-	void OnIdle() override;
+	void OnIdle() noexcept override;
 };
 
 static constexpr struct {
@@ -488,7 +488,7 @@ ProxyDatabase::OnSocketReady(gcc_unused unsigned flags) noexcept
 }
 
 void
-ProxyDatabase::OnIdle()
+ProxyDatabase::OnIdle() noexcept
 {
 	assert(connection != nullptr);
 

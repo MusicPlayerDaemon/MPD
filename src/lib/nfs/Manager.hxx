@@ -116,7 +116,7 @@ private:
 	void CollectGarbage();
 
 	/* virtual methods from IdleMonitor */
-	void OnIdle() override;
+	void OnIdle() noexcept override;
 };
 
 #endif

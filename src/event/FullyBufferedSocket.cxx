@@ -110,7 +110,7 @@ FullyBufferedSocket::OnSocketReady(unsigned flags) noexcept
 }
 
 void
-FullyBufferedSocket::OnIdle()
+FullyBufferedSocket::OnIdle() noexcept
 {
 	if (Flush() && !output.empty())
 		ScheduleWrite();

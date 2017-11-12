@@ -24,7 +24,7 @@
 #include <assert.h>
 
 void
-IdleMonitor::Cancel()
+IdleMonitor::Cancel() noexcept
 {
 	assert(loop.IsInside());
 
@@ -35,7 +35,7 @@ IdleMonitor::Cancel()
 }
 
 void
-IdleMonitor::Schedule()
+IdleMonitor::Schedule() noexcept
 {
 	assert(loop.IsInside());
 
@@ -47,7 +47,7 @@ IdleMonitor::Schedule()
 }
 
 void
-IdleMonitor::Run()
+IdleMonitor::Run() noexcept
 {
 	assert(loop.IsInside());
 

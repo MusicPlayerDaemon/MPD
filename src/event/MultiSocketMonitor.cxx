@@ -89,7 +89,7 @@ MultiSocketMonitor::Prepare()
 }
 
 void
-MultiSocketMonitor::OnIdle()
+MultiSocketMonitor::OnIdle() noexcept
 {
 	if (ready) {
 		ready = false;

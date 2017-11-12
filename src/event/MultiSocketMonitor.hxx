@@ -223,7 +223,7 @@ private:
 		IdleMonitor::Schedule();
 	}
 
-	virtual void OnIdle() final;
+	virtual void OnIdle() noexcept final;
 };
 
 #endif

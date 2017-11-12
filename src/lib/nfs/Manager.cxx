@@ -110,7 +110,7 @@ NfsManager::CollectGarbage()
 }
 
 void
-NfsManager::OnIdle()
+NfsManager::OnIdle() noexcept
 {
 	CollectGarbage();
 }
