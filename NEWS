@@ -2,6 +2,7 @@ ver 0.20.12 (not yet released)
 * input
   - curl: fix seeking
 * decoder
+  - ffmpeg: fix GCC 8 warning
   - vorbis: fix Tremor support
 * player
   - log message when decoder is too slow
