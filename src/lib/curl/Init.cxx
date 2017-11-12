@@ -57,7 +57,7 @@ CurlInit::CurlInit(EventLoop &event_loop)
 	instance = new CurlGlobal(event_loop);
 }
 
-CurlInit::~CurlInit()
+CurlInit::~CurlInit() noexcept
 {
 	const std::lock_guard<Mutex> protect(mutex);
 	if (--ref > 0)

@@ -127,7 +127,7 @@ struct CurlInputStream final : public AsyncInputStream, CurlResponseHandler {
 		       std::multimap<std::string, std::string> &&headers) override;
 	void OnData(ConstBuffer<void> data) override;
 	void OnEnd() override;
-	void OnError(std::exception_ptr e) override;
+	void OnError(std::exception_ptr e) noexcept override;
 
 	/* virtual methods from AsyncInputStream */
 	virtual void DoResume() override;
@@ -275,7 +275,7 @@ CurlInputStream::OnEnd()
 }
 
 void
-CurlInputStream::OnError(std::exception_ptr e)
+CurlInputStream::OnError(std::exception_ptr e) noexcept
 {
 	postponed_exception = std::move(e);
 

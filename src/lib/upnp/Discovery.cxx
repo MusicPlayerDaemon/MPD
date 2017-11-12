@@ -86,7 +86,7 @@ UPnPDeviceDirectory::Downloader::OnEnd()
 }
 
 void
-UPnPDeviceDirectory::Downloader::OnError(std::exception_ptr e)
+UPnPDeviceDirectory::Downloader::OnError(std::exception_ptr e) noexcept
 {
 	LogError(e);
 	Destroy();

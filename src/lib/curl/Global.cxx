@@ -68,7 +68,7 @@ public:
 	bool OnSocketReady(unsigned flags) noexcept override;
 
 private:
-	static constexpr int FlagsToCurlCSelect(unsigned flags) {
+	static constexpr int FlagsToCurlCSelect(unsigned flags) noexcept {
 		return (flags & (READ | HANGUP) ? CURL_CSELECT_IN : 0) |
 			(flags & WRITE ? CURL_CSELECT_OUT : 0) |
 			(flags & ERROR ? CURL_CSELECT_ERR : 0);
@@ -175,7 +175,7 @@ CurlGlobal::Add(CURL *easy, CurlRequest &request)
 }
 
 void
-CurlGlobal::Remove(CURL *easy)
+CurlGlobal::Remove(CURL *easy) noexcept
 {
 	assert(GetEventLoop().IsInside());
 	assert(easy != nullptr);
@@ -186,7 +186,7 @@ CurlGlobal::Remove(CURL *easy)
 }
 
 static CurlRequest *
-ToRequest(CURL *easy)
+ToRequest(CURL *easy) noexcept
 {
 	void *p;
 	CURLcode code = curl_easy_getinfo(easy, CURLINFO_PRIVATE, &p);
@@ -202,7 +202,7 @@ ToRequest(CURL *easy)
  * Runs in the I/O thread.  The caller must not hold locks.
  */
 inline void
-CurlGlobal::ReadInfo()
+CurlGlobal::ReadInfo() noexcept
 {
 	assert(GetEventLoop().IsInside());
 
@@ -220,7 +220,7 @@ CurlGlobal::ReadInfo()
 }
 
 inline void
-CurlGlobal::UpdateTimeout(long timeout_ms)
+CurlGlobal::UpdateTimeout(long timeout_ms) noexcept
 {
 	if (timeout_ms < 0) {
 		timeout_event.Cancel();
@@ -238,7 +238,8 @@ CurlGlobal::UpdateTimeout(long timeout_ms)
 }
 
 int
-CurlGlobal::TimerFunction(gcc_unused CURLM *_global, long timeout_ms, void *userp)
+CurlGlobal::TimerFunction(gcc_unused CURLM *_global, long timeout_ms,
+			  void *userp) noexcept
 {
 	auto &global = *(CurlGlobal *)userp;
 	assert(_global == global.multi.Get());
@@ -248,13 +249,13 @@ CurlGlobal::TimerFunction(gcc_unused CURLM *_global, long timeout_ms, void *user
 }
 
 void
-CurlGlobal::OnTimeout()
+CurlGlobal::OnTimeout() noexcept
 {
 	SocketAction(CURL_SOCKET_TIMEOUT, 0);
 }
 
 void
-CurlGlobal::SocketAction(curl_socket_t fd, int ev_bitmask)
+CurlGlobal::SocketAction(curl_socket_t fd, int ev_bitmask) noexcept
 {
 	int running_handles;
 	CURLMcode mcode = curl_multi_socket_action(multi.Get(), fd, ev_bitmask,

@@ -47,7 +47,7 @@ class CurlInit {
 
 public:
 	explicit CurlInit(EventLoop &event_loop);
-	~CurlInit();
+	~CurlInit() noexcept;
 
 	CurlInit(const CurlInit &) = delete;
 	CurlInit &operator=(const CurlInit &) = delete;
