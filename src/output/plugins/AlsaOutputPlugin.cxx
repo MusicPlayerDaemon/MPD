@@ -297,8 +297,8 @@ private:
 	}
 
 	/* virtual methods from class MultiSocketMonitor */
-	virtual std::chrono::steady_clock::duration PrepareSockets() override;
-	virtual void DispatchSockets() override;
+	std::chrono::steady_clock::duration PrepareSockets() noexcept override;
+	void DispatchSockets() noexcept override;
 };
 
 static constexpr Domain alsa_output_domain("alsa_output");
@@ -799,7 +799,7 @@ AlsaOutput::Play(const void *chunk, size_t size)
 }
 
 std::chrono::steady_clock::duration
-AlsaOutput::PrepareSockets()
+AlsaOutput::PrepareSockets() noexcept
 {
 	if (LockHasError()) {
 		ClearSocketList();
@@ -810,7 +810,7 @@ AlsaOutput::PrepareSockets()
 }
 
 void
-AlsaOutput::DispatchSockets()
+AlsaOutput::DispatchSockets() noexcept
 try {
 	{
 		const std::lock_guard<Mutex> lock(mutex);

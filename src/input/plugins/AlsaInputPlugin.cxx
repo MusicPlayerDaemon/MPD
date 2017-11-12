@@ -141,8 +141,9 @@ private:
 		defer_invalidate_sockets.Schedule();
 	}
 
-	virtual std::chrono::steady_clock::duration PrepareSockets() override;
-	virtual void DispatchSockets() override;
+	/* virtual methods from class MultiSocketMonitor */
+	std::chrono::steady_clock::duration PrepareSockets() noexcept override;
+	void DispatchSockets() noexcept override;
 };
 
 inline InputStream *
@@ -172,7 +173,7 @@ AlsaInputStream::Create(EventLoop &event_loop, const char *uri,
 }
 
 std::chrono::steady_clock::duration
-AlsaInputStream::PrepareSockets()
+AlsaInputStream::PrepareSockets() noexcept
 {
 	if (IsPaused()) {
 		ClearSocketList();
@@ -183,7 +184,7 @@ AlsaInputStream::PrepareSockets()
 }
 
 void
-AlsaInputStream::DispatchSockets()
+AlsaInputStream::DispatchSockets() noexcept
 {
 	const std::lock_guard<Mutex> protect(mutex);
 

@@ -67,8 +67,8 @@ public:
 	}
 
 private:
-	virtual std::chrono::steady_clock::duration PrepareSockets() override;
-	virtual void DispatchSockets() override;
+	std::chrono::steady_clock::duration PrepareSockets() noexcept override;
+	void DispatchSockets() noexcept override;
 };
 
 class AlsaMixer final : public Mixer {
@@ -103,7 +103,7 @@ public:
 static constexpr Domain alsa_mixer_domain("alsa_mixer");
 
 std::chrono::steady_clock::duration
-AlsaMixerMonitor::PrepareSockets()
+AlsaMixerMonitor::PrepareSockets() noexcept
 {
 	if (mixer == nullptr) {
 		ClearSocketList();
@@ -114,7 +114,7 @@ AlsaMixerMonitor::PrepareSockets()
 }
 
 void
-AlsaMixerMonitor::DispatchSockets()
+AlsaMixerMonitor::DispatchSockets() noexcept
 {
 	assert(mixer != nullptr);
 
