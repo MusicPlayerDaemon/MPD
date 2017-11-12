@@ -25,7 +25,7 @@
 #include <pulse/error.h>
 
 std::runtime_error
-MakePulseError(pa_context *context, const char *prefix)
+MakePulseError(pa_context *context, const char *prefix) noexcept
 {
 	const int e = pa_context_errno(context);
 	return FormatRuntimeError("%s: %s", prefix, pa_strerror(e));

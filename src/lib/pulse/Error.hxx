@@ -25,6 +25,6 @@
 struct pa_context;
 
 std::runtime_error
-MakePulseError(pa_context *context, const char *prefix);
+MakePulseError(pa_context *context, const char *prefix) noexcept;
 
 #endif

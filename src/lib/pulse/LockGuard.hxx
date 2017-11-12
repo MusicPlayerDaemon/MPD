@@ -28,12 +28,12 @@ class LockGuard {
 	struct pa_threaded_mainloop *const mainloop;
 
 public:
-	explicit LockGuard(struct pa_threaded_mainloop *_mainloop)
+	explicit LockGuard(struct pa_threaded_mainloop *_mainloop) noexcept
 		:mainloop(_mainloop) {
 		pa_threaded_mainloop_lock(mainloop);
 	}
 
-	~LockGuard() {
+	~LockGuard() noexcept {
 		pa_threaded_mainloop_unlock(mainloop);
 	}
 
