@@ -1400,6 +1400,11 @@ then
 	AX_APPEND_COMPILE_FLAGS([-Wcast-qual])
 	AX_APPEND_COMPILE_FLAGS([-Wwrite-strings])
 	AX_APPEND_COMPILE_FLAGS([-Wsign-compare])
+
+	dnl This GCC8 warning for C++17 ABI compatibility is of no
+	dnl interest for us, because we're not a shared library.
+	AX_APPEND_COMPILE_FLAGS([-Wno-noexcept-type])
+
 	AC_LANG_POP
 fi
 
