@@ -25,7 +25,7 @@
 #include <upnp/upnptools.h>
 
 static inline constexpr unsigned
-CountNameValuePairs()
+CountNameValuePairs() noexcept
 {
 	return 0;
 }
@@ -33,7 +33,7 @@ CountNameValuePairs()
 template<typename... Args>
 static inline constexpr unsigned
 CountNameValuePairs(gcc_unused const char *name, gcc_unused const char *value,
-		    Args... args)
+		    Args... args) noexcept
 {
 	return 1 + CountNameValuePairs(args...);
 }
@@ -45,7 +45,7 @@ CountNameValuePairs(gcc_unused const char *name, gcc_unused const char *value,
 template<typename... Args>
 static inline IXML_Document *
 MakeActionHelper(const char *action_name, const char *service_type,
-		 Args... args)
+		 Args... args) noexcept
 {
 	const unsigned n = CountNameValuePairs(args...);
 	return UpnpMakeAction(action_name, service_type, n,

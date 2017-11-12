@@ -28,7 +28,7 @@
 #include "util/RuntimeError.hxx"
 
 ContentDirectoryService::ContentDirectoryService(const UPnPDevice &device,
-						 const UPnPService &service)
+						 const UPnPService &service) noexcept
 	:m_actionURL(uri_apply_base(service.controlURL, device.URLBase)),
 	 m_serviceType(service.serviceType),
 	 m_deviceId(device.UDN),
@@ -44,7 +44,7 @@ ContentDirectoryService::ContentDirectoryService(const UPnPDevice &device,
 	}
 }
 
-ContentDirectoryService::~ContentDirectoryService()
+ContentDirectoryService::~ContentDirectoryService() noexcept
 {
 	/* this destructor exists here just so it won't get inlined */
 }

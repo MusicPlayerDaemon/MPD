@@ -28,7 +28,7 @@ namespace ixmlwrap {
 	 * contain a text node
 	 */
 	const char *getFirstElementValue(IXML_Document *doc,
-					 const char *name);
+					 const char *name) noexcept;
 
 };
 

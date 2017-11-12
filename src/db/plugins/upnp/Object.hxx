@@ -76,7 +76,7 @@ public:
 	UPnPDirObject() = default;
 	UPnPDirObject(UPnPDirObject &&) = default;
 
-	~UPnPDirObject();
+	~UPnPDirObject() noexcept;
 
 	UPnPDirObject &operator=(UPnPDirObject &&) = default;
 

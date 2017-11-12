@@ -24,7 +24,7 @@
 
 #include <string.h>
 
-UPnPDevice::~UPnPDevice()
+UPnPDevice::~UPnPDevice() noexcept
 {
 	/* this destructor exists here just so it won't get inlined */
 }

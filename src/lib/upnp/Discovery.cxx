@@ -45,7 +45,7 @@ UPnPDeviceDirectory::Downloader::Downloader(UPnPDeviceDirectory &_parent,
 }
 
 void
-UPnPDeviceDirectory::Downloader::Destroy()
+UPnPDeviceDirectory::Downloader::Destroy() noexcept
 {
 	parent.downloaders.erase_and_dispose(parent.downloaders.iterator_to(*this),
 					     DeleteDisposer());
@@ -170,7 +170,7 @@ UPnPDeviceDirectory::LockRemove(const std::string &id)
 }
 
 inline int
-UPnPDeviceDirectory::OnAlive(Upnp_Discovery *disco)
+UPnPDeviceDirectory::OnAlive(Upnp_Discovery *disco) noexcept
 {
 	if (isMSDevice(disco->DeviceType) ||
 	    isCDService(disco->ServiceType)) {
@@ -192,7 +192,7 @@ UPnPDeviceDirectory::OnAlive(Upnp_Discovery *disco)
 }
 
 inline int
-UPnPDeviceDirectory::OnByeBye(Upnp_Discovery *disco)
+UPnPDeviceDirectory::OnByeBye(Upnp_Discovery *disco) noexcept
 {
 	if (isMSDevice(disco->DeviceType) ||
 	    isCDService(disco->ServiceType)) {
@@ -208,7 +208,7 @@ UPnPDeviceDirectory::OnByeBye(Upnp_Discovery *disco)
 // Example: ContentDirectories appearing and disappearing from the network
 // We queue a task for our worker thread(s)
 int
-UPnPDeviceDirectory::Invoke(Upnp_EventType et, void *evp)
+UPnPDeviceDirectory::Invoke(Upnp_EventType et, void *evp) noexcept
 {
 	switch (et) {
 	case UPNP_DISCOVERY_SEARCH_RESULT:
@@ -251,13 +251,13 @@ UPnPDeviceDirectory::ExpireDevices()
 
 UPnPDeviceDirectory::UPnPDeviceDirectory(EventLoop &event_loop,
 					 UpnpClient_Handle _handle,
-					 UPnPDiscoveryListener *_listener)
+					 UPnPDiscoveryListener *_listener) noexcept
 	:curl(event_loop), handle(_handle),
 	 listener(_listener)
 {
 }
 
-UPnPDeviceDirectory::~UPnPDeviceDirectory()
+UPnPDeviceDirectory::~UPnPDeviceDirectory() noexcept
 {
 	BlockingCall(GetEventLoop(), [this](){
 			downloaders.clear_and_dispose(DeleteDisposer());
@@ -265,7 +265,7 @@ UPnPDeviceDirectory::~UPnPDeviceDirectory()
 }
 
 inline EventLoop &
-UPnPDeviceDirectory::GetEventLoop()
+UPnPDeviceDirectory::GetEventLoop() noexcept
 {
 	return curl->GetEventLoop();
 }

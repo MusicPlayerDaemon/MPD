@@ -32,15 +32,15 @@ public:
 	 * Pass this value as "cookie" pointer to libupnp asynchronous
 	 * functions.
 	 */
-	void *GetUpnpCookie() {
+	void *GetUpnpCookie() noexcept {
 		return this;
 	}
 
-	static UpnpCallback &FromUpnpCookie(void *cookie) {
+	static UpnpCallback &FromUpnpCookie(void *cookie) noexcept {
 		return *(UpnpCallback *)cookie;
 	}
 
-	virtual int Invoke(Upnp_EventType et, void *evp) = 0;
+	virtual int Invoke(Upnp_EventType et, void *evp) noexcept = 0;
 };
 
 #endif

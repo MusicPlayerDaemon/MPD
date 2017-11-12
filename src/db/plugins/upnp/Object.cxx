@@ -19,7 +19,7 @@
 
 #include "Object.hxx"
 
-UPnPDirObject::~UPnPDirObject()
+UPnPDirObject::~UPnPDirObject() noexcept
 {
 	/* this destructor exists here just so it won't get inlined */
 }
