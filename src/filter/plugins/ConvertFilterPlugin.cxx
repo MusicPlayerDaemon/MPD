@@ -24,7 +24,6 @@
 #include "util/Manual.hxx"
 #include "util/ConstBuffer.hxx"
 #include "AudioFormat.hxx"
-#include "poison.h"
 
 #include <stdexcept>
 #include <memory>

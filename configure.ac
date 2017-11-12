@@ -252,7 +252,6 @@ AC_SEARCH_LIBS([exp], [m],,
 	[AC_MSG_ERROR([exp() not found])])
 
 AC_CHECK_HEADERS(locale.h)
-AC_CHECK_HEADERS(valgrind/memcheck.h)
 
 AC_CHECK_HEADERS([sys/prctl.h], AC_CHECK_FUNCS([prctl]))
 
