@@ -20,7 +20,7 @@
 #include "config.h"
 #include "Call.hxx"
 #include "Loop.hxx"
-#include "DeferredMonitor.hxx"
+#include "DeferEvent.hxx"
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
 #include "Compiler.h"
@@ -30,8 +30,9 @@
 #include <assert.h>
 
 class BlockingCallMonitor final
-	: DeferredMonitor
 {
+	DeferEvent defer_event;
+
 	const std::function<void()> f;
 
 	Mutex mutex;
@@ -43,12 +44,13 @@ class BlockingCallMonitor final
 
 public:
 	BlockingCallMonitor(EventLoop &_loop, std::function<void()> &&_f)
-		:DeferredMonitor(_loop), f(std::move(_f)), done(false) {}
+		:defer_event(_loop, BIND_THIS_METHOD(RunDeferred)),
+		 f(std::move(_f)), done(false) {}
 
 	void Run() {
 		assert(!done);
 
-		Schedule();
+		defer_event.Schedule();
 
 		mutex.lock();
 		while (!done)
@@ -60,7 +62,7 @@ public:
 	}
 
 private:
-	virtual void RunDeferred() override {
+	void RunDeferred() noexcept {
 		assert(!done);
 
 		try {
