@@ -125,9 +125,13 @@ input_smbclient_open(const char *uri,
 size_t
 SmbclientInputStream::Read(void *ptr, size_t read_size)
 {
-	smbclient_mutex.lock();
-	ssize_t nbytes = smbc_read(fd, ptr, read_size);
-	smbclient_mutex.unlock();
+	ssize_t nbytes;
+
+	{
+		const std::lock_guard<Mutex> lock(smbclient_mutex);
+		nbytes = smbc_read(fd, ptr, read_size);
+	}
+
 	if (nbytes < 0)
 		throw MakeErrno("smbc_read() failed");
 
@@ -138,9 +142,13 @@ SmbclientInputStream::Read(void *ptr, size_t read_size)
 void
 SmbclientInputStream::Seek(offset_type new_offset)
 {
-	smbclient_mutex.lock();
-	off_t result = smbc_lseek(fd, new_offset, SEEK_SET);
-	smbclient_mutex.unlock();
+	off_t result;
+
+	{
+		const std::lock_guard<Mutex> lock(smbclient_mutex);
+		result = smbc_lseek(fd, new_offset, SEEK_SET);
+	}
+
 	if (result < 0)
 		throw MakeErrno("smbc_lseek() failed");
 
