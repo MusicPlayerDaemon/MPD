@@ -128,6 +128,7 @@ SmbclientInputStream::Read(void *ptr, size_t read_size)
 	ssize_t nbytes;
 
 	{
+		const ScopeUnlock unlock(mutex);
 		const std::lock_guard<Mutex> lock(smbclient_mutex);
 		nbytes = smbc_read(fd, ptr, read_size);
 	}
@@ -145,6 +146,7 @@ SmbclientInputStream::Seek(offset_type new_offset)
 	off_t result;
 
 	{
+		const ScopeUnlock unlock(mutex);
 		const std::lock_guard<Mutex> lock(smbclient_mutex);
 		result = smbc_lseek(fd, new_offset, SEEK_SET);
 	}

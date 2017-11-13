@@ -270,7 +270,10 @@ CdioParanoiaInputStream::Seek(offset_type new_offset)
 	lsn_relofs = new_offset / CDIO_CD_FRAMESIZE_RAW;
 	offset = new_offset;
 
-	cdio_paranoia_seek(para, lsn_from + lsn_relofs, SEEK_SET);
+	{
+		const ScopeUnlock unlock(mutex);
+		cdio_paranoia_seek(para, lsn_from + lsn_relofs, SEEK_SET);
+	}
 }
 
 size_t
@@ -292,6 +295,8 @@ CdioParanoiaInputStream::Read(void *ptr, size_t length)
 
 		//current sector was changed ?
 		if (lsn_relofs != buffer_lsn) {
+			const ScopeUnlock unlock(mutex);
+
 			rbuf = cdio_paranoia_read(para, nullptr);
 
 			s_err = cdda_errors(drv);

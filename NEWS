@@ -1,5 +1,7 @@
 ver 0.20.12 (not yet released)
 * input
+  - cdio_paranoia, ffmpeg, file, smbclient: reduce lock contention,
+    fixing lots of xrun problems
   - curl: fix seeking
 * decoder
   - ffmpeg: fix GCC 8 warning
