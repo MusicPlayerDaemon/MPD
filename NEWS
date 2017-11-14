@@ -12,6 +12,7 @@ ver 0.20.12 (not yet released)
   - vorbis: default to quality 3
 * output
   - fix hanging playback with soxr resampler
+  - httpd: flush encoder after tag; fixes corrupt Vorbis stream
 
 ver 0.20.11 (2017/10/18)
 * storage
