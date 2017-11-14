@@ -8,6 +8,8 @@ ver 0.20.12 (not yet released)
   - vorbis: fix Tremor support
 * player
   - log message when decoder is too slow
+* encoder
+  - vorbis: default to quality 3
 * output
   - fix hanging playback with soxr resampler
 
