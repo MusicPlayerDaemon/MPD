@@ -232,13 +232,17 @@ private:
 	/**
 	 * Wrapper for Activate() which unlocks our mutex.  Call this
 	 * if you're holding the mutex.
+	 *
+	 * @return true if Activate() was called, false if the mutex
+	 * was never unlocked
 	 */
-	void UnlockActivate() noexcept {
+	bool UnlockActivate() noexcept {
 		if (active)
-			return;
+			return false;
 
 		const ScopeUnlock unlock(mutex);
 		Activate();
+		return true;
 	}
 
 	void ClearRingBuffer() noexcept {
@@ -784,13 +788,12 @@ AlsaOutput::Play(const void *chunk, size_t size)
 		/* now that the ring_buffer is full, we can activate
 		   the socket handlers to trigger the first
 		   snd_pcm_writei() */
-		UnlockActivate();
-
-		/* check the error again, because a new one may have
-		   been set while our mutex was unlocked in
-		   UnlockActivate() */
-		if (error)
-			std::rethrow_exception(error);
+		if (UnlockActivate())
+			/* since everything may have changed while the
+			   mutex was unlocked, we need to skip the
+			   cond.wait() call below and check the new
+			   status */
+			continue;
 
 		/* wait for the DispatchSockets() to make room in the
 		   ring_buffer */
