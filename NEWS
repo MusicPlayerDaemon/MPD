@@ -17,14 +17,19 @@ ver 0.21 (not yet released)
 
 ver 0.20.12 (not yet released)
 * input
+  - cdio_paranoia, ffmpeg, file, smbclient: reduce lock contention,
+    fixing lots of xrun problems
   - curl: fix seeking
 * decoder
   - ffmpeg: fix GCC 8 warning
   - vorbis: fix Tremor support
 * player
   - log message when decoder is too slow
+* encoder
+  - vorbis: default to quality 3
 * output
   - fix hanging playback with soxr resampler
+  - httpd: flush encoder after tag; fixes corrupt Vorbis stream
 
 ver 0.20.11 (2017/10/18)
 * storage

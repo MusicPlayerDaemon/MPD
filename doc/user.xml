@@ -3068,8 +3068,8 @@ run</programlisting>
                 </entry>
                 <entry>
                   Sets the quality for VBR.  -1 is the lowest quality,
-                  10 is the highest quality.  Cannot be used with
-                  <varname>bitrate</varname>.
+                  10 is the highest quality.  Defaults to 3.  Cannot
+                  be used with <varname>bitrate</varname>.
                 </entry>
               </row>
               <row>

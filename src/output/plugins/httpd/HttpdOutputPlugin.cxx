@@ -387,6 +387,7 @@ HttpdOutput::SendTag(const Tag &tag)
 
 		try {
 			encoder->SendTag(tag);
+			encoder->Flush();
 		} catch (const std::runtime_error &) {
 			/* ignore */
 		}

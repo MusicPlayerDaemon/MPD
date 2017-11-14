@@ -62,7 +62,7 @@ private:
 };
 
 class PreparedVorbisEncoder final : public PreparedEncoder {
-	float quality;
+	float quality = 3;
 	int bitrate;
 
 public:
@@ -97,7 +97,7 @@ PreparedVorbisEncoder::PreparedVorbisEncoder(const ConfigBlock &block)
 
 		value = block.GetBlockValue("bitrate");
 		if (value == nullptr)
-			throw std::runtime_error("neither bitrate nor quality defined");
+			return;
 
 		quality = -2.0;
 

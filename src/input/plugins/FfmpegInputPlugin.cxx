@@ -104,7 +104,13 @@ input_ffmpeg_open(const char *uri,
 size_t
 FfmpegInputStream::Read(void *ptr, size_t read_size)
 {
-	auto result = avio_read(h, (unsigned char *)ptr, read_size);
+	int result;
+
+	{
+		const ScopeUnlock unlock(mutex);
+		result = avio_read(h, (unsigned char *)ptr, read_size);
+	}
+
 	if (result <= 0) {
 		if (result < 0)
 			throw MakeFfmpegError(result, "avio_read() failed");
@@ -126,7 +132,12 @@ FfmpegInputStream::IsEOF() noexcept
 void
 FfmpegInputStream::Seek(offset_type new_offset)
 {
-	auto result = avio_seek(h, new_offset, SEEK_SET);
+	int64_t result;
+
+	{
+		const ScopeUnlock unlock(mutex);
+		result = avio_seek(h, new_offset, SEEK_SET);
+	}
 
 	if (result < 0)
 		throw MakeFfmpegError(result, "avio_seek() failed");
