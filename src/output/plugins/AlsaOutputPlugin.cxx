@@ -815,7 +815,13 @@ AlsaOutput::PrepareSockets() noexcept
 		return std::chrono::steady_clock::duration(-1);
 	}
 
-	return PrepareAlsaPcmSockets(*this, pcm, pfd_buffer);
+	try {
+		return PrepareAlsaPcmSockets(*this, pcm, pfd_buffer);
+	} catch (...) {
+		ClearSocketList();
+		LockCaughtError();
+		return std::chrono::steady_clock::duration(-1);
+	}
 }
 
 void
