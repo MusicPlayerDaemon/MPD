@@ -300,6 +300,12 @@ private:
 		return !!error;
 	}
 
+	void LockCaughtError() noexcept {
+		const std::lock_guard<Mutex> lock(mutex);
+		error = std::current_exception();
+		cond.signal();
+	}
+
 	/* virtual methods from class MultiSocketMonitor */
 	std::chrono::steady_clock::duration PrepareSockets() noexcept override;
 	void DispatchSockets() noexcept override;
@@ -865,10 +871,7 @@ try {
 	}
 } catch (const std::runtime_error &) {
 	MultiSocketMonitor::Reset();
-
-	const std::lock_guard<Mutex> lock(mutex);
-	error = std::current_exception();
-	cond.signal();
+	LockCaughtError();
 }
 
 const struct AudioOutputPlugin alsa_output_plugin = {
