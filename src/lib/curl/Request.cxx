@@ -72,7 +72,7 @@ CurlRequest::~CurlRequest() noexcept
 }
 
 void
-CurlRequest::Start() noexcept
+CurlRequest::Start()
 {
 	assert(!registered);
 

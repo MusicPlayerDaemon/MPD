@@ -91,7 +91,7 @@ public:
 	 *
 	 * This method must be called in the event loop thread.
 	 */
-	void Start() noexcept;
+	void Start();
 
 	/**
 	 * Unregister this request via CurlGlobal::Remove().

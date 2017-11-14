@@ -110,7 +110,11 @@ class UPnPDeviceDirectory final : UpnpCallback {
 
 	private:
 		void OnDeferredStart() noexcept {
-			request.Start();
+			try {
+				request.Start();
+			} catch (...) {
+				OnError(std::current_exception());
+			}
 		}
 
 		/* virtual methods from CurlResponseHandler */
@@ -147,7 +151,7 @@ class UPnPDeviceDirectory final : UpnpCallback {
 
 public:
 	UPnPDeviceDirectory(EventLoop &event_loop, UpnpClient_Handle _handle,
-			    UPnPDiscoveryListener *_listener=nullptr) noexcept;
+			    UPnPDiscoveryListener *_listener=nullptr);
 	~UPnPDeviceDirectory() noexcept;
 
 	UPnPDeviceDirectory(const UPnPDeviceDirectory &) = delete;

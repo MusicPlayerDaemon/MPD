@@ -140,7 +140,11 @@ private:
 	void OnDeferredStart() noexcept {
 		assert(!done);
 
-		request.Start();
+		try {
+			request.Start();
+		} catch (...) {
+			OnError(std::current_exception());
+		}
 	}
 
 	/* virtual methods from CurlResponseHandler */

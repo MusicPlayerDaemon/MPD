@@ -174,15 +174,19 @@ UPnPDeviceDirectory::OnAlive(Upnp_Discovery *disco) noexcept
 {
 	if (isMSDevice(disco->DeviceType) ||
 	    isCDService(disco->ServiceType)) {
-		auto *downloader = new Downloader(*this, *disco);
-
 		try {
-			downloader->Start();
-		} catch (...) {
-			BlockingCall(GetEventLoop(), [downloader](){
-					downloader->Destroy();
-				});
+			auto *downloader = new Downloader(*this, *disco);
 
+			try {
+				downloader->Start();
+			} catch (...) {
+				BlockingCall(GetEventLoop(), [downloader](){
+						downloader->Destroy();
+					});
+
+				throw;
+			}
+		} catch (...) {
 			LogError(std::current_exception());
 			return UPNP_E_SUCCESS;
 		}
@@ -251,7 +255,7 @@ UPnPDeviceDirectory::ExpireDevices()
 
 UPnPDeviceDirectory::UPnPDeviceDirectory(EventLoop &event_loop,
 					 UpnpClient_Handle _handle,
-					 UPnPDiscoveryListener *_listener) noexcept
+					 UPnPDiscoveryListener *_listener)
 	:curl(event_loop), handle(_handle),
 	 listener(_listener)
 {
