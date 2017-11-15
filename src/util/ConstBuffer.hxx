@@ -109,6 +109,9 @@ struct ConstBuffer {
 	constexpr ConstBuffer(pointer_type _data, size_type _size)
 		:data(_data), size(_size) {}
 
+	constexpr ConstBuffer(pointer_type _data, pointer_type _end)
+		:data(_data), size(_end - _data) {}
+
 	/**
 	 * Convert array to ConstBuffer instance.
 	 */
