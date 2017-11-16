@@ -1,4 +1,6 @@
 ver 0.20.12 (not yet released)
+* database
+  - upnp: adapt to libupnp 1.8 API changes
 * input
   - cdio_paranoia, ffmpeg, file, smbclient: reduce lock contention,
     fixing lots of xrun problems

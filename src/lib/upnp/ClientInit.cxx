@@ -33,7 +33,12 @@ static unsigned upnp_client_ref;
 static UpnpClient_Handle upnp_client_handle;
 
 static int
-UpnpClientCallback(Upnp_EventType et, void *evp, void *cookie)
+UpnpClientCallback(Upnp_EventType et,
+#if UPNP_VERSION >= 10800
+		   const
+#endif
+		   void *evp,
+		   void *cookie)
 {
 	if (cookie == nullptr)
 		/* this is the cookie passed to UpnpRegisterClient();

@@ -153,10 +153,10 @@ UPnPDeviceDirectory::Explore(void *ctx)
 }
 
 inline int
-UPnPDeviceDirectory::OnAlive(const Upnp_Discovery *disco)
+UPnPDeviceDirectory::OnAlive(const UpnpDiscovery *disco)
 {
-	if (isMSDevice(disco->DeviceType) ||
-	    isCDService(disco->ServiceType)) {
+	if (isMSDevice(UpnpDiscovery_get_DeviceType_cstr(disco)) ||
+	    isCDService(UpnpDiscovery_get_ServiceType_cstr(disco))) {
 		DiscoveredTask *tp = new DiscoveredTask(disco);
 		if (queue.put(tp))
 			return UPNP_E_FINISH;
@@ -166,12 +166,12 @@ UPnPDeviceDirectory::OnAlive(const Upnp_Discovery *disco)
 }
 
 inline int
-UPnPDeviceDirectory::OnByeBye(const Upnp_Discovery *disco)
+UPnPDeviceDirectory::OnByeBye(const UpnpDiscovery *disco)
 {
-	if (isMSDevice(disco->DeviceType) ||
-	    isCDService(disco->ServiceType)) {
+	if (isMSDevice(UpnpDiscovery_get_DeviceType_cstr(disco)) ||
+	    isCDService(UpnpDiscovery_get_ServiceType_cstr(disco))) {
 		// Device signals it is going off.
-		LockRemove(disco->DeviceId);
+		LockRemove(UpnpDiscovery_get_DeviceID_cstr(disco));
 	}
 
 	return UPNP_E_SUCCESS;
@@ -188,13 +188,13 @@ UPnPDeviceDirectory::Invoke(Upnp_EventType et, const void *evp)
 	case UPNP_DISCOVERY_SEARCH_RESULT:
 	case UPNP_DISCOVERY_ADVERTISEMENT_ALIVE:
 		{
-			auto *disco = (const Upnp_Discovery *)evp;
+			auto *disco = (const UpnpDiscovery *)evp;
 			return OnAlive(disco);
 		}
 
 	case UPNP_DISCOVERY_ADVERTISEMENT_BYEBYE:
 		{
-			auto *disco = (const Upnp_Discovery *)evp;
+			auto *disco = (const UpnpDiscovery *)evp;
 			return OnByeBye(disco);
 		}
 

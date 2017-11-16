@@ -20,6 +20,7 @@
 #ifndef _UPNPPDISC_H_X_INCLUDED_
 #define _UPNPPDISC_H_X_INCLUDED_
 
+#include "Compat.hxx"
 #include "Callback.hxx"
 #include "Device.hxx"
 #include "WorkQueue.hxx"
@@ -33,6 +34,10 @@
 #include <string>
 #include <memory>
 #include <chrono>
+
+#if UPNP_VERSION < 10800
+#define UpnpDiscovery Upnp_Discovery
+#endif
 
 class ContentDirectoryService;
 
@@ -59,10 +64,10 @@ class UPnPDeviceDirectory final : UpnpCallback {
 		std::string device_id;
 		std::chrono::steady_clock::duration expires;
 
-		DiscoveredTask(const Upnp_Discovery *disco)
-			:url(disco->Location),
-			 device_id(disco->DeviceId),
-			 expires(std::chrono::seconds(disco->Expires)) {}
+		DiscoveredTask(const UpnpDiscovery *disco)
+			:url(UpnpDiscovery_get_Location_cstr(disco)),
+			 device_id(UpnpDiscovery_get_DeviceID_cstr(disco)),
+			 expires(std::chrono::seconds(UpnpDiscovery_get_Expires(disco))) {}
 	};
 
 	/**
@@ -153,8 +158,8 @@ private:
 	static void *Explore(void *);
 	void Explore();
 
-	int OnAlive(const Upnp_Discovery *disco);
-	int OnByeBye(const Upnp_Discovery *disco);
+	int OnAlive(const UpnpDiscovery *disco);
+	int OnByeBye(const UpnpDiscovery *disco);
 
 	/* virtual methods from class UpnpCallback */
 	virtual int Invoke(Upnp_EventType et, const void *evp) override;
