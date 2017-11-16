@@ -153,8 +153,8 @@ private:
 	static void *Explore(void *);
 	void Explore();
 
-	int OnAlive(Upnp_Discovery *disco);
-	int OnByeBye(Upnp_Discovery *disco);
+	int OnAlive(const Upnp_Discovery *disco);
+	int OnByeBye(const Upnp_Discovery *disco);
 
 	/* virtual methods from class UpnpCallback */
 	virtual int Invoke(Upnp_EventType et, void *evp) override;

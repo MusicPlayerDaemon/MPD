@@ -153,7 +153,7 @@ UPnPDeviceDirectory::Explore(void *ctx)
 }
 
 inline int
-UPnPDeviceDirectory::OnAlive(Upnp_Discovery *disco)
+UPnPDeviceDirectory::OnAlive(const Upnp_Discovery *disco)
 {
 	if (isMSDevice(disco->DeviceType) ||
 	    isCDService(disco->ServiceType)) {
@@ -166,7 +166,7 @@ UPnPDeviceDirectory::OnAlive(Upnp_Discovery *disco)
 }
 
 inline int
-UPnPDeviceDirectory::OnByeBye(Upnp_Discovery *disco)
+UPnPDeviceDirectory::OnByeBye(const Upnp_Discovery *disco)
 {
 	if (isMSDevice(disco->DeviceType) ||
 	    isCDService(disco->ServiceType)) {
@@ -188,13 +188,13 @@ UPnPDeviceDirectory::Invoke(Upnp_EventType et, void *evp)
 	case UPNP_DISCOVERY_SEARCH_RESULT:
 	case UPNP_DISCOVERY_ADVERTISEMENT_ALIVE:
 		{
-			Upnp_Discovery *disco = (Upnp_Discovery *)evp;
+			auto *disco = (const Upnp_Discovery *)evp;
 			return OnAlive(disco);
 		}
 
 	case UPNP_DISCOVERY_ADVERTISEMENT_BYEBYE:
 		{
-			Upnp_Discovery *disco = (Upnp_Discovery *)evp;
+			auto *disco = (const Upnp_Discovery *)evp;
 			return OnByeBye(disco);
 		}
 
