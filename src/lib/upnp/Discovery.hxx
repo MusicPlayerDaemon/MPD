@@ -157,7 +157,7 @@ private:
 	int OnByeBye(const Upnp_Discovery *disco);
 
 	/* virtual methods from class UpnpCallback */
-	virtual int Invoke(Upnp_EventType et, void *evp) override;
+	virtual int Invoke(Upnp_EventType et, const void *evp) override;
 };
 
 

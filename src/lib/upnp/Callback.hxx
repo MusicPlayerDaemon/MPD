@@ -40,7 +40,7 @@ public:
 		return *(UpnpCallback *)cookie;
 	}
 
-	virtual int Invoke(Upnp_EventType et, void *evp) = 0;
+	virtual int Invoke(Upnp_EventType et, const void *evp) = 0;
 };
 
 #endif

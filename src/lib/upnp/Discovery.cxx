@@ -182,7 +182,7 @@ UPnPDeviceDirectory::OnByeBye(const Upnp_Discovery *disco)
 // Example: ContentDirectories appearing and disappearing from the network
 // We queue a task for our worker thread(s)
 int
-UPnPDeviceDirectory::Invoke(Upnp_EventType et, void *evp)
+UPnPDeviceDirectory::Invoke(Upnp_EventType et, const void *evp)
 {
 	switch (et) {
 	case UPNP_DISCOVERY_SEARCH_RESULT:
