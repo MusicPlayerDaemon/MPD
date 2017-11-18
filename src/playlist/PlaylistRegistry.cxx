@@ -195,7 +195,7 @@ playlist_list_open_stream_mime2(InputStreamPtr &&is, const char *mime)
 			/* rewind the stream, so each plugin gets a
 			   fresh start */
 			try {
-				is->Rewind();
+				is->LockRewind();
 			} catch (const std::runtime_error &) {
 			}
 
@@ -239,7 +239,7 @@ playlist_list_open_stream_suffix(InputStreamPtr &&is, const char *suffix)
 			/* rewind the stream, so each plugin gets a
 			   fresh start */
 			try {
-				is->Rewind();
+				is->LockRewind();
 			} catch (const std::runtime_error &) {
 			}
 

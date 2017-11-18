@@ -98,7 +98,7 @@ NfsConnection::CancellableCallback::Read(nfs_context *ctx, struct nfsfh *fh,
 }
 
 inline void
-NfsConnection::CancellableCallback::CancelAndScheduleClose(struct nfsfh *fh)
+NfsConnection::CancellableCallback::CancelAndScheduleClose(struct nfsfh *fh) noexcept
 {
 	assert(connection.GetEventLoop().IsInside());
 	assert(!open);
@@ -110,7 +110,7 @@ NfsConnection::CancellableCallback::CancelAndScheduleClose(struct nfsfh *fh)
 }
 
 inline void
-NfsConnection::CancellableCallback::PrepareDestroyContext()
+NfsConnection::CancellableCallback::PrepareDestroyContext() noexcept
 {
 	assert(IsCancelled());
 
@@ -121,7 +121,7 @@ NfsConnection::CancellableCallback::PrepareDestroyContext()
 }
 
 inline void
-NfsConnection::CancellableCallback::Callback(int err, void *data)
+NfsConnection::CancellableCallback::Callback(int err, void *data) noexcept
 {
 	assert(connection.GetEventLoop().IsInside());
 
@@ -157,27 +157,28 @@ NfsConnection::CancellableCallback::Callback(int err, void *data)
 void
 NfsConnection::CancellableCallback::Callback(int err,
 					     gcc_unused struct nfs_context *nfs,
-					     void *data, void *private_data)
+					     void *data,
+					     void *private_data) noexcept
 {
 	CancellableCallback &c = *(CancellableCallback *)private_data;
 	c.Callback(err, data);
 }
 
 static constexpr unsigned
-libnfs_to_events(int i)
+libnfs_to_events(int i) noexcept
 {
 	return ((i & POLLIN) ? SocketMonitor::READ : 0) |
 		((i & POLLOUT) ? SocketMonitor::WRITE : 0);
 }
 
 static constexpr int
-events_to_libnfs(unsigned i)
+events_to_libnfs(unsigned i) noexcept
 {
 	return ((i & SocketMonitor::READ) ? POLLIN : 0) |
 		((i & SocketMonitor::WRITE) ? POLLOUT : 0);
 }
 
-NfsConnection::~NfsConnection()
+NfsConnection::~NfsConnection() noexcept
 {
 	assert(GetEventLoop().IsInside());
 	assert(new_leases.empty());
@@ -190,17 +191,17 @@ NfsConnection::~NfsConnection()
 }
 
 void
-NfsConnection::AddLease(NfsLease &lease)
+NfsConnection::AddLease(NfsLease &lease) noexcept
 {
 	assert(GetEventLoop().IsInside());
 
 	new_leases.push_back(&lease);
 
-	DeferredMonitor::Schedule();
+	defer_new_lease.Schedule();
 }
 
 void
-NfsConnection::RemoveLease(NfsLease &lease)
+NfsConnection::RemoveLease(NfsLease &lease) noexcept
 {
 	assert(GetEventLoop().IsInside());
 
@@ -243,7 +244,7 @@ NfsConnection::OpenDirectory(const char *path, NfsCallback &callback)
 }
 
 const struct nfsdirent *
-NfsConnection::ReadDirectory(struct nfsdir *dir)
+NfsConnection::ReadDirectory(struct nfsdir *dir) noexcept
 {
 	assert(GetEventLoop().IsInside());
 
@@ -251,7 +252,7 @@ NfsConnection::ReadDirectory(struct nfsdir *dir)
 }
 
 void
-NfsConnection::CloseDirectory(struct nfsdir *dir)
+NfsConnection::CloseDirectory(struct nfsdir *dir) noexcept
 {
 	assert(GetEventLoop().IsInside());
 
@@ -311,18 +312,18 @@ NfsConnection::Read(struct nfsfh *fh, uint64_t offset, size_t size,
 }
 
 void
-NfsConnection::Cancel(NfsCallback &callback)
+NfsConnection::Cancel(NfsCallback &callback) noexcept
 {
 	callbacks.Cancel(callback);
 }
 
 static void
-DummyCallback(int, struct nfs_context *, void *, void *)
+DummyCallback(int, struct nfs_context *, void *, void *) noexcept
 {
 }
 
 inline void
-NfsConnection::InternalClose(struct nfsfh *fh)
+NfsConnection::InternalClose(struct nfsfh *fh) noexcept
 {
 	assert(GetEventLoop().IsInside());
 	assert(context != nullptr);
@@ -332,7 +333,7 @@ NfsConnection::InternalClose(struct nfsfh *fh)
 }
 
 void
-NfsConnection::Close(struct nfsfh *fh)
+NfsConnection::Close(struct nfsfh *fh) noexcept
 {
 	assert(GetEventLoop().IsInside());
 
@@ -341,14 +342,14 @@ NfsConnection::Close(struct nfsfh *fh)
 }
 
 void
-NfsConnection::CancelAndClose(struct nfsfh *fh, NfsCallback &callback)
+NfsConnection::CancelAndClose(struct nfsfh *fh, NfsCallback &callback) noexcept
 {
 	CancellableCallback &cancel = callbacks.Get(callback);
 	cancel.CancelAndScheduleClose(fh);
 }
 
 void
-NfsConnection::DestroyContext()
+NfsConnection::DestroyContext() noexcept
 {
 	assert(GetEventLoop().IsInside());
 	assert(context != nullptr);
@@ -363,9 +364,9 @@ NfsConnection::DestroyContext()
 		mount_timeout_event.Cancel();
 	}
 
-	/* cancel pending DeferredMonitor that was scheduled to notify
+	/* cancel pending DeferEvent that was scheduled to notify
 	   new leases */
-	DeferredMonitor::Cancel();
+	defer_new_lease.Cancel();
 
 	if (SocketMonitor::IsDefined())
 		SocketMonitor::Steal();
@@ -379,7 +380,7 @@ NfsConnection::DestroyContext()
 }
 
 inline void
-NfsConnection::DeferClose(struct nfsfh *fh)
+NfsConnection::DeferClose(struct nfsfh *fh) noexcept
 {
 	assert(GetEventLoop().IsInside());
 	assert(in_event);
@@ -391,7 +392,7 @@ NfsConnection::DeferClose(struct nfsfh *fh)
 }
 
 void
-NfsConnection::ScheduleSocket()
+NfsConnection::ScheduleSocket() noexcept
 {
 	assert(GetEventLoop().IsInside());
 	assert(context != nullptr);
@@ -421,7 +422,7 @@ NfsConnection::ScheduleSocket()
 }
 
 inline int
-NfsConnection::Service(unsigned flags)
+NfsConnection::Service(unsigned flags) noexcept
 {
 	assert(GetEventLoop().IsInside());
 	assert(context != nullptr);
@@ -446,7 +447,7 @@ NfsConnection::Service(unsigned flags)
 }
 
 bool
-NfsConnection::OnSocketReady(unsigned flags)
+NfsConnection::OnSocketReady(unsigned flags) noexcept
 {
 	assert(GetEventLoop().IsInside());
 	assert(deferred_close.empty());
@@ -518,7 +519,7 @@ NfsConnection::OnSocketReady(unsigned flags)
 
 inline void
 NfsConnection::MountCallback(int status, gcc_unused nfs_context *nfs,
-			     gcc_unused void *data)
+			     gcc_unused void *data) noexcept
 {
 	assert(GetEventLoop().IsInside());
 	assert(context == nfs);
@@ -538,7 +539,7 @@ NfsConnection::MountCallback(int status, gcc_unused nfs_context *nfs,
 
 void
 NfsConnection::MountCallback(int status, nfs_context *nfs, void *data,
-			     void *private_data)
+			     void *private_data) noexcept
 {
 	NfsConnection *c = (NfsConnection *)private_data;
 
@@ -579,7 +580,7 @@ NfsConnection::MountInternal()
 }
 
 void
-NfsConnection::BroadcastMountSuccess()
+NfsConnection::BroadcastMountSuccess() noexcept
 {
 	assert(GetEventLoop().IsInside());
 
@@ -591,7 +592,7 @@ NfsConnection::BroadcastMountSuccess()
 }
 
 void
-NfsConnection::BroadcastMountError(std::exception_ptr &&e)
+NfsConnection::BroadcastMountError(std::exception_ptr &&e) noexcept
 {
 	assert(GetEventLoop().IsInside());
 
@@ -605,7 +606,7 @@ NfsConnection::BroadcastMountError(std::exception_ptr &&e)
 }
 
 void
-NfsConnection::BroadcastError(std::exception_ptr &&e)
+NfsConnection::BroadcastError(std::exception_ptr &&e) noexcept
 {
 	assert(GetEventLoop().IsInside());
 
@@ -619,7 +620,7 @@ NfsConnection::BroadcastError(std::exception_ptr &&e)
 }
 
 void
-NfsConnection::OnMountTimeout()
+NfsConnection::OnMountTimeout() noexcept
 {
 	assert(GetEventLoop().IsInside());
 	assert(!mount_finished);
@@ -631,7 +632,7 @@ NfsConnection::OnMountTimeout()
 }
 
 void
-NfsConnection::RunDeferred()
+NfsConnection::RunDeferred() noexcept
 {
 	assert(GetEventLoop().IsInside());
 

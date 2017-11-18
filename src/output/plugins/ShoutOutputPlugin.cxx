@@ -21,15 +21,17 @@
 #include "ShoutOutputPlugin.hxx"
 #include "../OutputAPI.hxx"
 #include "encoder/EncoderInterface.hxx"
-#include "encoder/EncoderPlugin.hxx"
-#include "encoder/EncoderList.hxx"
+#include "encoder/Configured.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/Domain.hxx"
+#include "util/ScopeExit.hxx"
+#include "util/StringAPI.hxx"
 #include "Log.hxx"
 
 #include <shout/shout.h>
 
 #include <stdexcept>
+#include <memory>
 
 #include <assert.h>
 #include <stdlib.h>
@@ -40,13 +42,9 @@ static constexpr unsigned DEFAULT_CONN_TIMEOUT = 2;
 
 struct ShoutOutput final : AudioOutput {
 	shout_t *shout_conn;
-	shout_metadata_t *shout_meta;
 
-	PreparedEncoder *prepared_encoder = nullptr;
+	std::unique_ptr<PreparedEncoder> prepared_encoder;
 	Encoder *encoder;
-
-	float quality = -2.0;
-	int bitrate = -1;
 
 	int timeout = DEFAULT_CONN_TIMEOUT;
 
@@ -86,17 +84,6 @@ require_block_string(const ConfigBlock &block, const char *name)
 	return value;
 }
 
-static const EncoderPlugin *
-shout_encoder_plugin_get(const char *name)
-{
-	if (strcmp(name, "ogg") == 0)
-		name = "vorbis";
-	else if (strcmp(name, "mp3") == 0)
-		name = "lame";
-
-	return encoder_plugin_get(name);
-}
-
 static void
 ShoutSetAudioInfo(shout_t *shout_conn, const AudioFormat &audio_format)
 {
@@ -112,7 +99,7 @@ ShoutSetAudioInfo(shout_t *shout_conn, const AudioFormat &audio_format)
 ShoutOutput::ShoutOutput(const ConfigBlock &block)
 	:AudioOutput(FLAG_PAUSE),
 	 shout_conn(shout_new()),
-	 shout_meta(shout_metadata_new())
+	 prepared_encoder(CreateConfiguredEncoder(block, true))
 {
 	NeedFullyDefinedAudioFormat();
 
@@ -129,54 +116,21 @@ ShoutOutput::ShoutOutput(const ConfigBlock &block)
 
 	const char *user = block.GetBlockValue("user", "source");
 
-	const char *value = block.GetBlockValue("quality");
-	if (value != nullptr) {
-		char *test;
-		quality = strtod(value, &test);
-
-		if (*test != '\0' || quality < -1.0 || quality > 10.0)
-			throw FormatRuntimeError("shout quality \"%s\" is not a number in the "
-						 "range -1 to 10",
-						 value);
-
-		if (block.GetBlockValue("bitrate") != nullptr)
-			throw std::runtime_error("quality and bitrate are "
-						 "both defined");
-	} else {
-		value = block.GetBlockValue("bitrate");
-		if (value == nullptr)
-			throw std::runtime_error("neither bitrate nor quality defined");
-
-		char *test;
-		bitrate = strtol(value, &test, 10);
-
-		if (*test != '\0' || bitrate <= 0)
-			throw std::runtime_error("bitrate must be a positive integer");
-	}
-
-	const char *encoding = block.GetBlockValue("encoder", nullptr);
-	if (encoding == nullptr)
-		encoding = block.GetBlockValue("encoding", "vorbis");
-	const auto encoder_plugin = shout_encoder_plugin_get(encoding);
-	if (encoder_plugin == nullptr)
-		throw FormatRuntimeError("couldn't find shout encoder plugin \"%s\"",
-					 encoding);
-
-	prepared_encoder = encoder_init(*encoder_plugin, block);
+	const char *const mime_type = prepared_encoder->GetMimeType();
 
 	unsigned shout_format;
-	if (strcmp(encoding, "mp3") == 0 || strcmp(encoding, "lame") == 0)
+	if (StringIsEqual(mime_type, "audio/mpeg"))
 		shout_format = SHOUT_FORMAT_MP3;
 	else
 		shout_format = SHOUT_FORMAT_OGG;
 
 	unsigned protocol;
-	value = block.GetBlockValue("protocol");
+	const char *value = block.GetBlockValue("protocol");
 	if (value != nullptr) {
 		if (0 == strcmp(value, "shoutcast") &&
-		    0 != strcmp(encoding, "mp3"))
+		    !StringIsEqual(mime_type, "audio/mpeg"))
 			throw FormatRuntimeError("you cannot stream \"%s\" to shoutcast, use mp3",
-						 encoding);
+						 mime_type);
 		else if (0 == strcmp(value, "shoutcast"))
 			protocol = SHOUT_PROTOCOL_ICY;
 		else if (0 == strcmp(value, "icecast1"))
@@ -219,32 +173,23 @@ ShoutOutput::ShoutOutput(const ConfigBlock &block)
 	if (value != nullptr && shout_set_url(shout_conn, value))
 		throw std::runtime_error(shout_get_error(shout_conn));
 
-	{
-		char temp[11];
-		if (quality >= -1.0) {
-			snprintf(temp, sizeof(temp), "%2.2f", quality);
-			shout_set_audio_info(shout_conn, SHOUT_AI_QUALITY,
-					     temp);
-		} else {
-			snprintf(temp, sizeof(temp), "%d", bitrate);
-			shout_set_audio_info(shout_conn, SHOUT_AI_BITRATE,
-					     temp);
-		}
-	}
+	value = block.GetBlockValue("quality");
+	if (value != nullptr)
+		shout_set_audio_info(shout_conn, SHOUT_AI_QUALITY, value);
+
+	value = block.GetBlockValue("bitrate");
+	if (value != nullptr)
+		shout_set_audio_info(shout_conn, SHOUT_AI_BITRATE, value);
 }
 
 ShoutOutput::~ShoutOutput()
 {
-	if (shout_meta != nullptr)
-		shout_metadata_free(shout_meta);
 	if (shout_conn != nullptr)
 		shout_free(shout_conn);
 
 	shout_init_count--;
 	if (shout_init_count == 0)
 		shout_shutdown();
-
-	delete prepared_encoder;
 }
 
 AudioOutput *
@@ -391,27 +336,12 @@ ShoutOutput::Pause()
 static void
 shout_tag_to_metadata(const Tag &tag, char *dest, size_t size)
 {
-	char artist[size];
-	char title[size];
+	const char *artist = tag.GetValue(TAG_ARTIST);
+	const char *title = tag.GetValue(TAG_TITLE);
 
-	artist[0] = 0;
-	title[0] = 0;
-
-	for (const auto &item : tag) {
-		switch (item.type) {
-		case TAG_ARTIST:
-			strncpy(artist, item.value, size);
-			break;
-		case TAG_TITLE:
-			strncpy(title, item.value, size);
-			break;
-
-		default:
-			break;
-		}
-	}
-
-	snprintf(dest, size, "%s - %s", artist, title);
+	snprintf(dest, size, "%s - %s",
+		 artist != nullptr ? artist : "",
+		 title != nullptr ? title : "");
 }
 
 void
@@ -425,12 +355,15 @@ ShoutOutput::SendTag(const Tag &tag)
 		encoder->SendTag(tag);
 	} else {
 		/* no stream tag support: fall back to icy-metadata */
+
+		const auto meta = shout_metadata_new();
+		AtScopeExit(meta) { shout_metadata_free(meta); };
+
 		char song[1024];
 		shout_tag_to_metadata(tag, song, sizeof(song));
 
-		shout_metadata_add(shout_meta, "song", song);
-		if (SHOUTERR_SUCCESS != shout_set_metadata(shout_conn,
-							   shout_meta)) {
+		shout_metadata_add(meta, "song", song);
+		if (SHOUTERR_SUCCESS != shout_set_metadata(shout_conn, meta)) {
 			LogWarning(shout_output_domain,
 				   "error setting shout metadata");
 		}

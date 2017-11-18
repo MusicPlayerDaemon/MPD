@@ -39,7 +39,7 @@ inline bool
 GunzipReader::FillBuffer()
 {
 	auto w = buffer.Write();
-	assert(!w.IsEmpty());
+	assert(!w.empty());
 
 	size_t nbytes = next.Read(w.data, w.size);
 	if (nbytes == 0)
@@ -62,7 +62,7 @@ GunzipReader::Read(void *data, size_t size)
 		int flush = Z_NO_FLUSH;
 
 		auto r = buffer.Read();
-		if (r.IsEmpty()) {
+		if (r.empty()) {
 			if (FillBuffer())
 				r = buffer.Read();
 			else

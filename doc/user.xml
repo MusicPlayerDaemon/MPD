@@ -3068,8 +3068,8 @@ run</programlisting>
                 </entry>
                 <entry>
                   Sets the quality for VBR.  -1 is the lowest quality,
-                  10 is the highest quality.  Cannot be used with
-                  <varname>bitrate</varname>.
+                  10 is the highest quality.  Defaults to 3.  Cannot
+                  be used with <varname>bitrate</varname>.
                 </entry>
               </row>
               <row>
@@ -3455,6 +3455,28 @@ run</programlisting>
                   other hardware.  Therefore, the default is
                   <parameter>no</parameter> and you can enable the
                   option at your own risk.
+                </entry>
+              </row>
+
+              <row>
+                <entry>
+                  <varname>allowed_formats</varname>
+                  <parameter>F1 F2 ...</parameter>
+                </entry>
+                <entry>
+                  <para>
+                    Specifies a list of allowed audio formats, separated
+                    by a space.  All items may contain asterisks as a
+                    wild card, and may be followed by
+                    "<parameter>=dop</parameter>" to enable DoP (DSD
+                    over PCM) for this particular format.  The first
+                    matching format is used, and if none matches, MPD
+                    chooses the best fallback of this list.
+                  </para>
+                  <para>
+                    Example: "<parameter>96000:16:* 192000:24:*
+                    dsd64:*=dop *:dsd:*</parameter>".
+                  </para>
                 </entry>
               </row>
             </tbody>

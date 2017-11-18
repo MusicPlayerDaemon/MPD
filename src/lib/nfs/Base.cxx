@@ -28,7 +28,7 @@ static char nfs_base_export_name[256];
 static size_t nfs_base_export_name_length;
 
 void
-nfs_set_base(const char *server, const char *export_name)
+nfs_set_base(const char *server, const char *export_name) noexcept
 {
 	assert(server != nullptr);
 	assert(export_name != nullptr);

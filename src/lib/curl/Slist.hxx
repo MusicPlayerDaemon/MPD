@@ -43,24 +43,24 @@ class CurlSlist {
 public:
 	CurlSlist() = default;
 
-	CurlSlist(CurlSlist &&src)
+	CurlSlist(CurlSlist &&src) noexcept
 		:head(std::exchange(src.head, nullptr)) {}
 
-	~CurlSlist() {
+	~CurlSlist() noexcept {
 		if (head != nullptr)
 			curl_slist_free_all(head);
 	}
 
-	CurlSlist &operator=(CurlSlist &&src) {
+	CurlSlist &operator=(CurlSlist &&src) noexcept {
 		std::swap(head, src.head);
 		return *this;
 	}
 
-	struct curl_slist *Get() {
+	struct curl_slist *Get() noexcept {
 		return head;
 	}
 
-	void Clear() {
+	void Clear() noexcept {
 		curl_slist_free_all(head);
 		head = nullptr;
 	}

@@ -55,7 +55,7 @@ public:
 
 	using ForeignFifoBuffer<T>::GetCapacity;
 	using ForeignFifoBuffer<T>::Clear;
-	using ForeignFifoBuffer<T>::IsEmpty;
+	using ForeignFifoBuffer<T>::empty;
 	using ForeignFifoBuffer<T>::IsFull;
 	using ForeignFifoBuffer<T>::GetAvailable;
 	using ForeignFifoBuffer<T>::Read;

@@ -30,7 +30,7 @@
 #include "SocketMonitor.hxx"
 #include "TimerEvent.hxx"
 #include "IdleMonitor.hxx"
-#include "DeferredMonitor.hxx"
+#include "DeferEvent.hxx"
 
 #include <boost/intrusive/set.hpp>
 #include <boost/intrusive/list.hpp>
@@ -76,10 +76,10 @@ class EventLoop final : SocketMonitor
 
 	Mutex mutex;
 
-	typedef boost::intrusive::list<DeferredMonitor,
-				       boost::intrusive::member_hook<DeferredMonitor,
-								     DeferredMonitor::ListHook,
-								     &DeferredMonitor::list_hook>,
+	typedef boost::intrusive::list<DeferEvent,
+				       boost::intrusive::member_hook<DeferEvent,
+								     DeferEvent::ListHook,
+								     &DeferEvent::list_hook>,
 				       boost::intrusive::constant_time_size<false>> DeferredList;
 	DeferredList deferred;
 
@@ -160,19 +160,19 @@ public:
 	void CancelTimer(TimerEvent &t);
 
 	/**
-	 * Schedule a call to DeferredMonitor::RunDeferred().
+	 * Schedule a call to DeferEvent::RunDeferred().
 	 *
 	 * This method is thread-safe.
 	 */
-	void AddDeferred(DeferredMonitor &d);
+	void AddDeferred(DeferEvent &d) noexcept;
 
 	/**
-	 * Cancel a pending call to DeferredMonitor::RunDeferred().
+	 * Cancel a pending call to DeferEvent::RunDeferred().
 	 * However after returning, the call may still be running.
 	 *
 	 * This method is thread-safe.
 	 */
-	void RemoveDeferred(DeferredMonitor &d);
+	void RemoveDeferred(DeferEvent &d) noexcept;
 
 	/**
 	 * The main function of this class.  It will loop until
@@ -182,13 +182,13 @@ public:
 
 private:
 	/**
-	 * Invoke all pending DeferredMonitors.
+	 * Invoke all pending DeferEvents.
 	 *
 	 * Caller must lock the mutex.
 	 */
 	void HandleDeferred();
 
-	virtual bool OnSocketReady(unsigned flags) override;
+	bool OnSocketReady(unsigned flags) noexcept override;
 
 public:
 

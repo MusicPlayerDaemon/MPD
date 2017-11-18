@@ -23,6 +23,6 @@
 struct pa_context;
 
 void
-LogPulseError(pa_context *context, const char *prefix);
+LogPulseError(pa_context *context, const char *prefix) noexcept;
 
 #endif

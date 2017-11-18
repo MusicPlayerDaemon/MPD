@@ -29,7 +29,7 @@
  * available only there.
  */
 void
-UpdateRemoveService::RunDeferred()
+UpdateRemoveService::RunDeferred() noexcept
 {
 	/* copy the list and unlock the mutex before invoking
 	   callbacks */
@@ -65,5 +65,5 @@ UpdateRemoveService::Remove(std::string &&uri)
 	   was empty; if it was not, then that even was already
 	   pending */
 	if (was_empty)
-		DeferredMonitor::Schedule();
+		defer.Schedule();
 }

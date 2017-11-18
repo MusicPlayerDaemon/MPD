@@ -40,7 +40,7 @@
 UpdateService::UpdateService(EventLoop &_loop, SimpleDatabase &_db,
 			     CompositeStorage &_storage,
 			     DatabaseListener &_listener)
-	:DeferredMonitor(_loop),
+	:defer(_loop, BIND_THIS_METHOD(RunDeferred)),
 	 db(_db), storage(_storage),
 	 listener(_listener),
 	 update_thread(BIND_THIS_METHOD(Task))
@@ -136,7 +136,7 @@ UpdateService::Task()
 	else
 		LogDebug(update_domain, "finished");
 
-	DeferredMonitor::Schedule();
+	defer.Schedule();
 }
 
 void
@@ -237,7 +237,7 @@ UpdateService::Enqueue(const char *path, bool discard)
  * Called in the main thread after the database update is finished.
  */
 void
-UpdateService::RunDeferred()
+UpdateService::RunDeferred() noexcept
 {
 	assert(next.IsDefined());
 	assert(walk != nullptr);

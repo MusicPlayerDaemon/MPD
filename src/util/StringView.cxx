@@ -34,7 +34,7 @@ template<typename T>
 void
 BasicStringView<T>::StripLeft() noexcept
 {
-	while (!IsEmpty() && IsWhitespaceOrNull(front()))
+	while (!empty() && IsWhitespaceOrNull(front()))
 		pop_front();
 }
 
@@ -42,7 +42,7 @@ template<typename T>
 void
 BasicStringView<T>::StripRight() noexcept
 {
-	while (!IsEmpty() && IsWhitespaceOrNull(back()))
+	while (!empty() && IsWhitespaceOrNull(back()))
 		pop_back();
 }
 

@@ -29,8 +29,8 @@ class SqliteError final : public std::runtime_error {
 	int code;
 
 public:
-	SqliteError(sqlite3 *db, int _code, const char *msg);
-	SqliteError(sqlite3_stmt *stmt, int _code, const char *msg);
+	SqliteError(sqlite3 *db, int _code, const char *msg) noexcept;
+	SqliteError(sqlite3_stmt *stmt, int _code, const char *msg) noexcept;
 
 	int GetCode() const {
 		return code;

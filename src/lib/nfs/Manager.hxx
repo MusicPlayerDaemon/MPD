@@ -47,13 +47,13 @@ class NfsManager final : IdleMonitor {
 	public:
 		ManagedConnection(NfsManager &_manager, EventLoop &_loop,
 				  const char *_server,
-				  const char *_export_name)
+				  const char *_export_name) noexcept
 			:NfsConnection(_loop, _server, _export_name),
 			 manager(_manager) {}
 
 	protected:
 		/* virtual methods from NfsConnection */
-		void OnNfsConnectionError(std::exception_ptr &&e) override;
+		void OnNfsConnectionError(std::exception_ptr &&e) noexcept override;
 	};
 
 	struct Compare {
@@ -89,13 +89,13 @@ class NfsManager final : IdleMonitor {
 	List garbage;
 
 public:
-	NfsManager(EventLoop &_loop)
+	explicit NfsManager(EventLoop &_loop) noexcept
 		:IdleMonitor(_loop) {}
 
 	/**
 	 * Must be run from EventLoop's thread.
 	 */
-	~NfsManager();
+	~NfsManager() noexcept;
 
 	using IdleMonitor::GetEventLoop;
 
@@ -104,7 +104,7 @@ public:
 				     const char *export_name) noexcept;
 
 private:
-	void ScheduleDelete(ManagedConnection &c) {
+	void ScheduleDelete(ManagedConnection &c) noexcept {
 		connections.erase(connections.iterator_to(c));
 		garbage.push_front(c);
 		IdleMonitor::Schedule();
@@ -113,10 +113,10 @@ private:
 	/**
 	 * Delete all connections on the #garbage list.
 	 */
-	void CollectGarbage();
+	void CollectGarbage() noexcept;
 
 	/* virtual methods from IdleMonitor */
-	void OnIdle() override;
+	void OnIdle() noexcept override;
 };
 
 #endif

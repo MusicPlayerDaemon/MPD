@@ -50,7 +50,7 @@ protected:
 	NfsConnection &connection;
 
 public:
-	BlockingNfsOperation(NfsConnection &_connection)
+	BlockingNfsOperation(NfsConnection &_connection) noexcept
 		:finished(false), connection(_connection) {}
 
 	/**
@@ -59,7 +59,7 @@ public:
 	void Run();
 
 private:
-	bool LockWaitFinished() {
+	bool LockWaitFinished() noexcept {
 		const std::lock_guard<Mutex> protect(mutex);
 		while (!finished)
 			if (!cond.timed_wait(mutex, timeout))
@@ -72,24 +72,24 @@ private:
 	 * Mark the operation as "finished" and wake up the waiting
 	 * thread.
 	 */
-	void LockSetFinished() {
+	void LockSetFinished() noexcept {
 		const std::lock_guard<Mutex> protect(mutex);
 		finished = true;
 		cond.signal();
 	}
 
 	/* virtual methods from NfsLease */
-	void OnNfsConnectionReady() final;
-	void OnNfsConnectionFailed(std::exception_ptr e) final;
-	void OnNfsConnectionDisconnected(std::exception_ptr e) final;
+	void OnNfsConnectionReady() noexcept final;
+	void OnNfsConnectionFailed(std::exception_ptr e) noexcept final;
+	void OnNfsConnectionDisconnected(std::exception_ptr e) noexcept final;
 
 	/* virtual methods from NfsCallback */
-	void OnNfsCallback(unsigned status, void *data) final;
-	void OnNfsError(std::exception_ptr &&e) final;
+	void OnNfsCallback(unsigned status, void *data) noexcept final;
+	void OnNfsError(std::exception_ptr &&e) noexcept final;
 
 protected:
 	virtual void Start() = 0;
-	virtual void HandleResult(unsigned status, void *data) = 0;
+	virtual void HandleResult(unsigned status, void *data) noexcept = 0;
 };
 
 #endif

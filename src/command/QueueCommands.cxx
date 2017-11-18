@@ -242,7 +242,7 @@ handle_playlistinfo(Client &client, Request args, Response &r)
 CommandResult
 handle_playlistid(Client &client, Request args, Response &r)
 {
-	if (!args.IsEmpty()) {
+	if (!args.empty()) {
 		unsigned id = args.ParseUnsigned(0);
 		playlist_print_id(r, client.GetPlaylist(), id);
 	} else {

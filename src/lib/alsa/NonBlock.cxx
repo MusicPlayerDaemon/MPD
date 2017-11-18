@@ -20,22 +20,31 @@
 #include "config.h"
 #include "NonBlock.hxx"
 #include "event/MultiSocketMonitor.hxx"
+#include "util/RuntimeError.hxx"
 
 std::chrono::steady_clock::duration
 PrepareAlsaPcmSockets(MultiSocketMonitor &m, snd_pcm_t *pcm,
-		      ReusableArray<pollfd> &pfd_buffer) noexcept
+		      ReusableArray<pollfd> &pfd_buffer)
 {
 	int count = snd_pcm_poll_descriptors_count(pcm);
 	if (count <= 0) {
-		m.ClearSocketList();
-		return std::chrono::steady_clock::duration(-1);
+		if (count == 0)
+			throw std::runtime_error("snd_pcm_poll_descriptors_count() failed");
+		else
+			throw FormatRuntimeError("snd_pcm_poll_descriptors_count() failed: %s",
+						 snd_strerror(-count));
 	}
 
 	struct pollfd *pfds = pfd_buffer.Get(count);
 
 	count = snd_pcm_poll_descriptors(pcm, pfds, count);
-	if (count < 0)
-		count = 0;
+	if (count <= 0) {
+		if (count == 0)
+			throw std::runtime_error("snd_pcm_poll_descriptors() failed");
+		else
+			throw FormatRuntimeError("snd_pcm_poll_descriptors() failed: %s",
+						 snd_strerror(-count));
+	}
 
 	m.ReplaceSocketList(pfds, count);
 	return std::chrono::steady_clock::duration(-1);

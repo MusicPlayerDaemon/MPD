@@ -30,7 +30,7 @@
 #endif
 
 void
-SocketMonitor::Dispatch(unsigned flags)
+SocketMonitor::Dispatch(unsigned flags) noexcept
 {
 	flags &= GetScheduledFlags();
 
@@ -38,14 +38,14 @@ SocketMonitor::Dispatch(unsigned flags)
 		Cancel();
 }
 
-SocketMonitor::~SocketMonitor()
+SocketMonitor::~SocketMonitor() noexcept
 {
 	if (IsDefined())
 		Cancel();
 }
 
 void
-SocketMonitor::Open(SocketDescriptor _fd)
+SocketMonitor::Open(SocketDescriptor _fd) noexcept
 {
 	assert(!fd.IsDefined());
 	assert(_fd.IsDefined());
@@ -54,7 +54,7 @@ SocketMonitor::Open(SocketDescriptor _fd)
 }
 
 SocketDescriptor
-SocketMonitor::Steal()
+SocketMonitor::Steal() noexcept
 {
 	assert(IsDefined());
 
@@ -64,22 +64,13 @@ SocketMonitor::Steal()
 }
 
 void
-SocketMonitor::Abandon()
-{
-	assert(IsDefined());
-
-	loop.Abandon(std::exchange(fd, SocketDescriptor::Undefined()).Get(),
-		     *this);
-}
-
-void
-SocketMonitor::Close()
+SocketMonitor::Close() noexcept
 {
 	Steal().Close();
 }
 
 void
-SocketMonitor::Schedule(unsigned flags)
+SocketMonitor::Schedule(unsigned flags) noexcept
 {
 	assert(IsDefined());
 
@@ -94,33 +85,4 @@ SocketMonitor::Schedule(unsigned flags)
 		loop.ModifyFD(fd.Get(), flags, *this);
 
 	scheduled_flags = flags;
-}
-
-SocketMonitor::ssize_t
-SocketMonitor::Read(void *data, size_t length)
-{
-	assert(IsDefined());
-
-	int flags = 0;
-#ifdef MSG_DONTWAIT
-	flags |= MSG_DONTWAIT;
-#endif
-
-	return recv(Get().Get(), (char *)data, length, flags);
-}
-
-SocketMonitor::ssize_t
-SocketMonitor::Write(const void *data, size_t length)
-{
-	assert(IsDefined());
-
-	int flags = 0;
-#ifdef MSG_NOSIGNAL
-	flags |= MSG_NOSIGNAL;
-#endif
-#ifdef MSG_DONTWAIT
-	flags |= MSG_DONTWAIT;
-#endif
-
-	return send(Get().Get(), (const char *)data, length, flags);
 }

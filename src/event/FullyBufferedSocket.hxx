@@ -61,8 +61,10 @@ protected:
 	 */
 	bool Write(const void *data, size_t length);
 
-	virtual bool OnSocketReady(unsigned flags) override;
-	virtual void OnIdle() override;
+	/* virtual methods from class SocketMonitor */
+	bool OnSocketReady(unsigned flags) noexcept override;
+
+	virtual void OnIdle() noexcept override;
 };
 
 #endif

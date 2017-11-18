@@ -29,7 +29,7 @@
 #include <stdint.h>
 
 static size_t
-ReadPage(const ogg_page &page, void *_buffer, size_t size)
+ReadPage(const ogg_page &page, void *_buffer, size_t size) noexcept
 {
 	assert(page.header_len > 0 || page.body_len > 0);
 

@@ -29,14 +29,6 @@
 #include <assert.h>
 #include <stddef.h>
 
-#ifdef WIN32
-/* ERROR is a WIN32 macro that poisons our namespace; this is a kludge
-   to allow us to use it anyway */
-#ifdef ERROR
-#undef ERROR
-#endif
-#endif
-
 class EventLoop;
 
 /**
@@ -53,13 +45,13 @@ class EventLoop;
  * as thread-safe.
  */
 class SocketMonitor {
-	SocketDescriptor fd;
+	SocketDescriptor fd = SocketDescriptor::Undefined();
 	EventLoop &loop;
 
 	/**
 	 * A bit mask of events that is currently registered in the EventLoop.
 	 */
-	unsigned scheduled_flags;
+	unsigned scheduled_flags = 0;
 
 public:
 	static constexpr unsigned READ = PollGroup::READ;
@@ -69,82 +61,74 @@ public:
 
 	typedef std::make_signed<size_t>::type ssize_t;
 
-	SocketMonitor(EventLoop &_loop)
-		:fd(-1), loop(_loop), scheduled_flags(0) {}
+	explicit SocketMonitor(EventLoop &_loop) noexcept
+		:loop(_loop) {}
 
-	SocketMonitor(SocketDescriptor _fd, EventLoop &_loop)
-		:fd(_fd), loop(_loop), scheduled_flags(0) {}
+	SocketMonitor(SocketDescriptor _fd, EventLoop &_loop) noexcept
+		:fd(_fd), loop(_loop) {}
 
-	~SocketMonitor();
+	~SocketMonitor() noexcept;
 
-	EventLoop &GetEventLoop() {
+	EventLoop &GetEventLoop() noexcept {
 		return loop;
 	}
 
-	bool IsDefined() const {
+	bool IsDefined() const noexcept {
 		return fd.IsDefined();
 	}
 
-	SocketDescriptor Get() const {
+	SocketDescriptor GetSocket() const noexcept {
 		assert(IsDefined());
 
 		return fd;
 	}
 
-	void Open(SocketDescriptor _fd);
+	void Open(SocketDescriptor _fd) noexcept;
 
 	/**
 	 * "Steal" the socket descriptor.  This abandons the socket
 	 * and returns it.
 	 */
-	SocketDescriptor Steal();
+	SocketDescriptor Steal() noexcept;
 
-	/**
-	 * Somebody has closed the socket.  Unregister this object.
-	 */
-	void Abandon();
+	void Close() noexcept;
 
-	void Close();
-
-	unsigned GetScheduledFlags() const {
+	unsigned GetScheduledFlags() const noexcept {
 		assert(IsDefined());
 
 		return scheduled_flags;
 	}
 
-	void Schedule(unsigned flags);
+	void Schedule(unsigned flags) noexcept;
 
-	void Cancel() {
+	void Cancel() noexcept {
 		Schedule(0);
 	}
 
-	void ScheduleRead() {
+	void ScheduleRead() noexcept {
 		Schedule(GetScheduledFlags() | READ | HANGUP | ERROR);
 	}
 
-	void ScheduleWrite() {
+	void ScheduleWrite() noexcept {
 		Schedule(GetScheduledFlags() | WRITE);
 	}
 
-	void CancelRead() {
+	void CancelRead() noexcept {
 		Schedule(GetScheduledFlags() & ~(READ|HANGUP|ERROR));
 	}
 
-	void CancelWrite() {
+	void CancelWrite() noexcept {
 		Schedule(GetScheduledFlags() & ~WRITE);
 	}
-
-	ssize_t Read(void *data, size_t length);
-	ssize_t Write(const void *data, size_t length);
 
 protected:
 	/**
 	 * @return false if the socket has been closed
 	 */
-	virtual bool OnSocketReady(unsigned flags) = 0;
+	virtual bool OnSocketReady(unsigned flags) noexcept = 0;
 
 public:
-	void Dispatch(unsigned flags);
+	void Dispatch(unsigned flags) noexcept;
 };
 
 #endif

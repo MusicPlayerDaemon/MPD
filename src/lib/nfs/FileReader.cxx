@@ -32,25 +32,25 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 
-NfsFileReader::NfsFileReader()
-	:DeferredMonitor(nfs_get_event_loop()), state(State::INITIAL)
+NfsFileReader::NfsFileReader() noexcept
+	:defer_open(nfs_get_event_loop(), BIND_THIS_METHOD(OnDeferredOpen))
 {
 }
 
-NfsFileReader::~NfsFileReader()
+NfsFileReader::~NfsFileReader() noexcept
 {
 	assert(state == State::INITIAL);
 }
 
 void
-NfsFileReader::Close()
+NfsFileReader::Close() noexcept
 {
 	if (state == State::INITIAL)
 		return;
 
 	if (state == State::DEFER) {
 		state = State::INITIAL;
-		DeferredMonitor::Cancel();
+		defer_open.Cancel();
 		return;
 	}
 
@@ -61,7 +61,7 @@ NfsFileReader::Close()
 }
 
 void
-NfsFileReader::CancelOrClose()
+NfsFileReader::CancelOrClose() noexcept
 {
 	assert(state != State::INITIAL &&
 	       state != State::DEFER);
@@ -83,7 +83,7 @@ NfsFileReader::CancelOrClose()
 }
 
 void
-NfsFileReader::DeferClose()
+NfsFileReader::DeferClose() noexcept
 {
 	BlockingCall(GetEventLoop(), [this](){ Close(); });
 }
@@ -122,7 +122,7 @@ NfsFileReader::Open(const char *uri)
 	}
 
 	state = State::DEFER;
-	DeferredMonitor::Schedule();
+	defer_open.Schedule();
 }
 
 void
@@ -135,7 +135,7 @@ NfsFileReader::Read(uint64_t offset, size_t size)
 }
 
 void
-NfsFileReader::CancelRead()
+NfsFileReader::CancelRead() noexcept
 {
 	if (state == State::READ) {
 		connection->Cancel(*this);
@@ -144,7 +144,7 @@ NfsFileReader::CancelRead()
 }
 
 void
-NfsFileReader::OnNfsConnectionReady()
+NfsFileReader::OnNfsConnectionReady() noexcept
 {
 	assert(state == State::MOUNT);
 
@@ -159,7 +159,7 @@ NfsFileReader::OnNfsConnectionReady()
 }
 
 void
-NfsFileReader::OnNfsConnectionFailed(std::exception_ptr e)
+NfsFileReader::OnNfsConnectionFailed(std::exception_ptr e) noexcept
 {
 	assert(state == State::MOUNT);
 
@@ -169,7 +169,7 @@ NfsFileReader::OnNfsConnectionFailed(std::exception_ptr e)
 }
 
 void
-NfsFileReader::OnNfsConnectionDisconnected(std::exception_ptr e)
+NfsFileReader::OnNfsConnectionDisconnected(std::exception_ptr e) noexcept
 {
 	assert(state > State::MOUNT);
 
@@ -179,7 +179,7 @@ NfsFileReader::OnNfsConnectionDisconnected(std::exception_ptr e)
 }
 
 inline void
-NfsFileReader::OpenCallback(nfsfh *_fh)
+NfsFileReader::OpenCallback(nfsfh *_fh) noexcept
 {
 	assert(state == State::OPEN);
 	assert(connection != nullptr);
@@ -198,7 +198,7 @@ NfsFileReader::OpenCallback(nfsfh *_fh)
 }
 
 inline void
-NfsFileReader::StatCallback(const struct stat *st)
+NfsFileReader::StatCallback(const struct stat *st) noexcept
 {
 	assert(state == State::STAT);
 	assert(connection != nullptr);
@@ -216,7 +216,7 @@ NfsFileReader::StatCallback(const struct stat *st)
 }
 
 void
-NfsFileReader::OnNfsCallback(unsigned status, void *data)
+NfsFileReader::OnNfsCallback(unsigned status, void *data) noexcept
 {
 	switch (state) {
 	case State::INITIAL:
@@ -242,7 +242,7 @@ NfsFileReader::OnNfsCallback(unsigned status, void *data)
 }
 
 void
-NfsFileReader::OnNfsError(std::exception_ptr &&e)
+NfsFileReader::OnNfsError(std::exception_ptr &&e) noexcept
 {
 	switch (state) {
 	case State::INITIAL:
@@ -272,7 +272,7 @@ NfsFileReader::OnNfsError(std::exception_ptr &&e)
 }
 
 void
-NfsFileReader::RunDeferred()
+NfsFileReader::OnDeferredOpen() noexcept
 {
 	assert(state == State::DEFER);
 

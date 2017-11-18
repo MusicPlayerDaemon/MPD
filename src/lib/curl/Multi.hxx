@@ -58,25 +58,26 @@ public:
 	/**
 	 * Create an empty instance.
 	 */
-	CurlMulti(std::nullptr_t):handle(nullptr) {}
+	CurlMulti(std::nullptr_t) noexcept:handle(nullptr) {}
 
-	CurlMulti(CurlMulti &&src):handle(std::exchange(src.handle, nullptr)) {}
+	CurlMulti(CurlMulti &&src) noexcept
+		:handle(std::exchange(src.handle, nullptr)) {}
 
-	~CurlMulti() {
+	~CurlMulti() noexcept {
 		if (handle != nullptr)
 			curl_multi_cleanup(handle);
 	}
 
-	operator bool() const {
+	operator bool() const noexcept {
 		return handle != nullptr;
 	}
 
-	CurlMulti &operator=(CurlMulti &&src) {
+	CurlMulti &operator=(CurlMulti &&src) noexcept {
 		std::swap(handle, src.handle);
 		return *this;
 	}
 
-	CURLM *Get() {
+	CURLM *Get() noexcept {
 		return handle;
 	}
 

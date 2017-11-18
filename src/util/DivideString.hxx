@@ -53,7 +53,7 @@ public:
 	/**
 	 * Is the first part empty?
 	 */
-	bool IsEmpty() const {
+	bool empty() const {
 		assert(IsDefined());
 
 		return *first == 0;

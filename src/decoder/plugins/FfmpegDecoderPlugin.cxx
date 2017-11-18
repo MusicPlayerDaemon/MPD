@@ -258,7 +258,7 @@ FfmpegSendFrame(DecoderClient &client, InputStream &is,
 	try {
 		output_buffer = copy_interleave_frame(codec_context, frame,
 						      buffer);
-	} catch (const std::exception e) {
+	} catch (const std::exception &e) {
 		/* this must be a serious error, e.g. OOM */
 		LogError(e);
 		return DecoderCommand::STOP;
@@ -617,7 +617,7 @@ FfmpegCheckTag(DecoderClient &client, InputStream &is,
 
 	TagBuilder tag;
 	FfmpegScanTag(format_context, audio_stream, tag);
-	if (!tag.IsEmpty())
+	if (!tag.empty())
 		client.SubmitTag(is, tag.Commit());
 }
 

@@ -23,18 +23,17 @@
 #include "tag/Format.hxx"
 #include "encoder/ToOutputStream.hxx"
 #include "encoder/EncoderInterface.hxx"
-#include "encoder/EncoderPlugin.hxx"
-#include "encoder/EncoderList.hxx"
+#include "encoder/Configured.hxx"
 #include "config/ConfigError.hxx"
 #include "config/ConfigPath.hxx"
 #include "Log.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "fs/io/FileOutputStream.hxx"
-#include "util/RuntimeError.hxx"
 #include "util/Domain.hxx"
 #include "util/ScopeExit.hxx"
 
 #include <stdexcept>
+#include <memory>
 
 #include <assert.h>
 #include <stdlib.h>
@@ -45,7 +44,7 @@ class RecorderOutput final : AudioOutput {
 	/**
 	 * The configured encoder plugin.
 	 */
-	PreparedEncoder *prepared_encoder = nullptr;
+	std::unique_ptr<PreparedEncoder> prepared_encoder;
 	Encoder *encoder;
 
 	/**
@@ -71,10 +70,6 @@ class RecorderOutput final : AudioOutput {
 	FileOutputStream *file;
 
 	RecorderOutput(const ConfigBlock &block);
-
-	~RecorderOutput() {
-		delete prepared_encoder;
-	}
 
 public:
 	static AudioOutput *Create(EventLoop &, const ConfigBlock &block) {
@@ -112,15 +107,10 @@ private:
 };
 
 RecorderOutput::RecorderOutput(const ConfigBlock &block)
-	:AudioOutput(0)
+	:AudioOutput(0),
+	 prepared_encoder(CreateConfiguredEncoder(block))
 {
 	/* read configuration */
-
-	const char *encoder_name =
-		block.GetBlockValue("encoder", "vorbis");
-	const auto encoder_plugin = encoder_plugin_get(encoder_name);
-	if (encoder_plugin == nullptr)
-		throw FormatRuntimeError("No such encoder: %s", encoder_name);
 
 	path = block.GetPath("path");
 
@@ -133,10 +123,6 @@ RecorderOutput::RecorderOutput(const ConfigBlock &block)
 
 	if (!path.IsNull() && fmt != nullptr)
 		throw std::runtime_error("Cannot have both 'path' and 'format_path'");
-
-	/* initialize encoder */
-
-	prepared_encoder = encoder_init(*encoder_plugin, block);
 }
 
 inline void

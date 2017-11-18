@@ -45,7 +45,7 @@ UPnPDeviceDirectory::Downloader::Downloader(UPnPDeviceDirectory &_parent,
 }
 
 void
-UPnPDeviceDirectory::Downloader::Destroy()
+UPnPDeviceDirectory::Downloader::Destroy() noexcept
 {
 	parent.downloaders.erase_and_dispose(parent.downloaders.iterator_to(*this),
 					     DeleteDisposer());
@@ -86,7 +86,7 @@ UPnPDeviceDirectory::Downloader::OnEnd()
 }
 
 void
-UPnPDeviceDirectory::Downloader::OnError(std::exception_ptr e)
+UPnPDeviceDirectory::Downloader::OnError(std::exception_ptr e) noexcept
 {
 	LogError(e);
 	Destroy();
@@ -170,19 +170,23 @@ UPnPDeviceDirectory::LockRemove(const std::string &id)
 }
 
 inline int
-UPnPDeviceDirectory::OnAlive(Upnp_Discovery *disco)
+UPnPDeviceDirectory::OnAlive(Upnp_Discovery *disco) noexcept
 {
 	if (isMSDevice(disco->DeviceType) ||
 	    isCDService(disco->ServiceType)) {
-		auto *downloader = new Downloader(*this, *disco);
-
 		try {
-			downloader->Start();
-		} catch (...) {
-			BlockingCall(GetEventLoop(), [downloader](){
-					downloader->Destroy();
-				});
+			auto *downloader = new Downloader(*this, *disco);
 
+			try {
+				downloader->Start();
+			} catch (...) {
+				BlockingCall(GetEventLoop(), [downloader](){
+						downloader->Destroy();
+					});
+
+				throw;
+			}
+		} catch (...) {
 			LogError(std::current_exception());
 			return UPNP_E_SUCCESS;
 		}
@@ -192,7 +196,7 @@ UPnPDeviceDirectory::OnAlive(Upnp_Discovery *disco)
 }
 
 inline int
-UPnPDeviceDirectory::OnByeBye(Upnp_Discovery *disco)
+UPnPDeviceDirectory::OnByeBye(Upnp_Discovery *disco) noexcept
 {
 	if (isMSDevice(disco->DeviceType) ||
 	    isCDService(disco->ServiceType)) {
@@ -208,7 +212,7 @@ UPnPDeviceDirectory::OnByeBye(Upnp_Discovery *disco)
 // Example: ContentDirectories appearing and disappearing from the network
 // We queue a task for our worker thread(s)
 int
-UPnPDeviceDirectory::Invoke(Upnp_EventType et, void *evp)
+UPnPDeviceDirectory::Invoke(Upnp_EventType et, void *evp) noexcept
 {
 	switch (et) {
 	case UPNP_DISCOVERY_SEARCH_RESULT:
@@ -257,7 +261,7 @@ UPnPDeviceDirectory::UPnPDeviceDirectory(EventLoop &event_loop,
 {
 }
 
-UPnPDeviceDirectory::~UPnPDeviceDirectory()
+UPnPDeviceDirectory::~UPnPDeviceDirectory() noexcept
 {
 	BlockingCall(GetEventLoop(), [this](){
 			downloaders.clear_and_dispose(DeleteDisposer());
@@ -265,7 +269,7 @@ UPnPDeviceDirectory::~UPnPDeviceDirectory()
 }
 
 inline EventLoop &
-UPnPDeviceDirectory::GetEventLoop()
+UPnPDeviceDirectory::GetEventLoop() noexcept
 {
 	return curl->GetEventLoop();
 }

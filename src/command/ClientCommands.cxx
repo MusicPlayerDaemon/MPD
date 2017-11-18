@@ -58,7 +58,7 @@ handle_password(Client &client, Request args, Response &r)
 static TagMask
 ParseTagMask(Request request)
 {
-	if (request.IsEmpty())
+	if (request.empty())
 		throw ProtocolError(ACK_ERROR_ARG, "Not enough arguments");
 
 	TagMask result = TagMask::None();
@@ -77,14 +77,14 @@ ParseTagMask(Request request)
 CommandResult
 handle_tagtypes(Client &client, Request request, Response &r)
 {
-	if (request.IsEmpty()) {
+	if (request.empty()) {
 		tag_print_types(r);
 		return CommandResult::OK;
 	}
 
 	const char *cmd = request.shift();
 	if (StringIsEqual(cmd, "all")) {
-		if (!request.IsEmpty()) {
+		if (!request.empty()) {
 			r.Error(ACK_ERROR_ARG, "Too many arguments");
 			return CommandResult::ERROR;
 		}
@@ -92,7 +92,7 @@ handle_tagtypes(Client &client, Request request, Response &r)
 		client.tag_mask = TagMask::All();
 		return CommandResult::OK;
 	} else if (StringIsEqual(cmd, "clear")) {
-		if (!request.IsEmpty()) {
+		if (!request.empty()) {
 			r.Error(ACK_ERROR_ARG, "Too many arguments");
 			return CommandResult::ERROR;
 		}

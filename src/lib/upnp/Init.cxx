@@ -57,7 +57,7 @@ UpnpGlobalInit()
 }
 
 void
-UpnpGlobalFinish()
+UpnpGlobalFinish() noexcept
 {
 	const std::lock_guard<Mutex> protect(upnp_init_mutex);
 

@@ -49,7 +49,7 @@ public:
 	OggSyncState(const OggSyncState &) = delete;
 	OggSyncState &operator=(const OggSyncState &) = delete;
 
-	void Reset() {
+	void Reset() noexcept {
 		ogg_sync_reset(&oy);
 	}
 

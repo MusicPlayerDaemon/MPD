@@ -32,10 +32,10 @@ PeakBuffer::~PeakBuffer()
 }
 
 bool
-PeakBuffer::IsEmpty() const noexcept
+PeakBuffer::empty() const noexcept
 {
-	return (normal_buffer == nullptr || normal_buffer->IsEmpty()) &&
-		(peak_buffer == nullptr || peak_buffer->IsEmpty());
+	return (normal_buffer == nullptr || normal_buffer->empty()) &&
+		(peak_buffer == nullptr || peak_buffer->empty());
 }
 
 WritableBuffer<void>
@@ -43,13 +43,13 @@ PeakBuffer::Read() const noexcept
 {
 	if (normal_buffer != nullptr) {
 		const auto p = normal_buffer->Read();
-		if (!p.IsEmpty())
+		if (!p.empty())
 			return p.ToVoid();
 	}
 
 	if (peak_buffer != nullptr) {
 		const auto p = peak_buffer->Read();
-		if (!p.IsEmpty())
+		if (!p.empty())
 			return p.ToVoid();
 	}
 
@@ -59,14 +59,14 @@ PeakBuffer::Read() const noexcept
 void
 PeakBuffer::Consume(size_t length) noexcept
 {
-	if (normal_buffer != nullptr && !normal_buffer->IsEmpty()) {
+	if (normal_buffer != nullptr && !normal_buffer->empty()) {
 		normal_buffer->Consume(length);
 		return;
 	}
 
-	if (peak_buffer != nullptr && !peak_buffer->IsEmpty()) {
+	if (peak_buffer != nullptr && !peak_buffer->empty()) {
 		peak_buffer->Consume(length);
-		if (peak_buffer->IsEmpty()) {
+		if (peak_buffer->empty()) {
 			delete peak_buffer;
 			peak_buffer = nullptr;
 		}
@@ -86,7 +86,7 @@ AppendTo(DynamicFifoBuffer<uint8_t> &buffer,
 
 	do {
 		const auto p = buffer.Write();
-		if (p.IsEmpty())
+		if (p.empty())
 			break;
 
 		const size_t nbytes = std::min(length, p.size);
@@ -107,7 +107,7 @@ PeakBuffer::Append(const void *data, size_t length)
 	if (length == 0)
 		return true;
 
-	if (peak_buffer != nullptr && !peak_buffer->IsEmpty()) {
+	if (peak_buffer != nullptr && !peak_buffer->empty()) {
 		size_t nbytes = AppendTo(*peak_buffer, data, length);
 		return nbytes == length;
 	}

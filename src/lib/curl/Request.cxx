@@ -66,7 +66,7 @@ CurlRequest::CurlRequest(CurlGlobal &_global, const char *url,
 	easy.SetOption(CURLOPT_URL, url);
 }
 
-CurlRequest::~CurlRequest()
+CurlRequest::~CurlRequest() noexcept
 {
 	FreeEasy();
 }
@@ -81,7 +81,7 @@ CurlRequest::Start()
 }
 
 void
-CurlRequest::Stop()
+CurlRequest::Stop() noexcept
 {
 	if (!registered)
 		return;
@@ -91,7 +91,7 @@ CurlRequest::Stop()
 }
 
 void
-CurlRequest::FreeEasy()
+CurlRequest::FreeEasy() noexcept
 {
 	if (!easy)
 		return;
@@ -101,7 +101,7 @@ CurlRequest::FreeEasy()
 }
 
 void
-CurlRequest::Resume()
+CurlRequest::Resume() noexcept
 {
 	assert(registered);
 
@@ -143,7 +143,7 @@ CurlRequest::FinishBody()
 }
 
 void
-CurlRequest::Done(CURLcode result)
+CurlRequest::Done(CURLcode result) noexcept
 {
 	Stop();
 
@@ -180,7 +180,7 @@ IsResponseBoundaryHeader(StringView s) noexcept
 }
 
 inline void
-CurlRequest::HeaderFunction(StringView s)
+CurlRequest::HeaderFunction(StringView s) noexcept
 {
 	if (state > State::HEADERS)
 		return;
@@ -216,7 +216,8 @@ CurlRequest::HeaderFunction(StringView s)
 }
 
 size_t
-CurlRequest::_HeaderFunction(void *ptr, size_t size, size_t nmemb, void *stream)
+CurlRequest::_HeaderFunction(void *ptr, size_t size, size_t nmemb,
+			     void *stream) noexcept
 {
 	CurlRequest &c = *(CurlRequest *)stream;
 
@@ -227,7 +228,7 @@ CurlRequest::_HeaderFunction(void *ptr, size_t size, size_t nmemb, void *stream)
 }
 
 inline size_t
-CurlRequest::DataReceived(const void *ptr, size_t received_size)
+CurlRequest::DataReceived(const void *ptr, size_t received_size) noexcept
 {
 	assert(received_size > 0);
 
@@ -249,7 +250,8 @@ CurlRequest::DataReceived(const void *ptr, size_t received_size)
 }
 
 size_t
-CurlRequest::WriteFunction(void *ptr, size_t size, size_t nmemb, void *stream)
+CurlRequest::WriteFunction(void *ptr, size_t size, size_t nmemb,
+			   void *stream) noexcept
 {
 	CurlRequest &c = *(CurlRequest *)stream;
 
@@ -261,7 +263,7 @@ CurlRequest::WriteFunction(void *ptr, size_t size, size_t nmemb, void *stream)
 }
 
 void
-CurlRequest::OnPostponeError()
+CurlRequest::OnPostponeError() noexcept
 {
 	assert(postponed_error);
 

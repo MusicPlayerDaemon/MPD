@@ -27,13 +27,13 @@
 #include <poll.h>
 #endif
 
-MultiSocketMonitor::MultiSocketMonitor(EventLoop &_loop)
+MultiSocketMonitor::MultiSocketMonitor(EventLoop &_loop) noexcept
 	:IdleMonitor(_loop),
 	 timeout_event(_loop, BIND_THIS_METHOD(OnTimeout)) {
 }
 
 void
-MultiSocketMonitor::Reset()
+MultiSocketMonitor::Reset() noexcept
 {
 	assert(GetEventLoop().IsInside());
 
@@ -44,7 +44,7 @@ MultiSocketMonitor::Reset()
 }
 
 void
-MultiSocketMonitor::ClearSocketList()
+MultiSocketMonitor::ClearSocketList() noexcept
 {
 	assert(GetEventLoop().IsInside());
 
@@ -54,7 +54,7 @@ MultiSocketMonitor::ClearSocketList()
 #ifndef WIN32
 
 void
-MultiSocketMonitor::ReplaceSocketList(pollfd *pfds, unsigned n)
+MultiSocketMonitor::ReplaceSocketList(pollfd *pfds, unsigned n) noexcept
 {
 	pollfd *const end = pfds + n;
 
@@ -78,7 +78,7 @@ MultiSocketMonitor::ReplaceSocketList(pollfd *pfds, unsigned n)
 #endif
 
 void
-MultiSocketMonitor::Prepare()
+MultiSocketMonitor::Prepare() noexcept
 {
 	const auto timeout = PrepareSockets();
 	if (timeout >= timeout.zero())
@@ -89,7 +89,7 @@ MultiSocketMonitor::Prepare()
 }
 
 void
-MultiSocketMonitor::OnIdle()
+MultiSocketMonitor::OnIdle() noexcept
 {
 	if (ready) {
 		ready = false;

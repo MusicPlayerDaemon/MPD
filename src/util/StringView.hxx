@@ -58,7 +58,7 @@ struct BasicStringView : ConstBuffer<T> {
 	constexpr BasicStringView(std::nullptr_t n) noexcept
 		:ConstBuffer<T>(n) {}
 
-	using ConstBuffer<T>::IsEmpty;
+	using ConstBuffer<T>::empty;
 	using ConstBuffer<T>::front;
 	using ConstBuffer<T>::back;
 	using ConstBuffer<T>::pop_front;

@@ -65,12 +65,12 @@ public:
 	 * UPnPDeviceDirectory::GetDirectories()
 	 */
 	ContentDirectoryService(const UPnPDevice &device,
-				const UPnPService &service);
+				const UPnPService &service) noexcept;
 
 	/** An empty one */
 	ContentDirectoryService() = default;
 
-	~ContentDirectoryService();
+	~ContentDirectoryService() noexcept;
 
 	/** Read a container's children list into dirbuf.
 	 *

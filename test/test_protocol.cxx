@@ -37,7 +37,7 @@ ArgParserTest::TestRange()
 	try {
 		range = ParseCommandArgRange("-2");
 		CPPUNIT_ASSERT(false);
-	} catch (ProtocolError) {
+	} catch (const ProtocolError &) {
 		CPPUNIT_ASSERT(true);
 	}
 }

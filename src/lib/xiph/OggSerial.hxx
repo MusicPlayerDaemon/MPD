@@ -24,6 +24,6 @@
  * Generate the next pseudo-random Ogg serial.
  */
 int
-GenerateOggSerial();
+GenerateOggSerial() noexcept;
 
 #endif

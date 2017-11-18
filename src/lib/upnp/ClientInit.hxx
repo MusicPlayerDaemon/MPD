@@ -28,6 +28,6 @@ void
 UpnpClientGlobalInit(UpnpClient_Handle &handle);
 
 void
-UpnpClientGlobalFinish();
+UpnpClientGlobalFinish() noexcept;
 
 #endif

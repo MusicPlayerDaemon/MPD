@@ -45,7 +45,6 @@ public:
 
 	using SocketMonitor::IsDefined;
 	using SocketMonitor::Close;
-	using SocketMonitor::Write;
 
 private:
 	ssize_t DirectRead(void *data, size_t length);
@@ -113,7 +112,8 @@ protected:
 	virtual void OnSocketError(std::exception_ptr ep) = 0;
 	virtual void OnSocketClosed() = 0;
 
-	virtual bool OnSocketReady(unsigned flags) override;
+	/* virtual methods from class SocketMonitor */
+	bool OnSocketReady(unsigned flags) noexcept override;
 };
 
 #endif

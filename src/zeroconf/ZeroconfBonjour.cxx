@@ -48,7 +48,8 @@ public:
 	}
 
 protected:
-	virtual bool OnSocketReady(gcc_unused unsigned flags) override {
+	/* virtual methods from class SocketMonitor */
+	bool OnSocketReady(gcc_unused unsigned flags) noexcept override {
 		DNSServiceProcessResult(service_ref);
 		return false;
 	}

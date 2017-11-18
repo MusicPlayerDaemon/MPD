@@ -284,7 +284,7 @@ handle_update(Client &client, Request args, Response &r, bool discard)
 	const char *path = "";
 
 	assert(args.size <= 1);
-	if (!args.IsEmpty()) {
+	if (!args.empty()) {
 		path = args.front();
 
 		if (*path == 0 || StringIsEqual(path, "/"))

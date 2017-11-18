@@ -69,10 +69,11 @@ public:
 		delete w;
 	}
 
-protected:
-	virtual bool OnSocketReady(unsigned flags) {
+private:
+	/* virtual methods from class SocketMonitor */
+	bool OnSocketReady(unsigned flags) noexcept {
 		received = ToAvahiWatchEvent(flags);
-		callback(this, Get().Get(), received, userdata);
+		callback(this, GetSocket().Get(), received, userdata);
 		received = AvahiWatchEvent(0);
 		return true;
 	}

@@ -87,14 +87,24 @@ input_file_open(gcc_unused const char *filename,
 void
 FileInputStream::Seek(offset_type new_offset)
 {
-	reader.Seek((off_t)new_offset);
+	{
+		const ScopeUnlock unlock(mutex);
+		reader.Seek((off_t)new_offset);
+	}
+
 	offset = new_offset;
 }
 
 size_t
 FileInputStream::Read(void *ptr, size_t read_size)
 {
-	size_t nbytes = reader.Read(ptr, read_size);
+	size_t nbytes;
+
+	{
+		const ScopeUnlock unlock(mutex);
+		nbytes = reader.Read(ptr, read_size);
+	}
+
 	offset += nbytes;
 	return nbytes;
 }

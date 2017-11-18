@@ -21,7 +21,7 @@
 namespace ixmlwrap {
 
 const char *
-getFirstElementValue(IXML_Document *doc, const char *name)
+getFirstElementValue(IXML_Document *doc, const char *name) noexcept
 {
 	UniqueIxmlNodeList nodes(ixmlDocument_getElementsByTagName(doc, name));
 	if (!nodes)

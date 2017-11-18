@@ -34,13 +34,13 @@ BufferedReader::Fill(bool need_more)
 		return !need_more;
 
 	auto w = buffer.Write();
-	if (w.IsEmpty()) {
+	if (w.empty()) {
 		if (buffer.GetCapacity() >= MAX_SIZE)
 			return !need_more;
 
 		buffer.Grow(buffer.GetCapacity() * 2);
 		w = buffer.Write();
-		assert(!w.IsEmpty());
+		assert(!w.empty());
 	}
 
 	size_t nbytes = reader.Read(w.data, w.size);
@@ -104,14 +104,14 @@ BufferedReader::ReadLine()
 		}
 	} while (Fill(true));
 
-	if (!eof || buffer.IsEmpty())
+	if (!eof || buffer.empty())
 		return nullptr;
 
 	auto w = buffer.Write();
-	if (w.IsEmpty()) {
+	if (w.empty()) {
 		buffer.Grow(buffer.GetCapacity() + 1);
 		w = buffer.Write();
-		assert(!w.IsEmpty());
+		assert(!w.empty());
 	}
 
 	/* terminate the last line */

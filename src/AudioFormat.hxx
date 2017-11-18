@@ -133,6 +133,11 @@ struct AudioFormat {
 		return result;
 	}
 
+	gcc_pure
+	bool MatchMask(AudioFormat mask) const noexcept {
+		return WithMask(mask) == *this;
+	}
+
 	/**
 	 * Returns the size of each (mono) sample in bytes.
 	 */

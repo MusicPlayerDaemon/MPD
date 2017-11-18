@@ -22,7 +22,7 @@
 
 #include "check.h"
 #include "Queue.hxx"
-#include "event/DeferredMonitor.hxx"
+#include "event/DeferEvent.hxx"
 #include "thread/Thread.hxx"
 #include "Compiler.h"
 
@@ -34,7 +34,9 @@ class CompositeStorage;
 /**
  * This class manages the update queue and runs the update thread.
  */
-class UpdateService final : DeferredMonitor {
+class UpdateService final {
+	DeferEvent defer;
+
 	SimpleDatabase &db;
 	CompositeStorage &storage;
 
@@ -60,6 +62,10 @@ public:
 		      DatabaseListener &_listener);
 
 	~UpdateService();
+
+	EventLoop &GetEventLoop() noexcept {
+		return defer.GetEventLoop();
+	}
 
 	/**
 	 * Returns a non-zero job id when we are currently updating
@@ -93,8 +99,8 @@ public:
 	void CancelMount(const char *uri);
 
 private:
-	/* virtual methods from class DeferredMonitor */
-	virtual void RunDeferred() override;
+	/* DeferEvent callback */
+	void RunDeferred() noexcept;
 
 	/* the update thread */
 	void Task();

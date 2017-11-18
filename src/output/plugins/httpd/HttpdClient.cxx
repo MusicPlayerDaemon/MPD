@@ -54,9 +54,9 @@ HttpdClient::LockClose()
 void
 HttpdClient::BeginResponse()
 {
-	assert(state != RESPONSE);
+	assert(state != State::RESPONSE);
 
-	state = RESPONSE;
+	state = State::RESPONSE;
 	current_page = nullptr;
 
 	if (!head_method)
@@ -69,9 +69,9 @@ HttpdClient::BeginResponse()
 bool
 HttpdClient::HandleLine(const char *line)
 {
-	assert(state != RESPONSE);
+	assert(state != State::RESPONSE);
 
-	if (state == REQUEST) {
+	if (state == State::REQUEST) {
 		if (memcmp(line, "HEAD /", 6) == 0) {
 			line += 6;
 			head_method = true;
@@ -96,7 +96,7 @@ HttpdClient::HandleLine(const char *line)
 		}
 
 		/* after the request line, request headers follow */
-		state = HEADERS;
+		state = State::HEADERS;
 		return true;
 	} else {
 		if (*line == 0) {
@@ -137,7 +137,7 @@ HttpdClient::SendResponse()
 	AllocatedString<> allocated = nullptr;
 	const char *response;
 
-	assert(state == RESPONSE);
+	assert(state == State::RESPONSE);
 
 	if (dlna_streaming_requested) {
 		snprintf(buffer, sizeof(buffer),
@@ -173,7 +173,7 @@ HttpdClient::SendResponse()
 		response = buffer;
 	}
 
-	ssize_t nbytes = SocketMonitor::Write(response, strlen(response));
+	ssize_t nbytes = GetSocket().Write(response, strlen(response));
 	if (gcc_unlikely(nbytes < 0)) {
 		const SocketErrorMessage msg;
 		FormatWarning(httpd_output_domain,
@@ -186,27 +186,19 @@ HttpdClient::SendResponse()
 	return true;
 }
 
-HttpdClient::HttpdClient(HttpdOutput &_httpd, UniqueSocketDescriptor &&_fd,
+HttpdClient::HttpdClient(HttpdOutput &_httpd, UniqueSocketDescriptor _fd,
 			 EventLoop &_loop,
 			 bool _metadata_supported)
 	:BufferedSocket(_fd.Release(), _loop),
 	 httpd(_httpd),
-	 state(REQUEST),
-	 queue_size(0),
-	 head_method(false),
-	 dlna_streaming_requested(false),
-	 metadata_supported(_metadata_supported),
-	 metadata_requested(false), metadata_sent(true),
-	 metaint(8192), /*TODO: just a std value */
-	 metadata(nullptr),
-	 metadata_current_position(0), metadata_fill(0)
+	 metadata_supported(_metadata_supported)
 {
 }
 
 void
 HttpdClient::ClearQueue()
 {
-	assert(state == RESPONSE);
+	assert(state == State::RESPONSE);
 
 	while (!pages.empty()) {
 #ifndef NDEBUG
@@ -224,7 +216,7 @@ HttpdClient::ClearQueue()
 void
 HttpdClient::CancelQueue()
 {
-	if (state != RESPONSE)
+	if (state != State::RESPONSE)
 		return;
 
 	ClearQueue();
@@ -238,15 +230,15 @@ HttpdClient::TryWritePage(const Page &page, size_t position)
 {
 	assert(position < page.GetSize());
 
-	return Write(page.GetData() + position,
-		     page.GetSize() - position);
+	return GetSocket().Write(page.GetData() + position,
+				 page.GetSize() - position);
 }
 
 ssize_t
 HttpdClient::TryWritePageN(const Page &page, size_t position, ssize_t n)
 {
 	return n >= 0
-		? Write(page.GetData() + position, n)
+		? GetSocket().Write(page.GetData() + position, n)
 		: TryWritePage(page, position);
 }
 
@@ -265,7 +257,7 @@ HttpdClient::TryWrite()
 {
 	const std::lock_guard<Mutex> protect(httpd.mutex);
 
-	assert(state == RESPONSE);
+	assert(state == State::RESPONSE);
 
 	if (current_page == nullptr) {
 		if (pages.empty()) {
@@ -315,7 +307,7 @@ HttpdClient::TryWrite()
 		} else {
 			char empty_data = 0;
 
-			ssize_t nbytes = Write(&empty_data, 1);
+			ssize_t nbytes = GetSocket().Write(&empty_data, 1);
 			if (nbytes < 0) {
 				auto e = GetSocketError();
 				if (IsSocketErrorAgain(e))
@@ -377,7 +369,7 @@ HttpdClient::TryWrite()
 void
 HttpdClient::PushPage(PagePtr page)
 {
-	if (state != RESPONSE)
+	if (state != State::RESPONSE)
 		/* the client is still writing the HTTP request */
 		return;
 
@@ -403,7 +395,7 @@ HttpdClient::PushMetaData(PagePtr page)
 }
 
 bool
-HttpdClient::OnSocketReady(unsigned flags)
+HttpdClient::OnSocketReady(unsigned flags) noexcept
 {
 	if (!BufferedSocket::OnSocketReady(flags))
 		return false;
@@ -418,7 +410,7 @@ HttpdClient::OnSocketReady(unsigned flags)
 BufferedSocket::InputResult
 HttpdClient::OnSocketInput(void *data, size_t length)
 {
-	if (state == RESPONSE) {
+	if (state == State::RESPONSE) {
 		LogWarning(httpd_output_domain,
 			   "unexpected input from client");
 		LockClose();
@@ -443,7 +435,7 @@ HttpdClient::OnSocketInput(void *data, size_t length)
 		return InputResult::CLOSED;
 	}
 
-	if (state == RESPONSE) {
+	if (state == State::RESPONSE) {
 		if (!SendResponse())
 			return InputResult::CLOSED;
 

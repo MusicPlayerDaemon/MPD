@@ -31,14 +31,6 @@
 
 #include <assert.h>
 
-#ifdef WIN32
-/* ERROR is a WIN32 macro that poisons our namespace; this is a kludge
-   to allow us to use it anyway */
-#ifdef ERROR
-#undef ERROR
-#endif
-#endif
-
 #ifndef WIN32
 struct pollfd;
 #endif
@@ -60,35 +52,35 @@ class MultiSocketMonitor : IdleMonitor
 
 	public:
 		SingleFD(MultiSocketMonitor &_multi, SocketDescriptor _fd,
-			 unsigned events)
+			 unsigned events) noexcept
 			:SocketMonitor(_fd, _multi.GetEventLoop()),
 			multi(_multi), revents(0) {
 			Schedule(events);
 		}
 
-		SocketDescriptor GetFD() const {
-			return SocketMonitor::Get();
+		SocketDescriptor GetSocket() const noexcept {
+			return SocketMonitor::GetSocket();
 		}
 
-		unsigned GetEvents() const {
+		unsigned GetEvents() const noexcept {
 			return SocketMonitor::GetScheduledFlags();
 		}
 
-		void SetEvents(unsigned _events) {
+		void SetEvents(unsigned _events) noexcept {
 			revents &= _events;
 			SocketMonitor::Schedule(_events);
 		}
 
-		unsigned GetReturnedEvents() const {
+		unsigned GetReturnedEvents() const noexcept {
 			return revents;
 		}
 
-		void ClearReturnedEvents() {
+		void ClearReturnedEvents() noexcept {
 			revents = 0;
 		}
 
 	protected:
-		virtual bool OnSocketReady(unsigned flags) override {
+		bool OnSocketReady(unsigned flags) noexcept override {
 			revents = flags;
 			multi.SetReady();
 			return true;
@@ -121,7 +113,7 @@ public:
 	static constexpr unsigned ERROR = SocketMonitor::ERROR;
 	static constexpr unsigned HANGUP = SocketMonitor::HANGUP;
 
-	MultiSocketMonitor(EventLoop &_loop);
+	MultiSocketMonitor(EventLoop &_loop) noexcept;
 
 	using IdleMonitor::GetEventLoop;
 
@@ -140,13 +132,13 @@ public:
 	 * meantime the #EventLoop thread could invoke those pure
 	 * methods.
 	 */
-	void Reset();
+	void Reset() noexcept;
 
 	/**
 	 * Invalidate the socket list.  A call to PrepareSockets() is
 	 * scheduled which will then update the list.
 	 */
-	void InvalidateSockets() {
+	void InvalidateSockets() noexcept {
 		refresh = true;
 		IdleMonitor::Schedule();
 	}
@@ -156,7 +148,7 @@ public:
 	 *
 	 * May only be called from PrepareSockets().
 	 */
-	void AddSocket(SocketDescriptor fd, unsigned events) {
+	void AddSocket(SocketDescriptor fd, unsigned events) noexcept {
 		fds.emplace_front(*this, fd, events);
 	}
 
@@ -165,7 +157,7 @@ public:
 	 *
 	 * May only be called from PrepareSockets().
 	 */
-	void ClearSocketList();
+	void ClearSocketList() noexcept;
 
 	/**
 	 * Update the known sockets by invoking the given function for
@@ -176,13 +168,13 @@ public:
 	 * May only be called from PrepareSockets().
 	 */
 	template<typename E>
-	void UpdateSocketList(E &&e) {
+	void UpdateSocketList(E &&e) noexcept {
 		for (auto prev = fds.before_begin(), end = fds.end(),
 			     i = std::next(prev);
 		     i != end; i = std::next(prev)) {
 			assert(i->GetEvents() != 0);
 
-			unsigned events = e(i->GetFD());
+			unsigned events = e(i->GetSocket());
 			if (events != 0) {
 				i->SetEvents(events);
 				prev = i;
@@ -199,7 +191,7 @@ public:
 	 *
 	 * May only be called from PrepareSockets().
 	 */
-	void ReplaceSocketList(pollfd *pfds, unsigned n);
+	void ReplaceSocketList(pollfd *pfds, unsigned n) noexcept;
 #endif
 
 protected:
@@ -210,28 +202,28 @@ protected:
 	 *
 	 * @return timeout or a negative value for no timeout
 	 */
-	virtual std::chrono::steady_clock::duration PrepareSockets() = 0;
+	virtual std::chrono::steady_clock::duration PrepareSockets() noexcept = 0;
 
 	/**
 	 * At least one socket is ready or the timeout has expired.
 	 * This method should be used to perform I/O.
 	 */
-	virtual void DispatchSockets() = 0;
+	virtual void DispatchSockets() noexcept = 0;
 
 private:
-	void SetReady() {
+	void SetReady() noexcept {
 		ready = true;
 		IdleMonitor::Schedule();
 	}
 
-	void Prepare();
+	void Prepare() noexcept;
 
-	void OnTimeout() {
+	void OnTimeout() noexcept {
 		SetReady();
 		IdleMonitor::Schedule();
 	}
 
-	virtual void OnIdle() final;
+	virtual void OnIdle() noexcept final;
 };
 
 #endif

@@ -18,17 +18,17 @@
  */
 
 #include "config.h"
-#include "DeferredMonitor.hxx"
+#include "DeferEvent.hxx"
 #include "Loop.hxx"
 
 void
-DeferredMonitor::Cancel()
+DeferEvent::Cancel() noexcept
 {
 	loop.RemoveDeferred(*this);
 }
 
 void
-DeferredMonitor::Schedule()
+DeferEvent::Schedule() noexcept
 {
 	loop.AddDeferred(*this);
 }

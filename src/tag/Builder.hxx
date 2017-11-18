@@ -74,7 +74,7 @@ public:
 	 * Returns true if the tag contains no items.  This ignores
 	 * the "duration" attribute.
 	 */
-	bool IsEmpty() const {
+	bool empty() const {
 		return items.empty();
 	}
 
@@ -83,7 +83,7 @@ public:
 	 */
 	gcc_pure
 	bool IsDefined() const noexcept {
-		return !duration.IsNegative() || has_playlist || !IsEmpty();
+		return !duration.IsNegative() || has_playlist || !empty();
 	}
 
 	void Clear();

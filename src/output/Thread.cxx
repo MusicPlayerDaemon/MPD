@@ -245,22 +245,21 @@ try {
 inline bool
 AudioOutputControl::PlayChunk() noexcept
 {
-	if (tags) {
-		const auto *tag = source.ReadTag();
-		if (tag != nullptr) {
-			const ScopeUnlock unlock(mutex);
-			try {
-				output->SendTag(*tag);
-			} catch (const std::runtime_error &e) {
-				FormatError(e, "Failed to send tag to %s",
-					    GetLogName());
-			}
+	// ensure pending tags are flushed in all cases
+	const auto *tag = source.ReadTag();
+	if (tags && tag != nullptr) {
+		const ScopeUnlock unlock(mutex);
+		try {
+			output->SendTag(*tag);
+		} catch (const std::runtime_error &e) {
+			FormatError(e, "Failed to send tag to %s",
+				    GetLogName());
 		}
 	}
 
 	while (command == Command::NONE) {
 		const auto data = source.PeekData();
-		if (data.IsEmpty())
+		if (data.empty())
 			break;
 
 		if (skip_delay)

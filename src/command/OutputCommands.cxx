@@ -71,7 +71,7 @@ handle_toggleoutput(Client &client, Request args, Response &r)
 CommandResult
 handle_devices(Client &client, gcc_unused Request args, Response &r)
 {
-	assert(args.IsEmpty());
+	assert(args.empty());
 
 	printAudioDevices(r, client.GetPartition().outputs);
 	return CommandResult::OK;

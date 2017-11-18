@@ -142,10 +142,10 @@ private:
 	void Disconnect();
 
 	/* virtual methods from SocketMonitor */
-	bool OnSocketReady(unsigned flags) override;
+	bool OnSocketReady(unsigned flags) noexcept override;
 
 	/* virtual methods from IdleMonitor */
-	void OnIdle() override;
+	void OnIdle() noexcept override;
 };
 
 static constexpr struct {
@@ -459,7 +459,7 @@ ProxyDatabase::Disconnect()
 }
 
 bool
-ProxyDatabase::OnSocketReady(gcc_unused unsigned flags)
+ProxyDatabase::OnSocketReady(gcc_unused unsigned flags) noexcept
 {
 	assert(connection != nullptr);
 
@@ -488,7 +488,7 @@ ProxyDatabase::OnSocketReady(gcc_unused unsigned flags)
 }
 
 void
-ProxyDatabase::OnIdle()
+ProxyDatabase::OnIdle() noexcept
 {
 	assert(connection != nullptr);
 
@@ -801,7 +801,7 @@ ProxyDatabase::VisitUniqueTags(const DatabaseSelection &selection,
 		TagBuilder tag;
 		tag.AddItem(tag_type, pair->value);
 
-		if (tag.IsEmpty())
+		if (tag.empty())
 			/* if no tag item has been added, then the
 			   given value was not acceptable
 			   (e.g. empty); forcefully insert an empty

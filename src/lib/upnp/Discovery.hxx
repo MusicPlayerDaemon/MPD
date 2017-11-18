@@ -73,7 +73,7 @@ class UPnPDeviceDirectory final : UpnpCallback {
 
 		ContentDirectoryDescriptor(std::string &&_id,
 					   std::chrono::steady_clock::time_point last,
-					   std::chrono::steady_clock::duration exp)
+					   std::chrono::steady_clock::duration exp) noexcept
 			:id(std::move(_id)),
 			 expires(last + exp + std::chrono::seconds(20)) {}
 
@@ -102,15 +102,19 @@ class UPnPDeviceDirectory final : UpnpCallback {
 		Downloader(UPnPDeviceDirectory &_parent,
 			   const Upnp_Discovery &disco);
 
-		void Start() {
+		void Start() noexcept {
 			defer_start_event.Schedule();
 		}
 
-		void Destroy();
+		void Destroy() noexcept;
 
 	private:
-		void OnDeferredStart() {
-			request.Start();
+		void OnDeferredStart() noexcept {
+			try {
+				request.Start();
+			} catch (...) {
+				OnError(std::current_exception());
+			}
 		}
 
 		/* virtual methods from CurlResponseHandler */
@@ -118,7 +122,7 @@ class UPnPDeviceDirectory final : UpnpCallback {
 			       std::multimap<std::string, std::string> &&headers) override;
 		void OnData(ConstBuffer<void> data) override;
 		void OnEnd() override;
-		void OnError(std::exception_ptr e) override;
+		void OnError(std::exception_ptr e) noexcept override;
 	};
 
 	CurlInit curl;
@@ -148,12 +152,12 @@ class UPnPDeviceDirectory final : UpnpCallback {
 public:
 	UPnPDeviceDirectory(EventLoop &event_loop, UpnpClient_Handle _handle,
 			    UPnPDiscoveryListener *_listener=nullptr);
-	~UPnPDeviceDirectory();
+	~UPnPDeviceDirectory() noexcept;
 
 	UPnPDeviceDirectory(const UPnPDeviceDirectory &) = delete;
 	UPnPDeviceDirectory& operator=(const UPnPDeviceDirectory &) = delete;
 
-	EventLoop &GetEventLoop();
+	EventLoop &GetEventLoop() noexcept;
 
 	void Start();
 
@@ -180,11 +184,11 @@ private:
 	void LockAdd(ContentDirectoryDescriptor &&d);
 	void LockRemove(const std::string &id);
 
-	int OnAlive(Upnp_Discovery *disco);
-	int OnByeBye(Upnp_Discovery *disco);
+	int OnAlive(Upnp_Discovery *disco) noexcept;
+	int OnByeBye(Upnp_Discovery *disco) noexcept;
 
 	/* virtual methods from class UpnpCallback */
-	virtual int Invoke(Upnp_EventType et, void *evp) override;
+	int Invoke(Upnp_EventType et, void *evp) noexcept override;
 };
 
 

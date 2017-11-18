@@ -42,7 +42,7 @@ public:
 			       std::multimap<std::string, std::string> &&headers) = 0;
 	virtual void OnData(ConstBuffer<void> data) = 0;
 	virtual void OnEnd() = 0;
-	virtual void OnError(std::exception_ptr e) = 0;
+	virtual void OnError(std::exception_ptr e) noexcept = 0;
 };
 
 #endif

@@ -23,15 +23,13 @@
 #include "HttpdClient.hxx"
 #include "output/OutputAPI.hxx"
 #include "encoder/EncoderInterface.hxx"
-#include "encoder/EncoderPlugin.hxx"
-#include "encoder/EncoderList.hxx"
+#include "encoder/Configured.hxx"
 #include "net/UniqueSocketDescriptor.hxx"
 #include "net/SocketAddress.hxx"
 #include "net/ToString.hxx"
 #include "Page.hxx"
 #include "IcyMetaDataServer.hxx"
 #include "event/Call.hxx"
-#include "util/RuntimeError.hxx"
 #include "util/Domain.hxx"
 #include "util/DeleteDisposer.hxx"
 #include "Log.hxx"
@@ -51,9 +49,9 @@ const Domain httpd_output_domain("httpd_output");
 inline
 HttpdOutput::HttpdOutput(EventLoop &_loop, const ConfigBlock &block)
 	:AudioOutput(FLAG_ENABLE_DISABLE|FLAG_PAUSE),
-	 ServerSocket(_loop), DeferredMonitor(_loop),
-	 encoder(nullptr), unflushed_input(0),
-	 metadata(nullptr)
+	 ServerSocket(_loop),
+	 prepared_encoder(CreateConfiguredEncoder(block)),
+	 defer_broadcast(_loop, BIND_THIS_METHOD(OnDeferredBroadcast))
 {
 	/* read configuration */
 	name = block.GetBlockValue("name", "Set name in config");
@@ -61,12 +59,6 @@ HttpdOutput::HttpdOutput(EventLoop &_loop, const ConfigBlock &block)
 	website = block.GetBlockValue("website", "Set website in config");
 
 	unsigned port = block.GetBlockValue("port", 8000u);
-
-	const char *encoder_name =
-		block.GetBlockValue("encoder", "vorbis");
-	const auto encoder_plugin = encoder_plugin_get(encoder_name);
-	if (encoder_plugin == nullptr)
-		throw FormatRuntimeError("No such encoder: %s", encoder_name);
 
 	clients_max = block.GetBlockValue("max_clients", 0u);
 
@@ -78,19 +70,10 @@ HttpdOutput::HttpdOutput(EventLoop &_loop, const ConfigBlock &block)
 	else
 		AddPort(port);
 
-	/* initialize encoder */
-
-	prepared_encoder = encoder_init(*encoder_plugin, block);
-
 	/* determine content type */
 	content_type = prepared_encoder->GetMimeType();
 	if (content_type == nullptr)
 		content_type = "application/octet-stream";
-}
-
-HttpdOutput::~HttpdOutput()
-{
-	delete prepared_encoder;
 }
 
 inline void
@@ -118,7 +101,7 @@ HttpdOutput::Unbind()
  * HttpdOutput.clients linked list.
  */
 inline void
-HttpdOutput::AddClient(UniqueSocketDescriptor &&fd)
+HttpdOutput::AddClient(UniqueSocketDescriptor fd)
 {
 	auto *client = new HttpdClient(*this, std::move(fd), GetEventLoop(),
 				       !encoder->ImplementsTag());
@@ -130,7 +113,7 @@ HttpdOutput::AddClient(UniqueSocketDescriptor &&fd)
 }
 
 void
-HttpdOutput::RunDeferred()
+HttpdOutput::OnDeferredBroadcast() noexcept
 {
 	/* this method runs in the IOThread; it broadcasts pages from
 	   our own queue to all clients */
@@ -151,7 +134,7 @@ HttpdOutput::RunDeferred()
 }
 
 void
-HttpdOutput::OnAccept(UniqueSocketDescriptor &&fd,
+HttpdOutput::OnAccept(UniqueSocketDescriptor fd,
 		      SocketAddress address, gcc_unused int uid)
 {
 	/* the listener socket has become readable - a client has
@@ -260,7 +243,7 @@ HttpdOutput::Close() noexcept
 	delete timer;
 
 	BlockingCall(GetEventLoop(), [this](){
-			DeferredMonitor::Cancel();
+			defer_broadcast.Cancel();
 
 			const std::lock_guard<Mutex> protect(mutex);
 			open = false;
@@ -319,7 +302,7 @@ HttpdOutput::BroadcastPage(PagePtr page)
 		pages.emplace(std::move(page));
 	}
 
-	DeferredMonitor::Schedule();
+	defer_broadcast.Schedule();
 }
 
 void
@@ -342,7 +325,7 @@ HttpdOutput::BroadcastFromEncoder()
 	}
 
 	if (!empty)
-		DeferredMonitor::Schedule();
+		defer_broadcast.Schedule();
 }
 
 inline void
@@ -404,6 +387,7 @@ HttpdOutput::SendTag(const Tag &tag)
 
 		try {
 			encoder->SendTag(tag);
+			encoder->Flush();
 		} catch (const std::runtime_error &) {
 			/* ignore */
 		}

@@ -47,7 +47,7 @@ TextInputStream::ReadLine()
 			/* line too long: terminate the current
 			   line */
 
-			assert(!dest.IsEmpty());
+			assert(!dest.empty());
 			dest[0] = 0;
 			line = buffer.Read().data;
 			buffer.Clear();
@@ -79,12 +79,12 @@ TextInputStream::ReadLine()
 			   line */
 
 			dest = buffer.Write();
-			assert(!dest.IsEmpty());
+			assert(!dest.empty());
 			dest[0] = 0;
 
 			auto r = buffer.Read();
 			buffer.Clear();
-			return r.IsEmpty()
+			return r.empty()
 				? nullptr
 				: r.data;
 		}

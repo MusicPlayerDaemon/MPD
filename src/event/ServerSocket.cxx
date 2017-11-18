@@ -115,7 +115,7 @@ public:
 	void Accept() noexcept;
 
 private:
-	virtual bool OnSocketReady(unsigned flags) override;
+	bool OnSocketReady(unsigned flags) noexcept override;
 };
 
 static constexpr Domain server_socket_domain("server_socket");
@@ -149,7 +149,7 @@ inline void
 OneServerSocket::Accept() noexcept
 {
 	StaticSocketAddress peer_address;
-	UniqueSocketDescriptor peer_fd(Get().AcceptNonBlock(peer_address));
+	UniqueSocketDescriptor peer_fd(GetSocket().AcceptNonBlock(peer_address));
 	if (!peer_fd.IsDefined()) {
 		const SocketErrorMessage msg;
 		FormatError(server_socket_domain,
@@ -169,7 +169,7 @@ OneServerSocket::Accept() noexcept
 }
 
 bool
-OneServerSocket::OnSocketReady(gcc_unused unsigned flags)
+OneServerSocket::OnSocketReady(gcc_unused unsigned flags) noexcept
 {
 	Accept();
 	return true;

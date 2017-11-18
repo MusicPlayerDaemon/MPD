@@ -334,7 +334,7 @@ tag_id3_import(struct id3_tag *tag)
 {
 	TagBuilder tag_builder;
 	scan_id3_tag(tag, add_tag_handler, &tag_builder);
-	return tag_builder.IsEmpty()
+	return tag_builder.empty()
 		? nullptr
 		: tag_builder.CommitNew();
 }

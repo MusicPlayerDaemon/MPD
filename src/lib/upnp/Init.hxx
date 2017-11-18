@@ -26,6 +26,6 @@ void
 UpnpGlobalInit();
 
 void
-UpnpGlobalFinish();
+UpnpGlobalFinish() noexcept;
 
 #endif

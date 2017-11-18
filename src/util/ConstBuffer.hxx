@@ -84,7 +84,7 @@ struct ConstBuffer<void> {
 		return data != nullptr;
 	}
 
-	constexpr bool IsEmpty() const {
+	constexpr bool empty() const {
 		return size == 0;
 	}
 };
@@ -144,6 +144,7 @@ struct ConstBuffer {
 	constexpr
 #endif
 	static ConstBuffer<T> FromVoid(ConstBuffer<void> other) {
+		static_assert(sizeof(T) > 0, "Empty base type");
 #ifndef NDEBUG
 		assert(other.size % sizeof(T) == 0);
 #endif
@@ -167,7 +168,7 @@ struct ConstBuffer {
 		return data != nullptr;
 	}
 
-	constexpr bool IsEmpty() const {
+	constexpr bool empty() const {
 		return size == 0;
 	}
 
@@ -217,7 +218,7 @@ struct ConstBuffer {
 #endif
 	reference_type front() const {
 #ifndef NDEBUG
-		assert(!IsEmpty());
+		assert(!empty());
 #endif
 		return data[0];
 	}
@@ -231,7 +232,7 @@ struct ConstBuffer {
 #endif
 	reference_type back() const {
 #ifndef NDEBUG
-		assert(!IsEmpty());
+		assert(!empty());
 #endif
 		return data[size - 1];
 	}
@@ -242,7 +243,7 @@ struct ConstBuffer {
 	 */
 	void pop_front() {
 #ifndef NDEBUG
-		assert(!IsEmpty());
+		assert(!empty());
 #endif
 
 		++data;
@@ -255,7 +256,7 @@ struct ConstBuffer {
 	 */
 	void pop_back() {
 #ifndef NDEBUG
-		assert(!IsEmpty());
+		assert(!empty());
 #endif
 
 		--size;

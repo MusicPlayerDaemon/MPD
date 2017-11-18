@@ -21,7 +21,7 @@
 #define MPD_UPDATE_REMOVE_HXX
 
 #include "check.h"
-#include "event/DeferredMonitor.hxx"
+#include "event/DeferEvent.hxx"
 #include "thread/Mutex.hxx"
 #include "Compiler.h"
 
@@ -35,16 +35,19 @@ class DatabaseListener;
  * This class handles #Song removal.  It defers the action to the main
  * thread to ensure that all references to the #Song are gone.
  */
-class UpdateRemoveService final : DeferredMonitor {
+class UpdateRemoveService final {
 	DatabaseListener &listener;
 
 	Mutex mutex;
 
 	std::forward_list<std::string> uris;
 
+	DeferEvent defer;
+
 public:
 	UpdateRemoveService(EventLoop &_loop, DatabaseListener &_listener)
-		:DeferredMonitor(_loop), listener(_listener) {}
+		:listener(_listener),
+		 defer(_loop, BIND_THIS_METHOD(RunDeferred)) {}
 
 	/**
 	 * Sends a signal to the main thread which will in turn remove
@@ -55,8 +58,8 @@ public:
 	void Remove(std::string &&uri);
 
 private:
-	/* virtual methods from class DeferredMonitor */
-	virtual void RunDeferred() override;
+	/* DeferEvent callback */
+	void RunDeferred() noexcept;
 };
 
 #endif

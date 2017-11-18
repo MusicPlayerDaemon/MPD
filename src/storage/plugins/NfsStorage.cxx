@@ -33,7 +33,7 @@
 #include "thread/Cond.hxx"
 #include "event/Loop.hxx"
 #include "event/Call.hxx"
-#include "event/DeferredMonitor.hxx"
+#include "event/DeferEvent.hxx"
 #include "event/TimerEvent.hxx"
 #include "util/StringCompare.hxx"
 
@@ -49,7 +49,7 @@ extern "C" {
 #include <fcntl.h>
 
 class NfsStorage final
-	: public Storage, NfsLease, DeferredMonitor {
+	: public Storage, NfsLease {
 
 	enum class State {
 		INITIAL, CONNECTING, READY, DELAY,
@@ -61,22 +61,22 @@ class NfsStorage final
 
 	NfsConnection *connection;
 
+	DeferEvent defer_connect;
 	TimerEvent reconnect_timer;
 
 	Mutex mutex;
 	Cond cond;
-	State state;
+	State state = State::INITIAL;
 	std::exception_ptr last_exception;
 
 public:
 	NfsStorage(EventLoop &_loop, const char *_base,
 		   std::string &&_server, std::string &&_export_name)
-		:DeferredMonitor(_loop),
-		 base(_base),
+		:base(_base),
 		 server(std::move(_server)),
 		 export_name(std::move(_export_name)),
-		 reconnect_timer(_loop, BIND_THIS_METHOD(OnReconnectTimer)),
-		 state(State::INITIAL) {
+		 defer_connect(_loop, BIND_THIS_METHOD(OnDeferredConnect)),
+		 reconnect_timer(_loop, BIND_THIS_METHOD(OnReconnectTimer)) {
 		nfs_init(_loop);
 	}
 
@@ -95,28 +95,28 @@ public:
 	const char *MapToRelativeUTF8(const char *uri_utf8) const noexcept override;
 
 	/* virtual methods from NfsLease */
-	void OnNfsConnectionReady() final {
+	void OnNfsConnectionReady() noexcept final {
 		assert(state == State::CONNECTING);
 
 		SetState(State::READY);
 	}
 
-	void OnNfsConnectionFailed(std::exception_ptr e) final {
+	void OnNfsConnectionFailed(std::exception_ptr e) noexcept final {
 		assert(state == State::CONNECTING);
 
 		SetState(State::DELAY, std::move(e));
 		reconnect_timer.Schedule(std::chrono::minutes(1));
 	}
 
-	void OnNfsConnectionDisconnected(std::exception_ptr e) final {
+	void OnNfsConnectionDisconnected(std::exception_ptr e) noexcept final {
 		assert(state == State::READY);
 
 		SetState(State::DELAY, std::move(e));
 		reconnect_timer.Schedule(std::chrono::seconds(5));
 	}
 
-	/* virtual methods from DeferredMonitor */
-	void RunDeferred() final {
+	/* DeferEvent callback */
+	void OnDeferredConnect() noexcept {
 		if (state == State::INITIAL)
 			Connect();
 	}
@@ -129,11 +129,11 @@ public:
 	}
 
 private:
-	EventLoop &GetEventLoop() {
-		return DeferredMonitor::GetEventLoop();
+	EventLoop &GetEventLoop() noexcept {
+		return defer_connect.GetEventLoop();
 	}
 
-	void SetState(State _state) {
+	void SetState(State _state) noexcept {
 		assert(GetEventLoop().IsInside());
 
 		const std::lock_guard<Mutex> protect(mutex);
@@ -141,7 +141,7 @@ private:
 		cond.broadcast();
 	}
 
-	void SetState(State _state, std::exception_ptr &&e) {
+	void SetState(State _state, std::exception_ptr &&e) noexcept {
 		assert(GetEventLoop().IsInside());
 
 		const std::lock_guard<Mutex> protect(mutex);
@@ -150,7 +150,7 @@ private:
 		cond.broadcast();
 	}
 
-	void Connect() {
+	void Connect() noexcept {
 		assert(state != State::READY);
 		assert(GetEventLoop().IsInside());
 
@@ -161,7 +161,7 @@ private:
 		SetState(State::CONNECTING);
 	}
 
-	void EnsureConnected() {
+	void EnsureConnected() noexcept {
 		if (state != State::READY)
 			Connect();
 	}
@@ -174,7 +174,7 @@ private:
 			case State::INITIAL:
 				/* schedule connect */
 				mutex.unlock();
-				DeferredMonitor::Schedule();
+				defer_connect.Schedule();
 				mutex.lock();
 				if (state == State::INITIAL)
 					cond.wait(mutex);
@@ -191,12 +191,12 @@ private:
 		}
 	}
 
-	void Disconnect() {
+	void Disconnect() noexcept {
 		assert(GetEventLoop().IsInside());
 
 		switch (state) {
 		case State::INITIAL:
-			DeferredMonitor::Cancel();
+			defer_connect.Cancel();
 			break;
 
 		case State::CONNECTING:
@@ -243,7 +243,7 @@ NfsStorage::MapToRelativeUTF8(const char *uri_utf8) const noexcept
 }
 
 static void
-Copy(StorageFileInfo &info, const struct stat &st)
+Copy(StorageFileInfo &info, const struct stat &st) noexcept
 {
 	if (S_ISREG(st.st_mode))
 		info.type = StorageFileInfo::Type::REGULAR;
@@ -275,7 +275,7 @@ protected:
 		connection.Stat(path, *this);
 	}
 
-	void HandleResult(gcc_unused unsigned status, void *data) override {
+	void HandleResult(gcc_unused unsigned status, void *data) noexcept override {
 		Copy(info, *(const struct stat *)data);
 	}
 };
@@ -343,7 +343,8 @@ protected:
 		connection.OpenDirectory(path, *this);
 	}
 
-	void HandleResult(gcc_unused unsigned status, void *data) override {
+	void HandleResult(gcc_unused unsigned status,
+			  void *data) noexcept override {
 		struct nfsdir *const dir = (struct nfsdir *)data;
 
 		CollectEntries(dir);

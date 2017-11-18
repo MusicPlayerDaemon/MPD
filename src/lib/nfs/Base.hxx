@@ -31,7 +31,7 @@
  * This is a kludge that is not truly thread-safe.
  */
 void
-nfs_set_base(const char *server, const char *export_name);
+nfs_set_base(const char *server, const char *export_name) noexcept;
 
 /**
  * Check if the given server and path are inside the "base"

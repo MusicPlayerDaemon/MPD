@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "AlsaOutputPlugin.hxx"
+#include "lib/alsa/AllowedFormat.hxx"
 #include "lib/alsa/HwSetup.hxx"
 #include "lib/alsa/NonBlock.hxx"
 #include "lib/alsa/PeriodBuffer.hxx"
@@ -32,8 +33,9 @@
 #include "util/RuntimeError.hxx"
 #include "util/Domain.hxx"
 #include "util/ConstBuffer.hxx"
+#include "util/StringView.hxx"
 #include "event/MultiSocketMonitor.hxx"
-#include "event/DeferredMonitor.hxx"
+#include "event/DeferEvent.hxx"
 #include "event/Call.hxx"
 #include "Log.hxx"
 
@@ -42,13 +44,16 @@
 #include <boost/lockfree/spsc_queue.hpp>
 
 #include <string>
+#include <forward_list>
 
 static const char default_device[] = "default";
 
 static constexpr unsigned MPD_ALSA_BUFFER_TIME_US = 500000;
 
 class AlsaOutput final
-	: AudioOutput, MultiSocketMonitor, DeferredMonitor {
+	: AudioOutput, MultiSocketMonitor {
+
+	DeferEvent defer_invalidate_sockets;
 
 	Manual<PcmExport> pcm_export;
 
@@ -64,7 +69,7 @@ class AlsaOutput final
 	 *
 	 * @see http://dsd-guide.com/dop-open-standard
 	 */
-	const bool dop;
+	const bool dop_setting;
 #endif
 
 	/** libasound's buffer_time setting (in microseconds) */
@@ -75,6 +80,8 @@ class AlsaOutput final
 
 	/** the mode flags passed to snd_pcm_open */
 	int mode = 0;
+
+	std::forward_list<Alsa::AllowedFormat> allowed_formats;
 
 	/** the libasound PCM device handle */
 	snd_pcm_t *pcm;
@@ -202,7 +209,11 @@ private:
 		      PcmExport::Params &params);
 #endif
 
-	void SetupOrDop(AudioFormat &audio_format, PcmExport::Params &params);
+	void SetupOrDop(AudioFormat &audio_format, PcmExport::Params &params
+#ifdef ENABLE_DSD
+			, bool dop
+#endif
+			);
 
 	/**
 	 * Activate the output by registering the sockets in the
@@ -215,19 +226,23 @@ private:
 			return;
 
 		active = true;
-		DeferredMonitor::Schedule();
+		defer_invalidate_sockets.Schedule();
 	}
 
 	/**
 	 * Wrapper for Activate() which unlocks our mutex.  Call this
 	 * if you're holding the mutex.
+	 *
+	 * @return true if Activate() was called, false if the mutex
+	 * was never unlocked
 	 */
-	void UnlockActivate() noexcept {
+	bool UnlockActivate() noexcept {
 		if (active)
-			return;
+			return false;
 
 		const ScopeUnlock unlock(mutex);
 		Activate();
+		return true;
 	}
 
 	void ClearRingBuffer() noexcept {
@@ -285,26 +300,28 @@ private:
 		return !!error;
 	}
 
-	/* virtual methods from class DeferredMonitor */
-	virtual void RunDeferred() override {
-		InvalidateSockets();
+	void LockCaughtError() noexcept {
+		const std::lock_guard<Mutex> lock(mutex);
+		error = std::current_exception();
+		cond.signal();
 	}
 
 	/* virtual methods from class MultiSocketMonitor */
-	virtual std::chrono::steady_clock::duration PrepareSockets() override;
-	virtual void DispatchSockets() override;
+	std::chrono::steady_clock::duration PrepareSockets() noexcept override;
+	void DispatchSockets() noexcept override;
 };
 
 static constexpr Domain alsa_output_domain("alsa_output");
 
-AlsaOutput::AlsaOutput(EventLoop &loop, const ConfigBlock &block)
+AlsaOutput::AlsaOutput(EventLoop &_loop, const ConfigBlock &block)
 	:AudioOutput(FLAG_ENABLE_DISABLE),
-	 MultiSocketMonitor(loop), DeferredMonitor(loop),
+	 MultiSocketMonitor(_loop),
+	 defer_invalidate_sockets(_loop, BIND_THIS_METHOD(InvalidateSockets)),
 	 device(block.GetBlockValue("device", "")),
 #ifdef ENABLE_DSD
-	 dop(block.GetBlockValue("dop", false) ||
-	     /* legacy name from MPD 0.18 and older: */
-	     block.GetBlockValue("dsd_usb", false)),
+	 dop_setting(block.GetBlockValue("dop", false) ||
+		     /* legacy name from MPD 0.18 and older: */
+		     block.GetBlockValue("dsd_usb", false)),
 #endif
 	 buffer_time(block.GetBlockValue("buffer_time",
 					 MPD_ALSA_BUFFER_TIME_US)),
@@ -324,6 +341,11 @@ AlsaOutput::AlsaOutput(EventLoop &loop, const ConfigBlock &block)
 	if (!block.GetBlockValue("auto_format", true))
 		mode |= SND_PCM_NO_AUTO_FORMAT;
 #endif
+
+	const char *allowed_formats_string =
+		block.GetBlockValue("allowed_formats", nullptr);
+	if (allowed_formats_string != nullptr)
+		allowed_formats = Alsa::AllowedFormat::ParseList(allowed_formats_string);
 }
 
 void
@@ -430,7 +452,6 @@ inline void
 AlsaOutput::SetupDop(const AudioFormat audio_format,
 		     PcmExport::Params &params)
 {
-	assert(dop);
 	assert(audio_format.format == SampleFormat::DSD);
 
 	/* pass 24 bit to AlsaSetup() */
@@ -462,7 +483,11 @@ AlsaOutput::SetupDop(const AudioFormat audio_format,
 #endif
 
 inline void
-AlsaOutput::SetupOrDop(AudioFormat &audio_format, PcmExport::Params &params)
+AlsaOutput::SetupOrDop(AudioFormat &audio_format, PcmExport::Params &params
+#ifdef ENABLE_DSD
+		       , bool dop
+#endif
+		       )
 {
 #ifdef ENABLE_DSD
 	std::exception_ptr dop_error;
@@ -506,9 +531,34 @@ MaybeDmix(snd_pcm_t *pcm) noexcept
 	return MaybeDmix(snd_pcm_type(pcm));
 }
 
+static const Alsa::AllowedFormat &
+BestMatch(const std::forward_list<Alsa::AllowedFormat> &haystack,
+	  const AudioFormat &needle)
+{
+	assert(!haystack.empty());
+
+	for (const auto &i : haystack)
+		if (needle.MatchMask(i.format))
+			return i;
+
+	return haystack.front();
+}
+
 void
 AlsaOutput::Open(AudioFormat &audio_format)
 {
+#ifdef ENABLE_DSD
+	bool dop = dop_setting;
+#endif
+
+	if (!allowed_formats.empty()) {
+		const auto &a = BestMatch(allowed_formats, audio_format);
+		audio_format.ApplyMask(a.format);
+#ifdef ENABLE_DSD
+		dop = a.dop;
+#endif
+	}
+
 	int err = snd_pcm_open(&pcm, GetDevice(),
 			       SND_PCM_STREAM_PLAYBACK, mode);
 	if (err < 0)
@@ -523,7 +573,11 @@ AlsaOutput::Open(AudioFormat &audio_format)
 	params.alsa_channel_order = true;
 
 	try {
-		SetupOrDop(audio_format, params);
+		SetupOrDop(audio_format, params
+#ifdef ENABLE_DSD
+			   , dop
+#endif
+			   );
 	} catch (...) {
 		snd_pcm_close(pcm);
 		std::throw_with_nested(FormatRuntimeError("Error opening ALSA device \"%s\"",
@@ -701,7 +755,7 @@ AlsaOutput::Close() noexcept
 	/* make sure the I/O thread isn't inside DispatchSockets() */
 	BlockingCall(MultiSocketMonitor::GetEventLoop(), [this](){
 			MultiSocketMonitor::Reset();
-			DeferredMonitor::Cancel();
+			defer_invalidate_sockets.Cancel();
 		});
 
 	period_buffer.Free();
@@ -740,13 +794,12 @@ AlsaOutput::Play(const void *chunk, size_t size)
 		/* now that the ring_buffer is full, we can activate
 		   the socket handlers to trigger the first
 		   snd_pcm_writei() */
-		UnlockActivate();
-
-		/* check the error again, because a new one may have
-		   been set while our mutex was unlocked in
-		   UnlockActivate() */
-		if (error)
-			std::rethrow_exception(error);
+		if (UnlockActivate())
+			/* since everything may have changed while the
+			   mutex was unlocked, we need to skip the
+			   cond.wait() call below and check the new
+			   status */
+			continue;
 
 		/* wait for the DispatchSockets() to make room in the
 		   ring_buffer */
@@ -755,18 +808,24 @@ AlsaOutput::Play(const void *chunk, size_t size)
 }
 
 std::chrono::steady_clock::duration
-AlsaOutput::PrepareSockets()
+AlsaOutput::PrepareSockets() noexcept
 {
 	if (LockHasError()) {
 		ClearSocketList();
 		return std::chrono::steady_clock::duration(-1);
 	}
 
-	return PrepareAlsaPcmSockets(*this, pcm, pfd_buffer);
+	try {
+		return PrepareAlsaPcmSockets(*this, pcm, pfd_buffer);
+	} catch (...) {
+		ClearSocketList();
+		LockCaughtError();
+		return std::chrono::steady_clock::duration(-1);
+	}
 }
 
 void
-AlsaOutput::DispatchSockets()
+AlsaOutput::DispatchSockets() noexcept
 try {
 	{
 		const std::lock_guard<Mutex> lock(mutex);
@@ -818,10 +877,7 @@ try {
 	}
 } catch (const std::runtime_error &) {
 	MultiSocketMonitor::Reset();
-
-	const std::lock_guard<Mutex> lock(mutex);
-	error = std::current_exception();
-	cond.signal();
+	LockCaughtError();
 }
 
 const struct AudioOutputPlugin alsa_output_plugin = {

@@ -114,7 +114,7 @@ protected:
 	}
 
 	bool IsBufferEmpty() const noexcept {
-		return buffer.IsEmpty();
+		return buffer.empty();
 	}
 
 	bool IsBufferFull() const noexcept {

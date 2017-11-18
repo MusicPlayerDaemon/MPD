@@ -31,7 +31,7 @@
 #include "lib/expat/ExpatParser.hxx"
 #include "fs/Traits.hxx"
 #include "event/Call.hxx"
-#include "event/DeferredMonitor.hxx"
+#include "event/DeferEvent.hxx"
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
 #include "util/ChronoUtil.hxx"
@@ -88,7 +88,9 @@ CurlStorage::MapToRelativeUTF8(const char *uri_utf8) const noexcept
 	return PathTraitsUTF8::Relative(base.c_str(), uri_utf8);
 }
 
-class BlockingHttpRequest : protected CurlResponseHandler, DeferredMonitor {
+class BlockingHttpRequest : protected CurlResponseHandler {
+	DeferEvent defer_start;
+
 	std::exception_ptr postponed_error;
 
 	bool done = false;
@@ -101,12 +103,13 @@ protected:
 
 public:
 	BlockingHttpRequest(CurlGlobal &curl, const char *uri)
-		:DeferredMonitor(curl.GetEventLoop()),
+		:defer_start(curl.GetEventLoop(),
+			     BIND_THIS_METHOD(OnDeferredStart)),
 		 request(curl, uri, *this) {
 		// TODO: use CurlInputStream's configuration
 
 		/* start the transfer inside the IOThread */
-		DeferredMonitor::Schedule();
+		defer_start.Schedule();
 	}
 
 	void Wait() {
@@ -133,15 +136,19 @@ protected:
 	}
 
 private:
-	/* virtual methods from DeferredMonitor */
-	void RunDeferred() final {
+	/* DeferEvent callback */
+	void OnDeferredStart() noexcept {
 		assert(!done);
 
-		request.Start();
+		try {
+			request.Start();
+		} catch (...) {
+			OnError(std::current_exception());
+		}
 	}
 
 	/* virtual methods from CurlResponseHandler */
-	void OnError(std::exception_ptr e) final {
+	void OnError(std::exception_ptr e) noexcept final {
 		const std::lock_guard<Mutex> lock(mutex);
 		postponed_error = std::move(e);
 		SetDone();

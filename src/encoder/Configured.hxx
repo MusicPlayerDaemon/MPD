@@ -17,17 +17,23 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "config.h"
-#include "LogError.hxx"
-#include "Domain.hxx"
-#include "Log.hxx"
+#ifndef MPD_ENCODER_CONFIGURED_HXX
+#define MPD_ENCODER_CONFIGURED_HXX
 
-#include <pulse/context.h>
-#include <pulse/error.h>
+struct ConfigBlock;
+class PreparedEncoder;
 
-void
-LogPulseError(pa_context *context, const char *prefix) noexcept
-{
-	const int e = pa_context_errno(context);
-	FormatError(pulse_domain, "%s: %s", prefix, pa_strerror(e));
-}
+/**
+ * Create a #PreparedEncoder instance from the settings in the
+ * #ConfigBlock.  Its "encoder" setting is used to choose the encoder
+ * plugin.
+ *
+ * Throws an exception on error.
+ *
+ * @param shout_legacy enable the "shout" plugin legacy configuration?
+ * i.e. fall back to setting "encoding" instead of "encoder"
+ */
+PreparedEncoder *
+CreateConfiguredEncoder(const ConfigBlock &block, bool shout_legacy=false);
+
+#endif

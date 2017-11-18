@@ -31,7 +31,7 @@
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
 #include "event/ServerSocket.hxx"
-#include "event/DeferredMonitor.hxx"
+#include "event/DeferEvent.hxx"
 #include "util/Cast.hxx"
 #include "Compiler.h"
 
@@ -39,6 +39,7 @@
 
 #include <queue>
 #include <list>
+#include <memory>
 
 struct ConfigBlock;
 class EventLoop;
@@ -48,7 +49,7 @@ class PreparedEncoder;
 class Encoder;
 struct Tag;
 
-class HttpdOutput final : AudioOutput, ServerSocket, DeferredMonitor {
+class HttpdOutput final : AudioOutput, ServerSocket {
 	/**
 	 * True if the audio output is open and accepts client
 	 * connections.
@@ -60,8 +61,8 @@ class HttpdOutput final : AudioOutput, ServerSocket, DeferredMonitor {
 	/**
 	 * The configured encoder plugin.
 	 */
-	PreparedEncoder *prepared_encoder = nullptr;
-	Encoder *encoder;
+	std::unique_ptr<PreparedEncoder> prepared_encoder;
+	Encoder *encoder = nullptr;
 
 	/**
 	 * Number of bytes which were fed into the encoder, without
@@ -69,7 +70,7 @@ class HttpdOutput final : AudioOutput, ServerSocket, DeferredMonitor {
 	 * whether MPD should manually flush the encoder, to avoid
 	 * buffer underruns in the client.
 	 */
-	size_t unflushed_input;
+	size_t unflushed_input = 0;
 
 public:
 	/**
@@ -114,6 +115,8 @@ private:
 	 */
 	std::queue<PagePtr, std::list<PagePtr>> pages;
 
+	DeferEvent defer_broadcast;
+
  public:
 	/**
 	 * The configured name.
@@ -150,14 +153,13 @@ private:
 
 public:
 	HttpdOutput(EventLoop &_loop, const ConfigBlock &block);
-	~HttpdOutput();
 
 	static AudioOutput *Create(EventLoop &event_loop,
 				   const ConfigBlock &block) {
 		return new HttpdOutput(event_loop, block);
 	}
 
-	using DeferredMonitor::GetEventLoop;
+	using ServerSocket::GetEventLoop;
 
 	void Bind();
 	void Unbind();
@@ -206,7 +208,7 @@ public:
 		return HasClients();
 	}
 
-	void AddClient(UniqueSocketDescriptor &&fd);
+	void AddClient(UniqueSocketDescriptor fd);
 
 	/**
 	 * Removes a client from the httpd_output.clients linked list.
@@ -255,9 +257,10 @@ public:
 	bool Pause() override;
 
 private:
-	virtual void RunDeferred() override;
+	/* DeferEvent callback */
+	void OnDeferredBroadcast() noexcept;
 
-	void OnAccept(UniqueSocketDescriptor &&fd,
+	void OnAccept(UniqueSocketDescriptor fd,
 		      SocketAddress address, int uid) override;
 };
 

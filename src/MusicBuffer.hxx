@@ -50,7 +50,7 @@ public:
 	 * object is inaccessible to other threads.
 	 */
 	bool IsEmptyUnsafe() const {
-		return buffer.IsEmpty();
+		return buffer.empty();
 	}
 #endif
 

@@ -17,50 +17,29 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_SOCKET_DEFERRED_MONITOR_HXX
-#define MPD_SOCKET_DEFERRED_MONITOR_HXX
+#ifndef MPD_ALSA_ALLOWED_FORMAT_HXX
+#define MPD_ALSA_ALLOWED_FORMAT_HXX
 
 #include "check.h"
+#include "AudioFormat.hxx"
 
-#include <boost/intrusive/list_hook.hpp>
+#include <forward_list>
 
-class EventLoop;
+struct StringView;
 
-/**
- * Defer execution of an event into an #EventLoop.
- *
- * This class is thread-safe.
- */
-class DeferredMonitor {
-	friend class EventLoop;
+namespace Alsa {
 
-	typedef boost::intrusive::list_member_hook<> ListHook;
-	ListHook list_hook;
+struct AllowedFormat {
+	AudioFormat format;
+#ifdef ENABLE_DSD
+	bool dop;
+#endif
 
-	EventLoop &loop;
+	explicit AllowedFormat(StringView s);
 
-public:
-	DeferredMonitor(EventLoop &_loop)
-		:loop(_loop) {}
-
-	~DeferredMonitor() {
-		Cancel();
-	}
-
-	EventLoop &GetEventLoop() {
-		return loop;
-	}
-
-	void Schedule();
-	void Cancel();
-
-private:
-	bool IsPending() const {
-		return list_hook.is_linked();
-	}
-
-protected:
-	virtual void RunDeferred() = 0;
+	static std::forward_list<AllowedFormat> ParseList(StringView s);
 };
+
+} // namespace Alsa
 
 #endif
