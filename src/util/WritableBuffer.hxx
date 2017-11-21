@@ -60,10 +60,6 @@ struct WritableBuffer<void> {
 	constexpr WritableBuffer(pointer_type _data, size_type _size)
 		:data(_data), size(_size) {}
 
-	constexpr static WritableBuffer Null() {
-		return { nullptr, 0 };
-	}
-
 	constexpr bool IsNull() const {
 		return data == nullptr;
 	}
@@ -113,10 +109,6 @@ struct WritableBuffer {
 	template<size_type _size>
 	constexpr WritableBuffer(T (&_data)[_size])
 		:data(_data), size(_size) {}
-
-	constexpr static WritableBuffer Null() {
-		return { nullptr, 0 };
-	}
 
 	/**
 	 * Cast a WritableBuffer<void> to a WritableBuffer<T>,
