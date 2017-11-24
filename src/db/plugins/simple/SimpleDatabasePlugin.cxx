@@ -382,8 +382,7 @@ SimpleDatabase::Mount(const char *uri, Database *db)
 		throw DatabaseError(DatabaseErrorCode::NOT_FOUND,
 				    "Parent not found");
 
-	Directory *mnt = r.directory->CreateChild(r.uri);
-	mnt->mounted_database = db;
+	r.directory->CreateChild(r.uri, db);
 }
 
 static constexpr bool
