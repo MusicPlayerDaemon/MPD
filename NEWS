@@ -9,6 +9,7 @@ ver 0.20.13 (not yet released)
   - simple: fix "lsinfo" into mount points
   - upnp: work around libupnp 1.6.24 API breakage
 * queue: fix spuriously misplaced prioritized songs
+* save and restore mountpoints within the state file
 * include Windows cross-build script in source tarball
 * fix Windows build failures
 

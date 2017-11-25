@@ -702,6 +702,7 @@ libstorage_a_SOURCES = \
 	src/storage/MemoryDirectoryReader.cxx src/storage/MemoryDirectoryReader.hxx \
 	src/storage/Configured.cxx src/storage/Configured.hxx \
 	src/storage/plugins/LocalStorage.cxx src/storage/plugins/LocalStorage.hxx \
+	src/storage/StorageState.cxx src/storage/StorageState.hxx \
 	src/storage/FileInfo.hxx
 
 libstorage_a_CPPFLAGS = $(AM_CPPFLAGS) \
