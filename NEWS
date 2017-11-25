@@ -1,4 +1,6 @@
 ver 0.20.13 (not yet released)
+* database
+  - simple: don't purge mount points on update/rescan
 
 ver 0.20.12 (2017/11/25)
 * database
