@@ -1146,7 +1146,7 @@ do_play(PlayerControl &pc, DecoderControl &dc,
 }
 
 void
-PlayerControl::RunThread()
+PlayerControl::RunThread() noexcept
 {
 	SetThreadName("player");
 

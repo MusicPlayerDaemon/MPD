@@ -32,7 +32,7 @@ PlayerControl::PlayerControl(PlayerListener &_listener,
 			     unsigned _buffer_chunks,
 			     unsigned _buffered_before_play,
 			     AudioFormat _configured_audio_format,
-			     const ReplayGainConfig &_replay_gain_config)
+			     const ReplayGainConfig &_replay_gain_config) noexcept
 	:listener(_listener), outputs(_outputs),
 	 buffer_chunks(_buffer_chunks),
 	 buffered_before_play(_buffered_before_play),
@@ -42,14 +42,14 @@ PlayerControl::PlayerControl(PlayerListener &_listener,
 {
 }
 
-PlayerControl::~PlayerControl()
+PlayerControl::~PlayerControl() noexcept
 {
 	delete next_song;
 	delete tagged_song;
 }
 
 bool
-PlayerControl::WaitOutputConsumed(unsigned threshold)
+PlayerControl::WaitOutputConsumed(unsigned threshold) noexcept
 {
 	bool result = outputs.Check() < threshold;
 	if (!result && command == PlayerCommand::NONE) {
@@ -75,14 +75,14 @@ PlayerControl::Play(DetachedSong *song)
 }
 
 void
-PlayerControl::LockCancel()
+PlayerControl::LockCancel() noexcept
 {
 	LockSynchronousCommand(PlayerCommand::CANCEL);
 	assert(next_song == nullptr);
 }
 
 void
-PlayerControl::LockStop()
+PlayerControl::LockStop() noexcept
 {
 	LockSynchronousCommand(PlayerCommand::CLOSE_AUDIO);
 	assert(next_song == nullptr);
@@ -91,13 +91,13 @@ PlayerControl::LockStop()
 }
 
 void
-PlayerControl::LockUpdateAudio()
+PlayerControl::LockUpdateAudio() noexcept
 {
 	LockSynchronousCommand(PlayerCommand::UPDATE_AUDIO);
 }
 
 void
-PlayerControl::Kill()
+PlayerControl::Kill() noexcept
 {
 	assert(thread.IsDefined());
 
@@ -108,7 +108,7 @@ PlayerControl::Kill()
 }
 
 void
-PlayerControl::PauseLocked()
+PlayerControl::PauseLocked() noexcept
 {
 	if (state != PlayerState::STOP) {
 		SynchronousCommand(PlayerCommand::PAUSE);
@@ -117,14 +117,14 @@ PlayerControl::PauseLocked()
 }
 
 void
-PlayerControl::LockPause()
+PlayerControl::LockPause() noexcept
 {
 	const std::lock_guard<Mutex> protect(mutex);
 	PauseLocked();
 }
 
 void
-PlayerControl::LockSetPause(bool pause_flag)
+PlayerControl::LockSetPause(bool pause_flag) noexcept
 {
 	const std::lock_guard<Mutex> protect(mutex);
 
@@ -145,7 +145,7 @@ PlayerControl::LockSetPause(bool pause_flag)
 }
 
 void
-PlayerControl::LockSetBorderPause(bool _border_pause)
+PlayerControl::LockSetBorderPause(bool _border_pause) noexcept
 {
 	const std::lock_guard<Mutex> protect(mutex);
 	border_pause = _border_pause;
@@ -172,7 +172,7 @@ PlayerControl::LockGetStatus() noexcept
 }
 
 void
-PlayerControl::SetError(PlayerError type, std::exception_ptr &&_error)
+PlayerControl::SetError(PlayerError type, std::exception_ptr &&_error) noexcept
 {
 	assert(type != PlayerError::NONE);
 	assert(_error);
@@ -182,14 +182,14 @@ PlayerControl::SetError(PlayerError type, std::exception_ptr &&_error)
 }
 
 void
-PlayerControl::LockClearError()
+PlayerControl::LockClearError() noexcept
 {
 	const std::lock_guard<Mutex> protect(mutex);
 	ClearError();
 }
 
 void
-PlayerControl::LockSetTaggedSong(const DetachedSong &song)
+PlayerControl::LockSetTaggedSong(const DetachedSong &song) noexcept
 {
 	const std::lock_guard<Mutex> protect(mutex);
 	delete tagged_song;
@@ -197,14 +197,14 @@ PlayerControl::LockSetTaggedSong(const DetachedSong &song)
 }
 
 void
-PlayerControl::ClearTaggedSong()
+PlayerControl::ClearTaggedSong() noexcept
 {
 	delete tagged_song;
 	tagged_song = nullptr;
 }
 
 void
-PlayerControl::LockEnqueueSong(DetachedSong *song)
+PlayerControl::LockEnqueueSong(DetachedSong *song) noexcept
 {
 	assert(song != nullptr);
 
@@ -255,7 +255,7 @@ PlayerControl::LockSeek(DetachedSong *song, SongTime t)
 }
 
 void
-PlayerControl::SetCrossFade(float _cross_fade_seconds)
+PlayerControl::SetCrossFade(float _cross_fade_seconds) noexcept
 {
 	if (_cross_fade_seconds < 0)
 		_cross_fade_seconds = 0;
@@ -265,7 +265,7 @@ PlayerControl::SetCrossFade(float _cross_fade_seconds)
 }
 
 void
-PlayerControl::SetMixRampDb(float _mixramp_db)
+PlayerControl::SetMixRampDb(float _mixramp_db) noexcept
 {
 	cross_fade.mixramp_db = _mixramp_db;
 
@@ -273,7 +273,7 @@ PlayerControl::SetMixRampDb(float _mixramp_db)
 }
 
 void
-PlayerControl::SetMixRampDelay(float _mixramp_delay_seconds)
+PlayerControl::SetMixRampDelay(float _mixramp_delay_seconds) noexcept
 {
 	cross_fade.mixramp_delay = _mixramp_delay_seconds;
 
