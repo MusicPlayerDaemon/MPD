@@ -37,21 +37,22 @@ class IdTable {
 	int *data;
 
 public:
-	IdTable(unsigned _size):size(_size), next(1), data(new int[size]) {
+	IdTable(unsigned _size) noexcept
+		:size(_size), next(1), data(new int[size]) {
 		std::fill_n(data, size, -1);
 	}
 
-	~IdTable() {
+	~IdTable() noexcept {
 		delete[] data;
 	}
 
-	int IdToPosition(unsigned id) const {
+	int IdToPosition(unsigned id) const noexcept {
 		return id < size
 			? data[id]
 			: -1;
 	}
 
-	unsigned GenerateId() {
+	unsigned GenerateId() noexcept {
 		assert(next > 0);
 		assert(next < size);
 
@@ -67,20 +68,20 @@ public:
 		}
 	}
 
-	unsigned Insert(unsigned position) {
+	unsigned Insert(unsigned position) noexcept {
 		unsigned id = GenerateId();
 		data[id] = position;
 		return id;
 	}
 
-	void Move(unsigned id, unsigned position) {
+	void Move(unsigned id, unsigned position) noexcept {
 		assert(id < size);
 		assert(data[id] >= 0);
 
 		data[id] = position;
 	}
 
-	void Erase(unsigned id) {
+	void Erase(unsigned id) noexcept {
 		assert(id < size);
 		assert(data[id] >= 0);
 
