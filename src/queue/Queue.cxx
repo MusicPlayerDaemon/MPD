@@ -21,7 +21,7 @@
 #include "Queue.hxx"
 #include "DetachedSong.hxx"
 
-Queue::Queue(unsigned _max_length)
+Queue::Queue(unsigned _max_length) noexcept
 	:max_length(_max_length),
 	 items(new Item[max_length]),
 	 order(new unsigned[max_length]),
@@ -29,7 +29,7 @@ Queue::Queue(unsigned _max_length)
 {
 }
 
-Queue::~Queue()
+Queue::~Queue() noexcept
 {
 	Clear();
 
@@ -79,7 +79,7 @@ Queue::ModifyAtOrder(unsigned _order) noexcept
 }
 
 unsigned
-Queue::Append(DetachedSong &&song, uint8_t priority)
+Queue::Append(DetachedSong &&song, uint8_t priority) noexcept
 {
 	assert(!IsFull());
 
@@ -295,7 +295,7 @@ queue_sort_order_by_priority(Queue *queue,
 }
 
 void
-Queue::ShuffleOrderRange(unsigned start, unsigned end)
+Queue::ShuffleOrderRange(unsigned start, unsigned end) noexcept
 {
 	assert(random);
 	assert(start <= end);
@@ -310,7 +310,7 @@ Queue::ShuffleOrderRange(unsigned start, unsigned end)
  * priority group.
  */
 void
-Queue::ShuffleOrderRangeWithPriority(unsigned start, unsigned end)
+Queue::ShuffleOrderRangeWithPriority(unsigned start, unsigned end) noexcept
 {
 	assert(random);
 	assert(start <= end);
@@ -344,13 +344,13 @@ Queue::ShuffleOrderRangeWithPriority(unsigned start, unsigned end)
 }
 
 void
-Queue::ShuffleOrder()
+Queue::ShuffleOrder() noexcept
 {
 	ShuffleOrderRangeWithPriority(0, length);
 }
 
 void
-Queue::ShuffleOrderFirst(unsigned start, unsigned end)
+Queue::ShuffleOrderFirst(unsigned start, unsigned end) noexcept
 {
 	rand.AutoCreate();
 
@@ -359,7 +359,7 @@ Queue::ShuffleOrderFirst(unsigned start, unsigned end)
 }
 
 void
-Queue::ShuffleOrderLast(unsigned start, unsigned end)
+Queue::ShuffleOrderLast(unsigned start, unsigned end) noexcept
 {
 	rand.AutoCreate();
 
@@ -368,7 +368,7 @@ Queue::ShuffleOrderLast(unsigned start, unsigned end)
 }
 
 void
-Queue::ShuffleRange(unsigned start, unsigned end)
+Queue::ShuffleRange(unsigned start, unsigned end) noexcept
 {
 	assert(start <= end);
 	assert(end <= length);
@@ -418,7 +418,7 @@ Queue::CountSamePriority(unsigned start_order, uint8_t priority) const noexcept
 
 bool
 Queue::SetPriority(unsigned position, uint8_t priority, int after_order,
-		   bool reorder)
+		   bool reorder) noexcept
 {
 	assert(position < length);
 
@@ -478,7 +478,7 @@ Queue::SetPriority(unsigned position, uint8_t priority, int after_order,
 
 bool
 Queue::SetPriorityRange(unsigned start_position, unsigned end_position,
-			uint8_t priority, int after_order)
+			uint8_t priority, int after_order) noexcept
 {
 	assert(start_position <= end_position);
 	assert(end_position <= length);
