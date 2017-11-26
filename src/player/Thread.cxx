@@ -360,7 +360,7 @@ Player::StartDecoder(MusicPipe &_pipe)
 
 	SongTime start_time = pc.next_song->GetStartTime() + pc.seek_time;
 
-	dc.Start(new DetachedSong(*pc.next_song),
+	dc.Start(std::make_unique<DetachedSong>(*pc.next_song),
 		 start_time, pc.next_song->GetEndTime(),
 		 buffer, _pipe);
 }

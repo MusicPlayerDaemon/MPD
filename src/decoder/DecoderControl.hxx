@@ -31,8 +31,8 @@
 #include "ReplayGainMode.hxx"
 
 #include <exception>
-
 #include <utility>
+#include <memory>
 
 #include <assert.h>
 #include <stdint.h>
@@ -130,11 +130,8 @@ struct DecoderControl {
 	 * The song currently being decoded.  This attribute is set by
 	 * the player thread, when it sends the #DecoderCommand::START
 	 * command.
-	 *
-	 * This is a duplicate, and must be freed when this attribute
-	 * is cleared.
 	 */
-	DetachedSong *song = nullptr;
+	std::unique_ptr<DetachedSong> song;
 
 	/**
 	 * The initial seek position, e.g. to the start of a sub-track
@@ -382,7 +379,8 @@ public:
 	 * @param pipe the pipe which receives the decoded chunks (owned by
 	 * the caller)
 	 */
-	void Start(DetachedSong *song, SongTime start_time, SongTime end_time,
+	void Start(std::unique_ptr<DetachedSong> song,
+		   SongTime start_time, SongTime end_time,
 		   MusicBuffer &buffer, MusicPipe &pipe) noexcept;
 
 	void Stop() noexcept;
