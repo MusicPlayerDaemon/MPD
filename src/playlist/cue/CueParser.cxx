@@ -229,7 +229,7 @@ CueParser::Feed2(char *p) noexcept
 		}
 
 		state = TRACK;
-		current.reset(new DetachedSong(filename));
+		current = std::make_unique<DetachedSong>(filename);
 		assert(!current->GetTag().IsDefined());
 
 		song_tag = header_tag;

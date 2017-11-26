@@ -80,7 +80,7 @@ FlacPlaylist::NextSong()
 		? c.tracks[next_track].offset
 		: total_samples;
 
-	std::unique_ptr<DetachedSong> song(new DetachedSong(uri));
+	auto song = std::make_unique<DetachedSong>(uri);
 	song->SetStartTime(SongTime::FromScale(start, sample_rate));
 	song->SetEndTime(SongTime::FromScale(end, sample_rate));
 	return song;

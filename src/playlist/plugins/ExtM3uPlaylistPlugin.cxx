@@ -135,7 +135,7 @@ ExtM3uPlaylist::NextSong()
 		line_s = StripLeft(line_s);
 	} while (line_s[0] == '#' || *line_s == 0);
 
-	return std::unique_ptr<DetachedSong>(new DetachedSong(line_s, std::move(tag)));
+	return std::make_unique<DetachedSong>(line_s, std::move(tag));
 }
 
 static const char *const extm3u_suffixes[] = {
