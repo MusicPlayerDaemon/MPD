@@ -234,7 +234,7 @@ playlist::SeekSongOrder(PlayerControl &pc, unsigned i, SongTime seek_time)
 	queued = -1;
 
 	try {
-		pc.LockSeek(new DetachedSong(queue.GetOrder(i)), seek_time);
+		pc.LockSeek(std::make_unique<DetachedSong>(queue.GetOrder(i)), seek_time);
 	} catch (...) {
 		UpdateQueuedSong(pc, queued_song);
 		throw;

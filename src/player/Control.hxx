@@ -31,6 +31,7 @@
 #include "ReplayGainMode.hxx"
 
 #include <exception>
+#include <memory>
 
 #include <stdint.h>
 
@@ -156,7 +157,7 @@ struct PlayerControl final : AudioOutputClient {
 	 * Protected by #mutex.  Set by the PlayerThread and consumed
 	 * by the main thread.
 	 */
-	DetachedSong *tagged_song = nullptr;
+	std::unique_ptr<DetachedSong> tagged_song;
 
 	uint16_t bit_rate;
 	AudioFormat audio_format;
@@ -169,7 +170,7 @@ struct PlayerControl final : AudioOutputClient {
 	 * This is a duplicate, and must be freed when this attribute
 	 * is cleared.
 	 */
-	DetachedSong *next_song = nullptr;
+	std::unique_ptr<DetachedSong> next_song;
 
 	SongTime seek_time;
 
@@ -341,10 +342,9 @@ public:
 	/**
 	 * Throws std::runtime_error or #Error on error.
 	 *
-	 * @param song the song to be queued; the given instance will
-	 * be owned and freed by the player
+	 * @param song the song to be queued
 	 */
-	void Play(DetachedSong *song);
+	void Play(std::unique_ptr<DetachedSong> song);
 
 	/**
 	 * see PlayerCommand::CANCEL
@@ -452,45 +452,31 @@ public:
 	 *
 	 * Caller must lock the object.
 	 */
-	DetachedSong *ReadTaggedSong() noexcept {
-		DetachedSong *result = tagged_song;
-		tagged_song = nullptr;
-		return result;
-	}
+	std::unique_ptr<DetachedSong> ReadTaggedSong() noexcept;
 
 	/**
 	 * Like ReadTaggedSong(), but locks and unlocks the object.
 	 */
-	DetachedSong *LockReadTaggedSong() noexcept {
-		const std::lock_guard<Mutex> protect(mutex);
-		return ReadTaggedSong();
-	}
+	std::unique_ptr<DetachedSong> LockReadTaggedSong() noexcept;
 
 	void LockStop() noexcept;
 
 	void LockUpdateAudio() noexcept;
 
 private:
-	void EnqueueSongLocked(DetachedSong *song) noexcept {
-		assert(song != nullptr);
-		assert(next_song == nullptr);
-
-		next_song = song;
-		seek_time = SongTime::zero();
-		SynchronousCommand(PlayerCommand::QUEUE);
-	}
+	void EnqueueSongLocked(std::unique_ptr<DetachedSong> song) noexcept;
 
 	/**
 	 * Throws std::runtime_error or #Error on error.
 	 */
-	void SeekLocked(DetachedSong *song, SongTime t);
+	void SeekLocked(std::unique_ptr<DetachedSong> song, SongTime t);
 
 public:
 	/**
 	 * @param song the song to be queued; the given instance will be owned
 	 * and freed by the player
 	 */
-	void LockEnqueueSong(DetachedSong *song) noexcept;
+	void LockEnqueueSong(std::unique_ptr<DetachedSong> song) noexcept;
 
 	/**
 	 * Makes the player thread seek the specified song to a position.
@@ -500,7 +486,7 @@ public:
 	 * @param song the song to be queued; the given instance will be owned
 	 * and freed by the player
 	 */
-	void LockSeek(DetachedSong *song, SongTime t);
+	void LockSeek(std::unique_ptr<DetachedSong> song, SongTime t);
 
 	void SetCrossFade(float cross_fade_seconds) noexcept;
 

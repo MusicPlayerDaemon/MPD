@@ -44,8 +44,6 @@ PlayerControl::PlayerControl(PlayerListener &_listener,
 
 PlayerControl::~PlayerControl() noexcept
 {
-	delete next_song;
-	delete tagged_song;
 }
 
 bool
@@ -61,12 +59,12 @@ PlayerControl::WaitOutputConsumed(unsigned threshold) noexcept
 }
 
 void
-PlayerControl::Play(DetachedSong *song)
+PlayerControl::Play(std::unique_ptr<DetachedSong> song)
 {
 	assert(song != nullptr);
 
 	const std::lock_guard<Mutex> protect(mutex);
-	SeekLocked(song, SongTime::zero());
+	SeekLocked(std::move(song), SongTime::zero());
 
 	if (state == PlayerState::PAUSE)
 		/* if the player was paused previously, we need to
@@ -192,28 +190,51 @@ void
 PlayerControl::LockSetTaggedSong(const DetachedSong &song) noexcept
 {
 	const std::lock_guard<Mutex> protect(mutex);
-	delete tagged_song;
-	tagged_song = new DetachedSong(song);
+	tagged_song.reset();
+	tagged_song = std::make_unique<DetachedSong>(song);
 }
 
 void
 PlayerControl::ClearTaggedSong() noexcept
 {
-	delete tagged_song;
-	tagged_song = nullptr;
+	tagged_song.reset();
+}
+
+std::unique_ptr<DetachedSong>
+PlayerControl::ReadTaggedSong() noexcept
+{
+	return std::exchange(tagged_song, nullptr);
+}
+
+std::unique_ptr<DetachedSong>
+PlayerControl::LockReadTaggedSong() noexcept
+{
+	const std::lock_guard<Mutex> protect(mutex);
+	return ReadTaggedSong();
 }
 
 void
-PlayerControl::LockEnqueueSong(DetachedSong *song) noexcept
+PlayerControl::LockEnqueueSong(std::unique_ptr<DetachedSong> song) noexcept
 {
 	assert(song != nullptr);
 
 	const std::lock_guard<Mutex> protect(mutex);
-	EnqueueSongLocked(song);
+	EnqueueSongLocked(std::move(song));
 }
 
 void
-PlayerControl::SeekLocked(DetachedSong *song, SongTime t)
+PlayerControl::EnqueueSongLocked(std::unique_ptr<DetachedSong> song) noexcept
+{
+	assert(song != nullptr);
+	assert(next_song == nullptr);
+
+	next_song = std::move(song);
+	seek_time = SongTime::zero();
+	SynchronousCommand(PlayerCommand::QUEUE);
+}
+
+void
+PlayerControl::SeekLocked(std::unique_ptr<DetachedSong> song, SongTime t)
 {
 	assert(song != nullptr);
 
@@ -227,7 +248,7 @@ PlayerControl::SeekLocked(DetachedSong *song, SongTime t)
 	assert(next_song == nullptr);
 
 	ClearError();
-	next_song = song;
+	next_song = std::move(song);
 	seek_time = t;
 	SynchronousCommand(PlayerCommand::SEEK);
 
@@ -242,13 +263,13 @@ PlayerControl::SeekLocked(DetachedSong *song, SongTime t)
 }
 
 void
-PlayerControl::LockSeek(DetachedSong *song, SongTime t)
+PlayerControl::LockSeek(std::unique_ptr<DetachedSong> song, SongTime t)
 {
 	assert(song != nullptr);
 
 	{
 		const std::lock_guard<Mutex> protect(mutex);
-		SeekLocked(song, t);
+		SeekLocked(std::move(song), t);
 	}
 
 	idle_add(IDLE_PLAYER);

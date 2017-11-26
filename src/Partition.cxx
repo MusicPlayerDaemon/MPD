@@ -88,11 +88,9 @@ Partition::DatabaseModified(const Database &db)
 void
 Partition::TagModified()
 {
-	DetachedSong *song = pc.LockReadTaggedSong();
-	if (song != nullptr) {
+	auto song = pc.LockReadTaggedSong();
+	if (song)
 		playlist.TagModified(std::move(*song));
-		delete song;
-	}
 }
 
 void

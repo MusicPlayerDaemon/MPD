@@ -56,7 +56,7 @@ playlist::QueueSongOrder(PlayerControl &pc, unsigned order)
 	FormatDebug(playlist_domain, "queue song %i:\"%s\"",
 		    queued, song.GetURI());
 
-	pc.LockEnqueueSong(new DetachedSong(song));
+	pc.LockEnqueueSong(std::make_unique<DetachedSong>(song));
 }
 
 void
@@ -163,7 +163,7 @@ playlist::PlayOrder(PlayerControl &pc, unsigned order)
 
 	current = order;
 
-	pc.Play(new DetachedSong(song));
+	pc.Play(std::make_unique<DetachedSong>(song));
 
 	SongStarted();
 }
