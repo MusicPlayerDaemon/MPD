@@ -29,13 +29,13 @@
 
 DecoderControl::DecoderControl(Mutex &_mutex, Cond &_client_cond,
 			       const AudioFormat _configured_audio_format,
-			       const ReplayGainConfig &_replay_gain_config)
+			       const ReplayGainConfig &_replay_gain_config) noexcept
 	:thread(BIND_THIS_METHOD(RunThread)),
 	 mutex(_mutex), client_cond(_client_cond),
 	 configured_audio_format(_configured_audio_format),
 	 replay_gain_config(_replay_gain_config) {}
 
-DecoderControl::~DecoderControl()
+DecoderControl::~DecoderControl() noexcept
 {
 	ClearError();
 
@@ -43,7 +43,7 @@ DecoderControl::~DecoderControl()
 }
 
 void
-DecoderControl::WaitForDecoder()
+DecoderControl::WaitForDecoder() noexcept
 {
 	assert(!client_is_waiting);
 	client_is_waiting = true;
@@ -56,7 +56,7 @@ DecoderControl::WaitForDecoder()
 
 void
 DecoderControl::SetReady(const AudioFormat audio_format,
-			 bool _seekable, SignedSongTime _duration)
+			 bool _seekable, SignedSongTime _duration) noexcept
 {
 	assert(state == DecoderState::START);
 	assert(pipe != nullptr);
@@ -94,7 +94,7 @@ DecoderControl::IsCurrentSong(const DetachedSong &_song) const noexcept
 void
 DecoderControl::Start(DetachedSong *_song,
 		      SongTime _start_time, SongTime _end_time,
-		      MusicBuffer &_buffer, MusicPipe &_pipe)
+		      MusicBuffer &_buffer, MusicPipe &_pipe) noexcept
 {
 	const std::lock_guard<Mutex> protect(mutex);
 
@@ -113,7 +113,7 @@ DecoderControl::Start(DetachedSong *_song,
 }
 
 void
-DecoderControl::Stop()
+DecoderControl::Stop() noexcept
 {
 	const std::lock_guard<Mutex> protect(mutex);
 
@@ -162,7 +162,7 @@ DecoderControl::Seek(SongTime t)
 }
 
 void
-DecoderControl::Quit()
+DecoderControl::Quit() noexcept
 {
 	assert(thread.IsDefined());
 
@@ -173,7 +173,7 @@ DecoderControl::Quit()
 }
 
 void
-DecoderControl::CycleMixRamp()
+DecoderControl::CycleMixRamp() noexcept
 {
 	previous_mix_ramp = std::move(mix_ramp);
 	mix_ramp.Clear();
