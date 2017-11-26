@@ -73,10 +73,10 @@ struct Queue {
 	unsigned max_length;
 
 	/** number of songs in the queue */
-	unsigned length;
+	unsigned length = 0;
 
 	/** the current version number */
-	uint32_t version;
+	uint32_t version = 1;
 
 	/** all songs in "position" order */
 	Item *items;
@@ -89,16 +89,16 @@ struct Queue {
 
 	/** repeat playback when the end of the queue has been
 	    reached? */
-	bool repeat;
+	bool repeat = false;
 
 	/** play only current song. */
-	bool single;
+	bool single = false;
 
 	/** remove each played files. */
-	bool consume;
+	bool consume = false;
 
 	/** play back songs in random order? */
-	bool random;
+	bool random = false;
 
 	/** random number generator for shuffle and random mode */
 	LazyRandomEngine rand;

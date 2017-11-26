@@ -22,15 +22,10 @@
 #include "DetachedSong.hxx"
 
 Queue::Queue(unsigned _max_length)
-	:max_length(_max_length), length(0),
-	 version(1),
+	:max_length(_max_length),
 	 items(new Item[max_length]),
 	 order(new unsigned[max_length]),
-	 id_table(max_length * HASH_MULT),
-	 repeat(false),
-	 single(false),
-	 consume(false),
-	 random(false)
+	 id_table(max_length * HASH_MULT)
 {
 }
 
