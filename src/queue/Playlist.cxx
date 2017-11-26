@@ -178,7 +178,7 @@ playlist::SyncWithPlayer(PlayerControl &pc)
 
 	pc.Lock();
 	const PlayerState pc_state = pc.GetState();
-	const DetachedSong *pc_next_song = pc.next_song;
+	bool pc_has_next_song = pc.next_song != nullptr;
 	pc.Unlock();
 
 	if (pc_state == PlayerState::STOP)
@@ -190,16 +190,16 @@ playlist::SyncWithPlayer(PlayerControl &pc)
 	else {
 		/* check if the player thread has already started
 		   playing the queued song */
-		if (pc_next_song == nullptr && queued != -1)
+		if (!pc_has_next_song && queued != -1)
 			QueuedSongStarted(pc);
 
 		pc.Lock();
-		pc_next_song = pc.next_song;
+		pc_has_next_song = pc.next_song != nullptr;
 		pc.Unlock();
 
 		/* make sure the queued song is always set (if
 		   possible) */
-		if (pc_next_song == nullptr && queued < 0)
+		if (!pc_has_next_song && queued < 0)
 			UpdateQueuedSong(pc, nullptr);
 	}
 }
