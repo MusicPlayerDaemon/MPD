@@ -70,7 +70,7 @@ struct Queue {
 	};
 
 	/** configured maximum length of the queue */
-	unsigned max_length;
+	const unsigned max_length;
 
 	/** number of songs in the queue */
 	unsigned length = 0;
@@ -79,10 +79,10 @@ struct Queue {
 	uint32_t version = 1;
 
 	/** all songs in "position" order */
-	Item *items;
+	Item *const items;
 
 	/** map order numbers to positions */
-	unsigned *order;
+	unsigned *const order;
 
 	/** map song ids to positions */
 	IdTable id_table;
