@@ -104,7 +104,7 @@ inline void
 UpdateWalk::PurgeDeletedFromDirectory(Directory &directory)
 {
 	directory.ForEachChildSafe([&](Directory &child){
-			if (DirectoryExists(storage, child))
+			if (DirectoryExists(storage, child) || child.IsMount())
 				return;
 
 			editor.LockDeleteDirectory(&child);
