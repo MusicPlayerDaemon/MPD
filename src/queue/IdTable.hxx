@@ -46,6 +46,9 @@ public:
 		delete[] data;
 	}
 
+	IdTable(const IdTable &) = delete;
+	IdTable &operator=(const IdTable &) = delete;
+
 	int IdToPosition(unsigned id) const noexcept {
 		return id < size
 			? data[id]
