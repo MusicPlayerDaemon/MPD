@@ -56,7 +56,7 @@ Thread::Start()
 }
 
 void
-Thread::Join()
+Thread::Join() noexcept
 {
 	assert(IsDefined());
 	assert(!IsInside());
@@ -72,7 +72,7 @@ Thread::Join()
 }
 
 inline void
-Thread::Run()
+Thread::Run() noexcept
 {
 #ifndef WIN32
 #ifndef NDEBUG
@@ -94,7 +94,7 @@ Thread::Run()
 #ifdef WIN32
 
 DWORD WINAPI
-Thread::ThreadProc(LPVOID ctx)
+Thread::ThreadProc(LPVOID ctx) noexcept
 {
 	Thread &thread = *(Thread *)ctx;
 
@@ -105,7 +105,7 @@ Thread::ThreadProc(LPVOID ctx)
 #else
 
 void *
-Thread::ThreadProc(void *ctx)
+Thread::ThreadProc(void *ctx) noexcept
 {
 	Thread &thread = *(Thread *)ctx;
 

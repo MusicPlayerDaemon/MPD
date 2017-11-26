@@ -41,13 +41,13 @@
 #ifdef __linux__
 
 static int
-ioprio_set(int which, int who, int ioprio)
+ioprio_set(int which, int who, int ioprio) noexcept
 {
 	return syscall(__NR_ioprio_set, which, who, ioprio);
 }
 
 static void
-ioprio_set_idle()
+ioprio_set_idle() noexcept
 {
 	static constexpr int _IOPRIO_WHO_PROCESS = 1;
 	static constexpr int _IOPRIO_CLASS_IDLE = 3;
@@ -61,7 +61,7 @@ ioprio_set_idle()
 #endif
 
 void
-SetThreadIdlePriority()
+SetThreadIdlePriority() noexcept
 {
 #ifdef __linux__
 #ifdef SCHED_IDLE

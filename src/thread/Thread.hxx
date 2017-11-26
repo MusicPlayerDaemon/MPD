@@ -54,19 +54,19 @@ class Thread {
 #endif
 
 public:
-	explicit Thread(Function _f):f(_f) {}
+	explicit Thread(Function _f) noexcept:f(_f) {}
 
 	Thread(const Thread &) = delete;
 
 #ifndef NDEBUG
-	~Thread() {
+	~Thread() noexcept {
 		/* all Thread objects must be destructed manually by calling
 		   Join(), to clean up */
 		assert(!IsDefined());
 	}
 #endif
 
-	bool IsDefined() const {
+	bool IsDefined() const noexcept {
 #ifdef WIN32
 		return handle != nullptr;
 #else
@@ -91,15 +91,15 @@ public:
 	}
 
 	void Start();
-	void Join();
+	void Join() noexcept;
 
 private:
-	void Run();
+	void Run() noexcept;
 
 #ifdef WIN32
-	static DWORD WINAPI ThreadProc(LPVOID ctx);
+	static DWORD WINAPI ThreadProc(LPVOID ctx) noexcept;
 #else
-	static void *ThreadProc(void *ctx);
+	static void *ThreadProc(void *ctx) noexcept;
 #endif
 
 };

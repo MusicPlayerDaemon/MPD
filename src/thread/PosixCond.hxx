@@ -46,15 +46,15 @@ public:
 #ifdef __GLIBC__
 	/* optimized constexpr constructor for pthread implementations
 	   that support it */
-	constexpr PosixCond():cond(PTHREAD_COND_INITIALIZER) {}
+	constexpr PosixCond() noexcept:cond(PTHREAD_COND_INITIALIZER) {}
 #else
 	/* slow fallback for pthread implementations that are not
 	   compatible with "constexpr" */
-	PosixCond() {
+	PosixCond() noexcept {
 		pthread_cond_init(&cond, nullptr);
 	}
 
-	~PosixCond() {
+	~PosixCond() noexcept {
 		pthread_cond_destroy(&cond);
 	}
 #endif
@@ -62,20 +62,20 @@ public:
 	PosixCond(const PosixCond &other) = delete;
 	PosixCond &operator=(const PosixCond &other) = delete;
 
-	void signal() {
+	void signal() noexcept {
 		pthread_cond_signal(&cond);
 	}
 
-	void broadcast() {
+	void broadcast() noexcept {
 		pthread_cond_broadcast(&cond);
 	}
 
-	void wait(PosixMutex &mutex) {
+	void wait(PosixMutex &mutex) noexcept {
 		pthread_cond_wait(&cond, &mutex.mutex);
 	}
 
 private:
-	bool timed_wait(PosixMutex &mutex, unsigned timeout_ms) {
+	bool timed_wait(PosixMutex &mutex, unsigned timeout_ms) noexcept {
 		struct timeval now;
 		gettimeofday(&now, nullptr);
 
@@ -93,7 +93,7 @@ private:
 
 public:
 	bool timed_wait(PosixMutex &mutex,
-			std::chrono::steady_clock::duration timeout) {
+			std::chrono::steady_clock::duration timeout) noexcept {
 		auto timeout_ms = std::chrono::duration_cast<std::chrono::milliseconds>(timeout).count();
 		if (timeout_ms < 0)
 			timeout_ms = 0;

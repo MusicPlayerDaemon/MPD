@@ -41,35 +41,35 @@ class WindowsCond {
 	CONDITION_VARIABLE cond;
 
 public:
-	WindowsCond() {
+	WindowsCond() noexcept {
 		InitializeConditionVariable(&cond);
 	}
 
 	WindowsCond(const WindowsCond &other) = delete;
 	WindowsCond &operator=(const WindowsCond &other) = delete;
 
-	void signal() {
+	void signal() noexcept {
 		WakeConditionVariable(&cond);
 	}
 
-	void broadcast() {
+	void broadcast() noexcept {
 		WakeAllConditionVariable(&cond);
 	}
 
 private:
-	bool timed_wait(CriticalSection &mutex, DWORD timeout_ms) {
+	bool timed_wait(CriticalSection &mutex, DWORD timeout_ms) noexcept {
 		return SleepConditionVariableCS(&cond, &mutex.critical_section,
 						timeout_ms);
 	}
 
 public:
 	bool timed_wait(CriticalSection &mutex,
-			std::chrono::steady_clock::duration timeout) {
+			std::chrono::steady_clock::duration timeout) noexcept {
 		auto timeout_ms = std::chrono::duration_cast<std::chrono::milliseconds>(timeout).count();
 		return timed_wait(mutex, timeout_ms);
 	}
 
-	void wait(CriticalSection &mutex) {
+	void wait(CriticalSection &mutex) noexcept {
 		timed_wait(mutex, INFINITE);
 	}
 };
