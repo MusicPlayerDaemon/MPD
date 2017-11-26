@@ -20,6 +20,8 @@
 #ifndef MPD_SONG_SAVE_HXX
 #define MPD_SONG_SAVE_HXX
 
+#include <memory>
+
 #define SONG_BEGIN "song_begin: "
 
 struct Song;
@@ -39,7 +41,7 @@ song_save(BufferedOutputStream &os, const DetachedSong &song);
  *
  * Throws #std::runtime_error on error.
  */
-DetachedSong *
+std::unique_ptr<DetachedSong>
 song_load(TextFile &file, const char *uri);
 
 #endif
