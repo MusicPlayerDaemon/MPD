@@ -25,12 +25,12 @@ public:
 	/**
 	 * Must call playlist_sync().
 	 */
-	virtual void OnPlayerSync() = 0;
+	virtual void OnPlayerSync() noexcept = 0;
 
 	/**
 	 * The current song's tag has changed.
 	 */
-	virtual void OnPlayerTagModified() = 0;
+	virtual void OnPlayerTagModified() noexcept = 0;
 };
 
 #endif

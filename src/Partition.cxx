@@ -118,13 +118,13 @@ Partition::OnQueueSongStarted()
 }
 
 void
-Partition::OnPlayerSync()
+Partition::OnPlayerSync() noexcept
 {
 	EmitGlobalEvent(SYNC_WITH_PLAYER);
 }
 
 void
-Partition::OnPlayerTagModified()
+Partition::OnPlayerTagModified() noexcept
 {
 	EmitGlobalEvent(TAG_MODIFIED);
 }
