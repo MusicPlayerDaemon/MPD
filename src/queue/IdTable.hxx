@@ -34,7 +34,7 @@ class IdTable {
 
 	unsigned next;
 
-	int *data;
+	int *const data;
 
 public:
 	IdTable(unsigned _size) noexcept
