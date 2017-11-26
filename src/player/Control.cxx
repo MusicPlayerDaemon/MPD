@@ -256,6 +256,11 @@ PlayerControl::SeekLocked(std::unique_ptr<DetachedSong> song, SongTime t)
 
 	assert(next_song == nullptr);
 
+	/* the SEEK command is asynchronous; until completion, the
+	   "seeking" flag is set */
+	while (seeking)
+		ClientWait();
+
 	if (error_type != PlayerError::NONE) {
 		assert(error);
 		std::rethrow_exception(error);

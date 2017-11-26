@@ -54,7 +54,9 @@ enum class PlayerCommand : uint8_t {
 	/**
 	 * Seek to a certain position in the specified song.  This
 	 * command can also be used to change the current song or
-	 * start playback.
+	 * start playback.  It "finishes" immediately, but
+	 * PlayerControl::seeking will be set until seeking really
+	 * completes (or fails).
 	 */
 	SEEK,
 
@@ -175,6 +177,11 @@ struct PlayerControl final : AudioOutputClient {
 	PlayerError error_type = PlayerError::NONE;
 
 	ReplayGainMode replay_gain_mode = ReplayGainMode::OFF;
+
+	/**
+	 * Is the player currently busy with the SEEK command?
+	 */
+	bool seeking = false;
 
 	/**
 	 * If this flag is set, then the player will be auto-paused at

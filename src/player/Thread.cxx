@@ -147,6 +147,16 @@ class Player {
 	 */
 	SongTime elapsed_time = SongTime::zero();
 
+	/**
+	 * If this is positive, then we need to ask the decoder to
+	 * seek after it has completed startup.  This is needed if the
+	 * decoder is in the middle of startup while the player
+	 * receives another seek command.
+	 *
+	 * This is only valid while #decoder_starting is true.
+	 */
+	SongTime pending_seek;
+
 	PeriodClock throttle_silence_log;
 
 public:
@@ -279,6 +289,11 @@ private:
 	 * @return false if the decoder has failed
 	 */
 	bool SeekDecoder() noexcept;
+
+	void CancelPendingSeek() noexcept {
+		pending_seek = SongTime::zero();
+		pc.seeking = false;
+	}
 
 	/**
 	 * Check if the decoder has reported an error, and forward it
@@ -432,6 +447,7 @@ Player::ActivateDecoder() noexcept
 	/* set the "starting" flag, which will be cleared by
 	   CheckDecoderStartup() */
 	decoder_starting = true;
+	pending_seek = SongTime::zero();
 
 	/* update PlayerControl's song information */
 	pc.total_time = song->GetDuration();
@@ -528,6 +544,19 @@ Player::CheckDecoderStartup() noexcept
 
 		idle_add(IDLE_PLAYER);
 
+		if (pending_seek > SongTime::zero()) {
+			assert(pc.seeking);
+
+			bool success = SeekDecoder(pending_seek);
+			pc.seeking = false;
+			pc.ClientSignal();
+			if (!success)
+				return false;
+
+			/* re-fill the buffer after seeking */
+			buffering = true;
+		}
+
 		if (!paused && !OpenOutput()) {
 			FormatError(player_domain,
 				    "problems opening audio device "
@@ -619,6 +648,8 @@ Player::SeekDecoder() noexcept
 {
 	assert(pc.next_song != nullptr);
 
+	CancelPendingSeek();
+
 	{
 		const ScopeUnlock unlock(pc.mutex);
 		pc.outputs.Cancel();
@@ -650,18 +681,22 @@ Player::SeekDecoder() noexcept
 		pc.next_song.reset();
 		queued = false;
 
-		/* wait for the decoder to complete initialization
-		   (just in case that happens to be still in
-		   progress) */
+		if (decoder_starting) {
+			/* wait for the decoder to complete
+			   initialization; postpone the SEEK
+			   command */
 
-		if (!WaitDecoderStartup())
-			return false;
-
-		/* send the SEEK command */
-
-		if (!SeekDecoder(pc.seek_time)) {
+			pending_seek = pc.seek_time;
+			pc.seeking = true;
 			pc.CommandFinished();
-			return false;
+			return true;
+		} else {
+			/* send the SEEK command */
+
+			if (!SeekDecoder(pc.seek_time)) {
+				pc.CommandFinished();
+				return false;
+			}
 		}
 	}
 
@@ -1114,6 +1149,7 @@ Player::Run() noexcept
 		}
 	}
 
+	CancelPendingSeek();
 	StopDecoder();
 
 	ClearAndDeletePipe();
