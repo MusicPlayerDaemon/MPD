@@ -1,3 +1,5 @@
+ver 0.20.13 (not yet released)
+
 ver 0.20.12 (2017/11/25)
 * database
   - upnp: adapt to libupnp 1.8 API changes
