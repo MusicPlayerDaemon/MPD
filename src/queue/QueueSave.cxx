@@ -114,7 +114,7 @@ queue_load_song(TextFile &file, const SongLoader &loader,
 		song = std::make_unique<DetachedSong>(uri);
 	}
 
-	if (playlist_check_translate_song(*song, nullptr, loader))
+	if (!playlist_check_translate_song(*song, nullptr, loader))
 		return;
 
 	queue.Append(std::move(*song), priority);
