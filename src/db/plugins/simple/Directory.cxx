@@ -85,17 +85,6 @@ Directory::CreateChild(const char *name_utf8)
 	return child;
 }
 
-Directory*
-Directory::CreateChild(const char *name_utf8, Database* db)
-{
-	assert(db != nullptr);
-
-	Directory *child = CreateChild(name_utf8);
-	child->mounted_database = db;
-
-	return child;
-}
-
 const Directory *
 Directory::FindChild(const char *name) const noexcept
 {

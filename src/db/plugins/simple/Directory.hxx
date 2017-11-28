@@ -130,19 +130,7 @@ public:
 	 *
 	 * @param name_utf8 the UTF-8 encoded name of the new sub directory
 	 */
-	gcc_malloc
 	Directory *CreateChild(const char *name_utf8);
-
-	/**
-	 * Create a new #Directory object that is the mount point to a different database as a child of the given one.
-	 *
-	 * Caller must lock the #db_mutex.
-	 *
-	 * @param name_utf8 the UTF-8 encoded name of the new sub directory
-	 * @param db Pointer to the database that should be bound to the new child node.
-	 */
-	gcc_malloc
-	Directory *CreateChild(const char *name_utf8, Database* db);
 
 	/**
 	 * Caller must lock the #db_mutex.
