@@ -127,7 +127,6 @@ public:
 	 *
 	 * @param name_utf8 the UTF-8 encoded name of the new sub directory
 	 */
-	gcc_malloc
 	Directory *CreateChild(const char *name_utf8);
 
 	/**
