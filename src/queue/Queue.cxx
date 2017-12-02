@@ -364,8 +364,20 @@ Queue::ShuffleOrderFirst(unsigned start, unsigned end)
 }
 
 void
-Queue::ShuffleOrderLast(unsigned start, unsigned end)
+Queue::ShuffleOrderLastWithPriority(unsigned start, unsigned end)
 {
+	assert(end <= length);
+	assert(start < end);
+
+	/* skip all items at the start which have a higher priority,
+	   because the last item shall only be shuffled within its
+	   priority group */
+	const auto last_priority = items[OrderToPosition(end - 1)].priority;
+	while (items[OrderToPosition(start)].priority != last_priority) {
+		++start;
+		assert(start < end);
+	}
+
 	rand.AutoCreate();
 
 	std::uniform_int_distribution<unsigned> distribution(start, end - 1);

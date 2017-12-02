@@ -112,7 +112,7 @@ playlist::AppendSong(PlayerControl &pc, DetachedSong &&song)
 		else
 			start = current + 1;
 		if (start < queue.GetLength())
-			queue.ShuffleOrderLast(start, queue.GetLength());
+			queue.ShuffleOrderLastWithPriority(start, queue.GetLength());
 	}
 
 	UpdateQueuedSong(pc, queued_song);

@@ -356,11 +356,12 @@ struct Queue {
 	void ShuffleOrderFirst(unsigned start, unsigned end);
 
 	/**
-	 * Shuffles the virtual order of the last song in the specified
-	 * (order) range.  This is used in random mode after a song has been
-	 * appended by queue_append().
+	 * Shuffles the virtual order of the last song in the
+	 * specified (order) range; only songs which match this song's
+	 * priority are considered.  This is used in random mode after
+	 * a song has been appended by Append().
 	 */
-	void ShuffleOrderLast(unsigned start, unsigned end);
+	void ShuffleOrderLastWithPriority(unsigned start, unsigned end);
 
 	/**
 	 * Shuffles a (position) range in the queue.  The songs are physically
