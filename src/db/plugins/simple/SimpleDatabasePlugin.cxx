@@ -20,6 +20,7 @@
 #include "config.h"
 #include "SimpleDatabasePlugin.hxx"
 #include "PrefixedLightSong.hxx"
+#include "Mount.hxx"
 #include "db/DatabasePlugin.hxx"
 #include "db/Selection.hxx"
 #include "db/Helpers.hxx"
@@ -270,6 +271,18 @@ SimpleDatabase::Visit(const DatabaseSelection &selection,
 	ScopeDatabaseLock protect;
 
 	auto r = root->LookupDirectory(selection.uri.c_str());
+
+	if (r.directory->IsMount()) {
+		/* pass the request and the remaining uri to the mounted database */
+		protect.unlock();
+
+		WalkMount(r.directory->GetPath(), *(r.directory->mounted_database),
+			(r.uri == nullptr)?"":r.uri, selection.recursive, selection.filter,
+			visit_directory, visit_song, visit_playlist);
+
+		return;
+	}
+
 	if (r.uri == nullptr) {
 		/* it's a directory */
 
