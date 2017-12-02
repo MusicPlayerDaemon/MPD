@@ -227,7 +227,7 @@ Directory::Walk(bool recursive, const SongFilter *filter,
 		   call will lock it again */
 		const ScopeDatabaseUnlock unlock;
 		WalkMount(GetPath(), *mounted_database,
-			  recursive, filter,
+			  "", recursive, filter,
 			  visit_directory, visit_song,
 			  visit_playlist);
 		return;
