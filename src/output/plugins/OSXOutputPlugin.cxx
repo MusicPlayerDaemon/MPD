@@ -727,5 +727,5 @@ const struct AudioOutputPlugin osx_output_plugin = {
 	"osx",
 	osx_output_test_default_device,
 	&OSXOutput::Create,
-	nullptr,
+        &osx_mixer_plugin,
 };
