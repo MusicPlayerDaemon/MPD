@@ -75,8 +75,7 @@ playlist::MoveOrderToCurrent(unsigned old_order)
 	} else {
 		/* not playing anything: move the specified song to
 		   the front */
-		queue.SwapOrders(old_order, 0);
-		return 0;
+		return queue.MoveOrderBefore(old_order, 0);
 	}
 }
 

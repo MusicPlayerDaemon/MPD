@@ -23,11 +23,14 @@
 #include <upnp/upnp.h>
 
 #if UPNP_VERSION < 10800
-#include "Compiler.h"
-
 /* emulate the libupnp 1.8 API with older versions */
 
 using UpnpDiscovery = Upnp_Discovery;
+
+#endif
+
+#if UPNP_VERSION < 10624
+#include "Compiler.h"
 
 gcc_pure
 static inline int

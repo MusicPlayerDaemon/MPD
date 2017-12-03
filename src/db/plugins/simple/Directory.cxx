@@ -106,7 +106,7 @@ Directory::PruneEmpty() noexcept
 	     child != end;) {
 		child->PruneEmpty();
 
-		if (child->IsEmpty())
+		if (child->IsEmpty() && !child->IsMount())
 			child = children.erase_and_dispose(child,
 							   DeleteDisposer());
 		else
