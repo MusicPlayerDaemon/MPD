@@ -52,11 +52,11 @@ class ScopeUnlock {
 	Mutex &mutex;
 
 public:
-	explicit ScopeUnlock(Mutex &_mutex):mutex(_mutex) {
+	explicit ScopeUnlock(Mutex &_mutex) noexcept:mutex(_mutex) {
 		mutex.unlock();
 	};
 
-	~ScopeUnlock() {
+	~ScopeUnlock() noexcept {
 		mutex.lock();
 	}
 

@@ -76,10 +76,10 @@ song_save(BufferedOutputStream &os, const DetachedSong &song)
 	os.Format(SONG_END "\n");
 }
 
-DetachedSong *
+std::unique_ptr<DetachedSong>
 song_load(TextFile &file, const char *uri)
 {
-	DetachedSong *song = new DetachedSong(uri);
+	auto song = std::make_unique<DetachedSong>(uri);
 
 	TagBuilder tag;
 
@@ -88,8 +88,6 @@ song_load(TextFile &file, const char *uri)
 	       strcmp(line, SONG_END) != 0) {
 		char *colon = strchr(line, ':');
 		if (colon == nullptr || colon == line) {
-			delete song;
-
 			throw FormatRuntimeError("unknown line in db: %s", line);
 		}
 
@@ -116,8 +114,6 @@ song_load(TextFile &file, const char *uri)
 			song->SetStartTime(SongTime::FromMS(start_ms));
 			song->SetEndTime(SongTime::FromMS(end_ms));
 		} else {
-			delete song;
-
 			throw FormatRuntimeError("unknown line in db: %s", line);
 		}
 	}

@@ -55,7 +55,7 @@ M3uPlaylist::NextSong()
 		line_s = Strip(line_s);
 	} while (line_s[0] == '#' || *line_s == 0);
 
-	return std::unique_ptr<DetachedSong>(new DetachedSong(line_s));
+	return std::make_unique<DetachedSong>(line_s);
 }
 
 static const char *const m3u_suffixes[] = {

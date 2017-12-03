@@ -232,8 +232,8 @@ private:
 	void OnQueueSongStarted() override;
 
 	/* virtual methods from class PlayerListener */
-	void OnPlayerSync() override;
-	void OnPlayerTagModified() override;
+	void OnPlayerSync() noexcept override;
+	void OnPlayerTagModified() noexcept override;
 
 	/* virtual methods from class MixerListener */
 	void OnMixerVolumeChanged(Mixer &mixer, int volume) override;

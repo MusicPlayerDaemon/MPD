@@ -34,7 +34,7 @@
  * Lower the current thread's priority to "idle" (very low).
  */
 void
-SetThreadIdlePriority();
+SetThreadIdlePriority() noexcept;
 
 /**
  * Raise the current thread's priority to "real-time" (very high).

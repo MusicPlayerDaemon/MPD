@@ -44,7 +44,7 @@ class CommandListBuilder {
 		 * Enabled in "list_OK" mode.
 		 */
 		OK = true,
-	} mode;
+	} mode = Mode::DISABLED;
 
 	/**
 	 * for when in list mode
@@ -57,9 +57,6 @@ class CommandListBuilder {
 	size_t size;
 
 public:
-	CommandListBuilder()
-		:mode(Mode::DISABLED) {}
-
 	/**
 	 * Is a command list currently being built?
 	 */

@@ -26,7 +26,7 @@ MemorySongEnumerator::NextSong()
 	if (songs.empty())
 		return nullptr;
 
-	std::unique_ptr<DetachedSong> result(new DetachedSong(std::move(songs.front())));
+	auto result = std::make_unique<DetachedSong>(std::move(songs.front()));
 	songs.pop_front();
 	return result;
 }

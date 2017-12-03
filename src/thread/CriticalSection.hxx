@@ -41,26 +41,26 @@ class CriticalSection {
 	CRITICAL_SECTION critical_section;
 
 public:
-	CriticalSection() {
+	CriticalSection() noexcept {
 		::InitializeCriticalSection(&critical_section);
 	}
 
-	~CriticalSection() {
+	~CriticalSection() noexcept {
 		::DeleteCriticalSection(&critical_section);
 	}
 
 	CriticalSection(const CriticalSection &other) = delete;
 	CriticalSection &operator=(const CriticalSection &other) = delete;
 
-	void lock() {
+	void lock() noexcept {
 		::EnterCriticalSection(&critical_section);
 	};
 
-	bool try_lock() {
+	bool try_lock() noexcept {
 		return ::TryEnterCriticalSection(&critical_section) != 0;
 	};
 
-	void unlock() {
+	void unlock() noexcept {
 		::LeaveCriticalSection(&critical_section);
 	}
 };

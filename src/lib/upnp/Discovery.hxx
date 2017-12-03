@@ -20,6 +20,7 @@
 #ifndef _UPNPPDISC_H_X_INCLUDED_
 #define _UPNPPDISC_H_X_INCLUDED_
 
+#include "Compat.hxx"
 #include "Callback.hxx"
 #include "Device.hxx"
 #include "lib/curl/Init.hxx"
@@ -38,6 +39,10 @@
 #include <string>
 #include <memory>
 #include <chrono>
+
+#if UPNP_VERSION < 10800
+#define UpnpDiscovery Upnp_Discovery
+#endif
 
 class ContentDirectoryService;
 
@@ -100,7 +105,7 @@ class UPnPDeviceDirectory final : UpnpCallback {
 
 	public:
 		Downloader(UPnPDeviceDirectory &_parent,
-			   const Upnp_Discovery &disco);
+			   const UpnpDiscovery &disco);
 
 		void Start() noexcept {
 			defer_start_event.Schedule();
@@ -184,11 +189,11 @@ private:
 	void LockAdd(ContentDirectoryDescriptor &&d);
 	void LockRemove(const std::string &id);
 
-	int OnAlive(Upnp_Discovery *disco) noexcept;
-	int OnByeBye(Upnp_Discovery *disco) noexcept;
+	int OnAlive(const UpnpDiscovery *disco) noexcept;
+	int OnByeBye(const UpnpDiscovery *disco) noexcept;
 
 	/* virtual methods from class UpnpCallback */
-	int Invoke(Upnp_EventType et, void *evp) noexcept override;
+	int Invoke(Upnp_EventType et, const void *evp) noexcept override;
 };
 
 

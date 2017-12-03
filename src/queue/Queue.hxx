@@ -70,51 +70,51 @@ struct Queue {
 	};
 
 	/** configured maximum length of the queue */
-	unsigned max_length;
+	const unsigned max_length;
 
 	/** number of songs in the queue */
-	unsigned length;
+	unsigned length = 0;
 
 	/** the current version number */
-	uint32_t version;
+	uint32_t version = 1;
 
 	/** all songs in "position" order */
-	Item *items;
+	Item *const items;
 
 	/** map order numbers to positions */
-	unsigned *order;
+	unsigned *const order;
 
 	/** map song ids to positions */
 	IdTable id_table;
 
 	/** repeat playback when the end of the queue has been
 	    reached? */
-	bool repeat;
+	bool repeat = false;
 
 	/** play only current song. */
-	bool single;
+	bool single = false;
 
 	/** remove each played files. */
-	bool consume;
+	bool consume = false;
 
 	/** play back songs in random order? */
-	bool random;
+	bool random = false;
 
 	/** random number generator for shuffle and random mode */
 	LazyRandomEngine rand;
 
-	explicit Queue(unsigned max_length);
+	explicit Queue(unsigned max_length) noexcept;
 
 	/**
 	 * Deinitializes a queue object.  It does not free the queue
 	 * pointer itself.
 	 */
-	~Queue();
+	~Queue() noexcept;
 
 	Queue(const Queue &) = delete;
 	Queue &operator=(const Queue &) = delete;
 
-	unsigned GetLength() const {
+	unsigned GetLength() const noexcept {
 		assert(length <= max_length);
 
 		return length;
@@ -123,14 +123,14 @@ struct Queue {
 	/**
 	 * Determine if the queue is empty, i.e. there are no songs.
 	 */
-	bool IsEmpty() const {
+	bool IsEmpty() const noexcept {
 		return length == 0;
 	}
 
 	/**
 	 * Determine if the maximum number of songs has been reached.
 	 */
-	bool IsFull() const {
+	bool IsFull() const noexcept {
 		assert(length <= max_length);
 
 		return length >= max_length;
@@ -139,23 +139,22 @@ struct Queue {
 	/**
 	 * Is that a valid position number?
 	 */
-	bool IsValidPosition(unsigned position) const {
+	bool IsValidPosition(unsigned position) const noexcept {
 		return position < length;
 	}
 
 	/**
 	 * Is that a valid order number?
 	 */
-	bool IsValidOrder(unsigned _order) const {
+	bool IsValidOrder(unsigned _order) const noexcept {
 		return _order < length;
 	}
 
-	int IdToPosition(unsigned id) const {
+	int IdToPosition(unsigned id) const noexcept {
 		return id_table.IdToPosition(id);
 	}
 
-	int PositionToId(unsigned position) const
-	{
+	int PositionToId(unsigned position) const noexcept {
 		assert(position < length);
 
 		return items[position].id;
@@ -187,20 +186,20 @@ struct Queue {
 		return items[position].priority;
 	}
 
-	const Item &GetOrderItem(unsigned i) const {
+	const Item &GetOrderItem(unsigned i) const noexcept {
 		assert(IsValidOrder(i));
 
 		return items[OrderToPosition(i)];
 	}
 
-	uint8_t GetOrderPriority(unsigned i) const {
+	uint8_t GetOrderPriority(unsigned i) const noexcept {
 		return GetOrderItem(i).priority;
 	}
 
 	/**
 	 * Returns the song at the specified position.
 	 */
-	DetachedSong &Get(unsigned position) const {
+	DetachedSong &Get(unsigned position) const noexcept {
 		assert(position < length);
 
 		return *items[position].song;
@@ -209,7 +208,7 @@ struct Queue {
 	/**
 	 * Returns the song at the specified order number.
 	 */
-	DetachedSong &GetOrder(unsigned _order) const {
+	DetachedSong &GetOrder(unsigned _order) const noexcept {
 		return Get(OrderToPosition(_order));
 	}
 
@@ -217,7 +216,8 @@ struct Queue {
 	 * Is the song at the specified position newer than the specified
 	 * version?
 	 */
-	bool IsNewerAtPosition(unsigned position, uint32_t _version) const {
+	bool IsNewerAtPosition(unsigned position,
+			       uint32_t _version) const noexcept {
 		assert(position < length);
 
 		return _version > version ||
@@ -245,7 +245,7 @@ struct Queue {
 	 * IncrementVersion() after all modifications have been made.
 	 * number.
 	 */
-	void ModifyAtPosition(unsigned position) {
+	void ModifyAtPosition(unsigned position) noexcept {
 		assert(position < length);
 
 		items[position].version = version;
@@ -268,7 +268,7 @@ struct Queue {
 	 *
 	 * @param priority the priority of this new queue item
 	 */
-	unsigned Append(DetachedSong &&song, uint8_t priority);
+	unsigned Append(DetachedSong &&song, uint8_t priority) noexcept;
 
 	/**
 	 * Swaps two songs, addressed by their position.
@@ -278,7 +278,7 @@ struct Queue {
 	/**
 	 * Swaps two songs, addressed by their order number.
 	 */
-	void SwapOrders(unsigned order1, unsigned order2) {
+	void SwapOrders(unsigned order1, unsigned order2) noexcept {
 		std::swap(order[order1], order[order2]);
 	}
 
@@ -330,7 +330,7 @@ struct Queue {
 	/**
 	 * Initializes the "order" array, and restores "normal" order.
 	 */
-	void RestoreOrder() {
+	void RestoreOrder() noexcept {
 		for (unsigned i = 0; i < length; ++i)
 			order[i] = i;
 	}
@@ -339,43 +339,45 @@ struct Queue {
 	 * Shuffle the order of items in the specified range, ignoring
 	 * their priorities.
 	 */
-	void ShuffleOrderRange(unsigned start, unsigned end);
+	void ShuffleOrderRange(unsigned start, unsigned end) noexcept;
 
 	/**
 	 * Shuffle the order of items in the specified range, taking their
 	 * priorities into account.
 	 */
-	void ShuffleOrderRangeWithPriority(unsigned start, unsigned end);
+	void ShuffleOrderRangeWithPriority(unsigned start,
+					   unsigned end) noexcept;
 
 	/**
 	 * Shuffles the virtual order of songs, but does not move them
 	 * physically.  This is used in random mode.
 	 */
-	void ShuffleOrder();
+	void ShuffleOrder() noexcept;
 
-	void ShuffleOrderFirst(unsigned start, unsigned end);
+	void ShuffleOrderFirst(unsigned start, unsigned end) noexcept;
 
 	/**
-	 * Shuffles the virtual order of the last song in the specified
-	 * (order) range.  This is used in random mode after a song has been
-	 * appended by queue_append().
+	 * Shuffles the virtual order of the last song in the
+	 * specified (order) range; only songs which match this song's
+	 * priority are considered.  This is used in random mode after
+	 * a song has been appended by Append().
 	 */
-	void ShuffleOrderLast(unsigned start, unsigned end);
+	void ShuffleOrderLastWithPriority(unsigned start, unsigned end) noexcept;
 
 	/**
 	 * Shuffles a (position) range in the queue.  The songs are physically
 	 * shuffled, not by using the "order" mapping.
 	 */
-	void ShuffleRange(unsigned start, unsigned end);
+	void ShuffleRange(unsigned start, unsigned end) noexcept;
 
 	bool SetPriority(unsigned position, uint8_t priority, int after_order,
-			 bool reorder=true);
+			 bool reorder=true) noexcept;
 
 	bool SetPriorityRange(unsigned start_position, unsigned end_position,
-			      uint8_t priority, int after_order);
+			      uint8_t priority, int after_order) noexcept;
 
 private:
-	void MoveItemTo(unsigned from, unsigned to) {
+	void MoveItemTo(unsigned from, unsigned to) noexcept {
 		unsigned from_id = items[from].id;
 
 		items[to] = items[from];

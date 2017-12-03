@@ -31,6 +31,7 @@
 #include "ReplayGainMode.hxx"
 
 #include <exception>
+#include <memory>
 
 #include <stdint.h>
 
@@ -156,7 +157,7 @@ struct PlayerControl final : AudioOutputClient {
 	 * Protected by #mutex.  Set by the PlayerThread and consumed
 	 * by the main thread.
 	 */
-	DetachedSong *tagged_song = nullptr;
+	std::unique_ptr<DetachedSong> tagged_song;
 
 	uint16_t bit_rate;
 	AudioFormat audio_format;
@@ -169,7 +170,7 @@ struct PlayerControl final : AudioOutputClient {
 	 * This is a duplicate, and must be freed when this attribute
 	 * is cleared.
 	 */
-	DetachedSong *next_song = nullptr;
+	std::unique_ptr<DetachedSong> next_song;
 
 	SongTime seek_time;
 
@@ -194,20 +195,20 @@ struct PlayerControl final : AudioOutputClient {
 		      unsigned buffer_chunks,
 		      unsigned buffered_before_play,
 		      AudioFormat _configured_audio_format,
-		      const ReplayGainConfig &_replay_gain_config);
-	~PlayerControl();
+		      const ReplayGainConfig &_replay_gain_config) noexcept;
+	~PlayerControl() noexcept;
 
 	/**
 	 * Locks the object.
 	 */
-	void Lock() const {
+	void Lock() const noexcept {
 		mutex.lock();
 	}
 
 	/**
 	 * Unlocks the object.
 	 */
-	void Unlock() const {
+	void Unlock() const noexcept {
 		mutex.unlock();
 	}
 
@@ -215,7 +216,7 @@ struct PlayerControl final : AudioOutputClient {
 	 * Signals the object.  The object should be locked prior to
 	 * calling this function.
 	 */
-	void Signal() {
+	void Signal() noexcept {
 		cond.signal();
 	}
 
@@ -223,7 +224,7 @@ struct PlayerControl final : AudioOutputClient {
 	 * Signals the object.  The object is temporarily locked by
 	 * this function.
 	 */
-	void LockSignal() {
+	void LockSignal() noexcept {
 		const std::lock_guard<Mutex> protect(mutex);
 		Signal();
 	}
@@ -233,7 +234,7 @@ struct PlayerControl final : AudioOutputClient {
 	 * valid in the player thread.  The object must be locked
 	 * prior to calling this function.
 	 */
-	void Wait() {
+	void Wait() noexcept {
 		assert(thread.IsInside());
 
 		cond.wait(mutex);
@@ -244,7 +245,7 @@ struct PlayerControl final : AudioOutputClient {
 	 *
 	 * Caller must lock the object.
 	 */
-	void ClientSignal() {
+	void ClientSignal() noexcept {
 		assert(thread.IsInside());
 
 		client_cond.signal();
@@ -256,7 +257,7 @@ struct PlayerControl final : AudioOutputClient {
 	 *
 	 * Caller must lock the object.
 	 */
-	void ClientWait() {
+	void ClientWait() noexcept {
 		assert(!thread.IsInside());
 
 		client_cond.wait(mutex);
@@ -269,14 +270,14 @@ struct PlayerControl final : AudioOutputClient {
 	 * To be called from the player thread.  Caller must lock the
 	 * object.
 	 */
-	void CommandFinished() {
+	void CommandFinished() noexcept {
 		assert(command != PlayerCommand::NONE);
 
 		command = PlayerCommand::NONE;
 		ClientSignal();
 	}
 
-	void LockCommandFinished() {
+	void LockCommandFinished() noexcept {
 		const std::lock_guard<Mutex> protect(mutex);
 		CommandFinished();
 	}
@@ -291,9 +292,9 @@ struct PlayerControl final : AudioOutputClient {
 	 * @param threshold the maximum number of chunks in the pipe
 	 * @return true if there are less than #threshold chunks in the pipe
 	 */
-	bool WaitOutputConsumed(unsigned threshold);
+	bool WaitOutputConsumed(unsigned threshold) noexcept;
 
-	bool LockWaitOutputConsumed(unsigned threshold) {
+	bool LockWaitOutputConsumed(unsigned threshold) noexcept {
 		const std::lock_guard<Mutex> protect(mutex);
 		return WaitOutputConsumed(threshold);
 	}
@@ -305,7 +306,7 @@ private:
 	 * To be called from the main thread.  Caller must lock the
 	 * object.
 	 */
-	void WaitCommandLocked() {
+	void WaitCommandLocked() noexcept {
 		while (command != PlayerCommand::NONE)
 			ClientWait();
 	}
@@ -341,51 +342,50 @@ public:
 	/**
 	 * Throws std::runtime_error or #Error on error.
 	 *
-	 * @param song the song to be queued; the given instance will
-	 * be owned and freed by the player
+	 * @param song the song to be queued
 	 */
-	void Play(DetachedSong *song);
+	void Play(std::unique_ptr<DetachedSong> song);
 
 	/**
 	 * see PlayerCommand::CANCEL
 	 */
-	void LockCancel();
+	void LockCancel() noexcept;
 
-	void LockSetPause(bool pause_flag);
+	void LockSetPause(bool pause_flag) noexcept;
 
 private:
-	void PauseLocked();
+	void PauseLocked() noexcept;
 
-	void ClearError() {
+	void ClearError() noexcept {
 		error_type = PlayerError::NONE;
 		error = std::exception_ptr();
 	}
 
 public:
-	void LockPause();
+	void LockPause() noexcept;
 
 	/**
 	 * Set the player's #border_pause flag.
 	 */
-	void LockSetBorderPause(bool border_pause);
+	void LockSetBorderPause(bool border_pause) noexcept;
 
-	bool ApplyBorderPause() {
+	bool ApplyBorderPause() noexcept {
 		if (border_pause)
 			state = PlayerState::PAUSE;
 		return border_pause;
 	}
 
-	bool LockApplyBorderPause() {
+	bool LockApplyBorderPause() noexcept {
 		const std::lock_guard<Mutex> lock(mutex);
 		return ApplyBorderPause();
 	}
 
-	void Kill();
+	void Kill() noexcept;
 
 	gcc_pure
 	player_status LockGetStatus() noexcept;
 
-	PlayerState GetState() const {
+	PlayerState GetState() const noexcept {
 		return state;
 	}
 
@@ -396,12 +396,12 @@ public:
 	 *
 	 * @param type the error type; must not be #PlayerError::NONE
 	 */
-	void SetError(PlayerError type, std::exception_ptr &&_error);
+	void SetError(PlayerError type, std::exception_ptr &&_error) noexcept;
 
 	/**
 	 * Set the error and set state to PlayerState::PAUSE.
 	 */
-	void SetOutputError(std::exception_ptr &&_error) {
+	void SetOutputError(std::exception_ptr &&_error) noexcept {
 		SetError(PlayerError::OUTPUT, std::move(_error));
 
 		/* pause: the user may resume playback as soon as an
@@ -409,7 +409,7 @@ public:
 		state = PlayerState::PAUSE;
 	}
 
-	void LockSetOutputError(std::exception_ptr &&_error) {
+	void LockSetOutputError(std::exception_ptr &&_error) noexcept {
 		const std::lock_guard<Mutex> lock(mutex);
 		SetOutputError(std::move(_error));
 	}
@@ -433,9 +433,9 @@ public:
 		CheckRethrowError();
 	}
 
-	void LockClearError();
+	void LockClearError() noexcept;
 
-	PlayerError GetErrorType() const {
+	PlayerError GetErrorType() const noexcept {
 		return error_type;
 	}
 
@@ -443,54 +443,40 @@ public:
 	 * Set the #tagged_song attribute to a newly allocated copy of
 	 * the given #DetachedSong.  Locks and unlocks the object.
 	 */
-	void LockSetTaggedSong(const DetachedSong &song);
+	void LockSetTaggedSong(const DetachedSong &song) noexcept;
 
-	void ClearTaggedSong();
+	void ClearTaggedSong() noexcept;
 
 	/**
 	 * Read and clear the #tagged_song attribute.
 	 *
 	 * Caller must lock the object.
 	 */
-	DetachedSong *ReadTaggedSong() {
-		DetachedSong *result = tagged_song;
-		tagged_song = nullptr;
-		return result;
-	}
+	std::unique_ptr<DetachedSong> ReadTaggedSong() noexcept;
 
 	/**
 	 * Like ReadTaggedSong(), but locks and unlocks the object.
 	 */
-	DetachedSong *LockReadTaggedSong() {
-		const std::lock_guard<Mutex> protect(mutex);
-		return ReadTaggedSong();
-	}
+	std::unique_ptr<DetachedSong> LockReadTaggedSong() noexcept;
 
-	void LockStop();
+	void LockStop() noexcept;
 
-	void LockUpdateAudio();
+	void LockUpdateAudio() noexcept;
 
 private:
-	void EnqueueSongLocked(DetachedSong *song) {
-		assert(song != nullptr);
-		assert(next_song == nullptr);
-
-		next_song = song;
-		seek_time = SongTime::zero();
-		SynchronousCommand(PlayerCommand::QUEUE);
-	}
+	void EnqueueSongLocked(std::unique_ptr<DetachedSong> song) noexcept;
 
 	/**
 	 * Throws std::runtime_error or #Error on error.
 	 */
-	void SeekLocked(DetachedSong *song, SongTime t);
+	void SeekLocked(std::unique_ptr<DetachedSong> song, SongTime t);
 
 public:
 	/**
 	 * @param song the song to be queued; the given instance will be owned
 	 * and freed by the player
 	 */
-	void LockEnqueueSong(DetachedSong *song);
+	void LockEnqueueSong(std::unique_ptr<DetachedSong> song) noexcept;
 
 	/**
 	 * Makes the player thread seek the specified song to a position.
@@ -500,32 +486,32 @@ public:
 	 * @param song the song to be queued; the given instance will be owned
 	 * and freed by the player
 	 */
-	void LockSeek(DetachedSong *song, SongTime t);
+	void LockSeek(std::unique_ptr<DetachedSong> song, SongTime t);
 
-	void SetCrossFade(float cross_fade_seconds);
+	void SetCrossFade(float cross_fade_seconds) noexcept;
 
-	float GetCrossFade() const {
+	float GetCrossFade() const noexcept {
 		return cross_fade.duration;
 	}
 
-	void SetMixRampDb(float mixramp_db);
+	void SetMixRampDb(float mixramp_db) noexcept;
 
-	float GetMixRampDb() const {
+	float GetMixRampDb() const noexcept {
 		return cross_fade.mixramp_db;
 	}
 
-	void SetMixRampDelay(float mixramp_delay_seconds);
+	void SetMixRampDelay(float mixramp_delay_seconds) noexcept;
 
-	float GetMixRampDelay() const {
+	float GetMixRampDelay() const noexcept {
 		return cross_fade.mixramp_delay;
 	}
 
-	void LockSetReplayGainMode(ReplayGainMode _mode) {
+	void LockSetReplayGainMode(ReplayGainMode _mode) noexcept {
 		const std::lock_guard<Mutex> protect(mutex);
 		replay_gain_mode = _mode;
 	}
 
-	double GetTotalPlayTime() const {
+	double GetTotalPlayTime() const noexcept {
 		return total_play_time;
 	}
 
@@ -539,7 +525,7 @@ public:
 	}
 
 private:
-	void RunThread();
+	void RunThread() noexcept;
 };
 
 #endif

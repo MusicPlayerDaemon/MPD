@@ -89,7 +89,7 @@ queue_load_song(TextFile &file, const SongLoader &loader,
 			return;
 	}
 
-	DetachedSong *song;
+	std::unique_ptr<DetachedSong> song;
 
 	if ((p = StringAfterPrefix(line, SONG_BEGIN))) {
 		const char *uri = p;
@@ -111,14 +111,11 @@ queue_load_song(TextFile &file, const SongLoader &loader,
 
 		const char *uri = endptr + 1;
 
-		song = new DetachedSong(uri);
+		song = std::make_unique<DetachedSong>(uri);
 	}
 
-	if (!playlist_check_translate_song(*song, nullptr, loader)) {
-		delete song;
+	if (!playlist_check_translate_song(*song, nullptr, loader))
 		return;
-	}
 
 	queue.Append(std::move(*song), priority);
-	delete song;
 }

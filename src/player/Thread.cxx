@@ -90,7 +90,7 @@ class Player {
 	/**
 	 * the song currently being played
 	 */
-	DetachedSong *song;
+	std::unique_ptr<DetachedSong> song;
 
 	/**
 	 * Is cross-fading to the next song enabled?
@@ -360,7 +360,7 @@ Player::StartDecoder(MusicPipe &_pipe)
 
 	SongTime start_time = pc.next_song->GetStartTime() + pc.seek_time;
 
-	dc.Start(new DetachedSong(*pc.next_song),
+	dc.Start(std::make_unique<DetachedSong>(*pc.next_song),
 		 start_time, pc.next_song->GetEndTime(),
 		 buffer, _pipe);
 }
@@ -413,9 +413,7 @@ Player::ActivateDecoder()
 
 		pc.ClearTaggedSong();
 
-		delete song;
-		song = pc.next_song;
-		pc.next_song = nullptr;
+		song = std::exchange(pc.next_song, nullptr);
 
 		elapsed_time = pc.seek_time;
 
@@ -558,8 +556,10 @@ Player::SendSilence()
 	   partial frames */
 	unsigned num_frames = sizeof(chunk->data) / frame_size;
 
+	chunk->bit_rate = 0;
 	chunk->time = SignedSongTime::Negative(); /* undefined time stamp */
 	chunk->length = num_frames * frame_size;
+	chunk->replay_gain_serial = MusicChunk::IGNORE_REPLAY_GAIN;
 	PcmSilence({chunk->data, chunk->length}, play_audio_format.format);
 
 	try {
@@ -605,8 +605,7 @@ Player::SeekDecoder()
 			ClearAndReplacePipe(dc.pipe);
 		}
 
-		delete pc.next_song;
-		pc.next_song = nullptr;
+		pc.next_song.reset();
 		queued = false;
 
 		/* wait for the decoder to complete initialization
@@ -724,8 +723,7 @@ Player::ProcessCommand()
 			StopDecoder();
 		}
 
-		delete pc.next_song;
-		pc.next_song = nullptr;
+		pc.next_song.reset();
 		queued = false;
 		pc.CommandFinished();
 		break;
@@ -1119,7 +1117,7 @@ Player::Run()
 
 	if (song != nullptr) {
 		FormatDefault(player_domain, "played \"%s\"", song->GetURI());
-		delete song;
+		song.reset();
 	}
 
 	pc.Lock();
@@ -1128,8 +1126,7 @@ Player::Run()
 
 	if (queued) {
 		assert(pc.next_song != nullptr);
-		delete pc.next_song;
-		pc.next_song = nullptr;
+		pc.next_song.reset();
 	}
 
 	pc.state = PlayerState::STOP;
@@ -1146,7 +1143,7 @@ do_play(PlayerControl &pc, DecoderControl &dc,
 }
 
 void
-PlayerControl::RunThread()
+PlayerControl::RunThread() noexcept
 {
 	SetThreadName("player");
 
@@ -1179,8 +1176,7 @@ PlayerControl::RunThread()
 			/* fall through */
 
 		case PlayerCommand::PAUSE:
-			delete next_song;
-			next_song = nullptr;
+			next_song.reset();
 
 			CommandFinished();
 			break;
@@ -1215,8 +1211,7 @@ PlayerControl::RunThread()
 			return;
 
 		case PlayerCommand::CANCEL:
-			delete next_song;
-			next_song = nullptr;
+			next_song.reset();
 
 			CommandFinished();
 			break;

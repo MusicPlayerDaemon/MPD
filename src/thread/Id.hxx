@@ -44,12 +44,12 @@ public:
 	/**
 	 * No initialisation.
 	 */
-	ThreadId() = default;
+	ThreadId() noexcept = default;
 
 #ifdef WIN32
-	constexpr ThreadId(DWORD _id):id(_id) {}
+	constexpr ThreadId(DWORD _id) noexcept:id(_id) {}
 #else
-	constexpr ThreadId(pthread_t _id):id(_id) {}
+	constexpr ThreadId(pthread_t _id) noexcept:id(_id) {}
 #endif
 
 	gcc_const

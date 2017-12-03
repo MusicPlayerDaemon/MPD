@@ -521,7 +521,7 @@ try {
 }
 
 void
-DecoderControl::RunThread()
+DecoderControl::RunThread() noexcept
 {
 	SetThreadName("decoder");
 

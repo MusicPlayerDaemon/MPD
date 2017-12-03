@@ -30,7 +30,7 @@
  * merge multiple wakeups, which is a trick to save energy.
  */
 static inline void
-SetThreadTimerSlackNS(unsigned long slack_ns)
+SetThreadTimerSlackNS(unsigned long slack_ns) noexcept
 {
 #if defined(HAVE_PRCTL) && defined(PR_SET_TIMERSLACK)
 	prctl(PR_SET_TIMERSLACK, slack_ns, 0, 0, 0);
@@ -40,13 +40,13 @@ SetThreadTimerSlackNS(unsigned long slack_ns)
 }
 
 static inline void
-SetThreadTimerSlackUS(unsigned long slack_us)
+SetThreadTimerSlackUS(unsigned long slack_us) noexcept
 {
 	SetThreadTimerSlackNS(slack_us * 1000ul);
 }
 
 static inline void
-SetThreadTimerSlackMS(unsigned long slack_ms)
+SetThreadTimerSlackMS(unsigned long slack_ms) noexcept
 {
 	SetThreadTimerSlackNS(slack_ms * 1000000ul);
 }
