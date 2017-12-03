@@ -561,7 +561,7 @@ Player::SendSilence()
 	chunk->bit_rate = 0;
 	chunk->time = SignedSongTime::Negative(); /* undefined time stamp */
 	chunk->length = num_frames * frame_size;
-	chunk->replay_gain_serial = 0;
+	chunk->replay_gain_serial = MusicChunk::IGNORE_REPLAY_GAIN;
 	PcmSilence({chunk->data, chunk->length}, play_audio_format.format);
 
 	try {

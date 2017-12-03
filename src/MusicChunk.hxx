@@ -80,6 +80,14 @@ struct MusicChunk {
 	ReplayGainInfo replay_gain_info;
 
 	/**
+	 * A magic value for #replay_gain_serial which omits updating
+	 * the #ReplayGainFilter.  This is used by "silence" chunks
+	 * (see PlayerThread::SendSilence()) so they don't affect the
+	 * replay gain.
+	 */
+	static constexpr unsigned IGNORE_REPLAY_GAIN = ~0u;
+
+	/**
 	 * A serial number for checking if replay gain info has
 	 * changed since the last chunk.  The magic value 0 indicates
 	 * that there is no replay gain info available.
