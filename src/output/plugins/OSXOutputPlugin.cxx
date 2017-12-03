@@ -686,7 +686,9 @@ OSXOutput::Open(AudioFormat &audio_format)
 					 errormsg);
 	}
 
-	ring_buffer = new boost::lockfree::spsc_queue<uint8_t>(buffer_frame_size);
+	// Make the ring buffer 4 times as large as the hardware buffer size.
+	// This would allow MPD having sufficient space to write on.
+	ring_buffer = new boost::lockfree::spsc_queue<uint8_t>(buffer_frame_size * 4);
 
 	status = AudioOutputUnitStart(au);
 	if (status != 0) {
