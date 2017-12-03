@@ -84,7 +84,7 @@ struct MusicChunk {
 	 * changed since the last chunk.  The magic value 0 indicates
 	 * that there is no replay gain info available.
 	 */
-	unsigned replay_gain_serial = 0;
+	unsigned replay_gain_serial;
 
 	/** the data (probably PCM) */
 	uint8_t data[CHUNK_SIZE];
