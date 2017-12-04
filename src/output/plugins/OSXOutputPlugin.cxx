@@ -36,9 +36,10 @@
 
 #include <memory>
 
+static constexpr unsigned MPD_OSX_BUFFER_TIME_MS = 100;
+
 struct OSXOutput {
 	AudioOutput base;
-
 	/* configuration settings */
 	OSType component_subtype;
 	/* only applicable with kAudioUnitSubType_HALOutput */
@@ -693,7 +694,9 @@ osx_output_open(AudioOutput *ao, AudioFormat &audio_format)
 					 errormsg);
 	}
 
-	od->ring_buffer = new boost::lockfree::spsc_queue<uint8_t>(buffer_frame_size);
+	size_t ring_buffer_size = std::max<size_t>(buffer_frame_size,
+						   MPD_OSX_BUFFER_TIME_MS * audio_format.GetFrameSize() * audio_format.sample_rate / 1000);
+	od->ring_buffer = new boost::lockfree::spsc_queue<uint8_t>(ring_buffer_size);
 
 	status = AudioOutputUnitStart(od->au);
 	if (status != 0) {
@@ -717,7 +720,7 @@ osx_output_delay(AudioOutput *ao) noexcept
 	OSXOutput *od = (OSXOutput *)ao;
 	return od->ring_buffer->write_available()
 		? std::chrono::steady_clock::duration::zero()
-		: std::chrono::milliseconds(25);
+		: std::chrono::milliseconds(MPD_OSX_BUFFER_TIME_MS / 4);
 }
 
 int
