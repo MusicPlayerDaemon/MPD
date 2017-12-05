@@ -2412,6 +2412,7 @@ EXTRA_DIST = $(doc_DATA) autogen.sh \
 	$(man_MANS) $(DOCBOOK_FILES) doc/mpdconf.example doc/doxygen.conf \
 	$(wildcard $(srcdir)/doc/include/*.xml) \
 	systemd/system/mpd.socket \
+	$(wildcard $(srcdir)/python/build/*.py) \
 	android/AndroidManifest.xml \
 	android/build.py \
 	android/custom_rules.xml \
@@ -2419,5 +2420,6 @@ EXTRA_DIST = $(doc_DATA) autogen.sh \
 	android/src/Bridge.java \
 	android/src/Loader.java \
 	android/src/Main.java \
+	win32/build.py \
 	win32/res/mpd.rc.in win32/res/mpd.ico \
 	src/haiku/App_MusicPD

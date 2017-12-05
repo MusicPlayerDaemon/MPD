@@ -4,6 +4,7 @@ ver 0.20.13 (not yet released)
   - simple: fix "mount" bug caused by bad compiler optimization
   - upnp: work around libupnp 1.6.24 API breakage
 * queue: fix spuriously misplaced prioritized songs
+* include Windows cross-build script in source tarball
 
 ver 0.20.12 (2017/11/25)
 * database
