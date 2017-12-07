@@ -20,7 +20,7 @@
 #ifndef MPD_UPNP_CALLBACK_HXX
 #define MPD_UPNP_CALLBACK_HXX
 
-#include <upnp/upnp.h>
+#include <upnp.h>
 
 /**
  * A class that is supposed to be used for libupnp asynchronous
