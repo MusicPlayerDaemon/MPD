@@ -93,6 +93,11 @@ ffmpeg = FfmpegProject(
         '--disable-devices',
         '--disable-filters',
         '--disable-v4l2_m2m',
+
+        # clang misinterprets the "B0" in hevc_mvs.c as binary
+        # literal, which breaks the build; but we don't need that
+        # video codec anyway
+        '--disable-decoder=hevc',
     ],
 )
 
