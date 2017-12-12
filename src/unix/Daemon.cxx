@@ -23,7 +23,7 @@
 #include "fs/AllocatedPath.hxx"
 #include "fs/FileSystem.hxx"
 
-#ifndef WIN32
+#ifndef _WIN32
 #include "PidFile.hxx"
 #endif
 
@@ -31,7 +31,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 
-#ifndef WIN32
+#ifndef _WIN32
 #include <sys/wait.h>
 #include <signal.h>
 #include <pwd.h>
@@ -42,7 +42,7 @@
 #define WCOREDUMP(v) 0
 #endif
 
-#ifndef WIN32
+#ifndef _WIN32
 
 /** the Unix user name which MPD runs as */
 static char *user_name;

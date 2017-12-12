@@ -23,14 +23,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <string.h>
 #endif
 
 AllocatedString<>
 FormatStringV(const char *fmt, va_list args)
 {
-#ifndef WIN32
+#ifndef _WIN32
 	va_list tmp;
 	va_copy(tmp, args);
 	const int length = vsnprintf(NULL, 0, fmt, tmp);

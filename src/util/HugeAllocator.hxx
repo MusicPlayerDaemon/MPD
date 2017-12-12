@@ -65,7 +65,7 @@ HugeFree(void *p, size_t size) noexcept;
 void
 HugeDiscard(void *p, size_t size) noexcept;
 
-#elif defined(WIN32)
+#elif defined(_WIN32)
 #include <windows.h>
 
 gcc_malloc

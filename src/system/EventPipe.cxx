@@ -26,19 +26,19 @@
 #include <assert.h>
 #include <unistd.h>
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <ws2tcpip.h>
 #include <winsock2.h>
 #include <cstring> /* for memset() */
 #endif
 
-#ifdef WIN32
+#ifdef _WIN32
 static bool PoorSocketPair(int fd[2]);
 #endif
 
 EventPipe::EventPipe()
 {
-#ifdef WIN32
+#ifdef _WIN32
 	bool success = PoorSocketPair(fds);
 #else
 	bool success = pipe_cloexec_nonblock(fds) >= 0;
@@ -49,7 +49,7 @@ EventPipe::EventPipe()
 
 EventPipe::~EventPipe()
 {
-#ifdef WIN32
+#ifdef _WIN32
 	closesocket(fds[0]);
 	closesocket(fds[1]);
 #else
@@ -65,7 +65,7 @@ EventPipe::Read()
 	assert(fds[1] >= 0);
 
 	char buffer[256];
-#ifdef WIN32
+#ifdef _WIN32
 	return recv(fds[0], buffer, sizeof(buffer), 0) > 0;
 #else
 	return read(fds[0], buffer, sizeof(buffer)) > 0;
@@ -78,14 +78,14 @@ EventPipe::Write()
 	assert(fds[0] >= 0);
 	assert(fds[1] >= 0);
 
-#ifdef WIN32
+#ifdef _WIN32
 	send(fds[1], "", 1, 0);
 #else
 	gcc_unused ssize_t nbytes = write(fds[1], "", 1);
 #endif
 }
 
-#ifdef WIN32
+#ifdef _WIN32
 
 static void SafeCloseSocket(SOCKET s)
 {

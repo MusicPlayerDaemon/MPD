@@ -162,7 +162,7 @@ FileLog(const Domain &domain, const char *message)
 		domain.GetName(),
 		chomp_length(message), message);
 
-#ifdef WIN32
+#ifdef _WIN32
 	/* force-flush the log file, because setvbuf() does not seem
 	   to have an effect on WIN32 */
 	fflush(stderr);

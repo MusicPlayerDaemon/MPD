@@ -31,7 +31,7 @@
 
 #include <chrono>
 
-#ifndef WIN32
+#ifndef _WIN32
 /**
  * The monotonic time stamp when MPD was started.  It is used to
  * calculate the uptime.
@@ -114,7 +114,7 @@ stats_print(Response &r, const Partition &partition)
 {
 	r.Format("uptime: %u\n"
 		 "playtime: %lu\n",
-#ifdef WIN32
+#ifdef _WIN32
 		 GetProcessUptimeS(),
 #else
 		 (unsigned)std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - start_time).count(),

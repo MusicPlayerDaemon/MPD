@@ -115,7 +115,7 @@ SimpleDatabase::Check() const
 						 path_utf8 + "\" because the "
 						 "parent path is not a directory");
 
-#ifndef WIN32
+#ifndef _WIN32
 		/* Check if we can write to the directory */
 		if (!CheckAccess(dirPath, X_OK | W_OK)) {
 			const int e = errno;
@@ -134,7 +134,7 @@ SimpleDatabase::Check() const
 	if (!fi.IsRegular())
 		throw std::runtime_error("db file \"" + path_utf8 + "\" is not a regular file");
 
-#ifndef WIN32
+#ifndef _WIN32
 	/* And check that we can write to it */
 	if (!CheckAccess(path, R_OK | W_OK))
 		throw FormatErrno("Can't open db file \"%s\" for reading/writing",

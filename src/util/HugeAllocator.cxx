@@ -96,7 +96,7 @@ HugeDiscard(void *p, size_t size) noexcept
 #endif
 }
 
-#elif defined(WIN32)
+#elif defined(_WIN32)
 
 void *
 HugeAllocate(size_t size)

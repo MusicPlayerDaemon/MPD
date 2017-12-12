@@ -36,7 +36,7 @@
 #include <ctype.h>
 #endif
 
-#ifdef WIN32
+#ifdef _WIN32
 #include "Win32.hxx"
 #include <windows.h>
 #endif
@@ -73,7 +73,7 @@ try {
 	folded.SetSize(folded_length);
 	return UCharToUTF8({folded.begin(), folded.size()});
 
-#elif defined(WIN32)
+#elif defined(_WIN32)
 	const auto u = MultiByteToWideChar(CP_UTF8, src);
 
 	const int size = LCMapStringEx(LOCALE_NAME_INVARIANT,

@@ -23,7 +23,7 @@
 #include "check.h"
 #include "Compiler.h"
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <windows.h>
 #else
 #include <pthread.h>
@@ -32,7 +32,7 @@
 #include <assert.h>
 
 class Thread {
-#ifdef WIN32
+#ifdef _WIN32
 	HANDLE handle = nullptr;
 	DWORD id;
 #else
@@ -66,7 +66,7 @@ public:
 #endif
 
 	bool IsDefined() const {
-#ifdef WIN32
+#ifdef _WIN32
 		return handle != nullptr;
 #else
 		return defined;
@@ -78,7 +78,7 @@ public:
 	 */
 	gcc_pure
 	bool IsInside() const noexcept {
-#ifdef WIN32
+#ifdef _WIN32
 		return GetCurrentThreadId() == id;
 #else
 #ifdef NDEBUG
@@ -93,7 +93,7 @@ public:
 	void Join();
 
 private:
-#ifdef WIN32
+#ifdef _WIN32
 	static DWORD WINAPI ThreadProc(LPVOID ctx);
 #else
 	static void *ThreadProc(void *ctx);

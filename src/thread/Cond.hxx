@@ -30,7 +30,7 @@
 #ifndef THREAD_COND_HXX
 #define THREAD_COND_HXX
 
-#ifdef WIN32
+#ifdef _WIN32
 
 #include "WindowsCond.hxx"
 class Cond : public WindowsCond {};

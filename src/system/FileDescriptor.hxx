@@ -93,7 +93,7 @@ public:
 	bool Open(const char *pathname, int flags, mode_t mode=0666) noexcept;
 	bool OpenReadOnly(const char *pathname) noexcept;
 
-#ifndef WIN32
+#ifndef _WIN32
 	bool OpenNonBlocking(const char *pathname) noexcept;
 
 	static bool CreatePipe(FileDescriptor &r, FileDescriptor &w) noexcept;
@@ -169,7 +169,7 @@ public:
 		return ::write(fd, buffer, length);
 	}
 
-#ifndef WIN32
+#ifndef _WIN32
 	int Poll(short events, int timeout) const noexcept;
 
 	int WaitReadable(int timeout) const noexcept;

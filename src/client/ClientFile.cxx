@@ -28,7 +28,7 @@
 void
 Client::AllowFile(Path path_fs) const
 {
-#ifdef WIN32
+#ifdef _WIN32
 	(void)path_fs;
 
 	throw ProtocolError(ACK_ERROR_PERMISSION, "Access denied");

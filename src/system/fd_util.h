@@ -41,7 +41,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-#ifndef WIN32
+#ifndef _WIN32
 #include <sys/types.h>
 #endif
 

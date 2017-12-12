@@ -21,7 +21,7 @@
 #include "SignalHandlers.hxx"
 #include "event/SignalMonitor.hxx"
 
-#ifndef WIN32
+#ifndef _WIN32
 
 #include "Log.hxx"
 #include "LogInit.hxx"
@@ -61,7 +61,7 @@ SignalHandlersInit(EventLoop &loop)
 {
 	SignalMonitorInit(loop);
 
-#ifndef WIN32
+#ifndef _WIN32
 	struct sigaction sa;
 
 	sa.sa_flags = 0;

@@ -33,7 +33,7 @@ Thread::Start(void (*_f)(void *ctx), void *_ctx)
 	f = _f;
 	ctx = _ctx;
 
-#ifdef WIN32
+#ifdef _WIN32
 	handle = ::CreateThread(nullptr, 0, ThreadProc, this, 0, &id);
 	if (handle == nullptr)
 		throw MakeLastError("Failed to create thread");
@@ -66,7 +66,7 @@ Thread::Join()
 	assert(IsDefined());
 	assert(!IsInside());
 
-#ifdef WIN32
+#ifdef _WIN32
 	::WaitForSingleObject(handle, INFINITE);
 	::CloseHandle(handle);
 	handle = nullptr;
@@ -76,7 +76,7 @@ Thread::Join()
 #endif
 }
 
-#ifdef WIN32
+#ifdef _WIN32
 
 DWORD WINAPI
 Thread::ThreadProc(LPVOID ctx)

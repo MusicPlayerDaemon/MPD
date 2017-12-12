@@ -101,7 +101,7 @@ gcc_nonnull_all
 static inline wchar_t *
 UnsafeCopyStringP(wchar_t *dest, const wchar_t *src) noexcept
 {
-#if defined(WIN32) || defined(__BIONIC__) || defined(__OpenBSD__) || \
+#if defined(_WIN32) || defined(__BIONIC__) || defined(__OpenBSD__) || \
 	defined(__NetBSD__)
   /* emulate wcpcpy() */
   UnsafeCopyString(dest, src);

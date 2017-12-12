@@ -42,7 +42,7 @@ gcc_pure
 AllocatedPath
 GetUserCacheDir() noexcept;
 
-#ifdef WIN32
+#ifdef _WIN32
 
 /**
  * Obtains system configuration directory.

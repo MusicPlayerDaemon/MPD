@@ -22,7 +22,7 @@
 
 #include "Compiler.h"
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <windows.h>
 #else
 #include <pthread.h>
@@ -34,7 +34,7 @@
  * debugging code.
  */
 class ThreadId {
-#ifdef WIN32
+#ifdef _WIN32
 	DWORD id;
 #else
 	pthread_t id;
@@ -46,7 +46,7 @@ public:
 	 */
 	ThreadId() = default;
 
-#ifdef WIN32
+#ifdef _WIN32
 	constexpr ThreadId(DWORD _id):id(_id) {}
 #else
 	constexpr ThreadId(pthread_t _id):id(_id) {}
@@ -54,7 +54,7 @@ public:
 
 	gcc_const
 	static ThreadId Null() noexcept {
-#ifdef WIN32
+#ifdef _WIN32
 		return 0;
 #else
 		static ThreadId null;
@@ -72,7 +72,7 @@ public:
 	 */
 	gcc_pure
 	static const ThreadId GetCurrent() noexcept {
-#ifdef WIN32
+#ifdef _WIN32
 		return ::GetCurrentThreadId();
 #else
 		return pthread_self();
@@ -81,7 +81,7 @@ public:
 
 	gcc_pure
 	bool operator==(const ThreadId &other) const noexcept {
-#ifdef WIN32
+#ifdef _WIN32
 		return id == other.id;
 #else
 		return pthread_equal(id, other.id);

@@ -22,7 +22,7 @@
 
 #include "Compiler.h"
 
-#if defined(WIN32) && CLANG_OR_GCC_VERSION(4,7)
+#if defined(_WIN32) && CLANG_OR_GCC_VERSION(4,7)
 /* "INPUT" is declared by winuser.h */
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wshadow"
@@ -93,7 +93,7 @@ enum class ConfigBlockOption {
 	MAX
 };
 
-#if defined(WIN32) && CLANG_OR_GCC_VERSION(4,7)
+#if defined(_WIN32) && CLANG_OR_GCC_VERSION(4,7)
 #pragma GCC diagnostic pop
 #endif
 

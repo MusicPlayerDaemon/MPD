@@ -86,7 +86,7 @@ TagGetter(const void *object, const char *name) noexcept
 
 	if (strcmp(name, "iso8601") == 0) {
 		time_t t = time(nullptr);
-#ifdef WIN32
+#ifdef _WIN32
 		const struct tm *tm2 = gmtime(&t);
 #else
 		struct tm tm;
@@ -96,7 +96,7 @@ TagGetter(const void *object, const char *name) noexcept
 			return "";
 
 		strftime(ctx.buffer, sizeof(ctx.buffer),
-#ifdef WIN32
+#ifdef _WIN32
 			 /* kludge: use underscore instead of colon on
 			    Windows because colons are not allowed in
 			    file names, and this library is mostly

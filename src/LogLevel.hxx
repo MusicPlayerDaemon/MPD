@@ -20,7 +20,7 @@
 #ifndef MPD_LOG_LEVEL_HXX
 #define MPD_LOG_LEVEL_HXX
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <windows.h>
 /* damn you, windows.h! */
 #ifdef ERROR

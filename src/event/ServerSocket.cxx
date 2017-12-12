@@ -43,7 +43,7 @@
 #include <unistd.h>
 #include <assert.h>
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <ws2tcpip.h>
 #include <winsock.h>
 #else

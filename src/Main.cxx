@@ -106,7 +106,7 @@
 #include <locale.h>
 #endif
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #endif
@@ -289,7 +289,7 @@ glue_state_file_init()
  */
 static void winsock_init(void)
 {
-#ifdef WIN32
+#ifdef _WIN32
 	WSADATA sockinfo;
 
 	int retval = WSAStartup(MAKEWORD(2, 2), &sockinfo);
@@ -418,7 +418,7 @@ Instance::OnIdle(unsigned flags)
 
 int main(int argc, char *argv[])
 {
-#ifdef WIN32
+#ifdef _WIN32
 	return win32_main(argc, argv);
 #else
 	return mpd_main(argc, argv);
@@ -615,7 +615,7 @@ try {
 	   playlist_state_restore() */
 	instance->partition->pc.LockUpdateAudio();
 
-#ifdef WIN32
+#ifdef _WIN32
 	win32_app_started();
 #endif
 
@@ -630,7 +630,7 @@ try {
 	/* run the main loop */
 	instance->event_loop.Run();
 
-#ifdef WIN32
+#ifdef _WIN32
 	win32_app_stopping();
 #endif
 
@@ -702,7 +702,7 @@ try {
 	daemonize_finish();
 #endif
 
-#ifdef WIN32
+#ifdef _WIN32
 	WSACleanup();
 #endif
 

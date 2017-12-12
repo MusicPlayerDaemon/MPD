@@ -31,7 +31,7 @@
 
 #include <assert.h>
 
-#ifdef WIN32
+#ifdef _WIN32
 /* ERROR is a WIN32 macro that poisons our namespace; this is a kludge
    to allow us to use it anyway */
 #ifdef ERROR
@@ -39,7 +39,7 @@
 #endif
 #endif
 
-#ifndef WIN32
+#ifndef _WIN32
 struct pollfd;
 #endif
 
@@ -189,7 +189,7 @@ public:
 		}
 	}
 
-#ifndef WIN32
+#ifndef _WIN32
 	/**
 	 * Replace the socket list with the given file descriptors.
 	 * The given pollfd array will be modified by this method.

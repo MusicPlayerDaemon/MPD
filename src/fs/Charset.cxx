@@ -24,7 +24,7 @@
 #include "lib/icu/Converter.hxx"
 #include "util/AllocatedString.hxx"
 
-#ifdef WIN32
+#ifdef _WIN32
 #include "lib/icu/Win32.hxx"
 #include <windows.h>
 #endif
@@ -70,7 +70,7 @@ GetFSCharset() noexcept
 {
 #ifdef HAVE_FS_CHARSET
 	return fs_charset.empty() ? "UTF-8" : fs_charset.c_str();
-#elif defined(WIN32)
+#elif defined(_WIN32)
 	return "ACP";
 #else
 	return "UTF-8";
@@ -100,7 +100,7 @@ PathToUTF8(PathTraitsFS::const_pointer_type path_fs)
 	assert(path_fs != nullptr);
 #endif
 
-#ifdef WIN32
+#ifdef _WIN32
 	const auto buffer = WideCharToMultiByte(CP_UTF8, path_fs);
 	return FixSeparators(PathTraitsUTF8::string(buffer.c_str()));
 #else
@@ -116,7 +116,7 @@ PathToUTF8(PathTraitsFS::const_pointer_type path_fs)
 #endif
 }
 
-#if defined(HAVE_FS_CHARSET) || defined(WIN32)
+#if defined(HAVE_FS_CHARSET) || defined(_WIN32)
 
 PathTraitsFS::string
 PathFromUTF8(PathTraitsUTF8::const_pointer_type path_utf8)
@@ -126,7 +126,7 @@ PathFromUTF8(PathTraitsUTF8::const_pointer_type path_utf8)
 	assert(path_utf8 != nullptr);
 #endif
 
-#ifdef WIN32
+#ifdef _WIN32
 	const auto buffer = MultiByteToWideChar(CP_UTF8, path_utf8);
 	return PathTraitsFS::string(buffer.c_str());
 #else

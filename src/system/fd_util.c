@@ -34,7 +34,7 @@
 #include <fcntl.h>
 #include <errno.h>
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <ws2tcpip.h>
 #include <winsock2.h>
 #else
@@ -45,7 +45,7 @@
 #include <sys/eventfd.h>
 #endif
 
-#ifndef WIN32
+#ifndef _WIN32
 
 static int
 fd_mask_flags(int fd, int and_mask, int xor_mask)
@@ -63,12 +63,12 @@ fd_mask_flags(int fd, int and_mask, int xor_mask)
 	return fcntl(fd, F_SETFD, new_flags);
 }
 
-#endif /* !WIN32 */
+#endif /* !_WIN32 */
 
 int
 fd_set_cloexec(int fd, bool enable)
 {
-#ifndef WIN32
+#ifndef _WIN32
 	return fd_mask_flags(fd, ~FD_CLOEXEC, enable ? FD_CLOEXEC : 0);
 #else
 	(void)fd;
@@ -85,7 +85,7 @@ fd_set_cloexec(int fd, bool enable)
 static int
 fd_set_nonblock(int fd)
 {
-#ifdef WIN32
+#ifdef _WIN32
 	u_long val = 1;
 	return ioctlsocket(fd, FIONBIO, &val);
 #else
@@ -124,7 +124,7 @@ open_cloexec(const char *path_fs, int flags, int mode)
 int
 pipe_cloexec_nonblock(int fd[2])
 {
-#ifdef WIN32
+#ifdef _WIN32
 	return _pipe(fd, 512, _O_BINARY);
 #else
 	int ret;
@@ -199,7 +199,7 @@ accept_cloexec_nonblock(int fd, struct sockaddr *address,
 int
 close_socket(int fd)
 {
-#ifdef WIN32
+#ifdef _WIN32
 	return closesocket(fd);
 #else
 	return close(fd);

@@ -78,7 +78,7 @@ GetParentPathImpl(typename Traits::const_pointer_type p)
 		return typename Traits::string(Traits::CURRENT_DIRECTORY);
 	if (sep == p)
 		return typename Traits::string(p, p + 1);
-#ifdef WIN32
+#ifdef _WIN32
 	if (Traits::IsDrive(p) && sep == p + 2)
 		return typename Traits::string(p, p + 3);
 #endif
