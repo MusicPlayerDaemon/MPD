@@ -84,11 +84,15 @@ ffmpeg = FfmpegProject(
         '--disable-swscale',
         '--disable-postproc',
         '--disable-avfilter',
+        '--disable-lzo',
+        '--disable-faan',
+        '--disable-pixelutils',
         '--disable-network',
         '--disable-encoders',
         '--disable-protocols',
-        '--disable-outdevs',
+        '--disable-devices',
         '--disable-filters',
+        '--disable-v4l2_m2m',
     ],
 )
 
