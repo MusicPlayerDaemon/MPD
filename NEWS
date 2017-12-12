@@ -1,6 +1,8 @@
 ver 0.20.13 (not yet released)
 * output
   - osx: set up ring buffer to hold at least 100ms
+* mixer
+  - alsa: fix rounding errors
 * database
   - simple: don't purge mount points on update/rescan
   - simple: fix "mount" bug caused by bad compiler optimization
