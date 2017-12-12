@@ -22,7 +22,7 @@
 #include "EPollFD.hxx"
 #include "FatalError.hxx"
 
-#ifdef __BIONIC__
+#if defined(__BIONIC__) && __ANDROID_API__ < 21
 
 #include <sys/syscall.h>
 #include <fcntl.h>
