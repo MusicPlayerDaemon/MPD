@@ -36,7 +36,7 @@ class UpdateWalk final {
 	friend class UpdateArchiveVisitor;
 #endif
 
-#ifndef WIN32
+#ifndef _WIN32
 	static constexpr bool DEFAULT_FOLLOW_INSIDE_SYMLINKS = true;
 	static constexpr bool DEFAULT_FOLLOW_OUTSIDE_SYMLINKS = true;
 

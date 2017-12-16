@@ -43,7 +43,7 @@ FileOutputStream::FileOutputStream(Path _path, Mode _mode)
 	}
 }
 
-#ifdef WIN32
+#ifdef _WIN32
 
 inline void
 FileOutputStream::OpenCreate(gcc_unused bool visible)
@@ -223,7 +223,7 @@ FileOutputStream::Commit()
 #endif
 
 	if (!Close()) {
-#ifdef WIN32
+#ifdef _WIN32
 		throw FormatLastError("Failed to commit %s",
 				      path.ToUTF8().c_str());
 #else

@@ -67,7 +67,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#ifdef WIN32
+#ifdef _WIN32
 #define CONFIG_FILE_LOCATION PATH_LITERAL("mpd\\mpd.conf")
 #define APP_CONFIG_FILE_LOCATION PATH_LITERAL("conf\\mpd.conf")
 #else
@@ -389,7 +389,7 @@ ParseCommandLine(int argc, char **argv, struct options *options)
 	ConfigLoader loader;
 
 	bool found =
-#ifdef WIN32
+#ifdef _WIN32
 		loader.TryFile(GetUserConfigDir(), CONFIG_FILE_LOCATION) ||
 		loader.TryFile(GetSystemConfigDir(), CONFIG_FILE_LOCATION) ||
 		loader.TryFile(GetAppBaseDir(), APP_CONFIG_FILE_LOCATION);

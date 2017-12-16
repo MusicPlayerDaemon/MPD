@@ -20,7 +20,7 @@
 #ifndef MPD_UPNP_COMPAT_HXX
 #define MPD_UPNP_COMPAT_HXX
 
-#include <upnp/upnp.h>
+#include <upnp.h>
 
 #if UPNP_VERSION < 10800
 /* emulate the libupnp 1.8 API with older versions */

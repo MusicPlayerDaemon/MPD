@@ -24,7 +24,7 @@
 #include "util/BindMethod.hxx"
 #include "Compiler.h"
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <windows.h>
 #else
 #include <pthread.h>
@@ -36,7 +36,7 @@ class Thread {
 	typedef BoundMethod<void()> Function;
 	const Function f;
 
-#ifdef WIN32
+#ifdef _WIN32
 	HANDLE handle = nullptr;
 	DWORD id;
 #else
@@ -67,7 +67,7 @@ public:
 #endif
 
 	bool IsDefined() const noexcept {
-#ifdef WIN32
+#ifdef _WIN32
 		return handle != nullptr;
 #else
 		return defined;
@@ -79,7 +79,7 @@ public:
 	 */
 	gcc_pure
 	bool IsInside() const noexcept {
-#ifdef WIN32
+#ifdef _WIN32
 		return GetCurrentThreadId() == id;
 #else
 #ifdef NDEBUG
@@ -96,7 +96,7 @@ public:
 private:
 	void Run() noexcept;
 
-#ifdef WIN32
+#ifdef _WIN32
 	static DWORD WINAPI ThreadProc(LPVOID ctx) noexcept;
 #else
 	static void *ThreadProc(void *ctx) noexcept;

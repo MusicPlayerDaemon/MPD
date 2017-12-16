@@ -22,7 +22,7 @@
 
 #include "check.h"
 
-#include <upnp/upnp.h>
+#include <upnp.h>
 
 void
 UpnpClientGlobalInit(UpnpClient_Handle &handle);

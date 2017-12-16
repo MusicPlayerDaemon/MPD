@@ -25,7 +25,7 @@
 #include "util/StringPointer.hxx"
 #include "util/StringAPI.hxx"
 
-#ifdef WIN32
+#ifdef _WIN32
 #include "util/CharUtil.hxx"
 #include <tchar.h>
 #endif
@@ -34,7 +34,7 @@
 
 #include <assert.h>
 
-#ifdef WIN32
+#ifdef _WIN32
 #define PATH_LITERAL(s) _T(s)
 #else
 #define PATH_LITERAL(s) (s)
@@ -44,7 +44,7 @@
  * This class describes the nature of a native filesystem path.
  */
 struct PathTraitsFS {
-#ifdef WIN32
+#ifdef _WIN32
 	typedef std::wstring string;
 #else
 	typedef std::string string;
@@ -55,7 +55,7 @@ struct PathTraitsFS {
 	typedef Pointer::pointer_type pointer_type;
 	typedef Pointer::const_pointer_type const_pointer_type;
 
-#ifdef WIN32
+#ifdef _WIN32
 	static constexpr value_type SEPARATOR = '\\';
 #else
 	static constexpr value_type SEPARATOR = '/';
@@ -65,7 +65,7 @@ struct PathTraitsFS {
 
 	static constexpr bool IsSeparator(value_type ch) noexcept {
 		return
-#ifdef WIN32
+#ifdef _WIN32
 			ch == '/' ||
 #endif
 			ch == SEPARATOR;
@@ -78,7 +78,7 @@ struct PathTraitsFS {
 		assert(p != nullptr);
 #endif
 
-#ifdef WIN32
+#ifdef _WIN32
 		const_pointer_type pos = p + GetLength(p);
 		while (p != pos && !IsSeparator(*pos))
 			--pos;
@@ -88,7 +88,7 @@ struct PathTraitsFS {
 #endif
 	}
 
-#ifdef WIN32
+#ifdef _WIN32
 	gcc_pure gcc_nonnull_all
 	static constexpr bool IsDrive(const_pointer_type p) noexcept {
 		return IsAlphaASCII(p[0]) && p[1] == ':';
@@ -102,7 +102,7 @@ struct PathTraitsFS {
 		assert(p != nullptr);
 #endif
 
-#ifdef WIN32
+#ifdef _WIN32
 		if (IsDrive(p) && IsSeparator(p[2]))
 			return true;
 #endif
@@ -188,7 +188,7 @@ struct PathTraitsUTF8 {
 		return strrchr(p, SEPARATOR);
 	}
 
-#ifdef WIN32
+#ifdef _WIN32
 	gcc_pure gcc_nonnull_all
 	static constexpr bool IsDrive(const_pointer_type p) noexcept {
 		return IsAlphaASCII(p[0]) && p[1] == ':';
@@ -202,7 +202,7 @@ struct PathTraitsUTF8 {
 		assert(p != nullptr);
 #endif
 
-#ifdef WIN32
+#ifdef _WIN32
 		if (IsDrive(p) && IsSeparator(p[2]))
 			return true;
 #endif

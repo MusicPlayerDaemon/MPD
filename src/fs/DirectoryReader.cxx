@@ -21,7 +21,7 @@
 #include "DirectoryReader.hxx"
 #include "system/Error.hxx"
 
-#ifdef WIN32
+#ifdef _WIN32
 
 DirectoryReader::DirectoryReader(Path dir)
 	:handle(FindFirstFile(MakeWildcardPath(dir.c_str()), &data))

@@ -24,7 +24,7 @@
 #include "Path.hxx"
 #include "system/Error.hxx"
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <fileapi.h>
 #else
 #include <sys/stat.h>
@@ -34,7 +34,7 @@
 
 #include <stdint.h>
 
-#ifdef WIN32
+#ifdef _WIN32
 
 static inline constexpr uint64_t
 ConstructUint64(DWORD lo, DWORD hi)
@@ -63,7 +63,7 @@ class FileInfo {
 				bool follow_symlinks);
 	friend class FileReader;
 
-#ifdef WIN32
+#ifdef _WIN32
 	WIN32_FILE_ATTRIBUTE_DATA data;
 #else
 	struct stat st;
@@ -74,7 +74,7 @@ public:
 
 	FileInfo(Path path, bool follow_symlinks=true) {
 		if (!GetFileInfo(path, *this, follow_symlinks)) {
-#ifdef WIN32
+#ifdef _WIN32
 			throw FormatLastError("Failed to access %s",
 					      path.ToUTF8().c_str());
 #else
@@ -85,7 +85,7 @@ public:
 	}
 
 	bool IsRegular() const {
-#ifdef WIN32
+#ifdef _WIN32
 		return (data.dwFileAttributes &
 			(FILE_ATTRIBUTE_DIRECTORY|FILE_ATTRIBUTE_DEVICE)) == 0;
 #else
@@ -94,7 +94,7 @@ public:
 	}
 
 	bool IsDirectory() const {
-#ifdef WIN32
+#ifdef _WIN32
 		return data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY;
 #else
 		return S_ISDIR(st.st_mode);
@@ -102,7 +102,7 @@ public:
 	}
 
 	uint64_t GetSize() const {
-#ifdef WIN32
+#ifdef _WIN32
 		return ConstructUint64(data.nFileSizeLow, data.nFileSizeHigh);
 #else
 		return st.st_size;
@@ -110,14 +110,14 @@ public:
 	}
 
 	std::chrono::system_clock::time_point GetModificationTime() const {
-#ifdef WIN32
+#ifdef _WIN32
 		return FileTimeToChrono(data.ftLastWriteTime);
 #else
 		return std::chrono::system_clock::from_time_t(st.st_mtime);
 #endif
 	}
 
-#ifndef WIN32
+#ifndef _WIN32
 	uid_t GetUid() const {
 		return st.st_uid;
 	}
@@ -139,7 +139,7 @@ public:
 inline bool
 GetFileInfo(Path path, FileInfo &info, bool follow_symlinks=true)
 {
-#ifdef WIN32
+#ifdef _WIN32
 	(void)follow_symlinks;
 	return GetFileAttributesEx(path.c_str(), GetFileExInfoStandard,
 				   &info.data);

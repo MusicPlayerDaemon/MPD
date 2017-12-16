@@ -24,7 +24,7 @@
 
 #include <stdint.h>
 
-#if defined(WIN32) && GCC_CHECK_VERSION(4,6)
+#if defined(_WIN32) && GCC_CHECK_VERSION(4,6)
 /* on WIN32, "FLOAT" is already defined, and this triggers -Wshadow */
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wshadow"
@@ -57,7 +57,7 @@ enum class SampleFormat : uint8_t {
 	DSD,
 };
 
-#if defined(WIN32) && GCC_CHECK_VERSION(4,6)
+#if defined(_WIN32) && GCC_CHECK_VERSION(4,6)
 #pragma GCC diagnostic pop
 #endif
 

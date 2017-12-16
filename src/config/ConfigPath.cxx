@@ -29,7 +29,7 @@
 #include <assert.h>
 #include <string.h>
 
-#ifndef WIN32
+#ifndef _WIN32
 #include <pwd.h>
 
 /**
@@ -79,7 +79,7 @@ ParsePath(const char *path)
 {
 	assert(path != nullptr);
 
-#ifndef WIN32
+#ifndef _WIN32
 	if (path[0] == '~') {
 		++path;
 
@@ -119,7 +119,7 @@ ParsePath(const char *path)
 	} else {
 #endif
 		return AllocatedPath::FromUTF8Throw(path);
-#ifndef WIN32
+#ifndef _WIN32
 	}
 #endif
 }

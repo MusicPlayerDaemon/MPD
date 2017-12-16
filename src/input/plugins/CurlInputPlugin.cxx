@@ -230,7 +230,7 @@ CurlInputStream::OnHeaders(unsigned status,
 
 		if (i != headers.end()) {
 			size_t icy_metaint = ParseUint64(i->second.c_str());
-#ifndef WIN32
+#ifndef _WIN32
 			/* Windows doesn't know "%z" */
 			FormatDebug(curl_domain, "icy-metaint=%zu", icy_metaint);
 #endif
@@ -407,7 +407,7 @@ CurlInputStream::SeekInternal(offset_type new_offset)
 
 	if (offset > 0) {
 		char range[32];
-#ifdef WIN32
+#ifdef _WIN32
 		// TODO: what can we use on Windows to format 64 bit?
 		sprintf(range, "%lu-", (long)offset);
 #else

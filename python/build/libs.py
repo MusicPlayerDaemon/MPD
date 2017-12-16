@@ -69,8 +69,8 @@ liblame = AutotoolsProject(
 )
 
 ffmpeg = FfmpegProject(
-    'http://ffmpeg.org/releases/ffmpeg-3.3.3.tar.xz',
-    'd2a9002cdc6b533b59728827186c044ad02ba64841f1b7cd6c21779875453a1e',
+    'http://ffmpeg.org/releases/ffmpeg-3.4.1.tar.xz',
+    '5a77278a63741efa74e26bf197b9bb09ac6381b9757391b922407210f0f991c0',
     'lib/libavcodec.a',
     [
         '--disable-shared', '--enable-static',
@@ -84,17 +84,26 @@ ffmpeg = FfmpegProject(
         '--disable-swscale',
         '--disable-postproc',
         '--disable-avfilter',
+        '--disable-lzo',
+        '--disable-faan',
+        '--disable-pixelutils',
         '--disable-network',
         '--disable-encoders',
         '--disable-protocols',
-        '--disable-outdevs',
+        '--disable-devices',
         '--disable-filters',
+        '--disable-v4l2_m2m',
+
+        # clang misinterprets the "B0" in hevc_mvs.c as binary
+        # literal, which breaks the build; but we don't need that
+        # video codec anyway
+        '--disable-decoder=hevc',
     ],
 )
 
 curl = AutotoolsProject(
-    'http://curl.haxx.se/download/curl-7.55.1.tar.xz',
-    '3eafca6e84ecb4af5f35795dee84e643d5428287e88c041122bb8dac18676bb7',
+    'http://curl.haxx.se/download/curl-7.57.0.tar.xz',
+    'f5f6fd3c72b7b8389969f4fb671ed8532fa9b5bb7a5cae7ca89bc1cea45c7878',
     'lib/libcurl.a',
     [
         '--disable-shared', '--enable-static',
@@ -114,7 +123,7 @@ curl = AutotoolsProject(
 )
 
 boost = BoostProject(
-    'http://downloads.sourceforge.net/project/boost/boost/1.65.0/boost_1_65_0.tar.bz2',
-    'ea26712742e2fb079c2a566a31f3266973b76e38222b9f88b387e3c8b2f9902c',
+    'http://downloads.sourceforge.net/project/boost/boost/1.65.1/boost_1_65_1.tar.bz2',
+    '9807a5d16566c57fd74fb522764e0b134a8bbe6b6e8967b83afefd30dcd3be81',
     'include/boost/version.hpp',
 )

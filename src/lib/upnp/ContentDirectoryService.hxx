@@ -22,7 +22,7 @@
 
 #include "Compiler.h"
 
-#include <upnp/upnp.h>
+#include <upnp.h>
 
 #include <string>
 #include <list>

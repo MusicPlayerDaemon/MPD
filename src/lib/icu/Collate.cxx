@@ -32,7 +32,7 @@
 #include <ctype.h>
 #endif
 
-#ifdef WIN32
+#ifdef _WIN32
 #include "Win32.hxx"
 #include "util/AllocatedString.hxx"
 #include <windows.h>
@@ -103,7 +103,7 @@ IcuCollate(const char *a, const char *b) noexcept
 	}
 #endif
 
-#elif defined(WIN32)
+#elif defined(_WIN32)
 	AllocatedString<wchar_t> wa = nullptr, wb = nullptr;
 
 	try {

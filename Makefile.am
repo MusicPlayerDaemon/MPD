@@ -773,6 +773,7 @@ libneighbor_a_SOURCES = \
 	src/neighbor/NeighborPlugin.hxx
 
 libneighbor_a_CPPFLAGS = $(AM_CPPFLAGS) \
+	$(UPNP_CFLAGS) \
 	$(SMBCLIENT_CFLAGS)
 
 if ENABLE_SMBCLIENT
@@ -822,6 +823,8 @@ libdb_plugins_a_SOURCES = \
 	src/db/plugins/simple/PrefixedLightSong.hxx \
 	src/db/plugins/simple/SimpleDatabasePlugin.cxx \
 	src/db/plugins/simple/SimpleDatabasePlugin.hxx
+libdb_plugins_a_CPPFLAGS = $(AM_CPPFLAGS) \
+	$(UPNP_CFLAGS)
 
 if ENABLE_LIBMPDCLIENT
 libdb_plugins_a_SOURCES += \
@@ -2422,6 +2425,7 @@ EXTRA_DIST = $(doc_DATA) autogen.sh \
 	$(man_MANS) $(DOCBOOK_FILES) doc/mpdconf.example doc/doxygen.conf \
 	$(wildcard $(srcdir)/doc/include/*.xml) \
 	systemd/system/mpd.socket \
+	$(wildcard $(srcdir)/python/build/*.py) \
 	android/AndroidManifest.xml \
 	android/build.py \
 	android/custom_rules.xml \
@@ -2429,5 +2433,6 @@ EXTRA_DIST = $(doc_DATA) autogen.sh \
 	android/src/Bridge.java \
 	android/src/Loader.java \
 	android/src/Main.java \
+	win32/build.py \
 	win32/res/mpd.rc.in win32/res/mpd.ico \
 	src/haiku/App_MusicPD

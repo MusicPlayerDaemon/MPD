@@ -27,20 +27,20 @@
 #include <assert.h>
 #include <unistd.h>
 
-#ifdef WIN32
+#ifdef _WIN32
 #include "net/IPv4Address.hxx"
 #include "net/StaticSocketAddress.hxx"
 #include "net/UniqueSocketDescriptor.hxx"
 #include "net/SocketError.hxx"
 #endif
 
-#ifdef WIN32
+#ifdef _WIN32
 static void PoorSocketPair(int fd[2]);
 #endif
 
 EventPipe::EventPipe()
 {
-#ifdef WIN32
+#ifdef _WIN32
 	PoorSocketPair(fds);
 #else
 	FileDescriptor r, w;
@@ -54,7 +54,7 @@ EventPipe::EventPipe()
 
 EventPipe::~EventPipe()
 {
-#ifdef WIN32
+#ifdef _WIN32
 	closesocket(fds[0]);
 	closesocket(fds[1]);
 #else
@@ -70,7 +70,7 @@ EventPipe::Read()
 	assert(fds[1] >= 0);
 
 	char buffer[256];
-#ifdef WIN32
+#ifdef _WIN32
 	return recv(fds[0], buffer, sizeof(buffer), 0) > 0;
 #else
 	return read(fds[0], buffer, sizeof(buffer)) > 0;
@@ -83,14 +83,14 @@ EventPipe::Write()
 	assert(fds[0] >= 0);
 	assert(fds[1] >= 0);
 
-#ifdef WIN32
+#ifdef _WIN32
 	send(fds[1], "", 1, 0);
 #else
 	gcc_unused ssize_t nbytes = write(fds[1], "", 1);
 #endif
 }
 
-#ifdef WIN32
+#ifdef _WIN32
 
 /* Our poor man's socketpair() implementation
  * Due to limited protocol/address family support

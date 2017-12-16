@@ -30,7 +30,7 @@ Thread::Start()
 {
 	assert(!IsDefined());
 
-#ifdef WIN32
+#ifdef _WIN32
 	handle = ::CreateThread(nullptr, 0, ThreadProc, this, 0, &id);
 	if (handle == nullptr)
 		throw MakeLastError("Failed to create thread");
@@ -61,7 +61,7 @@ Thread::Join() noexcept
 	assert(IsDefined());
 	assert(!IsInside());
 
-#ifdef WIN32
+#ifdef _WIN32
 	::WaitForSingleObject(handle, INFINITE);
 	::CloseHandle(handle);
 	handle = nullptr;
@@ -74,7 +74,7 @@ Thread::Join() noexcept
 inline void
 Thread::Run() noexcept
 {
-#ifndef WIN32
+#ifndef _WIN32
 #ifndef NDEBUG
 	/* this works around a race condition that causes an assertion
 	   failure due to IsInside() spuriously returning false right
@@ -91,7 +91,7 @@ Thread::Run() noexcept
 #endif
 }
 
-#ifdef WIN32
+#ifdef _WIN32
 
 DWORD WINAPI
 Thread::ThreadProc(LPVOID ctx) noexcept

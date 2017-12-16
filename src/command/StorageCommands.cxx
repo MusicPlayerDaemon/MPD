@@ -50,7 +50,7 @@ skip_path(const char *name_utf8) noexcept
 	return strchr(name_utf8, '\n') != nullptr;
 }
 
-#if defined(WIN32) && GCC_CHECK_VERSION(4,6)
+#if defined(_WIN32) && GCC_CHECK_VERSION(4,6)
 /* PRIu64 causes bogus compiler warning */
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wformat"
@@ -94,7 +94,7 @@ handle_listfiles_storage(Response &r, StorageDirectoryReader &reader)
 	}
 }
 
-#if defined(WIN32) && GCC_CHECK_VERSION(4,6)
+#if defined(_WIN32) && GCC_CHECK_VERSION(4,6)
 #pragma GCC diagnostic pop
 #endif
 

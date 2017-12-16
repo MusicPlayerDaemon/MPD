@@ -47,7 +47,7 @@ FormatSystemError(std::error_code code, const char *fmt,
 	return std::system_error(code, buffer);
 }
 
-#ifdef WIN32
+#ifdef _WIN32
 
 #include <windows.h>
 
@@ -90,7 +90,7 @@ FormatLastError(const char *fmt, Args&&... args) noexcept
 			       std::forward<Args>(args)...);
 }
 
-#endif /* WIN32 */
+#endif /* _WIN32 */
 
 #include <errno.h>
 #include <string.h>
@@ -106,7 +106,7 @@ FormatLastError(const char *fmt, Args&&... args) noexcept
 static inline const std::error_category &
 ErrnoCategory() noexcept
 {
-#ifdef WIN32
+#ifdef _WIN32
 	/* on Windows, the generic_category() is used for errno
 	   values */
 	return std::generic_category();
@@ -151,7 +151,7 @@ gcc_pure
 static inline bool
 IsFileNotFound(const std::system_error &e) noexcept
 {
-#ifdef WIN32
+#ifdef _WIN32
 	return e.code().category() == std::system_category() &&
 		e.code().value() == ERROR_FILE_NOT_FOUND;
 #else
@@ -164,7 +164,7 @@ gcc_pure
 static inline bool
 IsPathNotFound(const std::system_error &e) noexcept
 {
-#ifdef WIN32
+#ifdef _WIN32
 	return e.code().category() == std::system_category() &&
 		e.code().value() == ERROR_PATH_NOT_FOUND;
 #else
@@ -177,7 +177,7 @@ gcc_pure
 static inline bool
 IsAccessDenied(const std::system_error &e) noexcept
 {
-#ifdef WIN32
+#ifdef _WIN32
 	return e.code().category() == std::system_category() &&
 		e.code().value() == ERROR_ACCESS_DENIED;
 #else

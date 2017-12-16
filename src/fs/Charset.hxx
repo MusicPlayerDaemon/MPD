@@ -24,7 +24,7 @@
 #include "Compiler.h"
 #include "Traits.hxx"
 
-#if (defined(HAVE_ICU) || defined(HAVE_ICONV)) && !defined(WIN32)
+#if (defined(HAVE_ICU) || defined(HAVE_ICONV)) && !defined(_WIN32)
 #define HAVE_FS_CHARSET
 #endif
 

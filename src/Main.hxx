@@ -42,7 +42,7 @@ int mpd_main(int argc, char *argv[]);
 
 #endif
 
-#ifdef WIN32
+#ifdef _WIN32
 
 /**
  * If program is run as windows service performs nessesary initialization

@@ -25,7 +25,7 @@
 #include "Path.hxx"
 #include "system/UniqueFileDescriptor.hxx"
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <fileapi.h>
 #endif
 
@@ -42,7 +42,7 @@ class AllocatedPath;
 static inline FILE *
 FOpen(Path file, PathTraitsFS::const_pointer_type mode)
 {
-#ifdef WIN32
+#ifdef _WIN32
 	return _tfopen(file.c_str(), mode);
 #else
 	return fopen(file.c_str(), mode);
@@ -68,7 +68,7 @@ OpenFile(Path file, int flags, int mode)
 void
 RenameFile(Path oldpath, Path newpath);
 
-#ifndef WIN32
+#ifndef _WIN32
 
 /**
  * Wrapper for stat() that uses #Path names.
@@ -104,7 +104,7 @@ RemoveFile(Path path);
 AllocatedPath
 ReadLink(Path path);
 
-#ifndef WIN32
+#ifndef _WIN32
 
 static inline bool
 MakeFifo(Path path, mode_t mode)
@@ -129,7 +129,7 @@ CheckAccess(Path path, int mode)
 static inline bool
 FileExists(Path path, bool follow_symlinks = true)
 {
-#ifdef WIN32
+#ifdef _WIN32
 	(void)follow_symlinks;
 
 	const auto a = GetFileAttributes(path.c_str());
@@ -147,7 +147,7 @@ FileExists(Path path, bool follow_symlinks = true)
 static inline bool
 DirectoryExists(Path path, bool follow_symlinks = true)
 {
-#ifdef WIN32
+#ifdef _WIN32
 	(void)follow_symlinks;
 
 	const auto a = GetFileAttributes(path.c_str());
@@ -164,7 +164,7 @@ DirectoryExists(Path path, bool follow_symlinks = true)
 static inline bool
 PathExists(Path path)
 {
-#ifdef WIN32
+#ifdef _WIN32
 	return GetFileAttributes(path.c_str()) != INVALID_FILE_ATTRIBUTES;
 #else
 	return CheckAccess(path, F_OK);

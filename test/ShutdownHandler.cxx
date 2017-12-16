@@ -20,7 +20,7 @@
 #include "config.h"
 #include "ShutdownHandler.hxx"
 
-#ifndef WIN32
+#ifndef _WIN32
 #include "event/SignalMonitor.hxx"
 #include "event/Loop.hxx"
 

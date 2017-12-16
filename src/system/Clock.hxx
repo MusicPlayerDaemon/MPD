@@ -22,7 +22,7 @@
 
 #include "Compiler.h"
 
-#ifdef WIN32
+#ifdef _WIN32
 
 /**
  * Returns the uptime of the current process in seconds.

@@ -22,7 +22,7 @@
 
 #include "Compiler.h"
 
-#include <upnp/upnptools.h>
+#include <upnptools.h>
 
 static inline constexpr unsigned
 CountNameValuePairs() noexcept

@@ -86,7 +86,7 @@ Stat(Path path, bool follow)
 
 	info.size = src.GetSize();
 	info.mtime = src.GetModificationTime();
-#ifdef WIN32
+#ifdef _WIN32
 	info.device = info.inode = 0;
 #else
 	info.device = src.GetDevice();

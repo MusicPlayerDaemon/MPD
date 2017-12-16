@@ -28,7 +28,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <windows.h>
 #else
 #include <errno.h>
@@ -61,7 +61,7 @@ FormatFatalError(const char *fmt, ...)
 	Abort();
 }
 
-#ifdef WIN32
+#ifdef _WIN32
 
 void
 FatalSystemError(const char *msg, DWORD code)
@@ -79,7 +79,7 @@ FatalSystemError(const char *msg, DWORD code)
 void
 FatalSystemError(const char *msg)
 {
-#ifdef WIN32
+#ifdef _WIN32
 	FatalSystemError(msg, GetLastError());
 #else
 	const char *system_error = strerror(errno);

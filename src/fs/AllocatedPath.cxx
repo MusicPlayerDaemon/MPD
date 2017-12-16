@@ -31,7 +31,7 @@ AllocatedPath::~AllocatedPath() {}
 AllocatedPath
 AllocatedPath::FromUTF8(const char *path_utf8) noexcept
 {
-#if defined(HAVE_FS_CHARSET) || defined(WIN32)
+#if defined(HAVE_FS_CHARSET) || defined(_WIN32)
 	try {
 		return AllocatedPath(::PathFromUTF8(path_utf8));
 	} catch (const std::runtime_error &) {
@@ -45,7 +45,7 @@ AllocatedPath::FromUTF8(const char *path_utf8) noexcept
 AllocatedPath
 AllocatedPath::FromUTF8Throw(const char *path_utf8)
 {
-#if defined(HAVE_FS_CHARSET) || defined(WIN32)
+#if defined(HAVE_FS_CHARSET) || defined(_WIN32)
 	return AllocatedPath(::PathFromUTF8(path_utf8));
 #else
 	return FromFS(path_utf8);

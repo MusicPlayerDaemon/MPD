@@ -41,7 +41,7 @@ try {
 		return;
 	}
 
-#ifndef WIN32
+#ifndef _WIN32
 	try {
 		const auto x = AllocatedPath::Build(path_fs,
 						    PathTraitsFS::CURRENT_DIRECTORY);

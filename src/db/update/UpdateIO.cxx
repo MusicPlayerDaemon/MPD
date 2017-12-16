@@ -91,7 +91,7 @@ bool
 directory_child_access(Storage &storage, const Directory &directory,
 		       const char *name, int mode) noexcept
 {
-#ifdef WIN32
+#ifdef _WIN32
 	/* CheckAccess() is useless on WIN32 */
 	(void)storage;
 	(void)directory;
