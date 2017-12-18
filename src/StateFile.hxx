@@ -45,7 +45,7 @@ class StateFile final {
 	 * file.  If nothing has changed, we won't let the hard drive spin up.
 	 */
 	unsigned prev_volume_version = 0, prev_output_version = 0,
-		prev_playlist_version = 0;
+		prev_playlist_version = 0, prev_storage_version = 0;
 
 public:
 	static constexpr std::chrono::steady_clock::duration DEFAULT_INTERVAL = std::chrono::minutes(2);
