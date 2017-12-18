@@ -34,7 +34,7 @@
 #include "Instance.hxx"
 #include "Log.hxx"
 
-#include <list>
+#include <set>
 #include <boost/crc.hpp>
 
 #define MOUNT_STATE_BEGIN        "mount_begin"
@@ -117,15 +117,13 @@ storage_state_restore(const char *line, TextFile &file, Instance &instance)
 unsigned
 storage_state_get_hash(const Instance &instance)
 {
-	std::list<std::string> mounts;
+	std::set<std::string> mounts;
 
 	const auto visitor = [&mounts](const char *mount_uri, const Storage &storage) {
-		mounts.push_back(std::string(mount_uri) + ":" + storage.MapUTF8(""));
+		mounts.emplace(std::string(mount_uri) + ":" + storage.MapUTF8(""));
 	};
 
 	((CompositeStorage*)instance.storage)->VisitMounts(visitor);
-
-	mounts.sort();
 
 	boost::crc_32_type result;
 
