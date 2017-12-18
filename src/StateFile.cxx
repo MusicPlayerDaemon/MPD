@@ -24,6 +24,7 @@
 #include "fs/io/TextFile.hxx"
 #include "fs/io/FileOutputStream.hxx"
 #include "fs/io/BufferedOutputStream.hxx"
+#include "storage/StorageState.hxx"
 #include "Partition.hxx"
 #include "Instance.hxx"
 #include "mixer/Volume.hxx"
@@ -56,6 +57,9 @@ StateFile::RememberVersions() noexcept
 	prev_output_version = audio_output_state_get_version();
 	prev_playlist_version = playlist_state_get_hash(partition.playlist,
 							partition.pc);
+#ifdef ENABLE_DATABASE
+	prev_storage_version = storage_state_get_hash(partition.instance);
+#endif
 }
 
 bool
@@ -64,7 +68,11 @@ StateFile::IsModified() const noexcept
 	return prev_volume_version != sw_volume_state_get_hash() ||
 		prev_output_version != audio_output_state_get_version() ||
 		prev_playlist_version != playlist_state_get_hash(partition.playlist,
-								 partition.pc);
+								 partition.pc)
+#ifdef ENABLE_DATABASE
+		|| prev_storage_version != storage_state_get_hash(partition.instance)
+#endif
+		;
 }
 
 inline void
@@ -72,6 +80,11 @@ StateFile::Write(BufferedOutputStream &os)
 {
 	save_sw_volume_state(os);
 	audio_output_state_save(os, partition.outputs);
+
+#ifdef ENABLE_DATABASE
+	storage_state_save(os, partition.instance);
+#endif
+
 	playlist_state_save(os, partition.playlist, partition.pc);
 }
 
@@ -123,6 +136,10 @@ try {
 			playlist_state_restore(line, file, song_loader,
 					       partition.playlist,
 					       partition.pc);
+#ifdef ENABLE_DATABASE
+		success = success || storage_state_restore(line, file, partition.instance);
+#endif
+
 		if (!success)
 			FormatError(state_file_domain,
 				    "Unrecognized line in state file: %s",

@@ -47,6 +47,10 @@ class StateFile final {
 	unsigned prev_volume_version = 0, prev_output_version = 0,
 		prev_playlist_version = 0;
 
+#ifdef ENABLE_DATABASE
+	unsigned prev_storage_version = 0;
+#endif
+
 public:
 	static constexpr std::chrono::steady_clock::duration DEFAULT_INTERVAL = std::chrono::minutes(2);
 

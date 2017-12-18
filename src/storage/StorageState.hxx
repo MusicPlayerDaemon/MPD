@@ -17,18 +17,30 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_DB_SIMPLE_MOUNT_HXX
-#define MPD_DB_SIMPLE_MOUNT_HXX
+/*
+ * Saving and loading the playlist to/from the state file.
+ *
+ */
 
-#include "db/Visitor.hxx"
+#ifndef MPD_STORAGE_STATE_HXX
+#define MPD_STORAGE_STATE_HXX
 
-class Database;
-class SongFilter;
+struct Instance;
+class BufferedOutputStream;
+class TextFile;
 
 void
-WalkMount(const char *base, const Database &db,
-	  const char* uri, bool recursive, const SongFilter *filter,
-	  const VisitDirectory &visit_directory, const VisitSong &visit_song,
-	  const VisitPlaylist &visit_playlist);
+storage_state_save(BufferedOutputStream &os, const Instance &instance);
+
+bool
+storage_state_restore(const char *line, TextFile &file, Instance &instance);
+
+/**
+ * Generates a hash number for the current state of the composite storage.
+ * This is used by timer_save_state_file() to determine whether the state
+ * has changed and the state file should be saved.
+ */
+unsigned
+storage_state_get_hash(const Instance &instance);
 
 #endif
