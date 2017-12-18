@@ -53,12 +53,12 @@ public:
 	}
 
 	/* virtual methods from class StorageDirectoryReader */
-	const char *Read() override;
+	const char *Read() noexcept override;
 	StorageFileInfo GetInfo(bool follow) override;
 };
 
 const char *
-CompositeDirectoryReader::Read()
+CompositeDirectoryReader::Read() noexcept
 {
 	if (other != nullptr) {
 		const char *name = other->Read();

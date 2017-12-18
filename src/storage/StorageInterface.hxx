@@ -32,9 +32,9 @@ class StorageDirectoryReader {
 public:
 	StorageDirectoryReader() = default;
 	StorageDirectoryReader(const StorageDirectoryReader &) = delete;
-	virtual ~StorageDirectoryReader() {}
+	virtual ~StorageDirectoryReader() noexcept {}
 
-	virtual const char *Read() = 0;
+	virtual const char *Read() noexcept = 0;
 
 	/**
 	 * Throws #std::runtime_error on error.
@@ -46,7 +46,7 @@ class Storage {
 public:
 	Storage() = default;
 	Storage(const Storage &) = delete;
-	virtual ~Storage() {}
+	virtual ~Storage() noexcept {}
 
 	/**
 	 * Throws #std::runtime_error on error.

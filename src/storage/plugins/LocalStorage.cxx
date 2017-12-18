@@ -41,7 +41,7 @@ public:
 		:base_fs(std::move(_base_fs)), reader(base_fs) {}
 
 	/* virtual methods from class StorageDirectoryReader */
-	const char *Read() override;
+	const char *Read() noexcept override;
 	StorageFileInfo GetInfo(bool follow) override;
 };
 
@@ -156,7 +156,7 @@ SkipNameFS(PathTraitsFS::const_pointer_type name_fs) noexcept
 }
 
 const char *
-LocalDirectoryReader::Read()
+LocalDirectoryReader::Read() noexcept
 {
 	while (reader.ReadEntry()) {
 		const Path name_fs = reader.GetEntry();

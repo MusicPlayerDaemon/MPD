@@ -60,7 +60,7 @@ public:
 		:entries(std::move(_entries)), first(true) {}
 
 	/* virtual methods from class StorageDirectoryReader */
-	const char *Read() override;
+	const char *Read() noexcept override;
 	StorageFileInfo GetInfo(bool follow) override;
 };
 

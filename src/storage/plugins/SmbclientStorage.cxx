@@ -45,7 +45,7 @@ public:
 	virtual ~SmbclientDirectoryReader();
 
 	/* virtual methods from class StorageDirectoryReader */
-	const char *Read() override;
+	const char *Read() noexcept override;
 	StorageFileInfo GetInfo(bool follow) override;
 };
 
@@ -158,7 +158,7 @@ SmbclientDirectoryReader::~SmbclientDirectoryReader()
 }
 
 const char *
-SmbclientDirectoryReader::Read()
+SmbclientDirectoryReader::Read() noexcept
 {
 	const std::lock_guard<Mutex> protect(smbclient_mutex);
 

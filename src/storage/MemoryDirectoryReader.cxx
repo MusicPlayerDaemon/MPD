@@ -23,7 +23,7 @@
 #include <assert.h>
 
 const char *
-MemoryStorageDirectoryReader::Read()
+MemoryStorageDirectoryReader::Read() noexcept
 {
 	if (first)
 		first = false;
