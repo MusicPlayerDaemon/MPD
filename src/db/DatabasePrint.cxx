@@ -220,13 +220,21 @@ db_selection_print(Response &r, Partition &partition,
 			db.Visit(selection, d, collect_songs, p);
 		}
 
-		std::stable_sort(songs.begin(), songs.end(),
-				 [sort, descending](const DetachedSong &a,
-						    const DetachedSong &b){
-					 return CompareTags(sort, descending,
-							    a.GetTag(),
-							    b.GetTag());
-				 });
+		if (sort == TagType(SORT_TAG_LAST_MODIFIED))
+			std::stable_sort(songs.begin(), songs.end(),
+					 [descending](const DetachedSong &a, const DetachedSong &b){
+						 return descending
+							 ? a.GetLastModified() > b.GetLastModified()
+							 : a.GetLastModified() < b.GetLastModified();
+					 });
+		else
+			std::stable_sort(songs.begin(), songs.end(),
+					 [sort, descending](const DetachedSong &a,
+							    const DetachedSong &b){
+						 return CompareTags(sort, descending,
+								    a.GetTag(),
+								    b.GetTag());
+					 });
 
 		if (window_end < songs.size())
 			songs.erase(std::next(songs.begin(), window_end),

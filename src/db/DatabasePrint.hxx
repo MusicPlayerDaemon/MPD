@@ -38,6 +38,10 @@ db_selection_print(Response &r, Partition &partition,
 		   const DatabaseSelection &selection,
 		   bool full, bool base);
 
+/**
+ * @param sort the sort tag; TAG_NUM_OF_ITEM_TYPES means don't sort;
+ * LOCATE_TAG_MODIFIED_SINCE means sort by file modification time
+ */
 void
 db_selection_print(Response &r, Partition &partition,
 		   const DatabaseSelection &selection,

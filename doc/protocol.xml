@@ -1702,7 +1702,8 @@ OK
               "ArtistSort", "AlbumSort" or "AlbumArtistSort" instead.
               These will automatically fall back to the former if
               "*Sort" doesn't exist.  "AlbumArtist" falls back to just
-              "Artist".
+              "Artist".  The type "Last-Modified" can sort by file
+              modification time.
             </para>
 
             <para>
