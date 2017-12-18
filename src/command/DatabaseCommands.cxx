@@ -68,8 +68,15 @@ handle_match(Client &client, Request args, Response &r, bool fold_case)
 		window.SetAll();
 
 	TagType sort = TAG_NUM_OF_ITEM_TYPES;
+	bool descending = false;
 	if (args.size >= 2 && StringIsEqual(args[args.size - 2], "sort")) {
-		sort = tag_name_parse_i(args.back());
+		const char *s = args.back();
+		if (*s == '-') {
+			descending = true;
+			++s;
+		}
+
+		sort = tag_name_parse_i(s);
 		if (sort == TAG_NUM_OF_ITEM_TYPES)
 			throw ProtocolError(ACK_ERROR_ARG, "Unknown sort tag");
 
@@ -87,7 +94,7 @@ handle_match(Client &client, Request args, Response &r, bool fold_case)
 
 	db_selection_print(r, client.GetPartition(),
 			   selection, true, false,
-			   sort,
+			   sort, descending,
 			   window.start, window.end);
 	return CommandResult::OK;
 }

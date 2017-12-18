@@ -1693,7 +1693,9 @@ OK
 
             <para>
               <varname>sort</varname> sorts the result by the
-              specified tag.  Without <varname>sort</varname>, the
+              specified tag.  The sort is descending if the tag is
+              prefixed with a minus ('-').
+              Without <varname>sort</varname>, the
               order is undefined.  Only the first tag value will be
               used, if multiple of the same type exist.  To sort by
               "Artist", "Album" or "AlbumArtist", you should specify

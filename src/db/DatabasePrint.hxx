@@ -42,7 +42,7 @@ void
 db_selection_print(Response &r, Partition &partition,
 		   const DatabaseSelection &selection,
 		   bool full, bool base,
-		   TagType sort,
+		   TagType sort, bool descending,
 		   unsigned window_start, unsigned window_end);
 
 void
