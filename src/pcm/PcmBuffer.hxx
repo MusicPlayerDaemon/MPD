@@ -47,11 +47,11 @@ public:
 	 * to signal "error".  An empty destination buffer is not
 	 * always an error.
 	 */
-	gcc_malloc
+	gcc_malloc gcc_returns_nonnull
 	void *Get(size_t size);
 
 	template<typename T>
-	gcc_malloc
+	gcc_malloc gcc_returns_nonnull
 	T *GetT(size_t n) {
 		return (T *)Get(n * sizeof(T));
 	}

@@ -84,7 +84,7 @@ public:
 	 * Get the buffer, and guarantee a minimum size.  This buffer
 	 * becomes invalid with the next Get() call.
 	 */
-	gcc_malloc
+	gcc_malloc gcc_returns_nonnull
 	T *Get(size_t size) {
 		if (gcc_unlikely(size > capacity)) {
 			/* too small: grow */

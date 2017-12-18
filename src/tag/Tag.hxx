@@ -116,7 +116,7 @@ struct Tag {
 	 *
 	 * @return a newly allocated tag
 	 */
-	gcc_malloc
+	gcc_malloc gcc_returns_nonnull
 	static Tag *Merge(const Tag &base, const Tag &add);
 
 	/**
@@ -125,7 +125,7 @@ struct Tag {
 	 *
 	 * @return a newly allocated tag
 	 */
-	gcc_malloc
+	gcc_malloc gcc_returns_nonnull
 	static Tag *MergeReplace(Tag *base, Tag *add);
 
 	/**
@@ -148,7 +148,7 @@ struct Tag {
 	 * (e.g. #TAG_ALBUM_ARTIST falls back to #TAG_ARTIST).  If
 	 * there is no such value, returns an empty string.
 	 */
-	gcc_pure
+	gcc_pure gcc_returns_nonnull
 	const char *GetSortValue(TagType type) const noexcept;
 
 	class const_iterator {

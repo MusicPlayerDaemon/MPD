@@ -95,11 +95,11 @@ struct Song {
 	Song(const char *_uri, size_t uri_length, Directory &parent);
 	~Song();
 
-	gcc_malloc
+	gcc_malloc gcc_returns_nonnull
 	static Song *NewFrom(DetachedSong &&other, Directory &parent);
 
 	/** allocate a new song with a local file name */
-	gcc_malloc
+	gcc_malloc gcc_returns_nonnull
 	static Song *NewFile(const char *path_utf8, Directory &parent);
 
 	/**

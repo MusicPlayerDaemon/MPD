@@ -106,7 +106,7 @@ public:
 	/**
 	 * Create a new root #Directory object.
 	 */
-	gcc_malloc
+	gcc_malloc gcc_returns_nonnull
 	static Directory *NewRoot() {
 		return new Directory(std::string(), nullptr);
 	}

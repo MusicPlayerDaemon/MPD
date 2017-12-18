@@ -30,7 +30,7 @@
  * This function never fails; in out-of-memory situations, it aborts
  * the process.
  */
-gcc_malloc
+gcc_malloc gcc_returns_nonnull
 void *
 xalloc(size_t size);
 
@@ -40,7 +40,7 @@ xalloc(size_t size);
  * This function never fails; in out-of-memory situations, it aborts
  * the process.
  */
-gcc_malloc gcc_nonnull_all
+gcc_malloc gcc_returns_nonnull gcc_nonnull_all
 void *
 xmemdup(const void *s, size_t size);
 
@@ -50,7 +50,7 @@ xmemdup(const void *s, size_t size);
  * This function never fails; in out-of-memory situations, it aborts
  * the process.
  */
-gcc_malloc gcc_nonnull_all
+gcc_malloc gcc_returns_nonnull gcc_nonnull_all
 char *
 xstrdup(const char *s);
 
@@ -60,7 +60,7 @@ xstrdup(const char *s);
  * This function never fails; in out-of-memory situations, it aborts
  * the process.
  */
-gcc_malloc gcc_nonnull_all
+gcc_malloc gcc_returns_nonnull gcc_nonnull_all
 char *
 xstrndup(const char *s, size_t n);
 
@@ -71,15 +71,15 @@ xstrndup(const char *s, size_t n);
  * This function never fails; in out-of-memory situations, it aborts
  * the process.
  */
-gcc_malloc gcc_nonnull_all
+gcc_malloc gcc_returns_nonnull gcc_nonnull_all
 char *
 xstrcatdup(const char *a, const char *b);
 
-gcc_malloc gcc_nonnull_all
+gcc_malloc gcc_returns_nonnull gcc_nonnull_all
 char *
 xstrcatdup(const char *a, const char *b, const char *c);
 
-gcc_malloc gcc_nonnull_all
+gcc_malloc gcc_returns_nonnull gcc_nonnull_all
 char *
 xstrcatdup(const char *a, const char *b, const char *c, const char *d);
 
