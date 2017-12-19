@@ -69,7 +69,7 @@ class AlsaOutput final
 	 *
 	 * @see http://dsd-guide.com/dop-open-standard
 	 */
-	const bool dop_setting;
+	bool dop_setting;
 #endif
 
 	/** libasound's buffer_time setting (in microseconds) */
@@ -82,6 +82,11 @@ class AlsaOutput final
 	int mode = 0;
 
 	std::forward_list<Alsa::AllowedFormat> allowed_formats;
+
+	/**
+	 * Protects #dop_setting and #allowed_formats.
+	 */
+	mutable Mutex attributes_mutex;
 
 	/** the libasound PCM device handle */
 	snd_pcm_t *pcm;
@@ -186,6 +191,9 @@ public:
 	}
 
 private:
+	const std::map<std::string, std::string> GetAttributes() const noexcept override;
+	void SetAttribute(std::string &&name, std::string &&value) override;
+
 	void Enable() override;
 	void Disable() noexcept override;
 
@@ -346,6 +354,40 @@ AlsaOutput::AlsaOutput(EventLoop &_loop, const ConfigBlock &block)
 		block.GetBlockValue("allowed_formats", nullptr);
 	if (allowed_formats_string != nullptr)
 		allowed_formats = Alsa::AllowedFormat::ParseList(allowed_formats_string);
+}
+
+const std::map<std::string, std::string>
+AlsaOutput::GetAttributes() const noexcept
+{
+	const std::lock_guard<Mutex> lock(attributes_mutex);
+
+	return {
+		std::make_pair("allowed_formats",
+			       Alsa::ToString(allowed_formats)),
+#ifdef ENABLE_DSD
+		std::make_pair("dop", dop_setting ? "1" : "0"),
+#endif
+	};
+}
+
+void
+AlsaOutput::SetAttribute(std::string &&name, std::string &&value)
+{
+	if (name == "allowed_formats") {
+		const std::lock_guard<Mutex> lock(attributes_mutex);
+		allowed_formats = Alsa::AllowedFormat::ParseList({value.data(), value.length()});
+#ifdef ENABLE_DSD
+	} else if (name == "dop") {
+		const std::lock_guard<Mutex> lock(attributes_mutex);
+		if (value == "0")
+			dop_setting = false;
+		else if (value == "1")
+			dop_setting = true;
+		else
+			throw std::invalid_argument("Bad 'dop' value");
+#endif
+	} else
+		AudioOutput::SetAttribute(std::move(name), std::move(value));
 }
 
 void
@@ -548,15 +590,23 @@ void
 AlsaOutput::Open(AudioFormat &audio_format)
 {
 #ifdef ENABLE_DSD
-	bool dop = dop_setting;
+	bool dop;
 #endif
 
-	if (!allowed_formats.empty()) {
-		const auto &a = BestMatch(allowed_formats, audio_format);
-		audio_format.ApplyMask(a.format);
+	{
+		const std::lock_guard<Mutex> lock(attributes_mutex);
 #ifdef ENABLE_DSD
-		dop = a.dop;
+		dop = dop_setting;
 #endif
+
+		if (!allowed_formats.empty()) {
+			const auto &a = BestMatch(allowed_formats,
+						  audio_format);
+			audio_format.ApplyMask(a.format);
+#ifdef ENABLE_DSD
+			dop = a.dop;
+#endif
+		}
 	}
 
 	int err = snd_pcm_open(&pcm, GetDevice(),

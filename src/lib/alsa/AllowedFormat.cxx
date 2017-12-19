@@ -21,6 +21,7 @@
 #include "AllowedFormat.hxx"
 #include "AudioParser.hxx"
 #include "util/IterableSplitString.hxx"
+#include "util/StringBuffer.hxx"
 
 #include <stdexcept>
 
@@ -63,6 +64,26 @@ AllowedFormat::ParseList(StringView s)
 			tail = list.emplace_after(tail, i);
 
 	return list;
+}
+
+std::string
+ToString(const std::forward_list<AllowedFormat> &allowed_formats) noexcept
+{
+	std::string result;
+
+	for (const auto &i : allowed_formats) {
+		if (!result.empty())
+			result.push_back(' ');
+
+		result += ::ToString(i.format);
+
+#ifdef ENABLE_DSD
+		if (i.dop)
+			result += "=dop";
+#endif
+	}
+
+	return result;
 }
 
 } // namespace Alsa

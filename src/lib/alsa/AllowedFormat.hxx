@@ -24,6 +24,7 @@
 #include "AudioFormat.hxx"
 
 #include <forward_list>
+#include <string>
 
 struct StringView;
 
@@ -53,6 +54,9 @@ struct AllowedFormat {
 	 */
 	static std::forward_list<AllowedFormat> ParseList(StringView s);
 };
+
+std::string
+ToString(const std::forward_list<AllowedFormat> &allowed_formats) noexcept;
 
 } // namespace Alsa
 

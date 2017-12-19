@@ -3539,6 +3539,52 @@ run</programlisting>
             </tbody>
           </tgroup>
         </informaltable>
+
+        <para>
+          The following attributes can be configured at runtime using
+          the <command>outputset</command> command:
+        </para>
+
+        <informaltable>
+          <tgroup cols="2">
+            <thead>
+              <row>
+                <entry>Setting</entry>
+                <entry>Description</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>
+                  <varname>dop</varname>
+                  <parameter>1|0</parameter>
+                </entry>
+                <entry>
+                  <para>
+                    Allows changing the <varname>dop</varname>
+                    configuration setting at runtime.  This takes
+                    effect the next time the output is opened.
+                  </para>
+                </entry>
+              </row>
+
+              <row>
+                <entry>
+                  <varname>allowed_formats</varname>
+                  <parameter>F1 F2 ...</parameter>
+                </entry>
+                <entry>
+                  <para>
+                    Allows changing the
+                    <varname>allowed_formats</varname> configuration
+                    setting at runtime.  This takes effect the next
+                    time the output is opened.
+                  </para>
+                </entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
       </section>
 
       <section>
