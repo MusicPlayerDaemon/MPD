@@ -27,7 +27,6 @@
 #include <id3tag.h>
 
 #include <algorithm>
-#include <stdexcept>
 
 static constexpr size_t ID3V1_SIZE = 128;
 
@@ -46,7 +45,7 @@ try {
 	is.ReadFull(buf, sizeof(buf));
 
 	return id3_tag_query(buf, sizeof(buf));
-} catch (const std::runtime_error &) {
+} catch (...) {
 	return 0;
 }
 
@@ -77,7 +76,7 @@ try {
 	is.ReadFull(end, remaining);
 
 	return UniqueId3Tag(id3_tag_parse(tag_buffer.get(), tag_size));
-} catch (const std::runtime_error &) {
+} catch (...) {
 	return nullptr;
 }
 
@@ -87,7 +86,7 @@ try {
 	is.Seek(offset);
 
 	return ReadId3Tag(is);
-} catch (const std::runtime_error &) {
+} catch (...) {
 	return nullptr;
 }
 
@@ -98,7 +97,7 @@ try {
 	is.ReadFull(buffer, ID3V1_SIZE);
 
 	return UniqueId3Tag(id3_tag_parse(buffer, ID3V1_SIZE));
-} catch (const std::runtime_error &) {
+} catch (...) {
 	return nullptr;
 }
 
@@ -107,7 +106,7 @@ ReadId3v1Tag(InputStream &is, offset_type offset)
 try {
 	is.Seek(offset);
 	return ReadId3v1Tag(is);
-} catch (const std::runtime_error &) {
+} catch (...) {
 	return nullptr;
 }
 
@@ -140,7 +139,7 @@ try {
 	}
 
 	return tag;
-} catch (const std::runtime_error &) {
+} catch (...) {
 	return nullptr;
 }
 
@@ -181,7 +180,7 @@ try {
 
 	/* We have an id3v2 tag, so ditch v1tag */
 	return tag;
-} catch (const std::runtime_error &) {
+} catch (...) {
 	return nullptr;
 }
 
@@ -191,7 +190,7 @@ try {
 	size_t size;
 	try {
 		size = riff_seek_id3(is);
-	} catch (const std::runtime_error &) {
+	} catch (...) {
 		size = aiff_seek_id3(is);
 	}
 
@@ -203,7 +202,7 @@ try {
 	is.ReadFull(buffer.get(), size);
 
 	return UniqueId3Tag(id3_tag_parse(buffer.get(), size));
-} catch (const std::runtime_error &) {
+} catch (...) {
 	return nullptr;
 }
 
@@ -220,6 +219,6 @@ try {
 	}
 
 	return tag;
-} catch (const std::runtime_error &) {
+} catch (...) {
 	return nullptr;
 }

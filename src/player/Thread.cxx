@@ -37,7 +37,7 @@
 #include "thread/Name.hxx"
 #include "Log.hxx"
 
-#include <stdexcept>
+#include <exception>
 
 #include <string.h>
 
@@ -462,8 +462,8 @@ Player::OpenOutput()
 	try {
 		const ScopeUnlock unlock(pc.mutex);
 		pc.outputs.Open(play_audio_format, buffer);
-	} catch (const std::runtime_error &e) {
-		LogError(e);
+	} catch (...) {
+		LogError(std::current_exception());
 
 		output_open = false;
 
@@ -564,8 +564,8 @@ Player::SendSilence()
 
 	try {
 		pc.outputs.Play(chunk);
-	} catch (const std::runtime_error &e) {
-		LogError(e);
+	} catch (...) {
+		LogError(std::current_exception());
 		buffer.Return(chunk);
 		return false;
 	}
@@ -896,8 +896,8 @@ Player::PlayNextChunk()
 
 	try {
 		play_chunk(pc, *song, chunk, buffer, play_audio_format);
-	} catch (const std::runtime_error &e) {
-		LogError(e);
+	} catch (...) {
+		LogError(std::current_exception());
 
 		buffer.Return(chunk);
 

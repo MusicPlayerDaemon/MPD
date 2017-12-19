@@ -338,8 +338,8 @@ UpdateWalk::UpdateDirectory(Directory &directory,
 
 	try {
 		reader.reset(storage.OpenDirectory(directory.GetPath()));
-	} catch (const std::runtime_error &e) {
-		LogError(e);
+	} catch (...) {
+		LogError(std::current_exception());
 		return false;
 	}
 

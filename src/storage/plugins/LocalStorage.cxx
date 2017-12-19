@@ -123,7 +123,7 @@ LocalStorage::MapFS(const char *uri_utf8) const noexcept
 {
 	try {
 		return MapFSOrThrow(uri_utf8);
-	} catch (const std::runtime_error &) {
+	} catch (...) {
 		return AllocatedPath::Null();
 	}
 }

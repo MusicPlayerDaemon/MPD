@@ -29,6 +29,8 @@
 #include "util/StringCompare.hxx"
 #include "Log.hxx"
 
+#include <exception>
+
 #include <stdlib.h>
 
 #define PRIO_LABEL "Prio: "
@@ -96,8 +98,8 @@ queue_load_song(TextFile &file, const SongLoader &loader,
 
 		try {
 			song = song_load(file, uri);
-		} catch (const std::runtime_error &e) {
-			LogError(e);
+		} catch (...) {
+			LogError(std::current_exception());
 			return;
 		}
 	} else {

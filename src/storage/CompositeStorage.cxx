@@ -299,7 +299,7 @@ CompositeStorage::OpenDirectory(const char *uri)
 
 	try {
 		other = f.directory->storage->OpenDirectory(f.uri);
-	} catch (const std::runtime_error &) {
+	} catch (...) {
 	}
 
 	return new CompositeDirectoryReader(other, directory->children);

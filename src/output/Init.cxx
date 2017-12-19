@@ -186,11 +186,11 @@ FilteredAudioOutput::Configure(const ConfigBlock &block)
 	try {
 		filter_chain_parse(*prepared_filter,
 				   block.GetBlockValue(AUDIO_FILTERS, ""));
-	} catch (const std::runtime_error &e) {
+	} catch (...) {
 		/* It's not really fatal - Part of the filter chain
 		   has been set up already and even an empty one will
 		   work (if only with unexpected behaviour) */
-		FormatError(e,
+		FormatError(std::current_exception(),
 			    "Failed to initialize filter chain for '%s'",
 			    name);
 	}
@@ -232,8 +232,8 @@ FilteredAudioOutput::Setup(EventLoop &event_loop,
 						mixer_plugin,
 						*prepared_filter,
 						mixer_listener);
-	} catch (const std::runtime_error &e) {
-		FormatError(e,
+	} catch (...) {
+		FormatError(std::current_exception(),
 			    "Failed to initialize hardware mixer for '%s'",
 			    name);
 	}

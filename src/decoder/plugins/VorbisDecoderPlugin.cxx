@@ -129,7 +129,7 @@ VorbisDecoder::Seek(uint64_t where_frame)
 		SeekGranulePos(where_granulepos);
 		vorbis_synthesis_restart(&dsp);
 		return true;
-	} catch (const std::runtime_error &) {
+	} catch (...) {
 		return false;
 	}
 }
@@ -323,7 +323,7 @@ vorbis_stream_decode(DecoderClient &client,
 	   moved it */
 	try {
 		input_stream.LockRewind();
-	} catch (const std::runtime_error &) {
+	} catch (...) {
 	}
 
 	DecoderReader reader(client, input_stream);

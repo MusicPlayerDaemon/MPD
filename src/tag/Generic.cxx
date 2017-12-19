@@ -28,7 +28,7 @@
 #include "input/LocalOpen.hxx"
 #include "Log.hxx"
 
-#include <stdexcept>
+#include <exception>
 
 bool
 ScanGenericTags(InputStream &is, const TagHandler &handler, void *ctx)
@@ -39,7 +39,7 @@ ScanGenericTags(InputStream &is, const TagHandler &handler, void *ctx)
 #ifdef ENABLE_ID3TAG
 	try {
 		is.LockRewind();
-	} catch (const std::runtime_error &) {
+	} catch (...) {
 		return false;
 	}
 
@@ -57,7 +57,7 @@ try {
 
 	auto is = OpenLocalInputStream(path, mutex, cond);
 	return ScanGenericTags(*is, handler, ctx);
-} catch (const std::runtime_error &e) {
-	LogError(e);
+} catch (...) {
+	LogError(std::current_exception());
 	return false;
 }

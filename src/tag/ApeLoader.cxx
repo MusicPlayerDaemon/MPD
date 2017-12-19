@@ -24,7 +24,6 @@
 #include "util/StringView.hxx"
 
 #include <memory>
-#include <stdexcept>
 
 #include <stdint.h>
 #include <assert.h>
@@ -104,6 +103,6 @@ try {
 	}
 
 	return true;
-} catch (const std::runtime_error &) {
-		return false;
+} catch (...) {
+	return false;
 }

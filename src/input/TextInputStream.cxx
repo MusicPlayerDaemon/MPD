@@ -63,8 +63,8 @@ TextInputStream::ReadLine()
 
 		try {
 			nbytes = is->LockRead(dest.data, dest.size);
-		} catch (const std::runtime_error &e) {
-			LogError(e);
+		} catch (...) {
+			LogError(std::current_exception());
 			return nullptr;
 		}
 

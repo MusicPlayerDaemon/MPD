@@ -32,7 +32,7 @@
 #endif
 #endif
 
-#include <stdexcept>
+#include <exception>
 
 Instance::Instance()
 	:idle_monitor(event_loop, BIND_THIS_METHOD(OnIdle))
@@ -84,7 +84,7 @@ Instance::OnDatabaseSongRemoved(const char *uri)
 	if (sticker_enabled()) {
 		try {
 			sticker_song_delete(uri);
-		} catch (const std::runtime_error &) {
+		} catch (...) {
 		}
 	}
 #endif

@@ -205,8 +205,9 @@ AudioOutputControl::Open(const AudioFormat audio_format,
 	if (open2 && output->mixer != nullptr) {
 		try {
 			mixer_open(output->mixer);
-		} catch (const std::runtime_error &e) {
-			FormatError(e, "Failed to open mixer for '%s'",
+		} catch (...) {
+			FormatError(std::current_exception(),
+				    "Failed to open mixer for '%s'",
 				    GetName());
 		}
 	}

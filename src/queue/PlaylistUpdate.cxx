@@ -23,8 +23,6 @@
 #include "db/LightSong.hxx"
 #include "DetachedSong.hxx"
 
-#include <stdexcept>
-
 static bool
 UpdatePlaylistSong(const Database &db, DetachedSong &song)
 {
@@ -36,7 +34,7 @@ UpdatePlaylistSong(const Database &db, DetachedSong &song)
 	const LightSong *original;
 	try {
 		original = db.GetSong(song.GetURI());
-	} catch (const std::runtime_error &e) {
+	} catch (...) {
 		/* not found - shouldn't happen, because the update
 		   thread should ensure that all stale Song instances
 		   have been purged */

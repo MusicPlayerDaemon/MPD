@@ -416,7 +416,7 @@ try {
 	assert(nbytes > 0 || is.IsEOF());
 
 	return nbytes;
-} catch (const std::runtime_error &e) {
+} catch (...) {
 	error = std::current_exception();
 	return 0;
 }
@@ -471,7 +471,7 @@ DecoderBridge::SubmitData(InputStream *is,
 			auto result = convert->Convert({data, length});
 			data = result.data;
 			length = result.size;
-		} catch (const std::runtime_error &e) {
+		} catch (...) {
 			/* the PCM conversion has failed - stop
 			   playback, since we have no better way to
 			   bail out */

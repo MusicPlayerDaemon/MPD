@@ -72,7 +72,7 @@ AudioOutputControl::InternalOpen2(const AudioFormat in_audio_format)
 
 		try {
 			output->ConfigureConvertFilter();
-		} catch (const std::runtime_error &e) {
+		} catch (...) {
 			open = false;
 
 			{
@@ -107,8 +107,8 @@ AudioOutputControl::InternalEnable() noexcept
 
 		really_enabled = true;
 		return true;
-	} catch (const std::runtime_error &e) {
-		LogError(e);
+	} catch (...) {
+		LogError(std::current_exception());
 		fail_timer.Update();
 		last_error = std::current_exception();
 		return false;
@@ -149,7 +149,7 @@ AudioOutputControl::InternalOpen(const AudioFormat in_audio_format,
 					output->prepared_replay_gain_filter,
 					output->prepared_other_replay_gain_filter,
 					output->prepared_filter);
-		} catch (const std::runtime_error &e) {
+		} catch (...) {
 			std::throw_with_nested(FormatRuntimeError("Failed to open filter for %s",
 								  GetLogName()));
 		}
@@ -160,8 +160,8 @@ AudioOutputControl::InternalOpen(const AudioFormat in_audio_format,
 			source.Close();
 			throw;
 		}
-	} catch (const std::runtime_error &e) {
-		LogError(e);
+	} catch (...) {
+		LogError(std::current_exception());
 		fail_timer.Update();
 		last_error = std::current_exception();
 	}
@@ -231,8 +231,9 @@ bool
 AudioOutputControl::FillSourceOrClose()
 try {
 	return source.Fill(mutex);
-} catch (const std::runtime_error &e) {
-	FormatError(e, "Failed to filter for %s", GetLogName());
+} catch (...) {
+	FormatError(std::current_exception(),
+		    "Failed to filter for %s", GetLogName());
 
 	InternalClose(false);
 
@@ -251,8 +252,9 @@ AudioOutputControl::PlayChunk() noexcept
 		const ScopeUnlock unlock(mutex);
 		try {
 			output->SendTag(*tag);
-		} catch (const std::runtime_error &e) {
-			FormatError(e, "Failed to send tag to %s",
+		} catch (...) {
+			FormatError(std::current_exception(),
+				    "Failed to send tag to %s",
 				    GetLogName());
 		}
 	}
@@ -273,8 +275,9 @@ AudioOutputControl::PlayChunk() noexcept
 			const ScopeUnlock unlock(mutex);
 			nbytes = output->Play(data.data, data.size);
 			assert(nbytes <= data.size);
-		} catch (const std::runtime_error &e) {
-			FormatError(e, "Failed to play on %s", GetLogName());
+		} catch (...) {
+			FormatError(std::current_exception(),
+				    "Failed to play on %s", GetLogName());
 			nbytes = 0;
 		}
 
@@ -382,8 +385,8 @@ AudioOutputControl::Task()
 
 	try {
 		SetThreadRealtime();
-	} catch (const std::runtime_error &e) {
-		LogError(e,
+	} catch (...) {
+		LogError(std::current_exception(),
 			 "OutputThread could not get realtime scheduling, continuing anyway");
 	}
 

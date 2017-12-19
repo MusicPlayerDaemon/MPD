@@ -32,7 +32,7 @@
 #include "fs/io/BufferedOutputStream.hxx"
 #include "util/UriUtil.hxx"
 
-#include <stdexcept>
+#include <exception>
 
 static void
 playlist_print_path(BufferedOutputStream &os, const Path path)
@@ -57,7 +57,7 @@ playlist_print_song(BufferedOutputStream &os, const DetachedSong &song)
 	try {
 		const auto uri_fs = AllocatedPath::FromUTF8Throw(uri_utf8);
 		playlist_print_path(os, uri_fs);
-	} catch (const std::runtime_error &) {
+	} catch (...) {
 	}
 }
 
@@ -76,7 +76,7 @@ playlist_print_uri(BufferedOutputStream &os, const char *uri)
 
 		if (!path.IsNull())
 			playlist_print_path(os, path);
-	} catch (const std::runtime_error &) {
+	} catch (...) {
 	}
 }
 

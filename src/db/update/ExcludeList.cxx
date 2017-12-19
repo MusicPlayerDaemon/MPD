@@ -31,7 +31,7 @@
 #include "util/StringStrip.hxx"
 #include "Log.hxx"
 
-#include <stdexcept>
+#include <exception>
 
 #include <assert.h>
 #include <string.h>
@@ -62,8 +62,8 @@ try {
 	if (!IsFileNotFound(e))
 		LogError(e);
 	return false;
-} catch (const std::exception &e) {
-	LogError(e);
+} catch (...) {
+	LogError(std::current_exception());
 	return false;
 }
 
@@ -85,7 +85,7 @@ ExcludeList::Check(Path name_fs) const noexcept
 		try {
 			if (i.Check(NarrowPath(name_fs).c_str()))
 				return true;
-		} catch (const std::runtime_error &) {
+		} catch (...) {
 		}
 	}
 #else

@@ -26,8 +26,6 @@
 #include "util/UriUtil.hxx"
 #include "DetachedSong.hxx"
 
-#include <stdexcept>
-
 #include <string.h>
 
 static void
@@ -53,7 +51,7 @@ try {
 
 	merge_song_metadata(song, tmp);
 	return true;
-} catch (const std::runtime_error &) {
+} catch (...) {
 	return false;
 }
 

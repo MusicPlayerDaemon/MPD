@@ -149,7 +149,7 @@ alsa_mixer_elem_callback(snd_mixer_elem_t *elem, unsigned mask)
 		try {
 			int volume = mixer.GetVolume();
 			mixer.listener.OnMixerVolumeChanged(mixer, volume);
-		} catch (const std::runtime_error &) {
+		} catch (...) {
 		}
 	}
 

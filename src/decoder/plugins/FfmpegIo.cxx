@@ -25,7 +25,7 @@
 #include "../DecoderAPI.hxx"
 #include "input/InputStream.hxx"
 
-#include <stdexcept>
+#include <exception>
 
 AvioStream::~AvioStream()
 {
@@ -72,7 +72,7 @@ AvioStream::Seek(int64_t pos, int whence)
 	try {
 		input.LockSeek(pos);
 		return input.GetOffset();
-	} catch (const std::runtime_error &) {
+	} catch (...) {
 		return -1;
 	}
 }

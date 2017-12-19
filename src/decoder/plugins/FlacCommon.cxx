@@ -27,7 +27,7 @@
 #include "util/ConstBuffer.hxx"
 #include "Log.hxx"
 
-#include <stdexcept>
+#include <exception>
 
 bool
 FlacDecoder::Initialize(unsigned sample_rate, unsigned bits_per_sample,
@@ -39,8 +39,8 @@ FlacDecoder::Initialize(unsigned sample_rate, unsigned bits_per_sample,
 	try {
 		pcm_import.Open(sample_rate, bits_per_sample,
 				channels);
-	} catch (const std::runtime_error &e) {
-		LogError(e);
+	} catch (...) {
+		LogError(std::current_exception());
 		unsupported = true;
 		return false;
 	}

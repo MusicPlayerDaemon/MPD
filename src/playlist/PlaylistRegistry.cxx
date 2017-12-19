@@ -38,8 +38,6 @@
 #include "config/ConfigGlobal.hxx"
 #include "config/Block.hxx"
 
-#include <stdexcept>
-
 #include <assert.h>
 #include <string.h>
 
@@ -196,7 +194,7 @@ playlist_list_open_stream_mime2(InputStreamPtr &&is, const char *mime)
 			   fresh start */
 			try {
 				is->LockRewind();
-			} catch (const std::runtime_error &) {
+			} catch (...) {
 			}
 
 			auto playlist = playlist_plugin_open_stream(plugin,
@@ -240,7 +238,7 @@ playlist_list_open_stream_suffix(InputStreamPtr &&is, const char *suffix)
 			   fresh start */
 			try {
 				is->LockRewind();
-			} catch (const std::runtime_error &) {
+			} catch (...) {
 			}
 
 			auto playlist = playlist_plugin_open_stream(plugin,

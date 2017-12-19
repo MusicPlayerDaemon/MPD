@@ -119,9 +119,9 @@ UpdateWalk::UpdateContainerFile(Directory &directory,
 
 			modified = true;
 		}
-	} catch (const std::runtime_error &e) {
+	} catch (...) {
+		LogError(std::current_exception());
 		editor.LockDeleteDirectory(contdir);
-		LogError(e);
 		return false;
 	}
 

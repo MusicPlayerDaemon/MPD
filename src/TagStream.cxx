@@ -30,7 +30,7 @@
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
 
-#include <stdexcept>
+#include <exception>
 
 #include <assert.h>
 
@@ -66,7 +66,7 @@ tag_stream_scan(InputStream &is, const TagHandler &handler, void *ctx)
 				    &handler, ctx](const DecoderPlugin &plugin){
 			try {
 				is.LockRewind();
-			} catch (const std::runtime_error &) {
+			} catch (...) {
 			}
 
 			return CheckDecoderPlugin(plugin, suffix, mime) &&

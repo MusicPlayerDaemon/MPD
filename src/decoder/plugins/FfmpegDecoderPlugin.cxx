@@ -483,7 +483,7 @@ ffmpeg_probe(DecoderClient *client, InputStream &is)
 
 	try {
 		is.LockRewind();
-	} catch (const std::runtime_error &) {
+	} catch (...) {
 		return nullptr;
 	}
 
@@ -814,8 +814,8 @@ ffmpeg_decode(DecoderClient &client, InputStream &input)
 	try {
 		format_context =FfmpegOpenInput(stream.io, input.GetURI(),
 						input_format);
-	} catch (const std::runtime_error &e) {
-		LogError(e);
+	} catch (...) {
+		LogError(std::current_exception());
 		return;
 	}
 
@@ -869,7 +869,7 @@ ffmpeg_scan_stream(InputStream &is,
 	AVFormatContext *f;
 	try {
 		f = FfmpegOpenInput(stream.io, is.GetURI(), input_format);
-	} catch (const std::runtime_error &) {
+	} catch (...) {
 		return false;
 	}
 

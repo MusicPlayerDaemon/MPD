@@ -45,7 +45,7 @@ FilteredAudioOutput::Enable()
 {
 	try {
 		output->Enable();
-	} catch (const std::runtime_error &e) {
+	} catch (...) {
 		std::throw_with_nested(FormatRuntimeError("Failed to enable output %s",
 							  GetLogName()));
 	}
@@ -62,7 +62,7 @@ FilteredAudioOutput::ConfigureConvertFilter()
 {
 	try {
 		convert_filter_set(convert_filter.Get(), out_audio_format);
-	} catch (const std::runtime_error &e) {
+	} catch (...) {
 		std::throw_with_nested(FormatRuntimeError("Failed to convert for %s",
 							  GetLogName()));
 	}
@@ -75,7 +75,7 @@ FilteredAudioOutput::OpenOutputAndConvert(AudioFormat desired_audio_format)
 
 	try {
 		output->Open(out_audio_format);
-	} catch (const std::runtime_error &e) {
+	} catch (...) {
 		std::throw_with_nested(FormatRuntimeError("Failed to open %s",
 							  GetLogName()));
 	}
@@ -87,7 +87,7 @@ FilteredAudioOutput::OpenOutputAndConvert(AudioFormat desired_audio_format)
 
 	try {
 		ConfigureConvertFilter();
-	} catch (const std::runtime_error &e) {
+	} catch (...) {
 		output->Close();
 
 		if (out_audio_format.format == SampleFormat::DSD) {
@@ -97,7 +97,7 @@ FilteredAudioOutput::OpenOutputAndConvert(AudioFormat desired_audio_format)
 			   implemented; our last resort is to give up
 			   DSD and fall back to PCM */
 
-			LogError(e);
+			LogError(std::current_exception());
 			FormatError(output_domain, "Retrying without DSD");
 
 			desired_audio_format.format = SampleFormat::FLOAT;
@@ -184,8 +184,8 @@ FilteredAudioOutput::IteratePause() noexcept
 {
 	try {
 		return output->Pause();
-	} catch (const std::runtime_error &e) {
-		FormatError(e, "Failed to pause %s",
+	} catch (...) {
+		FormatError(std::current_exception(), "Failed to pause %s",
 			    GetLogName());
 		return false;
 	}

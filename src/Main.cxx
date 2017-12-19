@@ -379,7 +379,7 @@ initialize_decoder_and_player(const ReplayGainConfig &replay_gain_config)
 		try {
 			configured_audio_format = ParseAudioFormat(param->value.c_str(),
 								   true);
-		} catch (const std::runtime_error &) {
+		} catch (...) {
 			std::throw_with_nested(FormatRuntimeError("error parsing line %i",
 								  param->line));
 		}

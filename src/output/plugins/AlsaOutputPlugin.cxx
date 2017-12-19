@@ -875,7 +875,7 @@ try {
 		   call */
 		return;
 	}
-} catch (const std::runtime_error &) {
+} catch (...) {
 	MultiSocketMonitor::Reset();
 	LockCaughtError();
 }

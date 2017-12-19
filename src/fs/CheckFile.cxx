@@ -62,6 +62,6 @@ try {
 				    "No permission to read directory: %s",
 				    path_fs.ToUTF8().c_str());
 	}
-} catch (const std::runtime_error &e) {
-	LogError(e);
+} catch (...) {
+	LogError(std::current_exception());
 }

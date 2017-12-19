@@ -43,8 +43,8 @@ output_mixer_get_volume(const AudioOutputControl &ao) noexcept
 
 	try {
 		return mixer_get_volume(mixer);
-	} catch (const std::runtime_error &e) {
-		FormatError(e,
+	} catch (...) {
+		FormatError(std::current_exception(),
 			    "Failed to read mixer for '%s'",
 			    ao.GetName());
 		return -1;
@@ -86,8 +86,8 @@ output_mixer_set_volume(AudioOutputControl &ao, unsigned volume) noexcept
 	try {
 		mixer_set_volume(mixer, volume);
 		return true;
-	} catch (const std::runtime_error &e) {
-		FormatError(e,
+	} catch (...) {
+		FormatError(std::current_exception(),
 			    "Failed to set mixer for '%s'",
 			    ao.GetName());
 		return false;

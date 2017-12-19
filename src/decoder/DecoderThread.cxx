@@ -112,7 +112,7 @@ decoder_stream_decode(const DecoderPlugin &plugin,
 	/* rewind the stream, so each plugin gets a fresh start */
 	try {
 		input_stream.Rewind();
-	} catch (const std::runtime_error &) {
+	} catch (...) {
 	}
 
 	{

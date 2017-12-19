@@ -212,7 +212,7 @@ MadDecoder::Seek(long offset)
 {
 	try {
 		input_stream.LockSeek(offset);
-	} catch (const std::runtime_error &) {
+	} catch (...) {
 		return false;
 	}
 

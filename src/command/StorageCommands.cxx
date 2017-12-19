@@ -68,7 +68,7 @@ handle_listfiles_storage(Response &r, StorageDirectoryReader &reader)
 		StorageFileInfo info;
 		try {
 			info = reader.GetInfo(false);
-		} catch (const std::runtime_error &) {
+		} catch (...) {
 			continue;
 		}
 

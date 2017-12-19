@@ -251,7 +251,7 @@ ShoutOutput::Close() noexcept
 	try {
 		encoder->End();
 		WritePage();
-	} catch (const std::runtime_error &) {
+	} catch (...) {
 		/* ignore */
 	}
 

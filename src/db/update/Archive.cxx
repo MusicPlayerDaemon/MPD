@@ -34,7 +34,7 @@
 #include "Log.hxx"
 
 #include <string>
-#include <stdexcept>
+#include <exception>
 
 #include <string.h>
 
@@ -153,8 +153,8 @@ UpdateWalk::UpdateArchiveFile(Directory &parent, const char *name,
 	ArchiveFile *file;
 	try {
 		file = archive_file_open(&plugin, path_fs);
-	} catch (const std::runtime_error &e) {
-		LogError(e);
+	} catch (...) {
+		LogError(std::current_exception());
 		if (directory != nullptr)
 			editor.LockDeleteDirectory(directory);
 		return;

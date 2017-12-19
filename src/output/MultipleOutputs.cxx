@@ -57,7 +57,7 @@ LoadOutput(EventLoop &event_loop,
 try {
 	return audio_output_new(event_loop, replay_gain_config, block,
 				mixer_listener);
-} catch (const std::runtime_error &e) {
+} catch (...) {
 	if (block.line > 0)
 		std::throw_with_nested(FormatRuntimeError("Failed to configure output in line %i",
 							  block.line));

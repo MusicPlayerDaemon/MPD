@@ -42,7 +42,6 @@
 #endif
 
 #include <memory>
-#include <stdexcept>
 
 #include <assert.h>
 #include <string.h>
@@ -95,7 +94,7 @@ try {
 #else
 #error not implemented
 #endif
-} catch (const std::runtime_error &) {
+} catch (...) {
 	return AllocatedString<>::Duplicate(src);
 }
 

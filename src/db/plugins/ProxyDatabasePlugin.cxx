@@ -361,10 +361,10 @@ ProxyDatabase::Open()
 
 	try {
 		Connect();
-	} catch (const std::runtime_error &error) {
+	} catch (...) {
 		/* this error is non-fatal, because this plugin will
 		   attempt to reconnect again automatically */
-		LogError(error);
+		LogError(std::current_exception());
 	}
 }
 
@@ -473,8 +473,8 @@ ProxyDatabase::OnSocketReady(gcc_unused unsigned flags) noexcept
 	if (idle == 0) {
 		try {
 			CheckError(connection);
-		} catch (const std::runtime_error &error) {
-			LogError(error);
+		} catch (...) {
+			LogError(std::current_exception());
 			Disconnect();
 			return false;
 		}
@@ -508,8 +508,8 @@ ProxyDatabase::OnIdle() noexcept
 	if (!mpd_send_idle_mask(connection, MPD_IDLE_DATABASE)) {
 		try {
 			ThrowError(connection);
-		} catch (const std::runtime_error &error) {
-			LogError(error);
+		} catch (...) {
+			LogError(std::current_exception());
 		}
 
 		SocketMonitor::Steal();

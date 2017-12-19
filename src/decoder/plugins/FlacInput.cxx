@@ -25,7 +25,7 @@
 #include "Log.hxx"
 #include "Compiler.h"
 
-#include <stdexcept>
+#include <exception>
 
 FLAC__StreamDecoderReadStatus
 FlacInput::Read(FLAC__byte buffer[], size_t *bytes)
@@ -54,8 +54,8 @@ FlacInput::Seek(FLAC__uint64 absolute_byte_offset)
 	try {
 		input_stream.LockSeek(absolute_byte_offset);
 		return FLAC__STREAM_DECODER_SEEK_STATUS_OK;
-	} catch (const std::runtime_error &e) {
-		LogError(e);
+	} catch (...) {
+		LogError(std::current_exception());
 		return FLAC__STREAM_DECODER_SEEK_STATUS_ERROR;
 	}
 }

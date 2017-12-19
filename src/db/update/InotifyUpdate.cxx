@@ -187,8 +187,8 @@ recursive_watch_subdirectories(WatchDirectory *directory,
 		FileInfo fi;
 		try {
 			fi = FileInfo(child_path_fs);
-		} catch (const std::runtime_error &e) {
-			LogError(e);
+		} catch (...) {
+			LogError(std::current_exception());
 			continue;
 		}
 
@@ -198,8 +198,8 @@ recursive_watch_subdirectories(WatchDirectory *directory,
 		try {
 			ret = inotify_source->Add(child_path_fs.c_str(),
 						  IN_MASK);
-		} catch (const std::runtime_error &e) {
-			FormatError(e,
+		} catch (...) {
+			FormatError(std::current_exception(),
 				    "Failed to register %s",
 				    child_path_fs.c_str());
 			continue;
@@ -302,8 +302,8 @@ mpd_inotify_init(EventLoop &loop, Storage &storage, UpdateService &update,
 		inotify_source = new InotifySource(loop,
 						   mpd_inotify_callback,
 						   nullptr);
-	} catch (const std::runtime_error &e) {
-		LogError(e);
+	} catch (...) {
+		LogError(std::current_exception());
 		return;
 	}
 
@@ -312,8 +312,8 @@ mpd_inotify_init(EventLoop &loop, Storage &storage, UpdateService &update,
 	int descriptor;
 	try {
 		descriptor = inotify_source->Add(path.c_str(), IN_MASK);
-	} catch (const std::runtime_error &e) {
-		LogError(e);
+	} catch (...) {
+		LogError(std::current_exception());
 		delete inotify_source;
 		inotify_source = nullptr;
 		return;

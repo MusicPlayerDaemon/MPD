@@ -77,8 +77,8 @@ stats_update(const Database &db)
 		stats = db.GetStats(selection);
 		stats_validity = StatsValidity::VALID;
 		return true;
-	} catch (const std::runtime_error &e) {
-		LogError(e);
+	} catch (...) {
+		LogError(std::current_exception());
 		stats_validity = StatsValidity::FAILED;
 		return false;
 	}

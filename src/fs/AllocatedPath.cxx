@@ -23,7 +23,7 @@
 #include "Charset.hxx"
 #include "Compiler.h"
 
-#include <stdexcept>
+#include <exception>
 
 /* no inlining, please */
 AllocatedPath::~AllocatedPath() {}
@@ -34,7 +34,7 @@ AllocatedPath::FromUTF8(const char *path_utf8) noexcept
 #if defined(HAVE_FS_CHARSET) || defined(_WIN32)
 	try {
 		return AllocatedPath(::PathFromUTF8(path_utf8));
-	} catch (const std::runtime_error &) {
+	} catch (...) {
 		return nullptr;
 	}
 #else
@@ -63,7 +63,7 @@ AllocatedPath::ToUTF8() const noexcept
 {
 	try {
 		return ::PathToUTF8(c_str());
-	} catch (const std::runtime_error &) {
+	} catch (...) {
 		return std::string();
 	}
 }

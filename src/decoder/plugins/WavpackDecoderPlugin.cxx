@@ -295,7 +295,7 @@ struct WavpackInput {
 		try {
 			is.LockSeek(pos);
 			return 0;
-		} catch (const std::runtime_error &) {
+		} catch (...) {
 			return -1;
 		}
 	}
@@ -520,7 +520,7 @@ wavpack_open_wvc(DecoderClient &client, const char *uri)
 
 	try {
 		return client.OpenUri(uri);
-	} catch (const std::runtime_error &) {
+	} catch (...) {
 		return nullptr;
 	}
 }

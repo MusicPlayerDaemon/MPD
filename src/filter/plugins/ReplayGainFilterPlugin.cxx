@@ -29,7 +29,7 @@
 #include "util/Domain.hxx"
 #include "Log.hxx"
 
-#include <stdexcept>
+#include <exception>
 
 #include <assert.h>
 
@@ -163,8 +163,9 @@ ReplayGainFilter::Update()
 
 		try {
 			mixer_set_volume(mixer, _volume);
-		} catch (const std::runtime_error &e) {
-			LogError(e, "Failed to update hardware mixer");
+		} catch (...) {
+			LogError(std::current_exception(),
+				 "Failed to update hardware mixer");
 		}
 	} else
 		pv.SetVolume(volume);

@@ -25,8 +25,6 @@
 #include "util/Alloc.hxx"
 #include "util/ScopeExit.hxx"
 
-#include <stdexcept>
-
 #include <string.h>
 #include <stdlib.h>
 
@@ -96,7 +94,7 @@ sticker_song_find_cb(const char *uri, const char *value, void *user_data)
 		const LightSong *song = db->GetSong(uri);
 		data->func(*song, value, data->user_data);
 		db->ReturnSong(song);
-	} catch (const std::runtime_error &e) {
+	} catch (...) {
 	}
 }
 

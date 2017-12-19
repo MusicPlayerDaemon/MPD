@@ -30,7 +30,7 @@
 #include "util/UriUtil.hxx"
 #include "lib/icu/CaseFold.hxx"
 
-#include <stdexcept>
+#include <exception>
 
 #include <assert.h>
 #include <stdlib.h>
@@ -190,7 +190,7 @@ ParseTimeStamp(const char *s)
 	try {
 		/* try ISO 8601 */
 		return ParseTimePoint(s, "%FT%TZ");
-	} catch (const std::runtime_error &) {
+	} catch (...) {
 		return std::chrono::system_clock::time_point::min();
 	}
 }

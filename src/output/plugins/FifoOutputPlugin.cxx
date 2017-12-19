@@ -92,8 +92,8 @@ FifoOutput::Delete()
 
 	try {
 		RemoveFile(path);
-	} catch (const std::runtime_error &e) {
-		LogError(e, "Could not remove FIFO");
+	} catch (...) {
+		LogError(std::current_exception(), "Could not remove FIFO");
 		return;
 	}
 
