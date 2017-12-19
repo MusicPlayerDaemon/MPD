@@ -233,6 +233,9 @@ public:
 	const char *GetName() const noexcept;
 
 	gcc_pure
+	const char *GetPluginName() const noexcept;
+
+	gcc_pure
 	const char *GetLogName() const noexcept;
 
 	AudioOutputClient &GetClient() noexcept {

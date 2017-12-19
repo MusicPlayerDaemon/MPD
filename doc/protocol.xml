@@ -2521,6 +2521,7 @@ OK
             <screen>
 outputid: 0
 outputname: My ALSA Device
+plugin: alsa
 outputenabled: 0
 OK
             </screen>

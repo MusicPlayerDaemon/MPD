@@ -59,6 +59,12 @@ AudioOutputControl::GetName() const noexcept
 }
 
 const char *
+AudioOutputControl::GetPluginName() const noexcept
+{
+	return output->GetPluginName();
+}
+
+const char *
 AudioOutputControl::GetLogName() const noexcept
 {
 	return output->GetLogName();

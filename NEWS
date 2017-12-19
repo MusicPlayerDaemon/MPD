@@ -2,6 +2,7 @@ ver 0.21 (not yet released)
 * protocol
   - "tagtypes" can be used to hide tags
   - "find" and "search" can sort
+  - "outputs" prints the plugin name
   - close connection when client sends HTTP request
 * tags
   - new tag "OriginalDate"

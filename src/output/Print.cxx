@@ -36,7 +36,10 @@ printAudioDevices(Response &r, const MultipleOutputs &outputs)
 
 		r.Format("outputid: %u\n"
 			 "outputname: %s\n"
+			 "plugin: %s\n"
 			 "outputenabled: %i\n",
-			 i, ao.GetName(), ao.IsEnabled());
+			 i,
+			 ao.GetName(), ao.GetPluginName(),
+			 ao.IsEnabled());
 	}
 }

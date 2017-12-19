@@ -147,6 +147,10 @@ public:
 		return name;
 	}
 
+	const char *GetPluginName() const noexcept {
+		return plugin_name;
+	}
+
 	const char *GetLogName() const noexcept {
 		return log_name.c_str();
 	}
