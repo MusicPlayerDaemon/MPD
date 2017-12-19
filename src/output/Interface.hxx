@@ -28,11 +28,15 @@ struct Tag;
 class AudioOutput {
 	const unsigned flags;
 
-	bool need_fully_defined_audio_format = false;
-
 protected:
 	static constexpr unsigned FLAG_ENABLE_DISABLE = 0x1;
 	static constexpr unsigned FLAG_PAUSE = 0x2;
+
+	/**
+	 * This output requires an "audio_format" setting which
+	 * evaluates AudioFormat::IsFullyDefined().
+	 */
+	static constexpr unsigned FLAG_NEED_FULLY_DEFINED_AUDIO_FORMAT = 0x4;
 
 public:
 	explicit AudioOutput(unsigned _flags):flags(_flags) {}
@@ -50,16 +54,7 @@ public:
 	}
 
 	bool GetNeedFullyDefinedAudioFormat() const {
-		return need_fully_defined_audio_format;
-	}
-
-	/**
-	 * Plugins shall call this method if they require an
-	 * "audio_format" setting which evaluates
-	 * AudioFormat::IsFullyDefined().
-	 */
-	void NeedFullyDefinedAudioFormat() {
-		need_fully_defined_audio_format = true;
+		return flags & FLAG_NEED_FULLY_DEFINED_AUDIO_FORMAT;
 	}
 
 	/**

@@ -97,12 +97,10 @@ ShoutSetAudioInfo(shout_t *shout_conn, const AudioFormat &audio_format)
 }
 
 ShoutOutput::ShoutOutput(const ConfigBlock &block)
-	:AudioOutput(FLAG_PAUSE),
+	:AudioOutput(FLAG_PAUSE|FLAG_NEED_FULLY_DEFINED_AUDIO_FORMAT),
 	 shout_conn(shout_new()),
 	 prepared_encoder(CreateConfiguredEncoder(block, true))
 {
-	NeedFullyDefinedAudioFormat();
-
 	const char *host = require_block_string(block, "host");
 	const char *mount = require_block_string(block, "mount");
 	unsigned port = block.GetBlockValue("port", 0u);
