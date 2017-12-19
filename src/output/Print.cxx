@@ -34,7 +34,7 @@ printAudioDevices(Response &r, const MultipleOutputs &outputs)
 	for (unsigned i = 0, n = outputs.Size(); i != n; ++i) {
 		const auto &ao = outputs.Get(i);
 
-		r.Format("outputid: %i\n"
+		r.Format("outputid: %u\n"
 			 "outputname: %s\n"
 			 "outputenabled: %i\n",
 			 i, ao.GetName(), ao.IsEnabled());
