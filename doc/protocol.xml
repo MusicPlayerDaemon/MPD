@@ -2523,6 +2523,7 @@ outputid: 0
 outputname: My ALSA Device
 plugin: alsa
 outputenabled: 0
+attribute: dop=0
 OK
             </screen>
             <para>
@@ -2545,6 +2546,24 @@ OK
                 </para>
               </listitem>
             </itemizedlist>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry id="command_outputset">
+          <term>
+            <cmdsynopsis>
+              <command>outputset</command>
+              <arg choice="req"><replaceable>ID</replaceable></arg>
+              <arg choice="req"><replaceable>NAME</replaceable></arg>
+              <arg choice="req"><replaceable>VALUE</replaceable></arg>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              Set a runtime attribute.  These are specific to the
+              output plugin, and supported values are usually printed
+              in the <command>outputs</command> response.
+            </para>
           </listitem>
         </varlistentry>
       </variablelist>

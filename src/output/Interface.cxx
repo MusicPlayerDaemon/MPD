@@ -17,28 +17,14 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_OUTPUT_COMMANDS_HXX
-#define MPD_OUTPUT_COMMANDS_HXX
+#include "Interface.hxx"
+#include "Compiler.h"
 
-#include "CommandResult.hxx"
+#include <stdexcept>
 
-class Client;
-class Request;
-class Response;
-
-CommandResult
-handle_enableoutput(Client &client, Request request, Response &response);
-
-CommandResult
-handle_disableoutput(Client &client, Request request, Response &response);
-
-CommandResult
-handle_toggleoutput(Client &client, Request request, Response &response);
-
-CommandResult
-handle_outputset(Client &client, Request request, Response &response);
-
-CommandResult
-handle_devices(Client &client, Request request, Response &response);
-
-#endif
+void
+AudioOutput::SetAttribute(gcc_unused std::string &&name,
+			  gcc_unused std::string &&value)
+{
+	throw std::invalid_argument("Unsupported attribute");
+}

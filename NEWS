@@ -3,6 +3,7 @@ ver 0.21 (not yet released)
   - "tagtypes" can be used to hide tags
   - "find" and "search" can sort
   - "outputs" prints the plugin name
+  - "outputset" sets runtime attributes
   - close connection when client sends HTTP request
 * tags
   - new tag "OriginalDate"

@@ -1390,7 +1390,6 @@ OUTPUT_LIBS = \
 OUTPUT_API_SRC = \
 	src/output/Client.hxx \
 	src/output/OutputAPI.hxx \
-	src/output/Interface.hxx \
 	src/output/Filtered.cxx src/output/Filtered.hxx \
 	src/output/Registry.cxx src/output/Registry.hxx \
 	src/output/MultipleOutputs.cxx src/output/MultipleOutputs.hxx \
@@ -1407,6 +1406,7 @@ OUTPUT_API_SRC = \
 	src/output/Init.cxx
 
 liboutput_plugins_a_SOURCES = \
+	src/output/Interface.cxx src/output/Interface.hxx \
 	src/output/Timer.cxx src/output/Timer.hxx \
 	src/output/plugins/NullOutputPlugin.cxx \
 	src/output/plugins/NullOutputPlugin.hxx

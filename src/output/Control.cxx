@@ -76,6 +76,18 @@ AudioOutputControl::GetMixer() const noexcept
 	return output->mixer;
 }
 
+const std::map<std::string, std::string>
+AudioOutputControl::GetAttributes() const noexcept
+{
+	return output->GetAttributes();
+}
+
+void
+AudioOutputControl::SetAttribute(std::string &&name, std::string &&value)
+{
+	output->SetAttribute(std::move(name), std::move(value));
+}
+
 bool
 AudioOutputControl::LockSetEnabled(bool new_value) noexcept
 {

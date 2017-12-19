@@ -20,7 +20,10 @@
 #ifndef MPD_AUDIO_OUTPUT_INTERFACE_HXX
 #define MPD_AUDIO_OUTPUT_INTERFACE_HXX
 
+#include <map>
+#include <string>
 #include <chrono>
+#include <stdexcept>
 
 struct AudioFormat;
 struct Tag;
@@ -56,6 +59,22 @@ public:
 	bool GetNeedFullyDefinedAudioFormat() const {
 		return flags & FLAG_NEED_FULLY_DEFINED_AUDIO_FORMAT;
 	}
+
+	/**
+	 * Returns a map of runtime attributes.
+	 *
+	 * This method must be thread-safe.
+	 */
+	virtual const std::map<std::string, std::string> GetAttributes() const noexcept {
+		return {};
+	}
+
+	/**
+	 * Manipulate a runtime attribute on client request.
+	 *
+	 * This method must be thread-safe.
+	 */
+	virtual void SetAttribute(std::string &&name, std::string &&value);
 
 	/**
 	 * Enable the device.  This may allocate resources, preparing

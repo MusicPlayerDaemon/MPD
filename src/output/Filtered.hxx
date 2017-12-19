@@ -25,6 +25,7 @@
 
 #include <memory>
 #include <string>
+#include <map>
 #include <chrono>
 
 class PreparedFilter;
@@ -166,6 +167,9 @@ public:
 	 */
 	gcc_pure
 	bool SupportsPause() const noexcept;
+
+	const std::map<std::string, std::string> GetAttributes() const noexcept;
+	void SetAttribute(std::string &&name, std::string &&value);
 
 	/**
 	 * Throws #std::runtime_error on error.

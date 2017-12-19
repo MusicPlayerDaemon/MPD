@@ -30,6 +30,8 @@
 
 #include <utility>
 #include <exception>
+#include <string>
+#include <map>
 
 #ifndef NDEBUG
 #include <assert.h>
@@ -323,6 +325,9 @@ public:
 
 	void BeginDestroy() noexcept;
 	void FinishDestroy() noexcept;
+
+	const std::map<std::string, std::string> GetAttributes() const noexcept;
+	void SetAttribute(std::string &&name, std::string &&value);
 
 	/**
 	 * Enables the device, but don't wait for completion.
