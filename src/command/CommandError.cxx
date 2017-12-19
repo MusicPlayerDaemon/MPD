@@ -123,6 +123,10 @@ ToAck(std::exception_ptr ep) noexcept
 		return ACK_ERROR_SYSTEM;
 	} catch (const std::invalid_argument &e) {
 		return ACK_ERROR_ARG;
+	} catch (const std::length_error &e) {
+		return ACK_ERROR_ARG;
+	} catch (const std::out_of_range &e) {
+		return ACK_ERROR_ARG;
 #ifdef GLIBCXX_49X
 	} catch (const std::exception &e) {
 #else
