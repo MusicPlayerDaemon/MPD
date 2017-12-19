@@ -39,7 +39,7 @@ AllowedFormat::AllowedFormat(StringView s)
 
 	char buffer[64];
 	if (s.size >= sizeof(buffer))
-		throw std::runtime_error("Failed to parse audio format");
+		throw std::invalid_argument("Failed to parse audio format");
 
 	memcpy(buffer, s.data, s.size);
 	buffer[s.size] = 0;
@@ -48,7 +48,7 @@ AllowedFormat::AllowedFormat(StringView s)
 
 #ifdef ENABLE_DSD
 	if (dop && format.format != SampleFormat::DSD)
-		throw std::runtime_error("DoP works only with DSD");
+		throw std::invalid_argument("DoP works only with DSD");
 #endif
 }
 
