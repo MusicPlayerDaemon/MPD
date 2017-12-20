@@ -201,9 +201,13 @@ private:
 	/**
 	 * The decoder has acknowledged the "START" command (see
 	 * ActivateDecoder()).  This function checks if the decoder
-	 * initialization has completed yet.
+	 * initialization has completed yet.  If not, it will wait
+	 * some more.
 	 *
 	 * Caller must lock the mutex.
+	 *
+	 * @return false if the decoder has failed, true on success
+	 * (though the decoder startup may or may not yet be finished)
 	 */
 	bool CheckDecoderStartup();
 
@@ -214,6 +218,8 @@ private:
 	 *
 	 * This method does not check for commands.  It is only
 	 * allowed to be used while a command is being handled.
+	 *
+	 * @return false if the decoder has failed
 	 */
 	bool WaitDecoderStartup() {
 		const std::lock_guard<Mutex> lock(pc.mutex);
@@ -270,6 +276,8 @@ private:
 	 * This is the handler for the #PlayerCommand::SEEK command.
 	 *
 	 * The player lock is not held.
+	 *
+	 * @return false if the decoder has failed
 	 */
 	bool SeekDecoder();
 
@@ -320,6 +328,8 @@ private:
 	 * yet, to prevent underruns in the hardware buffers.
 	 *
 	 * The player lock is not held.
+	 *
+	 * @return false on error
 	 */
 	bool SendSilence();
 
