@@ -141,11 +141,6 @@ struct PlayerControl final : AudioOutputClient {
 	 */
 	Cond client_cond;
 
-	PlayerCommand command = PlayerCommand::NONE;
-	PlayerState state = PlayerState::STOP;
-
-	PlayerError error_type = PlayerError::NONE;
-
 	/**
 	 * The error that occurred in the player thread.  This
 	 * attribute is only valid if #error_type is not
@@ -153,6 +148,14 @@ struct PlayerControl final : AudioOutputClient {
 	 * object transitions back to #PlayerError::NONE.
 	 */
 	std::exception_ptr error;
+
+	/**
+	 * The next queued song.
+	 *
+	 * This is a duplicate, and must be freed when this attribute
+	 * is cleared.
+	 */
+	std::unique_ptr<DetachedSong> next_song;
 
 	/**
 	 * A copy of the current #DetachedSong after its tags have
@@ -166,27 +169,12 @@ struct PlayerControl final : AudioOutputClient {
 	 */
 	std::unique_ptr<DetachedSong> tagged_song;
 
-	uint16_t bit_rate;
-	AudioFormat audio_format;
-	SignedSongTime total_time;
-	SongTime elapsed_time;
+	PlayerCommand command = PlayerCommand::NONE;
+	PlayerState state = PlayerState::STOP;
 
-	/**
-	 * The next queued song.
-	 *
-	 * This is a duplicate, and must be freed when this attribute
-	 * is cleared.
-	 */
-	std::unique_ptr<DetachedSong> next_song;
+	PlayerError error_type = PlayerError::NONE;
 
-	SongTime seek_time;
-
-	CrossFadeSettings cross_fade;
-
-	const ReplayGainConfig replay_gain_config;
 	ReplayGainMode replay_gain_mode = ReplayGainMode::OFF;
-
-	double total_play_time = 0;
 
 	/**
 	 * If this flag is set, then the player will be auto-paused at
@@ -196,6 +184,20 @@ struct PlayerControl final : AudioOutputClient {
 	 * time.
 	 */
 	bool border_pause = false;
+
+	AudioFormat audio_format;
+	uint16_t bit_rate;
+
+	SignedSongTime total_time;
+	SongTime elapsed_time;
+
+	SongTime seek_time;
+
+	CrossFadeSettings cross_fade;
+
+	const ReplayGainConfig replay_gain_config;
+
+	double total_play_time = 0;
 
 	PlayerControl(PlayerListener &_listener,
 		      MultipleOutputs &_outputs,
