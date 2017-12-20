@@ -151,7 +151,7 @@ class Player {
 
 public:
 	Player(PlayerControl &_pc, DecoderControl &_dc,
-	       MusicBuffer &_buffer)
+	       MusicBuffer &_buffer) noexcept
 		:pc(_pc), dc(_dc), buffer(_buffer),
 		 buffering(true),
 		 decoder_starting(false),
@@ -170,22 +170,22 @@ private:
 	 * Reset cross-fading to the initial state.  A check to
 	 * re-enable it at an appropriate time will be scheduled.
 	 */
-	void ResetCrossFade() {
+	void ResetCrossFade() noexcept {
 		xfade_state = CrossFadeState::UNKNOWN;
 	}
 
-	void ClearAndDeletePipe() {
+	void ClearAndDeletePipe() noexcept {
 		pipe->Clear(buffer);
 		delete pipe;
 	}
 
-	void ClearAndReplacePipe(MusicPipe *_pipe) {
+	void ClearAndReplacePipe(MusicPipe *_pipe) noexcept {
 		ResetCrossFade();
 		ClearAndDeletePipe();
 		pipe = _pipe;
 	}
 
-	void ReplacePipe(MusicPipe *_pipe) {
+	void ReplacePipe(MusicPipe *_pipe) noexcept {
 		ResetCrossFade();
 		delete pipe;
 		pipe = _pipe;
@@ -196,7 +196,7 @@ private:
 	 *
 	 * Player lock is not held.
 	 */
-	void StartDecoder(MusicPipe &pipe);
+	void StartDecoder(MusicPipe &pipe) noexcept;
 
 	/**
 	 * The decoder has acknowledged the "START" command (see
@@ -209,7 +209,7 @@ private:
 	 * @return false if the decoder has failed, true on success
 	 * (though the decoder startup may or may not yet be finished)
 	 */
-	bool CheckDecoderStartup();
+	bool CheckDecoderStartup() noexcept;
 
 	/**
 	 * Call CheckDecoderStartup() repeatedly until the decoder has
@@ -221,7 +221,7 @@ private:
 	 *
 	 * @return false if the decoder has failed
 	 */
-	bool WaitDecoderStartup() {
+	bool WaitDecoderStartup() noexcept {
 		const std::lock_guard<Mutex> lock(pc.mutex);
 
 		while (decoder_starting) {
@@ -247,7 +247,7 @@ private:
 	 *
 	 * Player lock is not held.
 	 */
-	void StopDecoder();
+	void StopDecoder() noexcept;
 
 	/**
 	 * Is the decoder still busy on the same song as the player?
@@ -279,7 +279,7 @@ private:
 	 *
 	 * @return false if the decoder has failed
 	 */
-	bool SeekDecoder();
+	bool SeekDecoder() noexcept;
 
 	/**
 	 * Check if the decoder has reported an error, and forward it
@@ -287,7 +287,7 @@ private:
 	 *
 	 * @return false if an error has occurred
 	 */
-	bool ForwardDecoderError();
+	bool ForwardDecoderError() noexcept;
 
 	/**
 	 * After the decoder has been started asynchronously, activate
@@ -302,7 +302,7 @@ private:
 	 *
 	 * The player lock is not held.
 	 */
-	void ActivateDecoder();
+	void ActivateDecoder() noexcept;
 
 	/**
 	 * Wrapper for MultipleOutputs::Open().  Upon failure, it
@@ -312,7 +312,7 @@ private:
 	 *
 	 * @return true on success
 	 */
-	bool OpenOutput();
+	bool OpenOutput() noexcept;
 
 	/**
 	 * Obtains the next chunk from the music pipe, optionally applies
@@ -320,7 +320,7 @@ private:
 	 *
 	 * @return true on success, false on error (playback will be stopped)
 	 */
-	bool PlayNextChunk();
+	bool PlayNextChunk() noexcept;
 
 	/**
 	 * Sends a chunk of silence to the audio outputs.  This is
@@ -331,12 +331,12 @@ private:
 	 *
 	 * @return false on error
 	 */
-	bool SendSilence();
+	bool SendSilence() noexcept;
 
 	/**
 	 * Player lock must be held before calling.
 	 */
-	void ProcessCommand();
+	void ProcessCommand() noexcept;
 
 	/**
 	 * This is called at the border between two songs: the audio output
@@ -345,7 +345,7 @@ private:
 	 *
 	 * The player lock is not held.
 	 */
-	void SongBorder();
+	void SongBorder() noexcept;
 
 public:
 	/*
@@ -353,11 +353,11 @@ public:
 	 * is basically a state machine, which multiplexes data
 	 * between the decoder thread and the output threads.
 	 */
-	void Run();
+	void Run() noexcept;
 };
 
 void
-Player::StartDecoder(MusicPipe &_pipe)
+Player::StartDecoder(MusicPipe &_pipe) noexcept
 {
 	assert(queued || pc.command == PlayerCommand::SEEK);
 	assert(pc.next_song != nullptr);
@@ -376,7 +376,7 @@ Player::StartDecoder(MusicPipe &_pipe)
 }
 
 void
-Player::StopDecoder()
+Player::StopDecoder() noexcept
 {
 	dc.Stop();
 
@@ -398,7 +398,7 @@ Player::StopDecoder()
 }
 
 bool
-Player::ForwardDecoderError()
+Player::ForwardDecoderError() noexcept
 {
 	try {
 		dc.CheckRethrowError();
@@ -411,7 +411,7 @@ Player::ForwardDecoderError()
 }
 
 void
-Player::ActivateDecoder()
+Player::ActivateDecoder() noexcept
 {
 	assert(queued || pc.command == PlayerCommand::SEEK);
 	assert(pc.next_song != nullptr);
@@ -446,7 +446,8 @@ Player::ActivateDecoder()
  * indicated by the decoder plugin.
  */
 static SignedSongTime
-real_song_duration(const DetachedSong &song, SignedSongTime decoder_duration)
+real_song_duration(const DetachedSong &song,
+		   SignedSongTime decoder_duration) noexcept
 {
 	if (decoder_duration.IsNegative())
 		/* the decoder plugin didn't provide information; fall
@@ -463,7 +464,7 @@ real_song_duration(const DetachedSong &song, SignedSongTime decoder_duration)
 }
 
 bool
-Player::OpenOutput()
+Player::OpenOutput() noexcept
 {
 	assert(play_audio_format.IsDefined());
 	assert(pc.state == PlayerState::PLAY ||
@@ -499,7 +500,7 @@ Player::OpenOutput()
 }
 
 bool
-Player::CheckDecoderStartup()
+Player::CheckDecoderStartup() noexcept
 {
 	assert(decoder_starting);
 
@@ -542,7 +543,7 @@ Player::CheckDecoderStartup()
 }
 
 bool
-Player::SendSilence()
+Player::SendSilence() noexcept
 {
 	assert(output_open);
 	assert(play_audio_format.IsDefined());
@@ -584,7 +585,7 @@ Player::SendSilence()
 }
 
 inline bool
-Player::SeekDecoder()
+Player::SeekDecoder() noexcept
 {
 	assert(pc.next_song != nullptr);
 
@@ -658,7 +659,7 @@ Player::SeekDecoder()
 }
 
 inline void
-Player::ProcessCommand()
+Player::ProcessCommand() noexcept
 {
 	switch (pc.command) {
 	case PlayerCommand::NONE:
@@ -754,7 +755,8 @@ Player::ProcessCommand()
 }
 
 static void
-update_song_tag(PlayerControl &pc, DetachedSong &song, const Tag &new_tag)
+update_song_tag(PlayerControl &pc, DetachedSong &song,
+		const Tag &new_tag) noexcept
 {
 	if (song.IsFile())
 		/* don't update tags of local files, only remote
@@ -785,7 +787,7 @@ static void
 play_chunk(PlayerControl &pc,
 	   DetachedSong &song, MusicChunk *chunk,
 	   MusicBuffer &buffer,
-	   const AudioFormat format)
+	   const AudioFormat format) noexcept
 {
 	assert(chunk->CheckFormat(format));
 
@@ -810,7 +812,7 @@ play_chunk(PlayerControl &pc,
 }
 
 inline bool
-Player::PlayNextChunk()
+Player::PlayNextChunk() noexcept
 {
 	if (!pc.LockWaitOutputConsumed(64))
 		/* the output pipe is still large enough, don't send
@@ -941,7 +943,7 @@ Player::PlayNextChunk()
 }
 
 inline void
-Player::SongBorder()
+Player::SongBorder() noexcept
 {
 	FormatDefault(player_domain, "played \"%s\"", song->GetURI());
 
@@ -961,7 +963,7 @@ Player::SongBorder()
 }
 
 inline void
-Player::Run()
+Player::Run() noexcept
 {
 	pipe = new MusicPipe();
 
@@ -1146,7 +1148,7 @@ Player::Run()
 
 static void
 do_play(PlayerControl &pc, DecoderControl &dc,
-	MusicBuffer &buffer)
+	MusicBuffer &buffer) noexcept
 {
 	Player player(pc, dc, buffer);
 	player.Run();
