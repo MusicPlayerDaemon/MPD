@@ -55,29 +55,29 @@ class Player {
 	/**
 	 * are we waiting for buffered_before_play?
 	 */
-	bool buffering;
+	bool buffering = true;
 
 	/**
 	 * true if the decoder is starting and did not provide data
 	 * yet
 	 */
-	bool decoder_starting;
+	bool decoder_starting = false;
 
 	/**
 	 * Did we wake up the DecoderThread recently?  This avoids
 	 * duplicate wakeup calls.
 	 */
-	bool decoder_woken;
+	bool decoder_woken = false;
 
 	/**
 	 * is the player paused?
 	 */
-	bool paused;
+	bool paused = false;
 
 	/**
 	 * is there a new song in pc.next_song?
 	 */
-	bool queued;
+	bool queued = true;
 
 	/**
 	 * Was any audio output opened successfully?  It might have
@@ -85,7 +85,7 @@ class Player {
 	 * player thread.  When this flag is unset, some output
 	 * methods must not be called.
 	 */
-	bool output_open;
+	bool output_open = false;
 
 	/**
 	 * the song currently being played
@@ -119,19 +119,19 @@ class Player {
 		 * Currently cross-fading to the next song.
 		 */
 		ACTIVE,
-	} xfade_state;
+	} xfade_state = CrossFadeState::UNKNOWN;
 
 	/**
 	 * The number of chunks used for crossfading.
 	 */
-	unsigned cross_fade_chunks;
+	unsigned cross_fade_chunks = 0;
 
 	/**
 	 * The tag of the "next" song during cross-fade.  It is
 	 * postponed, and sent to the output thread when the new song
 	 * really begins.
 	 */
-	Tag *cross_fade_tag;
+	Tag *cross_fade_tag = nullptr;
 
 	/**
 	 * The current audio format for the audio outputs.
@@ -145,25 +145,14 @@ class Player {
 	 * value; the output thread can estimate the elapsed time more
 	 * precisely.
 	 */
-	SongTime elapsed_time;
+	SongTime elapsed_time = SongTime::zero();
 
 	PeriodClock throttle_silence_log;
 
 public:
 	Player(PlayerControl &_pc, DecoderControl &_dc,
 	       MusicBuffer &_buffer) noexcept
-		:pc(_pc), dc(_dc), buffer(_buffer),
-		 buffering(true),
-		 decoder_starting(false),
-		 decoder_woken(false),
-		 paused(false),
-		 queued(true),
-		 output_open(false),
-		 song(nullptr),
-		 xfade_state(CrossFadeState::UNKNOWN),
-		 cross_fade_chunks(0),
-		 cross_fade_tag(nullptr),
-		 elapsed_time(SongTime::zero()) {}
+		:pc(_pc), dc(_dc), buffer(_buffer) {}
 
 private:
 	/**
