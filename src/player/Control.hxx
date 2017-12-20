@@ -50,7 +50,14 @@ enum class PlayerCommand : uint8_t {
 	EXIT,
 	STOP,
 	PAUSE,
+
+	/**
+	 * Seek to a certain position in the specified song.  This
+	 * command can also be used to change the current song or
+	 * start playback.
+	 */
 	SEEK,
+
 	CLOSE_AUDIO,
 
 	/**
