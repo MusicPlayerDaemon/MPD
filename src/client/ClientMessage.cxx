@@ -19,10 +19,8 @@
 
 #include "ClientMessage.hxx"
 #include "util/CharUtil.hxx"
-#include "Compiler.h"
 
-gcc_const
-static bool
+static constexpr bool
 valid_channel_char(const char ch) noexcept
 {
 	return IsAlphaNumericASCII(ch) ||
