@@ -3,6 +3,7 @@
  */
 
 #include "config.h"
+#include "util/ScopeExit.hxx"
 
 /* include the .cxx file to get access to internal functions */
 #include "IcyMetaDataParser.cxx"
@@ -20,9 +21,8 @@ static Tag *
 icy_parse_tag(const char *p)
 {
 	char *q = strdup(p);
-	Tag *tag = icy_parse_tag(q, q + strlen(q));
-	free(q);
-	return tag;
+	AtScopeExit(q) { free(q); };
+	return icy_parse_tag(q, q + strlen(q));
 }
 
 static void
