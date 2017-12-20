@@ -38,7 +38,7 @@ class BufferedSocket : protected SocketMonitor {
 	StaticFifoBuffer<uint8_t, 8192> input;
 
 public:
-	BufferedSocket(SocketDescriptor _fd, EventLoop &_loop)
+	BufferedSocket(SocketDescriptor _fd, EventLoop &_loop) noexcept
 		:SocketMonitor(_fd, _loop) {
 		ScheduleRead();
 	}
@@ -47,20 +47,20 @@ public:
 	using SocketMonitor::Close;
 
 private:
-	ssize_t DirectRead(void *data, size_t length);
+	ssize_t DirectRead(void *data, size_t length) noexcept;
 
 	/**
 	 * Receive data from the socket to the input buffer.
 	 *
 	 * @return false if the socket has been closed
 	 */
-	bool ReadToBuffer();
+	bool ReadToBuffer() noexcept;
 
 protected:
 	/**
 	 * @return false if the socket has been closed
 	 */
-	bool ResumeInput();
+	bool ResumeInput() noexcept;
 
 	/**
 	 * Mark a portion of the input buffer "consumed".  Only
@@ -68,7 +68,7 @@ protected:
 	 * does not invalidate the pointer passed to OnSocketInput()
 	 * yet.
 	 */
-	void ConsumeInput(size_t nbytes) {
+	void ConsumeInput(size_t nbytes) noexcept {
 		assert(IsDefined());
 
 		input.Consume(nbytes);
@@ -107,10 +107,10 @@ protected:
 	 * buffer may be modified by the method while it processes the
 	 * data
 	 */
-	virtual InputResult OnSocketInput(void *data, size_t length) = 0;
+	virtual InputResult OnSocketInput(void *data, size_t length) noexcept = 0;
 
-	virtual void OnSocketError(std::exception_ptr ep) = 0;
-	virtual void OnSocketClosed() = 0;
+	virtual void OnSocketError(std::exception_ptr ep) noexcept = 0;
+	virtual void OnSocketClosed() noexcept = 0;
 
 	/* virtual methods from class SocketMonitor */
 	bool OnSocketReady(unsigned flags) noexcept override;

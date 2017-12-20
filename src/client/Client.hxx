@@ -226,9 +226,9 @@ public:
 
 private:
 	/* virtual methods from class BufferedSocket */
-	InputResult OnSocketInput(void *data, size_t length) override;
-	void OnSocketError(std::exception_ptr ep) override;
-	void OnSocketClosed() override;
+	InputResult OnSocketInput(void *data, size_t length) noexcept override;
+	void OnSocketError(std::exception_ptr ep) noexcept override;
+	void OnSocketClosed() noexcept override;
 
 	/* callback for TimerEvent */
 	void OnTimeout() noexcept;

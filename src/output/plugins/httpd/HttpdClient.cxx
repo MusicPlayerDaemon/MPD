@@ -408,7 +408,7 @@ HttpdClient::OnSocketReady(unsigned flags) noexcept
 }
 
 BufferedSocket::InputResult
-HttpdClient::OnSocketInput(void *data, size_t length)
+HttpdClient::OnSocketInput(void *data, size_t length) noexcept
 {
 	if (state == State::RESPONSE) {
 		LogWarning(httpd_output_domain,
@@ -449,13 +449,13 @@ HttpdClient::OnSocketInput(void *data, size_t length)
 }
 
 void
-HttpdClient::OnSocketError(std::exception_ptr ep)
+HttpdClient::OnSocketError(std::exception_ptr ep) noexcept
 {
 	LogError(ep);
 }
 
 void
-HttpdClient::OnSocketClosed()
+HttpdClient::OnSocketClosed() noexcept
 {
 	LockClose();
 }
