@@ -53,6 +53,18 @@ class Player {
 	MusicPipe *pipe;
 
 	/**
+	 * the song currently being played
+	 */
+	std::unique_ptr<DetachedSong> song;
+
+	/**
+	 * The tag of the "next" song during cross-fade.  It is
+	 * postponed, and sent to the output thread when the new song
+	 * really begins.
+	 */
+	std::unique_ptr<Tag> cross_fade_tag;
+
+	/**
 	 * are we waiting for buffered_before_play?
 	 */
 	bool buffering = true;
@@ -88,11 +100,6 @@ class Player {
 	bool output_open = false;
 
 	/**
-	 * the song currently being played
-	 */
-	std::unique_ptr<DetachedSong> song;
-
-	/**
 	 * Is cross-fading to the next song enabled?
 	 */
 	enum class CrossFadeState : uint8_t {
@@ -125,13 +132,6 @@ class Player {
 	 * The number of chunks used for crossfading.
 	 */
 	unsigned cross_fade_chunks = 0;
-
-	/**
-	 * The tag of the "next" song during cross-fade.  It is
-	 * postponed, and sent to the output thread when the new song
-	 * really begins.
-	 */
-	std::unique_ptr<Tag> cross_fade_tag;
 
 	/**
 	 * The current audio format for the audio outputs.
