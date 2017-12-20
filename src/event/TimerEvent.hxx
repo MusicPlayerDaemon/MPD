@@ -55,27 +55,27 @@ class TimerEvent final {
 	std::chrono::steady_clock::time_point due;
 
 public:
-	TimerEvent(EventLoop &_loop, Callback _callback)
+	TimerEvent(EventLoop &_loop, Callback _callback) noexcept
 		:loop(_loop), callback(_callback) {
 	}
 
-	~TimerEvent() {
+	~TimerEvent() noexcept {
 		Cancel();
 	}
 
-	EventLoop &GetEventLoop() {
+	EventLoop &GetEventLoop() noexcept {
 		return loop;
 	}
 
-	bool IsActive() const {
+	bool IsActive() const noexcept {
 		return timer_set_hook.is_linked();
 	}
 
-	void Schedule(std::chrono::steady_clock::duration d);
-	void Cancel();
+	void Schedule(std::chrono::steady_clock::duration d) noexcept;
+	void Cancel() noexcept;
 
 private:
-	void Run() {
+	void Run() noexcept {
 		callback();
 	}
 };
