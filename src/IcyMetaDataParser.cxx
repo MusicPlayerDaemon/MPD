@@ -31,7 +31,7 @@
 static constexpr Domain icy_metadata_domain("icy_metadata");
 
 void
-IcyMetaDataParser::Reset()
+IcyMetaDataParser::Reset() noexcept
 {
 	if (!IsDefined())
 		return;
@@ -46,7 +46,7 @@ IcyMetaDataParser::Reset()
 }
 
 size_t
-IcyMetaDataParser::Data(size_t length)
+IcyMetaDataParser::Data(size_t length) noexcept
 {
 	assert(length > 0);
 
@@ -66,7 +66,7 @@ IcyMetaDataParser::Data(size_t length)
 }
 
 static void
-icy_add_item(TagBuilder &tag, TagType type, const char *value)
+icy_add_item(TagBuilder &tag, TagType type, const char *value) noexcept
 {
 	size_t length = strlen(value);
 
@@ -81,7 +81,8 @@ icy_add_item(TagBuilder &tag, TagType type, const char *value)
 }
 
 static void
-icy_parse_tag_item(TagBuilder &tag, const char *name, const char *value)
+icy_parse_tag_item(TagBuilder &tag,
+		   const char *name, const char *value) noexcept
 {
 	if (strcmp(name, "StreamTitle") == 0)
 		icy_add_item(tag, TAG_TITLE, value);
@@ -96,7 +97,7 @@ icy_parse_tag_item(TagBuilder &tag, const char *name, const char *value)
  * that also fails, return #end.
  */
 static char *
-find_end_quote(char *p, char *const end)
+find_end_quote(char *p, char *const end) noexcept
 {
 	char *fallback = std::find(p, end, '\'');
 	if (fallback >= end - 1 || fallback[1] == ';')
@@ -116,7 +117,7 @@ find_end_quote(char *p, char *const end)
 }
 
 static std::unique_ptr<Tag>
-icy_parse_tag(char *p, char *const end)
+icy_parse_tag(char *p, char *const end) noexcept
 {
 	assert(p != nullptr);
 	assert(end != nullptr);
@@ -165,7 +166,7 @@ icy_parse_tag(char *p, char *const end)
 }
 
 size_t
-IcyMetaDataParser::Meta(const void *data, size_t length)
+IcyMetaDataParser::Meta(const void *data, size_t length) noexcept
 {
 	const unsigned char *p = (const unsigned char *)data;
 
@@ -223,7 +224,7 @@ IcyMetaDataParser::Meta(const void *data, size_t length)
 }
 
 size_t
-IcyMetaDataParser::ParseInPlace(void *data, size_t length)
+IcyMetaDataParser::ParseInPlace(void *data, size_t length) noexcept
 {
 	uint8_t *const dest0 = (uint8_t *)data;
 	uint8_t *dest = dest0;

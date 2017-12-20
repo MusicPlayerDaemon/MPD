@@ -25,7 +25,7 @@
 struct Tag;
 
 class IcyMetaDataParser {
-	size_t data_size, data_rest;
+	size_t data_size = 0, data_rest;
 
 	size_t meta_size, meta_position;
 	char *meta_data;
@@ -33,8 +33,7 @@ class IcyMetaDataParser {
 	Tag *tag;
 
 public:
-	IcyMetaDataParser():data_size(0) {}
-	~IcyMetaDataParser() {
+	~IcyMetaDataParser() noexcept {
 		Reset();
 	}
 
@@ -42,7 +41,7 @@ public:
 	 * Initialize an enabled icy_metadata object with the specified
 	 * data_size (from the icy-metaint HTTP response header).
 	 */
-	void Start(size_t _data_size) {
+	void Start(size_t _data_size) noexcept {
 		data_size = data_rest = _data_size;
 		meta_size = 0;
 		tag = nullptr;
@@ -51,12 +50,12 @@ public:
 	/**
 	 * Resets the icy_metadata.  Call this after rewinding the stream.
 	 */
-	void Reset();
+	void Reset() noexcept;
 
 	/**
 	 * Checks whether the icy_metadata object is enabled.
 	 */
-	bool IsDefined() const {
+	bool IsDefined() const noexcept {
 		return data_size > 0;
 	}
 
@@ -66,23 +65,23 @@ public:
 	 * return value is smaller than "length", the caller should invoke
 	 * icy_meta().
 	 */
-	size_t Data(size_t length);
+	size_t Data(size_t length) noexcept;
 
 	/**
 	 * Reads metadata from the stream.  Returns the number of bytes
 	 * consumed.  If the return value is smaller than "length", the caller
 	 * should invoke icy_data().
 	 */
-	size_t Meta(const void *data, size_t length);
+	size_t Meta(const void *data, size_t length) noexcept;
 
 	/**
 	 * Parse data and eliminate metadata.
 	 *
 	 * @return the number of data bytes remaining in the buffer
 	 */
-	size_t ParseInPlace(void *data, size_t length);
+	size_t ParseInPlace(void *data, size_t length) noexcept;
 
-	Tag *ReadTag() {
+	Tag *ReadTag() noexcept {
 		Tag *result = tag;
 		tag = nullptr;
 		return result;
