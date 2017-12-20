@@ -55,12 +55,12 @@ Tag::Tag(const Tag &other)
 	}
 }
 
-Tag *
-Tag::Merge(const Tag &base, const Tag &add)
+std::unique_ptr<Tag>
+Tag::Merge(const Tag &base, const Tag &add) noexcept
 {
 	TagBuilder builder(add);
 	builder.Complement(base);
-	return builder.CommitNew().release();
+	return builder.CommitNew();
 }
 
 Tag *
@@ -72,7 +72,7 @@ Tag::MergeReplace(Tag *base, Tag *add)
 	if (base == nullptr)
 		return add;
 
-	Tag *tag = Merge(*base, *add);
+	Tag *tag = Merge(*base, *add).release();
 	delete base;
 	delete add;
 

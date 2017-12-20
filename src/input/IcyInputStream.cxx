@@ -75,7 +75,7 @@ IcyInputStream::ReadTag()
 	if (icy_tag == nullptr)
 		return new Tag(*input_tag);
 
-	return Tag::Merge(*input_tag, *icy_tag);
+	return Tag::Merge(*input_tag, *icy_tag).release();
 }
 
 size_t

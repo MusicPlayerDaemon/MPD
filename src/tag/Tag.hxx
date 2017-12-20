@@ -26,6 +26,7 @@
 #include "Compiler.h"
 
 #include <algorithm>
+#include <memory>
 
 /**
  * The meta information about a song file.  It is a MPD specific
@@ -116,8 +117,8 @@ struct Tag {
 	 *
 	 * @return a newly allocated tag
 	 */
-	gcc_malloc gcc_returns_nonnull
-	static Tag *Merge(const Tag &base, const Tag &add);
+	static std::unique_ptr<Tag> Merge(const Tag &base,
+					  const Tag &add) noexcept;
 
 	/**
 	 * Merges the data from two tags.  Any of the two may be nullptr.  Both

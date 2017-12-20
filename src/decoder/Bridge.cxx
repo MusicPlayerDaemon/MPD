@@ -450,13 +450,11 @@ DecoderBridge::SubmitData(InputStream *is,
 	/* send stream tags */
 
 	if (UpdateStreamTag(is)) {
-		if (decoder_tag != nullptr) {
+		if (decoder_tag != nullptr)
 			/* merge with tag from decoder plugin */
-			Tag *tag = Tag::Merge(*decoder_tag,
-					      *stream_tag);
-			cmd = DoSendTag(*tag);
-			delete tag;
-		} else
+			cmd = DoSendTag(*Tag::Merge(*decoder_tag,
+						    *stream_tag));
+		else
 			/* send only the stream tag */
 			cmd = DoSendTag(*stream_tag);
 
@@ -559,14 +557,10 @@ DecoderBridge::SubmitTag(InputStream *is, Tag &&tag)
 
 	/* send tag to music pipe */
 
-	if (stream_tag != nullptr) {
+	if (stream_tag != nullptr)
 		/* merge with tag from input stream */
-		Tag *merged;
-
-		merged = Tag::Merge(*stream_tag, *decoder_tag);
-		cmd = DoSendTag(*merged);
-		delete merged;
-	} else
+		cmd = DoSendTag(*Tag::Merge(*stream_tag, *decoder_tag));
+	else
 		/* send only the decoder tag */
 		cmd = DoSendTag(*decoder_tag);
 
