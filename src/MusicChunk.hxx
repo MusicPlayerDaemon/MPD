@@ -28,6 +28,8 @@
 #include "AudioFormat.hxx"
 #endif
 
+#include <memory>
+
 #include <stdint.h>
 #include <stddef.h>
 
@@ -67,11 +69,9 @@ struct MusicChunk {
 
 	/**
 	 * An optional tag associated with this chunk (and the
-	 * following chunks); appears at song boundaries.  The tag
-	 * object is owned by this chunk, and must be freed when this
-	 * chunk is deinitialized.
+	 * following chunks); appears at song boundaries.
 	 */
-	Tag *tag = nullptr;
+	std::unique_ptr<Tag> tag;
 
 	/**
 	 * Replay gain information associated with this chunk.
@@ -101,12 +101,10 @@ struct MusicChunk {
 	AudioFormat audio_format;
 #endif
 
-	MusicChunk() = default;
+	MusicChunk() noexcept;
+	~MusicChunk() noexcept;
 
 	MusicChunk(const MusicChunk &) = delete;
-
-	~MusicChunk();
-
 	MusicChunk &operator=(const MusicChunk &) = delete;
 
 	bool IsEmpty() const {

@@ -222,7 +222,7 @@ AudioOutputSource::Fill(Mutex &mutex)
 	if (current_chunk == nullptr)
 		return false;
 
-	pending_tag = current_chunk->tag;
+	pending_tag = current_chunk->tag.get();
 
 	try {
 		/* release the mutex while the filter runs, because

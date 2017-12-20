@@ -126,8 +126,8 @@ struct Tag {
 	 *
 	 * @return a newly allocated tag
 	 */
-	gcc_malloc gcc_returns_nonnull
-	static Tag *MergeReplace(Tag *base, Tag *add);
+	static std::unique_ptr<Tag> Merge(std::unique_ptr<Tag> base,
+					  std::unique_ptr<Tag> add);
 
 	/**
 	 * Returns the first value of the specified tag type, or

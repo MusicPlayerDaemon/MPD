@@ -215,7 +215,7 @@ DecoderBridge::DoSendTag(const Tag &tag)
 		return dc.command;
 	}
 
-	chunk->tag = new Tag(tag);
+	chunk->tag = std::make_unique<Tag>(tag);
 	return DecoderCommand::NONE;
 }
 

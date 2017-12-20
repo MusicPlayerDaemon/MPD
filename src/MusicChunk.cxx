@@ -24,10 +24,8 @@
 
 #include <assert.h>
 
-MusicChunk::~MusicChunk()
-{
-	delete tag;
-}
+MusicChunk::MusicChunk() noexcept = default;
+MusicChunk::~MusicChunk() noexcept = default;
 
 #ifndef NDEBUG
 bool

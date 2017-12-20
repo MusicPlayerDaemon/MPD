@@ -131,7 +131,7 @@ class Player {
 	 * postponed, and sent to the output thread when the new song
 	 * really begins.
 	 */
-	Tag *cross_fade_tag = nullptr;
+	std::unique_ptr<Tag> cross_fade_tag;
 
 	/**
 	 * The current audio format for the audio outputs.
@@ -837,10 +837,8 @@ Player::PlayNextChunk() noexcept
 			/* don't send the tags of the new song (which
 			   is being faded in) yet; postpone it until
 			   the current song is faded out */
-			cross_fade_tag =
-				Tag::MergeReplace(cross_fade_tag,
-						  other_chunk->tag);
-			other_chunk->tag = nullptr;
+			cross_fade_tag = Tag::Merge(std::move(cross_fade_tag),
+						    std::move(other_chunk->tag));
 
 			if (pc.cross_fade.mixramp_delay <= 0) {
 				chunk->mix_ratio = ((float)cross_fade_position)
@@ -889,7 +887,8 @@ Player::PlayNextChunk() noexcept
 	/* insert the postponed tag if cross-fading is finished */
 
 	if (xfade_state != CrossFadeState::ACTIVE && cross_fade_tag != nullptr) {
-		chunk->tag = Tag::MergeReplace(chunk->tag, cross_fade_tag);
+		chunk->tag = Tag::Merge(std::move(chunk->tag),
+					std::move(cross_fade_tag));
 		cross_fade_tag = nullptr;
 	}
 
@@ -1114,7 +1113,7 @@ Player::Run() noexcept
 
 	ClearAndDeletePipe();
 
-	delete cross_fade_tag;
+	cross_fade_tag.reset();
 
 	if (song != nullptr) {
 		FormatDefault(player_domain, "played \"%s\"", song->GetURI());
