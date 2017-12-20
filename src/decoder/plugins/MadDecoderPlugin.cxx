@@ -351,10 +351,10 @@ MadDecoder::ParseId3(size_t tagsize, Tag **mpd_tag)
 	}
 
 	if (mpd_tag) {
-		Tag *tmp_tag = tag_id3_import(id3_tag);
+		auto tmp_tag = tag_id3_import(id3_tag);
 		if (tmp_tag != nullptr) {
 			delete *mpd_tag;
-			*mpd_tag = tmp_tag;
+			*mpd_tag = tmp_tag.release();
 		}
 	}
 

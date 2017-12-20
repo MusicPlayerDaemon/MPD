@@ -330,14 +330,14 @@ scan_id3_tag(struct id3_tag *tag,
 	tag_id3_import_ufid(tag, handler, handler_ctx);
 }
 
-Tag *
+std::unique_ptr<Tag>
 tag_id3_import(struct id3_tag *tag)
 {
 	TagBuilder tag_builder;
 	scan_id3_tag(tag, add_tag_handler, &tag_builder);
 	return tag_builder.empty()
 		? nullptr
-		: tag_builder.CommitNew().release();
+		: tag_builder.CommitNew();
 }
 
 bool
