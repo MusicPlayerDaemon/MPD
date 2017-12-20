@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "InputStream.hxx"
+#include "tag/Tag.hxx"
 #include "thread/Cond.hxx"
 #include "util/StringCompare.hxx"
 
@@ -107,13 +108,13 @@ InputStream::LockSkip(offset_type _offset)
 	Skip(_offset);
 }
 
-Tag *
+std::unique_ptr<Tag>
 InputStream::ReadTag()
 {
 	return nullptr;
 }
 
-Tag *
+std::unique_ptr<Tag>
 InputStream::LockReadTag()
 {
 	const std::lock_guard<Mutex> protect(mutex);

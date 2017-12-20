@@ -38,22 +38,23 @@ IcyInputStream::Update()
 		offset = override_offset;
 }
 
-Tag *
+std::unique_ptr<Tag>
 IcyInputStream::ReadTag()
 {
-	Tag *new_input_tag = ProxyInputStream::ReadTag();
+	auto new_input_tag = ProxyInputStream::ReadTag();
 	if (!IsEnabled())
 		return new_input_tag;
 
+	const bool had_new_input_tag = !!new_input_tag;
 	if (new_input_tag != nullptr)
-		input_tag.reset(new_input_tag);
+		input_tag = std::move(new_input_tag);
 
 	auto new_icy_tag = parser.ReadTag();
 	const bool had_new_icy_tag = !!new_icy_tag;
 	if (new_icy_tag != nullptr)
 		icy_tag = std::move(new_icy_tag);
 
-	if (new_input_tag == nullptr && !had_new_icy_tag)
+	if (!had_new_input_tag && !had_new_icy_tag)
 		/* no change */
 		return nullptr;
 
@@ -62,12 +63,12 @@ IcyInputStream::ReadTag()
 		return nullptr;
 
 	if (input_tag == nullptr)
-		return new Tag(*icy_tag);
+		return std::make_unique<Tag>(*icy_tag);
 
 	if (icy_tag == nullptr)
-		return new Tag(*input_tag);
+		return std::make_unique<Tag>(*input_tag);
 
-	return Tag::Merge(*input_tag, *icy_tag).release();
+	return Tag::Merge(*input_tag, *icy_tag);
 }
 
 size_t

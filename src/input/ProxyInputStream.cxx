@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "ProxyInputStream.hxx"
+#include "tag/Tag.hxx"
 
 ProxyInputStream::ProxyInputStream(InputStream *_input)
 	:InputStream(_input->GetURI(), _input->mutex, _input->cond),
@@ -75,7 +76,7 @@ ProxyInputStream::IsEOF() noexcept
 	return input.IsEOF();
 }
 
-Tag *
+std::unique_ptr<Tag>
 ProxyInputStream::ReadTag()
 {
 	return input.ReadTag();

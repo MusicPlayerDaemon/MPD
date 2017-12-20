@@ -45,15 +45,19 @@ AsyncInputStream::AsyncInputStream(EventLoop &event_loop, const char *_url,
 
 AsyncInputStream::~AsyncInputStream()
 {
-	delete tag;
-
 	buffer.Clear();
 }
 
 void
-AsyncInputStream::SetTag(Tag *_tag) noexcept
+AsyncInputStream::SetTag(std::unique_ptr<Tag> _tag) noexcept
 {
-	delete std::exchange(tag, _tag);
+	tag = std::move(_tag);
+}
+
+void
+AsyncInputStream::ClearTag() noexcept
+{
+	tag.reset();
 }
 
 void
@@ -151,7 +155,7 @@ AsyncInputStream::SeekDone() noexcept
 	cond.broadcast();
 }
 
-Tag *
+std::unique_ptr<Tag>
 AsyncInputStream::ReadTag()
 {
 	return std::exchange(tag, nullptr);

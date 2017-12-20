@@ -27,6 +27,7 @@
 #include "Compiler.h"
 
 #include <string>
+#include <memory>
 
 #include <assert.h>
 
@@ -322,18 +323,16 @@ public:
 	 *
 	 * The caller must lock the mutex.
 	 *
-	 * @return a tag object which must be freed by the caller, or
-	 * nullptr if the tag has not changed since the last call
+	 * @return a tag object or nullptr if the tag has not changed
+	 * since the last call
 	 */
-	gcc_malloc
-	virtual Tag *ReadTag();
+	virtual std::unique_ptr<Tag> ReadTag();
 
 	/**
 	 * Wrapper for ReadTag() which locks and unlocks the mutex;
 	 * the caller must not be holding it already.
 	 */
-	gcc_malloc
-	Tag *LockReadTag();
+	std::unique_ptr<Tag> LockReadTag();
 
 	/**
 	 * Returns true if the next read operation will not block: either data

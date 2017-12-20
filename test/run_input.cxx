@@ -82,11 +82,12 @@ dump_input_stream(InputStream *is)
 	/* read data and tags from the stream */
 
 	while (!is->IsEOF()) {
-		Tag *tag = is->ReadTag();
-		if (tag != NULL) {
-			fprintf(stderr, "Received a tag:\n");
-			tag_save(stderr, *tag);
-			delete tag;
+		{
+			auto tag = is->ReadTag();
+			if (tag) {
+				fprintf(stderr, "Received a tag:\n");
+				tag_save(stderr, *tag);
+			}
 		}
 
 		char buffer[4096];

@@ -223,7 +223,7 @@ bool
 DecoderBridge::UpdateStreamTag(InputStream *is)
 {
 	auto *tag = is != nullptr
-		? is->LockReadTag()
+		? is->LockReadTag().release()
 		: nullptr;
 	if (tag == nullptr) {
 		tag = song_tag;
