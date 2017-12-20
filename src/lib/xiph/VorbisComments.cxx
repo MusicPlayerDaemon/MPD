@@ -100,12 +100,12 @@ vorbis_comments_scan(char **comments,
 
 }
 
-Tag *
+std::unique_ptr<Tag>
 vorbis_comments_to_tag(char **comments) noexcept
 {
 	TagBuilder tag_builder;
 	vorbis_comments_scan(comments, add_tag_handler, &tag_builder);
 	return tag_builder.empty()
 		? nullptr
-		: tag_builder.CommitNew().release();
+		: tag_builder.CommitNew();
 }

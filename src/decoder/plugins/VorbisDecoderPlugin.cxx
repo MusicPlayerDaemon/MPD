@@ -152,12 +152,11 @@ static void
 vorbis_send_comments(DecoderClient &client, InputStream &is,
 		     char **comments)
 {
-	Tag *tag = vorbis_comments_to_tag(comments);
+	auto tag = vorbis_comments_to_tag(comments);
 	if (!tag)
 		return;
 
 	client.SubmitTag(is, std::move(*tag));
-	delete tag;
 }
 
 void

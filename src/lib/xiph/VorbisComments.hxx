@@ -22,6 +22,8 @@
 
 #include "check.h"
 
+#include <memory>
+
 struct ReplayGainInfo;
 struct TagHandler;
 struct Tag;
@@ -33,7 +35,7 @@ void
 vorbis_comments_scan(char **comments,
 		     const TagHandler &handler, void *handler_ctx);
 
-Tag *
+std::unique_ptr<Tag>
 vorbis_comments_to_tag(char **comments) noexcept;
 
 #endif
