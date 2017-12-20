@@ -24,6 +24,8 @@
 #include "IcyMetaDataParser.hxx"
 #include "Compiler.h"
 
+#include <memory>
+
 struct Tag;
 
 /**
@@ -35,12 +37,12 @@ class IcyInputStream final : public ProxyInputStream {
 	/**
 	 * The #Tag object ready to be requested via ReadTag().
 	 */
-	Tag *input_tag;
+	std::unique_ptr<Tag> input_tag;
 
 	/**
 	 * The #Tag object ready to be requested via ReadTag().
 	 */
-	Tag *icy_tag;
+	std::unique_ptr<Tag> icy_tag;
 
 	offset_type override_offset;
 

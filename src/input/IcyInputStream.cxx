@@ -23,16 +23,11 @@
 
 IcyInputStream::IcyInputStream(InputStream *_input)
 	:ProxyInputStream(_input),
-	 input_tag(nullptr), icy_tag(nullptr),
 	 override_offset(0)
 {
 }
 
-IcyInputStream::~IcyInputStream()
-{
-	delete input_tag;
-	delete icy_tag;
-}
+IcyInputStream::~IcyInputStream() = default;
 
 void
 IcyInputStream::Update()
@@ -50,18 +45,15 @@ IcyInputStream::ReadTag()
 	if (!IsEnabled())
 		return new_input_tag;
 
-	if (new_input_tag != nullptr) {
-		delete input_tag;
-		input_tag = new_input_tag;
-	}
+	if (new_input_tag != nullptr)
+		input_tag.reset(new_input_tag);
 
 	auto new_icy_tag = parser.ReadTag();
-	if (new_icy_tag != nullptr) {
-		delete icy_tag;
-		icy_tag = new_icy_tag.release();
-	}
+	const bool had_new_icy_tag = !!new_icy_tag;
+	if (new_icy_tag != nullptr)
+		icy_tag = std::move(new_icy_tag);
 
-	if (new_input_tag == nullptr && new_icy_tag == nullptr)
+	if (new_input_tag == nullptr && !had_new_icy_tag)
 		/* no change */
 		return nullptr;
 
