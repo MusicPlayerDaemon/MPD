@@ -42,7 +42,7 @@
 static constexpr char GREETING[] = "OK MPD " PROTOCOL_VERSION "\n";
 
 Client::Client(EventLoop &_loop, Partition &_partition,
-	       UniqueSocketDescriptor _fd, int _uid, int _num)
+	       UniqueSocketDescriptor _fd, int _uid, int _num) noexcept
 	:FullyBufferedSocket(_fd.Release(), _loop,
 			     16384, client_max_output_buffer_size),
 	 timeout_event(_loop, BIND_THIS_METHOD(OnTimeout)),
@@ -56,7 +56,7 @@ Client::Client(EventLoop &_loop, Partition &_partition,
 
 void
 client_new(EventLoop &loop, Partition &partition,
-	   UniqueSocketDescriptor fd, SocketAddress address, int uid)
+	   UniqueSocketDescriptor fd, SocketAddress address, int uid) noexcept
 {
 	static unsigned int next_client_num;
 	const auto remote = ToString(address);
@@ -102,7 +102,7 @@ client_new(EventLoop &loop, Partition &partition,
 }
 
 void
-Client::Close()
+Client::Close() noexcept
 {
 	partition->instance.client_list->Remove(*this);
 

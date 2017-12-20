@@ -25,7 +25,7 @@
 #include <assert.h>
 
 Client::SubscribeResult
-Client::Subscribe(const char *channel)
+Client::Subscribe(const char *channel) noexcept
 {
 	assert(channel != nullptr);
 
@@ -47,7 +47,7 @@ Client::Subscribe(const char *channel)
 }
 
 bool
-Client::Unsubscribe(const char *channel)
+Client::Unsubscribe(const char *channel) noexcept
 {
 	const auto i = subscriptions.find(channel);
 	if (i == subscriptions.end())
@@ -67,14 +67,14 @@ Client::Unsubscribe(const char *channel)
 }
 
 void
-Client::UnsubscribeAll()
+Client::UnsubscribeAll() noexcept
 {
 	subscriptions.clear();
 	num_subscriptions = 0;
 }
 
 bool
-Client::PushMessage(const ClientMessage &msg)
+Client::PushMessage(const ClientMessage &msg) noexcept
 {
 	if (messages.size() >= CLIENT_MAX_MESSAGES ||
 	    !IsSubscribed(msg.GetChannel()))
