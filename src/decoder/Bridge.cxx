@@ -47,10 +47,6 @@ DecoderBridge::~DecoderBridge()
 		convert->Close();
 		delete convert;
 	}
-
-	delete song_tag;
-	delete stream_tag;
-	delete decoder_tag;
 }
 
 bool
@@ -222,11 +218,11 @@ DecoderBridge::DoSendTag(const Tag &tag)
 bool
 DecoderBridge::UpdateStreamTag(InputStream *is)
 {
-	auto *tag = is != nullptr
-		? is->LockReadTag().release()
+	auto tag = is != nullptr
+		? is->LockReadTag()
 		: nullptr;
 	if (tag == nullptr) {
-		tag = song_tag;
+		tag = std::move(song_tag);
 		if (tag == nullptr)
 			return false;
 
@@ -234,12 +230,9 @@ DecoderBridge::UpdateStreamTag(InputStream *is)
 		   instead */
 	} else
 		/* discard the song tag; we don't need it */
-		delete song_tag;
+		song_tag.reset();
 
-	song_tag = nullptr;
-
-	delete stream_tag;
-	stream_tag = tag;
+	stream_tag = std::move(tag);
 	return true;
 }
 
@@ -540,8 +533,7 @@ DecoderBridge::SubmitTag(InputStream *is, Tag &&tag)
 
 	/* save the tag */
 
-	delete decoder_tag;
-	decoder_tag = new Tag(std::move(tag));
+	decoder_tag = std::make_unique<Tag>(std::move(tag));
 
 	/* check for a new stream tag */
 

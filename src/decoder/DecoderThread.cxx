@@ -447,7 +447,7 @@ decoder_run_song(DecoderControl &dc,
 				file - tags on "stream" songs are just
 				remembered from the last time we
 				played it*/
-			     song.IsFile() ? new Tag(song.GetTag()) : nullptr);
+			     song.IsFile() ? std::make_unique<Tag>(song.GetTag()) : nullptr);
 
 	dc.state = DecoderState::START;
 	dc.CommandFinishedLocked();

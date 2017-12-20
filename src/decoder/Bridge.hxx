@@ -24,6 +24,7 @@
 #include "ReplayGainInfo.hxx"
 
 #include <exception>
+#include <memory>
 
 class PcmConvert;
 struct MusicChunk;
@@ -74,13 +75,13 @@ public:
 	 * files, because we expect the stream server to send us a new
 	 * tag each time we play it.
 	 */
-	Tag *song_tag;
+	std::unique_ptr<Tag> song_tag;
 
 	/** the last tag received from the stream */
-	Tag *stream_tag = nullptr;
+	std::unique_ptr<Tag> stream_tag;
 
 	/** the last tag received from the decoder plugin */
-	Tag *decoder_tag = nullptr;
+	std::unique_ptr<Tag> decoder_tag;
 
 	/** the chunk currently being written to */
 	MusicChunk *current_chunk = nullptr;
@@ -100,10 +101,10 @@ public:
 	std::exception_ptr error;
 
 	DecoderBridge(DecoderControl &_dc, bool _initial_seek_pending,
-		      Tag *_tag)
+		      std::unique_ptr<Tag> _tag)
 		:dc(_dc),
 		 initial_seek_pending(_initial_seek_pending),
-		 song_tag(_tag) {}
+		 song_tag(std::move(_tag)) {}
 
 	~DecoderBridge();
 
