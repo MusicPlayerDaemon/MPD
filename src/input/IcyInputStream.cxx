@@ -55,10 +55,10 @@ IcyInputStream::ReadTag()
 		input_tag = new_input_tag;
 	}
 
-	Tag *new_icy_tag = parser.ReadTag();
+	auto new_icy_tag = parser.ReadTag();
 	if (new_icy_tag != nullptr) {
 		delete icy_tag;
-		icy_tag = new_icy_tag;
+		icy_tag = new_icy_tag.release();
 	}
 
 	if (new_input_tag == nullptr && new_icy_tag == nullptr)

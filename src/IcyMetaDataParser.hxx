@@ -20,9 +20,11 @@
 #ifndef MPD_ICY_META_DATA_PARSER_HXX
 #define MPD_ICY_META_DATA_PARSER_HXX
 
-#include <stddef.h>
+#include "tag/Tag.hxx"
 
-struct Tag;
+#include <memory>
+
+#include <stddef.h>
 
 class IcyMetaDataParser {
 	size_t data_size = 0, data_rest;
@@ -30,7 +32,7 @@ class IcyMetaDataParser {
 	size_t meta_size, meta_position;
 	char *meta_data;
 
-	Tag *tag;
+	std::unique_ptr<Tag> tag;
 
 public:
 	~IcyMetaDataParser() noexcept {
@@ -81,10 +83,8 @@ public:
 	 */
 	size_t ParseInPlace(void *data, size_t length) noexcept;
 
-	Tag *ReadTag() noexcept {
-		Tag *result = tag;
-		tag = nullptr;
-		return result;
+	std::unique_ptr<Tag> ReadTag() noexcept {
+		return std::exchange(tag, nullptr);
 	}
 };
 

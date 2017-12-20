@@ -39,7 +39,7 @@ IcyMetaDataParser::Reset() noexcept
 	if (data_rest == 0 && meta_size > 0)
 		delete[] meta_data;
 
-	delete tag;
+	tag.reset();
 
 	data_rest = data_size;
 	meta_size = 0;
@@ -209,9 +209,7 @@ IcyMetaDataParser::Meta(const void *data, size_t length) noexcept
 	if (meta_position == meta_size) {
 		/* parse */
 
-		delete tag;
-
-		tag = icy_parse_tag(meta_data, meta_data + meta_size).release();
+		tag = icy_parse_tag(meta_data, meta_data + meta_size);
 		delete[] meta_data;
 
 		/* change back to normal data mode */
