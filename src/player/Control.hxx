@@ -185,6 +185,29 @@ struct PlayerControl final : AudioOutputClient {
 	 */
 	bool border_pause = false;
 
+	/**
+	 * If this flag is set, then the player thread is currently
+	 * occupied and will not be able to respond quickly to
+	 * commands (e.g. waiting for the decoder thread to finish
+	 * seeking).  This is used to skip #PlayerCommand::REFRESH to
+	 * avoid blocking the main thread.
+	 */
+	bool occupied = false;
+
+	struct ScopeOccupied {
+		PlayerControl &pc;
+
+		explicit ScopeOccupied(PlayerControl &_pc) noexcept:pc(_pc) {
+			assert(!pc.occupied);
+			pc.occupied = true;
+		}
+
+		~ScopeOccupied() noexcept {
+			assert(pc.occupied);
+			pc.occupied = false;
+		}
+	};
+
 	AudioFormat audio_format;
 	uint16_t bit_rate;
 

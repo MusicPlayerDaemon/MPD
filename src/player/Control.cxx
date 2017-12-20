@@ -44,6 +44,7 @@ PlayerControl::PlayerControl(PlayerListener &_listener,
 
 PlayerControl::~PlayerControl() noexcept
 {
+	assert(!occupied);
 }
 
 bool
@@ -155,7 +156,8 @@ PlayerControl::LockGetStatus() noexcept
 	player_status status;
 
 	const std::lock_guard<Mutex> protect(mutex);
-	SynchronousCommand(PlayerCommand::REFRESH);
+	if (!occupied)
+		SynchronousCommand(PlayerCommand::REFRESH);
 
 	status.state = state;
 

@@ -367,6 +367,8 @@ Player::StartDecoder(MusicPipe &_pipe) noexcept
 void
 Player::StopDecoder() noexcept
 {
+	const PlayerControl::ScopeOccupied occupied(pc);
+
 	dc.Stop();
 
 	if (dc.pipe != nullptr) {
@@ -624,6 +626,8 @@ Player::SeekDecoder() noexcept
 		}
 
 		try {
+			const PlayerControl::ScopeOccupied occupied(pc);
+
 			dc.Seek(where + start_time);
 		} catch (...) {
 			/* decoder failure */
