@@ -321,7 +321,7 @@ inline void
 MadDecoder::ParseId3(size_t tagsize, Tag **mpd_tag)
 {
 #ifdef ENABLE_ID3TAG
-	id3_byte_t *allocated = nullptr;
+	std::unique_ptr<id3_byte_t[]> allocated;
 
 	const id3_length_t count = stream.bufend - stream.this_frame;
 
@@ -330,25 +330,22 @@ MadDecoder::ParseId3(size_t tagsize, Tag **mpd_tag)
 		id3_data = stream.this_frame;
 		mad_stream_skip(&(stream), tagsize);
 	} else {
-		allocated = new id3_byte_t[tagsize];
-		memcpy(allocated, stream.this_frame, count);
+		allocated.reset(new id3_byte_t[tagsize]);
+		memcpy(allocated.get(), stream.this_frame, count);
 		mad_stream_skip(&(stream), count);
 
 		if (!decoder_read_full(client, input_stream,
-				       allocated + count, tagsize - count)) {
+				       allocated.get() + count, tagsize - count)) {
 			LogDebug(mad_domain, "error parsing ID3 tag");
-			delete[] allocated;
 			return;
 		}
 
-		id3_data = allocated;
+		id3_data = allocated.get();
 	}
 
 	struct id3_tag *const id3_tag = id3_tag_parse(id3_data, tagsize);
-	if (id3_tag == nullptr) {
-		delete[] allocated;
+	if (id3_tag == nullptr)
 		return;
-	}
 
 	if (mpd_tag) {
 		auto tmp_tag = tag_id3_import(id3_tag);
@@ -371,7 +368,6 @@ MadDecoder::ParseId3(size_t tagsize, Tag **mpd_tag)
 
 	id3_tag_delete(id3_tag);
 
-	delete[] allocated;
 #else /* !ENABLE_ID3TAG */
 	(void)mpd_tag;
 
