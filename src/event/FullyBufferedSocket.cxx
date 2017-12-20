@@ -26,7 +26,7 @@
 #include <string.h>
 
 FullyBufferedSocket::ssize_t
-FullyBufferedSocket::DirectWrite(const void *data, size_t length)
+FullyBufferedSocket::DirectWrite(const void *data, size_t length) noexcept
 {
 	const auto nbytes = GetSocket().Write((const char *)data, length);
 	if (gcc_unlikely(nbytes < 0)) {
@@ -47,7 +47,7 @@ FullyBufferedSocket::DirectWrite(const void *data, size_t length)
 }
 
 bool
-FullyBufferedSocket::Flush()
+FullyBufferedSocket::Flush() noexcept
 {
 	assert(IsDefined());
 
@@ -73,7 +73,7 @@ FullyBufferedSocket::Flush()
 }
 
 bool
-FullyBufferedSocket::Write(const void *data, size_t length)
+FullyBufferedSocket::Write(const void *data, size_t length) noexcept
 {
 	assert(IsDefined());
 
