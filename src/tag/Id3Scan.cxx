@@ -23,6 +23,7 @@
 #include "Handler.hxx"
 #include "Table.hxx"
 #include "Builder.hxx"
+#include "Tag.hxx"
 #include "Id3MusicBrainz.hxx"
 #include "util/Alloc.hxx"
 #include "util/ScopeExit.hxx"
@@ -336,7 +337,7 @@ tag_id3_import(struct id3_tag *tag)
 	scan_id3_tag(tag, add_tag_handler, &tag_builder);
 	return tag_builder.empty()
 		? nullptr
-		: tag_builder.CommitNew();
+		: tag_builder.CommitNew().release();
 }
 
 bool

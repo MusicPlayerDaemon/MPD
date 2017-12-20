@@ -31,6 +31,7 @@
 #include "config/ConfigGlobal.hxx"
 #include "config/Block.hxx"
 #include "tag/Builder.hxx"
+#include "tag/Tag.hxx"
 #include "event/Call.hxx"
 #include "event/Loop.hxx"
 #include "thread/Cond.hxx"
@@ -222,7 +223,7 @@ CurlInputStream::OnHeaders(unsigned status,
 		TagBuilder tag_builder;
 		tag_builder.AddItem(TAG_NAME, i->second.c_str());
 
-		SetTag(tag_builder.CommitNew());
+		SetTag(tag_builder.CommitNew().release());
 	}
 
 	if (!icy->IsEnabled()) {

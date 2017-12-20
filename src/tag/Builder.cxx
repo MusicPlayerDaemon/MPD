@@ -144,10 +144,10 @@ TagBuilder::Commit()
 	return tag;
 }
 
-Tag *
+std::unique_ptr<Tag>
 TagBuilder::CommitNew()
 {
-	Tag *tag = new Tag();
+	std::unique_ptr<Tag> tag(new Tag());
 	Commit(*tag);
 	return tag;
 }

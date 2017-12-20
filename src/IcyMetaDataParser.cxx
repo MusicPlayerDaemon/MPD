@@ -115,7 +115,7 @@ find_end_quote(char *p, char *const end)
 	}
 }
 
-static Tag *
+static std::unique_ptr<Tag>
 icy_parse_tag(char *p, char *const end)
 {
 	assert(p != nullptr);
@@ -210,7 +210,7 @@ IcyMetaDataParser::Meta(const void *data, size_t length)
 
 		delete tag;
 
-		tag = icy_parse_tag(meta_data, meta_data + meta_size);
+		tag = icy_parse_tag(meta_data, meta_data + meta_size).release();
 		delete[] meta_data;
 
 		/* change back to normal data mode */

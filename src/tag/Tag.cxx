@@ -60,7 +60,7 @@ Tag::Merge(const Tag &base, const Tag &add)
 {
 	TagBuilder builder(add);
 	builder.Complement(base);
-	return builder.CommitNew();
+	return builder.CommitNew().release();
 }
 
 Tag *

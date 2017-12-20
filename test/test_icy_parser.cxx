@@ -17,7 +17,7 @@
 
 #include <string.h>
 
-static Tag *
+static std::unique_ptr<Tag>
 icy_parse_tag(const char *p)
 {
 	char *q = strdup(p);
@@ -38,17 +38,15 @@ CompareTagTitle(const Tag &tag, const std::string &title)
 static void
 TestIcyParserTitle(const char *input, const char *title)
 {
-	Tag *tag = icy_parse_tag(input);
+	const auto tag = icy_parse_tag(input);
 	CompareTagTitle(*tag, title);
-	delete tag;
 }
 
 static void
 TestIcyParserEmpty(const char *input)
 {
-	Tag *tag = icy_parse_tag(input);
+	const auto tag = icy_parse_tag(input);
 	CPPUNIT_ASSERT_EQUAL(uint16_t(0), tag->num_items);
-	delete tag;
 }
 
 class IcyTest : public CppUnit::TestFixture {

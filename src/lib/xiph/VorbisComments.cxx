@@ -23,6 +23,7 @@
 #include "tag/Table.hxx"
 #include "tag/Handler.hxx"
 #include "tag/Builder.hxx"
+#include "tag/Tag.hxx"
 #include "tag/VorbisComment.hxx"
 #include "tag/ReplayGain.hxx"
 #include "ReplayGainInfo.hxx"
@@ -106,5 +107,5 @@ vorbis_comments_to_tag(char **comments) noexcept
 	vorbis_comments_scan(comments, add_tag_handler, &tag_builder);
 	return tag_builder.empty()
 		? nullptr
-		: tag_builder.CommitNew();
+		: tag_builder.CommitNew().release();
 }
