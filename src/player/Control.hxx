@@ -340,7 +340,7 @@ private:
 
 public:
 	/**
-	 * Throws std::runtime_error or #Error on error.
+	 * Throws on error.
 	 *
 	 * @param song the song to be queued
 	 */
@@ -467,7 +467,7 @@ private:
 	void EnqueueSongLocked(std::unique_ptr<DetachedSong> song) noexcept;
 
 	/**
-	 * Throws std::runtime_error or #Error on error.
+	 * Throws on error.
 	 */
 	void SeekLocked(std::unique_ptr<DetachedSong> song, SongTime t);
 
@@ -481,7 +481,7 @@ public:
 	/**
 	 * Makes the player thread seek the specified song to a position.
 	 *
-	 * Throws std::runtime_error or #Error on error.
+	 * Throws on error.
 	 *
 	 * @param song the song to be queued; the given instance will be owned
 	 * and freed by the player

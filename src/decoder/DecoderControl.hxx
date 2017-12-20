@@ -283,7 +283,7 @@ struct DecoderControl {
 	}
 
 	/**
-	 * Clear the error condition and free the #Error object (if any).
+	 * Clear the error condition (if any).
 	 *
 	 * Caller must lock the object.
 	 */
