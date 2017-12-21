@@ -610,6 +610,8 @@ Player::SeekDecoder() noexcept
 			ClearAndReplacePipe(dc.pipe);
 		}
 
+		const std::lock_guard<Mutex> lock(pc.mutex);
+
 		const SongTime start_time = pc.next_song->GetStartTime();
 		pc.next_song.reset();
 		queued = false;
@@ -618,7 +620,7 @@ Player::SeekDecoder() noexcept
 		   (just in case that happens to be still in
 		   progress) */
 
-		if (!LockWaitDecoderStartup())
+		if (!WaitDecoderStartup())
 			return false;
 
 		/* send the SEEK command */
@@ -629,8 +631,6 @@ Player::SeekDecoder() noexcept
 			if (where > total_time)
 				where = total_time;
 		}
-
-		const std::lock_guard<Mutex> lock(pc.mutex);
 
 		try {
 			const PlayerControl::ScopeOccupied occupied(pc);
