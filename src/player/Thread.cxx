@@ -267,6 +267,16 @@ private:
 	}
 
 	/**
+	 * Invoke DecoderControl::Seek() and update our state or
+	 * handle errors.
+	 *
+	 * Caller must lock the mutex.
+	 *
+	 * @return false if the decoder has failed
+	 */
+	bool SeekDecoder(SongTime seek_time) noexcept;
+
+	/**
 	 * This is the handler for the #PlayerCommand::SEEK command.
 	 *
 	 * The player lock is not held.
@@ -580,6 +590,33 @@ Player::SendSilence() noexcept
 	return true;
 }
 
+bool
+Player::SeekDecoder(SongTime seek_time) noexcept
+{
+	assert(song);
+	assert(!decoder_starting);
+
+	if (!pc.total_time.IsNegative()) {
+		const SongTime total_time(pc.total_time);
+		if (seek_time > total_time)
+			seek_time = total_time;
+	}
+
+	try {
+		const PlayerControl::ScopeOccupied occupied(pc);
+
+		dc.Seek(song->GetStartTime() + seek_time);
+	} catch (...) {
+		/* decoder failure */
+		pc.SetError(PlayerError::DECODER, std::current_exception());
+		pc.CommandFinished();
+		return false;
+	}
+
+	elapsed_time = seek_time;
+	return true;
+}
+
 inline bool
 Player::SeekDecoder() noexcept
 {
@@ -615,7 +652,6 @@ Player::SeekDecoder() noexcept
 
 		const std::lock_guard<Mutex> lock(pc.mutex);
 
-		const SongTime start_time = pc.next_song->GetStartTime();
 		pc.next_song.reset();
 		queued = false;
 
@@ -628,26 +664,8 @@ Player::SeekDecoder() noexcept
 
 		/* send the SEEK command */
 
-		SongTime where = pc.seek_time;
-		if (!pc.total_time.IsNegative()) {
-			const SongTime total_time(pc.total_time);
-			if (where > total_time)
-				where = total_time;
-		}
-
-		try {
-			const PlayerControl::ScopeOccupied occupied(pc);
-
-			dc.Seek(where + start_time);
-		} catch (...) {
-			/* decoder failure */
-			pc.SetError(PlayerError::DECODER,
-				    std::current_exception());
-			pc.CommandFinished();
+		if (!SeekDecoder(pc.seek_time))
 			return false;
-		}
-
-		elapsed_time = where;
 	}
 
 	pc.LockCommandFinished();
