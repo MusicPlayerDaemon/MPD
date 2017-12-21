@@ -231,11 +231,6 @@ private:
 		return true;
 	}
 
-	bool LockWaitDecoderStartup() noexcept {
-		const std::lock_guard<Mutex> lock(pc.mutex);
-		return WaitDecoderStartup();
-	}
-
 	/**
 	 * Stop the decoder and clears (and frees) its music pipe.
 	 *
@@ -641,7 +636,8 @@ Player::SeekDecoder() noexcept
 		StartDecoder(*pipe);
 		ActivateDecoder();
 
-		if (!LockWaitDecoderStartup())
+		const std::lock_guard<Mutex> lock(pc.mutex);
+		if (!WaitDecoderStartup())
 			return false;
 	} else {
 		if (!IsDecoderAtCurrentSong()) {
