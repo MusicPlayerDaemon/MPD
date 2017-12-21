@@ -628,6 +628,7 @@ Player::SeekDecoder() noexcept
 		try {
 			const PlayerControl::ScopeOccupied occupied(pc);
 
+			const std::lock_guard<Mutex> lock(pc.mutex);
 			dc.Seek(where + start_time);
 		} catch (...) {
 			/* decoder failure */

@@ -387,6 +387,8 @@ public:
 
 	/**
 	 * Throws #std::runtime_error on error.
+	 *
+	 * Caller must lock the object.
 	 */
 	void Seek(SongTime t);
 

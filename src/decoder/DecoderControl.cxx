@@ -128,8 +128,6 @@ DecoderControl::Stop() noexcept
 void
 DecoderControl::Seek(SongTime t)
 {
-	const std::lock_guard<Mutex> protect(mutex);
-
 	assert(state != DecoderState::START);
 	assert(state != DecoderState::ERROR);
 
