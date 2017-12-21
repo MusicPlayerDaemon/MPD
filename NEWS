@@ -18,6 +18,10 @@ ver 0.21 (not yet released)
 * mixer
   - sndio: new mixer plugin
 
+ver 0.20.14 (not yet released)
+* database
+  - simple: fix file corruption in the presence of mount points
+
 ver 0.20.13 (2017/12/18)
 * output
   - osx: set up ring buffer to hold at least 100ms
