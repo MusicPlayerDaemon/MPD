@@ -631,9 +631,10 @@ Player::SeekDecoder() noexcept
 			dc.Seek(where + start_time);
 		} catch (...) {
 			/* decoder failure */
+			const std::lock_guard<Mutex> lock(pc.mutex);
 			pc.SetError(PlayerError::DECODER,
 				    std::current_exception());
-			pc.LockCommandFinished();
+			pc.CommandFinished();
 			return false;
 		}
 
