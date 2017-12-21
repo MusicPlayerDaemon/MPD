@@ -106,6 +106,8 @@ UnsafeCopyStringP(wchar_t *dest, const wchar_t *src) noexcept
   /* emulate wcpcpy() */
   UnsafeCopyString(dest, src);
   return dest + StringLength(dest);
+#elif defined(__sun) && defined (__SVR4)
+	return std::wcpcpy(dest, src);
 #else
   return wcpcpy(dest, src);
 #endif
@@ -140,7 +142,11 @@ gcc_malloc gcc_nonnull_all
 static inline wchar_t *
 DuplicateString(const wchar_t *p)
 {
+#if defined(__sun) && defined (__SVR4)
+	return std::wcsdup(p);
+#else
 	return wcsdup(p);
+#endif
 }
 
 #endif

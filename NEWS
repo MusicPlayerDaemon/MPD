@@ -1,6 +1,7 @@
 ver 0.20.14 (not yet released)
 * database
   - simple: fix file corruption in the presence of mount points
+* fix Solaris build failure
 
 ver 0.20.13 (2017/12/18)
 * output
