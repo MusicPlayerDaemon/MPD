@@ -373,6 +373,7 @@ void
 Player::StopDecoder() noexcept
 {
 	const PlayerControl::ScopeOccupied occupied(pc);
+	const std::lock_guard<Mutex> protect(pc.mutex);
 
 	dc.Stop();
 

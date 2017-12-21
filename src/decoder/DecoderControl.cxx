@@ -112,8 +112,6 @@ DecoderControl::Start(std::unique_ptr<DetachedSong> _song,
 void
 DecoderControl::Stop() noexcept
 {
-	const std::lock_guard<Mutex> protect(mutex);
-
 	if (command != DecoderCommand::NONE)
 		/* Attempt to cancel the current command.  If it's too
 		   late and the decoder thread is already executing

@@ -383,6 +383,9 @@ public:
 		   SongTime start_time, SongTime end_time,
 		   MusicBuffer &buffer, MusicPipe &pipe) noexcept;
 
+	/**
+	 * Caller must lock the object.
+	 */
 	void Stop() noexcept;
 
 	/**
