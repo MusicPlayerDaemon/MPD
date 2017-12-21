@@ -208,11 +208,11 @@ private:
 	 * This method does not check for commands.  It is only
 	 * allowed to be used while a command is being handled.
 	 *
+	 * Caller must lock the mutex.
+	 *
 	 * @return false if the decoder has failed
 	 */
 	bool WaitDecoderStartup() noexcept {
-		const std::lock_guard<Mutex> lock(pc.mutex);
-
 		while (decoder_starting) {
 			if (!CheckDecoderStartup()) {
 				/* if decoder startup fails, make sure
@@ -229,6 +229,11 @@ private:
 		}
 
 		return true;
+	}
+
+	bool LockWaitDecoderStartup() noexcept {
+		const std::lock_guard<Mutex> lock(pc.mutex);
+		return WaitDecoderStartup();
 	}
 
 	/**
@@ -596,7 +601,7 @@ Player::SeekDecoder() noexcept
 		StartDecoder(*pipe);
 		ActivateDecoder();
 
-		if (!WaitDecoderStartup())
+		if (!LockWaitDecoderStartup())
 			return false;
 	} else {
 		if (!IsDecoderAtCurrentSong()) {
@@ -613,7 +618,7 @@ Player::SeekDecoder() noexcept
 		   (just in case that happens to be still in
 		   progress) */
 
-		if (!WaitDecoderStartup())
+		if (!LockWaitDecoderStartup())
 			return false;
 
 		/* send the SEEK command */
