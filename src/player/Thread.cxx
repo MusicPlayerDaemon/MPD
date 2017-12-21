@@ -361,11 +361,10 @@ Player::StartDecoder(MusicPipe &_pipe) noexcept
 	assert(queued || pc.command == PlayerCommand::SEEK);
 	assert(pc.next_song != nullptr);
 
-	{
-		/* copy ReplayGain parameters to the decoder */
-		const std::lock_guard<Mutex> protect(pc.mutex);
-		dc.replay_gain_mode = pc.replay_gain_mode;
-	}
+	const std::lock_guard<Mutex> protect(pc.mutex);
+
+	/* copy ReplayGain parameters to the decoder */
+	dc.replay_gain_mode = pc.replay_gain_mode;
 
 	SongTime start_time = pc.next_song->GetStartTime() + pc.seek_time;
 

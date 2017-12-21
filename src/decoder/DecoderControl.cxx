@@ -94,8 +94,6 @@ DecoderControl::Start(std::unique_ptr<DetachedSong> _song,
 		      SongTime _start_time, SongTime _end_time,
 		      MusicBuffer &_buffer, MusicPipe &_pipe) noexcept
 {
-	const std::lock_guard<Mutex> protect(mutex);
-
 	assert(_song != nullptr);
 	assert(_pipe.IsEmpty());
 

@@ -372,6 +372,8 @@ public:
 	/**
 	 * Start the decoder.
 	 *
+	 * Caller must lock the object.
+	 *
 	 * @param song the song to be decoded; the given instance will be
 	 * owned and freed by the decoder
 	 * @param start_time see #DecoderControl
