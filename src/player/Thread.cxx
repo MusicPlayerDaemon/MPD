@@ -299,7 +299,7 @@ private:
 	 * yet, therefore we don't know the audio format yet.  To
 	 * finish decoder startup, call CheckDecoderStartup().
 	 *
-	 * The player lock is not held.
+	 * Caller must lock the mutex.
 	 */
 	void ActivateDecoder() noexcept;
 
@@ -419,27 +419,26 @@ Player::ActivateDecoder() noexcept
 
 	queued = false;
 
+	pc.ClearTaggedSong();
+
+	song = std::exchange(pc.next_song, nullptr);
+
+	elapsed_time = pc.seek_time;
+
+	/* set the "starting" flag, which will be cleared by
+	   player_check_decoder_startup() */
+	decoder_starting = true;
+
+	/* update PlayerControl's song information */
+	pc.total_time = song->GetDuration();
+	pc.bit_rate = 0;
+	pc.audio_format.Clear();
+
 	{
-		const std::lock_guard<Mutex> lock(pc.mutex);
-
-		pc.ClearTaggedSong();
-
-		song = std::exchange(pc.next_song, nullptr);
-
-		elapsed_time = pc.seek_time;
-
-		/* set the "starting" flag, which will be cleared by
-		   player_check_decoder_startup() */
-		decoder_starting = true;
-
-		/* update PlayerControl's song information */
-		pc.total_time = song->GetDuration();
-		pc.bit_rate = 0;
-		pc.audio_format.Clear();
+		/* call syncPlaylistWithQueue() in the main thread */
+		const ScopeUnlock unlock(pc.mutex);
+		pc.listener.OnPlayerSync();
 	}
-
-	/* call syncPlaylistWithQueue() in the main thread */
-	pc.listener.OnPlayerSync();
 }
 
 /**
@@ -634,9 +633,9 @@ Player::SeekDecoder() noexcept
 
 		/* re-start the decoder */
 		StartDecoder(*pipe);
+		const std::lock_guard<Mutex> lock(pc.mutex);
 		ActivateDecoder();
 
-		const std::lock_guard<Mutex> lock(pc.mutex);
 		if (!WaitDecoderStartup())
 			return false;
 	} else {
@@ -966,7 +965,10 @@ Player::SongBorder() noexcept
 
 	pc.outputs.SongBorder();
 
-	ActivateDecoder();
+	{
+		const std::lock_guard<Mutex> lock(pc.mutex);
+		ActivateDecoder();
+	}
 
 	const bool border_pause = pc.LockApplyBorderPause();
 	if (border_pause) {
@@ -981,9 +983,9 @@ Player::Run() noexcept
 	pipe = new MusicPipe();
 
 	StartDecoder(*pipe);
+	pc.Lock();
 	ActivateDecoder();
 
-	pc.Lock();
 	pc.state = PlayerState::PLAY;
 
 	pc.CommandFinished();
