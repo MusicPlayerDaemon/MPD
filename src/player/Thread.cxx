@@ -1130,7 +1130,7 @@ Player::Run() noexcept
 		song.reset();
 	}
 
-	pc.Lock();
+	const std::lock_guard<Mutex> lock(pc.mutex);
 
 	pc.ClearTaggedSong();
 
@@ -1140,8 +1140,6 @@ Player::Run() noexcept
 	}
 
 	pc.state = PlayerState::STOP;
-
-	pc.Unlock();
 }
 
 static void
