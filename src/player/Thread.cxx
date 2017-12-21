@@ -239,7 +239,7 @@ private:
 	/**
 	 * Stop the decoder and clears (and frees) its music pipe.
 	 *
-	 * Player lock is not held.
+	 * Caller must lock the mutex.
 	 */
 	void StopDecoder() noexcept;
 
@@ -373,7 +373,6 @@ void
 Player::StopDecoder() noexcept
 {
 	const PlayerControl::ScopeOccupied occupied(pc);
-	const std::lock_guard<Mutex> protect(pc.mutex);
 
 	dc.Stop();
 
@@ -592,7 +591,10 @@ Player::SeekDecoder() noexcept
 		/* the decoder is already decoding the "next" song -
 		   stop it and start the previous song again */
 
-		StopDecoder();
+		{
+			const std::lock_guard<Mutex> lock(pc.mutex);
+			StopDecoder();
+		}
 
 		/* clear music chunks which might still reside in the
 		   pipe */
@@ -727,12 +729,10 @@ Player::ProcessCommand() noexcept
 			return;
 		}
 
-		if (IsDecoderAtNextSong()) {
+		if (IsDecoderAtNextSong())
 			/* the decoder is already decoding the song -
 			   stop it and reset the position */
-			const ScopeUnlock unlock(pc.mutex);
 			StopDecoder();
-		}
 
 		pc.next_song.reset();
 		queued = false;
@@ -1120,6 +1120,8 @@ Player::Run() noexcept
 		pc.Lock();
 	}
 
+	const std::lock_guard<Mutex> lock(pc.mutex);
+
 	StopDecoder();
 
 	ClearAndDeletePipe();
@@ -1130,8 +1132,6 @@ Player::Run() noexcept
 		FormatDefault(player_domain, "played \"%s\"", song->GetURI());
 		song.reset();
 	}
-
-	const std::lock_guard<Mutex> lock(pc.mutex);
 
 	pc.ClearTaggedSong();
 
