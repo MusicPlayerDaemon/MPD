@@ -35,23 +35,10 @@ Thread::Start()
 	if (handle == nullptr)
 		throw MakeLastError("Failed to create thread");
 #else
-#ifndef NDEBUG
-	creating = true;
-#endif
-
 	int e = pthread_create(&handle, nullptr, ThreadProc, this);
 
-	if (e != 0) {
-#ifndef NDEBUG
-		creating = false;
-#endif
+	if (e != 0)
 		throw MakeErrno(e, "Failed to create thread");
-	}
-
-	defined = true;
-#ifndef NDEBUG
-	creating = false;
-#endif
 #endif
 }
 
@@ -67,23 +54,13 @@ Thread::Join() noexcept
 	handle = nullptr;
 #else
 	pthread_join(handle, nullptr);
-	defined = false;
+	handle = pthread_t();
 #endif
 }
 
 inline void
 Thread::Run() noexcept
 {
-#ifndef _WIN32
-#ifndef NDEBUG
-	/* this works around a race condition that causes an assertion
-	   failure due to IsInside() spuriously returning false right
-	   after the thread has been created, and the calling thread
-	   hasn't initialised "defined" yet */
-	defined = true;
-#endif
-#endif
-
 	f();
 
 #ifdef ANDROID

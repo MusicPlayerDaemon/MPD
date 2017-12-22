@@ -40,17 +40,7 @@ class Thread {
 	HANDLE handle = nullptr;
 	DWORD id;
 #else
-	pthread_t handle;
-	bool defined = false;
-
-#ifndef NDEBUG
-	/**
-	 * The thread is currently being created.  This is a workaround for
-	 * IsInside(), which may return false until pthread_create() has
-	 * initialised the #handle.
-	 */
-	bool creating = false;
-#endif
+	pthread_t handle = pthread_t();
 #endif
 
 public:
@@ -70,7 +60,7 @@ public:
 #ifdef _WIN32
 		return handle != nullptr;
 #else
-		return defined;
+		return handle != pthread_t();
 #endif
   }
 
@@ -82,11 +72,13 @@ public:
 #ifdef _WIN32
 		return GetCurrentThreadId() == id;
 #else
-#ifdef NDEBUG
-		constexpr bool creating = false;
-#endif
-		return IsDefined() && (creating ||
-				       pthread_equal(pthread_self(), handle));
+		/* note: not using pthread_equal() because that
+		   function "is undefined if either thread ID is not
+		   valid so we can't safely use it on
+		   default-constructed values" (comment from
+		   libstdc++) - and if both libstdc++ and libc++ get
+		   away with this, we can do it as well */
+		return pthread_self() == handle;
 #endif
 	}
 
