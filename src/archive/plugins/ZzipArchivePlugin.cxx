@@ -40,7 +40,7 @@ public:
 	ZZIP_DIR *const dir;
 
 	ZzipArchiveFile(ZZIP_DIR *_dir)
-		:ArchiveFile(zzip_archive_plugin), dir(_dir) {}
+		:dir(_dir) {}
 
 	~ZzipArchiveFile() {
 		zzip_dir_close(dir);

@@ -46,8 +46,7 @@ public:
 	const InputStreamPtr istream;
 
 	Bzip2ArchiveFile(Path path, InputStreamPtr &&_is)
-		:ArchiveFile(bz2_archive_plugin),
-		 name(path.GetBase().c_str()),
+		:name(path.GetBase().c_str()),
 		 istream(std::move(_is)) {
 		// remove .bz2 suffix
 		const size_t len = name.length();

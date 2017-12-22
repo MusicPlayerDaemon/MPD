@@ -45,7 +45,7 @@ class Iso9660ArchiveFile final : public ArchiveFile {
 
 public:
 	Iso9660ArchiveFile(iso9660_t *_iso)
-		:ArchiveFile(iso9660_archive_plugin), iso(_iso) {}
+		:iso(_iso) {}
 
 	~Iso9660ArchiveFile() {
 		iso9660_close(iso);

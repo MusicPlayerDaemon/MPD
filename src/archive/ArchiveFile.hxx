@@ -27,12 +27,6 @@ class ArchiveVisitor;
 class InputStream;
 
 class ArchiveFile {
-public:
-	const ArchivePlugin &plugin;
-
-	ArchiveFile(const ArchivePlugin &_plugin)
-		:plugin(_plugin) {}
-
 protected:
 	/**
 	 * Use Close() instead of delete.
