@@ -332,6 +332,11 @@ private:
 	 */
 	bool SendSilence() noexcept;
 
+	unsigned UnlockCheckOutputs() noexcept {
+		const ScopeUnlock unlock(pc.mutex);
+		return pc.outputs.Check();
+	}
+
 	/**
 	 * Player lock must be held before calling.
 	 */
@@ -970,7 +975,7 @@ Player::Run() noexcept
 {
 	pipe = new MusicPipe();
 
-	pc.Lock();
+	const std::lock_guard<Mutex> lock(pc.mutex);
 
 	StartDecoder(*pipe);
 	ActivateDecoder();
@@ -984,7 +989,7 @@ Player::Run() noexcept
 		if (pc.command == PlayerCommand::STOP ||
 		    pc.command == PlayerCommand::EXIT ||
 		    pc.command == PlayerCommand::CLOSE_AUDIO) {
-			pc.Unlock();
+			const ScopeUnlock unlock(pc.mutex);
 			pc.outputs.Cancel();
 			break;
 		}
@@ -1018,10 +1023,8 @@ Player::Run() noexcept
 		if (decoder_starting) {
 			/* wait until the decoder is initialized completely */
 
-			if (!CheckDecoderStartup()) {
-				pc.Unlock();
+			if (!CheckDecoderStartup())
 				break;
-			}
 
 			continue;
 		}
@@ -1062,11 +1065,7 @@ Player::Run() noexcept
 				xfade_state = CrossFadeState::DISABLED;
 		}
 
-		pc.Unlock();
-
 		if (paused) {
-			pc.Lock();
-
 			if (pc.command == PlayerCommand::NONE)
 				pc.Wait();
 			continue;
@@ -1074,13 +1073,12 @@ Player::Run() noexcept
 			/* at least one music chunk is ready - send it
 			   to the audio output */
 
+			const ScopeUnlock unlock(pc.mutex);
 			PlayNextChunk();
-		} else if (pc.outputs.Check() > 0) {
+		} else if (UnlockCheckOutputs() > 0) {
 			/* not enough data from decoder, but the
 			   output thread is still busy, so it's
 			   okay */
-
-			pc.Lock();
 
 			/* wake up the decoder (just in case it's
 			   waiting for space in the MusicBuffer) and
@@ -1091,14 +1089,16 @@ Player::Run() noexcept
 		} else if (IsDecoderAtNextSong()) {
 			/* at the beginning of a new song */
 
+			const ScopeUnlock unlock(pc.mutex);
 			SongBorder();
-		} else if (dc.LockIsIdle()) {
+		} else if (dc.IsIdle()) {
 			/* check the size of the pipe again, because
 			   the decoder thread may have added something
 			   since we last checked */
 			if (pipe->IsEmpty()) {
 				/* wait for the hardware to finish
 				   playback */
+				const ScopeUnlock unlock(pc.mutex);
 				pc.outputs.Drain();
 				break;
 			}
@@ -1106,6 +1106,7 @@ Player::Run() noexcept
 			/* the decoder is too busy and hasn't provided
 			   new PCM data in time: send silence (if the
 			   output pipe is empty) */
+			const ScopeUnlock unlock(pc.mutex);
 
 			if (throttle_silence_log.CheckUpdate(std::chrono::seconds(5)))
 				FormatWarning(player_domain, "Decoder is too slow; playing silence to avoid xrun");
@@ -1113,11 +1114,7 @@ Player::Run() noexcept
 			if (!SendSilence())
 				break;
 		}
-
-		pc.Lock();
 	}
-
-	const std::lock_guard<Mutex> lock(pc.mutex);
 
 	StopDecoder();
 
