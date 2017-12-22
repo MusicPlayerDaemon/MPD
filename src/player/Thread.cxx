@@ -989,23 +989,23 @@ Player::Run() noexcept
 			break;
 		}
 
-		pc.Unlock();
-
 		if (buffering) {
 			/* buffering at the start of the song - wait
 			   until the buffer is large enough, to
 			   prevent stuttering on slow machines */
 
 			if (pipe->GetSize() < pc.buffered_before_play &&
-			    !dc.LockIsIdle()) {
+			    !dc.IsIdle()) {
 				/* not enough decoded buffer space yet */
 
-				if (!paused && output_open &&
-				    pc.outputs.Check() < 4 &&
-				    !SendSilence())
-					break;
+				{
+					const ScopeUnlock unlock(pc.mutex);
+					if (!paused && output_open &&
+					    pc.outputs.Check() < 4 &&
+					    !SendSilence())
+						break;
+				}
 
-				pc.Lock();
 				/* XXX race condition: check decoder again */
 				dc.WaitForDecoder();
 				continue;
@@ -1018,8 +1018,6 @@ Player::Run() noexcept
 		if (decoder_starting) {
 			/* wait until the decoder is initialized completely */
 
-			pc.Lock();
-
 			if (!CheckDecoderStartup()) {
 				pc.Unlock();
 				break;
@@ -1028,13 +1026,12 @@ Player::Run() noexcept
 			continue;
 		}
 
-		if (dc.LockIsIdle() && queued && dc.pipe == pipe) {
+		if (dc.IsIdle() && queued && dc.pipe == pipe) {
 			/* the decoder has finished the current song;
 			   make it decode the next song */
 
 			assert(dc.pipe == nullptr || dc.pipe == pipe);
 
-			const std::lock_guard<Mutex> lock(pc.mutex);
 			StartDecoder(*new MusicPipe());
 		}
 
@@ -1043,7 +1040,7 @@ Player::Run() noexcept
 		    !pc.border_pause &&
 		    IsDecoderAtNextSong() &&
 		    xfade_state == CrossFadeState::UNKNOWN &&
-		    !dc.LockIsStarting()) {
+		    !dc.IsStarting()) {
 			/* enable cross fading in this song?  if yes,
 			   calculate how many chunks will be required
 			   for it */
@@ -1064,6 +1061,8 @@ Player::Run() noexcept
 				   next song is too short */
 				xfade_state = CrossFadeState::DISABLED;
 		}
+
+		pc.Unlock();
 
 		if (paused) {
 			pc.Lock();
