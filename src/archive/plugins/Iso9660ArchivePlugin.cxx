@@ -182,6 +182,8 @@ Iso9660ArchiveFile::OpenStream(const char *pathname,
 size_t
 Iso9660InputStream::Read(void *ptr, size_t read_size)
 {
+	const ScopeUnlock unlock(mutex);
+
 	int readed = 0;
 	int no_blocks, cur_block;
 	size_t left_bytes = statbuf->size - offset;

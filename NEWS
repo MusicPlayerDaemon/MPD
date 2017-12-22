@@ -3,6 +3,7 @@ ver 0.20.14 (not yet released)
   - simple: fix file corruption in the presence of mount points
 * archive
   - bz2: fix deadlock
+  - reduce lock contention, fixing lots of xrun problems
 * fix Solaris build failure
 
 ver 0.20.13 (2017/12/18)
