@@ -162,7 +162,7 @@ Bzip2InputStream::FillBuffer()
 	if (bzstream.avail_in > 0)
 		return true;
 
-	size_t count = archive->istream->Read(buffer, sizeof(buffer));
+	size_t count = archive->istream->LockRead(buffer, sizeof(buffer));
 	if (count == 0)
 		return false;
 
@@ -174,6 +174,8 @@ Bzip2InputStream::FillBuffer()
 size_t
 Bzip2InputStream::Read(void *ptr, size_t length)
 {
+	const ScopeUnlock unlock(mutex);
+
 	int bz_result;
 	size_t nbytes = 0;
 
@@ -224,4 +226,3 @@ const ArchivePlugin bz2_archive_plugin = {
 	bz2_open,
 	bz2_extensions,
 };
-

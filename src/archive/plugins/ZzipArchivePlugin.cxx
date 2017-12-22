@@ -138,6 +138,8 @@ ZzipArchiveFile::OpenStream(const char *pathname,
 size_t
 ZzipInputStream::Read(void *ptr, size_t read_size)
 {
+	const ScopeUnlock unlock(mutex);
+
 	int ret = zzip_file_read(file, ptr, read_size);
 	if (ret < 0)
 		throw std::runtime_error("zzip_file_read() has failed");
@@ -155,6 +157,8 @@ ZzipInputStream::IsEOF() noexcept
 void
 ZzipInputStream::Seek(offset_type new_offset)
 {
+	const ScopeUnlock unlock(mutex);
+
 	zzip_off_t ofs = zzip_seek(file, new_offset, SEEK_SET);
 	if (ofs < 0)
 		throw std::runtime_error("zzip_seek() has failed");
