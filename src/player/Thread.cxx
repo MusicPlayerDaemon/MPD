@@ -1028,14 +1028,6 @@ Player::Run() noexcept
 			continue;
 		}
 
-#ifndef NDEBUG
-		/*
-		music_pipe_check_format(&play_audio_format,
-					next_song_chunk,
-					&dc.out_audio_format);
-		*/
-#endif
-
 		if (dc.LockIsIdle() && queued && dc.pipe == pipe) {
 			/* the decoder has finished the current song;
 			   make it decode the next song */
