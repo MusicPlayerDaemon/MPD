@@ -304,12 +304,6 @@ struct DecoderControl {
 	gcc_pure
 	bool IsCurrentSong(const DetachedSong &_song) const noexcept;
 
-	gcc_pure
-	bool LockIsCurrentSong(const DetachedSong &_song) const noexcept {
-		const std::lock_guard<Mutex> protect(mutex);
-		return IsCurrentSong(_song);
-	}
-
 private:
 	/**
 	 * Wait for the command to be finished by the decoder thread.

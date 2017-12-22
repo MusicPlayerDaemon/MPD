@@ -615,20 +615,18 @@ Player::SeekDecoder() noexcept
 
 	pc.outputs.Cancel();
 
-	if (!dc.LockIsCurrentSong(*pc.next_song)) {
+	const std::lock_guard<Mutex> lock(pc.mutex);
+
+	if (!dc.IsCurrentSong(*pc.next_song)) {
 		/* the decoder is already decoding the "next" song -
 		   stop it and start the previous song again */
 
-		{
-			const std::lock_guard<Mutex> lock(pc.mutex);
-			StopDecoder();
-		}
+		StopDecoder();
 
 		/* clear music chunks which might still reside in the
 		   pipe */
 		pipe->Clear(buffer);
 
-		const std::lock_guard<Mutex> lock(pc.mutex);
 		/* re-start the decoder */
 		StartDecoder(*pipe);
 		ActivateDecoder();
@@ -641,8 +639,6 @@ Player::SeekDecoder() noexcept
 			   but it is the same song file; exchange the pipe */
 			ClearAndReplacePipe(dc.pipe);
 		}
-
-		const std::lock_guard<Mutex> lock(pc.mutex);
 
 		pc.next_song.reset();
 		queued = false;
@@ -660,7 +656,7 @@ Player::SeekDecoder() noexcept
 			return false;
 	}
 
-	pc.LockCommandFinished();
+	pc.CommandFinished();
 
 	assert(xfade_state == CrossFadeState::UNKNOWN);
 
