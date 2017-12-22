@@ -177,7 +177,7 @@ UpdateWalk::UpdateArchiveFile(Directory &parent, const char *name,
 
 	UpdateArchiveVisitor visitor(*this, *file, directory);
 	file->Visit(visitor);
-	file->Close();
+	delete file;
 }
 
 bool

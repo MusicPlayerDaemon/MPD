@@ -72,10 +72,6 @@ public:
 	void Visit(char *path, size_t length, size_t capacity,
 		   ArchiveVisitor &visitor);
 
-	virtual void Close() override {
-		delete this;
-	}
-
 	virtual void Visit(ArchiveVisitor &visitor) override;
 
 	InputStream *OpenStream(const char *path,

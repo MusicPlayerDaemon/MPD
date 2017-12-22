@@ -93,7 +93,7 @@ try {
 
 	MyArchiveVisitor visitor;
 	file->Visit(visitor);
-	file->Close();
+	delete file;
 
 	return result;
 } catch (const std::exception &e) {

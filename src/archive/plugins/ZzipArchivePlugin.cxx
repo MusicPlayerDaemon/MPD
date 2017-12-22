@@ -57,10 +57,6 @@ public:
 	ZzipArchiveFile(std::shared_ptr<ZzipDir> &&_dir)
 		:dir(std::move(_dir)) {}
 
-	virtual void Close() override {
-		delete this;
-	}
-
 	virtual void Visit(ArchiveVisitor &visitor) override;
 
 	InputStream *OpenStream(const char *path,

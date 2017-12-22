@@ -49,10 +49,6 @@ public:
 			name.erase(len - 4);
 	}
 
-	virtual void Close() override {
-		delete this;
-	}
-
 	virtual void Visit(ArchiveVisitor &visitor) override {
 		visitor.VisitArchiveEntry(name.c_str());
 	}

@@ -22,19 +22,12 @@
 
 class Mutex;
 class Cond;
-struct ArchivePlugin;
 class ArchiveVisitor;
 class InputStream;
 
 class ArchiveFile {
-protected:
-	/**
-	 * Use Close() instead of delete.
-	 */
-	~ArchiveFile() {}
-
 public:
-	virtual void Close() = 0;
+	virtual ~ArchiveFile() noexcept = default;
 
 	/**
 	 * Visit all entries inside this archive.
