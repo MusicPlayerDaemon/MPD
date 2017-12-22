@@ -24,6 +24,8 @@
 #include "Editor.hxx"
 #include "Compiler.h"
 
+#include <atomic>
+
 struct StorageFileInfo;
 struct Directory;
 struct ArchivePlugin;
@@ -52,7 +54,7 @@ class UpdateWalk final {
 	 * cancel as quickly as possible.  Access to this flag is
 	 * unprotected.
 	 */
-	volatile bool cancel;
+	std::atomic_bool cancel;
 
 	Storage &storage;
 
