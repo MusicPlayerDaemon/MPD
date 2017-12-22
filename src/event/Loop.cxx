@@ -27,7 +27,7 @@
 #include <algorithm>
 
 EventLoop::EventLoop()
-	:SocketMonitor(*this)
+	:SocketMonitor(*this), quit(false)
 {
 	SocketMonitor::Open(wake_fd.Get());
 	SocketMonitor::Schedule(SocketMonitor::READ);
@@ -46,7 +46,9 @@ EventLoop::~EventLoop()
 void
 EventLoop::Break()
 {
-	quit = true;
+	if (quit.exchange(true))
+		return;
+
 	wake_fd.Write();
 }
 

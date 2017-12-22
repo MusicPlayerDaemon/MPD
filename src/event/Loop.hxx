@@ -30,6 +30,7 @@
 #include "SocketMonitor.hxx"
 
 #include <chrono>
+#include <atomic>
 #include <list>
 #include <set>
 
@@ -82,7 +83,7 @@ class EventLoop final : SocketMonitor
 
 	std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
 
-	bool quit = false;
+	std::atomic_bool quit;
 
 	/**
 	 * True when the object has been modified and another check is
