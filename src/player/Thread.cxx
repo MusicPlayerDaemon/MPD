@@ -1042,6 +1042,7 @@ Player::Run() noexcept
 
 			assert(dc.pipe == nullptr || dc.pipe == pipe);
 
+			const std::lock_guard<Mutex> lock(pc.mutex);
 			StartDecoder(*new MusicPipe());
 		}
 
