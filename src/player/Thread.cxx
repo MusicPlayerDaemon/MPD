@@ -274,7 +274,7 @@ private:
 	/**
 	 * This is the handler for the #PlayerCommand::SEEK command.
 	 *
-	 * The player lock is not held.
+	 * Caller must lock the mutex.
 	 *
 	 * @return false if the decoder has failed
 	 */
@@ -613,9 +613,10 @@ Player::SeekDecoder() noexcept
 {
 	assert(pc.next_song != nullptr);
 
-	pc.outputs.Cancel();
-
-	const std::lock_guard<Mutex> lock(pc.mutex);
+	{
+		const ScopeUnlock unlock(pc.mutex);
+		pc.outputs.Cancel();
+	}
 
 	if (!dc.IsCurrentSong(*pc.next_song)) {
 		/* the decoder is already decoding the "next" song -
@@ -717,10 +718,7 @@ Player::ProcessCommand() noexcept
 		break;
 
 	case PlayerCommand::SEEK:
-		{
-			const ScopeUnlock unlock(pc.mutex);
-			SeekDecoder();
-		}
+		SeekDecoder();
 		break;
 
 	case PlayerCommand::CANCEL:
