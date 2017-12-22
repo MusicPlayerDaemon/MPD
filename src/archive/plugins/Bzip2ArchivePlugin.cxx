@@ -29,22 +29,17 @@
 #include "input/InputStream.hxx"
 #include "input/LocalOpen.hxx"
 #include "thread/Cond.hxx"
-#include "util/RefCount.hxx"
 #include "fs/Path.hxx"
 
 #include <bzlib.h>
 
 #include <stdexcept>
 
-#include <stddef.h>
-
 class Bzip2ArchiveFile final : public ArchiveFile {
-public:
-	RefCount ref;
-
 	std::string name;
-	const InputStreamPtr istream;
+	std::shared_ptr<InputStream> istream;
 
+public:
 	Bzip2ArchiveFile(Path path, InputStreamPtr &&_is)
 		:name(path.GetBase().c_str()),
 		 istream(std::move(_is)) {
@@ -54,19 +49,8 @@ public:
 			name.erase(len - 4);
 	}
 
-	void Ref() {
-		ref.Increment();
-	}
-
-	void Unref() {
-		if (!ref.Decrement())
-			return;
-
-		delete this;
-	}
-
 	virtual void Close() override {
-		Unref();
+		delete this;
 	}
 
 	virtual void Visit(ArchiveVisitor &visitor) override {
@@ -78,7 +62,7 @@ public:
 };
 
 class Bzip2InputStream final : public InputStream {
-	Bzip2ArchiveFile *archive;
+	std::shared_ptr<InputStream> input;
 
 	bool eof = false;
 
@@ -87,7 +71,8 @@ class Bzip2InputStream final : public InputStream {
 	char buffer[5000];
 
 public:
-	Bzip2InputStream(Bzip2ArchiveFile &context, const char *uri,
+	Bzip2InputStream(const std::shared_ptr<InputStream> &_input,
+			 const char *uri,
 			 Mutex &mutex, Cond &cond);
 	~Bzip2InputStream();
 
@@ -132,27 +117,25 @@ bz2_open(Path pathname)
 
 /* single archive handling */
 
-Bzip2InputStream::Bzip2InputStream(Bzip2ArchiveFile &_context,
+Bzip2InputStream::Bzip2InputStream(const std::shared_ptr<InputStream> &_input,
 				   const char *_uri,
 				   Mutex &_mutex, Cond &_cond)
 	:InputStream(_uri, _mutex, _cond),
-	 archive(&_context)
+	 input(_input)
 {
 	Open();
-	archive->Ref();
 }
 
 Bzip2InputStream::~Bzip2InputStream()
 {
 	BZ2_bzDecompressEnd(&bzstream);
-	archive->Unref();
 }
 
 InputStream *
 Bzip2ArchiveFile::OpenStream(const char *path,
 			     Mutex &mutex, Cond &cond)
 {
-	return new Bzip2InputStream(*this, path, mutex, cond);
+	return new Bzip2InputStream(istream, path, mutex, cond);
 }
 
 inline bool
@@ -161,7 +144,7 @@ Bzip2InputStream::FillBuffer()
 	if (bzstream.avail_in > 0)
 		return true;
 
-	size_t count = archive->istream->LockRead(buffer, sizeof(buffer));
+	size_t count = input->LockRead(buffer, sizeof(buffer));
 	if (count == 0)
 		return false;
 
