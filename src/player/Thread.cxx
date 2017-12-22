@@ -1157,7 +1157,7 @@ PlayerControl::RunThread() noexcept
 
 	MusicBuffer buffer(buffer_chunks);
 
-	Lock();
+	const std::lock_guard<Mutex> lock(mutex);
 
 	while (1) {
 		switch (command) {
@@ -1165,16 +1165,19 @@ PlayerControl::RunThread() noexcept
 		case PlayerCommand::QUEUE:
 			assert(next_song != nullptr);
 
-			Unlock();
-			do_play(*this, dc, buffer);
-			listener.OnPlayerSync();
-			Lock();
+			{
+				const ScopeUnlock unlock(mutex);
+				do_play(*this, dc, buffer);
+				listener.OnPlayerSync();
+			}
+
 			break;
 
 		case PlayerCommand::STOP:
-			Unlock();
-			outputs.Cancel();
-			Lock();
+			{
+				const ScopeUnlock unlock(mutex);
+				outputs.Cancel();
+			}
 
 			/* fall through */
 
@@ -1185,11 +1188,11 @@ PlayerControl::RunThread() noexcept
 			break;
 
 		case PlayerCommand::CLOSE_AUDIO:
-			Unlock();
+			{
+				const ScopeUnlock unlock(mutex);
+				outputs.Release();
+			}
 
-			outputs.Release();
-
-			Lock();
 			CommandFinished();
 
 			assert(buffer.IsEmptyUnsafe());
@@ -1197,20 +1200,22 @@ PlayerControl::RunThread() noexcept
 			break;
 
 		case PlayerCommand::UPDATE_AUDIO:
-			Unlock();
-			outputs.EnableDisable();
-			Lock();
+			{
+				const ScopeUnlock unlock(mutex);
+				outputs.EnableDisable();
+			}
+
 			CommandFinished();
 			break;
 
 		case PlayerCommand::EXIT:
-			Unlock();
+			{
+				const ScopeUnlock unlock(mutex);
+				dc.Quit();
+				outputs.Close();
+			}
 
-			dc.Quit();
-
-			outputs.Close();
-
-			LockCommandFinished();
+			CommandFinished();
 			return;
 
 		case PlayerCommand::CANCEL:
