@@ -52,13 +52,11 @@ public:
 	constexpr ThreadId(pthread_t _id):id(_id) {}
 #endif
 
-	gcc_const
-	static ThreadId Null() noexcept {
+	static constexpr ThreadId Null() noexcept {
 #ifdef _WIN32
 		return 0;
 #else
-		static ThreadId null;
-		return null;
+		return pthread_t();
 #endif
 	}
 
@@ -81,11 +79,13 @@ public:
 
 	gcc_pure
 	bool operator==(const ThreadId &other) const noexcept {
-#ifdef _WIN32
+		/* note: not using pthread_equal() because that
+		   function "is undefined if either thread ID is not
+		   valid so we can't safely use it on
+		   default-constructed values" (comment from
+		   libstdc++) - and if both libstdc++ and libc++ get
+		   away with this, we can do it as well */
 		return id == other.id;
-#else
-		return pthread_equal(id, other.id);
-#endif
 	}
 
 	/**
