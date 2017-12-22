@@ -183,7 +183,7 @@ private:
 	/**
 	 * Start the decoder.
 	 *
-	 * Player lock is not held.
+	 * Caller must lock the mutex.
 	 */
 	void StartDecoder(MusicPipe &pipe) noexcept;
 
@@ -360,8 +360,6 @@ Player::StartDecoder(MusicPipe &_pipe) noexcept
 {
 	assert(queued || pc.command == PlayerCommand::SEEK);
 	assert(pc.next_song != nullptr);
-
-	const std::lock_guard<Mutex> protect(pc.mutex);
 
 	/* copy ReplayGain parameters to the decoder */
 	dc.replay_gain_mode = pc.replay_gain_mode;
@@ -630,9 +628,9 @@ Player::SeekDecoder() noexcept
 		   pipe */
 		pipe->Clear(buffer);
 
+		const std::lock_guard<Mutex> lock(pc.mutex);
 		/* re-start the decoder */
 		StartDecoder(*pipe);
-		const std::lock_guard<Mutex> lock(pc.mutex);
 		ActivateDecoder();
 
 		if (!WaitDecoderStartup())
@@ -699,11 +697,8 @@ Player::ProcessCommand() noexcept
 		queued = true;
 		pc.CommandFinished();
 
-		{
-			const ScopeUnlock unlock(pc.mutex);
-			if (dc.LockIsIdle())
-				StartDecoder(*new MusicPipe());
-		}
+		if (dc.IsIdle())
+			StartDecoder(*new MusicPipe());
 
 		break;
 
@@ -981,8 +976,9 @@ Player::Run() noexcept
 {
 	pipe = new MusicPipe();
 
-	StartDecoder(*pipe);
 	pc.Lock();
+
+	StartDecoder(*pipe);
 	ActivateDecoder();
 
 	pc.state = PlayerState::PLAY;
