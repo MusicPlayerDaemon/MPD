@@ -19,14 +19,24 @@
 
 #include "config.h"
 #include "IcyInputStream.hxx"
+#include "IcyMetaDataParser.hxx"
 #include "tag/Tag.hxx"
 
-IcyInputStream::IcyInputStream(InputStream *_input) noexcept
-	:ProxyInputStream(_input)
+IcyInputStream::IcyInputStream(InputStream *_input,
+			       std::shared_ptr<IcyMetaDataParser> _parser) noexcept
+	:ProxyInputStream(_input), parser(std::move(_parser))
 {
 }
 
 IcyInputStream::~IcyInputStream() noexcept = default;
+
+inline bool
+IcyInputStream::IsEnabled() const noexcept
+{
+	assert(parser);
+
+	return parser->IsDefined();
+}
 
 void
 IcyInputStream::Update() noexcept
@@ -48,7 +58,7 @@ IcyInputStream::ReadTag()
 	if (new_input_tag != nullptr)
 		input_tag = std::move(new_input_tag);
 
-	auto new_icy_tag = parser.ReadTag();
+	auto new_icy_tag = parser->ReadTag();
 	const bool had_new_icy_tag = !!new_icy_tag;
 	if (new_icy_tag != nullptr)
 		icy_tag = std::move(new_icy_tag);
@@ -81,7 +91,7 @@ IcyInputStream::Read(void *ptr, size_t read_size)
 		if (nbytes == 0)
 			return 0;
 
-		size_t result = parser.ParseInPlace(ptr, nbytes);
+		size_t result = parser->ParseInPlace(ptr, nbytes);
 		if (result > 0) {
 			override_offset += result;
 			offset = override_offset;

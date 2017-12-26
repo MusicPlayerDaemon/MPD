@@ -21,18 +21,18 @@
 #define MPD_ICY_INPUT_STREAM_HXX
 
 #include "ProxyInputStream.hxx"
-#include "IcyMetaDataParser.hxx"
 #include "Compiler.h"
 
 #include <memory>
 
 struct Tag;
+class IcyMetaDataParser;
 
 /**
  * An #InputStream filter that parses Icy metadata.
  */
 class IcyInputStream final : public ProxyInputStream {
-	IcyMetaDataParser parser;
+	std::shared_ptr<IcyMetaDataParser> parser;
 
 	/**
 	 * The #Tag object ready to be requested via ReadTag().
@@ -47,19 +47,21 @@ class IcyInputStream final : public ProxyInputStream {
 	offset_type override_offset = 0;
 
 public:
-	IcyInputStream(InputStream *_input) noexcept;
+	/**
+	 * @param _parser a IcyMetaDataParser instance which is shared
+	 * with our input; it needs to be shared because our input
+	 * needs to feed parameters (e.g. from the "icy-metaint"
+	 * header) into it
+	 */
+	IcyInputStream(InputStream *_input,
+		       std::shared_ptr<IcyMetaDataParser> _parser) noexcept;
 	virtual ~IcyInputStream() noexcept;
 
 	IcyInputStream(const IcyInputStream &) = delete;
 	IcyInputStream &operator=(const IcyInputStream &) = delete;
 
-	void Enable(size_t _data_size) noexcept {
-		parser.Start(_data_size);
-	}
-
-	bool IsEnabled() const noexcept {
-		return parser.IsDefined();
-	}
+	gcc_pure
+	bool IsEnabled() const noexcept;
 
 	/* virtual methods from InputStream */
 	void Update() noexcept override;

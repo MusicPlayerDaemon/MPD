@@ -27,6 +27,7 @@
 #include "lib/curl/Slist.hxx"
 #include "../AsyncInputStream.hxx"
 #include "../IcyInputStream.hxx"
+#include "IcyMetaDataParser.hxx"
 #include "../InputPlugin.hxx"
 #include "config/ConfigGlobal.hxx"
 #include "config/Block.hxx"
@@ -72,14 +73,14 @@ struct CurlInputStream final : public AsyncInputStream, CurlResponseHandler {
 	CurlRequest *request = nullptr;
 
 	/** parser for icy-metadata */
-	IcyInputStream *icy;
+	std::shared_ptr<IcyMetaDataParser> icy;
 
 	CurlInputStream(EventLoop &event_loop, const char *_url,
 			Mutex &_mutex, Cond &_cond)
 		:AsyncInputStream(event_loop, _url, _mutex, _cond,
 				  CURL_MAX_BUFFERED,
 				  CURL_RESUME_AT),
-		 icy(new IcyInputStream(this)) {
+		 icy(new IcyMetaDataParser()) {
 	}
 
 	~CurlInputStream();
@@ -199,7 +200,7 @@ CurlInputStream::OnHeaders(unsigned status,
 		return;
 	}
 
-	if (!icy->IsEnabled() &&
+	if (!icy->IsDefined() &&
 	    headers.find("accept-ranges") != headers.end())
 		/* a stream with icy-metadata is not seekable */
 		seekable = true;
@@ -226,7 +227,7 @@ CurlInputStream::OnHeaders(unsigned status,
 		SetTag(tag_builder.CommitNew());
 	}
 
-	if (!icy->IsEnabled()) {
+	if (!icy->IsDefined()) {
 		i = headers.find("icy-metaint");
 
 		if (i != headers.end()) {
@@ -237,7 +238,7 @@ CurlInputStream::OnHeaders(unsigned status,
 #endif
 
 			if (icy_metaint > 0) {
-				icy->Enable(icy_metaint);
+				icy->Start(icy_metaint);
 
 				/* a stream with icy-metadata is not
 				   seekable */
@@ -450,7 +451,8 @@ CurlInputStream::Open(const char *url, Mutex &mutex, Cond &cond)
 		throw;
 	}
 
-	return c->icy;
+	auto icy = c->icy;
+	return new IcyInputStream(c, std::move(icy));
 }
 
 static InputStream *
