@@ -182,7 +182,7 @@ cdio_detect_device(void)
 	return path;
 }
 
-static InputStream *
+static InputStreamPtr
 input_cdio_open(const char *uri,
 		Mutex &mutex, Cond &cond)
 {
@@ -250,9 +250,10 @@ input_cdio_open(const char *uri,
 		lsn_to = cdio_get_disc_last_lsn(cdio);
 	}
 
-	return new CdioParanoiaInputStream(uri, mutex, cond,
-					   drv, cdio, reverse_endian,
-					   lsn_from, lsn_to);
+	return std::make_unique<CdioParanoiaInputStream>(uri, mutex, cond,
+							 drv, cdio,
+							 reverse_endian,
+							 lsn_from, lsn_to);
 }
 
 void

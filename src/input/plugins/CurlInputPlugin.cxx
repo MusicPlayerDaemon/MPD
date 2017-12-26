@@ -88,7 +88,7 @@ struct CurlInputStream final : public AsyncInputStream, CurlResponseHandler {
 	CurlInputStream(const CurlInputStream &) = delete;
 	CurlInputStream &operator=(const CurlInputStream &) = delete;
 
-	static InputStream *Open(const char *url, Mutex &mutex, Cond &cond);
+	static InputStreamPtr Open(const char *url, Mutex &mutex, Cond &cond);
 
 	/**
 	 * Create and initialize a new #CurlRequest instance.  After
@@ -435,7 +435,7 @@ CurlInputStream::DoSeek(offset_type new_offset)
 		});
 }
 
-inline InputStream *
+inline InputStreamPtr
 CurlInputStream::Open(const char *url, Mutex &mutex, Cond &cond)
 {
 	auto c = std::make_unique<CurlInputStream>((*curl_init)->GetEventLoop(),
@@ -447,10 +447,10 @@ CurlInputStream::Open(const char *url, Mutex &mutex, Cond &cond)
 		});
 
 	auto icy = c->icy;
-	return new IcyInputStream(std::move(c), std::move(icy));
+	return std::make_unique<IcyInputStream>(std::move(c), std::move(icy));
 }
 
-static InputStream *
+static InputStreamPtr
 input_curl_open(const char *url, Mutex &mutex, Cond &cond)
 {
 	if (strncmp(url, "http://", 7) != 0 &&

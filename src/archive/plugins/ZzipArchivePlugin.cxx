@@ -59,8 +59,8 @@ public:
 
 	virtual void Visit(ArchiveVisitor &visitor) override;
 
-	InputStream *OpenStream(const char *path,
-				Mutex &mutex, Cond &cond) override;
+	InputStreamPtr OpenStream(const char *path,
+				  Mutex &mutex, Cond &cond) override;
 };
 
 /* archive open && listing routine */
@@ -116,7 +116,7 @@ public:
 	void Seek(offset_type offset) override;
 };
 
-InputStream *
+InputStreamPtr
 ZzipArchiveFile::OpenStream(const char *pathname,
 			    Mutex &mutex, Cond &cond)
 {
@@ -125,9 +125,9 @@ ZzipArchiveFile::OpenStream(const char *pathname,
 		throw FormatRuntimeError("not found in the ZIP file: %s",
 					 pathname);
 
-	return new ZzipInputStream(dir, pathname,
-				   mutex, cond,
-				   _file);
+	return std::make_unique<ZzipInputStream>(dir, pathname,
+						 mutex, cond,
+						 _file);
 }
 
 size_t

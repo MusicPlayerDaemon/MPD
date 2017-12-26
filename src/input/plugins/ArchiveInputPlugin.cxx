@@ -66,10 +66,10 @@ OpenArchiveInputStream(Path path, Mutex &mutex, Cond &cond)
 		delete file;
 	};
 
-	return InputStreamPtr(file->OpenStream(filename, mutex, cond));
+	return file->OpenStream(filename, mutex, cond);
 }
 
-static InputStream *
+static InputStreamPtr
 input_archive_open(gcc_unused const char *filename,
 		   gcc_unused Mutex &mutex, gcc_unused Cond &cond)
 {

@@ -53,8 +53,8 @@ public:
 		visitor.VisitArchiveEntry(name.c_str());
 	}
 
-	InputStream *OpenStream(const char *path,
-				Mutex &mutex, Cond &cond) override;
+	InputStreamPtr OpenStream(const char *path,
+				  Mutex &mutex, Cond &cond) override;
 };
 
 class Bzip2InputStream final : public InputStream {
@@ -127,11 +127,11 @@ Bzip2InputStream::~Bzip2InputStream()
 	BZ2_bzDecompressEnd(&bzstream);
 }
 
-InputStream *
+InputStreamPtr
 Bzip2ArchiveFile::OpenStream(const char *path,
 			     Mutex &mutex, Cond &cond)
 {
-	return new Bzip2InputStream(istream, path, mutex, cond);
+	return std::make_unique<Bzip2InputStream>(istream, path, mutex, cond);
 }
 
 inline bool

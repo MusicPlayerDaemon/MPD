@@ -20,10 +20,11 @@
 #ifndef MPD_ARCHIVE_FILE_HXX
 #define MPD_ARCHIVE_FILE_HXX
 
+#include "input/Ptr.hxx"
+
 class Mutex;
 class Cond;
 class ArchiveVisitor;
-class InputStream;
 
 class ArchiveFile {
 public:
@@ -41,8 +42,8 @@ public:
 	 *
 	 * @param path the path within the archive
 	 */
-	virtual InputStream *OpenStream(const char *path,
-					Mutex &mutex, Cond &cond) = 0;
+	virtual InputStreamPtr OpenStream(const char *path,
+					  Mutex &mutex, Cond &cond) = 0;
 };
 
 #endif

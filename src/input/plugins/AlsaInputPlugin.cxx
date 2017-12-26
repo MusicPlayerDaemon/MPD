@@ -110,8 +110,8 @@ public:
 		snd_pcm_close(capture_handle);
 	}
 
-	static InputStream *Create(EventLoop &event_loop, const char *uri,
-				   Mutex &mutex, Cond &cond);
+	static InputStreamPtr Create(EventLoop &event_loop, const char *uri,
+				     Mutex &mutex, Cond &cond);
 
 protected:
 	/* virtual methods from AsyncInputStream */
@@ -146,7 +146,7 @@ private:
 	void DispatchSockets() noexcept override;
 };
 
-inline InputStream *
+inline InputStreamPtr
 AlsaInputStream::Create(EventLoop &event_loop, const char *uri,
 			Mutex &mutex, Cond &cond)
 {
@@ -167,9 +167,9 @@ AlsaInputStream::Create(EventLoop &event_loop, const char *uri,
 	snd_pcm_t *handle = OpenDevice(device, rate, format, channels);
 
 	int frame_size = snd_pcm_format_width(format) / 8 * channels;
-	return new AlsaInputStream(event_loop,
-				   uri, mutex, cond,
-				   device, handle, frame_size);
+	return std::make_unique<AlsaInputStream>(event_loop,
+						 uri, mutex, cond,
+						 device, handle, frame_size);
 }
 
 std::chrono::steady_clock::duration
@@ -396,7 +396,7 @@ alsa_input_init(EventLoop &event_loop, const ConfigBlock &)
 	alsa_input_event_loop = &event_loop;
 }
 
-static InputStream *
+static InputStreamPtr
 alsa_input_open(const char *uri, Mutex &mutex, Cond &cond)
 {
 	return AlsaInputStream::Create(*alsa_input_event_loop, uri,

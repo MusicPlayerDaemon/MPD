@@ -147,5 +147,5 @@ input_rewind_open(InputStreamPtr is)
 		/* seekable resources don't need this plugin */
 		return is;
 
-	return InputStreamPtr(new RewindInputStream(std::move(is)));
+	return std::make_unique<RewindInputStream>(std::move(is));
 }

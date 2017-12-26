@@ -74,8 +74,8 @@ public:
 
 	virtual void Visit(ArchiveVisitor &visitor) override;
 
-	InputStream *OpenStream(const char *path,
-				Mutex &mutex, Cond &cond) override;
+	InputStreamPtr OpenStream(const char *path,
+				  Mutex &mutex, Cond &cond) override;
 };
 
 /* archive open && listing routine */
@@ -156,7 +156,7 @@ public:
 	size_t Read(void *ptr, size_t size) override;
 };
 
-InputStream *
+InputStreamPtr
 Iso9660ArchiveFile::OpenStream(const char *pathname,
 			       Mutex &mutex, Cond &cond)
 {
@@ -165,8 +165,8 @@ Iso9660ArchiveFile::OpenStream(const char *pathname,
 		throw FormatRuntimeError("not found in the ISO file: %s",
 					 pathname);
 
-	return new Iso9660InputStream(iso, pathname, mutex, cond,
-				      statbuf);
+	return std::make_unique<Iso9660InputStream>(iso, pathname, mutex, cond,
+						    statbuf);
 }
 
 size_t
