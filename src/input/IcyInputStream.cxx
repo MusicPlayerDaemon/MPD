@@ -22,9 +22,9 @@
 #include "IcyMetaDataParser.hxx"
 #include "tag/Tag.hxx"
 
-IcyInputStream::IcyInputStream(InputStream *_input,
+IcyInputStream::IcyInputStream(InputStreamPtr _input,
 			       std::shared_ptr<IcyMetaDataParser> _parser) noexcept
-	:ProxyInputStream(_input), parser(std::move(_parser))
+	:ProxyInputStream(std::move(_input)), parser(std::move(_parser))
 {
 }
 

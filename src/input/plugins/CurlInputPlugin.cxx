@@ -438,21 +438,16 @@ CurlInputStream::DoSeek(offset_type new_offset)
 inline InputStream *
 CurlInputStream::Open(const char *url, Mutex &mutex, Cond &cond)
 {
-	CurlInputStream *c = new CurlInputStream((*curl_init)->GetEventLoop(),
-						 url, mutex, cond);
+	auto c = std::make_unique<CurlInputStream>((*curl_init)->GetEventLoop(),
+						   url, mutex, cond);
 
-	try {
-		BlockingCall(c->GetEventLoop(), [c](){
-				c->InitEasy();
-				c->StartRequest();
-			});
-	} catch (...) {
-		delete c;
-		throw;
-	}
+	BlockingCall(c->GetEventLoop(), [&c](){
+			c->InitEasy();
+			c->StartRequest();
+		});
 
 	auto icy = c->icy;
-	return new IcyInputStream(c, std::move(icy));
+	return new IcyInputStream(std::move(c), std::move(icy));
 }
 
 static InputStream *

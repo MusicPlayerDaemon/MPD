@@ -53,7 +53,7 @@ public:
 	 * needs to feed parameters (e.g. from the "icy-metaint"
 	 * header) into it
 	 */
-	IcyInputStream(InputStream *_input,
+	IcyInputStream(InputStreamPtr _input,
 		       std::shared_ptr<IcyMetaDataParser> _parser) noexcept;
 	virtual ~IcyInputStream() noexcept;
 

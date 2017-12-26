@@ -21,6 +21,7 @@
 #define MPD_PROXY_INPUT_STREAM_HXX
 
 #include "InputStream.hxx"
+#include "Ptr.hxx"
 
 struct Tag;
 
@@ -31,11 +32,11 @@ struct Tag;
  */
 class ProxyInputStream : public InputStream {
 protected:
-	InputStream &input;
+	InputStreamPtr input;
 
 public:
 	gcc_nonnull_all
-	ProxyInputStream(InputStream *_input) noexcept;
+	explicit ProxyInputStream(InputStreamPtr _input) noexcept;
 
 	virtual ~ProxyInputStream() noexcept;
 

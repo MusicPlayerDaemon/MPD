@@ -28,10 +28,9 @@
 #define MPD_INPUT_REWIND_HXX
 
 #include "check.h"
+#include "input/Ptr.hxx"
 
-class InputStream;
-
-InputStream *
-input_rewind_open(InputStream *is);
+InputStreamPtr
+input_rewind_open(InputStreamPtr is);
 
 #endif

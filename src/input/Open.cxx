@@ -42,11 +42,8 @@ InputStream::Open(const char *url,
 		InputStream *is;
 
 		is = plugin->open(url, mutex, cond);
-		if (is != nullptr) {
-			is = input_rewind_open(is);
-
-			return InputStreamPtr(is);
-		}
+		if (is != nullptr)
+			return input_rewind_open(InputStreamPtr(is));
 	}
 
 	throw std::runtime_error("Unrecognized URI");

@@ -21,77 +21,77 @@
 #include "ProxyInputStream.hxx"
 #include "tag/Tag.hxx"
 
-ProxyInputStream::ProxyInputStream(InputStream *_input) noexcept
+ProxyInputStream::ProxyInputStream(InputStreamPtr _input) noexcept
 	:InputStream(_input->GetURI(), _input->mutex, _input->cond),
-	 input(*_input) {}
-
-ProxyInputStream::~ProxyInputStream() noexcept
+	 input(std::move(_input))
 {
-	delete &input;
+	assert(input);
 }
+
+ProxyInputStream::~ProxyInputStream() noexcept = default;
 
 void
 ProxyInputStream::CopyAttributes()
 {
-	if (input.IsReady()) {
+	if (input->IsReady()) {
 		if (!IsReady()) {
-			if (input.HasMimeType())
-				SetMimeType(input.GetMimeType());
+			if (input->HasMimeType())
+				SetMimeType(input->GetMimeType());
 
-			size = input.KnownSize()
-				? input.GetSize()
+			size = input->KnownSize()
+				? input->GetSize()
 				: UNKNOWN_SIZE;
 
-			seekable = input.IsSeekable();
+			seekable = input->IsSeekable();
 			SetReady();
 		}
 
-		offset = input.GetOffset();
+		offset = input->GetOffset();
 	}
 }
 
 void
 ProxyInputStream::Check()
 {
-	input.Check();
+	input->Check();
 }
 
 void
 ProxyInputStream::Update() noexcept
 {
-	input.Update();
+	input->Update();
 	CopyAttributes();
 }
 
 void
 ProxyInputStream::Seek(offset_type new_offset)
 {
-	input.Seek(new_offset);
+	input->Seek(new_offset);
 	CopyAttributes();
 }
 
 bool
 ProxyInputStream::IsEOF() noexcept
 {
-	return input.IsEOF();
+	return input->IsEOF();
 }
 
 std::unique_ptr<Tag>
 ProxyInputStream::ReadTag()
 {
-	return input.ReadTag();
+	return input->ReadTag();
 }
 
 bool
 ProxyInputStream::IsAvailable() noexcept
 {
-	return input.IsAvailable();
+	return input->IsAvailable();
 }
 
 size_t
 ProxyInputStream::Read(void *ptr, size_t read_size)
 {
-	size_t nbytes = input.Read(ptr, read_size);
+	size_t nbytes = input->Read(ptr, read_size);
 	CopyAttributes();
 	return nbytes;
 }
