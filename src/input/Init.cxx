@@ -69,7 +69,8 @@ input_stream_global_init(EventLoop &event_loop)
 	}
 }
 
-void input_stream_global_finish(void)
+void
+input_stream_global_finish() noexcept
 {
 	input_plugins_for_each_enabled(plugin)
 		if (plugin->finish != nullptr)

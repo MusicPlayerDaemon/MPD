@@ -35,16 +35,16 @@ protected:
 
 public:
 	gcc_nonnull_all
-	ProxyInputStream(InputStream *_input);
+	ProxyInputStream(InputStream *_input) noexcept;
 
-	virtual ~ProxyInputStream();
+	virtual ~ProxyInputStream() noexcept;
 
 	ProxyInputStream(const ProxyInputStream &) = delete;
 	ProxyInputStream &operator=(const ProxyInputStream &) = delete;
 
 	/* virtual methods from InputStream */
 	void Check() override;
-	void Update() override;
+	void Update() noexcept override;
 	void Seek(offset_type new_offset) override;
 	bool IsEOF() noexcept override;
 	std::unique_ptr<Tag> ReadTag() override;

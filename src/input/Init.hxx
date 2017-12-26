@@ -32,6 +32,6 @@ input_stream_global_init(EventLoop &event_loop);
  * Deinitializes this library and all #InputStream implementations.
  */
 void
-input_stream_global_finish();
+input_stream_global_finish() noexcept;
 
 #endif

@@ -47,22 +47,22 @@ class IcyInputStream final : public ProxyInputStream {
 	offset_type override_offset = 0;
 
 public:
-	IcyInputStream(InputStream *_input);
-	virtual ~IcyInputStream();
+	IcyInputStream(InputStream *_input) noexcept;
+	virtual ~IcyInputStream() noexcept;
 
 	IcyInputStream(const IcyInputStream &) = delete;
 	IcyInputStream &operator=(const IcyInputStream &) = delete;
 
-	void Enable(size_t _data_size) {
+	void Enable(size_t _data_size) noexcept {
 		parser.Start(_data_size);
 	}
 
-	bool IsEnabled() const {
+	bool IsEnabled() const noexcept {
 		return parser.IsDefined();
 	}
 
 	/* virtual methods from InputStream */
-	void Update() override;
+	void Update() noexcept override;
 	std::unique_ptr<Tag> ReadTag() override;
 	size_t Read(void *ptr, size_t size) override;
 };

@@ -21,11 +21,11 @@
 #include "ProxyInputStream.hxx"
 #include "tag/Tag.hxx"
 
-ProxyInputStream::ProxyInputStream(InputStream *_input)
+ProxyInputStream::ProxyInputStream(InputStream *_input) noexcept
 	:InputStream(_input->GetURI(), _input->mutex, _input->cond),
 	 input(*_input) {}
 
-ProxyInputStream::~ProxyInputStream()
+ProxyInputStream::~ProxyInputStream() noexcept
 {
 	delete &input;
 }
@@ -57,7 +57,7 @@ ProxyInputStream::Check()
 }
 
 void
-ProxyInputStream::Update()
+ProxyInputStream::Update() noexcept
 {
 	input.Update();
 	CopyAttributes();

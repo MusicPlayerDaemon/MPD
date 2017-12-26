@@ -27,7 +27,7 @@
 
 #include <assert.h>
 
-InputStream::~InputStream()
+InputStream::~InputStream() noexcept
 {
 }
 
@@ -37,12 +37,12 @@ InputStream::Check()
 }
 
 void
-InputStream::Update()
+InputStream::Update() noexcept
 {
 }
 
 void
-InputStream::SetReady()
+InputStream::SetReady() noexcept
 {
 	assert(!ready);
 
@@ -51,7 +51,7 @@ InputStream::SetReady()
 }
 
 void
-InputStream::WaitReady()
+InputStream::WaitReady() noexcept
 {
 	while (true) {
 		Update();
@@ -63,7 +63,7 @@ InputStream::WaitReady()
 }
 
 void
-InputStream::LockWaitReady()
+InputStream::LockWaitReady() noexcept
 {
 	const std::lock_guard<Mutex> protect(mutex);
 	WaitReady();

@@ -53,7 +53,7 @@ public:
 
 	/* virtual methods from InputStream */
 
-	void Update() override {
+	void Update() noexcept override {
 		if (!ReadingFromBuffer())
 			ProxyInputStream::Update();
 	}
@@ -70,7 +70,7 @@ private:
 	 * Are we currently reading from the buffer, and does the
 	 * buffer contain more data for the next read operation?
 	 */
-	bool ReadingFromBuffer() const {
+	bool ReadingFromBuffer() const noexcept {
 		return tail > 0 && offset < input.GetOffset();
 	}
 };

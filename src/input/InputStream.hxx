@@ -107,7 +107,7 @@ public:
 	 *
 	 * The caller must not lock the mutex.
 	 */
-	virtual ~InputStream();
+	virtual ~InputStream() noexcept;
 
 	/**
 	 * Opens a new input stream.  You may not access it until the "ready"
@@ -138,15 +138,15 @@ public:
 	 *
 	 * No lock necessary for this method.
 	 */
-	const char *GetURI() const {
+	const char *GetURI() const noexcept {
 		return uri.c_str();
 	}
 
-	void Lock() {
+	void Lock() noexcept {
 		mutex.lock();
 	}
 
-	void Unlock() {
+	void Unlock() noexcept {
 		mutex.unlock();
 	}
 
@@ -160,9 +160,9 @@ public:
 	 * Update the public attributes.  Call before accessing attributes
 	 * such as "ready" or "offset".
 	 */
-	virtual void Update();
+	virtual void Update() noexcept;
 
-	void SetReady();
+	void SetReady() noexcept;
 
 	/**
 	 * Return whether the stream is ready for reading and whether
@@ -174,13 +174,13 @@ public:
 		return ready;
 	}
 
-	void WaitReady();
+	void WaitReady() noexcept;
 
 	/**
 	 * Wrapper for WaitReady() which locks and unlocks the mutex;
 	 * the caller must not be holding it already.
 	 */
-	void LockWaitReady();
+	void LockWaitReady() noexcept;
 
 	gcc_pure
 	bool HasMimeType() const noexcept {
@@ -201,13 +201,13 @@ public:
 	}
 
 	gcc_nonnull_all
-	void SetMimeType(const char *_mime) {
+	void SetMimeType(const char *_mime) noexcept {
 		assert(!ready);
 
 		mime = _mime;
 	}
 
-	void SetMimeType(std::string &&_mime) {
+	void SetMimeType(std::string &&_mime) noexcept {
 		assert(!ready);
 
 		mime = std::move(_mime);

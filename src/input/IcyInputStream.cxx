@@ -21,15 +21,15 @@
 #include "IcyInputStream.hxx"
 #include "tag/Tag.hxx"
 
-IcyInputStream::IcyInputStream(InputStream *_input)
+IcyInputStream::IcyInputStream(InputStream *_input) noexcept
 	:ProxyInputStream(_input)
 {
 }
 
-IcyInputStream::~IcyInputStream() = default;
+IcyInputStream::~IcyInputStream() noexcept = default;
 
 void
-IcyInputStream::Update()
+IcyInputStream::Update() noexcept
 {
 	ProxyInputStream::Update();
 
