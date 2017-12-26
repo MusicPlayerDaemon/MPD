@@ -70,24 +70,24 @@ protected:
 	 * indicates whether the stream is ready for reading and
 	 * whether the other attributes in this struct are valid
 	 */
-	bool ready;
+	bool ready = false;
 
 	/**
 	 * if true, then the stream is fully seekable
 	 */
-	bool seekable;
+	bool seekable = false;
 
 	static constexpr offset_type UNKNOWN_SIZE = -1;
 
 	/**
 	 * the size of the resource, or #UNKNOWN_SIZE if unknown
 	 */
-	offset_type size;
+	offset_type size = UNKNOWN_SIZE;
 
 	/**
 	 * the current offset within the stream
 	 */
-	offset_type offset;
+	offset_type offset = 0;
 
 private:
 	/**
@@ -98,9 +98,7 @@ private:
 public:
 	InputStream(const char *_uri, Mutex &_mutex, Cond &_cond)
 		:uri(_uri),
-		 mutex(_mutex), cond(_cond),
-		 ready(false), seekable(false),
-		 size(UNKNOWN_SIZE), offset(0) {
+		 mutex(_mutex), cond(_cond) {
 		assert(_uri != nullptr);
 	}
 

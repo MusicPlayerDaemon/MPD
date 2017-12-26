@@ -22,8 +22,7 @@
 #include "tag/Tag.hxx"
 
 IcyInputStream::IcyInputStream(InputStream *_input)
-	:ProxyInputStream(_input),
-	 override_offset(0)
+	:ProxyInputStream(_input)
 {
 }
 

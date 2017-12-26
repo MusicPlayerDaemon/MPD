@@ -34,7 +34,7 @@ class RewindInputStream final : public ProxyInputStream {
 	/**
 	 * The write/append position within the buffer.
 	 */
-	size_t tail;
+	size_t tail = 0;
 
 	/**
 	 * The size of this buffer is the maximum number of bytes
@@ -48,8 +48,7 @@ class RewindInputStream final : public ProxyInputStream {
 
 public:
 	RewindInputStream(InputStream *_input)
-		:ProxyInputStream(_input),
-		 tail(0) {
+		:ProxyInputStream(_input) {
 	}
 
 	/* virtual methods from InputStream */

@@ -44,7 +44,7 @@ class IcyInputStream final : public ProxyInputStream {
 	 */
 	std::unique_ptr<Tag> icy_tag;
 
-	offset_type override_offset;
+	offset_type override_offset = 0;
 
 public:
 	IcyInputStream(InputStream *_input);
