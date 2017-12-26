@@ -85,11 +85,12 @@ ZzipArchiveFile::Visit(ArchiveVisitor &visitor)
 
 /* single archive handling */
 
-struct ZzipInputStream final : public InputStream {
+class ZzipInputStream final : public InputStream {
 	std::shared_ptr<ZzipDir> dir;
 
-	ZZIP_FILE *file;
+	ZZIP_FILE *const file;
 
+public:
 	ZzipInputStream(const std::shared_ptr<ZzipDir> _dir, const char *_uri,
 			Mutex &_mutex, Cond &_cond,
 			ZZIP_FILE *_file)
