@@ -122,7 +122,7 @@ sample_format_size(SampleFormat format)
  * @param format a #SampleFormat enum value
  * @return the string
  */
-gcc_pure gcc_malloc gcc_returns_nonnull
+gcc_pure gcc_returns_nonnull
 const char *
 sample_format_to_string(SampleFormat format) noexcept;
 

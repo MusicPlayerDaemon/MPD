@@ -270,6 +270,7 @@ CurlInputStream::OnData(ConstBuffer<void> data)
 void
 CurlInputStream::OnEnd()
 {
+	const std::lock_guard<Mutex> protect(mutex);
 	cond.broadcast();
 
 	AsyncInputStream::SetClosed();
@@ -278,6 +279,7 @@ CurlInputStream::OnEnd()
 void
 CurlInputStream::OnError(std::exception_ptr e) noexcept
 {
+	const std::lock_guard<Mutex> protect(mutex);
 	postponed_exception = std::move(e);
 
 	if (IsSeekPending())
