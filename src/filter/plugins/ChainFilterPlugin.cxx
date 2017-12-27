@@ -19,9 +19,7 @@
 
 #include "config.h"
 #include "ChainFilterPlugin.hxx"
-#include "filter/FilterPlugin.hxx"
 #include "filter/FilterInternal.hxx"
-#include "filter/FilterRegistry.hxx"
 #include "AudioFormat.hxx"
 #include "util/ConstBuffer.hxx"
 #include "util/StringBuffer.hxx"
@@ -94,12 +92,6 @@ public:
 	Filter *Open(AudioFormat &af) override;
 };
 
-static PreparedFilter *
-chain_filter_init(gcc_unused const ConfigBlock &block)
-{
-	return new PreparedChainFilter();
-}
-
 Filter *
 PreparedChainFilter::Child::Open(const AudioFormat &prev_audio_format)
 {
@@ -150,11 +142,6 @@ ChainFilter::FilterPCM(ConstBuffer<void> src)
 	/* return the output of the last filter */
 	return src;
 }
-
-const FilterPlugin chain_filter_plugin = {
-	"chain",
-	chain_filter_init,
-};
 
 PreparedFilter *
 filter_chain_new(void)

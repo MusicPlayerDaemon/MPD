@@ -19,9 +19,7 @@
 
 #include "config.h"
 #include "ConvertFilterPlugin.hxx"
-#include "filter/FilterPlugin.hxx"
 #include "filter/FilterInternal.hxx"
-#include "filter/FilterRegistry.hxx"
 #include "pcm/PcmConvert.hxx"
 #include "util/Manual.hxx"
 #include "util/ConstBuffer.hxx"
@@ -63,12 +61,6 @@ class PreparedConvertFilter final : public PreparedFilter {
 public:
 	Filter *Open(AudioFormat &af) override;
 };
-
-static PreparedFilter *
-convert_filter_init(gcc_unused const ConfigBlock &block)
-{
-	return new PreparedConvertFilter();
-}
 
 void
 ConvertFilter::Set(const AudioFormat &_out_audio_format)
@@ -126,11 +118,6 @@ ConvertFilter::FilterPCM(ConstBuffer<void> src)
 
 	return state.Convert(src);
 }
-
-const FilterPlugin convert_filter_plugin = {
-	"convert",
-	convert_filter_init,
-};
 
 PreparedFilter *
 convert_filter_prepare() noexcept
