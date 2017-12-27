@@ -33,7 +33,7 @@ AudioFormat
 AudioOutputSource::Open(const AudioFormat audio_format, const MusicPipe &_pipe,
 			PreparedFilter *prepared_replay_gain_filter,
 			PreparedFilter *prepared_other_replay_gain_filter,
-			PreparedFilter *prepared_filter)
+			PreparedFilter &prepared_filter)
 {
 	assert(audio_format.IsValid());
 
@@ -90,7 +90,7 @@ void
 AudioOutputSource::OpenFilter(AudioFormat audio_format,
 			      PreparedFilter *prepared_replay_gain_filter,
 			      PreparedFilter *prepared_other_replay_gain_filter,
-			      PreparedFilter *prepared_filter)
+			      PreparedFilter &prepared_filter)
 try {
 	assert(audio_format.IsValid());
 
@@ -107,7 +107,7 @@ try {
 			prepared_other_replay_gain_filter->Open(audio_format);
 	}
 
-	filter_instance = prepared_filter->Open(audio_format);
+	filter_instance = prepared_filter.Open(audio_format);
 } catch (...) {
 	CloseFilter();
 	throw;

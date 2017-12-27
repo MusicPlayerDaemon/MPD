@@ -148,7 +148,7 @@ AudioOutputControl::InternalOpen(const AudioFormat in_audio_format,
 			f = source.Open(in_audio_format, pipe,
 					output->prepared_replay_gain_filter,
 					output->prepared_other_replay_gain_filter,
-					output->prepared_filter);
+					*output->prepared_filter);
 		} catch (...) {
 			std::throw_with_nested(FormatRuntimeError("Failed to open filter for %s",
 								  GetLogName()));
