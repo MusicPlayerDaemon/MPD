@@ -50,13 +50,13 @@ public:
 class PreparedVolumeFilter final : public PreparedFilter {
 public:
 	/* virtual methods from class Filter */
-	Filter *Open(AudioFormat &af) override;
+	std::unique_ptr<Filter> Open(AudioFormat &af) override;
 };
 
-Filter *
+std::unique_ptr<Filter>
 PreparedVolumeFilter::Open(AudioFormat &audio_format)
 {
-	return new VolumeFilter(audio_format);
+	return std::make_unique<VolumeFilter>(audio_format);
 }
 
 ConstBuffer<void>

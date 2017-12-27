@@ -138,7 +138,7 @@ public:
 	}
 
 	/* virtual methods from class Filter */
-	Filter *Open(AudioFormat &af) override;
+	std::unique_ptr<Filter> Open(AudioFormat &af) override;
 };
 
 void
@@ -177,10 +177,10 @@ NewReplayGainFilter(const ReplayGainConfig &config) noexcept
 	return std::make_unique<PreparedReplayGainFilter>(config);
 }
 
-Filter *
+std::unique_ptr<Filter>
 PreparedReplayGainFilter::Open(AudioFormat &af)
 {
-	return new ReplayGainFilter(config, af, mixer, base);
+	return std::make_unique<ReplayGainFilter>(config, af, mixer, base);
 }
 
 ConstBuffer<void>

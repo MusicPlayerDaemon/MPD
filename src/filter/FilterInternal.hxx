@@ -27,8 +27,9 @@
 
 #include "AudioFormat.hxx"
 
+#include <memory>
+
 #include <assert.h>
-#include <stddef.h>
 
 struct AudioFormat;
 template<typename T> struct ConstBuffer;
@@ -84,7 +85,7 @@ public:
 	 * plugin may modify the object to enforce another input
 	 * format
 	 */
-	virtual Filter *Open(AudioFormat &af) = 0;
+	virtual std::unique_ptr<Filter> Open(AudioFormat &af) = 0;
 };
 
 #endif

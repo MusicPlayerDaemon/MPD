@@ -33,16 +33,10 @@
 class ChainFilter final : public Filter {
 	struct Child {
 		const char *name;
-		Filter *filter;
+		std::unique_ptr<Filter> filter;
 
-		Child(const char *_name, Filter *_filter)
-			:name(_name), filter(_filter) {}
-		~Child() {
-			delete filter;
-		}
-
-		Child(const Child &) = delete;
-		Child &operator=(const Child &) = delete;
+		Child(const char *_name, std::unique_ptr<Filter> _filter)
+			:name(_name), filter(std::move(_filter)) {}
 	};
 
 	std::list<Child> children;
@@ -51,12 +45,12 @@ public:
 	explicit ChainFilter(AudioFormat _audio_format)
 		:Filter(_audio_format) {}
 
-	void Append(const char *name, Filter *filter) {
+	void Append(const char *name, std::unique_ptr<Filter> filter) {
 		assert(out_audio_format.IsValid());
 		out_audio_format = filter->GetOutAudioFormat();
 		assert(out_audio_format.IsValid());
 
-		children.emplace_back(name, filter);
+		children.emplace_back(name, std::move(filter));
 	}
 
 	/* virtual methods from class Filter */
@@ -76,7 +70,7 @@ class PreparedChainFilter final : public PreparedFilter {
 		Child(const Child &) = delete;
 		Child &operator=(const Child &) = delete;
 
-		Filter *Open(const AudioFormat &prev_audio_format);
+		std::unique_ptr<Filter> Open(const AudioFormat &prev_audio_format);
 	};
 
 	std::list<Child> children;
@@ -88,38 +82,34 @@ public:
 	}
 
 	/* virtual methods from class PreparedFilter */
-	Filter *Open(AudioFormat &af) override;
+	std::unique_ptr<Filter> Open(AudioFormat &af) override;
 };
 
-Filter *
+std::unique_ptr<Filter>
 PreparedChainFilter::Child::Open(const AudioFormat &prev_audio_format)
 {
 	AudioFormat conv_audio_format = prev_audio_format;
-	Filter *new_filter = filter->Open(conv_audio_format);
+	auto new_filter = filter->Open(conv_audio_format);
 
-	if (conv_audio_format != prev_audio_format) {
-		delete new_filter;
-
+	if (conv_audio_format != prev_audio_format)
 		throw FormatRuntimeError("Audio format not supported by filter '%s': %s",
 					 name,
 					 ToString(prev_audio_format).c_str());
-	}
 
 	return new_filter;
 }
 
-Filter *
+std::unique_ptr<Filter>
 PreparedChainFilter::Open(AudioFormat &in_audio_format)
 {
-	std::unique_ptr<ChainFilter> chain(new ChainFilter(in_audio_format));
+	auto chain = std::make_unique<ChainFilter>(in_audio_format);
 
 	for (auto &child : children) {
 		AudioFormat audio_format = chain->GetOutAudioFormat();
-		auto *filter = child.Open(audio_format);
-		chain->Append(child.name, filter);
+		chain->Append(child.name, child.Open(audio_format));
 	}
 
-	return chain.release();
+	return chain;
 }
 
 void

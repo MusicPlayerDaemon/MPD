@@ -59,7 +59,7 @@ public:
 
 class PreparedConvertFilter final : public PreparedFilter {
 public:
-	Filter *Open(AudioFormat &af) override;
+	std::unique_ptr<Filter> Open(AudioFormat &af) override;
 };
 
 void
@@ -91,12 +91,12 @@ ConvertFilter::ConvertFilter(const AudioFormat &audio_format)
 {
 }
 
-Filter *
+std::unique_ptr<Filter>
 PreparedConvertFilter::Open(AudioFormat &audio_format)
 {
 	assert(audio_format.IsValid());
 
-	return new ConvertFilter(audio_format);
+	return std::make_unique<ConvertFilter>(audio_format);
 }
 
 ConvertFilter::~ConvertFilter()

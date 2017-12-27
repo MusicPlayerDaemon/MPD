@@ -50,26 +50,25 @@ public:
 
 	Filter *Get();
 
-	Filter *Open(AudioFormat &af) override;
+	std::unique_ptr<Filter> Open(AudioFormat &af) override;
 };
 
 class FilterObserver::Proxy final : public Filter {
 	PreparedProxy &parent;
 
-	Filter *const filter;
+	std::unique_ptr<Filter> filter;
 
 public:
-	Proxy(PreparedProxy &_parent, Filter *_filter)
+	Proxy(PreparedProxy &_parent, std::unique_ptr<Filter> _filter)
 		:Filter(_filter->GetOutAudioFormat()),
-		 parent(_parent), filter(_filter) {}
+		 parent(_parent), filter(std::move(_filter)) {}
 
 	~Proxy() {
 		parent.Clear(this);
-		delete filter;
 	}
 
 	Filter *Get() {
-		return filter;
+		return filter.get();
 	}
 
 	ConstBuffer<void> FilterPCM(ConstBuffer<void> src) override {
@@ -85,13 +84,14 @@ FilterObserver::PreparedProxy::Get()
 		: nullptr;
 }
 
-Filter *
+std::unique_ptr<Filter>
 FilterObserver::PreparedProxy::Open(AudioFormat &af)
 {
 	assert(child == nullptr);
 
-	Filter *f = prepared_filter->Open(af);
-	return child = new Proxy(*this, f);
+	auto c = std::make_unique<Proxy>(*this, prepared_filter->Open(af));
+	child = c.get();
+	return c;
 }
 
 std::unique_ptr<PreparedFilter>

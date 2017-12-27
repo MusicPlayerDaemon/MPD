@@ -30,6 +30,7 @@
 #include "util/ConstBuffer.hxx"
 
 #include <utility>
+#include <memory>
 
 #include <assert.h>
 #include <stdint.h>
@@ -76,14 +77,14 @@ class AudioOutputSource {
 	 * The replay_gain_filter_plugin instance of this audio
 	 * output.
 	 */
-	Filter *replay_gain_filter_instance = nullptr;
+	std::unique_ptr<Filter> replay_gain_filter_instance;
 
 	/**
 	 * The replay_gain_filter_plugin instance of this audio
 	 * output, to be applied to the second chunk during
 	 * cross-fading.
 	 */
-	Filter *other_replay_gain_filter_instance = nullptr;
+	std::unique_ptr<Filter> other_replay_gain_filter_instance;
 
 	/**
 	 * The buffer used to allocate the cross-fading result.
@@ -99,7 +100,7 @@ class AudioOutputSource {
 	 * The filter object of this audio output.  This is an
 	 * instance of chain_filter_plugin.
 	 */
-	Filter *filter_instance = nullptr;
+	std::unique_ptr<Filter> filter_instance;
 
 	/**
 	 * The #MusicChunk currently being processed (see
@@ -119,6 +120,9 @@ class AudioOutputSource {
 	ConstBuffer<uint8_t> pending_data;
 
 public:
+	AudioOutputSource() noexcept;
+	~AudioOutputSource() noexcept;
+
 	void SetReplayGainMode(ReplayGainMode _mode) noexcept {
 		replay_gain_mode = _mode;
 	}

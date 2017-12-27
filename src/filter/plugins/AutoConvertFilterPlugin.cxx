@@ -68,10 +68,10 @@ public:
 	PreparedAutoConvertFilter(std::unique_ptr<PreparedFilter> _filter) noexcept
 		:filter(std::move(_filter)) {}
 
-	Filter *Open(AudioFormat &af) override;
+	std::unique_ptr<Filter> Open(AudioFormat &af) override;
 };
 
-Filter *
+std::unique_ptr<Filter>
 PreparedAutoConvertFilter::Open(AudioFormat &in_audio_format)
 {
 	assert(in_audio_format.IsValid());
@@ -79,7 +79,7 @@ PreparedAutoConvertFilter::Open(AudioFormat &in_audio_format)
 	/* open the "real" filter */
 
 	AudioFormat child_audio_format = in_audio_format;
-	std::unique_ptr<Filter> new_filter(filter->Open(child_audio_format));
+	auto new_filter = filter->Open(child_audio_format);
 
 	/* need to convert? */
 
@@ -91,8 +91,8 @@ PreparedAutoConvertFilter::Open(AudioFormat &in_audio_format)
 						 child_audio_format));
 	}
 
-	return new AutoConvertFilter(std::move(new_filter),
-				     std::move(convert));
+	return std::make_unique<AutoConvertFilter>(std::move(new_filter),
+						   std::move(convert));
 }
 
 ConstBuffer<void>
