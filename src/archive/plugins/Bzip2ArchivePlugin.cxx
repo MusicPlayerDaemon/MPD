@@ -102,13 +102,13 @@ Bzip2InputStream::Open()
 
 /* archive open && listing routine */
 
-static ArchiveFile *
+static std::unique_ptr<ArchiveFile>
 bz2_open(Path pathname)
 {
 	static Mutex mutex;
 	static Cond cond;
 	auto is = OpenLocalInputStream(pathname, mutex, cond);
-	return new Bzip2ArchiveFile(pathname, std::move(is));
+	return std::make_unique<Bzip2ArchiveFile>(pathname, std::move(is));
 }
 
 /* single archive handling */

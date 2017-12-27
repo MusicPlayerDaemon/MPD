@@ -60,13 +60,8 @@ OpenArchiveInputStream(Path path, Mutex &mutex, Cond &cond)
 		return nullptr;
 	}
 
-	auto file = archive_file_open(arplug, Path::FromFS(archive));
-
-	AtScopeExit(file) {
-		delete file;
-	};
-
-	return file->OpenStream(filename, mutex, cond);
+	return archive_file_open(arplug, Path::FromFS(archive))
+		->OpenStream(filename, mutex, cond);
 }
 
 static InputStreamPtr

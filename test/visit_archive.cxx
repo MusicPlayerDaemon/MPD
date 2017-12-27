@@ -89,11 +89,10 @@ try {
 
 	int result = EXIT_SUCCESS;
 
-	ArchiveFile *file = archive_file_open(plugin, path);
+	auto file = archive_file_open(plugin, path);
 
 	MyArchiveVisitor visitor;
 	file->Visit(visitor);
-	delete file;
 
 	return result;
 } catch (const std::exception &e) {

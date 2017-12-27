@@ -150,7 +150,7 @@ UpdateWalk::UpdateArchiveFile(Directory &parent, const char *name,
 		return;
 
 	/* open archive */
-	ArchiveFile *file;
+	std::unique_ptr<ArchiveFile> file;
 	try {
 		file = archive_file_open(&plugin, path_fs);
 	} catch (...) {
@@ -177,7 +177,6 @@ UpdateWalk::UpdateArchiveFile(Directory &parent, const char *name,
 
 	UpdateArchiveVisitor visitor(*this, *file, directory);
 	file->Visit(visitor);
-	delete file;
 }
 
 bool

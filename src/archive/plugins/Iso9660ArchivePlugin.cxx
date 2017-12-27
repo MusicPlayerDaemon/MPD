@@ -116,10 +116,10 @@ Iso9660ArchiveFile::Visit(char *path, size_t length, size_t capacity,
 	_cdio_list_free (entlist, true);
 }
 
-static ArchiveFile *
+static std::unique_ptr<ArchiveFile>
 iso9660_archive_open(Path pathname)
 {
-	return new Iso9660ArchiveFile(std::make_shared<Iso9660>(pathname));
+	return std::make_unique<Iso9660ArchiveFile>(std::make_shared<Iso9660>(pathname));
 }
 
 void

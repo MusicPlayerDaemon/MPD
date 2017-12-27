@@ -19,11 +19,12 @@
 
 #include "config.h"
 #include "ArchivePlugin.hxx"
+#include "ArchiveFile.hxx"
 #include "fs/Path.hxx"
 
 #include <assert.h>
 
-ArchiveFile *
+std::unique_ptr<ArchiveFile>
 archive_file_open(const ArchivePlugin *plugin, Path path)
 {
 	assert(plugin != nullptr);

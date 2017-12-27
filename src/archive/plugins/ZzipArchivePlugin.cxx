@@ -65,10 +65,10 @@ public:
 
 /* archive open && listing routine */
 
-static ArchiveFile *
+static std::unique_ptr<ArchiveFile>
 zzip_archive_open(Path pathname)
 {
-	return new ZzipArchiveFile(std::make_shared<ZzipDir>(pathname));
+	return std::make_unique<ZzipArchiveFile>(std::make_shared<ZzipDir>(pathname));
 }
 
 inline void
