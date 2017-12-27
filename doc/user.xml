@@ -87,7 +87,7 @@ cd mpd-version</programlisting>
         <listitem>
           <para>
             a C++14 compiler (e.g. <ulink
-            url="http://gcc.gnu.org/">gcc 4.9</ulink> or <ulink
+            url="http://gcc.gnu.org/">gcc 5.0</ulink> or <ulink
             url="http://clang.llvm.org/">clang 3.9</ulink>)
           </para>
         </listitem>

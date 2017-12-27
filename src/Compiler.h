@@ -62,8 +62,8 @@
 #    error Sorry, your clang version is too old.  You need at least version 3.1.
 #  endif
 #elif defined(__GNUC__)
-#  if GCC_OLDER_THAN(4,9)
-#    error Sorry, your gcc version is too old.  You need at least version 4.9.
+#  if GCC_OLDER_THAN(5,0)
+#    error Sorry, your gcc version is too old.  You need at least version 5.0.
 #  endif
 #else
 #  warning Untested compiler.  Use at your own risk!
