@@ -29,6 +29,7 @@
 #include "mixer/MixerControl.hxx"
 #include "util/ConstBuffer.hxx"
 #include "util/StringBuffer.hxx"
+#include "util/RuntimeError.hxx"
 #include "system/FatalError.hxx"
 #include "Log.hxx"
 
@@ -53,10 +54,9 @@ load_filter(const char *name)
 {
 	const auto *param = config_find_block(ConfigBlockOption::AUDIO_FILTER,
 					      "name", name);
-	if (param == NULL) {
-		fprintf(stderr, "No such configured filter: %s\n", name);
-		return nullptr;
-	}
+	if (param == NULL)
+		throw FormatRuntimeError("No such configured filter: %s",
+					 name);
 
 	return filter_configured_new(*param);
 }
@@ -87,8 +87,6 @@ try {
 	/* initialize the filter */
 
 	auto prepared_filter = load_filter(argv[2]);
-	if (!prepared_filter)
-		return EXIT_FAILURE;
 
 	/* open the filter */
 
