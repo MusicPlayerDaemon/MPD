@@ -27,13 +27,15 @@
 #ifndef MPD_FILTER_CHAIN_HXX
 #define MPD_FILTER_CHAIN_HXX
 
+#include <memory>
+
 class PreparedFilter;
 
 /**
  * Creates a new filter chain.
  */
-PreparedFilter *
-filter_chain_new();
+std::unique_ptr<PreparedFilter>
+filter_chain_new() noexcept;
 
 /**
  * Appends a new filter at the end of the filter chain.  You must call
@@ -44,6 +46,6 @@ filter_chain_new();
  */
 void
 filter_chain_append(PreparedFilter &chain, const char *name,
-		    PreparedFilter *filter);
+		    std::unique_ptr<PreparedFilter> filter) noexcept;
 
 #endif

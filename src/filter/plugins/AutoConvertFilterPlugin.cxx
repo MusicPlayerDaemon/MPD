@@ -62,13 +62,11 @@ class PreparedAutoConvertFilter final : public PreparedFilter {
 	/**
 	 * The underlying filter.
 	 */
-	PreparedFilter *const filter;
+	std::unique_ptr<PreparedFilter> filter;
 
 public:
-	PreparedAutoConvertFilter(PreparedFilter *_filter):filter(_filter) {}
-	~PreparedAutoConvertFilter() {
-		delete filter;
-	}
+	PreparedAutoConvertFilter(std::unique_ptr<PreparedFilter> _filter) noexcept
+		:filter(std::move(_filter)) {}
 
 	Filter *Open(AudioFormat &af) override;
 };
@@ -106,8 +104,8 @@ AutoConvertFilter::FilterPCM(ConstBuffer<void> src)
 	return filter->FilterPCM(src);
 }
 
-PreparedFilter *
-autoconvert_filter_new(PreparedFilter *filter)
+std::unique_ptr<PreparedFilter>
+autoconvert_filter_new(std::unique_ptr<PreparedFilter> filter) noexcept
 {
-	return new PreparedAutoConvertFilter(filter);
+	return std::make_unique<PreparedAutoConvertFilter>(std::move(filter));
 }

@@ -67,13 +67,11 @@ public:
 class PreparedChainFilter final : public PreparedFilter {
 	struct Child {
 		const char *name;
-		PreparedFilter *filter;
+		std::unique_ptr<PreparedFilter> filter;
 
-		Child(const char *_name, PreparedFilter *_filter)
-			:name(_name), filter(_filter) {}
-		~Child() {
-			delete filter;
-		}
+		Child(const char *_name,
+		      std::unique_ptr<PreparedFilter> _filter)
+			:name(_name), filter(std::move(_filter)) {}
 
 		Child(const Child &) = delete;
 		Child &operator=(const Child &) = delete;
@@ -84,8 +82,9 @@ class PreparedChainFilter final : public PreparedFilter {
 	std::list<Child> children;
 
 public:
-	void Append(const char *name, PreparedFilter *filter) {
-		children.emplace_back(name, filter);
+	void Append(const char *name,
+		    std::unique_ptr<PreparedFilter> filter) noexcept {
+		children.emplace_back(name, std::move(filter));
 	}
 
 	/* virtual methods from class PreparedFilter */
@@ -143,17 +142,17 @@ ChainFilter::FilterPCM(ConstBuffer<void> src)
 	return src;
 }
 
-PreparedFilter *
-filter_chain_new(void)
+std::unique_ptr<PreparedFilter>
+filter_chain_new() noexcept
 {
-	return new PreparedChainFilter();
+	return std::make_unique<PreparedChainFilter>();
 }
 
 void
 filter_chain_append(PreparedFilter &_chain, const char *name,
-		    PreparedFilter *filter)
+		    std::unique_ptr<PreparedFilter> filter) noexcept
 {
 	PreparedChainFilter &chain = (PreparedChainFilter &)_chain;
 
-	chain.Append(name, filter);
+	chain.Append(name, std::move(filter));
 }

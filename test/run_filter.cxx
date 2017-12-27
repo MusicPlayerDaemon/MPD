@@ -48,7 +48,7 @@ mixer_set_volume(gcc_unused Mixer *mixer,
 {
 }
 
-static PreparedFilter *
+static std::unique_ptr<PreparedFilter>
 load_filter(const char *name)
 {
 	const auto *param = config_find_block(ConfigBlockOption::AUDIO_FILTER,
@@ -86,7 +86,7 @@ try {
 
 	/* initialize the filter */
 
-	std::unique_ptr<PreparedFilter> prepared_filter(load_filter(argv[2]));
+	auto prepared_filter = load_filter(argv[2]);
 	if (!prepared_filter)
 		return EXIT_FAILURE;
 

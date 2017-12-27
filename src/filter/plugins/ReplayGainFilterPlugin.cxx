@@ -171,10 +171,10 @@ ReplayGainFilter::Update()
 		pv.SetVolume(volume);
 }
 
-PreparedFilter *
-NewReplayGainFilter(const ReplayGainConfig &config)
+std::unique_ptr<PreparedFilter>
+NewReplayGainFilter(const ReplayGainConfig &config) noexcept
 {
-	return new PreparedReplayGainFilter(config);
+	return std::make_unique<PreparedReplayGainFilter>(config);
 }
 
 Filter *

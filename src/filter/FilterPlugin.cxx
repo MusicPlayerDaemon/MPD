@@ -20,13 +20,14 @@
 #include "config.h"
 #include "FilterPlugin.hxx"
 #include "FilterRegistry.hxx"
+#include "FilterInternal.hxx"
 #include "config/Block.hxx"
 #include "config/ConfigError.hxx"
 #include "util/RuntimeError.hxx"
 
 #include <assert.h>
 
-PreparedFilter *
+std::unique_ptr<PreparedFilter>
 filter_new(const FilterPlugin *plugin, const ConfigBlock &block)
 {
 	assert(plugin != nullptr);
@@ -34,7 +35,7 @@ filter_new(const FilterPlugin *plugin, const ConfigBlock &block)
 	return plugin->init(block);
 }
 
-PreparedFilter *
+std::unique_ptr<PreparedFilter>
 filter_configured_new(const ConfigBlock &block)
 {
 	const char *plugin_name = block.GetBlockValue("plugin");

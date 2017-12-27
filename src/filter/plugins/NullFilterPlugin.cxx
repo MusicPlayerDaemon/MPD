@@ -48,10 +48,10 @@ public:
 	}
 };
 
-static PreparedFilter *
+static std::unique_ptr<PreparedFilter>
 null_filter_init(gcc_unused const ConfigBlock &block)
 {
-	return new PreparedNullFilter();
+	return std::make_unique<PreparedNullFilter>();
 }
 
 const FilterPlugin null_filter_plugin = {

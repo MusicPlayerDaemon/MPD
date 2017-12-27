@@ -65,10 +65,10 @@ VolumeFilter::FilterPCM(ConstBuffer<void> src)
 	return pv.Apply(src);
 }
 
-PreparedFilter *
+std::unique_ptr<PreparedFilter>
 volume_filter_prepare() noexcept
 {
-	return new PreparedVolumeFilter();
+	return std::make_unique<PreparedVolumeFilter>();
 }
 
 unsigned

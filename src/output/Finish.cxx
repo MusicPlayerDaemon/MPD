@@ -27,10 +27,6 @@ FilteredAudioOutput::~FilteredAudioOutput()
 {
 	if (mixer != nullptr)
 		mixer_free(mixer);
-
-	delete prepared_replay_gain_filter;
-	delete prepared_other_replay_gain_filter;
-	delete prepared_filter;
 }
 
 void

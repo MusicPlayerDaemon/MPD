@@ -196,10 +196,10 @@ PreparedRouteFilter::PreparedRouteFilter(const ConfigBlock &block)
 	}
 }
 
-static PreparedFilter *
+static std::unique_ptr<PreparedFilter>
 route_filter_init(const ConfigBlock &block)
 {
-	return new PreparedRouteFilter(block);
+	return std::make_unique<PreparedRouteFilter>(block);
 }
 
 RouteFilter::RouteFilter(const AudioFormat &audio_format,

@@ -93,7 +93,7 @@ public:
 	 * The filter object of this audio output.  This is an
 	 * instance of chain_filter_plugin.
 	 */
-	PreparedFilter *prepared_filter = nullptr;
+	std::unique_ptr<PreparedFilter> prepared_filter;
 
 	/**
 	 * The #VolumeFilter instance of this audio output.  It is
@@ -105,14 +105,14 @@ public:
 	 * The replay_gain_filter_plugin instance of this audio
 	 * output.
 	 */
-	PreparedFilter *prepared_replay_gain_filter = nullptr;
+	std::unique_ptr<PreparedFilter> prepared_replay_gain_filter;
 
 	/**
 	 * The replay_gain_filter_plugin instance of this audio
 	 * output, to be applied to the second chunk during
 	 * cross-fading.
 	 */
-	PreparedFilter *prepared_other_replay_gain_filter = nullptr;
+	std::unique_ptr<PreparedFilter> prepared_other_replay_gain_filter;
 
 	/**
 	 * The convert_filter_plugin instance of this audio output.

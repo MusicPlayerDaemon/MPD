@@ -119,10 +119,10 @@ ConvertFilter::FilterPCM(ConstBuffer<void> src)
 	return state.Convert(src);
 }
 
-PreparedFilter *
+std::unique_ptr<PreparedFilter>
 convert_filter_prepare() noexcept
 {
-	return new PreparedConvertFilter();
+	return std::make_unique<PreparedConvertFilter>();
 }
 
 Filter *

@@ -53,10 +53,10 @@ public:
 	Filter *Open(AudioFormat &af) override;
 };
 
-static PreparedFilter *
+static std::unique_ptr<PreparedFilter>
 normalize_filter_init(gcc_unused const ConfigBlock &block)
 {
-	return new PreparedNormalizeFilter();
+	return std::make_unique<PreparedNormalizeFilter>();
 }
 
 Filter *
@@ -82,8 +82,8 @@ const FilterPlugin normalize_filter_plugin = {
 	normalize_filter_init,
 };
 
-PreparedFilter *
+std::unique_ptr<PreparedFilter>
 normalize_filter_prepare() noexcept
 {
-	return new PreparedNormalizeFilter();
+	return std::make_unique<PreparedNormalizeFilter>();
 }
