@@ -19,9 +19,7 @@
 
 #include "config.h"
 #include "VolumeFilterPlugin.hxx"
-#include "filter/FilterPlugin.hxx"
 #include "filter/FilterInternal.hxx"
-#include "filter/FilterRegistry.hxx"
 #include "pcm/Volume.hxx"
 #include "AudioFormat.hxx"
 #include "util/ConstBuffer.hxx"
@@ -55,12 +53,6 @@ public:
 	Filter *Open(AudioFormat &af) override;
 };
 
-static PreparedFilter *
-volume_filter_init(gcc_unused const ConfigBlock &block)
-{
-	return new PreparedVolumeFilter();
-}
-
 Filter *
 PreparedVolumeFilter::Open(AudioFormat &audio_format)
 {
@@ -72,11 +64,6 @@ VolumeFilter::FilterPCM(ConstBuffer<void> src)
 {
 	return pv.Apply(src);
 }
-
-const FilterPlugin volume_filter_plugin = {
-	"volume",
-	volume_filter_init,
-};
 
 PreparedFilter *
 volume_filter_prepare() noexcept

@@ -33,7 +33,6 @@ struct FilterPlugin;
 extern const FilterPlugin null_filter_plugin;
 extern const FilterPlugin route_filter_plugin;
 extern const FilterPlugin normalize_filter_plugin;
-extern const FilterPlugin volume_filter_plugin;
 
 gcc_pure
 const FilterPlugin *
