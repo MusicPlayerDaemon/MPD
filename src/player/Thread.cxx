@@ -428,7 +428,7 @@ Player::ActivateDecoder() noexcept
 	elapsed_time = pc.seek_time;
 
 	/* set the "starting" flag, which will be cleared by
-	   player_check_decoder_startup() */
+	   CheckDecoderStartup() */
 	decoder_starting = true;
 
 	/* update PlayerControl's song information */
