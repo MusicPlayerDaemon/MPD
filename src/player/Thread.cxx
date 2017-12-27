@@ -605,7 +605,6 @@ Player::SeekDecoder(SongTime seek_time) noexcept
 	} catch (...) {
 		/* decoder failure */
 		pc.SetError(PlayerError::DECODER, std::current_exception());
-		pc.CommandFinished();
 		return false;
 	}
 
@@ -658,8 +657,10 @@ Player::SeekDecoder() noexcept
 
 		/* send the SEEK command */
 
-		if (!SeekDecoder(pc.seek_time))
+		if (!SeekDecoder(pc.seek_time)) {
+			pc.CommandFinished();
 			return false;
+		}
 	}
 
 	pc.CommandFinished();
