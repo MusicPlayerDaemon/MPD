@@ -989,11 +989,8 @@ Player::Run() noexcept
 	pc.CommandFinished();
 
 	while (true) {
-		if (!ProcessCommand()) {
-			const ScopeUnlock unlock(pc.mutex);
-			pc.outputs.Cancel();
+		if (!ProcessCommand())
 			break;
-		}
 
 		if (buffering) {
 			/* buffering at the start of the song - wait
