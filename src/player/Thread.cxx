@@ -339,8 +339,10 @@ private:
 
 	/**
 	 * Player lock must be held before calling.
+	 *
+	 * @return false to stop playback
 	 */
-	void ProcessCommand() noexcept;
+	bool ProcessCommand() noexcept;
 
 	/**
 	 * This is called at the border between two songs: the audio output
@@ -673,15 +675,17 @@ Player::SeekDecoder() noexcept
 	return true;
 }
 
-inline void
+inline bool
 Player::ProcessCommand() noexcept
 {
 	switch (pc.command) {
 	case PlayerCommand::NONE:
+		break;
+
 	case PlayerCommand::STOP:
 	case PlayerCommand::EXIT:
 	case PlayerCommand::CLOSE_AUDIO:
-		break;
+		return false;
 
 	case PlayerCommand::UPDATE_AUDIO:
 		{
@@ -724,17 +728,14 @@ Player::ProcessCommand() noexcept
 		break;
 
 	case PlayerCommand::SEEK:
-		SeekDecoder();
-		break;
+		return SeekDecoder();
 
 	case PlayerCommand::CANCEL:
-		if (pc.next_song == nullptr) {
+		if (pc.next_song == nullptr)
 			/* the cancel request arrived too late, we're
 			   already playing the queued song...  stop
 			   everything now */
-			pc.command = PlayerCommand::STOP;
-			return;
-		}
+			return false;
 
 		if (IsDecoderAtNextSong())
 			/* the decoder is already decoding the song -
@@ -759,6 +760,8 @@ Player::ProcessCommand() noexcept
 		pc.CommandFinished();
 		break;
 	}
+
+	return true;
 }
 
 static void
@@ -986,10 +989,7 @@ Player::Run() noexcept
 	pc.CommandFinished();
 
 	while (true) {
-		ProcessCommand();
-		if (pc.command == PlayerCommand::STOP ||
-		    pc.command == PlayerCommand::EXIT ||
-		    pc.command == PlayerCommand::CLOSE_AUDIO) {
+		if (!ProcessCommand()) {
 			const ScopeUnlock unlock(pc.mutex);
 			pc.outputs.Cancel();
 			break;
