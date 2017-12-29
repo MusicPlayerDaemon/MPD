@@ -2202,7 +2202,7 @@ test_test_util_SOURCES = \
 	test/MimeTypeTest.hxx \
 	test/TestCircularBuffer.hxx \
 	test/test_util.cxx
-test_test_util_CPPFLAGS = $(AM_CPPFLAGS) $(CPPUNIT_CFLAGS) -DCPPUNIT_HAVE_RTTI=0
+test_test_util_CPPFLAGS = $(AM_CPPFLAGS) $(CPPUNIT_CFLAGS)
 test_test_util_CXXFLAGS = $(AM_CXXFLAGS) -Wno-error=deprecated-declarations
 test_test_util_LDADD = \
 	libutil.a \
@@ -2210,7 +2210,7 @@ test_test_util_LDADD = \
 
 test_test_byte_reverse_SOURCES = \
 	test/test_byte_reverse.cxx
-test_test_byte_reverse_CPPFLAGS = $(AM_CPPFLAGS) $(CPPUNIT_CFLAGS) -DCPPUNIT_HAVE_RTTI=0
+test_test_byte_reverse_CPPFLAGS = $(AM_CPPFLAGS) $(CPPUNIT_CFLAGS)
 test_test_byte_reverse_CXXFLAGS = $(AM_CXXFLAGS) -Wno-error=deprecated-declarations
 test_test_byte_reverse_LDADD = \
 	libutil.a \
@@ -2219,7 +2219,7 @@ test_test_byte_reverse_LDADD = \
 test_test_rewind_SOURCES = \
 	src/Log.cxx src/LogBackend.cxx \
 	test/test_rewind.cxx
-test_test_rewind_CPPFLAGS = $(AM_CPPFLAGS) $(CPPUNIT_CFLAGS) -DCPPUNIT_HAVE_RTTI=0
+test_test_rewind_CPPFLAGS = $(AM_CPPFLAGS) $(CPPUNIT_CFLAGS)
 test_test_rewind_CXXFLAGS = $(AM_CXXFLAGS) -Wno-error=deprecated-declarations
 test_test_rewind_LDADD = \
 	$(INPUT_LIBS) \
@@ -2231,7 +2231,7 @@ test_test_rewind_LDADD = \
 test_test_mixramp_SOURCES = \
 	src/Log.cxx src/LogBackend.cxx \
 	test/test_mixramp.cxx
-test_test_mixramp_CPPFLAGS = $(AM_CPPFLAGS) $(CPPUNIT_CFLAGS) -DCPPUNIT_HAVE_RTTI=0
+test_test_mixramp_CPPFLAGS = $(AM_CPPFLAGS) $(CPPUNIT_CFLAGS)
 test_test_mixramp_CXXFLAGS = $(AM_CXXFLAGS) -Wno-error=deprecated-declarations
 test_test_mixramp_LDADD = \
 	libutil.a \
@@ -2241,7 +2241,7 @@ if ENABLE_CURL
 test_test_icy_parser_SOURCES = \
 	src/Log.cxx src/LogBackend.cxx \
 	test/test_icy_parser.cxx
-test_test_icy_parser_CPPFLAGS = $(AM_CPPFLAGS) $(CPPUNIT_CFLAGS) -DCPPUNIT_HAVE_RTTI=0
+test_test_icy_parser_CPPFLAGS = $(AM_CPPFLAGS) $(CPPUNIT_CFLAGS)
 test_test_icy_parser_CXXFLAGS = $(AM_CXXFLAGS) -Wno-error=deprecated-declarations
 test_test_icy_parser_LDADD = \
 	libtag.a \
@@ -2262,7 +2262,7 @@ test_test_pcm_SOURCES = \
 	test/test_pcm_export.cxx \
 	test/test_pcm_all.hxx \
 	test/test_pcm_main.cxx
-test_test_pcm_CPPFLAGS = $(AM_CPPFLAGS) $(CPPUNIT_CFLAGS) -DCPPUNIT_HAVE_RTTI=0
+test_test_pcm_CPPFLAGS = $(AM_CPPFLAGS) $(CPPUNIT_CFLAGS)
 test_test_pcm_CXXFLAGS = $(AM_CXXFLAGS) -Wno-error=deprecated-declarations
 test_test_pcm_LDADD = \
 	$(PCM_LIBS) \
@@ -2273,7 +2273,7 @@ test_test_pcm_LDADD = \
 test_test_archive_SOURCES = \
 	src/Log.cxx src/LogBackend.cxx \
 	test/test_archive.cxx
-test_test_archive_CPPFLAGS = $(AM_CPPFLAGS) $(CPPUNIT_CFLAGS) -DCPPUNIT_HAVE_RTTI=0
+test_test_archive_CPPFLAGS = $(AM_CPPFLAGS) $(CPPUNIT_CFLAGS)
 test_test_archive_CXXFLAGS = $(AM_CXXFLAGS) -Wno-error=deprecated-declarations
 test_test_archive_LDADD = \
 	libarchive.a \
@@ -2290,7 +2290,7 @@ test_test_translate_song_SOURCES = \
 	src/LocateUri.cxx \
 	src/Log.cxx \
 	test/test_translate_song.cxx
-test_test_translate_song_CPPFLAGS = $(AM_CPPFLAGS) $(CPPUNIT_CFLAGS) -DCPPUNIT_HAVE_RTTI=0
+test_test_translate_song_CPPFLAGS = $(AM_CPPFLAGS) $(CPPUNIT_CFLAGS)
 test_test_translate_song_CXXFLAGS = $(AM_CXXFLAGS) -Wno-error=deprecated-declarations
 test_test_translate_song_LDADD = \
 	$(STORAGE_LIBS) \
@@ -2306,7 +2306,7 @@ endif
 test_test_protocol_SOURCES = \
 	src/protocol/ArgParser.cxx \
 	test/test_protocol.cxx
-test_test_protocol_CPPFLAGS = $(AM_CPPFLAGS) $(CPPUNIT_CFLAGS) -DCPPUNIT_HAVE_RTTI=0
+test_test_protocol_CPPFLAGS = $(AM_CPPFLAGS) $(CPPUNIT_CFLAGS)
 test_test_protocol_CXXFLAGS = $(AM_CXXFLAGS) -Wno-error=deprecated-declarations
 test_test_protocol_LDADD = \
 	libsystem.a \
@@ -2317,7 +2317,7 @@ test_test_queue_priority_SOURCES = \
 	src/queue/Queue.cxx \
 	src/DetachedSong.cxx \
 	test/test_queue_priority.cxx
-test_test_queue_priority_CPPFLAGS = $(AM_CPPFLAGS) $(CPPUNIT_CFLAGS) -DCPPUNIT_HAVE_RTTI=0
+test_test_queue_priority_CPPFLAGS = $(AM_CPPFLAGS) $(CPPUNIT_CFLAGS)
 test_test_queue_priority_CXXFLAGS = $(AM_CXXFLAGS) -Wno-error=deprecated-declarations
 test_test_queue_priority_LDADD = \
 	libsystem.a \
@@ -2326,7 +2326,7 @@ test_test_queue_priority_LDADD = \
 
 test_TestFs_SOURCES = \
 	test/TestFs.cxx
-test_TestFs_CPPFLAGS = $(AM_CPPFLAGS) $(CPPUNIT_CFLAGS) -DCPPUNIT_HAVE_RTTI=0
+test_TestFs_CPPFLAGS = $(AM_CPPFLAGS) $(CPPUNIT_CFLAGS)
 test_TestFs_CXXFLAGS = $(AM_CXXFLAGS) -Wno-error=deprecated-declarations
 test_TestFs_LDADD = \
 	$(FS_LIBS) \
@@ -2334,7 +2334,7 @@ test_TestFs_LDADD = \
 
 test_TestIcu_SOURCES = \
 	test/TestIcu.cxx
-test_TestIcu_CPPFLAGS = $(AM_CPPFLAGS) $(CPPUNIT_CFLAGS) -DCPPUNIT_HAVE_RTTI=0
+test_TestIcu_CPPFLAGS = $(AM_CPPFLAGS) $(CPPUNIT_CFLAGS)
 test_TestIcu_CXXFLAGS = $(AM_CXXFLAGS) -Wno-error=deprecated-declarations
 test_TestIcu_LDADD = \
 	$(ICU_LDADD) \
