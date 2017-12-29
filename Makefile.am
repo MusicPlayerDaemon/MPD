@@ -143,6 +143,7 @@ libmpd_a_SOURCES = \
 	src/player/Thread.cxx src/player/Thread.hxx \
 	src/player/Control.cxx src/player/Control.hxx \
 	src/player/Listener.hxx \
+	src/player/Outputs.hxx \
 	src/PlaylistError.cxx src/PlaylistError.hxx \
 	src/PlaylistPrint.cxx src/PlaylistPrint.hxx \
 	src/PlaylistSave.cxx src/PlaylistSave.hxx \

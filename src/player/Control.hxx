@@ -36,7 +36,7 @@
 #include <stdint.h>
 
 class PlayerListener;
-class MultipleOutputs;
+class PlayerOutputs;
 class DetachedSong;
 
 enum class PlayerState : uint8_t {
@@ -108,7 +108,7 @@ struct player_status {
 struct PlayerControl final : AudioOutputClient {
 	PlayerListener &listener;
 
-	MultipleOutputs &outputs;
+	PlayerOutputs &outputs;
 
 	const unsigned buffer_chunks;
 
@@ -223,7 +223,7 @@ struct PlayerControl final : AudioOutputClient {
 	double total_play_time = 0;
 
 	PlayerControl(PlayerListener &_listener,
-		      MultipleOutputs &_outputs,
+		      PlayerOutputs &_outputs,
 		      unsigned buffer_chunks,
 		      unsigned buffered_before_play,
 		      AudioFormat _configured_audio_format,

@@ -19,16 +19,16 @@
 
 #include "config.h"
 #include "Control.hxx"
+#include "Outputs.hxx"
 #include "Idle.hxx"
 #include "DetachedSong.hxx"
-#include "output/MultipleOutputs.hxx"
 
 #include <algorithm>
 
 #include <assert.h>
 
 PlayerControl::PlayerControl(PlayerListener &_listener,
-			     MultipleOutputs &_outputs,
+			     PlayerOutputs &_outputs,
 			     unsigned _buffer_chunks,
 			     unsigned _buffered_before_play,
 			     AudioFormat _configured_audio_format,
@@ -50,10 +50,10 @@ PlayerControl::~PlayerControl() noexcept
 bool
 PlayerControl::WaitOutputConsumed(unsigned threshold) noexcept
 {
-	bool result = outputs.Check() < threshold;
+	bool result = outputs.CheckPipe() < threshold;
 	if (!result && command == PlayerCommand::NONE) {
 		Wait();
-		result = outputs.Check() < threshold;
+		result = outputs.CheckPipe() < threshold;
 	}
 
 	return result;

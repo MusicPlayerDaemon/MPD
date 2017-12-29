@@ -315,7 +315,7 @@ MultipleOutputs::ClearTailChunk(const MusicChunk *chunk,
 }
 
 unsigned
-MultipleOutputs::Check() noexcept
+MultipleOutputs::CheckPipe() noexcept
 {
 	const MusicChunk *chunk;
 	bool is_tail;

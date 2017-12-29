@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "Thread.hxx"
+#include "Outputs.hxx"
 #include "Listener.hxx"
 #include "decoder/DecoderThread.hxx"
 #include "decoder/DecoderControl.hxx"
@@ -29,7 +30,6 @@
 #include "DetachedSong.hxx"
 #include "CrossFade.hxx"
 #include "Control.hxx"
-#include "output/MultipleOutputs.hxx"
 #include "tag/Tag.hxx"
 #include "Idle.hxx"
 #include "system/PeriodClock.hxx"
@@ -334,7 +334,7 @@ private:
 
 	unsigned UnlockCheckOutputs() noexcept {
 		const ScopeUnlock unlock(pc.mutex);
-		return pc.outputs.Check();
+		return pc.outputs.CheckPipe();
 	}
 
 	/**
@@ -750,7 +750,7 @@ Player::ProcessCommand() noexcept
 	case PlayerCommand::REFRESH:
 		if (output_open && !paused) {
 			const ScopeUnlock unlock(pc.mutex);
-			pc.outputs.Check();
+			pc.outputs.CheckPipe();
 		}
 
 		pc.elapsed_time = !pc.outputs.GetElapsedTime().IsNegative()
@@ -1004,7 +1004,7 @@ Player::Run() noexcept
 				{
 					const ScopeUnlock unlock(pc.mutex);
 					if (!paused && output_open &&
-					    pc.outputs.Check() < 4 &&
+					    pc.outputs.CheckPipe() < 4 &&
 					    !SendSilence())
 						break;
 				}

@@ -27,6 +27,7 @@
 #define OUTPUT_ALL_H
 
 #include "Control.hxx"
+#include "player/Outputs.hxx"
 #include "AudioFormat.hxx"
 #include "ReplayGainMode.hxx"
 #include "Chrono.hxx"
@@ -44,7 +45,7 @@ class AudioOutputClient;
 struct MusicChunk;
 struct ReplayGainConfig;
 
-class MultipleOutputs {
+class MultipleOutputs final : public PlayerOutputs {
 	MixerListener &mixer_listener;
 
 	std::vector<AudioOutputControl *> outputs;
@@ -115,84 +116,7 @@ public:
 	gcc_pure
 	AudioOutputControl *FindByName(const char *name) noexcept;
 
-	/**
-	 * Checks the "enabled" flag of all audio outputs, and if one has
-	 * changed, commit the change.
-	 */
-	void EnableDisable();
-
-	/**
-	 * Opens all audio outputs which are not disabled.
-	 *
-	 * Throws #std::runtime_error on error.
-	 *
-	 * @param audio_format the preferred audio format
-	 * @param _buffer the #music_buffer where consumed #MusicChunk objects
-	 * should be returned
-	 */
-	void Open(const AudioFormat audio_format, MusicBuffer &_buffer);
-
-	/**
-	 * Closes all audio outputs.
-	 */
-	void Close() noexcept;
-
-	/**
-	 * Closes all audio outputs.  Outputs with the "always_on"
-	 * flag are put into pause mode.
-	 */
-	void Release() noexcept;
-
 	void SetReplayGainMode(ReplayGainMode mode) noexcept;
-
-	/**
-	 * Enqueue a #MusicChunk object for playing, i.e. pushes it to a
-	 * #MusicPipe.
-	 *
-	 * Throws #std::runtime_error on error (all closed then).
-	 *
-	 * @param chunk the #MusicChunk object to be played
-	 */
-	void Play(MusicChunk *chunk);
-
-	/**
-	 * Checks if the output devices have drained their music pipe, and
-	 * returns the consumed music chunks to the #music_buffer.
-	 *
-	 * @return the number of chunks to play left in the #MusicPipe
-	 */
-	unsigned Check() noexcept;
-
-	/**
-	 * Puts all audio outputs into pause mode.  Most implementations will
-	 * simply close it then.
-	 */
-	void Pause() noexcept;
-
-	/**
-	 * Drain all audio outputs.
-	 */
-	void Drain() noexcept;
-
-	/**
-	 * Try to cancel data which may still be in the device's buffers.
-	 */
-	void Cancel() noexcept;
-
-	/**
-	 * Indicate that a new song will begin now.
-	 */
-	void SongBorder() noexcept;
-
-	/**
-	 * Returns the "elapsed_time" stamp of the most recently finished
-	 * chunk.  A negative value is returned when no chunk has been
-	 * finished yet.
-	 */
-	gcc_pure
-	SignedSongTime GetElapsedTime() const noexcept {
-		return elapsed_time;
-	}
 
 	/**
 	 * Returns the average volume of all available mixers (range
@@ -259,6 +183,22 @@ private:
 	 * reference.
 	 */
 	void ClearTailChunk(const MusicChunk *chunk, bool *locked) noexcept;
+
+	/* virtual methods from class PlayerOutputs */
+	void EnableDisable() override;
+	void Open(const AudioFormat audio_format,
+		  MusicBuffer &_buffer) override;
+	void Close() noexcept override;
+	void Release() noexcept override;
+	void Play(MusicChunk *chunk) override;
+	unsigned CheckPipe() noexcept override;
+	void Pause() noexcept override;
+	void Drain() noexcept override;
+	void Cancel() noexcept override;
+	void SongBorder() noexcept override;
+	SignedSongTime GetElapsedTime() const noexcept override {
+		return elapsed_time;
+	}
 };
 
 #endif
