@@ -73,8 +73,8 @@ public:
 	 * Load audio outputs from the configuration file and
 	 * initialize them.
 	 */
-	MultipleOutputs(MixerListener &_mixer_listener);
-	~MultipleOutputs();
+	MultipleOutputs(MixerListener &_mixer_listener) noexcept;
+	~MultipleOutputs() noexcept;
 
 	void Configure(EventLoop &event_loop,
 		       const ReplayGainConfig &replay_gain_config,
@@ -96,13 +96,13 @@ public:
 	/**
 	 * Returns the "i"th audio output device.
 	 */
-	const AudioOutputControl &Get(unsigned i) const {
+	const AudioOutputControl &Get(unsigned i) const noexcept {
 		assert(i < Size());
 
 		return *outputs[i];
 	}
 
-	AudioOutputControl &Get(unsigned i) {
+	AudioOutputControl &Get(unsigned i) noexcept {
 		assert(i < Size());
 
 		return *outputs[i];
@@ -135,15 +135,15 @@ public:
 	/**
 	 * Closes all audio outputs.
 	 */
-	void Close();
+	void Close() noexcept;
 
 	/**
 	 * Closes all audio outputs.  Outputs with the "always_on"
 	 * flag are put into pause mode.
 	 */
-	void Release();
+	void Release() noexcept;
 
-	void SetReplayGainMode(ReplayGainMode mode);
+	void SetReplayGainMode(ReplayGainMode mode) noexcept;
 
 	/**
 	 * Enqueue a #MusicChunk object for playing, i.e. pushes it to a
@@ -161,28 +161,28 @@ public:
 	 *
 	 * @return the number of chunks to play left in the #MusicPipe
 	 */
-	unsigned Check();
+	unsigned Check() noexcept;
 
 	/**
 	 * Puts all audio outputs into pause mode.  Most implementations will
 	 * simply close it then.
 	 */
-	void Pause();
+	void Pause() noexcept;
 
 	/**
 	 * Drain all audio outputs.
 	 */
-	void Drain();
+	void Drain() noexcept;
 
 	/**
 	 * Try to cancel data which may still be in the device's buffers.
 	 */
-	void Cancel();
+	void Cancel() noexcept;
 
 	/**
 	 * Indicate that a new song will begin now.
 	 */
-	void SongBorder();
+	void SongBorder() noexcept;
 
 	/**
 	 * Returns the "elapsed_time" stamp of the most recently finished
@@ -238,7 +238,7 @@ private:
 	/**
 	 * Signals all audio outputs which are open.
 	 */
-	void AllowPlay();
+	void AllowPlay() noexcept;
 
 	/**
 	 * Opens all output devices which are enabled, but closed.
@@ -246,7 +246,7 @@ private:
 	 * @return true if there is at least open output device which
 	 * is open
 	 */
-	bool Update(bool force);
+	bool Update(bool force) noexcept;
 
 	/**
 	 * Has this chunk been consumed by all audio outputs?
@@ -258,7 +258,7 @@ private:
 	 * audio outputs have consumed it already.  Clear the
 	 * reference.
 	 */
-	void ClearTailChunk(const MusicChunk *chunk, bool *locked);
+	void ClearTailChunk(const MusicChunk *chunk, bool *locked) noexcept;
 };
 
 #endif

@@ -35,12 +35,12 @@
 #include <assert.h>
 #include <string.h>
 
-MultipleOutputs::MultipleOutputs(MixerListener &_mixer_listener)
+MultipleOutputs::MultipleOutputs(MixerListener &_mixer_listener) noexcept
 	:mixer_listener(_mixer_listener)
 {
 }
 
-MultipleOutputs::~MultipleOutputs()
+MultipleOutputs::~MultipleOutputs() noexcept
 {
 	/* parallel destruction */
 	for (auto *i : outputs)
@@ -177,14 +177,14 @@ MultipleOutputs::WaitAll() noexcept
 }
 
 void
-MultipleOutputs::AllowPlay()
+MultipleOutputs::AllowPlay() noexcept
 {
 	for (auto *ao : outputs)
 		ao->LockAllowPlay();
 }
 
 bool
-MultipleOutputs::Update(bool force)
+MultipleOutputs::Update(bool force) noexcept
 {
 	bool ret = false;
 
@@ -199,7 +199,7 @@ MultipleOutputs::Update(bool force)
 }
 
 void
-MultipleOutputs::SetReplayGainMode(ReplayGainMode mode)
+MultipleOutputs::SetReplayGainMode(ReplayGainMode mode) noexcept
 {
 	for (auto *ao : outputs)
 		ao->SetReplayGainMode(mode);
@@ -292,7 +292,7 @@ MultipleOutputs::IsChunkConsumed(const MusicChunk *chunk) const noexcept
 
 inline void
 MultipleOutputs::ClearTailChunk(const MusicChunk *chunk,
-				bool *locked)
+				bool *locked) noexcept
 {
 	assert(chunk->next == nullptr);
 	assert(pipe->Contains(chunk));
@@ -315,7 +315,7 @@ MultipleOutputs::ClearTailChunk(const MusicChunk *chunk,
 }
 
 unsigned
-MultipleOutputs::Check()
+MultipleOutputs::Check() noexcept
 {
 	const MusicChunk *chunk;
 	bool is_tail;
@@ -363,7 +363,7 @@ MultipleOutputs::Check()
 }
 
 void
-MultipleOutputs::Pause()
+MultipleOutputs::Pause() noexcept
 {
 	Update(false);
 
@@ -374,7 +374,7 @@ MultipleOutputs::Pause()
 }
 
 void
-MultipleOutputs::Drain()
+MultipleOutputs::Drain() noexcept
 {
 	for (auto *ao : outputs)
 		ao->LockDrainAsync();
@@ -383,7 +383,7 @@ MultipleOutputs::Drain()
 }
 
 void
-MultipleOutputs::Cancel()
+MultipleOutputs::Cancel() noexcept
 {
 	/* send the cancel() command to all audio outputs */
 
@@ -408,7 +408,7 @@ MultipleOutputs::Cancel()
 }
 
 void
-MultipleOutputs::Close()
+MultipleOutputs::Close() noexcept
 {
 	for (auto *ao : outputs)
 		ao->LockCloseWait();
@@ -429,7 +429,7 @@ MultipleOutputs::Close()
 }
 
 void
-MultipleOutputs::Release()
+MultipleOutputs::Release() noexcept
 {
 	for (auto *ao : outputs)
 		ao->LockRelease();
@@ -450,7 +450,7 @@ MultipleOutputs::Release()
 }
 
 void
-MultipleOutputs::SongBorder()
+MultipleOutputs::SongBorder() noexcept
 {
 	/* clear the elapsed_time pointer at the beginning of a new
 	   song */
