@@ -44,11 +44,13 @@ ArchiveLookupTest::TestArchiveLookup()
 			     archive_lookup(path, &archive, &inpath, &suffix));
 	free(path);
 
-	path = strdup("Makefile/foo/bar");
+	fclose(fopen("dummy", "w"));
+
+	path = strdup("dummy/foo/bar");
 	CPPUNIT_ASSERT_EQUAL(true,
 			     archive_lookup(path, &archive, &inpath, &suffix));
 	CPPUNIT_ASSERT_EQUAL((const char *)path, archive);
-	CPPUNIT_ASSERT_EQUAL(0, strcmp(archive, "Makefile"));
+	CPPUNIT_ASSERT_EQUAL(0, strcmp(archive, "dummy"));
 	CPPUNIT_ASSERT_EQUAL(0, strcmp(inpath, "foo/bar"));
 	CPPUNIT_ASSERT_EQUAL((const char *)nullptr, suffix);
 	free(path);

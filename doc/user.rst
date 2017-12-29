@@ -47,6 +47,8 @@ Download the source tarball from the `MPD home page <https://musicpd.org>`_ and 
 In any case, you need:
 
 * a C++14 compiler (e.g. gcc 6.0 or clang 3.9)
+* `Meson 0.47 <http://mesonbuild.com/>`__ and `Ninja
+  <https://ninja-build.org/>`__
 * Boost 1.58
 * pkg-config 
 
@@ -87,44 +89,54 @@ Now configure the source tree:
 
 .. code-block:: none
 
-    ./configure
+ meson . output/release --buildtype=debugpotimized -Db_ndebug=true
 
-The :option:`--help` argument shows a list of compile-time options. When everything is ready and configured, compile:
+The following command shows a list of compile-time options:
 
 .. code-block:: none
 
-    make
+ meson configure output/release
+
+When everything is ready and configured, compile:
+
+.. code-block:: none
+
+ ninja -C output/release
 
 And install:
 
 .. code-block:: none
 
-    make install
+ ninja -C output/release install
 
 Compiling for Windows
 ---------------------
 
 Even though it does not "feel" like a Windows application, :program:`MPD` works well under Windows. Its build process follows the "Linux style" and may seem awkward for Windows people (who are not used to compiling their software, anyway).
 
-Basically, there are three ways to compile :program:`MPD` for Windows:
+Basically, there are two ways to compile :program:`MPD` for Windows:
 
-* Build on Windows for Windows. All you need to do is described above already: configure and make.
+* Build as described above: with :program:`meson` and
+  :program:`ninja`.  To cross-compile from Linux, you need `a Meson
+  cross file <https://mesonbuild.com/Cross-compilation.html>`__.
 
-  For Windows users, this is kind of unusual, because few Windows users have a GNU toolchain and a UNIX shell installed.
-
-* Build on Linux for Windows. This is described above already: configure and make. You need the :program:`mingw-w64` cross compiler. Pass :option:`--host=i686-w64-mingw32` (32 bit) or :option:`--host=x86_64-w64-mingw32` (64 bit) to configure.
-
-  This is somewhat natural for Linux users. Many distributions have mingw-w64 packages. The remaining difficulty here is installing all the external libraries. And :program:`MPD` usually needs many, making this method cumbersome for the casual user.
+  The remaining difficulty is installing all the external libraries.
+  And :program:`MPD` usually needs many, making this method cumbersome
+  for the casual user.
 
 * Build on Linux for Windows using :program:`MPD`'s library build script. 
 
 This section is about the latter.
 
-Just like with the native build, unpack the :program:`MPD` source tarball and change into the directory. Then, instead of ./configure, type:
+Just like with the native build, unpack the :program:`MPD` source
+tarball and change into the directory.  Then, instead of
+:program:`meson`, type:
 
 .. code-block:: none
 
-  ./win32/build.py --64
+ mkdir -p output/win64
+ cd output/win64
+ ../../win32/build.py --64
 
 This downloads various library sources, and then configures and builds :program:`MPD` (for x64; to build a 32 bit binary, pass :option:`--32`). The resulting EXE files is linked statically, i.e. it contains all the libraries already and you do not need carry DLLs around. It is large, but easy to use. If you wish to have a small mpd.exe with DLLs, you need to compile manually, without the :file:`build.py` script.
 
@@ -138,12 +150,17 @@ You need:
 * Android SDK
 * Android NDK 
 
-Just like with the native build, unpack the :program:`MPD` source tarball and change into the directory. Then, instead of ./configure, type:
+Just like with the native build, unpack the :program:`MPD` source
+tarball and change into the directory.  Then, instead of
+:program:`meson`, type:
 
 .. code-block:: none
 
-    ./android/build.py SDK_PATH NDK_PATH ABI
-    make android/build/mpd-debug.apk
+ mkdir -p output/android
+ cd output/android
+ ../../android/build.py SDK_PATH NDK_PATH ABI
+ meson configure -Dandroid_debug_keystore=$HOME/.android/debug.keystore
+ ninja android/apk/mpd-debug.apk
 
 :envvar:`SDK_PATH` is the absolute path where you installed the Android SDK; :envvar:`NDK_PATH` is the Android NDK installation path; ABI is the Android ABI to be built, e.g. "armeabi-v7a".
 
@@ -154,7 +171,10 @@ systemd socket activation
 
 Using systemd, you can launch :program:`MPD` on demand when the first client attempts to connect.
 
-:program:`MPD` comes with two systemd unit files: a "service" unit and a "socket" unit. These will only be installed when :program:`MPD` was configured with :option:`--with-systemdsystemunitdir=/lib/systemd/system`.
+:program:`MPD` comes with two systemd unit files: a "service" unit and
+a "socket" unit.  These will be installed to the directory specified
+with :option:`-Dsystemd_system_unit_dir=...`,
+e.g. :file:`/lib/systemd/system`.
 
 To enable socket activation, type:
 
@@ -168,7 +188,11 @@ In this configuration, :program:`MPD` will ignore the :dfn:`bind_to_address` and
 systemd user unit
 -----------------
 
-You can launch :program:`MPD` as a systemd user unit. The service file will only be installed when :program:`MPD` was configured with :option:`--with-systemduserunitdir=/usr/lib/systemd/user` or :option:`--with-systemduserunitdir=$HOME/.local/share/systemd/user`.
+You can launch :program:`MPD` as a systemd user unit.  These will be
+installed to the directory specified with
+:option:`-Dsystemd_user_unit_dir=...`,
+e.g. :file:`/usr/lib/systemd/user` or
+:file:`$HOME/.local/share/systemd/user`.
 
 Once the user unit is installed, you can start and stop :program:`MPD` like any other service:
 
@@ -529,7 +553,10 @@ The State File
 The Sticker Database
 ~~~~~~~~~~~~~~~~~~~~
 
-"Stickers" are pieces of information attached to songs. Some clients use them to store ratings and other volatile data. This feature requires :program:`SQLite`, compile-time configure option :option:`--enable-sqlite.`
+"Stickers" are pieces of information attached to songs. Some clients
+use them to store ratings and other volatile data. This feature
+requires :program:`SQLite`, compile-time configure option
+:option:`-Dsqlite`.
 
 .. list-table::
    :widths: 20 80
@@ -579,7 +606,10 @@ Do not change these unless you know what you are doing.
 Zeroconf
 ~~~~~~~~
 
-If Zeroconf support (`Avahi <http://avahi.org/>`_ or Apple's Bonjour) was enabled at compile time with :option:`--with-zeroconf=...`, :program:`MPD` can announce its presence on the network. The following settings control this feature:
+If Zeroconf support (`Avahi <http://avahi.org/>`_ or Apple's Bonjour)
+was enabled at compile time with :option:`-Dzeroconf=...`,
+:program:`MPD` can announce its presence on the network. The following
+settings control this feature:
 
 .. list-table::
    :widths: 20 80

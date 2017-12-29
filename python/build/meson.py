@@ -40,6 +40,7 @@ c = '%s'
 cpp = '%s'
 ar = '%s'
 strip = '%s'
+pkgconfig = '%s'
 %s
 
 [properties]
@@ -60,6 +61,7 @@ cpu_family = '%s'
 cpu = '%s'
 endian = '%s'
             """ % (toolchain.cc, toolchain.cxx, toolchain.ar, toolchain.strip,
+                   toolchain.pkg_config,
                    windres,
                    toolchain.install_prefix,
                    repr((toolchain.cppflags + ' ' + toolchain.cflags).split()),

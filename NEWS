@@ -46,6 +46,7 @@ ver 0.21 (not yet released)
   - opus: support for sending metadata using ogg stream chaining
 * systemd watchdog support
 * require GCC 6
+* build with Meson instead of autotools
 
 ver 0.20.22 (not yet released)
 * storage

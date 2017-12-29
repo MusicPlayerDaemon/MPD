@@ -2,6 +2,7 @@
 
 import os, os.path
 import sys, subprocess
+import shutil
 
 configure_args = sys.argv[1:]
 
@@ -73,7 +74,15 @@ class CrossGccToolchain:
 
         # redirect pkg-config to use our root directory instead of the
         # default one on the build host
-        self.env['PKG_CONFIG_LIBDIR'] = os.path.join(install_prefix, 'lib/pkgconfig')
+        import shutil
+        bin_dir = os.path.join(install_prefix, 'bin')
+        try:
+            os.makedirs(bin_dir)
+        except:
+            pass
+        self.pkg_config = shutil.copy(os.path.join(mpd_path, 'build', 'pkg-config.sh'),
+                                      os.path.join(bin_dir, 'pkg-config'))
+        self.env['PKG_CONFIG'] = self.pkg_config
 
 # a list of third-party libraries to be used by MPD on Android
 from build.libs import *
@@ -103,30 +112,6 @@ for x in thirdparty_libs:
 
 # configure and build MPD
 
-configure = [
-    os.path.join(mpd_path, 'configure'),
-    'CC=' + toolchain.cc,
-    'CXX=' + toolchain.cxx,
-    'CFLAGS=' + toolchain.cflags,
-    'CXXFLAGS=' + toolchain.cxxflags,
-    'CPPFLAGS=' + toolchain.cppflags,
-    'LDFLAGS=' + toolchain.ldflags + ' -static',
-    'LIBS=' + toolchain.libs,
-    'AR=' + toolchain.ar,
-    'RANLIB=' + toolchain.ranlib,
-    'STRIP=' + toolchain.strip,
-    '--host=' + toolchain.arch,
-    '--prefix=' + toolchain.install_prefix,
-
-    '--enable-silent-rules',
-
-    '--disable-icu',
-
-] + configure_args
-
-from build.cmdline import concatenate_cmdline_variables
-configure = concatenate_cmdline_variables(configure,
-    set(('CFLAGS', 'CXXFLAGS', 'CPPFLAGS', 'LDFLAGS', 'LIBS')))
-
-subprocess.check_call(configure, env=toolchain.env)
-subprocess.check_call(['/usr/bin/make', '--quiet', '-j12'], env=toolchain.env)
+from build.meson import configure as run_meson
+run_meson(toolchain, mpd_path, '.', configure_args)
+subprocess.check_call(['/usr/bin/ninja'], env=toolchain.env)

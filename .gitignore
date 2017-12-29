@@ -33,7 +33,7 @@ tags
 /libtool
 /ltmain.sh
 /mkinstalldirs
-/build
+/output/
 /src/mpd
 /systemd/system/mpd.service
 /systemd/user/mpd.service

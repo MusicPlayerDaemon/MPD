@@ -53,7 +53,8 @@ If you already have a clone, update it:
 
 You can do without :option:`--rebase`, but we recommend that you rebase your repository on the "master" repository all the time.
 
-Configure with the options :option:`--enable-debug --enable-werror`.  Enable as many plugins as possible, to be sure that you don't break any disabled code.
+Configure with the option :option:`--werror`.  Enable as many plugins
+as possible, to be sure that you don't break any disabled code.
 
 Don't mix several changes in one single patch.  Create a separate patch for every change. Tools like :program:`stgit` help you with that. This way, we can review your patches more easily, and we can pick the patches we like most first.
 

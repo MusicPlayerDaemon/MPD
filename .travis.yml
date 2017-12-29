@@ -9,12 +9,23 @@ matrix:
           sources:
             - ubuntu-toolchain-r-test
             - sourceline: 'ppa:mhier/libboost-latest'
+            - sourceline: 'ppa:saiarcot895/chromium-dev' # for ninja-build
+            - sourceline: 'ppa:deadsnakes/ppa' # for Python 3.7 (required by Meson)
           packages:
             - g++-6
             - libcppunit-dev
             - boost1.67
+            - python3.6
+            - python3-urllib3
+            - ninja-build
+      before_install:
+        - wget https://bootstrap.pypa.io/get-pip.py
+        - /usr/bin/python3.6 get-pip.py --user
+      install:
+        - /usr/bin/python3.6 $HOME/.local/bin/pip install --user meson
       env:
-        - MATRIX_EVAL="export CC=gcc-6 CXX=g++-6"
+        # use gold as workaround for https://sourceware.org/bugzilla/show_bug.cgi?id=17068
+        - MATRIX_EVAL="export CC=gcc-6 CXX=g++-6 LDFLAGS=-fuse-ld=gold PATH=$HOME/.local/bin:$PATH"
 
     - os: linux
       dist: trusty
@@ -23,21 +34,28 @@ matrix:
           sources:
             - ubuntu-toolchain-r-test
             - sourceline: 'ppa:mhier/libboost-latest'
+            - sourceline: 'ppa:saiarcot895/chromium-dev' # for ninja-build
+            - sourceline: 'ppa:deadsnakes/ppa' # for Python 3.7 (required by Meson)
           packages:
             - g++-8
             - libcppunit-dev
             - boost1.67
+            - python3.6
+            - python3-urllib3
+            - ninja-build
+      before_install:
+        - wget https://bootstrap.pypa.io/get-pip.py
+        - /usr/bin/python3.6 get-pip.py --user
+      install:
+        - /usr/bin/python3.6 $HOME/.local/bin/pip install --user meson
       env:
-        - MATRIX_EVAL="export CC=gcc-8 CXX=g++-8"
+        # use gold as workaround for https://sourceware.org/bugzilla/show_bug.cgi?id=17068
+        - MATRIX_EVAL="export CC=gcc-8 CXX=g++-8 LDFLAGS=-fuse-ld=gold PATH=$HOME/.local/bin:$PATH"
 
     - os: osx
       osx_image: xcode9.3beta
       env:
         - MATRIX_EVAL=""
-
-env:
-  global:
-    - MAKEFLAGS="-j2"
 
 cache:
   - apt
@@ -50,16 +68,14 @@ before_install:
 
 install:
   # C++14
-  - test "$TRAVIS_OS_NAME" != "osx" || brew install cppunit ccache
+  - test "$TRAVIS_OS_NAME" != "osx" || brew install cppunit ccache meson
 
 before_script:
   - ccache -s
 
 script:
-  - OPTIONS="--enable-test"
-  - test "$TRAVIS_OS_NAME" != "osx" || OPTIONS="$OPTIONS --enable-osx"
-  - ./autogen.sh
-  - ./configure CC="ccache $CC" CXX="ccache $CXX" --disable-silent-rules --disable-dependency-tracking $OPTIONS
-  - make
-  - make check
+  - eval "${MATRIX_EVAL}"
+  - OPTIONS="-Dtest=true"
+  - meson . output --werror $OPTIONS
+  - ninja -C output -v test
   - ccache -s

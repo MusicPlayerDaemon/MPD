@@ -1,0 +1,186 @@
+option('documentation', type: 'boolean', value: false, description: 'Build documentation')
+
+option('test', type: 'boolean', value: false, description: 'Build the unit tests and debug programs')
+
+option('syslog', type: 'feature', description: 'syslog support')
+option('inotify', type: 'boolean', value: true, description: 'inotify support (for automatic database update)')
+
+option('daemon', type: 'boolean', value: true, description: 'enable daemonization')
+option('systemd', type: 'feature', description: 'systemd support')
+
+option('systemd_system_unit_dir', type: 'string', description: 'systemd system service directory')
+option('systemd_user_unit_dir', type: 'string', description: 'systemd user service directory')
+
+#
+# Android
+#
+
+option('android_sdk', type: 'string', description: 'The path where Android SDK is installed')
+option('android_ndk', type: 'string', description: 'The path where Android NDK is installed')
+option('android_abi', type: 'string', value: 'armeabi-v7a', description: 'The Android ABI to be built')
+
+option('android_strip', type: 'string', value: 'strip', description: 'The "strip" tool from the NDK')
+
+option('android_debug_keystore', type: 'string', description: 'The keystore file used to sign debug APK files')
+
+option('android_keystore', type: 'string', description: 'The keystore file used to sign APK files')
+option('android_keyalias', type: 'string', description: 'The key alias used to sign APK files')
+option('android_keypass', type: 'string', description: 'The password of the keystore used to sign APK files')
+
+#
+# System call support
+#
+
+option('epoll', type: 'boolean', value: true, description: 'Use epoll on Linux')
+option('eventfd', type: 'boolean', value: true, description: 'Use eventfd() on Linux')
+option('signalfd', type: 'boolean', value: true, description: 'Use signalfd() on Linux')
+
+#
+# Network support
+#
+
+option('tcp', type: 'boolean', value: true, description: 'Support for clients connecting via TCP')
+option('ipv6', type: 'feature', description: 'Support for IPv6')
+option('local_socket', type: 'boolean', value: true, description: 'Support for clients connecting via local sockets')
+
+#
+# Audio formats
+#
+
+option('dsd', type: 'boolean', value: true, description: 'Support the DSD audio format')
+
+#
+# Database plugins
+#
+
+option('database', type: 'boolean', value: true, description: 'enable support for the music database')
+option('upnp', type: 'feature', description: 'UPnP client support')
+option('libmpdclient', type: 'feature', description: 'libmpdclient support (for the proxy database plugin)')
+
+#
+# Neighbor plugins
+#
+
+option('neighbor', type: 'boolean', value: true, description: 'enable support for neighbor discovery')
+
+#
+# Storage plugins
+#
+
+option('udisks', type: 'feature', description: 'Support for removable media using udisks2')
+option('webdav', type: 'feature', description: 'WebDAV support using CURL and Expat')
+
+#
+# Playlist plugins
+#
+
+option('cue', type: 'boolean', value: true, description: 'CUE sheet support')
+
+#
+# Input plugins
+#
+
+option('cdio_paranoia', type: 'feature', description: 'libcdio_paranoia input plugin')
+option('curl', type: 'feature', description: 'HTTP client using CURL')
+option('mms', type: 'feature', description: 'MMS protocol support using libmms')
+option('nfs', type: 'feature', description: 'NFS protocol support using libnfs')
+option('smbclient', type: 'feature', description: 'SMB support using libsmbclient')
+
+#
+# Commercial services
+#
+
+option('qobuz', type: 'feature', description: 'Qobuz client')
+option('soundcloud', type: 'feature', description: 'SoundCloud client')
+option('tidal', type: 'feature', description: 'Tidal client')
+
+#
+# Archive plugins
+#
+
+option('bzip2', type: 'feature', description: 'bzip2 support using libbz2')
+option('iso9660', type: 'feature', description: 'ISO9660 support using libiso9660')
+option('zzip', type: 'feature', description: 'ZIP support using zziplib')
+
+#
+# Tag plugins
+#
+
+option('id3tag', type: 'feature', description: 'ID3 support using libid3tag')
+
+#
+# Decoder plugins
+#
+
+option('adplug', type: 'feature', description: 'AdPlug decoder plugin')
+option('audiofile', type: 'feature', description: 'libaudiofile decoder plugin')
+option('faad', type: 'feature', description: 'AAC decoder using libfaad')
+option('ffmpeg', type: 'feature', description: 'FFmpeg codec support')
+option('flac', type: 'feature', description: 'FLAC decoder plugin')
+option('fluidsynth', type: 'feature', description: 'fluidsynth MIDI decoder plugin')
+option('gme', type: 'feature', description: 'Game Music Emulator decoder plugin')
+option('mad', type: 'feature', description: 'MP3 decoder using libmad')
+option('mikmod', type: 'feature', description: 'MikMod decoder plugin')
+option('modplug', type: 'feature', description: 'Modplug decoder plugin')
+option('mpcdec', type: 'feature', description: 'Musepack decoder plugin')
+option('mpg123', type: 'feature', description: 'MP3 decoder using libmpg123')
+option('opus', type: 'feature', description: 'Opus decoder plugin')
+option('sidplay', type: 'feature', description: 'C64 SID support via libsidplayfp or libsidplay2')
+option('sndfile', type: 'feature', description: 'libsndfile decoder plugin')
+option('vorbis', type: 'feature', description: 'Vorbis decoder plugin')
+option('wavpack', type: 'feature', description: 'WavPack decoder plugin')
+option('wildmidi', type: 'feature', description: 'WildMidi decoder plugin')
+
+#
+# Decoder plugins
+#
+
+option('vorbisenc', type: 'feature', description: 'Vorbis encoder plugin')
+option('lame', type: 'feature', description: 'LAME MP3 encoder plugin')
+option('twolame', type: 'feature', description: 'TwoLAME MP2 encoder plugin')
+option('shine', type: 'feature', description: 'shine MP3 encoder plugin')
+option('wave_encoder', type: 'boolean', value: true, description: 'PCM wave encoder encoder plugin')
+
+#
+# Filter plugins
+#
+
+option('libsamplerate', type: 'feature', description: 'libsamplerate resampler')
+option('soxr', type: 'feature', description: 'libsoxr resampler')
+
+#
+# Output plugins
+#
+
+option('alsa', type: 'feature', description: 'ALSA support')
+option('ao', type: 'feature', description: 'libao output plugin')
+option('fifo', type: 'boolean', value: true, description: 'FIFO output plugin')
+option('httpd', type: 'boolean', value: true, description: 'HTTP streaming output plugin')
+option('jack', type: 'feature', description: 'JACK output plugin')
+option('openal', type: 'feature', description: 'OpenAL output plugin')
+option('oss', type: 'feature', description: 'Open Sound System support')
+option('pipe', type: 'boolean', value: true, description: 'Pipe output plugin')
+option('pulse', type: 'feature', description: 'PulseAudio support')
+option('recorder', type: 'boolean', value: true, description: 'Recorder output plugin')
+option('roar', type: 'feature', description: 'Roar output plugin')
+option('shout', type: 'feature', description: 'Shoutcast streaming support using libshout')
+option('sndio', type: 'feature', description: 'sndio output plugin')
+option('solaris_output', type: 'feature', description: 'Solaris /dev/audio support')
+
+#
+# Misc libraries
+#
+
+option('dbus', type: 'feature', description: 'D-Bus support')
+option('expat', type: 'feature', description: 'Expat XML support')
+option('icu', type: 'feature', description: 'Use libicu for Unicode')
+option('iconv', type: 'feature', description: 'Use iconv() for character set conversion')
+option('libwrap', type: 'feature', description: 'libwrap support')
+option('sqlite', type: 'feature', description: 'SQLite database support (for stickers)')
+option('yajl', type: 'feature', description: 'libyajl for YAML support')
+option('zlib', type: 'feature', description: 'zlib support (for database compression)')
+
+option('zeroconf', type: 'combo',
+       choices: ['auto', 'avahi', 'bonjour', 'disabled'],
+       value: 'auto',
+       description: 'Zeroconf support')

@@ -1,6 +1,6 @@
 #!/bin/sh -e
 
-SRC_BASE=configure
+SRC_BASE=meson.build
 SRC="$(dirname $0)/../${SRC_BASE}"
 DST="$(pwd)/test/tmp/${SRC_BASE}.bz2"
 

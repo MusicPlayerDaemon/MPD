@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "CommandLine.hxx"
+#include "GitVersion.hxx"
 #include "ls.hxx"
 #include "LogInit.hxx"
 #include "Log.hxx"
@@ -107,11 +108,7 @@ static constexpr Domain cmdline_domain("cmdline");
 gcc_noreturn
 static void version(void)
 {
-	printf("Music Player Daemon " VERSION
-#ifdef GIT_COMMIT
-	       " (" GIT_COMMIT ")"
-#endif
-	       "\n"
+	printf("Music Player Daemon " VERSION " (%s)\n"
 	       "\n"
 	       "Copyright (C) 2003-2007 Warren Dukes <warren.dukes@gmail.com>\n"
 	       "Copyright 2008-2017 Max Kellermann <max.kellermann@gmail.com>\n"
@@ -120,7 +117,8 @@ static void version(void)
 
 #ifdef ENABLE_DATABASE
 	       "\n"
-	       "Database plugins:\n");
+	       "Database plugins:\n",
+	       GIT_VERSION);
 
 	for (auto i = database_plugins; *i != nullptr; ++i)
 		printf(" %s", (*i)->name);

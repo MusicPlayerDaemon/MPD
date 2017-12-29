@@ -22,7 +22,7 @@
 #include "net/AddressInfo.hxx"
 #include "net/ToString.hxx"
 #include "net/SocketAddress.hxx"
-#include "Log.hxx"
+#include "util/PrintException.hxx"
 
 #include <exception>
 
@@ -42,6 +42,6 @@ try {
 
 	return EXIT_SUCCESS;
 } catch (...) {
-	LogError(std::current_exception());
+	PrintException(std::current_exception());
 	return EXIT_FAILURE;
 }
