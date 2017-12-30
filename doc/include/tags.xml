@@ -153,4 +153,13 @@
       database.
     </para>
   </listitem>
+
+  <listitem>
+    <para>
+      <varname>musicbrainz_workid</varname>: the work id in the
+      <ulink
+      url="https://picard.musicbrainz.org/docs/mappings/">MusicBrainz</ulink>
+      database.
+    </para>
+  </listitem>
 </itemizedlist>
