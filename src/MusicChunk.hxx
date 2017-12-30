@@ -37,12 +37,12 @@ static constexpr size_t CHUNK_SIZE = 4096;
 
 struct AudioFormat;
 struct Tag;
+struct MusicChunk;
 
 /**
- * A chunk of music data.  Its format is defined by the
- * MusicPipe::Push() caller.
+ * Meta information for #MusicChunk.
  */
-struct MusicChunk {
+struct MusicChunkInfo {
 	/** the next chunk in a linked list */
 	MusicChunk *next;
 
@@ -94,18 +94,15 @@ struct MusicChunk {
 	 */
 	unsigned replay_gain_serial;
 
-	/** the data (probably PCM) */
-	uint8_t data[CHUNK_SIZE];
-
 #ifndef NDEBUG
 	AudioFormat audio_format;
 #endif
 
-	MusicChunk() noexcept;
-	~MusicChunk() noexcept;
+	MusicChunkInfo() noexcept;
+	~MusicChunkInfo() noexcept;
 
-	MusicChunk(const MusicChunk &) = delete;
-	MusicChunk &operator=(const MusicChunk &) = delete;
+	MusicChunkInfo(const MusicChunkInfo &) = delete;
+	MusicChunkInfo &operator=(const MusicChunkInfo &) = delete;
 
 	bool IsEmpty() const {
 		return length == 0 && tag == nullptr;
@@ -119,6 +116,15 @@ struct MusicChunk {
 	gcc_pure
 	bool CheckFormat(AudioFormat audio_format) const noexcept;
 #endif
+};
+
+/**
+ * A chunk of music data.  Its format is defined by the
+ * MusicPipe::Push() caller.
+ */
+struct MusicChunk : MusicChunkInfo {
+	/** the data (probably PCM) */
+	uint8_t data[CHUNK_SIZE];
 
 	/**
 	 * Prepares appending to the music chunk.  Returns a buffer
