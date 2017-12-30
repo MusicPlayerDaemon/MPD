@@ -113,7 +113,7 @@
     <para>
       <varname>musicbrainz_artistid</varname>: the artist id in the
       <ulink
-      url="http://musicbrainz.org/doc/MusicBrainzTag">MusicBrainz</ulink>
+      url="https://picard.musicbrainz.org/docs/mappings/">MusicBrainz</ulink>
       database.
     </para>
   </listitem>
@@ -122,7 +122,7 @@
     <para>
       <varname>musicbrainz_albumid</varname>: the album id in the
       <ulink
-      url="http://musicbrainz.org/doc/MusicBrainzTag">MusicBrainz</ulink>
+      url="https://picard.musicbrainz.org/docs/mappings/">MusicBrainz</ulink>
       database.
     </para>
   </listitem>
@@ -131,7 +131,7 @@
     <para>
       <varname>musicbrainz_albumartistid</varname>: the album artist
       id in the <ulink
-      url="http://musicbrainz.org/doc/MusicBrainzTag">MusicBrainz</ulink>
+      url="https://picard.musicbrainz.org/docs/mappings/">MusicBrainz</ulink>
       database.
     </para>
   </listitem>
@@ -140,7 +140,7 @@
     <para>
       <varname>musicbrainz_trackid</varname>: the track id in the
       <ulink
-      url="http://musicbrainz.org/doc/MusicBrainzTag">MusicBrainz</ulink>
+      url="https://picard.musicbrainz.org/docs/mappings/">MusicBrainz</ulink>
       database.
     </para>
   </listitem>
@@ -149,7 +149,7 @@
     <para>
       <varname>musicbrainz_releasetrackid</varname>: the release track
       id in the <ulink
-      url="http://musicbrainz.org/doc/MusicBrainzTag">MusicBrainz</ulink>
+      url="https://picard.musicbrainz.org/docs/mappings/">MusicBrainz</ulink>
       database.
     </para>
   </listitem>
