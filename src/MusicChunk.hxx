@@ -53,6 +53,12 @@ struct MusicChunkInfo {
 	MusicChunk *other = nullptr;
 
 	/**
+	 * An optional tag associated with this chunk (and the
+	 * following chunks); appears at song boundaries.
+	 */
+	std::unique_ptr<Tag> tag;
+
+	/**
 	 * The current mix ratio for cross-fading: 1.0 means play 100%
 	 * of this chunk, 0.0 means play 100% of the "other" chunk.
 	 */
@@ -66,12 +72,6 @@ struct MusicChunkInfo {
 
 	/** the time stamp within the song */
 	SignedSongTime time;
-
-	/**
-	 * An optional tag associated with this chunk (and the
-	 * following chunks); appears at song boundaries.
-	 */
-	std::unique_ptr<Tag> tag;
 
 	/**
 	 * Replay gain information associated with this chunk.
