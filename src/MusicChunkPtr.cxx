@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2017 The Music Player Daemon Project
+ * Copyright 2003-2018 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,30 +18,11 @@
  */
 
 #include "config.h"
+#include "MusicChunkPtr.hxx"
 #include "MusicBuffer.hxx"
-#include "MusicChunk.hxx"
-
-#include <assert.h>
-
-MusicBuffer::MusicBuffer(unsigned num_chunks) noexcept
-	:buffer(num_chunks) {
-}
-
-MusicChunkPtr
-MusicBuffer::Allocate() noexcept
-{
-	const std::lock_guard<Mutex> protect(mutex);
-	return MusicChunkPtr(buffer.Allocate(), MusicChunkDeleter(*this));
-}
 
 void
-MusicBuffer::Return(MusicChunk *chunk) noexcept
+MusicChunkDeleter::operator()(MusicChunk *chunk) noexcept
 {
-	assert(chunk != nullptr);
-
-	const std::lock_guard<Mutex> protect(mutex);
-
-	assert(!chunk->other || !chunk->other->other);
-
-	buffer.Free(chunk);
+	buffer->Return(chunk);
 }

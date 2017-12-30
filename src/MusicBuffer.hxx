@@ -20,10 +20,9 @@
 #ifndef MPD_MUSIC_BUFFER_HXX
 #define MPD_MUSIC_BUFFER_HXX
 
+#include "MusicChunkPtr.hxx"
 #include "util/SliceBuffer.hxx"
 #include "thread/Mutex.hxx"
-
-struct MusicChunk;
 
 /**
  * An allocator for #MusicChunk objects.
@@ -71,7 +70,7 @@ public:
 	 * @return an empty chunk or nullptr if there are no chunks
 	 * available
 	 */
-	MusicChunk *Allocate() noexcept;
+	MusicChunkPtr Allocate() noexcept;
 
 	/**
 	 * Returns a chunk to the buffer.  It can be reused by

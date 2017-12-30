@@ -205,7 +205,7 @@ MultipleOutputs::SetReplayGainMode(ReplayGainMode mode) noexcept
 }
 
 void
-MultipleOutputs::Play(MusicChunk *chunk)
+MultipleOutputs::Play(MusicChunkPtr chunk)
 {
 	assert(pipe != nullptr);
 	assert(chunk != nullptr);
@@ -215,7 +215,7 @@ MultipleOutputs::Play(MusicChunk *chunk)
 		/* TODO: obtain real error */
 		throw std::runtime_error("Failed to open audio output");
 
-	pipe->Push(chunk);
+	pipe->Push(std::move(chunk));
 
 	for (auto *ao : outputs)
 		ao->LockPlay();
@@ -314,7 +314,6 @@ MultipleOutputs::CheckPipe() noexcept
 {
 	const MusicChunk *chunk;
 	bool is_tail;
-	MusicChunk *shifted;
 	bool locked[outputs.size()];
 
 	assert(pipe != nullptr);
@@ -339,8 +338,8 @@ MultipleOutputs::CheckPipe() noexcept
 			ClearTailChunk(chunk, locked);
 
 		/* remove the chunk from the pipe */
-		shifted = pipe->Shift();
-		assert(shifted == chunk);
+		const auto shifted = pipe->Shift();
+		assert(shifted.get() == chunk);
 
 		if (is_tail)
 			/* unlock all audio outputs which were locked
@@ -349,8 +348,8 @@ MultipleOutputs::CheckPipe() noexcept
 				if (locked[i])
 					outputs[i]->mutex.unlock();
 
-		/* return the chunk to the buffer */
-		pipe->GetBuffer().Return(shifted);
+		/* chunk is automatically returned to the buffer by
+		   ~MusicChunkPtr() */
 	}
 
 	return 0;

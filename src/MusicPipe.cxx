@@ -38,7 +38,7 @@ MusicPipe::Contains(const MusicChunk *chunk) const noexcept
 
 #endif
 
-MusicChunk *
+MusicChunkPtr
 MusicPipe::Shift() noexcept
 {
 	const std::lock_guard<Mutex> protect(mutex);
@@ -69,20 +69,17 @@ MusicPipe::Shift() noexcept
 #endif
 	}
 
-	return chunk;
+	return MusicChunkPtr(chunk, MusicChunkDeleter(buffer));
 }
 
 void
 MusicPipe::Clear() noexcept
 {
-	MusicChunk *chunk;
-
-	while ((chunk = Shift()) != nullptr)
-		buffer.Return(chunk);
+	while (Shift()) {}
 }
 
 void
-MusicPipe::Push(MusicChunk *chunk) noexcept
+MusicPipe::Push(MusicChunkPtr chunk) noexcept
 {
 	assert(!chunk->IsEmpty());
 	assert(chunk->length == 0 || chunk->audio_format.IsValid());
@@ -98,9 +95,10 @@ MusicPipe::Push(MusicChunk *chunk) noexcept
 		audio_format = chunk->audio_format;
 #endif
 
-	chunk->next = nullptr;
-	*tail_r = chunk;
-	tail_r = &chunk->next;
+	auto *c = chunk.release();
+	c->next = nullptr;
+	*tail_r = c;
+	tail_r = &c->next;
 
 	++size;
 }

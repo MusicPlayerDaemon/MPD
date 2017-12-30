@@ -27,6 +27,7 @@
 #define OUTPUT_ALL_H
 
 #include "Control.hxx"
+#include "MusicChunkPtr.hxx"
 #include "player/Outputs.hxx"
 #include "AudioFormat.hxx"
 #include "ReplayGainMode.hxx"
@@ -42,7 +43,6 @@ class MusicPipe;
 class EventLoop;
 class MixerListener;
 class AudioOutputClient;
-struct MusicChunk;
 struct ReplayGainConfig;
 
 class MultipleOutputs final : public PlayerOutputs {
@@ -185,7 +185,7 @@ private:
 		  MusicBuffer &_buffer) override;
 	void Close() noexcept override;
 	void Release() noexcept override;
-	void Play(MusicChunk *chunk) override;
+	void Play(MusicChunkPtr chunk) override;
 	unsigned CheckPipe() noexcept override;
 	void Pause() noexcept override;
 	void Drain() noexcept override;

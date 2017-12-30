@@ -136,6 +136,7 @@ libmpd_a_SOURCES = \
 	src/MusicBuffer.cxx src/MusicBuffer.hxx \
 	src/MusicPipe.cxx src/MusicPipe.hxx \
 	src/MusicChunk.cxx src/MusicChunk.hxx \
+	src/MusicChunkPtr.cxx src/MusicChunkPtr.hxx \
 	src/Mapper.cxx src/Mapper.hxx \
 	src/Partition.cxx src/Partition.hxx \
 	src/Permission.cxx src/Permission.hxx \

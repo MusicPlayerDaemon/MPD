@@ -20,6 +20,7 @@
 #ifndef MPD_PIPE_H
 #define MPD_PIPE_H
 
+#include "MusicChunkPtr.hxx"
 #include "thread/Mutex.hxx"
 #include "Compiler.h"
 
@@ -29,7 +30,6 @@
 
 #include <assert.h>
 
-struct MusicChunk;
 class MusicBuffer;
 
 /**
@@ -108,7 +108,7 @@ public:
 	/**
 	 * Removes the first chunk from the head, and returns it.
 	 */
-	MusicChunk *Shift() noexcept;
+	MusicChunkPtr Shift() noexcept;
 
 	/**
 	 * Clears the whole pipe and returns the chunks to the buffer.
@@ -118,7 +118,7 @@ public:
 	/**
 	 * Pushes a chunk to the tail of the pipe.
 	 */
-	void Push(MusicChunk *chunk) noexcept;
+	void Push(MusicChunkPtr chunk) noexcept;
 
 	/**
 	 * Returns the number of chunks currently in this pipe.

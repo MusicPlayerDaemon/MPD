@@ -20,6 +20,7 @@
 #ifndef MPD_PLAYER_OUTPUT_INTERFACE_HXX
 #define MPD_PLAYER_OUTPUT_INTERFACE_HXX
 
+#include "MusicChunkPtr.hxx"
 #include "Chrono.hxx"
 #include "Compiler.h"
 
@@ -74,7 +75,7 @@ public:
 	 *
 	 * @param chunk the #MusicChunk object to be played
 	 */
-	virtual void Play(MusicChunk *chunk) = 0;
+	virtual void Play(MusicChunkPtr chunk) = 0;
 
 	/**
 	 * Checks if the output devices have drained their music pipe, and

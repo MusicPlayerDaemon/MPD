@@ -751,8 +751,7 @@ update_song_tag(PlayerControl &pc, DetachedSong &song,
  */
 static void
 play_chunk(PlayerControl &pc,
-	   DetachedSong &song, MusicChunk *chunk,
-	   MusicBuffer &buffer,
+	   DetachedSong &song, MusicChunkPtr chunk,
 	   const AudioFormat format)
 {
 	assert(chunk->CheckFormat(format));
@@ -760,10 +759,8 @@ play_chunk(PlayerControl &pc,
 	if (chunk->tag != nullptr)
 		update_song_tag(pc, song, *chunk->tag);
 
-	if (chunk->IsEmpty()) {
-		buffer.Return(chunk);
+	if (chunk->IsEmpty())
 		return;
-	}
 
 	{
 		const std::lock_guard<Mutex> lock(pc.mutex);
@@ -772,9 +769,10 @@ play_chunk(PlayerControl &pc,
 
 	/* send the chunk to the audio outputs */
 
-	pc.outputs.Play(chunk);
-	pc.total_play_time += (double)chunk->length /
-		format.GetTimeToSize();
+	const double chunk_length(chunk->length);
+
+	pc.outputs.Play(std::move(chunk));
+	pc.total_play_time += chunk_length / format.GetTimeToSize();
 }
 
 inline bool
@@ -796,7 +794,7 @@ Player::PlayNextChunk() noexcept
 		xfade_state = CrossFadeState::ACTIVE;
 	}
 
-	MusicChunk *chunk = nullptr;
+	MusicChunkPtr chunk;
 	if (xfade_state == CrossFadeState::ACTIVE) {
 		/* perform cross fade */
 
@@ -805,7 +803,7 @@ Player::PlayNextChunk() noexcept
 		unsigned cross_fade_position = pipe->GetSize();
 		assert(cross_fade_position <= cross_fade_chunks);
 
-		MusicChunk *other_chunk = dc.pipe->Shift();
+		auto other_chunk = dc.pipe->Shift();
 		if (other_chunk != nullptr) {
 			chunk = pipe->Shift();
 			assert(chunk != nullptr);
@@ -832,11 +830,10 @@ Player::PlayNextChunk() noexcept
 				   beginning of the new song, we can
 				   easily recover by throwing it away
 				   now */
-				buffer.Return(other_chunk);
-				other_chunk = nullptr;
+				other_chunk.reset();
 			}
 
-			chunk->other = other_chunk;
+			chunk->other = std::move(other_chunk);
 		} else {
 			/* there are not enough decoded chunks yet */
 
@@ -872,11 +869,12 @@ Player::PlayNextChunk() noexcept
 	/* play the current chunk */
 
 	try {
-		play_chunk(pc, *song, chunk, buffer, play_audio_format);
+		play_chunk(pc, *song, std::move(chunk),
+			   play_audio_format);
 	} catch (...) {
 		LogError(std::current_exception());
 
-		buffer.Return(chunk);
+		chunk.reset();
 
 		/* pause: the user may resume playback as soon as an
 		   audio output becomes available */

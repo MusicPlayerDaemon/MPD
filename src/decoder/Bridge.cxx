@@ -95,7 +95,7 @@ DecoderBridge::GetChunk() noexcept
 	DecoderCommand cmd;
 
 	if (current_chunk != nullptr)
-		return current_chunk;
+		return current_chunk.get();
 
 	do {
 		current_chunk = dc.pipe->GetBuffer().Allocate();
@@ -104,7 +104,7 @@ DecoderBridge::GetChunk() noexcept
 			if (replay_gain_serial != 0)
 				current_chunk->replay_gain_info = replay_gain_info;
 
-			return current_chunk;
+			return current_chunk.get();
 		}
 
 		cmd = LockNeedChunks(dc);
@@ -121,11 +121,9 @@ DecoderBridge::FlushChunk()
 	assert(!initial_seek_pending);
 	assert(current_chunk != nullptr);
 
-	auto *chunk = std::exchange(current_chunk, nullptr);
-	if (chunk->IsEmpty())
-		dc.pipe->GetBuffer().Return(chunk);
-	else
-		dc.pipe->Push(chunk);
+	auto chunk = std::move(current_chunk);
+	if (!chunk->IsEmpty())
+		dc.pipe->Push(std::move(chunk));
 
 	const std::lock_guard<Mutex> protect(dc.mutex);
 	if (dc.client_is_waiting)
@@ -302,10 +300,7 @@ DecoderBridge::CommandFinished()
 
 		/* delete frames from the old song position */
 
-		if (current_chunk != nullptr) {
-			dc.pipe->GetBuffer().Return(current_chunk);
-			current_chunk = nullptr;
-		}
+		current_chunk.reset();
 
 		dc.pipe->Clear();
 
