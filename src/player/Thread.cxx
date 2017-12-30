@@ -211,37 +211,6 @@ private:
 	bool CheckDecoderStartup() noexcept;
 
 	/**
-	 * Call CheckDecoderStartup() repeatedly until the decoder has
-	 * finished startup.  Returns false on decoder error (and
-	 * finishes the #PlayerCommand).
-	 *
-	 * This method does not check for commands.  It is only
-	 * allowed to be used while a command is being handled.
-	 *
-	 * Caller must lock the mutex.
-	 *
-	 * @return false if the decoder has failed
-	 */
-	bool WaitDecoderStartup() noexcept {
-		while (decoder_starting) {
-			if (!CheckDecoderStartup()) {
-				/* if decoder startup fails, make sure
-				   the previous song is not being
-				   played anymore */
-				{
-					const ScopeUnlock unlock(pc.mutex);
-					pc.outputs.Cancel();
-				}
-
-				pc.CommandFinished();
-				return false;
-			}
-		}
-
-		return true;
-	}
-
-	/**
 	 * Stop the decoder and clears (and frees) its music pipe.
 	 *
 	 * Caller must lock the mutex.
@@ -555,6 +524,12 @@ Player::CheckDecoderStartup() noexcept
 
 			/* re-fill the buffer after seeking */
 			buffering = true;
+		} else if (pc.seeking) {
+			pc.seeking = false;
+			pc.ClientSignal();
+
+			/* re-fill the buffer after seeking */
+			buffering = true;
 		}
 
 		if (!paused && !OpenOutput()) {
@@ -669,8 +644,12 @@ Player::SeekDecoder() noexcept
 		StartDecoder(*pipe);
 		ActivateDecoder();
 
-		if (!WaitDecoderStartup())
-			return false;
+		pc.seeking = true;
+		pc.CommandFinished();
+
+		assert(xfade_state == CrossFadeState::UNKNOWN);
+
+		return true;
 	} else {
 		if (!IsDecoderAtCurrentSong()) {
 			/* the decoder is already decoding the "next" song,
