@@ -551,7 +551,7 @@ DecoderControl::RunThread() noexcept
 			/* we need to clear the pipe here; usually the
 			   PlayerThread is responsible, but it is not
 			   aware that the decoder has finished */
-			pipe->Clear(*buffer);
+			pipe->Clear();
 
 			decoder_run(*this);
 			break;

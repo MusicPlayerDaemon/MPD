@@ -170,7 +170,7 @@ private:
 	}
 
 	void ClearAndDeletePipe() noexcept {
-		pipe->Clear(buffer);
+		pipe->Clear();
 		delete pipe;
 	}
 
@@ -348,7 +348,7 @@ Player::StartDecoder(MusicPipe &_pipe) noexcept
 
 	dc.Start(std::make_unique<DetachedSong>(*pc.next_song),
 		 start_time, pc.next_song->GetEndTime(),
-		 buffer, _pipe);
+		 _pipe);
 }
 
 void
@@ -361,7 +361,7 @@ Player::StopDecoder() noexcept
 	if (dc.pipe != nullptr) {
 		/* clear and free the decoder pipe */
 
-		dc.pipe->Clear(buffer);
+		dc.pipe->Clear();
 
 		if (dc.pipe != pipe)
 			delete dc.pipe;
@@ -585,7 +585,7 @@ Player::SeekDecoder() noexcept
 
 		/* clear music chunks which might still reside in the
 		   pipe */
-		pipe->Clear(buffer);
+		pipe->Clear();
 
 		/* re-start the decoder */
 		StartDecoder(*pipe);
@@ -666,7 +666,7 @@ Player::ProcessCommand() noexcept
 		pc.CommandFinished();
 
 		if (dc.IsIdle())
-			StartDecoder(*new MusicPipe());
+			StartDecoder(*new MusicPipe(buffer));
 
 		break;
 
@@ -939,7 +939,7 @@ Player::SongBorder() noexcept
 inline void
 Player::Run() noexcept
 {
-	pipe = new MusicPipe();
+	pipe = new MusicPipe(buffer);
 
 	const std::lock_guard<Mutex> lock(pc.mutex);
 
@@ -986,7 +986,7 @@ Player::Run() noexcept
 
 			assert(dc.pipe == nullptr || dc.pipe == pipe);
 
-			StartDecoder(*new MusicPipe());
+			StartDecoder(*new MusicPipe(buffer));
 		}
 
 		if (/* no cross-fading if MPD is going to pause at the

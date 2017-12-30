@@ -37,6 +37,11 @@ class MusicBuffer;
  * tail, and the other consumes them from the head.
  */
 class MusicPipe {
+	/**
+	 * The #MusicBuffer where all chunks must be returned.
+	 */
+	MusicBuffer &buffer;
+
 	/** the first chunk */
 	MusicChunk *head = nullptr;
 
@@ -57,7 +62,8 @@ public:
 	/**
 	 * Creates a new #MusicPipe object.  It is empty.
 	 */
-	MusicPipe() = default;
+	explicit MusicPipe(MusicBuffer &_buffer) noexcept
+		:buffer(_buffer) {}
 
 	MusicPipe(const MusicPipe &) = delete;
 
@@ -70,6 +76,10 @@ public:
 	}
 
 	MusicPipe &operator=(const MusicPipe &) = delete;
+
+	MusicBuffer &GetBuffer() noexcept {
+		return buffer;
+	}
 
 #ifndef NDEBUG
 	/**
@@ -106,10 +116,8 @@ public:
 
 	/**
 	 * Clears the whole pipe and returns the chunks to the buffer.
-	 *
-	 * @param buffer the buffer object to return the chunks to
 	 */
-	void Clear(MusicBuffer &buffer) noexcept;
+	void Clear() noexcept;
 
 	/**
 	 * Pushes a chunk to the tail of the pipe.

@@ -44,7 +44,6 @@
 #endif
 
 class DetachedSong;
-class MusicBuffer;
 class MusicPipe;
 
 enum class DecoderState : uint8_t {
@@ -151,9 +150,6 @@ struct DecoderControl final : InputStreamHandler {
 	SongTime end_time;
 
 	SignedSongTime total_time;
-
-	/** the #MusicChunk allocator */
-	MusicBuffer *buffer;
 
 	/**
 	 * The destination pipe for decoded chunks.  The caller thread
@@ -383,7 +379,7 @@ public:
 	 */
 	void Start(std::unique_ptr<DetachedSong> song,
 		   SongTime start_time, SongTime end_time,
-		   MusicBuffer &buffer, MusicPipe &pipe) noexcept;
+		   MusicPipe &pipe) noexcept;
 
 	/**
 	 * Caller must lock the object.

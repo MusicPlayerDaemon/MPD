@@ -207,7 +207,6 @@ MultipleOutputs::SetReplayGainMode(ReplayGainMode mode) noexcept
 void
 MultipleOutputs::Play(MusicChunk *chunk)
 {
-	assert(buffer != nullptr);
 	assert(pipe != nullptr);
 	assert(chunk != nullptr);
 	assert(chunk->CheckFormat(input_audio_format));
@@ -224,21 +223,18 @@ MultipleOutputs::Play(MusicChunk *chunk)
 
 void
 MultipleOutputs::Open(const AudioFormat audio_format,
-		      MusicBuffer &_buffer)
+		      MusicBuffer &buffer)
 {
 	bool ret = false, enabled = false;
 
-	assert(buffer == nullptr || buffer == &_buffer);
-	assert((pipe == nullptr) == (buffer == nullptr));
-
-	buffer = &_buffer;
+	assert(pipe == nullptr || &pipe->GetBuffer() == &buffer);
 
 	/* the audio format must be the same as existing chunks in the
 	   pipe */
 	assert(pipe == nullptr || pipe->CheckFormat(audio_format));
 
 	if (pipe == nullptr)
-		pipe = new MusicPipe();
+		pipe = new MusicPipe(buffer);
 	else
 		/* if the pipe hasn't been cleared, the the audio
 		   format must not have changed */
@@ -321,7 +317,6 @@ MultipleOutputs::CheckPipe() noexcept
 	MusicChunk *shifted;
 	bool locked[outputs.size()];
 
-	assert(buffer != nullptr);
 	assert(pipe != nullptr);
 
 	while ((chunk = pipe->Peek()) != nullptr) {
@@ -355,7 +350,7 @@ MultipleOutputs::CheckPipe() noexcept
 					outputs[i]->mutex.unlock();
 
 		/* return the chunk to the buffer */
-		buffer->Return(shifted);
+		pipe->GetBuffer().Return(shifted);
 	}
 
 	return 0;
@@ -394,7 +389,7 @@ MultipleOutputs::Cancel() noexcept
 	/* clear the music pipe and return all chunks to the buffer */
 
 	if (pipe != nullptr)
-		pipe->Clear(*buffer);
+		pipe->Clear();
 
 	/* the audio outputs are now waiting for a signal, to
 	   synchronize the cleared music pipe */
@@ -413,14 +408,10 @@ MultipleOutputs::Close() noexcept
 		ao->LockCloseWait();
 
 	if (pipe != nullptr) {
-		assert(buffer != nullptr);
-
-		pipe->Clear(*buffer);
+		pipe->Clear();
 		delete pipe;
 		pipe = nullptr;
 	}
-
-	buffer = nullptr;
 
 	input_audio_format.Clear();
 
@@ -434,14 +425,10 @@ MultipleOutputs::Release() noexcept
 		ao->LockRelease();
 
 	if (pipe != nullptr) {
-		assert(buffer != nullptr);
-
-		pipe->Clear(*buffer);
+		pipe->Clear();
 		delete pipe;
 		pipe = nullptr;
 	}
-
-	buffer = nullptr;
 
 	input_audio_format.Clear();
 

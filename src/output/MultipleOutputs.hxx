@@ -53,11 +53,6 @@ class MultipleOutputs final : public PlayerOutputs {
 	AudioFormat input_audio_format = AudioFormat::Undefined();
 
 	/**
-	 * The #MusicBuffer object where consumed chunks are returned.
-	 */
-	MusicBuffer *buffer = nullptr;
-
-	/**
 	 * The #MusicPipe object which feeds all audio outputs.  It is
 	 * filled by Play().
 	 */

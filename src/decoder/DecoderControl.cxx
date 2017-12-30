@@ -92,7 +92,7 @@ DecoderControl::IsCurrentSong(const DetachedSong &_song) const noexcept
 void
 DecoderControl::Start(std::unique_ptr<DetachedSong> _song,
 		      SongTime _start_time, SongTime _end_time,
-		      MusicBuffer &_buffer, MusicPipe &_pipe) noexcept
+		      MusicPipe &_pipe) noexcept
 {
 	assert(_song != nullptr);
 	assert(_pipe.IsEmpty());
@@ -100,7 +100,6 @@ DecoderControl::Start(std::unique_ptr<DetachedSong> _song,
 	song = std::move(_song);
 	start_time = _start_time;
 	end_time = _end_time;
-	buffer = &_buffer;
 	pipe = &_pipe;
 
 	ClearError();

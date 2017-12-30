@@ -98,7 +98,7 @@ DecoderBridge::GetChunk() noexcept
 		return current_chunk;
 
 	do {
-		current_chunk = dc.buffer->Allocate();
+		current_chunk = dc.pipe->GetBuffer().Allocate();
 		if (current_chunk != nullptr) {
 			current_chunk->replay_gain_serial = replay_gain_serial;
 			if (replay_gain_serial != 0)
@@ -123,7 +123,7 @@ DecoderBridge::FlushChunk()
 
 	auto *chunk = std::exchange(current_chunk, nullptr);
 	if (chunk->IsEmpty())
-		dc.buffer->Return(chunk);
+		dc.pipe->GetBuffer().Return(chunk);
 	else
 		dc.pipe->Push(chunk);
 
@@ -303,11 +303,11 @@ DecoderBridge::CommandFinished()
 		/* delete frames from the old song position */
 
 		if (current_chunk != nullptr) {
-			dc.buffer->Return(current_chunk);
+			dc.pipe->GetBuffer().Return(current_chunk);
 			current_chunk = nullptr;
 		}
 
-		dc.pipe->Clear(*dc.buffer);
+		dc.pipe->Clear();
 
 		if (convert != nullptr)
 			convert->Reset();

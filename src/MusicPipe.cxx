@@ -73,7 +73,7 @@ MusicPipe::Shift() noexcept
 }
 
 void
-MusicPipe::Clear(MusicBuffer &buffer) noexcept
+MusicPipe::Clear() noexcept
 {
 	MusicChunk *chunk;
 
