@@ -105,7 +105,7 @@ CrossFadeSettings::Calculate(SignedSongTime total_time,
 	assert(duration >= 0);
 	assert(af.IsValid());
 
-	chunks_f = (float)af.GetTimeToSize() / (float)CHUNK_SIZE;
+	chunks_f = (float)af.GetTimeToSize() / (float)sizeof(MusicChunk::data);
 
 	if (mixramp_delay <= 0 || !mixramp_start || !mixramp_prev_end) {
 		chunks = (chunks_f * duration + 0.5);
