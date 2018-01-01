@@ -244,3 +244,11 @@ AudioOutputSource::ConsumeData(size_t nbytes) noexcept
 	if (pending_data.empty())
 		pipe.Consume(*std::exchange(current_chunk, nullptr));
 }
+
+ConstBuffer<void>
+AudioOutputSource::Flush()
+{
+	return filter
+		? filter->Flush()
+		: nullptr;
+}

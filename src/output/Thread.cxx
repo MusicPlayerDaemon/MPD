@@ -362,10 +362,41 @@ AudioOutputControl::InternalPause() noexcept
 	skip_delay = true;
 }
 
+static void
+PlayFull(FilteredAudioOutput &output, ConstBuffer<void> _buffer)
+{
+	auto buffer = ConstBuffer<uint8_t>::FromVoid(_buffer);
+
+	while (!buffer.empty()) {
+		size_t nbytes = output.Play(buffer.data, buffer.size);
+		assert(nbytes > 0);
+
+		buffer.skip_front(nbytes);
+	}
+
+}
+
 inline void
 AudioOutputControl::InternalDrain() noexcept
 {
 	const ScopeUnlock unlock(mutex);
+
+	try {
+		/* flush the filter and play its remaining output */
+
+		while (true) {
+			auto buffer = source.Flush();
+			if (buffer.IsNull())
+				break;
+
+			PlayFull(*output, buffer);
+		}
+	} catch (...) {
+		FormatError(std::current_exception(),
+			    "Failed to flush filter on %s", GetLogName());
+		InternalCloseError(std::current_exception());
+		return;
+	}
 
 	output->Drain();
 }

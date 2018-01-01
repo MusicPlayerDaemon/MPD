@@ -62,6 +62,12 @@ public:
 	 * or Reset() call)
 	 */
 	virtual ConstBuffer<void> FilterPCM(ConstBuffer<void> src) = 0;
+
+	/**
+	 * Flush pending data and return it.  This should be called
+	 * repepatedly until it returns nullptr.
+	 */
+	virtual ConstBuffer<void> Flush();
 };
 
 #endif

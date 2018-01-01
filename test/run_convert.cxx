@@ -86,6 +86,15 @@ try {
 						   output.size);
 	}
 
+	while (true) {
+		auto output = state.Flush();
+		if (output.IsNull())
+			break;
+
+		gcc_unused ssize_t ignored = write(1, output.data,
+						   output.size);
+	}
+
 	state.Close();
 
 	return EXIT_SUCCESS;

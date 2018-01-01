@@ -1644,7 +1644,7 @@ libfilter_api_a_SOURCES = \
 	src/filter/Observer.cxx src/filter/Observer.hxx \
 	src/filter/FilterPlugin.hxx \
 	src/filter/Prepared.hxx \
-	src/filter/Filter.hxx
+	src/filter/Filter.cxx src/filter/Filter.hxx
 
 libfilter_plugins_a_SOURCES = \
 	src/AudioCompress/config.h \

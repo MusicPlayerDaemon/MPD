@@ -75,6 +75,10 @@ public:
 	ConstBuffer<void> FilterPCM(ConstBuffer<void> src) override {
 		return filter->FilterPCM(src);
 	}
+
+	ConstBuffer<void> Flush() noexcept override {
+		return filter->Flush();
+	}
 };
 
 Filter *

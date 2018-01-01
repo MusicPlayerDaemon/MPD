@@ -195,6 +195,11 @@ public:
 		pipe.ClearTail(chunk);
 	}
 
+	/**
+	 * Wrapper for Filter::Flush().
+	 */
+	ConstBuffer<void> Flush();
+
 private:
 	void OpenFilter(AudioFormat audio_format,
 			PreparedFilter *prepared_replay_gain_filter,
