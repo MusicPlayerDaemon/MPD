@@ -38,7 +38,7 @@ ConstBuffer<int16_t>
 pcm_convert_channels_16(PcmBuffer &buffer,
 			unsigned dest_channels,
 			unsigned src_channels,
-			ConstBuffer<int16_t> src);
+			ConstBuffer<int16_t> src) noexcept;
 
 /**
  * Changes the number of channels in 24 bit PCM data (aligned at 32
@@ -54,7 +54,7 @@ ConstBuffer<int32_t>
 pcm_convert_channels_24(PcmBuffer &buffer,
 			unsigned dest_channels,
 			unsigned src_channels,
-			ConstBuffer<int32_t> src);
+			ConstBuffer<int32_t> src) noexcept;
 
 /**
  * Changes the number of channels in 32 bit PCM data.
@@ -69,7 +69,7 @@ ConstBuffer<int32_t>
 pcm_convert_channels_32(PcmBuffer &buffer,
 			unsigned dest_channels,
 			unsigned src_channels,
-			ConstBuffer<int32_t> src);
+			ConstBuffer<int32_t> src) noexcept;
 
 /**
  * Changes the number of channels in 32 bit float PCM data.
@@ -84,6 +84,6 @@ ConstBuffer<float>
 pcm_convert_channels_float(PcmBuffer &buffer,
 			   unsigned dest_channels,
 			   unsigned src_channels,
-			   ConstBuffer<float> src);
+			   ConstBuffer<float> src) noexcept;
 
 #endif

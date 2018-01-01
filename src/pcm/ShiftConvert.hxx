@@ -39,7 +39,7 @@ struct LeftShiftSampleConvert {
 	static_assert(SrcTraits::BITS < DstTraits::BITS,
 		      "Source format must be smaller than destination format");
 
-	constexpr static DV Convert(SV src) {
+	constexpr static DV Convert(SV src) noexcept {
 		return DV(src) << (DstTraits::BITS - SrcTraits::BITS);
 	}
 };
@@ -61,7 +61,7 @@ struct RightShiftSampleConvert {
 	static_assert(SrcTraits::BITS > DstTraits::BITS,
 		      "Source format must be smaller than destination format");
 
-	constexpr static DV Convert(SV src) {
+	constexpr static DV Convert(SV src) noexcept {
 		return src >> (SrcTraits::BITS - DstTraits::BITS);
 	}
 };

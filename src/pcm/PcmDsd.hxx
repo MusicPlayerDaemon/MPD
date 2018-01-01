@@ -39,13 +39,13 @@ class PcmDsd {
 	std::array<struct dsd2pcm_ctx_s *, MAX_CHANNELS> dsd2pcm;
 
 public:
-	PcmDsd();
-	~PcmDsd();
+	PcmDsd() noexcept;
+	~PcmDsd() noexcept;
 
-	void Reset();
+	void Reset() noexcept;
 
 	ConstBuffer<float> ToFloat(unsigned channels,
-				   ConstBuffer<uint8_t> src);
+				   ConstBuffer<uint8_t> src) noexcept;
 };
 
 #endif

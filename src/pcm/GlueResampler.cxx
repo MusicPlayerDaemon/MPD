@@ -27,7 +27,7 @@
 GluePcmResampler::GluePcmResampler()
 	:resampler(pcm_resampler_create()) {}
 
-GluePcmResampler::~GluePcmResampler()
+GluePcmResampler::~GluePcmResampler() noexcept
 {
 	delete resampler;
 }
@@ -57,7 +57,7 @@ GluePcmResampler::Open(AudioFormat src_format, unsigned new_sample_rate)
 }
 
 void
-GluePcmResampler::Close()
+GluePcmResampler::Close() noexcept
 {
 	if (requested_sample_format != src_sample_format)
 		format_converter.Close();
@@ -66,7 +66,7 @@ GluePcmResampler::Close()
 }
 
 void
-GluePcmResampler::Reset()
+GluePcmResampler::Reset() noexcept
 {
 	resampler->Reset();
 }

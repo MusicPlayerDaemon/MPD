@@ -49,7 +49,7 @@ PcmChannelsConverter::Open(SampleFormat _format,
 }
 
 void
-PcmChannelsConverter::Close()
+PcmChannelsConverter::Close() noexcept
 {
 #ifndef NDEBUG
 	format = SampleFormat::UNDEFINED;

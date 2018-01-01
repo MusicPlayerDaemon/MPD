@@ -47,6 +47,6 @@ class PcmDither;
 gcc_warn_unused_result
 bool
 pcm_mix(PcmDither &dither, void *buffer1, const void *buffer2, size_t size,
-	SampleFormat format, float portion1);
+	SampleFormat format, float portion1) noexcept;
 
 #endif

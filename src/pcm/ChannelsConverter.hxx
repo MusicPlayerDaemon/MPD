@@ -41,10 +41,10 @@ class PcmChannelsConverter {
 
 public:
 #ifndef NDEBUG
-	PcmChannelsConverter()
+	PcmChannelsConverter() noexcept
 		:format(SampleFormat::UNDEFINED) {}
 
-	~PcmChannelsConverter() {
+	~PcmChannelsConverter() noexcept {
 		assert(format == SampleFormat::UNDEFINED);
 	}
 #endif
@@ -64,7 +64,7 @@ public:
 	/**
 	 * Closes the object.  After that, you may call Open() again.
 	 */
-	void Close();
+	void Close() noexcept;
 
 	/**
 	 * Convert a block of PCM data.

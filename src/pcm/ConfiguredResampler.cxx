@@ -52,7 +52,7 @@ enum class SelectedResampler {
 static SelectedResampler selected_resampler = SelectedResampler::FALLBACK;
 
 static const ConfigBlock *
-MakeResamplerDefaultConfig(ConfigBlock &block)
+MakeResamplerDefaultConfig(ConfigBlock &block) noexcept
 {
 	assert(block.IsEmpty());
 
@@ -71,7 +71,7 @@ MakeResamplerDefaultConfig(ConfigBlock &block)
  * "resampler" block.
  */
 static const ConfigBlock *
-MigrateResamplerConfig(const ConfigParam &param, ConfigBlock &block)
+MigrateResamplerConfig(const ConfigParam &param, ConfigBlock &block) noexcept
 {
 	assert(block.IsEmpty());
 
@@ -102,7 +102,7 @@ MigrateResamplerConfig(const ConfigParam &param, ConfigBlock &block)
 }
 
 static const ConfigBlock *
-MigrateResamplerConfig(const ConfigParam *param, ConfigBlock &buffer)
+MigrateResamplerConfig(const ConfigParam *param, ConfigBlock &buffer) noexcept
 {
 	assert(buffer.IsEmpty());
 

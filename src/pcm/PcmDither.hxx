@@ -29,7 +29,7 @@ class PcmDither {
 	int32_t random;
 
 public:
-	constexpr PcmDither()
+	constexpr PcmDither() noexcept
 		:error{0, 0, 0}, random(0) {}
 
 	/**
@@ -42,13 +42,13 @@ public:
 	 * @param sample the input sample value
 	 */
 	template<typename ST, unsigned SBITS, unsigned DBITS>
-	ST DitherShift(ST sample);
+	ST DitherShift(ST sample) noexcept;
 
 	void Dither24To16(int16_t *dest, const int32_t *src,
-			  const int32_t *src_end);
+			  const int32_t *src_end) noexcept;
 
 	void Dither32To16(int16_t *dest, const int32_t *src,
-			  const int32_t *src_end);
+			  const int32_t *src_end) noexcept;
 
 private:
 	/**
@@ -62,7 +62,7 @@ private:
 	 * @param sample the input sample value
 	 */
 	template<typename T, T MIN, T MAX, unsigned scale_bits>
-	T Dither(T sample);
+	T Dither(T sample) noexcept;
 
 	/**
 	 * Convert the given sample from one sample format to another,
@@ -73,12 +73,12 @@ private:
 	 * @param sample the input sample value
 	 */
 	template<typename ST, typename DT>
-	typename DT::value_type DitherConvert(typename ST::value_type sample);
+	typename DT::value_type DitherConvert(typename ST::value_type sample) noexcept;
 
 	template<typename ST, typename DT>
 	void DitherConvert(typename DT::pointer_type dest,
 			   typename ST::const_pointer_type src,
-			   typename ST::const_pointer_type src_end);
+			   typename ST::const_pointer_type src_end) noexcept;
 };
 
 #endif

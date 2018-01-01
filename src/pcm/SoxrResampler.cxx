@@ -134,7 +134,7 @@ SoxrPcmResampler::Open(AudioFormat &af, unsigned new_sample_rate)
 }
 
 void
-SoxrPcmResampler::Close()
+SoxrPcmResampler::Close() noexcept
 {
 	soxr_delete(soxr);
 }

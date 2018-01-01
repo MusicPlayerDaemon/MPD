@@ -21,7 +21,7 @@
 #include "PcmBuffer.hxx"
 
 void *
-PcmBuffer::Get(size_t new_size)
+PcmBuffer::Get(size_t new_size) noexcept
 {
 	if (new_size == 0)
 		/* never return nullptr, because nullptr would be

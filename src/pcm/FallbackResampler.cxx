@@ -57,7 +57,7 @@ FallbackPcmResampler::Open(AudioFormat &af, unsigned new_sample_rate)
 }
 
 void
-FallbackPcmResampler::Close()
+FallbackPcmResampler::Close() noexcept
 {
 }
 
@@ -67,7 +67,7 @@ pcm_resample_fallback(PcmBuffer &buffer,
 		      unsigned channels,
 		      unsigned src_rate,
 		      ConstBuffer<T> src,
-		      unsigned dest_rate)
+		      unsigned dest_rate) noexcept
 {
 	unsigned dest_pos = 0;
 	unsigned src_frames = src.size / channels;
@@ -107,7 +107,7 @@ pcm_resample_fallback_void(PcmBuffer &buffer,
 			   unsigned channels,
 			   unsigned src_rate,
 			   ConstBuffer<void> src,
-			   unsigned dest_rate)
+			   unsigned dest_rate) noexcept
 {
 	const auto typed_src = ConstBuffer<T>::FromVoid(src);
 	return pcm_resample_fallback(buffer, channels, src_rate, typed_src,

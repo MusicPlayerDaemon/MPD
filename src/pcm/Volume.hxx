@@ -45,14 +45,14 @@ static constexpr int PCM_VOLUME_1S = PCM_VOLUME_1;
  * Converts a float value (0.0 = silence, 1.0 = 100% volume) to an
  * integer volume value (1000 = 100%).
  */
-static inline int
-pcm_float_to_volume(float volume)
+static constexpr inline int
+pcm_float_to_volume(float volume) noexcept
 {
 	return volume * PCM_VOLUME_1 + 0.5;
 }
 
-static inline float
-pcm_volume_to_float(int volume)
+static constexpr inline float
+pcm_volume_to_float(int volume) noexcept
 {
 	return (float)volume / (float)PCM_VOLUME_1;
 }
@@ -69,14 +69,14 @@ class PcmVolume {
 	PcmDither dither;
 
 public:
-	PcmVolume()
+	PcmVolume() noexcept
 		:volume(PCM_VOLUME_1) {
 #ifndef NDEBUG
 		format = SampleFormat::UNDEFINED;
 #endif
 	}
 
-	unsigned GetVolume() const {
+	unsigned GetVolume() const noexcept {
 		return volume;
 	}
 
@@ -85,7 +85,7 @@ public:
 	 * [0..#PCM_VOLUME_1]; may be bigger than #PCM_VOLUME_1, but
 	 * then it will most likely clip a lot
 	 */
-	void SetVolume(unsigned _volume) {
+	void SetVolume(unsigned _volume) noexcept {
 		volume = _volume;
 	}
 
@@ -101,7 +101,7 @@ public:
 	/**
 	 * Closes the object.  After that, you may call Open() again.
 	 */
-	void Close() {
+	void Close() noexcept {
 #ifndef NDEBUG
 		assert(format != SampleFormat::UNDEFINED);
 		format = SampleFormat::UNDEFINED;

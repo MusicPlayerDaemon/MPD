@@ -34,7 +34,7 @@ class PcmBuffer {
 	ReusableArray<uint8_t, 8192> buffer;
 
 public:
-	void Clear() {
+	void Clear() noexcept {
 		buffer.Clear();
 	}
 
@@ -48,11 +48,11 @@ public:
 	 * always an error.
 	 */
 	gcc_malloc gcc_returns_nonnull
-	void *Get(size_t size);
+	void *Get(size_t size) noexcept;
 
 	template<typename T>
 	gcc_malloc gcc_returns_nonnull
-	T *GetT(size_t n) {
+	T *GetT(size_t n) noexcept {
 		return (T *)Get(n * sizeof(T));
 	}
 };

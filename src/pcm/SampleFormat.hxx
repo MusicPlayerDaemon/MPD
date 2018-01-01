@@ -68,7 +68,7 @@ enum class SampleFormat : uint8_t {
 constexpr
 #endif
 static inline bool
-audio_valid_sample_format(SampleFormat format)
+audio_valid_sample_format(SampleFormat format) noexcept
 {
 	switch (format) {
 	case SampleFormat::S8:
@@ -90,7 +90,7 @@ audio_valid_sample_format(SampleFormat format)
 constexpr
 #endif
 static inline unsigned
-sample_format_size(SampleFormat format)
+sample_format_size(SampleFormat format) noexcept
 {
 	switch (format) {
 	case SampleFormat::S8:

@@ -52,12 +52,12 @@ public:
 	 * Closes the resampler.  After that, you may call Open()
 	 * again.
 	 */
-	virtual void Close() = 0;
+	virtual void Close() noexcept = 0;
 
 	/**
 	 * Reset the filter's state, e.g. drop/flush buffers.
 	 */
-	virtual void Reset() {
+	virtual void Reset() noexcept {
 	}
 
 	/**
