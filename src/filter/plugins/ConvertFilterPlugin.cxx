@@ -19,7 +19,8 @@
 
 #include "config.h"
 #include "ConvertFilterPlugin.hxx"
-#include "filter/FilterInternal.hxx"
+#include "filter/Filter.hxx"
+#include "filter/Prepared.hxx"
 #include "pcm/PcmConvert.hxx"
 #include "util/Manual.hxx"
 #include "util/ConstBuffer.hxx"

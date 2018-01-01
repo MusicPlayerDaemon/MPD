@@ -28,7 +28,7 @@
 #include "mixer/MixerControl.hxx"
 #include "mixer/plugins/SoftwareMixerPlugin.hxx"
 #include "filter/FilterConfig.hxx"
-#include "filter/FilterInternal.hxx"
+#include "filter/Prepared.hxx"
 #include "filter/plugins/AutoConvertFilterPlugin.hxx"
 #include "filter/plugins/ConvertFilterPlugin.hxx"
 #include "filter/plugins/ReplayGainFilterPlugin.hxx"

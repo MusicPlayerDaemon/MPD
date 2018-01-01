@@ -105,7 +105,8 @@ libmpd_a_SOURCES = \
 	src/decoder/DecoderPrint.cxx src/decoder/DecoderPrint.hxx \
 	src/filter/FilterConfig.cxx src/filter/FilterConfig.hxx \
 	src/filter/FilterPlugin.cxx src/filter/FilterPlugin.hxx \
-	src/filter/FilterInternal.hxx \
+	src/filter/Filter.hxx \
+	src/filter/Prepared.hxx \
 	src/filter/FilterRegistry.cxx src/filter/FilterRegistry.hxx \
 	src/filter/Observer.cxx src/filter/Observer.hxx \
 	src/client/Client.cxx src/client/Client.hxx \

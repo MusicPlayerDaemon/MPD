@@ -17,60 +17,13 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-/** \file
- *
- * Internal stuff for the filter core and filter plugins.
- */
-
-#ifndef MPD_FILTER_INTERNAL_HXX
-#define MPD_FILTER_INTERNAL_HXX
-
-#include "AudioFormat.hxx"
+#ifndef MPD_PREPARED_FILTER_HXX
+#define MPD_PREPARED_FILTER_HXX
 
 #include <memory>
 
-#include <assert.h>
-
 struct AudioFormat;
-template<typename T> struct ConstBuffer;
-
-class Filter {
-protected:
-	AudioFormat out_audio_format;
-
-	explicit Filter(AudioFormat _out_audio_format)
-		:out_audio_format(_out_audio_format) {
-		assert(out_audio_format.IsValid());
-	}
-
-public:
-	virtual ~Filter() {}
-
-	/**
-	 * Returns the #AudioFormat produced by FilterPCM().
-	 */
-	const AudioFormat &GetOutAudioFormat() const {
-		return out_audio_format;
-	}
-
-	/**
-	 * Reset the filter's state, e.g. drop/flush buffers.
-	 */
-	virtual void Reset() {
-	}
-
-	/**
-	 * Filters a block of PCM data.
-	 *
-	 * Throws std::runtime_error on error.
-	 *
-	 * @param src the input buffer
-	 * @return the destination buffer on success (will be
-	 * invalidated by deleting this object or the next FilterPCM()
-	 * or Reset() call)
-	 */
-	virtual ConstBuffer<void> FilterPCM(ConstBuffer<void> src) = 0;
-};
+class Filter;
 
 class PreparedFilter {
 public:

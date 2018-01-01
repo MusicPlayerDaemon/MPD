@@ -20,7 +20,7 @@
 #include "config.h"
 #include "FilterConfig.hxx"
 #include "FilterPlugin.hxx"
-#include "FilterInternal.hxx"
+#include "Prepared.hxx"
 #include "plugins/ChainFilterPlugin.hxx"
 #include "config/Param.hxx"
 #include "config/ConfigOption.hxx"

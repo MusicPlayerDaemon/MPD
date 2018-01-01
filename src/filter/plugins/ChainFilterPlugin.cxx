@@ -19,7 +19,8 @@
 
 #include "config.h"
 #include "ChainFilterPlugin.hxx"
-#include "filter/FilterInternal.hxx"
+#include "filter/Filter.hxx"
+#include "filter/Prepared.hxx"
 #include "AudioFormat.hxx"
 #include "util/ConstBuffer.hxx"
 #include "util/StringBuffer.hxx"
