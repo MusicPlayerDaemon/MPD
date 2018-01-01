@@ -30,25 +30,25 @@ class Filter {
 protected:
 	AudioFormat out_audio_format;
 
-	explicit Filter(AudioFormat _out_audio_format)
+	explicit Filter(AudioFormat _out_audio_format) noexcept
 		:out_audio_format(_out_audio_format) {
 		assert(out_audio_format.IsValid());
 	}
 
 public:
-	virtual ~Filter() {}
+	virtual ~Filter() noexcept {}
 
 	/**
 	 * Returns the #AudioFormat produced by FilterPCM().
 	 */
-	const AudioFormat &GetOutAudioFormat() const {
+	const AudioFormat &GetOutAudioFormat() const noexcept {
 		return out_audio_format;
 	}
 
 	/**
 	 * Reset the filter's state, e.g. drop/flush buffers.
 	 */
-	virtual void Reset() {
+	virtual void Reset() noexcept {
 	}
 
 	/**

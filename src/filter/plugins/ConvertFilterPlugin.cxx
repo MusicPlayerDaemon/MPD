@@ -50,7 +50,7 @@ public:
 
 	void Set(const AudioFormat &_out_audio_format);
 
-	void Reset() override {
+	void Reset() noexcept override {
 		state.Reset();
 	}
 

@@ -36,7 +36,8 @@ class ChainFilter final : public Filter {
 		const char *name;
 		std::unique_ptr<Filter> filter;
 
-		Child(const char *_name, std::unique_ptr<Filter> _filter)
+		Child(const char *_name,
+		      std::unique_ptr<Filter> _filter) noexcept
 			:name(_name), filter(std::move(_filter)) {}
 	};
 
@@ -46,7 +47,8 @@ public:
 	explicit ChainFilter(AudioFormat _audio_format)
 		:Filter(_audio_format) {}
 
-	void Append(const char *name, std::unique_ptr<Filter> filter) {
+	void Append(const char *name,
+		    std::unique_ptr<Filter> filter) noexcept {
 		assert(out_audio_format.IsValid());
 		out_audio_format = filter->GetOutAudioFormat();
 		assert(out_audio_format.IsValid());
@@ -55,7 +57,7 @@ public:
 	}
 
 	/* virtual methods from class Filter */
-	void Reset() override;
+	void Reset() noexcept override;
 	ConstBuffer<void> FilterPCM(ConstBuffer<void> src) override;
 };
 
@@ -114,7 +116,7 @@ PreparedChainFilter::Open(AudioFormat &in_audio_format)
 }
 
 void
-ChainFilter::Reset()
+ChainFilter::Reset() noexcept
 {
 	for (auto &child : children)
 		child.filter->Reset();

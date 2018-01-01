@@ -49,7 +49,7 @@ public:
 		:Filter(_filter->GetOutAudioFormat()),
 		 filter(std::move(_filter)), convert(std::move(_convert)) {}
 
-	void Reset() override {
+	void Reset() noexcept override {
 		filter->Reset();
 
 		if (convert)
