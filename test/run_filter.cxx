@@ -91,7 +91,7 @@ try {
 
 	/* open the filter */
 
-	std::unique_ptr<Filter> filter(prepared_filter->Open(audio_format));
+	auto filter = prepared_filter->Open(audio_format);
 
 	const AudioFormat out_audio_format = filter->GetOutAudioFormat();
 
