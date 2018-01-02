@@ -27,7 +27,7 @@
 #include "mixer/MixerType.hxx"
 #include "mixer/MixerControl.hxx"
 #include "mixer/plugins/SoftwareMixerPlugin.hxx"
-#include "filter/FilterConfig.hxx"
+#include "filter/LoadChain.hxx"
 #include "filter/Prepared.hxx"
 #include "filter/plugins/AutoConvertFilterPlugin.hxx"
 #include "filter/plugins/ConvertFilterPlugin.hxx"

@@ -17,13 +17,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-/** \file
- *
- * Utility functions for filter configuration
- */
-
-#ifndef MPD_FILTER_CONFIG_HXX
-#define MPD_FILTER_CONFIG_HXX
+#ifndef MPD_FILTER_LOAD_CHAIN_HXX
+#define MPD_FILTER_LOAD_CHAIN_HXX
 
 class PreparedFilter;
 

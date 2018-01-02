@@ -104,7 +104,7 @@ libmpd_a_SOURCES = \
 	src/decoder/Bridge.cxx src/decoder/Bridge.hxx \
 	src/decoder/DecoderPrint.cxx src/decoder/DecoderPrint.hxx \
 	src/filter/LoadOne.cxx src/filter/LoadOne.hxx \
-	src/filter/FilterConfig.cxx src/filter/FilterConfig.hxx \
+	src/filter/LoadChain.cxx src/filter/LoadChain.hxx \
 	src/filter/FilterPlugin.hxx \
 	src/filter/Filter.hxx \
 	src/filter/Prepared.hxx \
