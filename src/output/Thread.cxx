@@ -274,6 +274,7 @@ AudioOutputControl::PlayChunk() noexcept
 		try {
 			const ScopeUnlock unlock(mutex);
 			nbytes = output->Play(data.data, data.size);
+			assert(nbytes > 0);
 			assert(nbytes <= data.size);
 		} catch (...) {
 			FormatError(std::current_exception(),
