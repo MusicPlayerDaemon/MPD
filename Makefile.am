@@ -27,7 +27,9 @@ noinst_LIBRARIES = \
 	libfs.a \
 	libplaylist_plugins.a \
 	libdecoder.a \
+	libfilter_api.a \
 	libfilter_plugins.a \
+	libfilter_glue.a \
 	libmixer_plugins.a \
 	liboutput_plugins.a
 
@@ -103,13 +105,6 @@ libmpd_a_SOURCES = \
 	src/decoder/DecoderPlugin.hxx \
 	src/decoder/Bridge.cxx src/decoder/Bridge.hxx \
 	src/decoder/DecoderPrint.cxx src/decoder/DecoderPrint.hxx \
-	src/filter/LoadOne.cxx src/filter/LoadOne.hxx \
-	src/filter/LoadChain.cxx src/filter/LoadChain.hxx \
-	src/filter/FilterPlugin.hxx \
-	src/filter/Filter.hxx \
-	src/filter/Prepared.hxx \
-	src/filter/FilterRegistry.cxx src/filter/FilterRegistry.hxx \
-	src/filter/Observer.cxx src/filter/Observer.hxx \
 	src/client/Client.cxx src/client/Client.hxx \
 	src/client/ClientInternal.hxx \
 	src/client/ClientEvent.cxx \
@@ -1645,6 +1640,12 @@ endif
 # Filter plugins
 #
 
+libfilter_api_a_SOURCES = \
+	src/filter/Observer.cxx src/filter/Observer.hxx \
+	src/filter/FilterPlugin.hxx \
+	src/filter/Prepared.hxx \
+	src/filter/Filter.hxx
+
 libfilter_plugins_a_SOURCES = \
 	src/AudioCompress/config.h \
 	src/AudioCompress/compress.h \
@@ -1664,8 +1665,15 @@ libfilter_plugins_a_SOURCES = \
 	src/filter/plugins/VolumeFilterPlugin.cxx \
 	src/filter/plugins/VolumeFilterPlugin.hxx
 
+libfilter_glue_a_SOURCES = \
+	src/filter/FilterRegistry.cxx src/filter/FilterRegistry.hxx \
+	src/filter/LoadOne.cxx src/filter/LoadOne.hxx \
+	src/filter/LoadChain.cxx src/filter/LoadChain.hxx
+
 FILTER_LIBS = \
+	libfilter_glue.a \
 	libfilter_plugins.a \
+	libfilter_api.a \
 	$(PCM_LIBS)
 
 
@@ -2055,8 +2063,7 @@ test_run_filter_LDADD = \
 	libsystem.a \
 	libutil.a
 test_run_filter_SOURCES = test/run_filter.cxx \
-	src/Log.cxx src/LogBackend.cxx \
-	src/filter/LoadOne.cxx src/filter/FilterRegistry.cxx
+	src/Log.cxx src/LogBackend.cxx
 
 if ENABLE_ENCODER
 noinst_PROGRAMS += test/run_encoder
@@ -2159,6 +2166,7 @@ test_read_mixer_LDADD = \
 	libpcm.a \
 	libmixer_plugins.a \
 	$(OUTPUT_LIBS) \
+	libfilter_api.a \
 	libconf.a \
 	libbasic.a \
 	libevent.a \
@@ -2169,7 +2177,6 @@ test_read_mixer_LDADD = \
 test_read_mixer_SOURCES = test/read_mixer.cxx \
 	src/Log.cxx src/LogBackend.cxx \
 	src/mixer/MixerControl.cxx \
-	src/filter/LoadOne.cxx \
 	src/filter/plugins/VolumeFilterPlugin.cxx
 
 if ENABLE_BZIP2_TEST
