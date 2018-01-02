@@ -93,7 +93,7 @@ sidplay_init(const ConfigBlock &block)
 	if (!database_path.IsNull())
 		songlength_database = sidplay_load_songlength_db(database_path);
 
-	default_songlength = block.GetBlockValue("default_songlength", 0u);
+	default_songlength = block.GetPositiveValue("default_songlength", 0u);
 
 	all_files_are_containers =
 		block.GetBlockValue("all_files_are_containers", true);

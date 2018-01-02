@@ -64,7 +64,7 @@ public:
 	HaikuOutput(const ConfigBlock &block)
 		:AudioOutput(0),
 		 /* XXX: by default we should let the MediaKit propose the buffer size */
-		 write_size(block.GetBlockValue("write_size", 4096u)) {}
+		 write_size(block.GetPositiveValue("write_size", 4096u)) {}
 
 	~HaikuOutput();
 

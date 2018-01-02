@@ -47,6 +47,7 @@ struct BlockParam {
 	int GetIntValue() const;
 
 	unsigned GetUnsignedValue() const;
+	unsigned GetPositiveValue() const;
 
 	bool GetBoolValue() const;
 };
@@ -116,6 +117,8 @@ struct ConfigBlock {
 	int GetBlockValue(const char *name, int default_value) const;
 
 	unsigned GetBlockValue(const char *name, unsigned default_value) const;
+
+	unsigned GetPositiveValue(const char *name, unsigned default_value) const;
 
 	bool GetBlockValue(const char *name, bool default_value) const;
 };

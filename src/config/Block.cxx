@@ -52,6 +52,21 @@ BlockParam::GetUnsignedValue() const
 	return (unsigned)value2;
 }
 
+unsigned
+BlockParam::GetPositiveValue() const
+{
+	const char *const s = value.c_str();
+	char *endptr;
+	unsigned long value2 = strtoul(s, &endptr, 0);
+	if (endptr == s || *endptr != 0)
+		FormatFatalError("Not a valid number in line %i", line);
+
+	if (value2 <= 0)
+		FormatFatalError("Number in line %i must be positive", line);
+
+	return (unsigned)value2;
+}
+
 bool
 BlockParam::GetBoolValue() const
 {
@@ -129,6 +144,16 @@ ConfigBlock::GetBlockValue(const char *name, unsigned default_value) const
 		return default_value;
 
 	return bp->GetUnsignedValue();
+}
+
+unsigned
+ConfigBlock::GetPositiveValue(const char *name, unsigned default_value) const
+{
+	const auto *param = GetBlockParam(name);
+	if (param == nullptr)
+		return default_value;
+
+	return param->GetPositiveValue();
 }
 
 bool

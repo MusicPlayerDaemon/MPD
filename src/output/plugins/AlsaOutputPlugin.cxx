@@ -331,9 +331,9 @@ AlsaOutput::AlsaOutput(EventLoop &_loop, const ConfigBlock &block)
 		     /* legacy name from MPD 0.18 and older: */
 		     block.GetBlockValue("dsd_usb", false)),
 #endif
-	 buffer_time(block.GetBlockValue("buffer_time",
-					 MPD_ALSA_BUFFER_TIME_US)),
-	 period_time(block.GetBlockValue("period_time", 0u))
+	 buffer_time(block.GetPositiveValue("buffer_time",
+					    MPD_ALSA_BUFFER_TIME_US)),
+	 period_time(block.GetPositiveValue("period_time", 0u))
 {
 #ifdef SND_PCM_NO_AUTO_RESAMPLE
 	if (!block.GetBlockValue("auto_resample", true))

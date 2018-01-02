@@ -114,7 +114,7 @@ mikmod_decoder_init(const ConfigBlock &block)
 	static char params[] = "";
 
 	mikmod_loop = block.GetBlockValue("loop", false);
-	mikmod_sample_rate = block.GetBlockValue("sample_rate", 44100u);
+	mikmod_sample_rate = block.GetPositiveValue("sample_rate", 44100u);
 	if (!audio_valid_sample_rate(mikmod_sample_rate))
 		throw FormatRuntimeError("Invalid sample rate in line %d: %u",
 					 block.line, mikmod_sample_rate);
