@@ -99,7 +99,6 @@ storage_state_restore(const char *line, TextFile &file, Instance &instance)
 		return true;
 	}
 
-#ifdef ENABLE_DATABASE
 	Database *db = instance.database;
 	if (db != nullptr && db->IsPlugin(simple_db_plugin)) {
 		try {
@@ -108,7 +107,6 @@ storage_state_restore(const char *line, TextFile &file, Instance &instance)
 			throw;
 		}
 	}
-#endif
 
 	((CompositeStorage*)instance.storage)->Mount(uri.c_str(), storage);
 
