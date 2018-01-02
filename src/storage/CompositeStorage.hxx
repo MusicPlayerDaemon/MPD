@@ -25,6 +25,7 @@
 #include "thread/Mutex.hxx"
 #include "Compiler.h"
 
+#include <memory>
 #include <string>
 #include <map>
 
@@ -47,12 +48,9 @@ class CompositeStorage final : public Storage {
 		 * Other Directory instances may have one, and child
 		 * mounts will be "mixed" in.
 		 */
-		Storage *storage;
+		std::unique_ptr<Storage> storage;
 
 		std::map<std::string, Directory> children;
-
-		Directory():storage(nullptr) {}
-		~Directory();
 
 		gcc_pure
 		bool IsEmpty() const noexcept {
@@ -115,7 +113,7 @@ public:
 		VisitMounts(uri, root, t);
 	}
 
-	void Mount(const char *uri, Storage *storage);
+	void Mount(const char *uri, std::unique_ptr<Storage> storage);
 	bool Unmount(const char *uri);
 
 	/* virtual methods from class Storage */
@@ -133,9 +131,8 @@ private:
 	template<typename T>
 	void VisitMounts(std::string &uri, const Directory &directory,
 			 T t) const {
-		const Storage *const storage = directory.storage;
-		if (storage != nullptr)
-			t(uri.c_str(), *storage);
+		if (directory.storage)
+			t(uri.c_str(), *directory.storage);
 
 		if (!uri.empty())
 			uri.push_back('/');

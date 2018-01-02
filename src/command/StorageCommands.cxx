@@ -205,7 +205,7 @@ handle_mount(Client &client, Request args, Response &r)
 		return CommandResult::ERROR;
 	}
 
-	composite.Mount(local_uri, storage.release());
+	composite.Mount(local_uri, std::move(storage));
 	instance.EmitIdle(IDLE_MOUNT);
 
 #ifdef ENABLE_DATABASE

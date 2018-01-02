@@ -103,11 +103,6 @@ NextSegment(const char *&uri_r)
 	}
 }
 
-CompositeStorage::Directory::~Directory()
-{
-	delete storage;
-}
-
 const CompositeStorage::Directory *
 CompositeStorage::Directory::Find(const char *uri) const noexcept
 {
@@ -144,8 +139,7 @@ CompositeStorage::Directory::Unmount() noexcept
 	if (storage == nullptr)
 		return false;
 
-	delete storage;
-	storage = nullptr;
+	storage.reset();
 	return true;
 }
 
@@ -210,18 +204,16 @@ CompositeStorage::GetMount(const char *uri) noexcept
 		/* not a mount point */
 		return nullptr;
 
-	return result.directory->storage;
+	return result.directory->storage.get();
 }
 
 void
-CompositeStorage::Mount(const char *uri, Storage *storage)
+CompositeStorage::Mount(const char *uri, std::unique_ptr<Storage> storage)
 {
 	const std::lock_guard<Mutex> protect(mutex);
 
 	Directory &directory = root.Make(uri);
-	if (directory.storage != nullptr)
-		delete directory.storage;
-	directory.storage = storage;
+	directory.storage = std::move(storage);
 }
 
 bool

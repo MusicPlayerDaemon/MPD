@@ -181,7 +181,7 @@ InitStorage(EventLoop &event_loop)
 
 	CompositeStorage *composite = new CompositeStorage();
 	instance->storage = composite;
-	composite->Mount("", storage.release());
+	composite->Mount("", std::move(storage));
 }
 
 /**

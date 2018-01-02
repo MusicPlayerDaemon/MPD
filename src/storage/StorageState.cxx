@@ -120,7 +120,7 @@ storage_state_restore(const char *line, TextFile &file, Instance &instance)
 	}
 
 	((CompositeStorage*)instance.storage)->Mount(uri.c_str(),
-						     storage.release());
+						     std::move(storage));
 
 	return true;
 }
