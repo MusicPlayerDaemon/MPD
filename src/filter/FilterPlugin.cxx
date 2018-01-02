@@ -28,14 +28,6 @@
 #include <assert.h>
 
 std::unique_ptr<PreparedFilter>
-filter_new(const FilterPlugin *plugin, const ConfigBlock &block)
-{
-	assert(plugin != nullptr);
-
-	return plugin->init(block);
-}
-
-std::unique_ptr<PreparedFilter>
 filter_configured_new(const ConfigBlock &block)
 {
 	const char *plugin_name = block.GetBlockValue("plugin");
@@ -47,5 +39,5 @@ filter_configured_new(const ConfigBlock &block)
 		throw FormatRuntimeError("No such filter plugin: %s",
 					 plugin_name);
 
-	return filter_new(plugin, block);
+	return plugin->init(block);
 }
