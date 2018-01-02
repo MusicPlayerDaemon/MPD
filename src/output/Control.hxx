@@ -520,6 +520,13 @@ private:
 	void InternalPause() noexcept;
 
 	/**
+	 * Runs inside the OutputThread.
+	 * Caller must lock the mutex.
+	 * Handles exceptions.
+	 */
+	void InternalDrain() noexcept;
+
+	/**
 	 * The OutputThread.
 	 */
 	void Task();

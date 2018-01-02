@@ -362,6 +362,14 @@ AudioOutputControl::InternalPause() noexcept
 	skip_delay = true;
 }
 
+inline void
+AudioOutputControl::InternalDrain() noexcept
+{
+	const ScopeUnlock unlock(mutex);
+
+	output->Drain();
+}
+
 void
 AudioOutputControl::Task()
 {
@@ -421,10 +429,8 @@ AudioOutputControl::Task()
 			continue;
 
 		case Command::DRAIN:
-			if (open) {
-				const ScopeUnlock unlock(mutex);
-				output->Drain();
-			}
+			if (open)
+				InternalDrain();
 
 			CommandFinished();
 			continue;
