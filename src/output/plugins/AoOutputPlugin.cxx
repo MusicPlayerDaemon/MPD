@@ -52,6 +52,8 @@ class AoOutput final : AudioOutput, SafeSingleton<AoInit> {
 	ao_option *options = nullptr;
 	ao_device *device;
 
+	size_t frame_size;
+
 	AoOutput(const ConfigBlock &block);
 	~AoOutput();
 
@@ -162,6 +164,8 @@ AoOutput::Open(AudioFormat &audio_format)
 		break;
 	}
 
+	frame_size = audio_format.GetFrameSize();
+
 	format.rate = audio_format.sample_rate;
 	format.byte_format = AO_FMT_NATIVE;
 	format.channels = audio_format.channels;
@@ -180,8 +184,18 @@ AoOutput::Close() noexcept
 size_t
 AoOutput::Play(const void *chunk, size_t size)
 {
-	if (size > write_size)
-		size = write_size;
+	assert(size % frame_size == 0);
+
+	if (size > write_size) {
+		/* round down to a multiple of the frame size */
+		size = (write_size / frame_size) * frame_size;
+
+		if (size < frame_size)
+			/* no matter how small "write_size" was
+			   configured, we must pass at least one frame
+			   to libao */
+			size = frame_size;
+	}
 
 	/* For whatever reason, libao wants a non-const pointer.
 	   Let's hope it does not write to the buffer, and use the

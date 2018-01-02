@@ -13,6 +13,7 @@ ver 0.21 (not yet released)
 * output
   - alsa: non-blocking mode
   - alsa: change "dop" and "allowed_formats" settings at runtime
+  - ao: fix crash bug due to partial frames
   - shout: support the Shine encoder plugin
   - sndio: remove support for the broken RoarAudio sndio emulation
 * mixer
