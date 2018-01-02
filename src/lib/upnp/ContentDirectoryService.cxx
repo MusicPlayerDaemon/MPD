@@ -22,10 +22,10 @@
 #include "UniqueIxml.hxx"
 #include "Device.hxx"
 #include "ixmlwrap.hxx"
-#include "Util.hxx"
 #include "Action.hxx"
 #include "util/UriUtil.hxx"
 #include "util/RuntimeError.hxx"
+#include "util/SplitString.hxx"
 
 ContentDirectoryService::ContentDirectoryService(const UPnPDevice &device,
 						 const UPnPService &service) noexcept
@@ -49,7 +49,7 @@ ContentDirectoryService::~ContentDirectoryService() noexcept
 	/* this destructor exists here just so it won't get inlined */
 }
 
-std::list<std::string>
+std::forward_list<std::string>
 ContentDirectoryService::getSearchCapabilities(UpnpClient_Handle hdl) const
 {
 	UniqueIxmlDocument request(UpnpMakeAction("GetSearchCapabilities", m_serviceType.c_str(),
@@ -68,15 +68,10 @@ ContentDirectoryService::getSearchCapabilities(UpnpClient_Handle hdl) const
 
 	UniqueIxmlDocument response(_response);
 
-	std::list<std::string> result;
-
 	const char *s = ixmlwrap::getFirstElementValue(response.get(),
 						       "SearchCaps");
 	if (s == nullptr || *s == 0)
-		return result;
+		return {};
 
-	if (!csvToStrings(s, result))
-		throw std::runtime_error("Bad response");
-
-	return result;
+	return SplitString(s, ',', false);
 }
