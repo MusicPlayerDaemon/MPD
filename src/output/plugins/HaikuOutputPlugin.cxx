@@ -266,11 +266,6 @@ HaikuOutput::Play(const void *chunk, size_t size)
 	BSoundPlayer* const soundPlayer = sound_player;
 	const uint8 *data = (const uint8 *)chunk;
 
-	if (size == 0) {
-		soundPlayer->SetHasData(false);
-		return 0;
-	}
-
 	if (!soundPlayer->HasData())
 		soundPlayer->SetHasData(true);
 	acquire_sem(new_buffer);
