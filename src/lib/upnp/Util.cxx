@@ -30,11 +30,11 @@ trimstring(std::string &s, const char *ws) noexcept
 		s.clear();
 		return;
 	}
-	s.replace(0, pos, std::string());
+	s.erase(0, pos);
 
 	pos = s.find_last_not_of(ws);
 	if (pos != std::string::npos && pos != s.length()-1)
-		s.replace(pos + 1, std::string::npos, std::string());
+		s.erase(pos + 1);
 }
 
 static void
