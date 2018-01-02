@@ -81,6 +81,12 @@ public:
 	 * @return the destination buffer
 	 */
 	ConstBuffer<void> Convert(ConstBuffer<void> src);
+
+	/**
+	 * Flush pending data and return it.  This should be called
+	 * repepatedly until it returns nullptr.
+	 */
+	ConstBuffer<void> Flush();
 };
 
 void

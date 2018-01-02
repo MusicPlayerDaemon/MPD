@@ -152,3 +152,22 @@ PcmConvert::Convert(ConstBuffer<void> buffer)
 
 	return buffer;
 }
+
+ConstBuffer<void>
+PcmConvert::Flush()
+{
+	if (enable_resampler) {
+		auto buffer = resampler.Flush();
+		if (!buffer.IsNull()) {
+			if (enable_format)
+				buffer = format_converter.Convert(buffer);
+
+			if (enable_channels)
+				buffer = channels_converter.Convert(buffer);
+
+			return buffer;
+		}
+	}
+
+	return nullptr;
+}

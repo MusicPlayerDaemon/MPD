@@ -55,6 +55,10 @@ public:
 	}
 
 	ConstBuffer<void> FilterPCM(ConstBuffer<void> src) override;
+
+	ConstBuffer<void> Flush() override {
+		return state.Flush();
+	}
 };
 
 class PreparedConvertFilter final : public PreparedFilter {

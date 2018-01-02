@@ -81,3 +81,9 @@ GluePcmResampler::Resample(ConstBuffer<void> src)
 
 	return resampler->Resample(src);
 }
+
+ConstBuffer<void>
+GluePcmResampler::Flush()
+{
+	return resampler->Flush();
+}

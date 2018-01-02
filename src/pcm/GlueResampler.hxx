@@ -61,6 +61,8 @@ public:
 	void Reset() noexcept;
 
 	ConstBuffer<void> Resample(ConstBuffer<void> src);
+
+	ConstBuffer<void> Flush();
 };
 
 #endif

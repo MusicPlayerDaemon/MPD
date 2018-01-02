@@ -70,6 +70,14 @@ public:
 	 * filter_close() or filter_filter())
 	 */
 	virtual ConstBuffer<void> Resample(ConstBuffer<void> src) = 0;
+
+	/**
+	 * Flush pending data and return it.  This should be called
+	 * repepatedly until it returns nullptr.
+	 */
+	virtual ConstBuffer<void> Flush() {
+		return nullptr;
+	}
 };
 
 #endif
