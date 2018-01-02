@@ -104,6 +104,7 @@ storage_state_restore(const char *line, TextFile &file, Instance &instance)
 		try {
 			((SimpleDatabase *)db)->Mount(uri.c_str(), url.c_str());
 		} catch (...) {
+			delete storage;
 			throw;
 		}
 	}
