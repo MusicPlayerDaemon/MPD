@@ -421,6 +421,17 @@ public:
 
 private:
 	/**
+	 * An error has occurred and this output is defunct.
+	 */
+	void Failure(std::exception_ptr e) noexcept {
+		last_error = e;
+
+		/* don't automatically reopen this device for 10
+		   seconds */
+		fail_timer.Update();
+	}
+
+	/**
 	 * Runs inside the OutputThread.
 	 * Caller must lock the mutex.
 	 * Handles exceptions.

@@ -109,8 +109,7 @@ AudioOutputControl::InternalEnable() noexcept
 		return true;
 	} catch (...) {
 		LogError(std::current_exception());
-		fail_timer.Update();
-		last_error = std::current_exception();
+		Failure(std::current_exception());
 		return false;
 	}
 }
@@ -162,8 +161,7 @@ AudioOutputControl::InternalOpen(const AudioFormat in_audio_format,
 		}
 	} catch (...) {
 		LogError(std::current_exception());
-		fail_timer.Update();
-		last_error = std::current_exception();
+		Failure(std::current_exception());
 	}
 
 	if (f != in_audio_format || f != output->out_audio_format)
@@ -234,13 +232,8 @@ try {
 } catch (...) {
 	FormatError(std::current_exception(),
 		    "Failed to filter for %s", GetLogName());
-	last_error = std::current_exception();
-
+	Failure(std::current_exception());
 	InternalClose(false);
-
-	/* don't automatically reopen this device for 10
-	   seconds */
-	fail_timer.Update();
 	return false;
 }
 
@@ -280,15 +273,9 @@ AudioOutputControl::PlayChunk() noexcept
 		} catch (...) {
 			FormatError(std::current_exception(),
 				    "Failed to play on %s", GetLogName());
-			last_error = std::current_exception();
+			Failure(std::current_exception());
 
 			InternalClose(false);
-
-			/* don't automatically reopen this device for
-			   10 seconds */
-			assert(!fail_timer.IsDefined());
-			fail_timer.Update();
-
 			return false;
 		}
 
