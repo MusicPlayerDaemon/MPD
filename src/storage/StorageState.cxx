@@ -105,7 +105,10 @@ storage_state_restore(const char *line, TextFile &file, Instance &instance)
 			((SimpleDatabase *)db)->Mount(uri.c_str(), url.c_str());
 		} catch (...) {
 			delete storage;
-			throw;
+			FormatError(std::current_exception(),
+				    "Failed to restore mount to %s",
+				    url.c_str());
+			return true;
 		}
 	}
 
