@@ -175,13 +175,13 @@ glue_mapper_init()
 static void
 InitStorage(EventLoop &event_loop)
 {
-	Storage *storage = CreateConfiguredStorage(event_loop);
+	auto storage = CreateConfiguredStorage(event_loop);
 	if (storage == nullptr)
 		return;
 
 	CompositeStorage *composite = new CompositeStorage();
 	instance->storage = composite;
-	composite->Mount("", storage);
+	composite->Mount("", storage.release());
 }
 
 /**

@@ -549,14 +549,14 @@ CurlStorage::OpenDirectory(const char *uri_utf8)
 	return HttpListDirectoryOperation(*curl, uri.c_str()).Perform();
 }
 
-static Storage *
+static std::unique_ptr<Storage>
 CreateCurlStorageURI(EventLoop &event_loop, const char *uri)
 {
 	if (strncmp(uri, "http://", 7) != 0 &&
 	    strncmp(uri, "https://", 8) != 0)
 		return nullptr;
 
-	return new CurlStorage(event_loop, uri);
+	return std::make_unique<CurlStorage>(event_loop, uri);
 }
 
 const StoragePlugin curl_storage_plugin = {

@@ -20,6 +20,7 @@
 #include "config.h"
 #include "Registry.hxx"
 #include "StoragePlugin.hxx"
+#include "StorageInterface.hxx"
 #include "plugins/LocalStorage.hxx"
 #include "plugins/SmbclientStorage.hxx"
 #include "plugins/NfsStorage.hxx"
@@ -54,7 +55,7 @@ GetStoragePluginByName(const char *name) noexcept
 	return nullptr;
 }
 
-Storage *
+std::unique_ptr<Storage>
 CreateStorageURI(EventLoop &event_loop, const char *uri)
 {
 	for (auto i = storage_plugins; *i != nullptr; ++i) {
@@ -63,7 +64,7 @@ CreateStorageURI(EventLoop &event_loop, const char *uri)
 		if (plugin.create_uri == nullptr)
 			continue;
 
-		Storage *storage = plugin.create_uri(event_loop, uri);
+		auto storage = plugin.create_uri(event_loop, uri);
 		if (storage != nullptr)
 			return storage;
 	}

@@ -179,10 +179,10 @@ LocalDirectoryReader::GetInfo(bool follow)
 	return Stat(AllocatedPath::Build(base_fs, reader.GetEntry()), follow);
 }
 
-Storage *
+std::unique_ptr<Storage>
 CreateLocalStorage(Path base_fs)
 {
-	return new LocalStorage(base_fs);
+	return std::make_unique<LocalStorage>(base_fs);
 }
 
 const StoragePlugin local_storage_plugin = {

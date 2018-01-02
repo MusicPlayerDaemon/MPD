@@ -22,6 +22,8 @@
 
 #include "check.h"
 
+#include <memory>
+
 class Storage;
 class EventLoop;
 
@@ -31,7 +33,8 @@ struct StoragePlugin {
 	/**
 	 * Throws #std::runtime_error on error.
 	 */
-	Storage *(*create_uri)(EventLoop &event_loop, const char *uri);
+	std::unique_ptr<Storage> (*create_uri)(EventLoop &event_loop,
+					       const char *uri);
 };
 
 #endif

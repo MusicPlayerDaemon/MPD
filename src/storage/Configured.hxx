@@ -23,6 +23,8 @@
 #include "check.h"
 #include "Compiler.h"
 
+#include <memory>
+
 class Storage;
 class EventLoop;
 
@@ -32,7 +34,7 @@ class EventLoop;
  *
  * Throws #std::runtime_error on error.
  */
-Storage *
+std::unique_ptr<Storage>
 CreateConfiguredStorage(EventLoop &event_loop);
 
 /**

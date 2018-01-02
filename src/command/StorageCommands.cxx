@@ -199,13 +199,13 @@ handle_mount(Client &client, Request args, Response &r)
 	}
 
 	auto &event_loop = instance.io_thread.GetEventLoop();
-	Storage *storage = CreateStorageURI(event_loop, remote_uri);
+	auto storage = CreateStorageURI(event_loop, remote_uri);
 	if (storage == nullptr) {
 		r.Error(ACK_ERROR_ARG, "Unrecognized storage URI");
 		return CommandResult::ERROR;
 	}
 
-	composite.Mount(local_uri, storage);
+	composite.Mount(local_uri, storage.release());
 	instance.EmitIdle(IDLE_MOUNT);
 
 #ifdef ENABLE_DATABASE

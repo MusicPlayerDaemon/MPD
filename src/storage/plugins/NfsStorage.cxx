@@ -390,7 +390,7 @@ NfsStorage::OpenDirectory(const char *uri_utf8)
 	return operation.ToReader();
 }
 
-static Storage *
+static std::unique_ptr<Storage>
 CreateNfsStorageURI(EventLoop &event_loop, const char *base)
 {
 	if (strncmp(base, "nfs://", 6) != 0)
@@ -406,7 +406,8 @@ CreateNfsStorageURI(EventLoop &event_loop, const char *base)
 
 	nfs_set_base(server.c_str(), mount);
 
-	return new NfsStorage(event_loop, base, server.c_str(), mount);
+	return std::make_unique<NfsStorage>(event_loop, base,
+					    server.c_str(), mount);
 }
 
 const StoragePlugin nfs_storage_plugin = {

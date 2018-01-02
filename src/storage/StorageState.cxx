@@ -101,7 +101,7 @@ storage_state_restore(const char *line, TextFile &file, Instance &instance)
 	FormatDebug(storage_domain, "Restoring mount %s => %s", uri.c_str(), url.c_str());
 
 	auto &event_loop = instance.io_thread.GetEventLoop();
-	Storage *storage = CreateStorageURI(event_loop, url.c_str());
+	auto storage = CreateStorageURI(event_loop, url.c_str());
 	if (storage == nullptr) {
 		FormatError(storage_domain, "Unrecognized storage URI: %s", url.c_str());
 		return true;
@@ -112,7 +112,6 @@ storage_state_restore(const char *line, TextFile &file, Instance &instance)
 		try {
 			((SimpleDatabase *)db)->Mount(uri.c_str(), url.c_str());
 		} catch (...) {
-			delete storage;
 			FormatError(std::current_exception(),
 				    "Failed to restore mount to %s",
 				    url.c_str());
@@ -120,7 +119,8 @@ storage_state_restore(const char *line, TextFile &file, Instance &instance)
 		}
 	}
 
-	((CompositeStorage*)instance.storage)->Mount(uri.c_str(), storage);
+	((CompositeStorage*)instance.storage)->Mount(uri.c_str(),
+						     storage.release());
 
 	return true;
 }

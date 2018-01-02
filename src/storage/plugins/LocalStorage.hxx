@@ -23,14 +23,16 @@
 #include "check.h"
 #include "Compiler.h"
 
+#include <memory>
+
 struct StoragePlugin;
 class Storage;
 class Path;
 
 extern const StoragePlugin local_storage_plugin;
 
-gcc_malloc gcc_nonnull_all
-Storage *
+gcc_nonnull_all
+std::unique_ptr<Storage>
 CreateLocalStorage(Path base_fs);
 
 #endif
