@@ -58,6 +58,9 @@ public:
 		delete std::exchange(instance, nullptr);
 	}
 
+	SafeSingleton(const SafeSingleton &) = delete;
+	SafeSingleton &operator=(const SafeSingleton &) = delete;
+
 	T *get() {
 		return instance;
 	}
