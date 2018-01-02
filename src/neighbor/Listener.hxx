@@ -29,8 +29,8 @@ class NeighborExplorer;
  */
 class NeighborListener {
 public:
-	virtual void FoundNeighbor(const NeighborInfo &info) = 0;
-	virtual void LostNeighbor(const NeighborInfo &info) = 0;
+	virtual void FoundNeighbor(const NeighborInfo &info) noexcept = 0;
+	virtual void LostNeighbor(const NeighborInfo &info) noexcept = 0;
 };
 
 #endif

@@ -98,14 +98,14 @@ Instance::OnDatabaseSongRemoved(const char *uri)
 #ifdef ENABLE_NEIGHBOR_PLUGINS
 
 void
-Instance::FoundNeighbor(gcc_unused const NeighborInfo &info)
+Instance::FoundNeighbor(gcc_unused const NeighborInfo &info) noexcept
 {
 	for (auto &partition : partitions)
 		partition.EmitIdle(IDLE_NEIGHBOR);
 }
 
 void
-Instance::LostNeighbor(gcc_unused const NeighborInfo &info)
+Instance::LostNeighbor(gcc_unused const NeighborInfo &info) noexcept
 {
 	for (auto &partition : partitions)
 		partition.EmitIdle(IDLE_NEIGHBOR);

@@ -30,12 +30,12 @@
 
 #include <stdexcept>
 
-NeighborGlue::Explorer::~Explorer()
+NeighborGlue::Explorer::~Explorer() noexcept
 {
 	delete explorer;
 }
 
-NeighborGlue::~NeighborGlue() {}
+NeighborGlue::~NeighborGlue() noexcept {}
 
 static NeighborExplorer *
 CreateNeighborExplorer(EventLoop &loop, NeighborListener &listener,
@@ -86,7 +86,7 @@ NeighborGlue::Open()
 }
 
 void
-NeighborGlue::Close()
+NeighborGlue::Close() noexcept
 {
 	for (auto i = explorers.begin(), end = explorers.end(); i != end; ++i)
 		i->explorer->Close();

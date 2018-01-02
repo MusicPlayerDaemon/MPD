@@ -38,9 +38,11 @@ class NeighborGlue {
 	struct Explorer {
 		NeighborExplorer *const explorer;
 
-		Explorer(NeighborExplorer *_explorer):explorer(_explorer) {}
+		Explorer(NeighborExplorer *_explorer) noexcept
+			:explorer(_explorer) {}
+
 		Explorer(const Explorer &) = delete;
-		~Explorer();
+		~Explorer() noexcept;
 	};
 
 	Mutex mutex;
@@ -52,9 +54,9 @@ public:
 
 	NeighborGlue() = default;
 	NeighborGlue(const NeighborGlue &) = delete;
-	~NeighborGlue();
+	~NeighborGlue() noexcept;
 
-	bool IsEmpty() const {
+	bool IsEmpty() const noexcept {
 		return explorers.empty();
 	}
 
@@ -64,7 +66,7 @@ public:
 	void Init(EventLoop &loop, NeighborListener &listener);
 
 	void Open();
-	void Close();
+	void Close() noexcept;
 
 	/**
 	 * Get the combined list of all neighbors from all active
