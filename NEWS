@@ -19,6 +19,11 @@ ver 0.21 (not yet released)
   - sndio: new mixer plugin
 * require GCC 5.0
 
+ver 0.20.15 (not yet released)
+* state file
+  - make mount point restore errors non-fatal
+  - fix crash when restoring mounts with incompatible database plugin
+
 ver 0.20.14 (2018/01/01)
 * database
   - simple: fix file corruption in the presence of mount points

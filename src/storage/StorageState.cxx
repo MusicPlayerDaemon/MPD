@@ -47,6 +47,9 @@ static constexpr Domain storage_domain("storage");
 void
 storage_state_save(BufferedOutputStream &os, const Instance &instance)
 {
+	if (instance.storage == nullptr)
+		return;
+
 	const auto visitor = [&os](const char *mount_uri, const Storage &storage) {
 		std::string uri = storage.MapUTF8("");
 		if (uri.empty() || StringIsEmpty(mount_uri))
@@ -84,6 +87,12 @@ storage_state_restore(const char *line, TextFile &file, Instance &instance)
 			FormatError(storage_domain, "Unrecognized line in mountpoint state: %s", line);
 	}
 
+	if (instance.storage == nullptr)
+		/* without storage (a CompositeStorage instance), we
+		   cannot mount, and therefore we silently ignore the
+		   state file */
+		return true;
+
 	if (url.empty() || uri.empty()) {
 		LogError(storage_domain, "Missing value in mountpoint state.");	
 		return true;
@@ -98,16 +107,18 @@ storage_state_restore(const char *line, TextFile &file, Instance &instance)
 		return true;
 	}
 
-#ifdef ENABLE_DATABASE
 	Database *db = instance.database;
 	if (db != nullptr && db->IsPlugin(simple_db_plugin)) {
 		try {
 			((SimpleDatabase *)db)->Mount(uri.c_str(), url.c_str());
 		} catch (...) {
-			throw;
+			delete storage;
+			FormatError(std::current_exception(),
+				    "Failed to restore mount to %s",
+				    url.c_str());
+			return true;
 		}
 	}
-#endif
 
 	((CompositeStorage*)instance.storage)->Mount(uri.c_str(), storage);
 
@@ -117,6 +128,9 @@ storage_state_restore(const char *line, TextFile &file, Instance &instance)
 unsigned
 storage_state_get_hash(const Instance &instance)
 {
+	if (instance.storage == nullptr)
+		return 0;
+
 	std::set<std::string> mounts;
 
 	const auto visitor = [&mounts](const char *mount_uri, const Storage &storage) {
