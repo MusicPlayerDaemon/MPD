@@ -234,6 +234,7 @@ try {
 } catch (...) {
 	FormatError(std::current_exception(),
 		    "Failed to filter for %s", GetLogName());
+	last_error = std::current_exception();
 
 	InternalClose(false);
 
@@ -279,6 +280,8 @@ AudioOutputControl::PlayChunk() noexcept
 		} catch (...) {
 			FormatError(std::current_exception(),
 				    "Failed to play on %s", GetLogName());
+			last_error = std::current_exception();
+
 			InternalClose(false);
 
 			/* don't automatically reopen this device for
