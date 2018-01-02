@@ -20,6 +20,7 @@
 #include "config.h"
 #include "AoOutputPlugin.hxx"
 #include "../OutputAPI.hxx"
+#include "thread/SafeSingleton.hxx"
 #include "system/Error.hxx"
 #include "util/DivideString.hxx"
 #include "util/SplitString.hxx"
@@ -34,9 +35,18 @@
 /* An ao_sample_format, with all fields set to zero: */
 static ao_sample_format OUR_AO_FORMAT_INITIALIZER;
 
-static unsigned ao_output_ref;
+class AoInit {
+public:
+	AoInit() {
+		ao_initialize();
+	}
 
-class AoOutput final : AudioOutput {
+	~AoInit() noexcept {
+		ao_shutdown();
+	}
+};
+
+class AoOutput final : AudioOutput, SafeSingleton<AoInit> {
 	const size_t write_size;
 	int driver;
 	ao_option *options = nullptr;
@@ -93,11 +103,6 @@ AoOutput::AoOutput(const ConfigBlock &block)
 	:AudioOutput(0),
 	 write_size(block.GetBlockValue("write_size", 1024u))
 {
-	if (ao_output_ref == 0) {
-		ao_initialize();
-	}
-	ao_output_ref++;
-
 	const char *value = block.GetBlockValue("driver", "default");
 	if (0 == strcmp(value, "default"))
 		driver = ao_default_driver_id();
@@ -132,11 +137,6 @@ AoOutput::AoOutput(const ConfigBlock &block)
 AoOutput::~AoOutput()
 {
 	ao_free_options(options);
-
-	ao_output_ref--;
-
-	if (ao_output_ref == 0)
-		ao_shutdown();
 }
 
 void
