@@ -467,6 +467,14 @@ private:
 	void InternalClose(bool drain) noexcept;
 
 	/**
+	 * An error has occurred, and this output must be closed.
+	 */
+	void InternalCloseError(std::exception_ptr e) noexcept {
+		Failure(e);
+		InternalClose(false);
+	}
+
+	/**
 	 * Runs inside the OutputThread.
 	 * Caller must lock the mutex.
 	 */

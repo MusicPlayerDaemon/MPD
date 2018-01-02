@@ -232,8 +232,7 @@ try {
 } catch (...) {
 	FormatError(std::current_exception(),
 		    "Failed to filter for %s", GetLogName());
-	Failure(std::current_exception());
-	InternalClose(false);
+	InternalCloseError(std::current_exception());
 	return false;
 }
 
@@ -273,9 +272,7 @@ AudioOutputControl::PlayChunk() noexcept
 		} catch (...) {
 			FormatError(std::current_exception(),
 				    "Failed to play on %s", GetLogName());
-			Failure(std::current_exception());
-
-			InternalClose(false);
+			InternalCloseError(std::current_exception());
 			return false;
 		}
 
