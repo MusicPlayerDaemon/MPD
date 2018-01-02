@@ -37,11 +37,12 @@ class SafeSingleton {
 	static T *instance;
 
 public:
-	SafeSingleton() {
+	template<typename... Args>
+	explicit SafeSingleton(Args&&... args) {
 		const std::lock_guard<Mutex> lock(mutex);
 
 		if (ref == 0)
-			instance = new T;
+			instance = new T(std::forward<Args>(args)...);
 
 		/* increment after creating the instance; this way is
 		   exception-safe, because we must not increment the
