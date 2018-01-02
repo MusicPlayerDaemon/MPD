@@ -46,13 +46,12 @@ AudioOutputSource::Open(const AudioFormat audio_format, const MusicPipe &_pipe,
 
 	/* (re)open the filter */
 
-	if (filter_instance != nullptr &&
-	    audio_format != in_audio_format)
+	if (filter && audio_format != in_audio_format)
 		/* the filter must be reopened on all input format
 		   changes */
 		CloseFilter();
 
-	if (filter_instance == nullptr)
+	if (filter == nullptr)
 		/* open the filter */
 		OpenFilter(audio_format,
 			   prepared_replay_gain_filter,
@@ -60,7 +59,7 @@ AudioOutputSource::Open(const AudioFormat audio_format, const MusicPipe &_pipe,
 			   prepared_filter);
 
 	in_audio_format = audio_format;
-	return filter_instance->GetOutAudioFormat();
+	return filter->GetOutAudioFormat();
 }
 
 void
@@ -80,14 +79,14 @@ AudioOutputSource::Cancel() noexcept
 	current_chunk = nullptr;
 	pipe.Cancel();
 
-	if (replay_gain_filter_instance != nullptr)
-		replay_gain_filter_instance->Reset();
+	if (replay_gain_filter)
+		replay_gain_filter->Reset();
 
-	if (other_replay_gain_filter_instance != nullptr)
-		other_replay_gain_filter_instance->Reset();
+	if (other_replay_gain_filter)
+		other_replay_gain_filter->Reset();
 
-	if (filter_instance != nullptr)
-		filter_instance->Reset();
+	if (filter)
+		filter->Reset();
 }
 
 void
@@ -99,19 +98,19 @@ try {
 	assert(audio_format.IsValid());
 
 	/* the replay_gain filter cannot fail here */
-	if (prepared_replay_gain_filter != nullptr) {
+	if (prepared_replay_gain_filter) {
 		replay_gain_serial = 0;
-		replay_gain_filter_instance =
+		replay_gain_filter =
 			prepared_replay_gain_filter->Open(audio_format);
 	}
 
-	if (prepared_other_replay_gain_filter != nullptr) {
+	if (prepared_other_replay_gain_filter) {
 		other_replay_gain_serial = 0;
-		other_replay_gain_filter_instance =
+		other_replay_gain_filter =
 			prepared_other_replay_gain_filter->Open(audio_format);
 	}
 
-	filter_instance = prepared_filter.Open(audio_format);
+	filter = prepared_filter.Open(audio_format);
 } catch (...) {
 	CloseFilter();
 	throw;
@@ -120,14 +119,14 @@ try {
 void
 AudioOutputSource::CloseFilter() noexcept
 {
-	replay_gain_filter_instance.reset();
-	other_replay_gain_filter_instance.reset();
-	filter_instance.reset();
+	replay_gain_filter.reset();
+	other_replay_gain_filter.reset();
+	filter.reset();
 }
 
 ConstBuffer<void>
 AudioOutputSource::GetChunkData(const MusicChunk &chunk,
-				Filter *replay_gain_filter,
+				Filter *current_replay_gain_filter,
 				unsigned *replay_gain_serial_p)
 {
 	assert(!chunk.IsEmpty());
@@ -137,20 +136,20 @@ AudioOutputSource::GetChunkData(const MusicChunk &chunk,
 
 	assert(data.size % in_audio_format.GetFrameSize() == 0);
 
-	if (!data.empty() && replay_gain_filter != nullptr) {
-		replay_gain_filter_set_mode(*replay_gain_filter,
+	if (!data.empty() && current_replay_gain_filter != nullptr) {
+		replay_gain_filter_set_mode(*current_replay_gain_filter,
 					    replay_gain_mode);
 
 		if (chunk.replay_gain_serial != *replay_gain_serial_p &&
 		    chunk.replay_gain_serial != MusicChunk::IGNORE_REPLAY_GAIN) {
-			replay_gain_filter_set_info(*replay_gain_filter,
+			replay_gain_filter_set_info(*current_replay_gain_filter,
 						    chunk.replay_gain_serial != 0
 						    ? &chunk.replay_gain_info
 						    : nullptr);
 			*replay_gain_serial_p = chunk.replay_gain_serial;
 		}
 
-		data = replay_gain_filter->FilterPCM(data);
+		data = current_replay_gain_filter->FilterPCM(data);
 	}
 
 	return data;
@@ -159,7 +158,7 @@ AudioOutputSource::GetChunkData(const MusicChunk &chunk,
 ConstBuffer<void>
 AudioOutputSource::FilterChunk(const MusicChunk &chunk)
 {
-	auto data = GetChunkData(chunk, replay_gain_filter_instance.get(),
+	auto data = GetChunkData(chunk, replay_gain_filter.get(),
 				 &replay_gain_serial);
 	if (data.empty())
 		return data;
@@ -168,7 +167,7 @@ AudioOutputSource::FilterChunk(const MusicChunk &chunk)
 
 	if (chunk.other != nullptr) {
 		auto other_data = GetChunkData(*chunk.other,
-					       other_replay_gain_filter_instance.get(),
+					       other_replay_gain_filter.get(),
 					       &other_replay_gain_serial);
 		if (other_data.empty())
 			return data;
@@ -204,7 +203,7 @@ AudioOutputSource::FilterChunk(const MusicChunk &chunk)
 
 	/* apply filter chain */
 
-	return filter_instance->FilterPCM(data);
+	return filter->FilterPCM(data);
 }
 
 bool
