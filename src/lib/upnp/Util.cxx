@@ -102,34 +102,3 @@ stringToTokens(const std::string &str,
 
 	return tokens;
 }
-
-template <class T>
-bool
-csvToStrings(const char *s, T &tokens) noexcept
-{
-	assert(tokens.empty());
-
-	std::string current;
-
-	while (true) {
-		char ch = *s++;
-		if (ch == 0) {
-			tokens.emplace_back(std::move(current));
-			return true;
-		}
-
-		if (ch == '\\') {
-			ch = *s++;
-			if (ch == 0)
-				return false;
-		} else if (ch == ',') {
-			tokens.emplace_back(std::move(current));
-			current.clear();
-			continue;
-		}
-
-		current.push_back(ch);
-	}
-}
-
-template bool csvToStrings<std::list<std::string>>(const char *, std::list<std::string> &) noexcept;

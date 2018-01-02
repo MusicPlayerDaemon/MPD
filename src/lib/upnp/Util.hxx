@@ -35,8 +35,4 @@ gcc_pure
 std::list<std::string>
 stringToTokens(const std::string &str, char delim) noexcept;
 
-template <class T>
-bool
-csvToStrings(const char *s, T &tokens) noexcept;
-
 #endif /* _UPNPP_H_X_INCLUDED_ */
