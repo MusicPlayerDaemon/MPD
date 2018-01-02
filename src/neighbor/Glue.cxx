@@ -30,14 +30,10 @@
 
 #include <stdexcept>
 
-NeighborGlue::Explorer::~Explorer() noexcept
-{
-	delete explorer;
-}
-
+NeighborGlue::NeighborGlue() noexcept {}
 NeighborGlue::~NeighborGlue() noexcept {}
 
-static NeighborExplorer *
+static std::unique_ptr<NeighborExplorer>
 CreateNeighborExplorer(EventLoop &loop, NeighborListener &listener,
 		       const ConfigBlock &block)
 {
@@ -59,9 +55,9 @@ NeighborGlue::Init(EventLoop &loop, NeighborListener &listener)
 	for (const auto *block = config_get_block(ConfigBlockOption::NEIGHBORS);
 	     block != nullptr; block = block->next) {
 		try {
-			auto *explorer =
-				CreateNeighborExplorer(loop, listener, *block);
-			explorers.emplace_front(explorer);
+			explorers.emplace_front(CreateNeighborExplorer(loop,
+								       listener,
+								       *block));
 		} catch (...) {
 			std::throw_with_nested(FormatRuntimeError("Line %i: ",
 								  block->line));

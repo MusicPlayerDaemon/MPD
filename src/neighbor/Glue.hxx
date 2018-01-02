@@ -25,6 +25,7 @@
 #include "thread/Mutex.hxx"
 
 #include <forward_list>
+#include <memory>
 
 class EventLoop;
 class NeighborExplorer;
@@ -36,13 +37,13 @@ struct NeighborInfo;
  */
 class NeighborGlue {
 	struct Explorer {
-		NeighborExplorer *const explorer;
+		std::unique_ptr<NeighborExplorer> explorer;
 
-		Explorer(NeighborExplorer *_explorer) noexcept
-			:explorer(_explorer) {}
+		template<typename E>
+		Explorer(E &&_explorer) noexcept
+			:explorer(std::forward<E>(_explorer)) {}
 
 		Explorer(const Explorer &) = delete;
-		~Explorer() noexcept;
 	};
 
 	Mutex mutex;
@@ -52,7 +53,7 @@ class NeighborGlue {
 public:
 	typedef std::forward_list<NeighborInfo> List;
 
-	NeighborGlue() = default;
+	NeighborGlue() noexcept;
 	NeighborGlue(const NeighborGlue &) = delete;
 	~NeighborGlue() noexcept;
 
