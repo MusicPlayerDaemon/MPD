@@ -60,8 +60,8 @@ DoInit()
 					 UpnpGetErrorMessage(code));
 }
 
-void
-UpnpClientGlobalInit(UpnpClient_Handle &handle)
+UpnpClient_Handle
+UpnpClientGlobalInit()
 {
 	UpnpGlobalInit();
 
@@ -75,7 +75,7 @@ UpnpClientGlobalInit(UpnpClient_Handle &handle)
 	}
 
 	++upnp_client_ref;
-	handle = upnp_client_handle;
+	return upnp_client_handle;
 }
 
 void

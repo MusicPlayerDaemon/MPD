@@ -153,7 +153,7 @@ UpnpDatabase::Create(EventLoop &, EventLoop &io_event_loop,
 void
 UpnpDatabase::Open()
 {
-	UpnpClientGlobalInit(handle);
+	handle = UpnpClientGlobalInit();
 
 	discovery = new UPnPDeviceDirectory(event_loop, handle);
 	try {
