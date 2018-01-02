@@ -17,27 +17,23 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-/** \file
- *
- * This header declares the filter_plugin class.  It describes a
- * plugin API for objects which filter raw PCM data.
- */
-
-#ifndef MPD_FILTER_PLUGIN_HXX
-#define MPD_FILTER_PLUGIN_HXX
+#ifndef MPD_FILTER_LOAD_ONE_HXX
+#define MPD_FILTER_LOAD_ONE_HXX
 
 #include <memory>
 
 struct ConfigBlock;
 class PreparedFilter;
 
-struct FilterPlugin {
-	const char *name;
-
-	/**
-         * Allocates and configures a filter.
-	 */
-	std::unique_ptr<PreparedFilter> (*init)(const ConfigBlock &block);
-};
+/**
+ * Creates a new filter, loads configuration and the plugin name from
+ * the specified configuration section.
+ *
+ * Throws std::runtime_error on error.
+ *
+ * @param block the configuration section
+ */
+std::unique_ptr<PreparedFilter>
+filter_configured_new(const ConfigBlock &block);
 
 #endif

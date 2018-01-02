@@ -103,8 +103,9 @@ libmpd_a_SOURCES = \
 	src/decoder/DecoderPlugin.hxx \
 	src/decoder/Bridge.cxx src/decoder/Bridge.hxx \
 	src/decoder/DecoderPrint.cxx src/decoder/DecoderPrint.hxx \
+	src/filter/LoadOne.cxx src/filter/LoadOne.hxx \
 	src/filter/FilterConfig.cxx src/filter/FilterConfig.hxx \
-	src/filter/FilterPlugin.cxx src/filter/FilterPlugin.hxx \
+	src/filter/FilterPlugin.hxx \
 	src/filter/Filter.hxx \
 	src/filter/Prepared.hxx \
 	src/filter/FilterRegistry.cxx src/filter/FilterRegistry.hxx \
@@ -2055,7 +2056,7 @@ test_run_filter_LDADD = \
 	libutil.a
 test_run_filter_SOURCES = test/run_filter.cxx \
 	src/Log.cxx src/LogBackend.cxx \
-	src/filter/FilterPlugin.cxx src/filter/FilterRegistry.cxx
+	src/filter/LoadOne.cxx src/filter/FilterRegistry.cxx
 
 if ENABLE_ENCODER
 noinst_PROGRAMS += test/run_encoder
@@ -2168,7 +2169,7 @@ test_read_mixer_LDADD = \
 test_read_mixer_SOURCES = test/read_mixer.cxx \
 	src/Log.cxx src/LogBackend.cxx \
 	src/mixer/MixerControl.cxx \
-	src/filter/FilterPlugin.cxx \
+	src/filter/LoadOne.cxx \
 	src/filter/plugins/VolumeFilterPlugin.cxx
 
 if ENABLE_BZIP2_TEST

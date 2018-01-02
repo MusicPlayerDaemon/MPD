@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "FilterConfig.hxx"
-#include "FilterPlugin.hxx"
+#include "LoadOne.hxx"
 #include "Prepared.hxx"
 #include "plugins/ChainFilterPlugin.hxx"
 #include "config/Param.hxx"

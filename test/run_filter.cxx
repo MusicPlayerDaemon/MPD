@@ -23,7 +23,7 @@
 #include "fs/Path.hxx"
 #include "AudioParser.hxx"
 #include "AudioFormat.hxx"
-#include "filter/FilterPlugin.hxx"
+#include "filter/LoadOne.hxx"
 #include "filter/Filter.hxx"
 #include "filter/Prepared.hxx"
 #include "pcm/Volume.hxx"

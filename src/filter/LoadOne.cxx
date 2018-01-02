@@ -18,14 +18,12 @@
  */
 
 #include "config.h"
+#include "LoadOne.hxx"
 #include "FilterPlugin.hxx"
 #include "FilterRegistry.hxx"
 #include "Prepared.hxx"
 #include "config/Block.hxx"
-#include "config/ConfigError.hxx"
 #include "util/RuntimeError.hxx"
-
-#include <assert.h>
 
 std::unique_ptr<PreparedFilter>
 filter_configured_new(const ConfigBlock &block)
