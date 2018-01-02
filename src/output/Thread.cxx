@@ -279,10 +279,6 @@ AudioOutputControl::PlayChunk() noexcept
 		} catch (...) {
 			FormatError(std::current_exception(),
 				    "Failed to play on %s", GetLogName());
-			nbytes = 0;
-		}
-
-		if (nbytes == 0) {
 			InternalClose(false);
 
 			/* don't automatically reopen this device for
