@@ -414,11 +414,6 @@ public:
 		return border_pause;
 	}
 
-	bool LockApplyBorderPause() noexcept {
-		const std::lock_guard<Mutex> lock(mutex);
-		return ApplyBorderPause();
-	}
-
 	void Kill() noexcept;
 
 	gcc_pure

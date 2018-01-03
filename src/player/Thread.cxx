@@ -333,7 +333,7 @@ private:
 	 * has consumed all chunks of the current song, and we should start
 	 * sending chunks from the next one.
 	 *
-	 * The player lock is not held.
+	 * Caller must lock the mutex.
 	 */
 	void SongBorder() noexcept;
 
@@ -968,20 +968,22 @@ Player::PlayNextChunk() noexcept
 inline void
 Player::SongBorder() noexcept
 {
-	FormatDefault(player_domain, "played \"%s\"", song->GetURI());
-
-	throttle_silence_log.Reset();
-
-	ReplacePipe(dc.pipe);
-
-	pc.outputs.SongBorder();
-
 	{
-		const std::lock_guard<Mutex> lock(pc.mutex);
-		ActivateDecoder();
+		const ScopeUnlock unlock(pc.mutex);
+
+		FormatDefault(player_domain, "played \"%s\"", song->GetURI());
+
+		throttle_silence_log.Reset();
+
+		ReplacePipe(dc.pipe);
+
+
+		pc.outputs.SongBorder();
 	}
 
-	const bool border_pause = pc.LockApplyBorderPause();
+	ActivateDecoder();
+
+	const bool border_pause = pc.ApplyBorderPause();
 	if (border_pause) {
 		paused = true;
 		idle_add(IDLE_PLAYER);
@@ -1101,7 +1103,6 @@ Player::Run() noexcept
 		} else if (IsDecoderAtNextSong()) {
 			/* at the beginning of a new song */
 
-			const ScopeUnlock unlock(pc.mutex);
 			SongBorder();
 		} else if (dc.IsIdle()) {
 			/* check the size of the pipe again, because
