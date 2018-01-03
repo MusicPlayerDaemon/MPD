@@ -6,7 +6,7 @@ ver 0.21 (not yet released)
   - "outputset" sets runtime attributes
   - close connection when client sends HTTP request
 * tags
-  - new tag "OriginalDate"
+  - new tags "OriginalDate", "MUSICBRAINZ_WORKID"
 * decoder
   - gme: try loading m3u sidecar files
   - pcm: support audio/L24 (RFC 3190)
