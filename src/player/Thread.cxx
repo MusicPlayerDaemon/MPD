@@ -1082,7 +1082,6 @@ Player::Run() noexcept
 		if (paused) {
 			if (pc.command == PlayerCommand::NONE)
 				pc.Wait();
-			continue;
 		} else if (!pipe->IsEmpty()) {
 			/* at least one music chunk is ready - send it
 			   to the audio output */
@@ -1099,7 +1098,6 @@ Player::Run() noexcept
 			   wait for it */
 			dc.Signal();
 			dc.WaitForDecoder();
-			continue;
 		} else if (IsDecoderAtNextSong()) {
 			/* at the beginning of a new song */
 
