@@ -292,19 +292,22 @@ clean-local:
 libmpd.so: $(filter %.a,$(src_mpd_LDADD)) libmain.a
 	$(AM_V_CXXLD)$(CXXLD) -shared -Wl,--no-undefined,-shared,-Bsymbolic -llog -lz -o $@ $(AM_CXXFLAGS) $(CXXFLAGS) $(LDFLAGS) src/libmain_a-Main.o $(src_mpd_LDADD) $(LIBS)
 
+ANDROID_SDK_PLATFORM = android-17
+ANDROID_SDK_PLATFORM_DIR = $(ANDROID_SDK)/platforms/$(ANDROID_SDK_PLATFORM)
+
 android/build/build.xml: android/AndroidManifest.xml
 	rm -rf android/build
 	mkdir -p android/build/include android/build/res android/build/src/org
 	ln -s $(abs_srcdir)/android/AndroidManifest.xml $(abs_srcdir)/android/custom_rules.xml android/build
 	ln -s $(abs_srcdir)/android/src android/build/src/org/musicpd
 	ln -s $(abs_srcdir)/android/res/values $(abs_srcdir)/android/res/layout android/build/res
-	$(ANDROID_SDK)/tools/android update project --path android/build --target android-17 --name $(APK_NAME)
+	$(ANDROID_SDK)/tools/android update project --path android/build --target $(ANDROID_SDK_PLATFORM) --name $(APK_NAME)
 
 android/build/bin/classes/org/musicpd/Bridge.class: android/src/Bridge.java android/build/build.xml android/build/res/drawable/icon.png
 	cd android/build && ant compile-jni-classes
 
 android/build/include/org_musicpd_Bridge.h: android/build/bin/classes/org/musicpd/Bridge.class
-	javah -classpath $(ANDROID_SDK)/platforms/android-17/android.jar:android/build/bin/classes -d $(@D) org.musicpd.Bridge
+	javah -classpath $(ANDROID_SDK_PLATFORM_DIR)/android.jar:android/build/bin/classes -d $(@D) org.musicpd.Bridge
 
 BUILT_SOURCES = android/build/include/org_musicpd_Bridge.h
 
