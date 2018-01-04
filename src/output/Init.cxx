@@ -279,7 +279,7 @@ audio_output_new(EventLoop &event_loop,
 			throw FormatRuntimeError("No such audio output plugin: %s", p);
 	} else {
 		LogWarning(output_domain,
-			   "No 'AudioOutput' defined in config file");
+			   "No 'audio_output' defined in config file");
 
 		plugin = audio_output_detect();
 
