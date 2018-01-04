@@ -47,6 +47,8 @@ MultipleOutputs::~MultipleOutputs() noexcept
 		i->BeginDestroy();
 	for (auto *i : outputs)
 		i->FinishDestroy();
+	for (auto *i : outputs)
+		delete i;
 }
 
 static FilteredAudioOutput *
