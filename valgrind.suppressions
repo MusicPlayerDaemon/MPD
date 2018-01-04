@@ -337,6 +337,15 @@
 }
 
 {
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:*alloc
+   ...
+   fun:g_quark_init
+}
+
+{
    g_quark_from_string
    Memcheck:Leak
    fun:*alloc
@@ -553,4 +562,30 @@
    fun:gomp_init_num_threads
    ...
    fun:_dl_init
+}
+
+#
+# libpixman
+#
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:*alloc
+   ...
+   fun:pixman_constructor
+}
+
+#
+# libssh (via libcurl)
+#
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:*alloc
+   ...
+   fun:libssh2_init
 }
