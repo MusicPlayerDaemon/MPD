@@ -35,9 +35,3 @@ FilteredAudioOutput::BeginDestroy() noexcept
 	if (mixer != nullptr)
 		mixer_auto_close(mixer);
 }
-
-void
-FilteredAudioOutput::FinishDestroy() noexcept
-{
-	output.reset();
-}

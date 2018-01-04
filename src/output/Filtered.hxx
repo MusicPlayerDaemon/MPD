@@ -142,7 +142,6 @@ public:
 		   const ConfigBlock &block);
 
 	void BeginDestroy() noexcept;
-	void FinishDestroy() noexcept;
 
 	const char *GetName() const {
 		return name;

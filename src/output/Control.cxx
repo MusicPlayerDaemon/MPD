@@ -377,7 +377,6 @@ AudioOutputControl::FinishDestroy() noexcept
 	if (thread.IsDefined())
 		thread.Join();
 
-	output->FinishDestroy();
 	delete output;
 	output = nullptr;
 }
