@@ -73,6 +73,8 @@ class AndroidNdkToolchain:
         self.cxx = os.path.join(llvm_bin, 'clang++')
         common_flags += ' -target ' + llvm_triple + ' -integrated-as -gcc-toolchain ' + toolchain_path
 
+        common_flags += ' -fvisibility=hidden -fdata-sections -ffunction-sections'
+
         self.ar = os.path.join(toolchain_bin, arch + '-ar')
         self.ranlib = os.path.join(toolchain_bin, arch + '-ranlib')
         self.nm = os.path.join(toolchain_bin, arch + '-nm')
