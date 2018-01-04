@@ -111,9 +111,8 @@ void
 AudioOutputControl::WaitForCommand() noexcept
 {
 	while (!IsCommandFinished()) {
-		mutex.unlock();
+		const ScopeUnlock unlock(mutex);
 		audio_output_client_notify.Wait();
-		mutex.lock();
 	}
 }
 
