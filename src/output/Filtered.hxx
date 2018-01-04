@@ -141,8 +141,6 @@ public:
 		   MixerListener &mixer_listener,
 		   const ConfigBlock &block);
 
-	void BeginDestroy() noexcept;
-
 	const char *GetName() const {
 		return name;
 	}

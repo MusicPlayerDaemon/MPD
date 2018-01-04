@@ -371,8 +371,6 @@ AudioOutputControl::LockCloseWait() noexcept
 void
 AudioOutputControl::BeginDestroy() noexcept
 {
-	output->BeginDestroy();
-
 	if (thread.IsDefined()) {
 		const std::lock_guard<Mutex> protect(mutex);
 		CommandAsync(Command::KILL);
