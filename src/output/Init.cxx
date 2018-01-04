@@ -221,9 +221,6 @@ FilteredAudioOutput::Setup(EventLoop &event_loop,
 		prepared_other_replay_gain_filter =
 			NewReplayGainFilter(replay_gain_config);
 		assert(prepared_other_replay_gain_filter != nullptr);
-	} else {
-		prepared_replay_gain_filter = nullptr;
-		prepared_other_replay_gain_filter = nullptr;
 	}
 
 	/* set up the mixer */
