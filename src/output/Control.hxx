@@ -212,10 +212,10 @@ public:
 	mutable Mutex mutex;
 
 	AudioOutputControl(FilteredAudioOutput *_output,
-			   AudioOutputClient &_client);
+			   AudioOutputClient &_client) noexcept;
 
 #ifndef NDEBUG
-	~AudioOutputControl() {
+	~AudioOutputControl() noexcept {
 		assert(!fail_timer.IsDefined());
 		assert(!thread.IsDefined());
 		assert(output == nullptr);
@@ -490,7 +490,7 @@ private:
 	/**
 	 * Caller must lock the mutex.
 	 */
-	bool FillSourceOrClose();
+	bool FillSourceOrClose() noexcept;
 
 	/**
 	 * Caller must lock the mutex.
@@ -528,7 +528,7 @@ private:
 	/**
 	 * The OutputThread.
 	 */
-	void Task();
+	void Task() noexcept;
 };
 
 #endif

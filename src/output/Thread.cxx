@@ -226,7 +226,7 @@ AudioOutputControl::WaitForDelay() noexcept
 }
 
 bool
-AudioOutputControl::FillSourceOrClose()
+AudioOutputControl::FillSourceOrClose() noexcept
 try {
 	return source.Fill(mutex);
 } catch (...) {
@@ -402,7 +402,7 @@ AudioOutputControl::InternalDrain() noexcept
 }
 
 void
-AudioOutputControl::Task()
+AudioOutputControl::Task() noexcept
 {
 	FormatThreadName("output:%s", GetName());
 
