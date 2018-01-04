@@ -37,11 +37,19 @@ static constexpr PeriodClock::Duration REOPEN_AFTER = std::chrono::seconds(10);
 
 struct notify audio_output_client_notify;
 
-AudioOutputControl::AudioOutputControl(FilteredAudioOutput *_output,
+AudioOutputControl::AudioOutputControl(std::unique_ptr<FilteredAudioOutput> _output,
 				       AudioOutputClient &_client) noexcept
-	:output(_output), client(_client),
+	:output(std::move(_output)), client(_client),
 	 thread(BIND_THIS_METHOD(Task))
 {
+}
+
+AudioOutputControl::~AudioOutputControl() noexcept
+{
+	assert(!fail_timer.IsDefined());
+	assert(!thread.IsDefined());
+	assert(output == nullptr);
+	assert(!open);
 }
 
 void
@@ -377,6 +385,5 @@ AudioOutputControl::FinishDestroy() noexcept
 	if (thread.IsDefined())
 		thread.Join();
 
-	delete output;
-	output = nullptr;
+	output.reset();
 }

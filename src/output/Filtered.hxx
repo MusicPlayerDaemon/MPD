@@ -239,7 +239,7 @@ extern struct notify audio_output_client_notify;
 /**
  * Throws #std::runtime_error on error.
  */
-FilteredAudioOutput *
+std::unique_ptr<FilteredAudioOutput>
 audio_output_new(EventLoop &event_loop,
 		 const ReplayGainConfig &replay_gain_config,
 		 const ConfigBlock &block,

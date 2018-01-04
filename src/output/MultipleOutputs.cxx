@@ -51,7 +51,7 @@ MultipleOutputs::~MultipleOutputs() noexcept
 		delete i;
 }
 
-static FilteredAudioOutput *
+static std::unique_ptr<FilteredAudioOutput>
 LoadOutput(EventLoop &event_loop,
 	   const ReplayGainConfig &replay_gain_config,
 	   MixerListener &mixer_listener,
@@ -73,10 +73,10 @@ LoadOutputControl(EventLoop &event_loop,
 		  MixerListener &mixer_listener,
 		  AudioOutputClient &client, const ConfigBlock &block)
 {
-	auto *output = LoadOutput(event_loop, replay_gain_config,
-				  mixer_listener,
-				  block);
-	auto *control = new AudioOutputControl(output, client);
+	auto output = LoadOutput(event_loop, replay_gain_config,
+				 mixer_listener,
+				 block);
+	auto *control = new AudioOutputControl(std::move(output), client);
 
 	try {
 		control->Configure(block);

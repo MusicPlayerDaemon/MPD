@@ -30,6 +30,7 @@
 
 #include <utility>
 #include <exception>
+#include <memory>
 #include <string>
 #include <map>
 
@@ -52,7 +53,7 @@ class AudioOutputClient;
  * Controller for an #AudioOutput and its output thread.
  */
 class AudioOutputControl {
-	FilteredAudioOutput *output;
+	std::unique_ptr<FilteredAudioOutput> output;
 
 	/**
 	 * The PlayerControl object which "owns" this output.  This
@@ -211,17 +212,10 @@ public:
 	 */
 	mutable Mutex mutex;
 
-	AudioOutputControl(FilteredAudioOutput *_output,
+	AudioOutputControl(std::unique_ptr<FilteredAudioOutput> _output,
 			   AudioOutputClient &_client) noexcept;
 
-#ifndef NDEBUG
-	~AudioOutputControl() noexcept {
-		assert(!fail_timer.IsDefined());
-		assert(!thread.IsDefined());
-		assert(output == nullptr);
-		assert(!open);
-	}
-#endif
+	~AudioOutputControl() noexcept;
 
 	AudioOutputControl(const AudioOutputControl &) = delete;
 	AudioOutputControl &operator=(const AudioOutputControl &) = delete;

@@ -259,7 +259,7 @@ FilteredAudioOutput::Setup(EventLoop &event_loop,
 			    convert_filter.Set(convert_filter_prepare()));
 }
 
-FilteredAudioOutput *
+std::unique_ptr<FilteredAudioOutput>
 audio_output_new(EventLoop &event_loop,
 		 const ReplayGainConfig &replay_gain_config,
 		 const ConfigBlock &block,
@@ -292,16 +292,10 @@ audio_output_new(EventLoop &event_loop,
 						       block));
 	assert(ao != nullptr);
 
-	auto *f = new FilteredAudioOutput(plugin->name, std::move(ao), block);
-
-	try {
-		f->Setup(event_loop, replay_gain_config,
-			 plugin->mixer_plugin,
-			 mixer_listener, block);
-	} catch (...) {
-		delete f;
-		throw;
-	}
-
+	auto f = std::make_unique<FilteredAudioOutput>(plugin->name,
+						       std::move(ao), block);
+	f->Setup(event_loop, replay_gain_config,
+		 plugin->mixer_plugin,
+		 mixer_listener, block);
 	return f;
 }
