@@ -46,8 +46,6 @@ MultipleOutputs::~MultipleOutputs() noexcept
 	for (auto *i : outputs)
 		i->BeginDestroy();
 	for (auto *i : outputs)
-		i->FinishDestroy();
-	for (auto *i : outputs)
 		delete i;
 }
 
@@ -82,7 +80,6 @@ LoadOutputControl(EventLoop &event_loop,
 		control->Configure(block);
 	} catch (...) {
 		control->BeginDestroy();
-		control->FinishDestroy();
 		delete control;
 		throw;
 	}

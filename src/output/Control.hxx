@@ -317,7 +317,6 @@ public:
 	void LockCommandWait(Command cmd) noexcept;
 
 	void BeginDestroy() noexcept;
-	void FinishDestroy() noexcept;
 
 	const std::map<std::string, std::string> GetAttributes() const noexcept;
 	void SetAttribute(std::string &&name, std::string &&value);
