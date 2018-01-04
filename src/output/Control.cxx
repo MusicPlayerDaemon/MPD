@@ -361,16 +361,6 @@ AudioOutputControl::LockCloseWait() noexcept
 }
 
 void
-AudioOutputControl::StopThread() noexcept
-{
-	assert(thread.IsDefined());
-	assert(allow_play);
-
-	LockCommandWait(Command::KILL);
-	thread.Join();
-}
-
-void
 AudioOutputControl::BeginDestroy() noexcept
 {
 	output->BeginDestroy();

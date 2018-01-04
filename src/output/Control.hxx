@@ -286,7 +286,6 @@ public:
 	}
 
 	void StartThread();
-	void StopThread() noexcept;
 
 	/**
 	 * Caller must lock the mutex.
