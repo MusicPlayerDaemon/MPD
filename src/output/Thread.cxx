@@ -501,5 +501,6 @@ AudioOutputControl::StartThread()
 {
 	assert(command == Command::NONE);
 
+	const ScopeUnlock unlock(mutex);
 	thread.Start();
 }

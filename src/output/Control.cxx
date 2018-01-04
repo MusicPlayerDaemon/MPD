@@ -226,6 +226,7 @@ AudioOutputControl::Open(const AudioFormat audio_format,
 	const bool open2 = open;
 
 	if (open2 && output->mixer != nullptr) {
+		const ScopeUnlock unlock(mutex);
 		try {
 			mixer_open(output->mixer);
 		} catch (...) {
