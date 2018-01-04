@@ -292,8 +292,13 @@ clean-local:
 libmpd.so: $(filter %.a,$(src_mpd_LDADD)) libmain.a
 	$(AM_V_CXXLD)$(CXXLD) -shared -Wl,--no-undefined,-shared,-Bsymbolic -llog -lz -o $@ $(AM_CXXFLAGS) $(CXXFLAGS) $(LDFLAGS) src/libmain_a-Main.o $(src_mpd_LDADD) $(LIBS)
 
+ANDROID_SDK_BUILD_TOOLS_VERSION = 20.0.0
 ANDROID_SDK_PLATFORM = android-17
+
+ANDROID_BUILD_TOOLS_DIR = $(ANDROID_SDK)/build-tools/$(ANDROID_SDK_BUILD_TOOLS_VERSION)
 ANDROID_SDK_PLATFORM_DIR = $(ANDROID_SDK)/platforms/$(ANDROID_SDK_PLATFORM)
+
+ZIPALIGN = $(ANDROID_BUILD_TOOLS_DIR)/zipalign
 
 android/build/build.xml: android/AndroidManifest.xml
 	rm -rf android/build
@@ -334,10 +339,8 @@ android/build/bin/$(APK_NAME)-release-unsigned.apk: $(APK_DEPS)
 android/build/bin/$(APK_NAME)-release-unaligned.apk: android/build/bin/$(APK_NAME)-release-unsigned.apk
 	jarsigner -digestalg SHA1 -sigalg MD5withRSA -storepass:env ANDROID_KEYSTORE_PASS -keystore $(ANDROID_KEYSTORE) -signedjar $@ $< $(ANDROID_KEY_ALIAS)
 
-ANDROID_SDK_BUILD_TOOLS_VERSION = 20.0.0
-
 android/build/bin/$(APK_NAME).apk: android/build/bin/$(APK_NAME)-release-unaligned.apk
-	$(ANDROID_SDK)/build-tools/$(ANDROID_SDK_BUILD_TOOLS_VERSION)/zipalign -f 4 $< $@
+	$(ZIPALIGN) -f 4 $< $@
 
 endif
 
