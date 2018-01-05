@@ -8,21 +8,27 @@ libogg = AutotoolsProject(
     'http://downloads.xiph.org/releases/ogg/libogg-1.3.2.tar.xz',
     '5c3a34309d8b98640827e5d0991a4015',
     'lib/libogg.a',
-    ['--disable-shared', '--enable-static'],
+    [
+        '--disable-shared', '--enable-static',
+    ],
 )
 
 libvorbis = AutotoolsProject(
     'http://downloads.xiph.org/releases/vorbis/libvorbis-1.3.5.tar.xz',
     '28cb28097c07a735d6af56e598e1c90f',
     'lib/libvorbis.a',
-    ['--disable-shared', '--enable-static'],
+    [
+        '--disable-shared', '--enable-static',
+    ],
 )
 
 opus = AutotoolsProject(
     'https://archive.mozilla.org/pub/opus/opus-1.2.1.tar.gz',
     'cfafd339ccd9c5ef8d6ab15d7e1a412c054bf4cb4ecbbbcc78c12ef2def70732',
     'lib/libopus.a',
-    ['--disable-shared', '--enable-static'],
+    [
+        '--disable-shared', '--enable-static',
+    ],
 )
 
 flac = AutotoolsProject(
@@ -45,7 +51,9 @@ libid3tag = AutotoolsProject(
     'ftp://ftp.mars.org/pub/mpeg/libid3tag-0.15.1b.tar.gz',
     'e5808ad997ba32c498803822078748c3',
     'lib/libid3tag.a',
-    ['--disable-shared', '--enable-static'],
+    [
+        '--disable-shared', '--enable-static',
+    ],
     autogen=True,
 )
 
@@ -53,7 +61,9 @@ libmad = AutotoolsProject(
     'ftp://ftp.mars.org/pub/mpeg/libmad-0.15.1b.tar.gz',
     '1be543bc30c56fb6bea1d7bf6a64e66c',
     'lib/libmad.a',
-    ['--disable-shared', '--enable-static'],
+    [
+        '--disable-shared', '--enable-static',
+    ],
     autogen=True,
 )
 
