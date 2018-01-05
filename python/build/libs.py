@@ -1,3 +1,4 @@
+import re
 from build.project import Project
 from build.zlib import ZlibProject
 from build.autotools import AutotoolsProject
@@ -58,6 +59,11 @@ libid3tag = AutotoolsProject(
         '--disable-debugging',
     ],
     autogen=True,
+
+    edits={
+        # fix bug in libid3tag's configure.ac which discards all but the last optimization flag
+        'configure.ac': lambda data: re.sub(r'optimize="\$1"', r'optimize="$optimize $1"', data, count=1),
+    }
 )
 
 libmad = AutotoolsProject(
