@@ -1,4 +1,4 @@
-ver 0.20.15 (not yet released)
+ver 0.20.15 (2018/01/05)
 * queue: fix crash after seek failure
 * resampler
   - soxr: clear internal state after manual song change
