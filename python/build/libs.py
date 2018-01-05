@@ -53,6 +53,9 @@ libid3tag = AutotoolsProject(
     'lib/libid3tag.a',
     [
         '--disable-shared', '--enable-static',
+
+        # without this, libid3tag's configure.ac ignores -O* and -f*
+        '--disable-debugging',
     ],
     autogen=True,
 )
@@ -63,6 +66,9 @@ libmad = AutotoolsProject(
     'lib/libmad.a',
     [
         '--disable-shared', '--enable-static',
+
+        # without this, libmad's configure.ac ignores -O* and -f*
+        '--disable-debugging',
     ],
     autogen=True,
 )
