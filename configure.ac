@@ -243,6 +243,8 @@ AC_CHECK_FUNCS(fnmatch)
 AC_CHECK_FUNCS(strndup)
 AC_CHECK_FUNCS(strcasestr)
 
+AC_CHECK_MEMBERS([struct sockaddr_in.sin_len], [], [], [[#include <netinet/in.h>]])
+
 if test x$host_is_linux = xyes; then
 	MPD_OPTIONAL_FUNC(eventfd, eventfd, USE_EVENTFD)
 	MPD_OPTIONAL_FUNC(signalfd, signalfd, USE_SIGNALFD)
