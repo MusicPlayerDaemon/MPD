@@ -30,6 +30,9 @@ opus = AutotoolsProject(
     [
         '--disable-shared', '--enable-static',
     ],
+
+    # suppress "visibility default" from opus_defines.h
+    cppflags='-DOPUS_EXPORT=',
 )
 
 flac = AutotoolsProject(
