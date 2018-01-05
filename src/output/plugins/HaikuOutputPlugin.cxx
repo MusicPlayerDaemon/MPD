@@ -77,7 +77,6 @@ public:
 	void Close();
 
 	size_t Play(const void *chunk, size_t size);
-	void Cancel();
 
 	std::chrono::steady_clock::duration Delay() noexcept;
 
