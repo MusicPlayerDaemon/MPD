@@ -125,11 +125,13 @@ public:
 	virtual void SendTag(const Tag &) {}
 
 	/**
-	 * Play a chunk of audio data.
+	 * Play a chunk of audio data.  The method blocks until at
+	 * least one audio frame is consumed.
 	 *
 	 * Throws #std::runtime_error on error.
 	 *
-	 * @return the number of bytes played
+	 * @return the number of bytes played (must be a multiple of
+	 * the frame size)
 	 */
 	virtual size_t Play(const void *chunk, size_t size) = 0;
 
