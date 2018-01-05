@@ -76,7 +76,6 @@ private:
 	void Close() noexcept override;
 
 	size_t Play(const void *chunk, size_t size) override;
-	void Cancel() noexcept override;
 
 	std::chrono::steady_clock::duration Delay() const noexcept override;
 

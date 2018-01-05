@@ -139,6 +139,14 @@ SoxrPcmResampler::Close() noexcept
 	soxr_delete(soxr);
 }
 
+void
+SoxrPcmResampler::Reset() noexcept
+{
+#if SOXR_THIS_VERSION >= SOXR_VERSION(0,1,2)
+	soxr_clear(soxr);
+#endif
+}
+
 ConstBuffer<void>
 SoxrPcmResampler::Resample(ConstBuffer<void> src)
 {

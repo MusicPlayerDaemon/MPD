@@ -23,9 +23,14 @@ ver 0.21 (not yet released)
 * require GCC 5.0
 
 ver 0.20.15 (not yet released)
+* resampler
+  - soxr: clear internal state after manual song change
 * state file
   - make mount point restore errors non-fatal
   - fix crash when restoring mounts with incompatible database plugin
+* Android
+  - build without Ant
+  - fix for SIGSYS crash
 
 ver 0.20.14 (2018/01/01)
 * database

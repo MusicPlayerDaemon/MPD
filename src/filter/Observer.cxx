@@ -72,6 +72,10 @@ public:
 		return filter.get();
 	}
 
+	void Reset() noexcept override {
+		filter->Reset();
+	}
+
 	ConstBuffer<void> FilterPCM(ConstBuffer<void> src) override {
 		return filter->FilterPCM(src);
 	}

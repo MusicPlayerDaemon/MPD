@@ -8,21 +8,27 @@ libogg = AutotoolsProject(
     'http://downloads.xiph.org/releases/ogg/libogg-1.3.2.tar.xz',
     '5c3a34309d8b98640827e5d0991a4015',
     'lib/libogg.a',
-    ['--disable-shared', '--enable-static'],
+    [
+        '--disable-shared', '--enable-static',
+    ],
 )
 
 libvorbis = AutotoolsProject(
     'http://downloads.xiph.org/releases/vorbis/libvorbis-1.3.5.tar.xz',
     '28cb28097c07a735d6af56e598e1c90f',
     'lib/libvorbis.a',
-    ['--disable-shared', '--enable-static'],
+    [
+        '--disable-shared', '--enable-static',
+    ],
 )
 
 opus = AutotoolsProject(
     'https://archive.mozilla.org/pub/opus/opus-1.2.1.tar.gz',
     'cfafd339ccd9c5ef8d6ab15d7e1a412c054bf4cb4ecbbbcc78c12ef2def70732',
     'lib/libopus.a',
-    ['--disable-shared', '--enable-static'],
+    [
+        '--disable-shared', '--enable-static',
+    ],
 )
 
 flac = AutotoolsProject(
@@ -45,7 +51,12 @@ libid3tag = AutotoolsProject(
     'ftp://ftp.mars.org/pub/mpeg/libid3tag-0.15.1b.tar.gz',
     'e5808ad997ba32c498803822078748c3',
     'lib/libid3tag.a',
-    ['--disable-shared', '--enable-static'],
+    [
+        '--disable-shared', '--enable-static',
+
+        # without this, libid3tag's configure.ac ignores -O* and -f*
+        '--disable-debugging',
+    ],
     autogen=True,
 )
 
@@ -53,7 +64,12 @@ libmad = AutotoolsProject(
     'ftp://ftp.mars.org/pub/mpeg/libmad-0.15.1b.tar.gz',
     '1be543bc30c56fb6bea1d7bf6a64e66c',
     'lib/libmad.a',
-    ['--disable-shared', '--enable-static'],
+    [
+        '--disable-shared', '--enable-static',
+
+        # without this, libmad's configure.ac ignores -O* and -f*
+        '--disable-debugging',
+    ],
     autogen=True,
 )
 
@@ -123,7 +139,7 @@ curl = AutotoolsProject(
 )
 
 boost = BoostProject(
-    'http://downloads.sourceforge.net/project/boost/boost/1.65.1/boost_1_65_1.tar.bz2',
-    '9807a5d16566c57fd74fb522764e0b134a8bbe6b6e8967b83afefd30dcd3be81',
+    'http://downloads.sourceforge.net/project/boost/boost/1.66.0/boost_1_66_0.tar.bz2',
+    '5721818253e6a0989583192f96782c4a98eb6204965316df9f5ad75819225ca9',
     'include/boost/version.hpp',
 )
