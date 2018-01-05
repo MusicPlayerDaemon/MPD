@@ -212,8 +212,6 @@ playlist::SeekSongOrder(PlayerControl &pc, unsigned i, SongTime seek_time)
 {
 	assert(queue.IsValidOrder(i));
 
-	const DetachedSong *queued_song = GetQueuedSong();
-
 	pc.LockClearError();
 	stop_on_error = true;
 	error_count = 0;
@@ -226,8 +224,6 @@ playlist::SeekSongOrder(PlayerControl &pc, unsigned i, SongTime seek_time)
 
 		playing = true;
 		current = i;
-
-		queued_song = nullptr;
 	}
 
 	queued = -1;
@@ -235,7 +231,7 @@ playlist::SeekSongOrder(PlayerControl &pc, unsigned i, SongTime seek_time)
 	try {
 		pc.LockSeek(std::make_unique<DetachedSong>(queue.GetOrder(i)), seek_time);
 	} catch (...) {
-		UpdateQueuedSong(pc, queued_song);
+		UpdateQueuedSong(pc, nullptr);
 		throw;
 	}
 
