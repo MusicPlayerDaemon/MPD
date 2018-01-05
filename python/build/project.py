@@ -7,6 +7,7 @@ from build.tar import untar
 class Project:
     def __init__(self, url, md5, installed, name=None, version=None,
                  base=None,
+                 edits=None,
                  use_cxx=False):
         if base is None:
             basename = os.path.basename(url)
@@ -28,6 +29,7 @@ class Project:
         self.md5 = md5
         self.installed = installed
 
+        self.edits = edits
         self.use_cxx = use_cxx
 
     def download(self, toolchain):
@@ -47,7 +49,18 @@ class Project:
             parent_path = toolchain.src_path
         else:
             parent_path = toolchain.build_path
-        return untar(self.download(toolchain), parent_path, self.base)
+        path = untar(self.download(toolchain), parent_path, self.base)
+
+        if self.edits is not None:
+            for filename, function in self.edits.items():
+                with open(os.path.join(path, filename), 'r+t') as f:
+                    old_data = f.read()
+                    new_data = function(old_data)
+                    f.seek(0)
+                    f.truncate(0)
+                    f.write(new_data)
+
+        return path
 
     def make_build_path(self, toolchain):
         path = os.path.join(toolchain.build_path, self.base)
