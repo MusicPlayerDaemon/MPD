@@ -79,6 +79,8 @@ private:
 
 	std::chrono::steady_clock::duration Delay() const noexcept override;
 
+	static void _FillBuffer(void* cookie, void* _buffer, size_t size,
+		gcc_unused const media_raw_audio_format& _format);
 	void FillBuffer(void* _buffer, size_t size,
 		gcc_unused const media_raw_audio_format& _format);
 
@@ -143,8 +145,8 @@ HaikuOutput::~HaikuOutput()
 	finalize_application();
 }
 
-static void
-fill_buffer(void* cookie, void* buffer, size_t size,
+void
+HaikuOutput::_FillBuffer(void* cookie, void* buffer, size_t size,
 	const media_raw_audio_format& format)
 {
 	HaikuOutput *ad = (HaikuOutput *)cookie;
@@ -231,7 +233,7 @@ HaikuOutput::Open(AudioFormat &audio_format)
 			format.format, (int)format.buffer_size);
 
 	sound_player = new BSoundPlayer(&format, "MPD Output",
-		fill_buffer, NULL, this);
+		HaikuOutput::_FillBuffer, NULL, this);
 
 	err = sound_player->InitCheck();
 	if (err != B_OK) {
@@ -451,8 +453,6 @@ haiku_output_set_volume(HaikuOutput &haiku, unsigned volume)
 	soundPlayer->SetVolume((float)volume / 100);
 	return true;
 }
-
-typedef AudioOutputWrapper<HaikuOutput> Wrapper;
 
 const struct AudioOutputPlugin haiku_output_plugin = {
 	"haiku",
