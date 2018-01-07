@@ -22,6 +22,8 @@ ver 0.21 (not yet released)
   - sndio: new mixer plugin
 * require GCC 5.0
 
+ver 0.20.16 (not yet released)
+
 ver 0.20.15 (2018/01/05)
 * queue: fix crash after seek failure
 * resampler
