@@ -86,6 +86,10 @@ Thread::ThreadProc(void *ctx)
 {
 	Thread &thread = *(Thread *)ctx;
 
+#ifndef NDEBUG
+	thread.inside_handle = pthread_self();
+#endif
+
 	thread.Run();
 
 	return nullptr;

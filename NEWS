@@ -1,4 +1,5 @@
 ver 0.20.16 (not yet released)
+* fix crash in debug build on Haiku and other operating systems
 
 ver 0.20.15 (2018/01/05)
 * queue: fix crash after seek failure

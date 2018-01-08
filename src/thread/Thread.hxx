@@ -41,6 +41,16 @@ class Thread {
 	DWORD id;
 #else
 	pthread_t handle = pthread_t();
+
+#ifndef NDEBUG
+	/**
+	 * This handle is only used by IsInside(), and is set by the
+	 * thread function.  Since #handle is set by pthread_create()
+	 * which is racy, we need this attribute for early checks
+	 * inside the thread function.
+	 */
+	pthread_t inside_handle = pthread_t();
+#endif
 #endif
 
 public:
@@ -79,7 +89,7 @@ public:
 		   default-constructed values" (comment from
 		   libstdc++) - and if both libstdc++ and libc++ get
 		   away with this, we can do it as well */
-		return pthread_self() == handle;
+		return pthread_self() == inside_handle;
 #endif
 	}
 #endif
