@@ -62,7 +62,7 @@ public:
 #else
 		return handle != pthread_t();
 #endif
-  }
+	}
 
 	/**
 	 * Check if this thread is the current thread.
