@@ -20,6 +20,7 @@
 #ifndef MPD_IO_THREAD_HXX
 #define MPD_IO_THREAD_HXX
 
+#include "check.h"
 #include "Compiler.h"
 
 class EventLoop;
@@ -53,11 +54,15 @@ gcc_const
 EventLoop &
 io_thread_get() noexcept;
 
+#ifndef NDEBUG
+
 /**
  * Is the current thread the I/O thread?
  */
 gcc_pure
 bool
 io_thread_inside() noexcept;
+
+#endif
 
 #endif

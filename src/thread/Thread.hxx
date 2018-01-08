@@ -64,6 +64,7 @@ public:
 #endif
 	}
 
+#ifndef NDEBUG
 	/**
 	 * Check if this thread is the current thread.
 	 */
@@ -81,6 +82,7 @@ public:
 		return pthread_self() == handle;
 #endif
 	}
+#endif
 
 	void Start();
 	void Join();

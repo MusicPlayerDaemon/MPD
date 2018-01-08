@@ -108,8 +108,12 @@ io_thread_get() noexcept
 	return *io.loop;
 }
 
+#ifndef NDEBUG
+
 bool
 io_thread_inside() noexcept
 {
 	return io.thread.IsInside();
 }
+
+#endif
