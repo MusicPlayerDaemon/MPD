@@ -1366,6 +1366,16 @@ libinput_a_SOURCES += \
 	src/IcyMetaDataParser.cxx src/IcyMetaDataParser.hxx
 endif
 
+if ENABLE_TIDAL
+libinput_a_SOURCES += \
+	$(YAJL_SOURCES) \
+	src/input/plugins/TidalLoginRequest.cxx src/input/plugins/TidalLoginRequest.hxx \
+	src/input/plugins/TidalSessionManager.cxx src/input/plugins/TidalSessionManager.hxx \
+	src/input/plugins/TidalTrackRequest.cxx src/input/plugins/TidalTrackRequest.hxx \
+	src/input/plugins/TidalInputPlugin.cxx src/input/plugins/TidalInputPlugin.hxx
+INPUT_LIBS += $(YAJL_LIBS)
+endif
+
 if ENABLE_SMBCLIENT
 libinput_a_SOURCES += \
 	$(SMBCLIENT_SOURCES) \

@@ -367,6 +367,11 @@ AC_ARG_ENABLE(soundcloud,
 		[enable support for soundcloud.com]),,
 	[enable_soundcloud=auto])
 
+AC_ARG_ENABLE(tidal,
+	AS_HELP_STRING([--enable-tidal],
+		[enable support for Tidal streaming]),,
+	[enable_tidal=auto])
+
 AC_ARG_ENABLE([libwrap],
 	AS_HELP_STRING([--enable-libwrap], [use libwrap]),,
 	[enable_libwrap=auto])
@@ -562,7 +567,7 @@ MPD_ENABLE_AUTO_PKG(expat, EXPAT, [expat],
 
 dnl -------------------------------- yajl -------------------------------------
 
-if test x$enable_soundcloud != xno; then
+if test x$enable_soundcloud != xno || test x$enable_tidal != xno; then
 	PKG_CHECK_MODULES([YAJL], [yajl >= 2.0],
 		[found_yajl=yes],
 		[found_yajl=no])
@@ -700,6 +705,7 @@ dnl Input Plugins
 dnl ---------------------------------------------------------------------------
 
 dnl ----------------------------------- CURL ----------------------------------
+
 MPD_ENABLE_AUTO_PKG(curl, CURL, [libcurl >= 7.18],
 	[libcurl HTTP streaming], [libcurl not found])
 
@@ -717,6 +723,12 @@ MPD_DEPENDS([enable_soundcloud], [found_yajl],
 	[soundcloud.com support], [libyajl not found])
 MPD_DEFINE_CONDITIONAL(enable_soundcloud, ENABLE_SOUNDCLOUD,
 	[soundcloud.com support])
+
+dnl --------------------------------- Tidal -----------------------------------
+MPD_DEPENDS([enable_tidal], [found_yajl], [Tidal streaming], [libyajl not found])
+MPD_DEPENDS([enable_tidal], [enable_curl], [Tidal streaming], [libcurl not found])
+MPD_AUTO(tidal, [Tidal streaming], [Tidal not available], [found_tidal=yes])
+MPD_DEFINE_CONDITIONAL(enable_tidal, ENABLE_TIDAL, [Tidal streaming])
 
 dnl ---------------------------------- cdio ---------------------------------
 MPD_ENABLE_AUTO_PKG(cdio_paranoia, CDIO_PARANOIA, [libcdio_paranoia],
@@ -1515,6 +1527,7 @@ results(cdio_paranoia, [CDIO_PARANOIA])
 results(curl,[CURL])
 results(smbclient,[SMBCLIENT])
 results(soundcloud,[Soundcloud])
+results(tidal,[Tidal])
 printf '\n\t'
 results(mms,[MMS])
 

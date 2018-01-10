@@ -21,6 +21,7 @@
 #include "Registry.hxx"
 #include "util/Macros.hxx"
 #include "plugins/FileInputPlugin.hxx"
+#include "plugins/TidalInputPlugin.hxx"
 
 #ifdef ENABLE_ALSA
 #include "plugins/AlsaInputPlugin.hxx"
@@ -61,6 +62,9 @@ const InputPlugin *const input_plugins[] = {
 #endif
 #ifdef ENABLE_ARCHIVE
 	&input_plugin_archive,
+#endif
+#ifdef ENABLE_TIDAL
+	&tidal_input_plugin,
 #endif
 #ifdef ENABLE_CURL
 	&input_plugin_curl,

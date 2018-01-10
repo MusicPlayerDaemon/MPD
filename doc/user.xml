@@ -2369,6 +2369,60 @@ run</programlisting>
           <filename>mpc add smb://servername/sharename/filename.ogg</filename>
         </para>
       </section>
+
+      <section id="tidal_input">
+        <title><varname>tidal</varname></title>
+
+        <para>
+          Play songs from the commercial streaming service <ulink
+          url="http://tidal.com/">Tidal</ulink>.  It plays URLs in the
+          form <filename>tidal://track/ID</filename>, e.g.:
+        </para>
+
+        <programlisting>mpc add tidal://track/59727857</programlisting>
+
+        <informaltable>
+          <tgroup cols="2">
+            <thead>
+              <row>
+                <entry>Setting</entry>
+                <entry>Description</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>
+                  <varname>token</varname>
+                  <parameter>TOKEN</parameter>
+                </entry>
+                <entry>
+                  The Tidal application token.
+                </entry>
+              </row>
+
+              <row>
+                <entry>
+                  <varname>username</varname>
+                  <parameter>USERNAME</parameter>
+                </entry>
+                <entry>
+                  The Tidal user name.
+                </entry>
+              </row>
+
+              <row>
+                <entry>
+                  <varname>password</varname>
+                  <parameter>PASSWORD</parameter>
+                </entry>
+                <entry>
+                  The Tidal password.
+                </entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
+      </section>
     </section>
 
     <section id="decoder_plugins">

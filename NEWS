@@ -5,6 +5,8 @@ ver 0.21 (not yet released)
   - "outputs" prints the plugin name
   - "outputset" sets runtime attributes
   - close connection when client sends HTTP request
+* input
+  - tidal: new plugin to play Tidal streams
 * tags
   - new tags "OriginalDate", "MUSICBRAINZ_WORKID"
 * decoder
