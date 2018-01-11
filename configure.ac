@@ -560,6 +560,14 @@ dnl -------------------------------- expat --------------------------------
 MPD_ENABLE_AUTO_PKG(expat, EXPAT, [expat],
 	[expat XML parser], [expat not found])
 
+dnl -------------------------------- yajl -------------------------------------
+
+if test x$enable_soundcloud != xno; then
+	PKG_CHECK_MODULES([YAJL], [yajl >= 2.0],
+		[found_yajl=yes],
+		[found_yajl=no])
+fi
+
 dnl --------------------------------- inotify ---------------------------------
 AC_CHECK_FUNCS(inotify_init inotify_init1)
 
@@ -705,10 +713,8 @@ MPD_ENABLE_AUTO_PKG(nfs, NFS, [libnfs],
 	[NFS input plugin], [libnfs not found])
 
 dnl --------------------------------- Soundcloud ------------------------------
-MPD_AUTO([soundcloud], [soundcloud.com support], [libyajl not found],
-	[PKG_CHECK_MODULES([YAJL], [yajl >= 2.0],
-		[found_soundcloud=yes],
-		[found_soundcloud=no])])
+MPD_DEPENDS([enable_soundcloud], [found_yajl],
+	[soundcloud.com support], [libyajl not found])
 MPD_DEFINE_CONDITIONAL(enable_soundcloud, ENABLE_SOUNDCLOUD,
 	[soundcloud.com support])
 
