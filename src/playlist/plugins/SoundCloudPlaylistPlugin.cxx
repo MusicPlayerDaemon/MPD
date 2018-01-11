@@ -22,6 +22,7 @@
 #include "../PlaylistPlugin.hxx"
 #include "../MemorySongEnumerator.hxx"
 #include "lib/yajl/Handle.hxx"
+#include "lib/yajl/Callbacks.hxx"
 #include "lib/yajl/ParseInputStream.hxx"
 #include "config/Block.hxx"
 #include "input/InputStream.hxx"
@@ -109,111 +110,106 @@ struct SoundCloudJsonData {
 	int got_url = 0; /* nesting level of last stream_url */
 
 	std::forward_list<DetachedSong> songs;
+
+	bool Integer(long long value) noexcept;
+	bool String(StringView value) noexcept;
+	bool StartMap() noexcept;
+	bool MapKey(StringView value) noexcept;
+	bool EndMap() noexcept;
 };
 
-static int
-handle_integer(void *ctx, long long intval)
+inline bool
+SoundCloudJsonData::Integer(long long intval) noexcept
 {
-	auto *data = (SoundCloudJsonData *) ctx;
-
-	switch (data->key) {
+	switch (key) {
 	case SoundCloudJsonData::Key::DURATION:
-		data->duration = intval;
+		duration = intval;
 		break;
 	default:
 		break;
 	}
 
-	return 1;
+	return true;
 }
 
-static int
-handle_string(void *ctx, const unsigned char *stringval, size_t stringlen)
+inline bool
+SoundCloudJsonData::String(StringView value) noexcept
 {
-	auto *data = (SoundCloudJsonData *) ctx;
-	const char *s = (const char *) stringval;
-
-	switch (data->key) {
+	switch (key) {
 	case SoundCloudJsonData::Key::TITLE:
-		data->title.assign(s, stringlen);
+		title.assign(value.data, value.size);
 		break;
 
 	case SoundCloudJsonData::Key::STREAM_URL:
-		data->stream_url.assign(s, stringlen);
-		data->got_url = 1;
+		stream_url.assign(value.data, value.size);
+		got_url = 1;
 		break;
 
 	default:
 		break;
 	}
 
-	return 1;
+	return true;
 }
 
-static int
-handle_mapkey(void *ctx, const unsigned char *stringval, size_t stringlen)
+inline bool
+SoundCloudJsonData::MapKey(StringView value) noexcept
 {
-	auto *data = (SoundCloudJsonData *) ctx;
-
 	const auto *i = key_str;
-	while (*i != nullptr &&
-	       !StringStartsWith(*i, {(const char *)stringval, stringlen}))
+	while (*i != nullptr && !StringStartsWith(*i, value))
 		++i;
 
-	data->key = SoundCloudJsonData::Key(i - key_str);
-	return 1;
+	key = SoundCloudJsonData::Key(i - key_str);
+	return true;
 }
 
-static int
-handle_start_map(void *ctx)
+inline bool
+SoundCloudJsonData::StartMap() noexcept
 {
-	auto *data = (SoundCloudJsonData *) ctx;
+	if (got_url > 0)
+		got_url++;
 
-	if (data->got_url > 0)
-		data->got_url++;
-
-	return 1;
+	return true;
 }
 
-static int
-handle_end_map(void *ctx)
+inline bool
+SoundCloudJsonData::EndMap() noexcept
 {
-	auto *data = (SoundCloudJsonData *) ctx;
-
-	if (data->got_url > 1) {
-		data->got_url--;
+	if (got_url > 1) {
+		got_url--;
 		return 1;
 	}
 
-	if (data->got_url == 0)
+	if (got_url == 0)
 		return 1;
 
 	/* got_url == 1, track finished, make it into a song */
-	data->got_url = 0;
+	got_url = 0;
 
-	const std::string u = data->stream_url + "?client_id=" +
+	const std::string u = stream_url + "?client_id=" +
 		soundcloud_config.apikey;
 
 	TagBuilder tag;
-	tag.SetDuration(SignedSongTime::FromMS(data->duration));
-	if (!data->title.empty())
-		tag.AddItem(TAG_NAME, data->title.c_str());
+	tag.SetDuration(SignedSongTime::FromMS(duration));
+	if (!title.empty())
+		tag.AddItem(TAG_NAME, title.c_str());
 
-	data->songs.emplace_front(u.c_str(), tag.Commit());
+	songs.emplace_front(u.c_str(), tag.Commit());
 
-	return 1;
+	return true;
 }
 
+using Wrapper = Yajl::CallbacksWrapper<SoundCloudJsonData>;
 static constexpr yajl_callbacks parse_callbacks = {
 	nullptr,
 	nullptr,
-	handle_integer,
+	Wrapper::Integer,
 	nullptr,
 	nullptr,
-	handle_string,
-	handle_start_map,
-	handle_mapkey,
-	handle_end_map,
+	Wrapper::String,
+	Wrapper::StartMap,
+	Wrapper::MapKey,
+	Wrapper::EndMap,
 	nullptr,
 	nullptr,
 };
