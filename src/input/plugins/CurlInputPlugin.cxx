@@ -183,6 +183,7 @@ CurlInputStream::OnHeaders(unsigned status,
 {
 	assert(GetEventLoop().IsInside());
 	assert(!postponed_exception);
+	assert(!icy || !icy->IsDefined());
 
 	if (status < 200 || status >= 300)
 		throw FormatRuntimeError("got HTTP status %ld", status);
@@ -195,9 +196,7 @@ CurlInputStream::OnHeaders(unsigned status,
 		return;
 	}
 
-	if (!icy->IsDefined() &&
-	    headers.find("accept-ranges") != headers.end())
-		/* a stream with icy-metadata is not seekable */
+	if (headers.find("accept-ranges") != headers.end())
 		seekable = true;
 
 	auto i = headers.find("content-length");
@@ -222,7 +221,7 @@ CurlInputStream::OnHeaders(unsigned status,
 		SetTag(tag_builder.CommitNew());
 	}
 
-	if (!icy->IsDefined()) {
+	if (icy) {
 		i = headers.find("icy-metaint");
 
 		if (i != headers.end()) {
@@ -429,6 +428,7 @@ void
 CurlInputStream::DoSeek(offset_type new_offset)
 {
 	assert(IsReady());
+	assert(seekable);
 
 	const ScopeUnlock unlock(mutex);
 
