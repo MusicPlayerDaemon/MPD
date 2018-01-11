@@ -78,6 +78,7 @@ class CurlInputStream final : public AsyncInputStream, CurlResponseHandler {
 public:
 	template<typename I>
 	CurlInputStream(EventLoop &event_loop, const char *_url,
+			const std::multimap<std::string, std::string> &headers,
 			I &&_icy,
 			Mutex &_mutex, Cond &_cond);
 
@@ -86,7 +87,9 @@ public:
 	CurlInputStream(const CurlInputStream &) = delete;
 	CurlInputStream &operator=(const CurlInputStream &) = delete;
 
-	static InputStreamPtr Open(const char *url, Mutex &mutex, Cond &cond);
+	static InputStreamPtr Open(const char *url,
+				   const std::multimap<std::string, std::string> &headers,
+				   Mutex &mutex, Cond &cond);
 
 private:
 	/**
@@ -344,6 +347,7 @@ input_curl_finish() noexcept
 template<typename I>
 inline
 CurlInputStream::CurlInputStream(EventLoop &event_loop, const char *_url,
+				 const std::multimap<std::string, std::string> &headers,
 				 I &&_icy,
 				 Mutex &_mutex, Cond &_cond)
 	:AsyncInputStream(event_loop, _url, _mutex, _cond,
@@ -352,6 +356,9 @@ CurlInputStream::CurlInputStream(EventLoop &event_loop, const char *_url,
 	 icy(std::forward<I>(_icy))
 {
 	request_headers.Append("Icy-Metadata: 1");
+
+	for (const auto &i : headers)
+		request_headers.Append((i.first + ":" + i.second).c_str());
 }
 
 CurlInputStream::~CurlInputStream() noexcept
@@ -442,12 +449,14 @@ CurlInputStream::DoSeek(offset_type new_offset)
 }
 
 inline InputStreamPtr
-CurlInputStream::Open(const char *url, Mutex &mutex, Cond &cond)
+CurlInputStream::Open(const char *url,
+		      const std::multimap<std::string, std::string> &headers,
+		      Mutex &mutex, Cond &cond)
 {
 	auto icy = std::make_shared<IcyMetaDataParser>();
 
 	auto c = std::make_unique<CurlInputStream>((*curl_init)->GetEventLoop(),
-						   url,
+						   url, headers,
 						   icy,
 						   mutex, cond);
 
@@ -466,7 +475,7 @@ input_curl_open(const char *url, Mutex &mutex, Cond &cond)
 	    strncmp(url, "https://", 8) != 0)
 		return nullptr;
 
-	return CurlInputStream::Open(url, mutex, cond);
+	return CurlInputStream::Open(url, {}, mutex, cond);
 }
 
 const struct InputPlugin input_plugin_curl = {
