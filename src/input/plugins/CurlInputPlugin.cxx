@@ -166,8 +166,6 @@ CurlInputStream::FreeEasy() noexcept
 
 	delete request;
 	request = nullptr;
-
-	request_headers.Clear();
 }
 
 void
@@ -350,6 +348,7 @@ CurlInputStream::CurlInputStream(EventLoop &event_loop, const char *_url,
 			  CURL_RESUME_AT),
 	 icy(new IcyMetaDataParser())
 {
+	request_headers.Append("Icy-Metadata: 1");
 }
 
 CurlInputStream::~CurlInputStream() noexcept
@@ -383,16 +382,12 @@ CurlInputStream::InitEasy()
 
 	request->SetOption(CURLOPT_SSL_VERIFYPEER, verify_peer ? 1l : 0l);
 	request->SetOption(CURLOPT_SSL_VERIFYHOST, verify_host ? 2l : 0l);
-
-	request_headers.Clear();
-	request_headers.Append("Icy-Metadata: 1");
+	request->SetOption(CURLOPT_HTTPHEADER, request_headers.Get());
 }
 
 void
 CurlInputStream::StartRequest()
 {
-	request->SetOption(CURLOPT_HTTPHEADER, request_headers.Get());
-
 	request->Start();
 }
 
