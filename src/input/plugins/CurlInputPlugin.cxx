@@ -77,12 +77,7 @@ class CurlInputStream final : public AsyncInputStream, CurlResponseHandler {
 
 public:
 	CurlInputStream(EventLoop &event_loop, const char *_url,
-			Mutex &_mutex, Cond &_cond)
-		:AsyncInputStream(event_loop, _url, _mutex, _cond,
-				  CURL_MAX_BUFFERED,
-				  CURL_RESUME_AT),
-		 icy(new IcyMetaDataParser()) {
-	}
+			Mutex &_mutex, Cond &_cond);
 
 	~CurlInputStream() noexcept;
 
@@ -345,6 +340,16 @@ input_curl_finish() noexcept
 
 	curl_slist_free_all(http_200_aliases);
 	http_200_aliases = nullptr;
+}
+
+inline
+CurlInputStream::CurlInputStream(EventLoop &event_loop, const char *_url,
+				 Mutex &_mutex, Cond &_cond)
+	:AsyncInputStream(event_loop, _url, _mutex, _cond,
+			  CURL_MAX_BUFFERED,
+			  CURL_RESUME_AT),
+	 icy(new IcyMetaDataParser())
+{
 }
 
 CurlInputStream::~CurlInputStream() noexcept
