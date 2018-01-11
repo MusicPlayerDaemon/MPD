@@ -65,7 +65,7 @@ static const size_t CURL_MAX_BUFFERED = 512 * 1024;
  */
 static const size_t CURL_RESUME_AT = 384 * 1024;
 
-struct CurlInputStream final : public AsyncInputStream, CurlResponseHandler {
+class CurlInputStream final : public AsyncInputStream, CurlResponseHandler {
 	/* some buffers which were passed to libcurl, which we have
 	   too free */
 	CurlSlist request_headers;
@@ -75,6 +75,7 @@ struct CurlInputStream final : public AsyncInputStream, CurlResponseHandler {
 	/** parser for icy-metadata */
 	std::shared_ptr<IcyMetaDataParser> icy;
 
+public:
 	CurlInputStream(EventLoop &event_loop, const char *_url,
 			Mutex &_mutex, Cond &_cond)
 		:AsyncInputStream(event_loop, _url, _mutex, _cond,
@@ -90,6 +91,7 @@ struct CurlInputStream final : public AsyncInputStream, CurlResponseHandler {
 
 	static InputStreamPtr Open(const char *url, Mutex &mutex, Cond &cond);
 
+private:
 	/**
 	 * Create and initialize a new #CurlRequest instance.  After
 	 * this, you may add more request headers and set options.  To
