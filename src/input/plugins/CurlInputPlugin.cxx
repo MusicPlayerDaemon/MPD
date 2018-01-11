@@ -84,7 +84,7 @@ public:
 		 icy(new IcyMetaDataParser()) {
 	}
 
-	~CurlInputStream();
+	~CurlInputStream() noexcept;
 
 	CurlInputStream(const CurlInputStream &) = delete;
 	CurlInputStream &operator=(const CurlInputStream &) = delete;
@@ -111,7 +111,7 @@ private:
 	 *
 	 * Runs in the I/O thread.
 	 */
-	void FreeEasy();
+	void FreeEasy() noexcept;
 
 	/**
 	 * Frees the current "libcurl easy" handle, and everything associated
@@ -119,7 +119,7 @@ private:
 	 *
 	 * The mutex must not be locked.
 	 */
-	void FreeEasyIndirect();
+	void FreeEasyIndirect() noexcept;
 
 	/**
 	 * The DoSeek() implementation invoked in the IOThread.
@@ -162,7 +162,7 @@ CurlInputStream::DoResume()
 }
 
 void
-CurlInputStream::FreeEasy()
+CurlInputStream::FreeEasy() noexcept
 {
 	assert(GetEventLoop().IsInside());
 
@@ -176,7 +176,7 @@ CurlInputStream::FreeEasy()
 }
 
 void
-CurlInputStream::FreeEasyIndirect()
+CurlInputStream::FreeEasyIndirect() noexcept
 {
 	BlockingCall(GetEventLoop(), [this](){
 			FreeEasy();
@@ -339,7 +339,7 @@ input_curl_init(EventLoop &event_loop, const ConfigBlock &block)
 }
 
 static void
-input_curl_finish(void)
+input_curl_finish() noexcept
 {
 	delete curl_init;
 
@@ -347,7 +347,7 @@ input_curl_finish(void)
 	http_200_aliases = nullptr;
 }
 
-CurlInputStream::~CurlInputStream()
+CurlInputStream::~CurlInputStream() noexcept
 {
 	FreeEasyIndirect();
 }
