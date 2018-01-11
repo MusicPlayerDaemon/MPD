@@ -242,6 +242,9 @@ CURL_SOURCES = \
 	src/lib/curl/Multi.hxx \
 	src/lib/curl/Slist.hxx
 
+YAJL_SOURCES = \
+	src/lib/yajl/Handle.hxx
+
 UPNP_SOURCES = \
 	src/lib/upnp/Compat.hxx \
 	src/lib/upnp/Init.cxx src/lib/upnp/Init.hxx \
@@ -1647,6 +1650,7 @@ endif
 
 if ENABLE_SOUNDCLOUD
 libplaylist_plugins_a_SOURCES += \
+	$(YAJL_SOURCES) \
 	src/playlist/plugins/SoundCloudPlaylistPlugin.cxx \
 	src/playlist/plugins/SoundCloudPlaylistPlugin.hxx
 PLAYLIST_LIBS += $(YAJL_LIBS)

@@ -21,6 +21,7 @@
 #include "SoundCloudPlaylistPlugin.hxx"
 #include "../PlaylistPlugin.hxx"
 #include "../MemorySongEnumerator.hxx"
+#include "lib/yajl/Handle.hxx"
 #include "config/Block.hxx"
 #include "input/InputStream.hxx"
 #include "tag/Builder.hxx"
@@ -29,8 +30,6 @@
 #include "util/Domain.hxx"
 #include "util/ScopeExit.hxx"
 #include "Log.hxx"
-
-#include <yajl/yajl_parse.h>
 
 #include <string>
 
@@ -221,18 +220,17 @@ static constexpr yajl_callbacks parse_callbacks = {
 /**
  * Read JSON data and parse it using the given YAJL parser.
  * @param url URL of the JSON data.
- * @param hand YAJL parser handle.
+ * @param handle YAJL parser handle.
  * @return -1 on error, 0 on success.
  */
 static int
-soundcloud_parse_json(const char *url, yajl_handle hand,
+soundcloud_parse_json(const char *url, Yajl::Handle &handle,
 		      Mutex &mutex, Cond &cond)
 try {
 	auto input_stream = InputStream::OpenReady(url, mutex, cond);
 
 	const std::lock_guard<Mutex> protect(mutex);
 
-	yajl_status stat;
 	bool done = false;
 
 	while (!done) {
@@ -243,16 +241,9 @@ try {
 			done = true;
 
 		if (done) {
-			stat = yajl_complete_parse(hand);
+			handle.CompleteParse();
 		} else
-			stat = yajl_parse(hand, buffer, nbytes);
-
-		if (stat != yajl_status_ok) {
-			unsigned char *str = yajl_get_error(hand, 1, buffer, nbytes);
-			LogError(soundcloud_domain, (const char *)str);
-			yajl_free_error(hand, str);
-			break;
-		}
+			handle.Parse(buffer, nbytes);
 	}
 
 	return 0;
@@ -310,10 +301,8 @@ soundcloud_open_uri(const char *uri, Mutex &mutex, Cond &cond)
 	}
 
 	SoundCloudJsonData data;
-	yajl_handle hand = yajl_alloc(&parse_callbacks, nullptr, &data);
-	AtScopeExit(hand, &data) { yajl_free(hand); };
-
-	int ret = soundcloud_parse_json(u, hand, mutex, cond);
+	Yajl::Handle handle(&parse_callbacks, nullptr, &data);
+	int ret = soundcloud_parse_json(u, handle, mutex, cond);
 
 	if (ret == -1)
 		return nullptr;
