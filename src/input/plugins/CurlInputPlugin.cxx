@@ -76,7 +76,9 @@ class CurlInputStream final : public AsyncInputStream, CurlResponseHandler {
 	std::shared_ptr<IcyMetaDataParser> icy;
 
 public:
+	template<typename I>
 	CurlInputStream(EventLoop &event_loop, const char *_url,
+			I &&_icy,
 			Mutex &_mutex, Cond &_cond);
 
 	~CurlInputStream() noexcept;
@@ -339,13 +341,15 @@ input_curl_finish() noexcept
 	http_200_aliases = nullptr;
 }
 
+template<typename I>
 inline
 CurlInputStream::CurlInputStream(EventLoop &event_loop, const char *_url,
+				 I &&_icy,
 				 Mutex &_mutex, Cond &_cond)
 	:AsyncInputStream(event_loop, _url, _mutex, _cond,
 			  CURL_MAX_BUFFERED,
 			  CURL_RESUME_AT),
-	 icy(new IcyMetaDataParser())
+	 icy(std::forward<I>(_icy))
 {
 	request_headers.Append("Icy-Metadata: 1");
 }
@@ -440,15 +444,18 @@ CurlInputStream::DoSeek(offset_type new_offset)
 inline InputStreamPtr
 CurlInputStream::Open(const char *url, Mutex &mutex, Cond &cond)
 {
+	auto icy = std::make_shared<IcyMetaDataParser>();
+
 	auto c = std::make_unique<CurlInputStream>((*curl_init)->GetEventLoop(),
-						   url, mutex, cond);
+						   url,
+						   icy,
+						   mutex, cond);
 
 	BlockingCall(c->GetEventLoop(), [&c](){
 			c->InitEasy();
 			c->StartRequest();
 		});
 
-	auto icy = c->icy;
 	return std::make_unique<IcyInputStream>(std::move(c), std::move(icy));
 }
 
