@@ -468,6 +468,14 @@ CurlInputStream::Open(const char *url,
 	return std::make_unique<IcyInputStream>(std::move(c), std::move(icy));
 }
 
+InputStreamPtr
+OpenCurlInputStream(const char *uri,
+		    const std::multimap<std::string, std::string> &headers,
+		    Mutex &mutex, Cond &cond)
+{
+	return CurlInputStream::Open(uri, headers, mutex, cond);
+}
+
 static InputStreamPtr
 input_curl_open(const char *url, Mutex &mutex, Cond &cond)
 {

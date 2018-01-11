@@ -20,6 +20,26 @@
 #ifndef MPD_INPUT_CURL_HXX
 #define MPD_INPUT_CURL_HXX
 
+#include "input/Ptr.hxx"
+
+#include <string>
+#include <map>
+
+class Mutex;
+class Cond;
+
 extern const struct InputPlugin input_plugin_curl;
+
+/**
+ * Open a #CurlInputStream with custom request headers.
+ *
+ * This stream does not support Icy metadata.
+ *
+ * Throws on error.
+ */
+InputStreamPtr
+OpenCurlInputStream(const char *uri,
+		    const std::multimap<std::string, std::string> &headers,
+		    Mutex &mutex, Cond &cond);
 
 #endif
