@@ -22,6 +22,7 @@
 #include "../PlaylistPlugin.hxx"
 #include "../MemorySongEnumerator.hxx"
 #include "lib/yajl/Handle.hxx"
+#include "lib/yajl/ParseInputStream.hxx"
 #include "config/Block.hxx"
 #include "input/InputStream.hxx"
 #include "tag/Builder.hxx"
@@ -227,23 +228,7 @@ soundcloud_parse_json(const char *url, Yajl::Handle &handle,
 		      Mutex &mutex, Cond &cond)
 {
 	auto input_stream = InputStream::OpenReady(url, mutex, cond);
-
-	const std::lock_guard<Mutex> protect(mutex);
-
-	bool done = false;
-
-	while (!done) {
-		unsigned char buffer[4096];
-		const size_t nbytes =
-			input_stream->Read(buffer, sizeof(buffer));
-		if (nbytes == 0)
-			done = true;
-
-		if (done) {
-			handle.CompleteParse();
-		} else
-			handle.Parse(buffer, nbytes);
-	}
+	Yajl::ParseInputStream(handle, *input_stream);
 }
 
 /**

@@ -243,6 +243,7 @@ CURL_SOURCES = \
 	src/lib/curl/Slist.hxx
 
 YAJL_SOURCES = \
+	src/lib/yajl/ParseInputStream.cxx src/lib/yajl/ParseInputStream.hxx \
 	src/lib/yajl/Handle.hxx
 
 UPNP_SOURCES = \
