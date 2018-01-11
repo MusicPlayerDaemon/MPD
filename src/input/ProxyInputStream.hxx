@@ -29,14 +29,24 @@ struct Tag;
  * An #InputStream that forwards all methods call to another
  * #InputStream instance.  This can be used as a base class to
  * override selected methods.
+ *
+ * The inner #InputStream instance may be nullptr initially, to be set
+ * later.
  */
 class ProxyInputStream : public InputStream {
 protected:
 	InputStreamPtr input;
 
 public:
-	gcc_nonnull_all
 	explicit ProxyInputStream(InputStreamPtr _input) noexcept;
+
+	/**
+	 * Construct an instance without an #InputStream instance.
+	 * Once that instance becomes available, call SetInput().
+	 */
+	ProxyInputStream(const char *_uri,
+			 Mutex &_mutex, Cond &_cond) noexcept
+		:InputStream(_uri, _mutex, _cond) {}
 
 	virtual ~ProxyInputStream() noexcept;
 
@@ -53,6 +63,14 @@ public:
 	size_t Read(void *ptr, size_t read_size) override;
 
 protected:
+	/**
+	 * If this instance was initialized without an input, this
+	 * method can set it.
+	 *
+	 * Caller must lock the mutex.
+	 */
+	void SetInput(InputStreamPtr _input) noexcept;
+
 	/**
 	 * Copy public attributes from the underlying input stream to the
 	 * "rewind" input stream.  This function is called when a method of

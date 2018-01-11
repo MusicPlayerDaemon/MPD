@@ -20,6 +20,9 @@
 #include "config.h"
 #include "ProxyInputStream.hxx"
 #include "tag/Tag.hxx"
+#include "thread/Cond.hxx"
+
+#include <stdexcept>
 
 ProxyInputStream::ProxyInputStream(InputStreamPtr _input) noexcept
 	:InputStream(_input->GetURI(), _input->mutex, _input->cond),
@@ -31,8 +34,23 @@ ProxyInputStream::ProxyInputStream(InputStreamPtr _input) noexcept
 ProxyInputStream::~ProxyInputStream() noexcept = default;
 
 void
+ProxyInputStream::SetInput(InputStreamPtr _input) noexcept
+{
+	assert(!input);
+	assert(_input);
+
+	input = std::move(_input);
+
+	/* this call wakes up client threads if the new input is
+	   ready */
+	CopyAttributes();
+}
+
+void
 ProxyInputStream::CopyAttributes()
 {
+	assert(input);
+
 	if (input->IsReady()) {
 		if (!IsReady()) {
 			if (input->HasMimeType())
@@ -53,12 +71,16 @@ ProxyInputStream::CopyAttributes()
 void
 ProxyInputStream::Check()
 {
-	input->Check();
+	if (input)
+		input->Check();
 }
 
 void
 ProxyInputStream::Update() noexcept
 {
+	if (!input)
+		return;
+
 	input->Update();
 	CopyAttributes();
 }
@@ -66,6 +88,9 @@ ProxyInputStream::Update() noexcept
 void
 ProxyInputStream::Seek(offset_type new_offset)
 {
+	while (!input)
+		cond.wait(mutex);
+
 	input->Seek(new_offset);
 	CopyAttributes();
 }
@@ -73,24 +98,30 @@ ProxyInputStream::Seek(offset_type new_offset)
 bool
 ProxyInputStream::IsEOF() noexcept
 {
-	return input->IsEOF();
+	return input && input->IsEOF();
 }
 
 std::unique_ptr<Tag>
 ProxyInputStream::ReadTag()
 {
+	if (!input)
+		return nullptr;
+
 	return input->ReadTag();
 }
 
 bool
 ProxyInputStream::IsAvailable() noexcept
 {
-	return input->IsAvailable();
+	return input && input->IsAvailable();
 }
 
 size_t
 ProxyInputStream::Read(void *ptr, size_t read_size)
 {
+	while (!input)
+		cond.wait(mutex);
+
 	size_t nbytes = input->Read(ptr, read_size);
 	CopyAttributes();
 	return nbytes;
