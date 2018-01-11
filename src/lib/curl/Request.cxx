@@ -32,6 +32,7 @@
 #include "Global.hxx"
 #include "Version.hxx"
 #include "Handler.hxx"
+#include "event/Call.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/StringStrip.hxx"
 #include "util/StringView.hxx"
@@ -81,6 +82,14 @@ CurlRequest::Start()
 }
 
 void
+CurlRequest::StartIndirect()
+{
+	BlockingCall(global.GetEventLoop(), [this](){
+			Start();
+		});
+}
+
+void
 CurlRequest::Stop() noexcept
 {
 	if (!registered)
@@ -88,6 +97,14 @@ CurlRequest::Stop() noexcept
 
 	global.Remove(easy.Get());
 	registered = false;
+}
+
+void
+CurlRequest::StopIndirect()
+{
+	BlockingCall(global.GetEventLoop(), [this](){
+			Stop();
+		});
 }
 
 void

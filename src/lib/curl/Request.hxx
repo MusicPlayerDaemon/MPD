@@ -94,11 +94,21 @@ public:
 	void Start();
 
 	/**
+	 * A thread-safe version of Start().
+	 */
+	void StartIndirect();
+
+	/**
 	 * Unregister this request via CurlGlobal::Remove().
 	 *
 	 * This method must be called in the event loop thread.
 	 */
 	void Stop() noexcept;
+
+	/**
+	 * A thread-safe version of Stop().
+	 */
+	void StopIndirect();
 
 	CURL *Get() noexcept {
 		return easy.Get();
