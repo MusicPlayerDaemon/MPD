@@ -25,11 +25,9 @@
 void
 Yajl::ParseInputStream(Handle &handle, InputStream &is)
 {
-	const std::lock_guard<Mutex> protect(is.mutex);
-
 	while (true) {
 		unsigned char buffer[4096];
-		const size_t nbytes = is.Read(buffer, sizeof(buffer));
+		const size_t nbytes = is.LockRead(buffer, sizeof(buffer));
 		if (nbytes == 0)
 			break;
 
