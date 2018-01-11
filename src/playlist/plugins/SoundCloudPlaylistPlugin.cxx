@@ -221,12 +221,11 @@ static constexpr yajl_callbacks parse_callbacks = {
  * Read JSON data and parse it using the given YAJL parser.
  * @param url URL of the JSON data.
  * @param handle YAJL parser handle.
- * @return -1 on error, 0 on success.
  */
-static int
+static void
 soundcloud_parse_json(const char *url, Yajl::Handle &handle,
 		      Mutex &mutex, Cond &cond)
-try {
+{
 	auto input_stream = InputStream::OpenReady(url, mutex, cond);
 
 	const std::lock_guard<Mutex> protect(mutex);
@@ -245,11 +244,6 @@ try {
 		} else
 			handle.Parse(buffer, nbytes);
 	}
-
-	return 0;
-} catch (const std::exception &e) {
-	LogError(e);
-	return -1;
 }
 
 /**
@@ -302,10 +296,7 @@ soundcloud_open_uri(const char *uri, Mutex &mutex, Cond &cond)
 
 	SoundCloudJsonData data;
 	Yajl::Handle handle(&parse_callbacks, nullptr, &data);
-	int ret = soundcloud_parse_json(u, handle, mutex, cond);
-
-	if (ret == -1)
-		return nullptr;
+	soundcloud_parse_json(u, handle, mutex, cond);
 
 	data.songs.reverse();
 	return new MemorySongEnumerator(std::move(data.songs));
