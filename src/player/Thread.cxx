@@ -1027,7 +1027,9 @@ Player::Run() noexcept
 			/* wake up the decoder (just in case it's
 			   waiting for space in the MusicBuffer) and
 			   wait for it */
+			// TODO: eliminate this kludge
 			dc.Signal();
+
 			dc.WaitForDecoder();
 		} else if (IsDecoderAtNextSong()) {
 			/* at the beginning of a new song */
@@ -1048,6 +1050,12 @@ Player::Run() noexcept
 			/* the decoder is too busy and hasn't provided
 			   new PCM data in time: wait for the
 			   decoder */
+
+			/* wake up the decoder (just in case it's
+			   waiting for space in the MusicBuffer) and
+			   wait for it */
+			// TODO: eliminate this kludge
+			dc.Signal();
 
 			dc.WaitForDecoder();
 		}
