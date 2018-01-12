@@ -70,6 +70,14 @@ struct CallbacksWrapper {
 	static int EndMap(void *ctx) noexcept {
 		return Cast(ctx).EndMap();
 	}
+
+	static int StartArray(void *ctx) noexcept {
+		return Cast(ctx).StartArray();
+	}
+
+	static int EndArray(void *ctx) noexcept {
+		return Cast(ctx).EndArray();
+	}
 };
 
 } // namespace Yajl
