@@ -22,6 +22,7 @@
 #include "util/Macros.hxx"
 #include "plugins/FileInputPlugin.hxx"
 #include "plugins/TidalInputPlugin.hxx"
+#include "plugins/QobuzInputPlugin.hxx"
 
 #ifdef ENABLE_ALSA
 #include "plugins/AlsaInputPlugin.hxx"
@@ -65,6 +66,9 @@ const InputPlugin *const input_plugins[] = {
 #endif
 #ifdef ENABLE_TIDAL
 	&tidal_input_plugin,
+#endif
+#ifdef ENABLE_QOBUZ
+	&qobuz_input_plugin,
 #endif
 #ifdef ENABLE_CURL
 	&input_plugin_curl,

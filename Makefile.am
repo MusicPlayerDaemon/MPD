@@ -1376,6 +1376,18 @@ libinput_a_SOURCES += \
 INPUT_LIBS += $(YAJL_LIBS)
 endif
 
+if ENABLE_QOBUZ
+libinput_a_SOURCES += \
+	$(YAJL_SOURCES) \
+	src/lib/gcrypt/MD5.cxx src/lib/gcrypt/MD5.hxx \
+	src/input/plugins/QobuzSession.hxx \
+	src/input/plugins/QobuzClient.cxx src/input/plugins/QobuzClient.hxx \
+	src/input/plugins/QobuzLoginRequest.cxx src/input/plugins/QobuzLoginRequest.hxx \
+	src/input/plugins/QobuzTrackRequest.cxx src/input/plugins/QobuzTrackRequest.hxx \
+	src/input/plugins/QobuzInputPlugin.cxx src/input/plugins/QobuzInputPlugin.hxx
+INPUT_LIBS += $(YAJL_LIBS) $(LIBGCRYPT_LIBS)
+endif
+
 if ENABLE_SMBCLIENT
 libinput_a_SOURCES += \
 	$(SMBCLIENT_SOURCES) \

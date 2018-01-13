@@ -2370,6 +2370,70 @@ run</programlisting>
         </para>
       </section>
 
+      <section id="qobuz_input">
+        <title><varname>qobuz</varname></title>
+
+        <para>
+          Play songs from the commercial streaming service <ulink
+          url="https://www.qobuz.com/">Qobuz</ulink>.  It plays URLs in the
+          form <filename>qobuz://track/ID</filename>, e.g.:
+        </para>
+
+        <programlisting>mpc add qobuz://track/23601296</programlisting>
+
+        <informaltable>
+          <tgroup cols="2">
+            <thead>
+              <row>
+                <entry>Setting</entry>
+                <entry>Description</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>
+                  <varname>app_id</varname>
+                  <parameter>ID</parameter>
+                </entry>
+                <entry>
+                  The Qobuz application id.
+                </entry>
+              </row>
+
+              <row>
+                <entry>
+                  <varname>app_secret</varname>
+                  <parameter>SECRET</parameter>
+                </entry>
+                <entry>
+                  The Qobuz application secret.
+                </entry>
+              </row>
+
+              <row>
+                <entry>
+                  <varname>username</varname>
+                  <parameter>USERNAME</parameter>
+                </entry>
+                <entry>
+                  The Qobuz user name.
+                </entry>
+              </row>
+
+              <row>
+                <entry>
+                  <varname>password</varname>
+                  <parameter>PASSWORD</parameter>
+                </entry>
+                <entry>
+                  The Qobuz password.
+                </entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
+      </section>
+
       <section id="tidal_input">
         <title><varname>tidal</varname></title>
 

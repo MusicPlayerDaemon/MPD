@@ -1,0 +1,185 @@
+/*
+ * Copyright 2003-2018 The Music Player Daemon Project
+ * http://www.musicpd.org
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ */
+
+#include "config.h"
+#include "QobuzInputPlugin.hxx"
+#include "QobuzClient.hxx"
+#include "QobuzTrackRequest.hxx"
+#include "CurlInputPlugin.hxx"
+#include "PluginUnavailable.hxx"
+#include "input/ProxyInputStream.hxx"
+#include "input/FailingInputStream.hxx"
+#include "input/InputPlugin.hxx"
+#include "config/Block.hxx"
+#include "thread/Mutex.hxx"
+#include "util/StringCompare.hxx"
+
+#include <stdexcept>
+#include <memory>
+
+#include <time.h>
+
+static QobuzClient *qobuz_client;
+
+class QobuzInputStream final
+	: public ProxyInputStream, QobuzSessionHandler, QobuzTrackHandler {
+
+	const std::string track_id;
+
+	std::unique_ptr<QobuzTrackRequest> track_request;
+
+	std::exception_ptr error;
+
+public:
+	QobuzInputStream(const char *_uri, const char *_track_id,
+			 Mutex &_mutex, Cond &_cond) noexcept
+		:ProxyInputStream(_uri, _mutex, _cond),
+		 track_id(_track_id)
+	{
+		qobuz_client->AddLoginHandler(*this);
+	}
+
+	~QobuzInputStream() {
+		qobuz_client->RemoveLoginHandler(*this);
+	}
+
+	/* virtual methods from InputStream */
+
+	void Check() override {
+		if (error)
+			std::rethrow_exception(error);
+	}
+
+private:
+	void Failed(std::exception_ptr e) {
+		SetInput(std::make_unique<FailingInputStream>(GetURI(), e,
+							      mutex, cond));
+	}
+
+	/* virtual methods from QobuzSessionHandler */
+	void OnQobuzSession() noexcept override;
+
+	/* virtual methods from QobuzTrackHandler */
+	void OnQobuzTrackSuccess(std::string &&url) noexcept override;
+	void OnQobuzTrackError(std::exception_ptr error) noexcept override;
+};
+
+void
+QobuzInputStream::OnQobuzSession() noexcept
+{
+	const std::lock_guard<Mutex> protect(mutex);
+
+	try {
+		const auto session = qobuz_client->GetSession();
+
+		QobuzTrackHandler &handler = *this;
+		track_request = std::make_unique<QobuzTrackRequest>(*qobuz_client,
+								    session,
+								    track_id.c_str(),
+								    handler);
+		track_request->Start();
+	} catch (...) {
+		Failed(std::current_exception());
+	}
+}
+
+void
+QobuzInputStream::OnQobuzTrackSuccess(std::string &&url) noexcept
+{
+	const std::lock_guard<Mutex> protect(mutex);
+
+	try {
+		SetInput(OpenCurlInputStream(url.c_str(), {},
+					     mutex, cond));
+	} catch (...) {
+		Failed(std::current_exception());
+	}
+}
+
+void
+QobuzInputStream::OnQobuzTrackError(std::exception_ptr e) noexcept
+{
+	const std::lock_guard<Mutex> protect(mutex);
+
+	Failed(e);
+}
+
+static void
+InitQobuzInput(EventLoop &event_loop, const ConfigBlock &block)
+{
+	const char *base_url = block.GetBlockValue("base_url",
+						   "http://www.qobuz.com/api.json/0.2/");
+
+	const char *app_id = block.GetBlockValue("app_id");
+	if (app_id == nullptr)
+		throw PluginUnavailable("No Qobuz app_id configured");
+
+	const char *app_secret = block.GetBlockValue("app_secret");
+	if (app_secret == nullptr)
+		throw PluginUnavailable("No Qobuz app_secret configured");
+
+	const char *device_manufacturer_id = block.GetBlockValue("device_manufacturer_id",
+								 "df691fdc-fa36-11e7-9718-635337d7df8f");
+
+	const char *username = block.GetBlockValue("username");
+	const char *email = block.GetBlockValue("email");
+	if (username == nullptr && email == nullptr)
+		throw PluginUnavailable("No Qobuz username configured");
+
+	const char *password = block.GetBlockValue("password");
+	if (password == nullptr)
+		throw PluginUnavailable("No Qobuz password configured");
+
+	qobuz_client = new QobuzClient(event_loop, base_url,
+				       app_id, app_secret,
+				       device_manufacturer_id,
+				       username, email, password);
+}
+
+static void
+FinishQobuzInput()
+{
+	delete qobuz_client;
+}
+
+static InputStreamPtr
+OpenQobuzInput(const char *uri, Mutex &mutex, Cond &cond)
+{
+	assert(qobuz_client != nullptr);
+
+	const char *track_id;
+
+	// TODO: what's the standard "qobuz://" URI syntax?
+
+	track_id = StringAfterPrefix(uri, "qobuz://track/");
+
+	if (track_id == nullptr || *track_id == 0)
+		return nullptr;
+
+	// TODO: validate track_id
+
+	return std::make_unique<QobuzInputStream>(uri, track_id, mutex, cond);
+}
+
+const InputPlugin qobuz_input_plugin = {
+	"qobuz",
+	InitQobuzInput,
+	FinishQobuzInput,
+	OpenQobuzInput,
+};

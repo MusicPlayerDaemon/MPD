@@ -362,6 +362,11 @@ AC_ARG_ENABLE(ipv6,
 
 AC_SYS_LARGEFILE
 
+AC_ARG_ENABLE(qobuz,
+	AS_HELP_STRING([--enable-qobuz],
+		[enable support for Qobuz streaming]),,
+	[enable_qobuz=auto])
+
 AC_ARG_ENABLE(soundcloud,
 	AS_HELP_STRING([--enable-soundcloud],
 		[enable support for soundcloud.com]),,
@@ -565,9 +570,15 @@ dnl -------------------------------- expat --------------------------------
 MPD_ENABLE_AUTO_PKG(expat, EXPAT, [expat],
 	[expat XML parser], [expat not found])
 
+dnl -------------------------------- libgcrypt --------------------------------
+
+if test x$enable_qobuz != xno; then
+	AM_PATH_LIBGCRYPT([1], [found_gcrypt=yes], [found_gcrypt=no])
+fi
+
 dnl -------------------------------- yajl -------------------------------------
 
-if test x$enable_soundcloud != xno || test x$enable_tidal != xno; then
+if test x$enable_qobuz != xno || x$enable_soundcloud != xno || test x$enable_tidal != xno; then
 	PKG_CHECK_MODULES([YAJL], [yajl >= 2.0],
 		[found_yajl=yes],
 		[found_yajl=no])
@@ -717,6 +728,13 @@ MPD_ENABLE_AUTO_PKG_LIB(smbclient, SMBCLIENT, [smbclient >= 0.2],
 dnl ----------------------------------- NFS -----------------------------
 MPD_ENABLE_AUTO_PKG(nfs, NFS, [libnfs],
 	[NFS input plugin], [libnfs not found])
+
+dnl --------------------------------- Qobuz -----------------------------------
+MPD_DEPENDS([enable_qobuz], [found_yajl], [Qobuz streaming], [libyajl not found])
+MPD_DEPENDS([enable_qobuz], [found_gcrypt], [Qobuz streaming], [libgcrypt not found])
+MPD_DEPENDS([enable_qobuz], [enable_curl], [Qobuz streaming], [libcurl not found])
+MPD_AUTO(qobuz, [Qobuz streaming], [Qobuz not available], [found_qobuz=yes])
+MPD_DEFINE_CONDITIONAL(enable_qobuz, ENABLE_QOBUZ, [Qobuz streaming])
 
 dnl --------------------------------- Soundcloud ------------------------------
 MPD_DEPENDS([enable_soundcloud], [found_yajl],
@@ -1525,6 +1543,7 @@ fi
 printf '\nStreaming support:\n\t'
 results(cdio_paranoia, [CDIO_PARANOIA])
 results(curl,[CURL])
+results(qobuz,[Qobuz])
 results(smbclient,[SMBCLIENT])
 results(soundcloud,[Soundcloud])
 results(tidal,[Tidal])
