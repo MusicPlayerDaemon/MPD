@@ -45,7 +45,7 @@
 #include <assert.h>
 #include <string.h>
 
-CurlRequest::CurlRequest(CurlGlobal &_global, const char *url,
+CurlRequest::CurlRequest(CurlGlobal &_global,
 			 CurlResponseHandler &_handler)
 	:global(_global), handler(_handler),
 	 postpone_error_event(global.GetEventLoop(),
@@ -64,7 +64,6 @@ CurlRequest::CurlRequest(CurlGlobal &_global, const char *url,
 	easy.SetOption(CURLOPT_NOPROGRESS, 1l);
 	easy.SetOption(CURLOPT_NOSIGNAL, 1l);
 	easy.SetOption(CURLOPT_CONNECTTIMEOUT, 10l);
-	easy.SetOption(CURLOPT_URL, url);
 }
 
 CurlRequest::~CurlRequest() noexcept

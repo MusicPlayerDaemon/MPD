@@ -78,8 +78,15 @@ public:
 	/**
 	 * To start sending the request, call Start().
 	 */
-	CurlRequest(CurlGlobal &_global, const char *url,
+	CurlRequest(CurlGlobal &_global,
 		    CurlResponseHandler &_handler);
+
+	CurlRequest(CurlGlobal &_global, const char *url,
+		    CurlResponseHandler &_handler)
+		:CurlRequest(_global, _handler) {
+		SetUrl(url);
+	}
+
 	~CurlRequest() noexcept;
 
 	CurlRequest(const CurlRequest &) = delete;
@@ -117,6 +124,10 @@ public:
 	template<typename T>
 	void SetOption(CURLoption option, T value) {
 		easy.SetOption(option, value);
+	}
+
+	void SetUrl(const char *url) {
+		easy.SetOption(CURLOPT_URL, url);
 	}
 
 	/**
