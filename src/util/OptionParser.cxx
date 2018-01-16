@@ -40,9 +40,7 @@ bool
 OptionParser::ParseNext() noexcept
 {
 	assert(HasEntries());
-	const char *arg = *argv;
-	++argv;
-	--argc;
+	const char *arg = args.shift();
 	if (arg[0] == '-') {
 		if (arg[1] == '-') {
 			option = arg + 2;

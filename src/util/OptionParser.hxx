@@ -20,6 +20,8 @@
 #ifndef MPD_UTIL_OPTIONPARSER_HXX
 #define MPD_UTIL_OPTIONPARSER_HXX
 
+#include "util/ConstBuffer.hxx"
+
 #include <assert.h>
 
 class OptionDef;
@@ -29,8 +31,7 @@ class OptionDef;
  */
 class OptionParser
 {
-	int argc;
-	char *const*argv;
+	ConstBuffer<const char *> args;
 	const char *option = nullptr;
 	const char *option_raw = nullptr;
 	bool is_long = false;
@@ -40,13 +41,13 @@ public:
 	 * Constructs #OptionParser.
 	 */
 	constexpr OptionParser(int _argc, char *const*_argv) noexcept
-		:argc(_argc - 1), argv(_argv + 1) {}
+		:args(_argv + 1, _argc - 1) {}
 
 	/**
 	 * Checks if there are command line entries to process.
 	 */
 	constexpr bool HasEntries() const noexcept {
-		return argc > 0;
+		return !args.empty();
 	}
 
 	/**
