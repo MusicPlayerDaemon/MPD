@@ -31,16 +31,16 @@ class OptionParser
 {
 	int argc;
 	char **argv;
-	char *option;
-	char *option_raw;
-	bool is_long;
+	char *option = nullptr;
+	char *option_raw = nullptr;
+	bool is_long = false;
+
 public:
 	/**
 	 * Constructs #OptionParser.
 	 */
 	OptionParser(int _argc, char **_argv)
-		: argc(_argc - 1), argv(_argv + 1),
-		  option(nullptr), option_raw(nullptr), is_long(false) { }
+		:argc(_argc - 1), argv(_argv + 1) {}
 
 	/**
 	 * Checks if there are command line entries to process.
