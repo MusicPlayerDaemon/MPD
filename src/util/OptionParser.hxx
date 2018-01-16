@@ -30,16 +30,16 @@ class OptionDef;
 class OptionParser
 {
 	int argc;
-	char **argv;
-	char *option = nullptr;
-	char *option_raw = nullptr;
+	char *const*argv;
+	const char *option = nullptr;
+	const char *option_raw = nullptr;
 	bool is_long = false;
 
 public:
 	/**
 	 * Constructs #OptionParser.
 	 */
-	constexpr OptionParser(int _argc, char **_argv) noexcept
+	constexpr OptionParser(int _argc, char *const*_argv) noexcept
 		:argc(_argc - 1), argv(_argv + 1) {}
 
 	/**
@@ -52,7 +52,7 @@ public:
 	/**
 	 * Gets the last parsed option.
 	 */
-	char *GetOption() noexcept {
+	const char *GetOption() noexcept {
 		assert(option_raw != nullptr);
 		return option_raw;
 	}
