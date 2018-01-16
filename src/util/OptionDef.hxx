@@ -40,9 +40,9 @@ public:
 		  short_option(_short_option),
 		  desc(_desc) { }
 
-	bool HasLongOption() const { return long_option != nullptr; }
-	bool HasShortOption() const { return short_option != 0; }
-	bool HasDescription() const { return desc != nullptr; }
+	constexpr bool HasLongOption() const { return long_option != nullptr; }
+	constexpr bool HasShortOption() const { return short_option != 0; }
+	constexpr bool HasDescription() const { return desc != nullptr; }
 
 	const char *GetLongOption() const {
 		assert(HasLongOption());
