@@ -55,23 +55,21 @@ ParseDuration(const char *duration) noexcept
 {
 	char *endptr;
 
-	unsigned result = ParseUnsigned(duration, &endptr);
+	int hours = ParseInt(duration, &endptr);
 	if (endptr == duration || *endptr != ':')
 		return SignedSongTime::Negative();
 
-	result *= 60;
 	duration = endptr + 1;
-	result += ParseUnsigned(duration, &endptr);
+	unsigned minutes = ParseUnsigned(duration, &endptr);
 	if (endptr == duration || *endptr != ':')
 		return SignedSongTime::Negative();
 
-	result *= 60;
 	duration = endptr + 1;
-	result += ParseUnsigned(duration, &endptr);
-	if (endptr == duration || *endptr != 0)
+	double seconds = ParseDouble(duration, &endptr);
+	if (endptr == duration || *endptr != 0 || seconds < 0.0)
 		return SignedSongTime::Negative();
 
-	return SignedSongTime::FromS(result);
+	return SignedSongTime::FromS((((hours * 60) + minutes) * 60) + seconds);
 }
 
 /**
