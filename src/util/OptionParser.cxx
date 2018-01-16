@@ -53,7 +53,9 @@ OptionParser::ParseNext() noexcept
 		option_raw = arg;
 		return true;
 	}
+
 	option = nullptr;
 	option_raw = nullptr;
+	*remaining_tail++ = arg;
 	return false;
 }

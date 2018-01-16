@@ -357,11 +357,9 @@ ParseCommandLine(int argc, char **argv, struct options *options)
 
 	// Second pass: find non-option parameters (i.e. config file)
 	const char *config_file = nullptr;
-	for (int i = 1; i < argc; ++i) {
-		if (OptionParser::IsOption(argv[i]))
-			continue;
+	for (const char *i : parser.GetRemaining()) {
 		if (config_file == nullptr) {
-			config_file = argv[i];
+			config_file = i;
 			continue;
 		}
 

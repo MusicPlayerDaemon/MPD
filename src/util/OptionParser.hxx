@@ -36,12 +36,16 @@ class OptionParser
 	const char *option_raw = nullptr;
 	bool is_long = false;
 
+	const char **const remaining_head, **remaining_tail;
+
 public:
 	/**
 	 * Constructs #OptionParser.
 	 */
-	constexpr OptionParser(int _argc, char *const*_argv) noexcept
-		:args(_argv + 1, _argc - 1) {}
+	constexpr OptionParser(int _argc, char **_argv) noexcept
+		:args(_argv + 1, _argc - 1),
+		 remaining_head(const_cast<const char **>(_argv + 1)),
+		 remaining_tail(remaining_head) {}
 
 	/**
 	 * Checks if there are command line entries to process.
@@ -81,11 +85,10 @@ public:
 	bool ParseNext() noexcept;
 
 	/**
-	 * Checks if specified string is a command line option.
+	 * Returns the remaining non-option arguments.
 	 */
-	static bool IsOption(const char *s) noexcept {
-		assert(s != nullptr);
-		return s[0] == '-';
+	ConstBuffer<const char *> GetRemaining() const noexcept {
+		return {remaining_head, remaining_tail};
 	}
 };
 
