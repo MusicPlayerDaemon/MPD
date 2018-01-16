@@ -39,13 +39,15 @@ public:
 	/**
 	 * Constructs #OptionParser.
 	 */
-	OptionParser(int _argc, char **_argv) noexcept
+	constexpr OptionParser(int _argc, char **_argv) noexcept
 		:argc(_argc - 1), argv(_argv + 1) {}
 
 	/**
 	 * Checks if there are command line entries to process.
 	 */
-	bool HasEntries() const noexcept { return argc > 0; }
+	constexpr bool HasEntries() const noexcept {
+		return argc > 0;
+	}
 
 	/**
 	 * Gets the last parsed option.
