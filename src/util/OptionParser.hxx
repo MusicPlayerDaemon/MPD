@@ -39,18 +39,18 @@ public:
 	/**
 	 * Constructs #OptionParser.
 	 */
-	OptionParser(int _argc, char **_argv)
+	OptionParser(int _argc, char **_argv) noexcept
 		:argc(_argc - 1), argv(_argv + 1) {}
 
 	/**
 	 * Checks if there are command line entries to process.
 	 */
-	bool HasEntries() const { return argc > 0; }
+	bool HasEntries() const noexcept { return argc > 0; }
 
 	/**
 	 * Gets the last parsed option.
 	 */
-	char *GetOption() {
+	char *GetOption() noexcept {
 		assert(option_raw != nullptr);
 		return option_raw;
 	}
@@ -58,13 +58,14 @@ public:
 	/**
 	 * Checks if current option is a specified option.
 	 */
-	bool CheckOption(const OptionDef& opt);
+	bool CheckOption(const OptionDef &opt) const noexcept;
 
 	/**
 	 * Checks if current option is a specified option
 	 * or specified alternative option.
 	 */
-	bool CheckOption(const OptionDef& opt, const OptionDef &alt_opt) {
+	bool CheckOption(const OptionDef &opt,
+			 const OptionDef &alt_opt) const noexcept {
 		return CheckOption(opt) || CheckOption(alt_opt);
 	}
 
@@ -74,12 +75,12 @@ public:
 	 * Regardless of result, advances current position to the next
 	 * command line entry. 
 	 */
-	bool ParseNext();
+	bool ParseNext() noexcept;
 
 	/**
 	 * Checks if specified string is a command line option.
 	 */
-	static bool IsOption(const char *s) {
+	static bool IsOption(const char *s) noexcept {
 		assert(s != nullptr);
 		return s[0] == '-';
 	}

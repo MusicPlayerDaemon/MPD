@@ -22,7 +22,8 @@
 
 #include <string.h>
 
-bool OptionParser::CheckOption(const OptionDef &opt)
+bool
+OptionParser::CheckOption(const OptionDef &opt) const noexcept
 {
 	assert(option != nullptr);
 
@@ -35,7 +36,8 @@ bool OptionParser::CheckOption(const OptionDef &opt)
 	       option[1] == '\0';
 }
 
-bool OptionParser::ParseNext()
+bool
+OptionParser::ParseNext() noexcept
 {
 	assert(HasEntries());
 	char *arg = *argv;
