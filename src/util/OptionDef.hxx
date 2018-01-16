@@ -20,6 +20,8 @@
 #ifndef MPD_UTIL_OPTIONDEF_HXX
 #define MPD_UTIL_OPTIONDEF_HXX
 
+#include <assert.h>
+
 /**
  * Command line option definition.
  */

@@ -313,9 +313,7 @@ ParseCommandLine(int argc, char **argv, struct options *options)
 
 	// First pass: handle command line options
 	OptionParser parser(argc, argv);
-	while (parser.HasEntries()) {
-		if (!parser.ParseNext())
-			continue;
+	while (parser.ParseNext()) {
 		if (parser.CheckOption(opt_kill)) {
 			options->kill = true;
 			continue;

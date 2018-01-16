@@ -22,8 +22,6 @@
 
 #include "util/ConstBuffer.hxx"
 
-#include <assert.h>
-
 class OptionDef;
 
 /**
@@ -32,8 +30,8 @@ class OptionDef;
 class OptionParser
 {
 	ConstBuffer<const char *> args;
-	const char *option = nullptr;
-	const char *option_raw = nullptr;
+	const char *option;
+	const char *option_raw;
 	bool is_long = false;
 
 	const char **const remaining_head, **remaining_tail;
@@ -42,23 +40,15 @@ public:
 	/**
 	 * Constructs #OptionParser.
 	 */
-	constexpr OptionParser(int _argc, char **_argv) noexcept
+	OptionParser(int _argc, char **_argv) noexcept
 		:args(_argv + 1, _argc - 1),
 		 remaining_head(const_cast<const char **>(_argv + 1)),
 		 remaining_tail(remaining_head) {}
 
 	/**
-	 * Checks if there are command line entries to process.
-	 */
-	constexpr bool HasEntries() const noexcept {
-		return !args.empty();
-	}
-
-	/**
 	 * Gets the last parsed option.
 	 */
 	const char *GetOption() noexcept {
-		assert(option_raw != nullptr);
 		return option_raw;
 	}
 
@@ -78,9 +68,11 @@ public:
 
 	/**
 	 * Parses current command line entry.
-	 * Returns true on success, false otherwise.
 	 * Regardless of result, advances current position to the next
 	 * command line entry. 
+	 *
+	 * @return true if an option was found, false if there are no
+	 * more options
 	 */
 	bool ParseNext() noexcept;
 

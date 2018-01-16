@@ -39,23 +39,23 @@ OptionParser::CheckOption(const OptionDef &opt) const noexcept
 bool
 OptionParser::ParseNext() noexcept
 {
-	assert(HasEntries());
-	const char *arg = args.shift();
-	if (arg[0] == '-') {
-		if (arg[1] == '-') {
-			option = arg + 2;
-			is_long = true;
+	while (!args.empty()) {
+		const char *arg = args.shift();
+		if (arg[0] == '-') {
+			if (arg[1] == '-') {
+				option = arg + 2;
+				is_long = true;
+			}
+			else {
+				option = arg + 1;
+				is_long = false;
+			}
+			option_raw = arg;
+			return true;
 		}
-		else {
-			option = arg + 1;
-			is_long = false;
-		}
-		option_raw = arg;
-		return true;
+
+		*remaining_tail++ = arg;
 	}
 
-	option = nullptr;
-	option_raw = nullptr;
-	*remaining_tail++ = arg;
 	return false;
 }
