@@ -20,25 +20,56 @@
 #include "OptionParser.hxx"
 #include "OptionDef.hxx"
 #include "util/RuntimeError.hxx"
+#include "util/StringCompare.hxx"
 
 #include <string.h>
 
+inline const char *
+OptionParser::CheckShiftValue(const char *s, const OptionDef &option)
+{
+	if (!option.HasValue())
+		return nullptr;
+
+	if (args.empty())
+		throw FormatRuntimeError("Value expected after %s", s);
+
+	return args.shift();
+}
+
 inline OptionParser::Result
-OptionParser::IdentifyOption(const char *s) const
+OptionParser::IdentifyOption(const char *s)
 {
 	assert(s != nullptr);
 	assert(*s == '-');
 
 	if (s[1] == '-') {
-		for (const auto &i : options)
-			if (i.HasLongOption() &&
-			    strcmp(s + 2, i.GetLongOption()) == 0)
-				return {int(&i - options.data)};
+		for (const auto &i : options) {
+			if (!i.HasLongOption())
+				continue;
+
+			const char *t = StringAfterPrefix(s + 2, i.GetLongOption());
+			if (t == nullptr)
+				continue;
+
+			const char *value;
+
+			if (*t == 0)
+				value = CheckShiftValue(s, i);
+			else if (*t == '=')
+				value = t + 1;
+			else
+				continue;
+
+			return {int(&i - options.data), value};
+		}
 	} else if (s[1] != 0 && s[2] == 0) {
 		const char ch = s[1];
-		for (const auto &i : options)
-			if (i.HasShortOption() && ch == i.GetShortOption())
-				return {int(&i - options.data)};
+		for (const auto &i : options) {
+			if (i.HasShortOption() && ch == i.GetShortOption()) {
+				const char *value = CheckShiftValue(s, i);
+				return {int(&i - options.data), value};
+			}
+		}
 	}
 
 	throw FormatRuntimeError("Unknown option: %s", s);
@@ -55,5 +86,5 @@ OptionParser::Next()
 		*remaining_tail++ = arg;
 	}
 
-	return {-1};
+	return {-1, nullptr};
 }

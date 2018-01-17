@@ -47,6 +47,7 @@ public:
 
 	struct Result {
 		int index;
+		const char *value;
 
 		constexpr operator bool() noexcept {
 			return index >= 0;
@@ -70,7 +71,8 @@ public:
 	}
 
 private:
-	Result IdentifyOption(const char *s) const;
+	const char *CheckShiftValue(const char *s, const OptionDef &option);
+	Result IdentifyOption(const char *s);
 };
 
 #endif
