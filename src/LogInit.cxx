@@ -46,7 +46,7 @@ static constexpr Domain log_domain("log");
 #ifndef ANDROID
 
 static int out_fd = -1;
-static AllocatedPath out_path = AllocatedPath::Null();
+static AllocatedPath out_path = nullptr;
 
 static void redirect_logs(int fd)
 {
@@ -169,7 +169,7 @@ log_deinit(void)
 {
 #ifndef ANDROID
 	close_log_files();
-	out_path = AllocatedPath::Null();
+	out_path = nullptr;
 #endif
 }
 

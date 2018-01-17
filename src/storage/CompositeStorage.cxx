@@ -316,7 +316,7 @@ CompositeStorage::MapFS(const char *uri) const noexcept
 
 	auto f = FindStorage(uri);
 	if (f.directory->storage == nullptr)
-		return AllocatedPath::Null();
+		return nullptr;
 
 	return f.directory->storage->MapFS(f.uri);
 }

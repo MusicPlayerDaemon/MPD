@@ -25,7 +25,7 @@
 AllocatedPath
 Storage::MapFS(gcc_unused const char *uri_utf8) const noexcept
 {
-	return AllocatedPath::Null();
+	return nullptr;
 }
 
 AllocatedPath

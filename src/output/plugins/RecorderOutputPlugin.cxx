@@ -50,7 +50,7 @@ class RecorderOutput final : AudioOutput {
 	/**
 	 * The destination file name.
 	 */
-	AllocatedPath path = AllocatedPath::Null();
+	AllocatedPath path = nullptr;
 
 	/**
 	 * A string that will be used with FormatTag() to build the
@@ -298,7 +298,7 @@ RecorderOutput::SendTag(const Tag &tag)
 
 		AtScopeExit(p) { free(p); };
 
-		AllocatedPath new_path = AllocatedPath::Null();
+		AllocatedPath new_path = nullptr;
 
 		try {
 			new_path = ParsePath(p);

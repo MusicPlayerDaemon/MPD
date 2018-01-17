@@ -71,7 +71,7 @@ public:
 		:SocketMonitor(_loop),
 		 parent(_parent), serial(_serial),
 #ifdef HAVE_UN
-		 path(AllocatedPath::Null()),
+		 path(nullptr),
 #endif
 		 address(std::forward<A>(_address))
 	{

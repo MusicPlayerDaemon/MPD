@@ -79,7 +79,7 @@ inline SimpleDatabase::SimpleDatabase(AllocatedPath &&_path,
 #ifdef ENABLE_ZLIB
 	 compress(_compress),
 #endif
-	 cache_path(AllocatedPath::Null()),
+	 cache_path(nullptr),
 	 prefixed_light_song(nullptr) {
 }
 

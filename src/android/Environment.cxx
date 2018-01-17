@@ -60,7 +60,7 @@ Environment::getExternalStorageDirectory()
 		env->CallStaticObjectMethod(cls,
 					    getExternalStorageDirectory_method);
 	if (file == nullptr)
-		return AllocatedPath::Null();
+		return nullptr;
 
 	return Java::File::ToAbsolutePath(env, file);
 }
@@ -70,7 +70,7 @@ Environment::getExternalStoragePublicDirectory(const char *type)
 {
 	if (getExternalStoragePublicDirectory_method == nullptr)
 		/* needs API level 8 */
-		return AllocatedPath::Null();
+		return nullptr;
 
 	JNIEnv *env = Java::GetEnv();
 
@@ -79,7 +79,7 @@ Environment::getExternalStoragePublicDirectory(const char *type)
 						   Environment::getExternalStoragePublicDirectory_method,
 						   type2.Get());
 	if (file == nullptr)
-		return AllocatedPath::Null();
+		return nullptr;
 
 	return Java::File::ToAbsolutePath(env, file);
 }

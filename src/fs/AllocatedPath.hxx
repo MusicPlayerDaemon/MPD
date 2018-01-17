@@ -43,7 +43,6 @@ class AllocatedPath {
 
 	string value;
 
-	AllocatedPath(std::nullptr_t):value() {}
 	explicit AllocatedPath(const_pointer_type _value):value(_value) {}
 
 	AllocatedPath(const_pointer_type _begin, const_pointer_type _end)
@@ -57,6 +56,14 @@ class AllocatedPath {
 	}
 public:
 	/**
+	 * Construct a "nulled" instance.  Its IsNull() method will
+	 * return true.  Such an object must not be used.
+	 *
+	 * @see IsNull()
+	 */
+	AllocatedPath(std::nullptr_t):value() {}
+
+	/**
 	 * Copy an #AllocatedPath object.
 	 */
 	AllocatedPath(const AllocatedPath &) = default;
@@ -69,17 +76,6 @@ public:
 	explicit AllocatedPath(Path other):value(other.c_str()) {}
 
 	~AllocatedPath();
-
-	/**
-	 * Return a "nulled" instance.  Its IsNull() method will
-	 * return true.  Such an object must not be used.
-	 *
-	 * @see IsNull()
-	 */
-	gcc_const
-	static AllocatedPath Null() noexcept {
-		return AllocatedPath(nullptr);
-	}
 
 	gcc_pure
 	operator Path() const noexcept {

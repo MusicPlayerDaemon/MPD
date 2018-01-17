@@ -67,7 +67,7 @@ struct LocatedUri {
 	AllocatedPath path;
 
 	LocatedUri(Type _type, const char *_uri,
-		   AllocatedPath &&_path=AllocatedPath::Null())
+		   AllocatedPath &&_path=nullptr)
 		:type(_type), canonical_uri(_uri), path(std::move(_path)) {}
 };
 

@@ -66,7 +66,7 @@ public:
 
 	/**
 	 * Map the given relative URI to a local file path.  Returns
-	 * AllocatedPath::Null() on error or if this storage does not
+	 * nullptr on error or if this storage does not
 	 * support local files.
 	 */
 	gcc_pure

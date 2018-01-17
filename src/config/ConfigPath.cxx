@@ -86,7 +86,7 @@ ParsePath(const char *path)
 		if (*path == '\0')
 			return GetConfiguredHome();
 
-		AllocatedPath home = AllocatedPath::Null();
+		AllocatedPath home = nullptr;
 
 		if (*path == '/') {
 			home = GetConfiguredHome();
@@ -107,11 +107,11 @@ ParsePath(const char *path)
 		}
 
 		if (home.IsNull())
-			return AllocatedPath::Null();
+			return nullptr;
 
 		AllocatedPath path2 = AllocatedPath::FromUTF8Throw(path);
 		if (path2.IsNull())
-			return AllocatedPath::Null();
+			return nullptr;
 
 		return AllocatedPath::Build(home, path2);
 	} else if (!PathTraitsUTF8::IsAbsolute(path)) {

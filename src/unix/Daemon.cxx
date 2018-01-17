@@ -54,7 +54,7 @@ static uid_t user_uid = (uid_t)-1;
 static gid_t user_gid = (gid_t)-1;
 
 /** the absolute path of the pidfile */
-static AllocatedPath pidfile = AllocatedPath::Null();
+static AllocatedPath pidfile = nullptr;
 
 /* whether "group" conf. option was given */
 static bool had_group = false;
@@ -251,7 +251,7 @@ daemonize_finish(void)
 {
 	if (!pidfile.IsNull()) {
 		unlink(pidfile.c_str());
-		pidfile = AllocatedPath::Null();
+		pidfile = nullptr;
 	}
 
 	free(user_name);

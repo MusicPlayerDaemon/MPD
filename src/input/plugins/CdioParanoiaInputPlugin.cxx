@@ -175,7 +175,7 @@ cdio_detect_device(void)
 	char **devices = cdio_get_devices_with_cap(nullptr, CDIO_FS_AUDIO,
 						   false);
 	if (devices == nullptr)
-		return AllocatedPath::Null();
+		return nullptr;
 
 	AllocatedPath path = AllocatedPath::FromFS(devices[0]);
 	cdio_free_device_list(devices);

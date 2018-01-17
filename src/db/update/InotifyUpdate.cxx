@@ -135,7 +135,7 @@ AllocatedPath
 WatchDirectory::GetUriFS() const noexcept
 {
 	if (parent == nullptr)
-		return AllocatedPath::Null();
+		return nullptr;
 
 	const auto uri = parent->GetUriFS();
 	if (uri.IsNull())

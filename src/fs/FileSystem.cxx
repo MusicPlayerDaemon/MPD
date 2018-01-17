@@ -45,15 +45,15 @@ ReadLink(Path path)
 #ifdef _WIN32
 	(void)path;
 	errno = EINVAL;
-	return AllocatedPath::Null();
+	return nullptr;
 #else
 	char buffer[MPD_PATH_MAX];
 	ssize_t size = readlink(path.c_str(), buffer, MPD_PATH_MAX);
 	if (size < 0)
-		return AllocatedPath::Null();
+		return nullptr;
 	if (size_t(size) >= MPD_PATH_MAX) {
 		errno = ENOMEM;
-		return AllocatedPath::Null();
+		return nullptr;
 	}
 	buffer[size] = '\0';
 	return AllocatedPath::FromFS(buffer);

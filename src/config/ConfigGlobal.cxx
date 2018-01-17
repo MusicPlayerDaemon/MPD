@@ -125,7 +125,7 @@ config_get_path(ConfigOption option)
 {
 	const auto *param = config_get_param(option);
 	if (param == nullptr)
-		return AllocatedPath::Null();
+		return nullptr;
 
 	return param->GetPath();
 }

@@ -118,7 +118,7 @@ ConfigBlock::GetPath(const char *name, const char *default_value) const
 		s = bp->value.c_str();
 	} else {
 		if (default_value == nullptr)
-			return AllocatedPath::Null();
+			return nullptr;
 
 		s = default_value;
 	}
