@@ -309,9 +309,8 @@ ParseCommandLine(int argc, char **argv, struct options &options)
 
 	// First pass: handle command line options
 	OptionParser parser(option_defs, argc, argv);
-	int option_index;
-	while ((option_index = parser.Next()) >= 0) {
-		switch (Option(option_index)) {
+	while (auto o = parser.Next()) {
+		switch (Option(o.index)) {
 		case OPTION_KILL:
 			options.kill = true;
 			break;

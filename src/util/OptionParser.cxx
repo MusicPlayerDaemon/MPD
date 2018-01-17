@@ -23,7 +23,7 @@
 
 #include <string.h>
 
-inline unsigned
+inline OptionParser::Result
 OptionParser::IdentifyOption(const char *s) const
 {
 	assert(s != nullptr);
@@ -33,18 +33,18 @@ OptionParser::IdentifyOption(const char *s) const
 		for (const auto &i : options)
 			if (i.HasLongOption() &&
 			    strcmp(s + 2, i.GetLongOption()) == 0)
-				return &i - options.data;
+				return {int(&i - options.data)};
 	} else if (s[1] != 0 && s[2] == 0) {
 		const char ch = s[1];
 		for (const auto &i : options)
 			if (i.HasShortOption() && ch == i.GetShortOption())
-				return &i - options.data;
+				return {int(&i - options.data)};
 	}
 
 	throw FormatRuntimeError("Unknown option: %s", s);
 }
 
-int
+OptionParser::Result
 OptionParser::Next()
 {
 	while (!args.empty()) {
@@ -55,5 +55,5 @@ OptionParser::Next()
 		*remaining_tail++ = arg;
 	}
 
-	return -1;
+	return {-1};
 }

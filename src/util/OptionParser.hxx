@@ -45,17 +45,22 @@ public:
 		 remaining_head(const_cast<const char **>(_argv + 1)),
 		 remaining_tail(remaining_head) {}
 
+	struct Result {
+		int index;
+
+		constexpr operator bool() noexcept {
+			return index >= 0;
+		}
+	};
+
 	/**
 	 * Parses current command line entry.
 	 * Regardless of result, advances current position to the next
 	 * command line entry. 
 	 *
 	 * Throws on error.
-	 *
-	 * @return the index if an option was found, -1 if there are
-	 * no more options
 	 */
-	int Next();
+	Result Next();
 
 	/**
 	 * Returns the remaining non-option arguments.
@@ -65,7 +70,7 @@ public:
 	}
 
 private:
-	unsigned IdentifyOption(const char *s) const;
+	Result IdentifyOption(const char *s) const;
 };
 
 #endif
