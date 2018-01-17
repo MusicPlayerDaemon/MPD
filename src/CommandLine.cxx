@@ -306,10 +306,6 @@ void
 ParseCommandLine(int argc, char **argv, struct options *options)
 {
 	bool use_config_file = true;
-	options->kill = false;
-	options->daemon = true;
-	options->log_stderr = false;
-	options->verbose = false;
 
 	// First pass: handle command line options
 	OptionParser parser(option_defs, argc, argv);

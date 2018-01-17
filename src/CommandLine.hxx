@@ -21,10 +21,10 @@
 #define MPD_COMMAND_LINE_HXX
 
 struct options {
-	bool kill;
-	bool daemon;
-	bool log_stderr;
-	bool verbose;
+	bool kill = false;
+	bool daemon = true;
+	bool log_stderr = false;
+	bool verbose = false;
 };
 
 void
