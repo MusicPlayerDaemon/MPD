@@ -129,7 +129,7 @@ VorbisDecoder::Seek(uint64_t where_frame)
 		SeekGranulePos(where_granulepos);
 		vorbis_synthesis_restart(&dsp);
 		return true;
-	} catch (const std::runtime_error &) {
+	} catch (...) {
 		return false;
 	}
 }
@@ -152,12 +152,11 @@ static void
 vorbis_send_comments(DecoderClient &client, InputStream &is,
 		     char **comments)
 {
-	Tag *tag = vorbis_comments_to_tag(comments);
+	auto tag = vorbis_comments_to_tag(comments);
 	if (!tag)
 		return;
 
 	client.SubmitTag(is, std::move(*tag));
-	delete tag;
 }
 
 void
@@ -323,7 +322,7 @@ vorbis_stream_decode(DecoderClient &client,
 	   moved it */
 	try {
 		input_stream.LockRewind();
-	} catch (const std::runtime_error &) {
+	} catch (...) {
 	}
 
 	DecoderReader reader(client, input_stream);

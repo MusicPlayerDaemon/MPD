@@ -23,7 +23,7 @@
 #include "Compiler.h"
 #include "system/Error.hxx"
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <winsock2.h>
 typedef DWORD socket_error_t;
 #else
@@ -35,7 +35,7 @@ gcc_pure
 static inline socket_error_t
 GetSocketError() noexcept
 {
-#ifdef WIN32
+#ifdef _WIN32
 	return WSAGetLastError();
 #else
 	return errno;
@@ -46,7 +46,7 @@ gcc_const
 static inline bool
 IsSocketErrorAgain(socket_error_t code) noexcept
 {
-#ifdef WIN32
+#ifdef _WIN32
 	return code == WSAEINPROGRESS;
 #else
 	return code == EAGAIN;
@@ -57,7 +57,7 @@ gcc_const
 static inline bool
 IsSocketErrorInterruped(socket_error_t code) noexcept
 {
-#ifdef WIN32
+#ifdef _WIN32
 	return code == WSAEINTR;
 #else
 	return code == EINTR;
@@ -68,7 +68,7 @@ gcc_const
 static inline bool
 IsSocketErrorClosed(socket_error_t code) noexcept
 {
-#ifdef WIN32
+#ifdef _WIN32
 	return code == WSAECONNRESET;
 #else
 	return code == EPIPE || code == ECONNRESET;
@@ -81,7 +81,7 @@ IsSocketErrorClosed(socket_error_t code) noexcept
  * and this class hosts the buffer.
  */
 class SocketErrorMessage {
-#ifdef WIN32
+#ifdef _WIN32
 	char msg[256];
 #else
 	const char *const msg;
@@ -99,7 +99,7 @@ gcc_const
 static inline std::system_error
 MakeSocketError(socket_error_t code, const char *msg) noexcept
 {
-#ifdef WIN32
+#ifdef _WIN32
 	return MakeLastError(code, msg);
 #else
 	return MakeErrno(code, msg);

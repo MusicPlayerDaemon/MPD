@@ -216,21 +216,15 @@ input_nfs_finish() noexcept
 	nfs_finish();
 }
 
-static InputStream *
+static InputStreamPtr
 input_nfs_open(const char *uri,
 	       Mutex &mutex, Cond &cond)
 {
 	if (!StringStartsWith(uri, "nfs://"))
 		return nullptr;
 
-	NfsInputStream *is = new NfsInputStream(uri, mutex, cond);
-	try {
-		is->Open();
-	} catch (...) {
-		delete is;
-		throw;
-	}
-
+	auto is = std::make_unique<NfsInputStream>(uri, mutex, cond);
+	is->Open();
 	return is;
 }
 

@@ -24,6 +24,8 @@
 #include "Editor.hxx"
 #include "Compiler.h"
 
+#include <atomic>
+
 struct StorageFileInfo;
 struct Directory;
 struct ArchivePlugin;
@@ -36,7 +38,7 @@ class UpdateWalk final {
 	friend class UpdateArchiveVisitor;
 #endif
 
-#ifndef WIN32
+#ifndef _WIN32
 	static constexpr bool DEFAULT_FOLLOW_INSIDE_SYMLINKS = true;
 	static constexpr bool DEFAULT_FOLLOW_OUTSIDE_SYMLINKS = true;
 
@@ -52,7 +54,7 @@ class UpdateWalk final {
 	 * cancel as quickly as possible.  Access to this flag is
 	 * unprotected.
 	 */
-	volatile bool cancel;
+	std::atomic_bool cancel;
 
 	Storage &storage;
 

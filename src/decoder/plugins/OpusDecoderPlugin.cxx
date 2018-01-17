@@ -261,7 +261,7 @@ MPDOpusDecoder::Seek(uint64_t where_frame)
 	try {
 		SeekGranulePos(where_granulepos);
 		return true;
-	} catch (const std::runtime_error &) {
+	} catch (...) {
 		return false;
 	}
 }
@@ -277,7 +277,7 @@ mpd_opus_stream_decode(DecoderClient &client,
 	   moved it */
 	try {
 		input_stream.LockRewind();
-	} catch (const std::runtime_error &) {
+	} catch (...) {
 	}
 
 	DecoderReader reader(client, input_stream);

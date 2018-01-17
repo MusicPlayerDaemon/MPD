@@ -28,6 +28,8 @@
 #include "AudioFormat.hxx"
 #endif
 
+#include <memory>
+
 #include <stdint.h>
 #include <stddef.h>
 
@@ -35,12 +37,12 @@ static constexpr size_t CHUNK_SIZE = 4096;
 
 struct AudioFormat;
 struct Tag;
+struct MusicChunk;
 
 /**
- * A chunk of music data.  Its format is defined by the
- * MusicPipe::Push() caller.
+ * Meta information for #MusicChunk.
  */
-struct MusicChunk {
+struct MusicChunkInfo {
 	/** the next chunk in a linked list */
 	MusicChunk *next;
 
@@ -49,6 +51,12 @@ struct MusicChunk {
 	 * This is used for cross-fading.
 	 */
 	MusicChunk *other = nullptr;
+
+	/**
+	 * An optional tag associated with this chunk (and the
+	 * following chunks); appears at song boundaries.
+	 */
+	std::unique_ptr<Tag> tag;
 
 	/**
 	 * The current mix ratio for cross-fading: 1.0 means play 100%
@@ -66,26 +74,10 @@ struct MusicChunk {
 	SignedSongTime time;
 
 	/**
-	 * An optional tag associated with this chunk (and the
-	 * following chunks); appears at song boundaries.  The tag
-	 * object is owned by this chunk, and must be freed when this
-	 * chunk is deinitialized.
-	 */
-	Tag *tag = nullptr;
-
-	/**
 	 * Replay gain information associated with this chunk.
 	 * Only valid if the serial is not 0.
 	 */
 	ReplayGainInfo replay_gain_info;
-
-	/**
-	 * A magic value for #replay_gain_serial which omits updating
-	 * the #ReplayGainFilter.  This is used by "silence" chunks
-	 * (see PlayerThread::SendSilence()) so they don't affect the
-	 * replay gain.
-	 */
-	static constexpr unsigned IGNORE_REPLAY_GAIN = ~0u;
 
 	/**
 	 * A serial number for checking if replay gain info has
@@ -94,20 +86,15 @@ struct MusicChunk {
 	 */
 	unsigned replay_gain_serial;
 
-	/** the data (probably PCM) */
-	uint8_t data[CHUNK_SIZE];
-
 #ifndef NDEBUG
 	AudioFormat audio_format;
 #endif
 
-	MusicChunk() = default;
+	MusicChunkInfo() noexcept;
+	~MusicChunkInfo() noexcept;
 
-	MusicChunk(const MusicChunk &) = delete;
-
-	~MusicChunk();
-
-	MusicChunk &operator=(const MusicChunk &) = delete;
+	MusicChunkInfo(const MusicChunkInfo &) = delete;
+	MusicChunkInfo &operator=(const MusicChunkInfo &) = delete;
 
 	bool IsEmpty() const {
 		return length == 0 && tag == nullptr;
@@ -121,6 +108,15 @@ struct MusicChunk {
 	gcc_pure
 	bool CheckFormat(AudioFormat audio_format) const noexcept;
 #endif
+};
+
+/**
+ * A chunk of music data.  Its format is defined by the
+ * MusicPipe::Push() caller.
+ */
+struct MusicChunk : MusicChunkInfo {
+	/** the data (probably PCM) */
+	uint8_t data[CHUNK_SIZE - sizeof(MusicChunkInfo)];
 
 	/**
 	 * Prepares appending to the music chunk.  Returns a buffer
@@ -148,5 +144,7 @@ struct MusicChunk {
 	 */
 	bool Expand(AudioFormat af, size_t length) noexcept;
 };
+
+static_assert(sizeof(MusicChunk) == CHUNK_SIZE, "Wrong size");
 
 #endif

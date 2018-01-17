@@ -41,7 +41,7 @@ try {
 		return;
 	}
 
-#ifndef WIN32
+#ifndef _WIN32
 	try {
 		const auto x = AllocatedPath::Build(path_fs,
 						    PathTraitsFS::CURRENT_DIRECTORY);
@@ -62,6 +62,6 @@ try {
 				    "No permission to read directory: %s",
 				    path_fs.ToUTF8().c_str());
 	}
-} catch (const std::runtime_error &e) {
-	LogError(e);
+} catch (...) {
+	LogError(std::current_exception());
 }

@@ -23,9 +23,9 @@
 #include "net/SocketAddress.hxx"
 #include "Log.hxx"
 
-#include <stdexcept>
+#include <exception>
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <ws2tcpip.h>
 #include <winsock.h>
 #else
@@ -53,7 +53,7 @@ try {
 
 	freeaddrinfo(ai);
 	return EXIT_SUCCESS;
-} catch (const std::runtime_error &e) {
-	LogError(e);
+} catch (...) {
+	LogError(std::current_exception());
 	return EXIT_FAILURE;
 }

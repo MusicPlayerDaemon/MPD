@@ -20,7 +20,7 @@
 #ifndef MPD_COMMAND_RESULT_HXX
 #define MPD_COMMAND_RESULT_HXX
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <windows.h>
 /* damn you, windows.h! */
 #ifdef ERROR

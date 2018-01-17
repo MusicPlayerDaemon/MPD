@@ -31,7 +31,7 @@
 
 #include <neaacdec.h>
 
-#include <stdexcept>
+#include <exception>
 
 #include <assert.h>
 #include <string.h>
@@ -196,7 +196,7 @@ faad_song_duration(DecoderBuffer &buffer, InputStream &is)
 
 		try {
 			is.LockSeek(tagsize);
-		} catch (const std::runtime_error &) {
+		} catch (...) {
 		}
 
 		buffer.Clear();
@@ -316,7 +316,7 @@ faad_get_file_time(InputStream &is)
 		try {
 			faad_decoder_init(decoder, buffer, audio_format);
 			recognized = true;
-		} catch (const std::runtime_error &e) {
+		} catch (...) {
 		}
 	}
 

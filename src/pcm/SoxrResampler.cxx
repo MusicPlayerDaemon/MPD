@@ -134,9 +134,17 @@ SoxrPcmResampler::Open(AudioFormat &af, unsigned new_sample_rate)
 }
 
 void
-SoxrPcmResampler::Close()
+SoxrPcmResampler::Close() noexcept
 {
 	soxr_delete(soxr);
+}
+
+void
+SoxrPcmResampler::Reset() noexcept
+{
+#if SOXR_THIS_VERSION >= SOXR_VERSION(0,1,2)
+	soxr_clear(soxr);
+#endif
 }
 
 ConstBuffer<void>
@@ -157,6 +165,27 @@ SoxrPcmResampler::Resample(ConstBuffer<void> src)
 				      output_buffer, o_frames, &o_done);
 	if (e != nullptr)
 		throw FormatRuntimeError("soxr error: %s", e);
+
+	return { output_buffer, o_done * frame_size };
+}
+
+ConstBuffer<void>
+SoxrPcmResampler::Flush()
+{
+	const size_t frame_size = channels * sizeof(float);
+	const size_t o_frames = 1024;
+
+	float *output_buffer = (float *)buffer.Get(o_frames * frame_size);
+
+	size_t o_done;
+	soxr_error_t e = soxr_process(soxr, nullptr, 0, nullptr,
+				      output_buffer, o_frames, &o_done);
+	if (e != nullptr)
+		throw FormatRuntimeError("soxr error: %s", e);
+
+	if (o_done == 0)
+		/* flush complete */
+		output_buffer = nullptr;
 
 	return { output_buffer, o_done * frame_size };
 }

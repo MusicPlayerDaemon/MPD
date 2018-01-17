@@ -30,7 +30,7 @@
 #include "event/DeferEvent.hxx"
 #include "Compiler.h"
 
-#include <upnp/upnp.h>
+#include <upnp.h>
 
 #include <boost/intrusive/list.hpp>
 
@@ -137,9 +137,15 @@ class UPnPDeviceDirectory final : UpnpCallback {
 
 	Mutex mutex;
 
+	/**
+	 * Protected by #mutex.
+	 */
 	boost::intrusive::list<Downloader,
 			       boost::intrusive::constant_time_size<false>> downloaders;
 
+	/**
+	 * Protected by #mutex.
+	 */
 	std::list<ContentDirectoryDescriptor> directories;
 
 	/**

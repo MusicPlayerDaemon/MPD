@@ -31,7 +31,7 @@ try {
 	Mutex mutex;
 	Cond cond;
 
-	InputStreamPtr is(archive.OpenStream(path_utf8, mutex, cond));
+	auto is = archive.OpenStream(path_utf8, mutex, cond);
 	if (!is)
 		return false;
 
@@ -47,7 +47,7 @@ try {
 	Mutex mutex;
 	Cond cond;
 
-	InputStreamPtr is(archive.OpenStream(path_utf8, mutex, cond));
+	auto is = archive.OpenStream(path_utf8, mutex, cond);
 	return is && tag_stream_scan(*is, builder);
 } catch (const std::exception &e) {
 	return false;

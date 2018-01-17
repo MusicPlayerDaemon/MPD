@@ -24,7 +24,7 @@
 
 template<typename T, T MIN, T MAX, unsigned scale_bits>
 inline T
-PcmDither::Dither(T sample)
+PcmDither::Dither(T sample) noexcept
 {
 	constexpr T round = 1 << (scale_bits - 1);
 	constexpr T mask = (1 << scale_bits) - 1;
@@ -64,7 +64,7 @@ PcmDither::Dither(T sample)
 
 template<typename ST, unsigned SBITS, unsigned DBITS>
 inline ST
-PcmDither::DitherShift(ST sample)
+PcmDither::DitherShift(ST sample) noexcept
 {
 	static_assert(sizeof(ST) * 8 > SBITS, "Source type too small");
 	static_assert(SBITS > DBITS, "Non-positive scale_bits");
@@ -77,7 +77,7 @@ PcmDither::DitherShift(ST sample)
 
 template<typename ST, typename DT>
 inline typename DT::value_type
-PcmDither::DitherConvert(typename ST::value_type sample)
+PcmDither::DitherConvert(typename ST::value_type sample) noexcept
 {
 	static_assert(ST::BITS > DT::BITS,
 		      "Sample formats cannot be dithered");
@@ -92,7 +92,7 @@ template<typename ST, typename DT>
 inline void
 PcmDither::DitherConvert(typename DT::pointer_type dest,
 			 typename ST::const_pointer_type src,
-			 typename ST::const_pointer_type src_end)
+			 typename ST::const_pointer_type src_end) noexcept
 {
 	while (src < src_end)
 		*dest++ = DitherConvert<ST, DT>(*src++);
@@ -100,7 +100,7 @@ PcmDither::DitherConvert(typename DT::pointer_type dest,
 
 inline void
 PcmDither::Dither24To16(int16_t *dest, const int32_t *src,
-			const int32_t *src_end)
+			const int32_t *src_end) noexcept
 {
 	typedef SampleTraits<SampleFormat::S24_P32> ST;
 	typedef SampleTraits<SampleFormat::S16> DT;
@@ -109,7 +109,7 @@ PcmDither::Dither24To16(int16_t *dest, const int32_t *src,
 
 inline void
 PcmDither::Dither32To16(int16_t *dest, const int32_t *src,
-			const int32_t *src_end)
+			const int32_t *src_end) noexcept
 {
 	typedef SampleTraits<SampleFormat::S32> ST;
 	typedef SampleTraits<SampleFormat::S16> DT;

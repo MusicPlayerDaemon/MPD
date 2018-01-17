@@ -21,27 +21,10 @@
 #include "Filtered.hxx"
 #include "Interface.hxx"
 #include "mixer/MixerControl.hxx"
-#include "filter/FilterInternal.hxx"
+#include "filter/Prepared.hxx"
 
 FilteredAudioOutput::~FilteredAudioOutput()
 {
 	if (mixer != nullptr)
 		mixer_free(mixer);
-
-	delete prepared_replay_gain_filter;
-	delete prepared_other_replay_gain_filter;
-	delete prepared_filter;
-}
-
-void
-FilteredAudioOutput::BeginDestroy() noexcept
-{
-	if (mixer != nullptr)
-		mixer_auto_close(mixer);
-}
-
-void
-FilteredAudioOutput::FinishDestroy() noexcept
-{
-	output.reset();
 }

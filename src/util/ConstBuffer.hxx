@@ -60,10 +60,6 @@ struct ConstBuffer<void> {
 	constexpr ConstBuffer(pointer_type _data, size_type _size)
 		:data(_data), size(_size) {}
 
-	constexpr static ConstBuffer Null() {
-		return ConstBuffer(nullptr, 0);
-	}
-
 	constexpr static ConstBuffer<void> FromVoid(ConstBuffer<void> other) {
 		return other;
 	}
@@ -113,16 +109,15 @@ struct ConstBuffer {
 	constexpr ConstBuffer(pointer_type _data, size_type _size)
 		:data(_data), size(_size) {}
 
+	constexpr ConstBuffer(pointer_type _data, pointer_type _end)
+		:data(_data), size(_end - _data) {}
+
 	/**
 	 * Convert array to ConstBuffer instance.
 	 */
 	template<size_type _size>
 	constexpr ConstBuffer(const T (&_data)[_size])
 		:data(_data), size(_size) {}
-
-	constexpr static ConstBuffer Null() {
-		return ConstBuffer(nullptr, 0);
-	}
 
 	/**
 	 * Cast a ConstBuffer<void> to a ConstBuffer<T>, rounding down

@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2017 The Music Player Daemon Project
+ * Copyright 2003-2018 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,27 +17,9 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-/** \file
- *
- * Utility functions for filter configuration
- */
+#ifndef INPUT_QOBUZ_HXX
+#define INPUT_QOBUZ_HXX
 
-#ifndef MPD_FILTER_CONFIG_HXX
-#define MPD_FILTER_CONFIG_HXX
-
-class PreparedFilter;
-
-/**
- * Builds a filter chain from a configuration string on the form
- * "name1, name2, name3, ..." by looking up each name among the
- * configured filter sections.
- *
- * Throws std::runtime_error on error.
- *
- * @param chain the chain to append filters on
- * @param spec the filter chain specification
- */
-void
-filter_chain_parse(PreparedFilter &chain, const char *spec);
+extern const struct InputPlugin qobuz_input_plugin;
 
 #endif

@@ -22,7 +22,7 @@
 #include "lib/xiph/OggFind.hxx"
 #include "input/InputStream.hxx"
 
-#include <stdexcept>
+#include <exception>
 
 /**
  * Load the end-of-stream packet and restore the previous file
@@ -55,7 +55,7 @@ OggDecoder::LoadEndPacket(ogg_packet &packet) const
 	/* restore the previous file position */
 	try {
 		input_stream.LockSeek(old_offset);
-	} catch (const std::runtime_error &) {
+	} catch (...) {
 	}
 
 	return result;

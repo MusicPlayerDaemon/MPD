@@ -31,9 +31,10 @@
 int
 BlockParam::GetIntValue() const
 {
+	const char *const s = value.c_str();
 	char *endptr;
-	long value2 = strtol(value.c_str(), &endptr, 0);
-	if (*endptr != 0)
+	long value2 = strtol(s, &endptr, 0);
+	if (endptr == s || *endptr != 0)
 		FormatFatalError("Not a valid number in line %i", line);
 
 	return value2;
@@ -42,10 +43,26 @@ BlockParam::GetIntValue() const
 unsigned
 BlockParam::GetUnsignedValue() const
 {
+	const char *const s = value.c_str();
 	char *endptr;
-	unsigned long value2 = strtoul(value.c_str(), &endptr, 0);
-	if (*endptr != 0)
+	unsigned long value2 = strtoul(s, &endptr, 0);
+	if (endptr == s || *endptr != 0)
 		FormatFatalError("Not a valid number in line %i", line);
+
+	return (unsigned)value2;
+}
+
+unsigned
+BlockParam::GetPositiveValue() const
+{
+	const char *const s = value.c_str();
+	char *endptr;
+	unsigned long value2 = strtoul(s, &endptr, 0);
+	if (endptr == s || *endptr != 0)
+		FormatFatalError("Not a valid number in line %i", line);
+
+	if (value2 <= 0)
+		FormatFatalError("Number in line %i must be positive", line);
 
 	return (unsigned)value2;
 }
@@ -101,7 +118,7 @@ ConfigBlock::GetPath(const char *name, const char *default_value) const
 		s = bp->value.c_str();
 	} else {
 		if (default_value == nullptr)
-			return AllocatedPath::Null();
+			return nullptr;
 
 		s = default_value;
 	}
@@ -127,6 +144,16 @@ ConfigBlock::GetBlockValue(const char *name, unsigned default_value) const
 		return default_value;
 
 	return bp->GetUnsignedValue();
+}
+
+unsigned
+ConfigBlock::GetPositiveValue(const char *name, unsigned default_value) const
+{
+	const auto *param = GetBlockParam(name);
+	if (param == nullptr)
+		return default_value;
+
+	return param->GetPositiveValue();
 }
 
 bool

@@ -61,8 +61,8 @@ public:
 					      "foo bar");
 		CPPUNIT_ASSERT(sis->IsReady());
 
-		InputStream *ris = input_rewind_open(sis);
-		CPPUNIT_ASSERT(ris != sis);
+		auto ris = input_rewind_open(InputStreamPtr(sis));
+		CPPUNIT_ASSERT(ris.get() != sis);
 		CPPUNIT_ASSERT(ris != nullptr);
 
 		const std::lock_guard<Mutex> protect(mutex);

@@ -26,6 +26,7 @@
 #include "Compiler.h"
 
 #include <algorithm>
+#include <memory>
 
 /**
  * The meta information about a song file.  It is a MPD specific
@@ -116,8 +117,8 @@ struct Tag {
 	 *
 	 * @return a newly allocated tag
 	 */
-	gcc_malloc
-	static Tag *Merge(const Tag &base, const Tag &add);
+	static std::unique_ptr<Tag> Merge(const Tag &base,
+					  const Tag &add) noexcept;
 
 	/**
 	 * Merges the data from two tags.  Any of the two may be nullptr.  Both
@@ -125,8 +126,8 @@ struct Tag {
 	 *
 	 * @return a newly allocated tag
 	 */
-	gcc_malloc
-	static Tag *MergeReplace(Tag *base, Tag *add);
+	static std::unique_ptr<Tag> Merge(std::unique_ptr<Tag> base,
+					  std::unique_ptr<Tag> add);
 
 	/**
 	 * Returns the first value of the specified tag type, or
@@ -148,7 +149,7 @@ struct Tag {
 	 * (e.g. #TAG_ALBUM_ARTIST falls back to #TAG_ARTIST).  If
 	 * there is no such value, returns an empty string.
 	 */
-	gcc_pure
+	gcc_pure gcc_returns_nonnull
 	const char *GetSortValue(TagType type) const noexcept;
 
 	class const_iterator {

@@ -61,7 +61,7 @@ skip_path(Path name_fs) noexcept
 	return name_fs.HasNewline();
 }
 
-#if defined(WIN32) && GCC_CHECK_VERSION(4,6)
+#if defined(_WIN32) && GCC_CHECK_VERSION(4,6)
 /* PRIu64 causes bogus compiler warning */
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wformat"
@@ -104,7 +104,7 @@ handle_listfiles_local(Response &r, Path path_fs)
 	return CommandResult::OK;
 }
 
-#if defined(WIN32) && GCC_CHECK_VERSION(4,6)
+#if defined(_WIN32) && GCC_CHECK_VERSION(4,6)
 #pragma GCC diagnostic pop
 #endif
 

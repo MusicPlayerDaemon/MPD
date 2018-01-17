@@ -25,6 +25,7 @@
 #include "Compiler.h"
 
 #include <vector>
+#include <memory>
 
 struct StringView;
 struct TagItem;
@@ -105,7 +106,7 @@ public:
 	 * returned object is owned by the caller.  This object is
 	 * empty afterwards.
 	 */
-	Tag *CommitNew();
+	std::unique_ptr<Tag> CommitNew();
 
 	void SetDuration(SignedSongTime _duration) {
 		duration = _duration;

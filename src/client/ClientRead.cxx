@@ -27,7 +27,7 @@
 #include <string.h>
 
 BufferedSocket::InputResult
-Client::OnSocketInput(void *data, size_t length)
+Client::OnSocketInput(void *data, size_t length) noexcept
 {
 	char *p = (char *)data;
 	char *newline = (char *)memchr(p, '\n', length);

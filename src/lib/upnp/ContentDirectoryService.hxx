@@ -22,10 +22,10 @@
 
 #include "Compiler.h"
 
-#include <upnp/upnp.h>
+#include <upnp.h>
 
 #include <string>
-#include <list>
+#include <forward_list>
 
 class UPnPDevice;
 struct UPnPService;
@@ -111,7 +111,7 @@ public:
 	 * @param[out] result an empty vector: no search, or a single '*' element:
 	 *     any tag can be used in a search, or a list of usable tag names.
 	 */
-	std::list<std::string> getSearchCapabilities(UpnpClient_Handle handle) const;
+	std::forward_list<std::string> getSearchCapabilities(UpnpClient_Handle handle) const;
 
 	gcc_pure
 	std::string GetURI() const noexcept {

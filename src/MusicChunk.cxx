@@ -24,14 +24,12 @@
 
 #include <assert.h>
 
-MusicChunk::~MusicChunk()
-{
-	delete tag;
-}
+MusicChunkInfo::MusicChunkInfo() noexcept = default;
+MusicChunkInfo::~MusicChunkInfo() noexcept = default;
 
 #ifndef NDEBUG
 bool
-MusicChunk::CheckFormat(const AudioFormat other_format) const noexcept
+MusicChunkInfo::CheckFormat(const AudioFormat other_format) const noexcept
 {
 	assert(other_format.IsValid());
 

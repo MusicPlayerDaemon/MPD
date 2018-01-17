@@ -36,7 +36,7 @@ Context::GetCacheDir(JNIEnv *env) const
 	jobject file = env->CallObjectMethod(Get(), method);
 	if (file == nullptr) {
 		env->ExceptionClear();
-		return AllocatedPath::Null();
+		return nullptr;
 	}
 
 	return Java::File::ToAbsolutePath(env, file);

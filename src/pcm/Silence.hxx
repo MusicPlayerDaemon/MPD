@@ -31,6 +31,6 @@ enum class SampleFormat : uint8_t;
  * Fill the given buffer with the format-specific silence pattern.
  */
 void
-PcmSilence(WritableBuffer<void> dest, SampleFormat format);
+PcmSilence(WritableBuffer<void> dest, SampleFormat format) noexcept;
 
 #endif

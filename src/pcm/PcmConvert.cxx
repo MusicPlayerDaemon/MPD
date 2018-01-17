@@ -30,7 +30,7 @@ pcm_convert_global_init()
 	pcm_resampler_global_init();
 }
 
-PcmConvert::PcmConvert()
+PcmConvert::PcmConvert() noexcept
 {
 #ifndef NDEBUG
 	src_format.Clear();
@@ -38,7 +38,7 @@ PcmConvert::PcmConvert()
 #endif
 }
 
-PcmConvert::~PcmConvert()
+PcmConvert::~PcmConvert() noexcept
 {
 	assert(!src_format.IsValid());
 	assert(!dest_format.IsValid());
@@ -97,7 +97,7 @@ PcmConvert::Open(const AudioFormat _src_format, const AudioFormat _dest_format)
 }
 
 void
-PcmConvert::Close()
+PcmConvert::Close() noexcept
 {
 	if (enable_channels)
 		channels_converter.Close();
@@ -117,7 +117,7 @@ PcmConvert::Close()
 }
 
 void
-PcmConvert::Reset()
+PcmConvert::Reset() noexcept
 {
 	if (enable_resampler)
 		resampler.Reset();
@@ -151,4 +151,23 @@ PcmConvert::Convert(ConstBuffer<void> buffer)
 		buffer = channels_converter.Convert(buffer);
 
 	return buffer;
+}
+
+ConstBuffer<void>
+PcmConvert::Flush()
+{
+	if (enable_resampler) {
+		auto buffer = resampler.Flush();
+		if (!buffer.IsNull()) {
+			if (enable_format)
+				buffer = format_converter.Convert(buffer);
+
+			if (enable_channels)
+				buffer = channels_converter.Convert(buffer);
+
+			return buffer;
+		}
+	}
+
+	return nullptr;
 }

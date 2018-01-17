@@ -19,16 +19,16 @@
 
 #include "config.h"
 #include "Control.hxx"
+#include "Outputs.hxx"
 #include "Idle.hxx"
 #include "DetachedSong.hxx"
-#include "output/MultipleOutputs.hxx"
 
 #include <algorithm>
 
 #include <assert.h>
 
 PlayerControl::PlayerControl(PlayerListener &_listener,
-			     MultipleOutputs &_outputs,
+			     PlayerOutputs &_outputs,
 			     unsigned _buffer_chunks,
 			     unsigned _buffered_before_play,
 			     AudioFormat _configured_audio_format,
@@ -44,15 +44,16 @@ PlayerControl::PlayerControl(PlayerListener &_listener,
 
 PlayerControl::~PlayerControl() noexcept
 {
+	assert(!occupied);
 }
 
 bool
 PlayerControl::WaitOutputConsumed(unsigned threshold) noexcept
 {
-	bool result = outputs.Check() < threshold;
+	bool result = outputs.CheckPipe() < threshold;
 	if (!result && command == PlayerCommand::NONE) {
 		Wait();
-		result = outputs.Check() < threshold;
+		result = outputs.CheckPipe() < threshold;
 	}
 
 	return result;
@@ -155,7 +156,8 @@ PlayerControl::LockGetStatus() noexcept
 	player_status status;
 
 	const std::lock_guard<Mutex> protect(mutex);
-	SynchronousCommand(PlayerCommand::REFRESH);
+	if (!occupied)
+		SynchronousCommand(PlayerCommand::REFRESH);
 
 	status.state = state;
 
@@ -253,6 +255,11 @@ PlayerControl::SeekLocked(std::unique_ptr<DetachedSong> song, SongTime t)
 	SynchronousCommand(PlayerCommand::SEEK);
 
 	assert(next_song == nullptr);
+
+	/* the SEEK command is asynchronous; until completion, the
+	   "seeking" flag is set */
+	while (seeking)
+		ClientWait();
 
 	if (error_type != PlayerError::NONE) {
 		assert(error);

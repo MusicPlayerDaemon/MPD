@@ -47,10 +47,6 @@ DecoderBridge::~DecoderBridge()
 		convert->Close();
 		delete convert;
 	}
-
-	delete song_tag;
-	delete stream_tag;
-	delete decoder_tag;
 }
 
 bool
@@ -215,18 +211,18 @@ DecoderBridge::DoSendTag(const Tag &tag)
 		return dc.command;
 	}
 
-	chunk->tag = new Tag(tag);
+	chunk->tag = std::make_unique<Tag>(tag);
 	return DecoderCommand::NONE;
 }
 
 bool
 DecoderBridge::UpdateStreamTag(InputStream *is)
 {
-	auto *tag = is != nullptr
+	auto tag = is != nullptr
 		? is->LockReadTag()
 		: nullptr;
 	if (tag == nullptr) {
-		tag = song_tag;
+		tag = std::move(song_tag);
 		if (tag == nullptr)
 			return false;
 
@@ -234,12 +230,9 @@ DecoderBridge::UpdateStreamTag(InputStream *is)
 		   instead */
 	} else
 		/* discard the song tag; we don't need it */
-		delete song_tag;
+		song_tag.reset();
 
-	song_tag = nullptr;
-
-	delete stream_tag;
-	stream_tag = tag;
+	stream_tag = std::move(tag);
 	return true;
 }
 
@@ -416,7 +409,7 @@ try {
 	assert(nbytes > 0 || is.IsEOF());
 
 	return nbytes;
-} catch (const std::runtime_error &e) {
+} catch (...) {
 	error = std::current_exception();
 	return 0;
 }
@@ -450,13 +443,11 @@ DecoderBridge::SubmitData(InputStream *is,
 	/* send stream tags */
 
 	if (UpdateStreamTag(is)) {
-		if (decoder_tag != nullptr) {
+		if (decoder_tag != nullptr)
 			/* merge with tag from decoder plugin */
-			Tag *tag = Tag::Merge(*decoder_tag,
-					      *stream_tag);
-			cmd = DoSendTag(*tag);
-			delete tag;
-		} else
+			cmd = DoSendTag(*Tag::Merge(*decoder_tag,
+						    *stream_tag));
+		else
 			/* send only the stream tag */
 			cmd = DoSendTag(*stream_tag);
 
@@ -471,7 +462,7 @@ DecoderBridge::SubmitData(InputStream *is,
 			auto result = convert->Convert({data, length});
 			data = result.data;
 			length = result.size;
-		} catch (const std::runtime_error &e) {
+		} catch (...) {
 			/* the PCM conversion has failed - stop
 			   playback, since we have no better way to
 			   bail out */
@@ -542,8 +533,7 @@ DecoderBridge::SubmitTag(InputStream *is, Tag &&tag)
 
 	/* save the tag */
 
-	delete decoder_tag;
-	decoder_tag = new Tag(std::move(tag));
+	decoder_tag = std::make_unique<Tag>(std::move(tag));
 
 	/* check for a new stream tag */
 
@@ -559,14 +549,10 @@ DecoderBridge::SubmitTag(InputStream *is, Tag &&tag)
 
 	/* send tag to music pipe */
 
-	if (stream_tag != nullptr) {
+	if (stream_tag != nullptr)
 		/* merge with tag from input stream */
-		Tag *merged;
-
-		merged = Tag::Merge(*stream_tag, *decoder_tag);
-		cmd = DoSendTag(*merged);
-		delete merged;
-	} else
+		cmd = DoSendTag(*Tag::Merge(*stream_tag, *decoder_tag));
+	else
 		/* send only the decoder tag */
 		cmd = DoSendTag(*decoder_tag);
 

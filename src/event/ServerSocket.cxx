@@ -44,7 +44,7 @@
 #include <unistd.h>
 #include <assert.h>
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <ws2tcpip.h>
 #include <winsock.h>
 #else
@@ -71,7 +71,7 @@ public:
 		:SocketMonitor(_loop),
 		 parent(_parent), serial(_serial),
 #ifdef HAVE_UN
-		 path(AllocatedPath::Null()),
+		 path(nullptr),
 #endif
 		 address(std::forward<A>(_address))
 	{
@@ -220,11 +220,11 @@ ServerSocket::Open()
 
 		try {
 			i.Open();
-		} catch (const std::runtime_error &e) {
+		} catch (...) {
 			if (good != nullptr && good->GetSerial() == i.GetSerial()) {
 				const auto address_string = i.ToString();
 				const auto good_string = good->ToString();
-				FormatError(e,
+				FormatError(std::current_exception(),
 					    "bind to '%s' failed "
 					    "(continuing anyway, because "
 					    "binding to '%s' succeeded)",

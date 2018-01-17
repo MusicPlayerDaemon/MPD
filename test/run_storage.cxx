@@ -34,10 +34,10 @@
 #include <string.h>
 #include <time.h>
 
-static Storage *
+static std::unique_ptr<Storage>
 MakeStorage(EventLoop &event_loop, const char *uri)
 {
-	Storage *storage = CreateStorageURI(event_loop, uri);
+	auto storage = CreateStorageURI(event_loop, uri);
 	if (storage == nullptr)
 		throw std::runtime_error("Unrecognized storage URI");
 
@@ -108,8 +108,8 @@ try {
 
 		const char *const path = argv[3];
 
-		std::unique_ptr<Storage> storage(MakeStorage(io_thread.GetEventLoop(),
-							     storage_uri));
+		auto storage = MakeStorage(io_thread.GetEventLoop(),
+					   storage_uri);
 
 		return Ls(*storage, path);
 	} else {

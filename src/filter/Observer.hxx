@@ -22,6 +22,8 @@
 
 #include "check.h"
 
+#include <memory>
+
 class PreparedFilter;
 class Filter;
 
@@ -39,7 +41,7 @@ public:
 	/**
 	 * @return a proxy object
 	 */
-	PreparedFilter *Set(PreparedFilter *pf);
+	std::unique_ptr<PreparedFilter> Set(std::unique_ptr<PreparedFilter> pf);
 
 	Filter *Get();
 };

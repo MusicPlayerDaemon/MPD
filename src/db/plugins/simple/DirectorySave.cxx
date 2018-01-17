@@ -83,10 +83,11 @@ directory_save(BufferedOutputStream &os, const Directory &directory)
 	}
 
 	for (const auto &child : directory.children) {
-		os.Format(DIRECTORY_DIR "%s\n", child.GetName());
+		if (child.IsMount())
+			continue;
 
-		if (!child.IsMount())
-			directory_save(os, child);
+		os.Format(DIRECTORY_DIR "%s\n", child.GetName());
+		directory_save(os, child);
 	}
 
 	for (const auto &song : directory.songs)

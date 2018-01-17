@@ -20,27 +20,15 @@
 #ifndef MPD_ARCHIVE_FILE_HXX
 #define MPD_ARCHIVE_FILE_HXX
 
+#include "input/Ptr.hxx"
+
 class Mutex;
 class Cond;
-struct ArchivePlugin;
 class ArchiveVisitor;
-class InputStream;
 
 class ArchiveFile {
 public:
-	const ArchivePlugin &plugin;
-
-	ArchiveFile(const ArchivePlugin &_plugin)
-		:plugin(_plugin) {}
-
-protected:
-	/**
-	 * Use Close() instead of delete.
-	 */
-	~ArchiveFile() {}
-
-public:
-	virtual void Close() = 0;
+	virtual ~ArchiveFile() noexcept = default;
 
 	/**
 	 * Visit all entries inside this archive.
@@ -54,8 +42,8 @@ public:
 	 *
 	 * @param path the path within the archive
 	 */
-	virtual InputStream *OpenStream(const char *path,
-					Mutex &mutex, Cond &cond) = 0;
+	virtual InputStreamPtr OpenStream(const char *path,
+					  Mutex &mutex, Cond &cond) = 0;
 };
 
 #endif

@@ -20,7 +20,7 @@
 #include "config.h"
 #include "SignalMonitor.hxx"
 
-#ifndef WIN32
+#ifndef _WIN32
 
 #include "SocketMonitor.hxx"
 #include "util/Manual.hxx"

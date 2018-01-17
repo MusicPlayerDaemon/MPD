@@ -26,7 +26,7 @@
 #include <string.h>
 
 void
-PcmSilence(WritableBuffer<void> dest, SampleFormat format)
+PcmSilence(WritableBuffer<void> dest, SampleFormat format) noexcept
 {
 	uint8_t pattern = 0;
 	if (format == SampleFormat::DSD)

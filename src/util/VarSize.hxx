@@ -50,7 +50,7 @@
  * #T
  */
 template<class T, typename... Args>
-gcc_malloc
+gcc_malloc gcc_returns_nonnull
 T *
 NewVarSize(size_t declared_tail_size, size_t real_tail_size, Args&&... args)
 {

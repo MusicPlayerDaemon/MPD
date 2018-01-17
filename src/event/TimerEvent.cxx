@@ -22,14 +22,14 @@
 #include "Loop.hxx"
 
 void
-TimerEvent::Cancel()
+TimerEvent::Cancel() noexcept
 {
 	if (IsActive())
 		loop.CancelTimer(*this);
 }
 
 void
-TimerEvent::Schedule(std::chrono::steady_clock::duration d)
+TimerEvent::Schedule(std::chrono::steady_clock::duration d) noexcept
 {
 	Cancel();
 

@@ -40,8 +40,10 @@ class SoxrPcmResampler final : public PcmResampler {
 
 public:
 	AudioFormat Open(AudioFormat &af, unsigned new_sample_rate) override;
-	void Close() override;
+	void Close() noexcept override;
+	void Reset() noexcept override;
 	ConstBuffer<void> Resample(ConstBuffer<void> src) override;
+	ConstBuffer<void> Flush() override;
 };
 
 void

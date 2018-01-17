@@ -76,8 +76,7 @@ private:
 void
 UpnpNeighborExplorer::Open()
 {
-	UpnpClient_Handle handle;
-	UpnpClientGlobalInit(handle);
+	auto handle = UpnpClientGlobalInit();
 
 	discovery = new UPnPDeviceDirectory(event_loop, handle, this);
 
@@ -104,8 +103,8 @@ UpnpNeighborExplorer::GetList() const noexcept
 
 	try {
 		tmp = discovery->GetDirectories();
-	} catch (const std::runtime_error &e) {
-		LogError(e);
+	} catch (...) {
+		LogError(std::current_exception());
 	}
 
 	List result;
@@ -128,12 +127,12 @@ UpnpNeighborExplorer::LostUPnP(const ContentDirectoryService &service)
 	listener.LostNeighbor(n);
 }
 
-static NeighborExplorer *
+static std::unique_ptr<NeighborExplorer>
 upnp_neighbor_create(EventLoop &event_loop,
 		     NeighborListener &listener,
 		     gcc_unused const ConfigBlock &block)
 {
-	return new UpnpNeighborExplorer(event_loop, listener);
+	return std::make_unique<UpnpNeighborExplorer>(event_loop, listener);
 }
 
 const NeighborPlugin upnp_neighbor_plugin = {

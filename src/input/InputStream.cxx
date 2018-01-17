@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "InputStream.hxx"
+#include "tag/Tag.hxx"
 #include "thread/Cond.hxx"
 #include "util/StringCompare.hxx"
 
@@ -26,7 +27,7 @@
 
 #include <assert.h>
 
-InputStream::~InputStream()
+InputStream::~InputStream() noexcept
 {
 }
 
@@ -36,12 +37,12 @@ InputStream::Check()
 }
 
 void
-InputStream::Update()
+InputStream::Update() noexcept
 {
 }
 
 void
-InputStream::SetReady()
+InputStream::SetReady() noexcept
 {
 	assert(!ready);
 
@@ -50,7 +51,7 @@ InputStream::SetReady()
 }
 
 void
-InputStream::WaitReady()
+InputStream::WaitReady() noexcept
 {
 	while (true) {
 		Update();
@@ -62,7 +63,7 @@ InputStream::WaitReady()
 }
 
 void
-InputStream::LockWaitReady()
+InputStream::LockWaitReady() noexcept
 {
 	const std::lock_guard<Mutex> protect(mutex);
 	WaitReady();
@@ -107,13 +108,13 @@ InputStream::LockSkip(offset_type _offset)
 	Skip(_offset);
 }
 
-Tag *
+std::unique_ptr<Tag>
 InputStream::ReadTag()
 {
 	return nullptr;
 }
 
-Tag *
+std::unique_ptr<Tag>
 InputStream::LockReadTag()
 {
 	const std::lock_guard<Mutex> protect(mutex);

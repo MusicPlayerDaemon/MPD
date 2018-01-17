@@ -252,14 +252,14 @@ SmbclientNeighborExplorer::ThreadFunc()
 	mutex.unlock();
 }
 
-static NeighborExplorer *
+static std::unique_ptr<NeighborExplorer>
 smbclient_neighbor_create(gcc_unused EventLoop &loop,
 			  NeighborListener &listener,
 			  gcc_unused const ConfigBlock &block)
 {
 	SmbclientInit();
 
-	return new SmbclientNeighborExplorer(listener);
+	return std::make_unique<SmbclientNeighborExplorer>(listener);
 }
 
 const NeighborPlugin smbclient_neighbor_plugin = {

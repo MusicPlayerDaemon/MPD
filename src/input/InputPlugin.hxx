@@ -20,6 +20,8 @@
 #ifndef MPD_INPUT_PLUGIN_HXX
 #define MPD_INPUT_PLUGIN_HXX
 
+#include "Ptr.hxx"
+
 struct ConfigBlock;
 class Mutex;
 class Cond;
@@ -48,8 +50,8 @@ struct InputPlugin {
 	/**
 	 * Throws std::runtime_error on error.
 	 */
-	InputStream *(*open)(const char *uri,
-			     Mutex &mutex, Cond &cond);
+	InputStreamPtr (*open)(const char *uri,
+			       Mutex &mutex, Cond &cond);
 };
 
 #endif

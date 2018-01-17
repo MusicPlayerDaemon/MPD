@@ -23,6 +23,7 @@
 #include "Handler.hxx"
 #include "Table.hxx"
 #include "Builder.hxx"
+#include "Tag.hxx"
 #include "Id3MusicBrainz.hxx"
 #include "util/Alloc.hxx"
 #include "util/ScopeExit.hxx"
@@ -32,7 +33,7 @@
 #include <id3tag.h>
 
 #include <string>
-#include <stdexcept>
+#include <exception>
 
 #include <string.h>
 #include <stdlib.h>
@@ -329,7 +330,7 @@ scan_id3_tag(struct id3_tag *tag,
 	tag_id3_import_ufid(tag, handler, handler_ctx);
 }
 
-Tag *
+std::unique_ptr<Tag>
 tag_id3_import(struct id3_tag *tag)
 {
 	TagBuilder tag_builder;
@@ -349,8 +350,8 @@ tag_id3_scan(InputStream &is,
 		tag = tag_id3_load(is);
 		if (!tag)
 			return false;
-	} catch (const std::runtime_error &e) {
-		LogError(e);
+	} catch (...) {
+		LogError(std::current_exception());
 		return false;
 	}
 

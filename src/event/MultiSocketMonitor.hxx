@@ -31,7 +31,7 @@
 
 #include <assert.h>
 
-#ifndef WIN32
+#ifndef _WIN32
 struct pollfd;
 #endif
 
@@ -184,7 +184,7 @@ public:
 		}
 	}
 
-#ifndef WIN32
+#ifndef _WIN32
 	/**
 	 * Replace the socket list with the given file descriptors.
 	 * The given pollfd array will be modified by this method.

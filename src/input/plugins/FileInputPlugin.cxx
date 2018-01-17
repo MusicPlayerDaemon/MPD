@@ -70,12 +70,12 @@ OpenFileInputStream(Path path,
 		      POSIX_FADV_SEQUENTIAL);
 #endif
 
-	return InputStreamPtr(new FileInputStream(path.ToUTF8().c_str(),
-						  std::move(reader), info.GetSize(),
-						  mutex, cond));
+	return std::make_unique<FileInputStream>(path.ToUTF8().c_str(),
+						 std::move(reader), info.GetSize(),
+						 mutex, cond);
 }
 
-static InputStream *
+static InputStreamPtr
 input_file_open(gcc_unused const char *filename,
 		gcc_unused Mutex &mutex, gcc_unused Cond &cond)
 {

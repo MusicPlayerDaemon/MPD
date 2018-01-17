@@ -23,6 +23,8 @@
 #include "check.h"
 #include "Compiler.h"
 
+#include <memory>
+
 struct StoragePlugin;
 class Storage;
 class EventLoop;
@@ -37,8 +39,8 @@ gcc_nonnull_all gcc_pure
 const StoragePlugin *
 GetStoragePluginByName(const char *name) noexcept;
 
-gcc_nonnull_all gcc_malloc
-Storage *
+gcc_nonnull_all
+std::unique_ptr<Storage>
 CreateStorageURI(EventLoop &event_loop, const char *uri);
 
 #endif

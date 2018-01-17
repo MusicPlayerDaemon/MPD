@@ -18,9 +18,10 @@
  */
 
 #include "config.h"
-#include "FilterConfig.hxx"
+#include "LoadChain.hxx"
+#include "LoadOne.hxx"
+#include "Prepared.hxx"
 #include "plugins/ChainFilterPlugin.hxx"
-#include "FilterPlugin.hxx"
 #include "config/Param.hxx"
 #include "config/ConfigOption.hxx"
 #include "config/ConfigGlobal.hxx"
@@ -42,11 +43,11 @@ filter_chain_append_new(PreparedFilter &chain, const char *template_name)
 					 template_name);
 
 	// Instantiate one of those filter plugins with the template name as a hint
-	PreparedFilter *f = filter_configured_new(*cfg);
+	auto f = filter_configured_new(*cfg);
 
 	const char *plugin_name = cfg->GetBlockValue("plugin",
 						     "unknown");
-	filter_chain_append(chain, plugin_name, f);
+	filter_chain_append(chain, plugin_name, std::move(f));
 }
 
 void

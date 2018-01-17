@@ -26,6 +26,8 @@
 #ifndef MPD_FILTER_PLUGIN_HXX
 #define MPD_FILTER_PLUGIN_HXX
 
+#include <memory>
+
 struct ConfigBlock;
 class PreparedFilter;
 
@@ -35,30 +37,7 @@ struct FilterPlugin {
 	/**
          * Allocates and configures a filter.
 	 */
-	PreparedFilter *(*init)(const ConfigBlock &block);
+	std::unique_ptr<PreparedFilter> (*init)(const ConfigBlock &block);
 };
-
-/**
- * Creates a new instance of the specified filter plugin.
- *
- * Throws std::runtime_error on error.
- *
- * @param plugin the filter plugin
- * @param block configuration section
- */
-PreparedFilter *
-filter_new(const FilterPlugin *plugin,
-	   const ConfigBlock &block);
-
-/**
- * Creates a new filter, loads configuration and the plugin name from
- * the specified configuration section.
- *
- * Throws std::runtime_error on error.
- *
- * @param block the configuration section
- */
-PreparedFilter *
-filter_configured_new(const ConfigBlock &block);
 
 #endif

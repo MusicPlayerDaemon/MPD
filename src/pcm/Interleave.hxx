@@ -31,7 +31,7 @@
  */
 void
 PcmInterleave(void *gcc_restrict dest, ConstBuffer<const void *> src,
-	      size_t n_frames, size_t sample_size);
+	      size_t n_frames, size_t sample_size) noexcept;
 
 /**
  * A variant of PcmInterleave() that assumes 32 bit samples (4 bytes
@@ -39,11 +39,11 @@ PcmInterleave(void *gcc_restrict dest, ConstBuffer<const void *> src,
  */
 void
 PcmInterleave32(int32_t *gcc_restrict dest, ConstBuffer<const int32_t *> src,
-		size_t n_frames);
+		size_t n_frames) noexcept;
 
 static inline void
 PcmInterleaveFloat(float *gcc_restrict dest, ConstBuffer<const float *> src,
-		   size_t n_frames)
+		   size_t n_frames) noexcept
 {
 	PcmInterleave32((int32_t *)dest,
 			ConstBuffer<const int32_t *>((const int32_t *const*)src.data,

@@ -112,7 +112,7 @@ decoder_stream_decode(const DecoderPlugin &plugin,
 	/* rewind the stream, so each plugin gets a fresh start */
 	try {
 		input_stream.Rewind();
-	} catch (const std::runtime_error &) {
+	} catch (...) {
 	}
 
 	{
@@ -454,7 +454,7 @@ decoder_run_song(DecoderControl &dc,
 				file - tags on "stream" songs are just
 				remembered from the last time we
 				played it*/
-			     song.IsFile() ? new Tag(song.GetTag()) : nullptr);
+			     song.IsFile() ? std::make_unique<Tag>(song.GetTag()) : nullptr);
 
 	dc.state = DecoderState::START;
 	dc.CommandFinishedLocked();
@@ -505,8 +505,8 @@ try {
 
 	const char *const uri_utf8 = song.GetRealURI();
 
-	Path path_fs = Path::Null();
-	AllocatedPath path_buffer = AllocatedPath::Null();
+	Path path_fs = nullptr;
+	AllocatedPath path_buffer = nullptr;
 	if (PathTraitsUTF8::IsAbsolute(uri_utf8)) {
 		path_buffer = AllocatedPath::FromUTF8Throw(uri_utf8);
 		path_fs = path_buffer;

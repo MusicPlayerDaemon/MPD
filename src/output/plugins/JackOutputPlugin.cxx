@@ -210,7 +210,7 @@ JackOutput::JackOutput(const ConfigBlock &block)
 			      num_source_ports, num_destination_ports,
 			      block.line);
 
-	ringbuffer_size = block.GetBlockValue("ringbuffer_size", 32768u);
+	ringbuffer_size = block.GetPositiveValue("ringbuffer_size", 32768u);
 }
 
 inline jack_nframes_t

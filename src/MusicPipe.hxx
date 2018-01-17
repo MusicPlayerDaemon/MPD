@@ -95,6 +95,7 @@ public:
 	 */
 	gcc_pure
 	const MusicChunk *Peek() const noexcept {
+		const std::lock_guard<Mutex> protect(mutex);
 		return head;
 	}
 
@@ -120,6 +121,7 @@ public:
 	 */
 	gcc_pure
 	unsigned GetSize() const noexcept {
+		const std::lock_guard<Mutex> protect(mutex);
 		return size;
 	}
 

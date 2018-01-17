@@ -67,7 +67,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#ifdef WIN32
+#ifdef _WIN32
 #define CONFIG_FILE_LOCATION PATH_LITERAL("mpd\\mpd.conf")
 #define APP_CONFIG_FILE_LOCATION PATH_LITERAL("conf\\mpd.conf")
 #else
@@ -76,24 +76,29 @@
 #define USER_CONFIG_FILE_LOCATION_XDG PATH_LITERAL("mpd/mpd.conf")
 #endif
 
-static constexpr OptionDef opt_kill(
-	"kill", "kill the currently running mpd session");
-static constexpr OptionDef opt_no_config(
-	"no-config", "don't read from config");
-static constexpr OptionDef opt_no_daemon(
-	"no-daemon", "don't detach from console");
-static constexpr OptionDef opt_stdout(
-	"stdout", nullptr); // hidden, compatibility with old versions
-static constexpr OptionDef opt_stderr(
-	"stderr", "print messages to stderr");
-static constexpr OptionDef opt_verbose(
-	"verbose", 'v', "verbose logging");
-static constexpr OptionDef opt_version(
-	"version", 'V', "print version number");
-static constexpr OptionDef opt_help(
-	"help", 'h', "show help options");
-static constexpr OptionDef opt_help_alt(
-	nullptr, '?', nullptr); // hidden, standard alias for --help
+enum Option {
+	OPTION_KILL,
+	OPTION_NO_CONFIG,
+	OPTION_NO_DAEMON,
+	OPTION_STDOUT,
+	OPTION_STDERR,
+	OPTION_VERBOSE,
+	OPTION_VERSION,
+	OPTION_HELP,
+	OPTION_HELP2,
+};
+
+static constexpr OptionDef option_defs[] = {
+	{"kill", "kill the currently running mpd session"},
+	{"no-config", "don't read from config"},
+	{"no-daemon", "don't detach from console"},
+	{"stdout", nullptr}, // hidden, compatibility with old versions
+	{"stderr", "print messages to stderr"},
+	{"verbose", 'v', "verbose logging"},
+	{"version", 'V', "print version number"},
+	{"help", 'h', "show help options"},
+	{nullptr, '?', nullptr}, // hidden, standard alias for --help
+};
 
 static constexpr Domain cmdline_domain("cmdline");
 
@@ -265,13 +270,8 @@ static void help(void)
 	       "\n"
 	       "Options:\n");
 
-	PrintOption(opt_help);
-	PrintOption(opt_kill);
-	PrintOption(opt_no_config);
-	PrintOption(opt_no_daemon);
-	PrintOption(opt_stderr);
-	PrintOption(opt_verbose);
-	PrintOption(opt_version);
+	for (const auto &i : option_defs)
+		PrintOption(i);
 
 	exit(EXIT_SUCCESS);
 }
@@ -303,51 +303,47 @@ bool ConfigLoader::TryFile(const AllocatedPath &base_path,
 }
 
 void
-ParseCommandLine(int argc, char **argv, struct options *options)
+ParseCommandLine(int argc, char **argv, struct options &options)
 {
 	bool use_config_file = true;
-	options->kill = false;
-	options->daemon = true;
-	options->log_stderr = false;
-	options->verbose = false;
 
 	// First pass: handle command line options
-	OptionParser parser(argc, argv);
-	while (parser.HasEntries()) {
-		if (!parser.ParseNext())
-			continue;
-		if (parser.CheckOption(opt_kill)) {
-			options->kill = true;
-			continue;
-		}
-		if (parser.CheckOption(opt_no_config)) {
-			use_config_file = false;
-			continue;
-		}
-		if (parser.CheckOption(opt_no_daemon)) {
-			options->daemon = false;
-			continue;
-		}
-		if (parser.CheckOption(opt_stderr, opt_stdout)) {
-			options->log_stderr = true;
-			continue;
-		}
-		if (parser.CheckOption(opt_verbose)) {
-			options->verbose = true;
-			continue;
-		}
-		if (parser.CheckOption(opt_version))
-			version();
-		if (parser.CheckOption(opt_help, opt_help_alt))
-			help();
+	OptionParser parser(option_defs, argc, argv);
+	while (auto o = parser.Next()) {
+		switch (Option(o.index)) {
+		case OPTION_KILL:
+			options.kill = true;
+			break;
 
-		throw FormatRuntimeError("invalid option: %s",
-					 parser.GetOption());
+		case OPTION_NO_CONFIG:
+			use_config_file = false;
+			break;
+
+		case OPTION_NO_DAEMON:
+			options.daemon = false;
+			break;
+
+		case OPTION_STDOUT:
+		case OPTION_STDERR:
+			options.log_stderr = true;
+			break;
+
+		case OPTION_VERBOSE:
+			options.verbose = true;
+			break;
+
+		case OPTION_VERSION:
+			version();
+
+		case OPTION_HELP:
+		case OPTION_HELP2:
+			help();
+		}
 	}
 
 	/* initialize the logging library, so the configuration file
 	   parser can use it already */
-	log_early_init(options->verbose);
+	log_early_init(options.verbose);
 
 	if (!use_config_file) {
 		LogDebug(cmdline_domain,
@@ -357,11 +353,9 @@ ParseCommandLine(int argc, char **argv, struct options *options)
 
 	// Second pass: find non-option parameters (i.e. config file)
 	const char *config_file = nullptr;
-	for (int i = 1; i < argc; ++i) {
-		if (OptionParser::IsOption(argv[i]))
-			continue;
+	for (const char *i : parser.GetRemaining()) {
 		if (config_file == nullptr) {
-			config_file = argv[i];
+			config_file = i;
 			continue;
 		}
 
@@ -389,7 +383,7 @@ ParseCommandLine(int argc, char **argv, struct options *options)
 	ConfigLoader loader;
 
 	bool found =
-#ifdef WIN32
+#ifdef _WIN32
 		loader.TryFile(GetUserConfigDir(), CONFIG_FILE_LOCATION) ||
 		loader.TryFile(GetSystemConfigDir(), CONFIG_FILE_LOCATION) ||
 		loader.TryFile(GetAppBaseDir(), APP_CONFIG_FILE_LOCATION);

@@ -62,7 +62,7 @@ SupportsContainerSuffix(const DecoderPlugin &plugin, const char *suffix)
 {
 	if (plugin.container_scan != nullptr)
 		if (strcmp(plugin.name, "dsdiff") == 0 && plugin.SupportsSuffix(suffix))
-			if (plugin.container_scan(Path::Null()).empty())
+			if (plugin.container_scan(Path(nullptr)).empty())
 				return false;
 
 	return plugin.container_scan != nullptr &&
@@ -126,8 +126,8 @@ UpdateWalk::UpdateContainerFile(Directory &directory,
 				modified = true;
 			}
 		}
-		catch (const std::runtime_error &e) {
-			LogError(e);
+		catch (...) {
+			LogError(std::current_exception());
 		}
 	}
 

@@ -36,7 +36,7 @@
 #include <stdint.h>
 
 class PlayerListener;
-class MultipleOutputs;
+class PlayerOutputs;
 class DetachedSong;
 
 enum class PlayerState : uint8_t {
@@ -50,7 +50,16 @@ enum class PlayerCommand : uint8_t {
 	EXIT,
 	STOP,
 	PAUSE,
+
+	/**
+	 * Seek to a certain position in the specified song.  This
+	 * command can also be used to change the current song or
+	 * start playback.  It "finishes" immediately, but
+	 * PlayerControl::seeking will be set until seeking really
+	 * completes (or fails).
+	 */
 	SEEK,
+
 	CLOSE_AUDIO,
 
 	/**
@@ -101,7 +110,7 @@ struct player_status {
 struct PlayerControl final : AudioOutputClient {
 	PlayerListener &listener;
 
-	MultipleOutputs &outputs;
+	PlayerOutputs &outputs;
 
 	const unsigned buffer_chunks;
 
@@ -134,11 +143,6 @@ struct PlayerControl final : AudioOutputClient {
 	 */
 	Cond client_cond;
 
-	PlayerCommand command = PlayerCommand::NONE;
-	PlayerState state = PlayerState::STOP;
-
-	PlayerError error_type = PlayerError::NONE;
-
 	/**
 	 * The error that occurred in the player thread.  This
 	 * attribute is only valid if #error_type is not
@@ -146,6 +150,14 @@ struct PlayerControl final : AudioOutputClient {
 	 * object transitions back to #PlayerError::NONE.
 	 */
 	std::exception_ptr error;
+
+	/**
+	 * The next queued song.
+	 *
+	 * This is a duplicate, and must be freed when this attribute
+	 * is cleared.
+	 */
+	std::unique_ptr<DetachedSong> next_song;
 
 	/**
 	 * A copy of the current #DetachedSong after its tags have
@@ -159,27 +171,17 @@ struct PlayerControl final : AudioOutputClient {
 	 */
 	std::unique_ptr<DetachedSong> tagged_song;
 
-	uint16_t bit_rate;
-	AudioFormat audio_format;
-	SignedSongTime total_time;
-	SongTime elapsed_time;
+	PlayerCommand command = PlayerCommand::NONE;
+	PlayerState state = PlayerState::STOP;
 
-	/**
-	 * The next queued song.
-	 *
-	 * This is a duplicate, and must be freed when this attribute
-	 * is cleared.
-	 */
-	std::unique_ptr<DetachedSong> next_song;
+	PlayerError error_type = PlayerError::NONE;
 
-	SongTime seek_time;
-
-	CrossFadeSettings cross_fade;
-
-	const ReplayGainConfig replay_gain_config;
 	ReplayGainMode replay_gain_mode = ReplayGainMode::OFF;
 
-	double total_play_time = 0;
+	/**
+	 * Is the player currently busy with the SEEK command?
+	 */
+	bool seeking = false;
 
 	/**
 	 * If this flag is set, then the player will be auto-paused at
@@ -190,8 +192,45 @@ struct PlayerControl final : AudioOutputClient {
 	 */
 	bool border_pause = false;
 
+	/**
+	 * If this flag is set, then the player thread is currently
+	 * occupied and will not be able to respond quickly to
+	 * commands (e.g. waiting for the decoder thread to finish
+	 * seeking).  This is used to skip #PlayerCommand::REFRESH to
+	 * avoid blocking the main thread.
+	 */
+	bool occupied = false;
+
+	struct ScopeOccupied {
+		PlayerControl &pc;
+
+		explicit ScopeOccupied(PlayerControl &_pc) noexcept:pc(_pc) {
+			assert(!pc.occupied);
+			pc.occupied = true;
+		}
+
+		~ScopeOccupied() noexcept {
+			assert(pc.occupied);
+			pc.occupied = false;
+		}
+	};
+
+	AudioFormat audio_format;
+	uint16_t bit_rate;
+
+	SignedSongTime total_time;
+	SongTime elapsed_time;
+
+	SongTime seek_time;
+
+	CrossFadeSettings cross_fade;
+
+	const ReplayGainConfig replay_gain_config;
+
+	double total_play_time = 0;
+
 	PlayerControl(PlayerListener &_listener,
-		      MultipleOutputs &_outputs,
+		      PlayerOutputs &_outputs,
 		      unsigned buffer_chunks,
 		      unsigned buffered_before_play,
 		      AudioFormat _configured_audio_format,
@@ -340,7 +379,7 @@ private:
 
 public:
 	/**
-	 * Throws std::runtime_error or #Error on error.
+	 * Throws on error.
 	 *
 	 * @param song the song to be queued
 	 */
@@ -373,11 +412,6 @@ public:
 		if (border_pause)
 			state = PlayerState::PAUSE;
 		return border_pause;
-	}
-
-	bool LockApplyBorderPause() noexcept {
-		const std::lock_guard<Mutex> lock(mutex);
-		return ApplyBorderPause();
 	}
 
 	void Kill() noexcept;
@@ -467,7 +501,7 @@ private:
 	void EnqueueSongLocked(std::unique_ptr<DetachedSong> song) noexcept;
 
 	/**
-	 * Throws std::runtime_error or #Error on error.
+	 * Throws on error.
 	 */
 	void SeekLocked(std::unique_ptr<DetachedSong> song, SongTime t);
 
@@ -481,7 +515,7 @@ public:
 	/**
 	 * Makes the player thread seek the specified song to a position.
 	 *
-	 * Throws std::runtime_error or #Error on error.
+	 * Throws on error.
 	 *
 	 * @param song the song to be queued; the given instance will be owned
 	 * and freed by the player

@@ -19,23 +19,27 @@
 
 #include "config.h"
 #include "IcyInputStream.hxx"
+#include "IcyMetaDataParser.hxx"
 #include "tag/Tag.hxx"
 
-IcyInputStream::IcyInputStream(InputStream *_input)
-	:ProxyInputStream(_input),
-	 input_tag(nullptr), icy_tag(nullptr),
-	 override_offset(0)
+IcyInputStream::IcyInputStream(InputStreamPtr _input,
+			       std::shared_ptr<IcyMetaDataParser> _parser) noexcept
+	:ProxyInputStream(std::move(_input)), parser(std::move(_parser))
 {
 }
 
-IcyInputStream::~IcyInputStream()
+IcyInputStream::~IcyInputStream() noexcept = default;
+
+inline bool
+IcyInputStream::IsEnabled() const noexcept
 {
-	delete input_tag;
-	delete icy_tag;
+	assert(parser);
+
+	return parser->IsDefined();
 }
 
 void
-IcyInputStream::Update()
+IcyInputStream::Update() noexcept
 {
 	ProxyInputStream::Update();
 
@@ -43,25 +47,23 @@ IcyInputStream::Update()
 		offset = override_offset;
 }
 
-Tag *
+std::unique_ptr<Tag>
 IcyInputStream::ReadTag()
 {
-	Tag *new_input_tag = ProxyInputStream::ReadTag();
+	auto new_input_tag = ProxyInputStream::ReadTag();
 	if (!IsEnabled())
 		return new_input_tag;
 
-	if (new_input_tag != nullptr) {
-		delete input_tag;
-		input_tag = new_input_tag;
-	}
+	const bool had_new_input_tag = !!new_input_tag;
+	if (new_input_tag != nullptr)
+		input_tag = std::move(new_input_tag);
 
-	Tag *new_icy_tag = parser.ReadTag();
-	if (new_icy_tag != nullptr) {
-		delete icy_tag;
-		icy_tag = new_icy_tag;
-	}
+	auto new_icy_tag = parser->ReadTag();
+	const bool had_new_icy_tag = !!new_icy_tag;
+	if (new_icy_tag != nullptr)
+		icy_tag = std::move(new_icy_tag);
 
-	if (new_input_tag == nullptr && new_icy_tag == nullptr)
+	if (!had_new_input_tag && !had_new_icy_tag)
 		/* no change */
 		return nullptr;
 
@@ -70,10 +72,10 @@ IcyInputStream::ReadTag()
 		return nullptr;
 
 	if (input_tag == nullptr)
-		return new Tag(*icy_tag);
+		return std::make_unique<Tag>(*icy_tag);
 
 	if (icy_tag == nullptr)
-		return new Tag(*input_tag);
+		return std::make_unique<Tag>(*input_tag);
 
 	return Tag::Merge(*input_tag, *icy_tag);
 }
@@ -89,7 +91,7 @@ IcyInputStream::Read(void *ptr, size_t read_size)
 		if (nbytes == 0)
 			return 0;
 
-		size_t result = parser.ParseInPlace(ptr, nbytes);
+		size_t result = parser->ParseInPlace(ptr, nbytes);
 		if (result > 0) {
 			override_offset += result;
 			offset = override_offset;

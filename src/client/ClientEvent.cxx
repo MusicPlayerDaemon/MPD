@@ -22,7 +22,7 @@
 #include "Log.hxx"
 
 void
-Client::OnSocketError(std::exception_ptr ep)
+Client::OnSocketError(std::exception_ptr ep) noexcept
 {
 	FormatError(ep, "error on client %d", num);
 
@@ -30,7 +30,7 @@ Client::OnSocketError(std::exception_ptr ep)
 }
 
 void
-Client::OnSocketClosed()
+Client::OnSocketClosed() noexcept
 {
 	SetExpired();
 }

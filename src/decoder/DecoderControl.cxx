@@ -94,8 +94,6 @@ DecoderControl::Start(std::unique_ptr<DetachedSong> _song,
 		      SongTime _start_time, SongTime _end_time,
 		      MusicBuffer &_buffer, MusicPipe &_pipe) noexcept
 {
-	const std::lock_guard<Mutex> protect(mutex);
-
 	assert(_song != nullptr);
 	assert(_pipe.IsEmpty());
 
@@ -112,8 +110,6 @@ DecoderControl::Start(std::unique_ptr<DetachedSong> _song,
 void
 DecoderControl::Stop() noexcept
 {
-	const std::lock_guard<Mutex> protect(mutex);
-
 	if (command != DecoderCommand::NONE)
 		/* Attempt to cancel the current command.  If it's too
 		   late and the decoder thread is already executing
@@ -128,8 +124,6 @@ DecoderControl::Stop() noexcept
 void
 DecoderControl::Seek(SongTime t)
 {
-	const std::lock_guard<Mutex> protect(mutex);
-
 	assert(state != DecoderState::START);
 	assert(state != DecoderState::ERROR);
 

@@ -24,7 +24,7 @@
 #include <assert.h>
 
 void
-Client::IdleNotify()
+Client::IdleNotify() noexcept
 {
 	assert(idle_waiting);
 	assert(idle_flags != 0);
@@ -46,7 +46,7 @@ Client::IdleNotify()
 }
 
 void
-Client::IdleAdd(unsigned flags)
+Client::IdleAdd(unsigned flags) noexcept
 {
 	if (IsExpired())
 		return;
@@ -57,7 +57,7 @@ Client::IdleAdd(unsigned flags)
 }
 
 bool
-Client::IdleWait(unsigned flags)
+Client::IdleWait(unsigned flags) noexcept
 {
 	assert(!idle_waiting);
 

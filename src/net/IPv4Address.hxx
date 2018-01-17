@@ -81,8 +81,7 @@ class IPv4Address {
 	static constexpr struct sockaddr_in Construct(struct in_addr address,
 						      uint16_t port) {
 		return {
-#if defined(__APPLE__) || \
-    defined(__OpenBSD__) || defined(__NetBSD__) || defined(__FreeBSD__)
+#ifdef HAVE_STRUCT_SOCKADDR_IN_SIN_LEN
 			sizeof(struct sockaddr_in),
 #endif
 			AF_INET,

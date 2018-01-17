@@ -23,6 +23,7 @@
 #include "tag/Table.hxx"
 #include "tag/Handler.hxx"
 #include "tag/Builder.hxx"
+#include "tag/Tag.hxx"
 #include "tag/VorbisComment.hxx"
 #include "tag/ReplayGain.hxx"
 #include "ReplayGainInfo.hxx"
@@ -99,7 +100,7 @@ vorbis_comments_scan(char **comments,
 
 }
 
-Tag *
+std::unique_ptr<Tag>
 vorbis_comments_to_tag(char **comments) noexcept
 {
 	TagBuilder tag_builder;

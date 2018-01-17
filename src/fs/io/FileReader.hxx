@@ -25,11 +25,11 @@
 #include "fs/AllocatedPath.hxx"
 #include "Compiler.h"
 
-#ifndef WIN32
+#ifndef _WIN32
 #include "system/FileDescriptor.hxx"
 #endif
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <windows.h>
 #endif
 
@@ -39,7 +39,7 @@ class FileInfo;
 class FileReader final : public Reader {
 	AllocatedPath path;
 
-#ifdef WIN32
+#ifdef _WIN32
 	HANDLE handle;
 #else
 	FileDescriptor fd;
@@ -48,7 +48,7 @@ class FileReader final : public Reader {
 public:
 	explicit FileReader(Path _path);
 
-#ifdef WIN32
+#ifdef _WIN32
 	FileReader(FileReader &&other)
 		:path(std::move(other.path)),
 		 handle(other.handle) {
@@ -70,7 +70,7 @@ public:
 
 protected:
 	bool IsDefined() const {
-#ifdef WIN32
+#ifdef _WIN32
 		return handle != INVALID_HANDLE_VALUE;
 #else
 		return fd.IsDefined();
@@ -78,7 +78,7 @@ protected:
 	}
 
 public:
-#ifndef WIN32
+#ifndef _WIN32
 	FileDescriptor GetFD() const {
 		return fd;
 	}
@@ -90,7 +90,7 @@ public:
 
 	gcc_pure
 	uint64_t GetSize() const noexcept {
-#ifdef WIN32
+#ifdef _WIN32
 		LARGE_INTEGER size;
 		return GetFileSizeEx(handle, &size)
 			? size.QuadPart
@@ -102,7 +102,7 @@ public:
 
 	gcc_pure
 	uint64_t GetPosition() const noexcept {
-#ifdef WIN32
+#ifdef _WIN32
 		LARGE_INTEGER zero;
 		zero.QuadPart = 0;
 		LARGE_INTEGER position;

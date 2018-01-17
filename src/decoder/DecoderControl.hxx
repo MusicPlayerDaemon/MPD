@@ -283,7 +283,7 @@ struct DecoderControl {
 	}
 
 	/**
-	 * Clear the error condition and free the #Error object (if any).
+	 * Clear the error condition (if any).
 	 *
 	 * Caller must lock the object.
 	 */
@@ -303,12 +303,6 @@ struct DecoderControl {
 	 */
 	gcc_pure
 	bool IsCurrentSong(const DetachedSong &_song) const noexcept;
-
-	gcc_pure
-	bool LockIsCurrentSong(const DetachedSong &_song) const noexcept {
-		const std::lock_guard<Mutex> protect(mutex);
-		return IsCurrentSong(_song);
-	}
 
 private:
 	/**
@@ -372,6 +366,8 @@ public:
 	/**
 	 * Start the decoder.
 	 *
+	 * Caller must lock the object.
+	 *
 	 * @param song the song to be decoded; the given instance will be
 	 * owned and freed by the decoder
 	 * @param start_time see #DecoderControl
@@ -383,10 +379,15 @@ public:
 		   SongTime start_time, SongTime end_time,
 		   MusicBuffer &buffer, MusicPipe &pipe) noexcept;
 
+	/**
+	 * Caller must lock the object.
+	 */
 	void Stop() noexcept;
 
 	/**
 	 * Throws #std::runtime_error on error.
+	 *
+	 * Caller must lock the object.
 	 */
 	void Seek(SongTime t);
 

@@ -179,7 +179,7 @@ HttpdOutput::ReadPage()
 		   buffer underruns */
 		try {
 			encoder->Flush();
-		} catch (const std::runtime_error &) {
+		} catch (...) {
 			/* ignore */
 		}
 
@@ -376,7 +376,7 @@ HttpdOutput::SendTag(const Tag &tag)
 
 		try {
 			encoder->PreTag();
-		} catch (const std::runtime_error &) {
+		} catch (...) {
 			/* ignore */
 		}
 
@@ -388,7 +388,7 @@ HttpdOutput::SendTag(const Tag &tag)
 		try {
 			encoder->SendTag(tag);
 			encoder->Flush();
-		} catch (const std::runtime_error &) {
+		} catch (...) {
 			/* ignore */
 		}
 

@@ -25,6 +25,7 @@
 
 #include <memory>
 #include <string>
+#include <map>
 #include <chrono>
 
 class PreparedFilter;
@@ -92,7 +93,7 @@ public:
 	 * The filter object of this audio output.  This is an
 	 * instance of chain_filter_plugin.
 	 */
-	PreparedFilter *prepared_filter = nullptr;
+	std::unique_ptr<PreparedFilter> prepared_filter;
 
 	/**
 	 * The #VolumeFilter instance of this audio output.  It is
@@ -104,14 +105,14 @@ public:
 	 * The replay_gain_filter_plugin instance of this audio
 	 * output.
 	 */
-	PreparedFilter *prepared_replay_gain_filter = nullptr;
+	std::unique_ptr<PreparedFilter> prepared_replay_gain_filter;
 
 	/**
 	 * The replay_gain_filter_plugin instance of this audio
 	 * output, to be applied to the second chunk during
 	 * cross-fading.
 	 */
-	PreparedFilter *prepared_other_replay_gain_filter = nullptr;
+	std::unique_ptr<PreparedFilter> prepared_other_replay_gain_filter;
 
 	/**
 	 * The convert_filter_plugin instance of this audio output.
@@ -140,11 +141,12 @@ public:
 		   MixerListener &mixer_listener,
 		   const ConfigBlock &block);
 
-	void BeginDestroy() noexcept;
-	void FinishDestroy() noexcept;
-
 	const char *GetName() const {
 		return name;
+	}
+
+	const char *GetPluginName() const noexcept {
+		return plugin_name;
 	}
 
 	const char *GetLogName() const noexcept {
@@ -162,6 +164,9 @@ public:
 	 */
 	gcc_pure
 	bool SupportsPause() const noexcept;
+
+	const std::map<std::string, std::string> GetAttributes() const noexcept;
+	void SetAttribute(std::string &&name, std::string &&value);
 
 	/**
 	 * Throws #std::runtime_error on error.
@@ -232,7 +237,7 @@ extern struct notify audio_output_client_notify;
 /**
  * Throws #std::runtime_error on error.
  */
-FilteredAudioOutput *
+std::unique_ptr<FilteredAudioOutput>
 audio_output_new(EventLoop &event_loop,
 		 const ReplayGainConfig &replay_gain_config,
 		 const ConfigBlock &block,

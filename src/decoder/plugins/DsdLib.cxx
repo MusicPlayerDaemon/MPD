@@ -57,7 +57,7 @@ dsdlib_skip_to(DecoderClient *client, InputStream &is,
 	if (is.IsSeekable()) {
 		try {
 			is.LockSeek(offset);
-		} catch (const std::runtime_error &) {
+		} catch (...) {
 			return false;
 		}
 	}
@@ -81,7 +81,7 @@ dsdlib_skip(DecoderClient *client, InputStream &is,
 	if (is.IsSeekable()) {
 		try {
 			is.LockSeek(is.GetOffset() + delta);
-		} catch (const std::runtime_error &) {
+		} catch (...) {
 			return false;
 		}
 	}

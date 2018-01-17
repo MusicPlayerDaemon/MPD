@@ -45,7 +45,7 @@ public:
 	virtual ~SmbclientDirectoryReader();
 
 	/* virtual methods from class StorageDirectoryReader */
-	const char *Read() override;
+	const char *Read() noexcept override;
 	StorageFileInfo GetInfo(bool follow) override;
 };
 
@@ -158,7 +158,7 @@ SmbclientDirectoryReader::~SmbclientDirectoryReader()
 }
 
 const char *
-SmbclientDirectoryReader::Read()
+SmbclientDirectoryReader::Read() noexcept
 {
 	const std::lock_guard<Mutex> protect(smbclient_mutex);
 
@@ -179,7 +179,7 @@ SmbclientDirectoryReader::GetInfo(gcc_unused bool follow)
 	return ::GetInfo(path.c_str());
 }
 
-static Storage *
+static std::unique_ptr<Storage>
 CreateSmbclientStorageURI(gcc_unused EventLoop &event_loop, const char *base)
 {
 	if (strncmp(base, "smb://", 6) != 0)
@@ -198,7 +198,7 @@ CreateSmbclientStorageURI(gcc_unused EventLoop &event_loop, const char *base)
 		throw MakeErrno("smbc_new_context() failed");
 	}
 
-	return new SmbclientStorage(base, ctx2);
+	return std::make_unique<SmbclientStorage>(base, ctx2);
 }
 
 const StoragePlugin smbclient_storage_plugin = {

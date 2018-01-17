@@ -33,20 +33,20 @@ class FullyBufferedSocket : protected BufferedSocket, private IdleMonitor {
 
 public:
 	FullyBufferedSocket(SocketDescriptor _fd, EventLoop &_loop,
-			    size_t normal_size, size_t peak_size=0)
+			    size_t normal_size, size_t peak_size=0) noexcept
 		:BufferedSocket(_fd, _loop), IdleMonitor(_loop),
 		 output(normal_size, peak_size) {
 	}
 
 	using BufferedSocket::IsDefined;
 
-	void Close() {
+	void Close() noexcept {
 		IdleMonitor::Cancel();
 		BufferedSocket::Close();
 	}
 
 private:
-	ssize_t DirectWrite(const void *data, size_t length);
+	ssize_t DirectWrite(const void *data, size_t length) noexcept;
 
 protected:
 	/**
@@ -54,12 +54,12 @@ protected:
 	 *
 	 * @return false if the socket has been closed
 	 */
-	bool Flush();
+	bool Flush() noexcept;
 
 	/**
 	 * @return false if the socket has been closed
 	 */
-	bool Write(const void *data, size_t length);
+	bool Write(const void *data, size_t length) noexcept;
 
 	/* virtual methods from class SocketMonitor */
 	bool OnSocketReady(unsigned flags) noexcept override;

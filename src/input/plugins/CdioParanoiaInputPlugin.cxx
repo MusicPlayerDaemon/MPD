@@ -175,14 +175,14 @@ cdio_detect_device(void)
 	char **devices = cdio_get_devices_with_cap(nullptr, CDIO_FS_AUDIO,
 						   false);
 	if (devices == nullptr)
-		return AllocatedPath::Null();
+		return nullptr;
 
 	AllocatedPath path = AllocatedPath::FromFS(devices[0]);
 	cdio_free_device_list(devices);
 	return path;
 }
 
-static InputStream *
+static InputStreamPtr
 input_cdio_open(const char *uri,
 		Mutex &mutex, Cond &cond)
 {
@@ -250,9 +250,10 @@ input_cdio_open(const char *uri,
 		lsn_to = cdio_get_disc_last_lsn(cdio);
 	}
 
-	return new CdioParanoiaInputStream(uri, mutex, cond,
-					   drv, cdio, reverse_endian,
-					   lsn_from, lsn_to);
+	return std::make_unique<CdioParanoiaInputStream>(uri, mutex, cond,
+							 drv, cdio,
+							 reverse_endian,
+							 lsn_from, lsn_to);
 }
 
 void

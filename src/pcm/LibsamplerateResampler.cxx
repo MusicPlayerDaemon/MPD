@@ -109,13 +109,13 @@ LibsampleratePcmResampler::Open(AudioFormat &af, unsigned new_sample_rate)
 }
 
 void
-LibsampleratePcmResampler::Close()
+LibsampleratePcmResampler::Close() noexcept
 {
 	state = src_delete(state);
 }
 
 void
-LibsampleratePcmResampler::Reset()
+LibsampleratePcmResampler::Reset() noexcept
 {
 	src_reset(state);
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2017 The Music Player Daemon Project
+ * Copyright 2003-2018 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -19,41 +19,72 @@
 
 #include "OptionParser.hxx"
 #include "OptionDef.hxx"
+#include "util/RuntimeError.hxx"
+#include "util/StringCompare.hxx"
 
 #include <string.h>
 
-bool OptionParser::CheckOption(const OptionDef &opt)
+inline const char *
+OptionParser::CheckShiftValue(const char *s, const OptionDef &option)
 {
-	assert(option != nullptr);
+	if (!option.HasValue())
+		return nullptr;
 
-	if (is_long)
-		return opt.HasLongOption() &&
-		       strcmp(option, opt.GetLongOption()) == 0;
+	if (args.empty())
+		throw FormatRuntimeError("Value expected after %s", s);
 
-	return opt.HasShortOption() &&
-	       option[0] == opt.GetShortOption() &&
-	       option[1] == '\0';
+	return args.shift();
 }
 
-bool OptionParser::ParseNext()
+inline OptionParser::Result
+OptionParser::IdentifyOption(const char *s)
 {
-	assert(HasEntries());
-	char *arg = *argv;
-	++argv;
-	--argc;
-	if (arg[0] == '-') {
-		if (arg[1] == '-') {
-			option = arg + 2;
-			is_long = true;
+	assert(s != nullptr);
+	assert(*s == '-');
+
+	if (s[1] == '-') {
+		for (const auto &i : options) {
+			if (!i.HasLongOption())
+				continue;
+
+			const char *t = StringAfterPrefix(s + 2, i.GetLongOption());
+			if (t == nullptr)
+				continue;
+
+			const char *value;
+
+			if (*t == 0)
+				value = CheckShiftValue(s, i);
+			else if (*t == '=')
+				value = t + 1;
+			else
+				continue;
+
+			return {int(&i - options.data), value};
 		}
-		else {
-			option = arg + 1;
-			is_long = false;
+	} else if (s[1] != 0 && s[2] == 0) {
+		const char ch = s[1];
+		for (const auto &i : options) {
+			if (i.HasShortOption() && ch == i.GetShortOption()) {
+				const char *value = CheckShiftValue(s, i);
+				return {int(&i - options.data), value};
+			}
 		}
-		option_raw = arg;
-		return true;
 	}
-	option = nullptr;
-	option_raw = nullptr;
-	return false;
+
+	throw FormatRuntimeError("Unknown option: %s", s);
+}
+
+OptionParser::Result
+OptionParser::Next()
+{
+	while (!args.empty()) {
+		const char *arg = args.shift();
+		if (arg[0] == '-')
+			return IdentifyOption(arg);
+
+		*remaining_tail++ = arg;
+	}
+
+	return {-1, nullptr};
 }

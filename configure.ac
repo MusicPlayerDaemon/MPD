@@ -243,6 +243,8 @@ AC_CHECK_FUNCS(fnmatch)
 AC_CHECK_FUNCS(strndup)
 AC_CHECK_FUNCS(strcasestr)
 
+AC_CHECK_MEMBERS([struct sockaddr_in.sin_len], [], [], [[#include <netinet/in.h>]])
+
 if test x$host_is_linux = xyes; then
 	MPD_OPTIONAL_FUNC(eventfd, eventfd, USE_EVENTFD)
 	MPD_OPTIONAL_FUNC(signalfd, signalfd, USE_SIGNALFD)
@@ -252,7 +254,6 @@ AC_SEARCH_LIBS([exp], [m],,
 	[AC_MSG_ERROR([exp() not found])])
 
 AC_CHECK_HEADERS(locale.h)
-AC_CHECK_HEADERS(valgrind/memcheck.h)
 
 AC_CHECK_HEADERS([sys/prctl.h], AC_CHECK_FUNCS([prctl]))
 
@@ -361,10 +362,20 @@ AC_ARG_ENABLE(ipv6,
 
 AC_SYS_LARGEFILE
 
+AC_ARG_ENABLE(qobuz,
+	AS_HELP_STRING([--enable-qobuz],
+		[enable support for Qobuz streaming]),,
+	[enable_qobuz=auto])
+
 AC_ARG_ENABLE(soundcloud,
 	AS_HELP_STRING([--enable-soundcloud],
 		[enable support for soundcloud.com]),,
 	[enable_soundcloud=auto])
+
+AC_ARG_ENABLE(tidal,
+	AS_HELP_STRING([--enable-tidal],
+		[enable support for Tidal streaming]),,
+	[enable_tidal=auto])
 
 AC_ARG_ENABLE([libwrap],
 	AS_HELP_STRING([--enable-libwrap], [use libwrap]),,
@@ -502,7 +513,7 @@ if test x$enable_ipv6 = xyes; then
 	AC_EGREP_CPP([AP_maGiC_VALUE],
 	[
 #include <sys/types.h>
-#ifdef WIN32
+#ifdef _WIN32
 #include <winsock2.h>
 #else
 #include <sys/socket.h>
@@ -568,6 +579,20 @@ MPD_ENABLE_AUTO_PKG_DEPENDS(libmpdclient, LIBMPDCLIENT,
 dnl -------------------------------- expat --------------------------------
 MPD_ENABLE_AUTO_PKG(expat, EXPAT, [expat],
 	[expat XML parser], [expat not found])
+
+dnl -------------------------------- libgcrypt --------------------------------
+
+if test x$enable_qobuz != xno; then
+	AM_PATH_LIBGCRYPT([1], [found_gcrypt=yes], [found_gcrypt=no])
+fi
+
+dnl -------------------------------- yajl -------------------------------------
+
+if test x$enable_qobuz != xno || x$enable_soundcloud != xno || test x$enable_tidal != xno; then
+	PKG_CHECK_MODULES([YAJL], [yajl >= 2.0],
+		[found_yajl=yes],
+		[found_yajl=no])
+fi
 
 dnl --------------------------------- inotify ---------------------------------
 AC_CHECK_FUNCS(inotify_init inotify_init1)
@@ -701,6 +726,7 @@ dnl Input Plugins
 dnl ---------------------------------------------------------------------------
 
 dnl ----------------------------------- CURL ----------------------------------
+
 MPD_ENABLE_AUTO_PKG(curl, CURL, [libcurl >= 7.18],
 	[libcurl HTTP streaming], [libcurl not found])
 
@@ -713,13 +739,24 @@ dnl ----------------------------------- NFS -----------------------------
 MPD_ENABLE_AUTO_PKG(nfs, NFS, [libnfs],
 	[NFS input plugin], [libnfs not found])
 
+dnl --------------------------------- Qobuz -----------------------------------
+MPD_DEPENDS([enable_qobuz], [found_yajl], [Qobuz streaming], [libyajl not found])
+MPD_DEPENDS([enable_qobuz], [found_gcrypt], [Qobuz streaming], [libgcrypt not found])
+MPD_DEPENDS([enable_qobuz], [enable_curl], [Qobuz streaming], [libcurl not found])
+MPD_AUTO(qobuz, [Qobuz streaming], [Qobuz not available], [found_qobuz=yes])
+MPD_DEFINE_CONDITIONAL(enable_qobuz, ENABLE_QOBUZ, [Qobuz streaming])
+
 dnl --------------------------------- Soundcloud ------------------------------
-MPD_AUTO([soundcloud], [soundcloud.com support], [libyajl not found],
-	[PKG_CHECK_MODULES([YAJL], [yajl >= 2.0],
-		[found_soundcloud=yes],
-		[found_soundcloud=no])])
+MPD_DEPENDS([enable_soundcloud], [found_yajl],
+	[soundcloud.com support], [libyajl not found])
 MPD_DEFINE_CONDITIONAL(enable_soundcloud, ENABLE_SOUNDCLOUD,
 	[soundcloud.com support])
+
+dnl --------------------------------- Tidal -----------------------------------
+MPD_DEPENDS([enable_tidal], [found_yajl], [Tidal streaming], [libyajl not found])
+MPD_DEPENDS([enable_tidal], [enable_curl], [Tidal streaming], [libcurl not found])
+MPD_AUTO(tidal, [Tidal streaming], [Tidal not available], [found_tidal=yes])
+MPD_DEFINE_CONDITIONAL(enable_tidal, ENABLE_TIDAL, [Tidal streaming])
 
 dnl ---------------------------------- cdio ---------------------------------
 MPD_ENABLE_AUTO_PKG(cdio_paranoia, CDIO_PARANOIA, [libcdio_paranoia],
@@ -1539,8 +1576,10 @@ fi
 printf '\nStreaming support:\n\t'
 results(cdio_paranoia, [CDIO_PARANOIA])
 results(curl,[CURL])
+results(qobuz,[Qobuz])
 results(smbclient,[SMBCLIENT])
 results(soundcloud,[Soundcloud])
+results(tidal,[Tidal])
 printf '\n\t'
 results(mms,[MMS])
 

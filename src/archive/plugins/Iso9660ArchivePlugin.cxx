@@ -28,7 +28,6 @@
 #include "../ArchiveVisitor.hxx"
 #include "input/InputStream.hxx"
 #include "fs/Path.hxx"
-#include "util/RefCount.hxx"
 #include "util/RuntimeError.hxx"
 
 #include <cdio/iso9660.h>
@@ -38,31 +37,34 @@
 
 #define CEILING(x, y) ((x+(y-1))/y)
 
-class Iso9660ArchiveFile final : public ArchiveFile {
-	RefCount ref;
+struct Iso9660 {
+	iso9660_t *const iso;
 
-	iso9660_t *iso;
+	explicit Iso9660(Path path)
+		:iso(iso9660_open(path.c_str())) {
+		if (iso == nullptr)
+			throw FormatRuntimeError("Failed to open ISO9660 file %s",
+						 path.c_str());
+	}
 
-public:
-	Iso9660ArchiveFile(iso9660_t *_iso)
-		:ArchiveFile(iso9660_archive_plugin), iso(_iso) {}
-
-	~Iso9660ArchiveFile() {
+	~Iso9660() noexcept {
 		iso9660_close(iso);
 	}
 
-	void Ref() {
-		ref.Increment();
-	}
-
-	void Unref() {
-		if (ref.Decrement())
-			delete this;
-	}
+	Iso9660(const Iso9660 &) = delete;
+	Iso9660 &operator=(const Iso9660 &) = delete;
 
 	long SeekRead(void *ptr, lsn_t start, long int i_size) const {
 		return iso9660_iso_seek_read(iso, ptr, start, i_size);
 	}
+};
+
+class Iso9660ArchiveFile final : public ArchiveFile {
+	std::shared_ptr<Iso9660> iso;
+
+public:
+	Iso9660ArchiveFile(std::shared_ptr<Iso9660> &&_iso)
+		:iso(std::move(_iso)) {}
 
 	/**
 	 * @param capacity the path buffer size
@@ -70,14 +72,10 @@ public:
 	void Visit(char *path, size_t length, size_t capacity,
 		   ArchiveVisitor &visitor);
 
-	virtual void Close() override {
-		Unref();
-	}
-
 	virtual void Visit(ArchiveVisitor &visitor) override;
 
-	InputStream *OpenStream(const char *path,
-				Mutex &mutex, Cond &cond) override;
+	InputStreamPtr OpenStream(const char *path,
+				  Mutex &mutex, Cond &cond) override;
 };
 
 /* archive open && listing routine */
@@ -86,7 +84,7 @@ inline void
 Iso9660ArchiveFile::Visit(char *path, size_t length, size_t capacity,
 			  ArchiveVisitor &visitor)
 {
-	auto *entlist = iso9660_ifs_readdir(iso, path);
+	auto *entlist = iso9660_ifs_readdir(iso->iso, path);
 	if (!entlist) {
 		return;
 	}
@@ -118,16 +116,10 @@ Iso9660ArchiveFile::Visit(char *path, size_t length, size_t capacity,
 	_cdio_list_free (entlist, true);
 }
 
-static ArchiveFile *
+static std::unique_ptr<ArchiveFile>
 iso9660_archive_open(Path pathname)
 {
-	/* open archive */
-	auto iso = iso9660_open(pathname.c_str());
-	if (iso == nullptr)
-		throw FormatRuntimeError("Failed to open ISO9660 file %s",
-					 pathname.c_str());
-
-	return new Iso9660ArchiveFile(iso);
+	return std::make_unique<Iso9660ArchiveFile>(std::make_shared<Iso9660>(pathname));
 }
 
 void
@@ -140,25 +132,23 @@ Iso9660ArchiveFile::Visit(ArchiveVisitor &visitor)
 /* single archive handling */
 
 class Iso9660InputStream final : public InputStream {
-	Iso9660ArchiveFile &archive;
+	std::shared_ptr<Iso9660> iso;
 
 	iso9660_stat_t *statbuf;
 
 public:
-	Iso9660InputStream(Iso9660ArchiveFile &_archive, const char *_uri,
+	Iso9660InputStream(const std::shared_ptr<Iso9660> &_iso,
+			   const char *_uri,
 			   Mutex &_mutex, Cond &_cond,
 			   iso9660_stat_t *_statbuf)
 		:InputStream(_uri, _mutex, _cond),
-		 archive(_archive), statbuf(_statbuf) {
+		 iso(_iso), statbuf(_statbuf) {
 		size = statbuf->size;
 		SetReady();
-
-		archive.Ref();
 	}
 
 	~Iso9660InputStream() {
 		free(statbuf);
-		archive.Unref();
 	}
 
 	/* virtual methods from InputStream */
@@ -166,22 +156,24 @@ public:
 	size_t Read(void *ptr, size_t size) override;
 };
 
-InputStream *
+InputStreamPtr
 Iso9660ArchiveFile::OpenStream(const char *pathname,
 			       Mutex &mutex, Cond &cond)
 {
-	auto statbuf = iso9660_ifs_stat_translate(iso, pathname);
+	auto statbuf = iso9660_ifs_stat_translate(iso->iso, pathname);
 	if (statbuf == nullptr)
 		throw FormatRuntimeError("not found in the ISO file: %s",
 					 pathname);
 
-	return new Iso9660InputStream(*this, pathname, mutex, cond,
-				      statbuf);
+	return std::make_unique<Iso9660InputStream>(iso, pathname, mutex, cond,
+						    statbuf);
 }
 
 size_t
 Iso9660InputStream::Read(void *ptr, size_t read_size)
 {
+	const ScopeUnlock unlock(mutex);
+
 	int readed = 0;
 	int no_blocks, cur_block;
 	size_t left_bytes = statbuf->size - offset;
@@ -197,8 +189,7 @@ Iso9660InputStream::Read(void *ptr, size_t read_size)
 
 	cur_block = offset / ISO_BLOCKSIZE;
 
-	readed = archive.SeekRead(ptr, statbuf->lsn + cur_block,
-				  no_blocks);
+	readed = iso->SeekRead(ptr, statbuf->lsn + cur_block, no_blocks);
 
 	if (readed != no_blocks * ISO_BLOCKSIZE)
 		throw FormatRuntimeError("error reading ISO file at lsn %lu",

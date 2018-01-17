@@ -108,7 +108,7 @@ SocketDescriptor::Connect(SocketAddress address)
 bool
 SocketDescriptor::Create(int domain, int type, int protocol)
 {
-#ifdef WIN32
+#ifdef _WIN32
 	static bool initialised = false;
 	if (!initialised) {
 		WSADATA data;

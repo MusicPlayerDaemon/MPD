@@ -120,7 +120,7 @@ listen_global_init(EventLoop &loop, Partition &partition)
 		do {
 			try {
 				listen_add_config_param(port, param);
-			} catch (const std::runtime_error &e) {
+			} catch (...) {
 				delete listen_socket;
 				std::throw_with_nested(FormatRuntimeError("Failed to listen on %s (line %i)",
 									  param->value.c_str(),
@@ -133,7 +133,7 @@ listen_global_init(EventLoop &loop, Partition &partition)
 
 		try {
 			listen_socket->AddPort(port);
-		} catch (const std::runtime_error &e) {
+		} catch (...) {
 			delete listen_socket;
 			std::throw_with_nested(FormatRuntimeError("Failed to listen on *:%d: ", port));
 		}
@@ -141,7 +141,7 @@ listen_global_init(EventLoop &loop, Partition &partition)
 
 	try {
 		listen_socket->Open();
-	} catch (const std::runtime_error &e) {
+	} catch (...) {
 		delete listen_socket;
 		throw;
 	}

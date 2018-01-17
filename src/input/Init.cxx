@@ -62,14 +62,15 @@ input_stream_global_init(EventLoop &event_loop)
 				    "Input plugin '%s' is unavailable",
 				    plugin->name);
 			continue;
-		} catch (const std::runtime_error &e) {
+		} catch (...) {
 			std::throw_with_nested(FormatRuntimeError("Failed to initialize input plugin '%s'",
 								  plugin->name));
 		}
 	}
 }
 
-void input_stream_global_finish(void)
+void
+input_stream_global_finish() noexcept
 {
 	input_plugins_for_each_enabled(plugin)
 		if (plugin->finish != nullptr)

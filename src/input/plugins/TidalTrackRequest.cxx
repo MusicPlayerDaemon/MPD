@@ -1,0 +1,141 @@
+/*
+ * Copyright 2003-2018 The Music Player Daemon Project
+ * http://www.musicpd.org
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ */
+
+#include "config.h"
+#include "TidalTrackRequest.hxx"
+#include "lib/yajl/Callbacks.hxx"
+#include "util/RuntimeError.hxx"
+
+using Wrapper = Yajl::CallbacksWrapper<TidalTrackRequest>;
+static constexpr yajl_callbacks parse_callbacks = {
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	Wrapper::String,
+	nullptr,
+	Wrapper::MapKey,
+	Wrapper::EndMap,
+	nullptr,
+	nullptr,
+};
+
+static std::string
+MakeTrackUrl(const char *base_url, const char *track_id)
+{
+	// TODO: add "audioquality" parameter to this function
+	return std::string(base_url)
+		+ "/tracks/"
+		+ track_id
+		+ "/urlpostpaywall?assetpresentation=FULL&audioquality=LOW&urlusagemode=STREAM";
+}
+
+TidalTrackRequest::TidalTrackRequest(CurlGlobal &curl,
+				     const char *base_url, const char *token,
+				     const char *session,
+				     const char *track_id,
+				     TidalTrackHandler &_handler) noexcept
+	:request(curl, MakeTrackUrl(base_url, track_id).c_str(), *this),
+	 parser(&parse_callbacks, nullptr, this),
+	 handler(_handler)
+{
+	request_headers.Append((std::string("X-Tidal-Token:")
+				+ token).c_str());
+	request_headers.Append((std::string("X-Tidal-SessionId:")
+				+ session).c_str());
+	request.SetOption(CURLOPT_HTTPHEADER, request_headers.Get());
+
+	request.StartIndirect();
+}
+
+TidalTrackRequest::~TidalTrackRequest() noexcept
+{
+	request.StopIndirect();
+}
+
+void
+TidalTrackRequest::OnHeaders(unsigned status,
+			     std::multimap<std::string, std::string> &&headers)
+{
+	if (status != 200)
+		throw FormatRuntimeError("Status %u from Tidal", status);
+
+	auto i = headers.find("content-type");
+	if (i == headers.end() || i->second.find("/json") == i->second.npos)
+		throw std::runtime_error("Not a JSON response from Tidal");
+}
+
+void
+TidalTrackRequest::OnData(ConstBuffer<void> data)
+{
+	parser.Parse((const unsigned char *)data.data, data.size);
+}
+
+void
+TidalTrackRequest::OnEnd()
+{
+	parser.CompleteParse();
+
+	if (url.empty())
+		throw std::runtime_error("No url in track response");
+
+	handler.OnTidalTrackSuccess(std::move(url));
+}
+
+void
+TidalTrackRequest::OnError(std::exception_ptr e) noexcept
+{
+	handler.OnTidalTrackError(e);
+}
+
+inline bool
+TidalTrackRequest::String(StringView value) noexcept
+{
+	switch (state) {
+	case State::NONE:
+		break;
+
+	case State::URLS:
+		if (url.empty())
+			url.assign(value.data, value.size);
+		break;
+	}
+
+	return true;
+}
+
+inline bool
+TidalTrackRequest::MapKey(StringView value) noexcept
+{
+	if (value.Equals("urls"))
+		state = State::URLS;
+	else
+		state = State::NONE;
+
+	return true;
+}
+
+inline bool
+TidalTrackRequest::EndMap() noexcept
+{
+	state = State::NONE;
+
+	return true;
+}

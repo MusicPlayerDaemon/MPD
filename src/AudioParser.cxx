@@ -44,10 +44,9 @@ ParseSampleRate(const char *src, bool mask, const char **endptr_r)
 
 	value = strtoul(src, &endptr, 10);
 	if (endptr == src) {
-		throw std::runtime_error("Failed to parse the sample rate");
+		throw std::invalid_argument("Failed to parse the sample rate");
 	} else if (!audio_valid_sample_rate(value))
-		throw FormatRuntimeError("Invalid sample rate: %lu",
-					 value);
+		throw FormatInvalidArgument("Invalid sample rate: %lu", value);
 
 	*endptr_r = endptr;
 	return value;
@@ -77,7 +76,7 @@ ParseSampleFormat(const char *src, bool mask, const char **endptr_r)
 
 	value = strtoul(src, &endptr, 10);
 	if (endptr == src)
-		throw std::runtime_error("Failed to parse the sample format");
+		throw std::invalid_argument("Failed to parse the sample format");
 
 	switch (value) {
 	case 8:
@@ -101,7 +100,8 @@ ParseSampleFormat(const char *src, bool mask, const char **endptr_r)
 		break;
 
 	default:
-		throw FormatRuntimeError("Invalid sample format: %lu", value);
+		throw FormatInvalidArgument("Invalid sample format: %lu",
+					    value);
 	}
 
 	assert(audio_valid_sample_format(sample_format));
@@ -123,9 +123,10 @@ ParseChannelCount(const char *src, bool mask, const char **endptr_r)
 
 	value = strtoul(src, &endptr, 10);
 	if (endptr == src)
-		throw std::runtime_error("Failed to parse the channel count");
+		throw std::invalid_argument("Failed to parse the channel count");
 	else if (!audio_valid_channel_count(value))
-		throw FormatRuntimeError("Invalid channel count: %u", value);
+		throw FormatInvalidArgument("Invalid channel count: %u",
+					    value);
 
 	*endptr_r = endptr;
 	return value;
@@ -151,7 +152,8 @@ ParseAudioFormat(const char *src, bool mask)
 			src = endptr + 1;
 			dest.channels = ParseChannelCount(src, mask, &src);
 			if (*src != 0)
-				throw FormatRuntimeError("Extra data after channel count: %s", src);
+				throw FormatInvalidArgument("Extra data after channel count: %s",
+							    src);
 
 			return dest;
 		}
@@ -162,21 +164,22 @@ ParseAudioFormat(const char *src, bool mask)
 	dest.sample_rate = ParseSampleRate(src, mask, &src);
 
 	if (*src++ != ':')
-		throw std::runtime_error("Sample format missing");
+		throw std::invalid_argument("Sample format missing");
 
 	/* parse sample format */
 
 	dest.format = ParseSampleFormat(src, mask, &src);
 
 	if (*src++ != ':')
-		throw std::runtime_error("Channel count missing");
+		throw std::invalid_argument("Channel count missing");
 
 	/* parse channel count */
 
 	dest.channels = ParseChannelCount(src, mask, &src);
 
 	if (*src != 0)
-		throw FormatRuntimeError("Extra data after channel count: %s", src);
+		throw FormatInvalidArgument("Extra data after channel count: %s",
+					    src);
 
 	assert(mask
 	       ? dest.IsMaskValid()

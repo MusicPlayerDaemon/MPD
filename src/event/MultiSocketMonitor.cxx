@@ -23,7 +23,7 @@
 
 #include <algorithm>
 
-#ifndef WIN32
+#ifndef _WIN32
 #include <poll.h>
 #endif
 
@@ -51,7 +51,7 @@ MultiSocketMonitor::ClearSocketList() noexcept
 	fds.clear();
 }
 
-#ifndef WIN32
+#ifndef _WIN32
 
 void
 MultiSocketMonitor::ReplaceSocketList(pollfd *pfds, unsigned n) noexcept

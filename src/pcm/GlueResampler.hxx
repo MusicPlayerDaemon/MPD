@@ -46,21 +46,23 @@ class GluePcmResampler {
 
 public:
 	GluePcmResampler();
-	~GluePcmResampler();
+	~GluePcmResampler() noexcept;
 
 	void Open(AudioFormat src_format, unsigned new_sample_rate);
-	void Close();
+	void Close() noexcept;
 
-	SampleFormat GetOutputSampleFormat() const {
+	SampleFormat GetOutputSampleFormat() const noexcept {
 		return output_sample_format;
 	}
 
 	/**
 	 * @see PcmResampler::Reset()
 	 */
-	void Reset();
+	void Reset() noexcept;
 
 	ConstBuffer<void> Resample(ConstBuffer<void> src);
+
+	ConstBuffer<void> Flush();
 };
 
 #endif

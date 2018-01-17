@@ -50,7 +50,7 @@ class RecorderOutput final : AudioOutput {
 	/**
 	 * The destination file name.
 	 */
-	AllocatedPath path = AllocatedPath::Null();
+	AllocatedPath path = nullptr;
 
 	/**
 	 * A string that will be used with FormatTag() to build the
@@ -154,7 +154,7 @@ RecorderOutput::Open(AudioFormat &audio_format)
 
 	try {
 		encoder = prepared_encoder->Open(audio_format);
-	} catch (const std::runtime_error &) {
+	} catch (...) {
 		delete file;
 		throw;
 	}
@@ -162,7 +162,7 @@ RecorderOutput::Open(AudioFormat &audio_format)
 	if (!HasDynamicPath()) {
 		try {
 			EncoderToFile();
-		} catch (const std::runtime_error &) {
+		} catch (...) {
 			delete encoder;
 			throw;
 		}
@@ -218,8 +218,8 @@ RecorderOutput::Close() noexcept
 
 	try {
 		Commit();
-	} catch (const std::exception &e) {
-		LogError(e);
+	} catch (...) {
+		LogError(std::current_exception());
 	}
 
 	if (HasDynamicPath()) {
@@ -238,8 +238,8 @@ RecorderOutput::FinishFormat()
 
 	try {
 		Commit();
-	} catch (const std::exception &e) {
-		LogError(e);
+	} catch (...) {
+		LogError(std::current_exception());
 	}
 
 	file = nullptr;
@@ -270,7 +270,7 @@ RecorderOutput::ReopenFormat(AllocatedPath &&new_path)
 
 	try {
 		EncoderToOutputStream(*new_file, *encoder);
-	} catch (const std::exception &e) {
+	} catch (...) {
 		delete encoder;
 		delete new_file;
 		throw;
@@ -298,12 +298,12 @@ RecorderOutput::SendTag(const Tag &tag)
 
 		AtScopeExit(p) { free(p); };
 
-		AllocatedPath new_path = AllocatedPath::Null();
+		AllocatedPath new_path = nullptr;
 
 		try {
 			new_path = ParsePath(p);
-		} catch (const std::runtime_error &e) {
-			LogError(e);
+		} catch (...) {
+			LogError(std::current_exception());
 			FinishFormat();
 			return;
 		}
@@ -313,8 +313,8 @@ RecorderOutput::SendTag(const Tag &tag)
 
 			try {
 				ReopenFormat(std::move(new_path));
-			} catch (const std::runtime_error &e) {
-				LogError(e);
+			} catch (...) {
+				LogError(std::current_exception());
 				return;
 			}
 		}

@@ -23,6 +23,8 @@
 #include "event/Loop.hxx"
 #include "Log.hxx"
 
+#include <exception>
+
 #include <sys/inotify.h>
 
 static constexpr unsigned IN_MASK =
@@ -59,7 +61,7 @@ try {
 	event_loop.Run();
 
 	return EXIT_SUCCESS;
-} catch (const std::runtime_error &e) {
-	LogError(e);
+} catch (...) {
+	LogError(std::current_exception());
 	return EXIT_FAILURE;
 }

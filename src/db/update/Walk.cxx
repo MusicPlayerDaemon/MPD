@@ -55,7 +55,7 @@ UpdateWalk::UpdateWalk(EventLoop &_loop, DatabaseListener &_listener,
 	 storage(_storage),
 	 editor(_loop, _listener)
 {
-#ifndef WIN32
+#ifndef _WIN32
 	follow_inside_symlinks =
 		config_get_bool(ConfigOption::FOLLOW_INSIDE_SYMLINKS,
 				DEFAULT_FOLLOW_INSIDE_SYMLINKS);
@@ -133,7 +133,7 @@ UpdateWalk::PurgeDeletedFromDirectory(Directory &directory)
 	}
 }
 
-#ifndef WIN32
+#ifndef _WIN32
 static bool
 update_directory_stat(Storage &storage, Directory &directory)
 {
@@ -156,7 +156,7 @@ static int
 FindAncestorLoop(Storage &storage, Directory *parent,
 		 unsigned inode, unsigned device)
 {
-#ifndef WIN32
+#ifndef _WIN32
 	if (device == 0 && inode == 0)
 		/* can't detect loops if the Storage does not support
 		   these numbers */
@@ -258,7 +258,7 @@ bool
 UpdateWalk::SkipSymlink(const Directory *directory,
 			const char *utf8_name) const noexcept
 {
-#ifndef WIN32
+#ifndef _WIN32
 	const auto path_fs = storage.MapChildFS(directory->GetPath(),
 						utf8_name);
 	if (path_fs.IsNull())
@@ -338,8 +338,8 @@ UpdateWalk::UpdateDirectory(Directory &directory,
 
 	try {
 		reader.reset(storage.OpenDirectory(directory.GetPath()));
-	} catch (const std::runtime_error &e) {
-		LogError(e);
+	} catch (...) {
+		LogError(std::current_exception());
 		return false;
 	}
 

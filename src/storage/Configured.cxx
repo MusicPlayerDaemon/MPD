@@ -20,6 +20,7 @@
 #include "config.h"
 #include "Configured.hxx"
 #include "Registry.hxx"
+#include "StorageInterface.hxx"
 #include "plugins/LocalStorage.hxx"
 #include "config/ConfigGlobal.hxx"
 #include "config/ConfigError.hxx"
@@ -30,10 +31,10 @@
 
 #include <assert.h>
 
-static Storage *
+static std::unique_ptr<Storage>
 CreateConfiguredStorageUri(EventLoop &event_loop, const char *uri)
 {
-	Storage *storage = CreateStorageURI(event_loop, uri);
+	auto storage = CreateStorageURI(event_loop, uri);
 	if (storage == nullptr)
 		throw FormatRuntimeError("Unrecognized storage URI: %s", uri);
 
@@ -50,7 +51,7 @@ GetConfiguredMusicDirectory()
 	return path;
 }
 
-static Storage *
+static std::unique_ptr<Storage>
 CreateConfiguredStorageLocal()
 {
 	AllocatedPath path = GetConfiguredMusicDirectory();
@@ -62,7 +63,7 @@ CreateConfiguredStorageLocal()
 	return CreateLocalStorage(path);
 }
 
-Storage *
+std::unique_ptr<Storage>
 CreateConfiguredStorage(EventLoop &event_loop)
 {
 	auto uri = config_get_string(ConfigOption::MUSIC_DIR);

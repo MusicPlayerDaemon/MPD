@@ -50,7 +50,7 @@ skip_path(const char *name_utf8) noexcept
 	return strchr(name_utf8, '\n') != nullptr;
 }
 
-#if defined(WIN32) && GCC_CHECK_VERSION(4,6)
+#if defined(_WIN32) && GCC_CHECK_VERSION(4,6)
 /* PRIu64 causes bogus compiler warning */
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wformat"
@@ -68,7 +68,7 @@ handle_listfiles_storage(Response &r, StorageDirectoryReader &reader)
 		StorageFileInfo info;
 		try {
 			info = reader.GetInfo(false);
-		} catch (const std::runtime_error &) {
+		} catch (...) {
 			continue;
 		}
 
@@ -94,7 +94,7 @@ handle_listfiles_storage(Response &r, StorageDirectoryReader &reader)
 	}
 }
 
-#if defined(WIN32) && GCC_CHECK_VERSION(4,6)
+#if defined(_WIN32) && GCC_CHECK_VERSION(4,6)
 #pragma GCC diagnostic pop
 #endif
 
@@ -199,13 +199,13 @@ handle_mount(Client &client, Request args, Response &r)
 	}
 
 	auto &event_loop = instance.io_thread.GetEventLoop();
-	Storage *storage = CreateStorageURI(event_loop, remote_uri);
+	auto storage = CreateStorageURI(event_loop, remote_uri);
 	if (storage == nullptr) {
 		r.Error(ACK_ERROR_ARG, "Unrecognized storage URI");
 		return CommandResult::ERROR;
 	}
 
-	composite.Mount(local_uri, storage);
+	composite.Mount(local_uri, std::move(storage));
 	instance.EmitIdle(IDLE_MOUNT);
 
 #ifdef ENABLE_DATABASE

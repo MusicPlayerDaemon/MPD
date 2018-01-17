@@ -22,7 +22,7 @@
 #include "Log.hxx"
 
 void
-Client::SetExpired()
+Client::SetExpired() noexcept
 {
 	if (IsExpired())
 		return;
@@ -32,7 +32,7 @@ Client::SetExpired()
 }
 
 void
-Client::OnTimeout()
+Client::OnTimeout() noexcept
 {
 	if (!IsExpired()) {
 		assert(!idle_waiting);

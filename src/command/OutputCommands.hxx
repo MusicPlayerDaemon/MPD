@@ -36,6 +36,9 @@ CommandResult
 handle_toggleoutput(Client &client, Request request, Response &response);
 
 CommandResult
+handle_outputset(Client &client, Request request, Response &response);
+
+CommandResult
 handle_devices(Client &client, Request request, Response &response);
 
 #endif

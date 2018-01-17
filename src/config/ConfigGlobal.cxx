@@ -125,7 +125,7 @@ config_get_path(ConfigOption option)
 {
 	const auto *param = config_get_param(option);
 	if (param == nullptr)
-		return AllocatedPath::Null();
+		return nullptr;
 
 	return param->GetPath();
 }
@@ -140,8 +140,9 @@ config_get_unsigned(ConfigOption option, unsigned default_value)
 	if (param == nullptr)
 		return default_value;
 
-	value = strtol(param->value.c_str(), &endptr, 0);
-	if (*endptr != 0 || value < 0)
+	const char *const s = param->value.c_str();
+	value = strtol(s, &endptr, 0);
+	if (endptr == s || *endptr != 0 || value < 0)
 		FormatFatalError("Not a valid non-negative number in line %i",
 				 param->line);
 
@@ -158,8 +159,9 @@ config_get_positive(ConfigOption option, unsigned default_value)
 	if (param == nullptr)
 		return default_value;
 
-	value = strtol(param->value.c_str(), &endptr, 0);
-	if (*endptr != 0)
+	const char *const s = param->value.c_str();
+	value = strtol(s, &endptr, 0);
+	if (endptr == s || *endptr != 0)
 		FormatFatalError("Not a valid number in line %i", param->line);
 
 	if (value <= 0)

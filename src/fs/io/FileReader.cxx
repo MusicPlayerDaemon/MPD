@@ -24,7 +24,7 @@
 
 #include <assert.h>
 
-#ifdef WIN32
+#ifdef _WIN32
 
 FileReader::FileReader(Path _path)
 	:path(_path),

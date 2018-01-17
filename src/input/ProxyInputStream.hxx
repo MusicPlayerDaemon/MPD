@@ -21,6 +21,7 @@
 #define MPD_PROXY_INPUT_STREAM_HXX
 
 #include "InputStream.hxx"
+#include "Ptr.hxx"
 
 struct Tag;
 
@@ -28,30 +29,48 @@ struct Tag;
  * An #InputStream that forwards all methods call to another
  * #InputStream instance.  This can be used as a base class to
  * override selected methods.
+ *
+ * The inner #InputStream instance may be nullptr initially, to be set
+ * later.
  */
 class ProxyInputStream : public InputStream {
 protected:
-	InputStream &input;
+	InputStreamPtr input;
 
 public:
-	gcc_nonnull_all
-	ProxyInputStream(InputStream *_input);
+	explicit ProxyInputStream(InputStreamPtr _input) noexcept;
 
-	virtual ~ProxyInputStream();
+	/**
+	 * Construct an instance without an #InputStream instance.
+	 * Once that instance becomes available, call SetInput().
+	 */
+	ProxyInputStream(const char *_uri,
+			 Mutex &_mutex, Cond &_cond) noexcept
+		:InputStream(_uri, _mutex, _cond) {}
+
+	virtual ~ProxyInputStream() noexcept;
 
 	ProxyInputStream(const ProxyInputStream &) = delete;
 	ProxyInputStream &operator=(const ProxyInputStream &) = delete;
 
 	/* virtual methods from InputStream */
 	void Check() override;
-	void Update() override;
+	void Update() noexcept override;
 	void Seek(offset_type new_offset) override;
 	bool IsEOF() noexcept override;
-	Tag *ReadTag() override;
+	std::unique_ptr<Tag> ReadTag() override;
 	bool IsAvailable() noexcept override;
 	size_t Read(void *ptr, size_t read_size) override;
 
 protected:
+	/**
+	 * If this instance was initialized without an input, this
+	 * method can set it.
+	 *
+	 * Caller must lock the mutex.
+	 */
+	void SetInput(InputStreamPtr _input) noexcept;
+
 	/**
 	 * Copy public attributes from the underlying input stream to the
 	 * "rewind" input stream.  This function is called when a method of

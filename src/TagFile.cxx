@@ -29,7 +29,7 @@
 #include "input/LocalOpen.hxx"
 #include "thread/Cond.hxx"
 
-#include <stdexcept>
+#include <exception>
 
 #include <assert.h>
 
@@ -64,13 +64,13 @@ public:
 			try {
 				is = OpenLocalInputStream(path_fs,
 							  mutex, cond);
-			} catch (const std::runtime_error &) {
+			} catch (...) {
 				return false;
 			}
 		} else {
 			try {
 				is->LockRewind();
-			} catch (const std::runtime_error &) {
+			} catch (...) {
 			}
 		}
 

@@ -83,7 +83,7 @@ input_smbclient_init(EventLoop &, const ConfigBlock &)
 	// TODO: evaluate ConfigBlock, call smbc_setOption*()
 }
 
-static InputStream *
+static InputStreamPtr
 input_smbclient_open(const char *uri,
 		     Mutex &mutex, Cond &cond)
 {
@@ -119,7 +119,8 @@ input_smbclient_open(const char *uri,
 		throw MakeErrno(e, "smbc_fstat() failed");
 	}
 
-	return new SmbclientInputStream(uri, mutex, cond, ctx, fd, st);
+	return std::make_unique<SmbclientInputStream>(uri, mutex, cond,
+						      ctx, fd, st);
 }
 
 size_t

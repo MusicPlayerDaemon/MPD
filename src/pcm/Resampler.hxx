@@ -52,12 +52,12 @@ public:
 	 * Closes the resampler.  After that, you may call Open()
 	 * again.
 	 */
-	virtual void Close() = 0;
+	virtual void Close() noexcept = 0;
 
 	/**
 	 * Reset the filter's state, e.g. drop/flush buffers.
 	 */
-	virtual void Reset() {
+	virtual void Reset() noexcept {
 	}
 
 	/**
@@ -70,6 +70,14 @@ public:
 	 * filter_close() or filter_filter())
 	 */
 	virtual ConstBuffer<void> Resample(ConstBuffer<void> src) = 0;
+
+	/**
+	 * Flush pending data and return it.  This should be called
+	 * repepatedly until it returns nullptr.
+	 */
+	virtual ConstBuffer<void> Flush() {
+		return nullptr;
+	}
 };
 
 #endif

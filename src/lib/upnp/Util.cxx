@@ -30,11 +30,11 @@ trimstring(std::string &s, const char *ws) noexcept
 		s.clear();
 		return;
 	}
-	s.replace(0, pos, std::string());
+	s.erase(0, pos);
 
 	pos = s.find_last_not_of(ws);
 	if (pos != std::string::npos && pos != s.length()-1)
-		s.replace(pos + 1, std::string::npos, std::string());
+		s.erase(pos + 1);
 }
 
 static void
@@ -102,34 +102,3 @@ stringToTokens(const std::string &str,
 
 	return tokens;
 }
-
-template <class T>
-bool
-csvToStrings(const char *s, T &tokens) noexcept
-{
-	assert(tokens.empty());
-
-	std::string current;
-
-	while (true) {
-		char ch = *s++;
-		if (ch == 0) {
-			tokens.emplace_back(std::move(current));
-			return true;
-		}
-
-		if (ch == '\\') {
-			ch = *s++;
-			if (ch == 0)
-				return false;
-		} else if (ch == ',') {
-			tokens.emplace_back(std::move(current));
-			current.clear();
-			continue;
-		}
-
-		current.push_back(ch);
-	}
-}
-
-template bool csvToStrings<std::list<std::string>>(const char *, std::list<std::string> &) noexcept;

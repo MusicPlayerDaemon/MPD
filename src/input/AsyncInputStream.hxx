@@ -61,7 +61,7 @@ class AsyncInputStream : public InputStream {
 	 * The #Tag object ready to be requested via
 	 * InputStream::ReadTag().
 	 */
-	Tag *tag = nullptr;
+	std::unique_ptr<Tag> tag;
 
 	offset_type seek_offset;
 
@@ -84,7 +84,7 @@ public:
 	void Check() final;
 	bool IsEOF() noexcept final;
 	void Seek(offset_type new_offset) final;
-	Tag *ReadTag() final;
+	std::unique_ptr<Tag> ReadTag() final;
 	bool IsAvailable() noexcept final;
 	size_t Read(void *ptr, size_t read_size) final;
 
@@ -92,11 +92,8 @@ protected:
 	/**
 	 * Pass an tag from the I/O thread to the client thread.
 	 */
-	void SetTag(Tag *_tag) noexcept;
-
-	void ClearTag() noexcept {
-		SetTag(nullptr);
-	}
+	void SetTag(std::unique_ptr<Tag> _tag) noexcept;
+	void ClearTag() noexcept;
 
 	void Pause() noexcept;
 

@@ -24,8 +24,6 @@
 #include "util/StringBuffer.hxx"
 #include "Compiler.h"
 
-#include <stdexcept>
-
 #include <unistd.h>
 #include <stdio.h>
 
@@ -83,7 +81,7 @@ FakeDecoder::Read(InputStream &is, void *buffer, size_t length)
 {
 	try {
 		return is.LockRead(buffer, length);
-	} catch (const std::runtime_error &e) {
+	} catch (...) {
 		return 0;
 	}
 }

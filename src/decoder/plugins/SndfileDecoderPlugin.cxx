@@ -26,7 +26,7 @@
 #include "util/Domain.hxx"
 #include "Log.hxx"
 
-#include <stdexcept>
+#include <exception>
 
 #include <sndfile.h>
 
@@ -93,8 +93,8 @@ sndfile_vio_seek(sf_count_t _offset, int whence, void *user_data)
 	try {
 		is.LockSeek(offset);
 		return is.GetOffset();
-	} catch (const std::runtime_error &e) {
-		LogError(e, "Seek failed");
+	} catch (...) {
+		LogError(std::current_exception(), "Seek failed");
 		return -1;
 	}
 }

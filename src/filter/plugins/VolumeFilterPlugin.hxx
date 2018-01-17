@@ -20,10 +20,12 @@
 #ifndef MPD_VOLUME_FILTER_PLUGIN_HXX
 #define MPD_VOLUME_FILTER_PLUGIN_HXX
 
+#include <memory>
+
 class PreparedFilter;
 class Filter;
 
-PreparedFilter *
+std::unique_ptr<PreparedFilter>
 volume_filter_prepare() noexcept;
 
 unsigned

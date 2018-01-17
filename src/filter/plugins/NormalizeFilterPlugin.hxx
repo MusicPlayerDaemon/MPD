@@ -20,11 +20,13 @@
 #ifndef MPD_NORMALIZE_FILTER_PLUGIN_HXX
 #define MPD_NORMALIZE_FILTER_PLUGIN_HXX
 
+#include <memory>
+
 class PreparedFilter;
 class Filter;
 struct AudioFormat;
 
-PreparedFilter *
+std::unique_ptr<PreparedFilter>
 normalize_filter_prepare() noexcept;
 
 #endif

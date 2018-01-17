@@ -78,7 +78,7 @@ HugeForkCow(void *p, size_t size, bool enable) noexcept;
 void
 HugeDiscard(void *p, size_t size) noexcept;
 
-#elif defined(WIN32)
+#elif defined(_WIN32)
 #include <windows.h>
 
 WritableBuffer<void>

@@ -22,7 +22,7 @@
 
 #include "Compiler.h"
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <windows.h>
 #else
 #include <pthread.h>
@@ -34,7 +34,7 @@
  * debugging code.
  */
 class ThreadId {
-#ifdef WIN32
+#ifdef _WIN32
 	DWORD id;
 #else
 	pthread_t id;
@@ -46,19 +46,17 @@ public:
 	 */
 	ThreadId() noexcept = default;
 
-#ifdef WIN32
+#ifdef _WIN32
 	constexpr ThreadId(DWORD _id) noexcept:id(_id) {}
 #else
 	constexpr ThreadId(pthread_t _id) noexcept:id(_id) {}
 #endif
 
-	gcc_const
-	static ThreadId Null() noexcept {
-#ifdef WIN32
+	static constexpr ThreadId Null() noexcept {
+#ifdef _WIN32
 		return 0;
 #else
-		static ThreadId null;
-		return null;
+		return pthread_t();
 #endif
 	}
 
@@ -72,7 +70,7 @@ public:
 	 */
 	gcc_pure
 	static const ThreadId GetCurrent() noexcept {
-#ifdef WIN32
+#ifdef _WIN32
 		return ::GetCurrentThreadId();
 #else
 		return pthread_self();
@@ -81,11 +79,13 @@ public:
 
 	gcc_pure
 	bool operator==(const ThreadId &other) const noexcept {
-#ifdef WIN32
+		/* note: not using pthread_equal() because that
+		   function "is undefined if either thread ID is not
+		   valid so we can't safely use it on
+		   default-constructed values" (comment from
+		   libstdc++) - and if both libstdc++ and libc++ get
+		   away with this, we can do it as well */
 		return id == other.id;
-#else
-		return pthread_equal(id, other.id);
-#endif
 	}
 
 	/**

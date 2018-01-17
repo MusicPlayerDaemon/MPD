@@ -44,7 +44,8 @@
 #include "config/Block.hxx"
 #include "AudioFormat.hxx"
 #include "filter/FilterPlugin.hxx"
-#include "filter/FilterInternal.hxx"
+#include "filter/Filter.hxx"
+#include "filter/Prepared.hxx"
 #include "filter/FilterRegistry.hxx"
 #include "pcm/PcmBuffer.hxx"
 #include "pcm/Silence.hxx"
@@ -134,7 +135,7 @@ public:
 	PreparedRouteFilter(const ConfigBlock &block);
 
 	/* virtual methods from class PreparedFilter */
-	Filter *Open(AudioFormat &af) override;
+	std::unique_ptr<Filter> Open(AudioFormat &af) override;
 };
 
 PreparedRouteFilter::PreparedRouteFilter(const ConfigBlock &block)
@@ -196,10 +197,10 @@ PreparedRouteFilter::PreparedRouteFilter(const ConfigBlock &block)
 	}
 }
 
-static PreparedFilter *
+static std::unique_ptr<PreparedFilter>
 route_filter_init(const ConfigBlock &block)
 {
-	return new PreparedRouteFilter(block);
+	return std::make_unique<PreparedRouteFilter>(block);
 }
 
 RouteFilter::RouteFilter(const AudioFormat &audio_format,
@@ -216,10 +217,11 @@ RouteFilter::RouteFilter(const AudioFormat &audio_format,
 	output_frame_size = out_audio_format.GetFrameSize();
 }
 
-Filter *
+std::unique_ptr<Filter>
 PreparedRouteFilter::Open(AudioFormat &audio_format)
 {
-	return new RouteFilter(audio_format, min_output_channels, sources);
+	return std::make_unique<RouteFilter>(audio_format, min_output_channels,
+					     sources);
 }
 
 ConstBuffer<void>

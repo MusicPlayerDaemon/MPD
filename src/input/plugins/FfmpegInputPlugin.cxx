@@ -81,7 +81,7 @@ input_ffmpeg_init(EventLoop &, const ConfigBlock &)
 		throw PluginUnavailable("No protocol");
 }
 
-static InputStream *
+static InputStreamPtr
 input_ffmpeg_open(const char *uri,
 		  Mutex &mutex, Cond &cond)
 {
@@ -98,7 +98,7 @@ input_ffmpeg_open(const char *uri,
 	if (result != 0)
 		throw MakeFfmpegError(result);
 
-	return new FfmpegInputStream(uri, mutex, cond, h);
+	return std::make_unique<FfmpegInputStream>(uri, mutex, cond, h);
 }
 
 size_t

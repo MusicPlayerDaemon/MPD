@@ -66,7 +66,7 @@ public:
 		buffer.ForkCow(false);
 	}
 
-	~SliceBuffer() {
+	~SliceBuffer() noexcept {
 		/* all slices must be freed explicitly, and this
 		   assertion checks for leaks */
 		assert(n_allocated == 0);
@@ -75,15 +75,15 @@ public:
 	SliceBuffer(const SliceBuffer &other) = delete;
 	SliceBuffer &operator=(const SliceBuffer &other) = delete;
 
-	unsigned GetCapacity() const {
+	unsigned GetCapacity() const noexcept {
 		return buffer.size();
 	}
 
-	bool empty() const {
+	bool empty() const noexcept {
 		return n_allocated == 0;
 	}
 
-	bool IsFull() const {
+	bool IsFull() const noexcept {
 		return n_allocated == buffer.size();
 	}
 
@@ -112,7 +112,7 @@ public:
 		return ::new((void *)value) T(std::forward<Args>(args)...);
 	}
 
-	void Free(T *value) {
+	void Free(T *value) noexcept {
 		assert(n_initialized <= buffer.size());
 		assert(n_allocated > 0);
 		assert(n_allocated <= n_initialized);

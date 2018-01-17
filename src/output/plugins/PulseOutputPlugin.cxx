@@ -856,7 +856,7 @@ try {
 	PulseOutput po(empty);
 	po.WaitConnection();
 	return true;
-} catch (const std::runtime_error &e) {
+} catch (...) {
 	return false;
 }
 

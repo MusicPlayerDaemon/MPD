@@ -21,14 +21,12 @@
 #include "Path.hxx"
 #include "Charset.hxx"
 
-#include <stdexcept>
-
 std::string
 Path::ToUTF8() const noexcept
 {
 	try {
 		return ::PathToUTF8(c_str());
-	} catch (const std::runtime_error &) {
+	} catch (...) {
 		return std::string();
 	}
 }

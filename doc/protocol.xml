@@ -1693,14 +1693,17 @@ OK
 
             <para>
               <varname>sort</varname> sorts the result by the
-              specified tag.  Without <varname>sort</varname>, the
+              specified tag.  The sort is descending if the tag is
+              prefixed with a minus ('-').
+              Without <varname>sort</varname>, the
               order is undefined.  Only the first tag value will be
               used, if multiple of the same type exist.  To sort by
               "Artist", "Album" or "AlbumArtist", you should specify
               "ArtistSort", "AlbumSort" or "AlbumArtistSort" instead.
               These will automatically fall back to the former if
               "*Sort" doesn't exist.  "AlbumArtist" falls back to just
-              "Artist".
+              "Artist".  The type "Last-Modified" can sort by file
+              modification time.
             </para>
 
             <para>
@@ -2518,7 +2521,9 @@ OK
             <screen>
 outputid: 0
 outputname: My ALSA Device
+plugin: alsa
 outputenabled: 0
+attribute: dop=0
 OK
             </screen>
             <para>
@@ -2541,6 +2546,24 @@ OK
                 </para>
               </listitem>
             </itemizedlist>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry id="command_outputset">
+          <term>
+            <cmdsynopsis>
+              <command>outputset</command>
+              <arg choice="req"><replaceable>ID</replaceable></arg>
+              <arg choice="req"><replaceable>NAME</replaceable></arg>
+              <arg choice="req"><replaceable>VALUE</replaceable></arg>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              Set a runtime attribute.  These are specific to the
+              output plugin, and supported values are usually printed
+              in the <command>outputs</command> response.
+            </para>
           </listitem>
         </varlistentry>
       </variablelist>

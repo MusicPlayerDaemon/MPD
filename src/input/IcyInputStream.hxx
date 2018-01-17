@@ -21,47 +21,51 @@
 #define MPD_ICY_INPUT_STREAM_HXX
 
 #include "ProxyInputStream.hxx"
-#include "IcyMetaDataParser.hxx"
 #include "Compiler.h"
 
+#include <memory>
+
 struct Tag;
+class IcyMetaDataParser;
 
 /**
  * An #InputStream filter that parses Icy metadata.
  */
 class IcyInputStream final : public ProxyInputStream {
-	IcyMetaDataParser parser;
+	std::shared_ptr<IcyMetaDataParser> parser;
 
 	/**
 	 * The #Tag object ready to be requested via ReadTag().
 	 */
-	Tag *input_tag;
+	std::unique_ptr<Tag> input_tag;
 
 	/**
 	 * The #Tag object ready to be requested via ReadTag().
 	 */
-	Tag *icy_tag;
+	std::unique_ptr<Tag> icy_tag;
 
-	offset_type override_offset;
+	offset_type override_offset = 0;
 
 public:
-	IcyInputStream(InputStream *_input);
-	virtual ~IcyInputStream();
+	/**
+	 * @param _parser a IcyMetaDataParser instance which is shared
+	 * with our input; it needs to be shared because our input
+	 * needs to feed parameters (e.g. from the "icy-metaint"
+	 * header) into it
+	 */
+	IcyInputStream(InputStreamPtr _input,
+		       std::shared_ptr<IcyMetaDataParser> _parser) noexcept;
+	virtual ~IcyInputStream() noexcept;
 
 	IcyInputStream(const IcyInputStream &) = delete;
 	IcyInputStream &operator=(const IcyInputStream &) = delete;
 
-	void Enable(size_t _data_size) {
-		parser.Start(_data_size);
-	}
-
-	bool IsEnabled() const {
-		return parser.IsDefined();
-	}
+	gcc_pure
+	bool IsEnabled() const noexcept;
 
 	/* virtual methods from InputStream */
-	void Update() override;
-	Tag *ReadTag() override;
+	void Update() noexcept override;
+	std::unique_ptr<Tag> ReadTag() override;
 	size_t Read(void *ptr, size_t size) override;
 };
 

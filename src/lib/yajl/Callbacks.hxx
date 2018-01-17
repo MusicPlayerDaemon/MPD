@@ -1,6 +1,5 @@
 /*
- * Copyright 2003-2017 The Music Player Daemon Project
- * http://www.musicpd.org
+ * Copyright (C) 2018 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -28,37 +27,59 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/** \file
- *
- * A very simple reference counting library.
+#ifndef YAJL_CALLBACKS_HXX
+#define YAJL_CALLBACKS_HXX
+
+#include "util/Cast.hxx"
+#include "util/StringView.hxx"
+
+#include <yajl/yajl_parse.h>
+
+namespace Yajl {
+
+/**
+ * Helper template which allows implementing callbacks as regular
+ * methods.  The "ctx" parameter is casted to the enclosing class.
  */
-
-#ifndef MPD_REFCOUNT_HXX
-#define MPD_REFCOUNT_HXX
-
-#include <atomic>
-
-class RefCount {
-	std::atomic_uint n;
-
-public:
-#ifndef _LIBCPP_VERSION
-	/* the "constexpr" is missing in libc++'s "atomic"
-	   implementation */
-	constexpr
-#endif
-	RefCount():n(1) {}
-
-	void Increment() {
-		++n;
+template<class T>
+struct CallbacksWrapper {
+	static T &Cast(void *ctx) {
+		return *(T *)ctx;
 	}
 
-	/**
-	 * @return true if the number of references has been dropped to 0
-	 */
-	bool Decrement() {
-		return --n == 0;
+	static int Integer(void *ctx, long long integerVal) noexcept {
+		return Cast(ctx).Integer(integerVal);
+	}
+
+	static int String(void *ctx, const unsigned char *stringVal,
+			  size_t stringLen) noexcept {
+		return Cast(ctx).String(StringView((const char *)stringVal,
+						   stringLen));
+	}
+
+	static int StartMap(void *ctx) noexcept {
+		return Cast(ctx).StartMap();
+	}
+
+	static int MapKey(void *ctx, const unsigned char *key,
+			  size_t stringLen) noexcept {
+		return Cast(ctx).MapKey(StringView((const char *)key,
+						   stringLen));
+	}
+
+	static int EndMap(void *ctx) noexcept {
+		return Cast(ctx).EndMap();
+	}
+
+	static int StartArray(void *ctx) noexcept {
+		return Cast(ctx).StartArray();
+	}
+
+	static int EndArray(void *ctx) noexcept {
+		return Cast(ctx).EndArray();
 	}
 };
+
+} // namespace Yajl
 
 #endif

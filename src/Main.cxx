@@ -105,7 +105,7 @@
 #include <locale.h>
 #endif
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #endif
@@ -175,13 +175,13 @@ glue_mapper_init()
 static void
 InitStorage(EventLoop &event_loop)
 {
-	Storage *storage = CreateConfiguredStorage(event_loop);
+	auto storage = CreateConfiguredStorage(event_loop);
 	if (storage == nullptr)
 		return;
 
 	CompositeStorage *composite = new CompositeStorage();
 	instance->storage = composite;
-	composite->Mount("", storage);
+	composite->Mount("", std::move(storage));
 }
 
 /**
@@ -290,7 +290,7 @@ glue_state_file_init()
  */
 static void winsock_init(void)
 {
-#ifdef WIN32
+#ifdef _WIN32
 	WSADATA sockinfo;
 
 	int retval = WSAStartup(MAKEWORD(2, 2), &sockinfo);
@@ -379,7 +379,7 @@ initialize_decoder_and_player(const ReplayGainConfig &replay_gain_config)
 		try {
 			configured_audio_format = ParseAudioFormat(param->value.c_str(),
 								   true);
-		} catch (const std::runtime_error &) {
+		} catch (...) {
 			std::throw_with_nested(FormatRuntimeError("error parsing line %i",
 								  param->line));
 		}
@@ -421,7 +421,7 @@ Instance::OnIdle(unsigned flags)
 
 int main(int argc, char *argv[])
 {
-#ifdef WIN32
+#ifdef _WIN32
 	return win32_main(argc, argv);
 #else
 	return mpd_main(argc, argv);
@@ -469,7 +469,7 @@ try {
 			ReadConfigFile(config_path);
 	}
 #else
-	ParseCommandLine(argc, argv, &options);
+	ParseCommandLine(argc, argv, options);
 #endif
 
 	const auto config = LoadConfig();
@@ -622,7 +622,7 @@ try {
 	for (auto &partition : instance->partitions)
 		partition.pc.LockUpdateAudio();
 
-#ifdef WIN32
+#ifdef _WIN32
 	win32_app_started();
 #endif
 
@@ -637,7 +637,7 @@ try {
 	/* run the main loop */
 	instance->event_loop.Run();
 
-#ifdef WIN32
+#ifdef _WIN32
 	win32_app_stopping();
 #endif
 
@@ -711,7 +711,7 @@ try {
 	daemonize_finish();
 #endif
 
-#ifdef WIN32
+#ifdef _WIN32
 	WSACleanup();
 #endif
 

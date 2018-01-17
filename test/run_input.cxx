@@ -26,8 +26,12 @@
 #include "event/Thread.hxx"
 #include "thread/Cond.hxx"
 #include "Log.hxx"
+#include "fs/Path.hxx"
 #include "fs/io/BufferedOutputStream.hxx"
 #include "fs/io/StdioOutputStream.hxx"
+#include "util/ConstBuffer.hxx"
+#include "util/OptionDef.hxx"
+#include "util/OptionParser.hxx"
 
 #ifdef ENABLE_ARCHIVE
 #include "archive/ArchiveList.hxx"
@@ -38,13 +42,53 @@
 #include <unistd.h>
 #include <stdlib.h>
 
+struct CommandLine {
+	const char *uri = nullptr;
+
+	Path config_path = nullptr;
+};
+
+enum Option {
+	OPTION_CONFIG,
+};
+
+static constexpr OptionDef option_defs[] = {
+	{"config", 0, true, "Load a MPD configuration file"},
+};
+
+static CommandLine
+ParseCommandLine(int argc, char **argv)
+{
+	CommandLine c;
+
+	OptionParser option_parser(option_defs, argc, argv);
+	while (auto o = option_parser.Next()) {
+		switch (Option(o.index)) {
+		case OPTION_CONFIG:
+			c.config_path = Path::FromFS(o.value);
+			break;
+		}
+	}
+
+	auto args = option_parser.GetRemaining();
+	if (args.size != 1)
+		throw std::runtime_error("Usage: run_input [--config=FILE] URI");
+
+	c.uri = args.front();
+	return c;
+}
+
 class GlobalInit {
 	EventThread io_thread;
 
 public:
-	GlobalInit() {
+	GlobalInit(Path config_path) {
 		io_thread.Start();
 		config_global_init();
+
+		if (!config_path.IsNull())
+			ReadConfigFile(config_path);
+
 #ifdef ENABLE_ARCHIVE
 		archive_plugin_init_all();
 #endif
@@ -82,11 +126,12 @@ dump_input_stream(InputStream *is)
 	/* read data and tags from the stream */
 
 	while (!is->IsEOF()) {
-		Tag *tag = is->ReadTag();
-		if (tag != NULL) {
-			fprintf(stderr, "Received a tag:\n");
-			tag_save(stderr, *tag);
-			delete tag;
+		{
+			auto tag = is->ReadTag();
+			if (tag) {
+				fprintf(stderr, "Received a tag:\n");
+				tag_save(stderr, *tag);
+			}
 		}
 
 		char buffer[4096];
@@ -106,20 +151,17 @@ dump_input_stream(InputStream *is)
 
 int main(int argc, char **argv)
 try {
-	if (argc != 2) {
-		fprintf(stderr, "Usage: run_input URI\n");
-		return EXIT_FAILURE;
-	}
+	const auto c = ParseCommandLine(argc, argv);
 
 	/* initialize MPD */
 
-	const GlobalInit init;
+	const GlobalInit init(c.config_path);
 
 	/* open the stream and dump it */
 
 	Mutex mutex;
 	Cond cond;
-	auto is = InputStream::OpenReady(argv[1], mutex, cond);
+	auto is = InputStream::OpenReady(c.uri, mutex, cond);
 	return dump_input_stream(is.get());
 } catch (const std::exception &e) {
 	LogError(e);

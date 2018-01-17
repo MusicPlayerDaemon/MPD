@@ -32,7 +32,7 @@
 
 #include <mutex>
 
-#ifdef WIN32
+#ifdef _WIN32
 
 #include "CriticalSection.hxx"
 class Mutex : public CriticalSection {};

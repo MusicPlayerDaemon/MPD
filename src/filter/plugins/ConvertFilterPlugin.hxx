@@ -20,11 +20,13 @@
 #ifndef MPD_CONVERT_FILTER_PLUGIN_HXX
 #define MPD_CONVERT_FILTER_PLUGIN_HXX
 
+#include <memory>
+
 class PreparedFilter;
 class Filter;
 struct AudioFormat;
 
-PreparedFilter *
+std::unique_ptr<PreparedFilter>
 convert_filter_prepare() noexcept;
 
 Filter *

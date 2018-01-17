@@ -46,7 +46,7 @@ static constexpr Domain log_domain("log");
 #ifndef ANDROID
 
 static int out_fd = -1;
-static AllocatedPath out_path = AllocatedPath::Null();
+static AllocatedPath out_path = nullptr;
 
 static void redirect_logs(int fd)
 {
@@ -72,7 +72,7 @@ log_init_file(int line)
 
 	out_fd = open_log_file();
 	if (out_fd < 0) {
-#ifdef WIN32
+#ifdef _WIN32
 		const std::string out_path_utf8 = out_path.ToUTF8();
 		throw FormatRuntimeError("failed to open log file \"%s\" (config line %d)",
 					 out_path_utf8.c_str(), line);
@@ -169,7 +169,7 @@ log_deinit(void)
 {
 #ifndef ANDROID
 	close_log_files();
-	out_path = AllocatedPath::Null();
+	out_path = nullptr;
 #endif
 }
 
@@ -182,7 +182,7 @@ void setup_log_output()
 	fflush(nullptr);
 
 	if (out_fd < 0) {
-#ifdef WIN32
+#ifdef _WIN32
 		return;
 #else
 		out_fd = open("/dev/null", O_WRONLY);

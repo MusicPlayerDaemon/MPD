@@ -27,10 +27,12 @@
 #include "lib/curl/Slist.hxx"
 #include "../AsyncInputStream.hxx"
 #include "../IcyInputStream.hxx"
+#include "IcyMetaDataParser.hxx"
 #include "../InputPlugin.hxx"
 #include "config/ConfigGlobal.hxx"
 #include "config/Block.hxx"
 #include "tag/Builder.hxx"
+#include "tag/Tag.hxx"
 #include "event/Call.hxx"
 #include "event/Loop.hxx"
 #include "thread/Cond.hxx"
@@ -63,7 +65,7 @@ static const size_t CURL_MAX_BUFFERED = 512 * 1024;
  */
 static const size_t CURL_RESUME_AT = 384 * 1024;
 
-struct CurlInputStream final : public AsyncInputStream, CurlResponseHandler {
+class CurlInputStream final : public AsyncInputStream, CurlResponseHandler {
 	/* some buffers which were passed to libcurl, which we have
 	   too free */
 	CurlSlist request_headers;
@@ -71,23 +73,25 @@ struct CurlInputStream final : public AsyncInputStream, CurlResponseHandler {
 	CurlRequest *request = nullptr;
 
 	/** parser for icy-metadata */
-	IcyInputStream *icy;
+	std::shared_ptr<IcyMetaDataParser> icy;
 
+public:
+	template<typename I>
 	CurlInputStream(EventLoop &event_loop, const char *_url,
-			Mutex &_mutex, Cond &_cond)
-		:AsyncInputStream(event_loop, _url, _mutex, _cond,
-				  CURL_MAX_BUFFERED,
-				  CURL_RESUME_AT),
-		 icy(new IcyInputStream(this)) {
-	}
+			const std::multimap<std::string, std::string> &headers,
+			I &&_icy,
+			Mutex &_mutex, Cond &_cond);
 
-	~CurlInputStream();
+	~CurlInputStream() noexcept;
 
 	CurlInputStream(const CurlInputStream &) = delete;
 	CurlInputStream &operator=(const CurlInputStream &) = delete;
 
-	static InputStream *Open(const char *url, Mutex &mutex, Cond &cond);
+	static InputStreamPtr Open(const char *url,
+				   const std::multimap<std::string, std::string> &headers,
+				   Mutex &mutex, Cond &cond);
 
+private:
 	/**
 	 * Create and initialize a new #CurlRequest instance.  After
 	 * this, you may add more request headers and set options.  To
@@ -107,7 +111,7 @@ struct CurlInputStream final : public AsyncInputStream, CurlResponseHandler {
 	 *
 	 * Runs in the I/O thread.
 	 */
-	void FreeEasy();
+	void FreeEasy() noexcept;
 
 	/**
 	 * Frees the current "libcurl easy" handle, and everything associated
@@ -115,7 +119,7 @@ struct CurlInputStream final : public AsyncInputStream, CurlResponseHandler {
 	 *
 	 * The mutex must not be locked.
 	 */
-	void FreeEasyIndirect();
+	void FreeEasyIndirect() noexcept;
 
 	/**
 	 * The DoSeek() implementation invoked in the IOThread.
@@ -158,7 +162,7 @@ CurlInputStream::DoResume()
 }
 
 void
-CurlInputStream::FreeEasy()
+CurlInputStream::FreeEasy() noexcept
 {
 	assert(GetEventLoop().IsInside());
 
@@ -167,12 +171,10 @@ CurlInputStream::FreeEasy()
 
 	delete request;
 	request = nullptr;
-
-	request_headers.Clear();
 }
 
 void
-CurlInputStream::FreeEasyIndirect()
+CurlInputStream::FreeEasyIndirect() noexcept
 {
 	BlockingCall(GetEventLoop(), [this](){
 			FreeEasy();
@@ -186,6 +188,7 @@ CurlInputStream::OnHeaders(unsigned status,
 {
 	assert(GetEventLoop().IsInside());
 	assert(!postponed_exception);
+	assert(!icy || !icy->IsDefined());
 
 	if (status < 200 || status >= 300)
 		throw FormatRuntimeError("got HTTP status %ld", status);
@@ -198,9 +201,7 @@ CurlInputStream::OnHeaders(unsigned status,
 		return;
 	}
 
-	if (!icy->IsEnabled() &&
-	    headers.find("accept-ranges") != headers.end())
-		/* a stream with icy-metadata is not seekable */
+	if (headers.find("accept-ranges") != headers.end())
 		seekable = true;
 
 	auto i = headers.find("content-length");
@@ -225,18 +226,18 @@ CurlInputStream::OnHeaders(unsigned status,
 		SetTag(tag_builder.CommitNew());
 	}
 
-	if (!icy->IsEnabled()) {
+	if (icy) {
 		i = headers.find("icy-metaint");
 
 		if (i != headers.end()) {
 			size_t icy_metaint = ParseUint64(i->second.c_str());
-#ifndef WIN32
+#ifndef _WIN32
 			/* Windows doesn't know "%z" */
 			FormatDebug(curl_domain, "icy-metaint=%zu", icy_metaint);
 #endif
 
 			if (icy_metaint > 0) {
-				icy->Enable(icy_metaint);
+				icy->Start(icy_metaint);
 
 				/* a stream with icy-metadata is not
 				   seekable */
@@ -269,6 +270,7 @@ CurlInputStream::OnData(ConstBuffer<void> data)
 void
 CurlInputStream::OnEnd()
 {
+	const std::lock_guard<Mutex> protect(mutex);
 	cond.broadcast();
 
 	AsyncInputStream::SetClosed();
@@ -277,6 +279,7 @@ CurlInputStream::OnEnd()
 void
 CurlInputStream::OnError(std::exception_ptr e) noexcept
 {
+	const std::lock_guard<Mutex> protect(mutex);
 	postponed_exception = std::move(e);
 
 	if (IsSeekPending())
@@ -333,7 +336,7 @@ input_curl_init(EventLoop &event_loop, const ConfigBlock &block)
 }
 
 static void
-input_curl_finish(void)
+input_curl_finish() noexcept
 {
 	delete curl_init;
 
@@ -341,7 +344,24 @@ input_curl_finish(void)
 	http_200_aliases = nullptr;
 }
 
-CurlInputStream::~CurlInputStream()
+template<typename I>
+inline
+CurlInputStream::CurlInputStream(EventLoop &event_loop, const char *_url,
+				 const std::multimap<std::string, std::string> &headers,
+				 I &&_icy,
+				 Mutex &_mutex, Cond &_cond)
+	:AsyncInputStream(event_loop, _url, _mutex, _cond,
+			  CURL_MAX_BUFFERED,
+			  CURL_RESUME_AT),
+	 icy(std::forward<I>(_icy))
+{
+	request_headers.Append("Icy-Metadata: 1");
+
+	for (const auto &i : headers)
+		request_headers.Append((i.first + ":" + i.second).c_str());
+}
+
+CurlInputStream::~CurlInputStream() noexcept
 {
 	FreeEasyIndirect();
 }
@@ -372,16 +392,12 @@ CurlInputStream::InitEasy()
 
 	request->SetOption(CURLOPT_SSL_VERIFYPEER, verify_peer ? 1l : 0l);
 	request->SetOption(CURLOPT_SSL_VERIFYHOST, verify_host ? 2l : 0l);
-
-	request_headers.Clear();
-	request_headers.Append("Icy-Metadata: 1");
+	request->SetOption(CURLOPT_HTTPHEADER, request_headers.Get());
 }
 
 void
 CurlInputStream::StartRequest()
 {
-	request->SetOption(CURLOPT_HTTPHEADER, request_headers.Get());
-
 	request->Start();
 }
 
@@ -407,7 +423,7 @@ CurlInputStream::SeekInternal(offset_type new_offset)
 
 	if (offset > 0) {
 		char range[32];
-#ifdef WIN32
+#ifdef _WIN32
 		// TODO: what can we use on Windows to format 64 bit?
 		sprintf(range, "%lu-", (long)offset);
 #else
@@ -423,6 +439,7 @@ void
 CurlInputStream::DoSeek(offset_type new_offset)
 {
 	assert(IsReady());
+	assert(seekable);
 
 	const ScopeUnlock unlock(mutex);
 
@@ -431,33 +448,42 @@ CurlInputStream::DoSeek(offset_type new_offset)
 		});
 }
 
-inline InputStream *
-CurlInputStream::Open(const char *url, Mutex &mutex, Cond &cond)
+inline InputStreamPtr
+CurlInputStream::Open(const char *url,
+		      const std::multimap<std::string, std::string> &headers,
+		      Mutex &mutex, Cond &cond)
 {
-	CurlInputStream *c = new CurlInputStream((*curl_init)->GetEventLoop(),
-						 url, mutex, cond);
+	auto icy = std::make_shared<IcyMetaDataParser>();
 
-	try {
-		BlockingCall(c->GetEventLoop(), [c](){
-				c->InitEasy();
-				c->StartRequest();
-			});
-	} catch (...) {
-		delete c;
-		throw;
-	}
+	auto c = std::make_unique<CurlInputStream>((*curl_init)->GetEventLoop(),
+						   url, headers,
+						   icy,
+						   mutex, cond);
 
-	return c->icy;
+	BlockingCall(c->GetEventLoop(), [&c](){
+			c->InitEasy();
+			c->StartRequest();
+		});
+
+	return std::make_unique<IcyInputStream>(std::move(c), std::move(icy));
 }
 
-static InputStream *
+InputStreamPtr
+OpenCurlInputStream(const char *uri,
+		    const std::multimap<std::string, std::string> &headers,
+		    Mutex &mutex, Cond &cond)
+{
+	return CurlInputStream::Open(uri, headers, mutex, cond);
+}
+
+static InputStreamPtr
 input_curl_open(const char *url, Mutex &mutex, Cond &cond)
 {
 	if (strncmp(url, "http://", 7) != 0 &&
 	    strncmp(url, "https://", 8) != 0)
 		return nullptr;
 
-	return CurlInputStream::Open(url, mutex, cond);
+	return CurlInputStream::Open(url, {}, mutex, cond);
 }
 
 const struct InputPlugin input_plugin_curl = {

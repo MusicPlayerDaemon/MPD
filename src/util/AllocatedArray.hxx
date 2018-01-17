@@ -72,7 +72,7 @@ public:
 
 	AllocatedArray(AllocatedArray &&other)
 		:buffer(other.buffer) {
-		other.buffer = Buffer::Null();
+		other.buffer = nullptr;
 	}
 
 	~AllocatedArray() {

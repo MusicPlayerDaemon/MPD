@@ -29,7 +29,7 @@
 #include <assert.h>
 #include <string.h>
 
-#ifndef WIN32
+#ifndef _WIN32
 #include <pwd.h>
 
 /**
@@ -79,14 +79,14 @@ ParsePath(const char *path)
 {
 	assert(path != nullptr);
 
-#ifndef WIN32
+#ifndef _WIN32
 	if (path[0] == '~') {
 		++path;
 
 		if (*path == '\0')
 			return GetConfiguredHome();
 
-		AllocatedPath home = AllocatedPath::Null();
+		AllocatedPath home = nullptr;
 
 		if (*path == '/') {
 			home = GetConfiguredHome();
@@ -107,11 +107,11 @@ ParsePath(const char *path)
 		}
 
 		if (home.IsNull())
-			return AllocatedPath::Null();
+			return nullptr;
 
 		AllocatedPath path2 = AllocatedPath::FromUTF8Throw(path);
 		if (path2.IsNull())
-			return AllocatedPath::Null();
+			return nullptr;
 
 		return AllocatedPath::Build(home, path2);
 	} else if (!PathTraitsUTF8::IsAbsolute(path)) {
@@ -119,7 +119,7 @@ ParsePath(const char *path)
 	} else {
 #endif
 		return AllocatedPath::FromUTF8Throw(path);
-#ifndef WIN32
+#ifndef _WIN32
 	}
 #endif
 }

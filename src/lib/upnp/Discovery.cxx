@@ -27,7 +27,7 @@
 #include "util/ScopeExit.hxx"
 #include "util/RuntimeError.hxx"
 
-#include <upnp/upnptools.h>
+#include <upnptools.h>
 
 #include <stdlib.h>
 #include <string.h>
@@ -42,12 +42,14 @@ UPnPDeviceDirectory::Downloader::Downloader(UPnPDeviceDirectory &_parent,
 	 expires(std::chrono::seconds(UpnpDiscovery_get_Expires(&disco))),
 	 request(*parent.curl, url.c_str(), *this)
 {
+	const std::lock_guard<Mutex> protect(parent.mutex);
 	parent.downloaders.push_back(*this);
 }
 
 void
 UPnPDeviceDirectory::Downloader::Destroy() noexcept
 {
+	const std::lock_guard<Mutex> protect(parent.mutex);
 	parent.downloaders.erase_and_dispose(parent.downloaders.iterator_to(*this),
 					     DeleteDisposer());
 }
@@ -265,6 +267,7 @@ UPnPDeviceDirectory::UPnPDeviceDirectory(EventLoop &event_loop,
 UPnPDeviceDirectory::~UPnPDeviceDirectory() noexcept
 {
 	BlockingCall(GetEventLoop(), [this](){
+			const std::lock_guard<Mutex> protect(mutex);
 			downloaders.clear_and_dispose(DeleteDisposer());
 		});
 }

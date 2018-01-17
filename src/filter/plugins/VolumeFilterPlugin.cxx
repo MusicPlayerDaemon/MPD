@@ -19,9 +19,8 @@
 
 #include "config.h"
 #include "VolumeFilterPlugin.hxx"
-#include "filter/FilterPlugin.hxx"
-#include "filter/FilterInternal.hxx"
-#include "filter/FilterRegistry.hxx"
+#include "filter/Filter.hxx"
+#include "filter/Prepared.hxx"
 #include "pcm/Volume.hxx"
 #include "AudioFormat.hxx"
 #include "util/ConstBuffer.hxx"
@@ -52,19 +51,13 @@ public:
 class PreparedVolumeFilter final : public PreparedFilter {
 public:
 	/* virtual methods from class Filter */
-	Filter *Open(AudioFormat &af) override;
+	std::unique_ptr<Filter> Open(AudioFormat &af) override;
 };
 
-static PreparedFilter *
-volume_filter_init(gcc_unused const ConfigBlock &block)
-{
-	return new PreparedVolumeFilter();
-}
-
-Filter *
+std::unique_ptr<Filter>
 PreparedVolumeFilter::Open(AudioFormat &audio_format)
 {
-	return new VolumeFilter(audio_format);
+	return std::make_unique<VolumeFilter>(audio_format);
 }
 
 ConstBuffer<void>
@@ -73,15 +66,10 @@ VolumeFilter::FilterPCM(ConstBuffer<void> src)
 	return pv.Apply(src);
 }
 
-const FilterPlugin volume_filter_plugin = {
-	"volume",
-	volume_filter_init,
-};
-
-PreparedFilter *
+std::unique_ptr<PreparedFilter>
 volume_filter_prepare() noexcept
 {
-	return new PreparedVolumeFilter();
+	return std::make_unique<PreparedVolumeFilter>();
 }
 
 unsigned

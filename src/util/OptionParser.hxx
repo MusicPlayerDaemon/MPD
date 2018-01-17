@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2017 The Music Player Daemon Project
+ * Copyright 2003-2018 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -20,7 +20,7 @@
 #ifndef MPD_UTIL_OPTIONPARSER_HXX
 #define MPD_UTIL_OPTIONPARSER_HXX
 
-#include <assert.h>
+#include "util/ConstBuffer.hxx"
 
 class OptionDef;
 
@@ -29,60 +29,50 @@ class OptionDef;
  */
 class OptionParser
 {
-	int argc;
-	char **argv;
-	char *option;
-	char *option_raw;
-	bool is_long;
+	ConstBuffer<OptionDef> options;
+
+	ConstBuffer<const char *> args;
+
+	const char **const remaining_head, **remaining_tail;
+
 public:
 	/**
 	 * Constructs #OptionParser.
 	 */
-	OptionParser(int _argc, char **_argv)
-		: argc(_argc - 1), argv(_argv + 1),
-		  option(nullptr), option_raw(nullptr), is_long(false) { }
+	OptionParser(ConstBuffer<OptionDef> _options,
+		     int _argc, char **_argv) noexcept
+		:options(_options), args(_argv + 1, _argc - 1),
+		 remaining_head(const_cast<const char **>(_argv + 1)),
+		 remaining_tail(remaining_head) {}
 
-	/**
-	 * Checks if there are command line entries to process.
-	 */
-	bool HasEntries() const { return argc > 0; }
+	struct Result {
+		int index;
+		const char *value;
 
-	/**
-	 * Gets the last parsed option.
-	 */
-	char *GetOption() {
-		assert(option_raw != nullptr);
-		return option_raw;
-	}
-
-	/**
-	 * Checks if current option is a specified option.
-	 */
-	bool CheckOption(const OptionDef& opt);
-
-	/**
-	 * Checks if current option is a specified option
-	 * or specified alternative option.
-	 */
-	bool CheckOption(const OptionDef& opt, const OptionDef &alt_opt) {
-		return CheckOption(opt) || CheckOption(alt_opt);
-	}
+		constexpr operator bool() noexcept {
+			return index >= 0;
+		}
+	};
 
 	/**
 	 * Parses current command line entry.
-	 * Returns true on success, false otherwise.
 	 * Regardless of result, advances current position to the next
 	 * command line entry. 
+	 *
+	 * Throws on error.
 	 */
-	bool ParseNext();
+	Result Next();
 
 	/**
-	 * Checks if specified string is a command line option.
+	 * Returns the remaining non-option arguments.
 	 */
-	static bool IsOption(const char *s) {
-		assert(s != nullptr);
-		return s[0] == '-';
+	ConstBuffer<const char *> GetRemaining() const noexcept {
+		return {remaining_head, remaining_tail};
 	}
+
+private:
+	const char *CheckShiftValue(const char *s, const OptionDef &option);
+	Result IdentifyOption(const char *s);
 };
 
 #endif

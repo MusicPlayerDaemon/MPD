@@ -29,25 +29,19 @@
 #include "input/InputStream.hxx"
 #include "input/LocalOpen.hxx"
 #include "thread/Cond.hxx"
-#include "util/RefCount.hxx"
 #include "fs/Path.hxx"
 
 #include <bzlib.h>
 
 #include <stdexcept>
 
-#include <stddef.h>
-
 class Bzip2ArchiveFile final : public ArchiveFile {
-public:
-	RefCount ref;
-
 	std::string name;
-	const InputStreamPtr istream;
+	std::shared_ptr<InputStream> istream;
 
+public:
 	Bzip2ArchiveFile(Path path, InputStreamPtr &&_is)
-		:ArchiveFile(bz2_archive_plugin),
-		 name(path.GetBase().c_str()),
+		:name(path.GetBase().c_str()),
 		 istream(std::move(_is)) {
 		// remove .bz2 suffix
 		const size_t len = name.length();
@@ -55,31 +49,16 @@ public:
 			name.erase(len - 4);
 	}
 
-	void Ref() {
-		ref.Increment();
-	}
-
-	void Unref() {
-		if (!ref.Decrement())
-			return;
-
-		delete this;
-	}
-
-	virtual void Close() override {
-		Unref();
-	}
-
 	virtual void Visit(ArchiveVisitor &visitor) override {
 		visitor.VisitArchiveEntry(name.c_str());
 	}
 
-	InputStream *OpenStream(const char *path,
-				Mutex &mutex, Cond &cond) override;
+	InputStreamPtr OpenStream(const char *path,
+				  Mutex &mutex, Cond &cond) override;
 };
 
 class Bzip2InputStream final : public InputStream {
-	Bzip2ArchiveFile *archive;
+	std::shared_ptr<InputStream> input;
 
 	bool eof = false;
 
@@ -88,7 +67,8 @@ class Bzip2InputStream final : public InputStream {
 	char buffer[5000];
 
 public:
-	Bzip2InputStream(Bzip2ArchiveFile &context, const char *uri,
+	Bzip2InputStream(const std::shared_ptr<InputStream> &_input,
+			 const char *uri,
 			 Mutex &mutex, Cond &cond);
 	~Bzip2InputStream();
 
@@ -122,38 +102,36 @@ Bzip2InputStream::Open()
 
 /* archive open && listing routine */
 
-static ArchiveFile *
+static std::unique_ptr<ArchiveFile>
 bz2_open(Path pathname)
 {
 	static Mutex mutex;
 	static Cond cond;
 	auto is = OpenLocalInputStream(pathname, mutex, cond);
-	return new Bzip2ArchiveFile(pathname, std::move(is));
+	return std::make_unique<Bzip2ArchiveFile>(pathname, std::move(is));
 }
 
 /* single archive handling */
 
-Bzip2InputStream::Bzip2InputStream(Bzip2ArchiveFile &_context,
+Bzip2InputStream::Bzip2InputStream(const std::shared_ptr<InputStream> &_input,
 				   const char *_uri,
 				   Mutex &_mutex, Cond &_cond)
 	:InputStream(_uri, _mutex, _cond),
-	 archive(&_context)
+	 input(_input)
 {
 	Open();
-	archive->Ref();
 }
 
 Bzip2InputStream::~Bzip2InputStream()
 {
 	BZ2_bzDecompressEnd(&bzstream);
-	archive->Unref();
 }
 
-InputStream *
+InputStreamPtr
 Bzip2ArchiveFile::OpenStream(const char *path,
 			     Mutex &mutex, Cond &cond)
 {
-	return new Bzip2InputStream(*this, path, mutex, cond);
+	return std::make_unique<Bzip2InputStream>(istream, path, mutex, cond);
 }
 
 inline bool
@@ -162,7 +140,7 @@ Bzip2InputStream::FillBuffer()
 	if (bzstream.avail_in > 0)
 		return true;
 
-	size_t count = archive->istream->Read(buffer, sizeof(buffer));
+	size_t count = input->LockRead(buffer, sizeof(buffer));
 	if (count == 0)
 		return false;
 
@@ -174,6 +152,8 @@ Bzip2InputStream::FillBuffer()
 size_t
 Bzip2InputStream::Read(void *ptr, size_t length)
 {
+	const ScopeUnlock unlock(mutex);
+
 	int bz_result;
 	size_t nbytes = 0;
 
@@ -224,4 +204,3 @@ const ArchivePlugin bz2_archive_plugin = {
 	bz2_open,
 	bz2_extensions,
 };
-

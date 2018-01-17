@@ -37,8 +37,8 @@ decoder_read(DecoderClient *client,
 
 	try {
 		return is.LockRead(buffer, length);
-	} catch (const std::runtime_error &e) {
-		LogError(e);
+	} catch (...) {
+		LogError(std::current_exception());
 		return 0;
 	}
 }

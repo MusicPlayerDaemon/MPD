@@ -20,6 +20,8 @@
 #ifndef MPD_ARCHIVE_PLUGIN_HXX
 #define MPD_ARCHIVE_PLUGIN_HXX
 
+#include <memory>
+
 class ArchiveFile;
 class Path;
 
@@ -45,7 +47,7 @@ struct ArchivePlugin {
 	 *
 	 * Throws std::runtime_error on error.
 	 */
-	ArchiveFile *(*open)(Path path_fs);
+	std::unique_ptr<ArchiveFile> (*open)(Path path_fs);
 
 	/**
 	 * suffixes handled by this plugin.
@@ -54,7 +56,7 @@ struct ArchivePlugin {
 	const char *const*suffixes;
 };
 
-ArchiveFile *
+std::unique_ptr<ArchiveFile>
 archive_file_open(const ArchivePlugin *plugin, Path path);
 
 #endif

@@ -30,7 +30,7 @@
 #include <audiofile.h>
 #include <af_vfs.h>
 
-#include <stdexcept>
+#include <exception>
 
 #include <assert.h>
 #include <stdio.h>
@@ -120,8 +120,8 @@ audiofile_file_seek(AFvirtualfile *vfile, AFfileoffset _offset,
 	try {
 		is.LockSeek(offset);
 		return is.GetOffset();
-	} catch (const std::runtime_error &e) {
-		LogError(e, "Seek failed");
+	} catch (...) {
+		LogError(std::current_exception(), "Seek failed");
 		return -1;
 	}
 }

@@ -40,7 +40,7 @@ class NeighborExplorer {
 protected:
 	NeighborListener &listener;
 
-	explicit NeighborExplorer(NeighborListener &_listener)
+	explicit NeighborExplorer(NeighborListener &_listener) noexcept
 		:listener(_listener) {}
 
 public:
@@ -49,7 +49,7 @@ public:
 	/**
 	 * Free instance data.
          */
-	virtual ~NeighborExplorer() {}
+	virtual ~NeighborExplorer() noexcept {}
 
 	/**
          * Start exploring the neighborhood.

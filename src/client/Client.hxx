@@ -97,14 +97,14 @@ public:
 	std::list<ClientMessage> messages;
 
 	Client(EventLoop &loop, Partition &partition,
-	       UniqueSocketDescriptor fd, int uid, int num);
+	       UniqueSocketDescriptor fd, int uid, int num) noexcept;
 
-	~Client() {
+	~Client() noexcept {
 		if (FullyBufferedSocket::IsDefined())
 			FullyBufferedSocket::Close();
 	}
 
-	bool IsConnected() const {
+	bool IsConnected() const noexcept {
 		return FullyBufferedSocket::IsDefined();
 	}
 
@@ -113,8 +113,8 @@ public:
 		return !FullyBufferedSocket::IsDefined();
 	}
 
-	void Close();
-	void SetExpired();
+	void Close() noexcept;
+	void SetExpired() noexcept;
 
 	bool Write(const void *data, size_t length);
 
@@ -127,7 +127,7 @@ public:
 	 * returns the uid of the client process, or a negative value
 	 * if the uid is unknown
 	 */
-	int GetUID() const {
+	int GetUID() const noexcept {
 		return uid;
 	}
 
@@ -135,24 +135,24 @@ public:
 	 * Is this client running on the same machine, connected with
 	 * a local (UNIX domain) socket?
 	 */
-	bool IsLocal() const {
+	bool IsLocal() const noexcept {
 		return uid >= 0;
 	}
 
-	unsigned GetPermission() const {
+	unsigned GetPermission() const noexcept {
 		return permission;
 	}
 
-	void SetPermission(unsigned _permission) {
+	void SetPermission(unsigned _permission) noexcept {
 		permission = _permission;
 	}
 
 	/**
 	 * Send "idle" response to this client.
 	 */
-	void IdleNotify();
-	void IdleAdd(unsigned flags);
-	bool IdleWait(unsigned flags);
+	void IdleNotify() noexcept;
+	void IdleAdd(unsigned flags) noexcept;
+	bool IdleWait(unsigned flags) noexcept;
 
 	enum class SubscribeResult {
 		/** success */
@@ -173,10 +173,10 @@ public:
 		return subscriptions.find(channel_name) != subscriptions.end();
 	}
 
-	SubscribeResult Subscribe(const char *channel);
-	bool Unsubscribe(const char *channel);
-	void UnsubscribeAll();
-	bool PushMessage(const ClientMessage &msg);
+	SubscribeResult Subscribe(const char *channel) noexcept;
+	bool Unsubscribe(const char *channel) noexcept;
+	void UnsubscribeAll() noexcept;
+	bool PushMessage(const ClientMessage &msg) noexcept;
 
 	/**
 	 * Is this client allowed to use the specified local file?
@@ -226,12 +226,12 @@ public:
 
 private:
 	/* virtual methods from class BufferedSocket */
-	InputResult OnSocketInput(void *data, size_t length) override;
-	void OnSocketError(std::exception_ptr ep) override;
-	void OnSocketClosed() override;
+	InputResult OnSocketInput(void *data, size_t length) noexcept override;
+	void OnSocketError(std::exception_ptr ep) noexcept override;
+	void OnSocketClosed() noexcept override;
 
 	/* callback for TimerEvent */
-	void OnTimeout();
+	void OnTimeout() noexcept;
 };
 
 void
@@ -239,7 +239,7 @@ client_manager_init();
 
 void
 client_new(EventLoop &loop, Partition &partition,
-	   UniqueSocketDescriptor fd, SocketAddress address, int uid);
+	   UniqueSocketDescriptor fd, SocketAddress address, int uid) noexcept;
 
 /**
  * Write a printf-like formatted string to the client.

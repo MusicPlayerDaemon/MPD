@@ -14,6 +14,7 @@
 #include "ls.hxx"
 #include "Log.hxx"
 #include "db/DatabaseSong.hxx"
+#include "storage/StorageInterface.hxx"
 #include "storage/plugins/LocalStorage.hxx"
 #include "Mapper.hxx"
 #include "util/ChronoUtil.hxx"
@@ -309,7 +310,8 @@ CPPUNIT_TEST_SUITE_REGISTRATION(TranslateSongTest);
 int
 main(gcc_unused int argc, gcc_unused char **argv)
 {
-	storage = CreateLocalStorage(Path::FromFS(music_directory));
+	auto _storage = CreateLocalStorage(Path::FromFS(music_directory));
+	storage = _storage.get();
 
 	CppUnit::TextUi::TestRunner runner;
 	auto &registry = CppUnit::TestFactoryRegistry::getRegistry();

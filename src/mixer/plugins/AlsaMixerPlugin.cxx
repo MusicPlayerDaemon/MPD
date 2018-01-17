@@ -149,7 +149,7 @@ alsa_mixer_elem_callback(snd_mixer_elem_t *elem, unsigned mask)
 		try {
 			int volume = mixer.GetVolume();
 			mixer.listener.OnMixerVolumeChanged(mixer, volume);
-		} catch (const std::runtime_error &) {
+		} catch (...) {
 		}
 	}
 
@@ -282,7 +282,9 @@ AlsaMixer::SetVolume(unsigned volume)
 {
 	assert(handle != nullptr);
 
-	int err = set_normalized_playback_volume(elem, 0.01*volume, 1);
+	double cur = get_normalized_playback_volume(elem, SND_MIXER_SCHN_FRONT_LEFT);
+	int delta = volume - lrint(100.*cur);
+	int err = set_normalized_playback_volume(elem, cur + 0.01*delta, delta);
 	if (err < 0)
 		throw FormatRuntimeError("failed to set ALSA volume: %s",
 					 snd_strerror(err));

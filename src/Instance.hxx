@@ -139,8 +139,8 @@ private:
 
 #ifdef ENABLE_NEIGHBOR_PLUGINS
 	/* virtual methods from class NeighborListener */
-	void FoundNeighbor(const NeighborInfo &info) override;
-	void LostNeighbor(const NeighborInfo &info) override;
+	void FoundNeighbor(const NeighborInfo &info) noexcept override;
+	void LostNeighbor(const NeighborInfo &info) noexcept override;
 #endif
 
 	/* callback for #idle_monitor */

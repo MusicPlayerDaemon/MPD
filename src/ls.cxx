@@ -61,6 +61,12 @@ static const char *const remoteUrlPrefixes[] = {
 #ifdef ENABLE_ALSA
 	"alsa://",
 #endif
+#ifdef ENABLE_QOBUZ
+	"qobuz://",
+#endif
+#ifdef ENABLE_TIDAL
+	"tidal://",
+#endif
 	NULL
 };
 

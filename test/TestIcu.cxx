@@ -43,7 +43,7 @@ public:
 		try {
 			IcuConverter::Create("doesntexist");
 			CPPUNIT_FAIL("Exception expected");
-		} catch (const std::runtime_error &) {
+		} catch (...) {
 		}
 	}
 
@@ -56,7 +56,7 @@ public:
 			try {
 				auto f = converter->FromUTF8(i);
 				CPPUNIT_FAIL("Exception expected");
-			} catch (const std::runtime_error &) {
+			} catch (...) {
 			}
 		}
 

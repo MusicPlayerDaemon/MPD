@@ -32,6 +32,7 @@
 #include "Global.hxx"
 #include "Version.hxx"
 #include "Handler.hxx"
+#include "event/Call.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/StringStrip.hxx"
 #include "util/StringView.hxx"
@@ -44,7 +45,7 @@
 #include <assert.h>
 #include <string.h>
 
-CurlRequest::CurlRequest(CurlGlobal &_global, const char *url,
+CurlRequest::CurlRequest(CurlGlobal &_global,
 			 CurlResponseHandler &_handler)
 	:global(_global), handler(_handler),
 	 postpone_error_event(global.GetEventLoop(),
@@ -63,7 +64,6 @@ CurlRequest::CurlRequest(CurlGlobal &_global, const char *url,
 	easy.SetOption(CURLOPT_NOPROGRESS, 1l);
 	easy.SetOption(CURLOPT_NOSIGNAL, 1l);
 	easy.SetOption(CURLOPT_CONNECTTIMEOUT, 10l);
-	easy.SetOption(CURLOPT_URL, url);
 }
 
 CurlRequest::~CurlRequest() noexcept
@@ -81,6 +81,14 @@ CurlRequest::Start()
 }
 
 void
+CurlRequest::StartIndirect()
+{
+	BlockingCall(global.GetEventLoop(), [this](){
+			Start();
+		});
+}
+
+void
 CurlRequest::Stop() noexcept
 {
 	if (!registered)
@@ -88,6 +96,14 @@ CurlRequest::Stop() noexcept
 
 	global.Remove(easy.Get());
 	registered = false;
+}
+
+void
+CurlRequest::StopIndirect()
+{
+	BlockingCall(global.GetEventLoop(), [this](){
+			Stop();
+		});
 }
 
 void
@@ -173,10 +189,10 @@ gcc_pure
 static bool
 IsResponseBoundaryHeader(StringView s) noexcept
 {
-	return s.size > 5 && (memcmp(s.data, "HTTP/", 5) == 0 ||
+	return s.size > 5 && (s.StartsWith("HTTP/") ||
 			      /* the proprietary "ICY 200 OK" is
 				 emitted by Shoutcast */
-			      memcmp(s.data, "ICY 2", 5) == 0);
+			      s.StartsWith("ICY 2"));
 }
 
 inline void

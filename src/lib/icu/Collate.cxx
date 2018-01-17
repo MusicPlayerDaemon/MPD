@@ -32,7 +32,7 @@
 #include <ctype.h>
 #endif
 
-#ifdef WIN32
+#ifdef _WIN32
 #include "Win32.hxx"
 #include "util/AllocatedString.hxx"
 #include <windows.h>
@@ -97,29 +97,29 @@ IcuCollate(const char *a, const char *b) noexcept
 
 		return ucol_strcoll(collator, au.begin(), au.size(),
 				    bu.begin(), bu.size());
-	} catch (const std::runtime_error &) {
+	} catch (...) {
 		/* fall back to plain strcasecmp() */
 		return strcasecmp(a, b);
 	}
 #endif
 
-#elif defined(WIN32)
+#elif defined(_WIN32)
 	AllocatedString<wchar_t> wa = nullptr, wb = nullptr;
 
 	try {
 		wa = MultiByteToWideChar(CP_UTF8, a);
-	} catch (const std::runtime_error &) {
+	} catch (...) {
 		try {
 			wb = MultiByteToWideChar(CP_UTF8, b);
 			return -1;
-		} catch (const std::runtime_error &) {
+		} catch (...) {
 			return 0;
 		}
 	}
 
 	try {
 		wb = MultiByteToWideChar(CP_UTF8, b);
-	} catch (const std::runtime_error &) {
+	} catch (...) {
 		return 1;
 	}
 

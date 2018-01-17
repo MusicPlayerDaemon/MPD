@@ -62,8 +62,8 @@
 #    error Sorry, your clang version is too old.  You need at least version 3.1.
 #  endif
 #elif defined(__GNUC__)
-#  if GCC_OLDER_THAN(4,9)
-#    error Sorry, your gcc version is too old.  You need at least version 4.9.
+#  if GCC_OLDER_THAN(5,0)
+#    error Sorry, your gcc version is too old.  You need at least version 5.0.
 #  endif
 #else
 #  warning Untested compiler.  Use at your own risk!
@@ -93,6 +93,8 @@
 
 #define gcc_nonnull(...) __attribute__((nonnull(__VA_ARGS__)))
 #define gcc_nonnull_all __attribute__((nonnull))
+#define gcc_returns_nonnull __attribute__((returns_nonnull))
+#define gcc_returns_twice __attribute__((returns_twice))
 
 #define gcc_likely(x) __builtin_expect (!!(x), 1)
 #define gcc_unlikely(x) __builtin_expect (!!(x), 0)
@@ -121,6 +123,8 @@
 
 #define gcc_nonnull(...)
 #define gcc_nonnull_all
+#define gcc_returns_nonnull
+#define gcc_returns_twice
 
 #define gcc_likely(x) (x)
 #define gcc_unlikely(x) (x)

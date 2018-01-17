@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2017 The Music Player Daemon Project
+ * Copyright 2003-2018 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,33 +18,21 @@
  */
 
 #include "config.h"
-#include "FilterPlugin.hxx"
-#include "FilterRegistry.hxx"
-#include "config/Block.hxx"
-#include "config/ConfigError.hxx"
-#include "util/RuntimeError.hxx"
+#include "ParseInputStream.hxx"
+#include "Handle.hxx"
+#include "input/InputStream.hxx"
 
-#include <assert.h>
-
-PreparedFilter *
-filter_new(const FilterPlugin *plugin, const ConfigBlock &block)
+void
+Yajl::ParseInputStream(Handle &handle, InputStream &is)
 {
-	assert(plugin != nullptr);
+	while (true) {
+		unsigned char buffer[4096];
+		const size_t nbytes = is.LockRead(buffer, sizeof(buffer));
+		if (nbytes == 0)
+			break;
 
-	return plugin->init(block);
-}
+		handle.Parse(buffer, nbytes);
+	}
 
-PreparedFilter *
-filter_configured_new(const ConfigBlock &block)
-{
-	const char *plugin_name = block.GetBlockValue("plugin");
-	if (plugin_name == nullptr)
-		throw std::runtime_error("No filter plugin specified");
-
-	const auto *plugin = filter_plugin_by_name(plugin_name);
-	if (plugin == nullptr)
-		throw FormatRuntimeError("No such filter plugin: %s",
-					 plugin_name);
-
-	return filter_new(plugin, block);
+	handle.CompleteParse();
 }

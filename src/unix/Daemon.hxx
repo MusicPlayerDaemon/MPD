@@ -22,7 +22,7 @@
 
 class AllocatedPath;
 
-#ifndef WIN32
+#ifndef _WIN32
 void
 daemonize_init(const char *user, const char *group, AllocatedPath &&pidfile);
 #else
@@ -31,7 +31,7 @@ daemonize_init(const char *user, const char *group, AllocatedPath &&pidfile)
 { (void)user; (void)group; (void)pidfile; }
 #endif
 
-#ifndef WIN32
+#ifndef _WIN32
 void
 daemonize_finish();
 #else
@@ -44,7 +44,7 @@ daemonize_finish()
  * Kill the MPD which is currently running, pid determined from the
  * pid file.
  */
-#ifndef WIN32
+#ifndef _WIN32
 void
 daemonize_kill();
 #else
@@ -59,7 +59,7 @@ daemonize_kill()
 /**
  * Close stdin (fd 0) and re-open it as /dev/null.
  */
-#ifndef WIN32
+#ifndef _WIN32
 void
 daemonize_close_stdin();
 #else
@@ -70,7 +70,7 @@ daemonize_close_stdin() {}
 /**
  * Change to the configured Unix user.
  */
-#ifndef WIN32
+#ifndef _WIN32
 void
 daemonize_set_user();
 #else
@@ -79,7 +79,7 @@ daemonize_set_user()
 { /* nop */ }
 #endif
 
-#ifndef WIN32
+#ifndef _WIN32
 void
 daemonize_begin(bool detach);
 #else
@@ -88,7 +88,7 @@ daemonize_begin(bool detach)
 { (void)detach; }
 #endif
 
-#ifndef WIN32
+#ifndef _WIN32
 void
 daemonize_commit();
 #else

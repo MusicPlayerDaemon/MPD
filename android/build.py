@@ -46,13 +46,14 @@ class AndroidNdkToolchain:
 
         self.ndk_arch = 'arm'
         android_abi = 'armeabi-v7a'
-        ndk_platform = 'android-14'
+        ndk_platform = 'android-21'
 
         # select the NDK compiler
         gcc_version = '4.9'
 
         ndk_platform_path = os.path.join(ndk_path, 'platforms', ndk_platform)
-        sysroot = os.path.join(ndk_platform_path, 'arch-' + self.ndk_arch)
+        sysroot = os.path.join(ndk_path, 'sysroot')
+        target_root = os.path.join(ndk_platform_path, 'arch-' + self.ndk_arch)
 
         install_prefix = os.path.join(arch_path, 'root')
 
@@ -72,6 +73,8 @@ class AndroidNdkToolchain:
         self.cxx = os.path.join(llvm_bin, 'clang++')
         common_flags += ' -target ' + llvm_triple + ' -integrated-as -gcc-toolchain ' + toolchain_path
 
+        common_flags += ' -fvisibility=hidden -fdata-sections -ffunction-sections'
+
         self.ar = os.path.join(toolchain_bin, arch + '-ar')
         self.ranlib = os.path.join(toolchain_bin, arch + '-ranlib')
         self.nm = os.path.join(toolchain_bin, arch + '-nm')
@@ -79,8 +82,15 @@ class AndroidNdkToolchain:
 
         self.cflags = '-Os -g ' + common_flags
         self.cxxflags = '-Os -g ' + common_flags
-        self.cppflags = '--sysroot=' + self.sysroot + ' -isystem ' + os.path.join(install_prefix, 'include')
-        self.ldflags = '--sysroot=' + self.sysroot + ' ' + common_flags + ' -L' + os.path.join(install_prefix, 'lib')
+        self.cppflags = '--sysroot=' + sysroot + \
+            ' -isystem ' + os.path.join(install_prefix, 'include') + \
+            ' -isystem ' + os.path.join(sysroot, 'usr', 'include', arch) + \
+            ' -D__ANDROID_API__=21'
+        self.ldflags = '--sysroot=' + sysroot + \
+            ' -L' + os.path.join(install_prefix, 'lib') + \
+            ' -L' + os.path.join(target_root, 'usr', 'lib') + \
+            ' -B' + os.path.join(target_root, 'usr', 'lib') + \
+            ' ' + common_flags
         self.libs = ''
 
         self.is_arm = self.ndk_arch == 'arm'

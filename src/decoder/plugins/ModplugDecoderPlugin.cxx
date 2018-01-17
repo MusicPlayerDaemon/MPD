@@ -66,12 +66,12 @@ mod_loadfile(DecoderClient *client, InputStream &is)
 
 		if (size == 0) {
 			LogWarning(modplug_domain, "file is empty");
-			return { nullptr, 0 };
+			return nullptr;
 		}
 
 		if (size > MODPLUG_FILE_LIMIT) {
 			LogWarning(modplug_domain, "file too large");
-			return { nullptr, 0 };
+			return nullptr;
 		}
 
 		buffer.size = size;

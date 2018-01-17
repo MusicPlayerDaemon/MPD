@@ -42,11 +42,11 @@ class PcmFormatConverter {
 
 public:
 #ifndef NDEBUG
-	PcmFormatConverter()
+	PcmFormatConverter() noexcept
 		:src_format(SampleFormat::UNDEFINED),
 		 dest_format(SampleFormat::UNDEFINED) {}
 
-	~PcmFormatConverter() {
+	~PcmFormatConverter() noexcept {
 		assert(src_format == SampleFormat::UNDEFINED);
 		assert(dest_format == SampleFormat::UNDEFINED);
 	}

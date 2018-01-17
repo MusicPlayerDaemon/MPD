@@ -30,6 +30,9 @@
 
 #include <utility>
 #include <exception>
+#include <memory>
+#include <string>
+#include <map>
 
 #ifndef NDEBUG
 #include <assert.h>
@@ -50,7 +53,7 @@ class AudioOutputClient;
  * Controller for an #AudioOutput and its output thread.
  */
 class AudioOutputControl {
-	FilteredAudioOutput *output;
+	std::unique_ptr<FilteredAudioOutput> output;
 
 	/**
 	 * The PlayerControl object which "owns" this output.  This
@@ -209,17 +212,10 @@ public:
 	 */
 	mutable Mutex mutex;
 
-	AudioOutputControl(FilteredAudioOutput *_output,
-			   AudioOutputClient &_client);
+	AudioOutputControl(std::unique_ptr<FilteredAudioOutput> _output,
+			   AudioOutputClient &_client) noexcept;
 
-#ifndef NDEBUG
-	~AudioOutputControl() {
-		assert(!fail_timer.IsDefined());
-		assert(!thread.IsDefined());
-		assert(output == nullptr);
-		assert(!open);
-	}
-#endif
+	~AudioOutputControl() noexcept;
 
 	AudioOutputControl(const AudioOutputControl &) = delete;
 	AudioOutputControl &operator=(const AudioOutputControl &) = delete;
@@ -231,6 +227,9 @@ public:
 
 	gcc_pure
 	const char *GetName() const noexcept;
+
+	gcc_pure
+	const char *GetPluginName() const noexcept;
 
 	gcc_pure
 	const char *GetLogName() const noexcept;
@@ -281,7 +280,6 @@ public:
 	}
 
 	void StartThread();
-	void StopThread() noexcept;
 
 	/**
 	 * Caller must lock the mutex.
@@ -319,7 +317,9 @@ public:
 	void LockCommandWait(Command cmd) noexcept;
 
 	void BeginDestroy() noexcept;
-	void FinishDestroy() noexcept;
+
+	const std::map<std::string, std::string> GetAttributes() const noexcept;
+	void SetAttribute(std::string &&name, std::string &&value);
 
 	/**
 	 * Enables the device, but don't wait for completion.
@@ -413,6 +413,17 @@ public:
 
 private:
 	/**
+	 * An error has occurred and this output is defunct.
+	 */
+	void Failure(std::exception_ptr e) noexcept {
+		last_error = e;
+
+		/* don't automatically reopen this device for 10
+		   seconds */
+		fail_timer.Update();
+	}
+
+	/**
 	 * Runs inside the OutputThread.
 	 * Caller must lock the mutex.
 	 * Handles exceptions.
@@ -448,6 +459,14 @@ private:
 	void InternalClose(bool drain) noexcept;
 
 	/**
+	 * An error has occurred, and this output must be closed.
+	 */
+	void InternalCloseError(std::exception_ptr e) noexcept {
+		Failure(e);
+		InternalClose(false);
+	}
+
+	/**
 	 * Runs inside the OutputThread.
 	 * Caller must lock the mutex.
 	 */
@@ -464,7 +483,7 @@ private:
 	/**
 	 * Caller must lock the mutex.
 	 */
-	bool FillSourceOrClose();
+	bool FillSourceOrClose() noexcept;
 
 	/**
 	 * Caller must lock the mutex.
@@ -493,9 +512,16 @@ private:
 	void InternalPause() noexcept;
 
 	/**
+	 * Runs inside the OutputThread.
+	 * Caller must lock the mutex.
+	 * Handles exceptions.
+	 */
+	void InternalDrain() noexcept;
+
+	/**
 	 * The OutputThread.
 	 */
-	void Task();
+	void Task() noexcept;
 };
 
 #endif

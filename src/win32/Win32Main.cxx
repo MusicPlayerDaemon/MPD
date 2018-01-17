@@ -20,7 +20,7 @@
 #include "config.h"
 #include "Main.hxx"
 
-#ifdef WIN32
+#ifdef _WIN32
 
 #include "Compiler.h"
 #include "Instance.hxx"

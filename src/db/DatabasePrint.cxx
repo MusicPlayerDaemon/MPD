@@ -149,10 +149,15 @@ CompareNumeric(const char *a, const char *b)
 }
 
 static bool
-CompareTags(TagType type, const Tag &a, const Tag &b)
+CompareTags(TagType type, bool descending, const Tag &a, const Tag &b)
 {
 	const char *a_value = a.GetSortValue(type);
 	const char *b_value = b.GetSortValue(type);
+
+	if (descending) {
+		using std::swap;
+		swap(a_value, b_value);
+	}
 
 	switch (type) {
 	case TAG_DISC:
@@ -168,7 +173,7 @@ void
 db_selection_print(Response &r, Partition &partition,
 		   const DatabaseSelection &selection,
 		   bool full, bool base,
-		   TagType sort,
+		   TagType sort, bool descending,
 		   unsigned window_start, unsigned window_end)
 {
 	const Database &db = partition.GetDatabaseOrThrow();
@@ -215,11 +220,21 @@ db_selection_print(Response &r, Partition &partition,
 			db.Visit(selection, d, collect_songs, p);
 		}
 
-		std::stable_sort(songs.begin(), songs.end(),
-				 [sort](const DetachedSong &a, const DetachedSong &b){
-					 return CompareTags(sort, a.GetTag(),
-							    b.GetTag());
-				 });
+		if (sort == TagType(SORT_TAG_LAST_MODIFIED))
+			std::stable_sort(songs.begin(), songs.end(),
+					 [descending](const DetachedSong &a, const DetachedSong &b){
+						 return descending
+							 ? a.GetLastModified() > b.GetLastModified()
+							 : a.GetLastModified() < b.GetLastModified();
+					 });
+		else
+			std::stable_sort(songs.begin(), songs.end(),
+					 [sort, descending](const DetachedSong &a,
+							    const DetachedSong &b){
+						 return CompareTags(sort, descending,
+								    a.GetTag(),
+								    b.GetTag());
+					 });
 
 		if (window_end < songs.size())
 			songs.erase(std::next(songs.begin(), window_end),
@@ -242,7 +257,7 @@ db_selection_print(Response &r, Partition &partition,
 		   bool full, bool base)
 {
 	db_selection_print(r, partition, selection, full, base,
-			   TAG_NUM_OF_ITEM_TYPES,
+			   TAG_NUM_OF_ITEM_TYPES, false,
 			   0, std::numeric_limits<int>::max());
 }
 

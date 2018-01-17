@@ -34,7 +34,7 @@ class PcmBuffer {
 	ReusableArray<uint8_t, 8192> buffer;
 
 public:
-	void Clear() {
+	void Clear() noexcept {
 		buffer.Clear();
 	}
 
@@ -47,12 +47,12 @@ public:
 	 * to signal "error".  An empty destination buffer is not
 	 * always an error.
 	 */
-	gcc_malloc
-	void *Get(size_t size);
+	gcc_malloc gcc_returns_nonnull
+	void *Get(size_t size) noexcept;
 
 	template<typename T>
-	gcc_malloc
-	T *GetT(size_t n) {
+	gcc_malloc gcc_returns_nonnull
+	T *GetT(size_t n) noexcept {
 		return (T *)Get(n * sizeof(T));
 	}
 };

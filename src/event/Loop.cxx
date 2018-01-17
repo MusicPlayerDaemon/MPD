@@ -25,7 +25,7 @@
 #include "util/ScopeExit.hxx"
 
 EventLoop::EventLoop(ThreadId _thread)
-	:SocketMonitor(*this), thread(_thread)
+	:SocketMonitor(*this), quit(false), thread(_thread)
 {
 	SocketMonitor::Open(SocketDescriptor(wake_fd.Get()));
 }
@@ -39,10 +39,9 @@ EventLoop::~EventLoop()
 void
 EventLoop::Break()
 {
-	if (quit)
+	if (quit.exchange(true))
 		return;
 
-	quit = true;
 	wake_fd.Write();
 }
 

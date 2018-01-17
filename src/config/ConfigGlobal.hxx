@@ -71,7 +71,7 @@ config_get_string(enum ConfigOption option,
 /**
  * Returns an optional configuration variable which contains an
  * absolute path.  If there is a tilde prefix, it is expanded.
- * Returns AllocatedPath::Null() if the value is not present.
+ * Returns nullptr if the value is not present.
  *
  * Throws #std::runtime_error on error.
  */

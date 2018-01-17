@@ -22,6 +22,8 @@
 
 #include "check.h"
 
+#include <memory>
+
 class InputStream;
 struct TagHandler;
 struct Tag;
@@ -31,7 +33,7 @@ bool
 tag_id3_scan(InputStream &is,
 	     const TagHandler &handler, void *handler_ctx);
 
-Tag *
+std::unique_ptr<Tag>
 tag_id3_import(id3_tag *);
 
 /**

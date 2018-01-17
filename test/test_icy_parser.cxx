@@ -3,6 +3,7 @@
  */
 
 #include "config.h"
+#include "util/ScopeExit.hxx"
 
 /* include the .cxx file to get access to internal functions */
 #include "IcyMetaDataParser.cxx"
@@ -16,13 +17,12 @@
 
 #include <string.h>
 
-static Tag *
+static std::unique_ptr<Tag>
 icy_parse_tag(const char *p)
 {
 	char *q = strdup(p);
-	Tag *tag = icy_parse_tag(q, q + strlen(q));
-	free(q);
-	return tag;
+	AtScopeExit(q) { free(q); };
+	return icy_parse_tag(q, q + strlen(q));
 }
 
 static void
@@ -38,17 +38,15 @@ CompareTagTitle(const Tag &tag, const std::string &title)
 static void
 TestIcyParserTitle(const char *input, const char *title)
 {
-	Tag *tag = icy_parse_tag(input);
+	const auto tag = icy_parse_tag(input);
 	CompareTagTitle(*tag, title);
-	delete tag;
 }
 
 static void
 TestIcyParserEmpty(const char *input)
 {
-	Tag *tag = icy_parse_tag(input);
+	const auto tag = icy_parse_tag(input);
 	CPPUNIT_ASSERT_EQUAL(uint16_t(0), tag->num_items);
-	delete tag;
 }
 
 class IcyTest : public CppUnit::TestFixture {

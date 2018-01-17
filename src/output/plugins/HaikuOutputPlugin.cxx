@@ -64,7 +64,7 @@ public:
 	HaikuOutput(const ConfigBlock &block)
 		:AudioOutput(0),
 		 /* XXX: by default we should let the MediaKit propose the buffer size */
-		 write_size(block.GetBlockValue("write_size", 4096u)) {}
+		 write_size(block.GetPositiveValue("write_size", 4096u)) {}
 
 	~HaikuOutput();
 
@@ -76,10 +76,11 @@ private:
 	void Close() noexcept override;
 
 	size_t Play(const void *chunk, size_t size) override;
-	void Cancel() noexcept override;
 
 	std::chrono::steady_clock::duration Delay() const noexcept override;
 
+	static void _FillBuffer(void* cookie, void* _buffer, size_t size,
+		gcc_unused const media_raw_audio_format& _format);
 	void FillBuffer(void* _buffer, size_t size,
 		gcc_unused const media_raw_audio_format& _format);
 
@@ -144,8 +145,8 @@ HaikuOutput::~HaikuOutput()
 	finalize_application();
 }
 
-static void
-fill_buffer(void* cookie, void* buffer, size_t size,
+void
+HaikuOutput::_FillBuffer(void* cookie, void* buffer, size_t size,
 	const media_raw_audio_format& format)
 {
 	HaikuOutput *ad = (HaikuOutput *)cookie;
@@ -232,7 +233,7 @@ HaikuOutput::Open(AudioFormat &audio_format)
 			format.format, (int)format.buffer_size);
 
 	sound_player = new BSoundPlayer(&format, "MPD Output",
-		fill_buffer, NULL, this);
+		HaikuOutput::_FillBuffer, NULL, this);
 
 	err = sound_player->InitCheck();
 	if (err != B_OK) {
@@ -265,11 +266,6 @@ HaikuOutput::Play(const void *chunk, size_t size)
 {
 	BSoundPlayer* const soundPlayer = sound_player;
 	const uint8 *data = (const uint8 *)chunk;
-
-	if (size == 0) {
-		soundPlayer->SetHasData(false);
-		return 0;
-	}
 
 	if (!soundPlayer->HasData())
 		soundPlayer->SetHasData(true);
@@ -457,8 +453,6 @@ haiku_output_set_volume(HaikuOutput &haiku, unsigned volume)
 	soundPlayer->SetVolume((float)volume / 100);
 	return true;
 }
-
-typedef AudioOutputWrapper<HaikuOutput> Wrapper;
 
 const struct AudioOutputPlugin haiku_output_plugin = {
 	"haiku",

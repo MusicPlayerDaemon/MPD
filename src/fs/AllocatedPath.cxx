@@ -23,7 +23,7 @@
 #include "Charset.hxx"
 #include "Compiler.h"
 
-#include <stdexcept>
+#include <exception>
 
 /* no inlining, please */
 AllocatedPath::~AllocatedPath() {}
@@ -31,10 +31,10 @@ AllocatedPath::~AllocatedPath() {}
 AllocatedPath
 AllocatedPath::FromUTF8(const char *path_utf8) noexcept
 {
-#if defined(HAVE_FS_CHARSET) || defined(WIN32)
+#if defined(HAVE_FS_CHARSET) || defined(_WIN32)
 	try {
 		return AllocatedPath(::PathFromUTF8(path_utf8));
-	} catch (const std::runtime_error &) {
+	} catch (...) {
 		return nullptr;
 	}
 #else
@@ -45,7 +45,7 @@ AllocatedPath::FromUTF8(const char *path_utf8) noexcept
 AllocatedPath
 AllocatedPath::FromUTF8Throw(const char *path_utf8)
 {
-#if defined(HAVE_FS_CHARSET) || defined(WIN32)
+#if defined(HAVE_FS_CHARSET) || defined(_WIN32)
 	return AllocatedPath(::PathFromUTF8(path_utf8));
 #else
 	return FromFS(path_utf8);
@@ -63,7 +63,7 @@ AllocatedPath::ToUTF8() const noexcept
 {
 	try {
 		return ::PathToUTF8(c_str());
-	} catch (const std::runtime_error &) {
+	} catch (...) {
 		return std::string();
 	}
 }
@@ -77,10 +77,6 @@ AllocatedPath::ChopSeparators() noexcept
 	while (l >= 2 && PathTraitsFS::IsSeparator(p[l - 1])) {
 		--l;
 
-#if GCC_CHECK_VERSION(4,7)
 		value.pop_back();
-#else
-		value.erase(value.end() - 1, value.end());
-#endif
 	}
 }

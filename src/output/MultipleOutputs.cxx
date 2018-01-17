@@ -35,21 +35,21 @@
 #include <assert.h>
 #include <string.h>
 
-MultipleOutputs::MultipleOutputs(MixerListener &_mixer_listener)
+MultipleOutputs::MultipleOutputs(MixerListener &_mixer_listener) noexcept
 	:mixer_listener(_mixer_listener)
 {
 }
 
-MultipleOutputs::~MultipleOutputs()
+MultipleOutputs::~MultipleOutputs() noexcept
 {
 	/* parallel destruction */
 	for (auto *i : outputs)
 		i->BeginDestroy();
 	for (auto *i : outputs)
-		i->FinishDestroy();
+		delete i;
 }
 
-static FilteredAudioOutput *
+static std::unique_ptr<FilteredAudioOutput>
 LoadOutput(EventLoop &event_loop,
 	   const ReplayGainConfig &replay_gain_config,
 	   MixerListener &mixer_listener,
@@ -57,7 +57,7 @@ LoadOutput(EventLoop &event_loop,
 try {
 	return audio_output_new(event_loop, replay_gain_config, block,
 				mixer_listener);
-} catch (const std::runtime_error &e) {
+} catch (...) {
 	if (block.line > 0)
 		std::throw_with_nested(FormatRuntimeError("Failed to configure output in line %i",
 							  block.line));
@@ -71,16 +71,15 @@ LoadOutputControl(EventLoop &event_loop,
 		  MixerListener &mixer_listener,
 		  AudioOutputClient &client, const ConfigBlock &block)
 {
-	auto *output = LoadOutput(event_loop, replay_gain_config,
-				  mixer_listener,
-				  block);
-	auto *control = new AudioOutputControl(output, client);
+	auto output = LoadOutput(event_loop, replay_gain_config,
+				 mixer_listener,
+				 block);
+	auto *control = new AudioOutputControl(std::move(output), client);
 
 	try {
 		control->Configure(block);
 	} catch (...) {
 		control->BeginDestroy();
-		control->FinishDestroy();
 		delete control;
 		throw;
 	}
@@ -177,14 +176,14 @@ MultipleOutputs::WaitAll() noexcept
 }
 
 void
-MultipleOutputs::AllowPlay()
+MultipleOutputs::AllowPlay() noexcept
 {
 	for (auto *ao : outputs)
 		ao->LockAllowPlay();
 }
 
 bool
-MultipleOutputs::Update(bool force)
+MultipleOutputs::Update(bool force) noexcept
 {
 	bool ret = false;
 
@@ -199,7 +198,7 @@ MultipleOutputs::Update(bool force)
 }
 
 void
-MultipleOutputs::SetReplayGainMode(ReplayGainMode mode)
+MultipleOutputs::SetReplayGainMode(ReplayGainMode mode) noexcept
 {
 	for (auto *ao : outputs)
 		ao->SetReplayGainMode(mode);
@@ -292,7 +291,7 @@ MultipleOutputs::IsChunkConsumed(const MusicChunk *chunk) const noexcept
 
 inline void
 MultipleOutputs::ClearTailChunk(const MusicChunk *chunk,
-				bool *locked)
+				bool *locked) noexcept
 {
 	assert(chunk->next == nullptr);
 	assert(pipe->Contains(chunk));
@@ -315,7 +314,7 @@ MultipleOutputs::ClearTailChunk(const MusicChunk *chunk,
 }
 
 unsigned
-MultipleOutputs::Check()
+MultipleOutputs::CheckPipe() noexcept
 {
 	const MusicChunk *chunk;
 	bool is_tail;
@@ -363,7 +362,7 @@ MultipleOutputs::Check()
 }
 
 void
-MultipleOutputs::Pause()
+MultipleOutputs::Pause() noexcept
 {
 	Update(false);
 
@@ -374,7 +373,7 @@ MultipleOutputs::Pause()
 }
 
 void
-MultipleOutputs::Drain()
+MultipleOutputs::Drain() noexcept
 {
 	for (auto *ao : outputs)
 		ao->LockDrainAsync();
@@ -383,7 +382,7 @@ MultipleOutputs::Drain()
 }
 
 void
-MultipleOutputs::Cancel()
+MultipleOutputs::Cancel() noexcept
 {
 	/* send the cancel() command to all audio outputs */
 
@@ -408,7 +407,7 @@ MultipleOutputs::Cancel()
 }
 
 void
-MultipleOutputs::Close()
+MultipleOutputs::Close() noexcept
 {
 	for (auto *ao : outputs)
 		ao->LockCloseWait();
@@ -429,7 +428,7 @@ MultipleOutputs::Close()
 }
 
 void
-MultipleOutputs::Release()
+MultipleOutputs::Release() noexcept
 {
 	for (auto *ao : outputs)
 		ao->LockRelease();
@@ -450,7 +449,7 @@ MultipleOutputs::Release()
 }
 
 void
-MultipleOutputs::SongBorder()
+MultipleOutputs::SongBorder() noexcept
 {
 	/* clear the elapsed_time pointer at the beginning of a new
 	   song */

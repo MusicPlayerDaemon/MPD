@@ -26,7 +26,7 @@
 #include "fs/Path.hxx"
 #include "Log.hxx"
 
-#include <stdexcept>
+#include <exception>
 
 #include <assert.h>
 
@@ -46,8 +46,8 @@ try {
 	auto is = OpenLocalInputStream(path, mutex, cond);
 	return playlist_list_open_stream_suffix(std::move(is),
 						suffix_utf8.c_str());
-} catch (const std::runtime_error &e) {
-	LogError(e);
+} catch (...) {
+	LogError(std::current_exception());
 	return nullptr;
 }
 
@@ -64,8 +64,8 @@ try {
 		playlist = playlist_open_path_suffix(path, mutex, cond);
 
 	return playlist;
-} catch (const std::runtime_error &e) {
-	LogError(e);
+} catch (...) {
+	LogError(std::current_exception());
 	return nullptr;
 }
 
@@ -80,7 +80,7 @@ try {
 
 	auto is = InputStream::OpenReady(uri, mutex, cond);
 	return playlist_list_open_stream(std::move(is), uri);
-} catch (const std::runtime_error &e) {
-	LogError(e);
+} catch (...) {
+	LogError(std::current_exception());
 	return nullptr;
 }

@@ -51,8 +51,8 @@ class PcmConvert {
 	bool enable_resampler, enable_format, enable_channels;
 
 public:
-	PcmConvert();
-	~PcmConvert();
+	PcmConvert() noexcept;
+	~PcmConvert() noexcept;
 
 	/**
 	 * Prepare the object.  Call Close() when done.
@@ -65,12 +65,12 @@ public:
 	 * Close the object after it was prepared with Open().  After
 	 * that, it may be reused by calling Open() again.
 	 */
-	void Close();
+	void Close() noexcept;
 
 	/**
 	 * Reset the filter's state, e.g. drop/flush buffers.
 	 */
-	void Reset();
+	void Reset() noexcept;
 
 	/**
 	 * Converts PCM data between two audio formats.
@@ -81,6 +81,12 @@ public:
 	 * @return the destination buffer
 	 */
 	ConstBuffer<void> Convert(ConstBuffer<void> src);
+
+	/**
+	 * Flush pending data and return it.  This should be called
+	 * repepatedly until it returns nullptr.
+	 */
+	ConstBuffer<void> Flush();
 };
 
 void

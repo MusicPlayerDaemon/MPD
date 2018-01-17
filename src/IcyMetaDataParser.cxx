@@ -31,7 +31,7 @@
 static constexpr Domain icy_metadata_domain("icy_metadata");
 
 void
-IcyMetaDataParser::Reset()
+IcyMetaDataParser::Reset() noexcept
 {
 	if (!IsDefined())
 		return;
@@ -39,14 +39,14 @@ IcyMetaDataParser::Reset()
 	if (data_rest == 0 && meta_size > 0)
 		delete[] meta_data;
 
-	delete tag;
+	tag.reset();
 
 	data_rest = data_size;
 	meta_size = 0;
 }
 
 size_t
-IcyMetaDataParser::Data(size_t length)
+IcyMetaDataParser::Data(size_t length) noexcept
 {
 	assert(length > 0);
 
@@ -66,7 +66,7 @@ IcyMetaDataParser::Data(size_t length)
 }
 
 static void
-icy_add_item(TagBuilder &tag, TagType type, const char *value)
+icy_add_item(TagBuilder &tag, TagType type, const char *value) noexcept
 {
 	size_t length = strlen(value);
 
@@ -81,7 +81,8 @@ icy_add_item(TagBuilder &tag, TagType type, const char *value)
 }
 
 static void
-icy_parse_tag_item(TagBuilder &tag, const char *name, const char *value)
+icy_parse_tag_item(TagBuilder &tag,
+		   const char *name, const char *value) noexcept
 {
 	if (strcmp(name, "StreamTitle") == 0)
 		icy_add_item(tag, TAG_TITLE, value);
@@ -96,7 +97,7 @@ icy_parse_tag_item(TagBuilder &tag, const char *name, const char *value)
  * that also fails, return #end.
  */
 static char *
-find_end_quote(char *p, char *const end)
+find_end_quote(char *p, char *const end) noexcept
 {
 	char *fallback = std::find(p, end, '\'');
 	if (fallback >= end - 1 || fallback[1] == ';')
@@ -115,8 +116,8 @@ find_end_quote(char *p, char *const end)
 	}
 }
 
-static Tag *
-icy_parse_tag(char *p, char *const end)
+static std::unique_ptr<Tag>
+icy_parse_tag(char *p, char *const end) noexcept
 {
 	assert(p != nullptr);
 	assert(end != nullptr);
@@ -165,7 +166,7 @@ icy_parse_tag(char *p, char *const end)
 }
 
 size_t
-IcyMetaDataParser::Meta(const void *data, size_t length)
+IcyMetaDataParser::Meta(const void *data, size_t length) noexcept
 {
 	const unsigned char *p = (const unsigned char *)data;
 
@@ -208,8 +209,6 @@ IcyMetaDataParser::Meta(const void *data, size_t length)
 	if (meta_position == meta_size) {
 		/* parse */
 
-		delete tag;
-
 		tag = icy_parse_tag(meta_data, meta_data + meta_size);
 		delete[] meta_data;
 
@@ -223,7 +222,7 @@ IcyMetaDataParser::Meta(const void *data, size_t length)
 }
 
 size_t
-IcyMetaDataParser::ParseInPlace(void *data, size_t length)
+IcyMetaDataParser::ParseInPlace(void *data, size_t length) noexcept
 {
 	uint8_t *const dest0 = (uint8_t *)data;
 	uint8_t *dest = dest0;

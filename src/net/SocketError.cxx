@@ -23,7 +23,7 @@
 
 #include <string.h>
 
-#ifdef WIN32
+#ifdef _WIN32
 
 SocketErrorMessage::SocketErrorMessage(socket_error_t code) noexcept
 {

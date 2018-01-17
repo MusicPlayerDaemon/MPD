@@ -35,7 +35,7 @@
 #include <assert.h>
 #include <time.h>
 
-#if !defined(__GLIBC__) && !defined(WIN32)
+#if !defined(__GLIBC__) && !defined(_WIN32)
 
 /**
  * Determine the time zone offset in a portable way.
@@ -59,7 +59,7 @@ ParseTimePoint(const char *s, const char *format)
 	assert(s != nullptr);
 	assert(format != nullptr);
 
-#ifdef WIN32
+#ifdef _WIN32
 	/* TODO: emulate strptime()? */
 	(void)s;
 	(void)format;
@@ -80,5 +80,5 @@ ParseTimePoint(const char *s, const char *format)
 
 	return std::chrono::system_clock::from_time_t(t);
 
-#endif /* !WIN32 */
+#endif /* !_WIN32 */
 }

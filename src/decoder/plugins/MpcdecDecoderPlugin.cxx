@@ -32,7 +32,7 @@
 
 #include <mpc/mpcdec.h>
 
-#include <stdexcept>
+#include <exception>
 
 #include <math.h>
 
@@ -67,7 +67,7 @@ mpc_seek_cb(mpc_reader *reader, mpc_int32_t offset)
 	try {
 		data->is.LockSeek(offset);
 		return true;
-	} catch (const std::runtime_error &) {
+	} catch (...) {
 		return false;
 	}
 }

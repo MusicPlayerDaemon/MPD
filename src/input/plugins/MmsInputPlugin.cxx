@@ -66,7 +66,7 @@ MmsInputStream::Open()
 	SetMimeType("audio/x-ms-wma");
 }
 
-static InputStream *
+static InputStreamPtr
 input_mms_open(const char *url,
 	       Mutex &mutex, Cond &cond)
 {
@@ -76,7 +76,7 @@ input_mms_open(const char *url,
 	    !StringStartsWith(url, "mmsu://"))
 		return nullptr;
 
-	auto m = new MmsInputStream(url, mutex, cond);
+	auto m = std::make_unique<MmsInputStream>(url, mutex, cond);
 	m->Start();
 	return m;
 }

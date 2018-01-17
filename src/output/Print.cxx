@@ -34,9 +34,16 @@ printAudioDevices(Response &r, const MultipleOutputs &outputs)
 	for (unsigned i = 0, n = outputs.Size(); i != n; ++i) {
 		const auto &ao = outputs.Get(i);
 
-		r.Format("outputid: %i\n"
+		r.Format("outputid: %u\n"
 			 "outputname: %s\n"
+			 "plugin: %s\n"
 			 "outputenabled: %i\n",
-			 i, ao.GetName(), ao.IsEnabled());
+			 i,
+			 ao.GetName(), ao.GetPluginName(),
+			 ao.IsEnabled());
+
+		for (const auto &a : ao.GetAttributes())
+			r.Format("attribute: %s=%s\n",
+				 a.first.c_str(), a.second.c_str());
 	}
 }

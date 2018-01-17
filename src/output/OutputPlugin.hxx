@@ -76,7 +76,7 @@ ao_plugin_test_default_device(const AudioOutputPlugin *plugin)
 		: false;
 }
 
-gcc_malloc
+gcc_malloc gcc_returns_nonnull
 AudioOutput *
 ao_plugin_init(EventLoop &event_loop,
 	       const AudioOutputPlugin &plugin,

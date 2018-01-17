@@ -34,7 +34,7 @@ class RewindInputStream final : public ProxyInputStream {
 	/**
 	 * The write/append position within the buffer.
 	 */
-	size_t tail;
+	size_t tail = 0;
 
 	/**
 	 * The size of this buffer is the maximum number of bytes
@@ -47,14 +47,12 @@ class RewindInputStream final : public ProxyInputStream {
 	char buffer[64 * 1024];
 
 public:
-	RewindInputStream(InputStream *_input)
-		:ProxyInputStream(_input),
-		 tail(0) {
-	}
+	explicit RewindInputStream(InputStreamPtr _input)
+		:ProxyInputStream(std::move(_input)) {}
 
 	/* virtual methods from InputStream */
 
-	void Update() override {
+	void Update() noexcept override {
 		if (!ReadingFromBuffer())
 			ProxyInputStream::Update();
 	}
@@ -71,8 +69,8 @@ private:
 	 * Are we currently reading from the buffer, and does the
 	 * buffer contain more data for the next read operation?
 	 */
-	bool ReadingFromBuffer() const {
-		return tail > 0 && offset < input.GetOffset();
+	bool ReadingFromBuffer() const noexcept {
+		return tail > 0 && offset < input->GetOffset();
 	}
 };
 
@@ -83,7 +81,7 @@ RewindInputStream::Read(void *ptr, size_t read_size)
 		/* buffered read */
 
 		assert(head == (size_t)offset);
-		assert(tail == (size_t)input.GetOffset());
+		assert(tail == (size_t)input->GetOffset());
 
 		if (read_size > tail - head)
 			read_size = tail - head;
@@ -96,9 +94,9 @@ RewindInputStream::Read(void *ptr, size_t read_size)
 	} else {
 		/* pass method call to underlying stream */
 
-		size_t nbytes = input.Read(ptr, read_size);
+		size_t nbytes = input->Read(ptr, read_size);
 
-		if (input.GetOffset() > (offset_type)sizeof(buffer))
+		if (input->GetOffset() > (offset_type)sizeof(buffer))
 			/* disable buffering */
 			tail = 0;
 		else if (tail == (size_t)offset) {
@@ -107,7 +105,7 @@ RewindInputStream::Read(void *ptr, size_t read_size)
 			memcpy(buffer + tail, ptr, nbytes);
 			tail += nbytes;
 
-			assert(tail == (size_t)input.GetOffset());
+			assert(tail == (size_t)input->GetOffset());
 		}
 
 		CopyAttributes();
@@ -126,7 +124,7 @@ RewindInputStream::Seek(offset_type new_offset)
 
 		assert(!ReadingFromBuffer() ||
 		       head == (size_t)offset);
-		assert(tail == (size_t)input.GetOffset());
+		assert(tail == (size_t)input->GetOffset());
 
 		head = (size_t)new_offset;
 		offset = new_offset;
@@ -139,8 +137,8 @@ RewindInputStream::Seek(offset_type new_offset)
 	}
 }
 
-InputStream *
-input_rewind_open(InputStream *is)
+InputStreamPtr
+input_rewind_open(InputStreamPtr is)
 {
 	assert(is != nullptr);
 	assert(!is->IsReady() || is->GetOffset() == 0);
@@ -149,5 +147,5 @@ input_rewind_open(InputStream *is)
 		/* seekable resources don't need this plugin */
 		return is;
 
-	return new RewindInputStream(is);
+	return std::make_unique<RewindInputStream>(std::move(is));
 }

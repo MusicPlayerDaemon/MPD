@@ -46,7 +46,7 @@ FlacIORead(void *ptr, size_t size, size_t nmemb, FLAC__IOHandle handle)
 
 			p += nbytes;
 
-#ifndef WIN32
+#ifndef _WIN32
 		} catch (const std::system_error &e) {
 			errno = e.code().category() == ErrnoCategory()
 				? e.code().value()
@@ -55,7 +55,7 @@ FlacIORead(void *ptr, size_t size, size_t nmemb, FLAC__IOHandle handle)
 				: EINVAL;
 			return 0;
 #endif
-		} catch (const std::runtime_error &) {
+		} catch (...) {
 			/* just some random non-zero errno value */
 			errno = EINVAL;
 			return 0;
@@ -96,8 +96,8 @@ FlacIOSeek(FLAC__IOHandle handle, FLAC__int64 _offset, int whence)
 	try {
 		is->LockSeek(offset);
 		return 0;
-	} catch (const std::runtime_error &e) {
-		LogError(e);
+	} catch (...) {
+		LogError(std::current_exception());
 		return -1;
 	}
 }

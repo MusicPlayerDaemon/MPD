@@ -107,11 +107,11 @@ UnsafeCopyString(char *dest, const char *src) noexcept
 	strcpy(dest, src);
 }
 
-gcc_nonnull_all
+gcc_returns_nonnull gcc_nonnull_all
 static inline char *
 UnsafeCopyStringP(char *dest, const char *src) noexcept
 {
-#if defined(WIN32) || defined(__BIONIC__)
+#if defined(_WIN32) || defined(__BIONIC__)
 	/* emulate stpcpy() */
 	UnsafeCopyString(dest, src);
 	return dest + StringLength(dest);
@@ -165,7 +165,7 @@ StringCollate(const char *a, const char *b) noexcept
  * Copy the string to a new allocation.  The return value must be
  * freed with free().
  */
-gcc_malloc gcc_nonnull_all
+gcc_malloc gcc_returns_nonnull gcc_nonnull_all
 static inline char *
 DuplicateString(const char *p) noexcept
 {

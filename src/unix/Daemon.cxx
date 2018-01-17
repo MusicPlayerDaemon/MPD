@@ -23,7 +23,7 @@
 #include "fs/AllocatedPath.hxx"
 #include "fs/FileSystem.hxx"
 
-#ifndef WIN32
+#ifndef _WIN32
 #include "PidFile.hxx"
 #endif
 
@@ -31,7 +31,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 
-#ifndef WIN32
+#ifndef _WIN32
 #include <sys/wait.h>
 #include <signal.h>
 #include <pwd.h>
@@ -42,7 +42,7 @@
 #define WCOREDUMP(v) 0
 #endif
 
-#ifndef WIN32
+#ifndef _WIN32
 
 /** the Unix user name which MPD runs as */
 static char *user_name;
@@ -54,7 +54,7 @@ static uid_t user_uid = (uid_t)-1;
 static gid_t user_gid = (gid_t)-1;
 
 /** the absolute path of the pidfile */
-static AllocatedPath pidfile = AllocatedPath::Null();
+static AllocatedPath pidfile = nullptr;
 
 /* whether "group" conf. option was given */
 static bool had_group = false;
@@ -251,7 +251,7 @@ daemonize_finish(void)
 {
 	if (!pidfile.IsNull()) {
 		unlink(pidfile.c_str());
-		pidfile = AllocatedPath::Null();
+		pidfile = nullptr;
 	}
 
 	free(user_name);

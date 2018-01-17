@@ -27,6 +27,7 @@
 #include "Compiler.h"
 
 #include <string>
+#include <memory>
 
 #include <assert.h>
 
@@ -69,24 +70,24 @@ protected:
 	 * indicates whether the stream is ready for reading and
 	 * whether the other attributes in this struct are valid
 	 */
-	bool ready;
+	bool ready = false;
 
 	/**
 	 * if true, then the stream is fully seekable
 	 */
-	bool seekable;
+	bool seekable = false;
 
 	static constexpr offset_type UNKNOWN_SIZE = -1;
 
 	/**
 	 * the size of the resource, or #UNKNOWN_SIZE if unknown
 	 */
-	offset_type size;
+	offset_type size = UNKNOWN_SIZE;
 
 	/**
 	 * the current offset within the stream
 	 */
-	offset_type offset;
+	offset_type offset = 0;
 
 private:
 	/**
@@ -97,9 +98,7 @@ private:
 public:
 	InputStream(const char *_uri, Mutex &_mutex, Cond &_cond)
 		:uri(_uri),
-		 mutex(_mutex), cond(_cond),
-		 ready(false), seekable(false),
-		 size(UNKNOWN_SIZE), offset(0) {
+		 mutex(_mutex), cond(_cond) {
 		assert(_uri != nullptr);
 	}
 
@@ -108,7 +107,7 @@ public:
 	 *
 	 * The caller must not lock the mutex.
 	 */
-	virtual ~InputStream();
+	virtual ~InputStream() noexcept;
 
 	/**
 	 * Opens a new input stream.  You may not access it until the "ready"
@@ -139,15 +138,15 @@ public:
 	 *
 	 * No lock necessary for this method.
 	 */
-	const char *GetURI() const {
+	const char *GetURI() const noexcept {
 		return uri.c_str();
 	}
 
-	void Lock() {
+	void Lock() noexcept {
 		mutex.lock();
 	}
 
-	void Unlock() {
+	void Unlock() noexcept {
 		mutex.unlock();
 	}
 
@@ -161,9 +160,9 @@ public:
 	 * Update the public attributes.  Call before accessing attributes
 	 * such as "ready" or "offset".
 	 */
-	virtual void Update();
+	virtual void Update() noexcept;
 
-	void SetReady();
+	void SetReady() noexcept;
 
 	/**
 	 * Return whether the stream is ready for reading and whether
@@ -175,13 +174,13 @@ public:
 		return ready;
 	}
 
-	void WaitReady();
+	void WaitReady() noexcept;
 
 	/**
 	 * Wrapper for WaitReady() which locks and unlocks the mutex;
 	 * the caller must not be holding it already.
 	 */
-	void LockWaitReady();
+	void LockWaitReady() noexcept;
 
 	gcc_pure
 	bool HasMimeType() const noexcept {
@@ -202,13 +201,13 @@ public:
 	}
 
 	gcc_nonnull_all
-	void SetMimeType(const char *_mime) {
+	void SetMimeType(const char *_mime) noexcept {
 		assert(!ready);
 
 		mime = _mime;
 	}
 
-	void SetMimeType(std::string &&_mime) {
+	void SetMimeType(std::string &&_mime) noexcept {
 		assert(!ready);
 
 		mime = std::move(_mime);
@@ -322,18 +321,16 @@ public:
 	 *
 	 * The caller must lock the mutex.
 	 *
-	 * @return a tag object which must be freed by the caller, or
-	 * nullptr if the tag has not changed since the last call
+	 * @return a tag object or nullptr if the tag has not changed
+	 * since the last call
 	 */
-	gcc_malloc
-	virtual Tag *ReadTag();
+	virtual std::unique_ptr<Tag> ReadTag();
 
 	/**
 	 * Wrapper for ReadTag() which locks and unlocks the mutex;
 	 * the caller must not be holding it already.
 	 */
-	gcc_malloc
-	Tag *LockReadTag();
+	std::unique_ptr<Tag> LockReadTag();
 
 	/**
 	 * Returns true if the next read operation will not block: either data
