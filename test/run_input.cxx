@@ -45,7 +45,7 @@
 struct CommandLine {
 	const char *uri = nullptr;
 
-	Path config_path = Path::Null();
+	Path config_path = nullptr;
 };
 
 enum Option {

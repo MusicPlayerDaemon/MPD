@@ -43,19 +43,17 @@ class Path : public PathTraitsFS::Pointer {
 
 public:
 	/**
-	 * Copy a #Path object.
-	 */
-	constexpr Path(const Path &) = default;
-
-	/**
-	 * Return a "nulled" instance.  Its IsNull() method will
+	 * Construct a "nulled" instance.  Its IsNull() method will
 	 * return true.  Such an object must not be used.
 	 *
 	 * @see IsNull()
 	 */
-	static constexpr Path Null() {
-		return Path(nullptr);
-	}
+	constexpr Path(std::nullptr_t):Base(nullptr) {}
+
+	/**
+	 * Copy a #Path object.
+	 */
+	constexpr Path(const Path &) = default;
 
 	/**
 	 * Create a new instance pointing to the specified path

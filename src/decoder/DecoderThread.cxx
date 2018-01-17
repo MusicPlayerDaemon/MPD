@@ -498,7 +498,7 @@ try {
 
 	const char *const uri_utf8 = song.GetRealURI();
 
-	Path path_fs = Path::Null();
+	Path path_fs = nullptr;
 	AllocatedPath path_buffer = AllocatedPath::Null();
 	if (PathTraitsUTF8::IsAbsolute(uri_utf8)) {
 		path_buffer = AllocatedPath::FromUTF8Throw(uri_utf8);
