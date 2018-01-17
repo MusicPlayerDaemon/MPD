@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2017 The Music Player Daemon Project
+ * Copyright 2003-2018 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -19,43 +19,41 @@
 
 #include "OptionParser.hxx"
 #include "OptionDef.hxx"
+#include "util/RuntimeError.hxx"
 
 #include <string.h>
 
-bool
-OptionParser::CheckOption(const OptionDef &opt) const noexcept
+inline unsigned
+OptionParser::IdentifyOption(const char *s) const
 {
-	assert(option != nullptr);
+	assert(s != nullptr);
+	assert(*s == '-');
 
-	if (is_long)
-		return opt.HasLongOption() &&
-		       strcmp(option, opt.GetLongOption()) == 0;
+	if (s[1] == '-') {
+		for (const auto &i : options)
+			if (i.HasLongOption() &&
+			    strcmp(s + 2, i.GetLongOption()) == 0)
+				return &i - options.data;
+	} else if (s[1] != 0 && s[2] == 0) {
+		const char ch = s[1];
+		for (const auto &i : options)
+			if (i.HasShortOption() && ch == i.GetShortOption())
+				return &i - options.data;
+	}
 
-	return opt.HasShortOption() &&
-	       option[0] == opt.GetShortOption() &&
-	       option[1] == '\0';
+	throw FormatRuntimeError("Unknown option: %s", s);
 }
 
-bool
-OptionParser::ParseNext() noexcept
+int
+OptionParser::Next()
 {
 	while (!args.empty()) {
 		const char *arg = args.shift();
-		if (arg[0] == '-') {
-			if (arg[1] == '-') {
-				option = arg + 2;
-				is_long = true;
-			}
-			else {
-				option = arg + 1;
-				is_long = false;
-			}
-			option_raw = arg;
-			return true;
-		}
+		if (arg[0] == '-')
+			return IdentifyOption(arg);
 
 		*remaining_tail++ = arg;
 	}
 
-	return false;
+	return -1;
 }

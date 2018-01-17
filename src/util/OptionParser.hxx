@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2017 The Music Player Daemon Project
+ * Copyright 2003-2018 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -29,10 +29,9 @@ class OptionDef;
  */
 class OptionParser
 {
+	ConstBuffer<OptionDef> options;
+
 	ConstBuffer<const char *> args;
-	const char *option;
-	const char *option_raw;
-	bool is_long = false;
 
 	const char **const remaining_head, **remaining_tail;
 
@@ -40,41 +39,23 @@ public:
 	/**
 	 * Constructs #OptionParser.
 	 */
-	OptionParser(int _argc, char **_argv) noexcept
-		:args(_argv + 1, _argc - 1),
+	OptionParser(ConstBuffer<OptionDef> _options,
+		     int _argc, char **_argv) noexcept
+		:options(_options), args(_argv + 1, _argc - 1),
 		 remaining_head(const_cast<const char **>(_argv + 1)),
 		 remaining_tail(remaining_head) {}
-
-	/**
-	 * Gets the last parsed option.
-	 */
-	const char *GetOption() noexcept {
-		return option_raw;
-	}
-
-	/**
-	 * Checks if current option is a specified option.
-	 */
-	bool CheckOption(const OptionDef &opt) const noexcept;
-
-	/**
-	 * Checks if current option is a specified option
-	 * or specified alternative option.
-	 */
-	bool CheckOption(const OptionDef &opt,
-			 const OptionDef &alt_opt) const noexcept {
-		return CheckOption(opt) || CheckOption(alt_opt);
-	}
 
 	/**
 	 * Parses current command line entry.
 	 * Regardless of result, advances current position to the next
 	 * command line entry. 
 	 *
-	 * @return true if an option was found, false if there are no
-	 * more options
+	 * Throws on error.
+	 *
+	 * @return the index if an option was found, -1 if there are
+	 * no more options
 	 */
-	bool ParseNext() noexcept;
+	int Next();
 
 	/**
 	 * Returns the remaining non-option arguments.
@@ -82,6 +63,9 @@ public:
 	ConstBuffer<const char *> GetRemaining() const noexcept {
 		return {remaining_head, remaining_tail};
 	}
+
+private:
+	unsigned IdentifyOption(const char *s) const;
 };
 
 #endif

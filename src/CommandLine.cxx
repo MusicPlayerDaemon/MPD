@@ -76,24 +76,29 @@
 #define USER_CONFIG_FILE_LOCATION_XDG PATH_LITERAL("mpd/mpd.conf")
 #endif
 
-static constexpr OptionDef opt_kill(
-	"kill", "kill the currently running mpd session");
-static constexpr OptionDef opt_no_config(
-	"no-config", "don't read from config");
-static constexpr OptionDef opt_no_daemon(
-	"no-daemon", "don't detach from console");
-static constexpr OptionDef opt_stdout(
-	"stdout", nullptr); // hidden, compatibility with old versions
-static constexpr OptionDef opt_stderr(
-	"stderr", "print messages to stderr");
-static constexpr OptionDef opt_verbose(
-	"verbose", 'v', "verbose logging");
-static constexpr OptionDef opt_version(
-	"version", 'V', "print version number");
-static constexpr OptionDef opt_help(
-	"help", 'h', "show help options");
-static constexpr OptionDef opt_help_alt(
-	nullptr, '?', nullptr); // hidden, standard alias for --help
+enum Option {
+	OPTION_KILL,
+	OPTION_NO_CONFIG,
+	OPTION_NO_DAEMON,
+	OPTION_STDOUT,
+	OPTION_STDERR,
+	OPTION_VERBOSE,
+	OPTION_VERSION,
+	OPTION_HELP,
+	OPTION_HELP2,
+};
+
+static constexpr OptionDef option_defs[] = {
+	{"kill", "kill the currently running mpd session"},
+	{"no-config", "don't read from config"},
+	{"no-daemon", "don't detach from console"},
+	{"stdout", nullptr}, // hidden, compatibility with old versions
+	{"stderr", "print messages to stderr"},
+	{"verbose", 'v', "verbose logging"},
+	{"version", 'V', "print version number"},
+	{"help", 'h', "show help options"},
+	{nullptr, '?', nullptr}, // hidden, standard alias for --help
+};
 
 static constexpr Domain cmdline_domain("cmdline");
 
@@ -265,13 +270,8 @@ static void help(void)
 	       "\n"
 	       "Options:\n");
 
-	PrintOption(opt_help);
-	PrintOption(opt_kill);
-	PrintOption(opt_no_config);
-	PrintOption(opt_no_daemon);
-	PrintOption(opt_stderr);
-	PrintOption(opt_verbose);
-	PrintOption(opt_version);
+	for (const auto &i : option_defs)
+		PrintOption(i);
 
 	exit(EXIT_SUCCESS);
 }
@@ -312,35 +312,38 @@ ParseCommandLine(int argc, char **argv, struct options *options)
 	options->verbose = false;
 
 	// First pass: handle command line options
-	OptionParser parser(argc, argv);
-	while (parser.ParseNext()) {
-		if (parser.CheckOption(opt_kill)) {
+	OptionParser parser(option_defs, argc, argv);
+	int option_index;
+	while ((option_index = parser.Next()) >= 0) {
+		switch (Option(option_index)) {
+		case OPTION_KILL:
 			options->kill = true;
-			continue;
-		}
-		if (parser.CheckOption(opt_no_config)) {
-			use_config_file = false;
-			continue;
-		}
-		if (parser.CheckOption(opt_no_daemon)) {
-			options->daemon = false;
-			continue;
-		}
-		if (parser.CheckOption(opt_stderr, opt_stdout)) {
-			options->log_stderr = true;
-			continue;
-		}
-		if (parser.CheckOption(opt_verbose)) {
-			options->verbose = true;
-			continue;
-		}
-		if (parser.CheckOption(opt_version))
-			version();
-		if (parser.CheckOption(opt_help, opt_help_alt))
-			help();
+			break;
 
-		throw FormatRuntimeError("invalid option: %s",
-					 parser.GetOption());
+		case OPTION_NO_CONFIG:
+			use_config_file = false;
+			break;
+
+		case OPTION_NO_DAEMON:
+			options->daemon = false;
+			break;
+
+		case OPTION_STDOUT:
+		case OPTION_STDERR:
+			options->log_stderr = true;
+			break;
+
+		case OPTION_VERBOSE:
+			options->verbose = true;
+			break;
+
+		case OPTION_VERSION:
+			version();
+
+		case OPTION_HELP:
+		case OPTION_HELP2:
+			help();
+		}
 	}
 
 	/* initialize the logging library, so the configuration file
