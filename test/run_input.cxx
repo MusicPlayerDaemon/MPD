@@ -28,6 +28,8 @@
 #include "Log.hxx"
 #include "fs/io/BufferedOutputStream.hxx"
 #include "fs/io/StdioOutputStream.hxx"
+#include "util/ConstBuffer.hxx"
+#include "util/OptionParser.hxx"
 
 #ifdef ENABLE_ARCHIVE
 #include "archive/ArchiveList.hxx"
@@ -37,6 +39,27 @@
 
 #include <unistd.h>
 #include <stdlib.h>
+
+struct CommandLine {
+	const char *uri = nullptr;
+};
+
+static CommandLine
+ParseCommandLine(int argc, char **argv)
+{
+	CommandLine c;
+
+	OptionParser option_parser(nullptr, argc, argv);
+	while (auto o = option_parser.Next()) {
+	}
+
+	auto args = option_parser.GetRemaining();
+	if (args.size != 1)
+		throw std::runtime_error("Usage: run_input URI");
+
+	c.uri = args.front();
+	return c;
+}
 
 class GlobalInit {
 	EventThread io_thread;
@@ -107,10 +130,7 @@ dump_input_stream(InputStream *is)
 
 int main(int argc, char **argv)
 try {
-	if (argc != 2) {
-		fprintf(stderr, "Usage: run_input URI\n");
-		return EXIT_FAILURE;
-	}
+	const auto c = ParseCommandLine(argc, argv);
 
 	/* initialize MPD */
 
@@ -120,7 +140,7 @@ try {
 
 	Mutex mutex;
 	Cond cond;
-	auto is = InputStream::OpenReady(argv[1], mutex, cond);
+	auto is = InputStream::OpenReady(c.uri, mutex, cond);
 	return dump_input_stream(is.get());
 } catch (const std::exception &e) {
 	LogError(e);
