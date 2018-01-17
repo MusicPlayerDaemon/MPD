@@ -26,9 +26,11 @@
 #include "event/Thread.hxx"
 #include "thread/Cond.hxx"
 #include "Log.hxx"
+#include "fs/Path.hxx"
 #include "fs/io/BufferedOutputStream.hxx"
 #include "fs/io/StdioOutputStream.hxx"
 #include "util/ConstBuffer.hxx"
+#include "util/OptionDef.hxx"
 #include "util/OptionParser.hxx"
 
 #ifdef ENABLE_ARCHIVE
@@ -42,6 +44,16 @@
 
 struct CommandLine {
 	const char *uri = nullptr;
+
+	Path config_path = Path::Null();
+};
+
+enum Option {
+	OPTION_CONFIG,
+};
+
+static constexpr OptionDef option_defs[] = {
+	{"config", 0, true, "Load a MPD configuration file"},
 };
 
 static CommandLine
@@ -49,13 +61,18 @@ ParseCommandLine(int argc, char **argv)
 {
 	CommandLine c;
 
-	OptionParser option_parser(nullptr, argc, argv);
+	OptionParser option_parser(option_defs, argc, argv);
 	while (auto o = option_parser.Next()) {
+		switch (Option(o.index)) {
+		case OPTION_CONFIG:
+			c.config_path = Path::FromFS(o.value);
+			break;
+		}
 	}
 
 	auto args = option_parser.GetRemaining();
 	if (args.size != 1)
-		throw std::runtime_error("Usage: run_input URI");
+		throw std::runtime_error("Usage: run_input [--config=FILE] URI");
 
 	c.uri = args.front();
 	return c;
@@ -65,9 +82,13 @@ class GlobalInit {
 	EventThread io_thread;
 
 public:
-	GlobalInit() {
+	GlobalInit(Path config_path) {
 		io_thread.Start();
 		config_global_init();
+
+		if (!config_path.IsNull())
+			ReadConfigFile(config_path);
+
 #ifdef ENABLE_ARCHIVE
 		archive_plugin_init_all();
 #endif
@@ -134,7 +155,7 @@ try {
 
 	/* initialize MPD */
 
-	const GlobalInit init;
+	const GlobalInit init(c.config_path);
 
 	/* open the stream and dump it */
 
