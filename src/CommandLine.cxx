@@ -303,7 +303,7 @@ bool ConfigLoader::TryFile(const AllocatedPath &base_path,
 }
 
 void
-ParseCommandLine(int argc, char **argv, struct options *options)
+ParseCommandLine(int argc, char **argv, struct options &options)
 {
 	bool use_config_file = true;
 
@@ -313,7 +313,7 @@ ParseCommandLine(int argc, char **argv, struct options *options)
 	while ((option_index = parser.Next()) >= 0) {
 		switch (Option(option_index)) {
 		case OPTION_KILL:
-			options->kill = true;
+			options.kill = true;
 			break;
 
 		case OPTION_NO_CONFIG:
@@ -321,16 +321,16 @@ ParseCommandLine(int argc, char **argv, struct options *options)
 			break;
 
 		case OPTION_NO_DAEMON:
-			options->daemon = false;
+			options.daemon = false;
 			break;
 
 		case OPTION_STDOUT:
 		case OPTION_STDERR:
-			options->log_stderr = true;
+			options.log_stderr = true;
 			break;
 
 		case OPTION_VERBOSE:
-			options->verbose = true;
+			options.verbose = true;
 			break;
 
 		case OPTION_VERSION:
@@ -344,7 +344,7 @@ ParseCommandLine(int argc, char **argv, struct options *options)
 
 	/* initialize the logging library, so the configuration file
 	   parser can use it already */
-	log_early_init(options->verbose);
+	log_early_init(options.verbose);
 
 	if (!use_config_file) {
 		LogDebug(cmdline_domain,

@@ -469,7 +469,7 @@ try {
 			ReadConfigFile(config_path);
 	}
 #else
-	ParseCommandLine(argc, argv, &options);
+	ParseCommandLine(argc, argv, options);
 #endif
 
 	const auto config = LoadConfig();

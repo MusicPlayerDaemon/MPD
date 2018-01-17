@@ -28,6 +28,6 @@ struct options {
 };
 
 void
-ParseCommandLine(int argc, char **argv, struct options *options);
+ParseCommandLine(int argc, char **argv, struct options &options);
 
 #endif
