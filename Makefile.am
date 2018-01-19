@@ -61,8 +61,8 @@ src_mpd_LDADD = \
 	libnet.a \
 	$(FS_LIBS) \
 	libsystem.a \
-	libutil.a \
 	$(ICU_LDADD) \
+	libutil.a \
 	$(SYSTEMD_DAEMON_LIBS)
 
 src_mpd_SOURCES = \
