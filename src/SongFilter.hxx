@@ -66,11 +66,6 @@ public:
 		Item(unsigned tag, const char *value, bool fold_case=false);
 		Item(unsigned tag, time_t time);
 
-		Item(const Item &other) = delete;
-		Item(Item &&) = default;
-
-		Item &operator=(const Item &other) = delete;
-
 		unsigned GetTag() const {
 			return tag;
 		}
