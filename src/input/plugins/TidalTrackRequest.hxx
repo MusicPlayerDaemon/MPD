@@ -46,6 +46,8 @@ public:
 
 /**
  * An asynchronous request for the streaming URL of a Tidal track.
+ *
+ * After construction, call Start() to initiate the request.
  */
 class TidalTrackRequest final : CurlResponseHandler {
 	CurlSlist request_headers;
@@ -73,6 +75,10 @@ public:
 			  TidalTrackHandler &_handler) noexcept;
 
 	~TidalTrackRequest() noexcept;
+
+	void Start() {
+		request.StartIndirect();
+	}
 
 private:
 	/* virtual methods from CurlResponseHandler */

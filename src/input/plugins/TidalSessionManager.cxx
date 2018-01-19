@@ -60,6 +60,7 @@ TidalSessionManager::AddLoginHandler(TidalSessionHandler &h) noexcept
 								    token,
 								    username, password,
 								    handler);
+			login_request->Start();
 		} catch (...) {
 			error = std::current_exception();
 			ScheduleInvokeHandlers();

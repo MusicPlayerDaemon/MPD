@@ -91,6 +91,7 @@ TidalInputStream::OnTidalSession() noexcept
 								    tidal_session->GetSession().c_str(),
 								    track_id.c_str(),
 								    handler);
+		track_request->Start();
 	} catch (...) {
 		Failed(std::current_exception());
 	}

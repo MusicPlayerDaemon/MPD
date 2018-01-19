@@ -44,6 +44,8 @@ public:
 
 /**
  * An asynchronous Tidal "login/username" request.
+ *
+ * After construction, call Start() to initiate the request.
  */
 class TidalLoginRequest final : CurlResponseHandler {
 	CurlSlist request_headers;
@@ -70,6 +72,10 @@ public:
 			  TidalLoginHandler &_handler) noexcept;
 
 	~TidalLoginRequest() noexcept;
+
+	void Start() {
+		request.StartIndirect();
+	}
 
 private:
 	/* virtual methods from CurlResponseHandler */

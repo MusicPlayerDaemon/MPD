@@ -61,8 +61,6 @@ TidalTrackRequest::TidalTrackRequest(CurlGlobal &curl,
 	request_headers.Append((std::string("X-Tidal-SessionId:")
 				+ session).c_str());
 	request.SetOption(CURLOPT_HTTPHEADER, request_headers.Get());
-
-	request.StartIndirect();
 }
 
 TidalTrackRequest::~TidalTrackRequest() noexcept

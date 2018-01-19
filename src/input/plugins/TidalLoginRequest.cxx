@@ -59,8 +59,6 @@ TidalLoginRequest::TidalLoginRequest(CurlGlobal &curl,
 	request.SetOption(CURLOPT_COPYPOSTFIELDS,
 			  EncodeForm(request.Get(),
 				     {{"username", username}, {"password", password}}).c_str());
-
-	request.StartIndirect();
 }
 
 TidalLoginRequest::~TidalLoginRequest() noexcept
