@@ -65,7 +65,8 @@ class AndroidNdkToolchain:
         llvm_path = os.path.join(ndk_path, 'toolchains', 'llvm', 'prebuilt', build_arch)
         llvm_triple = 'armv7-none-linux-androideabi'
 
-        common_flags = '-march=armv7-a -mfloat-abi=softfp'
+        common_flags = '-Os -g'
+        common_flags += ' -march=armv7-a -mfloat-abi=softfp'
 
         toolchain_bin = os.path.join(toolchain_path, 'bin')
         llvm_bin = os.path.join(llvm_path, 'bin')
@@ -80,8 +81,8 @@ class AndroidNdkToolchain:
         self.nm = os.path.join(toolchain_bin, arch + '-nm')
         self.strip = os.path.join(toolchain_bin, arch + '-strip')
 
-        self.cflags = '-Os -g ' + common_flags
-        self.cxxflags = '-Os -g ' + common_flags
+        self.cflags = common_flags
+        self.cxxflags = common_flags
         self.cppflags = '--sysroot=' + sysroot + \
             ' -isystem ' + os.path.join(install_prefix, 'include') + \
             ' -isystem ' + os.path.join(sysroot, 'usr', 'include', arch) + \
