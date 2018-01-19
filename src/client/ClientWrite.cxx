@@ -19,11 +19,8 @@
 
 #include "config.h"
 #include "Client.hxx"
-#include "util/FormatString.hxx"
-#include "util/AllocatedString.hxx"
 
 #include <string.h>
-#include <stdarg.h>
 
 bool
 Client::Write(const void *data, size_t length)
@@ -36,20 +33,4 @@ bool
 Client::Write(const char *data)
 {
 	return Write(data, strlen(data));
-}
-
-static void
-client_vprintf(Client &client, const char *fmt, va_list args)
-{
-	client.Write(FormatStringV(fmt, args).c_str());
-}
-
-void
-client_printf(Client &client, const char *fmt, ...)
-{
-	va_list args;
-
-	va_start(args, fmt);
-	client_vprintf(client, fmt, args);
-	va_end(args);
 }
