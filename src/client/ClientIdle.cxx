@@ -19,21 +19,21 @@
 
 #include "config.h"
 #include "ClientInternal.hxx"
+#include "Response.hxx"
 #include "Idle.hxx"
 
 #include <assert.h>
 
 static void
-WriteIdleResponse(Client &client, unsigned flags) noexcept
+WriteIdleResponse(Response &r, unsigned flags) noexcept
 {
 	const char *const*idle_names = idle_get_names();
 	for (unsigned i = 0; idle_names[i]; ++i) {
 		if (flags & (1 << i))
-			client_printf(client, "changed: %s\n",
-				      idle_names[i]);
+			r.Format("changed: %s\n", idle_names[i]);
 	}
 
-	client.Write("OK\n");
+	r.Write("OK\n");
 }
 
 void
@@ -45,7 +45,8 @@ Client::IdleNotify() noexcept
 	unsigned flags = std::exchange(idle_flags, 0) & idle_subscriptions;
 	idle_waiting = false;
 
-	WriteIdleResponse(*this, flags);
+	Response r(*this, 0);
+	WriteIdleResponse(r, flags);
 
 	timeout_event.Schedule(client_timeout);
 }
