@@ -34,10 +34,20 @@
 class CurlRequest;
 class TidalLoginRequest;
 
+/**
+ * Callback class for #TidalSessionManager.
+ *
+ * Its methods must be thread-safe.
+ */
 class TidalSessionHandler
 	: public boost::intrusive::list_base_hook<boost::intrusive::link_mode<boost::intrusive::safe_link>>
 {
 public:
+	/**
+	 * TidalSessionHandler::AddLoginHandler() has completed
+	 * (successful or failed).  This method may now call
+	 * #TidalSessionHandler::GetSession().
+	 */
 	virtual void OnTidalSession() noexcept = 0;
 };
 
@@ -105,6 +115,13 @@ public:
 		return base_url;
 	}
 
+	/**
+	 * Ask the object to call back once the login to Tidal has
+	 * completed.  If no session exists currently, then one is
+	 * created.  Since the callback may occur in another thread,
+	 * the it may have been completed already before this method
+	 * returns.
+	 */
 	void AddLoginHandler(TidalSessionHandler &h) noexcept;
 
 	void RemoveLoginHandler(TidalSessionHandler &h) noexcept {
@@ -117,6 +134,10 @@ public:
 		return token;
 	}
 
+	/**
+	 * Get the Tidal session id, or rethrows an exception if an
+	 * error has occurred while logging in.
+	 */
 	std::string GetSession() const {
 		const std::lock_guard<Mutex> protect(mutex);
 

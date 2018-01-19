@@ -31,12 +31,20 @@
 
 class CurlRequest;
 
+/**
+ * Callback class for #TidalLoginRequest.
+ *
+ * Its methods must be thread-safe.
+ */
 class TidalLoginHandler {
 public:
 	virtual void OnTidalLoginSuccess(std::string &&session) noexcept = 0;
 	virtual void OnTidalLoginError(std::exception_ptr error) noexcept = 0;
 };
 
+/**
+ * An asynchronous Tidal "login/username" request.
+ */
 class TidalLoginRequest final : CurlResponseHandler {
 	CurlSlist request_headers;
 
