@@ -158,7 +158,7 @@ private:
 	}
 
 	/* virtual methods from TidalLoginHandler */
-	void OnTidalLoginSuccess(std::string &&session) noexcept override;
+	void OnTidalLoginSuccess(std::string session) noexcept override;
 	void OnTidalLoginError(std::exception_ptr error) noexcept override;
 };
 

@@ -70,7 +70,7 @@ TidalSessionManager::AddLoginHandler(TidalSessionHandler &h) noexcept
 }
 
 void
-TidalSessionManager::OnTidalLoginSuccess(std::string &&_session) noexcept
+TidalSessionManager::OnTidalLoginSuccess(std::string _session) noexcept
 {
 	{
 		const std::lock_guard<Mutex> protect(mutex);

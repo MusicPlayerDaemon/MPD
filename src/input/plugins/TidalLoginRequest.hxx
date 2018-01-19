@@ -38,7 +38,7 @@ class CurlRequest;
  */
 class TidalLoginHandler {
 public:
-	virtual void OnTidalLoginSuccess(std::string &&session) noexcept = 0;
+	virtual void OnTidalLoginSuccess(std::string session) noexcept = 0;
 	virtual void OnTidalLoginError(std::exception_ptr error) noexcept = 0;
 };
 

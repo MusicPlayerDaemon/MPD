@@ -74,7 +74,7 @@ private:
 	void OnTidalSession() noexcept override;
 
 	/* virtual methods from TidalTrackHandler */
-	void OnTidalTrackSuccess(std::string &&url) noexcept override;
+	void OnTidalTrackSuccess(std::string url) noexcept override;
 	void OnTidalTrackError(std::exception_ptr error) noexcept override;
 };
 
@@ -98,7 +98,7 @@ TidalInputStream::OnTidalSession() noexcept
 }
 
 void
-TidalInputStream::OnTidalTrackSuccess(std::string &&url) noexcept
+TidalInputStream::OnTidalTrackSuccess(std::string url) noexcept
 {
 	const std::lock_guard<Mutex> protect(mutex);
 
