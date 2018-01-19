@@ -29,8 +29,7 @@ Client::IdleNotify() noexcept
 	assert(idle_waiting);
 	assert(idle_flags != 0);
 
-	unsigned flags = idle_flags;
-	idle_flags = 0;
+	unsigned flags = std::exchange(idle_flags, 0);
 	idle_waiting = false;
 
 	const char *const*idle_names = idle_get_names();
