@@ -44,6 +44,7 @@ flac = AutotoolsProject(
     [
         '--disable-shared', '--enable-static',
         '--disable-xmms-plugin', '--disable-cpplibs',
+        '--disable-doxygen-docs',
     ],
 )
 
