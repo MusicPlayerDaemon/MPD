@@ -29,6 +29,8 @@ opus = AutotoolsProject(
     'lib/libopus.a',
     [
         '--disable-shared', '--enable-static',
+        '--disable-doc',
+        '--disable-extra-programs',
     ],
 
     # suppress "visibility default" from opus_defines.h
