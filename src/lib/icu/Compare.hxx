@@ -37,6 +37,18 @@ public:
 
 	explicit IcuCompare(const char *needle) noexcept;
 
+	IcuCompare(const IcuCompare &src) noexcept
+		:needle(src
+			? AllocatedString<>::Duplicate(src.needle.c_str())
+			: nullptr) {}
+
+	IcuCompare &operator=(const IcuCompare &src) noexcept {
+		needle = src
+			? AllocatedString<>::Duplicate(src.needle.c_str())
+			: nullptr;
+		return *this;
+	}
+
 	IcuCompare(IcuCompare &&) = default;
 	IcuCompare &operator=(IcuCompare &&) = default;
 

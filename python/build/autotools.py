@@ -8,6 +8,7 @@ class AutotoolsProject(MakeProject):
                  cppflags='',
                  ldflags='',
                  libs='',
+                 subdirs=None,
                  **kwargs):
         MakeProject.__init__(self, url, md5, installed, **kwargs)
         self.configure_args = configure_args
@@ -15,6 +16,7 @@ class AutotoolsProject(MakeProject):
         self.cppflags = cppflags
         self.ldflags = ldflags
         self.libs = libs
+        self.subdirs = subdirs
 
     def configure(self, toolchain):
         src = self.unpack(toolchain)
@@ -51,4 +53,8 @@ class AutotoolsProject(MakeProject):
 
     def build(self, toolchain):
         build = self.configure(toolchain)
-        MakeProject.build(self, toolchain, build)
+        if self.subdirs is not None:
+            for subdir in self.subdirs:
+                MakeProject.build(self, toolchain, os.path.join(build, subdir))
+        else:
+            MakeProject.build(self, toolchain, build)
