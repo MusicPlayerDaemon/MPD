@@ -23,6 +23,19 @@
 
 #include <assert.h>
 
+static void
+WriteIdleResponse(Client &client, unsigned flags) noexcept
+{
+	const char *const*idle_names = idle_get_names();
+	for (unsigned i = 0; idle_names[i]; ++i) {
+		if (flags & (1 << i))
+			client_printf(client, "changed: %s\n",
+				      idle_names[i]);
+	}
+
+	client.Write("OK\n");
+}
+
 void
 Client::IdleNotify() noexcept
 {
@@ -32,14 +45,7 @@ Client::IdleNotify() noexcept
 	unsigned flags = std::exchange(idle_flags, 0) & idle_subscriptions;
 	idle_waiting = false;
 
-	const char *const*idle_names = idle_get_names();
-	for (unsigned i = 0; idle_names[i]; ++i) {
-		if (flags & (1 << i))
-			client_printf(*this, "changed: %s\n",
-				      idle_names[i]);
-	}
-
-	Write("OK\n");
+	WriteIdleResponse(*this, flags);
 
 	timeout_event.Schedule(client_timeout);
 }
