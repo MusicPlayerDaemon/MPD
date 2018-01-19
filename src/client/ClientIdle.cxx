@@ -29,12 +29,12 @@ Client::IdleNotify() noexcept
 	assert(idle_waiting);
 	assert(idle_flags != 0);
 
-	unsigned flags = std::exchange(idle_flags, 0);
+	unsigned flags = std::exchange(idle_flags, 0) & idle_subscriptions;
 	idle_waiting = false;
 
 	const char *const*idle_names = idle_get_names();
 	for (unsigned i = 0; idle_names[i]; ++i) {
-		if (flags & (1 << i) & idle_subscriptions)
+		if (flags & (1 << i))
 			client_printf(*this, "changed: %s\n",
 				      idle_names[i]);
 	}
