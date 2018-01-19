@@ -20,6 +20,7 @@
 #include "config.h"
 #include "Mount.hxx"
 #include "PrefixedLightSong.hxx"
+#include "SongFilter.hxx"
 #include "db/Selection.hxx"
 #include "db/LightDirectory.hxx"
 #include "db/Interface.hxx"
@@ -85,6 +86,17 @@ WalkMount(const char *base, const Database &db,
 	if (visit_playlist)
 		vp = std::bind(PrefixVisitPlaylist,
 			       base, std::ref(visit_playlist), _1, _2);
+
+	SongFilter prefix_filter;
+
+	if (base != nullptr && filter != nullptr) {
+		/* if the SongFilter contains a LOCATE_TAG_BASE_TYPE
+		   item, copy the SongFilter and drop the mount point
+		   from the filter, because the mounted database
+		   doesn't know its own location within MPD's VFS */
+		prefix_filter = filter->WithoutBasePrefix(base);
+		filter = &prefix_filter;
+	}
 
 	db.Visit(DatabaseSelection(uri, recursive, filter), vd, vs, vp);
 }

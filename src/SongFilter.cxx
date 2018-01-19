@@ -24,6 +24,8 @@
 #include "tag/Tag.hxx"
 #include "util/ConstBuffer.hxx"
 #include "util/StringAPI.hxx"
+#include "util/StringCompare.hxx"
+#include "util/StringView.hxx"
 #include "util/ASCII.hxx"
 #include "util/TimeParser.hxx"
 #include "util/UriUtil.hxx"
@@ -273,4 +275,34 @@ SongFilter::GetBase() const noexcept
 			return i.GetValue();
 
 	return nullptr;
+}
+
+SongFilter
+SongFilter::WithoutBasePrefix(const char *_prefix) const noexcept
+{
+	const StringView prefix(_prefix);
+	SongFilter result;
+
+	for (const auto &i : items) {
+		if (i.GetTag() == LOCATE_TAG_BASE_TYPE) {
+			const char *s = StringAfterPrefix(i.GetValue(), prefix);
+			if (s != nullptr) {
+				if (*s == 0)
+					continue;
+
+				if (*s == '/') {
+					++s;
+
+					if (*s != 0)
+						result.items.emplace_back(LOCATE_TAG_BASE_TYPE, s);
+
+					continue;
+				}
+			}
+		}
+
+		result.items.emplace_back(i);
+	}
+
+	return result;
 }

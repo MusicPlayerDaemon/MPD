@@ -152,6 +152,13 @@ public:
 	 */
 	gcc_pure
 	const char *GetBase() const noexcept;
+
+	/**
+	 * Create a copy of the filter with the given prefix stripped
+	 * from all #LOCATE_TAG_BASE_TYPE items.  This is used to
+	 * filter songs in mounted databases.
+	 */
+	SongFilter WithoutBasePrefix(const char *prefix) const noexcept;
 };
 
 /**
