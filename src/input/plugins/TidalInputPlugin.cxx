@@ -102,6 +102,8 @@ TidalInputStream::OnTidalTrackSuccess(std::string url) noexcept
 {
 	const std::lock_guard<Mutex> protect(mutex);
 
+	track_request.reset();
+
 	try {
 		SetInput(OpenCurlInputStream(url.c_str(), {},
 					     mutex, cond));

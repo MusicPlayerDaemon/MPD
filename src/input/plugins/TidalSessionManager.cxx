@@ -74,6 +74,7 @@ TidalSessionManager::OnTidalLoginSuccess(std::string _session) noexcept
 {
 	{
 		const std::lock_guard<Mutex> protect(mutex);
+		login_request.reset();
 		session = std::move(_session);
 	}
 
