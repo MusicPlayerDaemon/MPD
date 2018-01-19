@@ -101,15 +101,13 @@ class AndroidNdkToolchain:
         libcxx_path = os.path.join(ndk_path, 'sources/cxx-stl/llvm-libc++')
         libcxx_libs_path = os.path.join(libcxx_path, 'libs', android_abi)
 
-        libstdcxx_cppflags = '-nostdinc++ -isystem ' + os.path.join(libcxx_path, 'include') + ' -isystem ' + os.path.join(ndk_path, 'sources/android/support/include')
-        libstdcxx_ldadd = os.path.join(libcxx_libs_path, 'libc++_static.a') + ' ' + os.path.join(libcxx_libs_path, 'libc++abi.a')
-
-        if self.is_armv7:
-            libstdcxx_ldadd += ' ' + os.path.join(libcxx_libs_path, 'libunwind.a')
+        libstdcxx_flags = '-stdlib=libc++'
+        libstdcxx_cxxflags = libstdcxx_flags + ' -isystem ' + os.path.join(libcxx_path, 'include') + ' -isystem ' + os.path.join(ndk_path, 'sources/android/support/include')
+        libstdcxx_ldflags = libstdcxx_flags + ' -static-libstdc++ -L' + libcxx_libs_path
 
         if use_cxx:
-            self.libs += ' ' + libstdcxx_ldadd
-            self.cppflags += ' ' + libstdcxx_cppflags
+            self.cxxflags += ' ' + libstdcxx_cxxflags
+            self.ldflags += ' ' + libstdcxx_ldflags
 
         self.env = dict(os.environ)
 
