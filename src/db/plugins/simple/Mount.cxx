@@ -25,13 +25,6 @@
 #include "db/Interface.hxx"
 #include "fs/Traits.hxx"
 
-#ifdef _LIBCPP_VERSION
-/* workaround for "error: incomplete type 'PlaylistInfo' used in type
-   trait expression" with libc++ version 3900 (from Android NDK
-   r13b) */
-#include "db/PlaylistInfo.hxx"
-#endif
-
 #include <string>
 
 struct PrefixedLightDirectory : LightDirectory {
