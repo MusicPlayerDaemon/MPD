@@ -21,9 +21,9 @@
 #define MPD_SONG_FILTER_HXX
 
 #include "lib/icu/Compare.hxx"
-#include "util/AllocatedString.hxx"
 #include "Compiler.h"
 
+#include <string>
 #include <list>
 
 #include <stdint.h>
@@ -49,7 +49,7 @@ public:
 	class Item {
 		uint8_t tag;
 
-		AllocatedString<> value;
+		std::string value;
 
 		/**
 		 * This value is only set if case folding is enabled.

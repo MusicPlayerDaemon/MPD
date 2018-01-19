@@ -59,7 +59,7 @@ locate_parse_type(const char *str) noexcept
 
 SongFilter::Item::Item(unsigned _tag, const char *_value, bool _fold_case)
 	:tag(_tag),
-	 value(AllocatedString<>::Duplicate(_value)),
+	 value(_value),
 	 fold_case(_fold_case ? IcuCompare(value.c_str()) : IcuCompare())
 {
 }
