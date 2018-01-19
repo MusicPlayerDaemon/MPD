@@ -30,7 +30,6 @@
 #include "fs/AllocatedPath.hxx"
 #include "storage/FileInfo.hxx"
 #include "Log.hxx"
-#include "util/AllocatedString.hxx"
 
 Directory *
 UpdateWalk::MakeDirectoryIfModified(Directory &parent, const char *name,
