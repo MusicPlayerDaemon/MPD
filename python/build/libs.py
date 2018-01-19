@@ -46,6 +46,7 @@ flac = AutotoolsProject(
         '--disable-xmms-plugin', '--disable-cpplibs',
         '--disable-doxygen-docs',
     ],
+    subdirs=['include', 'src/libFLAC'],
 )
 
 zlib = ZlibProject(
