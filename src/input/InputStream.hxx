@@ -96,7 +96,7 @@ private:
 	std::string mime;
 
 public:
-	InputStream(const char *_uri, Mutex &_mutex, Cond &_cond)
+	InputStream(const char *_uri, Mutex &_mutex, Cond &_cond) noexcept
 		:uri(_uri),
 		 mutex(_mutex), cond(_cond) {
 		assert(_uri != nullptr);
