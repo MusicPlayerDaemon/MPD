@@ -1293,7 +1293,6 @@ endif
 #
 
 libinput_a_SOURCES = \
-	src/input/Domain.cxx src/input/Domain.hxx \
 	src/input/Init.cxx src/input/Init.hxx \
 	src/input/Registry.cxx src/input/Registry.hxx \
 	src/input/Open.cxx \

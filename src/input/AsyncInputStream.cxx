@@ -19,7 +19,6 @@
 
 #include "config.h"
 #include "AsyncInputStream.hxx"
-#include "Domain.hxx"
 #include "tag/Tag.hxx"
 #include "thread/Cond.hxx"
 #include "IOThread.hxx"
