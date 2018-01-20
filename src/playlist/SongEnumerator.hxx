@@ -35,6 +35,8 @@ public:
 	/**
 	 * Obtain the next song.  Returns nullptr if there are no more
 	 * songs.
+	 *
+	 * Throws on error.
 	 */
 	virtual std::unique_ptr<DetachedSong> NextSong() = 0;
 };
