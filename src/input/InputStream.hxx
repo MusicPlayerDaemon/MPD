@@ -142,14 +142,6 @@ public:
 		return uri.c_str();
 	}
 
-	void Lock() noexcept {
-		mutex.lock();
-	}
-
-	void Unlock() noexcept {
-		mutex.unlock();
-	}
-
 	/**
 	 * Check for errors that may have occurred in the I/O thread.
 	 * Throws std::runtime_error on error.
