@@ -39,13 +39,13 @@ class TagBuilder {
 	 * The duration of the song.  A negative value means that the
 	 * length is unknown.
 	 */
-	SignedSongTime duration;
+	SignedSongTime duration = SignedSongTime::Negative();
 
 	/**
 	 * Does this file have an embedded playlist (e.g. embedded CUE
 	 * sheet)?
 	 */
-	bool has_playlist;
+	bool has_playlist = false;
 
 	/** an array of tag items */
 	std::vector<TagItem *> items;
@@ -54,8 +54,7 @@ public:
 	/**
 	 * Create an empty tag.
 	 */
-	TagBuilder()
-		:duration(SignedSongTime::Negative()), has_playlist(false) {}
+	TagBuilder() = default;
 
 	~TagBuilder() {
 		Clear();
