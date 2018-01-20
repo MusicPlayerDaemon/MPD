@@ -27,10 +27,10 @@
 
 #include <assert.h>
 
-TextInputStream::TextInputStream(InputStreamPtr &&_is)
+TextInputStream::TextInputStream(InputStreamPtr &&_is) noexcept
 	:is(std::move(_is)) {}
 
-TextInputStream::~TextInputStream() {}
+TextInputStream::~TextInputStream() noexcept {}
 
 char *
 TextInputStream::ReadLine()

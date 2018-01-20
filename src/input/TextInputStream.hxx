@@ -34,13 +34,13 @@ public:
 	 *
 	 * @param _is an open #InputStream object
 	 */
-	explicit TextInputStream(InputStreamPtr &&_is);
-	~TextInputStream();
+	explicit TextInputStream(InputStreamPtr &&_is) noexcept;
+	~TextInputStream() noexcept;
 
 	TextInputStream(const TextInputStream &) = delete;
 	TextInputStream& operator=(const TextInputStream &) = delete;
 
-	InputStreamPtr &&StealInputStream() {
+	InputStreamPtr &&StealInputStream() noexcept {
 		return std::move(is);
 	}
 
