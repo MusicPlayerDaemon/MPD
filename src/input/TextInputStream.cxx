@@ -59,14 +59,7 @@ TextInputStream::ReadLine()
 		   character */
 		--dest.size;
 
-		size_t nbytes;
-
-		try {
-			nbytes = is->LockRead(dest.data, dest.size);
-		} catch (...) {
-			LogError(std::current_exception());
-			return nullptr;
-		}
+		size_t nbytes = is->LockRead(dest.data, dest.size);
 
 		buffer.Append(nbytes);
 

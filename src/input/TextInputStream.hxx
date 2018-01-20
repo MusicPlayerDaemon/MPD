@@ -47,7 +47,9 @@ public:
 	/**
 	 * Reads the next line from the stream with newline character stripped.
 	 *
-	 * @return a pointer to the line, or nullptr on end-of-file or error
+	 * Throws on error.
+	 *
+	 * @return a pointer to the line, or nullptr on end-of-file
 	 */
 	char *ReadLine();
 };
