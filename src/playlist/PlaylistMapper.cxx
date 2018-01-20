@@ -21,6 +21,7 @@
 #include "PlaylistMapper.hxx"
 #include "PlaylistFile.hxx"
 #include "PlaylistStream.hxx"
+#include "SongEnumerator.hxx"
 #include "Mapper.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "storage/StorageInterface.hxx"
@@ -31,7 +32,7 @@
 /**
  * Load a playlist from the configured playlist directory.
  */
-static SongEnumerator *
+static std::unique_ptr<SongEnumerator>
 playlist_open_in_playlist_dir(const char *uri, Mutex &mutex, Cond &cond)
 {
 	assert(spl_valid_name(uri));
@@ -48,7 +49,7 @@ playlist_open_in_playlist_dir(const char *uri, Mutex &mutex, Cond &cond)
 /**
  * Load a playlist from the configured music directory.
  */
-static SongEnumerator *
+static std::unique_ptr<SongEnumerator>
 playlist_open_in_storage(const char *uri, const Storage *storage,
 			 Mutex &mutex, Cond &cond)
 {
@@ -69,7 +70,7 @@ playlist_open_in_storage(const char *uri, const Storage *storage,
 
 #endif
 
-SongEnumerator *
+std::unique_ptr<SongEnumerator>
 playlist_mapper_open(const char *uri,
 #ifdef ENABLE_DATABASE
 		     const Storage *storage,

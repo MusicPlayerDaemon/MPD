@@ -21,9 +21,10 @@
 #include "PlaylistAny.hxx"
 #include "PlaylistStream.hxx"
 #include "PlaylistMapper.hxx"
+#include "SongEnumerator.hxx"
 #include "util/UriUtil.hxx"
 
-SongEnumerator *
+std::unique_ptr<SongEnumerator>
 playlist_open_any(const char *uri,
 #ifdef ENABLE_DATABASE
 		  const Storage *storage,

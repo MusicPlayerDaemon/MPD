@@ -49,10 +49,10 @@ playlist_list_global_finish();
 /**
  * Opens a playlist by its URI.
  */
-SongEnumerator *
+std::unique_ptr<SongEnumerator>
 playlist_list_open_uri(const char *uri, Mutex &mutex, Cond &cond);
 
-SongEnumerator *
+std::unique_ptr<SongEnumerator>
 playlist_list_open_stream_suffix(InputStreamPtr &&is, const char *suffix);
 
 /**
@@ -62,7 +62,7 @@ playlist_list_open_stream_suffix(InputStreamPtr &&is, const char *suffix);
  * @param uri optional URI which was used to open the stream; may be
  * used to select the appropriate playlist plugin
  */
-SongEnumerator *
+std::unique_ptr<SongEnumerator>
 playlist_list_open_stream(InputStreamPtr &&is, const char *uri);
 
 /**

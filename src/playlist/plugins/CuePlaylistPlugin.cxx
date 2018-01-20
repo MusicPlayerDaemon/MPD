@@ -36,10 +36,10 @@ class CuePlaylist final : public SongEnumerator {
 	virtual std::unique_ptr<DetachedSong> NextSong() override;
 };
 
-static SongEnumerator *
+static std::unique_ptr<SongEnumerator>
 cue_playlist_open_stream(InputStreamPtr &&is)
 {
-	return new CuePlaylist(std::move(is));
+	return std::make_unique<CuePlaylist>(std::move(is));
 }
 
 std::unique_ptr<DetachedSong>

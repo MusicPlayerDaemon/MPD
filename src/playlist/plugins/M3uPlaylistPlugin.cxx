@@ -36,10 +36,10 @@ public:
 	virtual std::unique_ptr<DetachedSong> NextSong() override;
 };
 
-static SongEnumerator *
+static std::unique_ptr<SongEnumerator>
 m3u_open_stream(InputStreamPtr &&is)
 {
-	return new M3uPlaylist(std::move(is));
+	return std::make_unique<M3uPlaylist>(std::move(is));
 }
 
 std::unique_ptr<DetachedSong>

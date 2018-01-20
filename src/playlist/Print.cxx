@@ -65,15 +65,14 @@ playlist_file_print(Response &r, Partition &partition,
 	(void)partition;
 #endif
 
-	SongEnumerator *playlist = playlist_open_any(uri,
+	auto playlist = playlist_open_any(uri,
 #ifdef ENABLE_DATABASE
-						     partition.instance.storage,
+					  partition.instance.storage,
 #endif
-						     mutex, cond);
+					  mutex, cond);
 	if (playlist == nullptr)
 		return false;
 
 	playlist_provider_print(r, loader, uri, *playlist, detail);
-	delete playlist;
 	return true;
 }

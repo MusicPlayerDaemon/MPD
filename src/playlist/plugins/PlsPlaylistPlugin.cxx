@@ -153,14 +153,14 @@ ParsePls(InputStreamPtr &&is, std::forward_list<DetachedSong> &songs)
 	return true;
 }
 
-static SongEnumerator *
+static std::unique_ptr<SongEnumerator>
 pls_open_stream(InputStreamPtr &&is)
 {
 	std::forward_list<DetachedSong> songs;
 	if (!ParsePls(std::move(is), songs))
 		return nullptr;
 
-	return new MemorySongEnumerator(std::move(songs));
+	return std::make_unique<MemorySongEnumerator>(std::move(songs));
 }
 
 static const char *const pls_suffixes[] = {

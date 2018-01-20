@@ -86,7 +86,7 @@ FlacPlaylist::NextSong()
 	return song;
 }
 
-static SongEnumerator *
+static std::unique_ptr<SongEnumerator>
 flac_playlist_open_uri(const char *uri,
 		       gcc_unused Mutex &mutex, gcc_unused Cond &cond)
 {
@@ -109,7 +109,7 @@ flac_playlist_open_uri(const char *uri,
 		return nullptr;
 	}
 
-	return new FlacPlaylist(uri, cuesheet, streaminfo);
+	return std::make_unique<FlacPlaylist>(uri, cuesheet, streaminfo);
 }
 
 static const char *const flac_playlist_suffixes[] = {

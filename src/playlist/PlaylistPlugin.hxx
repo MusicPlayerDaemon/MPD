@@ -51,8 +51,8 @@ struct playlist_plugin {
 	 * Opens the playlist on the specified URI.  This URI has
 	 * either matched one of the schemes or one of the suffixes.
 	 */
-	SongEnumerator *(*open_uri)(const char *uri,
-				    Mutex &mutex, Cond &cond);
+	std::unique_ptr<SongEnumerator> (*open_uri)(const char *uri,
+						    Mutex &mutex, Cond &cond);
 
 	/**
 	 * Opens the playlist in the specified input stream.  It has
@@ -62,7 +62,7 @@ struct playlist_plugin {
 	 * @parm is the input stream; the pointer will not be
 	 * invalidated when the function returns nullptr
 	 */
-	SongEnumerator *(*open_stream)(InputStreamPtr &&is);
+	std::unique_ptr<SongEnumerator> (*open_stream)(InputStreamPtr &&is);
 
 	const char *const*schemes;
 	const char *const*suffixes;

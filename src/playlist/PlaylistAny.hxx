@@ -20,6 +20,8 @@
 #ifndef MPD_PLAYLIST_ANY_HXX
 #define MPD_PLAYLIST_ANY_HXX
 
+#include <memory>
+
 class Mutex;
 class Cond;
 class SongEnumerator;
@@ -30,7 +32,7 @@ class Storage;
  * absolute remote URI (with a scheme) or a relative path to the
  * music or playlist directory.
  */
-SongEnumerator *
+std::unique_ptr<SongEnumerator>
 playlist_open_any(const char *uri,
 #ifdef ENABLE_DATABASE
 		  const Storage *storage,
