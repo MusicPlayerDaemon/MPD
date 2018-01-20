@@ -51,15 +51,13 @@ protected:
 void
 MmsInputStream::Open()
 {
-	Unlock();
+	{
+		const ScopeUnlock unlock(mutex);
 
-	mms = mmsx_connect(nullptr, nullptr, GetURI(), 128 * 1024);
-	if (mms == nullptr) {
-		Lock();
-		throw std::runtime_error("mmsx_connect() failed");
+		mms = mmsx_connect(nullptr, nullptr, GetURI(), 128 * 1024);
+		if (mms == nullptr)
+			throw std::runtime_error("mmsx_connect() failed");
 	}
-
-	Lock();
 
 	/* TODO: is this correct?  at least this selects the ffmpeg
 	   decoder, which seems to work fine */
