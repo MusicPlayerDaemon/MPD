@@ -200,7 +200,12 @@ static void version(void)
 #endif
 
 	       "\n"
-	       "Input plugins:\n");
+	       "Input plugins:\n"
+	       " file"
+#ifdef ENABLE_ARCHIVE
+	       " archive"
+#endif
+	       );
 	input_plugins_for_each(plugin)
 		printf(" %s", plugin->name);
 

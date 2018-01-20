@@ -26,8 +26,6 @@ class Path;
 class Mutex;
 class Cond;
 
-extern const struct InputPlugin input_plugin_file;
-
 InputStreamPtr
 OpenFileInputStream(Path path,
 		    Mutex &mutex, Cond &cond);
