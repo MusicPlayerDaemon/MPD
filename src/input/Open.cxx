@@ -22,7 +22,6 @@
 #include "Registry.hxx"
 #include "InputPlugin.hxx"
 #include "LocalOpen.hxx"
-#include "Domain.hxx"
 #include "plugins/RewindInputPlugin.hxx"
 #include "fs/Traits.hxx"
 #include "fs/AllocatedPath.hxx"
