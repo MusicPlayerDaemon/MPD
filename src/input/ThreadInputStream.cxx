@@ -27,7 +27,7 @@
 ThreadInputStream::ThreadInputStream(const char *_plugin,
 				     const char *_uri,
 				     Mutex &_mutex, Cond &_cond,
-				     size_t _buffer_size)
+				     size_t _buffer_size) noexcept
 	:InputStream(_uri, _mutex, _cond),
 	 plugin(_plugin),
 	 thread(BIND_THIS_METHOD(ThreadFunc)),
@@ -37,7 +37,7 @@ ThreadInputStream::ThreadInputStream(const char *_plugin,
 	allocation.ForkCow(false);
 }
 
-ThreadInputStream::~ThreadInputStream()
+ThreadInputStream::~ThreadInputStream() noexcept
 {
 	{
 		const std::lock_guard<Mutex> lock(mutex);
@@ -58,8 +58,8 @@ ThreadInputStream::Start()
 	thread.Start();
 }
 
-void
-ThreadInputStream::ThreadFunc()
+inline void
+ThreadInputStream::ThreadFunc() noexcept
 {
 	FormatThreadName("input:%s", plugin);
 
