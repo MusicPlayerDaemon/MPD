@@ -43,7 +43,7 @@ struct TagPoolSlot {
 	static constexpr unsigned MAX_REF = std::numeric_limits<decltype(ref)>::max();
 
 	TagPoolSlot(TagPoolSlot *_next, TagType type,
-		    StringView value)
+		    StringView value) noexcept
 		:next(_next) {
 		item.type = type;
 		memcpy(item.value, value.data, value.size);
@@ -51,12 +51,12 @@ struct TagPoolSlot {
 	}
 
 	static TagPoolSlot *Create(TagPoolSlot *_next, TagType type,
-				   StringView value);
+				   StringView value) noexcept;
 };
 
 TagPoolSlot *
 TagPoolSlot::Create(TagPoolSlot *_next, TagType type,
-		    StringView value)
+		    StringView value) noexcept
 {
 	TagPoolSlot *dummy;
 	return NewVarSize<TagPoolSlot>(sizeof(dummy->item.value),
@@ -68,7 +68,7 @@ TagPoolSlot::Create(TagPoolSlot *_next, TagType type,
 static TagPoolSlot *slots[NUM_SLOTS];
 
 static inline unsigned
-calc_hash(TagType type, StringView p)
+calc_hash(TagType type, StringView p) noexcept
 {
 	unsigned hash = 5381;
 
@@ -79,7 +79,7 @@ calc_hash(TagType type, StringView p)
 }
 
 static inline unsigned
-calc_hash(TagType type, const char *p)
+calc_hash(TagType type, const char *p) noexcept
 {
 	unsigned hash = 5381;
 
@@ -92,25 +92,25 @@ calc_hash(TagType type, const char *p)
 }
 
 static inline constexpr TagPoolSlot *
-tag_item_to_slot(TagItem *item)
+tag_item_to_slot(TagItem *item) noexcept
 {
 	return &ContainerCast(*item, &TagPoolSlot::item);
 }
 
 static inline TagPoolSlot **
-tag_value_slot_p(TagType type, StringView value)
+tag_value_slot_p(TagType type, StringView value) noexcept
 {
 	return &slots[calc_hash(type, value) % NUM_SLOTS];
 }
 
 static inline TagPoolSlot **
-tag_value_slot_p(TagType type, const char *value)
+tag_value_slot_p(TagType type, const char *value) noexcept
 {
 	return &slots[calc_hash(type, value) % NUM_SLOTS];
 }
 
 TagItem *
-tag_pool_get_item(TagType type, StringView value)
+tag_pool_get_item(TagType type, StringView value) noexcept
 {
 	auto slot_p = tag_value_slot_p(type, value);
 	for (auto slot = *slot_p; slot != nullptr; slot = slot->next) {
@@ -129,7 +129,7 @@ tag_pool_get_item(TagType type, StringView value)
 }
 
 TagItem *
-tag_pool_dup_item(TagItem *item)
+tag_pool_dup_item(TagItem *item) noexcept
 {
 	TagPoolSlot *slot = tag_item_to_slot(item);
 
@@ -147,7 +147,7 @@ tag_pool_dup_item(TagItem *item)
 }
 
 void
-tag_pool_put_item(TagItem *item)
+tag_pool_put_item(TagItem *item) noexcept
 {
 	TagPoolSlot **slot_p, *slot;
 

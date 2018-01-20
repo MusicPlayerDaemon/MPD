@@ -29,12 +29,12 @@ struct TagItem;
 struct StringView;
 
 TagItem *
-tag_pool_get_item(TagType type, StringView value);
+tag_pool_get_item(TagType type, StringView value) noexcept;
 
 TagItem *
-tag_pool_dup_item(TagItem *item);
+tag_pool_dup_item(TagItem *item) noexcept;
 
 void
-tag_pool_put_item(TagItem *item);
+tag_pool_put_item(TagItem *item) noexcept;
 
 #endif
