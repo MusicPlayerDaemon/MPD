@@ -37,25 +37,24 @@ struct Tag {
 	 * The duration of the song.  A negative value means that the
 	 * length is unknown.
 	 */
-	SignedSongTime duration;
+	SignedSongTime duration = SignedSongTime::Negative();
 
 	/**
 	 * Does this file have an embedded playlist (e.g. embedded CUE
 	 * sheet)?
 	 */
-	bool has_playlist;
+	bool has_playlist = false;
 
 	/** the total number of tag items in the #items array */
-	unsigned short num_items;
+	unsigned short num_items = 0;
 
 	/** an array of tag items */
-	TagItem **items;
+	TagItem **items = nullptr;
 
 	/**
 	 * Create an empty tag.
 	 */
-	Tag():duration(SignedSongTime::Negative()), has_playlist(false),
-	      num_items(0), items(nullptr) {}
+	Tag() = default;
 
 	Tag(const Tag &other);
 
