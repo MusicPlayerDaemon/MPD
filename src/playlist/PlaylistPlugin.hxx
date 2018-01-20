@@ -96,18 +96,4 @@ playlist_plugin_finish(const struct playlist_plugin *plugin)
 		plugin->finish();
 }
 
-static inline SongEnumerator *
-playlist_plugin_open_uri(const struct playlist_plugin *plugin, const char *uri,
-			 Mutex &mutex, Cond &cond)
-{
-	return plugin->open_uri(uri, mutex, cond);
-}
-
-static inline SongEnumerator *
-playlist_plugin_open_stream(const struct playlist_plugin *plugin,
-			    InputStreamPtr &&is)
-{
-	return plugin->open_stream(std::move(is));
-}
-
 #endif

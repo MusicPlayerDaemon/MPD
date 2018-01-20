@@ -121,8 +121,7 @@ playlist_list_open_uri_scheme(const char *uri, Mutex &mutex, Cond &cond,
 		if (playlist_plugins_enabled[i] && plugin->open_uri != nullptr &&
 		    plugin->schemes != nullptr &&
 		    StringArrayContainsCase(plugin->schemes, scheme.c_str())) {
-			playlist = playlist_plugin_open_uri(plugin, uri,
-							    mutex, cond);
+			playlist = plugin->open_uri(uri, mutex, cond);
 			if (playlist != nullptr)
 				break;
 
@@ -152,8 +151,7 @@ playlist_list_open_uri_suffix(const char *uri, Mutex &mutex, Cond &cond,
 		if (playlist_plugins_enabled[i] && !tried[i] &&
 		    plugin->open_uri != nullptr && plugin->suffixes != nullptr &&
 		    StringArrayContainsCase(plugin->suffixes, suffix)) {
-			playlist = playlist_plugin_open_uri(plugin, uri,
-							    mutex, cond);
+			playlist = plugin->open_uri(uri, mutex, cond);
 			if (playlist != nullptr)
 				break;
 		}
@@ -197,8 +195,7 @@ playlist_list_open_stream_mime2(InputStreamPtr &&is, const char *mime)
 			} catch (...) {
 			}
 
-			auto playlist = playlist_plugin_open_stream(plugin,
-								    std::move(is));
+			auto playlist = plugin->open_stream(std::move(is));
 			if (playlist != nullptr)
 				return playlist;
 		}
@@ -241,8 +238,7 @@ playlist_list_open_stream_suffix(InputStreamPtr &&is, const char *suffix)
 			} catch (...) {
 			}
 
-			auto playlist = playlist_plugin_open_stream(plugin,
-								    std::move(is));
+			auto playlist = plugin->open_stream(std::move(is));
 			if (playlist != nullptr)
 				return playlist;
 		}
