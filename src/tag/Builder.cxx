@@ -31,7 +31,7 @@
 #include <assert.h>
 #include <stdlib.h>
 
-TagBuilder::TagBuilder(const Tag &other)
+TagBuilder::TagBuilder(const Tag &other) noexcept
 	:duration(other.duration), has_playlist(other.has_playlist)
 {
 	items.reserve(other.num_items);
@@ -42,7 +42,7 @@ TagBuilder::TagBuilder(const Tag &other)
 	tag_pool_lock.unlock();
 }
 
-TagBuilder::TagBuilder(Tag &&other)
+TagBuilder::TagBuilder(Tag &&other) noexcept
 	:duration(other.duration), has_playlist(other.has_playlist)
 {
 	/* move all TagItem pointers from the Tag object; we don't
@@ -58,7 +58,7 @@ TagBuilder::TagBuilder(Tag &&other)
 }
 
 TagBuilder &
-TagBuilder::operator=(const TagBuilder &other)
+TagBuilder::operator=(const TagBuilder &other) noexcept
 {
 	/* copy all attributes */
 	duration = other.duration;
@@ -75,7 +75,7 @@ TagBuilder::operator=(const TagBuilder &other)
 }
 
 TagBuilder &
-TagBuilder::operator=(TagBuilder &&other)
+TagBuilder::operator=(TagBuilder &&other) noexcept
 {
 	duration = other.duration;
 	has_playlist = other.has_playlist;
@@ -85,7 +85,7 @@ TagBuilder::operator=(TagBuilder &&other)
 }
 
 TagBuilder &
-TagBuilder::operator=(Tag &&other)
+TagBuilder::operator=(Tag &&other) noexcept
 {
 	duration = other.duration;
 	has_playlist = other.has_playlist;
@@ -106,7 +106,7 @@ TagBuilder::operator=(Tag &&other)
 }
 
 void
-TagBuilder::Clear()
+TagBuilder::Clear() noexcept
 {
 	duration = SignedSongTime::Negative();
 	has_playlist = false;
@@ -114,7 +114,7 @@ TagBuilder::Clear()
 }
 
 void
-TagBuilder::Commit(Tag &tag)
+TagBuilder::Commit(Tag &tag) noexcept
 {
 	tag.Clear();
 
@@ -137,7 +137,7 @@ TagBuilder::Commit(Tag &tag)
 }
 
 Tag
-TagBuilder::Commit()
+TagBuilder::Commit() noexcept
 {
 	Tag tag;
 	Commit(tag);
@@ -145,7 +145,7 @@ TagBuilder::Commit()
 }
 
 std::unique_ptr<Tag>
-TagBuilder::CommitNew()
+TagBuilder::CommitNew() noexcept
 {
 	std::unique_ptr<Tag> tag(new Tag());
 	Commit(*tag);
@@ -163,7 +163,7 @@ TagBuilder::HasType(TagType type) const noexcept
 }
 
 void
-TagBuilder::Complement(const Tag &other)
+TagBuilder::Complement(const Tag &other) noexcept
 {
 	if (duration.IsNegative())
 		duration = other.duration;
@@ -189,7 +189,7 @@ TagBuilder::Complement(const Tag &other)
 }
 
 inline void
-TagBuilder::AddItemInternal(TagType type, StringView value)
+TagBuilder::AddItemInternal(TagType type, StringView value) noexcept
 {
 	assert(!value.empty());
 
@@ -207,7 +207,7 @@ TagBuilder::AddItemInternal(TagType type, StringView value)
 }
 
 void
-TagBuilder::AddItem(TagType type, StringView value)
+TagBuilder::AddItem(TagType type, StringView value) noexcept
 {
 	if (value.empty() || !IsTagEnabled(type))
 		return;
@@ -216,7 +216,7 @@ TagBuilder::AddItem(TagType type, StringView value)
 }
 
 void
-TagBuilder::AddItem(TagType type, const char *value)
+TagBuilder::AddItem(TagType type, const char *value) noexcept
 {
 #if !CLANG_CHECK_VERSION(3,6)
 	/* disabled on clang due to -Wtautological-pointer-compare */
@@ -227,7 +227,7 @@ TagBuilder::AddItem(TagType type, const char *value)
 }
 
 void
-TagBuilder::AddEmptyItem(TagType type)
+TagBuilder::AddEmptyItem(TagType type) noexcept
 {
 	tag_pool_lock.lock();
 	auto i = tag_pool_get_item(type, "");
