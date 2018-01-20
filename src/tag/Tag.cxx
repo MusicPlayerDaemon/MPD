@@ -40,7 +40,7 @@ Tag::Clear() noexcept
 	num_items = 0;
 }
 
-Tag::Tag(const Tag &other)
+Tag::Tag(const Tag &other) noexcept
 	:duration(other.duration), has_playlist(other.has_playlist),
 	 num_items(other.num_items),
 	 items(nullptr)
@@ -64,7 +64,7 @@ Tag::Merge(const Tag &base, const Tag &add) noexcept
 }
 
 std::unique_ptr<Tag>
-Tag::Merge(std::unique_ptr<Tag> base, std::unique_ptr<Tag> add)
+Tag::Merge(std::unique_ptr<Tag> base, std::unique_ptr<Tag> add) noexcept
 {
 	if (add == nullptr)
 		return base;
