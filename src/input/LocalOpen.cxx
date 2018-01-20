@@ -53,7 +53,8 @@ OpenLocalInputStream(Path path, Mutex &mutex, Cond &cond)
 	}
 #endif
 
-	assert(is == nullptr || is->IsReady());
+	assert(is);
+	assert(is->IsReady());
 
 	return is;
 }
