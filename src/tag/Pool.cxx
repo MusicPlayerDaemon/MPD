@@ -29,6 +29,7 @@
 #include <assert.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdint.h>
 
 Mutex tag_pool_lock;
 
@@ -36,7 +37,7 @@ static constexpr size_t NUM_SLOTS = 4093;
 
 struct TagPoolSlot {
 	TagPoolSlot *next;
-	unsigned char ref;
+	uint8_t ref;
 	TagItem item;
 
 	static constexpr unsigned MAX_REF = std::numeric_limits<decltype(ref)>::max();
