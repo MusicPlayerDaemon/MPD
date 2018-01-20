@@ -37,14 +37,14 @@ static constexpr size_t NUM_SLOTS = 4093;
 
 struct TagPoolSlot {
 	TagPoolSlot *next;
-	uint8_t ref;
+	uint8_t ref = 1;
 	TagItem item;
 
 	static constexpr unsigned MAX_REF = std::numeric_limits<decltype(ref)>::max();
 
 	TagPoolSlot(TagPoolSlot *_next, TagType type,
 		    StringView value)
-		:next(_next), ref(1) {
+		:next(_next) {
 		item.type = type;
 		memcpy(item.value, value.data, value.size);
 		item.value[value.size] = 0;
