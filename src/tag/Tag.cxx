@@ -30,10 +30,11 @@ Tag::Clear() noexcept
 	duration = SignedSongTime::Negative();
 	has_playlist = false;
 
-	tag_pool_lock.lock();
-	for (unsigned i = 0; i < num_items; ++i)
-		tag_pool_put_item(items[i]);
-	tag_pool_lock.unlock();
+	{
+		const std::lock_guard<Mutex> protect(tag_pool_lock);
+		for (unsigned i = 0; i < num_items; ++i)
+			tag_pool_put_item(items[i]);
+	}
 
 	delete[] items;
 	items = nullptr;
@@ -48,10 +49,9 @@ Tag::Tag(const Tag &other) noexcept
 	if (num_items > 0) {
 		items = new TagItem *[num_items];
 
-		tag_pool_lock.lock();
+		const std::lock_guard<Mutex> protect(tag_pool_lock);
 		for (unsigned i = 0; i < num_items; i++)
 			items[i] = tag_pool_dup_item(other.items[i]);
-		tag_pool_lock.unlock();
 	}
 }
 

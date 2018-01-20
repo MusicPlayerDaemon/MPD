@@ -36,10 +36,10 @@ TagBuilder::TagBuilder(const Tag &other) noexcept
 {
 	items.reserve(other.num_items);
 
-	tag_pool_lock.lock();
+	const std::lock_guard<Mutex> protect(tag_pool_lock);
+
 	for (unsigned i = 0, n = other.num_items; i != n; ++i)
 		items.push_back(tag_pool_dup_item(other.items[i]));
-	tag_pool_lock.unlock();
 }
 
 TagBuilder::TagBuilder(Tag &&other) noexcept
@@ -66,10 +66,9 @@ TagBuilder::operator=(const TagBuilder &other) noexcept
 	items = other.items;
 
 	/* increment the tag pool refcounters */
-	tag_pool_lock.lock();
+	const std::lock_guard<Mutex> protect(tag_pool_lock);
 	for (auto i : items)
 		tag_pool_dup_item(i);
-	tag_pool_lock.unlock();
 
 	return *this;
 }
@@ -179,13 +178,12 @@ TagBuilder::Complement(const Tag &other) noexcept
 
 	items.reserve(items.size() + other.num_items);
 
-	tag_pool_lock.lock();
+	const std::lock_guard<Mutex> protect(tag_pool_lock);
 	for (unsigned i = 0, n = other.num_items; i != n; ++i) {
 		TagItem *item = other.items[i];
 		if (!present[item->type])
 			items.push_back(tag_pool_dup_item(item));
 	}
-	tag_pool_lock.unlock();
 }
 
 inline void
@@ -197,9 +195,11 @@ TagBuilder::AddItemInternal(TagType type, StringView value) noexcept
 	if (!f.IsNull())
 		value = { f.data, f.size };
 
-	tag_pool_lock.lock();
-	auto i = tag_pool_get_item(type, value);
-	tag_pool_lock.unlock();
+	TagItem *i;
+	{
+		const std::lock_guard<Mutex> protect(tag_pool_lock);
+		i = tag_pool_get_item(type, value);
+	}
 
 	free(f.data);
 
@@ -229,9 +229,11 @@ TagBuilder::AddItem(TagType type, const char *value) noexcept
 void
 TagBuilder::AddEmptyItem(TagType type) noexcept
 {
-	tag_pool_lock.lock();
-	auto i = tag_pool_get_item(type, "");
-	tag_pool_lock.unlock();
+	TagItem *i;
+	{
+		const std::lock_guard<Mutex> protect(tag_pool_lock);
+		i = tag_pool_get_item(type, "");
+	}
 
 	items.push_back(i);
 }
@@ -239,10 +241,11 @@ TagBuilder::AddEmptyItem(TagType type) noexcept
 void
 TagBuilder::RemoveAll() noexcept
 {
-	tag_pool_lock.lock();
-	for (auto i : items)
-		tag_pool_put_item(i);
-	tag_pool_lock.unlock();
+	{
+		const std::lock_guard<Mutex> protect(tag_pool_lock);
+		for (auto i : items)
+			tag_pool_put_item(i);
+	}
 
 	items.clear();
 }
