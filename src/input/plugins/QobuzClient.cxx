@@ -101,9 +101,6 @@ QobuzClient::AddLoginHandler(QobuzSessionHandler &h) noexcept
 	} else {
 		// TODO: throttle login attempts?
 
-		std::string login_uri(base_url);
-		login_uri += "/login/username";
-
 		try {
 			StartLogin();
 		} catch (...) {
