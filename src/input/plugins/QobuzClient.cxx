@@ -131,6 +131,7 @@ QobuzClient::OnQobuzLoginSuccess(QobuzSession &&_session) noexcept
 	{
 		const std::lock_guard<Mutex> protect(mutex);
 		session = std::move(_session);
+		login_request.reset();
 	}
 
 	ScheduleInvokeHandlers();
@@ -142,6 +143,7 @@ QobuzClient::OnQobuzLoginError(std::exception_ptr _error) noexcept
 	{
 		const std::lock_guard<Mutex> protect(mutex);
 		error = std::move(_error);
+		login_request.reset();
 	}
 
 	ScheduleInvokeHandlers();
@@ -158,8 +160,6 @@ QobuzClient::InvokeHandlers() noexcept
 		const ScopeUnlock unlock(mutex);
 		h.OnQobuzSession();
 	}
-
-	login_request.reset();
 }
 
 std::string
