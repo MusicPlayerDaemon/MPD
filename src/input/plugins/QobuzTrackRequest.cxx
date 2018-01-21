@@ -55,7 +55,6 @@ QobuzTrackRequest::QobuzTrackRequest(QobuzClient &client,
 	:request(client.GetCurl(),
 		 MakeTrackUrl(client, track_id).c_str(),
 		 *this),
-	 parser(&parse_callbacks, nullptr, this),
 	 handler(_handler)
 {
 	request_headers.Append(("X-User-Auth-Token:"
@@ -78,6 +77,8 @@ QobuzTrackRequest::OnHeaders(unsigned status,
 	auto i = headers.find("content-type");
 	if (i == headers.end() || i->second.find("/json") == i->second.npos)
 		throw std::runtime_error("Not a JSON response from Qobuz");
+
+	parser = {&parse_callbacks, nullptr, this};
 }
 
 void

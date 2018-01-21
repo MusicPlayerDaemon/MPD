@@ -82,7 +82,6 @@ QobuzLoginRequest::QobuzLoginRequest(CurlGlobal &curl,
 				     const char *device_manufacturer_id,
 				     QobuzLoginHandler &_handler) noexcept
 	:request(curl, *this),
-	 parser(&parse_callbacks, nullptr, this),
 	 handler(_handler)
 {
 	request.SetUrl(MakeLoginUrl(request.Get(), base_url, app_id,
@@ -105,6 +104,8 @@ QobuzLoginRequest::OnHeaders(unsigned status,
 	auto i = headers.find("content-type");
 	if (i == headers.end() || i->second.find("/json") == i->second.npos)
 		throw std::runtime_error("Not a JSON response from Qobuz");
+
+	parser = {&parse_callbacks, nullptr, this};
 }
 
 void
