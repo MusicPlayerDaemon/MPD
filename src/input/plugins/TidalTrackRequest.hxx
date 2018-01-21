@@ -27,9 +27,11 @@
 #include "lib/yajl/Handle.hxx"
 
 #include <exception>
+#include <memory>
 #include <string>
 
 class CurlRequest;
+class TidalErrorParser;
 
 /**
  * Callback class for #TidalTrackRequest.
@@ -53,6 +55,8 @@ class TidalTrackRequest final : CurlResponseHandler {
 	CurlSlist request_headers;
 
 	CurlRequest request;
+
+	std::unique_ptr<TidalErrorParser> error_parser;
 
 	Yajl::Handle parser;
 
