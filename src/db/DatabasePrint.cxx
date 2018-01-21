@@ -38,8 +38,9 @@
 
 #include <functional>
 
+gcc_pure
 static const char *
-ApplyBaseFlag(const char *uri, bool base)
+ApplyBaseFlag(const char *uri, bool base) noexcept
 {
 	if (base)
 		uri = PathTraitsUTF8::GetBase(uri);
@@ -47,21 +48,24 @@ ApplyBaseFlag(const char *uri, bool base)
 }
 
 static void
-PrintDirectoryURI(Response &r, bool base, const LightDirectory &directory)
+PrintDirectoryURI(Response &r, bool base,
+		  const LightDirectory &directory) noexcept
 {
 	r.Format("directory: %s\n",
 		 ApplyBaseFlag(directory.GetPath(), base));
 }
 
 static void
-PrintDirectoryBrief(Response &r, bool base, const LightDirectory &directory)
+PrintDirectoryBrief(Response &r, bool base,
+		    const LightDirectory &directory) noexcept
 {
 	if (!directory.IsRoot())
 		PrintDirectoryURI(r, base, directory);
 }
 
 static void
-PrintDirectoryFull(Response &r, bool base, const LightDirectory &directory)
+PrintDirectoryFull(Response &r, bool base,
+		   const LightDirectory &directory) noexcept
 {
 	if (!directory.IsRoot()) {
 		PrintDirectoryURI(r, base, directory);
@@ -74,7 +78,7 @@ PrintDirectoryFull(Response &r, bool base, const LightDirectory &directory)
 static void
 print_playlist_in_directory(Response &r, bool base,
 			    const char *directory,
-			    const char *name_utf8)
+			    const char *name_utf8) noexcept
 {
 	if (base || directory == nullptr)
 		r.Format("playlist: %s\n",
@@ -87,7 +91,7 @@ print_playlist_in_directory(Response &r, bool base,
 static void
 print_playlist_in_directory(Response &r, bool base,
 			    const LightDirectory *directory,
-			    const char *name_utf8)
+			    const char *name_utf8) noexcept
 {
 	if (base || directory == nullptr || directory->IsRoot())
 		r.Format("playlist: %s\n", name_utf8);
@@ -97,7 +101,7 @@ print_playlist_in_directory(Response &r, bool base,
 }
 
 static void
-PrintSongBrief(Response &r, bool base, const LightSong &song)
+PrintSongBrief(Response &r, bool base, const LightSong &song) noexcept
 {
 	song_print_uri(r, song, base);
 
@@ -108,7 +112,7 @@ PrintSongBrief(Response &r, bool base, const LightSong &song)
 }
 
 static void
-PrintSongFull(Response &r, bool base, const LightSong &song)
+PrintSongFull(Response &r, bool base, const LightSong &song) noexcept
 {
 	song_print_info(r, song, base);
 
@@ -121,7 +125,7 @@ PrintSongFull(Response &r, bool base, const LightSong &song)
 static void
 PrintPlaylistBrief(Response &r, bool base,
 		   const PlaylistInfo &playlist,
-		   const LightDirectory &directory)
+		   const LightDirectory &directory) noexcept
 {
 	print_playlist_in_directory(r, base,
 				    &directory, playlist.name.c_str());
@@ -130,7 +134,7 @@ PrintPlaylistBrief(Response &r, bool base,
 static void
 PrintPlaylistFull(Response &r, bool base,
 		  const PlaylistInfo &playlist,
-		  const LightDirectory &directory)
+		  const LightDirectory &directory) noexcept
 {
 	print_playlist_in_directory(r, base,
 				    &directory, playlist.name.c_str());
@@ -139,8 +143,9 @@ PrintPlaylistFull(Response &r, bool base,
 		time_print(r, "Last-Modified", playlist.mtime);
 }
 
+gcc_pure
 static bool
-CompareNumeric(const char *a, const char *b)
+CompareNumeric(const char *a, const char *b) noexcept
 {
 	long a_value = strtol(a, nullptr, 10);
 	long b_value = strtol(b, nullptr, 10);
@@ -148,8 +153,9 @@ CompareNumeric(const char *a, const char *b)
 	return a_value < b_value;
 }
 
+gcc_pure
 static bool
-CompareTags(TagType type, bool descending, const Tag &a, const Tag &b)
+CompareTags(TagType type, bool descending, const Tag &a, const Tag &b) noexcept
 {
 	const char *a_value = a.GetSortValue(type);
 	const char *b_value = b.GetSortValue(type);
@@ -262,14 +268,14 @@ db_selection_print(Response &r, Partition &partition,
 }
 
 static void
-PrintSongURIVisitor(Response &r, const LightSong &song)
+PrintSongURIVisitor(Response &r, const LightSong &song) noexcept
 {
 	song_print_uri(r, song);
 }
 
 static void
 PrintUniqueTag(Response &r, TagType tag_type,
-	       const Tag &tag)
+	       const Tag &tag) noexcept
 {
 	const char *value = tag.GetValue(tag_type);
 	assert(value != nullptr);
