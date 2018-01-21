@@ -32,7 +32,7 @@ ExpatParser::Parse(InputStream &is)
 		if (nbytes == 0)
 			break;
 
-		Parse(buffer, nbytes, false);
+		Parse(buffer, nbytes);
 	}
 
 	CompleteParse();

@@ -300,7 +300,7 @@ private:
 
 	void OnData(ConstBuffer<void> _data) final {
 		const auto data = ConstBuffer<char>::FromVoid(_data);
-		Parse(data.data, data.size, false);
+		Parse(data.data, data.size);
 	}
 
 	void OnEnd() final {

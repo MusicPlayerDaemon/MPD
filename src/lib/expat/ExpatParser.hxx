@@ -72,7 +72,7 @@ public:
 		XML_SetCharacterDataHandler(parser, charhndl);
 	}
 
-	void Parse(const char *data, size_t length, bool is_final);
+	void Parse(const char *data, size_t length, bool is_final=false);
 
 	void CompleteParse() {
 		Parse("", 0, true);
