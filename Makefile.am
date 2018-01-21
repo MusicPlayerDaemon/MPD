@@ -1382,6 +1382,7 @@ libinput_a_SOURCES += \
 	src/lib/gcrypt/MD5.cxx src/lib/gcrypt/MD5.hxx \
 	src/input/plugins/QobuzSession.hxx \
 	src/input/plugins/QobuzClient.cxx src/input/plugins/QobuzClient.hxx \
+	src/input/plugins/QobuzErrorParser.cxx src/input/plugins/QobuzErrorParser.hxx \
 	src/input/plugins/QobuzLoginRequest.cxx src/input/plugins/QobuzLoginRequest.hxx \
 	src/input/plugins/QobuzTrackRequest.cxx src/input/plugins/QobuzTrackRequest.hxx \
 	src/input/plugins/QobuzInputPlugin.cxx src/input/plugins/QobuzInputPlugin.hxx

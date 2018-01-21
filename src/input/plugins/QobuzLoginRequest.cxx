@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "QobuzLoginRequest.hxx"
+#include "QobuzErrorParser.hxx"
 #include "lib/curl/Form.hxx"
 #include "lib/yajl/Callbacks.hxx"
 #include "util/RuntimeError.hxx"
@@ -98,8 +99,10 @@ void
 QobuzLoginRequest::OnHeaders(unsigned status,
 			     std::multimap<std::string, std::string> &&headers)
 {
-	if (status != 200)
-		throw FormatRuntimeError("Status %u from Qobuz", status);
+	if (status != 200) {
+		error_parser = std::make_unique<QobuzErrorParser>(status, headers);
+		return;
+	}
 
 	auto i = headers.find("content-type");
 	if (i == headers.end() || i->second.find("/json") == i->second.npos)
@@ -111,12 +114,22 @@ QobuzLoginRequest::OnHeaders(unsigned status,
 void
 QobuzLoginRequest::OnData(ConstBuffer<void> data)
 {
+	if (error_parser) {
+		error_parser->OnData(data);
+		return;
+	}
+
 	parser.Parse((const unsigned char *)data.data, data.size);
 }
 
 void
 QobuzLoginRequest::OnEnd()
 {
+	if (error_parser) {
+		error_parser->OnEnd();
+		return;
+	}
+
 	parser.CompleteParse();
 
 	if (session.user_auth_token.empty())

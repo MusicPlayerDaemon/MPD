@@ -27,9 +27,11 @@
 #include "lib/yajl/Handle.hxx"
 
 #include <exception>
+#include <memory>
 #include <string>
 
 class CurlRequest;
+class QobuzErrorParser;
 
 class QobuzLoginHandler {
 public:
@@ -39,6 +41,8 @@ public:
 
 class QobuzLoginRequest final : CurlResponseHandler {
 	CurlRequest request;
+
+	std::unique_ptr<QobuzErrorParser> error_parser;
 
 	Yajl::Handle parser;
 
