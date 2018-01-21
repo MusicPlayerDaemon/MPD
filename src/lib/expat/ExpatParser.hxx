@@ -104,12 +104,9 @@ public:
 		parser.SetCharacterDataHandler(CharacterData);
 	}
 
-	void Parse(const char *data, size_t length, bool is_final) {
-		parser.Parse(data, length, is_final);
-	}
-
-	void Parse(InputStream &is) {
-		parser.Parse(is);
+	template<typename... Args>
+	void Parse(Args&&... args) {
+		parser.Parse(std::forward<Args>(args)...);
 	}
 
 	gcc_pure
