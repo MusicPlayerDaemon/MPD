@@ -45,12 +45,12 @@ public:
 	 *
 	 * @return true if the vector or one of its items was modified
 	 */
-	bool UpdateOrInsert(PlaylistInfo &&pi);
+	bool UpdateOrInsert(PlaylistInfo &&pi) noexcept;
 
 	/**
 	 * Caller must lock the #db_mutex.
 	 */
-	bool erase(const char *name);
+	bool erase(const char *name) noexcept;
 };
 
 #endif /* SONGVEC_H */

@@ -36,7 +36,7 @@ PlaylistVector::find(const char *name) noexcept
 }
 
 bool
-PlaylistVector::UpdateOrInsert(PlaylistInfo &&pi)
+PlaylistVector::UpdateOrInsert(PlaylistInfo &&pi) noexcept
 {
 	assert(holding_db_lock());
 
@@ -53,7 +53,7 @@ PlaylistVector::UpdateOrInsert(PlaylistInfo &&pi)
 }
 
 bool
-PlaylistVector::erase(const char *name)
+PlaylistVector::erase(const char *name) noexcept
 {
 	assert(holding_db_lock());
 
