@@ -34,7 +34,7 @@ static void
 playlist_provider_print(Response &r,
 			const SongLoader &loader,
 			const char *uri,
-			SongEnumerator &e, bool detail)
+			SongEnumerator &e, bool detail) noexcept
 {
 	const std::string base_uri = uri != nullptr
 		? PathTraitsUTF8::GetParent(uri)
