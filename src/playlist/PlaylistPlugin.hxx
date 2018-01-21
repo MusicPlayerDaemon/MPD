@@ -90,7 +90,7 @@ playlist_plugin_init(const struct playlist_plugin *plugin,
  * Deinitialize a plugin which was initialized successfully.
  */
 static inline void
-playlist_plugin_finish(const struct playlist_plugin *plugin)
+playlist_plugin_finish(const struct playlist_plugin *plugin) noexcept
 {
 	if (plugin->finish != nullptr)
 		plugin->finish();
