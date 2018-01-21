@@ -74,6 +74,10 @@ public:
 
 	void Parse(const char *data, size_t length, bool is_final);
 
+	void CompleteParse() {
+		Parse("", 0, true);
+	}
+
 	void Parse(InputStream &is);
 
 	gcc_pure
@@ -107,6 +111,10 @@ public:
 	template<typename... Args>
 	void Parse(Args&&... args) {
 		parser.Parse(std::forward<Args>(args)...);
+	}
+
+	void CompleteParse() {
+		parser.CompleteParse();
 	}
 
 	gcc_pure

@@ -304,7 +304,7 @@ private:
 	}
 
 	void OnEnd() final {
-		Parse("", 0, true);
+		CompleteParse();
 		LockSetDone();
 	}
 

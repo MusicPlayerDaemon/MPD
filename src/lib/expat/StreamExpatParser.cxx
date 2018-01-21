@@ -35,5 +35,5 @@ ExpatParser::Parse(InputStream &is)
 		Parse(buffer, nbytes, false);
 	}
 
-	Parse("", 0, true);
+	CompleteParse();
 }
