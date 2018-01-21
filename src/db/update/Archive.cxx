@@ -39,21 +39,21 @@
 #include <string.h>
 
 static Directory *
-LockFindChild(Directory &directory, const char *name)
+LockFindChild(Directory &directory, const char *name) noexcept
 {
 	const ScopeDatabaseLock protect;
 	return directory.FindChild(name);
 }
 
 static Directory *
-LockMakeChild(Directory &directory, const char *name)
+LockMakeChild(Directory &directory, const char *name) noexcept
 {
 	const ScopeDatabaseLock protect;
 	return directory.MakeChild(name);
 }
 
 static Song *
-LockFindSong(Directory &directory, const char *name)
+LockFindSong(Directory &directory, const char *name) noexcept
 {
 	const ScopeDatabaseLock protect;
 	return directory.FindSong(name);
@@ -61,7 +61,7 @@ LockFindSong(Directory &directory, const char *name)
 
 void
 UpdateWalk::UpdateArchiveTree(ArchiveFile &archive, Directory &directory,
-			      const char *name)
+			      const char *name) noexcept
 {
 	const char *tmp = strchr(name, '/');
 	if (tmp) {
@@ -112,7 +112,7 @@ class UpdateArchiveVisitor final : public ArchiveVisitor {
 
  public:
 	UpdateArchiveVisitor(UpdateWalk &_walk, ArchiveFile &_archive,
-			     Directory *_directory)
+			     Directory *_directory) noexcept
 		:walk(_walk), archive(_archive), directory(_directory) {}
 
 	virtual void VisitArchiveEntry(const char *path_utf8) override {
@@ -133,7 +133,7 @@ class UpdateArchiveVisitor final : public ArchiveVisitor {
 void
 UpdateWalk::UpdateArchiveFile(Directory &parent, const char *name,
 			      const StorageFileInfo &info,
-			      const ArchivePlugin &plugin)
+			      const ArchivePlugin &plugin) noexcept
 {
 	Directory *directory = LockFindChild(parent, name);
 
@@ -182,7 +182,7 @@ UpdateWalk::UpdateArchiveFile(Directory &parent, const char *name,
 bool
 UpdateWalk::UpdateArchiveFile(Directory &directory,
 			      const char *name, const char *suffix,
-			      const StorageFileInfo &info)
+			      const StorageFileInfo &info) noexcept
 {
 	const ArchivePlugin *plugin = archive_plugin_from_suffix(suffix);
 	if (plugin == nullptr)

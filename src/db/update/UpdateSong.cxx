@@ -33,7 +33,7 @@
 inline void
 UpdateWalk::UpdateSongFile2(Directory &directory,
 			    const char *name, const char *suffix,
-			    const StorageFileInfo &info)
+			    const StorageFileInfo &info) noexcept
 {
 	Song *song;
 	{
@@ -95,7 +95,7 @@ UpdateWalk::UpdateSongFile2(Directory &directory,
 bool
 UpdateWalk::UpdateSongFile(Directory &directory,
 			   const char *name, const char *suffix,
-			   const StorageFileInfo &info)
+			   const StorageFileInfo &info) noexcept
 {
 	if (!decoder_plugins_supports_suffix(suffix))
 		return false;

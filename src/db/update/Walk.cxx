@@ -50,7 +50,7 @@
 #include <errno.h>
 
 UpdateWalk::UpdateWalk(EventLoop &_loop, DatabaseListener &_listener,
-		       Storage &_storage)
+		       Storage &_storage) noexcept
 	:cancel(false),
 	 storage(_storage),
 	 editor(_loop, _listener)
@@ -75,7 +75,7 @@ directory_set_stat(Directory &dir, const StorageFileInfo &info)
 
 inline void
 UpdateWalk::RemoveExcludedFromDirectory(Directory &directory,
-					const ExcludeList &exclude_list)
+					const ExcludeList &exclude_list) noexcept
 {
 	const ScopeDatabaseLock protect;
 
@@ -101,7 +101,7 @@ UpdateWalk::RemoveExcludedFromDirectory(Directory &directory,
 }
 
 inline void
-UpdateWalk::PurgeDeletedFromDirectory(Directory &directory)
+UpdateWalk::PurgeDeletedFromDirectory(Directory &directory) noexcept
 {
 	directory.ForEachChildSafe([&](Directory &child){
 			if (child.IsMount() || DirectoryExists(storage, child))
@@ -135,7 +135,7 @@ UpdateWalk::PurgeDeletedFromDirectory(Directory &directory)
 
 #ifndef _WIN32
 static bool
-update_directory_stat(Storage &storage, Directory &directory)
+update_directory_stat(Storage &storage, Directory &directory) noexcept
 {
 	StorageFileInfo info;
 	if (!GetInfo(storage, directory.GetPath(), info))
@@ -154,7 +154,7 @@ update_directory_stat(Storage &storage, Directory &directory)
  */
 static int
 FindAncestorLoop(Storage &storage, Directory *parent,
-		 unsigned inode, unsigned device)
+		 unsigned inode, unsigned device) noexcept
 {
 #ifndef _WIN32
 	if (device == 0 && inode == 0)
@@ -187,7 +187,7 @@ FindAncestorLoop(Storage &storage, Directory *parent,
 inline bool
 UpdateWalk::UpdatePlaylistFile(Directory &directory,
 			       const char *name, const char *suffix,
-			       const StorageFileInfo &info)
+			       const StorageFileInfo &info) noexcept
 {
 	if (!playlist_suffix_supported(suffix))
 		return false;
@@ -202,7 +202,8 @@ UpdateWalk::UpdatePlaylistFile(Directory &directory,
 
 inline bool
 UpdateWalk::UpdateRegularFile(Directory &directory,
-			      const char *name, const StorageFileInfo &info)
+			      const char *name,
+			      const StorageFileInfo &info) noexcept
 {
 	const char *suffix = uri_get_suffix(name);
 	if (suffix == nullptr)
@@ -216,7 +217,7 @@ UpdateWalk::UpdateRegularFile(Directory &directory,
 void
 UpdateWalk::UpdateDirectoryChild(Directory &directory,
 				 const ExcludeList &exclude_list,
-				 const char *name, const StorageFileInfo &info)
+				 const char *name, const StorageFileInfo &info) noexcept
 try {
 	assert(strchr(name, '/') == nullptr);
 
@@ -328,7 +329,7 @@ UpdateWalk::SkipSymlink(const Directory *directory,
 bool
 UpdateWalk::UpdateDirectory(Directory &directory,
 			    const ExcludeList &exclude_list,
-			    const StorageFileInfo &info)
+			    const StorageFileInfo &info) noexcept
 {
 	assert(info.IsDirectory());
 
@@ -390,7 +391,7 @@ UpdateWalk::UpdateDirectory(Directory &directory,
 inline Directory *
 UpdateWalk::DirectoryMakeChildChecked(Directory &parent,
 				      const char *uri_utf8,
-				      const char *name_utf8)
+				      const char *name_utf8) noexcept
 {
 	Directory *directory;
 	{
@@ -429,7 +430,8 @@ UpdateWalk::DirectoryMakeChildChecked(Directory &parent,
 }
 
 inline Directory *
-UpdateWalk::DirectoryMakeUriParentChecked(Directory &root, const char *uri)
+UpdateWalk::DirectoryMakeUriParentChecked(Directory &root,
+					  const char *uri) noexcept
 {
 	Directory *directory = &root;
 	char *duplicated = xstrdup(uri);
@@ -455,7 +457,7 @@ UpdateWalk::DirectoryMakeUriParentChecked(Directory &root, const char *uri)
 }
 
 inline void
-UpdateWalk::UpdateUri(Directory &root, const char *uri)
+UpdateWalk::UpdateUri(Directory &root, const char *uri) noexcept
 try {
 	Directory *parent = DirectoryMakeUriParentChecked(root, uri);
 	if (parent == nullptr)
@@ -482,7 +484,7 @@ try {
 }
 
 bool
-UpdateWalk::Walk(Directory &root, const char *path, bool discard)
+UpdateWalk::Walk(Directory &root, const char *path, bool discard) noexcept
 {
 	walk_discard = discard;
 	modified = false;
