@@ -451,7 +451,7 @@ dsdiff_stream_decode(DecoderClient &client, InputStream &is)
 static bool
 dsdiff_scan_stream(InputStream &is,
 		   gcc_unused const TagHandler &handler,
-		   gcc_unused void *handler_ctx)
+		   gcc_unused void *handler_ctx) noexcept
 {
 	DsdiffMetaData metadata;
 	DsdiffChunkHeader chunk_header;

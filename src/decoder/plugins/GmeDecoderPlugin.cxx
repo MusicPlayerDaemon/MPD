@@ -282,7 +282,7 @@ ScanMusicEmu(Music_Emu *emu, unsigned song_num,
 
 static bool
 gme_scan_file(Path path_fs,
-	      const TagHandler &handler, void *handler_ctx)
+	      const TagHandler &handler, void *handler_ctx) noexcept
 {
 	const auto container = ParseContainerPath(path_fs);
 

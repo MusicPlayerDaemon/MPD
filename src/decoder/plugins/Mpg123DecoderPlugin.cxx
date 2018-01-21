@@ -45,7 +45,7 @@ mpd_mpg123_init(gcc_unused const ConfigBlock &block)
 }
 
 static void
-mpd_mpg123_finish(void)
+mpd_mpg123_finish() noexcept
 {
 	mpg123_exit();
 }
@@ -280,7 +280,7 @@ mpd_mpg123_file_decode(DecoderClient &client, Path path_fs)
 
 static bool
 mpd_mpg123_scan_file(Path path_fs,
-		     const TagHandler &handler, void *handler_ctx)
+		     const TagHandler &handler, void *handler_ctx) noexcept
 {
 	int error;
 	mpg123_handle *const handle = mpg123_new(nullptr, &error);

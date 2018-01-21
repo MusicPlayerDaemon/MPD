@@ -194,7 +194,7 @@ fluidsynth_file_decode(DecoderClient &client, Path path_fs)
 static bool
 fluidsynth_scan_file(Path path_fs,
 		     gcc_unused const TagHandler &handler,
-		     gcc_unused void *handler_ctx)
+		     gcc_unused void *handler_ctx) noexcept
 {
 	return fluid_is_midifile(path_fs.c_str());
 }

@@ -363,7 +363,7 @@ VisitVorbisDuration(InputStream &is,
 
 static bool
 vorbis_scan_stream(InputStream &is,
-		   const TagHandler &handler, void *handler_ctx)
+		   const TagHandler &handler, void *handler_ctx) noexcept
 {
 	/* initialize libogg */
 

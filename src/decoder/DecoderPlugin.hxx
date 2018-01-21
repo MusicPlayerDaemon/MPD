@@ -48,7 +48,7 @@ struct DecoderPlugin {
 	 * Deinitialize a decoder plugin which was initialized
 	 * successfully.  Optional method.
 	 */
-	void (*finish)();
+	void (*finish)() noexcept;
 
 	/**
 	 * Decode a stream (data read from an #InputStream object).
@@ -73,7 +73,7 @@ struct DecoderPlugin {
 	 */
 	bool (*scan_file)(Path path_fs,
 			  const TagHandler &handler,
-			  void *handler_ctx);
+			  void *handler_ctx) noexcept;
 
 	/**
 	 * Scan metadata of a file.
@@ -82,7 +82,7 @@ struct DecoderPlugin {
 	 */
 	bool (*scan_stream)(InputStream &is,
 			    const TagHandler &handler,
-			    void *handler_ctx);
+			    void *handler_ctx) noexcept;
 
 	/**
 	 * @brief Return a "virtual" filename for subtracks in
@@ -140,7 +140,7 @@ struct DecoderPlugin {
 	 */
 	template<typename P>
 	bool ScanFile(P path_fs,
-		      const TagHandler &handler, void *handler_ctx) const {
+		      const TagHandler &handler, void *handler_ctx) const noexcept {
 		return scan_file != nullptr
 			? scan_file(path_fs, handler, handler_ctx)
 			: false;
@@ -150,7 +150,7 @@ struct DecoderPlugin {
 	 * Read the tag of a stream.
 	 */
 	bool ScanStream(InputStream &is,
-			const TagHandler &handler, void *handler_ctx) const {
+			const TagHandler &handler, void *handler_ctx) const noexcept {
 		return scan_stream != nullptr
 			? scan_stream(is, handler, handler_ctx)
 			: false;

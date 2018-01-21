@@ -262,7 +262,7 @@ static constexpr struct {
 
 static bool
 sndfile_scan_stream(InputStream &is,
-		    const TagHandler &handler, void *handler_ctx)
+		    const TagHandler &handler, void *handler_ctx) noexcept
 {
 	SF_INFO info;
 
