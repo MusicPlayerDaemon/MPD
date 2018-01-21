@@ -121,7 +121,7 @@ DatabaseDetachSong(gcc_unused const Database &db,
 }
 
 bool
-DetachedSong::LoadFile(Path path)
+DetachedSong::LoadFile(Path path) noexcept
 {
 	if (path.ToUTF8() == uri1) {
 		SetTag(MakeTag1a());
