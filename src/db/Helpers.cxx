@@ -38,7 +38,7 @@ typedef std::set<const char *, StringLess> StringSet;
 
 static void
 StatsVisitTag(DatabaseStats &stats, StringSet &artists, StringSet &albums,
-	      const Tag &tag)
+	      const Tag &tag) noexcept
 {
 	if (!tag.duration.IsNegative())
 		stats.total_duration += tag.duration;
@@ -61,7 +61,7 @@ StatsVisitTag(DatabaseStats &stats, StringSet &artists, StringSet &albums,
 
 static void
 StatsVisitSong(DatabaseStats &stats, StringSet &artists, StringSet &albums,
-	       const LightSong &song)
+	       const LightSong &song) noexcept
 {
 	++stats.song_count;
 
