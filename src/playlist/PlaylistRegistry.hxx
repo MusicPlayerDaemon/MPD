@@ -21,6 +21,7 @@
 #define MPD_PLAYLIST_REGISTRY_HXX
 
 #include "input/Ptr.hxx"
+#include "Compiler.h"
 
 class Mutex;
 class Cond;
@@ -44,7 +45,7 @@ playlist_list_global_init();
  * Deinitializes all playlist plugins.
  */
 void
-playlist_list_global_finish();
+playlist_list_global_finish() noexcept;
 
 /**
  * Opens a playlist by its URI.
@@ -69,7 +70,8 @@ playlist_list_open_stream(InputStreamPtr &&is, const char *uri);
  * Determines if there is a playlist plugin which can handle the
  * specified file name suffix.
  */
+gcc_pure
 bool
-playlist_suffix_supported(const char *suffix);
+playlist_suffix_supported(const char *suffix) noexcept;
 
 #endif

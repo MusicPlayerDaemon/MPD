@@ -96,7 +96,7 @@ playlist_list_global_init(void)
 }
 
 void
-playlist_list_global_finish(void)
+playlist_list_global_finish() noexcept
 {
 	playlist_plugins_for_each_enabled(plugin)
 		playlist_plugin_finish(plugin);
@@ -272,7 +272,7 @@ playlist_list_open_stream(InputStreamPtr &&is, const char *uri)
 }
 
 bool
-playlist_suffix_supported(const char *suffix)
+playlist_suffix_supported(const char *suffix) noexcept
 {
 	assert(suffix != nullptr);
 
