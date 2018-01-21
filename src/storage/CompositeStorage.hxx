@@ -119,7 +119,7 @@ public:
 	/* virtual methods from class Storage */
 	StorageFileInfo GetInfo(const char *uri, bool follow) override;
 
-	StorageDirectoryReader *OpenDirectory(const char *uri) override;
+	std::unique_ptr<StorageDirectoryReader> OpenDirectory(const char *uri) override;
 
 	std::string MapUTF8(const char *uri) const noexcept override;
 

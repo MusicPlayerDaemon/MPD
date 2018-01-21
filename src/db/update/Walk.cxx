@@ -337,7 +337,7 @@ UpdateWalk::UpdateDirectory(Directory &directory,
 	std::unique_ptr<StorageDirectoryReader> reader;
 
 	try {
-		reader.reset(storage.OpenDirectory(directory.GetPath()));
+		reader = storage.OpenDirectory(directory.GetPath());
 	} catch (...) {
 		LogError(std::current_exception());
 		return false;

@@ -60,7 +60,7 @@ public:
 	/* virtual methods from class Storage */
 	StorageFileInfo GetInfo(const char *uri_utf8, bool follow) override;
 
-	StorageDirectoryReader *OpenDirectory(const char *uri_utf8) override;
+	std::unique_ptr<StorageDirectoryReader> OpenDirectory(const char *uri_utf8) override;
 
 	std::string MapUTF8(const char *uri_utf8) const noexcept override;
 
@@ -474,14 +474,14 @@ public:
 		:PropfindOperation(curl, uri, 1),
 		 base_path(UriPathOrSlash(uri)) {}
 
-	StorageDirectoryReader *Perform() {
+	std::unique_ptr<StorageDirectoryReader> Perform() {
 		Wait();
 		return ToReader();
 	}
 
 private:
-	StorageDirectoryReader *ToReader() {
-		return new MemoryStorageDirectoryReader(std::move(entries));
+	std::unique_ptr<StorageDirectoryReader> ToReader() {
+		return std::make_unique<MemoryStorageDirectoryReader>(std::move(entries));
 	}
 
 	/**
@@ -534,7 +534,7 @@ protected:
 	}
 };
 
-StorageDirectoryReader *
+std::unique_ptr<StorageDirectoryReader>
 CurlStorage::OpenDirectory(const char *uri_utf8)
 {
 	// TODO: escape the given URI

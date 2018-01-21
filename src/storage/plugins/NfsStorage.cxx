@@ -88,7 +88,7 @@ public:
 	/* virtual methods from class Storage */
 	StorageFileInfo GetInfo(const char *uri_utf8, bool follow) override;
 
-	StorageDirectoryReader *OpenDirectory(const char *uri_utf8) override;
+	std::unique_ptr<StorageDirectoryReader> OpenDirectory(const char *uri_utf8) override;
 
 	std::string MapUTF8(const char *uri_utf8) const noexcept override;
 
@@ -334,8 +334,8 @@ public:
 				  const char *_path)
 		:BlockingNfsOperation(_connection), path(_path) {}
 
-	StorageDirectoryReader *ToReader() {
-		return new MemoryStorageDirectoryReader(std::move(entries));
+	std::unique_ptr<StorageDirectoryReader> ToReader() {
+		return std::make_unique<MemoryStorageDirectoryReader>(std::move(entries));
 	}
 
 protected:
@@ -377,7 +377,7 @@ NfsListDirectoryOperation::CollectEntries(struct nfsdir *dir)
 	}
 }
 
-StorageDirectoryReader *
+std::unique_ptr<StorageDirectoryReader>
 NfsStorage::OpenDirectory(const char *uri_utf8)
 {
 	const std::string path = UriToNfsPath(uri_utf8);

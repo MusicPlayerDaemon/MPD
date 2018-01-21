@@ -82,7 +82,6 @@ Ls(Storage &storage, const char *path)
 		       mtime, name);
 	}
 
-	delete dir;
 	return EXIT_SUCCESS;
 }
 
