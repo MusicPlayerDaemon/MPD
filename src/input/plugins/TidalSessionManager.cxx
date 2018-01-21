@@ -47,7 +47,10 @@ TidalSessionManager::AddLoginHandler(TidalSessionHandler &h) noexcept
 	const bool was_empty = handlers.empty();
 	handlers.push_front(h);
 
-	if (was_empty && session.empty() && !login_request) {
+	if (!was_empty || login_request)
+		return;
+
+	if (session.empty()) {
 		// TODO: throttle login attempts?
 
 		std::string login_uri(base_url);
@@ -66,7 +69,8 @@ TidalSessionManager::AddLoginHandler(TidalSessionHandler &h) noexcept
 			ScheduleInvokeHandlers();
 			return;
 		}
-	}
+	} else
+		ScheduleInvokeHandlers();
 }
 
 void
