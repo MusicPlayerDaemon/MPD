@@ -103,6 +103,7 @@ void
 QobuzInputStream::OnQobuzTrackSuccess(std::string url) noexcept
 {
 	const std::lock_guard<Mutex> protect(mutex);
+	track_request.reset();
 
 	try {
 		SetInput(OpenCurlInputStream(url.c_str(), {},
@@ -116,6 +117,7 @@ void
 QobuzInputStream::OnQobuzTrackError(std::exception_ptr e) noexcept
 {
 	const std::lock_guard<Mutex> protect(mutex);
+	track_request.reset();
 
 	Failed(e);
 }
