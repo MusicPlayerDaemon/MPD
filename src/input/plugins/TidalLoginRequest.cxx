@@ -49,7 +49,6 @@ TidalLoginRequest::TidalLoginRequest(CurlGlobal &curl,
 				     const char *username, const char *password,
 				     TidalLoginHandler &_handler) noexcept
 	:request(curl, MakeLoginUrl(base_url).c_str(), *this),
-	 parser(&parse_callbacks, nullptr, this),
 	 handler(_handler)
 {
 	request_headers.Append((std::string("X-Tidal-Token:")
@@ -76,6 +75,8 @@ TidalLoginRequest::OnHeaders(unsigned status,
 	auto i = headers.find("content-type");
 	if (i == headers.end() || i->second.find("/json") == i->second.npos)
 		throw std::runtime_error("Not a JSON response from Tidal");
+
+	parser = {&parse_callbacks, nullptr, this};
 }
 
 void

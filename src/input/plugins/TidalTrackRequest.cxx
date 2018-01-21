@@ -53,7 +53,6 @@ TidalTrackRequest::TidalTrackRequest(CurlGlobal &curl,
 				     const char *track_id,
 				     TidalTrackHandler &_handler) noexcept
 	:request(curl, MakeTrackUrl(base_url, track_id).c_str(), *this),
-	 parser(&parse_callbacks, nullptr, this),
 	 handler(_handler)
 {
 	request_headers.Append((std::string("X-Tidal-Token:")
@@ -78,6 +77,8 @@ TidalTrackRequest::OnHeaders(unsigned status,
 	auto i = headers.find("content-type");
 	if (i == headers.end() || i->second.find("/json") == i->second.npos)
 		throw std::runtime_error("Not a JSON response from Tidal");
+
+	parser = {&parse_callbacks, nullptr, this};
 }
 
 void
