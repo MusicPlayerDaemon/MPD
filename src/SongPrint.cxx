@@ -34,7 +34,7 @@
 #define SONG_FILE "file: "
 
 static void
-song_print_uri(Response &r, const char *uri, bool base)
+song_print_uri(Response &r, const char *uri, bool base) noexcept
 {
 	std::string allocated;
 
@@ -50,7 +50,7 @@ song_print_uri(Response &r, const char *uri, bool base)
 }
 
 void
-song_print_uri(Response &r, const LightSong &song, bool base)
+song_print_uri(Response &r, const LightSong &song, bool base) noexcept
 {
 	if (!base && song.directory != nullptr)
 		r.Format(SONG_FILE "%s/%s\n", song.directory, song.uri);
@@ -59,13 +59,13 @@ song_print_uri(Response &r, const LightSong &song, bool base)
 }
 
 void
-song_print_uri(Response &r, const DetachedSong &song, bool base)
+song_print_uri(Response &r, const DetachedSong &song, bool base) noexcept
 {
 	song_print_uri(r, song.GetURI(), base);
 }
 
 static void
-PrintRange(Response &r, SongTime start_time, SongTime end_time)
+PrintRange(Response &r, SongTime start_time, SongTime end_time) noexcept
 {
 	const unsigned start_ms = start_time.ToMS();
 	const unsigned end_ms = end_time.ToMS();
@@ -83,7 +83,7 @@ PrintRange(Response &r, SongTime start_time, SongTime end_time)
 }
 
 void
-song_print_info(Response &r, const LightSong &song, bool base)
+song_print_info(Response &r, const LightSong &song, bool base) noexcept
 {
 	song_print_uri(r, song, base);
 
@@ -96,7 +96,7 @@ song_print_info(Response &r, const LightSong &song, bool base)
 }
 
 void
-song_print_info(Response &r, const DetachedSong &song, bool base)
+song_print_info(Response &r, const DetachedSong &song, bool base) noexcept
 {
 	song_print_uri(r, song, base);
 
