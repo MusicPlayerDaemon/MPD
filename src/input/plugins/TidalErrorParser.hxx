@@ -21,9 +21,8 @@
 #define TIDAL_ERROR_PARSER_HXX
 
 #include "check.h"
-#include "lib/yajl/Handle.hxx"
+#include "lib/yajl/ResponseParser.hxx"
 
-#include <exception>
 #include <string>
 #include <map>
 
@@ -33,10 +32,8 @@ struct StringView;
 /**
  * Parse an error JSON response.
  */
-class TidalErrorParser {
+class TidalErrorParser final : public YajlResponseParser {
 	const unsigned status;
-
-	Yajl::Handle parser;
 
 	enum class State {
 		NONE,
@@ -53,16 +50,9 @@ public:
 	TidalErrorParser(unsigned status,
 			 const std::multimap<std::string, std::string> &headers);
 
-	/**
-	 * Feed response body data into the JSON parser.
-	 */
-	void OnData(ConstBuffer<void> data);
-
-	/**
-	 * Throw an exception describing the error condition.  Call
-	 * this at the end of the response body.
-	 */
-	void OnEnd();
+protected:
+	/* virtual methods from CurlResponseParser */
+	void OnEnd() override;
 
 public:
 	/* yajl callbacks */

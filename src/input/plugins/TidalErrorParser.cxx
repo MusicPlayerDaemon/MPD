@@ -40,8 +40,8 @@ static constexpr yajl_callbacks tidal_error_parser_callbacks = {
 
 TidalErrorParser::TidalErrorParser(unsigned _status,
 				   const std::multimap<std::string, std::string> &headers)
-	:status(_status),
-	 parser(&tidal_error_parser_callbacks, nullptr, this)
+	:YajlResponseParser(&tidal_error_parser_callbacks, nullptr, this),
+	 status(_status)
 {
 	auto i = headers.find("content-type");
 	if (i == headers.end() || i->second.find("/json") == i->second.npos)
@@ -49,15 +49,9 @@ TidalErrorParser::TidalErrorParser(unsigned _status,
 }
 
 void
-TidalErrorParser::OnData(ConstBuffer<void> data)
-{
-	parser.Parse((const unsigned char *)data.data, data.size);
-}
-
-void
 TidalErrorParser::OnEnd()
 {
-	parser.CompleteParse();
+	YajlResponseParser::OnEnd();
 
 	if (!message.empty())
 		throw FormatRuntimeError("Error from Tidal: %s",

@@ -232,6 +232,8 @@ libmpd_a_SOURCES += \
 endif
 
 CURL_SOURCES = \
+	src/lib/curl/Delegate.cxx src/lib/curl/Delegate.hxx \
+	src/lib/curl/Parser.hxx \
 	src/lib/curl/Version.cxx src/lib/curl/Version.hxx \
 	src/lib/curl/Init.cxx src/lib/curl/Init.hxx \
 	src/lib/curl/Global.cxx src/lib/curl/Global.hxx \
@@ -243,6 +245,7 @@ CURL_SOURCES = \
 	src/lib/curl/Slist.hxx
 
 YAJL_SOURCES = \
+	src/lib/yajl/ResponseParser.cxx src/lib/yajl/ResponseParser.hxx \
 	src/lib/yajl/ParseInputStream.cxx src/lib/yajl/ParseInputStream.hxx \
 	src/lib/yajl/Callbacks.hxx \
 	src/lib/yajl/Handle.hxx

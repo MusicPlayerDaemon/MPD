@@ -21,17 +21,9 @@
 #define TIDAL_TRACK_REQUEST_HXX
 
 #include "check.h"
-#include "lib/curl/Handler.hxx"
+#include "lib/curl/Delegate.hxx"
 #include "lib/curl/Slist.hxx"
 #include "lib/curl/Request.hxx"
-#include "lib/yajl/Handle.hxx"
-
-#include <exception>
-#include <memory>
-#include <string>
-
-class CurlRequest;
-class TidalErrorParser;
 
 /**
  * Callback class for #TidalTrackRequest.
@@ -51,27 +43,16 @@ public:
  *
  * After construction, call Start() to initiate the request.
  */
-class TidalTrackRequest final : CurlResponseHandler {
+class TidalTrackRequest final : DelegateCurlResponseHandler {
 	CurlSlist request_headers;
 
 	CurlRequest request;
 
-	std::unique_ptr<TidalErrorParser> error_parser;
-
-	Yajl::Handle parser;
-
-	enum class State {
-		NONE,
-		URLS,
-	} state = State::NONE;
-
-	std::string url;
-
-	std::exception_ptr error;
-
 	TidalTrackHandler &handler;
 
 public:
+	class ResponseParser;
+
 	TidalTrackRequest(CurlGlobal &curl,
 			  const char *base_url, const char *token,
 			  const char *session,
@@ -85,18 +66,13 @@ public:
 	}
 
 private:
-	/* virtual methods from CurlResponseHandler */
-	void OnHeaders(unsigned status,
-		       std::multimap<std::string, std::string> &&headers) override;
-	void OnData(ConstBuffer<void> data) override;
-	void OnEnd() override;
-	void OnError(std::exception_ptr e) noexcept override;
+	/* virtual methods from DelegateCurlResponseHandler */
+	std::unique_ptr<CurlResponseParser> MakeParser(unsigned status,
+						       std::multimap<std::string, std::string> &&headers) override;
+	void FinishParser(std::unique_ptr<CurlResponseParser> p) override;
 
-public:
-	/* yajl callbacks */
-	bool String(StringView value) noexcept;
-	bool MapKey(StringView value) noexcept;
-	bool EndMap() noexcept;
+	/* virtual methods from CurlResponseHandler */
+	void OnError(std::exception_ptr e) noexcept override;
 };
 
 #endif

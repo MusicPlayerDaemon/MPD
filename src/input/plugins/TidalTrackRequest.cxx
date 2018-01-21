@@ -23,7 +23,7 @@
 #include "lib/yajl/Callbacks.hxx"
 #include "util/RuntimeError.hxx"
 
-using Wrapper = Yajl::CallbacksWrapper<TidalTrackRequest>;
+using Wrapper = Yajl::CallbacksWrapper<TidalTrackRequest::ResponseParser>;
 static constexpr yajl_callbacks parse_callbacks = {
 	nullptr,
 	nullptr,
@@ -36,6 +36,31 @@ static constexpr yajl_callbacks parse_callbacks = {
 	Wrapper::EndMap,
 	nullptr,
 	nullptr,
+};
+
+class TidalTrackRequest::ResponseParser final : public YajlResponseParser {
+	enum class State {
+		NONE,
+		URLS,
+	} state = State::NONE;
+
+	std::string url;
+
+public:
+	explicit ResponseParser() noexcept
+		:YajlResponseParser(&parse_callbacks, nullptr, this) {}
+
+	std::string &&GetUrl() {
+		if (url.empty())
+			throw std::runtime_error("No url in track response");
+
+		return std::move(url);
+	}
+
+	/* yajl callbacks */
+	bool String(StringView value) noexcept;
+	bool MapKey(StringView value) noexcept;
+	bool EndMap() noexcept;
 };
 
 static std::string
@@ -68,47 +93,26 @@ TidalTrackRequest::~TidalTrackRequest() noexcept
 	request.StopIndirect();
 }
 
-void
-TidalTrackRequest::OnHeaders(unsigned status,
-			     std::multimap<std::string, std::string> &&headers)
+std::unique_ptr<CurlResponseParser>
+TidalTrackRequest::MakeParser(unsigned status,
+			      std::multimap<std::string, std::string> &&headers)
 {
-	if (status != 200) {
-		error_parser = std::make_unique<TidalErrorParser>(status, headers);
-		return;
-	}
+	if (status != 200)
+		return std::make_unique<TidalErrorParser>(status, headers);
 
 	auto i = headers.find("content-type");
 	if (i == headers.end() || i->second.find("/json") == i->second.npos)
 		throw std::runtime_error("Not a JSON response from Tidal");
 
-	parser = {&parse_callbacks, nullptr, this};
+	return std::make_unique<ResponseParser>();
 }
 
 void
-TidalTrackRequest::OnData(ConstBuffer<void> data)
+TidalTrackRequest::FinishParser(std::unique_ptr<CurlResponseParser> p)
 {
-	if (error_parser) {
-		error_parser->OnData(data);
-		return;
-	}
-
-	parser.Parse((const unsigned char *)data.data, data.size);
-}
-
-void
-TidalTrackRequest::OnEnd()
-{
-	if (error_parser) {
-		error_parser->OnEnd();
-		return;
-	}
-
-	parser.CompleteParse();
-
-	if (url.empty())
-		throw std::runtime_error("No url in track response");
-
-	handler.OnTidalTrackSuccess(std::move(url));
+	assert(dynamic_cast<ResponseParser *>(p.get()) != nullptr);
+	auto &rp = (ResponseParser &)*p;
+	handler.OnTidalTrackSuccess(rp.GetUrl());
 }
 
 void
@@ -118,7 +122,7 @@ TidalTrackRequest::OnError(std::exception_ptr e) noexcept
 }
 
 inline bool
-TidalTrackRequest::String(StringView value) noexcept
+TidalTrackRequest::ResponseParser::String(StringView value) noexcept
 {
 	switch (state) {
 	case State::NONE:
@@ -134,7 +138,7 @@ TidalTrackRequest::String(StringView value) noexcept
 }
 
 inline bool
-TidalTrackRequest::MapKey(StringView value) noexcept
+TidalTrackRequest::ResponseParser::MapKey(StringView value) noexcept
 {
 	if (value.Equals("urls"))
 		state = State::URLS;
@@ -145,7 +149,7 @@ TidalTrackRequest::MapKey(StringView value) noexcept
 }
 
 inline bool
-TidalTrackRequest::EndMap() noexcept
+TidalTrackRequest::ResponseParser::EndMap() noexcept
 {
 	state = State::NONE;
 
