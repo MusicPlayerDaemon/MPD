@@ -31,6 +31,6 @@ class DetachedSong;
  */
 bool
 playlist_check_translate_song(DetachedSong &song, const char *base_uri,
-			      const SongLoader &loader);
+			      const SongLoader &loader) noexcept;
 
 #endif
