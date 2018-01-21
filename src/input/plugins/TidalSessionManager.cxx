@@ -90,6 +90,7 @@ TidalSessionManager::OnTidalLoginError(std::exception_ptr e) noexcept
 {
 	{
 		const std::lock_guard<Mutex> protect(mutex);
+		login_request.reset();
 		error = e;
 	}
 
@@ -107,6 +108,4 @@ TidalSessionManager::InvokeHandlers() noexcept
 		const ScopeUnlock unlock(mutex);
 		h.OnTidalSession();
 	}
-
-	login_request.reset();
 }
