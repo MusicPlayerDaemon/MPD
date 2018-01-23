@@ -104,7 +104,7 @@ sidplay_init(const ConfigBlock &block)
 }
 
 static void
-sidplay_finish()
+sidplay_finish() noexcept
 {
 	delete songlength_database;
 }
@@ -442,7 +442,7 @@ ScanSidTuneInfo(const SidTuneInfo &info, unsigned track, unsigned n_tracks,
 
 static bool
 sidplay_scan_file(Path path_fs,
-		  const TagHandler &handler, void *handler_ctx)
+		  const TagHandler &handler, void *handler_ctx) noexcept
 {
 	const auto container = ParseContainerPath(path_fs);
 	const unsigned song_num = container.track;
