@@ -53,7 +53,11 @@ try {
 
 	NullMixerListener mixer_listener;
 	Mixer *mixer = mixer_new(event_loop, alsa_mixer_plugin,
-				 *(AudioOutput *)nullptr,
+				 /* ugly dangerous dummy pointer to
+				    make the compiler happy; this
+				    works with most mixers, because
+				    they don't need the AudioOutput */
+				 *(AudioOutput *)0x1,
 				 mixer_listener,
 				 ConfigBlock());
 
