@@ -313,7 +313,7 @@ soundcloud_open_uri(const char *uri, Mutex &mutex, Cond &cond)
 
 	SoundCloudJsonData data;
 	yajl_handle hand = yajl_alloc(&parse_callbacks, nullptr, &data);
-	AtScopeExit(hand, &data) { yajl_free(hand); };
+	AtScopeExit(hand) { yajl_free(hand); };
 
 	int ret = soundcloud_parse_json(u, hand, mutex, cond);
 
