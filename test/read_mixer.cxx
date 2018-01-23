@@ -18,6 +18,7 @@
  */
 
 #include "config.h"
+#include "NullMixerListener.hxx"
 #include "mixer/MixerControl.hxx"
 #include "mixer/MixerList.hxx"
 #include "filter/FilterRegistry.hxx"
@@ -50,9 +51,10 @@ try {
 
 	EventLoop event_loop;
 
+	NullMixerListener mixer_listener;
 	Mixer *mixer = mixer_new(event_loop, alsa_mixer_plugin,
 				 *(AudioOutput *)nullptr,
-				 *(MixerListener *)nullptr,
+				 mixer_listener,
 				 ConfigBlock());
 
 	mixer_open(mixer);

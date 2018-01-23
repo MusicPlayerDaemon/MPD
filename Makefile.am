@@ -2159,6 +2159,7 @@ test_run_output_LDADD = $(MPD_LIBS) \
 	libutil.a
 test_run_output_SOURCES = test/run_output.cxx \
 	test/ScopeIOThread.hxx \
+	test/NullMixerListener.hxx \
 	src/Log.cxx src/LogBackend.cxx \
 	src/IOThread.cxx \
 	src/output/Domain.cxx \
@@ -2182,6 +2183,7 @@ test_read_mixer_LDADD = \
 	libsystem.a \
 	libutil.a
 test_read_mixer_SOURCES = test/read_mixer.cxx \
+	test/NullMixerListener.hxx \
 	src/Log.cxx src/LogBackend.cxx \
 	src/mixer/MixerControl.cxx \
 	src/filter/FilterPlugin.cxx \

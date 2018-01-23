@@ -18,6 +18,7 @@
  */
 
 #include "config.h"
+#include "NullMixerListener.hxx"
 #include "output/Internal.hxx"
 #include "output/OutputPlugin.hxx"
 #include "output/Client.hxx"
@@ -64,7 +65,9 @@ filter_plugin_by_name(gcc_unused const char *name) noexcept
 }
 
 static AudioOutput *
-load_audio_output(EventLoop &event_loop, AudioOutputClient &client,
+load_audio_output(EventLoop &event_loop,
+		  NullMixerListener &mixer_listener,
+		  AudioOutputClient &client,
 		  const char *name)
 {
 	const auto *param = config_find_block(ConfigBlockOption::AUDIO_OUTPUT,
@@ -74,7 +77,7 @@ load_audio_output(EventLoop &event_loop, AudioOutputClient &client,
 					 name);
 
 	return audio_output_new(event_loop, ReplayGainConfig(), *param,
-				*(MixerListener *)nullptr,
+				mixer_listener,
 				client);
 }
 
@@ -144,8 +147,10 @@ try {
 
 	/* initialize the audio output */
 
+	NullMixerListener mixer_listener;
 	DummyAudioOutputClient client;
-	AudioOutput *ao = load_audio_output(event_loop, client, argv[2]);
+	AudioOutput *ao = load_audio_output(event_loop, mixer_listener,
+					    client, argv[2]);
 
 	/* parse the audio format */
 
