@@ -444,6 +444,7 @@ libutil_a_SOURCES = \
 	src/util/NumberParser.hxx \
 	src/util/MimeType.cxx src/util/MimeType.hxx \
 	src/util/StringBuffer.hxx \
+	src/util/StringFormat.hxx \
 	src/util/StringPointer.hxx \
 	src/util/StringView.cxx src/util/StringView.hxx \
 	src/util/AllocatedString.cxx src/util/AllocatedString.hxx \

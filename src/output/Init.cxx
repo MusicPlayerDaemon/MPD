@@ -37,6 +37,7 @@
 #include "config/ConfigGlobal.hxx"
 #include "config/Block.hxx"
 #include "util/RuntimeError.hxx"
+#include "util/StringFormat.hxx"
 #include "Log.hxx"
 
 #include <stdexcept>

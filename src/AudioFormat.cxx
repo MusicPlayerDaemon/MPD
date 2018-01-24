@@ -19,9 +19,9 @@
 
 #include "AudioFormat.hxx"
 #include "util/StringBuffer.hxx"
+#include "util/StringFormat.hxx"
 
 #include <assert.h>
-#include <stdio.h>
 
 void
 AudioFormat::ApplyMask(AudioFormat mask) noexcept
@@ -44,21 +44,16 @@ AudioFormat::ApplyMask(AudioFormat mask) noexcept
 StringBuffer<24>
 ToString(const AudioFormat af) noexcept
 {
-	StringBuffer<24> buffer;
-
 	if (af.format == SampleFormat::DSD && af.sample_rate > 0 &&
 	    af.sample_rate % 44100 == 0) {
 		/* use shortcuts such as "dsd64" which implies the
 		   sample rate */
-		snprintf(buffer.data(), buffer.capacity(), "dsd%u:%u",
-			 af.sample_rate * 8 / 44100,
-			 af.channels);
-		return buffer;
+		return StringFormat<24>("dsd%u:%u",
+					af.sample_rate * 8 / 44100,
+					af.channels);
 	}
 
-	snprintf(buffer.data(), buffer.capacity(), "%u:%s:%u",
-		 af.sample_rate, sample_format_to_string(af.format),
-		 af.channels);
-
-	return buffer;
+	return StringFormat<24>("%u:%s:%u",
+				af.sample_rate, sample_format_to_string(af.format),
+				af.channels);
 }

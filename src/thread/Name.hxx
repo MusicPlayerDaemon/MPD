@@ -31,7 +31,7 @@
 #endif
 
 #ifdef HAVE_THREAD_NAME
-#  include <stdio.h>
+#include "util/StringFormat.hxx"
 #endif
 
 static inline void
@@ -59,9 +59,7 @@ static inline void
 FormatThreadName(const char *fmt, gcc_unused Args&&... args)
 {
 #ifdef HAVE_THREAD_NAME
-	char buffer[16];
-	snprintf(buffer, sizeof(buffer), fmt, args...);
-	SetThreadName(buffer);
+	SetThreadName(StringFormat<16>(fmt, args...));
 #else
 	(void)fmt;
 #endif

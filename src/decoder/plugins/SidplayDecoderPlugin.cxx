@@ -26,7 +26,7 @@
 #include "fs/Path.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "util/Macros.hxx"
-#include "util/FormatString.hxx"
+#include "util/StringFormat.hxx"
 #include "util/Domain.hxx"
 #include "system/ByteOrder.hxx"
 #include "Log.hxx"
@@ -413,10 +413,9 @@ ScanSidTuneInfo(const SidTuneInfo &info, unsigned track, unsigned n_tracks,
 		title = "";
 
 	if (n_tracks > 1) {
-		char tag_title[1024];
-		snprintf(tag_title, sizeof(tag_title),
-			 "%s (%u/%u)",
-			 title, track, n_tracks);
+		const auto tag_title =
+			StringFormat<1024>("%s (%u/%u)",
+					   title, track, n_tracks);
 		tag_handler_invoke_tag(handler, handler_ctx,
 				       TAG_TITLE, tag_title);
 	} else
@@ -435,9 +434,8 @@ ScanSidTuneInfo(const SidTuneInfo &info, unsigned track, unsigned n_tracks,
 				       date);
 
 	/* track */
-	char track_buffer[16];
-	sprintf(track_buffer, "%d", track);
-	tag_handler_invoke_tag(handler, handler_ctx, TAG_TRACK, track_buffer);
+	tag_handler_invoke_tag(handler, handler_ctx, TAG_TRACK,
+			       StringFormat<16>("%u", track));
 }
 
 static bool
