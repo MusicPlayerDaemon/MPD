@@ -157,11 +157,8 @@ ToString(const Tag &tag)
 {
 	std::string result;
 
-	if (!tag.duration.IsNegative()) {
-		char buffer[64];
-		sprintf(buffer, "%d", tag.duration.ToMS());
-		result.append(buffer);
-	}
+	if (!tag.duration.IsNegative())
+		result.append(std::to_string(tag.duration.ToMS()));
 
 	for (const auto &item : tag) {
 		result.push_back('|');
@@ -179,27 +176,18 @@ ToString(const DetachedSong &song)
 	std::string result = song.GetURI();
 	result.push_back('|');
 
-	char buffer[64];
-
-	if (!IsNegative(song.GetLastModified())) {
-		sprintf(buffer, "%lu",
-			(unsigned long)std::chrono::system_clock::to_time_t(song.GetLastModified()));
-		result.append(buffer);
-	}
+	if (!IsNegative(song.GetLastModified()))
+		result.append(std::to_string(std::chrono::system_clock::to_time_t(song.GetLastModified())));
 
 	result.push_back('|');
 
-	if (song.GetStartTime().IsPositive()) {
-		sprintf(buffer, "%u", song.GetStartTime().ToMS());
-		result.append(buffer);
-	}
+	if (song.GetStartTime().IsPositive())
+		result.append(std::to_string(song.GetStartTime().ToMS()));
 
 	result.push_back('-');
 
-	if (song.GetEndTime().IsPositive()) {
-		sprintf(buffer, "%u", song.GetEndTime().ToMS());
-		result.append(buffer);
-	}
+	if (song.GetEndTime().IsPositive())
+		result.append(std::to_string(song.GetEndTime().ToMS()));
 
 	result.push_back('|');
 
