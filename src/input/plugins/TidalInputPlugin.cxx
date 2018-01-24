@@ -21,6 +21,7 @@
 #include "TidalInputPlugin.hxx"
 #include "TidalSessionManager.hxx"
 #include "TidalTrackRequest.hxx"
+#include "TidalError.hxx"
 #include "CurlInputPlugin.hxx"
 #include "PluginUnavailable.hxx"
 #include "input/ProxyInputStream.hxx"
@@ -29,6 +30,7 @@
 #include "config/Block.hxx"
 #include "thread/Mutex.hxx"
 #include "util/Domain.hxx"
+#include "util/Exception.hxx"
 #include "util/StringCompare.hxx"
 #include "Log.hxx"
 
@@ -47,6 +49,12 @@ class TidalInputStream final
 	std::unique_ptr<TidalTrackRequest> track_request;
 
 	std::exception_ptr error;
+
+	/**
+	 * Retry to login if TidalError::IsInvalidSession() returns
+	 * true?
+	 */
+	bool retry_login = true;
 
 public:
 	TidalInputStream(const char *_uri, const char *_track_id,
@@ -119,10 +127,35 @@ TidalInputStream::OnTidalTrackSuccess(std::string url) noexcept
 	}
 }
 
+gcc_pure
+static bool
+IsInvalidSession(std::exception_ptr e) noexcept
+{
+	try {
+		std::rethrow_exception(e);
+	} catch (const TidalError &te) {
+		return te.IsInvalidSession();
+	} catch (...) {
+		return false;
+	}
+}
+
 void
 TidalInputStream::OnTidalTrackError(std::exception_ptr e) noexcept
 {
 	const std::lock_guard<Mutex> protect(mutex);
+
+	if (retry_login && IsInvalidSession(e)) {
+		/* the session has expired - obtain a new session id
+		   by logging in again */
+
+		FormatInfo(tidal_domain, "Session expired ('%s'), retrying to log in",
+			   GetFullMessage(e).c_str());
+
+		retry_login = false;
+		tidal_session->AddLoginHandler(*this);
+		return;
+	}
 
 	Failed(e);
 }
