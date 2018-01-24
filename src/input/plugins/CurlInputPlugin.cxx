@@ -423,12 +423,7 @@ CurlInputStream::SeekInternal(offset_type new_offset)
 
 	if (offset > 0) {
 		char range[32];
-#ifdef _WIN32
-		// TODO: what can we use on Windows to format 64 bit?
-		sprintf(range, "%lu-", (long)offset);
-#else
 		sprintf(range, "%llu-", (unsigned long long)offset);
-#endif
 		request->SetOption(CURLOPT_RANGE, range);
 	}
 
