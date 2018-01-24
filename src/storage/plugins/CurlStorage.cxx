@@ -37,6 +37,7 @@
 #include "util/ChronoUtil.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/StringCompare.hxx"
+#include "util/StringFormat.hxx"
 #include "util/TimeParser.hxx"
 #include "util/UriUtil.hxx"
 
@@ -259,9 +260,7 @@ public:
 	{
 		request.SetOption(CURLOPT_CUSTOMREQUEST, "PROPFIND");
 
-		char buffer[40];
-		sprintf(buffer, "depth: %u", depth);
-		request_headers.Append(buffer);
+		request_headers.Append(StringFormat<40>("depth: %u", depth));
 
 		request.SetOption(CURLOPT_HTTPHEADER, request_headers.Get());
 
