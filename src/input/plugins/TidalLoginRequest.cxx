@@ -21,10 +21,8 @@
 #include "TidalLoginRequest.hxx"
 #include "TidalErrorParser.hxx"
 #include "lib/curl/Form.hxx"
-#include "lib/yajl/Handle.hxx"
 #include "lib/yajl/Callbacks.hxx"
 #include "lib/yajl/ResponseParser.hxx"
-#include "util/RuntimeError.hxx"
 
 using Wrapper = Yajl::CallbacksWrapper<TidalLoginRequest::ResponseParser>;
 static constexpr yajl_callbacks parse_callbacks = {
