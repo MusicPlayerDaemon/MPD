@@ -44,6 +44,8 @@
 #include "Log.hxx"
 #include "PluginUnavailable.hxx"
 
+#include <cinttypes>
+
 #include <assert.h>
 #include <string.h>
 
@@ -423,7 +425,7 @@ CurlInputStream::SeekInternal(offset_type new_offset)
 
 	if (offset > 0) {
 		char range[32];
-		sprintf(range, "%llu-", (unsigned long long)offset);
+		sprintf(range, "%" PRIoffset "-", offset);
 		request->SetOption(CURLOPT_RANGE, range);
 	}
 
