@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2017 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright (C) 2010-2018 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -53,53 +53,53 @@ protected:
 public:
 	typedef typename Array::const_iterator const_iterator;
 
-	constexpr size_type capacity() const {
+	constexpr size_type capacity() const noexcept {
 		return CAPACITY;
 	}
 
-	constexpr bool empty() const {
+	constexpr bool empty() const noexcept {
 		return front() == SENTINEL;
 	}
 
-	void clear() {
+	void clear() noexcept {
 		the_data[0] = SENTINEL;
 	}
 
-	constexpr const_pointer c_str() const {
+	constexpr const_pointer c_str() const noexcept {
 		return &the_data.front();
 	}
 
-	pointer data() {
+	pointer data() noexcept {
 		return &the_data.front();
 	}
 
-	constexpr value_type front() const {
+	constexpr value_type front() const noexcept {
 		return the_data.front();
 	}
 
 	/**
 	 * Returns one character.  No bounds checking.
 	 */
-	value_type operator[](size_type i) const {
+	value_type operator[](size_type i) const noexcept {
 		return the_data[i];
 	}
 
 	/**
 	 * Returns one writable character.  No bounds checking.
 	 */
-	reference operator[](size_type i) {
+	reference operator[](size_type i) noexcept {
 		return the_data[i];
 	}
 
-	constexpr const_iterator begin() const {
+	constexpr const_iterator begin() const noexcept {
 		return the_data.begin();
 	}
 
-	constexpr const_iterator end() const {
+	constexpr const_iterator end() const noexcept {
 		return the_data.end();
 	}
 
-	constexpr operator const_pointer() const {
+	constexpr operator const_pointer() const noexcept {
 		return c_str();
 	}
 };
