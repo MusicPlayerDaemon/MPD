@@ -26,6 +26,9 @@
 
 /**
  * An error condition reported by the server.
+ *
+ * See http://developer.tidal.com/technical/errors/ for details (login
+ * required).
  */
 class TidalError : public std::runtime_error {
 	/**
@@ -51,6 +54,10 @@ public:
 
 	unsigned GetSubStatus() const noexcept {
 		return sub_status;
+	}
+
+	bool IsInvalidSession() const noexcept {
+		return sub_status == 6001 || sub_status == 6002;
 	}
 };
 
