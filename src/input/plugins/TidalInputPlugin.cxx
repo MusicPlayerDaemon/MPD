@@ -28,10 +28,14 @@
 #include "input/InputPlugin.hxx"
 #include "config/Block.hxx"
 #include "thread/Mutex.hxx"
+#include "util/Domain.hxx"
 #include "util/StringCompare.hxx"
+#include "Log.hxx"
 
 #include <stdexcept>
 #include <memory>
+
+static constexpr Domain tidal_domain("tidal");
 
 static TidalSessionManager *tidal_session;
 
@@ -100,6 +104,9 @@ TidalInputStream::OnTidalSession() noexcept
 void
 TidalInputStream::OnTidalTrackSuccess(std::string url) noexcept
 {
+	FormatDebug(tidal_domain, "Tidal track '%s' resolves to %s",
+		    track_id.c_str(), url.c_str());
+
 	const std::lock_guard<Mutex> protect(mutex);
 
 	track_request.reset();

@@ -20,6 +20,11 @@
 #include "config.h"
 #include "TidalSessionManager.hxx"
 #include "lib/curl/Global.hxx"
+#include "util/Domain.hxx"
+
+#include "Log.hxx"
+
+static constexpr Domain tidal_domain("tidal");
 
 TidalSessionManager::TidalSessionManager(EventLoop &event_loop,
 					 const char *_base_url, const char *_token,
@@ -53,6 +58,8 @@ TidalSessionManager::AddLoginHandler(TidalSessionHandler &h) noexcept
 	if (session.empty()) {
 		// TODO: throttle login attempts?
 
+		LogDebug(tidal_domain, "Sending login request");
+
 		std::string login_uri(base_url);
 		login_uri += "/login/username";
 
@@ -76,6 +83,8 @@ TidalSessionManager::AddLoginHandler(TidalSessionHandler &h) noexcept
 void
 TidalSessionManager::OnTidalLoginSuccess(std::string _session) noexcept
 {
+	FormatDebug(tidal_domain, "Login successful, session=%s", _session.c_str());
+
 	{
 		const std::lock_guard<Mutex> protect(mutex);
 		login_request.reset();
