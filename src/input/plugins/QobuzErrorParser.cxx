@@ -40,8 +40,8 @@ static constexpr yajl_callbacks qobuz_error_parser_callbacks = {
 
 QobuzErrorParser::QobuzErrorParser(unsigned _status,
 				   const std::multimap<std::string, std::string> &headers)
-	:status(_status),
-	 parser(&qobuz_error_parser_callbacks, nullptr, this)
+	:YajlResponseParser(&qobuz_error_parser_callbacks, nullptr, this),
+	 status(_status)
 {
 	auto i = headers.find("content-type");
 	if (i == headers.end() || i->second.find("/json") == i->second.npos)
@@ -49,15 +49,9 @@ QobuzErrorParser::QobuzErrorParser(unsigned _status,
 }
 
 void
-QobuzErrorParser::OnData(ConstBuffer<void> data)
-{
-	parser.Parse((const unsigned char *)data.data, data.size);
-}
-
-void
 QobuzErrorParser::OnEnd()
 {
-	parser.CompleteParse();
+	YajlResponseParser::OnEnd();
 
 	if (!message.empty())
 		throw FormatRuntimeError("Error from Qobuz: %s",

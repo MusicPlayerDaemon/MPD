@@ -24,7 +24,7 @@
 #include "lib/yajl/Callbacks.hxx"
 #include "util/RuntimeError.hxx"
 
-using Wrapper = Yajl::CallbacksWrapper<QobuzTrackRequest>;
+using Wrapper = Yajl::CallbacksWrapper<QobuzTrackRequest::ResponseParser>;
 static constexpr yajl_callbacks parse_callbacks = {
 	nullptr,
 	nullptr,
@@ -37,6 +37,31 @@ static constexpr yajl_callbacks parse_callbacks = {
 	Wrapper::EndMap,
 	nullptr,
 	nullptr,
+};
+
+class QobuzTrackRequest::ResponseParser final : public YajlResponseParser {
+	enum class State {
+		NONE,
+		URL,
+	} state = State::NONE;
+
+	std::string url;
+
+public:
+	explicit ResponseParser() noexcept
+		:YajlResponseParser(&parse_callbacks, nullptr, this) {}
+
+	std::string &&GetUrl() {
+		if (url.empty())
+			throw std::runtime_error("No url in track response");
+
+		return std::move(url);
+	}
+
+	/* yajl callbacks */
+	bool String(StringView value) noexcept;
+	bool MapKey(StringView value) noexcept;
+	bool EndMap() noexcept;
 };
 
 static std::string
@@ -68,47 +93,26 @@ QobuzTrackRequest::~QobuzTrackRequest() noexcept
 	request.StopIndirect();
 }
 
-void
-QobuzTrackRequest::OnHeaders(unsigned status,
-			     std::multimap<std::string, std::string> &&headers)
+std::unique_ptr<CurlResponseParser>
+QobuzTrackRequest::MakeParser(unsigned status,
+			      std::multimap<std::string, std::string> &&headers)
 {
-	if (status != 200) {
-		error_parser = std::make_unique<QobuzErrorParser>(status, headers);
-		return;
-	}
+	if (status != 200)
+		return std::make_unique<QobuzErrorParser>(status, headers);
 
 	auto i = headers.find("content-type");
 	if (i == headers.end() || i->second.find("/json") == i->second.npos)
 		throw std::runtime_error("Not a JSON response from Qobuz");
 
-	parser = {&parse_callbacks, nullptr, this};
+	return std::make_unique<ResponseParser>();
 }
 
 void
-QobuzTrackRequest::OnData(ConstBuffer<void> data)
+QobuzTrackRequest::FinishParser(std::unique_ptr<CurlResponseParser> p)
 {
-	if (error_parser) {
-		error_parser->OnData(data);
-		return;
-	}
-
-	parser.Parse((const unsigned char *)data.data, data.size);
-}
-
-void
-QobuzTrackRequest::OnEnd()
-{
-	if (error_parser) {
-		error_parser->OnEnd();
-		return;
-	}
-
-	parser.CompleteParse();
-
-	if (url.empty())
-		throw std::runtime_error("No url in track response");
-
-	handler.OnQobuzTrackSuccess(std::move(url));
+	assert(dynamic_cast<ResponseParser *>(p.get()) != nullptr);
+	auto &rp = (ResponseParser &)*p;
+	handler.OnQobuzTrackSuccess(rp.GetUrl());
 }
 
 void
@@ -118,7 +122,7 @@ QobuzTrackRequest::OnError(std::exception_ptr e) noexcept
 }
 
 inline bool
-QobuzTrackRequest::String(StringView value) noexcept
+QobuzTrackRequest::ResponseParser::String(StringView value) noexcept
 {
 	switch (state) {
 	case State::NONE:
@@ -133,7 +137,7 @@ QobuzTrackRequest::String(StringView value) noexcept
 }
 
 inline bool
-QobuzTrackRequest::MapKey(StringView value) noexcept
+QobuzTrackRequest::ResponseParser::MapKey(StringView value) noexcept
 {
 	if (value.Equals("url"))
 		state = State::URL;
@@ -144,7 +148,7 @@ QobuzTrackRequest::MapKey(StringView value) noexcept
 }
 
 inline bool
-QobuzTrackRequest::EndMap() noexcept
+QobuzTrackRequest::ResponseParser::EndMap() noexcept
 {
 	state = State::NONE;
 

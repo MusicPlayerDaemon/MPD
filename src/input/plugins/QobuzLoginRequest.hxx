@@ -21,17 +21,11 @@
 #define QOBUZ_LOGIN_REQUEST_HXX
 
 #include "check.h"
-#include "QobuzSession.hxx"
-#include "lib/curl/Handler.hxx"
+#include "lib/curl/Delegate.hxx"
 #include "lib/curl/Request.hxx"
-#include "lib/yajl/Handle.hxx"
-
-#include <exception>
-#include <memory>
-#include <string>
 
 class CurlRequest;
-class QobuzErrorParser;
+struct QobuzSession;
 
 class QobuzLoginHandler {
 public:
@@ -39,29 +33,14 @@ public:
 	virtual void OnQobuzLoginError(std::exception_ptr error) noexcept = 0;
 };
 
-class QobuzLoginRequest final : CurlResponseHandler {
+class QobuzLoginRequest final : DelegateCurlResponseHandler {
 	CurlRequest request;
-
-	std::unique_ptr<QobuzErrorParser> error_parser;
-
-	Yajl::Handle parser;
-
-	enum class State {
-		NONE,
-		DEVICE,
-		DEVICE_ID,
-		USER_AUTH_TOKEN,
-	} state = State::NONE;
-
-	unsigned map_depth = 0;
-
-	QobuzSession session;
-
-	std::exception_ptr error;
 
 	QobuzLoginHandler &handler;
 
 public:
+	class ResponseParser;
+
 	QobuzLoginRequest(CurlGlobal &curl,
 			  const char *base_url, const char *app_id,
 			  const char *username, const char *email,
@@ -76,19 +55,13 @@ public:
 	}
 
 private:
-	/* virtual methods from CurlResponseHandler */
-	void OnHeaders(unsigned status,
-		       std::multimap<std::string, std::string> &&headers) override;
-	void OnData(ConstBuffer<void> data) override;
-	void OnEnd() override;
-	void OnError(std::exception_ptr e) noexcept override;
+	/* virtual methods from DelegateCurlResponseHandler */
+	std::unique_ptr<CurlResponseParser> MakeParser(unsigned status,
+						       std::multimap<std::string, std::string> &&headers) override;
+	void FinishParser(std::unique_ptr<CurlResponseParser> p) override;
 
-public:
-	/* yajl callbacks */
-	bool String(StringView value) noexcept;
-	bool StartMap() noexcept;
-	bool MapKey(StringView value) noexcept;
-	bool EndMap() noexcept;
+	/* virtual methods from CurlResponseHandler */
+	void OnError(std::exception_ptr e) noexcept override;
 };
 
 #endif

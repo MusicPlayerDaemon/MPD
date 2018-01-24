@@ -20,11 +20,12 @@
 #include "config.h"
 #include "QobuzLoginRequest.hxx"
 #include "QobuzErrorParser.hxx"
+#include "QobuzSession.hxx"
 #include "lib/curl/Form.hxx"
 #include "lib/yajl/Callbacks.hxx"
 #include "util/RuntimeError.hxx"
 
-using Wrapper = Yajl::CallbacksWrapper<QobuzLoginRequest>;
+using Wrapper = Yajl::CallbacksWrapper<QobuzLoginRequest::ResponseParser>;
 static constexpr yajl_callbacks parse_callbacks = {
 	nullptr,
 	nullptr,
@@ -38,6 +39,43 @@ static constexpr yajl_callbacks parse_callbacks = {
 	nullptr,
 	nullptr,
 };
+
+class QobuzLoginRequest::ResponseParser final : public YajlResponseParser {
+	enum class State {
+		NONE,
+		DEVICE,
+		DEVICE_ID,
+		USER_AUTH_TOKEN,
+	} state = State::NONE;
+
+	unsigned map_depth = 0;
+
+	QobuzSession session;
+
+public:
+	explicit ResponseParser() noexcept
+		:YajlResponseParser(&parse_callbacks, nullptr, this) {}
+
+	QobuzSession &&GetSession();
+
+	/* yajl callbacks */
+	bool String(StringView value) noexcept;
+	bool StartMap() noexcept;
+	bool MapKey(StringView value) noexcept;
+	bool EndMap() noexcept;
+};
+
+inline QobuzSession &&
+QobuzLoginRequest::ResponseParser::GetSession()
+{
+	if (session.user_auth_token.empty())
+		throw std::runtime_error("No user_auth_token in login response");
+
+	if (session.device_id.empty())
+		throw std::runtime_error("No device id in login response");
+
+	return std::move(session);
+}
 
 static std::multimap<std::string, std::string>
 MakeLoginForm(const char *app_id,
@@ -95,50 +133,26 @@ QobuzLoginRequest::~QobuzLoginRequest() noexcept
 	request.StopIndirect();
 }
 
-void
-QobuzLoginRequest::OnHeaders(unsigned status,
-			     std::multimap<std::string, std::string> &&headers)
+std::unique_ptr<CurlResponseParser>
+QobuzLoginRequest::MakeParser(unsigned status,
+			      std::multimap<std::string, std::string> &&headers)
 {
-	if (status != 200) {
-		error_parser = std::make_unique<QobuzErrorParser>(status, headers);
-		return;
-	}
+	if (status != 200)
+		return std::make_unique<QobuzErrorParser>(status, headers);
 
 	auto i = headers.find("content-type");
 	if (i == headers.end() || i->second.find("/json") == i->second.npos)
 		throw std::runtime_error("Not a JSON response from Qobuz");
 
-	parser = {&parse_callbacks, nullptr, this};
+	return std::make_unique<ResponseParser>();
 }
 
 void
-QobuzLoginRequest::OnData(ConstBuffer<void> data)
+QobuzLoginRequest::FinishParser(std::unique_ptr<CurlResponseParser> p)
 {
-	if (error_parser) {
-		error_parser->OnData(data);
-		return;
-	}
-
-	parser.Parse((const unsigned char *)data.data, data.size);
-}
-
-void
-QobuzLoginRequest::OnEnd()
-{
-	if (error_parser) {
-		error_parser->OnEnd();
-		return;
-	}
-
-	parser.CompleteParse();
-
-	if (session.user_auth_token.empty())
-		throw std::runtime_error("No user_auth_token in login response");
-
-	if (session.device_id.empty())
-		throw std::runtime_error("No device id in login response");
-
-	handler.OnQobuzLoginSuccess(std::move(session));
+	assert(dynamic_cast<ResponseParser *>(p.get()) != nullptr);
+	auto &rp = (ResponseParser &)*p;
+	handler.OnQobuzLoginSuccess(rp.GetSession());
 }
 
 void
@@ -148,7 +162,7 @@ QobuzLoginRequest::OnError(std::exception_ptr e) noexcept
 }
 
 inline bool
-QobuzLoginRequest::String(StringView value) noexcept
+QobuzLoginRequest::ResponseParser::String(StringView value) noexcept
 {
 	switch (state) {
 	case State::NONE:
@@ -168,7 +182,7 @@ QobuzLoginRequest::String(StringView value) noexcept
 }
 
 inline bool
-QobuzLoginRequest::StartMap() noexcept
+QobuzLoginRequest::ResponseParser::StartMap() noexcept
 {
 	switch (state) {
 	case State::NONE:
@@ -187,7 +201,7 @@ QobuzLoginRequest::StartMap() noexcept
 }
 
 inline bool
-QobuzLoginRequest::MapKey(StringView value) noexcept
+QobuzLoginRequest::ResponseParser::MapKey(StringView value) noexcept
 {
 	switch (state) {
 	case State::NONE:
@@ -217,7 +231,7 @@ QobuzLoginRequest::MapKey(StringView value) noexcept
 }
 
 inline bool
-QobuzLoginRequest::EndMap() noexcept
+QobuzLoginRequest::ResponseParser::EndMap() noexcept
 {
 	switch (state) {
 	case State::NONE:
