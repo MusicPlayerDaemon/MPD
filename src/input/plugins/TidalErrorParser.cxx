@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "TidalErrorParser.hxx"
+#include "TidalError.hxx"
 #include "lib/yajl/Callbacks.hxx"
 #include "util/ConstBuffer.hxx"
 #include "util/RuntimeError.hxx"
@@ -53,11 +54,15 @@ TidalErrorParser::OnEnd()
 {
 	YajlResponseParser::OnEnd();
 
+	char what[1024];
+
 	if (!message.empty())
-		throw FormatRuntimeError("Error from Tidal: %s",
-					 message.c_str());
+		snprintf(what, sizeof(what), "Error from Tidal: %s",
+			 message.c_str());
 	else
-		throw FormatRuntimeError("Status %u from Tidal", status);
+		snprintf(what, sizeof(what), "Status %u from Tidal", status);
+
+	throw TidalError(status, what);
 }
 
 inline bool

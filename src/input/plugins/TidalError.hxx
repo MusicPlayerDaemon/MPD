@@ -17,49 +17,31 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef TIDAL_ERROR_PARSER_HXX
-#define TIDAL_ERROR_PARSER_HXX
+#ifndef TIDAL_ERROR_HXX
+#define TIDAL_ERROR_HXX
 
 #include "check.h"
-#include "lib/yajl/ResponseParser.hxx"
 
-#include <string>
-#include <map>
-
-template<typename T> struct ConstBuffer;
-struct StringView;
+#include <stdexcept>
 
 /**
- * Parse an error JSON response and throw a #TidalError upon
- * completion.
+ * An error condition reported by the server.
  */
-class TidalErrorParser final : public YajlResponseParser {
-	const unsigned status;
-
-	enum class State {
-		NONE,
-		USER_MESSAGE,
-	} state = State::NONE;
-
-	std::string message;
-
-public:
+class TidalError : public std::runtime_error {
 	/**
-	 * May throw if there is a formal error in the response
-	 * headers.
+	 * The HTTP status code.
 	 */
-	TidalErrorParser(unsigned status,
-			 const std::multimap<std::string, std::string> &headers);
-
-protected:
-	/* virtual methods from CurlResponseParser */
-	void OnEnd() override;
+	unsigned status;
 
 public:
-	/* yajl callbacks */
-	bool String(StringView value) noexcept;
-	bool MapKey(StringView value) noexcept;
-	bool EndMap() noexcept;
+	template<typename W>
+	TidalError(unsigned _status, W &&_what) noexcept
+		:std::runtime_error(std::forward<W>(_what)),
+		 status(_status) {}
+
+	unsigned GetStatus() const noexcept {
+		return status;
+	}
 };
 
 #endif

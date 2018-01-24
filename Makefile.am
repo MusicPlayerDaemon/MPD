@@ -1372,6 +1372,7 @@ endif
 if ENABLE_TIDAL
 libinput_a_SOURCES += \
 	$(YAJL_SOURCES) \
+	src/input/plugins/TidalError.hxx \
 	src/input/plugins/TidalErrorParser.cxx src/input/plugins/TidalErrorParser.hxx \
 	src/input/plugins/TidalLoginRequest.cxx src/input/plugins/TidalLoginRequest.hxx \
 	src/input/plugins/TidalSessionManager.cxx src/input/plugins/TidalSessionManager.hxx \
