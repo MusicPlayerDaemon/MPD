@@ -33,14 +33,24 @@ class TidalError : public std::runtime_error {
 	 */
 	unsigned status;
 
+	/**
+	 * The Tidal-specific "subStatus".  0 if none was found in the
+	 * JSON response.
+	 */
+	unsigned sub_status;
+
 public:
 	template<typename W>
-	TidalError(unsigned _status, W &&_what) noexcept
+	TidalError(unsigned _status, unsigned _sub_status, W &&_what) noexcept
 		:std::runtime_error(std::forward<W>(_what)),
-		 status(_status) {}
+		 status(_status), sub_status(_sub_status) {}
 
 	unsigned GetStatus() const noexcept {
 		return status;
+	}
+
+	unsigned GetSubStatus() const noexcept {
+		return sub_status;
 	}
 };
 

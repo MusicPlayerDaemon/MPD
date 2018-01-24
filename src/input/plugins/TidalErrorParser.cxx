@@ -28,7 +28,7 @@ using Wrapper = Yajl::CallbacksWrapper<TidalErrorParser>;
 static constexpr yajl_callbacks tidal_error_parser_callbacks = {
 	nullptr,
 	nullptr,
-	nullptr,
+	Wrapper::Integer,
 	nullptr,
 	nullptr,
 	Wrapper::String,
@@ -62,7 +62,23 @@ TidalErrorParser::OnEnd()
 	else
 		snprintf(what, sizeof(what), "Status %u from Tidal", status);
 
-	throw TidalError(status, what);
+	throw TidalError(status, sub_status, what);
+}
+
+inline bool
+TidalErrorParser::Integer(long long value) noexcept
+{
+	switch (state) {
+	case State::NONE:
+	case State::USER_MESSAGE:
+		break;
+
+	case State::SUB_STATUS:
+		sub_status = value;
+		break;
+	}
+
+	return true;
 }
 
 inline bool
@@ -70,6 +86,7 @@ TidalErrorParser::String(StringView value) noexcept
 {
 	switch (state) {
 	case State::NONE:
+	case State::SUB_STATUS:
 		break;
 
 	case State::USER_MESSAGE:
@@ -85,6 +102,8 @@ TidalErrorParser::MapKey(StringView value) noexcept
 {
 	if (value.Equals("userMessage"))
 		state = State::USER_MESSAGE;
+	else if (value.Equals("subStatus"))
+		state = State::SUB_STATUS;
 	else
 		state = State::NONE;
 

@@ -39,7 +39,10 @@ class TidalErrorParser final : public YajlResponseParser {
 	enum class State {
 		NONE,
 		USER_MESSAGE,
+		SUB_STATUS,
 	} state = State::NONE;
+
+	unsigned sub_status = 0;
 
 	std::string message;
 
@@ -57,6 +60,7 @@ protected:
 
 public:
 	/* yajl callbacks */
+	bool Integer(long long value) noexcept;
 	bool String(StringView value) noexcept;
 	bool MapKey(StringView value) noexcept;
 	bool EndMap() noexcept;
