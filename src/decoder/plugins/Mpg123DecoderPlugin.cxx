@@ -292,7 +292,12 @@ mpd_mpg123_scan_file(Path path_fs,
 	}
 
 	AudioFormat audio_format;
-	if (!mpd_mpg123_open(handle, path_fs.c_str(), audio_format)) {
+	try {
+		if (!mpd_mpg123_open(handle, path_fs.c_str(), audio_format)) {
+			mpg123_delete(handle);
+			return false;
+		}
+	} catch (...) {
 		mpg123_delete(handle);
 		return false;
 	}
