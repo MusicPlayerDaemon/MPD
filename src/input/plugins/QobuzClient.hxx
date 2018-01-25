@@ -94,7 +94,7 @@ public:
 				  const std::multimap<std::string, std::string> &query) const noexcept;
 
 private:
-	void StartLogin() noexcept;
+	void StartLogin();
 
 	void InvokeHandlers() noexcept;
 

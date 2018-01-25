@@ -68,7 +68,7 @@ QobuzClient::GetCurl() noexcept
 }
 
 void
-QobuzClient::StartLogin() noexcept
+QobuzClient::StartLogin()
 {
 	assert(!session.IsDefined());
 	assert(!login_request);
