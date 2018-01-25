@@ -26,6 +26,7 @@
 #include "util/Domain.hxx"
 #include "util/ScopeExit.hxx"
 #include "util/StringAPI.hxx"
+#include "util/StringFormat.hxx"
 #include "Log.hxx"
 
 #include <shout/shout.h>
@@ -87,13 +88,11 @@ require_block_string(const ConfigBlock &block, const char *name)
 static void
 ShoutSetAudioInfo(shout_t *shout_conn, const AudioFormat &audio_format)
 {
-	char temp[11];
+	shout_set_audio_info(shout_conn, SHOUT_AI_CHANNELS,
+			     StringFormat<11>("%u", audio_format.channels));
 
-	snprintf(temp, sizeof(temp), "%u", audio_format.channels);
-	shout_set_audio_info(shout_conn, SHOUT_AI_CHANNELS, temp);
-
-	snprintf(temp, sizeof(temp), "%u", audio_format.sample_rate);
-	shout_set_audio_info(shout_conn, SHOUT_AI_SAMPLERATE, temp);
+	shout_set_audio_info(shout_conn, SHOUT_AI_SAMPLERATE,
+			     StringFormat<11>("%u", audio_format.sample_rate));
 }
 
 ShoutOutput::ShoutOutput(const ConfigBlock &block)

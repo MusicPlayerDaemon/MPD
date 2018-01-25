@@ -70,7 +70,7 @@ flac_write_cb(const FLAC__StreamDecoder *dec, const FLAC__Frame *frame,
 
 static bool
 flac_scan_file(Path path_fs,
-	       const TagHandler &handler, void *handler_ctx)
+	       const TagHandler &handler, void *handler_ctx) noexcept
 {
 	FlacMetadataChain chain;
 	if (!chain.Read(NarrowPath(path_fs))) {
@@ -86,7 +86,7 @@ flac_scan_file(Path path_fs,
 
 static bool
 flac_scan_stream(InputStream &is,
-		 const TagHandler &handler, void *handler_ctx)
+		 const TagHandler &handler, void *handler_ctx) noexcept
 {
 	FlacMetadataChain chain;
 	if (!chain.Read(is)) {
@@ -290,7 +290,7 @@ oggflac_init(gcc_unused const ConfigBlock &block)
 
 static bool
 oggflac_scan_file(Path path_fs,
-		  const TagHandler &handler, void *handler_ctx)
+		  const TagHandler &handler, void *handler_ctx) noexcept
 {
 	FlacMetadataChain chain;
 	if (!chain.ReadOgg(NarrowPath(path_fs))) {
@@ -306,7 +306,7 @@ oggflac_scan_file(Path path_fs,
 
 static bool
 oggflac_scan_stream(InputStream &is,
-		    const TagHandler &handler, void *handler_ctx)
+		    const TagHandler &handler, void *handler_ctx) noexcept
 {
 	FlacMetadataChain chain;
 	if (!chain.ReadOgg(is)) {

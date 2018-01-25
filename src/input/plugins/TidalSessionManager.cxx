@@ -20,11 +20,16 @@
 #include "config.h"
 #include "TidalSessionManager.hxx"
 #include "lib/curl/Global.hxx"
+#include "util/Domain.hxx"
+
+#include "Log.hxx"
+
+static constexpr Domain tidal_domain("tidal");
 
 TidalSessionManager::TidalSessionManager(EventLoop &event_loop,
 					 const char *_base_url, const char *_token,
 					 const char *_username,
-					 const char *_password) noexcept
+					 const char *_password)
 	:base_url(_base_url), token(_token),
 	 username(_username), password(_password),
 	 curl(event_loop),
@@ -47,8 +52,13 @@ TidalSessionManager::AddLoginHandler(TidalSessionHandler &h) noexcept
 	const bool was_empty = handlers.empty();
 	handlers.push_front(h);
 
-	if (was_empty && session.empty() && !login_request) {
+	if (!was_empty || login_request)
+		return;
+
+	if (session.empty()) {
 		// TODO: throttle login attempts?
+
+		LogDebug(tidal_domain, "Sending login request");
 
 		std::string login_uri(base_url);
 		login_uri += "/login/username";
@@ -60,19 +70,24 @@ TidalSessionManager::AddLoginHandler(TidalSessionHandler &h) noexcept
 								    token,
 								    username, password,
 								    handler);
+			login_request->Start();
 		} catch (...) {
 			error = std::current_exception();
 			ScheduleInvokeHandlers();
 			return;
 		}
-	}
+	} else
+		ScheduleInvokeHandlers();
 }
 
 void
-TidalSessionManager::OnTidalLoginSuccess(std::string &&_session) noexcept
+TidalSessionManager::OnTidalLoginSuccess(std::string _session) noexcept
 {
+	FormatDebug(tidal_domain, "Login successful, session=%s", _session.c_str());
+
 	{
 		const std::lock_guard<Mutex> protect(mutex);
+		login_request.reset();
 		session = std::move(_session);
 	}
 
@@ -84,6 +99,7 @@ TidalSessionManager::OnTidalLoginError(std::exception_ptr e) noexcept
 {
 	{
 		const std::lock_guard<Mutex> protect(mutex);
+		login_request.reset();
 		error = e;
 	}
 
@@ -101,6 +117,4 @@ TidalSessionManager::InvokeHandlers() noexcept
 		const ScopeUnlock unlock(mutex);
 		h.OnTidalSession();
 	}
-
-	login_request.reset();
 }

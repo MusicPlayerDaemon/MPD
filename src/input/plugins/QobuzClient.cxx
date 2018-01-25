@@ -68,7 +68,7 @@ QobuzClient::GetCurl() noexcept
 }
 
 void
-QobuzClient::StartLogin() noexcept
+QobuzClient::StartLogin()
 {
 	assert(!session.IsDefined());
 	assert(!login_request);
@@ -101,9 +101,6 @@ QobuzClient::AddLoginHandler(QobuzSessionHandler &h) noexcept
 	} else {
 		// TODO: throttle login attempts?
 
-		std::string login_uri(base_url);
-		login_uri += "/login/username";
-
 		try {
 			StartLogin();
 		} catch (...) {
@@ -134,6 +131,7 @@ QobuzClient::OnQobuzLoginSuccess(QobuzSession &&_session) noexcept
 	{
 		const std::lock_guard<Mutex> protect(mutex);
 		session = std::move(_session);
+		login_request.reset();
 	}
 
 	ScheduleInvokeHandlers();
@@ -145,6 +143,7 @@ QobuzClient::OnQobuzLoginError(std::exception_ptr _error) noexcept
 	{
 		const std::lock_guard<Mutex> protect(mutex);
 		error = std::move(_error);
+		login_request.reset();
 	}
 
 	ScheduleInvokeHandlers();
@@ -161,8 +160,6 @@ QobuzClient::InvokeHandlers() noexcept
 		const ScopeUnlock unlock(mutex);
 		h.OnQobuzSession();
 	}
-
-	login_request.reset();
 }
 
 std::string

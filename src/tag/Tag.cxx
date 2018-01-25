@@ -30,17 +30,18 @@ Tag::Clear() noexcept
 	duration = SignedSongTime::Negative();
 	has_playlist = false;
 
-	tag_pool_lock.lock();
-	for (unsigned i = 0; i < num_items; ++i)
-		tag_pool_put_item(items[i]);
-	tag_pool_lock.unlock();
+	{
+		const std::lock_guard<Mutex> protect(tag_pool_lock);
+		for (unsigned i = 0; i < num_items; ++i)
+			tag_pool_put_item(items[i]);
+	}
 
 	delete[] items;
 	items = nullptr;
 	num_items = 0;
 }
 
-Tag::Tag(const Tag &other)
+Tag::Tag(const Tag &other) noexcept
 	:duration(other.duration), has_playlist(other.has_playlist),
 	 num_items(other.num_items),
 	 items(nullptr)
@@ -48,10 +49,9 @@ Tag::Tag(const Tag &other)
 	if (num_items > 0) {
 		items = new TagItem *[num_items];
 
-		tag_pool_lock.lock();
+		const std::lock_guard<Mutex> protect(tag_pool_lock);
 		for (unsigned i = 0; i < num_items; i++)
 			items[i] = tag_pool_dup_item(other.items[i]);
-		tag_pool_lock.unlock();
 	}
 }
 
@@ -64,7 +64,7 @@ Tag::Merge(const Tag &base, const Tag &add) noexcept
 }
 
 std::unique_ptr<Tag>
-Tag::Merge(std::unique_ptr<Tag> base, std::unique_ptr<Tag> add)
+Tag::Merge(std::unique_ptr<Tag> base, std::unique_ptr<Tag> add) noexcept
 {
 	if (add == nullptr)
 		return base;

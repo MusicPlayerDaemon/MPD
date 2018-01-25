@@ -34,7 +34,8 @@ class TagBuilder;
  * found)
  */
 bool
-tag_file_scan(Path path, const TagHandler &handler, void *handler_ctx);
+tag_file_scan(Path path,
+	      const TagHandler &handler, void *handler_ctx) noexcept;
 
 /**
  * Scan the tags of a song file.  Invokes matching decoder plugins,
@@ -45,6 +46,6 @@ tag_file_scan(Path path, const TagHandler &handler, void *handler_ctx);
  * found)
  */
 bool
-tag_file_scan(Path path, TagBuilder &builder);
+tag_file_scan(Path path, TagBuilder &builder) noexcept;
 
 #endif

@@ -27,10 +27,10 @@
 
 #include <assert.h>
 
-TextInputStream::TextInputStream(InputStreamPtr &&_is)
+TextInputStream::TextInputStream(InputStreamPtr &&_is) noexcept
 	:is(std::move(_is)) {}
 
-TextInputStream::~TextInputStream() {}
+TextInputStream::~TextInputStream() noexcept {}
 
 char *
 TextInputStream::ReadLine()
@@ -59,14 +59,7 @@ TextInputStream::ReadLine()
 		   character */
 		--dest.size;
 
-		size_t nbytes;
-
-		try {
-			nbytes = is->LockRead(dest.data, dest.size);
-		} catch (...) {
-			LogError(std::current_exception());
-			return nullptr;
-		}
+		size_t nbytes = is->LockRead(dest.data, dest.size);
 
 		buffer.Append(nbytes);
 

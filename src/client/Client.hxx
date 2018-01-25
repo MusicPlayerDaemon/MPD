@@ -241,11 +241,4 @@ void
 client_new(EventLoop &loop, Partition &partition,
 	   UniqueSocketDescriptor fd, SocketAddress address, int uid) noexcept;
 
-/**
- * Write a printf-like formatted string to the client.
- */
-gcc_printf(2,3)
-void
-client_printf(Client &client, const char *fmt, ...);
-
 #endif

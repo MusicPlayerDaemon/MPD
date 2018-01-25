@@ -39,6 +39,7 @@
 #include "config/ConfigGlobal.hxx"
 #include "config/Block.hxx"
 #include "util/RuntimeError.hxx"
+#include "util/StringFormat.hxx"
 #include "Log.hxx"
 
 #include <stdexcept>
@@ -165,12 +166,7 @@ FilteredAudioOutput::Configure(const ConfigBlock &block)
 		config_audio_format.Clear();
 	}
 
-	{
-		char buffer[64];
-		snprintf(buffer, sizeof(buffer), "\"%s\" (%s)",
-			 name, plugin_name);
-		log_name = buffer;
-	}
+	log_name = StringFormat<256>("\"%s\" (%s)", name, plugin_name);
 
 	/* set up the filter chain */
 

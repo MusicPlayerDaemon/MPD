@@ -754,7 +754,7 @@ static void
 play_chunk(PlayerControl &pc,
 	   DetachedSong &song, MusicChunk *chunk,
 	   MusicBuffer &buffer,
-	   const AudioFormat format) noexcept
+	   const AudioFormat format)
 {
 	assert(chunk->CheckFormat(format));
 

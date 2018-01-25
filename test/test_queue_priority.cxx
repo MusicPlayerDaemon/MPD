@@ -8,7 +8,7 @@
 #include <cppunit/ui/text/TestRunner.h>
 #include <cppunit/extensions/HelperMacros.h>
 
-Tag::Tag(const Tag &) {}
+Tag::Tag(const Tag &) noexcept {}
 void Tag::Clear() noexcept {}
 
 static void

@@ -103,7 +103,7 @@ ffmpeg_init(const ConfigBlock &block)
 }
 
 static void
-ffmpeg_finish()
+ffmpeg_finish() noexcept
 {
 	av_dict_free(&avformat_options);
 }
@@ -856,7 +856,7 @@ FfmpegScanStream(AVFormatContext &format_context,
 
 static bool
 ffmpeg_scan_stream(InputStream &is,
-		   const TagHandler &handler, void *handler_ctx)
+		   const TagHandler &handler, void *handler_ctx) noexcept
 {
 	AVInputFormat *input_format = ffmpeg_probe(nullptr, is);
 	if (input_format == nullptr)

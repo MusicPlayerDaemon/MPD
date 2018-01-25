@@ -234,7 +234,7 @@ soundcloud_parse_json(const char *url, Yajl::Handle &handle,
  *	soundcloud://playlist/<playlist-id>
  *	soundcloud://url/<url or path of soundcloud page>
  */
-static SongEnumerator *
+static std::unique_ptr<SongEnumerator>
 soundcloud_open_uri(const char *uri, Mutex &mutex, Cond &cond)
 {
 	assert(strncmp(uri, "soundcloud://", 13) == 0);
@@ -280,7 +280,7 @@ soundcloud_open_uri(const char *uri, Mutex &mutex, Cond &cond)
 	soundcloud_parse_json(u, handle, mutex, cond);
 
 	data.songs.reverse();
-	return new MemorySongEnumerator(std::move(data.songs));
+	return std::make_unique<MemorySongEnumerator>(std::move(data.songs));
 }
 
 static const char *const soundcloud_schemes[] = {

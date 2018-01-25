@@ -63,19 +63,3 @@ OpenArchiveInputStream(Path path, Mutex &mutex, Cond &cond)
 	return archive_file_open(arplug, Path::FromFS(archive))
 		->OpenStream(filename, mutex, cond);
 }
-
-static InputStreamPtr
-input_archive_open(gcc_unused const char *filename,
-		   gcc_unused Mutex &mutex, gcc_unused Cond &cond)
-{
-	/* dummy method; use OpenArchiveInputStream() instead */
-
-	return nullptr;
-}
-
-const InputPlugin input_plugin_archive = {
-	"archive",
-	nullptr,
-	nullptr,
-	input_archive_open,
-};

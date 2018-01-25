@@ -579,9 +579,16 @@ wavpack_filedecode(DecoderClient &client, Path path_fs)
  */
 static bool
 wavpack_scan_file(Path path_fs,
-		  const TagHandler &handler, void *handler_ctx)
+		  const TagHandler &handler, void *handler_ctx) noexcept
 {
-	auto *wpc = WavpackOpenInput(path_fs, OPEN_DSD_FLAG, 0);
+	WavpackContext *wpc;
+
+	try {
+		wpc = WavpackOpenInput(path_fs, OPEN_DSD_FLAG, 0);
+	} catch (...) {
+		return false;
+	}
+
 	AtScopeExit(wpc) {
 		WavpackCloseFile(wpc);
 	};
@@ -595,11 +602,18 @@ wavpack_scan_file(Path path_fs,
 
 static bool
 wavpack_scan_stream(InputStream &is,
-		    const TagHandler &handler, void *handler_ctx)
+		    const TagHandler &handler, void *handler_ctx) noexcept
 {
 	WavpackInput isp(nullptr, is);
-	auto *wpc = WavpackOpenInput(&mpd_is_reader, &isp, nullptr,
-				     OPEN_DSD_FLAG, 0);
+
+	WavpackContext *wpc;
+	try {
+		wpc = WavpackOpenInput(&mpd_is_reader, &isp, nullptr,
+					     OPEN_DSD_FLAG, 0);
+	} catch (...) {
+		return false;
+	}
+
 	AtScopeExit(wpc) {
 		WavpackCloseFile(wpc);
 	};

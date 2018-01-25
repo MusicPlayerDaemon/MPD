@@ -37,29 +37,28 @@ struct Tag {
 	 * The duration of the song.  A negative value means that the
 	 * length is unknown.
 	 */
-	SignedSongTime duration;
+	SignedSongTime duration = SignedSongTime::Negative();
 
 	/**
 	 * Does this file have an embedded playlist (e.g. embedded CUE
 	 * sheet)?
 	 */
-	bool has_playlist;
+	bool has_playlist = false;
 
 	/** the total number of tag items in the #items array */
-	unsigned short num_items;
+	unsigned short num_items = 0;
 
 	/** an array of tag items */
-	TagItem **items;
+	TagItem **items = nullptr;
 
 	/**
 	 * Create an empty tag.
 	 */
-	Tag():duration(SignedSongTime::Negative()), has_playlist(false),
-	      num_items(0), items(nullptr) {}
+	Tag() = default;
 
-	Tag(const Tag &other);
+	Tag(const Tag &other) noexcept;
 
-	Tag(Tag &&other)
+	Tag(Tag &&other) noexcept
 		:duration(other.duration), has_playlist(other.has_playlist),
 		 num_items(other.num_items), items(other.items) {
 		other.items = nullptr;
@@ -69,13 +68,13 @@ struct Tag {
 	/**
 	 * Free the tag object and all its items.
 	 */
-	~Tag() {
+	~Tag() noexcept {
 		Clear();
 	}
 
 	Tag &operator=(const Tag &other) = delete;
 
-	Tag &operator=(Tag &&other) {
+	Tag &operator=(Tag &&other) noexcept {
 		duration = other.duration;
 		has_playlist = other.has_playlist;
 		MoveItemsFrom(std::move(other));
@@ -127,7 +126,7 @@ struct Tag {
 	 * @return a newly allocated tag
 	 */
 	static std::unique_ptr<Tag> Merge(std::unique_ptr<Tag> base,
-					  std::unique_ptr<Tag> add);
+					  std::unique_ptr<Tag> add) noexcept;
 
 	/**
 	 * Returns the first value of the specified tag type, or
@@ -156,52 +155,52 @@ struct Tag {
 		friend struct Tag;
 		const TagItem *const*cursor;
 
-		constexpr const_iterator(const TagItem *const*_cursor)
+		constexpr const_iterator(const TagItem *const*_cursor) noexcept
 			:cursor(_cursor) {}
 
 	public:
-		constexpr const TagItem &operator*() const {
+		constexpr const TagItem &operator*() const noexcept {
 			return **cursor;
 		}
 
-		constexpr const TagItem *operator->() const {
+		constexpr const TagItem *operator->() const noexcept {
 			return *cursor;
 		}
 
-		const_iterator &operator++() {
+		const_iterator &operator++() noexcept {
 			++cursor;
 			return *this;
 		}
 
-		const_iterator operator++(int) {
+		const_iterator operator++(int) noexcept {
 			auto result = cursor++;
 			return const_iterator{result};
 		}
 
-		const_iterator &operator--() {
+		const_iterator &operator--() noexcept {
 			--cursor;
 			return *this;
 		}
 
-		const_iterator operator--(int) {
+		const_iterator operator--(int) noexcept {
 			auto result = cursor--;
 			return const_iterator{result};
 		}
 
-		constexpr bool operator==(const_iterator other) const {
+		constexpr bool operator==(const_iterator other) const noexcept {
 			return cursor == other.cursor;
 		}
 
-		constexpr bool operator!=(const_iterator other) const {
+		constexpr bool operator!=(const_iterator other) const noexcept {
 			return cursor != other.cursor;
 		}
 	};
 
-	const_iterator begin() const {
+	const_iterator begin() const noexcept {
 		return const_iterator{items};
 	}
 
-	const_iterator end() const {
+	const_iterator end() const noexcept {
 		return const_iterator{items + num_items};
 	}
 };

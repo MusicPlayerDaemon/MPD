@@ -42,7 +42,8 @@
 #ifdef ENABLE_DATABASE
 
 Song *
-Song::LoadFile(Storage &storage, const char *path_utf8, Directory &parent)
+Song::LoadFile(Storage &storage, const char *path_utf8,
+	       Directory &parent) noexcept
 {
 	assert(!uri_has_scheme(path_utf8));
 	assert(strchr(path_utf8, '\n') == nullptr);
@@ -61,7 +62,7 @@ Song::LoadFile(Storage &storage, const char *path_utf8, Directory &parent)
 #ifdef ENABLE_DATABASE
 
 bool
-Song::UpdateFile(Storage &storage)
+Song::UpdateFile(Storage &storage) noexcept
 {
 	const auto &relative_uri = GetURI();
 
@@ -99,7 +100,7 @@ Song::UpdateFile(Storage &storage)
 
 Song *
 Song::LoadFromArchive(ArchiveFile &archive, const char *name_utf8,
-		      Directory &parent)
+		      Directory &parent) noexcept
 {
 	assert(!uri_has_scheme(name_utf8));
 	assert(strchr(name_utf8, '\n') == nullptr);
@@ -115,7 +116,7 @@ Song::LoadFromArchive(ArchiveFile &archive, const char *name_utf8,
 }
 
 bool
-Song::UpdateFileInArchive(ArchiveFile &archive)
+Song::UpdateFileInArchive(ArchiveFile &archive) noexcept
 {
 	assert(parent != nullptr);
 	assert(parent->device == DEVICE_INARCHIVE);
@@ -141,7 +142,7 @@ Song::UpdateFileInArchive(ArchiveFile &archive)
 #endif
 
 bool
-DetachedSong::LoadFile(Path path)
+DetachedSong::LoadFile(Path path) noexcept
 {
 	FileInfo fi;
 	if (!GetFileInfo(path, fi) || !fi.IsRegular())
@@ -157,7 +158,7 @@ DetachedSong::LoadFile(Path path)
 }
 
 bool
-DetachedSong::Update()
+DetachedSong::Update() noexcept
 {
 	if (IsAbsoluteFile()) {
 		const AllocatedPath path_fs =

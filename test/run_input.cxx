@@ -26,6 +26,7 @@
 #include "event/Thread.hxx"
 #include "thread/Cond.hxx"
 #include "Log.hxx"
+#include "LogBackend.hxx"
 #include "fs/Path.hxx"
 #include "fs/io/BufferedOutputStream.hxx"
 #include "fs/io/StdioOutputStream.hxx"
@@ -46,14 +47,18 @@ struct CommandLine {
 	const char *uri = nullptr;
 
 	Path config_path = nullptr;
+
+	bool verbose = false;
 };
 
 enum Option {
 	OPTION_CONFIG,
+	OPTION_VERBOSE,
 };
 
 static constexpr OptionDef option_defs[] = {
 	{"config", 0, true, "Load a MPD configuration file"},
+	{"verbose", 'v', false, "Verbose logging"},
 };
 
 static CommandLine
@@ -67,12 +72,16 @@ ParseCommandLine(int argc, char **argv)
 		case OPTION_CONFIG:
 			c.config_path = Path::FromFS(o.value);
 			break;
+
+		case OPTION_VERBOSE:
+			c.verbose = true;
+			break;
 		}
 	}
 
 	auto args = option_parser.GetRemaining();
 	if (args.size != 1)
-		throw std::runtime_error("Usage: run_input [--config=FILE] URI");
+		throw std::runtime_error("Usage: run_input [--verbose] [--config=FILE] URI");
 
 	c.uri = args.front();
 	return c;
@@ -82,7 +91,9 @@ class GlobalInit {
 	EventThread io_thread;
 
 public:
-	GlobalInit(Path config_path) {
+	GlobalInit(Path config_path, bool verbose) {
+		SetLogThreshold(verbose ? LogLevel::DEBUG : LogLevel::INFO);
+
 		io_thread.Start();
 		config_global_init();
 
@@ -155,7 +166,7 @@ try {
 
 	/* initialize MPD */
 
-	const GlobalInit init(c.config_path);
+	const GlobalInit init(c.config_path, c.verbose);
 
 	/* open the stream and dump it */
 

@@ -117,7 +117,7 @@ try {
 
 	/* deinitialize everything */
 
-	delete playlist;
+	playlist.reset();
 	is.reset();
 
 	decoder_plugin_deinit_all();

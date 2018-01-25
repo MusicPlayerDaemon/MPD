@@ -237,12 +237,12 @@ public:
 	 *
 	 * @return true on success
 	 */
-	bool Update();
+	bool Update() noexcept;
 
 	/**
 	 * Load #tag and #mtime from a local file.
 	 */
-	bool LoadFile(Path path);
+	bool LoadFile(Path path) noexcept;
 };
 
 #endif

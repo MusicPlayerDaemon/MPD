@@ -25,6 +25,8 @@
 #include "util/ChronoUtil.hxx"
 #include "util/ConstBuffer.hxx"
 #include "util/StringAPI.hxx"
+#include "util/StringCompare.hxx"
+#include "util/StringView.hxx"
 #include "util/ASCII.hxx"
 #include "util/TimeParser.hxx"
 #include "util/UriUtil.hxx"
@@ -60,7 +62,7 @@ locate_parse_type(const char *str) noexcept
 
 SongFilter::Item::Item(unsigned _tag, const char *_value, bool _fold_case)
 	:tag(_tag),
-	 value(AllocatedString<>::Duplicate(_value)),
+	 value(_value),
 	 fold_case(_fold_case ? IcuCompare(value.c_str()) : IcuCompare())
 {
 }
@@ -274,4 +276,34 @@ SongFilter::GetBase() const noexcept
 			return i.GetValue();
 
 	return nullptr;
+}
+
+SongFilter
+SongFilter::WithoutBasePrefix(const char *_prefix) const noexcept
+{
+	const StringView prefix(_prefix);
+	SongFilter result;
+
+	for (const auto &i : items) {
+		if (i.GetTag() == LOCATE_TAG_BASE_TYPE) {
+			const char *s = StringAfterPrefix(i.GetValue(), prefix);
+			if (s != nullptr) {
+				if (*s == 0)
+					continue;
+
+				if (*s == '/') {
+					++s;
+
+					if (*s != 0)
+						result.items.emplace_back(LOCATE_TAG_BASE_TYPE, s);
+
+					continue;
+				}
+			}
+		}
+
+		result.items.emplace_back(i);
+	}
+
+	return result;
 }

@@ -22,6 +22,8 @@
 
 #include "Compiler.h"
 
+#include <memory>
+
 class Mutex;
 class Cond;
 class SongEnumerator;
@@ -34,11 +36,11 @@ class Path;
  * @return a playlist, or nullptr on error
  */
 gcc_nonnull_all
-SongEnumerator *
+std::unique_ptr<SongEnumerator>
 playlist_open_path(Path path, Mutex &mutex, Cond &cond);
 
 gcc_nonnull_all
-SongEnumerator *
+std::unique_ptr<SongEnumerator>
 playlist_open_remote(const char *uri, Mutex &mutex, Cond &cond);
 
 #endif

@@ -26,7 +26,7 @@
 
 bool
 tag_archive_scan(ArchiveFile &archive, const char *path_utf8,
-		 const TagHandler &handler, void *handler_ctx)
+		 const TagHandler &handler, void *handler_ctx) noexcept
 try {
 	Mutex mutex;
 	Cond cond;
@@ -42,7 +42,7 @@ try {
 
 bool
 tag_archive_scan(ArchiveFile &archive, const char *path_utf8,
-		 TagBuilder &builder)
+		 TagBuilder &builder) noexcept
 try {
 	Mutex mutex;
 	Cond cond;

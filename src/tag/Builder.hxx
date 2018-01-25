@@ -39,13 +39,13 @@ class TagBuilder {
 	 * The duration of the song.  A negative value means that the
 	 * length is unknown.
 	 */
-	SignedSongTime duration;
+	SignedSongTime duration = SignedSongTime::Negative();
 
 	/**
 	 * Does this file have an embedded playlist (e.g. embedded CUE
 	 * sheet)?
 	 */
-	bool has_playlist;
+	bool has_playlist = false;
 
 	/** an array of tag items */
 	std::vector<TagItem *> items;
@@ -54,22 +54,21 @@ public:
 	/**
 	 * Create an empty tag.
 	 */
-	TagBuilder()
-		:duration(SignedSongTime::Negative()), has_playlist(false) {}
+	TagBuilder() = default;
 
-	~TagBuilder() {
+	~TagBuilder() noexcept {
 		Clear();
 	}
 
 	TagBuilder(const TagBuilder &other) = delete;
 
-	explicit TagBuilder(const Tag &other);
-	explicit TagBuilder(Tag &&other);
+	explicit TagBuilder(const Tag &other) noexcept;
+	explicit TagBuilder(Tag &&other) noexcept;
 
-	TagBuilder &operator=(const TagBuilder &other);
-	TagBuilder &operator=(TagBuilder &&other);
+	TagBuilder &operator=(const TagBuilder &other) noexcept;
+	TagBuilder &operator=(TagBuilder &&other) noexcept;
 
-	TagBuilder &operator=(Tag &&other);
+	TagBuilder &operator=(Tag &&other) noexcept;
 
 	/**
 	 * Returns true if the tag contains no items.  This ignores
@@ -87,36 +86,36 @@ public:
 		return !duration.IsNegative() || has_playlist || !empty();
 	}
 
-	void Clear();
+	void Clear() noexcept;
 
 	/**
 	 * Move this object to the given #Tag instance.  This object
 	 * is empty afterwards.
 	 */
-	void Commit(Tag &tag);
+	void Commit(Tag &tag) noexcept;
 
 	/**
 	 * Create a new #Tag instance from data in this object.  This
 	 * object is empty afterwards.
 	 */
-	Tag Commit();
+	Tag Commit() noexcept;
 
 	/**
 	 * Create a new #Tag instance from data in this object.  The
 	 * returned object is owned by the caller.  This object is
 	 * empty afterwards.
 	 */
-	std::unique_ptr<Tag> CommitNew();
+	std::unique_ptr<Tag> CommitNew() noexcept;
 
-	void SetDuration(SignedSongTime _duration) {
+	void SetDuration(SignedSongTime _duration) noexcept {
 		duration = _duration;
 	}
 
-	void SetHasPlaylist(bool _has_playlist) {
+	void SetHasPlaylist(bool _has_playlist) noexcept {
 		has_playlist = _has_playlist;
 	}
 
-	void Reserve(unsigned n) {
+	void Reserve(unsigned n) noexcept {
 		items.reserve(n);
 	}
 
@@ -131,7 +130,7 @@ public:
 	 * Copy attributes and items from the other object that do not
 	 * exist in this object.
 	 */
-	void Complement(const Tag &other);
+	void Complement(const Tag &other) noexcept;
 
 	/**
 	 * Appends a new tag item.
@@ -141,7 +140,7 @@ public:
 	 * @param length the length of #value
 	 */
 	gcc_nonnull_all
-	void AddItem(TagType type, StringView value);
+	void AddItem(TagType type, StringView value) noexcept;
 
 	/**
 	 * Appends a new tag item.
@@ -150,14 +149,14 @@ public:
 	 * @param value the value of the tag item (null-terminated)
 	 */
 	gcc_nonnull_all
-	void AddItem(TagType type, const char *value);
+	void AddItem(TagType type, const char *value) noexcept;
 
 	/**
 	 * Appends a new tag item with an empty value.  Do not use
 	 * this unless you know what you're doing - because usually,
 	 * empty values are discarded.
 	 */
-	void AddEmptyItem(TagType type);
+	void AddEmptyItem(TagType type) noexcept;
 
 	/**
 	 * Removes all tag items.
@@ -171,7 +170,7 @@ public:
 
 private:
 	gcc_nonnull_all
-	void AddItemInternal(TagType type, StringView value);
+	void AddItemInternal(TagType type, StringView value) noexcept;
 };
 
 #endif

@@ -50,14 +50,14 @@ class CrossGccToolchain:
         self.nm = os.path.join(toolchain_bin, arch + '-nm')
         self.strip = os.path.join(toolchain_bin, arch + '-strip')
 
-        common_flags = ''
+        common_flags = '-O2 -g'
 
         if not x64:
             # enable SSE support which is required for LAME
             common_flags += ' -march=pentium3'
 
-        self.cflags = '-O2 -g ' + common_flags
-        self.cxxflags = '-O2 -g ' + common_flags
+        self.cflags = common_flags
+        self.cxxflags = common_flags
         self.cppflags = '-isystem ' + os.path.join(install_prefix, 'include')
         self.ldflags = '-L' + os.path.join(install_prefix, 'lib')
         self.libs = ''

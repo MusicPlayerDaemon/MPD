@@ -34,7 +34,7 @@ static void
 playlist_provider_print(Response &r,
 			const SongLoader &loader,
 			const char *uri,
-			SongEnumerator &e, bool detail)
+			SongEnumerator &e, bool detail) noexcept
 {
 	const std::string base_uri = uri != nullptr
 		? PathTraitsUTF8::GetParent(uri)
@@ -65,15 +65,14 @@ playlist_file_print(Response &r, Partition &partition,
 	(void)partition;
 #endif
 
-	SongEnumerator *playlist = playlist_open_any(uri,
+	auto playlist = playlist_open_any(uri,
 #ifdef ENABLE_DATABASE
-						     partition.instance.storage,
+					  partition.instance.storage,
 #endif
-						     mutex, cond);
+					  mutex, cond);
 	if (playlist == nullptr)
 		return false;
 
 	playlist_provider_print(r, loader, uri, *playlist, detail);
-	delete playlist;
 	return true;
 }

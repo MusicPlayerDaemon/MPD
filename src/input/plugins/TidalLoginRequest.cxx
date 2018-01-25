@@ -19,11 +19,12 @@
 
 #include "config.h"
 #include "TidalLoginRequest.hxx"
+#include "TidalErrorParser.hxx"
 #include "lib/curl/Form.hxx"
 #include "lib/yajl/Callbacks.hxx"
-#include "util/RuntimeError.hxx"
+#include "lib/yajl/ResponseParser.hxx"
 
-using Wrapper = Yajl::CallbacksWrapper<TidalLoginRequest>;
+using Wrapper = Yajl::CallbacksWrapper<TidalLoginRequest::ResponseParser>;
 static constexpr yajl_callbacks parse_callbacks = {
 	nullptr,
 	nullptr,
@@ -38,6 +39,31 @@ static constexpr yajl_callbacks parse_callbacks = {
 	nullptr,
 };
 
+class TidalLoginRequest::ResponseParser final : public YajlResponseParser {
+	enum class State {
+		NONE,
+		SESSION_ID,
+	} state = State::NONE;
+
+	std::string session;
+
+public:
+	explicit ResponseParser() noexcept
+		:YajlResponseParser(&parse_callbacks, nullptr, this) {}
+
+	std::string &&GetSession() {
+		if (session.empty())
+			throw std::runtime_error("No sessionId in login response");
+
+		return std::move(session);
+	}
+
+	/* yajl callbacks */
+	bool String(StringView value) noexcept;
+	bool MapKey(StringView value) noexcept;
+	bool EndMap() noexcept;
+};
+
 static std::string
 MakeLoginUrl(const char *base_url)
 {
@@ -47,9 +73,8 @@ MakeLoginUrl(const char *base_url)
 TidalLoginRequest::TidalLoginRequest(CurlGlobal &curl,
 				     const char *base_url, const char *token,
 				     const char *username, const char *password,
-				     TidalLoginHandler &_handler) noexcept
+				     TidalLoginHandler &_handler)
 	:request(curl, MakeLoginUrl(base_url).c_str(), *this),
-	 parser(&parse_callbacks, nullptr, this),
 	 handler(_handler)
 {
 	request_headers.Append((std::string("X-Tidal-Token:")
@@ -59,8 +84,6 @@ TidalLoginRequest::TidalLoginRequest(CurlGlobal &curl,
 	request.SetOption(CURLOPT_COPYPOSTFIELDS,
 			  EncodeForm(request.Get(),
 				     {{"username", username}, {"password", password}}).c_str());
-
-	request.StartIndirect();
 }
 
 TidalLoginRequest::~TidalLoginRequest() noexcept
@@ -68,33 +91,26 @@ TidalLoginRequest::~TidalLoginRequest() noexcept
 	request.StopIndirect();
 }
 
-void
-TidalLoginRequest::OnHeaders(unsigned status,
-			     std::multimap<std::string, std::string> &&headers)
+std::unique_ptr<CurlResponseParser>
+TidalLoginRequest::MakeParser(unsigned status,
+			      std::multimap<std::string, std::string> &&headers)
 {
 	if (status != 200)
-		throw FormatRuntimeError("Status %u from Tidal", status);
+		return std::make_unique<TidalErrorParser>(status, headers);
 
 	auto i = headers.find("content-type");
 	if (i == headers.end() || i->second.find("/json") == i->second.npos)
 		throw std::runtime_error("Not a JSON response from Tidal");
+
+	return std::make_unique<ResponseParser>();
 }
 
 void
-TidalLoginRequest::OnData(ConstBuffer<void> data)
+TidalLoginRequest::FinishParser(std::unique_ptr<CurlResponseParser> p)
 {
-	parser.Parse((const unsigned char *)data.data, data.size);
-}
-
-void
-TidalLoginRequest::OnEnd()
-{
-	parser.CompleteParse();
-
-	if (session.empty())
-		throw std::runtime_error("No sessionId in login response");
-
-	handler.OnTidalLoginSuccess(std::move(session));
+	assert(dynamic_cast<ResponseParser *>(p.get()) != nullptr);
+	auto &rp = (ResponseParser &)*p;
+	handler.OnTidalLoginSuccess(rp.GetSession());
 }
 
 void
@@ -104,7 +120,7 @@ TidalLoginRequest::OnError(std::exception_ptr e) noexcept
 }
 
 inline bool
-TidalLoginRequest::String(StringView value) noexcept
+TidalLoginRequest::ResponseParser::String(StringView value) noexcept
 {
 	switch (state) {
 	case State::NONE:
@@ -119,7 +135,7 @@ TidalLoginRequest::String(StringView value) noexcept
 }
 
 inline bool
-TidalLoginRequest::MapKey(StringView value) noexcept
+TidalLoginRequest::ResponseParser::MapKey(StringView value) noexcept
 {
 	if (value.Equals("sessionId"))
 		state = State::SESSION_ID;
@@ -130,7 +146,7 @@ TidalLoginRequest::MapKey(StringView value) noexcept
 }
 
 inline bool
-TidalLoginRequest::EndMap() noexcept
+TidalLoginRequest::ResponseParser::EndMap() noexcept
 {
 	state = State::NONE;
 

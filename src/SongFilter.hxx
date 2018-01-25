@@ -21,9 +21,9 @@
 #define MPD_SONG_FILTER_HXX
 
 #include "lib/icu/Compare.hxx"
-#include "util/AllocatedString.hxx"
 #include "Compiler.h"
 
+#include <string>
 #include <list>
 #include <chrono>
 
@@ -54,7 +54,7 @@ public:
 	class Item {
 		uint8_t tag;
 
-		AllocatedString<> value;
+		std::string value;
 
 		/**
 		 * This value is only set if case folding is enabled.
@@ -70,11 +70,6 @@ public:
 		gcc_nonnull(3)
 		Item(unsigned tag, const char *value, bool fold_case=false);
 		Item(unsigned tag, std::chrono::system_clock::time_point time);
-
-		Item(const Item &other) = delete;
-		Item(Item &&) = default;
-
-		Item &operator=(const Item &other) = delete;
 
 		unsigned GetTag() const {
 			return tag;
@@ -162,6 +157,13 @@ public:
 	 */
 	gcc_pure
 	const char *GetBase() const noexcept;
+
+	/**
+	 * Create a copy of the filter with the given prefix stripped
+	 * from all #LOCATE_TAG_BASE_TYPE items.  This is used to
+	 * filter songs in mounted databases.
+	 */
+	SongFilter WithoutBasePrefix(const char *prefix) const noexcept;
 };
 
 /**

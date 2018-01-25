@@ -20,9 +20,9 @@
 #ifndef MPD_ACK_H
 #define MPD_ACK_H
 
-#include <stdexcept>
+#include "util/StringFormat.hxx"
 
-#include <stdio.h>
+#include <stdexcept>
 
 class Domain;
 
@@ -60,9 +60,9 @@ template<typename... Args>
 static inline ProtocolError
 FormatProtocolError(enum ack code, const char *fmt, Args&&... args) noexcept
 {
-	char buffer[256];
-	snprintf(buffer, sizeof(buffer), fmt, std::forward<Args>(args)...);
-	return ProtocolError(code, buffer);
+	return ProtocolError(code,
+			     StringFormat<256>(fmt,
+					       std::forward<Args>(args)...));
 }
 
 #endif

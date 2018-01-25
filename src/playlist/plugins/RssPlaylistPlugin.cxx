@@ -140,7 +140,7 @@ rss_char_data(void *user_data, const XML_Char *s, int len)
  *
  */
 
-static SongEnumerator *
+static std::unique_ptr<SongEnumerator>
 rss_open_stream(InputStreamPtr &&is)
 {
 	RssParser parser;
@@ -153,7 +153,7 @@ rss_open_stream(InputStreamPtr &&is)
 	}
 
 	parser.songs.reverse();
-	return new MemorySongEnumerator(std::move(parser.songs));
+	return std::make_unique<MemorySongEnumerator>(std::move(parser.songs));
 }
 
 static const char *const rss_suffixes[] = {

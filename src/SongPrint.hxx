@@ -25,15 +25,17 @@ class DetachedSong;
 class Response;
 
 void
-song_print_info(Response &r, const DetachedSong &song, bool base=false);
+song_print_info(Response &r, const DetachedSong &song,
+		bool base=false) noexcept;
 
 void
-song_print_info(Response &r, const LightSong &song, bool base=false);
+song_print_info(Response &r, const LightSong &song, bool base=false) noexcept;
 
 void
-song_print_uri(Response &r, const LightSong &song, bool base=false);
+song_print_uri(Response &r, const LightSong &song, bool base=false) noexcept;
 
 void
-song_print_uri(Response &r, const DetachedSong &song, bool base=false);
+song_print_uri(Response &r, const DetachedSong &song,
+	       bool base=false) noexcept;
 
 #endif

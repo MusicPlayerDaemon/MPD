@@ -21,8 +21,8 @@
 #include "Handler.hxx"
 #include "Builder.hxx"
 #include "util/ASCII.hxx"
+#include "util/StringFormat.hxx"
 
-#include <stdio.h>
 #include <stdlib.h>
 
 static void
@@ -42,11 +42,8 @@ add_tag_tag(TagType type, const char *value, void *ctx)
 		/* filter out this extra data and leading zeroes */
 		char *end;
 		unsigned n = strtoul(value, &end, 10);
-		if (value != end) {
-			char s[21];
-			if (snprintf(s, 21, "%u", n) > 0)
-				tag.AddItem(type, s);
-		}
+		if (value != end)
+			tag.AddItem(type, StringFormat<21>("%u", n));
 	} else
 		tag.AddItem(type, value);
 }

@@ -42,7 +42,7 @@ class TagCountMap : public std::map<std::string, SearchStats> {
 };
 
 static void
-PrintSearchStats(Response &r, const SearchStats &stats)
+PrintSearchStats(Response &r, const SearchStats &stats) noexcept
 {
 	unsigned total_duration_s =
 		std::chrono::duration_cast<std::chrono::seconds>(stats.total_duration).count();
@@ -53,7 +53,7 @@ PrintSearchStats(Response &r, const SearchStats &stats)
 }
 
 static void
-Print(Response &r, TagType group, const TagCountMap &m)
+Print(Response &r, TagType group, const TagCountMap &m) noexcept
 {
 	assert(unsigned(group) < TAG_NUM_OF_ITEM_TYPES);
 
@@ -64,7 +64,7 @@ Print(Response &r, TagType group, const TagCountMap &m)
 }
 
 static void
-stats_visitor_song(SearchStats &stats, const LightSong &song)
+stats_visitor_song(SearchStats &stats, const LightSong &song) noexcept
 {
 	stats.n_songs++;
 
@@ -74,7 +74,7 @@ stats_visitor_song(SearchStats &stats, const LightSong &song)
 }
 
 static bool
-CollectGroupCounts(TagCountMap &map, TagType group, const Tag &tag)
+CollectGroupCounts(TagCountMap &map, TagType group, const Tag &tag) noexcept
 {
 	bool found = false;
 	for (const auto &item : tag) {
@@ -94,7 +94,8 @@ CollectGroupCounts(TagCountMap &map, TagType group, const Tag &tag)
 }
 
 static void
-GroupCountVisitor(TagCountMap &map, TagType group, const LightSong &song)
+GroupCountVisitor(TagCountMap &map, TagType group,
+		  const LightSong &song) noexcept
 {
 	assert(song.tag != nullptr);
 

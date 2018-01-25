@@ -31,10 +31,6 @@
 
 #include <assert.h>
 
-#ifdef ENABLE_ARCHIVE
-#include <errno.h>
-#endif
-
 InputStreamPtr
 OpenLocalInputStream(Path path, Mutex &mutex, Cond &cond)
 {
@@ -57,7 +53,8 @@ OpenLocalInputStream(Path path, Mutex &mutex, Cond &cond)
 	}
 #endif
 
-	assert(is == nullptr || is->IsReady());
+	assert(is);
+	assert(is->IsReady());
 
 	return is;
 }

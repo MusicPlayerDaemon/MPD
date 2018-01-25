@@ -36,12 +36,34 @@
 #include <string>
 #include <map>
 
+/**
+ * Asynchronous response handler for a #CurlRequest.
+ *
+ * Its methods must be thread-safe.
+ */
 class CurlResponseHandler {
 public:
+	/**
+	 * Status line and headers have been received.
+	 */
 	virtual void OnHeaders(unsigned status,
 			       std::multimap<std::string, std::string> &&headers) = 0;
+
+	/**
+	 * Response body data has been received.
+	 */
 	virtual void OnData(ConstBuffer<void> data) = 0;
+
+	/**
+	 * The response has ended.  The method is allowed delete the
+	 * #CurlRequest here.
+	 */
 	virtual void OnEnd() = 0;
+
+	/**
+	 * An error has occurred.  The method is allowed delete the
+	 * #CurlRequest here.
+	 */
 	virtual void OnError(std::exception_ptr e) noexcept = 0;
 };
 

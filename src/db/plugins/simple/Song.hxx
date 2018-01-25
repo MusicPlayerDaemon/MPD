@@ -109,17 +109,17 @@ struct Song {
 	 */
 	gcc_malloc
 	static Song *LoadFile(Storage &storage, const char *name_utf8,
-			      Directory &parent);
+			      Directory &parent) noexcept;
 
 	void Free();
 
-	bool UpdateFile(Storage &storage);
+	bool UpdateFile(Storage &storage) noexcept;
 
 #ifdef ENABLE_ARCHIVE
 	static Song *LoadFromArchive(ArchiveFile &archive,
 				     const char *name_utf8,
-				     Directory &parent);
-	bool UpdateFileInArchive(ArchiveFile &archive);
+				     Directory &parent) noexcept;
+	bool UpdateFileInArchive(ArchiveFile &archive) noexcept;
 #endif
 
 	/**

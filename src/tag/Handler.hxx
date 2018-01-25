@@ -54,7 +54,7 @@ struct TagHandler {
 
 static inline void
 tag_handler_invoke_duration(const TagHandler &handler, void *ctx,
-			    SongTime duration)
+			    SongTime duration) noexcept
 {
 	if (handler.duration != nullptr)
 		handler.duration(duration, ctx);
@@ -62,7 +62,7 @@ tag_handler_invoke_duration(const TagHandler &handler, void *ctx,
 
 static inline void
 tag_handler_invoke_tag(const TagHandler &handler, void *ctx,
-		       TagType type, const char *value)
+		       TagType type, const char *value) noexcept
 {
 	assert((unsigned)type < TAG_NUM_OF_ITEM_TYPES);
 	assert(value != nullptr);
@@ -73,7 +73,7 @@ tag_handler_invoke_tag(const TagHandler &handler, void *ctx,
 
 static inline void
 tag_handler_invoke_pair(const TagHandler &handler, void *ctx,
-			const char *name, const char *value)
+			const char *name, const char *value) noexcept
 {
 	assert(name != nullptr);
 	assert(value != nullptr);

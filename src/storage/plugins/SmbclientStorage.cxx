@@ -67,7 +67,7 @@ public:
 	/* virtual methods from class Storage */
 	StorageFileInfo GetInfo(const char *uri_utf8, bool follow) override;
 
-	StorageDirectoryReader *OpenDirectory(const char *uri_utf8) override;
+	std::unique_ptr<StorageDirectoryReader> OpenDirectory(const char *uri_utf8) override;
 
 	std::string MapUTF8(const char *uri_utf8) const noexcept override;
 
@@ -124,7 +124,7 @@ SmbclientStorage::GetInfo(const char *uri_utf8, gcc_unused bool follow)
 	return ::GetInfo(mapped.c_str());
 }
 
-StorageDirectoryReader *
+std::unique_ptr<StorageDirectoryReader>
 SmbclientStorage::OpenDirectory(const char *uri_utf8)
 {
 	std::string mapped = MapUTF8(uri_utf8);
@@ -138,7 +138,8 @@ SmbclientStorage::OpenDirectory(const char *uri_utf8)
 			throw MakeErrno("Failed to open directory");
 	}
 
-	return new SmbclientDirectoryReader(std::move(mapped.c_str()), handle);
+	return std::make_unique<SmbclientDirectoryReader>(std::move(mapped.c_str()),
+							  handle);
 }
 
 gcc_pure

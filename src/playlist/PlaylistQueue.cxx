@@ -72,11 +72,11 @@ playlist_open_into_queue(const char *uri,
 	Mutex mutex;
 	Cond cond;
 
-	std::unique_ptr<SongEnumerator> playlist(playlist_open_any(uri,
+	auto playlist = playlist_open_any(uri,
 #ifdef ENABLE_DATABASE
-								   loader.GetStorage(),
+					  loader.GetStorage(),
 #endif
-								   mutex, cond));
+					  mutex, cond);
 	if (playlist == nullptr)
 		throw PlaylistError::NoSuchList();
 

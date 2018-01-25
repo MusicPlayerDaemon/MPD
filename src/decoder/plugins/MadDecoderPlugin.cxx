@@ -1063,7 +1063,7 @@ mp3_decode(DecoderClient &client, InputStream &input_stream)
 
 static bool
 mad_decoder_scan_stream(InputStream &is,
-			const TagHandler &handler, void *handler_ctx)
+			const TagHandler &handler, void *handler_ctx) noexcept
 {
 	const auto result = mad_decoder_total_file_time(is);
 	if (!result.first)

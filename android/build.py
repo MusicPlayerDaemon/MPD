@@ -65,7 +65,9 @@ class AndroidNdkToolchain:
         llvm_path = os.path.join(ndk_path, 'toolchains', 'llvm', 'prebuilt', build_arch)
         llvm_triple = 'armv7-none-linux-androideabi'
 
-        common_flags = '-march=armv7-a -mfloat-abi=softfp'
+        common_flags = '-Os -g'
+        common_flags += ' -fPIC'
+        common_flags += ' -march=armv7-a -mfloat-abi=softfp'
 
         toolchain_bin = os.path.join(toolchain_path, 'bin')
         llvm_bin = os.path.join(llvm_path, 'bin')
@@ -80,8 +82,8 @@ class AndroidNdkToolchain:
         self.nm = os.path.join(toolchain_bin, arch + '-nm')
         self.strip = os.path.join(toolchain_bin, arch + '-strip')
 
-        self.cflags = '-Os -g ' + common_flags
-        self.cxxflags = '-Os -g ' + common_flags
+        self.cflags = common_flags
+        self.cxxflags = common_flags
         self.cppflags = '--sysroot=' + sysroot + \
             ' -isystem ' + os.path.join(install_prefix, 'include') + \
             ' -isystem ' + os.path.join(sysroot, 'usr', 'include', arch) + \
@@ -100,15 +102,13 @@ class AndroidNdkToolchain:
         libcxx_path = os.path.join(ndk_path, 'sources/cxx-stl/llvm-libc++')
         libcxx_libs_path = os.path.join(libcxx_path, 'libs', android_abi)
 
-        libstdcxx_cppflags = '-nostdinc++ -isystem ' + os.path.join(libcxx_path, 'include') + ' -isystem ' + os.path.join(ndk_path, 'sources/android/support/include')
-        libstdcxx_ldadd = os.path.join(libcxx_libs_path, 'libc++_static.a') + ' ' + os.path.join(libcxx_libs_path, 'libc++abi.a')
-
-        if self.is_armv7:
-            libstdcxx_ldadd += ' ' + os.path.join(libcxx_libs_path, 'libunwind.a')
+        libstdcxx_flags = '-stdlib=libc++'
+        libstdcxx_cxxflags = libstdcxx_flags + ' -isystem ' + os.path.join(libcxx_path, 'include') + ' -isystem ' + os.path.join(ndk_path, 'sources/android/support/include')
+        libstdcxx_ldflags = libstdcxx_flags + ' -static-libstdc++ -L' + libcxx_libs_path
 
         if use_cxx:
-            self.libs += ' ' + libstdcxx_ldadd
-            self.cppflags += ' ' + libstdcxx_cppflags
+            self.cxxflags += ' ' + libstdcxx_cxxflags
+            self.ldflags += ' ' + libstdcxx_ldflags
 
         self.env = dict(os.environ)
 

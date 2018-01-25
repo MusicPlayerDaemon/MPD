@@ -21,64 +21,58 @@
 #define TIDAL_TRACK_REQUEST_HXX
 
 #include "check.h"
-#include "lib/curl/Handler.hxx"
+#include "lib/curl/Delegate.hxx"
 #include "lib/curl/Slist.hxx"
 #include "lib/curl/Request.hxx"
-#include "lib/yajl/Handle.hxx"
 
-#include <exception>
-#include <string>
-
-class CurlRequest;
-
+/**
+ * Callback class for #TidalTrackRequest.
+ *
+ * Its methods must be thread-safe.
+ */
 class TidalTrackHandler
 	: public boost::intrusive::list_base_hook<boost::intrusive::link_mode<boost::intrusive::safe_link>>
 {
 public:
-	virtual void OnTidalTrackSuccess(std::string &&url) noexcept = 0;
+	virtual void OnTidalTrackSuccess(std::string url) noexcept = 0;
 	virtual void OnTidalTrackError(std::exception_ptr error) noexcept = 0;
 };
 
-class TidalTrackRequest final : CurlResponseHandler {
+/**
+ * An asynchronous request for the streaming URL of a Tidal track.
+ *
+ * After construction, call Start() to initiate the request.
+ */
+class TidalTrackRequest final : DelegateCurlResponseHandler {
 	CurlSlist request_headers;
 
 	CurlRequest request;
 
-	Yajl::Handle parser;
-
-	enum class State {
-		NONE,
-		URLS,
-	} state = State::NONE;
-
-	std::string url;
-
-	std::exception_ptr error;
-
 	TidalTrackHandler &handler;
 
 public:
+	class ResponseParser;
+
 	TidalTrackRequest(CurlGlobal &curl,
 			  const char *base_url, const char *token,
 			  const char *session,
 			  const char *track_id,
-			  TidalTrackHandler &_handler) noexcept;
+			  TidalTrackHandler &_handler);
 
 	~TidalTrackRequest() noexcept;
 
-private:
-	/* virtual methods from CurlResponseHandler */
-	void OnHeaders(unsigned status,
-		       std::multimap<std::string, std::string> &&headers) override;
-	void OnData(ConstBuffer<void> data) override;
-	void OnEnd() override;
-	void OnError(std::exception_ptr e) noexcept override;
+	void Start() {
+		request.StartIndirect();
+	}
 
-public:
-	/* yajl callbacks */
-	bool String(StringView value) noexcept;
-	bool MapKey(StringView value) noexcept;
-	bool EndMap() noexcept;
+private:
+	/* virtual methods from DelegateCurlResponseHandler */
+	std::unique_ptr<CurlResponseParser> MakeParser(unsigned status,
+						       std::multimap<std::string, std::string> &&headers) override;
+	void FinishParser(std::unique_ptr<CurlResponseParser> p) override;
+
+	/* virtual methods from CurlResponseHandler */
+	void OnError(std::exception_ptr e) noexcept override;
 };
 
 #endif

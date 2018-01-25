@@ -96,7 +96,7 @@ private:
 	std::string mime;
 
 public:
-	InputStream(const char *_uri, Mutex &_mutex, Cond &_cond)
+	InputStream(const char *_uri, Mutex &_mutex, Cond &_cond) noexcept
 		:uri(_uri),
 		 mutex(_mutex), cond(_cond) {
 		assert(_uri != nullptr);
@@ -140,14 +140,6 @@ public:
 	 */
 	const char *GetURI() const noexcept {
 		return uri.c_str();
-	}
-
-	void Lock() noexcept {
-		mutex.lock();
-	}
-
-	void Unlock() noexcept {
-		mutex.unlock();
 	}
 
 	/**

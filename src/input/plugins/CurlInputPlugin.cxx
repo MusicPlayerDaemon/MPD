@@ -38,11 +38,14 @@
 #include "thread/Cond.hxx"
 #include "util/ASCII.hxx"
 #include "util/StringUtil.hxx"
+#include "util/StringFormat.hxx"
 #include "util/NumberParser.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
 #include "PluginUnavailable.hxx"
+
+#include <cinttypes>
 
 #include <assert.h>
 #include <string.h>
@@ -382,13 +385,10 @@ CurlInputStream::InitEasy()
 	if (proxy_port > 0)
 		request->SetOption(CURLOPT_PROXYPORT, (long)proxy_port);
 
-	if (proxy_user != nullptr && proxy_password != nullptr) {
-		char proxy_auth_str[1024];
-		snprintf(proxy_auth_str, sizeof(proxy_auth_str),
-			 "%s:%s",
-			 proxy_user, proxy_password);
-		request->SetOption(CURLOPT_PROXYUSERPWD, proxy_auth_str);
-	}
+	if (proxy_user != nullptr && proxy_password != nullptr)
+		request->SetOption(CURLOPT_PROXYUSERPWD,
+				   StringFormat<1024>("%s:%s", proxy_user,
+						      proxy_password).c_str());
 
 	request->SetOption(CURLOPT_SSL_VERIFYPEER, verify_peer ? 1l : 0l);
 	request->SetOption(CURLOPT_SSL_VERIFYHOST, verify_host ? 2l : 0l);
@@ -421,16 +421,10 @@ CurlInputStream::SeekInternal(offset_type new_offset)
 
 	/* send the "Range" header */
 
-	if (offset > 0) {
-		char range[32];
-#ifdef _WIN32
-		// TODO: what can we use on Windows to format 64 bit?
-		sprintf(range, "%lu-", (long)offset);
-#else
-		sprintf(range, "%llu-", (unsigned long long)offset);
-#endif
-		request->SetOption(CURLOPT_RANGE, range);
-	}
+	if (offset > 0)
+		request->SetOption(CURLOPT_RANGE,
+				   StringFormat<40>("%" PRIoffset "-",
+						    offset).c_str());
 
 	StartRequest();
 }

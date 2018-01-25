@@ -37,6 +37,7 @@
 #include "util/ChronoUtil.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/StringCompare.hxx"
+#include "util/StringFormat.hxx"
 #include "util/TimeParser.hxx"
 #include "util/UriUtil.hxx"
 
@@ -60,7 +61,7 @@ public:
 	/* virtual methods from class Storage */
 	StorageFileInfo GetInfo(const char *uri_utf8, bool follow) override;
 
-	StorageDirectoryReader *OpenDirectory(const char *uri_utf8) override;
+	std::unique_ptr<StorageDirectoryReader> OpenDirectory(const char *uri_utf8) override;
 
 	std::string MapUTF8(const char *uri_utf8) const noexcept override;
 
@@ -259,9 +260,7 @@ public:
 	{
 		request.SetOption(CURLOPT_CUSTOMREQUEST, "PROPFIND");
 
-		char buffer[40];
-		sprintf(buffer, "depth: %u", depth);
-		request_headers.Append(buffer);
+		request_headers.Append(StringFormat<40>("depth: %u", depth));
 
 		request.SetOption(CURLOPT_HTTPHEADER, request_headers.Get());
 
@@ -300,11 +299,11 @@ private:
 
 	void OnData(ConstBuffer<void> _data) final {
 		const auto data = ConstBuffer<char>::FromVoid(_data);
-		Parse(data.data, data.size, false);
+		Parse(data.data, data.size);
 	}
 
 	void OnEnd() final {
-		Parse("", 0, true);
+		CompleteParse();
 		LockSetDone();
 	}
 
@@ -474,14 +473,14 @@ public:
 		:PropfindOperation(curl, uri, 1),
 		 base_path(UriPathOrSlash(uri)) {}
 
-	StorageDirectoryReader *Perform() {
+	std::unique_ptr<StorageDirectoryReader> Perform() {
 		Wait();
 		return ToReader();
 	}
 
 private:
-	StorageDirectoryReader *ToReader() {
-		return new MemoryStorageDirectoryReader(std::move(entries));
+	std::unique_ptr<StorageDirectoryReader> ToReader() {
+		return std::make_unique<MemoryStorageDirectoryReader>(std::move(entries));
 	}
 
 	/**
@@ -534,7 +533,7 @@ protected:
 	}
 };
 
-StorageDirectoryReader *
+std::unique_ptr<StorageDirectoryReader>
 CurlStorage::OpenDirectory(const char *uri_utf8)
 {
 	// TODO: escape the given URI

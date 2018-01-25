@@ -23,14 +23,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#ifdef _WIN32
-#include <string.h>
-#endif
-
 AllocatedString<>
 FormatStringV(const char *fmt, va_list args) noexcept
 {
-#ifndef _WIN32
 	va_list tmp;
 	va_copy(tmp, args);
 	const int length = vsnprintf(NULL, 0, fmt, tmp);
@@ -43,22 +38,6 @@ FormatStringV(const char *fmt, va_list args) noexcept
 	char *buffer = new char[length + 1];
 	vsnprintf(buffer, length + 1, fmt, args);
 	return AllocatedString<>::Donate(buffer);
-#else
-	/* On mingw32, snprintf() expects a 64 bit integer instead of
-	   a "long int" for "%li".  This is not consistent with our
-	   expectation, so we're using plain sprintf() here, hoping
-	   the static buffer is large enough.  Sorry for this hack,
-	   but WIN32 development is so painful, I'm not in the mood to
-	   do it properly now. */
-
-	char buffer[16384];
-	vsprintf(buffer, fmt, args);
-
-	const size_t length = strlen(buffer);
-	char *p = new char[length + 1];
-	memcpy(p, buffer, length + 1);
-	return AllocatedString<>::Donate(p);
-#endif
 }
 
 AllocatedString<>

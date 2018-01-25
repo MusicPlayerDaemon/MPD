@@ -24,7 +24,7 @@
 #include "client/Response.hxx"
 
 void
-tag_print_types(Response &r)
+tag_print_types(Response &r) noexcept
 {
 	for (unsigned i = 0; i < TAG_NUM_OF_ITEM_TYPES; i++)
 		if (IsTagEnabled(i))
@@ -32,13 +32,13 @@ tag_print_types(Response &r)
 }
 
 void
-tag_print(Response &r, TagType type, const char *value)
+tag_print(Response &r, TagType type, const char *value) noexcept
 {
 	r.Format("%s: %s\n", tag_item_names[type], value);
 }
 
 void
-tag_print_values(Response &r, const Tag &tag)
+tag_print_values(Response &r, const Tag &tag) noexcept
 {
 	const auto tag_mask = r.GetTagMask();
 	for (const auto &i : tag)
@@ -47,7 +47,7 @@ tag_print_values(Response &r, const Tag &tag)
 }
 
 void
-tag_print(Response &r, const Tag &tag)
+tag_print(Response &r, const Tag &tag) noexcept
 {
 	if (!tag.duration.IsNegative())
 		r.Format("Time: %i\n"

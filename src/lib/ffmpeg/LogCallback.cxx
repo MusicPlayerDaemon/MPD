@@ -25,6 +25,7 @@
 #include "Domain.hxx"
 #include "LogV.hxx"
 #include "util/Domain.hxx"
+#include "util/StringFormat.hxx"
 
 extern "C" {
 #include <libavutil/log.h>
@@ -57,9 +58,10 @@ FfmpegLogCallback(gcc_unused void *ptr, int level, const char *fmt, va_list vl)
 		cls = *(const AVClass *const*)ptr;
 
 	if (cls != nullptr) {
-		char domain[64];
-		snprintf(domain, sizeof(domain), "%s/%s",
-			 ffmpeg_domain.GetName(), cls->item_name(ptr));
+		const auto domain =
+			StringFormat<64>("%s/%s",
+					 ffmpeg_domain.GetName(),
+					 cls->item_name(ptr));
 		const Domain d(domain);
 		LogFormatV(d, FfmpegImportLogLevel(level), fmt, vl);
 	}

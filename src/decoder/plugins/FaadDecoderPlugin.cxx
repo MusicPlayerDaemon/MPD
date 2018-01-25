@@ -415,7 +415,7 @@ faad_stream_decode(DecoderClient &client, InputStream &is)
 
 static bool
 faad_scan_stream(InputStream &is,
-		 const TagHandler &handler, void *handler_ctx)
+		 const TagHandler &handler, void *handler_ctx) noexcept
 {
 	auto result = faad_get_file_time(is);
 	if (!result.first)

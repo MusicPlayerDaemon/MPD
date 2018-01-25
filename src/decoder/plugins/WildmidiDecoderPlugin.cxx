@@ -54,7 +54,7 @@ wildmidi_init(const ConfigBlock &block)
 }
 
 static void
-wildmidi_finish(void)
+wildmidi_finish() noexcept
 {
 	WildMidi_Shutdown();
 }
@@ -127,7 +127,7 @@ wildmidi_file_decode(DecoderClient &client, Path path_fs)
 
 static bool
 wildmidi_scan_file(Path path_fs,
-		   const TagHandler &handler, void *handler_ctx)
+		   const TagHandler &handler, void *handler_ctx) noexcept
 {
 	midi *wm = WildMidi_Open(path_fs.c_str());
 	if (wm == nullptr)

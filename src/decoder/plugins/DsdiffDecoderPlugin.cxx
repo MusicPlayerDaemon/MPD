@@ -451,7 +451,7 @@ dsdiff_stream_decode(DecoderClient &client, InputStream &is)
 static bool
 dsdiff_scan_stream(InputStream &is,
 		   gcc_unused const TagHandler &handler,
-		   gcc_unused void *handler_ctx)
+		   gcc_unused void *handler_ctx) noexcept
 {
 	DsdiffMetaData metadata;
 	DsdiffChunkHeader chunk_header;
@@ -460,14 +460,15 @@ dsdiff_scan_stream(InputStream &is,
 	if (!dsdiff_read_metadata(nullptr, is, &metadata, &chunk_header))
 		return false;
 
-	auto audio_format = CheckAudioFormat(metadata.sample_rate / 8,
-					     SampleFormat::DSD,
-					     metadata.channels);
+	const auto sample_rate = metadata.sample_rate / 8;
+	if (!audio_valid_sample_rate(sample_rate) ||
+	    !audio_valid_channel_count(metadata.channels))
+		return false;
 
 	/* calculate song time and add as tag */
-	uint64_t n_frames = metadata.chunk_size / audio_format.channels;
+	uint64_t n_frames = metadata.chunk_size / metadata.channels;
 	auto songtime = SongTime::FromScale<uint64_t>(n_frames,
-						      audio_format.sample_rate);
+						      sample_rate);
 	tag_handler_invoke_duration(handler, handler_ctx, songtime);
 
 	/* Read additional metadata and created tags if available */

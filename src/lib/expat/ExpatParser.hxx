@@ -72,7 +72,11 @@ public:
 		XML_SetCharacterDataHandler(parser, charhndl);
 	}
 
-	void Parse(const char *data, size_t length, bool is_final);
+	void Parse(const char *data, size_t length, bool is_final=false);
+
+	void CompleteParse() {
+		Parse("", 0, true);
+	}
 
 	void Parse(InputStream &is);
 
@@ -104,12 +108,13 @@ public:
 		parser.SetCharacterDataHandler(CharacterData);
 	}
 
-	void Parse(const char *data, size_t length, bool is_final) {
-		parser.Parse(data, length, is_final);
+	template<typename... Args>
+	void Parse(Args&&... args) {
+		parser.Parse(std::forward<Args>(args)...);
 	}
 
-	void Parse(InputStream &is) {
-		parser.Parse(is);
+	void CompleteParse() {
+		parser.CompleteParse();
 	}
 
 	gcc_pure

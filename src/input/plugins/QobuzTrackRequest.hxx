@@ -21,13 +21,9 @@
 #define QOBUZ_TRACK_REQUEST_HXX
 
 #include "check.h"
-#include "lib/curl/Handler.hxx"
+#include "lib/curl/Delegate.hxx"
 #include "lib/curl/Slist.hxx"
 #include "lib/curl/Request.hxx"
-#include "lib/yajl/Handle.hxx"
-
-#include <exception>
-#include <string>
 
 class QobuzClient;
 struct QobuzSession;
@@ -36,32 +32,23 @@ class QobuzTrackHandler
 	: public boost::intrusive::list_base_hook<boost::intrusive::link_mode<boost::intrusive::safe_link>>
 {
 public:
-	virtual void OnQobuzTrackSuccess(std::string &&url) noexcept = 0;
+	virtual void OnQobuzTrackSuccess(std::string url) noexcept = 0;
 	virtual void OnQobuzTrackError(std::exception_ptr error) noexcept = 0;
 };
 
-class QobuzTrackRequest final : CurlResponseHandler {
+class QobuzTrackRequest final : DelegateCurlResponseHandler {
 	CurlSlist request_headers;
 
 	CurlRequest request;
 
-	Yajl::Handle parser;
-
-	enum class State {
-		NONE,
-		URL,
-	} state = State::NONE;
-
-	std::string url;
-
-	std::exception_ptr error;
-
 	QobuzTrackHandler &handler;
 
 public:
+	class ResponseParser;
+
 	QobuzTrackRequest(QobuzClient &client, const QobuzSession &session,
 			  const char *track_id,
-			  QobuzTrackHandler &_handler) noexcept;
+			  QobuzTrackHandler &_handler);
 
 	~QobuzTrackRequest() noexcept;
 
@@ -70,11 +57,12 @@ public:
 	}
 
 private:
+	/* virtual methods from DelegateCurlResponseHandler */
+	std::unique_ptr<CurlResponseParser> MakeParser(unsigned status,
+						       std::multimap<std::string, std::string> &&headers) override;
+	void FinishParser(std::unique_ptr<CurlResponseParser> p) override;
+
 	/* virtual methods from CurlResponseHandler */
-	void OnHeaders(unsigned status,
-		       std::multimap<std::string, std::string> &&headers) override;
-	void OnData(ConstBuffer<void> data) override;
-	void OnEnd() override;
 	void OnError(std::exception_ptr e) noexcept override;
 
 public:

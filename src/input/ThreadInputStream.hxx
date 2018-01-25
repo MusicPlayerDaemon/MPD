@@ -71,9 +71,9 @@ class ThreadInputStream : public InputStream {
 public:
 	ThreadInputStream(const char *_plugin,
 			  const char *_uri, Mutex &_mutex, Cond &_cond,
-			  size_t _buffer_size);
+			  size_t _buffer_size) noexcept;
 
-	virtual ~ThreadInputStream();
+	virtual ~ThreadInputStream() noexcept;
 
 	/**
 	 * Initialize the object and start the thread.
@@ -87,7 +87,7 @@ public:
 	size_t Read(void *ptr, size_t size) override final;
 
 protected:
-	void SetMimeType(const char *_mime) {
+	void SetMimeType(const char *_mime) noexcept {
 		assert(thread.IsInside());
 
 		InputStream::SetMimeType(_mime);
@@ -124,7 +124,7 @@ protected:
 	 *
 	 * The #InputStream is not locked.
 	 */
-	virtual void Close() {}
+	virtual void Close() noexcept {}
 
 	/**
 	 * Called from the client thread to cancel a Read() inside the
@@ -132,10 +132,10 @@ protected:
 	 *
 	 * The #InputStream is not locked.
 	 */
-	virtual void Cancel() {}
+	virtual void Cancel() noexcept {}
 
 private:
-	void ThreadFunc();
+	void ThreadFunc() noexcept;
 };
 
 #endif

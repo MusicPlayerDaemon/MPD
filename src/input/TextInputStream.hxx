@@ -34,20 +34,22 @@ public:
 	 *
 	 * @param _is an open #InputStream object
 	 */
-	explicit TextInputStream(InputStreamPtr &&_is);
-	~TextInputStream();
+	explicit TextInputStream(InputStreamPtr &&_is) noexcept;
+	~TextInputStream() noexcept;
 
 	TextInputStream(const TextInputStream &) = delete;
 	TextInputStream& operator=(const TextInputStream &) = delete;
 
-	InputStreamPtr &&StealInputStream() {
+	InputStreamPtr &&StealInputStream() noexcept {
 		return std::move(is);
 	}
 
 	/**
 	 * Reads the next line from the stream with newline character stripped.
 	 *
-	 * @return a pointer to the line, or nullptr on end-of-file or error
+	 * Throws on error.
+	 *
+	 * @return a pointer to the line, or nullptr on end-of-file
 	 */
 	char *ReadLine();
 };

@@ -176,7 +176,7 @@ mod_decode(DecoderClient &client, InputStream &is)
 
 static bool
 modplug_scan_stream(InputStream &is,
-		    const TagHandler &handler, void *handler_ctx)
+		    const TagHandler &handler, void *handler_ctx) noexcept
 {
 	ModPlugFile *f = LoadModPlugFile(nullptr, is);
 	if (f == nullptr)

@@ -76,7 +76,7 @@ private:
 	void OnQobuzSession() noexcept override;
 
 	/* virtual methods from QobuzTrackHandler */
-	void OnQobuzTrackSuccess(std::string &&url) noexcept override;
+	void OnQobuzTrackSuccess(std::string url) noexcept override;
 	void OnQobuzTrackError(std::exception_ptr error) noexcept override;
 };
 
@@ -100,9 +100,10 @@ QobuzInputStream::OnQobuzSession() noexcept
 }
 
 void
-QobuzInputStream::OnQobuzTrackSuccess(std::string &&url) noexcept
+QobuzInputStream::OnQobuzTrackSuccess(std::string url) noexcept
 {
 	const std::lock_guard<Mutex> protect(mutex);
+	track_request.reset();
 
 	try {
 		SetInput(OpenCurlInputStream(url.c_str(), {},
@@ -116,6 +117,7 @@ void
 QobuzInputStream::OnQobuzTrackError(std::exception_ptr e) noexcept
 {
 	const std::lock_guard<Mutex> protect(mutex);
+	track_request.reset();
 
 	Failed(e);
 }

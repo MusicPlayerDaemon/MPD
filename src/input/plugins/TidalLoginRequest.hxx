@@ -21,61 +21,55 @@
 #define TIDAL_LOGIN_REQUEST_HXX
 
 #include "check.h"
-#include "lib/curl/Handler.hxx"
+#include "lib/curl/Delegate.hxx"
 #include "lib/curl/Slist.hxx"
 #include "lib/curl/Request.hxx"
-#include "lib/yajl/Handle.hxx"
 
-#include <exception>
-#include <string>
-
-class CurlRequest;
-
+/**
+ * Callback class for #TidalLoginRequest.
+ *
+ * Its methods must be thread-safe.
+ */
 class TidalLoginHandler {
 public:
-	virtual void OnTidalLoginSuccess(std::string &&session) noexcept = 0;
+	virtual void OnTidalLoginSuccess(std::string session) noexcept = 0;
 	virtual void OnTidalLoginError(std::exception_ptr error) noexcept = 0;
 };
 
-class TidalLoginRequest final : CurlResponseHandler {
+/**
+ * An asynchronous Tidal "login/username" request.
+ *
+ * After construction, call Start() to initiate the request.
+ */
+class TidalLoginRequest final : DelegateCurlResponseHandler {
 	CurlSlist request_headers;
 
 	CurlRequest request;
 
-	Yajl::Handle parser;
-
-	enum class State {
-		NONE,
-		SESSION_ID,
-	} state = State::NONE;
-
-	std::string session;
-
-	std::exception_ptr error;
-
 	TidalLoginHandler &handler;
 
 public:
+	class ResponseParser;
+
 	TidalLoginRequest(CurlGlobal &curl,
 			  const char *base_url, const char *token,
 			  const char *username, const char *password,
-			  TidalLoginHandler &_handler) noexcept;
+			  TidalLoginHandler &_handler);
 
 	~TidalLoginRequest() noexcept;
 
-private:
-	/* virtual methods from CurlResponseHandler */
-	void OnHeaders(unsigned status,
-		       std::multimap<std::string, std::string> &&headers) override;
-	void OnData(ConstBuffer<void> data) override;
-	void OnEnd() override;
-	void OnError(std::exception_ptr e) noexcept override;
+	void Start() {
+		request.StartIndirect();
+	}
 
-public:
-	/* yajl callbacks */
-	bool String(StringView value) noexcept;
-	bool MapKey(StringView value) noexcept;
-	bool EndMap() noexcept;
+private:
+	/* virtual methods from DelegateCurlResponseHandler */
+	std::unique_ptr<CurlResponseParser> MakeParser(unsigned status,
+						       std::multimap<std::string, std::string> &&headers) override;
+	void FinishParser(std::unique_ptr<CurlResponseParser> p) override;
+
+	/* virtual methods from CurlResponseHandler */
+	void OnError(std::exception_ptr e) noexcept override;
 };
 
 #endif

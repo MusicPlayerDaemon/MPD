@@ -19,10 +19,10 @@
 
 #include "config.h"
 #include "TidalTrackRequest.hxx"
+#include "TidalErrorParser.hxx"
 #include "lib/yajl/Callbacks.hxx"
-#include "util/RuntimeError.hxx"
 
-using Wrapper = Yajl::CallbacksWrapper<TidalTrackRequest>;
+using Wrapper = Yajl::CallbacksWrapper<TidalTrackRequest::ResponseParser>;
 static constexpr yajl_callbacks parse_callbacks = {
 	nullptr,
 	nullptr,
@@ -35,6 +35,31 @@ static constexpr yajl_callbacks parse_callbacks = {
 	Wrapper::EndMap,
 	nullptr,
 	nullptr,
+};
+
+class TidalTrackRequest::ResponseParser final : public YajlResponseParser {
+	enum class State {
+		NONE,
+		URLS,
+	} state = State::NONE;
+
+	std::string url;
+
+public:
+	explicit ResponseParser() noexcept
+		:YajlResponseParser(&parse_callbacks, nullptr, this) {}
+
+	std::string &&GetUrl() {
+		if (url.empty())
+			throw std::runtime_error("No url in track response");
+
+		return std::move(url);
+	}
+
+	/* yajl callbacks */
+	bool String(StringView value) noexcept;
+	bool MapKey(StringView value) noexcept;
+	bool EndMap() noexcept;
 };
 
 static std::string
@@ -51,9 +76,8 @@ TidalTrackRequest::TidalTrackRequest(CurlGlobal &curl,
 				     const char *base_url, const char *token,
 				     const char *session,
 				     const char *track_id,
-				     TidalTrackHandler &_handler) noexcept
+				     TidalTrackHandler &_handler)
 	:request(curl, MakeTrackUrl(base_url, track_id).c_str(), *this),
-	 parser(&parse_callbacks, nullptr, this),
 	 handler(_handler)
 {
 	request_headers.Append((std::string("X-Tidal-Token:")
@@ -61,8 +85,6 @@ TidalTrackRequest::TidalTrackRequest(CurlGlobal &curl,
 	request_headers.Append((std::string("X-Tidal-SessionId:")
 				+ session).c_str());
 	request.SetOption(CURLOPT_HTTPHEADER, request_headers.Get());
-
-	request.StartIndirect();
 }
 
 TidalTrackRequest::~TidalTrackRequest() noexcept
@@ -70,33 +92,26 @@ TidalTrackRequest::~TidalTrackRequest() noexcept
 	request.StopIndirect();
 }
 
-void
-TidalTrackRequest::OnHeaders(unsigned status,
-			     std::multimap<std::string, std::string> &&headers)
+std::unique_ptr<CurlResponseParser>
+TidalTrackRequest::MakeParser(unsigned status,
+			      std::multimap<std::string, std::string> &&headers)
 {
 	if (status != 200)
-		throw FormatRuntimeError("Status %u from Tidal", status);
+		return std::make_unique<TidalErrorParser>(status, headers);
 
 	auto i = headers.find("content-type");
 	if (i == headers.end() || i->second.find("/json") == i->second.npos)
 		throw std::runtime_error("Not a JSON response from Tidal");
+
+	return std::make_unique<ResponseParser>();
 }
 
 void
-TidalTrackRequest::OnData(ConstBuffer<void> data)
+TidalTrackRequest::FinishParser(std::unique_ptr<CurlResponseParser> p)
 {
-	parser.Parse((const unsigned char *)data.data, data.size);
-}
-
-void
-TidalTrackRequest::OnEnd()
-{
-	parser.CompleteParse();
-
-	if (url.empty())
-		throw std::runtime_error("No url in track response");
-
-	handler.OnTidalTrackSuccess(std::move(url));
+	assert(dynamic_cast<ResponseParser *>(p.get()) != nullptr);
+	auto &rp = (ResponseParser &)*p;
+	handler.OnTidalTrackSuccess(rp.GetUrl());
 }
 
 void
@@ -106,7 +121,7 @@ TidalTrackRequest::OnError(std::exception_ptr e) noexcept
 }
 
 inline bool
-TidalTrackRequest::String(StringView value) noexcept
+TidalTrackRequest::ResponseParser::String(StringView value) noexcept
 {
 	switch (state) {
 	case State::NONE:
@@ -122,7 +137,7 @@ TidalTrackRequest::String(StringView value) noexcept
 }
 
 inline bool
-TidalTrackRequest::MapKey(StringView value) noexcept
+TidalTrackRequest::ResponseParser::MapKey(StringView value) noexcept
 {
 	if (value.Equals("urls"))
 		state = State::URLS;
@@ -133,7 +148,7 @@ TidalTrackRequest::MapKey(StringView value) noexcept
 }
 
 inline bool
-TidalTrackRequest::EndMap() noexcept
+TidalTrackRequest::ResponseParser::EndMap() noexcept
 {
 	state = State::NONE;
 

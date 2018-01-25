@@ -75,15 +75,6 @@ OpenFileInputStream(Path path,
 						 mutex, cond);
 }
 
-static InputStreamPtr
-input_file_open(gcc_unused const char *filename,
-		gcc_unused Mutex &mutex, gcc_unused Cond &cond)
-{
-	/* dummy method; use OpenFileInputStream() instead */
-
-	return nullptr;
-}
-
 void
 FileInputStream::Seek(offset_type new_offset)
 {
@@ -108,10 +99,3 @@ FileInputStream::Read(void *ptr, size_t read_size)
 	offset += nbytes;
 	return nbytes;
 }
-
-const InputPlugin input_plugin_file = {
-	"file",
-	nullptr,
-	nullptr,
-	input_file_open,
-};

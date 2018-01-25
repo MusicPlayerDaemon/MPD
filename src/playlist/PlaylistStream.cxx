@@ -20,6 +20,7 @@
 #include "config.h"
 #include "PlaylistStream.hxx"
 #include "PlaylistRegistry.hxx"
+#include "SongEnumerator.hxx"
 #include "util/UriUtil.hxx"
 #include "input/InputStream.hxx"
 #include "input/LocalOpen.hxx"
@@ -30,7 +31,7 @@
 
 #include <assert.h>
 
-static SongEnumerator *
+static std::unique_ptr<SongEnumerator>
 playlist_open_path_suffix(Path path, Mutex &mutex, Cond &cond)
 try {
 	assert(!path.IsNull());
@@ -51,7 +52,7 @@ try {
 	return nullptr;
 }
 
-SongEnumerator *
+std::unique_ptr<SongEnumerator>
 playlist_open_path(Path path, Mutex &mutex, Cond &cond)
 try {
 	assert(!path.IsNull());
@@ -69,12 +70,12 @@ try {
 	return nullptr;
 }
 
-SongEnumerator *
+std::unique_ptr<SongEnumerator>
 playlist_open_remote(const char *uri, Mutex &mutex, Cond &cond)
 try {
 	assert(uri_has_scheme(uri));
 
-	SongEnumerator *playlist = playlist_list_open_uri(uri, mutex, cond);
+	auto playlist = playlist_list_open_uri(uri, mutex, cond);
 	if (playlist != nullptr)
 		return playlist;
 

@@ -21,6 +21,7 @@
 #include "TidalInputPlugin.hxx"
 #include "TidalSessionManager.hxx"
 #include "TidalTrackRequest.hxx"
+#include "TidalError.hxx"
 #include "CurlInputPlugin.hxx"
 #include "PluginUnavailable.hxx"
 #include "input/ProxyInputStream.hxx"
@@ -28,10 +29,15 @@
 #include "input/InputPlugin.hxx"
 #include "config/Block.hxx"
 #include "thread/Mutex.hxx"
+#include "util/Domain.hxx"
+#include "util/Exception.hxx"
 #include "util/StringCompare.hxx"
+#include "Log.hxx"
 
 #include <stdexcept>
 #include <memory>
+
+static constexpr Domain tidal_domain("tidal");
 
 static TidalSessionManager *tidal_session;
 
@@ -43,6 +49,12 @@ class TidalInputStream final
 	std::unique_ptr<TidalTrackRequest> track_request;
 
 	std::exception_ptr error;
+
+	/**
+	 * Retry to login if TidalError::IsInvalidSession() returns
+	 * true?
+	 */
+	bool retry_login = true;
 
 public:
 	TidalInputStream(const char *_uri, const char *_track_id,
@@ -74,7 +86,7 @@ private:
 	void OnTidalSession() noexcept override;
 
 	/* virtual methods from TidalTrackHandler */
-	void OnTidalTrackSuccess(std::string &&url) noexcept override;
+	void OnTidalTrackSuccess(std::string url) noexcept override;
 	void OnTidalTrackError(std::exception_ptr error) noexcept override;
 };
 
@@ -91,15 +103,21 @@ TidalInputStream::OnTidalSession() noexcept
 								    tidal_session->GetSession().c_str(),
 								    track_id.c_str(),
 								    handler);
+		track_request->Start();
 	} catch (...) {
 		Failed(std::current_exception());
 	}
 }
 
 void
-TidalInputStream::OnTidalTrackSuccess(std::string &&url) noexcept
+TidalInputStream::OnTidalTrackSuccess(std::string url) noexcept
 {
+	FormatDebug(tidal_domain, "Tidal track '%s' resolves to %s",
+		    track_id.c_str(), url.c_str());
+
 	const std::lock_guard<Mutex> protect(mutex);
+
+	track_request.reset();
 
 	try {
 		SetInput(OpenCurlInputStream(url.c_str(), {},
@@ -109,10 +127,35 @@ TidalInputStream::OnTidalTrackSuccess(std::string &&url) noexcept
 	}
 }
 
+gcc_pure
+static bool
+IsInvalidSession(std::exception_ptr e) noexcept
+{
+	try {
+		std::rethrow_exception(e);
+	} catch (const TidalError &te) {
+		return te.IsInvalidSession();
+	} catch (...) {
+		return false;
+	}
+}
+
 void
 TidalInputStream::OnTidalTrackError(std::exception_ptr e) noexcept
 {
 	const std::lock_guard<Mutex> protect(mutex);
+
+	if (retry_login && IsInvalidSession(e)) {
+		/* the session has expired - obtain a new session id
+		   by logging in again */
+
+		FormatInfo(tidal_domain, "Session expired ('%s'), retrying to log in",
+			   GetFullMessage(e).c_str());
+
+		retry_login = false;
+		tidal_session->AddLoginHandler(*this);
+		return;
+	}
 
 	Failed(e);
 }

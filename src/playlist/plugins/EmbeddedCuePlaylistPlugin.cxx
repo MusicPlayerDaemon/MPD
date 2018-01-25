@@ -87,7 +87,7 @@ static constexpr TagHandler embcue_tag_handler = {
 	embcue_tag_pair,
 };
 
-static SongEnumerator *
+static std::unique_ptr<SongEnumerator>
 embcue_playlist_open_uri(const char *uri,
 			 gcc_unused Mutex &mutex,
 			 gcc_unused Cond &cond)
@@ -98,17 +98,15 @@ embcue_playlist_open_uri(const char *uri,
 
 	const auto path_fs = AllocatedPath::FromUTF8Throw(uri);
 
-	const auto playlist = new EmbeddedCuePlaylist();
+	auto playlist = std::make_unique<EmbeddedCuePlaylist>();
 
-	tag_file_scan(path_fs, embcue_tag_handler, playlist);
+	tag_file_scan(path_fs, embcue_tag_handler, playlist.get());
 	if (playlist->cuesheet.empty())
-		ScanGenericTags(path_fs, embcue_tag_handler, playlist);
+		ScanGenericTags(path_fs, embcue_tag_handler, playlist.get());
 
-	if (playlist->cuesheet.empty()) {
+	if (playlist->cuesheet.empty())
 		/* no "CUESHEET" tag found */
-		delete playlist;
 		return nullptr;
-	}
 
 	playlist->filename = PathTraitsUTF8::GetBase(uri);
 
