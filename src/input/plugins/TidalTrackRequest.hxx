@@ -57,7 +57,7 @@ public:
 			  const char *base_url, const char *token,
 			  const char *session,
 			  const char *track_id,
-			  TidalTrackHandler &_handler) noexcept;
+			  TidalTrackHandler &_handler);
 
 	~TidalTrackRequest() noexcept;
 

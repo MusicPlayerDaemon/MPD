@@ -73,7 +73,7 @@ MakeLoginUrl(const char *base_url)
 TidalLoginRequest::TidalLoginRequest(CurlGlobal &curl,
 				     const char *base_url, const char *token,
 				     const char *username, const char *password,
-				     TidalLoginHandler &_handler) noexcept
+				     TidalLoginHandler &_handler)
 	:request(curl, MakeLoginUrl(base_url).c_str(), *this),
 	 handler(_handler)
 {

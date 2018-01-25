@@ -77,7 +77,7 @@ MakeTrackUrl(QobuzClient &client, const char *track_id)
 QobuzTrackRequest::QobuzTrackRequest(QobuzClient &client,
 				     const QobuzSession &session,
 				     const char *track_id,
-				     QobuzTrackHandler &_handler) noexcept
+				     QobuzTrackHandler &_handler)
 	:request(client.GetCurl(),
 		 MakeTrackUrl(client, track_id).c_str(),
 		 *this),

@@ -29,7 +29,7 @@ static constexpr Domain tidal_domain("tidal");
 TidalSessionManager::TidalSessionManager(EventLoop &event_loop,
 					 const char *_base_url, const char *_token,
 					 const char *_username,
-					 const char *_password) noexcept
+					 const char *_password)
 	:base_url(_base_url), token(_token),
 	 username(_username), password(_password),
 	 curl(event_loop),

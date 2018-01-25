@@ -119,7 +119,7 @@ QobuzLoginRequest::QobuzLoginRequest(CurlGlobal &curl,
 				     const char *username, const char *email,
 				     const char *password,
 				     const char *device_manufacturer_id,
-				     QobuzLoginHandler &_handler) noexcept
+				     QobuzLoginHandler &_handler)
 	:request(curl, *this),
 	 handler(_handler)
 {

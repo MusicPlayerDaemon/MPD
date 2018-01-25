@@ -48,7 +48,7 @@ public:
 
 	QobuzTrackRequest(QobuzClient &client, const QobuzSession &session,
 			  const char *track_id,
-			  QobuzTrackHandler &_handler) noexcept;
+			  QobuzTrackHandler &_handler);
 
 	~QobuzTrackRequest() noexcept;
 

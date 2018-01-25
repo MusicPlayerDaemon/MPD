@@ -99,7 +99,7 @@ public:
 	TidalSessionManager(EventLoop &event_loop,
 			    const char *_base_url, const char *_token,
 			    const char *_username,
-			    const char *_password) noexcept;
+			    const char *_password);
 
 	~TidalSessionManager() noexcept;
 

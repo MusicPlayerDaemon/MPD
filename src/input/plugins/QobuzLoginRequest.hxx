@@ -46,7 +46,7 @@ public:
 			  const char *username, const char *email,
 			  const char *password,
 			  const char *device_manufacturer_id,
-			  QobuzLoginHandler &_handler) noexcept;
+			  QobuzLoginHandler &_handler);
 
 	~QobuzLoginRequest() noexcept;
 

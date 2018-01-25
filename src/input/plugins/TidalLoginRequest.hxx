@@ -54,7 +54,7 @@ public:
 	TidalLoginRequest(CurlGlobal &curl,
 			  const char *base_url, const char *token,
 			  const char *username, const char *password,
-			  TidalLoginHandler &_handler) noexcept;
+			  TidalLoginHandler &_handler);
 
 	~TidalLoginRequest() noexcept;
 

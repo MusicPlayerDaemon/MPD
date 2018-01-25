@@ -76,7 +76,7 @@ TidalTrackRequest::TidalTrackRequest(CurlGlobal &curl,
 				     const char *base_url, const char *token,
 				     const char *session,
 				     const char *track_id,
-				     TidalTrackHandler &_handler) noexcept
+				     TidalTrackHandler &_handler)
 	:request(curl, MakeTrackUrl(base_url, track_id).c_str(), *this),
 	 handler(_handler)
 {
