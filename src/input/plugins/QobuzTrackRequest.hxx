@@ -28,9 +28,7 @@
 class QobuzClient;
 struct QobuzSession;
 
-class QobuzTrackHandler
-	: public boost::intrusive::list_base_hook<boost::intrusive::link_mode<boost::intrusive::safe_link>>
-{
+class QobuzTrackHandler {
 public:
 	virtual void OnQobuzTrackSuccess(std::string url) noexcept = 0;
 	virtual void OnQobuzTrackError(std::exception_ptr error) noexcept = 0;
