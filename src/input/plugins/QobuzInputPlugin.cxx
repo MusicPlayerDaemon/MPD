@@ -148,10 +148,13 @@ InitQobuzInput(EventLoop &event_loop, const ConfigBlock &block)
 	if (password == nullptr)
 		throw PluginUnavailable("No Qobuz password configured");
 
+	const char *format_id = block.GetBlockValue("format_id", "5");
+
 	qobuz_client = new QobuzClient(event_loop, base_url,
 				       app_id, app_secret,
 				       device_manufacturer_id,
-				       username, email, password);
+				       username, email, password,
+				       format_id);
 }
 
 static void

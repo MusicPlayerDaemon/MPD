@@ -70,7 +70,7 @@ MakeTrackUrl(QobuzClient &client, const char *track_id)
 	return client.MakeSignedUrl("track", "getFileUrl",
 				    {
 					    {"track_id", track_id},
-					    {"format_id", "5"},
+					    {"format_id", client.GetFormatId()},
 				    });
 }
 

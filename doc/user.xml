@@ -2429,6 +2429,20 @@ run</programlisting>
                   The Qobuz password.
                 </entry>
               </row>
+
+              <row>
+                <entry>
+                  <varname>format_id</varname>
+                  <parameter>N</parameter>
+                </entry>
+                <entry>
+                  The <ulink
+                  url="https://github.com/Qobuz/api-documentation/blob/master/endpoints/track/getFileUrl.md#parameters">Qobuz
+                  format identifier</ulink>, i.e. a number which
+                  chooses the format and quality to be requested from
+                  Qobuz.  The default is "5" (320 kbit/s MP3).
+                </entry>
+              </row>
             </tbody>
           </tgroup>
         </informaltable>
