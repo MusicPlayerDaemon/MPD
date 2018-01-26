@@ -1378,6 +1378,7 @@ libinput_a_SOURCES += \
 	src/input/plugins/TidalLoginRequest.cxx src/input/plugins/TidalLoginRequest.hxx \
 	src/input/plugins/TidalSessionManager.cxx src/input/plugins/TidalSessionManager.hxx \
 	src/input/plugins/TidalTrackRequest.cxx src/input/plugins/TidalTrackRequest.hxx \
+	src/input/plugins/TidalTagScanner.cxx src/input/plugins/TidalTagScanner.hxx \
 	src/input/plugins/TidalInputPlugin.cxx src/input/plugins/TidalInputPlugin.hxx
 INPUT_LIBS += $(YAJL_LIBS)
 endif

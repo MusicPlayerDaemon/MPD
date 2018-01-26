@@ -21,6 +21,7 @@
 #include "TidalInputPlugin.hxx"
 #include "TidalSessionManager.hxx"
 #include "TidalTrackRequest.hxx"
+#include "TidalTagScanner.hxx"
 #include "TidalError.hxx"
 #include "CurlInputPlugin.hxx"
 #include "PluginUnavailable.hxx"
@@ -223,9 +224,25 @@ OpenTidalInput(const char *uri, Mutex &mutex, Cond &cond)
 	return std::make_unique<TidalInputStream>(uri, track_id, mutex, cond);
 }
 
+static std::unique_ptr<RemoteTagScanner>
+ScanTidalTags(const char *uri, RemoteTagHandler &handler)
+{
+	assert(tidal_session != nullptr);
+
+	const char *track_id = ExtractTidalTrackId(uri);
+	if (track_id == nullptr)
+		return nullptr;
+
+	return std::make_unique<TidalTagScanner>(tidal_session->GetCurl(),
+						 tidal_session->GetBaseUrl(),
+						 tidal_session->GetToken(),
+						 track_id, handler);
+}
+
 const InputPlugin tidal_input_plugin = {
 	"tidal",
 	InitTidalInput,
 	FinishTidalInput,
 	OpenTidalInput,
+	ScanTidalTags,
 };
