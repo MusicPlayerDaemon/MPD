@@ -3251,6 +3251,23 @@ run</programlisting>
                   (the default), "voice" and "music".
                 </entry>
               </row>
+
+              <row>
+                <entry>
+                  <varname>opustags</varname>
+                  <parameter>yes|no</parameter>
+                </entry>
+                <entry>
+                  Configures how metadata is interleaved into the stream.
+                  If set to <parameter>yes</parameter>, then metadata
+                  is inserted using ogg stream chaining, as specified
+                  in <ulink url="https://tools.ietf.org/html/rfc7845.html#section-7.2">RFC
+                  7845</ulink>. If set to <parameter>no</parameter>
+                  (the default), then ogg stream chaining is avoided
+                  and other output-dependent method is used, if
+                  available.
+                </entry>
+              </row>
             </tbody>
           </tgroup>
         </informaltable>

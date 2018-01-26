@@ -26,6 +26,8 @@ ver 0.21 (not yet released)
   - sndio: remove support for the broken RoarAudio sndio emulation
 * mixer
   - sndio: new mixer plugin
+* encoder
+  - opus: support for sending metadata using ogg stream chaining
 * require GCC 5.0
 
 ver 0.20.18 (2018/02/24)
