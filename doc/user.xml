@@ -2497,6 +2497,21 @@ run</programlisting>
                   The Tidal password.
                 </entry>
               </row>
+
+              <row>
+                <entry>
+                  <varname>audioquality</varname>
+                  <parameter>Q</parameter>
+                </entry>
+                <entry>
+                  The Tidal "audioquality" parameter.  Possible
+                  values: <parameter>HI_RES</parameter>,
+                  <parameter>LOSSLESS</parameter>,
+                  <parameter>HIGH</parameter>,
+                  <parameter>LOW</parameter>.  Default is
+                  <parameter>HIGH</parameter>.
+                </entry>
+              </row>
             </tbody>
           </tgroup>
         </informaltable>

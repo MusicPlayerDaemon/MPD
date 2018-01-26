@@ -40,6 +40,7 @@
 static constexpr Domain tidal_domain("tidal");
 
 static TidalSessionManager *tidal_session;
+static const char *tidal_audioquality;
 
 class TidalInputStream final
 	: public ProxyInputStream, TidalSessionHandler, TidalTrackHandler {
@@ -102,6 +103,7 @@ TidalInputStream::OnTidalSession() noexcept
 								    tidal_session->GetToken(),
 								    tidal_session->GetSession().c_str(),
 								    track_id.c_str(),
+								    tidal_audioquality,
 								    handler);
 		track_request->Start();
 	} catch (...) {
@@ -178,7 +180,7 @@ InitTidalInput(EventLoop &event_loop, const ConfigBlock &block)
 	if (password == nullptr)
 		throw PluginUnavailable("No Tidal password configured");
 
-	// TODO: "audioquality" setting
+	tidal_audioquality = block.GetBlockValue("audioquality", "HIGH");
 
 	tidal_session = new TidalSessionManager(event_loop, base_url, token,
 						username, password);

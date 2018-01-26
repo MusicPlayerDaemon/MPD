@@ -55,6 +55,7 @@ public:
 			  const char *base_url, const char *token,
 			  const char *session,
 			  const char *track_id,
+			  const char *audioquality,
 			  TidalTrackHandler &_handler);
 
 	~TidalTrackRequest() noexcept;

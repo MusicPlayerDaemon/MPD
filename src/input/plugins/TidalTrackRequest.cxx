@@ -63,21 +63,24 @@ public:
 };
 
 static std::string
-MakeTrackUrl(const char *base_url, const char *track_id)
+MakeTrackUrl(const char *base_url, const char *track_id,
+	     const char *audioquality) noexcept
 {
-	// TODO: add "audioquality" parameter to this function
 	return std::string(base_url)
 		+ "/tracks/"
 		+ track_id
-		+ "/urlpostpaywall?assetpresentation=FULL&audioquality=LOW&urlusagemode=STREAM";
+		+ "/urlpostpaywall?assetpresentation=FULL&audioquality="
+		+ audioquality + "&urlusagemode=STREAM";
 }
 
 TidalTrackRequest::TidalTrackRequest(CurlGlobal &curl,
 				     const char *base_url, const char *token,
 				     const char *session,
 				     const char *track_id,
+				     const char *audioquality,
 				     TidalTrackHandler &_handler)
-	:request(curl, MakeTrackUrl(base_url, track_id).c_str(), *this),
+	:request(curl, MakeTrackUrl(base_url, track_id, audioquality).c_str(),
+		 *this),
 	 handler(_handler)
 {
 	request_headers.Append((std::string("X-Tidal-Token:")
