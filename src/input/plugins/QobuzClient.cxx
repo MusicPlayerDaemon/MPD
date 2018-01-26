@@ -165,6 +165,25 @@ QobuzClient::InvokeHandlers() noexcept
 }
 
 std::string
+QobuzClient::MakeUrl(const char *object, const char *method,
+		     const std::multimap<std::string, std::string> &query) const noexcept
+{
+	assert(!query.empty());
+
+	std::string uri(base_url);
+	uri += object;
+	uri.push_back('/');
+	uri += method;
+
+	QueryStringBuilder q;
+	for (const auto &i : query)
+		q(uri, i.first.c_str(), i.second.c_str());
+
+	q(uri, "app_id", app_id);
+	return uri;
+}
+
+std::string
 QobuzClient::MakeSignedUrl(const char *object, const char *method,
 			   const std::multimap<std::string, std::string> &query) const noexcept
 {

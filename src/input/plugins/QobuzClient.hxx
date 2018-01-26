@@ -96,6 +96,9 @@ public:
 	 */
 	QobuzSession GetSession() const;
 
+	std::string MakeUrl(const char *object, const char *method,
+			    const std::multimap<std::string, std::string> &query) const noexcept;
+
 	std::string MakeSignedUrl(const char *object, const char *method,
 				  const std::multimap<std::string, std::string> &query) const noexcept;
 

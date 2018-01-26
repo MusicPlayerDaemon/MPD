@@ -21,6 +21,7 @@
 #include "QobuzInputPlugin.hxx"
 #include "QobuzClient.hxx"
 #include "QobuzTrackRequest.hxx"
+#include "QobuzTagScanner.hxx"
 #include "CurlInputPlugin.hxx"
 #include "PluginUnavailable.hxx"
 #include "input/ProxyInputStream.hxx"
@@ -192,9 +193,23 @@ OpenQobuzInput(const char *uri, Mutex &mutex, Cond &cond)
 	return std::make_unique<QobuzInputStream>(uri, track_id, mutex, cond);
 }
 
+static std::unique_ptr<RemoteTagScanner>
+ScanQobuzTags(const char *uri, RemoteTagHandler &handler)
+{
+	assert(qobuz_client != nullptr);
+
+	const char *track_id = ExtractQobuzTrackId(uri);
+	if (track_id == nullptr)
+		return nullptr;
+
+	return std::make_unique<QobuzTagScanner>(*qobuz_client, track_id,
+						 handler);
+}
+
 const InputPlugin qobuz_input_plugin = {
 	"qobuz",
 	InitQobuzInput,
 	FinishQobuzInput,
 	OpenQobuzInput,
+	ScanQobuzTags,
 };

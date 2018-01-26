@@ -1392,6 +1392,7 @@ libinput_a_SOURCES += \
 	src/input/plugins/QobuzErrorParser.cxx src/input/plugins/QobuzErrorParser.hxx \
 	src/input/plugins/QobuzLoginRequest.cxx src/input/plugins/QobuzLoginRequest.hxx \
 	src/input/plugins/QobuzTrackRequest.cxx src/input/plugins/QobuzTrackRequest.hxx \
+	src/input/plugins/QobuzTagScanner.cxx src/input/plugins/QobuzTagScanner.hxx \
 	src/input/plugins/QobuzInputPlugin.cxx src/input/plugins/QobuzInputPlugin.hxx
 INPUT_LIBS += $(YAJL_LIBS) $(LIBGCRYPT_LIBS)
 endif
