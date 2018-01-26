@@ -163,18 +163,28 @@ FinishQobuzInput()
 	delete qobuz_client;
 }
 
+gcc_pure
+static const char *
+ExtractQobuzTrackId(const char *uri)
+{
+	// TODO: what's the standard "qobuz://" URI syntax?
+	const char *track_id = StringAfterPrefix(uri, "qobuz://track/");
+	if (track_id == nullptr)
+		return nullptr;
+
+	if (*track_id == 0)
+		return nullptr;
+
+	return track_id;
+}
+
 static InputStreamPtr
 OpenQobuzInput(const char *uri, Mutex &mutex, Cond &cond)
 {
 	assert(qobuz_client != nullptr);
 
-	const char *track_id;
-
-	// TODO: what's the standard "qobuz://" URI syntax?
-
-	track_id = StringAfterPrefix(uri, "qobuz://track/");
-
-	if (track_id == nullptr || *track_id == 0)
+	const char *track_id = ExtractQobuzTrackId(uri);
+	if (track_id == nullptr)
 		return nullptr;
 
 	// TODO: validate track_id
