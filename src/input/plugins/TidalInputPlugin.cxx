@@ -190,18 +190,30 @@ FinishTidalInput()
 	delete tidal_session;
 }
 
+gcc_pure
+static const char *
+ExtractTidalTrackId(const char *uri)
+{
+	const char *track_id = StringAfterPrefix(uri, "tidal://track/");
+	if (track_id == nullptr) {
+		track_id = StringAfterPrefix(uri, "https://listen.tidal.com/track/");
+		if (track_id == nullptr)
+			return nullptr;
+	}
+
+	if (*track_id == 0)
+		return nullptr;
+
+	return track_id;
+}
+
 static InputStreamPtr
 OpenTidalInput(const char *uri, Mutex &mutex, Cond &cond)
 {
 	assert(tidal_session != nullptr);
 
-	const char *track_id;
-
-	track_id = StringAfterPrefix(uri, "tidal://track/");
+	const char *track_id = ExtractTidalTrackId(uri);
 	if (track_id == nullptr)
-		track_id = StringAfterPrefix(uri, "https://listen.tidal.com/track/");
-
-	if (track_id == nullptr || *track_id == 0)
 		return nullptr;
 
 	// TODO: validate track_id
