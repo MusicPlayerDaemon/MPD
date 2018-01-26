@@ -62,12 +62,6 @@ private:
 
 	/* virtual methods from CurlResponseHandler */
 	void OnError(std::exception_ptr e) noexcept override;
-
-public:
-	/* yajl callbacks */
-	bool String(StringView value) noexcept;
-	bool MapKey(StringView value) noexcept;
-	bool EndMap() noexcept;
 };
 
 #endif
