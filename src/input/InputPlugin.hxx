@@ -26,7 +26,8 @@ struct ConfigBlock;
 class Mutex;
 class Cond;
 class EventLoop;
-class InputStream;
+class RemoteTagScanner;
+class RemoteTagHandler;
 
 struct InputPlugin {
 	const char *name;
@@ -52,6 +53,17 @@ struct InputPlugin {
 	 */
 	InputStreamPtr (*open)(const char *uri,
 			       Mutex &mutex, Cond &cond);
+
+	/**
+	 * Prepare a #RemoteTagScanner.  The operation must be started
+	 * using RemoteTagScanner::Start().
+	 *
+	 * Throws on error.
+	 *
+	 * @return nullptr if the given URI is not supported.
+	 */
+	std::unique_ptr<RemoteTagScanner> (*scan_tags)(const char *uri,
+						       RemoteTagHandler &handler) = nullptr;
 };
 
 #endif

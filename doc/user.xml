@@ -2429,6 +2429,20 @@ run</programlisting>
                   The Qobuz password.
                 </entry>
               </row>
+
+              <row>
+                <entry>
+                  <varname>format_id</varname>
+                  <parameter>N</parameter>
+                </entry>
+                <entry>
+                  The <ulink
+                  url="https://github.com/Qobuz/api-documentation/blob/master/endpoints/track/getFileUrl.md#parameters">Qobuz
+                  format identifier</ulink>, i.e. a number which
+                  chooses the format and quality to be requested from
+                  Qobuz.  The default is "5" (320 kbit/s MP3).
+                </entry>
+              </row>
             </tbody>
           </tgroup>
         </informaltable>
@@ -2481,6 +2495,21 @@ run</programlisting>
                 </entry>
                 <entry>
                   The Tidal password.
+                </entry>
+              </row>
+
+              <row>
+                <entry>
+                  <varname>audioquality</varname>
+                  <parameter>Q</parameter>
+                </entry>
+                <entry>
+                  The Tidal "audioquality" parameter.  Possible
+                  values: <parameter>HI_RES</parameter>,
+                  <parameter>LOSSLESS</parameter>,
+                  <parameter>HIGH</parameter>,
+                  <parameter>LOW</parameter>.  Default is
+                  <parameter>HIGH</parameter>.
                 </entry>
               </row>
             </tbody>

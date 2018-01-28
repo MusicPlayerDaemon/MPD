@@ -17,40 +17,33 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef QOBUZ_TRACK_REQUEST_HXX
-#define QOBUZ_TRACK_REQUEST_HXX
+#ifndef QOBUZ_TAG_SCANNER
+#define QOBUZ_TAG_SCANNER
 
 #include "check.h"
 #include "lib/curl/Delegate.hxx"
-#include "lib/curl/Slist.hxx"
 #include "lib/curl/Request.hxx"
+#include "input/RemoteTagScanner.hxx"
 
 class QobuzClient;
-struct QobuzSession;
 
-class QobuzTrackHandler {
-public:
-	virtual void OnQobuzTrackSuccess(std::string url) noexcept = 0;
-	virtual void OnQobuzTrackError(std::exception_ptr error) noexcept = 0;
-};
-
-class QobuzTrackRequest final : DelegateCurlResponseHandler {
-	CurlSlist request_headers;
-
+class QobuzTagScanner final
+	: public RemoteTagScanner, DelegateCurlResponseHandler
+{
 	CurlRequest request;
 
-	QobuzTrackHandler &handler;
+	RemoteTagHandler &handler;
 
 public:
 	class ResponseParser;
 
-	QobuzTrackRequest(QobuzClient &client, const QobuzSession &session,
-			  const char *track_id,
-			  QobuzTrackHandler &_handler);
+	QobuzTagScanner(QobuzClient &client,
+			const char *track_id,
+			RemoteTagHandler &_handler);
 
-	~QobuzTrackRequest() noexcept;
+	~QobuzTagScanner() noexcept override;
 
-	void Start() noexcept {
+	void Start() noexcept override {
 		request.StartIndirect();
 	}
 

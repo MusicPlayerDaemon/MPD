@@ -30,9 +30,7 @@
  *
  * Its methods must be thread-safe.
  */
-class TidalTrackHandler
-	: public boost::intrusive::list_base_hook<boost::intrusive::link_mode<boost::intrusive::safe_link>>
-{
+class TidalTrackHandler {
 public:
 	virtual void OnTidalTrackSuccess(std::string url) noexcept = 0;
 	virtual void OnTidalTrackError(std::exception_ptr error) noexcept = 0;
@@ -57,6 +55,7 @@ public:
 			  const char *base_url, const char *token,
 			  const char *session,
 			  const char *track_id,
+			  const char *audioquality,
 			  TidalTrackHandler &_handler);
 
 	~TidalTrackRequest() noexcept;
