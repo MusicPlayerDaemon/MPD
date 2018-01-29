@@ -46,15 +46,6 @@ public:
 
 	void Start();
 
-	/**
-	 * Ask the thread to stop, but does not wait for it.  Usually,
-	 * you don't need to call this function, because Stop()
-	 * includes this.
-	 */
-	void StopAsync() {
-		event_loop.Break();
-	}
-
 	void Stop();
 
 private:
