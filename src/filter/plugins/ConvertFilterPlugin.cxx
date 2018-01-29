@@ -57,7 +57,9 @@ public:
 	ConstBuffer<void> FilterPCM(ConstBuffer<void> src) override;
 
 	ConstBuffer<void> Flush() override {
-		return state.Flush();
+		return IsActive()
+			? state.Flush()
+			: nullptr;
 	}
 
 private:
