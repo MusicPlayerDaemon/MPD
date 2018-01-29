@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "Listen.hxx"
-#include "client/Client.hxx"
+#include "client/Listener.hxx"
 #include "config/Param.hxx"
 #include "config/ConfigGlobal.hxx"
 #include "config/ConfigOption.hxx"
@@ -42,21 +42,6 @@
 static constexpr Domain listen_domain("listen");
 
 #define DEFAULT_PORT	6600
-
-class ClientListener final : public ServerSocket {
-	Partition &partition;
-
-public:
-	ClientListener(EventLoop &_loop, Partition &_partition)
-		:ServerSocket(_loop), partition(_partition) {}
-
-private:
-	void OnAccept(UniqueSocketDescriptor fd,
-		      SocketAddress address, int uid) override {
-		client_new(GetEventLoop(), partition,
-			   std::move(fd), address, uid);
-	}
-};
 
 static ClientListener *listen_socket;
 int listen_port;

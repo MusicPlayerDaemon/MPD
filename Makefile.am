@@ -105,6 +105,7 @@ libmpd_a_SOURCES = \
 	src/decoder/DecoderPlugin.hxx \
 	src/decoder/Bridge.cxx src/decoder/Bridge.hxx \
 	src/decoder/DecoderPrint.cxx src/decoder/DecoderPrint.hxx \
+	src/client/Listener.cxx src/client/Listener.hxx \
 	src/client/Client.cxx src/client/Client.hxx \
 	src/client/ClientInternal.hxx \
 	src/client/ClientEvent.cxx \
