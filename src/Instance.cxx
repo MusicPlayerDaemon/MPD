@@ -39,6 +39,8 @@ Instance::Instance()
 {
 }
 
+Instance::~Instance() noexcept = default;
+
 Partition *
 Instance::FindPartition(const char *name) noexcept
 {

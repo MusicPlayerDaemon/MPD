@@ -94,6 +94,7 @@ struct Instance final
 	StateFile *state_file = nullptr;
 
 	Instance();
+	~Instance() noexcept;
 
 	/**
 	 * Initiate shutdown.  Wrapper for EventLoop::Break().
