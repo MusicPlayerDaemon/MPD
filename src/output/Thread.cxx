@@ -379,10 +379,10 @@ PlayFull(FilteredAudioOutput &output, ConstBuffer<void> _buffer)
 inline void
 AudioOutputControl::InternalDrain() noexcept
 {
-	const ScopeUnlock unlock(mutex);
-
 	try {
 		/* flush the filter and play its remaining output */
+
+		const ScopeUnlock unlock(mutex);
 
 		while (true) {
 			auto buffer = source.Flush();
@@ -391,14 +391,14 @@ AudioOutputControl::InternalDrain() noexcept
 
 			PlayFull(*output, buffer);
 		}
+
+		output->Drain();
 	} catch (...) {
 		FormatError(std::current_exception(),
 			    "Failed to flush filter on %s", GetLogName());
 		InternalCloseError(std::current_exception());
 		return;
 	}
-
-	output->Drain();
 }
 
 void
