@@ -97,9 +97,9 @@ struct Instance final
 	~Instance() noexcept;
 
 	/**
-	 * Initiate shutdown.  Wrapper for EventLoop::Break().
+	 * Wrapper for EventLoop::Break().  Call to initiate shutdown.
 	 */
-	void Shutdown() {
+	void Break() {
 		event_loop.Break();
 	}
 
