@@ -98,6 +98,12 @@ Partition::TagModified()
 }
 
 void
+Partition::TagModified(const char *uri, const Tag &tag) noexcept
+{
+	playlist.TagModified(uri, tag);
+}
+
+void
 Partition::SyncWithPlayer()
 {
 	playlist.SyncWithPlayer(pc);

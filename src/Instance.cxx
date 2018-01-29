@@ -23,6 +23,11 @@
 #include "Idle.hxx"
 #include "Stats.hxx"
 
+#ifdef ENABLE_CURL
+#include "RemoteTagCache.hxx"
+#include "util/UriUtil.hxx"
+#endif
+
 #ifdef ENABLE_DATABASE
 #include "db/DatabaseError.hxx"
 
@@ -111,6 +116,34 @@ Instance::LostNeighbor(gcc_unused const NeighborInfo &info) noexcept
 {
 	for (auto &partition : partitions)
 		partition.EmitIdle(IDLE_NEIGHBOR);
+}
+
+#endif
+
+#ifdef ENABLE_CURL
+
+void
+Instance::LookupRemoteTag(const char *uri) noexcept
+{
+	if (!uri_has_scheme(uri))
+		return;
+
+	if (!remote_tag_cache)
+		remote_tag_cache = std::make_unique<RemoteTagCache>(event_loop,
+								    *this);
+
+	remote_tag_cache->Lookup(uri);
+}
+
+void
+Instance::OnRemoteTag(const char *uri, const Tag &tag) noexcept
+{
+	if (!tag.IsDefined())
+		/* boring */
+		return;
+
+	for (auto &partition : partitions)
+		partition.TagModified(uri, tag);
 }
 
 #endif

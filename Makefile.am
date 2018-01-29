@@ -183,6 +183,12 @@ libmpd_a_SOURCES = \
 	src/SongFilter.cxx src/SongFilter.hxx \
 	src/PlaylistFile.cxx src/PlaylistFile.hxx
 
+if ENABLE_CURL
+libmpd_a_SOURCES += \
+	src/RemoteTagCache.cxx src/RemoteTagCache.hxx \
+	src/RemoteTagCacheHandler.hxx
+endif
+
 if ANDROID
 else
 libmpd_a_SOURCES += \

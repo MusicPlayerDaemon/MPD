@@ -32,6 +32,7 @@
 #include "client/Client.hxx"
 #include "client/Response.hxx"
 #include "Partition.hxx"
+#include "Instance.hxx"
 #include "BulkEdit.hxx"
 #include "util/ConstBuffer.hxx"
 #include "util/StringAPI.hxx"
@@ -87,6 +88,10 @@ handle_add(Client &client, Request args, Response &r)
 					   );
 	switch (located_uri.type) {
 	case LocatedUri::Type::ABSOLUTE:
+		AddUri(client, located_uri);
+		client.GetInstance().LookupRemoteTag(located_uri.canonical_uri);
+		return CommandResult::OK;
+
 	case LocatedUri::Type::PATH:
 		AddUri(client, located_uri);
 		return CommandResult::OK;
@@ -107,6 +112,7 @@ handle_addid(Client &client, Request args, Response &r)
 	auto &partition = client.GetPartition();
 	const SongLoader loader(client);
 	unsigned added_id = partition.AppendURI(loader, uri);
+	partition.instance.LookupRemoteTag(uri);
 
 	if (args.size == 2) {
 		unsigned to = args.ParseUnsigned(1);

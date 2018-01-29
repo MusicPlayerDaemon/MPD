@@ -227,6 +227,12 @@ struct Partition final : QueueListener, PlayerListener, MixerListener {
 	void TagModified();
 
 	/**
+	 * The tag of the given song has been modified.  Propagate the
+	 * change to all instances of this song in the queue.
+	 */
+	void TagModified(const char *uri, const Tag &tag) noexcept;
+
+	/**
 	 * Synchronize the player with the play queue.
 	 */
 	void SyncWithPlayer();
