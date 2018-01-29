@@ -114,7 +114,7 @@ public:
 	explicit EventLoop(ThreadId _thread);
 	EventLoop():EventLoop(ThreadId::GetCurrent()) {}
 
-	~EventLoop();
+	~EventLoop() noexcept;
 
 	/**
 	 * A caching wrapper for std::chrono::steady_clock::now().
@@ -130,15 +130,15 @@ public:
 	 * method is thread-safe and non-blocking: after returning, it
 	 * is not guaranteed that the EventLoop has really stopped.
 	 */
-	void Break();
+	void Break() noexcept;
 
-	bool AddFD(int _fd, unsigned flags, SocketMonitor &m) {
+	bool AddFD(int _fd, unsigned flags, SocketMonitor &m) noexcept {
 		assert(IsInside());
 
 		return poll_group.Add(_fd, flags, &m);
 	}
 
-	bool ModifyFD(int _fd, unsigned flags, SocketMonitor &m) {
+	bool ModifyFD(int _fd, unsigned flags, SocketMonitor &m) noexcept {
 		assert(IsInside());
 
 		return poll_group.Modify(_fd, flags, &m);
@@ -149,16 +149,16 @@ public:
 	 * has been closed.  This is like RemoveFD(), but does not
 	 * attempt to use #EPOLL_CTL_DEL.
 	 */
-	bool Abandon(int fd, SocketMonitor &m);
+	bool Abandon(int fd, SocketMonitor &m) noexcept;
 
-	bool RemoveFD(int fd, SocketMonitor &m);
+	bool RemoveFD(int fd, SocketMonitor &m) noexcept;
 
-	void AddIdle(IdleMonitor &i);
-	void RemoveIdle(IdleMonitor &i);
+	void AddIdle(IdleMonitor &i) noexcept;
+	void RemoveIdle(IdleMonitor &i) noexcept;
 
 	void AddTimer(TimerEvent &t,
-		      std::chrono::steady_clock::duration d);
-	void CancelTimer(TimerEvent &t);
+		      std::chrono::steady_clock::duration d) noexcept;
+	void CancelTimer(TimerEvent &t) noexcept;
 
 	/**
 	 * Schedule a call to DeferEvent::RunDeferred().
@@ -179,7 +179,7 @@ public:
 	 * The main function of this class.  It will loop until
 	 * Break() gets called.  Can be called only once.
 	 */
-	void Run();
+	void Run() noexcept;
 
 private:
 	/**
@@ -187,7 +187,7 @@ private:
 	 *
 	 * Caller must lock the mutex.
 	 */
-	void HandleDeferred();
+	void HandleDeferred() noexcept;
 
 	bool OnSocketReady(unsigned flags) noexcept override;
 

@@ -48,14 +48,14 @@ public:
 	static constexpr unsigned ERROR = POLLERR;
 	static constexpr unsigned HANGUP = POLLHUP;
 
-	PollGroupPoll();
-	~PollGroupPoll();
+	PollGroupPoll() noexcept;
+	~PollGroupPoll() noexcept;
 
-	void ReadEvents(PollResultGeneric &result, int timeout_ms);
-	bool Add(int fd, unsigned events, void *obj);
-	bool Modify(int fd, unsigned events, void *obj);
-	bool Remove(int fd);
-	bool Abandon(int fd) {
+	void ReadEvents(PollResultGeneric &result, int timeout_ms) noexcept;
+	bool Add(int fd, unsigned events, void *obj) noexcept;
+	bool Modify(int fd, unsigned events, void *obj) noexcept;
+	bool Remove(int fd) noexcept;
+	bool Abandon(int fd) noexcept {
 		return Remove(fd);
 	}
 };

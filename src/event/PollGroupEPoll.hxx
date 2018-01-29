@@ -36,12 +36,23 @@ class PollResultEPoll
 	size_t n_events = 0;
 
 public:
-	size_t GetSize() const { return n_events; }
-	unsigned GetEvents(size_t i) const { return events[i].events; }
-	void *GetObject(size_t i) const { return events[i].data.ptr; }
-	void Reset() { n_events = 0; }
+	size_t GetSize() const noexcept {
+		return n_events;
+	}
 
-	void Clear(void *obj) {
+	unsigned GetEvents(size_t i) const noexcept {
+		return events[i].events;
+	}
+
+	void *GetObject(size_t i) const noexcept {
+		return events[i].data.ptr;
+	}
+
+	void Reset() noexcept {
+		n_events = 0;
+	}
+
+	void Clear(void *obj) noexcept {
 		for (size_t i = 0; i < n_events; ++i)
 			if (events[i].data.ptr == obj)
 				events[i].events = 0;
@@ -62,25 +73,25 @@ public:
 
 	PollGroupEPoll() = default;
 
-	void ReadEvents(PollResultEPoll &result, int timeout_ms) {
+	void ReadEvents(PollResultEPoll &result, int timeout_ms) noexcept {
 		int ret = epoll.Wait(result.events.data(), result.events.size(),
 				     timeout_ms);
 		result.n_events = std::max(0, ret);
 	}
 
-	bool Add(int fd, unsigned events, void *obj) {
+	bool Add(int fd, unsigned events, void *obj) noexcept {
 		return epoll.Add(fd, events, obj);
 	}
 
-	bool Modify(int fd, unsigned events, void *obj) {
+	bool Modify(int fd, unsigned events, void *obj) noexcept {
 		return epoll.Modify(fd, events, obj);
 	}
 
-	bool Remove(int fd) {
+	bool Remove(int fd) noexcept {
 		return epoll.Remove(fd);
 	}
 
-	bool Abandon(gcc_unused int fd) {
+	bool Abandon(gcc_unused int fd) noexcept {
 		// Nothing to do in this implementation.
 		// Closed descriptors are automatically unregistered.
 		return true;

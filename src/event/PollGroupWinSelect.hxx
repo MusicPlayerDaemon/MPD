@@ -42,7 +42,10 @@ class SocketSet
 {
 	fd_set set;
 public:
-	SocketSet() { set.fd_count = 0; }
+	SocketSet() noexcept {
+		set.fd_count = 0;
+	}
+
 	SocketSet(const SocketSet &other) noexcept {
 		set.fd_count = other.set.fd_count;
 		memcpy(set.fd_array,
@@ -50,28 +53,39 @@ public:
 		       sizeof (SOCKET) * set.fd_count);
 	}
 
-	fd_set *GetPtr() { return &set; }
-	size_t Size() { return set.fd_count; }
-	bool IsEmpty() { return set.fd_count == 0; }
-	bool IsFull() { return set.fd_count == FD_SETSIZE; }
+	fd_set *GetPtr() noexcept {
+		return &set;
+	}
+
+	size_t Size() const noexcept {
+		return set.fd_count;
+	}
+
+	bool IsEmpty() const noexcept {
+		return set.fd_count == 0;
+	}
+
+	bool IsFull() const noexcept {
+		return set.fd_count == FD_SETSIZE;
+	}
 
 	int operator[](size_t index) const noexcept {
 		assert(index < set.fd_count);
 		return set.fd_array[index];
 	}
 
-	size_t Add(int fd) {
+	size_t Add(int fd) noexcept {
 		assert(!IsFull());
 		set.fd_array[set.fd_count] = fd;
 		return set.fd_count++;
 	}
 
-	void MoveToEnd(size_t index) {
+	void MoveToEnd(size_t index) noexcept {
 		assert(index < set.fd_count);
 		std::swap(set.fd_array[index], set.fd_array[set.fd_count - 1]);
 	}
 
-	void RemoveLast() {
+	void RemoveLast() noexcept {
 		assert(!IsEmpty());
 		--set.fd_count;
 	}
@@ -89,8 +103,10 @@ class PollGroupWinSelect
 	SocketSet event_set[2];
 	std::unordered_map<int, Item> items;
 
-	bool CanModify(Item &item, unsigned events, int event_id);
-	void Modify(Item &item, int fd, unsigned events, int event_id);
+	bool CanModify(Item &item, unsigned events,
+		       int event_id) const noexcept;
+	void Modify(Item &item, int fd, unsigned events,
+		    int event_id) noexcept;
 
 	PollGroupWinSelect(PollGroupWinSelect &) = delete;
 	PollGroupWinSelect &operator=(PollGroupWinSelect &) = delete;
@@ -100,14 +116,16 @@ public:
 	static constexpr unsigned ERROR = 0;
 	static constexpr unsigned HANGUP = 0;
 
-	PollGroupWinSelect();
-	~PollGroupWinSelect();
+	PollGroupWinSelect() noexcept;
+	~PollGroupWinSelect() noexcept;
 
-	void ReadEvents(PollResultGeneric &result, int timeout_ms);
-	bool Add(int fd, unsigned events, void *obj);
-	bool Modify(int fd, unsigned events, void *obj);
-	bool Remove(int fd);
-	bool Abandon(int fd) { return Remove(fd); }
+	void ReadEvents(PollResultGeneric &result, int timeout_ms) noexcept;
+	bool Add(int fd, unsigned events, void *obj) noexcept;
+	bool Modify(int fd, unsigned events, void *obj) noexcept;
+	bool Remove(int fd) noexcept;
+	bool Abandon(int fd) noexcept {
+		return Remove(fd);
+	}
 };
 
 #endif

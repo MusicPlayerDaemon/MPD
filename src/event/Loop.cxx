@@ -30,14 +30,14 @@ EventLoop::EventLoop(ThreadId _thread)
 	SocketMonitor::Open(SocketDescriptor(wake_fd.Get()));
 }
 
-EventLoop::~EventLoop()
+EventLoop::~EventLoop() noexcept
 {
 	assert(idle.empty());
 	assert(timers.empty());
 }
 
 void
-EventLoop::Break()
+EventLoop::Break() noexcept
 {
 	if (quit.exchange(true))
 		return;
@@ -46,7 +46,7 @@ EventLoop::Break()
 }
 
 bool
-EventLoop::Abandon(int _fd, SocketMonitor &m)
+EventLoop::Abandon(int _fd, SocketMonitor &m)  noexcept
 {
 	assert(IsInside());
 
@@ -55,7 +55,7 @@ EventLoop::Abandon(int _fd, SocketMonitor &m)
 }
 
 bool
-EventLoop::RemoveFD(int _fd, SocketMonitor &m)
+EventLoop::RemoveFD(int _fd, SocketMonitor &m) noexcept
 {
 	assert(IsInside());
 
@@ -64,7 +64,7 @@ EventLoop::RemoveFD(int _fd, SocketMonitor &m)
 }
 
 void
-EventLoop::AddIdle(IdleMonitor &i)
+EventLoop::AddIdle(IdleMonitor &i) noexcept
 {
 	assert(IsInside());
 
@@ -73,7 +73,7 @@ EventLoop::AddIdle(IdleMonitor &i)
 }
 
 void
-EventLoop::RemoveIdle(IdleMonitor &i)
+EventLoop::RemoveIdle(IdleMonitor &i) noexcept
 {
 	assert(IsInside());
 
@@ -81,7 +81,7 @@ EventLoop::RemoveIdle(IdleMonitor &i)
 }
 
 void
-EventLoop::AddTimer(TimerEvent &t, std::chrono::steady_clock::duration d)
+EventLoop::AddTimer(TimerEvent &t, std::chrono::steady_clock::duration d) noexcept
 {
 	assert(IsInside());
 
@@ -91,7 +91,7 @@ EventLoop::AddTimer(TimerEvent &t, std::chrono::steady_clock::duration d)
 }
 
 void
-EventLoop::CancelTimer(TimerEvent &t)
+EventLoop::CancelTimer(TimerEvent &t) noexcept
 {
 	assert(IsInside());
 
@@ -112,7 +112,7 @@ ExportTimeoutMS(std::chrono::steady_clock::duration timeout)
 }
 
 void
-EventLoop::Run()
+EventLoop::Run() noexcept
 {
 	if (thread.IsNull())
 		thread = ThreadId::GetCurrent();
@@ -241,7 +241,7 @@ EventLoop::RemoveDeferred(DeferEvent &d) noexcept
 }
 
 void
-EventLoop::HandleDeferred()
+EventLoop::HandleDeferred() noexcept
 {
 	while (!deferred.empty() && !quit) {
 		auto &m = deferred.front();

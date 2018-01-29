@@ -34,24 +34,35 @@ class PollResultGeneric
 		void *obj;
 
 		Item() = default;
-		Item(unsigned _events, void *_obj)
+		constexpr Item(unsigned _events, void *_obj) noexcept
 			: events(_events), obj(_obj) { }
 	};
 
 	std::vector<Item> items;
 public:
-	size_t GetSize() const { return items.size(); }
-	unsigned GetEvents(size_t i) const { return items[i].events; }
-	void *GetObject(size_t i) const { return items[i].obj; }
-	void Reset() { items.clear(); }
+	size_t GetSize() const noexcept {
+		return items.size();
+	}
 
-	void Clear(void *obj) {
+	unsigned GetEvents(size_t i) const noexcept {
+		return items[i].events;
+	}
+
+	void *GetObject(size_t i) const noexcept {
+		return items[i].obj;
+	}
+
+	void Reset() noexcept {
+		items.clear();
+	}
+
+	void Clear(void *obj) noexcept {
 		for (auto i = items.begin(); i != items.end(); ++i)
 			if (i->obj == obj)
 				i->events = 0;
 	}
 
-	void Add(unsigned events, void *obj) {
+	void Add(unsigned events, void *obj) noexcept {
 		items.emplace_back(events, obj);
 	}
 };
