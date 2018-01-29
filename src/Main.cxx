@@ -643,8 +643,10 @@ try {
 
 	/* cleanup */
 
-#if defined(ENABLE_DATABASE) && defined(ENABLE_INOTIFY)
+#ifdef ENABLE_DATABASE
+#ifdef ENABLE_INOTIFY
 	mpd_inotify_finish();
+#endif
 
 	if (instance->update != nullptr)
 		instance->update->CancelAllAsync();
