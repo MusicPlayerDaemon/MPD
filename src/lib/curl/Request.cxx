@@ -171,13 +171,7 @@ CurlRequest::Done(CURLcode result) noexcept
 				msg = curl_easy_strerror(result);
 			throw FormatRuntimeError("CURL failed: %s", msg);
 		}
-	} catch (...) {
-		state = State::CLOSED;
-		handler.OnError(std::current_exception());
-		return;
-	}
 
-	try {
 		FinishBody();
 	} catch (...) {
 		state = State::CLOSED;
