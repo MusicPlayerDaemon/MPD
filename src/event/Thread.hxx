@@ -36,20 +36,20 @@ public:
 	EventThread()
 		:event_loop(ThreadId::Null()), thread(BIND_THIS_METHOD(Run)) {}
 
-	~EventThread() {
+	~EventThread() noexcept {
 		Stop();
 	}
 
-	EventLoop &GetEventLoop() {
+	EventLoop &GetEventLoop() noexcept {
 		return event_loop;
 	}
 
 	void Start();
 
-	void Stop();
+	void Stop() noexcept;
 
 private:
-	void Run();
+	void Run() noexcept;
 };
 
 #endif /* MAIN_NOTIFY_H */
