@@ -189,6 +189,13 @@ private:
 	 */
 	void HandleDeferred() noexcept;
 
+	/**
+	 * Invoke all expired #TimerEvent instances and return the
+	 * duration until the next timer expires.  Returns a negative
+	 * duration if there is no timeout.
+	 */
+	std::chrono::steady_clock::duration HandleTimers() noexcept;
+
 	bool OnSocketReady(unsigned flags) noexcept override;
 
 public:

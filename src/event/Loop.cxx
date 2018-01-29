@@ -98,6 +98,29 @@ EventLoop::CancelTimer(TimerEvent &t) noexcept
 	timers.erase(timers.iterator_to(t));
 }
 
+inline std::chrono::steady_clock::duration
+EventLoop::HandleTimers() noexcept
+{
+	std::chrono::steady_clock::duration timeout;
+
+	while (!quit) {
+		auto i = timers.begin();
+		if (i == timers.end())
+			break;
+
+		TimerEvent &t = *i;
+		timeout = t.due - now;
+		if (timeout > timeout.zero())
+			return timeout;
+
+		timers.erase(i);
+
+		t.Run();
+	}
+
+	return std::chrono::steady_clock::duration(-1);
+}
+
 /**
  * Convert the given timeout specification to a milliseconds integer,
  * to be used by functions like poll() and epoll_wait().  Any negative
@@ -130,26 +153,9 @@ EventLoop::Run() noexcept
 
 		/* invoke timers */
 
-		std::chrono::steady_clock::duration timeout;
-		while (true) {
-			auto i = timers.begin();
-			if (i == timers.end()) {
-				timeout = std::chrono::steady_clock::duration(-1);
-				break;
-			}
-
-			TimerEvent &t = *i;
-			timeout = t.due - now;
-			if (timeout > timeout.zero())
-				break;
-
-			timers.erase(i);
-
-			t.Run();
-
-			if (quit)
-				return;
-		}
+		const auto timeout = HandleTimers();
+		if (quit)
+			break;
 
 		/* invoke idle */
 
