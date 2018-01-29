@@ -31,13 +31,14 @@ struct epoll_event;
 
 /**
  * A class that wraps Linux epoll.
- *
- * Errors in the constructor are fatal.
  */
 class EPollFD {
 	const int fd;
 
 public:
+	/**
+	 * Throws on error.
+	 */
 	EPollFD();
 
 	~EPollFD() noexcept {
