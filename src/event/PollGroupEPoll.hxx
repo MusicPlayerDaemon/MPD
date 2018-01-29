@@ -33,17 +33,17 @@ class PollResultEPoll
 	friend class PollGroupEPoll;
 
 	std::array<epoll_event, 16> events;
-	int n_events;
+	size_t n_events;
 public:
 	PollResultEPoll() : n_events(0) { }
 
-	int GetSize() const { return n_events; }
-	unsigned GetEvents(int i) const { return events[i].events; }
-	void *GetObject(int i) const { return events[i].data.ptr; }
+	size_t GetSize() const { return n_events; }
+	unsigned GetEvents(size_t i) const { return events[i].events; }
+	void *GetObject(size_t i) const { return events[i].data.ptr; }
 	void Reset() { n_events = 0; }
 
 	void Clear(void *obj) {
-		for (int i = 0; i < n_events; ++i)
+		for (size_t i = 0; i < n_events; ++i)
 			if (events[i].data.ptr == obj)
 				events[i].events = 0;
 	}

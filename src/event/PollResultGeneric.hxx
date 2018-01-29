@@ -24,6 +24,8 @@
 
 #include <vector>
 
+#include <stddef.h>
+
 class PollResultGeneric
 {
 	struct Item
@@ -38,9 +40,9 @@ class PollResultGeneric
 
 	std::vector<Item> items;
 public:
-	int GetSize() const { return items.size(); }
-	unsigned GetEvents(int i) const { return items[i].events; }
-	void *GetObject(int i) const { return items[i].obj; }
+	size_t GetSize() const { return items.size(); }
+	unsigned GetEvents(size_t i) const { return items[i].events; }
+	void *GetObject(size_t i) const { return items[i].obj; }
 	void Reset() { items.clear(); }
 
 	void Clear(void *obj) {

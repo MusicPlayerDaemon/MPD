@@ -188,7 +188,7 @@ EventLoop::Run()
 		}
 
 		/* invoke sockets */
-		for (int i = 0; i < poll_result.GetSize(); ++i) {
+		for (size_t i = 0; i < poll_result.GetSize(); ++i) {
 			auto events = poll_result.GetEvents(i);
 			if (events != 0) {
 				if (quit)

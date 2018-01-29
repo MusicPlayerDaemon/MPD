@@ -51,23 +51,23 @@ public:
 	}
 
 	fd_set *GetPtr() { return &set; }
-	int Size() { return set.fd_count; }
+	size_t Size() { return set.fd_count; }
 	bool IsEmpty() { return set.fd_count == 0; }
 	bool IsFull() { return set.fd_count == FD_SETSIZE; }
 
-	int operator[](int index) {
-		assert(index >= 0 && (u_int)index < set.fd_count);
+	int operator[](size_t index) const noexcept {
+		assert(index < set.fd_count);
 		return set.fd_array[index];
 	}
 
-	int Add(int fd) {
+	size_t Add(int fd) {
 		assert(!IsFull());
 		set.fd_array[set.fd_count] = fd;
 		return set.fd_count++;
 	}
 
-	void MoveToEnd(int index) {
-		assert(index >= 0 && (u_int)index < set.fd_count);
+	void MoveToEnd(size_t index) {
+		assert(index < set.fd_count);
 		std::swap(set.fd_array[index], set.fd_array[set.fd_count - 1]);
 	}
 

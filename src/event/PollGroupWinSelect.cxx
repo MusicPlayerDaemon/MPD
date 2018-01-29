@@ -51,7 +51,7 @@ void PollGroupWinSelect::Modify(PollGroupWinSelect::Item &item, int fd,
 	if (index < 0 && HasEvent(events, event_id))
 		item.index[event_id] = set.Add(fd);
 	else if (index >= 0 && !HasEvent(events, event_id)) {
-		if (index != set.Size() - 1) {
+		if (size_t(index) != set.Size() - 1) {
 			set.MoveToEnd(index);
 			items[set[index]].index[event_id] = index;
 		}
@@ -142,13 +142,13 @@ void PollGroupWinSelect::ReadEvents(PollResultGeneric &result, int timeout_ms)
 	if (ret == 0 || ret == SOCKET_ERROR)
 		return;
 
-	for (int i = 0; i < read_set.Size(); ++i)
+	for (size_t i = 0; i < read_set.Size(); ++i)
 		items[read_set[i]].events |= READ;
 
-	for (int i = 0; i < write_set.Size(); ++i)
+	for (size_t i = 0; i < write_set.Size(); ++i)
 		items[write_set[i]].events |= WRITE;
 
-	for (int i = 0; i < except_set.Size(); ++i)
+	for (size_t i = 0; i < except_set.Size(); ++i)
 		items[except_set[i]].events |= WRITE;
 
 	for (auto i = items.begin(); i != items.end(); ++i)
