@@ -89,6 +89,11 @@ class EventLoop final : SocketMonitor
 	std::atomic_bool quit;
 
 	/**
+	 * If this is true, then Run() has returned.
+	 */
+	std::atomic_bool dead;
+
+	/**
 	 * True when the object has been modified and another check is
 	 * necessary before going to sleep via PollGroup::ReadEvents().
 	 */
@@ -199,6 +204,10 @@ private:
 	bool OnSocketReady(unsigned flags) noexcept override;
 
 public:
+	gcc_pure
+	bool IsDead() const noexcept {
+		return dead;
+	}
 
 	/**
 	 * Are we currently running inside this EventLoop's thread?

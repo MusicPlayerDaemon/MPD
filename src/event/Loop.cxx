@@ -25,7 +25,9 @@
 #include "util/ScopeExit.hxx"
 
 EventLoop::EventLoop(ThreadId _thread)
-	:SocketMonitor(*this), quit(false), thread(_thread)
+	:SocketMonitor(*this),
+	 quit(false), dead(false),
+	 thread(_thread)
 {
 	SocketMonitor::Open(SocketDescriptor(wake_fd.Get()));
 }
@@ -142,10 +144,14 @@ EventLoop::Run() noexcept
 
 	assert(IsInside());
 	assert(!quit);
+	assert(!dead);
 	assert(busy);
 
 	SocketMonitor::Schedule(SocketMonitor::READ);
-	AtScopeExit(this) { SocketMonitor::Cancel(); };
+	AtScopeExit(this) {
+		dead = true;
+		SocketMonitor::Cancel();
+	};
 
 	do {
 		now = std::chrono::steady_clock::now();
@@ -210,6 +216,7 @@ EventLoop::Run() noexcept
 	} while (!quit);
 
 #ifndef NDEBUG
+	assert(!dead);
 	assert(busy);
 	assert(thread.IsInside());
 #endif
