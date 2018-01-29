@@ -59,6 +59,11 @@ public:
 	ConstBuffer<void> Flush() override {
 		return state.Flush();
 	}
+
+private:
+	bool IsActive() const noexcept {
+		return out_audio_format != in_audio_format;
+	}
 };
 
 class PreparedConvertFilter final : public PreparedFilter {
@@ -76,7 +81,7 @@ ConvertFilter::Set(const AudioFormat &_out_audio_format)
 		/* no change */
 		return;
 
-	if (out_audio_format != in_audio_format) {
+	if (IsActive()) {
 		out_audio_format = in_audio_format;
 		state.Close();
 	}
@@ -107,7 +112,7 @@ ConvertFilter::~ConvertFilter()
 {
 	assert(in_audio_format.IsValid());
 
-	if (out_audio_format != in_audio_format)
+	if (IsActive())
 		state.Close();
 }
 
@@ -116,11 +121,10 @@ ConvertFilter::FilterPCM(ConstBuffer<void> src)
 {
 	assert(in_audio_format.IsValid());
 
-	if (out_audio_format == in_audio_format)
+	return IsActive()
+		? state.Convert(src)
 		/* optimized special case: no-op */
-		return src;
-
-	return state.Convert(src);
+		: src;
 }
 
 std::unique_ptr<PreparedFilter>
