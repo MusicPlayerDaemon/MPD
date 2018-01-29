@@ -80,7 +80,7 @@ public:
 		return filter->FilterPCM(src);
 	}
 
-	ConstBuffer<void> Flush() noexcept override {
+	ConstBuffer<void> Flush() override {
 		return filter->Flush();
 	}
 };
