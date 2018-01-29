@@ -28,6 +28,7 @@
 #include "Mapper.hxx"
 #include "Permission.hxx"
 #include "Listen.hxx"
+#include "client/Listener.hxx"
 #include "client/Client.hxx"
 #include "client/ClientList.hxx"
 #include "command/AllCommands.hxx"
@@ -442,8 +443,10 @@ Instance::ShutdownDatabase() noexcept
 inline void
 Instance::BeginShutdownPartitions() noexcept
 {
-	for (auto &partition : partitions)
+	for (auto &partition : partitions) {
 		partition.pc.Kill();
+		partition.listener.reset();
+	}
 }
 
 inline void
@@ -548,7 +551,7 @@ try {
 
 	initialize_decoder_and_player(config.replay_gain);
 
-	listen_global_init(instance->event_loop, instance->partitions.front());
+	listen_global_init(*instance->partitions.front().listener);
 
 #ifdef ENABLE_DAEMON
 	daemonize_set_user();
@@ -697,10 +700,10 @@ try {
 		delete instance->state_file;
 	}
 
+	ZeroconfDeinit();
+
 	instance->BeginShutdownPartitions();
 
-	ZeroconfDeinit();
-	listen_global_finish();
 	delete instance->client_list;
 
 #ifdef ENABLE_NEIGHBOR_PLUGINS

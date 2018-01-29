@@ -23,6 +23,7 @@
 #include "DetachedSong.hxx"
 #include "mixer/Volume.hxx"
 #include "IdleFlags.hxx"
+#include "client/Listener.hxx"
 
 Partition::Partition(Instance &_instance,
 		     const char *_name,
@@ -33,6 +34,7 @@ Partition::Partition(Instance &_instance,
 		     const ReplayGainConfig &replay_gain_config)
 	:instance(_instance),
 	 name(_name),
+	 listener(new ClientListener(instance.event_loop, *this)),
 	 global_events(instance.event_loop, BIND_THIS_METHOD(OnGlobalEvent)),
 	 playlist(max_length, *this),
 	 outputs(*this),
@@ -41,6 +43,8 @@ Partition::Partition(Instance &_instance,
 {
 	UpdateEffectiveReplayGainMode();
 }
+
+Partition::~Partition() noexcept = default;
 
 void
 Partition::EmitIdle(unsigned mask)
