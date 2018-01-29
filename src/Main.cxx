@@ -405,6 +405,53 @@ initialize_decoder_and_player(const ReplayGainConfig &replay_gain_config)
 	}
 }
 
+inline void
+Instance::BeginShutdownUpdate() noexcept
+{
+#ifdef ENABLE_DATABASE
+#ifdef ENABLE_INOTIFY
+	mpd_inotify_finish();
+#endif
+
+	if (update != nullptr)
+		update->CancelAllAsync();
+#endif
+}
+
+inline void
+Instance::FinishShutdownUpdate() noexcept
+{
+#ifdef ENABLE_DATABASE
+	delete update;
+#endif
+}
+
+inline void
+Instance::ShutdownDatabase() noexcept
+{
+#ifdef ENABLE_DATABASE
+	if (instance->database != nullptr) {
+		instance->database->Close();
+		delete instance->database;
+	}
+
+	delete instance->storage;
+#endif
+}
+
+inline void
+Instance::BeginShutdownPartitions() noexcept
+{
+	for (auto &partition : partitions)
+		partition.pc.Kill();
+}
+
+inline void
+Instance::FinishShutdownPartitions() noexcept
+{
+	partitions.clear();
+}
+
 void
 Instance::OnIdle(unsigned flags)
 {
@@ -643,22 +690,14 @@ try {
 
 	/* cleanup */
 
-#ifdef ENABLE_DATABASE
-#ifdef ENABLE_INOTIFY
-	mpd_inotify_finish();
-#endif
-
-	if (instance->update != nullptr)
-		instance->update->CancelAllAsync();
-#endif
+	instance->BeginShutdownUpdate();
 
 	if (instance->state_file != nullptr) {
 		instance->state_file->Write();
 		delete instance->state_file;
 	}
 
-	for (auto &partition : instance->partitions)
-		partition.pc.Kill();
+	instance->BeginShutdownPartitions();
 
 	ZeroconfDeinit();
 	listen_global_finish();
@@ -671,16 +710,8 @@ try {
 	}
 #endif
 
-#ifdef ENABLE_DATABASE
-	delete instance->update;
-
-	if (instance->database != nullptr) {
-		instance->database->Close();
-		delete instance->database;
-	}
-
-	delete instance->storage;
-#endif
+	instance->FinishShutdownUpdate();
+	instance->ShutdownDatabase();
 
 #ifdef ENABLE_SQLITE
 	sticker_global_finish();
@@ -695,7 +726,7 @@ try {
 
 	DeinitFS();
 
-	instance->partitions.clear();
+	instance->FinishShutdownPartitions();
 	command_finish();
 	decoder_plugin_deinit_all();
 #ifdef ENABLE_ARCHIVE

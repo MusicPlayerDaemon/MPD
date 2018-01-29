@@ -114,6 +114,9 @@ struct Instance final
 	gcc_pure
 	Partition *FindPartition(const char *name) noexcept;
 
+	void BeginShutdownPartitions() noexcept;
+	void FinishShutdownPartitions() noexcept;
+
 #ifdef ENABLE_DATABASE
 	/**
 	 * Returns the global #Database instance.  May return nullptr
@@ -131,6 +134,10 @@ struct Instance final
 	 */
 	const Database &GetDatabaseOrThrow() const;
 #endif
+
+	void BeginShutdownUpdate() noexcept;
+	void FinishShutdownUpdate() noexcept;
+	void ShutdownDatabase() noexcept;
 
 private:
 #ifdef ENABLE_DATABASE
