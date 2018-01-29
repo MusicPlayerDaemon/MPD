@@ -43,7 +43,7 @@ class SocketSet
 	fd_set set;
 public:
 	SocketSet() { set.fd_count = 0; }
-	SocketSet(SocketSet &other) {
+	SocketSet(const SocketSet &other) noexcept {
 		set.fd_count = other.set.fd_count;
 		memcpy(set.fd_array,
 		       other.set.fd_array,
