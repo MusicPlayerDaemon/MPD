@@ -1,4 +1,6 @@
 ver 0.20.16 (not yet released)
+* output
+  - pulse: fix crash during auto-detection
 * database
   - simple: fix search within mount points
 * fix crash in debug build on Haiku and other operating systems
