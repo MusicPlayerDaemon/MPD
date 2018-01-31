@@ -34,7 +34,7 @@ static unsigned upnp_ref;
 static void
 DoInit()
 {
-	auto code = UpnpInit(0, 0);
+	auto code = UpnpInit(nullptr, 0);
 	if (code != UPNP_E_SUCCESS)
 		throw FormatRuntimeError("UpnpInit() failed: %s",
 					 UpnpGetErrorMessage(code));
