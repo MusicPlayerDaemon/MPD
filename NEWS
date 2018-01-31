@@ -3,6 +3,7 @@ ver 0.20.16 (not yet released)
   - pulse: fix crash during auto-detection
 * database
   - simple: fix search within mount points
+  - upnp: enable IPv6
 * fix crash in debug build on Haiku and other operating systems
 
 ver 0.20.15 (2018/01/05)
