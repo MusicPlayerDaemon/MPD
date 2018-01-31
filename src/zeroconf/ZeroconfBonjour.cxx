@@ -69,9 +69,9 @@ dnsRegisterCallback(gcc_unused DNSServiceRef sdRef,
 
 		bonjour_monitor->Cancel();
 	} else {
-		FormatDebug(bonjour_domain,
-			    "Registered zeroconf service with name '%s'",
-			    name);
+		// FormatDebug(bonjour_domain,
+		// 	    "Registered zeroconf service with name '%s'",
+		// 	    name);
 	}
 }
 

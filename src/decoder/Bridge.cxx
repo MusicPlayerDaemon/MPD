@@ -252,9 +252,9 @@ DecoderBridge::Ready(const AudioFormat audio_format,
 	assert(decoder_tag == nullptr);
 	assert(!seeking);
 
-	FormatDebug(decoder_domain, "audio_format=%s, seekable=%s",
-		    ToString(audio_format).c_str(),
-		    seekable ? "true" : "false");
+	// FormatDebug(decoder_domain, "audio_format=%s, seekable=%s",
+	// 	    ToString(audio_format).c_str(),
+	// 	    seekable ? "true" : "false");
 
 	{
 		const std::lock_guard<Mutex> protect(dc.mutex);

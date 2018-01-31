@@ -101,8 +101,8 @@ client_new(EventLoop &loop, Partition &partition,
 
 	client_list.Add(*client);
 
-	FormatInfo(client_domain, "[%u] opened from %s",
-		   client->num, remote.c_str());
+	// FormatInfo(client_domain, "[%u] opened from %s",
+	// 	   client->num, remote.c_str());
 }
 
 void
@@ -112,6 +112,6 @@ Client::Close()
 
 	SetExpired();
 
-	FormatInfo(client_domain, "[%u] closed", num);
+	// FormatInfo(client_domain, "[%u] closed", num);
 	delete this;
 }

@@ -801,8 +801,8 @@ ffmpeg_decode(DecoderClient &client, InputStream &input)
 	if (input_format == nullptr)
 		return;
 
-	FormatDebug(ffmpeg_domain, "detected input format '%s' (%s)",
-		    input_format->name, input_format->long_name);
+	// FormatDebug(ffmpeg_domain, "detected input format '%s' (%s)",
+	// 	    input_format->name, input_format->long_name);
 
 	AvioStream stream(&client, input);
 	if (!stream.Open()) {

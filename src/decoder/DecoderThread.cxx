@@ -104,7 +104,7 @@ decoder_stream_decode(const DecoderPlugin &plugin,
 	assert(input_stream.IsReady());
 	assert(bridge.dc.state == DecoderState::START);
 
-	FormatDebug(decoder_thread_domain, "probing plugin %s", plugin.name);
+	// FormatDebug(decoder_thread_domain, "probing plugin %s", plugin.name);
 
 	if (bridge.dc.command == DecoderCommand::STOP)
 		throw StopDecoder();
@@ -118,7 +118,7 @@ decoder_stream_decode(const DecoderPlugin &plugin,
 	{
 		const ScopeUnlock unlock(bridge.dc.mutex);
 
-		FormatThreadName("decoder:%s", plugin.name);
+		// FormatThreadName("decoder:%s", plugin.name);
 
 		plugin.StreamDecode(bridge, input_stream);
 
@@ -147,7 +147,7 @@ decoder_file_decode(const DecoderPlugin &plugin,
 	assert(path.IsAbsolute());
 	assert(bridge.dc.state == DecoderState::START);
 
-	FormatDebug(decoder_thread_domain, "probing plugin %s", plugin.name);
+	// FormatDebug(decoder_thread_domain, "probing plugin %s", plugin.name);
 
 	if (bridge.dc.command == DecoderCommand::STOP)
 		throw StopDecoder();
@@ -155,7 +155,7 @@ decoder_file_decode(const DecoderPlugin &plugin,
 	{
 		const ScopeUnlock unlock(bridge.dc.mutex);
 
-		FormatThreadName("decoder:%s", plugin.name);
+		// FormatThreadName("decoder:%s", plugin.name);
 
 		plugin.FileDecode(bridge, path);
 
