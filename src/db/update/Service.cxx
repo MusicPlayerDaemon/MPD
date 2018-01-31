@@ -111,10 +111,10 @@ UpdateService::Task()
 {
 	assert(walk != nullptr);
 
-	if (!next.path_utf8.empty())
-		FormatDebug(update_domain, "starting: %s",
-			    next.path_utf8.c_str());
-	else
+	// if (!next.path_utf8.empty())
+	// 	FormatDebug(update_domain, "starting: %s",
+	// 		    next.path_utf8.c_str());
+	// else
 		LogDebug(update_domain, "starting");
 
 	SetThreadIdlePriority();
