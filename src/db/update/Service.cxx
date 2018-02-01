@@ -252,7 +252,7 @@ UpdateService::RunDeferred()
 	delete walk;
 	walk = nullptr;
 
-	next = UpdateQueueItem();
+	next.Clear();
 
 	idle_add(IDLE_UPDATE);
 

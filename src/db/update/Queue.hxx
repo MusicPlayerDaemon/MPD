@@ -49,6 +49,10 @@ struct UpdateQueueItem {
 	bool IsDefined() const {
 		return id != 0;
 	}
+
+	void Clear() {
+		id = 0;
+	}
 };
 
 class UpdateQueue {
