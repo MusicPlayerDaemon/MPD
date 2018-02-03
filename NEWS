@@ -4,6 +4,8 @@ ver 0.20.16 (not yet released)
 * database
   - simple: fix search within mount points
   - upnp: enable IPv6
+* archive
+  - iso9660: libcdio 2.0 compatibility
 * fix crash in debug build on Haiku and other operating systems
 
 ver 0.20.15 (2018/01/05)
