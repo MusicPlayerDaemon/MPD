@@ -26,24 +26,27 @@
 constexpr int EVENT_READ = 0;
 constexpr int EVENT_WRITE = 1;
 
-static inline bool HasEvent(unsigned events, int event_id)
+static constexpr
+bool HasEvent(unsigned events, int event_id) noexcept
 {
 	return (events & (1 << event_id)) != 0;
 }
 
-PollGroupWinSelect::PollGroupWinSelect() { }
-PollGroupWinSelect::~PollGroupWinSelect() { }
+PollGroupWinSelect::PollGroupWinSelect() noexcept = default;
+PollGroupWinSelect::~PollGroupWinSelect() noexcept = default;
 
-bool PollGroupWinSelect::CanModify(PollGroupWinSelect::Item &item,
-				   unsigned events, int event_id)
+bool
+PollGroupWinSelect::CanModify(PollGroupWinSelect::Item &item,
+			      unsigned events, int event_id) const noexcept
 {
 	if (item.index[event_id] < 0 && HasEvent(events, event_id))
 		return !event_set[event_id].IsFull();
 	return true;
 }
 
-void PollGroupWinSelect::Modify(PollGroupWinSelect::Item &item, int fd,
-				unsigned events, int event_id)
+void
+PollGroupWinSelect::Modify(PollGroupWinSelect::Item &item, int fd,
+			   unsigned events, int event_id) noexcept
 {
 	int index = item.index[event_id];
 	auto &set = event_set[event_id];
@@ -51,7 +54,7 @@ void PollGroupWinSelect::Modify(PollGroupWinSelect::Item &item, int fd,
 	if (index < 0 && HasEvent(events, event_id))
 		item.index[event_id] = set.Add(fd);
 	else if (index >= 0 && !HasEvent(events, event_id)) {
-		if (index != set.Size() - 1) {
+		if (size_t(index) != set.Size() - 1) {
 			set.MoveToEnd(index);
 			items[set[index]].index[event_id] = index;
 		}
@@ -60,7 +63,8 @@ void PollGroupWinSelect::Modify(PollGroupWinSelect::Item &item, int fd,
 	}
 }
 
-bool PollGroupWinSelect::Add(int fd, unsigned events, void *obj)
+bool
+PollGroupWinSelect::Add(int fd, unsigned events, void *obj) noexcept
 {
 	assert(items.find(fd) == items.end());
 	auto &item = items[fd];
@@ -84,7 +88,8 @@ bool PollGroupWinSelect::Add(int fd, unsigned events, void *obj)
 	return true;
 }
 
-bool PollGroupWinSelect::Modify(int fd, unsigned events, void *obj)
+bool
+PollGroupWinSelect::Modify(int fd, unsigned events, void *obj) noexcept
 {
 	auto item_iter = items.find(fd);
 	assert(item_iter != items.end());
@@ -101,7 +106,8 @@ bool PollGroupWinSelect::Modify(int fd, unsigned events, void *obj)
 	return true;
 }
 
-bool PollGroupWinSelect::Remove(int fd)
+bool
+PollGroupWinSelect::Remove(int fd) noexcept
 {
 	auto item_iter = items.find(fd);
 	assert(item_iter != items.end());
@@ -113,7 +119,9 @@ bool PollGroupWinSelect::Remove(int fd)
 	return true;
 }
 
-void PollGroupWinSelect::ReadEvents(PollResultGeneric &result, int timeout_ms)
+void
+PollGroupWinSelect::ReadEvents(PollResultGeneric &result,
+			       int timeout_ms) noexcept
 {
 	bool use_sleep = event_set[EVENT_READ].IsEmpty() &&
 			 event_set[EVENT_WRITE].IsEmpty();
@@ -142,13 +150,13 @@ void PollGroupWinSelect::ReadEvents(PollResultGeneric &result, int timeout_ms)
 	if (ret == 0 || ret == SOCKET_ERROR)
 		return;
 
-	for (int i = 0; i < read_set.Size(); ++i)
+	for (size_t i = 0; i < read_set.Size(); ++i)
 		items[read_set[i]].events |= READ;
 
-	for (int i = 0; i < write_set.Size(); ++i)
+	for (size_t i = 0; i < write_set.Size(); ++i)
 		items[write_set[i]].events |= WRITE;
 
-	for (int i = 0; i < except_set.Size(); ++i)
+	for (size_t i = 0; i < except_set.Size(); ++i)
 		items[except_set[i]].events |= WRITE;
 
 	for (auto i = items.begin(); i != items.end(); ++i)

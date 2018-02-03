@@ -26,6 +26,10 @@
 #include "event/MaskMonitor.hxx"
 #include "Compiler.h"
 
+#ifdef ENABLE_CURL
+#include "RemoteTagCacheHandler.hxx"
+#endif
+
 #ifdef ENABLE_NEIGHBOR_PLUGINS
 #include "neighbor/Listener.hxx"
 class NeighborGlue;
@@ -38,11 +42,13 @@ class Storage;
 class UpdateService;
 #endif
 
+#include <memory>
 #include <list>
 
 class ClientList;
 struct Partition;
 class StateFile;
+class RemoteTagCache;
 
 /**
  * A utility class which, when used as the first base class, ensures
@@ -66,6 +72,9 @@ struct Instance final
 #ifdef ENABLE_NEIGHBOR_PLUGINS
 	public NeighborListener
 #endif
+#ifdef ENABLE_CURL
+	, public RemoteTagCacheHandler
+#endif
 {
 	EventThread io_thread;
 
@@ -87,6 +96,10 @@ struct Instance final
 	UpdateService *update = nullptr;
 #endif
 
+#ifdef ENABLE_CURL
+	std::unique_ptr<RemoteTagCache> remote_tag_cache;
+#endif
+
 	ClientList *client_list;
 
 	std::list<Partition> partitions;
@@ -94,11 +107,12 @@ struct Instance final
 	StateFile *state_file = nullptr;
 
 	Instance();
+	~Instance() noexcept;
 
 	/**
-	 * Initiate shutdown.  Wrapper for EventLoop::Break().
+	 * Wrapper for EventLoop::Break().  Call to initiate shutdown.
 	 */
-	void Shutdown() {
+	void Break() {
 		event_loop.Break();
 	}
 
@@ -112,6 +126,9 @@ struct Instance final
 	 */
 	gcc_pure
 	Partition *FindPartition(const char *name) noexcept;
+
+	void BeginShutdownPartitions() noexcept;
+	void FinishShutdownPartitions() noexcept;
 
 #ifdef ENABLE_DATABASE
 	/**
@@ -131,6 +148,18 @@ struct Instance final
 	const Database &GetDatabaseOrThrow() const;
 #endif
 
+	void BeginShutdownUpdate() noexcept;
+	void FinishShutdownUpdate() noexcept;
+	void ShutdownDatabase() noexcept;
+
+#ifdef ENABLE_CURL
+	void LookupRemoteTag(const char *uri) noexcept;
+#else
+	void LookupRemoteTag(const char *) noexcept {
+		/* no-op */
+	}
+#endif
+
 private:
 #ifdef ENABLE_DATABASE
 	void OnDatabaseModified() override;
@@ -141,6 +170,11 @@ private:
 	/* virtual methods from class NeighborListener */
 	void FoundNeighbor(const NeighborInfo &info) noexcept override;
 	void LostNeighbor(const NeighborInfo &info) noexcept override;
+#endif
+
+#ifdef ENABLE_CURL
+	/* virtual methods from class RemoteTagCacheHandler */
+	void OnRemoteTag(const char *uri, const Tag &tag) noexcept override;
 #endif
 
 	/* callback for #idle_monitor */

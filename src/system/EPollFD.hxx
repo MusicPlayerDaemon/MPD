@@ -31,16 +31,17 @@ struct epoll_event;
 
 /**
  * A class that wraps Linux epoll.
- *
- * Errors in the constructor are fatal.
  */
 class EPollFD {
 	const int fd;
 
 public:
+	/**
+	 * Throws on error.
+	 */
 	EPollFD();
 
-	~EPollFD() {
+	~EPollFD() noexcept {
 		assert(fd >= 0);
 
 		::close(fd);
@@ -49,15 +50,15 @@ public:
 	EPollFD(const EPollFD &other) = delete;
 	EPollFD &operator=(const EPollFD &other) = delete;
 
-	int Wait(epoll_event *events, int maxevents, int timeout) {
+	int Wait(epoll_event *events, int maxevents, int timeout) noexcept {
 		return ::epoll_wait(fd, events, maxevents, timeout);
 	}
 
-	bool Control(int op, int _fd, epoll_event *event) {
+	bool Control(int op, int _fd, epoll_event *event) noexcept {
 		return ::epoll_ctl(fd, op, _fd, event) >= 0;
 	}
 
-	bool Add(int _fd, uint32_t events, void *ptr) {
+	bool Add(int _fd, uint32_t events, void *ptr) noexcept {
 		epoll_event e;
 		e.events = events;
 		e.data.ptr = ptr;
@@ -65,7 +66,7 @@ public:
 		return Control(EPOLL_CTL_ADD, _fd, &e);
 	}
 
-	bool Modify(int _fd, uint32_t events, void *ptr) {
+	bool Modify(int _fd, uint32_t events, void *ptr) noexcept {
 		epoll_event e;
 		e.events = events;
 		e.data.ptr = ptr;
@@ -73,7 +74,7 @@ public:
 		return Control(EPOLL_CTL_MOD, _fd, &e);
 	}
 
-	bool Remove(int _fd) {
+	bool Remove(int _fd) noexcept {
 		return Control(EPOLL_CTL_DEL, _fd, nullptr);
 	}
 };

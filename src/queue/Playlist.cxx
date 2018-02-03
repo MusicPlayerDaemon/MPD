@@ -43,6 +43,24 @@ playlist::TagModified(DetachedSong &&song)
 	OnModified();
 }
 
+void
+playlist::TagModified(const char *uri, const Tag &tag) noexcept
+{
+	bool modified = false;
+
+	for (unsigned i = 0; i < queue.length; ++i) {
+		auto &song = *queue.items[i].song;
+		if (song.IsURI(uri)) {
+			song.SetTag(tag);
+			queue.ModifyAtPosition(i);
+			modified = true;
+		}
+	}
+
+	if (modified)
+		OnModified();
+}
+
 inline void
 playlist::QueueSongOrder(PlayerControl &pc, unsigned order)
 

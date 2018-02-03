@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2017 The Music Player Daemon Project
+ * Copyright 2003-2018 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,39 +17,16 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_EVENT_THREAD_HXX
-#define MPD_EVENT_THREAD_HXX
+#include "config.h"
+#include "Listener.hxx"
+#include "Client.hxx"
+#include "net/UniqueSocketDescriptor.hxx"
+#include "net/SocketAddress.hxx"
 
-#include "check.h"
-#include "Loop.hxx"
-#include "thread/Thread.hxx"
-
-/**
- * A thread which runs an #EventLoop.
- */
-class EventThread final {
-	EventLoop event_loop;
-
-	Thread thread;
-
-public:
-	EventThread()
-		:event_loop(ThreadId::Null()), thread(BIND_THIS_METHOD(Run)) {}
-
-	~EventThread() noexcept {
-		Stop();
-	}
-
-	EventLoop &GetEventLoop() noexcept {
-		return event_loop;
-	}
-
-	void Start();
-
-	void Stop() noexcept;
-
-private:
-	void Run() noexcept;
-};
-
-#endif /* MAIN_NOTIFY_H */
+void
+ClientListener::OnAccept(UniqueSocketDescriptor fd,
+			 SocketAddress address, int uid) noexcept
+{
+	client_new(GetEventLoop(), partition,
+		   std::move(fd), address, uid);
+}

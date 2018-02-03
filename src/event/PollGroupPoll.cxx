@@ -25,10 +25,11 @@
 
 #include <assert.h>
 
-PollGroupPoll::PollGroupPoll() { }
-PollGroupPoll::~PollGroupPoll() { }
+PollGroupPoll::PollGroupPoll() noexcept = default;
+PollGroupPoll::~PollGroupPoll() noexcept = default;
 
-bool PollGroupPoll::Add(int fd, unsigned events, void *obj)
+bool
+PollGroupPoll::Add(int fd, unsigned events, void *obj) noexcept
 {
 	assert(items.find(fd) == items.end());
 
@@ -44,7 +45,8 @@ bool PollGroupPoll::Add(int fd, unsigned events, void *obj)
 	return true;
 }
 
-bool PollGroupPoll::Modify(int fd, unsigned events, void *obj)
+bool
+PollGroupPoll::Modify(int fd, unsigned events, void *obj) noexcept
 {
 	auto item_iter = items.find(fd);
 	assert(item_iter != items.end());
@@ -56,7 +58,8 @@ bool PollGroupPoll::Modify(int fd, unsigned events, void *obj)
 	return true;
 }
 
-bool PollGroupPoll::Remove(int fd)
+bool
+PollGroupPoll::Remove(int fd) noexcept
 {
 	auto item_iter = items.find(fd);
 	assert(item_iter != items.end());
@@ -72,7 +75,8 @@ bool PollGroupPoll::Remove(int fd)
 	return true;
 }
 
-void PollGroupPoll::ReadEvents(PollResultGeneric &result, int timeout_ms)
+void
+PollGroupPoll::ReadEvents(PollResultGeneric &result, int timeout_ms) noexcept
 {
 	int n = poll(poll_events.empty() ? nullptr : &poll_events[0],
 		     poll_events.size(), timeout_ms);

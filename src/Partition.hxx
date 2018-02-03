@@ -32,10 +32,12 @@
 #include "Compiler.h"
 
 #include <string>
+#include <memory>
 
 struct Instance;
 class MultipleOutputs;
 class SongLoader;
+class ClientListener;
 
 /**
  * A partition of the Music Player Daemon.  It is a separate unit with
@@ -48,6 +50,8 @@ struct Partition final : QueueListener, PlayerListener, MixerListener {
 	Instance &instance;
 
 	const std::string name;
+
+	std::unique_ptr<ClientListener> listener;
 
 	MaskMonitor global_events;
 
@@ -66,6 +70,8 @@ struct Partition final : QueueListener, PlayerListener, MixerListener {
 		  unsigned buffered_before_play,
 		  AudioFormat configured_audio_format,
 		  const ReplayGainConfig &replay_gain_config);
+
+	~Partition() noexcept;
 
 	void EmitGlobalEvent(unsigned mask) {
 		global_events.OrMask(mask);
@@ -219,6 +225,12 @@ struct Partition final : QueueListener, PlayerListener, MixerListener {
 	 * thread.  Propagate the change to all subsystems.
 	 */
 	void TagModified();
+
+	/**
+	 * The tag of the given song has been modified.  Propagate the
+	 * change to all instances of this song in the queue.
+	 */
+	void TagModified(const char *uri, const Tag &tag) noexcept;
 
 	/**
 	 * Synchronize the player with the play queue.

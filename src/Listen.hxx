@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2017 The Music Player Daemon Project
+ * Copyright 2003-2018 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -20,15 +20,11 @@
 #ifndef MPD_LISTEN_HXX
 #define MPD_LISTEN_HXX
 
-class EventLoop;
-struct Partition;
+class ClientListener;
 
 extern int listen_port;
 
 void
-listen_global_init(EventLoop &loop, Partition &partition);
-
-void
-listen_global_finish();
+listen_global_init(ClientListener &listener);
 
 #endif

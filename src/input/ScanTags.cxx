@@ -17,39 +17,24 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_EVENT_THREAD_HXX
-#define MPD_EVENT_THREAD_HXX
+#include "config.h"
+#include "ScanTags.hxx"
+#include "RemoteTagScanner.hxx"
+#include "InputPlugin.hxx"
+#include "Registry.hxx"
 
-#include "check.h"
-#include "Loop.hxx"
-#include "thread/Thread.hxx"
+std::unique_ptr<RemoteTagScanner>
+InputScanTags(const char *uri, RemoteTagHandler &handler)
+{
+	input_plugins_for_each_enabled(plugin) {
+		if (plugin->scan_tags == nullptr)
+			continue;
 
-/**
- * A thread which runs an #EventLoop.
- */
-class EventThread final {
-	EventLoop event_loop;
-
-	Thread thread;
-
-public:
-	EventThread()
-		:event_loop(ThreadId::Null()), thread(BIND_THIS_METHOD(Run)) {}
-
-	~EventThread() noexcept {
-		Stop();
+		auto scanner = plugin->scan_tags(uri, handler);
+		if (scanner)
+			return scanner;
 	}
 
-	EventLoop &GetEventLoop() noexcept {
-		return event_loop;
-	}
-
-	void Start();
-
-	void Stop() noexcept;
-
-private:
-	void Run() noexcept;
-};
-
-#endif /* MAIN_NOTIFY_H */
+	/* unsupported URI */
+	return nullptr;
+}

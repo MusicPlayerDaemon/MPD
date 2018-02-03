@@ -30,7 +30,7 @@ EventThread::Start()
 }
 
 void
-EventThread::Stop()
+EventThread::Stop() noexcept
 {
 	if (thread.IsDefined()) {
 		event_loop.Break();
@@ -39,7 +39,7 @@ EventThread::Stop()
 }
 
 void
-EventThread::Run()
+EventThread::Run() noexcept
 {
 	SetThreadName("io");
 

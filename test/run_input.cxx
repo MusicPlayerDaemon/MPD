@@ -26,6 +26,7 @@
 #include "input/Registry.hxx"
 #include "input/InputPlugin.hxx"
 #include "input/RemoteTagScanner.hxx"
+#include "input/ScanTags.hxx"
 #include "event/Thread.hxx"
 #include "thread/Cond.hxx"
 #include "Log.hxx"
@@ -213,20 +214,15 @@ Scan(const char *uri)
 {
 	DumpRemoteTagHandler handler;
 
-	input_plugins_for_each_enabled(plugin) {
-		if (plugin->scan_tags == nullptr)
-			continue;
-
-		auto scanner = plugin->scan_tags(uri, handler);
-		if (scanner) {
-			scanner->Start();
-			tag_save(stdout, handler.Wait());
-			return EXIT_SUCCESS;
-		}
+	auto scanner = InputScanTags(uri, handler);
+	if (!scanner) {
+		fprintf(stderr, "Unsupported URI\n");
+		return EXIT_FAILURE;
 	}
 
-	fprintf(stderr, "Unsupported URI\n");
-	return EXIT_FAILURE;
+	scanner->Start();
+	tag_save(stdout, handler.Wait());
+	return EXIT_SUCCESS;
 }
 
 int main(int argc, char **argv)

@@ -105,6 +105,7 @@ libmpd_a_SOURCES = \
 	src/decoder/DecoderPlugin.hxx \
 	src/decoder/Bridge.cxx src/decoder/Bridge.hxx \
 	src/decoder/DecoderPrint.cxx src/decoder/DecoderPrint.hxx \
+	src/client/Listener.cxx src/client/Listener.hxx \
 	src/client/Client.cxx src/client/Client.hxx \
 	src/client/ClientInternal.hxx \
 	src/client/ClientEvent.cxx \
@@ -181,6 +182,12 @@ libmpd_a_SOURCES = \
 	src/Chrono.hxx \
 	src/SongFilter.cxx src/SongFilter.hxx \
 	src/PlaylistFile.cxx src/PlaylistFile.hxx
+
+if ENABLE_CURL
+libmpd_a_SOURCES += \
+	src/RemoteTagCache.cxx src/RemoteTagCache.hxx \
+	src/RemoteTagCacheHandler.hxx
+endif
 
 if ANDROID
 else
@@ -1434,6 +1441,7 @@ libinput_a_SOURCES = \
 	src/input/Ptr.hxx \
 	src/input/InputPlugin.hxx \
 	src/input/RemoteTagScanner.hxx \
+	src/input/ScanTags.cxx src/input/ScanTags.hxx \
 	src/input/Reader.cxx src/input/Reader.hxx \
 	src/input/TextInputStream.cxx src/input/TextInputStream.hxx \
 	src/input/ThreadInputStream.cxx src/input/ThreadInputStream.hxx \

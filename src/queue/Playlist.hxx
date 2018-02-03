@@ -23,6 +23,7 @@
 #include "queue/Queue.hxx"
 
 enum TagType : uint8_t;
+struct Tag;
 struct PlayerControl;
 class DetachedSong;
 class Database;
@@ -192,6 +193,7 @@ public:
 	 * the song matches.
 	 */
 	void TagModified(DetachedSong &&song);
+	void TagModified(const char *uri, const Tag &tag) noexcept;
 
 #ifdef ENABLE_DATABASE
 	/**

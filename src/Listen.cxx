@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2017 The Music Player Daemon Project
+ * Copyright 2003-2018 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -19,18 +19,13 @@
 
 #include "config.h"
 #include "Listen.hxx"
-#include "client/Client.hxx"
+#include "client/Listener.hxx"
 #include "config/Param.hxx"
 #include "config/ConfigGlobal.hxx"
 #include "config/ConfigOption.hxx"
-#include "net/SocketAddress.hxx"
-#include "net/UniqueSocketDescriptor.hxx"
-#include "event/ServerSocket.hxx"
 #include "system/Error.hxx"
 #include "util/RuntimeError.hxx"
-#include "util/Domain.hxx"
 #include "fs/AllocatedPath.hxx"
-#include "Log.hxx"
 
 #include <string.h>
 #include <assert.h>
@@ -39,50 +34,33 @@
 #include <systemd/sd-daemon.h>
 #endif
 
-static constexpr Domain listen_domain("listen");
-
 #define DEFAULT_PORT	6600
 
-class ClientListener final : public ServerSocket {
-	Partition &partition;
-
-public:
-	ClientListener(EventLoop &_loop, Partition &_partition)
-		:ServerSocket(_loop), partition(_partition) {}
-
-private:
-	void OnAccept(UniqueSocketDescriptor fd,
-		      SocketAddress address, int uid) override {
-		client_new(GetEventLoop(), partition,
-			   std::move(fd), address, uid);
-	}
-};
-
-static ClientListener *listen_socket;
 int listen_port;
 
 /**
  * Throws #std::runtime_error on error.
  */
 static void
-listen_add_config_param(unsigned int port,
+listen_add_config_param(ClientListener &listener,
+			unsigned int port,
 			const ConfigParam *param)
 {
 	assert(param != nullptr);
 
 	if (0 == strcmp(param->value.c_str(), "any")) {
-		listen_socket->AddPort(port);
+		listener.AddPort(port);
 	} else if (param->value[0] == '/' || param->value[0] == '~') {
-		listen_socket->AddPath(param->GetPath());
+		listener.AddPath(param->GetPath());
 	} else {
-		listen_socket->AddHost(param->value.c_str(), port);
+		listener.AddHost(param->value.c_str(), port);
 	}
 }
 
 #ifdef ENABLE_SYSTEMD_DAEMON
 
 static bool
-listen_systemd_activation()
+listen_systemd_activation(ClientListener &listener)
 {
 	int n = sd_listen_fds(true);
 	if (n <= 0) {
@@ -93,7 +71,7 @@ listen_systemd_activation()
 
 	for (int i = SD_LISTEN_FDS_START, end = SD_LISTEN_FDS_START + n;
 	     i != end; ++i)
-		listen_socket->AddFD(i);
+		listener.AddFD(i);
 
 	return true;
 }
@@ -101,15 +79,13 @@ listen_systemd_activation()
 #endif
 
 void
-listen_global_init(EventLoop &loop, Partition &partition)
+listen_global_init(ClientListener &listener)
 {
 	int port = config_get_positive(ConfigOption::PORT, DEFAULT_PORT);
 	const auto *param = config_get_param(ConfigOption::BIND_TO_ADDRESS);
 
-	listen_socket = new ClientListener(loop, partition);
-
 #ifdef ENABLE_SYSTEMD_DAEMON
-	if (listen_systemd_activation())
+	if (listen_systemd_activation(listener))
 		return;
 #endif
 
@@ -119,9 +95,8 @@ listen_global_init(EventLoop &loop, Partition &partition)
 
 		do {
 			try {
-				listen_add_config_param(port, param);
+				listen_add_config_param(listener, port, param);
 			} catch (...) {
-				delete listen_socket;
 				std::throw_with_nested(FormatRuntimeError("Failed to listen on %s (line %i)",
 									  param->value.c_str(),
 									  param->line));
@@ -132,28 +107,13 @@ listen_global_init(EventLoop &loop, Partition &partition)
 		   configured port on all interfaces */
 
 		try {
-			listen_socket->AddPort(port);
+			listener.AddPort(port);
 		} catch (...) {
-			delete listen_socket;
 			std::throw_with_nested(FormatRuntimeError("Failed to listen on *:%d: ", port));
 		}
 	}
 
-	try {
-		listen_socket->Open();
-	} catch (...) {
-		delete listen_socket;
-		throw;
-	}
+	listener.Open();
 
 	listen_port = port;
-}
-
-void listen_global_finish(void)
-{
-	LogDebug(listen_domain, "listen_global_finish called");
-
-	assert(listen_socket != nullptr);
-
-	delete listen_socket;
 }
