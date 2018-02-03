@@ -113,7 +113,12 @@ Iso9660ArchiveFile::Visit(char *path, size_t length, size_t capacity,
 			visitor.VisitArchiveEntry(path + 1);
 		}
 	}
+
+#if LIBCDIO_VERSION_NUM >= 20000
+	iso9660_filelist_free(entlist);
+#else
 	_cdio_list_free (entlist, true);
+#endif
 }
 
 static std::unique_ptr<ArchiveFile>
