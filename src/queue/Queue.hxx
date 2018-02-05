@@ -22,6 +22,7 @@
 
 #include "Compiler.h"
 #include "IdTable.hxx"
+#include "SingleMode.hxx"
 #include "util/LazyRandomEngine.hxx"
 
 #include <algorithm>
@@ -92,7 +93,8 @@ struct Queue {
 	bool repeat = false;
 
 	/** play only current song. */
-	bool single = false;
+	// bool single = false;
+	SingleMode single = SingleMode::OFF;
 
 	/** remove each played files. */
 	bool consume = false;

@@ -31,6 +31,11 @@ public:
 	 * The current song's tag has changed.
 	 */
 	virtual void OnPlayerTagModified() noexcept = 0;
+
+	/**
+	 * Playback went into border pause.
+	 */
+	virtual void OnBorderPause() noexcept = 0;
 };
 
 #endif

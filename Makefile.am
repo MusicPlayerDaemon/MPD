@@ -946,6 +946,7 @@ endif
 libbasic_a_SOURCES = \
 	src/ReplayGainConfig.hxx \
 	src/ReplayGainMode.cxx src/ReplayGainMode.hxx \
+	src/SingleMode.cxx src/SingleMode.hxx \
 	src/ReplayGainInfo.cxx src/ReplayGainInfo.hxx
 
 # configuration library
