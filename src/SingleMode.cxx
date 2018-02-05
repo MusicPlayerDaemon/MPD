@@ -17,25 +17,42 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_PLAYER_LISTENER_HXX
-#define MPD_PLAYER_LISTENER_HXX
+#include "SingleMode.hxx"
 
-class PlayerListener {
-public:
-	/**
-	 * Must call playlist_sync().
-	 */
-	virtual void OnPlayerSync() noexcept = 0;
+#include <stdexcept>
 
-	/**
-	 * The current song's tag has changed.
-	 */
-	virtual void OnPlayerTagModified() noexcept = 0;
+#include <assert.h>
+#include <string.h>
 
-	/**
-	 * Playback went into border pause.
-	 */
-	virtual void OnBorderPause() noexcept = 0;
-};
+const char *
+SingleToString(SingleMode mode) noexcept
+{
+	switch (mode) {
+	case SingleMode::OFF:
+		return "0";
 
-#endif
+	case SingleMode::ON:
+		return "1";
+
+	case SingleMode::ONE_SHOT:
+		return "oneshot";
+	}
+
+	assert(false);
+	gcc_unreachable();
+}
+
+SingleMode
+SingleFromString(const char *s)
+{
+	assert(s != nullptr);
+
+	if (strcmp(s, "0") == 0)
+		return SingleMode::OFF;
+	else if (strcmp(s, "1") == 0)
+		return SingleMode::ON;
+	else if (strcmp(s, "oneshot") == 0)
+		return SingleMode::ONE_SHOT;
+	else
+		throw std::invalid_argument("Unrecognized single mode, expected 0, 1, or oneshot");
+}

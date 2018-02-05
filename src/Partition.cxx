@@ -110,6 +110,12 @@ Partition::SyncWithPlayer()
 }
 
 void
+Partition::BorderPause()
+{
+	playlist.BorderPause(pc);
+}
+
+void
 Partition::OnQueueModified()
 {
 	EmitIdle(IDLE_PLAYLIST);
@@ -140,6 +146,12 @@ Partition::OnPlayerTagModified() noexcept
 }
 
 void
+Partition::OnBorderPause() noexcept
+{
+	EmitGlobalEvent(BORDER_PAUSE);
+}
+
+void
 Partition::OnMixerVolumeChanged(gcc_unused Mixer &mixer, gcc_unused int volume)
 {
 	InvalidateHardwareVolume();
@@ -156,4 +168,7 @@ Partition::OnGlobalEvent(unsigned mask)
 
 	if ((mask & TAG_MODIFIED) != 0)
 		TagModified();
+
+	if ((mask & BORDER_PAUSE) != 0)
+		BorderPause();
 }

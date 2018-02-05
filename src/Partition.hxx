@@ -28,6 +28,7 @@
 #include "player/Control.hxx"
 #include "player/Listener.hxx"
 #include "ReplayGainMode.hxx"
+#include "SingleMode.hxx"
 #include "Chrono.hxx"
 #include "Compiler.h"
 
@@ -46,6 +47,7 @@ class ClientListener;
 struct Partition final : QueueListener, PlayerListener, MixerListener {
 	static constexpr unsigned TAG_MODIFIED = 0x1;
 	static constexpr unsigned SYNC_WITH_PLAYER = 0x2;
+	static constexpr unsigned BORDER_PAUSE = 0x4;
 
 	Instance &instance;
 
@@ -184,7 +186,7 @@ struct Partition final : QueueListener, PlayerListener, MixerListener {
 		playlist.SetRandom(pc, new_value);
 	}
 
-	void SetSingle(bool new_value) {
+	void SetSingle(SingleMode new_value) {
 		playlist.SetSingle(pc, new_value);
 	}
 
@@ -237,6 +239,12 @@ struct Partition final : QueueListener, PlayerListener, MixerListener {
 	 */
 	void SyncWithPlayer();
 
+	/**
+	 * Border pause has just been enabled. Change single mode to off
+	 * if it was one-shot.
+	 */
+	void BorderPause();
+
 private:
 	/* virtual methods from class QueueListener */
 	void OnQueueModified() override;
@@ -246,6 +254,7 @@ private:
 	/* virtual methods from class PlayerListener */
 	void OnPlayerSync() noexcept override;
 	void OnPlayerTagModified() noexcept override;
+	void OnBorderPause() noexcept override;
 
 	/* virtual methods from class MixerListener */
 	void OnMixerVolumeChanged(Mixer &mixer, int volume) override;

@@ -23,6 +23,7 @@
 #include "CommandError.hxx"
 #include "queue/Playlist.hxx"
 #include "PlaylistPrint.hxx"
+#include "SingleMode.hxx"
 #include "client/Client.hxx"
 #include "client/Response.hxx"
 #include "mixer/Volume.hxx"
@@ -134,7 +135,7 @@ handle_status(Client &client, gcc_unused Request args, Response &r)
 
 	r.Format(COMMAND_STATUS_REPEAT ": %i\n"
 		 COMMAND_STATUS_RANDOM ": %i\n"
-		 COMMAND_STATUS_SINGLE ": %i\n"
+		 COMMAND_STATUS_SINGLE ": %s\n"
 		 COMMAND_STATUS_CONSUME ": %i\n"
 		 COMMAND_STATUS_PLAYLIST ": %li\n"
 		 COMMAND_STATUS_PLAYLIST_LENGTH ": %i\n"
@@ -142,7 +143,7 @@ handle_status(Client &client, gcc_unused Request args, Response &r)
 		 COMMAND_STATUS_STATE ": %s\n",
 		 playlist.GetRepeat(),
 		 playlist.GetRandom(),
-		 playlist.GetSingle(),
+		 SingleToString(playlist.GetSingle()),
 		 playlist.GetConsume(),
 		 (unsigned long)playlist.GetVersion(),
 		 playlist.GetLength(),
@@ -218,8 +219,8 @@ handle_next(Client &client, gcc_unused Request args, gcc_unused Response &r)
 
 	/* single mode is not considered when this is user who
 	 * wants to change song. */
-	const bool single = playlist.queue.single;
-	playlist.queue.single = false;
+	const SingleMode single = playlist.queue.single;
+	playlist.queue.single = SingleMode::OFF;
 
 	AtScopeExit(&playlist, single) {
 		playlist.queue.single = single;
@@ -248,8 +249,8 @@ handle_repeat(Client &client, Request args, gcc_unused Response &r)
 CommandResult
 handle_single(Client &client, Request args, gcc_unused Response &r)
 {
-	bool status = args.ParseBool(0);
-	client.GetPartition().SetSingle(status);
+	auto new_mode = SingleFromString(args.front());
+	client.GetPartition().SetSingle(new_mode);
 	return CommandResult::OK;
 }
 

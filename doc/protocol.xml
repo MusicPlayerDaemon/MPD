@@ -464,8 +464,8 @@
               <listitem>
                <para>
                 <varname>single</varname>:
-                <footnote id="since_0_15"><simpara>Introduced with <application>MPD</application> 0.15</simpara></footnote>
-                <returnvalue>0 or 1</returnvalue>
+                <footnote id="since_0_15"><simpara>Introduced with <application>MPD</application> 0.15 (oneshot introduced with 0.20)</simpara></footnote>
+                <returnvalue>0, 1, or oneshot</returnvalue>
                </para>
               </listitem>
               <listitem>

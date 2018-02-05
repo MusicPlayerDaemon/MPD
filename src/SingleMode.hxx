@@ -17,25 +17,30 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_PLAYER_LISTENER_HXX
-#define MPD_PLAYER_LISTENER_HXX
+#ifndef MPD_SINGLE_MODE_HXX
+#define MPD_SINGLE_MODE_HXX
 
-class PlayerListener {
-public:
-	/**
-	 * Must call playlist_sync().
-	 */
-	virtual void OnPlayerSync() noexcept = 0;
+#include "Compiler.h"
 
-	/**
-	 * The current song's tag has changed.
-	 */
-	virtual void OnPlayerTagModified() noexcept = 0;
+#include <stdint.h>
 
-	/**
-	 * Playback went into border pause.
-	 */
-	virtual void OnBorderPause() noexcept = 0;
+enum class SingleMode : uint8_t {
+	OFF,
+	ON,
+	ONE_SHOT,
 };
+
+/**
+ * Return the string representation of a #SingleMode.
+ */
+gcc_pure
+const char *
+SingleToString(SingleMode mode) noexcept;
+
+/**
+ * Parse a string to a #SingleMode.  Throws std::invalid_argument on error.
+ */
+SingleMode
+SingleFromString(const char *s);
 
 #endif

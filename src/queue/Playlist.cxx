@@ -23,6 +23,7 @@
 #include "PlaylistError.hxx"
 #include "player/Control.hxx"
 #include "DetachedSong.hxx"
+#include "SingleMode.hxx"
 #include "Log.hxx"
 
 #include <assert.h>
@@ -136,7 +137,7 @@ playlist::UpdateQueuedSong(PlayerControl &pc, const DetachedSong *prev)
 		? queue.GetNextOrder(current)
 		: 0;
 
-	if (next_order == 0 && queue.random && !queue.single) {
+	if (next_order == 0 && queue.random && queue.single == SingleMode::OFF) {
 		/* shuffle the song order again, so we get a different
 		   order each time the playlist is played
 		   completely */
@@ -257,7 +258,7 @@ playlist::SetRepeat(PlayerControl &pc, bool status)
 
 	queue.repeat = status;
 
-	pc.LockSetBorderPause(queue.single && !queue.repeat);
+	pc.LockSetBorderPause(queue.single != SingleMode::OFF && !queue.repeat);
 
 	/* if the last song is currently being played, the "next song"
 	   might change when repeat mode is toggled */
@@ -277,14 +278,15 @@ playlist_order(playlist &playlist)
 }
 
 void
-playlist::SetSingle(PlayerControl &pc, bool status)
+playlist::SetSingle(PlayerControl &pc, SingleMode status)
 {
 	if (status == queue.single)
 		return;
 
 	queue.single = status;
 
-	pc.LockSetBorderPause(queue.single && !queue.repeat);
+
+	pc.LockSetBorderPause(queue.single != SingleMode::OFF && !queue.repeat);
 
 	/* if the last song is currently being played, the "next song"
 	   might change when single mode is toggled */
@@ -353,7 +355,7 @@ playlist::GetNextPosition() const noexcept
 	if (current < 0)
 		return -1;
 
-	if (queue.single && queue.repeat)
+	if (queue.single != SingleMode::OFF && queue.repeat)
 		return queue.OrderToPosition(current);
 	else if (queue.IsValidOrder(current + 1))
 		return queue.OrderToPosition(current + 1);
@@ -361,4 +363,15 @@ playlist::GetNextPosition() const noexcept
 		return queue.OrderToPosition(0);
 
 	return -1;
+}
+
+void
+playlist::BorderPause(PlayerControl &pc)
+{
+	if (queue.single == SingleMode::ONE_SHOT) {
+		queue.single = SingleMode::OFF;
+		pc.LockSetBorderPause(false);
+
+		listener.OnQueueOptionsChanged();
+	}
 }

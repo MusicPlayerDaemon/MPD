@@ -20,6 +20,7 @@
 #ifndef MPD_PLAYLIST_HXX
 #define MPD_PLAYLIST_HXX
 
+#include "SingleMode.hxx"
 #include "queue/Queue.hxx"
 
 enum TagType : uint8_t;
@@ -132,6 +133,12 @@ struct playlist {
 	 * when it exits.
 	 */
 	void SyncWithPlayer(PlayerControl &pc);
+
+	/**
+	 * This is the "BORDER_PAUSE" event handler.  It is invoked by
+	 * the player thread whenever playback goes into border pause.
+	 */
+	void BorderPause(PlayerControl &pc);
 
 protected:
 	/**
@@ -347,11 +354,11 @@ public:
 
 	void SetRandom(PlayerControl &pc, bool new_value);
 
-	bool GetSingle() const {
+	SingleMode GetSingle() const {
 		return queue.single;
 	}
 
-	void SetSingle(PlayerControl &pc, bool new_value);
+	void SetSingle(PlayerControl &pc, SingleMode new_value);
 
 	bool GetConsume() const {
 		return queue.consume;

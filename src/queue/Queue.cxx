@@ -42,7 +42,7 @@ Queue::GetNextOrder(unsigned _order) const noexcept
 {
 	assert(_order < length);
 
-	if (single && repeat && !consume)
+	if (single != SingleMode::OFF && repeat && !consume)
 		return _order;
 	else if (_order + 1 < length)
 		return _order + 1;
