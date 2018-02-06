@@ -256,8 +256,12 @@ private:
 	bool SeekDecoder() noexcept;
 
 	void CancelPendingSeek() noexcept {
+		if (!pc.seeking)
+			return;
+
 		pending_seek = SongTime::zero();
 		pc.seeking = false;
+		pc.ClientSignal();
 	}
 
 	/**

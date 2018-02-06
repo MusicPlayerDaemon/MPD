@@ -25,9 +25,14 @@ ver 0.21 (not yet released)
   - sndio: new mixer plugin
 * require GCC 5.0
 
-ver 0.20.16 (not yet released)
+ver 0.20.16 (2018/02/03)
+* output
+  - pulse: fix crash during auto-detection
 * database
   - simple: fix search within mount points
+  - upnp: enable IPv6
+* archive
+  - iso9660: libcdio 2.0 compatibility
 * fix crash in debug build on Haiku and other operating systems
 
 ver 0.20.15 (2018/01/05)

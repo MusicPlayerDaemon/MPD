@@ -26,6 +26,7 @@
 #include "../OutputAPI.hxx"
 #include "mixer/MixerList.hxx"
 #include "mixer/plugins/PulseMixerPlugin.hxx"
+#include "util/ScopeExit.hxx"
 #include "Log.hxx"
 
 #include <pulse/thread-mainloop.h>
@@ -854,7 +855,10 @@ PulseOutput::TestDefaultDevice()
 try {
 	const ConfigBlock empty;
 	PulseOutput po(empty);
+	po.Enable();
+	AtScopeExit(&po) { po.Disable(); };
 	po.WaitConnection();
+
 	return true;
 } catch (...) {
 	return false;

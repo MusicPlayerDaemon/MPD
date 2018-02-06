@@ -34,7 +34,11 @@ static unsigned upnp_ref;
 static void
 DoInit()
 {
-	auto code = UpnpInit(0, 0);
+#ifdef UPNP_ENABLE_IPV6
+	auto code = UpnpInit2(nullptr, 0);
+#else
+	auto code = UpnpInit(nullptr, 0);
+#endif
 	if (code != UPNP_E_SUCCESS)
 		throw FormatRuntimeError("UpnpInit() failed: %s",
 					 UpnpGetErrorMessage(code));
