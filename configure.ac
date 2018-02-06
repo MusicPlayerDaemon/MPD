@@ -411,6 +411,16 @@ AC_ARG_ENABLE(recorder-output,
 		[enables the recorder file output plugin (default: disable)]),,
 	[enable_recorder_output=auto])
 
+AC_ARG_ENABLE(sacdiso,
+	AS_HELP_STRING([--enable-sacdiso],
+		[enable Super Audio CD ISO support via libsacdiso (default: disable)]),,
+	enable_sacdiso=no)
+
+AC_ARG_ENABLE(dvdaiso,
+	AS_HELP_STRING([--enable-dvdaiso],
+		[enable DVD-Audio ISO support via libdvdaiso (default: disable)]),,
+	enable_dvdaiso=no)
+
 AC_ARG_ENABLE(sidplay,
 	AS_HELP_STRING([--enable-sidplay],
 		[enable C64 SID support via libsidplay2]),,
@@ -1026,6 +1036,22 @@ fi
 
 AM_CONDITIONAL(ENABLE_VORBIS_DECODER, test x$enable_vorbis = xyes || test x$enable_tremor = xyes)
 
+dnl --------------------------------- sacdiso ---------------------------------
+if test x$enable_sacdiso = xyes; then
+  AC_DEFINE(ENABLE_SACDISO, 1, [Define for Super Audio ISO support])
+  AC_SUBST(SACDISO_LIBS,"-lssl -lcrypto")
+fi
+
+AM_CONDITIONAL(ENABLE_SACDISO, test x$enable_sacdiso = xyes)
+
+dnl --------------------------------- dvdaiso ---------------------------------
+if test x$enable_dvdaiso = xyes; then
+  AC_DEFINE(ENABLE_DVDAISO, 1, [Define for DVD-Audio ISO support])
+  AC_SUBST(DVDAISO_LIBS,"-lssl -lcrypto")
+fi
+
+AM_CONDITIONAL(ENABLE_DVDAISO, test x$enable_dvdaiso = xyes)
+
 dnl --------------------------------- sidplay ---------------------------------
 if test x$enable_sidplay != xno; then
 	dnl Check for libsidplayfp first
@@ -1415,6 +1441,11 @@ if test "x$enable_debug" = xno; then
 	AX_APPEND_LINK_FLAGS([-Wl,--gc-sections])
 fi
 
+if test "x$enable_debug" = xyes; then
+  CFLAGS="$CFLAGS -O0"
+  CXXFLAGS="$CXXFLAGS -O0"
+fi
+
 dnl ----------------------------------- GCC -----------------------------------
 if test x$GCC = xyes
 then
@@ -1454,6 +1485,8 @@ echo '########### MPD CONFIGURATION ############'
 printf '\nArchive support:\n\t'
 results(bzip2,[bzip2])
 results(iso9660,[ISO9660])
+results(sacdiso,[SACDISO])
+results(dvdaiso,[DVDAISO])
 results(zzip,[ZIP])
 
 if test x$with_zeroconf != xno; then

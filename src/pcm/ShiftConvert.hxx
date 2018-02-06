@@ -40,7 +40,7 @@ struct LeftShiftSampleConvert {
 		      "Source format must be smaller than destination format");
 
 	constexpr static DV Convert(SV src) noexcept {
-		return DV(src) << (DstTraits::BITS - SrcTraits::BITS);
+		return DV(src) << (DstTraits::BITS - SrcTraits::BITS-2);  // add 12 db buffer for shift to PCM 32bit
 	}
 };
 

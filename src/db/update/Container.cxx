@@ -60,6 +60,11 @@ static bool
 SupportsContainerSuffix(const DecoderPlugin &plugin,
 			const char *suffix) noexcept
 {
+	if (plugin.container_scan != nullptr)
+		if (strcmp(plugin.name, "dsdiff") == 0 && plugin.SupportsSuffix(suffix))
+			if (plugin.container_scan(Path(nullptr)).empty())
+				return false;
+
 	return plugin.container_scan != nullptr &&
 		plugin.SupportsSuffix(suffix);
 }
@@ -69,12 +74,12 @@ UpdateWalk::UpdateContainerFile(Directory &directory,
 				const char *name, const char *suffix,
 				const StorageFileInfo &info) noexcept
 {
-	const DecoderPlugin *_plugin = decoder_plugins_find([suffix](const DecoderPlugin &plugin){
-			return SupportsContainerSuffix(plugin, suffix);
-		});
-	if (_plugin == nullptr)
+	std::list<const DecoderPlugin *> plugins;
+	for (unsigned i = 0; decoder_plugins[i] != nullptr; ++i)
+		if (decoder_plugins_enabled[i] && SupportsContainerSuffix(*decoder_plugins[i], suffix))
+			plugins.push_back(decoder_plugins[i]);
+	if (plugins.empty())
 		return false;
-	const DecoderPlugin &plugin = *_plugin;
 
 	Directory *contdir;
 	{
@@ -90,37 +95,43 @@ UpdateWalk::UpdateContainerFile(Directory &directory,
 	const auto pathname = storage.MapFS(contdir->GetPath());
 	if (pathname.IsNull()) {
 		/* not a local file: skip, because the container API
-		   supports only local files */
+			 supports only local files */
 		editor.LockDeleteDirectory(contdir);
 		return false;
 	}
 
-	try {
-		auto v = plugin.container_scan(pathname);
-		if (v.empty()) {
-			editor.LockDeleteDirectory(contdir);
-			return false;
-		}
+	unsigned int track_count = 0;
+	for (auto plugin : plugins) {
+		try {
+			auto v = plugin->container_scan(pathname);
 
-		for (auto &vtrack : v) {
-			Song *song = Song::NewFrom(std::move(vtrack),
-						   *contdir);
-
-			// shouldn't be necessary but it's there..
-			song->mtime = info.mtime;
-
-			FormatDefault(update_domain, "added %s/%s",
-				      contdir->GetPath(), song->uri);
-
-			{
-				const ScopeDatabaseLock protect;
-				contdir->AddSong(song);
+			if (v.empty()) {
+				continue;
 			}
 
-			modified = true;
+			for (auto &vtrack : v) {
+				Song *song = Song::NewFrom(std::move(vtrack), *contdir);
+
+				// shouldn't be necessary but it's there..
+				song->mtime = info.mtime;
+
+				FormatDefault(update_domain, "added %s/%s", contdir->GetPath(), song->uri);
+
+				{
+					const ScopeDatabaseLock protect;
+					contdir->AddSong(song);
+					track_count++;
+				}
+
+				modified = true;
+			}
 		}
-	} catch (...) {
-		LogError(std::current_exception());
+		catch (...) {
+			LogError(std::current_exception());
+		}
+	}
+
+	if (track_count == 0) {
 		editor.LockDeleteDirectory(contdir);
 		return false;
 	}
