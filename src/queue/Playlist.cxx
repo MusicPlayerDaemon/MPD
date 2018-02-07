@@ -372,10 +372,12 @@ playlist::GetNextPosition() const noexcept
 }
 
 void
-playlist::BorderPause()
+playlist::BorderPause(PlayerControl &pc)
 {
-	if (queue.single == SingleMode::ONE_SHOT)
+	if (queue.single == SingleMode::ONE_SHOT) {
 		queue.single = SingleMode::OFF;
+		pc.LockSetBorderPause(false);
 
-	listener.OnQueueOptionsChanged();
+		listener.OnQueueOptionsChanged();
+	}
 }

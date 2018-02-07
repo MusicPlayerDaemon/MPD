@@ -112,7 +112,7 @@ Partition::SyncWithPlayer()
 void
 Partition::BorderPause()
 {
-	playlist.BorderPause();
+	playlist.BorderPause(pc);
 }
 
 void

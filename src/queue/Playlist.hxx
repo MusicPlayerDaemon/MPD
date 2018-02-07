@@ -138,7 +138,7 @@ struct playlist {
 	 * This is the "BORDER_PAUSE" event handler.  It is invoked by
 	 * the player thread whenever playback goes into border pause.
 	 */
-	void BorderPause();
+	void BorderPause(PlayerControl &pc);
 
 protected:
 	/**
