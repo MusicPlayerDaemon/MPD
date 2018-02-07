@@ -135,7 +135,7 @@ handle_status(Client &client, gcc_unused Request args, Response &r)
 
 	r.Format(COMMAND_STATUS_REPEAT ": %i\n"
 		 COMMAND_STATUS_RANDOM ": %i\n"
-		 COMMAND_STATUS_SINGLE ": %i\n" // FIXME?
+		 COMMAND_STATUS_SINGLE ": %i\n"
 		 COMMAND_STATUS_CONSUME ": %i\n"
 		 COMMAND_STATUS_PLAYLIST ": %li\n"
 		 COMMAND_STATUS_PLAYLIST_LENGTH ": %i\n"
@@ -143,7 +143,7 @@ handle_status(Client &client, gcc_unused Request args, Response &r)
 		 COMMAND_STATUS_STATE ": %s\n",
 		 playlist.GetRepeat(),
 		 playlist.GetRandom(),
-		 (int)playlist.GetSingle(), // FIXME?
+		 (int)playlist.GetSingle(),
 		 playlist.GetConsume(),
 		 (unsigned long)playlist.GetVersion(),
 		 playlist.GetLength(),
@@ -250,9 +250,7 @@ CommandResult
 handle_single(Client &client, Request args, gcc_unused Response &r)
 {
 	auto new_mode = SingleFromString(args.front());
-	// client.GetPartition().SetSingle(new_mode);
-	auto &partition = client.GetPartition();
-	partition.SetSingle(new_mode);
+	client.GetPartition().SetSingle(new_mode);
 	return CommandResult::OK;
 }
 

@@ -183,7 +183,7 @@ static constexpr struct command commands[] = {
 	{ "sendmessage", PERMISSION_CONTROL, 2, 2, handle_send_message },
 	{ "setvol", PERMISSION_CONTROL, 1, 1, handle_setvol },
 	{ "shuffle", PERMISSION_CONTROL, 0, 1, handle_shuffle },
-	{ "single", PERMISSION_CONTROL, 1, 2, handle_single },
+	{ "single", PERMISSION_CONTROL, 1, 1, handle_single },
 	{ "stats", PERMISSION_READ, 0, 0, handle_stats },
 	{ "status", PERMISSION_READ, 0, 0, handle_status },
 #ifdef ENABLE_SQLITE

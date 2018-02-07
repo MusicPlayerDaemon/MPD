@@ -89,7 +89,7 @@ playlist_state_save(BufferedOutputStream &os, const struct playlist &playlist,
 	os.Format(PLAYLIST_STATE_FILE_RANDOM "%i\n", playlist.queue.random);
 	os.Format(PLAYLIST_STATE_FILE_REPEAT "%i\n", playlist.queue.repeat);
 	os.Format(PLAYLIST_STATE_FILE_SINGLE "%i\n",
-			  (int)playlist.queue.single); // FIXME?
+			  (int)playlist.queue.single);
 	os.Format(PLAYLIST_STATE_FILE_CONSUME "%i\n", playlist.queue.consume);
 	os.Format(PLAYLIST_STATE_FILE_CROSSFADE "%i\n",
 		  (int)pc.GetCrossFade());
@@ -154,7 +154,6 @@ playlist_state_restore(const char *line, TextFile &file,
 		} else if ((p = StringAfterPrefix(line, PLAYLIST_STATE_FILE_REPEAT))) {
 			playlist.SetRepeat(pc, StringIsEqual(p, "1"));
 		} else if ((p = StringAfterPrefix(line, PLAYLIST_STATE_FILE_SINGLE))) {
-			// playlist.SetSingle(pc, StringIsEqual(p, "1"));
 			playlist.SetSingle(pc, (SingleMode)atoi(p));
 		} else if ((p = StringAfterPrefix(line, PLAYLIST_STATE_FILE_CONSUME))) {
 			playlist.SetConsume(StringIsEqual(p, "1"));
@@ -237,7 +236,7 @@ playlist_state_get_hash(const playlist &playlist,
 		(unsigned(player_status.state) << 24) ^
 		(playlist.queue.random << 27) ^
 		(playlist.queue.repeat << 28) ^
-		(((int)playlist.queue.single > 0) << 29) ^ // XXX will work?
+		((playlist.queue.single != SingleMode::OFF) << 29) ^
 		(playlist.queue.consume << 30) ^
 		(playlist.queue.random << 31);
 }

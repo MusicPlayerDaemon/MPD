@@ -93,7 +93,6 @@ struct Queue {
 	bool repeat = false;
 
 	/** play only current song. */
-	// bool single = false;
 	SingleMode single = SingleMode::OFF;
 
 	/** remove each played files. */
