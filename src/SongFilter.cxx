@@ -69,7 +69,7 @@ SongFilter::Item::Item(unsigned _tag, const char *_value, bool _fold_case)
 
 SongFilter::Item::Item(unsigned _tag,
 		       std::chrono::system_clock::time_point _time)
-	:tag(_tag), value(nullptr), time(_time)
+	:tag(_tag), time(_time)
 {
 }
 
