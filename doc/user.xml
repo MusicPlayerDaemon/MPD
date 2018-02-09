@@ -66,6 +66,23 @@
       </para>
     </section>
 
+    <section id="install_android">
+      <title>Installing on Android</title>
+
+      <para>
+        An experimental Android build is available on <ulink
+        url="https://play.google.com/store/apps/details?id=org.musicpd">Google
+        Play</ulink>.  After installing and launching it, MPD will
+        scan the music in your <filename>Music</filename> directory
+        and you can control it as usual with a MPD client.
+      </para>
+
+      <para>
+        If you need to tweak the configuration, you can create a file
+        called <filename>mpd.conf</filename> on the data partition.
+      </para>
+    </section>
+
     <section id="install_source">
       <title>Compiling from source</title>
 
@@ -323,7 +340,9 @@ systemctl start mpd.socket</programlisting>
         <application>MPD</application> as a user daemon (and not as a
         system daemon), the configuration is read from
         <filename>$XDG_CONFIG_HOME/mpd/mpd.conf</filename> (usually
-        <filename>~/.config/mpd/mpd.conf</filename>).
+        <filename>~/.config/mpd/mpd.conf</filename>).  On Android,
+        <filename>mpd.conf</filename> will be loaded from the
+        top-level directory of the data partition.
       </para>
 
       <para>
