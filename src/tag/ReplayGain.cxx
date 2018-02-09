@@ -22,6 +22,7 @@
 #include "VorbisComment.hxx"
 #include "ReplayGainInfo.hxx"
 #include "util/ASCII.hxx"
+#include "util/NumberParser.hxx"
 
 #include <assert.h>
 #include <stdlib.h>
@@ -33,16 +34,16 @@ ParseReplayGainTagTemplate(ReplayGainInfo &info, const T t)
 	const char *value;
 
 	if ((value = t["replaygain_track_gain"]) != nullptr) {
-		info.track.gain = atof(value);
+		info.track.gain = ParseFloat(value);
 		return true;
 	} else if ((value = t["replaygain_album_gain"]) != nullptr) {
-		info.album.gain = atof(value);
+		info.album.gain = ParseFloat(value);
 		return true;
 	} else if ((value = t["replaygain_track_peak"]) != nullptr) {
-		info.track.peak = atof(value);
+		info.track.peak = ParseFloat(value);
 		return true;
 	} else if ((value = t["replaygain_album_peak"]) != nullptr) {
-		info.album.peak = atof(value);
+		info.album.peak = ParseFloat(value);
 		return true;
 	} else
 		return false;
