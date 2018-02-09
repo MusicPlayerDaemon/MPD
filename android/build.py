@@ -67,7 +67,7 @@ class AndroidNdkToolchain:
 
         common_flags = '-Os -g'
         common_flags += ' -fPIC'
-        common_flags += ' -march=armv7-a -mfloat-abi=softfp'
+        common_flags += ' -march=armv7-a -mfpu=vfp -mfloat-abi=softfp'
 
         toolchain_bin = os.path.join(toolchain_path, 'bin')
         llvm_bin = os.path.join(llvm_path, 'bin')
