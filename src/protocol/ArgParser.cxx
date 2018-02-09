@@ -151,7 +151,12 @@ float
 ParseCommandArgFloat(const char *s)
 {
 	char *endptr;
+#ifdef ANDROID
+	/* strtof() requires API level 21 */
+	auto value = strtod(s, &endptr);
+#else
 	auto value = strtof(s, &endptr);
+#endif
 	if (endptr == s || *endptr != 0)
 		throw FormatProtocolError(ACK_ERROR_ARG,
 					  "Float expected: %s", s);
