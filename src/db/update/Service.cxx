@@ -29,6 +29,7 @@
 #include "Idle.hxx"
 #include "Log.hxx"
 #include "thread/Thread.hxx"
+#include "thread/Name.hxx"
 #include "thread/Util.hxx"
 
 #ifndef NDEBUG
@@ -112,6 +113,8 @@ inline void
 UpdateService::Task()
 {
 	assert(walk != nullptr);
+
+	SetThreadName("update");
 
 	if (!next.path_utf8.empty())
 		FormatDebug(update_domain, "starting: %s",
