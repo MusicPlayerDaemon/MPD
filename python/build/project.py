@@ -3,10 +3,12 @@ import re
 
 from build.download import download_and_verify
 from build.tar import untar
+from build.quilt import push_all
 
 class Project:
     def __init__(self, url, md5, installed, name=None, version=None,
                  base=None,
+                 patches=None,
                  edits=None,
                  use_cxx=False):
         if base is None:
@@ -29,6 +31,10 @@ class Project:
         self.md5 = md5
         self.installed = installed
 
+        if patches is not None:
+            srcdir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+            patches = os.path.join(srcdir, patches)
+        self.patches = patches
         self.edits = edits
         self.use_cxx = use_cxx
 
@@ -50,6 +56,9 @@ class Project:
         else:
             parent_path = toolchain.build_path
         path = untar(self.download(toolchain), parent_path, self.base)
+
+        if self.patches is not None:
+            push_all(toolchain, path, self.patches)
 
         if self.edits is not None:
             for filename, function in self.edits.items():
