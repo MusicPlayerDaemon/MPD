@@ -67,7 +67,7 @@ SongFilter::Item::Item(unsigned _tag, const char *_value, bool _fold_case)
 }
 
 SongFilter::Item::Item(unsigned _tag, time_t _time)
-	:tag(_tag), value(nullptr), time(_time)
+	:tag(_tag), time(_time)
 {
 }
 
