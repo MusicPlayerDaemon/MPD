@@ -41,7 +41,7 @@
 #if defined(__linux__) && !defined(ANDROID)
 
 static int
-ioprio_set(int which, int who, int ioprio)
+linux_ioprio_set(int which, int who, int ioprio)
 {
 	return syscall(__NR_ioprio_set, which, who, ioprio);
 }
@@ -55,7 +55,7 @@ ioprio_set_idle()
 	static constexpr int _IOPRIO_IDLE =
 		(_IOPRIO_CLASS_IDLE << _IOPRIO_CLASS_SHIFT) | 7;
 
-	ioprio_set(_IOPRIO_WHO_PROCESS, 0, _IOPRIO_IDLE);
+	linux_ioprio_set(_IOPRIO_WHO_PROCESS, 0, _IOPRIO_IDLE);
 }
 
 #endif
