@@ -38,7 +38,9 @@
 #include <windows.h>
 #endif
 
-#if defined(__linux__) && !defined(ANDROID)
+#ifdef __linux__
+
+#ifndef ANDROID
 
 static int
 linux_ioprio_set(int which, int who, int ioprio)
@@ -58,6 +60,19 @@ ioprio_set_idle()
 	linux_ioprio_set(_IOPRIO_WHO_PROCESS, 0, _IOPRIO_IDLE);
 }
 
+#endif /* !ANDROID */
+
+/**
+ * Wrapper for the "sched_setscheduler" system call.  We don't use the
+ * one from the C library because Musl has an intentionally broken
+ * implementation.
+ */
+static int
+linux_sched_setscheduler(pid_t pid, int sched, const struct sched_param *param)
+{
+	return syscall(__NR_sched_setscheduler, pid, sched, param);
+}
+
 #endif
 
 void
@@ -66,7 +81,7 @@ SetThreadIdlePriority()
 #ifdef __linux__
 #ifdef SCHED_IDLE
 	static struct sched_param sched_param;
-	sched_setscheduler(0, SCHED_IDLE, &sched_param);
+	linux_sched_setscheduler(0, SCHED_IDLE, &sched_param);
 #endif
 
 #ifndef ANDROID
@@ -92,7 +107,7 @@ SetThreadRealtime()
 	policy |= SCHED_RESET_ON_FORK;
 #endif
 
-	if (sched_setscheduler(0, policy, &sched_param) < 0)
+	if (linux_sched_setscheduler(0, policy, &sched_param) < 0)
 		throw MakeErrno("sched_setscheduler failed");
 #endif	// __linux__
 };
