@@ -88,7 +88,7 @@ static inline ConstBuffer<V>
 ToAlsaChannelOrder71(PcmBuffer &buffer, ConstBuffer<V> src)
 {
 	auto dest = buffer.GetT<V>(src.size);
-	ToAlsaChannelOrder71(dest, src.data, src.size / 6);
+	ToAlsaChannelOrder71(dest, src.data, src.size / 8);
 	return { dest, src.size };
 }
 
