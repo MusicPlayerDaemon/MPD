@@ -1,0 +1,15 @@
+Index: curl-7.58.0/Makefile.in
+===================================================================
+--- curl-7.58.0.orig/Makefile.in
++++ curl-7.58.0/Makefile.in
+@@ -641,8 +641,8 @@ CLEANFILES = $(VC6_LIBDSP) $(VC6_SRCDSP)
+  $(VC14_LIBVCXPROJ) $(VC14_SRCVCXPROJ) $(VC15_LIBVCXPROJ) $(VC15_SRCVCXPROJ)
+ 
+ bin_SCRIPTS = curl-config
+-SUBDIRS = lib src
+-DIST_SUBDIRS = $(SUBDIRS) tests packages scripts include docs
++SUBDIRS = lib
++DIST_SUBDIRS = $(SUBDIRS) include
+ pkgconfigdir = $(libdir)/pkgconfig
+ pkgconfig_DATA = libcurl.pc
+ LIB_VAUTH_CFILES = vauth/vauth.c vauth/cleartext.c vauth/cram.c         \

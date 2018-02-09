@@ -1,4 +1,6 @@
 import re
+from os.path import abspath
+
 from build.project import Project
 from build.zlib import ZlibProject
 from build.autotools import AutotoolsProject
@@ -359,11 +361,7 @@ curl = AutotoolsProject(
         '--without-ssl', '--without-gnutls', '--without-nss', '--without-libssh2',
     ],
 
-    edits={
-        # build only the library, not the "curl" command-line tool
-        'Makefile.in': lambda data: re.sub(r'^SUBDIRS = lib src$', r'SUBDIRS = lib',
-                                           data, count=1, flags=re.MULTILINE),
-    }
+    patches='src/lib/curl/patches',
 )
 
 boost = BoostProject(
