@@ -358,6 +358,12 @@ curl = AutotoolsProject(
         '--disable-crypto-auth', '--disable-ntlm-wb', '--disable-tls-srp', '--disable-cookies',
         '--without-ssl', '--without-gnutls', '--without-nss', '--without-libssh2',
     ],
+
+    edits={
+        # build only the library, not the "curl" command-line tool
+        'Makefile.in': lambda data: re.sub(r'^SUBDIRS = lib src$', r'SUBDIRS = lib',
+                                           data, count=1, flags=re.MULTILINE),
+    }
 )
 
 boost = BoostProject(
