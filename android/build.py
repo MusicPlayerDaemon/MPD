@@ -46,7 +46,7 @@ class AndroidNdkToolchain:
 
         self.ndk_arch = 'arm'
         android_abi = 'armeabi-v7a'
-        ndk_platform = 'android-21'
+        ndk_platform = 'android-14'
 
         # select the NDK compiler
         gcc_version = '4.9'
@@ -87,7 +87,7 @@ class AndroidNdkToolchain:
         self.cppflags = '--sysroot=' + sysroot + \
             ' -isystem ' + os.path.join(install_prefix, 'include') + \
             ' -isystem ' + os.path.join(sysroot, 'usr', 'include', arch) + \
-            ' -D__ANDROID_API__=21'
+            ' -D__ANDROID_API__=14'
         self.ldflags = '--sysroot=' + sysroot + \
             ' -L' + os.path.join(install_prefix, 'lib') + \
             ' -L' + os.path.join(target_root, 'usr', 'lib') + \

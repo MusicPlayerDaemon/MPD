@@ -2,6 +2,8 @@ ver 0.20.17 (not yet released)
 * output
   - alsa: fix crash bug with 8 channels
 * fix real-time and idle scheduling with Musl
+* Android
+  - fix compatibility with Android 4.0
 
 ver 0.20.16 (2018/02/03)
 * output
