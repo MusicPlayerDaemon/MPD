@@ -1,6 +1,8 @@
 ver 0.20.17 (not yet released)
 * output
   - alsa: fix crash bug with 8 channels
+* mixer
+  - alsa: fix rounding error at volume 0
 * fix real-time and idle scheduling with Musl
 * Android
   - fix compatibility with Android 4.0
