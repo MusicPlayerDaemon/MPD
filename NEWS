@@ -1,4 +1,4 @@
-ver 0.20.17 (not yet released)
+ver 0.20.17 (2018/02/11)
 * output
   - alsa: fix crash bug with 8 channels
 * mixer
