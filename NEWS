@@ -25,6 +25,15 @@ ver 0.21 (not yet released)
   - sndio: new mixer plugin
 * require GCC 5.0
 
+ver 0.20.17 (2018/02/11)
+* output
+  - alsa: fix crash bug with 8 channels
+* mixer
+  - alsa: fix rounding error at volume 0
+* fix real-time and idle scheduling with Musl
+* Android
+  - fix compatibility with Android 4.0
+
 ver 0.20.16 (2018/02/03)
 * output
   - pulse: fix crash during auto-detection

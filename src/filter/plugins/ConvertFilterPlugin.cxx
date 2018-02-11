@@ -51,7 +51,8 @@ public:
 	void Set(const AudioFormat &_out_audio_format);
 
 	void Reset() noexcept override {
-		state.Reset();
+		if (IsActive())
+			state.Reset();
 	}
 
 	ConstBuffer<void> FilterPCM(ConstBuffer<void> src) override;

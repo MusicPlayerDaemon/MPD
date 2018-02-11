@@ -1,4 +1,6 @@
 import re
+from os.path import abspath
+
 from build.project import Project
 from build.zlib import ZlibProject
 from build.autotools import AutotoolsProject
@@ -358,6 +360,8 @@ curl = AutotoolsProject(
         '--disable-crypto-auth', '--disable-ntlm-wb', '--disable-tls-srp', '--disable-cookies',
         '--without-ssl', '--without-gnutls', '--without-nss', '--without-libssh2',
     ],
+
+    patches='src/lib/curl/patches',
 )
 
 boost = BoostProject(
