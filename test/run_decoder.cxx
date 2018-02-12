@@ -35,6 +35,23 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+class GlobalInit {
+	EventThread io_thread;
+
+public:
+	GlobalInit() {
+		io_thread.Start();
+
+		input_stream_global_init(io_thread.GetEventLoop());
+		decoder_plugin_init_all();
+	}
+
+	~GlobalInit() {
+		decoder_plugin_deinit_all();
+		input_stream_global_finish();
+	}
+};
+
 int main(int argc, char **argv)
 try {
 	if (argc != 3) {
@@ -42,16 +59,10 @@ try {
 		return EXIT_FAILURE;
 	}
 
-	FakeDecoder decoder;
 	const char *const decoder_name = argv[1];
 	const char *const uri = argv[2];
 
-	EventThread io_thread;
-	io_thread.Start();
-
-	input_stream_global_init(io_thread.GetEventLoop());
-
-	decoder_plugin_init_all();
+	const GlobalInit init;
 
 	const DecoderPlugin *plugin = decoder_plugin_from_name(decoder_name);
 	if (plugin == nullptr) {
@@ -59,6 +70,7 @@ try {
 		return EXIT_FAILURE;
 	}
 
+	FakeDecoder decoder;
 	if (plugin->file_decode != nullptr) {
 		plugin->FileDecode(decoder, Path::FromFS(uri));
 	} else if (plugin->stream_decode != nullptr) {
@@ -69,9 +81,6 @@ try {
 		fprintf(stderr, "Decoder plugin is not usable\n");
 		return EXIT_FAILURE;
 	}
-
-	decoder_plugin_deinit_all();
-	input_stream_global_finish();
 
 	if (!decoder.initialized) {
 		fprintf(stderr, "Decoding failed\n");
