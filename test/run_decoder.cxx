@@ -18,6 +18,7 @@
  */
 
 #include "config.h"
+#include "config/ConfigGlobal.hxx"
 #include "event/Thread.hxx"
 #include "decoder/DecoderList.hxx"
 #include "decoder/DecoderPlugin.hxx"
@@ -26,7 +27,10 @@
 #include "input/InputStream.hxx"
 #include "fs/Path.hxx"
 #include "AudioFormat.hxx"
+#include "util/OptionDef.hxx"
+#include "util/OptionParser.hxx"
 #include "Log.hxx"
+#include "LogBackend.hxx"
 
 #include <stdexcept>
 
@@ -35,12 +39,63 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+struct CommandLine {
+	const char *decoder = nullptr;
+	const char *uri = nullptr;
+
+	Path config_path = nullptr;
+
+	bool verbose = false;
+};
+
+enum Option {
+	OPTION_CONFIG,
+	OPTION_VERBOSE,
+};
+
+static constexpr OptionDef option_defs[] = {
+	{"config", 0, true, "Load a MPD configuration file"},
+	{"verbose", 'v', false, "Verbose logging"},
+};
+
+static CommandLine
+ParseCommandLine(int argc, char **argv)
+{
+	CommandLine c;
+
+	OptionParser option_parser(option_defs, argc, argv);
+	while (auto o = option_parser.Next()) {
+		switch (Option(o.index)) {
+		case OPTION_CONFIG:
+			c.config_path = Path::FromFS(o.value);
+			break;
+
+		case OPTION_VERBOSE:
+			c.verbose = true;
+			break;
+		}
+	}
+
+	auto args = option_parser.GetRemaining();
+	if (args.size != 2)
+		throw std::runtime_error("Usage: run_decoder [--verbose] [--config=FILE] DECODER URI");
+
+	c.decoder = args[0];
+	c.uri = args[1];
+	return c;
+}
+
 class GlobalInit {
 	EventThread io_thread;
 
 public:
-	GlobalInit() {
+	GlobalInit(Path config_path, bool verbose) {
+		SetLogThreshold(verbose ? LogLevel::DEBUG : LogLevel::INFO);
+
 		io_thread.Start();
+
+		if (!config_path.IsNull())
+			ReadConfigFile(config_path);
 
 		input_stream_global_init(io_thread.GetEventLoop());
 		decoder_plugin_init_all();
@@ -54,27 +109,21 @@ public:
 
 int main(int argc, char **argv)
 try {
-	if (argc != 3) {
-		fprintf(stderr, "Usage: run_decoder DECODER URI >OUT\n");
-		return EXIT_FAILURE;
-	}
+	const auto c = ParseCommandLine(argc, argv);
 
-	const char *const decoder_name = argv[1];
-	const char *const uri = argv[2];
+	const GlobalInit init(c.config_path, c.verbose);
 
-	const GlobalInit init;
-
-	const DecoderPlugin *plugin = decoder_plugin_from_name(decoder_name);
+	const DecoderPlugin *plugin = decoder_plugin_from_name(c.decoder);
 	if (plugin == nullptr) {
-		fprintf(stderr, "No such decoder: %s\n", decoder_name);
+		fprintf(stderr, "No such decoder: %s\n", c.decoder);
 		return EXIT_FAILURE;
 	}
 
 	FakeDecoder decoder;
 	if (plugin->file_decode != nullptr) {
-		plugin->FileDecode(decoder, Path::FromFS(uri));
+		plugin->FileDecode(decoder, Path::FromFS(c.uri));
 	} else if (plugin->stream_decode != nullptr) {
-		auto is = InputStream::OpenReady(uri, decoder.mutex,
+		auto is = InputStream::OpenReady(c.uri, decoder.mutex,
 						 decoder.cond);
 		plugin->StreamDecode(decoder, *is);
 	} else {
