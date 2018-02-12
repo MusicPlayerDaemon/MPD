@@ -2762,6 +2762,19 @@ run</programlisting>
         </informaltable>
       </section>
 
+      <section id="hybrid_dsd_decoder">
+        <title><varname>hybrid_dsd</varname></title>
+
+        <para>
+          Hybrid-DSD is a MP4 container file
+          (<filename>*.m4a</filename>) which contains both ALAC and
+          DSD data.  It is disabled by default, and works only if you
+          explicitly enable it.  Without this plugin, the ALAC parts
+          gets handled by the <link linkend="ffmpeg_decoder">FFmpeg
+          decoder plugin</link>.
+        </para>
+      </section>
+
       <section id="mad_decoder">
         <title><varname>mad</varname></title>
 

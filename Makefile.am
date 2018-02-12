@@ -1074,6 +1074,8 @@ DECODER_LIBS = \
 
 if ENABLE_DSD
 libdecoder_a_SOURCES += \
+	src/decoder/plugins/HybridDsdDecoderPlugin.cxx \
+	src/decoder/plugins/HybridDsdDecoderPlugin.hxx \
 	src/decoder/plugins/DsdiffDecoderPlugin.cxx \
 	src/decoder/plugins/DsdiffDecoderPlugin.hxx \
 	src/decoder/plugins/DsfDecoderPlugin.cxx \
