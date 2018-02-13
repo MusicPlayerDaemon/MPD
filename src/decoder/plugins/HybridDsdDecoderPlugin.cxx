@@ -179,6 +179,7 @@ HybridDsdDecode(DecoderClient &client, InputStream &input)
 
 	offset_type remaining_bytes;
 	size_t frame_size;
+	unsigned kbit_rate;
 
 	try {
 		auto result = FindHybridDsdData(client, input);
@@ -187,6 +188,8 @@ HybridDsdDecode(DecoderClient &client, InputStream &input)
 			     /* TODO: implement seeking */ false,
 			     duration);
 		frame_size = result.first.GetFrameSize();
+		kbit_rate = frame_size * result.first.sample_rate /
+			(1024u / 8u);
 		remaining_bytes = result.second;
 	} catch (UnsupportedFile) {
 		/* not a Hybrid-DSD file; let the next decoder plugin
@@ -233,7 +236,7 @@ HybridDsdDecode(DecoderClient &client, InputStream &input)
 		if (n_frames > 0) {
 			cmd = client.SubmitData(input, r.data,
 						n_frames * frame_size,
-						0);
+						kbit_rate);
 			buffer.Consume(n_frames * frame_size);
 		}
 	}
