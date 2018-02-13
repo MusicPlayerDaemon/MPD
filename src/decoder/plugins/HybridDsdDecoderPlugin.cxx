@@ -177,30 +177,33 @@ HybridDsdDecode(DecoderClient &client, InputStream &input)
 		   streams */
 		return;
 
-	offset_type remaining_bytes;
+	uint64_t total_frames;
 	size_t frame_size;
 	unsigned kbit_rate;
 
 	try {
 		auto result = FindHybridDsdData(client, input);
 		auto duration = SignedSongTime::FromS(result.second / result.first.GetTimeToSize());
-		client.Ready(result.first,
-			     /* TODO: implement seeking */ false,
-			     duration);
+		client.Ready(result.first, true, duration);
 		frame_size = result.first.GetFrameSize();
 		kbit_rate = frame_size * result.first.sample_rate /
 			(1024u / 8u);
-		remaining_bytes = result.second;
+		total_frames = result.second / frame_size;
 	} catch (UnsupportedFile) {
 		/* not a Hybrid-DSD file; let the next decoder plugin
 		   (e.g. FFmpeg) handle it */
 		return;
 	}
 
+	const offset_type start_offset = input.GetOffset();
+	offset_type remaining_bytes = total_frames * frame_size;
+
 	StaticFifoBuffer<uint8_t, 16384> buffer;
 
 	auto cmd = client.GetCommand();
 	while (remaining_bytes > 0) {
+		uint64_t seek_frame;
+
 		switch (cmd) {
 		case DecoderCommand::NONE:
 		case DecoderCommand::START:
@@ -210,7 +213,24 @@ HybridDsdDecode(DecoderClient &client, InputStream &input)
 			return;
 
 		case DecoderCommand::SEEK:
-			// TODO: implement seeking
+			seek_frame = client.GetSeekFrame();
+			if (seek_frame >= total_frames) {
+				/* seeking past the end */
+				client.CommandFinished();
+				return;
+			}
+
+			try {
+				input.LockSeek(start_offset + seek_frame * frame_size);
+				remaining_bytes = (total_frames - seek_frame) * frame_size;
+				buffer.Clear();
+				client.CommandFinished();
+			} catch (...) {
+				LogError(std::current_exception());
+				client.SeekError();
+			}
+
+			cmd = DecoderCommand::NONE;
 			break;
 		}
 
