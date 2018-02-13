@@ -2766,12 +2766,16 @@ run</programlisting>
         <title><varname>hybrid_dsd</varname></title>
 
         <para>
-          Hybrid-DSD is a MP4 container file
-          (<filename>*.m4a</filename>) which contains both ALAC and
-          DSD data.  It is disabled by default, and works only if you
-          explicitly enable it.  Without this plugin, the ALAC parts
-          gets handled by the <link linkend="ffmpeg_decoder">FFmpeg
-          decoder plugin</link>.
+          <ulink
+              url="http://dsdmaster.blogspot.de/p/bitperfect-introduces-hybrid-dsd-file.html">Hybrid-DSD</ulink>
+          is a MP4 container file (<filename>*.m4a</filename>) which
+          contains both ALAC and DSD data.  It is disabled by default,
+          and works only if you explicitly enable it.  Without this
+          plugin, the ALAC parts gets handled by the <link
+          linkend="ffmpeg_decoder">FFmpeg decoder plugin</link>.  This
+          plugin should be enabled only if you have a bit-perfect
+          playback path to a DSD-capable DAC; for everybody else,
+          playing back the ALAC copy of the file is better.
         </para>
       </section>
 

@@ -36,6 +36,9 @@ namespace {
 static bool
 InitHybridDsdDecoder(const ConfigBlock &block)
 {
+	/* this plugin is disabled by default because for people
+	   without a DSD DAC, the PCM (=ALAC) part of the file is
+	   better */
 	if (block.GetBlockParam("enabled") == nullptr) {
 		LogInfo(hybrid_dsd_domain,
 			"The Hybrid DSD decoder is disabled because it was not explicitly enabled");
@@ -45,6 +48,10 @@ InitHybridDsdDecoder(const ConfigBlock &block)
 	return true;
 }
 
+/**
+ * This exception gets thrown by FindHybridDsdData() to indicate a
+ * file format error.
+ */
 struct UnsupportedFile {};
 
 struct Mp4ChunkHeader {
@@ -98,6 +105,7 @@ static std::pair<AudioFormat, offset_type>
 FindHybridDsdData(DecoderClient &client, InputStream &input)
 {
 	auto audio_format = AudioFormat::Undefined();
+	bool found_version = false;
 
 	while (true) {
 		auto header = ReadHeader(client, input);
@@ -107,12 +115,13 @@ FindHybridDsdData(DecoderClient &client, InputStream &input)
 
 		size_t remaining = header_size - sizeof(header);
 		if (memcmp(header.type, "bphv", 4) == 0) {
-			/* ? */
+			/* version; this plugin knows only version
+			   1 */
 			if (remaining != 4 || ReadBE32(client, input) != 1)
 				throw UnsupportedFile();
 			remaining -= 4;
 
-			audio_format.format = SampleFormat::DSD;
+			found_version = true;
 		} else if (memcmp(header.type, "bphc", 4) == 0) {
 			/* channel count */
 			if (remaining != 4)
@@ -139,18 +148,23 @@ FindHybridDsdData(DecoderClient &client, InputStream &input)
 
 			audio_format.sample_rate = sample_rate;
 		} else if (memcmp(header.type, "bphf", 4) == 0) {
-			/* ? */
+			/* format: 0 = plain DSD; 1 = DST compressed
+			   (only plain DSD is understood by this
+			   plugin) */
 			if (remaining != 4 || ReadBE32(client, input) != 0)
 				throw UnsupportedFile();
 			remaining -= 4;
+
+			audio_format.format = SampleFormat::DSD;
 		} else if (memcmp(header.type, "bphd", 4) == 0) {
 			/* the actual DSD data */
-			if (!audio_format.IsValid())
+			if (!found_version || !audio_format.IsValid())
 				throw UnsupportedFile();
 
 			return std::make_pair(audio_format, remaining);
 		}
 
+		/* skip this chunk payload */
 		input.LockSkip(remaining);
 	}
 }
@@ -175,6 +189,8 @@ HybridDsdDecode(DecoderClient &client, InputStream &input)
 		frame_size = result.first.GetFrameSize();
 		remaining_bytes = result.second;
 	} catch (UnsupportedFile) {
+		/* not a Hybrid-DSD file; let the next decoder plugin
+		   (e.g. FFmpeg) handle it */
 		return;
 	}
 
@@ -195,6 +211,7 @@ HybridDsdDecode(DecoderClient &client, InputStream &input)
 			break;
 		}
 
+		/* fill the buffer */
 		auto w = buffer.Write();
 		if (!w.empty()) {
 			if (remaining_bytes < (1<<30ull) &&
@@ -210,6 +227,7 @@ HybridDsdDecode(DecoderClient &client, InputStream &input)
 			buffer.Append(nbytes);
 		}
 
+		/* submit the buffer to our client */
 		auto r = buffer.Read();
 		auto n_frames = r.size / frame_size;
 		if (n_frames > 0) {
@@ -233,6 +251,8 @@ const struct DecoderPlugin hybrid_dsd_decoder_plugin = {
 	HybridDsdDecode,
 	nullptr,
 	nullptr,
+	/* no scan method here; the FFmpeg plugin will do that for us,
+	   and we only do the decoding */
 	nullptr,
 	nullptr,
 	hybrid_dsd_suffixes,
