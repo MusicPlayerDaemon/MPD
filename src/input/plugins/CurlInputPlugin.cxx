@@ -218,7 +218,6 @@ CurlInputStream::OnHeaders(unsigned status,
 	if (i != headers.end()) {
 		TagBuilder tag_builder;
 		tag_builder.AddItem(TAG_NAME, i->second.c_str());
-
 		SetTag(tag_builder.CommitNew());
 	}
 

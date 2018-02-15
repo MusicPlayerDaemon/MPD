@@ -25,6 +25,7 @@
 #include "plugins/M3uPlaylistPlugin.hxx"
 #include "plugins/XspfPlaylistPlugin.hxx"
 #include "plugins/SoundCloudPlaylistPlugin.hxx"
+#include "plugins/YtdlPlaylistPlugin.hxx"
 #include "plugins/PlsPlaylistPlugin.hxx"
 #include "plugins/AsxPlaylistPlugin.hxx"
 #include "plugins/RssPlaylistPlugin.hxx"
@@ -53,6 +54,9 @@ const PlaylistPlugin *const playlist_plugins[] = {
 #endif
 #ifdef ENABLE_SOUNDCLOUD
 	&soundcloud_playlist_plugin,
+#endif
+#ifdef ENABLE_YTDL
+	&ytdl_playlist_plugin,
 #endif
 #ifdef ENABLE_FLAC
 	&flac_playlist_plugin,
