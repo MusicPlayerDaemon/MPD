@@ -76,7 +76,18 @@ struct Instance final
 	, public RemoteTagCacheHandler
 #endif
 {
+	/**
+	 * A thread running an #EventLoop for non-blocking (bulk) I/O.
+	 */
 	EventThread io_thread;
+
+	/**
+	 * Another thread running an #EventLoop for non-blocking
+	 * (real-time) I/O.  This is used instead of #io_thread for
+	 * events which require low latency, e.g. for filling hardware
+	 * ring buffers.
+	 */
+	EventThread rtio_thread;
 
 	MaskMonitor idle_monitor;
 

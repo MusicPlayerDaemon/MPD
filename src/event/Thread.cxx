@@ -20,6 +20,8 @@
 #include "config.h"
 #include "Thread.hxx"
 #include "thread/Name.hxx"
+#include "thread/Util.hxx"
+#include "Log.hxx"
 
 void
 EventThread::Start()
@@ -41,7 +43,16 @@ EventThread::Stop() noexcept
 void
 EventThread::Run() noexcept
 {
-	SetThreadName("io");
+	SetThreadName(realtime ? "rtio" : "io");
+
+	if (realtime) {
+		try {
+			SetThreadRealtime();
+		} catch (...) {
+			LogError(std::current_exception(),
+				 "RTIOThread could not get realtime scheduling, continuing anyway");
+		}
+	}
 
 	event_loop.Run();
 }

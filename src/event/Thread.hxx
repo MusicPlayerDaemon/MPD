@@ -32,9 +32,12 @@ class EventThread final {
 
 	Thread thread;
 
+	const bool realtime;
+
 public:
-	EventThread()
-		:event_loop(ThreadId::Null()), thread(BIND_THIS_METHOD(Run)) {}
+	explicit EventThread(bool _realtime=false)
+		:event_loop(ThreadId::Null()), thread(BIND_THIS_METHOD(Run)),
+		 realtime(_realtime) {}
 
 	~EventThread() noexcept {
 		Stop();

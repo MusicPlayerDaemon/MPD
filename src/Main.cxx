@@ -604,7 +604,7 @@ try {
 	command_init();
 
 	for (auto &partition : instance->partitions) {
-		partition.outputs.Configure(instance->io_thread.GetEventLoop(),
+		partition.outputs.Configure(instance->rtio_thread.GetEventLoop(),
 					    config.replay_gain,
 					    partition.pc);
 		partition.UpdateEffectiveReplayGainMode();
@@ -625,6 +625,7 @@ try {
 #endif
 
 	instance->io_thread.Start();
+	instance->rtio_thread.Start();
 
 #ifdef ENABLE_NEIGHBOR_PLUGINS
 	if (instance->neighbors != nullptr)
@@ -736,6 +737,7 @@ try {
 	archive_plugin_deinit_all();
 #endif
 	config_global_finish();
+	instance->rtio_thread.Stop();
 	instance->io_thread.Stop();
 #ifndef ANDROID
 	SignalHandlersFinish();

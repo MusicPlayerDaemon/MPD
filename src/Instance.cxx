@@ -40,7 +40,8 @@
 #include <exception>
 
 Instance::Instance()
-	:idle_monitor(event_loop, BIND_THIS_METHOD(OnIdle))
+	:rtio_thread(true),
+	 idle_monitor(event_loop, BIND_THIS_METHOD(OnIdle))
 {
 }
 
