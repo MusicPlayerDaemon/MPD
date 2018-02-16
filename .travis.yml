@@ -24,6 +24,10 @@ env:
   global:
     - MAKEFLAGS="-j2"
 
+cache:
+  - apt
+  - ccache
+
 before_install:
   - eval "${MATRIX_EVAL}"
   # C++14
@@ -31,12 +35,16 @@ before_install:
 
 install:
   # C++14
-  - test "$TRAVIS_OS_NAME" != "osx" || brew install cppunit
+  - test "$TRAVIS_OS_NAME" != "osx" || brew install cppunit ccache
+
+before_script:
+  - ccache -s
 
 script:
   - OPTIONS="--enable-test"
   - test "$TRAVIS_OS_NAME" != "osx" || OPTIONS="$OPTIONS --enable-osx"
   - ./autogen.sh
-  - ./configure --disable-silent-rules --disable-dependency-tracking $OPTIONS
+  - ./configure CC="ccache $CC" CXX="ccache $CXX" --disable-silent-rules --disable-dependency-tracking $OPTIONS
   - make
   - make check
+  - ccache -s
