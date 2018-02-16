@@ -12,15 +12,20 @@ matrix:
             - g++-5
             - libcppunit-dev
             - libboost-dev
+      env:
+        - MATRIX_EVAL="export CC=gcc-5 CXX=g++-5"
 
     - os: osx
       osx_image: xcode9.3beta
+      env:
+        - MATRIX_EVAL=""
 
 env:
   global:
     - MAKEFLAGS="-j2"
 
 before_install:
+  - eval "${MATRIX_EVAL}"
   # C++14
   - test "$TRAVIS_OS_NAME" != "osx" || brew update
 
@@ -30,7 +35,6 @@ install:
 
 script:
   - OPTIONS="--enable-test"
-  - test "$TRAVIS_OS_NAME" != "linux" || export CC=gcc-5 CXX=g++-5
   - test "$TRAVIS_OS_NAME" != "osx" || OPTIONS="$OPTIONS --enable-osx"
   - ./autogen.sh
   - ./configure --disable-silent-rules --disable-dependency-tracking $OPTIONS
