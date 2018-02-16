@@ -1,15 +1,19 @@
-dist: trusty
 language: cpp
 
-addons:
-  apt:
-    packages:
-      - libcppunit-dev
-      - libboost-dev
+matrix:
+  include:
+    - os: linux
+      dist: trusty
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-5
+            - libcppunit-dev
+            - libboost-dev
 
-os:
-  - linux
-  - osx
+    - os: osx
 
 env:
   global:
@@ -17,13 +21,10 @@ env:
 
 before_install:
   # C++14
-  - test "$TRAVIS_OS_NAME" != "linux" || sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
-  - test "$TRAVIS_OS_NAME" != "linux" || sudo apt-get update -qq
   - test "$TRAVIS_OS_NAME" != "osx" || brew update
 
 install:
   # C++14
-  - test "$TRAVIS_OS_NAME" != "linux" || sudo apt-get install -qq g++-5
   - test "$TRAVIS_OS_NAME" != "osx" || brew install cppunit
 
 script:
