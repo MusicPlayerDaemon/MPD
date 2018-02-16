@@ -14,6 +14,7 @@ matrix:
             - libboost-dev
 
     - os: osx
+      osx_image: xcode9.3beta
 
 env:
   global:
