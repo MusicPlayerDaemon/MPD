@@ -282,7 +282,7 @@ read_stream_art(Response &r, const char *uri, size_t offset)
 		return CommandResult::ERROR;
 	}
 
-	const size_t art_file_size = is->GetSize();
+	const offset_type art_file_size = is->GetSize();
 
 	constexpr size_t CHUNK_SIZE = 8192;
 	uint8_t buffer[CHUNK_SIZE];
@@ -291,7 +291,7 @@ read_stream_art(Response &r, const char *uri, size_t offset)
 	is->Seek(offset);
 	read_size = is->Read(&buffer, CHUNK_SIZE);
 
-	r.Format("size: %" PRIu64 "\n"
+	r.Format("size: %" PRIoffset "\n"
 			 "binary: %u\n",
 			 art_file_size,
 			 read_size
