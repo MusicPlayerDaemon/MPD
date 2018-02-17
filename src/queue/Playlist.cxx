@@ -258,9 +258,7 @@ playlist::SetRepeat(PlayerControl &pc, bool status)
 
 	queue.repeat = status;
 
-	pc.LockSetBorderPause((queue.single == SingleMode::ON
-			       || queue.single == SingleMode::ONE_SHOT)
-			      && !queue.repeat);
+	pc.LockSetBorderPause(queue.single != SingleMode::OFF && !queue.repeat);
 
 	/* if the last song is currently being played, the "next song"
 	   might change when repeat mode is toggled */
@@ -288,9 +286,7 @@ playlist::SetSingle(PlayerControl &pc, SingleMode status)
 	queue.single = status;
 
 
-	pc.LockSetBorderPause((queue.single == SingleMode::ON
-			       || queue.single == SingleMode::ONE_SHOT)
-			      && !queue.repeat);
+	pc.LockSetBorderPause(queue.single != SingleMode::OFF && !queue.repeat);
 
 	/* if the last song is currently being played, the "next song"
 	   might change when single mode is toggled */
@@ -359,9 +355,7 @@ playlist::GetNextPosition() const noexcept
 	if (current < 0)
 		return -1;
 
-	if ((queue.single == SingleMode::ON
-	     || queue.single == SingleMode::ONE_SHOT)
-	    && queue.repeat)
+	if (queue.single != SingleMode::OFF && queue.repeat)
 		return queue.OrderToPosition(current);
 	else if (queue.IsValidOrder(current + 1))
 		return queue.OrderToPosition(current + 1);

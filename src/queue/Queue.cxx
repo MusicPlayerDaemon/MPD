@@ -19,7 +19,6 @@
 
 #include "config.h"
 #include "Queue.hxx"
-#include "SingleMode.hxx"
 #include "DetachedSong.hxx"
 
 Queue::Queue(unsigned _max_length) noexcept

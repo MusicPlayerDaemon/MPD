@@ -43,6 +43,4 @@ SingleToString(SingleMode mode) noexcept;
 SingleMode
 SingleFromString(const char *s);
 
-// #define SingleToString ToString
-// #define SingleFromString FromString
 #endif

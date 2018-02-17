@@ -28,14 +28,14 @@ const char *
 SingleToString(SingleMode mode) noexcept
 {
 	switch (mode) {
-	case SingleMode::ONE_SHOT:
-		return "oneshot";
-
 	case SingleMode::OFF:
-		return "off";
+		return "0";
 
 	case SingleMode::ON:
-		return "on";
+		return "1";
+
+	case SingleMode::ONE_SHOT:
+		return "oneshot";
 	}
 
 	assert(false);
@@ -47,17 +47,12 @@ SingleFromString(const char *s)
 {
 	assert(s != nullptr);
 
-	if (strcmp(s, "off") == 0)
+	if (strcmp(s, "0") == 0)
 		return SingleMode::OFF;
-	else if (strcmp(s, "on") == 0)
+	else if (strcmp(s, "1") == 0)
 		return SingleMode::ON;
 	else if (strcmp(s, "oneshot") == 0)
 		return SingleMode::ONE_SHOT;
-	// backward compatibility?
-	else if (strcmp(s, "1") == 0)
-		return SingleMode::ON;
-	else if (strcmp(s, "0") == 0)
-		return SingleMode::OFF;
 	else
-		throw std::invalid_argument("Unrecognized single mode");
+		throw std::invalid_argument("Unrecognized single mode, expected 0, 1, or oneshot");
 }
