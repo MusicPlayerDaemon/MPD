@@ -101,7 +101,7 @@ DumpDecoderClient::SubmitData(gcc_unused InputStream *is,
 		fprintf(stderr, "%u kbit/s\n", kbit_rate);
 	}
 
-	gcc_unused ssize_t nbytes = write(1, data, datalen);
+	gcc_unused ssize_t nbytes = write(STDOUT_FILENO, data, datalen);
 	return DecoderCommand::NONE;
 }
 
