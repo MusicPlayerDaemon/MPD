@@ -2030,7 +2030,6 @@ test_dump_playlist_LDADD = \
 	libutil.a \
 	libpcm.a
 test_dump_playlist_SOURCES = test/dump_playlist.cxx \
-	test/FakeDecoderAPI.cxx test/FakeDecoderAPI.hxx \
 	src/Log.cxx src/LogBackend.cxx \
 	src/TagSave.cxx \
 	src/TagFile.cxx \
@@ -2077,7 +2076,6 @@ test_read_tags_LDADD = \
 	libsystem.a \
 	libutil.a
 test_read_tags_SOURCES = test/read_tags.cxx \
-	test/FakeDecoderAPI.cxx test/FakeDecoderAPI.hxx \
 	src/DetachedSong.cxx \
 	src/Log.cxx src/LogBackend.cxx \
 	src/ReplayGainInfo.cxx
