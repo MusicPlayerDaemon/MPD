@@ -38,7 +38,7 @@ const char *
 SingleToString(SingleMode mode) noexcept;
 
 /**
- * Parse a string to a #SingleMode.  Throws std::runtime_error on error.
+ * Parse a string to a #SingleMode.  Throws std::invalid_argument on error.
  */
 SingleMode
 SingleFromString(const char *s);
