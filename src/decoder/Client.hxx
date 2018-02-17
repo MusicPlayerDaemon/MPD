@@ -70,7 +70,7 @@ public:
 	/**
 	 * Call this when you have received the DecoderCommand::SEEK command.
 	 *
-	 * @return the destination position for the seek in milliseconds
+	 * @return the destination position for the seek
 	 */
 	gcc_pure
 	virtual SongTime GetSeekTime() noexcept = 0;
