@@ -1399,6 +1399,34 @@ database {
 
       <programlisting>zgrep ^CONFIG_RT_GROUP_SCHED /proc/config.gz</programlisting>
 
+      <para>
+        You can verify whether the real-time scheduler is active with
+        the <command>ps</command> command:
+      </para>
+
+      <programlisting># ps H -q `pidof -s mpd` -o 'pid,tid,cls,rtprio,comm'
+  PID   TID CLS RTPRIO COMMAND
+16257 16257  TS      - mpd
+16257 16258  TS      - io
+16257 16259  FF     50 rtio
+16257 16260  TS      - player
+16257 16261  TS      - decoder
+16257 16262  FF     50 output:ALSA
+16257 16263 IDL      0 update</programlisting>
+
+      <para>
+        The <varname>CLS</varname> column shows the CPU scheduler;
+        <parameter>TS</parameter> is the normal scheduler;
+        <parameter>FF</parameter> and <parameter>RR</parameter> are
+        real-time schedulers.  In this example, two threads use the
+        real-time scheduler: the <command>output</command> thread and
+        the <command>rtio</command> (real-time I/O) thread; these two
+        are the important ones.  The database update thread uses the
+        idle scheduler ("<parameter>IDL</parameter> in
+        <command>ps</command>), which only gets CPU when no other
+        process needs it.
+      </para>
+
       <note>
         <para>
           There is a rumor that real-time scheduling improves audio
