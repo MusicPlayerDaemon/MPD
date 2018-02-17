@@ -27,6 +27,7 @@
 #include "FlacInput.hxx"
 #include "FlacPcm.hxx"
 #include "../DecoderAPI.hxx"
+#include "util/ConstBuffer.hxx"
 
 #include <FLAC/stream_decoder.h>
 
@@ -41,6 +42,12 @@ struct FlacDecoder : public FlacInput {
 	 */
 	bool unsupported = false;
 
+	/**
+	 * The kbit_rate parameter for the next
+	 * DecoderBridge::SubmitData() call.
+	 */
+	uint16_t kbit_rate;
+
 	FlacPcmImport pcm_import;
 
 	/**
@@ -50,6 +57,13 @@ struct FlacDecoder : public FlacInput {
 	FLAC__uint64 position = 0;
 
 	Tag tag;
+
+	/**
+	 * Decoded PCM data obtained by our libFLAC write callback.
+	 * If this is non-empty, then DecoderBridge::SubmitData()
+	 * should be called.
+	 */
+	ConstBuffer<void> chunk = nullptr;
 
 	FlacDecoder(DecoderClient &_client, InputStream &_input_stream)
 		:FlacInput(_input_stream, &_client) {}

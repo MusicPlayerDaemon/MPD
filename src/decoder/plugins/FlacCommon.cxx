@@ -24,7 +24,6 @@
 #include "config.h"
 #include "FlacCommon.hxx"
 #include "FlacMetadata.hxx"
-#include "util/ConstBuffer.hxx"
 #include "Log.hxx"
 
 #include <stdexcept>
@@ -143,25 +142,10 @@ FlacDecoder::OnWrite(const FLAC__Frame &frame,
 	if (!initialized && !OnFirstFrame(frame.header))
 		return FLAC__STREAM_DECODER_WRITE_STATUS_ABORT;
 
-	const auto data = pcm_import.Import(buf, frame.header.blocksize);
+	chunk = pcm_import.Import(buf, frame.header.blocksize);
 
-	unsigned bit_rate = nbytes * 8 * frame.header.sample_rate /
+	kbit_rate = nbytes * 8 * frame.header.sample_rate /
 		(1000 * frame.header.blocksize);
-
-	auto cmd = GetClient()->SubmitData(GetInputStream(),
-					   data.data, data.size,
-					   bit_rate);
-	switch (cmd) {
-	case DecoderCommand::NONE:
-	case DecoderCommand::START:
-		break;
-
-	case DecoderCommand::STOP:
-		return FLAC__STREAM_DECODER_WRITE_STATUS_ABORT;
-
-	case DecoderCommand::SEEK:
-		return FLAC__STREAM_DECODER_WRITE_STATUS_CONTINUE;
-	}
 
 	return FLAC__STREAM_DECODER_WRITE_STATUS_CONTINUE;
 }

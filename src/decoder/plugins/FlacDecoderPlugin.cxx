@@ -142,13 +142,28 @@ flac_decoder_initialize(FlacDecoder *data, FLAC__StreamDecoder *sd)
 static DecoderCommand
 FlacSubmitToClient(DecoderClient &client, FlacDecoder &d) noexcept
 {
+	if (d.tag.IsEmpty() && d.chunk.IsEmpty())
+		return client.GetCommand();
+
 	if (!d.tag.IsEmpty()) {
 		auto cmd = client.SubmitTag(d.GetInputStream(),
 					    std::move(d.tag));
 		d.tag.Clear();
-		return cmd;
-	} else
-		return client.GetCommand();
+		if (cmd != DecoderCommand::NONE)
+			return cmd;
+	}
+
+	if (!d.chunk.IsEmpty()) {
+		auto cmd = client.SubmitData(d.GetInputStream(),
+					     d.chunk.data,
+					     d.chunk.size,
+					     d.kbit_rate);
+		d.chunk = nullptr;
+		if (cmd != DecoderCommand::NONE)
+			return cmd;
+	}
+
+	return DecoderCommand::NONE;
 }
 
 static void

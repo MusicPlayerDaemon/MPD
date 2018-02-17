@@ -1,4 +1,6 @@
 ver 0.20.18 (not yet released)
+* decoder
+  - flac: improve seeking precision
 * fix gapless CUE song transitions
 
 ver 0.20.17 (2018/02/11)
