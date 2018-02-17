@@ -49,6 +49,9 @@ struct InputPlugin {
 	void (*finish)();
 
 	/**
+	 * Attempt to open the given URI.  Returns nullptr if the
+	 * plugin does not support this URI.
+	 *
 	 * Throws std::runtime_error on error.
 	 */
 	InputStreamPtr (*open)(const char *uri,
@@ -56,7 +59,8 @@ struct InputPlugin {
 
 	/**
 	 * Prepare a #RemoteTagScanner.  The operation must be started
-	 * using RemoteTagScanner::Start().
+	 * using RemoteTagScanner::Start().  Returns nullptr if the
+	 * plugin does not support this URI.
 	 *
 	 * Throws on error.
 	 *
