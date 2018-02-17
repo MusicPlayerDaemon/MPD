@@ -166,6 +166,11 @@ flac_decoder_loop(FlacDecoder *data, FLAC__StreamDecoder *flac_dec)
 				client.CommandFinished();
 			} else
 				client.SeekError();
+
+			/* FLAC__stream_decoder_seek_absolute()
+			   decodes one frame and may have provided
+			   data to be submitted to the client */
+			continue;
 		} else if (cmd == DecoderCommand::STOP)
 			break;
 
