@@ -32,6 +32,8 @@
 class DumpDecoderClient final : public DecoderClient {
 	bool initialized = false;
 
+	uint16_t prev_kbit_rate = 0;
+
 public:
 	Mutex mutex;
 	Cond cond;

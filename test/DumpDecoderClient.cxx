@@ -96,7 +96,6 @@ DumpDecoderClient::SubmitData(gcc_unused InputStream *is,
 			      const void *data, size_t datalen,
 			      gcc_unused uint16_t kbit_rate)
 {
-	static uint16_t prev_kbit_rate;
 	if (kbit_rate != prev_kbit_rate) {
 		prev_kbit_rate = kbit_rate;
 		fprintf(stderr, "%u kbit/s\n", kbit_rate);
