@@ -131,7 +131,7 @@ try {
 		return EXIT_FAILURE;
 	}
 
-	if (!client.initialized) {
+	if (!client.IsInitialized()) {
 		fprintf(stderr, "Decoding failed\n");
 		return EXIT_FAILURE;
 	}

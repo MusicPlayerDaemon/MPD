@@ -29,11 +29,16 @@
  * A #DecoderClient implementation which dumps metadata to stderr and
  * decoded data to stdout.
  */
-struct DumpDecoderClient final : DecoderClient {
+class DumpDecoderClient final : public DecoderClient {
+	bool initialized = false;
+
+public:
 	Mutex mutex;
 	Cond cond;
 
-	bool initialized = false;
+	bool IsInitialized() const noexcept {
+		return initialized;
+	}
 
 	/* virtual methods from DecoderClient */
 	void Ready(AudioFormat audio_format,
