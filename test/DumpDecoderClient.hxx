@@ -25,6 +25,10 @@
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
 
+/**
+ * A #DecoderClient implementation which dumps metadata to stderr and
+ * decoded data to stdout.
+ */
 struct DumpDecoderClient final : DecoderClient {
 	Mutex mutex;
 	Cond cond;
