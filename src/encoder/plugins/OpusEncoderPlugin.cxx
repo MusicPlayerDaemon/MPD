@@ -52,7 +52,7 @@ class OpusEncoder final : public OggEncoder {
 
 	ogg_int64_t packetno = 0;
 
-	ogg_int64_t granulepos;
+	ogg_int64_t granulepos = 0;
 
 public:
 	OpusEncoder(AudioFormat &_audio_format, ::OpusEncoder *_enc);
