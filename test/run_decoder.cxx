@@ -22,7 +22,7 @@
 #include "event/Thread.hxx"
 #include "decoder/DecoderList.hxx"
 #include "decoder/DecoderPlugin.hxx"
-#include "FakeDecoderAPI.hxx"
+#include "DumpDecoderClient.hxx"
 #include "input/Init.hxx"
 #include "input/InputStream.hxx"
 #include "fs/Path.hxx"
@@ -119,19 +119,19 @@ try {
 		return EXIT_FAILURE;
 	}
 
-	FakeDecoder decoder;
+	DumpDecoderClient client;
 	if (plugin->file_decode != nullptr) {
-		plugin->FileDecode(decoder, Path::FromFS(c.uri));
+		plugin->FileDecode(client, Path::FromFS(c.uri));
 	} else if (plugin->stream_decode != nullptr) {
-		auto is = InputStream::OpenReady(c.uri, decoder.mutex,
-						 decoder.cond);
-		plugin->StreamDecode(decoder, *is);
+		auto is = InputStream::OpenReady(c.uri, client.mutex,
+						 client.cond);
+		plugin->StreamDecode(client, *is);
 	} else {
 		fprintf(stderr, "Decoder plugin is not usable\n");
 		return EXIT_FAILURE;
 	}
 
-	if (!decoder.initialized) {
+	if (!client.initialized) {
 		fprintf(stderr, "Decoding failed\n");
 		return EXIT_FAILURE;
 	}

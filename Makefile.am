@@ -2056,7 +2056,7 @@ test_run_decoder_LDADD = \
 	libsystem.a \
 	libutil.a
 test_run_decoder_SOURCES = test/run_decoder.cxx \
-	test/FakeDecoderAPI.cxx test/FakeDecoderAPI.hxx \
+	test/DumpDecoderClient.cxx test/DumpDecoderClient.hxx \
 	src/DetachedSong.cxx \
 	src/Log.cxx src/LogBackend.cxx \
 	src/ReplayGainInfo.cxx

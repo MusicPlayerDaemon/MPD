@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2017 The Music Player Daemon Project
+ * Copyright 2003-2018 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#include "FakeDecoderAPI.hxx"
+#include "DumpDecoderClient.hxx"
 #include "decoder/DecoderAPI.hxx"
 #include "input/InputStream.hxx"
 #include "util/StringBuffer.hxx"
@@ -28,9 +28,9 @@
 #include <stdio.h>
 
 void
-FakeDecoder::Ready(const AudioFormat audio_format,
-		   gcc_unused bool seekable,
-		   SignedSongTime duration)
+DumpDecoderClient::Ready(const AudioFormat audio_format,
+			 gcc_unused bool seekable,
+			 SignedSongTime duration)
 {
 	assert(!initialized);
 	assert(audio_format.IsValid());
@@ -43,41 +43,41 @@ FakeDecoder::Ready(const AudioFormat audio_format,
 }
 
 DecoderCommand
-FakeDecoder::GetCommand() noexcept
+DumpDecoderClient::GetCommand() noexcept
 {
 	return DecoderCommand::NONE;
 }
 
 void
-FakeDecoder::CommandFinished()
+DumpDecoderClient::CommandFinished()
 {
 }
 
 SongTime
-FakeDecoder::GetSeekTime() noexcept
+DumpDecoderClient::GetSeekTime() noexcept
 {
 	return SongTime();
 }
 
 uint64_t
-FakeDecoder::GetSeekFrame() noexcept
+DumpDecoderClient::GetSeekFrame() noexcept
 {
 	return 1;
 }
 
 void
-FakeDecoder::SeekError()
+DumpDecoderClient::SeekError()
 {
 }
 
 InputStreamPtr
-FakeDecoder::OpenUri(const char *uri)
+DumpDecoderClient::OpenUri(const char *uri)
 {
 	return InputStream::OpenReady(uri, mutex, cond);
 }
 
 size_t
-FakeDecoder::Read(InputStream &is, void *buffer, size_t length)
+DumpDecoderClient::Read(InputStream &is, void *buffer, size_t length)
 {
 	try {
 		return is.LockRead(buffer, length);
@@ -87,14 +87,14 @@ FakeDecoder::Read(InputStream &is, void *buffer, size_t length)
 }
 
 void
-FakeDecoder::SubmitTimestamp(gcc_unused double t)
+DumpDecoderClient::SubmitTimestamp(gcc_unused double t)
 {
 }
 
 DecoderCommand
-FakeDecoder::SubmitData(gcc_unused InputStream *is,
-			const void *data, size_t datalen,
-			gcc_unused uint16_t kbit_rate)
+DumpDecoderClient::SubmitData(gcc_unused InputStream *is,
+			      const void *data, size_t datalen,
+			      gcc_unused uint16_t kbit_rate)
 {
 	static uint16_t prev_kbit_rate;
 	if (kbit_rate != prev_kbit_rate) {
@@ -107,8 +107,8 @@ FakeDecoder::SubmitData(gcc_unused InputStream *is,
 }
 
 DecoderCommand
-FakeDecoder::SubmitTag(gcc_unused InputStream *is,
-		       Tag &&tag)
+DumpDecoderClient::SubmitTag(gcc_unused InputStream *is,
+			     Tag &&tag)
 {
 	fprintf(stderr, "TAG: duration=%f\n", tag.duration.ToDoubleS());
 
@@ -134,14 +134,14 @@ DumpReplayGainInfo(const ReplayGainInfo &info)
 }
 
 void
-FakeDecoder::SubmitReplayGain(const ReplayGainInfo *rgi)
+DumpDecoderClient::SubmitReplayGain(const ReplayGainInfo *rgi)
 {
 	if (rgi != nullptr)
 		DumpReplayGainInfo(*rgi);
 }
 
 void
-FakeDecoder::SubmitMixRamp(gcc_unused MixRampInfo &&mix_ramp)
+DumpDecoderClient::SubmitMixRamp(gcc_unused MixRampInfo &&mix_ramp)
 {
 	fprintf(stderr, "MixRamp: start='%s' end='%s'\n",
 		mix_ramp.GetStart(), mix_ramp.GetEnd());
