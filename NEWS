@@ -26,6 +26,11 @@ ver 0.21 (not yet released)
   - sndio: new mixer plugin
 * require GCC 5.0
 
+ver 0.20.18 (not yet released)
+* decoder
+  - flac: improve seeking precision
+* fix gapless CUE song transitions
+
 ver 0.20.17 (2018/02/11)
 * output
   - alsa: fix crash bug with 8 channels

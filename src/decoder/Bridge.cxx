@@ -293,6 +293,7 @@ DecoderBridge::CommandFinished()
 
 		initial_seek_running = false;
 		timestamp = dc.start_time.ToDoubleS();
+		absolute_frame = dc.start_time.ToScale<uint64_t>(dc.in_audio_format.sample_rate);
 		return;
 	}
 
@@ -312,6 +313,7 @@ DecoderBridge::CommandFinished()
 			convert->Reset();
 
 		timestamp = dc.seek_time.ToDoubleS();
+		absolute_frame = dc.seek_time.ToScale<uint64_t>(dc.in_audio_format.sample_rate);
 	}
 
 	dc.command = DecoderCommand::NONE;
@@ -420,6 +422,7 @@ DecoderBridge::SubmitTimestamp(double t)
 	assert(t >= 0);
 
 	timestamp = t;
+	absolute_frame = uint64_t(t * dc.in_audio_format.sample_rate);
 }
 
 DecoderCommand
@@ -453,6 +456,29 @@ DecoderBridge::SubmitData(InputStream *is,
 
 		if (cmd != DecoderCommand::NONE)
 			return cmd;
+	}
+
+	cmd = DecoderCommand::NONE;
+
+	const size_t frame_size = dc.in_audio_format.GetFrameSize();
+	size_t data_frames = length / frame_size;
+
+	if (dc.end_time.IsPositive()) {
+		/* enforce the given end time */
+
+		const uint64_t end_frame =
+			dc.end_time.ToScale<uint64_t>(dc.in_audio_format.sample_rate);
+		if (absolute_frame >= end_frame)
+			return DecoderCommand::STOP;
+
+		const uint64_t remaining_frames = end_frame - absolute_frame;
+		if (data_frames >= remaining_frames) {
+			/* past the end of the range: truncate this
+			   data submission and stop the decoder */
+			data_frames = remaining_frames;
+			length = data_frames * frame_size;
+			cmd = DecoderCommand::STOP;
+		}
 	}
 
 	if (convert != nullptr) {
@@ -512,15 +538,11 @@ DecoderBridge::SubmitData(InputStream *is,
 
 		timestamp += (double)nbytes /
 			dc.out_audio_format.GetTimeToSize();
-
-		if (dc.end_time.IsPositive() &&
-		    timestamp >= dc.end_time.ToDoubleS())
-			/* the end of this range has been reached:
-			   stop decoding */
-			return DecoderCommand::STOP;
 	}
 
-	return DecoderCommand::NONE;
+	absolute_frame += data_frames;
+
+	return cmd;
 }
 
 DecoderCommand

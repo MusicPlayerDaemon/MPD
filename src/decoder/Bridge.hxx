@@ -51,6 +51,11 @@ public:
 	double timestamp = 0;
 
 	/**
+	 * The time stamp of the next data chunk, in PCM frames.
+	 */
+	uint64_t absolute_frame = 0;
+
+	/**
 	 * Is the initial seek (to the start position of the sub-song)
 	 * pending, or has it been performed already?
 	 */
