@@ -364,6 +364,21 @@ curl = AutotoolsProject(
     patches='src/lib/curl/patches',
 )
 
+libnfs = AutotoolsProject(
+    'https://github.com/sahlberg/libnfs/archive/libnfs-2.0.0.tar.gz',
+    '7ea6cd8fa6c461d01091e584d424d28e137d23ff4b65b95d01a3fd0ef95d120e',
+    'lib/libnfs.a',
+    [
+        '--disable-shared', '--enable-static',
+        '--disable-debug',
+
+        # work around -Wtautological-compare
+        '--disable-werror',
+    ],
+    base='libnfs-libnfs-2.0.0',
+    autoreconf=True,
+)
+
 boost = BoostProject(
     'http://downloads.sourceforge.net/project/boost/boost/1.66.0/boost_1_66_0.tar.bz2',
     '5721818253e6a0989583192f96782c4a98eb6204965316df9f5ad75819225ca9',

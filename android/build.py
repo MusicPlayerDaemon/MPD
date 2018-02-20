@@ -127,6 +127,7 @@ thirdparty_libs = [
     libmad,
     ffmpeg,
     curl,
+    libnfs,
     boost,
 ]
 
