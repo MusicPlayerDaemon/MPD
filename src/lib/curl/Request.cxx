@@ -64,6 +64,7 @@ CurlRequest::CurlRequest(CurlGlobal &_global,
 	easy.SetOption(CURLOPT_NOPROGRESS, 1l);
 	easy.SetOption(CURLOPT_NOSIGNAL, 1l);
 	easy.SetOption(CURLOPT_CONNECTTIMEOUT, 10l);
+	easy.SetOption(CURLOPT_HTTPAUTH, (long) CURLAUTH_ANY);
 }
 
 CurlRequest::~CurlRequest() noexcept
