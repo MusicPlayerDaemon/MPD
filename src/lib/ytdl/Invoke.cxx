@@ -7,6 +7,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/wait.h>
+#include <pthread.h>
 
 namespace Ytdl {
 
@@ -25,12 +26,29 @@ Invoke(Yajl::Handle &handle, const char *url, PlaylistMode mode)
 		}
 	};
 
-	int pid = fork();
-	if (pid < 0) {
-		throw std::runtime_error("Failed to fork()");
+	// block all signals while forking child
+	sigset_t signals_new, signals_old;
+	sigfillset(&signals_new);
+	if (pthread_sigmask(SIG_SETMASK, &signals_new, &signals_old)) {
+		throw std::runtime_error("Failed to block signals");
 	}
 
+	int pid = fork();
+
 	if (!pid) {
+		// restore all signal handlers to default
+		struct sigaction act;
+		act.sa_handler = SIG_DFL;
+		act.sa_flags = 0;
+		sigemptyset(&act.sa_mask);
+		for (int i = 0; i < NSIG; i++) {
+			sigaction(i, &act, nullptr);
+		}
+
+		if (pthread_sigmask(SIG_SETMASK, &signals_old, nullptr)) {
+			_exit(EXIT_FAILURE);
+		}
+
 		close(pipefd[0]);
 		if (dup2(pipefd[1], STDOUT_FILENO) < 0) {
 			_exit(EXIT_FAILURE);
@@ -55,6 +73,15 @@ Invoke(Yajl::Handle &handle, const char *url, PlaylistMode mode)
 			close(pipefd[1]);
 			_exit(EXIT_FAILURE);
 		}
+	}
+
+	// restore blocked signals
+	if (pthread_sigmask(SIG_SETMASK, &signals_old, nullptr)) {
+		throw std::runtime_error("Failed to unblock signals");
+	}
+
+	if (pid < 0) {
+		throw std::runtime_error("Failed to fork()");
 	}
 
 	close(pipefd[1]);
