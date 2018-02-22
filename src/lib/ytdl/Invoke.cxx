@@ -1,5 +1,6 @@
 #include "config.h"
 #include "Parser.hxx"
+#include "system/Error.hxx"
 #include "util/ScopeExit.hxx"
 
 #include <cinttypes>
@@ -16,7 +17,7 @@ Invoke(Yajl::Handle &handle, const char *url, PlaylistMode mode)
 {
 	int pipefd[2];
 	if (pipe2(pipefd, O_CLOEXEC) < 0) {
-		throw std::runtime_error("Failed to create pipe");
+		throw MakeErrno("Failed to create pipe");
 	}
 
 	AtScopeExit(pipefd) {
@@ -27,10 +28,11 @@ Invoke(Yajl::Handle &handle, const char *url, PlaylistMode mode)
 	};
 
 	// block all signals while forking child
+	int res;
 	sigset_t signals_new, signals_old;
 	sigfillset(&signals_new);
-	if (pthread_sigmask(SIG_SETMASK, &signals_new, &signals_old)) {
-		throw std::runtime_error("Failed to block signals");
+	if ((res = pthread_sigmask(SIG_SETMASK, &signals_new, &signals_old))) {
+		throw MakeErrno(res, "Failed to block signals");
 	}
 
 	int pid = fork();
@@ -49,7 +51,6 @@ Invoke(Yajl::Handle &handle, const char *url, PlaylistMode mode)
 			_exit(EXIT_FAILURE);
 		}
 
-		close(pipefd[0]);
 		if (dup2(pipefd[1], STDOUT_FILENO) < 0) {
 			_exit(EXIT_FAILURE);
 		}
@@ -70,42 +71,40 @@ Invoke(Yajl::Handle &handle, const char *url, PlaylistMode mode)
 		if (execlp("youtube-dl", "youtube-dl",
 			"-Jf", "bestaudio/best", playlist_flag, url, nullptr) < 0)
 		{
-			close(pipefd[1]);
 			_exit(EXIT_FAILURE);
 		}
 	}
 
 	// restore blocked signals
-	if (pthread_sigmask(SIG_SETMASK, &signals_old, nullptr)) {
-		throw std::runtime_error("Failed to unblock signals");
+	if ((res = pthread_sigmask(SIG_SETMASK, &signals_old, nullptr))) {
+		throw MakeErrno(res, "Failed to unblock signals");
 	}
 
 	if (pid < 0) {
-		throw std::runtime_error("Failed to fork()");
+		throw MakeErrno("Failed to fork()");
 	}
 
 	close(pipefd[1]);
 	pipefd[1] = -1; // sentinel to prevent closing AtExit
 
-	int ret;
 	uint8_t buffer[0x80];
 	do {
-		ret = read(pipefd[0], buffer, sizeof(buffer));
-		if (ret < 0) {
-			throw std::runtime_error("failed to read from pipe");
-		} else if (ret > 0) {
-			handle.Parse(buffer, ret);
+		res = read(pipefd[0], buffer, sizeof(buffer));
+		if (res < 0) {
+			throw MakeErrno("failed to read from pipe");
+		} else if (res > 0) {
+			handle.Parse(buffer, res);
 		}
-	} while (ret > 0);
+	} while (res > 0);
 
 	handle.CompleteParse();
 
-	if (waitpid(pid, &ret, 0) < 0) {
-		throw std::runtime_error("failed to wait on youtube-dl process");
+	if (waitpid(pid, &res, 0) < 0) {
+		throw MakeErrno("failed to wait on youtube-dl process");
 	}
 
-	if (ret) {
-		throw FormatRuntimeError("youtube-dl exited with code %d", ret);
+	if (res) {
+		throw FormatRuntimeError("youtube-dl exited with code %d", res);
 	}
 }
 
