@@ -51,6 +51,10 @@ struct CallbacksWrapper {
 		return Cast(ctx).Integer(integerVal);
 	}
 
+	static int Double(void *ctx, double doubleVal) noexcept {
+		return Cast(ctx).Double(doubleVal);
+	}
+
 	static int String(void *ctx, const unsigned char *stringVal,
 			  size_t stringLen) noexcept {
 		return Cast(ctx).String(StringView((const char *)stringVal,
