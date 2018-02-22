@@ -39,7 +39,8 @@ input_ytdl_open(const char *uri, Mutex &mutex, Cond &cond)
 		Ytdl::Parser parser(metadata);
 		auto handle = parser.CreateHandle();
 		Ytdl::Invoke(*handle, uri, Ytdl::PlaylistMode::SINGLE);
-		return OpenCurlInputStream(metadata.url.c_str(), metadata.headers, mutex, cond);
+		return OpenCurlInputStream(metadata.GetURL().c_str(),
+			metadata.GetHeaders(), mutex, cond);
 	}
 
 	return nullptr;

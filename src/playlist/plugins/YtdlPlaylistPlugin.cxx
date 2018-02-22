@@ -44,47 +44,23 @@ playlist_ytdl_open_uri(const char *uri, Mutex &mutex, Cond &cond)
 	Ytdl::TagHandler metadata;
 	Ytdl::Parser parser(metadata);
 	auto handle = parser.CreateHandle();
-	Ytdl::Invoke(*handle, uri, Ytdl::PlaylistMode::FLAT);
+	Ytdl::Invoke(*handle, uri, Ytdl::PlaylistMode::FULL);
 
 	// TODO: sites that don't have expiring URLs don't need the input plugin
 
-	if (metadata.extractor.empty()) {
-		metadata.extractor = "youtube-dl";
-	}
-
-	metadata.builder->AddItem(TAG_COMMENT, metadata.webpage_url.c_str());
-	metadata.builder->AddItem(TAG_ALBUM, metadata.extractor.c_str());
-	Tag playlist(metadata.builder->Commit());
+	Tag playlist(metadata.GetTagBuilder().Commit());
 
 	std::forward_list<DetachedSong> songs;
-	if (metadata.entries.empty()) {
-		std::string url(uri /* metadata.webpage_url */);
+	if (metadata.GetEntries().empty()) {
+		std::string url(uri /* metadata.GetWebpageURL() */);
 		url.insert(0, "youtube-dl://");
 		songs.emplace_front(url.c_str(), std::move(playlist));
 	} else {
-		metadata.SortEntries();
-		for (auto &entry : metadata.entries) {
-			if (!entry.builder->HasType(TAG_ALBUM)) {
-				entry.builder->AddItem(TAG_ALBUM, playlist.GetValue(TAG_TITLE));
-			}
-			if (!entry.builder->HasType(TAG_ARTIST)) {
-				entry.builder->AddItem(TAG_ARTIST, playlist.GetValue(TAG_ARTIST));
-			}
-			if (!metadata.webpage_url.empty()) {
-				entry.builder->AddItem(TAG_COMMENT, metadata.webpage_url.c_str());
-			}
-			if (!entry.webpage_url.empty()) {
-				entry.builder->AddItem(TAG_COMMENT, entry.webpage_url.c_str());
-			}
-			std::string& url = entry.webpage_url.empty() ? entry.url : entry.webpage_url;
-			if (entry.type == "url") {
-				if (metadata.extractor == "YoutubePlaylist") {
-					url.insert(0, "https://www.youtube.com/watch?v=");
-				}
-				entry.builder->AddItem(TAG_COMMENT, url.c_str());
-			}
+		for (auto &entry : metadata.GetEntries()) {
+			std::string url = entry.GetWebpageURL().empty()
+				? entry.GetURL() : entry.GetWebpageURL();
 			url.insert(0, "youtube-dl://");
-			songs.emplace_front(url.c_str(), entry.builder->Commit());
+			songs.emplace_front(url.c_str(), entry.GetTagBuilder().Commit());
 		}
 		songs.reverse();
 	}

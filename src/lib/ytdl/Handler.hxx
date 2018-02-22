@@ -5,6 +5,8 @@
 
 namespace Ytdl {
 
+class ParserContext;
+
 enum class StringMetadataTag {
 	CREATOR,
 	DESCRIPTION,
@@ -29,7 +31,9 @@ enum class ParseContinue {
 	CANCEL,
 };
 
-struct MetadataHandler {
+class MetadataHandler {
+	friend class ParserContext;
+
 	virtual ParseContinue OnEntryStart() noexcept = 0;
 	virtual ParseContinue OnEntryEnd() noexcept = 0;
 	virtual ParseContinue OnEnd() noexcept = 0;

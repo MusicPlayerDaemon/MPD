@@ -54,8 +54,10 @@ ParseContinue
 TagHandler::OnEnd() noexcept
 {
 	if (!artist.value.empty()) {
-		builder->AddItem(TAG_ARTIST, artist.value.c_str());
+		builder->AddItem(TAG_ARTIST, artist.value);
 	}
+
+	this->SortEntries();
 
 	return ParseContinue::CONTINUE;
 }

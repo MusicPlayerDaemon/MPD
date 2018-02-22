@@ -17,7 +17,7 @@ YtdlTagScanner::Start()
 		Ytdl::Parser parser(metadata);
 		auto handle = parser.CreateHandle();
 		Ytdl::Invoke(*handle, uri.c_str(), Ytdl::PlaylistMode::SINGLE);
-		handler.OnRemoteTag(metadata.builder->Commit());
+		handler.OnRemoteTag(metadata.GetTagBuilder().Commit());
 	} catch (...) {
 		handler.OnRemoteTagError(std::current_exception());
 	}
