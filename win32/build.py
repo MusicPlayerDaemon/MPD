@@ -85,6 +85,7 @@ thirdparty_libs = [
     liblame,
     ffmpeg,
     curl,
+    libnfs,
     boost,
 ]
 
