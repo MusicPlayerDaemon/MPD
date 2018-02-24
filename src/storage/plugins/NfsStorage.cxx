@@ -296,7 +296,7 @@ NfsStorage::GetInfo(const char *uri_utf8, gcc_unused bool follow)
 
 gcc_pure
 static bool
-SkipNameFS(const char *name) noexcept
+SkipNameFS(PathTraitsFS::const_pointer_type name) noexcept
 {
 	return name[0] == '.' &&
 		(name[1] == 0 ||
