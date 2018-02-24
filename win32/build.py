@@ -58,7 +58,8 @@ class CrossGccToolchain:
 
         self.cflags = common_flags
         self.cxxflags = common_flags
-        self.cppflags = '-isystem ' + os.path.join(install_prefix, 'include')
+        self.cppflags = '-isystem ' + os.path.join(install_prefix, 'include') + \
+                        ' -DWINVER=0x0600 -D_WIN32_WINNT=0x0600'
         self.ldflags = '-L' + os.path.join(install_prefix, 'lib')
         self.libs = ''
 
