@@ -50,6 +50,7 @@
 #include "unix/SignalHandlers.hxx"
 #include "system/FatalError.hxx"
 #include "thread/Slack.hxx"
+#include "net/Init.hxx"
 #include "lib/icu/Init.hxx"
 #include "config/ConfigGlobal.hxx"
 #include "config/Param.hxx"
@@ -104,11 +105,6 @@
 
 #ifdef HAVE_LOCALE_H
 #include <locale.h>
-#endif
-
-#ifdef _WIN32
-#include <winsock2.h>
-#include <ws2tcpip.h>
 #endif
 
 #ifdef __BLOCKS__
@@ -285,25 +281,6 @@ glue_state_file_init()
 }
 
 /**
- * Windows-only initialization of the Winsock2 library.
- */
-static void winsock_init(void)
-{
-#ifdef _WIN32
-	WSADATA sockinfo;
-
-	int retval = WSAStartup(MAKEWORD(2, 2), &sockinfo);
-	if(retval != 0)
-		FormatFatalError("Attempt to open Winsock2 failed; error code %d",
-				 retval);
-
-	if (LOBYTE(sockinfo.wVersion) != 2)
-		FatalError("We use Winsock2 but your version is either too new "
-			   "or old; please install Winsock 2.x");
-#endif
-}
-
-/**
  * Initialize the decoder and player core, including the music pipe.
  */
 static void
@@ -451,7 +428,8 @@ try {
 
 	IcuInit();
 
-	winsock_init();
+	const ScopeNetInit net_init;
+
 	io_thread_init();
 	config_global_init();
 
@@ -700,10 +678,6 @@ try {
 
 #ifdef ENABLE_DAEMON
 	daemonize_finish();
-#endif
-
-#ifdef _WIN32
-	WSACleanup();
 #endif
 
 	IcuFinish();
