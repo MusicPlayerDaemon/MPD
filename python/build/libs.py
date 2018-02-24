@@ -124,7 +124,6 @@ ffmpeg = FfmpegProject(
         '--disable-protocols',
         '--disable-devices',
         '--disable-filters',
-        '--disable-filters',
         '--disable-v4l2_m2m',
 
         '--disable-parser=bmp',
@@ -306,7 +305,7 @@ ffmpeg = FfmpegProject(
         '--disable-decoder=svq1',
         '--disable-decoder=svq3',
         '--disable-decoder=tiff',
-        '--disable-decoder=mottiertexseqvideo',
+        '--disable-decoder=tiertexseqvideo',
         '--disable-decoder=truemotion1',
         '--disable-decoder=truemotion2',
         '--disable-decoder=truemotion2rt',
