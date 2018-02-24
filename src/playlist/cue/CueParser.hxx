@@ -88,6 +88,13 @@ class CueParser {
 	std::unique_ptr<DetachedSong> finished;
 
 	/**
+	 * Ignore "INDEX" lines?  Only up the first one after "00" is
+	 * used.  If there is a pregap (INDEX 00..01), it is assigned
+	 * to the previous song.
+	 */
+	bool ignore_index;
+
+	/**
 	 * Tracks whether Finish() has been called.  If true, then all
 	 * remaining (partial) results will be delivered by Get().
 	 */

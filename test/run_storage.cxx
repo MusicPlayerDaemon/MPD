@@ -23,6 +23,7 @@
 #include "storage/Registry.hxx"
 #include "storage/StorageInterface.hxx"
 #include "storage/FileInfo.hxx"
+#include "net/Init.hxx"
 #include "util/ChronoUtil.hxx"
 
 #include <memory>
@@ -72,7 +73,12 @@ Ls(Storage &storage, const char *path)
 		const char *mtime = "          ";
 		if (!IsNegative(info.mtime)) {
 			time_t t = std::chrono::system_clock::to_time_t(info.mtime);
-			strftime(mtime_buffer, sizeof(mtime_buffer), "%F",
+			strftime(mtime_buffer, sizeof(mtime_buffer),
+#ifdef _WIN32
+				 "%Y-%m-%d",
+#else
+				 "%F",
+#endif
 				 gmtime(&t));
 			mtime = mtime_buffer;
 		}
@@ -96,6 +102,7 @@ try {
 	const char *const command = argv[1];
 	const char *const storage_uri = argv[2];
 
+	const ScopeNetInit net_init;
 	EventThread io_thread;
 	io_thread.Start();
 

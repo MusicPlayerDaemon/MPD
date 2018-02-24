@@ -30,7 +30,6 @@
 #include <assert.h>
 #include <string.h>
 #include <fcntl.h>
-#include <sys/stat.h>
 
 NfsFileReader::NfsFileReader() noexcept
 	:defer_open(nfs_get_event_loop(), BIND_THIS_METHOD(OnDeferredOpen))

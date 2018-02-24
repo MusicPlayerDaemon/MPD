@@ -31,6 +31,7 @@
 
 #include <stdint.h>
 #include <stddef.h>
+#include <sys/stat.h>
 
 struct nfsfh;
 class NfsConnection;

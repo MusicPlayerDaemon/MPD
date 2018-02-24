@@ -222,7 +222,12 @@ UriToNfsPath(const char *_uri_utf8)
 	std::string uri_utf8("/");
 	uri_utf8.append(_uri_utf8);
 
+#ifdef _WIN32
+	/* assume UTF-8 when accessing NFS from Windows */
+	return uri_utf8;
+#else
 	return AllocatedPath::FromUTF8Throw(uri_utf8.c_str()).Steal();
+#endif
 }
 
 std::string
@@ -294,7 +299,7 @@ NfsStorage::GetInfo(const char *uri_utf8, gcc_unused bool follow)
 
 gcc_pure
 static bool
-SkipNameFS(const char *name) noexcept
+SkipNameFS(PathTraitsFS::const_pointer_type name) noexcept
 {
 	return name[0] == '.' &&
 		(name[1] == 0 ||
@@ -362,7 +367,14 @@ NfsListDirectoryOperation::CollectEntries(struct nfsdir *dir)
 
 	const struct nfsdirent *ent;
 	while ((ent = connection.ReadDirectory(dir)) != nullptr) {
+#ifdef _WIN32
+		/* assume UTF-8 when accessing NFS from Windows */
+		const auto name_fs = AllocatedPath::FromUTF8Throw(ent->name);
+		if (name_fs.IsNull())
+			continue;
+#else
 		const Path name_fs = Path::FromFS(ent->name);
+#endif
 		if (SkipNameFS(name_fs.c_str()))
 			continue;
 

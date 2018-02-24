@@ -124,9 +124,9 @@ thirdparty_libs = [
     opus,
     flac,
     libid3tag,
-    libmad,
     ffmpeg,
     curl,
+    libnfs,
     boost,
 ]
 

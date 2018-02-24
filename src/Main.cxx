@@ -50,6 +50,7 @@
 #include "unix/SignalHandlers.hxx"
 #include "system/FatalError.hxx"
 #include "thread/Slack.hxx"
+#include "net/Init.hxx"
 #include "lib/icu/Init.hxx"
 #include "config/ConfigGlobal.hxx"
 #include "config/Param.hxx"
@@ -104,11 +105,6 @@
 
 #ifdef HAVE_LOCALE_H
 #include <locale.h>
-#endif
-
-#ifdef _WIN32
-#include <winsock2.h>
-#include <ws2tcpip.h>
 #endif
 
 #ifdef __BLOCKS__
@@ -284,25 +280,6 @@ glue_state_file_init()
 					     instance->partitions.front(),
 					     instance->event_loop);
 	instance->state_file->Read();
-}
-
-/**
- * Windows-only initialization of the Winsock2 library.
- */
-static void winsock_init(void)
-{
-#ifdef _WIN32
-	WSADATA sockinfo;
-
-	int retval = WSAStartup(MAKEWORD(2, 2), &sockinfo);
-	if(retval != 0)
-		FormatFatalError("Attempt to open Winsock2 failed; error code %d",
-				 retval);
-
-	if (LOBYTE(sockinfo.wVersion) != 2)
-		FatalError("We use Winsock2 but your version is either too new "
-			   "or old; please install Winsock 2.x");
-#endif
 }
 
 /**
@@ -504,7 +481,8 @@ try {
 
 	IcuInit();
 
-	winsock_init();
+	const ScopeNetInit net_init;
+
 	config_global_init();
 
 #ifdef ANDROID
@@ -747,10 +725,6 @@ try {
 
 #ifdef ENABLE_DAEMON
 	daemonize_finish();
-#endif
-
-#ifdef _WIN32
-	WSACleanup();
 #endif
 
 	IcuFinish();

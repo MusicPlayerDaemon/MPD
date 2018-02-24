@@ -31,7 +31,11 @@ extern "C" {
 
 #include <utility>
 
+#ifdef _WIN32
+#include <winsock2.h>
+#else
 #include <poll.h> /* for POLLIN, POLLOUT */
+#endif
 
 static constexpr std::chrono::steady_clock::duration NFS_MOUNT_TIMEOUT =
 	std::chrono::minutes(1);

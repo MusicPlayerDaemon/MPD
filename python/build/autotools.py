@@ -5,6 +5,7 @@ from build.makeproject import MakeProject
 class AutotoolsProject(MakeProject):
     def __init__(self, url, md5, installed, configure_args=[],
                  autogen=False,
+                 autoreconf=False,
                  cppflags='',
                  ldflags='',
                  libs='',
@@ -13,6 +14,7 @@ class AutotoolsProject(MakeProject):
         MakeProject.__init__(self, url, md5, installed, **kwargs)
         self.configure_args = configure_args
         self.autogen = autogen
+        self.autoreconf = autoreconf
         self.cppflags = cppflags
         self.ldflags = ldflags
         self.libs = libs
@@ -28,6 +30,8 @@ class AutotoolsProject(MakeProject):
             subprocess.check_call(['aclocal'], cwd=src)
             subprocess.check_call(['automake', '--add-missing', '--force-missing', '--foreign'], cwd=src)
             subprocess.check_call(['autoconf'], cwd=src)
+        if self.autoreconf:
+            subprocess.check_call(['autoreconf', '-vif'], cwd=src)
 
         build = self.make_build_path(toolchain)
 
