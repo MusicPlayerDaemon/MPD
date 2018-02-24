@@ -71,7 +71,12 @@ Ls(Storage &storage, const char *path)
 		char mtime_buffer[32];
 		const char *mtime = "          ";
 		if (info.mtime > 0) {
-			strftime(mtime_buffer, sizeof(mtime_buffer), "%F",
+			strftime(mtime_buffer, sizeof(mtime_buffer),
+#ifdef _WIN32
+				 "%Y-%m-%d",
+#else
+				 "%F",
+#endif
 				 gmtime(&info.mtime));
 			mtime = mtime_buffer;
 		}
