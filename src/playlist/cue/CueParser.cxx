@@ -229,6 +229,8 @@ CueParser::Feed2(char *p) noexcept
 		}
 
 		state = TRACK;
+		ignore_index = false;
+
 		current.reset(new DetachedSong(filename));
 		assert(!current->GetTag().IsDefined());
 
@@ -238,6 +240,9 @@ CueParser::Feed2(char *p) noexcept
 	} else if (state == IGNORE_TRACK) {
 		return;
 	} else if (state == TRACK && strcmp(command, "INDEX") == 0) {
+		if (ignore_index)
+			return;
+
 		const char *nr = cue_next_token(&p);
 		if (nr == nullptr)
 			return;
@@ -255,7 +260,7 @@ CueParser::Feed2(char *p) noexcept
 
 		current->SetStartTime(SongTime::FromMS(position_ms));
 		if(strcmp(nr, "00") != 0 || previous == nullptr)
-			state = IGNORE_TRACK;
+			ignore_index = true;
 	}
 }
 
