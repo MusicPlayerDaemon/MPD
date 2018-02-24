@@ -142,7 +142,6 @@ ffmpeg = FfmpegProject(
         '--disable-parser=mjpeg',
         '--disable-parser=mlp',
         '--disable-parser=mpeg4video',
-        '--disable-parser=mpegaudio',
         '--disable-parser=mpegvideo',
         '--disable-parser=opus',
         '--disable-parser=vc1',
@@ -194,16 +193,6 @@ ffmpeg = FfmpegProject(
         # we don't need these decoders, because we have the dedicated
         # libraries
         '--disable-decoder=flac',
-        '--disable-decoder=mp1',
-        '--disable-decoder=mp1float',
-        '--disable-decoder=mp2',
-        '--disable-decoder=mp2float',
-        '--disable-decoder=mp3',
-        '--disable-decoder=mp3adu',
-        '--disable-decoder=mp3adufloat',
-        '--disable-decoder=mp3float',
-        '--disable-decoder=mp3on4',
-        '--disable-decoder=mp3on4float',
         '--disable-decoder=opus',
         '--disable-decoder=vorbis',
 
