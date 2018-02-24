@@ -40,6 +40,9 @@ public:
 	~ScopeNetInit() noexcept {
 		WSACleanup();
 	}
+#else
+public:
+	ScopeNetInit() {}
 #endif
 };
 
