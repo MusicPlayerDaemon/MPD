@@ -23,6 +23,7 @@
 #include "storage/Registry.hxx"
 #include "storage/StorageInterface.hxx"
 #include "storage/FileInfo.hxx"
+#include "net/Init.hxx"
 
 #include <memory>
 #include <stdexcept>
@@ -95,6 +96,7 @@ try {
 	const char *const command = argv[1];
 	const char *const storage_uri = argv[2];
 
+	const ScopeNetInit net_init;
 	const ScopeIOThread io_thread;
 
 	if (strcmp(command, "ls") == 0) {
