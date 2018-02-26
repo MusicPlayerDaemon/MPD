@@ -24,6 +24,7 @@ ver 0.21 (not yet released)
   - ao: fix crash bug due to partial frames
   - shout: support the Shine encoder plugin
   - sndio: remove support for the broken RoarAudio sndio emulation
+  - osx: initial support for DSD over PCM
 * mixer
   - sndio: new mixer plugin
 * encoder

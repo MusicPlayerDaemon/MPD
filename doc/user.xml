@@ -4332,6 +4332,26 @@ run</programlisting>
                   select the best possible for each file.
                 </entry>
               </row>
+	      <row>
+                <entry>
+                  <varname>dop</varname>
+                  <parameter>yes|no</parameter>
+                </entry>
+                <entry>
+                  If set to <parameter>yes</parameter>, then DSD over
+                  PCM according to the <ulink
+                    url="http://dsd-guide.com/dop-open-standard">DoP
+                    standard</ulink> is enabled.  This wraps DSD
+                  samples in fake 24 bit PCM, and is understood by
+                  some DSD capable products, but may be harmful to
+                  other hardware.  Therefore, the default is
+                  <parameter>no</parameter> and you can enable the
+                  option at your own risk. Under macOS you must
+                  make sure to select a physical mode on the output
+                  device which supports at least 24 bits per channel
+                  as the Mac OS X plugin only changes the sample rate.
+                </entry>
+              </row>
               <row>
                 <entry>
                   <varname>channel_map</varname>
