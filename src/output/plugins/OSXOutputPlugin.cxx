@@ -24,6 +24,9 @@
 #include "util/ScopeExit.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/Domain.hxx"
+#include "util/Manual.hxx"
+#include "util/ConstBuffer.hxx"
+#include "pcm/PcmExport.hxx"
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
 #include "system/ByteOrder.hxx"
@@ -46,10 +49,20 @@ struct OSXOutput final : AudioOutput {
 	const char *channel_map;
 	bool hog_device;
 	bool sync_sample_rate;
-
+#ifdef ENABLE_DSD
+	/**
+	 * Enable DSD over PCM according to the DoP standard?
+	 *
+	 * @see http://dsd-guide.com/dop-open-standard
+	 */
+	bool dop_setting;
+#endif
+	
 	AudioDeviceID dev_id;
 	AudioComponentInstance au;
 	AudioStreamBasicDescription asbd;
+	Float64 sample_rate;
+	Manual<PcmExport> pcm_export;
 
 	boost::lockfree::spsc_queue<uint8_t> *ring_buffer;
 
@@ -116,6 +129,9 @@ OSXOutput::OSXOutput(const ConfigBlock &block)
 	channel_map = block.GetBlockValue("channel_map");
 	hog_device = block.GetBlockValue("hog_device", false);
 	sync_sample_rate = block.GetBlockValue("sync_sample_rate", false);
+#ifdef ENABLE_DSD
+	dop_setting=block.GetBlockValue("dop", false);
+#endif
 }
 
 AudioOutput *
@@ -271,7 +287,7 @@ osx_output_set_channel_map(OSXOutput *oo)
 	}
 }
 
-static void
+static Float64
 osx_output_sync_device_sample_rate(AudioDeviceID dev_id, AudioStreamBasicDescription desc)
 {
 	FormatDebug(osx_output_domain, "Syncing sample rate.");
@@ -336,6 +352,7 @@ osx_output_sync_device_sample_rate(AudioDeviceID dev_id, AudioStreamBasicDescrip
 			    "Sample rate synced to %f Hz.",
 			    sample_rate);
 	}
+	return sample_rate;
 }
 
 static OSStatus
@@ -581,11 +598,13 @@ OSXOutput::Enable()
 		throw FormatRuntimeError("Unable to open OS X component: %s",
 					 errormsg);
 	}
+	pcm_export.Construct();
 
 	try {
 		osx_output_set_device(this);
 	} catch (...) {
 		AudioComponentInstanceDispose(au);
+		pcm_export.Destruct();
 		throw;
 	}
 
@@ -597,6 +616,7 @@ void
 OSXOutput::Disable() noexcept
 {
 	AudioComponentInstanceDispose(au);
+	pcm_export.Destruct();
 
 	if (hog_device)
 		osx_output_hog_device(dev_id, false);
@@ -615,9 +635,14 @@ void
 OSXOutput::Open(AudioFormat &audio_format)
 {
 	char errormsg[1024];
-
+#ifdef ENABLE_DSD
+	bool dop = dop_setting;
+#endif
+	PcmExport::Params params;
+	params.alsa_channel_order = true;
+	params.dop = false;
+	
 	memset(&asbd, 0, sizeof(asbd));
-	asbd.mSampleRate = audio_format.sample_rate;
 	asbd.mFormatID = kAudioFormatLinearPCM;
 	asbd.mFormatFlags = kLinearPCMFormatFlagIsSignedInteger;
 
@@ -634,23 +659,51 @@ OSXOutput::Open(AudioFormat &audio_format)
 		asbd.mBitsPerChannel = 32;
 		break;
 
+#ifdef ENABLE_DSD
+	case SampleFormat::DSD:
+		if(dop) {
+			asbd.mBitsPerChannel = 24;
+			params.dop = true;
+			break;
+		}
+#endif
+
 	default:
 		audio_format.format = SampleFormat::S32;
 		asbd.mBitsPerChannel = 32;
 		break;
 	}
-
+	asbd.mSampleRate = params.CalcOutputSampleRate(audio_format.sample_rate);
+	
 	if (IsBigEndian())
 		asbd.mFormatFlags |= kLinearPCMFormatFlagIsBigEndian;
 
-	asbd.mBytesPerPacket = audio_format.GetFrameSize();
+	if (audio_format.format == SampleFormat::DSD)
+		asbd.mBytesPerPacket = 4 * audio_format.channels;
+	else
+		asbd.mBytesPerPacket = audio_format.GetFrameSize();
 	asbd.mFramesPerPacket = 1;
 	asbd.mBytesPerFrame = asbd.mBytesPerPacket;
 	asbd.mChannelsPerFrame = audio_format.channels;
 
-	if (sync_sample_rate)
-		osx_output_sync_device_sample_rate(dev_id, asbd);
+	if (sync_sample_rate
+#ifdef ENABLE_DSD
+		|| params.dop // sample rate needs to be synchronized for DoP
+#endif
+		)
+		sample_rate = osx_output_sync_device_sample_rate(dev_id, asbd);
 
+#ifdef ENABLE_DSD
+	if(params.dop && (sample_rate != asbd.mSampleRate)) { // fall back to PCM in case sample_rate cannot be synchronized
+		params.dop = false;
+		audio_format.format = SampleFormat::S32;
+		asbd.mBitsPerChannel = 32;
+		asbd.mBytesPerPacket = audio_format.GetFrameSize();
+		asbd.mSampleRate = params.CalcOutputSampleRate(audio_format.sample_rate);
+		asbd.mBytesPerFrame = asbd.mBytesPerPacket;
+	}
+#endif
+	
 	OSStatus status =
 		AudioUnitSetProperty(au, kAudioUnitProperty_StreamFormat,
 				     kAudioUnitScope_Input, 0,
@@ -687,9 +740,10 @@ OSXOutput::Open(AudioFormat &audio_format)
 		throw FormatRuntimeError("Unable to set frame size: %s",
 					 errormsg);
 	}
-
+	pcm_export->Open(audio_format.format, audio_format.channels, params);
+	
 	size_t ring_buffer_size = std::max<size_t>(buffer_frame_size,
-						   MPD_OSX_BUFFER_TIME_MS * audio_format.GetFrameSize() * audio_format.sample_rate / 1000);
+						   MPD_OSX_BUFFER_TIME_MS * pcm_export->GetFrameSize(audio_format) * asbd.mSampleRate / 1000);
 	ring_buffer = new boost::lockfree::spsc_queue<uint8_t>(ring_buffer_size);
 
 	status = AudioOutputUnitStart(au);
@@ -704,7 +758,20 @@ OSXOutput::Open(AudioFormat &audio_format)
 size_t
 OSXOutput::Play(const void *chunk, size_t size)
 {
-	return ring_buffer->push((uint8_t *)chunk, size);
+	assert(size > 0);
+	const auto e = pcm_export->Export({chunk, size});
+	if (e.size == 0)
+		/* the DoP (DSD over PCM) filter converts two frames
+			at a time and ignores the last odd frame; if there
+			was only one frame (e.g. the last frame in the
+		 	file), the result is empty; to avoid an endless
+			loop, bail out here, and pretend the one frame has
+			been played */
+		return size;
+	
+	size_t bytes_written = ring_buffer->push((const uint8_t *)e.data,
+											 e.size);
+	return pcm_export->CalcSourceSize(bytes_written);
 }
 
 std::chrono::steady_clock::duration
