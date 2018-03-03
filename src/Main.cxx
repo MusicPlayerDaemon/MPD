@@ -107,10 +107,6 @@
 #include <locale.h>
 #endif
 
-#ifdef __BLOCKS__
-#include <dispatch/dispatch.h>
-#endif
-
 #include <limits.h>
 
 static constexpr size_t KILOBYTE = 1024;
@@ -536,21 +532,8 @@ try {
 	daemonize_begin(options.daemon);
 #endif
 
-#ifdef __BLOCKS__
-	/* Runs the OS X native event loop in the main thread, and runs
-	   the rest of mpd_main on a new thread. This lets CoreAudio receive
-	   route change notifications (e.g. plugging or unplugging headphones).
-	   All hardware output on OS X ultimately uses CoreAudio internally.
-	   This must be run after forking; if dispatch is called before forking,
-	   the child process will have a broken internal dispatch state. */
-	dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-		exit(mpd_main_after_fork(config));
-	});
-	dispatch_main();
-	return EXIT_FAILURE; // unreachable, because dispatch_main never returns
-#else
 	return mpd_main_after_fork(config);
-#endif
+
 } catch (const std::exception &e) {
 	LogError(e);
 	return EXIT_FAILURE;
