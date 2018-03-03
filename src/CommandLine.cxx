@@ -276,7 +276,8 @@ static void help(void)
 	       "Options:\n");
 
 	for (const auto &i : option_defs)
-		PrintOption(i);
+		if(i.HasDescription() == true) // hide hidden options from help print
+			PrintOption(i);
 
 	exit(EXIT_SUCCESS);
 }
