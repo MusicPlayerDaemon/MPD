@@ -1,3 +1,5 @@
+ver 0.20.19 (not yet released)
+
 ver 0.20.18 (2018/02/24)
 * input
   - curl: allow authentication methods other than "Basic"
