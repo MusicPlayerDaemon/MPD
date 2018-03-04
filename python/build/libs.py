@@ -23,6 +23,11 @@ libvorbis = AutotoolsProject(
     [
         '--disable-shared', '--enable-static',
     ],
+
+    edits={
+        # this option is not understood by clang
+        'configure': lambda data: data.replace('-mno-ieee-fp', ' '),
+    }
 )
 
 opus = AutotoolsProject(

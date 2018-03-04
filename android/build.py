@@ -24,8 +24,17 @@ android_abis = {
     'armeabi-v7a': {
         'arch': 'arm-linux-androideabi',
         'ndk_arch': 'arm',
+        'toolchain_arch': 'arm-linux-androideabi',
         'llvm_triple': 'armv7-none-linux-androideabi',
         'cflags': '-march=armv7-a -mfpu=vfp -mfloat-abi=softfp',
+    },
+
+    'x86': {
+        'arch': 'i686-linux-android',
+        'ndk_arch': 'x86',
+        'toolchain_arch': 'x86',
+        'llvm_triple': 'i686-none-linux-android',
+        'cflags': '-march=i686 -mtune=intel -mssse3 -mfpmath=sse -m32',
     },
 }
 
@@ -71,7 +80,7 @@ class AndroidNdkToolchain:
         self.install_prefix = install_prefix
         self.sysroot = sysroot
 
-        toolchain_path = os.path.join(ndk_path, 'toolchains', arch + '-' + gcc_version, 'prebuilt', build_arch)
+        toolchain_path = os.path.join(ndk_path, 'toolchains', abi_info['toolchain_arch'] + '-' + gcc_version, 'prebuilt', build_arch)
         llvm_path = os.path.join(ndk_path, 'toolchains', 'llvm', 'prebuilt', build_arch)
         llvm_triple = abi_info['llvm_triple']
 
