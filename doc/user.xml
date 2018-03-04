@@ -303,8 +303,15 @@ apt-get install g++ \
           <command>./configure</command>, type:
         </para>
 
-        <programlisting>./android/build.py SDK_PATH NDK_PATH
+        <programlisting>./android/build.py SDK_PATH NDK_PATH ABI
 make android/build/mpd-debug.apk</programlisting>
+
+        <para>
+          <varname>SDK_PATH</varname> is the absolute path where you
+          installed the Android SDK; <varname>NDK_PATH</varname> is
+          the Android NDK installation path; <varname>ABI</varname> is
+          the Android ABI to be built, e.g. "armeabi-v7a".
+        </para>
 
         <para>
           This downloads various library sources, and then configures

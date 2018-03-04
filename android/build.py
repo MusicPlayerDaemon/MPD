@@ -3,13 +3,14 @@
 import os, os.path
 import sys, subprocess
 
-if len(sys.argv) < 3:
-    print("Usage: build.py SDK_PATH NDK_PATH [configure_args...]", file=sys.stderr)
+if len(sys.argv) < 4:
+    print("Usage: build.py SDK_PATH NDK_PATH ABI [configure_args...]", file=sys.stderr)
     sys.exit(1)
 
 sdk_path = sys.argv[1]
 ndk_path = sys.argv[2]
-configure_args = sys.argv[3:]
+android_abi = sys.argv[3]
+configure_args = sys.argv[4:]
 
 if not os.path.isfile(os.path.join(sdk_path, 'tools', 'android')):
     print("SDK not found in", ndk_path, file=sys.stderr)
@@ -19,8 +20,18 @@ if not os.path.isdir(ndk_path):
     print("NDK not found in", ndk_path, file=sys.stderr)
     sys.exit(1)
 
+android_abis = {
+    'armeabi-v7a': {
+        'arch': 'arm-linux-androideabi',
+        'ndk_arch': 'arm',
+        'llvm_triple': 'armv7-none-linux-androideabi',
+        'cflags': '-march=armv7-a -mfpu=vfp -mfloat-abi=softfp',
+    },
+}
+
 # select the NDK target
-arch = 'arm-linux-androideabi'
+abi_info = android_abis[android_abi]
+arch = abi_info['arch']
 
 # the path to the MPD sources
 mpd_path = os.path.abspath(os.path.join(os.path.dirname(sys.argv[0]) or '.', '..'))
@@ -44,8 +55,7 @@ class AndroidNdkToolchain:
         self.src_path = src_path
         self.build_path = build_path
 
-        ndk_arch = 'arm'
-        android_abi = 'armeabi-v7a'
+        ndk_arch = abi_info['ndk_arch']
         ndk_platform = 'android-14'
 
         # select the NDK compiler
@@ -63,11 +73,11 @@ class AndroidNdkToolchain:
 
         toolchain_path = os.path.join(ndk_path, 'toolchains', arch + '-' + gcc_version, 'prebuilt', build_arch)
         llvm_path = os.path.join(ndk_path, 'toolchains', 'llvm', 'prebuilt', build_arch)
-        llvm_triple = 'armv7-none-linux-androideabi'
+        llvm_triple = abi_info['llvm_triple']
 
         common_flags = '-Os -g'
         common_flags += ' -fPIC'
-        common_flags += ' -march=armv7-a -mfpu=vfp -mfloat-abi=softfp'
+        common_flags += ' ' + abi_info['cflags']
 
         toolchain_bin = os.path.join(toolchain_path, 'bin')
         llvm_bin = os.path.join(llvm_path, 'bin')
