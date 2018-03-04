@@ -265,6 +265,52 @@ apt-get install g++ \
           script.
         </para>
       </section>
+
+      <section id="android_build">
+        <title>Compiling for Android</title>
+
+        <para>
+          MPD can be compiled as an Android app.  It can be installed
+          easily with <link linkend="install_android">Google
+          Play</link>, but if you want to build it from source, follow
+          this section.
+        </para>
+
+        <para>
+          You need:
+        </para>
+
+        <itemizedlist>
+          <listitem>
+            <para>
+              Android SDK
+            </para>
+          </listitem>
+
+          <listitem>
+            <para>
+              <ulink
+              url="https://developer.android.com/ndk/downloads/index.html">Android
+              NDK</ulink>
+            </para>
+          </listitem>
+        </itemizedlist>
+
+        <para>
+          Just like with the native build, unpack the
+          <application>MPD</application> source tarball and change
+          into the directory.  Then, instead of
+          <command>./configure</command>, type:
+        </para>
+
+        <programlisting>./android/build.py SDK_PATH NDK_PATH
+make android/build/mpd-debug.apk</programlisting>
+
+        <para>
+          This downloads various library sources, and then configures
+          and builds <application>MPD</application>.
+        </para>
+      </section>
     </section>
 
     <section id="systemd_socket">
