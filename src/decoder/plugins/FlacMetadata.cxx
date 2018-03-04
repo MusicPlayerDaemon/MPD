@@ -40,10 +40,12 @@ flac_parse_replay_gain(ReplayGainInfo &rgi,
 	bool found = false;
 
 	const auto *comments = vc.comments;
-	for (FLAC__uint32 i = 0, n = vc.num_comments; i < n; ++i)
-		if (ParseReplayGainVorbis(rgi,
-					  (const char *)comments[i].entry))
+	for (FLAC__uint32 i = 0, n = vc.num_comments; i < n; ++i) {
+		const char *entry = (const char *)comments[i].entry;
+		if (entry != nullptr && ParseReplayGainVorbis(rgi,
+					  entry))
 			found = true;
+	}
 
 	return found;
 }
@@ -54,9 +56,13 @@ flac_parse_mixramp(const FLAC__StreamMetadata_VorbisComment &vc)
 	MixRampInfo mix_ramp;
 
 	const auto *comments = vc.comments;
-	for (FLAC__uint32 i = 0, n = vc.num_comments; i < n; ++i)
-		ParseMixRampVorbis(mix_ramp,
-				   (const char *)comments[i].entry);
+	for (FLAC__uint32 i = 0, n = vc.num_comments; i < n; ++i) {
+		const char *entry = (const char *)comments[i].entry;
+		if (entry != nullptr) {
+			ParseMixRampVorbis(mix_ramp,
+					   entry);
+		}
+	}
 
 	return mix_ramp;
 }
@@ -94,8 +100,11 @@ static void
 flac_scan_comment(const FLAC__StreamMetadata_VorbisComment_Entry *entry,
 		  const TagHandler &handler, void *handler_ctx)
 {
+	const char *comment = (const char *)entry->entry;
+	if (comment == nullptr) {
+		return;
+	}
 	if (handler.pair != nullptr) {
-		const char *comment = (const char *)entry->entry;
 		const DivideString split(comment, '=');
 		if (split.IsDefined() && !split.empty())
 			tag_handler_invoke_pair(handler, handler_ctx,

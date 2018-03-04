@@ -49,7 +49,7 @@ class UpnpNeighborExplorer final
 
 		gcc_pure
 		NeighborInfo Export() const noexcept {
-			return { "smb://" + name + "/", comment };
+			return { "smb://" + name + "/", comment,"", ""};  //???why smb
 		}
 	};
 
@@ -109,21 +109,21 @@ UpnpNeighborExplorer::GetList() const noexcept
 
 	List result;
 	for (const auto &i : tmp)
-		result.emplace_front(i.GetURI(), i.getFriendlyName());
+		result.emplace_front(i.GetURI(), i.getFriendlyName(), i.getDeviceIconUrl(), "");
 	return result;
 }
 
 void
 UpnpNeighborExplorer::FoundUPnP(const ContentDirectoryService &service)
 {
-	const NeighborInfo n(service.GetURI(), service.getFriendlyName());
+	const NeighborInfo n(service.GetURI(), service.getFriendlyName(), service.getDeviceIconUrl(), "");
 	listener.FoundNeighbor(n);
 }
 
 void
 UpnpNeighborExplorer::LostUPnP(const ContentDirectoryService &service)
 {
-	const NeighborInfo n(service.GetURI(), service.getFriendlyName());
+	const NeighborInfo n(service.GetURI(), service.getFriendlyName(), service.getDeviceIconUrl(), "");
 	listener.LostNeighbor(n);
 }
 

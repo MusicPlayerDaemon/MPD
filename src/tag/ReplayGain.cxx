@@ -82,5 +82,9 @@ ParseReplayGainVorbis(ReplayGainInfo &info, const char *entry)
 		}
 	};
 
+	if (entry == nullptr) {
+		return false;
+	}
+
 	return ParseReplayGainTagTemplate(info, VorbisCommentEntry{entry});
 }

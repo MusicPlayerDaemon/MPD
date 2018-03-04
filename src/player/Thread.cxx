@@ -717,6 +717,9 @@ Player::ProcessCommand() noexcept
 		pc.elapsed_time = !pc.outputs.GetElapsedTime().IsNegative()
 			? SongTime(pc.outputs.GetElapsedTime())
 			: elapsed_time;
+		if (pipe != nullptr) {
+			pc.buffered_time = pipe->GetBufferedTime();
+		}
 
 		pc.CommandFinished();
 		break;
@@ -729,10 +732,12 @@ static void
 update_song_tag(PlayerControl &pc, DetachedSong &song,
 		const Tag &new_tag) noexcept
 {
+#if 0 // allow modidy local file tag now
 	if (song.IsFile())
 		/* don't update tags of local files, only remote
 		   streams may change tags dynamically */
 		return;
+#endif
 
 	song.SetTag(new_tag);
 
@@ -782,10 +787,25 @@ play_chunk(PlayerControl &pc,
 		format.GetTimeToSize();
 }
 
+static unsigned getWaitThreshold(AudioFormat format)
+{
+	if (format.sample_rate >= 705600) {
+		return 256;
+	} else if (format.sample_rate >= 352800) {
+		return 180;
+	} else if (format.sample_rate >= 176400) {
+		return 128;
+	} else if (format.sample_rate >= 88200) {
+		return 64;
+	} else {
+		return 32;
+	}
+}
+
 inline bool
 Player::PlayNextChunk() noexcept
 {
-	if (!pc.LockWaitOutputConsumed(64))
+	if (!pc.LockWaitOutputConsumed(getWaitThreshold(play_audio_format)))
 		/* the output pipe is still large enough, don't send
 		   another chunk */
 		return true;
@@ -957,7 +977,7 @@ Player::Run() noexcept
 			   until the buffer is large enough, to
 			   prevent stuttering on slow machines */
 
-			if (pipe->GetSize() < pc.buffered_before_play &&
+			if (!pipe->CanPlay() &&
 			    !dc.IsIdle()) {
 				/* not enough decoded buffer space yet */
 

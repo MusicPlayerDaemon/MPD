@@ -35,12 +35,18 @@ ContentDirectoryService::ContentDirectoryService(const UPnPDevice &device,
 	 m_friendlyName(device.friendlyName),
 	 m_manufacturer(device.manufacturer),
 	 m_modelName(device.modelName),
+	 m_deviceIconUrl(device.device_icon_url),
 	 m_rdreqcnt(200)
 {
 	if (!m_modelName.compare("MediaTomb")) {
 		// Readdir by 200 entries is good for most, but MediaTomb likes
 		// them really big. Actually 1000 is better but I don't dare
 		m_rdreqcnt = 500;
+	}
+
+	size_t pos = device.URLBase.find(':', 14);
+	if (pos != std::string::npos) {
+		m_URLBase = device.URLBase.substr(0, pos);
 	}
 }
 

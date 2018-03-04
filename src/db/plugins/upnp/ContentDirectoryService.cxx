@@ -30,6 +30,10 @@
 #include "util/StringFormat.hxx"
 
 #include <stdio.h>
+#include <string.h>
+
+#define PIDNULL  "parentID=\"\""
+#define PIDOK    "parentID=\"-1\""
 
 static void
 ReadResultTag(UPnPDirContent &dirbuf, IXML_Document *response)
@@ -38,7 +42,15 @@ ReadResultTag(UPnPDirContent &dirbuf, IXML_Document *response)
 	if (p == nullptr)
 		p = "";
 
-	dirbuf.Parse(p);
+	const char *pid = strstr(p, PIDNULL);
+	if (pid != nullptr) {
+		std::string str = p;
+		auto pos = str.find(PIDNULL);
+		str.replace(pos, strlen(PIDNULL), PIDOK);
+		dirbuf.Parse(str.c_str());
+	} else {
+		dirbuf.Parse(p);
+	}
 }
 
 inline void

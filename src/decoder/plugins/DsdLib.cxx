@@ -128,7 +128,7 @@ dsdlib_tag_id3(InputStream &is,
 		return;
 
 	const auto count64 = size - tagoffset;
-	if (count64 < 10 || count64 > 1024 * 1024)
+	if (count64 < 10 || count64 > 10 * 1024 * 1024) // increase metadata limits to 10 Mb, so can read metadata of "01-Kalerka.dsf"
 		return;
 
 	if (!dsdlib_skip_to(nullptr, is, tagoffset))

@@ -79,6 +79,8 @@ MusicPipe::Clear(MusicBuffer &buffer) noexcept
 
 	while ((chunk = Shift()) != nullptr)
 		buffer.Return(chunk);
+
+	bufferd_time = 0;
 }
 
 void
@@ -101,6 +103,9 @@ MusicPipe::Push(MusicChunk *chunk) noexcept
 	chunk->next = nullptr;
 	*tail_r = chunk;
 	tail_r = &chunk->next;
+	if (chunk->length > 0) {
+		bufferd_time = chunk->buffered_time;
+	}
 
 	++size;
 }

@@ -24,6 +24,7 @@
 #include "CheckAudioFormat.hxx"
 #include "tag/Handler.hxx"
 #include "util/Domain.hxx"
+#include "util/StringCompare.hxx"
 #include "Log.hxx"
 
 #include <exception>
@@ -31,6 +32,47 @@
 #include <sndfile.h>
 
 static constexpr Domain sndfile_domain("sndfile");
+
+static bool
+is_dts(SampleFormat fmt, char *buffer)
+{
+	char dts[6];
+	switch (fmt) {
+	case SampleFormat::S16:
+		dts[0] = buffer[2];
+		dts[1] = buffer[3];
+		dts[2] = buffer[6];
+		dts[3] = buffer[7];
+		dts[4] = buffer[10];
+		dts[5] = buffer[11];
+		break;
+	case SampleFormat::S24_P32:
+		dts[0] = buffer[1];
+		dts[1] = buffer[2];
+		dts[2] = buffer[3];
+		dts[3] = buffer[5];
+		dts[4] = buffer[6];
+		dts[5] = buffer[7];
+		break;
+	case SampleFormat::FLOAT:
+	case SampleFormat::S32:
+	default:
+		memcpy(dts, buffer, 6);
+	}
+	if (dts[0] == 0xff && dts[1] == 0x1f &&
+		dts[2] == 0x00 && dts[3] == 0xe8 &&
+		(dts[4] & 0xf0) == 0xf0 && dts[5] == 0x07) {
+		return true;
+	}
+
+	if (dts[0] == 0x1f && dts[1] == 0xff &&
+		dts[2] == 0xe8 && dts[3] == 0x00 &&
+		dts[4] == 0x07 && (dts[5] & 0xf0) == 0xf0) {
+		return true;
+	}
+
+	return false;
+}
 
 static bool
 sndfile_init(gcc_unused const ConfigBlock &block)
@@ -153,8 +195,15 @@ sndfile_sample_format(const SF_INFO &info) noexcept
 	switch (info.format & SF_FORMAT_SUBMASK) {
 	case SF_FORMAT_PCM_S8:
 	case SF_FORMAT_PCM_U8:
+	case SF_FORMAT_DPCM_8:
 	case SF_FORMAT_PCM_16:
+	case SF_FORMAT_DPCM_16:
+	case SF_FORMAT_DWVW_12:
+	case SF_FORMAT_DWVW_16:
 		return SampleFormat::S16;
+	case SF_FORMAT_PCM_24:
+	case SF_FORMAT_DWVW_24:
+		return SampleFormat::S24_P32;
 
 	case SF_FORMAT_FLOAT:
 	case SF_FORMAT_DOUBLE:
@@ -173,6 +222,9 @@ sndfile_read_frames(SNDFILE *sf, SampleFormat format,
 	case SampleFormat::S16:
 		return sf_readf_short(sf, (short *)buffer, n_frames);
 
+	case SampleFormat::S24_P32:
+		return sf_readf_int(sf, (int *)buffer, n_frames);
+
 	case SampleFormat::S32:
 		return sf_readf_int(sf, (int *)buffer, n_frames);
 
@@ -188,6 +240,13 @@ sndfile_read_frames(SNDFILE *sf, SampleFormat format,
 static void
 sndfile_stream_decode(DecoderClient &client, InputStream &is)
 {
+	if (StringStartsWith(is.GetRealURI(), "http://127.0.0.1:4250/spotify")) {
+		// just return, so let ffmpeg to decode
+		// because the spotify server has seek bug when use sndfile
+		// curl: Seek failed: curl failed: The requested URL returned error: 416 Requested Range Not Satisfiable
+		return;
+	}
+
 	SF_INFO info;
 
 	info.format = 0;
@@ -205,13 +264,12 @@ sndfile_stream_decode(DecoderClient &client, InputStream &is)
 				 sndfile_sample_format(info),
 				 info.channels);
 
-	client.Ready(audio_format, info.seekable, sndfile_duration(info));
-
 	char buffer[16384];
 
 	const size_t frame_size = audio_format.GetFrameSize();
 	const sf_count_t read_frames = sizeof(buffer) / frame_size;
 
+	bool flag_det_dts = true;
 	DecoderCommand cmd;
 	do {
 		sf_count_t num_frames =
@@ -221,6 +279,14 @@ sndfile_stream_decode(DecoderClient &client, InputStream &is)
 		if (num_frames <= 0)
 			break;
 
+		if (gcc_unlikely(flag_det_dts)) {
+			flag_det_dts = false;
+			if (is_dts(sndfile_sample_format(info), buffer)) {
+				FormatDefault(sndfile_domain, "dts detected!");
+				break;
+			}
+			client.Ready(audio_format, info.seekable, sndfile_duration(info));
+		}
 		cmd = client.SubmitData(is,
 					buffer, num_frames * frame_size,
 					0);
@@ -264,6 +330,8 @@ static bool
 sndfile_scan_stream(InputStream &is,
 		    const TagHandler &handler, void *handler_ctx) noexcept
 {
+	return false; // leave ffmpeg to scan stream, because libsndfile couldn't read aiff comment
+
 	SF_INFO info;
 
 	info.format = 0;

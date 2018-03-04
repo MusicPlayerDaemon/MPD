@@ -22,6 +22,7 @@
 #include "tag/Tag.hxx"
 #include "tag/Settings.hxx"
 #include "client/Response.hxx"
+#include "util/StringUtil.hxx"
 
 void
 tag_print_types(Response &r) noexcept
@@ -34,7 +35,13 @@ tag_print_types(Response &r) noexcept
 void
 tag_print(Response &r, TagType type, const char *value) noexcept
 {
-	r.Format("%s: %s\n", tag_item_names[type], value);
+	if (type == TAG_SUFFIX) {
+		char s[64];
+		ToUpperASCII(s, value, sizeof(s));
+		r.Format("%s: %s\n", tag_item_names[type], s);
+	} else {
+		r.Format("%s: %s\n", tag_item_names[type], value);
+	}
 }
 
 void

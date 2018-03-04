@@ -37,6 +37,8 @@ const char *const tag_item_names[TAG_NUM_OF_ITEM_TYPES] = {
 	[TAG_PERFORMER] = "Performer",
 	[TAG_COMMENT] = "Comment",
 	[TAG_DISC] = "Disc",
+	[TAG_ALBUM_URI] = "AlbumUri",
+	[TAG_SUFFIX] = "Suffix",
 
 	/* MusicBrainz tags from http://musicbrainz.org/doc/MusicBrainzTag */
 	[TAG_MUSICBRAINZ_ARTISTID] = "MUSICBRAINZ_ARTISTID",

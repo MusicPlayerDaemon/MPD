@@ -34,6 +34,35 @@
 #include <assert.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <strings.h>
+#include <limits>
+
+#include <string.h>
+
+static inline bool
+ParseBool(const char *p, char **endptr=nullptr)
+{
+	assert(p != nullptr);
+
+	if (strcasecmp(p, "on") == 0
+		|| strcasecmp(p, "enable") == 0
+		|| strcasecmp(p, "yes") == 0
+		|| strcasecmp(p, "true") == 0) {
+		if (endptr != nullptr)
+			*endptr = const_cast<char*>(p+strlen(p));
+		return true;
+	}
+	if (strcasecmp(p, "off") == 0
+		|| strcasecmp(p, "disable") == 0
+		|| strcasecmp(p, "no") == 0
+		|| strcasecmp(p, "false") == 0) {
+		if (endptr != nullptr)
+			*endptr = const_cast<char*>(p+strlen(p));
+		return false;
+	}
+
+	return strtol(p, endptr, 10);
+}
 
 static inline unsigned
 ParseUnsigned(const char *p, char **endptr=nullptr, int base=10)
@@ -79,6 +108,44 @@ static inline float
 ParseFloat(const char *p, char **endptr=nullptr)
 {
 	return (float)ParseDouble(p, endptr);
+}
+
+static inline bool
+ParseIntRange(const char *p, int *value_r1, int *value_r2)
+{
+	char *test, *test2;
+	long value;
+
+	value = strtol(p, &test, 10);
+	if (test == p || (*test != '\0' && *test != ':')) {
+		return false;
+	}
+
+	if (int(value) > std::numeric_limits<int>::max()) {
+		return false;
+	}
+
+	*value_r1 = (int)value;
+
+	if (*test == ':') {
+		value = strtol(++test, &test2, 10);
+		if (*test2 != '\0') {
+			return false;
+		}
+
+		if (test == test2)
+			value = std::numeric_limits<int>::max();
+
+		if (int(value) > std::numeric_limits<int>::max()) {
+			return false;
+		}
+
+		*value_r2 = (int)value;
+	} else {
+		*value_r2 = -1;
+	}
+
+	return true;
 }
 
 #endif

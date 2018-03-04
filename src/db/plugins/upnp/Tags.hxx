@@ -20,9 +20,24 @@
 #ifndef MPD_UPNP_TAGS_HXX
 #define MPD_UPNP_TAGS_HXX
 
+struct mime_table {
+	const char *suffix;
+	const char *mime_name;
+};
+
 /**
  * Map UPnP property names to MPD tags.
  */
 extern const struct tag_table upnp_tags[];
+
+/**
+ * Map UPnP audio file mime type and suffix
+ */
+extern const struct mime_table mime_types[];
+
+
+const char *
+mime_table_lookup(const mime_table *table, const char *mime);
+
 
 #endif

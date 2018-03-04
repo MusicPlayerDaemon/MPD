@@ -20,6 +20,7 @@
 #include "config.h"
 #include "Tags.hxx"
 #include "tag/Table.hxx"
+#include <string.h>
 
 const struct tag_table upnp_tags[] = {
 	{ "upnp:artist", TAG_ARTIST },
@@ -27,7 +28,36 @@ const struct tag_table upnp_tags[] = {
 	{ "upnp:originalTrackNumber", TAG_TRACK },
 	{ "upnp:genre", TAG_GENRE },
 	{ "dc:title", TAG_TITLE },
+	{ "upnp:albumArtURI",TAG_ALBUM_URI},
 
 	/* sentinel */
 	{ nullptr, TAG_NUM_OF_ITEM_TYPES }
 };
+
+const struct mime_table mime_types[] = {
+	{ "OGG", "audio/ogg" },
+	{ "M4A", "audio/mp4" },
+	{ "AAC", "audio/aac" },	
+	{ "DSF", "audio/x-dsf" },
+	{ "DFF", "audio/x-dff" },
+	{ "FLAC", "audio/x-flac"},
+	{ "AIFF", "audio/x-aiff"},
+	{ "AIF", "audio/x-aiff"},
+	{ "WAV","audio/x-wav"},
+	{ "MP3","audio/mpeg"},
+	{ "MP4","audio/mp4"},
+	{ "WMA","audio/x-ms-wma"},
+	{ "WAV","audio/wav"},
+	{ "ASF","video/x-ms-asf"},
+	{nullptr,nullptr}
+};
+
+const char *
+mime_table_lookup(const mime_table *table, const char *mime)
+{
+	for (; table->mime_name != nullptr; ++table)
+		if (strcmp(table->mime_name,mime) == 0)
+			return table->suffix;
+
+	return nullptr;
+}

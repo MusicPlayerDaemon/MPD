@@ -21,6 +21,7 @@
 #include "Builder.hxx"
 #include "Mask.hxx"
 #include "Settings.hxx"
+#include "db/LightSong.hxx"
 
 #include <assert.h>
 
@@ -111,4 +112,44 @@ TagSet::InsertUnique(const Tag &tag,
 	     /* fall back to "Artist" if no "AlbumArtist" was found */
 	     !CheckUnique(type, tag, TAG_ARTIST, group_mask)))
 		InsertUnique(tag, type, nullptr, group_mask);
+}
+
+static std::string
+get_parent(std::string str)
+{
+	auto p1 = str.rfind('/');
+	if (p1 == std::string::npos) {
+		return std::string("Folder");
+	}
+
+	auto p2 = str.rfind('/', p1-1);
+	if (p2 == std::string::npos) {
+		return std::string("Folder");
+	}
+	return str.substr(p2+1, p1-p2-1);
+}
+
+void
+TagSet::InsertUnique(const LightSong &song,
+		TagType type, TagMask group_mask) noexcept
+{
+	static_assert(sizeof(group_mask) * 8 >= TAG_NUM_OF_ITEM_TYPES,
+			"Mask is too small");
+
+	assert(!group_mask.Test(type));
+
+	if (!CheckUnique(type, *song.tag, type, group_mask) &&
+		(type != TAG_ALBUM_ARTIST ||
+		!IsTagEnabled(TAG_ALBUM_ARTIST) ||
+		/* fall back to "Artist" if no "AlbumArtist" was found */
+		!CheckUnique(type, *song.tag, TAG_ARTIST, group_mask))) {
+		if (type == TAG_ALBUM ||
+			type == TAG_ALBUM_SORT) {
+			auto s = get_parent(song.GetURI());
+			// fall back to folder name
+			InsertUnique(*song.tag, type, s.c_str(), group_mask);
+		} else {
+			InsertUnique(*song.tag, type, nullptr, group_mask);
+		}
+	}
 }

@@ -40,7 +40,11 @@
 #include "CheckAudioFormat.hxx"
 #include "util/ScopeExit.hxx"
 #include "util/ConstBuffer.hxx"
+#include "util/StringCompare.hxx"
+#include "util/UriUtil.hxx"
 #include "LogV.hxx"
+#include "MusicChunk.hxx"
+#include "CheckAudioFormat.hxx"
 
 extern "C" {
 #include <libavcodec/avcodec.h>
@@ -242,6 +246,58 @@ PtsToPcmFrame(uint64_t pts, const AVStream &stream,
 	return av_rescale_q(pts, stream.time_base, codec_context.time_base);
 }
 
+static ConstBuffer<void>
+start_gapless_filter(ConstBuffer<void> buffer)
+{
+	unsigned none_zero_cnt = 0;
+	auto buf = ConstBuffer<uint8_t>::FromVoid(buffer);
+
+	for (unsigned i=0;i<buf.size;i++) {
+		if (buf.data[i] == 0x00) {
+			if (none_zero_cnt) {
+				none_zero_cnt--;
+			}
+		} else {
+			if (++none_zero_cnt >= (CHUNK_SIZE/4)) {
+				unsigned chunk = (i+CHUNK_SIZE-1)/CHUNK_SIZE;
+				unsigned size = chunk * CHUNK_SIZE;
+				if (size > buf.size) {
+					size = buf.size;
+				}
+				buf.data += size;
+				buf.size -= size;
+				break;
+			}
+		}
+	}
+
+	return buf.ToVoid();
+}
+
+static ConstBuffer<void>
+end_gapless_filter(ConstBuffer<void> buffer)
+{
+	unsigned zero_cnt = 0;
+	auto buf = ConstBuffer<uint8_t>::FromVoid(buffer);
+
+	for (unsigned i=0;i<buf.size;i++) {
+		if (buf.data[i] != 0x00) {
+			if (zero_cnt) {
+				zero_cnt--;
+			}
+		} else {
+			if (++zero_cnt >= (CHUNK_SIZE/4)) {
+				unsigned chunk = i/CHUNK_SIZE;
+				unsigned size = chunk * CHUNK_SIZE;
+				buf.size = size;
+				break;
+			}
+		}
+	}
+
+	return buf.ToVoid();
+}
+
 /**
  * Invoke DecoderClient::SubmitData() with the contents of an
  * #AVFrame.
@@ -251,7 +307,11 @@ FfmpegSendFrame(DecoderClient &client, InputStream &is,
 		AVCodecContext &codec_context,
 		const AVFrame &frame,
 		size_t &skip_bytes,
-		FfmpegBuffer &buffer)
+		FfmpegBuffer &buffer,
+		AVPacket &packet,
+		const AVStream &stream,
+		bool &enable_gapless_start,
+		bool &enable_gapless_end)
 {
 	ConstBuffer<void> output_buffer;
 
@@ -276,6 +336,27 @@ FfmpegSendFrame(DecoderClient &client, InputStream &is,
 		skip_bytes = 0;
 	}
 
+	if (enable_gapless_start && packet.pts <= 500) {
+		size_t size = output_buffer.size;
+		output_buffer = start_gapless_filter(output_buffer);
+		if (size != output_buffer.size) {
+			enable_gapless_start = false;
+			FormatDefault(ffmpeg_domain, "start gap size=%d total size=%d",
+				size-output_buffer.size, size);
+		}
+	} else if (enable_gapless_end) {
+		int64_t duration = av_rescale_q(stream.duration, stream.time_base,(AVRational){1, 1000});
+		if ((packet.pts + 500) >= duration) {
+			size_t size = output_buffer.size;
+			output_buffer = end_gapless_filter(output_buffer);
+			if (size != output_buffer.size) {
+				enable_gapless_end = false;
+				FormatDefault(ffmpeg_domain, "end gap size=%d total size=%d",
+					size-output_buffer.size, size);
+			}
+		}
+	}
+
 	return client.SubmitData(is,
 				 output_buffer.data, output_buffer.size,
 				 codec_context.bit_rate / 1000);
@@ -289,7 +370,11 @@ FfmpegReceiveFrames(DecoderClient &client, InputStream &is,
 		    AVFrame &frame,
 		    size_t &skip_bytes,
 		    FfmpegBuffer &buffer,
-		    bool &eof)
+		    bool &eof,
+		    AVPacket &packet,
+		    const AVStream &stream,
+		    bool &enable_gapless_start,
+		    bool &enable_gapless_end)
 {
 	while (true) {
 		DecoderCommand cmd;
@@ -299,7 +384,11 @@ FfmpegReceiveFrames(DecoderClient &client, InputStream &is,
 		case 0:
 			cmd = FfmpegSendFrame(client, is, codec_context,
 					      frame, skip_bytes,
-					      buffer);
+					      buffer,
+					      packet,
+					      stream,
+					      enable_gapless_start,
+					      enable_gapless_end);
 			if (cmd != DecoderCommand::NONE)
 				return cmd;
 
@@ -344,7 +433,9 @@ ffmpeg_send_packet(DecoderClient &client, InputStream &is,
 		   const AVStream &stream,
 		   AVFrame &frame,
 		   uint64_t min_frame, size_t pcm_frame_size,
-		   FfmpegBuffer &buffer)
+		   FfmpegBuffer &buffer,
+		   bool &enable_gapless_start,
+		   bool &enable_gapless_end)
 {
 	size_t skip_bytes = 0;
 
@@ -385,7 +476,11 @@ ffmpeg_send_packet(DecoderClient &client, InputStream &is,
 
 	auto cmd = FfmpegReceiveFrames(client, is, codec_context,
 				       frame,
-				       skip_bytes, buffer, eof);
+				       skip_bytes, buffer, eof,
+				       packet,
+				       stream,
+				       enable_gapless_start,
+				       enable_gapless_end);
 
 	if (eof)
 		cmd = DecoderCommand::STOP;
@@ -410,7 +505,11 @@ ffmpeg_send_packet(DecoderClient &client, InputStream &is,
 
 		cmd = FfmpegSendFrame(client, is, codec_context,
 				      frame, skip_bytes,
-				      buffer);
+				      buffer,
+				      packet,
+				      stream,
+				      enable_gapless_start,
+				      enable_gapless_end);
 	}
 #endif
 
@@ -627,6 +726,8 @@ static void
 FfmpegDecode(DecoderClient &client, InputStream &input,
 	     AVFormatContext &format_context)
 {
+	bool enable_gapless_start = false;
+	bool enable_gapless_end = false;
 	const int find_result =
 		avformat_find_stream_info(&format_context, nullptr);
 	if (find_result < 0) {
@@ -659,6 +760,18 @@ FfmpegDecode(DecoderClient &client, InputStream &input,
 		FormatDebug(ffmpeg_domain, "codec '%s'",
 			    codec_context->codec_name);
 #endif
+	switch (codec_params.codec_id) {
+	case AV_CODEC_ID_WMAV1:
+	case AV_CODEC_ID_WMAV2:
+	case AV_CODEC_ID_MP3:
+	case AV_CODEC_ID_WMALOSSLESS:
+	case AV_CODEC_ID_ALAC:
+		enable_gapless_start = enable_gapless_end = true;
+		break;
+	default:
+		enable_gapless_start = enable_gapless_end = false;
+		break;
+	}
 
 	AVCodec *codec = avcodec_find_decoder(codec_params.codec_id);
 
@@ -718,6 +831,16 @@ FfmpegDecode(DecoderClient &client, InputStream &input,
 
 	client.Ready(audio_format, input.IsSeekable(), total_time);
 
+	TagBuilder tag;
+	if (input.HasRealURI()) {
+		UriSuffixBuffer suffix_buffer;
+		const char *const suffix = uri_get_suffix(input.GetRealURI(), suffix_buffer);
+		if (suffix != nullptr) {
+			tag.AddItem(TAG_SUFFIX, suffix);
+			client.SubmitTag(input, tag.Commit());
+		}
+	}
+
 	FfmpegParseMetaData(client, format_context, audio_stream);
 
 #if LIBAVUTIL_VERSION_MAJOR >= 53
@@ -776,12 +899,14 @@ FfmpegDecode(DecoderClient &client, InputStream &input,
 
 		if (packet.size > 0 && packet.stream_index == audio_stream) {
 			cmd = ffmpeg_send_packet(client, input,
-						 packet,
+						 std::move(packet),
 						 *codec_context,
 						 av_stream,
 						 *frame,
 						 min_frame, audio_format.GetFrameSize(),
-						 interleaved_buffer);
+						 interleaved_buffer,
+						  enable_gapless_start,
+						  enable_gapless_end);
 			min_frame = 0;
 		} else
 			cmd = client.GetCommand();
@@ -840,6 +965,14 @@ FfmpegScanStream(AVFormatContext &format_context,
 		return false;
 
 	const AVStream &stream = *format_context.streams[audio_stream];
+	const auto &codec_params = GetCodecParameters(stream);
+	const SampleFormat sample_format =
+		ffmpeg_sample_format(GetSampleFormat(codec_params));
+	if (sample_format == SampleFormat::UNDEFINED) {
+		// (error message already done by ffmpeg_sample_format())
+		return false;
+	}
+
 	if (stream.duration != (int64_t)AV_NOPTS_VALUE)
 		tag_handler_invoke_duration(handler, handler_ctx,
 					    FromFfmpegTime(stream.duration,
@@ -892,7 +1025,7 @@ static const char *const ffmpeg_suffixes[] = {
 	"aifc", "aiff", "al", "alaw", "amr", "anim", "apc", "ape", "asf",
 	"atrac", "au", "aud", "avi", "avm2", "avs", "bap", "bfi", "c93", "cak",
 	"cin", "cmv", "cpk", "daud", "dct", "divx", "dts", "dv", "dvd", "dxa",
-	"eac3", "film", "flac", "flc", "fli", "fll", "flx", "flv", "g726",
+	"eac3", "film", /*"flac",*/ "flc", "fli", "fll", "flx", "flv", "g726", // disable flac
 	"gsm", "gxf", "iss", "m1v", "m2v", "m2t", "m2ts",
 	"m4a", "m4b", "m4v",
 	"mad",
@@ -924,7 +1057,7 @@ static const char *const ffmpeg_mime_types[] = {
 	"audio/aac",
 	"audio/aacp",
 	"audio/ac3",
-	"audio/aiff"
+	"audio/aiff",
 	"audio/amr",
 	"audio/basic",
 	"audio/flac",
@@ -962,7 +1095,7 @@ static const char *const ffmpeg_mime_types[] = {
 	"audio/x-pn-realaudio",
 	"audio/x-pn-multirate-realaudio",
 	"audio/x-speex",
-	"audio/x-tta"
+	"audio/x-tta",
 	"audio/x-voc",
 	"audio/x-wav",
 	"audio/x-wma",

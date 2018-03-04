@@ -67,6 +67,8 @@ public:
 	std::string modelName;
 	// Services provided by this device.
 	std::vector<UPnPService> services;
+	//It is the icon of upnp server
+	std::string device_icon_url;
 
 	UPnPDevice() = default;
 	UPnPDevice(const UPnPDevice &) = delete;

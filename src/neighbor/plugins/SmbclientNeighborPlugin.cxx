@@ -38,12 +38,12 @@
 
 class SmbclientNeighborExplorer final : public NeighborExplorer {
 	struct Server {
-		std::string name, comment;
+		std::string name, comment, workgroup;
 
 		bool alive;
 
-		Server(std::string &&_name, std::string &&_comment)
-			:name(std::move(_name)), comment(std::move(_comment)),
+		Server(std::string &&_name, std::string &&_comment, std::string &&_workgroup)
+			:name(std::move(_name)), comment(std::move(_comment)), workgroup(_workgroup),
 			 alive(true) {}
 		Server(const Server &) = delete;
 
@@ -54,7 +54,7 @@ class SmbclientNeighborExplorer final : public NeighborExplorer {
 
 		gcc_pure
 		NeighborInfo Export() const noexcept {
-			return { "smb://" + name + "/", comment };
+			return { "smb://" + name + "/", comment,"", workgroup};
 		}
 	};
 
@@ -113,26 +113,29 @@ SmbclientNeighborExplorer::GetList() const noexcept
 }
 
 static void
-ReadServer(NeighborExplorer::List &list, const smbc_dirent &e)
+ReadServer(NeighborExplorer::List &list, const smbc_dirent &e, const char *wg)
 {
 	const std::string name(e.name, e.namelen);
-	const std::string comment(e.comment, e.commentlen);
+	std::string comment(e.comment, e.commentlen);
 
-	list.emplace_front("smb://" + name, name + " (" + comment + ")");
+	if (comment.empty() || comment.compare("")==0) {
+		comment = name;
+	}
+	list.emplace_front("smb://" + name, comment, "", wg);
 }
 
 static void
-ReadServers(NeighborExplorer::List &list, const char *uri);
+ReadServers(NeighborExplorer::List &list, const char *uri, const char *wg);
 
 static void
 ReadWorkgroup(NeighborExplorer::List &list, const std::string &name)
 {
 	std::string uri = "smb://" + name;
-	ReadServers(list, uri.c_str());
+	ReadServers(list, uri.c_str(), name.c_str());
 }
 
 static void
-ReadEntry(NeighborExplorer::List &list, const smbc_dirent &e)
+ReadEntry(NeighborExplorer::List &list, const smbc_dirent &e, const char *wg)
 {
 	switch (e.smbc_type) {
 	case SMBC_WORKGROUP:
@@ -140,27 +143,27 @@ ReadEntry(NeighborExplorer::List &list, const smbc_dirent &e)
 		break;
 
 	case SMBC_SERVER:
-		ReadServer(list, e);
+		ReadServer(list, e, wg);
 		break;
 	}
 }
 
 static void
-ReadServers(NeighborExplorer::List &list, int fd)
+ReadServers(NeighborExplorer::List &list, int fd, const char *wg)
 {
 	smbc_dirent *e;
 	while ((e = smbc_readdir(fd)) != nullptr)
-		ReadEntry(list, *e);
+		ReadEntry(list, *e, wg);
 
 	smbc_closedir(fd);
 }
 
 static void
-ReadServers(NeighborExplorer::List &list, const char *uri)
+ReadServers(NeighborExplorer::List &list, const char *uri, const char *wg)
 {
 	int fd = smbc_opendir(uri);
 	if (fd >= 0) {
-		ReadServers(list, fd);
+		ReadServers(list, fd, wg);
 		smbc_closedir(fd);
 	} else
 		FormatErrno(smbclient_domain, "smbc_opendir('%s') failed",
@@ -173,7 +176,7 @@ DetectServers() noexcept
 {
 	NeighborExplorer::List list;
 	const std::lock_guard<Mutex> protect(smbclient_mutex);
-	ReadServers(list, "smb://");
+	ReadServers(list, "smb://", "");
 	return list;
 }
 

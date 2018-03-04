@@ -61,12 +61,12 @@
  * reasonable limit that doesn't make low-end machines suffer too
  * much, but doesn't cause stuttering on high-latency lines.
  */
-static const size_t CURL_MAX_BUFFERED = 512 * 1024;
+static const size_t CURL_MAX_BUFFERED = 10 * 1024 * 1024;
 
 /**
  * Resume the stream at this number of bytes after it has been paused.
  */
-static const size_t CURL_RESUME_AT = 384 * 1024;
+static const size_t CURL_RESUME_AT = CURL_MAX_BUFFERED * 8 / 10;
 
 class CurlInputStream final : public AsyncInputStream, CurlResponseHandler {
 	/* some buffers which were passed to libcurl, which we have
@@ -208,8 +208,11 @@ CurlInputStream::OnHeaders(unsigned status,
 		seekable = true;
 
 	auto i = headers.find("content-length");
-	if (i != headers.end())
+	if (i != headers.end()) {
+		if (!icy->IsDefined())
+			seekable = true;
 		size = offset + ParseUint64(i->second.c_str());
+	}
 
 	i = headers.find("content-type");
 	if (i != headers.end())

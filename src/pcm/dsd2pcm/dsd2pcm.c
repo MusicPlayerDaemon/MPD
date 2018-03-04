@@ -44,6 +44,8 @@ or implied, of Sebastian Gesemann.
 #error "FIFOSIZE too small"
 #endif
 
+#define ENABLE_DSD2PCM_6DB_GAIN
+
 /*
  * Properties of this 96-tap lowpass filter when applied on a signal
  * with sampling rate of 44100*64 Hz:
@@ -206,7 +208,11 @@ extern void dsd2pcm_translate(
 			bite2 = ptr->fifo[(ffp-(CTABLES*2-1)+i) & FIFOMASK] & 0xFF;
 			acc += ctables[i][bite1] + ctables[i][bite2];
 		}
+#ifdef ENABLE_DSD2PCM_6DB_GAIN
+		*dst = (float)acc * 2; dst += dst_stride;
+#else
 		*dst = (float)acc; dst += dst_stride;
+#endif
 		ffp = (ffp + 1) & FIFOMASK;
 	}
 	ptr->fifopos = ffp;

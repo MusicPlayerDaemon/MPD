@@ -28,6 +28,7 @@
 #include "input/InputStream.hxx"
 #include "input/LocalOpen.hxx"
 #include "thread/Cond.hxx"
+#include "util/StringUtil.hxx"
 
 #include <exception>
 
@@ -112,6 +113,14 @@ tag_file_scan(Path path, TagBuilder &builder) noexcept
 
 	if (builder.empty())
 		ScanGenericTags(path, full_tag_handler, &builder);
+
+	const auto *suffix = path.GetSuffix();
+	if (suffix != nullptr) {
+		char name[64];
+		const auto suffix_utf8 = Path::FromFS(suffix).ToUTF8();
+		ToUpperASCII(name, suffix_utf8.c_str(), sizeof(name));
+		tag_handler_invoke_tag(full_tag_handler, &builder, TAG_SUFFIX, name);
+	}
 
 	return true;
 }

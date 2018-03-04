@@ -52,16 +52,11 @@ public:
 class SmbclientStorage final : public Storage {
 	const std::string base;
 
-	SMBCCTX *const ctx;
-
 public:
-	SmbclientStorage(const char *_base, SMBCCTX *_ctx)
-		:base(_base), ctx(_ctx) {}
+	SmbclientStorage(const char *_base)
+		:base(_base) {}
 
 	virtual ~SmbclientStorage() {
-		smbclient_mutex.lock();
-		smbc_free_context(ctx, 1);
-		smbclient_mutex.unlock();
 	}
 
 	/* virtual methods from class Storage */
@@ -188,18 +183,7 @@ CreateSmbclientStorageURI(gcc_unused EventLoop &event_loop, const char *base)
 
 	SmbclientInit();
 
-	const std::lock_guard<Mutex> protect(smbclient_mutex);
-	SMBCCTX *ctx = smbc_new_context();
-	if (ctx == nullptr)
-		throw MakeErrno("smbc_new_context() failed");
-
-	SMBCCTX *ctx2 = smbc_init_context(ctx);
-	if (ctx2 == nullptr) {
-		AtScopeExit(ctx) { smbc_free_context(ctx, 1); };
-		throw MakeErrno("smbc_new_context() failed");
-	}
-
-	return std::make_unique<SmbclientStorage>(base, ctx2);
+	return std::make_unique<SmbclientStorage>(base);
 }
 
 const StoragePlugin smbclient_storage_plugin = {

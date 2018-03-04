@@ -25,7 +25,9 @@
 #include "tag/Builder.hxx"
 #include "tag/Table.hxx"
 #include "util/NumberParser.hxx"
+#include "util/UriUtil.hxx"
 #include "util/StringView.hxx"
+#include "util/StringUtil.hxx"
 
 #include <algorithm>
 #include <string>
@@ -111,6 +113,8 @@ class UPnPDirParser final : public CommonExpatParser {
 
 	UPnPDirObject object;
 	TagBuilder tag;
+	
+	const char *suffix = nullptr;
 
 public:
 	UPnPDirParser(UPnPDirContent &_directory)
@@ -137,6 +141,7 @@ protected:
 		case 'c':
 			if (!strcmp(name, "container")) {
 				object.Clear();
+				suffix = nullptr;
 				object.type = UPnPDirObject::Type::CONTAINER;
 
 				const char *id = GetAttribute(attrs, "id");
@@ -152,6 +157,7 @@ protected:
 		case 'i':
 			if (!strcmp(name, "item")) {
 				object.Clear();
+				suffix = nullptr;
 				object.type = UPnPDirObject::Type::ITEM;
 
 				const char *id = GetAttribute(attrs, "id");
@@ -176,8 +182,36 @@ protected:
 					tag.SetDuration(ParseDuration(duration));
 
 				state = RES;
-			}
 
+				if (suffix == nullptr) {
+					UriSuffixBuffer suffix_buffer;
+					suffix = uri_get_suffix(object.url.c_str(), suffix_buffer);					 
+					if (suffix == nullptr) {
+						const char *protocolInfo  = GetAttribute(attrs, "protocolInfo");
+						if (protocolInfo != nullptr) {
+							int  protocolInfolen = strlen(protocolInfo);
+							const char * start = strstr(protocolInfo,"http-get:*:");
+							if (start != nullptr) {
+								char *mime_type = (char *)malloc(protocolInfolen);
+								start+=strlen("http-get:*:"); 
+								const char * end = strchr(start,':');
+								if (end != nullptr) {
+									memcpy(mime_type,start,(end-start));
+								} else {
+									memcpy(mime_type,start,(protocolInfolen-strlen(start)));
+								}
+								suffix = mime_table_lookup(mime_types,mime_type);
+								free(mime_type);
+							}
+						}
+					}
+					if (suffix != nullptr)  {
+						char s[64];
+						ToUpperASCII(s, suffix, sizeof(s));
+						tag.AddItem(TAG_SUFFIX,s);
+					}
+				}
+			}
 			break;
 
 		case 'u':
@@ -225,6 +259,15 @@ protected:
 
 		case RES:
 			object.url.assign(s, len);
+			if (suffix == nullptr) {
+			    UriSuffixBuffer suffix_buffer;
+			    suffix = uri_get_suffix(object.url.c_str(), suffix_buffer);				
+			    if (suffix != nullptr) {
+					char ss[64];
+					ToUpperASCII(ss, suffix, sizeof(ss));
+			        tag.AddItem(TAG_SUFFIX, suffix);
+			    }	
+			}
 			break;
 
 		case CLASS:

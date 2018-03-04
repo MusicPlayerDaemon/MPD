@@ -36,6 +36,7 @@
 #include "tag/Handler.hxx"
 #include "DsdLib.hxx"
 #include "Log.hxx"
+#define DFF_BLOCK_LENGTH	(8192*125)
 
 struct DsdiffHeader {
 	DsdId id;
@@ -329,6 +330,12 @@ dsdiff_read_metadata(DecoderClient *client, InputStream &is,
 		} else if (chunk_header->id.Equals("DSD ")) {
 			const offset_type chunk_size = chunk_header->GetSize();
 			metadata->chunk_size = chunk_size;
+			if (is.KnownSize()) {
+				auto left_size = is.GetRest();
+				if (metadata->chunk_size > left_size) {
+					metadata->chunk_size = left_size;
+				}
+			}
 			return true;
 		} else {
 			/* ignore unknown chunk */
@@ -365,7 +372,7 @@ dsdiff_decode_chunk(DecoderClient &client, InputStream &is,
 {
 	const offset_type start_offset = is.GetOffset();
 
-	uint8_t buffer[8192];
+	uint8_t buffer[DFF_BLOCK_LENGTH];
 
 	const size_t sample_size = sizeof(buffer[0]);
 	const size_t frame_size = channels * sample_size;
@@ -399,8 +406,13 @@ dsdiff_decode_chunk(DecoderClient &client, InputStream &is,
 			now_size = now_frames * frame_size;
 		}
 
-		if (!decoder_read_full(&client, is, buffer, now_size))
+		if (!decoder_read_full(&client, is, buffer, now_size)) {
+			cmd = client.GetCommand();
+			if (cmd == DecoderCommand::SEEK) {
+				continue;
+			}
 			return false;
+		}
 
 		const size_t nbytes = now_size;
 		remaining_bytes -= nbytes;

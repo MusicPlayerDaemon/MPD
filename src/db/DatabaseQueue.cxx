@@ -24,16 +24,38 @@
 #include "Partition.hxx"
 #include "Instance.hxx"
 #include "DetachedSong.hxx"
+#include "tag/Builder.hxx"
 
 #include <functional>
+
+static std::string
+get_parent(std::string str)
+{
+	auto p1 = str.rfind('/');
+	if (p1 == std::string::npos) {
+		return std::string("Folder");
+	}
+
+	auto p2 = str.rfind('/', p1-1);
+	if (p2 == std::string::npos) {
+		return std::string("Folder");
+	}
+	return str.substr(p2+1, p1-p2-1);
+}
 
 static void
 AddToQueue(Partition &partition, const LightSong &song)
 {
 	const auto *storage = partition.instance.storage;
-	partition.playlist.AppendSong(partition.pc,
-				      DatabaseDetachSong(storage,
-							 song));
+	auto dsong = DatabaseDetachSong(storage, song);
+	const Tag &tag = dsong.GetTag();
+	if (!tag.HasType(TAG_ALBUM)) {
+		TagBuilder tb(tag);
+		tb.AddItem(TAG_ALBUM, get_parent(dsong.GetURI()).c_str());
+		dsong.SetTag(std::move(tb.Commit()));
+	}
+
+	partition.playlist.AppendSong(partition.pc, std::move(dsong));
 }
 
 void

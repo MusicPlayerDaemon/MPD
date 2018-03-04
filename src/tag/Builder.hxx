@@ -30,6 +30,7 @@
 struct StringView;
 struct TagItem;
 struct Tag;
+class Request;
 
 /**
  * A class that constructs #Tag objects.
@@ -87,6 +88,8 @@ public:
 	}
 
 	void Clear() noexcept;
+
+	bool Parse(Request args);
 
 	/**
 	 * Move this object to the given #Tag instance.  This object

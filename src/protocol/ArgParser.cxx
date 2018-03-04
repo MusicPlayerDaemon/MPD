@@ -23,6 +23,7 @@
 #include "Chrono.hxx"
 
 #include <stdlib.h>
+#include <strings.h>
 
 uint32_t
 ParseCommandArgU32(const char *s)
@@ -138,6 +139,19 @@ ParseCommandArgUnsigned(const char *s)
 bool
 ParseCommandArgBool(const char *s)
 {
+	if (strcasecmp(s, "on") == 0
+		|| strcasecmp(s, "enable") == 0
+		|| strcasecmp(s, "yes") == 0
+		|| strcasecmp(s, "true") == 0) {
+		return true;
+	}
+	if (strcasecmp(s, "off") == 0
+		|| strcasecmp(s, "disable") == 0
+		|| strcasecmp(s, "no") == 0
+		|| strcasecmp(s, "false") == 0) {
+		return false;
+	}
+
 	char *endptr;
 	auto value = strtol(s, &endptr, 10);
 	if (endptr == s || *endptr != 0 || (value != 0 && value != 1))

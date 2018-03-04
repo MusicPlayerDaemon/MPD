@@ -25,6 +25,8 @@
 DivideString::DivideString(const char *s, char separator, bool strip) noexcept
 	:first(nullptr)
 {
+	if (s == nullptr)
+		return;
 	const char *x = strchr(s, separator);
 	if (x == nullptr)
 		return;

@@ -53,6 +53,9 @@ class MusicPipe {
 	AudioFormat audio_format = AudioFormat::Undefined();
 #endif
 
+	double bufferd_time = 0;
+	double bufferd_before_play = 3;
+
 public:
 	/**
 	 * Creates a new #MusicPipe object.  It is empty.
@@ -128,6 +131,18 @@ public:
 	gcc_pure
 	bool IsEmpty() const noexcept {
 		return GetSize() == 0;
+	}
+
+	double GetBufferedTime() const noexcept {
+		return bufferd_time;
+	}
+
+	void SetBufferedBeforePlay(double t) noexcept {
+		bufferd_before_play = t;
+	}
+
+	bool CanPlay() const noexcept {
+		return bufferd_time >= bufferd_before_play;
 	}
 };
 

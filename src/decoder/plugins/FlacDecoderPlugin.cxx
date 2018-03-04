@@ -26,7 +26,10 @@
 #include "OggCodec.hxx"
 #include "fs/Path.hxx"
 #include "fs/NarrowPath.hxx"
+#include "util/UriUtil.hxx"
 #include "Log.hxx"
+#include "tag/Builder.hxx"
+#include "tag/Handler.hxx"
 
 #if !defined(FLAC_API_VERSION_CURRENT) || FLAC_API_VERSION_CURRENT <= 7
 #error libFLAC is too old
@@ -255,8 +258,21 @@ FlacInitAndDecode(FlacDecoder &data, FLAC__StreamDecoder *sd, bool is_ogg)
 	}
 
 	bool result = flac_decoder_initialize(&data, sd);
-	if (result)
+	if (result) {
+		TagBuilder tag;
+		InputStream &input_stream = data.GetInputStream();
+		if (input_stream.HasRealURI()) {
+			UriSuffixBuffer suffix_buffer;
+			const char *const suffix = uri_get_suffix(input_stream.GetRealURI(), suffix_buffer);
+			if (suffix != nullptr) {
+				tag.AddItem(TAG_SUFFIX, suffix);
+				FormatDefault(flac_domain, "suffix: %s", suffix);
+			}
+			tag.Complement(data.tag);
+			data.tag = tag.Commit();
+		}
 		flac_decoder_loop(&data, sd);
+	}
 
 	FLAC__stream_decoder_finish(sd);
 	return result;

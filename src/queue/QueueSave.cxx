@@ -51,7 +51,7 @@ queue_save_full_song(BufferedOutputStream &os, const DetachedSong &song)
 static void
 queue_save_song(BufferedOutputStream &os, int idx, const DetachedSong &song)
 {
-	if (song.IsInDatabase() &&
+	if (song.IsInDatabase() && memcmp("http", song.GetRealURI(), 4)!=0 &&
 	    song.GetStartTime().IsZero() && song.GetEndTime().IsZero())
 		/* use the brief format (just the URI) for "full"
 		   database songs */

@@ -62,7 +62,7 @@ MusicChunk::Write(const AudioFormat af,
 }
 
 bool
-MusicChunk::Expand(const AudioFormat af, size_t _length) noexcept
+MusicChunk::Expand(const AudioFormat af, size_t _length, double timestamp) noexcept
 {
 	const size_t frame_size = af.GetFrameSize();
 
@@ -70,6 +70,7 @@ MusicChunk::Expand(const AudioFormat af, size_t _length) noexcept
 	assert(audio_format == af);
 
 	length += _length;
+	buffered_time = timestamp;
 
 	return length + frame_size > sizeof(data);
 }

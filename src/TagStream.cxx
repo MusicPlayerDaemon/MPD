@@ -24,6 +24,7 @@
 #include "tag/Builder.hxx"
 #include "util/MimeType.hxx"
 #include "util/UriUtil.hxx"
+#include "util/StringUtil.hxx"
 #include "decoder/DecoderList.hxx"
 #include "decoder/DecoderPlugin.hxx"
 #include "input/InputStream.hxx"
@@ -52,11 +53,16 @@ tag_stream_scan(InputStream &is, const TagHandler &handler, void *ctx)
 	assert(is.IsReady());
 
 	UriSuffixBuffer suffix_buffer;
-	const char *const suffix = uri_get_suffix(is.GetURI(), suffix_buffer);
+	const char *const suffix = uri_get_suffix(is.GetRealURI(), suffix_buffer);
 	const char *mime = is.GetMimeType();
 
 	if (suffix == nullptr && mime == nullptr)
 		return false;
+	if (suffix != nullptr) {
+		char name[64];
+		ToUpperASCII(name, suffix, sizeof(name));
+		tag_handler_invoke_tag(handler, ctx, TAG_SUFFIX, name);
+	}
 
 	std::string mime_base;
 	if (mime != nullptr)
@@ -96,6 +102,14 @@ tag_stream_scan(InputStream &is, TagBuilder &builder)
 
 	if (builder.empty())
 		ScanGenericTags(is, full_tag_handler, &builder);
+
+	UriSuffixBuffer suffix_buffer;
+	const char *const suffix = uri_get_suffix(is.GetURI(), suffix_buffer);
+	if (suffix != nullptr) {
+		char name[64];
+		ToUpperASCII(name, suffix, sizeof(name));
+		tag_handler_invoke_tag(full_tag_handler, &builder, TAG_SUFFIX, name);
+	}
 
 	return true;
 }

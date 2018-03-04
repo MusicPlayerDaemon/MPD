@@ -24,6 +24,7 @@
 #include "DetachedSong.hxx"
 #include "storage/StorageInterface.hxx"
 #include "util/ScopeExit.hxx"
+#include "tag/Builder.hxx"
 
 #include <assert.h>
 
@@ -41,6 +42,21 @@ DatabaseDetachSong(const Storage *storage, const LightSong &song)
 	return detached;
 }
 
+static std::string
+get_parent(std::string str)
+{
+	auto p1 = str.rfind('/');
+	if (p1 == std::string::npos) {
+		return std::string("Folder");
+	}
+
+	auto p2 = str.rfind('/', p1-1);
+	if (p2 == std::string::npos) {
+		return std::string("Folder");
+	}
+	return str.substr(p2+1, p1-p2-1);
+}
+
 DetachedSong
 DatabaseDetachSong(const Database &db, const Storage *storage, const char *uri)
 {
@@ -49,5 +65,14 @@ DatabaseDetachSong(const Database &db, const Storage *storage, const char *uri)
 
 	AtScopeExit(&db, tmp) { db.ReturnSong(tmp); };
 
-	return DatabaseDetachSong(storage, *tmp);
+	auto song = DatabaseDetachSong(storage, *tmp);
+	Tag &tag = song.WritableTag();
+	if (!tag.HasType(TAG_ALBUM)) { // fall back to folder name
+		TagBuilder tb(tag);
+		auto str = get_parent(song.GetURI());
+		tb.AddItem(TAG_ALBUM, str.c_str());
+		song.SetTag(std::move(tb.Commit()));
+	}
+
+	return song;
 }

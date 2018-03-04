@@ -87,10 +87,10 @@ EnableLogTimestamp() noexcept
 static const char *
 log_date() noexcept
 {
-	static constexpr size_t LOG_DATE_BUF_SIZE = 16;
+	static constexpr size_t LOG_DATE_BUF_SIZE = 16+3;
 	static char buf[LOG_DATE_BUF_SIZE];
 	time_t t = time(nullptr);
-	strftime(buf, LOG_DATE_BUF_SIZE, "%b %d %H:%M : ", localtime(&t));
+	strftime(buf, LOG_DATE_BUF_SIZE, "%b %d %H:%M:%S : ", localtime(&t));
 	return buf;
 }
 

@@ -209,6 +209,10 @@ struct DecoderControl {
 		cond.wait(mutex);
 	}
 
+	bool Wait(unsigned ms) {
+		return cond.timed_wait(mutex, std::chrono::milliseconds(ms));
+	}
+
 	/**
 	 * Waits for a signal from the decoder thread.  This object
 	 * must be locked prior to calling this function.  This method

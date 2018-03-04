@@ -36,6 +36,7 @@
 #include "util/UriUtil.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/Domain.hxx"
+#include "util/StringCompare.hxx"
 #include "util/ScopeExit.hxx"
 #include "thread/Name.hxx"
 #include "tag/ApeReplayGain.hxx"
@@ -68,7 +69,14 @@ decoder_input_stream_open(DecoderControl &dc, const char *uri)
 		if (dc.command == DecoderCommand::STOP)
 			throw StopDecoder();
 
-		dc.Wait();
+		if (StringStartsWith(uri, "http://")) {
+			if (!dc.Wait(20*1000)) {
+				FormatError(decoder_thread_domain, "wait %s ready timeout", uri);
+				throw StopDecoder();
+			}
+		} else {
+			dc.Wait();
+		}
 
 		is->Update();
 	}
@@ -217,10 +225,16 @@ decoder_run_stream_plugin(DecoderBridge &bridge, InputStream &is,
 
 static bool
 decoder_run_stream_locked(DecoderBridge &bridge, InputStream &is,
-			  const char *uri, bool &tried_r)
+			  gcc_unused const char *uri, bool &tried_r)
 {
-	UriSuffixBuffer suffix_buffer;
-	const char *const suffix = uri_get_suffix(uri, suffix_buffer);
+	const char *suffix = nullptr;
+	if (bridge.song_tag != nullptr) {
+		suffix = bridge.song_tag->GetValue(TAG_SUFFIX);
+	}
+	if (suffix == nullptr) {
+		UriSuffixBuffer suffix_buffer;
+		suffix = uri_get_suffix(is.GetRealURI(), suffix_buffer);
+	}
 
 	using namespace std::placeholders;
 	const auto f = std::bind(decoder_run_stream_plugin,
@@ -441,6 +455,7 @@ static void
 decoder_run_song(DecoderControl &dc,
 		 const DetachedSong &song, const char *uri, Path path_fs)
 {
+#if 0
 	DecoderBridge bridge(dc, dc.start_time.IsPositive(),
 			     /* pass the song tag only if it's
 				authoritative, i.e. if it's a local
@@ -448,6 +463,9 @@ decoder_run_song(DecoderControl &dc,
 				remembered from the last time we
 				played it*/
 			     song.IsFile() ? std::make_unique<Tag>(song.GetTag()) : nullptr);
+#else
+	DecoderBridge bridge(dc, dc.start_time.IsPositive(), std::make_unique<Tag>(song.GetTag()));
+#endif
 
 	dc.state = DecoderState::START;
 	dc.CommandFinishedLocked();

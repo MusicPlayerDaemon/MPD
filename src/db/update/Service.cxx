@@ -30,11 +30,13 @@
 #include "Log.hxx"
 #include "thread/Thread.hxx"
 #include "thread/Util.hxx"
+#include "thread/Name.hxx"
 
 #ifndef NDEBUG
 #include "event/Loop.hxx"
 #endif
 
+#include <sys/time.h>
 #include <assert.h>
 
 UpdateService::UpdateService(EventLoop &_loop, SimpleDatabase &_db,
@@ -110,17 +112,23 @@ inline void
 UpdateService::Task()
 {
 	assert(walk != nullptr);
+	SetThreadName("UpdateService");
 
 	if (!next.path_utf8.empty())
-		FormatDebug(update_domain, "starting: %s",
+		FormatDefault(update_domain, "starting: %s",
 			    next.path_utf8.c_str());
 	else
-		LogDebug(update_domain, "starting");
+		LogDefault(update_domain, "starting");
 
 	SetThreadIdlePriority();
 
+	struct timeval tv1, tv2;
+	gettimeofday(&tv1, nullptr);
 	modified = walk->Walk(next.db->GetRoot(), next.path_utf8.c_str(),
 			      next.discard);
+	gettimeofday(&tv2, nullptr);
+	long sec = tv2.tv_sec - tv1.tv_sec;
+	FormatDefault(update_domain, "update elapsed time: %ld:%02ld", sec/60, sec%60);
 
 	if (modified || !next.db->FileExists()) {
 		try {
@@ -152,7 +160,7 @@ UpdateService::StartThread(UpdateQueueItem &&i)
 
 	update_thread.Start();
 
-	FormatDebug(update_domain,
+	FormatDefault(update_domain,
 		    "spawned thread for update job id %i", next.id);
 }
 

@@ -411,6 +411,19 @@ IsUnsafeChar(char ch)
 	return !IsSafeChar(ch);
 }
 
+static constexpr bool
+IsUnsafeChar2(char ch)
+{
+	return (ch == '<'
+		|| ch == '>'
+		|| ch == '/'
+		|| ch == '\\'
+		|| ch == ':'
+		|| ch == '|'
+		|| ch == '*'
+		|| ch == '?');
+}
+
 void
 SimpleDatabase::Mount(const char *local_uri, const char *storage_uri)
 {
@@ -419,7 +432,7 @@ SimpleDatabase::Mount(const char *local_uri, const char *storage_uri)
 				    "No 'cache_directory' configured");
 
 	std::string name(storage_uri);
-	std::replace_if(name.begin(), name.end(), IsUnsafeChar, '_');
+	std::replace_if(name.begin(), name.end(), IsUnsafeChar2, '_');
 
 	const auto name_fs = AllocatedPath::FromUTF8Throw(name.c_str());
 

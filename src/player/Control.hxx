@@ -102,9 +102,10 @@ enum class PlayerError : uint8_t {
 struct player_status {
 	PlayerState state;
 	uint16_t bit_rate;
-	AudioFormat audio_format;
+	AudioFormat audio_format = AudioFormat::Undefined();
 	SignedSongTime total_time;
 	SongTime elapsed_time;
+	double buffered_time = 0.0;
 };
 
 struct PlayerControl final : AudioOutputClient {
@@ -215,7 +216,7 @@ struct PlayerControl final : AudioOutputClient {
 		}
 	};
 
-	AudioFormat audio_format;
+	AudioFormat audio_format = AudioFormat::Undefined();
 	uint16_t bit_rate;
 
 	SignedSongTime total_time;
@@ -228,6 +229,7 @@ struct PlayerControl final : AudioOutputClient {
 	const ReplayGainConfig replay_gain_config;
 
 	double total_play_time = 0;
+	double buffered_time = 0;
 
 	PlayerControl(PlayerListener &_listener,
 		      PlayerOutputs &_outputs,
@@ -277,6 +279,12 @@ struct PlayerControl final : AudioOutputClient {
 		assert(thread.IsInside());
 
 		cond.wait(mutex);
+	}
+
+	void Wait(unsigned timeout_ms) noexcept {
+		assert(thread.IsInside());
+
+		cond.timed_wait(mutex, std::chrono::milliseconds(timeout_ms));
 	}
 
 	/**

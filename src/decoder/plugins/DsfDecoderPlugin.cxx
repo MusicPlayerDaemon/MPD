@@ -41,6 +41,7 @@
 #include <string.h>
 
 static constexpr unsigned DSF_BLOCK_SIZE = 4096;
+#define DSF_BLOCK_LENGTH	(125)
 
 struct DsfMetaData {
 	unsigned sample_rate, channels;
@@ -278,21 +279,34 @@ dsf_decode_chunk(DecoderClient &client, InputStream &is,
 				client.SeekError();
 		}
 
+		offset_type now_blocks = n_blocks - i;
+		now_blocks = now_blocks >= DSF_BLOCK_LENGTH ? DSF_BLOCK_LENGTH : now_blocks;
 		/* worst-case buffer size */
-		uint8_t buffer[MAX_CHANNELS * DSF_BLOCK_SIZE];
-		if (!decoder_read_full(&client, is, buffer, block_size))
+		uint8_t buffer[MAX_CHANNELS * DSF_BLOCK_SIZE * DSF_BLOCK_LENGTH];
+		if (!decoder_read_full(&client, is, buffer, block_size * now_blocks)) {
+			cmd = client.GetCommand();
+			if (cmd == DecoderCommand::SEEK) {
+				continue;
+			}
 			return false;
+		}
 
 		if (bitreverse)
-			bit_reverse_buffer(buffer, buffer + block_size);
+			bit_reverse_buffer(buffer, buffer + block_size * now_blocks);
 
 		uint8_t interleaved_buffer[MAX_CHANNELS * DSF_BLOCK_SIZE];
-		InterleaveDsfBlock(interleaved_buffer, buffer, channels);
+		for (unsigned n=0; n<now_blocks; n++) {
+			InterleaveDsfBlock(interleaved_buffer, buffer+n*block_size, channels);
 
-		cmd = client.SubmitData(is,
-					interleaved_buffer, block_size,
-					sample_rate / 1000);
-		++i;
+			cmd = client.SubmitData(is,
+						interleaved_buffer, block_size,
+						sample_rate / 1000);
+			++i;
+			if (cmd == DecoderCommand::STOP || cmd == DecoderCommand::SEEK) {
+				// todo seek back?
+				break;
+			}
+		}
 	}
 
 	return true;

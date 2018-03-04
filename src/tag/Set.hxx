@@ -28,6 +28,7 @@
 #include <string.h>
 
 class TagMask;
+struct LightSong;
 
 /**
  * Helper class for #TagSet which compares two #Tag objects.
@@ -61,6 +62,9 @@ class TagSet : public std::set<Tag, TagLess> {
 public:
 	void InsertUnique(const Tag &tag,
 			  TagType type, TagMask group_mask) noexcept;
+
+	void InsertUnique(const LightSong &song,
+			TagType type, TagMask group_mask) noexcept;
 
 private:
 	void InsertUnique(const Tag &src, TagType type, const char *value,

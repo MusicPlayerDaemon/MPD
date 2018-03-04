@@ -25,6 +25,7 @@
 #include "fs/FileInfo.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "fs/DirectoryReader.hxx"
+#include "config/ConfigPath.hxx"
 #include "util/StringCompare.hxx"
 
 #include <string>
@@ -185,7 +186,17 @@ CreateLocalStorage(Path base_fs)
 	return std::make_unique<LocalStorage>(base_fs);
 }
 
+static std::unique_ptr<Storage>
+CreateLocalStorageURI(gcc_unused EventLoop &event_loop, const char *base)
+{
+	if (memcmp(base, "/", 1) != 0 && memcmp(base, "file://", 6) != 0)
+		return nullptr;
+	AllocatedPath path = ParsePath(base);
+
+	return CreateLocalStorage(path);
+}
+
 const StoragePlugin local_storage_plugin = {
 	"local",
-	nullptr,
+	CreateLocalStorageURI,
 };

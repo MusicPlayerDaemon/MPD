@@ -499,9 +499,12 @@ DecoderBridge::SubmitData(InputStream *is,
 
 		memcpy(dest.data, data, nbytes);
 
+		timestamp += (double)nbytes /
+			dc.out_audio_format.GetTimeToSize();
+
 		/* expand the music pipe chunk */
 
-		full = chunk->Expand(dc.out_audio_format, nbytes);
+		full = chunk->Expand(dc.out_audio_format, nbytes, timestamp);
 		if (full) {
 			/* the chunk is full, flush it */
 			FlushChunk();
@@ -509,9 +512,6 @@ DecoderBridge::SubmitData(InputStream *is,
 
 		data = (const uint8_t *)data + nbytes;
 		length -= nbytes;
-
-		timestamp += (double)nbytes /
-			dc.out_audio_format.GetTimeToSize();
 
 		if (dc.end_time.IsPositive() &&
 		    timestamp >= dc.end_time.ToDoubleS())

@@ -73,6 +73,8 @@ struct MusicChunkInfo {
 	/** the time stamp within the song */
 	SignedSongTime time;
 
+	double buffered_time = 0;
+
 	/**
 	 * Replay gain information associated with this chunk.
 	 * Only valid if the serial is not 0.
@@ -140,9 +142,10 @@ struct MusicChunk : MusicChunkInfo {
 	 * @param af the audio format for the appended data; must
 	 * stay the same for the life cycle of this chunk
 	 * @param length the number of bytes which were appended
+	 * @param timestamp The time stamp of the next data chunk, in seconds.
 	 * @return true if the chunk is full
 	 */
-	bool Expand(AudioFormat af, size_t length) noexcept;
+	bool Expand(AudioFormat af, size_t length, double timestamp) noexcept;
 };
 
 static_assert(sizeof(MusicChunk) == CHUNK_SIZE, "Wrong size");

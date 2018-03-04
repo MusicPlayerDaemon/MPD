@@ -70,6 +70,10 @@ playlist_check_translate_song(DetachedSong &song, const char *base_uri,
 	if (base_uri != nullptr && !uri_has_scheme(uri) &&
 	    !PathTraitsUTF8::IsAbsolute(uri))
 		song.SetURI(PathTraitsUTF8::Build(base_uri, uri));
+	
+	if (memcmp("http", song.GetRealURI(), 4)==0) {
+		return true;
+	}
 
 	return playlist_check_load_song(song, loader);
 }

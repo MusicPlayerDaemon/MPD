@@ -65,6 +65,7 @@ void
 song_save(BufferedOutputStream &os, const DetachedSong &song)
 {
 	os.Format(SONG_BEGIN "%s\n", song.GetURI());
+	os.Format(SONG_REAL_URI "%s\n", song.GetRealURI());
 
 	range_save(os, song.GetStartTime().ToMS(), song.GetEndTime().ToMS());
 
@@ -97,6 +98,8 @@ song_load(TextFile &file, const char *uri)
 		TagType type;
 		if ((type = tag_name_parse(line)) != TAG_NUM_OF_ITEM_TYPES) {
 			tag.AddItem(type, value);
+		} else if (strcmp(line, "real_uri") == 0) {
+			song->SetRealURI(value);
 		} else if (strcmp(line, "Time") == 0) {
 			tag.SetDuration(SignedSongTime::FromS(atof(value)));
 		} else if (strcmp(line, "Playlist") == 0) {

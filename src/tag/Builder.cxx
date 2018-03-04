@@ -23,8 +23,11 @@
 #include "Pool.hxx"
 #include "FixString.hxx"
 #include "Tag.hxx"
+#include "ParseName.hxx"
 #include "util/WritableBuffer.hxx"
 #include "util/StringView.hxx"
+#include "util/ASCII.hxx"
+#include "command/Request.hxx"
 
 #include <array>
 
@@ -110,6 +113,29 @@ TagBuilder::Clear() noexcept
 	duration = SignedSongTime::Negative();
 	has_playlist = false;
 	RemoveAll();
+}
+
+bool
+TagBuilder::Parse(Request args)
+{
+	if (args.size == 0 || args.size % 2 != 0)
+		return false;
+
+	for (unsigned i = 0; i < args.size; i += 2) {
+		if (StringEqualsCaseASCII(args[i], "duration_ms")) {
+			duration = SignedSongTime::FromMS(args.ParseUnsigned(i+1));
+		} else if (StringEqualsCaseASCII(args[i], "duration")) {
+			duration = SignedSongTime::FromS(args.ParseFloat(i+1));
+		} else {
+			const TagType tag_type = tag_name_parse_i(args[i]);
+			if (tag_type == TAG_NUM_OF_ITEM_TYPES) {
+				return false;
+			}
+			AddItem(tag_type, args[i + 1]);
+		}
+	}
+
+	return true;
 }
 
 void

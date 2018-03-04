@@ -160,6 +160,7 @@ PlayerControl::LockGetStatus() noexcept
 		SynchronousCommand(PlayerCommand::REFRESH);
 
 	status.state = state;
+	status.buffered_time = buffered_time;
 
 	if (state != PlayerState::STOP) {
 		status.bit_rate = bit_rate;

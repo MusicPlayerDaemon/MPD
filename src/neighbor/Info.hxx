@@ -25,11 +25,15 @@
 struct NeighborInfo {
 	std::string uri;
 	std::string display_name;
+	std::string device_icon_url;
+	std::string workgroup;
 
-	template<typename U, typename DN>
-	NeighborInfo(U &&_uri, DN &&_display_name)
+	template<typename U, typename DN,typename DIU, typename WG>
+	NeighborInfo(U &&_uri, DN &&_display_name,DIU &&_device_icon_url, WG &&_workgroup)
 		:uri(std::forward<U>(_uri)),
-		 display_name(std::forward<DN>(_display_name)) {}
+		 display_name(std::forward<DN>(_display_name)),
+		 device_icon_url(std::forward<DIU>(_device_icon_url)),
+		 workgroup(std::forward<WG>(_workgroup)) {}
 };
 
 #endif
