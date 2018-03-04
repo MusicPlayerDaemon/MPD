@@ -44,7 +44,7 @@ class AndroidNdkToolchain:
         self.src_path = src_path
         self.build_path = build_path
 
-        self.ndk_arch = 'arm'
+        ndk_arch = 'arm'
         android_abi = 'armeabi-v7a'
         ndk_platform = 'android-14'
 
@@ -53,7 +53,7 @@ class AndroidNdkToolchain:
 
         ndk_platform_path = os.path.join(ndk_path, 'platforms', ndk_platform)
         sysroot = os.path.join(ndk_path, 'sysroot')
-        target_root = os.path.join(ndk_platform_path, 'arch-' + self.ndk_arch)
+        target_root = os.path.join(ndk_platform_path, 'arch-' + ndk_arch)
 
         install_prefix = os.path.join(arch_path, 'root')
 
@@ -95,7 +95,7 @@ class AndroidNdkToolchain:
             ' ' + common_flags
         self.libs = ''
 
-        self.is_arm = self.ndk_arch == 'arm'
+        self.is_arm = ndk_arch == 'arm'
         self.is_armv7 = self.is_arm and 'armv7' in self.cflags
         self.is_windows = False
 
