@@ -164,6 +164,10 @@ SongTime
 ParseCommandArgSongTime(const char *s)
 {
 	auto value = ParseCommandArgFloat(s);
+	if (value < 0)
+		throw FormatProtocolError(ACK_ERROR_ARG,
+					  "Negative value not allowed: %s", s);
+
 	return SongTime::FromS(value);
 }
 
