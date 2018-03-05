@@ -2574,7 +2574,10 @@ run</programlisting>
                   <parameter>TOKEN</parameter>
                 </entry>
                 <entry>
-                  The Tidal application token.
+                  The Tidal application token.  Since Tidal is
+                  unwilling to assign a token to MPD, this needs to be
+                  reverse-engineered from another (approved) Tidal
+                  client.
                 </entry>
               </row>
 
