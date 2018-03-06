@@ -138,15 +138,25 @@ AudioOutput *
 OSXOutput::Create(EventLoop &, const ConfigBlock &block)
 {
 	OSXOutput *oo = new OSXOutput(block);
-
-	AudioObjectPropertyAddress aopa = {
-		kAudioHardwarePropertyDefaultOutputDevice,
-		kAudioObjectPropertyScopeOutput,
-		kAudioObjectPropertyElementMaster
-	};
-
+	AudioObjectPropertyAddress aopa;
 	AudioDeviceID dev_id = kAudioDeviceUnknown;
 	UInt32 dev_id_size = sizeof(dev_id);
+	
+	if (oo->component_subtype == kAudioUnitSubType_SystemOutput)
+		// get system output dev_id if configured
+		aopa = {
+			kAudioHardwarePropertyDefaultSystemOutputDevice,
+			kAudioObjectPropertyScopeOutput,
+			kAudioObjectPropertyElementMaster
+		};
+	else
+		// fallback to default device initially (can still be changed by osx_output_set_device)
+		aopa = {
+			kAudioHardwarePropertyDefaultOutputDevice,
+			kAudioObjectPropertyScopeOutput,
+			kAudioObjectPropertyElementMaster
+		};
+
 	AudioObjectGetPropertyData(kAudioObjectSystemObject,
 				   &aopa,
 				   0,
