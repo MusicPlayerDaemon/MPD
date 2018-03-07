@@ -715,13 +715,13 @@ void
 OSXOutput::Open(AudioFormat &audio_format)
 {
 	char errormsg[1024];
-#ifdef ENABLE_DSD
-	bool dop = dop_setting;
-#endif
 	Float64 sample_rate = initial_sample_rate;
 	PcmExport::Params params;
 	params.alsa_channel_order = true;
+#ifdef ENABLE_DSD
+	bool dop = dop_setting;
 	params.dop = false;
+#endif
 
 	memset(&asbd, 0, sizeof(asbd));
 	asbd.mFormatID = kAudioFormatLinearPCM;
