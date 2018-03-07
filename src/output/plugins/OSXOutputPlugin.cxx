@@ -49,6 +49,7 @@ struct OSXOutput final : AudioOutput {
 	const char *channel_map;
 	bool hog_device;
 	bool sync_sample_rate;
+	bool pause;
 #ifdef ENABLE_DSD
 	/**
 	 * Enable DSD over PCM according to the DoP standard?
@@ -81,6 +82,7 @@ private:
 
 	std::chrono::steady_clock::duration Delay() const noexcept override;
 	size_t Play(const void *chunk, size_t size) override;
+	bool Pause() override;
 };
 
 static constexpr Domain osx_output_domain("osx_output");
@@ -108,7 +110,7 @@ osx_output_test_default_device(void)
 }
 
 OSXOutput::OSXOutput(const ConfigBlock &block)
-	:AudioOutput(FLAG_ENABLE_DISABLE)
+	:AudioOutput(FLAG_ENABLE_DISABLE|FLAG_PAUSE)
 {
 	const char *device = block.GetBlockValue("device");
 
@@ -763,12 +765,21 @@ OSXOutput::Open(AudioFormat &audio_format)
 		throw FormatRuntimeError("unable to start audio output: %s",
 					 errormsg);
 	}
+	pause = false;
 }
 
 size_t
 OSXOutput::Play(const void *chunk, size_t size)
 {
 	assert(size > 0);
+	if(pause) {
+		pause = false;
+		OSStatus status = AudioOutputUnitStart(au);
+		if (status != 0) {
+			AudioUnitUninitialize(au);
+			throw std::runtime_error("Unable to restart audio output after pause");
+		}
+	}
 	const auto e = pcm_export->Export({chunk, size});
 	if (e.size == 0)
 		/* the DoP (DSD over PCM) filter converts two frames
@@ -791,7 +802,15 @@ OSXOutput::Delay() const noexcept
 		? std::chrono::steady_clock::duration::zero()
 		: std::chrono::milliseconds(MPD_OSX_BUFFER_TIME_MS / 4);
 }
-
+	
+bool OSXOutput::Pause() {
+	if(!pause) {
+		pause = true;
+		AudioOutputUnitStop(au);
+	}
+	return true;
+}
+	
 int
 osx_output_get_volume(OSXOutput &output)
 {
