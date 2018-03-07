@@ -1626,14 +1626,20 @@ OK
           <listitem>
             <para>
               Counts the number of songs and their total playtime in
-              the db matching <varname>TAG</varname> exactly.
+              the db matching <varname>TAG</varname> exactly. The
+              following prints the number of songs whose title matches
+              "Echoes":
             </para>
+            <programlisting>count title Echoes</programlisting>
             <para>
               The <parameter>group</parameter> keyword may be used to
-              group the results by a tag.  The following prints
-              per-artist counts:
+              group the results by a tag.  The first following example
+              prints per-artist counts while the next prints the
+              number of songs whose title matches "Echoes" grouped by
+              artist:
             </para>
             <programlisting>count group artist</programlisting>
+            <programlisting>count title Echoes group artist</programlisting>
           </listitem>
         </varlistentry>
 
