@@ -62,7 +62,7 @@ struct OSXOutput final : AudioOutput {
 	AudioDeviceID dev_id;
 	AudioComponentInstance au;
 	AudioStreamBasicDescription asbd;
-	Float64 sample_rate;
+	Float64 initial_sample_rate;
 	Manual<PcmExport> pcm_export;
 
 	boost::lockfree::spsc_queue<uint8_t> *ring_buffer;
@@ -649,6 +649,24 @@ OSXOutput::Enable()
 		pcm_export.Destruct();
 		throw;
 	}
+	
+	AudioObjectPropertyAddress aopa = {
+		kAudioDevicePropertyNominalSampleRate,
+		kAudioObjectPropertyScopeOutput,
+		kAudioObjectPropertyElementMaster
+	};
+	UInt32 property_size = sizeof(initial_sample_rate);
+	status = AudioObjectGetPropertyData(dev_id,
+										&aopa,
+										0,
+										NULL,
+										&property_size,
+										&initial_sample_rate);
+	if(status != noErr) {
+		AudioComponentInstanceDispose(au);
+		pcm_export.Destruct();
+		throw std::runtime_error("Cannot get sample rate of macOS output device");
+	}
 
 	if (hog_device)
 		osx_output_hog_device(dev_id, true);
@@ -667,9 +685,29 @@ OSXOutput::Disable() noexcept
 void
 OSXOutput::Close() noexcept
 {
+	AudioObjectPropertyAddress aopa = {
+		kAudioDevicePropertyNominalSampleRate,
+		kAudioObjectPropertyScopeOutput,
+		kAudioObjectPropertyElementMaster
+	};
+	OSStatus err;
 	AudioOutputUnitStop(au);
 	AudioUnitUninitialize(au);
-
+	// Reset sample rate to initial state
+	if(sync_sample_rate
+#ifdef ENABLE_DSD
+	   || dop_setting
+#endif
+	   ) {
+		err = AudioObjectSetPropertyData(dev_id,
+										 &aopa,
+										 0,
+										 NULL,
+										 sizeof(initial_sample_rate),
+										 &initial_sample_rate);
+		if(err != noErr)
+			FormatWarning(osx_output_domain, "Unable to reset sample rate of macOS output device");
+	}
 	delete ring_buffer;
 }
 
@@ -680,6 +718,7 @@ OSXOutput::Open(AudioFormat &audio_format)
 #ifdef ENABLE_DSD
 	bool dop = dop_setting;
 #endif
+	Float64 sample_rate = initial_sample_rate;
 	PcmExport::Params params;
 	params.alsa_channel_order = true;
 	params.dop = false;
