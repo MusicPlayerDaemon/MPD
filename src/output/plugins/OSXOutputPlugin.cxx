@@ -300,7 +300,7 @@ osx_output_set_channel_map(OSXOutput *oo)
 }
 
 static Float64
-osx_output_sync_device_sample_rate(AudioDeviceID dev_id, AudioStreamBasicDescription desc)
+osx_output_sync_device_sample_rate(AudioDeviceID dev_id, Float64 requested_rate)
 {
 	FormatDebug(osx_output_domain, "Syncing sample rate.");
 	AudioObjectPropertyAddress aopa = {
@@ -325,40 +325,70 @@ osx_output_sync_device_sample_rate(AudioDeviceID dev_id, AudioStreamBasicDescrip
 					 NULL,
 					 &property_size,
 					 &ranges);
-	// Get the maximum sample rate as fallback.
-	Float64 sample_rate = .0;
+	
+	// Get the maximum and minimum sample rates as fallback.
+	Float64 sample_rate_min = ranges[0].mMinimum;
+	Float64 sample_rate_max = ranges[0].mMaximum;
 	for (int i = 0; i < count; i++) {
-		if (ranges[i].mMaximum > sample_rate)
-			sample_rate = ranges[i].mMaximum;
+		if (ranges[i].mMaximum > sample_rate_max)
+			sample_rate_max = ranges[i].mMaximum;
+		if( ranges[i].mMinimum < sample_rate_min)
+			sample_rate_min = ranges[i].mMinimum;
 	}
 
 	// Now try to see if the device support our format sample rate.
-	// For some high quality media samples, the frame rate may exceed
-	// device capability. In this case, we let CoreAudio downsample
-	// by decimation with an integer factor ranging from 1 to 4.
-	for (int f = 4; f > 0; f--) {
-		Float64 rate = desc.mSampleRate / f;
-		for (int i = 0; i < count; i++) {
-			if (ranges[i].mMinimum <= rate
-			   && rate <= ranges[i].mMaximum) {
-				sample_rate = rate;
-				break;
+	// For some media samples, the frame rate may exceed device
+	// capability. In this case, we downsample or upsample
+	// with an integer factor ranging from 1 to 4.
+	Float64 sample_rate = sample_rate_max;
+	Float64 rate;
+	if(requested_rate >= sample_rate_min) {
+		for (int f = 4; f > 0; f--) {
+			rate = requested_rate / f;
+			for (int i = 0; i < count; i++) {
+				if (ranges[i].mMinimum <= rate
+				   && rate <= ranges[i].mMaximum) {
+					sample_rate = rate;
+					break;
+				}
+			}
+		}
+	}
+	else {
+		sample_rate = sample_rate_min;
+		for (int f = 4; f > 1; f--) {
+			rate = requested_rate * f;
+			for (int i = 0; i < count; i++) {
+				if (ranges[i].mMinimum <= rate
+					&& rate <= ranges[i].mMaximum) {
+					sample_rate = rate;
+					break;
+				}
 			}
 		}
 	}
 
 	aopa.mSelector = kAudioDevicePropertyNominalSampleRate,
-
+	property_size = sizeof(sample_rate);
 	err = AudioObjectSetPropertyData(dev_id,
 					 &aopa,
 					 0,
 					 NULL,
-					 sizeof(&desc.mSampleRate),
+					 property_size,
 					 &sample_rate);
 	if (err != noErr) {
-                FormatWarning(osx_output_domain,
-			      "Failed to synchronize the sample rate: %d",
-			      err);
+		FormatWarning(osx_output_domain,
+		  "Failed to synchronize the sample rate: %d",
+		  err);
+		// Something went wrong with synchronization, get current device sample_rate and return that
+		err = AudioObjectGetPropertyData(dev_id,
+								 &aopa,
+								 0,
+								 NULL,
+								 &property_size,
+								 &sample_rate);
+		if(err != noErr)
+			throw std::runtime_error("Cannot get sample rate of macOS output device");
 	} else {
 		FormatDebug(osx_output_domain,
 			    "Sample rate synced to %f Hz.",
@@ -703,7 +733,7 @@ OSXOutput::Open(AudioFormat &audio_format)
 		|| params.dop // sample rate needs to be synchronized for DoP
 #endif
 		)
-		sample_rate = osx_output_sync_device_sample_rate(dev_id, asbd);
+		sample_rate = osx_output_sync_device_sample_rate(dev_id, asbd.mSampleRate);
 
 #ifdef ENABLE_DSD
 	if(params.dop && (sample_rate != asbd.mSampleRate)) { // fall back to PCM in case sample_rate cannot be synchronized
@@ -735,7 +765,7 @@ OSXOutput::Open(AudioFormat &audio_format)
 				     &callback, sizeof(callback));
 	if (status != noErr) {
 		AudioComponentInstanceDispose(au);
-		throw std::runtime_error("unable to set callback for OS X audio unit");
+		throw std::runtime_error("Unable to set callback for OS X audio unit");
 	}
 
 	status = AudioUnitInitialize(au);
@@ -762,7 +792,7 @@ OSXOutput::Open(AudioFormat &audio_format)
 	if (status != 0) {
 		AudioUnitUninitialize(au);
 		osx_os_status_to_cstring(status, errormsg, sizeof(errormsg));
-		throw FormatRuntimeError("unable to start audio output: %s",
+		throw FormatRuntimeError("Unable to start audio output: %s",
 					 errormsg);
 	}
 	pause = false;
