@@ -111,7 +111,7 @@ cd mpd-version</programlisting>
 
         <listitem>
           <para>
-            <ulink url="http://www.boost.org/">Boost 1.46</ulink>
+            <ulink url="http://www.boost.org/">Boost 1.54</ulink>
           </para>
         </listitem>
 
