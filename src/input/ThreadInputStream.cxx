@@ -68,7 +68,7 @@ ThreadInputStream::ThreadFunc()
 		Open();
 	} catch (...) {
 		postponed_exception = std::current_exception();
-		cond.broadcast();
+		SetReady();
 		return;
 	}
 

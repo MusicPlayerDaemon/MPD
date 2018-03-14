@@ -1,6 +1,8 @@
 ver 0.20.19 (not yet released)
 * protocol
   - validate absolute seek time, reject negative values
+* input
+  - mms: fix lockup bug
 * macOS: fix crash bug
 
 ver 0.20.18 (2018/02/24)
