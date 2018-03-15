@@ -39,6 +39,10 @@ public:
 				   MMS_BUFFER_SIZE) {
 	}
 
+	~MmsInputStream() noexcept override {
+		Stop();
+	}
+
 protected:
 	virtual void Open() override;
 	virtual size_t ThreadRead(void *ptr, size_t size) override;

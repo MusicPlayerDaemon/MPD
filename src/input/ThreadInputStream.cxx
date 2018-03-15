@@ -26,8 +26,12 @@
 #include <assert.h>
 #include <string.h>
 
-ThreadInputStream::~ThreadInputStream()
+void
+ThreadInputStream::Stop() noexcept
 {
+	if (!thread.IsDefined())
+		return;
+
 	{
 		const std::lock_guard<Mutex> lock(mutex);
 		close = true;
@@ -42,6 +46,7 @@ ThreadInputStream::~ThreadInputStream()
 		buffer->Clear();
 		HugeFree(buffer->Write().data, buffer_size);
 		delete buffer;
+		buffer = nullptr;
 	}
 }
 

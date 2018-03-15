@@ -27,6 +27,7 @@
 
 #include <exception>
 
+#include <assert.h>
 #include <stdint.h>
 
 template<typename T> class CircularBuffer;
@@ -39,6 +40,11 @@ template<typename T> class CircularBuffer;
  * manages the thread and the buffer.
  *
  * This works only for "streams": unknown length, no seeking, no tags.
+ *
+ * The implementation must call Stop() before its destruction
+ * completes.  This cannot be done in ~ThreadInputStream() because at
+ * this point, the class has been morphed back to #ThreadInputStream
+ * and the still-running thread will crash due to pure method call.
  */
 class ThreadInputStream : public InputStream {
 	const char *const plugin;
@@ -76,7 +82,13 @@ public:
 		 thread(BIND_THIS_METHOD(ThreadFunc)),
 		 buffer_size(_buffer_size) {}
 
-	virtual ~ThreadInputStream();
+#ifndef NDEBUG
+	~ThreadInputStream() override {
+		/* Stop() must have been called already */
+		assert(!thread.IsDefined());
+		assert(buffer == nullptr);
+	}
+#endif
 
 	/**
 	 * Initialize the object and start the thread.
@@ -90,6 +102,12 @@ public:
 	size_t Read(void *ptr, size_t size) override final;
 
 protected:
+	/**
+	 * Stop the thread and free the buffer.  This must be called
+	 * before destruction of this object completes.
+	 */
+	void Stop() noexcept;
+
 	void SetMimeType(const char *_mime) {
 		assert(thread.IsInside());
 
