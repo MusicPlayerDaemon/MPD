@@ -79,7 +79,10 @@
 
       <para>
         If you need to tweak the configuration, you can create a file
-        called <filename>mpd.conf</filename> on the data partition.
+        called <filename>mpd.conf</filename> on the data partition
+        (the directory which is returned by Android's <ulink
+        url="https://developer.android.com/reference/android/os/Environment.html#getExternalStorageDirectory()">getExternalStorageDirectory()</ulink>
+        API function).
       </para>
     </section>
 
