@@ -29,6 +29,7 @@
 
 #include <exception>
 
+#include <assert.h>
 #include <stdint.h>
 
 /**
@@ -39,6 +40,11 @@
  * manages the thread and the buffer.
  *
  * This works only for "streams": unknown length, no seeking, no tags.
+ *
+ * The implementation must call Stop() before its destruction
+ * completes.  This cannot be done in ~ThreadInputStream() because at
+ * this point, the class has been morphed back to #ThreadInputStream
+ * and the still-running thread will crash due to pure method call.
  */
 class ThreadInputStream : public InputStream {
 	const char *const plugin;
@@ -73,7 +79,12 @@ public:
 			  const char *_uri, Mutex &_mutex, Cond &_cond,
 			  size_t _buffer_size) noexcept;
 
-	virtual ~ThreadInputStream() noexcept;
+#ifndef NDEBUG
+	~ThreadInputStream() override {
+		/* Stop() must have been called already */
+		assert(!thread.IsDefined());
+	}
+#endif
 
 	/**
 	 * Initialize the object and start the thread.
@@ -87,6 +98,12 @@ public:
 	size_t Read(void *ptr, size_t size) override final;
 
 protected:
+	/**
+	 * Stop the thread and free the buffer.  This must be called
+	 * before destruction of this object completes.
+	 */
+	void Stop() noexcept;
+
 	void SetMimeType(const char *_mime) noexcept {
 		assert(thread.IsInside());
 

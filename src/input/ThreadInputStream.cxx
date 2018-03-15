@@ -37,8 +37,12 @@ ThreadInputStream::ThreadInputStream(const char *_plugin,
 	allocation.ForkCow(false);
 }
 
-ThreadInputStream::~ThreadInputStream() noexcept
+void
+ThreadInputStream::Stop() noexcept
 {
+	if (!thread.IsDefined())
+		return;
+
 	{
 		const std::lock_guard<Mutex> lock(mutex);
 		close = true;
@@ -69,7 +73,7 @@ ThreadInputStream::ThreadFunc() noexcept
 		Open();
 	} catch (...) {
 		postponed_exception = std::current_exception();
-		cond.broadcast();
+		SetReady();
 		return;
 	}
 
