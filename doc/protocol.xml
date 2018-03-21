@@ -1657,7 +1657,10 @@ OK
           <listitem>
             <para>
               Finds songs in the db that are exactly
-              <varname>WHAT</varname>.  <varname>TYPE</varname> can
+              <varname>WHAT</varname>.
+            </para>
+            <para>
+              <varname>TYPE</varname> can
               be any tag supported by <application>MPD</application>, or one of the special
               parameters:
             </para>
@@ -1689,6 +1692,14 @@ OK
                   <parameter>modified-since</parameter> compares the
                   file's time stamp with the given value (ISO 8601 or
                   UNIX time stamp)
+                </para>
+              </listitem>
+
+              <listitem>
+                <para>
+                  <parameter>albumartist</parameter> looks for
+                  <varname>WHAT</varname> in AlbumArtist and falls back to
+                  Artist tags if AlbumArtist does not exist.
                 </para>
               </listitem>
             </itemizedlist>
