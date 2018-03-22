@@ -578,7 +578,7 @@ fi
 
 dnl -------------------------------- yajl -------------------------------------
 
-if test x$enable_qobuz != xno || x$enable_soundcloud != xno || test x$enable_tidal != xno; then
+if test x$enable_qobuz != xno || test x$enable_soundcloud != xno || test x$enable_tidal != xno; then
 	PKG_CHECK_MODULES([YAJL], [yajl >= 2.0],
 		[found_yajl=yes],
 		[found_yajl=no])
