@@ -271,22 +271,12 @@ HaikuOutput::Play(const void *chunk, size_t size)
 		soundPlayer->SetHasData(true);
 	acquire_sem(new_buffer);
 
-	size_t bytesLeft = size;
-	while (bytesLeft > 0) {
-		if (buffer_filled == buffer_size) {
-			// Request another buffer from BSoundPlayer
-			release_sem(buffer_done);
-			acquire_sem(new_buffer);
-		}
-
-		const size_t copyBytes = std::min(bytesLeft, buffer_size
-			- buffer_filled);
-		memcpy(buffer + buffer_filled, data,
-			copyBytes);
-		buffer_filled += copyBytes;
-		data += copyBytes;
-		bytesLeft -= copyBytes;
-	}
+	const size_t copyBytes = std::min(size, buffer_size
+		- buffer_filled);
+	memcpy(buffer + buffer_filled, data,
+		copyBytes);
+	buffer_filled += copyBytes;
+	data += copyBytes;
 
 
 	if (buffer_filled < buffer_size) {
@@ -298,7 +288,7 @@ HaikuOutput::Play(const void *chunk, size_t size)
 		//soundPlayer->SetHasData(false);
 	}
 
-	return size;
+	return copyBytes;
 }
 
 inline std::chrono::steady_clock::duration
