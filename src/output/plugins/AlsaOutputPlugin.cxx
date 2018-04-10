@@ -658,9 +658,6 @@ AlsaOutput::Open(AudioFormat &audio_format)
 	size_t period_size = period_frames * out_frame_size;
 	ring_buffer = new boost::lockfree::spsc_queue<uint8_t>(period_size * 4);
 
-	/* reserve space for one more (partial) frame, to be able to
-	   fill the buffer with silence, after moving an unfinished
-	   frame to the end */
 	period_buffer.Allocate(period_frames, out_frame_size);
 
 	active = false;
