@@ -2,6 +2,8 @@
 #include "Parser.hxx"
 #include "system/Error.hxx"
 #include "util/ScopeExit.hxx"
+#include "event/Loop.hxx"
+#include "event/Call.hxx"
 
 #include <cinttypes>
 
@@ -12,8 +14,8 @@
 
 namespace Ytdl {
 
-void
-Invoke(Yajl::Handle &handle, const char *url, PlaylistMode mode)
+std::unique_ptr<YtdlProcess>
+YtdlProcess::Invoke(Yajl::Handle &handle, const char *url, PlaylistMode mode)
 {
 	int pipefd[2];
 	if (pipe2(pipefd, O_CLOEXEC) < 0) {
@@ -84,18 +86,31 @@ Invoke(Yajl::Handle &handle, const char *url, PlaylistMode mode)
 		throw MakeErrno("Failed to fork()");
 	}
 
-	close(pipefd[1]);
-	pipefd[1] = -1; // sentinel to prevent closing AtExit
+	pipefd[0] = -1; // sentinel to prevent closing AtExit
 
+	return std::make_unique<YtdlProcess>(handle, pipefd[0], pid);
+}
+
+YtdlProcess::~YtdlProcess()
+{
+	close(fd);
+
+	if (pid != -1) {
+		waitpid(pid, nullptr, 0);
+	}
+}
+
+bool
+YtdlProcess::Process()
+{
 	uint8_t buffer[0x80];
-	do {
-		res = read(pipefd[0], buffer, sizeof(buffer));
-		if (res < 0) {
-			throw MakeErrno("failed to read from pipe");
-		} else if (res > 0) {
-			handle.Parse(buffer, res);
-		}
-	} while (res > 0);
+	int res = read(fd, buffer, sizeof(buffer));
+	if (res < 0) {
+		throw MakeErrno("failed to read from pipe");
+	} else if (res > 0) {
+		handle.Parse(buffer, res);
+		return true;
+	}
 
 	handle.CompleteParse();
 
@@ -103,9 +118,51 @@ Invoke(Yajl::Handle &handle, const char *url, PlaylistMode mode)
 		throw MakeErrno("failed to wait on youtube-dl process");
 	}
 
+	pid = -1;
+
 	if (res) {
 		throw FormatRuntimeError("youtube-dl exited with code %d", res);
 	}
+
+	return false;
+}
+
+bool
+YtdlMonitor::OnSocketReady(unsigned flags) noexcept
+{
+	try {
+		// TODO: repeatedly call Process and wait for EWOULDBLOCK?
+		if (process->Process()) {
+			return true;
+		} else {
+			handler.OnComplete();
+			return false;
+		}
+	} catch (...) {
+		handler.OnError(std::current_exception());
+		return false;
+	}
+}
+
+std::unique_ptr<YtdlMonitor>
+Invoke(Yajl::Handle &handle, const char *url, PlaylistMode mode, EventLoop &loop, YtdlHandler &handler)
+{
+	auto process = YtdlProcess::Invoke(handle, url, mode);
+
+	std::unique_ptr<YtdlMonitor> monitor = std::make_unique<YtdlMonitor>(handler, std::move(process), loop);
+	BlockingCall(loop, [&] {
+		monitor->ScheduleRead();
+	});
+
+	return monitor;
+}
+
+void
+BlockingInvoke(Yajl::Handle &handle, const char *url, PlaylistMode mode)
+{
+	auto process = YtdlProcess::Invoke(handle, url, mode);
+
+	while (process->Process()) {}
 }
 
 } // namespace Ytdl
