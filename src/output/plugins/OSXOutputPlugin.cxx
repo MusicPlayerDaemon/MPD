@@ -35,6 +35,7 @@
 #include <CoreAudio/CoreAudio.h>
 #include <AudioUnit/AudioUnit.h>
 #include <CoreServices/CoreServices.h>
+#include <boost/next_prior.hpp>
 #include <boost/lockfree/spsc_queue.hpp>
 
 #include <memory>
