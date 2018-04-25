@@ -308,9 +308,14 @@ struct DecoderControl {
 	bool IsCurrentSong(const DetachedSong &_song) const noexcept;
 
 	gcc_pure
-	bool LockIsCurrentSong(const DetachedSong &_song) const noexcept {
+	bool IsSeekableCurrentSong(const DetachedSong &_song) const noexcept {
+		return seekable && IsCurrentSong(_song);
+	}
+
+	gcc_pure
+	bool LockIsSeeakbleCurrentSong(const DetachedSong &_song) const noexcept {
 		const std::lock_guard<Mutex> protect(mutex);
-		return IsCurrentSong(_song);
+		return IsSeekableCurrentSong(_song);
 	}
 
 private:

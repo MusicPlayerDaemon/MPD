@@ -3,6 +3,8 @@ ver 0.20.19 (not yet released)
   - validate absolute seek time, reject negative values
 * input
   - mms: fix lockup bug and a crash bug
+* player
+  - fix spurious "Not seekable" error when switching radio streams
 * macOS: fix crash bug
 
 ver 0.20.18 (2018/02/24)

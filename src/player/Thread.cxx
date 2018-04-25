@@ -584,7 +584,7 @@ Player::SeekDecoder()
 
 	const SongTime start_time = pc.next_song->GetStartTime();
 
-	if (!dc.LockIsCurrentSong(*pc.next_song)) {
+	if (!dc.LockIsSeeakbleCurrentSong(*pc.next_song)) {
 		/* the decoder is already decoding the "next" song -
 		   stop it and start the previous song again */
 
