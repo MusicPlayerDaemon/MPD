@@ -123,8 +123,7 @@ class AlsaOutput final
 	 * After Open(), has this output been activated by a Play()
 	 * command?
 	 *
-	 * This attribute is not thread-safe.  It is only used by the
-	 * client thread (the thread which calls AudioOutput public methods).
+	 * Protected by #mutex.
 	 */
 	bool active;
 
@@ -162,7 +161,7 @@ class AlsaOutput final
 	Alsa::PeriodBuffer period_buffer;
 
 	/**
-	 * Protects #cond, #error, #drain.
+	 * Protects #cond, #error, #active, #drain.
 	 */
 	mutable Mutex mutex;
 
@@ -227,6 +226,12 @@ private:
 			, bool dop
 #endif
 			);
+
+	gcc_pure
+	bool LockIsActive() const noexcept {
+		const std::lock_guard<Mutex> lock(mutex);
+		return active;
+	}
 
 	/**
 	 * Activate the output by registering the sockets in the
@@ -784,7 +789,7 @@ AlsaOutput::CancelInternal() noexcept
 void
 AlsaOutput::Cancel() noexcept
 {
-	if (!active) {
+	if (!LockIsActive()) {
 		/* early cancel, quick code path without thread
 		   synchronization */
 
@@ -880,6 +885,9 @@ AlsaOutput::DispatchSockets() noexcept
 try {
 	{
 		const std::lock_guard<Mutex> lock(mutex);
+
+		assert(active);
+
 		if (drain) {
 			{
 				ScopeUnlock unlock(mutex);
