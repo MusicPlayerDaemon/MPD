@@ -325,6 +325,34 @@ SendConstraints(mpd_connection *connection, const DatabaseSelection &selection)
 	return true;
 }
 
+static bool
+SendGroupMask(mpd_connection *connection, tag_mask_t mask)
+{
+#if LIBMPDCLIENT_CHECK_VERSION(2,12,0)
+	for (unsigned i = 0; i < TAG_NUM_OF_ITEM_TYPES; ++i) {
+		if ((mask & (tag_mask_t(1) << i)) == 0)
+			continue;
+
+		const auto tag = Convert(TagType(i));
+		if (tag == MPD_TAG_COUNT)
+			throw std::runtime_error("Unsupported tag");
+
+		if (!mpd_search_add_group_tag(connection, tag))
+			return false;
+	}
+
+	return true;
+#else
+	(void)connection;
+	(void)mask;
+
+	if (mask != 0)
+		throw std::runtime_error("Grouping requires libmpdclient 2.12");
+
+	return true;
+#endif
+}
+
 ProxyDatabase::ProxyDatabase(EventLoop &_loop, DatabaseListener &_listener,
 			     const ConfigBlock &block)
 	:Database(proxy_db_plugin),
@@ -761,7 +789,7 @@ ProxyDatabase::Visit(const DatabaseSelection &selection,
 void
 ProxyDatabase::VisitUniqueTags(const DatabaseSelection &selection,
 			       TagType tag_type,
-			       gcc_unused tag_mask_t group_mask,
+			       tag_mask_t group_mask,
 			       VisitTag visit_tag) const
 try {
 	// TODO: eliminate the const_cast
@@ -772,32 +800,47 @@ try {
 		throw std::runtime_error("Unsupported tag");
 
 	if (!mpd_search_db_tags(connection, tag_type2) ||
-	    !SendConstraints(connection, selection))
+	    !SendConstraints(connection, selection) ||
+	    !SendGroupMask(connection, group_mask))
 		ThrowError(connection);
-
-	// TODO: use group_mask
 
 	if (!mpd_search_commit(connection))
 		ThrowError(connection);
 
-	while (auto *pair = mpd_recv_pair_tag(connection, tag_type2)) {
+	TagBuilder builder;
+
+	while (auto *pair = mpd_recv_pair(connection)) {
 		AtScopeExit(this, pair) {
 			mpd_return_pair(connection, pair);
 		};
 
-		TagBuilder tag;
-		tag.AddItem(tag_type, pair->value);
+		const auto current_type = tag_name_parse_i(pair->name);
+		if (current_type == TAG_NUM_OF_ITEM_TYPES)
+			continue;
 
-		if (tag.IsEmpty())
+		if (current_type == tag_type && !builder.IsEmpty()) {
+			try {
+				visit_tag(builder.Commit());
+			} catch (...) {
+				mpd_response_finish(connection);
+				throw;
+			}
+		}
+
+		builder.AddItem(current_type, pair->value);
+
+		if (!builder.HasType(current_type))
 			/* if no tag item has been added, then the
 			   given value was not acceptable
 			   (e.g. empty); forcefully insert an empty
 			   tag in this case, as the caller expects the
 			   given tag type to be present */
-			tag.AddEmptyItem(tag_type);
+			builder.AddEmptyItem(current_type);
+	}
 
+	if (!builder.IsEmpty()) {
 		try {
-			visit_tag(tag.Commit());
+			visit_tag(builder.Commit());
 		} catch (...) {
 			mpd_response_finish(connection);
 			throw;

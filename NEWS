@@ -3,6 +3,7 @@ ver 0.20.19 (not yet released)
   - validate absolute seek time, reject negative values
 * database
   - proxy: fix "search already in progress" errors
+  - proxy: implement "list ... group"
 * input
   - mms: fix lockup bug and a crash bug
 * decoder
