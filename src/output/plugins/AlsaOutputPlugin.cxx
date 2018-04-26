@@ -922,10 +922,39 @@ try {
 
 	CopyRingToPeriodBuffer();
 
-	if (period_buffer.IsEmpty())
+	if (period_buffer.IsEmpty()) {
+		if (snd_pcm_state(pcm) == SND_PCM_STATE_PREPARED) {
+			/* at SND_PCM_STATE_PREPARED (not yet switched
+			   to SND_PCM_STATE_RUNNING), we have no
+			   pressure to fill the ALSA buffer, because
+			   no xrun can possibly occur; and if no data
+			   is available right now, we can easily wait
+			   until some is available; so we just stop
+			   monitoring the ALSA file descriptor, and
+			   let it be reactivated by Play()/Activate()
+			   whenever more data arrives */
+
+			{
+				const std::lock_guard<Mutex> lock(mutex);
+				active = false;
+			}
+
+			/* avoid race condition: see if data has
+			   arrived meanwhile before disabling the
+			   event (but after clearing the "active"
+			   flag) */
+			if (!CopyRingToPeriodBuffer()) {
+				MultiSocketMonitor::Reset();
+				defer_invalidate_sockets.Cancel();
+			}
+
+			return;
+		}
+
 		/* insert some silence if the buffer has not enough
 		   data yet, to avoid ALSA xrun */
 		period_buffer.FillWithSilence(silence, out_frame_size);
+	}
 
 	auto frames_written = WriteFromPeriodBuffer();
 	if (frames_written < 0) {
