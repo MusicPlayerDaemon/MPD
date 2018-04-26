@@ -1,4 +1,4 @@
-ver 0.20.19 (not yet released)
+ver 0.20.19 (2018/04/26)
 * protocol
   - validate absolute seek time, reject negative values
 * database
