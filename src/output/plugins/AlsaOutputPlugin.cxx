@@ -276,14 +276,17 @@ private:
 	 */
 	void CancelInternal() noexcept;
 
-	void CopyRingToPeriodBuffer() noexcept {
+	/**
+	 * @return false if no data was moved
+	 */
+	bool CopyRingToPeriodBuffer() noexcept {
 		if (period_buffer.IsFull())
-			return;
+			return false;
 
 		size_t nbytes = ring_buffer->pop(period_buffer.GetTail(),
 						 period_buffer.GetSpaceBytes());
 		if (nbytes == 0)
-			return;
+			return false;
 
 		period_buffer.AppendBytes(nbytes);
 
@@ -291,6 +294,8 @@ private:
 		/* notify the OutputThread that there is now
 		   room in ring_buffer */
 		cond.signal();
+
+		return true;
 	}
 
 	snd_pcm_sframes_t WriteFromPeriodBuffer() noexcept {
