@@ -233,28 +233,20 @@ private:
 	 * #EventLoop.  Before calling this, filling the ring buffer
 	 * has no effect; nothing will be played, and no code will be
 	 * run on #EventLoop's thread.
-	 */
-	void Activate() noexcept {
-		if (active)
-			return;
-
-		active = true;
-		defer_invalidate_sockets.Schedule();
-	}
-
-	/**
-	 * Wrapper for Activate() which unlocks our mutex.  Call this
-	 * if you're holding the mutex.
+	 *
+	 * Caller must hold the mutex.
 	 *
 	 * @return true if Activate() was called, false if the mutex
 	 * was never unlocked
 	 */
-	bool UnlockActivate() noexcept {
+	bool Activate() noexcept {
 		if (active)
 			return false;
 
+		active = true;
+
 		const ScopeUnlock unlock(mutex);
-		Activate();
+		defer_invalidate_sockets.Schedule();
 		return true;
 	}
 
@@ -767,7 +759,7 @@ AlsaOutput::Drain()
 
 	drain = true;
 
-	UnlockActivate();
+	Activate();
 
 	while (drain) {
 		if (error)
@@ -853,7 +845,7 @@ AlsaOutput::Play(const void *chunk, size_t size)
 		/* now that the ring_buffer is full, we can activate
 		   the socket handlers to trigger the first
 		   snd_pcm_writei() */
-		if (UnlockActivate())
+		if (Activate())
 			/* since everything may have changed while the
 			   mutex was unlocked, we need to skip the
 			   cond.wait() call below and check the new
