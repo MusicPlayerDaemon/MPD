@@ -779,6 +779,14 @@ AlsaOutput::CancelInternal() noexcept
 	pcm_export->Reset();
 	period_buffer.Clear();
 	ClearRingBuffer();
+
+	{
+		const std::lock_guard<Mutex> lock(mutex);
+		active = false;
+	}
+
+	MultiSocketMonitor::Reset();
+	defer_invalidate_sockets.Cancel();
 }
 
 void
