@@ -577,7 +577,7 @@ Player::SeekDecoder() noexcept
 		pc.outputs.Cancel();
 	}
 
-	if (!dc.IsCurrentSong(*pc.next_song)) {
+	if (!dc.IsSeekableCurrentSong(*pc.next_song)) {
 		/* the decoder is already decoding the "next" song -
 		   stop it and start the previous song again */
 

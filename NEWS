@@ -31,11 +31,18 @@ ver 0.21 (not yet released)
   - opus: support for sending metadata using ogg stream chaining
 * require GCC 5.0
 
-ver 0.20.19 (not yet released)
+ver 0.20.19 (2018/04/26)
 * protocol
   - validate absolute seek time, reject negative values
+* database
+  - proxy: fix "search already in progress" errors
+  - proxy: implement "list ... group"
 * input
   - mms: fix lockup bug and a crash bug
+* decoder
+  - ffmpeg: fix av_register_all() deprecation warning (FFmpeg 4.0)
+* player
+  - fix spurious "Not seekable" error when switching radio streams
 * macOS: fix crash bug
 
 ver 0.20.18 (2018/02/24)

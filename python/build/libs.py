@@ -17,8 +17,8 @@ libogg = AutotoolsProject(
 )
 
 libvorbis = AutotoolsProject(
-    'http://downloads.xiph.org/releases/vorbis/libvorbis-1.3.5.tar.xz',
-    '28cb28097c07a735d6af56e598e1c90f',
+    'http://downloads.xiph.org/releases/vorbis/libvorbis-1.3.6.tar.xz',
+    'af00bb5a784e7c9e69f56823de4637c350643deedaf333d0fa86ecdba6fcb415',
     'lib/libvorbis.a',
     [
         '--disable-shared', '--enable-static',
@@ -105,8 +105,8 @@ liblame = AutotoolsProject(
 )
 
 ffmpeg = FfmpegProject(
-    'http://ffmpeg.org/releases/ffmpeg-3.4.2.tar.xz',
-    '2b92e9578ef8b3e49eeab229e69305f5f4cbc1fdaa22e927fc7fca18acccd740',
+    'http://ffmpeg.org/releases/ffmpeg-4.0.tar.xz',
+    'ed945daf40b124e77a685893cc025d086f638bc703183460aff49508edb3a43f',
     'lib/libavcodec.a',
     [
         '--disable-shared', '--enable-static',

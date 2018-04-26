@@ -304,6 +304,11 @@ struct DecoderControl {
 	gcc_pure
 	bool IsCurrentSong(const DetachedSong &_song) const noexcept;
 
+	gcc_pure
+	bool IsSeekableCurrentSong(const DetachedSong &_song) const noexcept {
+		return seekable && IsCurrentSong(_song);
+	}
+
 private:
 	/**
 	 * Wait for the command to be finished by the decoder thread.
