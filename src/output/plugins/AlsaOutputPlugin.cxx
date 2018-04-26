@@ -305,14 +305,10 @@ private:
 		return frames_written;
 	}
 
-	bool LockHasError() const noexcept {
-		const std::lock_guard<Mutex> lock(mutex);
-		return !!error;
-	}
-
 	void LockCaughtError() noexcept {
 		const std::lock_guard<Mutex> lock(mutex);
 		error = std::current_exception();
+		active = false;
 		cond.signal();
 	}
 
@@ -766,12 +762,11 @@ AlsaOutput::Drain()
 
 	Activate();
 
-	while (drain) {
-		if (error)
-			std::rethrow_exception(error);
-
+	while (drain && active)
 		cond.wait(mutex);
-	}
+
+	if (error)
+		std::rethrow_exception(error);
 }
 
 inline void
@@ -866,7 +861,7 @@ AlsaOutput::Play(const void *chunk, size_t size)
 std::chrono::steady_clock::duration
 AlsaOutput::PrepareSockets() noexcept
 {
-	if (LockHasError()) {
+	if (!LockIsActive()) {
 		ClearSocketList();
 		return std::chrono::steady_clock::duration(-1);
 	}
