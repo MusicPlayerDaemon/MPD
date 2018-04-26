@@ -180,6 +180,8 @@ public:
 		snd_config_update_free_global();
 	}
 
+	using MultiSocketMonitor::GetEventLoop;
+
 	gcc_pure
 	const char *GetDevice() const noexcept {
 		return device.empty() ? default_device : device.c_str();
@@ -791,7 +793,7 @@ AlsaOutput::Cancel() noexcept
 		return;
 	}
 
-	BlockingCall(MultiSocketMonitor::GetEventLoop(), [this](){
+	BlockingCall(GetEventLoop(), [this](){
 			CancelInternal();
 		});
 }
@@ -800,7 +802,7 @@ void
 AlsaOutput::Close() noexcept
 {
 	/* make sure the I/O thread isn't inside DispatchSockets() */
-	BlockingCall(MultiSocketMonitor::GetEventLoop(), [this](){
+	BlockingCall(GetEventLoop(), [this](){
 			MultiSocketMonitor::Reset();
 			defer_invalidate_sockets.Cancel();
 		});
