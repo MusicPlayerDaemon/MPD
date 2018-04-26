@@ -762,12 +762,19 @@ AlsaOutput::Drain()
 {
 	const std::lock_guard<Mutex> lock(mutex);
 
+	if (error)
+		std::rethrow_exception(error);
+
 	drain = true;
 
 	UnlockActivate();
 
-	while (drain && !error)
+	while (drain) {
+		if (error)
+			std::rethrow_exception(error);
+
 		cond.wait(mutex);
+	}
 }
 
 inline void
