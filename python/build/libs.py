@@ -17,8 +17,8 @@ libogg = AutotoolsProject(
 )
 
 libvorbis = AutotoolsProject(
-    'http://downloads.xiph.org/releases/vorbis/libvorbis-1.3.5.tar.xz',
-    '28cb28097c07a735d6af56e598e1c90f',
+    'http://downloads.xiph.org/releases/vorbis/libvorbis-1.3.6.tar.xz',
+    'af00bb5a784e7c9e69f56823de4637c350643deedaf333d0fa86ecdba6fcb415',
     'lib/libvorbis.a',
     [
         '--disable-shared', '--enable-static',
