@@ -682,7 +682,7 @@ static void
 SearchSongs(struct mpd_connection *connection,
 	    const DatabaseSelection &selection,
 	    VisitSong visit_song)
-{
+try {
 	assert(selection.recursive);
 	assert(visit_song);
 
@@ -709,6 +709,11 @@ SearchSongs(struct mpd_connection *connection,
 
 	if (!mpd_response_finish(connection))
 		ThrowError(connection);
+} catch (...) {
+	if (connection != nullptr)
+		mpd_search_cancel(connection);
+
+	throw;
 }
 
 /**
@@ -758,7 +763,7 @@ ProxyDatabase::VisitUniqueTags(const DatabaseSelection &selection,
 			       TagType tag_type,
 			       gcc_unused tag_mask_t group_mask,
 			       VisitTag visit_tag) const
-{
+try {
 	// TODO: eliminate the const_cast
 	const_cast<ProxyDatabase *>(this)->EnsureConnected();
 
@@ -801,6 +806,11 @@ ProxyDatabase::VisitUniqueTags(const DatabaseSelection &selection,
 
 	if (!mpd_response_finish(connection))
 		ThrowError(connection);
+} catch (...) {
+	if (connection != nullptr)
+		mpd_search_cancel(connection);
+
+	throw;
 }
 
 DatabaseStats
