@@ -122,6 +122,9 @@ class AlsaOutput final
 	/**
 	 * After Open(), has this output been activated by a Play()
 	 * command?
+	 *
+	 * This attribute is not thread-safe.  It is only used by the
+	 * client thread (the thread which calls AudioOutput public methods).
 	 */
 	bool active;
 
