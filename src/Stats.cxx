@@ -26,11 +26,24 @@
 #include "db/Selection.hxx"
 #include "db/Interface.hxx"
 #include "db/Stats.hxx"
+#include "db/DatabaseLock.hxx"
+#include "db/plugins/simple/SimpleDatabasePlugin.hxx"
+#include "db/plugins/simple/Directory.hxx"
 #include "system/Clock.hxx"
 #include "Log.hxx"
+#ifdef ENABLE_DATABASE
+#include "db/update/Service.hxx"
+#define COMMAND_STATUS_UPDATING_DB	"updating_db"
+#endif
 #include "util/ChronoUtil.hxx"
+#include "storage/CompositeStorage.hxx"
 
 #include <chrono>
+
+#include "util/Domain.hxx"
+#include "Log.hxx"
+
+static constexpr Domain stats_domain("stats");
 
 #ifndef _WIN32
 /**
@@ -83,12 +96,46 @@ stats_update(const Database &db)
 		return false;
 	}
 }
+static bool
+getAllMounts(Storage *_composite, std::list<std::string> &list)
+{
+	if (_composite == nullptr) {
+		return false;
+	}
+
+	CompositeStorage &composite = *(CompositeStorage *)_composite;
+
+	list.clear();
+	const auto visitor = [&list](const char *mount_uri,
+				       gcc_unused const Storage &storage){
+		if (*mount_uri != 0) {
+			list.push_back(mount_uri);
+		}
+	};
+
+	composite.VisitMounts(visitor);
+
+	return true;
+}
 
 static void
-db_stats_print(Response &r, const Database &db)
+db_stats_print(Response &r, const Database &db, const Partition &partition)
 {
-	if (!stats_update(db))
-		return;
+#ifdef ENABLE_DATABASE
+	const UpdateService *update_service = partition.instance.update;
+	unsigned updateJobId = update_service != nullptr
+		? update_service->GetId()
+		: 0;
+	if (updateJobId != 0) {
+		stats_validity = StatsValidity::INVALID;
+		r.Format(COMMAND_STATUS_UPDATING_DB ": %i\n",
+				  updateJobId);
+	}
+#endif
+	if (!stats_update(db)) {
+		FormatDefault(stats_domain, "%s %d get stats fail!", __func__, __LINE__);
+ 		return;
+	}
 
 	unsigned total_duration_s =
 		std::chrono::duration_cast<std::chrono::seconds>(stats.total_duration).count();
@@ -102,7 +149,24 @@ db_stats_print(Response &r, const Database &db)
 		 stats.song_count,
 		 total_duration_s);
 
-	const auto update_stamp = db.GetUpdateStamp();
+	std::chrono::system_clock::time_point update_stamp;
+	std::list<std::string> list;
+	Storage *_composite = partition.instance.storage;
+	if (db.IsPlugin(simple_db_plugin) &&
+		getAllMounts(_composite, list)) {
+		SimpleDatabase *db2 = static_cast<SimpleDatabase*>(partition.instance.database);
+		for (const auto &str : list) {
+			db_lock();
+			const auto lr = db2->GetRoot().LookupDirectory(str.c_str());
+			db_unlock();
+			if (lr.directory->IsMount()) {
+				Database &_db2 = *(lr.directory->mounted_database);
+				auto t = _db2.GetUpdateStamp();
+				update_stamp = t;
+			}
+		}
+	}
+
 	if (!IsNegative(update_stamp))
 		r.Format("db_update: %lu\n",
 			 (unsigned long)std::chrono::system_clock::to_time_t(update_stamp));
@@ -125,6 +189,6 @@ stats_print(Response &r, const Partition &partition)
 #ifdef ENABLE_DATABASE
 	const Database *db = partition.instance.database;
 	if (db != nullptr)
-		db_stats_print(r, *db);
+		db_stats_print(r, *db, partition);
 #endif
 }

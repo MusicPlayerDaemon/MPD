@@ -341,7 +341,7 @@ FfmpegSendFrame(DecoderClient &client, InputStream &is,
 		output_buffer = start_gapless_filter(output_buffer);
 		if (size != output_buffer.size) {
 			enable_gapless_start = false;
-			FormatDefault(ffmpeg_domain, "start gap size=%d total size=%d",
+			FormatDefault(ffmpeg_domain, "start gap size=%lu total size=%lu",
 				size-output_buffer.size, size);
 		}
 	} else if (enable_gapless_end) {
@@ -351,7 +351,7 @@ FfmpegSendFrame(DecoderClient &client, InputStream &is,
 			output_buffer = end_gapless_filter(output_buffer);
 			if (size != output_buffer.size) {
 				enable_gapless_end = false;
-				FormatDefault(ffmpeg_domain, "end gap size=%d total size=%d",
+				FormatDefault(ffmpeg_domain, "end gap size=%lu total size=%lu",
 					size-output_buffer.size, size);
 			}
 		}
@@ -536,7 +536,7 @@ ffmpeg_send_packet(DecoderClient &client, InputStream &is,
 
 gcc_const
 static SampleFormat
-ffmpeg_sample_format(enum AVSampleFormat sample_fmt) noexcept
+ffmpeg_sample_format(enum AVSampleFormat sample_fmt, int raw_bits = -1) noexcept
 {
 	switch (sample_fmt) {
 	case AV_SAMPLE_FMT_S16:
@@ -545,7 +545,11 @@ ffmpeg_sample_format(enum AVSampleFormat sample_fmt) noexcept
 
 	case AV_SAMPLE_FMT_S32:
 	case AV_SAMPLE_FMT_S32P:
-		return SampleFormat::S32;
+		if (raw_bits == 24) {
+			return SampleFormat::S24_P32;
+		} else {
+			return SampleFormat::S32;
+		}
 
 	case AV_SAMPLE_FMT_FLT:
 	case AV_SAMPLE_FMT_FLTP:
@@ -797,7 +801,7 @@ FfmpegDecode(DecoderClient &client, InputStream &input,
 #endif
 
 	const SampleFormat sample_format =
-		ffmpeg_sample_format(GetSampleFormat(codec_params));
+		ffmpeg_sample_format(GetSampleFormat(codec_params), codec_context->bits_per_raw_sample);
 	if (sample_format == SampleFormat::UNDEFINED) {
 		// (error message already done by ffmpeg_sample_format())
 		return;
@@ -983,6 +987,10 @@ FfmpegScanStream(AVFormatContext &format_context,
 							   AV_TIME_BASE_Q));
 
 	FfmpegScanMetadata(format_context, audio_stream, handler, handler_ctx);
+
+	if (handler.cover != nullptr) {
+		FfmpegScanCover(format_context, handler, handler_ctx);
+	}
 
 	return true;
 }

@@ -27,9 +27,12 @@
 #include "util/Domain.hxx"
 #include "util/ByteReverse.hxx"
 #include "util/StaticFifoBuffer.hxx"
+#include "util/StringCompare.hxx"
 #include "util/NumberParser.hxx"
 #include "util/MimeType.hxx"
 #include "Log.hxx"
+#include "AudioParser.hxx"
+#include "tag/Handler.hxx"
 
 #include <exception>
 
@@ -133,6 +136,14 @@ pcm_stream_decode(DecoderClient &client, InputStream &is)
 			}
 
 			audio_format.channels = value;
+		}
+
+		i = mime_parameters.find("format");
+		if (i != mime_parameters.end()) {
+			const char *s = i->second.c_str();
+			const char *endptr = nullptr;
+			SampleFormat format = ParseSampleFormat(s, false, &endptr);
+			audio_format.format = format;
 		}
 	}
 

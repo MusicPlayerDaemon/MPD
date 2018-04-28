@@ -80,6 +80,18 @@ Partition::GetDatabaseOrThrow() const
 	return instance.GetDatabaseOrThrow();
 }
 
+const Database *
+Partition::GetUpnpDatabase() const
+{
+	return instance.GetUpnpDatabase();
+}
+
+const Database &
+Partition::GetUpnpDatabaseOrThrow() const
+{
+	return instance.GetUpnpDatabaseOrThrow();
+}
+
 void
 Partition::DatabaseModified(const Database &db)
 {

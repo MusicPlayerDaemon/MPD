@@ -38,6 +38,8 @@
 #include "util/ChronoUtil.hxx"
 #include "util/UriUtil.hxx"
 #include "util/StringAPI.hxx"
+#include "util/StringCompare.hxx"
+#include "util/Domain.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "Stats.hxx"
 #include "PlaylistFile.hxx"
@@ -48,6 +50,7 @@
 #include "Instance.hxx"
 #include "Idle.hxx"
 #include "Log.hxx"
+#include "storage/CompositeStorage.hxx"
 
 #ifdef ENABLE_DATABASE
 #include "DatabaseCommands.hxx"
@@ -57,6 +60,8 @@
 
 #include <assert.h>
 #include <string.h>
+
+static constexpr Domain domain("OtherCommands");
 
 static void
 print_spl_list(Response &r, const PlaylistVector &list)
@@ -167,10 +172,10 @@ handle_lsinfo_absolute(Response &r, const char *uri)
 }
 
 static CommandResult
-handle_lsinfo_relative(Client &client, Response &r, const char *uri)
+handle_lsinfo_relative(Client &client, Response &r, const char *uri, const RangeArg &window)
 {
 #ifdef ENABLE_DATABASE
-	CommandResult result = handle_lsinfo2(client, uri, r);
+	CommandResult result = handle_lsinfo2(client, uri, r, window);
 	if (result != CommandResult::OK)
 		return result;
 #else
@@ -194,7 +199,7 @@ handle_lsinfo_relative(Client &client, Response &r, const char *uri)
 }
 
 static CommandResult
-handle_lsinfo_path(Client &, Response &r,
+handle_lsinfo_path(Client &client, Response &r,
 		   const char *path_utf8, Path path_fs)
 {
 	DetachedSong song(path_utf8);
@@ -203,13 +208,17 @@ handle_lsinfo_path(Client &, Response &r,
 		return CommandResult::ERROR;
 	}
 
-	song_print_info(r, song);
+	song_print_info(r, client.GetPartition(), song);
 	return CommandResult::OK;
 }
 
 CommandResult
 handle_lsinfo(Client &client, Request args, Response &r)
 {
+	RangeArg window = args.size >= 2
+		? args.ParseRange(args.size - 1)
+		: RangeArg::All();
+
 	/* default is root directory */
 	auto uri = args.GetOptional(0, "");
 	if (StringIsEqual(uri, "/"))
@@ -232,7 +241,7 @@ handle_lsinfo(Client &client, Request args, Response &r)
 
 	case LocatedUri::Type::RELATIVE:
 		return handle_lsinfo_relative(client, r,
-					      located_uri.canonical_uri);
+					      located_uri.canonical_uri, window);
 
 	case LocatedUri::Type::PATH:
 		/* print information about an arbitrary local file */
@@ -245,10 +254,35 @@ handle_lsinfo(Client &client, Request args, Response &r)
 
 #ifdef ENABLE_DATABASE
 
+static unsigned
+update_all(Client &client, UpdateService &update, bool discard)
+{
+	unsigned ret = 0;
+	CompositeStorage *composite = (CompositeStorage*)client.GetPartition().instance.storage;
+
+	if (composite != nullptr) {
+		std::vector<std::string> list = composite->ListMounts();
+		for (const auto &str : list) {
+			FormatDefault(domain, "update enqueue: %s", str.c_str());
+			ret = update.Enqueue(str.c_str(), discard);
+		}
+	}
+
+	return ret;
+}
+
 static CommandResult
-handle_update(Response &r, UpdateService &update,
+handle_update(Client &client, Response &r, UpdateService &update,
 	      const char *uri_utf8, bool discard)
 {
+	if (StringIsEmpty(uri_utf8)) {
+		unsigned ret = update_all(client, update, discard);
+		if (ret > 0) {
+			r.Format("updating_db: %i\n", ret);
+			return CommandResult::OK;
+		}
+	}
+
 	unsigned ret = update.Enqueue(uri_utf8, discard);
 	if (ret > 0) {
 		r.Format("updating_db: %i\n", ret);
@@ -298,7 +332,7 @@ handle_update(Client &client, Request args, Response &r, bool discard)
 
 	UpdateService *update = client.GetInstance().update;
 	if (update != nullptr)
-		return handle_update(r, *update, path, discard);
+		return handle_update(client, r, *update, path, discard);
 
 	Database *db = client.GetInstance().database;
 	if (db != nullptr)

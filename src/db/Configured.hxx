@@ -37,4 +37,8 @@ Database *
 CreateConfiguredDatabase(EventLoop &main_event_loop, EventLoop &io_event_loop,
 			 DatabaseListener &listener);
 
+Database *
+CreateUpnpDatabase(EventLoop &main_event_loop, EventLoop &io_event_loop,
+			 DatabaseListener &listener);
+
 #endif

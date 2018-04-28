@@ -47,3 +47,20 @@ DatabaseGlobalInit(EventLoop &main_event_loop,
 							  plugin_name));
 	}
 }
+
+Database *
+UpnpDatabaseInit(EventLoop &main_event_loop,
+		 EventLoop &io_event_loop,
+		 DatabaseListener &listener)
+{
+		const char *plugin_name = "upnp";
+		const ConfigBlock block;
+
+		const DatabasePlugin *plugin = GetDatabasePluginByName(plugin_name);
+		if (plugin == nullptr) {
+			throw FormatRuntimeError("No such database plugin: %s",
+					 plugin_name);
+		}
+
+		return plugin->create(main_event_loop, io_event_loop, listener, block);
+}

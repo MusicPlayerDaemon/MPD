@@ -25,6 +25,7 @@
 #include "Compiler.h"
 
 #include <chrono>
+#include <stdint.h>
 
 struct DatabasePlugin;
 struct DatabaseStats;
@@ -89,9 +90,17 @@ public:
 	 * Visit the selected entities.
 	 */
 	virtual void Visit(const DatabaseSelection &selection,
+			   VisitDirectoryInfo visit_directory_info,
 			   VisitDirectory visit_directory,
 			   VisitSong visit_song,
 			   VisitPlaylist visit_playlist) const = 0;
+
+	void Visit(const DatabaseSelection &selection,
+		   VisitDirectory visit_directory,
+		   VisitSong visit_song,
+		   VisitPlaylist visit_playlist) const {
+		Visit(selection, VisitDirectoryInfo(), visit_directory, visit_song, visit_playlist);
+	}
 
 	void Visit(const DatabaseSelection &selection,
 		   VisitDirectory visit_directory,
@@ -99,9 +108,8 @@ public:
 		Visit(selection, visit_directory, visit_song, VisitPlaylist());
 	}
 
-	void Visit(const DatabaseSelection &selection,
-		   VisitSong visit_song) const {
-		return Visit(selection, VisitDirectory(), visit_song);
+	void Visit(const DatabaseSelection &selection, VisitSong visit_song) const {
+		Visit(selection, VisitDirectory(), visit_song);
 	}
 
 	/**

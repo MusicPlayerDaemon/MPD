@@ -35,7 +35,7 @@ class Response;
  */
 void
 db_selection_print(Response &r, Partition &partition,
-		   const DatabaseSelection &selection,
+		   DatabaseSelection &selection,
 		   bool full, bool base);
 
 /**
@@ -44,7 +44,7 @@ db_selection_print(Response &r, Partition &partition,
  */
 void
 db_selection_print(Response &r, Partition &partition,
-		   const DatabaseSelection &selection,
+		   DatabaseSelection &selection,
 		   bool full, bool base,
 		   TagType sort, bool descending,
 		   unsigned window_start, unsigned window_end);
@@ -52,6 +52,11 @@ db_selection_print(Response &r, Partition &partition,
 void
 PrintUniqueTags(Response &r, Partition &partition,
 		unsigned type, TagMask group_mask,
+		const SongFilter *filter);
+
+void
+PrintUniqueTagsExt(Response &r, Partition &partition,
+		unsigned type,
 		const SongFilter *filter);
 
 #endif

@@ -22,8 +22,16 @@
 
 #include "tag/Tag.hxx"
 #include "Compiler.h"
+#include "db/Visitor.hxx"
+
+#include <upnp/upnp.h>
 
 #include <string>
+#include <list>
+#include <vector>
+
+struct DatabaseSelection;
+class ContentDirectoryService;
 
 /**
  * UpnP Media Server directory entry, converted from XML data.
@@ -47,8 +55,12 @@ public:
 	// playlists).
 	enum class ItemClass {
 		UNKNOWN,
+		ARTIST,
+		ALBUM,
+		GENRE,
 		MUSIC,
 		PLAYLIST,
+		FOLDER,
 	};
 
 	/**
@@ -73,12 +85,47 @@ public:
 
 	Tag tag;
 
-	UPnPDirObject() = default;
-	UPnPDirObject(UPnPDirObject &&) = default;
+	std::vector<UPnPDirObject> childs;
+
+	unsigned total; // total childs match
+
+	UPnPDirObject()
+		: id("0"),
+		parent_id("0"),
+		url(),
+		name(),
+		type(Type::CONTAINER),
+		item_class(ItemClass::UNKNOWN),
+		tag(),
+		childs(),
+		total(std::numeric_limits<unsigned>::max()) {
+	}
+
+	UPnPDirObject(const UPnPDirObject &other)
+		: id(other.id),
+		parent_id(other.parent_id),
+		url(other.url),
+		name(other.name),
+		type(other.type),
+		item_class(other.item_class),
+		tag(other.tag),
+		childs(other.childs),
+		total(other.total) {
+	}
+
+	UPnPDirObject(UPnPDirObject &&other)
+		: id(std::move(other.id)),
+		parent_id(std::move(other.parent_id)),
+		url(std::move(other.url)),
+		name(std::move(other.name)),
+		type(other.type),
+		item_class(other.item_class),
+		tag(other.tag),
+		childs(std::move(other.childs)),
+		total(other.total) {
+	}
 
 	~UPnPDirObject() noexcept;
-
-	UPnPDirObject &operator=(UPnPDirObject &&) = default;
 
 	void Clear() noexcept {
 		id.clear();
@@ -87,6 +134,9 @@ public:
 		type = Type::UNKNOWN;
 		item_class = ItemClass::UNKNOWN;
 		tag.Clear();
+		childs.clear();
+		childs.shrink_to_fit();
+		total = std::numeric_limits<unsigned>::max();
 	}
 
 	gcc_pure
@@ -95,6 +145,74 @@ public:
 			(type != UPnPDirObject::Type::ITEM ||
 			 item_class != UPnPDirObject::ItemClass::UNKNOWN);
 	}
+
+	gcc_pure
+	UPnPDirObject *FindObject(const char *n) {
+		for (auto &o : childs)
+			if (o.name == n)
+				return &o;
+
+		return nullptr;
+	}
+
+	gcc_pure
+	UPnPDirObject *FindDirectory(const char *n) {
+		for (auto &o : childs)
+			if (o.name == n &&
+				o.type == Type::CONTAINER)
+				return &o;
+
+		return nullptr;
+	}
+
+	UPnPDirObject *LookupDirectory(std::list<std::string> vpath);
+
+	UPnPDirObject *LookupSong(std::list<std::string> vpath);
+
+	void visitSong(const char *path,
+		  const DatabaseSelection &selection,
+		  VisitSong visit_song) const;
+
+	void VisitItem(const char *uri,
+		  const DatabaseSelection &selection,
+		  VisitSong visit_song, VisitPlaylist visit_playlist) const;
+
+	void VisitObject(const char *uri,
+			const DatabaseSelection &selection,
+			VisitDirectory visit_directory,
+			VisitSong visit_song,
+			VisitPlaylist visit_playlist) const;
+
+	/**
+	 * Parse from DIDL-Lite XML data.
+	 *
+	 * Normally only used by ContentDirectoryService::readDir()
+	 * This is cumulative: in general, the XML data is obtained in
+	 * several documents corresponding to (offset,count) slices of the
+	 * directory (container). parse() can be called repeatedly with
+	 * the successive XML documents and will accumulate entries in the item
+	 * and container vectors. This makes more sense if the different
+	 * chunks are from the same container, but given that UPnP Ids are
+	 * actually global, nothing really bad will happen if you mix
+	 * up...
+	 */
+	void Parse(const char *didltext);
+
+	/**
+	 * Caller must lock #db_mutex.
+	 */
+	void Walk(const char *base_uri, const DatabaseSelection &selection,
+		  VisitDirectory visit_directory, VisitSong visit_song,
+		  VisitPlaylist visit_playlist) const;
+
+	void Update(ContentDirectoryService &server,
+				UpnpClient_Handle handle,
+				unsigned window_end = std::numeric_limits<unsigned>::max());
+
+	void Update(ContentDirectoryService &server,
+				UpnpClient_Handle handle,
+				std::list<std::string> vpath,
+				unsigned window_end = std::numeric_limits<unsigned>::max());
 };
 
 #endif /* _UPNPDIRCONTENT_H_X_INCLUDED_ */

@@ -216,7 +216,7 @@ UpdateService::Enqueue(const char *path, bool discard)
 		/* use the "root" database/storage */
 
 		db2 = &db;
-		storage2 = storage.GetMount("");
+		storage2 = storage.GetMount(path);
 	}
 
 	if (storage2 == nullptr)
@@ -258,7 +258,7 @@ UpdateService::RunDeferred() noexcept
 	delete walk;
 	walk = nullptr;
 
-	next.Clear();
+	next = UpdateQueueItem();
 
 	idle_add(IDLE_UPDATE);
 

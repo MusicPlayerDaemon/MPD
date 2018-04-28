@@ -28,4 +28,7 @@
 void
 SmbclientInit();
 
+void
+SmbclientReinit();
+
 #endif

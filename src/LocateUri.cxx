@@ -64,6 +64,10 @@ LocateAbsoluteUri(const char *uri
 	if (!uri_supported_scheme(uri))
 		throw std::runtime_error("Unsupported URI scheme");
 
+	if (StringStartsWith(uri, "upnp://")) {
+		return LocatedUri(LocatedUri::Type::RELATIVE, uri);
+	}
+
 #ifdef ENABLE_DATABASE
 	if (storage != nullptr) {
 		const char *suffix = storage->MapToRelativeUTF8(uri);

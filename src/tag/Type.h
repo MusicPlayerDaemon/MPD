@@ -53,6 +53,11 @@ enum TagType
 	TAG_DISC,
 	TAG_ALBUM_URI,
 	TAG_SUFFIX,
+	TAG_TOTAL_TRACKS,
+	TAG_BAND_WIDTH,
+	TAG_BOOKMARK_URL,
+	TAG_UUID,
+	TAG_AUDIO_QUALITY,
 
 	TAG_MUSICBRAINZ_ARTISTID,
 	TAG_MUSICBRAINZ_ALBUMID,
@@ -69,5 +74,35 @@ enum TagType
  * readable name (specific to the MPD protocol).
  */
 extern const char *const tag_item_names[];
+
+/**
+ * Codes for the type of a cover item.
+ */
+enum CoverType
+#ifdef __cplusplus
+/* the size of this enum is 1 byte; this is only relevant for C++
+   code; the only C sources including this header don't use instances
+   of this enum, they only refer to the integer values */
+: uint8_t
+#endif
+	{
+	COVER_TYPE,
+	COVER_MIME,
+	COVER_DESCRIPTION,
+	COVER_WIDTH,
+	COVER_HEIGHT,
+	COVER_DEPTH,
+	COVER_COLORS,
+	COVER_LENGTH,
+	COVER_DATA,
+
+	COVER_NUM_OF_ITEM_TYPES
+};
+
+/**
+ * An array of strings, which map the #CoverType to its machine
+ * readable name (specific to the MPD protocol).
+ */
+extern const char *const cover_item_names[];
 
 #endif

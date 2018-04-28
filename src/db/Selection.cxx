@@ -20,10 +20,41 @@
 #include "config.h"
 #include "Selection.hxx"
 #include "SongFilter.hxx"
+#include <string.h>
+#include <limits>
 
 DatabaseSelection::DatabaseSelection(const char *_uri, bool _recursive,
 				     const SongFilter *_filter)
-	:uri(_uri), recursive(_recursive), filter(_filter)
+	:uri(_uri), recursive(_recursive), ignore_repeat(false), update(false),
+	window_start(0), window_end(std::numeric_limits<unsigned>::max()), filter(_filter)
+{
+	/* optimization: if the caller didn't specify a base URI, pick
+	   the one from SongFilter */
+	if (uri.empty() && filter != nullptr) {
+		auto base = filter->GetBase();
+		if (base != nullptr)
+			uri = base;
+	}
+}
+
+DatabaseSelection::DatabaseSelection(const char *_uri, bool _recursive,
+				     bool _ignore_repeat, const SongFilter *_filter)
+	:uri(_uri), recursive(_recursive), ignore_repeat(_ignore_repeat), update(false),
+	window_start(0), window_end(std::numeric_limits<unsigned>::max()), filter(_filter)
+{
+	/* optimization: if the caller didn't specify a base URI, pick
+	   the one from SongFilter */
+	if (uri.empty() && filter != nullptr) {
+		auto base = filter->GetBase();
+		if (base != nullptr)
+			uri = base;
+	}
+}
+
+DatabaseSelection::DatabaseSelection(const char *_uri, bool _recursive,
+				     bool _ignore_repeat, bool _update, const SongFilter *_filter)
+	:uri(_uri), recursive(_recursive), ignore_repeat(_ignore_repeat), update(_update),
+	window_start(0), window_end(std::numeric_limits<unsigned>::max()), filter(_filter)
 {
 	/* optimization: if the caller didn't specify a base URI, pick
 	   the one from SongFilter */

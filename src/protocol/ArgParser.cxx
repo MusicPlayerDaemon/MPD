@@ -21,6 +21,8 @@
 #include "ArgParser.hxx"
 #include "Ack.hxx"
 #include "Chrono.hxx"
+#include "tag/Tag.hxx"
+#include "external/jaijson/Deserializer.hxx"
 
 #include <stdlib.h>
 #include <strings.h>
@@ -185,4 +187,18 @@ ParseCommandArgSignedSongTime(const char *s)
 {
 	auto value = ParseCommandArgFloat(s);
 	return SongTime::FromS(value);
+}
+
+Tag
+ParseCommandArgTag(const char *s)
+{
+	jaijson::Document d;
+	if (d.Parse(s).HasParseError()) {
+		throw FormatProtocolError(ACK_ERROR_ARG,
+					  "Invalid json Tag: %s", s);
+	}
+	Tag tag;
+	deserialize(d, tag);
+
+	return tag;
 }

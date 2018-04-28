@@ -23,6 +23,7 @@
 #include "Callback.hxx"
 #include "thread/Mutex.hxx"
 #include "util/RuntimeError.hxx"
+#include "lib/upnp/Discovery.hxx"
 
 #include <upnptools.h>
 
@@ -31,6 +32,7 @@
 static Mutex upnp_client_init_mutex;
 static unsigned upnp_client_ref;
 static UpnpClient_Handle upnp_client_handle;
+static UPnPDeviceDirectory *upnp_discovery = nullptr;
 
 static int
 UpnpClientCallback(Upnp_EventType et,
@@ -90,4 +92,16 @@ UpnpClientGlobalFinish() noexcept
 	}
 
 	UpnpGlobalFinish();
+}
+
+UPnPDeviceDirectory *
+GetUpnpDiscovery()
+{
+	return upnp_discovery;
+}
+
+void
+SetUpnpDiscovery(UPnPDeviceDirectory *d)
+{
+	upnp_discovery = d;
 }

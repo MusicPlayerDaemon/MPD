@@ -42,6 +42,7 @@
 #include "util/CharUtil.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
+#include "Mount.hxx"
 
 #ifdef ENABLE_ZLIB
 #include "fs/io/GzipOutputStream.hxx"
@@ -252,19 +253,33 @@ SimpleDatabase::ReturnSong(gcc_unused const LightSong *song) const
 	assert(song != nullptr);
 	assert(song == &light_song || song == prefixed_light_song);
 
-	delete prefixed_light_song;
-	prefixed_light_song = nullptr;
-
 #ifndef NDEBUG
+	if (song == prefixed_light_song) {
+		db_lock();
+		auto r = root->LookupDirectory(song->GetURI().c_str());
+		if (r.directory->IsMount()) {
+			/* pass the request to the mounted database */
+			db_unlock();
+			if (r.directory->mounted_database) {
+				SimpleDatabase *sd = (SimpleDatabase*)r.directory->mounted_database;
+				assert(sd->borrowed_song_count > 0);
+				sd->borrowed_song_count--;
+			}
+		}
+	}
 	if (song == &light_song) {
 		assert(borrowed_song_count > 0);
 		--borrowed_song_count;
 	}
 #endif
+
+	delete prefixed_light_song;
+	prefixed_light_song = nullptr;
 }
 
 void
 SimpleDatabase::Visit(const DatabaseSelection &selection,
+		      gcc_unused VisitDirectoryInfo visit_directory_info,
 		      VisitDirectory visit_directory,
 		      VisitSong visit_song,
 		      VisitPlaylist visit_playlist) const
@@ -273,14 +288,16 @@ SimpleDatabase::Visit(const DatabaseSelection &selection,
 
 	auto r = root->LookupDirectory(selection.uri.c_str());
 
-	if (r.directory->IsMount()) {
+	if (r.directory->IsMount()
+		&& r.uri != nullptr) {
 		/* pass the request and the remaining uri to the mounted database */
 		protect.unlock();
-
+		const DatabaseSelection sel = DatabaseSelection(r.uri == nullptr ? "" : r.uri
+			, selection.recursive, selection.filter);
 		WalkMount(r.directory->GetPath(), *(r.directory->mounted_database),
-			(r.uri == nullptr)?"":r.uri, selection.recursive, selection.filter,
-			visit_directory, visit_song, visit_playlist);
-
+					sel,
+					visit_directory, visit_song,
+					visit_playlist);
 		return;
 	}
 
@@ -397,6 +414,7 @@ SimpleDatabase::Mount(const char *uri, Database *db)
 
 	Directory *mnt = r.directory->CreateChild(r.uri);
 	mnt->mounted_database = db;
+	mnt->Sort();
 }
 
 static constexpr bool

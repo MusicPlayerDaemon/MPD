@@ -201,6 +201,19 @@ CompositeStorage::GetMount(const char *uri) noexcept
 	return result.directory->storage.get();
 }
 
+std::vector<std::string>
+CompositeStorage::ListMounts() const
+{
+	const std::lock_guard<Mutex> protect(mutex);
+
+	std::vector<std::string> l;
+	for (const auto &i : root.children) {
+		l.emplace_back(i.first);
+	}
+
+	return l;
+}
+
 void
 CompositeStorage::Mount(const char *uri, std::unique_ptr<Storage> storage)
 {

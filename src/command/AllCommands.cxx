@@ -34,6 +34,7 @@
 #include "ClientCommands.hxx"
 #include "PartitionCommands.hxx"
 #include "OtherCommands.hxx"
+#include "external/common/MiscCommands.hxx"
 #include "Permission.hxx"
 #include "tag/Type.h"
 #include "Partition.hxx"
@@ -81,12 +82,15 @@ handle_not_commands(Client &client, Request request, Response &response);
  * This array must be sorted!
  */
 static constexpr struct command commands[] = {
-	{ "add", PERMISSION_ADD, 1, 1, handle_add },
-	{ "addid", PERMISSION_ADD, 1, 2, handle_addid },
+	{ "add", PERMISSION_ADD, 1, -1, handle_add },
+	{ "addid", PERMISSION_ADD, 1, -1, handle_addid },
+	{ "addqueuetopl", PERMISSION_CONTROL, 1, 2, handle_addQueueToPlaylist },
+	{ "addqueuetoplaylist", PERMISSION_CONTROL, 1, 2, handle_addQueueToPlaylist },
 	{ "addtagid", PERMISSION_ADD, 3, 3, handle_addtagid },
 	{ "albumart", PERMISSION_READ, 2, 2, handle_album_art },
 	{ "channels", PERMISSION_READ, 0, 0, handle_channels },
 	{ "clear", PERMISSION_CONTROL, 0, 0, handle_clear },
+	{ "clearcache", PERMISSION_CONTROL, 0, 0, handle_clear_upnp_cache },
 	{ "clearerror", PERMISSION_CONTROL, 0, 0, handle_clearerror },
 	{ "cleartagid", PERMISSION_ADD, 1, 2, handle_cleartagid },
 	{ "close", PERMISSION_NONE, -1, -1, handle_close },
@@ -106,6 +110,8 @@ static constexpr struct command commands[] = {
 #ifdef ENABLE_DATABASE
 	{ "find", PERMISSION_READ, 2, -1, handle_find },
 	{ "findadd", PERMISSION_ADD, 2, -1, handle_findadd},
+	{ "findaddpl", PERMISSION_CONTROL, 3, -1, handle_findaddpl },
+	{ "findsavepl", PERMISSION_CONTROL, 3, -1, handle_findsavepl },
 #endif
 	{ "idle", PERMISSION_READ, 0, -1, handle_idle },
 	{ "kill", PERMISSION_ADMIN, -1, -1, handle_kill },
@@ -113,6 +119,7 @@ static constexpr struct command commands[] = {
 	{ "list", PERMISSION_READ, 1, -1, handle_list },
 	{ "listall", PERMISSION_READ, 0, 1, handle_listall },
 	{ "listallinfo", PERMISSION_READ, 0, 1, handle_listallinfo },
+	{ "listext", PERMISSION_READ, 1, -1, handle_listext },
 #endif
 	{ "listfiles", PERMISSION_READ, 0, 1, handle_listfiles },
 #ifdef ENABLE_DATABASE
@@ -126,7 +133,8 @@ static constexpr struct command commands[] = {
 	{ "listplaylistinfo", PERMISSION_READ, 1, 1, handle_listplaylistinfo },
 	{ "listplaylists", PERMISSION_READ, 0, 0, handle_listplaylists },
 	{ "load", PERMISSION_ADD, 1, 2, handle_load },
-	{ "lsinfo", PERMISSION_READ, 0, 1, handle_lsinfo },
+	{ "loadqueue", PERMISSION_ADD, 1, 1, handle_loadqueue },
+	{ "lsinfo", PERMISSION_READ, 0, 2, handle_lsinfo },
 	{ "mixrampdb", PERMISSION_CONTROL, 1, 1, handle_mixrampdb },
 	{ "mixrampdelay", PERMISSION_CONTROL, 1, 1, handle_mixrampdelay },
 #ifdef ENABLE_DATABASE
@@ -146,13 +154,15 @@ static constexpr struct command commands[] = {
 	{ "play", PERMISSION_CONTROL, 0, 1, handle_play },
 	{ "playid", PERMISSION_CONTROL, 0, 1, handle_playid },
 	{ "playlist", PERMISSION_READ, 0, 0, handle_playlist },
-	{ "playlistadd", PERMISSION_CONTROL, 2, 2, handle_playlistadd },
+	{ "playlistadd", PERMISSION_CONTROL, 2, 3, handle_playlistadd },
 	{ "playlistclear", PERMISSION_CONTROL, 1, 1, handle_playlistclear },
 	{ "playlistdelete", PERMISSION_CONTROL, 2, 2, handle_playlistdelete },
 	{ "playlistfind", PERMISSION_READ, 2, -1, handle_playlistfind },
 	{ "playlistid", PERMISSION_READ, 0, 1, handle_playlistid },
 	{ "playlistinfo", PERMISSION_READ, 0, 1, handle_playlistinfo },
+	{ "playlistload", PERMISSION_CONTROL, 2, 3, handle_playlistload },
 	{ "playlistmove", PERMISSION_CONTROL, 3, 3, handle_playlistmove },
+	{ "playlistsave", PERMISSION_CONTROL, 2, 3, handle_playlistsave },
 	{ "playlistsearch", PERMISSION_READ, 2, -1, handle_playlistsearch },
 	{ "plchanges", PERMISSION_READ, 1, 2, handle_plchanges },
 	{ "plchangesposid", PERMISSION_READ, 1, 2, handle_plchangesposid },
@@ -162,6 +172,8 @@ static constexpr struct command commands[] = {
 	{ "random", PERMISSION_CONTROL, 1, 1, handle_random },
 	{ "rangeid", PERMISSION_ADD, 2, 2, handle_rangeid },
 	{ "readcomments", PERMISSION_READ, 1, 1, handle_read_comments },
+	{ "readcover", PERMISSION_READ, 1, 1, handle_read_cover },
+	{ "readcovers", PERMISSION_READ, 1, 1, handle_read_cover },
 	{ "readmessages", PERMISSION_READ, 0, 0, handle_read_messages },
 	{ "rename", PERMISSION_CONTROL, 2, 2, handle_rename },
 	{ "repeat", PERMISSION_CONTROL, 1, 1, handle_repeat },
@@ -172,10 +184,13 @@ static constexpr struct command commands[] = {
 	{ "rescan", PERMISSION_CONTROL, 0, 1, handle_rescan },
 	{ "rm", PERMISSION_CONTROL, 1, 1, handle_rm },
 	{ "save", PERMISSION_CONTROL, 1, 1, handle_save },
+	{ "savequeue", PERMISSION_CONTROL, 0, 0, handle_savequeue },
+	{ "scanneighbors", PERMISSION_CONTROL, 0, 0, handle_scanNeighbors },
 #ifdef ENABLE_DATABASE
 	{ "search", PERMISSION_READ, 2, -1, handle_search },
 	{ "searchadd", PERMISSION_ADD, 2, -1, handle_searchadd },
 	{ "searchaddpl", PERMISSION_CONTROL, 3, -1, handle_searchaddpl },
+	{ "searchsavepl", PERMISSION_CONTROL, 3, -1, handle_searchsavepl },
 #endif
 	{ "seek", PERMISSION_CONTROL, 2, 2, handle_seek },
 	{ "seekcur", PERMISSION_CONTROL, 1, 1, handle_seekcur },
@@ -195,8 +210,10 @@ static constexpr struct command commands[] = {
 	{ "swapid", PERMISSION_CONTROL, 2, 2, handle_swapid },
 	{ "tagtypes", PERMISSION_READ, 0, -1, handle_tagtypes },
 	{ "toggleoutput", PERMISSION_ADMIN, 1, 1, handle_toggleoutput },
+	{ "tpm", PERMISSION_ADD, 2, -1, handle_tpm_tidal_session },
 #ifdef ENABLE_DATABASE
 	{ "unmount", PERMISSION_ADMIN, 1, 1, handle_unmount },
+	{ "unmountall", PERMISSION_ADMIN, 0, 0, handle_unmount_all },
 #endif
 	{ "unsubscribe", PERMISSION_READ, 1, 1, handle_unsubscribe },
 	{ "update", PERMISSION_CONTROL, 0, 1, handle_update },

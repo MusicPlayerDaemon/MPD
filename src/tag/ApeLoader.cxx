@@ -21,6 +21,7 @@
 #include "ApeLoader.hxx"
 #include "system/ByteOrder.hxx"
 #include "input/InputStream.hxx"
+#include "fs/FileSystem.hxx"
 #include "util/StringView.hxx"
 
 #include <memory>
@@ -105,4 +106,81 @@ try {
 	return true;
 } catch (...) {
 	return false;
+}
+
+static bool
+ape_scan_internal(FILE *fp, ApeTagCallback callback)
+try {
+	/* determine if file has an apeV2 tag */
+	ApeFooter footer;
+	if (fseek(fp, -(long)sizeof(footer), SEEK_END) ||
+	    fread(&footer, 1, sizeof(footer), fp) != sizeof(footer) ||
+	    memcmp(footer.id, "APETAGEX", sizeof(footer.id)) != 0 ||
+	    FromLE32(footer.version) != 2000)
+		return false;
+
+	/* find beginning of ape tag */
+	size_t remaining = FromLE32(footer.length);
+	if (remaining <= sizeof(footer) + 10 ||
+	    /* refuse to load more than one megabyte of tag data */
+	    remaining > 1024 * 1024 ||
+	    fseek(fp, -(long)remaining, SEEK_END))
+		return false;
+
+	/* read tag into buffer */
+	remaining -= sizeof(footer);
+	assert(remaining > 10);
+
+	std::unique_ptr<char[]> buffer(new char[remaining]);
+	if (fread(buffer.get(), 1, remaining, fp) != remaining) {
+		buffer.reset();
+		return false;
+	}
+
+	/* read tags */
+	unsigned n = FromLE32(footer.count);
+	const char *p = buffer.get();
+	while (n-- && remaining > 10) {
+		size_t size = FromLE32(*(const uint32_t *)p);
+		p += 4;
+		remaining -= 4;
+		unsigned long flags = FromLE32(*(const uint32_t *)p);
+		p += 4;
+		remaining -= 4;
+
+		/* get the key */
+		const char *key = p;
+		const char *key_end = (const char *)memchr(p, '\0', remaining);
+		if (key_end == nullptr)
+			break;
+
+		p = key_end + 1;
+		remaining -= p - key;
+
+		/* get the value */
+		if (remaining < size)
+			break;
+
+		if (!callback(flags, key, {p, size}))
+			break;
+
+		p += size;
+		remaining -= size;
+	}
+
+	return true;
+} catch (const std::runtime_error &) {
+		return false;
+}
+
+bool
+tag_ape_scan(Path path_fs, ApeTagCallback callback)
+{
+	FILE *fp = FOpen(path_fs, PATH_LITERAL("rb"));
+	if (fp == nullptr)
+		return false;
+
+	bool success = ape_scan_internal(fp, callback);
+	fclose(fp);
+	return success;
 }

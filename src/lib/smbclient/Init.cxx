@@ -48,4 +48,39 @@ SmbclientInit()
 	constexpr int debug = 0;
 	if (smbc_init(mpd_smbc_get_auth_data, debug) < 0)
 		throw MakeErrno("smbc_init() failed");
+	SMBCCTX *context = smbc_set_context(NULL);
+	smbc_setOptionBrowseMaxLmbCount (context, 3);
+	smbc_setTimeout(context, 5000);
+	smbc_setOptionUseCCache(context, false);
+}
+
+void
+SmbclientReinit()
+{
+	const std::lock_guard<Mutex> protect(smbclient_mutex);
+
+	int debug = 0;
+
+	SMBCCTX *context = smbc_new_context();
+	if (!context) {
+		throw MakeErrno("smbc_new_context() failed");
+	}
+
+	smbc_setDebug(context, debug);
+	smbc_setFunctionAuthData(context, mpd_smbc_get_auth_data);
+	smbc_setOptionBrowseMaxLmbCount (context, 3);
+	smbc_setTimeout(context, 5000);
+	smbc_setOptionUseCCache(context, false);
+
+	if (!smbc_init_context(context)) {
+		smbc_free_context(context, false);
+		throw MakeErrno("smbc_init_context() failed");
+	}
+	SMBCCTX *old_context = smbc_set_context(NULL);
+	if (old_context) {
+		if (smbc_free_context(old_context, 1)) {
+			throw MakeErrno("smbc_free_context() failed");
+		}
+	}
+	smbc_set_context(context);;
 }

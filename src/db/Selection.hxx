@@ -39,9 +39,30 @@ struct DatabaseSelection {
 	 */
 	bool recursive;
 
+	/*
+	 * Ignore the same song?
+	 */
+	bool ignore_repeat;
+
+	/*
+	 * Update if not found
+	 */
+	bool update;
+
+	unsigned window_start;
+
+	unsigned window_end;
+
 	const SongFilter *filter;
 
 	DatabaseSelection(const char *_uri, bool _recursive,
+			  const SongFilter *_filter=nullptr);
+
+	DatabaseSelection(const char *_uri, bool _recursive,
+			  bool _ignore_repeat, const SongFilter *_filter=nullptr);
+
+	DatabaseSelection(const char *_uri, bool _recursive,
+			  bool _ignore_repeat, bool _update,
 			  const SongFilter *_filter=nullptr);
 
 	gcc_pure

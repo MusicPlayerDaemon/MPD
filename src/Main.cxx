@@ -86,6 +86,8 @@
 #include "archive/ArchiveList.hxx"
 #endif
 
+#include "external/common/Context.hxx"
+
 #ifdef ANDROID
 #include "java/Global.hxx"
 #include "java/File.hxx"
@@ -139,6 +141,15 @@ Context *context;
 #endif
 
 Instance *instance;
+
+dms::Context &
+GetContext()
+{
+	assert(instance);
+	assert(instance->context);
+
+	return *instance->context;
+}
 
 struct Config {
 	ReplayGainConfig replay_gain;
@@ -231,6 +242,12 @@ glue_db_init_and_load(void)
 	instance->update = new UpdateService(instance->event_loop, db,
 					     static_cast<CompositeStorage &>(*instance->storage),
 					     *instance);
+
+	instance->upnpdatabase = CreateUpnpDatabase(instance->event_loop, instance->io_thread.GetEventLoop(), *instance);
+
+	if (instance->upnpdatabase == nullptr)  {
+		LogDefault(config_domain, "upbp database create fail!");
+	}
 
 	/* run database update after daemonization? */
 	return db.FileExists();
@@ -437,6 +454,10 @@ Instance::ShutdownDatabase() noexcept
 	}
 
 	delete instance->storage;
+	if (instance->upnpdatabase != nullptr) {
+		instance->upnpdatabase->Close();
+		delete instance->upnpdatabase;
+	}
 #endif
 }
 
@@ -534,6 +555,8 @@ try {
 
 	instance = new Instance();
 
+	instance->context = new dms::Context();
+
 #ifdef ENABLE_NEIGHBOR_PLUGINS
 	instance->neighbors = new NeighborGlue();
 	instance->neighbors->Init(instance->io_thread.GetEventLoop(),
@@ -629,6 +652,13 @@ try {
 #ifdef ENABLE_NEIGHBOR_PLUGINS
 	if (instance->neighbors != nullptr)
 		instance->neighbors->Open();
+#endif
+#ifdef ENABLE_DATABASE
+	try {
+		instance->upnpdatabase->Open();
+	} catch (...) {
+		LogDefault(config_domain, "open upnp error");
+	}
 #endif
 
 	ZeroconfInit(instance->event_loop);

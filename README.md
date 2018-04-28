@@ -10,6 +10,12 @@ retrieval, and playlist management can all be managed remotely.
 For basic installation instructions
 [read the manual](https://www.musicpd.org/doc/user/install.html).
 
+# Cary Audio Branch
+
+This is a branch of Cary Audio product. We use FIFO output plugin. And 
+the other program read audio data from FIFO, then dsp and playback it.
+"build-arm.sh" and "build-x64.sh" are build scripts for this branch.
+
 # Users
 
 - [Manual](http://www.musicpd.org/doc/user/)

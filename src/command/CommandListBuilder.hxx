@@ -54,7 +54,7 @@ class CommandListBuilder {
 	/**
 	 * Memory consumed by the list.
 	 */
-	size_t size;
+	size_t size = 0;
 
 public:
 	/**

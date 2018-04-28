@@ -34,22 +34,29 @@
 #include "util/StringAPI.hxx"
 #include "SongFilter.hxx"
 #include "BulkEdit.hxx"
+#include "PlaylistFile.hxx"
+#include "PlaylistError.hxx"
+#include "fs/FileSystem.hxx"
+#include "fs/AllocatedPath.hxx"
 
 #include <memory>
 
 CommandResult
 handle_listfiles_db(Client &client, Response &r, const char *uri)
 {
-	const DatabaseSelection selection(uri, false);
+	DatabaseSelection selection(uri, false);
 	db_selection_print(r, client.GetPartition(),
 			   selection, false, true);
 	return CommandResult::OK;
 }
 
 CommandResult
-handle_lsinfo2(Client &client, const char *uri, Response &r)
+handle_lsinfo2(Client &client, const char *uri, Response &r, const RangeArg &window)
 {
-	const DatabaseSelection selection(uri, false);
+	DatabaseSelection selection(uri, false);
+	selection.window_start = window.start;
+	selection.window_end = window.end;
+
 	db_selection_print(r, client.GetPartition(),
 			   selection, true, false);
 	return CommandResult::OK;
@@ -101,7 +108,7 @@ handle_match(Client &client, Request args, Response &r, bool fold_case)
 		return CommandResult::ERROR;
 	}
 
-	const DatabaseSelection selection("", true, &filter);
+	DatabaseSelection selection("", true, &filter);
 
 	db_selection_print(r, client.GetPartition(),
 			   selection, true, false,
@@ -134,7 +141,7 @@ handle_match_add(Client &client, Request args, Response &r, bool fold_case)
 	auto &partition = client.GetPartition();
 	const ScopeBulkEdit bulk_edit(partition);
 
-	const DatabaseSelection selection("", true, &filter);
+	DatabaseSelection selection("", true, &filter);
 	AddFromDatabase(partition, selection);
 	return CommandResult::OK;
 }
@@ -151,22 +158,29 @@ handle_searchadd(Client &client, Request args, Response &r)
 	return handle_match_add(client, args, r, true);
 }
 
-CommandResult
-handle_searchaddpl(Client &client, Request args, Response &r)
+static CommandResult
+handle_match_add_pl(Client &client, Request args, Response &r, bool fold_case)
 {
 	const char *playlist = args.shift();
 
 	SongFilter filter;
-	if (!filter.Parse(args, true)) {
+	if (!filter.Parse(args, fold_case)) {
 		r.Error(ACK_ERROR_ARG, "incorrect arguments");
 		return CommandResult::ERROR;
 	}
 
+	const DatabaseSelection selection("", true, &filter);
 	const Database &db = client.GetDatabaseOrThrow();
-
 	search_add_to_playlist(db, client.GetStorage(),
-			       "", playlist, &filter);
+				      playlist, selection);
+
 	return CommandResult::OK;
+}
+
+CommandResult
+handle_searchaddpl(Client &client, Request args, Response &r)
+{
+	return handle_match_add_pl(client, args, r, true);
 }
 
 CommandResult
@@ -202,8 +216,9 @@ handle_listall(Client &client, Request args, Response &r)
 	/* default is root directory */
 	const auto uri = args.GetOptional(0, "");
 
+	DatabaseSelection selection(uri, true);
 	db_selection_print(r, client.GetPartition(),
-			   DatabaseSelection(uri, true),
+			   selection,
 			   false, false);
 	return CommandResult::OK;
 }
@@ -278,8 +293,104 @@ handle_listallinfo(Client &client, Request args, Response &r)
 	/* default is root directory */
 	const auto uri = args.GetOptional(0, "");
 
+	DatabaseSelection selection(uri, true);
 	db_selection_print(r, client.GetPartition(),
-			   DatabaseSelection(uri, true),
+			   selection,
 			   true, false);
+	return CommandResult::OK;
+}
+
+CommandResult
+handle_findaddpl(Client &client, Request args, Response &r)
+{
+	return handle_match_add_pl(client, args, r, false);
+}
+
+static CommandResult
+handle_match_save_pl(Client &client, Request args, Response &r, bool fold_case)
+{
+	const auto path_fs = spl_map_to_fs(args.front());
+
+	if (FileExists(path_fs)) {
+		throw PlaylistError(PlaylistResult::LIST_EXISTS,
+				    "Playlist already exists");
+	}
+
+	return handle_match_add_pl(client, args, r, fold_case);
+}
+
+CommandResult
+handle_findsavepl(Client &client, Request args, Response &r)
+{
+	return handle_match_save_pl(client, args, r, false);
+}
+
+CommandResult
+handle_searchsavepl(Client &client, Request args, Response &r)
+{
+	return handle_match_save_pl(client, args, r, true);
+}
+
+CommandResult
+handle_listext(Client &client, Request args, Response &r)
+{
+	const char *tag_name = args.shift();
+	unsigned tagType = locate_parse_type(tag_name);
+
+	if (tagType >= TAG_NUM_OF_ITEM_TYPES &&
+	    tagType != LOCATE_TAG_FILE_TYPE) {
+		r.FormatError(ACK_ERROR_ARG,
+			      "Unknown tag type: %s", tag_name);
+		return CommandResult::ERROR;
+	}
+
+	std::unique_ptr<SongFilter> filter;
+	TagMask group_mask = TagMask::None();
+
+	if (args.size == 1) {
+		/* for compatibility with < 0.12.0 */
+		if (tagType != TAG_ALBUM) {
+			r.FormatError(ACK_ERROR_ARG,
+				      "should be \"%s\" for 3 arguments",
+				      tag_item_names[TAG_ALBUM]);
+			return CommandResult::ERROR;
+		}
+
+		filter.reset(new SongFilter((unsigned)TAG_ARTIST,
+					    args.shift()));
+	}
+
+	while (args.size >= 2 &&
+	       StringIsEqual(args[args.size - 2], "group")) {
+		const char *s = args[args.size - 1];
+		TagType gt = tag_name_parse_i(s);
+		if (gt == TAG_NUM_OF_ITEM_TYPES) {
+			r.FormatError(ACK_ERROR_ARG,
+				      "Unknown tag type: %s", s);
+			return CommandResult::ERROR;
+		}
+
+		group_mask |= gt;
+
+		args.pop_back();
+		args.pop_back();
+	}
+
+	if (!args.empty()) {
+		filter.reset(new SongFilter());
+		if (!filter->Parse(args, false)) {
+			r.Error(ACK_ERROR_ARG, "not able to parse args");
+			return CommandResult::ERROR;
+		}
+	}
+
+	if (tagType < TAG_NUM_OF_ITEM_TYPES &&
+	    group_mask.Test(TagType(tagType))) {
+		r.Error(ACK_ERROR_ARG, "Conflicting group");
+		return CommandResult::ERROR;
+	}
+
+	PrintUniqueTagsExt(r, client.GetPartition(),
+			tagType, filter.get());
 	return CommandResult::OK;
 }

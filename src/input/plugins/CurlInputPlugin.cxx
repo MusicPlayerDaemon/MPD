@@ -39,11 +39,14 @@
 #include "util/ASCII.hxx"
 #include "util/StringUtil.hxx"
 #include "util/StringFormat.hxx"
+#include "util/StringAPI.hxx"
 #include "util/NumberParser.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
 #include "PluginUnavailable.hxx"
+#include "external/common/Context.hxx"
+#include "Main.hxx"
 
 #include <cinttypes>
 
@@ -375,7 +378,17 @@ CurlInputStream::~CurlInputStream() noexcept
 void
 CurlInputStream::InitEasy()
 {
-	request = new CurlRequest(**curl_init, GetURI(), *this);
+	std::string url = GetURI();
+	try {
+		auto &context = GetContext();
+		url = context.acquireRealUrl(GetURI());
+		if (!StringIsEqual(url.c_str(), GetURI())) {
+			SetRealURI(url.c_str());
+		}
+	} catch (const std::runtime_error &e) {
+		FormatError(curl_domain, "%s", e.what());
+	}
+	request = new CurlRequest(**curl_init, url.c_str(), *this);
 
 	request->SetOption(CURLOPT_HTTP200ALIASES, http_200_aliases);
 	request->SetOption(CURLOPT_FOLLOWLOCATION, 1l);

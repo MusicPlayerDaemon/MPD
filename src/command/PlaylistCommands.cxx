@@ -21,6 +21,7 @@
 #include "PlaylistCommands.hxx"
 #include "Request.hxx"
 #include "db/DatabasePlaylist.hxx"
+#include "db/Selection.hxx"
 #include "CommandError.hxx"
 #include "PlaylistSave.hxx"
 #include "PlaylistFile.hxx"
@@ -35,9 +36,11 @@
 #include "client/Response.hxx"
 #include "Mapper.hxx"
 #include "fs/AllocatedPath.hxx"
+#include "fs/FileSystem.hxx"
 #include "util/UriUtil.hxx"
 #include "util/ConstBuffer.hxx"
 #include "util/ChronoUtil.hxx"
+#include "util/StringCompare.hxx"
 
 bool
 playlist_commands_available() noexcept
@@ -158,7 +161,12 @@ CommandResult
 handle_playlistadd(Client &client, Request args, gcc_unused Response &r)
 {
 	const char *const playlist = args[0];
-	const char *const uri = args[1];
+	const char *uri = args[1];
+
+	RangeArg range = args.ParseOptional(2, RangeArg::All());
+	DatabaseSelection selection(uri, true);
+	selection.window_start = range.start;
+	selection.window_end = range.end;
 
 	if (uri_has_scheme(uri)) {
 		const SongLoader loader(client);
@@ -168,7 +176,7 @@ handle_playlistadd(Client &client, Request args, gcc_unused Response &r)
 		const Database &db = client.GetDatabaseOrThrow();
 
 		search_add_to_playlist(db, client.GetStorage(),
-				       uri, playlist, nullptr);
+				       playlist, selection);
 #else
 		r.Error(ACK_ERROR_NO_EXIST, "directory or file not found");
 		return CommandResult::ERROR;
@@ -184,4 +192,41 @@ handle_listplaylists(gcc_unused Client &client, gcc_unused Request args,
 {
 	print_spl_list(r, ListPlaylistFiles());
 	return CommandResult::OK;
+}
+
+CommandResult
+handle_addQueueToPlaylist(Client &client, Request args, gcc_unused Response &r)
+{
+	RangeArg range = args.ParseOptional(1, RangeArg::All());
+
+	spl_append_queue(args.front(), client.GetPlaylist().queue, range.start, range.end);
+	return CommandResult::OK;
+}
+
+CommandResult
+handle_playlistload(Client &client, Request args, gcc_unused Response &r)
+{
+	RangeArg range = args.ParseOptional(2, RangeArg::All());
+
+	const ScopeBulkEdit bulk_edit(client.GetPartition());
+
+	const SongLoader loader(client);
+	playlist_open_into_playlist(args[0],
+				      range.start, range.end,
+				      args[1],
+				      loader);
+
+	return CommandResult::OK;
+}
+
+CommandResult
+handle_playlistsave(Client &client, Request args, Response &r)
+{
+	const auto path_fs = spl_map_to_fs(args.front());
+	if (FileExists(path_fs)) {
+		throw PlaylistError(PlaylistResult::LIST_EXISTS,
+				    "Playlist already exists");
+	}
+
+	return handle_playlistadd(client, args, r);
 }

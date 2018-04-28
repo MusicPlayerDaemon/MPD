@@ -133,6 +133,45 @@ flac_scan_comments(const FLAC__StreamMetadata_VorbisComment *comment,
 				  handler, handler_ctx);
 }
 
+
+static bool
+flac_copy_cover_paramer(CoverType type, FLAC__uint32 value,
+		  const TagHandler &handler, void *handler_ctx)
+{
+	char buf[21];
+
+	if (snprintf(buf, sizeof(buf)-1, "%u", value)) {
+		tag_handler_invoke_cover(handler, handler_ctx, type, (const char*)buf);
+		return true;
+	}
+	return false;
+}
+
+static void
+flac_scan_picture(const FLAC__StreamMetadata_Picture *picture,
+		   const TagHandler &handler, void *handler_ctx)
+{
+	flac_copy_cover_paramer(COVER_TYPE, (FLAC__uint32)picture->type,
+		handler, handler_ctx);
+	if (picture->mime_type != nullptr) {
+		tag_handler_invoke_cover(handler, handler_ctx, COVER_MIME,
+			(const char*)picture->mime_type);
+	}
+	if (picture->description != nullptr) {
+		tag_handler_invoke_cover(handler, handler_ctx, COVER_DESCRIPTION,
+			(const char*)picture->description);
+	}
+	flac_copy_cover_paramer(COVER_WIDTH, picture->width, handler, handler_ctx);
+	flac_copy_cover_paramer(COVER_HEIGHT, picture->height, handler, handler_ctx);
+	flac_copy_cover_paramer(COVER_DEPTH, picture->depth, handler, handler_ctx);
+	flac_copy_cover_paramer(COVER_COLORS, picture->colors, handler, handler_ctx);
+	flac_copy_cover_paramer(COVER_LENGTH, picture->data_length, handler, handler_ctx);
+	if (picture->data != nullptr) {
+		tag_handler_invoke_cover(handler, handler_ctx, COVER_DATA,
+			(const char*)picture->data, picture->data_length);
+	}
+}
+
 gcc_pure
 static inline SongTime
 flac_duration(const FLAC__StreamMetadata_StreamInfo *stream_info) noexcept
@@ -157,6 +196,11 @@ flac_scan_metadata(const FLAC__StreamMetadata *block,
 		if (block->data.stream_info.sample_rate > 0)
 			tag_handler_invoke_duration(handler, handler_ctx,
 						    flac_duration(&block->data.stream_info));
+		break;
+
+	case FLAC__METADATA_TYPE_PICTURE:
+		flac_scan_picture(&block->data.picture,
+				   handler, handler_ctx);
 		break;
 
 	default:

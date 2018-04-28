@@ -59,6 +59,7 @@ NeighborGlue::Init(EventLoop &loop, NeighborListener &listener)
 								       listener,
 								       *block));
 		} catch (...) {
+			continue; // jai
 			std::throw_with_nested(FormatRuntimeError("Line %i: ",
 								  block->line));
 		}
@@ -73,6 +74,7 @@ NeighborGlue::Open()
 		try {
 			i->explorer->Open();
 		} catch (...) {
+			continue; // jai
 			/* roll back */
 			for (auto k = explorers.begin(); k != i; ++k)
 				k->explorer->Close();
@@ -88,6 +90,14 @@ NeighborGlue::Close() noexcept
 		i->explorer->Close();
 }
 
+void
+NeighborGlue::Reopen()
+{
+	for (auto i = explorers.begin(), end = explorers.end(); i != end; ++i) {
+		i->explorer->Reopen();
+	}
+}
+
 NeighborGlue::List
 NeighborGlue::GetList() const noexcept
 {
@@ -100,3 +110,16 @@ NeighborGlue::GetList() const noexcept
 	return result;
 }
 
+
+int
+NeighborGlue::Scanning() const
+{
+	int scanning = 0;
+	for (const auto &i : explorers) {
+		int n = i.explorer->Scanning();
+		if (n > scanning) {
+			scanning = n;
+		}
+	}
+	return scanning;
+}

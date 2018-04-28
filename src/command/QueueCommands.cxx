@@ -37,27 +37,34 @@
 #include "util/ConstBuffer.hxx"
 #include "util/StringAPI.hxx"
 #include "util/NumberParser.hxx"
+#include "tag/Builder.hxx"
+#include "StateFile.hxx"
+#include "config/ConfigOption.hxx"
+#include "config/ConfigGlobal.hxx"
 
 #include <memory>
 #include <limits>
 
 static void
-AddUri(Client &client, const LocatedUri &uri)
+AddUri(Client &client, const char *uri, const Tag &tag)
 {
 	auto &partition = client.GetPartition();
 	partition.playlist.AppendSong(partition.pc,
-				      SongLoader(client).LoadSong(uri));
+				       tag.IsEmpty()
+				           ? SongLoader(client).LoadSong(uri)
+				           : SongLoader(client).LoadSong(uri, tag));
 }
 
 static CommandResult
-AddDatabaseSelection(Client &client, const char *uri,
-		     gcc_unused Response &r)
+AddDatabaseSelection(Client &client, const RangeArg &range, const char *uri, gcc_unused Response &r)
 {
 #ifdef ENABLE_DATABASE
 	auto &partition = client.GetPartition();
 	const ScopeBulkEdit bulk_edit(partition);
 
-	const DatabaseSelection selection(uri, true);
+	DatabaseSelection selection(uri, true);
+	selection.window_start = range.start;
+	selection.window_end = range.end;
 	AddFromDatabase(partition, selection);
 	return CommandResult::OK;
 #else
@@ -81,6 +88,15 @@ handle_add(Client &client, Request args, Response &r)
 		   here */
 		uri = "";
 
+	Tag tag;
+	if (args.size >= 2) {
+		jaijson::Document d;
+		if (!d.Parse(args.back()).HasParseError()) {
+			deserialize(d, tag);
+			args.pop_back();
+		}
+	}
+	RangeArg range = args.ParseOptional(1, RangeArg::All());
 	const auto located_uri = LocateUri(uri, &client
 #ifdef ENABLE_DATABASE
 					   , nullptr
@@ -88,16 +104,12 @@ handle_add(Client &client, Request args, Response &r)
 					   );
 	switch (located_uri.type) {
 	case LocatedUri::Type::ABSOLUTE:
-		AddUri(client, located_uri);
-		client.GetInstance().LookupRemoteTag(located_uri.canonical_uri);
-		return CommandResult::OK;
-
 	case LocatedUri::Type::PATH:
-		AddUri(client, located_uri);
+		AddUri(client, uri, tag);
 		return CommandResult::OK;
 
 	case LocatedUri::Type::RELATIVE:
-		return AddDatabaseSelection(client, located_uri.canonical_uri,
+		return AddDatabaseSelection(client, range, located_uri.canonical_uri,
 					    r);
 	}
 
@@ -109,9 +121,18 @@ handle_addid(Client &client, Request args, Response &r)
 {
 	const char *const uri = args.front();
 
+	Tag tag;
+	if (args.size >= 2) {
+		jaijson::Document d;
+		if (!d.Parse(args.back()).HasParseError()) {
+			deserialize(d, tag);
+			args.pop_back();
+		}
+	}
 	auto &partition = client.GetPartition();
 	const SongLoader loader(client);
-	unsigned added_id = partition.AppendURI(loader, uri);
+	unsigned added_id = tag.IsEmpty() ? partition.AppendURI(loader, uri)
+			: partition.AppendURI(loader, uri, tag);
 	partition.instance.LookupRemoteTag(uri);
 
 	if (args.size == 2) {
@@ -196,7 +217,7 @@ handle_deleteid(Client &client, Request args, gcc_unused Response &r)
 CommandResult
 handle_playlist(Client &client, gcc_unused Request args, Response &r)
 {
-	playlist_print_uris(r, client.GetPlaylist());
+	playlist_print_uris(r, client.GetPartition(), client.GetPlaylist());
 	return CommandResult::OK;
 }
 
@@ -220,7 +241,7 @@ handle_plchanges(Client &client, Request args, Response &r)
 {
 	uint32_t version = ParseCommandArgU32(args.front());
 	RangeArg range = args.ParseOptional(1, RangeArg::All());
-	playlist_print_changes_info(r, client.GetPlaylist(), version,
+	playlist_print_changes_info(r, client.GetPartition(), client.GetPlaylist(), version,
 				    range.start, range.end);
 	return CommandResult::OK;
 }
@@ -240,7 +261,7 @@ handle_playlistinfo(Client &client, Request args, Response &r)
 {
 	RangeArg range = args.ParseOptional(0, RangeArg::All());
 
-	playlist_print_info(r, client.GetPlaylist(),
+	playlist_print_info(r, client.GetPartition(), client.GetPlaylist(),
 			    range.start, range.end);
 	return CommandResult::OK;
 }
@@ -250,9 +271,9 @@ handle_playlistid(Client &client, Request args, Response &r)
 {
 	if (!args.empty()) {
 		unsigned id = args.ParseUnsigned(0);
-		playlist_print_id(r, client.GetPlaylist(), id);
+		playlist_print_id(r, client.GetPartition(), client.GetPlaylist(), id);
 	} else {
-		playlist_print_info(r, client.GetPlaylist(),
+		playlist_print_info(r, client.GetPartition(), client.GetPlaylist(),
 				    0, std::numeric_limits<unsigned>::max());
 	}
 
@@ -269,7 +290,7 @@ handle_playlist_match(Client &client, Request args, Response &r,
 		return CommandResult::ERROR;
 	}
 
-	playlist_print_find(r, client.GetPlaylist(), filter);
+	playlist_print_find(r, client.GetPartition(), client.GetPlaylist(), filter);
 	return CommandResult::OK;
 }
 
@@ -350,5 +371,31 @@ handle_swapid(Client &client, Request args, gcc_unused Response &r)
 	unsigned id1 = args.ParseUnsigned(0);
 	unsigned id2 = args.ParseUnsigned(1);
 	client.GetPartition().SwapIds(id1, id2);
+	return CommandResult::OK;
+}
+
+CommandResult
+handle_savequeue(Client &client, gcc_unused Request args, gcc_unused Response &r)
+{
+	auto &ins = client.GetInstance();
+	ins.state_file->Write();
+	return CommandResult::OK;
+}
+
+CommandResult
+handle_loadqueue(Client &client, Request args, gcc_unused Response &r)
+{
+	auto &ins = client.GetInstance();
+	delete ins.state_file;
+
+	const auto interval =
+		config_get_unsigned(ConfigOption::STATE_FILE_INTERVAL,
+				    StateFile::DEFAULT_INTERVAL);
+	auto path_fs = AllocatedPath::FromUTF8Throw(args.front());
+	ins.state_file = new StateFile(std::move(path_fs), interval,
+					     ins.partitions.front(),
+					     ins.event_loop);
+	ins.state_file->Read();
+
 	return CommandResult::OK;
 }

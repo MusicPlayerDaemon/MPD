@@ -117,6 +117,7 @@ public:
 	void ReturnSong(const LightSong *song) const override;
 
 	void Visit(const DatabaseSelection &selection,
+		   VisitDirectoryInfo visit_directory_info,
 		   VisitDirectory visit_directory,
 		   VisitSong visit_song,
 		   VisitPlaylist visit_playlist) const override;

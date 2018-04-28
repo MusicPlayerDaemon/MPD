@@ -93,6 +93,7 @@ libmpd_a_SOURCES = \
 	src/command/MessageCommands.cxx src/command/MessageCommands.hxx \
 	src/command/ClientCommands.cxx src/command/ClientCommands.hxx \
 	src/command/PartitionCommands.cxx src/command/PartitionCommands.hxx \
+	src/external/common/MiscCommands.cxx src/external/common/MiscCommands.hxx \
 	src/command/OtherCommands.cxx src/command/OtherCommands.hxx \
 	src/command/CommandListBuilder.cxx src/command/CommandListBuilder.hxx \
 	src/Idle.cxx src/Idle.hxx \
@@ -441,7 +442,8 @@ libmpd_a_SOURCES += \
 	src/sticker/Match.hxx \
 	src/sticker/StickerDatabase.cxx src/sticker/StickerDatabase.hxx \
 	src/sticker/StickerPrint.cxx src/sticker/StickerPrint.hxx \
-	src/sticker/SongSticker.cxx src/sticker/SongSticker.hxx
+	src/sticker/SongSticker.cxx src/sticker/SongSticker.hxx \
+	src/sticker/MiscSticker.cxx src/sticker/MiscSticker.hxx
 endif
 
 # Generic utility library
@@ -582,7 +584,8 @@ libicu_a_SOURCES = \
 	src/lib/icu/CaseFold.cxx src/lib/icu/CaseFold.hxx \
 	src/lib/icu/Compare.cxx src/lib/icu/Compare.hxx \
 	src/lib/icu/Collate.cxx src/lib/icu/Collate.hxx \
-	src/lib/icu/Converter.cxx src/lib/icu/Converter.hxx
+	src/lib/icu/Converter.cxx src/lib/icu/Converter.hxx \
+	src/lib/iconv/Converter.cxx src/lib/iconv/Converter.hxx
 
 if HAVE_ICU
 libicu_a_SOURCES += \
@@ -634,12 +637,14 @@ libpcm_a_SOURCES = \
 	src/pcm/PcmUtils.hxx
 libpcm_a_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(SOXR_CFLAGS) \
-	$(LIBSAMPLERATE_CFLAGS)
+	$(LIBSAMPLERATE_CFLAGS) \
+	-fopenmp
 
 PCM_LIBS = \
 	libpcm.a \
 	$(SOXR_LIBS) \
-	$(LIBSAMPLERATE_LIBS)
+	$(LIBSAMPLERATE_LIBS) \
+	-lgomp
 
 if ENABLE_DSD
 libpcm_a_SOURCES += \
@@ -986,6 +991,7 @@ libtag_a_SOURCES =\
 	src/tag/Pool.cxx src/tag/Pool.hxx \
 	src/tag/Table.cxx src/tag/Table.hxx \
 	src/tag/Set.cxx src/tag/Set.hxx \
+	src/tag/SetExt.cxx src/tag/SetExt.hxx \
 	src/tag/Format.cxx src/tag/Format.hxx \
 	src/tag/VorbisComment.cxx src/tag/VorbisComment.hxx \
 	src/tag/ReplayGain.cxx src/tag/ReplayGain.hxx \
@@ -1375,7 +1381,13 @@ libinput_a_SOURCES += \
 	src/input/IcyInputStream.cxx src/input/IcyInputStream.hxx \
 	src/input/plugins/CurlInputPlugin.cxx src/input/plugins/CurlInputPlugin.hxx \
 	$(CURL_SOURCES) \
-	src/IcyMetaDataParser.cxx src/IcyMetaDataParser.hxx
+	src/IcyMetaDataParser.cxx src/IcyMetaDataParser.hxx \
+	src/external/common/CurlCommand.cxx src/external/common/CurlCommand.hxx \
+	src/external/common/CurlSocket.cxx src/external/common/CurlSocket.hxx \
+	src/external/common/RealUrl.cxx src/external/common/RealUrl.hxx \
+	src/external/common/HttpError.cxx src/external/common/HttpError.hxx \
+	src/external/common/TidalConfig.cxx src/external/common/TidalConfig.hxx \
+	src/external/common/Context.cxx src/external/common/Context.hxx
 endif
 
 if ENABLE_TIDAL

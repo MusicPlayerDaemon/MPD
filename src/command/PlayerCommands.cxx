@@ -86,7 +86,7 @@ handle_stop(Client &client, gcc_unused Request args, gcc_unused Response &r)
 CommandResult
 handle_currentsong(Client &client, gcc_unused Request args, Response &r)
 {
-	playlist_print_current(r, client.GetPlaylist());
+	playlist_print_current(r, client.GetPartition(), client.GetPlaylist());
 	return CommandResult::OK;
 }
 

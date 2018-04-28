@@ -88,6 +88,12 @@ struct Partition final : QueueListener, PlayerListener, MixerListener {
 		return playlist.AppendURI(pc, loader, uri_utf8);
 	}
 
+	unsigned AppendURI(const SongLoader &loader,
+			   const char *uri_utf8,
+			   const Tag &tag) {
+		return playlist.AppendURI(pc, loader, uri_utf8, tag);
+	}
+
 	void DeletePosition(unsigned position) {
 		playlist.DeletePosition(pc, position);
 	}
@@ -153,11 +159,20 @@ struct Partition final : QueueListener, PlayerListener, MixerListener {
 	}
 
 	void PlayNext() {
-		return playlist.PlayNext(pc);
+		if (!playlist.playing) {
+			return playlist.PlayPosition(pc, -1);
+		} else {
+			return playlist.PlayNext(pc);
+		}
 	}
 
 	void PlayPrevious() {
-		return playlist.PlayPrevious(pc);
+		if (!playlist.playing) {
+			int length = playlist.queue.GetLength();
+			playlist.PlayPosition(pc, length-1);
+		} else {
+			return playlist.PlayPrevious(pc);
+		}
 	}
 
 	void SeekSongPosition(unsigned song_position, SongTime seek_time) {
@@ -212,6 +227,10 @@ struct Partition final : QueueListener, PlayerListener, MixerListener {
 	const Database *GetDatabase() const;
 
 	const Database &GetDatabaseOrThrow() const;
+
+	const Database *GetUpnpDatabase() const;
+
+	const Database &GetUpnpDatabaseOrThrow() const;
 
 	/**
 	 * The database has been modified.  Propagate the change to

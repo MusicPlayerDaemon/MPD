@@ -23,16 +23,20 @@
 #include "SongPrint.hxx"
 #include "db/Interface.hxx"
 #include "sticker/SongSticker.hxx"
+#include "sticker/MiscSticker.hxx"
 #include "sticker/StickerPrint.hxx"
 #include "sticker/StickerDatabase.hxx"
+#include "CommandError.hxx"
 #include "client/Client.hxx"
 #include "client/Response.hxx"
 #include "Partition.hxx"
+#include "util/ConstBuffer.hxx"
 #include "util/StringAPI.hxx"
 #include "util/ScopeExit.hxx"
 
 struct sticker_song_find_data {
 	Response &r;
+	Partition &partition;
 	const char *name;
 };
 
@@ -43,7 +47,7 @@ sticker_song_find_print_cb(const LightSong &song, const char *value,
 	struct sticker_song_find_data *data =
 		(struct sticker_song_find_data *)user_data;
 
-	song_print_uri(data->r, song);
+	song_print_uri(data->r, data->partition, song);
 	sticker_print_value(data->r, data->name, value);
 }
 
@@ -136,12 +140,63 @@ handle_sticker_song(Response &r, Partition &partition, Request args)
 
 		struct sticker_song_find_data data = {
 			r,
+			partition,
 			args[3],
 		};
 
 		sticker_song_find(db, base_uri, data.name,
 				  op, value,
 				  sticker_song_find_print_cb, &data);
+
+		return CommandResult::OK;
+	} else {
+		r.Error(ACK_ERROR_ARG, "bad request");
+		return CommandResult::ERROR;
+	}
+}
+
+static CommandResult
+handle_sticker_misc(Response &r, gcc_unused Partition &partition, Request args)
+{
+	const char *const cmd = args.front();
+
+	/* get misc id key */
+	if (args.size == 4 && StringIsEqual(cmd, "get")) {
+		const auto value = sticker_misc_get_value(args[2], args[3]);
+		if (value.empty()) {
+			r.Error(ACK_ERROR_NO_EXIST,
+				      "no such sticker");
+			return CommandResult::ERROR;
+		}
+
+		sticker_print_value(r, args[3], value.c_str());
+
+		return CommandResult::OK;
+	/* list misc */
+	} else if (args.size == 3 && StringIsEqual(cmd, "list")) {
+		Sticker *sticker = sticker_misc_get(args[2]);
+		if (sticker) {
+			sticker_print(r, *sticker);
+			sticker_free(sticker);
+		}
+
+		return CommandResult::OK;
+	/* set misc id key */
+	} else if (args.size == 5 && StringIsEqual(cmd, "set")) {
+		sticker_misc_set_value(args[2], args[3], args[4]);
+
+		return CommandResult::OK;
+	/* delete misc [key] */
+	} else if ((args.size == 3 || args.size == 4) &&
+		   StringIsEqual(cmd, "delete")) {
+		bool ret = args.size == 3
+			? sticker_misc_delete(args[2])
+			: sticker_misc_delete_value(args[2], args[3]);
+		if (!ret) {
+			r.Error(ACK_ERROR_SYSTEM,
+				      "no such sticker");
+			return CommandResult::ERROR;
+		}
 
 		return CommandResult::OK;
 	} else {
@@ -162,6 +217,8 @@ handle_sticker(Client &client, Request args, Response &r)
 
 	if (StringIsEqual(args[1], "song"))
 		return handle_sticker_song(r, client.GetPartition(), args);
+	else if (StringIsEqual(args[1], "misc"))
+		return handle_sticker_misc(r, client.GetPartition(), args);
 	else {
 		r.Error(ACK_ERROR_ARG, "unknown sticker domain");
 		return CommandResult::ERROR;

@@ -50,6 +50,10 @@ struct Partition;
 class StateFile;
 class RemoteTagCache;
 
+namespace dms {
+	struct Context;
+}
+
 /**
  * A utility class which, when used as the first base class, ensures
  * that the #EventLoop gets initialized before the other base classes.
@@ -86,6 +90,7 @@ struct Instance final
 
 #ifdef ENABLE_DATABASE
 	Database *database;
+	Database *upnpdatabase;
 
 	/**
 	 * This is really a #CompositeStorage.  To avoid heavy include
@@ -105,6 +110,8 @@ struct Instance final
 	std::list<Partition> partitions;
 
 	StateFile *state_file = nullptr;
+
+	dms::Context *context = nullptr;
 
 	Instance();
 	~Instance() noexcept;
@@ -139,6 +146,9 @@ struct Instance final
 	Database *GetDatabase() {
 		return database;
 	}
+	Database *GetUpnpDatabase() {
+		return upnpdatabase;
+	}
 
 	/**
 	 * Returns the global #Database instance.  Throws
@@ -146,6 +156,8 @@ struct Instance final
 	 * music_directory was configured).
 	 */
 	const Database &GetDatabaseOrThrow() const;
+
+	const Database &GetUpnpDatabaseOrThrow() const;
 #endif
 
 	void BeginShutdownUpdate() noexcept;

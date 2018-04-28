@@ -27,6 +27,7 @@ void
 CommandListBuilder::Reset()
 {
 	list.clear();
+	size = 0;
 	mode = Mode::DISABLED;
 }
 

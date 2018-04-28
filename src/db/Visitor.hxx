@@ -28,6 +28,7 @@ struct PlaylistInfo;
 struct Tag;
 
 typedef std::function<void(const LightDirectory &)> VisitDirectory;
+typedef std::function<void(const LightDirectory &)> VisitDirectoryInfo;
 typedef std::function<void(const LightSong &)> VisitSong;
 typedef std::function<void(const PlaylistInfo &,
 			   const LightDirectory &)> VisitPlaylist;

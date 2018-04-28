@@ -130,7 +130,7 @@ SmbclientStorage::OpenDirectory(const char *uri_utf8)
 		const std::lock_guard<Mutex> protect(smbclient_mutex);
 		handle = smbc_opendir(mapped.c_str());
 		if (handle < 0)
-			throw MakeErrno("Failed to open directory");
+			throw FormatErrno("Failed to open directory: %s", mapped.c_str());
 	}
 
 	return std::make_unique<SmbclientDirectoryReader>(std::move(mapped.c_str()),

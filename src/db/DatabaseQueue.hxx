@@ -24,6 +24,6 @@ struct Partition;
 struct DatabaseSelection;
 
 void
-AddFromDatabase(Partition &partition, const DatabaseSelection &selection);
+AddFromDatabase(Partition &partition, DatabaseSelection &selection);
 
 #endif

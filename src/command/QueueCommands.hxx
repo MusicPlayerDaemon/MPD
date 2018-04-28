@@ -86,4 +86,10 @@ handle_swap(Client &client, Request request, Response &response);
 CommandResult
 handle_swapid(Client &client, Request request, Response &response);
 
+CommandResult
+handle_savequeue(Client &client, Request request, Response &response);
+
+CommandResult
+handle_loadqueue(Client &client, Request request, Response &response);
+
 #endif

@@ -25,9 +25,12 @@
 #include "tag/Table.hxx"
 #include "tag/Handler.hxx"
 #include "tag/Id3MusicBrainz.hxx"
+#include "util/Macros.hxx"
 
 extern "C" {
+#include <libavformat/avformat.h>
 #include <libavutil/dict.h>
+#include <libavcodec/avcodec.h>
 }
 
 static constexpr struct tag_table ffmpeg_tags[] = {
@@ -85,4 +88,101 @@ FfmpegScanDictionary(AVDictionary *dict,
 
 	if (handler.pair != nullptr)
 		FfmpegScanPairs(dict, handler, handler_ctx);
+}
+
+static const char *mime_tympename[] = {
+	"image/jpeg",
+	"image/png",
+	"image/x-ms-bmp",
+	"image/jp2",
+	"image/x-portable-pixmap",
+	"image/gif",
+	"image/x-pcx",
+	"image/x-targa image/x-tga",
+	"image/tiff",
+	"image/webp",
+	"image/x-xwindowdump",
+};
+
+enum MimeNameIndex
+{
+	MJPEG,
+	PNG,
+	BMP,
+	JPEG2000,
+	PAM,
+	GIF,
+	PCX,
+	TARGA,
+	TIFF,
+	WEBP,
+	XWD,
+};
+
+static int mime_tbl[] = {
+	AV_CODEC_ID_MJPEG,
+	AV_CODEC_ID_PNG,
+	AV_CODEC_ID_BMP,
+	AV_CODEC_ID_JPEG2000,
+	AV_CODEC_ID_PAM,
+	AV_CODEC_ID_GIF,
+	AV_CODEC_ID_PCX,
+	AV_CODEC_ID_TARGA,
+	AV_CODEC_ID_TIFF,
+	AV_CODEC_ID_WEBP,
+	AV_CODEC_ID_XWD,
+};
+
+static const char  *
+get_MIMEDescriptor(enum AVCodecID id)
+{
+	if (id < ARRAY_SIZE(mime_tbl)) {
+		for (unsigned i=0;i<ARRAY_SIZE(mime_tbl);i++) {
+			if (mime_tbl[i] == id) {
+				return mime_tympename[i];
+			}
+		}
+	}
+
+	return nullptr;
+}
+
+static bool
+ffmpeg_copy_cover_paramer(CoverType type, unsigned value,
+						 const TagHandler &handler, void *handler_ctx)
+{
+	char buf[21];
+
+	if (snprintf(buf, sizeof(buf), "%u", value)) {
+		tag_handler_invoke_cover(handler, handler_ctx, type, (const char*)buf);
+		return true;
+	}
+
+	return false;
+}
+
+
+void
+FfmpegScanCover(AVFormatContext &format_context,
+    const TagHandler &handler, void *handler_ctx)
+{
+	assert(handler.cover != nullptr);
+
+	for (unsigned i=0; i<format_context.nb_streams; ++i) {
+		if(format_context.streams[i]->disposition & AV_DISPOSITION_ATTACHED_PIC) {
+			AVPacket pkt = format_context.streams[i]->attached_pic;
+			if (pkt.data != nullptr) {
+				ffmpeg_copy_cover_paramer(COVER_TYPE, 0, handler, handler_ctx);
+				const char  * mime_types = get_MIMEDescriptor(format_context.streams[i]->codec->codec_id);
+				if (mime_types != nullptr) {
+					tag_handler_invoke_cover(handler, handler_ctx, COVER_MIME,mime_types);
+				}
+				ffmpeg_copy_cover_paramer(COVER_WIDTH, format_context.streams[i]->codec->width, handler, handler_ctx);
+				ffmpeg_copy_cover_paramer(COVER_HEIGHT, format_context.streams[i]->codec->height, handler, handler_ctx);
+				ffmpeg_copy_cover_paramer(COVER_LENGTH, pkt.size, handler, handler_ctx);
+				tag_handler_invoke_cover(handler, handler_ctx, COVER_DATA, (const char*)pkt.data, pkt.size);
+				return;
+			}
+		}
+	}
 }

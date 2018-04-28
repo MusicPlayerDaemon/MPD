@@ -39,6 +39,11 @@ const char *const tag_item_names[TAG_NUM_OF_ITEM_TYPES] = {
 	[TAG_DISC] = "Disc",
 	[TAG_ALBUM_URI] = "AlbumUri",
 	[TAG_SUFFIX] = "Suffix",
+	[TAG_TOTAL_TRACKS] = "TotalTracks",
+	[TAG_BAND_WIDTH] = "BandWidth",
+	[TAG_BOOKMARK_URL] = "BookmarkUrl",
+	[TAG_UUID] = "uuid",
+	[TAG_AUDIO_QUALITY] = "AudioQuality",
 
 	/* MusicBrainz tags from http://musicbrainz.org/doc/MusicBrainzTag */
 	[TAG_MUSICBRAINZ_ARTISTID] = "MUSICBRAINZ_ARTISTID",
@@ -47,4 +52,16 @@ const char *const tag_item_names[TAG_NUM_OF_ITEM_TYPES] = {
 	[TAG_MUSICBRAINZ_TRACKID] = "MUSICBRAINZ_TRACKID",
 	[TAG_MUSICBRAINZ_RELEASETRACKID] = "MUSICBRAINZ_RELEASETRACKID",
 	[TAG_MUSICBRAINZ_WORKID] = "MUSICBRAINZ_WORKID",
+};
+
+const char *const cover_item_names[COVER_NUM_OF_ITEM_TYPES] = {
+	[COVER_TYPE] = "Type",
+	[COVER_MIME] = "MIME",
+	[COVER_DESCRIPTION] = "Description",
+	[COVER_WIDTH] = "Width",
+	[COVER_HEIGHT] = "Height",
+	[COVER_DEPTH] = "Depth",
+	[COVER_COLORS] = "Colors",
+	[COVER_LENGTH] = "Length",
+	[COVER_DATA] = "Data",
 };

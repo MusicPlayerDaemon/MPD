@@ -98,6 +98,14 @@ playlist::AppendSong(PlayerControl &pc, DetachedSong &&song)
 		throw PlaylistError(PlaylistResult::TOO_LARGE,
 				    "Playlist is too large");
 
+#if 0
+	for (unsigned i=0;i<queue.length;i++) {
+		if (queue.items[i].song->IsSame(song)) {
+			return queue.items[i].id;
+		}
+	}
+#endif
+
 	const DetachedSong *const queued_song = GetQueuedSong();
 
 	id = queue.Append(std::move(song), 0);
@@ -126,6 +134,14 @@ playlist::AppendURI(PlayerControl &pc, const SongLoader &loader,
 		    const char *uri)
 {
 	return AppendSong(pc, loader.LoadSong(uri));
+}
+
+unsigned
+playlist::AppendURI(PlayerControl &pc, const SongLoader &loader,
+		    const char *uri,
+		    const Tag &tag)
+{
+	return AppendSong(pc, loader.LoadSong(uri, tag));
 }
 
 void

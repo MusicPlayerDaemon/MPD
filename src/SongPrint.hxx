@@ -23,19 +23,22 @@
 struct LightSong;
 class DetachedSong;
 class Response;
+struct Partition;
 
 void
-song_print_info(Response &r, const DetachedSong &song,
-		bool base=false) noexcept;
+song_print_info(Response &r, Partition &partition,
+		const DetachedSong &song, bool base=false) noexcept;
 
 void
-song_print_info(Response &r, const LightSong &song, bool base=false) noexcept;
+song_print_info(Response &r, Partition &partition,
+		const LightSong &song, bool base=false) noexcept;
 
 void
-song_print_uri(Response &r, const LightSong &song, bool base=false) noexcept;
+song_print_uri(Response &r, Partition &partition,
+	       const LightSong &song, bool base=false) noexcept;
 
 void
-song_print_uri(Response &r, const DetachedSong &song,
-	       bool base=false) noexcept;
+song_print_uri(Response &r, Partition &partition,
+	       const DetachedSong &song, bool base=false) noexcept;
 
 #endif

@@ -68,6 +68,7 @@ public:
 
 	void Open();
 	void Close() noexcept;
+	void Reopen();
 
 	/**
 	 * Get the combined list of all neighbors from all active
@@ -75,6 +76,8 @@ public:
 	 */
 	gcc_pure
 	List GetList() const noexcept;
+
+	int Scanning() const;
 };
 
 #endif

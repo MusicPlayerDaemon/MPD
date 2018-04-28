@@ -25,12 +25,13 @@
 class Client;
 class Request;
 class Response;
+struct RangeArg;
 
 CommandResult
 handle_listfiles_db(Client &client, Response &r, const char *uri);
 
 CommandResult
-handle_lsinfo2(Client &client, const char *uri, Response &response);
+handle_lsinfo2(Client &client, const char *uri, Response &response, const RangeArg &window);
 
 CommandResult
 handle_find(Client &client, Request request, Response &response);
@@ -58,5 +59,17 @@ handle_list(Client &client, Request request, Response &response);
 
 CommandResult
 handle_listallinfo(Client &client, Request request, Response &response);
+
+CommandResult
+handle_findaddpl(Client &client, Request request, Response &response);
+
+CommandResult
+handle_findsavepl(Client &client, Request request, Response &response);
+
+CommandResult
+handle_searchsavepl(Client &client, Request request, Response &response);
+
+CommandResult
+handle_listext(Client &client, Request request, Response &response);
 
 #endif

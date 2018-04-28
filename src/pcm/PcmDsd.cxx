@@ -63,7 +63,10 @@ PcmDsd::ToFloat(unsigned channels, ConstBuffer<uint8_t> src) noexcept
 			if (dsd2pcm[c] == nullptr)
 				return nullptr;
 		}
-
+	}
+	unsigned c;
+#pragma omp parallel for
+	for (c = 0; c < channels; ++c) {
 		dsd2pcm_translate(dsd2pcm[c], num_frames,
 				  src.data + c, channels,
 				  false, dest + c, channels);

@@ -101,3 +101,12 @@ SongLoader::LoadSong(const char *uri_utf8) const
 					   );
 	return LoadSong(located_uri);
 }
+
+DetachedSong
+SongLoader::LoadSong(const char *uri_utf8, const Tag &tag) const
+{
+	DetachedSong song = LoadSong(uri_utf8);
+	song.SetTag(tag);
+
+	return song;
+}

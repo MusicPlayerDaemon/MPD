@@ -64,6 +64,21 @@ DecoderControl::SetReady(const AudioFormat audio_format,
 
 	in_audio_format = audio_format;
 	out_audio_format = audio_format.WithMask(configured_audio_format);
+	// only support dsd2pcm
+	if (out_audio_format.format == SampleFormat::DSD) {
+		out_audio_format.format = SampleFormat::FLOAT;
+		out_audio_format.sample_rate = 352800;
+	}
+	// only support (44.1/48 * n) kHz, n=(1,2,4,8,16)
+	if (out_audio_format.format != SampleFormat::DSD) {
+		if (out_audio_format.sample_rate % 44100 != 0 &&
+			out_audio_format.sample_rate % 48000 != 0) {
+			int a = out_audio_format.sample_rate / 44100;
+			int b = out_audio_format.sample_rate / 48000;
+			uint32_t base = (a == b && a > 1)? 48000 : 44100;
+			out_audio_format.sample_rate = (out_audio_format.sample_rate / base + 1) * base;
+		}
+	}
 
 	seekable = _seekable;
 	total_time = _duration;

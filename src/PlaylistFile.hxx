@@ -27,8 +27,9 @@ class DetachedSong;
 class SongLoader;
 class PlaylistVector;
 class AllocatedPath;
+struct Queue;
 
-typedef std::vector<std::string> PlaylistFileContents;
+typedef std::vector<DetachedSong> PlaylistFileContents;
 
 extern bool playlist_saveAbsolutePaths;
 
@@ -47,6 +48,8 @@ spl_valid_name(const char *name_utf8);
 
 AllocatedPath
 spl_map_to_fs(const char *name_utf8);
+
+bool is_mpd_playlist_file(const char *utf8path);
 
 /**
  * Returns a list of stored_playlist_info struct pointers.
@@ -78,6 +81,10 @@ spl_append_song(const char *utf8path, const DetachedSong &song);
 void
 spl_append_uri(const char *path_utf8,
 	       const SongLoader &loader, const char *uri_utf8);
+
+void
+spl_append_queue(const char *utf8path, const Queue &queue,
+	unsigned start, unsigned end);
 
 void
 spl_rename(const char *utf8from, const char *utf8to);

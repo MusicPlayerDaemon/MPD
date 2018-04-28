@@ -64,4 +64,13 @@ handle_playlistadd(Client &client, Request request, Response &response);
 CommandResult
 handle_listplaylists(Client &client, Request request, Response &response);
 
+CommandResult
+handle_addQueueToPlaylist(Client &client, Request request, Response &response);
+
+CommandResult
+handle_playlistload(Client &client, Request request, Response &response);
+
+CommandResult
+handle_playlistsave(Client &client, Request request, Response &response);
+
 #endif

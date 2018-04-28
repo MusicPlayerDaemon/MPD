@@ -35,4 +35,10 @@ neighbor_commands_available(const Instance &instance) noexcept;
 CommandResult
 handle_listneighbors(Client &client, Request request, Response &response);
 
+CommandResult
+handle_scanNeighbors(Client &client, gcc_unused Request request, Response &response);
+
+CommandResult
+handle_clear_upnp_cache(Client &client, Request args, Response &r);
+
 #endif

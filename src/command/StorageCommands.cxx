@@ -26,6 +26,7 @@
 #include "util/UriUtil.hxx"
 #include "util/ChronoUtil.hxx"
 #include "util/ConstBuffer.hxx"
+#include "util/StringCompare.hxx"
 #include "fs/Traits.hxx"
 #include "client/Client.hxx"
 #include "client/Response.hxx"
@@ -120,7 +121,7 @@ handle_listfiles_storage(Client &client, Response &r, const char *uri)
 }
 
 static void
-print_storage_uri(Client &client, Response &r, const Storage &storage)
+print_storage_uri(gcc_unused Client &client, Response &r, const Storage &storage)
 {
 	std::string uri = storage.MapUTF8("");
 	if (uri.empty())
@@ -158,8 +159,10 @@ handle_listmounts(Client &client, gcc_unused Request args, Response &r)
 
 	const auto visitor = [&client, &r](const char *mount_uri,
 					   const Storage &storage){
-		r.Format("mount: %s\n", mount_uri);
-		print_storage_uri(client, r, storage);
+		if (!StringIsEmpty(mount_uri)) {
+			r.Format("mount: %s\n", mount_uri);
+			print_storage_uri(client, r, storage);
+		}
 	};
 
 	composite.VisitMounts(visitor);
@@ -212,9 +215,13 @@ handle_mount(Client &client, Request args, Response &r)
 	Database *_db = instance.database;
 	if (_db != nullptr && _db->IsPlugin(simple_db_plugin)) {
 		SimpleDatabase &db = *(SimpleDatabase *)_db;
+		std::string remote_uri2(remote_uri);
+		if (StringStartsWith(remote_uri, "/mnt")) {
+			remote_uri2 = local_uri;
+		}
 
 		try {
-			db.Mount(local_uri, remote_uri);
+			db.Mount(local_uri, remote_uri2.c_str());
 		} catch (...) {
 			composite.Unmount(local_uri);
 			throw;
@@ -274,4 +281,33 @@ handle_unmount(Client &client, Request args, Response &r)
 	instance.EmitIdle(IDLE_MOUNT);
 
 	return CommandResult::OK;
+}
+
+CommandResult
+handle_unmount_all(Client &client, gcc_unused Request args, Response &r)
+{
+	UpdateService *update = client.GetPartition().instance.update;
+	if (update != nullptr) {
+		update->CancelAllAsync();
+	}
+	Storage *_composite = client.GetPartition().instance.storage;
+	if (_composite == nullptr) {
+		r.Error(ACK_ERROR_NO_EXIST, "No database");
+		return CommandResult::ERROR;
+	}
+
+	CompositeStorage &composite = *(CompositeStorage *)_composite;
+	std::vector<std::string> list = composite.ListMounts();
+	CommandResult ret = CommandResult::OK;
+	for (const auto &i : list) {
+		const char *argv[1];
+		Request args2(argv, 0);
+		argv[args2.size++] = i.c_str();
+		CommandResult ret2 = handle_unmount(client, args2, r);
+		if (ret2 != CommandResult::OK) {
+			ret = ret2;
+		}
+	}
+
+	return ret;
 }

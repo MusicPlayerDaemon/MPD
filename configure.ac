@@ -257,6 +257,11 @@ AC_CHECK_HEADERS(locale.h)
 
 AC_CHECK_HEADERS([sys/prctl.h], AC_CHECK_FUNCS([prctl]))
 
+AC_CHECK_FILE([/usr/local/include/rapidjson/rapidjson.h],
+	[AC_DEFINE([HAVE_RAPIDJSON_H], 1,
+		[Define to 1 if you have rapidjson.])],
+	[AC_MSG_ERROR([rapidjson >= 1.0.2 requested but not found, see https://github.com/Tencent/rapidjson])])
+
 dnl ---------------------------------------------------------------------------
 dnl Event loop selection
 dnl ---------------------------------------------------------------------------

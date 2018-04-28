@@ -30,11 +30,29 @@
 #include "thread/Cond.hxx"
 #include "thread/Thread.hxx"
 #include "thread/Name.hxx"
+#include "util/Macros.hxx"
+#include "util/Domain.hxx"
 #include "Log.hxx"
 
 #include <libsmbclient.h>
 
+#include <list>
 #include <algorithm>
+
+#include "util/Domain.hxx"
+#include "Log.hxx"
+
+#include "Instance.hxx"
+#include "player/Control.hxx"
+#include "Partition.hxx"
+#include <unistd.h>
+
+//This value determines the maximum number of local master browsers to query for the list of workgroups
+#define MAX_LMB_COUNT  10
+
+extern Instance *instance;
+
+static constexpr Domain smbclient_neighbor("smbclient_neighbor");
 
 class SmbclientNeighborExplorer final : public NeighborExplorer {
 	struct Server {
@@ -74,6 +92,7 @@ public:
 
 	/* virtual methods from class NeighborExplorer */
 	void Open() override;
+	void Reopen() override;
 	void Close() noexcept override;
 	List GetList() const noexcept override;
 
@@ -86,7 +105,17 @@ void
 SmbclientNeighborExplorer::Open()
 {
 	quit = false;
+	list.clear();
 	thread.Start();
+}
+
+void
+SmbclientNeighborExplorer::Reopen()
+{
+	FormatDefault(smbclient_neighbor, "%s %d", __func__, __LINE__);
+	Close();
+	SmbclientReinit();
+	Open();
 }
 
 void
@@ -180,77 +209,62 @@ DetectServers() noexcept
 	return list;
 }
 
-gcc_pure
-static NeighborExplorer::List::const_iterator
-FindBeforeServerByURI(NeighborExplorer::List::const_iterator prev,
-		      NeighborExplorer::List::const_iterator end,
-		      const std::string &uri) noexcept
-{
-	for (auto i = std::next(prev); i != end; prev = i, i = std::next(prev))
-		if (i->uri == uri)
-			return prev;
-
-	return end;
-}
-
 inline void
 SmbclientNeighborExplorer::Run()
 {
-	List found = DetectServers(), lost;
+	List found = DetectServers(), found2;
 
 	mutex.lock();
 
-	const auto found_before_begin = found.before_begin();
-	const auto found_end = found.end();
 
-	for (auto prev = list.before_begin(), i = std::next(prev), end = list.end();
-	     i != end; i = std::next(prev)) {
-		auto f = FindBeforeServerByURI(found_before_begin, found_end,
-					       i->uri);
-		if (f != found_end) {
-			/* still visible: remove from "found" so we
-			   don't believe it's a new one */
-			*i = std::move(*std::next(f));
-			found.erase_after(f);
-			prev = i;
-		} else {
-			/* can't see it anymore: move to "lost" */
-			lost.splice_after(lost.before_begin(), list, prev);
+	for (auto &i : found) {
+		bool is_in_list = false;
+		for (auto &j : list) {
+			if (i.uri == j.uri) {
+				is_in_list = true;
+				break;
+			}
+		}
+		if (!is_in_list) {
+			found2.push_front(i);
 		}
 	}
-
-	for (auto prev = found_before_begin, i = std::next(prev);
-	     i != found_end; prev = i, i = std::next(prev))
-		list.push_front(*i);
+	for (auto &i : found2) {
+		list.push_front(i);
+	}
 
 	mutex.unlock();
 
-	for (auto &i : lost)
-		listener.LostNeighbor(i);
-
-	for (auto &i : found)
+	for (auto &i : found2) {
 		listener.FoundNeighbor(i);
+		FormatDefault(smbclient_neighbor, "FoundNeighbor\n workgroup:%s\n uri:%s\n display_name:%s",
+			i.workgroup.c_str(), i.uri.c_str(), i.display_name.c_str());
+	}
 }
 
 inline void
 SmbclientNeighborExplorer::ThreadFunc()
 {
-	SetThreadName("smbclient");
+	SetThreadName("smbclientNeighbor");
 
 	mutex.lock();
+	scanning = 10;
 
-	while (!quit) {
+	do {
 		mutex.unlock();
-
+		//FormatDefault(smbclient_neighbor, "%s start", __func__);
 		Run();
+		//FormatDefault(smbclient_neighbor, "%s end", __func__);
 
 		mutex.lock();
 		if (quit)
 			break;
 
 		// TODO: sleep for how long?
-		cond.timed_wait(mutex, std::chrono::seconds(10));
-	}
+		scanning--;
+		cond.timed_wait(mutex, std::chrono::seconds(5));
+	} while (!quit && scanning);
+	scanning = 0;
 
 	mutex.unlock();
 }

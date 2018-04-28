@@ -52,7 +52,7 @@ ParseSampleRate(const char *src, bool mask, const char **endptr_r)
 	return value;
 }
 
-static SampleFormat
+SampleFormat
 ParseSampleFormat(const char *src, bool mask, const char **endptr_r)
 {
 	unsigned long value;

@@ -28,6 +28,7 @@
 #include "util/RuntimeError.hxx"
 #include "Log.hxx"
 #include "open.h"
+#include "FifoFormat.cxx"
 
 #include <sys/stat.h>
 #include <errno.h>
@@ -41,6 +42,8 @@ class FifoOutput final : AudioOutput {
 	int output = -1;
 	bool created = false;
 	Timer *timer;
+
+	FifoFormat format;
 
 public:
 	FifoOutput(const ConfigBlock &block);
@@ -74,14 +77,13 @@ static constexpr Domain fifo_output_domain("fifo_output");
 
 FifoOutput::FifoOutput(const ConfigBlock &block)
 	:AudioOutput(0),
-	 path(block.GetPath("path"))
+	 path(block.GetPath("path")),
+	 format(block.GetPath("format_path"))
 {
 	if (path.IsNull())
 		throw std::runtime_error("No \"path\" parameter specified");
 
 	path_utf8 = path.ToUTF8();
-
-	OpenFifo();
 }
 
 inline void
@@ -114,7 +116,7 @@ FifoOutput::CloseFifo()
 	}
 
 	FileInfo fi;
-	if (created && GetFileInfo(path, fi))
+	if (GetFileInfo(path, fi))
 		Delete();
 }
 
@@ -171,12 +173,16 @@ void
 FifoOutput::Open(AudioFormat &audio_format)
 {
 	timer = new Timer(audio_format);
+	OpenFifo();
+	format.Open(audio_format);
 }
 
 void
 FifoOutput::Close() noexcept
 {
 	delete timer;
+	format.Close();
+	CloseFifo();
 }
 
 void
@@ -195,6 +201,7 @@ FifoOutput::Cancel() noexcept
 			    "Flush of FIFO \"%s\" failed",
 			    path_utf8.c_str());
 	}
+	format.Cancel();
 }
 
 std::chrono::steady_clock::duration
@@ -208,10 +215,6 @@ FifoOutput::Delay() const noexcept
 size_t
 FifoOutput::Play(const void *chunk, size_t size)
 {
-	if (!timer->IsStarted())
-		timer->Start();
-	timer->Add(size);
-
 	while (true) {
 		ssize_t bytes = write(output, chunk, size);
 		if (bytes > 0)
@@ -220,9 +223,10 @@ FifoOutput::Play(const void *chunk, size_t size)
 		if (bytes < 0) {
 			switch (errno) {
 			case EAGAIN:
-				/* The pipe is full, so empty it */
-				Cancel();
-				continue;
+				/* The pipe is full, start delay */
+				timer->Start();
+				timer->Add(16*1024);
+				return 0;
 			case EINTR:
 				continue;
 			}
