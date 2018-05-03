@@ -846,6 +846,12 @@ AlsaOutput::Recover(int err)
 	case SND_PCM_STATE_DRAINING:
 		err = 0;
 		break;
+
+	default:
+		/* this default case is just here to work around
+		   -Wswitch due to SND_PCM_STATE_PRIVATE1 (libasound
+		   1.1.6) */
+		break;
 	}
 
 	return err;
