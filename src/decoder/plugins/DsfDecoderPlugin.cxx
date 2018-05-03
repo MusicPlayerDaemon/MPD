@@ -358,6 +358,8 @@ static const char *const dsf_suffixes[] = {
 
 static const char *const dsf_mime_types[] = {
 	"application/x-dsf",
+	"audio/x-dsf",
+	"audio/x-dsd",
 	nullptr
 };
 

@@ -1,6 +1,8 @@
 ver 0.20.20 (not yet released)
 * protocol
   - fix "modified-since" filter regression
+* decoder
+  - dsdiff, dsf: support more MIME types
 
 ver 0.20.19 (2018/04/26)
 * protocol

@@ -484,6 +484,8 @@ static const char *const dsdiff_suffixes[] = {
 
 static const char *const dsdiff_mime_types[] = {
 	"application/x-dff",
+	"audio/x-dff",
+	"audio/x-dsd",
 	nullptr
 };
 
