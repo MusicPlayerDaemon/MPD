@@ -260,6 +260,12 @@ AlsaInputStream::Recover(int err)
 		/* this is no error, so just keep running */
 		err = 0;
 		break;
+
+	default:
+		/* this default case is just here to work around
+		   -Wswitch due to SND_PCM_STATE_PRIVATE1 (libasound
+		   1.1.6) */
+		break;
 	}
 
 
