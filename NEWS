@@ -4,6 +4,7 @@ ver 0.20.20 (not yet released)
 * decoder
   - dsdiff, dsf: support more MIME types
   - dsdiff, dsf: allow 4 MB ID3 tags
+  - opus: support R128_ALBUM_GAIN tag
 
 ver 0.20.19 (2018/04/26)
 * protocol
