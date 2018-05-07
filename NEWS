@@ -3,6 +3,7 @@ ver 0.20.20 (not yet released)
   - fix "modified-since" filter regression
 * decoder
   - dsdiff, dsf: support more MIME types
+  - dsdiff, dsf: allow 4 MB ID3 tags
 
 ver 0.20.19 (2018/04/26)
 * protocol
