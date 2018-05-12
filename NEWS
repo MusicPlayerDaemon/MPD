@@ -1,6 +1,8 @@
 ver 0.20.20 (not yet released)
 * protocol
   - fix "modified-since" filter regression
+* output
+  - pulse: cork stream when paused due to "single" mode
 * decoder
   - dsdiff, dsf: support more MIME types
   - dsdiff, dsf: allow 4 MB ID3 tags

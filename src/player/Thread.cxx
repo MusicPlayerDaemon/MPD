@@ -950,6 +950,7 @@ Player::SongBorder()
 	const bool border_pause = pc.LockApplyBorderPause();
 	if (border_pause) {
 		paused = true;
+		pc.outputs.Pause();
 		idle_add(IDLE_PLAYER);
 	}
 }
