@@ -931,6 +931,7 @@ Player::SongBorder() noexcept
 	if (border_pause) {
 		paused = true;
 		pc.listener.OnBorderPause();
+		pc.outputs.Pause();
 		idle_add(IDLE_PLAYER);
 	}
 }

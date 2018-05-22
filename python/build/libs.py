@@ -3,9 +3,16 @@ from os.path import abspath
 
 from build.project import Project
 from build.zlib import ZlibProject
+from build.meson import MesonProject
 from build.autotools import AutotoolsProject
 from build.ffmpeg import FfmpegProject
 from build.boost import BoostProject
+
+libmpdclient = MesonProject(
+    'https://www.musicpd.org/download/libmpdclient/2/libmpdclient-2.14.tar.xz',
+    '0a84e2791bfe3077cf22ee1784c805d5bb550803dffe56a39aa3690a38061372',
+    'lib/libmpdclient.a',
+)
 
 libogg = AutotoolsProject(
     'http://downloads.xiph.org/releases/ogg/libogg-1.3.3.tar.xz',
@@ -334,8 +341,8 @@ ffmpeg = FfmpegProject(
 )
 
 curl = AutotoolsProject(
-    'http://curl.haxx.se/download/curl-7.59.0.tar.xz',
-    'e44eaabdf916407585bf5c7939ff1161e6242b6b015d3f2f5b758b2a330461fc',
+    'http://curl.haxx.se/download/curl-7.60.0.tar.xz',
+    '8736ff8ded89ddf7e926eec7b16f82597d029fc1469f3a551f1fafaac164e6a0',
     'lib/libcurl.a',
     [
         '--disable-shared', '--enable-static',

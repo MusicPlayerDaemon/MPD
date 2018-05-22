@@ -53,6 +53,14 @@ ScanOneOpusTag(const char *name, const char *value,
 		long l = strtol(value, &endptr, 10);
 		if (endptr > value && *endptr == 0)
 			rgi->track.gain = double(l) / 256.;
+	} else if (rgi != nullptr && strcmp(name, "R128_ALBUM_GAIN") == 0) {
+		/* R128_ALBUM_GAIN is a Q7.8 fixed point number in
+		   dB */
+
+		char *endptr;
+		long l = strtol(value, &endptr, 10);
+		if (endptr > value && *endptr == 0)
+			rgi->album.gain = double(l) / 256.;
 	}
 
 	tag_handler_invoke_pair(handler, ctx, name, value);

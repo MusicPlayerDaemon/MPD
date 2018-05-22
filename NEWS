@@ -31,11 +31,17 @@ ver 0.21 (not yet released)
   - opus: support for sending metadata using ogg stream chaining
 * require GCC 5.0
 
-ver 0.20.20 (not yet released)
+ver 0.20.20 (2018/05/22)
 * protocol
   - fix "modified-since" filter regression
+* output
+  - pulse: cork stream when paused due to "single" mode
 * decoder
   - dsdiff, dsf: support more MIME types
+  - dsdiff, dsf: allow 4 MB ID3 tags
+  - opus: support R128_ALBUM_GAIN tag
+* Android, Windows
+  - enable the "proxy" database plugin
 
 ver 0.20.19 (2018/04/26)
 * protocol
