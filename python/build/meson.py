@@ -33,6 +33,7 @@ class MesonProject(Project):
         # TODO: write pkg-config wrapper
 
         path = os.path.join(toolchain.build_path, 'meson.cross')
+        os.makedirs(toolchain.build_path, exist_ok=True)
         with open(path, 'w') as f:
             f.write("""
 [binaries]
