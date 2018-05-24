@@ -249,6 +249,7 @@ input {
 ##	public		"no"			# optional
 ##	timeout		"2"			# optional
 ##	mixer_type      "software"		# optional
+##      always_on       "yes"                   # optional
 #}
 #
 # An example of a recorder output:
