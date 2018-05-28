@@ -82,6 +82,7 @@ class ProxyDatabase final : public Database, SocketMonitor, IdleMonitor {
 	DatabaseListener &listener;
 
 	const std::string host;
+	const std::string password;
 	const unsigned port;
 	const bool keepalive;
 
@@ -359,6 +360,7 @@ ProxyDatabase::ProxyDatabase(EventLoop &_loop, DatabaseListener &_listener,
 	 SocketMonitor(_loop), IdleMonitor(_loop),
 	 listener(_listener),
 	 host(block.GetBlockValue("host", "")),
+	 password(block.GetBlockValue("password", "")),
 	 port(block.GetBlockValue("port", 0u)),
 	 keepalive(block.GetBlockValue("keepalive", false))
 {
@@ -402,6 +404,10 @@ ProxyDatabase::Connect()
 
 	try {
 		CheckError(connection);
+
+		if (!password.empty() &&
+		    !mpd_run_password(connection, password.c_str()))
+			ThrowError(connection);
 	} catch (...) {
 		mpd_connection_free(connection);
 		connection = nullptr;

@@ -1,4 +1,6 @@
 ver 0.20.21 (not yet released)
+* database
+  - proxy: add "password" setting
 
 ver 0.20.20 (2018/05/22)
 * protocol

@@ -2116,6 +2116,15 @@ run</programlisting>
               </row>
               <row>
                 <entry>
+                  <varname>password</varname>
+                </entry>
+                <entry>
+                  The password used to log in to the "master"
+                  <application>MPD</application> instance.
+                </entry>
+              </row>
+              <row>
+                <entry>
                   <varname>keepalive</varname>
                   <parameter>yes|no</parameter>
                 </entry>
