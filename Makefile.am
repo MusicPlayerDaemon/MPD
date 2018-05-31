@@ -278,6 +278,25 @@ ALSA_SOURCES = \
 	src/lib/alsa/PeriodBuffer.hxx \
 	src/lib/alsa/NonBlock.cxx src/lib/alsa/NonBlock.hxx
 
+if ENABLE_DBUS
+noinst_LIBRARIES += libodbus.a
+libodbus_a_SOURCES = \
+	src/lib/dbus/AppendIter.hxx \
+	src/lib/dbus/Connection.cxx src/lib/dbus/Connection.hxx \
+	src/lib/dbus/Error.cxx src/lib/dbus/Error.hxx \
+	src/lib/dbus/Iter.hxx \
+	src/lib/dbus/Message.cxx src/lib/dbus/Message.hxx \
+	src/lib/dbus/PendingCall.hxx \
+	src/lib/dbus/ReadIter.hxx \
+	src/lib/dbus/ObjectManager.hxx \
+	src/lib/dbus/UDisks2.hxx \
+	src/lib/dbus/ScopeMatch.cxx src/lib/dbus/ScopeMatch.hxx \
+	src/lib/dbus/Types.hxx \
+	src/lib/dbus/Values.hxx \
+	src/lib/dbus/Watch.cxx src/lib/dbus/Watch.hxx
+libodbus_a_CPPFLAGS = $(AM_CPPFLAGS) $(DBUS_CFLAGS)
+endif
+
 #
 # Android native library
 #

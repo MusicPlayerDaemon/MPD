@@ -627,6 +627,12 @@ if test x$enable_libwrap = xyes; then
 fi
 
 dnl ---------------------------------------------------------------------------
+dnl D-Bus
+dnl ---------------------------------------------------------------------------
+
+MPD_ENABLE_AUTO_PKG(dbus, DBUS, [dbus-1], [D-Bus support], [dbus-1 not found])
+
+dnl ---------------------------------------------------------------------------
 dnl Metadata Plugins
 dnl ---------------------------------------------------------------------------
 
@@ -1501,6 +1507,7 @@ results(soxr, [libsoxr])
 results(libmpdclient, [libmpdclient])
 results(inotify, [inotify])
 results(sqlite, [SQLite])
+results(dbus, [DBUS])
 
 printf '\nMetadata support:\n\t'
 results(id3,[ID3])
