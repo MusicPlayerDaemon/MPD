@@ -835,6 +835,7 @@ libneighbor_a_SOURCES = \
 	src/neighbor/NeighborPlugin.hxx
 
 libneighbor_a_CPPFLAGS = $(AM_CPPFLAGS) \
+	$(DBUS_CFLAGS) \
 	$(UPNP_CFLAGS) \
 	$(SMBCLIENT_CFLAGS)
 
@@ -855,6 +856,15 @@ libneighbor_a_SOURCES += \
 NEIGHBOR_LIBS += \
 	$(EXPAT_LIBS) \
 	$(UPNP_LIBS)
+endif
+
+if ENABLE_UDISKS
+libneighbor_a_SOURCES += \
+	$(UDISKS_SOURCES) \
+	src/neighbor/plugins/UdisksNeighborPlugin.cxx src/neighbor/plugins/UdisksNeighborPlugin.hxx
+NEIGHBOR_LIBS += \
+	$(DBUS_LIBS) \
+	libodbus.a
 endif
 
 endif

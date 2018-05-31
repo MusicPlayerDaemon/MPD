@@ -226,6 +226,9 @@ static void version(void)
 #ifdef ENABLE_DBUS
 	       " dbus"
 #endif
+#ifdef ENABLE_UDISKS
+	       " udisks"
+#endif
 #ifdef USE_EPOLL
 	       " epoll"
 #endif
