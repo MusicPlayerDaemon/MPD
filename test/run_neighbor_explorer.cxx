@@ -80,6 +80,12 @@ try {
 	neighbor.Init(loop, listener);
 	neighbor.Open();
 
+	/* dump initial list */
+
+	for (const auto &info : neighbor.GetList())
+		printf("have '%s' (%s)\n",
+		       info.display_name.c_str(), info.uri.c_str());
+
 	/* run */
 
 	loop.Run();
