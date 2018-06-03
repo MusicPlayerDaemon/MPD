@@ -32,6 +32,7 @@
 #include "neighbor/Listener.hxx"
 #include "neighbor/Info.hxx"
 #include "thread/Mutex.hxx"
+#include "thread/SafeSingleton.hxx"
 #include "util/Domain.hxx"
 #include "util/StringAPI.hxx"
 #include "util/Manual.hxx"
@@ -74,7 +75,7 @@ class UdisksNeighborExplorer final
 
 	EventLoop &event_loop;
 
-	Manual<ODBus::Glue> dbus_glue;
+	Manual<SafeSingleton<ODBus::Glue>> dbus_glue;
 
 	ODBus::PendingCall pending_list_call;
 
@@ -97,7 +98,7 @@ public:
 	}
 
 	auto &&GetConnection() noexcept {
-		return dbus_glue->GetConnection();
+		return dbus_glue.Get()->GetConnection();
 	}
 
 	/* virtual methods from class NeighborExplorer */
