@@ -20,6 +20,8 @@
 #ifndef ODBUS_OBJECT_MANAGER_HXX
 #define ODBUS_OBJECT_MANAGER_HXX
 
+#include "ReadIter.hxx"
+
 #include <dbus/dbus.h>
 
 #define DBUS_OM_INTERFACE "org.freedesktop.DBus.ObjectManager"
@@ -46,5 +48,33 @@
 	DBUS_TYPE_OBJECT_PATH_AS_STRING \
 	DBUS_TYPE_ARRAY_AS_STRING \
 	DBUS_TYPE_STRING_AS_STRING
+
+namespace ODBus {
+
+template<typename F>
+inline void
+RecurseInterfaceDictEntry(ReadMessageIter &&i, F &&f)
+{
+	if (i.GetArgType() != DBUS_TYPE_OBJECT_PATH)
+		return;
+
+	const char *path = i.GetString();
+	i.Next();
+	if (i.GetArgType() != DBUS_TYPE_ARRAY)
+		return;
+
+	f(path, i.Recurse());
+}
+
+template<typename F>
+inline void
+ForEachInterface(ReadMessageIter &&i, F &&f)
+{
+	i.ForEach(DBUS_TYPE_DICT_ENTRY, [&f](auto &&j){
+			RecurseInterfaceDictEntry(j.Recurse(), f);
+		});
+}
+
+}
 
 #endif

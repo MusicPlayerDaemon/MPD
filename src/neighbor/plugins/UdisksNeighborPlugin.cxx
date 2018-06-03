@@ -47,11 +47,14 @@
 static constexpr Domain udisks_domain("udisks");
 
 struct UdisksObject {
-	std::string path;
+	const std::string path;
 
 	std::string drive_id, block_id;
 
 	bool is_filesystem = false;
+
+	explicit UdisksObject(const char *_path) noexcept
+		:path(_path) {}
 
 	bool IsValid() const noexcept {
 		return !drive_id.empty() || !block_id.empty();
@@ -275,17 +278,7 @@ ParseInterfaceDictEntry(UdisksObject &o, ODBus::ReadMessageIter &&i) noexcept
 static bool
 ParseObject(UdisksObject &o, ODBus::ReadMessageIter &&i) noexcept
 {
-	if (i.GetArgType() != DBUS_TYPE_OBJECT_PATH)
-		return false;
-
-	o.path = i.GetString();
-
-	i.Next();
-
-	if (i.GetArgType() != DBUS_TYPE_ARRAY)
-		return false;
-
-	i.Recurse().ForEach(DBUS_TYPE_DICT_ENTRY, [&o](auto &&j){
+	i.ForEach(DBUS_TYPE_DICT_ENTRY, [&o](auto &&j){
 			ParseInterfaceDictEntry(o, j.Recurse());
 		});
 
@@ -365,9 +358,9 @@ UdisksNeighborExplorer::OnListNotify(DBusPendingCall *pending) noexcept
 		return;
 	}
 
-	i.Recurse().ForEach(DBUS_TYPE_DICT_ENTRY, [this](auto &&j){
-			UdisksObject o;
-			if (ParseObject(o, j.Recurse()) && o.IsValid())
+	ForEachInterface(i.Recurse(), [this](const char *path, auto &&j){
+			UdisksObject o(path);
+			if (ParseObject(o, std::move(j)) && o.IsValid())
 				Insert(std::move(o));
 		});
 }
@@ -380,9 +373,11 @@ UdisksNeighborExplorer::HandleMessage(DBusConnection *, DBusMessage *message) no
 	if (dbus_message_is_signal(message, DBUS_OM_INTERFACE,
 				   "InterfacesAdded") &&
 	    dbus_message_has_signature(message, DBUS_OM_INTERFACES_ADDED_SIGNATURE)) {
-		UdisksObject o;
-		if (ParseObject(o, ReadMessageIter(*message)) && o.IsValid())
-			Insert(std::move(o));
+		RecurseInterfaceDictEntry(ReadMessageIter(*message), [this](const char *path, auto &&i){
+				UdisksObject o(path);
+				if (ParseObject(o, std::move(i)) && o.IsValid())
+					Insert(std::move(o));
+			});
 
 		return DBUS_HANDLER_RESULT_HANDLED;
 	} else if (dbus_message_is_signal(message, DBUS_OM_INTERFACE,
