@@ -19,8 +19,21 @@
 
 #include "config.h"
 #include "Glue.hxx"
+#include "event/Call.hxx"
 
 namespace ODBus {
+
+void
+Glue::ConnectIndirect()
+{
+	BlockingCall(GetEventLoop(), [this](){ Connect(); });
+}
+
+void
+Glue::DisconnectIndirect()
+{
+	BlockingCall(GetEventLoop(), [this](){ Disconnect(); });
+}
 
 void
 Glue::Connect()

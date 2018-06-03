@@ -35,11 +35,11 @@ class Glue final : ODBus::WatchManagerObserver {
 public:
 	explicit Glue(EventLoop &event_loop)
 		:watch(event_loop, *this) {
-		Connect();
+		ConnectIndirect();
 	}
 
 	~Glue() noexcept {
-		Disconnect();
+		DisconnectIndirect();
 	}
 
 	EventLoop &GetEventLoop() noexcept {
@@ -51,6 +51,9 @@ public:
 	}
 
 private:
+	void ConnectIndirect();
+	void DisconnectIndirect();
+
 	void Connect();
 	void Disconnect();
 
