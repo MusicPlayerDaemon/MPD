@@ -57,7 +57,8 @@ struct UdisksObject {
 		:path(_path) {}
 
 	bool IsValid() const noexcept {
-		return !drive_id.empty() || !block_id.empty();
+		return is_filesystem &&
+			(!drive_id.empty() || !block_id.empty());
 	}
 
 	std::string GetUri() const noexcept {
