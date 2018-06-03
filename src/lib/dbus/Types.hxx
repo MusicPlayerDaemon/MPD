@@ -69,6 +69,16 @@ struct ArrayTypeTraits {
 	typedef TemplateString::InsertBefore<TYPE, typename ContainedTraits::TypeAsString> TypeAsString;
 };
 
+template<typename KeyT, typename ValueT>
+struct DictEntryTypeTraits {
+	static constexpr int TYPE = DBUS_TYPE_DICT_ENTRY;
+
+	typedef TemplateString::Concat<TemplateString::CharAsString<DBUS_DICT_ENTRY_BEGIN_CHAR>,
+				       typename KeyT::TypeAsString,
+				       typename ValueT::TypeAsString,
+				       TemplateString::CharAsString<DBUS_DICT_ENTRY_END_CHAR>> TypeAsString;
+};
+
 using VariantTypeTraits = BasicTypeTraits<DBUS_TYPE_VARIANT>;
 
 template<typename T, typename... ContainedTraits>
