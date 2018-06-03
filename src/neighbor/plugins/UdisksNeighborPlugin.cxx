@@ -202,44 +202,23 @@ CheckString(I &&i) noexcept
 	return i.GetString();
 }
 
-template<typename I>
-gcc_pure
-static const char *
-CheckVariantString(I &&i) noexcept
-{
-	if (i.GetArgType() != DBUS_TYPE_VARIANT)
-		return nullptr;
-
-	return CheckString(i.Recurse());
-}
-
 static void
-ParseDriveDictEntry(UdisksObject &o, ODBus::ReadMessageIter &&i) noexcept
+ParseDriveDictEntry(UdisksObject &o, const char *name,
+		    ODBus::ReadMessageIter &&value_i) noexcept
 {
-	if (i.GetArgType() != DBUS_TYPE_STRING)
-		return;
-
-	const char *name = i.GetString();
-	i.Next();
-
 	if (StringIsEqual(name, "Id")) {
-		const char *value = CheckVariantString(i);
+		const char *value = CheckString(value_i);
 		if (value != nullptr && o.drive_id.empty())
 			o.drive_id = value;
 	}
 }
 
 static void
-ParseBlockDictEntry(UdisksObject &o, ODBus::ReadMessageIter &&i) noexcept
+ParseBlockDictEntry(UdisksObject &o, const char *name,
+		    ODBus::ReadMessageIter &&value_i) noexcept
 {
-	if (i.GetArgType() != DBUS_TYPE_STRING)
-		return;
-
-	const char *name = i.GetString();
-	i.Next();
-
 	if (StringIsEqual(name, "Id")) {
-		const char *value = CheckVariantString(i);
+		const char *value = CheckString(value_i);
 		if (value != nullptr && o.block_id.empty())
 			o.block_id = value;
 	}
@@ -249,12 +228,13 @@ static void
 ParseInterface(UdisksObject &o, const char *interface,
 	       ODBus::ReadMessageIter &&i) noexcept
 {
+	using namespace std::placeholders;
 	if (StringIsEqual(interface, "org.freedesktop.UDisks2.Drive")) {
-		for (; i.GetArgType() == DBUS_TYPE_DICT_ENTRY; i.Next())
-			ParseDriveDictEntry(o, i.Recurse());
+		i.ForEachProperty(std::bind(ParseDriveDictEntry,
+					    std::ref(o), _1, _2));
 	} else if (StringIsEqual(interface, "org.freedesktop.UDisks2.Block")) {
-		for (; i.GetArgType() == DBUS_TYPE_DICT_ENTRY; i.Next())
-			ParseBlockDictEntry(o, i.Recurse());
+		i.ForEachProperty(std::bind(ParseBlockDictEntry,
+					    std::ref(o), _1, _2));
 	} else if (StringIsEqual(interface, "org.freedesktop.UDisks2.Filesystem")) {
 		o.is_filesystem = true;
 	}
