@@ -792,6 +792,7 @@ libstorage_a_SOURCES = \
 	src/storage/FileInfo.hxx
 
 libstorage_a_CPPFLAGS = $(AM_CPPFLAGS) \
+	$(DBUS_CFLAGS) \
 	$(NFS_CFLAGS) \
 	$(SMBCLIENT_CFLAGS)
 
@@ -801,6 +802,14 @@ STORAGE_LIBS = \
 	$(EXPAT_LIBS) \
 	$(NFS_LIBS) \
 	$(SMBCLIENT_LIBS)
+
+if ENABLE_UDISKS
+libstorage_a_SOURCES += \
+	src/storage/plugins/UdisksStorage.cxx src/storage/plugins/UdisksStorage.hxx
+STORAGE_LIBS += \
+	$(DBUS_LIBS) \
+	libodbus.a
+endif
 
 if ENABLE_SMBCLIENT
 libstorage_a_SOURCES += \

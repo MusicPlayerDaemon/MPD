@@ -25,6 +25,7 @@
 
 #define UDISKS2_PATH "/org/freedesktop/UDisks2"
 #define UDISKS2_INTERFACE "org.freedesktop.UDisks2"
+#define UDISKS2_FILESYSTEM_INTERFACE "org.freedesktop.UDisks2.Filesystem"
 
 namespace ODBus {
 class Message;
@@ -46,6 +47,16 @@ struct Object {
 	bool IsValid() const noexcept {
 		return is_filesystem &&
 			(!drive_id.empty() || !block_id.empty());
+	}
+
+	template<typename I>
+	bool IsId(I &&other) const noexcept {
+		if (!drive_id.empty())
+			return drive_id == std::forward<I>(other);
+		else if (!block_id.empty())
+			return block_id == std::forward<I>(other);
+		else
+			return false;
 	}
 
 	std::string GetUri() const noexcept {
