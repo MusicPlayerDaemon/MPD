@@ -21,35 +21,28 @@
 #define ODBUS_OBJECT_MANAGER_HXX
 
 #include "ReadIter.hxx"
+#include "Types.hxx"
 
 #include <dbus/dbus.h>
 
 #define DBUS_OM_INTERFACE "org.freedesktop.DBus.ObjectManager"
 
-#define DBUS_OM_PROPERTIES_SIGNATURE \
-	DBUS_TYPE_ARRAY_AS_STRING \
-	DBUS_DICT_ENTRY_BEGIN_CHAR_AS_STRING \
-	DBUS_TYPE_STRING_AS_STRING \
-	DBUS_TYPE_VARIANT_AS_STRING \
-	DBUS_DICT_ENTRY_END_CHAR_AS_STRING
-
-#define DBUS_OM_INTERFACES_SIGNATURE \
-	DBUS_TYPE_ARRAY_AS_STRING \
-	DBUS_DICT_ENTRY_BEGIN_CHAR_AS_STRING \
-	DBUS_TYPE_STRING_AS_STRING \
-	DBUS_OM_PROPERTIES_SIGNATURE \
-	DBUS_DICT_ENTRY_END_CHAR_AS_STRING
-
-#define DBUS_OM_INTERFACES_ADDED_SIGNATURE \
-	DBUS_TYPE_OBJECT_PATH_AS_STRING \
-	DBUS_OM_INTERFACES_SIGNATURE
-
-#define DBUS_OM_INTERFACES_REMOVED_SIGNATURE \
-	DBUS_TYPE_OBJECT_PATH_AS_STRING \
-	DBUS_TYPE_ARRAY_AS_STRING \
-	DBUS_TYPE_STRING_AS_STRING
-
 namespace ODBus {
+
+using PropertiesType =
+	ArrayTypeTraits<DictEntryTypeTraits<StringTypeTraits,
+					    VariantTypeTraits>>;
+
+using InterfacesType =
+	ArrayTypeTraits<DictEntryTypeTraits<StringTypeTraits,
+					    PropertiesType>>;
+
+using InterfacesAddedType =
+	ConcatTypeAsString<ObjectPathTypeTraits,
+			   InterfacesType>;
+
+using InterfacesRemovedType = ConcatTypeAsString<ObjectPathTypeTraits,
+						 ArrayTypeTraits<StringTypeTraits>>;
 
 template<typename F>
 inline void
