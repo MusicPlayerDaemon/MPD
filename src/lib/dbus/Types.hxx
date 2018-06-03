@@ -55,6 +55,9 @@ struct TypeTraits<const char *> : BasicTypeTraits<DBUS_TYPE_STRING> {
 
 using StringTypeTraits = TypeTraits<const char *>;
 
+struct ObjectPathTypeTraits : BasicTypeTraits<DBUS_TYPE_OBJECT_PATH> {
+};
+
 template<>
 struct TypeTraits<dbus_uint32_t> : BasicTypeTraits<DBUS_TYPE_UINT32> {
 };
