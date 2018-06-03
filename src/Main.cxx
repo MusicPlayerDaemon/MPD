@@ -101,6 +101,10 @@
 #include <systemd/sd-daemon.h>
 #endif
 
+#ifdef ENABLE_DBUS
+#include <dbus/dbus.h>
+#endif
+
 #include <stdlib.h>
 
 #ifdef HAVE_LOCALE_H
@@ -713,6 +717,12 @@ try {
 	IcuFinish();
 
 	log_deinit();
+
+#ifdef ENABLE_DBUS
+	/* free libdbus memory to make memory leak checkers happy */
+	dbus_shutdown();
+#endif
+
 	return EXIT_SUCCESS;
 } catch (const std::exception &e) {
 	LogError(e);

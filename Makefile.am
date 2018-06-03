@@ -46,6 +46,7 @@ src_mpd_LDADD = \
 	$(STORAGE_LIBS) \
 	$(PLAYLIST_LIBS) \
 	$(AVAHI_LIBS) \
+	$(DBUS_LIBS) \
 	$(LIBWRAP_LDFLAGS) \
 	$(SQLITE_LIBS) \
 	$(DECODER_LIBS) \
@@ -66,6 +67,8 @@ src_mpd_LDADD = \
 	$(ICU_LDADD) \
 	libutil.a \
 	$(SYSTEMD_DAEMON_LIBS)
+
+src_mpd_CPPFLAGS = $(AM_CPPFLAGS) $(DBUS_CFLAGS)
 
 src_mpd_SOURCES = \
 	src/Main.cxx src/Main.hxx
