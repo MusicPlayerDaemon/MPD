@@ -31,6 +31,7 @@
 #include "neighbor/Explorer.hxx"
 #include "neighbor/Listener.hxx"
 #include "neighbor/Info.hxx"
+#include "event/Call.hxx"
 #include "thread/Mutex.hxx"
 #include "thread/SafeSingleton.hxx"
 #include "util/Domain.hxx"
@@ -107,6 +108,9 @@ public:
 	List GetList() const noexcept override;
 
 private:
+	void DoOpen();
+	void DoClose() noexcept;
+
 	void Insert(UdisksObject &&o) noexcept;
 	void Remove(const std::string &path) noexcept;
 
@@ -125,8 +129,8 @@ private:
 					       void *user_data) noexcept;
 };
 
-void
-UdisksNeighborExplorer::Open()
+inline void
+UdisksNeighborExplorer::DoOpen()
 {
 	using namespace ODBus;
 
@@ -160,10 +164,14 @@ UdisksNeighborExplorer::Open()
 }
 
 void
-UdisksNeighborExplorer::Close() noexcept
+UdisksNeighborExplorer::Open()
 {
-	using namespace ODBus;
+	BlockingCall(GetEventLoop(), [this](){ DoOpen(); });
+}
 
+inline void
+UdisksNeighborExplorer::DoClose() noexcept
+{
 	if (pending_list_call) {
 		pending_list_call.Cancel();
 	}
@@ -172,6 +180,12 @@ UdisksNeighborExplorer::Close() noexcept
 	// TODO: remove_filter
 
 	dbus_glue.Destruct();
+}
+
+void
+UdisksNeighborExplorer::Close() noexcept
+{
+	BlockingCall(GetEventLoop(), [this](){ DoClose(); });
 }
 
 template<typename I>
