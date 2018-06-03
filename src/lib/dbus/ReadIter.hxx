@@ -74,10 +74,18 @@ public:
 		return value;
 	}
 
+	/**
+	 * Create a new iterator which recurses into a container
+	 * value.
+	 */
 	ReadMessageIter Recurse() noexcept {
 		return {RecurseTag(), *this};
 	}
 
+	/**
+	 * Invoke a function for each element (including the current
+	 * one), as long as the argument type is the specified one.
+	 */
 	template<typename F>
 	void ForEach(int arg_type, F &&f) {
 		for (; GetArgType() == arg_type; Next())
