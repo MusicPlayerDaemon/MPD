@@ -25,7 +25,7 @@ namespace ODBus {
 void
 Glue::Connect()
 {
-	watch.SetConnection(Connection::GetSystem());
+	watch.SetConnection(Connection::GetSystemPrivate());
 
 	dbus_connection_set_exit_on_disconnect(GetConnection(), false);
 }
@@ -33,6 +33,8 @@ Glue::Connect()
 void
 Glue::Disconnect()
 {
+	GetConnection().Close();
+
 	watch.SetConnection(Connection());
 }
 

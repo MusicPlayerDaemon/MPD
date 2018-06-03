@@ -69,6 +69,7 @@ public:
 	}
 
 	static Connection GetSystem();
+	static Connection GetSystemPrivate();
 	static Connection Open(const char *address);
 
 	operator DBusConnection *() noexcept {
@@ -77,6 +78,10 @@ public:
 
 	operator bool() const noexcept {
 		return c != nullptr;
+	}
+
+	void Close() noexcept {
+		dbus_connection_close(c);
 	}
 };
 

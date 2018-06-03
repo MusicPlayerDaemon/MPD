@@ -43,6 +43,15 @@ ODBus::Connection::GetSystem()
 }
 
 ODBus::Connection
+ODBus::Connection::GetSystemPrivate()
+{
+	ODBus::Error error;
+	auto *c = dbus_bus_get_private(DBUS_BUS_SYSTEM, error);
+	error.CheckThrow("DBus connection error");
+	return Connection(c);
+}
+
+ODBus::Connection
 ODBus::Connection::Open(const char *address)
 {
 	ODBus::Error error;
