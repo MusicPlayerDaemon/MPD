@@ -21,7 +21,7 @@
 #include "UdisksNeighborPlugin.hxx"
 #include "lib/dbus/Connection.hxx"
 #include "lib/dbus/Error.hxx"
-#include "lib/dbus/Watch.hxx"
+#include "lib/dbus/Glue.hxx"
 #include "lib/dbus/Message.hxx"
 #include "lib/dbus/PendingCall.hxx"
 #include "lib/dbus/ReadIter.hxx"
@@ -34,6 +34,7 @@
 #include "thread/Mutex.hxx"
 #include "util/Domain.hxx"
 #include "util/StringAPI.hxx"
+#include "util/Manual.hxx"
 #include "Log.hxx"
 
 #include <stdexcept>
@@ -69,9 +70,11 @@ struct UdisksObject {
 };
 
 class UdisksNeighborExplorer final
-	: public NeighborExplorer, ODBus::WatchManagerObserver {
+	: public NeighborExplorer {
 
-	ODBus::WatchManager dbus_watch;
+	EventLoop &event_loop;
+
+	Manual<ODBus::Glue> dbus_glue;
 
 	ODBus::PendingCall pending_list_call;
 
@@ -85,23 +88,22 @@ class UdisksNeighborExplorer final
 	std::map<std::string, ByUri::iterator> by_path;
 
 public:
-	UdisksNeighborExplorer(EventLoop &event_loop,
+	UdisksNeighborExplorer(EventLoop &_event_loop,
 			       NeighborListener &_listener) noexcept
-		:NeighborExplorer(_listener),
-		 dbus_watch(event_loop, *this) {}
+		:NeighborExplorer(_listener), event_loop(_event_loop) {}
 
 	auto &GetEventLoop() noexcept {
-		return dbus_watch.GetEventLoop();
+		return event_loop;
+	}
+
+	auto &&GetConnection() noexcept {
+		return dbus_glue->GetConnection();
 	}
 
 	/* virtual methods from class NeighborExplorer */
 	void Open() override;
 	void Close() noexcept override;
 	List GetList() const noexcept override;
-
-private:
-	/* virtual methods from class ODBus::WatchManagerObserver */
-	void OnDBusClosed() noexcept override;
 
 private:
 	void Insert(UdisksObject &&o) noexcept;
@@ -127,10 +129,9 @@ UdisksNeighborExplorer::Open()
 {
 	using namespace ODBus;
 
-	dbus_watch.SetConnection(Connection::GetSystem());
+	dbus_glue.Construct(event_loop);
 
-	auto &connection = dbus_watch.GetConnection();
-	dbus_connection_set_exit_on_disconnect(connection, false);
+	auto &connection = GetConnection();
 
 	try {
 		Error error;
@@ -152,7 +153,7 @@ UdisksNeighborExplorer::Open()
 		pending_list_call = PendingCall::SendWithReply(connection, msg.Get());
 		pending_list_call.SetNotify(OnListNotify, this);
 	} catch (...) {
-		dbus_watch.SetConnection(Connection());
+		dbus_glue.Destruct();
 		throw;
 	}
 }
@@ -169,7 +170,7 @@ UdisksNeighborExplorer::Close() noexcept
 	// TODO: remove_match
 	// TODO: remove_filter
 
-	dbus_watch.SetConnection(Connection());
+	dbus_glue.Destruct();
 }
 
 template<typename I>
@@ -286,12 +287,6 @@ UdisksNeighborExplorer::GetList() const noexcept
 	for (const auto &i : by_uri)
 		result.emplace_front(i.second);
 	return result;
-}
-
-void
-UdisksNeighborExplorer::OnDBusClosed() noexcept
-{
-	// TODO: reconnect
 }
 
 void

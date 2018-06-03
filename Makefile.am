@@ -293,6 +293,7 @@ libodbus_a_SOURCES = \
 	src/lib/dbus/ScopeMatch.cxx src/lib/dbus/ScopeMatch.hxx \
 	src/lib/dbus/Types.hxx \
 	src/lib/dbus/Values.hxx \
+	src/lib/dbus/Glue.cxx src/lib/dbus/Glue.hxx \
 	src/lib/dbus/Watch.cxx src/lib/dbus/Watch.hxx
 libodbus_a_CPPFLAGS = $(AM_CPPFLAGS) $(DBUS_CFLAGS)
 endif
