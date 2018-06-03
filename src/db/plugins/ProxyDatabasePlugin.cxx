@@ -84,6 +84,7 @@ class ProxyDatabase final : public Database, SocketMonitor, IdleMonitor {
 	DatabaseListener &listener;
 
 	const std::string host;
+	const std::string password;
 	const unsigned port;
 	const bool keepalive;
 
@@ -176,6 +177,13 @@ static constexpr struct {
 #if LIBMPDCLIENT_CHECK_VERSION(2,10,0)
 	{ TAG_MUSICBRAINZ_RELEASETRACKID,
 	  MPD_TAG_MUSICBRAINZ_RELEASETRACKID },
+#endif
+#if LIBMPDCLIENT_CHECK_VERSION(2,11,0)
+	{ TAG_ARTIST_SORT, MPD_TAG_ARTIST_SORT },
+	{ TAG_ALBUM_ARTIST_SORT, MPD_TAG_ALBUM_ARTIST_SORT },
+#endif
+#if LIBMPDCLIENT_CHECK_VERSION(2,12,0)
+	{ TAG_ALBUM_SORT, MPD_TAG_ALBUM_SORT },
 #endif
 	{ TAG_NUM_OF_ITEM_TYPES, MPD_TAG_COUNT }
 };
@@ -371,6 +379,7 @@ ProxyDatabase::ProxyDatabase(EventLoop &_loop, DatabaseListener &_listener,
 	 SocketMonitor(_loop), IdleMonitor(_loop),
 	 listener(_listener),
 	 host(block.GetBlockValue("host", "")),
+	 password(block.GetBlockValue("password", "")),
 	 port(block.GetBlockValue("port", 0u)),
 	 keepalive(block.GetBlockValue("keepalive", false))
 {
@@ -415,6 +424,10 @@ ProxyDatabase::Connect()
 
 	try {
 		CheckError(connection);
+
+		if (!password.empty() &&
+		    !mpd_run_password(connection, password.c_str()))
+			ThrowError(connection);
 	} catch (...) {
 		mpd_connection_free(connection);
 		connection = nullptr;

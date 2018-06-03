@@ -2115,13 +2115,6 @@ run</programlisting>
           database.
         </para>
 
-        <para>
-          Note that unless overridden by the below settings (e.g. by
-          setting them to a blank value), general curl configuration
-          from environment variables such as http_proxy or specified
-          in ~/.curlrc will be in effect.
-        </para>
-
         <informaltable>
           <tgroup cols="2">
             <thead>
@@ -2146,6 +2139,15 @@ run</programlisting>
                 </entry>
                 <entry>
                   The port number of the "master"
+                  <application>MPD</application> instance.
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  <varname>password</varname>
+                </entry>
+                <entry>
+                  The password used to log in to the "master"
                   <application>MPD</application> instance.
                 </entry>
               </row>

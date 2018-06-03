@@ -31,6 +31,11 @@ ver 0.21 (not yet released)
   - opus: support for sending metadata using ogg stream chaining
 * require GCC 5.0
 
+ver 0.20.21 (not yet released)
+* database
+  - proxy: add "password" setting
+  - proxy: support tags "ArtistSort", "AlbumArtistSort", "AlbumSort"
+
 ver 0.20.20 (2018/05/22)
 * protocol
   - fix "modified-since" filter regression
