@@ -91,6 +91,17 @@ public:
 		for (; GetArgType() == arg_type; Next())
 			f(*this);
 	}
+
+	/**
+	 * Wrapper for ForEach() which passes a recursed iterator for
+	 * each element.
+	 */
+	template<typename F>
+	void ForEachRecurse(int arg_type, F &&f) {
+		ForEach(arg_type, [&f](auto &&i){
+				f(i.Recurse());
+			});
+	}
 };
 
 } /* namespace ODBus */

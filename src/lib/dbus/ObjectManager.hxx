@@ -70,8 +70,8 @@ template<typename F>
 inline void
 ForEachInterface(ReadMessageIter &&i, F &&f)
 {
-	i.ForEach(DBUS_TYPE_DICT_ENTRY, [&f](auto &&j){
-			RecurseInterfaceDictEntry(j.Recurse(), f);
+	i.ForEachRecurse(DBUS_TYPE_DICT_ENTRY, [&f](auto &&j){
+			RecurseInterfaceDictEntry(std::move(j), f);
 		});
 }
 
