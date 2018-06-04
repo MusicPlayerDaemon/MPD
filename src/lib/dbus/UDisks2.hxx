@@ -20,7 +20,38 @@
 #ifndef UDISKS2_HXX
 #define UDISKS2_HXX
 
+#include <string>
+
 #define UDISKS2_PATH "/org/freedesktop/UDisks2"
 #define UDISKS2_INTERFACE "org.freedesktop.UDisks2"
+
+namespace UDisks2 {
+
+struct Object {
+	const std::string path;
+
+	std::string drive_id, block_id;
+
+	bool is_filesystem = false;
+
+	explicit Object(const char *_path) noexcept
+		:path(_path) {}
+
+	bool IsValid() const noexcept {
+		return is_filesystem &&
+			(!drive_id.empty() || !block_id.empty());
+	}
+
+	std::string GetUri() const noexcept {
+		if (!drive_id.empty())
+			return "udisks://" + drive_id;
+		else if (!block_id.empty())
+			return "udisks://" + block_id;
+		else
+			return {};
+	}
+};
+
+} // namespace UDisks2
 
 #endif

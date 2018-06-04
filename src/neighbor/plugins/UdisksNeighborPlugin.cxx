@@ -46,34 +46,11 @@
 
 static constexpr Domain udisks_domain("udisks");
 
-struct UdisksObject {
-	const std::string path;
-
-	std::string drive_id, block_id;
-
-	bool is_filesystem = false;
-
-	explicit UdisksObject(const char *_path) noexcept
-		:path(_path) {}
-
-	bool IsValid() const noexcept {
-		return is_filesystem &&
-			(!drive_id.empty() || !block_id.empty());
-	}
-
-	std::string GetUri() const noexcept {
-		if (!drive_id.empty())
-			return "udisks://" + drive_id;
-		else if (!block_id.empty())
-			return "udisks://" + block_id;
-		else
-			return {};
-	}
-
-	NeighborInfo ToNeighborInfo() const noexcept {
-		return {GetUri(), path};
-	}
-};
+static NeighborInfo
+ToNeighborInfo(const UDisks2::Object &o) noexcept
+{
+	return {o.GetUri(), o.path};
+}
 
 class UdisksNeighborExplorer final
 	: public NeighborExplorer {
@@ -115,7 +92,7 @@ private:
 	void DoOpen();
 	void DoClose() noexcept;
 
-	void Insert(UdisksObject &&o) noexcept;
+	void Insert(UDisks2::Object &&o) noexcept;
 	void Remove(const std::string &path) noexcept;
 
 	void OnListNotify(ODBus::Message reply) noexcept;
@@ -199,7 +176,7 @@ CheckString(I &&i) noexcept
 }
 
 static void
-ParseDriveDictEntry(UdisksObject &o, const char *name,
+ParseDriveDictEntry(UDisks2::Object &o, const char *name,
 		    ODBus::ReadMessageIter &&value_i) noexcept
 {
 	if (StringIsEqual(name, "Id")) {
@@ -210,7 +187,7 @@ ParseDriveDictEntry(UdisksObject &o, const char *name,
 }
 
 static void
-ParseBlockDictEntry(UdisksObject &o, const char *name,
+ParseBlockDictEntry(UDisks2::Object &o, const char *name,
 		    ODBus::ReadMessageIter &&value_i) noexcept
 {
 	if (StringIsEqual(name, "Id")) {
@@ -221,7 +198,7 @@ ParseBlockDictEntry(UdisksObject &o, const char *name,
 }
 
 static void
-ParseInterface(UdisksObject &o, const char *interface,
+ParseInterface(UDisks2::Object &o, const char *interface,
 	       ODBus::ReadMessageIter &&i) noexcept
 {
 	using namespace std::placeholders;
@@ -237,7 +214,7 @@ ParseInterface(UdisksObject &o, const char *interface,
 }
 
 static void
-ParseInterfaceDictEntry(UdisksObject &o, ODBus::ReadMessageIter &&i) noexcept
+ParseInterfaceDictEntry(UDisks2::Object &o, ODBus::ReadMessageIter &&i) noexcept
 {
 	if (i.GetArgType() != DBUS_TYPE_STRING)
 		return;
@@ -252,7 +229,7 @@ ParseInterfaceDictEntry(UdisksObject &o, ODBus::ReadMessageIter &&i) noexcept
 }
 
 static bool
-ParseObject(UdisksObject &o, ODBus::ReadMessageIter &&i) noexcept
+ParseObject(UDisks2::Object &o, ODBus::ReadMessageIter &&i) noexcept
 {
 	i.ForEach(DBUS_TYPE_DICT_ENTRY, [&o](auto &&j){
 			ParseInterfaceDictEntry(o, j.Recurse());
@@ -274,11 +251,11 @@ UdisksNeighborExplorer::GetList() const noexcept
 }
 
 void
-UdisksNeighborExplorer::Insert(UdisksObject &&o) noexcept
+UdisksNeighborExplorer::Insert(UDisks2::Object &&o) noexcept
 {
 	assert(o.IsValid());
 
-	const NeighborInfo info = o.ToNeighborInfo();
+	const NeighborInfo info = ToNeighborInfo(o);
 
 	{
 		const std::lock_guard<Mutex> protect(mutex);
@@ -330,7 +307,7 @@ UdisksNeighborExplorer::OnListNotify(ODBus::Message reply) noexcept
 	}
 
 	ForEachInterface(i.Recurse(), [this](const char *path, auto &&j){
-			UdisksObject o(path);
+			UDisks2::Object o(path);
 			if (ParseObject(o, std::move(j)) && o.IsValid())
 				Insert(std::move(o));
 		});
@@ -345,7 +322,7 @@ UdisksNeighborExplorer::HandleMessage(DBusConnection *, DBusMessage *message) no
 				   "InterfacesAdded") &&
 	    dbus_message_has_signature(message, InterfacesAddedType::value)) {
 		RecurseInterfaceDictEntry(ReadMessageIter(*message), [this](const char *path, auto &&i){
-				UdisksObject o(path);
+				UDisks2::Object o(path);
 				if (ParseObject(o, std::move(i)) && o.IsValid())
 					Insert(std::move(o));
 			});
