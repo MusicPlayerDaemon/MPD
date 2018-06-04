@@ -34,7 +34,6 @@
 #include "event/Call.hxx"
 #include "thread/Mutex.hxx"
 #include "thread/SafeSingleton.hxx"
-#include "util/Domain.hxx"
 #include "util/Manual.hxx"
 #include "Log.hxx"
 
@@ -42,8 +41,6 @@
 #include <string>
 #include <list>
 #include <map>
-
-static constexpr Domain udisks_domain("udisks");
 
 static NeighborInfo
 ToNeighborInfo(const UDisks2::Object &o) noexcept
@@ -216,24 +213,15 @@ UdisksNeighborExplorer::Remove(const std::string &path) noexcept
 inline void
 UdisksNeighborExplorer::OnListNotify(ODBus::Message reply) noexcept
 {
-	using namespace ODBus;
-
-	try {
-		reply.CheckThrowError();
+	try{
+		ParseObjects(reply,
+			     std::bind(&UdisksNeighborExplorer::Insert,
+				       this, std::placeholders::_1));
 	} catch (...) {
-		LogError(std::current_exception());
+		LogError(std::current_exception(),
+			 "Failed to parse GetManagedObjects reply");
 		return;
 	}
-
-	ReadMessageIter i(*reply.Get());
-	if (i.GetArgType() != DBUS_TYPE_ARRAY) {
-		LogError(udisks_domain, "Malformed response");
-		return;
-	}
-
-	ParseObjects(i.Recurse(),
-		     std::bind(&UdisksNeighborExplorer::Insert,
-			       this, std::placeholders::_1));
 }
 
 inline DBusHandlerResult

@@ -26,7 +26,10 @@
 #define UDISKS2_PATH "/org/freedesktop/UDisks2"
 #define UDISKS2_INTERFACE "org.freedesktop.UDisks2"
 
-namespace ODBus { class ReadMessageIter; }
+namespace ODBus {
+class Message;
+class ReadMessageIter;
+}
 
 namespace UDisks2 {
 
@@ -64,6 +67,16 @@ ParseObject(Object &o, ODBus::ReadMessageIter &&i) noexcept;
  */
 void
 ParseObjects(ODBus::ReadMessageIter &&i,
+	     std::function<void(Object &&o)> callback);
+
+/**
+ * Parse objects from a GetManagedObjects reply and invoke the
+ * callback for each.
+ *
+ * Throws on error.
+ */
+void
+ParseObjects(ODBus::Message &reply,
 	     std::function<void(Object &&o)> callback);
 
 } // namespace UDisks2

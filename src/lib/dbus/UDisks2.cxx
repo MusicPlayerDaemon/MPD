@@ -18,6 +18,7 @@
  */
 
 #include "UDisks2.hxx"
+#include "Message.hxx"
 #include "ReadIter.hxx"
 #include "ObjectManager.hxx"
 #include "util/StringAPI.hxx"
@@ -111,6 +112,21 @@ ParseObjects(ODBus::ReadMessageIter &&i,
 			if (o.IsValid())
 				callback(std::move(o));
 		});
+}
+
+void
+ParseObjects(ODBus::Message &reply,
+	     std::function<void(Object &&o)> callback)
+{
+	using namespace ODBus;
+
+	reply.CheckThrowError();
+
+	ReadMessageIter i(*reply.Get());
+	if (i.GetArgType() != DBUS_TYPE_ARRAY)
+		throw std::runtime_error("Malformed response");
+
+	ParseObjects(i.Recurse(), std::move(callback));
 }
 
 } // namespace UDisks2
