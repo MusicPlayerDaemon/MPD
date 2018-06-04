@@ -76,6 +76,10 @@ public:
 		return c;
 	}
 
+	operator DBusConnection &() noexcept {
+		return *c;
+	}
+
 	operator bool() const noexcept {
 		return c != nullptr;
 	}
