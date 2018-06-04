@@ -231,12 +231,9 @@ UdisksNeighborExplorer::OnListNotify(ODBus::Message reply) noexcept
 		return;
 	}
 
-	ForEachInterface(i.Recurse(), [this](const char *path, auto &&j){
-			UDisks2::Object o(path);
-			UDisks2::ParseObject(o, std::move(j));
-			if (o.IsValid())
-				Insert(std::move(o));
-		});
+	ParseObjects(i.Recurse(),
+		     std::bind(&UdisksNeighborExplorer::Insert,
+			       this, std::placeholders::_1));
 }
 
 inline DBusHandlerResult

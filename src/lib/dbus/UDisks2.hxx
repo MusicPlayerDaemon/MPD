@@ -21,6 +21,7 @@
 #define UDISKS2_HXX
 
 #include <string>
+#include <functional>
 
 #define UDISKS2_PATH "/org/freedesktop/UDisks2"
 #define UDISKS2_INTERFACE "org.freedesktop.UDisks2"
@@ -56,6 +57,14 @@ struct Object {
 
 void
 ParseObject(Object &o, ODBus::ReadMessageIter &&i) noexcept;
+
+/**
+ * Parse objects from an array/dictionary and invoke the callback for
+ * each.
+ */
+void
+ParseObjects(ODBus::ReadMessageIter &&i,
+	     std::function<void(Object &&o)> callback);
 
 } // namespace UDisks2
 

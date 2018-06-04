@@ -19,6 +19,7 @@
 
 #include "UDisks2.hxx"
 #include "ReadIter.hxx"
+#include "ObjectManager.hxx"
 #include "util/StringAPI.hxx"
 #include "Compiler.h"
 
@@ -95,6 +96,20 @@ ParseObject(Object &o, ODBus::ReadMessageIter &&i) noexcept
 {
 	i.ForEach(DBUS_TYPE_DICT_ENTRY, [&o](auto &&j){
 			ParseInterfaceDictEntry(o, j.Recurse());
+		});
+}
+
+void
+ParseObjects(ODBus::ReadMessageIter &&i,
+	     std::function<void(Object &&o)> callback)
+{
+	using namespace ODBus;
+
+	ForEachInterface(std::move(i), [&callback](const char *path, auto &&j){
+			Object o(path);
+			ParseObject(o, std::move(j));
+			if (o.IsValid())
+				callback(std::move(o));
 		});
 }
 
