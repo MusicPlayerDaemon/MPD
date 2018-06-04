@@ -31,14 +31,13 @@
 #define ODBUS_ASYNC_REQUEST_HXX
 
 #include "PendingCall.hxx"
+#include "Message.hxx"
 
 #include <functional>
 
 #include <assert.h>
 
 namespace ODBus {
-
-class Message;
 
 /**
  * Helper class which makes sending messages and receiving the
