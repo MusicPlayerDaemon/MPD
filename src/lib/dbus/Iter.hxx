@@ -33,6 +33,8 @@
 #ifndef ODBUS_ITER_HXX
 #define ODBUS_ITER_HXX
 
+#include <dbus/dbus.h>
+
 namespace ODBus {
 
 class MessageIter {
