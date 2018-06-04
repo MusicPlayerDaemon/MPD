@@ -67,7 +67,7 @@ try {
 
 	/* initialize the core */
 
-	GlobalInit init;
+	const GlobalInit init;
 	EventLoop loop;
 	const ShutdownHandler shutdown_handler(loop);
 
