@@ -285,6 +285,7 @@ if ENABLE_DBUS
 noinst_LIBRARIES += libodbus.a
 libodbus_a_SOURCES = \
 	src/lib/dbus/AppendIter.hxx \
+	src/lib/dbus/AsyncRequest.hxx \
 	src/lib/dbus/Connection.cxx src/lib/dbus/Connection.hxx \
 	src/lib/dbus/Error.cxx src/lib/dbus/Error.hxx \
 	src/lib/dbus/Iter.hxx \

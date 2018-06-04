@@ -23,7 +23,7 @@
 #include "lib/dbus/Error.hxx"
 #include "lib/dbus/Glue.hxx"
 #include "lib/dbus/Message.hxx"
-#include "lib/dbus/PendingCall.hxx"
+#include "lib/dbus/AsyncRequest.hxx"
 #include "lib/dbus/ReadIter.hxx"
 #include "lib/dbus/ObjectManager.hxx"
 #include "lib/dbus/UDisks2.hxx"
@@ -82,7 +82,7 @@ class UdisksNeighborExplorer final
 
 	Manual<SafeSingleton<ODBus::Glue>> dbus_glue;
 
-	ODBus::PendingCall pending_list_call;
+	ODBus::AsyncRequest list_request;
 
 	/**
 	 * Protects #by_uri, #by_path.
@@ -118,13 +118,7 @@ private:
 	void Insert(UdisksObject &&o) noexcept;
 	void Remove(const std::string &path) noexcept;
 
-	void OnListNotify(DBusPendingCall *pending) noexcept;
-
-	static void OnListNotify(DBusPendingCall *pending,
-				 void *user_data) noexcept {
-		auto &e = *(UdisksNeighborExplorer *)user_data;
-		e.OnListNotify(pending);
-	}
+	void OnListNotify(ODBus::Message reply) noexcept;
 
 	DBusHandlerResult HandleMessage(DBusConnection *dbus_connection,
 					DBusMessage *message) noexcept;
@@ -159,8 +153,9 @@ UdisksNeighborExplorer::DoOpen()
 						  UDISKS2_PATH,
 						  DBUS_OM_INTERFACE,
 						  "GetManagedObjects");
-		pending_list_call = PendingCall::SendWithReply(connection, msg.Get());
-		pending_list_call.SetNotify(OnListNotify, this);
+		list_request.Send(connection, *msg.Get(),
+				  std::bind(&UdisksNeighborExplorer::OnListNotify,
+					    this, std::placeholders::_1));
 	} catch (...) {
 		dbus_glue.Destruct();
 		throw;
@@ -176,8 +171,8 @@ UdisksNeighborExplorer::Open()
 inline void
 UdisksNeighborExplorer::DoClose() noexcept
 {
-	if (pending_list_call) {
-		pending_list_call.Cancel();
+	if (list_request) {
+		list_request.Cancel();
 	}
 
 	// TODO: remove_match
@@ -317,14 +312,9 @@ UdisksNeighborExplorer::Remove(const std::string &path) noexcept
 }
 
 inline void
-UdisksNeighborExplorer::OnListNotify(DBusPendingCall *pending) noexcept
+UdisksNeighborExplorer::OnListNotify(ODBus::Message reply) noexcept
 {
-	assert(pending == pending_list_call.Get());
-
-	pending_list_call = {};
-
 	using namespace ODBus;
-	Message reply = Message::StealReply(*pending);
 
 	try {
 		reply.CheckThrowError();
