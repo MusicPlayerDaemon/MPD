@@ -25,6 +25,8 @@
 #define UDISKS2_PATH "/org/freedesktop/UDisks2"
 #define UDISKS2_INTERFACE "org.freedesktop.UDisks2"
 
+namespace ODBus { class ReadMessageIter; }
+
 namespace UDisks2 {
 
 struct Object {
@@ -51,6 +53,9 @@ struct Object {
 			return {};
 	}
 };
+
+void
+ParseObject(Object &o, ODBus::ReadMessageIter &&i) noexcept;
 
 } // namespace UDisks2
 

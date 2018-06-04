@@ -293,7 +293,7 @@ libodbus_a_SOURCES = \
 	src/lib/dbus/PendingCall.hxx \
 	src/lib/dbus/ReadIter.hxx \
 	src/lib/dbus/ObjectManager.hxx \
-	src/lib/dbus/UDisks2.hxx \
+	src/lib/dbus/UDisks2.cxx src/lib/dbus/UDisks2.hxx \
 	src/lib/dbus/ScopeMatch.cxx src/lib/dbus/ScopeMatch.hxx \
 	src/lib/dbus/Types.hxx \
 	src/lib/dbus/Values.hxx \

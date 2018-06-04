@@ -35,7 +35,6 @@
 #include "thread/Mutex.hxx"
 #include "thread/SafeSingleton.hxx"
 #include "util/Domain.hxx"
-#include "util/StringAPI.hxx"
 #include "util/Manual.hxx"
 #include "Log.hxx"
 
@@ -164,80 +163,6 @@ UdisksNeighborExplorer::Close() noexcept
 	BlockingCall(GetEventLoop(), [this](){ DoClose(); });
 }
 
-template<typename I>
-gcc_pure
-static const char *
-CheckString(I &&i) noexcept
-{
-	if (i.GetArgType() != DBUS_TYPE_STRING)
-		return nullptr;
-
-	return i.GetString();
-}
-
-static void
-ParseDriveDictEntry(UDisks2::Object &o, const char *name,
-		    ODBus::ReadMessageIter &&value_i) noexcept
-{
-	if (StringIsEqual(name, "Id")) {
-		const char *value = CheckString(value_i);
-		if (value != nullptr && o.drive_id.empty())
-			o.drive_id = value;
-	}
-}
-
-static void
-ParseBlockDictEntry(UDisks2::Object &o, const char *name,
-		    ODBus::ReadMessageIter &&value_i) noexcept
-{
-	if (StringIsEqual(name, "Id")) {
-		const char *value = CheckString(value_i);
-		if (value != nullptr && o.block_id.empty())
-			o.block_id = value;
-	}
-}
-
-static void
-ParseInterface(UDisks2::Object &o, const char *interface,
-	       ODBus::ReadMessageIter &&i) noexcept
-{
-	using namespace std::placeholders;
-	if (StringIsEqual(interface, "org.freedesktop.UDisks2.Drive")) {
-		i.ForEachProperty(std::bind(ParseDriveDictEntry,
-					    std::ref(o), _1, _2));
-	} else if (StringIsEqual(interface, "org.freedesktop.UDisks2.Block")) {
-		i.ForEachProperty(std::bind(ParseBlockDictEntry,
-					    std::ref(o), _1, _2));
-	} else if (StringIsEqual(interface, "org.freedesktop.UDisks2.Filesystem")) {
-		o.is_filesystem = true;
-	}
-}
-
-static void
-ParseInterfaceDictEntry(UDisks2::Object &o, ODBus::ReadMessageIter &&i) noexcept
-{
-	if (i.GetArgType() != DBUS_TYPE_STRING)
-		return;
-
-	const char *interface = i.GetString();
-	i.Next();
-
-	if (i.GetArgType() != DBUS_TYPE_ARRAY)
-		return;
-
-	ParseInterface(o, interface, i.Recurse());
-}
-
-static bool
-ParseObject(UDisks2::Object &o, ODBus::ReadMessageIter &&i) noexcept
-{
-	i.ForEach(DBUS_TYPE_DICT_ENTRY, [&o](auto &&j){
-			ParseInterfaceDictEntry(o, j.Recurse());
-		});
-
-	return true;
-}
-
 NeighborExplorer::List
 UdisksNeighborExplorer::GetList() const noexcept
 {
@@ -308,7 +233,8 @@ UdisksNeighborExplorer::OnListNotify(ODBus::Message reply) noexcept
 
 	ForEachInterface(i.Recurse(), [this](const char *path, auto &&j){
 			UDisks2::Object o(path);
-			if (ParseObject(o, std::move(j)) && o.IsValid())
+			UDisks2::ParseObject(o, std::move(j));
+			if (o.IsValid())
 				Insert(std::move(o));
 		});
 }
@@ -323,7 +249,8 @@ UdisksNeighborExplorer::HandleMessage(DBusConnection *, DBusMessage *message) no
 	    dbus_message_has_signature(message, InterfacesAddedType::value)) {
 		RecurseInterfaceDictEntry(ReadMessageIter(*message), [this](const char *path, auto &&i){
 				UDisks2::Object o(path);
-				if (ParseObject(o, std::move(i)) && o.IsValid())
+				UDisks2::ParseObject(o, std::move(i));
+				if (o.IsValid())
 					Insert(std::move(o));
 			});
 
