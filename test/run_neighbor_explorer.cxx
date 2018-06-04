@@ -24,6 +24,7 @@
 #include "neighbor/Glue.hxx"
 #include "fs/Path.hxx"
 #include "event/Loop.hxx"
+#include "ShutdownHandler.hxx"
 #include "Log.hxx"
 
 #include <stdio.h>
@@ -68,6 +69,7 @@ try {
 
 	GlobalInit init;
 	EventLoop loop;
+	const ShutdownHandler shutdown_handler(loop);
 
 	/* read configuration file (mpd.conf) */
 

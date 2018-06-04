@@ -1967,6 +1967,7 @@ if ENABLE_NEIGHBOR_PLUGINS
 
 test_run_neighbor_explorer_SOURCES = \
 	src/Log.cxx src/LogBackend.cxx \
+	test/ShutdownHandler.cxx test/ShutdownHandler.hxx \
 	test/run_neighbor_explorer.cxx
 test_run_neighbor_explorer_LDADD = $(AM_LDADD) \
 	$(NEIGHBOR_LIBS) \
