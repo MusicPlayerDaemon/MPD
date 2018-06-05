@@ -298,10 +298,18 @@ UdisksStorage::MapUTF8(const char *uri_utf8) const noexcept
 {
 	assert(uri_utf8 != nullptr);
 
-	if (StringIsEmpty(uri_utf8))
-		return base_uri;
+	try {
+		const_cast<UdisksStorage *>(this)->MountWait();
 
-	return PathTraitsUTF8::Build(base_uri.c_str(), uri_utf8);
+		return mounted_storage->MapUTF8(uri_utf8);
+	} catch (...) {
+		/* fallback - not usable but the best we can do */
+
+		if (StringIsEmpty(uri_utf8))
+			return base_uri;
+
+		return PathTraitsUTF8::Build(base_uri.c_str(), uri_utf8);
+	}
 }
 
 const char *
