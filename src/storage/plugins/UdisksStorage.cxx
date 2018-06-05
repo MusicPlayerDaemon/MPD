@@ -108,6 +108,10 @@ public:
 
 	std::string MapUTF8(const char *uri_utf8) const noexcept override;
 
+	AllocatedPath MapFS(const char *uri_utf8) const noexcept override {
+		return mounted_storage->MapFS(uri_utf8);
+	}
+
 	const char *MapToRelativeUTF8(const char *uri_utf8) const noexcept override;
 
 private:
