@@ -2260,6 +2260,18 @@ run</programlisting>
           "security" measure means little.
         </para>
       </section>
+
+      <section id="udisks_storage">
+        <title><varname>udisks</varname></title>
+
+        <para>
+          Mount file systems (e.g. USB sticks or other removable
+          media) using the <varname>udisks2</varname> daemon via
+          D-Bus.  To obtain a valid <varname>udisks2</varname> URI,
+          consult the according <link
+          linkend="udisks_neighbor">neighbor plugin</link>.
+        </para>
+      </section>
     </section>
 
     <section id="neighbor_plugins">
@@ -2270,6 +2282,16 @@ run</programlisting>
 
         <para>
           Provides a list of SMB/CIFS servers on the local network.
+        </para>
+      </section>
+
+      <section id="udisks_neighbor">
+        <title><varname>udisks</varname></title>
+
+        <para>
+          Queries the <varname>udisks2</varname> daemon via D-Bus and
+          obtain a list of file systems (e.g. USB sticks or other
+          removable media).
         </para>
       </section>
 
