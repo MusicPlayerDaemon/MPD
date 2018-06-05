@@ -109,6 +109,12 @@ public:
 	std::string MapUTF8(const char *uri_utf8) const noexcept override;
 
 	AllocatedPath MapFS(const char *uri_utf8) const noexcept override {
+		try {
+			const_cast<UdisksStorage *>(this)->MountWait();
+		} catch (...) {
+			return nullptr;
+		}
+
 		return mounted_storage->MapFS(uri_utf8);
 	}
 
