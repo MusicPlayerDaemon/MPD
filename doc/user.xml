@@ -442,6 +442,12 @@ systemctl start mpd.socket</programlisting>
         recipe, read the <link linkend="satellite">Satellite
         MPD</link> section.
       </para>
+
+      <para>
+        You can also <link linkend="mount">use multiple storage
+        plugins to assemble a virtual music directory consisting of
+        multiple storages</link>.
+      </para>
     </section>
 
     <section id="config_database_plugins">
@@ -1531,6 +1537,30 @@ database {
         Matching files in the current directory and all subdirectories
         are excluded.
       </para>
+
+      <section id="mount">
+        <title>Mounting other storages into the music directory</title>
+
+        <para>
+          <application>MPD</application> has various <link
+          linkend="storage_plugins">storage plugins</link> of which
+          multiple instances can be "mounted" into the music
+          directory.  This way, you can use local music, file servers
+          and USB sticks at the same time.  Example:
+        </para>
+
+        <programlisting>mpc mount foo nfs://192.168.1.4/export/mp3
+mpc mount usbstick udisks://by-uuid-2F2B-D136
+mpc unmount usbstick</programlisting>
+
+        <para>
+          MPD's <link
+          linkend="neighbor_plugins">neighbor plugins</link> can be
+          helpful with finding mountable storages:
+        </para>
+
+        <programlisting>mpc listneighbors</programlisting>
+      </section>
     </section>
 
     <section id="tags">
