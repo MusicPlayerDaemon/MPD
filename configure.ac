@@ -627,21 +627,6 @@ if test x$enable_libwrap = xyes; then
 fi
 
 dnl ---------------------------------------------------------------------------
-dnl D-Bus
-dnl ---------------------------------------------------------------------------
-
-MPD_ENABLE_AUTO_PKG(dbus, DBUS, [dbus-1], [D-Bus support], [dbus-1 not found])
-
-AC_ARG_ENABLE(udisks,
-	AS_HELP_STRING([--enable-udisks],
-		[support for removable media via udisks2]),,
-	[enable_udisks=auto])
-
-MPD_DEPENDS([enable_udisks], [found_dbus], [support for removable media via udisks2], [dbus-1 not found])
-MPD_AUTO(udisks, [support for removable media via udisks2], [udisks not available], [found_udisks=yes])
-MPD_DEFINE_CONDITIONAL(enable_udisks, ENABLE_UDISKS, [support for removable media via udisks2])
-
-dnl ---------------------------------------------------------------------------
 dnl Metadata Plugins
 dnl ---------------------------------------------------------------------------
 
@@ -806,9 +791,6 @@ if test x$enable_neighbor_plugins = xauto; then
 		enable_neighbor_plugins=yes
 	fi
 	if test x$enable_upnp = xyes; then
-		enable_neighbor_plugins=yes
-	fi
-	if test x$enable_udisks = xyes; then
 		enable_neighbor_plugins=yes
 	fi
 fi
@@ -1113,6 +1095,7 @@ else
 	enable_shine_encoder=no
 	enable_wave_encoder=no
 	enable_flac_encoder=no
+	enable_fdkaac_encoder=no
 fi
 
 dnl ------------------------------- FLAC Encoder ------------------------------
@@ -1141,6 +1124,11 @@ dnl ------------------------------- WAVE Encoder ------------------------------
 MPD_DEFINE_CONDITIONAL(enable_wave_encoder, ENABLE_WAVE_ENCODER,
 	[PCM wave encoder plugin])
 
+dnl ------------------------------- FDK AAC Encoder ------------------------------
+MPD_ENABLE_AUTO_PKG(fdkaac_encoder, FDKAAC, [fdk-aac],
+	[FDK AAC encoder plugin], [libfdk-aac not found])
+
+
 dnl --------------------------- encoder plugins test --------------------------
 if test x$enable_vorbis_encoder != xno ||
 	test x$enable_opus != xno ||
@@ -1148,7 +1136,8 @@ if test x$enable_vorbis_encoder != xno ||
 	test x$enable_twolame_encoder != xno ||
 	test x$enable_flac_encoder != xno ||
 	test x$enable_shine_encoder != xno ||
-	test x$enable_wave_encoder != xno; then
+	test x$enable_wave_encoder != xno ||
+	test x$enable_fdkaac_encoder != xno; then
 	# at least one encoder plugin is enabled
 	enable_encoder=yes
 else
@@ -1519,8 +1508,6 @@ results(soxr, [libsoxr])
 results(libmpdclient, [libmpdclient])
 results(inotify, [inotify])
 results(sqlite, [SQLite])
-results(dbus, [DBUS])
-results(udisks, [UDISKS])
 
 printf '\nMetadata support:\n\t'
 results(id3,[ID3])
@@ -1558,6 +1545,7 @@ if
 		results(opus, [Opus])
 		results(twolame_encoder, [TwoLAME])
 		results(wave_encoder, [WAVE])
+		results(fdkaac_encoder, [FDKAAC])
 fi
 
 printf '\nStreaming support:\n\t'

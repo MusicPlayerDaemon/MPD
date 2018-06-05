@@ -28,6 +28,7 @@
 #include "plugins/ShineEncoderPlugin.hxx"
 #include "plugins/LameEncoderPlugin.hxx"
 #include "plugins/TwolameEncoderPlugin.hxx"
+#include "plugins/FdkaacEncoderPlugin.hxx"
 
 #include <string.h>
 
@@ -53,6 +54,9 @@ const EncoderPlugin *const encoder_plugins[] = {
 #endif
 #ifdef ENABLE_SHINE
 	&shine_encoder_plugin,
+#endif
+#ifdef ENABLE_FDKAAC
+	&fdkaac_encoder_plugin,
 #endif
 	nullptr
 };
