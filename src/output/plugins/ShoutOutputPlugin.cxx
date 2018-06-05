@@ -118,6 +118,8 @@ ShoutOutput::ShoutOutput(const ConfigBlock &block)
 	unsigned shout_format;
 	if (StringIsEqual(mime_type, "audio/mpeg"))
 		shout_format = SHOUT_FORMAT_MP3;
+	else if (StringIsEqual(mime_type, "audio/aac"))
+		shout_format = SHOUT_FORMAT_AAC;
 	else
 		shout_format = SHOUT_FORMAT_OGG;
 
