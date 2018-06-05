@@ -1560,6 +1560,29 @@ mpc unmount usbstick</programlisting>
         </para>
 
         <programlisting>mpc listneighbors</programlisting>
+
+        <para>
+          Mounting is only possible with the <link
+          linkend="simple_database"><varname>simple</varname> database
+          plugin</link> and a <varname>cache_directory</varname>,
+          e.g.:
+        </para>
+
+        <programlisting>
+database {
+  plugin "simple"
+  path "~/.mpd/db"
+  cache_directory "~/.mpd/cache"
+}
+        </programlisting>
+
+        <para>
+          This requires migrating from the old
+          <varname>db_file</varname> setting to a
+          <varname>database</varname> section.  The cache directory
+          must exist, and MPD will put one file per mount there, which
+          will be reused when the same storage is used again later.
+        </para>
       </section>
     </section>
 
@@ -2062,7 +2085,7 @@ run</programlisting>
     <section id="database_plugins">
       <title>Database plugins</title>
 
-      <section>
+      <section id="simple_database">
         <title><varname>simple</varname></title>
 
         <para>
