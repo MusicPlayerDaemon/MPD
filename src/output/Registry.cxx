@@ -31,6 +31,7 @@
 #include "plugins/OpenALOutputPlugin.hxx"
 #include "plugins/OssOutputPlugin.hxx"
 #include "plugins/OSXOutputPlugin.hxx"
+#include "plugins/MacOSOutputPlugin.hxx"
 #include "plugins/PipeOutputPlugin.hxx"
 #include "plugins/PulseOutputPlugin.hxx"
 #include "plugins/RecorderOutputPlugin.hxx"
@@ -79,6 +80,9 @@ const AudioOutputPlugin *const audio_output_plugins[] = {
 #endif
 #ifdef HAVE_OSX
 	&osx_output_plugin,
+#endif
+#ifdef HAVE_MACOS
+	&macos_output_plugin,
 #endif
 #ifdef ENABLE_SOLARIS_OUTPUT
 	&solaris_output_plugin,

@@ -278,6 +278,12 @@ ALSA_SOURCES = \
 	src/lib/alsa/PeriodBuffer.hxx \
 	src/lib/alsa/NonBlock.cxx src/lib/alsa/NonBlock.hxx
 
+COREAUDIO_SOURCES = \
+	src/lib/coreaudio/CoreAudioDevice.cxx src/lib/coreaudio/CoreAudioDevice.hxx \
+	src/lib/coreaudio/CoreAudioHardware.cxx src/lib/coreaudio/CoreAudioHardware.hxx \
+	src/lib/coreaudio/CoreAudioHelpers.cxx src/lib/coreaudio/CoreAudioHelpers.hxx \
+	src/lib/coreaudio/CoreAudioStream.cxx src/lib/coreaudio/CoreAudioStream.hxx
+
 #
 # Android native library
 #
@@ -1596,6 +1602,15 @@ liboutput_plugins_a_SOURCES += \
 endif
 libmixer_plugins_a_SOURCES += \
 	src/mixer/plugins/OSXMixerPlugin.cxx
+
+if HAVE_MACOS
+liboutput_plugins_a_SOURCES += \
+	$(COREAUDIO_SOURCES) \
+	src/output/plugins/MacOSOutputPlugin.cxx \
+	src/output/plugins/MacOSOutputPlugin.hxx
+endif
+libmixer_plugins_a_SOURCES += \
+src/mixer/plugins/MacOSMixerPlugin.cxx
 
 if ENABLE_PULSE
 liboutput_plugins_a_SOURCES += \

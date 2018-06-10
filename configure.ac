@@ -401,6 +401,11 @@ AC_ARG_ENABLE(osx,
 		[enable the OS X output plugin - unsupported! (default: disable)]),,
 	enable_osx=no)
 
+AC_ARG_ENABLE(macos,
+AS_HELP_STRING([--enable-macos],
+[enable the MacOS output plugin - unsupported! (default: disable)]),,
+enable_macos=no)
+
 AC_ARG_ENABLE(pipe-output,
 	AS_HELP_STRING([--enable-pipe-output],
 		[enable support for writing audio to a pipe (default: disable)]),,
@@ -1269,6 +1274,14 @@ fi
 
 AM_CONDITIONAL(HAVE_OSX, test x$enable_osx = xyes)
 
+dnl ----------------------------------- MacOS -----------------------------------
+if test x$enable_macos = xyes; then
+	AC_DEFINE(HAVE_MACOS, 1, [Define for compiling OS X support])
+	LIBS="$LIBS -framework CoreAudio -framework AudioToolbox"
+fi
+
+AM_CONDITIONAL(HAVE_MACOS, test x$enable_macos = xyes)
+
 dnl ------------------------------- Pipe Output -------------------------------
 MPD_DEFINE_CONDITIONAL(enable_pipe_output, ENABLE_PIPE_OUTPUT,
 		[support for writing audio to a pipe])
@@ -1518,6 +1531,7 @@ results(ao,[libao])
 results(oss,[OSS])
 results(openal,[OpenAL])
 results(osx, [OS X])
+results(macos, [Mac OS])
 results(pipe_output, [Pipeline])
 printf '\n\t'
 results(pulse, [PulseAudio])
