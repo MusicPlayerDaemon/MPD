@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2017 The Music Player Daemon Project
+ * Copyright 2003-2018 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,26 +17,17 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-/** \file
- *
- * This header provides "extern" declarations for all mixer plugins.
- */
+#ifndef MPD_MACOS_OUTPUT_PLUGIN_HXX
+#define MPD_MACOS_OUTPUT_PLUGIN_HXX
 
-#ifndef MPD_MIXER_LIST_HXX
-#define MPD_MIXER_LIST_HXX
+struct MacOSOutput;
 
-struct MixerPlugin;
+extern const struct AudioOutputPlugin macos_output_plugin;
 
-extern const MixerPlugin null_mixer_plugin;
-extern const MixerPlugin software_mixer_plugin;
-extern const MixerPlugin alsa_mixer_plugin;
-extern const MixerPlugin haiku_mixer_plugin;
-extern const MixerPlugin oss_mixer_plugin;
-extern const MixerPlugin osx_mixer_plugin;
-extern const MixerPlugin macos_mixer_plugin;
-extern const MixerPlugin roar_mixer_plugin;
-extern const MixerPlugin pulse_mixer_plugin;
-extern const MixerPlugin winmm_mixer_plugin;
-extern const MixerPlugin sndio_mixer_plugin;
+int
+macos_output_get_volume(MacOSOutput &output);
+
+void
+macos_output_set_volume(MacOSOutput &output, unsigned new_volume);
 
 #endif

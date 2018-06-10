@@ -842,7 +842,8 @@ systemctl start mpd.socket</programlisting>
                 Specifies which mixer should be used for this audio
                 output: the hardware mixer (available for <link
                 linkend="alsa_output">ALSA</link>, <link
-                linkend="oss_output">OSS</link> and <link
+                linkend="oss_output">OSS</link>, <link
+                linkend="macos_output">MacOS</link> and <link
                 linkend="pulse_output">PulseAudio</link>), the
                 software mixer, the "null" mixer
                 (<parameter>null</parameter>; allows setting the
@@ -4497,6 +4498,128 @@ run</programlisting>
                     second pair of sound card outputs) is a valid channel map but
                     "-1,-1,0,1" is not because the second channel ('1') does not exist
                     when the output is mono.
+                </para></entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
+      </section>
+      
+      <section id="macos_output">
+        <title><varname>macos</varname></title>
+        
+        <para>
+          The new "Mac OS" plugin based on Apple's CoreAudio API.
+        </para>
+        <informaltable>
+          <tgroup cols="2">
+            <thead>
+              <row>
+                <entry>Setting</entry>
+                <entry>Description</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>
+                  <varname>device</varname>
+                  <parameter>NAME</parameter>
+                </entry>
+                <entry>
+                  Sets the device which should be used. Uses device names as listed in the
+                  "Audio Devices" window of "Audio MIDI Setup". If not specified or if
+                  <parameter>default</parameter> is specified, the system default output
+                  device will be used.
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  <varname>hog_device</varname>
+                  <parameter>yes|no</parameter>
+                </entry>
+                <entry>
+                  Hog the device. This means that it takes exclusive control of the audio
+                  output device it is playing through, and no other program can access it.
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  <varname>dop</varname>
+                  <parameter>yes|no</parameter>
+                </entry>
+                <entry>
+                  If set to <parameter>yes</parameter>, then DSD over
+                  PCM according to the <ulink
+                    url="http://dsd-guide.com/dop-open-standard">DoP
+                    standard</ulink> is enabled.  This wraps DSD
+                  samples in fake 24 bit PCM, and is understood by
+                  some DSD capable products, but may be harmful to
+                  other hardware.  Therefore, the default is
+                  <parameter>no</parameter> and you can enable the
+                  option at your own risk.
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  <varname>integer_mode</varname>
+                  <parameter>yes|no</parameter>
+                </entry>
+                <entry>
+                  If enabled and supported by the output
+                  device, MPD will use direct integer mode
+                  for sending audio data to the device.
+                  This bypasses CoreAudio's internal float
+                  processing but means that no other program
+                  will be able to output audio at the same
+                  time (i.e. the device will be hogged as
+                  soon as MPD starts playing).
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  <varname>frame_buffer_size</varname>
+                  <parameter>1024</parameter>
+                </entry>
+                <entry>
+                  Can be used to increase the frame buffer
+                  size of the audio device. This determines
+                  how often MPD will be asked to provide
+                  output audio data. In general it should not
+                  be necessary to change the default of
+                  <parameter>1024</parameter> and higher
+                  frame buffer sizes might lead to problems
+                  with <varname>integer_mode</varname>.
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  <varname>channel_map</varname>
+                  <parameter>SOURCE,SOURCE,...</parameter>
+                </entry>
+                <entry><para>
+                  Specifies a channel map as comma separated list. This
+                  allows you to re-order channels from MPD ordering to
+                  the ordering of your Mac OS output device. Each list
+                  entry specifies the source channel (starting with zero
+                  index)for the respective output channel; use "-1" to
+                  silence an output. Please see following overview for
+                  MPD channel ordering:
+                  </para>
+                  <orderedlist>
+                    <listitem>mono</listitem>
+                    <listitem>left right</listitem>
+                    <listitem>left right center</listitem>
+                    <listitem>front left, front right, back left, back right</listitem>
+                    <listitem>front left, front right, front center, back/surround left, back/surround right</listitem>
+                    <listitem>front left, front right, front center, LFE, back/surround left, back/surround right</listitem>
+                    <listitem>front left, front right, front center, LFE, back center, side left, side right</listitem>
+                    <listitem>front left, front right, front center, LFE, back left, back right, side left, side right</listitem>
+                  </orderedlist>
+                  <para>
+                  In case your device has more than 8 channels, you should silence
+                  the additional channels by specfying "-1" as input channel. It is
+                  recommended to always specify a channel map for the
+                  complete number of output channels.
                 </para></entry>
               </row>
             </tbody>
