@@ -58,7 +58,7 @@ public:
 	/**
 	 * A cond that gets signalled when the state of this object
 	 * changes from the I/O thread.  The client of this object may
-	 * wait on it.  Optional, may be nullptr.
+	 * wait on it.
 	 *
 	 * This object is allocated by the client, and the client is
 	 * responsible for freeing it.
