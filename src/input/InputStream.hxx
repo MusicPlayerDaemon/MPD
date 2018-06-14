@@ -42,7 +42,7 @@ private:
 	/**
 	 * The absolute URI which was used to open this stream.
 	 */
-	std::string uri;
+	const std::string uri;
 
 public:
 	/**
