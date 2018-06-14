@@ -25,6 +25,7 @@
 #include "lib/curl/Request.hxx"
 #include "lib/curl/Handler.hxx"
 #include "lib/curl/Slist.hxx"
+#include "../MaybeBufferedInputStream.hxx"
 #include "../AsyncInputStream.hxx"
 #include "../IcyInputStream.hxx"
 #include "IcyMetaDataParser.hxx"
@@ -458,7 +459,7 @@ CurlInputStream::Open(const char *url,
 			c->StartRequest();
 		});
 
-	return std::make_unique<IcyInputStream>(std::move(c), std::move(icy));
+	return std::make_unique<MaybeBufferedInputStream>(std::make_unique<IcyInputStream>(std::move(c), std::move(icy)));
 }
 
 InputStreamPtr

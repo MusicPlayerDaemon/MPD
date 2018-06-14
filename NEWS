@@ -8,6 +8,7 @@ ver 0.21 (not yet released)
 * player
   - "one-shot" single mode
 * input
+  - curl: download to buffer instead of throttling transfer
   - qobuz: new plugin to play Qobuz streams
   - tidal: new plugin to play Tidal streams
 * tags
