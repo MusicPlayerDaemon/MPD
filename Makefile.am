@@ -526,6 +526,7 @@ libutil_a_SOURCES = \
 	src/util/SliceBuffer.hxx \
 	src/util/HugeAllocator.cxx src/util/HugeAllocator.hxx \
 	src/util/PeakBuffer.cxx src/util/PeakBuffer.hxx \
+	src/util/SparseBuffer.cxx src/util/SparseBuffer.hxx \
 	src/util/OptionParser.cxx src/util/OptionParser.hxx \
 	src/util/OptionDef.hxx \
 	src/util/ByteReverse.cxx src/util/ByteReverse.hxx \
