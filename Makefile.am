@@ -1392,6 +1392,7 @@ libinput_a_SOURCES = \
 	src/input/AsyncInputStream.cxx src/input/AsyncInputStream.hxx \
 	src/input/ProxyInputStream.cxx src/input/ProxyInputStream.hxx \
 	src/input/RewindInputStream.cxx src/input/RewindInputStream.hxx \
+	src/input/BufferedInputStream.cxx src/input/BufferedInputStream.hxx \
 	src/input/plugins/FileInputPlugin.cxx src/input/plugins/FileInputPlugin.hxx
 
 libinput_a_CPPFLAGS = $(AM_CPPFLAGS) \
