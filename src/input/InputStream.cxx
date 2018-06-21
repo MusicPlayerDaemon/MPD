@@ -79,6 +79,8 @@ static bool
 ExpensiveSeeking(const char *uri) noexcept
 {
 	return StringStartsWith(uri, "http://") ||
+		StringStartsWith(uri, "tidal://") ||
+		StringStartsWith(uri, "qobuz://") ||
 		StringStartsWith(uri, "https://");
 }
 
