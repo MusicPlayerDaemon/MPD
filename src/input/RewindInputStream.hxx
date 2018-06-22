@@ -24,11 +24,11 @@
  * each decoder plugin peek a portion from the stream).
  */
 
-#ifndef MPD_INPUT_REWIND_HXX
-#define MPD_INPUT_REWIND_HXX
+#ifndef MPD_REWIND_INPUT_STREAM_HXX
+#define MPD_REWIND_INPUT_STREAM_HXX
 
 #include "check.h"
-#include "input/Ptr.hxx"
+#include "Ptr.hxx"
 
 InputStreamPtr
 input_rewind_open(InputStreamPtr is);

@@ -18,8 +18,8 @@
  */
 
 #include "config.h"
-#include "RewindInputPlugin.hxx"
-#include "../ProxyInputStream.hxx"
+#include "RewindInputStream.hxx"
+#include "ProxyInputStream.hxx"
 
 #include <assert.h>
 #include <string.h>

@@ -22,7 +22,7 @@
 #include "Registry.hxx"
 #include "InputPlugin.hxx"
 #include "LocalOpen.hxx"
-#include "plugins/RewindInputPlugin.hxx"
+#include "RewindInputStream.hxx"
 #include "fs/Traits.hxx"
 #include "fs/AllocatedPath.hxx"
 

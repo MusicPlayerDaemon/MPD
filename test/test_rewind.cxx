@@ -3,7 +3,7 @@
  */
 
 #include "config.h"
-#include "input/plugins/RewindInputPlugin.hxx"
+#include "input/RewindInputStream.hxx"
 #include "input/InputStream.hxx"
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
