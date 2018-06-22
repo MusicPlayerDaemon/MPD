@@ -67,12 +67,8 @@ public:
 
 	MusicPipe(const MusicPipe &) = delete;
 
-	/**
-	 * Frees the object.  It must be empty now.
-	 */
-	~MusicPipe() {
-		assert(head == nullptr);
-		assert(tail_r == &head);
+	~MusicPipe() noexcept {
+		Clear();
 	}
 
 	MusicPipe &operator=(const MusicPipe &) = delete;

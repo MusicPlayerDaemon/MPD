@@ -407,11 +407,8 @@ MultipleOutputs::Close() noexcept
 	for (auto *ao : outputs)
 		ao->LockCloseWait();
 
-	if (pipe != nullptr) {
-		pipe->Clear();
-		delete pipe;
-		pipe = nullptr;
-	}
+	delete pipe;
+	pipe = nullptr;
 
 	input_audio_format.Clear();
 
@@ -424,11 +421,8 @@ MultipleOutputs::Release() noexcept
 	for (auto *ao : outputs)
 		ao->LockRelease();
 
-	if (pipe != nullptr) {
-		pipe->Clear();
-		delete pipe;
-		pipe = nullptr;
-	}
+	delete pipe;
+	pipe = nullptr;
 
 	input_audio_format.Clear();
 

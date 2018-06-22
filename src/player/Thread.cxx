@@ -169,14 +169,9 @@ private:
 		xfade_state = CrossFadeState::UNKNOWN;
 	}
 
-	void ClearAndDeletePipe() noexcept {
-		pipe->Clear();
-		delete pipe;
-	}
-
 	void ClearAndReplacePipe(MusicPipe *_pipe) noexcept {
 		ResetCrossFade();
-		ClearAndDeletePipe();
+		delete pipe;
 		pipe = _pipe;
 	}
 
@@ -1070,7 +1065,7 @@ Player::Run() noexcept
 	CancelPendingSeek();
 	StopDecoder();
 
-	ClearAndDeletePipe();
+	delete pipe;
 
 	cross_fade_tag.reset();
 
