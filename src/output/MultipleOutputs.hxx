@@ -59,7 +59,7 @@ class MultipleOutputs final : public PlayerOutputs {
 
 	/**
 	 * The #MusicPipe object which feeds all audio outputs.  It is
-	 * filled by audio_output_all_play().
+	 * filled by Play().
 	 */
 	MusicPipe *pipe = nullptr;
 
