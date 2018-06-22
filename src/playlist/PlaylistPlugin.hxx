@@ -25,7 +25,6 @@
 struct ConfigBlock;
 struct Tag;
 class Mutex;
-class Cond;
 class SongEnumerator;
 
 struct playlist_plugin {
@@ -52,7 +51,7 @@ struct playlist_plugin {
 	 * either matched one of the schemes or one of the suffixes.
 	 */
 	std::unique_ptr<SongEnumerator> (*open_uri)(const char *uri,
-						    Mutex &mutex, Cond &cond);
+						    Mutex &mutex);
 
 	/**
 	 * Opens the playlist in the specified input stream.  It has

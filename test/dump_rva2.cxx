@@ -23,7 +23,6 @@
 #include "ReplayGainInfo.hxx"
 #include "config/ConfigGlobal.hxx"
 #include "thread/Mutex.hxx"
-#include "thread/Cond.hxx"
 #include "fs/Path.hxx"
 #include "input/InputStream.hxx"
 #include "input/LocalOpen.hxx"
@@ -75,9 +74,8 @@ try {
 	const Path path = Path::FromFS(argv[1]);
 
 	Mutex mutex;
-	Cond cond;
 
-	auto is = OpenLocalInputStream(path, mutex, cond);
+	auto is = OpenLocalInputStream(path, mutex);
 
 	const auto tag = tag_id3_load(*is);
 	if (tag == NULL) {

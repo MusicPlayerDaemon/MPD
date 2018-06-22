@@ -22,6 +22,7 @@
 #include "Registry.hxx"
 #include "InputPlugin.hxx"
 #include "LocalOpen.hxx"
+#include "CondHandler.hxx"
 #include "RewindInputStream.hxx"
 #include "fs/Traits.hxx"
 #include "fs/AllocatedPath.hxx"
@@ -29,16 +30,15 @@
 #include <stdexcept>
 
 InputStreamPtr
-InputStream::Open(const char *url,
-		  Mutex &mutex, Cond &cond)
+InputStream::Open(const char *url, Mutex &mutex)
 {
 	if (PathTraitsUTF8::IsAbsolute(url)) {
 		const auto path = AllocatedPath::FromUTF8Throw(url);
-		return OpenLocalInputStream(path, mutex, cond);
+		return OpenLocalInputStream(path, mutex);
 	}
 
 	input_plugins_for_each_enabled(plugin) {
-		auto is = plugin->open(url, mutex, cond);
+		auto is = plugin->open(url, mutex);
 		if (is != nullptr)
 			return input_rewind_open(std::move(is));
 	}
@@ -47,16 +47,27 @@ InputStream::Open(const char *url,
 }
 
 InputStreamPtr
-InputStream::OpenReady(const char *uri,
-		       Mutex &mutex, Cond &cond)
+InputStream::OpenReady(const char *uri, Mutex &mutex)
 {
-	auto is = Open(uri, mutex, cond);
+	CondInputStreamHandler handler;
+
+	auto is = Open(uri, mutex);
+	is->SetHandler(&handler);
 
 	{
 		const std::lock_guard<Mutex> protect(mutex);
-		is->WaitReady();
+
+		while (true) {
+			is->Update();
+			if (is->IsReady())
+				break;
+
+			handler.cond.wait(mutex);
+		}
+
 		is->Check();
 	}
 
+	is->SetHandler(nullptr);
 	return is;
 }

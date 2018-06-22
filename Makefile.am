@@ -1382,6 +1382,7 @@ libinput_a_SOURCES = \
 	src/input/InputStream.cxx src/input/InputStream.hxx \
 	src/input/Ptr.hxx \
 	src/input/InputPlugin.hxx \
+	src/input/Handler.hxx \
 	src/input/RemoteTagScanner.hxx \
 	src/input/ScanTags.cxx src/input/ScanTags.hxx \
 	src/input/Reader.cxx src/input/Reader.hxx \

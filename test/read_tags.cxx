@@ -26,7 +26,6 @@
 #include "tag/Handler.hxx"
 #include "tag/Generic.hxx"
 #include "fs/Path.hxx"
-#include "thread/Cond.hxx"
 #include "Log.hxx"
 #include "util/ScopeExit.hxx"
 
@@ -110,11 +109,10 @@ try {
 	}
 
 	Mutex mutex;
-	Cond cond;
 	InputStreamPtr is;
 
 	if (!success && plugin->scan_stream != NULL) {
-		is = InputStream::OpenReady(path.c_str(), mutex, cond);
+		is = InputStream::OpenReady(path.c_str(), mutex);
 		success = plugin->ScanStream(*is, print_handler, nullptr);
 	}
 

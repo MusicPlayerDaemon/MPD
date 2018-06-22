@@ -23,7 +23,6 @@
 #include "input/InputStream.hxx"
 #include "input/TextInputStream.hxx"
 #include "config/ConfigGlobal.hxx"
-#include "thread/Cond.hxx"
 #include "Log.hxx"
 
 #ifdef ENABLE_ARCHIVE
@@ -94,9 +93,8 @@ try {
 	/* open the stream and dump it */
 
 	Mutex mutex;
-	Cond cond;
 
-	auto is = InputStream::OpenReady(argv[1], mutex, cond);
+	auto is = InputStream::OpenReady(argv[1], mutex);
 	return dump_input_stream(std::move(is));
 } catch (const std::exception &e) {
 	LogError(e);

@@ -39,9 +39,9 @@ struct FfmpegInputStream final : public InputStream {
 
 	bool eof;
 
-	FfmpegInputStream(const char *_uri, Mutex &_mutex, Cond &_cond,
+	FfmpegInputStream(const char *_uri, Mutex &_mutex,
 			  AVIOContext *_h)
-		:InputStream(_uri, _mutex, _cond),
+		:InputStream(_uri, _mutex),
 		 h(_h), eof(false) {
 		seekable = (h->seekable & AVIO_SEEKABLE_NORMAL) != 0;
 		size = avio_size(h);
@@ -83,7 +83,7 @@ input_ffmpeg_init(EventLoop &, const ConfigBlock &)
 
 static InputStreamPtr
 input_ffmpeg_open(const char *uri,
-		  Mutex &mutex, Cond &cond)
+		  Mutex &mutex)
 {
 	if (!StringStartsWith(uri, "gopher://") &&
 	    !StringStartsWith(uri, "rtp://") &&
@@ -98,7 +98,7 @@ input_ffmpeg_open(const char *uri,
 	if (result != 0)
 		throw MakeFfmpegError(result);
 
-	return std::make_unique<FfmpegInputStream>(uri, mutex, cond, h);
+	return std::make_unique<FfmpegInputStream>(uri, mutex, h);
 }
 
 size_t

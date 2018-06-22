@@ -370,7 +370,8 @@ DecoderBridge::OpenUri(const char *uri)
 	Mutex &mutex = dc.mutex;
 	Cond &cond = dc.cond;
 
-	auto is = InputStream::Open(uri, mutex, cond);
+	auto is = InputStream::Open(uri, mutex);
+	is->SetHandler(&dc);
 
 	const std::lock_guard<Mutex> lock(mutex);
 	while (true) {
@@ -404,7 +405,7 @@ try {
 		if (is.IsAvailable())
 			break;
 
-		is.cond.wait(is.mutex);
+		dc.cond.wait(is.mutex);
 	}
 
 	size_t nbytes = is.Read(buffer, length);

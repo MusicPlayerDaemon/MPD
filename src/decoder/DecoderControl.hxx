@@ -23,6 +23,7 @@
 #include "DecoderCommand.hxx"
 #include "AudioFormat.hxx"
 #include "MixRampInfo.hxx"
+#include "input/Handler.hxx"
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
 #include "thread/Thread.hxx"
@@ -60,7 +61,7 @@ enum class DecoderState : uint8_t {
 	ERROR,
 };
 
-struct DecoderControl {
+struct DecoderControl final : InputStreamHandler {
 	/**
 	 * The handle of the decoder thread.
 	 */
@@ -422,6 +423,15 @@ public:
 
 private:
 	void RunThread() noexcept;
+
+	/* virtual methods from class InputStreamHandler */
+	void OnInputStreamReady() noexcept override {
+		cond.signal();
+	}
+
+	void OnInputStreamAvailable() noexcept override {
+		cond.signal();
+	}
 };
 
 #endif

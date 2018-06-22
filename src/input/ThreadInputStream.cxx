@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "ThreadInputStream.hxx"
+#include "CondHandler.hxx"
 #include "thread/Name.hxx"
 
 #include <assert.h>
@@ -26,9 +27,9 @@
 
 ThreadInputStream::ThreadInputStream(const char *_plugin,
 				     const char *_uri,
-				     Mutex &_mutex, Cond &_cond,
+				     Mutex &_mutex,
 				     size_t _buffer_size) noexcept
-	:InputStream(_uri, _mutex, _cond),
+	:InputStream(_uri, _mutex),
 	 plugin(_plugin),
 	 thread(BIND_THIS_METHOD(ThreadFunc)),
 	 allocation(_buffer_size),
@@ -94,11 +95,11 @@ ThreadInputStream::ThreadFunc() noexcept
 				nbytes = ThreadRead(w.data, w.size);
 			} catch (...) {
 				postponed_exception = std::current_exception();
-				cond.broadcast();
+				InvokeOnAvailable();
 				break;
 			}
 
-			cond.broadcast();
+			InvokeOnAvailable();
 
 			if (nbytes == 0) {
 				eof = true;
@@ -134,6 +135,8 @@ ThreadInputStream::Read(void *ptr, size_t read_size)
 {
 	assert(!thread.IsInside());
 
+	CondInputStreamHandler cond_handler;
+
 	while (true) {
 		if (postponed_exception)
 			std::rethrow_exception(postponed_exception);
@@ -151,7 +154,8 @@ ThreadInputStream::Read(void *ptr, size_t read_size)
 		if (eof)
 			return 0;
 
-		cond.wait(mutex);
+		const ScopeExchangeInputStreamHandler h(*this, &cond_handler);
+		cond_handler.cond.wait(mutex);
 	}
 }
 

@@ -35,7 +35,6 @@
 #include "tag/Tag.hxx"
 #include "event/Call.hxx"
 #include "event/Loop.hxx"
-#include "thread/Cond.hxx"
 #include "util/ASCII.hxx"
 #include "util/StringUtil.hxx"
 #include "util/StringFormat.hxx"
@@ -83,7 +82,7 @@ public:
 	CurlInputStream(EventLoop &event_loop, const char *_url,
 			const std::multimap<std::string, std::string> &headers,
 			I &&_icy,
-			Mutex &_mutex, Cond &_cond);
+			Mutex &_mutex);
 
 	~CurlInputStream() noexcept;
 
@@ -92,7 +91,7 @@ public:
 
 	static InputStreamPtr Open(const char *url,
 				   const std::multimap<std::string, std::string> &headers,
-				   Mutex &mutex, Cond &cond);
+				   Mutex &mutex);
 
 private:
 	/**
@@ -274,7 +273,7 @@ void
 CurlInputStream::OnEnd()
 {
 	const std::lock_guard<Mutex> protect(mutex);
-	cond.broadcast();
+	InvokeOnAvailable();
 
 	AsyncInputStream::SetClosed();
 }
@@ -290,7 +289,7 @@ CurlInputStream::OnError(std::exception_ptr e) noexcept
 	else if (!IsReady())
 		SetReady();
 	else
-		cond.broadcast();
+		InvokeOnAvailable();
 
 	AsyncInputStream::SetClosed();
 }
@@ -352,8 +351,8 @@ inline
 CurlInputStream::CurlInputStream(EventLoop &event_loop, const char *_url,
 				 const std::multimap<std::string, std::string> &headers,
 				 I &&_icy,
-				 Mutex &_mutex, Cond &_cond)
-	:AsyncInputStream(event_loop, _url, _mutex, _cond,
+				 Mutex &_mutex)
+	:AsyncInputStream(event_loop, _url, _mutex,
 			  CURL_MAX_BUFFERED,
 			  CURL_RESUME_AT),
 	 icy(std::forward<I>(_icy))
@@ -445,14 +444,14 @@ CurlInputStream::DoSeek(offset_type new_offset)
 inline InputStreamPtr
 CurlInputStream::Open(const char *url,
 		      const std::multimap<std::string, std::string> &headers,
-		      Mutex &mutex, Cond &cond)
+		      Mutex &mutex)
 {
 	auto icy = std::make_shared<IcyMetaDataParser>();
 
 	auto c = std::make_unique<CurlInputStream>((*curl_init)->GetEventLoop(),
 						   url, headers,
 						   icy,
-						   mutex, cond);
+						   mutex);
 
 	BlockingCall(c->GetEventLoop(), [&c](){
 			c->InitEasy();
@@ -465,19 +464,19 @@ CurlInputStream::Open(const char *url,
 InputStreamPtr
 OpenCurlInputStream(const char *uri,
 		    const std::multimap<std::string, std::string> &headers,
-		    Mutex &mutex, Cond &cond)
+		    Mutex &mutex)
 {
-	return CurlInputStream::Open(uri, headers, mutex, cond);
+	return CurlInputStream::Open(uri, headers, mutex);
 }
 
 static InputStreamPtr
-input_curl_open(const char *url, Mutex &mutex, Cond &cond)
+input_curl_open(const char *url, Mutex &mutex)
 {
 	if (strncmp(url, "http://", 7) != 0 &&
 	    strncmp(url, "https://", 8) != 0)
 		return nullptr;
 
-	return CurlInputStream::Open(url, {}, mutex, cond);
+	return CurlInputStream::Open(url, {}, mutex);
 }
 
 const struct InputPlugin input_plugin_curl = {

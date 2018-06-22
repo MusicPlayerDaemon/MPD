@@ -23,7 +23,6 @@
 #include "ApeTag.hxx"
 #include "fs/Path.hxx"
 #include "thread/Mutex.hxx"
-#include "thread/Cond.hxx"
 #include "input/InputStream.hxx"
 #include "input/LocalOpen.hxx"
 #include "Log.hxx"
@@ -53,9 +52,8 @@ bool
 ScanGenericTags(Path path, const TagHandler &handler, void *ctx)
 try {
 	Mutex mutex;
-	Cond cond;
 
-	auto is = OpenLocalInputStream(path, mutex, cond);
+	auto is = OpenLocalInputStream(path, mutex);
 	return ScanGenericTags(*is, handler, ctx);
 } catch (...) {
 	LogError(std::current_exception());

@@ -22,6 +22,8 @@
 
 #include "InputStream.hxx"
 #include "Ptr.hxx"
+#include "Handler.hxx"
+#include "thread/Cond.hxx"
 
 struct Tag;
 
@@ -33,7 +35,9 @@ struct Tag;
  * The inner #InputStream instance may be nullptr initially, to be set
  * later.
  */
-class ProxyInputStream : public InputStream {
+class ProxyInputStream : public InputStream, protected InputStreamHandler {
+	Cond set_input_cond;
+
 protected:
 	InputStreamPtr input;
 
@@ -45,8 +49,8 @@ public:
 	 * Once that instance becomes available, call SetInput().
 	 */
 	ProxyInputStream(const char *_uri,
-			 Mutex &_mutex, Cond &_cond) noexcept
-		:InputStream(_uri, _mutex, _cond) {}
+			 Mutex &_mutex) noexcept
+		:InputStream(_uri, _mutex) {}
 
 	virtual ~ProxyInputStream() noexcept;
 
@@ -78,6 +82,15 @@ protected:
 	 * attributes.
 	 */
 	void CopyAttributes();
+
+	/* virtual methods from class InputStreamHandler */
+	void OnInputStreamReady() noexcept override {
+		InvokeOnReady();
+	}
+
+	void OnInputStreamAvailable() noexcept override {
+		InvokeOnAvailable();
+	}
 };
 
 #endif

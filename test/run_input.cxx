@@ -239,8 +239,7 @@ try {
 	/* open the stream and dump it */
 
 	Mutex mutex;
-	Cond cond;
-	auto is = InputStream::OpenReady(c.uri, mutex, cond);
+	auto is = InputStream::OpenReady(c.uri, mutex);
 	return dump_input_stream(is.get());
 } catch (const std::exception &e) {
 	LogError(e);

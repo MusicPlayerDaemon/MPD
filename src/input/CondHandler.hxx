@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2017 The Music Player Daemon Project
+ * Copyright 2003-2018 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,29 +17,27 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_PLAYLIST_STREAM_HXX
-#define MPD_PLAYLIST_STREAM_HXX
+#ifndef MPD_COND_INPUT_STREAM_HANDLER_HXX
+#define MPD_COND_INPUT_STREAM_HANDLER_HXX
 
-#include "Compiler.h"
-
-#include <memory>
-
-class Mutex;
-class SongEnumerator;
-class Path;
+#include "check.h"
+#include "Handler.hxx"
+#include "thread/Cond.hxx"
 
 /**
- * Opens a playlist from a local file.
- *
- * @param path the path of the playlist file
- * @return a playlist, or nullptr on error
+ * An #InputStreamHandler implementation which signals a #Cond.
  */
-gcc_nonnull_all
-std::unique_ptr<SongEnumerator>
-playlist_open_path(Path path, Mutex &mutex);
+struct CondInputStreamHandler final : InputStreamHandler {
+	Cond cond;
 
-gcc_nonnull_all
-std::unique_ptr<SongEnumerator>
-playlist_open_remote(const char *uri, Mutex &mutex);
+	/* virtual methods from class InputStreamHandler */
+	void OnInputStreamReady() noexcept override {
+		cond.signal();
+	}
+
+	void OnInputStreamAvailable() noexcept override {
+		cond.signal();
+	}
+};
 
 #endif

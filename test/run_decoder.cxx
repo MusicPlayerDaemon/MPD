@@ -123,8 +123,7 @@ try {
 	if (plugin->file_decode != nullptr) {
 		plugin->FileDecode(client, Path::FromFS(c.uri));
 	} else if (plugin->stream_decode != nullptr) {
-		auto is = InputStream::OpenReady(c.uri, client.mutex,
-						 client.cond);
+		auto is = InputStream::OpenReady(c.uri, client.mutex);
 		plugin->StreamDecode(client, *is);
 	} else {
 		fprintf(stderr, "Decoder plugin is not usable\n");

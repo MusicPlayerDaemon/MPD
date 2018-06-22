@@ -28,7 +28,6 @@
 #include "decoder/DecoderPlugin.hxx"
 #include "input/InputStream.hxx"
 #include "thread/Mutex.hxx"
-#include "thread/Cond.hxx"
 
 #include <exception>
 
@@ -78,9 +77,8 @@ bool
 tag_stream_scan(const char *uri, const TagHandler &handler, void *ctx)
 try {
 	Mutex mutex;
-	Cond cond;
 
-	auto is = InputStream::OpenReady(uri, mutex, cond);
+	auto is = InputStream::OpenReady(uri, mutex);
 	return tag_stream_scan(*is, handler, ctx);
 } catch (const std::exception &e) {
 	return false;
@@ -104,9 +102,8 @@ bool
 tag_stream_scan(const char *uri, TagBuilder &builder)
 try {
 	Mutex mutex;
-	Cond cond;
 
-	auto is = InputStream::OpenReady(uri, mutex, cond);
+	auto is = InputStream::OpenReady(uri, mutex);
 	return tag_stream_scan(*is, builder);
 } catch (const std::exception &e) {
 	return false;

@@ -26,7 +26,6 @@
 #include "SongEnumerator.hxx"
 #include "DetachedSong.hxx"
 #include "thread/Mutex.hxx"
-#include "thread/Cond.hxx"
 #include "fs/Traits.hxx"
 
 #ifdef ENABLE_DATABASE
@@ -70,13 +69,12 @@ playlist_open_into_queue(const char *uri,
 			 const SongLoader &loader)
 {
 	Mutex mutex;
-	Cond cond;
 
 	auto playlist = playlist_open_any(uri,
 #ifdef ENABLE_DATABASE
 					  loader.GetStorage(),
 #endif
-					  mutex, cond);
+					  mutex);
 	if (playlist == nullptr)
 		throw PlaylistError::NoSuchList();
 

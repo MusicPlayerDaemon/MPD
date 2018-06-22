@@ -74,14 +74,13 @@ try {
 	/* open the playlist */
 
 	Mutex mutex;
-	Cond cond;
 
 	InputStreamPtr is;
-	auto playlist = playlist_list_open_uri(uri, mutex, cond);
+	auto playlist = playlist_list_open_uri(uri, mutex);
 	if (playlist == NULL) {
 		/* open the stream and wait until it becomes ready */
 
-		is = InputStream::OpenReady(uri, mutex, cond);
+		is = InputStream::OpenReady(uri, mutex);
 
 		/* open the playlist */
 

@@ -20,7 +20,6 @@
 #include "config.h"
 #include "tag/ApeLoader.hxx"
 #include "thread/Mutex.hxx"
-#include "thread/Cond.hxx"
 #include "fs/Path.hxx"
 #include "Log.hxx"
 #include "input/InputStream.hxx"
@@ -62,9 +61,8 @@ try {
 	const Path path = Path::FromFS(argv[1]);
 
 	Mutex mutex;
-	Cond cond;
 
-	auto is = OpenLocalInputStream(path, mutex, cond);
+	auto is = OpenLocalInputStream(path, mutex);
 
 	if (!tag_ape_scan(*is, MyApeTagCallback)) {
 		fprintf(stderr, "error\n");

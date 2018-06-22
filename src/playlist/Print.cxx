@@ -26,7 +26,6 @@
 #include "DetachedSong.hxx"
 #include "fs/Traits.hxx"
 #include "thread/Mutex.hxx"
-#include "thread/Cond.hxx"
 #include "Partition.hxx"
 #include "Instance.hxx"
 
@@ -59,7 +58,6 @@ playlist_file_print(Response &r, Partition &partition,
 		    const char *uri, bool detail)
 {
 	Mutex mutex;
-	Cond cond;
 
 #ifndef ENABLE_DATABASE
 	(void)partition;
@@ -69,7 +67,7 @@ playlist_file_print(Response &r, Partition &partition,
 #ifdef ENABLE_DATABASE
 					  partition.instance.storage,
 #endif
-					  mutex, cond);
+					  mutex);
 	if (playlist == nullptr)
 		return false;
 

@@ -28,7 +28,6 @@
 #include "../ArchiveVisitor.hxx"
 #include "input/InputStream.hxx"
 #include "input/LocalOpen.hxx"
-#include "thread/Cond.hxx"
 #include "fs/Path.hxx"
 
 #include <bzlib.h>
@@ -54,7 +53,7 @@ public:
 	}
 
 	InputStreamPtr OpenStream(const char *path,
-				  Mutex &mutex, Cond &cond) override;
+				  Mutex &mutex) override;
 };
 
 class Bzip2InputStream final : public InputStream {
@@ -69,7 +68,7 @@ class Bzip2InputStream final : public InputStream {
 public:
 	Bzip2InputStream(const std::shared_ptr<InputStream> &_input,
 			 const char *uri,
-			 Mutex &mutex, Cond &cond);
+			 Mutex &mutex);
 	~Bzip2InputStream();
 
 	/* virtual methods from InputStream */
@@ -106,8 +105,7 @@ static std::unique_ptr<ArchiveFile>
 bz2_open(Path pathname)
 {
 	static Mutex mutex;
-	static Cond cond;
-	auto is = OpenLocalInputStream(pathname, mutex, cond);
+	auto is = OpenLocalInputStream(pathname, mutex);
 	return std::make_unique<Bzip2ArchiveFile>(pathname, std::move(is));
 }
 
@@ -115,8 +113,8 @@ bz2_open(Path pathname)
 
 Bzip2InputStream::Bzip2InputStream(const std::shared_ptr<InputStream> &_input,
 				   const char *_uri,
-				   Mutex &_mutex, Cond &_cond)
-	:InputStream(_uri, _mutex, _cond),
+				   Mutex &_mutex)
+	:InputStream(_uri, _mutex),
 	 input(_input)
 {
 	Open();
@@ -129,9 +127,9 @@ Bzip2InputStream::~Bzip2InputStream()
 
 InputStreamPtr
 Bzip2ArchiveFile::OpenStream(const char *path,
-			     Mutex &mutex, Cond &cond)
+			     Mutex &mutex)
 {
-	return std::make_unique<Bzip2InputStream>(istream, path, mutex, cond);
+	return std::make_unique<Bzip2InputStream>(istream, path, mutex);
 }
 
 inline bool

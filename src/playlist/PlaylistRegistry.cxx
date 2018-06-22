@@ -103,7 +103,7 @@ playlist_list_global_finish() noexcept
 }
 
 static std::unique_ptr<SongEnumerator>
-playlist_list_open_uri_scheme(const char *uri, Mutex &mutex, Cond &cond,
+playlist_list_open_uri_scheme(const char *uri, Mutex &mutex,
 			      bool *tried)
 {
 	assert(uri != nullptr);
@@ -120,7 +120,7 @@ playlist_list_open_uri_scheme(const char *uri, Mutex &mutex, Cond &cond,
 		if (playlist_plugins_enabled[i] && plugin->open_uri != nullptr &&
 		    plugin->schemes != nullptr &&
 		    StringArrayContainsCase(plugin->schemes, scheme.c_str())) {
-			auto playlist = plugin->open_uri(uri, mutex, cond);
+			auto playlist = plugin->open_uri(uri, mutex);
 			if (playlist)
 				return playlist;
 
@@ -132,7 +132,7 @@ playlist_list_open_uri_scheme(const char *uri, Mutex &mutex, Cond &cond,
 }
 
 static std::unique_ptr<SongEnumerator>
-playlist_list_open_uri_suffix(const char *uri, Mutex &mutex, Cond &cond,
+playlist_list_open_uri_suffix(const char *uri, Mutex &mutex,
 			      const bool *tried)
 {
 	assert(uri != nullptr);
@@ -148,7 +148,7 @@ playlist_list_open_uri_suffix(const char *uri, Mutex &mutex, Cond &cond,
 		if (playlist_plugins_enabled[i] && !tried[i] &&
 		    plugin->open_uri != nullptr && plugin->suffixes != nullptr &&
 		    StringArrayContainsCase(plugin->suffixes, suffix)) {
-			auto playlist = plugin->open_uri(uri, mutex, cond);
+			auto playlist = plugin->open_uri(uri, mutex);
 			if (playlist != nullptr)
 				return playlist;
 		}
@@ -158,7 +158,7 @@ playlist_list_open_uri_suffix(const char *uri, Mutex &mutex, Cond &cond,
 }
 
 std::unique_ptr<SongEnumerator>
-playlist_list_open_uri(const char *uri, Mutex &mutex, Cond &cond)
+playlist_list_open_uri(const char *uri, Mutex &mutex)
 {
 	/** this array tracks which plugins have already been tried by
 	    playlist_list_open_uri_scheme() */
@@ -168,9 +168,9 @@ playlist_list_open_uri(const char *uri, Mutex &mutex, Cond &cond)
 
 	memset(tried, false, sizeof(tried));
 
-	auto playlist = playlist_list_open_uri_scheme(uri, mutex, cond, tried);
+	auto playlist = playlist_list_open_uri_scheme(uri, mutex, tried);
 	if (playlist == nullptr)
-		playlist = playlist_list_open_uri_suffix(uri, mutex, cond,
+		playlist = playlist_list_open_uri_suffix(uri, mutex,
 							 tried);
 
 	return playlist;

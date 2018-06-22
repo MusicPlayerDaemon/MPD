@@ -27,7 +27,6 @@
 #include "decoder/DecoderPlugin.hxx"
 #include "input/InputStream.hxx"
 #include "input/LocalOpen.hxx"
-#include "thread/Cond.hxx"
 
 #include <exception>
 
@@ -41,7 +40,6 @@ class TagFileScan {
 	void *handler_ctx;
 
 	Mutex mutex;
-	Cond cond;
 	InputStreamPtr is;
 
 public:
@@ -62,8 +60,7 @@ public:
 		/* open the InputStream (if not already open) */
 		if (is == nullptr) {
 			try {
-				is = OpenLocalInputStream(path_fs,
-							  mutex, cond);
+				is = OpenLocalInputStream(path_fs, mutex);
 			} catch (...) {
 				return false;
 			}

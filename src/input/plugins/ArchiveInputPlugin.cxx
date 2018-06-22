@@ -35,7 +35,7 @@
 #include <stdlib.h>
 
 InputStreamPtr
-OpenArchiveInputStream(Path path, Mutex &mutex, Cond &cond)
+OpenArchiveInputStream(Path path, Mutex &mutex)
 {
 	const ArchivePlugin *arplug;
 
@@ -61,5 +61,5 @@ OpenArchiveInputStream(Path path, Mutex &mutex, Cond &cond)
 	}
 
 	return archive_file_open(arplug, Path::FromFS(archive))
-		->OpenStream(filename, mutex, cond);
+		->OpenStream(filename, mutex);
 }

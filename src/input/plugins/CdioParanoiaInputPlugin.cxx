@@ -61,11 +61,11 @@ class CdioParanoiaInputStream final : public InputStream {
 	int buffer_lsn;
 
  public:
-	CdioParanoiaInputStream(const char *_uri, Mutex &_mutex, Cond &_cond,
+	CdioParanoiaInputStream(const char *_uri, Mutex &_mutex,
 				cdrom_drive_t *_drv, CdIo_t *_cdio,
 				bool reverse_endian,
 				lsn_t _lsn_from, lsn_t _lsn_to)
-		:InputStream(_uri, _mutex, _cond),
+		:InputStream(_uri, _mutex),
 		 drv(_drv), cdio(_cdio), para(cdio_paranoia_init(drv)),
 		 lsn_from(_lsn_from), lsn_to(_lsn_to),
 		 lsn_relofs(0),
@@ -184,7 +184,7 @@ cdio_detect_device(void)
 
 static InputStreamPtr
 input_cdio_open(const char *uri,
-		Mutex &mutex, Cond &cond)
+		Mutex &mutex)
 {
 	struct cdio_uri parsed_uri;
 	if (!parse_cdio_uri(&parsed_uri, uri))
@@ -250,7 +250,7 @@ input_cdio_open(const char *uri,
 		lsn_to = cdio_get_disc_last_lsn(cdio);
 	}
 
-	return std::make_unique<CdioParanoiaInputStream>(uri, mutex, cond,
+	return std::make_unique<CdioParanoiaInputStream>(uri, mutex,
 							 drv, cdio,
 							 reverse_endian,
 							 lsn_from, lsn_to);

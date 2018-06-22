@@ -24,7 +24,6 @@
 #include "Compiler.h"
 
 class Mutex;
-class Cond;
 class SongEnumerator;
 
 extern const struct playlist_plugin *const playlist_plugins[];
@@ -51,7 +50,7 @@ playlist_list_global_finish() noexcept;
  * Opens a playlist by its URI.
  */
 std::unique_ptr<SongEnumerator>
-playlist_list_open_uri(const char *uri, Mutex &mutex, Cond &cond);
+playlist_list_open_uri(const char *uri, Mutex &mutex);
 
 std::unique_ptr<SongEnumerator>
 playlist_list_open_stream_suffix(InputStreamPtr &&is, const char *suffix);

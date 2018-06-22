@@ -25,7 +25,6 @@
 
 class Path;
 class Mutex;
-class Cond;
 
 /**
  * Open a "local" file.  This is a wrapper for the input plugins
@@ -34,6 +33,6 @@ class Cond;
  * Throws std::runtime_error on error.
  */
 InputStreamPtr
-OpenLocalInputStream(Path path, Mutex &mutex, Cond &cond);
+OpenLocalInputStream(Path path, Mutex &mutex);
 
 #endif

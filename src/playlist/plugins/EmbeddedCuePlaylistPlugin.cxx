@@ -89,8 +89,7 @@ static constexpr TagHandler embcue_tag_handler = {
 
 static std::unique_ptr<SongEnumerator>
 embcue_playlist_open_uri(const char *uri,
-			 gcc_unused Mutex &mutex,
-			 gcc_unused Cond &cond)
+			 gcc_unused Mutex &mutex)
 {
 	if (!PathTraitsUTF8::IsAbsolute(uri))
 		/* only local files supported */

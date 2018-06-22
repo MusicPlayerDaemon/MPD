@@ -32,20 +32,20 @@
 #include <assert.h>
 
 InputStreamPtr
-OpenLocalInputStream(Path path, Mutex &mutex, Cond &cond)
+OpenLocalInputStream(Path path, Mutex &mutex)
 {
 	InputStreamPtr is;
 
 #ifdef ENABLE_ARCHIVE
 	try {
 #endif
-		is = OpenFileInputStream(path, mutex, cond);
+		is = OpenFileInputStream(path, mutex);
 #ifdef ENABLE_ARCHIVE
 	} catch (const std::system_error &e) {
 		if (IsPathNotFound(e)) {
 			/* ENOTDIR means this may be a path inside an archive
 			   file */
-			is = OpenArchiveInputStream(path, mutex, cond);
+			is = OpenArchiveInputStream(path, mutex);
 			if (!is)
 				throw;
 		} else

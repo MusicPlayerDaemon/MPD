@@ -60,7 +60,7 @@ public:
 	virtual void Visit(ArchiveVisitor &visitor) override;
 
 	InputStreamPtr OpenStream(const char *path,
-				  Mutex &mutex, Cond &cond) override;
+				  Mutex &mutex) override;
 };
 
 /* archive open && listing routine */
@@ -92,9 +92,9 @@ class ZzipInputStream final : public InputStream {
 
 public:
 	ZzipInputStream(const std::shared_ptr<ZzipDir> _dir, const char *_uri,
-			Mutex &_mutex, Cond &_cond,
+			Mutex &_mutex,
 			ZZIP_FILE *_file)
-		:InputStream(_uri, _mutex, _cond),
+		:InputStream(_uri, _mutex),
 		 dir(_dir), file(_file) {
 		//we are seekable (but its not recommendent to do so)
 		seekable = true;
@@ -118,7 +118,7 @@ public:
 
 InputStreamPtr
 ZzipArchiveFile::OpenStream(const char *pathname,
-			    Mutex &mutex, Cond &cond)
+			    Mutex &mutex)
 {
 	ZZIP_FILE *_file = zzip_file_open(dir->dir, pathname, 0);
 	if (_file == nullptr)
@@ -126,7 +126,7 @@ ZzipArchiveFile::OpenStream(const char *pathname,
 					 pathname);
 
 	return std::make_unique<ZzipInputStream>(dir, pathname,
-						 mutex, cond,
+						 mutex,
 						 _file);
 }
 

@@ -24,7 +24,6 @@
 
 struct ConfigBlock;
 class Mutex;
-class Cond;
 class EventLoop;
 class RemoteTagScanner;
 class RemoteTagHandler;
@@ -54,8 +53,7 @@ struct InputPlugin {
 	 *
 	 * Throws std::runtime_error on error.
 	 */
-	InputStreamPtr (*open)(const char *uri,
-			       Mutex &mutex, Cond &cond);
+	InputStreamPtr (*open)(const char *uri, Mutex &mutex);
 
 	/**
 	 * Prepare a #RemoteTagScanner.  The operation must be started

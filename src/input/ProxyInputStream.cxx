@@ -20,15 +20,16 @@
 #include "config.h"
 #include "ProxyInputStream.hxx"
 #include "tag/Tag.hxx"
-#include "thread/Cond.hxx"
 
 #include <stdexcept>
 
 ProxyInputStream::ProxyInputStream(InputStreamPtr _input) noexcept
-	:InputStream(_input->GetURI(), _input->mutex, _input->cond),
+	:InputStream(_input->GetURI(), _input->mutex),
 	 input(std::move(_input))
 {
 	assert(input);
+
+	input->SetHandler(this);
 }
 
 ProxyInputStream::~ProxyInputStream() noexcept = default;
@@ -40,10 +41,13 @@ ProxyInputStream::SetInput(InputStreamPtr _input) noexcept
 	assert(_input);
 
 	input = std::move(_input);
+	input->SetHandler(this);
 
 	/* this call wakes up client threads if the new input is
 	   ready */
 	CopyAttributes();
+
+	set_input_cond.signal();
 }
 
 void
@@ -89,7 +93,7 @@ void
 ProxyInputStream::Seek(offset_type new_offset)
 {
 	while (!input)
-		cond.wait(mutex);
+		set_input_cond.wait(mutex);
 
 	input->Seek(new_offset);
 	CopyAttributes();
@@ -120,7 +124,7 @@ size_t
 ProxyInputStream::Read(void *ptr, size_t read_size)
 {
 	while (!input)
-		cond.wait(mutex);
+		set_input_cond.wait(mutex);
 
 	size_t nbytes = input->Read(ptr, read_size);
 	CopyAttributes();

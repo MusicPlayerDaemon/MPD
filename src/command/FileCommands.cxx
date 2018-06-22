@@ -40,7 +40,6 @@
 #include "LocateUri.hxx"
 #include "TimePrint.hxx"
 #include "thread/Mutex.hxx"
-#include "thread/Cond.hxx"
 
 #include <assert.h>
 #include <inttypes.h> /* for PRIu64 */
@@ -244,7 +243,7 @@ handle_read_comments(Client &client, Request args, Response &r)
  * opened file or #nullptr on failure.
  */
 static InputStreamPtr
-find_stream_art(const char *directory, Mutex &mutex, Cond &cond)
+find_stream_art(const char *directory, Mutex &mutex)
 {
 	static constexpr char const * art_names[] = {
 		"cover.png",
@@ -257,7 +256,7 @@ find_stream_art(const char *directory, Mutex &mutex, Cond &cond)
 		std::string art_file = PathTraitsUTF8::Build(directory, name);
 
 		try {
-			return InputStream::OpenReady(art_file.c_str(), mutex, cond);
+			return InputStream::OpenReady(art_file.c_str(), mutex);
 		} catch (const std::exception &e) {}
 	}
 	return nullptr;
@@ -269,9 +268,8 @@ read_stream_art(Response &r, const char *uri, size_t offset)
 	std::string art_directory = PathTraitsUTF8::GetParent(uri);
 
 	Mutex mutex;
-	Cond cond;
 
-	InputStreamPtr is = find_stream_art(art_directory.c_str(), mutex, cond);
+	InputStreamPtr is = find_stream_art(art_directory.c_str(), mutex);
 
 	if (is == nullptr) {
 		r.Error(ACK_ERROR_NO_EXIST, "No file exists");

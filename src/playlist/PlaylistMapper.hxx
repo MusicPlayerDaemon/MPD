@@ -25,7 +25,6 @@
 #include <memory>
 
 class Mutex;
-class Cond;
 class SongEnumerator;
 class Storage;
 
@@ -38,6 +37,6 @@ playlist_mapper_open(const char *uri,
 #ifdef ENABLE_DATABASE
 		     const Storage *storage,
 #endif
-		     Mutex &mutex, Cond &cond);
+		     Mutex &mutex);
 
 #endif
