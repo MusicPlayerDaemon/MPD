@@ -79,7 +79,6 @@ libmpd_a_SOURCES = \
 	src/check.h \
 	src/Compiler.h \
 	src/open.h \
-	src/notify.cxx src/notify.hxx \
 	src/protocol/Ack.cxx src/protocol/Ack.hxx \
 	src/protocol/ArgParser.cxx src/protocol/ArgParser.hxx \
 	src/protocol/Result.cxx src/protocol/Result.hxx \
