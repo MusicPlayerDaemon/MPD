@@ -159,8 +159,7 @@ MultipleOutputs::WaitAll() noexcept
 {
 	for (auto *ao : outputs) {
 		const std::lock_guard<Mutex> protect(ao->mutex);
-		if (ao->IsBusy())
-			ao->WaitForCommand();
+		ao->WaitForCommand();
 	}
 }
 
