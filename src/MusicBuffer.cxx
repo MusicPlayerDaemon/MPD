@@ -39,6 +39,12 @@ MusicBuffer::Return(MusicChunk *chunk) noexcept
 {
 	assert(chunk != nullptr);
 
+	/* these attributes need to be cleared before locking the
+	   mutex, because they might recursively call this method,
+	   causing a deadlock */
+	chunk->next.reset();
+	chunk->other.reset();
+
 	const std::lock_guard<Mutex> protect(mutex);
 
 	assert(!chunk->other || !chunk->other->other);
