@@ -36,6 +36,7 @@
 #include "Log.hxx"
 
 #include <exception>
+#include <memory>
 
 #include <string.h>
 
@@ -48,7 +49,7 @@ class Player {
 
 	MusicBuffer &buffer;
 
-	MusicPipe *pipe;
+	std::shared_ptr<MusicPipe> pipe;
 
 	/**
 	 * the song currently being played
@@ -169,10 +170,10 @@ private:
 		xfade_state = CrossFadeState::UNKNOWN;
 	}
 
-	void ReplacePipe(MusicPipe *_pipe) noexcept {
+	template<typename P>
+	void ReplacePipe(P &&_pipe) noexcept {
 		ResetCrossFade();
-		delete pipe;
-		pipe = _pipe;
+		pipe = std::forward<P>(_pipe);
 	}
 
 	/**
@@ -180,7 +181,7 @@ private:
 	 *
 	 * Caller must lock the mutex.
 	 */
-	void StartDecoder(MusicPipe &pipe) noexcept;
+	void StartDecoder(std::shared_ptr<MusicPipe> pipe) noexcept;
 
 	/**
 	 * The decoder has acknowledged the "START" command (see
@@ -325,7 +326,7 @@ public:
 };
 
 void
-Player::StartDecoder(MusicPipe &_pipe) noexcept
+Player::StartDecoder(std::shared_ptr<MusicPipe> _pipe) noexcept
 {
 	assert(queued || pc.command == PlayerCommand::SEEK);
 	assert(pc.next_song != nullptr);
@@ -337,7 +338,7 @@ Player::StartDecoder(MusicPipe &_pipe) noexcept
 
 	dc.Start(std::make_unique<DetachedSong>(*pc.next_song),
 		 start_time, pc.next_song->GetEndTime(),
-		 buffer, _pipe);
+		 buffer, std::move(_pipe));
 }
 
 void
@@ -351,11 +352,7 @@ Player::StopDecoder() noexcept
 		/* clear and free the decoder pipe */
 
 		dc.pipe->Clear();
-
-		if (dc.pipe != pipe)
-			delete dc.pipe;
-
-		dc.pipe = nullptr;
+		dc.pipe.reset();
 
 		/* just in case we've been cross-fading: cancel it
 		   now, because we just deleted the new song's decoder
@@ -577,7 +574,7 @@ Player::SeekDecoder() noexcept
 		pipe->Clear();
 
 		/* re-start the decoder */
-		StartDecoder(*pipe);
+		StartDecoder(pipe);
 		ActivateDecoder();
 
 		pc.seeking = true;
@@ -655,7 +652,7 @@ Player::ProcessCommand() noexcept
 		pc.CommandFinished();
 
 		if (dc.IsIdle())
-			StartDecoder(*new MusicPipe());
+			StartDecoder(std::make_shared<MusicPipe>());
 
 		break;
 
@@ -926,11 +923,11 @@ Player::SongBorder() noexcept
 inline void
 Player::Run() noexcept
 {
-	pipe = new MusicPipe();
+	pipe = std::make_shared<MusicPipe>();
 
 	const std::lock_guard<Mutex> lock(pc.mutex);
 
-	StartDecoder(*pipe);
+	StartDecoder(pipe);
 	ActivateDecoder();
 
 	pc.state = PlayerState::PLAY;
@@ -973,7 +970,7 @@ Player::Run() noexcept
 
 			assert(dc.pipe == nullptr || dc.pipe == pipe);
 
-			StartDecoder(*new MusicPipe());
+			StartDecoder(std::make_shared<MusicPipe>());
 		}
 
 		if (/* no cross-fading if MPD is going to pause at the
@@ -1057,7 +1054,7 @@ Player::Run() noexcept
 	CancelPendingSeek();
 	StopDecoder();
 
-	delete pipe;
+	pipe.reset();
 
 	cross_fade_tag.reset();
 

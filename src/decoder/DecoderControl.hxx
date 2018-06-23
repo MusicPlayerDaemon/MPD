@@ -159,7 +159,7 @@ struct DecoderControl final : InputStreamHandler {
 	 * The destination pipe for decoded chunks.  The caller thread
 	 * owns this object, and is responsible for freeing it.
 	 */
-	MusicPipe *pipe;
+	std::shared_ptr<MusicPipe> pipe;
 
 	const ReplayGainConfig replay_gain_config;
 	ReplayGainMode replay_gain_mode = ReplayGainMode::OFF;
@@ -383,7 +383,8 @@ public:
 	 */
 	void Start(std::unique_ptr<DetachedSong> song,
 		   SongTime start_time, SongTime end_time,
-		   MusicBuffer &buffer, MusicPipe &pipe) noexcept;
+		   MusicBuffer &buffer,
+		   std::shared_ptr<MusicPipe> pipe) noexcept;
 
 	/**
 	 * Caller must lock the object.

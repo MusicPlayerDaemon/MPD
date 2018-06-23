@@ -230,7 +230,7 @@ MultipleOutputs::Open(const AudioFormat audio_format)
 	assert(pipe == nullptr || pipe->CheckFormat(audio_format));
 
 	if (pipe == nullptr)
-		pipe = new MusicPipe();
+		pipe = std::make_unique<MusicPipe>();
 	else
 		/* if the pipe hasn't been cleared, the the audio
 		   format must not have changed */
@@ -402,8 +402,7 @@ MultipleOutputs::Close() noexcept
 	for (auto *ao : outputs)
 		ao->LockCloseWait();
 
-	delete pipe;
-	pipe = nullptr;
+	pipe.reset();
 
 	input_audio_format.Clear();
 
@@ -416,8 +415,7 @@ MultipleOutputs::Release() noexcept
 	for (auto *ao : outputs)
 		ao->LockRelease();
 
-	delete pipe;
-	pipe = nullptr;
+	pipe.reset();
 
 	input_audio_format.Clear();
 

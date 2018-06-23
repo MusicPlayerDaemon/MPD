@@ -55,7 +55,7 @@ class MultipleOutputs final : public PlayerOutputs {
 	 * The #MusicPipe object which feeds all audio outputs.  It is
 	 * filled by Play().
 	 */
-	MusicPipe *pipe = nullptr;
+	std::unique_ptr<MusicPipe> pipe;
 
 	/**
 	 * The "elapsed_time" stamp of the most recently finished
