@@ -30,18 +30,11 @@
 
 #include <assert.h>
 
-class MusicBuffer;
-
 /**
  * A queue of #MusicChunk objects.  One party appends chunks at the
  * tail, and the other consumes them from the head.
  */
 class MusicPipe {
-	/**
-	 * The #MusicBuffer where all chunks must be returned.
-	 */
-	MusicBuffer &buffer;
-
 	/** the first chunk */
 	MusicChunkPtr head;
 
@@ -59,22 +52,8 @@ class MusicPipe {
 #endif
 
 public:
-	/**
-	 * Creates a new #MusicPipe object.  It is empty.
-	 */
-	explicit MusicPipe(MusicBuffer &_buffer) noexcept
-		:buffer(_buffer) {}
-
-	MusicPipe(const MusicPipe &) = delete;
-
 	~MusicPipe() noexcept {
 		Clear();
-	}
-
-	MusicPipe &operator=(const MusicPipe &) = delete;
-
-	MusicBuffer &GetBuffer() noexcept {
-		return buffer;
 	}
 
 #ifndef NDEBUG

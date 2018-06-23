@@ -221,19 +221,16 @@ MultipleOutputs::Play(MusicChunkPtr chunk)
 }
 
 void
-MultipleOutputs::Open(const AudioFormat audio_format,
-		      MusicBuffer &buffer)
+MultipleOutputs::Open(const AudioFormat audio_format)
 {
 	bool ret = false, enabled = false;
-
-	assert(pipe == nullptr || &pipe->GetBuffer() == &buffer);
 
 	/* the audio format must be the same as existing chunks in the
 	   pipe */
 	assert(pipe == nullptr || pipe->CheckFormat(audio_format));
 
 	if (pipe == nullptr)
-		pipe = new MusicPipe(buffer);
+		pipe = new MusicPipe();
 	else
 		/* if the pipe hasn't been cleared, the the audio
 		   format must not have changed */

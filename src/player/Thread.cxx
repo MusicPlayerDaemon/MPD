@@ -343,7 +343,7 @@ Player::StartDecoder(MusicPipe &_pipe) noexcept
 
 	dc.Start(std::make_unique<DetachedSong>(*pc.next_song),
 		 start_time, pc.next_song->GetEndTime(),
-		 _pipe);
+		 buffer, _pipe);
 }
 
 void
@@ -445,7 +445,7 @@ Player::OpenOutput() noexcept
 
 	try {
 		const ScopeUnlock unlock(pc.mutex);
-		pc.outputs.Open(play_audio_format, buffer);
+		pc.outputs.Open(play_audio_format);
 	} catch (...) {
 		LogError(std::current_exception());
 
@@ -661,7 +661,7 @@ Player::ProcessCommand() noexcept
 		pc.CommandFinished();
 
 		if (dc.IsIdle())
-			StartDecoder(*new MusicPipe(buffer));
+			StartDecoder(*new MusicPipe());
 
 		break;
 
@@ -932,7 +932,7 @@ Player::SongBorder() noexcept
 inline void
 Player::Run() noexcept
 {
-	pipe = new MusicPipe(buffer);
+	pipe = new MusicPipe();
 
 	const std::lock_guard<Mutex> lock(pc.mutex);
 
@@ -979,7 +979,7 @@ Player::Run() noexcept
 
 			assert(dc.pipe == nullptr || dc.pipe == pipe);
 
-			StartDecoder(*new MusicPipe(buffer));
+			StartDecoder(*new MusicPipe());
 		}
 
 		if (/* no cross-fading if MPD is going to pause at the

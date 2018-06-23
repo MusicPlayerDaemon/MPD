@@ -98,7 +98,7 @@ DecoderBridge::GetChunk() noexcept
 		return current_chunk.get();
 
 	do {
-		current_chunk = dc.pipe->GetBuffer().Allocate();
+		current_chunk = dc.buffer->Allocate();
 		if (current_chunk != nullptr) {
 			current_chunk->replay_gain_serial = replay_gain_serial;
 			if (replay_gain_serial != 0)
