@@ -21,7 +21,6 @@
 #include "MultipleOutputs.hxx"
 #include "Filtered.hxx"
 #include "Domain.hxx"
-#include "MusicBuffer.hxx"
 #include "MusicPipe.hxx"
 #include "MusicChunk.hxx"
 #include "config/Block.hxx"

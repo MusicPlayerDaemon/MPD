@@ -19,7 +19,6 @@
 
 #include "config.h"
 #include "MusicPipe.hxx"
-#include "MusicBuffer.hxx"
 #include "MusicChunk.hxx"
 
 #ifndef NDEBUG
