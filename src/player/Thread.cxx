@@ -169,12 +169,6 @@ private:
 		xfade_state = CrossFadeState::UNKNOWN;
 	}
 
-	void ClearAndReplacePipe(MusicPipe *_pipe) noexcept {
-		ResetCrossFade();
-		delete pipe;
-		pipe = _pipe;
-	}
-
 	void ReplacePipe(MusicPipe *_pipe) noexcept {
 		ResetCrossFade();
 		delete pipe;
@@ -596,7 +590,7 @@ Player::SeekDecoder() noexcept
 		if (!IsDecoderAtCurrentSong()) {
 			/* the decoder is already decoding the "next" song,
 			   but it is the same song file; exchange the pipe */
-			ClearAndReplacePipe(dc.pipe);
+			ReplacePipe(dc.pipe);
 		}
 
 		pc.next_song.reset();
