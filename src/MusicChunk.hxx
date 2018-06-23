@@ -45,7 +45,7 @@ struct MusicChunk;
  */
 struct MusicChunkInfo {
 	/** the next chunk in a linked list */
-	MusicChunk *next;
+	MusicChunkPtr next;
 
 	/**
 	 * An optional chunk which should be mixed into this chunk.

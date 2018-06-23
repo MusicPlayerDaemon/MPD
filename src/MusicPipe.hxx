@@ -43,10 +43,10 @@ class MusicPipe {
 	MusicBuffer &buffer;
 
 	/** the first chunk */
-	MusicChunk *head = nullptr;
+	MusicChunkPtr head;
 
 	/** a pointer to the tail of the chunk */
-	MusicChunk **tail_r = &head;
+	MusicChunkPtr *tail_r = &head;
 
 	/** the current number of chunks */
 	unsigned size = 0;
@@ -102,7 +102,7 @@ public:
 	gcc_pure
 	const MusicChunk *Peek() const noexcept {
 		const std::lock_guard<Mutex> protect(mutex);
-		return head;
+		return head.get();
 	}
 
 	/**
