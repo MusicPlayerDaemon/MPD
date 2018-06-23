@@ -26,7 +26,6 @@
 #include "config/Block.hxx"
 #include "config/ConfigGlobal.hxx"
 #include "config/ConfigOption.hxx"
-#include "notify.hxx"
 #include "util/RuntimeError.hxx"
 
 #include <stdexcept>
@@ -155,23 +154,14 @@ MultipleOutputs::EnableDisable()
 	}
 }
 
-bool
-MultipleOutputs::AllFinished() const noexcept
+void
+MultipleOutputs::WaitAll() noexcept
 {
 	for (auto *ao : outputs) {
 		const std::lock_guard<Mutex> protect(ao->mutex);
 		if (ao->IsBusy())
-			return false;
+			ao->WaitForCommand();
 	}
-
-	return true;
-}
-
-void
-MultipleOutputs::WaitAll() noexcept
-{
-	while (!AllFinished())
-		audio_output_client_notify.Wait();
 }
 
 void

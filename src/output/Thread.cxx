@@ -22,7 +22,6 @@
 #include "Filtered.hxx"
 #include "Client.hxx"
 #include "Domain.hxx"
-#include "notify.hxx"
 #include "mixer/MixerInternal.hxx"
 #include "thread/Util.hxx"
 #include "thread/Slack.hxx"
@@ -41,8 +40,7 @@ AudioOutputControl::CommandFinished() noexcept
 	assert(command != Command::NONE);
 	command = Command::NONE;
 
-	const ScopeUnlock unlock(mutex);
-	audio_output_client_notify.Signal();
+	client_cond.signal();
 }
 
 inline void

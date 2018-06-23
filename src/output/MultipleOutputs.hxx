@@ -145,12 +145,9 @@ public:
 
 private:
 	/**
-	 * Determine if all (active) outputs have finished the current
+	 * Wait until all (active) outputs have finished the current
 	 * command.
 	 */
-	gcc_pure
-	bool AllFinished() const noexcept;
-
 	void WaitAll() noexcept;
 
 	/**

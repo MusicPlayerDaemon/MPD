@@ -94,6 +94,12 @@ class AudioOutputControl {
 	Cond wake_cond;
 
 	/**
+	 * This condition object signals #command completion to the
+	 * client.
+	 */
+	Cond client_cond;
+
+	/**
 	 * Additional data for #command.  Protected by #mutex.
 	 */
 	struct Request {
