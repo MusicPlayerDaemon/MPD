@@ -218,7 +218,7 @@ AudioOutputControl::WaitForDelay() noexcept
 		if (delay <= std::chrono::steady_clock::duration::zero())
 			return true;
 
-		(void)cond.timed_wait(mutex, delay);
+		(void)wake_cond.timed_wait(mutex, delay);
 
 		if (command != Command::NONE)
 			return false;
@@ -491,7 +491,7 @@ AudioOutputControl::Task() noexcept
 
 		if (command == Command::NONE) {
 			woken_for_play = false;
-			cond.wait(mutex);
+			wake_cond.wait(mutex);
 		}
 	}
 }

@@ -128,7 +128,7 @@ AudioOutputControl::CommandAsync(Command cmd) noexcept
 	assert(IsCommandFinished());
 
 	command = cmd;
-	cond.signal();
+	wake_cond.signal();
 }
 
 void
@@ -298,7 +298,7 @@ AudioOutputControl::LockPlay() noexcept
 
 	if (IsOpen() && !in_playback_loop && !woken_for_play) {
 		woken_for_play = true;
-		cond.signal();
+		wake_cond.signal();
 	}
 }
 
@@ -346,7 +346,7 @@ AudioOutputControl::LockAllowPlay() noexcept
 
 	allow_play = true;
 	if (IsOpen())
-		cond.signal();
+		wake_cond.signal();
 }
 
 void
