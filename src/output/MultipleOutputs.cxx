@@ -148,10 +148,7 @@ MultipleOutputs::EnableDisable()
 		ao->EnableDisableAsync();
 	}
 
-	for (auto *ao : outputs) {
-		const std::lock_guard<Mutex> lock(ao->mutex);
-		ao->WaitForCommand();
-	}
+	WaitAll();
 }
 
 void
