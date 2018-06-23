@@ -40,7 +40,7 @@ public:
 	 * @param num_chunks the number of #MusicChunk reserved in
 	 * this buffer
 	 */
-	MusicBuffer(unsigned num_chunks) noexcept;
+	explicit MusicBuffer(unsigned num_chunks) noexcept;
 
 #ifndef NDEBUG
 	/**
