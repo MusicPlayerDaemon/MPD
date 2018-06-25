@@ -19,13 +19,18 @@
 
 #include <string>
 #include "AudioFormat.hxx"
+#include "util/StringBuffer.hxx"
 #include <CoreAudio/CoreAudio.h>
 
 // Helper Functions
+// Return ID of device with search_name
+AudioDeviceID FindAudioDevice(const char *search_name);
+// Return ID of the default audio device
+AudioDeviceID GetDefaultOutputDevice();
 // Get a human readable error description for OSStatus
-std::string GetError(OSStatus error);
+const char* GetError(OSStatus error);
 // Transform ASBD to readable string for printout
-const char* StreamDescriptionToString(AudioStreamBasicDescription desc, std::string &str);
+StringBuffer<64> StreamDescriptionToString(const AudioStreamBasicDescription desc);
 // Allocate an AudioBufferList struct with capacity
 AudioBufferList* AllocateABL(AudioStreamBasicDescription asbd, UInt32 capacity_frames);
 // Frees the memory pointed to by the AudioBufferList pointer

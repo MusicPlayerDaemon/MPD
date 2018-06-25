@@ -20,7 +20,6 @@
 #ifndef MPD_CA_DEVICE_HXX
 #define MPD_CA_DEVICE_HXX
 
-#include <string>
 #include <vector>
 #include "CoreAudioStream.hxx"
 #include "AudioFormat.hxx"
@@ -29,11 +28,15 @@
 class CoreAudioDevice
 {
 public:
-	CoreAudioDevice();
-	explicit CoreAudioDevice(AudioDeviceID dev_id);
-	virtual ~CoreAudioDevice();
-	// Initialize and search for device name, falls back to system default device
-	bool Open(const std::string &device_name);
+	CoreAudioDevice() noexcept;
+	explicit CoreAudioDevice(AudioDeviceID dev_id) noexcept;
+	~CoreAudioDevice();
+	/** Initialize and search for device with device_name.
+	 *	Opens CoreAudio default output device in case
+	 *	"default" is passed. Throws runtime exception in
+	 *	case the device cannot be opened.
+	 */
+	void Open(const char *device_name);
 	// Restore settings and close the device
 	void Close();
 	// Starts the device (i.e. enables CoreAudio HAL to callback for data)
@@ -41,51 +44,74 @@ public:
 	// Stops the device (used for pause, no data will be requested)
 	void Stop();
 	AudioDeviceID GetId() {return device_id;}
-	std::string GetName() const;
+	const char * GetName();
 	bool IsPlanar() {return is_planar;}
-	UInt32 GetTotalOutputChannels() const;
-	UInt32 GetNumChannelsOfStream(UInt32 stream_idx) const;
 	UInt32 GetStreamIdx() {return output_stream_idx;}
-	bool GetStreams(AudioStreamIdList *stream_id_list);
-	// Turn on exclusive device usage
-	bool SetHogStatus(bool hog);
+	AudioStreamIdList GetStreams();
+	// Toggle for exclusive device usage
+	void SetHogStatus(bool hog);
 	pid_t GetHogStatus();
 	bool HasVolume() {return has_volume;}
-	bool SetCurrentVolume(Float32 vol);
+	/** Set the volume for float in range
+	 *	[0, 1]. No-op in case no volume
+	 *	setting is supported by device.
+	 *	Throws runtime exception in case
+	 *	volume could not be set successfully.
+	 */
+	void SetCurrentVolume(Float32 vol);
+	/** Get current volume ranged [0, 1]
+	 *	of the device. Returns -1 on
+	 *	error or in case the device
+	 *	does not support volume
+	 *	setting.
+	 */
 	Float32 GetCurrentVolume();
 	UInt32 GetBufferSize();
-	bool SetBufferSize(UInt32 size);
-	bool AddIOProc(AudioDeviceIOProc io_proc, void* callback_data);
-	bool RemoveIOProc();
+	void SetBufferSize(UInt32 size);
+	void AddIOProc(AudioDeviceIOProc io_proc, void* callback_data);
+	void RemoveIOProc();
 	/** Main method called for every MPD format change.
 	 *	Uses scoring to find the best matching output
-	 *	format for MPD AudioFormat format. In case
-	 *	prefer_unmixable is set, unmixable integer
-	 *	formats are used.
+	 *	format for MPD AudioFormat. In case prefer_unmixable
+	 *	is set, unmixable integer formats are used (if
+	 *	supported). Returns true if some matching
+	 *	format is found.
 	 */
 	bool SetFormat(const AudioFormat &format, bool prefer_unmixable);
 	// Return physical format used internally by the device output stream
 	AudioStreamBasicDescription GetPhysFormat();
-	// Return the IO format that the device expects to be fed
+	// Return the IO format that CoreAudio expects to be fed in the callback
 	AudioStreamBasicDescription GetIOFormat();
 	
 private:
-
-	bool started;
+	bool started = false;
 	// To identify devices where streams are single channels
-	bool is_planar;
-	AudioDeviceID device_id;
-	UInt32 output_stream_idx;
-	AudioStreamBasicDescription output_format;
-	AudioDeviceIOProc io_proc;
+	bool is_planar = true;
+	AudioDeviceID device_id = 0;
+	UInt32 output_stream_idx = 0;
+	AudioDeviceIOProc io_proc = nullptr;
+	char *dev_name = nullptr;
+	bool has_volume = false;
+	pid_t hog_pid = -1;
 	CoreAudioStream output_stream;
-	bool has_volume;
-	pid_t hog_pid;
-	UInt32 buffer_size_restore;
+	AudioStreamBasicDescription output_format;
+	/** This gets assigned when first changing the
+	 *	device frame buffer size by calling
+	 *	SetBufferSize. Used to restore buffer size
+	 *	on Close.
+	 */
+	UInt32 buffer_size_restore = 0;
 	
-	// Collect information from the device
-	bool Enumerate();
+	UInt32 GetTotalOutputChannels() const;
+	UInt32 GetNumChannelsOfStream(UInt32 stream_idx) const;
 	
+	/** This method enumerates the device by collecting
+	 *	information from the device. After successful
+	 *	enumeration stream_infos vector holds all
+	 *	CoreAudioStreams and related format information
+	 *	which is required to use SetFormat method.
+	 */
+	void Enumerate();
 	
 	/** Scores a format based on:
 	 *	1. Matching sample rate (or integer fraction / multiple)
@@ -94,7 +120,9 @@ private:
 	 *
 	 *	The ASBD which should be scored against the
 	 *	MPD AudioFormat format which should be matched
-	 *	to be passed.
+	 *	to be passed. The return value correponds to the
+	 *	score of the ASBD as match of the AudioFormat
+	 *	(higher is better).
 	 */
 	float ScoreFormat(const AudioStreamBasicDescription &format_desc, const AudioFormat &format) const;
 	
@@ -102,18 +130,19 @@ private:
 	 * 	1. Prefer exact match
 	 *	2. Prefer exact multiple of source samplerate
 	 *	The destination samplerate to score is compared against
-	 *	the requested source rate of the audio format.
+	 *	the requested source rate of the audio format. Returns
+	 *	float value that corresponds to the score of
+	 *	destination_rate as match of the source_rate.
 	 */
 	float ScoreSampleRate(Float64 destination_rate, unsigned int source_rate) const;
 	
-	typedef struct
-	{
+	struct StreamInfo {
 		AudioStreamID stream_id;
 		StreamFormatList format_list;
 		UInt32 num_channels;
-	} stream_info;
+	};
 	
-	std::vector<stream_info>       stream_infos;
+	std::vector<StreamInfo> stream_infos;
 };
 
 #endif

@@ -19,8 +19,7 @@
 
 #include "CoreAudioDevice.hxx"
 #include "CoreAudioHelpers.hxx"
-#include "CoreAudioHardware.hxx"
-#include "util/StringBuffer.hxx"
+#include "util/RuntimeError.hxx"
 #include <AudioToolbox/AudioToolbox.h>
 #include "system/ByteOrder.hxx"
 #include "util/Domain.hxx"
@@ -28,101 +27,69 @@
 
 static constexpr Domain macos_output_domain("macos_output");
 
-CoreAudioDevice::CoreAudioDevice()  :
-	started					(false	),
-	device_id				(0		),
-	io_proc					(nullptr),
-	has_volume				(false	),
-	hog_pid					(-1		),
-	buffer_size_restore		(0		)
-{
+CoreAudioDevice::CoreAudioDevice() noexcept {
 	output_format.mFormatID = 0;
 }
 
-CoreAudioDevice::CoreAudioDevice(AudioDeviceID dev_id) :
-	started					(false		),
-	device_id				(dev_id		),
-	io_proc					(nullptr	),
-	has_volume				(false		),
-	hog_pid					(-1			),
-	buffer_size_restore		(0			)
-{
+CoreAudioDevice::CoreAudioDevice(AudioDeviceID dev_id) noexcept : device_id {dev_id} {
 	output_format.mFormatID = 0;
 }
 
-CoreAudioDevice::~CoreAudioDevice()
-{
+CoreAudioDevice::~CoreAudioDevice() {
 	Close();
 }
 
-bool
-CoreAudioDevice::Open(const std::string &device_name)
-{
-	if(!(device_id = CCoreAudioHardware::FindAudioDevice(device_name)))
-		return false;
+void
+CoreAudioDevice::Open(const char *device_name) {
 	
-	if(!Enumerate())
-	{
-		FormatError(macos_output_domain, "Failed to get stream information from output device.");
-		return false;
-	}
+	device_id = FindAudioDevice(device_name);
+	Enumerate();
 
 	AudioObjectPropertyAddress aopa;
-	aopa.mScope		= kAudioDevicePropertyScopeOutput;
+	aopa.mScope = kAudioDevicePropertyScopeOutput;
 	aopa.mElement	= 0;
-	aopa.mSelector	= kAudioHardwareServiceDeviceProperty_VirtualMasterVolume;
+	aopa.mSelector = kAudioHardwareServiceDeviceProperty_VirtualMasterVolume;
 	Boolean writable;
 	
-	if(AudioObjectHasProperty(device_id, &aopa))
-	{
+	if(AudioObjectHasProperty(device_id, &aopa)) {
 		OSStatus err = AudioObjectIsPropertySettable(device_id, &aopa, &writable);
-		if (err != noErr)
-		{
-			FormatError(macos_output_domain, "Unable to get propertyinfo volume support. Error = %s", GetError(err).c_str());
-			has_volume = false;
+		if (err != noErr) {
+			throw FormatRuntimeError("Unable to get propertyinfo volume support. Error = %s", GetError(err));
 		}
 		else
 			has_volume = (bool)writable;
 	}
-	else
-	{
+	else {
 		has_volume = false;
-		FormatInfo(macos_output_domain, "The audio device (id 0x%04x) does not have Volume property.", (uint)device_id);
+		FormatInfo(macos_output_domain, "The audio device (id 0x%04x) does not have volume property.", (uint)device_id);
 	}
-	return true;
-}
-
-bool
-CoreAudioDevice::Enumerate()
-{
-	AudioStreamIdList stream_list;
-	bool ret = false;
-	stream_infos.clear();
-	is_planar = true;
-	
-	if (GetStreams(&stream_list))
-	{
-		for (UInt32 stream_idx = 0; stream_idx < stream_list.size(); stream_idx++)
-		{
-			stream_info info;
-			info.stream_id = stream_list[stream_idx];
-			info.num_channels = GetNumChannelsOfStream(stream_idx);
-			// one stream with num channels other than 1 is enough to make this device non-planar
-			if (info.num_channels != 1)
-				is_planar = false;
-			CoreAudioStream::GetAvailablePhysicalFormats(stream_list[stream_idx], &info.format_list);
-			stream_infos.push_back(info);
-		}
-		ret = true;
-	}
-	return ret;
 }
 
 void
-CoreAudioDevice::Close()
-{
+CoreAudioDevice::Enumerate() {
+	AudioStreamIdList stream_list = GetStreams();
+	stream_infos.clear();
+
+	for (unsigned int stream_idx = 0; stream_idx < stream_list.size(); stream_idx++) {
+		StreamInfo info;
+		info.stream_id = stream_list[stream_idx];
+		info.num_channels = GetNumChannelsOfStream(stream_idx);
+		// one stream with num channels other than 1 is enough to make this device non-planar
+		if (info.num_channels > 1)
+			is_planar = false;
+		info.format_list = CoreAudioStream::GetAvailablePhysicalFormats(info.stream_id);
+		stream_infos.push_back(info);
+	}
+}
+
+void
+CoreAudioDevice::Close() {
 	if (!device_id)
 		return;
+	
+	// Clear device name
+	dev_name = nullptr;
+	delete[] dev_name;
 
 	// Stop the device if it was started
 	Stop();
@@ -133,74 +100,65 @@ CoreAudioDevice::Close()
 	// Make sure to release hog state
 	SetHogStatus(false);
 
-	if (buffer_size_restore)
-	{
+	if (buffer_size_restore) {
 		SetBufferSize(buffer_size_restore);
 		buffer_size_restore = 0;
 	}
-	io_proc = nullptr;
 	device_id = 0;
 }
 
 void
-CoreAudioDevice::Start()
-{
+CoreAudioDevice::Start() {
 	if (!device_id || started)
 		return;
 
 	OSStatus err = AudioDeviceStart(device_id, io_proc);
 	if (err != noErr)
-		FormatError(macos_output_domain, "Unable to start device. Error = %s", GetError(err).c_str());
+		throw FormatRuntimeError("Unable to start device. Error = %s", GetError(err));
 	else
 		started = true;
 }
 
 void
-CoreAudioDevice::Stop()
-{
+CoreAudioDevice::Stop() {
 	if (!device_id || !started)
 		return;
 
 	OSStatus err = AudioDeviceStop(device_id, io_proc);
 	if (err != noErr)
-		FormatError(macos_output_domain, "Unable to stop device. Error = %s", GetError(err).c_str());
+		throw FormatRuntimeError("Unable to stop device. Error = %s", GetError(err));
 	started = false;
 	
 }
 
-bool
-CoreAudioDevice::AddIOProc(AudioDeviceIOProc callback_function, void* callback_data)
-{
+void
+CoreAudioDevice::AddIOProc(AudioDeviceIOProc callback_function, void* callback_data) {
 	assert(output_format.mFormatID != 0);
 	
 	// Allow only one IOProc at a time
 	if (!device_id || io_proc)
-		return false;
+		return;
 
 	// Open the output stream and make the desired format active
 	output_stream.Open(stream_infos[output_stream_idx].stream_id);
 	if (output_format.mFormatFlags & kAudioFormatFlagIsNonMixable)
-		output_stream.SetVirtualFormat(&output_format);
-	output_stream.SetPhysicalFormat(&output_format);
+		output_stream.SetVirtualFormat(output_format);
+	output_stream.SetPhysicalFormat(output_format);
 
 	// Create the callback
 	OSStatus err = AudioDeviceCreateIOProcID(device_id, callback_function, callback_data, &io_proc);
-	if (err != noErr)
-	{
-		FormatError(macos_output_domain, "Unable to add IOProc. Error = %s", GetError(err).c_str());
+	if (err != noErr) {
 		io_proc = nullptr;
-		return false;
+		throw FormatRuntimeError("Unable to add IOProc. Error = %s", GetError(err));
 	}
 	// Start the device (callback)
 	Start();
-	return true;
 }
 
-bool
-CoreAudioDevice::RemoveIOProc()
-{
+void
+CoreAudioDevice::RemoveIOProc() {
 	if (!device_id || !io_proc)
-		return false;
+		return;
 	
 	Stop();
 	
@@ -209,170 +167,174 @@ CoreAudioDevice::RemoveIOProc()
 
 	OSStatus err = AudioDeviceDestroyIOProcID(device_id, io_proc);
 	if (err != noErr)
-		FormatError(macos_output_domain, "Unable to remove IOProc. Error = %s", GetError(err).c_str());
+		throw FormatRuntimeError("Unable to destroy IOProc. Error = %s", GetError(err));
 
 	io_proc = nullptr; // Clear the reference no matter what
-	
-	return true;
+
 }
 
-std::string
-CoreAudioDevice::GetName() const
-{
+const char *
+CoreAudioDevice::GetName() {
+	
 	if (!device_id)
-		return "";
-
+		throw std::runtime_error("No device ID - Open device first.");
+	
+	// If device name was already retrieved, return it
+	if(dev_name != nullptr)
+		return dev_name;
+	
 	AudioObjectPropertyAddress  aopa;
-	aopa.mScope    = kAudioDevicePropertyScopeOutput;
-	aopa.mElement  = 0;
+	aopa.mScope = kAudioDevicePropertyScopeOutput;
+	aopa.mElement = 0;
 	aopa.mSelector = kAudioDevicePropertyDeviceNameCFString;
 
-	std::string name;
-	CFStringRef deviceName = nullptr;
-	UInt32 propertySize = sizeof(deviceName);
+	CFStringRef name = nullptr;
+	UInt32 property_size = sizeof(name);
 
-	OSStatus err = AudioObjectGetPropertyData(device_id, &aopa, 0, NULL, &propertySize, &deviceName);
+	OSStatus err = AudioObjectGetPropertyData(device_id, &aopa, 0, NULL, &property_size, &name);
 
-	if (err != noErr)
-	{
-		FormatError(macos_output_domain, "Unable to get device name - id: 0x%04x. Error = %s", (uint)device_id, GetError(err).c_str());
+	if (err != noErr) {
+		CFRelease(name);
+		throw FormatRuntimeError("Unable to get device name - id: 0x%04x. Error = %s", (uint)device_id, GetError(err));
 	}
-	else
-	{
-		// The +1 is for having space for the string to be NUL terminated
-		CFIndex bufferSize = CFStringGetLength(deviceName) + 1;
-		char buffer[bufferSize];
-		
-		if (CFStringGetCString(deviceName, buffer, bufferSize, kCFStringEncodingUTF8))
-		{
-			name.assign(buffer);
+	else {
+		try {
+			// The +1 is for having space for the string to be NUL terminated
+			CFIndex buffer_size = CFStringGetLength(name) + 1;
+			dev_name = new char[buffer_size];
+			if(!CFStringGetCString(name, dev_name, buffer_size, kCFStringEncodingUTF8))
+				throw std::runtime_error("Error converting CFString to CString.");
 		}
-		CFRelease(deviceName);
+		catch (...) {
+			CFRelease(name);
+			delete[] dev_name;
+			throw;
+		}
 	}
-	return name;
+	return dev_name;
 }
 
 UInt32
-CoreAudioDevice::GetTotalOutputChannels() const
-{
+CoreAudioDevice::GetTotalOutputChannels() const {
 	UInt32 channels = 0;
 
 	if (!device_id)
-		return channels;
+		throw std::runtime_error("No device ID - Open device first.");
 
 	AudioObjectPropertyAddress  aopa;
-	aopa.mScope    = kAudioDevicePropertyScopeOutput;
-	aopa.mElement  = 0;
+	aopa.mScope = kAudioDevicePropertyScopeOutput;
+	aopa.mElement = 0;
 	aopa.mSelector = kAudioDevicePropertyStreamConfiguration;
 
 	UInt32 size = 0;
 	OSStatus err = AudioObjectGetPropertyDataSize(device_id, &aopa, 0, NULL, &size);
 	if (err != noErr)
-		return channels;
+		throw std::runtime_error(FormatRuntimeError("Unable to get data size of stream configuration - id: 0x%04x. Error = %s", (uint)device_id, GetError(err)));
 
-	AudioBufferList* buffer_list = (AudioBufferList*)malloc(size);
-	err = AudioObjectGetPropertyData(device_id, &aopa, 0, NULL, &size, buffer_list);
-	if (err == noErr)
-	{
-		for(UInt32 buffer = 0; buffer < buffer_list->mNumberBuffers; ++buffer)
-			channels += buffer_list->mBuffers[buffer].mNumberChannels;
+	AudioBufferList* buffer_list = (AudioBufferList*) ::operator new(size);
+	try {
+		err = AudioObjectGetPropertyData(device_id, &aopa, 0, NULL, &size, buffer_list);
+		if (err == noErr) {
+			for(unsigned int buffer = 0; buffer < buffer_list->mNumberBuffers; ++buffer)
+				channels += buffer_list->mBuffers[buffer].mNumberChannels;
+		}
+		else
+			throw std::runtime_error(FormatRuntimeError("Unable to get stream configuration - id: 0x%04x. Error = %s", (uint)device_id, GetError(err)));
 	}
-	else
-	{
-		FormatError(macos_output_domain, "Unable to get total device output channels - id: 0x%04x. Error = %s", (uint)device_id, GetError(err).c_str());
+	catch (...) {
+		::operator delete(buffer_list);
+		throw;
 	}
-
-	free(buffer_list);
-
+	::operator delete(buffer_list);
 	return channels;
 }
 
 UInt32
-CoreAudioDevice::GetNumChannelsOfStream(UInt32 stream_idx) const
-{
+CoreAudioDevice::GetNumChannelsOfStream(UInt32 stream_idx) const {
 	UInt32 channels = 0;
 
 	if (!device_id)
-		return channels;
+		throw std::runtime_error("No device ID - Open device first.");
   
 	AudioObjectPropertyAddress  aopa;
-	aopa.mScope    = kAudioDevicePropertyScopeOutput;
-	aopa.mElement  = 0;
+	aopa.mScope = kAudioDevicePropertyScopeOutput;
+	aopa.mElement = 0;
 	aopa.mSelector = kAudioDevicePropertyStreamConfiguration;
 
 	UInt32 size = 0;
 	OSStatus err = AudioObjectGetPropertyDataSize(device_id, &aopa, 0, NULL, &size);
 	if (err != noErr)
-		return channels;
+		throw std::runtime_error(FormatRuntimeError("Unable to get data size of stream configuration - id: 0x%04x. Error = %s", (uint)device_id, GetError(err)));
   
-	AudioBufferList* buffer_list = (AudioBufferList*)malloc(size);
-	err = AudioObjectGetPropertyData(device_id, &aopa, 0, NULL, &size, buffer_list);
-	if (err == noErr)
-	{
-		if (stream_idx < buffer_list->mNumberBuffers)
-			channels = buffer_list->mBuffers[stream_idx].mNumberChannels;
+	AudioBufferList* buffer_list = (AudioBufferList*) ::operator new(size);
+	try {
+		err = AudioObjectGetPropertyData(device_id, &aopa, 0, NULL, &size, buffer_list);
+		if (err == noErr) {
+			if (stream_idx < buffer_list->mNumberBuffers)
+				channels = buffer_list->mBuffers[stream_idx].mNumberChannels;
+		}
+		else
+			throw std::runtime_error(FormatRuntimeError("Unable to get stream configuration - id: 0x%04x. Error = %s", (uint)device_id, GetError(err)));
 	}
-	else
-	{
-	  FormatError(macos_output_domain, "Unable to get number of stream output channels - id: 0x%04x. Error = %s.",
-				  (uint)device_id, GetError(err).c_str());
+	catch (...) {
+		::operator delete(buffer_list);
+		throw;
 	}
-  
-	free(buffer_list);
-  
+	::operator delete(buffer_list);
 	return channels;
 }
 
-bool
-CoreAudioDevice::GetStreams(AudioStreamIdList* stream_id_list)
-{
-	if (!stream_id_list || !device_id)
-		return false;
+AudioStreamIdList
+CoreAudioDevice::GetStreams() {
+	if (!device_id)
+		throw std::runtime_error("No device ID - Open device first.");
 
+	AudioStreamIdList out_list;
+	
 	// Get only output streams (mScope)
 	AudioObjectPropertyAddress  aopa;
-	aopa.mScope    = kAudioDevicePropertyScopeOutput;
-	aopa.mElement  = 0;
+	aopa.mScope = kAudioDevicePropertyScopeOutput;
+	aopa.mElement = 0;
 	aopa.mSelector = kAudioDevicePropertyStreams;
 
 	UInt32  size = 0;
 	OSStatus err = AudioObjectGetPropertyDataSize(device_id, &aopa, 0, NULL, &size);
 	if (err != noErr)
-		return false;
+		throw std::runtime_error("Unable to retrieve stream information from CoreAudio device.");
 
 	UInt32 stream_count = size / sizeof(AudioStreamID);
-	AudioStreamID* streams_list = new AudioStreamID[stream_count];
-	
-	err = AudioObjectGetPropertyData(device_id, &aopa, 0, NULL, &size, streams_list);
-	if (err == noErr)
-	{
-		for (UInt32 stream = 0; stream < stream_count; stream++)
-			stream_id_list->push_back(streams_list[stream]);
+	AudioStreamID *streams_list = new AudioStreamID[stream_count];
+	try {
+		err = AudioObjectGetPropertyData(device_id, &aopa, 0, NULL, &size, streams_list);
+		if (err != noErr)
+			throw std::runtime_error("Unable to retrieve stream information from CoreAudio device.");
+		for (unsigned int stream = 0; stream < stream_count; stream++)
+			out_list.push_back(streams_list[stream]);
 	}
-	
+	catch (...) {
+		delete[] streams_list;
+		throw;
+	}
 	delete[] streams_list;
-	return err == noErr;
+	return out_list;
 }
 
-bool
-CoreAudioDevice::SetHogStatus(bool hog)
-{
+void
+CoreAudioDevice::SetHogStatus(bool hog) {
   /* According to Jeff Moore (Core Audio, Apple), Setting kAudioDevicePropertyHogMode
    is a toggle and the only way to tell if you do get hog mode is to compare
-   the returned pid against getpid, if the match, you have hog mode, if not you don't. */
+   the returned pid against getpid. If they match, you have hog mode, if not you don't. */
 	if (!device_id)
-		return false;
+		throw std::runtime_error("No device ID - Open device first.");
 
 	AudioObjectPropertyAddress  aopa;
-	aopa.mScope    = kAudioDevicePropertyScopeOutput;
-	aopa.mElement  = 0;
+	aopa.mScope = kAudioDevicePropertyScopeOutput;
+	aopa.mElement = 0;
 	aopa.mSelector = kAudioDevicePropertyHogMode;
 
-	if (hog)
-	{
+	if (hog) {
 		// Not already set
-		if (hog_pid == -1)
-		{
+		if (hog_pid == -1) {
 			OSStatus err = AudioObjectSetPropertyData(device_id, &aopa, 0, NULL, sizeof(hog_pid), &hog_pid);
 
 			/* Even if setting hogmode was successful our PID might not get written
@@ -385,86 +347,74 @@ CoreAudioDevice::SetHogStatus(bool hog)
 				hog_pid = GetHogStatus();
 
 			if (err || hog_pid != getpid())
-			{
-				FormatError(macos_output_domain, "Unable to set hog mode. Error = %s", GetError(err).c_str());
-				return false;
-			}
+				throw FormatRuntimeError("Unable to set hog mode. Error = %s", GetError(err));
 		}
 	}
-	else
-	{
+	else {
 		// Currently Set
-		if (hog_pid > -1)
-		{
+		if (hog_pid > -1) {
 			pid_t unhog_pid = -1;
 			OSStatus err = AudioObjectSetPropertyData(device_id, &aopa, 0, NULL, sizeof(unhog_pid), &unhog_pid);
 			if (err || unhog_pid == getpid())
-			{
-				FormatError(macos_output_domain, "Unable to release hog mode. Error = %s", GetError(err).c_str());
-				return false;
-			}
+				throw FormatRuntimeError("Unable to release hog mode. Error = %s", GetError(err));
 			// Reset internal state
-			hog_pid = unhog_pid;
+			hog_pid = -1;
 		}
 	}
-	return true;
 }
 
 pid_t
-CoreAudioDevice::GetHogStatus()
-{
+CoreAudioDevice::GetHogStatus() {
 	if (!device_id)
 		return false;
 
 	AudioObjectPropertyAddress  aopa;
-	aopa.mScope    = kAudioDevicePropertyScopeOutput;
-	aopa.mElement  = 0;
+	aopa.mScope = kAudioDevicePropertyScopeOutput;
+	aopa.mElement = 0;
 	aopa.mSelector = kAudioDevicePropertyHogMode;
-
-	pid_t hogPid = -1;
-	UInt32 size = sizeof(hogPid);
-	AudioObjectGetPropertyData(device_id, &aopa, 0, NULL, &size, &hogPid);
-
-	return hogPid;
+	pid_t pid = -1;
+	UInt32 size = sizeof(pid);
+	OSStatus err = AudioObjectGetPropertyData(device_id, &aopa, 0, NULL, &size, &pid);
+	if(err != noErr)
+		throw FormatRuntimeError("Unable to get hog status. Error = %s", GetError(err));
+	return pid;
 }
 
-bool
+void
 CoreAudioDevice::SetCurrentVolume(Float32 vol)
 {
 	if (!device_id || !has_volume)
-		return false;
+		return;
 
 	AudioObjectPropertyAddress  aopa;
-	aopa.mScope    = kAudioDevicePropertyScopeOutput;
-	aopa.mElement  = 0;
+	aopa.mScope = kAudioDevicePropertyScopeOutput;
+	aopa.mElement = 0;
 	aopa.mSelector = kAudioHardwareServiceDeviceProperty_VirtualMasterVolume;
 
 	OSStatus err = AudioObjectSetPropertyData(device_id, &aopa, 0, NULL, sizeof(Float32), &vol);
 	if (err != noErr)
-	{
-		FormatError(macos_output_domain, "Unable to set output device volume. Error = %s", GetError(err).c_str());
-		return false;
-	}
-	return true;
+		throw std::runtime_error(FormatRuntimeError("Unable to set output device volume. Error = %s", GetError(err)));
+
 }
 
 Float32
 CoreAudioDevice::GetCurrentVolume()
 {
-	Float32 vol;
-	UInt32 size = sizeof(vol);
+	
 	if (!device_id || !has_volume)
 		return -1.0;
 	
+	Float32 vol;
+	UInt32 size = sizeof(vol);
+	
 	AudioObjectPropertyAddress  aopa;
-	aopa.mScope    = kAudioDevicePropertyScopeOutput;
-	aopa.mElement  = 0;
+	aopa.mScope = kAudioDevicePropertyScopeOutput;
+	aopa.mElement = 0;
 	aopa.mSelector = kAudioHardwareServiceDeviceProperty_VirtualMasterVolume;
 	
 	OSStatus err = AudioObjectGetPropertyData(device_id, &aopa, 0, NULL, &size, &vol);
-	if (err != noErr)
-	{
-		FormatError(macos_output_domain, "Unable to get output device volume. Error = %s", GetError(err).c_str());
+	if (err != noErr) {
+		FormatError(macos_output_domain, "Unable to get output device volume. Error = %s", GetError(err));
 		return -1.0;
 	}
 	return vol;
@@ -482,16 +432,15 @@ CoreAudioDevice::GetBufferSize()
 	 *	which is the minimum or regular buffer size.
 	 */
 	AudioObjectPropertyAddress  aopa;
-	aopa.mScope    = kAudioDevicePropertyScopeOutput;
-	aopa.mElement  = 0;
+	aopa.mScope = kAudioDevicePropertyScopeOutput;
+	aopa.mElement = 0;
 	aopa.mSelector = kAudioDevicePropertyUsesVariableBufferFrameSizes;
 
 	UInt32 buffer_size = 0, var_buffer_size = 0, property_size;
 	
 	property_size = sizeof(var_buffer_size);
 	OSStatus err = AudioObjectGetPropertyData(device_id, &aopa, 0, NULL, &property_size, &var_buffer_size);
-	if (err != noErr)
-	{
+	if (err != noErr) {
 		// Ignore this error, variable buffer sizes rarely used
 		var_buffer_size = 0;
 	}
@@ -499,49 +448,40 @@ CoreAudioDevice::GetBufferSize()
 	property_size = sizeof(buffer_size);
 	err = AudioObjectGetPropertyData(device_id, &aopa, 0, NULL, &property_size, &buffer_size);
 	if (err != noErr)
-	{
-		FormatError(macos_output_domain, "Unable to retrieve buffer frame size. Error = %s", GetError(err).c_str());
-		buffer_size = 0;
-	}
+		throw std::runtime_error(FormatRuntimeError("Unable to retrieve buffer frame size of device 0x%04x. Error = %s", (uint)device_id, GetError(err)));
+	
 	return std::max(buffer_size, var_buffer_size);
 }
 
-bool
-CoreAudioDevice::SetBufferSize(UInt32 size)
-{
+void
+CoreAudioDevice::SetBufferSize(UInt32 size) {
 	if (!device_id)
-		return false;
+		return;
 	
 	AudioObjectPropertyAddress  aopa;
-	aopa.mScope    = kAudioDevicePropertyScopeOutput;
-	aopa.mElement  = 0;
+	aopa.mScope = kAudioDevicePropertyScopeOutput;
+	aopa.mElement = 0;
 	aopa.mSelector = kAudioDevicePropertyBufferFrameSize;
 
 	OSStatus err;
 	UInt32 property_size = sizeof(size);
 	
 	// Get buffer size for restore
-	if(buffer_size_restore == 0)
-	{
+	if(buffer_size_restore == 0) {
 		UInt32 buffer_size;
 		err = AudioObjectGetPropertyData(device_id, &aopa, 0, NULL, &property_size, &buffer_size);
 		if(err != noErr)
-			FormatError(macos_output_domain, "Unable to get initial buffer size. Error = %s", GetError(err).c_str());
+			throw FormatRuntimeError("Unable to get initial buffer size. Error = %s", GetError(err));
 		else
 			buffer_size_restore = buffer_size;
 	}
 	err = AudioObjectSetPropertyData(device_id, &aopa, 0, NULL, property_size, &size);
 	if (err != noErr)
-	{
-		FormatError(macos_output_domain, "Unable to set buffer size. Error = %s", GetError(err).c_str());
-		return false;
-	}
-	return true;
+		throw FormatRuntimeError("Unable to set buffer size. Error = %s", GetError(err));
 }
 
 float
-CoreAudioDevice::ScoreSampleRate(Float64 destination_rate, unsigned int source_rate) const
-{
+CoreAudioDevice::ScoreSampleRate(Float64 destination_rate, unsigned int source_rate) const {
 	float score = 0;
 	double int_portion;
 	double frac_portion = modf(source_rate / destination_rate, &int_portion);
@@ -559,45 +499,42 @@ CoreAudioDevice::ScoreSampleRate(Float64 destination_rate, unsigned int source_r
 }
 
 float
-CoreAudioDevice::ScoreFormat(const AudioStreamBasicDescription &format_desc, const AudioFormat &format) const
-{
+CoreAudioDevice::ScoreFormat(const AudioStreamBasicDescription &format_desc, const AudioFormat &format) const {
 	float score = 0;
 	// Score only linear PCM formats (everything else MPD cannot use)
-	if (format_desc.mFormatID == kAudioFormatLinearPCM)
-	{
+	if (format_desc.mFormatID == kAudioFormatLinearPCM) {
 		score += ScoreSampleRate(format_desc.mSampleRate, format.sample_rate);
 		
 		// Just choose the stream / format with the highest number of output channels
 		score += format_desc.mChannelsPerFrame * 5;
 		
-		if (format.format == SampleFormat::FLOAT)
-		{
+		if (format.format == SampleFormat::FLOAT) {
 			// for float, prefer the highest bitdepth we have
 			if (format_desc.mBitsPerChannel >= 16)
 				score += (format_desc.mBitsPerChannel / 8);
 		}
-		else
-		{
+		else {
 			if (format_desc.mBitsPerChannel == ((format.format == SampleFormat::S24_P32) ? 24 : format.GetSampleSize() * 8))
 				score += 5;
 			else if (format_desc.mBitsPerChannel > format.GetSampleSize() * 8)
 				score += 1;
+			
 		}
 	}
 	return score;
 }
 
-AudioStreamBasicDescription CoreAudioDevice::GetPhysFormat()
-{
+AudioStreamBasicDescription
+CoreAudioDevice::GetPhysFormat() {
 	/** Always report back the (selected) physical
 	 *	stream output format that will be set when
-	 *	setting up the IOProc.
+	 *	preparing the IOProc (on AddIOProc()).
 	 */
 	return output_format;
 }
 
-AudioStreamBasicDescription CoreAudioDevice::GetIOFormat()
-{
+AudioStreamBasicDescription
+CoreAudioDevice::GetIOFormat() {
 	/** Return the physical format of the device in case integer
 	 *	mode is active (a non-mixable format has been selected).
 	 *	Otherwise, the virtual format is 32bit native endian float
@@ -620,8 +557,7 @@ AudioStreamBasicDescription CoreAudioDevice::GetIOFormat()
 	return io_format;
 }
 
-bool CoreAudioDevice::SetFormat(const AudioFormat &audio_format, bool prefer_unmixable)
-{
+bool CoreAudioDevice::SetFormat(const AudioFormat &audio_format, bool prefer_unmixable) {
 	FormatDebug(macos_output_domain, "Finding CoreAudio stream for format %s.", ToString(audio_format).c_str());
 	
 	bool format_found  = false;
@@ -629,15 +565,10 @@ bool CoreAudioDevice::SetFormat(const AudioFormat &audio_format, bool prefer_unm
 	float output_score  = 0;
 	
 	// loop over all streams to find one with a suitable format
-	for(UInt32 stream_idx = 0; stream_idx < stream_infos.size(); stream_idx++)
-	{
-		
-		// Probe physical formats
-		const StreamFormatList *formats = &stream_infos[stream_idx].format_list;
-		
-		for (StreamFormatList::const_iterator j = formats->begin(); j != formats->end(); ++j)
-		{
-			AudioStreamBasicDescription format_desc = j->mFormat;
+	for(unsigned int stream_idx = 0; stream_idx < stream_infos.size(); stream_idx++) {
+		// Probe physical formats of stream i
+		for (auto j : stream_infos[stream_idx].format_list) {
+			AudioStreamBasicDescription format_desc = j.mFormat;
 			std::string format_string;
 			
 			// for devices with kAudioStreamAnyRate
@@ -651,10 +582,11 @@ bool CoreAudioDevice::SetFormat(const AudioFormat &audio_format, bool prefer_unm
 			if (prefer_unmixable)
 				format_desc.mFormatFlags & kAudioFormatFlagIsNonMixable ? score += 1.0 : score -= 1.0;
 			
-			FormatDebug(macos_output_domain, "Physical Format: %s rated %f", StreamDescriptionToString(format_desc, format_string), score);
+			// print all (linear pcm) formats and their rating
+			if(score > 0.0)
+				FormatDebug(macos_output_domain, "Format: %s rated %f", StreamDescriptionToString(format_desc).c_str(), score);
 			
-			if (score > output_score)
-			{
+			if (score > output_score) {
 				output_score  = score;
 				output_format = format_desc;
 				output_stream_idx = stream_idx; // set the idx of the stream in the device
@@ -662,8 +594,8 @@ bool CoreAudioDevice::SetFormat(const AudioFormat &audio_format, bool prefer_unm
 			}
 		}
 	}
-	if (is_planar)
-	{
+	
+	if (is_planar) {
 		/** For planar devices make sure that the correct
 		 *	format settings are forced here (this should
 		 *	already be part of the format per default

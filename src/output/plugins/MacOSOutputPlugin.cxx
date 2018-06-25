@@ -29,7 +29,6 @@
 
 /** TODO:
  *	Callbacks for default device change and reconfiguration
- *	Close output stream only on stop and not on format change
  */
 
 #include "config.h"
@@ -40,7 +39,6 @@
 #include "util/Domain.hxx"
 #include "util/Manual.hxx"
 #include "util/ConstBuffer.hxx"
-#include "util/StringBuffer.hxx"
 #include "pcm/PcmExport.hxx"
 #include <AudioToolbox/AudioConverter.h>
 #include "Log.hxx"
@@ -60,7 +58,7 @@ struct MacOSOutput final : AudioOutput {
 	CoreAudioDevice device;
 
 	// Plugin settings as fetched from config
-	std::string device_name;
+	const char *device_name = nullptr;
 	std::vector<SInt32> channel_map;
 	bool hog_device;
 #ifdef ENABLE_DSD
@@ -81,7 +79,7 @@ struct MacOSOutput final : AudioOutput {
 	AudioBufferList *out_buffer = nullptr;
 	// The format MPD sends
 	AudioStreamBasicDescription in_format;
-	// The format the device requests for IO
+	// The format CoreAudio requests for IO
 	AudioStreamBasicDescription out_format;
 
 	bool pause;
@@ -134,12 +132,7 @@ macos_output_test_default_device(void)
 MacOSOutput::MacOSOutput(const ConfigBlock &block)
 		: AudioOutput(FLAG_ENABLE_DISABLE|FLAG_PAUSE)
 {
-	const char *dev_name = block.GetBlockValue("device");
-	if (dev_name == nullptr)
-		// Choose default device if not specified
-		device_name = "default";
-	else
-		device_name.assign(dev_name);
+	device_name = block.GetBlockValue("device", "default");
 	const char *ch_map = block.GetBlockValue("channel_map");
 	if(ch_map != nullptr)
 	{
@@ -161,65 +154,70 @@ MacOSOutput::Create(EventLoop &, const ConfigBlock &block)
 }
 
 unsigned
-MacOSOutput::GetVolume()
-{
+MacOSOutput::GetVolume() {
 	Float32 vol;
 	unsigned volume;
-	if(device.HasVolume())
-	{
-		if((vol = device.GetCurrentVolume()) < 0.0)
-		{
+	if(device.HasVolume()) {
+		if((vol = device.GetCurrentVolume()) < 0.0) {
 			FormatError(macos_output_domain, "Cannot get current volume.");
 			volume = 0;
 		}
 		else
 			volume = (unsigned)(vol * 100.0);
 	}
-	else
-	{
-		FormatWarning(macos_output_domain, "The device does not support volume setting.");
+	else {
+		FormatInfo(macos_output_domain, "The device does not support volume setting.");
 		volume = 0;
 	}
 	return volume;
 }
 
 void
-MacOSOutput::SetVolume(unsigned new_volume)
-{
+MacOSOutput::SetVolume(unsigned new_volume) {
 	Float32 vol = (Float32) new_volume / 100.0;
 	if(device.HasVolume())
-	{
-		if(!device.SetCurrentVolume(vol))
-			FormatError(macos_output_domain, "Failed to set volume.");
-	}
+		device.SetCurrentVolume(vol);
 	else
 		FormatWarning(macos_output_domain, "The device does not support volume setting.");
 }
 
 void
-MacOSOutput::Enable()
-{
-	if(!device.Open(device_name))
-		throw std::runtime_error(FormatRuntimeError("Unable to open output device %s.", device_name.c_str()));
-	FormatDebug(macos_output_domain, "Opened output device: %s", device.GetName().c_str());
-	if(!device.SetBufferSize(frame_buffer_size))
-		FormatWarning(macos_output_domain, "Unable to set frame buffer size to %d.", frame_buffer_size);
+MacOSOutput::Enable() {
+	device.Open(device_name);
+	try {
+		FormatDebug(macos_output_domain, "Opened output device: %s", device.GetName());
+		device.SetBufferSize(frame_buffer_size);
+	}
+	catch (...) {
+		device.Close();
+	}
 	pcm_export.Construct();
 }
 
 void
 MacOSOutput::Disable() noexcept {
+	try {
+		device.Close();
+	}
+	catch (...) {
+		FormatDebug(macos_output_domain, "Ignoring exception on close of MacOS output device.");
+	}
 	pcm_export.Destruct();
-	device.Close();
 }
 
 void
 MacOSOutput::Close() noexcept {
-	device.RemoveIOProc();
-	if(hog_device)
-		// Release hog mode
-		device.SetHogStatus(false);
-		
+	try {
+		device.RemoveIOProc();
+		if(hog_device)
+			// Release hog mode
+			device.SetHogStatus(false);
+	}
+	catch (...) {
+		// Make sure this is really noexcept method.
+		FormatDebug(macos_output_domain,"Ignoring exception on close of output.");
+	}
+	pcm_export->Reset();
 	DeallocateABL(out_buffer);
 	out_buffer = nullptr;
 	AudioConverterDispose(ca_converter);
@@ -228,8 +226,7 @@ MacOSOutput::Close() noexcept {
 }
 
 void
-MacOSOutput::SetupConverter()
-{
+MacOSOutput::SetupConverter() {
 	/** Setup the audio converter in the following cases:
 	 *	1. Integer mode is not used and float conversion is needed
 	 *	2. Number of channels for MPD format and device format differs
@@ -237,19 +234,17 @@ MacOSOutput::SetupConverter()
 	 *	4. Usage of planar audio device (de-interleaving required)
 	 */
 	OSStatus err = noErr;
-	if(!channel_map.empty())
-	{
+	if(!channel_map.empty()) {
 		if(out_format.mChannelsPerFrame > channel_map.size())
 			throw FormatRuntimeError("Channel map contains only %l channels, output device requires %d channels.", channel_map.size(), out_format.mChannelsPerFrame);
 		err = AudioConverterNew(&in_format, &out_format, &ca_converter);
 		/** Pass directly the array indicating with the size parameter
-		 * the number of channels to be read from the channel_map.
+		 *	the number of channels to be read from the channel_map.
 		 */
 		err = AudioConverterSetProperty(ca_converter, kAudioConverterChannelMap, out_format.mChannelsPerFrame * sizeof(SInt32), channel_map.data());
 
 	}
-	else if(!(out_format.mFormatFlags & kAudioFormatFlagIsNonMixable) || device.IsPlanar() || in_format.mChannelsPerFrame != out_format.mChannelsPerFrame)
-	{
+	else if(!(out_format.mFormatFlags & kAudioFormatFlagIsNonMixable) || device.IsPlanar() || in_format.mChannelsPerFrame != out_format.mChannelsPerFrame) {
 		// Integer mode not active, planar device or channel conversion needed
 		err = AudioConverterNew(&in_format, &out_format, &ca_converter);
 	}
@@ -263,15 +258,20 @@ MacOSOutput::SetupConverter()
 	 *	as the (variable) device buffer size, exactly
 	 *	this amount gets allocated here.
 	 */
-	if(ca_converter != nullptr)
-		out_buffer = AllocateABL(in_format, device.GetBufferSize());
+	try {
+		if(ca_converter != nullptr)
+			out_buffer = AllocateABL(in_format, device.GetBufferSize());
+	}
+	catch (...) {
+		AudioConverterDispose(ca_converter);
+		ca_converter = nullptr;
+		throw;
+	}
 }
 
 void
-MacOSOutput::Setup(AudioFormat &audio_format)
-{
-	if (device.SetFormat(audio_format, integer_mode))
-	{
+MacOSOutput::Setup(AudioFormat &audio_format) {
+	if (device.SetFormat(audio_format, integer_mode)) {
 		/** Report back the actual physical device format
 		 *	to make sure that MPDs output engine sends
 		 *	the physical format. This will get transformed
@@ -291,21 +291,17 @@ MacOSOutput::Setup(AudioFormat &audio_format)
 		audio_format.sample_rate = phys_format.sample_rate;
 		// Adjust converter input format accordingly to MPD format
 		in_format = AudioFormatToASBD(audio_format);
-		FormatDebug(macos_output_domain, "Sending format %s to output device.",
-					ToString(audio_format).c_str());
+		FormatDebug(macos_output_domain, "Sending format %s to output device.", ToString(audio_format).c_str());
 	}
 	else
 		throw std::runtime_error("Unable to set output format for MacOS output.");
 	
-	if(hog_device)
-		device.SetHogStatus(true);
 }
 
 #ifdef ENABLE_DSD
 
 void
-MacOSOutput::SetupDop(const AudioFormat audio_format, PcmExport::Params &params)
-{
+MacOSOutput::SetupDop(const AudioFormat audio_format, PcmExport::Params &params) {
 	assert(audio_format.format == SampleFormat::DSD);
 	
 	/* pass 24 bit to Setup() */
@@ -329,12 +325,9 @@ MacOSOutput::SetupDop(const AudioFormat audio_format, PcmExport::Params &params)
 		dop_format.format = SampleFormat::S24_P32;
 	
 	if (dop_format != check)
-	{
 		/* no bit-perfect playback, which is required
 		 for DSD over USB */
 		throw std::runtime_error("Failed to configure DSD-over-PCM, no suitable format available.");
-	}
-
 }
 
 #endif
@@ -344,21 +337,17 @@ MacOSOutput::SetupOrDop(AudioFormat &audio_format, PcmExport::Params &params
 #ifdef ENABLE_DSD
 					   , bool dop
 #endif
-)
-{
+) {
 #ifdef ENABLE_DSD
 	std::exception_ptr dop_error;
-	if(audio_format.format == SampleFormat::DSD){
-		if (dop)
-		{
-			try
-			{
+	if(audio_format.format == SampleFormat::DSD) {
+		if (dop) {
+			try {
 				params.dop = true;
 				SetupDop(audio_format, params);
 				return;
 			}
-			catch (...)
-			{
+			catch (...) {
 				dop_error = std::current_exception();
 				// DoP was unsuccessful, proceed with PCM output
 				params.dop = false;
@@ -373,18 +362,16 @@ MacOSOutput::SetupOrDop(AudioFormat &audio_format, PcmExport::Params &params
 			audio_format.format = SampleFormat::S32;
 	}
 	
-	try
-	{
+	try {
 #endif
 		Setup(audio_format);
 #ifdef ENABLE_DSD
 	}
-	catch (...)
-	{
+	catch (...) {
 		if (dop_error)
-		/* if DoP was attempted, prefer returning the
-		 original DoP error instead of the fallback
-		 error */
+			/* if DoP was attempted, prefer returning the
+			 original DoP error instead of the fallback
+			 error */
 			std::rethrow_exception(dop_error);
 		else
 			throw;
@@ -393,8 +380,7 @@ MacOSOutput::SetupOrDop(AudioFormat &audio_format, PcmExport::Params &params
 }
 
 void
-MacOSOutput::Open(AudioFormat &audio_format)
-{
+MacOSOutput::Open(AudioFormat &audio_format) {
 	PcmExport::Params params;
 	
 #ifdef ENABLE_DSD
@@ -402,17 +388,15 @@ MacOSOutput::Open(AudioFormat &audio_format)
 	params.dop = false;
 #endif
 	
-	try
-	{
+	try {
 		SetupOrDop(audio_format, params
 #ifdef ENABLE_DSD
 				   , dop
 #endif
 				   );
 	}
-	catch (...)
-	{
-		std::throw_with_nested(FormatRuntimeError("Error opening MacOS output device \"%s\"", device_name.c_str()));
+	catch (...) {
+		std::throw_with_nested(FormatRuntimeError("Error opening MacOS output device \"%s\"", device_name));
 	}
 	
 #ifdef ENABLE_DSD
@@ -420,21 +404,23 @@ MacOSOutput::Open(AudioFormat &audio_format)
 		FormatDebug(macos_output_domain, "DoP (DSD over PCM) enabled");
 #endif
 	
-	pcm_export->Open(audio_format.format, audio_format.channels, params);
+	// Setup converter used to transform MPD's format to the CoreAudio IO format
+	SetupConverter();
+	
+	if(hog_device)
+		device.SetHogStatus(true);
+	
 	/** Setup the ring_buffer to hold
 	 *	BUFFER_TIME_MS or four times
 	 *	the device frame buffer.
 	 */
 	UInt32 dev_frame_buffer = device.GetBufferSize();
-	if(dev_frame_buffer == 0)
-		throw std::runtime_error("Cannot get valid frame buffer size from device.");
-	size_t ring_buffer_size = std::max(4 * dev_frame_buffer * in_format.mBytesPerFrame, BUFFER_TIME_MS * (UInt32) in_format.mBytesPerFrame * (UInt32) in_format.mSampleRate / 1000);
+	size_t ring_buffer_size = std::max(4 * dev_frame_buffer * in_format.mBytesPerFrame, BUFFER_TIME_MS * (unsigned int) in_format.mBytesPerFrame * (unsigned int) in_format.mSampleRate / 1000);
 	buffer_ms = ring_buffer_size / (in_format.mSampleRate * in_format.mBytesPerFrame) * 1000;
 	FormatDebug(macos_output_domain, "Using buffer size of %d ms and %ld bytes", buffer_ms, ring_buffer_size);
 	ring_buffer = new boost::lockfree::spsc_queue<uint8_t>(ring_buffer_size);
 	
-	// Setup converter used to transform MPD's format to the CoreAudio IO format
-	SetupConverter();
+	pcm_export->Open(audio_format.format, audio_format.channels, params);
 	
 	// Register for data request callbacks from the driver and start
 	device.AddIOProc(RenderCallback, this);
@@ -442,12 +428,10 @@ MacOSOutput::Open(AudioFormat &audio_format)
 }
 
 size_t
-MacOSOutput::Play(const void *chunk, size_t size)
-{
+MacOSOutput::Play(const void *chunk, size_t size) {
 	assert(size > 0);
 	
-	if(pause)
-	{
+	if(pause) {
 		pause = false;
 		device.Start();
 	}
@@ -467,8 +451,7 @@ MacOSOutput::Play(const void *chunk, size_t size)
 }
 
 std::chrono::steady_clock::duration
-MacOSOutput::Delay() const noexcept
-{
+MacOSOutput::Delay() const noexcept {
 	if(pause)
 		return std::chrono::seconds(1);
 	// Wait for half the buffer size in case the buffer is full
@@ -476,10 +459,8 @@ MacOSOutput::Delay() const noexcept
 }
 	
 bool
-MacOSOutput::Pause()
-{
-	if(!pause)
-	{
+MacOSOutput::Pause() {
+	if(!pause) {
 		pause = true;
 		device.Stop();
 	}
@@ -487,20 +468,17 @@ MacOSOutput::Pause()
 }
 	
 int
-macos_output_get_volume(MacOSOutput &output)
-{
+macos_output_get_volume(MacOSOutput &output) {
 	return output.GetVolume();
 }
 
 void
-macos_output_set_volume(MacOSOutput &output, unsigned new_volume)
-{
+macos_output_set_volume(MacOSOutput &output, unsigned new_volume) {
 	return output.SetVolume(new_volume);
 }
 	
 OSStatus
-MacOSOutput::RenderCallback(gcc_unused AudioObjectID inDevice, gcc_unused const AudioTimeStamp* inNow, gcc_unused const AudioBufferList* inInputData, gcc_unused const AudioTimeStamp* inInputTime, AudioBufferList* outOutputData, gcc_unused const AudioTimeStamp* inOutputTime, void* inClientData)
-{
+MacOSOutput::RenderCallback(gcc_unused AudioObjectID inDevice, gcc_unused const AudioTimeStamp* inNow, gcc_unused const AudioBufferList* inInputData, gcc_unused const AudioTimeStamp* inInputTime, AudioBufferList* outOutputData, gcc_unused const AudioTimeStamp* inOutputTime, void* inClientData) {
 	MacOSOutput *oo = (MacOSOutput*)inClientData;
 	UInt32 requested = outOutputData->mBuffers[oo->device.GetStreamIdx()].mDataByteSize;
 	/** Frames are the same for both MPD input format and CoreAudio
@@ -515,30 +493,26 @@ MacOSOutput::RenderCallback(gcc_unused AudioObjectID inDevice, gcc_unused const 
 		FormatDebug(macos_output_domain, "Frames available (%d) less than requested (%d) by device.", available_frames, frames);
 	
 	// Usage of converter
-	if(oo->ca_converter != nullptr)
-	{
+	if(oo->ca_converter != nullptr) {
 		// Copy data to the interleaved buffer that was setup as input for the converter
 		oo->ring_buffer->pop((uint8_t *)oo->out_buffer->mBuffers[0].mData, in_bytes);
 		oo->out_buffer->mBuffers[0].mDataByteSize = in_bytes;
 		
-		if(oo->device.IsPlanar())
-		{
+		if(oo->device.IsPlanar()) {
 			/** For a planar device (several output streams with exactly one channel)
 			 *	use ConvertComplexBuffer to directly convert MPD's interleaved
 			 *	data to separate channel buffers.
 			 */
 			AudioConverterConvertComplexBuffer(oo->ca_converter, frames, oo->out_buffer, outOutputData);
 		}
-		else
-		{
+		else {
 			UInt32 written;
 			AudioConverterConvertBuffer(oo->ca_converter, in_bytes, oo->out_buffer->mBuffers[0].mData, &written, outOutputData->mBuffers[oo->device.GetStreamIdx()].mData);
 			
 		}
 	}
 	// Direct copy
-	else
-	{
+	else {
 		// Copy data to the interleaved buffer of the output device
 		oo->ring_buffer->pop((uint8_t *)outOutputData->mBuffers[oo->device.GetStreamIdx()].mData, in_bytes);
 	}

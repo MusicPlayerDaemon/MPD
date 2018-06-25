@@ -16,152 +16,174 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-
+#include "config.h"
 #include "CoreAudioHelpers.hxx"
+#include "CoreAudioDevice.hxx"
 #include "system/ByteOrder.hxx"
-#include <sstream>
-#include <vector>
 #include "util/Domain.hxx"
 #include "util/RuntimeError.hxx"
+#include "util/StringFormat.hxx"
 #include "Log.hxx"
 
 static constexpr Domain macos_output_domain("macos_output");
 
 // Helper Functions
-std::string
-GetError(OSStatus error)
-{
-	char buffer[128];
- 
-	*(UInt32 *)(buffer + 1) = CFSwapInt32HostToBig(error);
-	if (isprint(buffer[1]) && isprint(buffer[2]) && isprint(buffer[3]) && isprint(buffer[4]))
-	{
-		buffer[0] = buffer[5] = '\'';
-		buffer[6] = '\0';
+
+AudioDeviceID
+FindAudioDevice(const char *search_name) {
+	AudioDeviceID device_id = 0;
+	
+	if (search_name == nullptr)
+		throw std::runtime_error("No device name specified.");
+	
+	if (strncmp(search_name, "default", 7) == 0) {
+		device_id = GetDefaultOutputDevice();
+		FormatDebug(macos_output_domain, "Returning default device [0x%04x].", (uint)device_id);
+		return device_id;
 	}
-	else
-	{
-		// no, format it as an integer
-		sprintf(buffer, "%d", (int)error);
+	FormatDebug(macos_output_domain, "Searching for device - %s.", search_name);
+	// Obtain a list of all available audio devices
+	AudioObjectPropertyAddress aopa;
+	aopa.mScope = kAudioObjectPropertyScopeGlobal;
+	aopa.mElement = kAudioObjectPropertyElementMaster;
+	aopa.mSelector = kAudioHardwarePropertyDevices;
+	
+	UInt32 size = 0;
+	OSStatus ret = AudioObjectGetPropertyDataSize(kAudioObjectSystemObject, &aopa, 0, NULL, &size);
+	if (ret != noErr)
+		throw FormatRuntimeError("Unable to retrieve the size of the list of available devices. Error = %s", GetError(ret));
+	
+	size_t device_count = size / sizeof(AudioDeviceID);
+	AudioDeviceID* device_list = new AudioDeviceID[device_count];
+	try {
+		ret = AudioObjectGetPropertyData(kAudioObjectSystemObject, &aopa, 0, NULL, &size, device_list);
+		if (ret != noErr)
+			throw FormatRuntimeError("Unable to retrieve the list of available devices. Error = %s", GetError(ret));
+		
+		// Attempt to locate the requested device
+		const char *device_name;
+		for (size_t dev = 0; dev < device_count; dev++) {
+			CoreAudioDevice device(device_list[dev]);
+			device_name = device.GetName();
+			if (strcmp(device_name, search_name) == 0) {
+				device_id = device_list[dev];
+				break;
+			}
+		}
 	}
-	return std::string(buffer);
+	catch (...) {
+		delete[] device_list;
+		throw;
+	}
+	delete[] device_list;
+	if(!device_id) // No device with correct name found
+		throw FormatRuntimeError("No CoreAudio device with name %s.", search_name);
+	return device_id;
 }
 
-const char *
-StreamDescriptionToString(const AudioStreamBasicDescription desc, std::string &str)
-{
-	char fourCC[5] = {
-		(char)((desc.mFormatID >> 24) & 0xFF),
-		(char)((desc.mFormatID >> 16) & 0xFF),
-		(char)((desc.mFormatID >>  8) & 0xFF),
-		(char) (desc.mFormatID        & 0xFF),
-		0
-	};
+AudioDeviceID
+GetDefaultOutputDevice() {
+	AudioDeviceID device_id = 0;
+	
+	AudioObjectPropertyAddress  aopa;
+	aopa.mScope = kAudioObjectPropertyScopeGlobal;
+	aopa.mElement = kAudioObjectPropertyElementMaster;
+	aopa.mSelector = kAudioHardwarePropertyDefaultOutputDevice;
+	
+	UInt32 size = sizeof(AudioDeviceID);
+	OSStatus ret = AudioObjectGetPropertyData(kAudioObjectSystemObject, &aopa, 0, NULL, &size, &device_id);
+	
+	// Device ID is set to 0 if there is no audio device available
+	if (ret != noErr || !device_id)
+		throw FormatRuntimeError("Unable to get default output device. Error = %s", GetError(ret));
+	
+	return device_id;
+}
 
-	std::stringstream sstr;
-	switch (desc.mFormatID)
-	{
-		case kAudioFormatLinearPCM:
-			sstr  << "["
-				<< fourCC
-				<< "] "
-				<< ((desc.mFormatFlags & kAudioFormatFlagIsNonMixable) ? "" : "Mixable " )
-				<< ((desc.mFormatFlags & kAudioFormatFlagIsNonInterleaved) ? "Non-" : "" )
-				<< "Interleaved "
-				<< desc.mChannelsPerFrame
-				<< " Channel "
-				<< desc.mBitsPerChannel
-				<< "-bit "
-				<< ((desc.mFormatFlags & kAudioFormatFlagIsFloat) ? "Floating Point " : "Signed Integer ")
-				<< ((desc.mFormatFlags & kAudioFormatFlagIsBigEndian) ? "BE" : "LE")
-				<< " ("
-				<< (UInt32)desc.mSampleRate
-				<< "Hz)";
-			str = sstr.str();
-			break;
-		case kAudioFormatAC3:
-			sstr  << "["
-				<< fourCC
-				<< "] "
-				<< ((desc.mFormatFlags & kAudioFormatFlagIsBigEndian) ? "BE" : "LE")
-				<< " AC-3/DTS ("
-				<< (UInt32)desc.mSampleRate
-				<< "Hz)";
-			str = sstr.str();
-			break;
-		case kAudioFormat60958AC3:
-			sstr  << "["
-				<< fourCC
-				<< "] AC-3/DTS for S/PDIF "
-				<< ((desc.mFormatFlags & kAudioFormatFlagIsBigEndian) ? "BE" : "LE")
-				<< " ("
-				<< (UInt32)desc.mSampleRate
-				<< "Hz)";
-			str = sstr.str();
-			break;
-		default:
-			sstr  << "["
-				<< fourCC
-				<< "]";
-			break;
-	}
-	return str.c_str();
+
+const char *
+GetError(OSStatus error) {
+	
+	/** See https://developer.apple.com/library/archive/samplecode/CoreAudioUtilityClasses/Listings/CoreAudio_PublicUtility_CAXException_h.html
+	 *	for the magic that is done here. Basically this is a conversion
+	 *	of four one byte chars stored in UInt32 to a string.
+	 */
+	
+	static char error_buffer[16];
+	
+	UInt32 be_err = CFSwapInt32HostToBig(error);
+	char *str = error_buffer;
+	memcpy(str + 1, &be_err, 4);
+	if (isprint(str[1]) && isprint(str[2]) && isprint(str[3]) && isprint(str[4])) {
+		str[0] = str[5] = '\'';
+		str[6] = '\0';
+	} else if (error > -200000 && error < 200000)
+		// no, format it as an integer
+		snprintf(str, sizeof(error_buffer), "%d", (int)error);
+	else
+		snprintf(str, sizeof(error_buffer), "0x%x", (int)error);
+	return str;
+}
+
+StringBuffer<64>
+StreamDescriptionToString(const AudioStreamBasicDescription desc) {
+	// Only convert the lpcm formats (nothing else supported / used by MPD)
+	assert(desc.mFormatID == kAudioFormatLinearPCM);
+	
+	return StringFormat<64>("%u channel %s %sinterleaved %u-bit %s %s (%uHz)",
+							desc.mChannelsPerFrame,
+							(desc.mFormatFlags & kAudioFormatFlagIsNonMixable) ? "" : "mixable",
+							(desc.mFormatFlags & kAudioFormatFlagIsNonInterleaved) ? "non-" : "",
+							desc.mBitsPerChannel,
+							(desc.mFormatFlags & kAudioFormatFlagIsFloat) ? "Float" : "SInt",
+							(desc.mFormatFlags & kAudioFormatFlagIsBigEndian) ? "BE" : "LE",
+							(UInt32)desc.mSampleRate);
 }
 
 AudioBufferList *
-AllocateABL(const AudioStreamBasicDescription asbd, const UInt32 capacity_frames)
-{
+AllocateABL(const AudioStreamBasicDescription asbd, const UInt32 capacity_frames) {
 	AudioBufferList *buffer_list = nullptr;
-	UInt32 num_buffers = (asbd.mFormatFlags & kAudioFormatFlagIsNonInterleaved) ? asbd.mChannelsPerFrame : 1;
+	unsigned int num_buffers = (asbd.mFormatFlags & kAudioFormatFlagIsNonInterleaved) ? asbd.mChannelsPerFrame : 1;
 	
-	if((buffer_list = static_cast<AudioBufferList *>(calloc(1, offsetof(AudioBufferList, mBuffers) + (sizeof(AudioBuffer) * num_buffers)))) == nullptr)
-		throw std::runtime_error("Unable to allocate memory for AudioBufferList.");
-	else
-	{
-		buffer_list->mNumberBuffers = num_buffers;
-		for(UInt32 buffer_index = 0; buffer_index < buffer_list->mNumberBuffers; ++buffer_index)
-		{
-			try
-			{
-				AllocateAudioBuffer(buffer_list->mBuffers[buffer_index], asbd, capacity_frames);
-			}
-			catch (...)
-			{
-				DeallocateABL(buffer_list);
-				std::throw_with_nested("Unable to allocate memory for AudioBufferList.");
-			}
+	buffer_list = (AudioBufferList *)operator new(offsetof(AudioBufferList, mBuffers) + (sizeof(AudioBuffer) * num_buffers));
+	buffer_list->mNumberBuffers = num_buffers;
+	for(unsigned int buffer_index = 0; buffer_index < buffer_list->mNumberBuffers; ++buffer_index) {
+		try {
+			AllocateAudioBuffer(buffer_list->mBuffers[buffer_index], asbd, capacity_frames);
+		}
+		catch (...) {
+			DeallocateABL(buffer_list);
+			std::throw_with_nested("Unable to allocate memory for AudioBufferList.");
 		}
 	}
 	return buffer_list;
 }
 
 void
-DeallocateABL(AudioBufferList *buffer_list)
-{
-	if(buffer_list != nullptr)
-	{
-		for(UInt32 buffer_index = 0; buffer_index < buffer_list->mNumberBuffers; ++buffer_index) {
-			free(buffer_list->mBuffers[buffer_index].mData);
+DeallocateABL(AudioBufferList *buffer_list) {
+	if(buffer_list != nullptr) {
+		for(unsigned int buffer_index = 0; buffer_index < buffer_list->mNumberBuffers; ++buffer_index) {
+			operator delete(buffer_list->mBuffers[buffer_index].mData);
 		}
 	}
-	free(buffer_list);
+	operator delete(buffer_list);
 }
 
 void
-AllocateAudioBuffer(AudioBuffer &buffer, const AudioStreamBasicDescription asbd, const UInt32 capacity_frames)
-{
-	if((buffer.mData = static_cast<void *>(calloc(capacity_frames, asbd.mBytesPerFrame))) == nullptr)
-	   throw std::runtime_error("Unable to allocate memory for AudioBuffer.");
-	buffer.mDataByteSize = capacity_frames * asbd.mBytesPerFrame;
+AllocateAudioBuffer(AudioBuffer &buffer, const AudioStreamBasicDescription asbd, const UInt32 capacity_frames) {
+	const size_t bytes = asbd.mBytesPerFrame * capacity_frames;
+	buffer.mData = operator new(bytes);
+	buffer.mDataByteSize = bytes;
 	buffer.mNumberChannels = (asbd.mFormatFlags & kAudioFormatFlagIsNonInterleaved) ? 1 : asbd.mChannelsPerFrame;
 }
 
 AudioStreamBasicDescription
-AudioFormatToASBD(AudioFormat format)
-{
-	assert(format.format != SampleFormat::UNDEFINED);
-	assert(format.format != SampleFormat::DSD);
+AudioFormatToASBD(AudioFormat format) {
 	
+	assert(format.format != SampleFormat::UNDEFINED);
+#ifdef ENABLE_DSD
+	assert(format.format != SampleFormat::DSD);
+#endif
 	AudioStreamBasicDescription out_format;
 	memset(&out_format, 0, sizeof(out_format));
 	out_format.mSampleRate = format.sample_rate;
@@ -170,8 +192,7 @@ AudioFormatToASBD(AudioFormat format)
 	out_format.mFramesPerPacket = 1;
 	out_format.mBytesPerPacket = out_format.mBytesPerFrame = format.GetFrameSize();
 	
-	switch (format.format)
-	{
+	switch (format.format) {
 		case SampleFormat::S8:
 			out_format.mBitsPerChannel = 8;
 			out_format.mFormatFlags = kAudioFormatFlagIsSignedInteger;
@@ -192,7 +213,11 @@ AudioFormatToASBD(AudioFormat format)
 			out_format.mBitsPerChannel = 32;
 			out_format.mFormatFlags = kAudioFormatFlagIsFloat;
 			break;
-		default:
+#ifdef ENABLE_DSD
+		case SampleFormat::DSD:
+#endif
+		case SampleFormat::UNDEFINED:
+			gcc_unreachable();
 			break;
 	}
 	if(IsBigEndian())
@@ -201,8 +226,7 @@ AudioFormatToASBD(AudioFormat format)
 }
 
 AudioFormat
-ASBDToAudioFormat(AudioStreamBasicDescription asbd)
-{
+ASBDToAudioFormat(AudioStreamBasicDescription asbd) {
 	assert(asbd.mFormatID == kAudioFormatLinearPCM);
 
 	AudioFormat out_format;
@@ -211,8 +235,7 @@ ASBDToAudioFormat(AudioStreamBasicDescription asbd)
 	
 	if (asbd.mFormatFlags & kAudioFormatFlagIsFloat)
 		out_format.format = SampleFormat::FLOAT;
-	else
-	{
+	else {
 		switch (asbd.mBitsPerChannel) {
 			case 8:
 				out_format.format = SampleFormat::S8;
@@ -232,22 +255,18 @@ ASBDToAudioFormat(AudioStreamBasicDescription asbd)
 }
 
 void
-ParseChannelMap(const char *channel_map_str, std::vector<SInt32> &channel_map)
-{
+ParseChannelMap(const char *channel_map_str, std::vector<SInt32> &channel_map) {
 	char *endptr;
 	bool want_number = true;
 
-	while (*channel_map_str)
-	{
-		if (!want_number && *channel_map_str == ',')
-		{
+	while (*channel_map_str) {
+		if (!want_number && *channel_map_str == ',') {
 			++channel_map_str;
 			want_number = true;
 			continue;
 		}
 
-		if (want_number && (isdigit(*channel_map_str) || *channel_map_str == '-'))
-		{
+		if (want_number && (isdigit(*channel_map_str) || *channel_map_str == '-')) {
 			channel_map.push_back((SInt32)strtol(channel_map_str, &endptr, 10));
 			if (channel_map.back() < -1)
 				throw FormatRuntimeError("Channel map value %d not allowed (must be -1 or greater)", channel_map.back());

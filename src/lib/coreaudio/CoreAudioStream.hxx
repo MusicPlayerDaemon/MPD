@@ -21,35 +21,30 @@
 #define MPD_CA_STREAM_HXX
 
 #include <CoreAudio/CoreAudio.h>
-
 #include <vector>
 
 typedef std::vector<AudioStreamID> AudioStreamIdList;
 typedef std::vector<AudioStreamRangedDescription> StreamFormatList;
 
-class CoreAudioStream
-{
+class CoreAudioStream {
 public:
 	CoreAudioStream();
-	virtual ~CoreAudioStream();
+	~CoreAudioStream();
 
-	bool Open(AudioStreamID id);
-	void Close(bool restore = true);
+	void Open(AudioStreamID id);
+	void Close() noexcept;
 
 	AudioStreamID GetId() {return stream_id;}
-	bool GetVirtualFormat(AudioStreamBasicDescription *desc);
-	bool GetPhysicalFormat(AudioStreamBasicDescription *desc);
-	bool SetVirtualFormat(AudioStreamBasicDescription *desc);
-	bool SetPhysicalFormat(AudioStreamBasicDescription *desc);
-	bool GetAvailablePhysicalFormats(StreamFormatList *stream_fmt_list);
-	static bool GetAvailablePhysicalFormats(AudioStreamID id, StreamFormatList *stream_fmt_list);
-	static bool GetStartingChannelInDevice(AudioStreamID id, UInt32 &starting_channel);
+	AudioStreamBasicDescription GetVirtualFormat();
+	AudioStreamBasicDescription GetPhysicalFormat();
+	void SetVirtualFormat(AudioStreamBasicDescription desc);
+	void SetPhysicalFormat(AudioStreamBasicDescription desc);
+	StreamFormatList GetAvailablePhysicalFormats();
+	static StreamFormatList GetAvailablePhysicalFormats(AudioStreamID id);
 
 private:
-	static OSStatus HardwareStreamListener(AudioObjectID inObjectID,
-										   UInt32 inNumberAddresses, const AudioObjectPropertyAddress
-										   inAddresses[], void* inClientData);
-	AudioStreamID stream_id;
+	static OSStatus HardwareStreamListener(AudioObjectID inObjectID, UInt32 inNumberAddresses, const AudioObjectPropertyAddress inAddresses[], void* inClientData);
+	AudioStreamID stream_id = 0;
 	AudioStreamBasicDescription original_virtual_fmt;
 	AudioStreamBasicDescription original_physical_fmt;
 };

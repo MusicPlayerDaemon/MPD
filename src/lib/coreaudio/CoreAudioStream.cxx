@@ -21,273 +21,206 @@
 #include "CoreAudioHelpers.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
+#include "util/RuntimeError.hxx"
 
 static constexpr Domain macos_output_domain("macos_output");
 
-CoreAudioStream::CoreAudioStream() :
-	stream_id  (0    )
-{
+CoreAudioStream::CoreAudioStream() {
 	original_virtual_fmt.mFormatID = 0;
 	original_physical_fmt.mFormatID = 0;
 }
 
-CoreAudioStream::~CoreAudioStream()
-{
+CoreAudioStream::~CoreAudioStream() {
 	Close();
 }
 
-bool CoreAudioStream::Open(AudioStreamID id)
-{
+void
+CoreAudioStream::Open(AudioStreamID id) {
 	stream_id = id;
-	FormatDebug(macos_output_domain, "Opened stream 0x%04x.", (uint)stream_id);
+	FormatDebug(macos_output_domain, "Opening stream 0x%04x.", (uint)stream_id);
 	
 	// Get original stream formats
-	if (!GetVirtualFormat(&original_virtual_fmt))
-	{
-		FormatError(macos_output_domain, "Unable to retrieve current virtual format for stream 0x%04x.", (uint)stream_id);
-		return false;
-	}
-	if (!GetPhysicalFormat(&original_physical_fmt))
-	{
-		FormatError(macos_output_domain, "Unable to retrieve current physical format for stream 0x%04x.",
-					(uint)stream_id);
-		return false;
-	}
+	original_virtual_fmt = GetVirtualFormat();
+	original_physical_fmt = GetPhysicalFormat();
 
 	// watch for physical property changes.
 	AudioObjectPropertyAddress aopa;
-	aopa.mScope    = kAudioObjectPropertyScopeGlobal;
-	aopa.mElement  = kAudioObjectPropertyElementMaster;
+	aopa.mScope = kAudioObjectPropertyScopeGlobal;
+	aopa.mElement = kAudioObjectPropertyElementMaster;
 	aopa.mSelector = kAudioStreamPropertyPhysicalFormat;
 	if (AudioObjectAddPropertyListener(stream_id, &aopa, HardwareStreamListener, this) != noErr)
-		FormatError(macos_output_domain,"Couldn't set up a physical property listener for Core Audio stream.");
+		throw std::runtime_error("Couldn't set up a physical stream format property listener for Core Audio stream.");
 
 	// watch for virtual property changes.
-	aopa.mScope    = kAudioObjectPropertyScopeGlobal;
-	aopa.mElement  = kAudioObjectPropertyElementMaster;
 	aopa.mSelector = kAudioStreamPropertyVirtualFormat;
 	if (AudioObjectAddPropertyListener(stream_id, &aopa, HardwareStreamListener, this) != noErr)
-		FormatError(macos_output_domain, "Couldn't set up a virtual property listener for Core Audio stream.");
+		throw std::runtime_error("Couldn't set up a virtual stream format property listener for Core Audio stream.");
 
-	return true;
 }
 
 
-void CoreAudioStream::Close(bool restore)
-{
-	std::string format_string;
+void
+CoreAudioStream::Close() noexcept {
 	if (!stream_id)
 		return;
 
 	// remove the physical/virtual property listeners
 	AudioObjectPropertyAddress aopa;
-	aopa.mScope    = kAudioObjectPropertyScopeGlobal;
-	aopa.mElement  = kAudioObjectPropertyElementMaster;
+	aopa.mScope = kAudioObjectPropertyScopeGlobal;
+	aopa.mElement = kAudioObjectPropertyElementMaster;
 	aopa.mSelector = kAudioStreamPropertyPhysicalFormat;
-	if (AudioObjectRemovePropertyListener(stream_id, &aopa, HardwareStreamListener, this) != noErr)
-		FormatDebug(macos_output_domain, "Couldn't remove property listener for Core Audio stream.");
+	try {
+		if (AudioObjectRemovePropertyListener(stream_id, &aopa, HardwareStreamListener, this) != noErr)
+			FormatWarning(macos_output_domain, "Couldn't remove property listener for Core Audio stream.");
+		aopa.mSelector = kAudioStreamPropertyVirtualFormat;
+		if (AudioObjectRemovePropertyListener(stream_id, &aopa, HardwareStreamListener, this) != noErr)
+			FormatWarning(macos_output_domain, "Couldn't remove property listener for Core Audio stream.");
 
-	aopa.mScope    = kAudioObjectPropertyScopeGlobal;
-	aopa.mElement  = kAudioObjectPropertyElementMaster;
-	aopa.mSelector = kAudioStreamPropertyVirtualFormat;
-	if (AudioObjectRemovePropertyListener(stream_id, &aopa, HardwareStreamListener, this) != noErr)
-		FormatDebug(macos_output_domain, "Couldn't remove property listener for Core Audio stream.");
-
-	// Revert any format changes we made
-	if (restore && original_virtual_fmt.mFormatID && stream_id)
-	{
-		FormatDebug(macos_output_domain, "Restoring original virtual format for stream 0x%04x. (%s)",
-					(uint)stream_id, StreamDescriptionToString(original_virtual_fmt, format_string));
-		AudioStreamBasicDescription setFormat = original_virtual_fmt;
-		SetVirtualFormat(&setFormat);
+		// Revert any format changes we made
+		if (original_virtual_fmt.mFormatID) {
+			FormatDebug(macos_output_domain, "Restoring original virtual format for stream 0x%04x. (%s)", (uint)stream_id, StreamDescriptionToString(original_virtual_fmt).c_str());
+			SetVirtualFormat(original_virtual_fmt);
+		}
+		if (original_physical_fmt.mFormatID) {
+			FormatDebug(macos_output_domain, "Restoring original physical format for stream 0x%04x. (%s)", (uint)stream_id, StreamDescriptionToString(original_physical_fmt).c_str());
+			SetPhysicalFormat(original_physical_fmt);
+		}
 	}
-	if (restore && original_physical_fmt.mFormatID && stream_id)
-	{
-		FormatDebug(macos_output_domain, "Restoring original physical format for stream 0x%04x. (%s)",
-					(uint)stream_id, StreamDescriptionToString(original_physical_fmt, format_string));
-		AudioStreamBasicDescription setFormat = original_physical_fmt;
-		SetPhysicalFormat(&setFormat);
+	catch (...) {
+		// Ignore any exceptions that might be thrown, as the stream is anyways closed.
 	}
-
 	original_virtual_fmt.mFormatID  = 0;
 	original_physical_fmt.mFormatID = 0;
 	FormatDebug(macos_output_domain, "Closed stream 0x%04x.", (uint)stream_id);
 	stream_id = 0;
 }
 
-bool CoreAudioStream::GetStartingChannelInDevice(AudioStreamID id, UInt32 &startingChannel)
-{
-	if (!id)
-		return 0;
-
-	UInt32 i_param_size = sizeof(UInt32);
-	UInt32 i_param;
-	startingChannel = 0;
-	bool ret = false;
+AudioStreamBasicDescription
+CoreAudioStream::GetVirtualFormat() {
+	if (!stream_id)
+		throw std::runtime_error("Invalid stream ID.");
+	AudioStreamBasicDescription desc;
+	UInt32 size = sizeof(desc);
 
 	AudioObjectPropertyAddress aopa;
-	aopa.mScope    = kAudioObjectPropertyScopeGlobal;
-	aopa.mElement  = kAudioObjectPropertyElementMaster;
-	aopa.mSelector = kAudioStreamPropertyStartingChannel;
-
-	OSStatus status = AudioObjectGetPropertyData(id, &aopa, 0, NULL, &i_param_size, &i_param);
-	if (status == noErr)
-	{
-		startingChannel = i_param;
-		ret = true;
-	}
-	return ret;
-}
-
-bool CoreAudioStream::GetVirtualFormat(AudioStreamBasicDescription* desc)
-{
-	if (!desc || !stream_id)
-		return false;
-
-	UInt32 size = sizeof(AudioStreamBasicDescription);
-
-	AudioObjectPropertyAddress aopa;
-	aopa.mScope    = kAudioObjectPropertyScopeGlobal;
-	aopa.mElement  = kAudioObjectPropertyElementMaster;
+	aopa.mScope = kAudioObjectPropertyScopeGlobal;
+	aopa.mElement = kAudioObjectPropertyElementMaster;
 	aopa.mSelector = kAudioStreamPropertyVirtualFormat;
-	OSStatus ret = AudioObjectGetPropertyDataSize(stream_id, &aopa, 0, NULL, &size);
-	if (ret)
-		return false;
 
-	ret = AudioObjectGetPropertyData(stream_id, &aopa, 0, NULL, &size, desc);
-	if (ret)
-		return false;
-	return true;
+	OSStatus err = AudioObjectGetPropertyData(stream_id, &aopa, 0, NULL, &size, &desc);
+	if (err != noErr)
+		throw FormatRuntimeError("Unable to retrieve virtual format for stream 0x%04x.", (uint)stream_id);
+	return desc;
 }
 
-bool CoreAudioStream::SetVirtualFormat(AudioStreamBasicDescription* desc)
-{
-	if (!desc || !stream_id)
-		return false;
-
-	std::string format_string;
+void
+CoreAudioStream::SetVirtualFormat(AudioStreamBasicDescription desc) {
+	if (!stream_id)
+		return;
 
 	AudioObjectPropertyAddress aopa;
-	aopa.mScope    = kAudioObjectPropertyScopeGlobal;
-	aopa.mElement  = kAudioObjectPropertyElementMaster;
+	aopa.mScope = kAudioObjectPropertyScopeGlobal;
+	aopa.mElement = kAudioObjectPropertyElementMaster;
 	aopa.mSelector = kAudioStreamPropertyVirtualFormat;
 
 	UInt32 property_size = sizeof(AudioStreamBasicDescription);
-	OSStatus ret = AudioObjectSetPropertyData(stream_id, &aopa, 0, NULL, property_size, desc);
-	if (ret)
-	{
-		FormatError(macos_output_domain, "Unable to set virtual format for stream 0x%04x. Error = %s",
-					(uint)stream_id, GetError(ret).c_str());
-		return false;
-	}
-	return true;
+	OSStatus err = AudioObjectSetPropertyData(stream_id, &aopa, 0, NULL, property_size, &desc);
+	if (err != noErr)
+		throw FormatRuntimeError("Unable to set virtual format for stream 0x%04x. Error = %s", (uint)stream_id, GetError(err));
 }
 
-bool CoreAudioStream::GetPhysicalFormat(AudioStreamBasicDescription* desc)
-{
-	if (!desc || !stream_id)
-		return false;
+AudioStreamBasicDescription
+CoreAudioStream::GetPhysicalFormat() {
+	if (!stream_id)
+		throw std::runtime_error("Invalid stream ID.");
 
-	UInt32 size = sizeof(AudioStreamBasicDescription);
+	AudioStreamBasicDescription desc;
+	UInt32 size = sizeof(desc);
 
 	AudioObjectPropertyAddress aopa;
-	aopa.mScope    = kAudioObjectPropertyScopeGlobal;
-	aopa.mElement  = kAudioObjectPropertyElementMaster;
+	aopa.mScope = kAudioObjectPropertyScopeGlobal;
+	aopa.mElement = kAudioObjectPropertyElementMaster;
 	aopa.mSelector = kAudioStreamPropertyPhysicalFormat;
 
-	OSStatus ret = AudioObjectGetPropertyData(stream_id, &aopa, 0, NULL, &size, desc);
-	if (ret)
-		return false;
-	return true;
+	OSStatus err = AudioObjectGetPropertyData(stream_id, &aopa, 0, NULL, &size, &desc);
+	if (err != noErr)
+		throw FormatRuntimeError("Unable to retrieve physical format for stream 0x%04x.", (uint)stream_id);
+	return desc;
 }
 
-bool CoreAudioStream::SetPhysicalFormat(AudioStreamBasicDescription* desc)
-{
-	if (!desc || !stream_id)
-		return false;
+void
+CoreAudioStream::SetPhysicalFormat(AudioStreamBasicDescription desc) {
+	if (!stream_id)
+		return;
 
-	std::string format_string;
+	AudioObjectPropertyAddress aopa;
+	aopa.mScope = kAudioObjectPropertyScopeGlobal;
+	aopa.mElement = kAudioObjectPropertyElementMaster;
+	aopa.mSelector = kAudioStreamPropertyPhysicalFormat;
+
+	UInt32 property_size = sizeof(AudioStreamBasicDescription);
+	OSStatus err = AudioObjectSetPropertyData(stream_id, &aopa, 0, NULL, property_size, &desc);
+	if (err != noErr)
+		throw FormatRuntimeError("Unable to set physical format for stream 0x%04x. Error = %s", (uint)stream_id, GetError(err));
+}
+
+StreamFormatList
+CoreAudioStream::GetAvailablePhysicalFormats() {
+	return GetAvailablePhysicalFormats(stream_id);
+}
+
+StreamFormatList
+CoreAudioStream::GetAvailablePhysicalFormats(AudioStreamID id) {
+	if (!id)
+		throw std::runtime_error("Invalid stream ID.");
+
+	StreamFormatList stream_fmt_list;
 	
 	AudioObjectPropertyAddress aopa;
-	aopa.mScope    = kAudioObjectPropertyScopeGlobal;
-	aopa.mElement  = kAudioObjectPropertyElementMaster;
-	aopa.mSelector = kAudioStreamPropertyPhysicalFormat;
-
-	UInt32 property_size = sizeof(AudioStreamBasicDescription);
-	OSStatus ret = AudioObjectSetPropertyData(stream_id, &aopa, 0, NULL, property_size, desc);
-	if (ret)
-	{
-		FormatError(macos_output_domain, "Unable to set physical format for stream 0x%04x. Error = %s",
-					(uint)stream_id, GetError(ret).c_str());
-		return false;
-	}
-	return true;
-}
-
-bool CoreAudioStream::GetAvailablePhysicalFormats(StreamFormatList* stream_fmt_list)
-{
-	return GetAvailablePhysicalFormats(stream_id, stream_fmt_list);
-}
-
-bool CoreAudioStream::GetAvailablePhysicalFormats(AudioStreamID id, StreamFormatList* stream_fmt_list)
-{
-	if (!stream_fmt_list || !id)
-		return false;
-
-	AudioObjectPropertyAddress aopa;
-	aopa.mScope    = kAudioObjectPropertyScopeGlobal;
-	aopa.mElement  = kAudioObjectPropertyElementMaster;
+	aopa.mScope = kAudioObjectPropertyScopeGlobal;
+	aopa.mElement = kAudioObjectPropertyElementMaster;
 	aopa.mSelector = kAudioStreamPropertyAvailablePhysicalFormats;
 
 	UInt32 property_size = 0;
 	OSStatus err = AudioObjectGetPropertyDataSize(id, &aopa, 0, NULL, &property_size);
 	if (err != noErr)
-		return false;
+		throw FormatRuntimeError("Unable to get available formats for stream 0x%04x. Error = %s", (uint)id, GetError(err));
 
 	UInt32 format_count = property_size / sizeof(AudioStreamRangedDescription);
 	AudioStreamRangedDescription *format_list = new AudioStreamRangedDescription[format_count];
-	err = AudioObjectGetPropertyData(id, &aopa, 0, NULL, &property_size, format_list);
-	if (err == noErr)
-	{
-		for (UInt32 format = 0; format < format_count; format++)
-			stream_fmt_list->push_back(format_list[format]);
+	
+	try {
+		err = AudioObjectGetPropertyData(id, &aopa, 0, NULL, &property_size, format_list);
+		if (err != noErr)
+			throw FormatRuntimeError("Unable to get available formats for stream 0x%04x. Error = %s", (uint)id, GetError(err));
+		for (unsigned int format = 0; format < format_count; format++)
+			stream_fmt_list.push_back(format_list[format]);
+	}
+	catch (...) {
+		delete[] format_list;
+		throw;
 	}
 	delete[] format_list;
-	return (err == noErr);
+	return stream_fmt_list;
 }
 
-OSStatus CoreAudioStream::HardwareStreamListener(gcc_unused AudioObjectID inObjectID,
-												  UInt32 inNumberAddresses,
-												  const AudioObjectPropertyAddress inAddresses[],
-												  void *inClientData)
-{
+OSStatus CoreAudioStream::HardwareStreamListener(gcc_unused AudioObjectID inObjectID, UInt32 inNumberAddresses, const AudioObjectPropertyAddress inAddresses[], void *inClientData) {
 	CoreAudioStream *ca_stream = (CoreAudioStream*)inClientData;
-	std::string format_string;
-
-	for (UInt32 i = 0; i < inNumberAddresses; i++)
-	{
-		if (inAddresses[i].mSelector == kAudioStreamPropertyPhysicalFormat)
-		{
+	for (unsigned int i = 0; i < inNumberAddresses; i++) {
+		if (inAddresses[i].mSelector == kAudioStreamPropertyPhysicalFormat) {
 			AudioStreamBasicDescription actual_format;
 			UInt32 property_size = sizeof(AudioStreamBasicDescription);
 			// hardware physical format has changed.
 			if (AudioObjectGetPropertyData(ca_stream->stream_id, &inAddresses[i], 0, NULL, &property_size, &actual_format) == noErr)
-			{
-				FormatDebug(macos_output_domain, "Hardware physical format changed to %s",
-						   StreamDescriptionToString(actual_format, format_string));
-			}
+				FormatDebug(macos_output_domain, "Hardware physical format changed to %s", StreamDescriptionToString(actual_format).c_str());
 		}
-		else if (inAddresses[i].mSelector == kAudioStreamPropertyVirtualFormat)
-		{
+		else if (inAddresses[i].mSelector == kAudioStreamPropertyVirtualFormat) {
 			// hardware virtual format has changed.
 			AudioStreamBasicDescription actual_format;
 			UInt32 property_size = sizeof(AudioStreamBasicDescription);
 			if (AudioObjectGetPropertyData(ca_stream->stream_id, &inAddresses[i], 0, NULL, &property_size, &actual_format) == noErr)
-			{
-				FormatDebug(macos_output_domain, "Hardware virtual format changed to %s",
-						   StreamDescriptionToString(actual_format, format_string));
-			}
+				FormatDebug(macos_output_domain, "Hardware virtual format changed to %s", StreamDescriptionToString(actual_format).c_str());
 		}
 	}
-  return noErr;
+	return noErr;
 }

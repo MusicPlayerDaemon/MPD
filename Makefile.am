@@ -304,7 +304,6 @@ endif
 
 COREAUDIO_SOURCES = \
 	src/lib/coreaudio/CoreAudioDevice.cxx src/lib/coreaudio/CoreAudioDevice.hxx \
-	src/lib/coreaudio/CoreAudioHardware.cxx src/lib/coreaudio/CoreAudioHardware.hxx \
 	src/lib/coreaudio/CoreAudioHelpers.cxx src/lib/coreaudio/CoreAudioHelpers.hxx \
 	src/lib/coreaudio/CoreAudioStream.cxx src/lib/coreaudio/CoreAudioStream.hxx
 
