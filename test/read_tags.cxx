@@ -26,8 +26,10 @@
 #include "tag/Handler.hxx"
 #include "tag/Generic.hxx"
 #include "fs/Path.hxx"
+#include "AudioFormat.hxx"
 #include "Log.hxx"
 #include "util/ScopeExit.hxx"
+#include "util/StringBuffer.hxx"
 
 #include <stdexcept>
 
@@ -62,6 +64,10 @@ public:
 
 	void OnPair(const char *key, const char *value) noexcept override {
 		printf("\"%s\"=%s\n", key, value);
+	}
+
+	void OnAudioFormat(AudioFormat af) noexcept override {
+		printf("%s\n", ToString(af).c_str());
 	}
 };
 

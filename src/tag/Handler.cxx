@@ -20,10 +20,16 @@
 #include "config.h"
 #include "Handler.hxx"
 #include "Builder.hxx"
+#include "AudioFormat.hxx"
 #include "util/ASCII.hxx"
 #include "util/StringFormat.hxx"
 
 #include <stdlib.h>
+
+void
+NullTagHandler::OnAudioFormat(gcc_unused AudioFormat af) noexcept
+{
+}
 
 void
 AddTagHandler::OnDuration(SongTime duration) noexcept

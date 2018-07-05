@@ -25,6 +25,7 @@
 #include "Chrono.hxx"
 #include "Compiler.h"
 
+struct AudioFormat;
 class TagBuilder;
 
 /**
@@ -37,6 +38,7 @@ public:
 	static constexpr unsigned WANT_DURATION = 0x1;
 	static constexpr unsigned WANT_TAG = 0x2;
 	static constexpr unsigned WANT_PAIR = 0x4;
+	static constexpr unsigned WANT_AUDIO_FORMAT = 0x8;
 
 	explicit TagHandler(unsigned _want_mask) noexcept
 		:want_mask(_want_mask) {}
@@ -54,6 +56,10 @@ public:
 
 	bool WantPair() const noexcept {
 		return want_mask & WANT_PAIR;
+	}
+
+	bool WantAudioFormat() const noexcept {
+		return want_mask & WANT_AUDIO_FORMAT;
 	}
 
 	/**
@@ -76,6 +82,23 @@ public:
 	 * representation of tags.
 	 */
 	virtual void OnPair(const char *key, const char *value) noexcept = 0;
+
+	/**
+	 * Declare the audio format of a song.
+	 *
+	 * Because the #AudioFormat type is limited to formats
+	 * supported by MPD, the value passed to this method may be an
+	 * approximation (should be the one passed to
+	 * DecoderClient::Ready()).  For example, some codecs such as
+	 * MP3 are bit depth agnostic, so the decoder plugin chooses a
+	 * bit depth depending on what the codec library emits.
+	 *
+	 * This method is only called by those decoder plugins which
+	 * implement it.  Some may not have any code for calling it,
+	 * and others may decide that determining the audio format is
+	 * too expensive.
+	 */
+	virtual void OnAudioFormat(AudioFormat af) noexcept = 0;
 };
 
 class NullTagHandler : public TagHandler {
@@ -88,6 +111,7 @@ public:
 		   gcc_unused const char *value) noexcept override {}
 	void OnPair(gcc_unused const char *key,
 		    gcc_unused const char *value) noexcept override {}
+	void OnAudioFormat(AudioFormat af) noexcept override;
 };
 
 /**
