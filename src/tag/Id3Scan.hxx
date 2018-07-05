@@ -25,13 +25,12 @@
 #include <memory>
 
 class InputStream;
-struct TagHandler;
+class TagHandler;
 struct Tag;
 struct id3_tag;
 
 bool
-tag_id3_scan(InputStream &is,
-	     const TagHandler &handler, void *handler_ctx);
+tag_id3_scan(InputStream &is, TagHandler &handler) noexcept;
 
 std::unique_ptr<Tag>
 tag_id3_import(id3_tag *);
@@ -41,7 +40,6 @@ tag_id3_import(id3_tag *);
  *
  */
 void
-scan_id3_tag(id3_tag *tag,
-	     const TagHandler &handler, void *handler_ctx);
+scan_id3_tag(id3_tag *tag, TagHandler &handler) noexcept;
 
 #endif

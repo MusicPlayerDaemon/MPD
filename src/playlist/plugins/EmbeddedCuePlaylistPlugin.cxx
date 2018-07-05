@@ -71,21 +71,22 @@ public:
 	virtual std::unique_ptr<DetachedSong> NextSong() override;
 };
 
-static void
-embcue_tag_pair(const char *name, const char *value, void *ctx)
-{
-	EmbeddedCuePlaylist *playlist = (EmbeddedCuePlaylist *)ctx;
+class ExtractCuesheetTagHandler final : public NullTagHandler {
+public:
+	std::string cuesheet;
 
-	if (playlist->cuesheet.empty() &&
-	    StringEqualsCaseASCII(name, "cuesheet"))
-		playlist->cuesheet = value;
-}
+	ExtractCuesheetTagHandler() noexcept:NullTagHandler(WANT_PAIR) {}
 
-static constexpr TagHandler embcue_tag_handler = {
-	nullptr,
-	nullptr,
-	embcue_tag_pair,
+	void OnPair(const char *key, const char *value) noexcept override;
 };
+
+void
+ExtractCuesheetTagHandler::OnPair(const char *name, const char *value) noexcept
+{
+	if (cuesheet.empty() &&
+	    StringEqualsCaseASCII(name, "cuesheet"))
+		cuesheet = value;
+}
 
 static std::unique_ptr<SongEnumerator>
 embcue_playlist_open_uri(const char *uri,
@@ -97,17 +98,20 @@ embcue_playlist_open_uri(const char *uri,
 
 	const auto path_fs = AllocatedPath::FromUTF8Throw(uri);
 
-	auto playlist = std::make_unique<EmbeddedCuePlaylist>();
+	ExtractCuesheetTagHandler extract_cuesheet;
+	tag_file_scan(path_fs, extract_cuesheet);
+	if (extract_cuesheet.cuesheet.empty())
+		ScanGenericTags(path_fs, extract_cuesheet);
 
-	tag_file_scan(path_fs, embcue_tag_handler, playlist.get());
-	if (playlist->cuesheet.empty())
-		ScanGenericTags(path_fs, embcue_tag_handler, playlist.get());
-
-	if (playlist->cuesheet.empty())
+	if (extract_cuesheet.cuesheet.empty())
 		/* no "CUESHEET" tag found */
 		return nullptr;
 
+	auto playlist = std::make_unique<EmbeddedCuePlaylist>();
+
 	playlist->filename = PathTraitsUTF8::GetBase(uri);
+
+	playlist->cuesheet = std::move(extract_cuesheet.cuesheet);
 
 	playlist->next = &playlist->cuesheet[0];
 	playlist->parser = new CueParser();

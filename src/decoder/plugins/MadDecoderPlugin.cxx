@@ -1062,16 +1062,14 @@ mp3_decode(DecoderClient &client, InputStream &input_stream)
 }
 
 static bool
-mad_decoder_scan_stream(InputStream &is,
-			const TagHandler &handler, void *handler_ctx) noexcept
+mad_decoder_scan_stream(InputStream &is, TagHandler &handler) noexcept
 {
 	const auto result = mad_decoder_total_file_time(is);
 	if (!result.first)
 		return false;
 
 	if (!result.second.IsNegative())
-		tag_handler_invoke_duration(handler, handler_ctx,
-					    SongTime(result.second));
+		handler.OnDuration(SongTime(result.second));
 	return true;
 }
 

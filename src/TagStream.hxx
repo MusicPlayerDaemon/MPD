@@ -23,7 +23,7 @@
 #include "check.h"
 
 class InputStream;
-struct TagHandler;
+class TagHandler;
 class TagBuilder;
 
 /**
@@ -34,10 +34,10 @@ class TagBuilder;
  * found)
  */
 bool
-tag_stream_scan(InputStream &is, const TagHandler &handler, void *ctx);
+tag_stream_scan(InputStream &is, TagHandler &handler) noexcept;
 
 bool
-tag_stream_scan(const char *uri, const TagHandler &handler, void *ctx);
+tag_stream_scan(const char *uri, TagHandler &handler) noexcept;
 
 /**
  * Scan the tags of an #InputStream.  Invokes matching decoder
@@ -48,9 +48,9 @@ tag_stream_scan(const char *uri, const TagHandler &handler, void *ctx);
  * found)
  */
 bool
-tag_stream_scan(InputStream &is, TagBuilder &builder);
+tag_stream_scan(InputStream &is, TagBuilder &builder) noexcept;
 
 bool
-tag_stream_scan(const char *uri, TagBuilder &builder);
+tag_stream_scan(const char *uri, TagBuilder &builder) noexcept;
 
 #endif

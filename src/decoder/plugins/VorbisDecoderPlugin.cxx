@@ -348,7 +348,7 @@ static void
 VisitVorbisDuration(InputStream &is,
 		    OggSyncState &sync, OggStreamState &stream,
 		    unsigned sample_rate,
-		    const TagHandler &handler, void *handler_ctx)
+		    TagHandler &handler) noexcept
 {
 	ogg_packet packet;
 
@@ -358,12 +358,11 @@ VisitVorbisDuration(InputStream &is,
 	const auto duration =
 		SongTime::FromScale<uint64_t>(packet.granulepos,
 					      sample_rate);
-	tag_handler_invoke_duration(handler, handler_ctx, duration);
+	handler.OnDuration(duration);
 }
 
 static bool
-vorbis_scan_stream(InputStream &is,
-		   const TagHandler &handler, void *handler_ctx) noexcept
+vorbis_scan_stream(InputStream &is, TagHandler &handler) noexcept
 {
 	/* initialize libogg */
 
@@ -397,12 +396,11 @@ vorbis_scan_stream(InputStream &is,
 
 	/* visit the Vorbis comments we just read */
 
-	vorbis_comments_scan(vc.user_comments,
-			     handler, handler_ctx);
+	vorbis_comments_scan(vc.user_comments, handler);
 
 	/* check the song duration by locating the e_o_s packet */
 
-	VisitVorbisDuration(is, sync, stream, vi.rate, handler, handler_ctx);
+	VisitVorbisDuration(is, sync, stream, vi.rate, handler);
 
 	return true;
 }

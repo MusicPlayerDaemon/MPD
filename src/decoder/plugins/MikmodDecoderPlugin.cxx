@@ -185,8 +185,7 @@ mikmod_decoder_file_decode(DecoderClient &client, Path path_fs)
 }
 
 static bool
-mikmod_decoder_scan_file(Path path_fs,
-			 const TagHandler &handler, void *handler_ctx) noexcept
+mikmod_decoder_scan_file(Path path_fs, TagHandler &handler) noexcept
 {
 	/* deconstify the path because libmikmod wants a non-const
 	   string pointer */
@@ -204,8 +203,7 @@ mikmod_decoder_scan_file(Path path_fs,
 
 	char *title = Player_LoadTitle(path2);
 	if (title != nullptr) {
-		tag_handler_invoke_tag(handler, handler_ctx,
-				       TAG_TITLE, title);
+		handler.OnTag(TAG_TITLE, title);
 #if (LIBMIKMOD_VERSION >= 0x030200)
 		MikMod_free(title);
 #else

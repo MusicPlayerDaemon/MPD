@@ -256,14 +256,13 @@ audiofile_get_duration(InputStream &is) noexcept
 }
 
 static bool
-audiofile_scan_stream(InputStream &is,
-		      const TagHandler &handler, void *handler_ctx) noexcept
+audiofile_scan_stream(InputStream &is, TagHandler &handler) noexcept
 {
 	const auto duration = audiofile_get_duration(is);
 	if (duration.IsNegative())
 		return false;
 
-	tag_handler_invoke_duration(handler, handler_ctx, SongTime(duration));
+	handler.OnDuration(SongTime(duration));
 	return true;
 }
 

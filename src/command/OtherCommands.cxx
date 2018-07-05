@@ -93,15 +93,6 @@ handle_kill(gcc_unused Client &client, gcc_unused Request request,
 	return CommandResult::KILL;
 }
 
-static void
-print_tag(TagType type, const char *value, void *ctx)
-{
-	auto &r = *(Response *)ctx;
-
-	if (r.GetClient().tag_mask.Test(type))
-		tag_print(r, type, value);
-}
-
 CommandResult
 handle_listfiles(Client &client, Request args, Response &r)
 {
@@ -149,16 +140,24 @@ handle_listfiles(Client &client, Request args, Response &r)
 	gcc_unreachable();
 }
 
-static constexpr TagHandler print_tag_handler = {
-	nullptr,
-	print_tag,
-	nullptr,
+class PrintTagHandler final : public NullTagHandler {
+	Response &response;
+
+public:
+	explicit PrintTagHandler(Response &_response) noexcept
+		:NullTagHandler(WANT_TAG), response(_response) {}
+
+	void OnTag(TagType type, const char *value) noexcept override {
+		if (response.GetClient().tag_mask.Test(type))
+			tag_print(response, type, value);
+	}
 };
 
 static CommandResult
 handle_lsinfo_absolute(Response &r, const char *uri)
 {
-	if (!tag_stream_scan(uri, print_tag_handler, &r)) {
+	PrintTagHandler h(r);
+	if (!tag_stream_scan(uri, h)) {
 		r.Error(ACK_ERROR_NO_EXIST, "No such file");
 		return CommandResult::ERROR;
 	}

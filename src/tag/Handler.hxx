@@ -23,19 +23,45 @@
 #include "check.h"
 #include "Type.h"
 #include "Chrono.hxx"
+#include "Compiler.h"
 
-#include <assert.h>
+class TagBuilder;
 
 /**
- * A callback table for receiving metadata of a song.
+ * An interface for receiving metadata of a song.
  */
-struct TagHandler {
+class TagHandler {
+	const unsigned want_mask;
+
+public:
+	static constexpr unsigned WANT_DURATION = 0x1;
+	static constexpr unsigned WANT_TAG = 0x2;
+	static constexpr unsigned WANT_PAIR = 0x4;
+
+	explicit TagHandler(unsigned _want_mask) noexcept
+		:want_mask(_want_mask) {}
+
+	TagHandler(const TagHandler &) = delete;
+	TagHandler &operator=(const TagHandler &) = delete;
+
+	bool WantDuration() const noexcept {
+		return want_mask & WANT_DURATION;
+	}
+
+	bool WantTag() const noexcept {
+		return want_mask & WANT_TAG;
+	}
+
+	bool WantPair() const noexcept {
+		return want_mask & WANT_PAIR;
+	}
+
 	/**
 	 * Declare the duration of a song.  Do not call
 	 * this when the duration could not be determined, because
 	 * there is no magic value for "unknown duration".
 	 */
-	void (*duration)(SongTime duration, void *ctx);
+	virtual void OnDuration(SongTime duration) noexcept = 0;
 
 	/**
 	 * A tag has been read.
@@ -43,56 +69,57 @@ struct TagHandler {
 	 * @param the value of the tag; the pointer will become
 	 * invalid after returning
 	 */
-	void (*tag)(TagType type, const char *value, void *ctx);
+	virtual void OnTag(TagType type, const char *value) noexcept = 0;
 
 	/**
 	 * A name-value pair has been read.  It is the codec specific
 	 * representation of tags.
 	 */
-	void (*pair)(const char *key, const char *value, void *ctx);
+	virtual void OnPair(const char *key, const char *value) noexcept = 0;
 };
 
-static inline void
-tag_handler_invoke_duration(const TagHandler &handler, void *ctx,
-			    SongTime duration) noexcept
-{
-	if (handler.duration != nullptr)
-		handler.duration(duration, ctx);
-}
+class NullTagHandler : public TagHandler {
+public:
+	explicit NullTagHandler(unsigned _want_mask) noexcept
+		:TagHandler(_want_mask) {}
 
-static inline void
-tag_handler_invoke_tag(const TagHandler &handler, void *ctx,
-		       TagType type, const char *value) noexcept
-{
-	assert((unsigned)type < TAG_NUM_OF_ITEM_TYPES);
-	assert(value != nullptr);
-
-	if (handler.tag != nullptr)
-		handler.tag(type, value, ctx);
-}
-
-static inline void
-tag_handler_invoke_pair(const TagHandler &handler, void *ctx,
-			const char *name, const char *value) noexcept
-{
-	assert(name != nullptr);
-	assert(value != nullptr);
-
-	if (handler.pair != nullptr)
-		handler.pair(name, value, ctx);
-}
+	void OnDuration(gcc_unused SongTime duration) noexcept override {}
+	void OnTag(gcc_unused TagType type,
+		   gcc_unused const char *value) noexcept override {}
+	void OnPair(gcc_unused const char *key,
+		    gcc_unused const char *value) noexcept override {}
+};
 
 /**
- * This #TagHandler implementation adds tag values to a #TagBuilder object
- * (casted from the context pointer).
+ * This #TagHandler implementation adds tag values to a #TagBuilder
+ * object.
  */
-extern const TagHandler add_tag_handler;
+class AddTagHandler : public NullTagHandler {
+protected:
+	TagBuilder &tag;
+
+	AddTagHandler(unsigned _want_mask, TagBuilder &_builder) noexcept
+		:NullTagHandler(_want_mask), tag(_builder) {}
+
+public:
+	explicit AddTagHandler(TagBuilder &_builder) noexcept
+		:AddTagHandler(WANT_DURATION|WANT_TAG, _builder) {}
+
+	void OnDuration(SongTime duration) noexcept override;
+	void OnTag(TagType type, const char *value) noexcept override;
+};
 
 /**
  * This #TagHandler implementation adds tag values to a #TagBuilder object
  * (casted from the context pointer), and supports the has_playlist
  * attribute.
  */
-extern const TagHandler full_tag_handler;
+class FullTagHandler : public AddTagHandler {
+public:
+	explicit FullTagHandler(TagBuilder &_builder) noexcept
+		:AddTagHandler(WANT_DURATION|WANT_TAG|WANT_PAIR, _builder) {}
+
+	void OnPair(const char *key, const char *value) noexcept override;
+};
 
 #endif

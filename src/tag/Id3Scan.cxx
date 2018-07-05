@@ -100,7 +100,7 @@ import_id3_string(const id3_ucs4_t *ucs4)
 static void
 tag_id3_import_text_frame(const struct id3_frame *frame,
 			  TagType type,
-			  const TagHandler &handler, void *handler_ctx)
+			  TagHandler &handler) noexcept
 {
 	if (frame->nfields != 2)
 		return;
@@ -133,8 +133,7 @@ tag_id3_import_text_frame(const struct id3_frame *frame,
 
 		AtScopeExit(utf8) { free(utf8); };
 
-		tag_handler_invoke_tag(handler, handler_ctx,
-				       type, (const char *)utf8);
+		handler.OnTag(type, (const char *)utf8);
 	}
 }
 
@@ -144,13 +143,13 @@ tag_id3_import_text_frame(const struct id3_frame *frame,
  */
 static void
 tag_id3_import_text(struct id3_tag *tag, const char *id, TagType type,
-		    const TagHandler &handler, void *handler_ctx)
+		    TagHandler &handler) noexcept
 {
 	const struct id3_frame *frame;
 	for (unsigned i = 0;
 	     (frame = id3_tag_findframe(tag, id, i)) != nullptr; ++i)
 		tag_id3_import_text_frame(frame, type,
-					  handler, handler_ctx);
+					  handler);
 }
 
 /**
@@ -164,8 +163,7 @@ tag_id3_import_text(struct id3_tag *tag, const char *id, TagType type,
  */
 static void
 tag_id3_import_comment_frame(const struct id3_frame *frame, TagType type,
-			     const TagHandler &handler,
-			     void *handler_ctx)
+			     TagHandler &handler) noexcept
 {
 	if (frame->nfields != 4)
 		return;
@@ -185,7 +183,7 @@ tag_id3_import_comment_frame(const struct id3_frame *frame, TagType type,
 
 	AtScopeExit(utf8) { free(utf8); };
 
-	tag_handler_invoke_tag(handler, handler_ctx, type, (const char *)utf8);
+	handler.OnTag(type, (const char *)utf8);
 }
 
 /**
@@ -194,13 +192,13 @@ tag_id3_import_comment_frame(const struct id3_frame *frame, TagType type,
  */
 static void
 tag_id3_import_comment(struct id3_tag *tag, const char *id, TagType type,
-		       const TagHandler &handler, void *handler_ctx)
+		       TagHandler &handler) noexcept
 {
 	const struct id3_frame *frame;
 	for (unsigned i = 0;
 	     (frame = id3_tag_findframe(tag, id, i)) != nullptr; ++i)
 		tag_id3_import_comment_frame(frame, type,
-					     handler, handler_ctx);
+					     handler);
 }
 
 /**
@@ -220,8 +218,7 @@ tag_id3_parse_txxx_name(const char *name) noexcept
  */
 static void
 tag_id3_import_musicbrainz(struct id3_tag *id3_tag,
-			   const TagHandler &handler,
-			   void *handler_ctx)
+			   TagHandler &handler) noexcept
 {
 	for (unsigned i = 0;; ++i) {
 		const id3_frame *frame = id3_tag_findframe(id3_tag, "TXXX", i);
@@ -240,15 +237,12 @@ tag_id3_import_musicbrainz(struct id3_tag *id3_tag,
 
 		AtScopeExit(value) { free(value); };
 
-		tag_handler_invoke_pair(handler, handler_ctx,
-					(const char *)name,
-					(const char *)value);
+		handler.OnPair((const char *)name, (const char *)value);
 
 		TagType type = tag_id3_parse_txxx_name((const char*)name);
 
 		if (type != TAG_NUM_OF_ITEM_TYPES)
-			tag_handler_invoke_tag(handler, handler_ctx,
-					       type, (const char*)value);
+			handler.OnTag(type, (const char*)value);
 	}
 }
 
@@ -257,7 +251,7 @@ tag_id3_import_musicbrainz(struct id3_tag *id3_tag,
  */
 static void
 tag_id3_import_ufid(struct id3_tag *id3_tag,
-		    const TagHandler &handler, void *handler_ctx)
+		    TagHandler &handler) noexcept
 {
 	for (unsigned i = 0;; ++i) {
 		const id3_frame *frame = id3_tag_findframe(id3_tag, "UFID", i);
@@ -284,65 +278,63 @@ tag_id3_import_ufid(struct id3_tag *id3_tag,
 			continue;
 
 		std::string p((const char *)value, length);
-		tag_handler_invoke_tag(handler, handler_ctx,
-				       TAG_MUSICBRAINZ_TRACKID, p.c_str());
+		handler.OnTag(TAG_MUSICBRAINZ_TRACKID, p.c_str());
 	}
 }
 
 void
-scan_id3_tag(struct id3_tag *tag,
-	     const TagHandler &handler, void *handler_ctx)
+scan_id3_tag(struct id3_tag *tag, TagHandler &handler) noexcept
 {
 	tag_id3_import_text(tag, ID3_FRAME_ARTIST, TAG_ARTIST,
-			    handler, handler_ctx);
+			    handler);
 	tag_id3_import_text(tag, ID3_FRAME_ALBUM_ARTIST,
-			    TAG_ALBUM_ARTIST, handler, handler_ctx);
+			    TAG_ALBUM_ARTIST, handler);
 	tag_id3_import_text(tag, ID3_FRAME_ARTIST_SORT,
-			    TAG_ARTIST_SORT, handler, handler_ctx);
+			    TAG_ARTIST_SORT, handler);
 
-	tag_id3_import_text(tag, "TSOA", TAG_ALBUM_SORT, handler, handler_ctx);
+	tag_id3_import_text(tag, "TSOA", TAG_ALBUM_SORT, handler);
 
 	tag_id3_import_text(tag, ID3_FRAME_ALBUM_ARTIST_SORT,
-			    TAG_ALBUM_ARTIST_SORT, handler, handler_ctx);
+			    TAG_ALBUM_ARTIST_SORT, handler);
 	tag_id3_import_text(tag, ID3_FRAME_TITLE, TAG_TITLE,
-			    handler, handler_ctx);
+			    handler);
 	tag_id3_import_text(tag, ID3_FRAME_ALBUM, TAG_ALBUM,
-			    handler, handler_ctx);
+			    handler);
 	tag_id3_import_text(tag, ID3_FRAME_TRACK, TAG_TRACK,
-			    handler, handler_ctx);
+			    handler);
 	tag_id3_import_text(tag, ID3_FRAME_YEAR, TAG_DATE,
-			    handler, handler_ctx);
+			    handler);
 	tag_id3_import_text(tag, ID3_FRAME_ORIGINAL_RELEASE_DATE, TAG_ORIGINAL_DATE,
-			    handler, handler_ctx);
+			    handler);
 	tag_id3_import_text(tag, ID3_FRAME_GENRE, TAG_GENRE,
-			    handler, handler_ctx);
+			    handler);
 	tag_id3_import_text(tag, ID3_FRAME_COMPOSER, TAG_COMPOSER,
-			    handler, handler_ctx);
+			    handler);
 	tag_id3_import_text(tag, "TPE3", TAG_PERFORMER,
-			    handler, handler_ctx);
-	tag_id3_import_text(tag, "TPE4", TAG_PERFORMER, handler, handler_ctx);
+			    handler);
+	tag_id3_import_text(tag, "TPE4", TAG_PERFORMER, handler);
 	tag_id3_import_comment(tag, ID3_FRAME_COMMENT, TAG_COMMENT,
-			       handler, handler_ctx);
+			       handler);
 	tag_id3_import_text(tag, ID3_FRAME_DISC, TAG_DISC,
-			    handler, handler_ctx);
+			    handler);
 
-	tag_id3_import_musicbrainz(tag, handler, handler_ctx);
-	tag_id3_import_ufid(tag, handler, handler_ctx);
+	tag_id3_import_musicbrainz(tag, handler);
+	tag_id3_import_ufid(tag, handler);
 }
 
 std::unique_ptr<Tag>
 tag_id3_import(struct id3_tag *tag)
 {
 	TagBuilder tag_builder;
-	scan_id3_tag(tag, add_tag_handler, &tag_builder);
+	AddTagHandler h(tag_builder);
+	scan_id3_tag(tag, h);
 	return tag_builder.empty()
 		? nullptr
 		: tag_builder.CommitNew();
 }
 
 bool
-tag_id3_scan(InputStream &is,
-	     const TagHandler &handler, void *handler_ctx)
+tag_id3_scan(InputStream &is, TagHandler &handler) noexcept
 {
 	UniqueId3Tag tag;
 
@@ -355,6 +347,6 @@ tag_id3_scan(InputStream &is,
 		return false;
 	}
 
-	scan_id3_tag(tag.get(), handler, handler_ctx);
+	scan_id3_tag(tag.get(), handler);
 	return true;
 }

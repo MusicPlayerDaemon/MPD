@@ -572,21 +572,20 @@ FfmpegParseMetaData(DecoderClient &client,
 }
 
 static void
-FfmpegScanMetadata(const AVStream &stream,
-		   const TagHandler &handler, void *handler_ctx)
+FfmpegScanMetadata(const AVStream &stream, TagHandler &handler) noexcept
 {
-	FfmpegScanDictionary(stream.metadata, handler, handler_ctx);
+	FfmpegScanDictionary(stream.metadata, handler);
 }
 
 static void
 FfmpegScanMetadata(const AVFormatContext &format_context, int audio_stream,
-		   const TagHandler &handler, void *handler_ctx)
+		   TagHandler &handler) noexcept
 {
 	assert(audio_stream >= 0);
 
-	FfmpegScanDictionary(format_context.metadata, handler, handler_ctx);
+	FfmpegScanDictionary(format_context.metadata, handler);
 	FfmpegScanMetadata(*format_context.streams[audio_stream],
-			   handler, handler_ctx);
+			   handler);
 }
 
 #if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(56, 1, 0)
@@ -595,8 +594,8 @@ static void
 FfmpegScanTag(const AVFormatContext &format_context, int audio_stream,
 	      TagBuilder &tag)
 {
-	FfmpegScanMetadata(format_context, audio_stream,
-			   full_tag_handler, &tag);
+	FullTagHandler h(tag);
+	FfmpegScanMetadata(format_context, audio_stream, h);
 }
 
 /**
@@ -828,7 +827,7 @@ ffmpeg_decode(DecoderClient &client, InputStream &input)
 
 static bool
 FfmpegScanStream(AVFormatContext &format_context,
-		 const TagHandler &handler, void *handler_ctx)
+		 TagHandler &handler) noexcept
 {
 	const int find_result =
 		avformat_find_stream_info(&format_context, nullptr);
@@ -841,22 +840,19 @@ FfmpegScanStream(AVFormatContext &format_context,
 
 	const AVStream &stream = *format_context.streams[audio_stream];
 	if (stream.duration != (int64_t)AV_NOPTS_VALUE)
-		tag_handler_invoke_duration(handler, handler_ctx,
-					    FromFfmpegTime(stream.duration,
-							   stream.time_base));
+		handler.OnDuration(FromFfmpegTime(stream.duration,
+						  stream.time_base));
 	else if (format_context.duration != (int64_t)AV_NOPTS_VALUE)
-		tag_handler_invoke_duration(handler, handler_ctx,
-					    FromFfmpegTime(format_context.duration,
-							   AV_TIME_BASE_Q));
+		handler.OnDuration(FromFfmpegTime(format_context.duration,
+						  AV_TIME_BASE_Q));
 
-	FfmpegScanMetadata(format_context, audio_stream, handler, handler_ctx);
+	FfmpegScanMetadata(format_context, audio_stream, handler);
 
 	return true;
 }
 
 static bool
-ffmpeg_scan_stream(InputStream &is,
-		   const TagHandler &handler, void *handler_ctx) noexcept
+ffmpeg_scan_stream(InputStream &is, TagHandler &handler) noexcept
 {
 	AVInputFormat *input_format = ffmpeg_probe(nullptr, is);
 	if (input_format == nullptr)
@@ -877,7 +873,7 @@ ffmpeg_scan_stream(InputStream &is,
 		avformat_close_input(&f);
 	};
 
-	return FfmpegScanStream(*f, handler, handler_ctx);
+	return FfmpegScanStream(*f, handler);
 }
 
 /**

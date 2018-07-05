@@ -23,7 +23,7 @@
 #include "check.h"
 
 class Path;
-struct TagHandler;
+class TagHandler;
 class TagBuilder;
 
 /**
@@ -34,8 +34,7 @@ class TagBuilder;
  * found)
  */
 bool
-tag_file_scan(Path path,
-	      const TagHandler &handler, void *handler_ctx) noexcept;
+tag_file_scan(Path path, TagHandler &handler) noexcept;
 
 /**
  * Scan the tags of a song file.  Invokes matching decoder plugins,

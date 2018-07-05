@@ -21,10 +21,9 @@
 #define MPD_FFMPEG_METADATA_HXX
 
 struct AVDictionary;
-struct TagHandler;
+class TagHandler;
 
 void
-FfmpegScanDictionary(AVDictionary *dict,
-		     const TagHandler &handler, void *handler_ctx);
+FfmpegScanDictionary(AVDictionary *dict, TagHandler &handler) noexcept;
 
 #endif

@@ -25,19 +25,15 @@
 
 #include <stdlib.h>
 
-static void
-add_tag_duration(SongTime duration, void *ctx)
+void
+AddTagHandler::OnDuration(SongTime duration) noexcept
 {
-	TagBuilder &tag = *(TagBuilder *)ctx;
-
 	tag.SetDuration(duration);
 }
 
-static void
-add_tag_tag(TagType type, const char *value, void *ctx)
+void
+AddTagHandler::OnTag(TagType type, const char *value) noexcept
 {
-	TagBuilder &tag = *(TagBuilder *)ctx;
-
 	if (type == TAG_TRACK || type == TAG_DISC) {
 		/* filter out this extra data and leading zeroes */
 		char *end;
@@ -48,24 +44,10 @@ add_tag_tag(TagType type, const char *value, void *ctx)
 		tag.AddItem(type, value);
 }
 
-const TagHandler add_tag_handler = {
-	add_tag_duration,
-	add_tag_tag,
-	nullptr,
-};
-
-static void
-full_tag_pair(const char *name, gcc_unused const char *value, void *ctx)
+void
+FullTagHandler::OnPair(const char *name, gcc_unused const char *value) noexcept
 {
-	TagBuilder &tag = *(TagBuilder *)ctx;
-
 	if (StringEqualsCaseASCII(name, "cuesheet"))
 		tag.SetHasPlaylist(true);
 }
-
-const TagHandler full_tag_handler = {
-	add_tag_duration,
-	add_tag_tag,
-	full_tag_pair,
-};
 

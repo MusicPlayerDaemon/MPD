@@ -405,7 +405,7 @@ GetInfoString(const SidTuneInfo &info, unsigned i) noexcept
 
 static void
 ScanSidTuneInfo(const SidTuneInfo &info, unsigned track, unsigned n_tracks,
-		const TagHandler &handler, void *handler_ctx)
+		TagHandler &handler) noexcept
 {
 	/* title */
 	const char *title = GetInfoString(info, 0);
@@ -416,31 +416,26 @@ ScanSidTuneInfo(const SidTuneInfo &info, unsigned track, unsigned n_tracks,
 		const auto tag_title =
 			StringFormat<1024>("%s (%u/%u)",
 					   title, track, n_tracks);
-		tag_handler_invoke_tag(handler, handler_ctx,
-				       TAG_TITLE, tag_title);
+		handler.OnTag(TAG_TITLE, tag_title);
 	} else
-		tag_handler_invoke_tag(handler, handler_ctx, TAG_TITLE, title);
+		handler.OnTag(TAG_TITLE, title);
 
 	/* artist */
 	const char *artist = GetInfoString(info, 1);
 	if (artist != nullptr)
-		tag_handler_invoke_tag(handler, handler_ctx, TAG_ARTIST,
-				       artist);
+		handler.OnTag(TAG_ARTIST, artist);
 
 	/* date */
 	const char *date = GetInfoString(info, 2);
 	if (date != nullptr)
-		tag_handler_invoke_tag(handler, handler_ctx, TAG_DATE,
-				       date);
+		handler.OnTag(TAG_DATE, date);
 
 	/* track */
-	tag_handler_invoke_tag(handler, handler_ctx, TAG_TRACK,
-			       StringFormat<16>("%u", track));
+	handler.OnTag(TAG_TRACK, StringFormat<16>("%u", track));
 }
 
 static bool
-sidplay_scan_file(Path path_fs,
-		  const TagHandler &handler, void *handler_ctx) noexcept
+sidplay_scan_file(Path path_fs, TagHandler &handler) noexcept
 {
 	const auto container = ParseContainerPath(path_fs);
 	const unsigned song_num = container.track;
@@ -463,13 +458,12 @@ sidplay_scan_file(Path path_fs,
 	const unsigned n_tracks = info.songs;
 #endif
 
-	ScanSidTuneInfo(info, song_num, n_tracks, handler, handler_ctx);
+	ScanSidTuneInfo(info, song_num, n_tracks, handler);
 
 	/* time */
 	const auto duration = get_song_length(tune);
 	if (!duration.IsNegative())
-		tag_handler_invoke_duration(handler, handler_ctx,
-					    SongTime(duration));
+		handler.OnDuration(SongTime(duration));
 
 	return true;
 }
@@ -506,8 +500,8 @@ sidplay_container_scan(Path path_fs)
 	for (unsigned i = 1; i <= n_tracks; ++i) {
 		tune.selectSong(i);
 
-		ScanSidTuneInfo(info, i, n_tracks,
-				add_tag_handler, &tag_builder);
+		AddTagHandler h(tag_builder);
+		ScanSidTuneInfo(info, i, n_tracks, h);
 
 		char track_name[32];
 		/* Construct container/tune path names, eg.

@@ -25,7 +25,7 @@
 
 bool
 tag_archive_scan(ArchiveFile &archive, const char *path_utf8,
-		 const TagHandler &handler, void *handler_ctx) noexcept
+		 TagHandler &handler) noexcept
 try {
 	Mutex mutex;
 
@@ -33,7 +33,7 @@ try {
 	if (!is)
 		return false;
 
-	return tag_stream_scan(*is, handler, handler_ctx);
+	return tag_stream_scan(*is, handler);
 } catch (const std::exception &e) {
 	return false;
 }

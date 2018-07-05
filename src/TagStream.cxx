@@ -46,7 +46,7 @@ CheckDecoderPlugin(const DecoderPlugin &plugin,
 }
 
 bool
-tag_stream_scan(InputStream &is, const TagHandler &handler, void *ctx)
+tag_stream_scan(InputStream &is, TagHandler &handler) noexcept
 {
 	assert(is.IsReady());
 
@@ -62,44 +62,46 @@ tag_stream_scan(InputStream &is, const TagHandler &handler, void *ctx)
 		mime = (mime_base = GetMimeTypeBase(mime)).c_str();
 
 	return decoder_plugins_try([suffix, mime, &is,
-				    &handler, ctx](const DecoderPlugin &plugin){
+				    &handler](const DecoderPlugin &plugin){
 			try {
 				is.LockRewind();
 			} catch (...) {
 			}
 
 			return CheckDecoderPlugin(plugin, suffix, mime) &&
-				plugin.ScanStream(is, handler, ctx);
+				plugin.ScanStream(is, handler);
 		});
 }
 
 bool
-tag_stream_scan(const char *uri, const TagHandler &handler, void *ctx)
+tag_stream_scan(const char *uri, TagHandler &handler) noexcept
 try {
 	Mutex mutex;
 
 	auto is = InputStream::OpenReady(uri, mutex);
-	return tag_stream_scan(*is, handler, ctx);
+	return tag_stream_scan(*is, handler);
 } catch (const std::exception &e) {
 	return false;
 }
 
 bool
-tag_stream_scan(InputStream &is, TagBuilder &builder)
+tag_stream_scan(InputStream &is, TagBuilder &builder) noexcept
 {
 	assert(is.IsReady());
 
-	if (!tag_stream_scan(is, full_tag_handler, &builder))
+	FullTagHandler h(builder);
+
+	if (!tag_stream_scan(is, h))
 		return false;
 
 	if (builder.empty())
-		ScanGenericTags(is, full_tag_handler, &builder);
+		ScanGenericTags(is, h);
 
 	return true;
 }
 
 bool
-tag_stream_scan(const char *uri, TagBuilder &builder)
+tag_stream_scan(const char *uri, TagBuilder &builder) noexcept
 try {
 	Mutex mutex;
 

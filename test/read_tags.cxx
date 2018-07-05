@@ -40,31 +40,29 @@
 #include <locale.h>
 #endif
 
-static bool empty = true;
+class DumpTagHandler final : public NullTagHandler {
+	bool empty = true;
 
-static void
-print_duration(SongTime duration, gcc_unused void *ctx)
-{
-	printf("duration=%f\n", duration.ToDoubleS());
-}
+public:
+	DumpTagHandler() noexcept
+		:NullTagHandler(WANT_DURATION|WANT_TAG|WANT_PAIR) {}
 
-static void
-print_tag(TagType type, const char *value, gcc_unused void *ctx)
-{
-	printf("[%s]=%s\n", tag_item_names[type], value);
-	empty = false;
-}
+	bool IsEmpty() const noexcept {
+		return empty;
+	}
 
-static void
-print_pair(const char *name, const char *value, gcc_unused void *ctx)
-{
-	printf("\"%s\"=%s\n", name, value);
-}
+	void OnDuration(SongTime duration) noexcept override {
+		printf("duration=%f\n", duration.ToDoubleS());
+	}
 
-static constexpr TagHandler print_handler = {
-	print_duration,
-	print_tag,
-	print_pair,
+	void OnTag(TagType type, const char *value) noexcept override {
+		printf("[%s]=%s\n", tag_item_names[type], value);
+		empty = false;
+	}
+
+	void OnPair(const char *key, const char *value) noexcept override {
+		printf("\"%s\"=%s\n", key, value);
+	}
 };
 
 int main(int argc, char **argv)
@@ -100,9 +98,10 @@ try {
 		return EXIT_FAILURE;
 	}
 
+	DumpTagHandler h;
 	bool success;
 	try {
-		success = plugin->ScanFile(path, print_handler, nullptr);
+		success = plugin->ScanFile(path, h);
 	} catch (const std::exception &e) {
 		LogError(e);
 		success = false;
@@ -113,7 +112,7 @@ try {
 
 	if (!success && plugin->scan_stream != NULL) {
 		is = InputStream::OpenReady(path.c_str(), mutex);
-		success = plugin->ScanStream(*is, print_handler, nullptr);
+		success = plugin->ScanStream(*is, h);
 	}
 
 	if (!success) {
@@ -121,11 +120,11 @@ try {
 		return EXIT_FAILURE;
 	}
 
-	if (empty) {
+	if (h.IsEmpty()) {
 		if (is)
-			ScanGenericTags(*is, print_handler, nullptr);
+			ScanGenericTags(*is, h);
 		else
-			ScanGenericTags(path, print_handler, nullptr);
+			ScanGenericTags(path, h);
 	}
 
 	return 0;

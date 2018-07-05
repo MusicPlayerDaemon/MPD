@@ -240,11 +240,11 @@ sndfile_stream_decode(DecoderClient &client, InputStream &is)
 
 static void
 sndfile_handle_tag(SNDFILE *sf, int str, TagType tag,
-		   const TagHandler &handler, void *handler_ctx)
+		   TagHandler &handler) noexcept
 {
 	const char *value = sf_get_string(sf, str);
 	if (value != nullptr)
-		tag_handler_invoke_tag(handler, handler_ctx, tag, value);
+		handler.OnTag(tag, value);
 }
 
 static constexpr struct {
@@ -261,8 +261,7 @@ static constexpr struct {
 };
 
 static bool
-sndfile_scan_stream(InputStream &is,
-		    const TagHandler &handler, void *handler_ctx) noexcept
+sndfile_scan_stream(InputStream &is, TagHandler &handler) noexcept
 {
 	SF_INFO info;
 
@@ -280,11 +279,10 @@ sndfile_scan_stream(InputStream &is,
 		return false;
 	}
 
-	tag_handler_invoke_duration(handler, handler_ctx,
-				    sndfile_duration(info));
+	handler.OnDuration(sndfile_duration(info));
 
 	for (auto i : sndfile_tags)
-		sndfile_handle_tag(sf, i.str, i.tag, handler, handler_ctx);
+		sndfile_handle_tag(sf, i.str, i.tag, handler);
 
 	sf_close(sf);
 

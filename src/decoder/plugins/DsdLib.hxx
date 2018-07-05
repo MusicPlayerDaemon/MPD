@@ -26,7 +26,7 @@
 
 #include <stdint.h>
 
-struct TagHandler;
+class TagHandler;
 class DecoderClient;
 class InputStream;
 
@@ -79,8 +79,7 @@ dsdlib_valid_freq(uint32_t samplefreq) noexcept;
  * DSF and DSDIFF files are imported
  */
 void
-dsdlib_tag_id3(InputStream &is,
-	       const TagHandler &handler,
-	       void *handler_ctx, offset_type tagoffset);
+dsdlib_tag_id3(InputStream &is, TagHandler &handler,
+	       offset_type tagoffset);
 
 #endif

@@ -25,7 +25,7 @@
 
 #include <FLAC/metadata.h>
 
-struct TagHandler;
+class TagHandler;
 class MixRampInfo;
 
 class FlacMetadataChain {
@@ -82,7 +82,7 @@ public:
 		return FLAC__Metadata_ChainStatusString[GetStatus()];
 	}
 
-	void Scan(const TagHandler &handler, void *handler_ctx);
+	void Scan(TagHandler &handler) noexcept;
 };
 
 class FLACMetadataIterator {
@@ -126,6 +126,6 @@ flac_vorbis_comments_to_tag(const FLAC__StreamMetadata_VorbisComment *comment);
 
 void
 flac_scan_metadata(const FLAC__StreamMetadata *block,
-		   const TagHandler &handler, void *handler_ctx);
+		   TagHandler &handler) noexcept;
 
 #endif

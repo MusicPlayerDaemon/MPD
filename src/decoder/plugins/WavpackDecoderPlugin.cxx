@@ -578,8 +578,7 @@ wavpack_filedecode(DecoderClient &client, Path path_fs)
  * Reads metainfo from the specified file.
  */
 static bool
-wavpack_scan_file(Path path_fs,
-		  const TagHandler &handler, void *handler_ctx) noexcept
+wavpack_scan_file(Path path_fs, TagHandler &handler) noexcept
 {
 	WavpackContext *wpc;
 
@@ -595,14 +594,13 @@ wavpack_scan_file(Path path_fs,
 
 	const auto duration = GetDuration(wpc);
 	if (!duration.IsNegative())
-		tag_handler_invoke_duration(handler, handler_ctx, SongTime(duration));
+		handler.OnDuration(SongTime(duration));
 
 	return true;
 }
 
 static bool
-wavpack_scan_stream(InputStream &is,
-		    const TagHandler &handler, void *handler_ctx) noexcept
+wavpack_scan_stream(InputStream &is, TagHandler &handler) noexcept
 {
 	WavpackInput isp(nullptr, is);
 
@@ -620,7 +618,7 @@ wavpack_scan_stream(InputStream &is,
 
 	const auto duration = GetDuration(wpc);
 	if (!duration.IsNegative())
-		tag_handler_invoke_duration(handler, handler_ctx, SongTime(duration));
+		handler.OnDuration(SongTime(duration));
 
 	return true;
 }

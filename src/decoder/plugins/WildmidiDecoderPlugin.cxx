@@ -126,8 +126,7 @@ wildmidi_file_decode(DecoderClient &client, Path path_fs)
 }
 
 static bool
-wildmidi_scan_file(Path path_fs,
-		   const TagHandler &handler, void *handler_ctx) noexcept
+wildmidi_scan_file(Path path_fs, TagHandler &handler) noexcept
 {
 	midi *wm = WildMidi_Open(path_fs.c_str());
 	if (wm == nullptr)
@@ -142,7 +141,7 @@ wildmidi_scan_file(Path path_fs,
 	const auto duration =
 		SongTime::FromScale<uint64_t>(info->approx_total_samples,
 					      WILDMIDI_SAMPLE_RATE);
-	tag_handler_invoke_duration(handler, handler_ctx, duration);
+	handler.OnDuration(duration);
 
 	WildMidi_Close(wm);
 

@@ -53,13 +53,13 @@ vorbis_comments_to_replay_gain(ReplayGainInfo &rgi, char **comments) noexcept
 static bool
 vorbis_copy_comment(const char *comment,
 		    const char *name, TagType tag_type,
-		    const TagHandler &handler, void *handler_ctx)
+		    TagHandler &handler) noexcept
 {
 	const char *value;
 
 	value = vorbis_comment_value(comment, name);
 	if (value != nullptr) {
-		tag_handler_invoke_tag(handler, handler_ctx, tag_type, value);
+		handler.OnTag(tag_type, value);
 		return true;
 	}
 
@@ -67,36 +67,31 @@ vorbis_copy_comment(const char *comment,
 }
 
 static void
-vorbis_scan_comment(const char *comment,
-		    const TagHandler &handler, void *handler_ctx)
+vorbis_scan_comment(const char *comment, TagHandler &handler) noexcept
 {
-	if (handler.pair != nullptr) {
+	if (handler.WantPair()) {
 		const DivideString split(comment, '=');
 		if (split.IsDefined() && !split.empty())
-			tag_handler_invoke_pair(handler, handler_ctx,
-						split.GetFirst(),
-						split.GetSecond());
+			handler.OnPair(split.GetFirst(), split.GetSecond());
 	}
 
 	for (const struct tag_table *i = xiph_tags; i->name != nullptr; ++i)
 		if (vorbis_copy_comment(comment, i->name, i->type,
-					handler, handler_ctx))
+					handler))
 			return;
 
 	for (unsigned i = 0; i < TAG_NUM_OF_ITEM_TYPES; ++i)
 		if (vorbis_copy_comment(comment,
 					tag_item_names[i], TagType(i),
-					handler, handler_ctx))
+					handler))
 			return;
 }
 
 void
-vorbis_comments_scan(char **comments,
-		     const TagHandler &handler, void *handler_ctx)
+vorbis_comments_scan(char **comments, TagHandler &handler) noexcept
 {
 	while (*comments)
-		vorbis_scan_comment(*comments++,
-				    handler, handler_ctx);
+		vorbis_scan_comment(*comments++, handler);
 
 }
 
@@ -104,7 +99,8 @@ std::unique_ptr<Tag>
 vorbis_comments_to_tag(char **comments) noexcept
 {
 	TagBuilder tag_builder;
-	vorbis_comments_scan(comments, add_tag_handler, &tag_builder);
+	AddTagHandler h(tag_builder);
+	vorbis_comments_scan(comments, h);
 	return tag_builder.empty()
 		? nullptr
 		: tag_builder.CommitNew();

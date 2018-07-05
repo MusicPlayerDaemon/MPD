@@ -175,20 +175,17 @@ mod_decode(DecoderClient &client, InputStream &is)
 }
 
 static bool
-modplug_scan_stream(InputStream &is,
-		    const TagHandler &handler, void *handler_ctx) noexcept
+modplug_scan_stream(InputStream &is, TagHandler &handler) noexcept
 {
 	ModPlugFile *f = LoadModPlugFile(nullptr, is);
 	if (f == nullptr)
 		return false;
 
-	tag_handler_invoke_duration(handler, handler_ctx,
-				    SongTime::FromMS(ModPlug_GetLength(f)));
+	handler.OnDuration(SongTime::FromMS(ModPlug_GetLength(f)));
 
 	const char *title = ModPlug_GetName(f);
 	if (title != nullptr)
-		tag_handler_invoke_tag(handler, handler_ctx,
-				       TAG_TITLE, title);
+		handler.OnTag(TAG_TITLE, title);
 
 	ModPlug_Unload(f);
 

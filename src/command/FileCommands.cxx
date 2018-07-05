@@ -137,25 +137,24 @@ IsValidValue(const char *p) noexcept
 	return true;
 }
 
-static void
-print_pair(const char *key, const char *value, void *ctx)
-{
-	auto &r = *(Response *)ctx;
+class PrintCommentHandler final : public NullTagHandler {
+	Response &response;
 
-	if (IsValidName(key) && IsValidValue(value))
-		r.Format("%s: %s\n", key, value);
-}
+public:
+	explicit PrintCommentHandler(Response &_response) noexcept
+		:NullTagHandler(WANT_PAIR), response(_response) {}
 
-static constexpr TagHandler print_comment_handler = {
-	nullptr,
-	nullptr,
-	print_pair,
+	void OnPair(const char *key, const char *value) noexcept override {
+		if (IsValidName(key) && IsValidValue(value))
+			response.Format("%s: %s\n", key, value);
+	}
 };
 
 static CommandResult
 read_stream_comments(Response &r, const char *uri)
 {
-	if (!tag_stream_scan(uri, print_comment_handler, &r)) {
+	PrintCommentHandler h(r);
+	if (!tag_stream_scan(uri, h)) {
 		r.Error(ACK_ERROR_NO_EXIST, "Failed to load file");
 		return CommandResult::ERROR;
 	}
@@ -167,12 +166,13 @@ read_stream_comments(Response &r, const char *uri)
 static CommandResult
 read_file_comments(Response &r, const Path path_fs)
 {
-	if (!tag_file_scan(path_fs, print_comment_handler, &r)) {
+	PrintCommentHandler h(r);
+	if (!tag_file_scan(path_fs, h)) {
 		r.Error(ACK_ERROR_NO_EXIST, "Failed to load file");
 		return CommandResult::ERROR;
 	}
 
-	ScanGenericTags(path_fs, print_comment_handler, &r);
+	ScanGenericTags(path_fs, h);
 
 	return CommandResult::OK;
 
