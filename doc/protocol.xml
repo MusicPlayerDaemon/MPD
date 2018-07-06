@@ -213,6 +213,59 @@
         a UTF-8 string.
       </para>
     </section>
+
+    <section id="other_metadata">
+      <title>Other Metadata</title>
+
+      <para>
+        The response to <link
+        linkend="command_lsinfo"><command>lsinfo</command></link> and
+        similar commands may contain <link linkend="tags">song
+        tags</link> and other metadata, specifically:
+      </para>
+
+      <itemizedlist>
+        <listitem>
+          <para>
+            <varname>duration</varname>: the duration of the song in
+            seconds; may contain a fractional part.
+          </para>
+        </listitem>
+
+        <listitem>
+          <para>
+            <varname>time</varname>: like <varname>duration</varname>,
+            but as integer value.  This is deprecated and is only here
+            for compatibility with older clients.  Do not use.
+          </para>
+        </listitem>
+
+        <listitem>
+          <para>
+            <varname>Range</varname>: if this is a queue item
+            referring only to a portion of the song file, then this
+            attribute contains the time range in the form
+            <parameter>START-END</parameter> or
+            <parameter>START-</parameter> (open ended); both
+            <parameter>START</parameter> and
+            <parameter>END</parameter> are time stamps within the song
+            in seconds (may contain a fractional part).  Example:
+            "<parameter>60-120</parameter>" plays only the second
+            minute; "<parameter>180</parameter>" skips the first three
+            minutes.
+          </para>
+        </listitem>
+
+        <listitem>
+          <para>
+            <varname>Last-Modified</varname>: the time stamp of the
+            last modification of the underlying file in ISO 8601
+            format.  Example:
+            "<parameter>2008-09-28T20:04:57Z</parameter>"
+          </para>
+        </listitem>
+      </itemizedlist>
+    </section>
   </chapter>
 
   <chapter id="recipes">
@@ -1874,7 +1927,12 @@ OK
           <listitem>
             <para>
               Lists the contents of the directory
-              <varname>URI</varname>.
+              <varname>URI</varname>.  The response contains records
+              starting with <varname>file</varname>,
+              <varname>directory</varname> or
+              <varname>playlist</varname>, each followed by metadata
+              (<link linkend="tags">tags</link> or <link
+              linkend="other_metadata">other metadata</link>).
             </para>
             <para>
               When listing the root directory, this currently returns
