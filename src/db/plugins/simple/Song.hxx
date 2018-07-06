@@ -66,7 +66,7 @@ struct Song {
 
 	/**
 	 * The #Directory that contains this song.  Must be
-	 * non-nullptr.  directory this way.
+	 * non-nullptr.
 	 */
 	Directory *const parent;
 
