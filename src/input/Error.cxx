@@ -21,6 +21,11 @@
 #include "Error.hxx"
 #include "system/Error.hxx"
 
+#ifdef ENABLE_NFS
+#include "lib/nfs/Error.hxx"
+#include <nfsc/libnfs-raw-nfs.h>
+#endif
+
 bool
 IsFileNotFound(std::exception_ptr ep)
 {
@@ -28,6 +33,10 @@ IsFileNotFound(std::exception_ptr ep)
 		std::rethrow_exception(ep);
 	} catch (const std::system_error &e) {
 		return IsFileNotFound(e);
+#ifdef ENABLE_NFS
+	} catch (const NfsClientError &e) {
+		return e.GetCode() == NFS3ERR_NOENT;
+#endif
 	} catch (...) {
 	}
 

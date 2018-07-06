@@ -713,6 +713,7 @@ NFS_SOURCES = \
 	src/lib/nfs/Cancellable.hxx \
 	src/lib/nfs/Lease.hxx \
 	src/lib/nfs/Connection.cxx src/lib/nfs/Connection.hxx \
+	src/lib/nfs/Error.cxx src/lib/nfs/Error.hxx \
 	src/lib/nfs/Manager.cxx src/lib/nfs/Manager.hxx \
 	src/lib/nfs/Glue.cxx src/lib/nfs/Glue.hxx \
 	src/lib/nfs/Base.cxx src/lib/nfs/Base.hxx \
