@@ -36,6 +36,8 @@
 #include <roaraudio.h>
 #undef new
 
+#include <assert.h>
+
 class RoarOutput {
 	friend struct AudioOutputWrapper<RoarOutput>;
 

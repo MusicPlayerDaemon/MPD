@@ -32,6 +32,8 @@
 #include "PcmDop.hxx"
 #endif
 
+#include <assert.h>
+
 void
 PcmExport::Open(SampleFormat sample_format, unsigned _channels,
 		Params params)
