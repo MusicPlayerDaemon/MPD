@@ -85,7 +85,7 @@ Song::UpdateFile(Storage &storage) noexcept
 		if (!tag_stream_scan(absolute_uri.c_str(), tag_builder))
 			return false;
 	} else {
-		if (!tag_file_scan(path_fs, tag_builder))
+		if (!ScanFileTagsWithGeneric(path_fs, tag_builder))
 			return false;
 	}
 
@@ -149,7 +149,7 @@ DetachedSong::LoadFile(Path path) noexcept
 		return false;
 
 	TagBuilder tag_builder;
-	if (!tag_file_scan(path, tag_builder))
+	if (!ScanFileTagsWithGeneric(path, tag_builder))
 		return false;
 
 	mtime = fi.GetModificationTime();

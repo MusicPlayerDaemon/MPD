@@ -81,7 +81,7 @@ public:
 };
 
 bool
-tag_file_scan(Path path_fs, TagHandler &handler) noexcept
+ScanFileTagsNoGeneric(Path path_fs, TagHandler &handler) noexcept
 {
 	assert(!path_fs.IsNull());
 
@@ -100,11 +100,11 @@ tag_file_scan(Path path_fs, TagHandler &handler) noexcept
 }
 
 bool
-tag_file_scan(Path path, TagBuilder &builder) noexcept
+ScanFileTagsWithGeneric(Path path, TagBuilder &builder) noexcept
 {
 	FullTagHandler h(builder);
 
-	if (!tag_file_scan(path, h))
+	if (!ScanFileTagsNoGeneric(path, h))
 		return false;
 
 	if (builder.empty())

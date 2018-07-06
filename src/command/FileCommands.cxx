@@ -167,7 +167,7 @@ static CommandResult
 read_file_comments(Response &r, const Path path_fs)
 {
 	PrintCommentHandler h(r);
-	if (!tag_file_scan(path_fs, h)) {
+	if (!ScanFileTagsNoGeneric(path_fs, h)) {
 		r.Error(ACK_ERROR_NO_EXIST, "Failed to load file");
 		return CommandResult::ERROR;
 	}

@@ -28,13 +28,14 @@ class TagBuilder;
 
 /**
  * Scan the tags of a song file.  Invokes matching decoder plugins,
- * but does not invoke the special "APE" and "ID3" scanners.
+ * but does not fall back to generic scanners (APE and ID3) if no tags
+ * were found (but the file was recognized).
  *
  * @return true if the file was recognized (even if no metadata was
  * found)
  */
 bool
-tag_file_scan(Path path, TagHandler &handler) noexcept;
+ScanFileTagsNoGeneric(Path path, TagHandler &handler) noexcept;
 
 /**
  * Scan the tags of a song file.  Invokes matching decoder plugins,
@@ -45,6 +46,6 @@ tag_file_scan(Path path, TagHandler &handler) noexcept;
  * found)
  */
 bool
-tag_file_scan(Path path, TagBuilder &builder) noexcept;
+ScanFileTagsWithGeneric(Path path, TagBuilder &builder) noexcept;
 
 #endif

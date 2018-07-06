@@ -99,7 +99,7 @@ embcue_playlist_open_uri(const char *uri,
 	const auto path_fs = AllocatedPath::FromUTF8Throw(uri);
 
 	ExtractCuesheetTagHandler extract_cuesheet;
-	tag_file_scan(path_fs, extract_cuesheet);
+	ScanFileTagsNoGeneric(path_fs, extract_cuesheet);
 	if (extract_cuesheet.cuesheet.empty())
 		ScanGenericTags(path_fs, extract_cuesheet);
 
