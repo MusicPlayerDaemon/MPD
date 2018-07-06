@@ -99,11 +99,12 @@ protected:
 	TagBuilder &tag;
 
 	AddTagHandler(unsigned _want_mask, TagBuilder &_builder) noexcept
-		:NullTagHandler(_want_mask), tag(_builder) {}
+		:NullTagHandler(WANT_DURATION|WANT_TAG|_want_mask),
+		 tag(_builder) {}
 
 public:
 	explicit AddTagHandler(TagBuilder &_builder) noexcept
-		:AddTagHandler(WANT_DURATION|WANT_TAG, _builder) {}
+		:AddTagHandler(0, _builder) {}
 
 	void OnDuration(SongTime duration) noexcept override;
 	void OnTag(TagType type, const char *value) noexcept override;
@@ -117,7 +118,7 @@ public:
 class FullTagHandler : public AddTagHandler {
 public:
 	explicit FullTagHandler(TagBuilder &_builder) noexcept
-		:AddTagHandler(WANT_DURATION|WANT_TAG|WANT_PAIR, _builder) {}
+		:AddTagHandler(WANT_PAIR, _builder) {}
 
 	void OnPair(const char *key, const char *value) noexcept override;
 };
