@@ -237,30 +237,32 @@ SimpleDatabase::GetSong(const char *uri) const
 		throw DatabaseError(DatabaseErrorCode::NOT_FOUND,
 				    "No such song");
 
-	light_song = song->Export();
+	light_song.Construct(song->Export());
 
 #ifndef NDEBUG
 	++borrowed_song_count;
 #endif
 
-	return &light_song;
+	return &light_song.Get();
 }
 
 void
 SimpleDatabase::ReturnSong(gcc_unused const LightSong *song) const
 {
 	assert(song != nullptr);
-	assert(song == &light_song || song == prefixed_light_song);
+	assert(song == &light_song.Get() || song == prefixed_light_song);
 
-	delete prefixed_light_song;
-	prefixed_light_song = nullptr;
-
+	if (prefixed_light_song != nullptr) {
+		delete prefixed_light_song;
+		prefixed_light_song = nullptr;
+	} else {
 #ifndef NDEBUG
-	if (song == &light_song) {
 		assert(borrowed_song_count > 0);
 		--borrowed_song_count;
-	}
 #endif
+
+		light_song.Destruct();
+	}
 }
 
 void
