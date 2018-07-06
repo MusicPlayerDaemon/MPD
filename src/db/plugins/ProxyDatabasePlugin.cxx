@@ -203,10 +203,8 @@ Copy(TagBuilder &tag, TagType d_tag,
 }
 
 ProxySong::ProxySong(const mpd_song *song)
-	:LightSong(tag2)
+	:LightSong(mpd_song_get_uri(song), tag2)
 {
-	uri = mpd_song_get_uri(song);
-
 	const auto _mtime = mpd_song_get_last_modified(song);
 	if (_mtime > 0)
 		mtime = std::chrono::system_clock::from_time_t(_mtime);

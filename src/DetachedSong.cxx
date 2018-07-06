@@ -33,9 +33,8 @@ DetachedSong::DetachedSong(const LightSong &other)
 
 DetachedSong::operator LightSong() const noexcept
 {
-	LightSong result(tag);
+	LightSong result(uri.c_str(), tag);
 	result.directory = nullptr;
-	result.uri = uri.c_str();
 	result.real_uri = real_uri.empty() ? nullptr : real_uri.c_str();
 	result.mtime = mtime;
 	result.start_time = start_time;

@@ -78,8 +78,8 @@ struct LightSong {
 	 */
 	SongTime end_time = SongTime::zero();
 
-	explicit LightSong(const Tag &_tag) noexcept
-		:tag(_tag) {}
+	LightSong(const char *_uri, const Tag &_tag) noexcept
+		:uri(_uri), tag(_tag) {}
 
 	gcc_pure
 	std::string GetURI() const noexcept {
