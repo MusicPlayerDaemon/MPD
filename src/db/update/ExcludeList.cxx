@@ -26,8 +26,8 @@
 #include "ExcludeList.hxx"
 #include "fs/Path.hxx"
 #include "fs/NarrowPath.hxx"
-#include "fs/io/TextFile.hxx"
-#include "system/Error.hxx"
+#include "input/TextInputStream.hxx"
+#include "util/StringUtil.hxx"
 #include "Log.hxx"
 
 #include <stdexcept>
@@ -44,13 +44,13 @@ ExcludeList::ParseLine(char *line) noexcept
 }
 
 bool
-ExcludeList::LoadFile(Path path_fs) noexcept
-try {
+ExcludeList::Load(InputStreamPtr is)
+{
 #ifdef HAVE_CLASS_GLOB
-	TextFile file(path_fs);
+	TextInputStream tis(std::move(is));
 
 	char *line;
-	while ((line = file.ReadLine()) != nullptr)
+	while ((line = tis.ReadLine()) != nullptr)
 		ParseLine(line);
 #else
 	/* not implemented */
@@ -58,13 +58,6 @@ try {
 #endif
 
 	return true;
-} catch (const std::system_error &e) {
-	if (!IsFileNotFound(e))
-		LogError(e);
-	return false;
-} catch (const std::exception &e) {
-	LogError(e);
-	return false;
 }
 
 bool
