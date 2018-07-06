@@ -15,6 +15,19 @@ matrix:
       env:
         - MATRIX_EVAL="export CC=gcc-6 CXX=g++-6"
 
+    - os: linux
+      dist: trusty
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-8
+            - libcppunit-dev
+            - libboost-dev
+      env:
+        - MATRIX_EVAL="export CC=gcc-8 CXX=g++-8"
+
     - os: osx
       osx_image: xcode9.3beta
       env:
