@@ -164,7 +164,7 @@ SongFilter::Item::Match(const LightSong &song) const noexcept
 		return StringMatch(uri.c_str());
 	}
 
-	return Match(*song.tag);
+	return Match(song.tag);
 }
 
 SongFilter::SongFilter(unsigned tag, const char *value, bool fold_case)

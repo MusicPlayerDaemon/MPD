@@ -31,8 +31,7 @@ static void
 CollectTags(TagSet &set, TagType tag_type, TagMask group_mask,
 	    const LightSong &song)
 {
-	assert(song.tag != nullptr);
-	const Tag &tag = *song.tag;
+	const Tag &tag = song.tag;
 
 	set.InsertUnique(tag, tag_type, group_mask);
 }

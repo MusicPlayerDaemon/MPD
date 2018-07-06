@@ -55,13 +55,13 @@ class UpnpSong : public LightSong {
 
 public:
 	UpnpSong(UPnPDirObject &&object, std::string &&_uri)
-		:uri2(std::move(_uri)),
+		:LightSong(tag2),
+		 uri2(std::move(_uri)),
 		 real_uri2(std::move(object.url)),
 		 tag2(std::move(object.tag)) {
 		directory = nullptr;
 		uri = uri2.c_str();
 		real_uri = real_uri2.c_str();
-		tag = &tag2;
 		mtime = std::chrono::system_clock::time_point::min();
 		start_time = end_time = SongTime::zero();
 	}
@@ -321,11 +321,10 @@ visitSong(const UPnPDirObject &meta, const char *path,
 	if (!visit_song)
 		return;
 
-	LightSong song;
+	LightSong song(meta.tag);
 	song.directory = nullptr;
 	song.uri = path;
 	song.real_uri = meta.url.c_str();
-	song.tag = &meta.tag;
 	song.mtime = std::chrono::system_clock::time_point::min();
 	song.start_time = song.end_time = SongTime::zero();
 

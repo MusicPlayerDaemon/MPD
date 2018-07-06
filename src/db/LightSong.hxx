@@ -57,9 +57,9 @@ struct LightSong {
 	const char *real_uri;
 
 	/**
-	 * Must not be nullptr.
+	 * Metadata.
 	 */
-	const Tag *tag;
+	const Tag &tag;
 
 	/**
 	 * The time stamp of the last file modification.  A negative
@@ -77,6 +77,9 @@ struct LightSong {
 	 * Unused if zero.
 	 */
 	SongTime end_time;
+
+	explicit LightSong(const Tag &_tag) noexcept
+		:tag(_tag) {}
 
 	gcc_pure
 	std::string GetURI() const noexcept {

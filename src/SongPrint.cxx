@@ -92,7 +92,7 @@ song_print_info(Response &r, const LightSong &song, bool base) noexcept
 	if (!IsNegative(song.mtime))
 		time_print(r, "Last-Modified", song.mtime);
 
-	tag_print(r, *song.tag);
+	tag_print(r, song.tag);
 }
 
 void

@@ -203,11 +203,11 @@ Copy(TagBuilder &tag, TagType d_tag,
 }
 
 ProxySong::ProxySong(const mpd_song *song)
+	:LightSong(tag2)
 {
 	directory = nullptr;
 	uri = mpd_song_get_uri(song);
 	real_uri = nullptr;
-	tag = &tag2;
 
 	const auto _mtime = mpd_song_get_last_modified(song);
 	mtime = _mtime > 0

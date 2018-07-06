@@ -105,7 +105,7 @@ PrintSongBrief(Response &r, bool base, const LightSong &song) noexcept
 {
 	song_print_uri(r, song, base);
 
-	if (song.tag->has_playlist)
+	if (song.tag.has_playlist)
 		/* this song file has an embedded CUE sheet */
 		print_playlist_in_directory(r, base,
 					    song.directory, song.uri);
@@ -116,7 +116,7 @@ PrintSongFull(Response &r, bool base, const LightSong &song) noexcept
 {
 	song_print_info(r, song, base);
 
-	if (song.tag->has_playlist)
+	if (song.tag.has_playlist)
 		/* this song file has an embedded CUE sheet */
 		print_playlist_in_directory(r, base,
 					    song.directory, song.uri);

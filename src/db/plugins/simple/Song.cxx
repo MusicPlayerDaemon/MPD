@@ -98,12 +98,11 @@ Song::GetURI() const noexcept
 LightSong
 Song::Export() const noexcept
 {
-	LightSong dest;
+	LightSong dest(tag);
 	dest.directory = parent->IsRoot()
 		? nullptr : parent->GetPath();
 	dest.uri = uri;
 	dest.real_uri = nullptr;
-	dest.tag = &tag;
 	dest.mtime = mtime;
 	dest.start_time = start_time;
 	dest.end_time = end_time;
