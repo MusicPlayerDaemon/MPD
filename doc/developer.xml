@@ -47,7 +47,7 @@
       <listitem>
         <para>
           the code should be C++14 compliant, and must compile with
-          <application>GCC</application> 5.0 and
+          <application>GCC</application> 6.0 and
           <application>clang</application> 3.4
         </para>
       </listitem>

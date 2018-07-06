@@ -30,7 +30,7 @@ ver 0.21 (not yet released)
   - sndio: new mixer plugin
 * encoder
   - opus: support for sending metadata using ogg stream chaining
-* require GCC 5.0
+* require GCC 6
 
 ver 0.20.21 (not yet released)
 * database
