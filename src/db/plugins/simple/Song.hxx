@@ -74,18 +74,19 @@ struct Song {
 	 * The time stamp of the last file modification.  A negative
 	 * value means that this is unknown/unavailable.
 	 */
-	std::chrono::system_clock::time_point mtime;
+	std::chrono::system_clock::time_point mtime =
+		std::chrono::system_clock::time_point::min();
 
 	/**
 	 * Start of this sub-song within the file.
 	 */
-	SongTime start_time;
+	SongTime start_time = SongTime::zero();
 
 	/**
 	 * End of this sub-song within the file.
 	 * Unused if zero.
 	 */
-	SongTime end_time;
+	SongTime end_time = SongTime::zero();
 
 	/**
 	 * The file name.
