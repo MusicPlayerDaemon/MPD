@@ -82,6 +82,14 @@ public:
 
 	bool Seek(uint64_t where_frame);
 
+	static AudioFormat CheckAudioFormat(const vorbis_info &vi) {
+		return ::CheckAudioFormat(vi.rate, sample_format, vi.channels);
+	}
+
+	AudioFormat CheckAudioFormat() const {
+		return CheckAudioFormat(vi);
+	}
+
 private:
 	void InitVorbis() {
 		vorbis_info_init(&vi);
@@ -164,7 +172,7 @@ VorbisDecoder::SubmitInit()
 {
 	assert(!dsp_initialized);
 
-	audio_format = CheckAudioFormat(vi.rate, sample_format, vi.channels);
+	audio_format = CheckAudioFormat(vi);
 
 	frame_size = audio_format.GetFrameSize();
 
@@ -401,6 +409,11 @@ vorbis_scan_stream(InputStream &is, TagHandler &handler) noexcept
 	/* check the song duration by locating the e_o_s packet */
 
 	VisitVorbisDuration(is, sync, stream, vi.rate, handler);
+
+	try {
+		handler.OnAudioFormat(VorbisDecoder::CheckAudioFormat(vi));
+	} catch (...) {
+	}
 
 	return true;
 }
