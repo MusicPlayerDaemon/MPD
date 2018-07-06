@@ -82,11 +82,6 @@ class HttpdClient final
 	 */
 	bool head_method;
 
-	/**
-         * If DLNA streaming was an option.
-         */
-	bool dlna_streaming_requested;
-
 	/* ICY */
 
 	/**
