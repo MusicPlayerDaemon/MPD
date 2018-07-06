@@ -113,15 +113,6 @@ HttpdClient::HandleLine(const char *line)
 			return true;
 		}
 
-		if (StringEqualsCaseASCII(line, "transferMode.dlna.org: Streaming", 32)) {
-			/* Send as dlna */
-			dlna_streaming_requested = true;
-			/* metadata is not supported by dlna streaming, so disable it */
-			metadata_supported = false;
-			metadata_requested = false;
-			return true;
-		}
-
 		/* expect more request headers */
 		return true;
 	}
@@ -139,22 +130,7 @@ HttpdClient::SendResponse()
 
 	assert(state == State::RESPONSE);
 
-	if (dlna_streaming_requested) {
-		snprintf(buffer, sizeof(buffer),
-			 "HTTP/1.1 206 OK\r\n"
-			 "Content-Type: %s\r\n"
-			 "Content-Length: 10000\r\n"
-			 "Content-RangeX: 0-1000000/1000000\r\n"
-			 "transferMode.dlna.org: Streaming\r\n"
-			 "Accept-Ranges: bytes\r\n"
-			 "Connection: close\r\n"
-			 "realTimeInfo.dlna.org: DLNA.ORG_TLAG=*\r\n"
-			 "contentFeatures.dlna.org: DLNA.ORG_OP=01;DLNA.ORG_CI=0\r\n"
-			 "\r\n",
-			 httpd.content_type);
-		response = buffer;
-
-	} else if (metadata_requested) {
+	if (metadata_requested) {
 		allocated =
 			icy_server_metadata_header(httpd.name, httpd.genre,
 						   httpd.website,

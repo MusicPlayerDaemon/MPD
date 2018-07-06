@@ -36,6 +36,8 @@
 #include "fs/Traits.hxx"
 #include "fs/FileSystem.hxx"
 #include "storage/FileInfo.hxx"
+#include "input/InputStream.hxx"
+#include "input/Error.hxx"
 #include "util/Alloc.hxx"
 #include "util/StringCompare.hxx"
 #include "util/UriUtil.hxx"
@@ -346,11 +348,15 @@ UpdateWalk::UpdateDirectory(Directory &directory,
 
 	ExcludeList child_exclude_list(exclude_list);
 
-	{
-		const auto exclude_path_fs =
-			storage.MapChildFS(directory.GetPath(), ".mpdignore");
-		if (!exclude_path_fs.IsNull())
-			child_exclude_list.LoadFile(exclude_path_fs);
+	try {
+		Mutex mutex;
+		auto is = InputStream::OpenReady(PathTraitsUTF8::Build(storage.MapUTF8(directory.GetPath()).c_str(),
+								       ".mpdignore").c_str(),
+						 mutex);
+		child_exclude_list.Load(std::move(is));
+	} catch (...) {
+		if (!IsFileNotFound(std::current_exception()))
+			LogError(std::current_exception());
 	}
 
 	if (!child_exclude_list.IsEmpty())

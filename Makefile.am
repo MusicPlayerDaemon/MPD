@@ -242,6 +242,7 @@ libmpd_a_SOURCES += \
 endif
 
 CURL_SOURCES = \
+	src/lib/curl/Error.hxx \
 	src/lib/curl/Delegate.cxx src/lib/curl/Delegate.hxx \
 	src/lib/curl/Parser.hxx \
 	src/lib/curl/Version.cxx src/lib/curl/Version.hxx \
@@ -771,6 +772,7 @@ NFS_SOURCES = \
 	src/lib/nfs/Cancellable.hxx \
 	src/lib/nfs/Lease.hxx \
 	src/lib/nfs/Connection.cxx src/lib/nfs/Connection.hxx \
+	src/lib/nfs/Error.cxx src/lib/nfs/Error.hxx \
 	src/lib/nfs/Manager.cxx src/lib/nfs/Manager.hxx \
 	src/lib/nfs/Glue.cxx src/lib/nfs/Glue.hxx \
 	src/lib/nfs/Base.cxx src/lib/nfs/Base.hxx \
@@ -1375,6 +1377,7 @@ endif
 #
 
 libinput_a_SOURCES = \
+	src/input/Error.cxx src/input/Error.hxx \
 	src/input/Init.cxx src/input/Init.hxx \
 	src/input/Registry.cxx src/input/Registry.hxx \
 	src/input/Open.cxx \

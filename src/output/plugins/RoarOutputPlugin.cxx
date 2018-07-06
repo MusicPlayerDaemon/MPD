@@ -35,6 +35,8 @@
 #include <roaraudio.h>
 #undef new
 
+#include <assert.h>
+
 class RoarOutput final : AudioOutput {
 	const std::string host, name;
 

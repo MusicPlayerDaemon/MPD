@@ -23,7 +23,6 @@
 #include "pcm/SampleFormat.hxx"
 #include "Compiler.h"
 
-#include <assert.h>
 #include <stdint.h>
 #include <stddef.h>
 

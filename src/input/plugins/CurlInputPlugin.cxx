@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "CurlInputPlugin.hxx"
+#include "lib/curl/Error.hxx"
 #include "lib/curl/Easy.hxx"
 #include "lib/curl/Global.hxx"
 #include "lib/curl/Init.hxx"
@@ -194,7 +195,9 @@ CurlInputStream::OnHeaders(unsigned status,
 	assert(!icy || !icy->IsDefined());
 
 	if (status < 200 || status >= 300)
-		throw FormatRuntimeError("got HTTP status %ld", status);
+		throw HttpStatusError(status,
+				      StringFormat<40>("got HTTP status %u",
+						       status).c_str());
 
 	const std::lock_guard<Mutex> protect(mutex);
 

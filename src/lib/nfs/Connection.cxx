@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "Connection.hxx"
+#include "Error.hxx"
 #include "Lease.hxx"
 #include "Callback.hxx"
 #include "event/Loop.hxx"
@@ -139,7 +140,7 @@ NfsConnection::CancellableCallback::Callback(int err, void *data) noexcept
 		if (err >= 0)
 			cb.OnNfsCallback((unsigned)err, data);
 		else
-			cb.OnNfsError(std::make_exception_ptr(std::runtime_error((const char *)data)));
+			cb.OnNfsError(std::make_exception_ptr(NfsClientError(-err, (const char *)data)));
 	} else {
 		if (open) {
 			/* a nfs_open_async() call was cancelled - to

@@ -26,8 +26,7 @@
 #include "ExcludeList.hxx"
 #include "fs/Path.hxx"
 #include "fs/NarrowPath.hxx"
-#include "fs/io/TextFile.hxx"
-#include "system/Error.hxx"
+#include "input/TextInputStream.hxx"
 #include "util/StringStrip.hxx"
 #include "Log.hxx"
 
@@ -36,35 +35,29 @@
 #include <assert.h>
 #include <string.h>
 
+inline void
+ExcludeList::ParseLine(char *line) noexcept
+{
+	char *p = Strip(line);
+	if (*p != 0 && *p != '#')
+		patterns.emplace_front(p);
+}
+
 bool
-ExcludeList::LoadFile(Path path_fs) noexcept
-try {
+ExcludeList::Load(InputStreamPtr is)
+{
 #ifdef HAVE_CLASS_GLOB
-	TextFile file(path_fs);
+	TextInputStream tis(std::move(is));
 
 	char *line;
-	while ((line = file.ReadLine()) != nullptr) {
-		char *p = strchr(line, '#');
-		if (p != nullptr)
-			*p = 0;
-
-		p = Strip(line);
-		if (*p != 0)
-			patterns.emplace_front(p);
-	}
+	while ((line = tis.ReadLine()) != nullptr)
+		ParseLine(line);
 #else
 	/* not implemented */
 	(void)path_fs;
 #endif
 
 	return true;
-} catch (const std::system_error &e) {
-	if (!IsFileNotFound(e))
-		LogError(e);
-	return false;
-} catch (...) {
-	LogError(std::current_exception());
-	return false;
 }
 
 bool
