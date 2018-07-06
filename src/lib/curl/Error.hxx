@@ -17,37 +17,26 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "config.h"
-#include "Error.hxx"
-#include "system/Error.hxx"
+#ifndef CURL_ERROR_HXX
+#define CURL_ERROR_HXX
 
-#ifdef ENABLE_CURL
-#include "lib/curl/Error.hxx"
-#endif
+#include <stdexcept>
 
-#ifdef ENABLE_NFS
-#include "lib/nfs/Error.hxx"
-#include <nfsc/libnfs-raw-nfs.h>
-#endif
+/**
+ * Thrown when an unsuccessful status was received from the HTTP
+ * server.
+ */
+class HttpStatusError : public std::runtime_error {
+	unsigned status;
 
-bool
-IsFileNotFound(std::exception_ptr ep)
-{
-	try {
-		std::rethrow_exception(ep);
-	} catch (const std::system_error &e) {
-		return IsFileNotFound(e);
-#ifdef ENABLE_CURL
-	} catch (const HttpStatusError &e) {
-		return e.GetStatus() == 404;
-#endif
-#ifdef ENABLE_NFS
-	} catch (const NfsClientError &e) {
-		return e.GetCode() == NFS3ERR_NOENT;
-#endif
-	} catch (...) {
+public:
+	template<typename M>
+	explicit HttpStatusError(unsigned _status, M &&_msg) noexcept
+		:std::runtime_error(std::forward<M>(_msg)), status(_status) {}
+
+	unsigned GetStatus() const noexcept {
+		return status;
 	}
+};
 
-	return false;
-}
-
+#endif

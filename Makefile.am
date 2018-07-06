@@ -234,6 +234,7 @@ libmpd_a_SOURCES += \
 endif
 
 CURL_SOURCES = \
+	src/lib/curl/Error.hxx \
 	src/lib/curl/Version.cxx src/lib/curl/Version.hxx \
 	src/lib/curl/Global.cxx src/lib/curl/Global.hxx \
 	src/lib/curl/Request.cxx src/lib/curl/Request.hxx \
