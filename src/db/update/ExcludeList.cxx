@@ -35,6 +35,18 @@
 #include <assert.h>
 #include <string.h>
 
+inline void
+ExcludeList::ParseLine(char *line) noexcept
+{
+	char *p = strchr(line, '#');
+	if (p != nullptr)
+		*p = 0;
+
+	p = Strip(line);
+	if (*p != 0)
+		patterns.emplace_front(p);
+}
+
 bool
 ExcludeList::LoadFile(Path path_fs) noexcept
 try {
@@ -42,15 +54,8 @@ try {
 	TextFile file(path_fs);
 
 	char *line;
-	while ((line = file.ReadLine()) != nullptr) {
-		char *p = strchr(line, '#');
-		if (p != nullptr)
-			*p = 0;
-
-		p = Strip(line);
-		if (*p != 0)
-			patterns.emplace_front(p);
-	}
+	while ((line = file.ReadLine()) != nullptr)
+		ParseLine(line);
 #else
 	/* not implemented */
 	(void)path_fs;

@@ -69,6 +69,9 @@ public:
 	 * the specified file name.
 	 */
 	bool Check(Path name_fs) const noexcept;
+
+private:
+	void ParseLine(char *line) noexcept;
 };
 
 
