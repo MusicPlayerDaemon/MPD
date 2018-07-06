@@ -116,9 +116,13 @@ public:
  * attribute.
  */
 class FullTagHandler : public AddTagHandler {
+protected:
+	FullTagHandler(unsigned _want_mask, TagBuilder &_builder) noexcept
+		:AddTagHandler(WANT_PAIR|_want_mask, _builder) {}
+
 public:
 	explicit FullTagHandler(TagBuilder &_builder) noexcept
-		:AddTagHandler(WANT_PAIR, _builder) {}
+		:FullTagHandler(0, _builder) {}
 
 	void OnPair(const char *key, const char *value) noexcept override;
 };
