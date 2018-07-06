@@ -57,3 +57,9 @@ FullTagHandler::OnPair(const char *name, gcc_unused const char *value) noexcept
 		tag.SetHasPlaylist(true);
 }
 
+void
+FullTagHandler::OnAudioFormat(AudioFormat af) noexcept
+{
+	if (audio_format != nullptr)
+		*audio_format = af;
+}

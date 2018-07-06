@@ -140,15 +140,23 @@ public:
  * attribute.
  */
 class FullTagHandler : public AddTagHandler {
+	AudioFormat *const audio_format;
+
 protected:
-	FullTagHandler(unsigned _want_mask, TagBuilder &_builder) noexcept
-		:AddTagHandler(WANT_PAIR|_want_mask, _builder) {}
+	FullTagHandler(unsigned _want_mask, TagBuilder &_builder,
+		       AudioFormat *_audio_format) noexcept
+		:AddTagHandler(WANT_PAIR|_want_mask
+			       |(_audio_format ? WANT_AUDIO_FORMAT : 0),
+			       _builder),
+		 audio_format(_audio_format) {}
 
 public:
-	explicit FullTagHandler(TagBuilder &_builder) noexcept
-		:FullTagHandler(0, _builder) {}
+	explicit FullTagHandler(TagBuilder &_builder,
+				AudioFormat *_audio_format=nullptr) noexcept
+		:FullTagHandler(0, _builder, _audio_format) {}
 
 	void OnPair(const char *key, const char *value) noexcept override;
+	void OnAudioFormat(AudioFormat af) noexcept override;
 };
 
 #endif

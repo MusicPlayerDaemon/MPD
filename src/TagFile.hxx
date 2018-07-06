@@ -22,6 +22,7 @@
 
 #include "check.h"
 
+struct AudioFormat;
 class Path;
 class TagHandler;
 class TagBuilder;
@@ -46,6 +47,7 @@ ScanFileTagsNoGeneric(Path path, TagHandler &handler) noexcept;
  * found)
  */
 bool
-ScanFileTagsWithGeneric(Path path, TagBuilder &builder) noexcept;
+ScanFileTagsWithGeneric(Path path, TagBuilder &builder,
+			AudioFormat *audio_format=nullptr) noexcept;
 
 #endif

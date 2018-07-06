@@ -85,11 +85,12 @@ try {
 }
 
 bool
-tag_stream_scan(InputStream &is, TagBuilder &builder) noexcept
+tag_stream_scan(InputStream &is, TagBuilder &builder,
+		AudioFormat *audio_format) noexcept
 {
 	assert(is.IsReady());
 
-	FullTagHandler h(builder);
+	FullTagHandler h(builder, audio_format);
 
 	if (!tag_stream_scan(is, h))
 		return false;
@@ -101,12 +102,13 @@ tag_stream_scan(InputStream &is, TagBuilder &builder) noexcept
 }
 
 bool
-tag_stream_scan(const char *uri, TagBuilder &builder) noexcept
+tag_stream_scan(const char *uri, TagBuilder &builder,
+		AudioFormat *audio_format) noexcept
 try {
 	Mutex mutex;
 
 	auto is = InputStream::OpenReady(uri, mutex);
-	return tag_stream_scan(*is, builder);
+	return tag_stream_scan(*is, builder, audio_format);
 } catch (const std::exception &e) {
 	return false;
 }

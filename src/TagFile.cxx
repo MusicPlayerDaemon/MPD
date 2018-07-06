@@ -100,9 +100,10 @@ ScanFileTagsNoGeneric(Path path_fs, TagHandler &handler) noexcept
 }
 
 bool
-ScanFileTagsWithGeneric(Path path, TagBuilder &builder) noexcept
+ScanFileTagsWithGeneric(Path path, TagBuilder &builder,
+			AudioFormat *audio_format) noexcept
 {
-	FullTagHandler h(builder);
+	FullTagHandler h(builder, audio_format);
 
 	if (!ScanFileTagsNoGeneric(path, h))
 		return false;

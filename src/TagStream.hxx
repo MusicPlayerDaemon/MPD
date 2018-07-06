@@ -22,6 +22,7 @@
 
 #include "check.h"
 
+struct AudioFormat;
 class InputStream;
 class TagHandler;
 class TagBuilder;
@@ -48,9 +49,11 @@ tag_stream_scan(const char *uri, TagHandler &handler) noexcept;
  * found)
  */
 bool
-tag_stream_scan(InputStream &is, TagBuilder &builder) noexcept;
+tag_stream_scan(InputStream &is, TagBuilder &builder,
+		AudioFormat *audio_format=nullptr) noexcept;
 
 bool
-tag_stream_scan(const char *uri, TagBuilder &builder) noexcept;
+tag_stream_scan(const char *uri, TagBuilder &builder,
+		AudioFormat *audio_format=nullptr) noexcept;
 
 #endif
