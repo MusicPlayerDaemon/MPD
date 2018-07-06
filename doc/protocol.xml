@@ -258,6 +258,17 @@
 
         <listitem>
           <para>
+            <varname>Format</varname>: the audio format of the song
+            (or an approximation to a format supported by MPD and the
+            decoder plugin being used).  When playing this file, the
+            <varname>audio</varname> value in the <link
+            linkend="command_status"><command>status</command></link>
+            response should be the same.
+          </para>
+        </listitem>
+
+        <listitem>
+          <para>
             <varname>Last-Modified</varname>: the time stamp of the
             last modification of the underlying file in ISO 8601
             format.  Example:

@@ -104,5 +104,6 @@ Song::Export() const noexcept
 	dest.mtime = mtime;
 	dest.start_time = start_time;
 	dest.end_time = end_time;
+	dest.audio_format = audio_format;
 	return dest;
 }

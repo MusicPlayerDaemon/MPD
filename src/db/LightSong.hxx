@@ -21,6 +21,7 @@
 #define MPD_LIGHT_SONG_HXX
 
 #include "Chrono.hxx"
+#include "AudioFormat.hxx"
 #include "Compiler.h"
 
 #include <string>
@@ -77,6 +78,12 @@ struct LightSong {
 	 * Unused if zero.
 	 */
 	SongTime end_time = SongTime::zero();
+
+	/**
+	 * The audio format of the song, if given by the decoder
+	 * plugin.  May be undefined if unknown.
+	 */
+	AudioFormat audio_format = AudioFormat::Undefined();
 
 	LightSong(const char *_uri, const Tag &_tag) noexcept
 		:uri(_uri), tag(_tag) {}

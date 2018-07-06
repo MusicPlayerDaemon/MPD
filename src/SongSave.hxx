@@ -25,6 +25,7 @@
 #define SONG_BEGIN "song_begin: "
 
 struct Song;
+struct AudioFormat;
 class DetachedSong;
 class BufferedOutputStream;
 class TextFile;
@@ -42,6 +43,7 @@ song_save(BufferedOutputStream &os, const DetachedSong &song);
  * Throws #std::runtime_error on error.
  */
 std::unique_ptr<DetachedSong>
-song_load(TextFile &file, const char *uri);
+song_load(TextFile &file, const char *uri,
+	  AudioFormat *audio_format_r=nullptr);
 
 #endif

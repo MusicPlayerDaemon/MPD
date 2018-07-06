@@ -92,6 +92,9 @@ song_print_info(Response &r, const LightSong &song, bool base) noexcept
 	if (!IsNegative(song.mtime))
 		time_print(r, "Last-Modified", song.mtime);
 
+	if (song.audio_format.IsDefined())
+		r.Format("Format: %s\n", ToString(song.audio_format).c_str());
+
 	tag_print(r, song.tag);
 }
 

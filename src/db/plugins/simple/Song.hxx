@@ -23,6 +23,7 @@
 #include "check.h"
 #include "Chrono.hxx"
 #include "tag/Tag.hxx"
+#include "AudioFormat.hxx"
 #include "Compiler.h"
 
 #include <boost/intrusive/list.hpp>
@@ -87,6 +88,12 @@ struct Song {
 	 * Unused if zero.
 	 */
 	SongTime end_time = SongTime::zero();
+
+	/**
+	 * The audio format of the song, if given by the decoder
+	 * plugin.  May be undefined if unknown.
+	 */
+	AudioFormat audio_format = AudioFormat::Undefined();
 
 	/**
 	 * The file name.

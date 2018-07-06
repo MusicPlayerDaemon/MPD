@@ -1932,6 +1932,9 @@ test_DumpDatabase_SOURCES = test/DumpDatabase.cxx \
 	src/db/Selection.cxx \
 	src/db/PlaylistVector.cxx \
 	src/db/DatabaseLock.cxx \
+	src/AudioFormat.cxx \
+	src/AudioParser.cxx \
+	src/pcm/SampleFormat.cxx \
 	src/SongSave.cxx \
 	src/DetachedSong.cxx \
 	src/TagSave.cxx \
