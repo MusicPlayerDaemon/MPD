@@ -324,8 +324,9 @@
             <itemizedlist>
               <listitem>
                 <para>
-                  <returnvalue>database</returnvalue>: the song database
-                  has been modified after <command>update</command>.
+                  <returnvalue>database</returnvalue>: the song
+                  database has been modified after <link
+                  linkend="command_update"><command>update</command></link>.
                 </para>
               </listitem>
               <listitem>
@@ -408,7 +409,9 @@
               not in "idle" mode; no events gets lost while the client
               is doing something else with the connection.  If an
               event had already occurred since the last call, the new
-              <command>idle</command> command will return immediately.
+              <link
+              linkend="command_idle"><command>idle</command></link>
+              command will return immediately.
             </para>
 
             <para>
@@ -835,8 +838,9 @@
             </para>
             <note>
               <para>
-                <command>volume</command> is deprecated, use
-                <command>setvol</command> instead.
+                <command>volume</command> is deprecated, use <link
+                linkend="command_setvol"><command>setvol</command></link>
+                instead.
               </para>
             </note>
           </listitem>
@@ -1121,7 +1125,8 @@ OK
             </para>
             <note>
               <para>
-                Do not use this, instead use <command>playlistinfo</command>.
+                Do not use this, instead use <link
+                linkend="command_playlistinfo"><command>playlistinfo</command></link>.
               </para>
             </note>
           </listitem>
@@ -1743,8 +1748,9 @@ OK
           <listitem>
             <para>
               Finds songs in the db that are exactly
-              <varname>WHAT</varname> and adds them to current playlist.
-              Parameters have the same meaning as for <command>find</command>.
+              <varname>WHAT</varname> and adds them to current
+              playlist.  Parameters have the same meaning as for <link
+              linkend="command_find"><command>find</command></link>.
             </para>
           </listitem>
         </varlistentry>
@@ -1816,9 +1822,11 @@ OK
           </term>
           <listitem>
             <para>
-              Same as <command>listall</command>, except it also
-              returns metadata info in the same format as
-              <command>lsinfo</command>.
+              Same as <link
+              linkend="command_listall"><command>listall</command></link>,
+              except it also returns metadata info in the same format
+              as <link
+              linkend="command_lsinfo"><command>lsinfo</command></link>
             </para>
             <para>
               Do not use this command.  Do not manage a client-side
@@ -1927,9 +1935,10 @@ OK
           <listitem>
             <para>
               Searches for any song that contains
-              <varname>WHAT</varname>. Parameters have the same meaning
-              as for <command>find</command>, except that search is not
-              case sensitive.
+              <varname>WHAT</varname>. Parameters have the same
+              meaning as for <link
+              linkend="command_find"><command>find</command></link>,
+              except that search is not case sensitive.
             </para>
           </listitem>
         </varlistentry>
@@ -1948,7 +1957,8 @@ OK
               in tag <varname>TYPE</varname> and adds them to current playlist.
             </para>
             <para>
-              Parameters have the same meaning as for <command>find</command>,
+              Parameters have the same meaning as for <link
+              linkend="command_find"><command>find</command></link>,
               except that search is not case sensitive.
             </para>
           </listitem>
@@ -1973,7 +1983,8 @@ OK
               If a playlist by that name doesn't exist it is created.
             </para>
             <para>
-              Parameters have the same meaning as for <command>find</command>,
+              Parameters have the same meaning as for <link
+              linkend="command_find"><command>find</command></link>,
               except that search is not case sensitive.
             </para>
           </listitem>
@@ -1999,7 +2010,9 @@ OK
               Prints "updating_db: JOBID" where
               <varname>JOBID</varname> is a positive number
               identifying the update job.  You can read the current
-              job id in the <command>status</command> response.
+              job id in the <link
+              linkend="command_status"><command>status</command></link>
+              response.
             </para>
           </listitem>
         </varlistentry>
@@ -2012,8 +2025,9 @@ OK
           </term>
           <listitem>
             <para>
-              Same as <command>update</command>, but also rescans
-              unmodified files.
+              Same as <link
+              linkend="command_update"><command>update</command></link>,
+              but also rescans unmodified files.
             </para>
           </listitem>
         </varlistentry>
@@ -2579,7 +2593,9 @@ OK
             <para>
               Set a runtime attribute.  These are specific to the
               output plugin, and supported values are usually printed
-              in the <command>outputs</command> response.
+              in the <link
+              linkend="command_outputs"><command>outputs</command></link>
+              response.
             </para>
           </listitem>
         </varlistentry>
@@ -2703,9 +2719,10 @@ suffix: mpc</programlisting>
       <para>
         Each time a client subscribes or unsubscribes, the global idle
         event <varname>subscription</varname> is generated.  In
-        conjunction with the <command>channels</command> command, this
-        may be used to auto-detect clients providing additional
-        services.
+        conjunction with the <link
+        linkend="command_channels"><command>channels</command></link>
+        command, this may be used to auto-detect clients providing
+        additional services.
       </para>
 
       <para>
