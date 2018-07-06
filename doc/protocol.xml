@@ -91,7 +91,7 @@
               <para>
                 <returnvalue>error</returnvalue>: numeric value of one
                 of the <constant>ACK_ERROR</constant> constants defined
-                in <filename>ack.h</filename>.
+                in <filename>src/protocol/Ack.hxx</filename>.
               </para>
             </listitem>
             <listitem>
