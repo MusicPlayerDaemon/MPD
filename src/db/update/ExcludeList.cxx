@@ -38,12 +38,8 @@
 inline void
 ExcludeList::ParseLine(char *line) noexcept
 {
-	char *p = strchr(line, '#');
-	if (p != nullptr)
-		*p = 0;
-
-	p = Strip(line);
-	if (*p != 0)
+	char *p = Strip(line);
+	if (*p != 0 && *p != '#')
 		patterns.emplace_front(p);
 }
 

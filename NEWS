@@ -2,6 +2,7 @@ ver 0.20.21 (not yet released)
 * database
   - proxy: add "password" setting
   - proxy: support tags "ArtistSort", "AlbumArtistSort", "AlbumSort"
+  - simple: allow .mpdignore comments only at start of line
 * output
   - httpd: remove broken DLNA support code
 
