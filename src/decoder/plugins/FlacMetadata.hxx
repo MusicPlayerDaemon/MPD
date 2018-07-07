@@ -91,10 +91,9 @@ class FLACMetadataIterator {
 public:
 	FLACMetadataIterator():iterator(::FLAC__metadata_iterator_new()) {}
 
-	FLACMetadataIterator(FlacMetadataChain &chain)
+	FLACMetadataIterator(FLAC__Metadata_Chain *chain)
 		:iterator(::FLAC__metadata_iterator_new()) {
-		::FLAC__metadata_iterator_init(iterator,
-					       (FLAC__Metadata_Chain *)chain);
+		::FLAC__metadata_iterator_init(iterator, chain);
 	}
 
 	~FLACMetadataIterator() {

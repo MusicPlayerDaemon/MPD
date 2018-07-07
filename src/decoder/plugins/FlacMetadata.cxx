@@ -163,7 +163,7 @@ flac_vorbis_comments_to_tag(const FLAC__StreamMetadata_VorbisComment *comment)
 void
 FlacMetadataChain::Scan(TagHandler &handler) noexcept
 {
-	FLACMetadataIterator iterator(*this);
+	FLACMetadataIterator iterator(chain);
 
 	do {
 		FLAC__StreamMetadata *block = iterator.GetBlock();
