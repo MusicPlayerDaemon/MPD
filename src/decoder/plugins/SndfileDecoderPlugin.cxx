@@ -24,6 +24,7 @@
 #include "CheckAudioFormat.hxx"
 #include "tag/Handler.hxx"
 #include "util/Domain.hxx"
+#include "util/ScopeExit.hxx"
 #include "Log.hxx"
 
 #include <exception>
@@ -208,6 +209,8 @@ sndfile_stream_decode(DecoderClient &client, InputStream &is)
 		return;
 	}
 
+	AtScopeExit(sf) { sf_close(sf); };
+
 	const auto audio_format = CheckAudioFormat(info);
 
 	client.Ready(audio_format, info.seekable, sndfile_duration(info));
@@ -239,8 +242,6 @@ sndfile_stream_decode(DecoderClient &client, InputStream &is)
 			cmd = DecoderCommand::NONE;
 		}
 	} while (cmd == DecoderCommand::NONE);
-
-	sf_close(sf);
 }
 
 static void
@@ -277,8 +278,9 @@ sndfile_scan_stream(InputStream &is, TagHandler &handler) noexcept
 	if (sf == nullptr)
 		return false;
 
+	AtScopeExit(sf) { sf_close(sf); };
+
 	if (!audio_valid_sample_rate(info.samplerate)) {
-		sf_close(sf);
 		FormatWarning(sndfile_domain,
 			      "Invalid sample rate in %s", is.GetURI());
 		return false;
@@ -288,8 +290,6 @@ sndfile_scan_stream(InputStream &is, TagHandler &handler) noexcept
 
 	for (auto i : sndfile_tags)
 		sndfile_handle_tag(sf, i.str, i.tag, handler);
-
-	sf_close(sf);
 
 	return true;
 }
