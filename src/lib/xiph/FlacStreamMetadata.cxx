@@ -19,7 +19,9 @@
 
 #include "config.h"
 #include "FlacStreamMetadata.hxx"
-#include "lib/xiph/XiphTags.hxx"
+#include "FlacAudioFormat.hxx"
+#include "XiphTags.hxx"
+#include "CheckAudioFormat.hxx"
 #include "MixRampInfo.hxx"
 #include "tag/Handler.hxx"
 #include "tag/Table.hxx"
@@ -137,6 +139,13 @@ Scan(const FLAC__StreamMetadata_StreamInfo &stream_info,
 {
 	if (stream_info.sample_rate > 0)
 		handler.OnDuration(flac_duration(&stream_info));
+
+	try {
+		handler.OnAudioFormat(CheckAudioFormat(stream_info.sample_rate,
+						       FlacSampleFormat(stream_info.bits_per_sample),
+						       stream_info.channels));
+	} catch (...) {
+	}
 }
 
 void
