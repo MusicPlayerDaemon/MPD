@@ -121,7 +121,7 @@ FlacIOEof(FLAC__IOHandle handle)
 static int
 FlacIOClose(gcc_unused FLAC__IOHandle handle)
 {
-	/* no-op because the libFLAC caller is repsonsible for closing
+	/* no-op because the libFLAC caller is responsible for closing
 	   the #InputStream */
 
 	return 0;
