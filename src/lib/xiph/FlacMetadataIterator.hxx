@@ -31,7 +31,7 @@ public:
 	FlacMetadataIterator():iterator(::FLAC__metadata_iterator_new()) {}
 
 	FlacMetadataIterator(FLAC__Metadata_Chain *chain)
-		:iterator(::FLAC__metadata_iterator_new()) {
+		:FlacMetadataIterator() {
 		::FLAC__metadata_iterator_init(iterator, chain);
 	}
 
