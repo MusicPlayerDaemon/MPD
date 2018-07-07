@@ -39,6 +39,9 @@ public:
 		::FLAC__metadata_iterator_delete(iterator);
 	}
 
+	FlacMetadataIterator(const FlacMetadataIterator &) = delete;
+	FlacMetadataIterator &operator=(const FlacMetadataIterator &) = delete;
+
 	bool Next() noexcept {
 		return ::FLAC__metadata_iterator_next(iterator);
 	}
