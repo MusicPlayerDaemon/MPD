@@ -307,6 +307,8 @@ mpd_mpg123_scan_file(Path path_fs, TagHandler &handler) noexcept
 		return false;
 	}
 
+	handler.OnAudioFormat(audio_format);
+
 	/* ID3 tag support not yet implemented */
 
 	mpg123_delete(handle);
