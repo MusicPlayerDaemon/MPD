@@ -22,7 +22,7 @@
 #include "FlacStreamDecoder.hxx"
 #include "FlacDomain.hxx"
 #include "FlacCommon.hxx"
-#include "FlacMetadata.hxx"
+#include "lib/xiph/FlacMetadataChain.hxx"
 #include "OggCodec.hxx"
 #include "fs/Path.hxx"
 #include "fs/NarrowPath.hxx"

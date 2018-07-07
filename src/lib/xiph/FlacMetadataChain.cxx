@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2017 The Music Player Daemon Project
+ * Copyright 2003-2018 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,29 +17,21 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_FLAC_METADATA_H
-#define MPD_FLAC_METADATA_H
-
-#include <FLAC/metadata.h>
-
-class TagHandler;
-class MixRampInfo;
-
-struct Tag;
-struct ReplayGainInfo;
-
-bool
-flac_parse_replay_gain(ReplayGainInfo &rgi,
-		       const FLAC__StreamMetadata_VorbisComment &vc);
-
-MixRampInfo
-flac_parse_mixramp(const FLAC__StreamMetadata_VorbisComment &vc);
-
-Tag
-flac_vorbis_comments_to_tag(const FLAC__StreamMetadata_VorbisComment *comment);
+#include "config.h"
+#include "FlacMetadataChain.hxx"
+#include "FlacMetadataIterator.hxx"
+#include "decoder/plugins/FlacMetadata.hxx"
 
 void
-flac_scan_metadata(const FLAC__StreamMetadata *block,
-		   TagHandler &handler) noexcept;
+FlacMetadataChain::Scan(TagHandler &handler) noexcept
+{
+	FlacMetadataIterator iterator(chain);
 
-#endif
+	do {
+		FLAC__StreamMetadata *block = iterator.GetBlock();
+		if (block == nullptr)
+			break;
+
+		flac_scan_metadata(block, handler);
+	} while (iterator.Next());
+}

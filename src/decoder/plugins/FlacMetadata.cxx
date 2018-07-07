@@ -20,7 +20,6 @@
 #include "config.h"
 #include "FlacMetadata.hxx"
 #include "lib/xiph/XiphTags.hxx"
-#include "lib/xiph/FlacMetadataIterator.hxx"
 #include "MixRampInfo.hxx"
 #include "tag/Handler.hxx"
 #include "tag/Table.hxx"
@@ -159,18 +158,4 @@ flac_vorbis_comments_to_tag(const FLAC__StreamMetadata_VorbisComment *comment)
 	AddTagHandler h(tag_builder);
 	flac_scan_comments(comment, h);
 	return tag_builder.Commit();
-}
-
-void
-FlacMetadataChain::Scan(TagHandler &handler) noexcept
-{
-	FlacMetadataIterator iterator(chain);
-
-	do {
-		FLAC__StreamMetadata *block = iterator.GetBlock();
-		if (block == nullptr)
-			break;
-
-		flac_scan_metadata(block, handler);
-	} while (iterator.Next());
 }
