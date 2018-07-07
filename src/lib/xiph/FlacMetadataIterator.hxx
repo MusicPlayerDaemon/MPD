@@ -24,18 +24,18 @@
 
 #include <FLAC/metadata.h>
 
-class FLACMetadataIterator {
+class FlacMetadataIterator {
 	FLAC__Metadata_Iterator *iterator;
 
 public:
-	FLACMetadataIterator():iterator(::FLAC__metadata_iterator_new()) {}
+	FlacMetadataIterator():iterator(::FLAC__metadata_iterator_new()) {}
 
-	FLACMetadataIterator(FLAC__Metadata_Chain *chain)
+	FlacMetadataIterator(FLAC__Metadata_Chain *chain)
 		:iterator(::FLAC__metadata_iterator_new()) {
 		::FLAC__metadata_iterator_init(iterator, chain);
 	}
 
-	~FLACMetadataIterator() {
+	~FlacMetadataIterator() {
 		::FLAC__metadata_iterator_delete(iterator);
 	}
 
