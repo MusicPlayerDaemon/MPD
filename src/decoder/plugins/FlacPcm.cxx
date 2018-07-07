@@ -20,37 +20,17 @@
 #include "config.h"
 #include "FlacPcm.hxx"
 #include "CheckAudioFormat.hxx"
+#include "lib/xiph/FlacAudioFormat.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/ConstBuffer.hxx"
 
 #include <assert.h>
 
-static SampleFormat
-flac_sample_format(unsigned bits_per_sample)
-{
-	switch (bits_per_sample) {
-	case 8:
-		return SampleFormat::S8;
-
-	case 16:
-		return SampleFormat::S16;
-
-	case 24:
-		return SampleFormat::S24_P32;
-
-	case 32:
-		return SampleFormat::S32;
-
-	default:
-		return SampleFormat::UNDEFINED;
-	}
-}
-
 void
 FlacPcmImport::Open(unsigned sample_rate, unsigned bits_per_sample,
 		    unsigned channels)
 {
-	auto sample_format = flac_sample_format(bits_per_sample);
+	auto sample_format = FlacSampleFormat(bits_per_sample);
 	if (sample_format == SampleFormat::UNDEFINED)
 		throw FormatRuntimeError("Unsupported FLAC bit depth: %u",
 					 bits_per_sample);

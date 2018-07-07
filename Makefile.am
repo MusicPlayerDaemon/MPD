@@ -1198,6 +1198,7 @@ endif
 
 if ENABLE_FLAC
 libdecoder_a_SOURCES += \
+	src/lib/xiph/FlacAudioFormat.hxx \
 	src/lib/xiph/FlacMetadataIterator.hxx \
 	src/lib/xiph/FlacIOHandle.cxx src/lib/xiph/FlacIOHandle.hxx \
 	src/lib/xiph/FlacMetadataChain.cxx src/lib/xiph/FlacMetadataChain.hxx \
