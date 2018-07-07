@@ -1060,6 +1060,14 @@ mad_decoder_scan_stream(InputStream &is, TagHandler &handler) noexcept
 
 	if (!data.total_time.IsNegative())
 		handler.OnDuration(SongTime(data.total_time));
+
+	try {
+		handler.OnAudioFormat(CheckAudioFormat(data.frame.header.samplerate,
+						       SampleFormat::S24_P32,
+						       MAD_NCHANNELS(&data.frame.header)));
+	} catch (...) {
+	}
+
 	return true;
 }
 
