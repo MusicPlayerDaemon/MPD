@@ -237,32 +237,22 @@ audiofile_stream_decode(DecoderClient &client, InputStream &is)
 	} while (cmd == DecoderCommand::NONE);
 }
 
-gcc_pure
-static SignedSongTime
-audiofile_get_duration(InputStream &is) noexcept
+static bool
+audiofile_scan_stream(InputStream &is, TagHandler &handler) noexcept
 {
 	if (!is.IsSeekable() || !is.KnownSize())
-		return SignedSongTime::Negative();
+		return false;
 
 	AudioFileInputStream afis{nullptr, is};
 	AFvirtualfile *vf = setup_virtual_fops(afis);
 	AFfilehandle fh = afOpenVirtualFile(vf, "r", nullptr);
 	if (fh == AF_NULL_FILEHANDLE)
-		return SignedSongTime::Negative();
-
-	const auto duration = audiofile_get_duration(fh);
-	afCloseFile(fh);
-	return duration;
-}
-
-static bool
-audiofile_scan_stream(InputStream &is, TagHandler &handler) noexcept
-{
-	const auto duration = audiofile_get_duration(is);
-	if (duration.IsNegative())
 		return false;
 
-	handler.OnDuration(SongTime(duration));
+	AtScopeExit(fh) { afCloseFile(fh); };
+
+	handler.OnDuration(audiofile_get_duration(fh));
+
 	return true;
 }
 
