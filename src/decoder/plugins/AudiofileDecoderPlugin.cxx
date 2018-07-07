@@ -253,6 +253,13 @@ audiofile_scan_stream(InputStream &is, TagHandler &handler) noexcept
 
 	handler.OnDuration(audiofile_get_duration(fh));
 
+	try {
+		handler.OnAudioFormat(CheckAudioFormat(afGetRate(fh, AF_DEFAULT_TRACK),
+						       audiofile_setup_sample_format(fh),
+						       afGetVirtualChannels(fh, AF_DEFAULT_TRACK)));
+	} catch (...) {
+	}
+
 	return true;
 }
 
