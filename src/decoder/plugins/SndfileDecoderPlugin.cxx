@@ -286,6 +286,11 @@ sndfile_scan_stream(InputStream &is, TagHandler &handler) noexcept
 		return false;
 	}
 
+	try {
+		handler.OnAudioFormat(CheckAudioFormat(info));
+	} catch (...) {
+	}
+
 	handler.OnDuration(sndfile_duration(info));
 
 	for (auto i : sndfile_tags)
