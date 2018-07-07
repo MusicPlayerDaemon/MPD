@@ -1201,8 +1201,8 @@ libdecoder_a_SOURCES += \
 	src/lib/xiph/FlacMetadataIterator.hxx \
 	src/lib/xiph/FlacIOHandle.cxx src/lib/xiph/FlacIOHandle.hxx \
 	src/lib/xiph/FlacMetadataChain.cxx src/lib/xiph/FlacMetadataChain.hxx \
+	src/lib/xiph/FlacStreamMetadata.cxx src/lib/xiph/FlacStreamMetadata.hxx \
 	src/decoder/plugins/FlacInput.cxx src/decoder/plugins/FlacInput.hxx \
-	src/decoder/plugins/FlacMetadata.cxx src/decoder/plugins/FlacMetadata.hxx \
 	src/decoder/plugins/FlacPcm.cxx src/decoder/plugins/FlacPcm.hxx \
 	src/decoder/plugins/FlacDomain.cxx src/decoder/plugins/FlacDomain.hxx \
 	src/decoder/plugins/FlacCommon.cxx src/decoder/plugins/FlacCommon.hxx \
@@ -2096,8 +2096,7 @@ test_dump_playlist_SOURCES = test/dump_playlist.cxx \
 
 if ENABLE_FLAC
 test_dump_playlist_SOURCES += \
-	src/ReplayGainInfo.cxx \
-	src/decoder/plugins/FlacMetadata.cxx
+	src/ReplayGainInfo.cxx
 endif
 
 test_run_decoder_LDADD = \

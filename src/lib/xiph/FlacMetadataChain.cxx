@@ -21,7 +21,7 @@
 #include "FlacMetadataChain.hxx"
 #include "FlacMetadataIterator.hxx"
 #include "FlacIOHandle.hxx"
-#include "decoder/plugins/FlacMetadata.hxx"
+#include "FlacStreamMetadata.hxx"
 
 bool
 FlacMetadataChain::Read(InputStream &is) noexcept

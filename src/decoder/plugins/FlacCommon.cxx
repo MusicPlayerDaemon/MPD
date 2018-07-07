@@ -23,7 +23,7 @@
 
 #include "config.h"
 #include "FlacCommon.hxx"
-#include "FlacMetadata.hxx"
+#include "lib/xiph/FlacStreamMetadata.hxx"
 #include "Log.hxx"
 #include "input/InputStream.hxx"
 

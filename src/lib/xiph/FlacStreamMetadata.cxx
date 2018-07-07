@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2017 The Music Player Daemon Project
+ * Copyright 2003-2018 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#include "FlacMetadata.hxx"
+#include "FlacStreamMetadata.hxx"
 #include "lib/xiph/XiphTags.hxx"
 #include "MixRampInfo.hxx"
 #include "tag/Handler.hxx"
