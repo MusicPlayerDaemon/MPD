@@ -20,6 +20,7 @@
 #include "config.h"
 #include "FlacMetadata.hxx"
 #include "lib/xiph/XiphTags.hxx"
+#include "lib/xiph/FlacMetadataIterator.hxx"
 #include "MixRampInfo.hxx"
 #include "tag/Handler.hxx"
 #include "tag/Table.hxx"

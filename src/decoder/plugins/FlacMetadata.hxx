@@ -85,31 +85,6 @@ public:
 	void Scan(TagHandler &handler) noexcept;
 };
 
-class FLACMetadataIterator {
-	FLAC__Metadata_Iterator *iterator;
-
-public:
-	FLACMetadataIterator():iterator(::FLAC__metadata_iterator_new()) {}
-
-	FLACMetadataIterator(FLAC__Metadata_Chain *chain)
-		:iterator(::FLAC__metadata_iterator_new()) {
-		::FLAC__metadata_iterator_init(iterator, chain);
-	}
-
-	~FLACMetadataIterator() {
-		::FLAC__metadata_iterator_delete(iterator);
-	}
-
-	bool Next() noexcept {
-		return ::FLAC__metadata_iterator_next(iterator);
-	}
-
-	gcc_pure
-	FLAC__StreamMetadata *GetBlock() noexcept {
-		return ::FLAC__metadata_iterator_get_block(iterator);
-	}
-};
-
 struct Tag;
 struct ReplayGainInfo;
 
