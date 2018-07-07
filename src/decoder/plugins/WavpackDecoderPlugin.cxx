@@ -598,6 +598,11 @@ wavpack_scan_file(Path path_fs, TagHandler &handler) noexcept
 		WavpackCloseFile(wpc);
 	};
 
+	try {
+		handler.OnAudioFormat(CheckAudioFormat(wpc));
+	} catch (...) {
+	}
+
 	const auto duration = GetDuration(wpc);
 	if (!duration.IsNegative())
 		handler.OnDuration(SongTime(duration));
@@ -621,6 +626,11 @@ wavpack_scan_stream(InputStream &is, TagHandler &handler) noexcept
 	AtScopeExit(wpc) {
 		WavpackCloseFile(wpc);
 	};
+
+	try {
+		handler.OnAudioFormat(CheckAudioFormat(wpc));
+	} catch (...) {
+	}
 
 	const auto duration = GetDuration(wpc);
 	if (!duration.IsNegative())
