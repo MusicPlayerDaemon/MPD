@@ -21,7 +21,7 @@
 #define MPD_FLAC_METADATA_H
 
 #include "Compiler.h"
-#include "FlacIOHandle.hxx"
+#include "lib/xiph/FlacIOHandle.hxx"
 
 #include <FLAC/metadata.h>
 

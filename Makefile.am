@@ -1199,8 +1199,8 @@ endif
 if ENABLE_FLAC
 libdecoder_a_SOURCES += \
 	src/lib/xiph/FlacMetadataIterator.hxx \
+	src/lib/xiph/FlacIOHandle.cxx src/lib/xiph/FlacIOHandle.hxx \
 	src/decoder/plugins/FlacInput.cxx src/decoder/plugins/FlacInput.hxx \
-	src/decoder/plugins/FlacIOHandle.cxx src/decoder/plugins/FlacIOHandle.hxx \
 	src/decoder/plugins/FlacMetadata.cxx src/decoder/plugins/FlacMetadata.hxx \
 	src/decoder/plugins/FlacPcm.cxx src/decoder/plugins/FlacPcm.hxx \
 	src/decoder/plugins/FlacDomain.cxx src/decoder/plugins/FlacDomain.hxx \
