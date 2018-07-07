@@ -355,6 +355,9 @@ mpd_opus_scan_stream(InputStream &is, TagHandler &handler) noexcept
 	    !ReadAndVisitOpusTags(oy, os, handler))
 		return false;
 
+	handler.OnAudioFormat(AudioFormat(opus_sample_rate,
+					  SampleFormat::S16, channels));
+
 	VisitOpusDuration(is, oy, os, handler);
 	return true;
 }
