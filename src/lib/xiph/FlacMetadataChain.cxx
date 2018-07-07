@@ -20,7 +20,20 @@
 #include "config.h"
 #include "FlacMetadataChain.hxx"
 #include "FlacMetadataIterator.hxx"
+#include "FlacIOHandle.hxx"
 #include "decoder/plugins/FlacMetadata.hxx"
+
+bool
+FlacMetadataChain::Read(InputStream &is) noexcept
+{
+	return Read(::ToFlacIOHandle(is), ::GetFlacIOCallbacks(is));
+}
+
+bool
+FlacMetadataChain::ReadOgg(InputStream &is) noexcept
+{
+	return ReadOgg(::ToFlacIOHandle(is), ::GetFlacIOCallbacks(is));
+}
 
 void
 FlacMetadataChain::Scan(TagHandler &handler) noexcept

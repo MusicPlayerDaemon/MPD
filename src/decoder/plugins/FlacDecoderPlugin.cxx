@@ -24,6 +24,7 @@
 #include "FlacCommon.hxx"
 #include "lib/xiph/FlacMetadataChain.hxx"
 #include "OggCodec.hxx"
+#include "input/InputStream.hxx"
 #include "fs/Path.hxx"
 #include "fs/NarrowPath.hxx"
 #include "Log.hxx"

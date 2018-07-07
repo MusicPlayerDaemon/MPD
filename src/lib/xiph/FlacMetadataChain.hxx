@@ -20,11 +20,11 @@
 #ifndef MPD_FLAC_METADATA_CHAIN_HXX
 #define MPD_FLAC_METADATA_CHAIN_HXX
 
-#include "FlacIOHandle.hxx"
 #include "Compiler.h"
 
 #include <FLAC/metadata.h>
 
+class InputStream;
 class TagHandler;
 
 class FlacMetadataChain {
@@ -52,9 +52,7 @@ public:
 								  callbacks);
 	}
 
-	bool Read(InputStream &is) noexcept {
-		return Read(::ToFlacIOHandle(is), ::GetFlacIOCallbacks(is));
-	}
+	bool Read(InputStream &is) noexcept;
 
 	bool ReadOgg(const char *path) noexcept {
 		return ::FLAC__metadata_chain_read_ogg(chain, path);
@@ -67,9 +65,7 @@ public:
 								      callbacks);
 	}
 
-	bool ReadOgg(InputStream &is) {
-		return ReadOgg(::ToFlacIOHandle(is), ::GetFlacIOCallbacks(is));
-	}
+	bool ReadOgg(InputStream &is) noexcept;
 
 	gcc_pure
 	FLAC__Metadata_ChainStatus GetStatus() const noexcept {
