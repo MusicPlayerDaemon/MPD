@@ -165,6 +165,14 @@ sndfile_sample_format(const SF_INFO &info) noexcept
 	}
 }
 
+static AudioFormat
+CheckAudioFormat(const SF_INFO &info)
+{
+	return CheckAudioFormat(info.samplerate,
+				sndfile_sample_format(info),
+				info.channels);
+}
+
 static sf_count_t
 sndfile_read_frames(SNDFILE *sf, SampleFormat format,
 		    void *buffer, sf_count_t n_frames)
@@ -200,10 +208,7 @@ sndfile_stream_decode(DecoderClient &client, InputStream &is)
 		return;
 	}
 
-	const auto audio_format =
-		CheckAudioFormat(info.samplerate,
-				 sndfile_sample_format(info),
-				 info.channels);
+	const auto audio_format = CheckAudioFormat(info);
 
 	client.Ready(audio_format, info.seekable, sndfile_duration(info));
 
