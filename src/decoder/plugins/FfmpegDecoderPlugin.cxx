@@ -846,6 +846,14 @@ FfmpegScanStream(AVFormatContext &format_context,
 		handler.OnDuration(FromFfmpegTime(format_context.duration,
 						  AV_TIME_BASE_Q));
 
+	const auto &codec_params = GetCodecParameters(stream);
+	try {
+		handler.OnAudioFormat(CheckAudioFormat(codec_params.sample_rate,
+						       ffmpeg_sample_format(GetSampleFormat(codec_params)),
+						       codec_params.channels));
+	} catch (...) {
+	}
+
 	FfmpegScanMetadata(format_context, audio_stream, handler);
 
 	return true;
