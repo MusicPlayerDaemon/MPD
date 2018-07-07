@@ -134,6 +134,8 @@ wildmidi_scan_file(Path path_fs, TagHandler &handler) noexcept
 		return false;
 	}
 
+	handler.OnAudioFormat(wildmidi_audio_format);
+
 	const auto duration =
 		SongTime::FromScale<uint64_t>(info->approx_total_samples,
 					      wildmidi_audio_format.sample_rate);
