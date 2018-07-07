@@ -131,6 +131,14 @@ flac_duration(const FLAC__StreamMetadata_StreamInfo *stream_info) noexcept
 					     stream_info->sample_rate);
 }
 
+static void
+Scan(const FLAC__StreamMetadata_StreamInfo &stream_info,
+     TagHandler &handler) noexcept
+{
+	if (stream_info.sample_rate > 0)
+		handler.OnDuration(flac_duration(&stream_info));
+}
+
 void
 flac_scan_metadata(const FLAC__StreamMetadata *block,
 		   TagHandler &handler) noexcept
@@ -142,8 +150,7 @@ flac_scan_metadata(const FLAC__StreamMetadata *block,
 		break;
 
 	case FLAC__METADATA_TYPE_STREAMINFO:
-		if (block->data.stream_info.sample_rate > 0)
-			handler.OnDuration(flac_duration(&block->data.stream_info));
+		Scan(block->data.stream_info, handler);
 		break;
 
 	default:
