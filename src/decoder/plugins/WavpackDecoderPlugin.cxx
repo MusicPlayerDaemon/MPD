@@ -186,12 +186,8 @@ wavpack_bits_to_sample_format(bool is_float,
 	}
 }
 
-/*
- * This does the main decoding thing.
- * Requires an already opened WavpackContext.
- */
-static void
-wavpack_decode(DecoderClient &client, WavpackContext *wpc, bool can_seek)
+static AudioFormat
+CheckAudioFormat(WavpackContext *wpc)
 {
 	const bool is_float = (WavpackGetMode(wpc) & MODE_FLOAT) != 0;
 #if defined(OPEN_DSD_AS_PCM) && defined(ENABLE_DSD)
@@ -206,14 +202,24 @@ wavpack_decode(DecoderClient &client, WavpackContext *wpc, bool can_seek)
 #endif
 					      WavpackGetBytesPerSample(wpc));
 
-	auto audio_format = CheckAudioFormat(WavpackGetSampleRate(wpc),
-					     sample_format,
-					     WavpackGetReducedChannels(wpc));
+	return CheckAudioFormat(WavpackGetSampleRate(wpc),
+				sample_format,
+				WavpackGetReducedChannels(wpc));
+}
+
+/*
+ * This does the main decoding thing.
+ * Requires an already opened WavpackContext.
+ */
+static void
+wavpack_decode(DecoderClient &client, WavpackContext *wpc, bool can_seek)
+{
+	const auto audio_format = CheckAudioFormat(wpc);
 
 	auto *format_samples = format_samples_nop;
-	if (is_dsd)
+	if (audio_format.format == SampleFormat::DSD)
 		format_samples = format_samples_int<uint8_t>;
-	else if (!is_float) {
+	else if (audio_format.format != SampleFormat::FLOAT) {
 		switch (WavpackGetBytesPerSample(wpc)) {
 		case 1:
 			format_samples = format_samples_int<int8_t>;
