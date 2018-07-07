@@ -180,6 +180,14 @@ audiofile_setup_sample_format(AFfilehandle af_fp)
 	return audiofile_bits_to_sample_format(bits);
 }
 
+static AudioFormat
+CheckAudioFormat(AFfilehandle fh)
+{
+	return CheckAudioFormat(afGetRate(fh, AF_DEFAULT_TRACK),
+				audiofile_setup_sample_format(fh),
+				afGetVirtualChannels(fh, AF_DEFAULT_TRACK));
+}
+
 static void
 audiofile_stream_decode(DecoderClient &client, InputStream &is)
 {
@@ -197,11 +205,7 @@ audiofile_stream_decode(DecoderClient &client, InputStream &is)
 
 	AtScopeExit(fh) { afCloseFile(fh); };
 
-	const auto audio_format =
-		CheckAudioFormat(afGetRate(fh, AF_DEFAULT_TRACK),
-				 audiofile_setup_sample_format(fh),
-				 afGetVirtualChannels(fh, AF_DEFAULT_TRACK));
-
+	const auto audio_format = CheckAudioFormat(fh);
 	const auto total_time = audiofile_get_duration(fh);
 
 	const uint16_t kbit_rate = (uint16_t)
@@ -254,9 +258,7 @@ audiofile_scan_stream(InputStream &is, TagHandler &handler) noexcept
 	handler.OnDuration(audiofile_get_duration(fh));
 
 	try {
-		handler.OnAudioFormat(CheckAudioFormat(afGetRate(fh, AF_DEFAULT_TRACK),
-						       audiofile_setup_sample_format(fh),
-						       afGetVirtualChannels(fh, AF_DEFAULT_TRACK)));
+		handler.OnAudioFormat(CheckAudioFormat(fh));
 	} catch (...) {
 	}
 
