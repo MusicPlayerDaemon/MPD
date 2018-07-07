@@ -33,7 +33,7 @@ extern "C" {
 
 static constexpr Domain wildmidi_domain("wildmidi");
 
-static constexpr unsigned WILDMIDI_SAMPLE_RATE = 48000;
+static constexpr AudioFormat wildmidi_audio_format{48000, SampleFormat::S16, 2};
 
 static bool
 wildmidi_init(const ConfigBlock &block)
@@ -50,7 +50,8 @@ wildmidi_init(const ConfigBlock &block)
 		return false;
 	}
 
-	return WildMidi_Init(path.c_str(), WILDMIDI_SAMPLE_RATE, 0) == 0;
+	return WildMidi_Init(path.c_str(), wildmidi_audio_format.sample_rate,
+			     0) == 0;
 }
 
 static void
@@ -80,11 +81,6 @@ wildmidi_output(DecoderClient &client, midi *wm)
 static void
 wildmidi_file_decode(DecoderClient &client, Path path_fs)
 {
-	static constexpr AudioFormat audio_format = {
-		WILDMIDI_SAMPLE_RATE,
-		SampleFormat::S16,
-		2,
-	};
 	midi *wm;
 	const struct _WM_Info *info;
 
@@ -100,9 +96,9 @@ wildmidi_file_decode(DecoderClient &client, Path path_fs)
 
 	const auto duration =
 		SongTime::FromScale<uint64_t>(info->approx_total_samples,
-					      WILDMIDI_SAMPLE_RATE);
+					      wildmidi_audio_format.sample_rate);
 
-	client.Ready(audio_format, true, duration);
+	client.Ready(wildmidi_audio_format, true, duration);
 
 	DecoderCommand cmd;
 	do {
@@ -140,7 +136,7 @@ wildmidi_scan_file(Path path_fs, TagHandler &handler) noexcept
 
 	const auto duration =
 		SongTime::FromScale<uint64_t>(info->approx_total_samples,
-					      WILDMIDI_SAMPLE_RATE);
+					      wildmidi_audio_format.sample_rate);
 	handler.OnDuration(duration);
 
 	WildMidi_Close(wm);
