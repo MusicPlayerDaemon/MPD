@@ -83,26 +83,32 @@ CoreAudioDevice::Enumerate() {
 }
 
 void
-CoreAudioDevice::Close() {
+CoreAudioDevice::Close() noexcept {
 	if (!device_id)
 		return;
 	
 	// Clear device name
-	dev_name = nullptr;
 	delete[] dev_name;
+	dev_name = nullptr;
+	
+	try {
 
-	// Stop the device if it was started
-	Stop();
+		// Stop the device if it was started
+		Stop();
 
-	// Unregister the IOProc if available
-	RemoveIOProc();
+		// Unregister the IOProc if available
+		RemoveIOProc();
 
-	// Make sure to release hog state
-	SetHogStatus(false);
+		// Make sure to release hog state
+		SetHogStatus(false);
 
-	if (buffer_size_restore) {
-		SetBufferSize(buffer_size_restore);
-		buffer_size_restore = 0;
+		if (buffer_size_restore) {
+			SetBufferSize(buffer_size_restore);
+			buffer_size_restore = 0;
+		}
+	}
+	catch (...) {
+		FormatDebug(macos_output_domain, "Ignoring exception on close of CoreAudio device.");
 	}
 	device_id = 0;
 }

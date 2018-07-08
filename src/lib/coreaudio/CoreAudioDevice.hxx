@@ -38,7 +38,7 @@ public:
 	 */
 	void Open(const char *device_name);
 	// Restore settings and close the device
-	void Close();
+	void Close() noexcept;
 	// Starts the device (i.e. enables CoreAudio HAL to callback for data)
 	void Start();
 	// Stops the device (used for pause, no data will be requested)

@@ -190,18 +190,14 @@ MacOSOutput::Enable() {
 	}
 	catch (...) {
 		device.Close();
+		throw;
 	}
 	pcm_export.Construct();
 }
 
 void
 MacOSOutput::Disable() noexcept {
-	try {
-		device.Close();
-	}
-	catch (...) {
-		FormatDebug(macos_output_domain, "Ignoring exception on close of MacOS output device.");
-	}
+	device.Close();
 	pcm_export.Destruct();
 }
 
