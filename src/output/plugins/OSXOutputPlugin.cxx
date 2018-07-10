@@ -174,35 +174,47 @@ OSXOutput::Create(EventLoop &, const ConfigBlock &block)
 int
 OSXOutput::GetVolume()
 {
-	AudioUnitParameterValue dvolume;
-	char errormsg[1024];
+	Float32 vol;
+	AudioObjectPropertyAddress aopa = {
+		.mSelector	= kAudioDevicePropertyVolumeScalar,
+		.mScope		= kAudioObjectPropertyScopeOutput,
+		.mElement	= kAudioObjectPropertyElementMaster,
+	};
+	UInt32 size = sizeof(vol);
+	OSStatus status = AudioObjectGetPropertyData(dev_id,
+						     &aopa,
+						     0,
+						     NULL,
+						     &size,
+						     &vol);
 
-	OSStatus status = AudioUnitGetParameter(au, kHALOutputParam_Volume,
-			kAudioUnitScope_Global, 0, &dvolume);
 	if (status != noErr) {
+		char errormsg[1024];
 		osx_os_status_to_cstring(status, errormsg, sizeof(errormsg));
 		throw FormatRuntimeError("unable to get volume: %s", errormsg);
 	}
 
-	/* see the explanation in SetVolume, below */
-	return static_cast<int>(dvolume * dvolume * 100.0);
+	return static_cast<int>(vol * 100.0);
 }
 
 void
 OSXOutput::SetVolume(unsigned new_volume) {
-	char errormsg[1024];
+	Float32 vol = new_volume / 100.0;
+	AudioObjectPropertyAddress aopa = {
+		.mSelector	= kAudioDevicePropertyVolumeScalar,
+		.mScope		= kAudioObjectPropertyScopeOutput,
+		.mElement	= kAudioObjectPropertyElementMaster
+	};
+	UInt32 size = sizeof(vol);
+	OSStatus status = AudioObjectSetPropertyData(dev_id,
+						     &aopa,
+						     0,
+						     NULL,
+						     size,
+						     &vol);
 
-	/* The scaling below makes shifts in volume greater at the lower end
-	 * of the scale. This mimics the "feel" of physical volume levers. This is
-	 * generally what users of audio software expect.
-	 */
-
-	AudioUnitParameterValue scaled_volume =
-		sqrt(static_cast<AudioUnitParameterValue>(new_volume) / 100.0);
-
-	OSStatus status = AudioUnitSetParameter(au, kHALOutputParam_Volume,
-			kAudioUnitScope_Global, 0, scaled_volume, 0);
 	if (status != noErr) {
+		char errormsg[1024];
 		osx_os_status_to_cstring(status, errormsg, sizeof(errormsg));
 		throw FormatRuntimeError( "unable to set new volume %u: %s",
 				new_volume, errormsg);
