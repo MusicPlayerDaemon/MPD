@@ -892,11 +892,7 @@ OSXOutput::Play(const void *chunk, size_t size)
 std::chrono::steady_clock::duration
 OSXOutput::Delay() const noexcept
 {
-	// Idle if paused
-	if(pause)
-		return std::chrono::seconds(1);
-	
-	return ring_buffer->write_available()
+	return ring_buffer->write_available() && !pause
 		? std::chrono::steady_clock::duration::zero()
 		: std::chrono::milliseconds(MPD_OSX_BUFFER_TIME_MS / 4);
 }
