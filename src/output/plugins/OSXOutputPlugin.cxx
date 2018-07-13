@@ -74,6 +74,7 @@ struct OSXOutput final : AudioOutput {
 	 * @see http://dsd-guide.com/dop-open-standard
 	 */
 	bool dop_setting;
+	bool dop_enabled;
 	Manual<PcmExport> pcm_export;
 #endif
 
@@ -779,10 +780,9 @@ OSXOutput::Open(AudioFormat &audio_format)
 	if (dop && audio_format.format == SampleFormat::DSD) {
 		asbd.mBitsPerChannel = 24;
 		params.dop = true;
-	}
-	asbd.mSampleRate = params.CalcOutputSampleRate(audio_format.sample_rate);
-	if (audio_format.format == SampleFormat::DSD)
+		asbd.mSampleRate = params.CalcOutputSampleRate(audio_format.sample_rate);
 		asbd.mBytesPerPacket = 4 * audio_format.channels;
+	}
 #endif
 
 	asbd.mFramesPerPacket = 1;
@@ -800,6 +800,7 @@ OSXOutput::Open(AudioFormat &audio_format)
 		asbd.mSampleRate = params.CalcOutputSampleRate(audio_format.sample_rate);
 		asbd.mBytesPerFrame = asbd.mBytesPerPacket;
 	}
+	dop_enabled = params.dop;
 #endif
 
 	OSStatus status =
@@ -839,13 +840,15 @@ OSXOutput::Open(AudioFormat &audio_format)
 					 errormsg);
 	}
 
-#ifdef ENABLE_DSD
-	pcm_export->Open(audio_format.format, audio_format.channels, params);
-	size_t ring_buffer_size = std::max<size_t>(buffer_frame_size,
-						   MPD_OSX_BUFFER_TIME_MS * pcm_export->GetFrameSize(audio_format) * asbd.mSampleRate / 1000);
-#else
 	size_t ring_buffer_size = std::max<size_t>(buffer_frame_size,
 						   MPD_OSX_BUFFER_TIME_MS * audio_format.GetFrameSize() * audio_format.sample_rate / 1000);
+
+#ifdef ENABLE_DSD
+        if (dop_enabled) {
+		pcm_export->Open(audio_format.format, audio_format.channels, params);
+		ring_buffer_size = std::max<size_t>(buffer_frame_size,
+						   MPD_OSX_BUFFER_TIME_MS * pcm_export->GetFrameSize(audio_format) * asbd.mSampleRate / 1000);
+	}
 #endif
 	ring_buffer = new boost::lockfree::spsc_queue<uint8_t>(ring_buffer_size);
 
@@ -872,19 +875,20 @@ OSXOutput::Play(const void *chunk, size_t size)
 		}
 	}
 #ifdef ENABLE_DSD
-	const auto e = pcm_export->Export({chunk, size});
-	if (e.size == 0)
+        if (dop_enabled) {
+		const auto e = pcm_export->Export({chunk, size});
 		/* the DoP (DSD over PCM) filter converts two frames
 		   at a time and ignores the last odd frame; if there
 		   was only one frame (e.g. the last frame in the
 		   file), the result is empty; to avoid an endless
 		   loop, bail out here, and pretend the one frame has
 		   been played */
-		return size;
+		if (e.size == 0)
+			return size;
 
-	size_t bytes_written = ring_buffer->push((const uint8_t *)e.data,
-											 e.size);
-	return pcm_export->CalcSourceSize(bytes_written);
+		size_t bytes_written = ring_buffer->push((const uint8_t *)e.data, e.size);
+		return pcm_export->CalcSourceSize(bytes_written);
+	}
 #endif
 	return ring_buffer->push((const uint8_t *)chunk, size);
 }
