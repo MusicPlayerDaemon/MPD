@@ -97,13 +97,14 @@ public:
 
 	using FileDescriptor::SetNonBlocking;
 	using FileDescriptor::SetBlocking;
-	using FileDescriptor::EnableCloseOnExec;
-	using FileDescriptor::DisableCloseOnExec;
 	using FileDescriptor::Duplicate;
 	using FileDescriptor::CheckDuplicate;
 
 	static bool CreatePipe(FileDescriptor &r, FileDescriptor &w);
 #endif
+
+	using FileDescriptor::EnableCloseOnExec;
+	using FileDescriptor::DisableCloseOnExec;
 
 #ifdef USE_EVENTFD
 	using FileDescriptor::CreateEventFD;

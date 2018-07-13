@@ -90,11 +90,12 @@ public:
 		return SocketDescriptor(FileDescriptor::Undefined());
 	}
 
+	using FileDescriptor::EnableCloseOnExec;
+	using FileDescriptor::DisableCloseOnExec;
+
 #ifndef _WIN32
 	using FileDescriptor::SetNonBlocking;
 	using FileDescriptor::SetBlocking;
-	using FileDescriptor::EnableCloseOnExec;
-	using FileDescriptor::DisableCloseOnExec;
 	using FileDescriptor::Duplicate;
 	using FileDescriptor::Close;
 #else
