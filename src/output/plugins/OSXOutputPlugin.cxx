@@ -838,9 +838,9 @@ OSXOutput::Open(AudioFormat &audio_format)
 		throw FormatRuntimeError("Unable to set frame size: %s",
 					 errormsg);
 	}
-	pcm_export->Open(audio_format.format, audio_format.channels, params);
 
 #ifdef ENABLE_DSD
+	pcm_export->Open(audio_format.format, audio_format.channels, params);
 	size_t ring_buffer_size = std::max<size_t>(buffer_frame_size,
 						   MPD_OSX_BUFFER_TIME_MS * pcm_export->GetFrameSize(audio_format) * asbd.mSampleRate / 1000);
 #else
