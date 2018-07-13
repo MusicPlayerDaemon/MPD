@@ -4440,18 +4440,6 @@ run</programlisting>
                   output device it is playing through, and no other program can access it.
                 </entry>
               </row>
-              <row>
-                <entry>
-                  <varname>sync_sample_rate</varname>
-                  <parameter>yes|no</parameter>
-                </entry>
-                <entry>
-                  Synchronize the sample rate. It will try to set the output device sample
-                  rate to the corresponding sample rate of the file playing. If the output
-                  device does not support the sample rate the track has, it will try to 
-                  select the best possible for each file.
-                </entry>
-              </row>
 	      <row>
                 <entry>
                   <varname>dop</varname>
