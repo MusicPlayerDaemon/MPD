@@ -759,51 +759,32 @@ OSXOutput::Open(AudioFormat &audio_format)
 
 	memset(&asbd, 0, sizeof(asbd));
 	asbd.mFormatID = kAudioFormatLinearPCM;
-	asbd.mFormatFlags = kLinearPCMFormatFlagIsSignedInteger;
-
-	switch (audio_format.format) {
-	case SampleFormat::S8:
-		asbd.mBitsPerChannel = 8;
-		break;
-
-	case SampleFormat::S16:
-		asbd.mBitsPerChannel = 16;
-		break;
-
-	case SampleFormat::S24_P32:
-		asbd.mBitsPerChannel = 24;
-		break;
-
-	case SampleFormat::S32:
-		asbd.mBitsPerChannel = 32;
-		break;
-
-#ifdef ENABLE_DSD
-	case SampleFormat::DSD:
-		if(dop) {
-			asbd.mBitsPerChannel = 24;
-			params.dop = true;
-			break;
-		}
-#endif
-
-	default:
-		audio_format.format = SampleFormat::S32;
-		asbd.mBitsPerChannel = 32;
-		break;
+	if (audio_format.format == SampleFormat::FLOAT) {
+		asbd.mFormatFlags = kLinearPCMFormatFlagIsFloat;
+	} else {
+		asbd.mFormatFlags = kLinearPCMFormatFlagIsSignedInteger;
 	}
-#ifdef ENABLE_DSD
-	asbd.mSampleRate = params.CalcOutputSampleRate(audio_format.sample_rate);
-#endif
 
 	if (IsBigEndian())
 		asbd.mFormatFlags |= kLinearPCMFormatFlagIsBigEndian;
 
+	if (audio_format.format == SampleFormat::S24_P32) {
+		asbd.mBitsPerChannel = 24;
+	} else {
+		asbd.mBitsPerChannel = audio_format.GetSampleSize() * 8;
+	}
 	asbd.mBytesPerPacket = audio_format.GetFrameSize();
+
 #ifdef ENABLE_DSD
+	if (dop && audio_format.format == SampleFormat::DSD) {
+		asbd.mBitsPerChannel = 24;
+		params.dop = true;
+	}
+	asbd.mSampleRate = params.CalcOutputSampleRate(audio_format.sample_rate);
 	if (audio_format.format == SampleFormat::DSD)
 		asbd.mBytesPerPacket = 4 * audio_format.channels;
 #endif
+
 	asbd.mFramesPerPacket = 1;
 	asbd.mBytesPerFrame = asbd.mBytesPerPacket;
 	asbd.mChannelsPerFrame = audio_format.channels;
@@ -811,7 +792,7 @@ OSXOutput::Open(AudioFormat &audio_format)
 	Float64 sample_rate = osx_output_set_device_format(dev_id, audio_format);
 
 #ifdef ENABLE_DSD
-	if(params.dop && (sample_rate != asbd.mSampleRate)) { // fall back to PCM in case sample_rate cannot be synchronized
+	if(params.dop && sample_rate != asbd.mSampleRate) { // fall back to PCM in case sample_rate cannot be synchronized
 		params.dop = false;
 		audio_format.format = SampleFormat::S32;
 		asbd.mBitsPerChannel = 32;
