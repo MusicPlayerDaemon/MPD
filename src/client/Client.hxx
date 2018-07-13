@@ -97,7 +97,9 @@ public:
 	std::list<ClientMessage> messages;
 
 	Client(EventLoop &loop, Partition &partition,
-	       UniqueSocketDescriptor fd, int uid, int num) noexcept;
+	       UniqueSocketDescriptor fd, int uid,
+	       unsigned _permission,
+	       int num) noexcept;
 
 	~Client() noexcept {
 		if (FullyBufferedSocket::IsDefined())
@@ -239,6 +241,7 @@ client_manager_init();
 
 void
 client_new(EventLoop &loop, Partition &partition,
-	   UniqueSocketDescriptor fd, SocketAddress address, int uid) noexcept;
+	   UniqueSocketDescriptor fd, SocketAddress address, int uid,
+	   unsigned permission) noexcept;
 
 #endif

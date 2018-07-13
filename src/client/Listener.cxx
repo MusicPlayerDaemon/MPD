@@ -20,6 +20,7 @@
 #include "config.h"
 #include "Listener.hxx"
 #include "Client.hxx"
+#include "Permission.hxx"
 #include "net/UniqueSocketDescriptor.hxx"
 #include "net/SocketAddress.hxx"
 
@@ -28,5 +29,6 @@ ClientListener::OnAccept(UniqueSocketDescriptor fd,
 			 SocketAddress address, int uid) noexcept
 {
 	client_new(GetEventLoop(), partition,
-		   std::move(fd), address, uid);
+		   std::move(fd), address, uid,
+		   getDefaultPermissions());
 }
