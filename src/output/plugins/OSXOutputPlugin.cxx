@@ -36,6 +36,7 @@
 
 #include <CoreAudio/CoreAudio.h>
 #include <AudioUnit/AudioUnit.h>
+#include <AudioToolbox/AudioToolbox.h>
 #include <CoreServices/CoreServices.h>
 #include <boost/lockfree/spsc_queue.hpp>
 
@@ -192,7 +193,7 @@ OSXOutput::GetVolume()
 {
 	Float32 vol;
 	AudioObjectPropertyAddress aopa = {
-		.mSelector	= kAudioDevicePropertyVolumeScalar,
+		.mSelector	= kAudioHardwareServiceDeviceProperty_VirtualMasterVolume,
 		.mScope		= kAudioObjectPropertyScopeOutput,
 		.mElement	= kAudioObjectPropertyElementMaster,
 	};
@@ -217,7 +218,7 @@ void
 OSXOutput::SetVolume(unsigned new_volume) {
 	Float32 vol = new_volume / 100.0;
 	AudioObjectPropertyAddress aopa = {
-		.mSelector	= kAudioDevicePropertyVolumeScalar,
+		.mSelector	= kAudioHardwareServiceDeviceProperty_VirtualMasterVolume,
 		.mScope		= kAudioObjectPropertyScopeOutput,
 		.mElement	= kAudioObjectPropertyElementMaster
 	};
