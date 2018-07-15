@@ -75,13 +75,13 @@ public:
 	}
 
 private:
-	bool timed_wait(PosixMutex &mutex, unsigned timeout_ms) noexcept {
+	bool timed_wait(PosixMutex &mutex, long timeout_us) noexcept {
 		struct timeval now;
 		gettimeofday(&now, nullptr);
 
 		struct timespec ts;
-		ts.tv_sec = now.tv_sec + timeout_ms / 1000;
-		ts.tv_nsec = (now.tv_usec + (timeout_ms % 1000) * 1000) * 1000;
+		ts.tv_sec = now.tv_sec + timeout_us / 1000000;
+		ts.tv_nsec = (now.tv_usec + (timeout_us % 1000000)) * 1000;
 		// Keep tv_nsec < 1E9 to prevent return of EINVAL
 		if (ts.tv_nsec >= 1000000000) {
 			ts.tv_nsec -= 1000000000;
@@ -94,13 +94,13 @@ private:
 public:
 	bool timed_wait(PosixMutex &mutex,
 			std::chrono::steady_clock::duration timeout) noexcept {
-		auto timeout_ms = std::chrono::duration_cast<std::chrono::milliseconds>(timeout).count();
-		if (timeout_ms < 0)
-			timeout_ms = 0;
-		else if (timeout_ms > std::numeric_limits<unsigned>::max())
-			timeout_ms = std::numeric_limits<unsigned>::max();
+		auto timeout_us = std::chrono::duration_cast<std::chrono::microseconds>(timeout).count();
+		if (timeout_us < 0)
+			timeout_us = 0;
+		else if (timeout_us > std::numeric_limits<long>::max())
+			timeout_us = std::numeric_limits<long>::max();
 
-		return timed_wait(mutex, timeout_ms);
+		return timed_wait(mutex, timeout_us);
 	}
 };
 
