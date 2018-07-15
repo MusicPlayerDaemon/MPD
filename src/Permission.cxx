@@ -49,6 +49,10 @@ static std::map<std::string, unsigned> permission_passwords;
 
 static unsigned permission_default;
 
+#ifdef HAVE_UN
+static unsigned local_permissions;
+#endif
+
 static unsigned
 ParsePermission(const char *p)
 {
@@ -121,6 +125,14 @@ void initPermissions(void)
 
 	if (param)
 		permission_default = parsePermissions(param->value.c_str());
+
+#ifdef HAVE_UN
+	param = config_get_param(ConfigOption::LOCAL_PERMISSIONS);
+	if (param != nullptr)
+		local_permissions = parsePermissions(param->value.c_str());
+	else
+		local_permissions = permission_default;
+#endif
 }
 
 int getPermissionFromPassword(char const* password, unsigned* permission)
@@ -137,3 +149,13 @@ unsigned getDefaultPermissions(void)
 {
 	return permission_default;
 }
+
+#ifdef HAVE_UN
+
+unsigned
+GetLocalPermissions() noexcept
+{
+	return local_permissions;
+}
+
+#endif

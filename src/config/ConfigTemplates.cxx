@@ -43,6 +43,7 @@ const ConfigTemplate config_param_templates[] = {
 	{ "zeroconf_name" },
 	{ "zeroconf_enabled" },
 	{ "password", true },
+	{ "local_permissions" },
 	{ "default_permissions" },
 	{ "audio_output_format" },
 	{ "mixer_type" },

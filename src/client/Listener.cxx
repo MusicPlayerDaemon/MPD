@@ -24,11 +24,27 @@
 #include "net/UniqueSocketDescriptor.hxx"
 #include "net/SocketAddress.hxx"
 
+static unsigned
+GetPermissions(SocketAddress address, int uid) noexcept
+{
+	(void)uid; // TODO: implement option to derive permissions from uid
+
+#ifdef HAVE_UN
+	if (address.GetFamily() == AF_LOCAL)
+		return GetLocalPermissions();
+#else
+	(void)address;
+#endif
+
+	return getDefaultPermissions();
+}
+
 void
 ClientListener::OnAccept(UniqueSocketDescriptor fd,
 			 SocketAddress address, int uid) noexcept
 {
+
 	client_new(GetEventLoop(), partition,
 		   std::move(fd), address, uid,
-		   getDefaultPermissions());
+		   GetPermissions(address, uid));
 }

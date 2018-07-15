@@ -1159,6 +1159,11 @@ systemctl start mpd.socket</programlisting>
         </informaltable>
 
         <para>
+          <varname>local_permissions</varname> may be used to assign
+          other permissions to clients connecting on a local socket.
+        </para>
+
+        <para>
           <varname>password</varname> allows the client to send a
           password to gain other permissions.  This option may be
           specified multiple times with different passwords.
