@@ -276,10 +276,6 @@ MacOSOutput::Setup(AudioFormat &audio_format) {
 		 *	samples in case integer_mode is not
 		 *	configured or not supported).
 		 */
-		
-		memset(&in_format, 0, sizeof(in_format));
-		memset(&out_format, 0, sizeof(out_format));
-		
 		in_format = device.GetPhysFormat();
 		out_format = device.GetIOFormat();
 		AudioFormat phys_format = ASBDToAudioFormat(in_format);
