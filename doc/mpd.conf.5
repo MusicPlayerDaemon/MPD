@@ -72,19 +72,6 @@ never run as root, and you may use this option to make MPD change its
 user id after initialization.  Do not use this option if you start MPD
 as an unprivileged user.
 .TP
-.B bind_to_address <ip address or hostname or any>
-This specifies which address mpd binds to and listens on.  Multiple
-bind_to_address parameters may be specified.  The default is "any", which binds
-to all available addresses.
-
-You can set a port that is different from the global port setting,
-e.g. "localhost:6602".  IPv6 addresses must be enclosed in square
-brackets if you want to configure a port, e.g. "[::1]:6602".
-
-To bind to a Unix domain socket, specify an absolute path or a path starting
-with a tilde (~).  For a system-wide MPD, we suggest the path
-"\fB/var/run/mpd/socket\fP".
-.TP
 .B port <port>
 This specifies the port that mpd listens on.  The default is 6600.
 .TP
@@ -113,22 +100,6 @@ information will be published with Zeroconf.  The default is yes.
 If Zeroconf is enabled, this is the service name to publish.  This name should
 be unique to your local network, but name collisions will be properly dealt
 with.  The default is "Music Player".
-.TP
-.B password <password@permissions>
-This specifies a password for access to mpd.  The format is
-"password@permissions" where permissions is a comma delimited list composed
-of "read", "add", "control", and/or "admin".  "read" allows for reading of the
-database, displaying the current playlist, and current status of mpd.  "add"
-allows for adding songs and loading playlists.  "control" allows for all other
-player and playlist manipulations.  "admin" allows the db to be updated and for
-the client to kill mpd.  An example value is "somePassword@read,add".  Multiple
-password parameters may be specified.
-.TP
-.B default_permissions <permissions>
-This specifies the permissions of a client that has not been authenticated
-using a password.  The format of permissions is specified in the description of
-the "password" config parameter.  If no passwords are specified, the default is
-"read,add,control,admin", otherwise it is "" (no permissions).
 .TP
 .B audio_output
 See \fBDESCRIPTION\fP and the various \fBAUDIO OUTPUT PARAMETERS\fP sections

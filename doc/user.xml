@@ -1043,6 +1043,144 @@ systemctl start mpd.socket</programlisting>
       </section>
     </section>
 
+    <section id="config_clients">
+      <title>Client Connections</title>
+
+      <section id="config_listeners">
+        <title>Listeners</title>
+
+        <para>
+          The setting <varname>bind_to_address</varname> specifies
+          which addresses <application>MPD</application> listens on
+          for connections from clients.  The default is
+          "<parameter>any</parameter>", which binds to all available
+          addresses.
+        </para>
+
+        <para>
+          You can set a port that is different from the global port
+          setting, e.g. "<parameter>localhost:6602</parameter>".  IPv6
+          addresses must be enclosed in square brackets if you want to
+          configure a port, e.g. "<parameter>[::1]:6602</parameter>".
+        </para>
+
+        <para>
+          To bind to a local socket (UNIX domain socket), specify an
+          absolute path or a path starting with a tilde
+          (<parameter>~</parameter>).  Some clients default to
+          connecting to <filename>/var/run/mpd/socket</filename> so
+          this may be a good choice.
+        </para>
+
+        <para>
+          If no port is specified, the default port is
+          <parameter>6600</parameter>.  This default can be changed
+          with the <varname>port</varname> setting.
+        </para>
+      </section>
+
+      <section id="config_permissions">
+        <title>Permissions and Passwords</title>
+
+        <para>
+          By default, all clients are unauthenticated and have a full
+          set of permissions.  This can be restricted with the
+          settings <varname>default_permissions</varname> and
+          <varname>password</varname>.
+        </para>
+
+        <para>
+          <varname>default_permissions</varname> controls the
+          permissions of a new client.  Its value is a comma-separated
+          list of permissions:
+        </para>
+
+        <informaltable>
+          <tgroup cols="2">
+            <thead>
+              <row>
+                <entry>
+                  Name
+                </entry>
+                <entry>
+                  Description
+                </entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>
+                  <parameter>read</parameter>
+                </entry>
+                <entry>
+                  Allows reading of the database, displaying the current
+                  playlist, and current status of MPD.
+                </entry>
+              </row>
+
+              <row>
+                <entry>
+                  <parameter>read</parameter>
+                </entry>
+                <entry>
+                  Allows reading of the database, displaying the current
+                  playlist, and current status of MPD.
+                </entry>
+              </row>
+
+              <row>
+                <entry>
+                  <parameter>add</parameter>
+                </entry>
+                <entry>
+                  Allows adding songs and loading playlists.
+                </entry>
+              </row>
+
+              <row>
+                <entry>
+                  <parameter>control</parameter>
+                </entry>
+                <entry>
+                  Allows all other player and playlist manipulations.
+                </entry>
+              </row>
+
+              <row>
+                <entry>
+                  <parameter>admin</parameter>
+                </entry>
+                <entry>
+                  Allows database updates and allows shutting down MPD.
+                </entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
+
+        <para>
+          <varname>password</varname> allows the client to send a
+          password to gain other permissions.  This option may be
+          specified multiple times with different passwords.
+        </para>
+
+        <para>
+          Note that the <varname>password</varname> option is not
+          secure: passwords are sent in clear-text over the
+          connection, and the client cannot verify the server's
+          identity.
+        </para>
+
+        <para>
+          Example:
+        </para>
+
+        <programlisting>default_permissions "read"
+password "the_password@read,add,control"
+password "the_admin_password@read,add,control,admin"</programlisting>
+      </section>
+    </section>
+
     <section id="config_other">
       <title>Other Settings</title>
 
