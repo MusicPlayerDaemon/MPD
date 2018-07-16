@@ -75,7 +75,7 @@ public:
 	}
 
 private:
-	bool timed_wait(PosixMutex &mutex, long timeout_us) noexcept {
+	bool timed_wait(PosixMutex &mutex, uint_least32_t timeout_us) noexcept {
 		struct timeval now;
 		gettimeofday(&now, nullptr);
 
@@ -97,8 +97,8 @@ public:
 		auto timeout_us = std::chrono::duration_cast<std::chrono::microseconds>(timeout).count();
 		if (timeout_us < 0)
 			timeout_us = 0;
-		else if (timeout_us > std::numeric_limits<long>::max())
-			timeout_us = std::numeric_limits<long>::max();
+		else if (timeout_us > std::numeric_limits<uint_least32_t>::max())
+			timeout_us = std::numeric_limits<uint_least32_t>::max();
 
 		return timed_wait(mutex, timeout_us);
 	}
