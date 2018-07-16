@@ -29,29 +29,6 @@
 
 #include <assert.h>
 
-#define GLIBCXX_490 20140422
-#define GLIBCXX_491 20140716
-#define GLIBCXX_492 20141030
-#define GLIBCXX_492_Debian_9 20141220
-#define GLIBCXX_493 20150626
-#define GLIBCXX_494 20160803
-#define GLIBCXX_49X_NDK_r13b 20150123
-
-/* the big mess attempts to detect whether we're compiling with
-   libstdc++ 4.9.x; __GLIBCXX__ is a date tag and cannot be used to
-   check the major version; and just checking the compiler version
-   isn't enough, because somebody could use an old libstdc++ with
-   clang - SIGH! */
-#if GCC_OLDER_THAN(5,0) || (defined(__GLIBCXX__) &&		     \
-	(__GLIBCXX__ == GLIBCXX_490 || __GLIBCXX__ == GLIBCXX_491 || \
-	 __GLIBCXX__ == GLIBCXX_492 || \
-	 __GLIBCXX__ == GLIBCXX_492_Debian_9 || \
-	 __GLIBCXX__ == GLIBCXX_493 || \
-	 __GLIBCXX__ == GLIBCXX_494 || \
-	 __GLIBCXX__ == GLIBCXX_49X_NDK_r13b))
-#define GLIBCXX_49X
-#endif
-
 gcc_const
 static enum ack
 ToAck(PlaylistResult result) noexcept
@@ -127,19 +104,9 @@ ToAck(std::exception_ptr ep) noexcept
 		return ACK_ERROR_ARG;
 	} catch (const std::out_of_range &e) {
 		return ACK_ERROR_ARG;
-#ifdef GLIBCXX_49X
-	} catch (const std::exception &e) {
-#else
 	} catch (...) {
-#endif
 		try {
-#ifdef GLIBCXX_49X
-			/* workaround for g++ 4.x: no overload for
-			   rethrow_exception(exception_ptr) */
-			std::rethrow_if_nested(e);
-#else
 			std::rethrow_if_nested(ep);
-#endif
 			return ACK_ERROR_UNKNOWN;
 		} catch (...) {
 			return ToAck(std::current_exception());

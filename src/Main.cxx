@@ -118,13 +118,7 @@ static constexpr size_t MEGABYTE = 1024 * KILOBYTE;
 
 static constexpr size_t DEFAULT_BUFFER_SIZE = 4 * MEGABYTE;
 
-static
-#if GCC_OLDER_THAN(5,0)
-/* gcc 4.x has no "constexpr" for std::max() */
-const
-#else
-constexpr
-#endif
+static constexpr
 size_t MIN_BUFFER_SIZE = std::max(CHUNK_SIZE * 32,
 				  64 * KILOBYTE);
 
