@@ -255,11 +255,6 @@ private:
 		return true;
 	}
 
-	void ClearRingBuffer() noexcept {
-		std::array<uint8_t, 1024> buffer;
-		while (ring_buffer->pop(&buffer.front(), buffer.size())) {}
-	}
-
 	int Recover(int err) noexcept;
 
 	/**
@@ -789,7 +784,7 @@ AlsaOutput::CancelInternal() noexcept
 
 	pcm_export->Reset();
 	period_buffer.Clear();
-	ClearRingBuffer();
+	ring_buffer->reset();
 
 	{
 		const std::lock_guard<Mutex> lock(mutex);
@@ -809,7 +804,7 @@ AlsaOutput::Cancel() noexcept
 
 		pcm_export->Reset();
 		assert(period_buffer.IsEmpty());
-		ClearRingBuffer();
+		ring_buffer->reset();
 
 		return;
 	}
