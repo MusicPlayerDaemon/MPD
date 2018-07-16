@@ -341,8 +341,8 @@ ffmpeg = FfmpegProject(
 )
 
 curl = AutotoolsProject(
-    'http://curl.haxx.se/download/curl-7.60.0.tar.xz',
-    '8736ff8ded89ddf7e926eec7b16f82597d029fc1469f3a551f1fafaac164e6a0',
+    'http://curl.haxx.se/download/curl-7.61.0.tar.xz',
+    'ef6e55192d04713673b4409ccbcb4cb6cd723137d6e10ca45b0c593a454e1720',
     'lib/libcurl.a',
     [
         '--disable-shared', '--enable-static',
@@ -365,8 +365,8 @@ curl = AutotoolsProject(
 )
 
 libnfs = AutotoolsProject(
-    'https://github.com/sahlberg/libnfs/archive/libnfs-2.0.0.tar.gz',
-    '7ea6cd8fa6c461d01091e584d424d28e137d23ff4b65b95d01a3fd0ef95d120e',
+    'https://github.com/sahlberg/libnfs/archive/libnfs-3.0.0.tar.gz',
+    '445d92c5fc55e4a5b115e358e60486cf8f87ee50e0103d46a02e7fb4618566a5',
     'lib/libnfs.a',
     [
         '--disable-shared', '--enable-static',
@@ -375,7 +375,7 @@ libnfs = AutotoolsProject(
         # work around -Wtautological-compare
         '--disable-werror',
     ],
-    base='libnfs-libnfs-2.0.0',
+    base='libnfs-libnfs-3.0.0',
     autoreconf=True,
 )
 
