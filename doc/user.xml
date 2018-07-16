@@ -4583,6 +4583,16 @@ run</programlisting>
                   output device it is playing through, and no other program can access it.
                 </entry>
               </row>
+              <row>
+                <entry>
+                  <varname>buffer_time</varname>
+                  <parameter>US</parameter>
+                </entry>
+                <entry>
+                  Sets the device's buffer time in microseconds.
+                  Don't change unless you know what you're doing.
+                </entry>
+              </row>
 	      <row>
                 <entry>
                   <varname>dop</varname>

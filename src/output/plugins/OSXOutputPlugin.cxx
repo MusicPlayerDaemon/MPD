@@ -84,6 +84,8 @@ struct OSXOutput final : AudioOutput {
 	AudioStreamBasicDescription asbd;
 
 	boost::lockfree::spsc_queue<uint8_t> *ring_buffer;
+	/** Buffer time setting (in microseconds) */
+	long buffer_time;
 
 	OSXOutput(const ConfigBlock &block);
 
@@ -149,6 +151,7 @@ OSXOutput::OSXOutput(const ConfigBlock &block)
 
 	channel_map = block.GetBlockValue("channel_map");
 	hog_device = block.GetBlockValue("hog_device", false);
+	buffer_time = block.GetPositiveValue("buffer_time", MPD_OSX_BUFFER_TIME_MS * 1000);
 #ifdef ENABLE_DSD
 	dop_setting = block.GetBlockValue("dop", false);
 #endif
@@ -842,14 +845,14 @@ OSXOutput::Open(AudioFormat &audio_format)
 					 errormsg);
 	}
 
-	size_t ring_buffer_size = std::max<size_t>(buffer_frame_size,
-						   MPD_OSX_BUFFER_TIME_MS * audio_format.GetFrameSize() * audio_format.sample_rate / 1000);
+	long ring_buffer_size = std::max<long>(buffer_frame_size,
+						   buffer_time * audio_format.GetFrameSize() * audio_format.sample_rate / 1000 / 1000);
 
 #ifdef ENABLE_DSD
         if (dop_enabled) {
 		pcm_export->Open(audio_format.format, audio_format.channels, params);
-		ring_buffer_size = std::max<size_t>(buffer_frame_size,
-						   MPD_OSX_BUFFER_TIME_MS * pcm_export->GetFrameSize(audio_format) * asbd.mSampleRate / 1000);
+		ring_buffer_size = std::max(buffer_frame_size,
+						   buffer_time * pcm_export->GetFrameSize(audio_format) * asbd.mSampleRate / 1000 / 1000);
 	}
 #endif
 	ring_buffer = new boost::lockfree::spsc_queue<uint8_t>(ring_buffer_size);
@@ -900,7 +903,7 @@ OSXOutput::Delay() const noexcept
 {
 	return ring_buffer->write_available() && !pause
 		? std::chrono::steady_clock::duration::zero()
-		: std::chrono::milliseconds(MPD_OSX_BUFFER_TIME_MS / 4);
+		: std::chrono::microseconds(buffer_time / 4);
 }
 	
 bool OSXOutput::Pause() {
