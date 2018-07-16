@@ -31,7 +31,7 @@
 #include "../IcyInputStream.hxx"
 #include "IcyMetaDataParser.hxx"
 #include "../InputPlugin.hxx"
-#include "config/ConfigGlobal.hxx"
+#include "config/Global.hxx"
 #include "config/Block.hxx"
 #include "tag/Builder.hxx"
 #include "tag/Tag.hxx"

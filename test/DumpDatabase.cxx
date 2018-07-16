@@ -26,7 +26,7 @@
 #include "db/LightDirectory.hxx"
 #include "db/LightSong.hxx"
 #include "db/PlaylistVector.hxx"
-#include "config/ConfigGlobal.hxx"
+#include "config/Global.hxx"
 #include "config/Param.hxx"
 #include "config/Block.hxx"
 #include "tag/Config.hxx"

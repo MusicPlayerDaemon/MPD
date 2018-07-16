@@ -20,7 +20,7 @@
 #include "config.h"
 #include "Configured.hxx"
 #include "DatabaseGlue.hxx"
-#include "config/ConfigGlobal.hxx"
+#include "config/Global.hxx"
 #include "config/Param.hxx"
 #include "config/Block.hxx"
 #include "fs/AllocatedPath.hxx"

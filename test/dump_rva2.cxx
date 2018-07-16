@@ -21,7 +21,7 @@
 #include "tag/Id3Load.hxx"
 #include "tag/Rva2.hxx"
 #include "ReplayGainInfo.hxx"
-#include "config/ConfigGlobal.hxx"
+#include "config/Global.hxx"
 #include "thread/Mutex.hxx"
 #include "fs/Path.hxx"
 #include "input/InputStream.hxx"

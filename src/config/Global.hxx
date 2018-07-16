@@ -20,7 +20,7 @@
 #ifndef MPD_CONFIG_GLOBAL_HXX
 #define MPD_CONFIG_GLOBAL_HXX
 
-#include "ConfigOption.hxx"
+#include "Option.hxx"
 #include "Compiler.h"
 
 #include <chrono>

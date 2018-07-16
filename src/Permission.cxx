@@ -20,8 +20,8 @@
 #include "config.h"
 #include "Permission.hxx"
 #include "config/Param.hxx"
-#include "config/ConfigGlobal.hxx"
-#include "config/ConfigOption.hxx"
+#include "config/Global.hxx"
+#include "config/Option.hxx"
 #include "util/RuntimeError.hxx"
 
 #include <algorithm>

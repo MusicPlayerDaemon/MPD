@@ -52,11 +52,11 @@
 #include "thread/Slack.hxx"
 #include "net/Init.hxx"
 #include "lib/icu/Init.hxx"
-#include "config/ConfigGlobal.hxx"
+#include "config/Global.hxx"
 #include "config/Param.hxx"
-#include "config/ConfigDefaults.hxx"
-#include "config/ConfigOption.hxx"
-#include "config/ConfigError.hxx"
+#include "config/Defaults.hxx"
+#include "config/Option.hxx"
+#include "config/Domain.hxx"
 #include "util/RuntimeError.hxx"
 
 #ifdef ENABLE_DAEMON

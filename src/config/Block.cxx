@@ -19,8 +19,8 @@
 
 #include "config.h"
 #include "Block.hxx"
-#include "ConfigParser.hxx"
-#include "ConfigPath.hxx"
+#include "Parser.hxx"
+#include "Path.hxx"
 #include "system/FatalError.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "util/RuntimeError.hxx"

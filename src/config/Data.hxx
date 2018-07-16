@@ -20,7 +20,7 @@
 #ifndef MPD_CONFIG_DATA_HXX
 #define MPD_CONFIG_DATA_HXX
 
-#include "ConfigOption.hxx"
+#include "Option.hxx"
 
 #include <array>
 

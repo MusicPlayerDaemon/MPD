@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#include "config/ConfigGlobal.hxx"
+#include "config/Global.hxx"
 #include "event/Thread.hxx"
 #include "decoder/DecoderList.hxx"
 #include "decoder/DecoderPlugin.hxx"

@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "tag/Tag.hxx"
-#include "config/ConfigGlobal.hxx"
+#include "config/Global.hxx"
 #include "event/Thread.hxx"
 #include "input/Init.hxx"
 #include "archive/ArchiveList.hxx"

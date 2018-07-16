@@ -18,11 +18,11 @@
  */
 
 #include "config.h"
-#include "ConfigFile.hxx"
+#include "File.hxx"
 #include "Data.hxx"
 #include "Param.hxx"
 #include "Block.hxx"
-#include "ConfigTemplates.hxx"
+#include "Templates.hxx"
 #include "util/Tokenizer.hxx"
 #include "util/StringStrip.hxx"
 #include "util/Domain.hxx"

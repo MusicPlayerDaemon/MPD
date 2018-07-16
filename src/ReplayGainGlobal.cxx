@@ -21,7 +21,7 @@
 #include "ReplayGainGlobal.hxx"
 #include "ReplayGainConfig.hxx"
 #include "config/Param.hxx"
-#include "config/ConfigGlobal.hxx"
+#include "config/Global.hxx"
 #include "util/RuntimeError.hxx"
 
 #include <assert.h>

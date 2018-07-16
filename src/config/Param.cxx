@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "Param.hxx"
-#include "ConfigPath.hxx"
+#include "Path.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "util/RuntimeError.hxx"
 

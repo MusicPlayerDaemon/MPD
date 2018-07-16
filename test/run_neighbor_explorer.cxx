@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#include "config/ConfigGlobal.hxx"
+#include "config/Global.hxx"
 #include "neighbor/Listener.hxx"
 #include "neighbor/Info.hxx"
 #include "neighbor/Glue.hxx"

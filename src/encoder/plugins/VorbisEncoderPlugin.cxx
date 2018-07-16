@@ -22,7 +22,7 @@
 #include "OggEncoder.hxx"
 #include "lib/xiph/VorbisComment.hxx"
 #include "AudioFormat.hxx"
-#include "config/ConfigError.hxx"
+#include "config/Domain.hxx"
 #include "util/StringUtil.hxx"
 #include "util/NumberParser.hxx"
 #include "util/RuntimeError.hxx"

@@ -17,9 +17,24 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_CONFIG_ERROR_HXX
-#define MPD_CONFIG_ERROR_HXX
+#include "Parser.hxx"
+#include "util/StringUtil.hxx"
 
-extern const class Domain config_domain;
+bool
+get_bool(const char *value, bool *value_r)
+{
+	static const char *const t[] = { "yes", "true", "1", nullptr };
+	static const char *const f[] = { "no", "false", "0", nullptr };
 
-#endif
+	if (StringArrayContainsCase(t, value)) {
+		*value_r = true;
+		return true;
+	}
+
+	if (StringArrayContainsCase(f, value)) {
+		*value_r = false;
+		return true;
+	}
+
+	return false;
+}

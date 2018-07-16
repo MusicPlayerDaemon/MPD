@@ -17,8 +17,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "ConfigTemplates.hxx"
-#include "ConfigOption.hxx"
+#include "Templates.hxx"
+#include "Option.hxx"
 #include "util/Macros.hxx"
 
 #include <string.h>

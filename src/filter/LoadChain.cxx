@@ -23,9 +23,9 @@
 #include "Prepared.hxx"
 #include "plugins/ChainFilterPlugin.hxx"
 #include "config/Param.hxx"
-#include "config/ConfigOption.hxx"
-#include "config/ConfigGlobal.hxx"
-#include "config/ConfigError.hxx"
+#include "config/Option.hxx"
+#include "config/Global.hxx"
+#include "config/Domain.hxx"
 #include "config/Block.hxx"
 #include "util/RuntimeError.hxx"
 

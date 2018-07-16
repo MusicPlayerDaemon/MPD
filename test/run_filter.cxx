@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "config/Param.hxx"
-#include "config/ConfigGlobal.hxx"
+#include "config/Global.hxx"
 #include "fs/Path.hxx"
 #include "AudioParser.hxx"
 #include "AudioFormat.hxx"

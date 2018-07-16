@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "ClientInternal.hxx"
-#include "config/ConfigGlobal.hxx"
+#include "config/Global.hxx"
 
 #define CLIENT_TIMEOUT_DEFAULT			(60)
 #define CLIENT_MAX_COMMAND_LIST_DEFAULT		(2048*1024)

@@ -36,7 +36,7 @@
 #include "util/UriUtil.hxx"
 #include "util/StringUtil.hxx"
 #include "util/Macros.hxx"
-#include "config/ConfigGlobal.hxx"
+#include "config/Global.hxx"
 #include "config/Block.hxx"
 
 #include <assert.h>

@@ -23,8 +23,8 @@
 #include "Explorer.hxx"
 #include "NeighborPlugin.hxx"
 #include "Info.hxx"
-#include "config/ConfigGlobal.hxx"
-#include "config/ConfigError.hxx"
+#include "config/Global.hxx"
+#include "config/Domain.hxx"
 #include "config/Block.hxx"
 #include "util/RuntimeError.hxx"
 

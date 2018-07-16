@@ -22,7 +22,7 @@
 #include "input/Init.hxx"
 #include "input/InputStream.hxx"
 #include "input/TextInputStream.hxx"
-#include "config/ConfigGlobal.hxx"
+#include "config/Global.hxx"
 #include "Log.hxx"
 
 #ifdef ENABLE_ARCHIVE

@@ -17,7 +17,9 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "ConfigError.hxx"
-#include "util/Domain.hxx"
+#ifndef MPD_CONFIG_DOMAIN_HXX
+#define MPD_CONFIG_DOMAIN_HXX
 
-const Domain config_domain("config");
+extern const class Domain config_domain;
+
+#endif

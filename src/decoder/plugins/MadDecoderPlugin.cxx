@@ -21,7 +21,7 @@
 #include "MadDecoderPlugin.hxx"
 #include "../DecoderAPI.hxx"
 #include "input/InputStream.hxx"
-#include "config/ConfigGlobal.hxx"
+#include "config/Global.hxx"
 #include "tag/Id3Scan.hxx"
 #include "tag/Rva2.hxx"
 #include "tag/Handler.hxx"

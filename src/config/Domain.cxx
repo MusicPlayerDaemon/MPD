@@ -17,24 +17,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "ConfigParser.hxx"
-#include "util/StringUtil.hxx"
+#include "Domain.hxx"
+#include "util/Domain.hxx"
 
-bool
-get_bool(const char *value, bool *value_r)
-{
-	static const char *const t[] = { "yes", "true", "1", nullptr };
-	static const char *const f[] = { "no", "false", "0", nullptr };
-
-	if (StringArrayContainsCase(t, value)) {
-		*value_r = true;
-		return true;
-	}
-
-	if (StringArrayContainsCase(f, value)) {
-		*value_r = false;
-		return true;
-	}
-
-	return false;
-}
+const Domain config_domain("config");

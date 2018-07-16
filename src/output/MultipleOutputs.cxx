@@ -24,8 +24,8 @@
 #include "MusicPipe.hxx"
 #include "MusicChunk.hxx"
 #include "config/Block.hxx"
-#include "config/ConfigGlobal.hxx"
-#include "config/ConfigOption.hxx"
+#include "config/Global.hxx"
+#include "config/Option.hxx"
 #include "util/RuntimeError.hxx"
 
 #include <stdexcept>

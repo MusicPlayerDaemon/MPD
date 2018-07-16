@@ -20,7 +20,7 @@
 #include "config.h"
 #include "CheckFile.hxx"
 #include "Log.hxx"
-#include "config/ConfigError.hxx"
+#include "config/Domain.hxx"
 #include "FileInfo.hxx"
 #include "Path.hxx"
 #include "AllocatedPath.hxx"

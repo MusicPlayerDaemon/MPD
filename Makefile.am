@@ -1000,17 +1000,17 @@ libbasic_a_SOURCES = \
 # configuration library
 
 libconf_a_SOURCES = \
-	src/config/ConfigDefaults.hxx \
-	src/config/ConfigPath.cxx src/config/ConfigPath.hxx \
+	src/config/Defaults.hxx \
+	src/config/Path.cxx src/config/Path.hxx \
 	src/config/Data.cxx src/config/Data.hxx \
 	src/config/Block.cxx src/config/Block.hxx \
 	src/config/Param.cxx src/config/Param.hxx \
-	src/config/ConfigParser.cxx src/config/ConfigParser.hxx \
-	src/config/ConfigGlobal.cxx src/config/ConfigGlobal.hxx \
-	src/config/ConfigFile.cxx src/config/ConfigFile.hxx \
-	src/config/ConfigTemplates.cxx src/config/ConfigTemplates.hxx \
-	src/config/ConfigError.cxx src/config/ConfigError.hxx \
-	src/config/ConfigOption.hxx
+	src/config/Parser.cxx src/config/Parser.hxx \
+	src/config/Global.cxx src/config/Global.hxx \
+	src/config/File.cxx src/config/File.hxx \
+	src/config/Templates.cxx src/config/Templates.hxx \
+	src/config/Domain.cxx src/config/Domain.hxx \
+	src/config/Option.hxx
 
 # tag plugins
 

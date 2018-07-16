@@ -22,7 +22,7 @@
 #include "ls.hxx"
 #include "LogInit.hxx"
 #include "Log.hxx"
-#include "config/ConfigGlobal.hxx"
+#include "config/Global.hxx"
 #include "decoder/DecoderList.hxx"
 #include "decoder/DecoderPlugin.hxx"
 #include "output/Registry.hxx"

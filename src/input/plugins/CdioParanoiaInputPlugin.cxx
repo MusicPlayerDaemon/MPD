@@ -33,7 +33,7 @@
 #include "fs/AllocatedPath.hxx"
 #include "Log.hxx"
 #include "config/Block.hxx"
-#include "config/ConfigError.hxx"
+#include "config/Domain.hxx"
 
 #include <stdio.h>
 #include <stdint.h>
