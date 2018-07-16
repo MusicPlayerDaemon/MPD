@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2017 The Music Player Daemon Project
+ * Copyright 2003-2018 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -65,7 +65,7 @@ config_read_name_value(ConfigBlock &block, char *input, unsigned line)
 
 static ConfigBlock *
 config_read_block(BufferedReader &reader)
-try {
+{
 	std::unique_ptr<ConfigBlock> block(new ConfigBlock(reader.GetLineNumber()));
 
 	while (true) {
@@ -93,8 +93,6 @@ try {
 		config_read_name_value(*block, line,
 				       reader.GetLineNumber());
 	}
-} catch (...) {
-	std::throw_with_nested(FormatRuntimeError("Error in line %u", reader.GetLineNumber()));
 }
 
 gcc_nonnull_all
@@ -130,13 +128,11 @@ ReadConfigBlock(ConfigData &config_data, BufferedReader &reader,
 	/* now parse the block or the value */
 
 	if (tokenizer.CurrentChar() != '{')
-		throw FormatRuntimeError("line %u: '{' expected",
-					 reader.GetLineNumber());
+		throw std::runtime_error("'{' expected");
 
 	char *line = StripLeft(tokenizer.Rest() + 1);
 	if (*line != 0 && *line != CONF_COMMENT)
-		throw FormatRuntimeError("line %u: Unknown tokens after '{'",
-					 reader.GetLineNumber());
+		throw std::runtime_error("Unknown tokens after '{'");
 
 	auto *param = config_read_block(reader);
 	assert(param != nullptr);
@@ -177,12 +173,10 @@ ReadConfigParam(ConfigData &config_data, BufferedReader &reader,
 
 	const char *value = tokenizer.NextString();
 	if (value == nullptr)
-		throw FormatRuntimeError("line %u: Value missing",
-					 reader.GetLineNumber());
+		throw std::runtime_error("Value missing");
 
 	if (!tokenizer.IsEnd() && tokenizer.CurrentChar() != CONF_COMMENT)
-		throw FormatRuntimeError("line %u: Unknown tokens after value",
-					 reader.GetLineNumber());
+		throw std::runtime_error("Unknown tokens after value");
 
 	auto *param = new ConfigParam(value, reader.GetLineNumber());
 	Append(head, param);
@@ -219,9 +213,8 @@ ReadConfigFile(ConfigData &config_data, BufferedReader &reader)
 			ReadConfigBlock(config_data, reader, name, bo,
 					tokenizer);
 		} else {
-			throw FormatRuntimeError("unrecognized parameter in config file at "
-						 "line %u: %s\n",
-						 reader.GetLineNumber(), name);
+			throw FormatRuntimeError("unrecognized parameter: %s\n",
+						 name);
 		}
 	}
 }
@@ -237,5 +230,12 @@ ReadConfigFile(ConfigData &config_data, Path path)
 	FileReader file(path);
 
 	BufferedReader reader(file);
-	ReadConfigFile(config_data, reader);
+
+	try {
+		ReadConfigFile(config_data, reader);
+	} catch (...) {
+		std::throw_with_nested(FormatRuntimeError("Error in %s line %u",
+							  path_utf8.c_str(),
+							  reader.GetLineNumber()));
+	}
 }
