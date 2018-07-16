@@ -101,6 +101,7 @@ private:
 	std::chrono::steady_clock::duration Delay() const noexcept override;
 	size_t Play(const void *chunk, size_t size) override;
 	bool Pause() override;
+	void Cancel() noexcept override;
 };
 
 static constexpr Domain osx_output_domain("osx_output");
@@ -909,7 +910,18 @@ bool OSXOutput::Pause() {
 	}
 	return true;
 }
-	
+
+void
+OSXOutput::Cancel() noexcept
+{
+	AudioOutputUnitStop(au);
+	ring_buffer->reset();
+#ifdef ENABLE_DSD
+	pcm_export->Reset();
+#endif
+	AudioOutputUnitStart(au);
+}
+
 int
 osx_output_get_volume(OSXOutput &output)
 {
