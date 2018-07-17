@@ -38,11 +38,11 @@ struct BlockParam {
 	 * This flag is false when nobody has queried the value of
 	 * this option yet.
 	 */
-	mutable bool used;
+	mutable bool used = false;
 
 	gcc_nonnull_all
 	BlockParam(const char *_name, const char *_value, int _line=-1)
-		:name(_name), value(_value), line(_line), used(false) {}
+		:name(_name), value(_value), line(_line) {}
 
 	int GetIntValue() const;
 
@@ -57,7 +57,7 @@ struct ConfigBlock {
 	 * The next #ConfigBlock with the same name.  The destructor
 	 * deletes the whole chain.
 	 */
-	ConfigBlock *next;
+	ConfigBlock *next = nullptr;
 
 	int line;
 
@@ -67,10 +67,10 @@ struct ConfigBlock {
 	 * This flag is false when nobody has queried the value of
 	 * this option yet.
 	 */
-	bool used;
+	bool used = false;
 
 	explicit ConfigBlock(int _line=-1)
-		:next(nullptr), line(_line), used(false) {}
+		:line(_line) {}
 
 	ConfigBlock(const ConfigBlock &) = delete;
 
