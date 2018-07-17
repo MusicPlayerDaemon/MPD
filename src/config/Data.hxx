@@ -42,6 +42,10 @@ struct ConfigData {
 	const ConfigBlock *GetBlock(ConfigBlockOption option) const noexcept {
 		return blocks[size_t(option)];
 	}
+
+	gcc_pure
+	const ConfigBlock *FindBlock(ConfigBlockOption option,
+				     const char *key, const char *value) const noexcept;
 };
 
 #endif

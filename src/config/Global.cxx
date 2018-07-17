@@ -89,18 +89,7 @@ config_get_block(ConfigBlockOption option) noexcept
 const ConfigBlock *
 config_find_block(ConfigBlockOption option, const char *key, const char *value)
 {
-	for (const auto *block = config_get_block(option);
-	     block != nullptr; block = block->next) {
-		const char *value2 = block->GetBlockValue(key);
-		if (value2 == nullptr)
-			FormatFatalError("block without '%s' name in line %d",
-					 key, block->line);
-
-		if (strcmp(value2, value) == 0)
-			return block;
-	}
-
-	return nullptr;
+	return config_data.FindBlock(option, key, value);
 }
 
 const char *

@@ -21,6 +21,8 @@
 #include "Data.hxx"
 #include "Param.hxx"
 #include "Block.hxx"
+#include "system/FatalError.hxx"
+#include "util/StringAPI.hxx"
 
 void
 ConfigData::Clear()
@@ -34,4 +36,22 @@ ConfigData::Clear()
 		delete i;
 		i = nullptr;
 	}
+}
+
+const ConfigBlock *
+ConfigData::FindBlock(ConfigBlockOption option,
+		      const char *key, const char *value) const noexcept
+{
+	for (const auto *block = GetBlock(option);
+	     block != nullptr; block = block->next) {
+		const char *value2 = block->GetBlockValue(key);
+		if (value2 == nullptr)
+			FormatFatalError("block without '%s' in line %d",
+					 key, block->line);
+
+		if (StringIsEqual(value2, value))
+			return block;
+	}
+
+	return nullptr;
 }
