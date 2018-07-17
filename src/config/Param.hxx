@@ -38,12 +38,6 @@ struct ConfigParam {
 
 	int line;
 
-	/**
-	 * This flag is false when nobody has queried the value of
-	 * this option yet.
-	 */
-	bool used = false;
-
 	explicit ConfigParam(int _line=-1)
 		:line(_line) {}
 

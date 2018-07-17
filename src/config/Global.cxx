@@ -77,10 +77,7 @@ void config_global_check(void)
 const ConfigParam *
 config_get_param(ConfigOption option) noexcept
 {
-	auto *param = config_data.params[unsigned(option)];
-	if (param != nullptr)
-		param->used = true;
-	return param;
+	return config_data.params[unsigned(option)];
 }
 
 const ConfigBlock *
