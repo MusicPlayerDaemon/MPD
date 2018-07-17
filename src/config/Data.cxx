@@ -21,7 +21,7 @@
 #include "Data.hxx"
 #include "Param.hxx"
 #include "Block.hxx"
-#include "system/FatalError.hxx"
+#include "util/RuntimeError.hxx"
 #include "util/StringAPI.hxx"
 
 void
@@ -40,14 +40,14 @@ ConfigData::Clear()
 
 const ConfigBlock *
 ConfigData::FindBlock(ConfigBlockOption option,
-		      const char *key, const char *value) const noexcept
+		      const char *key, const char *value) const
 {
 	for (const auto *block = GetBlock(option);
 	     block != nullptr; block = block->next) {
 		const char *value2 = block->GetBlockValue(key);
 		if (value2 == nullptr)
-			FormatFatalError("block without '%s' in line %d",
-					 key, block->line);
+			throw FormatRuntimeError("block without '%s' in line %d",
+						 key, block->line);
 
 		if (StringIsEqual(value2, value))
 			return block;

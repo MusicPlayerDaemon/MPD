@@ -43,9 +43,12 @@ struct ConfigData {
 		return blocks[size_t(option)];
 	}
 
+	/**
+	 * Throws if a block doesn't have the specified (mandatory) key.
+	 */
 	gcc_pure
 	const ConfigBlock *FindBlock(ConfigBlockOption option,
-				     const char *key, const char *value) const noexcept;
+				     const char *key, const char *value) const;
 };
 
 #endif
