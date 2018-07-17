@@ -20,7 +20,6 @@
 #include "config.h"
 #include "Global.hxx"
 #include "Data.hxx"
-#include "Param.hxx"
 #include "Block.hxx"
 #include "File.hxx"
 #include "Path.hxx"
@@ -74,12 +73,6 @@ void config_global_check(void)
 	for (auto i : config_data.blocks)
 		for (const auto *p = i; p != nullptr; p = p->next)
 			Check(*p);
-}
-
-const ConfigParam *
-config_get_param(ConfigOption option) noexcept
-{
-	return config_data.GetParam(option);
 }
 
 const char *

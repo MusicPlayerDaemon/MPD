@@ -25,8 +25,6 @@
 
 class Path;
 struct ConfigData;
-struct ConfigParam;
-struct ConfigBlock;
 
 void
 config_global_init();
@@ -47,10 +45,6 @@ config_global_check();
 
 void
 ReadConfigFile(Path path);
-
-gcc_pure
-const ConfigParam *
-config_get_param(enum ConfigOption option) noexcept;
 
 const char *
 config_get_string(enum ConfigOption option,
