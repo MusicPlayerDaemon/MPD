@@ -32,7 +32,7 @@ struct ConfigParam {
 	 * The next ConfigParam with the same name.  The destructor
 	 * deletes the whole chain.
 	 */
-	ConfigParam *next;
+	ConfigParam *next = nullptr;
 
 	std::string value;
 
@@ -42,10 +42,10 @@ struct ConfigParam {
 	 * This flag is false when nobody has queried the value of
 	 * this option yet.
 	 */
-	bool used;
+	bool used = false;
 
 	explicit ConfigParam(int _line=-1)
-		:next(nullptr), line(_line), used(false) {}
+		:line(_line) {}
 
 	gcc_nonnull_all
 	ConfigParam(const char *_value, int _line=-1);
