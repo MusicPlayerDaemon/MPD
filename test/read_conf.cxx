@@ -47,17 +47,12 @@ try {
 	ReadConfigFile(config_path);
 
 	const char *value = config_get_string(option);
-	int ret;
-	if (value != NULL) {
-		printf("%s\n", value);
-		ret = EXIT_SUCCESS;
-	} else {
-		fprintf(stderr, "No such setting: %s\n", name);
-		ret = EXIT_FAILURE;
-	}
+	if (value == nullptr)
+		throw FormatRuntimeError("No such setting: %s", name);
 
+	printf("%s\n", value);
 	config_global_finish();
-	return ret;
+	return EXIT_SUCCESS;
 } catch (...) {
 	PrintException(std::current_exception());
 	return EXIT_FAILURE;
