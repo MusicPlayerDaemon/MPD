@@ -509,7 +509,7 @@ try {
 
 	TagLoadConfig(raw_config);
 
-	log_init(options.verbose, options.log_stderr);
+	log_init(raw_config, options.verbose, options.log_stderr);
 
 	instance = new Instance();
 
