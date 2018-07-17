@@ -125,6 +125,7 @@ GetResamplerConfig(ConfigBlock &buffer)
 		throw FormatRuntimeError("Cannot use both 'resampler' (line %d) and 'samplerate_converter' (line %d)",
 					 block->line, old_param->line);
 
+	block->SetUsed();
 	return block;
 }
 

@@ -42,6 +42,8 @@ filter_chain_append_new(PreparedFilter &chain, const char *template_name)
 		throw FormatRuntimeError("Filter template not found: %s",
 					 template_name);
 
+	cfg->SetUsed();
+
 	// Instantiate one of those filter plugins with the template name as a hint
 	auto f = filter_configured_new(*cfg);
 

@@ -54,6 +54,8 @@ NeighborGlue::Init(EventLoop &loop, NeighborListener &listener)
 {
 	for (const auto *block = config_get_block(ConfigBlockOption::NEIGHBORS);
 	     block != nullptr; block = block->next) {
+		block->SetUsed();
+
 		try {
 			explorers.emplace_front(CreateNeighborExplorer(loop,
 								       listener,

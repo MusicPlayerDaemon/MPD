@@ -92,6 +92,7 @@ MultipleOutputs::Configure(EventLoop &event_loop,
 {
 	for (const auto *param = config_get_block(ConfigBlockOption::AUDIO_OUTPUT);
 	     param != nullptr; param = param->next) {
+		param->SetUsed();
 		auto *output = LoadOutputControl(event_loop,
 						 replay_gain_config,
 						 mixer_listener,

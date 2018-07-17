@@ -143,6 +143,9 @@ void decoder_plugin_init_all(void)
 			/* the plugin is disabled in mpd.conf */
 			continue;
 
+		if (param != nullptr)
+			param->SetUsed();
+
 		if (plugin.Init(*param))
 			decoder_plugins_enabled[i] = true;
 	}

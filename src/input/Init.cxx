@@ -53,6 +53,8 @@ input_stream_global_init(EventLoop &event_loop)
 			/* the plugin is disabled in mpd.conf */
 			continue;
 
+		block->SetUsed();
+
 		try {
 			if (plugin->init != nullptr)
 				plugin->init(event_loop, *block);

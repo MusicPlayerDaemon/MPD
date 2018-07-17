@@ -38,10 +38,11 @@ CreateConfiguredDatabase(EventLoop &main_event_loop, EventLoop &io_event_loop,
 		throw FormatRuntimeError("Found both 'database' (line %d) and 'db_file' (line %d) setting",
 					 param->line, path->line);
 
-	if (param != nullptr)
+	if (param != nullptr) {
+		param->SetUsed();
 		return DatabaseGlobalInit(main_event_loop, io_event_loop,
 					  listener, *param);
-	else if (path != nullptr) {
+	} else if (path != nullptr) {
 		ConfigBlock block(path->line);
 		block.AddBlockParam("path", path->value, path->line);
 		return DatabaseGlobalInit(main_event_loop, io_event_loop,

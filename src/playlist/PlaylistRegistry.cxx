@@ -90,6 +90,9 @@ playlist_list_global_init(void)
 			/* the plugin is disabled in mpd.conf */
 			continue;
 
+		if (param != nullptr)
+			param->SetUsed();
+
 		playlist_plugins_enabled[i] =
 			playlist_plugin_init(playlist_plugins[i], *param);
 	}
