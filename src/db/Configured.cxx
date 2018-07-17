@@ -53,8 +53,7 @@ CreateConfiguredDatabase(EventLoop &main_event_loop, EventLoop &io_event_loop,
 		if (cache_dir.IsNull())
 			return nullptr;
 
-		const auto db_file = AllocatedPath::Build(cache_dir,
-							  PATH_LITERAL("mpd.db"));
+		const auto db_file = cache_dir / Path::FromFS(PATH_LITERAL("mpd.db"));
 		const auto db_file_utf8 = db_file.ToUTF8();
 		if (db_file_utf8.empty())
 			return nullptr;

@@ -114,8 +114,7 @@ LocalStorage::MapFSOrThrow(const char *uri_utf8) const
 	if (StringIsEmpty(uri_utf8))
 		return base_fs;
 
-	return AllocatedPath::Build(base_fs,
-				    AllocatedPath::FromUTF8Throw(uri_utf8));
+	return base_fs / AllocatedPath::FromUTF8Throw(uri_utf8);
 }
 
 AllocatedPath
@@ -176,7 +175,7 @@ LocalDirectoryReader::Read() noexcept
 StorageFileInfo
 LocalDirectoryReader::GetInfo(bool follow)
 {
-	return Stat(AllocatedPath::Build(base_fs, reader.GetEntry()), follow);
+	return Stat(base_fs / reader.GetEntry(), follow);
 }
 
 std::unique_ptr<Storage>

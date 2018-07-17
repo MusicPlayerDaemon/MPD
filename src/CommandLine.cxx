@@ -310,7 +310,7 @@ bool ConfigLoader::TryFile(const AllocatedPath &base_path, Path path)
 {
 	if (base_path.IsNull())
 		return false;
-	auto full_path = AllocatedPath::Build(base_path, path);
+	auto full_path = base_path / path;
 	return TryFile(full_path);
 }
 

@@ -141,7 +141,7 @@ WatchDirectory::GetUriFS() const noexcept
 	if (uri.IsNull())
 		return name;
 
-	return AllocatedPath::Build(uri, name);
+	return uri / name;
 }
 
 /* we don't look at "." / ".." nor files with newlines in their name */
@@ -181,8 +181,8 @@ recursive_watch_subdirectories(WatchDirectory *directory,
 		if (skip_path(ent->d_name))
 			continue;
 
-		const auto child_path_fs =
-			AllocatedPath::Build(path_fs, ent->d_name);
+		const auto name_fs = Path::FromFS(ent->d_name);
+		const auto child_path_fs = path_fs / name_fs;
 
 		FileInfo fi;
 		try {
@@ -211,7 +211,7 @@ recursive_watch_subdirectories(WatchDirectory *directory,
 			continue;
 
 		directory->children.emplace_front(directory,
-						  AllocatedPath::FromFS(ent->d_name),
+						  name_fs,
 						  ret);
 		child = &directory->children.front();
 
@@ -262,7 +262,7 @@ mpd_inotify_callback(int wd, unsigned mask,
 
 		const auto path_fs = uri_fs.IsNull()
 			? root
-			: AllocatedPath::Build(root, uri_fs.c_str());
+			: (root / uri_fs);
 
 		recursive_watch_subdirectories(directory, path_fs,
 					       directory->GetDepth());

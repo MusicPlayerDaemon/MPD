@@ -260,7 +260,7 @@ glue_state_file_init()
 		if (cache_dir.IsNull())
 			return;
 
-		path_fs = AllocatedPath::Build(cache_dir, "state");
+		path_fs = cache_dir / Path::FromFS("state");
 #else
 		return;
 #endif
@@ -486,7 +486,7 @@ try {
 	const auto sdcard = Environment::getExternalStorageDirectory();
 	if (!sdcard.IsNull()) {
 		const auto config_path =
-			AllocatedPath::Build(sdcard, "mpd.conf");
+			sdcard / Path::FromFS("mpd.conf");
 		if (FileExists(config_path))
 			ReadConfigFile(config_path);
 	}

@@ -113,7 +113,7 @@ ParsePath(const char *path)
 		if (path2.IsNull())
 			return nullptr;
 
-		return AllocatedPath::Build(home, path2);
+		return home / path2;
 	} else if (!PathTraitsUTF8::IsAbsolute(path)) {
 		throw FormatRuntimeError("not an absolute path: %s", path);
 	} else {

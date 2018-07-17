@@ -43,8 +43,7 @@ try {
 
 #ifndef _WIN32
 	try {
-		const auto x = AllocatedPath::Build(path_fs,
-						    PathTraitsFS::CURRENT_DIRECTORY);
+		const auto x = path_fs / Path::FromFS(PathTraitsFS::CURRENT_DIRECTORY);
 		const FileInfo fi2(x);
 	} catch (const std::system_error &e) {
 		if (IsAccessDenied(e))

@@ -428,8 +428,7 @@ SimpleDatabase::Mount(const char *local_uri, const char *storage_uri)
 #ifndef ENABLE_ZLIB
 	constexpr bool compress = false;
 #endif
-	auto db = new SimpleDatabase(AllocatedPath::Build(cache_path,
-							  name_fs.c_str()),
+	auto db = new SimpleDatabase(cache_path / name_fs,
 				     compress);
 	try {
 		db->Open();

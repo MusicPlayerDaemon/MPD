@@ -183,16 +183,16 @@ ParseConfigLine(char *line, const char *dir_name, AllocatedPath &result_dir)
 	*line_end = 0;
 
 	// build the result path
-	const char *path = line;
+	const auto path_fs = Path::FromFS(line);
 
 	AllocatedPath result = nullptr;
 	if (home_relative) {
 		auto home = GetHomeDir();
 		if (home.IsNull())
 			return true;
-		result = AllocatedPath::Build(home, path);
+		result = home / path_fs;
 	} else {
-		result = AllocatedPath::FromFS(path);
+		result = AllocatedPath(path_fs);
 	}
 
 	if (IsValidDir(result.c_str())) {
@@ -209,9 +209,8 @@ try {
 	auto config_dir = GetUserConfigDir();
 	if (config_dir.IsNull())
 		return result;
-	auto dirs_file = AllocatedPath::Build(config_dir, "user-dirs.dirs");
 
-	TextFile input(dirs_file);
+	TextFile input(config_dir / Path::FromFS("user-dirs.dirs"));
 	char *line;
 	while ((line = input.ReadLine()) != nullptr)
 		if (ParseConfigLine(line, name, result))
@@ -237,7 +236,7 @@ GetUserConfigDir() noexcept
 	// Check for $HOME/.config
 	auto home = GetHomeDir();
 	if (!home.IsNull()) {
-		AllocatedPath fallback = AllocatedPath::Build(home, ".config");
+		auto fallback = home / Path::FromFS(".config");
 		if (IsValidDir(fallback.c_str()))
 			return fallback;
 	}
@@ -274,7 +273,7 @@ GetUserCacheDir() noexcept
 	// Check for $HOME/.cache
 	auto home = GetHomeDir();
 	if (!home.IsNull()) {
-		AllocatedPath fallback = AllocatedPath::Build(home, ".cache");
+		auto fallback = home / Path::FromFS(".cache");
 		if (IsValidDir(fallback.c_str()))
 			return fallback;
 	}

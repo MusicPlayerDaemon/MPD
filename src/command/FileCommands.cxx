@@ -81,8 +81,7 @@ handle_listfiles_local(Response &r, Path path_fs)
 		if (name_utf8.empty())
 			continue;
 
-		const AllocatedPath full_fs =
-			AllocatedPath::Build(path_fs, name_fs);
+		const auto full_fs = path_fs / name_fs;
 		FileInfo fi;
 		if (!GetFileInfo(full_fs, fi, false))
 			continue;

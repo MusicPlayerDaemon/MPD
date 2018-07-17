@@ -138,7 +138,7 @@ LoadPlaylistFileInfo(PlaylistInfo &info,
 		return false;
 
 	FileInfo fi;
-	if (!GetFileInfo(AllocatedPath::Build(parent_path_fs, name_fs), fi) ||
+	if (!GetFileInfo(parent_path_fs / name_fs, fi) ||
 	    !fi.IsRegular())
 		return false;
 
