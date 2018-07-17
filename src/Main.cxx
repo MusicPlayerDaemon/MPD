@@ -557,7 +557,7 @@ try {
 	archive_plugin_init_all();
 #endif
 
-	pcm_convert_global_init();
+	pcm_convert_global_init(raw_config);
 
 	decoder_plugin_init_all(raw_config);
 

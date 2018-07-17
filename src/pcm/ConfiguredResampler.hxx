@@ -22,10 +22,11 @@
 
 #include "check.h"
 
+struct ConfigData;
 class PcmResampler;
 
 void
-pcm_resampler_global_init();
+pcm_resampler_global_init(const ConfigData &config);
 
 /**
  * Create a #PcmResampler instance from the implementation class
