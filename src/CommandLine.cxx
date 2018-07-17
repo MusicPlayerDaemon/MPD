@@ -67,14 +67,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+namespace {
 #ifdef _WIN32
-#define CONFIG_FILE_LOCATION PATH_LITERAL("mpd\\mpd.conf")
-#define APP_CONFIG_FILE_LOCATION PATH_LITERAL("conf\\mpd.conf")
+constexpr auto CONFIG_FILE_LOCATION = Path::FromFS(PATH_LITERAL("mpd\\mpd.conf"));
+constexpr auto APP_CONFIG_FILE_LOCATION = Path::FromFS(PATH_LITERAL("conf\\mpd.conf"));
 #else
-#define USER_CONFIG_FILE_LOCATION1 PATH_LITERAL(".mpdconf")
-#define USER_CONFIG_FILE_LOCATION2 PATH_LITERAL(".mpd/mpd.conf")
-#define USER_CONFIG_FILE_LOCATION_XDG PATH_LITERAL("mpd/mpd.conf")
+constexpr auto USER_CONFIG_FILE_LOCATION1 = Path::FromFS(PATH_LITERAL(".mpdconf"));
+constexpr auto USER_CONFIG_FILE_LOCATION2 = Path::FromFS(PATH_LITERAL(".mpd/mpd.conf"));
+constexpr auto USER_CONFIG_FILE_LOCATION_XDG = Path::FromFS(PATH_LITERAL("mpd/mpd.conf"));
 #endif
+}
 
 enum Option {
 	OPTION_KILL,
@@ -292,8 +294,7 @@ class ConfigLoader
 {
 public:
 	bool TryFile(const Path path);
-	bool TryFile(const AllocatedPath &base_path,
-		     PathTraitsFS::const_pointer_type path);
+	bool TryFile(const AllocatedPath &base_path, Path path);
 };
 
 bool ConfigLoader::TryFile(Path path)
@@ -305,8 +306,7 @@ bool ConfigLoader::TryFile(Path path)
 	return false;
 }
 
-bool ConfigLoader::TryFile(const AllocatedPath &base_path,
-			   PathTraitsFS::const_pointer_type path)
+bool ConfigLoader::TryFile(const AllocatedPath &base_path, Path path)
 {
 	if (base_path.IsNull())
 		return false;
