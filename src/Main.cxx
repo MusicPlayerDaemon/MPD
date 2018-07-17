@@ -545,7 +545,7 @@ try {
 	glue_mapper_init();
 
 	initPermissions();
-	spl_global_init();
+	spl_global_init(GetGlobalConfig());
 #ifdef ENABLE_ARCHIVE
 	archive_plugin_init_all();
 #endif
