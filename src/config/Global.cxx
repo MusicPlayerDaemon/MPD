@@ -28,7 +28,7 @@
 #include "Domain.hxx"
 #include "fs/Path.hxx"
 #include "fs/AllocatedPath.hxx"
-#include "system/FatalError.hxx"
+#include "util/RuntimeError.hxx"
 #include "Log.hxx"
 
 #include <stdlib.h>
@@ -126,8 +126,8 @@ config_get_unsigned(ConfigOption option, unsigned default_value)
 	const char *const s = param->value.c_str();
 	value = strtol(s, &endptr, 0);
 	if (endptr == s || *endptr != 0 || value < 0)
-		FormatFatalError("Not a valid non-negative number in line %i",
-				 param->line);
+		throw FormatRuntimeError("Not a valid non-negative number in line %i",
+					 param->line);
 
 	return (unsigned)value;
 }
@@ -145,11 +145,12 @@ config_get_positive(ConfigOption option, unsigned default_value)
 	const char *const s = param->value.c_str();
 	value = strtol(s, &endptr, 0);
 	if (endptr == s || *endptr != 0)
-		FormatFatalError("Not a valid number in line %i", param->line);
+		throw FormatRuntimeError("Not a valid number in line %i",
+					 param->line);
 
 	if (value <= 0)
-		FormatFatalError("Not a positive number in line %i",
-				 param->line);
+		throw FormatRuntimeError("Not a positive number in line %i",
+					 param->line);
 
 	return (unsigned)value;
 }
@@ -165,9 +166,9 @@ config_get_bool(ConfigOption option, bool default_value)
 
 	success = get_bool(param->value.c_str(), &value);
 	if (!success)
-		FormatFatalError("Expected boolean value (yes, true, 1) or "
-				 "(no, false, 0) on line %i\n",
-				 param->line);
+		throw FormatRuntimeError("Expected boolean value (yes, true, 1) or "
+					 "(no, false, 0) on line %i\n",
+					 param->line);
 
 	return value;
 }

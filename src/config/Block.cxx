@@ -21,7 +21,6 @@
 #include "Block.hxx"
 #include "Parser.hxx"
 #include "Path.hxx"
-#include "system/FatalError.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "util/RuntimeError.hxx"
 
@@ -35,7 +34,7 @@ BlockParam::GetIntValue() const
 	char *endptr;
 	long value2 = strtol(s, &endptr, 0);
 	if (endptr == s || *endptr != 0)
-		FormatFatalError("Not a valid number in line %i", line);
+		throw FormatRuntimeError("Not a valid number in line %i", line);
 
 	return value2;
 }
@@ -47,7 +46,7 @@ BlockParam::GetUnsignedValue() const
 	char *endptr;
 	unsigned long value2 = strtoul(s, &endptr, 0);
 	if (endptr == s || *endptr != 0)
-		FormatFatalError("Not a valid number in line %i", line);
+		throw FormatRuntimeError("Not a valid number in line %i", line);
 
 	return (unsigned)value2;
 }
@@ -59,10 +58,10 @@ BlockParam::GetPositiveValue() const
 	char *endptr;
 	unsigned long value2 = strtoul(s, &endptr, 0);
 	if (endptr == s || *endptr != 0)
-		FormatFatalError("Not a valid number in line %i", line);
+		throw FormatRuntimeError("Not a valid number in line %i", line);
 
 	if (value2 <= 0)
-		FormatFatalError("Number in line %i must be positive", line);
+		throw FormatRuntimeError("Number in line %i must be positive", line);
 
 	return (unsigned)value2;
 }
@@ -72,9 +71,9 @@ BlockParam::GetBoolValue() const
 {
 	bool value2;
 	if (!get_bool(value.c_str(), &value2))
-		FormatFatalError("%s is not a boolean value (yes, true, 1) or "
-				 "(no, false, 0) on line %i\n",
-				 name.c_str(), line);
+		throw FormatRuntimeError("%s is not a boolean value (yes, true, 1) or "
+					 "(no, false, 0) on line %i\n",
+					 name.c_str(), line);
 
 	return value2;
 }
