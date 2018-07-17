@@ -98,7 +98,8 @@ public:
 		if (!config_path.IsNull())
 			ReadConfigFile(config_path);
 
-		input_stream_global_init(io_thread.GetEventLoop());
+		input_stream_global_init(GetGlobalConfig(),
+					 io_thread.GetEventLoop());
 		decoder_plugin_init_all(GetGlobalConfig());
 	}
 

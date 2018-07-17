@@ -21,7 +21,7 @@
 #include "Init.hxx"
 #include "Registry.hxx"
 #include "InputPlugin.hxx"
-#include "config/Global.hxx"
+#include "config/Data.hxx"
 #include "config/Option.hxx"
 #include "config/Block.hxx"
 #include "Log.hxx"
@@ -33,7 +33,7 @@
 #include <assert.h>
 
 void
-input_stream_global_init(EventLoop &event_loop)
+input_stream_global_init(const ConfigData &config, EventLoop &event_loop)
 {
 	const ConfigBlock empty;
 
@@ -45,8 +45,8 @@ input_stream_global_init(EventLoop &event_loop)
 		assert(plugin->open != nullptr);
 
 		const auto *block =
-			config_find_block(ConfigBlockOption::INPUT, "plugin",
-					  plugin->name);
+			config.FindBlock(ConfigBlockOption::INPUT, "plugin",
+					 plugin->name);
 		if (block == nullptr) {
 			block = &empty;
 		} else if (!block->GetBlockValue("enabled", true))

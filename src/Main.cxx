@@ -570,7 +570,8 @@ try {
 	}
 
 	client_manager_init();
-	input_stream_global_init(instance->io_thread.GetEventLoop());
+	input_stream_global_init(GetGlobalConfig(),
+				 instance->io_thread.GetEventLoop());
 	playlist_list_global_init();
 
 #ifdef ENABLE_DAEMON

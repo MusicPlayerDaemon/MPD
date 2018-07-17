@@ -67,7 +67,7 @@ try {
 	EventThread io_thread;
 	io_thread.Start();
 
-	input_stream_global_init(io_thread.GetEventLoop());
+	input_stream_global_init(GetGlobalConfig(), io_thread.GetEventLoop());
 	playlist_list_global_init();
 	decoder_plugin_init_all(GetGlobalConfig());
 

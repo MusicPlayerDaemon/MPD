@@ -116,7 +116,8 @@ public:
 #ifdef ENABLE_ARCHIVE
 		archive_plugin_init_all();
 #endif
-		input_stream_global_init(io_thread.GetEventLoop());
+		input_stream_global_init(GetGlobalConfig(),
+					 io_thread.GetEventLoop());
 	}
 
 	~GlobalInit() {
