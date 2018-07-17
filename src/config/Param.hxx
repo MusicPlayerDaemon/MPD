@@ -48,7 +48,8 @@ struct ConfigParam {
 		:line(_line) {}
 
 	gcc_nonnull_all
-	ConfigParam(const char *_value, int _line=-1);
+	explicit ConfigParam(const char *_value, int _line=-1) noexcept
+		:value(_value), line(_line) {}
 
 	ConfigParam(const ConfigParam &) = delete;
 

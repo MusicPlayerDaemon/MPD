@@ -25,9 +25,6 @@
 
 #include <stdexcept>
 
-ConfigParam::ConfigParam(const char *_value, int _line)
-	:value(_value), line(_line) {}
-
 ConfigParam::~ConfigParam()
 {
 	delete next;
