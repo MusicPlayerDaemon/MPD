@@ -186,7 +186,7 @@ static bool
 glue_db_init_and_load(const ConfigData &config)
 {
 	instance->database =
-		CreateConfiguredDatabase(instance->event_loop,
+		CreateConfiguredDatabase(config, instance->event_loop,
 					 instance->io_thread.GetEventLoop(),
 					 *instance);
 	if (instance->database == nullptr)

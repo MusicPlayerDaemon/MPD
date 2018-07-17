@@ -20,7 +20,7 @@
 #include "config.h"
 #include "Configured.hxx"
 #include "DatabaseGlue.hxx"
-#include "config/Global.hxx"
+#include "config/Data.hxx"
 #include "config/Param.hxx"
 #include "config/Block.hxx"
 #include "fs/AllocatedPath.hxx"
@@ -28,11 +28,12 @@
 #include "util/RuntimeError.hxx"
 
 Database *
-CreateConfiguredDatabase(EventLoop &main_event_loop, EventLoop &io_event_loop,
+CreateConfiguredDatabase(const ConfigData &config,
+			 EventLoop &main_event_loop, EventLoop &io_event_loop,
 			 DatabaseListener &listener)
 {
-	const auto *param = config_get_block(ConfigBlockOption::DATABASE);
-	const auto *path = config_get_param(ConfigOption::DB_FILE);
+	const auto *param = config.GetBlock(ConfigBlockOption::DATABASE);
+	const auto *path = config.GetParam(ConfigOption::DB_FILE);
 
 	if (param != nullptr && path != nullptr)
 		throw FormatRuntimeError("Found both 'database' (line %d) and 'db_file' (line %d) setting",
