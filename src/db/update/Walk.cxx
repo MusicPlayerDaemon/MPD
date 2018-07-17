@@ -49,9 +49,10 @@
 #include <stdlib.h>
 #include <errno.h>
 
-UpdateWalk::UpdateWalk(EventLoop &_loop, DatabaseListener &_listener,
+UpdateWalk::UpdateWalk(const UpdateConfig &_config,
+		       EventLoop &_loop, DatabaseListener &_listener,
 		       Storage &_storage) noexcept
-	:cancel(false),
+	:config(_config), cancel(false),
 	 storage(_storage),
 	 editor(_loop, _listener)
 {

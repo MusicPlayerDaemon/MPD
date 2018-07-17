@@ -56,7 +56,8 @@ class UpdateWalk final {
 	DatabaseEditor editor;
 
 public:
-	UpdateWalk(EventLoop &_loop, DatabaseListener &_listener,
+	UpdateWalk(const UpdateConfig &_config,
+		   EventLoop &_loop, DatabaseListener &_listener,
 		   Storage &_storage) noexcept;
 
 	/**

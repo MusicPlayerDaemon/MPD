@@ -151,7 +151,7 @@ UpdateService::StartThread(UpdateQueueItem &&i)
 	modified = false;
 
 	next = std::move(i);
-	walk = new UpdateWalk(GetEventLoop(), listener, *next.storage);
+	walk = new UpdateWalk(config, GetEventLoop(), listener, *next.storage);
 
 	update_thread.Start();
 
