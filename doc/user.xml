@@ -410,6 +410,14 @@ systemctl start mpd.socket</programlisting>
     device "iec958:CARD=Intel,DEV=0"
     mixer_control "PCM"
 }</programlisting>
+
+      <para>
+        The <varname>include</varname> directive can be used to
+        include settings from another file; the given file name is
+        relative to the current file:
+      </para>
+
+      <programlisting>include "other.conf"</programlisting>
     </section>
 
     <section id="config_music_directory">

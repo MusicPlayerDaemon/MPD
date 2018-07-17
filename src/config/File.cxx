@@ -25,6 +25,7 @@
 #include "Templates.hxx"
 #include "util/Tokenizer.hxx"
 #include "util/StringStrip.hxx"
+#include "util/StringAPI.hxx"
 #include "util/Domain.hxx"
 #include "util/RuntimeError.hxx"
 #include "fs/Path.hxx"
@@ -152,8 +153,11 @@ ReadConfigParam(ConfigData &config_data, BufferedReader &reader,
 					    reader.GetLineNumber()));
 }
 
+/**
+ * @param directory the directory used to resolve relative paths
+ */
 static void
-ReadConfigFile(ConfigData &config_data, BufferedReader &reader)
+ReadConfigFile(ConfigData &config_data, BufferedReader &reader, Path directory)
 {
 	while (true) {
 		char *line = reader.ReadLine();
@@ -170,6 +174,16 @@ ReadConfigFile(ConfigData &config_data, BufferedReader &reader)
 		Tokenizer tokenizer(line);
 		const char *name = tokenizer.NextWord();
 		assert(name != nullptr);
+
+		if (StringIsEqual(name, "include")) {
+			// TODO: allow absolute path specifications
+			// TODO: detect recusion
+			// TODO: Config{Block,Param} have only line number but no file name
+			// TODO: support wildcards (include "conf.d/*.conf")
+			// TODO: add "include_optional"
+			ReadConfigFile(config_data, directory / AllocatedPath::FromUTF8Throw(ExpectValueAndEnd(tokenizer)));
+			continue;
+		}
 
 		/* get the definition of that option, and check the
 		   "repeatable" flag */
@@ -202,7 +216,7 @@ ReadConfigFile(ConfigData &config_data, Path path)
 	BufferedReader reader(file);
 
 	try {
-		ReadConfigFile(config_data, reader);
+		ReadConfigFile(config_data, reader, path.GetDirectoryName());
 	} catch (...) {
 		std::throw_with_nested(FormatRuntimeError("Error in %s line %u",
 							  path_utf8.c_str(),
