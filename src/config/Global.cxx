@@ -102,12 +102,6 @@ config_get_path(ConfigOption option)
 }
 
 unsigned
-config_get_unsigned(ConfigOption option, unsigned default_value)
-{
-	return config_data.GetUnsigned(option, default_value);
-}
-
-unsigned
 config_get_positive(ConfigOption option, unsigned default_value)
 {
 	return config_data.GetPositive(option, default_value);

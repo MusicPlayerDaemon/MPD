@@ -72,9 +72,6 @@ AllocatedPath
 config_get_path(enum ConfigOption option);
 
 unsigned
-config_get_unsigned(enum ConfigOption option, unsigned default_value);
-
-unsigned
 config_get_positive(enum ConfigOption option, unsigned default_value);
 
 bool config_get_bool(enum ConfigOption option, bool default_value);
