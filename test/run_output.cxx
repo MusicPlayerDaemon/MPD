@@ -22,7 +22,8 @@
 #include "output/Registry.hxx"
 #include "output/OutputPlugin.hxx"
 #include "config/Param.hxx"
-#include "config/Global.hxx"
+#include "config/Data.hxx"
+#include "config/File.hxx"
 #include "config/Option.hxx"
 #include "config/Block.hxx"
 #include "event/Thread.hxx"
@@ -43,10 +44,11 @@
 #include <stdio.h>
 
 static std::unique_ptr<AudioOutput>
-load_audio_output(EventLoop &event_loop, const char *name)
+LoadAudioOutput(const ConfigData &config, EventLoop &event_loop,
+		const char *name)
 {
-	const auto *block = config_find_block(ConfigBlockOption::AUDIO_OUTPUT,
-					      "name", name);
+	const auto *block = config.FindBlock(ConfigBlockOption::AUDIO_OUTPUT,
+					     "name", name);
 	if (block == nullptr)
 		throw FormatRuntimeError("No such configured audio output: %s",
 					 name);
@@ -120,15 +122,15 @@ try {
 
 	/* read configuration file (mpd.conf) */
 
-	config_global_init();
-	ReadConfigFile(config_path);
+	ConfigData config;
+	ReadConfigFile(config, config_path);
 
 	EventThread io_thread;
 	io_thread.Start();
 
 	/* initialize the audio output */
 
-	auto ao = load_audio_output(io_thread.GetEventLoop(), argv[2]);
+	auto ao = LoadAudioOutput(config, io_thread.GetEventLoop(), argv[2]);
 
 	/* parse the audio format */
 
@@ -140,10 +142,6 @@ try {
 	run_output(*ao, audio_format);
 
 	/* cleanup and exit */
-
-	ao.reset();
-
-	config_global_finish();
 
 	return EXIT_SUCCESS;
 } catch (...) {
