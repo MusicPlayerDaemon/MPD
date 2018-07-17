@@ -40,9 +40,11 @@ struct BlockParam {
 	 */
 	mutable bool used = false;
 
+	template<typename N, typename V>
 	gcc_nonnull_all
-	BlockParam(const char *_name, const char *_value, int _line=-1)
-		:name(_name), value(_value), line(_line) {}
+	BlockParam(N &&_name, V &&_value, int _line=-1) noexcept
+		:name(std::forward<N>(_name)), value(std::forward<V>(_value)),
+		 line(_line) {}
 
 	int GetIntValue() const;
 
@@ -92,10 +94,12 @@ struct ConfigBlock {
 		return block_params.empty();
 	}
 
+	template<typename N, typename V>
 	gcc_nonnull_all
-	void AddBlockParam(const char *_name, const char *_value,
-			   int _line=-1) {
-		block_params.emplace_back(_name, _value, _line);
+	void AddBlockParam(N &&_name, V &&_value, int _line=-1) noexcept {
+		block_params.emplace_back(std::forward<N>(_name),
+					  std::forward<V>(_value),
+					  _line);
 	}
 
 	gcc_nonnull_all gcc_pure

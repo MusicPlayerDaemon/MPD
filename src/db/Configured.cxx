@@ -43,7 +43,7 @@ CreateConfiguredDatabase(EventLoop &main_event_loop, EventLoop &io_event_loop,
 					  listener, *param);
 	else if (path != nullptr) {
 		ConfigBlock block(path->line);
-		block.AddBlockParam("path", path->value.c_str(), path->line);
+		block.AddBlockParam("path", path->value, path->line);
 		return DatabaseGlobalInit(main_event_loop, io_event_loop,
 					  listener, block);
 	} else {
@@ -54,12 +54,12 @@ CreateConfiguredDatabase(EventLoop &main_event_loop, EventLoop &io_event_loop,
 			return nullptr;
 
 		const auto db_file = cache_dir / Path::FromFS(PATH_LITERAL("mpd.db"));
-		const auto db_file_utf8 = db_file.ToUTF8();
+		auto db_file_utf8 = db_file.ToUTF8();
 		if (db_file_utf8.empty())
 			return nullptr;
 
 		ConfigBlock block;
-		block.AddBlockParam("path", db_file_utf8.c_str(), -1);
+		block.AddBlockParam("path", std::move(db_file_utf8), -1);
 		return DatabaseGlobalInit(main_event_loop, io_event_loop,
 					  listener, block);
 	}

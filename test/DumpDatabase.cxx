@@ -135,7 +135,7 @@ try {
 	const auto *path = config_get_param(ConfigOption::DB_FILE);
 	ConfigBlock block(path != nullptr ? path->line : -1);
 	if (path != nullptr)
-		block.AddBlockParam("path", path->value.c_str(), path->line);
+		block.AddBlockParam("path", path->value, path->line);
 
 	Database *db = plugin->create(init.GetEventLoop(),
 				      init.GetEventLoop(),
