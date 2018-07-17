@@ -166,9 +166,9 @@ glue_mapper_init(const ConfigData &config)
 #ifdef ENABLE_DATABASE
 
 static void
-InitStorage(EventLoop &event_loop)
+InitStorage(const ConfigData &config, EventLoop &event_loop)
 {
-	auto storage = CreateConfiguredStorage(event_loop);
+	auto storage = CreateConfiguredStorage(config, event_loop);
 	if (storage == nullptr)
 		return;
 
@@ -193,7 +193,7 @@ glue_db_init_and_load(const ConfigData &config)
 		return true;
 
 	if (instance->database->GetPlugin().flags & DatabasePlugin::FLAG_REQUIRE_STORAGE) {
-		InitStorage(instance->io_thread.GetEventLoop());
+		InitStorage(config, instance->io_thread.GetEventLoop());
 
 		if (instance->storage == nullptr) {
 			delete instance->database;
@@ -204,7 +204,7 @@ glue_db_init_and_load(const ConfigData &config)
 			return true;
 		}
 	} else {
-		if (IsStorageConfigured())
+		if (IsStorageConfigured(config))
 			LogDefault(config_domain,
 				   "Ignoring the storage configuration "
 				   "because the database does not need it");
