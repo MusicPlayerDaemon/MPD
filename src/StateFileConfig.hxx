@@ -34,6 +34,8 @@ struct StateFileConfig {
 
 	std::chrono::steady_clock::duration interval;
 
+	bool restore_paused;
+
 	explicit StateFileConfig(const ConfigData &config);
 
 	bool IsEnabled() const noexcept {

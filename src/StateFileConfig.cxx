@@ -30,7 +30,8 @@ constexpr std::chrono::steady_clock::duration StateFileConfig::DEFAULT_INTERVAL;
 StateFileConfig::StateFileConfig(const ConfigData &config)
 	:path(config.GetPath(ConfigOption::STATE_FILE)),
 	 interval(config.GetUnsigned(ConfigOption::STATE_FILE_INTERVAL,
-				     DEFAULT_INTERVAL))
+				     DEFAULT_INTERVAL)),
+	 restore_paused(config.GetBool(ConfigOption::RESTORE_PAUSED, false))
 {
 #ifdef ANDROID
 	if (path.IsNull()) {

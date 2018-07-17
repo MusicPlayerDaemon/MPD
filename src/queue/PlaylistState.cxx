@@ -27,12 +27,11 @@
 #include "PlaylistError.hxx"
 #include "Playlist.hxx"
 #include "SingleMode.hxx"
+#include "StateFileConfig.hxx"
 #include "queue/QueueSave.hxx"
 #include "fs/io/TextFile.hxx"
 #include "fs/io/BufferedOutputStream.hxx"
 #include "player/Control.hxx"
-#include "config/Global.hxx"
-#include "config/Option.hxx"
 #include "util/CharUtil.hxx"
 #include "util/StringAPI.hxx"
 #include "util/StringCompare.hxx"
@@ -128,7 +127,8 @@ playlist_state_load(TextFile &file, const SongLoader &song_loader,
 }
 
 bool
-playlist_state_restore(const char *line, TextFile &file,
+playlist_state_restore(const StateFileConfig &config,
+		       const char *line, TextFile &file,
 		       const SongLoader &song_loader,
 		       struct playlist &playlist, PlayerControl &pc)
 {
@@ -183,8 +183,7 @@ playlist_state_restore(const char *line, TextFile &file,
 		if (!playlist.queue.IsValidPosition(current))
 			current = 0;
 
-		if (state == PlayerState::PLAY &&
-		    config_get_bool(ConfigOption::RESTORE_PAUSED, false))
+		if (state == PlayerState::PLAY && config.restore_paused)
 			/* the user doesn't want MPD to auto-start
 			   playback after startup; fall back to
 			   "pause" */
