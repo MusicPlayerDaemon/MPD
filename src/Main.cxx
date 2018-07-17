@@ -593,7 +593,7 @@ try {
 		instance->neighbors->Open();
 #endif
 
-	ZeroconfInit(instance->event_loop);
+	ZeroconfInit(GetGlobalConfig(), instance->event_loop);
 
 	for (auto &partition : instance->partitions)
 		StartPlayerThread(partition.pc);

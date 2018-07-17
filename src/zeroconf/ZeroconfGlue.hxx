@@ -22,12 +22,13 @@
 
 #include "check.h"
 
+struct ConfigData;
 class EventLoop;
 
 #ifdef HAVE_ZEROCONF
 
 void
-ZeroconfInit(EventLoop &loop);
+ZeroconfInit(const ConfigData &config, EventLoop &loop);
 
 void
 ZeroconfDeinit();
@@ -35,7 +36,7 @@ ZeroconfDeinit();
 #else /* ! HAVE_ZEROCONF */
 
 static inline void
-ZeroconfInit(EventLoop &)
+ZeroconfInit(const ConfigData &, EventLoop &)
 {}
 
 static inline void
