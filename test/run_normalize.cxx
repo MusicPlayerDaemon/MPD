@@ -27,7 +27,7 @@
 #include "AudioCompress/compress.h"
 #include "AudioParser.hxx"
 #include "AudioFormat.hxx"
-#include "Log.hxx"
+#include "util/PrintException.hxx"
 
 #include <stdexcept>
 
@@ -63,7 +63,7 @@ try {
 
 	Compressor_delete(compressor);
 	return EXIT_SUCCESS;
-} catch (const std::exception &e) {
-	LogError(e);
+} catch (...) {
+	PrintException(std::current_exception());
 	return EXIT_FAILURE;
 }

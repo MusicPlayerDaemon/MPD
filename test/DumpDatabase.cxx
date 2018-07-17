@@ -32,8 +32,8 @@
 #include "tag/Config.hxx"
 #include "fs/Path.hxx"
 #include "event/Thread.hxx"
-#include "Log.hxx"
 #include "util/ScopeExit.hxx"
+#include "util/PrintException.hxx"
 
 #include <stdexcept>
 #include <iostream>
@@ -152,7 +152,7 @@ try {
 	db->Visit(selection, DumpDirectory, DumpSong, DumpPlaylist);
 
 	return EXIT_SUCCESS;
- } catch (const std::exception &e) {
-	LogError(e);
+} catch (...) {
+	PrintException(std::current_exception());
 	return EXIT_FAILURE;
- }
+}

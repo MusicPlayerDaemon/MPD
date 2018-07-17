@@ -37,6 +37,7 @@
 #include "util/ConstBuffer.hxx"
 #include "util/OptionDef.hxx"
 #include "util/OptionParser.hxx"
+#include "util/PrintException.hxx"
 
 #ifdef ENABLE_ARCHIVE
 #include "archive/ArchiveList.hxx"
@@ -241,7 +242,7 @@ try {
 	Mutex mutex;
 	auto is = InputStream::OpenReady(c.uri, mutex);
 	return dump_input_stream(is.get());
-} catch (const std::exception &e) {
-	LogError(e);
+} catch (...) {
+	PrintException(std::current_exception());
 	return EXIT_FAILURE;
 }

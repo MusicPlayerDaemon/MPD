@@ -26,7 +26,7 @@
 #include "Main.hxx"
 #include "event/Loop.hxx"
 #include "config/Block.hxx"
-#include "Log.hxx"
+#include "util/PrintException.hxx"
 
 #include <assert.h>
 #include <string.h>
@@ -76,7 +76,7 @@ try {
 
 	printf("%d\n", volume);
 	return 0;
-} catch (const std::exception &e) {
-	LogError(e);
+} catch (...) {
+	PrintException(std::current_exception());
 	return EXIT_FAILURE;
 }

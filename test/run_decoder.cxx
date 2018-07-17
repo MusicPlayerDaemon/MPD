@@ -29,6 +29,7 @@
 #include "AudioFormat.hxx"
 #include "util/OptionDef.hxx"
 #include "util/OptionParser.hxx"
+#include "util/PrintException.hxx"
 #include "Log.hxx"
 #include "LogBackend.hxx"
 
@@ -136,7 +137,7 @@ try {
 	}
 
 	return EXIT_SUCCESS;
-} catch (const std::exception &e) {
-	LogError(e);
+} catch (...) {
+	PrintException(std::current_exception());
 	return EXIT_FAILURE;
 }

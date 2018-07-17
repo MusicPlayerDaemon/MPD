@@ -32,7 +32,7 @@
 #include "util/StringBuffer.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/ScopeExit.hxx"
-#include "Log.hxx"
+#include "util/PrintException.hxx"
 
 #include <memory>
 
@@ -146,7 +146,7 @@ try {
 	config_global_finish();
 
 	return EXIT_SUCCESS;
- } catch (const std::exception &e) {
-	LogError(e);
+} catch (...) {
+	PrintException(std::current_exception());
 	return EXIT_FAILURE;
- }
+}

@@ -21,10 +21,10 @@
 #include "tag/ApeLoader.hxx"
 #include "thread/Mutex.hxx"
 #include "fs/Path.hxx"
-#include "Log.hxx"
 #include "input/InputStream.hxx"
 #include "input/LocalOpen.hxx"
 #include "util/StringView.hxx"
+#include "util/PrintException.hxx"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -70,7 +70,7 @@ try {
 	}
 
 	return EXIT_SUCCESS;
-} catch (const std::exception &e) {
-	LogError(e);
+} catch (...) {
+	PrintException(std::current_exception());
 	return EXIT_FAILURE;
 }

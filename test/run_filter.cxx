@@ -31,8 +31,7 @@
 #include "util/ConstBuffer.hxx"
 #include "util/StringBuffer.hxx"
 #include "util/RuntimeError.hxx"
-#include "system/FatalError.hxx"
-#include "Log.hxx"
+#include "util/PrintException.hxx"
 
 #include <memory>
 #include <stdexcept>
@@ -122,7 +121,7 @@ try {
 	config_global_finish();
 
 	return EXIT_SUCCESS;
-} catch (const std::exception &e) {
-	LogError(e);
+} catch (...) {
+	PrintException(std::current_exception());
 	return EXIT_FAILURE;
 }

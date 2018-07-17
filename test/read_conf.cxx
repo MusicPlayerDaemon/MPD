@@ -20,7 +20,8 @@
 #include "config.h"
 #include "config/Global.hxx"
 #include "fs/Path.hxx"
-#include "Log.hxx"
+#include "fs/Path.hxx"
+#include "util/PrintException.hxx"
 
 #include <assert.h>
 #include <stdio.h>
@@ -55,7 +56,7 @@ try {
 
 	config_global_finish();
 	return ret;
- } catch (const std::exception &e) {
-	LogError(e);
+} catch (...) {
+	PrintException(std::current_exception());
 	return EXIT_FAILURE;
- }
+}

@@ -21,7 +21,7 @@
 #include "fs/io/GzipOutputStream.hxx"
 #include "fs/io/StdioOutputStream.hxx"
 #include "system/Error.hxx"
-#include "Log.hxx"
+#include "util/PrintException.hxx"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -61,17 +61,15 @@ CopyGzip(FILE *_dest, int src)
 
 int
 main(int argc, gcc_unused char **argv)
-{
+try {
 	if (argc != 1) {
 		fprintf(stderr, "Usage: run_gzip\n");
 		return EXIT_FAILURE;
 	}
 
-	try {
-		CopyGzip(stdout, STDIN_FILENO);
-		return EXIT_SUCCESS;
-	} catch (const std::exception &e) {
-		LogError(e);
-		return EXIT_FAILURE;
-	}
+	CopyGzip(stdout, STDIN_FILENO);
+	return EXIT_SUCCESS;
+} catch (...) {
+	PrintException(std::current_exception());
+	return EXIT_FAILURE;
 }

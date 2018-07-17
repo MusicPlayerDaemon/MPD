@@ -26,7 +26,7 @@
 #include "fs/Path.hxx"
 #include "input/InputStream.hxx"
 #include "input/LocalOpen.hxx"
-#include "Log.hxx"
+#include "util/PrintException.hxx"
 
 #include <id3tag.h>
 
@@ -95,7 +95,7 @@ try {
 	DumpReplayGainInfo(replay_gain);
 
 	return EXIT_SUCCESS;
-} catch (const std::exception &e) {
-	LogError(e);
+} catch (...) {
+	PrintException(std::current_exception());
 	return EXIT_FAILURE;
 }

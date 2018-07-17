@@ -27,7 +27,7 @@
 #include "archive/ArchiveFile.hxx"
 #include "archive/ArchiveVisitor.hxx"
 #include "fs/Path.hxx"
-#include "Log.hxx"
+#include "util/PrintException.hxx"
 
 #include <stdexcept>
 
@@ -95,7 +95,7 @@ try {
 	file->Visit(visitor);
 
 	return result;
-} catch (const std::exception &e) {
-	LogError(e);
+} catch (...) {
+	PrintException(std::current_exception());
 	return EXIT_FAILURE;
 }

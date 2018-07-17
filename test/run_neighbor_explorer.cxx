@@ -25,7 +25,7 @@
 #include "fs/Path.hxx"
 #include "event/Loop.hxx"
 #include "ShutdownHandler.hxx"
-#include "Log.hxx"
+#include "util/PrintException.hxx"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -93,7 +93,7 @@ try {
 	loop.Run();
 	neighbor.Close();
 	return EXIT_SUCCESS;
-} catch (const std::exception &e) {
-	LogError(e);
+} catch (...) {
+	PrintException(std::current_exception());
 	return EXIT_FAILURE;
 }

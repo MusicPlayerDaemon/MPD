@@ -18,7 +18,6 @@
  */
 
 #include "config.h"
-#include "Log.hxx"
 #include "DetachedSong.hxx"
 #include "SongSave.hxx"
 #include "decoder/DecoderList.hxx"
@@ -27,6 +26,7 @@
 #include "fs/io/StdioOutputStream.hxx"
 #include "fs/io/BufferedOutputStream.hxx"
 #include "util/UriUtil.hxx"
+#include "util/PrintException.hxx"
 
 #include <stdexcept>
 
@@ -93,7 +93,7 @@ try {
 	decoder_plugin_deinit_all();
 
 	return EXIT_SUCCESS;
-} catch (const std::exception &e) {
-	LogError(e);
+} catch (...) {
+	PrintException(std::current_exception());
 	return EXIT_FAILURE;
 }
