@@ -40,6 +40,22 @@ static constexpr char CONF_COMMENT = '#';
 
 static constexpr Domain config_file_domain("config_file");
 
+/**
+ * Read a string value as the last token of a line.  Throws on error.
+ */
+static auto
+ExpectValueAndEnd(Tokenizer &tokenizer)
+{
+	auto value = tokenizer.NextString();
+	if (!value)
+		throw std::runtime_error("Value missing");
+
+	if (!tokenizer.IsEnd() && tokenizer.CurrentChar() != CONF_COMMENT)
+		throw std::runtime_error("Unknown tokens after value");
+
+	return value;
+}
+
 static void
 config_read_name_value(ConfigBlock &block, char *input, unsigned line)
 {
@@ -48,19 +64,14 @@ config_read_name_value(ConfigBlock &block, char *input, unsigned line)
 	const char *name = tokenizer.NextWord();
 	assert(name != nullptr);
 
-	const char *value = tokenizer.NextString();
-	if (value == nullptr)
-		throw std::runtime_error("Value missing");
-
-	if (!tokenizer.IsEnd() && tokenizer.CurrentChar() != CONF_COMMENT)
-		throw std::runtime_error("Unknown tokens after value");
+	auto value = ExpectValueAndEnd(tokenizer);
 
 	const BlockParam *bp = block.GetBlockParam(name);
 	if (bp != nullptr)
 		throw FormatRuntimeError("\"%s\" is duplicate, first defined on line %i",
 					 name, bp->line);
 
-	block.AddBlockParam(name, value, line);
+	block.AddBlockParam(name, std::move(value), line);
 }
 
 static ConfigBlock *
@@ -171,14 +182,8 @@ ReadConfigParam(ConfigData &config_data, BufferedReader &reader,
 
 	/* now parse the block or the value */
 
-	const char *value = tokenizer.NextString();
-	if (value == nullptr)
-		throw std::runtime_error("Value missing");
-
-	if (!tokenizer.IsEnd() && tokenizer.CurrentChar() != CONF_COMMENT)
-		throw std::runtime_error("Unknown tokens after value");
-
-	auto *param = new ConfigParam(value, reader.GetLineNumber());
+	auto *param = new ConfigParam(ExpectValueAndEnd(tokenizer),
+				      reader.GetLineNumber());
 	Append(head, param);
 }
 
