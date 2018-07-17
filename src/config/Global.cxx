@@ -44,6 +44,12 @@ void config_global_init(void)
 {
 }
 
+const ConfigData &
+GetGlobalConfig() noexcept
+{
+	return config_data;
+}
+
 void
 ReadConfigFile(Path path)
 {

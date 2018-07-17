@@ -27,6 +27,7 @@
 
 class Path;
 class AllocatedPath;
+struct ConfigData;
 struct ConfigParam;
 struct ConfigBlock;
 
@@ -35,6 +36,10 @@ config_global_init();
 
 void
 config_global_finish();
+
+gcc_const
+const ConfigData &
+GetGlobalConfig() noexcept;
 
 /**
  * Call this function after all configuration has been evaluated.  It
