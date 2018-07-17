@@ -20,7 +20,7 @@
 #include "config.h"
 #include "DecoderList.hxx"
 #include "DecoderPlugin.hxx"
-#include "config/Global.hxx"
+#include "config/Data.hxx"
 #include "config/Block.hxx"
 #include "plugins/AudiofileDecoderPlugin.hxx"
 #include "plugins/PcmDecoderPlugin.hxx"
@@ -127,15 +127,16 @@ decoder_plugin_from_name(const char *name) noexcept
 		});
 }
 
-void decoder_plugin_init_all(void)
+void
+decoder_plugin_init_all(const ConfigData &config)
 {
 	ConfigBlock empty;
 
 	for (unsigned i = 0; decoder_plugins[i] != nullptr; ++i) {
 		const DecoderPlugin &plugin = *decoder_plugins[i];
 		const auto *param =
-			config_find_block(ConfigBlockOption::DECODER, "plugin",
-					  plugin.name);
+			config.FindBlock(ConfigBlockOption::DECODER, "plugin",
+					 plugin.name);
 
 		if (param == nullptr)
 			param = &empty;

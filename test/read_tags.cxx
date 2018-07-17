@@ -18,6 +18,7 @@
  */
 
 #include "config.h"
+#include "config/Data.hxx"
 #include "event/Thread.hxx"
 #include "decoder/DecoderList.hxx"
 #include "decoder/DecoderPlugin.hxx"
@@ -95,7 +96,7 @@ try {
 	input_stream_global_init(io_thread.GetEventLoop());
 	AtScopeExit() { input_stream_global_finish(); };
 
-	decoder_plugin_init_all();
+	decoder_plugin_init_all(ConfigData());
 	AtScopeExit() { decoder_plugin_deinit_all(); };
 
 	plugin = decoder_plugin_from_name(decoder_name);

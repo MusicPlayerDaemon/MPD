@@ -99,7 +99,7 @@ public:
 			ReadConfigFile(config_path);
 
 		input_stream_global_init(io_thread.GetEventLoop());
-		decoder_plugin_init_all();
+		decoder_plugin_init_all(GetGlobalConfig());
 	}
 
 	~GlobalInit() {

@@ -552,7 +552,7 @@ try {
 
 	pcm_convert_global_init();
 
-	decoder_plugin_init_all();
+	decoder_plugin_init_all(GetGlobalConfig());
 
 #ifdef ENABLE_DATABASE
 	const bool create_db = InitDatabaseAndStorage();

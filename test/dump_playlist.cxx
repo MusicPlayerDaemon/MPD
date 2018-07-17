@@ -69,7 +69,7 @@ try {
 
 	input_stream_global_init(io_thread.GetEventLoop());
 	playlist_list_global_init();
-	decoder_plugin_init_all();
+	decoder_plugin_init_all(GetGlobalConfig());
 
 	/* open the playlist */
 

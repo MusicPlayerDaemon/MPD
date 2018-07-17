@@ -20,6 +20,7 @@
 #include "config.h"
 #include "DetachedSong.hxx"
 #include "SongSave.hxx"
+#include "config/Data.hxx"
 #include "decoder/DecoderList.hxx"
 #include "decoder/DecoderPlugin.hxx"
 #include "fs/Path.hxx"
@@ -68,7 +69,7 @@ try {
 
 	const Path path = Path::FromFS(argv[1]);
 
-	decoder_plugin_init_all();
+	decoder_plugin_init_all(ConfigData());
 
 	const auto *plugin = FindContainerDecoderPlugin(path);
 	if (plugin == nullptr) {
