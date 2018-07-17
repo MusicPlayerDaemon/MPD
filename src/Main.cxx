@@ -144,11 +144,12 @@ LoadConfig(const ConfigData &config)
 #ifdef ENABLE_DAEMON
 
 static void
-glue_daemonize_init(const struct options *options)
+glue_daemonize_init(const struct options *options,
+		    const ConfigData &config)
 {
-	daemonize_init(config_get_string(ConfigOption::USER, nullptr),
-		       config_get_string(ConfigOption::GROUP, nullptr),
-		       config_get_path(ConfigOption::PID_FILE));
+	daemonize_init(config.GetString(ConfigOption::USER),
+		       config.GetString(ConfigOption::GROUP),
+		       config.GetPath(ConfigOption::PID_FILE));
 
 	if (options->kill)
 		daemonize_kill();
@@ -157,9 +158,9 @@ glue_daemonize_init(const struct options *options)
 #endif
 
 static void
-glue_mapper_init()
+glue_mapper_init(const ConfigData &config)
 {
-	mapper_init(config_get_path(ConfigOption::PLAYLIST_DIR));
+	mapper_init(config.GetPath(ConfigOption::PLAYLIST_DIR));
 }
 
 #ifdef ENABLE_DATABASE
@@ -241,21 +242,23 @@ InitDatabaseAndStorage(const ConfigData &config)
  * Configure and initialize the sticker subsystem.
  */
 static void
-glue_sticker_init()
+glue_sticker_init(const ConfigData &config)
 {
 #ifdef ENABLE_SQLITE
-	auto sticker_file = config_get_path(ConfigOption::STICKER_FILE);
+	auto sticker_file = config.GetPath(ConfigOption::STICKER_FILE);
 	if (sticker_file.IsNull())
 		return;
 
 	sticker_global_init(std::move(sticker_file));
+#else
+	(void)config;
 #endif
 }
 
 static void
 glue_state_file_init(const ConfigData &config)
 {
-	auto path_fs = config_get_path(ConfigOption::STATE_FILE);
+	auto path_fs = config.GetPath(ConfigOption::STATE_FILE);
 	if (path_fs.IsNull()) {
 #ifdef ANDROID
 		const auto cache_dir = GetUserCacheDir();
@@ -282,12 +285,13 @@ glue_state_file_init(const ConfigData &config)
  * Initialize the decoder and player core, including the music pipe.
  */
 static void
-initialize_decoder_and_player(const ReplayGainConfig &replay_gain_config)
+initialize_decoder_and_player(const ConfigData &config,
+			      const ReplayGainConfig &replay_gain_config)
 {
 	const ConfigParam *param;
 
 	size_t buffer_size;
-	param = config_get_param(ConfigOption::AUDIO_BUFFER_SIZE);
+	param = config.GetParam(ConfigOption::AUDIO_BUFFER_SIZE);
 	if (param != nullptr) {
 		char *test;
 		long tmp = strtol(param->value.c_str(), &test, 10);
@@ -313,7 +317,7 @@ initialize_decoder_and_player(const ReplayGainConfig &replay_gain_config)
 				 (unsigned long)buffer_size);
 
 	float perc;
-	param = config_get_param(ConfigOption::BUFFER_BEFORE_PLAY);
+	param = config.GetParam(ConfigOption::BUFFER_BEFORE_PLAY);
 	if (param != nullptr) {
 		char *test;
 		perc = strtod(param->value.c_str(), &test);
@@ -344,11 +348,11 @@ initialize_decoder_and_player(const ReplayGainConfig &replay_gain_config)
 		buffered_before_play = buffered_chunks;
 
 	const unsigned max_length =
-		config_get_positive(ConfigOption::MAX_PLAYLIST_LENGTH,
-				    DEFAULT_PLAYLIST_MAX_LENGTH);
+		config.GetPositive(ConfigOption::MAX_PLAYLIST_LENGTH,
+				   DEFAULT_PLAYLIST_MAX_LENGTH);
 
 	AudioFormat configured_audio_format = AudioFormat::Undefined();
-	param = config_get_param(ConfigOption::AUDIO_OUTPUT_FORMAT);
+	param = config.GetParam(ConfigOption::AUDIO_OUTPUT_FORMAT);
 	if (param != nullptr) {
 		try {
 			configured_audio_format = ParseAudioFormat(param->value.c_str(),
@@ -369,7 +373,7 @@ initialize_decoder_and_player(const ReplayGainConfig &replay_gain_config)
 	auto &partition = instance->partitions.back();
 
 	try {
-		param = config_get_param(ConfigOption::REPLAYGAIN);
+		param = config.GetParam(ConfigOption::REPLAYGAIN);
 		if (param != nullptr)
 			partition.replay_gain_mode =
 				FromString(param->value.c_str());
@@ -500,7 +504,7 @@ try {
 	const auto config = LoadConfig(raw_config);
 
 #ifdef ENABLE_DAEMON
-	glue_daemonize_init(&options);
+	glue_daemonize_init(&options, raw_config);
 #endif
 
 	TagLoadConfig(raw_config);
@@ -521,10 +525,10 @@ try {
 #endif
 
 	const unsigned max_clients =
-		config_get_positive(ConfigOption::MAX_CONN, 10);
+		raw_config.GetPositive(ConfigOption::MAX_CONN, 10);
 	instance->client_list = new ClientList(max_clients);
 
-	initialize_decoder_and_player(config.replay_gain);
+	initialize_decoder_and_player(raw_config, config.replay_gain);
 
 	listen_global_init(*instance->partitions.front().listener);
 
@@ -545,7 +549,7 @@ mpd_main_after_fork(const ConfigData &raw_config, const Config &config)
 try {
 	ConfigureFS();
 
-	glue_mapper_init();
+	glue_mapper_init(raw_config);
 
 	initPermissions();
 	spl_global_init(raw_config);
@@ -561,7 +565,7 @@ try {
 	const bool create_db = InitDatabaseAndStorage(raw_config);
 #endif
 
-	glue_sticker_init();
+	glue_sticker_init(raw_config);
 
 	command_init();
 
@@ -613,15 +617,15 @@ try {
 	glue_state_file_init(raw_config);
 
 #ifdef ENABLE_DATABASE
-	if (config_get_bool(ConfigOption::AUTO_UPDATE, false)) {
+	if (raw_config.GetBool(ConfigOption::AUTO_UPDATE, false)) {
 #ifdef ENABLE_INOTIFY
 		if (instance->storage != nullptr &&
 		    instance->update != nullptr)
 			mpd_inotify_init(instance->event_loop,
 					 *instance->storage,
 					 *instance->update,
-					 config_get_unsigned(ConfigOption::AUTO_UPDATE_DEPTH,
-							     INT_MAX));
+					 raw_config.GetUnsigned(ConfigOption::AUTO_UPDATE_DEPTH,
+								INT_MAX));
 #else
 		FormatWarning(config_domain,
 			      "inotify: auto_update was disabled. enable during compilation phase");
