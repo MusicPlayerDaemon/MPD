@@ -37,6 +37,7 @@
 
 #include <stddef.h>
 
+struct ConfigData;
 class SocketAddress;
 class UniqueSocketDescriptor;
 class EventLoop;
@@ -237,7 +238,7 @@ private:
 };
 
 void
-client_manager_init();
+client_manager_init(const ConfigData &config);
 
 void
 client_new(EventLoop &loop, Partition &partition,

@@ -576,7 +576,7 @@ try {
 		partition.UpdateEffectiveReplayGainMode();
 	}
 
-	client_manager_init();
+	client_manager_init(raw_config);
 	input_stream_global_init(raw_config,
 				 instance->io_thread.GetEventLoop());
 	playlist_list_global_init(raw_config);
