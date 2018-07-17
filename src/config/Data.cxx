@@ -21,8 +21,12 @@
 #include "Data.hxx"
 #include "Param.hxx"
 #include "Block.hxx"
+#include "Parser.hxx"
+#include "fs/AllocatedPath.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/StringAPI.hxx"
+
+#include <stdlib.h>
 
 void
 ConfigData::Clear()
@@ -36,6 +40,87 @@ ConfigData::Clear()
 		delete i;
 		i = nullptr;
 	}
+}
+
+const char *
+ConfigData::GetString(ConfigOption option,
+		      const char *default_value) const noexcept
+{
+	const auto *param = GetParam(option);
+	if (param == nullptr)
+		return default_value;
+
+	return param->value.c_str();
+}
+
+AllocatedPath
+ConfigData::GetPath(ConfigOption option) const
+{
+	const auto *param = GetParam(option);
+	if (param == nullptr)
+		return nullptr;
+
+	return param->GetPath();
+}
+
+unsigned
+ConfigData::GetUnsigned(ConfigOption option, unsigned default_value) const
+{
+	const auto *param = GetParam(option);
+	long value;
+	char *endptr;
+
+	if (param == nullptr)
+		return default_value;
+
+	const char *const s = param->value.c_str();
+	value = strtol(s, &endptr, 0);
+	if (endptr == s || *endptr != 0 || value < 0)
+		throw FormatRuntimeError("Not a valid non-negative number in line %i",
+					 param->line);
+
+	return (unsigned)value;
+}
+
+unsigned
+ConfigData::GetPositive(ConfigOption option, unsigned default_value) const
+{
+	const auto *param = GetParam(option);
+	long value;
+	char *endptr;
+
+	if (param == nullptr)
+		return default_value;
+
+	const char *const s = param->value.c_str();
+	value = strtol(s, &endptr, 0);
+	if (endptr == s || *endptr != 0)
+		throw FormatRuntimeError("Not a valid number in line %i",
+					 param->line);
+
+	if (value <= 0)
+		throw FormatRuntimeError("Not a positive number in line %i",
+					 param->line);
+
+	return (unsigned)value;
+}
+
+bool
+ConfigData::GetBool(ConfigOption option, bool default_value) const
+{
+	const auto *param = GetParam(option);
+	bool success, value;
+
+	if (param == nullptr)
+		return default_value;
+
+	success = get_bool(param->value.c_str(), &value);
+	if (!success)
+		throw FormatRuntimeError("Expected boolean value (yes, true, 1) or "
+					 "(no, false, 0) on line %i\n",
+					 param->line);
+
+	return value;
 }
 
 const ConfigBlock *

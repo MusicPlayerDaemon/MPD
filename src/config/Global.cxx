@@ -19,7 +19,6 @@
 
 #include "config.h"
 #include "Global.hxx"
-#include "Parser.hxx"
 #include "Data.hxx"
 #include "Param.hxx"
 #include "Block.hxx"
@@ -30,8 +29,6 @@
 #include "fs/AllocatedPath.hxx"
 #include "util/RuntimeError.hxx"
 #include "Log.hxx"
-
-#include <stdlib.h>
 
 static ConfigData config_data;
 
@@ -95,80 +92,29 @@ config_get_block(ConfigBlockOption option) noexcept
 const char *
 config_get_string(ConfigOption option, const char *default_value) noexcept
 {
-	const auto *param = config_get_param(option);
-
-	if (param == nullptr)
-		return default_value;
-
-	return param->value.c_str();
+	return config_data.GetString(option, default_value);
 }
 
 AllocatedPath
 config_get_path(ConfigOption option)
 {
-	const auto *param = config_get_param(option);
-	if (param == nullptr)
-		return nullptr;
-
-	return param->GetPath();
+	return config_data.GetPath(option);
 }
 
 unsigned
 config_get_unsigned(ConfigOption option, unsigned default_value)
 {
-	const auto *param = config_get_param(option);
-	long value;
-	char *endptr;
-
-	if (param == nullptr)
-		return default_value;
-
-	const char *const s = param->value.c_str();
-	value = strtol(s, &endptr, 0);
-	if (endptr == s || *endptr != 0 || value < 0)
-		throw FormatRuntimeError("Not a valid non-negative number in line %i",
-					 param->line);
-
-	return (unsigned)value;
+	return config_data.GetUnsigned(option, default_value);
 }
 
 unsigned
 config_get_positive(ConfigOption option, unsigned default_value)
 {
-	const auto *param = config_get_param(option);
-	long value;
-	char *endptr;
-
-	if (param == nullptr)
-		return default_value;
-
-	const char *const s = param->value.c_str();
-	value = strtol(s, &endptr, 0);
-	if (endptr == s || *endptr != 0)
-		throw FormatRuntimeError("Not a valid number in line %i",
-					 param->line);
-
-	if (value <= 0)
-		throw FormatRuntimeError("Not a positive number in line %i",
-					 param->line);
-
-	return (unsigned)value;
+	return config_data.GetPositive(option, default_value);
 }
 
 bool
 config_get_bool(ConfigOption option, bool default_value)
 {
-	const auto *param = config_get_param(option);
-	bool success, value;
-
-	if (param == nullptr)
-		return default_value;
-
-	success = get_bool(param->value.c_str(), &value);
-	if (!success)
-		throw FormatRuntimeError("Expected boolean value (yes, true, 1) or "
-					 "(no, false, 0) on line %i\n",
-					 param->line);
-
-	return value;
+	return config_data.GetBool(option, default_value);
 }

@@ -26,6 +26,7 @@
 
 struct ConfigParam;
 struct ConfigBlock;
+class AllocatedPath;
 
 struct ConfigData {
 	std::array<ConfigParam *, std::size_t(ConfigOption::MAX)> params{{nullptr}};
@@ -37,6 +38,27 @@ struct ConfigData {
 	const ConfigParam *GetParam(ConfigOption option) const noexcept {
 		return params[size_t(option)];
 	}
+
+	gcc_pure
+	const char *GetString(ConfigOption option,
+			      const char *default_value=nullptr) const noexcept;
+
+	/**
+	 * Returns an optional configuration variable which contains an
+	 * absolute path.  If there is a tilde prefix, it is expanded.
+	 * Returns nullptr if the value is not present.
+	 *
+	 * Throws #std::runtime_error on error.
+	 */
+	AllocatedPath GetPath(ConfigOption option) const;
+
+	unsigned GetUnsigned(ConfigOption option,
+			     unsigned default_value) const;
+
+	unsigned GetPositive(ConfigOption option,
+			     unsigned default_value) const;
+
+	bool GetBool(ConfigOption option, bool default_value) const;
 
 	gcc_pure
 	const ConfigBlock *GetBlock(ConfigBlockOption option) const noexcept {
