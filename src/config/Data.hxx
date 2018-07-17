@@ -28,8 +28,8 @@ struct ConfigParam;
 struct ConfigBlock;
 
 struct ConfigData {
-	std::array<ConfigParam *, std::size_t(ConfigOption::MAX)> params;
-	std::array<ConfigBlock *, std::size_t(ConfigBlockOption::MAX)> blocks;
+	std::array<ConfigParam *, std::size_t(ConfigOption::MAX)> params{{nullptr}};
+	std::array<ConfigBlock *, std::size_t(ConfigBlockOption::MAX)> blocks{{nullptr}};
 
 	void Clear();
 
