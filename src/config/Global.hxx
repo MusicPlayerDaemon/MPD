@@ -24,7 +24,6 @@
 #include "Compiler.h"
 
 class Path;
-class AllocatedPath;
 struct ConfigData;
 struct ConfigParam;
 struct ConfigBlock;
@@ -60,16 +59,6 @@ config_get_block(enum ConfigBlockOption option) noexcept;
 const char *
 config_get_string(enum ConfigOption option,
 		  const char *default_value=nullptr) noexcept;
-
-/**
- * Returns an optional configuration variable which contains an
- * absolute path.  If there is a tilde prefix, it is expanded.
- * Returns nullptr if the value is not present.
- *
- * Throws #std::runtime_error on error.
- */
-AllocatedPath
-config_get_path(enum ConfigOption option);
 
 unsigned
 config_get_positive(enum ConfigOption option, unsigned default_value);

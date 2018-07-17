@@ -26,7 +26,6 @@
 #include "Path.hxx"
 #include "Domain.hxx"
 #include "fs/Path.hxx"
-#include "fs/AllocatedPath.hxx"
 #include "util/RuntimeError.hxx"
 #include "Log.hxx"
 
@@ -93,12 +92,6 @@ const char *
 config_get_string(ConfigOption option, const char *default_value) noexcept
 {
 	return config_data.GetString(option, default_value);
-}
-
-AllocatedPath
-config_get_path(ConfigOption option)
-{
-	return config_data.GetPath(option);
 }
 
 unsigned

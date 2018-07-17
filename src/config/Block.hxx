@@ -114,7 +114,7 @@ struct ConfigBlock {
 				  const char *default_value=nullptr) const noexcept;
 
 	/**
-	 * Same as config_get_path(), but looks up the setting in the
+	 * Same as ConfigData::GetPath(), but looks up the setting in the
 	 * specified block.
 	 *
 	 * Throws #std::runtime_error on error.
