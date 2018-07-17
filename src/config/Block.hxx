@@ -94,6 +94,10 @@ struct ConfigBlock {
 		return block_params.empty();
 	}
 
+	void SetUsed() const noexcept {
+		used = true;
+	}
+
 	template<typename N, typename V>
 	gcc_nonnull_all
 	void AddBlockParam(N &&_name, V &&_value, int _line=-1) noexcept {
