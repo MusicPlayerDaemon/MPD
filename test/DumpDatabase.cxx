@@ -27,6 +27,7 @@
 #include "db/LightSong.hxx"
 #include "db/PlaylistVector.hxx"
 #include "config/Global.hxx"
+#include "config/Data.hxx"
 #include "config/Param.hxx"
 #include "config/Block.hxx"
 #include "tag/Config.hxx"
@@ -126,13 +127,15 @@ try {
 
 	ReadConfigFile(config_path);
 
-	TagLoadConfig(GetGlobalConfig());
+	const auto &config = GetGlobalConfig();
+
+	TagLoadConfig(config);
 
 	MyDatabaseListener database_listener;
 
 	/* do it */
 
-	const auto *path = config_get_param(ConfigOption::DB_FILE);
+	const auto *path = config.GetParam(ConfigOption::DB_FILE);
 	ConfigBlock block(path != nullptr ? path->line : -1);
 	if (path != nullptr)
 		block.AddBlockParam("path", path->value, path->line);
