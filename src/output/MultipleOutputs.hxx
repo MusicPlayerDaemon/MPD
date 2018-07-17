@@ -42,6 +42,7 @@ class MusicPipe;
 class EventLoop;
 class MixerListener;
 class AudioOutputClient;
+struct ConfigData;
 struct ReplayGainConfig;
 
 class MultipleOutputs final : public PlayerOutputs {
@@ -72,6 +73,7 @@ public:
 	~MultipleOutputs() noexcept;
 
 	void Configure(EventLoop &event_loop,
+		       const ConfigData &config,
 		       const ReplayGainConfig &replay_gain_config,
 		       AudioOutputClient &client);
 

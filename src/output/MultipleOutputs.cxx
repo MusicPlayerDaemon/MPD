@@ -24,7 +24,7 @@
 #include "MusicPipe.hxx"
 #include "MusicChunk.hxx"
 #include "config/Block.hxx"
-#include "config/Global.hxx"
+#include "config/Data.hxx"
 #include "config/Option.hxx"
 #include "util/RuntimeError.hxx"
 
@@ -87,10 +87,11 @@ LoadOutputControl(EventLoop &event_loop,
 
 void
 MultipleOutputs::Configure(EventLoop &event_loop,
+			   const ConfigData &config,
 			   const ReplayGainConfig &replay_gain_config,
 			   AudioOutputClient &client)
 {
-	for (const auto *param = config_get_block(ConfigBlockOption::AUDIO_OUTPUT);
+	for (const auto *param = config.GetBlock(ConfigBlockOption::AUDIO_OUTPUT);
 	     param != nullptr; param = param->next) {
 		param->SetUsed();
 		auto *output = LoadOutputControl(event_loop,

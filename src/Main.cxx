@@ -572,6 +572,7 @@ try {
 
 	for (auto &partition : instance->partitions) {
 		partition.outputs.Configure(instance->rtio_thread.GetEventLoop(),
+					    raw_config,
 					    config.replay_gain,
 					    partition.pc);
 		partition.UpdateEffectiveReplayGainMode();
