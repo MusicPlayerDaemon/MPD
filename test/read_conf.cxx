@@ -18,7 +18,9 @@
  */
 
 #include "config.h"
-#include "config/Global.hxx"
+#include "config/Data.hxx"
+#include "config/Param.hxx"
+#include "config/File.hxx"
 #include "fs/Path.hxx"
 #include "fs/Path.hxx"
 #include "util/PrintException.hxx"
@@ -42,16 +44,14 @@ try {
 	if (option == ConfigOption::MAX)
 		throw FormatRuntimeError("Unknown setting: %s", name);
 
-	config_global_init();
+	ConfigData config;
+	ReadConfigFile(config, config_path);
 
-	ReadConfigFile(config_path);
-
-	const char *value = config_get_string(option);
-	if (value == nullptr)
+	const auto *param = config.GetParam(option);
+	if (param == nullptr)
 		throw FormatRuntimeError("No such setting: %s", name);
 
-	printf("%s\n", value);
-	config_global_finish();
+	printf("%s\n", param->value.c_str());
 	return EXIT_SUCCESS;
 } catch (...) {
 	PrintException(std::current_exception());
