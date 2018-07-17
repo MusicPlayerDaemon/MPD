@@ -181,7 +181,7 @@ InitStorage(EventLoop &event_loop)
  * process has been daemonized.
  */
 static bool
-glue_db_init_and_load(void)
+glue_db_init_and_load(const ConfigData &config)
 {
 	instance->database =
 		CreateConfiguredDatabase(instance->event_loop,
@@ -218,7 +218,8 @@ glue_db_init_and_load(void)
 		return true;
 
 	SimpleDatabase &db = *(SimpleDatabase *)instance->database;
-	instance->update = new UpdateService(instance->event_loop, db,
+	instance->update = new UpdateService(config,
+					     instance->event_loop, db,
 					     static_cast<CompositeStorage &>(*instance->storage),
 					     *instance);
 
@@ -227,9 +228,9 @@ glue_db_init_and_load(void)
 }
 
 static bool
-InitDatabaseAndStorage()
+InitDatabaseAndStorage(const ConfigData &config)
 {
-	const bool create_db = !glue_db_init_and_load();
+	const bool create_db = !glue_db_init_and_load(config);
 	return create_db;
 }
 
@@ -555,7 +556,7 @@ try {
 	decoder_plugin_init_all(GetGlobalConfig());
 
 #ifdef ENABLE_DATABASE
-	const bool create_db = InitDatabaseAndStorage();
+	const bool create_db = InitDatabaseAndStorage(GetGlobalConfig());
 #endif
 
 	glue_sticker_init();

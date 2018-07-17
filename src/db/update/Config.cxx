@@ -19,18 +19,20 @@
 
 #include "config.h"
 #include "Config.hxx"
-#include "config/Global.hxx"
+#include "config/Data.hxx"
 #include "config/Option.hxx"
 
-UpdateConfig::UpdateConfig()
+UpdateConfig::UpdateConfig(const ConfigData &config)
 {
 #ifndef _WIN32
 	follow_inside_symlinks =
-		config_get_bool(ConfigOption::FOLLOW_INSIDE_SYMLINKS,
-				DEFAULT_FOLLOW_INSIDE_SYMLINKS);
+		config.GetBool(ConfigOption::FOLLOW_INSIDE_SYMLINKS,
+			       DEFAULT_FOLLOW_INSIDE_SYMLINKS);
 
 	follow_outside_symlinks =
-		config_get_bool(ConfigOption::FOLLOW_OUTSIDE_SYMLINKS,
-				DEFAULT_FOLLOW_OUTSIDE_SYMLINKS);
+		config.GetBool(ConfigOption::FOLLOW_OUTSIDE_SYMLINKS,
+			       DEFAULT_FOLLOW_OUTSIDE_SYMLINKS);
+#else
+	(void)config;
 #endif
 }

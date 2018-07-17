@@ -60,7 +60,8 @@ class UpdateService final {
 	UpdateWalk *walk = nullptr;
 
 public:
-	UpdateService(EventLoop &_loop, SimpleDatabase &_db,
+	UpdateService(const ConfigData &_config,
+		      EventLoop &_loop, SimpleDatabase &_db,
 		      CompositeStorage &_storage,
 		      DatabaseListener &_listener);
 

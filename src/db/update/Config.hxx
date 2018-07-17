@@ -22,6 +22,8 @@
 
 #include "check.h"
 
+struct ConfigData;
+
 struct UpdateConfig {
 #ifndef _WIN32
 	static constexpr bool DEFAULT_FOLLOW_INSIDE_SYMLINKS = true;
@@ -31,7 +33,7 @@ struct UpdateConfig {
 	bool follow_outside_symlinks = DEFAULT_FOLLOW_OUTSIDE_SYMLINKS;
 #endif
 
-	UpdateConfig();
+	explicit UpdateConfig(const ConfigData &config);
 };
 
 #endif
