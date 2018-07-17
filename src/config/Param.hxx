@@ -47,9 +47,10 @@ struct ConfigParam {
 	explicit ConfigParam(int _line=-1)
 		:line(_line) {}
 
+	template<typename V>
 	gcc_nonnull_all
-	explicit ConfigParam(const char *_value, int _line=-1) noexcept
-		:value(_value), line(_line) {}
+	explicit ConfigParam(V &&_value, int _line=-1) noexcept
+		:value(std::forward<V>(_value)), line(_line) {}
 
 	ConfigParam(const ConfigParam &) = delete;
 
