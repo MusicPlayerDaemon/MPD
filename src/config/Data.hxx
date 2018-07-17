@@ -34,12 +34,12 @@ struct ConfigData {
 	void Clear();
 
 	gcc_pure
-	const ConfigParam *GetParam(ConfigOption option) noexcept {
+	const ConfigParam *GetParam(ConfigOption option) const noexcept {
 		return params[size_t(option)];
 	}
 
 	gcc_pure
-	const ConfigBlock *GetBlock(ConfigBlockOption option) noexcept {
+	const ConfigBlock *GetBlock(ConfigBlockOption option) const noexcept {
 		return blocks[size_t(option)];
 	}
 };
