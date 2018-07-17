@@ -27,6 +27,7 @@
 #include <forward_list>
 #include <memory>
 
+struct ConfigData;
 class EventLoop;
 class NeighborExplorer;
 class NeighborListener;
@@ -64,7 +65,8 @@ public:
 	/**
 	 * Throws std::runtime_error on error.
 	 */
-	void Init(EventLoop &loop, NeighborListener &listener);
+	void Init(const ConfigData &config, EventLoop &loop,
+		  NeighborListener &listener);
 
 	void Open();
 	void Close() noexcept;

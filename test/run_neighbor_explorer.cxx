@@ -79,7 +79,7 @@ try {
 
 	MyNeighborListener listener;
 	NeighborGlue neighbor;
-	neighbor.Init(loop, listener);
+	neighbor.Init(GetGlobalConfig(), loop, listener);
 	neighbor.Open();
 
 	/* dump initial list */

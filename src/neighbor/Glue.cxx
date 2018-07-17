@@ -23,7 +23,7 @@
 #include "Explorer.hxx"
 #include "NeighborPlugin.hxx"
 #include "Info.hxx"
-#include "config/Global.hxx"
+#include "config/Data.hxx"
 #include "config/Domain.hxx"
 #include "config/Block.hxx"
 #include "util/RuntimeError.hxx"
@@ -50,9 +50,10 @@ CreateNeighborExplorer(EventLoop &loop, NeighborListener &listener,
 }
 
 void
-NeighborGlue::Init(EventLoop &loop, NeighborListener &listener)
+NeighborGlue::Init(const ConfigData &config,
+		   EventLoop &loop, NeighborListener &listener)
 {
-	for (const auto *block = config_get_block(ConfigBlockOption::NEIGHBORS);
+	for (const auto *block = config.GetBlock(ConfigBlockOption::NEIGHBORS);
 	     block != nullptr; block = block->next) {
 		block->SetUsed();
 

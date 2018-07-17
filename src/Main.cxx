@@ -515,7 +515,8 @@ try {
 
 #ifdef ENABLE_NEIGHBOR_PLUGINS
 	instance->neighbors = new NeighborGlue();
-	instance->neighbors->Init(instance->io_thread.GetEventLoop(),
+	instance->neighbors->Init(raw_config,
+				  instance->io_thread.GetEventLoop(),
 				  *instance);
 
 	if (instance->neighbors->IsEmpty()) {
