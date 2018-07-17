@@ -23,6 +23,7 @@
 #include "input/Ptr.hxx"
 #include "Compiler.h"
 
+struct ConfigData;
 class Mutex;
 class SongEnumerator;
 
@@ -38,7 +39,7 @@ extern const struct playlist_plugin *const playlist_plugins[];
  * Initializes all playlist plugins.
  */
 void
-playlist_list_global_init();
+playlist_list_global_init(const ConfigData &config);
 
 /**
  * Deinitializes all playlist plugins.

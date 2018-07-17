@@ -572,7 +572,7 @@ try {
 	client_manager_init();
 	input_stream_global_init(GetGlobalConfig(),
 				 instance->io_thread.GetEventLoop());
-	playlist_list_global_init();
+	playlist_list_global_init(GetGlobalConfig());
 
 #ifdef ENABLE_DAEMON
 	daemonize_commit();

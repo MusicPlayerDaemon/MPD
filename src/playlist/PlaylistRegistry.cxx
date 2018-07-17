@@ -36,7 +36,7 @@
 #include "util/UriUtil.hxx"
 #include "util/StringUtil.hxx"
 #include "util/Macros.hxx"
-#include "config/Global.hxx"
+#include "config/Data.hxx"
 #include "config/Block.hxx"
 
 #include <assert.h>
@@ -75,15 +75,15 @@ static bool playlist_plugins_enabled[n_playlist_plugins];
 		if (playlist_plugins_enabled[playlist_plugin_iterator - playlist_plugins])
 
 void
-playlist_list_global_init(void)
+playlist_list_global_init(const ConfigData &config)
 {
 	const ConfigBlock empty;
 
 	for (unsigned i = 0; playlist_plugins[i] != nullptr; ++i) {
 		const struct playlist_plugin *plugin = playlist_plugins[i];
 		const auto *param =
-			config_find_block(ConfigBlockOption::PLAYLIST_PLUGIN,
-					  "name", plugin->name);
+			config.FindBlock(ConfigBlockOption::PLAYLIST_PLUGIN,
+					 "name", plugin->name);
 		if (param == nullptr)
 			param = &empty;
 		else if (!param->GetBlockValue("enabled", true))
