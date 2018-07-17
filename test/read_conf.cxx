@@ -22,6 +22,7 @@
 #include "fs/Path.hxx"
 #include "fs/Path.hxx"
 #include "util/PrintException.hxx"
+#include "util/RuntimeError.hxx"
 
 #include <assert.h>
 #include <stdio.h>
@@ -37,14 +38,15 @@ try {
 	const Path config_path = Path::FromFS(argv[1]);
 	const char *name = argv[2];
 
+	const auto option = ParseConfigOptionName(name);
+	if (option == ConfigOption::MAX)
+		throw FormatRuntimeError("Unknown setting: %s", name);
+
 	config_global_init();
 
 	ReadConfigFile(config_path);
 
-	ConfigOption option = ParseConfigOptionName(name);
-	const char *value = option != ConfigOption::MAX
-		? config_get_string(option)
-		: nullptr;
+	const char *value = config_get_string(option);
 	int ret;
 	if (value != NULL) {
 		printf("%s\n", value);
