@@ -551,7 +551,7 @@ try {
 
 	glue_mapper_init(raw_config);
 
-	initPermissions();
+	initPermissions(raw_config);
 	spl_global_init(raw_config);
 #ifdef ENABLE_ARCHIVE
 	archive_plugin_init_all();

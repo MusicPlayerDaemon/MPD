@@ -20,7 +20,7 @@
 #include "config.h"
 #include "Permission.hxx"
 #include "config/Param.hxx"
-#include "config/Global.hxx"
+#include "config/Data.hxx"
 #include "config/Option.hxx"
 #include "util/RuntimeError.hxx"
 
@@ -87,7 +87,8 @@ static unsigned parsePermissions(const char *string)
 	return permission;
 }
 
-void initPermissions(void)
+void
+initPermissions(const ConfigData &config)
 {
 	unsigned permission;
 	const ConfigParam *param;
@@ -95,7 +96,7 @@ void initPermissions(void)
 	permission_default = PERMISSION_READ | PERMISSION_ADD |
 	    PERMISSION_CONTROL | PERMISSION_ADMIN;
 
-	param = config_get_param(ConfigOption::PASSWORD);
+	param = config.GetParam(ConfigOption::PASSWORD);
 
 	if (param) {
 		permission_default = 0;
@@ -121,13 +122,13 @@ void initPermissions(void)
 		} while ((param = param->next) != nullptr);
 	}
 
-	param = config_get_param(ConfigOption::DEFAULT_PERMS);
+	param = config.GetParam(ConfigOption::DEFAULT_PERMS);
 
 	if (param)
 		permission_default = parsePermissions(param->value.c_str());
 
 #ifdef HAVE_UN
-	param = config_get_param(ConfigOption::LOCAL_PERMISSIONS);
+	param = config.GetParam(ConfigOption::LOCAL_PERMISSIONS);
 	if (param != nullptr)
 		local_permissions = parsePermissions(param->value.c_str());
 	else
