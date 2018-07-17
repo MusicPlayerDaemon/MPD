@@ -135,9 +135,9 @@ struct Config {
 };
 
 static Config
-LoadConfig()
+LoadConfig(const ConfigData &config)
 {
-	return {LoadReplayGainConfig()};
+	return {LoadReplayGainConfig(config)};
 }
 
 #ifdef ENABLE_DAEMON
@@ -494,7 +494,7 @@ try {
 	ParseCommandLine(argc, argv, options);
 #endif
 
-	const auto config = LoadConfig();
+	const auto config = LoadConfig(GetGlobalConfig());
 
 #ifdef ENABLE_DAEMON
 	glue_daemonize_init(&options);
