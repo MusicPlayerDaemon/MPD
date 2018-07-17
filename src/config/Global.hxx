@@ -52,10 +52,6 @@ gcc_pure
 const ConfigParam *
 config_get_param(enum ConfigOption option) noexcept;
 
-gcc_pure
-const ConfigBlock *
-config_get_block(enum ConfigBlockOption option) noexcept;
-
 const char *
 config_get_string(enum ConfigOption option,
 		  const char *default_value=nullptr) noexcept;
