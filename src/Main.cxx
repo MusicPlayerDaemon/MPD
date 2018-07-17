@@ -500,7 +500,7 @@ try {
 	glue_daemonize_init(&options);
 #endif
 
-	TagLoadConfig();
+	TagLoadConfig(GetGlobalConfig());
 
 	log_init(options.verbose, options.log_stderr);
 

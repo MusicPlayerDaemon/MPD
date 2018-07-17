@@ -126,7 +126,7 @@ try {
 
 	ReadConfigFile(config_path);
 
-	TagLoadConfig();
+	TagLoadConfig(GetGlobalConfig());
 
 	MyDatabaseListener database_listener;
 

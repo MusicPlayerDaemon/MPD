@@ -21,7 +21,7 @@
 #include "Config.hxx"
 #include "Settings.hxx"
 #include "ParseName.hxx"
-#include "config/Global.hxx"
+#include "config/Data.hxx"
 #include "config/Option.hxx"
 #include "util/Alloc.hxx"
 #include "util/ASCII.hxx"
@@ -31,9 +31,9 @@
 #include <stdlib.h>
 
 void
-TagLoadConfig()
+TagLoadConfig(const ConfigData &config)
 {
-	const char *value = config_get_string(ConfigOption::METADATA_TO_USE);
+	const char *value = config.GetString(ConfigOption::METADATA_TO_USE);
 	if (value == nullptr)
 		return;
 
