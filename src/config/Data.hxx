@@ -23,6 +23,7 @@
 #include "Option.hxx"
 
 #include <array>
+#include <chrono>
 
 struct ConfigParam;
 struct ConfigBlock;
@@ -55,8 +56,24 @@ struct ConfigData {
 	unsigned GetUnsigned(ConfigOption option,
 			     unsigned default_value) const;
 
+	std::chrono::steady_clock::duration
+	GetUnsigned(ConfigOption option,
+		    std::chrono::steady_clock::duration default_value) const {
+		// TODO: allow unit suffixes
+		auto u = GetUnsigned(option, default_value.count());
+		return std::chrono::steady_clock::duration(u);
+	}
+
 	unsigned GetPositive(ConfigOption option,
 			     unsigned default_value) const;
+
+	std::chrono::steady_clock::duration
+	GetPositive(ConfigOption option,
+		    std::chrono::steady_clock::duration default_value) const {
+		// TODO: allow unit suffixes
+		auto u = GetPositive(option, default_value.count());
+		return std::chrono::steady_clock::duration(u);
+	}
 
 	bool GetBool(ConfigOption option, bool default_value) const;
 

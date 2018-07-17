@@ -53,6 +53,7 @@
 #include "net/Init.hxx"
 #include "lib/icu/Init.hxx"
 #include "config/Global.hxx"
+#include "config/Data.hxx"
 #include "config/Param.hxx"
 #include "config/Defaults.hxx"
 #include "config/Option.hxx"
@@ -252,7 +253,7 @@ glue_sticker_init()
 }
 
 static void
-glue_state_file_init()
+glue_state_file_init(const ConfigData &config)
 {
 	auto path_fs = config_get_path(ConfigOption::STATE_FILE);
 	if (path_fs.IsNull()) {
@@ -268,8 +269,8 @@ glue_state_file_init()
 	}
 
 	const auto interval =
-		config_get_unsigned(ConfigOption::STATE_FILE_INTERVAL,
-				    StateFile::DEFAULT_INTERVAL);
+		config.GetUnsigned(ConfigOption::STATE_FILE_INTERVAL,
+				   StateFile::DEFAULT_INTERVAL);
 
 	instance->state_file = new StateFile(std::move(path_fs), interval,
 					     instance->partitions.front(),
@@ -609,7 +610,7 @@ try {
 	}
 #endif
 
-	glue_state_file_init();
+	glue_state_file_init(raw_config);
 
 #ifdef ENABLE_DATABASE
 	if (config_get_bool(ConfigOption::AUTO_UPDATE, false)) {

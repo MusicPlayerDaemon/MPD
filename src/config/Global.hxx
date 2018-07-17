@@ -23,8 +23,6 @@
 #include "Option.hxx"
 #include "Compiler.h"
 
-#include <chrono>
-
 class Path;
 class AllocatedPath;
 struct ConfigData;
@@ -76,26 +74,8 @@ config_get_path(enum ConfigOption option);
 unsigned
 config_get_unsigned(enum ConfigOption option, unsigned default_value);
 
-static inline std::chrono::steady_clock::duration
-config_get_unsigned(ConfigOption option,
-		    std::chrono::steady_clock::duration default_value)
-{
-	// TODO: allow unit suffixes
-	auto u = config_get_unsigned(option, default_value.count());
-	return std::chrono::steady_clock::duration(u);
-}
-
 unsigned
 config_get_positive(enum ConfigOption option, unsigned default_value);
-
-static inline std::chrono::steady_clock::duration
-config_get_positive(ConfigOption option,
-		    std::chrono::steady_clock::duration default_value)
-{
-	// TODO: allow unit suffixes
-	auto u = config_get_positive(option, default_value.count());
-	return std::chrono::steady_clock::duration(u);
-}
 
 bool config_get_bool(enum ConfigOption option, bool default_value);
 
