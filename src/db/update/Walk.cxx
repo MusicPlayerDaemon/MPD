@@ -30,8 +30,6 @@
 #include "storage/StorageInterface.hxx"
 #include "playlist/PlaylistRegistry.hxx"
 #include "ExcludeList.hxx"
-#include "config/Global.hxx"
-#include "config/Option.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "fs/Traits.hxx"
 #include "fs/FileSystem.hxx"
@@ -57,15 +55,6 @@ UpdateWalk::UpdateWalk(EventLoop &_loop, DatabaseListener &_listener,
 	 storage(_storage),
 	 editor(_loop, _listener)
 {
-#ifndef _WIN32
-	follow_inside_symlinks =
-		config_get_bool(ConfigOption::FOLLOW_INSIDE_SYMLINKS,
-				DEFAULT_FOLLOW_INSIDE_SYMLINKS);
-
-	follow_outside_symlinks =
-		config_get_bool(ConfigOption::FOLLOW_OUTSIDE_SYMLINKS,
-				DEFAULT_FOLLOW_OUTSIDE_SYMLINKS);
-#endif
 }
 
 static void
@@ -273,10 +262,12 @@ UpdateWalk::SkipSymlink(const Directory *directory,
 		/* don't skip if this is not a symlink */
 		return errno != EINVAL;
 
-	if (!follow_inside_symlinks && !follow_outside_symlinks) {
+	if (!config.follow_inside_symlinks &&
+	    !config.follow_outside_symlinks) {
 		/* ignore all symlinks */
 		return true;
-	} else if (follow_inside_symlinks && follow_outside_symlinks) {
+	} else if (config.follow_inside_symlinks &&
+		   config.follow_outside_symlinks) {
 		/* consider all symlinks */
 		return false;
 	}
@@ -291,8 +282,8 @@ UpdateWalk::SkipSymlink(const Directory *directory,
 		const char *relative =
 			storage.MapToRelativeUTF8(target_utf8.c_str());
 		return relative != nullptr
-			? !follow_inside_symlinks
-			: !follow_outside_symlinks;
+			? !config.follow_inside_symlinks
+			: !config.follow_outside_symlinks;
 	}
 
 	const char *p = target.c_str();
@@ -304,7 +295,7 @@ UpdateWalk::SkipSymlink(const Directory *directory,
 				/* we have moved outside the music
 				   directory - skip this symlink
 				   if such symlinks are not allowed */
-				return !follow_outside_symlinks;
+				return !config.follow_outside_symlinks;
 			}
 			p += 3;
 		} else if (PathTraitsFS::IsSeparator(p[1]))
@@ -317,7 +308,7 @@ UpdateWalk::SkipSymlink(const Directory *directory,
 	/* we are still in the music directory, so this symlink points
 	   to a song which is already in the database - skip according
 	   to the follow_inside_symlinks param*/
-	return !follow_inside_symlinks;
+	return !config.follow_inside_symlinks;
 #else
 	/* no symlink checking on WIN32 */
 

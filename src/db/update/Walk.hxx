@@ -21,6 +21,7 @@
 #define MPD_UPDATE_WALK_HXX
 
 #include "check.h"
+#include "Config.hxx"
 #include "Editor.hxx"
 #include "Compiler.h"
 
@@ -38,13 +39,7 @@ class UpdateWalk final {
 	friend class UpdateArchiveVisitor;
 #endif
 
-#ifndef _WIN32
-	static constexpr bool DEFAULT_FOLLOW_INSIDE_SYMLINKS = true;
-	static constexpr bool DEFAULT_FOLLOW_OUTSIDE_SYMLINKS = true;
-
-	bool follow_inside_symlinks;
-	bool follow_outside_symlinks;
-#endif
+	const UpdateConfig config;
 
 	bool walk_discard;
 	bool modified;

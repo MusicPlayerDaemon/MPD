@@ -215,6 +215,7 @@ libmpd_a_SOURCES += \
 	src/db/LightSong.cxx src/db/LightSong.hxx \
 	src/db/LightDirectory.hxx \
 	src/db/update/UpdateDomain.cxx src/db/update/UpdateDomain.hxx \
+	src/db/update/Config.cxx src/db/update/Config.hxx \
 	src/db/update/Service.cxx src/db/update/Service.hxx \
 	src/db/update/Queue.cxx src/db/update/Queue.hxx \
 	src/db/update/UpdateIO.cxx src/db/update/UpdateIO.hxx \
