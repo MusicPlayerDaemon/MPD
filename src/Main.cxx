@@ -453,7 +453,7 @@ int main(int argc, char *argv[])
 #endif
 
 static int
-mpd_main_after_fork(const Config &config);
+mpd_main_after_fork(const ConfigData &raw_config, const Config &config);
 
 #ifdef ANDROID
 static inline
@@ -495,13 +495,14 @@ try {
 	ParseCommandLine(argc, argv, options);
 #endif
 
-	const auto config = LoadConfig(GetGlobalConfig());
+	const auto &raw_config = GetGlobalConfig();
+	const auto config = LoadConfig(raw_config);
 
 #ifdef ENABLE_DAEMON
 	glue_daemonize_init(&options);
 #endif
 
-	TagLoadConfig(GetGlobalConfig());
+	TagLoadConfig(raw_config);
 
 	log_init(options.verbose, options.log_stderr);
 
@@ -531,7 +532,7 @@ try {
 	daemonize_begin(options.daemon);
 #endif
 
-	return mpd_main_after_fork(config);
+	return mpd_main_after_fork(raw_config, config);
 
 } catch (const std::exception &e) {
 	LogError(e);
@@ -539,24 +540,24 @@ try {
 }
 
 static int
-mpd_main_after_fork(const Config &config)
+mpd_main_after_fork(const ConfigData &raw_config, const Config &config)
 try {
 	ConfigureFS();
 
 	glue_mapper_init();
 
 	initPermissions();
-	spl_global_init(GetGlobalConfig());
+	spl_global_init(raw_config);
 #ifdef ENABLE_ARCHIVE
 	archive_plugin_init_all();
 #endif
 
 	pcm_convert_global_init();
 
-	decoder_plugin_init_all(GetGlobalConfig());
+	decoder_plugin_init_all(raw_config);
 
 #ifdef ENABLE_DATABASE
-	const bool create_db = InitDatabaseAndStorage(GetGlobalConfig());
+	const bool create_db = InitDatabaseAndStorage(raw_config);
 #endif
 
 	glue_sticker_init();
@@ -571,9 +572,9 @@ try {
 	}
 
 	client_manager_init();
-	input_stream_global_init(GetGlobalConfig(),
+	input_stream_global_init(raw_config,
 				 instance->io_thread.GetEventLoop());
-	playlist_list_global_init(GetGlobalConfig());
+	playlist_list_global_init(raw_config);
 
 #ifdef ENABLE_DAEMON
 	daemonize_commit();
@@ -593,7 +594,7 @@ try {
 		instance->neighbors->Open();
 #endif
 
-	ZeroconfInit(GetGlobalConfig(), instance->event_loop);
+	ZeroconfInit(raw_config, instance->event_loop);
 
 	for (auto &partition : instance->partitions)
 		StartPlayerThread(partition.pc);
