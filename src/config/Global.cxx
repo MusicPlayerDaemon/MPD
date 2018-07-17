@@ -77,13 +77,13 @@ void config_global_check(void)
 const ConfigParam *
 config_get_param(ConfigOption option) noexcept
 {
-	return config_data.params[unsigned(option)];
+	return config_data.GetParam(option);
 }
 
 const ConfigBlock *
 config_get_block(ConfigBlockOption option) noexcept
 {
-	return config_data.blocks[unsigned(option)];
+	return config_data.GetBlock(option);
 }
 
 const ConfigBlock *
