@@ -93,7 +93,6 @@
 #include "java/File.hxx"
 #include "android/Environment.hxx"
 #include "android/Context.hxx"
-#include "fs/StandardDirectory.hxx"
 #include "fs/FileSystem.hxx"
 #include "org_musicpd_Bridge.h"
 #endif
@@ -256,26 +255,13 @@ glue_sticker_init(const ConfigData &config)
 }
 
 static void
-glue_state_file_init(const ConfigData &config)
+glue_state_file_init(const ConfigData &raw_config)
 {
-	auto path_fs = config.GetPath(ConfigOption::STATE_FILE);
-	if (path_fs.IsNull()) {
-#ifdef ANDROID
-		const auto cache_dir = GetUserCacheDir();
-		if (cache_dir.IsNull())
-			return;
-
-		path_fs = cache_dir / Path::FromFS("state");
-#else
+	StateFileConfig config(raw_config);
+	if (!config.IsEnabled())
 		return;
-#endif
-	}
 
-	const auto interval =
-		config.GetUnsigned(ConfigOption::STATE_FILE_INTERVAL,
-				   StateFile::DEFAULT_INTERVAL);
-
-	instance->state_file = new StateFile(std::move(path_fs), interval,
+	instance->state_file = new StateFile(std::move(config),
 					     instance->partitions.front(),
 					     instance->event_loop);
 	instance->state_file->Read();

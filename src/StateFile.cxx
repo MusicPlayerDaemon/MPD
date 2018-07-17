@@ -38,13 +38,9 @@
 
 static constexpr Domain state_file_domain("state_file");
 
-constexpr std::chrono::steady_clock::duration StateFile::DEFAULT_INTERVAL;
-
-StateFile::StateFile(AllocatedPath &&_path,
-		     std::chrono::steady_clock::duration _interval,
+StateFile::StateFile(StateFileConfig &&_config,
 		     Partition &_partition, EventLoop &_loop)
-	:path(std::move(_path)), path_utf8(path.ToUTF8()),
-	 interval(_interval),
+	:config(std::move(_config)), path_utf8(config.path.ToUTF8()),
 	 timer_event(_loop, BIND_THIS_METHOD(OnTimeout)),
 	 partition(_partition)
 {
@@ -103,7 +99,7 @@ StateFile::Write()
 		    "Saving state file %s", path_utf8.c_str());
 
 	try {
-		FileOutputStream fos(path);
+		FileOutputStream fos(config.path);
 		Write(fos);
 		fos.Commit();
 	} catch (const std::exception &e) {
@@ -120,7 +116,7 @@ try {
 
 	FormatDebug(state_file_domain, "Loading state file %s", path_utf8.c_str());
 
-	TextFile file(path);
+	TextFile file(config.path);
 
 #ifdef ENABLE_DATABASE
 	const SongLoader song_loader(partition.instance.database,
@@ -155,7 +151,7 @@ void
 StateFile::CheckModified()
 {
 	if (!timer_event.IsActive() && IsModified())
-		timer_event.Schedule(interval);
+		timer_event.Schedule(config.interval);
 }
 
 void

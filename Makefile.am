@@ -175,6 +175,7 @@ libmpd_a_SOURCES = \
 	src/SongPrint.cxx src/SongPrint.hxx \
 	src/SongSave.cxx src/SongSave.hxx \
 	src/StateFile.cxx src/StateFile.hxx \
+	src/StateFileConfig.cxx src/StateFileConfig.hxx \
 	src/Stats.cxx src/Stats.hxx \
 	src/TagPrint.cxx src/TagPrint.hxx \
 	src/TagSave.cxx src/TagSave.hxx \
