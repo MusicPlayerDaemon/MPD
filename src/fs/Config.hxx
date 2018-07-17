@@ -22,13 +22,15 @@
 
 #include "check.h"
 
+struct ConfigData;
+
 /**
  * Performs global one-time initialization of this class.
  *
  * Throws std::runtime_error on error.
  */
 void
-ConfigureFS();
+ConfigureFS(const ConfigData &config);
 
 void
 DeinitFS();
