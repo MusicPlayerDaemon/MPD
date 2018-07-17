@@ -44,7 +44,13 @@ struct ConfigData {
 	}
 
 	/**
+	 * Find a block with a matching attribute.
+	 *
 	 * Throws if a block doesn't have the specified (mandatory) key.
+	 *
+	 * @param option the blocks to search
+	 * @param key the attribute name
+	 * @param value the expected attribute value
 	 */
 	gcc_pure
 	const ConfigBlock *FindBlock(ConfigBlockOption option,

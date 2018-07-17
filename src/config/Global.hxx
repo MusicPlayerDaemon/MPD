@@ -59,16 +59,6 @@ gcc_pure
 const ConfigBlock *
 config_get_block(enum ConfigBlockOption option) noexcept;
 
-/**
- * Find a block with a matching attribute.
- *
- * @param option the blocks to search
- * @param key the attribute name
- * @param value the expected attribute value
- */
-const ConfigBlock *
-config_find_block(ConfigBlockOption option, const char *key, const char *value);
-
 const char *
 config_get_string(enum ConfigOption option,
 		  const char *default_value=nullptr) noexcept;

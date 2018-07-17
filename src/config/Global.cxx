@@ -92,12 +92,6 @@ config_get_block(ConfigBlockOption option) noexcept
 	return config_data.GetBlock(option);
 }
 
-const ConfigBlock *
-config_find_block(ConfigBlockOption option, const char *key, const char *value)
-{
-	return config_data.FindBlock(option, key, value);
-}
-
 const char *
 config_get_string(ConfigOption option, const char *default_value) noexcept
 {
