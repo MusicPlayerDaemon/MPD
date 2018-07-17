@@ -21,7 +21,7 @@
 #include "Listen.hxx"
 #include "client/Listener.hxx"
 #include "config/Param.hxx"
-#include "config/Global.hxx"
+#include "config/Data.hxx"
 #include "config/Option.hxx"
 #include "system/Error.hxx"
 #include "util/RuntimeError.hxx"
@@ -79,16 +79,16 @@ listen_systemd_activation(ClientListener &listener)
 #endif
 
 void
-listen_global_init(ClientListener &listener)
+listen_global_init(const ConfigData &config, ClientListener &listener)
 {
-	int port = config_get_positive(ConfigOption::PORT, DEFAULT_PORT);
+	int port = config.GetPositive(ConfigOption::PORT, DEFAULT_PORT);
 
 #ifdef ENABLE_SYSTEMD_DAEMON
 	if (listen_systemd_activation(listener))
 		return;
 #endif
 
-	for (const auto *param = config_get_param(ConfigOption::BIND_TO_ADDRESS);
+	for (const auto *param = config.GetParam(ConfigOption::BIND_TO_ADDRESS);
 	     param != nullptr; param = param->next) {
 		try {
 			listen_add_config_param(listener, port, param);

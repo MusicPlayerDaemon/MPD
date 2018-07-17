@@ -530,7 +530,7 @@ try {
 
 	initialize_decoder_and_player(raw_config, config.replay_gain);
 
-	listen_global_init(*instance->partitions.front().listener);
+	listen_global_init(raw_config, *instance->partitions.front().listener);
 
 #ifdef ENABLE_DAEMON
 	daemonize_set_user();
