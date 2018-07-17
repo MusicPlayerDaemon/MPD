@@ -20,6 +20,7 @@
 #ifndef MPD_FILTER_LOAD_CHAIN_HXX
 #define MPD_FILTER_LOAD_CHAIN_HXX
 
+struct ConfigData;
 class PreparedFilter;
 
 /**
@@ -30,9 +31,12 @@ class PreparedFilter;
  * Throws std::runtime_error on error.
  *
  * @param chain the chain to append filters on
+ * @param config the global configuration to load filter definitions from
  * @param spec the filter chain specification
  */
 void
-filter_chain_parse(PreparedFilter &chain, const char *spec);
+filter_chain_parse(PreparedFilter &chain,
+		   const ConfigData &config,
+		   const char *spec);
 
 #endif
