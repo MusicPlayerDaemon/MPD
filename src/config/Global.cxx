@@ -83,7 +83,7 @@ config_get_param(ConfigOption option) noexcept
 const ConfigBlock *
 config_get_block(ConfigBlockOption option) noexcept
 {
-	ConfigBlock *block = config_data.blocks[unsigned(option)];
+	const auto *block = config_data.blocks[unsigned(option)];
 	if (block != nullptr)
 		block->used = true;
 	return block;

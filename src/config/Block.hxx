@@ -69,7 +69,7 @@ struct ConfigBlock {
 	 * This flag is false when nobody has queried the value of
 	 * this option yet.
 	 */
-	bool used = false;
+	mutable bool used = false;
 
 	explicit ConfigBlock(int _line=-1)
 		:line(_line) {}
