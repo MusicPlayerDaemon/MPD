@@ -418,6 +418,14 @@ systemctl start mpd.socket</programlisting>
       </para>
 
       <programlisting>include "other.conf"</programlisting>
+
+      <para>
+        You can use <varname>include_optional</varname> instead if you
+        want the included file to be optional; the directive will be
+        ignored if the file does not exist:
+      </para>
+
+      <programlisting>include_optional "may_not_exist.conf"</programlisting>
     </section>
 
     <section id="config_music_directory">

@@ -28,6 +28,7 @@
 #include "util/StringAPI.hxx"
 #include "util/Domain.hxx"
 #include "util/RuntimeError.hxx"
+#include "fs/FileSystem.hxx"
 #include "fs/Path.hxx"
 #include "fs/io/FileReader.hxx"
 #include "fs/io/BufferedReader.hxx"
@@ -179,10 +180,17 @@ ReadConfigFile(ConfigData &config_data, BufferedReader &reader, Path directory)
 			// TODO: detect recursion
 			// TODO: Config{Block,Param} have only line number but no file name
 			// TODO: support wildcards (include "conf.d/*.conf")
-			// TODO: add "include_optional"
 			const auto path = AllocatedPath::Apply(directory,
 							       AllocatedPath::FromUTF8Throw(ExpectValueAndEnd(tokenizer)));
 			ReadConfigFile(config_data, path);
+			continue;
+		}
+
+		if (StringIsEqual(name, "include_optional")) {
+			const auto path = AllocatedPath::Apply(directory,
+							       AllocatedPath::FromUTF8Throw(ExpectValueAndEnd(tokenizer)));
+			if (PathExists(path))
+				ReadConfigFile(config_data, path);
 			continue;
 		}
 
