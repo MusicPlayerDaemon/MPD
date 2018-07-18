@@ -177,7 +177,7 @@ ReadConfigFile(ConfigData &config_data, BufferedReader &reader, Path directory)
 
 		if (StringIsEqual(name, "include")) {
 			// TODO: allow absolute path specifications
-			// TODO: detect recusion
+			// TODO: detect recursion
 			// TODO: Config{Block,Param} have only line number but no file name
 			// TODO: support wildcards (include "conf.d/*.conf")
 			// TODO: add "include_optional"
