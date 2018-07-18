@@ -94,6 +94,13 @@ StringFindLast(char *haystack, char needle) noexcept
 	return strrchr(haystack, needle);
 }
 
+gcc_pure gcc_nonnull_all
+static inline const char *
+StringFindAny(const char *haystack, const char *accept) noexcept
+{
+	return strpbrk(haystack, accept);
+}
+
 static inline char *
 StringToken(char *str, const char *delim) noexcept
 {
