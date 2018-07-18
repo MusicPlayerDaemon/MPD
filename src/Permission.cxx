@@ -91,37 +91,32 @@ void
 initPermissions(const ConfigData &config)
 {
 	unsigned permission;
-	const ConfigParam *param;
 
 	permission_default = PERMISSION_READ | PERMISSION_ADD |
 	    PERMISSION_CONTROL | PERMISSION_ADMIN;
 
-	param = config.GetParam(ConfigOption::PASSWORD);
-
-	if (param) {
+	for (const auto &param : config.GetParamList(ConfigOption::PASSWORD)) {
 		permission_default = 0;
 
-		do {
-			const char *separator =
-				strchr(param->value.c_str(),
-				       PERMISSION_PASSWORD_CHAR);
+		const char *separator = strchr(param.value.c_str(),
+					       PERMISSION_PASSWORD_CHAR);
 
-			if (separator == NULL)
-				throw FormatRuntimeError("\"%c\" not found in password string "
-							 "\"%s\", line %i",
-							 PERMISSION_PASSWORD_CHAR,
-							 param->value.c_str(),
-							 param->line);
+		if (separator == NULL)
+			throw FormatRuntimeError("\"%c\" not found in password string "
+						 "\"%s\", line %i",
+						 PERMISSION_PASSWORD_CHAR,
+						 param.value.c_str(),
+						 param.line);
 
-			std::string password(param->value.c_str(), separator);
+		std::string password(param.value.c_str(), separator);
 
-			permission = parsePermissions(separator + 1);
+		permission = parsePermissions(separator + 1);
 
-			permission_passwords.insert(std::make_pair(std::move(password),
-								   permission));
-		} while ((param = param->next) != nullptr);
+		permission_passwords.insert(std::make_pair(std::move(password),
+							   permission));
 	}
 
+	const ConfigParam *param;
 	param = config.GetParam(ConfigOption::DEFAULT_PERMS);
 
 	if (param)

@@ -55,12 +55,6 @@ struct BlockParam {
 };
 
 struct ConfigBlock {
-	/**
-	 * The next #ConfigBlock with the same name.  The destructor
-	 * deletes the whole chain.
-	 */
-	ConfigBlock *next = nullptr;
-
 	int line;
 
 	std::vector<BlockParam> block_params;
@@ -74,11 +68,8 @@ struct ConfigBlock {
 	explicit ConfigBlock(int _line=-1)
 		:line(_line) {}
 
-	ConfigBlock(const ConfigBlock &) = delete;
-
-	~ConfigBlock();
-
-	ConfigBlock &operator=(const ConfigBlock &) = delete;
+	ConfigBlock(ConfigBlock &&) = default;
+	ConfigBlock &operator=(ConfigBlock &&) = default;
 
 	/**
 	 * Determine if this is a "null" instance, i.e. an empty

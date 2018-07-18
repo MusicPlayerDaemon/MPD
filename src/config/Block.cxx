@@ -78,11 +78,6 @@ BlockParam::GetBoolValue() const
 	return value2;
 }
 
-ConfigBlock::~ConfigBlock()
-{
-	delete next;
-}
-
 const BlockParam *
 ConfigBlock::GetBlockParam(const char *name) const noexcept
 {

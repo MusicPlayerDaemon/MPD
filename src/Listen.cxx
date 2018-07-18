@@ -88,14 +88,13 @@ listen_global_init(const ConfigData &config, ClientListener &listener)
 		return;
 #endif
 
-	for (const auto *param = config.GetParam(ConfigOption::BIND_TO_ADDRESS);
-	     param != nullptr; param = param->next) {
+	for (const auto &param : config.GetParamList(ConfigOption::BIND_TO_ADDRESS)) {
 		try {
-			listen_add_config_param(listener, port, param);
+			listen_add_config_param(listener, port, &param);
 		} catch (...) {
 			std::throw_with_nested(FormatRuntimeError("Failed to listen on %s (line %i)",
-								  param->value.c_str(),
-								  param->line));
+								  param.value.c_str(),
+								  param.line));
 		}
 	}
 

@@ -19,8 +19,6 @@
 
 #include "config.h"
 #include "Data.hxx"
-#include "Param.hxx"
-#include "Block.hxx"
 #include "Parser.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "util/RuntimeError.hxx"
@@ -31,35 +29,36 @@
 void
 ConfigData::Clear()
 {
-	for (auto &i : params) {
-		delete i;
-		i = nullptr;
-	}
+	for (auto &i : params)
+		i.clear();
 
-	for (auto &i : blocks) {
-		delete i;
-		i = nullptr;
-	}
+	for (auto &i : blocks)
+		i.clear();
 }
 
-gcc_nonnull_all
-static void
-Append(ConfigParam *&head, ConfigParam *p)
+template<typename T>
+gcc_pure
+static auto
+FindLast(const std::forward_list<T> &list)
 {
-	assert(p->next == nullptr);
+	auto i = list.before_begin();
+	while (std::next(i) != list.end())
+		++i;
+	return i;
+}
 
-	auto **i = &head;
-	while (*i != nullptr)
-		i = &(*i)->next;
-
-	*i = p;
+template<typename T>
+static auto
+Append(std::forward_list<T> &list, T &&src)
+{
+	return list.emplace_after(FindLast(list), std::move(src));
 }
 
 void
 ConfigData::AddParam(ConfigOption option,
 		     std::unique_ptr<ConfigParam> param) noexcept
 {
-	Append(params[size_t(option)], param.release());
+	Append(GetParamList(option), std::move(*param));
 }
 
 const char *
@@ -143,39 +142,25 @@ ConfigData::GetBool(ConfigOption option, bool default_value) const
 	return value;
 }
 
-gcc_nonnull_all
-static void
-Append(ConfigBlock *&head, ConfigBlock *p)
-{
-	assert(p->next == nullptr);
-
-	auto **i = &head;
-	while (*i != nullptr)
-		i = &(*i)->next;
-
-	*i = p;
-}
-
-void
+ConfigBlock &
 ConfigData::AddBlock(ConfigBlockOption option,
 		     std::unique_ptr<ConfigBlock> block) noexcept
 {
-	Append(blocks[size_t(option)], block.release());
+	return *Append(GetBlockList(option), std::move(*block));
 }
 
 const ConfigBlock *
 ConfigData::FindBlock(ConfigBlockOption option,
 		      const char *key, const char *value) const
 {
-	for (const auto *block = GetBlock(option);
-	     block != nullptr; block = block->next) {
-		const char *value2 = block->GetBlockValue(key);
+	for (const auto &block : GetBlockList(option)) {
+		const char *value2 = block.GetBlockValue(key);
 		if (value2 == nullptr)
 			throw FormatRuntimeError("block without '%s' in line %d",
-						 key, block->line);
+						 key, block.line);
 
 		if (StringIsEqual(value2, value))
-			return block;
+			return &block;
 	}
 
 	return nullptr;
@@ -189,8 +174,7 @@ ConfigData::MakeBlock(ConfigBlockOption option,
 	if (block == nullptr) {
 		auto new_block = std::make_unique<ConfigBlock>();
 		new_block->AddBlockParam(key, value);
-		block = new_block.get();
-		AddBlock(option, std::move(new_block));
+		block = &AddBlock(option, std::move(new_block));
 	}
 
 	return *block;

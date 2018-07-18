@@ -21,9 +21,12 @@
 #define MPD_CONFIG_DATA_HXX
 
 #include "Option.hxx"
+#include "Param.hxx"
+#include "Block.hxx"
 
 #include <array>
 #include <chrono>
+#include <forward_list>
 #include <memory>
 
 struct ConfigParam;
@@ -31,17 +34,26 @@ struct ConfigBlock;
 class AllocatedPath;
 
 struct ConfigData {
-	std::array<ConfigParam *, std::size_t(ConfigOption::MAX)> params{{nullptr}};
-	std::array<ConfigBlock *, std::size_t(ConfigBlockOption::MAX)> blocks{{nullptr}};
+	std::array<std::forward_list<ConfigParam>, std::size_t(ConfigOption::MAX)> params;
+	std::array<std::forward_list<ConfigBlock>, std::size_t(ConfigBlockOption::MAX)> blocks;
 
 	void Clear();
+
+	auto &GetParamList(ConfigOption option) noexcept {
+		return params[size_t(option)];
+	}
+
+	const auto &GetParamList(ConfigOption option) const noexcept {
+		return params[size_t(option)];
+	}
 
 	void AddParam(ConfigOption option,
 		      std::unique_ptr<ConfigParam> param) noexcept;
 
 	gcc_pure
 	const ConfigParam *GetParam(ConfigOption option) const noexcept {
-		return params[size_t(option)];
+		const auto &list = GetParamList(option);
+		return list.empty() ? nullptr : &list.front();
 	}
 
 	gcc_pure
@@ -81,12 +93,21 @@ struct ConfigData {
 
 	bool GetBool(ConfigOption option, bool default_value) const;
 
-	void AddBlock(ConfigBlockOption option,
-		      std::unique_ptr<ConfigBlock> block) noexcept;
+	auto &GetBlockList(ConfigBlockOption option) noexcept {
+		return blocks[size_t(option)];
+	}
+
+	const auto &GetBlockList(ConfigBlockOption option) const noexcept {
+		return blocks[size_t(option)];
+	}
+
+	ConfigBlock &AddBlock(ConfigBlockOption option,
+			      std::unique_ptr<ConfigBlock> block) noexcept;
 
 	gcc_pure
 	const ConfigBlock *GetBlock(ConfigBlockOption option) const noexcept {
-		return blocks[size_t(option)];
+		const auto &list = GetBlockList(option);
+		return list.empty() ? nullptr : &list.front();
 	}
 
 	/**

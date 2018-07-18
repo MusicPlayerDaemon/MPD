@@ -25,11 +25,6 @@
 
 #include <stdexcept>
 
-ConfigParam::~ConfigParam()
-{
-	delete next;
-}
-
 AllocatedPath
 ConfigParam::GetPath() const
 {

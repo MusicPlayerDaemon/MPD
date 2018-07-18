@@ -91,13 +91,12 @@ MultipleOutputs::Configure(EventLoop &event_loop,
 			   const ReplayGainConfig &replay_gain_config,
 			   AudioOutputClient &client)
 {
-	for (const auto *param = config.GetBlock(ConfigBlockOption::AUDIO_OUTPUT);
-	     param != nullptr; param = param->next) {
-		param->SetUsed();
+	for (const auto &block : config.GetBlockList(ConfigBlockOption::AUDIO_OUTPUT)) {
+		block.SetUsed();
 		auto *output = LoadOutputControl(event_loop,
 						 replay_gain_config,
 						 mixer_listener,
-						 client, *param);
+						 client, block);
 		if (FindByName(output->GetName()) != nullptr)
 			throw FormatRuntimeError("output devices with identical "
 						 "names: %s", output->GetName());

@@ -53,17 +53,16 @@ void
 NeighborGlue::Init(const ConfigData &config,
 		   EventLoop &loop, NeighborListener &listener)
 {
-	for (const auto *block = config.GetBlock(ConfigBlockOption::NEIGHBORS);
-	     block != nullptr; block = block->next) {
-		block->SetUsed();
+	for (const auto &block : config.GetBlockList(ConfigBlockOption::NEIGHBORS)) {
+		block.SetUsed();
 
 		try {
 			explorers.emplace_front(CreateNeighborExplorer(loop,
 								       listener,
-								       *block));
+								       block));
 		} catch (...) {
 			std::throw_with_nested(FormatRuntimeError("Line %i: ",
-								  block->line));
+								  block.line));
 		}
 	}
 }

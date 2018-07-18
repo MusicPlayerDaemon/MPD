@@ -72,9 +72,9 @@ Check(const ConfigBlock &block)
 
 void config_global_check(void)
 {
-	for (auto i : config_data.blocks)
-		for (const auto *p = i; p != nullptr; p = p->next)
-			Check(*p);
+	for (const auto &list : config_data.blocks)
+		for (const auto &block : list)
+			Check(block);
 }
 
 const char *
