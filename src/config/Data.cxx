@@ -56,9 +56,9 @@ Append(std::forward_list<T> &list, T &&src)
 
 void
 ConfigData::AddParam(ConfigOption option,
-		     std::unique_ptr<ConfigParam> param) noexcept
+		     ConfigParam &&param) noexcept
 {
-	Append(GetParamList(option), std::move(*param));
+	Append(GetParamList(option), std::move(param));
 }
 
 const char *
@@ -144,9 +144,9 @@ ConfigData::GetBool(ConfigOption option, bool default_value) const
 
 ConfigBlock &
 ConfigData::AddBlock(ConfigBlockOption option,
-		     std::unique_ptr<ConfigBlock> block) noexcept
+		     ConfigBlock &&block) noexcept
 {
-	return *Append(GetBlockList(option), std::move(*block));
+	return *Append(GetBlockList(option), std::move(block));
 }
 
 const ConfigBlock *
@@ -172,8 +172,8 @@ ConfigData::MakeBlock(ConfigBlockOption option,
 {
 	auto *block = const_cast<ConfigBlock *>(FindBlock(option, key, value));
 	if (block == nullptr) {
-		auto new_block = std::make_unique<ConfigBlock>();
-		new_block->AddBlockParam(key, value);
+		ConfigBlock new_block;
+		new_block.AddBlockParam(key, value);
 		block = &AddBlock(option, std::move(new_block));
 	}
 

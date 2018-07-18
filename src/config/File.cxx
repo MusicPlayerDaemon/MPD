@@ -32,8 +32,6 @@
 #include "fs/io/BufferedReader.hxx"
 #include "Log.hxx"
 
-#include <memory>
-
 #include <assert.h>
 
 static constexpr char CONF_COMMENT = '#';
@@ -74,10 +72,10 @@ config_read_name_value(ConfigBlock &block, char *input, unsigned line)
 	block.AddBlockParam(name, std::move(value), line);
 }
 
-static std::unique_ptr<ConfigBlock>
+static ConfigBlock
 config_read_block(BufferedReader &reader)
 {
-	std::unique_ptr<ConfigBlock> block(new ConfigBlock(reader.GetLineNumber()));
+	ConfigBlock block(reader.GetLineNumber());
 
 	while (true) {
 		char *line = reader.ReadLine();
@@ -101,7 +99,7 @@ config_read_block(BufferedReader &reader)
 
 		/* parse name and value */
 
-		config_read_name_value(*block, line,
+		config_read_name_value(block, line,
 				       reader.GetLineNumber());
 	}
 }
@@ -150,8 +148,8 @@ ReadConfigParam(ConfigData &config_data, BufferedReader &reader,
 
 	/* now parse the block or the value */
 
-	config_data.AddParam(o, std::make_unique<ConfigParam>(ExpectValueAndEnd(tokenizer),
-							      reader.GetLineNumber()));
+	config_data.AddParam(o, ConfigParam(ExpectValueAndEnd(tokenizer),
+					    reader.GetLineNumber()));
 }
 
 static void

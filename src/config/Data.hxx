@@ -27,7 +27,6 @@
 #include <array>
 #include <chrono>
 #include <forward_list>
-#include <memory>
 
 struct ConfigParam;
 struct ConfigBlock;
@@ -47,8 +46,7 @@ struct ConfigData {
 		return params[size_t(option)];
 	}
 
-	void AddParam(ConfigOption option,
-		      std::unique_ptr<ConfigParam> param) noexcept;
+	void AddParam(ConfigOption option, ConfigParam &&param) noexcept;
 
 	gcc_pure
 	const ConfigParam *GetParam(ConfigOption option) const noexcept {
@@ -102,7 +100,7 @@ struct ConfigData {
 	}
 
 	ConfigBlock &AddBlock(ConfigBlockOption option,
-			      std::unique_ptr<ConfigBlock> block) noexcept;
+			      ConfigBlock &&block) noexcept;
 
 	gcc_pure
 	const ConfigBlock *GetBlock(ConfigBlockOption option) const noexcept {
