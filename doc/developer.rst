@@ -54,7 +54,7 @@ If you already have a clone, update it:
 
     git pull --rebase git://github.com/MusicPlayerDaemon/MPD master
 
-You can do without "--rebase", but we recommend that you rebase your repository on the "master" repository all the time.
+You can do without :option:`--rebase`, but we recommend that you rebase your repository on the "master" repository all the time.
 
 Configure with the options :option:`--enable-debug --enable-werror`.  Enable as many plugins as possible, to be sure that you don't break any disabled code.
 
@@ -124,6 +124,6 @@ Now run the analyzer:
 
 .. code-block:: sh
 
-    scan-build --use-c++=clang++ --use-cc=clang make</programlisting>
+    scan-build --use-c++=clang++ --use-cc=clang make
 
 The options :option:`--use-c++` and :option:`--use-cc` are necessary because it invokes :command:`cc` for actually compiling the sources by default. That breaks, because MPD requires a C99 compiler.
