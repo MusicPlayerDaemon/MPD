@@ -1367,6 +1367,12 @@ dnl ---------------------------------------------------------------------------
 dnl Documentation
 dnl ---------------------------------------------------------------------------
 if test x$enable_documentation = xyes; then
+	AC_PATH_PROG(SPHINX, sphinx-build)
+	if test x$SPHINX = x; then
+		AC_MSG_ERROR([sphinx-build not found])
+	fi
+	AC_SUBST(SPHINX)
+
 	AC_PATH_PROG(XMLTO, xmlto)
 	if test x$XMLTO = x; then
 		AC_MSG_ERROR([xmlto not found])

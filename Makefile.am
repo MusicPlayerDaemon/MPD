@@ -2528,6 +2528,9 @@ DOCBOOK_HTML = $(patsubst %.xml,%/index.html,$(DOCBOOK_FILES))
 
 DOCBOOK_INCLUDES = $(wildcard $(srcdir)/doc/include/*.xml)
 
+doc/html/index.html: $(srcdir)/doc/conf.py $(srcdir)/doc/*.rst
+	$(SPHINX) -q -b html -d doc/doctrees $(srcdir)/doc doc/html
+
 $(DOCBOOK_HTML): %/index.html: %.xml $(DOCBOOK_INCLUDES)
 	$(XMLTO) -o $(@D) --stringparam chunker.output.encoding=utf-8 html --stringparam use.id.as.filename=1 $<
 
@@ -2535,13 +2538,17 @@ doc/api/html/index.html: doc/doxygen.conf
 	@$(MKDIR_P) $(@D)
 	$(DOXYGEN) $<
 
-all-local: $(DOCBOOK_HTML) doc/api/html/index.html
+all-local: doc/html/index.html $(DOCBOOK_HTML) doc/api/html/index.html
 
 clean-local:
 	rm -rf $(patsubst %.xml,%,$(DOCBOOK_FILES))
-	rm -rf doc/api
+	rm -rf doc/api doc/doctrees doc/html
 
 install-data-local: doc/api/html/index.html
+	$(mkinstalldirs) $(DESTDIR)$(docdir)/html $(DESTDIR)$(docdir)/html/_sources $(DESTDIR)$(docdir)/html/_static
+	$(INSTALL_DATA) -c doc/html/*.* $(DESTDIR)$(docdir)/html
+	$(INSTALL_DATA) -c doc/html/_sources/*.* $(DESTDIR)$(docdir)/html/_sources
+	$(INSTALL_DATA) -c doc/html/_static/*.* $(DESTDIR)$(docdir)/html/_static
 	$(mkinstalldirs) $(DESTDIR)$(docdir)/api/html
 	$(INSTALL_DATA) -c -m 644 doc/api/html/*.* \
 		$(DESTDIR)$(docdir)/api/html
