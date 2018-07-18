@@ -2512,7 +2512,7 @@ endif
 man_MANS = doc/mpd.1 doc/mpd.conf.5
 doc_DATA = AUTHORS COPYING NEWS README.md doc/mpdconf.example
 
-DOCBOOK_FILES = doc/protocol.xml doc/user.xml doc/developer.xml
+DOCBOOK_FILES = doc/protocol.xml doc/user.xml
 
 if ENABLE_DOCUMENTATION
 protocoldir = $(docdir)/protocol
@@ -2520,9 +2520,6 @@ protocol_DATA = $(wildcard doc/protocol/*.html)
 
 userdir = $(docdir)/user
 user_DATA = $(wildcard doc/user/*.html)
-
-developerdir = $(docdir)/developer
-developer_DATA = $(wildcard doc/developer/*.html)
 
 DOCBOOK_HTML = $(patsubst %.xml,%/index.html,$(DOCBOOK_FILES))
 
@@ -2561,7 +2558,6 @@ upload: $(DOCBOOK_HTML) doc/api/html/index.html
 		--chmod=Dug+rwx,Do+rx,Fug+rw,Fo+r \
 		--include=protocol --include=protocol/** \
 		--include=user --include=user/** \
-		--include=developer --include=developer/** \
 		--include=api --include=api/** \
 		--exclude=*
 
