@@ -249,14 +249,18 @@ public:
 	 * (#IsNull returns true).
 	 */
 	gcc_pure
-	std::string ToUTF8() const noexcept;
+	std::string ToUTF8() const noexcept {
+		return ((Path)*this).ToUTF8();
+	}
 
 	/**
 	 * Gets directory name of this path.
 	 * Returns a "nulled" instance on error.
 	 */
 	gcc_pure
-	AllocatedPath GetDirectoryName() const noexcept;
+	AllocatedPath GetDirectoryName() const noexcept {
+		return ((Path)*this).GetDirectoryName();
+	}
 
 	/**
 	 * Determine the relative part of the given path to this

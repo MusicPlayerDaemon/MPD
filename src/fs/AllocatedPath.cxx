@@ -52,22 +52,6 @@ AllocatedPath::FromUTF8Throw(const char *path_utf8)
 #endif
 }
 
-AllocatedPath
-AllocatedPath::GetDirectoryName() const noexcept
-{
-	return FromFS(PathTraitsFS::GetParent(c_str()));
-}
-
-std::string
-AllocatedPath::ToUTF8() const noexcept
-{
-	try {
-		return ::PathToUTF8(c_str());
-	} catch (...) {
-		return std::string();
-	}
-}
-
 void
 AllocatedPath::ChopSeparators() noexcept
 {
