@@ -42,6 +42,26 @@ ConfigData::Clear()
 	}
 }
 
+gcc_nonnull_all
+static void
+Append(ConfigParam *&head, ConfigParam *p)
+{
+	assert(p->next == nullptr);
+
+	auto **i = &head;
+	while (*i != nullptr)
+		i = &(*i)->next;
+
+	*i = p;
+}
+
+void
+ConfigData::AddParam(ConfigOption option,
+		     std::unique_ptr<ConfigParam> param) noexcept
+{
+	Append(params[size_t(option)], param.release());
+}
+
 const char *
 ConfigData::GetString(ConfigOption option,
 		      const char *default_value) const noexcept
@@ -121,6 +141,26 @@ ConfigData::GetBool(ConfigOption option, bool default_value) const
 					 param->line);
 
 	return value;
+}
+
+gcc_nonnull_all
+static void
+Append(ConfigBlock *&head, ConfigBlock *p)
+{
+	assert(p->next == nullptr);
+
+	auto **i = &head;
+	while (*i != nullptr)
+		i = &(*i)->next;
+
+	*i = p;
+}
+
+void
+ConfigData::AddBlock(ConfigBlockOption option,
+		     std::unique_ptr<ConfigBlock> block) noexcept
+{
+	Append(blocks[size_t(option)], block.release());
 }
 
 const ConfigBlock *

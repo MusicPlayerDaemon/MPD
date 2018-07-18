@@ -74,7 +74,7 @@ config_read_name_value(ConfigBlock &block, char *input, unsigned line)
 	block.AddBlockParam(name, std::move(value), line);
 }
 
-static ConfigBlock *
+static std::unique_ptr<ConfigBlock>
 config_read_block(BufferedReader &reader)
 {
 	std::unique_ptr<ConfigBlock> block(new ConfigBlock(reader.GetLineNumber()));
@@ -96,7 +96,7 @@ config_read_block(BufferedReader &reader)
 			if (*line != 0 && *line != CONF_COMMENT)
 				throw std::runtime_error("Unknown tokens after '}'");
 
-			return block.release();
+			return block;
 		}
 
 		/* parse name and value */
@@ -106,19 +106,6 @@ config_read_block(BufferedReader &reader)
 	}
 }
 
-gcc_nonnull_all
-static void
-Append(ConfigBlock *&head, ConfigBlock *p)
-{
-	assert(p->next == nullptr);
-
-	auto **i = &head;
-	while (*i != nullptr)
-		i = &(*i)->next;
-
-	*i = p;
-}
-
 static void
 ReadConfigBlock(ConfigData &config_data, BufferedReader &reader,
 		const char *name, ConfigBlockOption o,
@@ -126,15 +113,13 @@ ReadConfigBlock(ConfigData &config_data, BufferedReader &reader,
 {
 	const unsigned i = unsigned(o);
 	const ConfigTemplate &option = config_block_templates[i];
-	ConfigBlock *&head = config_data.blocks[i];
 
-	if (head != nullptr && !option.repeatable) {
-		ConfigBlock *block = head;
-		throw FormatRuntimeError("config parameter \"%s\" is first defined "
-					 "on line %d and redefined on line %u\n",
-					 name, block->line,
-					 reader.GetLineNumber());
-	}
+	if (!option.repeatable)
+		if (const auto *block = config_data.GetBlock(o))
+			throw FormatRuntimeError("config parameter \"%s\" is first defined "
+						 "on line %d and redefined on line %u\n",
+						 name, block->line,
+						 reader.GetLineNumber());
 
 	/* now parse the block or the value */
 
@@ -145,22 +130,7 @@ ReadConfigBlock(ConfigData &config_data, BufferedReader &reader,
 	if (*line != 0 && *line != CONF_COMMENT)
 		throw std::runtime_error("Unknown tokens after '{'");
 
-	auto *param = config_read_block(reader);
-	assert(param != nullptr);
-	Append(head, param);
-}
-
-gcc_nonnull_all
-static void
-Append(ConfigParam *&head, ConfigParam *p)
-{
-	assert(p->next == nullptr);
-
-	auto **i = &head;
-	while (*i != nullptr)
-		i = &(*i)->next;
-
-	*i = p;
+	config_data.AddBlock(o, config_read_block(reader));
 }
 
 static void
@@ -170,21 +140,18 @@ ReadConfigParam(ConfigData &config_data, BufferedReader &reader,
 {
 	const unsigned i = unsigned(o);
 	const ConfigTemplate &option = config_param_templates[i];
-	auto *&head = config_data.params[i];
 
-	if (head != nullptr && !option.repeatable) {
-		auto *param = head;
-		throw FormatRuntimeError("config parameter \"%s\" is first defined "
-					 "on line %d and redefined on line %u\n",
-					 name, param->line,
-					 reader.GetLineNumber());
-	}
+	if (!option.repeatable)
+		if (const auto *param = config_data.GetParam(o))
+			throw FormatRuntimeError("config parameter \"%s\" is first defined "
+						 "on line %d and redefined on line %u\n",
+						 name, param->line,
+						 reader.GetLineNumber());
 
 	/* now parse the block or the value */
 
-	auto *param = new ConfigParam(ExpectValueAndEnd(tokenizer),
-				      reader.GetLineNumber());
-	Append(head, param);
+	config_data.AddParam(o, std::make_unique<ConfigParam>(ExpectValueAndEnd(tokenizer),
+							      reader.GetLineNumber()));
 }
 
 static void

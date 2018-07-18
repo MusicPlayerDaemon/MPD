@@ -24,6 +24,7 @@
 
 #include <array>
 #include <chrono>
+#include <memory>
 
 struct ConfigParam;
 struct ConfigBlock;
@@ -34,6 +35,9 @@ struct ConfigData {
 	std::array<ConfigBlock *, std::size_t(ConfigBlockOption::MAX)> blocks{{nullptr}};
 
 	void Clear();
+
+	void AddParam(ConfigOption option,
+		      std::unique_ptr<ConfigParam> param) noexcept;
 
 	gcc_pure
 	const ConfigParam *GetParam(ConfigOption option) const noexcept {
@@ -76,6 +80,9 @@ struct ConfigData {
 	}
 
 	bool GetBool(ConfigOption option, bool default_value) const;
+
+	void AddBlock(ConfigBlockOption option,
+		      std::unique_ptr<ConfigBlock> block) noexcept;
 
 	gcc_pure
 	const ConfigBlock *GetBlock(ConfigBlockOption option) const noexcept {
