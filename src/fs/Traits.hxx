@@ -158,6 +158,14 @@ struct PathTraitsFS {
 	static string Build(const_pointer_type a, const_pointer_type b) noexcept {
 		return Build(a, GetLength(a), b, GetLength(b));
 	}
+
+	/**
+	 * Interpret the given path as being relative to the given
+	 * base, and return the concatenated path.
+	 */
+	gcc_pure
+	static string Apply(const_pointer_type base,
+			    const_pointer_type path) noexcept;
 };
 
 /**

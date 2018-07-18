@@ -124,6 +124,11 @@ public:
 			     b.value.c_str(), b.value.size());
 	}
 
+	gcc_pure
+	static AllocatedPath Apply(Path base, Path path) noexcept {
+		return Traits::Apply(base.c_str(), path.c_str());
+	}
+
 	/**
 	 * Convert a C string that is already in the filesystem
 	 * character set to a #Path instance.
