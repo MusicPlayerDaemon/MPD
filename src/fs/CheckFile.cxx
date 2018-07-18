@@ -32,12 +32,10 @@
 void
 CheckDirectoryReadable(Path path_fs)
 try {
-	const auto path_utf8 = path_fs.ToUTF8();
-
 	const FileInfo fi(path_fs);
 	if (!fi.IsDirectory()) {
 		FormatError(config_domain,
-			    "Not a directory: %s", path_utf8.c_str());
+			    "Not a directory: %s", path_fs.ToUTF8().c_str());
 		return;
 	}
 
@@ -49,7 +47,7 @@ try {
 		if (IsAccessDenied(e))
 			FormatError(config_domain,
 				    "No permission to traverse (\"execute\") directory: %s",
-				    path_utf8.c_str());
+				    path_fs.ToUTF8().c_str());
 	}
 #endif
 
