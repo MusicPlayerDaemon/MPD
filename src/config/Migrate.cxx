@@ -56,8 +56,17 @@ MigrateCurlProxyConfig(ConfigData &config) noexcept
 				 "proxy_password");
 }
 
+static void
+MigrateMadConfig(ConfigData &config) noexcept
+{
+	MigrateParamToBlockParam(config, ConfigOption::GAPLESS_MP3_PLAYBACK,
+				 ConfigBlockOption::DECODER, "plugin", "mad",
+				 "gapless");
+}
+
 void
 Migrate(ConfigData &config) noexcept
 {
 	MigrateCurlProxyConfig(config);
+	MigrateMadConfig(config);
 }

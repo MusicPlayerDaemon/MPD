@@ -3068,6 +3068,35 @@ run</programlisting>
           playback path to a DSD-capable DAC; for everybody else,
           playing back the ALAC copy of the file is better.
         </para>
+
+        <informaltable>
+          <tgroup cols="2">
+            <thead>
+              <row>
+                <entry>Setting</entry>
+                <entry>Description</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>
+                  <varname>gapless</varname>
+                  <parameter>yes|no</parameter>
+                </entry>
+                <entry>
+                  This specifies whether to support gapless playback
+                  of MP3s which have the necessary headers.  Useful if
+                  your MP3s have headers with incorrect information.
+                  If you have such MP3s, it is highly recommended that
+                  you fix them using <ulink
+                  url="http://www.willwap.co.uk/Programs/vbrfix.php"><application>vbrfix</application></ulink>
+                  instead of disabling gapless MP3 playback.  The
+                  default is to support gapless MP3 playback.
+                </entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
       </section>
 
       <section id="mad_decoder">

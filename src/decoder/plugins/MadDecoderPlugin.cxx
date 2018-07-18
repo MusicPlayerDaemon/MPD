@@ -21,7 +21,7 @@
 #include "MadDecoderPlugin.hxx"
 #include "../DecoderAPI.hxx"
 #include "input/InputStream.hxx"
-#include "config/Global.hxx"
+#include "config/Block.hxx"
 #include "tag/Id3Scan.hxx"
 #include "tag/Rva2.hxx"
 #include "tag/Handler.hxx"
@@ -107,10 +107,10 @@ mad_fixed_to_24_buffer(int32_t *dest, const struct mad_synth *synth,
 }
 
 static bool
-mp3_plugin_init(gcc_unused const ConfigBlock &block)
+mp3_plugin_init(const ConfigBlock &block)
 {
-	gapless_playback = config_get_bool(ConfigOption::GAPLESS_MP3_PLAYBACK,
-					   DEFAULT_GAPLESS_MP3_PLAYBACK);
+	gapless_playback = block.GetBlockValue("gapless",
+					       DEFAULT_GAPLESS_MP3_PLAYBACK);
 	return true;
 }
 
