@@ -176,12 +176,13 @@ ReadConfigFile(ConfigData &config_data, BufferedReader &reader, Path directory)
 		assert(name != nullptr);
 
 		if (StringIsEqual(name, "include")) {
-			// TODO: allow absolute path specifications
 			// TODO: detect recursion
 			// TODO: Config{Block,Param} have only line number but no file name
 			// TODO: support wildcards (include "conf.d/*.conf")
 			// TODO: add "include_optional"
-			ReadConfigFile(config_data, directory / AllocatedPath::FromUTF8Throw(ExpectValueAndEnd(tokenizer)));
+			const auto path = AllocatedPath::Apply(directory,
+							       AllocatedPath::FromUTF8Throw(ExpectValueAndEnd(tokenizer)));
+			ReadConfigFile(config_data, path);
 			continue;
 		}
 
