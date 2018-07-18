@@ -426,6 +426,14 @@ systemctl start mpd.socket</programlisting>
       </para>
 
       <programlisting>include_optional "may_not_exist.conf"</programlisting>
+
+      <para>
+        Both directives can have a shell pattern (with wildcards
+        '<filename>*</filename>' and '<filename>?</filename>') in the
+        last path segment, e.g.:
+      </para>
+
+      <programlisting>include "conf.d/*.conf"</programlisting>
     </section>
 
     <section id="config_music_directory">

@@ -23,12 +23,14 @@
 #include "Param.hxx"
 #include "Block.hxx"
 #include "Templates.hxx"
+#include "system/Error.hxx"
 #include "util/Tokenizer.hxx"
 #include "util/StringStrip.hxx"
 #include "util/StringAPI.hxx"
 #include "util/Domain.hxx"
 #include "util/RuntimeError.hxx"
 #include "fs/FileSystem.hxx"
+#include "fs/List.hxx"
 #include "fs/Path.hxx"
 #include "fs/io/FileReader.hxx"
 #include "fs/io/BufferedReader.hxx"
@@ -179,18 +181,29 @@ ReadConfigFile(ConfigData &config_data, BufferedReader &reader, Path directory)
 		if (StringIsEqual(name, "include")) {
 			// TODO: detect recursion
 			// TODO: Config{Block,Param} have only line number but no file name
-			// TODO: support wildcards (include "conf.d/*.conf")
-			const auto path = AllocatedPath::Apply(directory,
-							       AllocatedPath::FromUTF8Throw(ExpectValueAndEnd(tokenizer)));
-			ReadConfigFile(config_data, path);
+			const auto pattern = AllocatedPath::Apply(directory,
+								  AllocatedPath::FromUTF8Throw(ExpectValueAndEnd(tokenizer)));
+			for (const auto &path : ListWildcard(pattern))
+				ReadConfigFile(config_data, path);
 			continue;
 		}
 
 		if (StringIsEqual(name, "include_optional")) {
-			const auto path = AllocatedPath::Apply(directory,
-							       AllocatedPath::FromUTF8Throw(ExpectValueAndEnd(tokenizer)));
-			if (PathExists(path))
-				ReadConfigFile(config_data, path);
+			const auto pattern = AllocatedPath::Apply(directory,
+								  AllocatedPath::FromUTF8Throw(ExpectValueAndEnd(tokenizer)));
+
+			std::forward_list<AllocatedPath> l;
+			try {
+				l = ListWildcard(pattern);
+			} catch (const std::system_error &e) {
+				/* ignore "file not found */
+				if (!IsFileNotFound(e) && !IsPathNotFound(e))
+					throw;
+			}
+
+			for (const auto &path : l)
+				if (PathExists(path))
+					ReadConfigFile(config_data, path);
 			continue;
 		}
 
