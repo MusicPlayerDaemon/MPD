@@ -253,6 +253,10 @@ public:
 		return ((Path)*this).ToUTF8();
 	}
 
+	std::string ToUTF8Throw() const {
+		return ((Path)*this).ToUTF8Throw();
+	}
+
 	/**
 	 * Gets directory name of this path.
 	 * Returns a "nulled" instance on error.

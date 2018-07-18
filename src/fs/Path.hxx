@@ -135,6 +135,11 @@ public:
 	std::string ToUTF8() const noexcept;
 
 	/**
+	 * Like ToUTF8(), but throws on error.
+	 */
+	std::string ToUTF8Throw() const;
+
+	/**
 	 * Determine the "base" file name.
 	 * The return value points inside this object.
 	 */

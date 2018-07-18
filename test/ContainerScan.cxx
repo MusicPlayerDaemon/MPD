@@ -48,12 +48,9 @@ FindContainerDecoderPlugin(const char *suffix)
 static const DecoderPlugin *
 FindContainerDecoderPlugin(Path path)
 {
-	const auto utf8 = path.ToUTF8();
-	if (utf8.empty())
-		return nullptr;
-
 	UriSuffixBuffer suffix_buffer;
-	const char *const suffix = uri_get_suffix(utf8.c_str(), suffix_buffer);
+	const char *const suffix = uri_get_suffix(path.ToUTF8Throw().c_str(),
+						  suffix_buffer);
 	if (suffix == nullptr)
 		return nullptr;
 

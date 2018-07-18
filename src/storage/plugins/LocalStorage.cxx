@@ -51,7 +51,7 @@ class LocalStorage final : public Storage {
 
 public:
 	explicit LocalStorage(Path _base_fs)
-		:base_fs(_base_fs), base_utf8(base_fs.ToUTF8()) {
+		:base_fs(_base_fs), base_utf8(base_fs.ToUTF8Throw()) {
 		assert(!base_fs.IsNull());
 		assert(!base_utf8.empty());
 	}
@@ -162,11 +162,11 @@ LocalDirectoryReader::Read() noexcept
 		if (SkipNameFS(name_fs.c_str()))
 			continue;
 
-		name_utf8 = name_fs.ToUTF8();
-		if (name_utf8.empty())
-			continue;
-
-		return name_utf8.c_str();
+		try {
+			name_utf8 = name_fs.ToUTF8Throw();
+			return name_utf8.c_str();
+		} catch (...) {
+		}
 	}
 
 	return nullptr;

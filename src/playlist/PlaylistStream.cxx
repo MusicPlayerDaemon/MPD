@@ -40,7 +40,7 @@ try {
 	if (suffix == nullptr)
 		return nullptr;
 
-	const auto suffix_utf8 = Path::FromFS(suffix).ToUTF8();
+	const auto suffix_utf8 = Path::FromFS(suffix).ToUTF8Throw();
 	if (!playlist_suffix_supported(suffix_utf8.c_str()))
 		return nullptr;
 
@@ -57,10 +57,8 @@ playlist_open_path(Path path, Mutex &mutex)
 try {
 	assert(!path.IsNull());
 
-	const std::string uri_utf8 = path.ToUTF8();
-	auto playlist = !uri_utf8.empty()
-		? playlist_list_open_uri(uri_utf8.c_str(), mutex)
-		: nullptr;
+	const std::string uri_utf8 = path.ToUTF8Throw();
+	auto playlist = playlist_list_open_uri(uri_utf8.c_str(), mutex);
 	if (playlist == nullptr)
 		playlist = playlist_open_path_suffix(path, mutex);
 

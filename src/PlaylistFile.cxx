@@ -143,11 +143,13 @@ LoadPlaylistFileInfo(PlaylistInfo &info,
 		return false;
 
 	const auto name = AllocatedPath::FromFS(name_fs_str, name_fs_end);
-	std::string name_utf8 = name.ToUTF8();
-	if (name_utf8.empty())
-		return false;
 
-	info.name = std::move(name_utf8);
+	try {
+		info.name = name.ToUTF8Throw();
+	} catch (...) {
+		return false;
+	}
+
 	info.mtime = fi.GetModificationTime();
 	return true;
 }

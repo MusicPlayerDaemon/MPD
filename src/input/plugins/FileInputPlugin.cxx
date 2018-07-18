@@ -72,7 +72,7 @@ OpenFileInputStream(Path path, Mutex &mutex)
 #endif
 #endif
 
-	return std::make_unique<FileInputStream>(path.ToUTF8().c_str(),
+	return std::make_unique<FileInputStream>(path.ToUTF8Throw().c_str(),
 						 std::move(reader), info.GetSize(),
 						 mutex);
 }
