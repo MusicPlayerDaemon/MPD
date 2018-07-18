@@ -24,6 +24,7 @@
 #include "config/Param.hxx"
 #include "config/Data.hxx"
 #include "config/File.hxx"
+#include "config/Migrate.hxx"
 #include "config/Option.hxx"
 #include "config/Block.hxx"
 #include "event/Thread.hxx"
@@ -124,6 +125,7 @@ try {
 
 	ConfigData config;
 	ReadConfigFile(config, config_path);
+	Migrate(config);
 
 	EventThread io_thread;
 	io_thread.Start();

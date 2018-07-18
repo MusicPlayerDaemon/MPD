@@ -1011,6 +1011,7 @@ libconf_a_SOURCES = \
 	src/config/Parser.cxx src/config/Parser.hxx \
 	src/config/Global.cxx src/config/Global.hxx \
 	src/config/File.cxx src/config/File.hxx \
+	src/config/Migrate.cxx src/config/Migrate.hxx \
 	src/config/Templates.cxx src/config/Templates.hxx \
 	src/config/Domain.cxx src/config/Domain.hxx \
 	src/config/Option.hxx

@@ -21,6 +21,7 @@
 #include "config/Param.hxx"
 #include "config/Data.hxx"
 #include "config/File.hxx"
+#include "config/Migrate.hxx"
 #include "fs/Path.hxx"
 #include "AudioParser.hxx"
 #include "AudioFormat.hxx"
@@ -79,6 +80,7 @@ try {
 
 	ConfigData config;
 	ReadConfigFile(config, config_path);
+	Migrate(config);
 
 	/* parse the audio format */
 

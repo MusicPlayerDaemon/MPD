@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "Global.hxx"
+#include "Migrate.hxx"
 #include "Data.hxx"
 #include "Block.hxx"
 #include "File.hxx"
@@ -48,7 +49,8 @@ GetGlobalConfig() noexcept
 void
 ReadConfigFile(Path path)
 {
-	return ReadConfigFile(config_data, path);
+	ReadConfigFile(config_data, path);
+	Migrate(config_data);
 }
 
 static void

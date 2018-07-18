@@ -101,6 +101,9 @@ struct ConfigData {
 	gcc_pure
 	const ConfigBlock *FindBlock(ConfigBlockOption option,
 				     const char *key, const char *value) const;
+
+	ConfigBlock &MakeBlock(ConfigBlockOption option,
+				     const char *key, const char *value);
 };
 
 #endif

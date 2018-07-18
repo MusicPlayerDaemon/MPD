@@ -180,3 +180,18 @@ ConfigData::FindBlock(ConfigBlockOption option,
 
 	return nullptr;
 }
+
+ConfigBlock &
+ConfigData::MakeBlock(ConfigBlockOption option,
+		      const char *key, const char *value)
+{
+	auto *block = const_cast<ConfigBlock *>(FindBlock(option, key, value));
+	if (block == nullptr) {
+		auto new_block = std::make_unique<ConfigBlock>();
+		new_block->AddBlockParam(key, value);
+		block = new_block.get();
+		AddBlock(option, std::move(new_block));
+	}
+
+	return *block;
+}

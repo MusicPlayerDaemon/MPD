@@ -31,7 +31,6 @@
 #include "../IcyInputStream.hxx"
 #include "IcyMetaDataParser.hxx"
 #include "../InputPlugin.hxx"
-#include "config/Global.hxx"
 #include "config/Block.hxx"
 #include "tag/Builder.hxx"
 #include "tag/Tag.hxx"
@@ -327,15 +326,6 @@ input_curl_init(EventLoop &event_loop, const ConfigBlock &block)
 	proxy_port = block.GetBlockValue("proxy_port", 0u);
 	proxy_user = block.GetBlockValue("proxy_user");
 	proxy_password = block.GetBlockValue("proxy_password");
-
-	if (proxy == nullptr) {
-		/* deprecated proxy configuration */
-		proxy = config_get_string(ConfigOption::HTTP_PROXY_HOST);
-		proxy_port = config_get_positive(ConfigOption::HTTP_PROXY_PORT, 0);
-		proxy_user = config_get_string(ConfigOption::HTTP_PROXY_USER);
-		proxy_password = config_get_string(ConfigOption::HTTP_PROXY_PASSWORD,
-						   "");
-	}
 
 	verify_peer = block.GetBlockValue("verify_peer", true);
 	verify_host = block.GetBlockValue("verify_host", true);
