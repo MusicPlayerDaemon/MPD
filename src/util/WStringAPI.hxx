@@ -120,6 +120,13 @@ UnsafeCopyStringP(wchar_t *dest, const wchar_t *src) noexcept
 #endif
 }
 
+gcc_pure gcc_nonnull_all
+static inline int
+StringCompare(const wchar_t *a, const wchar_t *b) noexcept
+{
+	return wcscmp(a, b);
+}
+
 /**
  * Checks whether str1 and str2 are equal.
  * @param str1 String 1

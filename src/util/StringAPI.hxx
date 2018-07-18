@@ -127,6 +127,13 @@ UnsafeCopyStringP(char *dest, const char *src) noexcept
 #endif
 }
 
+gcc_pure gcc_nonnull_all
+static inline int
+StringCompare(const char *a, const char *b) noexcept
+{
+	return strcmp(a, b);
+}
+
 /**
  * Checks whether #a and #b are equal.
  */
