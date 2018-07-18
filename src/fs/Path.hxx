@@ -37,7 +37,8 @@ class AllocatedPath;
  * instance lives, the string must not be invalidated.
  */
 class Path : public PathTraitsFS::Pointer {
-	typedef PathTraitsFS::Pointer Base;
+	using Traits = PathTraitsFS;
+	typedef Traits::Pointer Base;
 
 	constexpr Path(const_pointer_type _value):Base(_value) {}
 
@@ -93,7 +94,7 @@ public:
 	size_t length() const noexcept {
 		assert(!IsNull());
 
-		return PathTraitsFS::GetLength(c_str());
+		return Traits::GetLength(c_str());
 	}
 
 	/**
@@ -122,7 +123,7 @@ public:
 	 */
 	gcc_pure
 	bool HasNewline() const noexcept {
-		return PathTraitsFS::Find(c_str(), '\n') != nullptr;
+		return Traits::Find(c_str(), '\n') != nullptr;
 	}
 
 	/**
@@ -139,7 +140,7 @@ public:
 	 */
 	gcc_pure
 	Path GetBase() const noexcept {
-		return FromFS(PathTraitsFS::GetBase(c_str()));
+		return FromFS(Traits::GetBase(c_str()));
 	}
 
 	/**
@@ -157,12 +158,12 @@ public:
 	 */
 	gcc_pure
 	const_pointer_type Relative(Path other_fs) const noexcept {
-		return PathTraitsFS::Relative(c_str(), other_fs.c_str());
+		return Traits::Relative(c_str(), other_fs.c_str());
 	}
 
 	gcc_pure
 	bool IsAbsolute() const noexcept {
-		return PathTraitsFS::IsAbsolute(c_str());
+		return Traits::IsAbsolute(c_str());
 	}
 
 	gcc_pure
