@@ -2553,12 +2553,13 @@ install-data-local: doc/api/html/index.html
 uninstall-local:
 	rm -f $(DESTDIR)$(docdir)/api/html/*.*
 
-upload: $(DOCBOOK_HTML) doc/api/html/index.html
+upload: doc/html/index.html $(DOCBOOK_HTML) doc/api/html/index.html
 	rsync -vpruz --delete doc/ www.musicpd.org:/var/www/mpd/doc/ \
 		--chmod=Dug+rwx,Do+rx,Fug+rw,Fo+r \
 		--include=protocol --include=protocol/** \
 		--include=user --include=user/** \
 		--include=api --include=api/** \
+		--include=html --include=html/** \
 		--exclude=*
 
 endif
