@@ -836,10 +836,10 @@ Common Problems
 Question: I can't see my music in the MPD database!
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-* Check your music_directory setting. 
+* Check your :code:`music_directory` setting. 
 * Does the MPD user have read permission on all music files, and read+execute permission on all music directories (and all of their parent directories)? 
 * Did you update the database? (mpc update) 
-* Did you enable all relevant decoder plugins at compile time? mpd --version will tell you. 
+* Did you enable all relevant decoder plugins at compile time? :command:`mpd --version` will tell you. 
 
 Question: MPD doesn't read ID3 tags!
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
