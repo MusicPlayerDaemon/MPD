@@ -208,7 +208,9 @@ Some of the settings are grouped in blocks with curly braces, e.g. per-plugin se
 
 The include directive can be used to include settings from another file; the given file name is relative to the current file:
 
-:code:`include "other.conf"`
+.. code-block:: ascii
+
+  include "other.conf"
 
 Configuring the music directory
 -------------------------------
