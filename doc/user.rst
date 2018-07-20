@@ -1585,7 +1585,9 @@ The `Advanced Linux Sound Architecture (ALSA) <http://www.alsa-project.org/>`_ p
    * - **dop yes|no**
      - If set to yes, then DSD over PCM according to the `DoP standard <http://dsd-guide.com/dop-open-standard>`_ is enabled. This wraps DSD samples in fake 24 bit PCM, and is understood by some DSD capable products, but may be harmful to other hardware. Therefore, the default is no and you can enable the option at your own risk.
    * - **allowed_formats F1 F2 ...**
-     - Specifies a list of allowed audio formats, separated by a space. All items may contain asterisks as a wild card, and may be followed by "=dop" to enable DoP (DSD over PCM) for this particular format. The first matching format is used, and if none matches, MPD chooses the best fallback of this list. Example: "96000:16:* 192000:24:* dsd64:*=dop *:dsd:*".
+     - Specifies a list of allowed audio formats, separated by a space. All items may contain asterisks as a wild card, and may be followed by "=dop" to enable DoP (DSD over PCM) for this particular format. The first matching format is used, and if none matches, MPD chooses the best fallback of this list.
+       
+       Example: "96000:16:* 192000:24:* dsd64:*=dop *:dsd:*".
 
 The according hardware mixer plugin understands the following settings:
 
@@ -1781,7 +1783,7 @@ The "Mac OS X" plugin uses Apple's CoreAudio API.
    * - **channel_map SOURCE,SOURCE,...**
      - Specifies a channel map. If your audio device has more than two outputs this allows you to route audio to auxillary outputs. For predictable results you should also specify a "format" with a fixed number of channels, e.g. "*:*:2". The number of items in the channel map must match the number of output channels of your output device. Each list entry specifies the source for that output channel; use "-1" to silence an output. For example, if you have a four-channel output device and you wish to send stereo sound (format "*:*:2") to outputs 3 and 4 while leaving outputs 1 and 2 silent then set the channel map to "-1,-1,0,1". In this example '0' and '1' denote the left and right channel respectively.
 
-The channel map may not refer to outputs that do not exist according to the format. If the format is "*:*:1" (mono) and you have a four-channel sound card then "-1,-1,0,0" (dual mono output on the second pair of sound card outputs) is a valid channel map but "-1,-1,0,1" is not because the second channel ('1') does not exist when the output is mono.
+       The channel map may not refer to outputs that do not exist according to the format. If the format is "*:*:1" (mono) and you have a four-channel sound card then "-1,-1,0,0" (dual mono output on the second pair of sound card outputs) is a valid channel map but "-1,-1,0,1" is not because the second channel ('1') does not exist when the output is mono.
 
 pipe
 ~~~~
