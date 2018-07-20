@@ -5,6 +5,7 @@ Music Player Daemon
    :maxdepth: 2
    :caption: Contents:
 
+   user
    developer
 
 
