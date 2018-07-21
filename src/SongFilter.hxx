@@ -81,6 +81,7 @@ public:
 			return value.c_str();
 		}
 
+	private:
 		gcc_pure gcc_nonnull(2)
 		bool StringMatch(const char *s) const noexcept;
 
@@ -90,6 +91,7 @@ public:
 		gcc_pure
 		bool Match(const Tag &tag) const noexcept;
 
+	public:
 		gcc_pure
 		bool Match(const DetachedSong &song) const noexcept;
 
