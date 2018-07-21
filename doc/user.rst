@@ -885,7 +885,7 @@ All :program:`MPD` crashes are bugs which must be fixed by a developer, and you 
 
 A crash bug report needs to contain a "backtrace".
 
-First of all, your :proragm:`MPD` executable must not be "stripped" (i.e. debug information deleted). The executables shipped with Linux distributions are usually stripped, but some have so-called "debug" packages (package mpd-dbg or mpd-dbgsym on Debian, mpd-debug on other distributions). Make sure this package is installed.
+First of all, your :program:`MPD` executable must not be "stripped" (i.e. debug information deleted). The executables shipped with Linux distributions are usually stripped, but some have so-called "debug" packages (package mpd-dbg or mpd-dbgsym on Debian, mpd-debug on other distributions). Make sure this package is installed.
 
 You can extract the backtrace from a core dump, or by running :program:`MPD` in a debugger, e.g.:
 
