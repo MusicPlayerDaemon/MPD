@@ -216,11 +216,17 @@ SongFilter::Parse(const char *tag_string, const char *value, bool fold_case)
 void
 SongFilter::Parse(ConstBuffer<const char *> args, bool fold_case)
 {
-	if (args.size == 0 || args.size % 2 != 0)
+	if (args.empty())
 		throw std::runtime_error("Incorrect number of filter arguments");
 
-	for (unsigned i = 0; i < args.size; i += 2)
-		Parse(args[i], args[i + 1], fold_case);
+	do {
+		if (args.size < 2)
+			throw std::runtime_error("Incorrect number of filter arguments");
+
+		const char *tag = args.shift();
+		const char *value = args.shift();
+		Parse(tag, value, fold_case);
+	} while (!args.empty());
 }
 
 bool
