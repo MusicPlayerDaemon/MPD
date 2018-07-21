@@ -27,8 +27,6 @@
 #include <list>
 #include <chrono>
 
-#include <stdint.h>
-
 /**
  * Limit the search to files within the given directory.
  */
@@ -52,7 +50,7 @@ class DetachedSong;
 class SongFilter {
 public:
 	class Item {
-		uint8_t tag;
+		unsigned tag;
 
 		std::string value;
 
