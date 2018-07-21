@@ -112,10 +112,13 @@ public:
 
 private:
 	gcc_nonnull(2,3)
-	bool Parse(const char *tag, const char *value, bool fold_case=false);
+	void Parse(const char *tag, const char *value, bool fold_case=false);
 
 public:
-	bool Parse(ConstBuffer<const char *> args, bool fold_case=false);
+	/**
+	 * Throws on error.
+	 */
+	void Parse(ConstBuffer<const char *> args, bool fold_case=false);
 
 	gcc_pure
 	bool Match(const DetachedSong &song) const noexcept;

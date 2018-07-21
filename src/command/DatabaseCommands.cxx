@@ -31,6 +31,7 @@
 #include "tag/ParseName.hxx"
 #include "tag/Mask.hxx"
 #include "util/ConstBuffer.hxx"
+#include "util/Exception.hxx"
 #include "util/StringAPI.hxx"
 #include "SongFilter.hxx"
 #include "BulkEdit.hxx"
@@ -96,8 +97,11 @@ handle_match(Client &client, Request args, Response &r, bool fold_case)
 	}
 
 	SongFilter filter;
-	if (!filter.Parse(args, fold_case)) {
-		r.Error(ACK_ERROR_ARG, "incorrect arguments");
+	try {
+		filter.Parse(args, fold_case);
+	} catch (...) {
+		r.Error(ACK_ERROR_ARG,
+			GetFullMessage(std::current_exception()).c_str());
 		return CommandResult::ERROR;
 	}
 
@@ -126,8 +130,11 @@ static CommandResult
 handle_match_add(Client &client, Request args, Response &r, bool fold_case)
 {
 	SongFilter filter;
-	if (!filter.Parse(args, fold_case)) {
-		r.Error(ACK_ERROR_ARG, "incorrect arguments");
+	try {
+		filter.Parse(args, fold_case);
+	} catch (...) {
+		r.Error(ACK_ERROR_ARG,
+			GetFullMessage(std::current_exception()).c_str());
 		return CommandResult::ERROR;
 	}
 
@@ -157,8 +164,11 @@ handle_searchaddpl(Client &client, Request args, Response &r)
 	const char *playlist = args.shift();
 
 	SongFilter filter;
-	if (!filter.Parse(args, true)) {
-		r.Error(ACK_ERROR_ARG, "incorrect arguments");
+	try {
+		filter.Parse(args, true);
+	} catch (...) {
+		r.Error(ACK_ERROR_ARG,
+			GetFullMessage(std::current_exception()).c_str());
 		return CommandResult::ERROR;
 	}
 
@@ -187,9 +197,14 @@ handle_count(Client &client, Request args, Response &r)
 	}
 
 	SongFilter filter;
-	if (!args.empty() && !filter.Parse(args, false)) {
-		r.Error(ACK_ERROR_ARG, "incorrect arguments");
-		return CommandResult::ERROR;
+	if (!args.empty()) {
+		try {
+			filter.Parse(args, false);
+		} catch (...) {
+			r.Error(ACK_ERROR_ARG,
+				GetFullMessage(std::current_exception()).c_str());
+			return CommandResult::ERROR;
+		}
 	}
 
 	PrintSongCount(r, client.GetPartition(), "", &filter, group);
@@ -255,8 +270,11 @@ handle_list(Client &client, Request args, Response &r)
 
 	if (!args.empty()) {
 		filter.reset(new SongFilter());
-		if (!filter->Parse(args, false)) {
-			r.Error(ACK_ERROR_ARG, "not able to parse args");
+		try {
+			filter->Parse(args, false);
+		} catch (...) {
+			r.Error(ACK_ERROR_ARG,
+				GetFullMessage(std::current_exception()).c_str());
 			return CommandResult::ERROR;
 		}
 	}

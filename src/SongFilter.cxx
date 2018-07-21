@@ -177,7 +177,6 @@ SongFilter::~SongFilter()
 	/* this destructor exists here just so it won't get inlined */
 }
 
-gcc_pure
 static std::chrono::system_clock::time_point
 ParseTimeStamp(const char *s)
 {
@@ -189,53 +188,39 @@ ParseTimeStamp(const char *s)
 		/* it's an integral UNIX time stamp */
 		return std::chrono::system_clock::from_time_t((time_t)value);
 
-	try {
-		/* try ISO 8601 */
-		return ParseTimePoint(s, "%FT%TZ");
-	} catch (...) {
-		return std::chrono::system_clock::time_point::min();
-	}
+	/* try ISO 8601 */
+	return ParseTimePoint(s, "%FT%TZ");
 }
 
-bool
+void
 SongFilter::Parse(const char *tag_string, const char *value, bool fold_case)
 {
 	unsigned tag = locate_parse_type(tag_string);
 	if (tag == TAG_NUM_OF_ITEM_TYPES)
-		return false;
+		throw std::runtime_error("Unknown filter type");
 
 	if (tag == LOCATE_TAG_BASE_TYPE) {
 		if (!uri_safe_local(value))
-			return false;
+			throw std::runtime_error("Bad URI");
 
 		/* case folding doesn't work with "base" */
 		fold_case = false;
 	}
 
-	if (tag == LOCATE_TAG_MODIFIED_SINCE) {
-		const auto t = ParseTimeStamp(value);
-		if (IsNegative(t))
-			return false;
-
-		items.push_back(Item(tag, t));
-		return true;
-	}
-
-	items.push_back(Item(tag, value, fold_case));
-	return true;
+	if (tag == LOCATE_TAG_MODIFIED_SINCE)
+		items.push_back(Item(tag, ParseTimeStamp(value)));
+	else
+		items.push_back(Item(tag, value, fold_case));
 }
 
-bool
+void
 SongFilter::Parse(ConstBuffer<const char *> args, bool fold_case)
 {
 	if (args.size == 0 || args.size % 2 != 0)
-		return false;
+		throw std::runtime_error("Incorrect number of filter arguments");
 
 	for (unsigned i = 0; i < args.size; i += 2)
-		if (!Parse(args[i], args[i + 1], fold_case))
-			return false;
-
-	return true;
+		Parse(args[i], args[i + 1], fold_case);
 }
 
 bool
