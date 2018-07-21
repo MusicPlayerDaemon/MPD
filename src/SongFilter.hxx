@@ -116,9 +116,6 @@ public:
 	bool Parse(ConstBuffer<const char *> args, bool fold_case=false);
 
 	gcc_pure
-	bool Match(const Tag &tag) const noexcept;
-
-	gcc_pure
 	bool Match(const DetachedSong &song) const noexcept;
 
 	gcc_pure
