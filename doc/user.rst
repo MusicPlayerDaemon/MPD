@@ -426,7 +426,7 @@ Resampler
 
 Sometimes, music needs to be resampled before it can be played; for example, CDs use a sample rate of 44,100 Hz while many cheap audio chips can only handle 48,000 Hz. Resampling reduces the quality and consumes a lot of CPU. There are different options, some of them optimized for high quality and others for low CPU usage, but you can't have both at the same time. Often, the resampler is the component that is responsible for most of :program:`MPD`'s CPU usage. Since :program:`MPD` comes with high quality defaults, it may appear that :program:`MPD` consumes more CPU than other software.
 
-Check the resampler plugin reference for a list of resamplers and how to configure them :ref:`resampler_plugin`.
+Check the resampler plugin reference for a list of resamplers and how to configure them :ref:`resampler_plugins`.
 
 Client Connections
 ------------------
@@ -580,6 +580,7 @@ Chapter 4. Advanced configuration
 =================================
 
 .. _satellite:
+
 Satellite setup
 ---------------
 
@@ -984,7 +985,7 @@ udisks
 
 Mount file systems (e.g. USB sticks or other removable media) using the udisks2 daemon via D-Bus. To obtain a valid udisks2 URI, consult the according neighbor plugin :ref:`neighbor_plugin`.
 
-.. _neighbor_plugins:
+.. _neighbor_plugin:
 
 Neighbor plugins
 ----------------
@@ -1888,7 +1889,7 @@ You must set a format.
    * - **public yes|no**
      - Specifies whether the stream should be "public". Default is no.
    * - **encoder PLUGIN**
-     - Chooses an encoder plugin. Default is vorbis :ref:`vorbis_plugin`. A list of encoder plugins can be found in the encoder plugin reference :ref:`encoder_plugin`.
+     - Chooses an encoder plugin. Default is vorbis :ref:`vorbis_plugin`. A list of encoder plugins can be found in the encoder plugin reference :ref:`encoder_plugins`.
 
 
 solaris
