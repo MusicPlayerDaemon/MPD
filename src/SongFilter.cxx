@@ -74,7 +74,7 @@ SongFilter::Item::Item(unsigned _tag,
 }
 
 bool
-SongFilter::Item::StringMatch(const char *s) const noexcept
+SongFilter::Item::StringMatchNN(const char *s) const noexcept
 {
 #if !CLANG_CHECK_VERSION(3,6)
 	/* disabled on clang due to -Wtautological-pointer-compare */
@@ -91,14 +91,14 @@ SongFilter::Item::StringMatch(const char *s) const noexcept
 }
 
 bool
-SongFilter::Item::Match(const TagItem &item) const noexcept
+SongFilter::Item::MatchNN(const TagItem &item) const noexcept
 {
 	return (tag == LOCATE_TAG_ANY_TYPE || (unsigned)item.type == tag) &&
-		StringMatch(item.value);
+		StringMatchNN(item.value);
 }
 
 bool
-SongFilter::Item::Match(const Tag &_tag) const noexcept
+SongFilter::Item::MatchNN(const Tag &_tag) const noexcept
 {
 	bool visited_types[TAG_NUM_OF_ITEM_TYPES];
 	std::fill_n(visited_types, size_t(TAG_NUM_OF_ITEM_TYPES), false);
@@ -106,7 +106,7 @@ SongFilter::Item::Match(const Tag &_tag) const noexcept
 	for (const auto &i : _tag) {
 		visited_types[i.type] = true;
 
-		if (Match(i))
+		if (MatchNN(i))
 			return true;
 	}
 
@@ -125,7 +125,7 @@ SongFilter::Item::Match(const Tag &_tag) const noexcept
 			   only "artist" exists, use that */
 			for (const auto &item : _tag)
 				if (item.type == TAG_ARTIST &&
-				    StringMatch(item.value))
+				    StringMatchNN(item.value))
 					return true;
 		}
 	}
@@ -134,7 +134,7 @@ SongFilter::Item::Match(const Tag &_tag) const noexcept
 }
 
 bool
-SongFilter::Item::Match(const DetachedSong &song) const noexcept
+SongFilter::Item::MatchNN(const DetachedSong &song) const noexcept
 {
 	if (tag == LOCATE_TAG_BASE_TYPE)
 		return uri_is_child_or_same(value.c_str(), song.GetURI());
@@ -143,13 +143,13 @@ SongFilter::Item::Match(const DetachedSong &song) const noexcept
 		return song.GetLastModified() >= time;
 
 	if (tag == LOCATE_TAG_FILE_TYPE)
-		return StringMatch(song.GetURI());
+		return StringMatchNN(song.GetURI());
 
-	return Match(song.GetTag());
+	return MatchNN(song.GetTag());
 }
 
 bool
-SongFilter::Item::Match(const LightSong &song) const noexcept
+SongFilter::Item::MatchNN(const LightSong &song) const noexcept
 {
 	if (tag == LOCATE_TAG_BASE_TYPE) {
 		const auto uri = song.GetURI();
@@ -161,10 +161,10 @@ SongFilter::Item::Match(const LightSong &song) const noexcept
 
 	if (tag == LOCATE_TAG_FILE_TYPE) {
 		const auto uri = song.GetURI();
-		return StringMatch(uri.c_str());
+		return StringMatchNN(uri.c_str());
 	}
 
-	return Match(song.tag);
+	return MatchNN(song.tag);
 }
 
 SongFilter::SongFilter(unsigned tag, const char *value, bool fold_case)

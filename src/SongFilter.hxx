@@ -52,6 +52,8 @@ public:
 	class Item {
 		unsigned tag;
 
+		bool negated = false;
+
 		std::string value;
 
 		/**
@@ -73,6 +75,14 @@ public:
 			return tag;
 		}
 
+		bool IsNegated() const noexcept {
+			return negated;
+		}
+
+		void SetNegated(bool _negated=true) noexcept {
+			negated = _negated;
+		}
+
 		bool GetFoldCase() const {
 			return fold_case;
 		}
@@ -82,21 +92,31 @@ public:
 		}
 
 	private:
+		/* note: the "NN" suffix means "no negation", i.e. the
+		   method pretends negation is unset, and the caller
+		   is responsibly for considering it */
+
 		gcc_pure gcc_nonnull(2)
-		bool StringMatch(const char *s) const noexcept;
+		bool StringMatchNN(const char *s) const noexcept;
 
 		gcc_pure
-		bool Match(const TagItem &tag_item) const noexcept;
+		bool MatchNN(const TagItem &tag_item) const noexcept;
 
 		gcc_pure
-		bool Match(const Tag &tag) const noexcept;
+		bool MatchNN(const Tag &tag) const noexcept;
+
+		gcc_pure
+		bool MatchNN(const DetachedSong &song) const noexcept;
+
+		gcc_pure
+		bool MatchNN(const LightSong &song) const noexcept;
 
 	public:
+		template<typename T>
 		gcc_pure
-		bool Match(const DetachedSong &song) const noexcept;
-
-		gcc_pure
-		bool Match(const LightSong &song) const noexcept;
+		bool Match(const T &t) const noexcept {
+			return MatchNN(t) != IsNegated();
+		}
 	};
 
 private:
