@@ -41,13 +41,13 @@ MPD sources are managed in a git repository on
 
 Always write your code against the latest git:
 
-.. code-block:: ascii
+.. code-block:: none
 
     git clone git://github.com/MusicPlayerDaemon/MPD
 
 If you already have a clone, update it:
 
-.. code-block:: ascii
+.. code-block:: none
 
     git pull --rebase git://github.com/MusicPlayerDaemon/MPD master
 

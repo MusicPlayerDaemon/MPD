@@ -18,7 +18,7 @@ Installing on Debian/Ubuntu
 Install the package :program:`MPD` via :program:`APT`:
 
 
-.. code-block:: ascii
+.. code-block:: none
 
     apt-get install mpd
 
@@ -36,7 +36,7 @@ Compiling from source
 
 Download the source tarball from the `MPD home page <https://musicpd.org>`_ and unpack it:
 
-.. code-block:: ascii
+.. code-block:: none
 
     tar xf mpd-version.tar.xz
     cd mpd-version
@@ -51,7 +51,7 @@ Each plugin usually needs a codec library, which you also need to install. Check
 
 For example, the following installs a fairly complete list of build dependencies on Debian Jessie:
 
-.. code-block:: ascii
+.. code-block:: none
 
     apt-get install g++ \
       libmad0-dev libmpg123-dev libid3tag0-dev \
@@ -82,19 +82,19 @@ For example, the following installs a fairly complete list of build dependencies
 
 Now configure the source tree:
 
-.. code-block:: ascii
+.. code-block:: none
 
     ./configure
 
 The :option:`--help` argument shows a list of compile-time options. When everything is ready and configured, compile:
 
-.. code-block:: ascii
+.. code-block:: none
 
     make
 
 And install:
 
-.. code-block:: ascii
+.. code-block:: none
 
     make install
 
@@ -119,7 +119,7 @@ This section is about the latter.
 
 Just like with the native build, unpack the :program:`MPD` source tarball and change into the directory. Then, instead of ./configure, type:
 
-.. code-block:: ascii
+.. code-block:: none
 
   ./win32/build.py --64
 
@@ -137,7 +137,7 @@ You need:
 
 Just like with the native build, unpack the :program:`MPD` source tarball and change into the directory. Then, instead of ./configure, type:
 
-.. code-block:: ascii
+.. code-block:: none
 
     ./android/build.py SDK_PATH NDK_PATH ABI
     make android/build/mpd-debug.apk
@@ -155,7 +155,7 @@ Using systemd, you can launch :program:`MPD` on demand when the first client att
 
 To enable socket activation, type:
 
-.. code-block:: ascii
+.. code-block:: none
 
     systemctl enable mpd.socket
     systemctl start mpd.socket
@@ -169,13 +169,13 @@ You can launch :program:`MPD` as a systemd user unit. The service file will only
 
 Once the user unit is installed, you can start and stop :program:`MPD` like any other service:
 
-.. code-block:: ascii
+.. code-block:: none
 
     systemctl --user start mpd
 
 To auto-start :program:`MPD` upon login, type:
 
-.. code-block:: ascii
+.. code-block:: none
 
     systemctl --user enable mpd
 
@@ -197,7 +197,7 @@ For settings which specify a filesystem path, the tilde is expanded:
 
 Some of the settings are grouped in blocks with curly braces, e.g. per-plugin settings:
 
-.. code-block:: ascii
+.. code-block:: none
 
     audio_output {
         type "alsa"
@@ -208,7 +208,7 @@ Some of the settings are grouped in blocks with curly braces, e.g. per-plugin se
 
 The include directive can be used to include settings from another file; the given file name is relative to the current file:
 
-.. code-block:: ascii
+.. code-block:: none
 
   include "other.conf"
 
@@ -228,7 +228,7 @@ Configuring database plugins
 
 If a music directory is configured, one database plugin is used. To configure this plugin, add a database block to :file:`mpd.conf`:
 
-.. code-block:: ascii
+.. code-block:: none
 
     database {
         plugin "simple"
@@ -242,7 +242,7 @@ Configuring neighbor plugins
 
 All neighbor plugins are disabled by default to avoid unwanted overhead. To enable (and configure) a plugin, add a neighbor block to :file:`mpd.conf`:
 
-.. code-block:: ascii
+.. code-block:: none
 
     neighbors {
         plugin "smbclient"
@@ -255,7 +255,7 @@ Configuring input plugins
 
 To configure an input plugin, add a input block to :file:`mpd.conf`:
 
-.. code-block:: ascii
+.. code-block:: none
 
     input {
         plugin "curl"
@@ -283,7 +283,7 @@ Configuring decoder plugins
 
 Most decoder plugins do not need any special configuration. To configure a decoder, add a decoder block to :file:`mpd.conf`:
 
-.. code-block:: ascii
+.. code-block:: none
 
     decoder {
         plugin "wildmidi"
@@ -319,7 +319,7 @@ Audio outputs are devices which actually play the audio chunks produced by :prog
 
 To configure an audio output manually, add one or more audio_output blocks to :file:`mpd.conf`:
 
-.. code-block:: ascii
+.. code-block:: none
 
     audio_output {
         type "alsa"
@@ -364,7 +364,7 @@ Filters are plugins which modify an audio stream.
 
 To configure a filter, add a filter block to :file:`mpd.conf`:
 
-.. code-block:: ascii
+.. code-block:: none
 
     filter {
         plugin "volume"
@@ -391,7 +391,7 @@ Playlist plugins are used to load remote playlists (protocol commands load, list
 
 To configure a playlist plugin, add a playlist_plugin block to :file:`mpd.conf`:
 
-.. code-block:: ascii
+.. code-block:: none
 
     playlist_plugin {
         name "m3u"
@@ -472,7 +472,7 @@ Note that the :code:`password` option is not secure: passwords are sent in clear
 
 Example:
 
-.. code-block:: ascii
+.. code-block:: none
 
     default_permissions "read"
     password "the_password@read,add,control"
@@ -587,7 +587,7 @@ Satellite setup
 
 One approach for optimization is running :program:`MPD` on the file server, which not only exports raw files, but also provides access to a readily scanned database. Example configuration:
 
-.. code-block:: ascii
+.. code-block:: none
 
     music_directory "nfs://fileserver.local/srv/mp3"
     #music_directory "smb://fileserver.local/mp3"
@@ -608,13 +608,13 @@ On Linux, :program:`MPD` attempts to configure real-time scheduling for some thr
 
 This is only possible you allow :program:`MPD` to do it. This privilege is controlled by :envvar:`RLIMIT_RTPRIO` :envvar:`RLIMIT_RTTIME`. You can configure this privilege with :command:`ulimit` before launching :program:`MPD`:
 
-.. code-block:: ascii
+.. code-block:: none
 
     ulimit -HS -r 50; mpd
 
 Or you can use the :command:`prlimit` program from the util-linux package:
 
-.. code-block:: ascii
+.. code-block:: none
 
     prlimit --rtprio=50 --rttime=unlimited mpd
 
@@ -622,13 +622,13 @@ The systemd service file shipped with :program:`MPD` comes with this setting.
 
 This works only if the Linux kernel was compiled with :makevar:`CONFIG_RT_GROUP_SCHED` disabled. Use the following command to check this option for your current kernel:
 
-.. code-block:: ascii
+.. code-block:: none
 
     zgrep ^CONFIG_RT_GROUP_SCHED /proc/config.gz
 
 You can verify whether the real-time scheduler is active with the ps command:
 
-.. code-block:: ascii
+.. code-block:: none
 
     # ps H -q `pidof -s mpd` -o 'pid,tid,cls,rtprio,comm'
       PID   TID CLS RTPRIO COMMAND
@@ -664,7 +664,7 @@ The music directory and the database
 
 The "music directory" is where you store your music files. :program:`MPD` stores all relevant meta information about all songs in its "database". Whenever you add, modify or remove songs in the music directory, you have to update the database, for example with mpc:
 
-.. code-block:: ascii
+.. code-block:: none
 
     mpc update
 
@@ -677,7 +677,7 @@ Mounting other storages into the music directory
 
 :program:`MPD` has various storage plugins of which multiple instances can be "mounted" into the music directory. This way, you can use local music, file servers and USB sticks at the same time. Example:
 
-.. code-block:: ascii
+.. code-block:: none
 
     mpc mount foo nfs://192.168.1.4/export/mp3
     mpc mount usbstick udisks://by-uuid-2F2B-D136
@@ -685,13 +685,13 @@ Mounting other storages into the music directory
 
 :program:`MPD`'s neighbor plugins can be helpful with finding mountable storages:
 
-.. code-block:: ascii
+.. code-block:: none
 
     mpc listneighbors
 
 Mounting is only possible with the simple database plugin and a :code:`cache_directory`, e.g.:
 
-.. code-block:: ascii
+.. code-block:: none
 
     database {
       plugin "simple"
@@ -750,7 +750,7 @@ By default, :program:`MPD` attempts to do bit-perfect playback, unless you tell 
 
 To verify if :program:`MPD` converts the audio format, enable verbose logging, and watch for these lines:
 
-.. code-block:: ascii
+.. code-block:: none
 
     decoder: audio_format=44100:24:2, seekable=true
     output: opened plugin=alsa name="An ALSA output"audio_format=44100:16:2
@@ -760,7 +760,7 @@ This example shows that a 24 bit file is being played, but the sound chip cannot
 
 However, this does not yet prove bit-perfect playback; ALSA may be fooling :program:`MPD` that the audio format is supported. To verify the format really being sent to the physical sound chip, try:
 
-.. code-block:: ascii
+.. code-block:: none
 
     cat /proc/asound/card*/pcm*p/sub*/hw_params
     access: RW_INTERLEAVED
@@ -817,7 +817,7 @@ Check the log file. Configure :code:`log_level "verbose"` or pass :option:`--ver
 
 Sometimes, it is helpful to run :program:`MPD` in a terminal and follow what happens. This is how to do it:
 
-.. code-block:: ascii
+.. code-block:: none
 
     mpd --stdout --no-daemon --verbose
 
@@ -888,7 +888,7 @@ First of all, your :proragm:`MPD` executable must not be "stripped" (i.e. debug 
 
 You can extract the backtrace from a core dump, or by running :program:`MPD` in a debugger, e.g.:
 
-.. code-block:: ascii
+.. code-block:: none
 
     gdb --args mpd --stdout --no-daemon --verbose
     run
@@ -973,7 +973,7 @@ Load music files from a NFS server. It is used when :code:`music_directory` cont
 
 This plugin uses libnfs, which supports only NFS version 3. Since :program:`MPD` is not allowed to bind to "privileged ports", the NFS server needs to enable the "insecure" setting; example :file:`/etc/exports`:
 
-.. code-block:: ascii
+.. code-block:: none
 
     /srv/mp3 192.168.1.55(ro,insecure)
 
@@ -1013,11 +1013,11 @@ alsa
 
 Allows :program:`MPD` on Linux to play audio directly from a soundcard using the scheme alsa://. Audio is formatted as 44.1 kHz 16-bit stereo (CD format). Examples:
 
-.. code-block:: ascii
+.. code-block:: none
 
     mpc add alsa:// plays audio from device hw:0,0
 
-.. code-block:: ascii
+.. code-block:: none
 
     mpc add alsa://hw:1,0 plays audio from device hw:1,0 cdio_paranoia
 
@@ -1077,7 +1077,7 @@ nfs
 
 Allows :program:`MPD` to access files on NFSv3 servers without actually mounting them (i.e. in userspace, without help from the kernel's VFS layer). All URIs with the nfs:// scheme are used according to RFC2224. Example:
 
-.. code-block:: ascii
+.. code-block:: none
 
      mpc add nfs://servername/path/filename.ogg
 
@@ -1088,7 +1088,7 @@ smbclient
 
 Allows :program:`MPD` to access files on SMB/CIFS servers (e.g. Samba or Microsoft Windows). All URIs with the smb:// scheme are used. Example:
 
-.. code-block:: ascii
+.. code-block:: none
 
     mpc add smb://servername/sharename/filename.ogg
 
@@ -1097,7 +1097,7 @@ qobuz
 
 Play songs from the commercial streaming service Qobuz. It plays URLs in the form qobuz://track/ID, e.g.:
 
-.. code-block:: ascii
+.. code-block:: none
 
     mpc add qobuz://track/23601296
 
@@ -1123,7 +1123,7 @@ tidal
 
 Play songs from the commercial streaming service `Tidal <http://tidal.com/>`_. It plays URLs in the form tidal://track/ID, e.g.:
 
-.. code-block:: ascii
+.. code-block:: none
 
     mpc add tidal://track/59727857
 
@@ -1476,7 +1476,7 @@ Resampler plugins
 
 The resampler can be configured in a block named resampler, for example:
 
-.. code-block:: ascii
+.. code-block:: none
 
     resampler {
       plugin "soxr"
