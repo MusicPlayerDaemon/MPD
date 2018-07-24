@@ -60,9 +60,9 @@ locate_parse_type(const char *str) noexcept
 	return tag_name_parse_i(str);
 }
 
-SongFilter::Item::Item(unsigned _tag, const char *_value, bool _fold_case)
+SongFilter::Item::Item(unsigned _tag, std::string &&_value, bool _fold_case)
 	:tag(_tag),
-	 value(_value),
+	 value(std::move(_value)),
 	 fold_case(_fold_case ? IcuCompare(value.c_str()) : IcuCompare())
 {
 }

@@ -67,8 +67,7 @@ public:
 		std::chrono::system_clock::time_point time;
 
 	public:
-		gcc_nonnull(3)
-		Item(unsigned tag, const char *value, bool fold_case=false);
+		Item(unsigned tag, std::string &&_value, bool fold_case=false);
 		Item(unsigned tag, std::chrono::system_clock::time_point time);
 
 		unsigned GetTag() const {
