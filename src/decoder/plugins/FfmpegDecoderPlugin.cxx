@@ -470,55 +470,6 @@ ffmpeg_sample_format(enum AVSampleFormat sample_fmt) noexcept
 	return SampleFormat::UNDEFINED;
 }
 
-static AVInputFormat *
-ffmpeg_probe(DecoderClient *client, InputStream &is)
-{
-	constexpr size_t BUFFER_SIZE = 16384;
-	constexpr size_t PADDING = 16;
-
-	unsigned char buffer[BUFFER_SIZE];
-	size_t nbytes = decoder_read(client, is, buffer, BUFFER_SIZE);
-	if (nbytes <= PADDING)
-		return nullptr;
-
-	try {
-		is.LockRewind();
-	} catch (...) {
-		return nullptr;
-	}
-
-	/* some ffmpeg parsers (e.g. ac3_parser.c) read a few bytes
-	   beyond the declared buffer limit, which makes valgrind
-	   angry; this workaround removes some padding from the buffer
-	   size */
-	nbytes -= PADDING;
-
-	AVProbeData avpd;
-
-	/* new versions of ffmpeg may add new attributes, and leaving
-	   them uninitialized may crash; hopefully, zero-initializing
-	   everything we don't know is ok */
-	memset(&avpd, 0, sizeof(avpd));
-
-	avpd.buf = buffer;
-	avpd.buf_size = nbytes;
-	avpd.filename = is.GetURI();
-
-#ifdef AVPROBE_SCORE_MIME
-#if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(56, 5, 1)
-	/* this attribute was added in libav/ffmpeg version 11, but
-	   unfortunately it's "uint8_t" instead of "char", and it's
-	   not "const" - wtf? */
-	avpd.mime_type = (uint8_t *)const_cast<char *>(is.GetMimeType());
-#else
-	/* API problem fixed in FFmpeg 2.5 */
-	avpd.mime_type = is.GetMimeType();
-#endif
-#endif
-
-	return av_probe_input_format(&avpd, true);
-}
-
 static void
 FfmpegParseMetaData(AVDictionary &dict, ReplayGainInfo &rg, MixRampInfo &mr)
 {
@@ -796,13 +747,6 @@ FfmpegDecode(DecoderClient &client, InputStream &input,
 static void
 ffmpeg_decode(DecoderClient &client, InputStream &input)
 {
-	AVInputFormat *input_format = ffmpeg_probe(&client, input);
-	if (input_format == nullptr)
-		return;
-
-	FormatDebug(ffmpeg_domain, "detected input format '%s' (%s)",
-		    input_format->name, input_format->long_name);
-
 	AvioStream stream(&client, input);
 	if (!stream.Open()) {
 		LogError(ffmpeg_domain, "Failed to open stream");
@@ -812,7 +756,7 @@ ffmpeg_decode(DecoderClient &client, InputStream &input)
 	AVFormatContext *format_context;
 	try {
 		format_context =FfmpegOpenInput(stream.io, input.GetURI(),
-						input_format);
+						nullptr);
 	} catch (...) {
 		LogError(std::current_exception());
 		return;
@@ -821,6 +765,10 @@ ffmpeg_decode(DecoderClient &client, InputStream &input)
 	AtScopeExit(&format_context) {
 		avformat_close_input(&format_context);
 	};
+
+	const auto *input_format = format_context->iformat;
+	FormatDebug(ffmpeg_domain, "detected input format '%s' (%s)",
+		    input_format->name, input_format->long_name);
 
 	FfmpegDecode(client, input, *format_context);
 }
@@ -862,17 +810,13 @@ FfmpegScanStream(AVFormatContext &format_context,
 static bool
 ffmpeg_scan_stream(InputStream &is, TagHandler &handler) noexcept
 {
-	AVInputFormat *input_format = ffmpeg_probe(nullptr, is);
-	if (input_format == nullptr)
-		return false;
-
 	AvioStream stream(nullptr, is);
 	if (!stream.Open())
 		return false;
 
 	AVFormatContext *f;
 	try {
-		f = FfmpegOpenInput(stream.io, is.GetURI(), input_format);
+		f = FfmpegOpenInput(stream.io, is.GetURI(), nullptr);
 	} catch (...) {
 		return false;
 	}
