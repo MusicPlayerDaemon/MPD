@@ -73,6 +73,27 @@ SongFilter::Item::Item(unsigned _tag,
 {
 }
 
+std::string
+SongFilter::Item::ToExpression() const noexcept
+{
+	switch (tag) {
+	case LOCATE_TAG_FILE_TYPE:
+		return "(" LOCATE_TAG_FILE_KEY " == \"" + value + "\")";
+
+	case LOCATE_TAG_BASE_TYPE:
+		return "(base \"" + value + "\")";
+
+	case LOCATE_TAG_MODIFIED_SINCE:
+		return "(modified-since \"" + value + "\")";
+
+	case LOCATE_TAG_ANY_TYPE:
+		return "(" LOCATE_TAG_ANY_KEY " == \"" + value + "\")";
+
+	default:
+		return std::string("(") + tag_item_names[tag] + " == \"" + value + "\")";
+	}
+}
+
 bool
 SongFilter::Item::StringMatchNN(const char *s) const noexcept
 {
@@ -175,6 +196,27 @@ SongFilter::SongFilter(unsigned tag, const char *value, bool fold_case)
 SongFilter::~SongFilter()
 {
 	/* this destructor exists here just so it won't get inlined */
+}
+
+std::string
+SongFilter::ToExpression() const noexcept
+{
+	auto i = items.begin();
+	const auto end = items.end();
+
+	if (std::next(i) == end)
+		return i->ToExpression();
+
+	std::string e("(");
+	e += i->ToExpression();
+
+	for (++i; i != end; ++i) {
+		e += " AND ";
+		e += i->ToExpression();
+	}
+
+	e.push_back(')');
+	return e;
 }
 
 static std::chrono::system_clock::time_point

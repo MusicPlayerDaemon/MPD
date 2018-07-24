@@ -70,6 +70,12 @@ public:
 		Item(unsigned tag, std::string &&_value, bool fold_case=false);
 		Item(unsigned tag, std::chrono::system_clock::time_point time);
 
+		/**
+		 * Convert this object into an "expression".  This is
+		 * only useful for debugging.
+		 */
+		std::string ToExpression() const noexcept;
+
 		unsigned GetTag() const {
 			return tag;
 		}
@@ -128,6 +134,12 @@ public:
 	SongFilter(unsigned tag, const char *value, bool fold_case=false);
 
 	~SongFilter();
+
+	/**
+	 * Convert this object into an "expression".  This is
+	 * only useful for debugging.
+	 */
+	std::string ToExpression() const noexcept;
 
 private:
 	gcc_nonnull(2,3)
