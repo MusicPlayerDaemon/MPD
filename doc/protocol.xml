@@ -2027,8 +2027,7 @@ OK
             </para>
             <para>
               Parameters have the same meaning as for <link
-              linkend="command_find"><command>find</command></link>,
-              except that search is not case sensitive.
+              linkend="command_search"><command>search</command></link>.
             </para>
           </listitem>
         </varlistentry>
@@ -2053,8 +2052,7 @@ OK
             </para>
             <para>
               Parameters have the same meaning as for <link
-              linkend="command_find"><command>find</command></link>,
-              except that search is not case sensitive.
+              linkend="command_search"><command>search</command></link>.
             </para>
           </listitem>
         </varlistentry>
