@@ -195,6 +195,78 @@
       </para>
     </section>
 
+    <section id="filter_syntax">
+      <title>Filters</title>
+
+      <para>
+        All commands which search for songs (e.g. <link
+        linkend="command_find"><command>find</command></link> and
+        <link
+        linkend="command_searchadd"><command>searchadd</command></link>)
+        share a common filter syntax:
+      </para>
+
+      <cmdsynopsis>
+        <command>find</command>
+        <arg choice="req" rep="repeat">
+          <arg choice="req"><replaceable>TYPE</replaceable></arg>
+          <arg choice="req"><replaceable>VALUE</replaceable></arg>
+        </arg>
+      </cmdsynopsis>
+
+      <para>
+        <varname>TYPE</varname> can
+        be any tag supported by <application>MPD</application>, or one of the special
+        parameters:
+      </para>
+
+      <itemizedlist>
+        <listitem>
+          <para>
+            <parameter>any</parameter> checks all tag values
+          </para>
+        </listitem>
+
+        <listitem>
+          <para>
+            <parameter>file</parameter> checks the full path
+            (relative to the music directory)
+          </para>
+        </listitem>
+
+        <listitem>
+          <para>
+            <parameter>base</parameter> restricts the search to
+            songs in the given directory (also relative to the
+            music directory)
+          </para>
+        </listitem>
+
+        <listitem>
+          <para>
+            <parameter>modified-since</parameter> compares the
+            file's time stamp with the given value (ISO 8601 or
+            UNIX time stamp)
+          </para>
+        </listitem>
+
+        <listitem>
+          <para>
+            <parameter>albumartist</parameter> looks for
+            <varname>VALUE</varname> in AlbumArtist and falls back to
+            Artist tags if AlbumArtist does not exist.
+          </para>
+        </listitem>
+      </itemizedlist>
+
+      <para>
+        <varname>VALUE</varname> is what to find.  The
+        <command>find</command> commands specify an exact value and
+        are case-sensitive; the <command>search</command> commands
+        specify a sub string and ignore case.
+      </para>
+    </section>
+
     <section id="tags">
       <title>Tags</title>
 
@@ -1685,17 +1757,16 @@ OK
           <term>
             <cmdsynopsis>
               <command>count</command>
-              <arg choice="req"><replaceable>TAG</replaceable></arg>
-              <arg choice="req"><replaceable>NEEDLE</replaceable></arg>
-              <arg choice="opt"><replaceable>...</replaceable></arg>
+              <arg choice="req" rep="repeat"><replaceable>FILTER</replaceable></arg>
               <arg choice="opt">group</arg>
               <arg choice="opt"><replaceable>GROUPTYPE</replaceable></arg>
             </cmdsynopsis>
           </term>
           <listitem>
             <para>
-              Counts the number of songs and their total playtime in
-              the db matching <varname>TAG</varname> exactly. The
+              Count the number of songs and their total playtime in
+              the database matching <varname>FILTER</varname> (see
+              <link linkend="filter_syntax">Filters</link>).  The
               following prints the number of songs whose title matches
               "Echoes":
             </para>
@@ -1716,65 +1787,16 @@ OK
           <term>
             <cmdsynopsis>
               <command>find</command>
-              <arg choice="req"><replaceable>TYPE</replaceable></arg>
-              <arg choice="req"><replaceable>WHAT</replaceable></arg>
-              <arg choice="opt"><replaceable>...</replaceable></arg>
+              <arg choice="req" rep="repeat"><replaceable>FILTER</replaceable></arg>
               <arg choice="opt">sort <replaceable>TYPE</replaceable></arg>
               <arg choice="opt">window <replaceable>START</replaceable>:<replaceable>END</replaceable></arg>
             </cmdsynopsis>
           </term>
           <listitem>
             <para>
-              Finds songs in the db that are exactly
-              <varname>WHAT</varname>.
-            </para>
-            <para>
-              <varname>TYPE</varname> can
-              be any tag supported by <application>MPD</application>, or one of the special
-              parameters:
-            </para>
-
-            <itemizedlist>
-              <listitem>
-                <para>
-                  <parameter>any</parameter> checks all tag values
-                </para>
-              </listitem>
-
-              <listitem>
-                <para>
-                  <parameter>file</parameter> checks the full path
-                  (relative to the music directory)
-                </para>
-              </listitem>
-
-              <listitem>
-                <para>
-                  <parameter>base</parameter> restricts the search to
-                  songs in the given directory (also relative to the
-                  music directory)
-                </para>
-              </listitem>
-
-              <listitem>
-                <para>
-                  <parameter>modified-since</parameter> compares the
-                  file's time stamp with the given value (ISO 8601 or
-                  UNIX time stamp)
-                </para>
-              </listitem>
-
-              <listitem>
-                <para>
-                  <parameter>albumartist</parameter> looks for
-                  <varname>WHAT</varname> in AlbumArtist and falls back to
-                  Artist tags if AlbumArtist does not exist.
-                </para>
-              </listitem>
-            </itemizedlist>
-
-            <para>
-              <varname>WHAT</varname> is what to find.
+              Search the database for songs matching
+              <varname>FILTER</varname> (see <link
+              linkend="filter_syntax">Filters</link>).
             </para>
 
             <para>
@@ -1804,16 +1826,16 @@ OK
           <term>
             <cmdsynopsis>
               <command>findadd</command>
-              <arg choice="req"><replaceable>TYPE</replaceable></arg>
-              <arg choice="req"><replaceable>WHAT</replaceable></arg>
-              <arg choice="opt"><replaceable>...</replaceable></arg>
+              <arg choice="req" rep="repeat"><replaceable>FILTER</replaceable></arg>
             </cmdsynopsis>
           </term>
           <listitem>
             <para>
-              Finds songs in the db that are exactly
-              <varname>WHAT</varname> and adds them to current
-              playlist.  Parameters have the same meaning as for <link
+              Search the database for songs matching
+              <varname>FILTER</varname> (see <link
+              linkend="filter_syntax">Filters</link>) and add them to
+              the queue.  Parameters have the same meaning as for
+              <link
               linkend="command_find"><command>find</command></link>.
             </para>
           </listitem>
@@ -1824,9 +1846,7 @@ OK
             <cmdsynopsis>
               <command>list</command>
               <arg choice="req"><replaceable>TYPE</replaceable></arg>
-              <arg choice="opt"><replaceable>FILTERTYPE</replaceable></arg>
-              <arg choice="opt"><replaceable>FILTERWHAT</replaceable></arg>
-              <arg choice="opt"><replaceable>...</replaceable></arg>
+              <arg choice="opt" rep="repeat"><replaceable>FILTER</replaceable></arg>
               <arg choice="opt">group</arg>
               <arg choice="opt"><replaceable>GROUPTYPE</replaceable></arg>
               <arg choice="opt"><replaceable>...</replaceable></arg>
@@ -1840,10 +1860,8 @@ OK
               <parameter>file</parameter>.
             </para>
             <para>
-              Additional arguments may specify a filter like the one
-              in the <link
-              linkend="command_find"><command>find</command>
-              command</link>.
+              Additional arguments may specify a <link
+              linkend="filter_syntax">filter</link>.
             </para>
             <para>
               The <parameter>group</parameter> keyword may be used
@@ -1994,18 +2012,17 @@ OK
           <term>
             <cmdsynopsis>
               <command>search</command>
-              <arg choice="req"><replaceable>TYPE</replaceable></arg>
-              <arg choice="req"><replaceable>WHAT</replaceable></arg>
-              <arg choice="opt"><replaceable>...</replaceable></arg>
+              <arg choice="req" rep="repeat"><replaceable>FILTER</replaceable></arg>
               <arg choice="opt">sort <replaceable>TYPE</replaceable></arg>
               <arg choice="opt">window <replaceable>START</replaceable>:<replaceable>END</replaceable></arg>
             </cmdsynopsis>
           </term>
           <listitem>
             <para>
-              Searches for any song that contains
-              <varname>WHAT</varname>. Parameters have the same
-              meaning as for <link
+              Search the database for songs matching
+              <varname>FILTER</varname> (see <link
+              linkend="filter_syntax">Filters</link>).  Parameters
+              have the same meaning as for <link
               linkend="command_find"><command>find</command></link>,
               except that search is not case sensitive.
             </para>
@@ -2015,15 +2032,15 @@ OK
           <term>
             <cmdsynopsis>
               <command>searchadd</command>
-              <arg choice="req"><replaceable>TYPE</replaceable></arg>
-              <arg choice="req"><replaceable>WHAT</replaceable></arg>
-              <arg choice="opt"><replaceable>...</replaceable></arg>
+              <arg choice="req" rep="repeat"><replaceable>FILTER</replaceable></arg>
             </cmdsynopsis>
           </term>
           <listitem>
             <para>
-              Searches for any song that contains <varname>WHAT</varname>
-              in tag <varname>TYPE</varname> and adds them to current playlist.
+              Search the database for songs matching
+              <varname>FILTER</varname> (see <link
+              linkend="filter_syntax">Filters</link>) and add them to
+              the queue.
             </para>
             <para>
               Parameters have the same meaning as for <link
@@ -2036,16 +2053,15 @@ OK
             <cmdsynopsis>
               <command>searchaddpl</command>
               <arg choice="req"><replaceable>NAME</replaceable></arg>
-              <arg choice="req"><replaceable>TYPE</replaceable></arg>
-              <arg choice="req"><replaceable>WHAT</replaceable></arg>
-              <arg choice="opt"><replaceable>...</replaceable></arg>
+              <arg choice="req" rep="repeat"><replaceable>FILTER</replaceable></arg>
             </cmdsynopsis>
           </term>
           <listitem>
             <para>
-              Searches for any song that contains <varname>WHAT</varname>
-              in tag <varname>TYPE</varname> and adds them to the playlist
-              named <varname>NAME</varname>.
+              Search the database for songs matching
+              <varname>FILTER</varname> (see <link
+              linkend="filter_syntax">Filters</link>) and add them to
+              the playlist named <varname>NAME</varname>.
             </para>
             <para>
               If a playlist by that name doesn't exist it is created.
