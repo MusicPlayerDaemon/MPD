@@ -1847,9 +1847,10 @@ OK
               <command>list</command>
               <arg choice="req"><replaceable>TYPE</replaceable></arg>
               <arg choice="opt" rep="repeat"><replaceable>FILTER</replaceable></arg>
-              <arg choice="opt">group</arg>
-              <arg choice="opt"><replaceable>GROUPTYPE</replaceable></arg>
-              <arg choice="opt"><replaceable>...</replaceable></arg>
+              <arg choice="opt" rep="repeat">
+                <arg choice="req">group</arg>
+                <arg choice="req"><replaceable>GROUPTYPE</replaceable></arg>
+              </arg>
             </cmdsynopsis>
           </term>
           <listitem>
