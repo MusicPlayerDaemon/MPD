@@ -1862,6 +1862,7 @@ TESTS = $(C_TESTS)
 
 noinst_PROGRAMS = \
 	$(C_TESTS) \
+	test/ParseSongFilter \
 	test/read_conf \
 	test/run_resolver \
 	test/run_input \
@@ -1903,6 +1904,14 @@ if ENABLE_ALSA
 # this debug program is still ALSA specific
 noinst_PROGRAMS += test/read_mixer
 endif
+
+test_ParseSongFilter_LDADD = \
+	$(TAG_LIBS) \
+	$(ICU_LDADD) \
+	libutil.a
+test_ParseSongFilter_SOURCES = \
+	src/SongFilter.cxx \
+	test/ParseSongFilter.cxx
 
 test_read_conf_LDADD = \
 	libconf.a \
