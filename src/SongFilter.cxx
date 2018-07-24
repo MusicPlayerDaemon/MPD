@@ -169,7 +169,7 @@ SongFilter::Item::MatchNN(const LightSong &song) const noexcept
 
 SongFilter::SongFilter(unsigned tag, const char *value, bool fold_case)
 {
-	items.push_back(Item(tag, value, fold_case));
+	items.emplace_back(tag, value, fold_case);
 }
 
 SongFilter::~SongFilter()
@@ -208,9 +208,9 @@ SongFilter::Parse(const char *tag_string, const char *value, bool fold_case)
 	}
 
 	if (tag == LOCATE_TAG_MODIFIED_SINCE)
-		items.push_back(Item(tag, ParseTimeStamp(value)));
+		items.emplace_back(tag, ParseTimeStamp(value));
 	else
-		items.push_back(Item(tag, value, fold_case));
+		items.emplace_back(tag, value, fold_case);
 }
 
 void
