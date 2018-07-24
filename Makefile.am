@@ -2513,14 +2513,11 @@ endif
 man_MANS = doc/mpd.1 doc/mpd.conf.5
 doc_DATA = AUTHORS COPYING NEWS README.md doc/mpdconf.example
 
-DOCBOOK_FILES = doc/protocol.xml doc/user.xml
+DOCBOOK_FILES = doc/protocol.xml
 
 if ENABLE_DOCUMENTATION
 protocoldir = $(docdir)/protocol
 protocol_DATA = $(wildcard doc/protocol/*.html)
-
-userdir = $(docdir)/user
-user_DATA = $(wildcard doc/user/*.html)
 
 DOCBOOK_HTML = $(patsubst %.xml,%/index.html,$(DOCBOOK_FILES))
 
