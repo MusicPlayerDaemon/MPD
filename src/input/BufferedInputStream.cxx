@@ -85,7 +85,7 @@ BufferedInputStream::Seek(offset_type new_offset)
 	if (seek_error)
 		std::rethrow_exception(std::exchange(seek_error, {}));
 
-	offset = input->GetOffset();
+	offset = new_offset;
 }
 
 bool
