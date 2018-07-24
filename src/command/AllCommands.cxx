@@ -94,7 +94,7 @@ static constexpr struct command commands[] = {
 	{ "config", PERMISSION_ADMIN, 0, 0, handle_config },
 	{ "consume", PERMISSION_CONTROL, 1, 1, handle_consume },
 #ifdef ENABLE_DATABASE
-	{ "count", PERMISSION_READ, 2, -1, handle_count },
+	{ "count", PERMISSION_READ, 1, -1, handle_count },
 #endif
 	{ "crossfade", PERMISSION_CONTROL, 1, 1, handle_crossfade },
 	{ "currentsong", PERMISSION_READ, 0, 0, handle_currentsong },
@@ -104,8 +104,8 @@ static constexpr struct command commands[] = {
 	{ "disableoutput", PERMISSION_ADMIN, 1, 1, handle_disableoutput },
 	{ "enableoutput", PERMISSION_ADMIN, 1, 1, handle_enableoutput },
 #ifdef ENABLE_DATABASE
-	{ "find", PERMISSION_READ, 2, -1, handle_find },
-	{ "findadd", PERMISSION_ADD, 2, -1, handle_findadd},
+	{ "find", PERMISSION_READ, 1, -1, handle_find },
+	{ "findadd", PERMISSION_ADD, 1, -1, handle_findadd},
 #endif
 	{ "idle", PERMISSION_READ, 0, -1, handle_idle },
 	{ "kill", PERMISSION_ADMIN, -1, -1, handle_kill },
@@ -149,11 +149,11 @@ static constexpr struct command commands[] = {
 	{ "playlistadd", PERMISSION_CONTROL, 2, 2, handle_playlistadd },
 	{ "playlistclear", PERMISSION_CONTROL, 1, 1, handle_playlistclear },
 	{ "playlistdelete", PERMISSION_CONTROL, 2, 2, handle_playlistdelete },
-	{ "playlistfind", PERMISSION_READ, 2, -1, handle_playlistfind },
+	{ "playlistfind", PERMISSION_READ, 1, -1, handle_playlistfind },
 	{ "playlistid", PERMISSION_READ, 0, 1, handle_playlistid },
 	{ "playlistinfo", PERMISSION_READ, 0, 1, handle_playlistinfo },
 	{ "playlistmove", PERMISSION_CONTROL, 3, 3, handle_playlistmove },
-	{ "playlistsearch", PERMISSION_READ, 2, -1, handle_playlistsearch },
+	{ "playlistsearch", PERMISSION_READ, 1, -1, handle_playlistsearch },
 	{ "plchanges", PERMISSION_READ, 1, 2, handle_plchanges },
 	{ "plchangesposid", PERMISSION_READ, 1, 2, handle_plchangesposid },
 	{ "previous", PERMISSION_CONTROL, 0, 0, handle_previous },
@@ -173,9 +173,9 @@ static constexpr struct command commands[] = {
 	{ "rm", PERMISSION_CONTROL, 1, 1, handle_rm },
 	{ "save", PERMISSION_CONTROL, 1, 1, handle_save },
 #ifdef ENABLE_DATABASE
-	{ "search", PERMISSION_READ, 2, -1, handle_search },
-	{ "searchadd", PERMISSION_ADD, 2, -1, handle_searchadd },
-	{ "searchaddpl", PERMISSION_CONTROL, 3, -1, handle_searchaddpl },
+	{ "search", PERMISSION_READ, 1, -1, handle_search },
+	{ "searchadd", PERMISSION_ADD, 1, -1, handle_searchadd },
+	{ "searchaddpl", PERMISSION_CONTROL, 2, -1, handle_searchaddpl },
 #endif
 	{ "seek", PERMISSION_CONTROL, 2, 2, handle_seek },
 	{ "seekcur", PERMISSION_CONTROL, 1, 1, handle_seekcur },

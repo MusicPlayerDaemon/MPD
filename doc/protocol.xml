@@ -208,63 +208,75 @@
 
       <cmdsynopsis>
         <command>find</command>
-        <arg choice="req" rep="repeat">
-          <arg choice="req"><replaceable>TYPE</replaceable></arg>
-          <arg choice="req"><replaceable>VALUE</replaceable></arg>
-        </arg>
+        <arg choice="req" rep="repeat">EXPRESSION</arg>
       </cmdsynopsis>
 
       <para>
-        <varname>TYPE</varname> can
-        be any tag supported by <application>MPD</application>, or one of the special
-        parameters:
+        <varname>EXPRESSION</varname> is a string enclosed in
+        parantheses which can be one of:
       </para>
 
       <itemizedlist>
         <listitem>
           <para>
-            <parameter>any</parameter> checks all tag values
+            "<code>(TAG == 'VALUE')</code>": match a tag value.
           </para>
-        </listitem>
 
-        <listitem>
           <para>
-            <parameter>file</parameter> checks the full path
-            (relative to the music directory)
+            The special tag "<parameter>any</parameter>" checks all
+            tag values.
           </para>
-        </listitem>
 
-        <listitem>
-          <para>
-            <parameter>base</parameter> restricts the search to
-            songs in the given directory (also relative to the
-            music directory)
-          </para>
-        </listitem>
-
-        <listitem>
-          <para>
-            <parameter>modified-since</parameter> compares the
-            file's time stamp with the given value (ISO 8601 or
-            UNIX time stamp)
-          </para>
-        </listitem>
-
-        <listitem>
           <para>
             <parameter>albumartist</parameter> looks for
-            <varname>VALUE</varname> in AlbumArtist and falls back to
-            Artist tags if AlbumArtist does not exist.
+            <varname>VALUE</varname> in <varname>AlbumArtist</varname>
+            and falls back to <varname>Artist</varname> tags if
+            <varname>AlbumArtist</varname> does not exist.
+          </para>
+
+          <para>
+            <varname>VALUE</varname> is what to find.  The
+            <command>find</command> commands specify an exact value
+            and are case-sensitive; the <command>search</command>
+            commands specify a sub string and ignore case.
+          </para>
+        </listitem>
+
+        <listitem>
+          <para>
+            "<code>(file == 'VALUE')</code>": match the full song URI
+            (relative to the music directory).
+          </para>
+        </listitem>
+
+        <listitem>
+          <para>
+            "<code>(base 'VALUE')</code>": restrict the search to
+            songs in the given directory (relative to the music
+            directory).
+          </para>
+        </listitem>
+
+        <listitem>
+          <para>
+            "<code>(modified-since 'VALUE')</code>": compares the
+            file's time stamp with the given value (ISO 8601 or UNIX
+            time stamp).
           </para>
         </listitem>
       </itemizedlist>
 
       <para>
-        <varname>VALUE</varname> is what to find.  The
-        <command>find</command> commands specify an exact value and
-        are case-sensitive; the <command>search</command> commands
-        specify a sub string and ignore case.
+        Prior to MPD 0.21, the syntax looked like this:
       </para>
+
+      <cmdsynopsis>
+        <command>find</command>
+        <arg choice="req" rep="repeat">
+          <arg choice="req"><replaceable>TYPE</replaceable></arg>
+          <arg choice="req"><replaceable>VALUE</replaceable></arg>
+        </arg>
+      </cmdsynopsis>
     </section>
 
     <section id="tags">

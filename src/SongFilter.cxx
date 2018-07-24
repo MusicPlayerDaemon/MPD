@@ -22,10 +22,13 @@
 #include "db/LightSong.hxx"
 #include "DetachedSong.hxx"
 #include "tag/ParseName.hxx"
+#include "util/CharUtil.hxx"
 #include "util/ChronoUtil.hxx"
 #include "util/ConstBuffer.hxx"
+#include "util/RuntimeError.hxx"
 #include "util/StringAPI.hxx"
 #include "util/StringCompare.hxx"
+#include "util/StringStrip.hxx"
 #include "util/StringView.hxx"
 #include "util/ASCII.hxx"
 #include "util/TimeParser.hxx"
@@ -234,6 +237,99 @@ ParseTimeStamp(const char *s)
 	return ParseTimePoint(s, "%FT%TZ");
 }
 
+static constexpr bool
+IsTagNameChar(char ch) noexcept
+{
+	return IsAlphaASCII(ch) || ch == '_';
+}
+
+static const char *
+FirstNonTagNameChar(const char *s) noexcept
+{
+	while (IsTagNameChar(*s))
+		++s;
+	return s;
+}
+
+static auto
+ExpectFilterType(const char *&s)
+{
+	const char *end = FirstNonTagNameChar(s);
+	if (end == s)
+		throw std::runtime_error("Tag name expected");
+
+	const std::string name(s, end);
+	s = StripLeft(end);
+
+	const auto type = locate_parse_type(name.c_str());
+	if (type == TAG_NUM_OF_ITEM_TYPES)
+		throw FormatRuntimeError("Unknown filter type: %s",
+					 name.c_str());
+
+	return type;
+}
+
+static constexpr bool
+IsQuote(char ch) noexcept
+{
+	return ch == '"' || ch == '\'';
+}
+
+static std::string
+ExpectQuoted(const char *&s)
+{
+	const char quote = *s++;
+	if (!IsQuote(quote))
+		throw std::runtime_error("Quoted string expected");
+
+	const char *begin = s;
+	const char *end = strchr(s, quote);
+	if (end == nullptr)
+		throw std::runtime_error("Closing quote not found");
+
+	s = StripLeft(end + 1);
+	return {begin, end};
+}
+
+const char *
+SongFilter::ParseExpression(const char *s, bool fold_case)
+{
+	assert(*s == '(');
+
+	s = StripLeft(s + 1);
+
+	if (*s == '(')
+		throw std::runtime_error("Nested expressions not yet implemented");
+
+	const auto type = ExpectFilterType(s);
+
+	if (type == LOCATE_TAG_MODIFIED_SINCE) {
+		const auto value_s = ExpectQuoted(s);
+		if (*s != ')')
+			throw std::runtime_error("')' expected");
+		items.emplace_back(type, ParseTimeStamp(value_s.c_str()));
+		return StripLeft(s + 1);
+	} else if (type == LOCATE_TAG_BASE_TYPE) {
+		auto value = ExpectQuoted(s);
+		if (*s != ')')
+			throw std::runtime_error("')' expected");
+
+		items.emplace_back(type, std::move(value), fold_case);
+		return StripLeft(s + 1);
+	} else {
+		if (s[0] != '=' || s[1] != '=')
+			throw std::runtime_error("'==' expected");
+
+		s = StripLeft(s + 2);
+		auto value = ExpectQuoted(s);
+		if (*s != ')')
+			throw std::runtime_error("')' expected");
+
+		items.emplace_back(type, std::move(value), fold_case);
+		return StripLeft(s + 1);
+	}
+}
+
 void
 SongFilter::Parse(const char *tag_string, const char *value, bool fold_case)
 {
@@ -262,6 +358,15 @@ SongFilter::Parse(ConstBuffer<const char *> args, bool fold_case)
 		throw std::runtime_error("Incorrect number of filter arguments");
 
 	do {
+		if (*args.front() == '(') {
+			const char *s = args.shift();
+			const char *end = ParseExpression(s, fold_case);
+			if (*end != 0)
+				throw std::runtime_error("Unparsed garbage after expression");
+
+			continue;
+		}
+
 		if (args.size < 2)
 			throw std::runtime_error("Incorrect number of filter arguments");
 
