@@ -223,6 +223,10 @@
           </para>
 
           <para>
+            "<code>(TAG != 'VALUE')</code>": mismatch a tag value.
+          </para>
+
+          <para>
             The special tag "<parameter>any</parameter>" checks all
             tag values.
           </para>

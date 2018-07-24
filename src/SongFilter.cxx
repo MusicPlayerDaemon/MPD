@@ -81,7 +81,7 @@ SongFilter::Item::ToExpression() const noexcept
 {
 	switch (tag) {
 	case LOCATE_TAG_FILE_TYPE:
-		return "(" LOCATE_TAG_FILE_KEY " == \"" + value + "\")";
+		return std::string("(" LOCATE_TAG_FILE_KEY " ") + (IsNegated() ? "!=" : "==") + " \"" + value + "\")";
 
 	case LOCATE_TAG_BASE_TYPE:
 		return "(base \"" + value + "\")";
@@ -90,10 +90,10 @@ SongFilter::Item::ToExpression() const noexcept
 		return "(modified-since \"" + value + "\")";
 
 	case LOCATE_TAG_ANY_TYPE:
-		return "(" LOCATE_TAG_ANY_KEY " == \"" + value + "\")";
+		return std::string("(" LOCATE_TAG_ANY_KEY " ") + (IsNegated() ? "!=" : "==") + " \"" + value + "\")";
 
 	default:
-		return std::string("(") + tag_item_names[tag] + " == \"" + value + "\")";
+		return std::string("(") + tag_item_names[tag] + " " + (IsNegated() ? "!=" : "==") + " \"" + value + "\")";
 	}
 }
 
@@ -317,8 +317,11 @@ SongFilter::ParseExpression(const char *s, bool fold_case)
 		items.emplace_back(type, std::move(value), fold_case);
 		return StripLeft(s + 1);
 	} else {
-		if (s[0] != '=' || s[1] != '=')
-			throw std::runtime_error("'==' expected");
+		bool negated = false;
+		if (s[0] == '!' && s[1] == '=')
+			negated = true;
+		else if (s[0] != '=' || s[1] != '=')
+			throw std::runtime_error("'==' or '!=' expected");
 
 		s = StripLeft(s + 2);
 		auto value = ExpectQuoted(s);
@@ -326,6 +329,7 @@ SongFilter::ParseExpression(const char *s, bool fold_case)
 			throw std::runtime_error("')' expected");
 
 		items.emplace_back(type, std::move(value), fold_case);
+		items.back().SetNegated(negated);
 		return StripLeft(s + 1);
 	}
 }

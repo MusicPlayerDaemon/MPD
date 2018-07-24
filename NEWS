@@ -7,7 +7,7 @@ ver 0.21 (not yet released)
   - "outputs" prints the plugin name
   - "outputset" sets runtime attributes
   - close connection when client sends HTTP request
-  - new filter syntax for "find"/"search" etc.
+  - new filter syntax for "find"/"search" etc. with negation
 * database
   - simple: scan audio formats
 * player
