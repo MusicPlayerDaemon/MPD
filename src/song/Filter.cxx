@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "Filter.hxx"
+#include "NotSongFilter.hxx"
 #include "UriSongFilter.hxx"
 #include "BaseSongFilter.hxx"
 #include "TagSongFilter.hxx"
@@ -212,6 +213,20 @@ SongFilter::ParseExpression(const char *&s, bool fold_case)
 			if (ExpectWord(s) != "AND")
 				throw std::runtime_error("'AND' expected");
 		}
+	}
+
+	if (*s == '!') {
+		s = StripLeft(s + 1);
+
+		if (*s != '(')
+			throw std::runtime_error("'(' expected");
+
+		auto inner = ParseExpression(s, fold_case);
+		if (*s != ')')
+			throw std::runtime_error("')' expected");
+		s = StripLeft(s + 1);
+
+		return std::make_unique<NotSongFilter>(std::move(inner));
 	}
 
 	auto type = ExpectFilterType(s);
