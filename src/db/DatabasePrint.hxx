@@ -50,6 +50,10 @@ db_selection_print(Response &r, Partition &partition,
 		   unsigned window_start, unsigned window_end);
 
 void
+PrintSongUris(Response &r, Partition &partition,
+	      const SongFilter *filter);
+
+void
 PrintUniqueTags(Response &r, Partition &partition,
 		unsigned type, TagMask group_mask,
 		const SongFilter *filter);

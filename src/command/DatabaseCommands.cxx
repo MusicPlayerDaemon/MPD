@@ -285,8 +285,11 @@ handle_list(Client &client, Request args, Response &r)
 		return CommandResult::ERROR;
 	}
 
-	PrintUniqueTags(r, client.GetPartition(),
-			tagType, group_mask, filter.get());
+	if (tagType == LOCATE_TAG_FILE_TYPE)
+		PrintSongUris(r, client.GetPartition(), filter.get());
+	else
+		PrintUniqueTags(r, client.GetPartition(),
+				tagType, group_mask, filter.get());
 	return CommandResult::OK;
 }
 

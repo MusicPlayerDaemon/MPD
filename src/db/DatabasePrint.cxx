@@ -273,6 +273,20 @@ PrintSongURIVisitor(Response &r, const LightSong &song) noexcept
 	song_print_uri(r, song);
 }
 
+void
+PrintSongUris(Response &r, Partition &partition,
+	      const SongFilter *filter)
+{
+	const Database &db = partition.GetDatabaseOrThrow();
+
+	const DatabaseSelection selection("", true, filter);
+
+	using namespace std::placeholders;
+	const auto f = std::bind(PrintSongURIVisitor,
+				 std::ref(r), _1);
+	db.Visit(selection, f);
+}
+
 static void
 PrintUniqueTag(Response &r, TagType tag_type,
 	       const Tag &tag) noexcept
@@ -292,22 +306,15 @@ PrintUniqueTags(Response &r, Partition &partition,
 		unsigned type, TagMask group_mask,
 		const SongFilter *filter)
 {
+	assert(type < TAG_NUM_OF_ITEM_TYPES);
+
 	const Database &db = partition.GetDatabaseOrThrow();
 
 	const DatabaseSelection selection("", true, filter);
 
-	if (type == LOCATE_TAG_FILE_TYPE) {
-		using namespace std::placeholders;
-		const auto f = std::bind(PrintSongURIVisitor,
-					 std::ref(r), _1);
-		db.Visit(selection, f);
-	} else {
-		assert(type < TAG_NUM_OF_ITEM_TYPES);
-
-		using namespace std::placeholders;
-		const auto f = std::bind(PrintUniqueTag, std::ref(r),
-					 (TagType)type, _1);
-		db.VisitUniqueTags(selection, (TagType)type,
-				   group_mask, f);
-	}
+	using namespace std::placeholders;
+	const auto f = std::bind(PrintUniqueTag, std::ref(r),
+				 (TagType)type, _1);
+	db.VisitUniqueTags(selection, (TagType)type,
+			   group_mask, f);
 }
