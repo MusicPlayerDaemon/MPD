@@ -413,7 +413,7 @@ AC_ARG_ENABLE(recorder-output,
 
 AC_ARG_ENABLE(sidplay,
 	AS_HELP_STRING([--enable-sidplay],
-		[enable C64 SID support via libsidplay2]),,
+		[enable C64 SID support via libsidplayfp or libsidplay2]),,
 	enable_sidplay=auto)
 
 AC_ARG_ENABLE(shout,
@@ -1041,7 +1041,7 @@ if test x$enable_sidplay != xno && test x$found_sidplayfp = xno; then
 		[found_sidplay=no])
 
 	MPD_AUTO_PRE(sidplay, [sidplay decoder plugin],
-		[libsidplay2 not found])
+		[libsidplay2 or libsidutils not found])
 fi
 
 if test x$enable_sidplay != xno && test x$found_sidplayfp = xno; then
@@ -1054,7 +1054,7 @@ fi
 
 if test x$enable_sidplay = xyes; then
 	SIDPLAY_LIBS="$SIDPLAY_LIBS -lresid-builder"
-	AC_DEFINE(ENABLE_SIDPLAY, 1, [Define for libsidplay2 support])
+	AC_DEFINE(ENABLE_SIDPLAY, 1, [Define for libsidplayfp or libsidplay2 support])
 	if test x$found_sidplayfp = xyes; then
 		AC_DEFINE(HAVE_SIDPLAYFP, 1, [Define if libsidplayfp is used instead of libsidplay2])
 	fi
