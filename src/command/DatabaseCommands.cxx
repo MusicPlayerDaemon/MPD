@@ -223,14 +223,36 @@ handle_listall(Client &client, Request args, Response &r)
 	return CommandResult::OK;
 }
 
+static CommandResult
+handle_list_file(Client &client, Request args, Response &r)
+{
+	std::unique_ptr<SongFilter> filter;
+
+	if (!args.empty()) {
+		filter.reset(new SongFilter());
+		try {
+			filter->Parse(args, false);
+		} catch (...) {
+			r.Error(ACK_ERROR_ARG,
+				GetFullMessage(std::current_exception()).c_str());
+			return CommandResult::ERROR;
+		}
+	}
+
+	PrintSongUris(r, client.GetPartition(), filter.get());
+	return CommandResult::OK;
+}
+
 CommandResult
 handle_list(Client &client, Request args, Response &r)
 {
 	const char *tag_name = args.shift();
 	unsigned tagType = locate_parse_type(tag_name);
 
-	if (tagType >= TAG_NUM_OF_ITEM_TYPES &&
-	    tagType != LOCATE_TAG_FILE_TYPE) {
+	if (tagType == LOCATE_TAG_FILE_TYPE)
+		return handle_list_file(client, args, r);
+
+	if (tagType >= TAG_NUM_OF_ITEM_TYPES) {
 		r.FormatError(ACK_ERROR_ARG,
 			      "Unknown tag type: %s", tag_name);
 		return CommandResult::ERROR;
@@ -285,11 +307,8 @@ handle_list(Client &client, Request args, Response &r)
 		return CommandResult::ERROR;
 	}
 
-	if (tagType == LOCATE_TAG_FILE_TYPE)
-		PrintSongUris(r, client.GetPartition(), filter.get());
-	else
-		PrintUniqueTags(r, client.GetPartition(),
-				TagType(tagType), group_mask, filter.get());
+	PrintUniqueTags(r, client.GetPartition(),
+			TagType(tagType), group_mask, filter.get());
 	return CommandResult::OK;
 }
 
