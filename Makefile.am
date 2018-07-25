@@ -518,6 +518,7 @@ libutil_a_SOURCES = \
 	src/util/TemplateString.hxx \
 	src/util/TimeParser.cxx src/util/TimeParser.hxx \
 	src/util/TimeConvert.cxx src/util/TimeConvert.hxx \
+	src/util/TimeISO8601.cxx src/util/TimeISO8601.hxx \
 	src/util/UriUtil.cxx src/util/UriUtil.hxx \
 	src/util/Manual.hxx \
 	src/util/StaticFifoBuffer.hxx \

@@ -31,7 +31,7 @@
 #include "util/StringStrip.hxx"
 #include "util/StringView.hxx"
 #include "util/ASCII.hxx"
-#include "util/TimeParser.hxx"
+#include "util/TimeISO8601.hxx"
 #include "util/UriUtil.hxx"
 #include "lib/icu/CaseFold.hxx"
 
@@ -219,7 +219,7 @@ ParseTimeStamp(const char *s)
 		return std::chrono::system_clock::from_time_t((time_t)value);
 
 	/* try ISO 8601 */
-	return ParseTimePoint(s, "%FT%TZ");
+	return ParseISO8601(s);
 }
 
 static constexpr bool
