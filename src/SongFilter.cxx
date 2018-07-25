@@ -44,7 +44,11 @@
 #define LOCATE_TAG_FILE_KEY_OLD "filename"
 #define LOCATE_TAG_ANY_KEY      "any"
 
-unsigned
+/**
+ * @return #TAG_NUM_OF_ITEM_TYPES on error
+ */
+gcc_pure
+static unsigned
 locate_parse_type(const char *str) noexcept
 {
 	if (StringEqualsCaseASCII(str, LOCATE_TAG_FILE_KEY) ||
