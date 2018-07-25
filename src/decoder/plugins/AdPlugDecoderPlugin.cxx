@@ -83,16 +83,14 @@ adplug_file_decode(DecoderClient &client, Path path_fs)
 
 static void
 adplug_scan_tag(TagType type, const std::string &value,
-		const TagHandler &handler, void *handler_ctx) noexcept
+		TagHandler &handler) noexcept
 {
 	if (!value.empty())
-		tag_handler_invoke_tag(handler, handler_ctx,
-				       type, value.c_str());
+		handler.OnTag(type, value.c_str());
 }
 
 static bool
-adplug_scan_file(Path path_fs,
-		 const TagHandler &handler, void *handler_ctx) noexcept
+adplug_scan_file(Path path_fs, TagHandler &handler) noexcept
 {
 	CEmuopl opl(sample_rate, true, true);
 	opl.init();
@@ -101,16 +99,15 @@ adplug_scan_file(Path path_fs,
 	if (player == nullptr)
 		return false;
 
-	tag_handler_invoke_duration(handler, handler_ctx,
-				    SongTime::FromMS(player->songlength()));
+	handler.OnDuration(SongTime::FromMS(player->songlength()));
 
-	if (handler.tag != nullptr) {
+	if (handler.WantTag()) {
 		adplug_scan_tag(TAG_TITLE, player->gettitle(),
-				handler, handler_ctx);
+				handler);
 		adplug_scan_tag(TAG_ARTIST, player->getauthor(),
-				handler, handler_ctx);
+				handler);
 		adplug_scan_tag(TAG_COMMENT, player->getdesc(),
-				handler, handler_ctx);
+				handler);
 	}
 
 	delete player;

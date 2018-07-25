@@ -20,7 +20,7 @@
 #include "config.h"
 #include "TagSave.hxx"
 #include "tag/Tag.hxx"
-#include "config/ConfigGlobal.hxx"
+#include "config/Global.hxx"
 #include "input/InputStream.hxx"
 #include "input/Init.hxx"
 #include "input/Registry.hxx"
@@ -37,6 +37,7 @@
 #include "util/ConstBuffer.hxx"
 #include "util/OptionDef.hxx"
 #include "util/OptionParser.hxx"
+#include "util/PrintException.hxx"
 
 #ifdef ENABLE_ARCHIVE
 #include "archive/ArchiveList.hxx"
@@ -115,7 +116,8 @@ public:
 #ifdef ENABLE_ARCHIVE
 		archive_plugin_init_all();
 #endif
-		input_stream_global_init(io_thread.GetEventLoop());
+		input_stream_global_init(GetGlobalConfig(),
+					 io_thread.GetEventLoop());
 	}
 
 	~GlobalInit() {
@@ -239,10 +241,9 @@ try {
 	/* open the stream and dump it */
 
 	Mutex mutex;
-	Cond cond;
-	auto is = InputStream::OpenReady(c.uri, mutex, cond);
+	auto is = InputStream::OpenReady(c.uri, mutex);
 	return dump_input_stream(is.get());
-} catch (const std::exception &e) {
-	LogError(e);
+} catch (...) {
+	PrintException(std::current_exception());
 	return EXIT_FAILURE;
 }

@@ -22,6 +22,7 @@
 
 #include "check.h"
 
+struct ConfigData;
 class EventLoop;
 class DatabaseListener;
 class Database;
@@ -34,7 +35,8 @@ class Database;
  * Throws #std::runtime_error on error.
  */
 Database *
-CreateConfiguredDatabase(EventLoop &main_event_loop, EventLoop &io_event_loop,
+CreateConfiguredDatabase(const ConfigData &config,
+			 EventLoop &main_event_loop, EventLoop &io_event_loop,
 			 DatabaseListener &listener);
 
 #endif

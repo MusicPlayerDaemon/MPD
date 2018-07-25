@@ -38,10 +38,12 @@
 
 #include <assert.h>
 
-UpdateService::UpdateService(EventLoop &_loop, SimpleDatabase &_db,
+UpdateService::UpdateService(const ConfigData &_config,
+			     EventLoop &_loop, SimpleDatabase &_db,
 			     CompositeStorage &_storage,
 			     DatabaseListener &_listener)
-	:defer(_loop, BIND_THIS_METHOD(RunDeferred)),
+	:config(_config),
+	 defer(_loop, BIND_THIS_METHOD(RunDeferred)),
 	 db(_db), storage(_storage),
 	 listener(_listener),
 	 update_thread(BIND_THIS_METHOD(Task))
@@ -151,7 +153,7 @@ UpdateService::StartThread(UpdateQueueItem &&i)
 	modified = false;
 
 	next = std::move(i);
-	walk = new UpdateWalk(GetEventLoop(), listener, *next.storage);
+	walk = new UpdateWalk(config, GetEventLoop(), listener, *next.storage);
 
 	update_thread.Start();
 

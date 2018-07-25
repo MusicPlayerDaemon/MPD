@@ -31,7 +31,9 @@
 #include "tag/ParseName.hxx"
 #include "tag/Mask.hxx"
 #include "util/ConstBuffer.hxx"
+#include "util/Exception.hxx"
 #include "util/StringAPI.hxx"
+#include "util/ASCII.hxx"
 #include "SongFilter.hxx"
 #include "BulkEdit.hxx"
 
@@ -96,8 +98,11 @@ handle_match(Client &client, Request args, Response &r, bool fold_case)
 	}
 
 	SongFilter filter;
-	if (!filter.Parse(args, fold_case)) {
-		r.Error(ACK_ERROR_ARG, "incorrect arguments");
+	try {
+		filter.Parse(args, fold_case);
+	} catch (...) {
+		r.Error(ACK_ERROR_ARG,
+			GetFullMessage(std::current_exception()).c_str());
 		return CommandResult::ERROR;
 	}
 
@@ -126,8 +131,11 @@ static CommandResult
 handle_match_add(Client &client, Request args, Response &r, bool fold_case)
 {
 	SongFilter filter;
-	if (!filter.Parse(args, fold_case)) {
-		r.Error(ACK_ERROR_ARG, "incorrect arguments");
+	try {
+		filter.Parse(args, fold_case);
+	} catch (...) {
+		r.Error(ACK_ERROR_ARG,
+			GetFullMessage(std::current_exception()).c_str());
 		return CommandResult::ERROR;
 	}
 
@@ -157,8 +165,11 @@ handle_searchaddpl(Client &client, Request args, Response &r)
 	const char *playlist = args.shift();
 
 	SongFilter filter;
-	if (!filter.Parse(args, true)) {
-		r.Error(ACK_ERROR_ARG, "incorrect arguments");
+	try {
+		filter.Parse(args, true);
+	} catch (...) {
+		r.Error(ACK_ERROR_ARG,
+			GetFullMessage(std::current_exception()).c_str());
 		return CommandResult::ERROR;
 	}
 
@@ -187,9 +198,14 @@ handle_count(Client &client, Request args, Response &r)
 	}
 
 	SongFilter filter;
-	if (!args.empty() && !filter.Parse(args, false)) {
-		r.Error(ACK_ERROR_ARG, "incorrect arguments");
-		return CommandResult::ERROR;
+	if (!args.empty()) {
+		try {
+			filter.Parse(args, false);
+		} catch (...) {
+			r.Error(ACK_ERROR_ARG,
+				GetFullMessage(std::current_exception()).c_str());
+			return CommandResult::ERROR;
+		}
 	}
 
 	PrintSongCount(r, client.GetPartition(), "", &filter, group);
@@ -208,14 +224,36 @@ handle_listall(Client &client, Request args, Response &r)
 	return CommandResult::OK;
 }
 
+static CommandResult
+handle_list_file(Client &client, Request args, Response &r)
+{
+	std::unique_ptr<SongFilter> filter;
+
+	if (!args.empty()) {
+		filter.reset(new SongFilter());
+		try {
+			filter->Parse(args, false);
+		} catch (...) {
+			r.Error(ACK_ERROR_ARG,
+				GetFullMessage(std::current_exception()).c_str());
+			return CommandResult::ERROR;
+		}
+	}
+
+	PrintSongUris(r, client.GetPartition(), filter.get());
+	return CommandResult::OK;
+}
+
 CommandResult
 handle_list(Client &client, Request args, Response &r)
 {
 	const char *tag_name = args.shift();
-	unsigned tagType = locate_parse_type(tag_name);
+	if (StringEqualsCaseASCII(tag_name, "file") ||
+	    StringEqualsCaseASCII(tag_name, "filename"))
+		return handle_list_file(client, args, r);
 
-	if (tagType >= TAG_NUM_OF_ITEM_TYPES &&
-	    tagType != LOCATE_TAG_FILE_TYPE) {
+	const auto tagType = tag_name_parse_i(tag_name);
+	if (tagType == TAG_NUM_OF_ITEM_TYPES) {
 		r.FormatError(ACK_ERROR_ARG,
 			      "Unknown tag type: %s", tag_name);
 		return CommandResult::ERROR;
@@ -233,7 +271,7 @@ handle_list(Client &client, Request args, Response &r)
 			return CommandResult::ERROR;
 		}
 
-		filter.reset(new SongFilter((unsigned)TAG_ARTIST,
+		filter.reset(new SongFilter(TAG_ARTIST,
 					    args.shift()));
 	}
 
@@ -255,14 +293,16 @@ handle_list(Client &client, Request args, Response &r)
 
 	if (!args.empty()) {
 		filter.reset(new SongFilter());
-		if (!filter->Parse(args, false)) {
-			r.Error(ACK_ERROR_ARG, "not able to parse args");
+		try {
+			filter->Parse(args, false);
+		} catch (...) {
+			r.Error(ACK_ERROR_ARG,
+				GetFullMessage(std::current_exception()).c_str());
 			return CommandResult::ERROR;
 		}
 	}
 
-	if (tagType < TAG_NUM_OF_ITEM_TYPES &&
-	    group_mask.Test(TagType(tagType))) {
+	if (group_mask.Test(tagType)) {
 		r.Error(ACK_ERROR_ARG, "Conflicting group");
 		return CommandResult::ERROR;
 	}

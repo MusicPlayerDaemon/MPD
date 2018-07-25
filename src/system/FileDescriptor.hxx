@@ -115,7 +115,10 @@ public:
 
 	static bool CreatePipe(FileDescriptor &r, FileDescriptor &w) noexcept;
 
-#ifndef _WIN32
+#ifdef _WIN32
+	void EnableCloseOnExec() noexcept {}
+	void DisableCloseOnExec() noexcept {}
+#else
 	static bool CreatePipeNonBlock(FileDescriptor &r,
 				       FileDescriptor &w) noexcept;
 

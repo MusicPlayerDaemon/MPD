@@ -76,7 +76,7 @@ ForEachValue(const char *value, const char *end, C &&callback)
 static bool
 tag_ape_import_item(unsigned long flags,
 		    const char *key, StringView value,
-		    const TagHandler &handler, void *handler_ctx)
+		    TagHandler &handler) noexcept
 {
 	/* we only care about utf-8 text tags */
 	if ((flags & (0x3 << 1)) != 0)
@@ -85,36 +85,31 @@ tag_ape_import_item(unsigned long flags,
 	const auto begin = value.begin();
 	const auto end = value.end();
 
-	if (handler.pair != nullptr)
-		ForEachValue(begin, end, [handler, handler_ctx,
-					  key](const char *_value) {
-				handler.pair(key, _value, handler_ctx);
+	if (handler.WantPair())
+		ForEachValue(begin, end, [&handler, key](const char *_value) {
+				handler.OnPair(key, _value);
 			});
 
 	TagType type = tag_ape_name_parse(key);
 	if (type == TAG_NUM_OF_ITEM_TYPES)
 		return false;
 
-	ForEachValue(begin, end, [handler, handler_ctx,
-				  type](const char *_value) {
-			tag_handler_invoke_tag(handler, handler_ctx,
-					       type, _value);
+	ForEachValue(begin, end, [&handler, type](const char *_value) {
+			handler.OnTag(type, _value);
 		});
 
 	return true;
 }
 
 bool
-tag_ape_scan2(InputStream &is,
-	      const TagHandler &handler, void *handler_ctx)
+tag_ape_scan2(InputStream &is, TagHandler &handler) noexcept
 {
 	bool recognized = false;
 
-	auto callback = [handler, handler_ctx, &recognized]
+	auto callback = [&handler, &recognized]
 		(unsigned long flags, const char *key,
 		 StringView value) {
-		recognized |= tag_ape_import_item(flags, key, value,
-						  handler, handler_ctx);
+		recognized |= tag_ape_import_item(flags, key, value, handler);
 		return true;
 	};
 

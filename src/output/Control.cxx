@@ -22,7 +22,6 @@
 #include "Filtered.hxx"
 #include "Domain.hxx"
 #include "mixer/MixerControl.hxx"
-#include "notify.hxx"
 #include "filter/plugins/ReplayGainFilterPlugin.hxx"
 #include "config/Block.hxx"
 #include "Log.hxx"
@@ -34,8 +33,6 @@
 /** after a failure, wait this duration before
     automatically reopening the device */
 static constexpr PeriodClock::Duration REOPEN_AFTER = std::chrono::seconds(10);
-
-struct notify audio_output_client_notify;
 
 AudioOutputControl::AudioOutputControl(std::unique_ptr<FilteredAudioOutput> _output,
 				       AudioOutputClient &_client) noexcept
@@ -116,10 +113,8 @@ AudioOutputControl::LockToggleEnabled() noexcept
 void
 AudioOutputControl::WaitForCommand() noexcept
 {
-	while (!IsCommandFinished()) {
-		const ScopeUnlock unlock(mutex);
-		audio_output_client_notify.Wait();
-	}
+	while (!IsCommandFinished())
+		client_cond.wait(mutex);
 }
 
 void
@@ -128,7 +123,7 @@ AudioOutputControl::CommandAsync(Command cmd) noexcept
 	assert(IsCommandFinished());
 
 	command = cmd;
-	cond.signal();
+	wake_cond.signal();
 }
 
 void
@@ -298,7 +293,7 @@ AudioOutputControl::LockPlay() noexcept
 
 	if (IsOpen() && !in_playback_loop && !woken_for_play) {
 		woken_for_play = true;
-		cond.signal();
+		wake_cond.signal();
 	}
 }
 
@@ -346,7 +341,7 @@ AudioOutputControl::LockAllowPlay() noexcept
 
 	allow_play = true;
 	if (IsOpen())
-		cond.signal();
+		wake_cond.signal();
 }
 
 void

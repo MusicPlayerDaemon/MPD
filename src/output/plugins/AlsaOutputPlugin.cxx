@@ -122,6 +122,8 @@ class AlsaOutput final
 	/**
 	 * After Open(), has this output been activated by a Play()
 	 * command?
+	 *
+	 * Protected by #mutex.
 	 */
 	bool active;
 
@@ -159,7 +161,7 @@ class AlsaOutput final
 	Alsa::PeriodBuffer period_buffer;
 
 	/**
-	 * Protects #cond, #error, #drain.
+	 * Protects #cond, #error, #active, #drain.
 	 */
 	mutable Mutex mutex;
 
@@ -179,6 +181,8 @@ public:
 		/* free libasound's config cache */
 		snd_config_update_free_global();
 	}
+
+	using MultiSocketMonitor::GetEventLoop;
 
 	gcc_pure
 	const char *GetDevice() const noexcept {
@@ -223,39 +227,32 @@ private:
 #endif
 			);
 
+	gcc_pure
+	bool LockIsActive() const noexcept {
+		const std::lock_guard<Mutex> lock(mutex);
+		return active;
+	}
+
 	/**
 	 * Activate the output by registering the sockets in the
 	 * #EventLoop.  Before calling this, filling the ring buffer
 	 * has no effect; nothing will be played, and no code will be
 	 * run on #EventLoop's thread.
-	 */
-	void Activate() noexcept {
-		if (active)
-			return;
-
-		active = true;
-		defer_invalidate_sockets.Schedule();
-	}
-
-	/**
-	 * Wrapper for Activate() which unlocks our mutex.  Call this
-	 * if you're holding the mutex.
+	 *
+	 * Caller must hold the mutex.
 	 *
 	 * @return true if Activate() was called, false if the mutex
 	 * was never unlocked
 	 */
-	bool UnlockActivate() noexcept {
+	bool Activate() noexcept {
 		if (active)
 			return false;
 
-		const ScopeUnlock unlock(mutex);
-		Activate();
-		return true;
-	}
+		active = true;
 
-	void ClearRingBuffer() noexcept {
-		std::array<uint8_t, 1024> buffer;
-		while (ring_buffer->pop(&buffer.front(), buffer.size())) {}
+		const ScopeUnlock unlock(mutex);
+		defer_invalidate_sockets.Schedule();
+		return true;
 	}
 
 	int Recover(int err) noexcept;
@@ -274,14 +271,17 @@ private:
 	 */
 	void CancelInternal() noexcept;
 
-	void CopyRingToPeriodBuffer() noexcept {
+	/**
+	 * @return false if no data was moved
+	 */
+	bool CopyRingToPeriodBuffer() noexcept {
 		if (period_buffer.IsFull())
-			return;
+			return false;
 
 		size_t nbytes = ring_buffer->pop(period_buffer.GetTail(),
 						 period_buffer.GetSpaceBytes());
 		if (nbytes == 0)
-			return;
+			return false;
 
 		period_buffer.AppendBytes(nbytes);
 
@@ -289,6 +289,8 @@ private:
 		/* notify the OutputThread that there is now
 		   room in ring_buffer */
 		cond.signal();
+
+		return true;
 	}
 
 	snd_pcm_sframes_t WriteFromPeriodBuffer() noexcept {
@@ -303,14 +305,10 @@ private:
 		return frames_written;
 	}
 
-	bool LockHasError() const noexcept {
-		const std::lock_guard<Mutex> lock(mutex);
-		return !!error;
-	}
-
 	void LockCaughtError() noexcept {
 		const std::lock_guard<Mutex> lock(mutex);
 		error = std::current_exception();
+		active = false;
 		cond.signal();
 	}
 
@@ -658,9 +656,6 @@ AlsaOutput::Open(AudioFormat &audio_format)
 	size_t period_size = period_frames * out_frame_size;
 	ring_buffer = new boost::lockfree::spsc_queue<uint8_t>(period_size * 4);
 
-	/* reserve space for one more (partial) frame, to be able to
-	   fill the buffer with silence, after moving an unfinished
-	   frame to the end */
 	period_buffer.Allocate(period_frames, out_frame_size);
 
 	active = false;
@@ -705,6 +700,12 @@ AlsaOutput::Recover(int err) noexcept
 	case SND_PCM_STATE_RUNNING:
 	case SND_PCM_STATE_DRAINING:
 		err = 0;
+		break;
+
+	default:
+		/* this default case is just here to work around
+		   -Wswitch due to SND_PCM_STATE_PRIVATE1 (libasound
+		   1.1.6) */
 		break;
 	}
 
@@ -760,12 +761,18 @@ AlsaOutput::Drain()
 {
 	const std::lock_guard<Mutex> lock(mutex);
 
+	if (error)
+		std::rethrow_exception(error);
+
 	drain = true;
 
-	UnlockActivate();
+	Activate();
 
-	while (drain && !error)
+	while (drain && active)
 		cond.wait(mutex);
+
+	if (error)
+		std::rethrow_exception(error);
 }
 
 inline void
@@ -777,24 +784,32 @@ AlsaOutput::CancelInternal() noexcept
 
 	pcm_export->Reset();
 	period_buffer.Clear();
-	ClearRingBuffer();
+	ring_buffer->reset();
+
+	{
+		const std::lock_guard<Mutex> lock(mutex);
+		active = false;
+	}
+
+	MultiSocketMonitor::Reset();
+	defer_invalidate_sockets.Cancel();
 }
 
 void
 AlsaOutput::Cancel() noexcept
 {
-	if (!active) {
+	if (!LockIsActive()) {
 		/* early cancel, quick code path without thread
 		   synchronization */
 
 		pcm_export->Reset();
 		assert(period_buffer.IsEmpty());
-		ClearRingBuffer();
+		ring_buffer->reset();
 
 		return;
 	}
 
-	BlockingCall(MultiSocketMonitor::GetEventLoop(), [this](){
+	BlockingCall(GetEventLoop(), [this](){
 			CancelInternal();
 		});
 }
@@ -803,7 +818,7 @@ void
 AlsaOutput::Close() noexcept
 {
 	/* make sure the I/O thread isn't inside DispatchSockets() */
-	BlockingCall(MultiSocketMonitor::GetEventLoop(), [this](){
+	BlockingCall(GetEventLoop(), [this](){
 			MultiSocketMonitor::Reset();
 			defer_invalidate_sockets.Cancel();
 		});
@@ -844,7 +859,7 @@ AlsaOutput::Play(const void *chunk, size_t size)
 		/* now that the ring_buffer is full, we can activate
 		   the socket handlers to trigger the first
 		   snd_pcm_writei() */
-		if (UnlockActivate())
+		if (Activate())
 			/* since everything may have changed while the
 			   mutex was unlocked, we need to skip the
 			   cond.wait() call below and check the new
@@ -860,7 +875,7 @@ AlsaOutput::Play(const void *chunk, size_t size)
 std::chrono::steady_clock::duration
 AlsaOutput::PrepareSockets() noexcept
 {
-	if (LockHasError()) {
+	if (!LockIsActive()) {
 		ClearSocketList();
 		return std::chrono::steady_clock::duration(-1);
 	}
@@ -879,6 +894,9 @@ AlsaOutput::DispatchSockets() noexcept
 try {
 	{
 		const std::lock_guard<Mutex> lock(mutex);
+
+		assert(active);
+
 		if (drain) {
 			{
 				ScopeUnlock unlock(mutex);
@@ -905,10 +923,39 @@ try {
 
 	CopyRingToPeriodBuffer();
 
-	if (period_buffer.IsEmpty())
+	if (period_buffer.IsEmpty()) {
+		if (snd_pcm_state(pcm) == SND_PCM_STATE_PREPARED) {
+			/* at SND_PCM_STATE_PREPARED (not yet switched
+			   to SND_PCM_STATE_RUNNING), we have no
+			   pressure to fill the ALSA buffer, because
+			   no xrun can possibly occur; and if no data
+			   is available right now, we can easily wait
+			   until some is available; so we just stop
+			   monitoring the ALSA file descriptor, and
+			   let it be reactivated by Play()/Activate()
+			   whenever more data arrives */
+
+			{
+				const std::lock_guard<Mutex> lock(mutex);
+				active = false;
+			}
+
+			/* avoid race condition: see if data has
+			   arrived meanwhile before disabling the
+			   event (but after clearing the "active"
+			   flag) */
+			if (!CopyRingToPeriodBuffer()) {
+				MultiSocketMonitor::Reset();
+				defer_invalidate_sockets.Cancel();
+			}
+
+			return;
+		}
+
 		/* insert some silence if the buffer has not enough
 		   data yet, to avoid ALSA xrun */
 		period_buffer.FillWithSilence(silence, out_frame_size);
+	}
 
 	auto frames_written = WriteFromPeriodBuffer();
 	if (frames_written < 0) {

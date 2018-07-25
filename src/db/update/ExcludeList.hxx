@@ -28,6 +28,7 @@
 #include "check.h"
 #include "Compiler.h"
 #include "fs/Glob.hxx"
+#include "input/Ptr.hxx"
 
 #ifdef HAVE_CLASS_GLOB
 #include <forward_list>
@@ -62,13 +63,16 @@ public:
 	/**
 	 * Loads and parses a .mpdignore file.
 	 */
-	bool LoadFile(Path path_fs) noexcept;
+	bool Load(InputStreamPtr is);
 
 	/**
 	 * Checks whether one of the patterns in the .mpdignore file matches
 	 * the specified file name.
 	 */
 	bool Check(Path name_fs) const noexcept;
+
+private:
+	void ParseLine(char *line) noexcept;
 };
 
 

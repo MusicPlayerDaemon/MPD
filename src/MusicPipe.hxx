@@ -20,6 +20,7 @@
 #ifndef MPD_PIPE_H
 #define MPD_PIPE_H
 
+#include "MusicChunkPtr.hxx"
 #include "thread/Mutex.hxx"
 #include "Compiler.h"
 
@@ -29,19 +30,16 @@
 
 #include <assert.h>
 
-struct MusicChunk;
-class MusicBuffer;
-
 /**
  * A queue of #MusicChunk objects.  One party appends chunks at the
  * tail, and the other consumes them from the head.
  */
 class MusicPipe {
 	/** the first chunk */
-	MusicChunk *head = nullptr;
+	MusicChunkPtr head;
 
 	/** a pointer to the tail of the chunk */
-	MusicChunk **tail_r = &head;
+	MusicChunkPtr *tail_r = &head;
 
 	/** the current number of chunks */
 	unsigned size = 0;
@@ -54,22 +52,9 @@ class MusicPipe {
 #endif
 
 public:
-	/**
-	 * Creates a new #MusicPipe object.  It is empty.
-	 */
-	MusicPipe() = default;
-
-	MusicPipe(const MusicPipe &) = delete;
-
-	/**
-	 * Frees the object.  It must be empty now.
-	 */
-	~MusicPipe() {
-		assert(head == nullptr);
-		assert(tail_r == &head);
+	~MusicPipe() noexcept {
+		Clear();
 	}
-
-	MusicPipe &operator=(const MusicPipe &) = delete;
 
 #ifndef NDEBUG
 	/**
@@ -96,25 +81,23 @@ public:
 	gcc_pure
 	const MusicChunk *Peek() const noexcept {
 		const std::lock_guard<Mutex> protect(mutex);
-		return head;
+		return head.get();
 	}
 
 	/**
 	 * Removes the first chunk from the head, and returns it.
 	 */
-	MusicChunk *Shift() noexcept;
+	MusicChunkPtr Shift() noexcept;
 
 	/**
 	 * Clears the whole pipe and returns the chunks to the buffer.
-	 *
-	 * @param buffer the buffer object to return the chunks to
 	 */
-	void Clear(MusicBuffer &buffer) noexcept;
+	void Clear() noexcept;
 
 	/**
 	 * Pushes a chunk to the tail of the pipe.
 	 */
-	void Push(MusicChunk *chunk) noexcept;
+	void Push(MusicChunkPtr chunk) noexcept;
 
 	/**
 	 * Returns the number of chunks currently in this pipe.

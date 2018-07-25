@@ -27,11 +27,11 @@ MusicBuffer::MusicBuffer(unsigned num_chunks) noexcept
 	:buffer(num_chunks) {
 }
 
-MusicChunk *
+MusicChunkPtr
 MusicBuffer::Allocate() noexcept
 {
 	const std::lock_guard<Mutex> protect(mutex);
-	return buffer.Allocate();
+	return MusicChunkPtr(buffer.Allocate(), MusicChunkDeleter(*this));
 }
 
 void
@@ -39,12 +39,15 @@ MusicBuffer::Return(MusicChunk *chunk) noexcept
 {
 	assert(chunk != nullptr);
 
+	/* these attributes need to be cleared before locking the
+	   mutex, because they might recursively call this method,
+	   causing a deadlock */
+	chunk->next.reset();
+	chunk->other.reset();
+
 	const std::lock_guard<Mutex> protect(mutex);
 
-	if (chunk->other != nullptr) {
-		assert(chunk->other->other == nullptr);
-		buffer.Free(chunk->other);
-	}
+	assert(!chunk->other || !chunk->other->other);
 
 	buffer.Free(chunk);
 }

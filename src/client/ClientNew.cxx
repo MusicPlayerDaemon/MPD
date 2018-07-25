@@ -42,12 +42,14 @@
 static constexpr char GREETING[] = "OK MPD " PROTOCOL_VERSION "\n";
 
 Client::Client(EventLoop &_loop, Partition &_partition,
-	       UniqueSocketDescriptor _fd, int _uid, int _num) noexcept
+	       UniqueSocketDescriptor _fd,
+	       int _uid, unsigned _permission,
+	       int _num) noexcept
 	:FullyBufferedSocket(_fd.Release(), _loop,
 			     16384, client_max_output_buffer_size),
 	 timeout_event(_loop, BIND_THIS_METHOD(OnTimeout)),
 	 partition(&_partition),
-	 permission(getDefaultPermissions()),
+	 permission(_permission),
 	 uid(_uid),
 	 num(_num)
 {
@@ -56,7 +58,8 @@ Client::Client(EventLoop &_loop, Partition &_partition,
 
 void
 client_new(EventLoop &loop, Partition &partition,
-	   UniqueSocketDescriptor fd, SocketAddress address, int uid) noexcept
+	   UniqueSocketDescriptor fd, SocketAddress address, int uid,
+	   unsigned permission) noexcept
 {
 	static unsigned int next_client_num;
 	const auto remote = ToString(address);
@@ -93,6 +96,7 @@ client_new(EventLoop &loop, Partition &partition,
 	(void)fd.Write(GREETING, sizeof(GREETING) - 1);
 
 	Client *client = new Client(loop, partition, std::move(fd), uid,
+				    permission,
 				    next_client_num++);
 
 	client_list.Add(*client);

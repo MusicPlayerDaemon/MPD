@@ -29,8 +29,7 @@
 #include <string.h>
 
 inline Song::Song(const char *_uri, size_t uri_length, Directory &_parent)
-	:parent(&_parent), mtime(std::chrono::system_clock::time_point::min()),
-	 start_time(SongTime::zero()), end_time(SongTime::zero())
+	:parent(&_parent)
 {
 	memcpy(uri, _uri, uri_length + 1);
 }
@@ -98,14 +97,13 @@ Song::GetURI() const noexcept
 LightSong
 Song::Export() const noexcept
 {
-	LightSong dest;
+	LightSong dest(uri, tag);
 	dest.directory = parent->IsRoot()
 		? nullptr : parent->GetPath();
-	dest.uri = uri;
 	dest.real_uri = nullptr;
-	dest.tag = &tag;
 	dest.mtime = mtime;
 	dest.start_time = start_time;
 	dest.end_time = end_time;
+	dest.audio_format = audio_format;
 	return dest;
 }

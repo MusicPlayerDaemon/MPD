@@ -31,6 +31,7 @@
 #endif
 
 template<typename T> struct ConstBuffer;
+struct ConfigData;
 
 /**
  * This object is statically allocated (within another struct), and
@@ -90,6 +91,6 @@ public:
 };
 
 void
-pcm_convert_global_init();
+pcm_convert_global_init(const ConfigData &config);
 
 #endif

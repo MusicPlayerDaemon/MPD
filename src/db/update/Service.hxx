@@ -21,6 +21,7 @@
 #define MPD_UPDATE_SERVICE_HXX
 
 #include "check.h"
+#include "Config.hxx"
 #include "Queue.hxx"
 #include "event/DeferEvent.hxx"
 #include "thread/Thread.hxx"
@@ -35,6 +36,8 @@ class CompositeStorage;
  * This class manages the update queue and runs the update thread.
  */
 class UpdateService final {
+	const UpdateConfig config;
+
 	DeferEvent defer;
 
 	SimpleDatabase &db;
@@ -57,7 +60,8 @@ class UpdateService final {
 	UpdateWalk *walk = nullptr;
 
 public:
-	UpdateService(EventLoop &_loop, SimpleDatabase &_db,
+	UpdateService(const ConfigData &_config,
+		      EventLoop &_loop, SimpleDatabase &_db,
 		      CompositeStorage &_storage,
 		      DatabaseListener &_listener);
 

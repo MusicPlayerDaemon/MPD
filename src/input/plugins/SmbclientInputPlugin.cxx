@@ -37,9 +37,9 @@ class SmbclientInputStream final : public InputStream {
 
 public:
 	SmbclientInputStream(const char *_uri,
-			     Mutex &_mutex, Cond &_cond,
+			     Mutex &_mutex,
 			     SMBCCTX *_ctx, int _fd, const struct stat &st)
-		:InputStream(_uri, _mutex, _cond),
+		:InputStream(_uri, _mutex),
 		 ctx(_ctx), fd(_fd) {
 		seekable = true;
 		size = st.st_size;
@@ -85,7 +85,7 @@ input_smbclient_init(EventLoop &, const ConfigBlock &)
 
 static InputStreamPtr
 input_smbclient_open(const char *uri,
-		     Mutex &mutex, Cond &cond)
+		     Mutex &mutex)
 {
 	if (!StringStartsWith(uri, "smb://"))
 		return nullptr;
@@ -119,7 +119,7 @@ input_smbclient_open(const char *uri,
 		throw MakeErrno(e, "smbc_fstat() failed");
 	}
 
-	return std::make_unique<SmbclientInputStream>(uri, mutex, cond,
+	return std::make_unique<SmbclientInputStream>(uri, mutex,
 						      ctx, fd, st);
 }
 

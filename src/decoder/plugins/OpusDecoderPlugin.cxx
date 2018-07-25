@@ -207,10 +207,9 @@ MPDOpusDecoder::HandleTags(const ogg_packet &packet)
 	rgi.Clear();
 
 	TagBuilder tag_builder;
+	AddTagHandler h(tag_builder);
 
-	if (ScanOpusTags(packet.packet, packet.bytes,
-			 &rgi,
-			 add_tag_handler, &tag_builder) &&
+	if (ScanOpusTags(packet.packet, packet.bytes, &rgi, h) &&
 	    !tag_builder.empty()) {
 		client.SubmitReplayGain(&rgi);
 
@@ -314,7 +313,7 @@ ReadAndParseOpusHead(OggSyncState &sync, OggStreamState &stream,
 
 static bool
 ReadAndVisitOpusTags(OggSyncState &sync, OggStreamState &stream,
-		     const TagHandler &handler, void *handler_ctx)
+		     TagHandler &handler)
 {
 	ogg_packet packet;
 
@@ -322,12 +321,12 @@ ReadAndVisitOpusTags(OggSyncState &sync, OggStreamState &stream,
 		IsOpusTags(packet) &&
 		ScanOpusTags(packet.packet, packet.bytes,
 			     nullptr,
-			     handler, handler_ctx);
+			     handler);
 }
 
 static void
 VisitOpusDuration(InputStream &is, OggSyncState &sync, OggStreamState &stream,
-		  const TagHandler &handler, void *handler_ctx)
+		  TagHandler &handler)
 {
 	ogg_packet packet;
 
@@ -335,13 +334,12 @@ VisitOpusDuration(InputStream &is, OggSyncState &sync, OggStreamState &stream,
 		const auto duration =
 			SongTime::FromScale<uint64_t>(packet.granulepos,
 						      opus_sample_rate);
-		tag_handler_invoke_duration(handler, handler_ctx, duration);
+		handler.OnDuration(duration);
 	}
 }
 
 static bool
-mpd_opus_scan_stream(InputStream &is,
-		     const TagHandler &handler, void *handler_ctx) noexcept
+mpd_opus_scan_stream(InputStream &is, TagHandler &handler) noexcept
 {
 	InputStreamReader reader(is);
 	OggSyncState oy(reader);
@@ -354,10 +352,13 @@ mpd_opus_scan_stream(InputStream &is,
 
 	unsigned channels;
 	if (!ReadAndParseOpusHead(oy, os, channels) ||
-	    !ReadAndVisitOpusTags(oy, os, handler, handler_ctx))
+	    !ReadAndVisitOpusTags(oy, os, handler))
 		return false;
 
-	VisitOpusDuration(is, oy, os, handler, handler_ctx);
+	handler.OnAudioFormat(AudioFormat(opus_sample_rate,
+					  SampleFormat::S16, channels));
+
+	VisitOpusDuration(is, oy, os, handler);
 	return true;
 }
 

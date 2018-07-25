@@ -21,7 +21,7 @@
 #include "OpusEncoderPlugin.hxx"
 #include "OggEncoder.hxx"
 #include "AudioFormat.hxx"
-#include "config/ConfigError.hxx"
+#include "config/Domain.hxx"
 #include "util/Alloc.hxx"
 #include "system/ByteOrder.hxx"
 #include "util/StringUtil.hxx"

@@ -97,9 +97,7 @@ static void
 GroupCountVisitor(TagCountMap &map, TagType group,
 		  const LightSong &song) noexcept
 {
-	assert(song.tag != nullptr);
-
-	const Tag &tag = *song.tag;
+	const Tag &tag = song.tag;
 	if (!CollectGroupCounts(map, group, tag) && group == TAG_ALBUM_ARTIST)
 		/* fall back to "Artist" if no "AlbumArtist" was found */
 		CollectGroupCounts(map, TAG_ARTIST, tag);

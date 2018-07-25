@@ -56,7 +56,8 @@ static constexpr Domain decoder_thread_domain("decoder_thread");
 static InputStreamPtr
 decoder_input_stream_open(DecoderControl &dc, const char *uri)
 {
-	auto is = InputStream::Open(uri, dc.mutex, dc.cond);
+	auto is = InputStream::Open(uri, dc.mutex);
+	is->SetHandler(&dc);
 
 	/* wait for the input stream to become ready; its metadata
 	   will be available then */
@@ -81,7 +82,7 @@ decoder_input_stream_open(DecoderControl &dc, const char *uri)
 static InputStreamPtr
 decoder_input_stream_open(DecoderControl &dc, Path path)
 {
-	auto is = OpenLocalInputStream(path, dc.mutex, dc.cond);
+	auto is = OpenLocalInputStream(path, dc.mutex);
 
 	assert(is->IsReady());
 
@@ -550,7 +551,7 @@ DecoderControl::RunThread() noexcept
 			/* we need to clear the pipe here; usually the
 			   PlayerThread is responsible, but it is not
 			   aware that the decoder has finished */
-			pipe->Clear(*buffer);
+			pipe->Clear();
 
 			decoder_run(*this);
 			break;

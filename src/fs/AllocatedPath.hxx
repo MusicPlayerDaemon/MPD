@@ -36,10 +36,11 @@
  * stored.
  */
 class AllocatedPath {
-	typedef PathTraitsFS::string string;
-	typedef PathTraitsFS::value_type value_type;
-	typedef PathTraitsFS::pointer_type pointer_type;
-	typedef PathTraitsFS::const_pointer_type const_pointer_type;
+	using Traits = PathTraitsFS;
+	typedef Traits::string string;
+	typedef Traits::value_type value_type;
+	typedef Traits::pointer_type pointer_type;
+	typedef Traits::const_pointer_type const_pointer_type;
 
 	string value;
 
@@ -52,7 +53,7 @@ class AllocatedPath {
 
 	static AllocatedPath Build(const_pointer_type a, size_t a_size,
 				   const_pointer_type b, size_t b_size) {
-		return AllocatedPath(PathTraitsFS::Build(a, a_size, b, b_size));
+		return AllocatedPath(Traits::Build(a, a_size, b, b_size));
 	}
 public:
 	/**
@@ -88,8 +89,8 @@ public:
 	gcc_pure gcc_nonnull_all
 	static AllocatedPath Build(const_pointer_type a,
 				   const_pointer_type b) noexcept {
-		return Build(a, PathTraitsFS::GetLength(a),
-			     b, PathTraitsFS::GetLength(b));
+		return Build(a, Traits::GetLength(a),
+			     b, Traits::GetLength(b));
 	}
 
 	gcc_pure gcc_nonnull_all
@@ -105,7 +106,7 @@ public:
 	gcc_pure gcc_nonnull_all
 	static AllocatedPath Build(const_pointer_type a,
 				   const AllocatedPath &b) noexcept {
-		return Build(a, PathTraitsFS::GetLength(a),
+		return Build(a, Traits::GetLength(a),
 			     b.value.c_str(), b.value.size());
 	}
 
@@ -113,7 +114,7 @@ public:
 	static AllocatedPath Build(const AllocatedPath &a,
 				   const_pointer_type b) noexcept {
 		return Build(a.value.c_str(), a.value.size(),
-			     b, PathTraitsFS::GetLength(b));
+			     b, Traits::GetLength(b));
 	}
 
 	gcc_pure
@@ -121,6 +122,11 @@ public:
 				   const AllocatedPath &b) noexcept {
 		return Build(a.value.c_str(), a.value.size(),
 			     b.value.c_str(), b.value.size());
+	}
+
+	gcc_pure
+	static AllocatedPath Apply(Path base, Path path) noexcept {
+		return Traits::Apply(base.c_str(), path.c_str());
 	}
 
 	/**
@@ -243,14 +249,22 @@ public:
 	 * (#IsNull returns true).
 	 */
 	gcc_pure
-	std::string ToUTF8() const noexcept;
+	std::string ToUTF8() const noexcept {
+		return ((Path)*this).ToUTF8();
+	}
+
+	std::string ToUTF8Throw() const {
+		return ((Path)*this).ToUTF8Throw();
+	}
 
 	/**
 	 * Gets directory name of this path.
 	 * Returns a "nulled" instance on error.
 	 */
 	gcc_pure
-	AllocatedPath GetDirectoryName() const noexcept;
+	AllocatedPath GetDirectoryName() const noexcept {
+		return ((Path)*this).GetDirectoryName();
+	}
 
 	/**
 	 * Determine the relative part of the given path to this
@@ -260,7 +274,7 @@ public:
 	 */
 	gcc_pure
 	const_pointer_type Relative(Path other_fs) const noexcept {
-		return PathTraitsFS::Relative(c_str(), other_fs.c_str());
+		return Traits::Relative(c_str(), other_fs.c_str());
 	}
 
 	/**
@@ -270,7 +284,7 @@ public:
 
 	gcc_pure
 	bool IsAbsolute() const noexcept {
-		return PathTraitsFS::IsAbsolute(c_str());
+		return Traits::IsAbsolute(c_str());
 	}
 };
 

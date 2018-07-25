@@ -186,8 +186,8 @@ dsdiff_read_prop(DecoderClient *client, InputStream &is,
 
 static void
 dsdiff_handle_native_tag(InputStream &is,
-			 const TagHandler &handler,
-			 void *handler_ctx, offset_type tagoffset,
+			 TagHandler &handler,
+			 offset_type tagoffset,
 			 TagType type)
 {
 	if (!dsdlib_skip_to(nullptr, is, tagoffset))
@@ -212,7 +212,7 @@ dsdiff_handle_native_tag(InputStream &is,
 		return;
 
 	string[length] = '\0';
-	tag_handler_invoke_tag(handler, handler_ctx, type, label);
+	handler.OnTag(type, label);
 	return;
 }
 
@@ -228,8 +228,7 @@ static bool
 dsdiff_read_metadata_extra(DecoderClient *client, InputStream &is,
 			   DsdiffMetaData *metadata,
 			   DsdiffChunkHeader *chunk_header,
-			   const TagHandler &handler,
-			   void *handler_ctx)
+			   TagHandler &handler)
 {
 
 	/* skip from DSD data to next chunk header */
@@ -286,17 +285,17 @@ dsdiff_read_metadata_extra(DecoderClient *client, InputStream &is,
 	if (id3_offset != 0) {
 		/* a ID3 tag has preference over the other tags, do not process
 		   other tags if we have one */
-		dsdlib_tag_id3(is, handler, handler_ctx, id3_offset);
+		dsdlib_tag_id3(is, handler, id3_offset);
 		return true;
 	}
 #endif
 
 	if (artist_offset != 0)
-		dsdiff_handle_native_tag(is, handler, handler_ctx,
+		dsdiff_handle_native_tag(is, handler,
 					 artist_offset, TAG_ARTIST);
 
 	if (title_offset != 0)
-		dsdiff_handle_native_tag(is, handler, handler_ctx,
+		dsdiff_handle_native_tag(is, handler,
 					 title_offset, TAG_TITLE);
 	return true;
 }
@@ -449,9 +448,7 @@ dsdiff_stream_decode(DecoderClient &client, InputStream &is)
 }
 
 static bool
-dsdiff_scan_stream(InputStream &is,
-		   gcc_unused const TagHandler &handler,
-		   gcc_unused void *handler_ctx) noexcept
+dsdiff_scan_stream(InputStream &is, TagHandler &handler) noexcept
 {
 	DsdiffMetaData metadata;
 	DsdiffChunkHeader chunk_header;
@@ -469,11 +466,11 @@ dsdiff_scan_stream(InputStream &is,
 	uint64_t n_frames = metadata.chunk_size / metadata.channels;
 	auto songtime = SongTime::FromScale<uint64_t>(n_frames,
 						      sample_rate);
-	tag_handler_invoke_duration(handler, handler_ctx, songtime);
+	handler.OnDuration(songtime);
 
 	/* Read additional metadata and created tags if available */
 	dsdiff_read_metadata_extra(nullptr, is, &metadata, &chunk_header,
-				   handler, handler_ctx);
+				   handler);
 
 	return true;
 }
@@ -485,6 +482,8 @@ static const char *const dsdiff_suffixes[] = {
 
 static const char *const dsdiff_mime_types[] = {
 	"application/x-dff",
+	"audio/x-dff",
+	"audio/x-dsd",
 	nullptr
 };
 

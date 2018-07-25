@@ -77,19 +77,23 @@ Song::UpdateFile(Storage &storage) noexcept
 		return false;
 
 	TagBuilder tag_builder;
+	auto new_audio_format = AudioFormat::Undefined();
 
 	const auto path_fs = storage.MapFS(relative_uri.c_str());
 	if (path_fs.IsNull()) {
 		const auto absolute_uri =
 			storage.MapUTF8(relative_uri.c_str());
-		if (!tag_stream_scan(absolute_uri.c_str(), tag_builder))
+		if (!tag_stream_scan(absolute_uri.c_str(), tag_builder,
+				     &new_audio_format))
 			return false;
 	} else {
-		if (!tag_file_scan(path_fs, tag_builder))
+		if (!ScanFileTagsWithGeneric(path_fs, tag_builder,
+					     &new_audio_format))
 			return false;
 	}
 
 	mtime = info.mtime;
+	audio_format = new_audio_format;
 	tag_builder.Commit(tag);
 	return true;
 }
@@ -149,7 +153,7 @@ DetachedSong::LoadFile(Path path) noexcept
 		return false;
 
 	TagBuilder tag_builder;
-	if (!tag_file_scan(path, tag_builder))
+	if (!ScanFileTagsWithGeneric(path, tag_builder))
 		return false;
 
 	mtime = fi.GetModificationTime();

@@ -186,12 +186,8 @@ wavpack_bits_to_sample_format(bool is_float,
 	}
 }
 
-/*
- * This does the main decoding thing.
- * Requires an already opened WavpackContext.
- */
-static void
-wavpack_decode(DecoderClient &client, WavpackContext *wpc, bool can_seek)
+static AudioFormat
+CheckAudioFormat(WavpackContext *wpc)
 {
 	const bool is_float = (WavpackGetMode(wpc) & MODE_FLOAT) != 0;
 #if defined(OPEN_DSD_AS_PCM) && defined(ENABLE_DSD)
@@ -206,14 +202,24 @@ wavpack_decode(DecoderClient &client, WavpackContext *wpc, bool can_seek)
 #endif
 					      WavpackGetBytesPerSample(wpc));
 
-	auto audio_format = CheckAudioFormat(WavpackGetSampleRate(wpc),
-					     sample_format,
-					     WavpackGetReducedChannels(wpc));
+	return CheckAudioFormat(WavpackGetSampleRate(wpc),
+				sample_format,
+				WavpackGetReducedChannels(wpc));
+}
+
+/*
+ * This does the main decoding thing.
+ * Requires an already opened WavpackContext.
+ */
+static void
+wavpack_decode(DecoderClient &client, WavpackContext *wpc, bool can_seek)
+{
+	const auto audio_format = CheckAudioFormat(wpc);
 
 	auto *format_samples = format_samples_nop;
-	if (is_dsd)
+	if (audio_format.format == SampleFormat::DSD)
 		format_samples = format_samples_int<uint8_t>;
-	else if (!is_float) {
+	else if (audio_format.format != SampleFormat::FLOAT) {
 		switch (WavpackGetBytesPerSample(wpc)) {
 		case 1:
 			format_samples = format_samples_int<int8_t>;
@@ -574,12 +580,24 @@ wavpack_filedecode(DecoderClient &client, Path path_fs)
 	wavpack_decode(client, wpc, true);
 }
 
+static void
+Scan(WavpackContext *wpc,TagHandler &handler) noexcept
+{
+	try {
+		handler.OnAudioFormat(CheckAudioFormat(wpc));
+	} catch (...) {
+	}
+
+	const auto duration = GetDuration(wpc);
+	if (!duration.IsNegative())
+		handler.OnDuration(SongTime(duration));
+}
+
 /*
  * Reads metainfo from the specified file.
  */
 static bool
-wavpack_scan_file(Path path_fs,
-		  const TagHandler &handler, void *handler_ctx) noexcept
+wavpack_scan_file(Path path_fs, TagHandler &handler) noexcept
 {
 	WavpackContext *wpc;
 
@@ -593,16 +611,12 @@ wavpack_scan_file(Path path_fs,
 		WavpackCloseFile(wpc);
 	};
 
-	const auto duration = GetDuration(wpc);
-	if (!duration.IsNegative())
-		tag_handler_invoke_duration(handler, handler_ctx, SongTime(duration));
-
+	Scan(wpc, handler);
 	return true;
 }
 
 static bool
-wavpack_scan_stream(InputStream &is,
-		    const TagHandler &handler, void *handler_ctx) noexcept
+wavpack_scan_stream(InputStream &is, TagHandler &handler) noexcept
 {
 	WavpackInput isp(nullptr, is);
 
@@ -618,10 +632,7 @@ wavpack_scan_stream(InputStream &is,
 		WavpackCloseFile(wpc);
 	};
 
-	const auto duration = GetDuration(wpc);
-	if (!duration.IsNegative())
-		tag_handler_invoke_duration(handler, handler_ctx, SongTime(duration));
-
+	Scan(wpc, handler);
 	return true;
 }
 

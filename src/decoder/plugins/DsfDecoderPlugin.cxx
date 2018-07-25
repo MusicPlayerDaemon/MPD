@@ -325,9 +325,7 @@ dsf_stream_decode(DecoderClient &client, InputStream &is)
 }
 
 static bool
-dsf_scan_stream(InputStream &is,
-		gcc_unused const TagHandler &handler,
-		gcc_unused void *handler_ctx) noexcept
+dsf_scan_stream(InputStream &is, TagHandler &handler) noexcept
 {
 	/* check DSF metadata */
 	DsfMetaData metadata;
@@ -342,11 +340,11 @@ dsf_scan_stream(InputStream &is,
 	const auto n_blocks = metadata.n_blocks;
 	auto songtime = SongTime::FromScale<uint64_t>(n_blocks * DSF_BLOCK_SIZE,
 						      sample_rate);
-	tag_handler_invoke_duration(handler, handler_ctx, songtime);
+	handler.OnDuration(songtime);
 
 #ifdef ENABLE_ID3TAG
 	/* Add available tags from the ID3 tag */
-	dsdlib_tag_id3(is, handler, handler_ctx, metadata.id3_offset);
+	dsdlib_tag_id3(is, handler, metadata.id3_offset);
 #endif
 	return true;
 }
@@ -358,6 +356,8 @@ static const char *const dsf_suffixes[] = {
 
 static const char *const dsf_mime_types[] = {
 	"application/x-dsf",
+	"audio/x-dsf",
+	"audio/x-dsd",
 	nullptr
 };
 

@@ -19,7 +19,9 @@
 
 #include "config.h"
 #include "config/Param.hxx"
-#include "config/ConfigGlobal.hxx"
+#include "config/Data.hxx"
+#include "config/File.hxx"
+#include "config/Migrate.hxx"
 #include "fs/Path.hxx"
 #include "AudioParser.hxx"
 #include "AudioFormat.hxx"
@@ -31,8 +33,7 @@
 #include "util/ConstBuffer.hxx"
 #include "util/StringBuffer.hxx"
 #include "util/RuntimeError.hxx"
-#include "system/FatalError.hxx"
-#include "Log.hxx"
+#include "util/PrintException.hxx"
 
 #include <memory>
 #include <stdexcept>
@@ -51,10 +52,10 @@ mixer_set_volume(gcc_unused Mixer *mixer,
 }
 
 static std::unique_ptr<PreparedFilter>
-load_filter(const char *name)
+LoadFilter(const ConfigData &config, const char *name)
 {
-	const auto *param = config_find_block(ConfigBlockOption::AUDIO_FILTER,
-					      "name", name);
+	const auto *param = config.FindBlock(ConfigBlockOption::AUDIO_FILTER,
+					     "name", name);
 	if (param == NULL)
 		throw FormatRuntimeError("No such configured filter: %s",
 					 name);
@@ -77,8 +78,9 @@ try {
 
 	/* read configuration file (mpd.conf) */
 
-	config_global_init();
-	ReadConfigFile(config_path);
+	ConfigData config;
+	ReadConfigFile(config, config_path);
+	Migrate(config);
 
 	/* parse the audio format */
 
@@ -87,7 +89,7 @@ try {
 
 	/* initialize the filter */
 
-	auto prepared_filter = load_filter(argv[2]);
+	auto prepared_filter = LoadFilter(config, argv[2]);
 
 	/* open the filter */
 
@@ -119,10 +121,8 @@ try {
 
 	/* cleanup and exit */
 
-	config_global_finish();
-
 	return EXIT_SUCCESS;
-} catch (const std::exception &e) {
-	LogError(e);
+} catch (...) {
+	PrintException(std::current_exception());
 	return EXIT_FAILURE;
 }

@@ -470,55 +470,6 @@ ffmpeg_sample_format(enum AVSampleFormat sample_fmt) noexcept
 	return SampleFormat::UNDEFINED;
 }
 
-static AVInputFormat *
-ffmpeg_probe(DecoderClient *client, InputStream &is)
-{
-	constexpr size_t BUFFER_SIZE = 16384;
-	constexpr size_t PADDING = 16;
-
-	unsigned char buffer[BUFFER_SIZE];
-	size_t nbytes = decoder_read(client, is, buffer, BUFFER_SIZE);
-	if (nbytes <= PADDING)
-		return nullptr;
-
-	try {
-		is.LockRewind();
-	} catch (...) {
-		return nullptr;
-	}
-
-	/* some ffmpeg parsers (e.g. ac3_parser.c) read a few bytes
-	   beyond the declared buffer limit, which makes valgrind
-	   angry; this workaround removes some padding from the buffer
-	   size */
-	nbytes -= PADDING;
-
-	AVProbeData avpd;
-
-	/* new versions of ffmpeg may add new attributes, and leaving
-	   them uninitialized may crash; hopefully, zero-initializing
-	   everything we don't know is ok */
-	memset(&avpd, 0, sizeof(avpd));
-
-	avpd.buf = buffer;
-	avpd.buf_size = nbytes;
-	avpd.filename = is.GetURI();
-
-#ifdef AVPROBE_SCORE_MIME
-#if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(56, 5, 1)
-	/* this attribute was added in libav/ffmpeg version 11, but
-	   unfortunately it's "uint8_t" instead of "char", and it's
-	   not "const" - wtf? */
-	avpd.mime_type = (uint8_t *)const_cast<char *>(is.GetMimeType());
-#else
-	/* API problem fixed in FFmpeg 2.5 */
-	avpd.mime_type = is.GetMimeType();
-#endif
-#endif
-
-	return av_probe_input_format(&avpd, true);
-}
-
 static void
 FfmpegParseMetaData(AVDictionary &dict, ReplayGainInfo &rg, MixRampInfo &mr)
 {
@@ -572,21 +523,20 @@ FfmpegParseMetaData(DecoderClient &client,
 }
 
 static void
-FfmpegScanMetadata(const AVStream &stream,
-		   const TagHandler &handler, void *handler_ctx)
+FfmpegScanMetadata(const AVStream &stream, TagHandler &handler) noexcept
 {
-	FfmpegScanDictionary(stream.metadata, handler, handler_ctx);
+	FfmpegScanDictionary(stream.metadata, handler);
 }
 
 static void
 FfmpegScanMetadata(const AVFormatContext &format_context, int audio_stream,
-		   const TagHandler &handler, void *handler_ctx)
+		   TagHandler &handler) noexcept
 {
 	assert(audio_stream >= 0);
 
-	FfmpegScanDictionary(format_context.metadata, handler, handler_ctx);
+	FfmpegScanDictionary(format_context.metadata, handler);
 	FfmpegScanMetadata(*format_context.streams[audio_stream],
-			   handler, handler_ctx);
+			   handler);
 }
 
 #if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(56, 1, 0)
@@ -595,8 +545,8 @@ static void
 FfmpegScanTag(const AVFormatContext &format_context, int audio_stream,
 	      TagBuilder &tag)
 {
-	FfmpegScanMetadata(format_context, audio_stream,
-			   full_tag_handler, &tag);
+	FullTagHandler h(tag);
+	FfmpegScanMetadata(format_context, audio_stream, h);
 }
 
 /**
@@ -797,13 +747,6 @@ FfmpegDecode(DecoderClient &client, InputStream &input,
 static void
 ffmpeg_decode(DecoderClient &client, InputStream &input)
 {
-	AVInputFormat *input_format = ffmpeg_probe(&client, input);
-	if (input_format == nullptr)
-		return;
-
-	FormatDebug(ffmpeg_domain, "detected input format '%s' (%s)",
-		    input_format->name, input_format->long_name);
-
 	AvioStream stream(&client, input);
 	if (!stream.Open()) {
 		LogError(ffmpeg_domain, "Failed to open stream");
@@ -813,7 +756,7 @@ ffmpeg_decode(DecoderClient &client, InputStream &input)
 	AVFormatContext *format_context;
 	try {
 		format_context =FfmpegOpenInput(stream.io, input.GetURI(),
-						input_format);
+						nullptr);
 	} catch (...) {
 		LogError(std::current_exception());
 		return;
@@ -823,12 +766,16 @@ ffmpeg_decode(DecoderClient &client, InputStream &input)
 		avformat_close_input(&format_context);
 	};
 
+	const auto *input_format = format_context->iformat;
+	FormatDebug(ffmpeg_domain, "detected input format '%s' (%s)",
+		    input_format->name, input_format->long_name);
+
 	FfmpegDecode(client, input, *format_context);
 }
 
 static bool
 FfmpegScanStream(AVFormatContext &format_context,
-		 const TagHandler &handler, void *handler_ctx)
+		 TagHandler &handler) noexcept
 {
 	const int find_result =
 		avformat_find_stream_info(&format_context, nullptr);
@@ -841,34 +788,35 @@ FfmpegScanStream(AVFormatContext &format_context,
 
 	const AVStream &stream = *format_context.streams[audio_stream];
 	if (stream.duration != (int64_t)AV_NOPTS_VALUE)
-		tag_handler_invoke_duration(handler, handler_ctx,
-					    FromFfmpegTime(stream.duration,
-							   stream.time_base));
+		handler.OnDuration(FromFfmpegTime(stream.duration,
+						  stream.time_base));
 	else if (format_context.duration != (int64_t)AV_NOPTS_VALUE)
-		tag_handler_invoke_duration(handler, handler_ctx,
-					    FromFfmpegTime(format_context.duration,
-							   AV_TIME_BASE_Q));
+		handler.OnDuration(FromFfmpegTime(format_context.duration,
+						  AV_TIME_BASE_Q));
 
-	FfmpegScanMetadata(format_context, audio_stream, handler, handler_ctx);
+	const auto &codec_params = GetCodecParameters(stream);
+	try {
+		handler.OnAudioFormat(CheckAudioFormat(codec_params.sample_rate,
+						       ffmpeg_sample_format(GetSampleFormat(codec_params)),
+						       codec_params.channels));
+	} catch (...) {
+	}
+
+	FfmpegScanMetadata(format_context, audio_stream, handler);
 
 	return true;
 }
 
 static bool
-ffmpeg_scan_stream(InputStream &is,
-		   const TagHandler &handler, void *handler_ctx) noexcept
+ffmpeg_scan_stream(InputStream &is, TagHandler &handler) noexcept
 {
-	AVInputFormat *input_format = ffmpeg_probe(nullptr, is);
-	if (input_format == nullptr)
-		return false;
-
 	AvioStream stream(nullptr, is);
 	if (!stream.Open())
 		return false;
 
 	AVFormatContext *f;
 	try {
-		f = FfmpegOpenInput(stream.io, is.GetURI(), input_format);
+		f = FfmpegOpenInput(stream.io, is.GetURI(), nullptr);
 	} catch (...) {
 		return false;
 	}
@@ -877,7 +825,7 @@ ffmpeg_scan_stream(InputStream &is,
 		avformat_close_input(&f);
 	};
 
-	return FfmpegScanStream(*f, handler, handler_ctx);
+	return FfmpegScanStream(*f, handler);
 }
 
 /**

@@ -23,7 +23,6 @@
 #include "input/Ptr.hxx"
 
 class Mutex;
-class Cond;
 class ArchiveVisitor;
 
 class ArchiveFile {
@@ -43,7 +42,7 @@ public:
 	 * @param path the path within the archive
 	 */
 	virtual InputStreamPtr OpenStream(const char *path,
-					  Mutex &mutex, Cond &cond) = 0;
+					  Mutex &mutex) = 0;
 };
 
 #endif

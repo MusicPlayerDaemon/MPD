@@ -20,6 +20,7 @@
 #ifndef MPD_MUSIC_CHUNK_HXX
 #define MPD_MUSIC_CHUNK_HXX
 
+#include "MusicChunkPtr.hxx"
 #include "Chrono.hxx"
 #include "ReplayGainInfo.hxx"
 #include "util/WritableBuffer.hxx"
@@ -44,13 +45,13 @@ struct MusicChunk;
  */
 struct MusicChunkInfo {
 	/** the next chunk in a linked list */
-	MusicChunk *next;
+	MusicChunkPtr next;
 
 	/**
 	 * An optional chunk which should be mixed into this chunk.
 	 * This is used for cross-fading.
 	 */
-	MusicChunk *other = nullptr;
+	MusicChunkPtr other;
 
 	/**
 	 * An optional tag associated with this chunk (and the

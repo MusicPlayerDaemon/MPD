@@ -46,6 +46,7 @@ src_mpd_LDADD = \
 	$(STORAGE_LIBS) \
 	$(PLAYLIST_LIBS) \
 	$(AVAHI_LIBS) \
+	$(DBUS_LIBS) \
 	$(LIBWRAP_LDFLAGS) \
 	$(SQLITE_LIBS) \
 	$(DECODER_LIBS) \
@@ -67,6 +68,8 @@ src_mpd_LDADD = \
 	libutil.a \
 	$(SYSTEMD_DAEMON_LIBS)
 
+src_mpd_CPPFLAGS = $(AM_CPPFLAGS) $(DBUS_CFLAGS)
+
 src_mpd_SOURCES = \
 	src/Main.cxx src/Main.hxx
 
@@ -76,7 +79,6 @@ libmpd_a_SOURCES = \
 	src/check.h \
 	src/Compiler.h \
 	src/open.h \
-	src/notify.cxx src/notify.hxx \
 	src/protocol/Ack.cxx src/protocol/Ack.hxx \
 	src/protocol/ArgParser.cxx src/protocol/ArgParser.hxx \
 	src/protocol/Result.cxx src/protocol/Result.hxx \
@@ -133,6 +135,7 @@ libmpd_a_SOURCES = \
 	src/MusicBuffer.cxx src/MusicBuffer.hxx \
 	src/MusicPipe.cxx src/MusicPipe.hxx \
 	src/MusicChunk.cxx src/MusicChunk.hxx \
+	src/MusicChunkPtr.cxx src/MusicChunkPtr.hxx \
 	src/Mapper.cxx src/Mapper.hxx \
 	src/Partition.cxx src/Partition.hxx \
 	src/Permission.cxx src/Permission.hxx \
@@ -172,6 +175,7 @@ libmpd_a_SOURCES = \
 	src/SongPrint.cxx src/SongPrint.hxx \
 	src/SongSave.cxx src/SongSave.hxx \
 	src/StateFile.cxx src/StateFile.hxx \
+	src/StateFileConfig.cxx src/StateFileConfig.hxx \
 	src/Stats.cxx src/Stats.hxx \
 	src/TagPrint.cxx src/TagPrint.hxx \
 	src/TagSave.cxx src/TagSave.hxx \
@@ -212,6 +216,7 @@ libmpd_a_SOURCES += \
 	src/db/LightSong.cxx src/db/LightSong.hxx \
 	src/db/LightDirectory.hxx \
 	src/db/update/UpdateDomain.cxx src/db/update/UpdateDomain.hxx \
+	src/db/update/Config.cxx src/db/update/Config.hxx \
 	src/db/update/Service.cxx src/db/update/Service.hxx \
 	src/db/update/Queue.cxx src/db/update/Queue.hxx \
 	src/db/update/UpdateIO.cxx src/db/update/UpdateIO.hxx \
@@ -239,6 +244,7 @@ libmpd_a_SOURCES += \
 endif
 
 CURL_SOURCES = \
+	src/lib/curl/Error.hxx \
 	src/lib/curl/Delegate.cxx src/lib/curl/Delegate.hxx \
 	src/lib/curl/Parser.hxx \
 	src/lib/curl/Version.cxx src/lib/curl/Version.hxx \
@@ -277,6 +283,27 @@ ALSA_SOURCES = \
 	src/lib/alsa/Format.hxx \
 	src/lib/alsa/PeriodBuffer.hxx \
 	src/lib/alsa/NonBlock.cxx src/lib/alsa/NonBlock.hxx
+
+if ENABLE_DBUS
+noinst_LIBRARIES += libodbus.a
+libodbus_a_SOURCES = \
+	src/lib/dbus/AppendIter.hxx \
+	src/lib/dbus/AsyncRequest.hxx \
+	src/lib/dbus/Connection.cxx src/lib/dbus/Connection.hxx \
+	src/lib/dbus/Error.cxx src/lib/dbus/Error.hxx \
+	src/lib/dbus/Iter.hxx \
+	src/lib/dbus/Message.cxx src/lib/dbus/Message.hxx \
+	src/lib/dbus/PendingCall.hxx \
+	src/lib/dbus/ReadIter.hxx \
+	src/lib/dbus/ObjectManager.hxx \
+	src/lib/dbus/UDisks2.cxx src/lib/dbus/UDisks2.hxx \
+	src/lib/dbus/ScopeMatch.cxx src/lib/dbus/ScopeMatch.hxx \
+	src/lib/dbus/Types.hxx \
+	src/lib/dbus/Values.hxx \
+	src/lib/dbus/Glue.cxx src/lib/dbus/Glue.hxx \
+	src/lib/dbus/Watch.cxx src/lib/dbus/Watch.hxx
+libodbus_a_CPPFLAGS = $(AM_CPPFLAGS) $(DBUS_CFLAGS)
+endif
 
 #
 # Android native library
@@ -352,7 +379,7 @@ android/build/gen/org/musicpd/R.java: android/build/resources.apk
 
 android/build/classes.dex: $(JAVA_SOURCE_PATHS) android/build/gen/org/musicpd/R.java
 	@$(MKDIR_P) $(JAVA_CLASSFILES_DIR)
-	$(JAVAC) -source 1.5 -target 1.5 -Xlint:-options \
+	$(JAVAC) -source 1.6 -target 1.6 -Xlint:-options \
 		-cp $(ANDROID_SDK_PLATFORM_DIR)/android.jar:$(JAVA_CLASSFILES_DIR) \
 		-d $(JAVA_CLASSFILES_DIR) $^
 	$(DX) --dex --output $@ $(JAVA_CLASSFILES_DIR)
@@ -488,7 +515,10 @@ libutil_a_SOURCES = \
 	src/util/FormatString.cxx src/util/FormatString.hxx \
 	src/util/Tokenizer.cxx src/util/Tokenizer.hxx \
 	src/util/TextFile.hxx \
+	src/util/TemplateString.hxx \
 	src/util/TimeParser.cxx src/util/TimeParser.hxx \
+	src/util/TimeConvert.cxx src/util/TimeConvert.hxx \
+	src/util/TimeISO8601.cxx src/util/TimeISO8601.hxx \
 	src/util/UriUtil.cxx src/util/UriUtil.hxx \
 	src/util/Manual.hxx \
 	src/util/StaticFifoBuffer.hxx \
@@ -501,6 +531,8 @@ libutil_a_SOURCES = \
 	src/util/SliceBuffer.hxx \
 	src/util/HugeAllocator.cxx src/util/HugeAllocator.hxx \
 	src/util/PeakBuffer.cxx src/util/PeakBuffer.hxx \
+	src/util/PrintException.cxx src/util/PrintException.hxx \
+	src/util/SparseBuffer.cxx src/util/SparseBuffer.hxx \
 	src/util/OptionParser.cxx src/util/OptionParser.hxx \
 	src/util/OptionDef.hxx \
 	src/util/ByteReverse.cxx src/util/ByteReverse.hxx \
@@ -714,6 +746,7 @@ libfs_a_SOURCES = \
 	src/fs/FileSystem.cxx src/fs/FileSystem.hxx \
 	src/fs/FileInfo.hxx \
 	src/fs/Glob.hxx \
+	src/fs/List.cxx src/fs/List.hxx \
 	src/fs/StandardDirectory.cxx src/fs/StandardDirectory.hxx \
 	src/fs/CheckFile.cxx src/fs/CheckFile.hxx \
 	src/fs/DirectoryReader.cxx src/fs/DirectoryReader.hxx
@@ -745,6 +778,7 @@ NFS_SOURCES = \
 	src/lib/nfs/Cancellable.hxx \
 	src/lib/nfs/Lease.hxx \
 	src/lib/nfs/Connection.cxx src/lib/nfs/Connection.hxx \
+	src/lib/nfs/Error.cxx src/lib/nfs/Error.hxx \
 	src/lib/nfs/Manager.cxx src/lib/nfs/Manager.hxx \
 	src/lib/nfs/Glue.cxx src/lib/nfs/Glue.hxx \
 	src/lib/nfs/Base.cxx src/lib/nfs/Base.hxx \
@@ -767,6 +801,7 @@ libstorage_a_SOURCES = \
 	src/storage/FileInfo.hxx
 
 libstorage_a_CPPFLAGS = $(AM_CPPFLAGS) \
+	$(DBUS_CFLAGS) \
 	$(NFS_CFLAGS) \
 	$(SMBCLIENT_CFLAGS)
 
@@ -776,6 +811,14 @@ STORAGE_LIBS = \
 	$(EXPAT_LIBS) \
 	$(NFS_LIBS) \
 	$(SMBCLIENT_LIBS)
+
+if ENABLE_UDISKS
+libstorage_a_SOURCES += \
+	src/storage/plugins/UdisksStorage.cxx src/storage/plugins/UdisksStorage.hxx
+STORAGE_LIBS += \
+	$(DBUS_LIBS) \
+	libodbus.a
+endif
 
 if ENABLE_SMBCLIENT
 libstorage_a_SOURCES += \
@@ -816,6 +859,7 @@ libneighbor_a_SOURCES = \
 	src/neighbor/NeighborPlugin.hxx
 
 libneighbor_a_CPPFLAGS = $(AM_CPPFLAGS) \
+	$(DBUS_CFLAGS) \
 	$(UPNP_CFLAGS) \
 	$(SMBCLIENT_CFLAGS)
 
@@ -836,6 +880,15 @@ libneighbor_a_SOURCES += \
 NEIGHBOR_LIBS += \
 	$(EXPAT_LIBS) \
 	$(UPNP_LIBS)
+endif
+
+if ENABLE_UDISKS
+libneighbor_a_SOURCES += \
+	$(UDISKS_SOURCES) \
+	src/neighbor/plugins/UdisksNeighborPlugin.cxx src/neighbor/plugins/UdisksNeighborPlugin.hxx
+NEIGHBOR_LIBS += \
+	$(DBUS_LIBS) \
+	libodbus.a
 endif
 
 endif
@@ -953,17 +1006,18 @@ libbasic_a_SOURCES = \
 # configuration library
 
 libconf_a_SOURCES = \
-	src/config/ConfigDefaults.hxx \
-	src/config/ConfigPath.cxx src/config/ConfigPath.hxx \
+	src/config/Defaults.hxx \
+	src/config/Path.cxx src/config/Path.hxx \
 	src/config/Data.cxx src/config/Data.hxx \
 	src/config/Block.cxx src/config/Block.hxx \
 	src/config/Param.cxx src/config/Param.hxx \
-	src/config/ConfigParser.cxx src/config/ConfigParser.hxx \
-	src/config/ConfigGlobal.cxx src/config/ConfigGlobal.hxx \
-	src/config/ConfigFile.cxx src/config/ConfigFile.hxx \
-	src/config/ConfigTemplates.cxx src/config/ConfigTemplates.hxx \
-	src/config/ConfigError.cxx src/config/ConfigError.hxx \
-	src/config/ConfigOption.hxx
+	src/config/Parser.cxx src/config/Parser.hxx \
+	src/config/Global.cxx src/config/Global.hxx \
+	src/config/File.cxx src/config/File.hxx \
+	src/config/Migrate.cxx src/config/Migrate.hxx \
+	src/config/Templates.cxx src/config/Templates.hxx \
+	src/config/Domain.cxx src/config/Domain.hxx \
+	src/config/Option.hxx
 
 # tag plugins
 
@@ -1151,9 +1205,12 @@ endif
 
 if ENABLE_FLAC
 libdecoder_a_SOURCES += \
+	src/lib/xiph/FlacAudioFormat.hxx \
+	src/lib/xiph/FlacMetadataIterator.hxx \
+	src/lib/xiph/FlacIOHandle.cxx src/lib/xiph/FlacIOHandle.hxx \
+	src/lib/xiph/FlacMetadataChain.cxx src/lib/xiph/FlacMetadataChain.hxx \
+	src/lib/xiph/FlacStreamMetadata.cxx src/lib/xiph/FlacStreamMetadata.hxx \
 	src/decoder/plugins/FlacInput.cxx src/decoder/plugins/FlacInput.hxx \
-	src/decoder/plugins/FlacIOHandle.cxx src/decoder/plugins/FlacIOHandle.hxx \
-	src/decoder/plugins/FlacMetadata.cxx src/decoder/plugins/FlacMetadata.hxx \
 	src/decoder/plugins/FlacPcm.cxx src/decoder/plugins/FlacPcm.hxx \
 	src/decoder/plugins/FlacDomain.cxx src/decoder/plugins/FlacDomain.hxx \
 	src/decoder/plugins/FlacCommon.cxx src/decoder/plugins/FlacCommon.hxx \
@@ -1330,6 +1387,7 @@ endif
 #
 
 libinput_a_SOURCES = \
+	src/input/Error.cxx src/input/Error.hxx \
 	src/input/Init.cxx src/input/Init.hxx \
 	src/input/Registry.cxx src/input/Registry.hxx \
 	src/input/Open.cxx \
@@ -1338,6 +1396,7 @@ libinput_a_SOURCES = \
 	src/input/InputStream.cxx src/input/InputStream.hxx \
 	src/input/Ptr.hxx \
 	src/input/InputPlugin.hxx \
+	src/input/Handler.hxx \
 	src/input/RemoteTagScanner.hxx \
 	src/input/ScanTags.cxx src/input/ScanTags.hxx \
 	src/input/Reader.cxx src/input/Reader.hxx \
@@ -1345,7 +1404,9 @@ libinput_a_SOURCES = \
 	src/input/ThreadInputStream.cxx src/input/ThreadInputStream.hxx \
 	src/input/AsyncInputStream.cxx src/input/AsyncInputStream.hxx \
 	src/input/ProxyInputStream.cxx src/input/ProxyInputStream.hxx \
-	src/input/plugins/RewindInputPlugin.cxx src/input/plugins/RewindInputPlugin.hxx \
+	src/input/RewindInputStream.cxx src/input/RewindInputStream.hxx \
+	src/input/BufferedInputStream.cxx src/input/BufferedInputStream.hxx \
+	src/input/MaybeBufferedInputStream.cxx src/input/MaybeBufferedInputStream.hxx \
 	src/input/plugins/FileInputPlugin.cxx src/input/plugins/FileInputPlugin.hxx
 
 libinput_a_CPPFLAGS = $(AM_CPPFLAGS) \
@@ -1803,6 +1864,7 @@ TESTS = $(C_TESTS)
 
 noinst_PROGRAMS = \
 	$(C_TESTS) \
+	test/ParseSongFilter \
 	test/read_conf \
 	test/run_resolver \
 	test/run_input \
@@ -1845,6 +1907,14 @@ if ENABLE_ALSA
 noinst_PROGRAMS += test/read_mixer
 endif
 
+test_ParseSongFilter_LDADD = \
+	$(TAG_LIBS) \
+	$(ICU_LDADD) \
+	libutil.a
+test_ParseSongFilter_SOURCES = \
+	src/SongFilter.cxx \
+	test/ParseSongFilter.cxx
+
 test_read_conf_LDADD = \
 	libconf.a \
 	$(FS_LIBS) \
@@ -1881,6 +1951,9 @@ test_DumpDatabase_SOURCES = test/DumpDatabase.cxx \
 	src/db/Selection.cxx \
 	src/db/PlaylistVector.cxx \
 	src/db/DatabaseLock.cxx \
+	src/AudioFormat.cxx \
+	src/AudioParser.cxx \
+	src/pcm/SampleFormat.cxx \
 	src/SongSave.cxx \
 	src/DetachedSong.cxx \
 	src/TagSave.cxx \
@@ -1932,6 +2005,7 @@ if ENABLE_NEIGHBOR_PLUGINS
 
 test_run_neighbor_explorer_SOURCES = \
 	src/Log.cxx src/LogBackend.cxx \
+	test/ShutdownHandler.cxx test/ShutdownHandler.hxx \
 	test/run_neighbor_explorer.cxx
 test_run_neighbor_explorer_LDADD = $(AM_LDADD) \
 	$(NEIGHBOR_LIBS) \
@@ -2039,8 +2113,7 @@ test_dump_playlist_SOURCES = test/dump_playlist.cxx \
 
 if ENABLE_FLAC
 test_dump_playlist_SOURCES += \
-	src/ReplayGainInfo.cxx \
-	src/decoder/plugins/FlacMetadata.cxx
+	src/ReplayGainInfo.cxx
 endif
 
 test_run_decoder_LDADD = \
@@ -2451,21 +2524,18 @@ endif
 man_MANS = doc/mpd.1 doc/mpd.conf.5
 doc_DATA = AUTHORS COPYING NEWS README.md doc/mpdconf.example
 
-DOCBOOK_FILES = doc/protocol.xml doc/user.xml doc/developer.xml
+DOCBOOK_FILES = doc/protocol.xml
 
 if ENABLE_DOCUMENTATION
 protocoldir = $(docdir)/protocol
 protocol_DATA = $(wildcard doc/protocol/*.html)
 
-userdir = $(docdir)/user
-user_DATA = $(wildcard doc/user/*.html)
-
-developerdir = $(docdir)/developer
-developer_DATA = $(wildcard doc/developer/*.html)
-
 DOCBOOK_HTML = $(patsubst %.xml,%/index.html,$(DOCBOOK_FILES))
 
 DOCBOOK_INCLUDES = $(wildcard $(srcdir)/doc/include/*.xml)
+
+doc/html/index.html: $(srcdir)/doc/conf.py $(srcdir)/doc/*.rst
+	$(SPHINX) -q -b html -d doc/doctrees $(srcdir)/doc doc/html
 
 $(DOCBOOK_HTML): %/index.html: %.xml $(DOCBOOK_INCLUDES)
 	$(XMLTO) -o $(@D) --stringparam chunker.output.encoding=utf-8 html --stringparam use.id.as.filename=1 $<
@@ -2474,13 +2544,17 @@ doc/api/html/index.html: doc/doxygen.conf
 	@$(MKDIR_P) $(@D)
 	$(DOXYGEN) $<
 
-all-local: $(DOCBOOK_HTML) doc/api/html/index.html
+all-local: doc/html/index.html $(DOCBOOK_HTML) doc/api/html/index.html
 
 clean-local:
 	rm -rf $(patsubst %.xml,%,$(DOCBOOK_FILES))
-	rm -rf doc/api
+	rm -rf doc/api doc/doctrees doc/html
 
 install-data-local: doc/api/html/index.html
+	$(mkinstalldirs) $(DESTDIR)$(docdir)/html $(DESTDIR)$(docdir)/html/_sources $(DESTDIR)$(docdir)/html/_static
+	$(INSTALL_DATA) -c doc/html/*.* $(DESTDIR)$(docdir)/html
+	$(INSTALL_DATA) -c doc/html/_sources/*.* $(DESTDIR)$(docdir)/html/_sources
+	$(INSTALL_DATA) -c doc/html/_static/*.* $(DESTDIR)$(docdir)/html/_static
 	$(mkinstalldirs) $(DESTDIR)$(docdir)/api/html
 	$(INSTALL_DATA) -c -m 644 doc/api/html/*.* \
 		$(DESTDIR)$(docdir)/api/html
@@ -2488,13 +2562,13 @@ install-data-local: doc/api/html/index.html
 uninstall-local:
 	rm -f $(DESTDIR)$(docdir)/api/html/*.*
 
-upload: $(DOCBOOK_HTML) doc/api/html/index.html
+upload: doc/html/index.html $(DOCBOOK_HTML) doc/api/html/index.html
 	rsync -vpruz --delete doc/ www.musicpd.org:/var/www/mpd/doc/ \
 		--chmod=Dug+rwx,Do+rx,Fug+rw,Fo+r \
 		--include=protocol --include=protocol/** \
 		--include=user --include=user/** \
-		--include=developer --include=developer/** \
 		--include=api --include=api/** \
+		--include=html --include=html/** \
 		--exclude=*
 
 endif

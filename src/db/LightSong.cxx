@@ -25,10 +25,10 @@ LightSong::GetDuration() const noexcept
 {
 	SongTime a = start_time, b = end_time;
 	if (!b.IsPositive()) {
-		if (tag->duration.IsNegative())
-			return tag->duration;
+		if (tag.duration.IsNegative())
+			return tag.duration;
 
-		b = SongTime(tag->duration);
+		b = SongTime(tag.duration);
 	}
 
 	return SignedSongTime(b - a);

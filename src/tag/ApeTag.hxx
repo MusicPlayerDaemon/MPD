@@ -20,10 +20,8 @@
 #ifndef MPD_APE_TAG_HXX
 #define MPD_APE_TAG_HXX
 
-#include "Table.hxx"
-
 class InputStream;
-struct TagHandler;
+class TagHandler;
 
 /**
  * Scan the APE tags of a stream.
@@ -31,7 +29,6 @@ struct TagHandler;
  * @param path_fs the path of the file in filesystem encoding
  */
 bool
-tag_ape_scan2(InputStream &is,
-	      const TagHandler &handler, void *handler_ctx);
+tag_ape_scan2(InputStream &is, TagHandler &handler) noexcept;
 
 #endif

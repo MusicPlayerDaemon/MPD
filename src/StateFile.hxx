@@ -20,6 +20,7 @@
 #ifndef MPD_STATE_FILE_HXX
 #define MPD_STATE_FILE_HXX
 
+#include "StateFileConfig.hxx"
 #include "event/TimerEvent.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "Compiler.h"
@@ -32,10 +33,10 @@ class OutputStream;
 class BufferedOutputStream;
 
 class StateFile final {
-	const AllocatedPath path;
+	const StateFileConfig config;
+
 	const std::string path_utf8;
 
-	const std::chrono::steady_clock::duration interval;
 	TimerEvent timer_event;
 
 	Partition &partition;
@@ -52,9 +53,7 @@ class StateFile final {
 #endif
 
 public:
-	static constexpr std::chrono::steady_clock::duration DEFAULT_INTERVAL = std::chrono::minutes(2);
-
-	StateFile(AllocatedPath &&path, std::chrono::steady_clock::duration interval,
+	StateFile(StateFileConfig &&_config,
 		  Partition &partition, EventLoop &loop);
 
 	void Read();

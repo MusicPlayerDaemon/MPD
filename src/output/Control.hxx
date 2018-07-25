@@ -91,7 +91,13 @@ class AudioOutputControl {
 	 * This condition object wakes up the output thread after
 	 * #command has been set.
 	 */
-	Cond cond;
+	Cond wake_cond;
+
+	/**
+	 * This condition object signals #command completion to the
+	 * client.
+	 */
+	Cond client_cond;
 
 	/**
 	 * Additional data for #command.  Protected by #mutex.

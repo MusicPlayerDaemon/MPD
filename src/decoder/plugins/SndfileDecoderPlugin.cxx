@@ -24,6 +24,7 @@
 #include "CheckAudioFormat.hxx"
 #include "tag/Handler.hxx"
 #include "util/Domain.hxx"
+#include "util/ScopeExit.hxx"
 #include "Log.hxx"
 
 #include <exception>
@@ -165,6 +166,14 @@ sndfile_sample_format(const SF_INFO &info) noexcept
 	}
 }
 
+static AudioFormat
+CheckAudioFormat(const SF_INFO &info)
+{
+	return CheckAudioFormat(info.samplerate,
+				sndfile_sample_format(info),
+				info.channels);
+}
+
 static sf_count_t
 sndfile_read_frames(SNDFILE *sf, SampleFormat format,
 		    void *buffer, sf_count_t n_frames)
@@ -200,10 +209,9 @@ sndfile_stream_decode(DecoderClient &client, InputStream &is)
 		return;
 	}
 
-	const auto audio_format =
-		CheckAudioFormat(info.samplerate,
-				 sndfile_sample_format(info),
-				 info.channels);
+	AtScopeExit(sf) { sf_close(sf); };
+
+	const auto audio_format = CheckAudioFormat(info);
 
 	client.Ready(audio_format, info.seekable, sndfile_duration(info));
 
@@ -234,17 +242,15 @@ sndfile_stream_decode(DecoderClient &client, InputStream &is)
 			cmd = DecoderCommand::NONE;
 		}
 	} while (cmd == DecoderCommand::NONE);
-
-	sf_close(sf);
 }
 
 static void
 sndfile_handle_tag(SNDFILE *sf, int str, TagType tag,
-		   const TagHandler &handler, void *handler_ctx)
+		   TagHandler &handler) noexcept
 {
 	const char *value = sf_get_string(sf, str);
 	if (value != nullptr)
-		tag_handler_invoke_tag(handler, handler_ctx, tag, value);
+		handler.OnTag(tag, value);
 }
 
 static constexpr struct {
@@ -261,8 +267,7 @@ static constexpr struct {
 };
 
 static bool
-sndfile_scan_stream(InputStream &is,
-		    const TagHandler &handler, void *handler_ctx) noexcept
+sndfile_scan_stream(InputStream &is, TagHandler &handler) noexcept
 {
 	SF_INFO info;
 
@@ -273,20 +278,23 @@ sndfile_scan_stream(InputStream &is,
 	if (sf == nullptr)
 		return false;
 
+	AtScopeExit(sf) { sf_close(sf); };
+
 	if (!audio_valid_sample_rate(info.samplerate)) {
-		sf_close(sf);
 		FormatWarning(sndfile_domain,
 			      "Invalid sample rate in %s", is.GetURI());
 		return false;
 	}
 
-	tag_handler_invoke_duration(handler, handler_ctx,
-				    sndfile_duration(info));
+	try {
+		handler.OnAudioFormat(CheckAudioFormat(info));
+	} catch (...) {
+	}
+
+	handler.OnDuration(sndfile_duration(info));
 
 	for (auto i : sndfile_tags)
-		sndfile_handle_tag(sf, i.str, i.tag, handler, handler_ctx);
-
-	sf_close(sf);
+		sndfile_handle_tag(sf, i.str, i.tag, handler);
 
 	return true;
 }

@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "SongSave.hxx"
+#include "AudioParser.hxx"
 #include "db/plugins/simple/Song.hxx"
 #include "DetachedSong.hxx"
 #include "TagSave.hxx"
@@ -28,6 +29,8 @@
 #include "tag/Tag.hxx"
 #include "tag/Builder.hxx"
 #include "util/ChronoUtil.hxx"
+#include "util/StringAPI.hxx"
+#include "util/StringBuffer.hxx"
 #include "util/StringStrip.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/NumberParser.hxx"
@@ -56,6 +59,9 @@ song_save(BufferedOutputStream &os, const Song &song)
 
 	tag_save(os, song.tag);
 
+	if (song.audio_format.IsDefined())
+		os.Format("Format: %s\n", ToString(song.audio_format).c_str());
+
 	if (!IsNegative(song.mtime))
 		os.Format(SONG_MTIME ": %li\n",
 			  (long)std::chrono::system_clock::to_time_t(song.mtime));
@@ -78,7 +84,8 @@ song_save(BufferedOutputStream &os, const DetachedSong &song)
 }
 
 std::unique_ptr<DetachedSong>
-song_load(TextFile &file, const char *uri)
+song_load(TextFile &file, const char *uri,
+	  AudioFormat *audio_format_r)
 {
 	auto song = std::make_unique<DetachedSong>(uri);
 
@@ -100,6 +107,15 @@ song_load(TextFile &file, const char *uri)
 			tag.AddItem(type, value);
 		} else if (strcmp(line, "Time") == 0) {
 			tag.SetDuration(SignedSongTime::FromS(ParseDouble(value)));
+		} else if (StringIsEqual(line, "Format")) {
+			if (audio_format_r != nullptr) {
+				try {
+					*audio_format_r =
+						ParseAudioFormat(value, false);
+				} catch (...) {
+					/* ignore parser errors */
+				}
+			}
 		} else if (strcmp(line, "Playlist") == 0) {
 			tag.SetHasPlaylist(strcmp(value, "yes") == 0);
 		} else if (strcmp(line, SONG_MTIME) == 0) {

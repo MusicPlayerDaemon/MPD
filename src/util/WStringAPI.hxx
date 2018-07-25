@@ -90,6 +90,13 @@ StringFindLast(wchar_t *haystack, wchar_t needle) noexcept
 	return wcsrchr(haystack, needle);
 }
 
+gcc_pure gcc_nonnull_all
+static inline const wchar_t *
+StringFindAny(const wchar_t *haystack, const wchar_t *accept) noexcept
+{
+	return wcspbrk(haystack, accept);
+}
+
 gcc_nonnull_all
 static inline void
 UnsafeCopyString(wchar_t *dest, const wchar_t *src) noexcept
@@ -111,6 +118,13 @@ UnsafeCopyStringP(wchar_t *dest, const wchar_t *src) noexcept
 #else
 	return wcpcpy(dest, src);
 #endif
+}
+
+gcc_pure gcc_nonnull_all
+static inline int
+StringCompare(const wchar_t *a, const wchar_t *b) noexcept
+{
+	return wcscmp(a, b);
 }
 
 /**

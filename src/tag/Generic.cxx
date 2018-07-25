@@ -23,7 +23,6 @@
 #include "ApeTag.hxx"
 #include "fs/Path.hxx"
 #include "thread/Mutex.hxx"
-#include "thread/Cond.hxx"
 #include "input/InputStream.hxx"
 #include "input/LocalOpen.hxx"
 #include "Log.hxx"
@@ -31,9 +30,9 @@
 #include <exception>
 
 bool
-ScanGenericTags(InputStream &is, const TagHandler &handler, void *ctx)
+ScanGenericTags(InputStream &is, TagHandler &handler) noexcept
 {
-	if (tag_ape_scan2(is, handler, ctx))
+	if (tag_ape_scan2(is, handler))
 		return true;
 
 #ifdef ENABLE_ID3TAG
@@ -43,20 +42,19 @@ ScanGenericTags(InputStream &is, const TagHandler &handler, void *ctx)
 		return false;
 	}
 
-	return tag_id3_scan(is, handler, ctx);
+	return tag_id3_scan(is, handler);
 #else
 	return false;
 #endif
 }
 
 bool
-ScanGenericTags(Path path, const TagHandler &handler, void *ctx)
+ScanGenericTags(Path path, TagHandler &handler) noexcept
 try {
 	Mutex mutex;
-	Cond cond;
 
-	auto is = OpenLocalInputStream(path, mutex, cond);
-	return ScanGenericTags(*is, handler, ctx);
+	auto is = OpenLocalInputStream(path, mutex);
+	return ScanGenericTags(*is, handler);
 } catch (...) {
 	LogError(std::current_exception());
 	return false;

@@ -94,6 +94,13 @@ StringFindLast(char *haystack, char needle) noexcept
 	return strrchr(haystack, needle);
 }
 
+gcc_pure gcc_nonnull_all
+static inline const char *
+StringFindAny(const char *haystack, const char *accept) noexcept
+{
+	return strpbrk(haystack, accept);
+}
+
 static inline char *
 StringToken(char *str, const char *delim) noexcept
 {
@@ -118,6 +125,13 @@ UnsafeCopyStringP(char *dest, const char *src) noexcept
 #else
 	return stpcpy(dest, src);
 #endif
+}
+
+gcc_pure gcc_nonnull_all
+static inline int
+StringCompare(const char *a, const char *b) noexcept
+{
+	return strcmp(a, b);
 }
 
 /**

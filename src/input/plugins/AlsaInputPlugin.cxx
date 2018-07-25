@@ -75,10 +75,10 @@ class AlsaInputStream final
 
 public:
 	AlsaInputStream(EventLoop &_loop,
-			const char *_uri, Mutex &_mutex, Cond &_cond,
+			const char *_uri, Mutex &_mutex,
 			const char *_device,
 			snd_pcm_t *_handle, int _frame_size)
-		:AsyncInputStream(_loop, _uri, _mutex, _cond,
+		:AsyncInputStream(_loop, _uri, _mutex,
 				  ALSA_MAX_BUFFERED, ALSA_RESUME_AT),
 		 MultiSocketMonitor(_loop),
 		 device(_device),
@@ -111,7 +111,7 @@ public:
 	}
 
 	static InputStreamPtr Create(EventLoop &event_loop, const char *uri,
-				     Mutex &mutex, Cond &cond);
+				     Mutex &mutex);
 
 protected:
 	/* virtual methods from AsyncInputStream */
@@ -148,7 +148,7 @@ private:
 
 inline InputStreamPtr
 AlsaInputStream::Create(EventLoop &event_loop, const char *uri,
-			Mutex &mutex, Cond &cond)
+			Mutex &mutex)
 {
 	const char *device = StringAfterPrefix(uri, "alsa://");
 	if (device == nullptr)
@@ -168,7 +168,7 @@ AlsaInputStream::Create(EventLoop &event_loop, const char *uri,
 
 	int frame_size = snd_pcm_format_width(format) / 8 * channels;
 	return std::make_unique<AlsaInputStream>(event_loop,
-						 uri, mutex, cond,
+						 uri, mutex,
 						 device, handle, frame_size);
 }
 
@@ -204,7 +204,7 @@ AlsaInputStream::DispatchSockets() noexcept
 
 		if (Recover(n_frames) < 0) {
 			postponed_exception = std::make_exception_ptr(std::runtime_error("PCM error - stream aborted"));
-			cond.broadcast();
+			InvokeOnAvailable();
 			return;
 		}
 	}
@@ -259,6 +259,12 @@ AlsaInputStream::Recover(int err)
 	case SND_PCM_STATE_DRAINING:
 		/* this is no error, so just keep running */
 		err = 0;
+		break;
+
+	default:
+		/* this default case is just here to work around
+		   -Wswitch due to SND_PCM_STATE_PRIVATE1 (libasound
+		   1.1.6) */
 		break;
 	}
 
@@ -397,10 +403,10 @@ alsa_input_init(EventLoop &event_loop, const ConfigBlock &)
 }
 
 static InputStreamPtr
-alsa_input_open(const char *uri, Mutex &mutex, Cond &cond)
+alsa_input_open(const char *uri, Mutex &mutex)
 {
 	return AlsaInputStream::Create(*alsa_input_event_loop, uri,
-				       mutex, cond);
+				       mutex);
 }
 
 const struct InputPlugin input_plugin_alsa = {

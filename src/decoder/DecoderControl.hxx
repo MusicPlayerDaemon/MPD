@@ -23,6 +23,7 @@
 #include "DecoderCommand.hxx"
 #include "AudioFormat.hxx"
 #include "MixRampInfo.hxx"
+#include "input/Handler.hxx"
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
 #include "thread/Thread.hxx"
@@ -60,7 +61,7 @@ enum class DecoderState : uint8_t {
 	ERROR,
 };
 
-struct DecoderControl {
+struct DecoderControl final : InputStreamHandler {
 	/**
 	 * The handle of the decoder thread.
 	 */
@@ -158,7 +159,7 @@ struct DecoderControl {
 	 * The destination pipe for decoded chunks.  The caller thread
 	 * owns this object, and is responsible for freeing it.
 	 */
-	MusicPipe *pipe;
+	std::shared_ptr<MusicPipe> pipe;
 
 	const ReplayGainConfig replay_gain_config;
 	ReplayGainMode replay_gain_mode = ReplayGainMode::OFF;
@@ -304,6 +305,11 @@ struct DecoderControl {
 	gcc_pure
 	bool IsCurrentSong(const DetachedSong &_song) const noexcept;
 
+	gcc_pure
+	bool IsSeekableCurrentSong(const DetachedSong &_song) const noexcept {
+		return seekable && IsCurrentSong(_song);
+	}
+
 private:
 	/**
 	 * Wait for the command to be finished by the decoder thread.
@@ -377,7 +383,8 @@ public:
 	 */
 	void Start(std::unique_ptr<DetachedSong> song,
 		   SongTime start_time, SongTime end_time,
-		   MusicBuffer &buffer, MusicPipe &pipe) noexcept;
+		   MusicBuffer &buffer,
+		   std::shared_ptr<MusicPipe> pipe) noexcept;
 
 	/**
 	 * Caller must lock the object.
@@ -417,6 +424,15 @@ public:
 
 private:
 	void RunThread() noexcept;
+
+	/* virtual methods from class InputStreamHandler */
+	void OnInputStreamReady() noexcept override {
+		cond.signal();
+	}
+
+	void OnInputStreamAvailable() noexcept override {
+		cond.signal();
+	}
 };
 
 #endif

@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "fs/io/FileOutputStream.hxx"
-#include "Log.hxx"
+#include "util/PrintException.hxx"
 
 #include <unistd.h>
 #include <errno.h>
@@ -49,7 +49,7 @@ Copy(OutputStream &dest, int src)
 
 int
 main(int argc, char **argv)
-{
+try {
 	if (argc != 2) {
 		fprintf(stderr, "Usage: WriteFile PATH\n");
 		return EXIT_FAILURE;
@@ -57,17 +57,15 @@ main(int argc, char **argv)
 
 	const Path path = Path::FromFS(argv[1]);
 
-	try {
-		FileOutputStream fos(path);
+	FileOutputStream fos(path);
 
-		if (!Copy(fos, STDIN_FILENO))
-			return EXIT_FAILURE;
-
-		fos.Commit();
-
-		return EXIT_SUCCESS;
-	} catch (const std::exception &e) {
-		LogError(e);
+	if (!Copy(fos, STDIN_FILENO))
 		return EXIT_FAILURE;
-	}
+
+	fos.Commit();
+
+	return EXIT_SUCCESS;
+} catch (...) {
+	PrintException(std::current_exception());
+	return EXIT_FAILURE;
 }

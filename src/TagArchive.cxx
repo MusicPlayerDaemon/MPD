@@ -22,20 +22,18 @@
 #include "TagStream.hxx"
 #include "archive/ArchiveFile.hxx"
 #include "input/InputStream.hxx"
-#include "thread/Cond.hxx"
 
 bool
 tag_archive_scan(ArchiveFile &archive, const char *path_utf8,
-		 const TagHandler &handler, void *handler_ctx) noexcept
+		 TagHandler &handler) noexcept
 try {
 	Mutex mutex;
-	Cond cond;
 
-	auto is = archive.OpenStream(path_utf8, mutex, cond);
+	auto is = archive.OpenStream(path_utf8, mutex);
 	if (!is)
 		return false;
 
-	return tag_stream_scan(*is, handler, handler_ctx);
+	return tag_stream_scan(*is, handler);
 } catch (const std::exception &e) {
 	return false;
 }
@@ -45,9 +43,8 @@ tag_archive_scan(ArchiveFile &archive, const char *path_utf8,
 		 TagBuilder &builder) noexcept
 try {
 	Mutex mutex;
-	Cond cond;
 
-	auto is = archive.OpenStream(path_utf8, mutex, cond);
+	auto is = archive.OpenStream(path_utf8, mutex);
 	return is && tag_stream_scan(*is, builder);
 } catch (const std::exception &e) {
 	return false;

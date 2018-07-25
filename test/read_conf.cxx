@@ -18,9 +18,13 @@
  */
 
 #include "config.h"
-#include "config/ConfigGlobal.hxx"
+#include "config/Data.hxx"
+#include "config/Param.hxx"
+#include "config/File.hxx"
 #include "fs/Path.hxx"
-#include "Log.hxx"
+#include "fs/Path.hxx"
+#include "util/PrintException.hxx"
+#include "util/RuntimeError.hxx"
 
 #include <assert.h>
 #include <stdio.h>
@@ -36,26 +40,20 @@ try {
 	const Path config_path = Path::FromFS(argv[1]);
 	const char *name = argv[2];
 
-	config_global_init();
+	const auto option = ParseConfigOptionName(name);
+	if (option == ConfigOption::MAX)
+		throw FormatRuntimeError("Unknown setting: %s", name);
 
-	ReadConfigFile(config_path);
+	ConfigData config;
+	ReadConfigFile(config, config_path);
 
-	ConfigOption option = ParseConfigOptionName(name);
-	const char *value = option != ConfigOption::MAX
-		? config_get_string(option)
-		: nullptr;
-	int ret;
-	if (value != NULL) {
-		printf("%s\n", value);
-		ret = EXIT_SUCCESS;
-	} else {
-		fprintf(stderr, "No such setting: %s\n", name);
-		ret = EXIT_FAILURE;
-	}
+	const auto *param = config.GetParam(option);
+	if (param == nullptr)
+		throw FormatRuntimeError("No such setting: %s", name);
 
-	config_global_finish();
-	return ret;
- } catch (const std::exception &e) {
-	LogError(e);
+	printf("%s\n", param->value.c_str());
+	return EXIT_SUCCESS;
+} catch (...) {
+	PrintException(std::current_exception());
 	return EXIT_FAILURE;
- }
+}

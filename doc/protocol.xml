@@ -91,7 +91,7 @@
               <para>
                 <returnvalue>error</returnvalue>: numeric value of one
                 of the <constant>ACK_ERROR</constant> constants defined
-                in <filename>ack.h</filename>.
+                in <filename>src/protocol/Ack.hxx</filename>.
               </para>
             </listitem>
             <listitem>
@@ -195,6 +195,94 @@
       </para>
     </section>
 
+    <section id="filter_syntax">
+      <title>Filters</title>
+
+      <para>
+        All commands which search for songs (e.g. <link
+        linkend="command_find"><command>find</command></link> and
+        <link
+        linkend="command_searchadd"><command>searchadd</command></link>)
+        share a common filter syntax:
+      </para>
+
+      <cmdsynopsis>
+        <command>find</command>
+        <arg choice="req" rep="repeat">EXPRESSION</arg>
+      </cmdsynopsis>
+
+      <para>
+        <varname>EXPRESSION</varname> is a string enclosed in
+        parantheses which can be one of:
+      </para>
+
+      <itemizedlist>
+        <listitem>
+          <para>
+            "<code>(TAG == 'VALUE')</code>": match a tag value.
+          </para>
+
+          <para>
+            "<code>(TAG != 'VALUE')</code>": mismatch a tag value.
+          </para>
+
+          <para>
+            The special tag "<parameter>any</parameter>" checks all
+            tag values.
+          </para>
+
+          <para>
+            <parameter>albumartist</parameter> looks for
+            <varname>VALUE</varname> in <varname>AlbumArtist</varname>
+            and falls back to <varname>Artist</varname> tags if
+            <varname>AlbumArtist</varname> does not exist.
+          </para>
+
+          <para>
+            <varname>VALUE</varname> is what to find.  The
+            <command>find</command> commands specify an exact value
+            and are case-sensitive; the <command>search</command>
+            commands specify a sub string and ignore case.
+          </para>
+        </listitem>
+
+        <listitem>
+          <para>
+            "<code>(file == 'VALUE')</code>": match the full song URI
+            (relative to the music directory).
+          </para>
+        </listitem>
+
+        <listitem>
+          <para>
+            "<code>(base 'VALUE')</code>": restrict the search to
+            songs in the given directory (relative to the music
+            directory).
+          </para>
+        </listitem>
+
+        <listitem>
+          <para>
+            "<code>(modified-since 'VALUE')</code>": compares the
+            file's time stamp with the given value (ISO 8601 or UNIX
+            time stamp).
+          </para>
+        </listitem>
+      </itemizedlist>
+
+      <para>
+        Prior to MPD 0.21, the syntax looked like this:
+      </para>
+
+      <cmdsynopsis>
+        <command>find</command>
+        <arg choice="req" rep="repeat">
+          <arg choice="req"><replaceable>TYPE</replaceable></arg>
+          <arg choice="req"><replaceable>VALUE</replaceable></arg>
+        </arg>
+      </cmdsynopsis>
+    </section>
+
     <section id="tags">
       <title>Tags</title>
 
@@ -212,6 +300,70 @@
         lines with a <varname>performer</varname> tag.  A tag value is
         a UTF-8 string.
       </para>
+    </section>
+
+    <section id="other_metadata">
+      <title>Other Metadata</title>
+
+      <para>
+        The response to <link
+        linkend="command_lsinfo"><command>lsinfo</command></link> and
+        similar commands may contain <link linkend="tags">song
+        tags</link> and other metadata, specifically:
+      </para>
+
+      <itemizedlist>
+        <listitem>
+          <para>
+            <varname>duration</varname>: the duration of the song in
+            seconds; may contain a fractional part.
+          </para>
+        </listitem>
+
+        <listitem>
+          <para>
+            <varname>time</varname>: like <varname>duration</varname>,
+            but as integer value.  This is deprecated and is only here
+            for compatibility with older clients.  Do not use.
+          </para>
+        </listitem>
+
+        <listitem>
+          <para>
+            <varname>Range</varname>: if this is a queue item
+            referring only to a portion of the song file, then this
+            attribute contains the time range in the form
+            <parameter>START-END</parameter> or
+            <parameter>START-</parameter> (open ended); both
+            <parameter>START</parameter> and
+            <parameter>END</parameter> are time stamps within the song
+            in seconds (may contain a fractional part).  Example:
+            "<parameter>60-120</parameter>" plays only the second
+            minute; "<parameter>180</parameter>" skips the first three
+            minutes.
+          </para>
+        </listitem>
+
+        <listitem>
+          <para>
+            <varname>Format</varname>: the audio format of the song
+            (or an approximation to a format supported by MPD and the
+            decoder plugin being used).  When playing this file, the
+            <varname>audio</varname> value in the <link
+            linkend="command_status"><command>status</command></link>
+            response should be the same.
+          </para>
+        </listitem>
+
+        <listitem>
+          <para>
+            <varname>Last-Modified</varname>: the time stamp of the
+            last modification of the underlying file in ISO 8601
+            format.  Example:
+            "<parameter>2008-09-28T20:04:57Z</parameter>"
+          </para>
+        </listitem>
+      </itemizedlist>
     </section>
   </chapter>
 
@@ -324,8 +476,9 @@
             <itemizedlist>
               <listitem>
                 <para>
-                  <returnvalue>database</returnvalue>: the song database
-                  has been modified after <command>update</command>.
+                  <returnvalue>database</returnvalue>: the song
+                  database has been modified after <link
+                  linkend="command_update"><command>update</command></link>.
                 </para>
               </listitem>
               <listitem>
@@ -408,7 +561,9 @@
               not in "idle" mode; no events gets lost while the client
               is doing something else with the connection.  If an
               event had already occurred since the last call, the new
-              <command>idle</command> command will return immediately.
+              <link
+              linkend="command_idle"><command>idle</command></link>
+              command will return immediately.
             </para>
 
             <para>
@@ -835,8 +990,9 @@
             </para>
             <note>
               <para>
-                <command>volume</command> is deprecated, use
-                <command>setvol</command> instead.
+                <command>volume</command> is deprecated, use <link
+                linkend="command_setvol"><command>setvol</command></link>
+                instead.
               </para>
             </note>
           </listitem>
@@ -1121,7 +1277,8 @@ OK
             </para>
             <note>
               <para>
-                Do not use this, instead use <command>playlistinfo</command>.
+                Do not use this, instead use <link
+                linkend="command_playlistinfo"><command>playlistinfo</command></link>.
               </para>
             </note>
           </listitem>
@@ -1616,17 +1773,16 @@ OK
           <term>
             <cmdsynopsis>
               <command>count</command>
-              <arg choice="req"><replaceable>TAG</replaceable></arg>
-              <arg choice="req"><replaceable>NEEDLE</replaceable></arg>
-              <arg choice="opt"><replaceable>...</replaceable></arg>
+              <arg choice="req" rep="repeat"><replaceable>FILTER</replaceable></arg>
               <arg choice="opt">group</arg>
               <arg choice="opt"><replaceable>GROUPTYPE</replaceable></arg>
             </cmdsynopsis>
           </term>
           <listitem>
             <para>
-              Counts the number of songs and their total playtime in
-              the db matching <varname>TAG</varname> exactly. The
+              Count the number of songs and their total playtime in
+              the database matching <varname>FILTER</varname> (see
+              <link linkend="filter_syntax">Filters</link>).  The
               following prints the number of songs whose title matches
               "Echoes":
             </para>
@@ -1647,65 +1803,16 @@ OK
           <term>
             <cmdsynopsis>
               <command>find</command>
-              <arg choice="req"><replaceable>TYPE</replaceable></arg>
-              <arg choice="req"><replaceable>WHAT</replaceable></arg>
-              <arg choice="opt"><replaceable>...</replaceable></arg>
+              <arg choice="req" rep="repeat"><replaceable>FILTER</replaceable></arg>
               <arg choice="opt">sort <replaceable>TYPE</replaceable></arg>
               <arg choice="opt">window <replaceable>START</replaceable>:<replaceable>END</replaceable></arg>
             </cmdsynopsis>
           </term>
           <listitem>
             <para>
-              Finds songs in the db that are exactly
-              <varname>WHAT</varname>.
-            </para>
-            <para>
-              <varname>TYPE</varname> can
-              be any tag supported by <application>MPD</application>, or one of the special
-              parameters:
-            </para>
-
-            <itemizedlist>
-              <listitem>
-                <para>
-                  <parameter>any</parameter> checks all tag values
-                </para>
-              </listitem>
-
-              <listitem>
-                <para>
-                  <parameter>file</parameter> checks the full path
-                  (relative to the music directory)
-                </para>
-              </listitem>
-
-              <listitem>
-                <para>
-                  <parameter>base</parameter> restricts the search to
-                  songs in the given directory (also relative to the
-                  music directory)
-                </para>
-              </listitem>
-
-              <listitem>
-                <para>
-                  <parameter>modified-since</parameter> compares the
-                  file's time stamp with the given value (ISO 8601 or
-                  UNIX time stamp)
-                </para>
-              </listitem>
-
-              <listitem>
-                <para>
-                  <parameter>albumartist</parameter> looks for
-                  <varname>WHAT</varname> in AlbumArtist and falls back to
-                  Artist tags if AlbumArtist does not exist.
-                </para>
-              </listitem>
-            </itemizedlist>
-
-            <para>
-              <varname>WHAT</varname> is what to find.
+              Search the database for songs matching
+              <varname>FILTER</varname> (see <link
+              linkend="filter_syntax">Filters</link>).
             </para>
 
             <para>
@@ -1735,16 +1842,17 @@ OK
           <term>
             <cmdsynopsis>
               <command>findadd</command>
-              <arg choice="req"><replaceable>TYPE</replaceable></arg>
-              <arg choice="req"><replaceable>WHAT</replaceable></arg>
-              <arg choice="opt"><replaceable>...</replaceable></arg>
+              <arg choice="req" rep="repeat"><replaceable>FILTER</replaceable></arg>
             </cmdsynopsis>
           </term>
           <listitem>
             <para>
-              Finds songs in the db that are exactly
-              <varname>WHAT</varname> and adds them to current playlist.
-              Parameters have the same meaning as for <command>find</command>.
+              Search the database for songs matching
+              <varname>FILTER</varname> (see <link
+              linkend="filter_syntax">Filters</link>) and add them to
+              the queue.  Parameters have the same meaning as for
+              <link
+              linkend="command_find"><command>find</command></link>.
             </para>
           </listitem>
         </varlistentry>
@@ -1754,12 +1862,11 @@ OK
             <cmdsynopsis>
               <command>list</command>
               <arg choice="req"><replaceable>TYPE</replaceable></arg>
-              <arg choice="opt"><replaceable>FILTERTYPE</replaceable></arg>
-              <arg choice="opt"><replaceable>FILTERWHAT</replaceable></arg>
-              <arg choice="opt"><replaceable>...</replaceable></arg>
-              <arg choice="opt">group</arg>
-              <arg choice="opt"><replaceable>GROUPTYPE</replaceable></arg>
-              <arg choice="opt"><replaceable>...</replaceable></arg>
+              <arg choice="opt" rep="repeat"><replaceable>FILTER</replaceable></arg>
+              <arg choice="opt" rep="repeat">
+                <arg choice="req">group</arg>
+                <arg choice="req"><replaceable>GROUPTYPE</replaceable></arg>
+              </arg>
             </cmdsynopsis>
           </term>
           <listitem>
@@ -1770,10 +1877,8 @@ OK
               <parameter>file</parameter>.
             </para>
             <para>
-              Additional arguments may specify a filter like the one
-              in the <link
-              linkend="command_find"><command>find</command>
-              command</link>.
+              Additional arguments may specify a <link
+              linkend="filter_syntax">filter</link>.
             </para>
             <para>
               The <parameter>group</parameter> keyword may be used
@@ -1816,9 +1921,11 @@ OK
           </term>
           <listitem>
             <para>
-              Same as <command>listall</command>, except it also
-              returns metadata info in the same format as
-              <command>lsinfo</command>.
+              Same as <link
+              linkend="command_listall"><command>listall</command></link>,
+              except it also returns metadata info in the same format
+              as <link
+              linkend="command_lsinfo"><command>lsinfo</command></link>
             </para>
             <para>
               Do not use this command.  Do not manage a client-side
@@ -1866,7 +1973,12 @@ OK
           <listitem>
             <para>
               Lists the contents of the directory
-              <varname>URI</varname>.
+              <varname>URI</varname>.  The response contains records
+              starting with <varname>file</varname>,
+              <varname>directory</varname> or
+              <varname>playlist</varname>, each followed by metadata
+              (<link linkend="tags">tags</link> or <link
+              linkend="other_metadata">other metadata</link>).
             </para>
             <para>
               When listing the root directory, this currently returns
@@ -1917,19 +2029,19 @@ OK
           <term>
             <cmdsynopsis>
               <command>search</command>
-              <arg choice="req"><replaceable>TYPE</replaceable></arg>
-              <arg choice="req"><replaceable>WHAT</replaceable></arg>
-              <arg choice="opt"><replaceable>...</replaceable></arg>
+              <arg choice="req" rep="repeat"><replaceable>FILTER</replaceable></arg>
               <arg choice="opt">sort <replaceable>TYPE</replaceable></arg>
               <arg choice="opt">window <replaceable>START</replaceable>:<replaceable>END</replaceable></arg>
             </cmdsynopsis>
           </term>
           <listitem>
             <para>
-              Searches for any song that contains
-              <varname>WHAT</varname>. Parameters have the same meaning
-              as for <command>find</command>, except that search is not
-              case sensitive.
+              Search the database for songs matching
+              <varname>FILTER</varname> (see <link
+              linkend="filter_syntax">Filters</link>).  Parameters
+              have the same meaning as for <link
+              linkend="command_find"><command>find</command></link>,
+              except that search is not case sensitive.
             </para>
           </listitem>
         </varlistentry>
@@ -1937,19 +2049,19 @@ OK
           <term>
             <cmdsynopsis>
               <command>searchadd</command>
-              <arg choice="req"><replaceable>TYPE</replaceable></arg>
-              <arg choice="req"><replaceable>WHAT</replaceable></arg>
-              <arg choice="opt"><replaceable>...</replaceable></arg>
+              <arg choice="req" rep="repeat"><replaceable>FILTER</replaceable></arg>
             </cmdsynopsis>
           </term>
           <listitem>
             <para>
-              Searches for any song that contains <varname>WHAT</varname>
-              in tag <varname>TYPE</varname> and adds them to current playlist.
+              Search the database for songs matching
+              <varname>FILTER</varname> (see <link
+              linkend="filter_syntax">Filters</link>) and add them to
+              the queue.
             </para>
             <para>
-              Parameters have the same meaning as for <command>find</command>,
-              except that search is not case sensitive.
+              Parameters have the same meaning as for <link
+              linkend="command_search"><command>search</command></link>.
             </para>
           </listitem>
         </varlistentry>
@@ -1958,23 +2070,22 @@ OK
             <cmdsynopsis>
               <command>searchaddpl</command>
               <arg choice="req"><replaceable>NAME</replaceable></arg>
-              <arg choice="req"><replaceable>TYPE</replaceable></arg>
-              <arg choice="req"><replaceable>WHAT</replaceable></arg>
-              <arg choice="opt"><replaceable>...</replaceable></arg>
+              <arg choice="req" rep="repeat"><replaceable>FILTER</replaceable></arg>
             </cmdsynopsis>
           </term>
           <listitem>
             <para>
-              Searches for any song that contains <varname>WHAT</varname>
-              in tag <varname>TYPE</varname> and adds them to the playlist
-              named <varname>NAME</varname>.
+              Search the database for songs matching
+              <varname>FILTER</varname> (see <link
+              linkend="filter_syntax">Filters</link>) and add them to
+              the playlist named <varname>NAME</varname>.
             </para>
             <para>
               If a playlist by that name doesn't exist it is created.
             </para>
             <para>
-              Parameters have the same meaning as for <command>find</command>,
-              except that search is not case sensitive.
+              Parameters have the same meaning as for <link
+              linkend="command_search"><command>search</command></link>.
             </para>
           </listitem>
         </varlistentry>
@@ -1999,7 +2110,9 @@ OK
               Prints "updating_db: JOBID" where
               <varname>JOBID</varname> is a positive number
               identifying the update job.  You can read the current
-              job id in the <command>status</command> response.
+              job id in the <link
+              linkend="command_status"><command>status</command></link>
+              response.
             </para>
           </listitem>
         </varlistentry>
@@ -2012,8 +2125,9 @@ OK
           </term>
           <listitem>
             <para>
-              Same as <command>update</command>, but also rescans
-              unmodified files.
+              Same as <link
+              linkend="command_update"><command>update</command></link>,
+              but also rescans unmodified files.
             </para>
           </listitem>
         </varlistentry>
@@ -2579,7 +2693,9 @@ OK
             <para>
               Set a runtime attribute.  These are specific to the
               output plugin, and supported values are usually printed
-              in the <command>outputs</command> response.
+              in the <link
+              linkend="command_outputs"><command>outputs</command></link>
+              response.
             </para>
           </listitem>
         </varlistentry>
@@ -2703,9 +2819,10 @@ suffix: mpc</programlisting>
       <para>
         Each time a client subscribes or unsubscribes, the global idle
         event <varname>subscription</varname> is generated.  In
-        conjunction with the <command>channels</command> command, this
-        may be used to auto-detect clients providing additional
-        services.
+        conjunction with the <link
+        linkend="command_channels"><command>channels</command></link>
+        command, this may be used to auto-detect clients providing
+        additional services.
       </para>
 
       <para>

@@ -65,7 +65,7 @@ StatsVisitSong(DatabaseStats &stats, StringSet &artists, StringSet &albums,
 {
 	++stats.song_count;
 
-	StatsVisitTag(stats, artists, albums, *song.tag);
+	StatsVisitTag(stats, artists, albums, song.tag);
 }
 
 DatabaseStats

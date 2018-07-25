@@ -20,7 +20,9 @@
 #ifndef MPD_TAG_CONFIG_HXX
 #define MPD_TAG_CONFIG_HXX
 
+struct ConfigData;
+
 void
-TagLoadConfig();
+TagLoadConfig(const ConfigData &config);
 
 #endif

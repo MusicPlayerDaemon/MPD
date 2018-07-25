@@ -19,19 +19,11 @@
 
 #include "config.h"
 #include "Param.hxx"
-#include "ConfigPath.hxx"
+#include "Path.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "util/RuntimeError.hxx"
 
 #include <stdexcept>
-
-ConfigParam::ConfigParam(const char *_value, int _line)
-	:next(nullptr), value(_value), line(_line), used(false) {}
-
-ConfigParam::~ConfigParam()
-{
-	delete next;
-}
 
 AllocatedPath
 ConfigParam::GetPath() const

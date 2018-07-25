@@ -60,8 +60,8 @@ class TidalInputStream final
 
 public:
 	TidalInputStream(const char *_uri, const char *_track_id,
-			 Mutex &_mutex, Cond &_cond) noexcept
-		:ProxyInputStream(_uri, _mutex, _cond),
+			 Mutex &_mutex) noexcept
+		:ProxyInputStream(_uri, _mutex),
 		 track_id(_track_id)
 	{
 		tidal_session->AddLoginHandler(*this);
@@ -81,7 +81,7 @@ public:
 private:
 	void Failed(std::exception_ptr e) {
 		SetInput(std::make_unique<FailingInputStream>(GetURI(), e,
-							      mutex, cond));
+							      mutex));
 	}
 
 	/* virtual methods from TidalSessionHandler */
@@ -98,14 +98,14 @@ TidalInputStream::OnTidalSession() noexcept
 	const std::lock_guard<Mutex> protect(mutex);
 
 	try {
-		TidalTrackHandler &handler = *this;
+		TidalTrackHandler &h = *this;
 		track_request = std::make_unique<TidalTrackRequest>(tidal_session->GetCurl(),
 								    tidal_session->GetBaseUrl(),
 								    tidal_session->GetToken(),
 								    tidal_session->GetSession().c_str(),
 								    track_id.c_str(),
 								    tidal_audioquality,
-								    handler);
+								    h);
 		track_request->Start();
 	} catch (...) {
 		Failed(std::current_exception());
@@ -124,7 +124,7 @@ TidalInputStream::OnTidalTrackSuccess(std::string url) noexcept
 
 	try {
 		SetInput(OpenCurlInputStream(url.c_str(), {},
-					     mutex, cond));
+					     mutex));
 	} catch (...) {
 		Failed(std::current_exception());
 	}
@@ -211,7 +211,7 @@ ExtractTidalTrackId(const char *uri)
 }
 
 static InputStreamPtr
-OpenTidalInput(const char *uri, Mutex &mutex, Cond &cond)
+OpenTidalInput(const char *uri, Mutex &mutex)
 {
 	assert(tidal_session != nullptr);
 
@@ -221,7 +221,7 @@ OpenTidalInput(const char *uri, Mutex &mutex, Cond &cond)
 
 	// TODO: validate track_id
 
-	return std::make_unique<TidalInputStream>(uri, track_id, mutex, cond);
+	return std::make_unique<TidalInputStream>(uri, track_id, mutex);
 }
 
 static std::unique_ptr<RemoteTagScanner>

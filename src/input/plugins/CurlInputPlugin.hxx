@@ -26,7 +26,6 @@
 #include <map>
 
 class Mutex;
-class Cond;
 
 extern const struct InputPlugin input_plugin_curl;
 
@@ -40,6 +39,6 @@ extern const struct InputPlugin input_plugin_curl;
 InputStreamPtr
 OpenCurlInputStream(const char *uri,
 		    const std::multimap<std::string, std::string> &headers,
-		    Mutex &mutex, Cond &cond);
+		    Mutex &mutex);
 
 #endif

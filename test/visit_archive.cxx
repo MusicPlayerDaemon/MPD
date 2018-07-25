@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "tag/Tag.hxx"
-#include "config/ConfigGlobal.hxx"
+#include "config/Data.hxx"
 #include "event/Thread.hxx"
 #include "input/Init.hxx"
 #include "archive/ArchiveList.hxx"
@@ -27,7 +27,7 @@
 #include "archive/ArchiveFile.hxx"
 #include "archive/ArchiveVisitor.hxx"
 #include "fs/Path.hxx"
-#include "Log.hxx"
+#include "util/PrintException.hxx"
 
 #include <stdexcept>
 
@@ -41,11 +41,11 @@ class GlobalInit {
 public:
 	GlobalInit() {
 		io_thread.Start();
-		config_global_init();
 #ifdef ENABLE_ARCHIVE
 		archive_plugin_init_all();
 #endif
-		input_stream_global_init(io_thread.GetEventLoop());
+		input_stream_global_init(ConfigData(),
+					 io_thread.GetEventLoop());
 	}
 
 	~GlobalInit() {
@@ -53,7 +53,6 @@ public:
 #ifdef ENABLE_ARCHIVE
 		archive_plugin_deinit_all();
 #endif
-		config_global_finish();
 	}
 };
 
@@ -95,7 +94,7 @@ try {
 	file->Visit(visitor);
 
 	return result;
-} catch (const std::exception &e) {
-	LogError(e);
+} catch (...) {
+	PrintException(std::current_exception());
 	return EXIT_FAILURE;
 }

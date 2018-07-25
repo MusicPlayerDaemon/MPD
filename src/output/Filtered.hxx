@@ -229,12 +229,6 @@ public:
 };
 
 /**
- * Notify object used by the thread's client, i.e. we will send a
- * notify signal to this object, expecting the caller to wait on it.
- */
-extern struct notify audio_output_client_notify;
-
-/**
  * Throws #std::runtime_error on error.
  */
 std::unique_ptr<FilteredAudioOutput>

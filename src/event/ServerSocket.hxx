@@ -109,6 +109,10 @@ public:
 	 */
 	void AddFD(int fd);
 
+	bool IsEmpty() const noexcept {
+		return sockets.empty();
+	}
+
 	/**
 	 * Throws #std::runtime_error on error.
 	 */

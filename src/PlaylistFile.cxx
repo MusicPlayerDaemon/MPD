@@ -29,9 +29,9 @@
 #include "fs/io/TextFile.hxx"
 #include "fs/io/FileOutputStream.hxx"
 #include "fs/io/BufferedOutputStream.hxx"
-#include "config/ConfigGlobal.hxx"
-#include "config/ConfigOption.hxx"
-#include "config/ConfigDefaults.hxx"
+#include "config/Data.hxx"
+#include "config/Option.hxx"
+#include "config/Defaults.hxx"
 #include "Idle.hxx"
 #include "fs/Limits.hxx"
 #include "fs/AllocatedPath.hxx"
@@ -55,15 +55,15 @@ static unsigned playlist_max_length;
 bool playlist_saveAbsolutePaths = DEFAULT_PLAYLIST_SAVE_ABSOLUTE_PATHS;
 
 void
-spl_global_init(void)
+spl_global_init(const ConfigData &config)
 {
 	playlist_max_length =
-		config_get_positive(ConfigOption::MAX_PLAYLIST_LENGTH,
-				    DEFAULT_PLAYLIST_MAX_LENGTH);
+		config.GetPositive(ConfigOption::MAX_PLAYLIST_LENGTH,
+				   DEFAULT_PLAYLIST_MAX_LENGTH);
 
 	playlist_saveAbsolutePaths =
-		config_get_bool(ConfigOption::SAVE_ABSOLUTE_PATHS,
-				DEFAULT_PLAYLIST_SAVE_ABSOLUTE_PATHS);
+		config.GetBool(ConfigOption::SAVE_ABSOLUTE_PATHS,
+			       DEFAULT_PLAYLIST_SAVE_ABSOLUTE_PATHS);
 }
 
 bool
@@ -138,16 +138,18 @@ LoadPlaylistFileInfo(PlaylistInfo &info,
 		return false;
 
 	FileInfo fi;
-	if (!GetFileInfo(AllocatedPath::Build(parent_path_fs, name_fs), fi) ||
+	if (!GetFileInfo(parent_path_fs / name_fs, fi) ||
 	    !fi.IsRegular())
 		return false;
 
 	const auto name = AllocatedPath::FromFS(name_fs_str, name_fs_end);
-	std::string name_utf8 = name.ToUTF8();
-	if (name_utf8.empty())
-		return false;
 
-	info.name = std::move(name_utf8);
+	try {
+		info.name = name.ToUTF8Throw();
+	} catch (...) {
+		return false;
+	}
+
 	info.mtime = fi.GetModificationTime();
 	return true;
 }

@@ -22,7 +22,6 @@
 #include "Filtered.hxx"
 #include "Client.hxx"
 #include "Domain.hxx"
-#include "notify.hxx"
 #include "mixer/MixerInternal.hxx"
 #include "thread/Util.hxx"
 #include "thread/Slack.hxx"
@@ -41,8 +40,7 @@ AudioOutputControl::CommandFinished() noexcept
 	assert(command != Command::NONE);
 	command = Command::NONE;
 
-	const ScopeUnlock unlock(mutex);
-	audio_output_client_notify.Signal();
+	client_cond.signal();
 }
 
 inline void
@@ -218,7 +216,7 @@ AudioOutputControl::WaitForDelay() noexcept
 		if (delay <= std::chrono::steady_clock::duration::zero())
 			return true;
 
-		(void)cond.timed_wait(mutex, delay);
+		(void)wake_cond.timed_wait(mutex, delay);
 
 		if (command != Command::NONE)
 			return false;
@@ -491,7 +489,7 @@ AudioOutputControl::Task() noexcept
 
 		if (command == Command::NONE) {
 			woken_for_play = false;
-			cond.wait(mutex);
+			wake_cond.wait(mutex);
 		}
 	}
 }

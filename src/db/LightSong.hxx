@@ -21,6 +21,7 @@
 #define MPD_LIGHT_SONG_HXX
 
 #include "Chrono.hxx"
+#include "AudioFormat.hxx"
 #include "Compiler.h"
 
 #include <string>
@@ -42,7 +43,7 @@ struct LightSong {
 	 * #uri.  To build the full URI, join directory and uri with a
 	 * slash.
 	 */
-	const char *directory;
+	const char *directory = nullptr;
 
 	const char *uri;
 
@@ -54,29 +55,38 @@ struct LightSong {
 	 * This attribute is used for songs from the database which
 	 * have a relative URI.
 	 */
-	const char *real_uri;
+	const char *real_uri = nullptr;
 
 	/**
-	 * Must not be nullptr.
+	 * Metadata.
 	 */
-	const Tag *tag;
+	const Tag &tag;
 
 	/**
 	 * The time stamp of the last file modification.  A negative
 	 * value means that this is unknown/unavailable.
 	 */
-	std::chrono::system_clock::time_point mtime;
+	std::chrono::system_clock::time_point mtime = std::chrono::system_clock::time_point::min();
 
 	/**
 	 * Start of this sub-song within the file.
 	 */
-	SongTime start_time;
+	SongTime start_time = SongTime::zero();
 
 	/**
 	 * End of this sub-song within the file.
 	 * Unused if zero.
 	 */
-	SongTime end_time;
+	SongTime end_time = SongTime::zero();
+
+	/**
+	 * The audio format of the song, if given by the decoder
+	 * plugin.  May be undefined if unknown.
+	 */
+	AudioFormat audio_format = AudioFormat::Undefined();
+
+	LightSong(const char *_uri, const Tag &_tag) noexcept
+		:uri(_uri), tag(_tag) {}
 
 	gcc_pure
 	std::string GetURI() const noexcept {

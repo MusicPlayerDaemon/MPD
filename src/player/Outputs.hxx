@@ -20,12 +20,12 @@
 #ifndef MPD_PLAYER_OUTPUT_INTERFACE_HXX
 #define MPD_PLAYER_OUTPUT_INTERFACE_HXX
 
+#include "MusicChunkPtr.hxx"
 #include "Chrono.hxx"
 #include "Compiler.h"
 
 struct AudioFormat;
 struct MusicChunk;
-class MusicBuffer;
 
 /**
  * An interface for the player thread to control all outputs.  This
@@ -49,11 +49,8 @@ public:
 	 * Throws on error.
 	 *
 	 * @param audio_format the preferred audio format
-	 * @param buffer the #MusicBuffer where consumed #MusicChunk
-	 * objects should be returned
 	 */
-	virtual void Open(const AudioFormat audio_format,
-			  MusicBuffer &buffer) = 0;
+	virtual void Open(const AudioFormat audio_format) = 0;
 
 	/**
 	 * Closes all audio outputs.
@@ -74,7 +71,7 @@ public:
 	 *
 	 * @param chunk the #MusicChunk object to be played
 	 */
-	virtual void Play(MusicChunk *chunk) = 0;
+	virtual void Play(MusicChunkPtr chunk) = 0;
 
 	/**
 	 * Checks if the output devices have drained their music pipe, and

@@ -25,7 +25,6 @@
 #include <memory>
 
 class Mutex;
-class Cond;
 class SongEnumerator;
 class Path;
 
@@ -37,10 +36,10 @@ class Path;
  */
 gcc_nonnull_all
 std::unique_ptr<SongEnumerator>
-playlist_open_path(Path path, Mutex &mutex, Cond &cond);
+playlist_open_path(Path path, Mutex &mutex);
 
 gcc_nonnull_all
 std::unique_ptr<SongEnumerator>
-playlist_open_remote(const char *uri, Mutex &mutex, Cond &cond);
+playlist_open_remote(const char *uri, Mutex &mutex);
 
 #endif

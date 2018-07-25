@@ -21,7 +21,7 @@
 #include "fs/io/GunzipReader.hxx"
 #include "fs/io/FileReader.hxx"
 #include "fs/io/StdioOutputStream.hxx"
-#include "Log.hxx"
+#include "util/PrintException.hxx"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -57,7 +57,7 @@ CopyGunzip(FILE *_dest, Path src_path)
 
 int
 main(int argc, gcc_unused char **argv)
-{
+try {
 	if (argc != 2) {
 		fprintf(stderr, "Usage: run_gunzip PATH\n");
 		return EXIT_FAILURE;
@@ -65,11 +65,9 @@ main(int argc, gcc_unused char **argv)
 
 	Path path = Path::FromFS(argv[1]);
 
-	try {
-		CopyGunzip(stdout, path);
-		return EXIT_SUCCESS;
-	} catch (const std::exception &e) {
-		LogError(e);
-		return EXIT_FAILURE;
-	}
+	CopyGunzip(stdout, path);
+	return EXIT_SUCCESS;
+} catch (...) {
+	PrintException(std::current_exception());
+	return EXIT_FAILURE;
 }

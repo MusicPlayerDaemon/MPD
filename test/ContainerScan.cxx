@@ -18,15 +18,16 @@
  */
 
 #include "config.h"
-#include "Log.hxx"
 #include "DetachedSong.hxx"
 #include "SongSave.hxx"
+#include "config/Data.hxx"
 #include "decoder/DecoderList.hxx"
 #include "decoder/DecoderPlugin.hxx"
 #include "fs/Path.hxx"
 #include "fs/io/StdioOutputStream.hxx"
 #include "fs/io/BufferedOutputStream.hxx"
 #include "util/UriUtil.hxx"
+#include "util/PrintException.hxx"
 
 #include <stdexcept>
 
@@ -47,12 +48,9 @@ FindContainerDecoderPlugin(const char *suffix)
 static const DecoderPlugin *
 FindContainerDecoderPlugin(Path path)
 {
-	const auto utf8 = path.ToUTF8();
-	if (utf8.empty())
-		return nullptr;
-
 	UriSuffixBuffer suffix_buffer;
-	const char *const suffix = uri_get_suffix(utf8.c_str(), suffix_buffer);
+	const char *const suffix = uri_get_suffix(path.ToUTF8Throw().c_str(),
+						  suffix_buffer);
 	if (suffix == nullptr)
 		return nullptr;
 
@@ -68,7 +66,7 @@ try {
 
 	const Path path = Path::FromFS(argv[1]);
 
-	decoder_plugin_init_all();
+	decoder_plugin_init_all(ConfigData());
 
 	const auto *plugin = FindContainerDecoderPlugin(path);
 	if (plugin == nullptr) {
@@ -93,7 +91,7 @@ try {
 	decoder_plugin_deinit_all();
 
 	return EXIT_SUCCESS;
-} catch (const std::exception &e) {
-	LogError(e);
+} catch (...) {
+	PrintException(std::current_exception());
 	return EXIT_FAILURE;
 }

@@ -23,6 +23,7 @@
 #include <vector>
 #include <string>
 
+struct ConfigData;
 class DetachedSong;
 class SongLoader;
 class PlaylistVector;
@@ -36,7 +37,7 @@ extern bool playlist_saveAbsolutePaths;
  * Perform some global initialization, e.g. load configuration values.
  */
 void
-spl_global_init();
+spl_global_init(const ConfigData &config);
 
 /**
  * Determines whether the specified string is a valid name for a

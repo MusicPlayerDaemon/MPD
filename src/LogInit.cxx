@@ -22,8 +22,8 @@
 #include "LogBackend.hxx"
 #include "Log.hxx"
 #include "config/Param.hxx"
-#include "config/ConfigGlobal.hxx"
-#include "config/ConfigOption.hxx"
+#include "config/Data.hxx"
+#include "config/Option.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "fs/FileSystem.hxx"
 #include "util/Domain.hxx"
@@ -118,7 +118,7 @@ log_early_init(bool verbose)
 }
 
 void
-log_init(bool verbose, bool use_stdout)
+log_init(const ConfigData &config, bool verbose, bool use_stdout)
 {
 #ifdef ANDROID
 	(void)verbose;
@@ -126,14 +126,14 @@ log_init(bool verbose, bool use_stdout)
 #else
 	if (verbose)
 		SetLogThreshold(LogLevel::DEBUG);
-	else if (const auto &param = config_get_param(ConfigOption::LOG_LEVEL))
+	else if (const auto &param = config.GetParam(ConfigOption::LOG_LEVEL))
 		SetLogThreshold(parse_log_level(param->value.c_str(),
 						param->line));
 
 	if (use_stdout) {
 		out_fd = STDOUT_FILENO;
 	} else {
-		const auto *param = config_get_param(ConfigOption::LOG_FILE);
+		const auto *param = config.GetParam(ConfigOption::LOG_FILE);
 		if (param == nullptr) {
 			/* no configuration: default to syslog (if
 			   available) */

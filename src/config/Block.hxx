@@ -38,11 +38,13 @@ struct BlockParam {
 	 * This flag is false when nobody has queried the value of
 	 * this option yet.
 	 */
-	mutable bool used;
+	mutable bool used = false;
 
+	template<typename N, typename V>
 	gcc_nonnull_all
-	BlockParam(const char *_name, const char *_value, int _line=-1)
-		:name(_name), value(_value), line(_line), used(false) {}
+	BlockParam(N &&_name, V &&_value, int _line=-1) noexcept
+		:name(std::forward<N>(_name)), value(std::forward<V>(_value)),
+		 line(_line) {}
 
 	int GetIntValue() const;
 
@@ -53,12 +55,6 @@ struct BlockParam {
 };
 
 struct ConfigBlock {
-	/**
-	 * The next #ConfigBlock with the same name.  The destructor
-	 * deletes the whole chain.
-	 */
-	ConfigBlock *next;
-
 	int line;
 
 	std::vector<BlockParam> block_params;
@@ -67,16 +63,13 @@ struct ConfigBlock {
 	 * This flag is false when nobody has queried the value of
 	 * this option yet.
 	 */
-	bool used;
+	mutable bool used = false;
 
 	explicit ConfigBlock(int _line=-1)
-		:next(nullptr), line(_line), used(false) {}
+		:line(_line) {}
 
-	ConfigBlock(const ConfigBlock &) = delete;
-
-	~ConfigBlock();
-
-	ConfigBlock &operator=(const ConfigBlock &) = delete;
+	ConfigBlock(ConfigBlock &&) = default;
+	ConfigBlock &operator=(ConfigBlock &&) = default;
 
 	/**
 	 * Determine if this is a "null" instance, i.e. an empty
@@ -92,10 +85,16 @@ struct ConfigBlock {
 		return block_params.empty();
 	}
 
+	void SetUsed() const noexcept {
+		used = true;
+	}
+
+	template<typename N, typename V>
 	gcc_nonnull_all
-	void AddBlockParam(const char *_name, const char *_value,
-			   int _line=-1) {
-		block_params.emplace_back(_name, _value, _line);
+	void AddBlockParam(N &&_name, V &&_value, int _line=-1) noexcept {
+		block_params.emplace_back(std::forward<N>(_name),
+					  std::forward<V>(_value),
+					  _line);
 	}
 
 	gcc_nonnull_all gcc_pure
@@ -106,7 +105,7 @@ struct ConfigBlock {
 				  const char *default_value=nullptr) const noexcept;
 
 	/**
-	 * Same as config_get_path(), but looks up the setting in the
+	 * Same as ConfigData::GetPath(), but looks up the setting in the
 	 * specified block.
 	 *
 	 * Throws #std::runtime_error on error.

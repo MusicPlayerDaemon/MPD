@@ -73,7 +73,7 @@ DumpDecoderClient::SeekError()
 InputStreamPtr
 DumpDecoderClient::OpenUri(const char *uri)
 {
-	return InputStream::OpenReady(uri, mutex, cond);
+	return InputStream::OpenReady(uri, mutex);
 }
 
 size_t

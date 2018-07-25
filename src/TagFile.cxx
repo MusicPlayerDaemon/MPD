@@ -27,7 +27,6 @@
 #include "decoder/DecoderPlugin.hxx"
 #include "input/InputStream.hxx"
 #include "input/LocalOpen.hxx"
-#include "thread/Cond.hxx"
 
 #include <exception>
 
@@ -37,22 +36,20 @@ class TagFileScan {
 	const Path path_fs;
 	const char *const suffix;
 
-	const TagHandler &handler;
-	void *handler_ctx;
+	TagHandler &handler;
 
 	Mutex mutex;
-	Cond cond;
 	InputStreamPtr is;
 
 public:
 	TagFileScan(Path _path_fs, const char *_suffix,
-		    const TagHandler &_handler, void *_handler_ctx) noexcept
+		    TagHandler &_handler) noexcept
 		:path_fs(_path_fs), suffix(_suffix),
-		 handler(_handler), handler_ctx(_handler_ctx) ,
+		 handler(_handler),
 		 is(nullptr) {}
 
 	bool ScanFile(const DecoderPlugin &plugin) noexcept {
-		return plugin.ScanFile(path_fs, handler, handler_ctx);
+		return plugin.ScanFile(path_fs, handler);
 	}
 
 	bool ScanStream(const DecoderPlugin &plugin) noexcept {
@@ -62,8 +59,7 @@ public:
 		/* open the InputStream (if not already open) */
 		if (is == nullptr) {
 			try {
-				is = OpenLocalInputStream(path_fs,
-							  mutex, cond);
+				is = OpenLocalInputStream(path_fs, mutex);
 			} catch (...) {
 				return false;
 			}
@@ -75,7 +71,7 @@ public:
 		}
 
 		/* now try the stream_tag() method */
-		return plugin.ScanStream(*is, handler, handler_ctx);
+		return plugin.ScanStream(*is, handler);
 	}
 
 	bool Scan(const DecoderPlugin &plugin) noexcept {
@@ -85,8 +81,7 @@ public:
 };
 
 bool
-tag_file_scan(Path path_fs,
-	      const TagHandler &handler, void *handler_ctx) noexcept
+ScanFileTagsNoGeneric(Path path_fs, TagHandler &handler) noexcept
 {
 	assert(!path_fs.IsNull());
 
@@ -98,20 +93,23 @@ tag_file_scan(Path path_fs,
 
 	const auto suffix_utf8 = Path::FromFS(suffix).ToUTF8();
 
-	TagFileScan tfs(path_fs, suffix_utf8.c_str(), handler, handler_ctx);
+	TagFileScan tfs(path_fs, suffix_utf8.c_str(), handler);
 	return decoder_plugins_try([&](const DecoderPlugin &plugin){
 			return tfs.Scan(plugin);
 		});
 }
 
 bool
-tag_file_scan(Path path, TagBuilder &builder) noexcept
+ScanFileTagsWithGeneric(Path path, TagBuilder &builder,
+			AudioFormat *audio_format) noexcept
 {
-	if (!tag_file_scan(path, full_tag_handler, &builder))
+	FullTagHandler h(builder, audio_format);
+
+	if (!ScanFileTagsNoGeneric(path, h))
 		return false;
 
 	if (builder.empty())
-		ScanGenericTags(path, full_tag_handler, &builder);
+		ScanGenericTags(path, h);
 
 	return true;
 }

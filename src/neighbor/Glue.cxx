@@ -23,8 +23,8 @@
 #include "Explorer.hxx"
 #include "NeighborPlugin.hxx"
 #include "Info.hxx"
-#include "config/ConfigGlobal.hxx"
-#include "config/ConfigError.hxx"
+#include "config/Data.hxx"
+#include "config/Domain.hxx"
 #include "config/Block.hxx"
 #include "util/RuntimeError.hxx"
 
@@ -50,17 +50,19 @@ CreateNeighborExplorer(EventLoop &loop, NeighborListener &listener,
 }
 
 void
-NeighborGlue::Init(EventLoop &loop, NeighborListener &listener)
+NeighborGlue::Init(const ConfigData &config,
+		   EventLoop &loop, NeighborListener &listener)
 {
-	for (const auto *block = config_get_block(ConfigBlockOption::NEIGHBORS);
-	     block != nullptr; block = block->next) {
+	for (const auto &block : config.GetBlockList(ConfigBlockOption::NEIGHBORS)) {
+		block.SetUsed();
+
 		try {
 			explorers.emplace_front(CreateNeighborExplorer(loop,
 								       listener,
-								       *block));
+								       block));
 		} catch (...) {
 			std::throw_with_nested(FormatRuntimeError("Line %i: ",
-								  block->line));
+								  block.line));
 		}
 	}
 }

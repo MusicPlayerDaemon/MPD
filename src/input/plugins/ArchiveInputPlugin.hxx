@@ -24,9 +24,8 @@
 
 class Path;
 class Mutex;
-class Cond;
 
 InputStreamPtr
-OpenArchiveInputStream(Path path, Mutex &mutex, Cond &cond);
+OpenArchiveInputStream(Path path, Mutex &mutex);
 
 #endif

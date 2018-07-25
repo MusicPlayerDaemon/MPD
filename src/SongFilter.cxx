@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2017 The Music Player Daemon Project
+ * Copyright 2003-2018 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -20,15 +20,18 @@
 #include "config.h"
 #include "SongFilter.hxx"
 #include "db/LightSong.hxx"
-#include "DetachedSong.hxx"
 #include "tag/ParseName.hxx"
+#include "tag/Tag.hxx"
+#include "util/CharUtil.hxx"
 #include "util/ChronoUtil.hxx"
 #include "util/ConstBuffer.hxx"
+#include "util/RuntimeError.hxx"
 #include "util/StringAPI.hxx"
 #include "util/StringCompare.hxx"
+#include "util/StringStrip.hxx"
 #include "util/StringView.hxx"
 #include "util/ASCII.hxx"
-#include "util/TimeParser.hxx"
+#include "util/TimeISO8601.hxx"
 #include "util/UriUtil.hxx"
 #include "lib/icu/CaseFold.hxx"
 
@@ -41,7 +44,19 @@
 #define LOCATE_TAG_FILE_KEY_OLD "filename"
 #define LOCATE_TAG_ANY_KEY      "any"
 
-unsigned
+/**
+ * Limit the search to files within the given directory.
+ */
+#define LOCATE_TAG_BASE_TYPE (TAG_NUM_OF_ITEM_TYPES + 1)
+#define LOCATE_TAG_MODIFIED_SINCE (TAG_NUM_OF_ITEM_TYPES + 2)
+#define LOCATE_TAG_FILE_TYPE	TAG_NUM_OF_ITEM_TYPES+10
+#define LOCATE_TAG_ANY_TYPE     TAG_NUM_OF_ITEM_TYPES+20
+
+/**
+ * @return #TAG_NUM_OF_ITEM_TYPES on error
+ */
+gcc_pure
+static unsigned
 locate_parse_type(const char *str) noexcept
 {
 	if (StringEqualsCaseASCII(str, LOCATE_TAG_FILE_KEY) ||
@@ -60,28 +75,13 @@ locate_parse_type(const char *str) noexcept
 	return tag_name_parse_i(str);
 }
 
-SongFilter::Item::Item(unsigned _tag, const char *_value, bool _fold_case)
-	:tag(_tag),
-	 value(_value),
-	 fold_case(_fold_case ? IcuCompare(value.c_str()) : IcuCompare())
-{
-}
-
-SongFilter::Item::Item(unsigned _tag,
-		       std::chrono::system_clock::time_point _time)
-	:tag(_tag), time(_time)
-{
-}
-
 bool
-SongFilter::Item::StringMatch(const char *s) const noexcept
+StringFilter::Match(const char *s) const noexcept
 {
 #if !CLANG_CHECK_VERSION(3,6)
 	/* disabled on clang due to -Wtautological-pointer-compare */
 	assert(s != nullptr);
 #endif
-
-	assert(tag != LOCATE_TAG_MODIFIED_SINCE);
 
 	if (fold_case) {
 		return fold_case.IsIn(s);
@@ -90,42 +90,76 @@ SongFilter::Item::StringMatch(const char *s) const noexcept
 	}
 }
 
-bool
-SongFilter::Item::Match(const TagItem &item) const noexcept
+std::string
+UriSongFilter::ToExpression() const noexcept
 {
-	return (tag == LOCATE_TAG_ANY_TYPE || (unsigned)item.type == tag) &&
-		StringMatch(item.value);
+	return std::string("(" LOCATE_TAG_FILE_KEY " ") + (negated ? "!=" : "==") + " \"" + filter.GetValue() + "\")";
 }
 
 bool
-SongFilter::Item::Match(const Tag &_tag) const noexcept
+UriSongFilter::Match(const LightSong &song) const noexcept
+{
+	return filter.Match(song.GetURI().c_str()) != negated;
+}
+
+std::string
+BaseSongFilter::ToExpression() const noexcept
+{
+	return "(base \"" + value + "\")";
+}
+
+bool
+BaseSongFilter::Match(const LightSong &song) const noexcept
+{
+	return uri_is_child_or_same(value.c_str(), song.GetURI().c_str());
+}
+
+std::string
+TagSongFilter::ToExpression() const noexcept
+{
+	const char *name = type == TAG_NUM_OF_ITEM_TYPES
+		? LOCATE_TAG_ANY_KEY
+		: tag_item_names[type];
+
+	return std::string("(") + name + " " + (negated ? "!=" : "==") + " \"" + filter.GetValue() + "\")";
+}
+
+bool
+TagSongFilter::MatchNN(const TagItem &item) const noexcept
+{
+	return (type == TAG_NUM_OF_ITEM_TYPES || item.type == type) &&
+		filter.Match(item.value);
+}
+
+bool
+TagSongFilter::MatchNN(const Tag &tag) const noexcept
 {
 	bool visited_types[TAG_NUM_OF_ITEM_TYPES];
 	std::fill_n(visited_types, size_t(TAG_NUM_OF_ITEM_TYPES), false);
 
-	for (const auto &i : _tag) {
+	for (const auto &i : tag) {
 		visited_types[i.type] = true;
 
-		if (Match(i))
+		if (MatchNN(i))
 			return true;
 	}
 
-	if (tag < TAG_NUM_OF_ITEM_TYPES && !visited_types[tag]) {
+	if (type < TAG_NUM_OF_ITEM_TYPES && !visited_types[type]) {
 		/* If the search critieron was not visited during the
 		   sweep through the song's tag, it means this field
 		   is absent from the tag or empty. Thus, if the
 		   searched string is also empty
 		   then it's a match as well and we should return
 		   true. */
-		if (value.empty())
+		if (filter.empty())
 			return true;
 
-		if (tag == TAG_ALBUM_ARTIST && visited_types[TAG_ARTIST]) {
+		if (type == TAG_ALBUM_ARTIST && visited_types[TAG_ARTIST]) {
 			/* if we're looking for "album artist", but
 			   only "artist" exists, use that */
-			for (const auto &item : _tag)
+			for (const auto &item : tag)
 				if (item.type == TAG_ARTIST &&
-				    StringMatch(item.value))
+				    filter.Match(item.value))
 					return true;
 		}
 	}
@@ -134,42 +168,27 @@ SongFilter::Item::Match(const Tag &_tag) const noexcept
 }
 
 bool
-SongFilter::Item::Match(const DetachedSong &song) const noexcept
+TagSongFilter::Match(const LightSong &song) const noexcept
 {
-	if (tag == LOCATE_TAG_BASE_TYPE)
-		return uri_is_child_or_same(value.c_str(), song.GetURI());
+	return MatchNN(song.tag) != negated;
+}
 
-	if (tag == LOCATE_TAG_MODIFIED_SINCE)
-		return song.GetLastModified() >= time;
-
-	if (tag == LOCATE_TAG_FILE_TYPE)
-		return StringMatch(song.GetURI());
-
-	return Match(song.GetTag());
+std::string
+ModifiedSinceSongFilter::ToExpression() const noexcept
+{
+	return std::string("(modified-since \"") + FormatISO8601(value).c_str() + "\")";
 }
 
 bool
-SongFilter::Item::Match(const LightSong &song) const noexcept
+ModifiedSinceSongFilter::Match(const LightSong &song) const noexcept
 {
-	if (tag == LOCATE_TAG_BASE_TYPE) {
-		const auto uri = song.GetURI();
-		return uri_is_child_or_same(value.c_str(), uri.c_str());
-	}
-
-	if (tag == LOCATE_TAG_MODIFIED_SINCE)
-		return song.mtime >= time;
-
-	if (tag == LOCATE_TAG_FILE_TYPE) {
-		const auto uri = song.GetURI();
-		return StringMatch(uri.c_str());
-	}
-
-	return Match(*song.tag);
+	return song.mtime >= value;
 }
 
-SongFilter::SongFilter(unsigned tag, const char *value, bool fold_case)
+SongFilter::SongFilter(TagType tag, const char *value, bool fold_case)
 {
-	items.push_back(Item(tag, value, fold_case));
+	items.emplace_back(std::make_unique<TagSongFilter>(tag, value,
+							   fold_case, false));
 }
 
 SongFilter::~SongFilter()
@@ -177,7 +196,27 @@ SongFilter::~SongFilter()
 	/* this destructor exists here just so it won't get inlined */
 }
 
-gcc_pure
+std::string
+SongFilter::ToExpression() const noexcept
+{
+	auto i = items.begin();
+	const auto end = items.end();
+
+	if (std::next(i) == end)
+		return (*i)->ToExpression();
+
+	std::string e("(");
+	e += (*i)->ToExpression();
+
+	for (++i; i != end; ++i) {
+		e += " AND ";
+		e += (*i)->ToExpression();
+	}
+
+	e.push_back(')');
+	return e;
+}
+
 static std::chrono::system_clock::time_point
 ParseTimeStamp(const char *s)
 {
@@ -189,81 +228,216 @@ ParseTimeStamp(const char *s)
 		/* it's an integral UNIX time stamp */
 		return std::chrono::system_clock::from_time_t((time_t)value);
 
-	try {
-		/* try ISO 8601 */
-		return ParseTimePoint(s, "%FT%TZ");
-	} catch (...) {
-		return std::chrono::system_clock::time_point::min();
+	/* try ISO 8601 */
+	return ParseISO8601(s);
+}
+
+static constexpr bool
+IsTagNameChar(char ch) noexcept
+{
+	return IsAlphaASCII(ch) || ch == '_' || ch == '-';
+}
+
+static const char *
+FirstNonTagNameChar(const char *s) noexcept
+{
+	while (IsTagNameChar(*s))
+		++s;
+	return s;
+}
+
+static auto
+ExpectFilterType(const char *&s)
+{
+	const char *end = FirstNonTagNameChar(s);
+	if (end == s)
+		throw std::runtime_error("Tag name expected");
+
+	const std::string name(s, end);
+	s = StripLeft(end);
+
+	const auto type = locate_parse_type(name.c_str());
+	if (type == TAG_NUM_OF_ITEM_TYPES)
+		throw FormatRuntimeError("Unknown filter type: %s",
+					 name.c_str());
+
+	return type;
+}
+
+static constexpr bool
+IsQuote(char ch) noexcept
+{
+	return ch == '"' || ch == '\'';
+}
+
+static std::string
+ExpectQuoted(const char *&s)
+{
+	const char quote = *s++;
+	if (!IsQuote(quote))
+		throw std::runtime_error("Quoted string expected");
+
+	const char *begin = s;
+	const char *end = strchr(s, quote);
+	if (end == nullptr)
+		throw std::runtime_error("Closing quote not found");
+
+	s = StripLeft(end + 1);
+	return {begin, end};
+}
+
+ISongFilterPtr
+SongFilter::ParseExpression(const char *&s, bool fold_case)
+{
+	assert(*s == '(');
+
+	s = StripLeft(s + 1);
+
+	if (*s == '(')
+		throw std::runtime_error("Nested expressions not yet implemented");
+
+	auto type = ExpectFilterType(s);
+
+	if (type == LOCATE_TAG_MODIFIED_SINCE) {
+		const auto value_s = ExpectQuoted(s);
+		if (*s != ')')
+			throw std::runtime_error("')' expected");
+		s = StripLeft(s + 1);
+		return std::make_unique<ModifiedSinceSongFilter>(ParseTimeStamp(value_s.c_str()));
+	} else if (type == LOCATE_TAG_BASE_TYPE) {
+		auto value = ExpectQuoted(s);
+		if (*s != ')')
+			throw std::runtime_error("')' expected");
+		s = StripLeft(s + 1);
+
+		return std::make_unique<BaseSongFilter>(std::move(value));
+	} else {
+		bool negated = false;
+		if (s[0] == '!' && s[1] == '=')
+			negated = true;
+		else if (s[0] != '=' || s[1] != '=')
+			throw std::runtime_error("'==' or '!=' expected");
+
+		s = StripLeft(s + 2);
+		auto value = ExpectQuoted(s);
+		if (*s != ')')
+			throw std::runtime_error("')' expected");
+
+		s = StripLeft(s + 1);
+
+		if (type == LOCATE_TAG_ANY_TYPE)
+			type = TAG_NUM_OF_ITEM_TYPES;
+
+		if (type == LOCATE_TAG_FILE_TYPE)
+			return std::make_unique<UriSongFilter>(std::move(value),
+							       fold_case,
+							       negated);
+
+		return std::make_unique<TagSongFilter>(TagType(type),
+						       std::move(value),
+						       fold_case, negated);
 	}
 }
 
-bool
+void
 SongFilter::Parse(const char *tag_string, const char *value, bool fold_case)
 {
 	unsigned tag = locate_parse_type(tag_string);
-	if (tag == TAG_NUM_OF_ITEM_TYPES)
-		return false;
 
-	if (tag == LOCATE_TAG_BASE_TYPE) {
+	switch (tag) {
+	case TAG_NUM_OF_ITEM_TYPES:
+		throw std::runtime_error("Unknown filter type");
+
+	case LOCATE_TAG_BASE_TYPE:
 		if (!uri_safe_local(value))
-			return false;
+			throw std::runtime_error("Bad URI");
 
-		/* case folding doesn't work with "base" */
-		fold_case = false;
+		items.emplace_back(std::make_unique<BaseSongFilter>(value));
+		break;
+
+	case LOCATE_TAG_MODIFIED_SINCE:
+		items.emplace_back(std::make_unique<ModifiedSinceSongFilter>(ParseTimeStamp(value)));
+		break;
+
+	case LOCATE_TAG_FILE_TYPE:
+		items.emplace_back(std::make_unique<UriSongFilter>(value,
+								   fold_case,
+								   false));
+		break;
+
+	default:
+		if (tag == LOCATE_TAG_ANY_TYPE)
+			tag = TAG_NUM_OF_ITEM_TYPES;
+
+		items.emplace_back(std::make_unique<TagSongFilter>(TagType(tag),
+								   value,
+								   fold_case,
+								   false));
+		break;
 	}
-
-	if (tag == LOCATE_TAG_MODIFIED_SINCE) {
-		const auto t = ParseTimeStamp(value);
-		if (IsNegative(t))
-			return false;
-
-		items.push_back(Item(tag, t));
-		return true;
-	}
-
-	items.push_back(Item(tag, value, fold_case));
-	return true;
 }
 
-bool
+void
 SongFilter::Parse(ConstBuffer<const char *> args, bool fold_case)
 {
-	if (args.size == 0 || args.size % 2 != 0)
-		return false;
+	if (args.empty())
+		throw std::runtime_error("Incorrect number of filter arguments");
 
-	for (unsigned i = 0; i < args.size; i += 2)
-		if (!Parse(args[i], args[i + 1], fold_case))
-			return false;
+	do {
+		if (*args.front() == '(') {
+			const char *s = args.shift();
+			const char *end = s;
+			auto f = ParseExpression(end, fold_case);
+			if (*end != 0)
+				throw std::runtime_error("Unparsed garbage after expression");
 
-	return true;
-}
+			items.emplace_back(std::move(f));
+			continue;
+		}
 
-bool
-SongFilter::Match(const DetachedSong &song) const noexcept
-{
-	for (const auto &i : items)
-		if (!i.Match(song))
-			return false;
+		if (args.size < 2)
+			throw std::runtime_error("Incorrect number of filter arguments");
 
-	return true;
+		const char *tag = args.shift();
+		const char *value = args.shift();
+		Parse(tag, value, fold_case);
+	} while (!args.empty());
 }
 
 bool
 SongFilter::Match(const LightSong &song) const noexcept
 {
 	for (const auto &i : items)
-		if (!i.Match(song))
+		if (!i->Match(song))
 			return false;
 
 	return true;
 }
 
 bool
+SongFilter::HasFoldCase() const noexcept
+{
+	for (const auto &i : items) {
+		if (auto t = dynamic_cast<const TagSongFilter *>(i.get())) {
+			if (t->GetFoldCase())
+				return true;
+		} else if (auto u = dynamic_cast<const UriSongFilter *>(i.get())) {
+			if (u->GetFoldCase())
+				return true;
+		}
+	}
+
+	return false;
+}
+
+bool
 SongFilter::HasOtherThanBase() const noexcept
 {
-	for (const auto &i : items)
-		if (i.GetTag() != LOCATE_TAG_BASE_TYPE)
+	for (const auto &i : items) {
+		const auto *f = dynamic_cast<const BaseSongFilter *>(i.get());
+		if (f == nullptr)
 			return true;
+	}
 
 	return false;
 }
@@ -271,9 +445,11 @@ SongFilter::HasOtherThanBase() const noexcept
 const char *
 SongFilter::GetBase() const noexcept
 {
-	for (const auto &i : items)
-		if (i.GetTag() == LOCATE_TAG_BASE_TYPE)
-			return i.GetValue();
+	for (const auto &i : items) {
+		const auto *f = dynamic_cast<const BaseSongFilter *>(i.get());
+		if (f != nullptr)
+			return f->GetValue();
+	}
 
 	return nullptr;
 }
@@ -285,8 +461,9 @@ SongFilter::WithoutBasePrefix(const char *_prefix) const noexcept
 	SongFilter result;
 
 	for (const auto &i : items) {
-		if (i.GetTag() == LOCATE_TAG_BASE_TYPE) {
-			const char *s = StringAfterPrefix(i.GetValue(), prefix);
+		const auto *f = dynamic_cast<const BaseSongFilter *>(i.get());
+		if (f != nullptr) {
+			const char *s = StringAfterPrefix(f->GetValue(), prefix);
 			if (s != nullptr) {
 				if (*s == 0)
 					continue;
@@ -295,14 +472,14 @@ SongFilter::WithoutBasePrefix(const char *_prefix) const noexcept
 					++s;
 
 					if (*s != 0)
-						result.items.emplace_back(LOCATE_TAG_BASE_TYPE, s);
+						result.items.emplace_back(std::make_unique<BaseSongFilter>(s));
 
 					continue;
 				}
 			}
 		}
 
-		result.items.emplace_back(i);
+		result.items.emplace_back(i->Clone());
 	}
 
 	return result;

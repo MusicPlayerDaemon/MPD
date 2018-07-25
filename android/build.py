@@ -138,6 +138,7 @@ class AndroidNdkToolchain:
 # a list of third-party libraries to be used by MPD on Android
 from build.libs import *
 thirdparty_libs = [
+    libmpdclient,
     libogg,
     libvorbis,
     opus,

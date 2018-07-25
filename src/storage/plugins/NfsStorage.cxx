@@ -378,14 +378,13 @@ NfsListDirectoryOperation::CollectEntries(struct nfsdir *dir)
 		if (SkipNameFS(name_fs.c_str()))
 			continue;
 
-		std::string name_utf8 = name_fs.ToUTF8();
-		if (name_utf8.empty())
+		try {
+			entries.emplace_front(name_fs.ToUTF8Throw());
+			Copy(entries.front().info, *ent);
+		} catch (...) {
 			/* ignore files whose name cannot be converted
 			   to UTF-8 */
-			continue;
-
-		entries.emplace_front(std::move(name_utf8));
-		Copy(entries.front().info, *ent);
+		}
 	}
 }
 

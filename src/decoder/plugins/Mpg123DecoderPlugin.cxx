@@ -279,8 +279,7 @@ mpd_mpg123_file_decode(DecoderClient &client, Path path_fs)
 }
 
 static bool
-mpd_mpg123_scan_file(Path path_fs,
-		     const TagHandler &handler, void *handler_ctx) noexcept
+mpd_mpg123_scan_file(Path path_fs, TagHandler &handler) noexcept
 {
 	int error;
 	mpg123_handle *const handle = mpg123_new(nullptr, &error);
@@ -308,6 +307,8 @@ mpd_mpg123_scan_file(Path path_fs,
 		return false;
 	}
 
+	handler.OnAudioFormat(audio_format);
+
 	/* ID3 tag support not yet implemented */
 
 	mpg123_delete(handle);
@@ -316,7 +317,7 @@ mpd_mpg123_scan_file(Path path_fs,
 		SongTime::FromScale<uint64_t>(num_samples,
 					      audio_format.sample_rate);
 
-	tag_handler_invoke_duration(handler, handler_ctx, duration);
+	handler.OnDuration(duration);
 	return true;
 }
 

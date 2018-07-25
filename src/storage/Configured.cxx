@@ -22,8 +22,8 @@
 #include "Registry.hxx"
 #include "StorageInterface.hxx"
 #include "plugins/LocalStorage.hxx"
-#include "config/ConfigGlobal.hxx"
-#include "config/ConfigError.hxx"
+#include "config/Data.hxx"
+#include "config/Domain.hxx"
 #include "fs/StandardDirectory.hxx"
 #include "fs/CheckFile.hxx"
 #include "util/UriUtil.hxx"
@@ -42,9 +42,9 @@ CreateConfiguredStorageUri(EventLoop &event_loop, const char *uri)
 }
 
 static AllocatedPath
-GetConfiguredMusicDirectory()
+GetConfiguredMusicDirectory(const ConfigData &config)
 {
-	AllocatedPath path = config_get_path(ConfigOption::MUSIC_DIR);
+	AllocatedPath path = config.GetPath(ConfigOption::MUSIC_DIR);
 	if (path.IsNull())
 		path = GetUserMusicDir();
 
@@ -52,9 +52,9 @@ GetConfiguredMusicDirectory()
 }
 
 static std::unique_ptr<Storage>
-CreateConfiguredStorageLocal()
+CreateConfiguredStorageLocal(const ConfigData &config)
 {
-	AllocatedPath path = GetConfiguredMusicDirectory();
+	AllocatedPath path = GetConfiguredMusicDirectory(config);
 	if (path.IsNull())
 		return nullptr;
 
@@ -64,17 +64,17 @@ CreateConfiguredStorageLocal()
 }
 
 std::unique_ptr<Storage>
-CreateConfiguredStorage(EventLoop &event_loop)
+CreateConfiguredStorage(const ConfigData &config, EventLoop &event_loop)
 {
-	auto uri = config_get_string(ConfigOption::MUSIC_DIR);
+	auto uri = config.GetString(ConfigOption::MUSIC_DIR);
 	if (uri != nullptr && uri_has_scheme(uri))
 		return CreateConfiguredStorageUri(event_loop, uri);
 
-	return CreateConfiguredStorageLocal();
+	return CreateConfiguredStorageLocal(config);
 }
 
 bool
-IsStorageConfigured() noexcept
+IsStorageConfigured(const ConfigData &config) noexcept
 {
-	return config_get_string(ConfigOption::MUSIC_DIR) != nullptr;
+	return config.GetParam(ConfigOption::MUSIC_DIR) != nullptr;
 }

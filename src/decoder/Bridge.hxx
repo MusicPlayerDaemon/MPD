@@ -22,6 +22,7 @@
 
 #include "Client.hxx"
 #include "ReplayGainInfo.hxx"
+#include "MusicChunkPtr.hxx"
 
 #include <exception>
 #include <memory>
@@ -89,7 +90,7 @@ public:
 	std::unique_ptr<Tag> decoder_tag;
 
 	/** the chunk currently being written to */
-	MusicChunk *current_chunk = nullptr;
+	MusicChunkPtr current_chunk;
 
 	ReplayGainInfo replay_gain_info;
 

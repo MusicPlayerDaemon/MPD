@@ -20,26 +20,19 @@
 #include "config.h"
 #include "TimePrint.hxx"
 #include "client/Response.hxx"
+#include "util/TimeISO8601.hxx"
 
 void
-time_print(Response &r, const char *name, time_t t)
+time_print(Response &r, const char *name,
+	   std::chrono::system_clock::time_point t)
 {
-#ifdef _WIN32
-	const struct tm *tm2 = gmtime(&t);
-#else
-	struct tm tm;
-	const struct tm *tm2 = gmtime_r(&t, &tm);
-#endif
-	if (tm2 == nullptr)
-		return;
+	StringBuffer<64> s;
 
-	char buffer[32];
-	strftime(buffer, sizeof(buffer),
-#ifdef _WIN32
-		 "%Y-%m-%dT%H:%M:%SZ",
-#else
-		 "%FT%TZ",
-#endif
-		 tm2);
-	r.Format("%s: %s\n", name, buffer);
+	try {
+		s = FormatISO8601(t);
+	} catch (...) {
+		return;
+	}
+
+	r.Format("%s: %s\n", name, s.c_str());
 }

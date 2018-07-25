@@ -35,8 +35,8 @@
 #include "filter/plugins/ChainFilterPlugin.hxx"
 #include "filter/plugins/VolumeFilterPlugin.hxx"
 #include "filter/plugins/NormalizeFilterPlugin.hxx"
-#include "config/ConfigError.hxx"
-#include "config/ConfigGlobal.hxx"
+#include "config/Domain.hxx"
+#include "config/Global.hxx"
 #include "config/Block.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/StringFormat.hxx"
@@ -181,7 +181,7 @@ FilteredAudioOutput::Configure(const ConfigBlock &block)
 	}
 
 	try {
-		filter_chain_parse(*prepared_filter,
+		filter_chain_parse(*prepared_filter, GetGlobalConfig(),
 				   block.GetBlockValue(AUDIO_FILTERS, ""));
 	} catch (...) {
 		/* It's not really fatal - Part of the filter chain

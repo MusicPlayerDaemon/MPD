@@ -23,7 +23,6 @@
 #include "check.h"
 #include "decoder/Client.hxx"
 #include "thread/Mutex.hxx"
-#include "thread/Cond.hxx"
 
 /**
  * A #DecoderClient implementation which dumps metadata to stderr and
@@ -36,7 +35,6 @@ class DumpDecoderClient final : public DecoderClient {
 
 public:
 	Mutex mutex;
-	Cond cond;
 
 	bool IsInitialized() const noexcept {
 		return initialized;

@@ -24,7 +24,7 @@
 
 #include <stdint.h>
 
-#if defined(_WIN32) && GCC_CHECK_VERSION(4,6)
+#if defined(_WIN32)
 /* on WIN32, "FLOAT" is already defined, and this triggers -Wshadow */
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wshadow"
@@ -57,17 +57,14 @@ enum class SampleFormat : uint8_t {
 	DSD,
 };
 
-#if defined(_WIN32) && GCC_CHECK_VERSION(4,6)
+#if defined(_WIN32)
 #pragma GCC diagnostic pop
 #endif
 
 /**
  * Checks whether the sample format is valid.
  */
-#if !GCC_OLDER_THAN(5,0)
-constexpr
-#endif
-static inline bool
+constexpr bool
 audio_valid_sample_format(SampleFormat format) noexcept
 {
 	switch (format) {
@@ -86,10 +83,7 @@ audio_valid_sample_format(SampleFormat format) noexcept
 	return false;
 }
 
-#if !GCC_OLDER_THAN(5,0)
-constexpr
-#endif
-static inline unsigned
+constexpr unsigned
 sample_format_size(SampleFormat format) noexcept
 {
 	switch (format) {

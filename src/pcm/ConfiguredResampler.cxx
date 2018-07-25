@@ -20,9 +20,9 @@
 #include "config.h"
 #include "ConfiguredResampler.hxx"
 #include "FallbackResampler.hxx"
-#include "config/ConfigGlobal.hxx"
-#include "config/ConfigOption.hxx"
-#include "config/ConfigError.hxx"
+#include "config/Data.hxx"
+#include "config/Option.hxx"
+#include "config/Domain.hxx"
 #include "config/Block.hxx"
 #include "config/Param.hxx"
 #include "util/RuntimeError.hxx"
@@ -35,6 +35,7 @@
 #include "SoxrResampler.hxx"
 #endif
 
+#include <assert.h>
 #include <string.h>
 
 enum class SelectedResampler {
@@ -112,11 +113,11 @@ MigrateResamplerConfig(const ConfigParam *param, ConfigBlock &buffer) noexcept
 }
 
 static const ConfigBlock *
-GetResamplerConfig(ConfigBlock &buffer)
+GetResamplerConfig(const ConfigData &config, ConfigBlock &buffer)
 {
 	const auto *old_param =
-		config_get_param(ConfigOption::SAMPLERATE_CONVERTER);
-	const auto *block = config_get_block(ConfigBlockOption::RESAMPLER);
+		config.GetParam(ConfigOption::SAMPLERATE_CONVERTER);
+	const auto *block = config.GetBlock(ConfigBlockOption::RESAMPLER);
 	if (block == nullptr)
 		return MigrateResamplerConfig(old_param, buffer);
 
@@ -124,14 +125,15 @@ GetResamplerConfig(ConfigBlock &buffer)
 		throw FormatRuntimeError("Cannot use both 'resampler' (line %d) and 'samplerate_converter' (line %d)",
 					 block->line, old_param->line);
 
+	block->SetUsed();
 	return block;
 }
 
 void
-pcm_resampler_global_init()
+pcm_resampler_global_init(const ConfigData &config)
 {
 	ConfigBlock buffer;
-	const auto *block = GetResamplerConfig(buffer);
+	const auto *block = GetResamplerConfig(config, buffer);
 
 	const char *plugin_name = block->GetBlockValue("plugin");
 	if (plugin_name == nullptr)

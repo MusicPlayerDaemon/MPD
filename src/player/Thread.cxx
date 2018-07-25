@@ -36,6 +36,7 @@
 #include "Log.hxx"
 
 #include <exception>
+#include <memory>
 
 #include <string.h>
 
@@ -48,7 +49,7 @@ class Player {
 
 	MusicBuffer &buffer;
 
-	MusicPipe *pipe;
+	std::shared_ptr<MusicPipe> pipe;
 
 	/**
 	 * the song currently being played
@@ -169,21 +170,10 @@ private:
 		xfade_state = CrossFadeState::UNKNOWN;
 	}
 
-	void ClearAndDeletePipe() noexcept {
-		pipe->Clear(buffer);
-		delete pipe;
-	}
-
-	void ClearAndReplacePipe(MusicPipe *_pipe) noexcept {
+	template<typename P>
+	void ReplacePipe(P &&_pipe) noexcept {
 		ResetCrossFade();
-		ClearAndDeletePipe();
-		pipe = _pipe;
-	}
-
-	void ReplacePipe(MusicPipe *_pipe) noexcept {
-		ResetCrossFade();
-		delete pipe;
-		pipe = _pipe;
+		pipe = std::forward<P>(_pipe);
 	}
 
 	/**
@@ -191,7 +181,7 @@ private:
 	 *
 	 * Caller must lock the mutex.
 	 */
-	void StartDecoder(MusicPipe &pipe) noexcept;
+	void StartDecoder(std::shared_ptr<MusicPipe> pipe) noexcept;
 
 	/**
 	 * The decoder has acknowledged the "START" command (see
@@ -336,7 +326,7 @@ public:
 };
 
 void
-Player::StartDecoder(MusicPipe &_pipe) noexcept
+Player::StartDecoder(std::shared_ptr<MusicPipe> _pipe) noexcept
 {
 	assert(queued || pc.command == PlayerCommand::SEEK);
 	assert(pc.next_song != nullptr);
@@ -348,7 +338,7 @@ Player::StartDecoder(MusicPipe &_pipe) noexcept
 
 	dc.Start(std::make_unique<DetachedSong>(*pc.next_song),
 		 start_time, pc.next_song->GetEndTime(),
-		 buffer, _pipe);
+		 buffer, std::move(_pipe));
 }
 
 void
@@ -361,12 +351,8 @@ Player::StopDecoder() noexcept
 	if (dc.pipe != nullptr) {
 		/* clear and free the decoder pipe */
 
-		dc.pipe->Clear(buffer);
-
-		if (dc.pipe != pipe)
-			delete dc.pipe;
-
-		dc.pipe = nullptr;
+		dc.pipe->Clear();
+		dc.pipe.reset();
 
 		/* just in case we've been cross-fading: cancel it
 		   now, because we just deleted the new song's decoder
@@ -450,7 +436,7 @@ Player::OpenOutput() noexcept
 
 	try {
 		const ScopeUnlock unlock(pc.mutex);
-		pc.outputs.Open(play_audio_format, buffer);
+		pc.outputs.Open(play_audio_format);
 	} catch (...) {
 		LogError(std::current_exception());
 
@@ -577,7 +563,7 @@ Player::SeekDecoder() noexcept
 		pc.outputs.Cancel();
 	}
 
-	if (!dc.IsCurrentSong(*pc.next_song)) {
+	if (!dc.IsSeekableCurrentSong(*pc.next_song)) {
 		/* the decoder is already decoding the "next" song -
 		   stop it and start the previous song again */
 
@@ -585,10 +571,10 @@ Player::SeekDecoder() noexcept
 
 		/* clear music chunks which might still reside in the
 		   pipe */
-		pipe->Clear(buffer);
+		pipe->Clear();
 
 		/* re-start the decoder */
-		StartDecoder(*pipe);
+		StartDecoder(pipe);
 		ActivateDecoder();
 
 		pc.seeking = true;
@@ -601,7 +587,7 @@ Player::SeekDecoder() noexcept
 		if (!IsDecoderAtCurrentSong()) {
 			/* the decoder is already decoding the "next" song,
 			   but it is the same song file; exchange the pipe */
-			ClearAndReplacePipe(dc.pipe);
+			ReplacePipe(dc.pipe);
 		}
 
 		pc.next_song.reset();
@@ -666,7 +652,7 @@ Player::ProcessCommand() noexcept
 		pc.CommandFinished();
 
 		if (dc.IsIdle())
-			StartDecoder(*new MusicPipe());
+			StartDecoder(std::make_shared<MusicPipe>());
 
 		break;
 
@@ -756,8 +742,7 @@ update_song_tag(PlayerControl &pc, DetachedSong &song,
  */
 static void
 play_chunk(PlayerControl &pc,
-	   DetachedSong &song, MusicChunk *chunk,
-	   MusicBuffer &buffer,
+	   DetachedSong &song, MusicChunkPtr chunk,
 	   const AudioFormat format)
 {
 	assert(chunk->CheckFormat(format));
@@ -765,10 +750,8 @@ play_chunk(PlayerControl &pc,
 	if (chunk->tag != nullptr)
 		update_song_tag(pc, song, *chunk->tag);
 
-	if (chunk->IsEmpty()) {
-		buffer.Return(chunk);
+	if (chunk->IsEmpty())
 		return;
-	}
 
 	{
 		const std::lock_guard<Mutex> lock(pc.mutex);
@@ -777,9 +760,10 @@ play_chunk(PlayerControl &pc,
 
 	/* send the chunk to the audio outputs */
 
-	pc.outputs.Play(chunk);
-	pc.total_play_time += (double)chunk->length /
-		format.GetTimeToSize();
+	const double chunk_length(chunk->length);
+
+	pc.outputs.Play(std::move(chunk));
+	pc.total_play_time += chunk_length / format.GetTimeToSize();
 }
 
 inline bool
@@ -801,7 +785,7 @@ Player::PlayNextChunk() noexcept
 		xfade_state = CrossFadeState::ACTIVE;
 	}
 
-	MusicChunk *chunk = nullptr;
+	MusicChunkPtr chunk;
 	if (xfade_state == CrossFadeState::ACTIVE) {
 		/* perform cross fade */
 
@@ -810,7 +794,7 @@ Player::PlayNextChunk() noexcept
 		unsigned cross_fade_position = pipe->GetSize();
 		assert(cross_fade_position <= cross_fade_chunks);
 
-		MusicChunk *other_chunk = dc.pipe->Shift();
+		auto other_chunk = dc.pipe->Shift();
 		if (other_chunk != nullptr) {
 			chunk = pipe->Shift();
 			assert(chunk != nullptr);
@@ -837,11 +821,10 @@ Player::PlayNextChunk() noexcept
 				   beginning of the new song, we can
 				   easily recover by throwing it away
 				   now */
-				buffer.Return(other_chunk);
-				other_chunk = nullptr;
+				other_chunk.reset();
 			}
 
-			chunk->other = other_chunk;
+			chunk->other = std::move(other_chunk);
 		} else {
 			/* there are not enough decoded chunks yet */
 
@@ -877,11 +860,12 @@ Player::PlayNextChunk() noexcept
 	/* play the current chunk */
 
 	try {
-		play_chunk(pc, *song, chunk, buffer, play_audio_format);
+		play_chunk(pc, *song, std::move(chunk),
+			   play_audio_format);
 	} catch (...) {
 		LogError(std::current_exception());
 
-		buffer.Return(chunk);
+		chunk.reset();
 
 		/* pause: the user may resume playback as soon as an
 		   audio output becomes available */
@@ -931,6 +915,7 @@ Player::SongBorder() noexcept
 	if (border_pause) {
 		paused = true;
 		pc.listener.OnBorderPause();
+		pc.outputs.Pause();
 		idle_add(IDLE_PLAYER);
 	}
 }
@@ -938,11 +923,11 @@ Player::SongBorder() noexcept
 inline void
 Player::Run() noexcept
 {
-	pipe = new MusicPipe();
+	pipe = std::make_shared<MusicPipe>();
 
 	const std::lock_guard<Mutex> lock(pc.mutex);
 
-	StartDecoder(*pipe);
+	StartDecoder(pipe);
 	ActivateDecoder();
 
 	pc.state = PlayerState::PLAY;
@@ -985,7 +970,7 @@ Player::Run() noexcept
 
 			assert(dc.pipe == nullptr || dc.pipe == pipe);
 
-			StartDecoder(*new MusicPipe());
+			StartDecoder(std::make_shared<MusicPipe>());
 		}
 
 		if (/* no cross-fading if MPD is going to pause at the
@@ -1069,7 +1054,7 @@ Player::Run() noexcept
 	CancelPendingSeek();
 	StopDecoder();
 
-	ClearAndDeletePipe();
+	pipe.reset();
 
 	cross_fade_tag.reset();
 

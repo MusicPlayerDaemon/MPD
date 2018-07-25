@@ -215,15 +215,13 @@ gme_file_decode(DecoderClient &client, Path path_fs)
 
 static void
 ScanGmeInfo(const gme_info_t &info, unsigned song_num, int track_count,
-	    const TagHandler &handler, void *handler_ctx)
+	    TagHandler &handler) noexcept
 {
 	if (info.play_length > 0)
-		tag_handler_invoke_duration(handler, handler_ctx,
-					    SongTime::FromMS(info.play_length));
+		handler.OnDuration(SongTime::FromMS(info.play_length));
 
 	if (track_count > 1)
-		tag_handler_invoke_tag(handler, handler_ctx, TAG_TRACK,
-				       StringFormat<16>("%u", song_num + 1));
+		handler.OnTag(TAG_TRACK, StringFormat<16>("%u", song_num + 1));
 
 	if (info.song != nullptr) {
 		if (track_count > 1) {
@@ -232,33 +230,26 @@ ScanGmeInfo(const gme_info_t &info, unsigned song_num, int track_count,
 				StringFormat<1024>("%s (%u/%d)",
 						   info.song, song_num + 1,
 						   track_count);
-			tag_handler_invoke_tag(handler, handler_ctx,
-					       TAG_TITLE, tag_title);
+			handler.OnTag(TAG_TITLE, tag_title);
 		} else
-			tag_handler_invoke_tag(handler, handler_ctx,
-					       TAG_TITLE, info.song);
+			handler.OnTag(TAG_TITLE, info.song);
 	}
 
 	if (info.author != nullptr)
-		tag_handler_invoke_tag(handler, handler_ctx,
-				       TAG_ARTIST, info.author);
+		handler.OnTag(TAG_ARTIST, info.author);
 
 	if (info.game != nullptr)
-		tag_handler_invoke_tag(handler, handler_ctx,
-				       TAG_ALBUM, info.game);
+		handler.OnTag(TAG_ALBUM, info.game);
 
 	if (info.comment != nullptr)
-		tag_handler_invoke_tag(handler, handler_ctx,
-				       TAG_COMMENT, info.comment);
+		handler.OnTag(TAG_COMMENT, info.comment);
 
 	if (info.copyright != nullptr)
-		tag_handler_invoke_tag(handler, handler_ctx,
-				       TAG_DATE, info.copyright);
+		handler.OnTag(TAG_DATE, info.copyright);
 }
 
 static bool
-ScanMusicEmu(Music_Emu *emu, unsigned song_num,
-	     const TagHandler &handler, void *handler_ctx)
+ScanMusicEmu(Music_Emu *emu, unsigned song_num, TagHandler &handler) noexcept
 {
 	gme_info_t *ti;
 	const char *gme_err = gme_track_info(emu, &ti, song_num);
@@ -271,14 +262,12 @@ ScanMusicEmu(Music_Emu *emu, unsigned song_num,
 
 	AtScopeExit(ti) { gme_free_info(ti); };
 
-	ScanGmeInfo(*ti, song_num, gme_track_count(emu),
-		    handler, handler_ctx);
+	ScanGmeInfo(*ti, song_num, gme_track_count(emu), handler);
 	return true;
 }
 
 static bool
-gme_scan_file(Path path_fs,
-	      const TagHandler &handler, void *handler_ctx) noexcept
+gme_scan_file(Path path_fs, TagHandler &handler) noexcept
 {
 	const auto container = ParseContainerPath(path_fs);
 
@@ -289,7 +278,7 @@ gme_scan_file(Path path_fs,
 
 	AtScopeExit(emu) { gme_delete(emu); };
 
-	return ScanMusicEmu(emu, container.track, handler, handler_ctx);
+	return ScanMusicEmu(emu, container.track, handler);
 }
 
 static std::forward_list<DetachedSong>
@@ -316,8 +305,8 @@ gme_container_scan(Path path_fs)
 
 	auto tail = list.before_begin();
 	for (unsigned i = 0; i < num_songs; ++i) {
-		ScanMusicEmu(emu, i,
-			     add_tag_handler, &tag_builder);
+		AddTagHandler h(tag_builder);
+		ScanMusicEmu(emu, i, h);
 
 		const auto track_name =
 			StringFormat<64>(SUBTUNE_PREFIX "%03u.%s", i+1,

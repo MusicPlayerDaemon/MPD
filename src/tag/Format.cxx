@@ -23,6 +23,7 @@
 #include "ParseName.hxx"
 #include "util/format.h"
 #include "util/TruncateString.hxx"
+#include "util/TimeConvert.hxx"
 
 #include <algorithm>
 
@@ -86,15 +87,13 @@ TagGetter(const void *object, const char *name) noexcept
 	auto &ctx = const_cast<FormatTagContext &>(_ctx);
 
 	if (strcmp(name, "iso8601") == 0) {
-		time_t t = time(nullptr);
-#ifdef _WIN32
-		const struct tm *tm2 = gmtime(&t);
-#else
 		struct tm tm;
-		const struct tm *tm2 = gmtime_r(&t, &tm);
-#endif
-		if (tm2 == nullptr)
+
+		try {
+			tm = GmTime(std::chrono::system_clock::now());
+		} catch (...) {
 			return "";
+		}
 
 		strftime(ctx.buffer, sizeof(ctx.buffer),
 #ifdef _WIN32
@@ -106,7 +105,7 @@ TagGetter(const void *object, const char *name) noexcept
 #else
 			 "%FT%TZ",
 #endif
-			 tm2);
+			 &tm);
 		return ctx.buffer;
 	}
 

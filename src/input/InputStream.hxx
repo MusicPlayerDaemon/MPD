@@ -31,8 +31,8 @@
 
 #include <assert.h>
 
-class Cond;
 struct Tag;
+class InputStreamHandler;
 
 class InputStream {
 public:
@@ -42,7 +42,7 @@ private:
 	/**
 	 * The absolute URI which was used to open this stream.
 	 */
-	std::string uri;
+	const std::string uri;
 
 public:
 	/**
@@ -55,15 +55,16 @@ public:
 	 */
 	Mutex &mutex;
 
+private:
 	/**
 	 * A cond that gets signalled when the state of this object
 	 * changes from the I/O thread.  The client of this object may
-	 * wait on it.  Optional, may be nullptr.
+	 * wait on it.
 	 *
 	 * This object is allocated by the client, and the client is
 	 * responsible for freeing it.
 	 */
-	Cond &cond;
+	InputStreamHandler *handler = nullptr;
 
 protected:
 	/**
@@ -96,9 +97,9 @@ private:
 	std::string mime;
 
 public:
-	InputStream(const char *_uri, Mutex &_mutex, Cond &_cond) noexcept
+	InputStream(const char *_uri, Mutex &_mutex) noexcept
 		:uri(_uri),
-		 mutex(_mutex), cond(_cond) {
+		 mutex(_mutex) {
 		assert(_uri != nullptr);
 	}
 
@@ -122,16 +123,33 @@ public:
 	 * notifications
 	 * @return an #InputStream object on success
 	 */
-	gcc_nonnull_all
-	static InputStreamPtr Open(const char *uri, Mutex &mutex, Cond &cond);
+	gcc_nonnull(1)
+	static InputStreamPtr Open(const char *uri, Mutex &mutex);
 
 	/**
 	 * Just like Open(), but waits for the stream to become ready.
 	 * It is a wrapper for Open(), WaitReady() and Check().
 	 */
-	gcc_nonnull_all
-	static InputStreamPtr OpenReady(const char *uri,
-					Mutex &mutex, Cond &cond);
+	gcc_nonnull(1)
+	static InputStreamPtr OpenReady(const char *uri, Mutex &mutex);
+
+	/**
+	 * Install a new handler.
+	 *
+	 * The caller must lock the mutex.
+	 */
+	void SetHandler(InputStreamHandler *new_handler) noexcept {
+		handler = new_handler;
+	}
+
+	/**
+	 * Install a new handler and return the old one.
+	 *
+	 * The caller must lock the mutex.
+	 */
+	InputStreamHandler *ExchangeHandler(InputStreamHandler *new_handler) noexcept {
+		return std::exchange(handler, new_handler);
+	}
 
 	/**
 	 * The absolute URI which was used to open this stream.
@@ -165,14 +183,6 @@ public:
 	bool IsReady() const {
 		return ready;
 	}
-
-	void WaitReady() noexcept;
-
-	/**
-	 * Wrapper for WaitReady() which locks and unlocks the mutex;
-	 * the caller must not be holding it already.
-	 */
-	void LockWaitReady() noexcept;
 
 	gcc_pure
 	bool HasMimeType() const noexcept {
@@ -380,6 +390,30 @@ public:
 	 */
 	gcc_nonnull_all
 	void LockReadFull(void *ptr, size_t size);
+
+protected:
+	void InvokeOnReady() noexcept;
+	void InvokeOnAvailable() noexcept;
+};
+
+/**
+ * Install an #InputStreamHandler during the scope in which this
+ * variable lives, and restore the old handler afterwards.
+ */
+class ScopeExchangeInputStreamHandler {
+	InputStream &is;
+	InputStreamHandler *const old_handler;
+
+public:
+	ScopeExchangeInputStreamHandler(InputStream &_is,
+					InputStreamHandler *new_handler) noexcept
+		:is(_is), old_handler(is.ExchangeHandler(new_handler)) {}
+
+	ScopeExchangeInputStreamHandler(const ScopeExchangeInputStreamHandler &) = delete;
+
+	~ScopeExchangeInputStreamHandler() noexcept {
+		is.SetHandler(old_handler);
+	}
 };
 
 #endif

@@ -34,8 +34,8 @@ class MmsInputStream final : public ThreadInputStream {
 	mmsx_t *mms;
 
 public:
-	MmsInputStream(const char *_uri, Mutex &_mutex, Cond &_cond)
-		:ThreadInputStream(input_plugin_mms.name, _uri, _mutex, _cond,
+	MmsInputStream(const char *_uri, Mutex &_mutex)
+		:ThreadInputStream(input_plugin_mms.name, _uri, _mutex,
 				   MMS_BUFFER_SIZE) {
 	}
 
@@ -70,7 +70,7 @@ MmsInputStream::Open()
 
 static InputStreamPtr
 input_mms_open(const char *url,
-	       Mutex &mutex, Cond &cond)
+	       Mutex &mutex)
 {
 	if (!StringStartsWith(url, "mms://") &&
 	    !StringStartsWith(url, "mmsh://") &&
@@ -78,7 +78,7 @@ input_mms_open(const char *url,
 	    !StringStartsWith(url, "mmsu://"))
 		return nullptr;
 
-	auto m = std::make_unique<MmsInputStream>(url, mutex, cond);
+	auto m = std::make_unique<MmsInputStream>(url, mutex);
 	m->Start();
 	return m;
 }

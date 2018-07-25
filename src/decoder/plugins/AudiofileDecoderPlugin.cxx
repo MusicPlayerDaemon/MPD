@@ -38,7 +38,7 @@
 static constexpr Domain audiofile_domain("audiofile");
 
 static void
-audiofile_error_func(long, const char *msg)
+audiofile_error_func(long, const char *msg) noexcept
 {
 	LogWarning(audiofile_domain, msg);
 }
@@ -54,7 +54,7 @@ struct AudioFileInputStream {
 	DecoderClient *const client;
 	InputStream &is;
 
-	size_t Read(void *buffer, size_t size) {
+	size_t Read(void *buffer, size_t size) noexcept {
 		/* libaudiofile does not like partial reads at all,
 		   and will abort playback; therefore always force full
 		   reads */
@@ -73,7 +73,7 @@ audiofile_get_duration(AFfilehandle fh) noexcept
 }
 
 static ssize_t
-audiofile_file_read(AFvirtualfile *vfile, void *data, size_t length)
+audiofile_file_read(AFvirtualfile *vfile, void *data, size_t length) noexcept
 {
 	AudioFileInputStream &afis = *(AudioFileInputStream *)vfile->closure;
 
@@ -81,7 +81,7 @@ audiofile_file_read(AFvirtualfile *vfile, void *data, size_t length)
 }
 
 static AFfileoffset
-audiofile_file_length(AFvirtualfile *vfile)
+audiofile_file_length(AFvirtualfile *vfile) noexcept
 {
 	AudioFileInputStream &afis = *(AudioFileInputStream *)vfile->closure;
 	InputStream &is = afis.is;
@@ -90,7 +90,7 @@ audiofile_file_length(AFvirtualfile *vfile)
 }
 
 static AFfileoffset
-audiofile_file_tell(AFvirtualfile *vfile)
+audiofile_file_tell(AFvirtualfile *vfile) noexcept
 {
 	AudioFileInputStream &afis = *(AudioFileInputStream *)vfile->closure;
 	InputStream &is = afis.is;
@@ -99,7 +99,7 @@ audiofile_file_tell(AFvirtualfile *vfile)
 }
 
 static void
-audiofile_file_destroy(AFvirtualfile *vfile)
+audiofile_file_destroy(AFvirtualfile *vfile) noexcept
 {
 	assert(vfile->closure != nullptr);
 
@@ -108,7 +108,7 @@ audiofile_file_destroy(AFvirtualfile *vfile)
 
 static AFfileoffset
 audiofile_file_seek(AFvirtualfile *vfile, AFfileoffset _offset,
-		    int is_relative)
+		    int is_relative) noexcept
 {
 	AudioFileInputStream &afis = *(AudioFileInputStream *)vfile->closure;
 	InputStream &is = afis.is;
@@ -127,9 +127,9 @@ audiofile_file_seek(AFvirtualfile *vfile, AFfileoffset _offset,
 }
 
 static AFvirtualfile *
-setup_virtual_fops(AudioFileInputStream &afis)
+setup_virtual_fops(AudioFileInputStream &afis) noexcept
 {
-	AFvirtualfile *vf = new AFvirtualfile();
+	AFvirtualfile *vf = (AFvirtualfile *)malloc(sizeof(*vf));
 	vf->closure = &afis;
 	vf->write = nullptr;
 	vf->read    = audiofile_file_read;
@@ -140,8 +140,9 @@ setup_virtual_fops(AudioFileInputStream &afis)
 	return vf;
 }
 
+gcc_const
 static SampleFormat
-audiofile_bits_to_sample_format(int bits)
+audiofile_bits_to_sample_format(int bits) noexcept
 {
 	switch (bits) {
 	case 8:
@@ -161,7 +162,7 @@ audiofile_bits_to_sample_format(int bits)
 }
 
 static SampleFormat
-audiofile_setup_sample_format(AFfilehandle af_fp)
+audiofile_setup_sample_format(AFfilehandle af_fp) noexcept
 {
 	int fs, bits;
 
@@ -178,6 +179,14 @@ audiofile_setup_sample_format(AFfilehandle af_fp)
 	afGetVirtualSampleFormat(af_fp, AF_DEFAULT_TRACK, &fs, &bits);
 
 	return audiofile_bits_to_sample_format(bits);
+}
+
+static AudioFormat
+CheckAudioFormat(AFfilehandle fh)
+{
+	return CheckAudioFormat(afGetRate(fh, AF_DEFAULT_TRACK),
+				audiofile_setup_sample_format(fh),
+				afGetVirtualChannels(fh, AF_DEFAULT_TRACK));
 }
 
 static void
@@ -197,11 +206,7 @@ audiofile_stream_decode(DecoderClient &client, InputStream &is)
 
 	AtScopeExit(fh) { afCloseFile(fh); };
 
-	const auto audio_format =
-		CheckAudioFormat(afGetRate(fh, AF_DEFAULT_TRACK),
-				 audiofile_setup_sample_format(fh),
-				 afGetVirtualChannels(fh, AF_DEFAULT_TRACK));
-
+	const auto audio_format = CheckAudioFormat(fh);
 	const auto total_time = audiofile_get_duration(fh);
 
 	const uint16_t kbit_rate = (uint16_t)
@@ -237,33 +242,27 @@ audiofile_stream_decode(DecoderClient &client, InputStream &is)
 	} while (cmd == DecoderCommand::NONE);
 }
 
-gcc_pure
-static SignedSongTime
-audiofile_get_duration(InputStream &is) noexcept
+static bool
+audiofile_scan_stream(InputStream &is, TagHandler &handler) noexcept
 {
 	if (!is.IsSeekable() || !is.KnownSize())
-		return SignedSongTime::Negative();
+		return false;
 
 	AudioFileInputStream afis{nullptr, is};
 	AFvirtualfile *vf = setup_virtual_fops(afis);
 	AFfilehandle fh = afOpenVirtualFile(vf, "r", nullptr);
 	if (fh == AF_NULL_FILEHANDLE)
-		return SignedSongTime::Negative();
-
-	const auto duration = audiofile_get_duration(fh);
-	afCloseFile(fh);
-	return duration;
-}
-
-static bool
-audiofile_scan_stream(InputStream &is,
-		      const TagHandler &handler, void *handler_ctx) noexcept
-{
-	const auto duration = audiofile_get_duration(is);
-	if (duration.IsNegative())
 		return false;
 
-	tag_handler_invoke_duration(handler, handler_ctx, SongTime(duration));
+	AtScopeExit(fh) { afCloseFile(fh); };
+
+	handler.OnDuration(audiofile_get_duration(fh));
+
+	try {
+		handler.OnAudioFormat(CheckAudioFormat(fh));
+	} catch (...) {
+	}
+
 	return true;
 }
 

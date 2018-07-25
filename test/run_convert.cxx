@@ -29,7 +29,7 @@
 #include "pcm/PcmConvert.hxx"
 #include "util/ConstBuffer.hxx"
 #include "util/StaticFifoBuffer.hxx"
-#include "Log.hxx"
+#include "util/PrintException.hxx"
 
 #include <assert.h>
 #include <stddef.h>
@@ -98,7 +98,7 @@ try {
 	state.Close();
 
 	return EXIT_SUCCESS;
-} catch (const std::exception &e) {
-	LogError(e);
+} catch (...) {
+	PrintException(std::current_exception());
 	return EXIT_FAILURE;
 }

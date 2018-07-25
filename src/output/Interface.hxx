@@ -106,6 +106,28 @@ public:
 	virtual void Close() noexcept = 0;
 
 	/**
+	 * Attempt to change the #AudioFormat.  After successful
+	 * return, the caller may invoke Play() with the new format.
+	 * If necessary, the method should drain old data from its
+	 * buffers.
+	 *
+	 * If this method fails, the caller may then attempt to
+	 * Close() and Open() the object instead.
+	 *
+	 * Throws on error.  After such a failure, this object is in
+	 * an undefined state, and it must be closed.
+	 *
+	 * @param audio_format the audio format in which data is going
+	 * to be delivered; may be modified by the plugin
+	 * @return true on success, false if the operation is not
+	 * supported/implemented (no-op and the old format may still
+	 * be used)
+	 */
+	virtual bool ChangeAudioFormat(AudioFormat &) {
+		return false;
+	}
+
+	/**
 	 * Returns a positive number if the output thread shall further
 	 * delay the next call to Play() or Pause(), which will happen
 	 * until this function returns 0.  This should be implemented

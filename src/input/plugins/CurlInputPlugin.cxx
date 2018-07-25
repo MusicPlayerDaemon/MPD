@@ -19,23 +19,23 @@
 
 #include "config.h"
 #include "CurlInputPlugin.hxx"
+#include "lib/curl/Error.hxx"
 #include "lib/curl/Easy.hxx"
 #include "lib/curl/Global.hxx"
 #include "lib/curl/Init.hxx"
 #include "lib/curl/Request.hxx"
 #include "lib/curl/Handler.hxx"
 #include "lib/curl/Slist.hxx"
+#include "../MaybeBufferedInputStream.hxx"
 #include "../AsyncInputStream.hxx"
 #include "../IcyInputStream.hxx"
 #include "IcyMetaDataParser.hxx"
 #include "../InputPlugin.hxx"
-#include "config/ConfigGlobal.hxx"
 #include "config/Block.hxx"
 #include "tag/Builder.hxx"
 #include "tag/Tag.hxx"
 #include "event/Call.hxx"
 #include "event/Loop.hxx"
-#include "thread/Cond.hxx"
 #include "util/ASCII.hxx"
 #include "util/StringUtil.hxx"
 #include "util/StringFormat.hxx"
@@ -83,7 +83,7 @@ public:
 	CurlInputStream(EventLoop &event_loop, const char *_url,
 			const std::multimap<std::string, std::string> &headers,
 			I &&_icy,
-			Mutex &_mutex, Cond &_cond);
+			Mutex &_mutex);
 
 	~CurlInputStream() noexcept;
 
@@ -92,7 +92,7 @@ public:
 
 	static InputStreamPtr Open(const char *url,
 				   const std::multimap<std::string, std::string> &headers,
-				   Mutex &mutex, Cond &cond);
+				   Mutex &mutex);
 
 private:
 	/**
@@ -194,7 +194,9 @@ CurlInputStream::OnHeaders(unsigned status,
 	assert(!icy || !icy->IsDefined());
 
 	if (status < 200 || status >= 300)
-		throw FormatRuntimeError("got HTTP status %ld", status);
+		throw HttpStatusError(status,
+				      StringFormat<40>("got HTTP status %u",
+						       status).c_str());
 
 	const std::lock_guard<Mutex> protect(mutex);
 
@@ -274,7 +276,7 @@ void
 CurlInputStream::OnEnd()
 {
 	const std::lock_guard<Mutex> protect(mutex);
-	cond.broadcast();
+	InvokeOnAvailable();
 
 	AsyncInputStream::SetClosed();
 }
@@ -290,7 +292,7 @@ CurlInputStream::OnError(std::exception_ptr e) noexcept
 	else if (!IsReady())
 		SetReady();
 	else
-		cond.broadcast();
+		InvokeOnAvailable();
 
 	AsyncInputStream::SetClosed();
 }
@@ -325,15 +327,6 @@ input_curl_init(EventLoop &event_loop, const ConfigBlock &block)
 	proxy_user = block.GetBlockValue("proxy_user");
 	proxy_password = block.GetBlockValue("proxy_password");
 
-	if (proxy == nullptr) {
-		/* deprecated proxy configuration */
-		proxy = config_get_string(ConfigOption::HTTP_PROXY_HOST);
-		proxy_port = config_get_positive(ConfigOption::HTTP_PROXY_PORT, 0);
-		proxy_user = config_get_string(ConfigOption::HTTP_PROXY_USER);
-		proxy_password = config_get_string(ConfigOption::HTTP_PROXY_PASSWORD,
-						   "");
-	}
-
 	verify_peer = block.GetBlockValue("verify_peer", true);
 	verify_host = block.GetBlockValue("verify_host", true);
 }
@@ -352,8 +345,8 @@ inline
 CurlInputStream::CurlInputStream(EventLoop &event_loop, const char *_url,
 				 const std::multimap<std::string, std::string> &headers,
 				 I &&_icy,
-				 Mutex &_mutex, Cond &_cond)
-	:AsyncInputStream(event_loop, _url, _mutex, _cond,
+				 Mutex &_mutex)
+	:AsyncInputStream(event_loop, _url, _mutex,
 			  CURL_MAX_BUFFERED,
 			  CURL_RESUME_AT),
 	 icy(std::forward<I>(_icy))
@@ -445,39 +438,39 @@ CurlInputStream::DoSeek(offset_type new_offset)
 inline InputStreamPtr
 CurlInputStream::Open(const char *url,
 		      const std::multimap<std::string, std::string> &headers,
-		      Mutex &mutex, Cond &cond)
+		      Mutex &mutex)
 {
 	auto icy = std::make_shared<IcyMetaDataParser>();
 
 	auto c = std::make_unique<CurlInputStream>((*curl_init)->GetEventLoop(),
 						   url, headers,
 						   icy,
-						   mutex, cond);
+						   mutex);
 
 	BlockingCall(c->GetEventLoop(), [&c](){
 			c->InitEasy();
 			c->StartRequest();
 		});
 
-	return std::make_unique<IcyInputStream>(std::move(c), std::move(icy));
+	return std::make_unique<MaybeBufferedInputStream>(std::make_unique<IcyInputStream>(std::move(c), std::move(icy)));
 }
 
 InputStreamPtr
 OpenCurlInputStream(const char *uri,
 		    const std::multimap<std::string, std::string> &headers,
-		    Mutex &mutex, Cond &cond)
+		    Mutex &mutex)
 {
-	return CurlInputStream::Open(uri, headers, mutex, cond);
+	return CurlInputStream::Open(uri, headers, mutex);
 }
 
 static InputStreamPtr
-input_curl_open(const char *url, Mutex &mutex, Cond &cond)
+input_curl_open(const char *url, Mutex &mutex)
 {
 	if (strncmp(url, "http://", 7) != 0 &&
 	    strncmp(url, "https://", 8) != 0)
 		return nullptr;
 
-	return CurlInputStream::Open(url, {}, mutex, cond);
+	return CurlInputStream::Open(url, {}, mutex);
 }
 
 const struct InputPlugin input_plugin_curl = {

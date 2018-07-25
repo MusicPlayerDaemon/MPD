@@ -3,9 +3,16 @@ from os.path import abspath
 
 from build.project import Project
 from build.zlib import ZlibProject
+from build.meson import MesonProject
 from build.autotools import AutotoolsProject
 from build.ffmpeg import FfmpegProject
 from build.boost import BoostProject
+
+libmpdclient = MesonProject(
+    'https://www.musicpd.org/download/libmpdclient/2/libmpdclient-2.14.tar.xz',
+    '0a84e2791bfe3077cf22ee1784c805d5bb550803dffe56a39aa3690a38061372',
+    'lib/libmpdclient.a',
+)
 
 libogg = AutotoolsProject(
     'http://downloads.xiph.org/releases/ogg/libogg-1.3.3.tar.xz',
@@ -17,8 +24,8 @@ libogg = AutotoolsProject(
 )
 
 libvorbis = AutotoolsProject(
-    'http://downloads.xiph.org/releases/vorbis/libvorbis-1.3.5.tar.xz',
-    '28cb28097c07a735d6af56e598e1c90f',
+    'http://downloads.xiph.org/releases/vorbis/libvorbis-1.3.6.tar.xz',
+    'af00bb5a784e7c9e69f56823de4637c350643deedaf333d0fa86ecdba6fcb415',
     'lib/libvorbis.a',
     [
         '--disable-shared', '--enable-static',
@@ -105,8 +112,8 @@ liblame = AutotoolsProject(
 )
 
 ffmpeg = FfmpegProject(
-    'http://ffmpeg.org/releases/ffmpeg-3.4.2.tar.xz',
-    '2b92e9578ef8b3e49eeab229e69305f5f4cbc1fdaa22e927fc7fca18acccd740',
+    'http://ffmpeg.org/releases/ffmpeg-4.0.1.tar.xz',
+    '605f5c01c60db35d3b617a79cabb2c7032412be243554602eeed1b628125c0ee',
     'lib/libavcodec.a',
     [
         '--disable-shared', '--enable-static',
@@ -334,8 +341,8 @@ ffmpeg = FfmpegProject(
 )
 
 curl = AutotoolsProject(
-    'http://curl.haxx.se/download/curl-7.59.0.tar.xz',
-    'e44eaabdf916407585bf5c7939ff1161e6242b6b015d3f2f5b758b2a330461fc',
+    'http://curl.haxx.se/download/curl-7.61.0.tar.xz',
+    'ef6e55192d04713673b4409ccbcb4cb6cd723137d6e10ca45b0c593a454e1720',
     'lib/libcurl.a',
     [
         '--disable-shared', '--enable-static',
@@ -358,8 +365,8 @@ curl = AutotoolsProject(
 )
 
 libnfs = AutotoolsProject(
-    'https://github.com/sahlberg/libnfs/archive/libnfs-2.0.0.tar.gz',
-    '7ea6cd8fa6c461d01091e584d424d28e137d23ff4b65b95d01a3fd0ef95d120e',
+    'https://github.com/sahlberg/libnfs/archive/libnfs-3.0.0.tar.gz',
+    '445d92c5fc55e4a5b115e358e60486cf8f87ee50e0103d46a02e7fb4618566a5',
     'lib/libnfs.a',
     [
         '--disable-shared', '--enable-static',
@@ -368,7 +375,7 @@ libnfs = AutotoolsProject(
         # work around -Wtautological-compare
         '--disable-werror',
     ],
-    base='libnfs-libnfs-2.0.0',
+    base='libnfs-libnfs-3.0.0',
     autoreconf=True,
 )
 

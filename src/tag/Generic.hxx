@@ -22,7 +22,7 @@
 
 #include "check.h"
 
-struct TagHandler;
+class TagHandler;
 class InputStream;
 class Path;
 
@@ -31,12 +31,12 @@ class Path;
  * stream does not need to be rewound.
  */
 bool
-ScanGenericTags(InputStream &is, const TagHandler &handler, void *ctx);
+ScanGenericTags(InputStream &is, TagHandler &handler) noexcept;
 
 /**
  * Attempts to scan APE or ID3 tags from the specified file.
  */
 bool
-ScanGenericTags(Path path, const TagHandler &handler, void *ctx);
+ScanGenericTags(Path path, TagHandler &handler) noexcept;
 
 #endif

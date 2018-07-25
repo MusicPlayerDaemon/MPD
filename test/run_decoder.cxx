@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#include "config/ConfigGlobal.hxx"
+#include "config/Global.hxx"
 #include "event/Thread.hxx"
 #include "decoder/DecoderList.hxx"
 #include "decoder/DecoderPlugin.hxx"
@@ -29,6 +29,7 @@
 #include "AudioFormat.hxx"
 #include "util/OptionDef.hxx"
 #include "util/OptionParser.hxx"
+#include "util/PrintException.hxx"
 #include "Log.hxx"
 #include "LogBackend.hxx"
 
@@ -97,8 +98,9 @@ public:
 		if (!config_path.IsNull())
 			ReadConfigFile(config_path);
 
-		input_stream_global_init(io_thread.GetEventLoop());
-		decoder_plugin_init_all();
+		input_stream_global_init(GetGlobalConfig(),
+					 io_thread.GetEventLoop());
+		decoder_plugin_init_all(GetGlobalConfig());
 	}
 
 	~GlobalInit() {
@@ -123,8 +125,7 @@ try {
 	if (plugin->file_decode != nullptr) {
 		plugin->FileDecode(client, Path::FromFS(c.uri));
 	} else if (plugin->stream_decode != nullptr) {
-		auto is = InputStream::OpenReady(c.uri, client.mutex,
-						 client.cond);
+		auto is = InputStream::OpenReady(c.uri, client.mutex);
 		plugin->StreamDecode(client, *is);
 	} else {
 		fprintf(stderr, "Decoder plugin is not usable\n");
@@ -137,7 +138,7 @@ try {
 	}
 
 	return EXIT_SUCCESS;
-} catch (const std::exception &e) {
-	LogError(e);
+} catch (...) {
+	PrintException(std::current_exception());
 	return EXIT_FAILURE;
 }

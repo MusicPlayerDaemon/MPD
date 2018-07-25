@@ -144,6 +144,20 @@ PathTraitsFS::Relative(const_pointer_type base, const_pointer_type other) noexce
 	return RelativePathImpl<PathTraitsFS>(base, other);
 }
 
+PathTraitsFS::string
+PathTraitsFS::Apply(const_pointer_type base, const_pointer_type path) noexcept
+{
+	// TODO: support the Windows syntax (absolute path with or without drive, drive with relative path)
+
+	if (base == nullptr)
+		return path;
+
+	if (IsAbsolute(path))
+		return path;
+
+	return Build(base, path);
+}
+
 PathTraitsUTF8::string
 PathTraitsUTF8::Build(const_pointer_type a, size_t a_size,
 		      const_pointer_type b, size_t b_size) noexcept

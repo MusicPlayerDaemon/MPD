@@ -1,13 +1,19 @@
 ver 0.21 (not yet released)
+* configuration
+  - add "include" directive, allows including config files
 * protocol
   - "tagtypes" can be used to hide tags
   - "find" and "search" can sort
   - "outputs" prints the plugin name
   - "outputset" sets runtime attributes
   - close connection when client sends HTTP request
+  - new filter syntax for "find"/"search" etc. with negation
+* database
+  - simple: scan audio formats
 * player
   - "one-shot" single mode
 * input
+  - curl: download to buffer instead of throttling transfer
   - qobuz: new plugin to play Qobuz streams
   - tidal: new plugin to play Tidal streams
 * tags
@@ -15,6 +21,7 @@ ver 0.21 (not yet released)
 * decoder
   - gme: try loading m3u sidecar files
   - hybrid_dsd: new decoder plugin
+  - mad: move "gapless_mp3_playback" setting to "decoder" block
   - pcm: support audio/L24 (RFC 3190)
 * resampler
   - soxr: flush resampler at end of song
@@ -29,13 +36,40 @@ ver 0.21 (not yet released)
   - sndio: new mixer plugin
 * encoder
   - opus: support for sending metadata using ogg stream chaining
-* require GCC 5.0
+* require GCC 6
 
-ver 0.20.19 (not yet released)
+ver 0.20.21 (not yet released)
+* database
+  - proxy: add "password" setting
+  - proxy: support tags "ArtistSort", "AlbumArtistSort", "AlbumSort"
+  - simple: allow .mpdignore comments only at start of line
+* output
+  - httpd: remove broken DLNA support code
+
+ver 0.20.20 (2018/05/22)
+* protocol
+  - fix "modified-since" filter regression
+* output
+  - pulse: cork stream when paused due to "single" mode
+* decoder
+  - dsdiff, dsf: support more MIME types
+  - dsdiff, dsf: allow 4 MB ID3 tags
+  - opus: support R128_ALBUM_GAIN tag
+* Android, Windows
+  - enable the "proxy" database plugin
+
+ver 0.20.19 (2018/04/26)
 * protocol
   - validate absolute seek time, reject negative values
+* database
+  - proxy: fix "search already in progress" errors
+  - proxy: implement "list ... group"
 * input
   - mms: fix lockup bug and a crash bug
+* decoder
+  - ffmpeg: fix av_register_all() deprecation warning (FFmpeg 4.0)
+* player
+  - fix spurious "Not seekable" error when switching radio streams
 * macOS: fix crash bug
 
 ver 0.20.18 (2018/02/24)

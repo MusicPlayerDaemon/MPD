@@ -21,8 +21,8 @@
 #include "Listen.hxx"
 #include "client/Listener.hxx"
 #include "config/Param.hxx"
-#include "config/ConfigGlobal.hxx"
-#include "config/ConfigOption.hxx"
+#include "config/Data.hxx"
+#include "config/Option.hxx"
 #include "system/Error.hxx"
 #include "util/RuntimeError.hxx"
 #include "fs/AllocatedPath.hxx"
@@ -79,30 +79,26 @@ listen_systemd_activation(ClientListener &listener)
 #endif
 
 void
-listen_global_init(ClientListener &listener)
+listen_global_init(const ConfigData &config, ClientListener &listener)
 {
-	int port = config_get_positive(ConfigOption::PORT, DEFAULT_PORT);
-	const auto *param = config_get_param(ConfigOption::BIND_TO_ADDRESS);
+	int port = config.GetPositive(ConfigOption::PORT, DEFAULT_PORT);
 
 #ifdef ENABLE_SYSTEMD_DAEMON
 	if (listen_systemd_activation(listener))
 		return;
 #endif
 
-	if (param != nullptr) {
-		/* "bind_to_address" is configured, create listeners
-		   for all values */
+	for (const auto &param : config.GetParamList(ConfigOption::BIND_TO_ADDRESS)) {
+		try {
+			listen_add_config_param(listener, port, &param);
+		} catch (...) {
+			std::throw_with_nested(FormatRuntimeError("Failed to listen on %s (line %i)",
+								  param.value.c_str(),
+								  param.line));
+		}
+	}
 
-		do {
-			try {
-				listen_add_config_param(listener, port, param);
-			} catch (...) {
-				std::throw_with_nested(FormatRuntimeError("Failed to listen on %s (line %i)",
-									  param->value.c_str(),
-									  param->line));
-			}
-		} while ((param = param->next) != nullptr);
-	} else {
+	if (listener.IsEmpty()) {
 		/* no "bind_to_address" configured, bind the
 		   configured port on all interfaces */
 

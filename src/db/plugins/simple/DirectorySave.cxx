@@ -161,10 +161,15 @@ directory_load(TextFile &file, Directory &directory)
 			if (directory.FindSong(name) != nullptr)
 				throw FormatRuntimeError("Duplicate song '%s'", name);
 
-			auto song = song_load(file, name);
+			auto audio_format = AudioFormat::Undefined();
+			auto detached_song = song_load(file, name,
+						       &audio_format);
 
-			directory.AddSong(Song::NewFrom(std::move(*song),
-							directory));
+			auto song = Song::NewFrom(std::move(*detached_song),
+						  directory);
+			song->audio_format = audio_format;
+
+			directory.AddSong(song);
 		} else if ((p = StringAfterPrefix(line, PLAYLIST_META_BEGIN))) {
 			const char *name = p;
 			playlist_metadata_load(file, directory.playlists, name);

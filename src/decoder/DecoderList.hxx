@@ -22,6 +22,7 @@
 
 #include "Compiler.h"
 
+struct ConfigData;
 struct DecoderPlugin;
 
 extern const struct DecoderPlugin *const decoder_plugins[];
@@ -35,7 +36,7 @@ decoder_plugin_from_name(const char *name) noexcept;
 
 /* this is where we "load" all the "plugins" ;-) */
 void
-decoder_plugin_init_all();
+decoder_plugin_init_all(const ConfigData &config);
 
 /* this is where we "unload" all the "plugins" */
 void

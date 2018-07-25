@@ -26,14 +26,15 @@
 #include "db/LightDirectory.hxx"
 #include "db/LightSong.hxx"
 #include "db/PlaylistVector.hxx"
-#include "config/ConfigGlobal.hxx"
+#include "config/Global.hxx"
+#include "config/Data.hxx"
 #include "config/Param.hxx"
 #include "config/Block.hxx"
 #include "tag/Config.hxx"
 #include "fs/Path.hxx"
 #include "event/Thread.hxx"
-#include "Log.hxx"
 #include "util/ScopeExit.hxx"
+#include "util/PrintException.hxx"
 
 #include <stdexcept>
 #include <iostream>
@@ -126,16 +127,18 @@ try {
 
 	ReadConfigFile(config_path);
 
-	TagLoadConfig();
+	const auto &config = GetGlobalConfig();
+
+	TagLoadConfig(config);
 
 	MyDatabaseListener database_listener;
 
 	/* do it */
 
-	const auto *path = config_get_param(ConfigOption::DB_FILE);
+	const auto *path = config.GetParam(ConfigOption::DB_FILE);
 	ConfigBlock block(path != nullptr ? path->line : -1);
 	if (path != nullptr)
-		block.AddBlockParam("path", path->value.c_str(), path->line);
+		block.AddBlockParam("path", path->value, path->line);
 
 	Database *db = plugin->create(init.GetEventLoop(),
 				      init.GetEventLoop(),
@@ -152,7 +155,7 @@ try {
 	db->Visit(selection, DumpDirectory, DumpSong, DumpPlaylist);
 
 	return EXIT_SUCCESS;
- } catch (const std::exception &e) {
-	LogError(e);
+} catch (...) {
+	PrintException(std::current_exception());
 	return EXIT_FAILURE;
- }
+}

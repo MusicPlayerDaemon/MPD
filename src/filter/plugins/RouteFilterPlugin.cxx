@@ -40,7 +40,7 @@
  */
 
 #include "config.h"
-#include "config/ConfigError.hxx"
+#include "config/Domain.hxx"
 #include "config/Block.hxx"
 #include "AudioFormat.hxx"
 #include "filter/FilterPlugin.hxx"

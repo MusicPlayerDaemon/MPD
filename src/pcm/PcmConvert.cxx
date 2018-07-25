@@ -25,9 +25,9 @@
 #include <assert.h>
 
 void
-pcm_convert_global_init()
+pcm_convert_global_init(const ConfigData &config)
 {
-	pcm_resampler_global_init();
+	pcm_resampler_global_init(config);
 }
 
 PcmConvert::PcmConvert() noexcept

@@ -26,7 +26,7 @@
 
 struct ConfigBlock;
 class InputStream;
-struct TagHandler;
+class TagHandler;
 class Path;
 class DecoderClient;
 class DetachedSong;
@@ -71,18 +71,14 @@ struct DecoderPlugin {
 	 *
 	 * @return false if the operation has failed
 	 */
-	bool (*scan_file)(Path path_fs,
-			  const TagHandler &handler,
-			  void *handler_ctx) noexcept;
+	bool (*scan_file)(Path path_fs, TagHandler &handler) noexcept;
 
 	/**
 	 * Scan metadata of a file.
 	 *
 	 * @return false if the operation has failed
 	 */
-	bool (*scan_stream)(InputStream &is,
-			    const TagHandler &handler,
-			    void *handler_ctx) noexcept;
+	bool (*scan_stream)(InputStream &is, TagHandler &handler) noexcept;
 
 	/**
 	 * @brief Return a "virtual" filename for subtracks in
@@ -139,20 +135,18 @@ struct DecoderPlugin {
 	 * Read the tag of a file.
 	 */
 	template<typename P>
-	bool ScanFile(P path_fs,
-		      const TagHandler &handler, void *handler_ctx) const noexcept {
+	bool ScanFile(P path_fs, TagHandler &handler) const noexcept {
 		return scan_file != nullptr
-			? scan_file(path_fs, handler, handler_ctx)
+			? scan_file(path_fs, handler)
 			: false;
 	}
 
 	/**
 	 * Read the tag of a stream.
 	 */
-	bool ScanStream(InputStream &is,
-			const TagHandler &handler, void *handler_ctx) const noexcept {
+	bool ScanStream(InputStream &is, TagHandler &handler) const noexcept {
 		return scan_stream != nullptr
-			? scan_stream(is, handler, handler_ctx)
+			? scan_stream(is, handler)
 			: false;
 	}
 

@@ -35,8 +35,8 @@ class FileInputStream final : public InputStream {
 
 public:
 	FileInputStream(const char *path, FileReader &&_reader, off_t _size,
-			Mutex &_mutex, Cond &_cond)
-		:InputStream(path, _mutex, _cond),
+			Mutex &_mutex)
+		:InputStream(path, _mutex),
 		 reader(std::move(_reader)) {
 		size = _size;
 		seekable = true;
@@ -54,8 +54,7 @@ public:
 };
 
 InputStreamPtr
-OpenFileInputStream(Path path,
-		    Mutex &mutex, Cond &cond)
+OpenFileInputStream(Path path, Mutex &mutex)
 {
 	FileReader reader(path);
 
@@ -73,9 +72,9 @@ OpenFileInputStream(Path path,
 #endif
 #endif
 
-	return std::make_unique<FileInputStream>(path.ToUTF8().c_str(),
+	return std::make_unique<FileInputStream>(path.ToUTF8Throw().c_str(),
 						 std::move(reader), info.GetSize(),
-						 mutex, cond);
+						 mutex);
 }
 
 void

@@ -3,10 +3,9 @@
  */
 
 #include "config.h"
-#include "input/plugins/RewindInputPlugin.hxx"
+#include "input/RewindInputStream.hxx"
 #include "input/InputStream.hxx"
 #include "thread/Mutex.hxx"
-#include "thread/Cond.hxx"
 
 #include <cppunit/TestFixture.h>
 #include <cppunit/extensions/TestFactoryRegistry.h>
@@ -24,9 +23,9 @@ class StringInputStream final : public InputStream {
 
 public:
 	StringInputStream(const char *_uri,
-			  Mutex &_mutex, Cond &_cond,
+			  Mutex &_mutex,
 			  const char *_data)
-		:InputStream(_uri, _mutex, _cond),
+		:InputStream(_uri, _mutex),
 		 data(_data), remaining(strlen(data)) {
 		SetReady();
 	}
@@ -54,10 +53,9 @@ class RewindTest : public CppUnit::TestFixture {
 public:
 	void TestRewind() {
 		Mutex mutex;
-		Cond cond;
 
 		StringInputStream *sis =
-			new StringInputStream("foo://", mutex, cond,
+			new StringInputStream("foo://", mutex,
 					      "foo bar");
 		CPPUNIT_ASSERT(sis->IsReady());
 

@@ -20,13 +20,14 @@
 #ifndef MPD_INPUT_INIT_HXX
 #define MPD_INPUT_INIT_HXX
 
+struct ConfigData;
 class EventLoop;
 
 /**
  * Initializes this library and all #InputStream implementations.
  */
 void
-input_stream_global_init(EventLoop &event_loop);
+input_stream_global_init(const ConfigData &config, EventLoop &event_loop);
 
 /**
  * Deinitializes this library and all #InputStream implementations.

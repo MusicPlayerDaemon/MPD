@@ -115,9 +115,8 @@ dsdlib_valid_freq(uint32_t samplefreq) noexcept
 
 #ifdef ENABLE_ID3TAG
 void
-dsdlib_tag_id3(InputStream &is,
-	       const TagHandler &handler,
-	       void *handler_ctx, offset_type tagoffset)
+dsdlib_tag_id3(InputStream &is, TagHandler &handler,
+	       offset_type tagoffset)
 {
 	if (tagoffset == 0 || !is.KnownSize())
 		return;
@@ -128,7 +127,7 @@ dsdlib_tag_id3(InputStream &is,
 		return;
 
 	const auto count64 = size - tagoffset;
-	if (count64 < 10 || count64 > 1024 * 1024)
+	if (count64 < 10 || count64 > 4 * 1024 * 1024)
 		return;
 
 	if (!dsdlib_skip_to(nullptr, is, tagoffset))
@@ -150,7 +149,7 @@ dsdlib_tag_id3(InputStream &is,
 	if (id3_tag == nullptr)
 		return;
 
-	scan_id3_tag(id3_tag, handler, handler_ctx);
+	scan_id3_tag(id3_tag, handler);
 
 	id3_tag_delete(id3_tag);
 	return;

@@ -25,6 +25,7 @@
 #ifndef MPD_PLAYLIST_STATE_HXX
 #define MPD_PLAYLIST_STATE_HXX
 
+struct StateFileConfig;
 struct playlist;
 struct PlayerControl;
 class TextFile;
@@ -36,7 +37,8 @@ playlist_state_save(BufferedOutputStream &os, const playlist &playlist,
 		    PlayerControl &pc);
 
 bool
-playlist_state_restore(const char *line, TextFile &file,
+playlist_state_restore(const StateFileConfig &config,
+		       const char *line, TextFile &file,
 		       const SongLoader &song_loader,
 		       playlist &playlist, PlayerControl &pc);
 

@@ -22,7 +22,7 @@
 #include "DetachedSong.hxx"
 #include "playlist/SongEnumerator.hxx"
 #include "input/InputStream.hxx"
-#include "config/ConfigGlobal.hxx"
+#include "config/Global.hxx"
 #include "decoder/DecoderList.hxx"
 #include "input/Init.hxx"
 #include "event/Thread.hxx"
@@ -32,7 +32,7 @@
 #include "fs/io/BufferedOutputStream.hxx"
 #include "fs/io/StdioOutputStream.hxx"
 #include "thread/Cond.hxx"
-#include "Log.hxx"
+#include "util/PrintException.hxx"
 
 #include <unistd.h>
 #include <stdlib.h>
@@ -67,21 +67,20 @@ try {
 	EventThread io_thread;
 	io_thread.Start();
 
-	input_stream_global_init(io_thread.GetEventLoop());
-	playlist_list_global_init();
-	decoder_plugin_init_all();
+	input_stream_global_init(GetGlobalConfig(), io_thread.GetEventLoop());
+	playlist_list_global_init(GetGlobalConfig());
+	decoder_plugin_init_all(GetGlobalConfig());
 
 	/* open the playlist */
 
 	Mutex mutex;
-	Cond cond;
 
 	InputStreamPtr is;
-	auto playlist = playlist_list_open_uri(uri, mutex, cond);
+	auto playlist = playlist_list_open_uri(uri, mutex);
 	if (playlist == NULL) {
 		/* open the stream and wait until it becomes ready */
 
-		is = InputStream::OpenReady(uri, mutex, cond);
+		is = InputStream::OpenReady(uri, mutex);
 
 		/* open the playlist */
 
@@ -126,7 +125,7 @@ try {
 	config_global_finish();
 
 	return EXIT_SUCCESS;
- } catch (const std::exception &e) {
-	LogError(e);
+} catch (...) {
+	PrintException(std::current_exception());
 	return EXIT_FAILURE;
- }
+}

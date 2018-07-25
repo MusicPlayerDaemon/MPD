@@ -96,14 +96,6 @@
 #
 #log_level			"default"
 #
-# If you have a problem with your MP3s ending abruptly it is recommended that 
-# you set this argument to "no" to attempt to fix the problem. If this solves
-# the problem, it is highly recommended to fix the MP3 files with vbrfix
-# (available from <http://www.willwap.co.uk/Programs/vbrfix.php>), at which
-# point gapless MP3 playback can be enabled.
-#
-#gapless_mp3_playback			"yes"
-#
 # Setting "restore_paused" to "yes" puts MPD into pause mode instead
 # of starting playback after startup.
 #

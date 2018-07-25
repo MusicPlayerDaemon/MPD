@@ -21,8 +21,8 @@
 #include "ZeroconfGlue.hxx"
 #include "ZeroconfAvahi.hxx"
 #include "ZeroconfBonjour.hxx"
-#include "config/ConfigGlobal.hxx"
-#include "config/ConfigOption.hxx"
+#include "config/Data.hxx"
+#include "config/Option.hxx"
 #include "Listen.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
@@ -40,12 +40,12 @@ static constexpr Domain zeroconf_domain("zeroconf");
 static int zeroconfEnabled;
 
 void
-ZeroconfInit(gcc_unused EventLoop &loop)
+ZeroconfInit(const ConfigData &config, gcc_unused EventLoop &loop)
 {
 	const char *serviceName;
 
-	zeroconfEnabled = config_get_bool(ConfigOption::ZEROCONF_ENABLED,
-					  DEFAULT_ZEROCONF_ENABLED);
+	zeroconfEnabled = config.GetBool(ConfigOption::ZEROCONF_ENABLED,
+					 DEFAULT_ZEROCONF_ENABLED);
 	if (!zeroconfEnabled)
 		return;
 
@@ -56,8 +56,8 @@ ZeroconfInit(gcc_unused EventLoop &loop)
 		return;
 	}
 
-	serviceName = config_get_string(ConfigOption::ZEROCONF_NAME,
-					SERVICE_NAME);
+	serviceName = config.GetString(ConfigOption::ZEROCONF_NAME,
+				       SERVICE_NAME);
 
 #ifdef HAVE_AVAHI
 	AvahiInit(loop, serviceName);

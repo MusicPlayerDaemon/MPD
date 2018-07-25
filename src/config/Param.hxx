@@ -28,33 +28,20 @@
 class AllocatedPath;
 
 struct ConfigParam {
-	/**
-	 * The next ConfigParam with the same name.  The destructor
-	 * deletes the whole chain.
-	 */
-	ConfigParam *next;
-
 	std::string value;
 
 	int line;
 
-	/**
-	 * This flag is false when nobody has queried the value of
-	 * this option yet.
-	 */
-	bool used;
-
 	explicit ConfigParam(int _line=-1)
-		:next(nullptr), line(_line), used(false) {}
+		:line(_line) {}
 
+	template<typename V>
 	gcc_nonnull_all
-	ConfigParam(const char *_value, int _line=-1);
+	explicit ConfigParam(V &&_value, int _line=-1) noexcept
+		:value(std::forward<V>(_value)), line(_line) {}
 
-	ConfigParam(const ConfigParam &) = delete;
-
-	~ConfigParam();
-
-	ConfigParam &operator=(const ConfigParam &) = delete;
+	ConfigParam(ConfigParam &&) = default;
+	ConfigParam &operator=(ConfigParam &&) = default;
 
 	/**
 	 * Determine if this is a "null" instance, i.e. an empty

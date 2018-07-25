@@ -22,9 +22,10 @@
 
 #include "check.h"
 
+struct ConfigData;
 struct ReplayGainConfig;
 
 ReplayGainConfig
-LoadReplayGainConfig();
+LoadReplayGainConfig(const ConfigData &config);
 
 #endif

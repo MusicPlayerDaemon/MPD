@@ -19,7 +19,6 @@
 
 #include "config.h"
 #include "MusicPipe.hxx"
-#include "MusicBuffer.hxx"
 #include "MusicChunk.hxx"
 
 #ifndef NDEBUG
@@ -29,7 +28,7 @@ MusicPipe::Contains(const MusicChunk *chunk) const noexcept
 {
 	const std::lock_guard<Mutex> protect(mutex);
 
-	for (const MusicChunk *i = head; i != nullptr; i = i->next)
+	for (const MusicChunk *i = head.get(); i != nullptr; i = i->next.get())
 		if (i == chunk)
 			return true;
 
@@ -38,16 +37,16 @@ MusicPipe::Contains(const MusicChunk *chunk) const noexcept
 
 #endif
 
-MusicChunk *
+MusicChunkPtr
 MusicPipe::Shift() noexcept
 {
 	const std::lock_guard<Mutex> protect(mutex);
 
-	MusicChunk *chunk = head;
+	auto chunk = std::move(head);
 	if (chunk != nullptr) {
 		assert(!chunk->IsEmpty());
 
-		head = chunk->next;
+		head = std::move(chunk->next);
 		--size;
 
 		if (head == nullptr) {
@@ -61,9 +60,6 @@ MusicPipe::Shift() noexcept
 		}
 
 #ifndef NDEBUG
-		/* poison the "next" reference */
-		chunk->next = (MusicChunk *)(void *)0x01010101;
-
 		if (size == 0)
 			audio_format.Clear();
 #endif
@@ -73,16 +69,13 @@ MusicPipe::Shift() noexcept
 }
 
 void
-MusicPipe::Clear(MusicBuffer &buffer) noexcept
+MusicPipe::Clear() noexcept
 {
-	MusicChunk *chunk;
-
-	while ((chunk = Shift()) != nullptr)
-		buffer.Return(chunk);
+	while (Shift()) {}
 }
 
 void
-MusicPipe::Push(MusicChunk *chunk) noexcept
+MusicPipe::Push(MusicChunkPtr chunk) noexcept
 {
 	assert(!chunk->IsEmpty());
 	assert(chunk->length == 0 || chunk->audio_format.IsValid());
@@ -98,9 +91,9 @@ MusicPipe::Push(MusicChunk *chunk) noexcept
 		audio_format = chunk->audio_format;
 #endif
 
-	chunk->next = nullptr;
-	*tail_r = chunk;
-	tail_r = &chunk->next;
+	chunk->next.reset();
+	*tail_r = std::move(chunk);
+	tail_r = &(*tail_r)->next;
 
 	++size;
 }

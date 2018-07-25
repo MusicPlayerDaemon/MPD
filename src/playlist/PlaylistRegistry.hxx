@@ -23,8 +23,8 @@
 #include "input/Ptr.hxx"
 #include "Compiler.h"
 
+struct ConfigData;
 class Mutex;
-class Cond;
 class SongEnumerator;
 
 extern const struct playlist_plugin *const playlist_plugins[];
@@ -39,7 +39,7 @@ extern const struct playlist_plugin *const playlist_plugins[];
  * Initializes all playlist plugins.
  */
 void
-playlist_list_global_init();
+playlist_list_global_init(const ConfigData &config);
 
 /**
  * Deinitializes all playlist plugins.
@@ -51,7 +51,7 @@ playlist_list_global_finish() noexcept;
  * Opens a playlist by its URI.
  */
 std::unique_ptr<SongEnumerator>
-playlist_list_open_uri(const char *uri, Mutex &mutex, Cond &cond);
+playlist_list_open_uri(const char *uri, Mutex &mutex);
 
 std::unique_ptr<SongEnumerator>
 playlist_list_open_stream_suffix(InputStreamPtr &&is, const char *suffix);

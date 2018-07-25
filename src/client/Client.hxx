@@ -37,6 +37,7 @@
 
 #include <stddef.h>
 
+struct ConfigData;
 class SocketAddress;
 class UniqueSocketDescriptor;
 class EventLoop;
@@ -97,7 +98,9 @@ public:
 	std::list<ClientMessage> messages;
 
 	Client(EventLoop &loop, Partition &partition,
-	       UniqueSocketDescriptor fd, int uid, int num) noexcept;
+	       UniqueSocketDescriptor fd, int uid,
+	       unsigned _permission,
+	       int num) noexcept;
 
 	~Client() noexcept {
 		if (FullyBufferedSocket::IsDefined())
@@ -235,10 +238,11 @@ private:
 };
 
 void
-client_manager_init();
+client_manager_init(const ConfigData &config);
 
 void
 client_new(EventLoop &loop, Partition &partition,
-	   UniqueSocketDescriptor fd, SocketAddress address, int uid) noexcept;
+	   UniqueSocketDescriptor fd, SocketAddress address, int uid,
+	   unsigned permission) noexcept;
 
 #endif

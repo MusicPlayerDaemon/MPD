@@ -18,13 +18,13 @@
  */
 
 #include "config.h"
-#include "Log.hxx"
 #include "event/Thread.hxx"
 #include "storage/Registry.hxx"
 #include "storage/StorageInterface.hxx"
 #include "storage/FileInfo.hxx"
 #include "net/Init.hxx"
 #include "util/ChronoUtil.hxx"
+#include "util/PrintException.hxx"
 
 #include <memory>
 #include <stdexcept>
@@ -124,7 +124,7 @@ try {
 	}
 
 	return EXIT_SUCCESS;
-} catch (const std::exception &e) {
-	LogError(e);
+} catch (...) {
+	PrintException(std::current_exception());
 	return EXIT_FAILURE;
 }

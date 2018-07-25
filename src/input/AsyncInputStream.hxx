@@ -70,7 +70,7 @@ protected:
 
 public:
 	AsyncInputStream(EventLoop &event_loop, const char *_url,
-			 Mutex &_mutex, Cond &_cond,
+			 Mutex &_mutex,
 			 size_t _buffer_size,
 			 size_t _resume_at);
 

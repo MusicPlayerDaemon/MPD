@@ -22,8 +22,9 @@
 #include "FlacStreamDecoder.hxx"
 #include "FlacDomain.hxx"
 #include "FlacCommon.hxx"
-#include "FlacMetadata.hxx"
+#include "lib/xiph/FlacMetadataChain.hxx"
 #include "OggCodec.hxx"
+#include "input/InputStream.hxx"
 #include "fs/Path.hxx"
 #include "fs/NarrowPath.hxx"
 #include "Log.hxx"
@@ -69,8 +70,7 @@ flac_write_cb(const FLAC__StreamDecoder *dec, const FLAC__Frame *frame,
 }
 
 static bool
-flac_scan_file(Path path_fs,
-	       const TagHandler &handler, void *handler_ctx) noexcept
+flac_scan_file(Path path_fs, TagHandler &handler) noexcept
 {
 	FlacMetadataChain chain;
 	if (!chain.Read(NarrowPath(path_fs))) {
@@ -80,13 +80,12 @@ flac_scan_file(Path path_fs,
 		return false;
 	}
 
-	chain.Scan(handler, handler_ctx);
+	chain.Scan(handler);
 	return true;
 }
 
 static bool
-flac_scan_stream(InputStream &is,
-		 const TagHandler &handler, void *handler_ctx) noexcept
+flac_scan_stream(InputStream &is, TagHandler &handler) noexcept
 {
 	FlacMetadataChain chain;
 	if (!chain.Read(is)) {
@@ -96,7 +95,7 @@ flac_scan_stream(InputStream &is,
 		return false;
 	}
 
-	chain.Scan(handler, handler_ctx);
+	chain.Scan(handler);
 	return true;
 }
 
@@ -315,8 +314,7 @@ oggflac_init(gcc_unused const ConfigBlock &block)
 }
 
 static bool
-oggflac_scan_file(Path path_fs,
-		  const TagHandler &handler, void *handler_ctx) noexcept
+oggflac_scan_file(Path path_fs, TagHandler &handler) noexcept
 {
 	FlacMetadataChain chain;
 	if (!chain.ReadOgg(NarrowPath(path_fs))) {
@@ -326,13 +324,12 @@ oggflac_scan_file(Path path_fs,
 		return false;
 	}
 
-	chain.Scan(handler, handler_ctx);
+	chain.Scan(handler);
 	return true;
 }
 
 static bool
-oggflac_scan_stream(InputStream &is,
-		    const TagHandler &handler, void *handler_ctx) noexcept
+oggflac_scan_stream(InputStream &is, TagHandler &handler) noexcept
 {
 	FlacMetadataChain chain;
 	if (!chain.ReadOgg(is)) {
@@ -342,7 +339,7 @@ oggflac_scan_stream(InputStream &is,
 		return false;
 	}
 
-	chain.Scan(handler, handler_ctx);
+	chain.Scan(handler);
 	return true;
 }
 

@@ -35,6 +35,7 @@
 #include "Instance.hxx"
 #include "BulkEdit.hxx"
 #include "util/ConstBuffer.hxx"
+#include "util/Exception.hxx"
 #include "util/StringAPI.hxx"
 #include "util/NumberParser.hxx"
 
@@ -264,8 +265,11 @@ handle_playlist_match(Client &client, Request args, Response &r,
 		      bool fold_case)
 {
 	SongFilter filter;
-	if (!filter.Parse(args, fold_case)) {
-		r.Error(ACK_ERROR_ARG, "incorrect arguments");
+	try {
+		filter.Parse(args, fold_case);
+	} catch (...) {
+		r.Error(ACK_ERROR_ARG,
+			GetFullMessage(std::current_exception()).c_str());
 		return CommandResult::ERROR;
 	}
 

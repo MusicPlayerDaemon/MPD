@@ -25,6 +25,7 @@
 
 #include <memory>
 
+struct ConfigData;
 class Storage;
 class EventLoop;
 
@@ -35,13 +36,13 @@ class EventLoop;
  * Throws #std::runtime_error on error.
  */
 std::unique_ptr<Storage>
-CreateConfiguredStorage(EventLoop &event_loop);
+CreateConfiguredStorage(const ConfigData &config, EventLoop &event_loop);
 
 /**
  * Returns true if there is configuration for a #Storage instance.
  */
 gcc_const
 bool
-IsStorageConfigured() noexcept;
+IsStorageConfigured(const ConfigData &config) noexcept;
 
 #endif

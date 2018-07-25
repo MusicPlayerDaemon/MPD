@@ -35,8 +35,8 @@ class FailingInputStream final : public InputStream {
 public:
 	explicit FailingInputStream(const char *_uri,
 				    const std::exception_ptr _error,
-				    Mutex &_mutex, Cond &_cond) noexcept
-		:InputStream(_uri, _mutex, _cond), error(_error) {
+				    Mutex &_mutex) noexcept
+		:InputStream(_uri, _mutex), error(_error) {
 		SetReady();
 	}
 

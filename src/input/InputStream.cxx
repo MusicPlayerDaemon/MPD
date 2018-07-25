@@ -19,8 +19,8 @@
 
 #include "config.h"
 #include "InputStream.hxx"
+#include "Handler.hxx"
 #include "tag/Tag.hxx"
-#include "thread/Cond.hxx"
 #include "util/StringCompare.hxx"
 
 #include <stdexcept>
@@ -47,26 +47,8 @@ InputStream::SetReady() noexcept
 	assert(!ready);
 
 	ready = true;
-	cond.broadcast();
-}
 
-void
-InputStream::WaitReady() noexcept
-{
-	while (true) {
-		Update();
-		if (ready)
-			break;
-
-		cond.wait(mutex);
-	}
-}
-
-void
-InputStream::LockWaitReady() noexcept
-{
-	const std::lock_guard<Mutex> protect(mutex);
-	WaitReady();
+	InvokeOnReady();
 }
 
 /**
@@ -79,6 +61,8 @@ static bool
 ExpensiveSeeking(const char *uri) noexcept
 {
 	return StringStartsWith(uri, "http://") ||
+		StringStartsWith(uri, "tidal://") ||
+		StringStartsWith(uri, "qobuz://") ||
 		StringStartsWith(uri, "https://");
 }
 
@@ -174,4 +158,18 @@ InputStream::LockIsEOF() noexcept
 {
 	const std::lock_guard<Mutex> protect(mutex);
 	return IsEOF();
+}
+
+void
+InputStream::InvokeOnReady() noexcept
+{
+	if (handler != nullptr)
+		handler->OnInputStreamReady();
+}
+
+void
+InputStream::InvokeOnAvailable() noexcept
+{
+	if (handler != nullptr)
+		handler->OnInputStreamAvailable();
 }

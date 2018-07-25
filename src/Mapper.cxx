@@ -82,7 +82,7 @@ map_uri_fs(const char *uri) noexcept
 	if (uri_fs.IsNull())
 		return nullptr;
 
-	return AllocatedPath::Build(music_dir_fs, uri_fs);
+	return music_dir_fs / uri_fs;
 }
 
 std::string
@@ -128,5 +128,5 @@ map_spl_utf8_to_fs(const char *name) noexcept
 	if (filename_fs.IsNull())
 		return nullptr;
 
-	return AllocatedPath::Build(playlist_dir_fs, filename_fs);
+	return playlist_dir_fs / filename_fs;
 }

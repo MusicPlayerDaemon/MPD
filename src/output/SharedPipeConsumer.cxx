@@ -33,7 +33,7 @@ SharedPipeConsumer::Get() noexcept
 			return nullptr;
 
 		consumed = false;
-		return chunk = chunk->next;
+		return chunk = chunk->next.get();
 	} else {
 		/* get the first chunk from the pipe */
 		consumed = false;

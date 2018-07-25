@@ -34,6 +34,7 @@
 #include "tag/Builder.hxx"
 #include "tag/Tag.hxx"
 #include "tag/Mask.hxx"
+#include "tag/ParseName.hxx"
 #include "util/ScopeExit.hxx"
 #include "util/RuntimeError.hxx"
 #include "protocol/Ack.hxx"
@@ -83,6 +84,7 @@ class ProxyDatabase final : public Database, SocketMonitor, IdleMonitor {
 	DatabaseListener &listener;
 
 	const std::string host;
+	const std::string password;
 	const unsigned port;
 	const bool keepalive;
 
@@ -176,6 +178,13 @@ static constexpr struct {
 	{ TAG_MUSICBRAINZ_RELEASETRACKID,
 	  MPD_TAG_MUSICBRAINZ_RELEASETRACKID },
 #endif
+#if LIBMPDCLIENT_CHECK_VERSION(2,11,0)
+	{ TAG_ARTIST_SORT, MPD_TAG_ARTIST_SORT },
+	{ TAG_ALBUM_ARTIST_SORT, MPD_TAG_ALBUM_ARTIST_SORT },
+#endif
+#if LIBMPDCLIENT_CHECK_VERSION(2,12,0)
+	{ TAG_ALBUM_SORT, MPD_TAG_ALBUM_SORT },
+#endif
 	{ TAG_NUM_OF_ITEM_TYPES, MPD_TAG_COUNT }
 };
 
@@ -194,22 +203,15 @@ Copy(TagBuilder &tag, TagType d_tag,
 }
 
 ProxySong::ProxySong(const mpd_song *song)
+	:LightSong(mpd_song_get_uri(song), tag2)
 {
-	directory = nullptr;
-	uri = mpd_song_get_uri(song);
-	real_uri = nullptr;
-	tag = &tag2;
-
 	const auto _mtime = mpd_song_get_last_modified(song);
-	mtime = _mtime > 0
-		? std::chrono::system_clock::from_time_t(_mtime)
-		: std::chrono::system_clock::time_point::min();
+	if (_mtime > 0)
+		mtime = std::chrono::system_clock::from_time_t(_mtime);
 
 #if LIBMPDCLIENT_CHECK_VERSION(2,3,0)
 	start_time = SongTime::FromS(mpd_song_get_start(song));
 	end_time = SongTime::FromS(mpd_song_get_end(song));
-#else
-	start_time = end_time = SongTime::zero();
 #endif
 
 	TagBuilder tag_builder;
@@ -266,49 +268,53 @@ CheckError(struct mpd_connection *connection)
 }
 
 static bool
-SendConstraints(mpd_connection *connection, const SongFilter::Item &item)
+SendConstraints(mpd_connection *connection, const ISongFilter &f)
 {
-	switch (item.GetTag()) {
-		mpd_tag_type tag;
-
-#if LIBMPDCLIENT_CHECK_VERSION(2,9,0)
-	case LOCATE_TAG_BASE_TYPE:
-		if (mpd_connection_cmp_server_version(connection, 0, 18, 0) < 0)
-			/* requires MPD 0.18 */
+	if (auto t = dynamic_cast<const TagSongFilter *>(&f)) {
+		if (t->IsNegated())
+			// TODO implement
 			return true;
 
-		return mpd_search_add_base_constraint(connection,
-						      MPD_OPERATOR_DEFAULT,
-						      item.GetValue());
-#endif
+		if (t->GetTagType() == TAG_NUM_OF_ITEM_TYPES)
+			return mpd_search_add_any_tag_constraint(connection,
+								 MPD_OPERATOR_DEFAULT,
+								 t->GetValue().c_str());
 
-	case LOCATE_TAG_FILE_TYPE:
-		return mpd_search_add_uri_constraint(connection,
-						     MPD_OPERATOR_DEFAULT,
-						     item.GetValue());
-
-	case LOCATE_TAG_ANY_TYPE:
-		return mpd_search_add_any_tag_constraint(connection,
-							 MPD_OPERATOR_DEFAULT,
-							 item.GetValue());
-
-	default:
-		tag = Convert(TagType(item.GetTag()));
+		const auto tag = Convert(t->GetTagType());
 		if (tag == MPD_TAG_COUNT)
 			return true;
 
 		return mpd_search_add_tag_constraint(connection,
 						     MPD_OPERATOR_DEFAULT,
 						     tag,
-						     item.GetValue());
-	}
+						     t->GetValue().c_str());
+	} else if (auto u = dynamic_cast<const UriSongFilter *>(&f)) {
+		if (u->IsNegated())
+			// TODO implement
+			return true;
+
+		return mpd_search_add_uri_constraint(connection,
+						     MPD_OPERATOR_DEFAULT,
+						     u->GetValue().c_str());
+#if LIBMPDCLIENT_CHECK_VERSION(2,9,0)
+	} else if (auto b = dynamic_cast<const BaseSongFilter *>(&f)) {
+		if (mpd_connection_cmp_server_version(connection, 0, 18, 0) < 0)
+			/* requires MPD 0.18 */
+			return true;
+
+		return mpd_search_add_base_constraint(connection,
+						      MPD_OPERATOR_DEFAULT,
+						      b->GetValue());
+#endif
+	} else
+		return true;
 }
 
 static bool
 SendConstraints(mpd_connection *connection, const SongFilter &filter)
 {
 	for (const auto &i : filter.GetItems())
-		if (!SendConstraints(connection, i))
+		if (!SendConstraints(connection, *i))
 			return false;
 
 	return true;
@@ -335,12 +341,42 @@ SendConstraints(mpd_connection *connection, const DatabaseSelection &selection)
 	return true;
 }
 
+static bool
+SendGroupMask(mpd_connection *connection, TagMask mask)
+{
+#if LIBMPDCLIENT_CHECK_VERSION(2,12,0)
+	for (unsigned i = 0; i < TAG_NUM_OF_ITEM_TYPES; ++i) {
+		const auto tag_type = TagType(i);
+		if (!mask.Test(tag_type))
+			continue;
+
+		const auto tag = Convert(tag_type);
+		if (tag == MPD_TAG_COUNT)
+			throw std::runtime_error("Unsupported tag");
+
+		if (!mpd_search_add_group_tag(connection, tag))
+			return false;
+	}
+
+	return true;
+#else
+	(void)connection;
+	(void)mask;
+
+	if (mask.TestAny())
+		throw std::runtime_error("Grouping requires libmpdclient 2.12");
+
+	return true;
+#endif
+}
+
 ProxyDatabase::ProxyDatabase(EventLoop &_loop, DatabaseListener &_listener,
 			     const ConfigBlock &block)
 	:Database(proxy_db_plugin),
 	 SocketMonitor(_loop), IdleMonitor(_loop),
 	 listener(_listener),
 	 host(block.GetBlockValue("host", "")),
+	 password(block.GetBlockValue("password", "")),
 	 port(block.GetBlockValue("port", 0u)),
 	 keepalive(block.GetBlockValue("keepalive", false))
 {
@@ -385,6 +421,10 @@ ProxyDatabase::Connect()
 
 	try {
 		CheckError(connection);
+
+		if (!password.empty() &&
+		    !mpd_run_password(connection, password.c_str()))
+			ThrowError(connection);
 	} catch (...) {
 		mpd_connection_free(connection);
 		connection = nullptr;
@@ -700,7 +740,7 @@ static void
 SearchSongs(struct mpd_connection *connection,
 	    const DatabaseSelection &selection,
 	    VisitSong visit_song)
-{
+try {
 	assert(selection.recursive);
 	assert(visit_song);
 
@@ -727,6 +767,11 @@ SearchSongs(struct mpd_connection *connection,
 
 	if (!mpd_response_finish(connection))
 		ThrowError(connection);
+} catch (...) {
+	if (connection != nullptr)
+		mpd_search_cancel(connection);
+
+	throw;
 }
 
 /**
@@ -774,9 +819,9 @@ ProxyDatabase::Visit(const DatabaseSelection &selection,
 void
 ProxyDatabase::VisitUniqueTags(const DatabaseSelection &selection,
 			       TagType tag_type,
-			       gcc_unused TagMask group_mask,
+			       TagMask group_mask,
 			       VisitTag visit_tag) const
-{
+try {
 	// TODO: eliminate the const_cast
 	const_cast<ProxyDatabase *>(this)->EnsureConnected();
 
@@ -785,32 +830,47 @@ ProxyDatabase::VisitUniqueTags(const DatabaseSelection &selection,
 		throw std::runtime_error("Unsupported tag");
 
 	if (!mpd_search_db_tags(connection, tag_type2) ||
-	    !SendConstraints(connection, selection))
+	    !SendConstraints(connection, selection) ||
+	    !SendGroupMask(connection, group_mask))
 		ThrowError(connection);
-
-	// TODO: use group_mask
 
 	if (!mpd_search_commit(connection))
 		ThrowError(connection);
 
-	while (auto *pair = mpd_recv_pair_tag(connection, tag_type2)) {
+	TagBuilder builder;
+
+	while (auto *pair = mpd_recv_pair(connection)) {
 		AtScopeExit(this, pair) {
 			mpd_return_pair(connection, pair);
 		};
 
-		TagBuilder tag;
-		tag.AddItem(tag_type, pair->value);
+		const auto current_type = tag_name_parse_i(pair->name);
+		if (current_type == TAG_NUM_OF_ITEM_TYPES)
+			continue;
 
-		if (tag.empty())
+		if (current_type == tag_type && !builder.empty()) {
+			try {
+				visit_tag(builder.Commit());
+			} catch (...) {
+				mpd_response_finish(connection);
+				throw;
+			}
+		}
+
+		builder.AddItem(current_type, pair->value);
+
+		if (!builder.HasType(current_type))
 			/* if no tag item has been added, then the
 			   given value was not acceptable
 			   (e.g. empty); forcefully insert an empty
 			   tag in this case, as the caller expects the
 			   given tag type to be present */
-			tag.AddEmptyItem(tag_type);
+			builder.AddEmptyItem(current_type);
+	}
 
+	if (!builder.empty()) {
 		try {
-			visit_tag(tag.Commit());
+			visit_tag(builder.Commit());
 		} catch (...) {
 			mpd_response_finish(connection);
 			throw;
@@ -819,6 +879,11 @@ ProxyDatabase::VisitUniqueTags(const DatabaseSelection &selection,
 
 	if (!mpd_response_finish(connection))
 		ThrowError(connection);
+} catch (...) {
+	if (connection != nullptr)
+		mpd_search_cancel(connection);
+
+	throw;
 }
 
 DatabaseStats

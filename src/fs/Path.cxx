@@ -25,10 +25,16 @@ std::string
 Path::ToUTF8() const noexcept
 {
 	try {
-		return ::PathToUTF8(c_str());
+		return ToUTF8Throw();
 	} catch (...) {
 		return std::string();
 	}
+}
+
+std::string
+Path::ToUTF8Throw() const
+{
+	return ::PathToUTF8(c_str());
 }
 
 Path::const_pointer_type
