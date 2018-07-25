@@ -303,7 +303,7 @@ PrintUniqueTag(Response &r, TagType tag_type,
 
 void
 PrintUniqueTags(Response &r, Partition &partition,
-		unsigned type, TagMask group_mask,
+		TagType type, TagMask group_mask,
 		const SongFilter *filter)
 {
 	assert(type < TAG_NUM_OF_ITEM_TYPES);
@@ -313,8 +313,6 @@ PrintUniqueTags(Response &r, Partition &partition,
 	const DatabaseSelection selection("", true, filter);
 
 	using namespace std::placeholders;
-	const auto f = std::bind(PrintUniqueTag, std::ref(r),
-				 (TagType)type, _1);
-	db.VisitUniqueTags(selection, (TagType)type,
-			   group_mask, f);
+	const auto f = std::bind(PrintUniqueTag, std::ref(r), type, _1);
+	db.VisitUniqueTags(selection, type, group_mask, f);
 }

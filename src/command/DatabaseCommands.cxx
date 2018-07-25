@@ -289,7 +289,7 @@ handle_list(Client &client, Request args, Response &r)
 		PrintSongUris(r, client.GetPartition(), filter.get());
 	else
 		PrintUniqueTags(r, client.GetPartition(),
-				tagType, group_mask, filter.get());
+				TagType(tagType), group_mask, filter.get());
 	return CommandResult::OK;
 }
 

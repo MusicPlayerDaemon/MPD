@@ -55,7 +55,7 @@ PrintSongUris(Response &r, Partition &partition,
 
 void
 PrintUniqueTags(Response &r, Partition &partition,
-		unsigned type, TagMask group_mask,
+		TagType type, TagMask group_mask,
 		const SongFilter *filter);
 
 #endif
