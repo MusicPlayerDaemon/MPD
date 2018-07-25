@@ -63,10 +63,23 @@ locate_parse_type(const char *str) noexcept
 	return tag_name_parse_i(str);
 }
 
+bool
+StringFilter::Match(const char *s) const noexcept
+{
+#if !CLANG_CHECK_VERSION(3,6)
+	/* disabled on clang due to -Wtautological-pointer-compare */
+	assert(s != nullptr);
+#endif
+
+	if (fold_case) {
+		return fold_case.IsIn(s);
+	} else {
+		return StringIsEqual(s, value.c_str());
+	}
+}
+
 SongFilter::Item::Item(unsigned _tag, std::string &&_value, bool _fold_case)
-	:tag(_tag),
-	 value(std::move(_value)),
-	 fold_case(_fold_case ? IcuCompare(value.c_str()) : IcuCompare())
+	:tag(_tag), string_filter(std::move(_value), _fold_case)
 {
 }
 
@@ -81,36 +94,19 @@ SongFilter::Item::ToExpression() const noexcept
 {
 	switch (tag) {
 	case LOCATE_TAG_FILE_TYPE:
-		return std::string("(" LOCATE_TAG_FILE_KEY " ") + (IsNegated() ? "!=" : "==") + " \"" + value + "\")";
+		return std::string("(" LOCATE_TAG_FILE_KEY " ") + (IsNegated() ? "!=" : "==") + " \"" + string_filter.GetValue() + "\")";
 
 	case LOCATE_TAG_BASE_TYPE:
-		return "(base \"" + value + "\")";
+		return "(base \"" + string_filter.GetValue() + "\")";
 
 	case LOCATE_TAG_MODIFIED_SINCE:
-		return "(modified-since \"" + value + "\")";
+		return "(modified-since \"" + string_filter.GetValue() + "\")";
 
 	case LOCATE_TAG_ANY_TYPE:
-		return std::string("(" LOCATE_TAG_ANY_KEY " ") + (IsNegated() ? "!=" : "==") + " \"" + value + "\")";
+		return std::string("(" LOCATE_TAG_ANY_KEY " ") + (IsNegated() ? "!=" : "==") + " \"" + string_filter.GetValue() + "\")";
 
 	default:
-		return std::string("(") + tag_item_names[tag] + " " + (IsNegated() ? "!=" : "==") + " \"" + value + "\")";
-	}
-}
-
-bool
-SongFilter::Item::StringMatchNN(const char *s) const noexcept
-{
-#if !CLANG_CHECK_VERSION(3,6)
-	/* disabled on clang due to -Wtautological-pointer-compare */
-	assert(s != nullptr);
-#endif
-
-	assert(tag != LOCATE_TAG_MODIFIED_SINCE);
-
-	if (fold_case) {
-		return fold_case.IsIn(s);
-	} else {
-		return StringIsEqual(s, value.c_str());
+		return std::string("(") + tag_item_names[tag] + " " + (IsNegated() ? "!=" : "==") + " \"" + string_filter.GetValue() + "\")";
 	}
 }
 
@@ -118,7 +114,7 @@ bool
 SongFilter::Item::MatchNN(const TagItem &item) const noexcept
 {
 	return (tag == LOCATE_TAG_ANY_TYPE || (unsigned)item.type == tag) &&
-		StringMatchNN(item.value);
+		string_filter.Match(item.value);
 }
 
 bool
@@ -141,7 +137,7 @@ SongFilter::Item::MatchNN(const Tag &_tag) const noexcept
 		   searched string is also empty
 		   then it's a match as well and we should return
 		   true. */
-		if (value.empty())
+		if (string_filter.empty())
 			return true;
 
 		if (tag == TAG_ALBUM_ARTIST && visited_types[TAG_ARTIST]) {
@@ -149,7 +145,7 @@ SongFilter::Item::MatchNN(const Tag &_tag) const noexcept
 			   only "artist" exists, use that */
 			for (const auto &item : _tag)
 				if (item.type == TAG_ARTIST &&
-				    StringMatchNN(item.value))
+				    string_filter.Match(item.value))
 					return true;
 		}
 	}
@@ -162,7 +158,8 @@ SongFilter::Item::MatchNN(const LightSong &song) const noexcept
 {
 	if (tag == LOCATE_TAG_BASE_TYPE) {
 		const auto uri = song.GetURI();
-		return uri_is_child_or_same(value.c_str(), uri.c_str());
+		return uri_is_child_or_same(string_filter.GetValue().c_str(),
+					    uri.c_str());
 	}
 
 	if (tag == LOCATE_TAG_MODIFIED_SINCE)
@@ -170,7 +167,7 @@ SongFilter::Item::MatchNN(const LightSong &song) const noexcept
 
 	if (tag == LOCATE_TAG_FILE_TYPE) {
 		const auto uri = song.GetURI();
-		return StringMatchNN(uri.c_str());
+		return string_filter.Match(uri.c_str());
 	}
 
 	return MatchNN(song.tag);

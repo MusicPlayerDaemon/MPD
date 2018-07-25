@@ -46,6 +46,40 @@ struct Tag;
 struct TagItem;
 struct LightSong;
 
+class StringFilter {
+	std::string value;
+
+	/**
+	 * This value is only set if case folding is enabled.
+	 */
+	IcuCompare fold_case;
+
+public:
+	StringFilter() = default;
+
+	template<typename V>
+	StringFilter(V &&_value, bool _fold_case)
+		:value(std::forward<V>(_value)),
+		 fold_case(_fold_case
+			   ? IcuCompare(value.c_str())
+			   : IcuCompare()) {}
+
+	bool empty() const noexcept {
+		return value.empty();
+	}
+
+	const auto &GetValue() const noexcept {
+		return value;
+	}
+
+	bool GetFoldCase() const noexcept {
+		return fold_case;
+	}
+
+	gcc_pure
+	bool Match(const char *s) const noexcept;
+};
+
 class SongFilter {
 public:
 	class Item {
@@ -53,12 +87,7 @@ public:
 
 		bool negated = false;
 
-		std::string value;
-
-		/**
-		 * This value is only set if case folding is enabled.
-		 */
-		IcuCompare fold_case;
+		StringFilter string_filter;
 
 		/**
 		 * For #LOCATE_TAG_MODIFIED_SINCE
@@ -88,20 +117,17 @@ public:
 		}
 
 		bool GetFoldCase() const {
-			return fold_case;
+			return string_filter.GetFoldCase();
 		}
 
 		const char *GetValue() const {
-			return value.c_str();
+			return string_filter.GetValue().c_str();
 		}
 
 	private:
 		/* note: the "NN" suffix means "no negation", i.e. the
 		   method pretends negation is unset, and the caller
 		   is responsibly for considering it */
-
-		gcc_pure gcc_nonnull(2)
-		bool StringMatchNN(const char *s) const noexcept;
 
 		gcc_pure
 		bool MatchNN(const TagItem &tag_item) const noexcept;
