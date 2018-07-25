@@ -45,7 +45,6 @@ template<typename T> struct ConstBuffer;
 struct Tag;
 struct TagItem;
 struct LightSong;
-class DetachedSong;
 
 class SongFilter {
 public:
@@ -111,16 +110,12 @@ public:
 		bool MatchNN(const Tag &tag) const noexcept;
 
 		gcc_pure
-		bool MatchNN(const DetachedSong &song) const noexcept;
-
-		gcc_pure
 		bool MatchNN(const LightSong &song) const noexcept;
 
 	public:
-		template<typename T>
 		gcc_pure
-		bool Match(const T &t) const noexcept {
-			return MatchNN(t) != IsNegated();
+		bool Match(const LightSong &song) const noexcept {
+			return MatchNN(song) != IsNegated();
 		}
 	};
 
@@ -152,9 +147,6 @@ public:
 	 * Throws on error.
 	 */
 	void Parse(ConstBuffer<const char *> args, bool fold_case=false);
-
-	gcc_pure
-	bool Match(const DetachedSong &song) const noexcept;
 
 	gcc_pure
 	bool Match(const LightSong &song) const noexcept;

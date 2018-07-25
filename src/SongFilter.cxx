@@ -20,8 +20,8 @@
 #include "config.h"
 #include "SongFilter.hxx"
 #include "db/LightSong.hxx"
-#include "DetachedSong.hxx"
 #include "tag/ParseName.hxx"
+#include "tag/Tag.hxx"
 #include "util/CharUtil.hxx"
 #include "util/ChronoUtil.hxx"
 #include "util/ConstBuffer.hxx"
@@ -155,21 +155,6 @@ SongFilter::Item::MatchNN(const Tag &_tag) const noexcept
 	}
 
 	return false;
-}
-
-bool
-SongFilter::Item::MatchNN(const DetachedSong &song) const noexcept
-{
-	if (tag == LOCATE_TAG_BASE_TYPE)
-		return uri_is_child_or_same(value.c_str(), song.GetURI());
-
-	if (tag == LOCATE_TAG_MODIFIED_SINCE)
-		return song.GetLastModified() >= time;
-
-	if (tag == LOCATE_TAG_FILE_TYPE)
-		return StringMatchNN(song.GetURI());
-
-	return MatchNN(song.GetTag());
 }
 
 bool
@@ -378,16 +363,6 @@ SongFilter::Parse(ConstBuffer<const char *> args, bool fold_case)
 		const char *value = args.shift();
 		Parse(tag, value, fold_case);
 	} while (!args.empty());
-}
-
-bool
-SongFilter::Match(const DetachedSong &song) const noexcept
-{
-	for (const auto &i : items)
-		if (!i.Match(song))
-			return false;
-
-	return true;
 }
 
 bool

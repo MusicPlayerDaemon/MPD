@@ -22,6 +22,8 @@
 #include "Queue.hxx"
 #include "SongFilter.hxx"
 #include "SongPrint.hxx"
+#include "DetachedSong.hxx"
+#include "db/LightSong.hxx"
 #include "client/Response.hxx"
 
 /**
@@ -111,7 +113,7 @@ queue_find(Response &r, const Queue &queue,
 	   const SongFilter &filter)
 {
 	for (unsigned i = 0; i < queue.GetLength(); i++) {
-		const DetachedSong &song = queue.Get(i);
+		const LightSong song{queue.Get(i)};
 
 		if (filter.Match(song))
 			queue_print_song_info(r, queue, i);
