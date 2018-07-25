@@ -45,6 +45,14 @@
 #define LOCATE_TAG_ANY_KEY      "any"
 
 /**
+ * Limit the search to files within the given directory.
+ */
+#define LOCATE_TAG_BASE_TYPE (TAG_NUM_OF_ITEM_TYPES + 1)
+#define LOCATE_TAG_MODIFIED_SINCE (TAG_NUM_OF_ITEM_TYPES + 2)
+#define LOCATE_TAG_FILE_TYPE	TAG_NUM_OF_ITEM_TYPES+10
+#define LOCATE_TAG_ANY_TYPE     TAG_NUM_OF_ITEM_TYPES+20
+
+/**
  * @return #TAG_NUM_OF_ITEM_TYPES on error
  */
 gcc_pure

@@ -31,18 +31,9 @@
 #include <stdint.h>
 
 /**
- * Limit the search to files within the given directory.
- */
-#define LOCATE_TAG_BASE_TYPE (TAG_NUM_OF_ITEM_TYPES + 1)
-#define LOCATE_TAG_MODIFIED_SINCE (TAG_NUM_OF_ITEM_TYPES + 2)
-
-/**
  * Special value for the db_selection_print() sort parameter.
  */
 #define SORT_TAG_LAST_MODIFIED (TAG_NUM_OF_ITEM_TYPES + 3)
-
-#define LOCATE_TAG_FILE_TYPE	TAG_NUM_OF_ITEM_TYPES+10
-#define LOCATE_TAG_ANY_TYPE     TAG_NUM_OF_ITEM_TYPES+20
 
 template<typename T> struct ConstBuffer;
 enum TagType : uint8_t;
