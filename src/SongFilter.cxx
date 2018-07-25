@@ -225,7 +225,7 @@ ParseTimeStamp(const char *s)
 static constexpr bool
 IsTagNameChar(char ch) noexcept
 {
-	return IsAlphaASCII(ch) || ch == '_';
+	return IsAlphaASCII(ch) || ch == '_' || ch == '-';
 }
 
 static const char *
