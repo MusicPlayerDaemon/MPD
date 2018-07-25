@@ -33,6 +33,7 @@
 #include "util/ConstBuffer.hxx"
 #include "util/Exception.hxx"
 #include "util/StringAPI.hxx"
+#include "util/ASCII.hxx"
 #include "SongFilter.hxx"
 #include "BulkEdit.hxx"
 
@@ -247,12 +248,12 @@ CommandResult
 handle_list(Client &client, Request args, Response &r)
 {
 	const char *tag_name = args.shift();
-	unsigned tagType = locate_parse_type(tag_name);
-
-	if (tagType == LOCATE_TAG_FILE_TYPE)
+	if (StringEqualsCaseASCII(tag_name, "file") ||
+	    StringEqualsCaseASCII(tag_name, "filename"))
 		return handle_list_file(client, args, r);
 
-	if (tagType >= TAG_NUM_OF_ITEM_TYPES) {
+	const auto tagType = tag_name_parse_i(tag_name);
+	if (tagType == TAG_NUM_OF_ITEM_TYPES) {
 		r.FormatError(ACK_ERROR_ARG,
 			      "Unknown tag type: %s", tag_name);
 		return CommandResult::ERROR;
@@ -301,14 +302,13 @@ handle_list(Client &client, Request args, Response &r)
 		}
 	}
 
-	if (tagType < TAG_NUM_OF_ITEM_TYPES &&
-	    group_mask.Test(TagType(tagType))) {
+	if (group_mask.Test(tagType)) {
 		r.Error(ACK_ERROR_ARG, "Conflicting group");
 		return CommandResult::ERROR;
 	}
 
 	PrintUniqueTags(r, client.GetPartition(),
-			TagType(tagType), group_mask, filter.get());
+			tagType, group_mask, filter.get());
 	return CommandResult::OK;
 }
 
