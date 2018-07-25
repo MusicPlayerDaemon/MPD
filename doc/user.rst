@@ -1314,7 +1314,7 @@ Read raw PCM samples. It understands the "audio/L16" MIME type with parameters "
 sidplay
 ~~~~~~~
 
-C64 SID decoder based on `libsidplay <http://www.mega-nerd.com/libsndfile/>`_.
+C64 SID decoder based on `libsidplayfp <https://sourceforge.net/projects/sidplay-residfp/>`_ or `libsidplay2 <https://sourceforge.net/projects/sidplay2/>`_.
 
 .. list-table::
    :widths: 20 80
