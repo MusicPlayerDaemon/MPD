@@ -22,13 +22,15 @@
 #include "client/Response.hxx"
 
 void
-time_print(Response &r, const char *name, time_t t)
+time_print(Response &r, const char *name,
+	   std::chrono::system_clock::time_point t)
 {
+	time_t t2 = std::chrono::system_clock::to_time_t(t);
 #ifdef _WIN32
-	const struct tm *tm2 = gmtime(&t);
+	const struct tm *tm2 = gmtime(&t2);
 #else
 	struct tm tm;
-	const struct tm *tm2 = gmtime_r(&t, &tm);
+	const struct tm *tm2 = gmtime_r(&t2, &tm);
 #endif
 	if (tm2 == nullptr)
 		return;
