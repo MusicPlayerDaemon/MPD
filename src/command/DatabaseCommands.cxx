@@ -248,7 +248,7 @@ handle_list(Client &client, Request args, Response &r)
 			return CommandResult::ERROR;
 		}
 
-		filter.reset(new SongFilter((unsigned)TAG_ARTIST,
+		filter.reset(new SongFilter(TAG_ARTIST,
 					    args.shift()));
 	}
 

@@ -268,49 +268,53 @@ CheckError(struct mpd_connection *connection)
 }
 
 static bool
-SendConstraints(mpd_connection *connection, const SongFilter::Item &item)
+SendConstraints(mpd_connection *connection, const ISongFilter &f)
 {
-	switch (item.GetTag()) {
-		mpd_tag_type tag;
-
-#if LIBMPDCLIENT_CHECK_VERSION(2,9,0)
-	case LOCATE_TAG_BASE_TYPE:
-		if (mpd_connection_cmp_server_version(connection, 0, 18, 0) < 0)
-			/* requires MPD 0.18 */
+	if (auto t = dynamic_cast<const TagSongFilter *>(&f)) {
+		if (t->IsNegated())
+			// TODO implement
 			return true;
 
-		return mpd_search_add_base_constraint(connection,
-						      MPD_OPERATOR_DEFAULT,
-						      item.GetValue());
-#endif
+		if (t->GetTagType() == TAG_NUM_OF_ITEM_TYPES)
+			return mpd_search_add_any_tag_constraint(connection,
+								 MPD_OPERATOR_DEFAULT,
+								 t->GetValue().c_str());
 
-	case LOCATE_TAG_FILE_TYPE:
-		return mpd_search_add_uri_constraint(connection,
-						     MPD_OPERATOR_DEFAULT,
-						     item.GetValue());
-
-	case LOCATE_TAG_ANY_TYPE:
-		return mpd_search_add_any_tag_constraint(connection,
-							 MPD_OPERATOR_DEFAULT,
-							 item.GetValue());
-
-	default:
-		tag = Convert(TagType(item.GetTag()));
+		const auto tag = Convert(t->GetTagType());
 		if (tag == MPD_TAG_COUNT)
 			return true;
 
 		return mpd_search_add_tag_constraint(connection,
 						     MPD_OPERATOR_DEFAULT,
 						     tag,
-						     item.GetValue());
-	}
+						     t->GetValue().c_str());
+	} else if (auto u = dynamic_cast<const UriSongFilter *>(&f)) {
+		if (u->IsNegated())
+			// TODO implement
+			return true;
+
+		return mpd_search_add_uri_constraint(connection,
+						     MPD_OPERATOR_DEFAULT,
+						     u->GetValue().c_str());
+#if LIBMPDCLIENT_CHECK_VERSION(2,9,0)
+	} else if (auto b = dynamic_cast<const BaseSongFilter *>(&f)) {
+		if (mpd_connection_cmp_server_version(connection, 0, 18, 0) < 0)
+			/* requires MPD 0.18 */
+			return true;
+
+		return mpd_search_add_base_constraint(connection,
+						      MPD_OPERATOR_DEFAULT,
+						      b->GetValue());
+#endif
+	} else
+		return true;
 }
 
 static bool
 SendConstraints(mpd_connection *connection, const SongFilter &filter)
 {
 	for (const auto &i : filter.GetItems())
-		if (!SendConstraints(connection, i))
+		if (!SendConstraints(connection, *i))
 			return false;
 
 	return true;

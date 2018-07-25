@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2017 The Music Player Daemon Project
+ * Copyright 2003-2018 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -23,9 +23,12 @@
 #include "lib/icu/Compare.hxx"
 #include "Compiler.h"
 
+#include <memory>
 #include <string>
 #include <list>
 #include <chrono>
+
+#include <stdint.h>
 
 /**
  * Limit the search to files within the given directory.
@@ -42,9 +45,28 @@
 #define LOCATE_TAG_ANY_TYPE     TAG_NUM_OF_ITEM_TYPES+20
 
 template<typename T> struct ConstBuffer;
+enum TagType : uint8_t;
 struct Tag;
 struct TagItem;
 struct LightSong;
+class ISongFilter;
+using ISongFilterPtr = std::unique_ptr<ISongFilter>;
+
+class ISongFilter {
+public:
+	virtual ~ISongFilter() noexcept {}
+
+	virtual ISongFilterPtr Clone() const noexcept = 0;
+
+	/**
+	 * Convert this object into an "expression".  This is
+	 * only useful for debugging.
+	 */
+	virtual std::string ToExpression() const noexcept = 0;
+
+	gcc_pure
+	virtual bool Match(const LightSong &song) const noexcept = 0;
+};
 
 class StringFilter {
 	std::string value;
@@ -55,8 +77,6 @@ class StringFilter {
 	IcuCompare fold_case;
 
 public:
-	StringFilter() = default;
-
 	template<typename V>
 	StringFilter(V &&_value, bool _fold_case)
 		:value(std::forward<V>(_value)),
@@ -80,81 +100,128 @@ public:
 	bool Match(const char *s) const noexcept;
 };
 
-class SongFilter {
+class UriSongFilter final : public ISongFilter {
+	StringFilter filter;
+
+	bool negated;
+
 public:
-	class Item {
-		unsigned tag;
+	template<typename V>
+	UriSongFilter(V &&_value, bool fold_case, bool _negated)
+		:filter(std::forward<V>(_value), fold_case),
+		 negated(_negated) {}
 
-		bool negated = false;
+	const auto &GetValue() const noexcept {
+		return filter.GetValue();
+	}
 
-		StringFilter string_filter;
+	bool GetFoldCase() const {
+		return filter.GetFoldCase();
+	}
 
-		/**
-		 * For #LOCATE_TAG_MODIFIED_SINCE
-		 */
-		std::chrono::system_clock::time_point time;
+	bool IsNegated() const noexcept {
+		return negated;
+	}
 
-	public:
-		Item(unsigned tag, std::string &&_value, bool fold_case=false);
-		Item(unsigned tag, std::chrono::system_clock::time_point time);
+	ISongFilterPtr Clone() const noexcept override {
+		return std::make_unique<UriSongFilter>(*this);
+	}
 
-		/**
-		 * Convert this object into an "expression".  This is
-		 * only useful for debugging.
-		 */
-		std::string ToExpression() const noexcept;
+	std::string ToExpression() const noexcept override;
+	bool Match(const LightSong &song) const noexcept override;
+};
 
-		unsigned GetTag() const {
-			return tag;
-		}
+class BaseSongFilter final : public ISongFilter {
+	std::string value;
 
-		bool IsNegated() const noexcept {
-			return negated;
-		}
+public:
+	BaseSongFilter(const BaseSongFilter &) = default;
 
-		void SetNegated(bool _negated=true) noexcept {
-			negated = _negated;
-		}
+	template<typename V>
+	explicit BaseSongFilter(V &&_value)
+		:value(std::forward<V>(_value)) {}
 
-		bool GetFoldCase() const {
-			return string_filter.GetFoldCase();
-		}
+	const char *GetValue() const noexcept {
+		return value.c_str();
+	}
 
-		const char *GetValue() const {
-			return string_filter.GetValue().c_str();
-		}
+	ISongFilterPtr Clone() const noexcept override {
+		return std::make_unique<BaseSongFilter>(*this);
+	}
 
-	private:
-		/* note: the "NN" suffix means "no negation", i.e. the
-		   method pretends negation is unset, and the caller
-		   is responsibly for considering it */
+	std::string ToExpression() const noexcept override;
+	bool Match(const LightSong &song) const noexcept override;
+};
 
-		gcc_pure
-		bool MatchNN(const TagItem &tag_item) const noexcept;
+class TagSongFilter final : public ISongFilter {
+	TagType type;
 
-		gcc_pure
-		bool MatchNN(const Tag &tag) const noexcept;
+	bool negated;
 
-		gcc_pure
-		bool MatchNN(const LightSong &song) const noexcept;
+	StringFilter filter;
 
-	public:
-		gcc_pure
-		bool Match(const LightSong &song) const noexcept {
-			return MatchNN(song) != IsNegated();
-		}
-	};
+public:
+	template<typename V>
+	TagSongFilter(TagType _type, V &&_value, bool fold_case, bool _negated)
+		:type(_type), negated(_negated),
+		 filter(std::forward<V>(_value), fold_case) {}
+
+	TagType GetTagType() const {
+		return type;
+	}
+
+	const auto &GetValue() const noexcept {
+		return filter.GetValue();
+	}
+
+	bool GetFoldCase() const {
+		return filter.GetFoldCase();
+	}
+
+	bool IsNegated() const noexcept {
+		return negated;
+	}
+
+	ISongFilterPtr Clone() const noexcept override {
+		return std::make_unique<TagSongFilter>(*this);
+	}
+
+	std::string ToExpression() const noexcept override;
+	bool Match(const LightSong &song) const noexcept override;
 
 private:
-	std::list<Item> items;
+	bool MatchNN(const Tag &tag) const noexcept;
+	bool MatchNN(const TagItem &tag) const noexcept;
+};
+
+class ModifiedSinceSongFilter final : public ISongFilter {
+	std::chrono::system_clock::time_point value;
+
+public:
+	explicit ModifiedSinceSongFilter(std::chrono::system_clock::time_point _value) noexcept
+		:value(_value) {}
+
+	ISongFilterPtr Clone() const noexcept override {
+		return std::make_unique<ModifiedSinceSongFilter>(*this);
+	}
+
+	std::string ToExpression() const noexcept override;
+	bool Match(const LightSong &song) const noexcept override;
+};
+
+class SongFilter {
+	std::list<ISongFilterPtr> items;
 
 public:
 	SongFilter() = default;
 
 	gcc_nonnull(3)
-	SongFilter(unsigned tag, const char *value, bool fold_case=false);
+	SongFilter(TagType tag, const char *value, bool fold_case=false);
 
 	~SongFilter();
+
+	SongFilter(SongFilter &&) = default;
+	SongFilter &operator=(SongFilter &&) = default;
 
 	/**
 	 * Convert this object into an "expression".  This is
@@ -163,7 +230,7 @@ public:
 	std::string ToExpression() const noexcept;
 
 private:
-	const char *ParseExpression(const char *s, bool fold_case=false);
+	ISongFilterPtr ParseExpression(const char *&s, bool fold_case=false);
 
 	gcc_nonnull(2,3)
 	void Parse(const char *tag, const char *value, bool fold_case=false);
@@ -177,7 +244,7 @@ public:
 	gcc_pure
 	bool Match(const LightSong &song) const noexcept;
 
-	const std::list<Item> &GetItems() const noexcept {
+	const auto &GetItems() const noexcept {
 		return items;
 	}
 
@@ -190,13 +257,7 @@ public:
 	 * Is there at least one item with "fold case" enabled?
 	 */
 	gcc_pure
-	bool HasFoldCase() const noexcept {
-		for (const auto &i : items)
-			if (i.GetFoldCase())
-				return true;
-
-		return false;
-	}
+	bool HasFoldCase() const noexcept;
 
 	/**
 	 * Does this filter contain constraints other than "base"?

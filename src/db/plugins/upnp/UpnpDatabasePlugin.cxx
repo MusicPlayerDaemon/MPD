@@ -254,9 +254,9 @@ UpnpDatabase::SearchSongs(const ContentDirectoryService &server,
 
 	std::string cond;
 	for (const auto &item : filter->GetItems()) {
-		switch (auto tag = item.GetTag()) {
-		case LOCATE_TAG_ANY_TYPE:
-			{
+		if (auto t = dynamic_cast<const TagSongFilter *>(item.get())) {
+			auto tag = t->GetTagType();
+			if (tag == TAG_NUM_OF_ITEM_TYPES) {
 				if (!cond.empty()) {
 					cond += " and ";
 				}
@@ -268,29 +268,21 @@ UpnpDatabase::SearchSongs(const ContentDirectoryService &server,
 					else
 						cond += " or ";
 					cond += cap;
-					if (item.GetFoldCase()) {
+					if (t->GetFoldCase()) {
 						cond += " contains ";
 					} else {
 						cond += " = ";
 					}
-					dquote(cond, item.GetValue());
+					dquote(cond, t->GetValue().c_str());
 				}
 				cond += ')';
+				continue;
 			}
-			break;
 
-		default:
-			/* Unhandled conditions like
-			   LOCATE_TAG_BASE_TYPE or
-			   LOCATE_TAG_FILE_TYPE won't have a
-			   corresponding upnp prop, so they will be
-			   skipped */
 			if (tag == TAG_ALBUM_ARTIST)
 				tag = TAG_ARTIST;
 
-			// TODO: support LOCATE_TAG_ANY_TYPE etc.
-			const char *name = tag_table_lookup(upnp_tags,
-							    TagType(tag));
+			const char *name = tag_table_lookup(upnp_tags, tag);
 			if (name == nullptr)
 				continue;
 
@@ -304,13 +296,15 @@ UpnpDatabase::SearchSongs(const ContentDirectoryService &server,
 			   case-insensitive, but at least some servers
 			   have the same convention as mpd (e.g.:
 			   minidlna) */
-			if (item.GetFoldCase()) {
+			if (t->GetFoldCase()) {
 				cond += " contains ";
 			} else {
 				cond += " = ";
 			}
-			dquote(cond, item.GetValue());
+			dquote(cond, t->GetValue().c_str());
 		}
+
+		// TODO: support other ISongFilter implementations
 	}
 
 	return server.search(handle, objid, cond.c_str());
