@@ -20,20 +20,19 @@
 #include "config.h"
 #include "TimePrint.hxx"
 #include "client/Response.hxx"
+#include "util/TimeConvert.hxx"
 
 void
 time_print(Response &r, const char *name,
 	   std::chrono::system_clock::time_point t)
 {
-	time_t t2 = std::chrono::system_clock::to_time_t(t);
-#ifdef _WIN32
-	const struct tm *tm2 = gmtime(&t2);
-#else
 	struct tm tm;
-	const struct tm *tm2 = gmtime_r(&t2, &tm);
-#endif
-	if (tm2 == nullptr)
+
+	try {
+		tm = GmTime(t);
+	} catch (...) {
 		return;
+	}
 
 	char buffer[32];
 	strftime(buffer, sizeof(buffer),
@@ -42,6 +41,6 @@ time_print(Response &r, const char *name,
 #else
 		 "%FT%TZ",
 #endif
-		 tm2);
+		 &tm);
 	r.Format("%s: %s\n", name, buffer);
 }
