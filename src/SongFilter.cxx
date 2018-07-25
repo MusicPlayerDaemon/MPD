@@ -334,7 +334,23 @@ SongFilter::ParseExpression(const char *&s, bool fold_case)
 			return first;
 		}
 
-		throw std::runtime_error("Nested expressions not yet implemented");
+		if (ExpectWord(s) != "AND")
+			throw std::runtime_error("'AND' expected");
+
+		auto and_filter = std::make_unique<AndSongFilter>();
+		and_filter->AddItem(std::move(first));
+
+		while (true) {
+			and_filter->AddItem(ParseExpression(s, fold_case));
+
+			if (*s == ')') {
+				++s;
+				return and_filter;
+			}
+
+			if (ExpectWord(s) != "AND")
+				throw std::runtime_error("'AND' expected");
+		}
 	}
 
 	auto type = ExpectFilterType(s);
