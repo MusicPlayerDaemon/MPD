@@ -1460,6 +1460,7 @@ if ENABLE_QOBUZ
 libinput_a_SOURCES += \
 	$(YAJL_SOURCES) \
 	src/lib/gcrypt/MD5.cxx src/lib/gcrypt/MD5.hxx \
+	src/lib/gcrypt/Hash.hxx \
 	src/input/plugins/QobuzSession.hxx \
 	src/input/plugins/QobuzClient.cxx src/input/plugins/QobuzClient.hxx \
 	src/input/plugins/QobuzErrorParser.cxx src/input/plugins/QobuzErrorParser.hxx \

@@ -27,28 +27,29 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "MD5.hxx"
-#include "Hash.hxx"
+#ifndef GCRYPT_HASH_HXX
+#define GCRYPT_HASH_HXX
 
-#include <stdio.h>
+#include "util/ConstBuffer.hxx"
+#include "Compiler.h"
 
-std::array<uint8_t, 16>
-MD5(ConstBuffer<void> input) noexcept
+#include <gcrypt.h>
+
+#include <array>
+
+namespace Gcrypt {
+
+template<int algo, size_t size>
+gcc_pure
+auto
+Hash(ConstBuffer<void> input) noexcept
 {
-	return Gcrypt::Hash<GCRY_MD_MD5, 16>(input);
-}
-
-std::array<char, 33>
-MD5Hex(ConstBuffer<void> input) noexcept
-{
-	const auto raw = MD5(input);
-	std::array<char, 33> result;
-
-	char *p = &result.front();
-	for (const auto i : raw) {
-		sprintf(p, "%02x", i);
-		p += 2;
-	}
-
+	std::array<uint8_t, size> result;
+	gcry_md_hash_buffer(GCRY_MD_MD5, &result.front(),
+			    input.data, input.size);
 	return result;
 }
+
+} /* namespace Gcrypt */
+
+#endif
