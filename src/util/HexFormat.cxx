@@ -27,21 +27,17 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "MD5.hxx"
-#include "Hash.hxx"
-#include "util/HexFormat.hxx"
+#include "HexFormat.hxx"
 
 #include <stdio.h>
 
-std::array<uint8_t, 16>
-MD5(ConstBuffer<void> input) noexcept
+char *
+HexFormat(char *dest, ConstBuffer<uint8_t> src) noexcept
 {
-	return Gcrypt::Hash<GCRY_MD_MD5, 16>(input);
-}
+	for (auto i : src) {
+		sprintf(dest, "%02x", i);
+		dest += 2;
+	}
 
-StringBuffer<33>
-MD5Hex(ConstBuffer<void> input) noexcept
-{
-	const auto raw = MD5(input);
-	return HexFormatBuffer<raw.size()>(&raw.front());
+	return dest;
 }

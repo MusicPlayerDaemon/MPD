@@ -493,6 +493,7 @@ libutil_a_SOURCES = \
 	src/util/CharUtil.hxx \
 	src/util/WCharUtil.hxx \
 	src/util/NumberParser.hxx \
+	src/util/HexFormat.cxx src/util/HexFormat.hxx \
 	src/util/MimeType.cxx src/util/MimeType.hxx \
 	src/util/StringBuffer.hxx \
 	src/util/StringFormat.hxx \

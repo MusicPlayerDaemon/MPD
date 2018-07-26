@@ -27,21 +27,38 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "MD5.hxx"
-#include "Hash.hxx"
-#include "util/HexFormat.hxx"
+#ifndef HEX_FORMAT_HXX
+#define HEX_FORMAT_HXX
 
-#include <stdio.h>
+#include "ConstBuffer.hxx"
+#include "StringBuffer.hxx"
+#include "Compiler.h"
 
-std::array<uint8_t, 16>
-MD5(ConstBuffer<void> input) noexcept
+#include <stdint.h>
+
+/**
+ * Format the given byte sequence into a null-terminated hexadecimal
+ * string.
+ *
+ * @param dest the destination buffer; must be large enough to hold
+ * all hex digits plus the null terminator
+ * @return a pointer to the generated null terminator
+ */
+char *
+HexFormat(char *dest, ConstBuffer<uint8_t> src) noexcept;
+
+/**
+ * Like HexFormat(), but return a #StringBuffer with exactly the
+ * required size.
+ */
+template<size_t size>
+gcc_pure
+auto
+HexFormatBuffer(const uint8_t *src) noexcept
 {
-	return Gcrypt::Hash<GCRY_MD_MD5, 16>(input);
+	StringBuffer<size * 2 + 1> dest;
+	HexFormat(dest.data(), {src, size});
+	return dest;
 }
 
-StringBuffer<33>
-MD5Hex(ConstBuffer<void> input) noexcept
-{
-	const auto raw = MD5(input);
-	return HexFormatBuffer<raw.size()>(&raw.front());
-}
+#endif
