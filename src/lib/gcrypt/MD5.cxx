@@ -38,13 +38,13 @@ MD5(ConstBuffer<void> input) noexcept
 	return Gcrypt::Hash<GCRY_MD_MD5, 16>(input);
 }
 
-std::array<char, 33>
+StringBuffer<33>
 MD5Hex(ConstBuffer<void> input) noexcept
 {
 	const auto raw = MD5(input);
-	std::array<char, 33> result;
+	StringBuffer<33> result;
 
-	char *p = &result.front();
+	char *p = result.data();
 	for (const auto i : raw) {
 		sprintf(p, "%02x", i);
 		p += 2;

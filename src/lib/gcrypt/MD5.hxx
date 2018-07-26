@@ -30,6 +30,7 @@
 #ifndef GCRYPT_MD5_HXX
 #define GCRYPT_MD5_HXX
 
+#include "util/StringBuffer.hxx"
 #include "Compiler.h"
 
 #include <array>
@@ -41,7 +42,7 @@ std::array<uint8_t, 16>
 MD5(ConstBuffer<void> input) noexcept;
 
 gcc_pure
-std::array<char, 33>
+StringBuffer<33>
 MD5Hex(ConstBuffer<void> input) noexcept;
 
 #endif
