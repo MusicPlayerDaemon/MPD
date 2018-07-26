@@ -28,6 +28,7 @@
 #include "input/FailingInputStream.hxx"
 #include "input/InputPlugin.hxx"
 #include "config/Block.hxx"
+#include "lib/gcrypt/Init.hxx"
 #include "thread/Mutex.hxx"
 #include "util/StringCompare.hxx"
 
@@ -126,6 +127,8 @@ QobuzInputStream::OnQobuzTrackError(std::exception_ptr e) noexcept
 static void
 InitQobuzInput(EventLoop &event_loop, const ConfigBlock &block)
 {
+	Gcrypt::Init();
+
 	const char *base_url = block.GetBlockValue("base_url",
 						   "http://www.qobuz.com/api.json/0.2/");
 
