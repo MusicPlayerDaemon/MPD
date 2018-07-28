@@ -777,6 +777,7 @@ OSXOutput::Open(AudioFormat &audio_format)
 		asbd.mBitsPerChannel = audio_format.GetSampleSize() * 8;
 	}
 	asbd.mBytesPerPacket = audio_format.GetFrameSize();
+	asbd.mSampleRate = audio_format.sample_rate;
 
 #ifdef ENABLE_DSD
 	if (dop && audio_format.format == SampleFormat::DSD) {
