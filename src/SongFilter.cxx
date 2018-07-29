@@ -185,19 +185,19 @@ ModifiedSinceSongFilter::Match(const LightSong &song) const noexcept
 	return song.mtime >= value;
 }
 
-SongFilter::SongFilter(TagType tag, const char *value, bool fold_case)
+ISongFilterPtr
+AndSongFilter::Clone() const noexcept
 {
-	items.emplace_back(std::make_unique<TagSongFilter>(tag, value,
-							   fold_case, false));
-}
+	auto result = std::make_unique<AndSongFilter>();
 
-SongFilter::~SongFilter()
-{
-	/* this destructor exists here just so it won't get inlined */
+	for (const auto &i : items)
+		result->items.emplace_back(i->Clone());
+
+	return result;
 }
 
 std::string
-SongFilter::ToExpression() const noexcept
+AndSongFilter::ToExpression() const noexcept
 {
 	auto i = items.begin();
 	const auto end = items.end();
@@ -215,6 +215,33 @@ SongFilter::ToExpression() const noexcept
 
 	e.push_back(')');
 	return e;
+}
+
+bool
+AndSongFilter::Match(const LightSong &song) const noexcept
+{
+	for (const auto &i : items)
+		if (!i->Match(song))
+			return false;
+
+	return true;
+}
+
+SongFilter::SongFilter(TagType tag, const char *value, bool fold_case)
+{
+	and_filter.AddItem(std::make_unique<TagSongFilter>(tag, value,
+							   fold_case, false));
+}
+
+SongFilter::~SongFilter()
+{
+	/* this destructor exists here just so it won't get inlined */
+}
+
+std::string
+SongFilter::ToExpression() const noexcept
+{
+	return and_filter.ToExpression();
 }
 
 static std::chrono::system_clock::time_point
@@ -352,15 +379,15 @@ SongFilter::Parse(const char *tag_string, const char *value, bool fold_case)
 		if (!uri_safe_local(value))
 			throw std::runtime_error("Bad URI");
 
-		items.emplace_back(std::make_unique<BaseSongFilter>(value));
+		and_filter.AddItem(std::make_unique<BaseSongFilter>(value));
 		break;
 
 	case LOCATE_TAG_MODIFIED_SINCE:
-		items.emplace_back(std::make_unique<ModifiedSinceSongFilter>(ParseTimeStamp(value)));
+		and_filter.AddItem(std::make_unique<ModifiedSinceSongFilter>(ParseTimeStamp(value)));
 		break;
 
 	case LOCATE_TAG_FILE_TYPE:
-		items.emplace_back(std::make_unique<UriSongFilter>(value,
+		and_filter.AddItem(std::make_unique<UriSongFilter>(value,
 								   fold_case,
 								   false));
 		break;
@@ -369,7 +396,7 @@ SongFilter::Parse(const char *tag_string, const char *value, bool fold_case)
 		if (tag == LOCATE_TAG_ANY_TYPE)
 			tag = TAG_NUM_OF_ITEM_TYPES;
 
-		items.emplace_back(std::make_unique<TagSongFilter>(TagType(tag),
+		and_filter.AddItem(std::make_unique<TagSongFilter>(TagType(tag),
 								   value,
 								   fold_case,
 								   false));
@@ -391,7 +418,7 @@ SongFilter::Parse(ConstBuffer<const char *> args, bool fold_case)
 			if (*end != 0)
 				throw std::runtime_error("Unparsed garbage after expression");
 
-			items.emplace_back(std::move(f));
+			and_filter.AddItem(std::move(f));
 			continue;
 		}
 
@@ -407,17 +434,13 @@ SongFilter::Parse(ConstBuffer<const char *> args, bool fold_case)
 bool
 SongFilter::Match(const LightSong &song) const noexcept
 {
-	for (const auto &i : items)
-		if (!i->Match(song))
-			return false;
-
-	return true;
+	return and_filter.Match(song);
 }
 
 bool
 SongFilter::HasFoldCase() const noexcept
 {
-	for (const auto &i : items) {
+	for (const auto &i : and_filter.GetItems()) {
 		if (auto t = dynamic_cast<const TagSongFilter *>(i.get())) {
 			if (t->GetFoldCase())
 				return true;
@@ -433,7 +456,7 @@ SongFilter::HasFoldCase() const noexcept
 bool
 SongFilter::HasOtherThanBase() const noexcept
 {
-	for (const auto &i : items) {
+	for (const auto &i : and_filter.GetItems()) {
 		const auto *f = dynamic_cast<const BaseSongFilter *>(i.get());
 		if (f == nullptr)
 			return true;
@@ -445,7 +468,7 @@ SongFilter::HasOtherThanBase() const noexcept
 const char *
 SongFilter::GetBase() const noexcept
 {
-	for (const auto &i : items) {
+	for (const auto &i : and_filter.GetItems()) {
 		const auto *f = dynamic_cast<const BaseSongFilter *>(i.get());
 		if (f != nullptr)
 			return f->GetValue();
@@ -460,7 +483,7 @@ SongFilter::WithoutBasePrefix(const char *_prefix) const noexcept
 	const StringView prefix(_prefix);
 	SongFilter result;
 
-	for (const auto &i : items) {
+	for (const auto &i : and_filter.GetItems()) {
 		const auto *f = dynamic_cast<const BaseSongFilter *>(i.get());
 		if (f != nullptr) {
 			const char *s = StringAfterPrefix(f->GetValue(), prefix);
@@ -472,14 +495,14 @@ SongFilter::WithoutBasePrefix(const char *_prefix) const noexcept
 					++s;
 
 					if (*s != 0)
-						result.items.emplace_back(std::make_unique<BaseSongFilter>(s));
+						result.and_filter.AddItem(std::make_unique<BaseSongFilter>(s));
 
 					continue;
 				}
 			}
 		}
 
-		result.items.emplace_back(i->Clone());
+		result.and_filter.AddItem(i->Clone());
 	}
 
 	return result;
