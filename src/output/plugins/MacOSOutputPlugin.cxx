@@ -106,6 +106,7 @@ private:
 	std::chrono::steady_clock::duration Delay() const noexcept override;
 	size_t Play(const void *chunk, size_t size) override;
 	bool Pause() override;
+	void Cancel() noexcept override;
 	void SetupConverter();
 	void Setup(AudioFormat &audio_format);
 #ifdef ENABLE_DSD
@@ -448,6 +449,18 @@ MacOSOutput::Delay() const noexcept {
 		return std::chrono::seconds(1);
 	// Wait for half the buffer size in case the buffer is full
 	return ring_buffer->write_available() ? std::chrono::steady_clock::duration::zero() : std::chrono::milliseconds(buffer_ms / 2);
+}
+
+void
+MacOSOutput::Cancel() noexcept {
+	// Avoid any calls to the callback while we empty the buffers
+	device.Stop();
+	// Empty ring buffer
+	ring_buffer->reset();
+	// Reset our PCM export
+	pcm_export->Reset();
+	// Restart the device (CoreAudio will query for additional data)
+	device.Start();
 }
 	
 bool
