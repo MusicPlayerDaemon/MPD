@@ -1071,10 +1071,11 @@ if test x$enable_sidplay != xno && test x$found_sidplayfp = xno; then
 fi
 
 if test x$enable_sidplay = xyes; then
-	SIDPLAY_LIBS="$SIDPLAY_LIBS -lresid-builder"
 	AC_DEFINE(ENABLE_SIDPLAY, 1, [Define for libsidplayfp or libsidplay2 support])
 	if test x$found_sidplayfp = xyes; then
 		AC_DEFINE(HAVE_SIDPLAYFP, 1, [Define if libsidplayfp is used instead of libsidplay2])
+	else
+		SIDPLAY_LIBS="$SIDPLAY_LIBS -lresid-builder"
 	fi
 fi
 
