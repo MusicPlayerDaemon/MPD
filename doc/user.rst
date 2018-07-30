@@ -1328,6 +1328,10 @@ C64 SID decoder based on `libsidplayfp <https://sourceforge.net/projects/sidplay
      - This is the default playing time in seconds for songs not in the songlength database, or in case you're not using a database. A value of 0 means play indefinitely.
    * - **filter yes|no**
      - Turns the SID filter emulation on or off.
+   * - **kernal**
+     - Only libsidplayfp. Roms are not embedded in libsidplayfp - please note https://sourceforge.net/p/sidplay-residfp/news/2013/01/released-libsidplayfp-100beta1/ But some SID tunes require rom images to play. Make C64 rom dumps from your own vintage gear or use rom files from Frodo or VICE emulation software tarballs. Absolute path to kernal rom image file.
+   * - **basic**
+     - Only libsidplayfp. Absolute path to basic rom image file.
 
 sndfile
 ~~~~~~~
