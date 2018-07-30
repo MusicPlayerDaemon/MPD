@@ -248,7 +248,7 @@ public:
 	std::string ToExpression() const noexcept;
 
 private:
-	ISongFilterPtr ParseExpression(const char *&s, bool fold_case=false);
+	static ISongFilterPtr ParseExpression(const char *&s, bool fold_case=false);
 
 	gcc_nonnull(2,3)
 	void Parse(const char *tag, const char *value, bool fold_case=false);
