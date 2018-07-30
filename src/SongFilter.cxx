@@ -320,8 +320,15 @@ SongFilter::ParseExpression(const char *&s, bool fold_case)
 
 	s = StripLeft(s + 1);
 
-	if (*s == '(')
+	if (*s == '(') {
+		auto first = ParseExpression(s, fold_case);
+		if (*s == ')') {
+			++s;
+			return first;
+		}
+
 		throw std::runtime_error("Nested expressions not yet implemented");
+	}
 
 	auto type = ExpectFilterType(s);
 
