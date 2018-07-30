@@ -274,14 +274,21 @@ FirstNonTagNameChar(const char *s) noexcept
 }
 
 static auto
-ExpectFilterType(const char *&s)
+ExpectWord(const char *&s)
 {
+	const char *begin = s;
 	const char *end = FirstNonTagNameChar(s);
 	if (end == s)
-		throw std::runtime_error("Tag name expected");
+		throw std::runtime_error("Word expected");
 
-	const std::string name(s, end);
 	s = StripLeft(end);
+	return std::string(begin, end);
+}
+
+static auto
+ExpectFilterType(const char *&s)
+{
+	const auto name = ExpectWord(s);
 
 	const auto type = locate_parse_type(name.c_str());
 	if (type == TAG_NUM_OF_ITEM_TYPES)
