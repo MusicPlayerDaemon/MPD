@@ -38,7 +38,8 @@ extern Instance *instance;
  * On Windows platform this is called from win32_main()
  * after doing some initialization.
  */
-int mpd_main(int argc, char *argv[]);
+int
+mpd_main(int argc, char *argv[]) noexcept;
 
 #endif
 

@@ -433,7 +433,8 @@ Instance::OnIdle(unsigned flags)
 
 #ifndef ANDROID
 
-int main(int argc, char *argv[])
+int
+main(int argc, char *argv[]) noexcept
 {
 #ifdef _WIN32
 	return win32_main(argc, argv);
@@ -445,7 +446,8 @@ int main(int argc, char *argv[])
 #endif
 
 static int
-mpd_main_after_fork(const ConfigData &raw_config, const Config &config);
+mpd_main_after_fork(const ConfigData &raw_config,
+		    const Config &config);
 
 static inline int
 MainOrThrow(int argc, char *argv[])
@@ -533,7 +535,7 @@ MainOrThrow(int argc, char *argv[])
 #ifdef ANDROID
 static inline
 #endif
-int mpd_main(int argc, char *argv[])
+int mpd_main(int argc, char *argv[]) noexcept
 {
 	AtScopeExit() { log_deinit(); };
 
