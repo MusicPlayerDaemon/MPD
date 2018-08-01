@@ -547,7 +547,7 @@ int mpd_main(int argc, char *argv[])
 
 static int
 mpd_main_after_fork(const ConfigData &raw_config, const Config &config)
-try {
+{
 	ConfigureFS(raw_config);
 
 	glue_mapper_init(raw_config);
@@ -721,9 +721,6 @@ try {
 	IcuFinish();
 
 	return EXIT_SUCCESS;
-} catch (const std::exception &e) {
-	LogError(e);
-	return EXIT_FAILURE;
 }
 
 #ifdef ANDROID
