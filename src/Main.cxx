@@ -59,6 +59,7 @@
 #include "config/Option.hxx"
 #include "config/Domain.hxx"
 #include "util/RuntimeError.hxx"
+#include "util/ScopeExit.hxx"
 
 #ifdef ENABLE_DAEMON
 #include "unix/Daemon.hxx"
@@ -534,6 +535,8 @@ static inline
 #endif
 int mpd_main(int argc, char *argv[])
 {
+	AtScopeExit() { log_deinit(); };
+
 	try {
 		return MainOrThrow(argc, argv);
 	} catch (const std::exception &e) {
@@ -716,8 +719,6 @@ try {
 #endif
 
 	IcuFinish();
-
-	log_deinit();
 
 	return EXIT_SUCCESS;
 } catch (const std::exception &e) {
