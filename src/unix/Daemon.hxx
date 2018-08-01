@@ -48,11 +48,11 @@ daemonize_finish()
 void
 daemonize_kill();
 #else
-#include "system/FatalError.hxx"
+#include <stdexcept>
 static inline void
 daemonize_kill()
 {
-	FatalError("--kill is not available on WIN32");
+	throw std::runtime_error("--kill is not available on WIN32");
 }
 #endif
 

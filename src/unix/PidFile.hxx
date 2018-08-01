@@ -22,7 +22,7 @@
 
 #include "fs/FileSystem.hxx"
 #include "fs/AllocatedPath.hxx"
-#include "Log.hxx"
+#include "system/Error.hxx"
 
 #include <assert.h>
 #include <string.h>
@@ -41,8 +41,8 @@ public:
 		fd = OpenFile(path, O_WRONLY|O_CREAT|O_TRUNC, 0666).Steal();
 		if (fd < 0) {
 			const std::string utf8 = path.ToUTF8();
-			FormatFatalSystemError("Failed to create pid file \"%s\"",
-					       utf8.c_str());
+			throw FormatErrno("Failed to create pid file \"%s\"",
+					  utf8.c_str());
 		}
 	}
 
