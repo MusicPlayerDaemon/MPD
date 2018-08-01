@@ -446,11 +446,9 @@ int main(int argc, char *argv[])
 static int
 mpd_main_after_fork(const ConfigData &raw_config, const Config &config);
 
-#ifdef ANDROID
-static inline
-#endif
-int mpd_main(int argc, char *argv[])
-try {
+static inline int
+MainOrThrow(int argc, char *argv[])
+{
 	struct options options;
 
 #ifdef ENABLE_DAEMON
@@ -529,10 +527,19 @@ try {
 #endif
 
 	return mpd_main_after_fork(raw_config, config);
+}
 
-} catch (const std::exception &e) {
-	LogError(e);
-	return EXIT_FAILURE;
+#ifdef ANDROID
+static inline
+#endif
+int mpd_main(int argc, char *argv[])
+{
+	try {
+		return MainOrThrow(argc, argv);
+	} catch (const std::exception &e) {
+		LogError(e);
+		return EXIT_FAILURE;
+	}
 }
 
 static int
