@@ -97,12 +97,12 @@
 #include "org_musicpd_Bridge.h"
 #endif
 
-#ifdef ENABLE_SYSTEMD_DAEMON
-#include <systemd/sd-daemon.h>
+#ifdef ENABLE_DBUS
+#include "lib/dbus/Init.hxx"
 #endif
 
-#ifdef ENABLE_DBUS
-#include <dbus/dbus.h>
+#ifdef ENABLE_SYSTEMD_DAEMON
+#include <systemd/sd-daemon.h>
 #endif
 
 #include <stdlib.h>
@@ -469,6 +469,10 @@ try {
 
 	const ScopeNetInit net_init;
 
+#ifdef ENABLE_DBUS
+	const ODBus::ScopeInit dbus_init;
+#endif
+
 	config_global_init();
 
 #ifdef ANDROID
@@ -707,11 +711,6 @@ try {
 	IcuFinish();
 
 	log_deinit();
-
-#ifdef ENABLE_DBUS
-	/* free libdbus memory to make memory leak checkers happy */
-	dbus_shutdown();
-#endif
 
 	return EXIT_SUCCESS;
 } catch (const std::exception &e) {
