@@ -48,14 +48,14 @@ public:
 
 	PidFile(const PidFile &) = delete;
 
-	void Close() {
+	void Close() noexcept {
 		if (fd < 0)
 			return;
 
 		close(fd);
 	}
 
-	void Delete(const AllocatedPath &path) {
+	void Delete(const AllocatedPath &path) noexcept {
 		if (fd < 0) {
 			assert(path.IsNull());
 			return;
@@ -67,7 +67,7 @@ public:
 		unlink(path.c_str());
 	}
 
-	void Write(pid_t pid) {
+	void Write(pid_t pid) noexcept {
 		if (fd < 0)
 			return;
 
@@ -78,7 +78,7 @@ public:
 		close(fd);
 	}
 
-	void Write() {
+	void Write() noexcept {
 		if (fd < 0)
 			return;
 
