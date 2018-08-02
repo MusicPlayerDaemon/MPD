@@ -53,12 +53,23 @@ ToString(const AudioFormat af) noexcept
 		   sample rate */
 		p += sprintf(p, "dsd%u:", af.sample_rate * 8 / 44100);
 	} else {
-		p += sprintf(p, "%u:%s:",
-			     af.sample_rate,
-			     sample_format_to_string(af.format));
+		const char *sample_format = af.format != SampleFormat::UNDEFINED
+			? sample_format_to_string(af.format)
+			: "*";
+
+		if (af.sample_rate > 0)
+			p += sprintf(p, "%u:%s:", af.sample_rate,
+				     sample_format);
+		else
+			p += sprintf(p, "*:%s:", sample_format);
 	}
 
-	p += sprintf(p, "%u", af.channels);
+	if (af.channels > 0)
+		p += sprintf(p, "%u", af.channels);
+	else {
+		*p++ = '*';
+		*p = 0;
+	}
 
 	return buffer;
 }
