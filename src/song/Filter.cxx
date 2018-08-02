@@ -23,7 +23,9 @@
 #include "BaseSongFilter.hxx"
 #include "TagSongFilter.hxx"
 #include "ModifiedSinceSongFilter.hxx"
+#include "AudioFormatSongFilter.hxx"
 #include "LightSong.hxx"
+#include "AudioParser.hxx"
 #include "tag/ParseName.hxx"
 #include "tag/Tag.hxx"
 #include "util/CharUtil.hxx"
@@ -55,6 +57,7 @@ enum {
 	LOCATE_TAG_BASE_TYPE = TAG_NUM_OF_ITEM_TYPES + 1,
 
 	LOCATE_TAG_MODIFIED_SINCE,
+	LOCATE_TAG_AUDIO_FORMAT,
 	LOCATE_TAG_FILE_TYPE,
 	LOCATE_TAG_ANY_TYPE,
 };
@@ -78,6 +81,9 @@ locate_parse_type(const char *str) noexcept
 
 	if (strcmp(str, "modified-since") == 0)
 		return LOCATE_TAG_MODIFIED_SINCE;
+
+	if (StringEqualsCaseASCII(str, "AudioFormat"))
+		return LOCATE_TAG_AUDIO_FORMAT;
 
 	return tag_name_parse_i(str);
 }
@@ -223,6 +229,21 @@ SongFilter::ParseExpression(const char *&s, bool fold_case)
 		s = StripLeft(s + 1);
 
 		return std::make_unique<BaseSongFilter>(std::move(value));
+	} else if (type == LOCATE_TAG_AUDIO_FORMAT) {
+		if (s[0] != '=' || s[1] != '=')
+			throw std::runtime_error("'==' expected");
+
+		s = StripLeft(s + 2);
+
+		// TODO: support mask
+		const auto value = ParseAudioFormat(ExpectQuoted(s).c_str(),
+						    false);
+
+		if (*s != ')')
+			throw std::runtime_error("')' expected");
+		s = StripLeft(s + 1);
+
+		return std::make_unique<AudioFormatSongFilter>(value);
 	} else {
 		bool negated = false;
 		if (s[0] == '!' && s[1] == '=')

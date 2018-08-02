@@ -1036,6 +1036,7 @@ libsong_a_SOURCES = \
 	src/song/BaseSongFilter.cxx src/song/BaseSongFilter.hxx \
 	src/song/TagSongFilter.cxx src/song/TagSongFilter.hxx \
 	src/song/ModifiedSinceSongFilter.cxx src/song/ModifiedSinceSongFilter.hxx \
+	src/song/AudioFormatSongFilter.cxx src/song/AudioFormatSongFilter.hxx \
 	src/song/AndSongFilter.cxx src/song/AndSongFilter.hxx \
 	src/song/Filter.cxx src/song/Filter.hxx \
 	src/song/LightSong.cxx src/song/LightSong.hxx
@@ -1932,6 +1933,7 @@ endif
 
 test_ParseSongFilter_LDADD = \
 	libsong.a \
+	libpcm.a \
 	$(TAG_LIBS) \
 	$(ICU_LDADD) \
 	libutil.a

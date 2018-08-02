@@ -271,6 +271,13 @@
 
         <listitem>
           <para>
+            "<code>(AudioFormat == 'SAMPLERATE:BITS:CHANNELS')</code>":
+            compares the audio format with the given value.
+          </para>
+        </listitem>
+
+        <listitem>
+          <para>
             "<code>EXPRESSION1 AND EXPRESSION2 ...</code>": combine two or
             more expressions with logical "and".
           </para>
