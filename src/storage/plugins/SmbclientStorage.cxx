@@ -27,6 +27,7 @@
 #include "fs/Traits.hxx"
 #include "thread/Mutex.hxx"
 #include "system/Error.hxx"
+#include "util/ASCII.hxx"
 #include "util/StringCompare.hxx"
 #include "util/ScopeExit.hxx"
 
@@ -182,7 +183,7 @@ SmbclientDirectoryReader::GetInfo(gcc_unused bool follow)
 static Storage *
 CreateSmbclientStorageURI(gcc_unused EventLoop &event_loop, const char *base)
 {
-	if (strncmp(base, "smb://", 6) != 0)
+	if (!StringStartsWithCaseASCII(base, "smb://"))
 		return nullptr;
 
 	SmbclientInit();

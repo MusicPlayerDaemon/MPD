@@ -24,7 +24,7 @@
 #include "Connection.hxx"
 #include "event/Call.hxx"
 #include "IOThread.hxx"
-#include "util/StringCompare.hxx"
+#include "util/ASCII.hxx"
 
 #include <utility>
 
@@ -93,7 +93,7 @@ NfsFileReader::Open(const char *uri)
 {
 	assert(state == State::INITIAL);
 
-	if (!StringStartsWith(uri, "nfs://"))
+	if (!StringStartsWithCaseASCII(uri, "nfs://"))
 		throw std::runtime_error("Malformed nfs:// URI");
 
 	uri += 6;

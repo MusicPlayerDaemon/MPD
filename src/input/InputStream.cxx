@@ -20,7 +20,7 @@
 #include "config.h"
 #include "InputStream.hxx"
 #include "thread/Cond.hxx"
-#include "util/StringCompare.hxx"
+#include "util/ASCII.hxx"
 
 #include <stdexcept>
 
@@ -77,8 +77,8 @@ gcc_pure
 static bool
 ExpensiveSeeking(const char *uri) noexcept
 {
-	return StringStartsWith(uri, "http://") ||
-		StringStartsWith(uri, "https://");
+	return StringStartsWithCaseASCII(uri, "http://") ||
+		StringStartsWithCaseASCII(uri, "https://");
 }
 
 bool

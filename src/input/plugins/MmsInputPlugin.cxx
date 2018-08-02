@@ -22,7 +22,7 @@
 #include "input/ThreadInputStream.hxx"
 #include "input/InputPlugin.hxx"
 #include "system/Error.hxx"
-#include "util/StringCompare.hxx"
+#include "util/ASCII.hxx"
 
 #include <libmms/mmsx.h>
 
@@ -74,10 +74,10 @@ static InputStream *
 input_mms_open(const char *url,
 	       Mutex &mutex, Cond &cond)
 {
-	if (!StringStartsWith(url, "mms://") &&
-	    !StringStartsWith(url, "mmsh://") &&
-	    !StringStartsWith(url, "mmst://") &&
-	    !StringStartsWith(url, "mmsu://"))
+	if (!StringStartsWithCaseASCII(url, "mms://") &&
+	    !StringStartsWithCaseASCII(url, "mmsh://") &&
+	    !StringStartsWithCaseASCII(url, "mmst://") &&
+	    !StringStartsWithCaseASCII(url, "mmsu://"))
 		return nullptr;
 
 	auto m = new MmsInputStream(url, mutex, cond);

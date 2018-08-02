@@ -25,7 +25,7 @@
 #include "../InputPlugin.hxx"
 #include "PluginUnavailable.hxx"
 #include "system/Error.hxx"
-#include "util/StringCompare.hxx"
+#include "util/ASCII.hxx"
 
 #include <libsmbclient.h>
 
@@ -87,7 +87,7 @@ static InputStream *
 input_smbclient_open(const char *uri,
 		     Mutex &mutex, Cond &cond)
 {
-	if (!StringStartsWith(uri, "smb://"))
+	if (!StringStartsWithCaseASCII(uri, "smb://"))
 		return nullptr;
 
 	const std::lock_guard<Mutex> protect(smbclient_mutex);

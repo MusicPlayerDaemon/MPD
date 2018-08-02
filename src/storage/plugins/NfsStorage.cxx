@@ -35,6 +35,7 @@
 #include "event/Call.hxx"
 #include "event/DeferredMonitor.hxx"
 #include "event/TimeoutMonitor.hxx"
+#include "util/ASCII.hxx"
 #include "util/StringCompare.hxx"
 
 extern "C" {
@@ -401,10 +402,9 @@ NfsStorage::OpenDirectory(const char *uri_utf8)
 static Storage *
 CreateNfsStorageURI(EventLoop &event_loop, const char *base)
 {
-	if (strncmp(base, "nfs://", 6) != 0)
+	const char *p = StringAfterPrefixCaseASCII(base, "nfs://");
+	if (p == nullptr)
 		return nullptr;
-
-	const char *p = base + 6;
 
 	const char *mount = strchr(p, '/');
 	if (mount == nullptr)

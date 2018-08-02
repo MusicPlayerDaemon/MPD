@@ -23,7 +23,7 @@
 #include "fs/AllocatedPath.hxx"
 #include "ls.hxx"
 #include "util/UriUtil.hxx"
-#include "util/StringCompare.hxx"
+#include "util/ASCII.hxx"
 
 #ifdef ENABLE_DATABASE
 #include "storage/StorageInterface.hxx"
@@ -83,7 +83,7 @@ LocateUri(const char *uri, const Client *client
 	  )
 {
 	/* skip the obsolete "file://" prefix */
-	const char *path_utf8 = StringAfterPrefix(uri, "file://");
+	const char *path_utf8 = StringAfterPrefixCaseASCII(uri, "file://");
 	if (path_utf8 != nullptr) {
 		if (!PathTraitsUTF8::IsAbsolute(path_utf8))
 			throw std::runtime_error("Malformed file:// URI");
