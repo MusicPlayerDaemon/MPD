@@ -381,11 +381,6 @@ AC_ARG_ENABLE([libwrap],
 	AS_HELP_STRING([--enable-libwrap], [use libwrap]),,
 	[enable_libwrap=auto])
 
-AC_ARG_ENABLE(mikmod,
-	AS_HELP_STRING([--enable-mikmod],
-		[enable the mikmod decoder (default: disable)]),,
-	enable_mikmod=no)
-
 AC_ARG_ENABLE(openal,
 	AS_HELP_STRING([--enable-openal],
 		[enable OpenAL support (default: auto)]),,
@@ -949,18 +944,8 @@ MPD_ENABLE_AUTO_PKG(mpg123, MPG123, [libmpg123],
 	[libmpg123 decoder plugin], [libmpg123 not found])
 
 dnl -------------------------------- libmikmod --------------------------------
-if test x$enable_mikmod = xyes; then
-	AC_PATH_PROG(LIBMIKMOD_CONFIG, libmikmod-config)
-	if test x$LIBMIKMOD_CONFIG != x ; then
-		AC_SUBST(LIBMIKMOD_CFLAGS, `$LIBMIKMOD_CONFIG --cflags`)
-		AC_SUBST(LIBMIKMOD_LIBS, `$LIBMIKMOD_CONFIG --libs`)
-		AC_DEFINE(ENABLE_MIKMOD_DECODER, 1, [Define for mikmod support])
-	else
-		enable_mikmod=no
-	fi
-fi
-
-AM_CONDITIONAL(ENABLE_MIKMOD_DECODER, test x$enable_mikmod = xyes)
+MPD_ENABLE_AUTO_PKG(mikmod, LIBMIKMOD, [libmikmod],
+	[MikMod decoder plugin], [libmikmod not found])
 
 dnl -------------------------------- libmodplug -------------------------------
 MPD_ENABLE_AUTO_PKG(modplug, MODPLUG, [libmodplug],

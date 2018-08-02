@@ -1249,7 +1249,7 @@ libdecoder_a_SOURCES += \
 	src/decoder/plugins/AudiofileDecoderPlugin.hxx
 endif
 
-if ENABLE_MIKMOD_DECODER
+if ENABLE_LIBMIKMOD
 libdecoder_a_SOURCES += \
 	src/decoder/plugins/MikmodDecoderPlugin.cxx \
 	src/decoder/plugins/MikmodDecoderPlugin.hxx

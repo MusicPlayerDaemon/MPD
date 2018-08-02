@@ -88,7 +88,7 @@ const struct DecoderPlugin *const decoder_plugins[] = {
 #ifdef ENABLE_MODPLUG
 	&modplug_decoder_plugin,
 #endif
-#ifdef ENABLE_MIKMOD_DECODER
+#ifdef ENABLE_LIBMIKMOD
 	&mikmod_decoder_plugin,
 #endif
 #ifdef ENABLE_SIDPLAY
