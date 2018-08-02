@@ -7,6 +7,11 @@ After=network.target sound.target
 Type=notify
 ExecStart=@prefix@/bin/mpd --no-daemon
 
+# Enable this setting to ask systemd to watch over MPD, see
+# systemd.service(5).  This is disabled by default because it causes
+# periodic wakeups which are unnecessary if MPD is not playing.
+#WatchdogSec=120
+
 # allow MPD to use real-time priority 50
 LimitRTPRIO=50
 LimitRTTIME=infinity

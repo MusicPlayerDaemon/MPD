@@ -205,6 +205,11 @@ libmpd_a_SOURCES += \
 	src/unix/PidFile.hxx
 endif
 
+if ENABLE_SYSTEMD_DAEMON
+libmpd_a_SOURCES += \
+	src/lib/systemd/Watchdog.cxx src/lib/systemd/Watchdog.hxx
+endif
+
 endif
 
 if ENABLE_DATABASE

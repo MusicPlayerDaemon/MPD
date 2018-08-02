@@ -36,6 +36,7 @@ ver 0.21 (not yet released)
   - sndio: new mixer plugin
 * encoder
   - opus: support for sending metadata using ogg stream chaining
+* systemd watchdog support
 * require GCC 6
 
 ver 0.20.21 (not yet released)

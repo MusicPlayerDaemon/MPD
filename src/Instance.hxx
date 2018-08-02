@@ -26,6 +26,10 @@
 #include "event/MaskMonitor.hxx"
 #include "Compiler.h"
 
+#ifdef ENABLE_SYSTEMD_DAEMON
+#include "lib/systemd/Watchdog.hxx"
+#endif
+
 #ifdef ENABLE_CURL
 #include "RemoteTagCacheHandler.hxx"
 #endif
@@ -88,6 +92,10 @@ struct Instance final
 	 * ring buffers.
 	 */
 	EventThread rtio_thread;
+
+#ifdef ENABLE_SYSTEMD_DAEMON
+	Systemd::Watchdog systemd_watchdog;
+#endif
 
 	MaskMonitor idle_monitor;
 

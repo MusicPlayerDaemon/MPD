@@ -41,6 +41,9 @@
 
 Instance::Instance()
 	:rtio_thread(true),
+#ifdef ENABLE_SYSTEMD_DAEMON
+	 systemd_watchdog(event_loop),
+#endif
 	 idle_monitor(event_loop, BIND_THIS_METHOD(OnIdle))
 {
 }
