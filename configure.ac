@@ -467,7 +467,7 @@ AC_ARG_ENABLE(icu,
 		[enable libicu for Unicode (default: auto)]),,
 	enable_icu=auto)
 
-MPD_AUTO_PKG(icu, ICU, [icu-i18n], [libicu], [libicu not found])
+MPD_AUTO_PKG(icu, ICU, [icu-i18n >= 50], [libicu], [libicu not found])
 MPD_DEFINE_CONDITIONAL(enable_icu, HAVE_ICU, [libicu])
 
 AC_ARG_ENABLE(iconv,

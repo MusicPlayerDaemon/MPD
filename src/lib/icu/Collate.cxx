@@ -85,23 +85,8 @@ IcuCollate(const char *a, const char *b) noexcept
 #ifdef HAVE_ICU
 	assert(collator != nullptr);
 
-#if U_ICU_VERSION_MAJOR_NUM >= 50
 	UErrorCode code = U_ZERO_ERROR;
 	return (int)ucol_strcollUTF8(collator, a, -1, b, -1, &code);
-#else
-	/* fall back to ucol_strcoll() */
-
-	try {
-		const auto au = UCharFromUTF8(a);
-		const auto bu = UCharFromUTF8(b);
-
-		return ucol_strcoll(collator, au.begin(), au.size(),
-				    bu.begin(), bu.size());
-	} catch (...) {
-		/* fall back to plain strcasecmp() */
-		return strcasecmp(a, b);
-	}
-#endif
 
 #elif defined(_WIN32)
 	AllocatedString<wchar_t> wa = nullptr, wb = nullptr;
