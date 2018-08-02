@@ -24,13 +24,14 @@
 std::string
 AudioFormatSongFilter::ToExpression() const noexcept
 {
-	// TODO: support mask
-	return std::string("(AudioFormat == \"") + ToString(value).c_str() + "\")";
+	return std::string("(AudioFormat ") +
+		(value.IsFullyDefined() ? "==" : "=~") +
+		" \"" + ToString(value).c_str() + "\")";
 }
 
 bool
 AudioFormatSongFilter::Match(const LightSong &song) const noexcept
 {
-	// TODO: support mask
-	return song.audio_format == value;
+	return song.audio_format.IsDefined() &&
+		song.audio_format.MatchMask(value);
 }

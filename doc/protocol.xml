@@ -278,6 +278,14 @@
 
         <listitem>
           <para>
+            "<code>(AudioFormat =~ 'SAMPLERATE:BITS:CHANNELS')</code>":
+            matches the audio format with the given mask (i.e. one
+            or more attributes may be "<code>*</code>").
+          </para>
+        </listitem>
+
+        <listitem>
+          <para>
             "<code>(!EXPRESSION)</code>": negate an expression.
           </para>
         </listitem>

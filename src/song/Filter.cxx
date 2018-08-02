@@ -245,14 +245,18 @@ SongFilter::ParseExpression(const char *&s, bool fold_case)
 
 		return std::make_unique<BaseSongFilter>(std::move(value));
 	} else if (type == LOCATE_TAG_AUDIO_FORMAT) {
-		if (s[0] != '=' || s[1] != '=')
-			throw std::runtime_error("'==' expected");
+		bool mask;
+		if (s[0] == '=' && s[1] == '=')
+			mask = false;
+		else if (s[0] == '=' && s[1] == '~')
+			mask = true;
+		else
+			throw std::runtime_error("'==' or '=~' expected");
 
 		s = StripLeft(s + 2);
 
-		// TODO: support mask
 		const auto value = ParseAudioFormat(ExpectQuoted(s).c_str(),
-						    false);
+						    mask);
 
 		if (*s != ')')
 			throw std::runtime_error("')' expected");
