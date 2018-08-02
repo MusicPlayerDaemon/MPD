@@ -109,8 +109,7 @@ ParsePath(const char *path)
 		if (home.IsNull())
 			return nullptr;
 
-		AllocatedPath path2 = AllocatedPath::FromUTF8Throw(path);
-		return home / path2;
+		return home / AllocatedPath::FromUTF8Throw(path);
 	} else if (!PathTraitsUTF8::IsAbsolute(path)) {
 		throw FormatRuntimeError("not an absolute path: %s", path);
 	} else {
