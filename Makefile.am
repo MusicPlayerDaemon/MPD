@@ -1029,6 +1029,14 @@ libconf_a_SOURCES = \
 
 libsong_a_SOURCES = \
 	src/song/DetachedSong.cxx src/song/DetachedSong.hxx \
+	src/song/ISongFilter.hxx \
+	src/song/UriSongFilter.hxx \
+	src/song/StringFilter.cxx src/song/StringFilter.hxx \
+	src/song/UriSongFilter.cxx src/song/UriSongFilter.hxx \
+	src/song/BaseSongFilter.cxx src/song/BaseSongFilter.hxx \
+	src/song/TagSongFilter.cxx src/song/TagSongFilter.hxx \
+	src/song/ModifiedSinceSongFilter.cxx src/song/ModifiedSinceSongFilter.hxx \
+	src/song/AndSongFilter.cxx src/song/AndSongFilter.hxx \
 	src/song/Filter.cxx src/song/Filter.hxx \
 	src/song/LightSong.cxx src/song/LightSong.hxx
 
