@@ -22,15 +22,6 @@
 
 extern "C" {
 #include <libavutil/mem.h>
-
-#if LIBAVUTIL_VERSION_INT >= AV_VERSION_INT(52, 18, 0)
-#define HAVE_AV_FAST_MALLOC
-#else
-#include <libavcodec/avcodec.h>
-#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(52, 25, 0)
-#define HAVE_AV_FAST_MALLOC
-#endif
-#endif
 }
 
 #include <stddef.h>
@@ -53,14 +44,7 @@ public:
 
 	gcc_malloc
 	void *Get(size_t min_size) {
-#ifdef HAVE_AV_FAST_MALLOC
 		av_fast_malloc(&data, &size, min_size);
-#else
-		void *new_data = av_fast_realloc(data, &size, min_size);
-		if (new_data == nullptr)
-			return AVERROR(ENOMEM);
-		data = new_data;
-#endif
 		return data;
 	}
 

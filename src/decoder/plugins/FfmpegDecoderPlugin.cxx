@@ -47,10 +47,7 @@ extern "C" {
 #include <libavformat/avformat.h>
 #include <libavformat/avio.h>
 #include <libavutil/avutil.h>
-
-#if LIBAVUTIL_VERSION_MAJOR >= 53
 #include <libavutil/frame.h>
-#endif
 }
 
 #include <assert.h>
@@ -539,8 +536,6 @@ FfmpegScanMetadata(const AVFormatContext &format_context, int audio_stream,
 			   handler);
 }
 
-#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(56, 1, 0)
-
 static void
 FfmpegScanTag(const AVFormatContext &format_context, int audio_stream,
 	      TagBuilder &tag)
@@ -571,8 +566,6 @@ FfmpegCheckTag(DecoderClient &client, InputStream &is,
 		client.SubmitTag(is, tag.Commit());
 }
 
-#endif
-
 static void
 FfmpegDecode(DecoderClient &client, InputStream &input,
 	     AVFormatContext &format_context)
@@ -598,17 +591,11 @@ FfmpegDecode(DecoderClient &client, InputStream &input,
 
 	const auto &codec_params = GetCodecParameters(av_stream);
 
-#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(54, 25, 0)
 	const AVCodecDescriptor *codec_descriptor =
 		avcodec_descriptor_get(codec_params.codec_id);
 	if (codec_descriptor != nullptr)
 		FormatDebug(ffmpeg_domain, "codec '%s'",
 			    codec_descriptor->name);
-#else
-	if (codec_context->codec_name[0] != 0)
-		FormatDebug(ffmpeg_domain, "codec '%s'",
-			    codec_context->codec_name);
-#endif
 
 	AVCodec *codec = avcodec_find_decoder(codec_params.codec_id);
 
@@ -670,24 +657,14 @@ FfmpegDecode(DecoderClient &client, InputStream &input,
 
 	FfmpegParseMetaData(client, format_context, audio_stream);
 
-#if LIBAVUTIL_VERSION_MAJOR >= 53
 	AVFrame *frame = av_frame_alloc();
-#else
-	AVFrame *frame = avcodec_alloc_frame();
-#endif
 	if (!frame) {
 		LogError(ffmpeg_domain, "Could not allocate frame");
 		return;
 	}
 
 	AtScopeExit(&frame) {
-#if LIBAVUTIL_VERSION_MAJOR >= 53
 		av_frame_free(&frame);
-#elif LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(54, 28, 0)
-		avcodec_free_frame(&frame);
-#else
-		av_free(frame);
-#endif
 	};
 
 	FfmpegBuffer interleaved_buffer;
@@ -720,9 +697,7 @@ FfmpegDecode(DecoderClient &client, InputStream &input,
 			/* end of file */
 			break;
 
-#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(56, 1, 0)
 		FfmpegCheckTag(client, input, format_context, audio_stream);
-#endif
 
 		if (packet.size > 0 && packet.stream_index == audio_stream) {
 			cmd = ffmpeg_send_packet(client, input,

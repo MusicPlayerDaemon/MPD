@@ -19,6 +19,7 @@ ver 0.21 (not yet released)
 * tags
   - new tags "OriginalDate", "MUSICBRAINZ_WORKID"
 * decoder
+  - ffmpeg: require at least version 11.12
   - gme: try loading m3u sidecar files
   - hybrid_dsd: new decoder plugin
   - mad: move "gapless_mp3_playback" setting to "decoder" block

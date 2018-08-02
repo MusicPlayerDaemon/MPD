@@ -911,7 +911,7 @@ MPD_ENABLE_AUTO_LIB(aac, FAAD, faad, NeAACDecOpen, [-lfaad], [],
 
 dnl ---------------------------------- ffmpeg ---------------------------------
 MPD_ENABLE_AUTO_PKG(ffmpeg, FFMPEG,
-	[libavformat >= 53.17 libavcodec >= 53.25 libavutil >= 51.17],
+	[libavformat >= 56.1 libavcodec >= 56.1 libavutil >= 54.3],
 	[ffmpeg decoder library], [libavformat+libavcodec+libavutil not found])
 
 dnl ----------------------------------- FLAC ----------------------------------
