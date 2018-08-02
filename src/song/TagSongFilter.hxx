@@ -38,6 +38,8 @@ class TagSongFilter final : public ISongFilter {
 
 	StringFilter filter;
 
+	friend ISongFilterPtr OptimizeSongFilter(ISongFilterPtr) noexcept;
+
 public:
 	template<typename V>
 	TagSongFilter(TagType _type, V &&_value, bool fold_case, bool _negated)

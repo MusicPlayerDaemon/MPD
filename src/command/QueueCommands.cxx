@@ -272,6 +272,7 @@ handle_playlist_match(Client &client, Request args, Response &r,
 			GetFullMessage(std::current_exception()).c_str());
 		return CommandResult::ERROR;
 	}
+	filter.Optimize();
 
 	playlist_print_find(r, client.GetPlaylist(), filter);
 	return CommandResult::OK;

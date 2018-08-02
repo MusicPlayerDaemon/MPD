@@ -68,6 +68,8 @@ public:
 	 */
 	void Parse(ConstBuffer<const char *> args, bool fold_case=false);
 
+	void Optimize() noexcept;
+
 	gcc_pure
 	bool Match(const LightSong &song) const noexcept;
 

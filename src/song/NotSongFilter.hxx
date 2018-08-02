@@ -28,6 +28,8 @@
 class NotSongFilter final : public ISongFilter {
 	ISongFilterPtr child;
 
+	friend ISongFilterPtr OptimizeSongFilter(ISongFilterPtr) noexcept;
+
 public:
 	template<typename C>
 	explicit NotSongFilter(C &&_child) noexcept

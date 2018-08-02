@@ -352,6 +352,12 @@ SongFilter::Parse(ConstBuffer<const char *> args, bool fold_case)
 	} while (!args.empty());
 }
 
+void
+SongFilter::Optimize() noexcept
+{
+	OptimizeSongFilter(and_filter);
+}
+
 bool
 SongFilter::Match(const LightSong &song) const noexcept
 {

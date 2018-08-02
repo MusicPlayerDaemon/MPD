@@ -41,6 +41,7 @@ try {
 
 	SongFilter filter;
 	filter.Parse(ConstBuffer<const char *>(argv + 1, argc - 1));
+	filter.Optimize();
 
 	puts(filter.ToExpression().c_str());
 	return EXIT_SUCCESS;

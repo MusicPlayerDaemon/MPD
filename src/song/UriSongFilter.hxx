@@ -28,6 +28,8 @@ class UriSongFilter final : public ISongFilter {
 
 	bool negated;
 
+	friend ISongFilterPtr OptimizeSongFilter(ISongFilterPtr) noexcept;
+
 public:
 	template<typename V>
 	UriSongFilter(V &&_value, bool fold_case, bool _negated)

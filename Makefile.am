@@ -1039,6 +1039,7 @@ libsong_a_SOURCES = \
 	src/song/AudioFormatSongFilter.cxx src/song/AudioFormatSongFilter.hxx \
 	src/song/AndSongFilter.cxx src/song/AndSongFilter.hxx \
 	src/song/NotSongFilter.hxx \
+	src/song/OptimizeFilter.cxx src/song/OptimizeFilter.hxx \
 	src/song/Filter.cxx src/song/Filter.hxx \
 	src/song/LightSong.cxx src/song/LightSong.hxx
 

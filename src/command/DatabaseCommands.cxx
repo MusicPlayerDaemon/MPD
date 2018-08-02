@@ -105,6 +105,7 @@ handle_match(Client &client, Request args, Response &r, bool fold_case)
 			GetFullMessage(std::current_exception()).c_str());
 		return CommandResult::ERROR;
 	}
+	filter.Optimize();
 
 	const DatabaseSelection selection("", true, &filter);
 
@@ -138,6 +139,7 @@ handle_match_add(Client &client, Request args, Response &r, bool fold_case)
 			GetFullMessage(std::current_exception()).c_str());
 		return CommandResult::ERROR;
 	}
+	filter.Optimize();
 
 	auto &partition = client.GetPartition();
 	const ScopeBulkEdit bulk_edit(partition);
@@ -172,6 +174,7 @@ handle_searchaddpl(Client &client, Request args, Response &r)
 			GetFullMessage(std::current_exception()).c_str());
 		return CommandResult::ERROR;
 	}
+	filter.Optimize();
 
 	const Database &db = client.GetDatabaseOrThrow();
 
@@ -206,6 +209,8 @@ handle_count(Client &client, Request args, Response &r)
 				GetFullMessage(std::current_exception()).c_str());
 			return CommandResult::ERROR;
 		}
+
+		filter.Optimize();
 	}
 
 	PrintSongCount(r, client.GetPartition(), "", &filter, group);
@@ -238,6 +243,7 @@ handle_list_file(Client &client, Request args, Response &r)
 				GetFullMessage(std::current_exception()).c_str());
 			return CommandResult::ERROR;
 		}
+		filter->Optimize();
 	}
 
 	PrintSongUris(r, client.GetPartition(), filter.get());
@@ -300,6 +306,7 @@ handle_list(Client &client, Request args, Response &r)
 				GetFullMessage(std::current_exception()).c_str());
 			return CommandResult::ERROR;
 		}
+		filter->Optimize();
 	}
 
 	if (group_mask.Test(tagType)) {
