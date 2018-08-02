@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright (C) 2013-2018 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -30,6 +30,7 @@
 #ifndef ASCII_HXX
 #define ASCII_HXX
 
+#include "StringView.hxx"
 #include "Compiler.h"
 
 #include <assert.h>
@@ -67,6 +68,22 @@ StringEqualsCaseASCII(const char *a, const char *b, size_t n) noexcept
 	/* note: strcasecmp() depends on the locale, but for ASCII-only
 	   strings, it's safe to use */
 	return strncasecmp(a, b, n) == 0;
+}
+
+gcc_pure gcc_nonnull_all
+static inline bool
+StringStartsWithCaseASCII(const char *haystack, StringView needle) noexcept
+{
+	return StringEqualsCaseASCII(haystack, needle.data, needle.size);
+}
+
+gcc_pure gcc_nonnull_all
+static inline const char *
+StringAfterPrefixCaseASCII(const char *haystack, StringView needle) noexcept
+{
+	return StringStartsWithCaseASCII(haystack, needle)
+		? haystack + needle.size
+		: nullptr;
 }
 
 #endif

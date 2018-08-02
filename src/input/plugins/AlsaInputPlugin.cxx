@@ -35,7 +35,7 @@
 #include "util/RuntimeError.hxx"
 #include "util/StringCompare.hxx"
 #include "util/ReusableArray.hxx"
-
+#include "util/ASCII.hxx"
 #include "Log.hxx"
 #include "event/MultiSocketMonitor.hxx"
 #include "event/DeferEvent.hxx"
@@ -150,7 +150,7 @@ inline InputStreamPtr
 AlsaInputStream::Create(EventLoop &event_loop, const char *uri,
 			Mutex &mutex)
 {
-	const char *device = StringAfterPrefix(uri, "alsa://");
+	const char *device = StringAfterPrefixCaseASCII(uri, "alsa://");
 	if (device == nullptr)
 		return nullptr;
 

@@ -18,7 +18,7 @@
  */
 
 #include "UriUtil.hxx"
-#include "StringCompare.hxx"
+#include "ASCII.hxx"
 #include "CharUtil.hxx"
 
 #include <assert.h>
@@ -169,7 +169,7 @@ SkipUriScheme(const char *uri) noexcept
 {
 	const char *const schemes[] = { "http://", "https://", "ftp://" };
 	for (auto scheme : schemes) {
-		auto result = StringAfterPrefix(uri, scheme);
+		auto result = StringAfterPrefixCaseASCII(uri, scheme);
 		if (result != nullptr)
 			return result;
 	}

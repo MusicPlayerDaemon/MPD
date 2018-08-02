@@ -45,6 +45,7 @@ ver 0.20.21 (not yet released)
   - simple: allow .mpdignore comments only at start of line
 * output
   - httpd: remove broken DLNA support code
+* URI schemes are case insensitive
 
 ver 0.20.20 (2018/05/22)
 * protocol

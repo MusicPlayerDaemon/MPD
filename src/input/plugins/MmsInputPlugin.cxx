@@ -22,7 +22,7 @@
 #include "input/ThreadInputStream.hxx"
 #include "input/InputPlugin.hxx"
 #include "system/Error.hxx"
-#include "util/StringCompare.hxx"
+#include "util/ASCII.hxx"
 
 #include <libmms/mmsx.h>
 
@@ -72,10 +72,10 @@ static InputStreamPtr
 input_mms_open(const char *url,
 	       Mutex &mutex)
 {
-	if (!StringStartsWith(url, "mms://") &&
-	    !StringStartsWith(url, "mmsh://") &&
-	    !StringStartsWith(url, "mmst://") &&
-	    !StringStartsWith(url, "mmsu://"))
+	if (!StringStartsWithCaseASCII(url, "mms://") &&
+	    !StringStartsWithCaseASCII(url, "mmsh://") &&
+	    !StringStartsWithCaseASCII(url, "mmst://") &&
+	    !StringStartsWithCaseASCII(url, "mmsu://"))
 		return nullptr;
 
 	auto m = std::make_unique<MmsInputStream>(url, mutex);

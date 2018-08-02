@@ -23,9 +23,7 @@
 #include "../InputPlugin.hxx"
 #include "lib/nfs/Glue.hxx"
 #include "lib/nfs/FileReader.hxx"
-#include "util/StringCompare.hxx"
-
-#include <string.h>
+#include "util/ASCII.hxx"
 
 /**
  * Do not buffer more than this number of bytes.  It should be a
@@ -219,7 +217,7 @@ static InputStreamPtr
 input_nfs_open(const char *uri,
 	       Mutex &mutex)
 {
-	if (!StringStartsWith(uri, "nfs://"))
+	if (!StringStartsWithCaseASCII(uri, "nfs://"))
 		return nullptr;
 
 	auto is = std::make_unique<NfsInputStream>(uri, mutex);

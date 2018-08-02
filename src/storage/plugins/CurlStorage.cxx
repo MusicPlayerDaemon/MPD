@@ -34,6 +34,7 @@
 #include "event/DeferEvent.hxx"
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
+#include "util/ASCII.hxx"
 #include "util/ChronoUtil.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/StringCompare.hxx"
@@ -551,8 +552,8 @@ CurlStorage::OpenDirectory(const char *uri_utf8)
 static std::unique_ptr<Storage>
 CreateCurlStorageURI(EventLoop &event_loop, const char *uri)
 {
-	if (strncmp(uri, "http://", 7) != 0 &&
-	    strncmp(uri, "https://", 8) != 0)
+	if (!StringStartsWithCaseASCII(uri, "http://") &&
+	    !StringStartsWithCaseASCII(uri, "https://"))
 		return nullptr;
 
 	return std::make_unique<CurlStorage>(event_loop, uri);

@@ -21,7 +21,7 @@
 #include "InputStream.hxx"
 #include "Handler.hxx"
 #include "tag/Tag.hxx"
-#include "util/StringCompare.hxx"
+#include "util/ASCII.hxx"
 
 #include <stdexcept>
 
@@ -60,10 +60,10 @@ gcc_pure
 static bool
 ExpensiveSeeking(const char *uri) noexcept
 {
-	return StringStartsWith(uri, "http://") ||
-		StringStartsWith(uri, "tidal://") ||
-		StringStartsWith(uri, "qobuz://") ||
-		StringStartsWith(uri, "https://");
+	return StringStartsWithCaseASCII(uri, "http://") ||
+		StringStartsWithCaseASCII(uri, "tidal://") ||
+		StringStartsWithCaseASCII(uri, "qobuz://") ||
+		StringStartsWithCaseASCII(uri, "https://");
 }
 
 bool

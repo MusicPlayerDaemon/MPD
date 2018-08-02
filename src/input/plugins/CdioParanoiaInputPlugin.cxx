@@ -26,7 +26,7 @@
 #include "../InputStream.hxx"
 #include "../InputPlugin.hxx"
 #include "util/TruncateString.hxx"
-#include "util/StringCompare.hxx"
+#include "util/ASCII.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/Domain.hxx"
 #include "system/ByteOrder.hxx"
@@ -128,7 +128,7 @@ struct cdio_uri {
 static bool
 parse_cdio_uri(struct cdio_uri *dest, const char *src)
 {
-	if (!StringStartsWith(src, "cdda://"))
+	if (!StringStartsWithCaseASCII(src, "cdda://"))
 		return false;
 
 	src += 7;

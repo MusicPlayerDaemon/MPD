@@ -28,7 +28,7 @@
 #include "../InputStream.hxx"
 #include "../InputPlugin.hxx"
 #include "PluginUnavailable.hxx"
-#include "util/StringCompare.hxx"
+#include "util/ASCII.hxx"
 
 extern "C" {
 #include <libavformat/avio.h>
@@ -85,12 +85,12 @@ static InputStreamPtr
 input_ffmpeg_open(const char *uri,
 		  Mutex &mutex)
 {
-	if (!StringStartsWith(uri, "gopher://") &&
-	    !StringStartsWith(uri, "rtp://") &&
-	    !StringStartsWith(uri, "rtsp://") &&
-	    !StringStartsWith(uri, "rtmp://") &&
-	    !StringStartsWith(uri, "rtmpt://") &&
-	    !StringStartsWith(uri, "rtmps://"))
+	if (!StringStartsWithCaseASCII(uri, "gopher://") &&
+	    !StringStartsWithCaseASCII(uri, "rtp://") &&
+	    !StringStartsWithCaseASCII(uri, "rtsp://") &&
+	    !StringStartsWithCaseASCII(uri, "rtmp://") &&
+	    !StringStartsWithCaseASCII(uri, "rtmpt://") &&
+	    !StringStartsWithCaseASCII(uri, "rtmps://"))
 		return nullptr;
 
 	AVIOContext *h;

@@ -466,8 +466,8 @@ OpenCurlInputStream(const char *uri,
 static InputStreamPtr
 input_curl_open(const char *url, Mutex &mutex)
 {
-	if (strncmp(url, "http://", 7) != 0 &&
-	    strncmp(url, "https://", 8) != 0)
+	if (!StringStartsWithCaseASCII(url, "http://") &&
+	    !StringStartsWithCaseASCII(url, "https://"))
 		return nullptr;
 
 	return CurlInputStream::Open(url, {}, mutex);

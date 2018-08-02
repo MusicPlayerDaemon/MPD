@@ -316,7 +316,7 @@ else
 fi
 
 default_enable_daemon=yes
-if test x$host_is_android = xyes || test x$host_is_android = xyes; then
+if test x$host_is_android = xyes || test x$host_is_windows = xyes; then
 	default_enable_daemon=no
 fi
 AC_ARG_ENABLE(daemon,

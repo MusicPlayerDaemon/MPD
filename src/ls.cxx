@@ -20,7 +20,7 @@
 #include "config.h"
 #include "ls.hxx"
 #include "client/Response.hxx"
-#include "util/StringCompare.hxx"
+#include "util/ASCII.hxx"
 #include "util/UriUtil.hxx"
 
 #include <assert.h>
@@ -103,7 +103,7 @@ uri_supported_scheme(const char *uri) noexcept
 	assert(uri_has_scheme(uri));
 
 	while (*urlPrefixes) {
-		if (StringStartsWith(uri, *urlPrefixes))
+		if (StringStartsWithCaseASCII(uri, *urlPrefixes))
 			return true;
 		urlPrefixes++;
 	}
