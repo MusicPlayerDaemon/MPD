@@ -22,7 +22,7 @@
 #include "Directory.hxx"
 #include "Song.hxx"
 #include "SongSave.hxx"
-#include "DetachedSong.hxx"
+#include "song/DetachedSong.hxx"
 #include "PlaylistDatabase.hxx"
 #include "fs/io/TextFile.hxx"
 #include "fs/io/BufferedOutputStream.hxx"

@@ -22,7 +22,7 @@
 #include "Listener.hxx"
 #include "PlaylistError.hxx"
 #include "player/Control.hxx"
-#include "DetachedSong.hxx"
+#include "song/DetachedSong.hxx"
 #include "SingleMode.hxx"
 #include "Log.hxx"
 

@@ -20,8 +20,8 @@
 #include "config.h"
 #include "Playlist.hxx"
 #include "db/Interface.hxx"
-#include "db/LightSong.hxx"
-#include "DetachedSong.hxx"
+#include "song/LightSong.hxx"
+#include "song/DetachedSong.hxx"
 
 static bool
 UpdatePlaylistSong(const Database &db, DetachedSong &song)

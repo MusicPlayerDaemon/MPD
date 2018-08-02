@@ -21,7 +21,7 @@
 #include "QueueSave.hxx"
 #include "Queue.hxx"
 #include "PlaylistError.hxx"
-#include "DetachedSong.hxx"
+#include "song/DetachedSong.hxx"
 #include "SongSave.hxx"
 #include "playlist/PlaylistSong.hxx"
 #include "fs/io/TextFile.hxx"

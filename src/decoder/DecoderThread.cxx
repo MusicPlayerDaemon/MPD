@@ -23,7 +23,7 @@
 #include "Bridge.hxx"
 #include "DecoderError.hxx"
 #include "DecoderPlugin.hxx"
-#include "DetachedSong.hxx"
+#include "song/DetachedSong.hxx"
 #include "MusicPipe.hxx"
 #include "fs/Traits.hxx"
 #include "fs/AllocatedPath.hxx"

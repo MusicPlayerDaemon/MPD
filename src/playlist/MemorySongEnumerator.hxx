@@ -21,7 +21,7 @@
 #define MPD_MEMORY_PLAYLIST_PROVIDER_HXX
 
 #include "SongEnumerator.hxx"
-#include "DetachedSong.hxx"
+#include "song/DetachedSong.hxx"
 #include "Compiler.h"
 
 #include <forward_list>

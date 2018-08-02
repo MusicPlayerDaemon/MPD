@@ -27,7 +27,7 @@
 #include "FlacPlaylistPlugin.hxx"
 #include "../PlaylistPlugin.hxx"
 #include "../SongEnumerator.hxx"
-#include "DetachedSong.hxx"
+#include "song/DetachedSong.hxx"
 #include "fs/Traits.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "fs/NarrowPath.hxx"

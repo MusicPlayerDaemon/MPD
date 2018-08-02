@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#include "DetachedSong.hxx"
+#include "song/DetachedSong.hxx"
 #include "SongSave.hxx"
 #include "config/Data.hxx"
 #include "decoder/DecoderList.hxx"

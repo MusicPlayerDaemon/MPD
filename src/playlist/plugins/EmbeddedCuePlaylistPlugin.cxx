@@ -30,7 +30,7 @@
 #include "../cue/CueParser.hxx"
 #include "tag/Handler.hxx"
 #include "tag/Generic.hxx"
-#include "DetachedSong.hxx"
+#include "song/DetachedSong.hxx"
 #include "TagFile.hxx"
 #include "fs/Traits.hxx"
 #include "fs/AllocatedPath.hxx"

@@ -26,7 +26,7 @@
 #include "MusicPipe.hxx"
 #include "MusicBuffer.hxx"
 #include "MusicChunk.hxx"
-#include "DetachedSong.hxx"
+#include "song/DetachedSong.hxx"
 #include "CrossFade.hxx"
 #include "Control.hxx"
 #include "tag/Tag.hxx"

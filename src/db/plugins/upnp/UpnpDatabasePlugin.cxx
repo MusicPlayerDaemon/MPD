@@ -29,7 +29,7 @@
 #include "db/Selection.hxx"
 #include "db/DatabaseError.hxx"
 #include "db/LightDirectory.hxx"
-#include "db/LightSong.hxx"
+#include "song/LightSong.hxx"
 #include "db/Stats.hxx"
 #include "config/Block.hxx"
 #include "tag/Builder.hxx"
@@ -37,7 +37,7 @@
 #include "tag/Mask.hxx"
 #include "fs/Traits.hxx"
 #include "Log.hxx"
-#include "SongFilter.hxx"
+#include "song/Filter.hxx"
 #include "util/SplitString.hxx"
 
 #include <string>

@@ -21,7 +21,7 @@
 #define MPD_DB_SIMPLE_PREFIXED_LIGHT_SONG_HXX
 
 #include "check.h"
-#include "db/LightSong.hxx"
+#include "song/LightSong.hxx"
 #include "fs/Traits.hxx"
 
 #include <string>

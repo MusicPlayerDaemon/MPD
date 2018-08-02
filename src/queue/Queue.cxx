@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "Queue.hxx"
-#include "DetachedSong.hxx"
+#include "song/DetachedSong.hxx"
 
 Queue::Queue(unsigned _max_length) noexcept
 	:max_length(_max_length),

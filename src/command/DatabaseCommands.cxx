@@ -34,7 +34,7 @@
 #include "util/Exception.hxx"
 #include "util/StringAPI.hxx"
 #include "util/ASCII.hxx"
-#include "SongFilter.hxx"
+#include "song/Filter.hxx"
 #include "BulkEdit.hxx"
 
 #include <memory>

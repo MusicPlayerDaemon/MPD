@@ -1,6 +1,6 @@
 #include "config.h"
 #include "queue/Queue.hxx"
-#include "DetachedSong.hxx"
+#include "song/DetachedSong.hxx"
 #include "util/Macros.hxx"
 
 #include <cppunit/TestFixture.h>

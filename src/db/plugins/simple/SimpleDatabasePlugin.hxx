@@ -23,7 +23,7 @@
 #include "check.h"
 #include "db/Interface.hxx"
 #include "fs/AllocatedPath.hxx"
-#include "db/LightSong.hxx"
+#include "song/LightSong.hxx"
 #include "util/Manual.hxx"
 #include "Compiler.h"
 

@@ -21,7 +21,7 @@
 #include "SongSave.hxx"
 #include "AudioParser.hxx"
 #include "db/plugins/simple/Song.hxx"
-#include "DetachedSong.hxx"
+#include "song/DetachedSong.hxx"
 #include "TagSave.hxx"
 #include "fs/io/TextFile.hxx"
 #include "fs/io/BufferedOutputStream.hxx"

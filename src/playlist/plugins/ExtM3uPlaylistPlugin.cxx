@@ -21,7 +21,7 @@
 #include "ExtM3uPlaylistPlugin.hxx"
 #include "../PlaylistPlugin.hxx"
 #include "../SongEnumerator.hxx"
-#include "DetachedSong.hxx"
+#include "song/DetachedSong.hxx"
 #include "tag/Tag.hxx"
 #include "tag/Builder.hxx"
 #include "util/StringStrip.hxx"

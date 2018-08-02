@@ -19,7 +19,7 @@
 
 #include "UniqueTags.hxx"
 #include "Interface.hxx"
-#include "LightSong.hxx"
+#include "song/LightSong.hxx"
 #include "tag/Set.hxx"
 #include "tag/Mask.hxx"
 

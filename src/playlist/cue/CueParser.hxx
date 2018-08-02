@@ -21,7 +21,7 @@
 #define MPD_CUE_PARSER_HXX
 
 #include "check.h"
-#include "DetachedSong.hxx"
+#include "song/DetachedSong.hxx"
 #include "tag/Builder.hxx"
 #include "Compiler.h"
 

@@ -22,7 +22,7 @@
 #include "DecoderAPI.hxx"
 #include "DecoderError.hxx"
 #include "DecoderControl.hxx"
-#include "DetachedSong.hxx"
+#include "song/DetachedSong.hxx"
 #include "pcm/PcmConvert.hxx"
 #include "MusicPipe.hxx"
 #include "MusicBuffer.hxx"

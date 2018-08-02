@@ -23,7 +23,7 @@
 #include "PlaylistError.hxx"
 #include "db/PlaylistInfo.hxx"
 #include "db/PlaylistVector.hxx"
-#include "DetachedSong.hxx"
+#include "song/DetachedSong.hxx"
 #include "SongLoader.hxx"
 #include "Mapper.hxx"
 #include "fs/io/TextFile.hxx"

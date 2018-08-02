@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "TagSave.hxx"
-#include "DetachedSong.hxx"
+#include "song/DetachedSong.hxx"
 #include "playlist/SongEnumerator.hxx"
 #include "input/InputStream.hxx"
 #include "config/Global.hxx"

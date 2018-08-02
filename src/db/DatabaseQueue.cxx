@@ -23,7 +23,7 @@
 #include "Interface.hxx"
 #include "Partition.hxx"
 #include "Instance.hxx"
-#include "DetachedSong.hxx"
+#include "song/DetachedSong.hxx"
 
 #include <functional>
 

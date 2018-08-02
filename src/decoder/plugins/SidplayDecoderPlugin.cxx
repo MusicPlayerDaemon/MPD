@@ -22,7 +22,7 @@
 #include "../DecoderAPI.hxx"
 #include "tag/Handler.hxx"
 #include "tag/Builder.hxx"
-#include "DetachedSong.hxx"
+#include "song/DetachedSong.hxx"
 #include "fs/Path.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "util/Macros.hxx"

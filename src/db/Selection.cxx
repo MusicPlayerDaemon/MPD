@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "Selection.hxx"
-#include "SongFilter.hxx"
+#include "song/Filter.hxx"
 
 DatabaseSelection::DatabaseSelection(const char *_uri, bool _recursive,
 				     const SongFilter *_filter)

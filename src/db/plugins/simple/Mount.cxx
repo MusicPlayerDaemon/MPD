@@ -20,7 +20,7 @@
 #include "config.h"
 #include "Mount.hxx"
 #include "PrefixedLightSong.hxx"
-#include "SongFilter.hxx"
+#include "song/Filter.hxx"
 #include "db/Selection.hxx"
 #include "db/LightDirectory.hxx"
 #include "db/Interface.hxx"

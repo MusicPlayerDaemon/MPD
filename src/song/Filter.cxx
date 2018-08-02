@@ -18,8 +18,8 @@
  */
 
 #include "config.h"
-#include "SongFilter.hxx"
-#include "db/LightSong.hxx"
+#include "Filter.hxx"
+#include "LightSong.hxx"
 #include "tag/ParseName.hxx"
 #include "tag/Tag.hxx"
 #include "util/CharUtil.hxx"

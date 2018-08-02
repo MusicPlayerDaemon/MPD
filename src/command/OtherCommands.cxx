@@ -26,7 +26,7 @@
 #include "db/Uri.hxx"
 #include "storage/StorageInterface.hxx"
 #include "LocateUri.hxx"
-#include "DetachedSong.hxx"
+#include "song/DetachedSong.hxx"
 #include "SongPrint.hxx"
 #include "TagPrint.hxx"
 #include "TagStream.hxx"

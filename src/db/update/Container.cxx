@@ -20,7 +20,7 @@
 #include "config.h" /* must be first for large file support */
 #include "Walk.hxx"
 #include "UpdateDomain.hxx"
-#include "DetachedSong.hxx"
+#include "song/DetachedSong.hxx"
 #include "db/DatabaseLock.hxx"
 #include "db/plugins/simple/Directory.hxx"
 #include "db/plugins/simple/Song.hxx"

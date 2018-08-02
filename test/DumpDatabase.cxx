@@ -24,7 +24,7 @@
 #include "db/Selection.hxx"
 #include "db/DatabaseListener.hxx"
 #include "db/LightDirectory.hxx"
-#include "db/LightSong.hxx"
+#include "song/LightSong.hxx"
 #include "db/PlaylistVector.hxx"
 #include "config/Global.hxx"
 #include "config/Data.hxx"

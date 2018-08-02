@@ -26,7 +26,7 @@
 #include "config.h"
 #include "Playlist.hxx"
 #include "PlaylistError.hxx"
-#include "DetachedSong.hxx"
+#include "song/DetachedSong.hxx"
 #include "tag/Tag.hxx"
 #include "tag/Builder.hxx"
 

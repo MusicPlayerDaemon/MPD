@@ -22,7 +22,7 @@
 #include "../DecoderAPI.hxx"
 #include "config/Block.cxx"
 #include "CheckAudioFormat.hxx"
-#include "DetachedSong.hxx"
+#include "song/DetachedSong.hxx"
 #include "tag/Handler.hxx"
 #include "tag/Builder.hxx"
 #include "fs/Path.hxx"

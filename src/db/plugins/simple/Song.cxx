@@ -22,8 +22,8 @@
 #include "Directory.hxx"
 #include "tag/Tag.hxx"
 #include "util/VarSize.hxx"
-#include "DetachedSong.hxx"
-#include "db/LightSong.hxx"
+#include "song/DetachedSong.hxx"
+#include "song/LightSong.hxx"
 
 #include <assert.h>
 #include <string.h>

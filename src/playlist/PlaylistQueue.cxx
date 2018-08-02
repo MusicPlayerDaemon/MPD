@@ -24,7 +24,7 @@
 #include "PlaylistError.hxx"
 #include "queue/Playlist.hxx"
 #include "SongEnumerator.hxx"
-#include "DetachedSong.hxx"
+#include "song/DetachedSong.hxx"
 #include "thread/Mutex.hxx"
 #include "fs/Traits.hxx"
 

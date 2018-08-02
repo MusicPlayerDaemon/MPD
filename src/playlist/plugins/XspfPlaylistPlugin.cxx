@@ -21,7 +21,7 @@
 #include "XspfPlaylistPlugin.hxx"
 #include "../PlaylistPlugin.hxx"
 #include "../MemorySongEnumerator.hxx"
-#include "DetachedSong.hxx"
+#include "song/DetachedSong.hxx"
 #include "input/InputStream.hxx"
 #include "tag/Builder.hxx"
 #include "util/StringView.hxx"

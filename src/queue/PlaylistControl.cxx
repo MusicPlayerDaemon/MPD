@@ -26,7 +26,7 @@
 #include "Playlist.hxx"
 #include "PlaylistError.hxx"
 #include "player/Control.hxx"
-#include "DetachedSong.hxx"
+#include "song/DetachedSong.hxx"
 #include "Log.hxx"
 
 void

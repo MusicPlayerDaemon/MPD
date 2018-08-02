@@ -4,7 +4,7 @@
 
 #include "config.h"
 #include "playlist/PlaylistSong.hxx"
-#include "DetachedSong.hxx"
+#include "song/DetachedSong.hxx"
 #include "SongLoader.hxx"
 #include "client/Client.hxx"
 #include "tag/Builder.hxx"

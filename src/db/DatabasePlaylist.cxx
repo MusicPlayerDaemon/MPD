@@ -23,7 +23,7 @@
 #include "Selection.hxx"
 #include "PlaylistFile.hxx"
 #include "Interface.hxx"
-#include "DetachedSong.hxx"
+#include "song/DetachedSong.hxx"
 
 #include <functional>
 

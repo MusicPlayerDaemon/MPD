@@ -21,7 +21,7 @@
 #include "Control.hxx"
 #include "Outputs.hxx"
 #include "Idle.hxx"
-#include "DetachedSong.hxx"
+#include "song/DetachedSong.hxx"
 
 #include <algorithm>
 

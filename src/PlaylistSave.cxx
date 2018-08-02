@@ -22,7 +22,7 @@
 #include "PlaylistFile.hxx"
 #include "PlaylistError.hxx"
 #include "queue/Playlist.hxx"
-#include "DetachedSong.hxx"
+#include "song/DetachedSong.hxx"
 #include "Mapper.hxx"
 #include "Idle.hxx"
 #include "fs/AllocatedPath.hxx"

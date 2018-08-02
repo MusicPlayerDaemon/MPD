@@ -20,7 +20,7 @@
 #include "Helpers.hxx"
 #include "Stats.hxx"
 #include "Interface.hxx"
-#include "LightSong.hxx"
+#include "song/LightSong.hxx"
 #include "tag/Tag.hxx"
 
 #include <set>

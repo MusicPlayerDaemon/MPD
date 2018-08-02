@@ -21,7 +21,7 @@
 #include "DecoderControl.hxx"
 #include "DecoderError.hxx"
 #include "MusicPipe.hxx"
-#include "DetachedSong.hxx"
+#include "song/DetachedSong.hxx"
 
 #include <stdexcept>
 

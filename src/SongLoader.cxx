@@ -23,7 +23,7 @@
 #include "client/Client.hxx"
 #include "db/DatabaseSong.hxx"
 #include "storage/StorageInterface.hxx"
-#include "DetachedSong.hxx"
+#include "song/DetachedSong.hxx"
 #include "PlaylistError.hxx"
 
 #include <assert.h>

@@ -21,7 +21,7 @@
 #include "M3uPlaylistPlugin.hxx"
 #include "../PlaylistPlugin.hxx"
 #include "../SongEnumerator.hxx"
-#include "DetachedSong.hxx"
+#include "song/DetachedSong.hxx"
 #include "input/TextInputStream.hxx"
 #include "util/StringStrip.hxx"
 

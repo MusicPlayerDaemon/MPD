@@ -23,7 +23,7 @@
 #include "Interface.hxx"
 #include "Partition.hxx"
 #include "client/Response.hxx"
-#include "LightSong.hxx"
+#include "song/LightSong.hxx"
 #include "tag/Tag.hxx"
 #include "TagPrint.hxx"
 

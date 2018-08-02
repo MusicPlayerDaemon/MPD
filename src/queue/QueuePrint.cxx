@@ -20,10 +20,10 @@
 #include "config.h"
 #include "QueuePrint.hxx"
 #include "Queue.hxx"
-#include "SongFilter.hxx"
+#include "song/Filter.hxx"
 #include "SongPrint.hxx"
-#include "DetachedSong.hxx"
-#include "db/LightSong.hxx"
+#include "song/DetachedSong.hxx"
+#include "song/LightSong.hxx"
 #include "client/Response.hxx"
 
 /**

@@ -18,7 +18,7 @@
  */
 
 #include "config.h" /* must be first for large file support */
-#include "DetachedSong.hxx"
+#include "song/DetachedSong.hxx"
 #include "db/plugins/simple/Song.hxx"
 #include "db/plugins/simple/Directory.hxx"
 #include "storage/StorageInterface.hxx"

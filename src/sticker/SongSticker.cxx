@@ -20,7 +20,7 @@
 #include "config.h"
 #include "SongSticker.hxx"
 #include "StickerDatabase.hxx"
-#include "db/LightSong.hxx"
+#include "song/LightSong.hxx"
 #include "db/Interface.hxx"
 #include "util/Alloc.hxx"
 #include "util/ScopeExit.hxx"

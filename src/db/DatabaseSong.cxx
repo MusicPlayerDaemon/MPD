@@ -19,9 +19,9 @@
 
 #include "config.h"
 #include "DatabaseSong.hxx"
-#include "LightSong.hxx"
 #include "Interface.hxx"
-#include "DetachedSong.hxx"
+#include "song/DetachedSong.hxx"
+#include "song/LightSong.hxx"
 #include "storage/StorageInterface.hxx"
 #include "util/ScopeExit.hxx"
 

@@ -20,7 +20,7 @@
 #include "config.h"
 #include "Partition.hxx"
 #include "Instance.hxx"
-#include "DetachedSong.hxx"
+#include "song/DetachedSong.hxx"
 #include "mixer/Volume.hxx"
 #include "IdleFlags.hxx"
 #include "client/Listener.hxx"

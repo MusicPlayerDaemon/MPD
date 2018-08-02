@@ -18,8 +18,8 @@
  */
 
 #include "config.h"
-#include "DetachedSong.hxx"
-#include "db/LightSong.hxx"
+#include "song/DetachedSong.hxx"
+#include "song/LightSong.hxx"
 #include "util/UriUtil.hxx"
 #include "fs/Traits.hxx"
 

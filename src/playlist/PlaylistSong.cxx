@@ -24,7 +24,7 @@
 #include "tag/Builder.hxx"
 #include "fs/Traits.hxx"
 #include "util/UriUtil.hxx"
-#include "DetachedSong.hxx"
+#include "song/DetachedSong.hxx"
 
 #include <string.h>
 
