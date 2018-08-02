@@ -61,10 +61,7 @@ mikmod_mpd_is_present(void)
 
 static char drv_name[] = PACKAGE_NAME;
 static char drv_version[] = VERSION;
-
-#if (LIBMIKMOD_VERSION > 0x030106)
 static char drv_alias[] = PACKAGE;
-#endif
 
 static MDRIVER drv_mpd = {
 	nullptr,
@@ -72,13 +69,9 @@ static MDRIVER drv_mpd = {
 	drv_version,
 	0,
 	255,
-#if (LIBMIKMOD_VERSION > 0x030106)
 	drv_alias,
-#if (LIBMIKMOD_VERSION >= 0x030200)
 	nullptr,  /* CmdLineHelp */
-#endif
 	nullptr,  /* CommandLine */
-#endif
 	mikmod_mpd_is_present,
 	VC_SampleLoad,
 	VC_SampleUnload,
@@ -204,11 +197,7 @@ mikmod_decoder_scan_file(Path path_fs, TagHandler &handler) noexcept
 	char *title = Player_LoadTitle(path2);
 	if (title != nullptr) {
 		handler.OnTag(TAG_TITLE, title);
-#if (LIBMIKMOD_VERSION >= 0x030200)
 		MikMod_free(title);
-#else
-		free(title);
-#endif
 	}
 
 	return true;

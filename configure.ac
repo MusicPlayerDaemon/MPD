@@ -944,7 +944,7 @@ MPD_ENABLE_AUTO_PKG(mpg123, MPG123, [libmpg123],
 	[libmpg123 decoder plugin], [libmpg123 not found])
 
 dnl -------------------------------- libmikmod --------------------------------
-MPD_ENABLE_AUTO_PKG(mikmod, LIBMIKMOD, [libmikmod],
+MPD_ENABLE_AUTO_PKG(mikmod, LIBMIKMOD, [libmikmod >= 3.2],
 	[MikMod decoder plugin], [libmikmod not found])
 
 dnl -------------------------------- libmodplug -------------------------------
