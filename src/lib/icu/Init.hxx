@@ -28,12 +28,12 @@ void
 IcuInit();
 
 void
-IcuFinish();
+IcuFinish() noexcept;
 
 #else
 
-static inline void IcuInit() {}
-static inline void IcuFinish() {}
+static inline void IcuInit() noexcept {}
+static inline void IcuFinish() noexcept {}
 
 #endif
 

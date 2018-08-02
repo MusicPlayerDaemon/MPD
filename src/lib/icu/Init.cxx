@@ -37,7 +37,7 @@ IcuInit()
 }
 
 void
-IcuFinish()
+IcuFinish() noexcept
 {
 	IcuCollateFinish();
 
