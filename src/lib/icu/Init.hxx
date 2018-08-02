@@ -37,4 +37,18 @@ static inline void IcuFinish() noexcept {}
 
 #endif
 
+class ScopeIcuInit {
+public:
+	ScopeIcuInit() {
+		IcuInit();
+	}
+
+	~ScopeIcuInit() noexcept {
+		IcuFinish();
+	}
+
+	ScopeIcuInit(const ScopeIcuInit &) = delete;
+	ScopeIcuInit &operator=(const ScopeIcuInit &) = delete;
+};
+
 #endif

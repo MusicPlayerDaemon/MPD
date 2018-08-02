@@ -466,8 +466,7 @@ MainOrThrow(int argc, char *argv[])
 #endif
 #endif
 
-	IcuInit();
-
+	const ScopeIcuInit icu_init;
 	const ScopeNetInit net_init;
 
 #ifdef ENABLE_DBUS
@@ -719,8 +718,6 @@ mpd_main_after_fork(const ConfigData &raw_config, const Config &config)
 #ifdef ENABLE_DAEMON
 	daemonize_finish();
 #endif
-
-	IcuFinish();
 
 	return EXIT_SUCCESS;
 }
