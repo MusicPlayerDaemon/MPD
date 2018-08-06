@@ -42,7 +42,7 @@ SignalMonitorInit(EventLoop &loop);
  * Deinitialise the signal monitor subsystem.
  */
 void
-SignalMonitorFinish();
+SignalMonitorFinish() noexcept;
 
 /**
  * Register a handler for the specified signal.  The handler will be

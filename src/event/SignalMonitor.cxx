@@ -147,7 +147,7 @@ x_sigaction(int signum, const struct sigaction &act)
 #endif
 
 void
-SignalMonitorFinish()
+SignalMonitorFinish() noexcept
 {
 #ifdef USE_SIGNALFD
 	std::fill_n(signal_handlers, MAX_SIGNAL, nullptr);
@@ -159,7 +159,7 @@ SignalMonitorFinish()
 
 	for (unsigned i = 0; i < MAX_SIGNAL; ++i) {
 		if (signal_handlers[i]) {
-			x_sigaction(i, sa);
+			sigaction(i, &sa, nullptr);
 			signal_handlers[i] = nullptr;
 		}
 	}
