@@ -64,7 +64,7 @@ public:
 	using SocketMonitor::GetEventLoop;
 
 #ifdef USE_SIGNALFD
-	void Update(sigset_t &mask) {
+	void Update(sigset_t &mask) noexcept {
 		const bool was_open = SocketMonitor::IsDefined();
 
 		fd.Create(mask);
@@ -75,7 +75,7 @@ public:
 		}
 	}
 #else
-	void WakeUp() {
+	void WakeUp() noexcept {
 		fd.Write();
 	}
 #endif
@@ -105,7 +105,7 @@ static Manual<SignalMonitor> monitor;
  * would inherit the blocked signals.
  */
 static void
-at_fork_child()
+at_fork_child() noexcept
 {
 	sigprocmask(SIG_UNBLOCK, &signal_mask, nullptr);
 }
@@ -113,7 +113,7 @@ at_fork_child()
 #else
 
 static void
-SignalCallback(int signo)
+SignalCallback(int signo) noexcept
 {
 	assert(signal_handlers[signo]);
 

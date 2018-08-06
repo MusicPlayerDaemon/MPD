@@ -59,7 +59,7 @@ SignalMonitorInit(EventLoop &)
 }
 
 static inline void
-SignalMonitorFinish()
+SignalMonitorFinish() noexcept
 {
 }
 
