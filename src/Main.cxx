@@ -502,6 +502,10 @@ MainOrThrow(int argc, char *argv[])
 	log_init(raw_config, options.verbose, options.log_stderr);
 
 	instance = new Instance();
+	AtScopeExit() {
+		delete instance;
+		instance = nullptr;
+	};
 
 #ifdef ENABLE_NEIGHBOR_PLUGINS
 	instance->neighbors = new NeighborGlue();
@@ -713,8 +717,6 @@ mpd_main_after_fork(const ConfigData &raw_config, const Config &config)
 #ifndef ANDROID
 	SignalHandlersFinish();
 #endif
-	delete instance;
-	instance = nullptr;
 
 	return EXIT_SUCCESS;
 }
