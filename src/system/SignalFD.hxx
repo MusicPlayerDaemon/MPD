@@ -35,9 +35,10 @@ public:
 	/**
 	 * Create the signalfd or update its mask.
 	 *
-	 * All errors are fatal.
+	 * Throws on error.
 	 */
 	void Create(const sigset_t &mask);
+
 	void Close() {
 		fd.Close();
 	}

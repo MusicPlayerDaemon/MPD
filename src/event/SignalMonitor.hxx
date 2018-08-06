@@ -32,6 +32,8 @@ typedef BoundMethod<void()> SignalHandler;
 
 /**
  * Initialise the signal monitor subsystem.
+ *
+ * Throws on error.
  */
 void
 SignalMonitorInit(EventLoop &loop);

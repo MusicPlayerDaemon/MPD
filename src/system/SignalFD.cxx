@@ -20,7 +20,7 @@
 #include "config.h"
 #ifdef USE_SIGNALFD
 #include "SignalFD.hxx"
-#include "FatalError.hxx"
+#include "Error.hxx"
 
 #include <assert.h>
 #include <sys/signalfd.h>
@@ -29,7 +29,7 @@ void
 SignalFD::Create(const sigset_t &mask)
 {
 	if (!fd.CreateSignalFD(&mask))
-		FatalSystemError("signalfd() failed");
+		throw MakeErrno("signalfd() failed");
 }
 
 int
