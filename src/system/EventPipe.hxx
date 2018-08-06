@@ -31,7 +31,11 @@ class EventPipe {
 	int fds[2];
 
 public:
+	/**
+	 * Throws on error.
+	 */
 	EventPipe();
+
 	~EventPipe();
 
 	EventPipe(const EventPipe &other) = delete;

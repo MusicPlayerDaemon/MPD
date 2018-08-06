@@ -116,7 +116,11 @@ class EventLoop final : SocketMonitor
 	ThreadId thread = ThreadId::Null();
 
 public:
+	/**
+	 * Throws on error.
+	 */
 	explicit EventLoop(ThreadId _thread);
+
 	EventLoop():EventLoop(ThreadId::GetCurrent()) {}
 
 	~EventLoop() noexcept;

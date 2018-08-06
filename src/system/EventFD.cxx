@@ -20,7 +20,7 @@
 #include "config.h"
 #ifdef USE_EVENTFD
 #include "EventFD.hxx"
-#include "system/FatalError.hxx"
+#include "system/Error.hxx"
 #include "Compiler.h"
 
 #include <assert.h>
@@ -29,7 +29,7 @@
 EventFD::EventFD()
 {
 	if (!fd.CreateEventFD(0))
-		FatalSystemError("eventfd() failed");
+		throw MakeErrno("eventfd() failed");
 }
 
 bool

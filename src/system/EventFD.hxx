@@ -25,13 +25,14 @@
 
 /**
  * A class that wraps eventfd().
- *
- * Errors in the constructor are fatal.
  */
 class EventFD {
 	UniqueFileDescriptor fd;
 
 public:
+	/**
+	 * Throws on error.
+	 */
 	EventFD();
 
 	int Get() const {
