@@ -33,7 +33,7 @@ SignalFD::Create(const sigset_t &mask)
 }
 
 int
-SignalFD::Read()
+SignalFD::Read() noexcept
 {
 	assert(fd.IsDefined());
 
