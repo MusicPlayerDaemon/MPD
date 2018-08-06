@@ -36,12 +36,12 @@ public:
 	 */
 	EventPipe();
 
-	~EventPipe();
+	~EventPipe() noexcept;
 
 	EventPipe(const EventPipe &other) = delete;
 	EventPipe &operator=(const EventPipe &other) = delete;
 
-	int Get() const {
+	int Get() const noexcept {
 		return fds[0];
 	}
 
@@ -49,13 +49,13 @@ public:
 	 * Checks if Write() was called at least once since the last
 	 * Read() call.
 	 */
-	bool Read();
+	bool Read() noexcept;
 
 	/**
 	 * Wakes up the reader.  Multiple calls to this function will
 	 * be combined to one wakeup.
 	 */
-	void Write();
+	void Write() noexcept;
 };
 
 #endif /* MAIN_NOTIFY_H */

@@ -33,7 +33,7 @@ EventFD::EventFD()
 }
 
 bool
-EventFD::Read()
+EventFD::Read() noexcept
 {
 	assert(fd.IsDefined());
 
@@ -42,7 +42,7 @@ EventFD::Read()
 }
 
 void
-EventFD::Write()
+EventFD::Write() noexcept
 {
 	assert(fd.IsDefined());
 

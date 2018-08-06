@@ -52,7 +52,7 @@ EventPipe::EventPipe()
 #endif
 }
 
-EventPipe::~EventPipe()
+EventPipe::~EventPipe() noexcept
 {
 #ifdef _WIN32
 	closesocket(fds[0]);
@@ -64,7 +64,7 @@ EventPipe::~EventPipe()
 }
 
 bool
-EventPipe::Read()
+EventPipe::Read() noexcept
 {
 	assert(fds[0] >= 0);
 	assert(fds[1] >= 0);
@@ -78,7 +78,7 @@ EventPipe::Read()
 }
 
 void
-EventPipe::Write()
+EventPipe::Write() noexcept
 {
 	assert(fds[0] >= 0);
 	assert(fds[1] >= 0);
