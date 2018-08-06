@@ -526,6 +526,7 @@ MainOrThrow(int argc, char *argv[])
 #ifdef ENABLE_DAEMON
 	daemonize_set_user();
 	daemonize_begin(options.daemon);
+	AtScopeExit() { daemonize_finish(); };
 #endif
 
 	return mpd_main_after_fork(raw_config, config);
@@ -714,10 +715,6 @@ mpd_main_after_fork(const ConfigData &raw_config, const Config &config)
 #endif
 	delete instance;
 	instance = nullptr;
-
-#ifdef ENABLE_DAEMON
-	daemonize_finish();
-#endif
 
 	return EXIT_SUCCESS;
 }
