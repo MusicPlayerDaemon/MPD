@@ -287,28 +287,25 @@ mpd_mpg123_scan_file(Path path_fs, TagHandler &handler) noexcept
 		return false;
 	}
 
+	AtScopeExit(handle) { mpg123_delete(handle); };
+
 	AudioFormat audio_format;
 	try {
 		if (!mpd_mpg123_open(handle, path_fs.c_str(), audio_format)) {
-			mpg123_delete(handle);
 			return false;
 		}
 	} catch (...) {
-		mpg123_delete(handle);
 		return false;
 	}
 
 	const off_t num_samples = mpg123_length(handle);
 	if (num_samples <= 0) {
-		mpg123_delete(handle);
 		return false;
 	}
 
 	handler.OnAudioFormat(audio_format);
 
 	/* ID3 tag support not yet implemented */
-
-	mpg123_delete(handle);
 
 	const auto duration =
 		SongTime::FromScale<uint64_t>(num_samples,
