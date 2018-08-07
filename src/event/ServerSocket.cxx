@@ -188,10 +188,10 @@ OneServerSocket::Open()
 	/* allow everybody to connect */
 
 	if (!path.IsNull())
-		chmod(path.c_str(), 0666);
+		fchmod(_fd.Get(), 0666);
 #endif
 
-	/* register in the EventLoop */
+	/* register in the EventLoop */	
 
 	SetFD(_fd.Release());
 }
