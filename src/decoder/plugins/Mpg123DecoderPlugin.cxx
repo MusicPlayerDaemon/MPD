@@ -27,6 +27,7 @@
 #include "tag/MixRamp.hxx"
 #include "fs/Path.hxx"
 #include "util/Domain.hxx"
+#include "util/ScopeExit.hxx"
 #include "util/StringView.hxx"
 #include "Log.hxx"
 
@@ -196,11 +197,11 @@ mpd_mpg123_file_decode(DecoderClient &client, Path path_fs)
 		return;
 	}
 
+	AtScopeExit(handle) { mpg123_delete(handle); };
+
 	AudioFormat audio_format;
-	if (!mpd_mpg123_open(handle, path_fs.c_str(), audio_format)) {
-		mpg123_delete(handle);
+	if (!mpd_mpg123_open(handle, path_fs.c_str(), audio_format))
 		return;
-	}
 
 	const off_t num_samples = mpg123_length(handle);
 
@@ -272,10 +273,6 @@ mpd_mpg123_file_decode(DecoderClient &client, Path path_fs)
 			cmd = DecoderCommand::NONE;
 		}
 	} while (cmd == DecoderCommand::NONE);
-
-	/* cleanup */
-
-	mpg123_delete(handle);
 }
 
 static bool
