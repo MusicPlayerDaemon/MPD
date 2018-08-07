@@ -39,7 +39,6 @@
 #include <string>
 #include <algorithm>
 
-#include <sys/stat.h>
 #include <string.h>
 #include <unistd.h>
 #include <assert.h>
@@ -183,13 +182,6 @@ OneServerSocket::Open()
 	auto _fd = socket_bind_listen(address.GetFamily(),
 				      SOCK_STREAM, 0,
 				      address, 5);
-
-#ifdef HAVE_UN
-	/* allow everybody to connect */
-
-	if (!path.IsNull())
-		fchmod(_fd.Get(), 0666);
-#endif
 
 	/* register in the EventLoop */	
 
