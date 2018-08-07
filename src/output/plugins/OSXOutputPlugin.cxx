@@ -339,8 +339,9 @@ osx_output_score_sample_rate(Float64 destination_rate, unsigned int source_rate)
 	score += (1 - frac_portion) * 1000;
 	// prefer exact matches over other multiples
 	score += (int_portion == 1.0) ? 500 : 0;
-	// prefer higher multiples if source rate higher than dest rate
-	if(source_rate >= destination_rate)
+	if (source_rate == destination_rate)
+		score += 1000;
+	else if(source_rate > destination_rate)
 		score += (int_portion > 1 && int_portion < 100) ? (100 - int_portion) / 100 * 100 : 0;
 	else
 		score += (int_portion > 1 && int_portion < 100) ? (100 + int_portion) / 100 * 100 : 0;
@@ -349,23 +350,23 @@ osx_output_score_sample_rate(Float64 destination_rate, unsigned int source_rate)
 }
 
 static float
-osx_output_score_format(const AudioStreamBasicDescription &format_desc, const AudioFormat &format) {
+osx_output_score_format(const AudioStreamBasicDescription &format_desc, const AudioStreamBasicDescription &target_format) {
 	float score = 0;
 	// Score only linear PCM formats (everything else MPD cannot use)
 	if (format_desc.mFormatID == kAudioFormatLinearPCM) {
-		score += osx_output_score_sample_rate(format_desc.mSampleRate, format.sample_rate);
+		score += osx_output_score_sample_rate(format_desc.mSampleRate, target_format.mSampleRate);
 		
 		// Just choose the stream / format with the highest number of output channels
 		score += format_desc.mChannelsPerFrame * 5;
 		
-		if (format.format == SampleFormat::FLOAT) {
+		if (target_format.mFormatFlags == kLinearPCMFormatFlagIsFloat) {
 			// for float, prefer the highest bitdepth we have
 			if (format_desc.mBitsPerChannel >= 16)
 				score += (format_desc.mBitsPerChannel / 8);
 		} else {
-			if (format_desc.mBitsPerChannel == ((format.format == SampleFormat::S24_P32) ? 24 : format.GetSampleSize() * 8))
+			if (format_desc.mBitsPerChannel == target_format.mBitsPerChannel)
 				score += 5;
-			else if (format_desc.mBitsPerChannel > format.GetSampleSize() * 8)
+			else if (format_desc.mBitsPerChannel > target_format.mBitsPerChannel)
 				score += 1;
 			
 		}
@@ -374,7 +375,7 @@ osx_output_score_format(const AudioStreamBasicDescription &format_desc, const Au
 }
 
 static Float64
-osx_output_set_device_format(AudioDeviceID dev_id, const AudioFormat &audio_format)
+osx_output_set_device_format(AudioDeviceID dev_id, const AudioStreamBasicDescription &target_format)
 {
 	AudioObjectPropertyAddress aopa = {
 		kAudioDevicePropertyStreams,
@@ -436,8 +437,8 @@ osx_output_set_device_format(AudioDeviceID dev_id, const AudioFormat &audio_form
 			// for devices with kAudioStreamAnyRate
 			// we use the requested samplerate here
 			if (format_desc.mSampleRate == kAudioStreamAnyRate)
-				format_desc.mSampleRate = audio_format.sample_rate;
-			float score = osx_output_score_format(format_desc, audio_format);
+				format_desc.mSampleRate = target_format.mSampleRate;
+			float score = osx_output_score_format(format_desc, target_format);
 			
 			// print all (linear pcm) formats and their rating
 			if(score > 0.0)
@@ -785,6 +786,7 @@ OSXOutput::Open(AudioFormat &audio_format)
 		params.dop = true;
 		asbd.mSampleRate = params.CalcOutputSampleRate(audio_format.sample_rate);
 		asbd.mBytesPerPacket = 4 * audio_format.channels;
+
 	}
 #endif
 
@@ -792,10 +794,10 @@ OSXOutput::Open(AudioFormat &audio_format)
 	asbd.mBytesPerFrame = asbd.mBytesPerPacket;
 	asbd.mChannelsPerFrame = audio_format.channels;
 
-	Float64 sample_rate = osx_output_set_device_format(dev_id, audio_format);
+	Float64 sample_rate = osx_output_set_device_format(dev_id, asbd);
 
 #ifdef ENABLE_DSD
-	if(params.dop && sample_rate != asbd.mSampleRate) { // fall back to PCM in case sample_rate cannot be synchronized
+	if(audio_format.format == SampleFormat::DSD && sample_rate != asbd.mSampleRate) { // fall back to PCM in case sample_rate cannot be synchronized
 		params.dop = false;
 		audio_format.format = SampleFormat::S32;
 		asbd.mBitsPerChannel = 32;
