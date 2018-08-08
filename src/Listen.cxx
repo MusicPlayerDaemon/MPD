@@ -23,6 +23,7 @@
 #include "config/Param.hxx"
 #include "config/Data.hxx"
 #include "config/Option.hxx"
+#include "config/Net.hxx"
 #include "system/Error.hxx"
 #include "util/RuntimeError.hxx"
 #include "fs/AllocatedPath.hxx"
@@ -48,13 +49,7 @@ listen_add_config_param(ClientListener &listener,
 {
 	assert(param != nullptr);
 
-	if (0 == strcmp(param->value.c_str(), "any")) {
-		listener.AddPort(port);
-	} else if (param->value[0] == '/' || param->value[0] == '~') {
-		listener.AddPath(param->GetPath());
-	} else {
-		listener.AddHost(param->value.c_str(), port);
-	}
+	ServerSocketAddGeneric(listener, param->value.c_str(), port);
 }
 
 #ifdef ENABLE_SYSTEMD_DAEMON

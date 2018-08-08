@@ -1705,7 +1705,7 @@ It is highly recommended to configure a fixed format, because a stream cannot sw
    * - **port P**
      - Binds the HTTP server to the specified port.
    * - **bind_to_address ADDR**
-     - Binds the HTTP server to the specified address (IPv4 or IPv6). Multiple addresses in parallel are not supported.
+     - Binds the HTTP server to the specified address (IPv4, IPv6 or UNIX socket). Multiple addresses in parallel are not supported.
    * - **encoder NAME**
      - Chooses an encoder plugin. A list of encoder plugins can be found in the encoder plugin reference :ref:`encoder_plugins`.
    * - **max_clients MC**

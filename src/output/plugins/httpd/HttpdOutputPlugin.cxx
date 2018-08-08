@@ -33,6 +33,7 @@
 #include "util/Domain.hxx"
 #include "util/DeleteDisposer.hxx"
 #include "Log.hxx"
+#include "config/Net.hxx"
 
 #include <assert.h>
 
@@ -58,17 +59,11 @@ HttpdOutput::HttpdOutput(EventLoop &_loop, const ConfigBlock &block)
 	genre = block.GetBlockValue("genre", "Set genre in config");
 	website = block.GetBlockValue("website", "Set website in config");
 
-	unsigned port = block.GetBlockValue("port", 8000u);
-
 	clients_max = block.GetBlockValue("max_clients", 0u);
 
 	/* set up bind_to_address */
 
-	const char *bind_to_address = block.GetBlockValue("bind_to_address");
-	if (bind_to_address != nullptr && strcmp(bind_to_address, "any") != 0)
-		AddHost(bind_to_address, port);
-	else
-		AddPort(port);
+	ServerSocketAddGeneric(*this, block.GetBlockValue("bind_to_address"), block.GetBlockValue("port", 8000u));
 
 	/* determine content type */
 	content_type = prepared_encoder->GetMimeType();

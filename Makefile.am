@@ -1023,6 +1023,7 @@ libconf_a_SOURCES = \
 	src/config/Migrate.cxx src/config/Migrate.hxx \
 	src/config/Templates.cxx src/config/Templates.hxx \
 	src/config/Domain.cxx src/config/Domain.hxx \
+	src/config/Net.cxx src/config/Net.hxx \
 	src/config/Option.hxx
 
 # the Song library
