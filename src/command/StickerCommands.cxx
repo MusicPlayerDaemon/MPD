@@ -31,10 +31,12 @@
 #include "util/StringAPI.hxx"
 #include "util/ScopeExit.hxx"
 
+namespace {
 struct sticker_song_find_data {
 	Response &r;
 	const char *name;
 };
+}
 
 static void
 sticker_song_find_print_cb(const LightSong &song, const char *value,

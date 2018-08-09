@@ -69,6 +69,7 @@ sticker_song_get(const LightSong &song)
 	return sticker_load("song", uri.c_str());
 }
 
+namespace {
 struct sticker_song_find_data {
 	const Database *db;
 	const char *base_uri;
@@ -78,6 +79,7 @@ struct sticker_song_find_data {
 		     void *user_data);
 	void *user_data;
 };
+}
 
 static void
 sticker_song_find_cb(const char *uri, const char *value, void *user_data)
