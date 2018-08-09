@@ -81,8 +81,8 @@ UPnPDeviceDirectory::Downloader::OnEnd()
 
 	try {
 		d.Parse(url, data.c_str());
-	} catch (const std::exception &e) {
-		LogError(e);
+	} catch (...) {
+		LogError(std::current_exception());
 	}
 
 	parent.LockAdd(std::move(d));

@@ -234,8 +234,8 @@ try {
 		FormatDebug(update_domain,
 			    "%s is not a directory, archive or music", name);
 	}
-} catch (const std::exception &e) {
-	LogError(e);
+} catch (...) {
+	LogError(std::current_exception());
 }
 
 /* we don't look at "." / ".." nor files with newlines in their name */
@@ -477,8 +477,8 @@ try {
 	ExcludeList exclude_list;
 
 	UpdateDirectoryChild(*parent, exclude_list, name, info);
-} catch (const std::exception &e) {
-	LogError(e);
+} catch (...) {
+	LogError(std::current_exception());
 }
 
 bool

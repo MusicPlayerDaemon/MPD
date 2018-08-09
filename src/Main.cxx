@@ -545,8 +545,8 @@ int mpd_main(int argc, char *argv[]) noexcept
 
 	try {
 		return MainOrThrow(argc, argv);
-	} catch (const std::exception &e) {
-		LogError(e);
+	} catch (...) {
+		LogError(std::current_exception());
 		return EXIT_FAILURE;
 	}
 }

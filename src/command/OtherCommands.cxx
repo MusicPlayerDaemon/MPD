@@ -179,8 +179,8 @@ handle_lsinfo_relative(Client &client, Response &r, const char *uri)
 	if (isRootDirectory(uri)) {
 		try {
 			print_spl_list(r, ListPlaylistFiles());
-		} catch (const std::exception &e) {
-			LogError(e);
+		} catch (...) {
+			LogError(std::current_exception());
 		}
 	} else {
 #ifndef ENABLE_DATABASE

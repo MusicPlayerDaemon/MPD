@@ -102,8 +102,8 @@ StateFile::Write()
 		FileOutputStream fos(config.path);
 		Write(fos);
 		fos.Commit();
-	} catch (const std::exception &e) {
-		LogError(e);
+	} catch (...) {
+		LogError(std::current_exception());
 	}
 
 	RememberVersions();
@@ -143,8 +143,8 @@ try {
 	}
 
 	RememberVersions();
-} catch (const std::exception &e) {
-	LogError(e);
+} catch (...) {
+	LogError(std::current_exception());
 }
 
 void

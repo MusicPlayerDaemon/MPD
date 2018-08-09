@@ -255,9 +255,9 @@ FfmpegSendFrame(DecoderClient &client, InputStream &is,
 	try {
 		output_buffer = copy_interleave_frame(codec_context, frame,
 						      buffer);
-	} catch (const std::exception &e) {
+	} catch (...) {
 		/* this must be a serious error, e.g. OOM */
-		LogError(e);
+		LogError(std::current_exception());
 		return DecoderCommand::STOP;
 	}
 

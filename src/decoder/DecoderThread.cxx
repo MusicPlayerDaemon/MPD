@@ -536,9 +536,8 @@ DecoderControl::RunThread() noexcept
 			if (state == DecoderState::ERROR) {
 				try {
 					std::rethrow_exception(error);
-				} catch (const std::exception &e) {
-					LogError(e);
 				} catch (...) {
+					LogError(std::current_exception());
 				}
 			}
 

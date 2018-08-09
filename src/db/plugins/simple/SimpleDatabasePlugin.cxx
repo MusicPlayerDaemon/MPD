@@ -175,8 +175,8 @@ SimpleDatabase::Open()
 
 	try {
 		Load();
-	} catch (const std::exception &e) {
-		LogError(e);
+	} catch (...) {
+		LogError(std::current_exception());
 
 		delete root;
 
