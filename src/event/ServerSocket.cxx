@@ -163,8 +163,9 @@ OneServerSocket::Accept() noexcept
 			    (const char *)msg);
 	}
 
-	parent.OnAccept(std::move(peer_fd), peer_address,
-			get_remote_uid(peer_fd.Get()));
+	const auto uid = get_remote_uid(peer_fd.Get());
+
+	parent.OnAccept(std::move(peer_fd), peer_address, uid);
 }
 
 bool
