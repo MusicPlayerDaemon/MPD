@@ -481,6 +481,8 @@ Example:
 Other Settings
 --------------
 
+.. _metadata_to_use:
+
 .. list-table::
    :widths: 20 80
    :header-rows: 1
@@ -492,7 +494,7 @@ Other Settings
        setting can reduce the database size and :program:`MPD`'s
        memory usage by omitting unused tags. By default, all tags but
        comment are enabled. The special value "none" disables all
-       tags.
+       tags. Section :ref:`tags` contains a list of supported tags.
 
 The State File
 ~~~~~~~~~~~~~~
@@ -706,6 +708,8 @@ Mounting is only possible with the simple database plugin and a :code:`cache_dir
         
 This requires migrating from the old :code:`db_file` setting to a database section. The cache directory must exist, and :program:`MPD` will put one file per mount there, which will be reused when the same storage is used again later.
 
+.. _tags:
+
 Metadata
 --------
 
@@ -732,6 +736,9 @@ When scanning or playing a song, :program:`MPD` parses its metadata. The followi
 * **musicbrainz_trackid**: the track id in the `MusicBrainz <https://picard.musicbrainz.org/docs/mappings/>`_ database.
 * **musicbrainz_releasetrackid**: the release track id in the `MusicBrainz <https://picard.musicbrainz.org/docs/mappings/>`_ database.
 * **musicbrainz_workid**: the work id in the `MusicBrainz <https://picard.musicbrainz.org/docs/mappings/>`_ database.
+
+The :ref:`metadata_to_use <metadata_to_use>` setting can be used to
+enable or disable certain tags.
 
 The queue
 ---------
