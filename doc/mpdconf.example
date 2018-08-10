@@ -111,6 +111,10 @@
 # found in the user manual.
 #metadata_to_use	"artist,album,title,track,name,genre,date,composer,performer,disc"
 #
+# This example just enables the "comment" tag without disabling all
+# the other supported tags:
+#metadata_to_use "+comment"
+#
 # This setting enables automatic update of MPD's database when files in 
 # music_directory are changed.
 #

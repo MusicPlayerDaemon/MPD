@@ -494,7 +494,16 @@ Other Settings
        setting can reduce the database size and :program:`MPD`'s
        memory usage by omitting unused tags. By default, all tags but
        comment are enabled. The special value "none" disables all
-       tags. Section :ref:`tags` contains a list of supported tags.
+       tags.
+
+       If the setting starts with ``+`` or ``-``, then the following
+       tags will be added or remoted to/from the current set of tags.
+       This example just enables the "comment" tag without disabling all
+       the other supported tags
+
+         metadata_to_use "+comment"
+
+       Section :ref:`tags` contains a list of supported tags.
 
 The State File
 ~~~~~~~~~~~~~~

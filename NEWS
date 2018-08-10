@@ -1,6 +1,7 @@
 ver 0.21 (not yet released)
 * configuration
   - add "include" directive, allows including config files
+  - incremental "metadata_to_use" setting
 * protocol
   - "tagtypes" can be used to hide tags
   - "find" and "search" can sort

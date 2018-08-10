@@ -34,19 +34,36 @@ TagLoadConfig(const ConfigData &config)
 	if (value == nullptr)
 		return;
 
-	global_tag_mask = TagMask::None();
-
-	if (StringEqualsCaseASCII(value, "none"))
+	if (StringEqualsCaseASCII(value, "none")) {
+		global_tag_mask = TagMask::None();
 		return;
+	}
+
+	bool plus = true;
+
+	if (*value != '+' && *value != '-')
+		/* no "+-": not incremental */
+		global_tag_mask = TagMask::None();
 
 	for (const auto &i : SplitString(value, ',')) {
 		const char *name = i.c_str();
+
+		if (*name == '+') {
+			plus = true;
+			++name;
+		} else if (*name == '-') {
+			plus = false;
+			++name;
+		}
 
 		const auto type = tag_name_parse_i(name);
 		if (type == TAG_NUM_OF_ITEM_TYPES)
 			throw FormatRuntimeError("error parsing metadata item \"%s\"",
 						 name);
 
-		global_tag_mask |= type;
+		if (plus)
+			global_tag_mask.Set(type);
+		else
+			global_tag_mask.Unset(type);
 	}
 }
