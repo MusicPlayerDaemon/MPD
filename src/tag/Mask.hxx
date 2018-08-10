@@ -87,6 +87,10 @@ public:
 	void Set(TagType tag) {
 		*this |= tag;
 	}
+
+	void Unset(TagType tag) {
+		*this |= ~TagMask(tag);
+	}
 };
 
 #endif
