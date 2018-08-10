@@ -184,6 +184,13 @@ OneServerSocket::Open()
 				      SOCK_STREAM, 0,
 				      address, 5);
 
+	#ifdef HAVE_UN
+		/* allow everybody to connect */
+
+		if (!path.IsNull())
+			chmod(path.c_str(), 0666);
+	#endif
+
 	/* register in the EventLoop */	
 
 	SetFD(_fd.Release());
