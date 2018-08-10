@@ -23,12 +23,9 @@
 #include "ParseName.hxx"
 #include "config/Data.hxx"
 #include "config/Option.hxx"
-#include "util/Alloc.hxx"
 #include "util/ASCII.hxx"
-#include "util/StringStrip.hxx"
 #include "util/RuntimeError.hxx"
-
-#include <stdlib.h>
+#include "util/SplitString.hxx"
 
 void
 TagLoadConfig(const ConfigData &config)
@@ -42,31 +39,14 @@ TagLoadConfig(const ConfigData &config)
 	if (StringEqualsCaseASCII(value, "none"))
 		return;
 
-	bool quit = false;
-	char *temp, *c, *s;
-	temp = c = s = xstrdup(value);
-	do {
-		if (*s == ',' || *s == '\0') {
-			if (*s == '\0')
-				quit = true;
-			*s = '\0';
+	for (const auto &i : SplitString(value, ',')) {
+		const char *name = i.c_str();
 
-			c = Strip(c);
-			if (*c == 0)
-				continue;
+		const auto type = tag_name_parse_i(name);
+		if (type == TAG_NUM_OF_ITEM_TYPES)
+			throw FormatRuntimeError("error parsing metadata item \"%s\"",
+						 name);
 
-			const auto type = tag_name_parse_i(c);
-			if (type == TAG_NUM_OF_ITEM_TYPES)
-				throw FormatRuntimeError("error parsing metadata item \"%s\"",
-							 c);
-
-			global_tag_mask |= type;
-
-			s++;
-			c = s;
-		}
-		s++;
-	} while (!quit);
-
-	free(temp);
+		global_tag_mask |= type;
+	}
 }
