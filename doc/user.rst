@@ -488,7 +488,11 @@ Other Settings
    * - Setting
      - Description
    * - **metadata_to_use TAG1,TAG2,...**
-     - Use only the specified tags, and ignore the others. This setting can reduce the database size and :program:`MPD`'s memory usage by omitting unused tags. By default, all tags but comment are enabled. The special value "none" disables all tags.
+     - Use only the specified tags, and ignore the others. This
+       setting can reduce the database size and :program:`MPD`'s
+       memory usage by omitting unused tags. By default, all tags but
+       comment are enabled. The special value "none" disables all
+       tags.
 
 The State File
 ~~~~~~~~~~~~~~
