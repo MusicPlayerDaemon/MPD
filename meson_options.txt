@@ -107,6 +107,7 @@ option('zzip', type: 'feature', description: 'ZIP support using zziplib')
 #
 
 option('id3tag', type: 'feature', description: 'ID3 support using libid3tag')
+option('chromaprint', type: 'feature', description: 'ChromaPrint / AcoustID support')
 
 #
 # Decoder plugins

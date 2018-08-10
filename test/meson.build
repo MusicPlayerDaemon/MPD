@@ -382,6 +382,26 @@ executable(
 )
 
 #
+# Tag
+#
+
+if chromaprint_dep.found()
+  executable(
+    'RunChromaprint',
+    'RunChromaprint.cxx',
+    '../src/Log.cxx',
+    '../src/LogBackend.cxx',
+    include_directories: inc,
+    dependencies: [
+      decoder_glue_dep,
+      input_glue_dep,
+      archive_glue_dep,
+      chromaprint_dep,
+    ],
+  )
+endif
+
+#
 # Decoder
 #
 
