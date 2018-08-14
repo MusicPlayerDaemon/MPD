@@ -26,6 +26,7 @@ ver 0.21 (not yet released)
   - mad: move "gapless_mp3_playback" setting to "decoder" block
   - mikmod: require at least version 3.2
   - pcm: support audio/L24 (RFC 3190)
+  - sidplay: support basic and kernal rom (libsidplayfp)
 * resampler
   - soxr: flush resampler at end of song
 * output
