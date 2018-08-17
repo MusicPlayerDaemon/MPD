@@ -51,6 +51,9 @@ c_link_args = %s
 cpp_args = %s
 cpp_link_args = %s
 
+# Keep Meson from executing Android-x86 test binariees
+needs_exe_wrapper = true
+
 [host_machine]
 system = '%s'
 cpu_family = '%s'
