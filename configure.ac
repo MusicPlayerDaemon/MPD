@@ -186,6 +186,7 @@ AC_ARG_WITH([android-sdk],
 		[Directory for Android SDK]),
 		[], [with_android_sdk=no])
 
+android_abi=""
 if test x$host_is_android = xyes; then
 	if test x$with_android_sdk = xno; then
 		AC_MSG_ERROR([Android build requires option --with-android-sdk=DIR])
@@ -194,9 +195,12 @@ if test x$host_is_android = xyes; then
 	if ! test -x $with_android_sdk/tools/android; then
 		AC_MSG_ERROR([Android SDK not found in $with_android_sdk])
 	fi
+
+	android_abi="armeabi-v7a"
 fi
 
 AC_SUBST(ANDROID_SDK, [$with_android_sdk])
+AC_SUBST(ANDROID_ABI, [$android_abi])
 
 dnl ---------------------------------------------------------------------------
 dnl Language Checks

@@ -341,7 +341,7 @@ android/build/include/org_musicpd_Bridge.h: android/build/classes.dex
 
 BUILT_SOURCES = android/build/include/org_musicpd_Bridge.h
 
-android/build/lib/armeabi-v7a/libmpd.so: libmpd.so
+android/build/lib/$(ANDROID_ABI)/libmpd.so: libmpd.so
 	mkdir -p $(@D)
 	rm -f $@
 	$(STRIP) -o $@ $<
@@ -351,7 +351,7 @@ android/build/res/drawable/icon.png: mpd.svg
 	rsvg-convert --width=48 --height=48 $< -o $@
 
 .DELETE_ON_ERROR: android/build/unsigned.apk
-android/build/unsigned.apk: android/build/classes.dex android/build/resources.apk android/build/lib/armeabi-v7a/libmpd.so
+android/build/unsigned.apk: android/build/classes.dex android/build/resources.apk android/build/lib/$(ANDROID_ABI)/libmpd.so
 	cp android/build/resources.apk $@
 	cd $(dir $@) && zip -q -r $(notdir $@) classes.dex lib
 
