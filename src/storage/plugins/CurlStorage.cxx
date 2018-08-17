@@ -34,6 +34,7 @@
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
 #include "util/ASCII.hxx"
+#include "util/IterableSplitString.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/StringCompare.hxx"
 #include "util/StringFormat.hxx"
@@ -79,9 +80,18 @@ CurlStorage::MapUTF8(const char *uri_utf8) const noexcept
 	if (StringIsEmpty(uri_utf8))
 		return base;
 
-	// TODO: escape the given URI
+	CurlEasy easy;
+	std::string path_esc;
 
-	return PathTraitsUTF8::Build(base.c_str(), uri_utf8);
+	for (auto elt: IterableSplitString(uri_utf8, '/')) {
+		char *elt_esc = easy.Escape(elt.data, elt.size);
+		if (!path_esc.empty())
+			path_esc.push_back('/');
+		path_esc += elt_esc;
+		curl_free(elt_esc);
+	}
+
+	return PathTraitsUTF8::Build(base.c_str(), path_esc.c_str());
 }
 
 const char *
