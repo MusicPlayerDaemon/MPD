@@ -65,7 +65,7 @@ class AndroidNdkToolchain:
         self.build_path = build_path
 
         ndk_arch = abi_info['ndk_arch']
-        android_api_level = '14'
+        android_api_level = '21'
         ndk_platform = 'android-' + android_api_level
 
         # select the NDK compiler

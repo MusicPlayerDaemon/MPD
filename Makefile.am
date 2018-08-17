@@ -294,7 +294,7 @@ libmpd.so: $(filter %.a,$(src_mpd_LDADD)) libmain.a
 	$(AM_V_CXXLD)$(CXXLD) -shared -Wl,--no-undefined,-shared,-Bsymbolic -llog -lz -o $@ $(AM_CXXFLAGS) $(CXXFLAGS) $(LDFLAGS) src/libmain_a-Main.o $(src_mpd_LDADD) $(LIBS)
 
 ANDROID_SDK_BUILD_TOOLS_VERSION = 27.0.0
-ANDROID_SDK_PLATFORM = android-17
+ANDROID_SDK_PLATFORM = android-21
 
 ANDROID_BUILD_TOOLS_DIR = $(ANDROID_SDK)/build-tools/$(ANDROID_SDK_BUILD_TOOLS_VERSION)
 ANDROID_SDK_PLATFORM_DIR = $(ANDROID_SDK)/platforms/$(ANDROID_SDK_PLATFORM)

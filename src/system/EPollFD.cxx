@@ -22,21 +22,6 @@
 #include "EPollFD.hxx"
 #include "FatalError.hxx"
 
-#if defined(__BIONIC__) && __ANDROID_API__ < 21
-
-#include <sys/syscall.h>
-#include <fcntl.h>
-
-#define EPOLL_CLOEXEC O_CLOEXEC
-
-static inline int
-epoll_create1(int flags)
-{
-    return syscall(__NR_epoll_create1, flags);
-}
-
-#endif
-
 EPollFD::EPollFD()
 	:fd(::epoll_create1(EPOLL_CLOEXEC))
 {

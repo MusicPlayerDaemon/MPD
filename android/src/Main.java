@@ -49,7 +49,7 @@ public class Main extends Activity implements Runnable {
 			TextView tv = new TextView(this);
 			tv.setText("Failed to load the native MPD libary.\n" +
 				   "Report this problem to us, and include the following information:\n" +
-				   "ABI=" + Build.CPU_ABI + "\n" +
+				   "SUPPORTED_ABIS=" + String.join(", ", Build.SUPPORTED_ABIS) + "\n" +
 				   "PRODUCT=" + Build.PRODUCT + "\n" +
 				   "FINGERPRINT=" + Build.FINGERPRINT + "\n" +
 				   "error=" + Loader.error);
