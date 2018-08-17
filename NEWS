@@ -8,6 +8,8 @@ ver 0.20.21 (not yet released)
 * playlist
   - cue: support file type declaration "FLAC" (non-standard)
 * URI schemes are case insensitive
+* Windows
+  - enable the "curl" storage plugin
 
 ver 0.20.20 (2018/05/22)
 * protocol
