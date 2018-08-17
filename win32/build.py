@@ -119,6 +119,8 @@ configure = [
 
     '--disable-icu',
 
+    'CXXFLAGS=-DCURL_STATICLIB',
+
 ] + configure_args
 
 from build.cmdline import concatenate_cmdline_variables
