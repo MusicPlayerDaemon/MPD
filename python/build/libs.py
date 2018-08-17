@@ -384,6 +384,8 @@ libnfs = AutotoolsProject(
 
         # work around -Wtautological-compare
         '--disable-werror',
+
+        '--disable-utils', '--disable-examples',
     ],
     base='libnfs-libnfs-3.0.0',
     autoreconf=True,
