@@ -146,6 +146,7 @@ thirdparty_libs = [
     libid3tag,
     ffmpeg,
     curl,
+    libexpat,
     libnfs,
     boost,
 ]
