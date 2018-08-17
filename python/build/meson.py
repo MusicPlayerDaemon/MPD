@@ -20,6 +20,9 @@ class MesonProject(Project):
                 cpu = 'armv7'
             else:
                 cpu = 'armv6'
+        elif toolchain.is_aarch64:
+            cpu_family = 'aarch64'
+            cpu = 'arm64-v8a'
         else:
             cpu_family = 'x86'
             if 'x86_64' in toolchain.arch:

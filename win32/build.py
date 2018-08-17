@@ -65,6 +65,7 @@ class CrossGccToolchain:
 
         self.is_arm = arch.startswith('arm')
         self.is_armv7 = self.is_arm and 'armv7' in self.cflags
+        self.is_aarch64 = arch == 'aarch64'
         self.is_windows = 'mingw32' in arch
 
         self.env = dict(os.environ)

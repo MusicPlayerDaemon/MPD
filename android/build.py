@@ -29,6 +29,15 @@ android_abis = {
         'cflags': '-march=armv7-a -mfpu=vfp -mfloat-abi=softfp',
     },
 
+    'arm64-v8a': {
+        'android_api_level': '21',
+        'arch': 'aarch64-linux-android',
+        'ndk_arch': 'arm64',
+        'toolchain_arch': 'aarch64-linux-android',
+        'llvm_triple': 'aarch64-none-linux-android',
+        'cflags': '',
+    },
+
     'x86': {
         'arch': 'i686-linux-android',
         'ndk_arch': 'x86',
@@ -117,6 +126,7 @@ class AndroidNdkToolchain:
 
         self.is_arm = ndk_arch == 'arm'
         self.is_armv7 = self.is_arm and 'armv7' in self.cflags
+        self.is_aarch64 = ndk_arch == 'arm64'
         self.is_windows = False
 
         libcxx_path = os.path.join(ndk_path, 'sources/cxx-stl/llvm-libc++')

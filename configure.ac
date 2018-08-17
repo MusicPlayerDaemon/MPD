@@ -198,6 +198,7 @@ if test x$host_is_android = xyes; then
 
 	AS_CASE([$host_cpu],
 		[i686], [android_abi="x86"],
+		[aarch64], [android_abi="arm64-v8a"],
 		[android_abi="armeabi-v7a"])
 fi
 
