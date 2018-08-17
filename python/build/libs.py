@@ -370,6 +370,7 @@ libexpat = AutotoolsProject(
     'lib/libexpat.a',
     [
         '--disable-shared', '--enable-static',
+        '--without-docbook',
     ],
 )
 
