@@ -737,6 +737,8 @@ libstorage_a_SOURCES = \
 	src/storage/FileInfo.hxx
 
 libstorage_a_CPPFLAGS = $(AM_CPPFLAGS) \
+	$(CURL_CFLAGS) \
+	$(EXPAT_CFLAGS) \
 	$(NFS_CFLAGS) \
 	$(SMBCLIENT_CFLAGS)
 
