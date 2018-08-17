@@ -65,7 +65,8 @@ class AndroidNdkToolchain:
         self.build_path = build_path
 
         ndk_arch = abi_info['ndk_arch']
-        ndk_platform = 'android-14'
+        android_api_level = '14'
+        ndk_platform = 'android-' + android_api_level
 
         # select the NDK compiler
         gcc_version = '4.9'
@@ -106,7 +107,7 @@ class AndroidNdkToolchain:
         self.cppflags = '--sysroot=' + sysroot + \
             ' -isystem ' + os.path.join(install_prefix, 'include') + \
             ' -isystem ' + os.path.join(sysroot, 'usr', 'include', arch) + \
-            ' -D__ANDROID_API__=14'
+            ' -D__ANDROID_API__=' + android_api_level
         self.ldflags = '--sysroot=' + sysroot + \
             ' -L' + os.path.join(install_prefix, 'lib') + \
             ' -L' + os.path.join(target_root, 'usr', 'lib') + \
