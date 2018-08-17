@@ -364,6 +364,16 @@ curl = AutotoolsProject(
     patches='src/lib/curl/patches',
 )
 
+libexpat = AutotoolsProject(
+    'https://github.com/libexpat/libexpat/releases/download/R_2_2_6/expat-2.2.6.tar.bz2',
+    '17b43c2716d521369f82fc2dc70f359860e90fa440bea65b3b85f0b246ea81f2',
+    'lib/libexpat.a',
+    [
+        '--disable-shared', '--enable-static',
+        '--without-docbook',
+    ],
+)
+
 libnfs = AutotoolsProject(
     'https://github.com/sahlberg/libnfs/archive/libnfs-3.0.0.tar.gz',
     '445d92c5fc55e4a5b115e358e60486cf8f87ee50e0103d46a02e7fb4618566a5',
@@ -374,13 +384,15 @@ libnfs = AutotoolsProject(
 
         # work around -Wtautological-compare
         '--disable-werror',
+
+        '--disable-utils', '--disable-examples',
     ],
     base='libnfs-libnfs-3.0.0',
     autoreconf=True,
 )
 
 boost = BoostProject(
-    'http://downloads.sourceforge.net/project/boost/boost/1.66.0/boost_1_66_0.tar.bz2',
-    '5721818253e6a0989583192f96782c4a98eb6204965316df9f5ad75819225ca9',
+    'http://downloads.sourceforge.net/project/boost/boost/1.68.0/boost_1_68_0.tar.bz2',
+    '7f6130bc3cf65f56a618888ce9d5ea704fa10b462be126ad053e80e553d6d8b7',
     'include/boost/version.hpp',
 )

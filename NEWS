@@ -44,14 +44,18 @@ ver 0.21 (not yet released)
 * systemd watchdog support
 * require GCC 6
 
-ver 0.20.21 (not yet released)
+ver 0.20.21 (2018/08/17)
 * database
   - proxy: add "password" setting
   - proxy: support tags "ArtistSort", "AlbumArtistSort", "AlbumSort"
   - simple: allow .mpdignore comments only at start of line
 * output
   - httpd: remove broken DLNA support code
+* playlist
+  - cue: support file type declaration "FLAC" (non-standard)
 * URI schemes are case insensitive
+* Android, Windows
+  - enable the "curl" storage plugin
 
 ver 0.20.20 (2018/05/22)
 * protocol

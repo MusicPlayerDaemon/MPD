@@ -29,6 +29,15 @@ android_abis = {
         'cflags': '-march=armv7-a -mfpu=vfp -mfloat-abi=softfp',
     },
 
+    'arm64-v8a': {
+        'android_api_level': '21',
+        'arch': 'aarch64-linux-android',
+        'ndk_arch': 'arm64',
+        'toolchain_arch': 'aarch64-linux-android',
+        'llvm_triple': 'aarch64-none-linux-android',
+        'cflags': '',
+    },
+
     'x86': {
         'arch': 'i686-linux-android',
         'ndk_arch': 'x86',
@@ -65,7 +74,8 @@ class AndroidNdkToolchain:
         self.build_path = build_path
 
         ndk_arch = abi_info['ndk_arch']
-        ndk_platform = 'android-14'
+        android_api_level = '21'
+        ndk_platform = 'android-' + android_api_level
 
         # select the NDK compiler
         gcc_version = '4.9'
@@ -106,7 +116,7 @@ class AndroidNdkToolchain:
         self.cppflags = '--sysroot=' + sysroot + \
             ' -isystem ' + os.path.join(install_prefix, 'include') + \
             ' -isystem ' + os.path.join(sysroot, 'usr', 'include', arch) + \
-            ' -D__ANDROID_API__=14'
+            ' -D__ANDROID_API__=' + android_api_level
         self.ldflags = '--sysroot=' + sysroot + \
             ' -L' + os.path.join(install_prefix, 'lib') + \
             ' -L' + os.path.join(target_root, 'usr', 'lib') + \
@@ -116,6 +126,7 @@ class AndroidNdkToolchain:
 
         self.is_arm = ndk_arch == 'arm'
         self.is_armv7 = self.is_arm and 'armv7' in self.cflags
+        self.is_aarch64 = ndk_arch == 'arm64'
         self.is_windows = False
 
         libcxx_path = os.path.join(ndk_path, 'sources/cxx-stl/llvm-libc++')
@@ -146,6 +157,7 @@ thirdparty_libs = [
     libid3tag,
     ffmpeg,
     curl,
+    libexpat,
     libnfs,
     boost,
 ]

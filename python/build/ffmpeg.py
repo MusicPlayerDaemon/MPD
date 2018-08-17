@@ -21,6 +21,8 @@ class FfmpegProject(Project):
 
         if toolchain.is_arm:
             arch = 'arm'
+        elif toolchain.is_aarch64:
+            arch = 'aarch64'
         else:
             arch = 'x86'
 

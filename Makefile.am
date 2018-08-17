@@ -347,7 +347,7 @@ libmpd.so: $(filter %.a,$(src_mpd_LDADD)) libmain.a
 	$(AM_V_CXXLD)$(CXXLD) -shared -Wl,--no-undefined,-shared,-Bsymbolic -llog -lz -o $@ $(AM_CXXFLAGS) $(CXXFLAGS) $(LDFLAGS) src/libmain_a-Main.o $(src_mpd_LDADD) $(LIBS)
 
 ANDROID_SDK_BUILD_TOOLS_VERSION = 27.0.0
-ANDROID_SDK_PLATFORM = android-17
+ANDROID_SDK_PLATFORM = android-21
 
 ANDROID_BUILD_TOOLS_DIR = $(ANDROID_SDK)/build-tools/$(ANDROID_SDK_BUILD_TOOLS_VERSION)
 ANDROID_SDK_PLATFORM_DIR = $(ANDROID_SDK)/platforms/$(ANDROID_SDK_PLATFORM)
@@ -394,7 +394,7 @@ android/build/include/org_musicpd_Bridge.h: android/build/classes.dex
 
 BUILT_SOURCES = android/build/include/org_musicpd_Bridge.h
 
-android/build/lib/armeabi-v7a/libmpd.so: libmpd.so
+android/build/lib/$(ANDROID_ABI)/libmpd.so: libmpd.so
 	mkdir -p $(@D)
 	rm -f $@
 	$(STRIP) -o $@ $<
@@ -404,7 +404,7 @@ android/build/res/drawable/icon.png: mpd.svg
 	rsvg-convert --width=48 --height=48 $< -o $@
 
 .DELETE_ON_ERROR: android/build/unsigned.apk
-android/build/unsigned.apk: android/build/classes.dex android/build/resources.apk android/build/lib/armeabi-v7a/libmpd.so
+android/build/unsigned.apk: android/build/classes.dex android/build/resources.apk android/build/lib/$(ANDROID_ABI)/libmpd.so
 	cp android/build/resources.apk $@
 	cd $(dir $@) && zip -q -r $(notdir $@) classes.dex lib
 
@@ -808,6 +808,8 @@ libstorage_a_SOURCES = \
 
 libstorage_a_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(DBUS_CFLAGS) \
+	$(CURL_CFLAGS) \
+	$(EXPAT_CFLAGS) \
 	$(NFS_CFLAGS) \
 	$(SMBCLIENT_CFLAGS)
 

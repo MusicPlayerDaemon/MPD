@@ -202,6 +202,7 @@ CueParser::Feed2(char *p) noexcept
 			return;
 
 		if (strcmp(type, "WAVE") != 0 &&
+		    strcmp(type, "FLAC") != 0 && /* non-standard */
 		    strcmp(type, "MP3") != 0 &&
 		    strcmp(type, "AIFF") != 0) {
 			state = IGNORE_FILE;

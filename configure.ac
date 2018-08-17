@@ -16,7 +16,7 @@ AC_CONFIG_MACRO_DIR([m4])
 
 AC_DEFINE(PROTOCOL_VERSION, "0.21.0", [The MPD protocol version])
 
-GIT_COMMIT=`GIT_DIR="$srcdir/.git" git describe --dirty --always 2>/dev/null`
+GIT_COMMIT=`cd "$srcdir" && git describe --dirty --always 2>/dev/null`
 if test x$GIT_COMMIT != x; then
 	AC_DEFINE_UNQUOTED(GIT_COMMIT, ["$GIT_COMMIT"], [The current git commit])
 fi
@@ -186,6 +186,7 @@ AC_ARG_WITH([android-sdk],
 		[Directory for Android SDK]),
 		[], [with_android_sdk=no])
 
+android_abi=""
 if test x$host_is_android = xyes; then
 	if test x$with_android_sdk = xno; then
 		AC_MSG_ERROR([Android build requires option --with-android-sdk=DIR])
@@ -194,9 +195,15 @@ if test x$host_is_android = xyes; then
 	if ! test -x $with_android_sdk/tools/android; then
 		AC_MSG_ERROR([Android SDK not found in $with_android_sdk])
 	fi
+
+	AS_CASE([$host_cpu],
+		[i686], [android_abi="x86"],
+		[aarch64], [android_abi="arm64-v8a"],
+		[android_abi="armeabi-v7a"])
 fi
 
 AC_SUBST(ANDROID_SDK, [$with_android_sdk])
+AC_SUBST(ANDROID_ABI, [$android_abi])
 
 dnl ---------------------------------------------------------------------------
 dnl Language Checks

@@ -64,12 +64,9 @@ OpenFileInputStream(Path path, Mutex &mutex)
 		throw FormatRuntimeError("Not a regular file: %s",
 					 path.c_str());
 
-#if !defined(__BIONIC__) || __ANDROID_API__ >= 21
-	/* posix_fadvise() requires Android API 21 */
 #ifdef POSIX_FADV_SEQUENTIAL
 	posix_fadvise(reader.GetFD().Get(), (off_t)0, info.GetSize(),
 		      POSIX_FADV_SEQUENTIAL);
-#endif
 #endif
 
 	return std::make_unique<FileInputStream>(path.ToUTF8Throw().c_str(),

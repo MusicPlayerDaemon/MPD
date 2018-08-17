@@ -20,6 +20,9 @@ class MesonProject(Project):
                 cpu = 'armv7'
             else:
                 cpu = 'armv6'
+        elif toolchain.is_aarch64:
+            cpu_family = 'aarch64'
+            cpu = 'arm64-v8a'
         else:
             cpu_family = 'x86'
             if 'x86_64' in toolchain.arch:
@@ -50,6 +53,9 @@ c_link_args = %s
 
 cpp_args = %s
 cpp_link_args = %s
+
+# Keep Meson from executing Android-x86 test binariees
+needs_exe_wrapper = true
 
 [host_machine]
 system = '%s'
