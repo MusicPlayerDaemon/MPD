@@ -86,6 +86,7 @@ thirdparty_libs = [
     liblame,
     ffmpeg,
     curl,
+    libexpat,
     libnfs,
     boost,
 ]
@@ -118,6 +119,8 @@ configure = [
     '--enable-silent-rules',
 
     '--disable-icu',
+
+    'CXXFLAGS=-DCURL_STATICLIB',
 
 ] + configure_args
 
