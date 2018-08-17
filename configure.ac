@@ -196,7 +196,9 @@ if test x$host_is_android = xyes; then
 		AC_MSG_ERROR([Android SDK not found in $with_android_sdk])
 	fi
 
-	android_abi="armeabi-v7a"
+	AS_CASE([$host_cpu],
+		[i686], [android_abi="x86"],
+		[android_abi="armeabi-v7a"])
 fi
 
 AC_SUBST(ANDROID_SDK, [$with_android_sdk])
