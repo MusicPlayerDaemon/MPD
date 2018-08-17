@@ -1,4 +1,4 @@
-ver 0.20.21 (not yet released)
+ver 0.20.21 (2018/08/17)
 * database
   - proxy: add "password" setting
   - proxy: support tags "ArtistSort", "AlbumArtistSort", "AlbumSort"
