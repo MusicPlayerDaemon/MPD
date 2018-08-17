@@ -364,6 +364,15 @@ curl = AutotoolsProject(
     patches='src/lib/curl/patches',
 )
 
+libexpat = AutotoolsProject(
+    'https://github.com/libexpat/libexpat/releases/download/R_2_2_6/expat-2.2.6.tar.bz2',
+    '17b43c2716d521369f82fc2dc70f359860e90fa440bea65b3b85f0b246ea81f2',
+    'lib/libexpat.a',
+    [
+        '--disable-shared', '--enable-static',
+    ],
+)
+
 libnfs = AutotoolsProject(
     'https://github.com/sahlberg/libnfs/archive/libnfs-3.0.0.tar.gz',
     '445d92c5fc55e4a5b115e358e60486cf8f87ee50e0103d46a02e7fb4618566a5',
