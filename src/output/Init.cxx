@@ -54,10 +54,11 @@
 
 FilteredAudioOutput::FilteredAudioOutput(const char *_plugin_name,
 					 std::unique_ptr<AudioOutput> &&_output,
-					 const ConfigBlock &block)
+					 const ConfigBlock &block,
+					 FilterFactory *filter_factory)
 	:plugin_name(_plugin_name), output(std::move(_output))
 {
-	Configure(block);
+	Configure(block, filter_factory);
 }
 
 static const AudioOutputPlugin *
@@ -148,7 +149,8 @@ audio_output_load_mixer(EventLoop &event_loop, FilteredAudioOutput &ao,
 }
 
 void
-FilteredAudioOutput::Configure(const ConfigBlock &block)
+FilteredAudioOutput::Configure(const ConfigBlock &block,
+			       FilterFactory *filter_factory)
 {
 	if (!block.IsNull()) {
 		name = block.GetBlockValue(AUDIO_OUTPUT_NAME);
@@ -181,8 +183,9 @@ FilteredAudioOutput::Configure(const ConfigBlock &block)
 	}
 
 	try {
-		filter_chain_parse(*prepared_filter, GetGlobalConfig(),
-				   block.GetBlockValue(AUDIO_FILTERS, ""));
+		if (filter_factory != nullptr)
+			filter_chain_parse(*prepared_filter, *filter_factory,
+					   block.GetBlockValue(AUDIO_FILTERS, ""));
 	} catch (...) {
 		/* It's not really fatal - Part of the filter chain
 		   has been set up already and even an empty one will
@@ -256,6 +259,7 @@ std::unique_ptr<FilteredAudioOutput>
 audio_output_new(EventLoop &event_loop,
 		 const ReplayGainConfig &replay_gain_config,
 		 const ConfigBlock &block,
+		 FilterFactory *filter_factory,
 		 MixerListener &mixer_listener)
 {
 	const AudioOutputPlugin *plugin;
@@ -286,7 +290,8 @@ audio_output_new(EventLoop &event_loop,
 	assert(ao != nullptr);
 
 	auto f = std::make_unique<FilteredAudioOutput>(plugin->name,
-						       std::move(ao), block);
+						       std::move(ao), block,
+						       filter_factory);
 	f->Setup(event_loop, replay_gain_config,
 		 plugin->mixer_plugin,
 		 mixer_listener, block);

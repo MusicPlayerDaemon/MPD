@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2017 The Music Player Daemon Project
+ * Copyright 2003-2018 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,26 +17,24 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_FILTER_LOAD_CHAIN_HXX
-#define MPD_FILTER_LOAD_CHAIN_HXX
+#include "config.h"
+#include "Factory.hxx"
+#include "LoadOne.hxx"
+#include "Prepared.hxx"
+#include "config/Data.hxx"
+#include "config/Block.hxx"
+#include "util/RuntimeError.hxx"
 
-class FilterFactory;
-class PreparedFilter;
+std::unique_ptr<PreparedFilter>
+FilterFactory::MakeFilter(const char *name)
+{
+	const auto *cfg = config.FindBlock(ConfigBlockOption::AUDIO_FILTER,
+					   "name", name);
+	if (cfg == nullptr)
+		throw FormatRuntimeError("Filter template not found: %s",
+					 name);
 
-/**
- * Builds a filter chain from a configuration string on the form
- * "name1, name2, name3, ..." by looking up each name among the
- * configured filter sections.
- *
- * Throws std::runtime_error on error.
- *
- * @param chain the chain to append filters on
- * @param config the global configuration to load filter definitions from
- * @param spec the filter chain specification
- */
-void
-filter_chain_parse(PreparedFilter &chain,
-		   FilterFactory &factory,
-		   const char *spec);
+	cfg->SetUsed();
 
-#endif
+	return filter_configured_new(*cfg);
+}

@@ -1834,6 +1834,7 @@ libfilter_plugins_a_SOURCES = \
 
 libfilter_glue_a_SOURCES = \
 	src/filter/FilterRegistry.cxx src/filter/FilterRegistry.hxx \
+	src/filter/Factory.cxx src/filter/Factory.hxx \
 	src/filter/LoadOne.cxx src/filter/LoadOne.hxx \
 	src/filter/LoadChain.cxx src/filter/LoadChain.hxx
 

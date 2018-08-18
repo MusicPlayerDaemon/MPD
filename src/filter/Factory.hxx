@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2017 The Music Player Daemon Project
+ * Copyright 2003-2018 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,26 +17,24 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_FILTER_LOAD_CHAIN_HXX
-#define MPD_FILTER_LOAD_CHAIN_HXX
+#ifndef MPD_FILTER_FACTORY_HXX
+#define MPD_FILTER_FACTORY_HXX
 
-class FilterFactory;
+#include "check.h"
+
+#include <memory>
+
+struct ConfigData;
 class PreparedFilter;
 
-/**
- * Builds a filter chain from a configuration string on the form
- * "name1, name2, name3, ..." by looking up each name among the
- * configured filter sections.
- *
- * Throws std::runtime_error on error.
- *
- * @param chain the chain to append filters on
- * @param config the global configuration to load filter definitions from
- * @param spec the filter chain specification
- */
-void
-filter_chain_parse(PreparedFilter &chain,
-		   FilterFactory &factory,
-		   const char *spec);
+class FilterFactory {
+	const ConfigData &config;
+
+public:
+	explicit FilterFactory(const ConfigData &_config) noexcept
+		:config(_config) {}
+
+	std::unique_ptr<PreparedFilter> MakeFilter(const char *name);
+};
 
 #endif

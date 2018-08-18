@@ -19,43 +19,26 @@
 
 #include "config.h"
 #include "LoadChain.hxx"
-#include "LoadOne.hxx"
+#include "Factory.hxx"
 #include "Prepared.hxx"
 #include "plugins/ChainFilterPlugin.hxx"
-#include "config/Param.hxx"
-#include "config/Option.hxx"
-#include "config/Data.hxx"
-#include "config/Domain.hxx"
-#include "config/Block.hxx"
-#include "util/RuntimeError.hxx"
 
 #include <algorithm>
+#include <string>
 
 #include <string.h>
 
 static void
-filter_chain_append_new(PreparedFilter &chain, const ConfigData &config,
+filter_chain_append_new(PreparedFilter &chain, FilterFactory &factory,
 			const char *template_name)
 {
-	const auto *cfg = config.FindBlock(ConfigBlockOption::AUDIO_FILTER,
-					   "name", template_name);
-	if (cfg == nullptr)
-		throw FormatRuntimeError("Filter template not found: %s",
-					 template_name);
-
-	cfg->SetUsed();
-
-	// Instantiate one of those filter plugins with the template name as a hint
-	auto f = filter_configured_new(*cfg);
-
-	const char *plugin_name = cfg->GetBlockValue("plugin",
-						     "unknown");
-	filter_chain_append(chain, plugin_name, std::move(f));
+	filter_chain_append(chain, template_name,
+			    factory.MakeFilter(template_name));
 }
 
 void
 filter_chain_parse(PreparedFilter &chain,
-		   const ConfigData &config,
+		   FilterFactory &factory,
 		   const char *spec)
 {
 	const char *const end = spec + strlen(spec);
@@ -64,7 +47,7 @@ filter_chain_parse(PreparedFilter &chain,
 		const char *comma = std::find(spec, end, ',');
 		if (comma > spec) {
 			const std::string name(spec, comma);
-			filter_chain_append_new(chain, config, name.c_str());
+			filter_chain_append_new(chain, factory, name.c_str());
 		}
 
 		if (comma == end)
