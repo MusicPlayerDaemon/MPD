@@ -38,6 +38,7 @@ struct MixerPlugin;
 struct MusicChunk;
 struct ConfigBlock;
 class AudioOutput;
+struct AudioOutputDefaults;
 struct ReplayGainConfig;
 struct Tag;
 
@@ -129,12 +130,14 @@ public:
 	FilteredAudioOutput(const char *_plugin_name,
 			    std::unique_ptr<AudioOutput> &&_output,
 			    const ConfigBlock &block,
+			    const AudioOutputDefaults &defaults,
 			    FilterFactory *filter_factory);
 
 	~FilteredAudioOutput();
 
 private:
 	void Configure(const ConfigBlock &block,
+		       const AudioOutputDefaults &defaults,
 		       FilterFactory *filter_factory);
 
 public:
@@ -142,7 +145,8 @@ public:
 		   const ReplayGainConfig &replay_gain_config,
 		   const MixerPlugin *mixer_plugin,
 		   MixerListener &mixer_listener,
-		   const ConfigBlock &block);
+		   const ConfigBlock &block,
+		   const AudioOutputDefaults &defaults);
 
 	const char *GetName() const {
 		return name;
@@ -238,6 +242,7 @@ std::unique_ptr<FilteredAudioOutput>
 audio_output_new(EventLoop &event_loop,
 		 const ReplayGainConfig &replay_gain_config,
 		 const ConfigBlock &block,
+		 const AudioOutputDefaults &defaults,
 		 FilterFactory *filter_factory,
 		 MixerListener &mixer_listener);
 

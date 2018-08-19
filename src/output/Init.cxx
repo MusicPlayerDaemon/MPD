@@ -22,6 +22,7 @@
 #include "Registry.hxx"
 #include "Domain.hxx"
 #include "OutputAPI.hxx"
+#include "Defaults.hxx"
 #include "AudioParser.hxx"
 #include "mixer/MixerList.hxx"
 #include "mixer/MixerType.hxx"
@@ -36,7 +37,7 @@
 #include "filter/plugins/VolumeFilterPlugin.hxx"
 #include "filter/plugins/NormalizeFilterPlugin.hxx"
 #include "config/Domain.hxx"
-#include "config/Global.hxx"
+#include "config/Option.hxx"
 #include "config/Block.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/StringFormat.hxx"
@@ -55,10 +56,11 @@
 FilteredAudioOutput::FilteredAudioOutput(const char *_plugin_name,
 					 std::unique_ptr<AudioOutput> &&_output,
 					 const ConfigBlock &block,
+					 const AudioOutputDefaults &defaults,
 					 FilterFactory *filter_factory)
 	:plugin_name(_plugin_name), output(std::move(_output))
 {
-	Configure(block, filter_factory);
+	Configure(block, defaults, filter_factory);
 }
 
 static const AudioOutputPlugin *
@@ -88,7 +90,8 @@ audio_output_detect()
  * mixer_enabled, if the mixer_type setting is not configured.
  */
 static MixerType
-audio_output_mixer_type(const ConfigBlock &block)
+audio_output_mixer_type(const ConfigBlock &block,
+			const AudioOutputDefaults &defaults)
 {
 	/* read the local "mixer_type" setting */
 	const char *p = block.GetBlockValue("mixer_type");
@@ -101,20 +104,20 @@ audio_output_mixer_type(const ConfigBlock &block)
 
 	/* fall back to the global "mixer_type" setting (also
 	   deprecated) */
-	return mixer_type_parse(config_get_string(ConfigOption::MIXER_TYPE,
-						  "hardware"));
+	return defaults.mixer_type;
 }
 
 static Mixer *
 audio_output_load_mixer(EventLoop &event_loop, FilteredAudioOutput &ao,
 			const ConfigBlock &block,
+			const AudioOutputDefaults &defaults,
 			const MixerPlugin *plugin,
 			PreparedFilter &filter_chain,
 			MixerListener &listener)
 {
 	Mixer *mixer;
 
-	switch (audio_output_mixer_type(block)) {
+	switch (audio_output_mixer_type(block, defaults)) {
 	case MixerType::NONE:
 		return nullptr;
 
@@ -148,6 +151,7 @@ audio_output_load_mixer(EventLoop &event_loop, FilteredAudioOutput &ao,
 
 void
 FilteredAudioOutput::Configure(const ConfigBlock &block,
+			       const AudioOutputDefaults &defaults,
 			       FilterFactory *filter_factory)
 {
 	if (!block.IsNull()) {
@@ -175,7 +179,7 @@ FilteredAudioOutput::Configure(const ConfigBlock &block,
 
 	/* create the normalization filter (if configured) */
 
-	if (config_get_bool(ConfigOption::VOLUME_NORMALIZATION, false)) {
+	if (defaults.normalize) {
 		filter_chain_append(*prepared_filter, "normalize",
 				    autoconvert_filter_new(normalize_filter_prepare()));
 	}
@@ -199,7 +203,8 @@ FilteredAudioOutput::Setup(EventLoop &event_loop,
 			   const ReplayGainConfig &replay_gain_config,
 			   const MixerPlugin *mixer_plugin,
 			   MixerListener &mixer_listener,
-			   const ConfigBlock &block)
+			   const ConfigBlock &block,
+			   const AudioOutputDefaults &defaults)
 {
 	if (output->GetNeedFullyDefinedAudioFormat() &&
 	    !config_audio_format.IsFullyDefined())
@@ -224,6 +229,7 @@ FilteredAudioOutput::Setup(EventLoop &event_loop,
 
 	try {
 		mixer = audio_output_load_mixer(event_loop, *this, block,
+						defaults,
 						mixer_plugin,
 						*prepared_filter,
 						mixer_listener);
@@ -257,6 +263,7 @@ std::unique_ptr<FilteredAudioOutput>
 audio_output_new(EventLoop &event_loop,
 		 const ReplayGainConfig &replay_gain_config,
 		 const ConfigBlock &block,
+		 const AudioOutputDefaults &defaults,
 		 FilterFactory *filter_factory,
 		 MixerListener &mixer_listener)
 {
@@ -289,9 +296,10 @@ audio_output_new(EventLoop &event_loop,
 
 	auto f = std::make_unique<FilteredAudioOutput>(plugin->name,
 						       std::move(ao), block,
+						       defaults,
 						       filter_factory);
 	f->Setup(event_loop, replay_gain_config,
 		 plugin->mixer_plugin,
-		 mixer_listener, block);
+		 mixer_listener, block, defaults);
 	return f;
 }

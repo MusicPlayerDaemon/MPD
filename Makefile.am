@@ -1551,6 +1551,7 @@ OUTPUT_LIBS = \
 	$(SHOUT_LIBS)
 
 OUTPUT_API_SRC = \
+	src/output/Defaults.cxx src/output/Defaults.hxx \
 	src/output/Client.hxx \
 	src/output/OutputAPI.hxx \
 	src/output/Filtered.cxx src/output/Filtered.hxx \
