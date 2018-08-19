@@ -617,9 +617,7 @@ mpd_main_after_fork(const ConfigData &raw_config, const Config &config)
 	if (create_db) {
 		/* the database failed to load: recreate the
 		   database */
-		unsigned job = instance->update->Enqueue("", true);
-		if (job == 0)
-			throw std::runtime_error("directory update failed");
+		instance->update->Enqueue("", true);
 	}
 #endif
 

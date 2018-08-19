@@ -26,6 +26,7 @@
 #include "db/plugins/simple/SimpleDatabasePlugin.hxx"
 #include "db/plugins/simple/Directory.hxx"
 #include "storage/CompositeStorage.hxx"
+#include "protocol/Ack.hxx"
 #include "Idle.hxx"
 #include "Log.hxx"
 #include "thread/Thread.hxx"
@@ -192,8 +193,7 @@ UpdateService::Enqueue(const char *path, bool discard)
 
 		Database &_db2 = *lr.directory->mounted_database;
 		if (!_db2.IsPlugin(simple_db_plugin))
-			/* cannot update this type of database */
-			return 0;
+			throw std::runtime_error("Cannot update this type of database");
 
 		db2 = static_cast<SimpleDatabase *>(&_db2);
 
@@ -219,12 +219,13 @@ UpdateService::Enqueue(const char *path, bool discard)
 	if (storage2 == nullptr)
 		/* no storage found at this mount point - should not
 		   happen */
-		return 0;
+		throw std::runtime_error("No storage at this path");
 
 	if (walk != nullptr) {
 		const unsigned id = GenerateId();
 		if (!queue.Push(*db2, *storage2, path, discard, id))
-			return 0;
+			throw ProtocolError(ACK_ERROR_UPDATE_ALREADY,
+					    "Update queue is full");
 
 		update_task_id = id;
 		return id;

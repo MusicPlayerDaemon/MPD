@@ -82,9 +82,11 @@ public:
 	/**
 	 * Add this path to the database update queue.
 	 *
+	 * Throws on error
+	 *
 	 * @param path a path to update; if an empty string,
 	 * the whole music directory is updated
-	 * @return the job id, or 0 on error
+	 * @return the job id
 	 */
 	gcc_nonnull_all
 	unsigned Enqueue(const char *path, bool discard);
