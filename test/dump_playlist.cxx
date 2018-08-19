@@ -22,7 +22,9 @@
 #include "song/DetachedSong.hxx"
 #include "playlist/SongEnumerator.hxx"
 #include "input/InputStream.hxx"
-#include "config/Global.hxx"
+#include "config/File.hxx"
+#include "config/Migrate.hxx"
+#include "config/Data.hxx"
 #include "decoder/DecoderList.hxx"
 #include "input/Init.hxx"
 #include "event/Thread.hxx"
@@ -60,16 +62,16 @@ try {
 
 	/* initialize MPD */
 
-	config_global_init();
-
-	ReadConfigFile(config_path);
+	ConfigData config;
+	ReadConfigFile(config, config_path);
+	Migrate(config);
 
 	EventThread io_thread;
 	io_thread.Start();
 
-	input_stream_global_init(GetGlobalConfig(), io_thread.GetEventLoop());
-	playlist_list_global_init(GetGlobalConfig());
-	decoder_plugin_init_all(GetGlobalConfig());
+	input_stream_global_init(config, io_thread.GetEventLoop());
+	playlist_list_global_init(config);
+	decoder_plugin_init_all(config);
 
 	/* open the playlist */
 
@@ -122,7 +124,6 @@ try {
 	decoder_plugin_deinit_all();
 	playlist_list_global_finish();
 	input_stream_global_finish();
-	config_global_finish();
 
 	return EXIT_SUCCESS;
 } catch (...) {
