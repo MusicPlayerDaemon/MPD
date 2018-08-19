@@ -20,7 +20,9 @@
 #include "config.h"
 #include "TagSave.hxx"
 #include "tag/Tag.hxx"
-#include "config/Global.hxx"
+#include "config/File.hxx"
+#include "config/Migrate.hxx"
+#include "config/Data.hxx"
 #include "input/InputStream.hxx"
 #include "input/Init.hxx"
 #include "input/Registry.hxx"
@@ -101,22 +103,24 @@ ParseCommandLine(int argc, char **argv)
 }
 
 class GlobalInit {
+	ConfigData config;
 	EventThread io_thread;
 
 public:
 	GlobalInit(Path config_path, bool verbose) {
 		SetLogThreshold(verbose ? LogLevel::DEBUG : LogLevel::INFO);
 
-		io_thread.Start();
-		config_global_init();
+		if (!config_path.IsNull()) {
+			ReadConfigFile(config, config_path);
+			Migrate(config);
+		}
 
-		if (!config_path.IsNull())
-			ReadConfigFile(config_path);
+		io_thread.Start();
 
 #ifdef ENABLE_ARCHIVE
 		archive_plugin_init_all();
 #endif
-		input_stream_global_init(GetGlobalConfig(),
+		input_stream_global_init(config,
 					 io_thread.GetEventLoop());
 	}
 
@@ -125,7 +129,6 @@ public:
 #ifdef ENABLE_ARCHIVE
 		archive_plugin_deinit_all();
 #endif
-		config_global_finish();
 	}
 };
 
