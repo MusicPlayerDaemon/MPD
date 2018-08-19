@@ -34,6 +34,8 @@
 
 #ifdef ANDROID
 #include <android/log.h>
+#include "android/LogListener.hxx"
+#include "Main.hxx"
 
 static int
 ToAndroidLogLevel(LogLevel log_level) noexcept
@@ -179,6 +181,9 @@ Log(const Domain &domain, LogLevel level, const char *msg) noexcept
 #ifdef ANDROID
 	__android_log_print(ToAndroidLogLevel(level), "MPD",
 			    "%s: %s", domain.GetName(), msg);
+	if (logListener != nullptr)
+		logListener->OnLog(Java::GetEnv(), ToAndroidLogLevel(level),
+				   "%s: %s", domain.GetName(), msg);
 #else
 
 	if (level < log_threshold)

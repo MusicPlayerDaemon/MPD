@@ -2,4 +2,10 @@
 
 <resources>
   <string name="app_name">MPD</string>
+  <string name="notification_title_mpd_running">Music Player Daemon is running</string>
+  <string name="notification_text_mpd_running">Touch for MPD options.</string>
+  <string name="toggle_button_run_on">MPD is running</string>
+  <string name="toggle_button_run_off">MPD is not running</string>
+  <string name="checkbox_run_on_boot">Run MPD automatically on boot</string>
+  <string name="checkbox_wakelock">Prevent suspend when MPD is running (Wakelock)</string>
 </resources>

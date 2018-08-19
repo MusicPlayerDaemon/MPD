@@ -44,6 +44,14 @@ ver 0.21 (not yet released)
 * systemd watchdog support
 * require GCC 6
 
+ver 0.20.22 (not yet released)
+* storage
+  - curl: URL-encode paths
+* Android
+  - now runs as a service
+  - add button to start/stop MPD
+  - add option to auto-start on boot
+
 ver 0.20.21 (2018/08/17)
 * database
   - proxy: add "password" setting

@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2017 The Music Player Daemon Project
+ * Copyright 2003-2018 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,20 +17,16 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-package org.musicpd;
+#ifndef MPD_ANDROID_LOG_LISTENER_HXX
+#define MPD_ANDROID_LOG_LISTENER_HXX
 
-import android.content.Context;
+#include "java/Object.hxx"
 
-/**
- * Bridge to native code.
- */
-public class Bridge {
+class LogListener : public Java::Object {
+public:
+	LogListener(JNIEnv *env, jobject obj):Java::Object(env, obj) {}
 
-	/* used by jni */
-	public interface LogListener {
-		public void onLog(int priority, String msg);
-	}
+	void OnLog(JNIEnv *env, int priority, const char *fmt, ...) const;
+};
 
-	public static native void run(Context context, LogListener logListener);
-	public static native void shutdown();
-}
+#endif

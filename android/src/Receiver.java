@@ -1,5 +1,6 @@
+
 /*
- * Copyright 2003-2017 The Music Player Daemon Project
+ * Copyright (C) 2003-2014 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -19,18 +20,22 @@
 
 package org.musicpd;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.util.Log;
 
-/**
- * Bridge to native code.
- */
-public class Bridge {
-
-	/* used by jni */
-	public interface LogListener {
-		public void onLog(int priority, String msg);
-	}
-
-	public static native void run(Context context, LogListener logListener);
-	public static native void shutdown();
+public class Receiver extends BroadcastReceiver {
+    @Override
+    public void onReceive(Context context, Intent intent) {
+        Log.d("Receiver", "onReceive: " + intent);
+        if (intent.getAction() == "android.intent.action.BOOT_COMPLETED") {
+        	if (Settings.Preferences.getBoolean(context,
+        			Settings.Preferences.KEY_RUN_ON_BOOT, false)) {
+        		final boolean wakelock = Settings.Preferences.getBoolean(context,
+        				Settings.Preferences.KEY_WAKELOCK, false);
+        		Main.start(context, wakelock);
+        	}
+        }
+    }
 }
