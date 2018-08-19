@@ -1021,7 +1021,6 @@ libconf_a_SOURCES = \
 	src/config/Block.cxx src/config/Block.hxx \
 	src/config/Param.cxx src/config/Param.hxx \
 	src/config/Parser.cxx src/config/Parser.hxx \
-	src/config/Global.cxx src/config/Global.hxx \
 	src/config/File.cxx src/config/File.hxx \
 	src/config/Migrate.cxx src/config/Migrate.hxx \
 	src/config/Templates.cxx src/config/Templates.hxx \
