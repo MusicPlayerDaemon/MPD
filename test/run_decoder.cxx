@@ -18,7 +18,9 @@
  */
 
 #include "config.h"
-#include "config/Global.hxx"
+#include "config/File.hxx"
+#include "config/Migrate.hxx"
+#include "config/Data.hxx"
 #include "event/Thread.hxx"
 #include "decoder/DecoderList.hxx"
 #include "decoder/DecoderPlugin.hxx"
@@ -87,20 +89,23 @@ ParseCommandLine(int argc, char **argv)
 }
 
 class GlobalInit {
+	ConfigData config;
 	EventThread io_thread;
 
 public:
 	GlobalInit(Path config_path, bool verbose) {
 		SetLogThreshold(verbose ? LogLevel::DEBUG : LogLevel::INFO);
 
+		if (!config_path.IsNull()) {
+			ReadConfigFile(config, config_path);
+			Migrate(config);
+		}
+
 		io_thread.Start();
 
-		if (!config_path.IsNull())
-			ReadConfigFile(config_path);
-
-		input_stream_global_init(GetGlobalConfig(),
+		input_stream_global_init(config,
 					 io_thread.GetEventLoop());
-		decoder_plugin_init_all(GetGlobalConfig());
+		decoder_plugin_init_all(config);
 	}
 
 	~GlobalInit() {
