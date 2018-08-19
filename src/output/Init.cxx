@@ -87,9 +87,8 @@ audio_output_detect()
  * This handles the deprecated options mixer_type (global) and
  * mixer_enabled, if the mixer_type setting is not configured.
  */
-gcc_pure
 static MixerType
-audio_output_mixer_type(const ConfigBlock &block) noexcept
+audio_output_mixer_type(const ConfigBlock &block)
 {
 	/* read the local "mixer_type" setting */
 	const char *p = block.GetBlockValue("mixer_type");
@@ -117,7 +116,6 @@ audio_output_load_mixer(EventLoop &event_loop, FilteredAudioOutput &ao,
 
 	switch (audio_output_mixer_type(block)) {
 	case MixerType::NONE:
-	case MixerType::UNKNOWN:
 		return nullptr;
 
 	case MixerType::NULL_:

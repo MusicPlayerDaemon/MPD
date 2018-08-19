@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2017 The Music Player Daemon Project
+ * Copyright 2003-2018 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -20,11 +20,13 @@
 #include "config.h"
 #include "MixerType.hxx"
 
+#include <stdexcept>
+
 #include <assert.h>
 #include <string.h>
 
 MixerType
-mixer_type_parse(const char *input) noexcept
+mixer_type_parse(const char *input)
 {
 	assert(input != NULL);
 
@@ -37,5 +39,5 @@ mixer_type_parse(const char *input) noexcept
 	else if (strcmp(input, "null") == 0)
 		return MixerType::NULL_;
 	else
-		return MixerType::UNKNOWN;
+		throw std::runtime_error("Unrecognized mixer type");
 }
