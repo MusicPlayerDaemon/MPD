@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2017 The Music Player Daemon Project
+ * Copyright 2003-2018 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -22,7 +22,7 @@
 #include "ls.hxx"
 #include "LogInit.hxx"
 #include "Log.hxx"
-#include "config/Global.hxx"
+#include "config/File.hxx"
 #include "decoder/DecoderList.hxx"
 #include "decoder/DecoderPlugin.hxx"
 #include "output/Registry.hxx"
@@ -292,7 +292,12 @@ static void help(void)
 
 class ConfigLoader
 {
+	ConfigData &config;
+
 public:
+	explicit ConfigLoader(ConfigData &_config) noexcept
+		:config(_config) {}
+
 	bool TryFile(const Path path);
 	bool TryFile(const AllocatedPath &base_path, Path path);
 };
@@ -300,7 +305,7 @@ public:
 bool ConfigLoader::TryFile(Path path)
 {
 	if (FileExists(path)) {
-		ReadConfigFile(path);
+		ReadConfigFile(config, path);
 		return true;
 	}
 	return false;
@@ -315,7 +320,8 @@ bool ConfigLoader::TryFile(const AllocatedPath &base_path, Path path)
 }
 
 void
-ParseCommandLine(int argc, char **argv, struct options &options)
+ParseCommandLine(int argc, char **argv, struct options &options,
+		 ConfigData &config)
 {
 	bool use_config_file = true;
 
@@ -383,16 +389,16 @@ ParseCommandLine(int argc, char **argv, struct options &options)
 		if (result <= 0)
 			throw MakeLastError("MultiByteToWideChar() failed");
 
-		ReadConfigFile(Path::FromFS(buffer));
+		ReadConfigFile(config, Path::FromFS(buffer));
 #else
-		ReadConfigFile(Path::FromFS(config_file));
+		ReadConfigFile(config, Path::FromFS(config_file));
 #endif
 		return;
 	}
 
 	/* use default configuration file path */
 
-	ConfigLoader loader;
+	ConfigLoader loader(config);
 
 	bool found =
 #ifdef _WIN32

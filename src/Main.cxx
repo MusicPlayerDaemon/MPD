@@ -52,7 +52,7 @@
 #include "thread/Slack.hxx"
 #include "net/Init.hxx"
 #include "lib/icu/Init.hxx"
-#include "config/Global.hxx"
+#include "config/File.hxx"
 #include "config/Check.hxx"
 #include "config/Data.hxx"
 #include "config/Param.hxx"
@@ -475,7 +475,7 @@ MainOrThrow(int argc, char *argv[])
 	const ODBus::ScopeInit dbus_init;
 #endif
 
-	config_global_init();
+	ConfigData raw_config;
 
 #ifdef ANDROID
 	(void)argc;
@@ -486,13 +486,12 @@ MainOrThrow(int argc, char *argv[])
 		const auto config_path =
 			sdcard / Path::FromFS("mpd.conf");
 		if (FileExists(config_path))
-			ReadConfigFile(config_path);
+			ReadConfigFile(raw_config, config_path);
 	}
 #else
-	ParseCommandLine(argc, argv, options);
+	ParseCommandLine(argc, argv, options, raw_config);
 #endif
 
-	const auto &raw_config = GetGlobalConfig();
 	InitPathParser(raw_config);
 	const auto config = LoadConfig(raw_config);
 
@@ -714,7 +713,6 @@ mpd_main_after_fork(const ConfigData &raw_config, const Config &config)
 #ifdef ENABLE_ARCHIVE
 	archive_plugin_deinit_all();
 #endif
-	config_global_finish();
 	instance->rtio_thread.Stop();
 	instance->io_thread.Stop();
 #ifndef ANDROID
