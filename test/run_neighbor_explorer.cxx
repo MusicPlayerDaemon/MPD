@@ -18,7 +18,9 @@
  */
 
 #include "config.h"
-#include "config/Global.hxx"
+#include "config/File.hxx"
+#include "config/Migrate.hxx"
+#include "config/Data.hxx"
 #include "neighbor/Listener.hxx"
 #include "neighbor/Info.hxx"
 #include "neighbor/Glue.hxx"
@@ -29,17 +31,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-
-class GlobalInit {
-public:
-	GlobalInit() {
-		config_global_init();
-	}
-
-	~GlobalInit() {
-		config_global_finish();
-	}
-};
 
 class MyNeighborListener final : public NeighborListener {
  public:
@@ -67,19 +58,20 @@ try {
 
 	/* initialize the core */
 
-	const GlobalInit init;
+	ConfigData config;
 	EventLoop loop;
 	const ShutdownHandler shutdown_handler(loop);
 
 	/* read configuration file (mpd.conf) */
 
-	ReadConfigFile(config_path);
+	ReadConfigFile(config, config_path);
+	Migrate(config);
 
 	/* initialize neighbor plugins */
 
 	MyNeighborListener listener;
 	NeighborGlue neighbor;
-	neighbor.Init(GetGlobalConfig(), loop, listener);
+	neighbor.Init(config, loop, listener);
 	neighbor.Open();
 
 	/* dump initial list */
