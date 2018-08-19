@@ -26,7 +26,8 @@
 #include "db/LightDirectory.hxx"
 #include "song/LightSong.hxx"
 #include "db/PlaylistVector.hxx"
-#include "config/Global.hxx"
+#include "config/File.hxx"
+#include "config/Migrate.hxx"
 #include "config/Data.hxx"
 #include "config/Param.hxx"
 #include "config/Block.hxx"
@@ -50,11 +51,9 @@ class GlobalInit {
 public:
 	GlobalInit() {
 		io_thread.Start();
-		config_global_init();
 	}
 
 	~GlobalInit() {
-		config_global_finish();
 	}
 
 	EventLoop &GetEventLoop() {
@@ -125,9 +124,9 @@ try {
 
 	GlobalInit init;
 
-	ReadConfigFile(config_path);
-
-	const auto &config = GetGlobalConfig();
+	ConfigData config;
+	ReadConfigFile(config, config_path);
+	Migrate(config);
 
 	TagLoadConfig(config);
 
