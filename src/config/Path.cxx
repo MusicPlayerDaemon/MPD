@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2017 The Music Player Daemon Project
+ * Copyright 2003-2018 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "Path.hxx"
-#include "Global.hxx"
+#include "Data.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "fs/Traits.hxx"
 #include "fs/Domain.hxx"
@@ -31,6 +31,8 @@
 
 #ifndef _WIN32
 #include <pwd.h>
+
+static const char *configured_user = nullptr;
 
 /**
  * Determine a given user's home directory.
@@ -66,13 +68,22 @@ GetHome()
 static AllocatedPath
 GetConfiguredHome()
 {
-	const char *user = config_get_string(ConfigOption::USER);
-	return user != nullptr
-		? GetHome(user)
+	return configured_user != nullptr
+		? GetHome(configured_user)
 		: GetHome();
 }
 
 #endif
+
+void
+InitPathParser(const ConfigData &config) noexcept
+{
+#ifdef _WIN32
+	(void)config;
+#else
+	configured_user = config.GetString(ConfigOption::USER);
+#endif
+}
 
 AllocatedPath
 ParsePath(const char *path)

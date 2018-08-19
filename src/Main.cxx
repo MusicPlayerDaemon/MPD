@@ -55,6 +55,7 @@
 #include "config/Global.hxx"
 #include "config/Data.hxx"
 #include "config/Param.hxx"
+#include "config/Path.hxx"
 #include "config/Defaults.hxx"
 #include "config/Option.hxx"
 #include "config/Domain.hxx"
@@ -491,6 +492,7 @@ MainOrThrow(int argc, char *argv[])
 #endif
 
 	const auto &raw_config = GetGlobalConfig();
+	InitPathParser(raw_config);
 	const auto config = LoadConfig(raw_config);
 
 #ifdef ENABLE_DAEMON
