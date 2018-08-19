@@ -333,11 +333,11 @@ android/build/classes.dex: $(JAVA_SOURCE_PATHS) android/build/gen/org/musicpd/R.
 	@$(MKDIR_P) $(JAVA_CLASSFILES_DIR)
 	$(JAVAC) -source 1.6 -target 1.6 -Xlint:-options \
 		-cp $(ANDROID_SDK_PLATFORM_DIR)/android.jar:$(JAVA_CLASSFILES_DIR) \
+		-h android/build/include \
 		-d $(JAVA_CLASSFILES_DIR) $^
 	$(DX) --dex --output $@ $(JAVA_CLASSFILES_DIR)
 
 android/build/include/org_musicpd_Bridge.h: android/build/classes.dex
-	javah -classpath $(ANDROID_SDK_PLATFORM_DIR)/android.jar:$(JAVA_CLASSFILES_DIR) -d $(@D) org.musicpd.Bridge
 
 BUILT_SOURCES = android/build/include/org_musicpd_Bridge.h
 
