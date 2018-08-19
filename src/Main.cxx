@@ -48,7 +48,6 @@
 #include "AudioParser.hxx"
 #include "pcm/PcmConvert.hxx"
 #include "unix/SignalHandlers.hxx"
-#include "system/FatalError.hxx"
 #include "thread/Slack.hxx"
 #include "net/Init.hxx"
 #include "lib/icu/Init.hxx"
@@ -285,9 +284,9 @@ initialize_decoder_and_player(const ConfigData &config,
 		char *test;
 		long tmp = strtol(param->value.c_str(), &test, 10);
 		if (*test != '\0' || tmp <= 0 || tmp == LONG_MAX)
-			FormatFatalError("buffer size \"%s\" is not a "
-					 "positive integer, line %i",
-					 param->value.c_str(), param->line);
+			throw FormatRuntimeError("buffer size \"%s\" is not a "
+						 "positive integer, line %i",
+						 param->value.c_str(), param->line);
 		buffer_size = tmp * KILOBYTE;
 
 		if (buffer_size < MIN_BUFFER_SIZE) {
@@ -302,8 +301,8 @@ initialize_decoder_and_player(const ConfigData &config,
 	const unsigned buffered_chunks = buffer_size / CHUNK_SIZE;
 
 	if (buffered_chunks >= 1 << 15)
-		FormatFatalError("buffer size \"%lu\" is too big",
-				 (unsigned long)buffer_size);
+		throw FormatRuntimeError("buffer size \"%lu\" is too big",
+					 (unsigned long)buffer_size);
 
 	float perc;
 	param = config.GetParam(ConfigOption::BUFFER_BEFORE_PLAY);
@@ -311,10 +310,10 @@ initialize_decoder_and_player(const ConfigData &config,
 		char *test;
 		perc = strtod(param->value.c_str(), &test);
 		if (*test != '%' || perc < 0 || perc > 100) {
-			FormatFatalError("buffered before play \"%s\" is not "
-					 "a positive percentage and less "
-					 "than 100 percent, line %i",
-					 param->value.c_str(), param->line);
+			throw FormatRuntimeError("buffered before play \"%s\" is not "
+						 "a positive percentage and less "
+						 "than 100 percent, line %i",
+						 param->value.c_str(), param->line);
 		}
 
 		if (perc > 80) {
@@ -620,7 +619,7 @@ mpd_main_after_fork(const ConfigData &raw_config, const Config &config)
 		   database */
 		unsigned job = instance->update->Enqueue("", true);
 		if (job == 0)
-			FatalError("directory update failed");
+			throw std::runtime_error("directory update failed");
 	}
 #endif
 
