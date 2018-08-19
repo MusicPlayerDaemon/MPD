@@ -53,6 +53,7 @@
 #include "net/Init.hxx"
 #include "lib/icu/Init.hxx"
 #include "config/Global.hxx"
+#include "config/Check.hxx"
 #include "config/Data.hxx"
 #include "config/Param.hxx"
 #include "config/Path.hxx"
@@ -643,7 +644,7 @@ mpd_main_after_fork(const ConfigData &raw_config, const Config &config)
 	}
 #endif
 
-	config_global_check();
+	Check(raw_config);
 
 	/* enable all audio outputs (if not already done by
 	   playlist_state_restore() */

@@ -53,30 +53,6 @@ ReadConfigFile(Path path)
 	Migrate(config_data);
 }
 
-static void
-Check(const ConfigBlock &block)
-{
-	if (!block.used)
-		/* this whole block was not queried at all -
-		   the feature might be disabled at compile time?
-		   Silently ignore it here. */
-		return;
-
-	for (const auto &i : block.block_params) {
-		if (!i.used)
-			FormatWarning(config_domain,
-				      "option '%s' on line %i was not recognized",
-				      i.name.c_str(), i.line);
-	}
-}
-
-void config_global_check(void)
-{
-	for (const auto &list : config_data.blocks)
-		for (const auto &block : list)
-			Check(block);
-}
-
 const char *
 config_get_string(ConfigOption option, const char *default_value) noexcept
 {

@@ -1016,6 +1016,7 @@ libbasic_a_SOURCES = \
 libconf_a_SOURCES = \
 	src/config/Defaults.hxx \
 	src/config/Path.cxx src/config/Path.hxx \
+	src/config/Check.cxx src/config/Check.hxx \
 	src/config/Data.cxx src/config/Data.hxx \
 	src/config/Block.cxx src/config/Block.hxx \
 	src/config/Param.cxx src/config/Param.hxx \
