@@ -223,6 +223,15 @@ public:
 	size_type MoveFrom(ForeignFifoBuffer<T> &src) noexcept {
 		auto r = src.Read();
 		auto w = Write();
+
+		if (w.size < r.size && head > 0) {
+			/* if the source contains more data than we
+			   can append at the tail, try to make more
+			   room by shifting the head to 0 */
+			Shift();
+			w = Write();
+		}
+
 		size_t n = std::min(r.size, w.size);
 
 		std::move(r.data, r.data + n, w.data);
