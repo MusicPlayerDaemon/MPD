@@ -158,6 +158,26 @@ public:
 		return ConstructInAddr(INADDR_LOOPBACK);
 	}
 
+	/**
+	 * Generate a (net-)mask with the specified prefix length.
+	 */
+	static constexpr IPv4Address MaskFromPrefix(unsigned prefix_length) noexcept {
+		return Construct(prefix_length == 0
+				 ? 0
+				 : (~uint32_t(0)) << (32 - prefix_length),
+				 ~uint16_t(0));
+	}
+
+	/**
+	 * Return a downcasted reference to the address.  This call is
+	 * only legal after verifying SocketAddress::GetFamily().
+	 */
+	static constexpr const IPv4Address &Cast(const SocketAddress src) noexcept {
+		/* this reinterpret_cast works because this class is
+		   just a wrapper for struct sockaddr_in6 */
+		return *(const IPv4Address *)(const void *)src.GetAddress();
+	}
+
 	constexpr operator SocketAddress() const noexcept {
 		return SocketAddress((const struct sockaddr *)&address,
 				     sizeof(address));
@@ -187,6 +207,29 @@ public:
 
 	constexpr const struct in_addr &GetAddress() const noexcept {
 		return address.sin_addr;
+	}
+
+	/**
+	 * @return the 32 bit IP address in network byte order
+	 */
+	constexpr uint32_t GetNumericAddressBE() const noexcept {
+		return GetAddress().s_addr;
+	}
+
+	/**
+	 * @return the 32 bit IP address in host byte order
+	 */
+	constexpr uint32_t GetNumericAddress() const noexcept {
+		return FromBE32(GetNumericAddressBE());
+	}
+
+	/**
+	 * Bit-wise AND of two addresses.  This is useful for netmask
+	 * calculations.
+	 */
+	constexpr IPv4Address operator&(const IPv4Address &other) const noexcept {
+		return IPv4Address(ConstructInAddrBE(GetNumericAddressBE() & other.GetNumericAddressBE()),
+				   GetPort() & other.GetPort());
 	}
 };
 
