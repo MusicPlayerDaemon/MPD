@@ -72,7 +72,7 @@ public:
 			:current(n), rest(n), separator(0) {}
 
 		void Next() {
-			if (rest.IsNull())
+			if (rest == nullptr)
 				current = nullptr;
 			else {
 				const auto *i = rest.Find(separator);
