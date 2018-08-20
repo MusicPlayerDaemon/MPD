@@ -249,19 +249,19 @@ NfsStorage::MapToRelativeUTF8(const char *uri_utf8) const noexcept
 }
 
 static void
-Copy(StorageFileInfo &info, const struct stat &st) noexcept
+Copy(StorageFileInfo &info, const struct nfs_stat_64 &st) noexcept
 {
-	if (S_ISREG(st.st_mode))
+	if (S_ISREG(st.nfs_mode))
 		info.type = StorageFileInfo::Type::REGULAR;
-	else if (S_ISDIR(st.st_mode))
+	else if (S_ISDIR(st.nfs_mode))
 		info.type = StorageFileInfo::Type::DIRECTORY;
 	else
 		info.type = StorageFileInfo::Type::OTHER;
 
-	info.size = st.st_size;
-	info.mtime = std::chrono::system_clock::from_time_t(st.st_mtime);
-	info.device = st.st_dev;
-	info.inode = st.st_ino;
+	info.size = st.nfs_size;
+	info.mtime = std::chrono::system_clock::from_time_t(st.nfs_mtime);
+	info.device = st.nfs_dev;
+	info.inode = st.nfs_ino;
 }
 
 class NfsGetInfoOperation final : public BlockingNfsOperation {
@@ -282,7 +282,7 @@ protected:
 	}
 
 	void HandleResult(gcc_unused unsigned status, void *data) noexcept override {
-		Copy(info, *(const struct stat *)data);
+		Copy(info, *(const struct nfs_stat_64 *)data);
 	}
 };
 

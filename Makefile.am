@@ -345,6 +345,7 @@ clean-local:
 	rm -rf android/build
 
 libmpd.so: $(filter %.a,$(src_mpd_LDADD)) libmain.a
+	$(AM_V_GEN)
 	$(AM_V_CXXLD)$(CXXLD) -shared -Wl,--no-undefined,-shared,-Bsymbolic -llog -lz -o $@ $(AM_CXXFLAGS) $(CXXFLAGS) $(LDFLAGS) src/libmain_a-Main.o $(src_mpd_LDADD) $(LIBS)
 
 ANDROID_SDK_BUILD_TOOLS_VERSION = 27.0.0
@@ -373,17 +374,19 @@ AIDL_JAVA_FILES = $(patsubst $(srcdir)/android/src/%.aidl,android/build/src/org/
 android/build/src/org/musicpd/IMain.java: android/build/src/org/musicpd/IMainCallback.java
 
 $(AIDL_JAVA_FILES): android/build/src/org/musicpd/%.java: $(srcdir)/android/src/%.aidl
-	@$(MKDIR_P) $(@D)
-	@cp $< $(@D)/
-	$(AIDL) -Iandroid/build/src -oandroid/build/src $(patsubst %.java,%.aidl,$@)
+	$(AM_V_GEN)
+	$(AM_V_at)$(MKDIR_P) $(@D)
+	$(AM_V_at)cp $< $(@D)/
+	$(AM_V_at)$(AIDL) -Iandroid/build/src -oandroid/build/src $(patsubst %.java,%.aidl,$@)
 
 $(ANDROID_XML_RES_COPIES): $(ANDROID_XML_RES)
-	@$(MKDIR_P) $(dir $@)
-	cp $(patsubst android/build/%,$(srcdir)/android/%,$@) $@
+	$(AM_V_at)$(MKDIR_P) $(@D)
+	$(AM_V_at)cp $(patsubst android/build/%,$(srcdir)/android/%,$@) $@
 
 android/build/resources.apk: $(ANDROID_XML_RES_COPIES) android/build/res/drawable/icon.png android/build/res/drawable/notification_icon.png
-	@$(MKDIR_P) android/build/gen
-	$(AAPT) package -f -m --auto-add-overlay \
+	$(AM_V_GEN)
+	$(AM_V_at)$(MKDIR_P) android/build/gen
+	$(AM_V_at)$(AAPT) package -f -m --auto-add-overlay \
 		--custom-package org.musicpd \
 		-M $(srcdir)/android/AndroidManifest.xml \
 		-S android/build/res \
@@ -395,42 +398,50 @@ android/build/resources.apk: $(ANDROID_XML_RES_COPIES) android/build/res/drawabl
 android/build/gen/org/musicpd/R.java: android/build/resources.apk
 
 android/build/classes.dex: $(JAVA_SOURCE_PATHS) $(AIDL_JAVA_FILES) android/build/gen/org/musicpd/R.java
-	@$(MKDIR_P) $(JAVA_CLASSFILES_DIR)
-	$(JAVAC) -source 1.6 -target 1.6 -Xlint:-options \
+	$(AM_V_GEN)
+	$(AM_V_at)$(MKDIR_P) $(JAVA_CLASSFILES_DIR)
+	$(AM_V_at)$(JAVAC) -source 1.6 -target 1.6 -Xlint:-options \
 		-cp $(ANDROID_SDK_PLATFORM_DIR)/android.jar:$(JAVA_CLASSFILES_DIR) \
 		-h android/build/include \
 		-d $(JAVA_CLASSFILES_DIR) $^
-	$(DX) --dex --output $@ $(JAVA_CLASSFILES_DIR)
+	$(AM_V_at)$(DX) --dex --output $@ $(JAVA_CLASSFILES_DIR)
 
 android/build/include/org_musicpd_Bridge.h: android/build/classes.dex
 
 BUILT_SOURCES = android/build/include/org_musicpd_Bridge.h
 
 android/build/lib/$(ANDROID_ABI)/libmpd.so: libmpd.so
-	mkdir -p $(@D)
-	rm -f $@
-	$(STRIP) -o $@ $<
+	$(AM_V_GEN)
+	$(AM_V_at)$(MKDIR_P) $(@D)
+	$(AM_V_at)rm -f $@
+	$(AM_V_at)$(STRIP) -o $@ $<
 
 android/build/res/drawable/icon.png: mpd.svg
-	mkdir -p $(@D)
-	rsvg-convert --width=48 --height=48 $< -o $@
+	$(AM_V_GEN)
+	$(AM_V_at)$(MKDIR_P) $(@D)
+	$(AM_V_at)rsvg-convert --width=48 --height=48 $< -o $@
 
 android/build/res/drawable/notification_icon.png: android/build/res/drawable/icon.png
-	convert $< -colorspace Gray -gamma 2.2 $@
+	$(AM_V_GEN)
+	$(AM_V_at)convert $< -colorspace Gray -gamma 2.2 $@
 
 .DELETE_ON_ERROR: android/build/unsigned.apk
 android/build/unsigned.apk: android/build/classes.dex android/build/resources.apk android/build/lib/$(ANDROID_ABI)/libmpd.so
-	cp android/build/resources.apk $@
-	cd $(dir $@) && zip -q -r $(notdir $@) classes.dex lib
+	$(AM_V_GEN)
+	$(AM_V_at)cp android/build/resources.apk $@
+	$(AM_V_at)cd $(@D) && zip -q -r $(@F) classes.dex lib
 
 android/build/$(APK_NAME)-debug.apk: android/build/unsigned.apk
-	jarsigner -keystore $(HOME)/.android/debug.keystore -storepass android -signedjar $@ $< androiddebugkey
+	$(AM_V_GEN)
+	$(AM_V_at)jarsigner -keystore $(HOME)/.android/debug.keystore -storepass android -signedjar $@ $< androiddebugkey
 
 android/build/$(APK_NAME)-release-unaligned.apk: android/build/unsigned.apk
-	jarsigner -digestalg SHA1 -sigalg MD5withRSA -storepass:env ANDROID_KEYSTORE_PASS -keystore $(ANDROID_KEYSTORE) -signedjar $@ $< $(ANDROID_KEY_ALIAS)
+	$(AM_V_GEN)
+	$(AM_V_at)jarsigner -digestalg SHA1 -sigalg MD5withRSA -storepass:env ANDROID_KEYSTORE_PASS -keystore $(ANDROID_KEYSTORE) -signedjar $@ $< $(ANDROID_KEY_ALIAS)
 
 android/build/$(APK_NAME).apk: android/build/$(APK_NAME)-release-unaligned.apk
-	$(ZIPALIGN) -f 4 $< $@
+	$(AM_V_GEN)
+	$(AM_V_at)$(ZIPALIGN) -f 4 $< $@
 
 endif
 
