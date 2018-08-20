@@ -57,19 +57,19 @@ public:
 	BoundMethod() = default;
 
 	constexpr
-	BoundMethod(void *_instance, function_pointer _function)
+	BoundMethod(void *_instance, function_pointer _function) noexcept
 		:instance_(_instance), function(_function) {}
 
 	/**
 	 * Construct an "undefined" object.  It must not be called,
 	 * and its "bool" operator returns false.
 	 */
-	BoundMethod(std::nullptr_t):function(nullptr) {}
+	BoundMethod(std::nullptr_t) noexcept:function(nullptr) {}
 
 	/**
 	 * Was this object initialized with a valid function pointer?
 	 */
-	operator bool() const {
+	operator bool() const noexcept {
 		return function != nullptr;
 	}
 
@@ -167,7 +167,7 @@ struct BindMethodWrapperGenerator<T, M, method, R(Args...)>
 template<typename T, typename S,
 	 typename MethodWithSignature<T, S>::method_pointer method>
 typename MethodWrapperWithSignature<S>::function_pointer
-MakeBindMethodWrapper()
+MakeBindMethodWrapper() noexcept
 {
 	return BindMethodWrapperGenerator<T, typename MethodWithSignature<T, S>::method_pointer, method, S>::Invoke;
 }
@@ -229,7 +229,7 @@ struct BindFunctionWrapperGenerator<R(Args...), P, function>
 
 template<typename T, typename T::pointer_type function>
 typename MethodWrapperWithSignature<typename T::function_type>::function_pointer
-MakeBindFunctionWrapper()
+MakeBindFunctionWrapper() noexcept
 {
 	return BindFunctionWrapperGenerator<typename T::function_type,
 					    typename T::pointer_type,
@@ -249,7 +249,7 @@ MakeBindFunctionWrapper()
 template<typename T, typename S,
 	 typename BindMethodDetail::MethodWithSignature<T, S>::method_pointer method>
 constexpr BoundMethod<S>
-BindMethod(T &_instance)
+BindMethod(T &_instance) noexcept
 {
 	return BoundMethod<S>(&_instance,
 			      BindMethodDetail::MakeBindMethodWrapper<T, S, method>());
@@ -278,7 +278,7 @@ BindMethod(T &_instance)
  */
 template<typename T, typename T::pointer_type function>
 constexpr BoundMethod<typename T::function_type>
-BindFunction()
+BindFunction() noexcept
 {
 	return BoundMethod<typename T::function_type>(nullptr,
 						      BindMethodDetail::MakeBindFunctionWrapper<T, function>());
