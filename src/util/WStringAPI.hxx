@@ -137,7 +137,7 @@ gcc_pure gcc_nonnull_all
 static inline bool
 StringIsEqual(const wchar_t *str1, const wchar_t *str2) noexcept
 {
-	return wcscmp(str1, str2) == 0;
+	return StringCompare(str1, str2) == 0;
 }
 
 /**

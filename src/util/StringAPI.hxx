@@ -141,7 +141,7 @@ gcc_pure gcc_nonnull_all
 static inline bool
 StringIsEqual(const char *a, const char *b) noexcept
 {
-	return strcmp(a, b) == 0;
+	return StringCompare(a, b) == 0;
 }
 
 /**
