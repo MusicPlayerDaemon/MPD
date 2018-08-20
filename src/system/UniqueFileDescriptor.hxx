@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2017 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2012-2018 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -39,25 +39,26 @@
  */
 class UniqueFileDescriptor : protected FileDescriptor {
 public:
-	UniqueFileDescriptor():FileDescriptor(FileDescriptor::Undefined()) {}
+	UniqueFileDescriptor() noexcept
+		:FileDescriptor(FileDescriptor::Undefined()) {}
 
 protected:
-	explicit UniqueFileDescriptor(int _fd):FileDescriptor(_fd) {
+	explicit UniqueFileDescriptor(int _fd) noexcept:FileDescriptor(_fd) {
 		assert(IsDefined());
 	}
 
 public:
-	explicit UniqueFileDescriptor(FileDescriptor _fd)
+	explicit UniqueFileDescriptor(FileDescriptor _fd) noexcept
 		:FileDescriptor(_fd) {}
 
-	UniqueFileDescriptor(UniqueFileDescriptor &&other)
+	UniqueFileDescriptor(UniqueFileDescriptor &&other) noexcept
 		:FileDescriptor(other.Steal()) {}
 
-	~UniqueFileDescriptor() {
+	~UniqueFileDescriptor() noexcept {
 		Close();
 	}
 
-	UniqueFileDescriptor &operator=(UniqueFileDescriptor &&other) {
+	UniqueFileDescriptor &operator=(UniqueFileDescriptor &&other) noexcept {
 		std::swap(fd, other.fd);
 		return *this;
 	}
@@ -65,7 +66,7 @@ public:
 	/**
 	 * Convert this object to its #FileDescriptor base type.
 	 */
-	const FileDescriptor &ToFileDescriptor() const {
+	const FileDescriptor &ToFileDescriptor() const noexcept {
 		return *this;
 	}
 
@@ -77,7 +78,7 @@ public:
 	using FileDescriptor::Steal;
 
 protected:
-	void Set(int _fd) {
+	void Set(int _fd) noexcept {
 		assert(!IsDefined());
 		assert(_fd >= 0);
 
@@ -91,7 +92,7 @@ public:
 #ifndef _WIN32
 	using FileDescriptor::OpenNonBlocking;
 
-	static bool CreatePipe(UniqueFileDescriptor &r, UniqueFileDescriptor &w) {
+	static bool CreatePipe(UniqueFileDescriptor &r, UniqueFileDescriptor &w) noexcept {
 		return FileDescriptor::CreatePipe(r, w);
 	}
 
@@ -100,7 +101,7 @@ public:
 	using FileDescriptor::Duplicate;
 	using FileDescriptor::CheckDuplicate;
 
-	static bool CreatePipe(FileDescriptor &r, FileDescriptor &w);
+	static bool CreatePipe(FileDescriptor &r, FileDescriptor &w) noexcept;
 #endif
 
 	using FileDescriptor::EnableCloseOnExec;
@@ -118,7 +119,7 @@ public:
 	using FileDescriptor::CreateInotify;
 #endif
 
-	bool Close() {
+	bool Close() noexcept {
 		return IsDefined() && FileDescriptor::Close();
 	}
 

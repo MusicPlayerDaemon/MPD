@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2017 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2012-2018 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -59,13 +59,13 @@ protected:
 
 public:
 	FileDescriptor() = default;
-	explicit constexpr FileDescriptor(int _fd):fd(_fd) {}
+	explicit constexpr FileDescriptor(int _fd) noexcept:fd(_fd) {}
 
-	constexpr bool operator==(FileDescriptor other) const {
+	constexpr bool operator==(FileDescriptor other) const noexcept {
 		return fd == other.fd;
 	}
 
-	constexpr bool IsDefined() const {
+	constexpr bool IsDefined() const noexcept {
 		return fd >= 0;
 	}
 
@@ -93,7 +93,7 @@ public:
 	 * Returns the file descriptor.  This may only be called if
 	 * IsDefined() returns true.
 	 */
-	constexpr int Get() const {
+	constexpr int Get() const noexcept {
 		return fd;
 	}
 
@@ -109,7 +109,7 @@ public:
 		fd = -1;
 	}
 
-	static constexpr FileDescriptor Undefined() {
+	static constexpr FileDescriptor Undefined() noexcept {
 		return FileDescriptor(-1);
 	}
 
