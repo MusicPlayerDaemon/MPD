@@ -220,6 +220,32 @@ SocketDescriptor::GetError()
 		: errno;
 }
 
+size_t
+SocketDescriptor::GetOption(int level, int name,
+			    void *value, size_t size) const
+{
+	assert(IsDefined());
+
+	socklen_t size2 = size;
+	return getsockopt(fd, level, name, (char *)value, &size2) == 0
+		? size2
+		: 0;
+}
+
+#ifdef HAVE_STRUCT_UCRED
+
+struct ucred
+SocketDescriptor::GetPeerCredentials() const noexcept
+{
+	struct ucred cred;
+	if (GetOption(SOL_SOCKET, SO_PEERCRED,
+		      &cred, sizeof(cred)) < sizeof(cred))
+		cred.pid = -1;
+	return cred;
+}
+
+#endif
+
 #ifdef _WIN32
 
 bool

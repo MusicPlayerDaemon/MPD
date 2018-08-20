@@ -150,6 +150,20 @@ public:
 
 	int GetError();
 
+	/**
+	 * @return the value size or 0 on error
+	 */
+	size_t GetOption(int level, int name, void *value, size_t size) const;
+
+#ifdef HAVE_STRUCT_UCRED
+	/**
+	 * Receive peer credentials (SO_PEERCRED).  On error, the pid
+	 * is -1.
+	 */
+	gcc_pure
+	struct ucred GetPeerCredentials() const noexcept;
+#endif
+
 	bool SetOption(int level, int name, const void *value, size_t size);
 
 	bool SetBoolOption(int level, int name, bool _value) {
