@@ -48,7 +48,7 @@
 class IPv4Address {
 	struct sockaddr_in address;
 
-#ifdef WIN32
+#ifdef _WIN32
 	static constexpr struct in_addr ConstructInAddr(uint8_t a, uint8_t b,
 							uint8_t c, uint8_t d) noexcept {
 		return {{{ a, b, c, d }}};
