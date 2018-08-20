@@ -168,8 +168,8 @@ public:
 	/**
 	 * Duplicate the file descriptor onto the given file descriptor.
 	 */
-	bool Duplicate(int new_fd) const noexcept {
-		return ::dup2(Get(), new_fd) == 0;
+	bool Duplicate(FileDescriptor new_fd) const noexcept {
+		return ::dup2(Get(), new_fd.Get()) == 0;
 	}
 
 	/**
@@ -178,7 +178,7 @@ public:
 	 * this method to inject file descriptors into a new child
 	 * process, to be used by a newly executed program.
 	 */
-	bool CheckDuplicate(int new_fd) noexcept;
+	bool CheckDuplicate(FileDescriptor new_fd) noexcept;
 #endif
 
 #ifdef __linux__
