@@ -56,6 +56,21 @@ ThrowException(std::exception_ptr ep)
 }
 
 /**
+ * Create a nested exception, wrapping #ep inside the
+ * std::current_exception().
+ */
+template<typename T>
+inline std::exception_ptr
+NestCurrentException(T &&t) noexcept
+{
+	try {
+		std::throw_with_nested(std::forward<T>(t));
+	} catch (...) {
+		return std::current_exception();
+	}
+}
+
+/**
  * Create a nested exception, wrapping #ep inside (a copy of) #t.
  */
 template<typename T>
@@ -65,11 +80,7 @@ NestException(std::exception_ptr ep, T &&t) noexcept
 	try {
 		std::rethrow_exception(ep);
 	} catch (...) {
-		try {
-			std::throw_with_nested(std::forward<T>(t));
-		} catch (...) {
-			return std::current_exception();
-		}
+		return NestCurrentException(std::forward<T>(t));
 	}
 }
 
