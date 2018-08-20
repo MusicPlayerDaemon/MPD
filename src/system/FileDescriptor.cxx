@@ -115,15 +115,33 @@ FileDescriptor::OpenNonBlocking(const char *pathname) noexcept
 
 #endif
 
+#ifdef __linux__
+
+bool
+FileDescriptor::CreatePipe(FileDescriptor &r, FileDescriptor &w,
+			   int flags) noexcept
+{
+	int fds[2];
+	const int result = pipe2(fds, flags);
+	if (result < 0)
+		return false;
+
+	r = FileDescriptor(fds[0]);
+	w = FileDescriptor(fds[1]);
+	return true;
+}
+
+#endif
+
 bool
 FileDescriptor::CreatePipe(FileDescriptor &r, FileDescriptor &w) noexcept
 {
+#ifdef __linux__
+	return CreatePipe(r, w, O_CLOEXEC);
+#else
 	int fds[2];
 
-#ifdef __linux__
-	const int flags = O_CLOEXEC;
-	const int result = pipe2(fds, flags);
-#elif defined(_WIN32)
+#ifdef _WIN32
 	const int result = _pipe(fds, 512, _O_BINARY);
 #else
 	const int result = pipe(fds);
@@ -135,6 +153,7 @@ FileDescriptor::CreatePipe(FileDescriptor &r, FileDescriptor &w) noexcept
 	r = FileDescriptor(fds[0]);
 	w = FileDescriptor(fds[1]);
 	return true;
+#endif
 }
 
 #ifndef _WIN32
@@ -143,27 +162,16 @@ bool
 FileDescriptor::CreatePipeNonBlock(FileDescriptor &r,
 				   FileDescriptor &w) noexcept
 {
-	int fds[2];
-
 #ifdef __linux__
-	const int flags = O_CLOEXEC|O_NONBLOCK;
-	const int result = pipe2(fds, flags);
+	return CreatePipe(r, w, O_CLOEXEC|O_NONBLOCK);
 #else
-	const int result = pipe(fds);
-#endif
-
-	if (result < 0)
+	if (!CreatePipe(r, w))
 		return false;
 
-	r = FileDescriptor(fds[0]);
-	w = FileDescriptor(fds[1]);
-
-#ifndef __linux__
 	r.SetNonBlocking();
 	w.SetNonBlocking();
-#endif
-
 	return true;
+#endif
 }
 
 void
