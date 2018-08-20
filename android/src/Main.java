@@ -156,38 +156,6 @@ public class Main extends Service implements Runnable {
 		sendMessage(MSG_SEND_STATUS, mStatus, 0, mError);
 	}
 
-	@TargetApi(Build.VERSION_CODES.GINGERBREAD)
-	private Notification buildNotificationGB(int title, int text, int icon, PendingIntent contentIntent) {
-		final Notification notification = new Notification();
-		notification.icon = R.drawable.icon;
-		notification.contentView = new RemoteViews(getPackageName(), R.layout.custom_notification_gb);
-		notification.contentView.setImageViewResource(R.id.image, icon);
-		notification.contentView.setTextViewText(R.id.title, getText(title));
-		notification.contentView.setTextViewText(R.id.text, getText(text));
-		notification.contentIntent = contentIntent;
-		return notification;
-	}
-
-	@TargetApi(Build.VERSION_CODES.HONEYCOMB)
-	private Notification buildNotificationHC(int title, int text, int icon, PendingIntent contentIntent) {
-		return new Notification.Builder(this)
-				.setContentTitle(getText(title))
-				.setContentText(getText(text))
-				.setSmallIcon(icon)
-				.setContentIntent(contentIntent)
-				.getNotification();
-	}
-
-	@TargetApi(Build.VERSION_CODES.JELLY_BEAN)
-	private Notification buildNotificationJB(int title, int text, int icon, PendingIntent contentIntent) {
-		return new Notification.Builder(this)
-				.setContentTitle(getText(title))
-				.setContentText(getText(text))
-				.setSmallIcon(icon)
-				.setContentIntent(contentIntent)
-				.build();
-	}
-
 	private void start() {
 		if (mThread != null)
 			return;
@@ -200,26 +168,12 @@ public class Main extends Service implements Runnable {
 		final PendingIntent contentIntent = PendingIntent.getActivity(this, 0,
 				mainIntent, PendingIntent.FLAG_CANCEL_CURRENT);
 
-		Notification notification;
-
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN)
-			notification = buildNotificationJB(
-					R.string.notification_title_mpd_running,
-					R.string.notification_text_mpd_running,
-					R.drawable.notification_icon,
-					contentIntent);
-		else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
-			notification = buildNotificationHC(
-					R.string.notification_title_mpd_running,
-					R.string.notification_text_mpd_running,
-					R.drawable.notification_icon,
-					contentIntent);
-		else
-			notification = buildNotificationGB(
-					R.string.notification_title_mpd_running,
-					R.string.notification_text_mpd_running,
-					R.drawable.notification_icon,
-					contentIntent);
+		Notification notification = new Notification.Builder(this)
+			.setContentTitle(getText(R.string.notification_title_mpd_running))
+			.setContentText(getText(R.string.notification_text_mpd_running))
+			.setSmallIcon(R.drawable.notification_icon)
+			.setContentIntent(contentIntent)
+			.build();
 
 		startForeground(R.string.notification_title_mpd_running, notification);
 		startService(new Intent(this, Main.class));
