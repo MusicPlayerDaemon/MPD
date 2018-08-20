@@ -126,11 +126,14 @@ class IPv4Address {
 public:
 	IPv4Address() = default;
 
+	constexpr IPv4Address(const struct sockaddr_in &_address) noexcept
+		:address(_address) {}
+
 	/**
 	 * @param port the port number in host byte order
 	 */
 	constexpr IPv4Address(struct in_addr _address, uint16_t port) noexcept
-		:address(Construct(_address, port)) {}
+		:IPv4Address(Construct(_address, port)) {}
 
 	/**
 	 * @param port the port number in host byte order
