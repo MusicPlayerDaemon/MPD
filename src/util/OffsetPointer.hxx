@@ -27,60 +27,24 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CAST_HXX
-#define CAST_HXX
-
-#include "OffsetPointer.hxx"
-#include "Compiler.h"
+#pragma once
 
 #include <stddef.h>
 
-template<typename T, typename U>
-static inline constexpr T *
-OffsetCast(U *p, ptrdiff_t offset)
+/**
+ * Offset the given pointer by the specified number of bytes.
+ */
+static inline constexpr void *
+OffsetPointer(void *p, ptrdiff_t offset)
 {
-	return reinterpret_cast<T *>(OffsetPointer(p, offset));
-}
-
-template<typename T, typename U>
-static inline constexpr T *
-OffsetCast(const U *p, ptrdiff_t offset)
-{
-	return reinterpret_cast<const T *>(OffsetPointer(p, offset));
-}
-
-template<class C, class A>
-static constexpr inline ptrdiff_t
-ContainerAttributeOffset(const C *null_c, const A C::*p)
-{
-	return ptrdiff_t((const char *)null_c - (const char *)&(null_c->*p));
-}
-
-template<class C, class A>
-static constexpr inline ptrdiff_t
-ContainerAttributeOffset(const A C::*p)
-{
-	return ContainerAttributeOffset<C, A>(nullptr, p);
+	return (char *)p + offset;
 }
 
 /**
- * Cast the given pointer to a struct member to its parent structure.
+ * Offset the given pointer by the specified number of bytes.
  */
-template<class C, class A>
-static inline constexpr C &
-ContainerCast(A &a, const A C::*member)
+static inline constexpr const void *
+OffsetPointer(const void *p, ptrdiff_t offset)
 {
-	return *OffsetCast<C, A>(&a, ContainerAttributeOffset<C, A>(member));
+	return (const char *)p + offset;
 }
-
-/**
- * Cast the given pointer to a struct member to its parent structure.
- */
-template<class C, class A>
-static inline constexpr const C &
-ContainerCast(const A &a, const A C::*member)
-{
-	return *OffsetCast<const C, const A>(&a, ContainerAttributeOffset<C, A>(member));
-}
-
-#endif

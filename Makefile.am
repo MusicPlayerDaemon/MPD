@@ -513,6 +513,7 @@ libutil_a_SOURCES = \
 	src/util/Chrono.hxx \
 	src/util/Clamp.hxx \
 	src/util/DeleteDisposer.hxx \
+	src/util/OffsetPointer.hxx \
 	src/util/Alloc.cxx src/util/Alloc.hxx \
 	src/util/AllocatedArray.hxx \
 	src/util/VarSize.hxx \
