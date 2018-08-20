@@ -62,6 +62,13 @@ public:
 	}
 #endif
 
+	/**
+	 * Cast a value reference to the containing Manual instance.
+	 */
+	static constexpr Manual<T> &Cast(T &value) {
+		return reinterpret_cast<Manual<T> &>(value);
+	}
+
 	template<typename... Args>
 	void Construct(Args&&... args) {
 		assert(!initialized);
