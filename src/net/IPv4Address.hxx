@@ -61,6 +61,9 @@ class IPv4Address {
 		return (struct in_addr){{.S_addr=x}};
 	}
 
+	/**
+	 * @param x the 32 bit IP address in host byte order
+	 */
 	static constexpr struct in_addr ConstructInAddr(uint32_t x) noexcept {
 		return ConstructInAddr(x >> 24, x >> 16, x >> 8, x);
 	}
@@ -82,6 +85,9 @@ class IPv4Address {
 		return { x };
 	}
 
+	/**
+	 * @param x the 32 bit IP address in host byte order
+	 */
 	static constexpr struct in_addr ConstructInAddr(uint32_t x) noexcept {
 		return ConstructInAddrBE(ToBE32(x));
 	}
@@ -92,6 +98,9 @@ class IPv4Address {
 	}
 #endif
 
+	/**
+	 * @param port the port number in host byte order
+	 */
 	static constexpr struct sockaddr_in Construct(struct in_addr address,
 						      uint16_t port) noexcept {
 		return {
@@ -105,6 +114,10 @@ class IPv4Address {
 		};
 	}
 
+	/**
+	 * @param x the 32 bit IP address in host byte order
+	 * @param port the port number in host byte order
+	 */
 	static constexpr struct sockaddr_in Construct(uint32_t address,
 						      uint16_t port) noexcept {
 		return Construct(ConstructInAddr(address), port);
@@ -113,18 +126,28 @@ class IPv4Address {
 public:
 	IPv4Address() = default;
 
+	/**
+	 * @param port the port number in host byte order
+	 */
 	constexpr IPv4Address(struct in_addr _address, uint16_t port) noexcept
 		:address(Construct(_address, port)) {}
 
+	/**
+	 * @param port the port number in host byte order
+	 */
 	constexpr IPv4Address(uint8_t a, uint8_t b, uint8_t c,
 			      uint8_t d, uint16_t port) noexcept
 		:IPv4Address(ConstructInAddr(a, b, c, d), port) {}
 
+	/**
+	 * @param port the port number in host byte order
+	 */
 	constexpr explicit IPv4Address(uint16_t port) noexcept
 		:IPv4Address(ConstructInAddr(INADDR_ANY), port) {}
 
 	/**
-	 * Convert a #SocketAddress to a #IPv4Address.  Its address family must be AF_INET.
+	 * Construct with data copied from a #SocketAddress.  Its
+	 * address family must be AF_INET.
 	 */
 	explicit IPv4Address(SocketAddress src) noexcept;
 
@@ -145,10 +168,16 @@ public:
 		return address.sin_family != AF_UNSPEC;
 	}
 
+	/**
+	 * @return the port number in host byte order
+	 */
 	constexpr uint16_t GetPort() const noexcept {
 		return FromBE16(address.sin_port);
 	}
 
+	/**
+	 * @param port the port number in host byte order
+	 */
 	void SetPort(uint16_t port) noexcept {
 		address.sin_port = ToBE16(port);
 	}
