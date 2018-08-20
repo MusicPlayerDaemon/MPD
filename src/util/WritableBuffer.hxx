@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2017 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright (C) 2013-2018 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -30,6 +30,7 @@
 #ifndef WRITABLE_BUFFER_HXX
 #define WRITABLE_BUFFER_HXX
 
+#include "ConstBuffer.hxx"
 #include "Compiler.h"
 
 #include <cstddef>
@@ -59,6 +60,10 @@ struct WritableBuffer<void> {
 
 	constexpr WritableBuffer(pointer_type _data, size_type _size)
 		:data(_data), size(_size) {}
+
+	constexpr operator ConstBuffer<void>() const noexcept {
+		return {data, size};
+	}
 
 	constexpr bool IsNull() const {
 		return data == nullptr;
@@ -112,6 +117,10 @@ struct WritableBuffer {
 	template<size_type _size>
 	constexpr WritableBuffer(T (&_data)[_size])
 		:data(_data), size(_size) {}
+
+	constexpr operator ConstBuffer<T>() const noexcept {
+		return {data, size};
+	}
 
 	/**
 	 * Cast a WritableBuffer<void> to a WritableBuffer<T>,
