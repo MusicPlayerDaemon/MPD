@@ -707,7 +707,7 @@ MPD_ENABLE_AUTO_PKG_LIB(smbclient, SMBCLIENT, [smbclient >= 0.2],
 	[smbclient input plugin], [libsmbclient not found])
 
 dnl ----------------------------------- NFS -----------------------------
-MPD_ENABLE_AUTO_PKG(nfs, NFS, [libnfs],
+MPD_ENABLE_AUTO_PKG(nfs, NFS, [libnfs >= 1.9.5],
 	[NFS input plugin], [libnfs not found])
 
 dnl --------------------------------- Soundcloud ------------------------------
