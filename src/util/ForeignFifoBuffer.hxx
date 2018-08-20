@@ -61,19 +61,19 @@ protected:
 	T *data;
 
 public:
-	explicit constexpr ForeignFifoBuffer(std::nullptr_t n)
+	explicit constexpr ForeignFifoBuffer(std::nullptr_t n) noexcept
 		:capacity(0), data(n) {}
 
-	constexpr ForeignFifoBuffer(T *_data, size_type _capacity)
+	constexpr ForeignFifoBuffer(T *_data, size_type _capacity) noexcept
 		:capacity(_capacity), data(_data) {}
 
-	ForeignFifoBuffer(ForeignFifoBuffer &&src)
+	ForeignFifoBuffer(ForeignFifoBuffer &&src) noexcept
 		:head(src.head), tail(src.tail),
 		 capacity(src.capacity), data(src.data) {
 		src.SetNull();
 	}
 
-	ForeignFifoBuffer &operator=(ForeignFifoBuffer &&src) {
+	ForeignFifoBuffer &operator=(ForeignFifoBuffer &&src) noexcept {
 		head = src.head;
 		tail = src.tail;
 		capacity = src.capacity;
@@ -82,36 +82,36 @@ public:
 		return *this;
 	}
 
-	void Swap(ForeignFifoBuffer<T> &other) {
+	void Swap(ForeignFifoBuffer<T> &other) noexcept {
 		std::swap(head, other.head);
 		std::swap(tail, other.tail);
 		std::swap(capacity, other.capacity);
 		std::swap(data, other.data);
 	}
 
-	constexpr bool IsNull() const {
+	constexpr bool IsNull() const noexcept {
 		return data == nullptr;
 	}
 
-	constexpr bool IsDefined() const {
+	constexpr bool IsDefined() const noexcept {
 		return !IsNull();
 	}
 
-	T *GetBuffer() {
+	T *GetBuffer() noexcept {
 		return data;
 	}
 
-	constexpr size_type GetCapacity() const {
+	constexpr size_type GetCapacity() const noexcept {
 		return capacity;
 	}
 
-	void SetNull() {
+	void SetNull() noexcept {
 		head = tail = 0;
 		capacity = 0;
 		data = nullptr;
 	}
 
-	void SetBuffer(T *_data, size_type _capacity) {
+	void SetBuffer(T *_data, size_type _capacity) noexcept {
 		assert(_data != nullptr);
 		assert(_capacity > 0);
 
@@ -120,7 +120,7 @@ public:
 		data = _data;
 	}
 
-	void MoveBuffer(T *new_data, size_type new_capacity) {
+	void MoveBuffer(T *new_data, size_type new_capacity) noexcept {
 		assert(new_capacity >= tail - head);
 
 		std::move(data + head, data + tail, new_data);
@@ -130,15 +130,15 @@ public:
 		head = 0;
 	}
 
-	void Clear() {
+	void Clear() noexcept {
 		head = tail = 0;
 	}
 
-	constexpr bool empty() const {
+	constexpr bool empty() const noexcept {
 		return head == tail;
 	}
 
-	constexpr bool IsFull() const {
+	constexpr bool IsFull() const noexcept {
 		return head == 0 && tail == capacity;
 	}
 
@@ -146,7 +146,7 @@ public:
 	 * Prepares writing.  Returns a buffer range which may be written.
 	 * When you are finished, call Append().
 	 */
-	Range Write() {
+	Range Write() noexcept {
 		if (empty())
 			Clear();
 		else if (tail == capacity)
@@ -155,7 +155,7 @@ public:
 		return Range(data + tail, capacity - tail);
 	}
 
-	bool WantWrite(size_type n) {
+	bool WantWrite(size_type n) noexcept {
 		if (tail + n <= capacity)
 			/* enough space after the tail */
 			return true;
@@ -174,7 +174,7 @@ public:
 	 * Expands the tail of the buffer, after data has been written to
 	 * the buffer returned by Write().
 	 */
-	void Append(size_type n) {
+	void Append(size_type n) noexcept {
 		assert(tail <= capacity);
 		assert(n <= capacity);
 		assert(tail + n <= capacity);
@@ -182,7 +182,7 @@ public:
 		tail += n;
 	}
 
-	constexpr size_type GetAvailable() const {
+	constexpr size_type GetAvailable() const noexcept {
 		return tail - head;
 	}
 
@@ -190,14 +190,14 @@ public:
 	 * Return a buffer range which may be read.  The buffer pointer is
 	 * writable, to allow modifications while parsing.
 	 */
-	constexpr Range Read() const {
+	constexpr Range Read() const noexcept {
 		return Range(data + head, tail - head);
 	}
 
 	/**
 	 * Marks a chunk as consumed.
 	 */
-	void Consume(size_type n) {
+	void Consume(size_type n) noexcept {
 		assert(tail <= capacity);
 		assert(head <= tail);
 		assert(n <= tail);
@@ -206,7 +206,7 @@ public:
 		head += n;
 	}
 
-	size_type Read(pointer_type p, size_type n) {
+	size_type Read(pointer_type p, size_type n) noexcept {
 		auto range = Read();
 		if (n > range.size)
 			n = range.size;
@@ -220,7 +220,7 @@ public:
 	 *
 	 * @return the number of items moved
 	 */
-	size_type MoveFrom(ForeignFifoBuffer<T> &src) {
+	size_type MoveFrom(ForeignFifoBuffer<T> &src) noexcept {
 		auto r = src.Read();
 		auto w = Write();
 		size_t n = std::min(r.size, w.size);
@@ -232,7 +232,7 @@ public:
 	}
 
 protected:
-	void Shift() {
+	void Shift() noexcept {
 		if (head == 0)
 			return;
 
