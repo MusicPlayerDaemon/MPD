@@ -54,6 +54,13 @@ class IPv4Address {
 		return {{{ a, b, c, d }}};
 	}
 
+	/**
+	 * @param x the 32 bit IP address in network byte order
+	 */
+	static constexpr struct in_addr ConstructInAddrBE(uint32_t x) noexcept {
+		return (struct in_addr){{.S_addr=x}};
+	}
+
 	static constexpr struct in_addr ConstructInAddr(uint32_t x) noexcept {
 		return ConstructInAddr(x >> 24, x >> 16, x >> 8, x);
 	}
@@ -68,8 +75,15 @@ class IPv4Address {
 		return ToBE32((a << 24) | (b << 16) | (c << 8) | d);
 	}
 
+	/**
+	 * @param x the 32 bit IP address in network byte order
+	 */
+	static constexpr struct in_addr ConstructInAddrBE(uint32_t x) noexcept {
+		return { x };
+	}
+
 	static constexpr struct in_addr ConstructInAddr(uint32_t x) noexcept {
-		return { ToBE32(x) };
+		return ConstructInAddrBE(ToBE32(x));
 	}
 
 	static constexpr struct in_addr ConstructInAddr(uint8_t a, uint8_t b,
