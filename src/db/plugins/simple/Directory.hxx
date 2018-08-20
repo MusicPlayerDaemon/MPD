@@ -21,7 +21,7 @@
 #define MPD_DIRECTORY_HXX
 
 #include "check.h"
-#include "Compiler.h"
+#include "util/Compiler.h"
 #include "db/Visitor.hxx"
 #include "db/PlaylistVector.hxx"
 #include "Song.hxx"

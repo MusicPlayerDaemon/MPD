@@ -22,7 +22,7 @@
 
 #include "check.h"
 #include "pcm/SampleFormat.hxx"
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 #include <alsa/asoundlib.h>
 

@@ -20,7 +20,7 @@
 #ifndef MPD_VOLUME_HXX
 #define MPD_VOLUME_HXX
 
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 class MultipleOutputs;
 class BufferedOutputStream;

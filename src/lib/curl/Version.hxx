@@ -30,7 +30,7 @@
 #ifndef CURL_VERSION_HXX
 #define CURL_VERSION_HXX
 
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 gcc_const
 bool

@@ -21,7 +21,7 @@
 #define MPD_LOG_HXX
 
 #include "LogLevel.hxx"
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 #include <exception>
 

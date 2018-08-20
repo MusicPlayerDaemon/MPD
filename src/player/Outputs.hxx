@@ -22,7 +22,7 @@
 
 #include "MusicChunkPtr.hxx"
 #include "Chrono.hxx"
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 struct AudioFormat;
 struct MusicChunk;

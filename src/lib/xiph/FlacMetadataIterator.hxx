@@ -20,7 +20,7 @@
 #ifndef MPD_FLAC_METADATA_ITERATOR_HXX
 #define MPD_FLAC_METADATA_ITERATOR_HXX
 
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 #include <FLAC/metadata.h>
 

@@ -20,7 +20,7 @@
 #ifndef MPD_TAG_SET_HXX
 #define MPD_TAG_SET_HXX
 
-#include "Compiler.h"
+#include "util/Compiler.h"
 #include "Tag.hxx"
 
 #include <set>

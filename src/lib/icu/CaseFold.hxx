@@ -25,7 +25,7 @@
 #if defined(HAVE_ICU) || defined(_WIN32)
 #define HAVE_ICU_CASE_FOLD
 
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 template<typename T> class AllocatedString;
 

@@ -32,7 +32,7 @@
 
 #include "check.h"
 #include "OutputStream.hxx"
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 #include <zlib.h>
 

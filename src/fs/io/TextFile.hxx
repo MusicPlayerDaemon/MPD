@@ -21,7 +21,7 @@
 #define MPD_TEXT_FILE_HXX
 
 #include "check.h"
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 class Path;
 class FileReader;

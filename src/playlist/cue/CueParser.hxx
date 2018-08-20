@@ -23,7 +23,7 @@
 #include "check.h"
 #include "song/DetachedSong.hxx"
 #include "tag/Builder.hxx"
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 #include <string>
 #include <memory>

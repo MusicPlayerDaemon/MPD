@@ -20,7 +20,7 @@
 #ifndef MPD_ANDROID_ENVIRONMENT_HXX
 #define MPD_ANDROID_ENVIRONMENT_HXX
 
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 #include <jni.h>
 

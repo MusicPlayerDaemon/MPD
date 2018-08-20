@@ -21,7 +21,7 @@
 #define MPD_FS_ALLOCATED_PATH_HXX
 
 #include "check.h"
-#include "Compiler.h"
+#include "util/Compiler.h"
 #include "Traits.hxx"
 #include "Path.hxx"
 

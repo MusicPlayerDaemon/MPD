@@ -1,7 +1,7 @@
 #include "config.h"
 #include "protocol/ArgParser.hxx"
 #include "protocol/Ack.hxx"
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 #include <cppunit/TestFixture.h>
 #include <cppunit/extensions/TestFactoryRegistry.h>

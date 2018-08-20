@@ -22,7 +22,7 @@
 #include "config.h"
 #include "mixer/MixerInternal.hxx"
 #include "output/plugins/RoarOutputPlugin.hxx"
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 class RoarMixer final : public Mixer {
 	/** the base mixer class */

@@ -21,7 +21,7 @@
 #define MPD_AND_SONG_FILTER_HXX
 
 #include "ISongFilter.hxx"
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 #include <list>
 

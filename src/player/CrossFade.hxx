@@ -20,7 +20,7 @@
 #ifndef MPD_CROSSFADE_HXX
 #define MPD_CROSSFADE_HXX
 
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 struct AudioFormat;
 class SignedSongTime;

@@ -18,7 +18,7 @@
  */
 
 #include "Interface.hxx"
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 #include <stdexcept>
 

@@ -22,7 +22,7 @@
 
 #include "system/ByteOrder.hxx"
 #include "input/Offset.hxx"
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 #include <stdint.h>
 

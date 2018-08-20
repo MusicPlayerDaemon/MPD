@@ -20,7 +20,7 @@
 #ifndef MPD_DECODER_BUFFER_HXX
 #define MPD_DECODER_BUFFER_HXX
 
-#include "Compiler.h"
+#include "util/Compiler.h"
 #include "util/DynamicFifoBuffer.hxx"
 #include "util/ConstBuffer.hxx"
 

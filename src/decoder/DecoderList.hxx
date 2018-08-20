@@ -20,7 +20,7 @@
 #ifndef MPD_DECODER_LIST_HXX
 #define MPD_DECODER_LIST_HXX
 
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 struct ConfigData;
 struct DecoderPlugin;

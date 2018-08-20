@@ -32,7 +32,7 @@
 #include "song/UriSongFilter.hxx"
 #include "song/BaseSongFilter.hxx"
 #include "song/TagSongFilter.hxx"
-#include "Compiler.h"
+#include "util/Compiler.h"
 #include "config/Block.hxx"
 #include "tag/Builder.hxx"
 #include "tag/Tag.hxx"

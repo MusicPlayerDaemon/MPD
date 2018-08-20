@@ -22,7 +22,7 @@
 
 #include "check.h"
 #include "Remove.hxx"
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 struct Directory;
 struct Song;

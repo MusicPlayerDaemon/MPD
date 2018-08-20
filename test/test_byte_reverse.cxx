@@ -19,7 +19,7 @@
 
 #include "util/ByteReverse.hxx"
 #include "util/Macros.hxx"
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 #include <cppunit/TestFixture.h>
 #include <cppunit/extensions/HelperMacros.h>

@@ -21,7 +21,7 @@
 #define MPD_TAG_PARSE_NAME_HXX
 
 #include "Type.h"
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 /**
  * Parse the string, and convert it into a #TagType.  Returns

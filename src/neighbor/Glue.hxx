@@ -21,7 +21,7 @@
 #define MPD_NEIGHBOR_ALL_HXX
 
 #include "check.h"
-#include "Compiler.h"
+#include "util/Compiler.h"
 #include "thread/Mutex.hxx"
 
 #include <forward_list>

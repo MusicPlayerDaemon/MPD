@@ -25,7 +25,7 @@
 #include "Queue.hxx"
 #include "event/DeferEvent.hxx"
 #include "thread/Thread.hxx"
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 class SimpleDatabase;
 class DatabaseListener;

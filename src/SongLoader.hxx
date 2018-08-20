@@ -21,7 +21,7 @@
 #define MPD_SONG_LOADER_HXX
 
 #include "check.h"
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 #include <cstddef>
 

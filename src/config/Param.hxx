@@ -21,7 +21,7 @@
 #define MPD_CONFIG_PARAM_HXX
 
 #include "check.h"
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 #include <string>
 

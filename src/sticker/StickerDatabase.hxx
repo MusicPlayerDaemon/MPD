@@ -43,7 +43,7 @@
 #define MPD_STICKER_DATABASE_HXX
 
 #include "Match.hxx"
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 #include <string>
 

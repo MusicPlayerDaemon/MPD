@@ -20,7 +20,7 @@
 #ifndef MPD_UPNP_UTIL_HXX
 #define MPD_UPNP_UTIL_HXX
 
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 #include <string>
 #include <list>

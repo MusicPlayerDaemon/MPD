@@ -22,7 +22,7 @@
 
 #include "MusicChunkPtr.hxx"
 #include "thread/Mutex.hxx"
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 #ifndef NDEBUG
 #include "AudioFormat.hxx"

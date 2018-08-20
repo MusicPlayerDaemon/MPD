@@ -28,7 +28,7 @@
 
 #include "check.h"
 #include "thread/Mutex.hxx"
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 #include <assert.h>
 

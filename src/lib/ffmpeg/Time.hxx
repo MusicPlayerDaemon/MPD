@@ -21,7 +21,7 @@
 #define MPD_FFMPEG_TIME_HXX
 
 #include "Chrono.hxx"
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 extern "C" {
 #include <libavutil/avutil.h>

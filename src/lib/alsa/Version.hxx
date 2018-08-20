@@ -20,7 +20,7 @@
 #ifndef MPD_ALSA_VERSION_HXX
 #define MPD_ALSA_VERSION_HXX
 
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 #include <stdint.h>
 

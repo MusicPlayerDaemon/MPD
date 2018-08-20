@@ -21,7 +21,7 @@
 #define MPD_FATAL_ERROR_HXX
 
 #include "check.h"
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 #ifdef _WIN32
 #include <windef.h>

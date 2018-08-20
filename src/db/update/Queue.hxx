@@ -21,7 +21,7 @@
 #define MPD_UPDATE_QUEUE_HXX
 
 #include "check.h"
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 #include <string>
 #include <list>

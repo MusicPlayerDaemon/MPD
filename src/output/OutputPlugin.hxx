@@ -20,7 +20,7 @@
 #ifndef MPD_OUTPUT_PLUGIN_HXX
 #define MPD_OUTPUT_PLUGIN_HXX
 
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 #include <chrono>
 

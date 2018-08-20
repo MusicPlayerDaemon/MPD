@@ -21,7 +21,7 @@
 #define MPD_TAG_VORBIS_COMMENT_HXX
 
 #include "check.h"
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 /**
  * Checks if the specified name matches the entry's name, and if yes,

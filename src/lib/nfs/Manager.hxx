@@ -22,7 +22,7 @@
 
 #include "check.h"
 #include "Connection.hxx"
-#include "Compiler.h"
+#include "util/Compiler.h"
 #include "event/IdleMonitor.hxx"
 
 #include <boost/intrusive/set.hpp>

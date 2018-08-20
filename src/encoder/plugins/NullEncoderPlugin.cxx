@@ -21,7 +21,7 @@
 #include "NullEncoderPlugin.hxx"
 #include "../EncoderAPI.hxx"
 #include "util/DynamicFifoBuffer.hxx"
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 class NullEncoder final : public Encoder {
 	DynamicFifoBuffer<uint8_t> buffer;

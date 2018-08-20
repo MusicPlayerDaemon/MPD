@@ -23,7 +23,7 @@
 #include "config.h"
 #include "mixer/MixerInternal.hxx"
 #include "output/plugins/HaikuOutputPlugin.hxx"
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 #include "util/RuntimeError.hxx"
 

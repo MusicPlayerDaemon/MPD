@@ -20,7 +20,7 @@
 #ifndef MPD_LIGHT_DIRECTORY_HXX
 #define MPD_LIGHT_DIRECTORY_HXX
 
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 #include <string>
 

@@ -20,7 +20,7 @@
 #ifndef MPD_ID_TABLE_HXX
 #define MPD_ID_TABLE_HXX
 
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 #include <algorithm>
 

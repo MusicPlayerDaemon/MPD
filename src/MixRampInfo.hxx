@@ -21,7 +21,7 @@
 #define MPD_MIX_RAMP_INFO_HXX
 
 #include "check.h"
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 #include <string>
 

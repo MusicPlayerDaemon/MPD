@@ -21,7 +21,7 @@
 #define MPD_NFS_BASE_HXX
 
 #include "check.h"
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 /**
  * Set the "base" NFS server and export name.  This will be the

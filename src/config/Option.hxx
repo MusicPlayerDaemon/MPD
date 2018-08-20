@@ -20,7 +20,7 @@
 #ifndef MPD_CONFIG_OPTION_HXX
 #define MPD_CONFIG_OPTION_HXX
 
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 #if defined(_WIN32) && CLANG_OR_GCC_VERSION(4,7)
 /* "INPUT" is declared by winuser.h */

@@ -26,7 +26,7 @@
 #include "tag/Mask.hxx"
 #include "event/FullyBufferedSocket.hxx"
 #include "event/TimerEvent.hxx"
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 #include <boost/intrusive/link_mode.hpp>
 #include <boost/intrusive/list_hook.hpp>

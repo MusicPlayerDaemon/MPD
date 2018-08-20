@@ -20,7 +20,7 @@
 #include "config.h"
 #include "BufferedSocket.hxx"
 #include "net/SocketError.hxx"
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 #include <algorithm>
 

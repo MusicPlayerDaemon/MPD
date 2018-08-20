@@ -25,7 +25,7 @@
 #include "fs/AllocatedPath.hxx"
 #include "song/LightSong.hxx"
 #include "util/Manual.hxx"
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 #include <cassert>
 

@@ -20,7 +20,7 @@
 #ifndef MPD_NFS_CANCELLABLE_HXX
 #define MPD_NFS_CANCELLABLE_HXX
 
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 #include <boost/intrusive/list.hpp>
 

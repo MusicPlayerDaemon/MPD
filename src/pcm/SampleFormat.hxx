@@ -20,7 +20,7 @@
 #ifndef MPD_PCM_SAMPLE_FORMAT_HXX
 #define MPD_PCM_SAMPLE_FORMAT_HXX
 
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 #include <stdint.h>
 

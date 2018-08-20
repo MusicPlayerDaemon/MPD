@@ -21,7 +21,7 @@
 #define MPD_REPLAY_GAIN_INFO_HXX
 
 #include "check.h"
-#include "Compiler.h"
+#include "util/Compiler.h"
 #include "ReplayGainMode.hxx"
 
 struct ReplayGainConfig;

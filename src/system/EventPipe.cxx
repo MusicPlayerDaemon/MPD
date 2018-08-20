@@ -22,7 +22,7 @@
 #include "FileDescriptor.hxx"
 #include "system/Error.hxx"
 #include "util/ScopeExit.hxx"
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 #include <assert.h>
 #include <unistd.h>

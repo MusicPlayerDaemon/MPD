@@ -20,7 +20,7 @@
 #ifndef MPD_DATABASE_GLUE_HXX
 #define MPD_DATABASE_GLUE_HXX
 
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 struct ConfigBlock;
 class EventLoop;

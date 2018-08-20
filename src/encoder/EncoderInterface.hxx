@@ -21,7 +21,7 @@
 #define MPD_ENCODER_INTERFACE_HXX
 
 #include "EncoderPlugin.hxx"
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 #include <assert.h>
 #include <stddef.h>

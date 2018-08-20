@@ -1,6 +1,6 @@
 #include "config.h"
 #include "archive/ArchiveLookup.hxx"
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 #include <cppunit/TestFixture.h>
 #include <cppunit/extensions/TestFactoryRegistry.h>

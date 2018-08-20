@@ -26,7 +26,7 @@
 #define MPD_EXCLUDE_H
 
 #include "check.h"
-#include "Compiler.h"
+#include "util/Compiler.h"
 #include "fs/Glob.hxx"
 #include "input/Ptr.hxx"
 

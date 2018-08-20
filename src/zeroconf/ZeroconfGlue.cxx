@@ -26,7 +26,7 @@
 #include "Listen.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 static constexpr Domain zeroconf_domain("zeroconf");
 

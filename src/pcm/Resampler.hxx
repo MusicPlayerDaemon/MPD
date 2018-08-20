@@ -21,7 +21,7 @@
 #define MPD_PCM_RESAMPLER_HXX
 
 #include "util/ConstBuffer.hxx"
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 struct AudioFormat;
 

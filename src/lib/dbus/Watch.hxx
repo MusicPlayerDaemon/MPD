@@ -36,7 +36,7 @@
 #include "Connection.hxx"
 #include "event/SocketMonitor.hxx"
 #include "event/DeferEvent.hxx"
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 #include <dbus/dbus.h>
 

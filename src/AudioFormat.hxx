@@ -21,7 +21,7 @@
 #define MPD_AUDIO_FORMAT_HXX
 
 #include "pcm/SampleFormat.hxx"
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 #include <stdint.h>
 #include <stddef.h>

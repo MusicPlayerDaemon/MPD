@@ -24,7 +24,7 @@
 #include "Offset.hxx"
 #include "Ptr.hxx"
 #include "thread/Mutex.hxx"
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 #include <string>
 #include <memory>

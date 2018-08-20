@@ -21,7 +21,7 @@
 #define MPD_NEIGHBOR_COMMANDS_HXX
 
 #include "CommandResult.hxx"
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 struct Instance;
 class Client;

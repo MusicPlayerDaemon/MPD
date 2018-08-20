@@ -22,7 +22,7 @@
 #include "decoder/DecoderAPI.hxx"
 #include "input/InputStream.hxx"
 #include "util/StringBuffer.hxx"
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 #include <unistd.h>
 #include <stdio.h>

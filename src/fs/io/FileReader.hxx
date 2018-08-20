@@ -23,7 +23,7 @@
 #include "check.h"
 #include "Reader.hxx"
 #include "fs/AllocatedPath.hxx"
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 #ifndef _WIN32
 #include "system/FileDescriptor.hxx"

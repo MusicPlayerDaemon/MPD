@@ -25,7 +25,7 @@
 #ifndef MPD_IDLE_FLAGS_HXX
 #define MPD_IDLE_FLAGS_HXX
 
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 /** song database has been updated*/
 static constexpr unsigned IDLE_DATABASE = 0x1;

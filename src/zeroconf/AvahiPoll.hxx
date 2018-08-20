@@ -21,7 +21,7 @@
 #define MPD_AVAHI_POLL_HXX
 
 #include "check.h"
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 #include <avahi-common/watch.h>
 

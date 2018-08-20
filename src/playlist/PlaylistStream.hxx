@@ -20,7 +20,7 @@
 #ifndef MPD_PLAYLIST_STREAM_HXX
 #define MPD_PLAYLIST_STREAM_HXX
 
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 #include <memory>
 

@@ -22,7 +22,7 @@
 
 #include "Page.hxx"
 #include "event/BufferedSocket.hxx"
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 #include <boost/intrusive/link_mode.hpp>
 #include <boost/intrusive/list_hook.hpp>

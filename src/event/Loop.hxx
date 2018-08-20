@@ -22,7 +22,7 @@
 
 #include "check.h"
 #include "thread/Id.hxx"
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 #include "PollGroup.hxx"
 #include "thread/Mutex.hxx"

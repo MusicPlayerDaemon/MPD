@@ -23,7 +23,7 @@
 #include "check.h"
 #include "Config.hxx"
 #include "Editor.hxx"
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 #include <atomic>
 

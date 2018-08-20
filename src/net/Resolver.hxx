@@ -21,7 +21,7 @@
 #define MPD_RESOLVER_HXX
 
 #include "check.h"
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 struct addrinfo;
 

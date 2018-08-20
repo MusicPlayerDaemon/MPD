@@ -28,7 +28,7 @@
 #include "lib/curl/Request.hxx"
 #include "thread/Mutex.hxx"
 #include "event/DeferEvent.hxx"
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 #include <upnp.h>
 

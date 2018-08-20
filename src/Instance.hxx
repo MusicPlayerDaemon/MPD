@@ -24,7 +24,7 @@
 #include "event/Loop.hxx"
 #include "event/Thread.hxx"
 #include "event/MaskMonitor.hxx"
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 #ifdef ENABLE_SYSTEMD_DAEMON
 #include "lib/systemd/Watchdog.hxx"

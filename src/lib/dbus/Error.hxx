@@ -33,7 +33,7 @@
 #ifndef ODBUS_ERROR_HXX
 #define ODBUS_ERROR_HXX
 
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 #include <dbus/dbus.h>
 

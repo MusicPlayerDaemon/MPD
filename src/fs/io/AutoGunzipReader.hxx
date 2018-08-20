@@ -22,7 +22,7 @@
 
 #include "check.h"
 #include "PeekReader.hxx"
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 class GunzipReader;
 

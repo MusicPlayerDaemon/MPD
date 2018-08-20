@@ -23,7 +23,7 @@
 #include "Type.h" // IWYU pragma: export
 #include "Item.hxx" // IWYU pragma: export
 #include "Chrono.hxx"
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 #include <algorithm>
 #include <memory>

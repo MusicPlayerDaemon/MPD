@@ -21,7 +21,7 @@
 #define MPD_PLAYLIST_COMMANDS_HXX
 
 #include "CommandResult.hxx"
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 class Client;
 class Request;

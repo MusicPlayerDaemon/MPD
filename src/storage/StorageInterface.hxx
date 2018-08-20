@@ -21,7 +21,7 @@
 #define MPD_STORAGE_INTERFACE_HXX
 
 #include "check.h"
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 #include <memory>
 #include <string>

@@ -20,7 +20,7 @@
 #ifndef MPD_DATABASE_SONG_HXX
 #define MPD_DATABASE_SONG_HXX
 
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 struct LightSong;
 class Database;

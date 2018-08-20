@@ -20,7 +20,7 @@
 #ifndef MPD_DATABASE_REGISTRY_HXX
 #define MPD_DATABASE_REGISTRY_HXX
 
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 struct DatabasePlugin;
 

@@ -33,7 +33,7 @@
 #endif
 
 #ifdef HAVE_CLASS_GLOB
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 /**
  * A pattern that matches file names.  It may contain shell wildcards

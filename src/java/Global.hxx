@@ -30,7 +30,7 @@
 #ifndef JAVA_GLOBAL_HXX
 #define JAVA_GLOBAL_HXX
 
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 #include <jni.h>
 

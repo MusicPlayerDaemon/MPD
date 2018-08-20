@@ -31,7 +31,7 @@
 #define GCRYPT_HASH_HXX
 
 #include "util/ConstBuffer.hxx"
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 #include <gcrypt.h>
 

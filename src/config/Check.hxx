@@ -21,7 +21,7 @@
 #define MPD_CONFIG_CHECK_HXX
 
 #include "Option.hxx"
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 struct ConfigData;
 

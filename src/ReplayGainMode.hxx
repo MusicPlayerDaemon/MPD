@@ -20,7 +20,7 @@
 #ifndef MPD_REPLAY_GAIN_MODE_HXX
 #define MPD_REPLAY_GAIN_MODE_HXX
 
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 #include <stdint.h>
 

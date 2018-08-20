@@ -22,7 +22,7 @@
 
 #include "Mask.hxx"
 #include "Type.h"
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 extern TagMask global_tag_mask;
 

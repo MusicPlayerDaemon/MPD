@@ -30,7 +30,7 @@ using UpnpDiscovery = Upnp_Discovery;
 #endif
 
 #if UPNP_VERSION < 10624
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 gcc_pure
 static inline int

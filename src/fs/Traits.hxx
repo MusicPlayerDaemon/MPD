@@ -21,7 +21,7 @@
 #define MPD_FS_TRAITS_HXX
 
 #include "check.h"
-#include "Compiler.h"
+#include "util/Compiler.h"
 #include "util/StringPointer.hxx"
 #include "util/StringAPI.hxx"
 

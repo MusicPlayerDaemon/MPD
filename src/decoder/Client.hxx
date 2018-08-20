@@ -24,7 +24,7 @@
 #include "DecoderCommand.hxx"
 #include "Chrono.hxx"
 #include "input/Ptr.hxx"
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 #include <stdint.h>
 

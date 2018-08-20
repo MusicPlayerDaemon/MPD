@@ -20,7 +20,7 @@
 #ifndef MPD_DB_COUNT_HXX
 #define MPD_DB_COUNT_HXX
 
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 #include <stdint.h>
 

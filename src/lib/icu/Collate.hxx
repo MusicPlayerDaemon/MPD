@@ -21,7 +21,7 @@
 #define MPD_ICU_COLLATE_HXX
 
 #include "check.h"
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 /**
  * Throws #std::runtime_error on error.

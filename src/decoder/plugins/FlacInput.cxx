@@ -23,7 +23,7 @@
 #include "../DecoderAPI.hxx"
 #include "input/InputStream.hxx"
 #include "Log.hxx"
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 #include <exception>
 

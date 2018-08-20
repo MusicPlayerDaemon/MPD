@@ -21,7 +21,7 @@
 #define MPD_PCM_INTERLEAVE_HXX
 
 #include "check.h"
-#include "Compiler.h"
+#include "util/Compiler.h"
 #include "util/ConstBuffer.hxx"
 
 #include <stdint.h>

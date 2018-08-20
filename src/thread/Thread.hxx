@@ -22,7 +22,7 @@
 
 #include "check.h"
 #include "util/BindMethod.hxx"
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 #ifdef _WIN32
 #include <windows.h>

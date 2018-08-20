@@ -30,7 +30,7 @@
 #include "filter/Prepared.hxx"
 #include "filter/FilterRegistry.hxx"
 #include "AudioFormat.hxx"
-#include "Compiler.h"
+#include "util/Compiler.h"
 #include "util/ConstBuffer.hxx"
 
 class NullFilter final : public Filter {

@@ -30,7 +30,7 @@
 #include "ReplayGainMode.hxx"
 #include "SingleMode.hxx"
 #include "Chrono.hxx"
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 #include <string>
 #include <memory>

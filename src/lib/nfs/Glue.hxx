@@ -21,7 +21,7 @@
 #define MPD_NFS_GLUE_HXX
 
 #include "check.h"
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 class EventLoop;
 class NfsConnection;

@@ -21,7 +21,7 @@
 #define MPD_PCM_MIX_HXX
 
 #include "SampleFormat.hxx"
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 #include <stddef.h>
 

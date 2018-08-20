@@ -21,7 +21,7 @@
 #define MPD_PLAYLIST_REGISTRY_HXX
 
 #include "input/Ptr.hxx"
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 struct ConfigData;
 class Mutex;

@@ -21,7 +21,7 @@
 #define MPD_STORAGE_CONFIG_HXX
 
 #include "check.h"
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 #include <memory>
 

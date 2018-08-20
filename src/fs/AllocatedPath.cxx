@@ -21,7 +21,7 @@
 #include "AllocatedPath.hxx"
 #include "Domain.hxx"
 #include "Charset.hxx"
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 #include <exception>
 

@@ -21,7 +21,7 @@
 #define MPD_TAG_STRING_HXX
 
 #include "check.h"
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 struct StringView;
 template<typename T> struct WritableBuffer;

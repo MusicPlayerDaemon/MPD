@@ -20,7 +20,7 @@
 #ifndef MPD_THREAD_ID_HXX
 #define MPD_THREAD_ID_HXX
 
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 #ifdef _WIN32
 #include <windows.h>

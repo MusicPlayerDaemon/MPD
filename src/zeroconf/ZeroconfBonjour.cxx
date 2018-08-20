@@ -24,7 +24,7 @@
 #include "event/SocketMonitor.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 #include <dns_sd.h>
 

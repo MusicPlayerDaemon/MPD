@@ -23,7 +23,7 @@
 #include "MixerPlugin.hxx"
 #include "MixerList.hxx"
 #include "thread/Mutex.hxx"
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 class MixerListener;
 

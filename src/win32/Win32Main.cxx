@@ -22,7 +22,7 @@
 
 #ifdef _WIN32
 
-#include "Compiler.h"
+#include "util/Compiler.h"
 #include "Instance.hxx"
 #include "system/FatalError.hxx"
 

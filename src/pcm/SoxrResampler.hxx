@@ -22,7 +22,7 @@
 
 #include "Resampler.hxx"
 #include "PcmBuffer.hxx"
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 struct AudioFormat;
 struct ConfigBlock;

@@ -26,7 +26,7 @@
 #ifndef MPD_FILTER_REGISTRY_HXX
 #define MPD_FILTER_REGISTRY_HXX
 
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 struct FilterPlugin;
 

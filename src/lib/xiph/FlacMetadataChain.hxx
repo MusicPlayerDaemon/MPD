@@ -20,7 +20,7 @@
 #ifndef MPD_FLAC_METADATA_CHAIN_HXX
 #define MPD_FLAC_METADATA_CHAIN_HXX
 
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 #include <FLAC/metadata.h>
 

@@ -21,7 +21,7 @@
 #define MPD_ICU_COMPARE_HXX
 
 #include "check.h"
-#include "Compiler.h"
+#include "util/Compiler.h"
 #include "util/AllocatedString.hxx"
 
 /**

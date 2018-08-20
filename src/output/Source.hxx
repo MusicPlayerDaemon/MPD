@@ -21,7 +21,7 @@
 #define AUDIO_OUTPUT_SOURCE_HXX
 
 #include "check.h"
-#include "Compiler.h"
+#include "util/Compiler.h"
 #include "SharedPipeConsumer.hxx"
 #include "AudioFormat.hxx"
 #include "ReplayGainMode.hxx"

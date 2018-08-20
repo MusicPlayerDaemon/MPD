@@ -22,7 +22,7 @@
 
 #include "check.h"
 #include "Param.hxx"
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 #include <string>
 #include <vector>

@@ -20,7 +20,7 @@
 #include "config.h"
 #include "FlacIOHandle.hxx"
 #include "Log.hxx"
-#include "Compiler.h"
+#include "util/Compiler.h"
 #include "system/Error.hxx"
 
 #include <errno.h>

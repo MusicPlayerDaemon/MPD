@@ -21,7 +21,7 @@
 #define MPD_INOTIFY_UPDATE_HXX
 
 #include "check.h"
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 class EventLoop;
 class Storage;

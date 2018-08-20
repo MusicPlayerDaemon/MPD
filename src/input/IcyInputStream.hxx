@@ -21,7 +21,7 @@
 #define MPD_ICY_INPUT_STREAM_HXX
 
 #include "ProxyInputStream.hxx"
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 #include <memory>
 

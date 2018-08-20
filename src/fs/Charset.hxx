@@ -21,7 +21,7 @@
 #define MPD_FS_CHARSET_HXX
 
 #include "check.h"
-#include "Compiler.h"
+#include "util/Compiler.h"
 #include "Traits.hxx"
 
 #if (defined(HAVE_ICU) || defined(HAVE_ICONV)) && !defined(_WIN32)

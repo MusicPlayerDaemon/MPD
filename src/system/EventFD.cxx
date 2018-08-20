@@ -21,7 +21,7 @@
 #ifdef USE_EVENTFD
 #include "EventFD.hxx"
 #include "system/Error.hxx"
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 #include <assert.h>
 #include <sys/eventfd.h>

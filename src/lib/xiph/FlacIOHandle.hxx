@@ -20,7 +20,7 @@
 #ifndef MPD_FLAC_IO_HANDLE_HXX
 #define MPD_FLAC_IO_HANDLE_HXX
 
-#include "Compiler.h"
+#include "util/Compiler.h"
 #include "input/InputStream.hxx"
 
 #include <FLAC/callback.h>

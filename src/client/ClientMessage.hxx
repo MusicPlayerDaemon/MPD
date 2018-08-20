@@ -20,7 +20,7 @@
 #ifndef MPD_CLIENT_MESSAGE_HXX
 #define MPD_CLIENT_MESSAGE_HXX
 
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 #include <string>
 

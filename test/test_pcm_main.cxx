@@ -20,7 +20,7 @@
 #include "config.h"
 #include "test_pcm_all.hxx"
 #include "TestAudioFormat.hxx"
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/ui/text/TestRunner.h>

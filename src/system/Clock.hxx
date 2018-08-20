@@ -20,7 +20,7 @@
 #ifndef MPD_CLOCK_H
 #define MPD_CLOCK_H
 
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 #ifdef _WIN32
 

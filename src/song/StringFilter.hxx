@@ -21,7 +21,7 @@
 #define MPD_STRING_FILTER_HXX
 
 #include "lib/icu/Compare.hxx"
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 #include <string>
 

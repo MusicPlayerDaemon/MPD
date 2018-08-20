@@ -20,7 +20,7 @@
 #ifndef MPD_DATABASE_SELECTION_HXX
 #define MPD_DATABASE_SELECTION_HXX
 
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 #include <string>
 

@@ -21,7 +21,7 @@
 #define MPD_UPNP_OBJECT_HXX
 
 #include "tag/Tag.hxx"
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 #include <string>
 

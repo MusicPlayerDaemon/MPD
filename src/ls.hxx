@@ -20,7 +20,7 @@
 #ifndef MPD_LS_HXX
 #define MPD_LS_HXX
 
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 #include <stdio.h>
 

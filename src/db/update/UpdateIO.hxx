@@ -21,7 +21,7 @@
 #define MPD_UPDATE_IO_HXX
 
 #include "check.h"
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 struct Directory;
 struct StorageFileInfo;

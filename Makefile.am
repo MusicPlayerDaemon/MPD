@@ -79,7 +79,6 @@ libmpd_a_SOURCES = \
 	$(OUTPUT_API_SRC) \
 	$(MIXER_API_SRC) \
 	src/check.h \
-	src/Compiler.h \
 	src/open.h \
 	src/protocol/Ack.cxx src/protocol/Ack.hxx \
 	src/protocol/ArgParser.cxx src/protocol/ArgParser.hxx \
@@ -505,6 +504,7 @@ endif
 # Generic utility library
 
 libutil_a_SOURCES = \
+	src/Compiler.h \
 	src/util/Exception.cxx src/util/Exception.hxx \
 	src/util/RuntimeError.hxx \
 	src/util/Macros.hxx \

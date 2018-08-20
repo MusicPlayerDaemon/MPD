@@ -20,7 +20,7 @@
 #ifndef _UPNPDIR_HXX_INCLUDED_
 #define _UPNPDIR_HXX_INCLUDED_
 
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 #include <upnp.h>
 

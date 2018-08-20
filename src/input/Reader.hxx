@@ -22,7 +22,7 @@
 
 #include "check.h"
 #include "fs/io/Reader.hxx"
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 struct Decoder;
 class InputStream;

@@ -21,7 +21,7 @@
 #define INPUT_ERROR_HXX
 
 #include "check.h"
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 #include <exception>
 

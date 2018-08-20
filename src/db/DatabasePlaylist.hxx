@@ -20,7 +20,7 @@
 #ifndef MPD_DATABASE_PLAYLIST_HXX
 #define MPD_DATABASE_PLAYLIST_HXX
 
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 class Database;
 class Storage;

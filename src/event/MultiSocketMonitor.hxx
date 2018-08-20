@@ -24,7 +24,7 @@
 #include "IdleMonitor.hxx"
 #include "TimerEvent.hxx"
 #include "SocketMonitor.hxx"
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 #include <forward_list>
 #include <iterator>

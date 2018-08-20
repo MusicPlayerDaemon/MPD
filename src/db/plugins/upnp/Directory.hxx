@@ -21,7 +21,7 @@
 #define MPD_UPNP_DIRECTORY_HXX
 
 #include "Object.hxx"
-#include "Compiler.h"
+#include "util/Compiler.h"
 
 #include <string>
 #include <vector>
