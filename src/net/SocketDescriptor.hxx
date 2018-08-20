@@ -82,6 +82,20 @@ public:
 	using FileDescriptor::IsValid;
 	using FileDescriptor::IsSocket;
 #endif
+
+	/**
+	 * Determine the socket type, i.e. SOCK_STREAM, SOCK_DGRAM or
+	 * SOCK_SEQPACKET.  Returns -1 on error.
+	 */
+	gcc_pure
+	int GetType() const noexcept;
+
+	/**
+	 * Is this a stream socket?
+	 */
+	gcc_pure
+	bool IsStream() const noexcept;
+
 	using FileDescriptor::Get;
 	using FileDescriptor::Set;
 	using FileDescriptor::Steal;

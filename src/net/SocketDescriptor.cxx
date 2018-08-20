@@ -44,6 +44,25 @@
 #include <errno.h>
 #include <string.h>
 
+int
+SocketDescriptor::GetType() const noexcept
+{
+	assert(IsDefined());
+
+	int type;
+	socklen_t size = sizeof(type);
+	return getsockopt(fd, SOL_SOCKET, SO_TYPE,
+			  (char *)&type, &size) == 0
+		? type
+		: -1;
+}
+
+bool
+SocketDescriptor::IsStream() const noexcept
+{
+	return GetType() == SOCK_STREAM;
+}
+
 #ifdef _WIN32
 
 void
