@@ -354,12 +354,12 @@ android/build/include/org_musicpd_Bridge.h: android/build/classes.dex
 BUILT_SOURCES = android/build/include/org_musicpd_Bridge.h
 
 android/build/lib/$(ANDROID_ABI)/libmpd.so: libmpd.so
-	mkdir -p $(@D)
+	$(MKDIR_P) $(@D)
 	rm -f $@
 	$(STRIP) -o $@ $<
 
 android/build/res/drawable/icon.png: mpd.svg
-	mkdir -p $(@D)
+	$(MKDIR_P) $(@D)
 	rsvg-convert --width=48 --height=48 $< -o $@
 
 android/build/res/drawable/notification_icon.png: android/build/res/drawable/icon.png
