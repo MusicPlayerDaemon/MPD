@@ -325,7 +325,7 @@ $(AIDL_JAVA_FILES): android/build/src/org/musicpd/%.java: $(srcdir)/android/src/
 	$(AIDL) -Iandroid/build/src -oandroid/build/src $(patsubst %.java,%.aidl,$@)
 
 $(ANDROID_XML_RES_COPIES): $(ANDROID_XML_RES)
-	@$(MKDIR_P) $(dir $@)
+	@$(MKDIR_P) $(@D)
 	cp $(patsubst android/build/%,$(srcdir)/android/%,$@) $@
 
 android/build/resources.apk: $(ANDROID_XML_RES_COPIES) android/build/res/drawable/icon.png android/build/res/drawable/notification_icon.png
@@ -368,7 +368,7 @@ android/build/res/drawable/notification_icon.png: android/build/res/drawable/ico
 .DELETE_ON_ERROR: android/build/unsigned.apk
 android/build/unsigned.apk: android/build/classes.dex android/build/resources.apk android/build/lib/$(ANDROID_ABI)/libmpd.so
 	cp android/build/resources.apk $@
-	cd $(dir $@) && zip -q -r $(notdir $@) classes.dex lib
+	cd $(@D) && zip -q -r $(@F) classes.dex lib
 
 android/build/$(APK_NAME)-debug.apk: android/build/unsigned.apk
 	jarsigner -keystore $(HOME)/.android/debug.keystore -storepass android -signedjar $@ $< androiddebugkey
