@@ -120,7 +120,7 @@ FileDescriptor::CreatePipe(FileDescriptor &r, FileDescriptor &w) noexcept
 {
 	int fds[2];
 
-#ifdef HAVE_PIPE2
+#ifdef __linux__
 	const int flags = O_CLOEXEC;
 	const int result = pipe2(fds, flags);
 #elif defined(_WIN32)
@@ -145,7 +145,7 @@ FileDescriptor::CreatePipeNonBlock(FileDescriptor &r,
 {
 	int fds[2];
 
-#ifdef HAVE_PIPE2
+#ifdef __linux__
 	const int flags = O_CLOEXEC|O_NONBLOCK;
 	const int result = pipe2(fds, flags);
 #else
@@ -158,7 +158,7 @@ FileDescriptor::CreatePipeNonBlock(FileDescriptor &r,
 	r = FileDescriptor(fds[0]);
 	w = FileDescriptor(fds[1]);
 
-#ifndef HAVE_PIPE2
+#ifndef __linux__
 	r.SetNonBlocking();
 	w.SetNonBlocking();
 #endif
