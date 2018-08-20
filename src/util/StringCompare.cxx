@@ -32,8 +32,8 @@
 bool
 StringEndsWith(const char *haystack, const char *needle) noexcept
 {
-	const size_t haystack_length = strlen(haystack);
-	const size_t needle_length = strlen(needle);
+	const size_t haystack_length = StringLength(haystack);
+	const size_t needle_length = StringLength(needle);
 
 	return haystack_length >= needle_length &&
 		memcmp(haystack + haystack_length - needle_length,
@@ -43,8 +43,8 @@ StringEndsWith(const char *haystack, const char *needle) noexcept
 const char *
 FindStringSuffix(const char *p, const char *suffix) noexcept
 {
-	const size_t p_length = strlen(p);
-	const size_t suffix_length = strlen(suffix);
+	const size_t p_length = StringLength(p);
+	const size_t suffix_length = StringLength(suffix);
 
 	if (p_length < suffix_length)
 		return nullptr;

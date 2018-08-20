@@ -31,6 +31,7 @@
 #define STRING_COMPARE_HXX
 
 #include "StringView.hxx"
+#include "StringAPI.hxx"
 #include "Compiler.h"
 
 #ifdef _UNICODE
@@ -47,7 +48,7 @@ gcc_pure gcc_nonnull_all
 static inline bool
 StringStartsWith(const char *haystack, StringView needle) noexcept
 {
-	return strncmp(haystack, needle.data, needle.size) == 0;
+	return StringIsEqual(haystack, needle.data, needle.size);
 }
 
 gcc_pure
