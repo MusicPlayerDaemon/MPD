@@ -44,6 +44,12 @@ struct BasicStringView : ConstBuffer<T> {
 
 	BasicStringView() = default;
 
+	explicit constexpr BasicStringView(ConstBuffer<T> src)
+		:ConstBuffer<T>(src) {}
+
+	explicit constexpr BasicStringView(ConstBuffer<void> src)
+		:ConstBuffer<T>(ConstBuffer<T>::FromVoid(src)) {}
+
 	constexpr BasicStringView(pointer_type _data, size_type _size) noexcept
 		:ConstBuffer<T>(_data, _size) {}
 
