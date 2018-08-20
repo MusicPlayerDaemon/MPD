@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#ifdef USE_EVENTFD
+#ifdef __linux__
 #include "EventFD.hxx"
 #include "system/Error.hxx"
 #include "util/Compiler.h"

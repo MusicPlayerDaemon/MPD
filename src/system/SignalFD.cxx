@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#ifdef USE_SIGNALFD
+#ifdef __linux__
 #include "SignalFD.hxx"
 #include "Error.hxx"
 
@@ -43,4 +43,4 @@ SignalFD::Read() noexcept
 		: -1;
 }
 
-#endif /* USE_SIGNALFD */
+#endif /* __linux__ */

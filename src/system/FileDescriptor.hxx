@@ -39,7 +39,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 
-#ifdef USE_SIGNALFD
+#ifdef __linux__
 #include <signal.h>
 #endif
 
@@ -181,15 +181,9 @@ public:
 	bool CheckDuplicate(int new_fd) noexcept;
 #endif
 
-#ifdef USE_EVENTFD
-	bool CreateEventFD(unsigned initval=0) noexcept;
-#endif
-
-#ifdef USE_SIGNALFD
-	bool CreateSignalFD(const sigset_t *mask) noexcept;
-#endif
-
 #ifdef __linux__
+	bool CreateEventFD(unsigned initval=0) noexcept;
+	bool CreateSignalFD(const sigset_t *mask) noexcept;
 	bool CreateInotify() noexcept;
 #endif
 

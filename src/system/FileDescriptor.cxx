@@ -37,15 +37,9 @@
 #include <poll.h>
 #endif
 
-#ifdef USE_EVENTFD
-#include <sys/eventfd.h>
-#endif
-
-#ifdef USE_SIGNALFD
-#include <sys/signalfd.h>
-#endif
-
 #ifdef __linux__
+#include <sys/eventfd.h>
+#include <sys/signalfd.h>
 #include <sys/inotify.h>
 #endif
 
@@ -222,7 +216,7 @@ FileDescriptor::CheckDuplicate(int new_fd) noexcept
 
 #endif
 
-#ifdef USE_EVENTFD
+#ifdef __linux__
 
 bool
 FileDescriptor::CreateEventFD(unsigned initval) noexcept
@@ -230,10 +224,6 @@ FileDescriptor::CreateEventFD(unsigned initval) noexcept
 	fd = ::eventfd(initval, EFD_NONBLOCK|EFD_CLOEXEC);
 	return fd >= 0;
 }
-
-#endif
-
-#ifdef USE_SIGNALFD
 
 bool
 FileDescriptor::CreateSignalFD(const sigset_t *mask) noexcept
@@ -245,10 +235,6 @@ FileDescriptor::CreateSignalFD(const sigset_t *mask) noexcept
 	fd = new_fd;
 	return true;
 }
-
-#endif
-
-#ifdef __linux__
 
 bool
 FileDescriptor::CreateInotify() noexcept
