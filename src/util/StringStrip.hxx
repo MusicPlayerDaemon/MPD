@@ -35,8 +35,10 @@
 #include <stddef.h>
 
 /**
- * Returns a pointer to the first non-whitespace character in the
- * string, or to the end of the string.
+ * Skips whitespace at the beginning of the string, and returns the
+ * first non-whitespace character.  If the string has no
+ * non-whitespace characters, then a pointer to the NULL terminator is
+ * returned.
  */
 gcc_pure gcc_returns_nonnull gcc_nonnull_all
 const char *
@@ -49,6 +51,10 @@ StripLeft(char *p) noexcept
 	return const_cast<char *>(StripLeft((const char *)p));
 }
 
+/**
+ * Skips whitespace at the beginning of the string, and returns the
+ * first non-whitespace character or the end pointer.
+ */
 gcc_pure gcc_returns_nonnull gcc_nonnull_all
 const char *
 StripLeft(const char *p, const char *end) noexcept;
