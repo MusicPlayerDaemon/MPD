@@ -30,6 +30,7 @@
 #include "config.h"
 #include "FileDescriptor.hxx"
 
+#include <assert.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 
