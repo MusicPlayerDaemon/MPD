@@ -80,6 +80,7 @@ public:
 	using FileDescriptor::IsDefined;
 #ifndef _WIN32
 	using FileDescriptor::IsValid;
+	using FileDescriptor::IsSocket;
 #endif
 	using FileDescriptor::Get;
 	using FileDescriptor::Set;
