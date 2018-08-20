@@ -29,8 +29,13 @@
 
 #include "config.h"
 #include "SocketAddress.hxx"
+#include "util/StringView.hxx"
 
 #include <string.h>
+
+#ifdef HAVE_UN
+#include <sys/un.h>
+#endif
 
 #ifdef HAVE_TCP
 #ifdef _WIN32
@@ -45,6 +50,28 @@ SocketAddress::operator==(SocketAddress other) const noexcept
 {
 	return size == other.size && memcmp(address, other.address, size) == 0;
 }
+
+#ifdef HAVE_UN
+
+StringView
+SocketAddress::GetLocalRaw() const noexcept
+{
+	if (IsNull() || GetFamily() != AF_LOCAL)
+		/* not applicable */
+		return nullptr;
+
+	const auto sun = (const struct sockaddr_un *)GetAddress();
+	const auto start = (const char *)sun;
+	const auto path = sun->sun_path;
+	const size_t header_size = path - start;
+	if (size < header_size)
+		/* malformed address */
+		return nullptr;
+
+	return {path, size - header_size};
+}
+
+#endif
 
 #ifdef HAVE_TCP
 
