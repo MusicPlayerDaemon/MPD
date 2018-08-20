@@ -33,7 +33,7 @@
 #include <assert.h>
 
 static const struct sockaddr_in *
-CastToIPv4(const struct sockaddr *p)
+CastToIPv4(const struct sockaddr *p) noexcept
 {
 	assert(p->sa_family == AF_INET);
 
@@ -42,5 +42,5 @@ CastToIPv4(const struct sockaddr *p)
 	return reinterpret_cast<const struct sockaddr_in *>(q);
 }
 
-IPv4Address::IPv4Address(SocketAddress src)
+IPv4Address::IPv4Address(SocketAddress src) noexcept
 	:address(*CastToIPv4(src.GetAddress())) {}
