@@ -45,7 +45,7 @@
 #include <sys/signalfd.h>
 #endif
 
-#ifdef HAVE_INOTIFY_INIT
+#ifdef __linux__
 #include <sys/inotify.h>
 #endif
 
@@ -248,22 +248,14 @@ FileDescriptor::CreateSignalFD(const sigset_t *mask) noexcept
 
 #endif
 
-#ifdef HAVE_INOTIFY_INIT
+#ifdef __linux__
 
 bool
 FileDescriptor::CreateInotify() noexcept
 {
-#ifdef HAVE_INOTIFY_INIT1
 	int new_fd = inotify_init1(IN_CLOEXEC|IN_NONBLOCK);
-#else
-	int new_fd = inotify_init();
-#endif
 	if (new_fd < 0)
 		return false;
-
-#ifndef HAVE_INOTIFY_INIT1
-	SetNonBlocking();
-#endif
 
 	fd = new_fd;
 	return true;

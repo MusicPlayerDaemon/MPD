@@ -189,7 +189,7 @@ public:
 	bool CreateSignalFD(const sigset_t *mask) noexcept;
 #endif
 
-#ifdef HAVE_INOTIFY_INIT
+#ifdef __linux__
 	bool CreateInotify() noexcept;
 #endif
 

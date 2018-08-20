@@ -587,9 +587,7 @@ if test x$enable_qobuz != xno || test x$enable_soundcloud != xno || test x$enabl
 fi
 
 dnl --------------------------------- inotify ---------------------------------
-AC_CHECK_FUNCS(inotify_init inotify_init1)
-
-if test x$ac_cv_func_inotify_init = xno; then
+if test x$host_is_linux = xno; then
 	enable_inotify=no
 fi
 
