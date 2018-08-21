@@ -283,15 +283,11 @@ SocketDescriptor::SetReuseAddress(bool value) noexcept
 
 #ifdef __linux__
 
-#ifdef SO_REUSEPORT
-
 bool
 SocketDescriptor::SetReusePort(bool value) noexcept
 {
 	return SetBoolOption(SOL_SOCKET, SO_REUSEPORT, value);
 }
-
-#endif
 
 bool
 SocketDescriptor::SetFreeBind(bool value) noexcept
