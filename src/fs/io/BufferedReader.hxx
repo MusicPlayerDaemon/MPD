@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2017 The Music Player Daemon Project
+ * Copyright 2003-2018 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -40,7 +40,7 @@ class BufferedReader {
 	unsigned line_number = 0;
 
 public:
-	explicit BufferedReader(Reader &_reader)
+	explicit BufferedReader(Reader &_reader) noexcept
 		:reader(_reader), buffer(4096) {}
 
 	/**
