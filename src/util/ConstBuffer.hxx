@@ -289,6 +289,19 @@ struct ConstBuffer {
 		size = end() - new_data;
 		data = new_data;
 	}
+
+	/**
+	 * Move the end pointer to the given address (by adjusting the
+	 * size).
+	 */
+	void SetEnd(pointer_type new_end) {
+#ifndef NDEBUG
+		assert(IsNull() == (new_end == nullptr));
+		assert(new_end >= begin());
+#endif
+
+		size = new_end - data;
+	}
 };
 
 #endif
