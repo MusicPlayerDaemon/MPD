@@ -116,6 +116,11 @@ public:
 		return FileDescriptor(-1);
 	}
 
+#ifdef __linux
+	bool Open(FileDescriptor dir, const char *pathname,
+		  int flags, mode_t mode=0666) noexcept;
+#endif
+
 	bool Open(const char *pathname, int flags, mode_t mode=0666) noexcept;
 
 #ifdef _WIN32

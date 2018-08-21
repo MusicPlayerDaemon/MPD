@@ -76,6 +76,18 @@ FileDescriptor::IsSocket() const noexcept
 
 #endif
 
+#ifdef __linux
+
+bool
+FileDescriptor::Open(FileDescriptor dir, const char *pathname,
+		     int flags, mode_t mode) noexcept
+{
+	fd = ::openat(dir.Get(), pathname, flags | O_NOCTTY | O_CLOEXEC, mode);
+	return IsDefined();
+}
+
+#endif
+
 bool
 FileDescriptor::Open(const char *pathname, int flags, mode_t mode) noexcept
 {
