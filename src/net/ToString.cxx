@@ -81,24 +81,13 @@ LocalAddressToString(const struct sockaddr_un &s_un, size_t size) noexcept
 
 #if defined(HAVE_IPV6) && defined(IN6_IS_ADDR_V4MAPPED)
 
-gcc_pure
-static bool
-IsV4Mapped(SocketAddress address) noexcept
-{
-	if (address.GetFamily() != AF_INET6)
-		return false;
-
-	const auto &a6 = *(const struct sockaddr_in6 *)address.GetAddress();
-	return IN6_IS_ADDR_V4MAPPED(&a6.sin6_addr);
-}
-
 /**
  * Convert "::ffff:127.0.0.1" to "127.0.0.1".
  */
 static SocketAddress
 UnmapV4(SocketAddress src, struct sockaddr_in &buffer) noexcept
 {
-	assert(IsV4Mapped(src));
+	assert(src.IsV4Mapped());
 
 	const auto &src6 = *(const struct sockaddr_in6 *)src.GetAddress();
 	memset(&buffer, 0, sizeof(buffer));
@@ -124,7 +113,7 @@ ToString(SocketAddress address) noexcept
 
 #if defined(HAVE_IPV6) && defined(IN6_IS_ADDR_V4MAPPED)
 	struct sockaddr_in in_buffer;
-	if (IsV4Mapped(address))
+	if (address.IsV4Mapped())
 		address = UnmapV4(address, in_buffer);
 #endif
 

@@ -82,6 +82,12 @@ SocketAddress::IsV6Any() const noexcept
 	return GetFamily() == AF_INET6 && IPv6Address(*this).IsAny();
 }
 
+bool
+SocketAddress::IsV4Mapped() const noexcept
+{
+	return GetFamily() == AF_INET6 && IPv6Address(*this).IsV4Mapped();
+}
+
 unsigned
 SocketAddress::GetPort() const noexcept
 {
