@@ -49,9 +49,7 @@ public:
 #ifdef _WIN32
 	FileReader(FileReader &&other) noexcept
 		:path(std::move(other.path)),
-		 handle(other.handle) {
-		other.handle = INVALID_HANDLE_VALUE;
-	}
+		 handle(std::exchange(other.handle, INVALID_HANDLE_VALUE)) {}
 #else
 	FileReader(FileReader &&other) noexcept
 		:path(std::move(other.path)),
