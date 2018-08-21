@@ -36,6 +36,8 @@
 
 class SocketAddress;
 class StaticSocketAddress;
+class IPv4Address;
+class IPv6Address;
 
 /**
  * An OO wrapper for a UNIX socket descriptor.
@@ -193,6 +195,10 @@ public:
 	bool SetBindToDevice(const char *name) noexcept;
 
 	bool SetTcpFastOpen(int qlen=16) noexcept;
+
+	bool AddMembership(const IPv4Address &address) noexcept;
+	bool AddMembership(const IPv6Address &address) noexcept;
+	bool AddMembership(SocketAddress address) noexcept;
 #endif
 
 	bool Bind(SocketAddress address) noexcept;

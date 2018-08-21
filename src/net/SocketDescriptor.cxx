@@ -31,6 +31,8 @@
 #include "SocketDescriptor.hxx"
 #include "SocketAddress.hxx"
 #include "StaticSocketAddress.hxx"
+#include "IPv4Address.hxx"
+#include "IPv6Address.hxx"
 
 #ifdef _WIN32
 #include <winsock2.h>
@@ -334,6 +336,39 @@ SocketDescriptor::SetTcpFastOpen(int qlen) noexcept
 }
 
 #endif
+
+bool
+SocketDescriptor::AddMembership(const IPv4Address &address) noexcept
+{
+	struct ip_mreq r{address.GetAddress(), IPv4Address(0).GetAddress()};
+	return setsockopt(fd, IPPROTO_IP, IP_ADD_MEMBERSHIP,
+			  &r, sizeof(r)) == 0;
+}
+
+bool
+SocketDescriptor::AddMembership(const IPv6Address &address) noexcept
+{
+	struct ipv6_mreq r{address.GetAddress(), 0};
+	r.ipv6mr_interface = address.GetScopeId();
+	return setsockopt(fd, IPPROTO_IPV6, IPV6_ADD_MEMBERSHIP,
+			  &r, sizeof(r)) == 0;
+}
+
+bool
+SocketDescriptor::AddMembership(SocketAddress address) noexcept
+{
+	switch (address.GetFamily()) {
+	case AF_INET:
+		return AddMembership(IPv4Address(address));
+
+	case AF_INET6:
+		return AddMembership(IPv6Address(address));
+
+	default:
+		errno = EINVAL;
+		return false;
+	}
+}
 
 #endif
 
