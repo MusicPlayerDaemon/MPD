@@ -21,6 +21,7 @@
 #include "FileReader.hxx"
 #include "fs/FileInfo.hxx"
 #include "system/Error.hxx"
+#include "system/Open.hxx"
 
 #include <assert.h>
 
@@ -88,11 +89,8 @@ FileReader::Close() noexcept
 #else
 
 FileReader::FileReader(Path _path)
-	:path(_path)
+	:path(_path), fd(OpenReadOnly(path.c_str()))
 {
-	fd.OpenReadOnly(path.c_str());
-	if (!fd.IsDefined())
-		throw FormatErrno("Failed to open %s", path.ToUTF8().c_str());
 }
 
 FileInfo
