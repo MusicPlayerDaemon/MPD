@@ -241,6 +241,12 @@ public:
 	 */
 	ssize_t Write(const void *buffer, size_t length,
 		      SocketAddress address) noexcept;
+
+#ifndef _WIN32
+	void Shutdown() noexcept;
+	void ShutdownRead() noexcept;
+	void ShutdownWrite() noexcept;
+#endif
 };
 
 static_assert(std::is_trivial<SocketDescriptor>::value, "type is not trivial");
