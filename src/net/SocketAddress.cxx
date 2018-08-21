@@ -29,6 +29,7 @@
 
 #include "config.h"
 #include "SocketAddress.hxx"
+#include "IPv4Address.hxx"
 #include "IPv6Address.hxx"
 #include "util/StringView.hxx"
 
@@ -96,7 +97,7 @@ SocketAddress::GetPort() const noexcept
 
 	switch (GetFamily()) {
 	case AF_INET:
-		return ntohs(((const struct sockaddr_in *)(const void *)address)->sin_port);
+		return IPv4Address(*this).GetPort();
 
 	case AF_INET6:
 		return IPv6Address(*this).GetPort();
