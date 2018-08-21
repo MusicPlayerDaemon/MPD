@@ -41,6 +41,7 @@
 #include <sys/socket.h>
 #endif
 
+template<typename T> struct ConstBuffer;
 struct StringView;
 
 /**
@@ -126,6 +127,16 @@ public:
 	gcc_pure
 	unsigned GetPort() const noexcept;
 #endif
+
+	/**
+	 * Return a buffer pointing to the "steady" portion of the
+	 * address, i.e. without volatile parts like the port number.
+	 * This buffer is useful for hashing the address, but not so
+	 * much for anything else.  Returns nullptr if the address is
+	 * not supported.
+	 */
+	gcc_pure
+	ConstBuffer<void> GetSteadyPart() const noexcept;
 
 	gcc_pure
 	bool operator==(const SocketAddress other) const noexcept;

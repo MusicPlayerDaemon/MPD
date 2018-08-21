@@ -107,4 +107,41 @@ SocketAddress::GetPort() const noexcept
 	}
 }
 
+static constexpr ConstBuffer<void>
+GetSteadyPart(const struct sockaddr_in &address) noexcept
+{
+	return {&address.sin_addr, sizeof(address.sin_addr)};
+}
+
+static constexpr ConstBuffer<void>
+GetSteadyPart(const struct sockaddr_in6 &address) noexcept
+{
+	return {&address.sin6_addr, sizeof(address.sin6_addr)};
+}
+
 #endif
+
+ConstBuffer<void>
+SocketAddress::GetSteadyPart() const noexcept
+{
+	if (IsNull())
+		return nullptr;
+
+	switch (GetFamily()) {
+#ifdef HAVE_UN
+	case AF_LOCAL:
+		return GetLocalRaw().ToVoid();
+#endif
+
+#ifdef HAVE_TCP
+	case AF_INET:
+		return ::GetSteadyPart(*(const struct sockaddr_in *)(const void *)GetAddress());
+
+	case AF_INET6:
+		return ::GetSteadyPart(*(const struct sockaddr_in6 *)(const void *)GetAddress());
+#endif
+
+	default:
+		return nullptr;
+	}
+}
