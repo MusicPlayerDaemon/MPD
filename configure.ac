@@ -241,7 +241,7 @@ AC_SEARCH_LIBS([socket], [network socket])
 AC_SEARCH_LIBS([gethostbyname], [nsl])
 
 if test x$host_is_linux = xyes; then
-	AC_CHECK_FUNCS(accept4 linkat)
+	AC_CHECK_FUNCS(linkat)
 fi
 
 AC_CHECK_FUNCS(getpwnam_r getpwuid_r)
