@@ -57,7 +57,7 @@ class FileOutputStream final : public OutputStream {
 	FileDescriptor fd = FileDescriptor::Undefined();
 #endif
 
-#ifdef HAVE_LINKAT
+#ifdef __linux__
 	/**
 	 * Was O_TMPFILE used?  If yes, then linkat() must be used to
 	 * create a link to this file.
