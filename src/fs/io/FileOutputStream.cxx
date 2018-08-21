@@ -123,7 +123,7 @@ FileOutputStream::Commit()
 }
 
 void
-FileOutputStream::Cancel()
+FileOutputStream::Cancel() noexcept
 {
 	assert(IsDefined());
 
@@ -243,7 +243,7 @@ FileOutputStream::Commit()
 }
 
 void
-FileOutputStream::Cancel()
+FileOutputStream::Cancel() noexcept
 {
 	assert(IsDefined());
 
