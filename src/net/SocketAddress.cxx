@@ -29,6 +29,7 @@
 
 #include "config.h"
 #include "SocketAddress.hxx"
+#include "IPv6Address.hxx"
 #include "util/StringView.hxx"
 
 #include <string.h>
@@ -78,9 +79,7 @@ SocketAddress::GetLocalRaw() const noexcept
 bool
 SocketAddress::IsV6Any() const noexcept
 {
-    return GetFamily() == AF_INET6 &&
-	    memcmp(&((const struct sockaddr_in6 *)(const void *)GetAddress())->sin6_addr,
-		   &in6addr_any, sizeof(in6addr_any)) == 0;
+	return GetFamily() == AF_INET6 && IPv6Address(*this).IsAny();
 }
 
 unsigned
@@ -94,7 +93,7 @@ SocketAddress::GetPort() const noexcept
 		return ntohs(((const struct sockaddr_in *)(const void *)address)->sin_port);
 
 	case AF_INET6:
-		return ntohs(((const struct sockaddr_in6 *)(const void *)address)->sin6_port);
+		return IPv6Address(*this).GetPort();
 
 	default:
 		return 0;
