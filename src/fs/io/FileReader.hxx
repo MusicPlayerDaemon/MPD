@@ -25,12 +25,10 @@
 #include "fs/AllocatedPath.hxx"
 #include "util/Compiler.h"
 
-#ifndef _WIN32
-#include "system/FileDescriptor.hxx"
-#endif
-
 #ifdef _WIN32
 #include <windows.h>
+#else
+#include "system/FileDescriptor.hxx"
 #endif
 
 class Path;
