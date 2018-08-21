@@ -66,7 +66,7 @@ SocketAddress::GetLocalRaw() const noexcept
 	const auto start = (const char *)sun;
 	const auto path = sun->sun_path;
 	const size_t header_size = path - start;
-	if (size < header_size)
+	if (size < size_type(header_size))
 		/* malformed address */
 		return nullptr;
 
