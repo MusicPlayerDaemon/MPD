@@ -78,7 +78,7 @@ FileReader::Skip(off_t offset)
 }
 
 void
-FileReader::Close()
+FileReader::Close() noexcept
 {
 	assert(IsDefined());
 
@@ -144,7 +144,7 @@ FileReader::Skip(off_t offset)
 }
 
 void
-FileReader::Close()
+FileReader::Close() noexcept
 {
 	assert(IsDefined());
 

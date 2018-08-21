@@ -47,27 +47,27 @@ public:
 	explicit FileReader(Path _path);
 
 #ifdef _WIN32
-	FileReader(FileReader &&other)
+	FileReader(FileReader &&other) noexcept
 		:path(std::move(other.path)),
 		 handle(other.handle) {
 		other.handle = INVALID_HANDLE_VALUE;
 	}
 #else
-	FileReader(FileReader &&other)
+	FileReader(FileReader &&other) noexcept
 		:path(std::move(other.path)),
 		 fd(other.fd) {
 		other.fd.SetUndefined();
 	}
 #endif
 
-	~FileReader() {
+	~FileReader() noexcept {
 		if (IsDefined())
 			Close();
 	}
 
 
 protected:
-	bool IsDefined() const {
+	bool IsDefined() const noexcept {
 #ifdef _WIN32
 		return handle != INVALID_HANDLE_VALUE;
 #else
@@ -77,12 +77,12 @@ protected:
 
 public:
 #ifndef _WIN32
-	FileDescriptor GetFD() const {
+	FileDescriptor GetFD() const noexcept {
 		return fd;
 	}
 #endif
 
-	void Close();
+	void Close() noexcept;
 
 	FileInfo GetFileInfo() const;
 
