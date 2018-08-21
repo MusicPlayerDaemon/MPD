@@ -27,6 +27,7 @@
 #include "net/SocketError.hxx"
 #include "net/UniqueSocketDescriptor.hxx"
 #include "net/Resolver.hxx"
+#include "net/AddressInfo.hxx"
 #include "net/ToString.hxx"
 #include "event/SocketMonitor.hxx"
 #include "fs/AllocatedPath.hxx"
@@ -369,12 +370,9 @@ void
 ServerSocket::AddHost(const char *hostname, unsigned port)
 {
 #ifdef HAVE_TCP
-	struct addrinfo *ai = resolve_host_port(hostname, port,
-						AI_PASSIVE, SOCK_STREAM);
-	AtScopeExit(ai) { freeaddrinfo(ai); };
-
-	for (const struct addrinfo *i = ai; i != nullptr; i = i->ai_next)
-		AddAddress(SocketAddress(i->ai_addr, i->ai_addrlen));
+	for (const auto &i : Resolve(hostname, port,
+				     AI_PASSIVE, SOCK_STREAM))
+		AddAddress(i);
 
 	++next_serial;
 #else /* HAVE_TCP */

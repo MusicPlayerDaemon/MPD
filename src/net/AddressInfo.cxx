@@ -1,8 +1,5 @@
 /*
- * Copyright 2007-2017 Content Management AG
- * All rights reserved.
- *
- * author: Max Kellermann <mk@cm4all.com>
+ * Copyright (C) 2016-2017 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -30,26 +27,55 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef NET_RESOLVER_HXX
-#define NET_RESOLVER_HXX
+#include "config.h"
+#include "AddressInfo.hxx"
 
-struct addrinfo;
-class AddressInfoList;
+#include <assert.h>
 
-/**
- * Resolve the given host name (which may include a port), and fall
- * back to the given default port.
- *
- * This is a wrapper for getaddrinfo() and it does not support local
- * sockets.
- *
- * Throws on error.
- */
-AddressInfoList
-Resolve(const char *host_and_port, int default_port,
-	const struct addrinfo *hints);
-
-AddressInfoList
-Resolve(const char *host_port, unsigned default_port, int flags, int socktype);
-
+static constexpr int address_family_ranking[] = {
+#ifdef HAVE_UN
+	AF_LOCAL,
 #endif
+	AF_INET6,
+};
+
+static bool
+IsAddressFamilyBetter(int previous, int next)
+{
+	for (auto i : address_family_ranking) {
+		if (next == i)
+			return previous != i;
+		if (previous == i)
+			return false;
+	}
+
+	return false;
+}
+
+static bool
+IsBetter(const AddressInfo &previous, const AddressInfo &next)
+{
+	return IsAddressFamilyBetter(previous.GetFamily(),
+				     next.GetFamily());
+}
+
+static bool
+IsBetter(const AddressInfo *previous, const AddressInfo &next)
+{
+	return previous == nullptr || IsBetter(*previous, next);
+}
+
+const AddressInfo &
+AddressInfoList::GetBest() const
+{
+	assert(!empty());
+
+	const AddressInfo *best = nullptr;
+
+	for (const auto &i : *this)
+		if (IsBetter(best, i))
+			best = &i;
+
+	assert(best != nullptr);
+	return *best;
+}

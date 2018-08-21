@@ -594,7 +594,9 @@ libnet_a_SOURCES = \
 	src/net/Features.hxx \
 	src/net/Init.hxx \
 	src/net/ToString.cxx src/net/ToString.hxx \
+	src/net/HostParser.cxx src/net/HostParser.hxx \
 	src/net/Resolver.cxx src/net/Resolver.hxx \
+	src/net/AddressInfo.cxx src/net/AddressInfo.hxx \
 	src/net/StaticSocketAddress.cxx src/net/StaticSocketAddress.hxx \
 	src/net/AllocatedSocketAddress.cxx src/net/AllocatedSocketAddress.hxx \
 	src/net/IPv4Address.cxx src/net/IPv4Address.hxx \

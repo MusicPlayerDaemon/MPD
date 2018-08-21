@@ -30,26 +30,47 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef NET_RESOLVER_HXX
-#define NET_RESOLVER_HXX
+#ifndef NET_HOST_PARSER_HXX
+#define NET_HOST_PARSER_HXX
 
-struct addrinfo;
-class AddressInfoList;
+#include "util/StringView.hxx"
+#include "util/Compiler.h"
 
 /**
- * Resolve the given host name (which may include a port), and fall
- * back to the given default port.
- *
- * This is a wrapper for getaddrinfo() and it does not support local
- * sockets.
- *
- * Throws on error.
+ * Result type for ExtractHost().
  */
-AddressInfoList
-Resolve(const char *host_and_port, int default_port,
-	const struct addrinfo *hints);
+struct ExtractHostResult {
+	/**
+	 * The host part of the address.
+	 *
+	 * If nothing was parsed, then this is nullptr.
+	 */
+	StringView host;
 
-AddressInfoList
-Resolve(const char *host_port, unsigned default_port, int flags, int socktype);
+	/**
+	 * Pointer to the first character that was not parsed.  On
+	 * success, this is usually a pointer to the zero terminator or to
+	 * a colon followed by a port number.
+	 *
+	 * If nothing was parsed, then this is a pointer to the given
+	 * source string.
+	 */
+	const char *end;
+
+	constexpr bool HasFailed() const {
+		return host == nullptr;
+	}
+};
+
+/**
+ * Extract the host from a string in the form "IP:PORT" or
+ * "[IPv6]:PORT".  Stops at the first invalid character (e.g. the
+ * colon).
+ *
+ * @param src the input string
+ */
+gcc_pure
+ExtractHostResult
+ExtractHost(const char *src);
 
 #endif

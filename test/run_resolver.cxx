@@ -19,19 +19,12 @@
 
 #include "config.h"
 #include "net/Resolver.hxx"
+#include "net/AddressInfo.hxx"
 #include "net/ToString.hxx"
 #include "net/SocketAddress.hxx"
 #include "Log.hxx"
 
 #include <exception>
-
-#ifdef _WIN32
-#include <ws2tcpip.h>
-#include <winsock.h>
-#else
-#include <sys/socket.h>
-#include <netdb.h>
-#endif
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -43,15 +36,10 @@ try {
 		return EXIT_FAILURE;
 	}
 
-	struct addrinfo *ai =
-		resolve_host_port(argv[1], 80, AI_PASSIVE, SOCK_STREAM);
-
-	for (const struct addrinfo *i = ai; i != NULL; i = i->ai_next) {
-		const auto s = ToString({i->ai_addr, i->ai_addrlen});
-		printf("%s\n", s.c_str());
+	for (const auto &i : Resolve(argv[1], 80, AI_PASSIVE, SOCK_STREAM)) {
+		printf("%s\n", ToString(i).c_str());
 	}
 
-	freeaddrinfo(ai);
 	return EXIT_SUCCESS;
 } catch (...) {
 	LogError(std::current_exception());

@@ -1,91 +1,160 @@
 /*
- * Copyright 2003-2017 The Music Player Daemon Project
- * http://www.musicpd.org
+ * Copyright 2007-2017 Content Management AG
+ * All rights reserved.
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * author: Max Kellermann <mk@cm4all.com>
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
  *
- * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * - Redistributions of source code must retain the above copyright
+ * notice, this list of conditions and the following disclaimer.
+ *
+ * - Redistributions in binary form must reproduce the above copyright
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the
+ * distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ * FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE
+ * FOUNDATION OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+ * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
+ * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include "config.h"
 #include "Resolver.hxx"
+#include "AddressInfo.hxx"
+#include "HostParser.hxx"
 #include "util/RuntimeError.hxx"
-
-#include <string>
+#include "util/CharUtil.hxx"
 
 #ifdef _WIN32
 #include <ws2tcpip.h>
 #else
-#include <sys/types.h>
 #include <sys/socket.h>
 #include <netdb.h>
+#include <net/if.h>
 #endif
 
 #include <string.h>
 #include <stdio.h>
+#include <errno.h>
 
-struct addrinfo *
-resolve_host_port(const char *host_port, unsigned default_port,
-		  int flags, int socktype)
+static inline bool
+ai_is_passive(const struct addrinfo *ai)
 {
-	std::string p(host_port);
-	const char *host = p.c_str(), *port = nullptr;
+	return ai == nullptr || (ai->ai_flags & AI_PASSIVE) != 0;
+}
 
-	if (host_port[0] == '[') {
-		/* IPv6 needs enclosing square braces, to
-		   differentiate between IP colons and the port
-		   separator */
+#ifndef _WIN32
 
-		size_t q = p.find(']', 1);
-		if (q != p.npos && p[q + 1] == ':' && p[q + 2] != 0) {
-			p[q] = 0;
-			port = host + q + 2;
-			++host;
+/**
+ * Check if there is an interface name after '%', and if so, replace
+ * it with the interface index, because getaddrinfo() understands only
+ * the index, not the name (tested on Linux/glibc).
+ */
+static void
+FindAndResolveInterfaceName(char *host, size_t size)
+{
+	char *percent = strchr(host, '%');
+	if (percent == nullptr || percent + 64 > host + size)
+		return;
+
+	char *interface = percent + 1;
+	if (!IsAlphaASCII(*interface))
+		return;
+
+	const unsigned i = if_nametoindex(interface);
+	if (i == 0)
+		throw FormatRuntimeError("No such interface: %s", interface);
+
+	sprintf(interface, "%u", i);
+}
+
+#endif
+
+static int
+Resolve(const char *host_and_port, int default_port,
+	const struct addrinfo *hints,
+	struct addrinfo **ai_r)
+{
+	const char *host, *port;
+	char buffer[256], port_string[16];
+
+	if (host_and_port != nullptr) {
+		const auto eh = ExtractHost(host_and_port);
+		if (eh.HasFailed())
+			return EAI_NONAME;
+
+		if (eh.host.size >= sizeof(buffer)) {
+#ifdef _WIN32
+			return EAI_MEMORY;
+#else
+			errno = ENAMETOOLONG;
+			return EAI_SYSTEM;
+#endif
 		}
-	}
 
-	if (port == nullptr) {
-		/* port is after the colon, but only if it's the only
-		   colon (don't split IPv6 addresses) */
+		memcpy(buffer, eh.host.data, eh.host.size);
+		buffer[eh.host.size] = 0;
+		host = buffer;
 
-		auto q = p.find(':');
-		if (q != p.npos && p[q + 1] != 0 &&
-		    p.find(':', q + 1) == p.npos) {
-			p[q] = 0;
-			port = host + q + 1;
-		}
-	}
+#ifndef _WIN32
+		FindAndResolveInterfaceName(buffer, sizeof(buffer));
+#endif
 
-	char buffer[32];
-	if (port == nullptr && default_port != 0) {
-		snprintf(buffer, sizeof(buffer), "%u", default_port);
-		port = buffer;
-	}
+		port = eh.end;
+		if (*port == ':') {
+			/* port specified */
+			++port;
+		} else if (*port == 0) {
+			/* no port specified */
+			snprintf(port_string, sizeof(port_string), "%d", default_port);
+			port = port_string;
+		} else
+			throw std::runtime_error("Garbage after host name");
 
-	if ((flags & AI_PASSIVE) != 0 && strcmp(host, "*") == 0)
+		if (ai_is_passive(hints) && strcmp(host, "*") == 0)
+			host = nullptr;
+	} else {
 		host = nullptr;
+		snprintf(port_string, sizeof(port_string), "%d", default_port);
+		port = port_string;
+	}
 
+	return getaddrinfo(host, port, hints, ai_r);
+}
+
+AddressInfoList
+Resolve(const char *host_and_port, int default_port,
+	const struct addrinfo *hints)
+{
+	struct addrinfo *ai;
+	int result = Resolve(host_and_port, default_port, hints, &ai);
+	if (result != 0)
+		throw FormatRuntimeError("Failed to resolve '%s': %s",
+					 host_and_port, gai_strerror(result));
+
+	return AddressInfoList(ai);
+}
+
+AddressInfoList
+Resolve(const char *host_port, unsigned default_port, int flags, int socktype)
+{
 	addrinfo hints;
 	memset(&hints, 0, sizeof(hints));
 	hints.ai_flags = flags;
 	hints.ai_family = AF_UNSPEC;
 	hints.ai_socktype = socktype;
 
-	struct addrinfo *ai;
-	int ret = getaddrinfo(host, port, &hints, &ai);
-	if (ret != 0)
-		throw FormatRuntimeError("Failed to look up '%s': %s",
-					 host_port, gai_strerror(ret));
-
-	return ai;
+	return Resolve(host_port, default_port, &hints);
 }
