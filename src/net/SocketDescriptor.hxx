@@ -42,16 +42,16 @@ class StaticSocketAddress;
  */
 class SocketDescriptor : protected FileDescriptor {
 protected:
-	explicit constexpr SocketDescriptor(FileDescriptor _fd)
+	explicit constexpr SocketDescriptor(FileDescriptor _fd) noexcept
 		:FileDescriptor(_fd) {}
 
 public:
 	SocketDescriptor() = default;
 
-	explicit constexpr SocketDescriptor(int _fd)
+	explicit constexpr SocketDescriptor(int _fd) noexcept
 		:FileDescriptor(_fd) {}
 
-	constexpr bool operator==(SocketDescriptor other) const {
+	constexpr bool operator==(SocketDescriptor other) const noexcept {
 		return fd == other.fd;
 	}
 
@@ -62,7 +62,7 @@ public:
 	 * same as file descriptors (i.e. not on Windows).  Use this only
 	 * when you know what you're doing.
 	 */
-	static constexpr SocketDescriptor FromFileDescriptor(FileDescriptor fd) {
+	static constexpr SocketDescriptor FromFileDescriptor(FileDescriptor fd) noexcept {
 		return SocketDescriptor(fd);
 	}
 
@@ -72,7 +72,7 @@ public:
 	 * same as file descriptors (i.e. not on Windows).  Use this only
 	 * when you know what you're doing.
 	 */
-	constexpr const FileDescriptor &ToFileDescriptor() const {
+	constexpr const FileDescriptor &ToFileDescriptor() const noexcept {
 		return *this;
 	}
 #endif
@@ -101,7 +101,7 @@ public:
 	using FileDescriptor::Steal;
 	using FileDescriptor::SetUndefined;
 
-	static constexpr SocketDescriptor Undefined() {
+	static constexpr SocketDescriptor Undefined() noexcept {
 		return SocketDescriptor(FileDescriptor::Undefined());
 	}
 
@@ -122,7 +122,7 @@ public:
 	 * careful when dealing with a FileDescriptor reference that is
 	 * really a SocketDescriptor.
 	 */
-	void Close();
+	void Close() noexcept;
 #endif
 
 	/**
@@ -134,26 +134,29 @@ public:
 	 * @return True on success, False on failure
 	 * See man 2 socket for detailed information
 	 */
-	bool Create(int domain, int type, int protocol);
+	bool Create(int domain, int type, int protocol) noexcept;
 
 	/**
 	 * Like Create(), but enable non-blocking mode.
 	 */
-	bool CreateNonBlock(int domain, int type, int protocol);
+	bool CreateNonBlock(int domain, int type, int protocol) noexcept;
 
 #ifndef _WIN32
 	static bool CreateSocketPair(int domain, int type, int protocol,
-				     SocketDescriptor &a, SocketDescriptor &b);
+				     SocketDescriptor &a,
+				     SocketDescriptor &b) noexcept;
 	static bool CreateSocketPairNonBlock(int domain, int type, int protocol,
-					     SocketDescriptor &a, SocketDescriptor &b);
+					     SocketDescriptor &a,
+					     SocketDescriptor &b) noexcept;
 #endif
 
-	int GetError();
+	int GetError() noexcept;
 
 	/**
 	 * @return the value size or 0 on error
 	 */
-	size_t GetOption(int level, int name, void *value, size_t size) const;
+	size_t GetOption(int level, int name,
+			 void *value, size_t size) const noexcept;
 
 #ifdef HAVE_STRUCT_UCRED
 	/**
@@ -164,62 +167,63 @@ public:
 	struct ucred GetPeerCredentials() const noexcept;
 #endif
 
-	bool SetOption(int level, int name, const void *value, size_t size);
+	bool SetOption(int level, int name,
+		       const void *value, size_t size) noexcept;
 
-	bool SetBoolOption(int level, int name, bool _value) {
+	bool SetBoolOption(int level, int name, bool _value) noexcept {
 		const int value = _value;
 		return SetOption(level, name, &value, sizeof(value));
 	}
 
-	bool SetKeepAlive(bool value=true);
-	bool SetReuseAddress(bool value=true);
+	bool SetKeepAlive(bool value=true) noexcept;
+	bool SetReuseAddress(bool value=true) noexcept;
 
 #ifdef __linux__
-	bool SetReusePort(bool value=true);
-	bool SetFreeBind(bool value=true);
-	bool SetNoDelay(bool value=true);
-	bool SetCork(bool value=true);
+	bool SetReusePort(bool value=true) noexcept;
+	bool SetFreeBind(bool value=true) noexcept;
+	bool SetNoDelay(bool value=true) noexcept;
+	bool SetCork(bool value=true) noexcept;
 
-	bool SetTcpDeferAccept(const int &seconds);
-	bool SetV6Only(bool value);
+	bool SetTcpDeferAccept(const int &seconds) noexcept;
+	bool SetV6Only(bool value) noexcept;
 
 	/**
 	 * Setter for SO_BINDTODEVICE.
 	 */
-	bool SetBindToDevice(const char *name);
+	bool SetBindToDevice(const char *name) noexcept;
 
-	bool SetTcpFastOpen(int qlen=16);
+	bool SetTcpFastOpen(int qlen=16) noexcept;
 #endif
 
-	bool Bind(SocketAddress address);
+	bool Bind(SocketAddress address) noexcept;
 
 #ifdef __linux__
 	/**
 	 * Binds the socket to a unique abstract address.
 	 */
-	bool AutoBind();
+	bool AutoBind() noexcept;
 #endif
 
-	bool Listen(int backlog);
+	bool Listen(int backlog) noexcept;
 
-	SocketDescriptor Accept();
-	SocketDescriptor AcceptNonBlock() const;
-	SocketDescriptor AcceptNonBlock(StaticSocketAddress &address) const;
+	SocketDescriptor Accept() noexcept;
+	SocketDescriptor AcceptNonBlock() const noexcept;
+	SocketDescriptor AcceptNonBlock(StaticSocketAddress &address) const noexcept;
 
-	bool Connect(SocketAddress address);
-
-	gcc_pure
-	StaticSocketAddress GetLocalAddress() const;
+	bool Connect(SocketAddress address) noexcept;
 
 	gcc_pure
-	StaticSocketAddress GetPeerAddress() const;
+	StaticSocketAddress GetLocalAddress() const noexcept;
 
-	ssize_t Read(void *buffer, size_t length);
-	ssize_t Write(const void *buffer, size_t length);
+	gcc_pure
+	StaticSocketAddress GetPeerAddress() const noexcept;
+
+	ssize_t Read(void *buffer, size_t length) noexcept;
+	ssize_t Write(const void *buffer, size_t length) noexcept;
 
 #ifdef _WIN32
-	int WaitReadable(int timeout_ms) const;
-	int WaitWritable(int timeout_ms) const;
+	int WaitReadable(int timeout_ms) const noexcept;
+	int WaitWritable(int timeout_ms) const noexcept;
 #else
 	using FileDescriptor::WaitReadable;
 	using FileDescriptor::WaitWritable;
@@ -230,13 +234,13 @@ public:
 	 * Receive a datagram and return the source address.
 	 */
 	ssize_t Read(void *buffer, size_t length,
-		     StaticSocketAddress &address);
+		     StaticSocketAddress &address) noexcept;
 
 	/**
 	 * Send a datagram to the specified address.
 	 */
 	ssize_t Write(const void *buffer, size_t length,
-		      SocketAddress address);
+		      SocketAddress address) noexcept;
 };
 
 static_assert(std::is_trivial<SocketDescriptor>::value, "type is not trivial");
