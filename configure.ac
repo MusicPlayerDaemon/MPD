@@ -138,6 +138,7 @@ haiku*)
 	;;
 esac
 
+AM_CONDITIONAL([LINUX], [test x$host_is_linux = xyes])
 AM_CONDITIONAL([ANDROID], [test x$host_is_android = xyes])
 AM_CONDITIONAL([HAVE_WINDOWS], [test x$host_is_windows = xyes])
 

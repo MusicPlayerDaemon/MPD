@@ -28,7 +28,6 @@
  */
 
 #include "config.h"
-#ifdef __linux__
 #include "EventFD.hxx"
 #include "system/Error.hxx"
 #include "util/Compiler.h"
@@ -60,5 +59,3 @@ EventFD::Write() noexcept
 	gcc_unused ssize_t nbytes =
 		fd.Write(&value, sizeof(value));
 }
-
-#endif /* USE_EVENTFD */

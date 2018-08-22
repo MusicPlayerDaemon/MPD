@@ -28,7 +28,6 @@
  */
 
 #include "config.h"
-#ifdef USE_EPOLL
 #include "EpollFD.hxx"
 #include "Error.hxx"
 
@@ -38,5 +37,3 @@ EpollFD::EpollFD()
 	if (!fd.IsDefined())
 		throw MakeErrno("epoll_create1() failed");
 }
-
-#endif /* USE_EPOLL */

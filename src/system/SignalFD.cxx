@@ -28,7 +28,6 @@
  */
 
 #include "config.h"
-#ifdef __linux__
 #include "SignalFD.hxx"
 #include "Error.hxx"
 
@@ -52,5 +51,3 @@ SignalFD::Read() noexcept
 		? info.ssi_signo
 		: -1;
 }
-
-#endif /* __linux__ */

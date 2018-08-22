@@ -617,11 +617,15 @@ libsystem_a_SOURCES = \
 	src/system/UniqueFileDescriptor.hxx \
 	src/system/Open.cxx src/system/Open.hxx \
 	src/system/EventPipe.cxx src/system/EventPipe.hxx \
-	src/system/EventFD.cxx src/system/EventFD.hxx \
-	src/system/SignalFD.cxx src/system/SignalFD.hxx \
-	src/system/EpollFD.cxx src/system/EpollFD.hxx \
 	src/system/PeriodClock.hxx \
 	src/system/Clock.cxx src/system/Clock.hxx
+
+if LINUX
+libsystem_a_SOURCES += \
+	src/system/EventFD.cxx src/system/EventFD.hxx \
+	src/system/SignalFD.cxx src/system/SignalFD.hxx \
+	src/system/EpollFD.cxx src/system/EpollFD.hxx
+endif
 
 # Event loop library
 
