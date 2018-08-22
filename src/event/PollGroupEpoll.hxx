@@ -23,14 +23,14 @@
 #include "check.h"
 
 #include "util/Compiler.h"
-#include "system/EPollFD.hxx"
+#include "system/EpollFD.hxx"
 
 #include <array>
 #include <algorithm>
 
-class PollResultEPoll
+class PollResultEpoll
 {
-	friend class PollGroupEPoll;
+	friend class PollGroupEpoll;
 
 	std::array<epoll_event, 16> events;
 	size_t n_events = 0;
@@ -59,21 +59,21 @@ public:
 	}
 };
 
-class PollGroupEPoll
+class PollGroupEpoll
 {
-	EPollFD epoll;
+	EpollFD epoll;
 
-	PollGroupEPoll(PollGroupEPoll &) = delete;
-	PollGroupEPoll &operator=(PollGroupEPoll &) = delete;
+	PollGroupEpoll(PollGroupEpoll &) = delete;
+	PollGroupEpoll &operator=(PollGroupEpoll &) = delete;
 public:
 	static constexpr unsigned READ = EPOLLIN;
 	static constexpr unsigned WRITE = EPOLLOUT;
 	static constexpr unsigned ERROR = EPOLLERR;
 	static constexpr unsigned HANGUP = EPOLLHUP;
 
-	PollGroupEPoll() = default;
+	PollGroupEpoll() = default;
 
-	void ReadEvents(PollResultEPoll &result, int timeout_ms) noexcept {
+	void ReadEvents(PollResultEpoll &result, int timeout_ms) noexcept {
 		int ret = epoll.Wait(result.events.data(), result.events.size(),
 				     timeout_ms);
 		result.n_events = std::max(0, ret);

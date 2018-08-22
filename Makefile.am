@@ -619,7 +619,7 @@ libsystem_a_SOURCES = \
 	src/system/EventPipe.cxx src/system/EventPipe.hxx \
 	src/system/EventFD.cxx src/system/EventFD.hxx \
 	src/system/SignalFD.cxx src/system/SignalFD.hxx \
-	src/system/EPollFD.cxx src/system/EPollFD.hxx \
+	src/system/EpollFD.cxx src/system/EpollFD.hxx \
 	src/system/PeriodClock.hxx \
 	src/system/Clock.cxx src/system/Clock.hxx
 
@@ -628,7 +628,7 @@ libsystem_a_SOURCES = \
 libevent_a_SOURCES = \
 	src/event/WakeFD.hxx \
 	src/event/PollGroup.hxx \
-	src/event/PollGroupEPoll.hxx \
+	src/event/PollGroupEpoll.hxx \
 	src/event/PollGroupPoll.hxx src/event/PollGroupPoll.cxx \
 	src/event/PollGroupWinSelect.hxx src/event/PollGroupWinSelect.cxx \
 	src/event/PollResultGeneric.hxx \

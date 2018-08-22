@@ -21,9 +21,9 @@
 #define MPD_EVENT_POLLGROUP_HXX
 
 #ifdef USE_EPOLL
-#include "PollGroupEPoll.hxx"
-typedef PollResultEPoll PollResult;
-typedef PollGroupEPoll  PollGroup;
+#include "PollGroupEpoll.hxx"
+typedef PollResultEpoll PollResult;
+typedef PollGroupEpoll PollGroup;
 #endif
 
 #ifdef USE_WINSELECT

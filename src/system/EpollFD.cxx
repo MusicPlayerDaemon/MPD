@@ -19,10 +19,10 @@
 
 #include "config.h"
 #ifdef USE_EPOLL
-#include "EPollFD.hxx"
+#include "EpollFD.hxx"
 #include "Error.hxx"
 
-EPollFD::EPollFD()
+EpollFD::EpollFD()
 	:fd(::epoll_create1(EPOLL_CLOEXEC))
 {
 	if (fd < 0)

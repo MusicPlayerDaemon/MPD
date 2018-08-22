@@ -32,23 +32,23 @@ struct epoll_event;
 /**
  * A class that wraps Linux epoll.
  */
-class EPollFD {
+class EpollFD {
 	const int fd;
 
 public:
 	/**
 	 * Throws on error.
 	 */
-	EPollFD();
+	EpollFD();
 
-	~EPollFD() noexcept {
+	~EpollFD() noexcept {
 		assert(fd >= 0);
 
 		::close(fd);
 	}
 
-	EPollFD(const EPollFD &other) = delete;
-	EPollFD &operator=(const EPollFD &other) = delete;
+	EpollFD(const EpollFD &other) = delete;
+	EpollFD &operator=(const EpollFD &other) = delete;
 
 	int Wait(epoll_event *events, int maxevents, int timeout) noexcept {
 		return ::epoll_wait(fd, events, maxevents, timeout);
