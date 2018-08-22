@@ -35,7 +35,7 @@
 EpollFD::EpollFD()
 	:fd(::epoll_create1(EPOLL_CLOEXEC))
 {
-	if (fd < 0)
+	if (!fd.IsDefined())
 		throw MakeErrno("epoll_create1() failed");
 }
 

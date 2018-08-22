@@ -30,12 +30,13 @@
 #ifndef EPOLL_FD_HXX
 #define EPOLL_FD_HXX
 
+#include "check.h"
+#include "UniqueFileDescriptor.hxx"
+
 #include <assert.h>
 #include <sys/epoll.h>
 #include <unistd.h>
 #include <stdint.h>
-
-#include "check.h"
 
 struct epoll_event;
 
@@ -43,7 +44,7 @@ struct epoll_event;
  * A class that wraps Linux epoll.
  */
 class EpollFD {
-	const int fd;
+	UniqueFileDescriptor fd;
 
 public:
 	/**
@@ -51,21 +52,15 @@ public:
 	 */
 	EpollFD();
 
-	~EpollFD() noexcept {
-		assert(fd >= 0);
-
-		::close(fd);
-	}
-
-	EpollFD(const EpollFD &other) = delete;
-	EpollFD &operator=(const EpollFD &other) = delete;
+	EpollFD(EpollFD &&) = default;
+	EpollFD &operator=(EpollFD &&) = default;
 
 	int Wait(epoll_event *events, int maxevents, int timeout) noexcept {
-		return ::epoll_wait(fd, events, maxevents, timeout);
+		return ::epoll_wait(fd.Get(), events, maxevents, timeout);
 	}
 
 	bool Control(int op, int _fd, epoll_event *event) noexcept {
-		return ::epoll_ctl(fd, op, _fd, event) >= 0;
+		return ::epoll_ctl(fd.Get(), op, _fd, event) >= 0;
 	}
 
 	bool Add(int _fd, uint32_t events, void *ptr) noexcept {
