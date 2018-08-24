@@ -79,6 +79,12 @@ public:
 	bool IsValid() const noexcept;
 
 	/**
+	 * Ask the kernel whether this is a regular file.
+	 */
+	gcc_pure
+	bool IsRegularFile() const noexcept;
+
+	/**
 	 * Ask the kernel whether this is a pipe.
 	 */
 	gcc_pure

@@ -60,6 +60,13 @@ FileDescriptor::IsValid() const noexcept
 }
 
 bool
+FileDescriptor::IsRegularFile() const noexcept
+{
+	struct stat st;
+	return IsDefined() && fstat(fd, &st) == 0 && S_ISREG(st.st_mode);
+}
+
+bool
 FileDescriptor::IsPipe() const noexcept
 {
 	struct stat st;
