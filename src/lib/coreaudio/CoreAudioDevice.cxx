@@ -494,9 +494,10 @@ CoreAudioDevice::ScoreSampleRate(Float64 destination_rate, unsigned int source_r
 	// prefer sample rates that are multiples of the source sample rate
 	score += (1 - frac_portion) * 1000;
 	// prefer exact matches over other multiples
-	score += (int_portion == 1.0) ? 500 : 0;
+	if(source_rate == destination_rate)
+		score += 500;
 	// prefer higher multiples if source rate higher than dest rate
-	if(source_rate >= destination_rate)
+	else if(source_rate >= destination_rate)
 		score += (int_portion > 1 && int_portion < 100) ? (100 - int_portion) / 100 * 100 : 0;
 	else
 		score += (int_portion > 1 && int_portion < 100) ? (100 + int_portion) / 100 * 100 : 0;
