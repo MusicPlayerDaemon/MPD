@@ -28,37 +28,29 @@ public:
 	MacOSMixer(MacOSOutput &_output, MixerListener &_listener)
 		:Mixer(macos_mixer_plugin, _listener),
 		 output(_output)
-	{
-	}
+	{}
 
 	/* virtual methods from class Mixer */
-	void Open() noexcept override {
-	}
+	void Open() noexcept override {}
 
-	void Close() noexcept override {
-	}
+	void Close() noexcept override {}
 
 	int GetVolume() override;
 	void SetVolume(unsigned volume) override;
 };
 
 int
-MacOSMixer::GetVolume()
-{
+MacOSMixer::GetVolume() {
 	return macos_output_get_volume(output);
 }
 
 void
-MacOSMixer::SetVolume(unsigned new_volume)
-{
+MacOSMixer::SetVolume(unsigned new_volume) {
 	macos_output_set_volume(output, new_volume);
 }
 
 static Mixer *
-macos_mixer_init(gcc_unused EventLoop &event_loop, AudioOutput &ao,
-		MixerListener &listener,
-		gcc_unused const ConfigBlock &block)
-{
+macos_mixer_init(gcc_unused EventLoop &event_loop, AudioOutput &ao, MixerListener &listener, gcc_unused const ConfigBlock &block) {
 	MacOSOutput &osxo = (MacOSOutput &)ao;
 	return new MacOSMixer(osxo, listener);
 }
