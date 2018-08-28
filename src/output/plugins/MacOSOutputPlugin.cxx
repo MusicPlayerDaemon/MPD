@@ -63,6 +63,8 @@ struct MacOSOutput final : AudioOutput {
 	bool hog_device;
 #ifdef ENABLE_DSD
 	bool dop_setting;
+	// This is set to true in case we actually perform DoP
+	bool dop = false;
 #endif
 	bool integer_mode;
 	UInt32 frame_buffer_size;
@@ -84,11 +86,13 @@ struct MacOSOutput final : AudioOutput {
 
 	bool pause;
 	
+#ifdef ENABLE_DSD
 	/** Required to support DoP. No
 	 *	other features currently used.
 	 */
 	Manual<PcmExport> pcm_export;
-
+#endif
+	
 	boost::lockfree::spsc_queue<uint8_t> *ring_buffer = nullptr;
 	UInt32 buffer_ms;
 	
@@ -110,14 +114,9 @@ private:
 	void SetupConverter();
 	void Setup(AudioFormat &audio_format);
 #ifdef ENABLE_DSD
-	void SetupDop(AudioFormat audio_format,
-				  PcmExport::Params &params);
+	void SetupDop(AudioFormat audio_format);
 #endif
-	void SetupOrDop(AudioFormat &audio_format, PcmExport::Params &params
-#ifdef ENABLE_DSD
-					, bool dop
-#endif
-	);
+	void SetupOrDop(AudioFormat &audio_format);
 	static OSStatus RenderCallback(gcc_unused AudioObjectID inDevice, gcc_unused const AudioTimeStamp* inNow, gcc_unused const AudioBufferList* inInputData, gcc_unused const AudioTimeStamp* inInputTime, AudioBufferList* outOutputData, gcc_unused const AudioTimeStamp* inOutputTime, void* inClientData);
 };
 
@@ -193,13 +192,11 @@ MacOSOutput::Enable() {
 		device.Close();
 		throw;
 	}
-	pcm_export.Construct();
 }
 
 void
 MacOSOutput::Disable() noexcept {
 	device.Close();
-	pcm_export.Destruct();
 }
 
 void
@@ -214,7 +211,12 @@ MacOSOutput::Close() noexcept {
 		// Make sure this is really noexcept method.
 		FormatDebug(macos_output_domain,"Ignoring exception on close of output.");
 	}
-	pcm_export->Reset();
+#ifdef ENABLE_DSD
+	if(dop) {
+		pcm_export.Destruct();
+		dop = false;
+	}
+#endif
 	DeallocateABL(out_buffer);
 	out_buffer = nullptr;
 	AudioConverterDispose(ca_converter);
@@ -294,26 +296,19 @@ MacOSOutput::Setup(AudioFormat &audio_format) {
 #ifdef ENABLE_DSD
 
 void
-MacOSOutput::SetupDop(const AudioFormat audio_format, PcmExport::Params &params) {
+MacOSOutput::SetupDop(const AudioFormat audio_format) {
 	assert(audio_format.format == SampleFormat::DSD);
-	
+	PcmExport::Params params;
+	params.dop = true;
 	/* pass 24 bit to Setup() */
-	
 	AudioFormat dop_format = audio_format;
 	dop_format.format = SampleFormat::S24_P32;
 	dop_format.sample_rate = params.CalcOutputSampleRate(audio_format.sample_rate);
-	
 	const AudioFormat check = dop_format;
 	
 	Setup(dop_format);
 	
-	/* if the device allows only 32 bit, shift all DoP
-	 samples left by 8 bit and leave the lower 8 bit cleared;
-	 the DSD-over-USB documentation does not specify whether
-	 this is legal, but there is anecdotical evidence that this
-	 is possible (and the only option for some devices) */
-	params.shift8 = dop_format.format == SampleFormat::S32;
-	
+	// We can accept also 32 bit (due to shift8 in this case)
 	if (dop_format.format == SampleFormat::S32)
 		dop_format.format = SampleFormat::S24_P32;
 	
@@ -326,24 +321,19 @@ MacOSOutput::SetupDop(const AudioFormat audio_format, PcmExport::Params &params)
 #endif
 
 void
-MacOSOutput::SetupOrDop(AudioFormat &audio_format, PcmExport::Params &params
-#ifdef ENABLE_DSD
-					   , bool dop
-#endif
-) {
+MacOSOutput::SetupOrDop(AudioFormat &audio_format) {
 #ifdef ENABLE_DSD
 	std::exception_ptr dop_error;
 	if(audio_format.format == SampleFormat::DSD) {
 		if (dop) {
 			try {
-				params.dop = true;
-				SetupDop(audio_format, params);
+				SetupDop(audio_format);
 				return;
 			}
 			catch (...) {
 				dop_error = std::current_exception();
 				// DoP was unsuccessful, proceed with PCM output
-				params.dop = false;
+				dop = false;
 				audio_format.format = SampleFormat::S32;
 			}
 		}
@@ -374,28 +364,20 @@ MacOSOutput::SetupOrDop(AudioFormat &audio_format, PcmExport::Params &params
 
 void
 MacOSOutput::Open(AudioFormat &audio_format) {
-	PcmExport::Params params;
-	
+
 #ifdef ENABLE_DSD
-	bool dop = dop_setting;
-	params.dop = false;
+	if(dop_setting && audio_format.format == SampleFormat::DSD)
+		dop = true;
+	else
+		dop = false;
 #endif
 	
 	try {
-		SetupOrDop(audio_format, params
-#ifdef ENABLE_DSD
-				   , dop
-#endif
-				   );
+		SetupOrDop(audio_format);
 	}
 	catch (...) {
 		std::throw_with_nested(FormatRuntimeError("Error opening MacOS output device \"%s\"", device_name));
 	}
-	
-#ifdef ENABLE_DSD
-	if (params.dop)
-		FormatDebug(macos_output_domain, "DoP (DSD over PCM) enabled");
-#endif
 	
 	// Setup converter used to transform MPD's format to the CoreAudio IO format
 	SetupConverter();
@@ -413,7 +395,21 @@ MacOSOutput::Open(AudioFormat &audio_format) {
 	FormatDebug(macos_output_domain, "Using buffer size of %d ms and %ld bytes", buffer_ms, ring_buffer_size);
 	ring_buffer = new boost::lockfree::spsc_queue<uint8_t>(ring_buffer_size);
 	
-	pcm_export->Open(audio_format.format, audio_format.channels, params);
+#ifdef ENABLE_DSD
+	if(dop) {
+		PcmExport::Params params;
+		params.dop = true;
+		/* If the device allows only 32 bit, shift all DoP
+		 samples left by 8 bit and leave the lower 8 bit cleared;
+		 the DSD-over-USB documentation does not specify whether
+		 this is legal, but there is anecdotical evidence that this
+		 is possible (and the only option for some devices) */
+		params.shift8 = in_format.mBitsPerChannel == 32;
+		pcm_export.Construct();
+		pcm_export->Open(audio_format.format, audio_format.channels, params);
+		FormatDebug(macos_output_domain, "DoP (DSD over PCM) enabled");
+	}
+#endif
 	
 	// Register for data request callbacks from the driver and start
 	device.AddIOProc(RenderCallback, this);
@@ -428,19 +424,24 @@ MacOSOutput::Play(const void *chunk, size_t size) {
 		pause = false;
 		device.Start();
 	}
-	const auto e = pcm_export->Export({chunk, size});
-	if (e.size == 0)
-		/** The DoP (DSD over PCM) filter converts two frames
-		 *	at a time and ignores the last odd frame; if there
-		 *	was only one frame (e.g. the last frame in the
-		 *	file), the result is empty; to avoid an endless
-		 *	loop, bail out here, and pretend the one frame has
-		 *	been played
-		 */
-		return size;
+#ifdef ENABLE_DSD
+	if(dop) {
+		const auto e = pcm_export->Export({chunk, size});
+		if (e.size == 0)
+			/** The DoP (DSD over PCM) filter converts two frames
+			 *	at a time and ignores the last odd frame; if there
+			 *	was only one frame (e.g. the last frame in the
+			 *	file), the result is empty; to avoid an endless
+			 *	loop, bail out here, and pretend the one frame has
+			 *	been played
+			 */
+			return size;
 
-	size_t bytes_written = ring_buffer->push((const uint8_t *)e.data, e.size);
-	return pcm_export->CalcSourceSize(bytes_written);
+		size_t bytes_written = ring_buffer->push((const uint8_t *)e.data, e.size);
+		return pcm_export->CalcSourceSize(bytes_written);
+	}
+#endif
+	return ring_buffer->push((const uint8_t *)chunk, size);
 }
 
 std::chrono::steady_clock::duration
@@ -457,8 +458,11 @@ MacOSOutput::Cancel() noexcept {
 	device.Stop();
 	// Empty ring buffer
 	ring_buffer->reset();
-	// Reset our PCM export
-	pcm_export->Reset();
+#ifdef ENABLE_DSD
+	if(dop)
+		// Reset our PCM export for DoP
+		pcm_export->Reset();
+#endif
 	// Restart the device (CoreAudio will query for additional data)
 	device.Start();
 }
