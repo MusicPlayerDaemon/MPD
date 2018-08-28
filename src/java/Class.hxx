@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2011 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright (C) 2010-2018 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -31,6 +31,7 @@
 #define JAVA_CLASS_HXX
 
 #include "Ref.hxx"
+#include "Exception.hxx"
 
 #include <assert.h>
 
@@ -38,7 +39,7 @@ namespace Java {
 	/**
 	 * Wrapper for a local "jclass" reference.
 	 */
-	class Class : public Java::LocalRef<jclass> {
+	class Class : public LocalRef<jclass> {
 	public:
 		Class(JNIEnv *env, jclass cls)
 			:LocalRef<jclass>(env, cls) {}
@@ -68,10 +69,8 @@ namespace Java {
 			assert(name != nullptr);
 
 			jclass cls = env->FindClass(name);
-			if (cls == nullptr) {
-				env->ExceptionClear();
+			if (DiscardException(env))
 				return false;
-			}
 
 			Set(env, cls);
 			env->DeleteLocalRef(cls);
