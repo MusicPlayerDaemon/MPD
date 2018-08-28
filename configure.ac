@@ -1295,7 +1295,7 @@ AM_CONDITIONAL(HAVE_OSX, test x$enable_osx = xyes)
 dnl ----------------------------------- MacOS -----------------------------------
 if test x$enable_macos = xyes; then
 	AC_DEFINE(HAVE_MACOS, 1, [Define for compiling OS X support])
-	LIBS="$LIBS -framework CoreAudio -framework AudioToolbox"
+	LIBS="$LIBS -framework CoreAudio -framework AudioToolbox -framework Foundation"
 fi
 
 AM_CONDITIONAL(HAVE_MACOS, test x$enable_macos = xyes)
