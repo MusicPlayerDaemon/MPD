@@ -32,7 +32,7 @@
 
 char *
 Java::String::CopyTo(JNIEnv *env, jstring value,
-		     char *buffer, size_t max_size)
+		     char *buffer, size_t max_size) noexcept
 {
 	const char *p = env->GetStringUTFChars(value, nullptr);
 	if (p == nullptr)

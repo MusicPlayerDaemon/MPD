@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2014 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2010-2018 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -45,10 +45,10 @@ namespace Java {
 
 	public:
 		gcc_nonnull_all
-		static void Initialise(JNIEnv *env);
+		static void Initialise(JNIEnv *env) noexcept;
 
 		gcc_nonnull_all
-		static jstring getAbsolutePath(JNIEnv *env, jobject file) {
+		static jstring getAbsolutePath(JNIEnv *env, jobject file) noexcept {
 			return (jstring)env->CallObjectMethod(file,
 							      getAbsolutePath_method);
 		}
@@ -59,7 +59,7 @@ namespace Java {
 		 */
 		gcc_pure gcc_nonnull_all
 		static AllocatedPath ToAbsolutePath(JNIEnv *env,
-						    jobject file);
+						    jobject file) noexcept;
 	};
 }
 

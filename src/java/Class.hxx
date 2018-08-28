@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2018 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2010-2018 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -41,10 +41,10 @@ namespace Java {
 	 */
 	class Class : public LocalRef<jclass> {
 	public:
-		Class(JNIEnv *env, jclass cls)
+		Class(JNIEnv *env, jclass cls) noexcept
 			:LocalRef<jclass>(env, cls) {}
 
-		Class(JNIEnv *env, const char *name)
+		Class(JNIEnv *env, const char *name) noexcept
 			:LocalRef<jclass>(env, env->FindClass(name)) {}
 	};
 
@@ -53,7 +53,7 @@ namespace Java {
 	 */
 	class TrivialClass : public TrivialRef<jclass> {
 	public:
-		void Find(JNIEnv *env, const char *name) {
+		void Find(JNIEnv *env, const char *name) noexcept {
 			assert(env != nullptr);
 			assert(name != nullptr);
 
@@ -64,7 +64,7 @@ namespace Java {
 			env->DeleteLocalRef(cls);
 		}
 
-		bool FindOptional(JNIEnv *env, const char *name) {
+		bool FindOptional(JNIEnv *env, const char *name) noexcept {
 			assert(env != nullptr);
 			assert(name != nullptr);
 

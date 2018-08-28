@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2012 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2010-2018 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -38,7 +38,7 @@ namespace Java {
 	 *
 	 * @return true if an exception was found (and discarded)
 	 */
-	static inline bool DiscardException(JNIEnv *env) {
+	static inline bool DiscardException(JNIEnv *env) noexcept {
 		bool result = env->ExceptionCheck();
 		if (result)
 			env->ExceptionClear();

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2014 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2010-2018 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -38,7 +38,7 @@
 jmethodID Java::File::getAbsolutePath_method;
 
 void
-Java::File::Initialise(JNIEnv *env)
+Java::File::Initialise(JNIEnv *env) noexcept
 {
 	Class cls(env, "java/io/File");
 
@@ -47,7 +47,7 @@ Java::File::Initialise(JNIEnv *env)
 }
 
 AllocatedPath
-Java::File::ToAbsolutePath(JNIEnv *env, jobject _file)
+Java::File::ToAbsolutePath(JNIEnv *env, jobject _file) noexcept
 {
 	assert(env != nullptr);
 	assert(_file != nullptr);
