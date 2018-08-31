@@ -47,8 +47,7 @@
 #include <boost/lockfree/spsc_queue.hpp>
 
 static constexpr Domain macos_output_domain("macos_output");
-// Set output frame buffer to double of the 512 default value
-static constexpr unsigned DEFAULT_FRAME_BUFFER_SIZE = 1024;
+
 // Ring buffer of at least 100ms
 static constexpr unsigned BUFFER_TIME_MS = 100;
 
@@ -143,7 +142,7 @@ MacOSOutput::MacOSOutput(const ConfigBlock &block)
 	dop_setting = block.GetBlockValue("dop", false);
 #endif
 	integer_mode = block.GetBlockValue("integer_mode", false);
-	frame_buffer_size = block.GetBlockValue("frame_buffer_size", DEFAULT_FRAME_BUFFER_SIZE);
+	frame_buffer_size = block.GetBlockValue("frame_buffer_size", 0);
 }
 
 AudioOutput *
@@ -186,7 +185,8 @@ MacOSOutput::Enable() {
 	device.Open(device_name);
 	try {
 		FormatDebug(macos_output_domain, "Opened output device: %s", device.GetName());
-		device.SetBufferSize(frame_buffer_size);
+		if(frame_buffer_size)
+			device.SetBufferSize(frame_buffer_size);
 	}
 	catch (...) {
 		device.Close();
