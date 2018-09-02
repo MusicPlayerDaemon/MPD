@@ -82,6 +82,7 @@ libmpd_a_SOURCES = \
 	src/open.h \
 	src/protocol/Ack.cxx src/protocol/Ack.hxx \
 	src/protocol/ArgParser.cxx src/protocol/ArgParser.hxx \
+	src/protocol/RangeArg.hxx \
 	src/protocol/Result.cxx src/protocol/Result.hxx \
 	src/command/Request.hxx \
 	src/command/CommandResult.hxx \

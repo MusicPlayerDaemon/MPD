@@ -21,6 +21,7 @@
 #include "QueueCommands.hxx"
 #include "Request.hxx"
 #include "CommandError.hxx"
+#include "protocol/RangeArg.hxx"
 #include "db/DatabaseQueue.hxx"
 #include "db/Selection.hxx"
 #include "song/Filter.hxx"

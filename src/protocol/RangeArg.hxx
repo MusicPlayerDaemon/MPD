@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2017 The Music Player Daemon Project
+ * Copyright 2003-2018 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,45 +17,24 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_PROTOCOL_ARGPARSER_HXX
-#define MPD_PROTOCOL_ARGPARSER_HXX
+#ifndef MPD_PROTOCOL_RANGE_ARG_HXX
+#define MPD_PROTOCOL_RANGE_ARG_HXX
 
 #include "check.h"
 
-#include <stdint.h>
+#include <limits>
 
-struct RangeArg;
-class SongTime;
-class SignedSongTime;
+struct RangeArg {
+	unsigned start, end;
 
-uint32_t
-ParseCommandArgU32(const char *s);
+	void SetAll() {
+		start = 0;
+		end = std::numeric_limits<unsigned>::max();
+	}
 
-int
-ParseCommandArgInt(const char *s, int min_value, int max_value);
-
-int
-ParseCommandArgInt(const char *s);
-
-RangeArg
-ParseCommandArgRange(const char *s);
-
-unsigned
-ParseCommandArgUnsigned(const char *s, unsigned max_value);
-
-unsigned
-ParseCommandArgUnsigned(const char *s);
-
-bool
-ParseCommandArgBool(const char *s);
-
-float
-ParseCommandArgFloat(const char *s);
-
-SongTime
-ParseCommandArgSongTime(const char *s);
-
-SignedSongTime
-ParseCommandArgSignedSongTime(const char *s);
+	static constexpr RangeArg All() {
+		return { 0, std::numeric_limits<unsigned>::max() };
+	}
+};
 
 #endif

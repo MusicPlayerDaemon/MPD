@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "ArgParser.hxx"
+#include "RangeArg.hxx"
 #include "Ack.hxx"
 #include "Chrono.hxx"
 #include "util/NumberParser.hxx"

@@ -1,6 +1,7 @@
 #include "config.h"
 #include "protocol/ArgParser.hxx"
 #include "protocol/Ack.hxx"
+#include "protocol/RangeArg.hxx"
 #include "util/Compiler.h"
 
 #include <cppunit/TestFixture.h>

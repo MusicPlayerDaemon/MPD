@@ -26,6 +26,7 @@
 #include "db/Count.hxx"
 #include "db/Selection.hxx"
 #include "CommandError.hxx"
+#include "protocol/RangeArg.hxx"
 #include "client/Client.hxx"
 #include "client/Response.hxx"
 #include "tag/ParseName.hxx"

@@ -22,6 +22,7 @@
 
 #include "check.h"
 #include "protocol/ArgParser.hxx"
+#include "protocol/RangeArg.hxx"
 #include "Chrono.hxx"
 #include "util/ConstBuffer.hxx"
 
