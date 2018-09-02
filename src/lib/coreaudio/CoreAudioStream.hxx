@@ -43,7 +43,6 @@ public:
 	static StreamFormatList GetAvailablePhysicalFormats(AudioStreamID id);
 
 private:
-	static OSStatus HardwareStreamListener(AudioObjectID inObjectID, UInt32 inNumberAddresses, const AudioObjectPropertyAddress inAddresses[], void* inClientData);
 	AudioStreamID stream_id = 0;
 	AudioStreamBasicDescription original_virtual_fmt;
 	AudioStreamBasicDescription original_physical_fmt;

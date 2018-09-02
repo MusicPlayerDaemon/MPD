@@ -42,20 +42,6 @@ CoreAudioStream::Open(AudioStreamID id) {
 	// Get original stream formats
 	original_virtual_fmt = GetVirtualFormat();
 	original_physical_fmt = GetPhysicalFormat();
-
-	// watch for physical property changes.
-	AudioObjectPropertyAddress aopa;
-	aopa.mScope = kAudioObjectPropertyScopeGlobal;
-	aopa.mElement = kAudioObjectPropertyElementMaster;
-	aopa.mSelector = kAudioStreamPropertyPhysicalFormat;
-	if (AudioObjectAddPropertyListener(stream_id, &aopa, HardwareStreamListener, this) != noErr)
-		throw std::runtime_error("Couldn't set up a physical stream format property listener for Core Audio stream.");
-
-	// watch for virtual property changes.
-	aopa.mSelector = kAudioStreamPropertyVirtualFormat;
-	if (AudioObjectAddPropertyListener(stream_id, &aopa, HardwareStreamListener, this) != noErr)
-		throw std::runtime_error("Couldn't set up a virtual stream format property listener for Core Audio stream.");
-
 }
 
 
@@ -63,18 +49,6 @@ void
 CoreAudioStream::Close() noexcept {
 	if (!stream_id)
 		return;
-
-	// remove the physical/virtual property listeners
-	AudioObjectPropertyAddress aopa;
-	aopa.mScope = kAudioObjectPropertyScopeGlobal;
-	aopa.mElement = kAudioObjectPropertyElementMaster;
-	aopa.mSelector = kAudioStreamPropertyPhysicalFormat;
-	try {
-		if (AudioObjectRemovePropertyListener(stream_id, &aopa, HardwareStreamListener, this) != noErr)
-			FormatWarning(macos_output_domain, "Couldn't remove property listener for Core Audio stream.");
-		aopa.mSelector = kAudioStreamPropertyVirtualFormat;
-		if (AudioObjectRemovePropertyListener(stream_id, &aopa, HardwareStreamListener, this) != noErr)
-			FormatWarning(macos_output_domain, "Couldn't remove property listener for Core Audio stream.");
 
 		// Revert any format changes we made
 		if (original_virtual_fmt.mFormatID) {
@@ -202,25 +176,4 @@ CoreAudioStream::GetAvailablePhysicalFormats(AudioStreamID id) {
 	}
 	delete[] format_list;
 	return stream_fmt_list;
-}
-
-OSStatus CoreAudioStream::HardwareStreamListener(gcc_unused AudioObjectID inObjectID, UInt32 inNumberAddresses, const AudioObjectPropertyAddress inAddresses[], void *inClientData) {
-	CoreAudioStream *ca_stream = (CoreAudioStream*)inClientData;
-	for (unsigned int i = 0; i < inNumberAddresses; i++) {
-		if (inAddresses[i].mSelector == kAudioStreamPropertyPhysicalFormat) {
-			AudioStreamBasicDescription actual_format;
-			UInt32 property_size = sizeof(AudioStreamBasicDescription);
-			// hardware physical format has changed.
-			if (AudioObjectGetPropertyData(ca_stream->stream_id, &inAddresses[i], 0, NULL, &property_size, &actual_format) == noErr)
-				FormatDebug(macos_output_domain, "Hardware physical format changed to %s", StreamDescriptionToString(actual_format).c_str());
-		}
-		else if (inAddresses[i].mSelector == kAudioStreamPropertyVirtualFormat) {
-			// hardware virtual format has changed.
-			AudioStreamBasicDescription actual_format;
-			UInt32 property_size = sizeof(AudioStreamBasicDescription);
-			if (AudioObjectGetPropertyData(ca_stream->stream_id, &inAddresses[i], 0, NULL, &property_size, &actual_format) == noErr)
-				FormatDebug(macos_output_domain, "Hardware virtual format changed to %s", StreamDescriptionToString(actual_format).c_str());
-		}
-	}
-	return noErr;
 }
