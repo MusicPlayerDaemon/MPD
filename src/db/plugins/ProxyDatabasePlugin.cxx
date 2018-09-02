@@ -336,10 +336,6 @@ SendConstraints(mpd_connection *connection, const ISongFilter &f)
 						     MPD_OPERATOR_DEFAULT,
 						     u->GetValue().c_str());
 	} else if (auto b = dynamic_cast<const BaseSongFilter *>(&f)) {
-		if (mpd_connection_cmp_server_version(connection, 0, 18, 0) < 0)
-			/* requires MPD 0.18 */
-			return true;
-
 		return mpd_search_add_base_constraint(connection,
 						      MPD_OPERATOR_DEFAULT,
 						      b->GetValue());
@@ -361,13 +357,10 @@ static bool
 SendConstraints(mpd_connection *connection, const DatabaseSelection &selection)
 {
 	if (!selection.uri.empty() &&
-	    mpd_connection_cmp_server_version(connection, 0, 18, 0) >= 0) {
-		/* requires MPD 0.18 */
-		if (!mpd_search_add_base_constraint(connection,
-						    MPD_OPERATOR_DEFAULT,
-						    selection.uri.c_str()))
-			return false;
-	}
+	    !mpd_search_add_base_constraint(connection,
+					    MPD_OPERATOR_DEFAULT,
+					    selection.uri.c_str()))
+		return false;
 
 	if (selection.filter != nullptr &&
 	    !SendConstraints(connection, *selection.filter))
@@ -456,6 +449,10 @@ ProxyDatabase::Connect()
 
 	try {
 		CheckError(connection);
+
+		if (mpd_connection_cmp_server_version(connection, 0, 19, 0) < 0)
+			throw FormatRuntimeError("Connect to MPD %s, but this plugin requires at least version 0.19",
+						 mpd_connection_get_server_version(connection));
 
 		if (!password.empty() &&
 		    !mpd_run_password(connection, password.c_str()))
@@ -807,17 +804,6 @@ try {
 	throw;
 }
 
-/**
- * Check whether we can use the "base" constraint.  Requires
- * libmpdclient 2.9 and MPD 0.18.
- */
-gcc_pure
-static bool
-ServerSupportsSearchBase(const struct mpd_connection *connection) noexcept
-{
-	return mpd_connection_cmp_server_version(connection, 0, 18, 0) >= 0;
-}
-
 void
 ProxyDatabase::Visit(const DatabaseSelection &selection,
 		     VisitDirectory visit_directory,
@@ -828,9 +814,7 @@ ProxyDatabase::Visit(const DatabaseSelection &selection,
 	const_cast<ProxyDatabase *>(this)->EnsureConnected();
 
 	if (!visit_directory && !visit_playlist && selection.recursive &&
-	    (ServerSupportsSearchBase(connection)
-	     ? !selection.IsEmpty()
-	     : selection.HasOtherThanBase())) {
+	    !selection.IsEmpty()) {
 		/* this optimized code path can only be used under
 		   certain conditions */
 		::SearchSongs(connection, selection, visit_song);
