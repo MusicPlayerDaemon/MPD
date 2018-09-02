@@ -215,6 +215,44 @@ ProxySong::ProxySong(const mpd_song *song)
 	start_time = SongTime::FromS(mpd_song_get_start(song));
 	end_time = SongTime::FromS(mpd_song_get_end(song));
 
+#if LIBMPDCLIENT_CHECK_VERSION(2,15,0)
+	const auto *af = mpd_song_get_audio_format(song);
+	if (af != nullptr) {
+		if (audio_valid_sample_rate(af->sample_rate))
+			audio_format.sample_rate = af->sample_rate;
+
+
+		switch (af->bits) {
+		case MPD_SAMPLE_FORMAT_FLOAT:
+			audio_format.format = SampleFormat::FLOAT;
+			break;
+
+		case MPD_SAMPLE_FORMAT_DSD:
+			audio_format.format = SampleFormat::DSD;
+			break;
+
+		case 8:
+			audio_format.format = SampleFormat::S8;
+			break;
+
+		case 16:
+			audio_format.format = SampleFormat::S16;
+			break;
+
+		case 24:
+			audio_format.format = SampleFormat::S24_P32;
+			break;
+
+		case 32:
+			audio_format.format = SampleFormat::S32;
+			break;
+		}
+
+		if (audio_valid_channel_count(af->channels))
+			audio_format.channels = af->channels;
+	}
+#endif
+
 	TagBuilder tag_builder;
 
 	const unsigned duration = mpd_song_get_duration(song);
