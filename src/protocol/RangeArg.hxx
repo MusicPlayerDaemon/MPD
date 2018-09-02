@@ -30,6 +30,18 @@ struct RangeArg {
 	static constexpr RangeArg All() {
 		return { 0, std::numeric_limits<unsigned>::max() };
 	}
+
+	constexpr bool operator==(RangeArg other) const noexcept {
+		return start == other.start && end == other.end;
+	}
+
+	constexpr bool operator!=(RangeArg other) const noexcept {
+		return !(*this == other);
+	}
+
+	constexpr bool IsAll() const noexcept {
+		return *this == All();
+	}
 };
 
 #endif

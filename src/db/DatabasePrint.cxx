@@ -200,8 +200,7 @@ db_selection_print(Response &r, Partition &partition,
 		: VisitPlaylist();
 
 	if (sort == TAG_NUM_OF_ITEM_TYPES) {
-		if (window.start > 0 ||
-		    window.end < (unsigned)std::numeric_limits<int>::max())
+		if (!window.IsAll())
 			s = [s, window, &i](const LightSong &song){
 				const bool in_window = i >= window.start && i < window.end;
 				++i;
