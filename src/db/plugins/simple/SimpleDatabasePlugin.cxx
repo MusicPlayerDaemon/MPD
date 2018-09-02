@@ -26,6 +26,7 @@
 #include "db/Helpers.hxx"
 #include "db/Stats.hxx"
 #include "db/UniqueTags.hxx"
+#include "db/VHelper.hxx"
 #include "db/LightDirectory.hxx"
 #include "Directory.hxx"
 #include "Song.hxx"
@@ -265,6 +266,15 @@ SimpleDatabase::ReturnSong(gcc_unused const LightSong *song) const noexcept
 	}
 }
 
+gcc_const
+static DatabaseSelection
+CheckSelection(DatabaseSelection selection) noexcept
+{
+	selection.uri.clear();
+	selection.filter = nullptr;
+	return selection;
+}
+
 void
 SimpleDatabase::Visit(const DatabaseSelection &selection,
 		      VisitDirectory visit_directory,
@@ -286,6 +296,8 @@ SimpleDatabase::Visit(const DatabaseSelection &selection,
 		return;
 	}
 
+	DatabaseVisitorHelper helper(CheckSelection(selection), visit_song);
+
 	if (r.uri == nullptr) {
 		/* it's a directory */
 
@@ -295,6 +307,7 @@ SimpleDatabase::Visit(const DatabaseSelection &selection,
 		r.directory->Walk(selection.recursive, selection.filter,
 				  visit_directory, visit_song,
 				  visit_playlist);
+		helper.Commit();
 		return;
 	}
 
@@ -306,6 +319,7 @@ SimpleDatabase::Visit(const DatabaseSelection &selection,
 				if (selection.Match(song2))
 					visit_song(song2);
 
+				helper.Commit();
 				return;
 			}
 		}

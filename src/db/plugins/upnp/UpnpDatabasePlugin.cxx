@@ -27,6 +27,7 @@
 #include "db/Interface.hxx"
 #include "db/DatabasePlugin.hxx"
 #include "db/Selection.hxx"
+#include "db/VHelper.hxx"
 #include "db/DatabaseError.hxx"
 #include "db/LightDirectory.hxx"
 #include "song/LightSong.hxx"
@@ -576,6 +577,15 @@ UpnpDatabase::VisitServer(const ContentDirectoryService &server,
 	}
 }
 
+gcc_const
+static DatabaseSelection
+CheckSelection(DatabaseSelection selection) noexcept
+{
+	selection.uri.clear();
+	selection.filter = nullptr;
+	return selection;
+}
+
 // Deal with the possibly multiple servers, call VisitServer if needed.
 void
 UpnpDatabase::Visit(const DatabaseSelection &selection,
@@ -583,6 +593,8 @@ UpnpDatabase::Visit(const DatabaseSelection &selection,
 		    VisitSong visit_song,
 		    VisitPlaylist visit_playlist) const
 {
+	DatabaseVisitorHelper helper(CheckSelection(selection), visit_song);
+
 	auto vpath = SplitString(selection.uri.c_str(), '/');
 	if (vpath.empty()) {
 		for (const auto &server : discovery->GetDirectories()) {
@@ -598,6 +610,7 @@ UpnpDatabase::Visit(const DatabaseSelection &selection,
 					    visit_playlist);
 		}
 
+		helper.Commit();
 		return;
 	}
 
@@ -608,6 +621,7 @@ UpnpDatabase::Visit(const DatabaseSelection &selection,
 	auto server = discovery->GetServer(servername.c_str());
 	VisitServer(server, std::move(vpath), selection,
 		    visit_directory, visit_song, visit_playlist);
+	helper.Commit();
 }
 
 void

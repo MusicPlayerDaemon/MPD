@@ -947,6 +947,7 @@ libdb_plugins_a_SOURCES = \
 	src/PlaylistDatabase.cxx src/PlaylistDatabase.hxx \
 	src/db/Registry.cxx src/db/Registry.hxx \
 	src/db/Helpers.cxx src/db/Helpers.hxx \
+	src/db/VHelper.cxx src/db/VHelper.hxx \
 	src/db/UniqueTags.cxx src/db/UniqueTags.hxx \
 	src/db/plugins/simple/DatabaseSave.cxx \
 	src/db/plugins/simple/DatabaseSave.hxx \

@@ -144,38 +144,6 @@ PrintPlaylistFull(Response &r, bool base,
 		time_print(r, "Last-Modified", playlist.mtime);
 }
 
-gcc_pure
-static bool
-CompareNumeric(const char *a, const char *b) noexcept
-{
-	long a_value = strtol(a, nullptr, 10);
-	long b_value = strtol(b, nullptr, 10);
-
-	return a_value < b_value;
-}
-
-gcc_pure
-static bool
-CompareTags(TagType type, bool descending, const Tag &a, const Tag &b) noexcept
-{
-	const char *a_value = a.GetSortValue(type);
-	const char *b_value = b.GetSortValue(type);
-
-	if (descending) {
-		using std::swap;
-		swap(a_value, b_value);
-	}
-
-	switch (type) {
-	case TAG_DISC:
-	case TAG_TRACK:
-		return CompareNumeric(a_value, b_value);
-
-	default:
-		return strcmp(a_value, b_value) < 0;
-	}
-}
-
 void
 db_selection_print(Response &r, Partition &partition,
 		   const DatabaseSelection &selection,
@@ -195,66 +163,7 @@ db_selection_print(Response &r, Partition &partition,
 			    std::ref(r), base, _1, _2)
 		: VisitPlaylist();
 
-	const auto window = selection.window;
-
-	if (selection.sort == TAG_NUM_OF_ITEM_TYPES) {
-		unsigned i = 0;
-		if (!selection.window.IsAll())
-			s = [s, window, &i](const LightSong &song){
-				if (window.Contains(i++))
-					s(song);
-			};
-
-		db.Visit(selection, d, s, p);
-	} else {
-		// TODO: allow the database plugin to sort internally
-
-		/* the client has asked us to sort the result; this is
-		   pretty expensive, because instead of streaming the
-		   result to the client, we need to copy it all into
-		   this std::vector, and then sort it */
-		std::vector<DetachedSong> songs;
-
-		{
-			auto collect_songs = [&songs](const LightSong &song){
-				songs.emplace_back(song);
-			};
-
-			db.Visit(selection, d, collect_songs, p);
-		}
-
-		const auto sort = selection.sort;
-		const auto descending = selection.descending;
-
-		if (sort == TagType(SORT_TAG_LAST_MODIFIED))
-			std::stable_sort(songs.begin(), songs.end(),
-					 [descending](const DetachedSong &a, const DetachedSong &b){
-						 return descending
-							 ? a.GetLastModified() > b.GetLastModified()
-							 : a.GetLastModified() < b.GetLastModified();
-					 });
-		else
-			std::stable_sort(songs.begin(), songs.end(),
-					 [sort, descending](const DetachedSong &a,
-							    const DetachedSong &b){
-						 return CompareTags(sort, descending,
-								    a.GetTag(),
-								    b.GetTag());
-					 });
-
-		if (window.end < songs.size())
-			songs.erase(std::next(songs.begin(), window.end),
-				    songs.end());
-
-		if (window.start >= songs.size())
-			return;
-
-		songs.erase(songs.begin(),
-			    std::next(songs.begin(), window.start));
-
-		for (const auto &song : songs)
-			s((LightSong)song);
-	}
+	db.Visit(selection, d, s, p);
 }
 
 static void

@@ -23,6 +23,7 @@
 #include "db/DatabasePlugin.hxx"
 #include "db/DatabaseListener.hxx"
 #include "db/Selection.hxx"
+#include "db/VHelper.hxx"
 #include "db/DatabaseError.hxx"
 #include "db/PlaylistInfo.hxx"
 #include "db/LightDirectory.hxx"
@@ -804,6 +805,15 @@ try {
 	throw;
 }
 
+gcc_const
+static DatabaseSelection
+CheckSelection(DatabaseSelection selection) noexcept
+{
+	selection.uri.clear();
+	selection.filter = nullptr;
+	return selection;
+}
+
 void
 ProxyDatabase::Visit(const DatabaseSelection &selection,
 		     VisitDirectory visit_directory,
@@ -813,11 +823,14 @@ ProxyDatabase::Visit(const DatabaseSelection &selection,
 	// TODO: eliminate the const_cast
 	const_cast<ProxyDatabase *>(this)->EnsureConnected();
 
+	DatabaseVisitorHelper helper(CheckSelection(selection), visit_song);
+
 	if (!visit_directory && !visit_playlist && selection.recursive &&
 	    !selection.IsEmpty()) {
 		/* this optimized code path can only be used under
 		   certain conditions */
 		::SearchSongs(connection, selection, visit_song);
+		helper.Commit();
 		return;
 	}
 
@@ -825,6 +838,8 @@ ProxyDatabase::Visit(const DatabaseSelection &selection,
 	::Visit(connection, selection.uri.c_str(),
 		selection.recursive, selection.filter,
 		visit_directory, visit_song, visit_playlist);
+
+	helper.Commit();
 }
 
 void
