@@ -185,8 +185,6 @@ db_selection_print(Response &r, Partition &partition,
 {
 	const Database &db = partition.GetDatabaseOrThrow();
 
-	unsigned i = 0;
-
 	using namespace std::placeholders;
 	const auto d = selection.filter == nullptr
 		? std::bind(full ? PrintDirectoryFull : PrintDirectoryBrief,
@@ -200,6 +198,7 @@ db_selection_print(Response &r, Partition &partition,
 		: VisitPlaylist();
 
 	if (sort == TAG_NUM_OF_ITEM_TYPES) {
+		unsigned i = 0;
 		if (!window.IsAll())
 			s = [s, window, &i](const LightSong &song){
 				if (window.Contains(i++))
