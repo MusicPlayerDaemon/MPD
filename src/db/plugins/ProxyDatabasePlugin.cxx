@@ -367,6 +367,38 @@ SendConstraints(mpd_connection *connection, const DatabaseSelection &selection)
 	    !SendConstraints(connection, *selection.filter))
 		return false;
 
+#if LIBMPDCLIENT_CHECK_VERSION(2, 11, 0)
+	if (selection.sort != TAG_NUM_OF_ITEM_TYPES &&
+	    mpd_connection_cmp_server_version(connection, 0, 21, 0) >= 0) {
+#if LIBMPDCLIENT_CHECK_VERSION(2, 15, 0)
+		if (selection.sort == SORT_TAG_LAST_MODIFIED) {
+			if (!mpd_search_add_sort_name(connection, "Last-Modified",
+						      selection.descending))
+				return false;
+		} else {
+#endif
+			const auto sort = Convert(selection.sort);
+			/* if this is an unsupported tag, the sort
+			   will be done later by class
+			   DatabaseVisitorHelper */
+			if (sort != MPD_TAG_COUNT &&
+			    !mpd_search_add_sort_tag(connection, sort,
+						     selection.descending))
+				return false;
+#if LIBMPDCLIENT_CHECK_VERSION(2, 15, 0)
+		}
+#endif
+	}
+#endif
+
+#if LIBMPDCLIENT_CHECK_VERSION(2, 10, 0)
+	if (selection.window != RangeArg::All() &&
+	    mpd_connection_cmp_server_version(connection, 0, 20, 0) >= 0 &&
+	    !mpd_search_add_window(connection, selection.window.start,
+				   selection.window.end))
+		return false;
+#endif
+
 	return true;
 }
 
@@ -805,12 +837,110 @@ try {
 	throw;
 }
 
-gcc_const
+#if LIBMPDCLIENT_CHECK_VERSION(2, 10, 0)
+
+gcc_pure
+static bool
+IsFilterSupported(const ISongFilter &f) noexcept
+{
+	if (auto t = dynamic_cast<const TagSongFilter *>(&f)) {
+		if (t->IsNegated())
+			// TODO implement
+			return false;
+
+		if (t->GetTagType() == TAG_NUM_OF_ITEM_TYPES)
+			return true;
+
+		const auto tag = Convert(t->GetTagType());
+		if (tag == MPD_TAG_COUNT)
+			return false;
+
+		return true;
+	} else if (auto u = dynamic_cast<const UriSongFilter *>(&f)) {
+		if (u->IsNegated())
+			// TODO implement
+			return false;
+
+		return false;
+	} else if (dynamic_cast<const BaseSongFilter *>(&f)) {
+		return true;
+	} else
+		return false;
+}
+
+gcc_pure
+static bool
+IsFilterFullySupported(const SongFilter &filter) noexcept
+{
+	for (const auto &i : filter.GetItems())
+		if (!IsFilterSupported(*i))
+			return false;
+
+	return true;
+}
+
+gcc_pure
+static bool
+IsFilterFullySupported(const SongFilter *filter) noexcept
+{
+	return filter == nullptr ||
+		IsFilterFullySupported(*filter);
+}
+
+#endif
+
+#if LIBMPDCLIENT_CHECK_VERSION(2, 11, 0)
+
+gcc_pure
+static bool
+IsSortSupported(TagType tag_type,
+		const struct mpd_connection *connection) noexcept
+{
+	if (mpd_connection_cmp_server_version(connection, 0, 21, 0) < 0)
+		/* sorting requires MPD 0.21 */
+		return false;
+
+	if (tag_type == TagType(SORT_TAG_LAST_MODIFIED)) {
+		/* sort "Last-Modified" requires libmpdclient 2.15 for
+		   mpd_search_add_sort_name() */
+#if LIBMPDCLIENT_CHECK_VERSION(2, 15, 0)
+		return true;
+#else
+		return false;
+#endif
+	}
+
+	return Convert(tag_type) != MPD_TAG_COUNT;
+}
+
+#endif
+
+gcc_pure
 static DatabaseSelection
-CheckSelection(DatabaseSelection selection) noexcept
+CheckSelection(DatabaseSelection selection,
+	       struct mpd_connection *connection) noexcept
 {
 	selection.uri.clear();
 	selection.filter = nullptr;
+
+#if LIBMPDCLIENT_CHECK_VERSION(2, 11, 0)
+	if (selection.sort != TAG_NUM_OF_ITEM_TYPES &&
+	    IsSortSupported(selection.sort, connection))
+		/* we can forward the "sort" parameter to the other
+		   MPD */
+		selection.sort = TAG_NUM_OF_ITEM_TYPES;
+#endif
+
+#if LIBMPDCLIENT_CHECK_VERSION(2, 10, 0)
+	if (selection.window != RangeArg::All() &&
+	    IsFilterFullySupported(selection.filter))
+		/* we can forward the "window" parameter to the other
+		   MPD */
+		selection.window = RangeArg::All();
+#else
+	(void)connection;
+#endif
+
 	return selection;
 }
 
@@ -823,7 +953,8 @@ ProxyDatabase::Visit(const DatabaseSelection &selection,
 	// TODO: eliminate the const_cast
 	const_cast<ProxyDatabase *>(this)->EnsureConnected();
 
-	DatabaseVisitorHelper helper(CheckSelection(selection), visit_song);
+	DatabaseVisitorHelper helper(CheckSelection(selection, connection),
+				     visit_song);
 
 	if (!visit_directory && !visit_playlist && selection.recursive &&
 	    !selection.IsEmpty()) {
