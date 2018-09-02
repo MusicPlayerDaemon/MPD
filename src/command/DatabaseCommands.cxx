@@ -107,12 +107,13 @@ handle_match(Client &client, Request args, Response &r, bool fold_case)
 	}
 	filter.Optimize();
 
-	const DatabaseSelection selection("", true, &filter);
+	DatabaseSelection selection("", true, &filter);
+	selection.window = window;
+	selection.sort = sort;
+	selection.descending = descending;
 
 	db_selection_print(r, client.GetPartition(),
-			   selection, true, false,
-			   sort, descending,
-			   window);
+			   selection, true, false);
 	return CommandResult::OK;
 }
 

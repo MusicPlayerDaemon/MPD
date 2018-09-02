@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2017 The Music Player Daemon Project
+ * Copyright 2003-2018 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -20,6 +20,8 @@
 #ifndef MPD_DATABASE_SELECTION_HXX
 #define MPD_DATABASE_SELECTION_HXX
 
+#include "protocol/RangeArg.hxx"
+#include "tag/Type.h"
 #include "util/Compiler.h"
 
 #include <string>
@@ -35,6 +37,20 @@ struct DatabaseSelection {
 	std::string uri;
 
 	const SongFilter *filter;
+
+	RangeArg window = RangeArg::All();
+
+	/**
+	 * Sort the result by the given tag.  #TAG_NUM_OF_ITEM_TYPES
+	 * means don't sort.  #SORT_TAG_LAST_MODIFIED sorts by
+	 * "Last-Modified" (not technically a tag).
+	 */
+	TagType sort = TAG_NUM_OF_ITEM_TYPES;
+
+	/**
+	 * If #sort is set, this flag can reverse the sort order.
+	 */
+	bool descending = false;
 
 	/**
 	 * Recursively search all sub directories?

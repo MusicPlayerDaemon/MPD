@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2017 The Music Player Daemon Project
+ * Copyright 2003-2018 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -179,9 +179,7 @@ CompareTags(TagType type, bool descending, const Tag &a, const Tag &b) noexcept
 void
 db_selection_print(Response &r, Partition &partition,
 		   const DatabaseSelection &selection,
-		   bool full, bool base,
-		   TagType sort, bool descending,
-		   RangeArg window)
+		   bool full, bool base)
 {
 	const Database &db = partition.GetDatabaseOrThrow();
 
@@ -197,9 +195,11 @@ db_selection_print(Response &r, Partition &partition,
 			    std::ref(r), base, _1, _2)
 		: VisitPlaylist();
 
-	if (sort == TAG_NUM_OF_ITEM_TYPES) {
+	const auto window = selection.window;
+
+	if (selection.sort == TAG_NUM_OF_ITEM_TYPES) {
 		unsigned i = 0;
-		if (!window.IsAll())
+		if (!selection.window.IsAll())
 			s = [s, window, &i](const LightSong &song){
 				if (window.Contains(i++))
 					s(song);
@@ -222,6 +222,9 @@ db_selection_print(Response &r, Partition &partition,
 
 			db.Visit(selection, d, collect_songs, p);
 		}
+
+		const auto sort = selection.sort;
+		const auto descending = selection.descending;
 
 		if (sort == TagType(SORT_TAG_LAST_MODIFIED))
 			std::stable_sort(songs.begin(), songs.end(),
@@ -252,16 +255,6 @@ db_selection_print(Response &r, Partition &partition,
 		for (const auto &song : songs)
 			s((LightSong)song);
 	}
-}
-
-void
-db_selection_print(Response &r, Partition &partition,
-		   const DatabaseSelection &selection,
-		   bool full, bool base)
-{
-	db_selection_print(r, partition, selection, full, base,
-			   TAG_NUM_OF_ITEM_TYPES, false,
-			   RangeArg::All());
 }
 
 static void
