@@ -236,7 +236,7 @@ UdisksNeighborExplorer::HandleMessage(DBusConnection *, DBusMessage *message) no
 				UDisks2::Object o(path);
 				UDisks2::ParseObject(o, std::move(i));
 				if (o.IsValid())
-					Insert(std::move(o));
+					this->Insert(std::move(o));
 			});
 
 		return DBUS_HANDLER_RESULT_HANDLED;
