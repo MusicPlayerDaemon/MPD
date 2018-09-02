@@ -26,6 +26,7 @@ enum TagType : uint8_t;
 class TagMask;
 class SongFilter;
 struct DatabaseSelection;
+struct RangeArg;
 struct Partition;
 class Response;
 
@@ -47,7 +48,7 @@ db_selection_print(Response &r, Partition &partition,
 		   const DatabaseSelection &selection,
 		   bool full, bool base,
 		   TagType sort, bool descending,
-		   unsigned window_start, unsigned window_end);
+		   RangeArg window);
 
 void
 PrintSongUris(Response &r, Partition &partition,

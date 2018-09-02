@@ -113,7 +113,7 @@ handle_match(Client &client, Request args, Response &r, bool fold_case)
 	db_selection_print(r, client.GetPartition(),
 			   selection, true, false,
 			   sort, descending,
-			   window.start, window.end);
+			   window);
 	return CommandResult::OK;
 }
 

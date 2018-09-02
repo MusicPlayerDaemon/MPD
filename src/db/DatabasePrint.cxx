@@ -24,6 +24,7 @@
 #include "TimePrint.hxx"
 #include "TagPrint.hxx"
 #include "client/Response.hxx"
+#include "protocol/RangeArg.hxx"
 #include "Partition.hxx"
 #include "song/DetachedSong.hxx"
 #include "song/Filter.hxx"
@@ -180,7 +181,7 @@ db_selection_print(Response &r, Partition &partition,
 		   const DatabaseSelection &selection,
 		   bool full, bool base,
 		   TagType sort, bool descending,
-		   unsigned window_start, unsigned window_end)
+		   RangeArg window)
 {
 	const Database &db = partition.GetDatabaseOrThrow();
 
@@ -199,10 +200,10 @@ db_selection_print(Response &r, Partition &partition,
 		: VisitPlaylist();
 
 	if (sort == TAG_NUM_OF_ITEM_TYPES) {
-		if (window_start > 0 ||
-		    window_end < (unsigned)std::numeric_limits<int>::max())
-			s = [s, window_start, window_end, &i](const LightSong &song){
-				const bool in_window = i >= window_start && i < window_end;
+		if (window.start > 0 ||
+		    window.end < (unsigned)std::numeric_limits<int>::max())
+			s = [s, window, &i](const LightSong &song){
+				const bool in_window = i >= window.start && i < window.end;
 				++i;
 				if (in_window)
 					s(song);
@@ -242,15 +243,15 @@ db_selection_print(Response &r, Partition &partition,
 								    b.GetTag());
 					 });
 
-		if (window_end < songs.size())
-			songs.erase(std::next(songs.begin(), window_end),
+		if (window.end < songs.size())
+			songs.erase(std::next(songs.begin(), window.end),
 				    songs.end());
 
-		if (window_start >= songs.size())
+		if (window.start >= songs.size())
 			return;
 
 		songs.erase(songs.begin(),
-			    std::next(songs.begin(), window_start));
+			    std::next(songs.begin(), window.start));
 
 		for (const auto &song : songs)
 			s((LightSong)song);
@@ -264,7 +265,7 @@ db_selection_print(Response &r, Partition &partition,
 {
 	db_selection_print(r, partition, selection, full, base,
 			   TAG_NUM_OF_ITEM_TYPES, false,
-			   0, std::numeric_limits<int>::max());
+			   RangeArg::All());
 }
 
 static void
