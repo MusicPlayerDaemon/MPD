@@ -23,7 +23,7 @@
 
 DatabaseSelection::DatabaseSelection(const char *_uri, bool _recursive,
 				     const SongFilter *_filter) noexcept
-	:uri(_uri), recursive(_recursive), filter(_filter)
+	:uri(_uri), filter(_filter), recursive(_recursive)
 {
 	/* optimization: if the caller didn't specify a base URI, pick
 	   the one from SongFilter */

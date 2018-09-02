@@ -34,12 +34,12 @@ struct DatabaseSelection {
 	 */
 	std::string uri;
 
+	const SongFilter *filter;
+
 	/**
 	 * Recursively search all sub directories?
 	 */
 	bool recursive;
-
-	const SongFilter *filter;
 
 	DatabaseSelection(const char *_uri, bool _recursive,
 			  const SongFilter *_filter=nullptr) noexcept;
