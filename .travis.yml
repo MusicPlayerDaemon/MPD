@@ -8,10 +8,11 @@ matrix:
         apt:
           sources:
             - ubuntu-toolchain-r-test
+            - sourceline: 'ppa:mhier/libboost-latest'
           packages:
             - g++-6
             - libcppunit-dev
-            - libboost-dev
+            - boost1.67
       env:
         - MATRIX_EVAL="export CC=gcc-6 CXX=g++-6"
 
@@ -21,10 +22,11 @@ matrix:
         apt:
           sources:
             - ubuntu-toolchain-r-test
+            - sourceline: 'ppa:mhier/libboost-latest'
           packages:
             - g++-8
             - libcppunit-dev
-            - libboost-dev
+            - boost1.67
       env:
         - MATRIX_EVAL="export CC=gcc-8 CXX=g++-8"
 
