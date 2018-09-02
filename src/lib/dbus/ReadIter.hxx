@@ -34,6 +34,13 @@
 #define ODBUS_READ_ITER_HXX
 
 #include "Iter.hxx"
+#include "util/Compiler.h"
+
+#if GCC_OLDER_THAN(8,0)
+/* switch off completely bogus shadow warnings in older GCC
+   versions */
+#pragma GCC diagnostic ignored "-Wshadow"
+#endif
 
 namespace ODBus {
 
