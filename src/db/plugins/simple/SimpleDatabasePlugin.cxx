@@ -72,7 +72,7 @@ inline SimpleDatabase::SimpleDatabase(AllocatedPath &&_path,
 #ifndef ENABLE_ZLIB
 				      gcc_unused
 #endif
-				      bool _compress)
+				      bool _compress) noexcept
 	:Database(simple_db_plugin),
 	 path(std::move(_path)),
 	 path_utf8(path.ToUTF8()),
@@ -187,7 +187,7 @@ SimpleDatabase::Open()
 }
 
 void
-SimpleDatabase::Close()
+SimpleDatabase::Close() noexcept
 {
 	assert(root != nullptr);
 	assert(prefixed_light_song == nullptr);
@@ -247,7 +247,7 @@ SimpleDatabase::GetSong(const char *uri) const
 }
 
 void
-SimpleDatabase::ReturnSong(gcc_unused const LightSong *song) const
+SimpleDatabase::ReturnSong(gcc_unused const LightSong *song) const noexcept
 {
 	assert(song != nullptr);
 	assert(song == &light_song.Get() || song == prefixed_light_song);
@@ -448,8 +448,8 @@ SimpleDatabase::Mount(const char *local_uri, const char *storage_uri)
 	}
 }
 
-Database *
-SimpleDatabase::LockUmountSteal(const char *uri)
+inline Database *
+SimpleDatabase::LockUmountSteal(const char *uri) noexcept
 {
 	ScopeDatabaseLock protect;
 
@@ -465,7 +465,7 @@ SimpleDatabase::LockUmountSteal(const char *uri)
 }
 
 bool
-SimpleDatabase::Unmount(const char *uri)
+SimpleDatabase::Unmount(const char *uri) noexcept
 {
 	Database *db = LockUmountSteal(uri);
 	if (db == nullptr)

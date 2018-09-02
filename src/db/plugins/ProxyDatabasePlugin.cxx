@@ -118,9 +118,9 @@ public:
 				const ConfigBlock &block);
 
 	void Open() override;
-	void Close() override;
+	void Close() noexcept override;
 	const LightSong *GetSong(const char *uri_utf8) const override;
-	void ReturnSong(const LightSong *song) const override;
+	void ReturnSong(const LightSong *song) const noexcept override;
 
 	void Visit(const DatabaseSelection &selection,
 		   VisitDirectory visit_directory,
@@ -144,7 +144,7 @@ private:
 	void CheckConnection();
 	void EnsureConnected();
 
-	void Disconnect();
+	void Disconnect() noexcept;
 
 	/* virtual methods from SocketMonitor */
 	bool OnSocketReady(unsigned flags) noexcept override;
@@ -193,7 +193,7 @@ static constexpr struct {
 
 static void
 Copy(TagBuilder &tag, TagType d_tag,
-     const struct mpd_song *song, enum mpd_tag_type s_tag)
+     const struct mpd_song *song, enum mpd_tag_type s_tag) noexcept
 {
 
 	for (unsigned i = 0;; ++i) {
@@ -440,7 +440,7 @@ ProxyDatabase::Open()
 }
 
 void
-ProxyDatabase::Close()
+ProxyDatabase::Close() noexcept
 {
 	if (connection != nullptr)
 		Disconnect();
@@ -522,7 +522,7 @@ ProxyDatabase::EnsureConnected()
 }
 
 void
-ProxyDatabase::Disconnect()
+ProxyDatabase::Disconnect() noexcept
 {
 	assert(connection != nullptr);
 
@@ -621,7 +621,7 @@ ProxyDatabase::GetSong(const char *uri) const
 }
 
 void
-ProxyDatabase::ReturnSong(const LightSong *_song) const
+ProxyDatabase::ReturnSong(const LightSong *_song) const noexcept
 {
 	assert(_song != nullptr);
 
@@ -700,30 +700,30 @@ class ProxyEntity {
 	struct mpd_entity *entity;
 
 public:
-	explicit ProxyEntity(struct mpd_entity *_entity)
+	explicit ProxyEntity(struct mpd_entity *_entity) noexcept
 		:entity(_entity) {}
 
 	ProxyEntity(const ProxyEntity &other) = delete;
 
-	ProxyEntity(ProxyEntity &&other)
+	ProxyEntity(ProxyEntity &&other) noexcept
 		:entity(other.entity) {
 		other.entity = nullptr;
 	}
 
-	~ProxyEntity() {
+	~ProxyEntity() noexcept {
 		if (entity != nullptr)
 			mpd_entity_free(entity);
 	}
 
 	ProxyEntity &operator=(const ProxyEntity &other) = delete;
 
-	operator const struct mpd_entity *() const {
+	operator const struct mpd_entity *() const noexcept {
 		return entity;
 	}
 };
 
 static std::list<ProxyEntity>
-ReceiveEntities(struct mpd_connection *connection)
+ReceiveEntities(struct mpd_connection *connection) noexcept
 {
 	std::list<ProxyEntity> entities;
 	struct mpd_entity *entity;

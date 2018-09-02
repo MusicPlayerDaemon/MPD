@@ -36,19 +36,19 @@ class Database {
 	const DatabasePlugin &plugin;
 
 public:
-	Database(const DatabasePlugin &_plugin)
+	Database(const DatabasePlugin &_plugin) noexcept
 		:plugin(_plugin) {}
 
 	/**
 	 * Free instance data.
          */
-	virtual ~Database() {}
+	virtual ~Database() noexcept = default;
 
-	const DatabasePlugin &GetPlugin() const {
+	const DatabasePlugin &GetPlugin() const noexcept {
 		return plugin;
 	}
 
-	bool IsPlugin(const DatabasePlugin &other) const {
+	bool IsPlugin(const DatabasePlugin &other) const noexcept {
 		return &plugin == &other;
 	}
 
@@ -63,7 +63,7 @@ public:
 	/**
          * Close the database, free allocated memory.
 	 */
-	virtual void Close() {}
+	virtual void Close() noexcept {}
 
 	/**
          * Look up a song (including tag data) in the database.  When
@@ -82,7 +82,7 @@ public:
 	 * Mark the song object as "unused".  Call this on objects
 	 * returned by GetSong().
 	 */
-	virtual void ReturnSong(const LightSong *song) const = 0;
+	virtual void ReturnSong(const LightSong *song) const noexcept = 0;
 
 	/**
 	 * Visit the selected entities.

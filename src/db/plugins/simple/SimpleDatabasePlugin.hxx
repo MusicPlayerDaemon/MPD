@@ -70,7 +70,7 @@ class SimpleDatabase : public Database {
 
 	SimpleDatabase(const ConfigBlock &block);
 
-	SimpleDatabase(AllocatedPath &&_path, bool _compress);
+	SimpleDatabase(AllocatedPath &&_path, bool _compress) noexcept;
 
 public:
 	static Database *Create(EventLoop &main_event_loop,
@@ -108,14 +108,14 @@ public:
 	void Mount(const char *local_uri, const char *storage_uri);
 
 	gcc_nonnull_all
-	bool Unmount(const char *uri);
+	bool Unmount(const char *uri) noexcept;
 
 	/* virtual methods from class Database */
 	void Open() override;
-	void Close() override;
+	void Close() noexcept override;
 
 	const LightSong *GetSong(const char *uri_utf8) const override;
-	void ReturnSong(const LightSong *song) const override;
+	void ReturnSong(const LightSong *song) const noexcept override;
 
 	void Visit(const DatabaseSelection &selection,
 		   VisitDirectory visit_directory,
@@ -142,7 +142,7 @@ private:
 	 */
 	void Load();
 
-	Database *LockUmountSteal(const char *uri);
+	Database *LockUmountSteal(const char *uri) noexcept;
 };
 
 extern const DatabasePlugin simple_db_plugin;
