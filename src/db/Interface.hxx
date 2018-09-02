@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2017 The Music Player Daemon Project
+ * Copyright 2003-2018 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -55,7 +55,7 @@ public:
 	/**
          * Open the database.  Read it into memory if applicable.
 	 *
-	 * Throws #DatabaseError or std::runtime_error on error.
+	 * Throws on error (e.g. #DatabaseError).
 	 */
 	virtual void Open() {
 	}
@@ -69,9 +69,8 @@ public:
          * Look up a song (including tag data) in the database.  When
          * you don't need this anymore, call ReturnSong().
 	 *
-	 * Throws std::runtime_error (or its derivative
-	 * #DatabaseError) on error.  "Not found" is an error that
-	 * throws DatabaseErrorCode::NOT_FOUND.
+	 * Throws on error.  "Not found" is an error that throws
+	 * DatabaseErrorCode::NOT_FOUND.
 	 *
 	 * @param uri_utf8 the URI of the song within the music
 	 * directory (UTF-8)
@@ -87,6 +86,8 @@ public:
 
 	/**
 	 * Visit the selected entities.
+	 *
+	 * Throws on error.
 	 */
 	virtual void Visit(const DatabaseSelection &selection,
 			   VisitDirectory visit_directory,
@@ -106,17 +107,22 @@ public:
 
 	/**
 	 * Visit all unique tag values.
+	 *
+	 * Throws on error.
 	 */
 	virtual void VisitUniqueTags(const DatabaseSelection &selection,
 				     TagType tag_type, TagMask group_mask,
 				     VisitTag visit_tag) const = 0;
 
+	/**
+	 * Throws on error.
+	 */
 	virtual DatabaseStats GetStats(const DatabaseSelection &selection) const = 0;
 
 	/**
 	 * Update the database.
 	 *
-	 * Throws #std::runtime_error on error.
+	 * Throws on error.
 	 *
 	 * @return the job id or 0 if not implemented
 	 */
