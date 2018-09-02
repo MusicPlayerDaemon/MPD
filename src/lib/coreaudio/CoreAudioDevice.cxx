@@ -568,7 +568,6 @@ bool CoreAudioDevice::SetFormat(const AudioFormat &audio_format, bool prefer_unm
 	FormatDebug(macos_output_domain, "Finding CoreAudio stream for format %s.", ToString(audio_format).c_str());
 	
 	bool format_found  = false;
-	memset(&output_format, 0, sizeof(output_format));
 	float output_score  = 0;
 	
 	// loop over all streams to find one with a suitable format
