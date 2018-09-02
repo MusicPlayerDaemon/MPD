@@ -561,7 +561,7 @@ dnl ---------------------------------------------------------------------------
 
 dnl -------------------------------- libmpdclient --------------------------------
 MPD_ENABLE_AUTO_PKG_DEPENDS(libmpdclient, LIBMPDCLIENT,
-	[libmpdclient >= 2.2],
+	[libmpdclient >= 2.9],
 	[MPD client library], [libmpdclient not found], [],
 	[enable_database], [Database support is disabled])
 

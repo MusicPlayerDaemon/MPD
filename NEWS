@@ -11,6 +11,7 @@ ver 0.21 (not yet released)
   - new filter syntax for "find"/"search" etc. with negation
 * database
   - simple: scan audio formats
+  - proxy: require libmpdclient 2.9
 * player
   - "one-shot" single mode
 * input

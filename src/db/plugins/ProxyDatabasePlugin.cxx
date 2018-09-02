@@ -212,10 +212,8 @@ ProxySong::ProxySong(const mpd_song *song)
 	if (_mtime > 0)
 		mtime = std::chrono::system_clock::from_time_t(_mtime);
 
-#if LIBMPDCLIENT_CHECK_VERSION(2,3,0)
 	start_time = SongTime::FromS(mpd_song_get_start(song));
 	end_time = SongTime::FromS(mpd_song_get_end(song));
-#endif
 
 	TagBuilder tag_builder;
 
@@ -299,7 +297,6 @@ SendConstraints(mpd_connection *connection, const ISongFilter &f)
 		return mpd_search_add_uri_constraint(connection,
 						     MPD_OPERATOR_DEFAULT,
 						     u->GetValue().c_str());
-#if LIBMPDCLIENT_CHECK_VERSION(2,9,0)
 	} else if (auto b = dynamic_cast<const BaseSongFilter *>(&f)) {
 		if (mpd_connection_cmp_server_version(connection, 0, 18, 0) < 0)
 			/* requires MPD 0.18 */
@@ -308,7 +305,6 @@ SendConstraints(mpd_connection *connection, const ISongFilter &f)
 		return mpd_search_add_base_constraint(connection,
 						      MPD_OPERATOR_DEFAULT,
 						      b->GetValue());
-#endif
 	} else
 		return true;
 }
@@ -326,7 +322,6 @@ SendConstraints(mpd_connection *connection, const SongFilter &filter)
 static bool
 SendConstraints(mpd_connection *connection, const DatabaseSelection &selection)
 {
-#if LIBMPDCLIENT_CHECK_VERSION(2,9,0)
 	if (!selection.uri.empty() &&
 	    mpd_connection_cmp_server_version(connection, 0, 18, 0) >= 0) {
 		/* requires MPD 0.18 */
@@ -335,7 +330,6 @@ SendConstraints(mpd_connection *connection, const DatabaseSelection &selection)
 						    selection.uri.c_str()))
 			return false;
 	}
-#endif
 
 	if (selection.filter != nullptr &&
 	    !SendConstraints(connection, *selection.filter))
@@ -615,11 +609,9 @@ Visit(struct mpd_connection *connection,
 
 	std::chrono::system_clock::time_point mtime =
 		std::chrono::system_clock::time_point::min();
-#if LIBMPDCLIENT_CHECK_VERSION(2,9,0)
 	time_t _mtime = mpd_directory_get_last_modified(directory);
 	if (_mtime > 0)
 		mtime = std::chrono::system_clock::from_time_t(_mtime);
-#endif
 
 	if (visit_directory)
 		visit_directory(LightDirectory(path, mtime));
@@ -785,13 +777,7 @@ gcc_pure
 static bool
 ServerSupportsSearchBase(const struct mpd_connection *connection) noexcept
 {
-#if LIBMPDCLIENT_CHECK_VERSION(2,9,0)
 	return mpd_connection_cmp_server_version(connection, 0, 18, 0) >= 0;
-#else
-	(void)connection;
-
-	return false;
-#endif
 }
 
 void
