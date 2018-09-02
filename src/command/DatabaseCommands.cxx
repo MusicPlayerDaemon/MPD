@@ -74,14 +74,13 @@ ParseSortTag(const char *s)
 static CommandResult
 handle_match(Client &client, Request args, Response &r, bool fold_case)
 {
-	RangeArg window;
+	RangeArg window = RangeArg::All();
 	if (args.size >= 2 && StringIsEqual(args[args.size - 2], "window")) {
 		window = args.ParseRange(args.size - 1);
 
 		args.pop_back();
 		args.pop_back();
-	} else
-		window.SetAll();
+	}
 
 	TagType sort = TAG_NUM_OF_ITEM_TYPES;
 	bool descending = false;
