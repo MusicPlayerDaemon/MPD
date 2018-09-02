@@ -202,9 +202,7 @@ db_selection_print(Response &r, Partition &partition,
 	if (sort == TAG_NUM_OF_ITEM_TYPES) {
 		if (!window.IsAll())
 			s = [s, window, &i](const LightSong &song){
-				const bool in_window = i >= window.start && i < window.end;
-				++i;
-				if (in_window)
+				if (window.Contains(i++))
 					s(song);
 			};
 

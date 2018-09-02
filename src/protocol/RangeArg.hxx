@@ -42,6 +42,10 @@ struct RangeArg {
 	constexpr bool IsAll() const noexcept {
 		return *this == All();
 	}
+
+	constexpr bool Contains(unsigned i) const noexcept {
+		return i >= start && i < end;
+	}
 };
 
 #endif
