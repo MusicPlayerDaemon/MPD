@@ -347,6 +347,14 @@ SendConstraints(mpd_connection *connection, const ISongFilter &f)
 static bool
 SendConstraints(mpd_connection *connection, const SongFilter &filter)
 {
+#if LIBMPDCLIENT_CHECK_VERSION(2, 15, 0)
+	if (mpd_connection_cmp_server_version(connection, 0, 21, 0) >= 0)
+		/* with MPD 0.21 (and libmpdclient 2.15), we can pass
+		   arbitrary filters as expression */
+		return mpd_search_add_expression(connection,
+						 filter.ToExpression().c_str());
+#endif
+
 	for (const auto &i : filter.GetItems())
 		if (!SendConstraints(connection, *i))
 			return false;
@@ -870,8 +878,18 @@ IsFilterSupported(const ISongFilter &f) noexcept
 
 gcc_pure
 static bool
-IsFilterFullySupported(const SongFilter &filter) noexcept
+IsFilterFullySupported(const SongFilter &filter,
+		       const struct mpd_connection *connection) noexcept
 {
+#if LIBMPDCLIENT_CHECK_VERSION(2, 15, 0)
+	if (mpd_connection_cmp_server_version(connection, 0, 21, 0) >= 0)
+		/* with MPD 0.21 (and libmpdclient 2.15), we can pass
+		   arbitrary filters as expression */
+		return true;
+#else
+	(void)connection;
+#endif
+
 	for (const auto &i : filter.GetItems())
 		if (!IsFilterSupported(*i))
 			return false;
@@ -881,10 +899,11 @@ IsFilterFullySupported(const SongFilter &filter) noexcept
 
 gcc_pure
 static bool
-IsFilterFullySupported(const SongFilter *filter) noexcept
+IsFilterFullySupported(const SongFilter *filter,
+		       const struct mpd_connection *connection) noexcept
 {
 	return filter == nullptr ||
-		IsFilterFullySupported(*filter);
+		IsFilterFullySupported(*filter, connection);
 }
 
 #endif
@@ -933,7 +952,7 @@ CheckSelection(DatabaseSelection selection,
 
 #if LIBMPDCLIENT_CHECK_VERSION(2, 10, 0)
 	if (selection.window != RangeArg::All() &&
-	    IsFilterFullySupported(selection.filter))
+	    IsFilterFullySupported(selection.filter, connection))
 		/* we can forward the "window" parameter to the other
 		   MPD */
 		selection.window = RangeArg::All();
