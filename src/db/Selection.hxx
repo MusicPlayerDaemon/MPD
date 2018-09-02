@@ -42,7 +42,7 @@ struct DatabaseSelection {
 	const SongFilter *filter;
 
 	DatabaseSelection(const char *_uri, bool _recursive,
-			  const SongFilter *_filter=nullptr);
+			  const SongFilter *_filter=nullptr) noexcept;
 
 	gcc_pure
 	bool IsEmpty() const noexcept;

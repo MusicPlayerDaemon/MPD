@@ -22,7 +22,7 @@
 #include "song/Filter.hxx"
 
 DatabaseSelection::DatabaseSelection(const char *_uri, bool _recursive,
-				     const SongFilter *_filter)
+				     const SongFilter *_filter) noexcept
 	:uri(_uri), recursive(_recursive), filter(_filter)
 {
 	/* optimization: if the caller didn't specify a base URI, pick
