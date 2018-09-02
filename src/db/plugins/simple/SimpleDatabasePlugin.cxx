@@ -280,8 +280,8 @@ SimpleDatabase::Visit(const DatabaseSelection &selection,
 		protect.unlock();
 
 		WalkMount(r.directory->GetPath(), *(r.directory->mounted_database),
-			(r.uri == nullptr)?"":r.uri, selection.recursive, selection.filter,
-			visit_directory, visit_song, visit_playlist);
+			  (r.uri == nullptr)?"":r.uri, selection,
+			  visit_directory, visit_song, visit_playlist);
 
 		return;
 	}

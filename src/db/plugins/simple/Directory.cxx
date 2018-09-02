@@ -27,6 +27,7 @@
 #include "db/Uri.hxx"
 #include "db/DatabaseLock.hxx"
 #include "db/Interface.hxx"
+#include "db/Selection.hxx"
 #include "song/Filter.hxx"
 #include "lib/icu/Collate.hxx"
 #include "fs/Traits.hxx"
@@ -227,7 +228,7 @@ Directory::Walk(bool recursive, const SongFilter *filter,
 		   call will lock it again */
 		const ScopeDatabaseUnlock unlock;
 		WalkMount(GetPath(), *mounted_database,
-			  "", recursive, filter,
+			  "", DatabaseSelection("", recursive, filter),
 			  visit_directory, visit_song,
 			  visit_playlist);
 		return;

@@ -23,11 +23,12 @@
 #include "db/Visitor.hxx"
 
 class Database;
-class SongFilter;
+struct DatabaseSelection;
 
 void
 WalkMount(const char *base, const Database &db,
-	  const char* uri, bool recursive, const SongFilter *filter,
+	  const char *uri,
+	  const DatabaseSelection &old_selection,
 	  const VisitDirectory &visit_directory, const VisitSong &visit_song,
 	  const VisitPlaylist &visit_playlist);
 
