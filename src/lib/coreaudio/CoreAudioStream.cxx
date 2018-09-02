@@ -50,6 +50,7 @@ CoreAudioStream::Close() noexcept {
 	if (!stream_id)
 		return;
 
+	try {
 		// Revert any format changes we made
 		if (original_virtual_fmt.mFormatID) {
 			FormatDebug(macos_output_domain, "Restoring original virtual format for stream 0x%04x. (%s)", (uint)stream_id, StreamDescriptionToString(original_virtual_fmt).c_str());
