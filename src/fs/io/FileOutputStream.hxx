@@ -105,6 +105,9 @@ public:
 			Cancel();
 	}
 
+	FileOutputStream(const FileOutputStream &) = delete;
+	FileOutputStream &operator=(const FileOutputStream &) = delete;
+
 public:
 	Path GetPath() const noexcept {
 		return path;
