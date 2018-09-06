@@ -108,8 +108,7 @@ gcc_returns_nonnull gcc_nonnull_all
 static inline wchar_t *
 UnsafeCopyStringP(wchar_t *dest, const wchar_t *src) noexcept
 {
-#if defined(_WIN32) || defined(__BIONIC__) || defined(__OpenBSD__) || \
-	defined(__NetBSD__)
+#if defined(_WIN32) || defined(__OpenBSD__) || defined(__NetBSD__)
 	/* emulate wcpcpy() */
 	UnsafeCopyString(dest, src);
 	return dest + StringLength(dest);
@@ -169,8 +168,6 @@ StringIsEqualIgnoreCase(const wchar_t *a, const wchar_t *b,
 
 #endif
 
-#ifndef __BIONIC__
-
 gcc_malloc gcc_returns_nonnull gcc_nonnull_all
 static inline wchar_t *
 DuplicateString(const wchar_t *p)
@@ -181,7 +178,5 @@ DuplicateString(const wchar_t *p)
 	return wcsdup(p);
 #endif
 }
-
-#endif
 
 #endif
