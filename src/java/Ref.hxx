@@ -63,6 +63,10 @@ namespace Java {
 		LocalRef(const LocalRef &other) = delete;
 		LocalRef &operator=(const LocalRef &other) = delete;
 
+		JNIEnv *GetEnv() const noexcept {
+			return env;
+		}
+
 		T Get() const noexcept {
 			return value;
 		}
