@@ -85,8 +85,8 @@ namespace Java {
 
 	public:
 		/**
-		 * Constructs an uninitialized object.  The method set() must be
-		 * called before it is destructed.
+		 * Constructs an uninitialized object.  The method
+		 * set() must be called before it is destructed.
 		 */
 		GlobalRef() = default;
 
@@ -107,8 +107,9 @@ namespace Java {
 		GlobalRef &operator=(const GlobalRef &other) = delete;
 
 		/**
-		 * Sets the object, ignoring the previous value.  This is only
-		 * allowed once after the default constructor was used.
+		 * Sets the object, ignoring the previous value.  This
+		 * is only allowed once after the default constructor
+		 * was used.
 		 */
 		void Set(JNIEnv *env, T _value) noexcept {
 			assert(_value != nullptr);
@@ -127,10 +128,10 @@ namespace Java {
 
 	/**
 	 * Container for a global reference to a JNI object that gets
-	 * initialised and deinitialised explicitly.  Since there is no
-	 * implicit initialisation in the default constructor, this is a
-	 * trivial C++ class.  It should only be used for global variables
-	 * that are implicitly initialised with zeroes.
+	 * initialised and deinitialised explicitly.  Since there is
+	 * no implicit initialisation in the default constructor, this
+	 * is a trivial C++ class.  It should only be used for global
+	 * variables that are implicitly initialised with zeroes.
 	 */
 	template<typename T>
 	class TrivialRef {
@@ -147,8 +148,8 @@ namespace Java {
 		}
 
 		/**
-		 * Obtain a global reference on the specified object and store it.
-		 * This object must not be set already.
+		 * Obtain a global reference on the specified object
+		 * and store it.  This object must not be set already.
 		 */
 		void Set(JNIEnv *env, T _value) noexcept {
 			assert(value == nullptr);
@@ -168,8 +169,9 @@ namespace Java {
 		}
 
 		/**
-		 * Release the global reference and clear this object.  It is
-		 * allowed to call this method without ever calling Set().
+		 * Release the global reference and clear this object.
+		 * It is allowed to call this method without ever
+		 * calling Set().
 		 */
 		void ClearOptional(JNIEnv *env) noexcept {
 			if (value != nullptr)
