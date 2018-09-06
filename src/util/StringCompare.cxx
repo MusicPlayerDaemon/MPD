@@ -40,6 +40,17 @@ StringEndsWith(const char *haystack, const char *needle) noexcept
 		       needle, needle_length) == 0;
 }
 
+bool
+StringEndsWithIgnoreCase(const char *haystack, const char *needle) noexcept
+{
+	const size_t haystack_length = StringLength(haystack);
+	const size_t needle_length = StringLength(needle);
+
+	return haystack_length >= needle_length &&
+		StringIsEqualIgnoreCase(haystack + haystack_length - needle_length,
+					needle);
+}
+
 const char *
 FindStringSuffix(const char *p, const char *suffix) noexcept
 {

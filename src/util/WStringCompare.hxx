@@ -54,6 +54,11 @@ gcc_pure gcc_nonnull_all
 bool
 StringEndsWith(const wchar_t *haystack, const wchar_t *needle) noexcept;
 
+gcc_pure gcc_nonnull_all
+bool
+StringEndsWithIgnoreCase(const wchar_t *haystack,
+			 const wchar_t *needle) noexcept;
+
 /**
  * Returns the portion of the string after a prefix.  If the string
  * does not begin with the specified prefix, this function returns
@@ -66,6 +71,14 @@ StringAfterPrefix(const wchar_t *haystack, WStringView needle) noexcept
 	return StringStartsWith(haystack, needle)
 		? haystack + needle.size
 		: nullptr;
+}
+
+gcc_pure gcc_nonnull_all
+static inline bool
+StringStartsWithIgnoreCase(const wchar_t *haystack,
+			   WStringView needle) noexcept
+{
+	return StringIsEqualIgnoreCase(haystack, needle.data, needle.size);
 }
 
 /**
