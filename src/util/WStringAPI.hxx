@@ -168,6 +168,13 @@ StringIsEqualIgnoreCase(const wchar_t *a, const wchar_t *b,
 
 #endif
 
+gcc_pure gcc_nonnull_all
+static inline int
+StringCollate(const wchar_t *a, const wchar_t *b) noexcept
+{
+	return wcscoll(a, b);
+}
+
 gcc_malloc gcc_returns_nonnull gcc_nonnull_all
 static inline wchar_t *
 DuplicateString(const wchar_t *p) noexcept
