@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2017 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2010-2018 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -170,7 +170,7 @@ StringIsEqualIgnoreCase(const wchar_t *a, const wchar_t *b,
 
 gcc_malloc gcc_returns_nonnull gcc_nonnull_all
 static inline wchar_t *
-DuplicateString(const wchar_t *p)
+DuplicateString(const wchar_t *p) noexcept
 {
 #if defined(__sun) && defined (__SVR4)
 	return std::wcsdup(p);
