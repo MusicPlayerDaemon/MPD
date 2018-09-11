@@ -31,6 +31,9 @@ An experimental Android build is available on Google Play. After installing and 
 
 If you need to tweak the configuration, you can create a file called :file:`mpd.conf` on the data partition (the directory which is returned by Android's :dfn:`getExternalStorageDirectory()` API function). 
 
+ALSA is not available on Android; only the :ref:`OpenSL ES
+<sles_output>` output plugin can be used for local playback.
+
 Compiling from source
 ---------------------
 
@@ -1914,6 +1917,16 @@ You must set a format.
      - Specifies whether the stream should be "public". Default is no.
    * - **encoder PLUGIN**
      - Chooses an encoder plugin. Default is vorbis :ref:`vorbis_plugin`. A list of encoder plugins can be found in the encoder plugin reference :ref:`encoder_plugins`.
+
+
+.. _sles_output:
+
+sles
+~~~~
+
+Plugin using the `OpenSL ES <https://www.khronos.org/opensles/>`__
+audio API.  Its primary use is local playback on Android, where
+:ref:`ALSA <alsa_plugin>` is not available.
 
 
 solaris
