@@ -520,7 +520,7 @@ The State File
      - Description
    * - **state_file PATH**
      - Specify the state file location. The parent directory must be writable by the :program:`MPD` user (+wx).
-   * - **state_file_internal SECONDS**
+   * - **state_file_interval SECONDS**
      - Auto-save the state file this number of seconds after each state change. Defaults to 120 (2 minutes).
 
 The Sticker Database
