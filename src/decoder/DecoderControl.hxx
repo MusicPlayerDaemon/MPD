@@ -179,6 +179,14 @@ struct DecoderControl final : InputStreamHandler {
 	~DecoderControl() noexcept;
 
 	/**
+	 * Throws on error.
+	 */
+	void StartThread() {
+		quit = false;
+		thread.Start();
+	}
+
+	/**
 	 * Locks the object.
 	 */
 	void Lock() const noexcept {

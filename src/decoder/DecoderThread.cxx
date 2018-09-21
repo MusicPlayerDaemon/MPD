@@ -18,7 +18,6 @@
  */
 
 #include "config.h"
-#include "DecoderThread.hxx"
 #include "DecoderControl.hxx"
 #include "Bridge.hxx"
 #include "DecoderError.hxx"
@@ -564,13 +563,4 @@ DecoderControl::RunThread() noexcept
 			break;
 		}
 	} while (command != DecoderCommand::NONE || !quit);
-}
-
-void
-decoder_thread_start(DecoderControl &dc)
-{
-	assert(!dc.thread.IsDefined());
-
-	dc.quit = false;
-	dc.thread.Start();
 }

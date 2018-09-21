@@ -21,7 +21,6 @@
 #include "Thread.hxx"
 #include "Outputs.hxx"
 #include "Listener.hxx"
-#include "decoder/DecoderThread.hxx"
 #include "decoder/DecoderControl.hxx"
 #include "MusicPipe.hxx"
 #include "MusicBuffer.hxx"
@@ -1089,7 +1088,7 @@ PlayerControl::RunThread() noexcept
 	DecoderControl dc(mutex, cond,
 			  configured_audio_format,
 			  replay_gain_config);
-	decoder_thread_start(dc);
+	dc.StartThread();
 
 	MusicBuffer buffer(buffer_chunks);
 
