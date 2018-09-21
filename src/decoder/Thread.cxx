@@ -488,7 +488,7 @@ decoder_run_song(DecoderControl &dc,
  * Caller holds DecoderControl::mutex.
  */
 static void
-decoder_run(DecoderControl &dc)
+decoder_run(DecoderControl &dc) noexcept
 try {
 	dc.ClearError();
 
