@@ -29,12 +29,14 @@
 #include "Chrono.hxx"
 #include "ReplayGainConfig.hxx"
 #include "ReplayGainMode.hxx"
+#include "MusicChunkPtr.hxx"
 
 #include <exception>
 #include <memory>
 
 #include <stdint.h>
 
+struct Tag;
 class PlayerListener;
 class PlayerOutputs;
 class DetachedSong;
@@ -555,6 +557,22 @@ public:
 	double GetTotalPlayTime() const noexcept {
 		return total_play_time;
 	}
+
+	void LockUpdateSongTag(DetachedSong &song,
+			       const Tag &new_tag) noexcept;
+
+	/**
+	 * Plays a #MusicChunk object (after applying software
+	 * volume).  If it contains a (stream) tag, copy it to the
+	 * current song, so MPD's playlist reflects the new stream
+	 * tag.
+	 *
+	 * Player lock is not held.
+	 *
+	 * Throws on error.
+	 */
+	void PlayChunk(DetachedSong &song, MusicChunkPtr chunk,
+		       const AudioFormat &format);
 
 	/* virtual methods from AudioOutputClient */
 	void ChunksConsumed() override {

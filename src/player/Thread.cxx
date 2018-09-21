@@ -726,9 +726,9 @@ Player::ProcessCommand() noexcept
 	return true;
 }
 
-static void
-update_song_tag(PlayerControl &pc, DetachedSong &song,
-		const Tag &new_tag) noexcept
+inline void
+PlayerControl::LockUpdateSongTag(DetachedSong &song,
+				 const Tag &new_tag) noexcept
 {
 	if (song.IsFile())
 		/* don't update tags of local files, only remote
@@ -737,48 +737,40 @@ update_song_tag(PlayerControl &pc, DetachedSong &song,
 
 	song.SetTag(new_tag);
 
-	pc.LockSetTaggedSong(song);
+	LockSetTaggedSong(song);
 
 	/* the main thread will update the playlist version when he
 	   receives this event */
-	pc.listener.OnPlayerTagModified();
+	listener.OnPlayerTagModified();
 
 	/* notify all clients that the tag of the current song has
 	   changed */
 	idle_add(IDLE_PLAYER);
 }
 
-/**
- * Plays a #MusicChunk object (after applying software volume).  If
- * it contains a (stream) tag, copy it to the current song, so MPD's
- * playlist reflects the new stream tag.
- *
- * Player lock is not held.
- */
-static void
-play_chunk(PlayerControl &pc,
-	   DetachedSong &song, MusicChunkPtr chunk,
-	   const AudioFormat format)
+inline void
+PlayerControl::PlayChunk(DetachedSong &song, MusicChunkPtr chunk,
+			 const AudioFormat &format)
 {
 	assert(chunk->CheckFormat(format));
 
 	if (chunk->tag != nullptr)
-		update_song_tag(pc, song, *chunk->tag);
+		LockUpdateSongTag(song, *chunk->tag);
 
 	if (chunk->IsEmpty())
 		return;
 
 	{
-		const std::lock_guard<Mutex> lock(pc.mutex);
-		pc.bit_rate = chunk->bit_rate;
+		const std::lock_guard<Mutex> lock(mutex);
+		bit_rate = chunk->bit_rate;
 	}
 
 	/* send the chunk to the audio outputs */
 
 	const double chunk_length(chunk->length);
 
-	pc.outputs.Play(std::move(chunk));
-	pc.total_play_time += chunk_length / format.GetTimeToSize();
+	outputs.Play(std::move(chunk));
+	total_play_time += chunk_length / format.GetTimeToSize();
 }
 
 inline bool
@@ -875,8 +867,8 @@ Player::PlayNextChunk() noexcept
 	/* play the current chunk */
 
 	try {
-		play_chunk(pc, *song, std::move(chunk),
-			   play_audio_format);
+		pc.PlayChunk(*song, std::move(chunk),
+			     play_audio_format);
 	} catch (...) {
 		LogError(std::current_exception());
 
