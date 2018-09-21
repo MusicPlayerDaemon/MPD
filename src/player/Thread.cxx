@@ -1098,7 +1098,7 @@ do_play(PlayerControl &pc, DecoderControl &dc,
 
 void
 PlayerControl::RunThread() noexcept
-{
+try {
 	SetThreadName("player");
 
 	DecoderControl dc(mutex, cond,
@@ -1185,4 +1185,12 @@ PlayerControl::RunThread() noexcept
 			break;
 		}
 	}
+} catch (...) {
+	/* exceptions caught here are thrown during initialization;
+	   the main loop doesn't throw */
+
+	LogError(std::current_exception());
+
+	/* TODO: what now? How will the main thread learn about this
+	   failure? */
 }
