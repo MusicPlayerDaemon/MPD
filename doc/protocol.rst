@@ -34,7 +34,7 @@ retrieve this real version identifier from the connection.)
 Requests
 ========
 
-CMDSYN:  COMMAND ARG
+``COMMAND [ARG...]``
 
 If arguments contain spaces, they should be surrounded by double
 quotation marks.
