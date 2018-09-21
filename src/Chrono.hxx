@@ -24,6 +24,8 @@
 #include <utility>
 #include <cstdint>
 
+using FloatDuration = std::chrono::duration<double>;
+
 /**
  * A time stamp within a song.  Granularity is 1 millisecond and the
  * maximum value is about 49 days.
