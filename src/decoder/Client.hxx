@@ -21,7 +21,7 @@
 #define MPD_DECODER_CLIENT_HXX
 
 #include "check.h"
-#include "DecoderCommand.hxx"
+#include "Command.hxx"
 #include "Chrono.hxx"
 #include "input/Ptr.hxx"
 #include "util/Compiler.h"

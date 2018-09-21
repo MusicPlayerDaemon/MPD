@@ -17,7 +17,9 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "DecoderError.hxx"
-#include "util/Domain.hxx"
+#ifndef MPD_DECODER_DOMAIN_HXX
+#define MPD_DECODER_DOMAIN_HXX
 
-const Domain decoder_domain("decoder");
+extern const class Domain decoder_domain;
+
+#endif

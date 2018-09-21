@@ -21,7 +21,7 @@
 #include "Thread.hxx"
 #include "Outputs.hxx"
 #include "Listener.hxx"
-#include "decoder/DecoderControl.hxx"
+#include "decoder/Control.hxx"
 #include "MusicPipe.hxx"
 #include "MusicBuffer.hxx"
 #include "MusicChunk.hxx"

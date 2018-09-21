@@ -32,7 +32,7 @@
 #include "check.h"
 #include "Client.hxx"
 #include "input/Ptr.hxx"
-#include "DecoderCommand.hxx"
+#include "Command.hxx"
 #include "DecoderPlugin.hxx"
 #include "ReplayGainInfo.hxx"
 #include "tag/Tag.hxx"

@@ -20,7 +20,7 @@
 #ifndef MPD_DECODER_CONTROL_HXX
 #define MPD_DECODER_CONTROL_HXX
 
-#include "DecoderCommand.hxx"
+#include "Command.hxx"
 #include "AudioFormat.hxx"
 #include "MixRampInfo.hxx"
 #include "input/Handler.hxx"

@@ -101,10 +101,10 @@ libmpd_a_SOURCES = \
 	src/command/CommandListBuilder.cxx src/command/CommandListBuilder.hxx \
 	src/Idle.cxx src/Idle.hxx \
 	src/IdleFlags.cxx src/IdleFlags.hxx \
-	src/decoder/DecoderError.cxx src/decoder/DecoderError.hxx \
-	src/decoder/DecoderThread.cxx \
-	src/decoder/DecoderCommand.hxx \
-	src/decoder/DecoderControl.cxx src/decoder/DecoderControl.hxx \
+	src/decoder/Domain.cxx src/decoder/Domain.hxx \
+	src/decoder/Thread.cxx \
+	src/decoder/Command.hxx \
+	src/decoder/Control.cxx src/decoder/Control.hxx \
 	src/decoder/Client.hxx \
 	src/decoder/DecoderPlugin.hxx \
 	src/decoder/Bridge.cxx src/decoder/Bridge.hxx \

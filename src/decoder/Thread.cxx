@@ -18,9 +18,8 @@
  */
 
 #include "config.h"
-#include "DecoderControl.hxx"
+#include "Control.hxx"
 #include "Bridge.hxx"
-#include "DecoderError.hxx"
 #include "DecoderPlugin.hxx"
 #include "song/DetachedSong.hxx"
 #include "MusicPipe.hxx"

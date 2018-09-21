@@ -18,8 +18,7 @@
  */
 
 #include "config.h"
-#include "DecoderControl.hxx"
-#include "DecoderError.hxx"
+#include "Control.hxx"
 #include "MusicPipe.hxx"
 #include "song/DetachedSong.hxx"
 
