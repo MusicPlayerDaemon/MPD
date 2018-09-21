@@ -109,7 +109,9 @@ struct PlayerStatus {
 	SongTime elapsed_time;
 };
 
-struct PlayerControl final : AudioOutputClient {
+class PlayerControl final : public AudioOutputClient {
+	friend class Player;
+
 	PlayerListener &listener;
 
 	PlayerOutputs &outputs;
@@ -231,6 +233,7 @@ struct PlayerControl final : AudioOutputClient {
 
 	double total_play_time = 0;
 
+public:
 	PlayerControl(PlayerListener &_listener,
 		      PlayerOutputs &_outputs,
 		      unsigned buffer_chunks,
@@ -268,6 +271,7 @@ struct PlayerControl final : AudioOutputClient {
 		cond.signal();
 	}
 
+private:
 	/**
 	 * Signals the object.  The object is temporarily locked by
 	 * this function.
@@ -347,7 +351,6 @@ struct PlayerControl final : AudioOutputClient {
 		return WaitOutputConsumed(threshold);
 	}
 
-private:
 	/**
 	 * Wait for the command to be finished by the player thread.
 	 *
@@ -417,12 +420,14 @@ public:
 	 */
 	void LockSetBorderPause(bool border_pause) noexcept;
 
+private:
 	bool ApplyBorderPause() noexcept {
 		if (border_pause)
 			state = PlayerState::PAUSE;
 		return border_pause;
 	}
 
+public:
 	void Kill() noexcept;
 
 	gcc_pure
@@ -432,6 +437,7 @@ public:
 		return state;
 	}
 
+private:
 	/**
 	 * Set the error.  Discards any previous error condition.
 	 *
@@ -468,6 +474,7 @@ public:
 			std::rethrow_exception(error);
 	}
 
+public:
 	/**
 	 * Like CheckRethrowError(), but locks and unlocks the object.
 	 */
@@ -482,6 +489,7 @@ public:
 		return error_type;
 	}
 
+private:
 	/**
 	 * Set the #tagged_song attribute to a newly allocated copy of
 	 * the given #DetachedSong.  Locks and unlocks the object.
@@ -497,6 +505,7 @@ public:
 	 */
 	std::unique_ptr<DetachedSong> ReadTaggedSong() noexcept;
 
+public:
 	/**
 	 * Like ReadTaggedSong(), but locks and unlocks the object.
 	 */
@@ -521,6 +530,10 @@ public:
 	 */
 	void LockEnqueueSong(std::unique_ptr<DetachedSong> song) noexcept;
 
+	bool HasNextSong() const noexcept {
+		return next_song != nullptr;
+	}
+
 	/**
 	 * Makes the player thread seek the specified song to a position.
 	 *
@@ -531,6 +544,19 @@ public:
 	 */
 	void LockSeek(std::unique_ptr<DetachedSong> song, SongTime t);
 
+private:
+	/**
+	 * Caller must lock the object.
+	 */
+	void CancelPendingSeek() noexcept {
+		if (!seeking)
+			return;
+
+		seeking = false;
+		ClientSignal();
+	}
+
+public:
 	void SetCrossFade(float cross_fade_seconds) noexcept;
 
 	float GetCrossFade() const noexcept {
@@ -558,6 +584,7 @@ public:
 		return total_play_time;
 	}
 
+private:
 	void LockUpdateSongTag(DetachedSong &song,
 			       const Tag &new_tag) noexcept;
 

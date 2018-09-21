@@ -91,7 +91,7 @@ playlist::SongStarted()
 inline void
 playlist::QueuedSongStarted(PlayerControl &pc)
 {
-	assert(pc.next_song == nullptr);
+	assert(!pc.HasNextSong());
 	assert(queued >= -1);
 	assert(current >= 0);
 
@@ -197,7 +197,7 @@ playlist::SyncWithPlayer(PlayerControl &pc)
 
 	pc.Lock();
 	const PlayerState pc_state = pc.GetState();
-	bool pc_has_next_song = pc.next_song != nullptr;
+	bool pc_has_next_song = pc.HasNextSong();
 	pc.Unlock();
 
 	if (pc_state == PlayerState::STOP)
@@ -213,7 +213,7 @@ playlist::SyncWithPlayer(PlayerControl &pc)
 			QueuedSongStarted(pc);
 
 		pc.Lock();
-		pc_has_next_song = pc.next_song != nullptr;
+		pc_has_next_song = pc.HasNextSong();
 		pc.Unlock();
 
 		/* make sure the queued song is always set (if

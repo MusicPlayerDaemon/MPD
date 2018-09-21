@@ -27,7 +27,7 @@
 class SongLoader;
 class SongEnumerator;
 struct playlist;
-struct PlayerControl;
+class PlayerControl;
 
 /**
  * Loads the contents of a playlist and append it to the specified

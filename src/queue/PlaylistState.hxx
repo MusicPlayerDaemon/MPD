@@ -27,7 +27,7 @@
 
 struct StateFileConfig;
 struct playlist;
-struct PlayerControl;
+class PlayerControl;
 class TextFile;
 class BufferedOutputStream;
 class SongLoader;

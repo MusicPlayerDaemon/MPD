@@ -25,7 +25,7 @@
 
 enum TagType : uint8_t;
 struct Tag;
-struct PlayerControl;
+class PlayerControl;
 class DetachedSong;
 class Database;
 class SongLoader;

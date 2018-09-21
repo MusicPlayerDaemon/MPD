@@ -44,7 +44,7 @@ class EventLoop;
 class Path;
 struct Instance;
 struct Partition;
-struct PlayerControl;
+class PlayerControl;
 struct playlist;
 class Database;
 class Storage;
