@@ -150,10 +150,10 @@ PlayerControl::LockSetBorderPause(bool _border_pause) noexcept
 	border_pause = _border_pause;
 }
 
-player_status
+PlayerStatus
 PlayerControl::LockGetStatus() noexcept
 {
-	player_status status;
+	PlayerStatus status;
 
 	const std::lock_guard<Mutex> protect(mutex);
 	if (!occupied)

@@ -99,7 +99,7 @@ enum class PlayerError : uint8_t {
 	OUTPUT,
 };
 
-struct player_status {
+struct PlayerStatus {
 	PlayerState state;
 	uint16_t bit_rate;
 	AudioFormat audio_format;
@@ -424,7 +424,7 @@ public:
 	void Kill() noexcept;
 
 	gcc_pure
-	player_status LockGetStatus() noexcept;
+	PlayerStatus LockGetStatus() noexcept;
 
 	PlayerState GetState() const noexcept {
 		return state;
