@@ -42,6 +42,11 @@ public:
 		return SongTime(Base::zero());
 	}
 
+	template<typename D>
+	static constexpr SongTime Cast(D src) {
+		return SongTime(std::chrono::duration_cast<Base>(src));
+	}
+
 	static constexpr SongTime FromS(unsigned s) {
 		return SongTime(rep(s) * 1000);
 	}
@@ -136,6 +141,11 @@ public:
 	 */
 	static constexpr SignedSongTime Negative() {
 		return SignedSongTime(-1);
+	}
+
+	template<typename D>
+	static constexpr SongTime Cast(D src) {
+		return SongTime(std::chrono::duration_cast<Base>(src));
 	}
 
 	static constexpr SignedSongTime FromS(int s) {
