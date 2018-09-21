@@ -29,7 +29,7 @@
 
 class PcmConvert;
 struct MusicChunk;
-struct DecoderControl;
+class DecoderControl;
 struct Tag;
 
 /**

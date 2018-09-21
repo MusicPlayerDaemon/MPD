@@ -61,12 +61,13 @@ enum class DecoderState : uint8_t {
 	ERROR,
 };
 
-struct DecoderControl final : InputStreamHandler {
+class DecoderControl final : public InputStreamHandler {
 	/**
 	 * The handle of the decoder thread.
 	 */
 	Thread thread;
 
+public:
 	/**
 	 * This lock protects #state and #command.
 	 *
@@ -103,8 +104,10 @@ struct DecoderControl final : InputStreamHandler {
 	 */
 	std::exception_ptr error;
 
+private:
 	bool quit;
 
+public:
 	/**
 	 * Is the client currently waiting for the DecoderThread?  If
 	 * false, the DecoderThread may omit invoking Cond::signal(),
@@ -116,11 +119,13 @@ struct DecoderControl final : InputStreamHandler {
 	bool seekable;
 	SongTime seek_time;
 
+private:
 	/**
 	 * The "audio_output_format" setting.
 	 */
 	const AudioFormat configured_audio_format;
 
+public:
 	/** the format of the song file */
 	AudioFormat in_audio_format;
 
@@ -167,8 +172,10 @@ struct DecoderControl final : InputStreamHandler {
 	float replay_gain_db = 0;
 	float replay_gain_prev_db = 0;
 
+private:
 	MixRampInfo mix_ramp, previous_mix_ramp;
 
+public:
 	/**
 	 * @param _mutex see #mutex
 	 * @param _client_cond see #client_cond
