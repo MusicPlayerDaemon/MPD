@@ -29,7 +29,7 @@
  */
 class MusicBuffer {
 	/** a mutex which protects #buffer */
-	Mutex mutex;
+	mutable Mutex mutex;
 
 	SliceBuffer<MusicChunk> buffer;
 
@@ -52,6 +52,11 @@ public:
 		return buffer.empty();
 	}
 #endif
+
+	bool IsFull() const noexcept {
+		const std::lock_guard<Mutex> protect(mutex);
+		return buffer.IsFull();
+	}
 
 	/**
 	 * Returns the total number of reserved chunks in this buffer.  This

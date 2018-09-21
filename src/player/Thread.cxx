@@ -944,7 +944,7 @@ Player::Run() noexcept
 			   prevent stuttering on slow machines */
 
 			if (pipe->GetSize() < pc.buffered_before_play &&
-			    !dc.IsIdle()) {
+			    !dc.IsIdle() && !buffer.IsFull()) {
 				/* not enough decoded buffer space yet */
 
 				dc.WaitForDecoder();
