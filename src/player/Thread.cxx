@@ -937,10 +937,7 @@ Player::Run() noexcept
 
 	pc.CommandFinished();
 
-	while (true) {
-		if (!ProcessCommand())
-			break;
-
+	while (ProcessCommand()) {
 		if (buffering) {
 			/* buffering at the start of the song - wait
 			   until the buffer is large enough, to
