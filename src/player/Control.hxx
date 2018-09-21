@@ -231,7 +231,7 @@ class PlayerControl final : public AudioOutputClient {
 
 	const ReplayGainConfig replay_gain_config;
 
-	double total_play_time = 0;
+	FloatDuration total_play_time = FloatDuration::zero();
 
 public:
 	PlayerControl(PlayerListener &_listener,
@@ -580,7 +580,7 @@ public:
 		replay_gain_mode = _mode;
 	}
 
-	double GetTotalPlayTime() const noexcept {
+	auto GetTotalPlayTime() const noexcept {
 		return total_play_time;
 	}
 

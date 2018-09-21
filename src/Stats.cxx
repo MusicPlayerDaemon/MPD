@@ -120,7 +120,7 @@ stats_print(Response &r, const Partition &partition)
 #else
 		 (unsigned)std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - start_time).count(),
 #endif
-		 (unsigned long)(partition.pc.GetTotalPlayTime() + 0.5));
+		 (unsigned long)(partition.pc.GetTotalPlayTime().count() + 0.5));
 
 #ifdef ENABLE_DATABASE
 	const Database *db = partition.instance.database;

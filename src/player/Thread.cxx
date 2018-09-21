@@ -766,7 +766,7 @@ PlayerControl::PlayChunk(DetachedSong &song, MusicChunkPtr chunk,
 	const double chunk_length(chunk->length);
 
 	outputs.Play(std::move(chunk));
-	total_play_time += chunk_length / format.GetTimeToSize();
+	total_play_time += FloatDuration(chunk_length / format.GetTimeToSize());
 }
 
 inline bool
