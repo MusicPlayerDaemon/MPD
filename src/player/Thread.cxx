@@ -17,8 +17,25 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+/* \file
+ *
+ * The player thread controls the playback.  It acts as a bridge
+ * between the decoder thread and the output thread(s): it receives
+ * #MusicChunk objects from the decoder, optionally mixes them
+ * (cross-fading), applies software volume, and sends them to the
+ * audio outputs via audio_output_all_play().
+ *
+ * It is controlled by the main thread (the playlist code), see
+ * Control.hxx.  The playlist enqueues new songs into the player
+ * thread and sends it commands.
+ *
+ * The player thread itself does not do any I/O.  It synchronizes with
+ * other threads via #GMutex and #GCond objects, and passes
+ * #MusicChunk instances around in #MusicPipe objects.
+ */
+
 #include "config.h"
-#include "Thread.hxx"
+#include "Control.hxx"
 #include "Outputs.hxx"
 #include "Listener.hxx"
 #include "decoder/Control.hxx"
@@ -27,7 +44,6 @@
 #include "MusicChunk.hxx"
 #include "song/DetachedSong.hxx"
 #include "CrossFade.hxx"
-#include "Control.hxx"
 #include "tag/Tag.hxx"
 #include "Idle.hxx"
 #include "util/Domain.hxx"
@@ -1169,12 +1185,4 @@ PlayerControl::RunThread() noexcept
 			break;
 		}
 	}
-}
-
-void
-StartPlayerThread(PlayerControl &pc)
-{
-	assert(!pc.thread.IsDefined());
-
-	pc.thread.Start();
 }

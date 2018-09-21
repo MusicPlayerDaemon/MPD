@@ -238,6 +238,13 @@ struct PlayerControl final : AudioOutputClient {
 	~PlayerControl() noexcept;
 
 	/**
+	 * Throws on error.
+	 */
+	void StartThread() {
+		thread.Start();
+	}
+
+	/**
 	 * Locks the object.
 	 */
 	void Lock() const noexcept {

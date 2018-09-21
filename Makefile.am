@@ -142,7 +142,7 @@ libmpd_a_SOURCES = \
 	src/Partition.cxx src/Partition.hxx \
 	src/Permission.cxx src/Permission.hxx \
 	src/player/CrossFade.cxx src/player/CrossFade.hxx \
-	src/player/Thread.cxx src/player/Thread.hxx \
+	src/player/Thread.cxx \
 	src/player/Control.cxx src/player/Control.hxx \
 	src/player/Listener.hxx \
 	src/player/Outputs.hxx \

@@ -24,7 +24,6 @@
 #include "PlaylistFile.hxx"
 #include "MusicChunk.hxx"
 #include "StateFile.hxx"
-#include "player/Thread.hxx"
 #include "Mapper.hxx"
 #include "Permission.hxx"
 #include "Listen.hxx"
@@ -613,7 +612,7 @@ mpd_main_after_fork(const ConfigData &raw_config, const Config &config)
 	ZeroconfInit(raw_config, instance->event_loop);
 
 	for (auto &partition : instance->partitions)
-		StartPlayerThread(partition.pc);
+		partition.pc.StartThread();
 
 #ifdef ENABLE_DATABASE
 	if (create_db) {
