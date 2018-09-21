@@ -23,6 +23,8 @@
 #include "pcm/SampleFormat.hxx"
 #include "util/Compiler.h"
 
+#include <chrono>
+
 #include <stdint.h>
 #include <stddef.h>
 
@@ -152,6 +154,28 @@ struct AudioFormat {
 	 * span to a storage size in bytes.
 	 */
 	double GetTimeToSize() const;
+
+	template<typename D>
+	constexpr auto TimeToFrames(D t) const noexcept {
+		using Period = typename D::period;
+		return ((t.count() * sample_rate) / Period::den) * Period::num;
+	}
+
+	template<typename D>
+	constexpr size_t TimeToSize(D t) const noexcept {
+		return size_t(size_t(TimeToFrames(t)) * GetFrameSize());
+	}
+
+	template<typename D>
+	constexpr D FramesToTime(std::uintmax_t size) const noexcept {
+		using Period = typename D::period;
+		return D(((size / Period::num) * Period::den) / sample_rate);
+	}
+
+	template<typename D>
+	constexpr D SizeToTime(std::uintmax_t size) const noexcept {
+		return FramesToTime<D>(size / GetFrameSize());
+	}
 };
 
 /**

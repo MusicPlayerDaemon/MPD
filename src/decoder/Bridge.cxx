@@ -532,8 +532,7 @@ DecoderBridge::SubmitData(InputStream *is,
 		data = (const uint8_t *)data + nbytes;
 		length -= nbytes;
 
-		timestamp += FloatDuration((double)nbytes /
-					   dc.out_audio_format.GetTimeToSize());
+		timestamp += dc.out_audio_format.SizeToTime<FloatDuration>(nbytes);
 	}
 
 	absolute_frame += data_frames;

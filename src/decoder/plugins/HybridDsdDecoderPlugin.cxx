@@ -183,7 +183,7 @@ HybridDsdDecode(DecoderClient &client, InputStream &input)
 
 	try {
 		auto result = FindHybridDsdData(client, input);
-		auto duration = SignedSongTime::FromS(result.second / result.first.GetTimeToSize());
+		auto duration = result.first.SizeToTime<SignedSongTime>(result.second);
 		client.Ready(result.first, true, duration);
 		frame_size = result.first.GetFrameSize();
 		kbit_rate = frame_size * result.first.sample_rate /
