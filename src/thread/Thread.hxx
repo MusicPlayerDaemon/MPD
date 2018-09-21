@@ -57,6 +57,7 @@ public:
 	explicit Thread(Function _f) noexcept:f(_f) {}
 
 	Thread(const Thread &) = delete;
+	Thread &operator=(const Thread &) = delete;
 
 #ifndef NDEBUG
 	~Thread() noexcept {
