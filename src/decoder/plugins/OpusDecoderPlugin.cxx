@@ -243,7 +243,7 @@ MPDOpusDecoder::HandleAudio(const ogg_packet &packet)
 			throw cmd;
 
 		if (packet.granulepos > 0)
-			client.SubmitTimestamp(double(packet.granulepos)
+			client.SubmitTimestamp(FloatDuration(packet.granulepos)
 					       / opus_sample_rate);
 	}
 }

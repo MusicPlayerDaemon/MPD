@@ -264,7 +264,8 @@ mpd_mpg123_file_decode(DecoderClient &client, Path path_fs)
 				client.SeekError();
 			else {
 				client.CommandFinished();
-				client.SubmitTimestamp(c / (double)audio_format.sample_rate);
+				client.SubmitTimestamp(FloatDuration(c)
+						       / audio_format.sample_rate);
 			}
 
 			cmd = DecoderCommand::NONE;

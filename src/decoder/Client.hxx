@@ -115,7 +115,7 @@ public:
 	 * use this function if it thinks that adding to the time stamp based
 	 * on the buffer size won't work.
 	 */
-	virtual void SubmitTimestamp(double t) = 0;
+	virtual void SubmitTimestamp(FloatDuration t) = 0;
 
 	/**
 	 * This function is called by the decoder plugin when it has

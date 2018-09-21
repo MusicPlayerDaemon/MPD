@@ -87,7 +87,7 @@ DumpDecoderClient::Read(InputStream &is, void *buffer, size_t length)
 }
 
 void
-DumpDecoderClient::SubmitTimestamp(gcc_unused double t)
+DumpDecoderClient::SubmitTimestamp(gcc_unused FloatDuration t)
 {
 }
 

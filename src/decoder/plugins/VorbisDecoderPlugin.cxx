@@ -298,7 +298,7 @@ VorbisDecoder::OnOggPacket(const ogg_packet &_packet)
 
 #ifndef HAVE_TREMOR
 		if (packet.granulepos > 0)
-			client.SubmitTimestamp(vorbis_granule_time(&dsp, packet.granulepos));
+			client.SubmitTimestamp(FloatDuration(vorbis_granule_time(&dsp, packet.granulepos)));
 #endif
 	}
 }
