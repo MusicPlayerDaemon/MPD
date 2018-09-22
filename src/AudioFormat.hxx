@@ -149,12 +149,6 @@ struct AudioFormat {
 	 */
 	unsigned GetFrameSize() const;
 
-	/**
-	 * Returns the floating point factor which converts a time
-	 * span to a storage size in bytes.
-	 */
-	double GetTimeToSize() const;
-
 	template<typename D>
 	constexpr auto TimeToFrames(D t) const noexcept {
 		using Period = typename D::period;
@@ -234,12 +228,6 @@ inline unsigned
 AudioFormat::GetFrameSize() const
 {
 	return GetSampleSize() * channels;
-}
-
-inline double
-AudioFormat::GetTimeToSize() const
-{
-	return sample_rate * GetFrameSize();
 }
 
 /**
