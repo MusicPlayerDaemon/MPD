@@ -20,6 +20,7 @@
 #ifndef MPD_CROSSFADE_HXX
 #define MPD_CROSSFADE_HXX
 
+#include "Chrono.hxx"
 #include "util/Compiler.h"
 
 struct AudioFormat;
@@ -29,7 +30,7 @@ struct CrossFadeSettings {
 	/**
 	 * The configured cross fade duration [s].
 	 */
-	float duration;
+	FloatDuration duration;
 
 	float mixramp_db;
 
@@ -37,7 +38,7 @@ struct CrossFadeSettings {
 	 * The configured MixRapm delay [s].  A non-positive value
 	 * disables MixRamp.
 	 */
-	float mixramp_delay;
+	FloatDuration mixramp_delay;
 
 	CrossFadeSettings()
 		:duration(0),

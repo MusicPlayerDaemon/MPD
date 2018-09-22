@@ -283,11 +283,9 @@ PlayerControl::LockSeek(std::unique_ptr<DetachedSong> song, SongTime t)
 }
 
 void
-PlayerControl::SetCrossFade(float _cross_fade_seconds) noexcept
+PlayerControl::SetCrossFade(FloatDuration duration) noexcept
 {
-	if (_cross_fade_seconds < 0)
-		_cross_fade_seconds = 0;
-	cross_fade.duration = _cross_fade_seconds;
+	cross_fade.duration = std::max(duration, FloatDuration::zero());
 
 	idle_add(IDLE_OPTIONS);
 }
@@ -301,9 +299,9 @@ PlayerControl::SetMixRampDb(float _mixramp_db) noexcept
 }
 
 void
-PlayerControl::SetMixRampDelay(float _mixramp_delay_seconds) noexcept
+PlayerControl::SetMixRampDelay(FloatDuration _mixramp_delay) noexcept
 {
-	cross_fade.mixramp_delay = _mixramp_delay_seconds;
+	cross_fade.mixramp_delay = _mixramp_delay;
 
 	idle_add(IDLE_OPTIONS);
 }

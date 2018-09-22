@@ -92,10 +92,10 @@ playlist_state_save(BufferedOutputStream &os, const struct playlist &playlist,
 			  (int)playlist.queue.single);
 	os.Format(PLAYLIST_STATE_FILE_CONSUME "%i\n", playlist.queue.consume);
 	os.Format(PLAYLIST_STATE_FILE_CROSSFADE "%i\n",
-		  (int)pc.GetCrossFade());
+		  (int)pc.GetCrossFade().count());
 	os.Format(PLAYLIST_STATE_FILE_MIXRAMPDB "%f\n", pc.GetMixRampDb());
 	os.Format(PLAYLIST_STATE_FILE_MIXRAMPDELAY "%f\n",
-		  pc.GetMixRampDelay());
+		  pc.GetMixRampDelay().count());
 	os.Write(PLAYLIST_STATE_FILE_PLAYLIST_BEGIN "\n");
 	queue_save(os, playlist.queue);
 	os.Write(PLAYLIST_STATE_FILE_PLAYLIST_END "\n");
@@ -159,14 +159,14 @@ playlist_state_restore(const StateFileConfig &config,
 		} else if ((p = StringAfterPrefix(line, PLAYLIST_STATE_FILE_CONSUME))) {
 			playlist.SetConsume(StringIsEqual(p, "1"));
 		} else if ((p = StringAfterPrefix(line, PLAYLIST_STATE_FILE_CROSSFADE))) {
-			pc.SetCrossFade(atoi(p));
+			pc.SetCrossFade(FloatDuration(atoi(p)));
 		} else if ((p = StringAfterPrefix(line, PLAYLIST_STATE_FILE_MIXRAMPDB))) {
 			pc.SetMixRampDb(ParseFloat(p));
 		} else if ((p = StringAfterPrefix(line, PLAYLIST_STATE_FILE_MIXRAMPDELAY))) {
 			/* this check discards "nan" which was used
 			   prior to MPD 0.18 */
 			if (IsDigitASCII(*p))
-				pc.SetMixRampDelay(ParseFloat(p));
+				pc.SetMixRampDelay(FloatDuration(ParseFloat(p)));
 		} else if ((p = StringAfterPrefix(line, PLAYLIST_STATE_FILE_RANDOM))) {
 			random_mode = StringIsEqual(p, "1");
 		} else if ((p = StringAfterPrefix(line, PLAYLIST_STATE_FILE_CURRENT))) {
@@ -232,7 +232,7 @@ playlist_state_get_hash(const playlist &playlist,
 		(playlist.current >= 0
 		 ? (playlist.queue.OrderToPosition(playlist.current) << 16)
 		 : 0) ^
-		((int)pc.GetCrossFade() << 20) ^
+		((int)pc.GetCrossFade().count() << 20) ^
 		(unsigned(player_status.state) << 24) ^
 		/* note that this takes 2 bits */
 		((int)playlist.queue.single << 25) ^

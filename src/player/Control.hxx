@@ -557,9 +557,9 @@ private:
 	}
 
 public:
-	void SetCrossFade(float cross_fade_seconds) noexcept;
+	void SetCrossFade(FloatDuration duration) noexcept;
 
-	float GetCrossFade() const noexcept {
+	auto GetCrossFade() const noexcept {
 		return cross_fade.duration;
 	}
 
@@ -569,9 +569,9 @@ public:
 		return cross_fade.mixramp_db;
 	}
 
-	void SetMixRampDelay(float mixramp_delay_seconds) noexcept;
+	void SetMixRampDelay(FloatDuration mixramp_delay) noexcept;
 
-	float GetMixRampDelay() const noexcept {
+	auto GetMixRampDelay() const noexcept {
 		return cross_fade.mixramp_delay;
 	}
 
