@@ -97,7 +97,6 @@ CrossFadeSettings::Calculate(SignedSongTime total_time,
 			     unsigned max_chunks) const noexcept
 {
 	unsigned int chunks = 0;
-	float chunks_f;
 
 	if (total_time.IsNegative() ||
 	    duration <= FloatDuration::zero() ||
@@ -109,11 +108,12 @@ CrossFadeSettings::Calculate(SignedSongTime total_time,
 	assert(duration > FloatDuration::zero());
 	assert(af.IsValid());
 
-	chunks_f = (float)af.GetTimeToSize() / (float)sizeof(MusicChunk::data);
+	const auto chunk_duration =
+		af.SizeToTime<FloatDuration>(sizeof(MusicChunk::data));
 
 	if (mixramp_delay <= FloatDuration::zero() ||
 	    !mixramp_start || !mixramp_prev_end) {
-		chunks = std::lround(chunks_f * duration.count());
+		chunks = std::lround(duration / chunk_duration);
 	} else {
 		/* Calculate mixramp overlap. */
 		const auto mixramp_overlap_current =
@@ -128,7 +128,8 @@ CrossFadeSettings::Calculate(SignedSongTime total_time,
 		if (mixramp_overlap_current >= FloatDuration::zero() &&
 		    mixramp_overlap_prev >= FloatDuration::zero() &&
 		    mixramp_delay <= mixramp_overlap) {
-			chunks = (chunks_f * (mixramp_overlap - mixramp_delay).count());
+			chunks = lround((mixramp_overlap - mixramp_delay)
+					/ chunk_duration);
 			FormatDebug(cross_fade_domain,
 				    "will overlap %d chunks, %fs", chunks,
 				    (mixramp_overlap - mixramp_delay).count());
