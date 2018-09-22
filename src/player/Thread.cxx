@@ -79,6 +79,16 @@ class Player {
 	std::unique_ptr<Tag> cross_fade_tag;
 
 	/**
+	 * If the decoder pipe gets consumed below this threshold,
+	 * it's time to wake up the decoder.
+	 *
+	 * It is calculated in a way which should prevent a wakeup
+	 * after each single consumed chunk; it is more efficient to
+	 * make the decoder decode a larger block at a time.
+	 */
+	const unsigned decoder_wakeup_threshold;
+
+	/**
 	 * are we waiting for buffered_before_play?
 	 */
 	bool buffering = true;
@@ -174,7 +184,11 @@ class Player {
 public:
 	Player(PlayerControl &_pc, DecoderControl &_dc,
 	       MusicBuffer &_buffer) noexcept
-		:pc(_pc), dc(_dc), buffer(_buffer) {}
+		:pc(_pc), dc(_dc), buffer(_buffer),
+		 decoder_wakeup_threshold((pc.buffered_before_play +
+					   buffer.GetSize() * 3) / 4)
+	{
+	}
 
 private:
 	/**
@@ -886,9 +900,7 @@ Player::PlayNextChunk() noexcept
 	/* this formula should prevent that the decoder gets woken up
 	   with each chunk; it is more efficient to make it decode a
 	   larger block at a time */
-	if (!dc.IsIdle() &&
-	    dc.pipe->GetSize() <= (pc.buffered_before_play +
-				   buffer.GetSize() * 3) / 4) {
+	if (!dc.IsIdle() && dc.pipe->GetSize() <= decoder_wakeup_threshold) {
 		if (!decoder_woken) {
 			decoder_woken = true;
 			dc.Signal();
