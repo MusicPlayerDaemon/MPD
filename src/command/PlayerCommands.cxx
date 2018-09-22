@@ -39,6 +39,8 @@
 #include "db/update/Service.hxx"
 #endif
 
+#include <cmath>
+
 #define COMMAND_STATUS_STATE            "state"
 #define COMMAND_STATUS_REPEAT           "repeat"
 #define COMMAND_STATUS_SINGLE           "single"
@@ -151,8 +153,8 @@ handle_status(Client &client, gcc_unused Request args, Response &r)
 		 state);
 
 	if (pc.GetCrossFade() > 0)
-		r.Format(COMMAND_STATUS_CROSSFADE ": %i\n",
-			 int(pc.GetCrossFade() + 0.5));
+		r.Format(COMMAND_STATUS_CROSSFADE ": %lu\n",
+			 std::lround(pc.GetCrossFade()));
 
 	if (pc.GetMixRampDelay() > 0)
 		r.Format(COMMAND_STATUS_MIXRAMPDELAY ": %f\n",

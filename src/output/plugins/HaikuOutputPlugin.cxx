@@ -38,6 +38,8 @@
 #include <StringList.h>
 #include <SoundPlayer.h>
 
+#include <cmath>
+
 #include <string.h>
 
 #define UTF8_PLAY "\xE2\x96\xB6"
@@ -439,7 +441,7 @@ haiku_output_get_volume(HaikuOutput &haiku)
 	if (soundPlayer == NULL || soundPlayer->InitCheck() != B_OK)
 		return 0;
 
-	return (int)(soundPlayer->Volume() * 100 + 0.5);
+	return lround(soundPlayer->Volume() * 100);
 }
 
 bool

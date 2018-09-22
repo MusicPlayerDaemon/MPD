@@ -26,6 +26,8 @@
 #include "util/Domain.hxx"
 #include "Log.hxx"
 
+#include <cmath>
+
 #include <assert.h>
 
 static constexpr Domain cross_fade_domain("cross_fade");
@@ -108,7 +110,7 @@ CrossFadeSettings::Calculate(SignedSongTime total_time,
 	chunks_f = (float)af.GetTimeToSize() / (float)sizeof(MusicChunk::data);
 
 	if (mixramp_delay <= 0 || !mixramp_start || !mixramp_prev_end) {
-		chunks = (chunks_f * duration + 0.5);
+		chunks = std::lround(chunks_f * duration);
 	} else {
 		/* Calculate mixramp overlap. */
 		const float mixramp_overlap_current =

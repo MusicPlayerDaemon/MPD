@@ -31,6 +31,7 @@
 
 #include <neaacdec.h>
 
+#include <cmath>
 #include <exception>
 
 #include <assert.h>
@@ -386,9 +387,9 @@ faad_stream_decode(DecoderClient &client, InputStream &is,
 		/* update bit rate and position */
 
 		if (frame_info.samples > 0) {
-			bit_rate = frame_info.bytesconsumed * 8.0 *
-			    frame_info.channels * audio_format.sample_rate /
-			    frame_info.samples / 1000 + 0.5;
+			bit_rate = lround(frame_info.bytesconsumed * 8.0 *
+					  frame_info.channels * audio_format.sample_rate /
+					  frame_info.samples / 1000);
 		}
 
 		/* send PCM samples to MPD */
