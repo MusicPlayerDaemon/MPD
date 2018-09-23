@@ -79,6 +79,12 @@ class Player {
 	std::unique_ptr<Tag> cross_fade_tag;
 
 	/**
+	 * Start playback as soon as this number of chunks has been
+	 * pushed to the decoder pipe.
+	 */
+	const unsigned buffer_before_play;
+
+	/**
 	 * If the decoder pipe gets consumed below this threshold,
 	 * it's time to wake up the decoder.
 	 *
@@ -89,7 +95,7 @@ class Player {
 	const unsigned decoder_wakeup_threshold;
 
 	/**
-	 * are we waiting for buffered_before_play?
+	 * Are we waiting for #buffer_before_play?
 	 */
 	bool buffering = true;
 
@@ -185,6 +191,7 @@ public:
 	Player(PlayerControl &_pc, DecoderControl &_dc,
 	       MusicBuffer &_buffer) noexcept
 		:pc(_pc), dc(_dc), buffer(_buffer),
+		 buffer_before_play(pc.buffered_before_play),
 		 decoder_wakeup_threshold(buffer.GetSize() * 3 / 4)
 	{
 	}
@@ -954,7 +961,7 @@ Player::Run() noexcept
 			   until the buffer is large enough, to
 			   prevent stuttering on slow machines */
 
-			if (pipe->GetSize() < pc.buffered_before_play &&
+			if (pipe->GetSize() < buffer_before_play &&
 			    !dc.IsIdle() && !buffer.IsFull()) {
 				/* not enough decoded buffer space yet */
 
@@ -1002,7 +1009,7 @@ Player::Run() noexcept
 							dc.out_audio_format,
 							play_audio_format,
 							buffer.GetSize() -
-							pc.buffered_before_play);
+							buffer_before_play);
 			if (cross_fade_chunks > 0)
 				xfade_state = CrossFadeState::ENABLED;
 			else
