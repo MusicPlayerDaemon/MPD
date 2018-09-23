@@ -239,13 +239,6 @@ public:
 		      const ReplayGainConfig &_replay_gain_config) noexcept;
 	~PlayerControl() noexcept;
 
-	/**
-	 * Throws on error.
-	 */
-	void StartThread() {
-		thread.Start();
-	}
-
 	void Kill() noexcept;
 
 	/**

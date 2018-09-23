@@ -577,9 +577,6 @@ mpd_main_after_fork(const ConfigData &raw_config, const Config &config)
 
 	ZeroconfInit(raw_config, instance->event_loop);
 
-	for (auto &partition : instance->partitions)
-		partition.pc.StartThread();
-
 #ifdef ENABLE_DATABASE
 	if (create_db) {
 		/* the database failed to load: recreate the

@@ -60,6 +60,9 @@ PlayerControl::WaitOutputConsumed(unsigned threshold) noexcept
 void
 PlayerControl::Play(std::unique_ptr<DetachedSong> song)
 {
+	if (!thread.IsDefined())
+		thread.Start();
+
 	assert(song != nullptr);
 
 	const std::lock_guard<Mutex> protect(mutex);
@@ -74,6 +77,8 @@ PlayerControl::Play(std::unique_ptr<DetachedSong> song)
 void
 PlayerControl::LockCancel() noexcept
 {
+	assert(thread.IsDefined());
+
 	LockSynchronousCommand(PlayerCommand::CANCEL);
 	assert(next_song == nullptr);
 }
@@ -81,6 +86,9 @@ PlayerControl::LockCancel() noexcept
 void
 PlayerControl::LockStop() noexcept
 {
+	if (!thread.IsDefined())
+		return;
+
 	LockSynchronousCommand(PlayerCommand::CLOSE_AUDIO);
 	assert(next_song == nullptr);
 
@@ -90,13 +98,17 @@ PlayerControl::LockStop() noexcept
 void
 PlayerControl::LockUpdateAudio() noexcept
 {
+	if (!thread.IsDefined())
+		return;
+
 	LockSynchronousCommand(PlayerCommand::UPDATE_AUDIO);
 }
 
 void
 PlayerControl::Kill() noexcept
 {
-	assert(thread.IsDefined());
+	if (!thread.IsDefined())
+		return;
 
 	LockSynchronousCommand(PlayerCommand::EXIT);
 	thread.Join();
@@ -123,6 +135,9 @@ PlayerControl::LockPause() noexcept
 void
 PlayerControl::LockSetPause(bool pause_flag) noexcept
 {
+	if (!thread.IsDefined())
+		return;
+
 	const std::lock_guard<Mutex> protect(mutex);
 
 	switch (state) {
@@ -154,7 +169,7 @@ PlayerControl::LockGetStatus() noexcept
 	PlayerStatus status;
 
 	const std::lock_guard<Mutex> protect(mutex);
-	if (!occupied)
+	if (!occupied && thread.IsDefined())
 		SynchronousCommand(PlayerCommand::REFRESH);
 
 	status.state = state;
@@ -216,6 +231,7 @@ PlayerControl::LockReadTaggedSong() noexcept
 void
 PlayerControl::LockEnqueueSong(std::unique_ptr<DetachedSong> song) noexcept
 {
+	assert(thread.IsDefined());
 	assert(song != nullptr);
 
 	const std::lock_guard<Mutex> protect(mutex);
@@ -270,6 +286,9 @@ PlayerControl::SeekLocked(std::unique_ptr<DetachedSong> song, SongTime t)
 void
 PlayerControl::LockSeek(std::unique_ptr<DetachedSong> song, SongTime t)
 {
+	if (!thread.IsDefined())
+		thread.Start();
+
 	assert(song != nullptr);
 
 	{

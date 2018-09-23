@@ -109,8 +109,6 @@ handle_newpartition(Client &client, Request request, Response &response)
 					ReplayGainConfig(),
 					partition.pc);
 	partition.UpdateEffectiveReplayGainMode();
-	partition.pc.StartThread();
-	partition.pc.LockUpdateAudio();
 
 	instance.EmitIdle(IDLE_PARTITION);
 
