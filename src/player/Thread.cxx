@@ -185,8 +185,7 @@ public:
 	Player(PlayerControl &_pc, DecoderControl &_dc,
 	       MusicBuffer &_buffer) noexcept
 		:pc(_pc), dc(_dc), buffer(_buffer),
-		 decoder_wakeup_threshold((pc.buffered_before_play +
-					   buffer.GetSize() * 3) / 4)
+		 decoder_wakeup_threshold(buffer.GetSize() * 3 / 4)
 	{
 	}
 
