@@ -92,6 +92,7 @@ public:
 
 		n_initialized = 0;
 		buffer.Discard();
+		available = nullptr;
 	}
 
 	template<typename... Args>
