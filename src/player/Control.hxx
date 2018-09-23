@@ -246,6 +246,7 @@ public:
 		thread.Start();
 	}
 
+private:
 	/**
 	 * Signals the object.  The object should be locked prior to
 	 * calling this function.
@@ -254,7 +255,6 @@ public:
 		cond.signal();
 	}
 
-private:
 	/**
 	 * Signals the object.  The object is temporarily locked by
 	 * this function.
