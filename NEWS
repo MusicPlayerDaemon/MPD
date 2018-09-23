@@ -14,6 +14,7 @@ ver 0.21 (not yet released)
   - proxy: require libmpdclient 2.9
   - proxy: forward `sort` and `window` to server
 * player
+  - hard-code "buffer_before_play" to 1 second, independent of audio format
   - "one-shot" single mode
 * input
   - curl: download to buffer instead of throttling transfer

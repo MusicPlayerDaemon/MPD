@@ -57,6 +57,12 @@
 
 static constexpr Domain player_domain("player");
 
+/**
+ * Start playback as soon as enough data for this duration has been
+ * pushed to the decoder pipe.
+ */
+static constexpr auto buffer_before_play_duration = std::chrono::seconds(1);
+
 class Player {
 	PlayerControl &pc;
 
@@ -80,9 +86,10 @@ class Player {
 
 	/**
 	 * Start playback as soon as this number of chunks has been
-	 * pushed to the decoder pipe.
+	 * pushed to the decoder pipe.  This is calculated based on
+	 * #buffer_before_play_duration.
 	 */
-	const unsigned buffer_before_play;
+	unsigned buffer_before_play;
 
 	/**
 	 * If the decoder pipe gets consumed below this threshold,
@@ -191,7 +198,6 @@ public:
 	Player(PlayerControl &_pc, DecoderControl &_dc,
 	       MusicBuffer &_buffer) noexcept
 		:pc(_pc), dc(_dc), buffer(_buffer),
-		 buffer_before_play(pc.buffered_before_play),
 		 decoder_wakeup_threshold(buffer.GetSize() * 3 / 4)
 	{
 	}
@@ -516,6 +522,12 @@ Player::CheckDecoderStartup() noexcept
 		pc.audio_format = dc.in_audio_format;
 		play_audio_format = dc.out_audio_format;
 		decoder_starting = false;
+
+		const size_t buffer_before_play_size =
+			play_audio_format.TimeToSize(buffer_before_play_duration);
+		buffer_before_play =
+			(buffer_before_play_size + sizeof(MusicChunk::data) - 1)
+			/ sizeof(MusicChunk::data);
 
 		idle_add(IDLE_PLAYER);
 

@@ -54,7 +54,7 @@ const ConfigTemplate config_param_templates[] = {
 	{ "volume_normalization" },
 	{ "samplerate_converter" },
 	{ "audio_buffer_size" },
-	{ "buffer_before_play" },
+	{ "buffer_before_play", false, true },
 	{ "http_proxy_host", false, true },
 	{ "http_proxy_port", false, true },
 	{ "http_proxy_user", false, true },
