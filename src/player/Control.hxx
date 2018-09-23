@@ -246,6 +246,112 @@ public:
 		thread.Start();
 	}
 
+	void Kill() noexcept;
+
+	/**
+	 * Like CheckRethrowError(), but locks and unlocks the object.
+	 */
+	void LockCheckRethrowError() const {
+		const std::lock_guard<Mutex> protect(mutex);
+		CheckRethrowError();
+	}
+
+	void LockClearError() noexcept;
+
+	PlayerError GetErrorType() const noexcept {
+		return error_type;
+	}
+
+	void LockUpdateAudio() noexcept;
+
+	/**
+	 * Throws on error.
+	 *
+	 * @param song the song to be queued
+	 */
+	void Play(std::unique_ptr<DetachedSong> song);
+
+	/**
+	 * @param song the song to be queued; the given instance will be owned
+	 * and freed by the player
+	 */
+	void LockEnqueueSong(std::unique_ptr<DetachedSong> song) noexcept;
+
+	/**
+	 * Makes the player thread seek the specified song to a position.
+	 *
+	 * Throws on error.
+	 *
+	 * @param song the song to be queued; the given instance will be owned
+	 * and freed by the player
+	 */
+	void LockSeek(std::unique_ptr<DetachedSong> song, SongTime t);
+
+	void LockStop() noexcept;
+
+	/**
+	 * see PlayerCommand::CANCEL
+	 */
+	void LockCancel() noexcept;
+
+	void LockSetPause(bool pause_flag) noexcept;
+
+	void LockPause() noexcept;
+
+	/**
+	 * Set the player's #border_pause flag.
+	 */
+	void LockSetBorderPause(bool border_pause) noexcept;
+	void SetCrossFade(FloatDuration duration) noexcept;
+
+	auto GetCrossFade() const noexcept {
+		return cross_fade.duration;
+	}
+
+	void SetMixRampDb(float mixramp_db) noexcept;
+
+	float GetMixRampDb() const noexcept {
+		return cross_fade.mixramp_db;
+	}
+
+	void SetMixRampDelay(FloatDuration mixramp_delay) noexcept;
+
+	auto GetMixRampDelay() const noexcept {
+		return cross_fade.mixramp_delay;
+	}
+
+	void LockSetReplayGainMode(ReplayGainMode _mode) noexcept {
+		const std::lock_guard<Mutex> protect(mutex);
+		replay_gain_mode = _mode;
+	}
+
+	/**
+	 * Like ReadTaggedSong(), but locks and unlocks the object.
+	 */
+	std::unique_ptr<DetachedSong> LockReadTaggedSong() noexcept;
+
+	gcc_pure
+	PlayerStatus LockGetStatus() noexcept;
+
+	PlayerState GetState() const noexcept {
+		return state;
+	}
+
+	struct SyncInfo {
+		PlayerState state;
+		bool has_next_song;
+	};
+
+	gcc_pure
+	SyncInfo LockGetSyncInfo() const noexcept {
+		const std::lock_guard<Mutex> protect(mutex);
+		return {state, next_song != nullptr};
+	}
+
+	auto GetTotalPlayTime() const noexcept {
+		return total_play_time;
+	}
+
 private:
 	/**
 	 * Signals the object.  The object should be locked prior to
@@ -372,22 +478,6 @@ private:
 		SynchronousCommand(cmd);
 	}
 
-public:
-	/**
-	 * Throws on error.
-	 *
-	 * @param song the song to be queued
-	 */
-	void Play(std::unique_ptr<DetachedSong> song);
-
-	/**
-	 * see PlayerCommand::CANCEL
-	 */
-	void LockCancel() noexcept;
-
-	void LockSetPause(bool pause_flag) noexcept;
-
-private:
 	void PauseLocked() noexcept;
 
 	void ClearError() noexcept {
@@ -395,43 +485,12 @@ private:
 		error = std::exception_ptr();
 	}
 
-public:
-	void LockPause() noexcept;
-
-	/**
-	 * Set the player's #border_pause flag.
-	 */
-	void LockSetBorderPause(bool border_pause) noexcept;
-
-private:
 	bool ApplyBorderPause() noexcept {
 		if (border_pause)
 			state = PlayerState::PAUSE;
 		return border_pause;
 	}
 
-public:
-	void Kill() noexcept;
-
-	gcc_pure
-	PlayerStatus LockGetStatus() noexcept;
-
-	PlayerState GetState() const noexcept {
-		return state;
-	}
-
-	struct SyncInfo {
-		PlayerState state;
-		bool has_next_song;
-	};
-
-	gcc_pure
-	SyncInfo LockGetSyncInfo() const noexcept {
-		const std::lock_guard<Mutex> protect(mutex);
-		return {state, next_song != nullptr};
-	}
-
-private:
 	/**
 	 * Set the error.  Discards any previous error condition.
 	 *
@@ -468,22 +527,6 @@ private:
 			std::rethrow_exception(error);
 	}
 
-public:
-	/**
-	 * Like CheckRethrowError(), but locks and unlocks the object.
-	 */
-	void LockCheckRethrowError() const {
-		const std::lock_guard<Mutex> protect(mutex);
-		CheckRethrowError();
-	}
-
-	void LockClearError() noexcept;
-
-	PlayerError GetErrorType() const noexcept {
-		return error_type;
-	}
-
-private:
 	/**
 	 * Set the #tagged_song attribute to a newly allocated copy of
 	 * the given #DetachedSong.  Locks and unlocks the object.
@@ -499,17 +542,6 @@ private:
 	 */
 	std::unique_ptr<DetachedSong> ReadTaggedSong() noexcept;
 
-public:
-	/**
-	 * Like ReadTaggedSong(), but locks and unlocks the object.
-	 */
-	std::unique_ptr<DetachedSong> LockReadTaggedSong() noexcept;
-
-	void LockStop() noexcept;
-
-	void LockUpdateAudio() noexcept;
-
-private:
 	void EnqueueSongLocked(std::unique_ptr<DetachedSong> song) noexcept;
 
 	/**
@@ -517,24 +549,6 @@ private:
 	 */
 	void SeekLocked(std::unique_ptr<DetachedSong> song, SongTime t);
 
-public:
-	/**
-	 * @param song the song to be queued; the given instance will be owned
-	 * and freed by the player
-	 */
-	void LockEnqueueSong(std::unique_ptr<DetachedSong> song) noexcept;
-
-	/**
-	 * Makes the player thread seek the specified song to a position.
-	 *
-	 * Throws on error.
-	 *
-	 * @param song the song to be queued; the given instance will be owned
-	 * and freed by the player
-	 */
-	void LockSeek(std::unique_ptr<DetachedSong> song, SongTime t);
-
-private:
 	/**
 	 * Caller must lock the object.
 	 */
@@ -546,35 +560,6 @@ private:
 		ClientSignal();
 	}
 
-public:
-	void SetCrossFade(FloatDuration duration) noexcept;
-
-	auto GetCrossFade() const noexcept {
-		return cross_fade.duration;
-	}
-
-	void SetMixRampDb(float mixramp_db) noexcept;
-
-	float GetMixRampDb() const noexcept {
-		return cross_fade.mixramp_db;
-	}
-
-	void SetMixRampDelay(FloatDuration mixramp_delay) noexcept;
-
-	auto GetMixRampDelay() const noexcept {
-		return cross_fade.mixramp_delay;
-	}
-
-	void LockSetReplayGainMode(ReplayGainMode _mode) noexcept {
-		const std::lock_guard<Mutex> protect(mutex);
-		replay_gain_mode = _mode;
-	}
-
-	auto GetTotalPlayTime() const noexcept {
-		return total_play_time;
-	}
-
-private:
 	void LockUpdateSongTag(DetachedSong &song,
 			       const Tag &new_tag) noexcept;
 
@@ -600,7 +585,6 @@ private:
 		LockUpdateAudio();
 	}
 
-private:
 	void RunThread() noexcept;
 };
 
