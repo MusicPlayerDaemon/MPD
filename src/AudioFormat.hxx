@@ -162,8 +162,9 @@ struct AudioFormat {
 
 	template<typename D>
 	constexpr D FramesToTime(std::uintmax_t size) const noexcept {
+		using Rep = typename D::rep;
 		using Period = typename D::period;
-		return D(((size / Period::num) * Period::den) / sample_rate);
+		return D(((Rep(1) * size / Period::num) * Period::den) / sample_rate);
 	}
 
 	template<typename D>
