@@ -434,6 +434,17 @@ public:
 		return state;
 	}
 
+	struct SyncInfo {
+		PlayerState state;
+		bool has_next_song;
+	};
+
+	gcc_pure
+	SyncInfo LockGetSyncInfo() const noexcept {
+		const std::lock_guard<Mutex> protect(mutex);
+		return {state, next_song != nullptr};
+	}
+
 private:
 	/**
 	 * Set the error.  Discards any previous error condition.
@@ -526,10 +537,6 @@ public:
 	 * and freed by the player
 	 */
 	void LockEnqueueSong(std::unique_ptr<DetachedSong> song) noexcept;
-
-	bool HasNextSong() const noexcept {
-		return next_song != nullptr;
-	}
 
 	/**
 	 * Makes the player thread seek the specified song to a position.

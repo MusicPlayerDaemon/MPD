@@ -91,7 +91,7 @@ playlist::SongStarted()
 inline void
 playlist::QueuedSongStarted(PlayerControl &pc)
 {
-	assert(!pc.HasNextSong());
+	assert(!pc.LockGetSyncInfo().has_next_song);
 	assert(queued >= -1);
 	assert(current >= 0);
 
@@ -195,12 +195,9 @@ playlist::SyncWithPlayer(PlayerControl &pc)
 		   playing anymore; ignore the event */
 		return;
 
-	pc.Lock();
-	const PlayerState pc_state = pc.GetState();
-	bool pc_has_next_song = pc.HasNextSong();
-	pc.Unlock();
+	const auto i = pc.LockGetSyncInfo();
 
-	if (pc_state == PlayerState::STOP)
+	if (i.state == PlayerState::STOP)
 		/* the player thread has stopped: check if playback
 		   should be restarted with the next song.  That can
 		   happen if the playlist isn't filling the queue fast
@@ -209,16 +206,12 @@ playlist::SyncWithPlayer(PlayerControl &pc)
 	else {
 		/* check if the player thread has already started
 		   playing the queued song */
-		if (!pc_has_next_song && queued != -1)
+		if (!i.has_next_song && queued != -1)
 			QueuedSongStarted(pc);
-
-		pc.Lock();
-		pc_has_next_song = pc.HasNextSong();
-		pc.Unlock();
 
 		/* make sure the queued song is always set (if
 		   possible) */
-		if (!pc_has_next_song && queued < 0)
+		if (!pc.LockGetSyncInfo().has_next_song && queued < 0)
 			UpdateQueuedSong(pc, nullptr);
 	}
 }
