@@ -247,20 +247,6 @@ public:
 	}
 
 	/**
-	 * Locks the object.
-	 */
-	void Lock() const noexcept {
-		mutex.lock();
-	}
-
-	/**
-	 * Unlocks the object.
-	 */
-	void Unlock() const noexcept {
-		mutex.unlock();
-	}
-
-	/**
 	 * Signals the object.  The object should be locked prior to
 	 * calling this function.
 	 */
