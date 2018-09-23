@@ -32,7 +32,6 @@ using FloatDuration = std::chrono::duration<double>;
  */
 class SongTime : public std::chrono::duration<std::uint32_t, std::milli> {
 	typedef std::chrono::duration<std::uint32_t, std::milli> Base;
-	typedef Base::rep rep;
 
 public:
 	SongTime() = default;
@@ -121,7 +120,6 @@ public:
  */
 class SignedSongTime : public std::chrono::duration<std::int32_t, std::milli> {
 	typedef std::chrono::duration<std::int32_t, std::milli> Base;
-	typedef Base::rep rep;
 
 public:
 	SignedSongTime() = default;
