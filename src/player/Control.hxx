@@ -118,8 +118,6 @@ class PlayerControl final : public AudioOutputClient {
 
 	const unsigned buffer_chunks;
 
-	const unsigned buffered_before_play;
-
 	/**
 	 * The "audio_output_format" setting.
 	 */
@@ -237,7 +235,6 @@ public:
 	PlayerControl(PlayerListener &_listener,
 		      PlayerOutputs &_outputs,
 		      unsigned buffer_chunks,
-		      unsigned buffered_before_play,
 		      AudioFormat _configured_audio_format,
 		      const ReplayGainConfig &_replay_gain_config) noexcept;
 	~PlayerControl() noexcept;

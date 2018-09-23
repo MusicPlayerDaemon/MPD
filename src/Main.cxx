@@ -124,8 +124,6 @@ static constexpr
 size_t MIN_BUFFER_SIZE = std::max(CHUNK_SIZE * 32,
 				  64 * KILOBYTE);
 
-static constexpr unsigned DEFAULT_BUFFER_BEFORE_PLAY = 10;
-
 #ifdef ANDROID
 Context *context;
 LogListener *logListener;
@@ -305,37 +303,6 @@ initialize_decoder_and_player(const ConfigData &config,
 		throw FormatRuntimeError("buffer size \"%lu\" is too big",
 					 (unsigned long)buffer_size);
 
-	float perc;
-	param = config.GetParam(ConfigOption::BUFFER_BEFORE_PLAY);
-	if (param != nullptr) {
-		char *test;
-		perc = strtod(param->value.c_str(), &test);
-		if (*test != '%' || perc < 0 || perc > 100) {
-			throw FormatRuntimeError("buffered before play \"%s\" is not "
-						 "a positive percentage and less "
-						 "than 100 percent, line %i",
-						 param->value.c_str(), param->line);
-		}
-
-		if (perc > 80) {
-			/* this upper limit should avoid deadlocks
-			   which can occur because the DecoderThread
-			   cannot ever fill the music buffer to
-			   exactly 100%; a few chunks always need to
-			   be available to generate silence in
-			   Player::SendSilence() */
-			FormatError(config_domain,
-				    "buffer_before_play is too large (%f%%), capping at 80%%; please fix your configuration",
-				    perc);
-			perc = 80;
-		}
-	} else
-		perc = DEFAULT_BUFFER_BEFORE_PLAY;
-
-	unsigned buffered_before_play = (perc / 100) * buffered_chunks;
-	if (buffered_before_play > buffered_chunks)
-		buffered_before_play = buffered_chunks;
-
 	const unsigned max_length =
 		config.GetPositive(ConfigOption::MAX_PLAYLIST_LENGTH,
 				   DEFAULT_PLAYLIST_MAX_LENGTH);
@@ -356,7 +323,6 @@ initialize_decoder_and_player(const ConfigData &config,
 					  "default",
 					  max_length,
 					  buffered_chunks,
-					  buffered_before_play,
 					  configured_audio_format,
 					  replay_gain_config);
 	auto &partition = instance->partitions.back();

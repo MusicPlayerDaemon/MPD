@@ -575,8 +575,6 @@ Do not change these unless you know what you are doing.
      - Description
    * - **audio_buffer_size KBYTES**
      - Adjust the size of the internal audio buffer. Default is 4096 (4 MiB).
-   * - **buffer_before_play PERCENT**
-     - Control the percentage of the buffer which is filled before beginning to play. Increasing this reduces the chance of audio file skipping, at the cost of increased time prior to audio playback. Default is 10%.
 
 Zeroconf
 ~~~~~~~~

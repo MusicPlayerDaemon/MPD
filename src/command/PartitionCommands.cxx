@@ -102,7 +102,6 @@ handle_newpartition(Client &client, Request request, Response &response)
 					 // TODO: use real configuration
 					 16384,
 					 1024,
-					 128,
 					 AudioFormat::Undefined(),
 					 ReplayGainConfig());
 	auto &partition = instance.partitions.back();

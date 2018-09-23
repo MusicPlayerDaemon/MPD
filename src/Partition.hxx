@@ -69,7 +69,6 @@ struct Partition final : QueueListener, PlayerListener, MixerListener {
 		  const char *_name,
 		  unsigned max_length,
 		  unsigned buffer_chunks,
-		  unsigned buffered_before_play,
 		  AudioFormat configured_audio_format,
 		  const ReplayGainConfig &replay_gain_config);
 

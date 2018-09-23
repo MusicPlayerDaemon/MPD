@@ -30,12 +30,10 @@
 PlayerControl::PlayerControl(PlayerListener &_listener,
 			     PlayerOutputs &_outputs,
 			     unsigned _buffer_chunks,
-			     unsigned _buffered_before_play,
 			     AudioFormat _configured_audio_format,
 			     const ReplayGainConfig &_replay_gain_config) noexcept
 	:listener(_listener), outputs(_outputs),
 	 buffer_chunks(_buffer_chunks),
-	 buffered_before_play(_buffered_before_play),
 	 configured_audio_format(_configured_audio_format),
 	 thread(BIND_THIS_METHOD(RunThread)),
 	 replay_gain_config(_replay_gain_config)
