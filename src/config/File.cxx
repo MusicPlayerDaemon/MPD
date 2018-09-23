@@ -116,6 +116,11 @@ ReadConfigBlock(ConfigData &config_data, BufferedReader &reader,
 	const unsigned i = unsigned(o);
 	const ConfigTemplate &option = config_block_templates[i];
 
+	if (option.deprecated)
+		FormatWarning(config_file_domain,
+			      "config parameter \"%s\" on line %u is deprecated",
+			      name, reader.GetLineNumber());
+
 	if (!option.repeatable)
 		if (const auto *block = config_data.GetBlock(o))
 			throw FormatRuntimeError("config parameter \"%s\" is first defined "
@@ -142,6 +147,11 @@ ReadConfigParam(ConfigData &config_data, BufferedReader &reader,
 {
 	const unsigned i = unsigned(o);
 	const ConfigTemplate &option = config_param_templates[i];
+
+	if (option.deprecated)
+		FormatWarning(config_file_domain,
+			      "config parameter \"%s\" on line %u is deprecated",
+			      name, reader.GetLineNumber());
 
 	if (!option.repeatable)
 		if (const auto *param = config_data.GetParam(o))

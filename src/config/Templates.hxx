@@ -24,7 +24,6 @@ struct ConfigTemplate {
 	const char *const name;
 	const bool repeatable;
 
-	// TODO: print warning when a deprecated option is used
 	const bool deprecated;
 
 	constexpr ConfigTemplate(const char *_name,
