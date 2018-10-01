@@ -58,7 +58,7 @@ ExcludeList::Load(InputStreamPtr is)
 		ParseLine(line);
 #else
 	/* not implemented */
-	(void)path_fs;
+	(void)is;
 #endif
 
 	return true;
