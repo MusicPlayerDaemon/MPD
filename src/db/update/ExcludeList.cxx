@@ -35,6 +35,8 @@
 #include <assert.h>
 #include <string.h>
 
+#ifdef HAVE_CLASS_GLOB
+
 inline void
 ExcludeList::ParseLine(char *line) noexcept
 {
@@ -42,6 +44,8 @@ ExcludeList::ParseLine(char *line) noexcept
 	if (*p != 0 && *p != '#')
 		patterns.emplace_front(p);
 }
+
+#endif
 
 bool
 ExcludeList::Load(InputStreamPtr is)
