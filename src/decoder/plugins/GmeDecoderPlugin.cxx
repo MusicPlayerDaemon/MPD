@@ -20,7 +20,7 @@
 #include "config.h"
 #include "GmeDecoderPlugin.hxx"
 #include "../DecoderAPI.hxx"
-#include "config/Block.cxx"
+#include "config/Block.hxx"
 #include "CheckAudioFormat.hxx"
 #include "song/DetachedSong.hxx"
 #include "tag/Handler.hxx"
