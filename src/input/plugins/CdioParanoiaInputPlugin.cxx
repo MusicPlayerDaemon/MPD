@@ -214,8 +214,6 @@ input_cdio_open(const char *uri,
 	if (speed > 0) {
 		FormatDebug(cdio_domain,"Attempting to set CD speed to %dx",speed);
 		cdda_speed_set(drv,speed);
-	} else {
-		FormatDebug(cdio_domain,"Leaving CD speed alone");
 	}
 
 	if (0 != cdio_cddap_open(drv)) {
