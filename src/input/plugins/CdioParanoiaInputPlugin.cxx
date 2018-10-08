@@ -104,6 +104,7 @@ class CdioParanoiaInputStream final : public InputStream {
 static constexpr Domain cdio_domain("cdio");
 
 static bool default_reverse_endian;
+static unsigned speed = 0;
 
 static void
 input_cdio_init(EventLoop &, const ConfigBlock &block)
@@ -118,6 +119,7 @@ input_cdio_init(EventLoop &, const ConfigBlock &block)
 			throw FormatRuntimeError("Unrecognized 'default_byte_order' setting: %s",
 						 value);
 	}
+	speed = block.GetBlockValue("speed",0u);
 }
 
 struct cdio_uri {
@@ -209,6 +211,10 @@ input_cdio_open(const char *uri,
 	}
 
 	cdda_verbose_set(drv, CDDA_MESSAGE_FORGETIT, CDDA_MESSAGE_FORGETIT);
+	if (speed > 0) {
+		FormatDebug(cdio_domain,"Attempting to set CD speed to %dx",speed);
+		cdda_speed_set(drv,speed);
+	}
 
 	if (0 != cdio_cddap_open(drv)) {
 		cdio_cddap_close_no_free_cdio(drv);

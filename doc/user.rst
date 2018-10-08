@@ -1056,6 +1056,8 @@ Plays audio CDs using libcdio. The URI has the form: "cdda://[DEVICE][/TRACK]". 
      - Description
    * - **default_byte_order little_endian|big_endian**
      - If the CD drive does not specify a byte order, MPD assumes it is the CPU's native byte order. This setting allows overriding this.
+   * - **speed N**
+     - Request CDParanoia cap the extraction speed to Nx normal CD audio rotation speed, keeping the drive quiet.
 
 curl
 ~~~~
