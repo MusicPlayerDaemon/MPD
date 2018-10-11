@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2017 The Music Player Daemon Project
+ * Copyright 2003-2018 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -192,8 +192,6 @@ CheckAudioFormat(WavpackContext *wpc)
 	const bool is_float = (WavpackGetMode(wpc) & MODE_FLOAT) != 0;
 #if defined(OPEN_DSD_AS_PCM) && defined(ENABLE_DSD)
 	const bool is_dsd = (WavpackGetQualifyMode(wpc) & QMODE_DSD_AUDIO) != 0;
-#else
-	constexpr bool is_dsd = false;
 #endif
 	SampleFormat sample_format =
 		wavpack_bits_to_sample_format(is_float,
