@@ -5,8 +5,10 @@ from build.project import Project
 def make_cross_file(toolchain):
     if toolchain.is_windows:
         system = 'windows'
+        windres = "windres = '%s'" % toolchain.windres
     else:
         system = 'linux'
+        windres = ''
 
     if toolchain.is_arm:
         cpu_family = 'arm'
@@ -38,6 +40,7 @@ c = '%s'
 cpp = '%s'
 ar = '%s'
 strip = '%s'
+%s
 
 [properties]
 root = '%s'
@@ -57,6 +60,7 @@ cpu_family = '%s'
 cpu = '%s'
 endian = '%s'
             """ % (toolchain.cc, toolchain.cxx, toolchain.ar, toolchain.strip,
+                   windres,
                    toolchain.install_prefix,
                    repr((toolchain.cppflags + ' ' + toolchain.cflags).split()),
                    repr(toolchain.ldflags.split()),

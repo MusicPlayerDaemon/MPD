@@ -49,6 +49,7 @@ class CrossGccToolchain:
         self.ranlib = os.path.join(toolchain_bin, arch + '-ranlib')
         self.nm = os.path.join(toolchain_bin, arch + '-nm')
         self.strip = os.path.join(toolchain_bin, arch + '-strip')
+        self.windres = os.path.join(toolchain_bin, arch + '-windres')
 
         common_flags = '-O2 -g'
 
