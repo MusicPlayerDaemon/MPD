@@ -31,7 +31,7 @@
 #endif
 
 bool
-IsFileNotFound(std::exception_ptr ep)
+IsFileNotFound(std::exception_ptr ep) noexcept
 {
 	try {
 		std::rethrow_exception(ep);

@@ -32,6 +32,6 @@
  */
 gcc_pure
 bool
-IsFileNotFound(std::exception_ptr e);
+IsFileNotFound(std::exception_ptr e) noexcept;
 
 #endif
