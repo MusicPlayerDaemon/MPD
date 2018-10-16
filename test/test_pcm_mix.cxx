@@ -18,10 +18,11 @@
  */
 
 #include "config.h"
-#include "test_pcm_all.hxx"
 #include "test_pcm_util.hxx"
 #include "pcm/PcmMix.hxx"
 #include "pcm/PcmDither.hxx"
+
+#include <gtest/gtest.h>
 
 template<typename T, SampleFormat format, typename G=RandomInt<T>>
 static void
@@ -38,49 +39,46 @@ TestPcmMix(G g=G())
 	bool success = pcm_mix(dither,
 			       result.begin(), src2.begin(), sizeof(result),
 			       format, 1.0);
-	CPPUNIT_ASSERT(success);
+	ASSERT_TRUE(success);
 	AssertEqualWithTolerance(result, src1, 3);
 
 	/* portion1=0.0: result must be equal to src2 */
 	result = src1;
 	success = pcm_mix(dither, result.begin(), src2.begin(), sizeof(result),
 			  format, 0.0);
-	CPPUNIT_ASSERT(success);
+	ASSERT_TRUE(success);
 	AssertEqualWithTolerance(result, src2, 3);
 
 	/* portion1=0.5 */
 	result = src1;
 	success = pcm_mix(dither, result.begin(), src2.begin(), sizeof(result),
 			  format, 0.5);
-	CPPUNIT_ASSERT(success);
+	ASSERT_TRUE(success);
 
 	auto expected = src1;
 	for (unsigned i = 0; i < N; ++i)
 		expected[i] = (int64_t(src1[i]) + int64_t(src2[i])) / 2;
 
-	AssertEqualWithTolerance(result, expected, 3);
+	for (unsigned i = 0; i < N; ++i)
+		EXPECT_NEAR(result[i], expected[i], 3);
 }
 
-void
-PcmMixTest::TestMix8()
+TEST(PcmTest, Mix8)
 {
 	TestPcmMix<int8_t, SampleFormat::S8>();
 }
 
-void
-PcmMixTest::TestMix16()
+TEST(PcmTest, Mix16)
 {
 	TestPcmMix<int16_t, SampleFormat::S16>();
 }
 
-void
-PcmMixTest::TestMix24()
+TEST(PcmTest, Mix24)
 {
 	TestPcmMix<int32_t, SampleFormat::S24_P32>(RandomInt24());
 }
 
-void
-PcmMixTest::TestMix32()
+TEST(PcmTest, Mix32)
 {
 	TestPcmMix<int32_t, SampleFormat::S32>();
 }

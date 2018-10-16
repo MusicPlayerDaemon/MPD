@@ -80,7 +80,7 @@ For example, the following installs a fairly complete list of build dependencies
       libavahi-client-dev \
       libsqlite3-dev \
       libsystemd-dev libwrap0-dev \
-      libcppunit-dev xmlto \
+      libgtest-dev xmlto \
       libboost-dev \
       libicu-dev
       

@@ -21,33 +21,12 @@
 #include "util/Macros.hxx"
 #include "util/Compiler.h"
 
-#include <cppunit/TestFixture.h>
-#include <cppunit/extensions/HelperMacros.h>
-#include <cppunit/extensions/TestFactoryRegistry.h>
-#include <cppunit/ui/text/TestRunner.h>
+#include <gtest/gtest.h>
 
 #include <string.h>
 #include <stdlib.h>
 
-class ByteReverseTest : public CppUnit::TestFixture {
-	CPPUNIT_TEST_SUITE(ByteReverseTest);
-	CPPUNIT_TEST(TestByteReverse2);
-	CPPUNIT_TEST(TestByteReverse3);
-	CPPUNIT_TEST(TestByteReverse4);
-	CPPUNIT_TEST(TestByteReverse5);
-	CPPUNIT_TEST_SUITE_END();
-
-public:
-	void TestByteReverse2();
-	void TestByteReverse3();
-	void TestByteReverse4();
-	void TestByteReverse5();
-};
-
-CPPUNIT_TEST_SUITE_REGISTRATION(ByteReverseTest);
-
-void
-ByteReverseTest::TestByteReverse2()
+TEST(ByteReverse, A)
 {
 	alignas(uint16_t) static const char src[] = "123456";
 	static const char result[] = "214365";
@@ -55,11 +34,10 @@ ByteReverseTest::TestByteReverse2()
 
 	reverse_bytes(dest, (const uint8_t *)src,
 		      (const uint8_t *)(src + ARRAY_SIZE(src) - 1), 2);
-	CPPUNIT_ASSERT(strcmp(result, (const char *)dest) == 0);
+	EXPECT_STREQ(result, (const char *)dest);
 }
 
-void
-ByteReverseTest::TestByteReverse3()
+TEST(ByteReverse, B)
 {
 	static const char src[] = "123456";
 	static const char result[] = "321654";
@@ -67,11 +45,10 @@ ByteReverseTest::TestByteReverse3()
 
 	reverse_bytes(dest, (const uint8_t *)src,
 		      (const uint8_t *)(src + ARRAY_SIZE(src) - 1), 3);
-	CPPUNIT_ASSERT(strcmp(result, (const char *)dest) == 0);
+	EXPECT_STREQ(result, (const char *)dest);
 }
 
-void
-ByteReverseTest::TestByteReverse4()
+TEST(ByteReverse, C)
 {
 	alignas(uint32_t) static const char src[] = "12345678";
 	static const char result[] = "43218765";
@@ -79,11 +56,10 @@ ByteReverseTest::TestByteReverse4()
 
 	reverse_bytes(dest, (const uint8_t *)src,
 		      (const uint8_t *)(src + ARRAY_SIZE(src) - 1), 4);
-	CPPUNIT_ASSERT(strcmp(result, (const char *)dest) == 0);
+	EXPECT_STREQ(result, (const char *)dest);
 }
 
-void
-ByteReverseTest::TestByteReverse5()
+TEST(ByteReverse, D)
 {
 	static const char src[] = "1234567890";
 	static const char result[] = "5432109876";
@@ -91,14 +67,5 @@ ByteReverseTest::TestByteReverse5()
 
 	reverse_bytes(dest, (const uint8_t *)src,
 		      (const uint8_t *)(src + ARRAY_SIZE(src) - 1), 5);
-	CPPUNIT_ASSERT(strcmp(result, (const char *)dest) == 0);
-}
-
-int
-main(gcc_unused int argc, gcc_unused char **argv)
-{
-	CppUnit::TextUi::TestRunner runner;
-	auto &registry = CppUnit::TestFactoryRegistry::getRegistry();
-	runner.addTest(registry.makeTest());
-	return runner.run() ? EXIT_SUCCESS : EXIT_FAILURE;
+	EXPECT_STREQ(result, (const char *)dest);
 }

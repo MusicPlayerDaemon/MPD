@@ -1,4 +1,22 @@
-cppunit_dep = dependency('cppunit', required: true)
+gtest_compile_args = [
+  '-Wno-undef',
+]
+
+if compiler.get_id() == 'gcc'
+  gtest_compile_args += [
+    '-Wno-suggest-attribute=format',
+    '-Wno-suggest-attribute=noreturn',
+    '-Wno-missing-declarations',
+
+    # needed on Jessie for gtest's IsNullLiteralHelper
+    '-Wno-conversion-null',
+  ]
+endif
+
+gtest_dep = declare_dependency(
+  dependencies: [dependency('gtest', main: true)],
+  compile_args: gtest_compile_args,
+)
 
 executable(
   'ParseSongFilter',
@@ -21,33 +39,28 @@ executable(
   ],
 )
 
-test('test_util', executable(
-  'test_util',
-  'test_util.cxx',
-  include_directories: inc,
-  dependencies: [
-    util_dep,
-    cppunit_dep,
-  ],
-))
-
-test('test_byte_reverse', executable(
-  'test_byte_reverse',
+test('TestUtil', executable(
+  'TestUtil',
+  'TestCircularBuffer.cxx',
+  'TestDivideString.cxx',
+  'TestMimeType.cxx',
+  'TestSplitString.cxx',
+  'TestUriUtil.cxx',
   'test_byte_reverse.cxx',
   include_directories: inc,
   dependencies: [
     util_dep,
-    cppunit_dep,
+    gtest_dep,
   ],
 ))
 
-test('test_rewind', executable(
-  'test_rewind',
-  'test_rewind.cxx',
+test('TestRewindInputStream', executable(
+  'TestRewindInputStream',
+  'TestRewindInputStream.cxx',
   include_directories: inc,
   dependencies: [
     input_glue_dep,
-    cppunit_dep,
+    gtest_dep,
   ],
 ))
 
@@ -59,7 +72,7 @@ test('test_mixramp', executable(
   include_directories: inc,
   dependencies: [
     util_dep,
-    cppunit_dep,
+    gtest_dep,
   ],
 ))
 
@@ -69,7 +82,7 @@ test('test_protocol', executable(
   '../src/protocol/ArgParser.cxx',
   include_directories: inc,
   dependencies: [
-    cppunit_dep,
+    gtest_dep,
   ],
 ))
 
@@ -80,7 +93,7 @@ test('test_queue_priority', executable(
   include_directories: inc,
   dependencies: [
     util_dep,
-    cppunit_dep,
+    gtest_dep,
   ],
 ))
 
@@ -90,7 +103,7 @@ test('TestFs', executable(
   include_directories: inc,
   dependencies: [
     fs_dep,
-    cppunit_dep,
+    gtest_dep,
   ],
 ))
 
@@ -101,7 +114,7 @@ test('TestIcu', executable(
   dependencies: [
     util_dep,
     icu_dep,
-    cppunit_dep,
+    gtest_dep,
   ],
 ))
 
@@ -265,7 +278,7 @@ if enable_database
     dependencies: [
       tag_dep,
       storage_glue_dep,
-      cppunit_dep,
+      gtest_dep,
     ],
   ))
 endif
@@ -296,7 +309,7 @@ if curl_dep.found()
     include_directories: inc,
     dependencies: [
       tag_dep,
-      cppunit_dep,
+      gtest_dep,
     ],
   ))
 endif
@@ -314,7 +327,7 @@ if archive_glue_dep.found()
     include_directories: inc,
     dependencies: [
       archive_glue_dep,
-      cppunit_dep,
+      gtest_dep,
     ],
   ))
 
@@ -457,11 +470,10 @@ test('test_pcm', executable(
   'test_pcm_mix.cxx',
   'test_pcm_interleave.cxx',
   'test_pcm_export.cxx',
-  'test_pcm_main.cxx',
   include_directories: inc,
   dependencies: [
     pcm_dep,
-    cppunit_dep,
+    gtest_dep,
   ],
 ))
 

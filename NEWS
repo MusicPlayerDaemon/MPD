@@ -47,6 +47,7 @@ ver 0.21 (not yet released)
 * systemd watchdog support
 * require GCC 6
 * build with Meson instead of autotools
+* use GTest instead of cppunit
 
 ver 0.20.22 (not yet released)
 * storage

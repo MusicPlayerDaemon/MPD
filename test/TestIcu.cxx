@@ -5,17 +5,8 @@
 #include "config.h"
 #include "lib/icu/Converter.hxx"
 #include "util/AllocatedString.hxx"
-#include "util/StringAPI.hxx"
 
-#include <cppunit/TestFixture.h>
-#include <cppunit/extensions/TestFactoryRegistry.h>
-#include <cppunit/ui/text/TestRunner.h>
-#include <cppunit/extensions/HelperMacros.h>
-
-#include <stdexcept>
-
-#include <string.h>
-#include <stdlib.h>
+#include <gtest/gtest.h>
 
 #ifdef HAVE_ICU_CONVERTER
 
@@ -32,61 +23,30 @@ static constexpr StringPair latin1_tests[] = {
 	{ "\xc3\xbc", "\xfc" },
 };
 
-class TestIcuConverter : public CppUnit::TestFixture {
-	CPPUNIT_TEST_SUITE(TestIcuConverter);
-	CPPUNIT_TEST(TestInvalidCharset);
-	CPPUNIT_TEST(TestLatin1);
-	CPPUNIT_TEST_SUITE_END();
-
-public:
-	void TestInvalidCharset() {
-		try {
-			IcuConverter::Create("doesntexist");
-			CPPUNIT_FAIL("Exception expected");
-		} catch (...) {
-		}
-	}
-
-	void TestLatin1() {
-		IcuConverter *const converter =
-			IcuConverter::Create("iso-8859-1");
-		CPPUNIT_ASSERT(converter != nullptr);
-
-		for (const auto i : invalid_utf8) {
-			try {
-				auto f = converter->FromUTF8(i);
-				CPPUNIT_FAIL("Exception expected");
-			} catch (...) {
-			}
-		}
-
-		for (const auto i : latin1_tests) {
-			auto f = converter->FromUTF8(i.utf8);
-			CPPUNIT_ASSERT_EQUAL(true, StringIsEqual(f.c_str(),
-								 i.other));
-
-			auto t = converter->ToUTF8(i.other);
-			CPPUNIT_ASSERT_EQUAL(true, StringIsEqual(t.c_str(),
-								 i.utf8));
-		}
-
-		delete converter;
-	}
-};
-
-CPPUNIT_TEST_SUITE_REGISTRATION(TestIcuConverter);
-
-#endif
-
-int
-main(gcc_unused int argc, gcc_unused char **argv)
+TEST(IcuConverter, InvalidCharset)
 {
-#ifdef HAVE_ICU_CONVERTER
-	CppUnit::TextUi::TestRunner runner;
-	auto &registry = CppUnit::TestFactoryRegistry::getRegistry();
-	runner.addTest(registry.makeTest());
-	return runner.run() ? EXIT_SUCCESS : EXIT_FAILURE;
-#else
-	return EXIT_SUCCESS;
-#endif
+	EXPECT_ANY_THROW(IcuConverter::Create("doesntexist"));
 }
+
+TEST(IcuConverter, Latin1)
+{
+	IcuConverter *const converter =
+		IcuConverter::Create("iso-8859-1");
+	ASSERT_NE(converter, nullptr);
+
+	for (const auto i : invalid_utf8) {
+		EXPECT_ANY_THROW(converter->FromUTF8(i));
+	}
+
+	for (const auto i : latin1_tests) {
+		auto f = converter->FromUTF8(i.utf8);
+		EXPECT_STREQ(f.c_str(), i.other);
+
+		auto t = converter->ToUTF8(i.other);
+		EXPECT_STREQ(t.c_str(), i.utf8);
+	}
+
+	delete converter;
+}
+
+#endif

@@ -18,14 +18,14 @@
  */
 
 #include "config.h"
-#include "test_pcm_all.hxx"
 #include "test_pcm_util.hxx"
 #include "pcm/PcmChannels.hxx"
 #include "pcm/PcmBuffer.hxx"
 #include "util/ConstBuffer.hxx"
 
-void
-PcmChannelsTest::TestChannels16()
+#include <gtest/gtest.h>
+
+TEST(PcmTest, Channels16)
 {
 	constexpr size_t N = 509;
 	const auto src = TestDataBuffer<int16_t, N * 2>();
@@ -35,40 +35,39 @@ PcmChannelsTest::TestChannels16()
 	/* stereo to mono */
 
 	auto dest = pcm_convert_channels_16(buffer, 1, 2, { src, N * 2 });
-	CPPUNIT_ASSERT(!dest.IsNull());
-	CPPUNIT_ASSERT_EQUAL(N, dest.size);
+	EXPECT_FALSE(dest.IsNull());
+	EXPECT_EQ(N, dest.size);
 	for (unsigned i = 0; i < N; ++i)
-		CPPUNIT_ASSERT_EQUAL(int16_t((src[i * 2] + src[i * 2 + 1]) / 2),
-				     dest[i]);
+		EXPECT_EQ(int16_t((src[i * 2] + src[i * 2 + 1]) / 2),
+			  dest[i]);
 
 	/* mono to stereo */
 
 	dest = pcm_convert_channels_16(buffer, 2, 1, { src, N * 2 });
-	CPPUNIT_ASSERT(!dest.IsNull());
-	CPPUNIT_ASSERT_EQUAL(N * 4, dest.size);
+	EXPECT_FALSE(dest.IsNull());
+	EXPECT_EQ(N * 4, dest.size);
 	for (unsigned i = 0; i < N; ++i) {
-		CPPUNIT_ASSERT_EQUAL(src[i], dest[i * 2]);
-		CPPUNIT_ASSERT_EQUAL(src[i], dest[i * 2 + 1]);
+		EXPECT_EQ(src[i], dest[i * 2]);
+		EXPECT_EQ(src[i], dest[i * 2 + 1]);
 	}
 
 	/* stereo to 5.1 */
 
 	dest = pcm_convert_channels_16(buffer, 6, 2, { src, N * 2 });
-	CPPUNIT_ASSERT(!dest.IsNull());
-	CPPUNIT_ASSERT_EQUAL(N * 6, dest.size);
+	EXPECT_FALSE(dest.IsNull());
+	EXPECT_EQ(N * 6, dest.size);
 	constexpr int16_t silence = 0;
 	for (unsigned i = 0; i < N; ++i) {
-		CPPUNIT_ASSERT_EQUAL(src[i * 2], dest[i * 6]);
-		CPPUNIT_ASSERT_EQUAL(src[i * 2 + 1], dest[i * 6+ 1]);
-		CPPUNIT_ASSERT_EQUAL(silence, dest[i * 6 + 2]);
-		CPPUNIT_ASSERT_EQUAL(silence, dest[i * 6 + 3]);
-		CPPUNIT_ASSERT_EQUAL(silence, dest[i * 6 + 4]);
-		CPPUNIT_ASSERT_EQUAL(silence, dest[i * 6 + 5]);
+		EXPECT_EQ(src[i * 2], dest[i * 6]);
+		EXPECT_EQ(src[i * 2 + 1], dest[i * 6+ 1]);
+		EXPECT_EQ(silence, dest[i * 6 + 2]);
+		EXPECT_EQ(silence, dest[i * 6 + 3]);
+		EXPECT_EQ(silence, dest[i * 6 + 4]);
+		EXPECT_EQ(silence, dest[i * 6 + 5]);
 	}
 }
 
-void
-PcmChannelsTest::TestChannels32()
+TEST(PcmTest, Channels32)
 {
 	constexpr size_t N = 509;
 	const auto src = TestDataBuffer<int32_t, N * 2>();
@@ -78,34 +77,34 @@ PcmChannelsTest::TestChannels32()
 	/* stereo to mono */
 
 	auto dest = pcm_convert_channels_32(buffer, 1, 2, { src, N * 2 });
-	CPPUNIT_ASSERT(!dest.IsNull());
-	CPPUNIT_ASSERT_EQUAL(N, dest.size);
+	EXPECT_FALSE(dest.IsNull());
+	EXPECT_EQ(N, dest.size);
 	for (unsigned i = 0; i < N; ++i)
-		CPPUNIT_ASSERT_EQUAL(int32_t(((int64_t)src[i * 2] + (int64_t)src[i * 2 + 1]) / 2),
-				     dest[i]);
+		EXPECT_EQ(int32_t(((int64_t)src[i * 2] + (int64_t)src[i * 2 + 1]) / 2),
+			  dest[i]);
 
 	/* mono to stereo */
 
 	dest = pcm_convert_channels_32(buffer, 2, 1, { src, N * 2 });
-	CPPUNIT_ASSERT(!dest.IsNull());
-	CPPUNIT_ASSERT_EQUAL(N * 4, dest.size);
+	EXPECT_FALSE(dest.IsNull());
+	EXPECT_EQ(N * 4, dest.size);
 	for (unsigned i = 0; i < N; ++i) {
-		CPPUNIT_ASSERT_EQUAL(src[i], dest[i * 2]);
-		CPPUNIT_ASSERT_EQUAL(src[i], dest[i * 2 + 1]);
+		EXPECT_EQ(src[i], dest[i * 2]);
+		EXPECT_EQ(src[i], dest[i * 2 + 1]);
 	}
 
 	/* stereo to 5.1 */
 
 	dest = pcm_convert_channels_32(buffer, 6, 2, { src, N * 2 });
-	CPPUNIT_ASSERT(!dest.IsNull());
-	CPPUNIT_ASSERT_EQUAL(N * 6, dest.size);
+	EXPECT_FALSE(dest.IsNull());
+	EXPECT_EQ(N * 6, dest.size);
 	constexpr int32_t silence = 0;
 	for (unsigned i = 0; i < N; ++i) {
-		CPPUNIT_ASSERT_EQUAL(src[i * 2], dest[i * 6]);
-		CPPUNIT_ASSERT_EQUAL(src[i * 2 + 1], dest[i * 6+ 1]);
-		CPPUNIT_ASSERT_EQUAL(silence, dest[i * 6 + 2]);
-		CPPUNIT_ASSERT_EQUAL(silence, dest[i * 6 + 3]);
-		CPPUNIT_ASSERT_EQUAL(silence, dest[i * 6 + 4]);
-		CPPUNIT_ASSERT_EQUAL(silence, dest[i * 6 + 5]);
+		EXPECT_EQ(src[i * 2], dest[i * 6]);
+		EXPECT_EQ(src[i * 2 + 1], dest[i * 6+ 1]);
+		EXPECT_EQ(silence, dest[i * 6 + 2]);
+		EXPECT_EQ(silence, dest[i * 6 + 3]);
+		EXPECT_EQ(silence, dest[i * 6 + 4]);
+		EXPECT_EQ(silence, dest[i * 6 + 5]);
 	}
 }

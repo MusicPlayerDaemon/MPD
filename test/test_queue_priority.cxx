@@ -3,10 +3,7 @@
 #include "song/DetachedSong.hxx"
 #include "util/Macros.hxx"
 
-#include <cppunit/TestFixture.h>
-#include <cppunit/extensions/TestFactoryRegistry.h>
-#include <cppunit/ui/text/TestRunner.h>
-#include <cppunit/extensions/HelperMacros.h>
+#include <gtest/gtest.h>
 
 Tag::Tag(const Tag &) noexcept {}
 void Tag::Clear() noexcept {}
@@ -27,17 +24,7 @@ check_descending_priority(const Queue *queue,
 	}
 }
 
-class QueuePriorityTest : public CppUnit::TestFixture {
-	CPPUNIT_TEST_SUITE(QueuePriorityTest);
-	CPPUNIT_TEST(TestPriority);
-	CPPUNIT_TEST_SUITE_END();
-
-public:
-	void TestPriority();
-};
-
-void
-QueuePriorityTest::TestPriority()
+TEST(QueuePriority, Priority)
 {
 	DetachedSong songs[16] = {
 		DetachedSong("0.ogg"),
@@ -63,7 +50,7 @@ QueuePriorityTest::TestPriority()
 	for (unsigned i = 0; i < ARRAY_SIZE(songs); ++i)
 		queue.Append(DetachedSong(songs[i]), 0);
 
-	CPPUNIT_ASSERT_EQUAL(unsigned(ARRAY_SIZE(songs)), queue.GetLength());
+	EXPECT_EQ(unsigned(ARRAY_SIZE(songs)), queue.GetLength());
 
 	/* priority=10 for 4 items */
 
@@ -90,7 +77,7 @@ QueuePriorityTest::TestPriority()
 	queue.SetPriorityRange(15, 16, 50, -1);
 	check_descending_priority(&queue, 0);
 
-	CPPUNIT_ASSERT_EQUAL(0u, queue.PositionToOrder(15));
+	EXPECT_EQ(0u, queue.PositionToOrder(15));
 
 	for (unsigned i = 0; i < 4; ++i) {
 		assert(queue.PositionToOrder(i) >= 4);
@@ -110,8 +97,8 @@ QueuePriorityTest::TestPriority()
 	queue.SetPriorityRange(3, 4, 20, -1);
 	check_descending_priority(&queue, 0);
 
-	CPPUNIT_ASSERT_EQUAL(1u, queue.PositionToOrder(3));
-	CPPUNIT_ASSERT_EQUAL(0u, queue.PositionToOrder(15));
+	EXPECT_EQ(1u, queue.PositionToOrder(3));
+	EXPECT_EQ(0u, queue.PositionToOrder(15));
 
 	for (unsigned i = 0; i < 3; ++i) {
 		assert(queue.PositionToOrder(i) >= 5);
@@ -136,14 +123,14 @@ QueuePriorityTest::TestPriority()
 
 	unsigned a_order = 3;
 	unsigned a_position = queue.OrderToPosition(a_order);
-	CPPUNIT_ASSERT_EQUAL(10u, unsigned(queue.items[a_position].priority));
+	EXPECT_EQ(10u, unsigned(queue.items[a_position].priority));
 	queue.SetPriority(a_position, 20, current_order);
 
 	current_order = queue.PositionToOrder(current_position);
-	CPPUNIT_ASSERT_EQUAL(3u, current_order);
+	EXPECT_EQ(3u, current_order);
 
 	a_order = queue.PositionToOrder(a_position);
-	CPPUNIT_ASSERT_EQUAL(4u, a_order);
+	EXPECT_EQ(4u, a_order);
 
 	check_descending_priority(&queue, current_order + 1);
 
@@ -153,38 +140,27 @@ QueuePriorityTest::TestPriority()
 
 	unsigned b_order = 10;
 	unsigned b_position = queue.OrderToPosition(b_order);
-	CPPUNIT_ASSERT_EQUAL(0u, unsigned(queue.items[b_position].priority));
+	EXPECT_EQ(0u, unsigned(queue.items[b_position].priority));
 	queue.SetPriority(b_position, 70, current_order);
 
 	current_order = queue.PositionToOrder(current_position);
-	CPPUNIT_ASSERT_EQUAL(3u, current_order);
+	EXPECT_EQ(3u, current_order);
 
 	b_order = queue.PositionToOrder(b_position);
-	CPPUNIT_ASSERT_EQUAL(4u, b_order);
+	EXPECT_EQ(4u, b_order);
 
 	check_descending_priority(&queue, current_order + 1);
 
 	/* move the prio=20 item back */
 
 	a_order = queue.PositionToOrder(a_position);
-	CPPUNIT_ASSERT_EQUAL(5u, a_order);
-	CPPUNIT_ASSERT_EQUAL(20u, unsigned(queue.items[a_position].priority));
+	EXPECT_EQ(5u, a_order);
+	EXPECT_EQ(20u, unsigned(queue.items[a_position].priority));
 	queue.SetPriority(a_position, 5, current_order);
 
 	current_order = queue.PositionToOrder(current_position);
-	CPPUNIT_ASSERT_EQUAL(3u, current_order);
+	EXPECT_EQ(3u, current_order);
 
 	a_order = queue.PositionToOrder(a_position);
-	CPPUNIT_ASSERT_EQUAL(6u, a_order);
-}
-
-CPPUNIT_TEST_SUITE_REGISTRATION(QueuePriorityTest);
-
-int
-main(gcc_unused int argc, gcc_unused char **argv)
-{
-	CppUnit::TextUi::TestRunner runner;
-	auto &registry = CppUnit::TestFactoryRegistry::getRegistry();
-	runner.addTest(registry.makeTest());
-	return runner.run() ? EXIT_SUCCESS : EXIT_FAILURE;
+	EXPECT_EQ(6u, a_order);
 }

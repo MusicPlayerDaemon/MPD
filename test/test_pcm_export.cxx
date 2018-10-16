@@ -18,16 +18,16 @@
  */
 
 #include "config.h"
-#include "test_pcm_all.hxx"
 #include "pcm/PcmExport.hxx"
 #include "pcm/Traits.hxx"
 #include "system/ByteOrder.hxx"
 #include "util/ConstBuffer.hxx"
 
+#include <gtest/gtest.h>
+
 #include <string.h>
 
-void
-PcmExportTest::TestShift8()
+TEST(PcmTest, ExportShift8)
 {
 	static constexpr int32_t src[] = { 0x0, 0x1, 0x100, 0x10000, 0xffffff };
 	static constexpr uint32_t expected[] = { 0x0, 0x100, 0x10000, 0x1000000, 0xffffff00 };
@@ -35,19 +35,18 @@ PcmExportTest::TestShift8()
 	PcmExport::Params params;
 	params.shift8 = true;
 
-	CPPUNIT_ASSERT_EQUAL(params.CalcOutputSampleRate(42u), 42u);
-	CPPUNIT_ASSERT_EQUAL(params.CalcInputSampleRate(42u), 42u);
+	EXPECT_EQ(params.CalcOutputSampleRate(42u), 42u);
+	EXPECT_EQ(params.CalcInputSampleRate(42u), 42u);
 
 	PcmExport e;
 	e.Open(SampleFormat::S24_P32, 2, params);
 
 	auto dest = e.Export({src, sizeof(src)});
-	CPPUNIT_ASSERT_EQUAL(sizeof(expected), dest.size);
-	CPPUNIT_ASSERT(memcmp(dest.data, expected, dest.size) == 0);
+	EXPECT_EQ(sizeof(expected), dest.size);
+	EXPECT_TRUE(memcmp(dest.data, expected, dest.size) == 0);
 }
 
-void
-PcmExportTest::TestPack24()
+TEST(PcmTest, ExportPack24)
 {
 	static constexpr int32_t src[] = { 0x0, 0x1, 0x100, 0x10000, 0xffffff };
 
@@ -74,19 +73,18 @@ PcmExportTest::TestPack24()
 	PcmExport::Params params;
 	params.pack24 = true;
 
-	CPPUNIT_ASSERT_EQUAL(params.CalcOutputSampleRate(42u), 42u);
-	CPPUNIT_ASSERT_EQUAL(params.CalcInputSampleRate(42u), 42u);
+	EXPECT_EQ(params.CalcOutputSampleRate(42u), 42u);
+	EXPECT_EQ(params.CalcInputSampleRate(42u), 42u);
 
 	PcmExport e;
 	e.Open(SampleFormat::S24_P32, 2, params);
 
 	auto dest = e.Export({src, sizeof(src)});
-	CPPUNIT_ASSERT_EQUAL(expected_size, dest.size);
-	CPPUNIT_ASSERT(memcmp(dest.data, expected, dest.size) == 0);
+	EXPECT_EQ(expected_size, dest.size);
+	EXPECT_TRUE(memcmp(dest.data, expected, dest.size) == 0);
 }
 
-void
-PcmExportTest::TestReverseEndian()
+TEST(PcmTest, ExportReverseEndian)
 {
 	static constexpr uint8_t src[] = {
 		1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12
@@ -103,31 +101,30 @@ PcmExportTest::TestReverseEndian()
 	PcmExport::Params params;
 	params.reverse_endian = true;
 
-	CPPUNIT_ASSERT_EQUAL(params.CalcOutputSampleRate(42u), 42u);
-	CPPUNIT_ASSERT_EQUAL(params.CalcInputSampleRate(42u), 42u);
+	EXPECT_EQ(params.CalcOutputSampleRate(42u), 42u);
+	EXPECT_EQ(params.CalcInputSampleRate(42u), 42u);
 
 	PcmExport e;
 	e.Open(SampleFormat::S8, 2, params);
 
 	auto dest = e.Export({src, sizeof(src)});
-	CPPUNIT_ASSERT_EQUAL(sizeof(src), dest.size);
-	CPPUNIT_ASSERT(memcmp(dest.data, src, dest.size) == 0);
+	EXPECT_EQ(sizeof(src), dest.size);
+	EXPECT_TRUE(memcmp(dest.data, src, dest.size) == 0);
 
 	e.Open(SampleFormat::S16, 2, params);
 	dest = e.Export({src, sizeof(src)});
-	CPPUNIT_ASSERT_EQUAL(sizeof(expected2), dest.size);
-	CPPUNIT_ASSERT(memcmp(dest.data, expected2, dest.size) == 0);
+	EXPECT_EQ(sizeof(expected2), dest.size);
+	EXPECT_TRUE(memcmp(dest.data, expected2, dest.size) == 0);
 
 	e.Open(SampleFormat::S32, 2, params);
 	dest = e.Export({src, sizeof(src)});
-	CPPUNIT_ASSERT_EQUAL(sizeof(expected4), dest.size);
-	CPPUNIT_ASSERT(memcmp(dest.data, expected4, dest.size) == 0);
+	EXPECT_EQ(sizeof(expected4), dest.size);
+	EXPECT_TRUE(memcmp(dest.data, expected4, dest.size) == 0);
 }
 
 #ifdef ENABLE_DSD
 
-void
-PcmExportTest::TestDsdU16()
+TEST(PcmTest, ExportDsdU16)
 {
 	static constexpr uint8_t src[] = {
 		0x01, 0x23, 0x45, 0x67,
@@ -146,19 +143,18 @@ PcmExportTest::TestDsdU16()
 	PcmExport::Params params;
 	params.dsd_u16 = true;
 
-	CPPUNIT_ASSERT_EQUAL(params.CalcOutputSampleRate(705600u), 352800u);
-	CPPUNIT_ASSERT_EQUAL(params.CalcInputSampleRate(352800u), 705600u);
+	EXPECT_EQ(params.CalcOutputSampleRate(705600u), 352800u);
+	EXPECT_EQ(params.CalcInputSampleRate(352800u), 705600u);
 
 	PcmExport e;
 	e.Open(SampleFormat::DSD, 2, params);
 
 	auto dest = e.Export({src, sizeof(src)});
-	CPPUNIT_ASSERT_EQUAL(sizeof(expected), dest.size);
-	CPPUNIT_ASSERT(memcmp(dest.data, expected, dest.size) == 0);
+	EXPECT_EQ(sizeof(expected), dest.size);
+	EXPECT_TRUE(memcmp(dest.data, expected, dest.size) == 0);
 }
 
-void
-PcmExportTest::TestDsdU32()
+TEST(PcmTest, ExportDsdU32)
 {
 	static constexpr uint8_t src[] = {
 		0x01, 0x23, 0x45, 0x67,
@@ -177,19 +173,18 @@ PcmExportTest::TestDsdU32()
 	PcmExport::Params params;
 	params.dsd_u32 = true;
 
-	CPPUNIT_ASSERT_EQUAL(params.CalcOutputSampleRate(705600u), 176400u);
-	CPPUNIT_ASSERT_EQUAL(params.CalcInputSampleRate(176400u), 705600u);
+	EXPECT_EQ(params.CalcOutputSampleRate(705600u), 176400u);
+	EXPECT_EQ(params.CalcInputSampleRate(176400u), 705600u);
 
 	PcmExport e;
 	e.Open(SampleFormat::DSD, 2, params);
 
 	auto dest = e.Export({src, sizeof(src)});
-	CPPUNIT_ASSERT_EQUAL(sizeof(expected), dest.size);
-	CPPUNIT_ASSERT(memcmp(dest.data, expected, dest.size) == 0);
+	EXPECT_EQ(sizeof(expected), dest.size);
+	EXPECT_TRUE(memcmp(dest.data, expected, dest.size) == 0);
 }
 
-void
-PcmExportTest::TestDop()
+TEST(PcmTest, ExportDop)
 {
 	static constexpr uint8_t src[] = {
 		0x01, 0x23, 0x45, 0x67,
@@ -206,15 +201,15 @@ PcmExportTest::TestDop()
 	PcmExport::Params params;
 	params.dop = true;
 
-	CPPUNIT_ASSERT_EQUAL(params.CalcOutputSampleRate(705600u), 352800u);
-	CPPUNIT_ASSERT_EQUAL(params.CalcInputSampleRate(352800u), 705600u);
+	EXPECT_EQ(params.CalcOutputSampleRate(705600u), 352800u);
+	EXPECT_EQ(params.CalcInputSampleRate(352800u), 705600u);
 
 	PcmExport e;
 	e.Open(SampleFormat::DSD, 2, params);
 
 	auto dest = e.Export({src, sizeof(src)});
-	CPPUNIT_ASSERT_EQUAL(sizeof(expected), dest.size);
-	CPPUNIT_ASSERT(memcmp(dest.data, expected, dest.size) == 0);
+	EXPECT_EQ(sizeof(expected), dest.size);
+	EXPECT_TRUE(memcmp(dest.data, expected, dest.size) == 0);
 }
 
 #endif
@@ -238,15 +233,15 @@ TestAlsaChannelOrder51()
 	PcmExport::Params params;
 	params.alsa_channel_order = true;
 
-	CPPUNIT_ASSERT_EQUAL(params.CalcOutputSampleRate(42u), 42u);
-	CPPUNIT_ASSERT_EQUAL(params.CalcInputSampleRate(42u), 42u);
+	EXPECT_EQ(params.CalcOutputSampleRate(42u), 42u);
+	EXPECT_EQ(params.CalcInputSampleRate(42u), 42u);
 
 	PcmExport e;
 	e.Open(F, 6, params);
 
 	auto dest = e.Export({src, sizeof(src)});
-	CPPUNIT_ASSERT_EQUAL(sizeof(expected), dest.size);
-	CPPUNIT_ASSERT(memcmp(dest.data, expected, dest.size) == 0);
+	EXPECT_EQ(sizeof(expected), dest.size);
+	EXPECT_TRUE(memcmp(dest.data, expected, dest.size) == 0);
 }
 
 template<SampleFormat F, class Traits=SampleTraits<F>>
@@ -268,19 +263,18 @@ TestAlsaChannelOrder71()
 	PcmExport::Params params;
 	params.alsa_channel_order = true;
 
-	CPPUNIT_ASSERT_EQUAL(params.CalcOutputSampleRate(42u), 42u);
-	CPPUNIT_ASSERT_EQUAL(params.CalcInputSampleRate(42u), 42u);
+	EXPECT_EQ(params.CalcOutputSampleRate(42u), 42u);
+	EXPECT_EQ(params.CalcInputSampleRate(42u), 42u);
 
 	PcmExport e;
 	e.Open(F, 8, params);
 
 	auto dest = e.Export({src, sizeof(src)});
-	CPPUNIT_ASSERT_EQUAL(sizeof(expected), dest.size);
-	CPPUNIT_ASSERT(memcmp(dest.data, expected, dest.size) == 0);
+	EXPECT_EQ(sizeof(expected), dest.size);
+	EXPECT_TRUE(memcmp(dest.data, expected, dest.size) == 0);
 }
 
-void
-PcmExportTest::TestAlsaChannelOrder()
+TEST(PcmTest, ExportAlsaChannelOrder)
 {
 	TestAlsaChannelOrder51<SampleFormat::S16>();
 	TestAlsaChannelOrder71<SampleFormat::S16>();

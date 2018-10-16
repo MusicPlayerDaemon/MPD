@@ -8,10 +8,7 @@
 /* include the .cxx file to get access to internal functions */
 #include "IcyMetaDataParser.cxx"
 
-#include <cppunit/TestFixture.h>
-#include <cppunit/extensions/TestFactoryRegistry.h>
-#include <cppunit/ui/text/TestRunner.h>
-#include <cppunit/extensions/HelperMacros.h>
+#include <gtest/gtest.h>
 
 #include <string>
 
@@ -28,11 +25,11 @@ icy_parse_tag(const char *p)
 static void
 CompareTagTitle(const Tag &tag, const std::string &title)
 {
-	CPPUNIT_ASSERT_EQUAL(uint16_t(1), tag.num_items);
+	EXPECT_EQ(uint16_t(1), tag.num_items);
 
 	const TagItem &item = *tag.items[0];
-	CPPUNIT_ASSERT_EQUAL(TAG_TITLE, item.type);
-	CPPUNIT_ASSERT_EQUAL(title, std::string(item.value));
+	EXPECT_EQ(TAG_TITLE, item.type);
+	EXPECT_EQ(title, std::string(item.value));
 }
 
 static void
@@ -46,38 +43,21 @@ static void
 TestIcyParserEmpty(const char *input)
 {
 	const auto tag = icy_parse_tag(input);
-	CPPUNIT_ASSERT_EQUAL(uint16_t(0), tag->num_items);
+	EXPECT_EQ(uint16_t(0), tag->num_items);
 }
 
-class IcyTest : public CppUnit::TestFixture {
-	CPPUNIT_TEST_SUITE(IcyTest);
-	CPPUNIT_TEST(TestIcyMetadataParser);
-	CPPUNIT_TEST_SUITE_END();
-
-public:
-	void TestIcyMetadataParser() {
-		TestIcyParserEmpty("foo=bar;");
-		TestIcyParserTitle("StreamTitle='foo bar'", "foo bar");
-		TestIcyParserTitle("StreamTitle='foo bar';", "foo bar");
-		TestIcyParserTitle("StreamTitle='foo\"bar';", "foo\"bar");
-		TestIcyParserTitle("StreamTitle='foo=bar';", "foo=bar");
-		TestIcyParserTitle("a=b;StreamTitle='foo';", "foo");
-		TestIcyParserTitle("a=;StreamTitle='foo';", "foo");
-		TestIcyParserTitle("a=b;StreamTitle='foo';c=d", "foo");
-		TestIcyParserTitle("a=b;StreamTitle='foo'", "foo");
-		TestIcyParserTitle("a='b;c';StreamTitle='foo;bar'", "foo;bar");
-		TestIcyParserTitle("a='b'c';StreamTitle='foo'bar'", "foo'bar");
-		TestIcyParserTitle("StreamTitle='fo'o'b'ar';a='b'c'd'", "fo'o'b'ar");
-	}
-};
-
-CPPUNIT_TEST_SUITE_REGISTRATION(IcyTest);
-
-int
-main(gcc_unused int argc, gcc_unused char **argv)
+TEST(IcyMetadataParserTest, Basic)
 {
-	CppUnit::TextUi::TestRunner runner;
-	auto &registry = CppUnit::TestFactoryRegistry::getRegistry();
-	runner.addTest(registry.makeTest());
-	return runner.run() ? EXIT_SUCCESS : EXIT_FAILURE;
+	TestIcyParserEmpty("foo=bar;");
+	TestIcyParserTitle("StreamTitle='foo bar'", "foo bar");
+	TestIcyParserTitle("StreamTitle='foo bar';", "foo bar");
+	TestIcyParserTitle("StreamTitle='foo\"bar';", "foo\"bar");
+	TestIcyParserTitle("StreamTitle='foo=bar';", "foo=bar");
+	TestIcyParserTitle("a=b;StreamTitle='foo';", "foo");
+	TestIcyParserTitle("a=;StreamTitle='foo';", "foo");
+	TestIcyParserTitle("a=b;StreamTitle='foo';c=d", "foo");
+	TestIcyParserTitle("a=b;StreamTitle='foo'", "foo");
+	TestIcyParserTitle("a='b;c';StreamTitle='foo;bar'", "foo;bar");
+	TestIcyParserTitle("a='b'c';StreamTitle='foo'bar'", "foo'bar");
+	TestIcyParserTitle("StreamTitle='fo'o'b'ar';a='b'c'd'", "fo'o'b'ar");
 }

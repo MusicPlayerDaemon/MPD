@@ -18,9 +18,10 @@
  */
 
 #include "config.h"
-#include "test_pcm_all.hxx"
 #include "pcm/Interleave.hxx"
 #include "util/Macros.hxx"
+
+#include <gtest/gtest.h>
 
 #include <algorithm>
 
@@ -45,32 +46,29 @@ TestInterleaveN()
 
 	PcmInterleave(dest, src, n_frames, sizeof(T));
 
-	CPPUNIT_ASSERT_EQUAL(T(1), dest[0]);
-	CPPUNIT_ASSERT_EQUAL(T(2), dest[1]);
-	CPPUNIT_ASSERT_EQUAL(T(3), dest[2]);
-	CPPUNIT_ASSERT_EQUAL(T(4), dest[3]);
-	CPPUNIT_ASSERT_EQUAL(T(5), dest[4]);
-	CPPUNIT_ASSERT_EQUAL(T(6), dest[5]);
-	CPPUNIT_ASSERT_EQUAL(T(7), dest[6]);
-	CPPUNIT_ASSERT_EQUAL(T(8), dest[7]);
-	CPPUNIT_ASSERT_EQUAL(T(9), dest[8]);
-	CPPUNIT_ASSERT_EQUAL(poison, dest[9]);
+	EXPECT_EQ(T(1), dest[0]);
+	EXPECT_EQ(T(2), dest[1]);
+	EXPECT_EQ(T(3), dest[2]);
+	EXPECT_EQ(T(4), dest[3]);
+	EXPECT_EQ(T(5), dest[4]);
+	EXPECT_EQ(T(6), dest[5]);
+	EXPECT_EQ(T(7), dest[6]);
+	EXPECT_EQ(T(8), dest[7]);
+	EXPECT_EQ(T(9), dest[8]);
+	EXPECT_EQ(poison, dest[9]);
 }
 
-void
-PcmInterleaveTest::TestInterleave8()
+TEST(PcmTest, Interleave8)
 {
 	TestInterleaveN<uint8_t>();
 }
 
-void
-PcmInterleaveTest::TestInterleave16()
+TEST(PcmTest, Interleave16)
 {
 	TestInterleaveN<uint16_t>();
 }
 
-void
-PcmInterleaveTest::TestInterleave24()
+TEST(PcmTest, Interleave24)
 {
 	typedef uint8_t T;
 	static constexpr T src1[] = { 1, 2, 3, 4, 5, 6 };
@@ -90,37 +88,35 @@ PcmInterleaveTest::TestInterleave24()
 
 	PcmInterleave(dest, src, n_frames, 3);
 
-	CPPUNIT_ASSERT_EQUAL(T(1), dest[0]);
-	CPPUNIT_ASSERT_EQUAL(T(2), dest[1]);
-	CPPUNIT_ASSERT_EQUAL(T(3), dest[2]);
-	CPPUNIT_ASSERT_EQUAL(T(7), dest[3]);
-	CPPUNIT_ASSERT_EQUAL(T(8), dest[4]);
-	CPPUNIT_ASSERT_EQUAL(T(9), dest[5]);
-	CPPUNIT_ASSERT_EQUAL(T(13), dest[6]);
-	CPPUNIT_ASSERT_EQUAL(T(14), dest[7]);
-	CPPUNIT_ASSERT_EQUAL(T(15), dest[8]);
-	CPPUNIT_ASSERT_EQUAL(T(4), dest[9]);
-	CPPUNIT_ASSERT_EQUAL(T(5), dest[10]);
-	CPPUNIT_ASSERT_EQUAL(T(6), dest[11]);
-	CPPUNIT_ASSERT_EQUAL(T(10), dest[12]);
-	CPPUNIT_ASSERT_EQUAL(T(11), dest[13]);
-	CPPUNIT_ASSERT_EQUAL(T(12), dest[14]);
-	CPPUNIT_ASSERT_EQUAL(T(16), dest[15]);
-	CPPUNIT_ASSERT_EQUAL(T(17), dest[16]);
-	CPPUNIT_ASSERT_EQUAL(T(18), dest[17]);
-	CPPUNIT_ASSERT_EQUAL(poison, dest[18]);
+	EXPECT_EQ(T(1), dest[0]);
+	EXPECT_EQ(T(2), dest[1]);
+	EXPECT_EQ(T(3), dest[2]);
+	EXPECT_EQ(T(7), dest[3]);
+	EXPECT_EQ(T(8), dest[4]);
+	EXPECT_EQ(T(9), dest[5]);
+	EXPECT_EQ(T(13), dest[6]);
+	EXPECT_EQ(T(14), dest[7]);
+	EXPECT_EQ(T(15), dest[8]);
+	EXPECT_EQ(T(4), dest[9]);
+	EXPECT_EQ(T(5), dest[10]);
+	EXPECT_EQ(T(6), dest[11]);
+	EXPECT_EQ(T(10), dest[12]);
+	EXPECT_EQ(T(11), dest[13]);
+	EXPECT_EQ(T(12), dest[14]);
+	EXPECT_EQ(T(16), dest[15]);
+	EXPECT_EQ(T(17), dest[16]);
+	EXPECT_EQ(T(18), dest[17]);
+	EXPECT_EQ(poison, dest[18]);
 
 	TestInterleaveN<uint16_t>();
 }
 
-void
-PcmInterleaveTest::TestInterleave32()
+TEST(PcmTest, Interleave32)
 {
 	TestInterleaveN<uint8_t>();
 }
 
-void
-PcmInterleaveTest::TestInterleave64()
+TEST(PcmTest, Interleave64)
 {
 	TestInterleaveN<uint64_t>();
 }

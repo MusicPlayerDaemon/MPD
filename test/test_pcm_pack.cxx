@@ -18,13 +18,13 @@
  */
 
 #include "config.h"
-#include "test_pcm_all.hxx"
 #include "test_pcm_util.hxx"
 #include "pcm/PcmPack.hxx"
 #include "system/ByteOrder.hxx"
 
-void
-PcmPackTest::TestPack24()
+#include <gtest/gtest.h>
+
+TEST(PcmTest, Pack24)
 {
 	constexpr unsigned N = 509;
 	const auto src = TestDataBuffer<int32_t, N>(RandomInt24());
@@ -43,12 +43,11 @@ PcmPackTest::TestPack24()
 		if (d & 0x800000)
 			d |= 0xff000000;
 
-		CPPUNIT_ASSERT_EQUAL(d, src[i]);
+		EXPECT_EQ(d, src[i]);
 	}
 }
 
-void
-PcmPackTest::TestUnpack24()
+TEST(PcmTest, Unpack24)
 {
 	constexpr unsigned N = 509;
 	const auto src = TestDataBuffer<uint8_t, N * 3>();
@@ -67,12 +66,11 @@ PcmPackTest::TestUnpack24()
 		if (s & 0x800000)
 			s |= 0xff000000;
 
-		CPPUNIT_ASSERT_EQUAL(s, dest[i]);
+		EXPECT_EQ(s, dest[i]);
 	}
 }
 
-void
-PcmPackTest::TestUnpack24BE()
+TEST(PcmTest, Unpack24BE)
 {
 	constexpr unsigned N = 509;
 	const auto src = TestDataBuffer<uint8_t, N * 3>();
@@ -87,6 +85,6 @@ PcmPackTest::TestUnpack24BE()
 		if (s & 0x800000)
 			s |= 0xff000000;
 
-		CPPUNIT_ASSERT_EQUAL(s, dest[i]);
+		EXPECT_EQ(s, dest[i]);
 	}
 }

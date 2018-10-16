@@ -18,11 +18,12 @@
  */
 
 #include "config.h"
-#include "test_pcm_all.hxx"
 #include "pcm/Volume.hxx"
 #include "pcm/Traits.hxx"
 #include "util/ConstBuffer.hxx"
 #include "test_pcm_util.hxx"
+
+#include <gtest/gtest.h>
 
 #include <algorithm>
 
@@ -45,54 +46,49 @@ TestVolume(G g=G())
 
 	pv.SetVolume(0);
 	auto dest = pv.Apply(src);
-	CPPUNIT_ASSERT_EQUAL(src.size, dest.size);
-	CPPUNIT_ASSERT_EQUAL(0, memcmp(dest.data, zero, sizeof(zero)));
+	EXPECT_EQ(src.size, dest.size);
+	EXPECT_EQ(0, memcmp(dest.data, zero, sizeof(zero)));
 
 	pv.SetVolume(PCM_VOLUME_1);
 	dest = pv.Apply(src);
-	CPPUNIT_ASSERT_EQUAL(src.size, dest.size);
-	CPPUNIT_ASSERT_EQUAL(0, memcmp(dest.data, src.data, src.size));
+	EXPECT_EQ(src.size, dest.size);
+	EXPECT_EQ(0, memcmp(dest.data, src.data, src.size));
 
 	pv.SetVolume(PCM_VOLUME_1 / 2);
 	dest = pv.Apply(src);
-	CPPUNIT_ASSERT_EQUAL(src.size, dest.size);
+	EXPECT_EQ(src.size, dest.size);
 
 	const auto _dest = ConstBuffer<value_type>::FromVoid(dest);
 	for (unsigned i = 0; i < N; ++i) {
 		const auto expected = (_src[i] + 1) / 2;
-		CPPUNIT_ASSERT(_dest[i] >= expected - 4);
-		CPPUNIT_ASSERT(_dest[i] <= expected + 4);
+		EXPECT_GE(_dest[i], expected - 4);
+		EXPECT_LE(_dest[i], expected + 4);
 	}
 
 	pv.Close();
 }
 
-void
-PcmVolumeTest::TestVolume8()
+TEST(PcmTest, Volume8)
 {
 	TestVolume<SampleFormat::S8>();
 }
 
-void
-PcmVolumeTest::TestVolume16()
+TEST(PcmTest, Volume16)
 {
 	TestVolume<SampleFormat::S16>();
 }
 
-void
-PcmVolumeTest::TestVolume24()
+TEST(PcmTest, Volume24)
 {
 	TestVolume<SampleFormat::S24_P32>(RandomInt24());
 }
 
-void
-PcmVolumeTest::TestVolume32()
+TEST(PcmTest, Volume32)
 {
 	TestVolume<SampleFormat::S32>();
 }
 
-void
-PcmVolumeTest::TestVolumeFloat()
+TEST(PcmTest, VolumeFloat)
 {
 	PcmVolume pv;
 	pv.Open(SampleFormat::FLOAT);
@@ -104,21 +100,21 @@ PcmVolumeTest::TestVolumeFloat()
 
 	pv.SetVolume(0);
 	auto dest = pv.Apply(src);
-	CPPUNIT_ASSERT_EQUAL(src.size, dest.size);
-	CPPUNIT_ASSERT_EQUAL(0, memcmp(dest.data, zero, sizeof(zero)));
+	EXPECT_EQ(src.size, dest.size);
+	EXPECT_EQ(0, memcmp(dest.data, zero, sizeof(zero)));
 
 	pv.SetVolume(PCM_VOLUME_1);
 	dest = pv.Apply(src);
-	CPPUNIT_ASSERT_EQUAL(src.size, dest.size);
-	CPPUNIT_ASSERT_EQUAL(0, memcmp(dest.data, src.data, src.size));
+	EXPECT_EQ(src.size, dest.size);
+	EXPECT_EQ(0, memcmp(dest.data, src.data, src.size));
 
 	pv.SetVolume(PCM_VOLUME_1 / 2);
 	dest = pv.Apply(src);
-	CPPUNIT_ASSERT_EQUAL(src.size, dest.size);
+	EXPECT_EQ(src.size, dest.size);
 
 	const auto _dest = ConstBuffer<float>::FromVoid(dest);
 	for (unsigned i = 0; i < N; ++i)
-		CPPUNIT_ASSERT_DOUBLES_EQUAL(_src[i] / 2, _dest[i], 1);
+		EXPECT_NEAR(_src[i] / 2, _dest[i], 1);
 
 	pv.Close();
 }

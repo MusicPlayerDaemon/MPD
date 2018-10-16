@@ -18,44 +18,13 @@
  */
 
 #include "config.h"
-#include "TestAudioFormat.hxx"
 #include "AudioFormat.hxx"
 #include "AudioParser.hxx"
 #include "util/StringBuffer.hxx"
 
-#include <cppunit/TestAssert.h>
+#include <gtest/gtest.h>
 
 #include <string.h>
-
-namespace CppUnit {
-template<>
-struct assertion_traits<const char *>
-{
-	static bool equal(const char *x, const char *y)
-	{
-		return strcmp(x, y) == 0;
-	}
-
-	static std::string toString(const char *x)
-	{
-		return std::string("\"") + x + "\"";
-	}
-};
-
-template<>
-struct assertion_traits<AudioFormat>
-{
-	static bool equal(AudioFormat x, AudioFormat y)
-	{
-		return x == y;
-	}
-
-	static std::string toString(AudioFormat x)
-	{
-		return ToString(x).c_str();
-	}
-};
-}
 
 struct AudioFormatStringTest {
 	AudioFormat af;
@@ -78,24 +47,19 @@ static constexpr AudioFormatStringTest af_mask_tests[] = {
 	{ AudioFormat::Undefined(), "*:*:*" },
 };
 
-void
-AudioFormatTest::TestToString()
+TEST(AudioFormatTest, ToString)
 {
 	for (const auto &i : af_string_tests)
-		CPPUNIT_ASSERT_EQUAL(i.s, ToString(i.af).c_str());
+		EXPECT_STREQ(i.s, ToString(i.af).c_str());
 }
 
-void
-AudioFormatTest::TestParse()
+TEST(AudioFormatTest, Parse)
 {
 	for (const auto &i : af_string_tests) {
-		CPPUNIT_ASSERT_EQUAL(i.af,
-				     ParseAudioFormat(i.s, false));
-		CPPUNIT_ASSERT_EQUAL(i.af,
-				     ParseAudioFormat(i.s, true));
+		EXPECT_EQ(i.af, ParseAudioFormat(i.s, false));
+		EXPECT_EQ(i.af, ParseAudioFormat(i.s, true));
 	}
 
 	for (const auto &i : af_mask_tests)
-		CPPUNIT_ASSERT_EQUAL(i.af,
-				     ParseAudioFormat(i.s, true));
+		EXPECT_EQ(i.af, ParseAudioFormat(i.s, true));
 }

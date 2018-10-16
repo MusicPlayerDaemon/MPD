@@ -13,7 +13,7 @@ matrix:
             - sourceline: 'ppa:deadsnakes/ppa' # for Python 3.7 (required by Meson)
           packages:
             - g++-6
-            - libcppunit-dev
+            - libgtest-dev
             - boost1.67
             - python3.6
             - python3-urllib3
@@ -38,7 +38,7 @@ matrix:
             - sourceline: 'ppa:deadsnakes/ppa' # for Python 3.7 (required by Meson)
           packages:
             - g++-8
-            - libcppunit-dev
+            - libgtest-dev
             - boost1.67
             - python3.6
             - python3-urllib3
@@ -68,7 +68,8 @@ before_install:
 
 install:
   # C++14
-  - test "$TRAVIS_OS_NAME" != "osx" || brew install cppunit ccache meson
+  - test "$TRAVIS_OS_NAME" != "osx" || brew install ccache meson
+  - test "$TRAVIS_OS_NAME" != "osx" || brew install --HEAD https://gist.githubusercontent.com/Kronuz/96ac10fbd8472eb1e7566d740c4034f8/raw/gtest.rb
 
 before_script:
   - ccache -s
