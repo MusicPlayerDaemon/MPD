@@ -37,7 +37,7 @@ custom_target(
   output: 'upload',
   build_always_stale: true,
   command: [
-    'rsync', '-vpruz', '--delete', meson.current_source_dir(),
+    'rsync', '-vpruz', '--delete', meson.current_build_dir() + '/',
     'www.musicpd.org:/var/www/mpd/doc/',
     '--chmod=Dug+rwx,Do+rx,Fug+rw,Fo+r',
     '--include=protocol', '--include=protocol/**',
