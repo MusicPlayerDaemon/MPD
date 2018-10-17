@@ -15,33 +15,15 @@ sphinx_output = custom_target(
   install_dir: join_paths(get_option('datadir'), 'doc', meson.project_name()),
 )
 
-xmlto = find_program('xmlto')
-xmlto_output = custom_target(
-  'Protocol documentation',
-  output: 'protocol',
-  input: 'protocol.xml',
-  command: [
-    xmlto, '-o', '@OUTPUT@',
-    '--stringparam=chunker.output.encoding=utf-8',
-    'html',
-    '--stringparam=use.id.as.filename=1',
-    '@INPUT@',
-  ],
-  build_by_default: true,
-  install: true,
-  install_dir: join_paths(get_option('datadir'), 'doc', meson.project_name()),
-)
-
 custom_target(
   'upload',
-  input: [sphinx_output, xmlto_output],
+  input: sphinx_output,
   output: 'upload',
   build_always_stale: true,
   command: [
     'rsync', '-vpruz', '--delete', meson.current_build_dir() + '/',
     'www.musicpd.org:/var/www/mpd/doc/',
     '--chmod=Dug+rwx,Do+rx,Fug+rw,Fo+r',
-    '--include=protocol', '--include=protocol/**',
     '--include=html', '--include=html/**',
     '--exclude=*',
   ],
