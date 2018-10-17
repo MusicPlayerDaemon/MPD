@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2017 The Music Player Daemon Project
+ * Copyright 2003-2018 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -51,6 +51,7 @@ enum TagType
 	TAG_PERFORMER,
 	TAG_COMMENT,
 	TAG_DISC,
+	TAG_LABEL,
 
 	TAG_MUSICBRAINZ_ARTISTID,
 	TAG_MUSICBRAINZ_ALBUMID,

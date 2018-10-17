@@ -770,6 +770,7 @@ When scanning or playing a song, :program:`MPD` parses its metadata. The followi
 * **performer**: the artist who performed the song.
 * **comment**: a human-readable comment about this song. The exact meaning of this tag is not well-defined.
 * **disc**: the decimal disc number in a multi-disc album.
+* **label**: the name of the label or publisher.
 * **musicbrainz_artistid**: the artist id in the `MusicBrainz <https://picard.musicbrainz.org/docs/mappings/>`_ database.
 * **musicbrainz_albumid**: the album id in the `MusicBrainz <https://picard.musicbrainz.org/docs/mappings/>`_ database.
 * **musicbrainz_albumartistid**: the album artist id in the `MusicBrainz <https://picard.musicbrainz.org/docs/mappings/>`_ database.
