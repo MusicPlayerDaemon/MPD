@@ -7,6 +7,7 @@ Music Player Daemon
 
    user
    developer
+   protocol
 
 
 Indices and tables

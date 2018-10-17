@@ -6,6 +6,7 @@ sphinx_output = custom_target(
   output: 'html',
   input: [
     'index.rst', 'user.rst', 'developer.rst',
+    'protocol.rst',
     'conf.py',
   ],
   command: [sphinx, '-q', '-b', 'html', '-d', '@OUTDIR@/doctrees', meson.current_source_dir(), '@OUTPUT@'],
