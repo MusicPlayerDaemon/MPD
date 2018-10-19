@@ -566,7 +566,7 @@ parse_xing(struct xing *xing, struct mad_bitptr *ptr, int *oldbitlen)
 	if (bitsleft < 0)
 		return false;
 	else if (bitsleft > 0) {
-		mad_bit_read(ptr, bitsleft);
+		mad_bit_skip(ptr, bitsleft);
 		bitlen -= bitsleft;
 	}
 
@@ -614,7 +614,7 @@ parse_lame(struct lame *lame, struct mad_bitptr *ptr, int *bitlen)
 	    (lame->version.major == 3 && lame->version.minor < 95))
 		adj = 6;
 
-	mad_bit_read(ptr, 16);
+	mad_bit_skip(ptr, 16);
 
 	lame->peak = mad_f_todouble(mad_bit_read(ptr, 32) << 5); /* peak */
 	FormatDebug(mad_domain, "LAME peak found: %f", lame->peak);
@@ -646,10 +646,10 @@ parse_lame(struct lame *lame, struct mad_bitptr *ptr, int *bitlen)
 			    lame->track_gain);
 	}
 #else
-	mad_bit_read(ptr, 16);
+	mad_bit_skip(ptr, 16);
 #endif
 
-	mad_bit_read(ptr, 16);
+	mad_bit_skip(ptr, 16);
 
 	lame->encoder_delay = mad_bit_read(ptr, 12);
 	lame->encoder_padding = mad_bit_read(ptr, 12);
@@ -657,7 +657,7 @@ parse_lame(struct lame *lame, struct mad_bitptr *ptr, int *bitlen)
 	FormatDebug(mad_domain, "encoder delay is %i, encoder padding is %i",
 		    lame->encoder_delay, lame->encoder_padding);
 
-	mad_bit_read(ptr, 80);
+	mad_bit_skip(ptr, 80);
 
 	lame->crc = mad_bit_read(ptr, 16);
 
