@@ -133,7 +133,8 @@ rva2_apply_frame(ReplayGainInfo &replay_gain_info,
 }
 
 bool
-tag_rva2_parse(struct id3_tag *tag, ReplayGainInfo &replay_gain_info)
+tag_rva2_parse(const struct id3_tag *tag,
+	       ReplayGainInfo &replay_gain_info) noexcept
 {
 	bool found = false;
 

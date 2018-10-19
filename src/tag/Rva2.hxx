@@ -32,6 +32,7 @@ struct ReplayGainInfo;
  * @return true on success
  */
 bool
-tag_rva2_parse(id3_tag *tag, ReplayGainInfo &replay_gain_info);
+tag_rva2_parse(const struct id3_tag *tag,
+	       ReplayGainInfo &replay_gain_info) noexcept;
 
 #endif
