@@ -142,7 +142,7 @@ tag_id3_import_text_frame(const struct id3_frame *frame,
  * 4.2).  This is a wrapper for tag_id3_import_text_frame().
  */
 static void
-tag_id3_import_text(struct id3_tag *tag, const char *id, TagType type,
+tag_id3_import_text(const struct id3_tag *tag, const char *id, TagType type,
 		    TagHandler &handler) noexcept
 {
 	const struct id3_frame *frame;
@@ -191,7 +191,7 @@ tag_id3_import_comment_frame(const struct id3_frame *frame, TagType type,
  * wrapper for tag_id3_import_comment_frame().
  */
 static void
-tag_id3_import_comment(struct id3_tag *tag, const char *id, TagType type,
+tag_id3_import_comment(const struct id3_tag *tag, const char *id, TagType type,
 		       TagHandler &handler) noexcept
 {
 	const struct id3_frame *frame;
@@ -217,7 +217,7 @@ tag_id3_parse_txxx_name(const char *name) noexcept
  * Import all known MusicBrainz tags from TXXX frames.
  */
 static void
-tag_id3_import_musicbrainz(struct id3_tag *id3_tag,
+tag_id3_import_musicbrainz(const struct id3_tag *id3_tag,
 			   TagHandler &handler) noexcept
 {
 	for (unsigned i = 0;; ++i) {
@@ -250,7 +250,7 @@ tag_id3_import_musicbrainz(struct id3_tag *id3_tag,
  * Imports the MusicBrainz TrackId from the UFID tag.
  */
 static void
-tag_id3_import_ufid(struct id3_tag *id3_tag,
+tag_id3_import_ufid(const struct id3_tag *id3_tag,
 		    TagHandler &handler) noexcept
 {
 	for (unsigned i = 0;; ++i) {
@@ -283,7 +283,7 @@ tag_id3_import_ufid(struct id3_tag *id3_tag,
 }
 
 void
-scan_id3_tag(struct id3_tag *tag, TagHandler &handler) noexcept
+scan_id3_tag(const struct id3_tag *tag, TagHandler &handler) noexcept
 {
 	tag_id3_import_text(tag, ID3_FRAME_ARTIST, TAG_ARTIST,
 			    handler);
@@ -323,7 +323,7 @@ scan_id3_tag(struct id3_tag *tag, TagHandler &handler) noexcept
 }
 
 std::unique_ptr<Tag>
-tag_id3_import(struct id3_tag *tag)
+tag_id3_import(const struct id3_tag *tag) noexcept
 {
 	TagBuilder tag_builder;
 	AddTagHandler h(tag_builder);
