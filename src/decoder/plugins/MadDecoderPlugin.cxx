@@ -23,6 +23,7 @@
 #include "input/InputStream.hxx"
 #include "config/Block.hxx"
 #include "tag/Id3Scan.hxx"
+#include "tag/Id3ReplayGain.hxx"
 #include "tag/Rva2.hxx"
 #include "tag/Handler.hxx"
 #include "tag/ReplayGain.hxx"
@@ -255,40 +256,6 @@ MadDecoder::FillBuffer()
 }
 
 #ifdef ENABLE_ID3TAG
-static bool
-parse_id3_replay_gain_info(ReplayGainInfo &rgi,
-			   struct id3_tag *tag)
-{
-	bool found = false;
-
-	rgi.Clear();
-
-	struct id3_frame *frame;
-	for (unsigned i = 0; (frame = id3_tag_findframe(tag, "TXXX", i)); i++) {
-		if (frame->nfields < 3)
-			continue;
-
-		char *const key = (char *)
-		    id3_ucs4_latin1duplicate(id3_field_getstring
-					     (&frame->fields[1]));
-		char *const value = (char *)
-		    id3_ucs4_latin1duplicate(id3_field_getstring
-					     (&frame->fields[2]));
-
-		if (ParseReplayGainTag(rgi, key, value))
-			found = true;
-
-		free(key);
-		free(value);
-	}
-
-	return found ||
-		/* fall back on RVA2 if no replaygain tags found */
-		tag_rva2_parse(tag, rgi);
-}
-#endif
-
-#ifdef ENABLE_ID3TAG
 gcc_pure
 static MixRampInfo
 parse_id3_mixramp(struct id3_tag *tag) noexcept
@@ -358,7 +325,7 @@ MadDecoder::ParseId3(size_t tagsize, Tag **mpd_tag)
 	if (client != nullptr) {
 		ReplayGainInfo rgi;
 
-		if (parse_id3_replay_gain_info(rgi, id3_tag)) {
+		if (Id3ToReplayGainInfo(rgi, id3_tag)) {
 			client->SubmitReplayGain(&rgi);
 			found_replay_gain = true;
 		}

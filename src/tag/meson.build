@@ -27,6 +27,7 @@ if libid3tag_dep.found()
   tag_sources += [
     'Id3Load.cxx',
     'Id3Scan.cxx',
+    'Id3ReplayGain.cxx',
     'Rva2.cxx',
     'Riff.cxx',
     'Aiff.cxx',
