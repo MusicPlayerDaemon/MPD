@@ -219,9 +219,7 @@ audiofile_stream_decode(DecoderClient &client, InputStream &is)
 
 	DecoderCommand cmd;
 	do {
-		/* pick 1020 since its divisible for 8,16,24, and
-		   32-bit audio */
-		char chunk[1020];
+		uint8_t chunk[8192];
 		const int nframes =
 			afReadFrames(fh, AF_DEFAULT_TRACK, chunk,
 				     sizeof(chunk) / frame_size);
