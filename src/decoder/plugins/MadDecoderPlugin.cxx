@@ -456,18 +456,12 @@ static constexpr unsigned NG_MAGIC = (('n' << 8) | 'g');
 static constexpr unsigned IN_MAGIC = (('I' << 8) | 'n');
 static constexpr unsigned FO_MAGIC = (('f' << 8) | 'o');
 
-enum xing_magic {
-	XING_MAGIC_XING, /* VBR */
-	XING_MAGIC_INFO  /* CBR */
-};
-
 struct xing {
 	long flags;             /* valid fields (see below) */
 	unsigned long frames;   /* total number of frames */
 	unsigned long bytes;    /* total number of bytes */
 	unsigned char toc[100]; /* 100-point seek table */
 	long scale;             /* VBR quality */
-	enum xing_magic magic;  /* header magic */
 };
 
 static constexpr unsigned XING_FRAMES = 1;
@@ -510,7 +504,6 @@ parse_xing(struct xing *xing, struct mad_bitptr *ptr, int *oldbitlen)
 			return false;
 
 		bitlen -= 16;
-		xing->magic = XING_MAGIC_XING;
 	} else if (bits == IN_MAGIC) {
 		if (bitlen < 16)
 			return false;
@@ -519,11 +512,8 @@ parse_xing(struct xing *xing, struct mad_bitptr *ptr, int *oldbitlen)
 			return false;
 
 		bitlen -= 16;
-		xing->magic = XING_MAGIC_INFO;
 	}
-	else if (bits == NG_MAGIC) xing->magic = XING_MAGIC_XING;
-	else if (bits == FO_MAGIC) xing->magic = XING_MAGIC_INFO;
-	else
+	else if (bits != NG_MAGIC && bits != FO_MAGIC)
 		return false;
 
 	if (bitlen < 32)
