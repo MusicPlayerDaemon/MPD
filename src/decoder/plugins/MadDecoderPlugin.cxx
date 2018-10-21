@@ -707,7 +707,6 @@ inline bool
 MadDecoder::DecodeFirstFrame(Tag **tag)
 {
 	struct xing xing;
-	xing.frames = 0;
 
 	while (true) {
 		enum mp3_action ret;
