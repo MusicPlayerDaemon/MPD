@@ -329,15 +329,13 @@ scan_id3_tag(const struct id3_tag *tag, TagHandler &handler) noexcept
 	tag_id3_import_ufid(tag, handler);
 }
 
-std::unique_ptr<Tag>
+Tag
 tag_id3_import(const struct id3_tag *tag) noexcept
 {
 	TagBuilder tag_builder;
 	AddTagHandler h(tag_builder);
 	scan_id3_tag(tag, h);
-	return tag_builder.empty()
-		? nullptr
-		: tag_builder.CommitNew();
+	return tag_builder.Commit();
 }
 
 bool

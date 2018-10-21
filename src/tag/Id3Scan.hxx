@@ -32,7 +32,7 @@ struct id3_tag;
 bool
 tag_id3_scan(InputStream &is, TagHandler &handler) noexcept;
 
-std::unique_ptr<Tag>
+Tag
 tag_id3_import(const struct id3_tag *) noexcept;
 
 /**

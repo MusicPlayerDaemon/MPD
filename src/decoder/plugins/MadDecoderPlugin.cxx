@@ -152,8 +152,8 @@ struct MadDecoder {
 
 	bool Seek(long offset);
 	bool FillBuffer();
-	void ParseId3(size_t tagsize, Tag **mpd_tag);
-	enum mp3_action DecodeNextFrameHeader(Tag **tag);
+	void ParseId3(size_t tagsize, Tag *tag);
+	enum mp3_action DecodeNextFrameHeader(Tag *tag);
 	enum mp3_action DecodeNextFrame();
 
 	gcc_pure
@@ -167,7 +167,7 @@ struct MadDecoder {
 	 */
 	void FileSizeToSongLength();
 
-	bool DecodeFirstFrame(Tag **tag);
+	bool DecodeFirstFrame(Tag *tag);
 
 	void AllocateBuffers() {
 		assert(max_frames > 0);
@@ -286,7 +286,7 @@ parse_id3_mixramp(struct id3_tag *tag) noexcept
 #endif
 
 inline void
-MadDecoder::ParseId3(size_t tagsize, Tag **mpd_tag)
+MadDecoder::ParseId3(size_t tagsize, Tag *mpd_tag)
 {
 #ifdef ENABLE_ID3TAG
 	std::unique_ptr<id3_byte_t[]> allocated;
@@ -315,13 +315,8 @@ MadDecoder::ParseId3(size_t tagsize, Tag **mpd_tag)
 	if (id3_tag == nullptr)
 		return;
 
-	if (mpd_tag) {
-		auto tmp_tag = tag_id3_import(id3_tag.get());
-		if (tmp_tag != nullptr) {
-			delete *mpd_tag;
-			*mpd_tag = tmp_tag.release();
-		}
-	}
+	if (mpd_tag != nullptr)
+		*mpd_tag = tag_id3_import(id3_tag.get());
 
 	if (client != nullptr) {
 		ReplayGainInfo rgi;
@@ -384,7 +379,7 @@ RecoverFrameError(struct mad_stream &stream)
 }
 
 enum mp3_action
-MadDecoder::DecodeNextFrameHeader(Tag **tag)
+MadDecoder::DecodeNextFrameHeader(Tag *tag)
 {
 	if ((stream.buffer == nullptr || stream.error == MAD_ERROR_BUFLEN) &&
 	    !FillBuffer())
@@ -397,11 +392,7 @@ MadDecoder::DecodeNextFrameHeader(Tag **tag)
 							    stream.this_frame);
 
 			if (tagsize > 0) {
-				if (tag && !(*tag)) {
-					ParseId3((size_t)tagsize, tag);
-				} else {
-					mad_stream_skip(&stream, tagsize);
-				}
+				ParseId3((size_t)tagsize, tag);
 				return DECODE_CONT;
 			}
 		}
@@ -703,7 +694,7 @@ MadDecoder::FileSizeToSongLength()
 }
 
 inline bool
-MadDecoder::DecodeFirstFrame(Tag **tag)
+MadDecoder::DecodeFirstFrame(Tag *tag)
 {
 	struct xing xing;
 
@@ -947,15 +938,13 @@ MadDecoder::Read()
 	while (true) {
 		enum mp3_action ret;
 		do {
-			Tag *tag = nullptr;
+			Tag tag;
 
 			ret = DecodeNextFrameHeader(&tag);
 
-			if (tag != nullptr) {
+			if (!tag.IsEmpty())
 				client->SubmitTag(input_stream,
-						  std::move(*tag));
-				delete tag;
-			}
+						  std::move(tag));
 		} while (ret == DECODE_CONT);
 		if (ret == DECODE_BREAK)
 			return false;
@@ -980,10 +969,8 @@ mp3_decode(DecoderClient &client, InputStream &input_stream)
 {
 	MadDecoder data(&client, input_stream);
 
-	Tag *tag = nullptr;
+	Tag tag;
 	if (!data.DecodeFirstFrame(&tag)) {
-		delete tag;
-
 		if (client.GetCommand() == DecoderCommand::NONE)
 			LogError(mad_domain,
 				 "input/Input does not appear to be a mp3 bit stream");
@@ -998,10 +985,8 @@ mp3_decode(DecoderClient &client, InputStream &input_stream)
 		     input_stream.IsSeekable(),
 		     data.total_time);
 
-	if (tag != nullptr) {
-		client.SubmitTag(input_stream, std::move(*tag));
-		delete tag;
-	}
+	if (!tag.IsEmpty())
+		client.SubmitTag(input_stream, std::move(tag));
 
 	while (data.Read()) {}
 }
