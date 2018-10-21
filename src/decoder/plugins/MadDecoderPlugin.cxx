@@ -36,6 +36,7 @@
 #include <mad.h>
 
 #ifdef ENABLE_ID3TAG
+#include "tag/Id3Unique.hxx"
 #include <id3tag.h>
 #endif
 
@@ -310,12 +311,12 @@ MadDecoder::ParseId3(size_t tagsize, Tag **mpd_tag)
 		id3_data = allocated.get();
 	}
 
-	struct id3_tag *const id3_tag = id3_tag_parse(id3_data, tagsize);
+	const UniqueId3Tag id3_tag(id3_tag_parse(id3_data, tagsize));
 	if (id3_tag == nullptr)
 		return;
 
 	if (mpd_tag) {
-		auto tmp_tag = tag_id3_import(id3_tag);
+		auto tmp_tag = tag_id3_import(id3_tag.get());
 		if (tmp_tag != nullptr) {
 			delete *mpd_tag;
 			*mpd_tag = tmp_tag.release();
@@ -325,15 +326,13 @@ MadDecoder::ParseId3(size_t tagsize, Tag **mpd_tag)
 	if (client != nullptr) {
 		ReplayGainInfo rgi;
 
-		if (Id3ToReplayGainInfo(rgi, id3_tag)) {
+		if (Id3ToReplayGainInfo(rgi, id3_tag.get())) {
 			client->SubmitReplayGain(&rgi);
 			found_replay_gain = true;
 		}
 
-		client->SubmitMixRamp(parse_id3_mixramp(id3_tag));
+		client->SubmitMixRamp(parse_id3_mixramp(id3_tag.get()));
 	}
-
-	id3_tag_delete(id3_tag);
 
 #else /* !ENABLE_ID3TAG */
 	(void)mpd_tag;
