@@ -978,6 +978,7 @@ libtag_a_SOURCES =\
 	src/tag/TagHandler.cxx src/tag/TagHandler.hxx \
 	src/tag/Mask.hxx \
 	src/tag/Fallback.hxx \
+	src/tag/VisitFallback.hxx \
 	src/tag/Settings.cxx src/tag/Settings.hxx \
 	src/tag/TagConfig.cxx src/tag/TagConfig.hxx \
 	src/tag/TagNames.c \
