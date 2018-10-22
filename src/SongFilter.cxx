@@ -22,6 +22,7 @@
 #include "db/LightSong.hxx"
 #include "DetachedSong.hxx"
 #include "tag/Tag.hxx"
+#include "tag/Fallback.hxx"
 #include "util/ConstBuffer.hxx"
 #include "util/StringAPI.hxx"
 #include "util/StringCompare.hxx"
@@ -118,14 +119,23 @@ SongFilter::Item::Match(const Tag &_tag) const noexcept
 		if (value.empty())
 			return true;
 
-		if (tag == TAG_ALBUM_ARTIST && visited_types[TAG_ARTIST]) {
-			/* if we're looking for "album artist", but
-			   only "artist" exists, use that */
-			for (const auto &item : _tag)
-				if (item.type == TAG_ARTIST &&
-				    StringMatch(item.value))
-					return true;
-		}
+		bool result = false;
+		if (ApplyTagFallback(TagType(tag),
+				     [&](TagType tag2) {
+			     if (!visited_types[tag2])
+				     return false;
+
+			     for (const auto &item : _tag) {
+				     if (item.type == tag2 &&
+					 StringMatch(item.value)) {
+					     result = true;
+					     break;
+				     }
+			     }
+
+			     return true;
+		     }))
+			return result;
 	}
 
 	return false;
