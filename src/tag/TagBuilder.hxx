@@ -133,6 +133,12 @@ public:
 	void Complement(const Tag &other);
 
 	/**
+	 * A variant of AddItem() which does not attempt to fix up the
+	 * value and does not check whether the tag type is disabled.
+	 */
+	void AddItemUnchecked(TagType type, StringView value) noexcept;
+
+	/**
 	 * Appends a new tag item.
 	 *
 	 * @param type the type of the new tag item

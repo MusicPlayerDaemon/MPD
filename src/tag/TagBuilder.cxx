@@ -188,6 +188,16 @@ TagBuilder::Complement(const Tag &other)
 	tag_pool_lock.unlock();
 }
 
+void
+TagBuilder::AddItemUnchecked(TagType type, StringView value) noexcept
+{
+	tag_pool_lock.lock();
+	auto i = tag_pool_get_item(type, value);
+	tag_pool_lock.unlock();
+
+	items.push_back(i);
+}
+
 inline void
 TagBuilder::AddItemInternal(TagType type, StringView value)
 {
@@ -197,13 +207,9 @@ TagBuilder::AddItemInternal(TagType type, StringView value)
 	if (!f.IsNull())
 		value = { f.data, f.size };
 
-	tag_pool_lock.lock();
-	auto i = tag_pool_get_item(type, value);
-	tag_pool_lock.unlock();
+	AddItemUnchecked(type, value);
 
 	free(f.data);
-
-	items.push_back(i);
 }
 
 void
@@ -229,11 +235,7 @@ TagBuilder::AddItem(TagType type, const char *value)
 void
 TagBuilder::AddEmptyItem(TagType type)
 {
-	tag_pool_lock.lock();
-	auto i = tag_pool_get_item(type, StringView::Empty());
-	tag_pool_lock.unlock();
-
-	items.push_back(i);
+	AddItemUnchecked(type, StringView::Empty());
 }
 
 void
