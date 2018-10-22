@@ -25,6 +25,7 @@
 #include "client/Response.hxx"
 #include "LightSong.hxx"
 #include "tag/Tag.hxx"
+#include "tag/Fallback.hxx"
 
 #include <functional>
 #include <map>
@@ -98,9 +99,9 @@ GroupCountVisitor(TagCountMap &map, TagType group, const LightSong &song)
 	assert(song.tag != nullptr);
 
 	const Tag &tag = *song.tag;
-	if (!CollectGroupCounts(map, group, tag) && group == TAG_ALBUM_ARTIST)
-		/* fall back to "Artist" if no "AlbumArtist" was found */
-		CollectGroupCounts(map, TAG_ARTIST, tag);
+	ApplyTagWithFallback(group,
+			     std::bind(CollectGroupCounts, std::ref(map),
+				       std::placeholders::_1, std::cref(tag)));
 }
 
 void
