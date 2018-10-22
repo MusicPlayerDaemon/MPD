@@ -90,10 +90,10 @@ GroupCountVisitor(TagCountMap &map, TagType group, const LightSong &song)
 	assert(song.tag != nullptr);
 
 	const Tag &tag = *song.tag;
-	VisitTagWithFallback(tag, group,
-			     std::bind(CollectGroupCounts, std::ref(map),
-				       std::cref(tag),
-				       std::placeholders::_1));
+	VisitTagWithFallbackOrEmpty(tag, group,
+				    std::bind(CollectGroupCounts, std::ref(map),
+					      std::cref(tag),
+					      std::placeholders::_1));
 }
 
 void

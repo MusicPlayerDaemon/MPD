@@ -1599,6 +1599,11 @@ OK
               per-artist counts:
             </para>
             <programlisting>count group artist</programlisting>
+            <para>
+              A group with an empty value contains counts of matching
+              song which don't this group tag.  It exists only if at
+              least one such song is found.
+            </para>
           </listitem>
         </varlistentry>
 

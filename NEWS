@@ -1,6 +1,7 @@
 ver 0.20.22 (not yet released)
 * protocol
   - add tag fallbacks for AlbumArtistSort, ArtistSort
+  - "count group ..." can print an empty group
 * storage
   - curl: URL-encode paths
 * Android

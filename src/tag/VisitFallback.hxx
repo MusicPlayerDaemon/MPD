@@ -49,4 +49,12 @@ VisitTagWithFallback(const Tag &tag, TagType type, F &&f) noexcept
 				    });
 }
 
+template<typename F>
+void
+VisitTagWithFallbackOrEmpty(const Tag &tag, TagType type, F &&f) noexcept
+{
+	if (!VisitTagWithFallback(tag, type, f))
+		f("");
+}
+
 #endif
