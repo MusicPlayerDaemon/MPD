@@ -9,8 +9,8 @@ from build.ffmpeg import FfmpegProject
 from build.boost import BoostProject
 
 libmpdclient = MesonProject(
-    'https://www.musicpd.org/download/libmpdclient/2/libmpdclient-2.14.tar.xz',
-    '0a84e2791bfe3077cf22ee1784c805d5bb550803dffe56a39aa3690a38061372',
+    'https://www.musicpd.org/download/libmpdclient/2/libmpdclient-2.16.tar.xz',
+    'fa6bdab67c0e0490302b38f00c27b4959735c3ec8aef7a88327adb1407654464',
     'lib/libmpdclient.a',
 )
 
