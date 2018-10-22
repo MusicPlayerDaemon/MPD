@@ -20,6 +20,7 @@
 #include "Set.hxx"
 #include "TagBuilder.hxx"
 #include "Settings.hxx"
+#include "util/StringView.hxx"
 
 #include <assert.h>
 
@@ -70,10 +71,7 @@ TagSet::InsertUnique(const Tag &src, TagType type, const char *value,
 		     tag_mask_t group_mask) noexcept
 {
 	TagBuilder builder;
-	if (value == nullptr)
-		builder.AddEmptyItem(type);
-	else
-		builder.AddItem(type, value);
+	builder.AddItemUnchecked(type, value);
 	CopyTagMask(builder, src, group_mask);
 #if CLANG_OR_GCC_VERSION(4,8)
 	emplace(builder.Commit());
@@ -110,8 +108,7 @@ TagSet::InsertUnique(const Tag &tag,
 
 	if (!CheckUnique(type, tag, type, group_mask) &&
 	    (type != TAG_ALBUM_ARTIST ||
-	     !IsTagEnabled(TAG_ALBUM_ARTIST) ||
 	     /* fall back to "Artist" if no "AlbumArtist" was found */
 	     !CheckUnique(type, tag, TAG_ARTIST, group_mask)))
-		InsertUnique(tag, type, nullptr, group_mask);
+		InsertUnique(tag, type, "", group_mask);
 }
