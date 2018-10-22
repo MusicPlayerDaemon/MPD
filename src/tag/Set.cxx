@@ -18,8 +18,11 @@
  */
 
 #include "Set.hxx"
+#include "Fallback.hxx"
 #include "TagBuilder.hxx"
 #include "util/StringView.hxx"
+
+#include <functional>
 
 #include <assert.h>
 
@@ -27,8 +30,8 @@
  * Copy all tag items of the specified type.
  */
 static bool
-CopyTagItem(TagBuilder &dest, TagType dest_type,
-	    const Tag &src, TagType src_type)
+CopyTagItem2(TagBuilder &dest, TagType dest_type,
+	     const Tag &src, TagType src_type)
 {
 	bool found = false;
 
@@ -49,9 +52,9 @@ CopyTagItem(TagBuilder &dest, TagType dest_type,
 static void
 CopyTagItem(TagBuilder &dest, const Tag &src, TagType type)
 {
-	if (!CopyTagItem(dest, type, src, type) &&
-	    type == TAG_ALBUM_ARTIST)
-		CopyTagItem(dest, type, src, TAG_ARTIST);
+	ApplyTagWithFallback(type,
+			     std::bind(CopyTagItem2, std::ref(dest), type,
+				       std::cref(src), std::placeholders::_1));
 }
 
 /**
@@ -105,9 +108,10 @@ TagSet::InsertUnique(const Tag &tag,
 
 	assert((group_mask & (tag_mask_t(1) << unsigned(type))) == 0);
 
-	if (!CheckUnique(type, tag, type, group_mask) &&
-	    (type != TAG_ALBUM_ARTIST ||
-	     /* fall back to "Artist" if no "AlbumArtist" was found */
-	     !CheckUnique(type, tag, TAG_ARTIST, group_mask)))
+	if (!ApplyTagWithFallback(type,
+				  std::bind(&TagSet::CheckUnique, this,
+					    type, std::cref(tag),
+					    std::placeholders::_1,
+					    group_mask)))
 		InsertUnique(tag, type, "", group_mask);
 }
