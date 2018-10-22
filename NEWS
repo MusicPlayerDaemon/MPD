@@ -10,6 +10,7 @@ ver 0.20.22 (not yet released)
   - now runs as a service
   - add button to start/stop MPD
   - add option to auto-start on boot
+* install the SVG icon
 
 ver 0.20.21 (2018/08/17)
 * database

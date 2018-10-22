@@ -1703,6 +1703,13 @@ FILTER_LIBS = \
 
 
 #
+# Icon
+#
+
+iconsdir = $(datadir)/icons/hicolor/scalable/apps
+icons_DATA = mpd.svg
+
+#
 # systemd unit
 #
 
