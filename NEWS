@@ -1,6 +1,7 @@
 ver 0.20.22 (not yet released)
 * protocol
   - add tag fallbacks for AlbumArtistSort, ArtistSort
+  - fix empty string filter on fallback tags
   - "count group ..." can print an empty group
   - fix broken command "list ... group"
 * storage
