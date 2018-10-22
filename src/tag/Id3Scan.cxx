@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2017 The Music Player Daemon Project
+ * Copyright 2003-2018 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -38,12 +38,13 @@
 #include <string.h>
 #include <stdlib.h>
 
-#  ifndef ID3_FRAME_COMPOSER
-#    define ID3_FRAME_COMPOSER "TCOM"
-#  endif
-#  ifndef ID3_FRAME_DISC
-#    define ID3_FRAME_DISC "TPOS"
-#  endif
+#ifndef ID3_FRAME_COMPOSER
+#define ID3_FRAME_COMPOSER "TCOM"
+#endif
+
+#ifndef ID3_FRAME_DISC
+#define ID3_FRAME_DISC "TPOS"
+#endif
 
 #ifndef ID3_FRAME_ARTIST_SORT
 #define ID3_FRAME_ARTIST_SORT "TSOP"
@@ -59,6 +60,10 @@
 
 #ifndef ID3_FRAME_ORIGINAL_RELEASE_DATE
 #define ID3_FRAME_ORIGINAL_RELEASE_DATE "TDOR"
+#endif
+
+#ifndef ID3_FRAME_LABEL
+#define ID3_FRAME_LABEL "TPUB"
 #endif
 
 gcc_pure
@@ -316,6 +321,8 @@ scan_id3_tag(const struct id3_tag *tag, TagHandler &handler) noexcept
 	tag_id3_import_comment(tag, ID3_FRAME_COMMENT, TAG_COMMENT,
 			       handler);
 	tag_id3_import_text(tag, ID3_FRAME_DISC, TAG_DISC,
+			    handler);
+	tag_id3_import_text(tag, ID3_FRAME_LABEL, TAG_LABEL,
 			    handler);
 
 	tag_id3_import_musicbrainz(tag, handler);
