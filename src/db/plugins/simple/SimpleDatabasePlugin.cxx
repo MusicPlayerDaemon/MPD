@@ -312,12 +312,11 @@ SimpleDatabase::Visit(const DatabaseSelection &selection,
 			    "No such directory");
 }
 
-void
-SimpleDatabase::VisitUniqueTags(const DatabaseSelection &selection,
-				TagType tag_type, tag_mask_t group_mask,
-				VisitTag visit_tag) const
+std::map<std::string, std::set<std::string>>
+SimpleDatabase::CollectUniqueTags(const DatabaseSelection &selection,
+				  TagType tag_type, TagType group) const
 {
-	::VisitUniqueTags(*this, selection, tag_type, group_mask, visit_tag);
+	return ::CollectUniqueTags(*this, selection, tag_type, group);
 }
 
 DatabaseStats

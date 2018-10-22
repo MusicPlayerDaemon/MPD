@@ -87,9 +87,9 @@ public:
 		   VisitSong visit_song,
 		   VisitPlaylist visit_playlist) const override;
 
-	void VisitUniqueTags(const DatabaseSelection &selection,
-			     TagType tag_type, tag_mask_t group_mask,
-			     VisitTag visit_tag) const override;
+	std::map<std::string, std::set<std::string>> CollectUniqueTags(const DatabaseSelection &selection,
+								       TagType tag_type,
+								       TagType group) const override;
 
 	DatabaseStats GetStats(const DatabaseSelection &selection) const override;
 
@@ -603,17 +603,15 @@ UpnpDatabase::Visit(const DatabaseSelection &selection,
 		    visit_directory, visit_song, visit_playlist);
 }
 
-void
-UpnpDatabase::VisitUniqueTags(const DatabaseSelection &selection,
-			      TagType tag, gcc_unused tag_mask_t group_mask,
-			      VisitTag visit_tag) const
+std::map<std::string, std::set<std::string>>
+UpnpDatabase::CollectUniqueTags(const DatabaseSelection &selection,
+				TagType tag, TagType group) const
 {
-	// TODO: use group_mask
+	(void)group; // TODO: use group
 
-	if (!visit_tag)
-		return;
+	std::map<std::string, std::set<std::string>> result;
+	auto &values = result[std::string()];
 
-	std::set<std::string> values;
 	for (auto& server : discovery->GetDirectories()) {
 		const auto dirbuf = SearchSongs(server, rootid, selection);
 
@@ -633,11 +631,7 @@ UpnpDatabase::VisitUniqueTags(const DatabaseSelection &selection,
 		}
 	}
 
-	for (const auto& value : values) {
-		TagBuilder builder;
-		builder.AddItem(tag, value.c_str());
-		visit_tag(builder.Commit());
-	}
+	return result;
 }
 
 DatabaseStats

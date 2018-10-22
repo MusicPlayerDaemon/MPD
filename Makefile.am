@@ -985,7 +985,6 @@ libtag_a_SOURCES =\
 	src/tag/TagString.cxx src/tag/TagString.hxx \
 	src/tag/TagPool.cxx src/tag/TagPool.hxx \
 	src/tag/TagTable.cxx src/tag/TagTable.hxx \
-	src/tag/Set.cxx src/tag/Set.hxx \
 	src/tag/Format.cxx src/tag/Format.hxx \
 	src/tag/VorbisComment.cxx src/tag/VorbisComment.hxx \
 	src/tag/ReplayGain.cxx src/tag/ReplayGain.hxx \

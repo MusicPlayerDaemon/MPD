@@ -20,16 +20,19 @@
 #ifndef MPD_DB_UNIQUE_TAGS_HXX
 #define MPD_DB_UNIQUE_TAGS_HXX
 
-#include "Visitor.hxx"
 #include "tag/TagType.h"
-#include "tag/Mask.hxx"
+#include "Compiler.h"
+
+#include <map>
+#include <set>
+#include <string>
 
 class Database;
 struct DatabaseSelection;
 
-void
-VisitUniqueTags(const Database &db, const DatabaseSelection &selection,
-		TagType tag_type, tag_mask_t group_mask,
-		VisitTag visit_tag);
+gcc_pure
+std::map<std::string, std::set<std::string>>
+CollectUniqueTags(const Database &db, const DatabaseSelection &selection,
+		  TagType tag_type, TagType group);
 
 #endif

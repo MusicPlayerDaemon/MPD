@@ -14,7 +14,7 @@ AM_SILENT_RULES
 AC_CONFIG_HEADERS(config.h)
 AC_CONFIG_MACRO_DIR([m4])
 
-AC_DEFINE(PROTOCOL_VERSION, "0.20.0", [The MPD protocol version])
+AC_DEFINE(PROTOCOL_VERSION, "0.20.22", [The MPD protocol version])
 
 GIT_COMMIT=`cd "$srcdir" && git describe --dirty --always 2>/dev/null`
 if test x$GIT_COMMIT != x; then

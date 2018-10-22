@@ -22,8 +22,11 @@
 
 #include "Visitor.hxx"
 #include "tag/TagType.h"
-#include "tag/Mask.hxx"
 #include "Compiler.h"
+
+#include <map>
+#include <set>
+#include <string>
 
 #include <time.h>
 
@@ -99,12 +102,9 @@ public:
 		return Visit(selection, VisitDirectory(), visit_song);
 	}
 
-	/**
-	 * Visit all unique tag values.
-	 */
-	virtual void VisitUniqueTags(const DatabaseSelection &selection,
-				     TagType tag_type, tag_mask_t group_mask,
-				     VisitTag visit_tag) const = 0;
+	virtual std::map<std::string, std::set<std::string>> CollectUniqueTags(const DatabaseSelection &selection,
+									       TagType tag_type,
+									       TagType group=TAG_NUM_OF_ITEM_TYPES) const = 0;
 
 	virtual DatabaseStats GetStats(const DatabaseSelection &selection) const = 0;
 

@@ -187,22 +187,34 @@ PrintSongURIVisitor(Response &r, Partition &partition, const LightSong &song)
 }
 
 static void
-PrintUniqueTag(Response &r, TagType tag_type,
-	       const Tag &tag)
+PrintUniqueTags(Response &r, TagType tag_type,
+		const std::set<std::string> &values)
 {
-	const char *value = tag.GetValue(tag_type);
-	assert(value != nullptr);
-	r.Format("%s: %s\n", tag_item_names[tag_type], value);
+	const char *const name = tag_item_names[tag_type];
+	for (const auto &i : values)
+		r.Format("%s: %s\n", name, i.c_str());
+}
 
-	for (const auto &item : tag)
-		if (item.type != tag_type)
-			r.Format("%s: %s\n",
-				 tag_item_names[item.type], item.value);
+static void
+PrintGroupedUniqueTags(Response &r, TagType tag_type, TagType group,
+		       const std::map<std::string, std::set<std::string>> &groups)
+{
+	if (group == TAG_NUM_OF_ITEM_TYPES) {
+		for (const auto &i : groups)
+			PrintUniqueTags(r, tag_type, i.second);
+		return;
+	}
+
+	const char *const group_name = tag_item_names[group];
+	for (const auto &i : groups) {
+		r.Format("%s: %s\n", group_name, i.first.c_str());
+		PrintUniqueTags(r, tag_type, i.second);
+	}
 }
 
 void
 PrintUniqueTags(Response &r, Partition &partition,
-		unsigned type, tag_mask_t group_mask,
+		unsigned type, TagType group,
 		const SongFilter *filter)
 {
 	const Database &db = partition.GetDatabaseOrThrow();
@@ -217,10 +229,9 @@ PrintUniqueTags(Response &r, Partition &partition,
 	} else {
 		assert(type < TAG_NUM_OF_ITEM_TYPES);
 
-		using namespace std::placeholders;
-		const auto f = std::bind(PrintUniqueTag, std::ref(r),
-					 (TagType)type, _1);
-		db.VisitUniqueTags(selection, (TagType)type,
-				   group_mask, f);
+		PrintGroupedUniqueTags(r, TagType(type), group,
+				       db.CollectUniqueTags(selection,
+							    TagType(type),
+							    group));
 	}
 }
