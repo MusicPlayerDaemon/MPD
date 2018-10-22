@@ -25,6 +25,9 @@
 #include "util/Compiler.h"
 
 #include <chrono>
+#include <map>
+#include <set>
+#include <string>
 
 struct DatabasePlugin;
 struct DatabaseStats;
@@ -105,14 +108,9 @@ public:
 		return Visit(selection, VisitDirectory(), visit_song);
 	}
 
-	/**
-	 * Visit all unique tag values.
-	 *
-	 * Throws on error.
-	 */
-	virtual void VisitUniqueTags(const DatabaseSelection &selection,
-				     TagType tag_type, TagMask group_mask,
-				     VisitTag visit_tag) const = 0;
+	virtual std::map<std::string, std::set<std::string>> CollectUniqueTags(const DatabaseSelection &selection,
+									       TagType tag_type,
+									       TagType group=TAG_NUM_OF_ITEM_TYPES) const = 0;
 
 	/**
 	 * Throws on error.

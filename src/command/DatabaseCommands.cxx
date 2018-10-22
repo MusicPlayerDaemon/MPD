@@ -267,7 +267,7 @@ handle_list(Client &client, Request args, Response &r)
 	}
 
 	std::unique_ptr<SongFilter> filter;
-	TagMask group_mask = TagMask::None();
+	TagType group = TAG_NUM_OF_ITEM_TYPES;
 
 	if (args.size == 1) {
 		/* for compatibility with < 0.12.0 */
@@ -282,17 +282,15 @@ handle_list(Client &client, Request args, Response &r)
 					    args.shift()));
 	}
 
-	while (args.size >= 2 &&
-	       StringIsEqual(args[args.size - 2], "group")) {
+	if  (args.size >= 2 &&
+	     StringIsEqual(args[args.size - 2], "group")) {
 		const char *s = args[args.size - 1];
-		TagType gt = tag_name_parse_i(s);
-		if (gt == TAG_NUM_OF_ITEM_TYPES) {
+		group = tag_name_parse_i(s);
+		if (group == TAG_NUM_OF_ITEM_TYPES) {
 			r.FormatError(ACK_ERROR_ARG,
 				      "Unknown tag type: %s", s);
 			return CommandResult::ERROR;
 		}
-
-		group_mask |= gt;
 
 		args.pop_back();
 		args.pop_back();
@@ -310,13 +308,13 @@ handle_list(Client &client, Request args, Response &r)
 		filter->Optimize();
 	}
 
-	if (group_mask.Test(tagType)) {
+	if (tagType < TAG_NUM_OF_ITEM_TYPES && tagType == group) {
 		r.Error(ACK_ERROR_ARG, "Conflicting group");
 		return CommandResult::ERROR;
 	}
 
 	PrintUniqueTags(r, client.GetPartition(),
-			tagType, group_mask, filter.get());
+			tagType, group, filter.get());
 	return CommandResult::OK;
 }
 

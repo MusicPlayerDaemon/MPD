@@ -17,35 +17,44 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_DB_PRINT_H
-#define MPD_DB_PRINT_H
+#ifndef MPD_TAG_VISIT_FALLBACK_HXX
+#define MPD_TAG_VISIT_FALLBACK_HXX
 
-#include <stdint.h>
+#include "Fallback.hxx"
+#include "Tag.hxx"
 
-enum TagType : uint8_t;
-class TagMask;
-class SongFilter;
-struct DatabaseSelection;
-struct RangeArg;
-struct Partition;
-class Response;
+template<typename F>
+bool
+VisitTagType(const Tag &tag, TagType type, F &&f) noexcept
+{
+	bool found = false;
 
-/**
- * @param full print attributes/tags
- * @param base print only base name of songs/directories?
- */
+	for (const auto &item : tag) {
+		if (item.type == type) {
+			found = true;
+			f(item.value);
+		}
+	}
+
+	return found;
+}
+
+template<typename F>
+bool
+VisitTagWithFallback(const Tag &tag, TagType type, F &&f) noexcept
+{
+	return ApplyTagWithFallback(type,
+				    [&](TagType type2) {
+					    return VisitTagType(tag, type2, f);
+				    });
+}
+
+template<typename F>
 void
-db_selection_print(Response &r, Partition &partition,
-		   const DatabaseSelection &selection,
-		   bool full, bool base);
-
-void
-PrintSongUris(Response &r, Partition &partition,
-	      const SongFilter *filter);
-
-void
-PrintUniqueTags(Response &r, Partition &partition,
-		TagType type, TagType group,
-		const SongFilter *filter);
+VisitTagWithFallbackOrEmpty(const Tag &tag, TagType type, F &&f) noexcept
+{
+	if (!VisitTagWithFallback(tag, type, f))
+		f("");
+}
 
 #endif

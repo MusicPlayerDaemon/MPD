@@ -25,6 +25,7 @@
 #include "client/Response.hxx"
 #include "song/LightSong.hxx"
 #include "tag/Tag.hxx"
+#include "tag/VisitFallback.hxx"
 #include "TagPrint.hxx"
 
 #include <functional>
@@ -73,24 +74,15 @@ stats_visitor_song(SearchStats &stats, const LightSong &song) noexcept
 		stats.total_duration += duration;
 }
 
-static bool
-CollectGroupCounts(TagCountMap &map, TagType group, const Tag &tag) noexcept
+static void
+CollectGroupCounts(TagCountMap &map, const Tag &tag,
+		   const char *value) noexcept
 {
-	bool found = false;
-	for (const auto &item : tag) {
-		if (item.type == group) {
-			auto r = map.insert(std::make_pair(item.value,
-							   SearchStats()));
-			SearchStats &s = r.first->second;
-			++s.n_songs;
-			if (!tag.duration.IsNegative())
-				s.total_duration += tag.duration;
-
-			found = true;
-		}
-	}
-
-	return found;
+	auto r = map.insert(std::make_pair(value, SearchStats()));
+	SearchStats &s = r.first->second;
+	++s.n_songs;
+	if (!tag.duration.IsNegative())
+		s.total_duration += tag.duration;
 }
 
 static void
@@ -98,9 +90,10 @@ GroupCountVisitor(TagCountMap &map, TagType group,
 		  const LightSong &song) noexcept
 {
 	const Tag &tag = song.tag;
-	if (!CollectGroupCounts(map, group, tag) && group == TAG_ALBUM_ARTIST)
-		/* fall back to "Artist" if no "AlbumArtist" was found */
-		CollectGroupCounts(map, TAG_ARTIST, tag);
+	VisitTagWithFallbackOrEmpty(tag, group,
+				    std::bind(CollectGroupCounts, std::ref(map),
+					      std::cref(tag),
+					      std::placeholders::_1));
 }
 
 void

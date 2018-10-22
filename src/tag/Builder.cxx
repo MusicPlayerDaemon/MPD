@@ -186,6 +186,19 @@ TagBuilder::Complement(const Tag &other) noexcept
 	}
 }
 
+void
+TagBuilder::AddItemUnchecked(TagType type, StringView value) noexcept
+{
+	TagItem *i;
+
+	{
+		const std::lock_guard<Mutex> protect(tag_pool_lock);
+		i = tag_pool_get_item(type, value);
+	}
+
+	items.push_back(i);
+}
+
 inline void
 TagBuilder::AddItemInternal(TagType type, StringView value) noexcept
 {
@@ -195,15 +208,9 @@ TagBuilder::AddItemInternal(TagType type, StringView value) noexcept
 	if (!f.IsNull())
 		value = { f.data, f.size };
 
-	TagItem *i;
-	{
-		const std::lock_guard<Mutex> protect(tag_pool_lock);
-		i = tag_pool_get_item(type, value);
-	}
+	AddItemUnchecked(type, value);
 
 	free(f.data);
-
-	items.push_back(i);
 }
 
 void
@@ -229,13 +236,7 @@ TagBuilder::AddItem(TagType type, const char *value) noexcept
 void
 TagBuilder::AddEmptyItem(TagType type) noexcept
 {
-	TagItem *i;
-	{
-		const std::lock_guard<Mutex> protect(tag_pool_lock);
-		i = tag_pool_get_item(type, "");
-	}
-
-	items.push_back(i);
+	AddItemUnchecked(type, "");
 }
 
 void

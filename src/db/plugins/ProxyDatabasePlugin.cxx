@@ -128,9 +128,9 @@ public:
 		   VisitSong visit_song,
 		   VisitPlaylist visit_playlist) const override;
 
-	void VisitUniqueTags(const DatabaseSelection &selection,
-			     TagType tag_type, TagMask group_mask,
-			     VisitTag visit_tag) const override;
+	std::map<std::string, std::set<std::string>> CollectUniqueTags(const DatabaseSelection &selection,
+								       TagType tag_type,
+								       TagType group) const override;
 
 	DatabaseStats GetStats(const DatabaseSelection &selection) const override;
 
@@ -411,31 +411,21 @@ SendConstraints(mpd_connection *connection, const DatabaseSelection &selection)
 }
 
 static bool
-SendGroupMask(mpd_connection *connection, TagMask mask)
+SendGroup(mpd_connection *connection, TagType group)
 {
+	if (group == TAG_NUM_OF_ITEM_TYPES)
+		return true;
+
 #if LIBMPDCLIENT_CHECK_VERSION(2,12,0)
-	for (unsigned i = 0; i < TAG_NUM_OF_ITEM_TYPES; ++i) {
-		const auto tag_type = TagType(i);
-		if (!mask.Test(tag_type))
-			continue;
+	const auto tag = Convert(group);
+	if (tag == MPD_TAG_COUNT)
+		throw std::runtime_error("Unsupported tag");
 
-		const auto tag = Convert(tag_type);
-		if (tag == MPD_TAG_COUNT)
-			throw std::runtime_error("Unsupported tag");
-
-		if (!mpd_search_add_group_tag(connection, tag))
-			return false;
-	}
-
-	return true;
+	return mpd_search_add_group_tag(connection, tag);
 #else
 	(void)connection;
-	(void)mask;
 
-	if (mask.TestAny())
-		throw std::runtime_error("Grouping requires libmpdclient 2.12");
-
-	return true;
+	throw std::runtime_error("Grouping requires libmpdclient 2.12");
 #endif
 }
 
@@ -992,11 +982,9 @@ ProxyDatabase::Visit(const DatabaseSelection &selection,
 	helper.Commit();
 }
 
-void
-ProxyDatabase::VisitUniqueTags(const DatabaseSelection &selection,
-			       TagType tag_type,
-			       TagMask group_mask,
-			       VisitTag visit_tag) const
+std::map<std::string, std::set<std::string>>
+ProxyDatabase::CollectUniqueTags(const DatabaseSelection &selection,
+				 TagType tag_type, TagType group) const
 try {
 	// TODO: eliminate the const_cast
 	const_cast<ProxyDatabase *>(this)->EnsureConnected();
@@ -1007,54 +995,56 @@ try {
 
 	if (!mpd_search_db_tags(connection, tag_type2) ||
 	    !SendConstraints(connection, selection) ||
-	    !SendGroupMask(connection, group_mask))
+	    !SendGroup(connection, group))
 		ThrowError(connection);
 
 	if (!mpd_search_commit(connection))
 		ThrowError(connection);
 
-	TagBuilder builder;
+	std::map<std::string, std::set<std::string>> result;
 
-	while (auto *pair = mpd_recv_pair(connection)) {
-		AtScopeExit(this, pair) {
-			mpd_return_pair(connection, pair);
-		};
+	if (group == TAG_NUM_OF_ITEM_TYPES) {
+		auto &values = result[std::string()];
 
-		const auto current_type = tag_name_parse_i(pair->name);
-		if (current_type == TAG_NUM_OF_ITEM_TYPES)
-			continue;
+		while (auto *pair = mpd_recv_pair(connection)) {
+			AtScopeExit(this, pair) {
+				mpd_return_pair(connection, pair);
+			};
 
-		if (current_type == tag_type && !builder.empty()) {
-			try {
-				visit_tag(builder.Commit());
-			} catch (...) {
-				mpd_response_finish(connection);
-				throw;
-			}
+			const auto current_type = tag_name_parse_i(pair->name);
+			if (current_type == TAG_NUM_OF_ITEM_TYPES)
+				continue;
+
+			if (current_type == tag_type)
+				values.emplace(pair->value);
 		}
+	} else {
+		std::set<std::string> *current_group = nullptr;
 
-		builder.AddItem(current_type, pair->value);
+		while (auto *pair = mpd_recv_pair(connection)) {
+			AtScopeExit(this, pair) {
+				mpd_return_pair(connection, pair);
+			};
 
-		if (!builder.HasType(current_type))
-			/* if no tag item has been added, then the
-			   given value was not acceptable
-			   (e.g. empty); forcefully insert an empty
-			   tag in this case, as the caller expects the
-			   given tag type to be present */
-			builder.AddEmptyItem(current_type);
-	}
+			const auto current_type = tag_name_parse_i(pair->name);
+			if (current_type == TAG_NUM_OF_ITEM_TYPES)
+				continue;
 
-	if (!builder.empty()) {
-		try {
-			visit_tag(builder.Commit());
-		} catch (...) {
-			mpd_response_finish(connection);
-			throw;
+			if (current_type == tag_type) {
+				if (current_group == nullptr)
+					current_group = &result[std::string()];
+
+				current_group->emplace(pair->value);
+			} else if (current_type == group) {
+				current_group = &result[pair->value];
+			}
 		}
 	}
 
 	if (!mpd_response_finish(connection))
 		ThrowError(connection);
+
+	return result;
 } catch (...) {
 	if (connection != nullptr)
 		mpd_search_cancel(connection);

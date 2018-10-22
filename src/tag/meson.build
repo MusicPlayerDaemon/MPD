@@ -9,7 +9,6 @@ tag_sources = [
   'FixString.cxx',
   'Pool.cxx',
   'Table.cxx',
-  'Set.cxx',
   'Format.cxx',
   'VorbisComment.cxx',
   'ReplayGain.cxx',

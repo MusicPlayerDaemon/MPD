@@ -17,35 +17,37 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_DB_PRINT_H
-#define MPD_DB_PRINT_H
+#ifndef MPD_TAG_FALLBACK_HXX
+#define MPD_TAG_FALLBACK_HXX
 
-#include <stdint.h>
+#include <utility>
 
-enum TagType : uint8_t;
-class TagMask;
-class SongFilter;
-struct DatabaseSelection;
-struct RangeArg;
-struct Partition;
-class Response;
+template<typename F>
+bool
+ApplyTagFallback(TagType type, F &&f) noexcept
+{
+	if (type == TAG_ALBUM_ARTIST_SORT) {
+		/* fall back to "AlbumArtist", "ArtistSort" and
+		   "Artist" if no "AlbumArtistSort" was found */
+		if (f(TAG_ALBUM_ARTIST))
+			return true;
 
-/**
- * @param full print attributes/tags
- * @param base print only base name of songs/directories?
- */
-void
-db_selection_print(Response &r, Partition &partition,
-		   const DatabaseSelection &selection,
-		   bool full, bool base);
+		return ApplyTagFallback(TAG_ARTIST_SORT, std::forward<F>(f));
+	}
 
-void
-PrintSongUris(Response &r, Partition &partition,
-	      const SongFilter *filter);
+	if (type == TAG_ALBUM_ARTIST || type == TAG_ARTIST_SORT)
+		/* fall back to "Artist" if no
+		   "AlbumArtist"/"ArtistSort" was found */
+		return f(TAG_ARTIST);
 
-void
-PrintUniqueTags(Response &r, Partition &partition,
-		TagType type, TagType group,
-		const SongFilter *filter);
+	return false;
+}
+
+template<typename F>
+bool
+ApplyTagWithFallback(TagType type, F &&f) noexcept
+{
+	return f(type) || ApplyTagFallback(type, std::forward<F>(f));
+}
 
 #endif

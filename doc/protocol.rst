@@ -732,6 +732,10 @@ The music database
      count group artist
      count title Echoes group artist
 
+    A group with an empty value contains counts of matching song which
+    don't this group tag.  It exists only if at least one such song is
+    found.
+
 .. _command_find:
 
 :command:`find {FILTER} [sort {TYPE}] [window {START:END}]`
