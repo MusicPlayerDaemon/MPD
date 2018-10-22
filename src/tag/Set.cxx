@@ -19,7 +19,6 @@
 
 #include "Set.hxx"
 #include "TagBuilder.hxx"
-#include "Settings.hxx"
 #include "util/StringView.hxx"
 
 #include <assert.h>
