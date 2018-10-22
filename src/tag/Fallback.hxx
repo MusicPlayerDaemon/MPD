@@ -26,8 +26,18 @@ template<typename F>
 bool
 ApplyTagFallback(TagType type, F &&f) noexcept
 {
-	if (type == TAG_ALBUM_ARTIST)
-		/* fall back to "Artist" if no "AlbumArtist" was found */
+	if (type == TAG_ALBUM_ARTIST_SORT) {
+		/* fall back to "AlbumArtist", "ArtistSort" and
+		   "Artist" if no "AlbumArtistSort" was found */
+		if (f(TAG_ALBUM_ARTIST))
+			return true;
+
+		return ApplyTagFallback(TAG_ARTIST_SORT, std::forward<F>(f));
+	}
+
+	if (type == TAG_ALBUM_ARTIST || type == TAG_ARTIST_SORT)
+		/* fall back to "Artist" if no
+		   "AlbumArtist"/"ArtistSort" was found */
 		return f(TAG_ARTIST);
 
 	return false;
