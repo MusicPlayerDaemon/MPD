@@ -54,15 +54,6 @@ TagSongFilter::MatchNN(const Tag &tag) const noexcept
 	}
 
 	if (type < TAG_NUM_OF_ITEM_TYPES && !visited_types[type]) {
-		/* If the search critieron was not visited during the
-		   sweep through the song's tag, it means this field
-		   is absent from the tag or empty. Thus, if the
-		   searched string is also empty
-		   then it's a match as well and we should return
-		   true. */
-		if (filter.empty())
-			return true;
-
 		bool result = false;
 		if (ApplyTagFallback(type,
 				     [&](TagType tag2) {
@@ -80,6 +71,15 @@ TagSongFilter::MatchNN(const Tag &tag) const noexcept
 			     return true;
 		     }))
 			return result;
+
+		/* If the search critieron was not visited during the
+		   sweep through the song's tag, it means this field
+		   is absent from the tag or empty. Thus, if the
+		   searched string is also empty
+		   then it's a match as well and we should return
+		   true. */
+		if (filter.empty())
+			return true;
 	}
 
 	return false;

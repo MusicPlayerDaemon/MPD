@@ -49,17 +49,22 @@ ver 0.21 (not yet released)
 * build with Meson instead of autotools
 * use GTest instead of cppunit
 
-ver 0.20.22 (not yet released)
+ver 0.20.22 (2018/10/23)
 * protocol
   - add tag fallbacks for AlbumArtistSort, ArtistSort
+  - fix empty string filter on fallback tags
   - "count group ..." can print an empty group
   - fix broken command "list ... group"
 * storage
   - curl: URL-encode paths
+* decoder
+  - fluidsynth: adapt to API change in version 2.0
 * Android
   - now runs as a service
   - add button to start/stop MPD
   - add option to auto-start on boot
+* work around clang bug leading to crash
+* install the SVG icon
 
 ver 0.20.21 (2018/08/17)
 * database

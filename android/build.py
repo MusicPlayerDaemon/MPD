@@ -133,13 +133,15 @@ class AndroidNdkToolchain:
         libcxx_path = os.path.join(ndk_path, 'sources/cxx-stl/llvm-libc++')
         libcxx_libs_path = os.path.join(libcxx_path, 'libs', android_abi)
 
-        libstdcxx_flags = '-stdlib=libc++'
+        libstdcxx_flags = ''
         libstdcxx_cxxflags = libstdcxx_flags + ' -isystem ' + os.path.join(libcxx_path, 'include') + ' -isystem ' + os.path.join(ndk_path, 'sources/android/support/include')
-        libstdcxx_ldflags = libstdcxx_flags + ' -static-libstdc++ -L' + libcxx_libs_path
+        libstdcxx_ldflags = libstdcxx_flags + ' -L' + libcxx_libs_path
+        libstdcxx_libs = '-lc++_static -lc++abi'
 
         if use_cxx:
             self.cxxflags += ' ' + libstdcxx_cxxflags
             self.ldflags += ' ' + libstdcxx_ldflags
+            self.libs += ' ' + libstdcxx_libs
 
         self.env = dict(os.environ)
 
