@@ -2478,6 +2478,7 @@ endif
 #
 
 EXTRA_DIST = $(doc_DATA) autogen.sh \
+	mpd.svg \
 	test/test_archive_bzip2.sh  \
 	test/test_archive_iso9660.sh \
 	test/test_archive_zzip.sh \
