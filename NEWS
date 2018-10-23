@@ -1,4 +1,4 @@
-ver 0.20.22 (not yet released)
+ver 0.20.22 (2018/10/23)
 * protocol
   - add tag fallbacks for AlbumArtistSort, ArtistSort
   - fix empty string filter on fallback tags
