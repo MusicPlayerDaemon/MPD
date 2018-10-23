@@ -64,7 +64,12 @@ fluidsynth_level_to_mpd(enum fluid_log_level level)
  * logging library.
  */
 static void
-fluidsynth_mpd_log_function(int level, char *message, gcc_unused void *data)
+fluidsynth_mpd_log_function(int level,
+#if FLUIDSYNTH_VERSION_MAJOR >= 2
+			    const
+#endif
+			    char *message,
+			    void *)
 {
 	Log(fluidsynth_domain,
 	    fluidsynth_level_to_mpd(fluid_log_level(level)),

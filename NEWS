@@ -6,6 +6,8 @@ ver 0.20.22 (not yet released)
   - fix broken command "list ... group"
 * storage
   - curl: URL-encode paths
+* decoder
+  - fluidsynth: adapt to API change in version 2.0
 * Android
   - now runs as a service
   - add button to start/stop MPD
