@@ -473,8 +473,15 @@ input_curl_open(const char *url, Mutex &mutex)
 	return CurlInputStream::Open(url, {}, mutex);
 }
 
+static constexpr const char *curl_prefixes[] = {
+	"http://",
+	"https://",
+	nullptr
+};
+
 const struct InputPlugin input_plugin_curl = {
 	"curl",
+	curl_prefixes,
 	input_curl_init,
 	input_curl_finish,
 	input_curl_open,

@@ -357,8 +357,14 @@ CdioParanoiaInputStream::IsEOF() noexcept
 	return lsn_from + lsn_relofs > lsn_to;
 }
 
+static constexpr const char *cdio_paranoia_prefixes[] = {
+	"cdda://",
+	nullptr
+};
+
 const InputPlugin input_plugin_cdio_paranoia = {
 	"cdio_paranoia",
+	cdio_paranoia_prefixes,
 	input_cdio_init,
 	nullptr,
 	input_cdio_open,

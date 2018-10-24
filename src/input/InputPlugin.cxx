@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2017 The Music Player Daemon Project
+ * Copyright 2003-2018 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,24 +17,19 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "config.h"
-#include "ScanTags.hxx"
-#include "RemoteTagScanner.hxx"
 #include "InputPlugin.hxx"
-#include "Registry.hxx"
+#include "util/StringCompare.hxx"
 
-std::unique_ptr<RemoteTagScanner>
-InputScanTags(const char *uri, RemoteTagHandler &handler)
+#include <assert.h>
+
+bool
+InputPlugin::SupportsUri(const char *uri) const noexcept
 {
-	input_plugins_for_each_enabled(plugin) {
-		if (plugin->scan_tags == nullptr || !plugin->SupportsUri(uri))
-			continue;
+	assert(prefixes != nullptr);
 
-		auto scanner = plugin->scan_tags(uri, handler);
-		if (scanner)
-			return scanner;
-	}
+	for (auto i = prefixes; *i != nullptr; ++i)
+		if (StringStartsWithIgnoreCase(uri, *i))
+			return true;
 
-	/* unsupported URI */
-	return nullptr;
+	return false;
 }

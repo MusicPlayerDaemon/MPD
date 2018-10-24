@@ -38,6 +38,9 @@ InputStream::Open(const char *url, Mutex &mutex)
 	}
 
 	input_plugins_for_each_enabled(plugin) {
+		if (!plugin->SupportsUri(url))
+			continue;
+
 		auto is = plugin->open(url, mutex);
 		if (is != nullptr)
 			return input_rewind_open(std::move(is));

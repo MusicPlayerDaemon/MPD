@@ -409,8 +409,14 @@ alsa_input_open(const char *uri, Mutex &mutex)
 				       mutex);
 }
 
+static constexpr const char *alsa_prefixes[] = {
+	"alsa://",
+	nullptr
+};
+
 const struct InputPlugin input_plugin_alsa = {
 	"alsa",
+	alsa_prefixes,
 	alsa_input_init,
 	nullptr,
 	alsa_input_open,

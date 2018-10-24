@@ -87,9 +87,6 @@ static InputStreamPtr
 input_smbclient_open(const char *uri,
 		     Mutex &mutex)
 {
-	if (!StringStartsWithCaseASCII(uri, "smb://"))
-		return nullptr;
-
 	const std::lock_guard<Mutex> protect(smbclient_mutex);
 
 	SMBCCTX *ctx = smbc_new_context();
@@ -158,8 +155,14 @@ SmbclientInputStream::Seek(offset_type new_offset)
 	offset = result;
 }
 
+static constexpr const char *smbclient_prefixes[] = {
+	"smb://",
+	nullptr
+};
+
 const InputPlugin input_plugin_smbclient = {
 	"smbclient",
+	smbclient_prefixes,
 	input_smbclient_init,
 	nullptr,
 	input_smbclient_open,

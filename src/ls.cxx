@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2017 The Music Player Daemon Project
+ * Copyright 2003-2018 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -19,94 +19,42 @@
 
 #include "config.h"
 #include "ls.hxx"
+#include "input/Registry.hxx"
+#include "input/InputPlugin.hxx"
 #include "client/Response.hxx"
 #include "util/ASCII.hxx"
 #include "util/UriUtil.hxx"
 
 #include <assert.h>
 
-/**
-  * file:// is not included in remoteUrlPrefixes, the connection method
-  * is detected at runtime and displayed as a urlhandler if the client is
-  * connected by IPC socket.
-  */
-static const char *const remoteUrlPrefixes[] = {
-#if defined(ENABLE_CURL)
-	"http://",
-	"https://",
-#endif
-#ifdef ENABLE_MMS
-	"mms://",
-	"mmsh://",
-	"mmst://",
-	"mmsu://",
-#endif
-#ifdef ENABLE_FFMPEG
-	"gopher://",
-	"rtp://",
-	"rtsp://",
-	"rtmp://",
-	"rtmpt://",
-	"rtmps://",
-#endif
-#ifdef ENABLE_SMBCLIENT
-	"smb://",
-#endif
-#ifdef ENABLE_NFS
-	"nfs://",
-#endif
-#ifdef ENABLE_CDIO_PARANOIA
-	"cdda://",
-#endif
-#ifdef ENABLE_ALSA
-	"alsa://",
-#endif
-#ifdef ENABLE_QOBUZ
-	"qobuz://",
-#endif
-#ifdef ENABLE_TIDAL
-	"tidal://",
-#endif
-	NULL
-};
-
 void print_supported_uri_schemes_to_fp(FILE *fp)
 {
-	const char *const*prefixes = remoteUrlPrefixes;
-
 #ifdef HAVE_UN
 	fprintf(fp, " file://");
 #endif
-	while (*prefixes) {
-		fprintf(fp, " %s", *prefixes);
-		prefixes++;
-	}
+	input_plugins_for_each(plugin)
+		for (auto i = plugin->prefixes; *i != nullptr; ++i)
+			fprintf(fp, " %s", *i);
 	fprintf(fp,"\n");
 }
 
 void
 print_supported_uri_schemes(Response &r)
 {
-	const char *const *prefixes = remoteUrlPrefixes;
-
-	while (*prefixes) {
-		r.Format("handler: %s\n", *prefixes);
-		prefixes++;
-	}
+	input_plugins_for_each_enabled(plugin)
+		for (auto i = plugin->prefixes; *i != nullptr; ++i)
+			r.Format("handler: %s\n", *i);
 }
 
 bool
 uri_supported_scheme(const char *uri) noexcept
 {
-	const char *const*urlPrefixes = remoteUrlPrefixes;
-
 	assert(uri_has_scheme(uri));
 
-	while (*urlPrefixes) {
-		if (StringStartsWithCaseASCII(uri, *urlPrefixes))
-			return true;
-		urlPrefixes++;
-	}
+	input_plugins_for_each_enabled(plugin)
+		for (auto i = plugin->prefixes; *i != nullptr; ++i)
+			if (StringStartsWithCaseASCII(uri, *i))
+				return true;
 
 	return false;
 }

@@ -217,16 +217,19 @@ static InputStreamPtr
 input_nfs_open(const char *uri,
 	       Mutex &mutex)
 {
-	if (!StringStartsWithCaseASCII(uri, "nfs://"))
-		return nullptr;
-
 	auto is = std::make_unique<NfsInputStream>(uri, mutex);
 	is->Open();
 	return is;
 }
 
+static constexpr const char *nfs_prefixes[] = {
+	"nfs://",
+	nullptr
+};
+
 const InputPlugin input_plugin_nfs = {
 	"nfs",
+	nfs_prefixes,
 	input_nfs_init,
 	input_nfs_finish,
 	input_nfs_open,

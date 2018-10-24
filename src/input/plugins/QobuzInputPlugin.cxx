@@ -209,8 +209,14 @@ ScanQobuzTags(const char *uri, RemoteTagHandler &handler)
 						 handler);
 }
 
+static constexpr const char *qobuz_prefixes[] = {
+	"qobuz://",
+	nullptr
+};
+
 const InputPlugin qobuz_input_plugin = {
 	"qobuz",
+	qobuz_prefixes,
 	InitQobuzInput,
 	FinishQobuzInput,
 	OpenQobuzInput,

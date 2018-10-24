@@ -1,6 +1,7 @@
 input_api = static_library(
   'input_api',
   'Error.cxx',
+  'InputPlugin.cxx',
   'InputStream.cxx',
   'ThreadInputStream.cxx',
   'AsyncInputStream.cxx',

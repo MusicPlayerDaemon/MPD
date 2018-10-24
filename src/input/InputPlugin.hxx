@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2017 The Music Player Daemon Project
+ * Copyright 2003-2018 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -21,6 +21,7 @@
 #define MPD_INPUT_PLUGIN_HXX
 
 #include "Ptr.hxx"
+#include "util/Compiler.h"
 
 struct ConfigBlock;
 class Mutex;
@@ -30,6 +31,12 @@ class RemoteTagHandler;
 
 struct InputPlugin {
 	const char *name;
+
+	/**
+	 * A nullptr-terminated list of URI prefixes handled by this
+	 * plugin.  This is usually a string in the form "scheme://".
+	 */
+	const char *const*prefixes;
 
 	/**
 	 * Global initialization.  This method is called when MPD starts.
@@ -66,6 +73,9 @@ struct InputPlugin {
 	 */
 	std::unique_ptr<RemoteTagScanner> (*scan_tags)(const char *uri,
 						       RemoteTagHandler &handler) = nullptr;
+
+	gcc_pure
+	bool SupportsUri(const char *uri) const noexcept;
 };
 
 #endif

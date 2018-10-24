@@ -72,12 +72,6 @@ static InputStreamPtr
 input_mms_open(const char *url,
 	       Mutex &mutex)
 {
-	if (!StringStartsWithCaseASCII(url, "mms://") &&
-	    !StringStartsWithCaseASCII(url, "mmsh://") &&
-	    !StringStartsWithCaseASCII(url, "mmst://") &&
-	    !StringStartsWithCaseASCII(url, "mmsu://"))
-		return nullptr;
-
 	auto m = std::make_unique<MmsInputStream>(url, mutex);
 	m->Start();
 	return m;
@@ -103,8 +97,17 @@ MmsInputStream::ThreadRead(void *ptr, size_t read_size)
 	return (size_t)nbytes;
 }
 
+static constexpr const char *mms_prefixes[] = {
+	"mms://",
+	"mmsh://",
+	"mmst://",
+	"mmsu://",
+	nullptr
+};
+
 const InputPlugin input_plugin_mms = {
 	"mms",
+	mms_prefixes,
 	nullptr,
 	nullptr,
 	input_mms_open,
