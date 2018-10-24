@@ -432,6 +432,19 @@ try {
 }
 
 /**
+ * Try to guess whether tags attached to the given song are
+ * "volatile", e.g. if they have been received by a live stream, but
+ * are only kept as a cache to be displayed by the client; they shall
+ * not be sent to the output.
+ */
+gcc_pure
+static bool
+SongHasVolatileTags(const DetachedSong &song) noexcept
+{
+	return !song.IsFile();
+}
+
+/**
  * Decode a song addressed by a #DetachedSong.
  *
  * Caller holds DecoderControl::mutex.
@@ -446,7 +459,7 @@ decoder_run_song(DecoderControl &dc,
 				file - tags on "stream" songs are just
 				remembered from the last time we
 				played it*/
-			     song.IsFile() ? std::make_unique<Tag>(song.GetTag()) : nullptr);
+			     !SongHasVolatileTags(song) ? std::make_unique<Tag>(song.GetTag()) : nullptr);
 
 	dc.state = DecoderState::START;
 	dc.CommandFinishedLocked();
