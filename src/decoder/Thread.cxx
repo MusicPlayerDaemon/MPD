@@ -35,6 +35,7 @@
 #include "util/RuntimeError.hxx"
 #include "util/Domain.hxx"
 #include "util/ScopeExit.hxx"
+#include "util/StringCompare.hxx"
 #include "thread/Name.hxx"
 #include "tag/ApeReplayGain.hxx"
 #include "Log.hxx"
@@ -431,6 +432,14 @@ try {
 						  error_uri));
 }
 
+gcc_pure
+static bool
+HasRemoteTagScanner(const char *uri) noexcept
+{
+	return StringStartsWith(uri, "tidal://") ||
+		StringStartsWith(uri, "qobuz://");
+}
+
 /**
  * Try to guess whether tags attached to the given song are
  * "volatile", e.g. if they have been received by a live stream, but
@@ -441,7 +450,7 @@ gcc_pure
 static bool
 SongHasVolatileTags(const DetachedSong &song) noexcept
 {
-	return !song.IsFile();
+	return !song.IsFile() && !HasRemoteTagScanner(song.GetRealURI());
 }
 
 /**
