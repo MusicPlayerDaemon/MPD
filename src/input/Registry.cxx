@@ -83,3 +83,14 @@ const InputPlugin *const input_plugins[] = {
 };
 
 bool input_plugins_enabled[ARRAY_SIZE(input_plugins) - 1];
+
+bool
+HasRemoteTagScanner(const char *uri) noexcept
+{
+	input_plugins_for_each_enabled(plugin)
+		if (plugin->scan_tags != nullptr &&
+		    plugin->SupportsUri(uri))
+			return true;
+
+	return false;
+}

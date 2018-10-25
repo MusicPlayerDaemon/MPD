@@ -28,6 +28,7 @@
 #include "DecoderAPI.hxx"
 #include "input/InputStream.hxx"
 #include "input/LocalOpen.hxx"
+#include "input/Registry.hxx"
 #include "DecoderList.hxx"
 #include "system/Error.hxx"
 #include "util/MimeType.hxx"
@@ -430,14 +431,6 @@ try {
 
 	std::throw_with_nested(FormatRuntimeError("Failed to decode %s",
 						  error_uri));
-}
-
-gcc_pure
-static bool
-HasRemoteTagScanner(const char *uri) noexcept
-{
-	return StringStartsWith(uri, "tidal://") ||
-		StringStartsWith(uri, "qobuz://");
 }
 
 /**
