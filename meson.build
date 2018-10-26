@@ -442,6 +442,11 @@ if systemd_dep.found()
   subdir('systemd')
 endif
 
+install_data(
+  'AUTHORS', 'COPYING', 'NEWS', 'README.md',
+  install_dir: join_paths(get_option('datadir'), 'doc', meson.project_name()),
+)
+
 if get_option('documentation')
   subdir('doc')
 endif
