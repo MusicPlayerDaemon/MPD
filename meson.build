@@ -443,6 +443,11 @@ if systemd_dep.found()
 endif
 
 install_data(
+  'mpd.svg',
+  install_dir: join_paths(get_option('datadir'), 'icons', 'hicolor', 'scalable', 'apps'),
+)
+
+install_data(
   'AUTHORS', 'COPYING', 'NEWS', 'README.md',
   install_dir: join_paths(get_option('datadir'), 'doc', meson.project_name()),
 )
