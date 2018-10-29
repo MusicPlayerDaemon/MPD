@@ -122,13 +122,13 @@ input_cdio_init(EventLoop &, const ConfigBlock &block)
 	speed = block.GetBlockValue("speed",0u);
 }
 
-struct cdio_uri {
+struct CdioUri {
 	char device[64];
 	int track;
 };
 
 static bool
-parse_cdio_uri(struct cdio_uri *dest, const char *src)
+parse_cdio_uri(CdioUri *dest, const char *src)
 {
 	if (*src == 0) {
 		/* play the whole CD in the default drive */
@@ -186,7 +186,7 @@ input_cdio_open(const char *uri,
 	uri = StringAfterPrefixIgnoreCase(uri, "cdda://");
 	assert(uri != nullptr);
 
-	struct cdio_uri parsed_uri;
+	CdioUri parsed_uri;
 	if (!parse_cdio_uri(&parsed_uri, uri))
 		return nullptr;
 
