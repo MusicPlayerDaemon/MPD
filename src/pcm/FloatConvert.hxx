@@ -35,6 +35,7 @@ struct FloatToIntegerSampleConvert {
 	typedef typename DstTraits::value_type DV;
 
 	static constexpr SV factor = 1 << (DstTraits::BITS - 1);
+	static_assert(factor > 0, "Wrong factor");
 
 	gcc_const
 	static DV Convert(SV src) noexcept {
@@ -54,6 +55,7 @@ struct IntegerToFloatSampleConvert {
 	typedef typename DstTraits::value_type DV;
 
 	static constexpr DV factor = 0.5 / (1 << (SrcTraits::BITS - 2));
+	static_assert(factor > 0, "Wrong factor");
 
 	gcc_const
 	static DV Convert(SV src) noexcept {
