@@ -127,43 +127,45 @@ struct CdioUri {
 	int track;
 };
 
-static bool
-parse_cdio_uri(CdioUri *dest, const char *src)
+static CdioUri
+parse_cdio_uri(const char *src)
 {
+	CdioUri dest;
+
 	if (*src == 0) {
 		/* play the whole CD in the default drive */
-		dest->device[0] = 0;
-		dest->track = -1;
-		return true;
+		dest.device[0] = 0;
+		dest.track = -1;
+		return dest;
 	}
 
 	const char *slash = strrchr(src, '/');
 	if (slash == nullptr) {
 		/* play the whole CD in the specified drive */
-		CopyTruncateString(dest->device, src, sizeof(dest->device));
-		dest->track = -1;
-		return true;
+		CopyTruncateString(dest.device, src, sizeof(dest.device));
+		dest.track = -1;
+		return dest;
 	}
 
 	size_t device_length = slash - src;
-	if (device_length >= sizeof(dest->device))
-		device_length = sizeof(dest->device) - 1;
+	if (device_length >= sizeof(dest.device))
+		device_length = sizeof(dest.device) - 1;
 
-	memcpy(dest->device, src, device_length);
-	dest->device[device_length] = 0;
+	memcpy(dest.device, src, device_length);
+	dest.device[device_length] = 0;
 
 	const char *track = slash + 1;
 
 	char *endptr;
-	dest->track = strtoul(track, &endptr, 10);
+	dest.track = strtoul(track, &endptr, 10);
 	if (*endptr != 0)
 		throw std::runtime_error("Malformed track number");
 
 	if (endptr == track)
 		/* play the whole CD */
-		dest->track = -1;
+		dest.track = -1;
 
-	return true;
+	return dest;
 }
 
 static AllocatedPath
@@ -186,9 +188,7 @@ input_cdio_open(const char *uri,
 	uri = StringAfterPrefixIgnoreCase(uri, "cdda://");
 	assert(uri != nullptr);
 
-	CdioUri parsed_uri;
-	if (!parse_cdio_uri(&parsed_uri, uri))
-		return nullptr;
+	const auto parsed_uri = parse_cdio_uri(uri);
 
 	/* get list of CD's supporting CD-DA */
 	const AllocatedPath device = parsed_uri.device[0] != 0
