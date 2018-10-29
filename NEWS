@@ -49,7 +49,7 @@ ver 0.21 (not yet released)
 * build with Meson instead of autotools
 * use GTest instead of cppunit
 
-ver 0.20.23 (not yet released)
+ver 0.20.23 (2018/10/29)
 * protocol
   - emit "player" idle event when restarting the current song
 * fix broken float to s32 conversion
