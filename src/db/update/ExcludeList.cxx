@@ -78,7 +78,7 @@ ExcludeList::Check(Path name_fs) const noexcept
 		try {
 			if (i.Check(NarrowPath(name_fs).c_str()))
 				return true;
-		} catch (const std::runtime_error &) {
+		} catch (...) {
 		}
 	}
 #else

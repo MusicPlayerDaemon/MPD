@@ -36,8 +36,8 @@ GetInfo(Storage &storage, const char *uri_utf8, StorageFileInfo &info) noexcept
 try {
 	info = storage.GetInfo(uri_utf8, true);
 	return true;
-} catch (const std::runtime_error &e) {
-	LogError(e);
+} catch (...) {
+	LogError(std::current_exception());
 	return false;
 }
 
@@ -46,8 +46,8 @@ GetInfo(StorageDirectoryReader &reader, StorageFileInfo &info) noexcept
 try {
 	info = reader.GetInfo(true);
 	return true;
-} catch (const std::runtime_error &e) {
-	LogError(e);
+} catch (...) {
+	LogError(std::current_exception());
 	return false;
 }
 
@@ -58,7 +58,7 @@ DirectoryExists(Storage &storage, const Directory &directory) noexcept
 
 	try {
 		info = storage.GetInfo(directory.GetPath(), true);
-	} catch (const std::runtime_error &) {
+	} catch (...) {
 		return false;
 	}
 
@@ -83,7 +83,7 @@ directory_child_is_regular(Storage &storage, const Directory &directory,
 try {
 	return GetDirectoryChildInfo(storage, directory, name_utf8)
 		.IsRegular();
-} catch (const std::runtime_error &) {
+} catch (...) {
 	return false;
 }
 
