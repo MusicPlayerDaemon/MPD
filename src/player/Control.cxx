@@ -246,12 +246,8 @@ PlayerControl::LockSeek(DetachedSong *song, SongTime t)
 {
 	assert(song != nullptr);
 
-	{
-		const std::lock_guard<Mutex> protect(mutex);
-		SeekLocked(song, t);
-	}
-
-	idle_add(IDLE_PLAYER);
+	const std::lock_guard<Mutex> protect(mutex);
+	SeekLocked(song, t);
 }
 
 void

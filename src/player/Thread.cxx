@@ -580,6 +580,8 @@ Player::SeekDecoder()
 {
 	assert(pc.next_song != nullptr);
 
+	idle_add(IDLE_PLAYER);
+
 	pc.outputs.Cancel();
 
 	const SongTime start_time = pc.next_song->GetStartTime();
