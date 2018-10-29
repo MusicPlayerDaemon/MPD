@@ -57,8 +57,7 @@ struct IntegerToFloatSampleConvert {
 	static constexpr DV factor = 1.0 / FloatToIntegerSampleConvert<F, Traits>::factor;
 	static_assert(factor > 0, "Wrong factor");
 
-	gcc_const
-	static DV Convert(SV src) noexcept {
+	static constexpr DV Convert(SV src) noexcept {
 		return DV(src) * factor;
 	}
 };
