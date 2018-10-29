@@ -115,3 +115,49 @@ TEST(PcmTest, FormatFloat16)
 	for (size_t i = 4; i < N; ++i)
 		EXPECT_EQ(src[i], d[i]);
 }
+
+TEST(PcmTest, FormatFloat32)
+{
+	constexpr size_t N = 509;
+	const auto src = TestDataBuffer<int32_t, N>();
+
+	PcmBuffer buffer1, buffer2;
+
+	auto f = pcm_convert_to_float(buffer1, SampleFormat::S32, src);
+	EXPECT_EQ(N, f.size);
+
+	for (size_t i = 0; i != f.size; ++i) {
+		EXPECT_GE(f[i], -1.);
+		EXPECT_LE(f[i], 1.);
+	}
+
+	auto d = pcm_convert_to_32(buffer2,
+				   SampleFormat::FLOAT,
+				   f.ToVoid());
+	EXPECT_EQ(N, d.size);
+
+	constexpr int error = 64;
+
+	for (size_t i = 0; i < N; ++i)
+		EXPECT_NEAR(src[i], d[i], error);
+
+	/* check if clamping works */
+	float *writable = const_cast<float *>(f.data);
+	*writable++ = 1.01;
+	*writable++ = 10;
+	*writable++ = -1.01;
+	*writable++ = -10;
+
+	d = pcm_convert_to_32(buffer2,
+			      SampleFormat::FLOAT,
+			      f.ToVoid());
+	EXPECT_EQ(N, d.size);
+
+	EXPECT_EQ(2147483647, int(d[0]));
+	EXPECT_EQ(2147483647, int(d[1]));
+	EXPECT_EQ(-2147483648, int(d[2]));
+	EXPECT_EQ(-2147483648, int(d[3]));
+
+	for (size_t i = 4; i < N; ++i)
+		EXPECT_NEAR(src[i], d[i], error);
+}
