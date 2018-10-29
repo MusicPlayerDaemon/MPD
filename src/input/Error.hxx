@@ -30,15 +30,7 @@
  * exist?  This function attempts to recognize exceptions thrown by
  * various input plugins.
  */
-#ifndef __clang__
-/* the "pure" attribute must be disabled because it triggers a clang
-   bug, wrongfully leading to std::terminate() even though the
-   function catches all exceptions thrown by std::rethrow_exception();
-   this can be reproduced with clang 7 from Android NDK r18b and on
-   clang 6 on FreeBSD
-   (https://github.com/MusicPlayerDaemon/MPD/issues/373) */
 gcc_pure
-#endif
 bool
 IsFileNotFound(std::exception_ptr e);
 

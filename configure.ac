@@ -1354,6 +1354,11 @@ AX_APPEND_COMPILE_FLAGS([-fno-threadsafe-statics])
 AX_APPEND_COMPILE_FLAGS([-fmerge-all-constants])
 AX_APPEND_COMPILE_FLAGS([-ffast-math])
 AX_APPEND_COMPILE_FLAGS([-ftree-vectorize])
+
+dnl Workaround for clang bug
+dnl https://bugs.llvm.org/show_bug.cgi?id=32611
+AX_APPEND_COMPILE_FLAGS([-funwind-tables])
+
 AC_LANG_POP
 
 dnl ---------------------------------- debug ----------------------------------
