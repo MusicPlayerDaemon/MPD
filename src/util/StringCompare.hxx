@@ -81,6 +81,15 @@ StringStartsWithIgnoreCase(const char *haystack, StringView needle) noexcept
 	return StringIsEqualIgnoreCase(haystack, needle.data, needle.size);
 }
 
+gcc_pure gcc_nonnull_all
+static inline const char *
+StringAfterPrefixIgnoreCase(const char *haystack, StringView needle) noexcept
+{
+	return StringStartsWithIgnoreCase(haystack, needle)
+		? haystack + needle.size
+		: nullptr;
+}
+
 /**
  * Check if the given string ends with the specified suffix.  If yes,
  * returns the position of the suffix, and nullptr otherwise.
