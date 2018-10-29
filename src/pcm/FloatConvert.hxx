@@ -34,7 +34,7 @@ struct FloatToIntegerSampleConvert {
 	typedef typename SrcTraits::long_type SL;
 	typedef typename DstTraits::value_type DV;
 
-	static constexpr SV factor = 1 << (DstTraits::BITS - 1);
+	static constexpr SV factor = uintmax_t(1) << (DstTraits::BITS - 1);
 	static_assert(factor > 0, "Wrong factor");
 
 	gcc_const
