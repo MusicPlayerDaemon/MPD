@@ -54,7 +54,7 @@ struct IntegerToFloatSampleConvert {
 	typedef typename SrcTraits::value_type SV;
 	typedef typename DstTraits::value_type DV;
 
-	static constexpr DV factor = 0.5 / (1 << (SrcTraits::BITS - 2));
+	static constexpr DV factor = 1.0 / FloatToIntegerSampleConvert<F, Traits>::factor;
 	static_assert(factor > 0, "Wrong factor");
 
 	gcc_const
