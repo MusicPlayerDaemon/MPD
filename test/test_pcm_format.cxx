@@ -70,7 +70,7 @@ TEST(PcmTest, Format16To32)
 		EXPECT_EQ(int(src[i]), d[i] >> 16);
 }
 
-TEST(PcmTest, FormatFloat)
+TEST(PcmTest, FormatFloat16)
 {
 	constexpr size_t N = 509;
 	const auto src = TestDataBuffer<int16_t, N>();
