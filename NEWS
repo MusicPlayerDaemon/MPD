@@ -49,6 +49,12 @@ ver 0.21 (not yet released)
 * build with Meson instead of autotools
 * use GTest instead of cppunit
 
+ver 0.20.23 (not yet released)
+* protocol
+  - emit "player" idle event when restarting the current song
+* fix broken float to s32 conversion
+* new clang crash bug workaround
+
 ver 0.20.22 (2018/10/23)
 * protocol
   - add tag fallbacks for AlbumArtistSort, ArtistSort

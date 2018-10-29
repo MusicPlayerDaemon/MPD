@@ -606,6 +606,8 @@ Player::SeekDecoder() noexcept
 		pc.outputs.Cancel();
 	}
 
+	idle_add(IDLE_PLAYER);
+
 	if (!dc.IsSeekableCurrentSong(*pc.next_song)) {
 		/* the decoder is already decoding the "next" song -
 		   stop it and start the previous song again */
