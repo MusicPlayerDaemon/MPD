@@ -37,8 +37,7 @@ struct FloatToIntegerSampleConvert {
 	static constexpr SV factor = uintmax_t(1) << (DstTraits::BITS - 1);
 	static_assert(factor > 0, "Wrong factor");
 
-	gcc_const
-	static DV Convert(SV src) noexcept {
+	static constexpr DV Convert(SV src) noexcept {
 		return PcmClamp<F, Traits>(SL(src * factor));
 	}
 };

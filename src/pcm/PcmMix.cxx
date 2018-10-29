@@ -134,7 +134,7 @@ pcm_add_vol(PcmDither &dither, void *buffer1, const void *buffer2, size_t size,
 }
 
 template<SampleFormat F, class Traits=SampleTraits<F>>
-static typename Traits::value_type
+static constexpr typename Traits::value_type
 PcmAdd(typename Traits::value_type _a, typename Traits::value_type _b) noexcept
 {
 	typename Traits::sum_type a(_a), b(_b);
