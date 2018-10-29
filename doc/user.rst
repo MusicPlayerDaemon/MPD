@@ -89,7 +89,7 @@ Now configure the source tree:
 
 .. code-block:: none
 
- meson . output/release --buildtype=debugpotimized -Db_ndebug=true
+ meson . output/release --buildtype=debugoptimized -Db_ndebug=true
 
 The following command shows a list of compile-time options:
 
