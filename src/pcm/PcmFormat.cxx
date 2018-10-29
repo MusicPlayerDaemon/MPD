@@ -20,7 +20,7 @@
 #include "config.h"
 #include "PcmFormat.hxx"
 #include "PcmBuffer.hxx"
-#include "PcmUtils.hxx"
+#include "Clamp.hxx"
 #include "Traits.hxx"
 #include "FloatConvert.hxx"
 #include "ShiftConvert.hxx"

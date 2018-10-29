@@ -21,7 +21,6 @@
 #include "test_pcm_util.hxx"
 #include "pcm/PcmFormat.hxx"
 #include "pcm/PcmDither.hxx"
-#include "pcm/PcmUtils.hxx"
 #include "pcm/PcmBuffer.hxx"
 #include "pcm/SampleFormat.hxx"
 
