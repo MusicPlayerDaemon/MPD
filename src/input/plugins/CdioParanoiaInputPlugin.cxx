@@ -26,7 +26,7 @@
 #include "../InputStream.hxx"
 #include "../InputPlugin.hxx"
 #include "util/TruncateString.hxx"
-#include "util/ASCII.hxx"
+#include "util/StringCompare.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/Domain.hxx"
 #include "system/ByteOrder.hxx"
@@ -130,11 +130,6 @@ struct cdio_uri {
 static bool
 parse_cdio_uri(struct cdio_uri *dest, const char *src)
 {
-	if (!StringStartsWithCaseASCII(src, "cdda://"))
-		return false;
-
-	src += 7;
-
 	if (*src == 0) {
 		/* play the whole CD in the default drive */
 		dest->device[0] = 0;
@@ -188,6 +183,9 @@ static InputStreamPtr
 input_cdio_open(const char *uri,
 		Mutex &mutex)
 {
+	uri = StringAfterPrefixIgnoreCase(uri, "cdda://");
+	assert(uri != nullptr);
+
 	struct cdio_uri parsed_uri;
 	if (!parse_cdio_uri(&parsed_uri, uri))
 		return nullptr;
