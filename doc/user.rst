@@ -461,13 +461,33 @@ Client Connections
 Listeners
 ~~~~~~~~~
 
-The setting :code:`bind_to_address` specifies which addresses :program:`MPD` listens on for connections from clients. The default is "any", which binds to all available addresses.
+The setting :code:`bind_to_address` specifies which addresses
+:program:`MPD` listens on for connections from clients.  It can be
+used multiple times to bind to more than one address.  Example::
 
-You can set a port that is different from the global port setting, e.g. "localhost:6602". IPv6 addresses must be enclosed in square brackets if you want to configure a port, e.g. "[::1]:6602".
+ bind_to_address "192.168.1.42"
+ bind_to_address "127.0.0.1"
 
-To bind to a local socket (UNIX domain socket), specify an absolute path or a path starting with a tilde (~). Some clients default to connecting to :file:`/var/run/mpd/socket` so this may be a good choice.
+The default is "any", which binds to all available addresses.
 
-If no port is specified, the default port is 6600. This default can be changed with the port setting.
+You can set a port that is different from the global port setting,
+e.g. "localhost:6602".  IPv6 addresses must be enclosed in square
+brackets if you want to configure a port::
+
+ bind_to_address "[::1]:6602"
+
+To bind to a local socket (UNIX domain socket), specify an absolute
+path or a path starting with a tilde (~).  Some clients default to
+connecting to :file:`/var/run/mpd/socket` so this may be a good
+choice::
+
+ bind_to_address "/var/run/mpd/socket"
+
+If no port is specified, the default port is 6600.  This default can
+be changed with the port setting::
+
+ port "6601"
+
 
 Permissions and Passwords
 ~~~~~~~~~~~~~~~~~~~~~~~~~
