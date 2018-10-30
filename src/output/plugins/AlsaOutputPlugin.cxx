@@ -41,6 +41,12 @@
 
 #include <alsa/asoundlib.h>
 
+// workaround ‘next’ is not a member of ‘boost’ build error from Boost 1.67
+#include <boost/version.hpp>
+#if BOOST_VERSION == 106700
+#include <boost/next_prior.hpp>
+#endif
+
 #include <boost/lockfree/spsc_queue.hpp>
 
 #include <string>
