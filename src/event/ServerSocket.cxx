@@ -67,7 +67,7 @@ public:
 	template<typename A>
 	OneServerSocket(EventLoop &_loop, ServerSocket &_parent,
 			unsigned _serial,
-			A &&_address)
+			A &&_address) noexcept
 		:SocketMonitor(_loop),
 		 parent(_parent), serial(_serial),
 #ifdef HAVE_UN
@@ -80,17 +80,17 @@ public:
 	OneServerSocket(const OneServerSocket &other) = delete;
 	OneServerSocket &operator=(const OneServerSocket &other) = delete;
 
-	~OneServerSocket() {
+	~OneServerSocket() noexcept {
 		if (IsDefined())
 			Close();
 	}
 
-	unsigned GetSerial() const {
+	unsigned GetSerial() const noexcept {
 		return serial;
 	}
 
 #ifdef HAVE_UN
-	void SetPath(AllocatedPath &&_path) {
+	void SetPath(AllocatedPath &&_path) noexcept {
 		assert(path.IsNull());
 
 		path = std::move(_path);
@@ -197,12 +197,12 @@ OneServerSocket::Open()
 	SetFD(_fd.Release());
 }
 
-ServerSocket::ServerSocket(EventLoop &_loop)
+ServerSocket::ServerSocket(EventLoop &_loop) noexcept
 	:loop(_loop), next_serial(1) {}
 
 /* this is just here to allow the OneServerSocket forward
    declaration */
-ServerSocket::~ServerSocket() {}
+ServerSocket::~ServerSocket() noexcept = default;
 
 void
 ServerSocket::Open()
@@ -265,7 +265,7 @@ ServerSocket::Open()
 }
 
 void
-ServerSocket::Close()
+ServerSocket::Close() noexcept
 {
 	for (auto &i : sockets)
 		if (i.IsDefined())
@@ -273,7 +273,7 @@ ServerSocket::Close()
 }
 
 OneServerSocket &
-ServerSocket::AddAddress(SocketAddress address)
+ServerSocket::AddAddress(SocketAddress address) noexcept
 {
 	sockets.emplace_back(loop, *this, next_serial,
 			     address);
@@ -282,7 +282,7 @@ ServerSocket::AddAddress(SocketAddress address)
 }
 
 OneServerSocket &
-ServerSocket::AddAddress(AllocatedSocketAddress &&address)
+ServerSocket::AddAddress(AllocatedSocketAddress &&address) noexcept
 {
 	sockets.emplace_back(loop, *this, next_serial,
 			     std::move(address));
@@ -308,7 +308,7 @@ ServerSocket::AddFD(int _fd)
 #ifdef HAVE_TCP
 
 inline void
-ServerSocket::AddPortIPv4(unsigned port)
+ServerSocket::AddPortIPv4(unsigned port) noexcept
 {
 	AddAddress(IPv4Address(port));
 }
@@ -316,7 +316,7 @@ ServerSocket::AddPortIPv4(unsigned port)
 #ifdef HAVE_IPV6
 
 inline void
-ServerSocket::AddPortIPv6(unsigned port)
+ServerSocket::AddPortIPv6(unsigned port) noexcept
 {
 	struct sockaddr_in6 sin;
 	memset(&sin, 0, sizeof(sin));

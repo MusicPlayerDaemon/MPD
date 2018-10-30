@@ -42,30 +42,30 @@ class ServerSocket {
 	unsigned next_serial;
 
 public:
-	ServerSocket(EventLoop &_loop);
-	~ServerSocket();
+	ServerSocket(EventLoop &_loop) noexcept;
+	~ServerSocket() noexcept;
 
-	EventLoop &GetEventLoop() {
+	EventLoop &GetEventLoop() const noexcept {
 		return loop;
 	}
 
 private:
-	OneServerSocket &AddAddress(SocketAddress address);
-	OneServerSocket &AddAddress(AllocatedSocketAddress &&address);
+	OneServerSocket &AddAddress(SocketAddress address) noexcept;
+	OneServerSocket &AddAddress(AllocatedSocketAddress &&address) noexcept;
 
 	/**
 	 * Add a listener on a port on all IPv4 interfaces.
 	 *
 	 * @param port the TCP port
 	 */
-	void AddPortIPv4(unsigned port);
+	void AddPortIPv4(unsigned port) noexcept;
 
 	/**
 	 * Add a listener on a port on all IPv6 interfaces.
 	 *
 	 * @param port the TCP port
 	 */
-	void AddPortIPv6(unsigned port);
+	void AddPortIPv6(unsigned port) noexcept;
 
 public:
 	/**
@@ -118,7 +118,7 @@ public:
 	 */
 	void Open();
 
-	void Close();
+	void Close() noexcept;
 
 protected:
 	virtual void OnAccept(UniqueSocketDescriptor fd,
