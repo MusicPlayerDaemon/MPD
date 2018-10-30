@@ -183,7 +183,8 @@ To enable socket activation, type:
     systemctl enable mpd.socket
     systemctl start mpd.socket
 
-In this configuration, :program:`MPD` will ignore the :dfn:`bind_to_address` and :dfn:`port` settings. 
+In this configuration, :program:`MPD` will ignore the :ref:`listener
+settings <listeners>` (``bind_to_address`` and ``port``).
 
 systemd user unit
 -----------------
@@ -458,6 +459,8 @@ Check the resampler plugin reference for a list of resamplers and how to configu
 Client Connections
 ------------------
 
+.. _listeners:
+
 Listeners
 ~~~~~~~~~
 
@@ -487,6 +490,9 @@ If no port is specified, the default port is 6600.  This default can
 be changed with the port setting::
 
  port "6601"
+
+These settings will be ignored if `systemd socket activation`_ is
+used.
 
 
 Permissions and Passwords
