@@ -20,6 +20,7 @@
 #include "config.h"
 #include "ServerSocket.hxx"
 #include "net/IPv4Address.hxx"
+#include "net/IPv6Address.hxx"
 #include "net/StaticSocketAddress.hxx"
 #include "net/AllocatedSocketAddress.hxx"
 #include "net/SocketAddress.hxx"
@@ -316,12 +317,7 @@ ServerSocket::AddPortIPv4(unsigned port) noexcept
 inline void
 ServerSocket::AddPortIPv6(unsigned port) noexcept
 {
-	struct sockaddr_in6 sin;
-	memset(&sin, 0, sizeof(sin));
-	sin.sin6_port = htons(port);
-	sin.sin6_family = AF_INET6;
-
-	AddAddress({(const sockaddr *)&sin, sizeof(sin)});
+	AddAddress(IPv6Address(port));
 }
 
 /**
