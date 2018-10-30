@@ -108,6 +108,9 @@ public:
 	 */
 	void AddFD(UniqueSocketDescriptor fd);
 
+	void AddFD(UniqueSocketDescriptor fd,
+		   AllocatedSocketAddress &&address) noexcept;
+
 	bool IsEmpty() const noexcept {
 		return sockets.empty();
 	}

@@ -288,6 +288,18 @@ ServerSocket::AddFD(UniqueSocketDescriptor fd)
 	s.SetFD(std::move(fd));
 }
 
+void
+ServerSocket::AddFD(UniqueSocketDescriptor fd,
+		    AllocatedSocketAddress &&address) noexcept
+{
+	assert(fd.IsDefined());
+	assert(!address.IsNull());
+	assert(address.IsDefined());
+
+	OneServerSocket &s = AddAddress(std::move(address));
+	s.SetFD(std::move(fd));
+}
+
 #ifdef HAVE_TCP
 
 inline void
