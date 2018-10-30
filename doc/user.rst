@@ -773,35 +773,11 @@ Mounting is only possible with the simple database plugin and a :code:`cache_dir
         
 This requires migrating from the old :code:`db_file` setting to a database section. The cache directory must exist, and :program:`MPD` will put one file per mount there, which will be reused when the same storage is used again later.
 
-.. _tags:
-
 Metadata
 --------
 
-When scanning or playing a song, :program:`MPD` parses its metadata. The following tags are supported:
-
-* **artist**: the artist name. Its meaning is not well-defined; see "*composer*" and "*performer*" for more specific tags.
-* **artistsort**: same as artist, but for sorting. This usually omits prefixes such as "The".
-* **album**: the album name.
-* **albumsort**: same as album, but for sorting.
-* **albumartist**: on multi-artist albums, this is the artist name which shall be used for the whole album. The exact meaning of this tag is not well-defined.
-* **albumartistsort**: same as albumartist, but for sorting.
-* **title**: the song title.
-* **track**: the decimal track number within the album.
-* **name**: a name for this song. This is not the song title. The exact meaning of this tag is not well-defined. It is often used by badly configured internet radio stations with broken tags to squeeze both the artist name and the song title in one tag.
-* **genre**: the music genre.
-* **date**: the song's release date. This is usually a 4-digit year.
-* **composer**: the artist who composed the song.
-* **performer**: the artist who performed the song.
-* **comment**: a human-readable comment about this song. The exact meaning of this tag is not well-defined.
-* **disc**: the decimal disc number in a multi-disc album.
-* **label**: the name of the label or publisher.
-* **musicbrainz_artistid**: the artist id in the `MusicBrainz <https://picard.musicbrainz.org/docs/mappings/>`_ database.
-* **musicbrainz_albumid**: the album id in the `MusicBrainz <https://picard.musicbrainz.org/docs/mappings/>`_ database.
-* **musicbrainz_albumartistid**: the album artist id in the `MusicBrainz <https://picard.musicbrainz.org/docs/mappings/>`_ database.
-* **musicbrainz_trackid**: the track id in the `MusicBrainz <https://picard.musicbrainz.org/docs/mappings/>`_ database.
-* **musicbrainz_releasetrackid**: the release track id in the `MusicBrainz <https://picard.musicbrainz.org/docs/mappings/>`_ database.
-* **musicbrainz_workid**: the work id in the `MusicBrainz <https://picard.musicbrainz.org/docs/mappings/>`_ database.
+When scanning or playing a song, :program:`MPD` parses its metadata.
+See :ref:`tags` for a list of supported tags.
 
 The :ref:`metadata_to_use <metadata_to_use>` setting can be used to
 enable or disable certain tags.
