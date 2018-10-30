@@ -6,6 +6,7 @@ Music Player Daemon
    :caption: Contents:
 
    user
+   plugins
    developer
    protocol
 
