@@ -19,16 +19,20 @@
 
 #include "config.h"
 #include "Listen.hxx"
+#include "Log.hxx"
 #include "client/Listener.hxx"
 #include "config/Param.hxx"
 #include "config/Data.hxx"
 #include "config/Option.hxx"
 #include "config/Net.hxx"
+#include "net/AllocatedSocketAddress.hxx"
 #include "net/UniqueSocketDescriptor.hxx"
+#include "net/SocketUtil.hxx"
 #include "system/Error.hxx"
 #include "util/RuntimeError.hxx"
 #include "fs/AllocatedPath.hxx"
 
+#include <sys/stat.h>
 #include <string.h>
 #include <assert.h>
 
@@ -61,6 +65,51 @@ listen_systemd_activation(ClientListener &listener)
 
 #endif
 
+/**
+ * Listen on "$XDG_RUNTIME_DIR/mpd/socket" (if applicable).
+ *
+ * @return true if a listener socket was added
+ */
+static bool
+ListenXdgRuntimeDir(ClientListener &listener) noexcept
+{
+#if defined(_WIN32) || defined(ANDROID) || !defined(HAVE_UN)
+	(void)listener;
+	return false;
+#else
+	if (geteuid() == 0)
+		/* this MPD instance is a system-wide daemon; don't
+		   use $XDG_RUNTIME_DIR */
+		return false;
+
+	Path xdg_runtime_dir = Path::FromFS(getenv("XDG_RUNTIME_DIR"));
+	if (xdg_runtime_dir.IsNull())
+		return false;
+
+	const auto mpd_runtime_dir = xdg_runtime_dir / Path::FromFS("mpd");
+	mkdir(mpd_runtime_dir.c_str(), 0700);
+
+	const auto socket_path = mpd_runtime_dir / Path::FromFS("socket");
+	unlink(socket_path.c_str());
+
+	AllocatedSocketAddress address;
+	address.SetLocal(socket_path.c_str());
+
+	try {
+		auto fd = socket_bind_listen(AF_LOCAL, SOCK_STREAM, 0,
+					     address, 5);
+		chmod(socket_path.c_str(), 0600);
+		listener.AddFD(std::move(fd), std::move(address));
+		return true;
+	} catch (...) {
+		FormatError(std::current_exception(),
+			    "Failed to listen on '%s' (not fatal)",
+			    socket_path.c_str());
+		return false;
+	}
+#endif
+}
+
 void
 listen_global_init(const ConfigData &config, ClientListener &listener)
 {
@@ -82,9 +131,13 @@ listen_global_init(const ConfigData &config, ClientListener &listener)
 		}
 	}
 
+	bool have_xdg_runtime_listener = false;
+
 	if (listener.IsEmpty()) {
 		/* no "bind_to_address" configured, bind the
 		   configured port on all interfaces */
+
+		have_xdg_runtime_listener = ListenXdgRuntimeDir(listener);
 
 		try {
 			listener.AddPort(port);
@@ -93,7 +146,15 @@ listen_global_init(const ConfigData &config, ClientListener &listener)
 		}
 	}
 
-	listener.Open();
+	try {
+		listener.Open();
+	} catch (...) {
+		if (have_xdg_runtime_listener)
+			LogError(std::current_exception(),
+				 "Default TCP listener setup failed, but this is okay because we have a $XDG_RUNTIME_DIR listener");
+		else
+			throw;
+	}
 
 	listen_port = port;
 }

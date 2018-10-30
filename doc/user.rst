@@ -471,6 +471,9 @@ used multiple times to bind to more than one address.  Example::
  bind_to_address "127.0.0.1"
 
 The default is "any", which binds to all available addresses.
+Additionally, MPD binds to :code:`$XDG_RUNTIME_DIR/mpd/socket` (if it
+was launched as a per-user daemon and no :code:`bind_to_address`
+setting exists).
 
 You can set a port that is different from the global port setting,
 e.g. "localhost:6602".  IPv6 addresses must be enclosed in square

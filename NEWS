@@ -44,6 +44,7 @@ ver 0.21 (not yet released)
   - sndio: new mixer plugin
 * encoder
   - opus: support for sending metadata using ogg stream chaining
+* listen on $XDG_RUNTIME_DIR/mpd/socket by default
 * systemd watchdog support
 * require GCC 6
 * build with Meson instead of autotools
