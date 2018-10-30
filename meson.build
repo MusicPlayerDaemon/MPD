@@ -60,6 +60,10 @@ test_cxxflags = test_common_flags + [
   # in C++17 because the exception specification is part of a function
   # type"
   '-Wno-noexcept-type',
+
+  # Workaround for clang bug
+  # https://bugs.llvm.org/show_bug.cgi?id=32611
+  '-funwind-tables',
 ]
 
 test_cflags = test_common_flags + [
