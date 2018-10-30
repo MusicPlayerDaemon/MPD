@@ -138,7 +138,13 @@ tarball and change into the directory.  Then, instead of
  cd output/win64
  ../../win32/build.py --64
 
-This downloads various library sources, and then configures and builds :program:`MPD` (for x64; to build a 32 bit binary, pass :option:`--32`). The resulting EXE files is linked statically, i.e. it contains all the libraries already and you do not need carry DLLs around. It is large, but easy to use. If you wish to have a small mpd.exe with DLLs, you need to compile manually, without the :file:`build.py` script.
+This downloads various library sources, and then configures and builds
+:program:`MPD` (for x64; to build a 32 bit binary, pass
+:code:`--32`). The resulting EXE files is linked statically, i.e. it
+contains all the libraries already and you do not need carry DLLs
+around. It is large, but easy to use. If you wish to have a small
+mpd.exe with DLLs, you need to compile manually, without the
+:file:`build.py` script.
 
 Compiling for Android
 ---------------------
@@ -173,7 +179,7 @@ Using systemd, you can launch :program:`MPD` on demand when the first client att
 
 :program:`MPD` comes with two systemd unit files: a "service" unit and
 a "socket" unit.  These will be installed to the directory specified
-with :option:`-Dsystemd_system_unit_dir=...`,
+with :code:`-Dsystemd_system_unit_dir=...`,
 e.g. :file:`/lib/systemd/system`.
 
 To enable socket activation, type:
@@ -191,7 +197,7 @@ systemd user unit
 
 You can launch :program:`MPD` as a systemd user unit.  These will be
 installed to the directory specified with
-:option:`-Dsystemd_user_unit_dir=...`,
+:code:`-Dsystemd_user_unit_dir=...`,
 e.g. :file:`/usr/lib/systemd/user` or
 :file:`$HOME/.local/share/systemd/user`.
 
@@ -588,7 +594,7 @@ The Sticker Database
 "Stickers" are pieces of information attached to songs. Some clients
 use them to store ratings and other volatile data. This feature
 requires :program:`SQLite`, compile-time configure option
-:option:`-Dsqlite`.
+:code:`-Dsqlite=...`.
 
 .. list-table::
    :widths: 20 80
@@ -639,7 +645,7 @@ Zeroconf
 ~~~~~~~~
 
 If Zeroconf support (`Avahi <http://avahi.org/>`_ or Apple's Bonjour)
-was enabled at compile time with :option:`-Dzeroconf=...`,
+was enabled at compile time with :code:`-Dzeroconf=...`,
 :program:`MPD` can announce its presence on the network. The following
 settings control this feature:
 
