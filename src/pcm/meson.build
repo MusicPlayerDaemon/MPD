@@ -40,6 +40,7 @@ if get_option('dsd')
     dependencies: [
       util_dep,
     ],
+    build_by_default: get_option('test'),
     install: false,
   )
 endif
