@@ -65,9 +65,9 @@ endian = '%s'
                    windres,
                    toolchain.install_prefix,
                    repr((toolchain.cppflags + ' ' + toolchain.cflags).split()),
-                   repr(toolchain.ldflags.split()),
+                   repr(toolchain.ldflags.split() + toolchain.libs.split()),
                    repr((toolchain.cppflags + ' ' + toolchain.cxxflags).split()),
-                   repr(toolchain.ldflags.split()),
+                   repr(toolchain.ldflags.split() + toolchain.libs.split()),
                    system, cpu_family, cpu, endian))
     return path
 
