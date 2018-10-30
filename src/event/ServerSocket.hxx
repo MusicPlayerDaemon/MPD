@@ -27,13 +27,12 @@ class AllocatedSocketAddress;
 class UniqueSocketDescriptor;
 class EventLoop;
 class AllocatedPath;
-class OneServerSocket;
 
 /**
  * A socket that accepts incoming stream connections (e.g. TCP).
  */
 class ServerSocket {
-	friend class OneServerSocket;
+	class OneServerSocket;
 
 	EventLoop &loop;
 

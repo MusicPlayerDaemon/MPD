@@ -52,7 +52,7 @@
 #include <netdb.h>
 #endif
 
-class OneServerSocket final : private SocketMonitor {
+class ServerSocket::OneServerSocket final : private SocketMonitor {
 	ServerSocket &parent;
 
 	const unsigned serial;
@@ -146,7 +146,7 @@ get_remote_uid(int fd)
 }
 
 inline void
-OneServerSocket::Accept() noexcept
+ServerSocket::OneServerSocket::Accept() noexcept
 {
 	StaticSocketAddress peer_address;
 	UniqueSocketDescriptor peer_fd(GetSocket().AcceptNonBlock(peer_address));
@@ -170,14 +170,14 @@ OneServerSocket::Accept() noexcept
 }
 
 bool
-OneServerSocket::OnSocketReady(gcc_unused unsigned flags) noexcept
+ServerSocket::OneServerSocket::OnSocketReady(gcc_unused unsigned flags) noexcept
 {
 	Accept();
 	return true;
 }
 
 inline void
-OneServerSocket::Open()
+ServerSocket::OneServerSocket::Open()
 {
 	assert(!IsDefined());
 
@@ -272,7 +272,7 @@ ServerSocket::Close() noexcept
 			i.Close();
 }
 
-OneServerSocket &
+ServerSocket::OneServerSocket &
 ServerSocket::AddAddress(SocketAddress address) noexcept
 {
 	sockets.emplace_back(loop, *this, next_serial,
@@ -281,7 +281,7 @@ ServerSocket::AddAddress(SocketAddress address) noexcept
 	return sockets.back();
 }
 
-OneServerSocket &
+ServerSocket::OneServerSocket &
 ServerSocket::AddAddress(AllocatedSocketAddress &&address) noexcept
 {
 	sockets.emplace_back(loop, *this, next_serial,
