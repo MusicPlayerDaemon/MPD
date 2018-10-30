@@ -207,6 +207,11 @@ ServerSocket::Open()
 		assert(i.GetSerial() > 0);
 		assert(good == nullptr || i.GetSerial() >= good->GetSerial());
 
+		if (i.IsDefined())
+			/* already open - was probably added by
+			   AddFD() */
+			continue;
+
 		if (bad != nullptr && i.GetSerial() != bad->GetSerial()) {
 			Close();
 			std::rethrow_exception(last_error);
