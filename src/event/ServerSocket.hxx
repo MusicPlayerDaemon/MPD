@@ -39,7 +39,7 @@ class ServerSocket {
 
 	std::list<OneServerSocket> sockets;
 
-	unsigned next_serial;
+	unsigned next_serial = 1;
 
 public:
 	ServerSocket(EventLoop &_loop) noexcept;

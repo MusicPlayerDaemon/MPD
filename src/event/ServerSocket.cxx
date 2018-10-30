@@ -198,7 +198,7 @@ OneServerSocket::Open()
 }
 
 ServerSocket::ServerSocket(EventLoop &_loop) noexcept
-	:loop(_loop), next_serial(1) {}
+	:loop(_loop) {}
 
 /* this is just here to allow the OneServerSocket forward
    declaration */
