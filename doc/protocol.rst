@@ -1,9 +1,9 @@
-================================
-The Music Player Daemon protocol
-================================
+########
+Protocol
+########
 
 General protocol syntax
-#######################
+***********************
 
 Protocol overview
 =================
@@ -254,7 +254,7 @@ may contain :ref:`song tags <tags>` and other metadata, specifically:
   "*2008-09-28T20:04:57Z*"
 
 Recipes
-#######
+*******
 
 Queuing
 =======
@@ -285,7 +285,7 @@ effect on the sequence.  During playback, a song's priority is
 reset to zero.
 
 Command reference
-#################
+*****************
 
 .. note:: For manipulating playlists and playing, there are two sets of
    commands.  One set uses the song id of a song in the playlist,

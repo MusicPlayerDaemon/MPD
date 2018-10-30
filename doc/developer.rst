@@ -1,6 +1,5 @@
-============================================
-The Music Player Daemon - Developer's Manual
-============================================
+Developer's Manual
+##################
 
 Introduction
 ============

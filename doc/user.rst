@@ -1,16 +1,15 @@
-=======================================
-The Music Player Daemon - User's Manual
-=======================================
+User's Manual
+#############
 
-Chapter 1. Introduction
-=======================
+Introduction
+************
 
 Music Player Daemon (:program:`MPD`) is a flexible, powerful, server-side application for playing music. Through plugins and libraries it can play a variety of sound files while being controlled by its network protocol.
 
 This document is work in progress. Most of it may be incomplete yet. Please help!
 
-Chapter 2. Installation
-=======================
+Installation
+************
 
 Installing on Debian/Ubuntu
 ---------------------------
@@ -207,8 +206,8 @@ To auto-start :program:`MPD` upon login, type:
 
     systemctl --user enable mpd
 
-Chapter 3. Configuration
-========================
+Configuration
+*************
 
 The Configuration File
 ----------------------
@@ -648,8 +647,8 @@ settings control this feature:
    * - **zeroconf_name NAME**
      - The service name to publish via Zeroconf. The default is "Music Player".
 
-Chapter 4. Advanced configuration
-=================================
+Advanced configuration
+**********************
 
 .. _satellite:
 
@@ -720,8 +719,8 @@ Note
 
 There is a rumor that real-time scheduling improves audio quality. That is not true. All it does is reduce the probability of skipping (audio buffer xruns) when the computer is under heavy load.
 
-Chapter 5. Using MPD
-====================
+Using MPD
+*********
 
 The client
 ----------
@@ -817,8 +816,8 @@ Stored Playlists
 
 Stored playlists are some kind of secondary playlists which can be created, saved, edited and deleted by the client. They are addressed by their names. Its contents can be loaded into the queue, to be played back. The playlist_directory setting specifies where those playlists are stored. 
 
-Chapter 6. Advanced usage
-=========================
+Advanced usage
+**************
 
 Bit-perfect playback
 --------------------
@@ -874,8 +873,8 @@ DSD (`Direct Stream Digital <https://en.wikipedia.org/wiki/Direct_Stream_Digital
 
 Native DSD playback is used automatically if available. DoP is only used if enabled explicitly using the dop option, because there is no way for :program:`MPD` to find out whether the DAC supports it. DSD to PCM conversion is the fallback if DSD cannot be used directly.
 
-Chapter 7. Client Hacks
-=======================
+Client Hacks
+************
 
 .. _external_mixer:
 
@@ -884,8 +883,8 @@ External Mixer
 
 The setting :code:`mixer_type "null"` asks MPD to pretend that there is a mixer, but not actually do something. This allows you to implement a :program:`MPD` client which listens for mixer events, queries the current (fake) volume, and uses it to program an external mixer. For example, your client can forward this setting to your amplifier.
 
-Chapter 8. Troubleshooting
-==========================
+Troubleshooting
+***************
 
 Where to start
 --------------
@@ -976,8 +975,8 @@ As soon as you have reproduced the crash, type "bt" on the gdb command prompt. C
 
 .. _plugin_references:
 
-Chapter 9. Plugin reference
-===========================
+Plugin reference
+****************
 
 .. _database_plugins:
 
