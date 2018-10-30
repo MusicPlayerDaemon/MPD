@@ -32,25 +32,17 @@
 #include "net/ToString.hxx"
 #include "event/SocketMonitor.hxx"
 #include "fs/AllocatedPath.hxx"
-#include "fs/FileSystem.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/Domain.hxx"
-#include "util/ScopeExit.hxx"
 #include "Log.hxx"
 
 #include <string>
 #include <algorithm>
 
-#include <string.h>
-#include <unistd.h>
 #include <assert.h>
 
-#ifdef _WIN32
-#include <ws2tcpip.h>
-#include <winsock.h>
-#else
-#include <sys/socket.h>
-#include <netdb.h>
+#ifdef HAVE_UN
+#include <sys/stat.h>
 #endif
 
 class ServerSocket::OneServerSocket final : private SocketMonitor {
