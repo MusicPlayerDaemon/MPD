@@ -24,6 +24,7 @@
 #include "config/Data.hxx"
 #include "config/Option.hxx"
 #include "config/Net.hxx"
+#include "net/UniqueSocketDescriptor.hxx"
 #include "system/Error.hxx"
 #include "util/RuntimeError.hxx"
 #include "fs/AllocatedPath.hxx"
@@ -66,7 +67,7 @@ listen_systemd_activation(ClientListener &listener)
 
 	for (int i = SD_LISTEN_FDS_START, end = SD_LISTEN_FDS_START + n;
 	     i != end; ++i)
-		listener.AddFD(i);
+		listener.AddFD(UniqueSocketDescriptor(i));
 
 	return true;
 }

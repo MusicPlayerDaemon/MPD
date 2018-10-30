@@ -107,8 +107,8 @@ public:
 		return ::ToString(address);
 	}
 
-	void SetFD(SocketDescriptor _fd) noexcept {
-		SocketMonitor::Open(_fd);
+	void SetFD(UniqueSocketDescriptor _fd) noexcept {
+		SocketMonitor::Open(_fd.Release());
 		SocketMonitor::ScheduleRead();
 	}
 
@@ -194,7 +194,7 @@ OneServerSocket::Open()
 
 	/* register in the EventLoop */	
 
-	SetFD(_fd.Release());
+	SetFD(std::move(_fd));
 }
 
 ServerSocket::ServerSocket(EventLoop &_loop) noexcept
@@ -291,18 +291,16 @@ ServerSocket::AddAddress(AllocatedSocketAddress &&address) noexcept
 }
 
 void
-ServerSocket::AddFD(int _fd)
+ServerSocket::AddFD(UniqueSocketDescriptor fd)
 {
-	assert(_fd >= 0);
-
-	SocketDescriptor fd(_fd);
+	assert(fd.IsDefined());
 
 	StaticSocketAddress address = fd.GetLocalAddress();
 	if (!address.IsDefined())
 		throw MakeSocketError("Failed to get socket address");
 
 	OneServerSocket &s = AddAddress(address);
-	s.SetFD(fd);
+	s.SetFD(std::move(fd));
 }
 
 #ifdef HAVE_TCP

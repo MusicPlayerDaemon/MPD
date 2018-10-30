@@ -107,7 +107,7 @@ public:
 	 *
 	 * Throws #std::runtime_error on error.
 	 */
-	void AddFD(int fd);
+	void AddFD(UniqueSocketDescriptor fd);
 
 	bool IsEmpty() const noexcept {
 		return sockets.empty();
