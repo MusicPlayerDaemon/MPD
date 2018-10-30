@@ -51,7 +51,8 @@ In any case, you need:
 * Boost 1.58
 * pkg-config 
 
-Each plugin usually needs a codec library, which you also need to install. Check the plugin reference for details about required libraries :ref:`plugin_references`.
+Each plugin usually needs a codec library, which you also need to
+install. Check the :doc:`plugins` for details about required libraries
 
 For example, the following installs a fairly complete list of build dependencies on Debian Jessie:
 
@@ -262,7 +263,8 @@ If a music directory is configured, one database plugin is used. To configure th
         path "/var/lib/mpd/db"
     }
     
-More information can be found in the database plugin reference :ref`database_plugins`. 
+More information can be found in the :ref:`database_plugins`
+reference.
 
 Configuring neighbor plugins
 ----------------------------
@@ -275,7 +277,7 @@ All neighbor plugins are disabled by default to avoid unwanted overhead. To enab
         plugin "smbclient"
     }
       
-More information can be found in the neighbor plugin reference :ref:`neighbor_plugin`. 
+More information can be found in the :ref:`neighbor_plugin` reference.
 
 Configuring input plugins
 -------------------------
@@ -303,7 +305,7 @@ The following table lists the input options valid for all plugins:
    * - **enabled yes|no**
      - Allows you to disable a input plugin without recompiling. By default, all plugins are enabled.
 
-More information can be found in the input plugin reference :ref:`input_plugins`.  
+More information can be found in the :ref:`input_plugins` reference.
 
 Configuring decoder plugins
 ---------------------------
@@ -330,14 +332,14 @@ The following table lists the decoder options valid for all plugins:
    * - **enabled yes|no**
      - Allows you to disable a decoder plugin without recompiling. By default, all plugins are enabled.
 
-More information can be found in the decoder plugin reference :ref:`decoder_plugins`. 
+More information can be found in the :ref:`decoder_plugins` reference.
 
 Configuring encoder plugins
 ---------------------------
 
 Encoders are used by some of the output plugins (such as shout). The encoder settings are included in the audio_output section.
 
-More information can be found in the encoder plugin reference :ref:`encoder_plugins`. 
+More information can be found in the :ref:`encoder_plugins` reference.
 
 Configuring audio outputs
 -------------------------
@@ -438,7 +440,8 @@ The following table lists the playlist_plugin options valid for all plugins:
    * - **enabled yes|no**
      - Allows you to disable a playlist plugin without recompiling. By default, all plugins are enabled.
 
-More information can be found in the playlist plugin reference :ref:`playlist_plugins`.
+More information can be found in the :ref:`playlist_plugins`
+reference.
 
 Audio Format Settings
 ---------------------
@@ -453,7 +456,8 @@ Resampler
 
 Sometimes, music needs to be resampled before it can be played; for example, CDs use a sample rate of 44,100 Hz while many cheap audio chips can only handle 48,000 Hz. Resampling reduces the quality and consumes a lot of CPU. There are different options, some of them optimized for high quality and others for low CPU usage, but you can't have both at the same time. Often, the resampler is the component that is responsible for most of :program:`MPD`'s CPU usage. Since :program:`MPD` comes with high quality defaults, it may appear that :program:`MPD` consumes more CPU than other software.
 
-Check the resampler plugin reference for a list of resamplers and how to configure them :ref:`resampler_plugins`.
+Check the :ref:`resampler_plugins` reference for a list of resamplers
+and how to configure them.
 
 Client Connections
 ------------------

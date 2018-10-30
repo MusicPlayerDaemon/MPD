@@ -1,5 +1,3 @@
-.. _plugin_references:
-
 Plugin reference
 ################
 
@@ -85,7 +83,9 @@ Don't fear: "insecure" does not mean that your NFS server is insecure. A few dec
 udisks
 ~~~~~~
 
-Mount file systems (e.g. USB sticks or other removable media) using the udisks2 daemon via D-Bus. To obtain a valid udisks2 URI, consult the according neighbor plugin :ref:`neighbor_plugin`.
+Mount file systems (e.g. USB sticks or other removable media) using
+the udisks2 daemon via D-Bus.  To obtain a valid udisks2 URI, consult
+:ref:`the according neighbor plugin <neighbor_plugin>`.
 
 .. _neighbor_plugin:
 
