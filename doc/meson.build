@@ -6,6 +6,7 @@ sphinx_output = custom_target(
   output: 'html',
   input: [
     'index.rst', 'user.rst', 'developer.rst',
+    'plugins.rst',
     'protocol.rst',
     'conf.py',
   ],
