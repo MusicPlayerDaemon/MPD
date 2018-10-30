@@ -265,20 +265,12 @@ ServerSocket::Close() noexcept
 			i.Close();
 }
 
+template<typename A>
 ServerSocket::OneServerSocket &
-ServerSocket::AddAddress(SocketAddress address) noexcept
+ServerSocket::AddAddress(A &&address) noexcept
 {
 	sockets.emplace_back(loop, *this, next_serial,
-			     address);
-
-	return sockets.back();
-}
-
-ServerSocket::OneServerSocket &
-ServerSocket::AddAddress(AllocatedSocketAddress &&address) noexcept
-{
-	sockets.emplace_back(loop, *this, next_serial,
-			     std::move(address));
+			     std::forward<A>(address));
 
 	return sockets.back();
 }

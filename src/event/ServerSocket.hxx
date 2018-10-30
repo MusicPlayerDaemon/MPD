@@ -49,8 +49,8 @@ public:
 	}
 
 private:
-	OneServerSocket &AddAddress(SocketAddress address) noexcept;
-	OneServerSocket &AddAddress(AllocatedSocketAddress &&address) noexcept;
+	template<typename A>
+	OneServerSocket &AddAddress(A &&address) noexcept;
 
 	/**
 	 * Add a listener on a port on all IPv4 interfaces.
