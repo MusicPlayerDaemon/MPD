@@ -40,19 +40,6 @@
 
 int listen_port;
 
-/**
- * Throws #std::runtime_error on error.
- */
-static void
-listen_add_config_param(ClientListener &listener,
-			unsigned int port,
-			const ConfigParam *param)
-{
-	assert(param != nullptr);
-
-	ServerSocketAddGeneric(listener, param->value.c_str(), port);
-}
-
 #ifdef ENABLE_SYSTEMD_DAEMON
 
 static bool
@@ -86,7 +73,8 @@ listen_global_init(const ConfigData &config, ClientListener &listener)
 
 	for (const auto &param : config.GetParamList(ConfigOption::BIND_TO_ADDRESS)) {
 		try {
-			listen_add_config_param(listener, port, &param);
+			ServerSocketAddGeneric(listener, param.value.c_str(),
+					       port);
 		} catch (...) {
 			std::throw_with_nested(FormatRuntimeError("Failed to listen on %s (line %i)",
 								  param.value.c_str(),
