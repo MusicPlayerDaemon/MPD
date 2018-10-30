@@ -130,7 +130,7 @@ HttpdOutput::OnDeferredBroadcast() noexcept
 
 void
 HttpdOutput::OnAccept(UniqueSocketDescriptor fd,
-		      SocketAddress address, gcc_unused int uid)
+		      SocketAddress address, gcc_unused int uid) noexcept
 {
 	/* the listener socket has become readable - a client has
 	   connected */

@@ -122,7 +122,7 @@ public:
 
 protected:
 	virtual void OnAccept(UniqueSocketDescriptor fd,
-			      SocketAddress address, int uid) = 0;
+			      SocketAddress address, int uid) noexcept = 0;
 };
 
 #endif
