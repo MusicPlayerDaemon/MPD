@@ -110,8 +110,8 @@ static void version(void)
 {
 	printf("Music Player Daemon " VERSION " (%s)\n"
 	       "\n"
-	       "Copyright (C) 2003-2007 Warren Dukes <warren.dukes@gmail.com>\n"
-	       "Copyright 2008-2017 Max Kellermann <max.kellermann@gmail.com>\n"
+	       "Copyright 2003-2007 Warren Dukes <warren.dukes@gmail.com>\n"
+	       "Copyright 2008-2018 Max Kellermann <max.kellermann@gmail.com>\n"
 	       "This is free software; see the source for copying conditions.  There is NO\n"
 	       "warranty; not even MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n"
 
