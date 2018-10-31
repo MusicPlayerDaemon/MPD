@@ -349,7 +349,16 @@ Video game music file emulator based on `game-music-emu <https://bitbucket.org/m
 hybrid_dsd
 ~~~~~~~~~~
 
-`Hybrid-DSD <http://dsdmaster.blogspot.de/p/bitperfect-introduces-hybrid-dsd-file.html>`_ is a MP4 container file (*.m4a) which contains both ALAC and DSD data. It is disabled by default, and works only if you explicitly enable it. Without this plugin, the ALAC parts gets handled by the `FFmpeg decoder plugin <https://www.musicpd.org/doc/user/decoder_plugins.html#ffmpeg_decoder>`_. This plugin should be enabled only if you have a bit-perfect playback path to a DSD-capable DAC; for everybody else, playing back the ALAC copy of the file is better.
+`Hybrid-DSD
+<http://dsdmaster.blogspot.de/p/bitperfect-introduces-hybrid-dsd-file.html>`_
+is a MP4 container file (:file:`*.m4a`) which contains both ALAC and
+DSD data. It is disabled by default, and works only if you explicitly
+enable it. Without this plugin, the ALAC parts gets handled by the
+`FFmpeg decoder plugin
+<https://www.musicpd.org/doc/user/decoder_plugins.html#ffmpeg_decoder>`_. This
+plugin should be enabled only if you have a bit-perfect playback path
+to a DSD-capable DAC; for everybody else, playing back the ALAC copy
+of the file is better.
 
 .. list-table::
    :widths: 20 80
