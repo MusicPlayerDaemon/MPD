@@ -34,7 +34,6 @@
 #include "plugins/PipeOutputPlugin.hxx"
 #include "plugins/PulseOutputPlugin.hxx"
 #include "plugins/RecorderOutputPlugin.hxx"
-#include "plugins/RoarOutputPlugin.hxx"
 #include "plugins/ShoutOutputPlugin.hxx"
 #include "plugins/sles/SlesOutputPlugin.hxx"
 #include "plugins/SolarisOutputPlugin.hxx"
@@ -64,9 +63,6 @@ const AudioOutputPlugin *const audio_output_plugins[] = {
 #endif
 #ifdef ENABLE_ALSA
 	&alsa_output_plugin,
-#endif
-#ifdef ENABLE_ROAR
-	&roar_output_plugin,
 #endif
 #ifdef ENABLE_AO
 	&ao_output_plugin,

@@ -72,7 +72,7 @@ For example, the following installs a fairly complete list of build dependencies
       libzzip-dev \
       libcurl4-gnutls-dev libyajl-dev libexpat-dev \
       libasound2-dev libao-dev libjack-jackd2-dev libopenal-dev \
-      libpulse-dev libroar-dev libshout3-dev \
+      libpulse-dev libshout3-dev \
       libsndio-dev \
       libmpdclient-dev \
       libnfs-dev libsmbclient-dev \

@@ -936,21 +936,6 @@ The pulse plugin connects to a `PulseAudio <http://www.freedesktop.org/wiki/Soft
    * - **sink NAME**
      - Specifies the name of the PulseAudio sink :program:`MPD` should play on.
 
-roar
-~~~~
-The roar plugin connects to a `RoarAudio <http://roaraudio.keep-cool.org/>`_ server.
-
-.. list-table::
-   :widths: 20 80
-   :header-rows: 1
-
-   * - Setting
-     - Description
-   * - **server HOSTNAME**
-     - The host name of the RoarAudio server. If not specified, then :program:`MPD` will connect to the default locations.
-   * - **role ROLE**
-     - The "role" that :program:`MPD` registers itself as in the RoarAudio server. The default is "music".
-
 recorder
 ~~~~~~~~
 The recorder plugin writes the audio played by :program:`MPD` to a file. This may be useful for recording radio streams.

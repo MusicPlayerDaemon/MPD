@@ -26,10 +26,6 @@ if pulse_dep.found()
   mixer_plugins_sources += 'PulseMixerPlugin.cxx'
 endif
 
-if libroar_dep.found()
-  mixer_plugins_sources += 'RoarMixerPlugin.cxx'
-endif
-
 if libsndio_dep.found()
   mixer_plugins_sources += 'SndioMixerPlugin.cxx'
 endif
@@ -45,7 +41,6 @@ mixer_plugins = static_library(
   dependencies: [
     alsa_dep,
     pulse_dep,
-    libroar_dep,
     libsndio_dep,
   ]
 )

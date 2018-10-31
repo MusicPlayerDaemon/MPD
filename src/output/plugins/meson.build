@@ -99,10 +99,6 @@ if get_option('recorder')
   need_encoder = true
 endif
 
-if libroar_dep.found()
-  output_plugins_sources += 'RoarOutputPlugin.cxx'
-endif
-
 libshout_dep = dependency('shout', required: get_option('shout'))
 conf.set('HAVE_SHOUT', libshout_dep.found())
 if libshout_dep.found()
@@ -150,7 +146,6 @@ output_plugins = static_library(
     libao_dep,
     libjack_dep,
     pulse_dep,
-    libroar_dep,
     libshout_dep,
     libsndio_dep,
     openal_dep,

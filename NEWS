@@ -39,6 +39,7 @@ ver 0.21 (not yet released)
   - shout: support the Shine encoder plugin
   - sndio: remove support for the broken RoarAudio sndio emulation
   - osx: initial support for DSD over PCM
+  - roar: removed
   - httpd_output: support for unix sockets
 * mixer
   - sndio: new mixer plugin
