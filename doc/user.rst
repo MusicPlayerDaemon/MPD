@@ -14,12 +14,11 @@ Installation
 Installing on Debian/Ubuntu
 ---------------------------
 
-Install the package :program:`MPD` via :program:`APT`:
-
+Install the package :file:`mpd` via :program:`apt`:
 
 .. code-block:: none
 
-    apt-get install mpd
+    apt install mpd
 
 When installed this way, :program:`MPD` by default looks for music in :file:`/var/lib/mpd/music/`; this may not be correct. Look at your :file:`/etc/mpd.conf` file... 
 
@@ -58,7 +57,7 @@ For example, the following installs a fairly complete list of build dependencies
 
 .. code-block:: none
 
-    apt-get install g++ \
+    apt install g++ \
       libmad0-dev libmpg123-dev libid3tag0-dev \
       libflac-dev libvorbis-dev libopus-dev \
       libadplug-dev libaudiofile-dev libsndfile1-dev libfaad-dev \
