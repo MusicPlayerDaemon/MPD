@@ -18,4 +18,4 @@ cp "$CLASSES_DEX" "$D/apk/"
 cp "$RESOURCES_APK" "$UNSIGNED_APK"
 
 cd "$D/apk"
-exec zip -q -r "../`basename $UNSIGNED_APK`" .
+exec zip -q -r -X "../`basename $UNSIGNED_APK`" .
