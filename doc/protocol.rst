@@ -423,7 +423,7 @@ Playback options
 
 :command:`single {STATE}` [#since_0_15]_
     Sets single state to ``STATE``,
-    ``STATE`` should be 0 or 1.
+    ``STATE`` should be ``0``, ``1`` or ``oneshot``.
     When single is activated, playback is stopped after current song, or
     song is repeated if the 'repeat' mode is enabled.
 
