@@ -31,6 +31,7 @@
 #include "system/Error.hxx"
 #include "util/RuntimeError.hxx"
 #include "fs/AllocatedPath.hxx"
+#include "fs/XDG.hxx"
 
 #include <sys/stat.h>
 #include <string.h>
@@ -73,10 +74,7 @@ listen_systemd_activation(ClientListener &listener)
 static bool
 ListenXdgRuntimeDir(ClientListener &listener) noexcept
 {
-#if defined(_WIN32) || defined(ANDROID) || !defined(HAVE_UN)
-	(void)listener;
-	return false;
-#else
+#if defined(USE_XDG) && defined(HAVE_UN)
 	if (geteuid() == 0)
 		/* this MPD instance is a system-wide daemon; don't
 		   use $XDG_RUNTIME_DIR */
@@ -107,6 +105,9 @@ ListenXdgRuntimeDir(ClientListener &listener) noexcept
 			    socket_path.c_str());
 		return false;
 	}
+#else
+	(void)listener;
+	return false;
 #endif
 }
 
