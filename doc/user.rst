@@ -22,6 +22,15 @@ Install the package :file:`mpd` via :program:`apt`:
 
 When installed this way, :program:`MPD` by default looks for music in :file:`/var/lib/mpd/music/`; this may not be correct. Look at your :file:`/etc/mpd.conf` file... 
 
+.. note::
+
+   Debian and Ubuntu are infamous for shipping heavily outdated
+   software.  The :program:`MPD` version in their respective stable
+   releases are usually too old to be supported by this project.
+   Ironically, the :program:`MPD` version in Debian "*unstable*" is
+   more stable than the version in Debian "*stable*".
+
+
 Installing on Android
 ---------------------
 
