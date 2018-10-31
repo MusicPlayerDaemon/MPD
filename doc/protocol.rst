@@ -357,7 +357,7 @@ Querying ``MPD``'s status
     - ``volume``: ``0-100`` or ``-1`` if the volume cannot be determined
     - ``repeat``: ``0`` or ``1``
     - ``random``: ``0`` or ``1``
-    - ``single`` [#since_0_15]_: ``0``, ``1``, or ``oneshot`` [#since_0_20]_
+    - ``single`` [#since_0_15]_: ``0``, ``1``, or ``oneshot`` [#since_0_21]_
     - ``consume`` [#since_0_15]_: ``0`` or ``1``
     - ``playlist``: 31-bit unsigned integer, the playlist version number
     - ``playlistlength``: integer, the length of the playlist
@@ -1201,3 +1201,4 @@ idle event.
 .. [#since_0_16] Since :program:`MPD` 0.16
 .. [#since_0_19] Since :program:`MPD` 0.20
 .. [#since_0_20] Since :program:`MPD` 0.20
+.. [#since_0_21] Since :program:`MPD` 0.21
