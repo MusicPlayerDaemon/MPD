@@ -99,7 +99,8 @@ information will be published with Zeroconf.  The default is yes.
 .B zeroconf_name <name>
 If Zeroconf is enabled, this is the service name to publish.  This name should
 be unique to your local network, but name collisions will be properly dealt
-with.  The default is "Music Player".
+with.  The default is "Music Player @ %h", where %h will be replaced with the
+hostname of the machine running MPD.
 .TP
 .B audio_output
 See \fBDESCRIPTION\fP and the various \fBAUDIO OUTPUT PARAMETERS\fP sections
