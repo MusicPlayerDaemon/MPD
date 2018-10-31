@@ -46,6 +46,10 @@
 #include <windows.h>
 #endif
 
+#ifdef __linux__
+#define HAVE_O_TMPFILE
+#endif
+
 class Path;
 
 class FileOutputStream final : public OutputStream {
@@ -57,7 +61,7 @@ class FileOutputStream final : public OutputStream {
 	FileDescriptor fd = FileDescriptor::Undefined();
 #endif
 
-#ifdef __linux__
+#ifdef HAVE_O_TMPFILE
 	/**
 	 * Was O_TMPFILE used?  If yes, then linkat() must be used to
 	 * create a link to this file.
