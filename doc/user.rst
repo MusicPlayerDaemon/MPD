@@ -176,7 +176,9 @@ tarball and change into the directory.  Then, instead of
  meson configure -Dandroid_debug_keystore=$HOME/.android/debug.keystore
  ninja android/apk/mpd-debug.apk
 
-:envvar:`SDK_PATH` is the absolute path where you installed the Android SDK; :envvar:`NDK_PATH` is the Android NDK installation path; ABI is the Android ABI to be built, e.g. "armeabi-v7a".
+:envvar:`SDK_PATH` is the absolute path where you installed the
+Android SDK; :envvar:`NDK_PATH` is the Android NDK installation path;
+ABI is the Android ABI to be built, e.g. ":code:`arm64-v8a`".
 
 This downloads various library sources, and then configures and builds :program:`MPD`. 
 
