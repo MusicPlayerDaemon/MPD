@@ -18,14 +18,9 @@
  */
 
 #include "config.h"
-
-// Use X Desktop guidelines where applicable
-#if !defined(__APPLE__) && !defined(_WIN32) && !defined(ANDROID)
-#define USE_XDG
-#endif
-
 #include "StandardDirectory.hxx"
 #include "FileSystem.hxx"
+#include "XDG.hxx"
 
 #include <array>
 
