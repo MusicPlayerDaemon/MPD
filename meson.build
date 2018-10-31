@@ -60,11 +60,13 @@ test_cxxflags = test_common_flags + [
   # in C++17 because the exception specification is part of a function
   # type"
   '-Wno-noexcept-type',
+]
 
+if compiler.get_id() == 'clang'
   # Workaround for clang bug
   # https://bugs.llvm.org/show_bug.cgi?id=32611
-  '-funwind-tables',
-]
+  test_cxxflags += '-funwind-tables'
+endif
 
 test_cflags = test_common_flags + [
   '-Wmissing-prototypes',
