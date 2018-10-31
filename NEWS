@@ -1,4 +1,4 @@
-ver 0.21 (not yet released)
+ver 0.21 (2018/10/31)
 * configuration
   - add "include" directive, allows including config files
   - incremental "metadata_to_use" setting
