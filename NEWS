@@ -46,6 +46,7 @@ ver 0.21 (not yet released)
 * encoder
   - opus: support for sending metadata using ogg stream chaining
 * listen on $XDG_RUNTIME_DIR/mpd/socket by default
+* append hostname to Zeroconf service name
 * systemd watchdog support
 * require GCC 6
 * build with Meson instead of autotools
