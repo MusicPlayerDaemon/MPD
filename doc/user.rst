@@ -939,9 +939,9 @@ If you believe you found a bug in :program:`MPD`, report it on the `bug tracker 
 
 Your bug report should contain:
 
-* the output of mpd --version
-* your configuration file (mpd.conf)
-* relevant portions of the log file (--verbose)
+* the output of :command:`mpd --version`
+* your configuration file (:file:`mpd.conf`)
+* relevant portions of the log file (:option:`--verbose`)
 * be clear about what you expect MPD to do, and what is actually happening
 
 MPD crashes
