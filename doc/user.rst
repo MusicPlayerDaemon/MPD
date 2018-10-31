@@ -250,7 +250,8 @@ Some of the settings are grouped in blocks with curly braces, e.g. per-plugin se
         mixer_control "PCM"
     }
 
-The include directive can be used to include settings from another file; the given file name is relative to the current file:
+The :code:`include` directive can be used to include settings from
+another file; the given file name is relative to the current file:
 
 .. code-block:: none
 
@@ -263,7 +264,11 @@ When you play local files, you should organize them within a directory called th
 
 By default, :program:`MPD` follows symbolic links in the music directory. This behavior can be switched off: :code:`follow_outside_symlinks` controls whether :program:`MPD` follows links pointing to files outside of the music directory, and :code:`follow_inside_symlinks` lets you disable symlinks to files inside the music directory.
 
-Instead of using local files, you can use storage plugins to access files on a remote file server. For example, to use music from the SMB/CIFS server "myfileserver" on the share called "Music", configure the music directory "smb://myfileserver/Music". For a recipe, read the Satellite :program:`MPD` section :ref:`satellite`.
+Instead of using local files, you can use storage plugins to access
+files on a remote file server. For example, to use music from the
+SMB/CIFS server ":file:`myfileserver`" on the share called "Music",
+configure the music directory ":file:`smb://myfileserver/Music`". For
+a recipe, read the Satellite :program:`MPD` section :ref:`satellite`.
 
 You can also use multiple storage plugins to assemble a virtual music directory consisting of multiple storages. 
 
