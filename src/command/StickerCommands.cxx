@@ -103,7 +103,7 @@ handle_sticker_song(Response &r, Partition &partition, Request args)
 			? sticker_song_delete(*song)
 			: sticker_song_delete_value(*song, args[3]);
 		if (!ret) {
-			r.Error(ACK_ERROR_SYSTEM, "no such sticker");
+			r.Error(ACK_ERROR_NO_EXIST, "no such sticker");
 			return CommandResult::ERROR;
 		}
 
