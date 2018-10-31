@@ -27,13 +27,16 @@
 #include "util/Domain.hxx"
 #include "Log.hxx"
 #include "util/Compiler.h"
+#include <unistd.h>
+#include <limits.h>
+#include <regex>
 
 static constexpr Domain zeroconf_domain("zeroconf");
 
 /* The default service name to publish
  * (overridden by 'zeroconf_name' config parameter)
  */
-#define SERVICE_NAME		"Music Player"
+#define SERVICE_NAME		"Music Player @ %h"
 
 #define DEFAULT_ZEROCONF_ENABLED 1
 
@@ -58,6 +61,11 @@ ZeroconfInit(const ConfigData &config, gcc_unused EventLoop &loop)
 
 	serviceName = config.GetString(ConfigOption::ZEROCONF_NAME,
 				       SERVICE_NAME);
+
+	char hostname[HOST_NAME_MAX+1];
+	gethostname(hostname, HOST_NAME_MAX);
+	std::string sName = std::regex_replace(serviceName, std::regex("%h"), hostname);
+	serviceName = sName.c_str();
 
 #ifdef HAVE_AVAHI
 	AvahiInit(loop, serviceName);

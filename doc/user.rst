@@ -673,7 +673,8 @@ settings control this feature:
    * - **zeroconf_enabled yes|no**
      - Enables or disables this feature. Default is yes.
    * - **zeroconf_name NAME**
-     - The service name to publish via Zeroconf. The default is "Music Player".
+     - The service name to publish via Zeroconf. The default is "Music Player @ %h".
+       %h will be replaced with the hostname of the machine running :program:`MPD`.
 
 Advanced configuration
 **********************

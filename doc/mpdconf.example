@@ -151,9 +151,9 @@
 #zeroconf_enabled		"yes"
 #
 # The argument to this setting will be the Zeroconf / Avahi unique name for
-# this MPD server on the network.
+# this MPD server on the network. %h will be replaced with the hostname.
 #
-#zeroconf_name			"Music Player"
+#zeroconf_name			"Music Player @ %h"
 #
 ###############################################################################
 
