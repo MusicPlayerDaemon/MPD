@@ -46,7 +46,12 @@
 #include <windows.h>
 #endif
 
-#ifdef __linux__
+#if defined(__linux__) && !defined(ANDROID)
+/* we don't use O_TMPFILE on Android because Android's braindead
+   SELinux policy disallows hardlinks
+   (https://android.googlesource.com/platform/external/sepolicy/+/85ce2c7),
+   even hardlinks from /proc/self/fd/*, which however is required to
+   use O_TMPFILE */
 #define HAVE_O_TMPFILE
 #endif
 
