@@ -50,10 +50,11 @@ If you already have a clone, update it:
 
     git pull --rebase git://github.com/MusicPlayerDaemon/MPD master
 
-You can do without :option:`--rebase`, but we recommend that you rebase your repository on the "master" repository all the time.
+You can do without :code:`--rebase`, but we recommend that you rebase
+your repository on the "master" repository all the time.
 
-Configure with the option :option:`--werror`.  Enable as many plugins
-as possible, to be sure that you don't break any disabled code.
+Configure with the option :code:`--werror`.  Enable as many plugins as
+possible, to be sure that you don't break any disabled code.
 
 Don't mix several changes in one single patch.  Create a separate patch for every change. Tools like :program:`stgit` help you with that. This way, we can review your patches more easily, and we can pick the patches we like most first.
 
@@ -112,7 +113,9 @@ Clang Static Analyzer
 
     ./configure --enable-debug CXX=clang++ CC=clang ...
 
-It is recommended to use :option:`--enable-debug`, because the analyzer takes advantage of :dfn:`assert()` calls, which are only enabled in the debug build. 
+It is recommended to use :code:`--enable-debug`, because the analyzer
+takes advantage of :dfn:`assert()` calls, which are only enabled in
+the debug build.
 
 Now run the analyzer:
 
@@ -120,4 +123,6 @@ Now run the analyzer:
 
     scan-build --use-c++=clang++ --use-cc=clang make
 
-The options :option:`--use-c++` and :option:`--use-cc` are necessary because it invokes :command:`cc` for actually compiling the sources by default. That breaks, because MPD requires a C99 compiler.
+The options :code:`--use-c++` and :code:`--use-cc` are necessary
+because it invokes :command:`cc` for actually compiling the sources by
+default. That breaks, because MPD requires a C99 compiler.
