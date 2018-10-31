@@ -43,7 +43,7 @@ class PosixCond {
 	pthread_cond_t cond;
 
 public:
-#ifdef __GLIBC__
+#if defined(__GLIBC__) && !defined(__gnu_hurd__)
 	/* optimized constexpr constructor for pthread implementations
 	   that support it */
 	constexpr PosixCond() noexcept:cond(PTHREAD_COND_INITIALIZER) {}
