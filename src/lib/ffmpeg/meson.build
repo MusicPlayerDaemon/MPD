@@ -26,4 +26,9 @@ ffmpeg = static_library(
 
 ffmpeg_dep = declare_dependency(
   link_with: ffmpeg,
+  dependencies: [
+    libavformat_dep,
+    libavcodec_dep,
+    libavutil_dep,
+  ],
 )
