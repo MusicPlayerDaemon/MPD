@@ -133,7 +133,7 @@ option('wavpack', type: 'feature', description: 'WavPack decoder plugin')
 option('wildmidi', type: 'feature', description: 'WildMidi decoder plugin')
 
 #
-# Decoder plugins
+# Encoder plugins
 #
 
 option('vorbisenc', type: 'feature', description: 'Vorbis encoder plugin')
