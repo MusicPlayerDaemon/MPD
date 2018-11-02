@@ -1,4 +1,6 @@
 ver 0.21.1 (not yet released)
+* decoder
+  - ffmpeg: fix build failure with non-standard FFmpeg installation path
 
 ver 0.21 (2018/10/31)
 * configuration
