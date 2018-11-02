@@ -68,16 +68,12 @@ class IPv6Address {
 	static constexpr struct sockaddr_in6 Construct(struct in6_addr address,
 						       uint16_t port,
 						       uint32_t scope_id) noexcept {
-		return {
-#if defined(__APPLE__)
-			sizeof(struct sockaddr_in6),
-#endif
-			AF_INET6,
-			ToBE16(port),
-			0,
-			address,
-			scope_id,
-		};
+		struct sockaddr_in6 sin{};
+		sin.sin6_family = AF_INET6;
+		sin.sin6_port = ToBE16(port);
+		sin.sin6_addr = address;
+		sin.sin6_scope_id = scope_id;
+		return sin;
 	}
 
 public:

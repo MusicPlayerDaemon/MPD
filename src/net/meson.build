@@ -10,14 +10,6 @@ if have_tcp and not get_option('ipv6').disabled()
   if not have_ipv6 and get_option('ipv6').enabled()
     error('IPv6 not supported by OS')
   endif
-
-  conf.set('HAVE_STRUCT_SOCKADDR_IN_SIN_LEN', c_compiler.has_member('struct sockaddr_in', 'sin_len', prefix: '''
-#ifdef _WIN32
-#include <winsock2.h>
-#include <ws2tcpip.h>
-#else
-#include <netinet/in.h>
-#endif'''))
 else
   have_ipv6 = false
 endif

@@ -2,6 +2,7 @@ ver 0.21.1 (not yet released)
 * decoder
   - ffmpeg: fix build failure with non-standard FFmpeg installation path
 * fix build failure on Linux-PowerPC
+* fix build failure on FreeBSD
 
 ver 0.21 (2018/10/31)
 * configuration
