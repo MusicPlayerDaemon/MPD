@@ -76,7 +76,7 @@ FileDescriptor::IsSocket() const noexcept
 
 #endif
 
-#ifdef __linux
+#ifdef __linux__
 
 bool
 FileDescriptor::Open(FileDescriptor dir, const char *pathname,

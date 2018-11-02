@@ -116,7 +116,7 @@ public:
 		return FileDescriptor(-1);
 	}
 
-#ifdef __linux
+#ifdef __linux__
 	bool Open(FileDescriptor dir, const char *pathname,
 		  int flags, mode_t mode=0666) noexcept;
 #endif
