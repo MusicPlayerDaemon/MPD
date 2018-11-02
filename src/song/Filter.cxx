@@ -173,13 +173,26 @@ ExpectQuoted(const char *&s)
 	if (!IsQuote(quote))
 		throw std::runtime_error("Quoted string expected");
 
-	const char *begin = s;
-	const char *end = strchr(s, quote);
-	if (end == nullptr)
-		throw std::runtime_error("Closing quote not found");
+	char buffer[4096];
+	size_t length = 0;
 
-	s = StripLeft(end + 1);
-	return {begin, end};
+	while (*s != quote) {
+		if (*s == '\\')
+			/* backslash escapes the following character */
+			++s;
+
+		if (*s == 0)
+			throw std::runtime_error("Closing quote not found");
+
+		buffer[length++] = *s++;
+
+		if (length >= sizeof(buffer))
+			throw std::runtime_error("Quoted value is too long");
+	}
+
+	s = StripLeft(s + 1);
+
+	return {buffer, length};
 }
 
 ISongFilterPtr

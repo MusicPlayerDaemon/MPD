@@ -1,6 +1,7 @@
 song = static_library(
   'song',
   'DetachedSong.cxx',
+  'Escape.cxx',
   'StringFilter.cxx',
   'UriSongFilter.cxx',
   'BaseSongFilter.cxx',

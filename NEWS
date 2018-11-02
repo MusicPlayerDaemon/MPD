@@ -1,4 +1,6 @@
 ver 0.21.1 (not yet released)
+* protocol
+  - allow escaping quotes in filter expressions
 * decoder
   - ffmpeg: fix build failure with non-standard FFmpeg installation path
 * fix build failure on Linux-PowerPC

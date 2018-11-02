@@ -184,6 +184,36 @@ Prior to MPD 0.21, the syntax looked like this::
 
  find TYPE VALUE
 
+Escaping String Values
+----------------------
+
+String values are quoted with single or double quotes, and special
+characters within those values must be escaped with the backslash
+(``\``).  Keep in mind that the backslash is also the escape character
+on the protocol level, which means you may need to use double
+backslash.
+
+Example expression which matches an artist named ``foo'bar"``::
+
+ (artist "foo\'bar\"")
+
+At the protocol level, the command must look like this::
+
+ find "(artist \"foo\\'bar\\\"\")"
+
+The double quotes enclosing the artist name must be escaped because
+they are inside a double-quoted ``find`` parameter.  The single quote
+inside that artist name must be escaped with two backslashes; one to
+escape the single quote, and another one because the backslash inside
+the string inside the parameter needs to be escaped as well.  The
+double quote has three confusing backslashes: two to build one
+backslash, and another one to escape the double quote on the protocol
+level.  Phew!
+
+To reduce confusion, you should use a library such as `libmpdclient
+<https://www.musicpd.org/libs/libmpdclient/>`_ which escapes command
+arguments for you.
+
 .. _tags:
 
 Tags

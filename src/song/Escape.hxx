@@ -17,20 +17,15 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "config.h"
-#include "BaseSongFilter.hxx"
-#include "Escape.hxx"
-#include "LightSong.hxx"
-#include "util/UriUtil.hxx"
+#ifndef MPD_SONG_ESCAPE_HXX
+#define MPD_SONG_ESCAPE_HXX
 
+#include "util/Compiler.h"
+
+#include <string>
+
+gcc_pure
 std::string
-BaseSongFilter::ToExpression() const noexcept
-{
-	return "(base \"" + EscapeFilterString(value) + "\")";
-}
+EscapeFilterString(const std::string &src) noexcept;
 
-bool
-BaseSongFilter::Match(const LightSong &song) const noexcept
-{
-	return uri_is_child_or_same(value.c_str(), song.GetURI().c_str());
-}
+#endif

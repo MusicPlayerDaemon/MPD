@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "TagSongFilter.hxx"
+#include "Escape.hxx"
 #include "LightSong.hxx"
 #include "tag/Tag.hxx"
 #include "tag/Fallback.hxx"
@@ -30,7 +31,7 @@ TagSongFilter::ToExpression() const noexcept
 		? "any"
 		: tag_item_names[type];
 
-	return std::string("(") + name + " " + (negated ? "!=" : "==") + " \"" + filter.GetValue() + "\")";
+	return std::string("(") + name + " " + (negated ? "!=" : "==") + " \"" + EscapeFilterString(filter.GetValue()) + "\")";
 }
 
 bool
