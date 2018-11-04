@@ -388,7 +388,7 @@ Querying ``MPD``'s status
     Reports the current status of the player and the volume
     level.
 
-    - ``volume``: ``0-100`` or ``-1`` if the volume cannot be determined
+    - ``volume``: ``0-100``
     - ``repeat``: ``0`` or ``1``
     - ``random``: ``0`` or ``1``
     - ``single`` [#since_0_15]_: ``0``, ``1``, or ``oneshot`` [#since_0_21]_
