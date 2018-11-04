@@ -34,6 +34,6 @@ StringFilter::Match(const char *s) const noexcept
 	if (fold_case) {
 		return fold_case.IsIn(s);
 	} else {
-		return StringIsEqual(s, value.c_str());
+		return value == s;
 	}
 }
