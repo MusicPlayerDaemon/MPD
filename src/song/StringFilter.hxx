@@ -33,13 +33,19 @@ class StringFilter {
 	 */
 	IcuCompare fold_case;
 
+	/**
+	 * Search for substrings instead of matching the whole string?
+	 */
+	bool substring;
+
 public:
 	template<typename V>
 	StringFilter(V &&_value, bool _fold_case)
 		:value(std::forward<V>(_value)),
 		 fold_case(_fold_case
 			   ? IcuCompare(value.c_str())
-			   : IcuCompare()) {}
+			   : IcuCompare()),
+		 substring(_fold_case) {}
 
 	bool empty() const noexcept {
 		return value.empty();
