@@ -395,7 +395,7 @@ Querying ``MPD``'s status
     - ``consume`` [#since_0_15]_: ``0`` or ``1``
     - ``playlist``: 31-bit unsigned integer, the playlist version number
     - ``playlistlength``: integer, the length of the playlist
-    - ``state``: ``play``, ``stop, or ``pause``
+    - ``state``: ``play``, ``stop``, or ``pause``
     - ``song``: playlist song number of the current song stopped on or playing
     - ``songid``: playlist songid of the current song stopped on or playing
     - ``nextsong`` [#since_0_15]_: playlist song number of the next song to be played
