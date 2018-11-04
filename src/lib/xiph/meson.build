@@ -2,10 +2,15 @@ libflac_dep = dependency('flac', version: '>= 1.2', required: get_option('flac')
 libopus_dep = dependency('opus', required: get_option('opus'))
 libvorbis_dep = dependency('vorbis', required: get_option('vorbis'))
 
-if need_encoder
-  libvorbisenc_dep = dependency('vorbisenc', required: get_option('vorbisenc'))
-else
-  libvorbisenc_dep = dependency('', required: false)
+libvorbisenc_dep = dependency('', required: false)
+if need_encoder and not get_option('vorbisenc').disabled()
+  if libvorbis_dep.found()
+    libvorbisenc_dep = dependency('vorbisenc', required: get_option('vorbisenc'))
+  elif get_option('vorbisenc').enabled()
+    error('Cannot build the Vorbis encoder without the Vorbis decoder')
+  else
+    message('Disabling the Vorbis encoder because the Vorbis decoder is disabled as well')
+  endif
 endif
 
 if libopus_dep.found() or libvorbis_dep.found() or libvorbisenc_dep.found()
