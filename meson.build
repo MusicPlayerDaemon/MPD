@@ -175,7 +175,7 @@ boost_dep = dependency('boost', version: '>= 1.58')
 if boost_dep.version() == '1.67'
   # https://github.com/MusicPlayerDaemon/MPD/pull/384
   # https://github.com/boostorg/lockfree/commit/12726cda009a855073b9bedbdce57b6ce7763da2
-  error('Your Boost version 1.67 is known to be buggy, and the MPD build will fail. Please upgrade to Boost 1.68 or later.')
+  warning('Your Boost version 1.67 is known to be buggy, and the MPD build will fail. Please upgrade to Boost 1.68 or later.')
 endif
 
 sources = [

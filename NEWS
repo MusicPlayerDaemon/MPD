@@ -9,7 +9,7 @@ ver 0.21.1 (not yet released)
 * fix build failure on Linux-PowerPC
 * fix build failure on FreeBSD
 * eliminate DLL dependencies on Windows
-* refuse to build with buggy Boost version 1.67
+* add warning about buggy Boost version 1.67
 * require Meson 0.47.2 because a Meson 0.47.1 bug breaks our build
 
 ver 0.21 (2018/10/31)
