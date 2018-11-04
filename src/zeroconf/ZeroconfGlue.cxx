@@ -32,6 +32,12 @@
 #include <unistd.h>
 #include <limits.h>
 
+#ifndef HOST_NAME_MAX
+/* HOST_NAME_MAX is not a portable macro; it is undefined on some
+   systems */
+#define HOST_NAME_MAX 255
+#endif
+
 static constexpr Domain zeroconf_domain("zeroconf");
 
 /* The default service name to publish
