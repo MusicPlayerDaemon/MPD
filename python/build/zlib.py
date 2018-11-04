@@ -18,5 +18,5 @@ class ZlibProject(Project):
             'INCLUDE_PATH='+ os.path.join(toolchain.install_prefix, 'include'),
             'LIBRARY_PATH=' + os.path.join(toolchain.install_prefix, 'lib'),
             'BINARY_PATH=' + os.path.join(toolchain.install_prefix, 'bin'),
-            'SHARED_MODE=1'],
+            ],
             cwd=src, env=toolchain.env)
