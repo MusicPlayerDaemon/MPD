@@ -106,13 +106,6 @@ ffmpeg_finish() noexcept
 }
 
 gcc_pure
-static AVSampleFormat
-GetSampleFormat(const AVCodecParameters &codec_params) noexcept
-{
-	return AVSampleFormat(codec_params.format);
-}
-
-gcc_pure
 static bool
 IsAudio(const AVStream &stream) noexcept
 {
@@ -695,7 +688,7 @@ FfmpegScanStream(AVFormatContext &format_context,
 	const auto &codec_params = *stream.codecpar;
 	try {
 		handler.OnAudioFormat(CheckAudioFormat(codec_params.sample_rate,
-						       ffmpeg_sample_format(GetSampleFormat(codec_params)),
+						       ffmpeg_sample_format(AVSampleFormat(codec_params.format)),
 						       codec_params.channels));
 	} catch (...) {
 	}
