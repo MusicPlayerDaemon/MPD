@@ -62,7 +62,8 @@ class CrossGccToolchain:
         self.cxxflags = common_flags
         self.cppflags = '-isystem ' + os.path.join(install_prefix, 'include') + \
                         ' -DWINVER=0x0600 -D_WIN32_WINNT=0x0600'
-        self.ldflags = '-L' + os.path.join(install_prefix, 'lib')
+        self.ldflags = '-L' + os.path.join(install_prefix, 'lib') + \
+                       ' -static-libstdc++ -static-libgcc'
         self.libs = ''
 
         self.is_arm = arch.startswith('arm')

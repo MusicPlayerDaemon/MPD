@@ -5,6 +5,7 @@ ver 0.21.1 (not yet released)
   - ffmpeg: fix build failure with non-standard FFmpeg installation path
 * fix build failure on Linux-PowerPC
 * fix build failure on FreeBSD
+* eliminate DLL dependencies on Windows
 
 ver 0.21 (2018/10/31)
 * configuration
