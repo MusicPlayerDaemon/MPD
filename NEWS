@@ -1,4 +1,4 @@
-ver 0.21.1 (not yet released)
+ver 0.21.1 (2018/11/04)
 * protocol
   - allow escaping quotes in filter expressions
   - operator "==" never searches substrings in filter expressions
