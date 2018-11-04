@@ -556,27 +556,22 @@ FfmpegDecode(DecoderClient &client, InputStream &input,
 
 	avcodec_parameters_to_context(codec_context, av_stream.codecpar);
 
-	const SampleFormat sample_format =
-		ffmpeg_sample_format(GetSampleFormat(codec_params));
-	if (sample_format == SampleFormat::UNDEFINED) {
-		// (error message already done by ffmpeg_sample_format())
-		return;
-	}
-
-	const auto audio_format = CheckAudioFormat(codec_params.sample_rate,
-						   sample_format,
-						   codec_params.channels);
-
-	/* the audio format must be read from AVCodecContext by now,
-	   because avcodec_open() has been demonstrated to fill bogus
-	   values into AVCodecContext.channels - a change that will be
-	   reverted later by avcodec_decode_audio3() */
-
 	const int open_result = avcodec_open2(codec_context, codec, nullptr);
 	if (open_result < 0) {
 		LogError(ffmpeg_domain, "Could not open codec");
 		return;
 	}
+
+	const SampleFormat sample_format =
+		ffmpeg_sample_format(codec_context->sample_fmt);
+	if (sample_format == SampleFormat::UNDEFINED) {
+		// (error message already done by ffmpeg_sample_format())
+		return;
+	}
+
+	const auto audio_format = CheckAudioFormat(codec_context->sample_rate,
+						   sample_format,
+						   codec_context->channels);
 
 	const SignedSongTime total_time =
 		av_stream.duration != (int64_t)AV_NOPTS_VALUE
