@@ -175,10 +175,14 @@ of:
   matches the audio format with the given mask (i.e. one
   or more attributes may be "*").
 
-- ``(!EXPRESSION)``: negate an expression.
+- ``(!EXPRESSION)``: negate an expression.  Note that each expression
+  must be enclosed in parantheses, e.g. :code:`(!(artist == 'VALUE'))`
+  (which is equivalent to :code:`(artist != 'VALUE')`)
 
 - ``(EXPRESSION1 AND EXPRESSION2 ...)``: combine two or
-  more expressions with logical "and".
+  more expressions with logical "and".  Note that each expression must
+  be enclosed in parantheses, e.g. :code:`((artist == 'FOO') AND
+  (album == 'BAR'))`
 
 Prior to MPD 0.21, the syntax looked like this::
 
