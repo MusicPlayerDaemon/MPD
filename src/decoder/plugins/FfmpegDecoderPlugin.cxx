@@ -627,6 +627,10 @@ FfmpegDecode(DecoderClient &client, InputStream &input,
 			/* end of file */
 			break;
 
+		AtScopeExit(&packet) {
+			av_packet_unref(&packet);
+		};
+
 		FfmpegCheckTag(client, input, format_context, audio_stream);
 
 		if (packet.size > 0 && packet.stream_index == audio_stream) {
@@ -640,8 +644,6 @@ FfmpegDecode(DecoderClient &client, InputStream &input,
 			min_frame = 0;
 		} else
 			cmd = client.GetCommand();
-
-		av_packet_unref(&packet);
 	}
 }
 
