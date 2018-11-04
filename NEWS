@@ -1,4 +1,6 @@
 ver 0.21.2 (not yet released)
+* decoder
+  - ffmpeg: require FFmpeg 3.1 or later
 
 ver 0.21.1 (2018/11/04)
 * protocol
