@@ -14,7 +14,7 @@ else
   libogg_dep = dependency('', required: false)
 endif
 
-if not libogg_dep.found() or not libflac_dep.found()
+if not libogg_dep.found() and not libflac_dep.found()
   xiph_dep = dependency('', required: false)
   ogg_dep = dependency('', required: false)
   flac_dep = dependency('', required: false)

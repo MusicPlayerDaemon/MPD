@@ -3,6 +3,7 @@ ver 0.21.1 (not yet released)
   - allow escaping quotes in filter expressions
 * decoder
   - ffmpeg: fix build failure with non-standard FFmpeg installation path
+  - flac: fix linker failure when building without FLAC support
 * fix build failure on Linux-PowerPC
 * fix build failure on FreeBSD
 * eliminate DLL dependencies on Windows
