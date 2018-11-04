@@ -40,12 +40,12 @@ class StringFilter {
 
 public:
 	template<typename V>
-	StringFilter(V &&_value, bool _fold_case)
+	StringFilter(V &&_value, bool _fold_case, bool _substring)
 		:value(std::forward<V>(_value)),
 		 fold_case(_fold_case
 			   ? IcuCompare(value.c_str())
 			   : IcuCompare()),
-		 substring(_fold_case) {}
+		 substring(_substring) {}
 
 	bool empty() const noexcept {
 		return value.empty();

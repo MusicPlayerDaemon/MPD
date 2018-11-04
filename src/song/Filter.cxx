@@ -91,8 +91,11 @@ locate_parse_type(const char *str) noexcept
 
 SongFilter::SongFilter(TagType tag, const char *value, bool fold_case)
 {
+	/* for compatibility with MPD 0.20 and older, "fold_case" also
+	   switches on "substring" */
 	and_filter.AddItem(std::make_unique<TagSongFilter>(tag, value,
-							   fold_case, false));
+							   fold_case, fold_case,
+							   false));
 }
 
 SongFilter::~SongFilter()
@@ -296,11 +299,13 @@ SongFilter::ParseExpression(const char *&s, bool fold_case)
 		if (type == LOCATE_TAG_FILE_TYPE)
 			return std::make_unique<UriSongFilter>(std::move(value),
 							       fold_case,
+							       false,
 							       negated);
 
 		return std::make_unique<TagSongFilter>(TagType(type),
 						       std::move(value),
-						       fold_case, negated);
+						       fold_case, false,
+						       negated);
 	}
 }
 
@@ -325,7 +330,10 @@ SongFilter::Parse(const char *tag_string, const char *value, bool fold_case)
 		break;
 
 	case LOCATE_TAG_FILE_TYPE:
+		/* for compatibility with MPD 0.20 and older,
+		   "fold_case" also switches on "substring" */
 		and_filter.AddItem(std::make_unique<UriSongFilter>(value,
+								   fold_case,
 								   fold_case,
 								   false));
 		break;
@@ -334,8 +342,11 @@ SongFilter::Parse(const char *tag_string, const char *value, bool fold_case)
 		if (tag == LOCATE_TAG_ANY_TYPE)
 			tag = TAG_NUM_OF_ITEM_TYPES;
 
+		/* for compatibility with MPD 0.20 and older,
+		   "fold_case" also switches on "substring" */
 		and_filter.AddItem(std::make_unique<TagSongFilter>(TagType(tag),
 								   value,
+								   fold_case,
 								   fold_case,
 								   false));
 		break;

@@ -32,8 +32,9 @@ class UriSongFilter final : public ISongFilter {
 
 public:
 	template<typename V>
-	UriSongFilter(V &&_value, bool fold_case, bool _negated)
-		:filter(std::forward<V>(_value), fold_case),
+	UriSongFilter(V &&_value, bool fold_case, bool substring,
+		      bool _negated)
+		:filter(std::forward<V>(_value), fold_case, substring),
 		 negated(_negated) {}
 
 	const auto &GetValue() const noexcept {
