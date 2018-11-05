@@ -37,11 +37,4 @@
 #error config.h missing
 #endif
 
-#if defined(__linux__) && !defined(NDEBUG) && defined(ENABLE_LARGEFILE) && \
-	defined(_FEATURES_H) && defined(__i386__) && \
-	!defined(__USE_FILE_OFFSET64)
-/* on i386, check if LFS is enabled */
-#error config.h was included too late
-#endif
-
 #endif
