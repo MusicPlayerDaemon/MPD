@@ -967,7 +967,12 @@ All :program:`MPD` crashes are bugs which must be fixed by a developer, and you 
 
 A crash bug report needs to contain a "backtrace".
 
-First of all, your :program:`MPD` executable must not be "stripped" (i.e. debug information deleted). The executables shipped with Linux distributions are usually stripped, but some have so-called "debug" packages (package mpd-dbg or mpd-dbgsym on Debian, mpd-debug on other distributions). Make sure this package is installed.
+First of all, your :program:`MPD` executable must not be "stripped"
+(i.e. debug information deleted).  The executables shipped with Linux
+distributions are usually stripped, but some have so-called "debug"
+packages (package :file:`mpd-dbgsym` or :file:`mpd-dbg` on Debian,
+:file:`mpd-debug` on other distributions).  Make sure this package is
+installed.
 
 If you built :program:`MPD` from sources, please recompile with Meson
 option ":code:`--buildtype=debug -Db_ndebug=false`", because this will
@@ -980,4 +985,5 @@ You can extract the backtrace from a core dump, or by running :program:`MPD` in 
     gdb --args mpd --stdout --no-daemon --verbose
     run
 
-As soon as you have reproduced the crash, type "bt" on the gdb command prompt. Copy the output to your bug report.
+As soon as you have reproduced the crash, type ":command:`bt`" on the
+gdb command prompt. Copy the output to your bug report.
