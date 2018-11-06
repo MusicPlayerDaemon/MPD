@@ -31,6 +31,11 @@ StringFilter::MatchWithoutNegation(const char *s) const noexcept
 	assert(s != nullptr);
 #endif
 
+#ifdef HAVE_PCRE
+	if (regex)
+		return regex->Match(s);
+#endif
+
 	if (fold_case) {
 		return substring
 			? fold_case.IsIn(s)

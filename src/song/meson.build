@@ -19,6 +19,7 @@ song_dep = declare_dependency(
   link_with: song,
   dependencies: [
     icu_dep,
+    pcre_dep,
     tag_dep,
     util_dep,
   ],

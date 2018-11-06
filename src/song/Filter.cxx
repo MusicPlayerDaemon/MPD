@@ -207,6 +207,20 @@ static StringFilter
 ParseStringFilter(const char *&s, bool fold_case)
 {
 	bool negated = false;
+
+#ifdef HAVE_PCRE
+	if ((s[0] == '!' || s[0] == '=') && s[1] == '~') {
+		negated = s[0] == '!';
+		s = StripLeft(s + 2);
+		auto value = ExpectQuoted(s);
+		StringFilter f(std::move(value), fold_case, false, negated);
+		f.SetRegex(std::make_shared<UniqueRegex>(f.GetValue().c_str(),
+							 false, false,
+							 fold_case));
+		return f;
+	}
+#endif
+
 	if (s[0] == '!' && s[1] == '=')
 		negated = true;
 	else if (s[0] != '=' || s[1] != '=')

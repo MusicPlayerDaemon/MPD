@@ -23,7 +23,12 @@
 #include "lib/icu/Compare.hxx"
 #include "util/Compiler.h"
 
+#ifdef HAVE_PCRE
+#include "lib/pcre/UniqueRegex.hxx"
+#endif
+
 #include <string>
+#include <memory>
 
 class StringFilter {
 	std::string value;
@@ -32,6 +37,10 @@ class StringFilter {
 	 * This value is only set if case folding is enabled.
 	 */
 	IcuCompare fold_case;
+
+#ifdef HAVE_PCRE
+	std::shared_ptr<UniqueRegex> regex;
+#endif
 
 	/**
 	 * Search for substrings instead of matching the whole string?
@@ -53,6 +62,21 @@ public:
 		return value.empty();
 	}
 
+	bool IsRegex() const noexcept {
+#ifdef HAVE_PCRE
+		return !!regex;
+#else
+		return false;
+#endif
+	}
+
+#ifdef HAVE_PCRE
+	template<typename R>
+	void SetRegex(R &&_regex) noexcept {
+		regex = std::forward<R>(_regex);
+	}
+#endif
+
 	const auto &GetValue() const noexcept {
 		return value;
 	}
@@ -70,7 +94,9 @@ public:
 	}
 
 	const char *GetOperator() const noexcept {
-		return negated ? "!=" : "==";
+		return IsRegex()
+			? (negated ? "!~" : "=~")
+			: (negated ? "!=" : "==");
 	}
 
 	gcc_pure

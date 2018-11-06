@@ -157,6 +157,11 @@ of:
   and are case-sensitive; the `search`
   commands specify a sub string and ignore case.
 
+- ``(TAG =~ 'VALUE')`` and ``(TAG !~ 'VALUE')`` use a Perl-compatible
+  regular expression instead of doing a simple string comparison.
+  (This feature is only available if :program:`MPD` was compiled with
+  :file:`libpcre`)
+
 - ``(file == 'VALUE')``: match the full song URI
   (relative to the music directory).
 
