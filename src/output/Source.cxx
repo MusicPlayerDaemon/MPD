@@ -41,8 +41,10 @@ AudioOutputSource::Open(const AudioFormat audio_format, const MusicPipe &_pipe,
 {
 	assert(audio_format.IsValid());
 
-	if (!IsOpen() || &_pipe != &pipe.GetPipe())
+	if (!IsOpen() || &_pipe != &pipe.GetPipe()) {
+		current_chunk = nullptr;
 		pipe.Init(_pipe);
+	}
 
 	/* (re)open the filter */
 
