@@ -970,6 +970,15 @@ Player::Run() noexcept
 	pc.CommandFinished();
 
 	while (ProcessCommand()) {
+		if (decoder_starting) {
+			/* wait until the decoder is initialized completely */
+
+			if (!CheckDecoderStartup())
+				break;
+
+			continue;
+		}
+
 		if (buffering) {
 			/* buffering at the start of the song - wait
 			   until the buffer is large enough, to
@@ -985,15 +994,6 @@ Player::Run() noexcept
 				/* buffering is complete */
 				buffering = false;
 			}
-		}
-
-		if (decoder_starting) {
-			/* wait until the decoder is initialized completely */
-
-			if (!CheckDecoderStartup())
-				break;
-
-			continue;
 		}
 
 		if (dc.IsIdle() && queued && dc.pipe == pipe) {
