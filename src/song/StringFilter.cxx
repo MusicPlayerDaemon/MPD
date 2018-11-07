@@ -23,8 +23,8 @@
 
 #include <assert.h>
 
-bool
-StringFilter::Match(const char *s) const noexcept
+inline bool
+StringFilter::MatchWithoutNegation(const char *s) const noexcept
 {
 #if !CLANG_CHECK_VERSION(3,6)
 	/* disabled on clang due to -Wtautological-pointer-compare */
@@ -40,4 +40,10 @@ StringFilter::Match(const char *s) const noexcept
 			? StringFind(s, value.c_str()) != nullptr
 			: value == s;
 	}
+}
+
+bool
+StringFilter::Match(const char *s) const noexcept
+{
+	return MatchWithoutNegation(s) != negated;
 }

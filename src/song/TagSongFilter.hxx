@@ -34,18 +34,15 @@ struct LightSong;
 class TagSongFilter final : public ISongFilter {
 	TagType type;
 
-	bool negated;
-
 	StringFilter filter;
-
-	friend ISongFilterPtr OptimizeSongFilter(ISongFilterPtr) noexcept;
 
 public:
 	template<typename V>
 	TagSongFilter(TagType _type, V &&_value, bool fold_case, bool substring,
-		      bool _negated)
-		:type(_type), negated(_negated),
-		 filter(std::forward<V>(_value), fold_case, substring) {}
+		      bool negated)
+		:type(_type),
+		 filter(std::forward<V>(_value), fold_case, substring,
+			negated) {}
 
 	TagType GetTagType() const {
 		return type;
@@ -60,7 +57,11 @@ public:
 	}
 
 	bool IsNegated() const noexcept {
-		return negated;
+		return filter.IsNegated();
+	}
+
+	void ToggleNegated() noexcept {
+		filter.ToggleNegated();
 	}
 
 	ISongFilterPtr Clone() const noexcept override {

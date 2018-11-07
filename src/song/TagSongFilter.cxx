@@ -31,7 +31,8 @@ TagSongFilter::ToExpression() const noexcept
 		? "any"
 		: tag_item_names[type];
 
-	return std::string("(") + name + " " + (negated ? "!=" : "==") + " \"" + EscapeFilterString(filter.GetValue()) + "\")";
+	return std::string("(") + name + " " + filter.GetOperator()
+		+ " \"" + EscapeFilterString(filter.GetValue()) + "\")";
 }
 
 bool
@@ -89,5 +90,5 @@ TagSongFilter::MatchNN(const Tag &tag) const noexcept
 bool
 TagSongFilter::Match(const LightSong &song) const noexcept
 {
-	return MatchNN(song.tag) != negated;
+	return MatchNN(song.tag);
 }

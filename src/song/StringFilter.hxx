@@ -38,14 +38,16 @@ class StringFilter {
 	 */
 	bool substring;
 
+	bool negated;
+
 public:
 	template<typename V>
-	StringFilter(V &&_value, bool _fold_case, bool _substring)
+	StringFilter(V &&_value, bool _fold_case, bool _substring, bool _negated)
 		:value(std::forward<V>(_value)),
 		 fold_case(_fold_case
 			   ? IcuCompare(value.c_str())
 			   : IcuCompare()),
-		 substring(_substring) {}
+		 substring(_substring), negated(_negated) {}
 
 	bool empty() const noexcept {
 		return value.empty();
@@ -59,8 +61,24 @@ public:
 		return fold_case;
 	}
 
+	bool IsNegated() const noexcept {
+		return negated;
+	}
+
+	void ToggleNegated() noexcept {
+		negated = !negated;
+	}
+
+	const char *GetOperator() const noexcept {
+		return negated ? "!=" : "==";
+	}
+
 	gcc_pure
 	bool Match(const char *s) const noexcept;
+
+private:
+	gcc_pure
+	bool MatchWithoutNegation(const char *s) const noexcept;
 };
 
 #endif

@@ -58,11 +58,11 @@ OptimizeSongFilter(ISongFilterPtr f) noexcept
 			/* #TagSongFilter has its own "negated" flag,
 			   so we can drop the #NotSongFilter
 			   container */
-			tf->negated = !tf->negated;
+			tf->ToggleNegated();
 			return child;
 		} else if (auto *uf = dynamic_cast<UriSongFilter *>(child.get())) {
 			/* same for #UriSongFilter */
-			uf->negated = !uf->negated;
+			uf->ToggleNegated();
 			return child;
 		}
 

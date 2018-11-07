@@ -26,16 +26,12 @@
 class UriSongFilter final : public ISongFilter {
 	StringFilter filter;
 
-	bool negated;
-
-	friend ISongFilterPtr OptimizeSongFilter(ISongFilterPtr) noexcept;
-
 public:
 	template<typename V>
 	UriSongFilter(V &&_value, bool fold_case, bool substring,
-		      bool _negated)
-		:filter(std::forward<V>(_value), fold_case, substring),
-		 negated(_negated) {}
+		      bool negated)
+		:filter(std::forward<V>(_value), fold_case, substring,
+			negated) {}
 
 	const auto &GetValue() const noexcept {
 		return filter.GetValue();
@@ -46,7 +42,11 @@ public:
 	}
 
 	bool IsNegated() const noexcept {
-		return negated;
+		return filter.IsNegated();
+	}
+
+	void ToggleNegated() noexcept {
+		filter.ToggleNegated();
 	}
 
 	ISongFilterPtr Clone() const noexcept override {
