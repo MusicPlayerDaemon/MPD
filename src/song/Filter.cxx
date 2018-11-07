@@ -197,6 +197,28 @@ ExpectQuoted(const char *&s)
 	return {buffer, length};
 }
 
+/**
+ * Parse a string operator and its second operand and convert it to a
+ * #StringFilter.
+ *
+ * Throws on error.
+ */
+static StringFilter
+ParseStringFilter(const char *&s, bool fold_case)
+{
+	bool negated = false;
+	if (s[0] == '!' && s[1] == '=')
+		negated = true;
+	else if (s[0] != '=' || s[1] != '=')
+		throw std::runtime_error("'==' or '!=' expected");
+
+	s = StripLeft(s + 2);
+	auto value = ExpectQuoted(s);
+
+	return StringFilter(std::move(value),
+			    fold_case, false, negated);
+}
+
 ISongFilterPtr
 SongFilter::ParseExpression(const char *&s, bool fold_case)
 {
@@ -279,21 +301,11 @@ SongFilter::ParseExpression(const char *&s, bool fold_case)
 
 		return std::make_unique<AudioFormatSongFilter>(value);
 	} else {
-		bool negated = false;
-		if (s[0] == '!' && s[1] == '=')
-			negated = true;
-		else if (s[0] != '=' || s[1] != '=')
-			throw std::runtime_error("'==' or '!=' expected");
-
-		s = StripLeft(s + 2);
-		auto value = ExpectQuoted(s);
+		auto string_filter = ParseStringFilter(s, fold_case);
 		if (*s != ')')
 			throw std::runtime_error("')' expected");
 
 		s = StripLeft(s + 1);
-
-		StringFilter string_filter(std::move(value),
-					   fold_case, false, negated);
 
 		if (type == LOCATE_TAG_ANY_TYPE)
 			type = TAG_NUM_OF_ITEM_TYPES;
