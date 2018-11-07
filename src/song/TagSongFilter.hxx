@@ -37,12 +37,8 @@ class TagSongFilter final : public ISongFilter {
 	StringFilter filter;
 
 public:
-	template<typename V>
-	TagSongFilter(TagType _type, V &&_value, bool fold_case, bool substring,
-		      bool negated)
-		:type(_type),
-		 filter(std::forward<V>(_value), fold_case, substring,
-			negated) {}
+	TagSongFilter(TagType _type, StringFilter &&_filter) noexcept
+		:type(_type), filter(std::move(_filter)) {}
 
 	TagType GetTagType() const {
 		return type;

@@ -93,9 +93,8 @@ SongFilter::SongFilter(TagType tag, const char *value, bool fold_case)
 {
 	/* for compatibility with MPD 0.20 and older, "fold_case" also
 	   switches on "substring" */
-	and_filter.AddItem(std::make_unique<TagSongFilter>(tag, value,
-							   fold_case, fold_case,
-							   false));
+	and_filter.AddItem(std::make_unique<TagSongFilter>(tag,
+							   StringFilter(value, fold_case, fold_case, false)));
 }
 
 SongFilter::~SongFilter()
@@ -293,19 +292,17 @@ SongFilter::ParseExpression(const char *&s, bool fold_case)
 
 		s = StripLeft(s + 1);
 
+		StringFilter string_filter(std::move(value),
+					   fold_case, false, negated);
+
 		if (type == LOCATE_TAG_ANY_TYPE)
 			type = TAG_NUM_OF_ITEM_TYPES;
 
 		if (type == LOCATE_TAG_FILE_TYPE)
-			return std::make_unique<UriSongFilter>(std::move(value),
-							       fold_case,
-							       false,
-							       negated);
+			return std::make_unique<UriSongFilter>(std::move(string_filter));
 
 		return std::make_unique<TagSongFilter>(TagType(type),
-						       std::move(value),
-						       fold_case, false,
-						       negated);
+						       std::move(string_filter));
 	}
 }
 
@@ -332,10 +329,10 @@ SongFilter::Parse(const char *tag_string, const char *value, bool fold_case)
 	case LOCATE_TAG_FILE_TYPE:
 		/* for compatibility with MPD 0.20 and older,
 		   "fold_case" also switches on "substring" */
-		and_filter.AddItem(std::make_unique<UriSongFilter>(value,
-								   fold_case,
-								   fold_case,
-								   false));
+		and_filter.AddItem(std::make_unique<UriSongFilter>(StringFilter(value,
+										fold_case,
+										fold_case,
+										false)));
 		break;
 
 	default:
@@ -345,10 +342,10 @@ SongFilter::Parse(const char *tag_string, const char *value, bool fold_case)
 		/* for compatibility with MPD 0.20 and older,
 		   "fold_case" also switches on "substring" */
 		and_filter.AddItem(std::make_unique<TagSongFilter>(TagType(tag),
-								   value,
-								   fold_case,
-								   fold_case,
-								   false));
+								   StringFilter(value,
+										fold_case,
+										fold_case,
+										false)));
 		break;
 	}
 }
