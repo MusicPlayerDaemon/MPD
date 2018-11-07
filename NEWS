@@ -4,6 +4,7 @@ ver 0.21.2 (not yet released)
   - ffmpeg: fix broken sound with certain codecs
 * output
   - httpd: fix crash with "always_on"
+* fix zlib support
 
 ver 0.21.1 (2018/11/04)
 * protocol
