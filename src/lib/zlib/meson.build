@@ -15,4 +15,7 @@ zlib = static_library(
 
 zlib_dep = declare_dependency(
   link_with: zlib,
+  dependencies: [
+    zlib_dep,
+  ],
 )
