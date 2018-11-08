@@ -3,7 +3,7 @@ ver 0.21.2 (not yet released)
   - ffmpeg: require FFmpeg 3.1 or later
   - ffmpeg: fix broken sound with certain codecs
 * output
-  - httpd: fix crash with "always_on"
+  - httpd: fix two crash bugs
 * fix zlib support
 
 ver 0.21.1 (2018/11/04)

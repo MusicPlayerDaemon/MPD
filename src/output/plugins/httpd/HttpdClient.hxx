@@ -98,8 +98,11 @@ class HttpdClient final
 
 	/**
 	 * If the current metadata was already sent to the client.
+	 *
+	 * Initialized to `true` because there is no metadata #Page
+	 * pending to be sent.
 	 */
-	bool metadata_sent = false;
+	bool metadata_sent = true;
 
 	/**
 	 * The amount of streaming data between each metadata block
