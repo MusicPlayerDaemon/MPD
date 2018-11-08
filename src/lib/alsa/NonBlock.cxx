@@ -49,6 +49,30 @@ AlsaNonBlockPcm::PrepareSockets(MultiSocketMonitor &m, snd_pcm_t *pcm)
 	return std::chrono::steady_clock::duration(-1);
 }
 
+void
+AlsaNonBlockPcm::DispatchSockets(MultiSocketMonitor &m,
+				 snd_pcm_t *pcm) noexcept
+{
+	int count = snd_pcm_poll_descriptors_count(pcm);
+	if (count <= 0)
+		return;
+
+	const auto pfds = pfd_buffer.Get(count), end = pfds + count;
+
+	auto *i = pfds;
+	m.ForEachReturnedEvent([&i, end](SocketDescriptor s, unsigned events){
+			if (i >= end)
+				return;
+
+			i->fd = s.Get();
+			i->events = i->revents = events;
+			++i;
+		});
+
+	unsigned short dummy;
+	snd_pcm_poll_descriptors_revents(pcm, pfds, i - pfds, &dummy);
+}
+
 std::chrono::steady_clock::duration
 AlsaNonBlockMixer::PrepareSockets(MultiSocketMonitor &m, snd_mixer_t *mixer) noexcept
 {
@@ -66,4 +90,28 @@ AlsaNonBlockMixer::PrepareSockets(MultiSocketMonitor &m, snd_mixer_t *mixer) noe
 
 	m.ReplaceSocketList(pfds, count);
 	return std::chrono::steady_clock::duration(-1);
+}
+
+void
+AlsaNonBlockMixer::DispatchSockets(MultiSocketMonitor &m,
+				   snd_mixer_t *mixer) noexcept
+{
+	int count = snd_mixer_poll_descriptors_count(mixer);
+	if (count <= 0)
+		return;
+
+	const auto pfds = pfd_buffer.Get(count), end = pfds + count;
+
+	auto *i = pfds;
+	m.ForEachReturnedEvent([&i, end](SocketDescriptor s, unsigned events){
+			if (i >= end)
+				return;
+
+			i->fd = s.Get();
+			i->events = i->revents = events;
+			++i;
+		});
+
+	unsigned short dummy;
+	snd_mixer_poll_descriptors_revents(mixer, pfds, i - pfds, &dummy);
 }

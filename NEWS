@@ -3,6 +3,7 @@ ver 0.21.2 (not yet released)
   - ffmpeg: require FFmpeg 3.1 or later
   - ffmpeg: fix broken sound with certain codecs
 * output
+  - alsa: fix high CPU usage with dmix
   - httpd: fix two crash bugs
 * mixer
   - alsa: fix more rounding errors

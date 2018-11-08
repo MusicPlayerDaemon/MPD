@@ -889,6 +889,8 @@ AlsaOutput::PrepareSockets() noexcept
 void
 AlsaOutput::DispatchSockets() noexcept
 try {
+	non_block.DispatchSockets(*this, pcm);
+
 	{
 		const std::lock_guard<Mutex> lock(mutex);
 

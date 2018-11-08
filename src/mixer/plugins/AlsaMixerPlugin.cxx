@@ -117,6 +117,8 @@ AlsaMixerMonitor::DispatchSockets() noexcept
 {
 	assert(mixer != nullptr);
 
+	non_block.DispatchSockets(*this, mixer);
+
 	int err = snd_mixer_handle_events(mixer);
 	if (err < 0) {
 		FormatError(alsa_mixer_domain,

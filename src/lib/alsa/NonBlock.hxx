@@ -42,6 +42,12 @@ public:
 	 */
 	std::chrono::steady_clock::duration PrepareSockets(MultiSocketMonitor &m,
 							   snd_pcm_t *pcm);
+
+	/**
+	 * Wrapper for snd_pcm_poll_descriptors_revents(), to be
+	 * called from MultiSocketMonitor::DispatchSockets().
+	 */
+	void DispatchSockets(MultiSocketMonitor &m, snd_pcm_t *pcm) noexcept;
 };
 
 /**
@@ -54,6 +60,12 @@ class AlsaNonBlockMixer {
 public:
 	std::chrono::steady_clock::duration PrepareSockets(MultiSocketMonitor &m,
 							   snd_mixer_t *mixer) noexcept;
+
+	/**
+	 * Wrapper for snd_mixer_poll_descriptors_revents(), to be
+	 * called from MultiSocketMonitor::DispatchSockets().
+	 */
+	void DispatchSockets(MultiSocketMonitor &m, snd_mixer_t *mixer) noexcept;
 };
 
 #endif

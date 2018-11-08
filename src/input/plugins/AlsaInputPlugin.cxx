@@ -185,6 +185,8 @@ AlsaInputStream::PrepareSockets() noexcept
 void
 AlsaInputStream::DispatchSockets() noexcept
 {
+	non_block.DispatchSockets(*this, capture_handle);
+
 	const std::lock_guard<Mutex> protect(mutex);
 
 	auto w = PrepareWriteBuffer();
