@@ -194,6 +194,19 @@ public:
 	void ReplaceSocketList(pollfd *pfds, unsigned n) noexcept;
 #endif
 
+	/**
+	 * Invoke a function for each socket which has become ready.
+	 */
+	template<typename F>
+	void ForEachReturnedEvent(F &&f) noexcept {
+		for (auto &i : fds) {
+			if (i.GetReturnedEvents() != 0) {
+				f(i.GetSocket(), i.GetReturnedEvents());
+				i.ClearReturnedEvents();
+			}
+		}
+	}
+
 protected:
 	/**
 	 * Override this method and update the socket registrations.
