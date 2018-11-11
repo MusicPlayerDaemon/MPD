@@ -135,6 +135,13 @@ static int set_normalized_volume(snd_mixer_elem_t *elem,
 		if (err < 0)
 			return err;
 
+		/* two special cases to avoid rounding errors at 0% and
+		   100% */
+		if (volume <= 0)
+			return set_raw[ctl_dir](elem, min);
+		else if (volume >= 1)
+			return set_raw[ctl_dir](elem, max);
+
 		value = lrint_dir(volume * (max - min), dir) + min;
 		return set_raw[ctl_dir](elem, value);
 	}
@@ -143,7 +150,7 @@ static int set_normalized_volume(snd_mixer_elem_t *elem,
 	   100% */
 	if (volume <= 0)
 		return set_dB[ctl_dir](elem, min, dir);
-	else if (volume >= 100)
+	else if (volume >= 1)
 		return set_dB[ctl_dir](elem, max, dir);
 
 	if (use_linear_dB_scale(min, max)) {
