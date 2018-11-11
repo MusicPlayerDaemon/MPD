@@ -26,7 +26,6 @@
 #include "event/DeferEvent.hxx"
 #include "event/Call.hxx"
 #include "util/ASCII.hxx"
-#include "util/ReusableArray.hxx"
 #include "util/Domain.hxx"
 #include "util/RuntimeError.hxx"
 #include "Log.hxx"
@@ -48,7 +47,7 @@ class AlsaMixerMonitor final : MultiSocketMonitor {
 
 	snd_mixer_t *mixer;
 
-	ReusableArray<pollfd> pfd_buffer;
+	AlsaNonBlockMixer non_block;
 
 public:
 	AlsaMixerMonitor(EventLoop &_loop, snd_mixer_t *_mixer)
@@ -110,7 +109,7 @@ AlsaMixerMonitor::PrepareSockets() noexcept
 		return std::chrono::steady_clock::duration(-1);
 	}
 
-	return PrepareAlsaMixerSockets(*this, mixer, pfd_buffer);
+	return non_block.PrepareSockets(*this, mixer);
 }
 
 void

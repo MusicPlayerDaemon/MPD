@@ -148,10 +148,7 @@ class AlsaOutput final
 	 */
 	uint8_t *silence;
 
-	/**
-	 * For PrepareAlsaPcmSockets().
-	 */
-	ReusableArray<pollfd> pfd_buffer;
+	AlsaNonBlockPcm non_block;
 
 	/**
 	 * For copying data from OutputThread to IOThread.
@@ -881,7 +878,7 @@ AlsaOutput::PrepareSockets() noexcept
 	}
 
 	try {
-		return PrepareAlsaPcmSockets(*this, pcm, pfd_buffer);
+		return non_block.PrepareSockets(*this, pcm);
 	} catch (...) {
 		ClearSocketList();
 		LockCaughtError();

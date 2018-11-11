@@ -34,7 +34,6 @@
 #include "util/Domain.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/StringCompare.hxx"
-#include "util/ReusableArray.hxx"
 #include "util/ASCII.hxx"
 #include "Log.hxx"
 #include "event/MultiSocketMonitor.hxx"
@@ -69,7 +68,7 @@ class AlsaInputStream final
 	snd_pcm_t *const capture_handle;
 	const size_t frame_size;
 
-	ReusableArray<pollfd> pfd_buffer;
+	AlsaNonBlockPcm non_block;
 
 	DeferEvent defer_invalidate_sockets;
 
@@ -180,7 +179,7 @@ AlsaInputStream::PrepareSockets() noexcept
 		return std::chrono::steady_clock::duration(-1);
 	}
 
-	return PrepareAlsaPcmSockets(*this, capture_handle, pfd_buffer);
+	return non_block.PrepareSockets(*this, capture_handle);
 }
 
 void
