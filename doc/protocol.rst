@@ -8,7 +8,7 @@ General protocol syntax
 Protocol overview
 =================
 
-The ``MPD`` command protocol exchanges
+The :program:`MPD` command protocol exchanges
 line-based text records between client and server over TCP.
 Once the client is connected to the server, they conduct a
 conversation until the client closes the connection. The
@@ -231,8 +231,7 @@ arguments for you.
 Tags
 ====
 
-The following tags are supported by
-``MPD``:
+The following tags are supported by :program:`MPD`:
 
 * **artist**: the artist name. Its meaning is not well-defined; see "*composer*" and "*performer*" for more specific tags.
 * **artistsort**: same as artist, but for sorting. This usually omits prefixes such as "The".
@@ -258,7 +257,7 @@ The following tags are supported by
 * **musicbrainz_workid**: the work id in the `MusicBrainz <https://picard.musicbrainz.org/docs/mappings/>`_ database.
 
 There can be multiple values for some of these tags.  For
-example, ``MPD`` may return multiple
+example, :program:`MPD` may return multiple
 lines with a ``performer`` tag.  A tag value is
 a UTF-8 string.
 
@@ -301,16 +300,17 @@ Recipes
 Queuing
 =======
 
-Often, users run ``MPD`` with :ref:`random <command_random>` enabled,
-but want to be able to insert songs "before" the rest of the playlist.
-That is commonly called "queuing".
+Often, users run :program:`MPD` with :ref:`random <command_random>`
+enabled, but want to be able to insert songs "before" the rest of the
+playlist.  That is commonly called "queuing".
 
-``MPD`` implements this by allowing the client to specify a "priority"
-for each song in the playlist (commands :ref:`priod <command_prio>`
-and :ref:`priodid <command_prioid>`).  A higher priority means that
-the song is going to be played before the other songs.
+:program:`MPD` implements this by allowing the client to specify a
+"priority" for each song in the playlist (commands :ref:`priod
+<command_prio>` and :ref:`priodid <command_prioid>`).  A higher
+priority means that the song is going to be played before the other
+songs.
 
-In "random" mode, ``MPD`` maintains an
+In "random" mode, :program:`MPD` maintains an
 internal randomized sequence of songs.  In this sequence,
 songs with a higher priority come first, and all songs with
 the same priority are shuffled (by default, all songs are
@@ -335,9 +335,9 @@ Command reference
    commands using song ids should be used instead of the commands
    that manipulate and control playback based on playlist
    position. Using song ids is a safer method when multiple
-   clients are interacting with ``MPD``.
+   clients are interacting with :program:`MPD`.
 
-Querying ``MPD``'s status
+Querying :program:`MPD`'s status
 ================================
 
 :command:`clearerror`
@@ -352,7 +352,7 @@ Querying ``MPD``'s status
 
 :command:`idle [SUBSYSTEMS...]` [#since_0_14]_
     Waits until there is a noteworthy change in one or more
-    of ``MPD``'s subsystems.  As soon
+    of :program:`MPD`'s subsystems.  As soon
     as there is one, it lists all changed systems in a line
     in the format ``changed:
     SUBSYSTEM``, where SUBSYSTEM is one of the
@@ -382,11 +382,11 @@ Querying ``MPD``'s status
     to wait for events as long as mpd runs.  The
     `idle` command can be canceled by
     sending the command `noidle` (no other
-    commands are allowed). ``MPD``
+    commands are allowed). :program:`MPD`
     will then leave `idle` mode and print
     results immediately; might be empty at this time.
     If the optional ``SUBSYSTEMS`` argument
-    is used, ``MPD`` will only send
+    is used, :program:`MPD` will only send
     notifications when something changed in one of the
     specified subsytems.
 
@@ -641,7 +641,7 @@ The current playlist
     but address the songs with their id.
 
 :command:`rangeid {ID} {START:END}` [#since_0_19]_
-    Since ``MPD``
+    Since :program:`MPD`
     0.19 Specifies the portion of the
     song that shall be played.  ``START`` and
     ``END`` are offsets in seconds
@@ -821,7 +821,7 @@ The music database
 :command:`list {TYPE} {FILTER} [group {GROUPTYPE}]`
     Lists unique tags values of the specified type.
     ``TYPE`` can be any tag supported by
-    ``MPD`` or
+    :program:`MPD` or
     *file*.
 
     Additional arguments may specify a :ref:`filter <filter_syntax>`.
@@ -840,10 +840,10 @@ The music database
     ``URI``.
 
     Do not use this command.  Do not manage a client-side
-    copy of ``MPD``'s database.  That
+    copy of :program:`MPD`'s database.  That
     is fragile and adds huge overhead.  It will break with
     large databases.  Instead, query
-    ``MPD`` whenever you need
+    :program:`MPD` whenever you need
     something.
 
 .. _command_listallinfo:
@@ -854,16 +854,16 @@ The music database
     as :ref:`lsinfo <command_lsinfo>`
 
     Do not use this command.  Do not manage a client-side
-    copy of ``MPD``'s database.  That
+    copy of :program:`MPD`'s database.  That
     is fragile and adds huge overhead.  It will break with
     large databases.  Instead, query
-    ``MPD`` whenever you need
+    :program:`MPD` whenever you need
     something.
 
 :command:`listfiles {URI}`
     Lists the contents of the directory
     ``URI``, including files are not
-    recognized by ``MPD``.
+    recognized by :program:`MPD`.
     ``URI`` can be a path relative to the
     music directory or an URI understood by one of the
     storage plugins.  The response contains at least one
@@ -970,7 +970,7 @@ Multiple storages can be "mounted" together, similar to the
 `mount` command on many operating
 systems, but without cooperation from the kernel.  No
 superuser privileges are necessary, beause this mapping exists
-only inside the ``MPD`` process
+only inside the :program:`MPD` process
 
 .. _command_mount:
 
@@ -1013,15 +1013,15 @@ Stickers
 
 "Stickers" [#since_0_15]_ are pieces of
 information attached to existing
-``MPD`` objects (e.g. song files,
+:program:`MPD` objects (e.g. song files,
 directories, albums).  Clients can create arbitrary name/value
-pairs.  ``MPD`` itself does not assume
+pairs.  :program:`MPD` itself does not assume
 any special meaning in them.
 
 The goal is to allow clients to share additional (possibly
 dynamic) information about songs, which is neither stored on
 the client (not available to other clients), nor stored in the
-song files (``MPD`` has no write
+song files (:program:`MPD` has no write
 access).
 
 Client developers should create a standard for common sticker
@@ -1063,14 +1063,14 @@ Connection settings
 ===================
 
 :command:`close`
-    Closes the connection to ``MPD``.
-    ``MPD`` will try to send the
+    Closes the connection to :program:`MPD`.
+    :program:`MPD` will try to send the
     remaining output buffer before it actually closes the
     connection, but that cannot be guaranteed.  This command
     will not generate a response.
 
 :command:`kill`
-    Kills ``MPD``.
+    Kills :program:`MPD`.
 
 :command:`password {PASSWORD}`
     This is used for authentication with the server.
@@ -1104,7 +1104,7 @@ Connection settings
 
 :command:`tagtypes clear`
     Clear the list of tag types this client is interested
-    in.  This means that ``MPD`` will
+    in.  This means that :program:`MPD` will
     not send any tags to this client.
 
 :command:`tagtypes all`
