@@ -443,8 +443,7 @@ AudioOutputControl::Task() noexcept
 		case Command::PAUSE:
 			if (!open) {
 				/* the output has failed after
-				   audio_output_all_pause() has
-				   submitted the PAUSE command; bail
+				   the PAUSE command was submitted; bail
 				   out */
 				CommandFinished();
 				break;

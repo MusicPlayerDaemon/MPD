@@ -23,7 +23,8 @@
  * between the decoder thread and the output thread(s): it receives
  * #MusicChunk objects from the decoder, optionally mixes them
  * (cross-fading), applies software volume, and sends them to the
- * audio outputs via audio_output_all_play().
+ * audio outputs via PlayerOutputs::Play()
+ * (i.e. MultipleOutputs::Play()).
  *
  * It is controlled by the main thread (the playlist code), see
  * Control.hxx.  The playlist enqueues new songs into the player
