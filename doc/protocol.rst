@@ -419,6 +419,10 @@ Querying ``MPD``'s status
     - ``updating_db``: ``job id``
     - ``error``: if there is an error, returns message here
 
+    :program:`MPD` may omit lines which have no (known) value.  Older
+    :program:`MPD` versions used to have a "magic" value for
+    "unknown", e.g. ":samp:`volume: -1`".
+
 :command:`stats`
     Displays statistics.
 
