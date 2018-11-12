@@ -124,9 +124,14 @@ FilteredAudioOutput::OpenOutputAndConvert(AudioFormat desired_audio_format)
 void
 FilteredAudioOutput::CloseOutput(bool drain) noexcept
 {
-	if (drain)
-		Drain();
-	else
+	if (drain) {
+		try {
+			Drain();
+		} catch (...) {
+			FormatError(std::current_exception(),
+				    "Failed to drain %s", GetLogName());
+		}
+	} else
 		Cancel();
 
 	output->Close();
