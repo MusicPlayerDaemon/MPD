@@ -206,6 +206,20 @@ ExpectQuoted(const char *&s)
 static StringFilter
 ParseStringFilter(const char *&s, bool fold_case)
 {
+	if (auto after_contains = StringAfterPrefixIgnoreCase(s, "contains ")) {
+		s = StripLeft(after_contains);
+		auto value = ExpectQuoted(s);
+		return StringFilter(std::move(value),
+				    fold_case, true, false);
+	}
+
+	if (auto after_not_contains = StringAfterPrefixIgnoreCase(s, "!contains ")) {
+		s = StripLeft(after_not_contains);
+		auto value = ExpectQuoted(s);
+		return StringFilter(std::move(value),
+				    fold_case, true, true);
+	}
+
 	bool negated = false;
 
 #ifdef HAVE_PCRE

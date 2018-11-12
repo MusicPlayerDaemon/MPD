@@ -96,7 +96,9 @@ public:
 	const char *GetOperator() const noexcept {
 		return IsRegex()
 			? (negated ? "!~" : "=~")
-			: (negated ? "!=" : "==");
+			: (substring
+			   ? (negated ? "!contains" : "contains")
+			   : (negated ? "!=" : "=="));
 	}
 
 	gcc_pure

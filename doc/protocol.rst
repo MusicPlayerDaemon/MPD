@@ -154,6 +154,9 @@ of:
   ``AlbumArtist`` does not exist.
   ``VALUE`` is what to find.
 
+- ``(TAG contains 'VALUE')`` checks if the given value is a substring
+  of the tag value.
+
 - ``(TAG =~ 'VALUE')`` and ``(TAG !~ 'VALUE')`` use a Perl-compatible
   regular expression instead of doing a simple string comparison.
   (This feature is only available if :program:`MPD` was compiled with

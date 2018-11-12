@@ -1,6 +1,7 @@
 ver 0.21.2 (not yet released)
 * protocol
   - operator "=~" matches a regular expression
+  - operator "contains" matches substrings
 * decoder
   - ffmpeg: require FFmpeg 3.1 or later
   - ffmpeg: fix broken sound with certain codecs
