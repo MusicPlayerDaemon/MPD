@@ -456,6 +456,30 @@ AudioOutputControl::Task() noexcept
 			   the new command first */
 			continue;
 
+		case Command::RELEASE:
+			if (!open) {
+				/* the output has failed after
+				   the PAUSE command was submitted; bail
+				   out */
+				CommandFinished();
+				break;
+			}
+
+			if (always_on) {
+				/* in "always_on" mode, the output is
+				   paused instead of being closed */
+				InternalPause();
+			} else {
+				InternalClose(false);
+				CommandFinished();
+			}
+
+			/* don't "break" here: this might cause
+			   Play() to be called when command==CLOSE
+			   ends the paused state - "continue" checks
+			   the new command first */
+			continue;
+
 		case Command::DRAIN:
 			if (open)
 				InternalDrain();

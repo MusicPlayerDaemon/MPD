@@ -347,10 +347,22 @@ AudioOutputControl::LockAllowPlay() noexcept
 void
 AudioOutputControl::LockRelease() noexcept
 {
-	if (always_on)
-		LockPauseAsync();
+	if (output->mixer != nullptr &&
+	    (!always_on || !output->SupportsPause()))
+		/* the device has no pause mode: close the mixer,
+		   unless its "global" flag is set (checked by
+		   mixer_auto_close()) */
+		mixer_auto_close(output->mixer);
+
+	const std::lock_guard<Mutex> protect(mutex);
+
+	assert(!open || !fail_timer.IsDefined());
+	assert(allow_play);
+
+	if (IsOpen())
+		CommandWait(Command::RELEASE);
 	else
-		LockCloseWait();
+		fail_timer.Reset();
 }
 
 void

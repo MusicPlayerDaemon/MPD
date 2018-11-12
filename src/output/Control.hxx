@@ -132,6 +132,12 @@ class AudioOutputControl {
 		PAUSE,
 
 		/**
+		 * Close or pause the device, depending on the
+		 * #always_on setting.
+		 */
+		RELEASE,
+
+		/**
 		 * Drains the internal (hardware) buffers of the device.  This
 		 * operation may take a while to complete.
 		 */
