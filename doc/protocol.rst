@@ -361,7 +361,7 @@ Querying :program:`MPD`'s status
     - ``database``: the song database has been modified after :ref:`update <command_update>`.
     - ``update``: a database update has started or finished.  If the database was modified during the update, the ``database`` event is also emitted.
     - ``stored_playlist``: a stored playlist has been modified, renamed, created or deleted
-    - ``playlist``: the current playlist has been modified
+    - ``playlist``: the queue (i.e. the current playlist) has been modified
     - ``player``: the player has been started, stopped or seeked
     - ``mixer``: the volume has been changed
     - ``output``: an audio output has been added, removed or modified (e.g. renamed, enabled or disabled)
@@ -538,8 +538,20 @@ Controlling playback
 :command:`stop`
     Stops playing.
 
-The current playlist
-====================
+The Queue
+=========
+
+.. note:: The "queue" used to be called "current playlist" or just
+          "playlist", but that was deemed confusing, because
+          "playlists" are also files containing a sequence of songs.
+          Those "playlist files" or "stored playlists" can be
+          :ref:`loaded into the queue <command_load>` and the queue
+          can be :ref:`saved into a playlist file <command_save>`, but
+          they are not to be confused with the queue.
+
+          Many of the command names in this section reflect the old
+          naming convention, but for the sake of compatibility, we
+          cannot rename commands.
 
 :command:`add {URI}`
     Adds the file ``URI`` to the playlist
@@ -555,7 +567,7 @@ The current playlist
      OK
 
 :command:`clear`
-    Clears the current playlist.
+    Clears the queue.
 
 .. _command_delete:
 
@@ -580,13 +592,13 @@ The current playlist
 
 :command:`playlist`
 
-    Displays the current playlist.
+    Displays the queue.
 
     Do not use this, instead use :ref:`playlistinfo
     <command_playlistinfo>`.
 
 :command:`playlistfind {TAG} {NEEDLE}`
-    Finds songs in the current playlist with strict
+    Finds songs in the queue with strict
     matching.
 
 :command:`playlistid {SONGID}`
@@ -604,7 +616,7 @@ The current playlist
 
 :command:`playlistsearch {TAG} {NEEDLE}`
     Searches case-insensitively for partial matches in the
-    current playlist.
+    queue.
 
 :command:`plchanges {VERSION} [START:END]`
     Displays changed songs currently in the playlist since
@@ -651,7 +663,7 @@ The current playlist
     playing cannot be manipulated this way.
 
 :command:`shuffle [START:END]`
-    Shuffles the current playlist.
+    Shuffles the queue.
     ``START:END`` is optional and specifies
     a range of songs.
 
@@ -705,6 +717,8 @@ remote playlists (absolute URI with a supported scheme).
     between clients and the server, clients should not
     compare this value with their local clock.
 
+.. _command_load:
+
 :command:`load {NAME} [START:END]`
     Loads the playlist into the current queue.  Playlist
     plugins are supported.  A range may be specified to load
@@ -735,8 +749,10 @@ remote playlists (absolute URI with a supported scheme).
     Removes the playlist `NAME.m3u` from
     the playlist directory.
 
+.. _command_save:
+
 :command:`save {NAME}`
-    Saves the current playlist to
+    Saves the queue to
     `NAME.m3u` in the playlist directory.
 
 The music database
