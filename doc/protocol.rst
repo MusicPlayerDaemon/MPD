@@ -152,10 +152,7 @@ of:
   ``VALUE`` in ``AlbumArtist``
   and falls back to ``Artist`` tags if
   ``AlbumArtist`` does not exist.
-  ``VALUE`` is what to find.  The
-  `find` commands specify an exact value
-  and are case-sensitive; the `search`
-  commands specify a sub string and ignore case.
+  ``VALUE`` is what to find.
 
 - ``(TAG =~ 'VALUE')`` and ``(TAG !~ 'VALUE')`` use a Perl-compatible
   regular expression instead of doing a simple string comparison.
@@ -188,6 +185,9 @@ of:
   more expressions with logical "and".  Note that each expression must
   be enclosed in parantheses, e.g. :code:`((artist == 'FOO') AND
   (album == 'BAR'))`
+
+The :command:`find` commands are case sensitive, which
+:command:`search` and related commands ignore case.
 
 Prior to MPD 0.21, the syntax looked like this::
 
