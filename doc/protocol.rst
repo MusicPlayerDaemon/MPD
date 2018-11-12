@@ -1069,8 +1069,15 @@ Connection settings
     connection, but that cannot be guaranteed.  This command
     will not generate a response.
 
+    Clients should not use this command; instead, they should just
+    close the socket.
+
 :command:`kill`
     Kills :program:`MPD`.
+
+    Do not use this command.  Send ``SIGTERM`` to :program:`MPD`
+    instead, or better: let your service manager handle :program:`MPD`
+    shutdown (e.g. :command:`systemctl stop mpd`).
 
 :command:`password {PASSWORD}`
     This is used for authentication with the server.
