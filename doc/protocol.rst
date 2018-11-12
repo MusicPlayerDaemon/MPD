@@ -396,7 +396,8 @@ Querying ``MPD``'s status
     Reports the current status of the player and the volume
     level.
 
-    - ``volume``: ``0-100`` or ``-1`` if the volume cannot be determined
+    - ``volume``: ``0-100`` (deprecated: ``-1`` if the volume cannot
+      be determined)
     - ``repeat``: ``0`` or ``1``
     - ``random``: ``0`` or ``1``
     - ``single`` [#since_0_15]_: ``0``, ``1``, or ``oneshot`` [#since_0_21]_
@@ -409,6 +410,7 @@ Querying ``MPD``'s status
     - ``nextsong`` [#since_0_15]_: playlist song number of the next song to be played
     - ``nextsongid`` [#since_0_15]_: playlist songid of the next song to be played
     - ``time``: total time elapsed (of current playing/paused song)
+      (deprecated, use ``elapsed`` instead)
     - ``elapsed`` [#since_0_16]_: Total time elapsed within the current song, but with higher resolution.
     - ``duration`` [#since_0_20]_: Duration of the current song in seconds.
     - ``bitrate``: instantaneous bitrate in kbps
