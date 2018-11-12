@@ -27,3 +27,10 @@ TimerEvent::Schedule(Event::Duration d) noexcept
 
 	loop.AddTimer(*this, d);
 }
+
+void
+TimerEvent::ScheduleEarlier(Event::Duration d) noexcept
+{
+	if (!IsPending() || loop.SteadyNow() + d < due)
+		Schedule(d);
+}

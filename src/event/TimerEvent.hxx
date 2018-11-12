@@ -53,8 +53,7 @@ class TimerEvent final
 
 public:
 	TimerEvent(EventLoop &_loop, Callback _callback) noexcept
-		:loop(_loop), callback(_callback) {
-	}
+		:loop(_loop), callback(_callback) {}
 
 	auto &GetEventLoop() const noexcept {
 		return loop;
@@ -65,6 +64,12 @@ public:
 	}
 
 	void Schedule(Event::Duration d) noexcept;
+
+	/**
+	 * Like Schedule(), but is a no-op if there is a due time
+	 * earlier than the given one.
+	 */
+	void ScheduleEarlier(Event::Duration d) noexcept;
 
 	void Cancel() noexcept {
 		unlink();
