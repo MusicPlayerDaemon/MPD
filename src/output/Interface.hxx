@@ -159,6 +159,8 @@ public:
 
 	/**
 	 * Wait until the device has finished playing.
+	 *
+	 * Throws on error.
 	 */
 	virtual void Drain() {}
 
