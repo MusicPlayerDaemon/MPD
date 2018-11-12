@@ -553,6 +553,22 @@ The Queue
           naming convention, but for the sake of compatibility, we
           cannot rename commands.
 
+There are two ways to address songs within the queue: by their
+position and by their id.
+
+The position is a 1-based index.  It is unstable by design: if you
+move, delete or insert songs, all following indices will change, and a
+client can never be sure what song is behind a given index/position.
+
+Song ids on the other hand are stable: an id is assigned to a song
+when it is added, and will stay the same, no matter how much it is
+moved around.  Adding the same song twice will assign different ids to
+them, and a deleted-and-readded song will have a new id.  This way, a
+client can always be sure the correct song is being used.
+
+Many commands come in two flavors, one for each address type.
+Whenever possible, ids should be used.
+
 :command:`add {URI}`
     Adds the file ``URI`` to the playlist
     (directories add recursively). ``URI``
