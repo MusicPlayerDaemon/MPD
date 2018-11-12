@@ -467,7 +467,12 @@ AudioOutputControl::Task() noexcept
 
 			if (always_on) {
 				/* in "always_on" mode, the output is
-				   paused instead of being closed */
+				   paused instead of being closed;
+				   however we need to close the
+				   AudioOutputSource because its data
+				   have been invalidated by stopping
+				   the actual playback */
+				source.Close();
 				InternalPause();
 			} else {
 				InternalClose(false);

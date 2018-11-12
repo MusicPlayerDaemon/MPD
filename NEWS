@@ -6,7 +6,7 @@ ver 0.21.2 (not yet released)
   - ffmpeg: fix broken sound with certain codecs
 * output
   - alsa: fix high CPU usage with dmix
-  - httpd: fix two crash bugs
+  - httpd: fix three crash bugs
 * mixer
   - alsa: fix more rounding errors
 * fix zlib support
