@@ -306,6 +306,8 @@ private:
 	}
 
 	void LockCaughtError() noexcept {
+		period_buffer.Clear();
+
 		const std::lock_guard<Mutex> lock(mutex);
 		error = std::current_exception();
 		active = false;

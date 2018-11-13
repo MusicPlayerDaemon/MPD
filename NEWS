@@ -1,4 +1,6 @@
 ver 0.21.3 (not yet released)
+* output
+  - alsa: fix crash bug
 
 ver 0.21.2 (2018/11/12)
 * protocol
