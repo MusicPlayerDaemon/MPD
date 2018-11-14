@@ -727,7 +727,7 @@ AlsaOutput::DrainInternal()
 	/* drain period_buffer */
 	if (!period_buffer.IsEmpty()) {
 		auto frames_written = WriteFromPeriodBuffer();
-		if (frames_written < 0 && errno != EAGAIN) {
+		if (frames_written < 0 && frames_written != -EAGAIN) {
 			CancelInternal();
 			return true;
 		}
