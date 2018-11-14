@@ -964,6 +964,7 @@ try {
 			{
 				const std::lock_guard<Mutex> lock(mutex);
 				active = false;
+				cond.signal();
 			}
 
 			/* avoid race condition: see if data has
