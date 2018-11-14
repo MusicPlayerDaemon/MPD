@@ -673,6 +673,7 @@ AlsaOutput::Open(AudioFormat &audio_format)
 
 	active = false;
 	must_prepare = false;
+	error = {};
 }
 
 inline int
