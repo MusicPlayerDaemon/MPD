@@ -258,10 +258,12 @@ private:
 	/**
 	 * Drain all buffers.  To be run in #EventLoop's thread.
 	 *
+	 * Throws on error.
+	 *
 	 * @return true if draining is complete, false if this method
 	 * needs to be called again later
 	 */
-	bool DrainInternal() noexcept;
+	bool DrainInternal();
 
 	/**
 	 * Stop playback immediately, dropping all buffers.  To be run
@@ -711,7 +713,7 @@ AlsaOutput::Recover(int err) noexcept
 }
 
 inline bool
-AlsaOutput::DrainInternal() noexcept
+AlsaOutput::DrainInternal()
 {
 	/* drain ring_buffer */
 	CopyRingToPeriodBuffer();
@@ -747,7 +749,13 @@ AlsaOutput::DrainInternal() noexcept
 	} else
 		result = snd_pcm_drain(pcm);
 
-	return result != -EAGAIN;
+	if (result == 0)
+		return true;
+	else if (result == -EAGAIN)
+		return false;
+	else
+		throw FormatRuntimeError("snd_pcm_drain() failed: %s",
+					 snd_strerror(-result));
 }
 
 void
