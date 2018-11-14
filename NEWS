@@ -2,6 +2,7 @@ ver 0.21.3 (not yet released)
 * output
   - alsa: fix crash bug
   - alsa: fix stuttering at start of playback
+* log: default to journal if MPD was started as systemd service
 
 ver 0.21.2 (2018/11/12)
 * protocol

@@ -30,6 +30,10 @@
 #include "util/RuntimeError.hxx"
 #include "system/Error.hxx"
 
+#ifdef ENABLE_SYSTEMD_DAEMON
+#include <systemd/sd-daemon.h>
+#endif
+
 #include <assert.h>
 #include <string.h>
 #include <fcntl.h>
@@ -139,6 +143,16 @@ log_init(const ConfigData &config, bool verbose, bool use_stdout)
 		if (param == nullptr) {
 			/* no configuration: default to syslog (if
 			   available) */
+#ifdef ENABLE_SYSTEMD_DAEMON
+			if (sd_booted() &&
+			    getenv("NOTIFY_SOCKET") != nullptr) {
+				/* if MPD was started as a systemd
+				   service, default to journal (which
+				   is connected to fd=2) */
+				out_fd = STDOUT_FILENO;
+				return;
+			}
+#endif
 #ifndef HAVE_SYSLOG
 			throw std::runtime_error("config parameter 'log_file' not found");
 #endif
