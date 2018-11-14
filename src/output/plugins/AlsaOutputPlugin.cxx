@@ -796,6 +796,9 @@ AlsaOutput::Drain()
 inline void
 AlsaOutput::CancelInternal() noexcept
 {
+	/* this method doesn't need to lock the mutex because while it
+	   runs, the calling thread is blocked inside Cancel() */
+
 	must_prepare = true;
 
 	snd_pcm_drop(pcm);
@@ -804,10 +807,7 @@ AlsaOutput::CancelInternal() noexcept
 	period_buffer.Clear();
 	ring_buffer->reset();
 
-	{
-		const std::lock_guard<Mutex> lock(mutex);
-		active = false;
-	}
+	active = false;
 
 	MultiSocketMonitor::Reset();
 	defer_invalidate_sockets.Cancel();
