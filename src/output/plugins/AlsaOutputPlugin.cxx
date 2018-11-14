@@ -749,11 +749,10 @@ AlsaOutput::DrainInternal()
 						 snd_strerror(-frames_written));
 		}
 
-		if (!period_buffer.IsEmpty())
-			/* need to call WriteFromPeriodBuffer() again
-			   in the next iteration, so don't finish the
-			   drain just yet */
-			return false;
+		/* need to call CopyRingToPeriodBuffer() and
+		   WriteFromPeriodBuffer() again in the next
+		   iteration, so don't finish the drain just yet */
+		return period_buffer.IsEmpty();
 	}
 
 	/* .. and finally drain the ALSA hardware buffer */

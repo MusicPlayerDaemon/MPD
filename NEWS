@@ -2,6 +2,7 @@ ver 0.21.3 (not yet released)
 * output
   - alsa: fix crash bug
   - alsa: fix stuttering at start of playback
+  - alsa: fix discarded samples at end of song
   - alsa: clear error after reopening device
 * log: default to journal if MPD was started as systemd service
 
