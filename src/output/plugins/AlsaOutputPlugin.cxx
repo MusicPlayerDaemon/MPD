@@ -891,6 +891,15 @@ AlsaOutput::DispatchSockets() noexcept
 try {
 	non_block.DispatchSockets(*this, pcm);
 
+	if (must_prepare) {
+		must_prepare = false;
+
+		int err = snd_pcm_prepare(pcm);
+		if (err < 0)
+			throw FormatRuntimeError("snd_pcm_prepare() failed: %s",
+						 snd_strerror(-err));
+	}
+
 	{
 		const std::lock_guard<Mutex> lock(mutex);
 
@@ -909,15 +918,6 @@ try {
 			cond.signal();
 			return;
 		}
-	}
-
-	if (must_prepare) {
-		must_prepare = false;
-
-		int err = snd_pcm_prepare(pcm);
-		if (err < 0)
-			throw FormatRuntimeError("snd_pcm_prepare() failed: %s",
-						 snd_strerror(-err));
 	}
 
 	CopyRingToPeriodBuffer();
