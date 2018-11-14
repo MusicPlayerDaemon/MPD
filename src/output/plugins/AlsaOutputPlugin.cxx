@@ -712,11 +712,6 @@ AlsaOutput::Recover(int err) noexcept
 inline bool
 AlsaOutput::DrainInternal() noexcept
 {
-	if (snd_pcm_state(pcm) != SND_PCM_STATE_RUNNING) {
-		CancelInternal();
-		return true;
-	}
-
 	/* drain ring_buffer */
 	CopyRingToPeriodBuffer();
 
