@@ -33,6 +33,7 @@
 #include "util/RuntimeError.hxx"
 #include "util/Domain.hxx"
 #include "util/ConstBuffer.hxx"
+#include "util/ScopeExit.hxx"
 #include "util/StringView.hxx"
 #include "event/MultiSocketMonitor.hxx"
 #include "event/DeferEvent.hxx"
@@ -738,14 +739,15 @@ AlsaOutput::DrainInternal() noexcept
 
 	/* .. and finally drain the ALSA hardware buffer */
 
+	int result;
 	if (work_around_drain_bug) {
 		snd_pcm_nonblock(pcm, 0);
-		bool result = snd_pcm_drain(pcm) != -EAGAIN;
+		result = snd_pcm_drain(pcm);
 		snd_pcm_nonblock(pcm, 1);
-		return result;
-	}
+	} else
+		result = snd_pcm_drain(pcm);
 
-	return snd_pcm_drain(pcm) != -EAGAIN;
+	return result != -EAGAIN;
 }
 
 void
