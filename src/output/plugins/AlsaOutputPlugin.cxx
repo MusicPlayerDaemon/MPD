@@ -110,6 +110,13 @@ class AlsaOutput final
 	snd_pcm_uframes_t period_frames;
 
 	/**
+	 * If snd_pcm_avail() goes above this value and no more data
+	 * is available in the #ring_buffer, we need to play some
+	 * silence.
+	 */
+	snd_pcm_sframes_t max_avail_frames;
+
+	/**
 	 * Is this a buggy alsa-lib version, which needs a workaround
 	 * for the snd_pcm_drain() bug always returning -EAGAIN?  See
 	 * alsa-lib commits fdc898d41135 and e4377b16454f for details.
@@ -481,6 +488,10 @@ AlsaOutput::Setup(AudioFormat &audio_format,
 		alsa_period_size = 1;
 
 	period_frames = alsa_period_size;
+
+	/* generate silence if there's less than once period of data
+	   in the ALSA-PCM buffer */
+	max_avail_frames = hw_result.buffer_size - hw_result.period_size;
 
 	silence = new uint8_t[snd_pcm_frames_to_bytes(pcm, alsa_period_size)];
 	snd_pcm_format_set_silence(hw_result.format, silence,
@@ -933,7 +944,8 @@ try {
 	CopyRingToPeriodBuffer();
 
 	if (period_buffer.IsEmpty()) {
-		if (snd_pcm_state(pcm) == SND_PCM_STATE_PREPARED) {
+		if (snd_pcm_state(pcm) == SND_PCM_STATE_PREPARED ||
+		    snd_pcm_avail(pcm) <= max_avail_frames) {
 			/* at SND_PCM_STATE_PREPARED (not yet switched
 			   to SND_PCM_STATE_RUNNING), we have no
 			   pressure to fill the ALSA buffer, because
@@ -943,6 +955,11 @@ try {
 			   monitoring the ALSA file descriptor, and
 			   let it be reactivated by Play()/Activate()
 			   whenever more data arrives */
+			/* the same applies when there is still enough
+			   data in the ALSA-PCM buffer (determined by
+			   snd_pcm_avail()); this can happend at the
+			   start of playback, when our ring_buffer is
+			   smaller than the ALSA-PCM buffer */
 
 			{
 				const std::lock_guard<Mutex> lock(mutex);
