@@ -556,7 +556,7 @@ The Queue
 There are two ways to address songs within the queue: by their
 position and by their id.
 
-The position is a 1-based index.  It is unstable by design: if you
+The position is a 0-based index.  It is unstable by design: if you
 move, delete or insert songs, all following indices will change, and a
 client can never be sure what song is behind a given index/position.
 
