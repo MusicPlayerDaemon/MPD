@@ -239,6 +239,7 @@ if enable_database
     '../src/LogBackend.cxx',
     include_directories: inc,
     dependencies: [
+      event_dep,
       storage_glue_dep,
     ],
   )
