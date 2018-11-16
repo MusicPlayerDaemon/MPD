@@ -1,4 +1,4 @@
-ver 0.21.3 (not yet released)
+ver 0.21.3 (2018/11/16)
 * output
   - alsa: fix crash bug
   - alsa: fix stuttering at start of playback
