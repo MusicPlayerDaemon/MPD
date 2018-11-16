@@ -147,6 +147,16 @@ class AlsaOutput final
 	 */
 	bool must_prepare;
 
+	/**
+	 * Has snd_pcm_writei() been called successfully at least once
+	 * since the PCM was prepared?
+	 *
+	 * This is necessary to work around a kernel bug which causes
+	 * snd_pcm_drain() to return -EAGAIN forever in non-blocking
+	 * mode if snd_pcm_writei() was never called.
+	 */
+	bool written;
+
 	bool drain;
 
 	/**
@@ -305,9 +315,11 @@ private:
 
 		auto frames_written = snd_pcm_writei(pcm, period_buffer.GetHead(),
 						     period_buffer.GetFrames(out_frame_size));
-		if (frames_written > 0)
+		if (frames_written > 0) {
+			written = true;
 			period_buffer.ConsumeFrames(frames_written,
 						    out_frame_size);
+		}
 
 		return frames_written;
 	}
@@ -673,6 +685,7 @@ AlsaOutput::Open(AudioFormat &audio_format)
 
 	active = false;
 	must_prepare = false;
+	written = false;
 	error = {};
 }
 
@@ -705,6 +718,7 @@ AlsaOutput::Recover(int err) noexcept
 	case SND_PCM_STATE_SETUP:
 	case SND_PCM_STATE_XRUN:
 		period_buffer.Rewind();
+		written = false;
 		err = snd_pcm_prepare(pcm);
 		break;
 	case SND_PCM_STATE_DISCONNECTED:
@@ -754,6 +768,11 @@ AlsaOutput::DrainInternal()
 		   iteration, so don't finish the drain just yet */
 		return period_buffer.IsEmpty();
 	}
+
+	if (!written)
+		/* if nothing has ever been written to the PCM, we
+		   don't need to drain it */
+		return true;
 
 	/* .. and finally drain the ALSA hardware buffer */
 
@@ -914,6 +933,7 @@ try {
 
 	if (must_prepare) {
 		must_prepare = false;
+		written = false;
 
 		int err = snd_pcm_prepare(pcm);
 		if (err < 0)
