@@ -40,10 +40,11 @@
 #include "tag/Mask.hxx"
 #include "fs/Traits.hxx"
 #include "Log.hxx"
+#include "util/ConstBuffer.hxx"
+#include "util/RecursiveMap.hxx"
 #include "util/SplitString.hxx"
 
 #include <string>
-#include <set>
 
 #include <assert.h>
 #include <string.h>
@@ -97,9 +98,8 @@ public:
 		   VisitSong visit_song,
 		   VisitPlaylist visit_playlist) const override;
 
-	std::map<std::string, std::set<std::string>> CollectUniqueTags(const DatabaseSelection &selection,
-								       TagType tag_type,
-								       TagType group) const override;
+	RecursiveMap<std::string> CollectUniqueTags(const DatabaseSelection &selection,
+						    ConstBuffer<TagType> tag_types) const override;
 
 	DatabaseStats GetStats(const DatabaseSelection &selection) const override;
 
@@ -624,11 +624,11 @@ UpnpDatabase::Visit(const DatabaseSelection &selection,
 	helper.Commit();
 }
 
-std::map<std::string, std::set<std::string>>
+RecursiveMap<std::string>
 UpnpDatabase::CollectUniqueTags(const DatabaseSelection &selection,
-				TagType tag, TagType group) const
+				ConstBuffer<TagType> tag_types) const
 {
-	return ::CollectUniqueTags(*this, selection, tag, group);
+	return ::CollectUniqueTags(*this, selection, tag_types);
 }
 
 DatabaseStats

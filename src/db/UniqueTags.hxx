@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2018 The Music Player Daemon Project
+ * Copyright 2003-2019 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -29,9 +29,11 @@
 class TagMask;
 class Database;
 struct DatabaseSelection;
+template<typename Key> class RecursiveMap;
+template<typename T> struct ConstBuffer;
 
-std::map<std::string, std::set<std::string>>
+RecursiveMap<std::string>
 CollectUniqueTags(const Database &db, const DatabaseSelection &selection,
-		  TagType tag_type, TagType group);
+		  ConstBuffer<TagType> tag_types);
 
 #endif

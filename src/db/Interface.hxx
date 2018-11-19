@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2018 The Music Player Daemon Project
+ * Copyright 2003-2019 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -25,15 +25,14 @@
 #include "util/Compiler.h"
 
 #include <chrono>
-#include <map>
-#include <set>
 #include <string>
 
 struct DatabasePlugin;
 struct DatabaseStats;
 struct DatabaseSelection;
 struct LightSong;
-class TagMask;
+template<typename Key> class RecursiveMap;
+template<typename T> struct ConstBuffer;
 
 class Database {
 	const DatabasePlugin &plugin;
@@ -106,13 +105,14 @@ public:
 	}
 
 	/**
-	 * Collect unique values of the given tag type.
+	 * Collect unique values of the given tag types.  Each item in
+	 * the #tag_types parameter results in one nesting level in
+	 * the return value.
 	 *
 	 * Throws on error.
 	 */
-	virtual std::map<std::string, std::set<std::string>> CollectUniqueTags(const DatabaseSelection &selection,
-									       TagType tag_type,
-									       TagType group=TAG_NUM_OF_ITEM_TYPES) const = 0;
+	virtual RecursiveMap<std::string> CollectUniqueTags(const DatabaseSelection &selection,
+							    ConstBuffer<TagType> tag_types) const = 0;
 
 	/**
 	 * Throws on error.

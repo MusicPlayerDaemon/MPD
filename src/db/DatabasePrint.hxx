@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2018 The Music Player Daemon Project
+ * Copyright 2003-2019 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -22,6 +22,7 @@
 
 #include <stdint.h>
 
+template<typename T> struct ConstBuffer;
 enum TagType : uint8_t;
 class TagMask;
 class SongFilter;
@@ -45,7 +46,7 @@ PrintSongUris(Response &r, Partition &partition,
 
 void
 PrintUniqueTags(Response &r, Partition &partition,
-		TagType type, TagType group,
+		ConstBuffer<TagType> tag_types,
 		const SongFilter *filter);
 
 #endif

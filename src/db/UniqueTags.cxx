@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2018 The Music Player Daemon Project
+ * Copyright 2003-2019 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -21,36 +21,32 @@
 #include "Interface.hxx"
 #include "song/LightSong.hxx"
 #include "tag/VisitFallback.hxx"
+#include "util/ConstBuffer.hxx"
+#include "util/RecursiveMap.hxx"
 
 static void
-CollectTags(std::set<std::string> &result,
-	    const Tag &tag,
-	    TagType tag_type) noexcept
+CollectUniqueTags(RecursiveMap<std::string> &result,
+		  const Tag &tag,
+		  ConstBuffer<TagType> tag_types) noexcept
 {
-	VisitTagWithFallbackOrEmpty(tag, tag_type, [&result](const char *value){
-			result.emplace(value);
+	if (tag_types.empty())
+		return;
+
+	const auto tag_type = tag_types.shift();
+
+	VisitTagWithFallbackOrEmpty(tag, tag_type, [&result, &tag, tag_types](const char *value){
+			CollectUniqueTags(result[value], tag, tag_types);
 		});
 }
 
-static void
-CollectGroupTags(std::map<std::string, std::set<std::string>> &result,
-		 const Tag &tag,
-		 TagType tag_type,
-		 TagType group) noexcept
-{
-	VisitTagWithFallbackOrEmpty(tag, group, [&](const char *group_name){
-			CollectTags(result[group_name], tag, tag_type);
-		});
-}
-
-std::map<std::string, std::set<std::string>>
+RecursiveMap<std::string>
 CollectUniqueTags(const Database &db, const DatabaseSelection &selection,
-		  TagType tag_type, TagType group)
+		  ConstBuffer<TagType> tag_types)
 {
-	std::map<std::string, std::set<std::string>> result;
+	RecursiveMap<std::string> result;
 
-	db.Visit(selection, [&result, tag_type, group](const LightSong &song){
-			CollectGroupTags(result, song.tag, tag_type, group);
+	db.Visit(selection, [&result, tag_types](const LightSong &song){
+			CollectUniqueTags(result, song.tag, tag_types);
 		});
 
 	return result;

@@ -1,4 +1,6 @@
 ver 0.21.11 (not yet released)
+* protocol
+  - fix "list" with multiple "group" levels
 
 ver 0.21.10 (2019/06/05)
 * decoder
