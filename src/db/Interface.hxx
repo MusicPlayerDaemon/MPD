@@ -38,10 +38,11 @@ class TagMask;
 class Database {
 	const DatabasePlugin &plugin;
 
-public:
+protected:
 	Database(const DatabasePlugin &_plugin) noexcept
 		:plugin(_plugin) {}
 
+public:
 	/**
 	 * Free instance data.
          */
