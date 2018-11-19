@@ -22,10 +22,6 @@
 #include "song/LightSong.hxx"
 #include "tag/VisitFallback.hxx"
 
-#include <functional>
-
-#include <assert.h>
-
 static void
 CollectTags(std::set<std::string> &result,
 	    const Tag &tag,
