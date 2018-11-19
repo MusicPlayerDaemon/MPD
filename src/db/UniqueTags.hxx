@@ -21,7 +21,6 @@
 #define MPD_DB_UNIQUE_TAGS_HXX
 
 #include "tag/Type.h"
-#include "util/Compiler.h"
 
 #include <map>
 #include <set>
@@ -31,7 +30,6 @@ class TagMask;
 class Database;
 struct DatabaseSelection;
 
-gcc_pure
 std::map<std::string, std::set<std::string>>
 CollectUniqueTags(const Database &db, const DatabaseSelection &selection,
 		  TagType tag_type, TagType group);
