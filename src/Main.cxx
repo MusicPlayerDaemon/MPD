@@ -216,17 +216,17 @@ glue_db_init_and_load(const ConfigData &config)
 		std::throw_with_nested(std::runtime_error("Failed to open database plugin"));
 	}
 
-	if (!instance->database->IsPlugin(simple_db_plugin))
+	auto *db = dynamic_cast<SimpleDatabase *>(instance->database);
+	if (db == nullptr)
 		return true;
 
-	SimpleDatabase &db = *(SimpleDatabase *)instance->database;
 	instance->update = new UpdateService(config,
-					     instance->event_loop, db,
+					     instance->event_loop, *db,
 					     static_cast<CompositeStorage &>(*instance->storage),
 					     *instance);
 
 	/* run database update after daemonization? */
-	return db.FileExists();
+	return db->FileExists();
 }
 
 static bool

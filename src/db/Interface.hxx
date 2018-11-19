@@ -52,10 +52,6 @@ public:
 		return plugin;
 	}
 
-	bool IsPlugin(const DatabasePlugin &other) const noexcept {
-		return &plugin == &other;
-	}
-
 	/**
          * Open the database.  Read it into memory if applicable.
 	 *

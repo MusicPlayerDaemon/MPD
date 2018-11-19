@@ -209,12 +209,9 @@ handle_mount(Client &client, Request args, Response &r)
 	instance.EmitIdle(IDLE_MOUNT);
 
 #ifdef ENABLE_DATABASE
-	Database *_db = instance.database;
-	if (_db != nullptr && _db->IsPlugin(simple_db_plugin)) {
-		SimpleDatabase &db = *(SimpleDatabase *)_db;
-
+	if (auto *db = dynamic_cast<SimpleDatabase *>(instance.database)) {
 		try {
-			db.Mount(local_uri, remote_uri);
+			db->Mount(local_uri, remote_uri);
 		} catch (...) {
 			composite.Unmount(local_uri);
 			throw;
@@ -256,11 +253,8 @@ handle_unmount(Client &client, Request args, Response &r)
 		   destroy here */
 		instance.update->CancelMount(local_uri);
 
-	Database *_db = instance.database;
-	if (_db != nullptr && _db->IsPlugin(simple_db_plugin)) {
-		SimpleDatabase &db = *(SimpleDatabase *)_db;
-
-		if (db.Unmount(local_uri))
+	if (auto *db = dynamic_cast<SimpleDatabase *>(instance.database)) {
+		if (db->Unmount(local_uri))
 			// TODO: call Instance::OnDatabaseModified()?
 			instance.EmitIdle(IDLE_DATABASE);
 	}

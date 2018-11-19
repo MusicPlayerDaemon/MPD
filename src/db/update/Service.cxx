@@ -94,11 +94,9 @@ UpdateService::CancelMount(const char *uri)
 		cancel_current = next.IsDefined() && next.storage == storage2;
 	}
 
-	Database &_db2 = *lr.directory->mounted_database;
-	if (_db2.IsPlugin(simple_db_plugin)) {
-		SimpleDatabase &db2 = static_cast<SimpleDatabase &>(_db2);
-		queue.Erase(db2);
-		cancel_current |= next.IsDefined() && next.db == &db2;
+	if (auto *db2 = dynamic_cast<SimpleDatabase *>(lr.directory->mounted_database)) {
+		queue.Erase(*db2);
+		cancel_current |= next.IsDefined() && next.db == db2;
 	}
 
 	if (cancel_current && walk != nullptr) {
@@ -190,11 +188,9 @@ UpdateService::Enqueue(const char *path, bool discard)
 		/* follow the mountpoint, update the mounted
 		   database */
 
-		Database &_db2 = *lr.directory->mounted_database;
-		if (!_db2.IsPlugin(simple_db_plugin))
+		db2 = dynamic_cast<SimpleDatabase *>(lr.directory->mounted_database);
+		if (db2 == nullptr)
 			throw std::runtime_error("Cannot update this type of database");
-
-		db2 = static_cast<SimpleDatabase *>(&_db2);
 
 		if (lr.uri == nullptr) {
 			storage2 = storage.GetMount(path);
