@@ -20,7 +20,6 @@
 #ifndef MPD_GUNZIP_READER_HXX
 #define MPD_GUNZIP_READER_HXX
 
-#include "check.h"
 #include "Reader.hxx"
 #include "util/StaticFifoBuffer.hxx"
 #include "util/Compiler.h"

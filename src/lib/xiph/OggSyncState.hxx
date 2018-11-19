@@ -20,8 +20,6 @@
 #ifndef MPD_OGG_SYNC_STATE_HXX
 #define MPD_OGG_SYNC_STATE_HXX
 
-#include "check.h"
-
 #include <ogg/ogg.h>
 
 #include <stddef.h>

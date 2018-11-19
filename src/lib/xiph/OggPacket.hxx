@@ -20,8 +20,6 @@
 #ifndef MPD_OGG_PACKET_HXX
 #define MPD_OGG_PACKET_HXX
 
-#include "check.h"
-
 #include <ogg/ogg.h>
 
 class OggSyncState;

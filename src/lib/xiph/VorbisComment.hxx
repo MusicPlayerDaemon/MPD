@@ -20,8 +20,6 @@
 #ifndef MPD_VORBIS_COMMENT_HXX
 #define MPD_VORBIS_COMMENT_HXX
 
-#include "check.h"
-
 #include <vorbis/codec.h>
 
 /**

@@ -20,7 +20,6 @@
 #ifndef MPD_BUFFERED_READER_HXX
 #define MPD_BUFFERED_READER_HXX
 
-#include "check.h"
 #include "util/Compiler.h"
 #include "util/DynamicFifoBuffer.hxx"
 

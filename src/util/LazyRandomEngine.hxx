@@ -20,8 +20,6 @@
 #ifndef MPD_LAZY_RANDOM_ENGINE_HXX
 #define MPD_LAZY_RANDOM_ENGINE_HXX
 
-#include "check.h"
-
 #include <random>
 
 #include <assert.h>

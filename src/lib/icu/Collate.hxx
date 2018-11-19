@@ -20,7 +20,6 @@
 #ifndef MPD_ICU_COLLATE_HXX
 #define MPD_ICU_COLLATE_HXX
 
-#include "check.h"
 #include "util/Compiler.h"
 
 /**

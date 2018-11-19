@@ -20,8 +20,6 @@
 #ifndef MPD_FS_LIST_XX
 #define MPD_FS_LIST_XX
 
-#include "check.h"
-
 #include <forward_list>
 
 class Path;

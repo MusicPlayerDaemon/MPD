@@ -17,7 +17,6 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "config.h"
 #include "StickerDatabase.hxx"
 #include "lib/sqlite/Util.hxx"
 #include "fs/Path.hxx"

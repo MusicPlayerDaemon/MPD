@@ -20,7 +20,6 @@
 #ifndef MPD_BUFFERED_SOCKET_HXX
 #define MPD_BUFFERED_SOCKET_HXX
 
-#include "check.h"
 #include "SocketMonitor.hxx"
 #include "util/StaticFifoBuffer.hxx"
 

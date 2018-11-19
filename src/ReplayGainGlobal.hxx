@@ -20,8 +20,6 @@
 #ifndef MPD_REPLAY_GAIN_GLOBAL_HXX
 #define MPD_REPLAY_GAIN_GLOBAL_HXX
 
-#include "check.h"
-
 struct ConfigData;
 struct ReplayGainConfig;
 

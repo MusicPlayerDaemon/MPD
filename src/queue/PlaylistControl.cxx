@@ -22,7 +22,6 @@
  *
  */
 
-#include "config.h"
 #include "Playlist.hxx"
 #include "PlaylistError.hxx"
 #include "player/Control.hxx"

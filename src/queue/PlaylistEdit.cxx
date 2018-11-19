@@ -23,7 +23,6 @@
  *
  */
 
-#include "config.h"
 #include "Playlist.hxx"
 #include "Listener.hxx"
 #include "PlaylistError.hxx"

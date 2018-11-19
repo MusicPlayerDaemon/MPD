@@ -21,7 +21,6 @@
 #define __STDC_CONSTANT_MACROS
 
 #include "lib/ffmpeg/Time.hxx"
-#include "config.h"
 #include "FfmpegDecoderPlugin.hxx"
 #include "lib/ffmpeg/Domain.hxx"
 #include "lib/ffmpeg/Error.hxx"

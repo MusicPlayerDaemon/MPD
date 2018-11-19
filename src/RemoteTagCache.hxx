@@ -20,7 +20,6 @@
 #ifndef MPD_REMOTE_TAG_CACHE_HXX
 #define MPD_REMOTE_TAG_CACHE_HXX
 
-#include "check.h"
 #include "input/RemoteTagScanner.hxx"
 #include "tag/Tag.hxx"
 #include "event/DeferEvent.hxx"

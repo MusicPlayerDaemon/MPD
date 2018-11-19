@@ -20,7 +20,6 @@
 #ifndef MPD_DECODER_CLIENT_HXX
 #define MPD_DECODER_CLIENT_HXX
 
-#include "check.h"
 #include "Command.hxx"
 #include "Chrono.hxx"
 #include "input/Ptr.hxx"

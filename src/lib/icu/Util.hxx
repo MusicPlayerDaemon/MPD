@@ -20,8 +20,6 @@
 #ifndef MPD_ICU_UTIL_HXX
 #define MPD_ICU_UTIL_HXX
 
-#include "check.h"
-
 #include <unicode/utypes.h>
 
 template<typename T> struct ConstBuffer;

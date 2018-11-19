@@ -20,7 +20,6 @@
 #ifndef MPD_CONFIG_PARAM_HXX
 #define MPD_CONFIG_PARAM_HXX
 
-#include "check.h"
 #include "util/Compiler.h"
 
 #include <string>

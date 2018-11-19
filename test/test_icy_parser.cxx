@@ -2,7 +2,6 @@
  * Unit tests for class IcyMetaDataParser.
  */
 
-#include "config.h"
 #include "util/ScopeExit.hxx"
 
 /* include the .cxx file to get access to internal functions */

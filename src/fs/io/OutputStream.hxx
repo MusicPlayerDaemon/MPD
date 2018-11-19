@@ -30,8 +30,6 @@
 #ifndef MPD_OUTPUT_STREAM_HXX
 #define MPD_OUTPUT_STREAM_HXX
 
-#include "check.h"
-
 #include <stddef.h>
 
 class OutputStream {

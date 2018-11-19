@@ -20,7 +20,6 @@
 #ifndef MPD_EVENT_POLLGROUP_POLL_HXX
 #define MPD_EVENT_POLLGROUP_POLL_HXX
 
-#include "check.h"
 #include "PollResultGeneric.hxx"
 
 #include <vector>

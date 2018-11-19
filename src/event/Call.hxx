@@ -20,8 +20,6 @@
 #ifndef MPD_EVENT_CALL_HXX
 #define MPD_EVENT_CALL_HXX
 
-#include "check.h"
-
 #include <functional>
 
 class EventLoop;

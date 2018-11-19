@@ -20,7 +20,6 @@
 #ifndef MPD_NFS_GLUE_HXX
 #define MPD_NFS_GLUE_HXX
 
-#include "check.h"
 #include "util/Compiler.h"
 
 class EventLoop;

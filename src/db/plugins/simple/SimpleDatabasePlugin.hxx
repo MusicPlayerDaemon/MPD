@@ -20,12 +20,12 @@
 #ifndef MPD_SIMPLE_DATABASE_PLUGIN_HXX
 #define MPD_SIMPLE_DATABASE_PLUGIN_HXX
 
-#include "check.h"
 #include "db/Interface.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "song/LightSong.hxx"
 #include "util/Manual.hxx"
 #include "util/Compiler.h"
+#include "config.h"
 
 #include <cassert>
 

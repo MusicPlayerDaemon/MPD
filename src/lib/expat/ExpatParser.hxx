@@ -20,7 +20,6 @@
 #ifndef MPD_EXPAT_HXX
 #define MPD_EXPAT_HXX
 
-#include "check.h"
 #include "util/Compiler.h"
 
 #include <expat.h>

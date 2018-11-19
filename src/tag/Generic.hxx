@@ -20,8 +20,6 @@
 #ifndef MPD_TAG_GENERIC_HXX
 #define MPD_TAG_GENERIC_HXX
 
-#include "check.h"
-
 class TagHandler;
 class InputStream;
 class Path;

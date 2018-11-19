@@ -1,4 +1,3 @@
-#include "config.h"
 #include "queue/Queue.hxx"
 #include "song/DetachedSong.hxx"
 #include "util/Macros.hxx"

@@ -20,8 +20,6 @@
 #ifndef MPD_TAG_MIXRAMP_HXX
 #define MPD_TAG_MIXRAMP_HXX
 
-#include "check.h"
-
 class MixRampInfo;
 
 bool

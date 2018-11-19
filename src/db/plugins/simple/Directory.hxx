@@ -20,7 +20,6 @@
 #ifndef MPD_DIRECTORY_HXX
 #define MPD_DIRECTORY_HXX
 
-#include "check.h"
 #include "util/Compiler.h"
 #include "db/Visitor.hxx"
 #include "db/PlaylistVector.hxx"

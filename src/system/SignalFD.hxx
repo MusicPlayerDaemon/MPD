@@ -30,7 +30,6 @@
 #ifndef SIGNAL_FD_HXX
 #define SIGNAL_FD_HXX
 
-#include "check.h"
 #include "UniqueFileDescriptor.hxx"
 
 #include <signal.h>

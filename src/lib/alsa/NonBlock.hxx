@@ -20,7 +20,6 @@
 #ifndef MPD_ALSA_NON_BLOCK_HXX
 #define MPD_ALSA_NON_BLOCK_HXX
 
-#include "check.h"
 #include "util/ReusableArray.hxx"
 
 #include <alsa/asoundlib.h>

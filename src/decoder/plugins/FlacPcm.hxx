@@ -20,7 +20,6 @@
 #ifndef MPD_FLAC_PCM_HXX
 #define MPD_FLAC_PCM_HXX
 
-#include "check.h"
 #include "pcm/PcmBuffer.hxx"
 #include "AudioFormat.hxx"
 

@@ -20,7 +20,6 @@
 #ifndef MPD_REPLAY_GAIN_INFO_HXX
 #define MPD_REPLAY_GAIN_INFO_HXX
 
-#include "check.h"
 #include "util/Compiler.h"
 #include "ReplayGainMode.hxx"
 

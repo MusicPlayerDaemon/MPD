@@ -20,11 +20,11 @@
 #ifndef MPD_SONG_HXX
 #define MPD_SONG_HXX
 
-#include "check.h"
 #include "Chrono.hxx"
 #include "tag/Tag.hxx"
 #include "AudioFormat.hxx"
 #include "util/Compiler.h"
+#include "config.h"
 
 #include <boost/intrusive/list.hpp>
 

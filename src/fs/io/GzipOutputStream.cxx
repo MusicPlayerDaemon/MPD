@@ -27,7 +27,6 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
 #include "GzipOutputStream.hxx"
 #include "lib/zlib/Error.hxx"
 

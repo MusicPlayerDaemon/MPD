@@ -20,7 +20,6 @@
 #ifndef MPD_NFS_BASE_HXX
 #define MPD_NFS_BASE_HXX
 
-#include "check.h"
 #include "util/Compiler.h"
 
 /**

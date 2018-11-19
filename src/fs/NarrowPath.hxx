@@ -20,7 +20,6 @@
 #ifndef MPD_FS_NARROW_PATH_HXX
 #define MPD_FS_NARROW_PATH_HXX
 
-#include "check.h"
 #include "Path.hxx"
 #include "util/Macros.hxx"
 

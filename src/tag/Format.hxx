@@ -20,7 +20,6 @@
 #ifndef MPD_TAG_FORMAT_HXX
 #define MPD_TAG_FORMAT_HXX
 
-#include "check.h"
 #include "util/Compiler.h"
 
 struct Tag;

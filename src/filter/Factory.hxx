@@ -20,8 +20,6 @@
 #ifndef MPD_FILTER_FACTORY_HXX
 #define MPD_FILTER_FACTORY_HXX
 
-#include "check.h"
-
 #include <memory>
 
 struct ConfigData;

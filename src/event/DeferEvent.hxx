@@ -20,7 +20,6 @@
 #ifndef MPD_DEFER_EVENT_HXX
 #define MPD_DEFER_EVENT_HXX
 
-#include "check.h"
 #include "util/BindMethod.hxx"
 
 #include <boost/intrusive/list_hook.hpp>

@@ -20,8 +20,6 @@
 #ifndef MPD_NFS_LEASE_HXX
 #define MPD_NFS_LEASE_HXX
 
-#include "check.h"
-
 #include <exception>
 
 class NfsLease {

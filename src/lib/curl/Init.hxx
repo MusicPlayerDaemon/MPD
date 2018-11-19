@@ -30,8 +30,6 @@
 #ifndef CURL_INIT_HXX
 #define CURL_INIT_HXX
 
-#include "check.h"
-
 class Mutex;
 class EventLoop;
 class CurlGlobal;

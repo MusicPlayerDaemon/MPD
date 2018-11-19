@@ -20,8 +20,6 @@
 #ifndef MPD_OPUS_TAGS_HXX
 #define MPD_OPUS_TAGS_HXX
 
-#include "check.h"
-
 #include <stddef.h>
 
 struct ReplayGainInfo;

@@ -20,7 +20,6 @@
 #ifndef MPD_NEIGHBOR_ALL_HXX
 #define MPD_NEIGHBOR_ALL_HXX
 
-#include "check.h"
 #include "util/Compiler.h"
 #include "thread/Mutex.hxx"
 

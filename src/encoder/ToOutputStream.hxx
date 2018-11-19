@@ -20,8 +20,6 @@
 #ifndef MPD_ENCODER_TO_OUTPUT_STREAM_HXX
 #define MPD_ENCODER_TO_OUTPUT_STREAM_HXX
 
-#include "check.h"
-
 class OutputStream;
 class Encoder;
 

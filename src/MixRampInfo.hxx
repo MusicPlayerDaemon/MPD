@@ -20,7 +20,6 @@
 #ifndef MPD_MIX_RAMP_INFO_HXX
 #define MPD_MIX_RAMP_INFO_HXX
 
-#include "check.h"
 #include "util/Compiler.h"
 
 #include <string>

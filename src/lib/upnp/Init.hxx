@@ -20,8 +20,6 @@
 #ifndef MPD_UPNP_INIT_HXX
 #define MPD_UPNP_INIT_HXX
 
-#include "check.h"
-
 void
 UpnpGlobalInit();
 

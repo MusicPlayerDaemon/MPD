@@ -20,7 +20,6 @@
 #ifndef MPD_OGG_ENCODER_HXX
 #define MPD_OGG_ENCODER_HXX
 
-#include "config.h"
 #include "../EncoderAPI.hxx"
 #include "lib/xiph/OggStreamState.hxx"
 #include "lib/xiph/OggPage.hxx"

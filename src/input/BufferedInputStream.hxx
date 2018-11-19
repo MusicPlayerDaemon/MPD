@@ -20,7 +20,6 @@
 #ifndef MPD_BUFFERED_INPUT_STREAM_BUFFER_HXX
 #define MPD_BUFFERED_INPUT_STREAM_BUFFER_HXX
 
-#include "check.h"
 #include "InputStream.hxx"
 #include "Ptr.hxx"
 #include "Handler.hxx"

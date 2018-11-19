@@ -30,7 +30,6 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
 #include "HostParser.hxx"
 #include "util/CharUtil.hxx"
 

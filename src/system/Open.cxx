@@ -27,7 +27,6 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
 #include "Open.hxx"
 #include "Error.hxx"
 #include "UniqueFileDescriptor.hxx"

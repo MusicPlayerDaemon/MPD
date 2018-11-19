@@ -20,7 +20,7 @@
 #ifndef MPD_PERMISSION_HXX
 #define MPD_PERMISSION_HXX
 
-#include "check.h"
+#include "config.h"
 
 struct ConfigData;
 

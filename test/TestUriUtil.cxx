@@ -2,7 +2,6 @@
  * Unit tests for src/util/
  */
 
-#include "config.h"
 #include "util/UriUtil.hxx"
 
 #include <gtest/gtest.h>

@@ -20,7 +20,6 @@
 #ifndef MPD_READER_HXX
 #define MPD_READER_HXX
 
-#include "check.h"
 #include "util/Compiler.h"
 
 #include <stddef.h>

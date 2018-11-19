@@ -20,8 +20,6 @@
 #ifndef MPD_NFS_CALLBACK_HXX
 #define MPD_NFS_CALLBACK_HXX
 
-#include "check.h"
-
 #include <exception>
 
 /**

@@ -22,6 +22,7 @@
 
 #include "SingleMode.hxx"
 #include "queue/Queue.hxx"
+#include "config.h"
 
 enum TagType : uint8_t;
 struct Tag;

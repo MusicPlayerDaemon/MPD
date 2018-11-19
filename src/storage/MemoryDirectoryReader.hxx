@@ -20,7 +20,6 @@
 #ifndef MPD_STORAGE_MEMORY_DIRECTORY_READER_HXX
 #define MPD_STORAGE_MEMORY_DIRECTORY_READER_HXX
 
-#include "check.h"
 #include "StorageInterface.hxx"
 #include "FileInfo.hxx"
 

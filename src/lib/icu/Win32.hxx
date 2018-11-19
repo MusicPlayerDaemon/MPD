@@ -20,7 +20,6 @@
 #ifndef MPD_ICU_WIN32_HXX
 #define MPD_ICU_WIN32_HXX
 
-#include "check.h"
 #include "util/Compiler.h"
 
 #include <wchar.h>

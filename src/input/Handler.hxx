@@ -20,8 +20,6 @@
 #ifndef MPD_INPUT_STREAM_HANDLER_HXX
 #define MPD_INPUT_STREAM_HANDLER_HXX
 
-#include "check.h"
-
 /**
  * An interface which gets receives events from an #InputStream.  Its
  * methods will be called from within an arbitrary thread and must not

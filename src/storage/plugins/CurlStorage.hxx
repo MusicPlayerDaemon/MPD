@@ -20,8 +20,6 @@
 #ifndef MPD_STORAGE_CURL_HXX
 #define MPD_STORAGE_CURL_HXX
 
-#include "check.h"
-
 struct StoragePlugin;
 
 extern const StoragePlugin curl_storage_plugin;

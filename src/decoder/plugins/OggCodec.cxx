@@ -21,7 +21,6 @@
  * Common functions used for Ogg data streams (Ogg-Vorbis and OggFLAC)
  */
 
-#include "config.h"
 #include "OggCodec.hxx"
 #include "../DecoderAPI.hxx"
 

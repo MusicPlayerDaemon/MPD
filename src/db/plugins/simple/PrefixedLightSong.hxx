@@ -20,7 +20,6 @@
 #ifndef MPD_DB_SIMPLE_PREFIXED_LIGHT_SONG_HXX
 #define MPD_DB_SIMPLE_PREFIXED_LIGHT_SONG_HXX
 
-#include "check.h"
 #include "song/LightSong.hxx"
 #include "fs/Traits.hxx"
 

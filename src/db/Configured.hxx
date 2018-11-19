@@ -20,8 +20,6 @@
 #ifndef MPD_DB_CONFIG_HXX
 #define MPD_DB_CONFIG_HXX
 
-#include "check.h"
-
 struct ConfigData;
 class EventLoop;
 class DatabaseListener;

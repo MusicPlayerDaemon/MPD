@@ -2,7 +2,6 @@
  * Unit tests for class CircularBuffer.
  */
 
-#include "config.h"
 #include "util/CircularBuffer.hxx"
 
 #include <gtest/gtest.h>

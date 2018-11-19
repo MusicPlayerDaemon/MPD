@@ -20,8 +20,6 @@
 #ifndef MPD_OPUS_DOMAIN_HXX
 #define MPD_OPUS_DOMAIN_HXX
 
-#include "check.h"
-
 extern const class Domain opus_domain;
 
 #endif

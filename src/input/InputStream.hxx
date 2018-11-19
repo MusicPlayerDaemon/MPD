@@ -20,7 +20,6 @@
 #ifndef MPD_INPUT_STREAM_HXX
 #define MPD_INPUT_STREAM_HXX
 
-#include "check.h"
 #include "Offset.hxx"
 #include "Ptr.hxx"
 #include "thread/Mutex.hxx"

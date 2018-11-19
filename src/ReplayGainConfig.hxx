@@ -20,8 +20,6 @@
 #ifndef MPD_REPLAY_GAIN_CONFIG_HXX
 #define MPD_REPLAY_GAIN_CONFIG_HXX
 
-#include "check.h"
-
 struct ReplayGainConfig {
 	static constexpr bool DEFAULT_LIMIT = true;
 

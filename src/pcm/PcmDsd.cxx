@@ -17,7 +17,6 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "config.h"
 #include "PcmDsd.hxx"
 #include "dsd2pcm/dsd2pcm.h"
 #include "util/ConstBuffer.hxx"

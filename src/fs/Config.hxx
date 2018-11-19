@@ -20,8 +20,6 @@
 #ifndef MPD_FS_CONFIG_HXX
 #define MPD_FS_CONFIG_HXX
 
-#include "check.h"
-
 struct ConfigData;
 
 /**

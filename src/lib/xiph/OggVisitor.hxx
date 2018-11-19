@@ -20,7 +20,6 @@
 #ifndef MPD_OGG_VISITOR_HXX
 #define MPD_OGG_VISITOR_HXX
 
-#include "check.h"
 #include "OggSyncState.hxx"
 #include "OggStreamState.hxx"
 

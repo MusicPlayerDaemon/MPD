@@ -20,7 +20,6 @@
 #ifndef TIDAL_ERROR_PARSER_HXX
 #define TIDAL_ERROR_PARSER_HXX
 
-#include "check.h"
 #include "lib/yajl/ResponseParser.hxx"
 
 #include <string>

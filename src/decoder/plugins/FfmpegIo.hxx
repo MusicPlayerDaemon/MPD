@@ -20,8 +20,6 @@
 #ifndef MPD_FFMPEG_IO_HXX
 #define MPD_FFMPEG_IO_HXX
 
-#include "check.h"
-
 extern "C" {
 #include "libavformat/avio.h"
 }

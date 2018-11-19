@@ -20,8 +20,6 @@
 #ifndef MPD_UPDATE_CONFIG_HXX
 #define MPD_UPDATE_CONFIG_HXX
 
-#include "check.h"
-
 struct ConfigData;
 
 struct UpdateConfig {

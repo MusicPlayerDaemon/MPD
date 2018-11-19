@@ -2,7 +2,6 @@
  * Unit tests for class RewindInputStream.
  */
 
-#include "config.h"
 #include "input/RewindInputStream.hxx"
 #include "input/InputStream.hxx"
 #include "thread/Mutex.hxx"

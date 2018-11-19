@@ -22,7 +22,6 @@
  *
  */
 
-#include "config.h"
 #include "State.hxx"
 #include "MultipleOutputs.hxx"
 #include "Filtered.hxx"

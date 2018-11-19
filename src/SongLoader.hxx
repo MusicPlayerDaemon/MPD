@@ -20,8 +20,8 @@
 #ifndef MPD_SONG_LOADER_HXX
 #define MPD_SONG_LOADER_HXX
 
-#include "check.h"
 #include "util/Compiler.h"
+#include "config.h"
 
 #include <cstddef>
 

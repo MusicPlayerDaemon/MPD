@@ -20,10 +20,10 @@
 #ifndef MPD_UPDATE_WALK_HXX
 #define MPD_UPDATE_WALK_HXX
 
-#include "check.h"
 #include "Config.hxx"
 #include "Editor.hxx"
 #include "util/Compiler.h"
+#include "config.h"
 
 #include <atomic>
 

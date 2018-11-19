@@ -22,7 +22,6 @@
  *
  */
 
-#include "config.h"
 #include "Idle.hxx"
 #include "Main.hxx"
 #include "Instance.hxx"

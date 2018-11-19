@@ -20,8 +20,6 @@
 #ifndef MPD_TAG_ID3_UNIQUE_HXX
 #define MPD_TAG_ID3_UNIQUE_HXX
 
-#include "check.h"
-
 #include <id3tag.h>
 
 #include <memory>

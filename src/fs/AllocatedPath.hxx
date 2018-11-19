@@ -20,7 +20,6 @@
 #ifndef MPD_FS_ALLOCATED_PATH_HXX
 #define MPD_FS_ALLOCATED_PATH_HXX
 
-#include "check.h"
 #include "util/Compiler.h"
 #include "Traits.hxx"
 #include "Path.hxx"

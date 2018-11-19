@@ -30,7 +30,6 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
 #include "Watch.hxx"
 
 namespace ODBus {

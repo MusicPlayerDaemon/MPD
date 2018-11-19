@@ -20,7 +20,6 @@
 #ifndef MPD_SOCKET_MONITOR_HXX
 #define MPD_SOCKET_MONITOR_HXX
 
-#include "check.h"
 #include "PollGroup.hxx"
 #include "net/SocketDescriptor.hxx"
 

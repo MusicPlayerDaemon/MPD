@@ -17,7 +17,6 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "config.h"
 #include "fs/io/GunzipReader.hxx"
 #include "fs/io/FileReader.hxx"
 #include "fs/io/StdioOutputStream.hxx"

@@ -21,7 +21,6 @@
   * single bz2 archive handling (requires libbz2)
   */
 
-#include "config.h"
 #include "Bzip2ArchivePlugin.hxx"
 #include "../ArchivePlugin.hxx"
 #include "../ArchiveFile.hxx"

@@ -22,13 +22,13 @@
  *
  */
 
-#include "config.h"
 #include "ExcludeList.hxx"
 #include "fs/Path.hxx"
 #include "fs/NarrowPath.hxx"
 #include "input/TextInputStream.hxx"
 #include "util/StringStrip.hxx"
 #include "Log.hxx"
+#include "config.h"
 
 #include <exception>
 

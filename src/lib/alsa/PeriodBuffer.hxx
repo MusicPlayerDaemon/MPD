@@ -20,8 +20,6 @@
 #ifndef MPD_ALSA_PERIOD_BUFFER_HXX
 #define MPD_ALSA_PERIOD_BUFFER_HXX
 
-#include "check.h"
-
 #include <alsa/asoundlib.h>
 
 #include <algorithm>

@@ -20,7 +20,6 @@
 #ifndef MPD_PEEK_READER_HXX
 #define MPD_PEEK_READER_HXX
 
-#include "check.h"
 #include "Reader.hxx"
 #include "util/Compiler.h"
 

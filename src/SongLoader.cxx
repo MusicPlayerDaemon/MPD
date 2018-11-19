@@ -17,7 +17,6 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "config.h"
 #include "SongLoader.hxx"
 #include "LocateUri.hxx"
 #include "client/Client.hxx"
@@ -25,6 +24,7 @@
 #include "storage/StorageInterface.hxx"
 #include "song/DetachedSong.hxx"
 #include "PlaylistError.hxx"
+#include "config.h"
 
 #include <assert.h>
 

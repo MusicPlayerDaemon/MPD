@@ -20,7 +20,6 @@
 #ifndef MPD_RESPONSE_HXX
 #define MPD_RESPONSE_HXX
 
-#include "check.h"
 #include "protocol/Ack.hxx"
 #include "util/Compiler.h"
 

@@ -20,7 +20,6 @@
 #ifndef MPD_STORAGE_LOCAL_HXX
 #define MPD_STORAGE_LOCAL_HXX
 
-#include "check.h"
 #include "util/Compiler.h"
 
 #include <memory>

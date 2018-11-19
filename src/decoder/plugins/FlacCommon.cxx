@@ -21,7 +21,6 @@
  * Common data structures and functions used by FLAC and OggFLAC
  */
 
-#include "config.h"
 #include "FlacCommon.hxx"
 #include "lib/xiph/FlacStreamMetadata.hxx"
 #include "Log.hxx"

@@ -27,7 +27,6 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
 #include "Init.hxx"
 #include "Global.hxx"
 #include "event/Call.hxx"

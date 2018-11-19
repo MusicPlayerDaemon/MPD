@@ -17,11 +17,11 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "config.h"
 #include "AllocatedPath.hxx"
 #include "Domain.hxx"
 #include "Charset.hxx"
 #include "util/Compiler.h"
+#include "config.h"
 
 #include <exception>
 

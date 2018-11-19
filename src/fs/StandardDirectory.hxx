@@ -20,7 +20,6 @@
 #ifndef MPD_FS_STANDARD_DIRECTORY_HXX
 #define MPD_FS_STANDARD_DIRECTORY_HXX
 
-#include "check.h"
 #include "AllocatedPath.hxx"
 
 /**

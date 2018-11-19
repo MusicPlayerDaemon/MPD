@@ -22,7 +22,6 @@
  *
  */
 
-#include "config.h"
 #include "AudioParser.hxx"
 #include "AudioFormat.hxx"
 #include "util/RuntimeError.hxx"

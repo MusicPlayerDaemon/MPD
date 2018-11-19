@@ -20,7 +20,7 @@
 #ifndef MPD_PLAYLIST_MAPPER_HXX
 #define MPD_PLAYLIST_MAPPER_HXX
 
-#include "check.h"
+#include "config.h"
 
 #include <memory>
 

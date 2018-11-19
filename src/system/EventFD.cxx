@@ -27,7 +27,6 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
 #include "EventFD.hxx"
 #include "system/Error.hxx"
 #include "util/Compiler.h"

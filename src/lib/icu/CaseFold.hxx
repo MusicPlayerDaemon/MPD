@@ -20,7 +20,7 @@
 #ifndef MPD_ICU_CASE_FOLD_HXX
 #define MPD_ICU_CASE_FOLD_HXX
 
-#include "check.h"
+#include "config.h"
 
 #if defined(HAVE_ICU) || defined(_WIN32)
 #define HAVE_ICU_CASE_FOLD

@@ -20,7 +20,6 @@
 #ifndef MPD_TAG_HANDLER_HXX
 #define MPD_TAG_HANDLER_HXX
 
-#include "check.h"
 #include "Type.h"
 #include "Chrono.hxx"
 #include "util/Compiler.h"

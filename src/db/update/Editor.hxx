@@ -20,7 +20,6 @@
 #ifndef MPD_UPDATE_DATABASE_HXX
 #define MPD_UPDATE_DATABASE_HXX
 
-#include "check.h"
 #include "Remove.hxx"
 #include "util/Compiler.h"
 

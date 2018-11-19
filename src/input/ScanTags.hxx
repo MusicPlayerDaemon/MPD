@@ -20,8 +20,6 @@
 #ifndef MPD_INPUT_SCAN_TAGS_HXX
 #define MPD_INPUT_SCAN_TAGS_HXX
 
-#include "check.h"
-
 #include <memory>
 
 class RemoteTagScanner;

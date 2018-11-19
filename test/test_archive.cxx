@@ -1,4 +1,3 @@
-#include "config.h"
 #include "archive/ArchiveLookup.hxx"
 #include "util/Compiler.h"
 

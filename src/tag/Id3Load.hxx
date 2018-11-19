@@ -20,7 +20,6 @@
 #ifndef MPD_TAG_ID3_LOAD_HXX
 #define MPD_TAG_ID3_LOAD_HXX
 
-#include "check.h"
 #include "Id3Unique.hxx"
 
 class InputStream;

@@ -20,7 +20,6 @@
 #ifndef NET_INIT_HXX
 #define NET_INIT_HXX
 
-#include "check.h"
 #include "SocketError.hxx"
 
 #ifdef _WIN32

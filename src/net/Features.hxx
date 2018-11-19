@@ -20,8 +20,7 @@
 #ifndef NET_FEATURES_HXX
 #define NET_FEATURES_HXX
 
-/* feature macros are defined in config.h, and this header verifies
-   that it has been included earlier */
-#include "check.h"
+/* feature macros are defined in config.h */
+#include "config.h"
 
 #endif

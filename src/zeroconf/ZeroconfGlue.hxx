@@ -20,7 +20,7 @@
 #ifndef MPD_ZEROCONF_GLUE_HXX
 #define MPD_ZEROCONF_GLUE_HXX
 
-#include "check.h"
+#include "config.h"
 
 struct ConfigData;
 class EventLoop;

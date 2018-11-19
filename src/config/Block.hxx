@@ -20,7 +20,6 @@
 #ifndef MPD_CONFIG_BLOCK_HXX
 #define MPD_CONFIG_BLOCK_HXX
 
-#include "check.h"
 #include "Param.hxx"
 #include "util/Compiler.h"
 

@@ -20,9 +20,9 @@
 #ifndef MPD_ALSA_FORMAT_HXX
 #define MPD_ALSA_FORMAT_HXX
 
-#include "check.h"
 #include "pcm/SampleFormat.hxx"
 #include "util/Compiler.h"
+#include "config.h"
 
 #include <alsa/asoundlib.h>
 

@@ -29,7 +29,6 @@
 
 // IWYU pragma: begin_exports
 
-#include "check.h"
 #include "Client.hxx"
 #include "input/Ptr.hxx"
 #include "Command.hxx"

@@ -2,7 +2,6 @@
  * Unit tests for playlist_check_translate_song().
  */
 
-#include "config.h"
 #include "playlist/PlaylistSong.hxx"
 #include "song/DetachedSong.hxx"
 #include "SongLoader.hxx"

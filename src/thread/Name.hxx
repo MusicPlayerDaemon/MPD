@@ -20,6 +20,8 @@
 #ifndef MPD_THREAD_NAME_HXX
 #define MPD_THREAD_NAME_HXX
 
+#include "config.h"
+
 #if defined(HAVE_PTHREAD_SETNAME_NP) && !defined(__NetBSD__)
 #  define HAVE_THREAD_NAME
 #  include <pthread.h>

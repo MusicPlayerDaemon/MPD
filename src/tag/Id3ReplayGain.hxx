@@ -20,8 +20,6 @@
 #ifndef MPD_TAG_ID3_REPLAY_GAIN_HXX
 #define MPD_TAG_ID3_REPLAY_GAIN_HXX
 
-#include "check.h"
-
 struct id3_tag;
 struct ReplayGainInfo;
 

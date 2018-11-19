@@ -20,7 +20,6 @@
 #ifndef MPD_OGG_DECODER_HXX
 #define MPD_OGG_DECODER_HXX
 
-#include "config.h" /* must be first for large file support */
 #include "lib/xiph/OggVisitor.hxx"
 #include "decoder/Reader.hxx"
 

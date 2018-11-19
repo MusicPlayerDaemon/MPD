@@ -30,7 +30,6 @@
 #ifndef FILE_OUTPUT_STREAM_HXX
 #define FILE_OUTPUT_STREAM_HXX
 
-#include "check.h"
 #include "OutputStream.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "util/Compiler.h"

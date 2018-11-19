@@ -20,11 +20,11 @@
 #ifndef PCM_CONVERT_HXX
 #define PCM_CONVERT_HXX
 
-#include "check.h"
 #include "FormatConverter.hxx"
 #include "ChannelsConverter.hxx"
 #include "GlueResampler.hxx"
 #include "AudioFormat.hxx"
+#include "config.h"
 
 #ifdef ENABLE_DSD
 #include "PcmDsd.hxx"

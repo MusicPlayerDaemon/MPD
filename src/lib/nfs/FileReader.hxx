@@ -20,7 +20,6 @@
 #ifndef MPD_NFS_FILE_READER_HXX
 #define MPD_NFS_FILE_READER_HXX
 
-#include "check.h"
 #include "Lease.hxx"
 #include "Callback.hxx"
 #include "event/DeferEvent.hxx"

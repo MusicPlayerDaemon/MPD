@@ -20,7 +20,6 @@
 #ifndef MPD_EVENT_MASK_MONITOR_HXX
 #define MPD_EVENT_MASK_MONITOR_HXX
 
-#include "check.h"
 #include "DeferEvent.hxx"
 #include "util/BindMethod.hxx"
 

@@ -27,7 +27,6 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
 #include "FileOutputStream.hxx"
 #include "system/Error.hxx"
 #include "util/StringFormat.hxx"

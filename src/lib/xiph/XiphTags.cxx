@@ -21,7 +21,7 @@
  * Flac and Opus which will be used in addition to the Tags in tag/TagNames.c
  * see https://www.xiph.org/vorbis/doc/v-comment.html for further Info
  */
-#include "config.h"
+
 #include "XiphTags.hxx"
 
 const struct tag_table xiph_tags[] = {

@@ -20,7 +20,6 @@
 #ifndef MPD_STORAGE_REGISTRY_HXX
 #define MPD_STORAGE_REGISTRY_HXX
 
-#include "check.h"
 #include "util/Compiler.h"
 
 #include <memory>

@@ -20,7 +20,6 @@
 #ifndef QOBUZ_LOGIN_REQUEST_HXX
 #define QOBUZ_LOGIN_REQUEST_HXX
 
-#include "check.h"
 #include "lib/curl/Delegate.hxx"
 #include "lib/curl/Request.hxx"
 

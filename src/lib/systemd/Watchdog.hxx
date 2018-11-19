@@ -30,7 +30,6 @@
 #ifndef SYSTEMD_WATCHDOG_HXX
 #define SYSTEMD_WATCHDOG_HXX
 
-#include "check.h"
 #include "event/TimerEvent.hxx"
 
 namespace Systemd {

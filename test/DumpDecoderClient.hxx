@@ -20,7 +20,6 @@
 #ifndef DUMP_DECODER_CLIENT_HXX
 #define DUMP_DECODER_CLIENT_HXX
 
-#include "check.h"
 #include "decoder/Client.hxx"
 #include "thread/Mutex.hxx"
 

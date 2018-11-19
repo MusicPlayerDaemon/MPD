@@ -20,7 +20,6 @@
 #ifndef MPD_GLUE_RESAMPLER_HXX
 #define MPD_GLUE_RESAMPLER_HXX
 
-#include "check.h"
 #include "AudioFormat.hxx"
 #include "FormatConverter.hxx"
 

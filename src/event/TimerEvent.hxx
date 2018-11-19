@@ -20,7 +20,6 @@
 #ifndef MPD_TIMER_EVENT_HXX
 #define MPD_TIMER_EVENT_HXX
 
-#include "check.h"
 #include "util/BindMethod.hxx"
 
 #include <boost/intrusive/set_hook.hpp>

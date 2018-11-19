@@ -20,8 +20,6 @@
 #ifndef MPD_OGG_PAGE_HXX
 #define MPD_OGG_PAGE_HXX
 
-#include "check.h"
-
 #include <ogg/ogg.h>
 
 #include <assert.h>

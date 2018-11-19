@@ -24,7 +24,6 @@
  *
  */
 
-#include "config.h"
 #include "OutputCommand.hxx"
 #include "MultipleOutputs.hxx"
 #include "Filtered.hxx"

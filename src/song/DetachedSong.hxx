@@ -20,7 +20,6 @@
 #ifndef MPD_DETACHED_SONG_HXX
 #define MPD_DETACHED_SONG_HXX
 
-#include "check.h"
 #include "tag/Tag.hxx"
 #include "Chrono.hxx"
 #include "util/Compiler.h"

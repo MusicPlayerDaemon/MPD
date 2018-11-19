@@ -20,8 +20,6 @@
 #ifndef MPD_OFFSET_HXX
 #define MPD_OFFSET_HXX
 
-#include "check.h"
-
 #include <stdint.h>
 
 /**

@@ -20,8 +20,6 @@
 #ifndef MPD_FILTER_OBSERVER_HXX
 #define MPD_FILTER_OBSERVER_HXX
 
-#include "check.h"
-
 #include <memory>
 
 class PreparedFilter;

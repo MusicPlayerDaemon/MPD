@@ -20,8 +20,8 @@
 #ifndef MPD_TEXT_FILE_HXX
 #define MPD_TEXT_FILE_HXX
 
-#include "check.h"
 #include "util/Compiler.h"
+#include "config.h"
 
 class Path;
 class FileReader;

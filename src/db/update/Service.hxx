@@ -20,7 +20,6 @@
 #ifndef MPD_UPDATE_SERVICE_HXX
 #define MPD_UPDATE_SERVICE_HXX
 
-#include "check.h"
 #include "Config.hxx"
 #include "Queue.hxx"
 #include "event/DeferEvent.hxx"

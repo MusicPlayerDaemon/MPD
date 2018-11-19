@@ -20,7 +20,6 @@
 #ifndef MPD_FS_FILE_INFO_HXX
 #define MPD_FS_FILE_INFO_HXX
 
-#include "check.h"
 #include "Path.hxx"
 #include "system/Error.hxx"
 

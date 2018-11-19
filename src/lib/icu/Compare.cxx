@@ -17,10 +17,10 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "config.h"
 #include "Compare.hxx"
 #include "CaseFold.hxx"
 #include "util/StringAPI.hxx"
+#include "config.h"
 
 #include <string.h>
 

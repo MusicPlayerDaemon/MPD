@@ -27,7 +27,6 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
 #include "Watchdog.hxx"
 
 #include <systemd/sd-daemon.h>

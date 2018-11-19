@@ -20,8 +20,6 @@
 #ifndef MPD_VORBIS_COMMENTS_HXX
 #define MPD_VORBIS_COMMENTS_HXX
 
-#include "check.h"
-
 #include <memory>
 
 struct ReplayGainInfo;

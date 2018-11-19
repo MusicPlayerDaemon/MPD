@@ -20,7 +20,6 @@
 #ifndef MPD_EVENT_THREAD_HXX
 #define MPD_EVENT_THREAD_HXX
 
-#include "check.h"
 #include "Loop.hxx"
 #include "thread/Thread.hxx"
 

@@ -20,7 +20,6 @@
 #ifndef TIDAL_SESSION_MANAGER_HXX
 #define TIDAL_SESSION_MANAGER_HXX
 
-#include "check.h"
 #include "TidalLoginRequest.hxx"
 #include "lib/curl/Init.hxx"
 #include "thread/Mutex.hxx"

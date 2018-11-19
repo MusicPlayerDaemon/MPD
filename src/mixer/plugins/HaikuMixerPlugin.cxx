@@ -20,7 +20,6 @@
  */
 
 
-#include "config.h"
 #include "mixer/MixerInternal.hxx"
 #include "output/plugins/HaikuOutputPlugin.hxx"
 #include "util/Compiler.h"

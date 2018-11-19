@@ -20,7 +20,6 @@
 #ifndef MPD_MULTI_SOCKET_MONITOR_HXX
 #define MPD_MULTI_SOCKET_MONITOR_HXX
 
-#include "check.h"
 #include "IdleMonitor.hxx"
 #include "TimerEvent.hxx"
 #include "SocketMonitor.hxx"

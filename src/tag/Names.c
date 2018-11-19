@@ -17,7 +17,6 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "config.h"
 #include "Type.h"
 
 const char *const tag_item_names[TAG_NUM_OF_ITEM_TYPES] = {

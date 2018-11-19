@@ -20,7 +20,6 @@
 #ifndef MPD_TAG_VORBIS_COMMENT_HXX
 #define MPD_TAG_VORBIS_COMMENT_HXX
 
-#include "check.h"
 #include "util/Compiler.h"
 
 /**

@@ -20,7 +20,6 @@
 #ifndef MPD_TAG_STRING_HXX
 #define MPD_TAG_STRING_HXX
 
-#include "check.h"
 #include "util/Compiler.h"
 
 struct StringView;

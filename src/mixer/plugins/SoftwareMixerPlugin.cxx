@@ -17,7 +17,6 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "config.h"
 #include "SoftwareMixerPlugin.hxx"
 #include "mixer/MixerInternal.hxx"
 #include "filter/plugins/VolumeFilterPlugin.hxx"

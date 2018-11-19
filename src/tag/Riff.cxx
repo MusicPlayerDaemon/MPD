@@ -17,7 +17,6 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "config.h" /* must be first for large file support */
 #include "Riff.hxx"
 #include "input/InputStream.hxx"
 #include "system/ByteOrder.hxx"

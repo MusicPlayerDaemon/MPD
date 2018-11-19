@@ -2,7 +2,6 @@
  * Unit tests for src/util/
  */
 
-#include "config.h"
 #include "util/DivideString.hxx"
 
 #include <gtest/gtest.h>

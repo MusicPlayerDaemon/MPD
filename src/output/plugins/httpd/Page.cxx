@@ -17,12 +17,9 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "config.h"
 #include "Page.hxx"
 
-#include <assert.h>
 #include <string.h>
-#include <stdlib.h>
 
 Page::Page(const void *data, size_t size)
 	:buffer(size)

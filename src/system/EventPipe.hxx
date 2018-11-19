@@ -20,8 +20,6 @@
 #ifndef MPD_EVENT_PIPE_HXX
 #define MPD_EVENT_PIPE_HXX
 
-#include "check.h"
-
 /**
  * A pipe that can be used to trigger an event to the read side.
  *

@@ -22,7 +22,6 @@
  *
  */
 
-#include "config.h"
 #include "IdleFlags.hxx"
 #include "util/ASCII.hxx"
 

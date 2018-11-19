@@ -20,7 +20,7 @@
 #ifndef MPD_FS_GLOB_XX
 #define MPD_FS_GLOB_XX
 
-#include "check.h"
+#include "config.h"
 
 #ifdef HAVE_FNMATCH
 #define HAVE_CLASS_GLOB

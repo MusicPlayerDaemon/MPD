@@ -20,7 +20,6 @@
 #ifndef MPD_BLOCKING_NFS_CALLBACK_HXX
 #define MPD_BLOCKING_NFS_CALLBACK_HXX
 
-#include "check.h"
 #include "Callback.hxx"
 #include "Lease.hxx"
 #include "thread/Mutex.hxx"

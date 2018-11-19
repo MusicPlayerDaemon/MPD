@@ -22,7 +22,6 @@
  *
  */
 
-#include "config.h"
 #include "StorageState.hxx"
 #include "fs/io/TextFile.hxx"
 #include "fs/io/BufferedOutputStream.hxx"

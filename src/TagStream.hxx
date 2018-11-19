@@ -20,8 +20,6 @@
 #ifndef MPD_TAG_STREAM_HXX
 #define MPD_TAG_STREAM_HXX
 
-#include "check.h"
-
 struct AudioFormat;
 class InputStream;
 class TagHandler;

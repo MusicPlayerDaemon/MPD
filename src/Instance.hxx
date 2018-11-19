@@ -20,7 +20,7 @@
 #ifndef MPD_INSTANCE_HXX
 #define MPD_INSTANCE_HXX
 
-#include "check.h"
+#include "config.h"
 #include "event/Loop.hxx"
 #include "event/Thread.hxx"
 #include "event/MaskMonitor.hxx"

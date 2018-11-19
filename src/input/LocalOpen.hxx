@@ -20,7 +20,6 @@
 #ifndef MPD_INPUT_LOCAL_OPEN_HXX
 #define MPD_INPUT_LOCAL_OPEN_HXX
 
-#include "check.h"
 #include "Ptr.hxx"
 
 class Path;

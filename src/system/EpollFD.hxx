@@ -30,7 +30,6 @@
 #ifndef EPOLL_FD_HXX
 #define EPOLL_FD_HXX
 
-#include "check.h"
 #include "UniqueFileDescriptor.hxx"
 
 #include <assert.h>

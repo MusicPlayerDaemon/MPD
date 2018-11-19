@@ -20,7 +20,6 @@
 #ifndef MPD_UPDATE_QUEUE_HXX
 #define MPD_UPDATE_QUEUE_HXX
 
-#include "check.h"
 #include "util/Compiler.h"
 
 #include <string>

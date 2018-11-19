@@ -39,7 +39,6 @@
  * one of them takes effect.
  */
 
-#include "config.h"
 #include "config/Domain.hxx"
 #include "config/Block.hxx"
 #include "AudioFormat.hxx"

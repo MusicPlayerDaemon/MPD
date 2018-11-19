@@ -23,7 +23,6 @@
  *
  */
 
-#include "config.h"
 #include "AudioParser.hxx"
 #include "AudioFormat.hxx"
 #include "pcm/PcmConvert.hxx"

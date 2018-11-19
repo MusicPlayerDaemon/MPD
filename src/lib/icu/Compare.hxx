@@ -20,7 +20,6 @@
 #ifndef MPD_ICU_COMPARE_HXX
 #define MPD_ICU_COMPARE_HXX
 
-#include "check.h"
 #include "util/Compiler.h"
 #include "util/AllocatedString.hxx"
 

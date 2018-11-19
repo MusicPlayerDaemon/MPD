@@ -35,7 +35,6 @@
  * #MusicChunk instances around in #MusicPipe objects.
  */
 
-#include "config.h"
 #include "Control.hxx"
 #include "Outputs.hxx"
 #include "Listener.hxx"

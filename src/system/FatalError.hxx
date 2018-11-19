@@ -20,7 +20,6 @@
 #ifndef MPD_FATAL_ERROR_HXX
 #define MPD_FATAL_ERROR_HXX
 
-#include "check.h"
 #include "util/Compiler.h"
 
 #ifdef _WIN32

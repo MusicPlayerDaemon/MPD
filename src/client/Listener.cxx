@@ -17,12 +17,12 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "config.h"
 #include "Listener.hxx"
 #include "Client.hxx"
 #include "Permission.hxx"
 #include "net/UniqueSocketDescriptor.hxx"
 #include "net/SocketAddress.hxx"
+#include "config.h"
 
 static unsigned
 GetPermissions(SocketAddress address, int uid) noexcept

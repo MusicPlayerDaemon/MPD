@@ -20,7 +20,6 @@
 #ifndef QOBUZ_CLIENT_HXX
 #define QOBUZ_CLIENT_HXX
 
-#include "check.h"
 #include "QobuzSession.hxx"
 #include "QobuzLoginRequest.hxx"
 #include "lib/curl/Init.hxx"

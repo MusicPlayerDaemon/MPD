@@ -30,7 +30,6 @@
 #ifndef STDIO_OUTPUT_STREAM_HXX
 #define STDIO_OUTPUT_STREAM_HXX
 
-#include "check.h"
 #include "OutputStream.hxx"
 #include "util/Compiler.h"
 

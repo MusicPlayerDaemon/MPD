@@ -20,7 +20,7 @@
 #ifndef MPD_LOCATE_URI_HXX
 #define MPD_LOCATE_URI_HXX
 
-#include "check.h"
+#include "config.h"
 #include "util/Compiler.h"
 #include "fs/AllocatedPath.hxx"
 

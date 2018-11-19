@@ -24,9 +24,10 @@
 #ifndef MPD_MAPPER_HXX
 #define MPD_MAPPER_HXX
 
-#include <string>
-
 #include "util/Compiler.h"
+#include "config.h"
+
+#include <string>
 
 #define PLAYLIST_FILE_SUFFIX ".m3u"
 

@@ -20,8 +20,6 @@
 #ifndef MPD_TAG_RVA2_HXX
 #define MPD_TAG_RVA2_HXX
 
-#include "check.h"
-
 struct id3_tag;
 struct ReplayGainInfo;
 

@@ -20,8 +20,8 @@
 #ifndef MPD_ALSA_ALLOWED_FORMAT_HXX
 #define MPD_ALSA_ALLOWED_FORMAT_HXX
 
-#include "check.h"
 #include "AudioFormat.hxx"
+#include "config.h"
 
 #include <forward_list>
 #include <string>

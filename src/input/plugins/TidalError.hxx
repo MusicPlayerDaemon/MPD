@@ -20,8 +20,6 @@
 #ifndef TIDAL_ERROR_HXX
 #define TIDAL_ERROR_HXX
 
-#include "check.h"
-
 #include <stdexcept>
 
 /**

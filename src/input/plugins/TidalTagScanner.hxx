@@ -20,7 +20,6 @@
 #ifndef TIDAL_TAG_SCANNER_HXX
 #define TIDAL_TAG_SCANNER_HXX
 
-#include "check.h"
 #include "lib/curl/Delegate.hxx"
 #include "lib/curl/Slist.hxx"
 #include "lib/curl/Request.hxx"

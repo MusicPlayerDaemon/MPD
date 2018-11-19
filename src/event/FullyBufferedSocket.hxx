@@ -20,7 +20,6 @@
 #ifndef MPD_FULLY_BUFFERED_SOCKET_HXX
 #define MPD_FULLY_BUFFERED_SOCKET_HXX
 
-#include "check.h"
 #include "BufferedSocket.hxx"
 #include "IdleMonitor.hxx"
 #include "util/PeakBuffer.hxx"

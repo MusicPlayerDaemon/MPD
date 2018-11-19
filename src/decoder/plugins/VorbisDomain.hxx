@@ -20,8 +20,6 @@
 #ifndef MPD_VORBIS_DOMAIN_HXX
 #define MPD_VORBIS_DOMAIN_HXX
 
-#include "check.h"
-
 class Domain;
 
 extern const Domain vorbis_domain;

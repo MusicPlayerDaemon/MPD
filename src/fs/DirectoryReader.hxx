@@ -20,7 +20,6 @@
 #ifndef MPD_FS_DIRECTORY_READER_HXX
 #define MPD_FS_DIRECTORY_READER_HXX
 
-#include "check.h"
 #include "Path.hxx"
 
 #ifdef _WIN32

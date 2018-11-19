@@ -20,7 +20,6 @@
 #ifndef MPD_COMPOSITE_STORAGE_HXX
 #define MPD_COMPOSITE_STORAGE_HXX
 
-#include "check.h"
 #include "StorageInterface.hxx"
 #include "thread/Mutex.hxx"
 #include "util/Compiler.h"

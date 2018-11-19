@@ -20,7 +20,6 @@
 #ifndef MPD_THREAD_HXX
 #define MPD_THREAD_HXX
 
-#include "check.h"
 #include "util/BindMethod.hxx"
 #include "util/Compiler.h"
 

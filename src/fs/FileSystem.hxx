@@ -20,7 +20,6 @@
 #ifndef MPD_FS_FILESYSTEM_HXX
 #define MPD_FS_FILESYSTEM_HXX
 
-#include "check.h"
 #include "Traits.hxx"
 #include "Path.hxx"
 #include "system/UniqueFileDescriptor.hxx"

@@ -20,8 +20,6 @@
 #ifndef MPD_STORAGE_FILE_INFO_HXX
 #define MPD_STORAGE_FILE_INFO_HXX
 
-#include "check.h"
-
 #include <chrono>
 
 #include <stdint.h>

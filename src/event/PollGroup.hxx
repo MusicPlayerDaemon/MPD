@@ -20,6 +20,8 @@
 #ifndef MPD_EVENT_POLLGROUP_HXX
 #define MPD_EVENT_POLLGROUP_HXX
 
+#include "config.h"
+
 #ifdef USE_EPOLL
 #include "PollGroupEpoll.hxx"
 typedef PollResultEpoll PollResult;

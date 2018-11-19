@@ -20,7 +20,7 @@
 #ifndef MPD_ICU_INIT_HXX
 #define MPD_ICU_INIT_HXX
 
-#include "check.h"
+#include "config.h"
 
 #ifdef HAVE_ICU
 

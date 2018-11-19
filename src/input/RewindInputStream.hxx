@@ -27,7 +27,6 @@
 #ifndef MPD_REWIND_INPUT_STREAM_HXX
 #define MPD_REWIND_INPUT_STREAM_HXX
 
-#include "check.h"
 #include "Ptr.hxx"
 
 InputStreamPtr

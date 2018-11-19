@@ -20,7 +20,6 @@
 #ifndef SHARED_PIPE_CONSUMER_HXX
 #define SHARED_PIPE_CONSUMER_HXX
 
-#include "check.h"
 #include "util/Compiler.h"
 
 #include <assert.h>

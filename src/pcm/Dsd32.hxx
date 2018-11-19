@@ -20,8 +20,6 @@
 #ifndef MPD_PCM_DSD_32_HXX
 #define MPD_PCM_DSD_32_HXX
 
-#include "check.h"
-
 #include <stdint.h>
 
 template<typename T> struct ConstBuffer;

@@ -17,7 +17,6 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "config.h"
 #include "IcyMetaDataParser.hxx"
 #include "tag/Tag.hxx"
 #include "tag/Builder.hxx"

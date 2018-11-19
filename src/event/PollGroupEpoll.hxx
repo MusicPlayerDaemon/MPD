@@ -20,8 +20,6 @@
 #ifndef MPD_EVENT_POLLGROUP_EPOLL_HXX
 #define MPD_EVENT_POLLGROUP_EPOLL_HXX
 
-#include "check.h"
-
 #include "util/Compiler.h"
 #include "system/EpollFD.hxx"
 

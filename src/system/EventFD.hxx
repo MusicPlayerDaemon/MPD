@@ -30,7 +30,6 @@
 #ifndef EVENT_FD_HXX
 #define EVENT_FD_HXX
 
-#include "check.h"
 #include "UniqueFileDescriptor.hxx"
 
 /**

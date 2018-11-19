@@ -20,8 +20,6 @@
 #ifndef MPD_APE_LOADER_HXX
 #define MPD_APE_LOADER_HXX
 
-#include "check.h"
-
 #include <functional>
 
 struct StringView;

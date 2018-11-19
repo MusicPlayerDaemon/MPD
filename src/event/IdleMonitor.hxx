@@ -20,8 +20,6 @@
 #ifndef MPD_SOCKET_IDLE_MONITOR_HXX
 #define MPD_SOCKET_IDLE_MONITOR_HXX
 
-#include "check.h"
-
 #include <boost/intrusive/list_hook.hpp>
 
 class EventLoop;
@@ -73,4 +71,4 @@ private:
 	void Run() noexcept;
 };
 
-#endif /* MAIN_NOTIFY_H */
+#endif

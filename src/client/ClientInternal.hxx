@@ -20,7 +20,6 @@
 #ifndef MPD_CLIENT_INTERNAL_HXX
 #define MPD_CLIENT_INTERNAL_HXX
 
-#include "check.h"
 #include "Client.hxx"
 #include "command/CommandResult.hxx"
 

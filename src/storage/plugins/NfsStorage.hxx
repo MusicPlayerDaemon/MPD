@@ -20,8 +20,6 @@
 #ifndef MPD_STORAGE_NFS_HXX
 #define MPD_STORAGE_NFS_HXX
 
-#include "check.h"
-
 struct StoragePlugin;
 
 extern const StoragePlugin nfs_storage_plugin;

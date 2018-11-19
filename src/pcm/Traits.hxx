@@ -20,7 +20,6 @@
 #ifndef MPD_PCM_TRAITS_HXX
 #define MPD_PCM_TRAITS_HXX
 
-#include "check.h"
 #include "SampleFormat.hxx"
 
 #include <stdint.h>

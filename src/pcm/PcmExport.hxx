@@ -20,9 +20,9 @@
 #ifndef PCM_EXPORT_HXX
 #define PCM_EXPORT_HXX
 
-#include "check.h"
 #include "SampleFormat.hxx"
 #include "PcmBuffer.hxx"
+#include "config.h"
 
 template<typename T> struct ConstBuffer;
 struct AudioFormat;

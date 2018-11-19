@@ -20,7 +20,6 @@
 #ifndef MPD_STATE_FILE_CONFIG_HXX
 #define MPD_STATE_FILE_CONFIG_HXX
 
-#include "check.h"
 #include "fs/AllocatedPath.hxx"
 
 #include <chrono>

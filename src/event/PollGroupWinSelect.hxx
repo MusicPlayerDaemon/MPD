@@ -20,8 +20,6 @@
 #ifndef MPD_EVENT_POLLGROUP_WINSELECT_HXX
 #define MPD_EVENT_POLLGROUP_WINSELECT_HXX
 
-#include "check.h"
-
 #include "PollResultGeneric.hxx"
 
 #include <assert.h>

@@ -24,7 +24,6 @@
  * plugins.
  */
 
-#include "config.h"
 #include "filter/FilterPlugin.hxx"
 #include "filter/Filter.hxx"
 #include "filter/Prepared.hxx"

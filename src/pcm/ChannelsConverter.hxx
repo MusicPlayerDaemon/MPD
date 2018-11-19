@@ -20,7 +20,6 @@
 #ifndef MPD_PCM_CHANNELS_CONVERTER_HXX
 #define MPD_PCM_CHANNELS_CONVERTER_HXX
 
-#include "check.h"
 #include "SampleFormat.hxx"
 #include "PcmBuffer.hxx"
 

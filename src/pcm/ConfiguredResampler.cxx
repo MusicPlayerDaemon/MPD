@@ -17,7 +17,6 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "config.h"
 #include "ConfiguredResampler.hxx"
 #include "FallbackResampler.hxx"
 #include "config/Data.hxx"
@@ -26,6 +25,7 @@
 #include "config/Block.hxx"
 #include "config/Param.hxx"
 #include "util/RuntimeError.hxx"
+#include "config.h"
 
 #ifdef ENABLE_LIBSAMPLERATE
 #include "LibsamplerateResampler.hxx"

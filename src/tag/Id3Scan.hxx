@@ -20,10 +20,6 @@
 #ifndef MPD_TAG_ID3_SCAN_HXX
 #define MPD_TAG_ID3_SCAN_HXX
 
-#include "check.h"
-
-#include <memory>
-
 class InputStream;
 class TagHandler;
 struct Tag;

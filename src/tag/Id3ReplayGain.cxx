@@ -17,7 +17,6 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "config.h"
 #include "Id3ReplayGain.hxx"
 #include "Rva2.hxx"
 #include "ReplayGain.hxx"

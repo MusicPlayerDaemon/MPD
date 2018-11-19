@@ -30,7 +30,6 @@
 #ifndef FILE_DESCRIPTOR_HXX
 #define FILE_DESCRIPTOR_HXX
 
-#include "check.h"
 #include "util/Compiler.h"
 
 #include <utility>

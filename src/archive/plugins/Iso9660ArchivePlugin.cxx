@@ -21,7 +21,6 @@
   * iso archive handling (requires cdio, and iso9660)
   */
 
-#include "config.h"
 #include "Iso9660ArchivePlugin.hxx"
 #include "../ArchivePlugin.hxx"
 #include "../ArchiveFile.hxx"

@@ -20,7 +20,6 @@
 #ifndef MPD_CUE_PARSER_HXX
 #define MPD_CUE_PARSER_HXX
 
-#include "check.h"
 #include "song/DetachedSong.hxx"
 #include "tag/Builder.hxx"
 #include "util/Compiler.h"

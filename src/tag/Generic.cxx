@@ -17,7 +17,6 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "config.h"
 #include "Generic.hxx"
 #include "Id3Scan.hxx"
 #include "ApeTag.hxx"
@@ -26,6 +25,7 @@
 #include "input/InputStream.hxx"
 #include "input/LocalOpen.hxx"
 #include "Log.hxx"
+#include "config.h"
 
 #include <exception>
 

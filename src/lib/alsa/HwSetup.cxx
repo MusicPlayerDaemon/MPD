@@ -17,7 +17,6 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "config.h"
 #include "HwSetup.hxx"
 #include "Format.hxx"
 #include "system/ByteOrder.hxx"
@@ -25,6 +24,7 @@
 #include "util/RuntimeError.hxx"
 #include "AudioFormat.hxx"
 #include "Log.hxx"
+#include "config.h"
 
 static constexpr Domain alsa_output_domain("alsa_output");
 

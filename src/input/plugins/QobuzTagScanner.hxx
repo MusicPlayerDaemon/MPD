@@ -20,7 +20,6 @@
 #ifndef QOBUZ_TAG_SCANNER
 #define QOBUZ_TAG_SCANNER
 
-#include "check.h"
 #include "lib/curl/Delegate.hxx"
 #include "lib/curl/Request.hxx"
 #include "input/RemoteTagScanner.hxx"

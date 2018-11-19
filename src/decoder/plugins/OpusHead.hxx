@@ -20,8 +20,6 @@
 #ifndef MPD_OPUS_HEAD_HXX
 #define MPD_OPUS_HEAD_HXX
 
-#include "check.h"
-
 #include <stddef.h>
 
 bool

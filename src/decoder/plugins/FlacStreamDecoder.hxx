@@ -20,8 +20,6 @@
 #ifndef MPD_FLAC_STREAM_DECODER
 #define MPD_FLAC_STREAM_DECODER
 
-#include "check.h"
-
 #include <FLAC/stream_decoder.h>
 
 #include <utility>

@@ -16,7 +16,6 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "config.h"
 #include "mixer/MixerInternal.hxx"
 #include "mixer/Listener.hxx"
 #include "output/plugins/SndioOutputPlugin.hxx"

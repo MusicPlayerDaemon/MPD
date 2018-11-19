@@ -17,7 +17,6 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "config.h"
 #include "Directory.hxx"
 #include "lib/upnp/Util.hxx"
 #include "lib/expat/ExpatParser.hxx"

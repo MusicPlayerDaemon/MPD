@@ -20,9 +20,9 @@
 #ifndef MPD_FS_CHARSET_HXX
 #define MPD_FS_CHARSET_HXX
 
-#include "check.h"
 #include "util/Compiler.h"
 #include "Traits.hxx"
+#include "config.h"
 
 #if (defined(HAVE_ICU) || defined(HAVE_ICONV)) && !defined(_WIN32)
 #define HAVE_FS_CHARSET

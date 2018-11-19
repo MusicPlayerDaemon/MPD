@@ -20,8 +20,6 @@
 #ifndef MPD_PROTOCOL_RANGE_ARG_HXX
 #define MPD_PROTOCOL_RANGE_ARG_HXX
 
-#include "check.h"
-
 #include <limits>
 
 struct RangeArg {

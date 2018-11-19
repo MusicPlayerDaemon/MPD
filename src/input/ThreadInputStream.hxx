@@ -20,7 +20,6 @@
 #ifndef MPD_THREAD_INPUT_STREAM_HXX
 #define MPD_THREAD_INPUT_STREAM_HXX
 
-#include "check.h"
 #include "InputStream.hxx"
 #include "thread/Thread.hxx"
 #include "thread/Cond.hxx"

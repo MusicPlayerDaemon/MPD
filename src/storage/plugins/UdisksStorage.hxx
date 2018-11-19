@@ -20,8 +20,6 @@
 #ifndef MPD_STORAGE_UDISKS_HXX
 #define MPD_STORAGE_UDISKS_HXX
 
-#include "check.h"
-
 struct StoragePlugin;
 
 extern const StoragePlugin udisks_storage_plugin;

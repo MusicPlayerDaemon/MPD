@@ -17,7 +17,6 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "config.h"
 #include "PcmDop.hxx"
 #include "PcmBuffer.hxx"
 #include "AudioFormat.hxx"

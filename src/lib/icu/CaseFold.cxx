@@ -17,8 +17,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "config.h"
 #include "CaseFold.hxx"
+#include "config.h"
 
 #ifdef HAVE_ICU_CASE_FOLD
 

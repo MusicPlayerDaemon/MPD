@@ -20,6 +20,8 @@
 #ifndef MPD_THREAD_SLACK_HXX
 #define MPD_THREAD_SLACK_HXX
 
+#include "config.h"
+
 #ifdef HAVE_PRCTL
 #include <sys/prctl.h>
 #endif

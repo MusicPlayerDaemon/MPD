@@ -20,8 +20,6 @@
 #ifndef MPD_APE_REPLAY_GAIN_HXX
 #define MPD_APE_REPLAY_GAIN_HXX
 
-#include "check.h"
-
 class InputStream;
 struct ReplayGainInfo;
 

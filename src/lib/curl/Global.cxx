@@ -27,7 +27,6 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
 #include "Global.hxx"
 #include "Request.hxx"
 #include "Log.hxx"
@@ -35,6 +34,7 @@
 #include "event/SocketMonitor.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/Domain.hxx"
+#include "config.h"
 
 static constexpr Domain curlm_domain("curlm");
 

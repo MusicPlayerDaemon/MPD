@@ -20,7 +20,6 @@
 #ifndef MPD_NFS_MANAGER_HXX
 #define MPD_NFS_MANAGER_HXX
 
-#include "check.h"
 #include "Connection.hxx"
 #include "util/Compiler.h"
 #include "event/IdleMonitor.hxx"

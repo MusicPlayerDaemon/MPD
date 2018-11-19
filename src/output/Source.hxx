@@ -20,7 +20,6 @@
 #ifndef AUDIO_OUTPUT_SOURCE_HXX
 #define AUDIO_OUTPUT_SOURCE_HXX
 
-#include "check.h"
 #include "util/Compiler.h"
 #include "SharedPipeConsumer.hxx"
 #include "AudioFormat.hxx"

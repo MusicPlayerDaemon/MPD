@@ -23,7 +23,6 @@
  *
  */
 
-#include "config.h"
 #include "AudioCompress/compress.h"
 #include "AudioParser.hxx"
 #include "AudioFormat.hxx"

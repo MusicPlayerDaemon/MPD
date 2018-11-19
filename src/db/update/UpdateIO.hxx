@@ -20,7 +20,6 @@
 #ifndef MPD_UPDATE_IO_HXX
 #define MPD_UPDATE_IO_HXX
 
-#include "check.h"
 #include "util/Compiler.h"
 
 struct Directory;

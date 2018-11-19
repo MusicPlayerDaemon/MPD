@@ -20,7 +20,6 @@
 #ifndef MPD_INPUT_REGISTRY_HXX
 #define MPD_INPUT_REGISTRY_HXX
 
-#include "check.h"
 #include "util/Compiler.h"
 
 /**

@@ -17,11 +17,11 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "config.h"
 #include "LogBackend.hxx"
 #include "Log.hxx"
 #include "util/Domain.hxx"
 #include "util/StringStrip.hxx"
+#include "config.h"
 
 #include <assert.h>
 #include <stdio.h>

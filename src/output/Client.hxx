@@ -20,8 +20,6 @@
 #ifndef MPD_OUTPUT_CLIENT_HXX
 #define MPD_OUTPUT_CLIENT_HXX
 
-#include "check.h"
-
 /**
  * An interface between the #AudioOutput and the #Player.
  */

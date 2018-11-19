@@ -30,6 +30,7 @@
 #ifndef SOCKET_DESCRIPTOR_HXX
 #define SOCKET_DESCRIPTOR_HXX
 
+#include "Features.hxx"
 #include "system/FileDescriptor.hxx"
 
 #include <type_traits>

@@ -20,8 +20,6 @@
 #ifndef MPD_FLAC_DOMAIN_HXX
 #define MPD_FLAC_DOMAIN_HXX
 
-#include "check.h"
-
 extern const class Domain flac_domain;
 
 #endif

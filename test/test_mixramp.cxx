@@ -2,7 +2,6 @@
  * Unit tests for mixramp_interpolate()
  */
 
-#include "config.h"
 #include "player/CrossFade.cxx"
 
 #include <gtest/gtest.h>

@@ -20,8 +20,6 @@
 #ifndef MPD_PROTOCOL_ARGPARSER_HXX
 #define MPD_PROTOCOL_ARGPARSER_HXX
 
-#include "check.h"
-
 #include <stdint.h>
 
 struct RangeArg;

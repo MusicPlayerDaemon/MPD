@@ -22,6 +22,7 @@
 
 #include "lib/icu/Compare.hxx"
 #include "util/Compiler.h"
+#include "config.h"
 
 #ifdef HAVE_PCRE
 #include "lib/pcre/UniqueRegex.hxx"

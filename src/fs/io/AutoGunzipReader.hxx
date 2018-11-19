@@ -20,7 +20,6 @@
 #ifndef MPD_AUTO_GUNZIP_READER_HXX
 #define MPD_AUTO_GUNZIP_READER_HXX
 
-#include "check.h"
 #include "PeekReader.hxx"
 #include "util/Compiler.h"
 

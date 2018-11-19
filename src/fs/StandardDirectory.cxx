@@ -17,10 +17,10 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "config.h"
 #include "StandardDirectory.hxx"
 #include "FileSystem.hxx"
 #include "XDG.hxx"
+#include "config.h"
 
 #include <array>
 

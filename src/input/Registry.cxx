@@ -17,12 +17,12 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "config.h"
 #include "Registry.hxx"
 #include "InputPlugin.hxx"
 #include "util/Macros.hxx"
 #include "plugins/TidalInputPlugin.hxx"
 #include "plugins/QobuzInputPlugin.hxx"
+#include "config.h"
 
 #ifdef ENABLE_ALSA
 #include "plugins/AlsaInputPlugin.hxx"

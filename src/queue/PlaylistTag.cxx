@@ -23,7 +23,6 @@
  *
  */
 
-#include "config.h"
 #include "Playlist.hxx"
 #include "PlaylistError.hxx"
 #include "song/DetachedSong.hxx"

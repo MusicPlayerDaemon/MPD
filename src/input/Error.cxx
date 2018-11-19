@@ -17,9 +17,9 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "config.h"
 #include "Error.hxx"
 #include "system/Error.hxx"
+#include "config.h"
 
 #ifdef ENABLE_CURL
 #include "lib/curl/Error.hxx"

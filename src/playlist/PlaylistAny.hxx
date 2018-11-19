@@ -20,6 +20,8 @@
 #ifndef MPD_PLAYLIST_ANY_HXX
 #define MPD_PLAYLIST_ANY_HXX
 
+#include "config.h"
+
 #include <memory>
 
 class Mutex;

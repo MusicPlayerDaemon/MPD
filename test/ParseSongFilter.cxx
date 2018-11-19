@@ -22,7 +22,6 @@
  *
  */
 
-#include "config.h"
 #include "song/Filter.hxx"
 #include "util/ConstBuffer.hxx"
 #include "util/PrintException.hxx"

@@ -20,8 +20,6 @@
 #ifndef MPD_OPUS_READER_HXX
 #define MPD_OPUS_READER_HXX
 
-#include "check.h"
-
 #include <algorithm>
 
 #include <stdint.h>

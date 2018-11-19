@@ -17,7 +17,6 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "config.h"
 #include "Registry.hxx"
 #include "StoragePlugin.hxx"
 #include "StorageInterface.hxx"
@@ -26,6 +25,7 @@
 #include "plugins/SmbclientStorage.hxx"
 #include "plugins/NfsStorage.hxx"
 #include "plugins/CurlStorage.hxx"
+#include "config.h"
 
 #include <assert.h>
 #include <string.h>

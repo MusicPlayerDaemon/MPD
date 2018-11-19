@@ -17,8 +17,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "config.h"
 #include "SignalMonitor.hxx"
+#include "config.h"
 
 #ifndef _WIN32
 

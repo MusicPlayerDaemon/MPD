@@ -20,8 +20,6 @@
 #ifndef MPD_CONFIGURED_RESAMPLER_HXX
 #define MPD_CONFIGURED_RESAMPLER_HXX
 
-#include "check.h"
-
 struct ConfigData;
 class PcmResampler;
 

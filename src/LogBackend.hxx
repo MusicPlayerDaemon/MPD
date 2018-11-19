@@ -20,7 +20,6 @@
 #ifndef MPD_LOG_BACKEND_HXX
 #define MPD_LOG_BACKEND_HXX
 
-#include "check.h"
 #include "LogLevel.hxx"
 
 void

@@ -20,8 +20,6 @@
 #ifndef MPD_PLAYLIST_DATABASE_HXX
 #define MPD_PLAYLIST_DATABASE_HXX
 
-#include "check.h"
-
 #define PLAYLIST_META_BEGIN "playlist_begin: "
 
 class PlaylistVector;

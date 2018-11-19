@@ -25,10 +25,10 @@
 #ifndef MPD_EXCLUDE_H
 #define MPD_EXCLUDE_H
 
-#include "check.h"
 #include "util/Compiler.h"
 #include "fs/Glob.hxx"
 #include "input/Ptr.hxx"
+#include "config.h"
 
 #ifdef HAVE_CLASS_GLOB
 #include <forward_list>

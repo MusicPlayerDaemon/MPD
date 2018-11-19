@@ -20,7 +20,6 @@
 #ifndef QOBUZ_TRACK_REQUEST_HXX
 #define QOBUZ_TRACK_REQUEST_HXX
 
-#include "check.h"
 #include "lib/curl/Delegate.hxx"
 #include "lib/curl/Slist.hxx"
 #include "lib/curl/Request.hxx"

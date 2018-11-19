@@ -20,8 +20,6 @@
 #ifndef MPD_TAG_FILE_HXX
 #define MPD_TAG_FILE_HXX
 
-#include "check.h"
-
 struct AudioFormat;
 class Path;
 class TagHandler;

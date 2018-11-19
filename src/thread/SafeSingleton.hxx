@@ -20,7 +20,6 @@
 #ifndef MPD_SAFE_SINGLETON_HXX
 #define MPD_SAFE_SINGLETON_HXX
 
-#include "check.h"
 #include "Mutex.hxx"
 
 /**

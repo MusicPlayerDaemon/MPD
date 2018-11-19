@@ -20,8 +20,8 @@
 #ifndef MPD_ICU_CONVERTER_HXX
 #define MPD_ICU_CONVERTER_HXX
 
-#include "check.h"
 #include "util/Compiler.h"
+#include "config.h"
 
 #ifdef HAVE_ICU
 #include "thread/Mutex.hxx"

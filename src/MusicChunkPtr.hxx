@@ -20,8 +20,6 @@
 #ifndef MPD_MUSIC_CHUNK_PTR_HXX
 #define MPD_MUSIC_CHUNK_PTR_HXX
 
-#include "check.h"
-
 #include <memory>
 
 struct MusicChunk;

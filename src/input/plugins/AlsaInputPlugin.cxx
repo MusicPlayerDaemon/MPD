@@ -24,7 +24,6 @@
  * http://alsamodular.sourceforge.net/alsa_programming_howto.html
  */
 
-#include "config.h"
 #include "AlsaInputPlugin.hxx"
 #include "lib/alsa/NonBlock.hxx"
 #include "../InputPlugin.hxx"

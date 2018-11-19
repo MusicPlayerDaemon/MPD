@@ -20,8 +20,6 @@
 #ifndef MPD_FS_CHECK_FILE_HXX
 #define MPD_FS_CHECK_FILE_HXX
 
-#include "check.h"
-
 class Path;
 
 /**

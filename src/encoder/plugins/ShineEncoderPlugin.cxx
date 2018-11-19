@@ -18,7 +18,6 @@
  */
 
 #include "ShineEncoderPlugin.hxx"
-#include "config.h"
 #include "../EncoderAPI.hxx"
 #include "AudioFormat.hxx"
 #include "config/Domain.hxx"

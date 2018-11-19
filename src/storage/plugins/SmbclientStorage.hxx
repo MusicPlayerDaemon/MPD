@@ -20,8 +20,6 @@
 #ifndef MPD_STORAGE_SMBCLIENT_HXX
 #define MPD_STORAGE_SMBCLIENT_HXX
 
-#include "check.h"
-
 struct StoragePlugin;
 
 extern const StoragePlugin smbclient_storage_plugin;

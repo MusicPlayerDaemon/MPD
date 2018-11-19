@@ -23,7 +23,6 @@
  * tag of a music file.
  */
 
-#include "config.h"
 #include "FlacPlaylistPlugin.hxx"
 #include "../PlaylistPlugin.hxx"
 #include "../SongEnumerator.hxx"

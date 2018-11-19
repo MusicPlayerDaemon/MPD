@@ -20,8 +20,6 @@
 #ifndef MPD_STORAGE_PLUGIN_HXX
 #define MPD_STORAGE_PLUGIN_HXX
 
-#include "check.h"
-
 #include <memory>
 
 class Storage;

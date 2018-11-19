@@ -20,8 +20,6 @@
 #ifndef MPD_SOCKET_SIGNAL_MONITOR_HXX
 #define MPD_SOCKET_SIGNAL_MONITOR_HXX
 
-#include "check.h"
-
 class EventLoop;
 
 #ifndef _WIN32

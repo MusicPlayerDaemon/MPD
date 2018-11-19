@@ -26,7 +26,6 @@
 #ifndef MPD_DB_LOCK_HXX
 #define MPD_DB_LOCK_HXX
 
-#include "check.h"
 #include "thread/Mutex.hxx"
 #include "util/Compiler.h"
 

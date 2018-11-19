@@ -20,7 +20,6 @@
 #ifndef MPD_CLIENT_LISTENER_HXX
 #define MPD_CLIENT_LISTENER_HXX
 
-#include "check.h"
 #include "event/ServerSocket.hxx"
 
 struct Partition;

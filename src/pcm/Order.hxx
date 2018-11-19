@@ -20,7 +20,6 @@
 #ifndef MPD_PCM_ORDER_HXX
 #define MPD_PCM_ORDER_HXX
 
-#include "check.h"
 #include "SampleFormat.hxx"
 
 class PcmBuffer;

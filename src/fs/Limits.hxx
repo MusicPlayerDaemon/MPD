@@ -20,8 +20,6 @@
 #ifndef MPD_FS_LIMITS_HXX
 #define MPD_FS_LIMITS_HXX
 
-#include "check.h"
-
 #include <stddef.h>
 #include <limits.h>
 

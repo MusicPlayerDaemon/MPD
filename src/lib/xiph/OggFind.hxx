@@ -20,7 +20,6 @@
 #ifndef MPD_OGG_FIND_HXX
 #define MPD_OGG_FIND_HXX
 
-#include "check.h"
 #include "input/Offset.hxx"
 
 #include <ogg/ogg.h>

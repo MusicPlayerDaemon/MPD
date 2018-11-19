@@ -17,12 +17,12 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "config.h"
 #include "PlaylistAny.hxx"
 #include "PlaylistStream.hxx"
 #include "PlaylistMapper.hxx"
 #include "SongEnumerator.hxx"
 #include "util/UriUtil.hxx"
+#include "config.h"
 
 std::unique_ptr<SongEnumerator>
 playlist_open_any(const char *uri,

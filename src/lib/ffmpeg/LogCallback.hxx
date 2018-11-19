@@ -20,8 +20,6 @@
 #ifndef MPD_FFMPEG_LOG_CALLBACK_HXX
 #define MPD_FFMPEG_LOG_CALLBACK_HXX
 
-#include "check.h"
-
 #include <stdarg.h>
 
 void

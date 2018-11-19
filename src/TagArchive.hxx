@@ -20,8 +20,6 @@
 #ifndef MPD_TAG_ARCHIVE_HXX
 #define MPD_TAG_ARCHIVE_HXX
 
-#include "check.h"
-
 class ArchiveFile;
 class TagHandler;
 class TagBuilder;

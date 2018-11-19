@@ -21,7 +21,6 @@
   * zip archive handling (requires zziplib)
   */
 
-#include "config.h"
 #include "ZzipArchivePlugin.hxx"
 #include "../ArchivePlugin.hxx"
 #include "../ArchiveFile.hxx"

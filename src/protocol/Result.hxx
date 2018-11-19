@@ -20,8 +20,6 @@
 #ifndef MPD_PROTOCOL_RESULT_HXX
 #define MPD_PROTOCOL_RESULT_HXX
 
-#include "check.h"
-
 class Client;
 
 void
