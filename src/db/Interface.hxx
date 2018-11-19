@@ -105,6 +105,11 @@ public:
 		return Visit(selection, VisitDirectory(), visit_song);
 	}
 
+	/**
+	 * Collect unique values of the given tag type.
+	 *
+	 * Throws on error.
+	 */
 	virtual std::map<std::string, std::set<std::string>> CollectUniqueTags(const DatabaseSelection &selection,
 									       TagType tag_type,
 									       TagType group=TAG_NUM_OF_ITEM_TYPES) const = 0;
