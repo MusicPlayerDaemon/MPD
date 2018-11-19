@@ -27,6 +27,7 @@
 #include "db/DatabasePlugin.hxx"
 #include "db/Selection.hxx"
 #include "db/VHelper.hxx"
+#include "db/UniqueTags.hxx"
 #include "db/DatabaseError.hxx"
 #include "db/LightDirectory.hxx"
 #include "song/LightSong.hxx"
@@ -627,27 +628,7 @@ std::map<std::string, std::set<std::string>>
 UpnpDatabase::CollectUniqueTags(const DatabaseSelection &selection,
 				TagType tag, TagType group) const
 {
-	(void)group; // TODO: use group
-
-	std::map<std::string, std::set<std::string>> result;
-	auto &values = result[std::string()];
-
-	for (auto& server : discovery->GetDirectories()) {
-		const auto dirbuf = SearchSongs(server, rootid, selection);
-
-		for (const auto &dirent : dirbuf.objects) {
-			if (dirent.type != UPnPDirObject::Type::ITEM ||
-			    dirent.item_class != UPnPDirObject::ItemClass::MUSIC)
-				continue;
-
-			const char *value = dirent.tag.GetValue(tag);
-			if (value != nullptr) {
-				values.emplace(value);
-			}
-		}
-	}
-
-	return result;
+	return ::CollectUniqueTags(*this, selection, tag, group);
 }
 
 DatabaseStats

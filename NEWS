@@ -1,4 +1,6 @@
 ver 0.21.4 (not yet released)
+* database
+  - upnp: implement "list ... group"
 
 ver 0.21.3 (2018/11/16)
 * output
