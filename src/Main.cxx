@@ -192,7 +192,7 @@ glue_db_init_and_load(const ConfigData &config)
 	if (instance->database == nullptr)
 		return true;
 
-	if (instance->database->GetPlugin().flags & DatabasePlugin::FLAG_REQUIRE_STORAGE) {
+	if (instance->database->GetPlugin().RequireStorage()) {
 		InitStorage(config, instance->io_thread.GetEventLoop());
 
 		if (instance->storage == nullptr) {
