@@ -276,7 +276,9 @@ You can also use multiple storage plugins to assemble a virtual music directory 
 Configuring database plugins
 ----------------------------
 
-If a music directory is configured, one database plugin is used. To configure this plugin, add a database block to :file:`mpd.conf`:
+If a music directory is configured, one database plugin is used. To
+configure this plugin, add a :code:`database` block to
+:file:`mpd.conf`:
 
 .. code-block:: none
 
@@ -291,7 +293,9 @@ reference.
 Configuring neighbor plugins
 ----------------------------
 
-All neighbor plugins are disabled by default to avoid unwanted overhead. To enable (and configure) a plugin, add a neighbor block to :file:`mpd.conf`:
+All neighbor plugins are disabled by default to avoid unwanted
+overhead. To enable (and configure) a plugin, add a :code:`neighbor`
+block to :file:`mpd.conf`:
 
 .. code-block:: none
 
@@ -304,7 +308,8 @@ More information can be found in the :ref:`neighbor_plugin` reference.
 Configuring input plugins
 -------------------------
 
-To configure an input plugin, add a input block to :file:`mpd.conf`:
+To configure an input plugin, add an :code:`input` block to
+:file:`mpd.conf`:
 
 .. code-block:: none
 
@@ -332,7 +337,8 @@ More information can be found in the :ref:`input_plugins` reference.
 Configuring decoder plugins
 ---------------------------
 
-Most decoder plugins do not need any special configuration. To configure a decoder, add a decoder block to :file:`mpd.conf`:
+Most decoder plugins do not need any special configuration. To
+configure a decoder, add a :code:`decoder` block to :file:`mpd.conf`:
 
 .. code-block:: none
 
@@ -368,7 +374,8 @@ Configuring audio outputs
 
 Audio outputs are devices which actually play the audio chunks produced by :program:`MPD`. You can configure any number of audio output devices, but there must be at least one. If none is configured, :program:`MPD` attempts to auto-detect. Usually, this works quite well with ALSA, OSS and on Mac OS X.
 
-To configure an audio output manually, add one or more audio_output blocks to :file:`mpd.conf`:
+To configure an audio output manually, add one or more
+:code:`audio_output` blocks to :file:`mpd.conf`:
 
 .. code-block:: none
 
@@ -406,14 +413,21 @@ The following table lists the audio_output options valid for all plugins:
    * - **always_on yes|no**
      - If set to yes, then :program:`MPD` attempts to keep this audio output always open. This may be useful for streaming servers, when you don't want to disconnect all listeners even when playback is accidentally stopped.
    * - **mixer_type hardware|software|null|none**
-     - Specifies which mixer should be used for this audio output: the hardware mixer (available for ALSA :ref:`alsa_plugin`, OSS :ref:`oss_plugin` and PulseAudio :ref:`pulse_plugin`), the software mixer, the "null" mixer (null; allows setting the volume, but with no effect; this can be used as a trick to implement an external mixer :ref:`external_mixer`) or no mixer (none). By default, the hardware mixer is used for devices which support it, and none for the others.
+     - Specifies which mixer should be used for this audio output: the
+       hardware mixer (available for ALSA :ref:`alsa_plugin`, OSS
+       :ref:`oss_plugin` and PulseAudio :ref:`pulse_plugin`), the
+       software mixer, the ":samp:`null`" mixer (allows setting the
+       volume, but with no effect; this can be used as a trick to
+       implement an external mixer :ref:`external_mixer`) or no mixer
+       (:samp:`none`). By default, the hardware mixer is used for
+       devices which support it, and none for the others.
 
 Configuring filters
 -------------------
 
 Filters are plugins which modify an audio stream.
 
-To configure a filter, add a filter block to :file:`mpd.conf`:
+To configure a filter, add a :code:`filter` block to :file:`mpd.conf`:
 
 .. code-block:: none
 
@@ -438,9 +452,12 @@ The following table lists the filter options valid for all plugins:
 Configuring playlist plugins
 ----------------------------
 
-Playlist plugins are used to load remote playlists (protocol commands load, listplaylist and listplaylistinfo). This is not related to :program:`MPD`'s playlist directory.
+Playlist plugins are used to load remote playlists (protocol commands
+load, listplaylist and listplaylistinfo). This is not related to
+:program:`MPD`'s :ref:`playlist directory <stored_playlists>`.
 
-To configure a playlist plugin, add a playlist_plugin block to :file:`mpd.conf`:
+To configure a playlist plugin, add a :code:`playlist_plugin` block to
+:file:`mpd.conf`:
 
 .. code-block:: none
 
@@ -817,10 +834,16 @@ The queue
 
 The queue (sometimes called "current playlist") is a list of songs to be played by :program:`MPD`. To play a song, add it to the queue and start playback. Most clients offer an interface to edit the queue.
 
+.. _stored_playlists:
+
 Stored Playlists
 ----------------
 
-Stored playlists are some kind of secondary playlists which can be created, saved, edited and deleted by the client. They are addressed by their names. Its contents can be loaded into the queue, to be played back. The playlist_directory setting specifies where those playlists are stored. 
+Stored playlists are some kind of secondary playlists which can be
+created, saved, edited and deleted by the client. They are addressed
+by their names.  Its contents can be loaded into the queue, to be
+played back.  The :code:`playlist_directory` setting specifies where
+those playlists are stored.
 
 Advanced usage
 **************
@@ -860,9 +883,11 @@ Obey the "format" row, which indicates that the current playback format is 16 bi
 Check list for bit-perfect playback:
 
 * Use the ALSA output plugin.
-* Disable sound processing inside ALSA by configuring a "hardware" device (hw:0,0 or similar).
-* Don't use software volume (setting mixer_type).
-* Don't force :program:`MPD` to use a specific audio format (settings format, audio_output_format).
+* Disable sound processing inside ALSA by configuring a "hardware"
+  device (:samp:`hw:0,0` or similar).
+* Don't use software volume (setting :code:`mixer_type`).
+* Don't force :program:`MPD` to use a specific audio format (settings
+  :code:`format`, :code:`audio_output_format`).
 * Verify that you are really doing bit-perfect playback using :program:`MPD`'s verbose log and :file:`/proc/asound/card*/pcm*p/sub*/hw_params`. Some DACs can also indicate the audio format.
 
 Direct Stream Digital (DSD)
@@ -877,7 +902,11 @@ DSD (`Direct Stream Digital <https://en.wikipedia.org/wiki/Direct_Stream_Digital
 * DoP (DSD over PCM) playback. This wraps DSD inside fake 24 bit PCM according to the DoP standard. Requires a DAC that supports DSD. No support from ALSA and the sound chip required (except for bit-perfect 24 bit PCM support).
 * Convert DSD to PCM on-the-fly. 
 
-Native DSD playback is used automatically if available. DoP is only used if enabled explicitly using the dop option, because there is no way for :program:`MPD` to find out whether the DAC supports it. DSD to PCM conversion is the fallback if DSD cannot be used directly.
+Native DSD playback is used automatically if available. DoP is only
+used if enabled explicitly using the :code:`dop` option, because there
+is no way for :program:`MPD` to find out whether the DAC supports
+it. DSD to PCM conversion is the fallback if DSD cannot be used
+directly.
 
 Client Hacks
 ************
