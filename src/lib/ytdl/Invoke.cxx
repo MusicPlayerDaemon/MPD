@@ -22,11 +22,11 @@ YtdlProcess::Invoke(Yajl::Handle &handle, const char *url, PlaylistMode mode)
 		throw MakeErrno("Failed to create pipe");
 	}
 
-	AtScopeExit(pipefd) {
-		close(pipefd[0]);
-		if (pipefd[1] != -1) {
-			close(pipefd[1]);
+	AtScopeExit(&pipefd) {
+		if (pipefd[0] != -1) {
+			close(pipefd[0]);
 		}
+		close(pipefd[1]);
 	};
 
 	// block all signals while forking child
@@ -86,9 +86,11 @@ YtdlProcess::Invoke(Yajl::Handle &handle, const char *url, PlaylistMode mode)
 		throw MakeErrno("Failed to fork()");
 	}
 
+	auto process = std::make_unique<YtdlProcess>(handle, pipefd[0], pid);
+
 	pipefd[0] = -1; // sentinel to prevent closing AtExit
 
-	return std::make_unique<YtdlProcess>(handle, pipefd[0], pid);
+	return process;
 }
 
 YtdlProcess::~YtdlProcess()
