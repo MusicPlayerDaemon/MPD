@@ -97,6 +97,7 @@ endif
 if enable_ytdl
   input_plugins_sources += [
     'YtdlInputPlugin.cxx',
+    'YtdlInputStream.cxx',
     'YtdlTagScanner.cxx',
   ]
   input_plugins_deps += [

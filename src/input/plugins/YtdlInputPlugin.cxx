@@ -7,6 +7,7 @@
 #include "tag/Tag.hxx"
 #include "config/Block.hxx"
 #include "YtdlInputPlugin.hxx"
+#include "YtdlInputStream.hxx"
 #include "YtdlTagScanner.hxx"
 #include "CurlInputPlugin.hxx"
 #include "../InputStream.hxx"
@@ -41,12 +42,7 @@ input_ytdl_open(const char *uri, Mutex &mutex)
 {
 	uri = ytdl_init->UriSupported(uri);
 	if (uri) {
-		Ytdl::TagHandler metadata;
-		Ytdl::Parser parser(metadata);
-		auto handle = parser.CreateHandle();
-		Ytdl::BlockingInvoke(*handle, uri, Ytdl::PlaylistMode::SINGLE);
-		return OpenCurlInputStream(metadata.GetURL().c_str(),
-			metadata.GetHeaders(), mutex);
+		return std::make_unique<YtdlInputStream>(uri, mutex, ytdl_init->GetEventLoop());
 	}
 
 	return nullptr;
