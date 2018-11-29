@@ -57,7 +57,7 @@ input_ytdl_scan_tags(const char *uri, RemoteTagHandler &handler)
 {
 	uri = ytdl_init->UriSupported(uri);
 	if (uri) {
-		return std::make_unique<YtdlTagScanner>(uri, handler);
+		return std::make_unique<YtdlTagScanner>(ytdl_init->GetEventLoop(), uri, handler);
 	}
 
 	return nullptr;

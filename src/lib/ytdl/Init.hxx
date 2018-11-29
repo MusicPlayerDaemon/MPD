@@ -22,6 +22,8 @@ public:
 	bool WhitelistMatch(const char *uri) const;
 
 	void Init(const ConfigBlock &block);
+
+	EventLoop &GetEventLoop() { return *event_loop; }
 };
 
 } // namespace Ytdl

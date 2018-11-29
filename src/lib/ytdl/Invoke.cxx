@@ -137,11 +137,11 @@ YtdlMonitor::OnSocketReady(unsigned flags) noexcept
 		if (process->Process()) {
 			return true;
 		} else {
-			handler.OnComplete();
+			handler.OnComplete(this);
 			return false;
 		}
 	} catch (...) {
-		handler.OnError(std::current_exception());
+		handler.OnError(this, std::current_exception());
 		return false;
 	}
 }

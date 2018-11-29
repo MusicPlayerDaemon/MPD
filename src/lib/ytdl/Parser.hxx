@@ -10,6 +10,7 @@ namespace Ytdl {
 
 class MetadataHandler;
 class ParserContext;
+class YtdlMonitor;
 
 enum class PlaylistMode {
 	SINGLE,
@@ -29,8 +30,8 @@ public:
 
 class YtdlHandler {
 public:
-	virtual void OnComplete() = 0;
-	virtual void OnError(std::exception_ptr e) = 0;
+	virtual void OnComplete(YtdlMonitor* monitor) = 0;
+	virtual void OnError(YtdlMonitor* monitor, std::exception_ptr e) = 0;
 };
 
 class YtdlProcess {
