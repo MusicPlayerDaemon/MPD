@@ -27,6 +27,10 @@
 bool
 InputPlugin::SupportsUri(const char *uri) const noexcept
 {
+	if (supports_uri != nullptr) {
+		return (*supports_uri)(uri);
+	}
+
 	assert(prefixes || protocols);
 	if (prefixes != nullptr) {
 		for (auto i = prefixes; *i != nullptr; ++i)

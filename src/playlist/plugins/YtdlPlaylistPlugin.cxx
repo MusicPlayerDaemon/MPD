@@ -33,8 +33,8 @@ static const char *const playlist_ytdl_schemes[] = {
 	nullptr
 };
 
-std::unique_ptr<SongEnumerator>
-playlist_ytdl_open_uri(const char *uri, Mutex &mutex, Cond &cond)
+static std::unique_ptr<SongEnumerator>
+playlist_ytdl_open_uri(const char *uri, Mutex &mutex)
 {
 	uri = ytdl_init->UriSupported(uri);
 	if (!uri) {

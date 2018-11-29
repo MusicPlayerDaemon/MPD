@@ -82,6 +82,13 @@ struct InputPlugin {
 	std::unique_ptr<RemoteTagScanner> (*scan_tags)(const char *uri,
 						       RemoteTagHandler &handler) = nullptr;
 
+	/**
+	 * Check whether the plugin supports the given URI.
+	 *
+	 * If nullptr, will fall back to comparing prefixes.
+	 */
+	bool (*supports_uri)(const char *uri) noexcept = nullptr;
+
 	gcc_pure
 	bool SupportsUri(const char *uri) const noexcept;
 

@@ -32,7 +32,7 @@ TagHandler::OnEntryStart() noexcept
 		current_entry = &entries.front();
 
 		return ParseContinue::CONTINUE;
-	} catch (std::bad_alloc) {
+	} catch (std::bad_alloc&) {
 		return ParseContinue::CANCEL;
 	}
 }
@@ -106,7 +106,7 @@ TagHandler::OnMetadata(StringMetadataTag tag, StringView value) noexcept
 		}
 
 		return ParseContinue::CONTINUE;
-	} catch (std::bad_alloc) {
+	} catch (std::bad_alloc&) {
 		return ParseContinue::CANCEL;
 	}
 }
@@ -144,7 +144,7 @@ TagHandler::OnHeader(StringView header, StringView value) noexcept
 			std::string(value.data, value.size));
 
 		return ParseContinue::CONTINUE;
-	} catch (std::bad_alloc) {
+	} catch (std::bad_alloc&) {
 		return ParseContinue::CANCEL;
 	}
 }

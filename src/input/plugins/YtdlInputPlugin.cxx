@@ -30,8 +30,14 @@ input_ytdl_finish() noexcept
 	delete ytdl_init;
 }
 
+static bool
+input_ytdl_supports_uri(const char *uri) noexcept
+{
+	return ytdl_init->UriSupported(uri) != nullptr;
+}
+
 static InputStreamPtr
-input_ytdl_open(const char *uri, Mutex &mutex, Cond &cond)
+input_ytdl_open(const char *uri, Mutex &mutex)
 {
 	uri = ytdl_init->UriSupported(uri);
 	if (uri) {
@@ -40,7 +46,7 @@ input_ytdl_open(const char *uri, Mutex &mutex, Cond &cond)
 		auto handle = parser.CreateHandle();
 		Ytdl::BlockingInvoke(*handle, uri, Ytdl::PlaylistMode::SINGLE);
 		return OpenCurlInputStream(metadata.GetURL().c_str(),
-			metadata.GetHeaders(), mutex, cond);
+			metadata.GetHeaders(), mutex);
 	}
 
 	return nullptr;
@@ -69,4 +75,5 @@ const struct InputPlugin input_plugin_ytdl = {
 	input_ytdl_finish,
 	input_ytdl_open,
 	input_ytdl_scan_tags,
+	input_ytdl_supports_uri,
 };

@@ -2,6 +2,15 @@ input_plugins_sources = [
   'FileInputPlugin.cxx',
 ]
 
+input_plugins_deps = [
+  alsa_dep,
+  curl_dep,
+  ffmpeg_dep,
+  nfs_dep,
+  yajl_dep,
+  crypto_md5_dep,
+]
+
 if alsa_dep.found()
   input_plugins_sources += 'AlsaInputPlugin.cxx'
 endif
@@ -10,6 +19,8 @@ libcdio_paranoia_dep = dependency('libcdio_paranoia', version: '>= 10.2+0.93+1',
 conf.set('ENABLE_CDIO_PARANOIA', libcdio_paranoia_dep.found())
 if libcdio_paranoia_dep.found()
   input_plugins_sources += 'CdioParanoiaInputPlugin.cxx'
+
+  input_plugins_deps += libcdio_paranoia_dep
 endif
 
 if curl_dep.found()
@@ -28,14 +39,17 @@ libmms_dep = dependency('libmms', version: '>= 0.4', required: get_option('mms')
 conf.set('ENABLE_MMS', libmms_dep.found())
 if libmms_dep.found()
   input_plugins_sources += 'MmsInputPlugin.cxx'
+  input_plugins_deps += libmms_dep
 endif
 
 if nfs_dep.found()
   input_plugins_sources += 'NfsInputPlugin.cxx'
+  input_plugins_deps += nfs_dep
 endif
 
 if smbclient_dep.found()
   input_plugins_sources += 'SmbclientInputPlugin.cxx'
+  input_plugins_deps += smbclient_dep
 endif
 
 qobuz_feature = get_option('qobuz')
@@ -80,21 +94,21 @@ if enable_tidal
   ]
 endif
 
+if enable_ytdl
+  input_plugins_sources += [
+    'YtdlInputPlugin.cxx',
+    'YtdlTagScanner.cxx',
+  ]
+  input_plugins_deps += [
+    ytdl_dep,
+  ]
+endif
+
 input_plugins = static_library(
   'input_plugins',
   input_plugins_sources,
   include_directories: inc,
-  dependencies: [
-    alsa_dep,
-    curl_dep,
-    ffmpeg_dep,
-    libcdio_paranoia_dep,
-    libmms_dep,
-    nfs_dep,
-    smbclient_dep,
-    yajl_dep,
-    crypto_md5_dep,
-  ],
+  dependencies: input_plugins_deps,
 )
 
 input_plugins_dep = declare_dependency(

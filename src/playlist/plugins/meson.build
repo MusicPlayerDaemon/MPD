@@ -45,6 +45,11 @@ if enable_soundcloud
   playlist_plugins_deps += yajl_dep
 endif
 
+if enable_ytdl
+  playlist_plugins_sources += 'YtdlPlaylistPlugin.cxx'
+  playlist_plugins_deps += ytdl_dep
+endif
+
 playlist_plugins = static_library(
   'playlist_plugins',
   playlist_plugins_sources,

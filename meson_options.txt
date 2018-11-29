@@ -93,6 +93,7 @@ option('smbclient', type: 'feature', description: 'SMB support using libsmbclien
 option('qobuz', type: 'feature', description: 'Qobuz client')
 option('soundcloud', type: 'feature', description: 'SoundCloud client')
 option('tidal', type: 'feature', description: 'Tidal client')
+option('youtube-dl', type: 'feature', description: 'youtube-dl streaming')
 
 #
 # Archive plugins
