@@ -1,5 +1,6 @@
 #include "config.h"
 #include "Parser.hxx"
+#include "Invoke.hxx"
 #include "system/Error.hxx"
 #include "util/ScopeExit.hxx"
 #include "event/Loop.hxx"
@@ -165,6 +166,20 @@ BlockingInvoke(Yajl::Handle &handle, const char *url, PlaylistMode mode)
 	auto process = YtdlProcess::Invoke(handle, url, mode);
 
 	while (process->Process()) {}
+}
+
+std::unique_ptr<InvokeContext>
+InvokeContext::Invoke(const char* uri, PlaylistMode mode, EventLoop &event_loop, YtdlHandler &handler) {
+	auto metadata = std::make_unique<TagHandler>();
+	auto parser = std::make_unique<Parser>(*metadata);
+	auto handle = parser->CreateHandle();
+	auto monitor = Ytdl::Invoke(*handle, uri, mode, event_loop, handler);
+	return std::make_unique<InvokeContext>(
+		std::move(metadata),
+		std::move(parser),
+		std::move(handle),
+		std::move(monitor)
+	);
 }
 
 } // namespace Ytdl
