@@ -60,7 +60,7 @@ input_ytdl_scan_tags(const char *uri, RemoteTagHandler &handler)
 }
 
 static constexpr const char *ytdl_prefixes[] = {
-	"youtube-dl://",
+	"ytdl://",
 	nullptr
 };
 

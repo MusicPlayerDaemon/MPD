@@ -27,7 +27,7 @@ playlist_ytdl_finish() noexcept
 }
 
 static const char *const playlist_ytdl_schemes[] = {
-	"youtube-dl",
+	"ytdl",
 	"http",
 	"https",
 	nullptr
@@ -53,13 +53,13 @@ playlist_ytdl_open_uri(const char *uri, Mutex &mutex)
 	std::forward_list<DetachedSong> songs;
 	if (metadata.GetEntries().empty()) {
 		std::string url(uri /* metadata.GetWebpageURL() */);
-		url.insert(0, "youtube-dl://");
+		url.insert(0, "ytdl://");
 		songs.emplace_front(url.c_str(), std::move(playlist));
 	} else {
 		for (auto &entry : metadata.GetEntries()) {
 			std::string url = entry.GetWebpageURL().empty()
 				? entry.GetURL() : entry.GetWebpageURL();
-			url.insert(0, "youtube-dl://");
+			url.insert(0, "ytdl://");
 			songs.emplace_front(url.c_str(), entry.GetTagBuilder().Commit());
 		}
 		songs.reverse();

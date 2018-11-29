@@ -22,7 +22,7 @@ YtdlInit::UriSupported(const char *uri) const
 {
 	const char* p;
 
-	if ((p = StringAfterPrefix(uri, "youtube-dl://"))) {
+	if ((p = StringAfterPrefix(uri, "ytdl://"))) {
 		return p;
 	} else if (WhitelistMatch(uri)) {
 		return uri;
