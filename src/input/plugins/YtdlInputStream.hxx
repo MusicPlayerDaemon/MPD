@@ -5,8 +5,11 @@
 #include "../Handler.hxx"
 #include "lib/ytdl/Invoke.hxx"
 
+class Tag;
+
 class YtdlInputStream : public InputStream, public InputStreamHandler, public Ytdl::YtdlHandler {
 	std::unique_ptr<Ytdl::InvokeContext> context;
+	std::unique_ptr<Tag> tag;
 	InputStreamPtr inner;
 	std::exception_ptr pending_exception;
 

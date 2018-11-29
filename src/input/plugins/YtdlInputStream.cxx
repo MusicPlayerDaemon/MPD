@@ -62,10 +62,11 @@ bool YtdlInputStream::IsEOF() noexcept {
 }
 
 std::unique_ptr<Tag> YtdlInputStream::ReadTag() {
-	if (inner != nullptr) {
+	if (tag != nullptr) {
+		return std::move(tag);
+	} else if (inner != nullptr) {
 		return inner->ReadTag();
 	} else {
-		// TODO: serve up the tag from the context?
 		return nullptr;
 	}
 }
@@ -91,7 +92,9 @@ size_t YtdlInputStream::Read(void *ptr, size_t sz) {
 }
 
 void YtdlInputStream::OnComplete(Ytdl::YtdlMonitor* monitor) {
+	const std::lock_guard<Mutex> protect(mutex);
 	try {
+		tag = context->GetMetadata().GetTagBuilder().CommitNew();
 		inner = OpenCurlInputStream(context->GetMetadata().GetURL().c_str(),
 			context->GetMetadata().GetHeaders(), mutex);
 		inner->SetHandler(this);
@@ -102,6 +105,7 @@ void YtdlInputStream::OnComplete(Ytdl::YtdlMonitor* monitor) {
 }
 
 void YtdlInputStream::OnError(Ytdl::YtdlMonitor* monitor, std::exception_ptr e) {
+	const std::lock_guard<Mutex> protect(mutex);
 	pending_exception = e;
 	context = nullptr;
 }
