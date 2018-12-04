@@ -45,8 +45,10 @@ public:
 	/**
 	 * Wrapper for snd_pcm_poll_descriptors_revents(), to be
 	 * called from MultiSocketMonitor::DispatchSockets().
+	 *
+	 * Throws on error.
 	 */
-	void DispatchSockets(MultiSocketMonitor &m, snd_pcm_t *pcm) noexcept;
+	void DispatchSockets(MultiSocketMonitor &m, snd_pcm_t *pcm);
 };
 
 /**

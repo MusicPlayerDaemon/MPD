@@ -50,7 +50,7 @@ AlsaNonBlockPcm::PrepareSockets(MultiSocketMonitor &m, snd_pcm_t *pcm)
 
 void
 AlsaNonBlockPcm::DispatchSockets(MultiSocketMonitor &m,
-				 snd_pcm_t *pcm) noexcept
+				 snd_pcm_t *pcm)
 {
 	int count = snd_pcm_poll_descriptors_count(pcm);
 	if (count <= 0)
@@ -69,7 +69,10 @@ AlsaNonBlockPcm::DispatchSockets(MultiSocketMonitor &m,
 		});
 
 	unsigned short dummy;
-	snd_pcm_poll_descriptors_revents(pcm, pfds, i - pfds, &dummy);
+	int err = snd_pcm_poll_descriptors_revents(pcm, pfds, i - pfds, &dummy);
+	if (err < 0)
+		throw FormatRuntimeError("snd_pcm_poll_descriptors_revents() failed: %s",
+					 snd_strerror(-err));
 }
 
 std::chrono::steady_clock::duration
