@@ -16,6 +16,9 @@ event = static_library(
   'Thread.cxx',
   'Loop.cxx',
   include_directories: inc,
+  dependencies: [
+    boost_dep,
+  ],
 )
 
 event_dep = declare_dependency(

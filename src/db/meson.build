@@ -45,6 +45,9 @@ db_glue = static_library(
   'db_glue',
   db_glue_sources,
   include_directories: inc,
+  dependencies: [
+    boost_dep,
+  ],
 )
 
 db_glue_dep = declare_dependency(

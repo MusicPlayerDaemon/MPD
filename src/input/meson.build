@@ -7,6 +7,9 @@ input_api = static_library(
   'AsyncInputStream.cxx',
   'ProxyInputStream.cxx',
   include_directories: inc,
+  dependencies: [
+    boost_dep,
+  ],
 )
 
 input_api_dep = declare_dependency(
