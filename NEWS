@@ -1,6 +1,8 @@
 ver 0.21.4 (not yet released)
 * database
   - upnp: implement "list ... group"
+* output
+  - httpd: declare protocol "HTTP/1.1" instead of "ICY"
 
 ver 0.21.3 (2018/11/16)
 * output
