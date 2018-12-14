@@ -31,7 +31,7 @@ icy_server_metadata_header(const char *name,
 			   const char *genre, const char *url,
 			   const char *content_type, int metaint)
 {
-	return FormatString("ICY 200 OK\r\n"
+	return FormatString("HTTP/1.1 200 OK\r\n"
 			    "icy-notice1:<BR>This stream requires an audio player!<BR>\r\n" /* TODO */
 			    "icy-notice2:MPD - The music player daemon<BR>\r\n"
 			    "icy-name: %s\r\n"             /* TODO */
