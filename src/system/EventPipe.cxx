@@ -102,7 +102,7 @@ PoorSocketPair(int fd[2])
 	assert (fd != nullptr);
 
 	UniqueSocketDescriptor listen_socket;
-	if (!listen_socket.CreateNonBlock(AF_INET, SOCK_STREAM, IPPROTO_TCP))
+	if (!listen_socket.Create(AF_INET, SOCK_STREAM, IPPROTO_TCP))
 		throw MakeSocketError("Failed to create socket");
 
 	if (!listen_socket.Bind(IPv4Address(IPv4Address::Loopback(), 0)))
