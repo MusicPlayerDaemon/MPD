@@ -2,8 +2,8 @@ rc = find_program('rc')
 xres = find_program('xres')
 
 rsrc = custom_target(
-  'mpd.rsrc',
-  output: 'mpd.rsrc',
+  'mpd2.rsrc',
+  output: 'mpd2.rsrc',
   input: 'mpd.rdef',
   command: [rc, '-q -o', '@OUTPUT@', '@INPUT@'],
 )
