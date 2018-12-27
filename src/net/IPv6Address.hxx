@@ -53,7 +53,10 @@ class IPv6Address {
 						   uint16_t c, uint16_t d,
 						   uint16_t e, uint16_t f,
 						   uint16_t g, uint16_t h) noexcept {
-		return {{{
+		return {{
+			#ifndef __HAIKU__
+				{
+			#endif
 			uint8_t(a >> 8), uint8_t(a),
 			uint8_t(b >> 8), uint8_t(b),
 			uint8_t(c >> 8), uint8_t(c),
@@ -62,7 +65,10 @@ class IPv6Address {
 			uint8_t(f >> 8), uint8_t(f),
 			uint8_t(g >> 8), uint8_t(g),
 			uint8_t(h >> 8), uint8_t(h),
-		}}};
+			#ifndef __HAIKU__
+				}
+			#endif
+		}};
 	}
 
 	static constexpr struct sockaddr_in6 Construct(struct in6_addr address,
