@@ -99,7 +99,7 @@ is_linux = host_machine.system() == 'linux'
 is_android = get_option('android_ndk') != ''
 is_darwin = host_machine.system() == 'darwin'
 is_windows = host_machine.system() == 'windows'
-is_haiku = host_machine.system() == 'haiku' # TODO is this correct?
+is_haiku = host_machine.system() == 'haiku'
 
 if is_android
   common_cppflags += '-DANDROID'
