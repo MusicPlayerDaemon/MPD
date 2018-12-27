@@ -5,7 +5,7 @@ rsrc = custom_target(
   'mpd2.rsrc',
   output: 'mpd2.rsrc',
   input: 'mpd.rdef',
-  command: [rc, '-q -o', '@OUTPUT@', '@INPUT@'],
+  command: [rc, '-o', '@OUTPUT@', '@INPUT@'],
 )
 
 custom_target(
