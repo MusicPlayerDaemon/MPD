@@ -25,8 +25,8 @@
 
 /**
  * Wait this long after the last change before calling
- * update_enqueue().  This increases the probability that updates can
- * be bundled.
+ * UpdateService::Enqueue().  This increases the probability that
+ * updates can be bundled.
  */
 static constexpr std::chrono::steady_clock::duration INOTIFY_UPDATE_DELAY =
 	std::chrono::seconds(5);
