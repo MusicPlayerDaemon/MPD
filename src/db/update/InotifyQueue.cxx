@@ -21,6 +21,7 @@
 #include "InotifyDomain.hxx"
 #include "Service.hxx"
 #include "Log.hxx"
+#include "protocol/Ack.hxx" // for class ProtocolError
 #include "util/StringCompare.hxx"
 
 /**
@@ -40,18 +41,22 @@ InotifyQueue::OnDelay() noexcept
 		const char *uri_utf8 = queue.front().c_str();
 
 		try {
-			id = update.Enqueue(uri_utf8, false);
+			try {
+				id = update.Enqueue(uri_utf8, false);
+			} catch (const ProtocolError &e) {
+				if (e.GetCode() == ACK_ERROR_UPDATE_ALREADY) {
+					/* retry later */
+					delay_event.Schedule(INOTIFY_UPDATE_DELAY);
+					return;
+				}
+
+				throw;
+			}
 		} catch (...) {
 			FormatError(std::current_exception(),
 				    "Failed to enqueue '%s'", uri_utf8);
 			queue.pop_front();
 			continue;
-		}
-
-		if (id == 0) {
-			/* retry later */
-			delay_event.Schedule(INOTIFY_UPDATE_DELAY);
-			return;
 		}
 
 		FormatDebug(inotify_domain, "updating '%s' job=%u",
