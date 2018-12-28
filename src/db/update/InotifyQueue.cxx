@@ -32,7 +32,7 @@ static constexpr std::chrono::steady_clock::duration INOTIFY_UPDATE_DELAY =
 	std::chrono::seconds(5);
 
 void
-InotifyQueue::OnDelay()
+InotifyQueue::OnDelay() noexcept
 {
 	unsigned id;
 

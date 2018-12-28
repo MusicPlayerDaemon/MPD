@@ -42,7 +42,7 @@ public:
 	void Enqueue(const char *uri_utf8);
 
 private:
-	void OnDelay();
+	void OnDelay() noexcept;
 };
 
 #endif
