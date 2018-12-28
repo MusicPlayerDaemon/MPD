@@ -92,7 +92,8 @@ public:
 	}
 
 	AllocatedArray &operator=(AllocatedArray &&other) noexcept {
-		std::swap(buffer, other.buffer);
+		using std::swap;
+		swap(buffer, other.buffer);
 		return *this;
 	}
 
