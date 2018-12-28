@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2016 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2010-2018 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -57,12 +57,12 @@ protected:
 public:
 	constexpr AllocatedArray() = default;
 
-	explicit AllocatedArray(size_type _size)
+	explicit AllocatedArray(size_type _size) noexcept
 		:buffer{new T[_size], _size} {
 		assert(size() == 0 || buffer.data != nullptr);
 	}
 
-	explicit AllocatedArray(const AllocatedArray &other)
+	explicit AllocatedArray(const AllocatedArray &other) noexcept
 		:buffer{new T[other.buffer.size], other.buffer.size} {
 		assert(size() == 0 || buffer.data != nullptr);
 		assert(other.size() == 0 || other.buffer.data != nullptr);
@@ -70,16 +70,16 @@ public:
 		std::copy_n(other.buffer.data, buffer.size, buffer.data);
 	}
 
-	AllocatedArray(AllocatedArray &&other)
+	AllocatedArray(AllocatedArray &&other) noexcept
 		:buffer(other.buffer) {
 		other.buffer = nullptr;
 	}
 
-	~AllocatedArray() {
+	~AllocatedArray() noexcept {
 		delete[] buffer.data;
 	}
 
-	AllocatedArray &operator=(const AllocatedArray &other) {
+	AllocatedArray &operator=(const AllocatedArray &other) noexcept {
 		assert(size() == 0 || buffer.data != nullptr);
 		assert(other.size() == 0 || other.buffer.data != nullptr);
 
@@ -91,57 +91,57 @@ public:
 		return *this;
 	}
 
-	AllocatedArray &operator=(AllocatedArray &&other) {
+	AllocatedArray &operator=(AllocatedArray &&other) noexcept {
 		std::swap(buffer, other.buffer);
 		return *this;
 	}
 
-	constexpr bool IsNull() const {
+	constexpr bool IsNull() const noexcept {
 		return buffer.IsNull();
 	}
 
-	constexpr bool operator==(std::nullptr_t) const {
+	constexpr bool operator==(std::nullptr_t) const noexcept {
 		return buffer == nullptr;
 	}
 
-	constexpr bool operator!=(std::nullptr_t) const {
+	constexpr bool operator!=(std::nullptr_t) const noexcept {
 		return buffer != nullptr;
 	}
 
 	/**
 	 * Returns true if no memory was allocated so far.
 	 */
-	constexpr bool empty() const {
+	constexpr bool empty() const noexcept {
 		return buffer.empty();
 	}
 
 	/**
 	 * Returns the number of allocated elements.
 	 */
-	constexpr size_type size() const {
+	constexpr size_type size() const noexcept {
 		return buffer.size;
 	}
 
-	reference_type front() {
+	reference_type front() noexcept {
 		return buffer.front();
 	}
 
-	const_reference_type front() const {
+	const_reference_type front() const noexcept {
 		return buffer.front();
 	}
 
-	reference_type back() {
+	reference_type back() noexcept {
 		return buffer.back();
 	}
 
-	const_reference_type back() const {
+	const_reference_type back() const noexcept {
 		return buffer.back();
 	}
 
 	/**
 	 * Returns one element.  No bounds checking.
 	 */
-	reference_type operator[](size_type i) {
+	reference_type operator[](size_type i) noexcept {
 		assert(i < size());
 
 		return buffer.data[i];
@@ -150,32 +150,32 @@ public:
 	/**
 	 * Returns one constant element.  No bounds checking.
 	 */
-	const_reference_type operator[](size_type i) const {
+	const_reference_type operator[](size_type i) const noexcept {
 		assert(i < size());
 
 		return buffer.data[i];
 	}
 
-	iterator begin() {
+	iterator begin() noexcept {
 		return buffer.begin();
 	}
 
-	constexpr const_iterator begin() const {
+	constexpr const_iterator begin() const noexcept {
 		return buffer.cbegin();
 	}
 
-	iterator end() {
+	iterator end() noexcept {
 		return buffer.end();
 	}
 
-	constexpr const_iterator end() const {
+	constexpr const_iterator end() const noexcept {
 		return buffer.cend();
 	}
 
 	/**
 	 * Resizes the array, discarding old data.
 	 */
-	void ResizeDiscard(size_type _size) {
+	void ResizeDiscard(size_type _size) noexcept {
 		if (_size == buffer.size)
 			return;
 
@@ -191,7 +191,7 @@ public:
 	 * Similar to ResizeDiscard(), but will never shrink the array to
 	 * avoid expensive heap operations.
 	 */
-	void GrowDiscard(size_type _size) {
+	void GrowDiscard(size_type _size) noexcept {
 		if (_size > buffer.size)
 			ResizeDiscard(_size);
 	}
@@ -200,7 +200,7 @@ public:
 	 * Grows the array to the specified size, preserving the value of a
 	 * range of elements, starting from the beginning.
 	 */
-	void GrowPreserve(size_type _size, size_type preserve) {
+	void GrowPreserve(size_type _size, size_type preserve) noexcept {
 		if (_size <= buffer.size)
 			return;
 
@@ -219,7 +219,7 @@ public:
 	 * larger than the current size.  Excess elements are not used (but
 	 * they are still allocated).
 	 */
-	void SetSize(size_type _size) {
+	void SetSize(size_type _size) noexcept {
 		assert(_size <= buffer.size);
 
 		buffer.size = _size;
