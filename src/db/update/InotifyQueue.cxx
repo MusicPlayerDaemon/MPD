@@ -39,7 +39,15 @@ InotifyQueue::OnDelay() noexcept
 	while (!queue.empty()) {
 		const char *uri_utf8 = queue.front().c_str();
 
-		id = update.Enqueue(uri_utf8, false);
+		try {
+			id = update.Enqueue(uri_utf8, false);
+		} catch (...) {
+			FormatError(std::current_exception(),
+				    "Failed to enqueue '%s'", uri_utf8);
+			queue.pop_front();
+			continue;
+		}
+
 		if (id == 0) {
 			/* retry later */
 			delay_event.Schedule(INOTIFY_UPDATE_DELAY);

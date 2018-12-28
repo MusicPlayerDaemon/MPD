@@ -1,5 +1,6 @@
 ver 0.21.4 (not yet released)
 * database
+  - inotify: fix crash bug "terminate called after throwing ..."
   - upnp: implement "list ... group"
 * output
   - httpd: declare protocol "HTTP/1.1" instead of "ICY"
