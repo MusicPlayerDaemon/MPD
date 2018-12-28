@@ -28,9 +28,9 @@
 #include <stdint.h>
 
 /**
- * A dynamically allocated buffer which keeps track of its reference
- * count.  This is useful for passing buffers around, when several
- * instances hold references to one buffer.
+ * A dynamically allocated buffer.  It is used to pass
+ * reference-counted buffers around (using std::shared_ptr), when
+ * several instances hold references to one buffer.
  */
 class Page {
 	AllocatedArray<uint8_t> buffer;
