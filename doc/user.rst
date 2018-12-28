@@ -88,7 +88,7 @@ For example, the following installs a fairly complete list of build dependencies
       libupnp-dev \
       libavahi-client-dev \
       libsqlite3-dev \
-      libsystemd-dev libwrap0-dev \
+      libsystemd-dev \
       libgtest-dev \
       libboost-dev \
       libicu-dev

@@ -40,11 +40,6 @@
 #include <string.h>
 #include <errno.h>
 
-#ifdef HAVE_LIBWRAP
-#include <sys/socket.h> /* needed for AF_LOCAL */
-#include <tcpd.h>
-#endif
-
 const Domain httpd_output_domain("httpd_output");
 
 inline
@@ -130,33 +125,10 @@ HttpdOutput::OnDeferredBroadcast() noexcept
 
 void
 HttpdOutput::OnAccept(UniqueSocketDescriptor fd,
-		      SocketAddress address, gcc_unused int uid) noexcept
+		      SocketAddress, gcc_unused int uid) noexcept
 {
 	/* the listener socket has become readable - a client has
 	   connected */
-
-#ifdef HAVE_LIBWRAP
-	if (address.GetFamily() != AF_LOCAL) {
-		const auto hostaddr = ToString(address);
-		// TODO: shall we obtain the program name from argv[0]?
-		const char *progname = "mpd";
-
-		struct request_info req;
-		request_init(&req, RQ_FILE, fd.Get(), RQ_DAEMON, progname, 0);
-
-		fromhost(&req);
-
-		if (!hosts_access(&req)) {
-			/* tcp wrappers says no */
-			FormatWarning(httpd_output_domain,
-				      "libwrap refused connection (libwrap=%s) from %s",
-				      progname, hostaddr.c_str());
-			return;
-		}
-	}
-#else
-	(void)address;
-#endif	/* HAVE_WRAP */
 
 	const std::lock_guard<Mutex> protect(mutex);
 

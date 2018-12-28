@@ -38,7 +38,7 @@ if get_option('httpd')
     'httpd/HttpdClient.cxx',
     'httpd/HttpdOutputPlugin.cxx',
   ]
-  output_plugins_deps += [ event_dep, net_dep, libwrap_dep ]
+  output_plugins_deps += [ event_dep, net_dep ]
   need_encoder = true
 endif
 

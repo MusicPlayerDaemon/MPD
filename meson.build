@@ -312,7 +312,6 @@ subdir('src/lib/curl')
 subdir('src/lib/expat')
 subdir('src/lib/ffmpeg')
 subdir('src/lib/gcrypt')
-subdir('src/lib/wrap')
 subdir('src/lib/nfs')
 subdir('src/lib/oss')
 subdir('src/lib/pcre')
@@ -432,7 +431,6 @@ mpd = build_target(
     systemd_dep,
     sqlite_dep,
     zeroconf_dep,
-    libwrap_dep,
     more_deps,
   ],
   link_args: link_args,
