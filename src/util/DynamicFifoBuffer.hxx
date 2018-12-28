@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2003-2018 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -45,9 +45,9 @@ public:
 	typedef typename ForeignFifoBuffer<T>::const_pointer_type const_pointer_type;
 	typedef typename ForeignFifoBuffer<T>::Range Range;
 
-	explicit DynamicFifoBuffer(size_type _capacity)
+	explicit DynamicFifoBuffer(size_type _capacity) noexcept
 		:ForeignFifoBuffer<T>(new T[_capacity], _capacity) {}
-	~DynamicFifoBuffer() {
+	~DynamicFifoBuffer() noexcept {
 		delete[] GetBuffer();
 	}
 
@@ -63,7 +63,7 @@ public:
 	using ForeignFifoBuffer<T>::Write;
 	using ForeignFifoBuffer<T>::Append;
 
-	void Grow(size_type new_capacity) {
+	void Grow(size_type new_capacity) noexcept {
 		assert(new_capacity > GetCapacity());
 
 		T *old_data = GetBuffer();
@@ -72,7 +72,7 @@ public:
 		delete[] old_data;
 	}
 
-	void WantWrite(size_type n) {
+	void WantWrite(size_type n) noexcept {
 		if (ForeignFifoBuffer<T>::WantWrite(n))
 			/* we already have enough space */
 			return;
@@ -91,7 +91,7 @@ public:
 	 * Write data to the buffer, growing it as needed.  Returns a
 	 * writable pointer.
 	 */
-	pointer_type Write(size_type n) {
+	pointer_type Write(size_type n) noexcept {
 		WantWrite(n);
 		return Write().data;
 	}
@@ -99,7 +99,7 @@ public:
 	/**
 	 * Append data to the buffer, growing it as needed.
 	 */
-	void Append(const_pointer_type p, size_type n) {
+	void Append(const_pointer_type p, size_type n) noexcept {
 		std::copy_n(p, n, Write(n));
 		Append(n);
 	}
