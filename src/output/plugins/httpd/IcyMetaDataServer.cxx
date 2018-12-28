@@ -29,7 +29,7 @@
 AllocatedString<>
 icy_server_metadata_header(const char *name,
 			   const char *genre, const char *url,
-			   const char *content_type, int metaint)
+			   const char *content_type, int metaint) noexcept
 {
 	return FormatString("HTTP/1.1 200 OK\r\n"
 			    "icy-notice1:<BR>This stream requires an audio player!<BR>\r\n" /* TODO */
@@ -54,7 +54,8 @@ icy_server_metadata_header(const char *name,
 }
 
 static AllocatedString<>
-icy_server_metadata_string(const char *stream_title, const char* stream_url)
+icy_server_metadata_string(const char *stream_title,
+			   const char* stream_url) noexcept
 {
 	// The leading n is a placeholder for the length information
 	auto icy_metadata = FormatString("nStreamTitle='%s';"
@@ -81,7 +82,7 @@ icy_server_metadata_string(const char *stream_title, const char* stream_url)
 }
 
 PagePtr
-icy_server_metadata_page(const Tag &tag, const TagType *types)
+icy_server_metadata_page(const Tag &tag, const TagType *types) noexcept
 {
 	const char *tag_items[TAG_NUM_OF_ITEM_TYPES];
 
