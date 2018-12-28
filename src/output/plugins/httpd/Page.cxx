@@ -21,7 +21,7 @@
 
 #include <string.h>
 
-Page::Page(const void *data, size_t size)
+Page::Page(const void *data, size_t size) noexcept
 	:buffer(size)
 {
 	memcpy(&buffer.front(), data, size);
