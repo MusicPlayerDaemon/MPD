@@ -138,55 +138,56 @@ public:
 	 * Note: this does not remove the client from the
 	 * #HttpdOutput object.
 	 */
-	~HttpdClient();
+	~HttpdClient() noexcept;
 
 	/**
 	 * Frees the client and removes it from the server's client list.
 	 */
-	void Close();
+	void Close() noexcept;
 
-	void LockClose();
+	void LockClose() noexcept;
 
 	/**
 	 * Clears the page queue.
 	 */
-	void CancelQueue();
+	void CancelQueue() noexcept;
 
 	/**
 	 * Handle a line of the HTTP request.
 	 */
-	bool HandleLine(const char *line);
+	bool HandleLine(const char *line) noexcept;
 
 	/**
 	 * Switch the client to #State::RESPONSE.
 	 */
-	void BeginResponse();
+	void BeginResponse() noexcept;
 
 	/**
 	 * Sends the status line and response headers to the client.
 	 */
-	bool SendResponse();
+	bool SendResponse() noexcept;
 
 	gcc_pure
 	ssize_t GetBytesTillMetaData() const noexcept;
 
-	ssize_t TryWritePage(const Page &page, size_t position);
-	ssize_t TryWritePageN(const Page &page, size_t position, ssize_t n);
+	ssize_t TryWritePage(const Page &page, size_t position) noexcept;
+	ssize_t TryWritePageN(const Page &page,
+			      size_t position, ssize_t n) noexcept;
 
-	bool TryWrite();
+	bool TryWrite() noexcept;
 
 	/**
 	 * Appends a page to the client's queue.
 	 */
-	void PushPage(PagePtr page);
+	void PushPage(PagePtr page) noexcept;
 
 	/**
 	 * Sends the passed metadata.
 	 */
-	void PushMetaData(PagePtr page);
+	void PushMetaData(PagePtr page) noexcept;
 
 private:
-	void ClearQueue();
+	void ClearQueue() noexcept;
 
 protected:
 	/* virtual methods from class SocketMonitor */

@@ -77,7 +77,7 @@ HttpdOutput::Bind()
 }
 
 inline void
-HttpdOutput::Unbind()
+HttpdOutput::Unbind() noexcept
 {
 	assert(!open);
 
@@ -91,7 +91,7 @@ HttpdOutput::Unbind()
  * HttpdOutput.clients linked list.
  */
 inline void
-HttpdOutput::AddClient(UniqueSocketDescriptor fd)
+HttpdOutput::AddClient(UniqueSocketDescriptor fd) noexcept
 {
 	auto *client = new HttpdClient(*this, std::move(fd), GetEventLoop(),
 				       !encoder->ImplementsTag());
@@ -223,7 +223,7 @@ HttpdOutput::Close() noexcept
 }
 
 void
-HttpdOutput::RemoveClient(HttpdClient &client)
+HttpdOutput::RemoveClient(HttpdClient &client) noexcept
 {
 	assert(!clients.empty());
 
@@ -232,7 +232,7 @@ HttpdOutput::RemoveClient(HttpdClient &client)
 }
 
 void
-HttpdOutput::SendHeader(HttpdClient &client) const
+HttpdOutput::SendHeader(HttpdClient &client) const noexcept
 {
 	if (header != nullptr)
 		client.PushPage(header);
@@ -260,7 +260,7 @@ HttpdOutput::Delay() const noexcept
 }
 
 void
-HttpdOutput::BroadcastPage(PagePtr page)
+HttpdOutput::BroadcastPage(PagePtr page) noexcept
 {
 	assert(page != nullptr);
 
@@ -386,7 +386,7 @@ HttpdOutput::SendTag(const Tag &tag)
 }
 
 inline void
-HttpdOutput::CancelAllClients()
+HttpdOutput::CancelAllClients() noexcept
 {
 	const std::lock_guard<Mutex> protect(mutex);
 
