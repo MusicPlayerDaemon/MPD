@@ -18,6 +18,9 @@ storage_glue = static_library(
   'Configured.cxx',
   'StorageState.cxx',
   include_directories: inc,
+  dependencies: [
+    boost_dep,
+  ],
 )
 
 storage_glue_dep = declare_dependency(

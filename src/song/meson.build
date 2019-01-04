@@ -13,6 +13,9 @@ song = static_library(
   'Filter.cxx',
   'LightSong.cxx',
   include_directories: inc,
+  dependencies: [
+    pcre_dep,
+  ],
 )
 
 song_dep = declare_dependency(
