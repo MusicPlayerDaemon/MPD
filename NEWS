@@ -5,6 +5,8 @@ ver 0.21.4 (not yet released)
 * output
   - httpd: declare protocol "HTTP/1.1" instead of "ICY"
 * remove libwrap support
+* Windows
+  - fix "Failed to accept connection: unknown error"
 * fix Haiku build
 
 ver 0.21.3 (2018/11/16)
