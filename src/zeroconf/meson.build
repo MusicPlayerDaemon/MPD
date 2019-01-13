@@ -30,10 +30,14 @@ if zeroconf_option == 'bonjour'
   if not compiler.has_header('dns_sd.h')
     error('dns_sd.h not found')
   endif
-  
-  bonjour_dep = declare_dependency(link_args: ['-framework', 'dnssd'])
+
+  if is_darwin
+    bonjour_dep = declare_dependency(link_args: ['-framework', 'dnssd'])
+  else
+    bonjour_dep = declare_dependency(link_args: ['-ldns_sd'])
+  endif
   conf.set('HAVE_BONJOUR', true)
-  
+
   zeroconf = static_library(
     'zeroconf_bonjour',
     'ZeroconfGlue.cxx',
