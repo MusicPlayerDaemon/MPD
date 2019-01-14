@@ -51,7 +51,12 @@ class IPv4Address {
 #ifdef _WIN32
 	static constexpr struct in_addr ConstructInAddr(uint8_t a, uint8_t b,
 							uint8_t c, uint8_t d) noexcept {
-		return {{{ a, b, c, d }}};
+		struct in_addr result{};
+		result.s_net = a;
+		result.s_host = b;
+		result.s_lh = c;
+		result.s_impno = d;
+		return result;
 	}
 #else
 
@@ -66,7 +71,7 @@ class IPv4Address {
 
 	static constexpr struct in_addr ConstructInAddr(uint8_t a, uint8_t b,
 							uint8_t c, uint8_t d) noexcept {
-		return { ConstructInAddrT(a, b, c, d) };
+		return ConstructInAddrBE(ConstructInAddrT(a, b, c, d));
 	}
 #endif
 
