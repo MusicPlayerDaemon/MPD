@@ -33,6 +33,7 @@
 
 #include <assert.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 static constexpr Domain audiofile_domain("audiofile");
 
