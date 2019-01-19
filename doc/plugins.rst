@@ -974,6 +974,8 @@ You must set a format.
      - Set the timeout for the shout connection in seconds. Defaults to 2 seconds.
    * - **protocol icecast2|icecast1|shoutcast**
      - Specifies the protocol that wil be used to connect to the server. The default is "icecast2".
+   * - **tls disabled|auto|auto_no_plain|rfc2818|rfc2817**
+     - Specifies what kind of TLS to use. The default is "disabled" (no TLS).
    * - **mount URI**
      - Mounts the :program:`MPD` stream in the specified URI.
    * - **user USERNAME**
