@@ -285,32 +285,27 @@ size_t
 CdioParanoiaInputStream::Read(void *ptr, size_t length)
 {
 	size_t nbytes = 0;
-	int diff;
-	size_t len, maxwrite;
-	int16_t *rbuf;
-	char *s_err, *s_mess;
 	char *wptr = (char *) ptr;
 
 	while (length > 0) {
-
-
 		/* end of track ? */
 		if (lsn_from + lsn_relofs > lsn_to)
 			break;
 
 		//current sector was changed ?
+		int16_t *rbuf;
 		if (lsn_relofs != buffer_lsn) {
 			const ScopeUnlock unlock(mutex);
 
 			rbuf = cdio_paranoia_read(para, nullptr);
 
-			s_err = cdda_errors(drv);
+			char *s_err = cdda_errors(drv);
 			if (s_err) {
 				FormatError(cdio_domain,
 					    "paranoia_read: %s", s_err);
 				free(s_err);
 			}
-			s_mess = cdda_messages(drv);
+			char *s_mess = cdda_messages(drv);
 			if (s_mess) {
 				free(s_mess);
 			}
@@ -326,12 +321,12 @@ CdioParanoiaInputStream::Read(void *ptr, size_t length)
 		}
 
 		//correct offset
-		diff = offset - lsn_relofs * CDIO_CD_FRAMESIZE_RAW;
+		const int diff = offset - lsn_relofs * CDIO_CD_FRAMESIZE_RAW;
 
 		assert(diff >= 0 && diff < CDIO_CD_FRAMESIZE_RAW);
 
-		maxwrite = CDIO_CD_FRAMESIZE_RAW - diff;  //# of bytes pending in current buffer
-		len = (length < maxwrite? length : maxwrite);
+		const size_t maxwrite = CDIO_CD_FRAMESIZE_RAW - diff;  //# of bytes pending in current buffer
+		const size_t len = (length < maxwrite? length : maxwrite);
 
 		//skip diff bytes from this lsn
 		memcpy(wptr, ((char*)rbuf) + diff, len);
