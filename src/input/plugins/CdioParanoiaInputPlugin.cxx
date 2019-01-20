@@ -23,6 +23,7 @@
 
 #include "config.h"
 #include "CdioParanoiaInputPlugin.hxx"
+#include "lib/cdio/Paranoia.hxx"
 #include "../InputStream.hxx"
 #include "../InputPlugin.hxx"
 #include "util/TruncateString.hxx"
@@ -41,19 +42,12 @@
 #include <stdlib.h>
 #include <assert.h>
 
-#include <cdio/version.h>
-#if LIBCDIO_VERSION_NUM >= 90
-#include <cdio/paranoia/paranoia.h>
-#else
-#include <cdio/paranoia.h>
-#endif
-
 #include <cdio/cd_types.h>
 
 class CdioParanoiaInputStream final : public InputStream {
 	cdrom_drive_t *const drv;
 	CdIo_t *const cdio;
-	cdrom_paranoia_t *const para;
+	CdromParanoia para;
 
 	const lsn_t lsn_from, lsn_to;
 	int lsn_relofs;
@@ -67,18 +61,17 @@ class CdioParanoiaInputStream final : public InputStream {
 				bool reverse_endian,
 				lsn_t _lsn_from, lsn_t _lsn_to)
 		:InputStream(_uri, _mutex),
-		 drv(_drv), cdio(_cdio), para(cdio_paranoia_init(drv)),
+		 drv(_drv), cdio(_cdio), para(drv),
 		 lsn_from(_lsn_from), lsn_to(_lsn_to),
 		 lsn_relofs(0),
 		 buffer_lsn(-1)
 	{
 		/* Set reading mode for full paranoia, but allow
 		   skipping sectors. */
-		paranoia_modeset(para,
-				 PARANOIA_MODE_FULL^PARANOIA_MODE_NEVERSKIP);
+		para.SetMode(PARANOIA_MODE_FULL^PARANOIA_MODE_NEVERSKIP);
 
 		/* seek to beginning of the track */
-		cdio_paranoia_seek(para, lsn_from, SEEK_SET);
+		para.Seek(lsn_from);
 
 		seekable = true;
 		size = (lsn_to - lsn_from + 1) * CDIO_CD_FRAMESIZE_RAW;
@@ -91,7 +84,7 @@ class CdioParanoiaInputStream final : public InputStream {
 	}
 
 	~CdioParanoiaInputStream() {
-		cdio_paranoia_free(para);
+		para = {};
 		cdio_cddap_close_no_free_cdio(drv);
 		cdio_destroy(cdio);
 	}
@@ -278,7 +271,7 @@ CdioParanoiaInputStream::Seek(offset_type new_offset)
 
 	{
 		const ScopeUnlock unlock(mutex);
-		cdio_paranoia_seek(para, lsn_from + lsn_relofs, SEEK_SET);
+		para.Seek(lsn_from + lsn_relofs);
 	}
 }
 
@@ -298,20 +291,22 @@ CdioParanoiaInputStream::Read(void *ptr, size_t length)
 		if (lsn_relofs != buffer_lsn) {
 			const ScopeUnlock unlock(mutex);
 
-			rbuf = cdio_paranoia_read(para, nullptr);
-
-			char *s_err = cdio_cddap_errors(drv);
-			if (s_err) {
-				FormatError(cdio_domain,
-					    "paranoia_read: %s", s_err);
+			try {
+				rbuf = para.Read().data;
+			} catch (...) {
+				char *s_err = cdio_cddap_errors(drv);
+				if (s_err) {
+					FormatError(cdio_domain,
+						    "paranoia_read: %s", s_err);
 #if LIBCDIO_VERSION_NUM >= 90
-				cdio_cddap_free_messages(s_err);
+					cdio_cddap_free_messages(s_err);
 #else
-				free(s_err);
+					free(s_err);
 #endif
+				}
+
+				throw;
 			}
-			if (!rbuf)
-				throw std::runtime_error("paranoia read error");
 
 			//store current buffer
 			memcpy(buffer, rbuf, CDIO_CD_FRAMESIZE_RAW);
