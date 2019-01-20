@@ -18,6 +18,8 @@ gtest_dep = declare_dependency(
   compile_args: gtest_compile_args,
 )
 
+subdir('net')
+
 executable(
   'ParseSongFilter',
   'ParseSongFilter.cxx',
