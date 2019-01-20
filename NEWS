@@ -1,6 +1,8 @@
 ver 0.21.5 (not yet released)
 * tags
   - ape: map "Album Artist"
+* output
+  - shout: add support for TLS
 
 ver 0.21.4 (2019/01/04)
 * database

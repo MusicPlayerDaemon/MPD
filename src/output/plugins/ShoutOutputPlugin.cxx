@@ -141,6 +141,25 @@ ShoutOutput::ShoutOutput(const ConfigBlock &block)
 		protocol = SHOUT_PROTOCOL_HTTP;
 	}
 
+	unsigned tls;
+	value = block.GetBlockValue("tls");
+	if (value != nullptr) {
+		if (0 == strcmp(value, "disabled"))
+			tls = SHOUT_TLS_DISABLED;
+		else if(0 == strcmp(value, "auto"))
+			tls = SHOUT_TLS_AUTO;
+		else if(0 == strcmp(value, "auto_no_plain"))
+			tls = SHOUT_TLS_AUTO_NO_PLAIN;
+		else if(0 == strcmp(value, "rfc2818"))
+			tls = SHOUT_TLS_RFC2818;
+		else if(0 == strcmp(value, "rfc2817"))
+			tls = SHOUT_TLS_RFC2817;
+		else
+			throw FormatRuntimeError("invalid shout TLS option \"%s\"", value);
+	} else {
+		tls = SHOUT_TLS_DISABLED;
+	}
+
 	if (shout_set_host(shout_conn, host) != SHOUTERR_SUCCESS ||
 	    shout_set_port(shout_conn, port) != SHOUTERR_SUCCESS ||
 	    shout_set_password(shout_conn, passwd) != SHOUTERR_SUCCESS ||
@@ -151,6 +170,7 @@ ShoutOutput::ShoutOutput(const ConfigBlock &block)
 	    shout_set_format(shout_conn, shout_format)
 	    != SHOUTERR_SUCCESS ||
 	    shout_set_protocol(shout_conn, protocol) != SHOUTERR_SUCCESS ||
+	    shout_set_tls(shout_conn, tls) != SHOUTERR_SUCCESS ||
 	    shout_set_agent(shout_conn, "MPD") != SHOUTERR_SUCCESS)
 		throw std::runtime_error(shout_get_error(shout_conn));
 
