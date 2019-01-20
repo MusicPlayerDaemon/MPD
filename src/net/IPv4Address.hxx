@@ -163,7 +163,7 @@ public:
 	 */
 	static constexpr const IPv4Address &Cast(const SocketAddress &src) noexcept {
 		/* this reinterpret_cast works because this class is
-		   just a wrapper for struct sockaddr_in6 */
+		   just a wrapper for struct sockaddr_in */
 		return *(const IPv4Address *)(const void *)src.GetAddress();
 	}
 
