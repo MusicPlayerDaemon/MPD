@@ -293,7 +293,7 @@ CdioParanoiaInputStream::Read(void *ptr, size_t length)
 			break;
 
 		//current sector was changed ?
-		int16_t *rbuf;
+		const int16_t *rbuf;
 		if (lsn_relofs != buffer_lsn) {
 			const ScopeUnlock unlock(mutex);
 
@@ -317,7 +317,7 @@ CdioParanoiaInputStream::Read(void *ptr, size_t length)
 			buffer_lsn = lsn_relofs;
 		} else {
 			//use cached sector
-			rbuf = (int16_t *)buffer;
+			rbuf = (const int16_t *)buffer;
 		}
 
 		//correct offset
@@ -329,7 +329,7 @@ CdioParanoiaInputStream::Read(void *ptr, size_t length)
 		const size_t len = (length < maxwrite? length : maxwrite);
 
 		//skip diff bytes from this lsn
-		memcpy(wptr, ((char*)rbuf) + diff, len);
+		memcpy(wptr, ((const char *)rbuf) + diff, len);
 		//update pointer
 		wptr += len;
 		nbytes += len;
