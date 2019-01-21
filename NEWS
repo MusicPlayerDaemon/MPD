@@ -1,4 +1,6 @@
 ver 0.21.5 (not yet released)
+* protocol
+  - fix deadlock in "albumart" command
 * tags
   - ape: map "Album Artist"
 * output

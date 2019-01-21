@@ -285,8 +285,11 @@ read_stream_art(Response &r, const char *uri, size_t offset)
 	uint8_t buffer[CHUNK_SIZE];
 	size_t read_size;
 
-	is->Seek(offset);
-	read_size = is->Read(&buffer, CHUNK_SIZE);
+	{
+		const std::lock_guard<Mutex> protect(mutex);
+		is->Seek(offset);
+		read_size = is->Read(&buffer, CHUNK_SIZE);
+	}
 
 	r.Format("size: %" PRIoffset "\n"
 			 "binary: %u\n",
