@@ -77,6 +77,9 @@ TEST(IPv6Address, MaskFromPrefix)
 	EXPECT_EQ(ToString(IPv6Address::MaskFromPrefix(17).GetAddress()), "ffff:8000::");
 	EXPECT_EQ(ToString(IPv6Address::MaskFromPrefix(32).GetAddress()), "ffff:ffff::");
 	EXPECT_EQ(ToString(IPv6Address::MaskFromPrefix(64).GetAddress()), "ffff:ffff:ffff:ffff::");
-	EXPECT_EQ(ToString(IPv6Address::MaskFromPrefix(112).GetAddress()), "ffff:ffff:ffff:ffff:ffff:ffff:ffff:0");
+	EXPECT_TRUE(/* glibc: */
+		    ToString(IPv6Address::MaskFromPrefix(112).GetAddress()) == "ffff:ffff:ffff:ffff:ffff:ffff:ffff:0" ||
+		    /* macOS: */
+		    ToString(IPv6Address::MaskFromPrefix(112).GetAddress()) == "ffff:ffff:ffff:ffff:ffff:ffff:ffff::");
 	EXPECT_EQ(ToString(IPv6Address::MaskFromPrefix(128).GetAddress()), "ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff");
 }
