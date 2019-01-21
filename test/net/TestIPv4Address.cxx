@@ -85,6 +85,6 @@ TEST(IPv4Address, MaskFromPrefix)
 
 TEST(IPv4Address, Numeric)
 {
-	EXPECT_EQ(IPv4Address(1, 2, 3, 4, 0).GetNumericAddress(), 0x01020304);
+	EXPECT_EQ(IPv4Address(1, 2, 3, 4, 0).GetNumericAddress(), 0x01020304u);
 	EXPECT_EQ(IPv4Address(1, 2, 3, 4, 0).GetNumericAddressBE(), htonl(0x01020304));
 }
