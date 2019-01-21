@@ -141,6 +141,7 @@ ShoutOutput::ShoutOutput(const ConfigBlock &block)
 		protocol = SHOUT_PROTOCOL_HTTP;
 	}
 
+#ifdef SHOUT_TLS
 	unsigned tls;
 	value = block.GetBlockValue("tls");
 	if (value != nullptr) {
@@ -159,6 +160,7 @@ ShoutOutput::ShoutOutput(const ConfigBlock &block)
 	} else {
 		tls = SHOUT_TLS_DISABLED;
 	}
+#endif
 
 	if (shout_set_host(shout_conn, host) != SHOUTERR_SUCCESS ||
 	    shout_set_port(shout_conn, port) != SHOUTERR_SUCCESS ||
@@ -170,7 +172,9 @@ ShoutOutput::ShoutOutput(const ConfigBlock &block)
 	    shout_set_format(shout_conn, shout_format)
 	    != SHOUTERR_SUCCESS ||
 	    shout_set_protocol(shout_conn, protocol) != SHOUTERR_SUCCESS ||
+#ifdef SHOUT_TLS
 	    shout_set_tls(shout_conn, tls) != SHOUTERR_SUCCESS ||
+#endif
 	    shout_set_agent(shout_conn, "MPD") != SHOUTERR_SUCCESS)
 		throw std::runtime_error(shout_get_error(shout_conn));
 
