@@ -256,7 +256,8 @@ find_stream_art(const char *directory, Mutex &mutex)
 
 		try {
 			return InputStream::OpenReady(art_file.c_str(), mutex);
-		} catch (const std::exception &e) {}
+		} catch (...) {
+		}
 	}
 	return nullptr;
 }
