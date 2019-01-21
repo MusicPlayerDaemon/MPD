@@ -31,8 +31,27 @@
 #include "system/Error.hxx"
 #include "util/StringFormat.hxx"
 
+#ifdef __linux__
+#include <fcntl.h>
+#endif
+
+#ifdef __linux__
+FileOutputStream::FileOutputStream(FileDescriptor _directory_fd,
+				   Path _path, Mode _mode)
+	:path(_path),
+	 directory_fd(_directory_fd),
+	 mode(_mode)
+{
+	Open();
+}
+#endif
+
 FileOutputStream::FileOutputStream(Path _path, Mode _mode)
-	:path(_path), mode(_mode)
+	:path(_path),
+#ifdef __linux__
+	 directory_fd(AT_FDCWD),
+#endif
+	 mode(_mode)
 {
 	Open();
 }
@@ -155,8 +174,12 @@ FileOutputStream::Cancel() noexcept
  * Open a file using Linux's O_TMPFILE for writing the given file.
  */
 static bool
-OpenTempFile(FileDescriptor &fd, Path path)
+OpenTempFile(FileDescriptor directory_fd,
+	     FileDescriptor &fd, Path path)
 {
+	if (directory_fd != FileDescriptor(AT_FDCWD))
+		return fd.Open(directory_fd, ".", O_TMPFILE|O_WRONLY, 0666);
+
 	const auto directory = path.GetDirectoryName();
 	if (directory.IsNull())
 		return false;
@@ -171,11 +194,15 @@ FileOutputStream::OpenCreate(bool visible)
 {
 #ifdef HAVE_O_TMPFILE
 	/* try Linux's O_TMPFILE first */
-	is_tmpfile = !visible && OpenTempFile(fd, GetPath());
+	is_tmpfile = !visible && OpenTempFile(directory_fd, fd, GetPath());
 	if (!is_tmpfile) {
 #endif
 		/* fall back to plain POSIX */
-		if (!fd.Open(GetPath().c_str(),
+		if (!fd.Open(
+#ifdef __linux__
+			     directory_fd,
+#endif
+			     GetPath().c_str(),
 			     O_WRONLY|O_CREAT|O_TRUNC,
 			     0666))
 			throw FormatErrno("Failed to create %s",
@@ -194,7 +221,11 @@ FileOutputStream::OpenAppend(bool create)
 	if (create)
 		flags |= O_CREAT;
 
-	if (!fd.Open(path.c_str(), flags))
+	if (!fd.Open(
+#ifdef __linux__
+		     directory_fd,
+#endif
+		     path.c_str(), flags))
 		throw FormatErrno("Failed to append to %s",
 				  path.c_str());
 }
@@ -225,12 +256,12 @@ FileOutputStream::Commit()
 
 #ifdef HAVE_O_TMPFILE
 	if (is_tmpfile) {
-		unlink(GetPath().c_str());
+		unlinkat(directory_fd.Get(), GetPath().c_str(), 0);
 
 		/* hard-link the temporary file to the final path */
 		if (linkat(AT_FDCWD,
 			   StringFormat<64>("/proc/self/fd/%d", fd.Get()),
-			   AT_FDCWD, path.c_str(),
+			   directory_fd.Get(), path.c_str(),
 			   AT_SYMLINK_FOLLOW) < 0)
 			throw FormatErrno("Failed to commit %s",
 					  path.c_str());
@@ -259,7 +290,11 @@ FileOutputStream::Cancel() noexcept
 #ifdef HAVE_O_TMPFILE
 		if (!is_tmpfile)
 #endif
-			unlink(GetPath().c_str());
+#ifdef __linux__
+			unlinkat(directory_fd.Get(), GetPath().c_str(), 0);
+#else
+		unlink(GetPath().c_str());
+#endif
 		break;
 
 	case Mode::CREATE_VISIBLE:
