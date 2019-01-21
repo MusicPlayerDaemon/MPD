@@ -67,7 +67,7 @@ TEST(LocalSocketAddress, Abstract)
 	EXPECT_EQ(sun.sun_path[0], 0);
 
 	/* ... but are not null-terminated */
-	EXPECT_STREQ(sun.sun_path + 1, path + 1);
+	EXPECT_EQ(memcmp(sun.sun_path + 1, path + 1, strlen(path) - 1), 0);
 	EXPECT_EQ(sun.sun_path + strlen(path), (const char *)a.GetAddress() + a.GetSize());
 }
 
