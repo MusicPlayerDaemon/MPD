@@ -133,6 +133,7 @@ public:
 private:
 	void OpenCreate(bool visible);
 	void OpenAppend(bool create);
+	void Open();
 
 	bool Close() noexcept {
 		assert(IsDefined());

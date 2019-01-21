@@ -34,6 +34,12 @@
 FileOutputStream::FileOutputStream(Path _path, Mode _mode)
 	:path(_path), mode(_mode)
 {
+	Open();
+}
+
+inline void
+FileOutputStream::Open()
+{
 	switch (mode) {
 	case Mode::CREATE:
 		OpenCreate(false);
