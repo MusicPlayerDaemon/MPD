@@ -209,10 +209,10 @@ input_cdio_open(const char *uri,
 		throw std::runtime_error("Unable to identify audio CD disc.");
 	}
 
-	cdda_verbose_set(drv, CDDA_MESSAGE_FORGETIT, CDDA_MESSAGE_FORGETIT);
+	cdio_cddap_verbose_set(drv, CDDA_MESSAGE_FORGETIT, CDDA_MESSAGE_FORGETIT);
 	if (speed > 0) {
 		FormatDebug(cdio_domain,"Attempting to set CD speed to %dx",speed);
-		cdda_speed_set(drv,speed);
+		cdio_cddap_speed_set(drv,speed);
 	}
 
 	if (0 != cdio_cddap_open(drv)) {
@@ -300,7 +300,7 @@ CdioParanoiaInputStream::Read(void *ptr, size_t length)
 
 			rbuf = cdio_paranoia_read(para, nullptr);
 
-			char *s_err = cdda_errors(drv);
+			char *s_err = cdio_cddap_errors(drv);
 			if (s_err) {
 				FormatError(cdio_domain,
 					    "paranoia_read: %s", s_err);
