@@ -37,9 +37,11 @@
 #include "fs/FileInfo.hxx"
 #include "fs/DirectoryReader.hxx"
 #include "input/InputStream.hxx"
+#include "input/Error.hxx"
 #include "LocateUri.hxx"
 #include "TimePrint.hxx"
 #include "thread/Mutex.hxx"
+#include "Log.hxx"
 
 #include <assert.h>
 #include <inttypes.h> /* for PRIu64 */
@@ -257,6 +259,9 @@ find_stream_art(const char *directory, Mutex &mutex)
 		try {
 			return InputStream::OpenReady(art_file.c_str(), mutex);
 		} catch (...) {
+			auto e = std::current_exception();
+			if (!IsFileNotFound(e))
+				LogError(e);
 		}
 	}
 	return nullptr;
