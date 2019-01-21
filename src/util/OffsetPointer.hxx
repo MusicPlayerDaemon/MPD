@@ -34,7 +34,7 @@
 /**
  * Offset the given pointer by the specified number of bytes.
  */
-static inline constexpr void *
+constexpr void *
 OffsetPointer(void *p, ptrdiff_t offset)
 {
 	return (char *)p + offset;
@@ -43,7 +43,7 @@ OffsetPointer(void *p, ptrdiff_t offset)
 /**
  * Offset the given pointer by the specified number of bytes.
  */
-static inline constexpr const void *
+constexpr const void *
 OffsetPointer(const void *p, ptrdiff_t offset)
 {
 	return (const char *)p + offset;
