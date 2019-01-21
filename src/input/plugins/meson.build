@@ -10,10 +10,6 @@ libcdio_paranoia_dep = dependency('libcdio_paranoia', version: '>= 0.4', require
 conf.set('ENABLE_CDIO_PARANOIA', libcdio_paranoia_dep.found())
 if libcdio_paranoia_dep.found()
   input_plugins_sources += 'CdioParanoiaInputPlugin.cxx'
-
-  conf.set('HAVE_CDIO_PARANOIA_PARANOIA_H',
-           compiler.has_header('cdio/paranoia/paranoia.h',
-                               dependencies: libcdio_paranoia_dep))
 endif
 
 if curl_dep.found()

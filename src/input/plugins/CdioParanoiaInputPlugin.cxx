@@ -41,7 +41,8 @@
 #include <stdlib.h>
 #include <assert.h>
 
-#ifdef HAVE_CDIO_PARANOIA_PARANOIA_H
+#include <cdio/version.h>
+#if LIBCDIO_VERSION_NUM >= 90
 #include <cdio/paranoia/paranoia.h>
 #else
 #include <cdio/paranoia.h>
