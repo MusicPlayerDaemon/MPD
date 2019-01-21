@@ -57,7 +57,7 @@ struct ExtractHostResult {
 	 */
 	const char *end;
 
-	constexpr bool HasFailed() const {
+	constexpr bool HasFailed() const noexcept {
 		return host == nullptr;
 	}
 };
@@ -71,6 +71,6 @@ struct ExtractHostResult {
  */
 gcc_pure
 ExtractHostResult
-ExtractHost(const char *src);
+ExtractHost(const char *src) noexcept;
 
 #endif

@@ -36,7 +36,7 @@
 #include <string.h>
 
 static inline bool
-IsValidHostnameChar(char ch)
+IsValidHostnameChar(char ch) noexcept
 {
 	return IsAlphaNumericASCII(ch) ||
 		ch == '-' || ch == '.' ||
@@ -44,14 +44,14 @@ IsValidHostnameChar(char ch)
 }
 
 static inline bool
-IsValidScopeChar(char ch)
+IsValidScopeChar(char ch) noexcept
 {
 	return IsAlphaNumericASCII(ch) ||
 		ch == '-' || ch == '_';
 }
 
 static const char *
-FindScopeEnd(const char *p)
+FindScopeEnd(const char *p) noexcept
 {
 	if (*p == '%' && IsValidScopeChar(p[1])) {
 		p += 2;
@@ -63,7 +63,7 @@ FindScopeEnd(const char *p)
 }
 
 static inline bool
-IsValidIPv6Char(char ch)
+IsValidIPv6Char(char ch) noexcept
 {
 	return IsDigitASCII(ch) ||
 		(ch >= 'a' && ch <= 'f') ||
@@ -72,7 +72,7 @@ IsValidIPv6Char(char ch)
 }
 
 static const char *
-FindIPv6End(const char *p)
+FindIPv6End(const char *p) noexcept
 {
 	while (IsValidIPv6Char(*p))
 		++p;
@@ -84,7 +84,7 @@ FindIPv6End(const char *p)
 }
 
 ExtractHostResult
-ExtractHost(const char *src)
+ExtractHost(const char *src) noexcept
 {
 	ExtractHostResult result{nullptr, src};
 	const char *hostname;
