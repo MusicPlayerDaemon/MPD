@@ -306,10 +306,6 @@ CdioParanoiaInputStream::Read(void *ptr, size_t length)
 					    "paranoia_read: %s", s_err);
 				free(s_err);
 			}
-			char *s_mess = cdda_messages(drv);
-			if (s_mess) {
-				free(s_mess);
-			}
 			if (!rbuf)
 				throw std::runtime_error("paranoia read error");
 
