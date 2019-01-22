@@ -93,7 +93,7 @@ public:
 	 * Does the object have a well-defined address?  Check !IsNull()
 	 * before calling this method.
 	 */
-	bool IsDefined() const noexcept {
+	constexpr bool IsDefined() const noexcept {
 		return GetFamily() != AF_UNSPEC;
 	}
 
