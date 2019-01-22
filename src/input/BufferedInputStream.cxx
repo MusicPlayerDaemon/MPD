@@ -66,6 +66,11 @@ BufferedInputStream::Check()
 void
 BufferedInputStream::Seek(offset_type new_offset)
 {
+	if (new_offset >= size) {
+		offset = size;
+		return;
+	}
+
 	auto r = buffer.Read(new_offset);
 	if (r.HasData()) {
 		/* nice, we already have some data at the desired
