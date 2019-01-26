@@ -149,6 +149,9 @@ LoadPlaylistFileInfo(PlaylistInfo &info,
 	} catch (...) {
 		return false;
 	}
+	
+	if (info.name.empty())
+		return false;
 
 	info.mtime = fi.GetModificationTime();
 	return true;
