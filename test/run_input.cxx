@@ -108,18 +108,14 @@ class GlobalInit {
 	const ScopeArchivePluginsInit archive_plugins_init;
 #endif
 
+	const ScopeInputPluginsInit input_plugins_init;
+
 public:
 	explicit GlobalInit(Path config_path)
-		:config(AutoLoadConfigFile(config_path))
+		:config(AutoLoadConfigFile(config_path)),
+		 input_plugins_init(config, io_thread.GetEventLoop())
 	{
 		io_thread.Start();
-
-		input_stream_global_init(config,
-					 io_thread.GetEventLoop());
-	}
-
-	~GlobalInit() {
-		input_stream_global_finish();
 	}
 };
 

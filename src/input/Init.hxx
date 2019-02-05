@@ -35,4 +35,16 @@ input_stream_global_init(const ConfigData &config, EventLoop &event_loop);
 void
 input_stream_global_finish() noexcept;
 
+class ScopeInputPluginsInit {
+public:
+	ScopeInputPluginsInit(const ConfigData &config,
+			      EventLoop &event_loop) {
+		input_stream_global_init(config, event_loop);
+	}
+
+	~ScopeInputPluginsInit() noexcept {
+		input_stream_global_finish();
+	}
+};
+
 #endif

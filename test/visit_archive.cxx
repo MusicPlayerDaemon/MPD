@@ -42,15 +42,13 @@ class GlobalInit {
 	const ScopeArchivePluginsInit archive_plugins_init;
 #endif
 
-public:
-	GlobalInit() {
-		io_thread.Start();
-		input_stream_global_init(ConfigData(),
-					 io_thread.GetEventLoop());
-	}
+	const ScopeInputPluginsInit input_plugins_init;
 
-	~GlobalInit() {
-		input_stream_global_finish();
+public:
+	GlobalInit()
+		:input_plugins_init(ConfigData(), io_thread.GetEventLoop())
+	{
+		io_thread.Start();
 	}
 };
 

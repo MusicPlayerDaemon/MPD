@@ -90,15 +90,15 @@ ParseCommandLine(int argc, char **argv)
 class GlobalInit {
 	const ConfigData config;
 	EventThread io_thread;
+	const ScopeInputPluginsInit input_plugins_init;
 
 public:
 	explicit GlobalInit(Path config_path)
-		:config(AutoLoadConfigFile(config_path))
+		:config(AutoLoadConfigFile(config_path)),
+		 input_plugins_init(config, io_thread.GetEventLoop())
 	{
 		io_thread.Start();
 
-		input_stream_global_init(config,
-					 io_thread.GetEventLoop());
 		decoder_plugin_init_all(config);
 
 		pcm_convert_global_init(config);
@@ -106,7 +106,6 @@ public:
 
 	~GlobalInit() {
 		decoder_plugin_deinit_all();
-		input_stream_global_finish();
 	}
 };
 

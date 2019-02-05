@@ -64,7 +64,7 @@ try {
 	EventThread io_thread;
 	io_thread.Start();
 
-	input_stream_global_init(config, io_thread.GetEventLoop());
+	const ScopeInputPluginsInit input_plugins_init(config, io_thread.GetEventLoop());
 	playlist_list_global_init(config);
 	decoder_plugin_init_all(config);
 
@@ -118,7 +118,6 @@ try {
 
 	decoder_plugin_deinit_all();
 	playlist_list_global_finish();
-	input_stream_global_finish();
 
 	return EXIT_SUCCESS;
 } catch (...) {

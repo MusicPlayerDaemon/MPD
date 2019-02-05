@@ -553,8 +553,8 @@ mpd_main_after_fork(const ConfigData &raw_config, const Config &config)
 	}
 
 	client_manager_init(raw_config);
-	input_stream_global_init(raw_config,
-				 instance->io_thread.GetEventLoop());
+	const ScopeInputPluginsInit input_plugins_init(raw_config,
+						       instance->io_thread.GetEventLoop());
 	playlist_list_global_init(raw_config);
 
 #ifdef ENABLE_DAEMON
@@ -660,7 +660,6 @@ mpd_main_after_fork(const ConfigData &raw_config, const Config &config)
 #endif
 
 	playlist_list_global_finish();
-	input_stream_global_finish();
 
 #ifdef ENABLE_DATABASE
 	mapper_finish();

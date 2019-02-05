@@ -93,8 +93,8 @@ try {
 	EventThread io_thread;
 	io_thread.Start();
 
-	input_stream_global_init(ConfigData(), io_thread.GetEventLoop());
-	AtScopeExit() { input_stream_global_finish(); };
+	const ScopeInputPluginsInit input_plugins_init(ConfigData(),
+						       io_thread.GetEventLoop());
 
 	decoder_plugin_init_all(ConfigData());
 	AtScopeExit() { decoder_plugin_deinit_all(); };
