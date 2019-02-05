@@ -26,7 +26,10 @@
 void
 EventThread::Start()
 {
+	assert(!event_loop.IsAlive());
 	assert(!thread.IsDefined());
+
+	event_loop.SetAlive(true);
 
 	thread.Start();
 }
@@ -35,6 +38,9 @@ void
 EventThread::Stop() noexcept
 {
 	if (thread.IsDefined()) {
+		assert(event_loop.IsAlive());
+		event_loop.SetAlive(false);
+
 		event_loop.Break();
 		thread.Join();
 	}

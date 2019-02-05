@@ -85,12 +85,15 @@ class EventLoop final : SocketMonitor
 
 	std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
 
-	std::atomic_bool quit;
-
 	/**
-	 * If this is true, then Run() has returned.
+	 * Is this #EventLoop alive, i.e. can events be scheduled?
+	 * This is used by BlockingCall() to determine whether
+	 * schedule in the #EventThread or to call directly (if
+	 * there's no #EventThread yet/anymore).
 	 */
-	std::atomic_bool dead;
+	bool alive;
+
+	std::atomic_bool quit;
 
 	/**
 	 * True when the object has been modified and another check is
@@ -207,9 +210,12 @@ private:
 	bool OnSocketReady(unsigned flags) noexcept override;
 
 public:
-	gcc_pure
-	bool IsDead() const noexcept {
-		return dead;
+	void SetAlive(bool _alive) noexcept {
+		alive = _alive;
+	}
+
+	bool IsAlive() const noexcept {
+		return alive;
 	}
 
 	/**

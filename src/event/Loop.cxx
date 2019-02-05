@@ -25,7 +25,13 @@
 
 EventLoop::EventLoop(ThreadId _thread)
 	:SocketMonitor(*this),
-	 quit(false), dead(false),
+	 /* if this instance is hosted by an EventThread (no ThreadId
+	    known yet) then we're not yet alive until the thread is
+	    started; for the main EventLoop instance, we assume it's
+	    already alive, because nobody but EventThread will call
+	    SetAlive() */
+	 alive(!_thread.IsNull()),
+	 quit(false),
 	 thread(_thread)
 {
 	SocketMonitor::Open(SocketDescriptor(wake_fd.Get()));
@@ -143,12 +149,11 @@ EventLoop::Run() noexcept
 
 	assert(IsInside());
 	assert(!quit);
-	assert(!dead);
+	assert(alive);
 	assert(busy);
 
 	SocketMonitor::Schedule(SocketMonitor::READ);
 	AtScopeExit(this) {
-		dead = true;
 		SocketMonitor::Cancel();
 	};
 
@@ -215,7 +220,6 @@ EventLoop::Run() noexcept
 	} while (!quit);
 
 #ifndef NDEBUG
-	assert(!dead);
 	assert(busy);
 	assert(thread.IsInside());
 #endif
