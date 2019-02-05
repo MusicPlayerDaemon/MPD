@@ -529,7 +529,7 @@ mpd_main_after_fork(const ConfigData &raw_config, const Config &config)
 	initPermissions(raw_config);
 	spl_global_init(raw_config);
 #ifdef ENABLE_ARCHIVE
-	archive_plugin_init_all();
+	const ScopeArchivePluginsInit archive_plugins_init;
 #endif
 
 	pcm_convert_global_init(raw_config);
@@ -671,9 +671,7 @@ mpd_main_after_fork(const ConfigData &raw_config, const Config &config)
 	instance->FinishShutdownPartitions();
 	command_finish();
 	decoder_plugin_deinit_all();
-#ifdef ENABLE_ARCHIVE
-	archive_plugin_deinit_all();
-#endif
+
 	instance->rtio_thread.Stop();
 	instance->io_thread.Stop();
 

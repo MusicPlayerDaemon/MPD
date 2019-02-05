@@ -46,4 +46,15 @@ archive_plugin_init_all();
 void
 archive_plugin_deinit_all() noexcept;
 
+class ScopeArchivePluginsInit {
+public:
+	ScopeArchivePluginsInit() {
+		archive_plugin_init_all();
+	}
+
+	~ScopeArchivePluginsInit() noexcept {
+		archive_plugin_deinit_all();
+	}
+};
+
 #endif

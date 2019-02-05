@@ -106,6 +106,10 @@ class GlobalInit {
 	ConfigData config;
 	EventThread io_thread;
 
+#ifdef ENABLE_ARCHIVE
+	const ScopeArchivePluginsInit archive_plugins_init;
+#endif
+
 public:
 	GlobalInit(Path config_path, bool verbose) {
 		SetLogThreshold(verbose ? LogLevel::DEBUG : LogLevel::INFO);
@@ -117,18 +121,12 @@ public:
 
 		io_thread.Start();
 
-#ifdef ENABLE_ARCHIVE
-		archive_plugin_init_all();
-#endif
 		input_stream_global_init(config,
 					 io_thread.GetEventLoop());
 	}
 
 	~GlobalInit() {
 		input_stream_global_finish();
-#ifdef ENABLE_ARCHIVE
-		archive_plugin_deinit_all();
-#endif
 	}
 };
 
