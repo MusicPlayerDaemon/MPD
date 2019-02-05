@@ -31,7 +31,7 @@ struct ConfigData;
  * @param verbose true when the program is started with --verbose
  */
 void
-log_early_init(bool verbose);
+log_early_init(bool verbose) noexcept;
 
 /**
  * Throws #std::runtime_error on error.
@@ -40,12 +40,12 @@ void
 log_init(const ConfigData &config, bool verbose, bool use_stdout);
 
 void
-log_deinit();
+log_deinit() noexcept;
 
 void
 setup_log_output();
 
 int
-cycle_log_files();
+cycle_log_files() noexcept;
 
 #endif /* LOG_H */

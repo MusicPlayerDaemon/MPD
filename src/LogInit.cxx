@@ -109,7 +109,7 @@ parse_log_level(const char *value, int line)
 #endif
 
 void
-log_early_init(bool verbose)
+log_early_init(bool verbose) noexcept
 {
 #ifdef ANDROID
 	(void)verbose;
@@ -171,7 +171,7 @@ log_init(const ConfigData &config, bool verbose, bool use_stdout)
 #ifndef ANDROID
 
 static void
-close_log_files(void)
+close_log_files() noexcept
 {
 #ifdef HAVE_SYSLOG
 	LogFinishSysLog();
@@ -181,7 +181,7 @@ close_log_files(void)
 #endif
 
 void
-log_deinit(void)
+log_deinit() noexcept
 {
 #ifndef ANDROID
 	close_log_files();
@@ -213,7 +213,8 @@ void setup_log_output()
 #endif
 }
 
-int cycle_log_files(void)
+int
+cycle_log_files() noexcept
 {
 #ifdef ANDROID
 	return 0;
