@@ -42,6 +42,17 @@ decoder_plugin_init_all(const ConfigData &config);
 void
 decoder_plugin_deinit_all() noexcept;
 
+class ScopeDecoderPluginsInit {
+public:
+	explicit ScopeDecoderPluginsInit(const ConfigData &config) {
+		decoder_plugin_init_all(config);
+	}
+
+	~ScopeDecoderPluginsInit() noexcept {
+		decoder_plugin_deinit_all();
+	}
+};
+
 template<typename F>
 static inline const DecoderPlugin *
 decoder_plugins_find(F f) noexcept

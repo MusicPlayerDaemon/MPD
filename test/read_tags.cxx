@@ -96,8 +96,7 @@ try {
 	const ScopeInputPluginsInit input_plugins_init(ConfigData(),
 						       io_thread.GetEventLoop());
 
-	decoder_plugin_init_all(ConfigData());
-	AtScopeExit() { decoder_plugin_deinit_all(); };
+	const ScopeDecoderPluginsInit decoder_plugins_init({});
 
 	plugin = decoder_plugin_from_name(decoder_name);
 	if (plugin == NULL) {

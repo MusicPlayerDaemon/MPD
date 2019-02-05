@@ -66,7 +66,7 @@ try {
 
 	const ScopeInputPluginsInit input_plugins_init(config, io_thread.GetEventLoop());
 	playlist_list_global_init(config);
-	decoder_plugin_init_all(config);
+	const ScopeDecoderPluginsInit decoder_plugins_init(config);
 
 	/* open the playlist */
 
@@ -116,7 +116,6 @@ try {
 	playlist.reset();
 	is.reset();
 
-	decoder_plugin_deinit_all();
 	playlist_list_global_finish();
 
 	return EXIT_SUCCESS;

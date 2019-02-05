@@ -65,7 +65,7 @@ try {
 
 	const Path path = Path::FromFS(argv[1]);
 
-	decoder_plugin_init_all(ConfigData());
+	const ScopeDecoderPluginsInit decoder_plugins_init({});
 
 	const auto *plugin = FindContainerDecoderPlugin(path);
 	if (plugin == nullptr) {
@@ -86,8 +86,6 @@ try {
 		song_save(bos, song);
 
 	bos.Flush();
-
-	decoder_plugin_deinit_all();
 
 	return EXIT_SUCCESS;
 } catch (...) {

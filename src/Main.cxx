@@ -534,7 +534,7 @@ mpd_main_after_fork(const ConfigData &raw_config, const Config &config)
 
 	pcm_convert_global_init(raw_config);
 
-	decoder_plugin_init_all(raw_config);
+	const ScopeDecoderPluginsInit decoder_plugins_init(raw_config);
 
 #ifdef ENABLE_DATABASE
 	const bool create_db = InitDatabaseAndStorage(raw_config);
@@ -669,7 +669,6 @@ mpd_main_after_fork(const ConfigData &raw_config, const Config &config)
 
 	instance->FinishShutdownPartitions();
 	command_finish();
-	decoder_plugin_deinit_all();
 
 	return EXIT_SUCCESS;
 }
