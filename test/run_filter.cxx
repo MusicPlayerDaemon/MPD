@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2018 The Music Player Daemon Project
+ * Copyright 2003-2019 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,10 +17,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "config/Param.hxx"
-#include "config/Data.hxx"
-#include "config/File.hxx"
-#include "config/Migrate.hxx"
+#include "ConfigGlue.hxx"
 #include "fs/Path.hxx"
 #include "AudioParser.hxx"
 #include "AudioFormat.hxx"
@@ -77,9 +74,7 @@ try {
 
 	/* read configuration file (mpd.conf) */
 
-	ConfigData config;
-	ReadConfigFile(config, config_path);
-	Migrate(config);
+	const auto config = AutoLoadConfigFile(config_path);
 
 	/* parse the audio format */
 

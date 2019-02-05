@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2018 The Music Player Daemon Project
+ * Copyright 2003-2019 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -21,9 +21,7 @@
 #include "song/DetachedSong.hxx"
 #include "playlist/SongEnumerator.hxx"
 #include "input/InputStream.hxx"
-#include "config/File.hxx"
-#include "config/Migrate.hxx"
-#include "config/Data.hxx"
+#include "ConfigGlue.hxx"
 #include "decoder/DecoderList.hxx"
 #include "input/Init.hxx"
 #include "event/Thread.hxx"
@@ -61,9 +59,7 @@ try {
 
 	/* initialize MPD */
 
-	ConfigData config;
-	ReadConfigFile(config, config_path);
-	Migrate(config);
+	const auto config = AutoLoadConfigFile(config_path);
 
 	EventThread io_thread;
 	io_thread.Start();

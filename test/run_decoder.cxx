@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2018 The Music Player Daemon Project
+ * Copyright 2003-2019 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,9 +17,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "config/File.hxx"
-#include "config/Migrate.hxx"
-#include "config/Data.hxx"
+#include "ConfigGlue.hxx"
 #include "event/Thread.hxx"
 #include "decoder/DecoderList.hxx"
 #include "decoder/DecoderPlugin.hxx"
@@ -88,18 +86,13 @@ ParseCommandLine(int argc, char **argv)
 }
 
 class GlobalInit {
-	ConfigData config;
+	const ConfigData config;
 	EventThread io_thread;
 
 public:
-	GlobalInit(Path config_path, bool verbose) {
-		SetLogThreshold(verbose ? LogLevel::DEBUG : LogLevel::INFO);
-
-		if (!config_path.IsNull()) {
-			ReadConfigFile(config, config_path);
-			Migrate(config);
-		}
-
+	explicit GlobalInit(Path config_path)
+		:config(AutoLoadConfigFile(config_path))
+	{
 		io_thread.Start();
 
 		input_stream_global_init(config,
@@ -117,7 +110,8 @@ int main(int argc, char **argv)
 try {
 	const auto c = ParseCommandLine(argc, argv);
 
-	const GlobalInit init(c.config_path, c.verbose);
+	SetLogThreshold(c.verbose ? LogLevel::DEBUG : LogLevel::INFO);
+	const GlobalInit init(c.config_path);
 
 	const DecoderPlugin *plugin = decoder_plugin_from_name(c.decoder);
 	if (plugin == nullptr) {

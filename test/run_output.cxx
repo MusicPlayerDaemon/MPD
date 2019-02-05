@@ -20,12 +20,7 @@
 #include "output/Interface.hxx"
 #include "output/Registry.hxx"
 #include "output/OutputPlugin.hxx"
-#include "config/Param.hxx"
-#include "config/Data.hxx"
-#include "config/File.hxx"
-#include "config/Migrate.hxx"
-#include "config/Option.hxx"
-#include "config/Block.hxx"
+#include "ConfigGlue.hxx"
 #include "event/Thread.hxx"
 #include "fs/Path.hxx"
 #include "AudioParser.hxx"
@@ -122,9 +117,7 @@ try {
 
 	/* read configuration file (mpd.conf) */
 
-	ConfigData config;
-	ReadConfigFile(config, config_path);
-	Migrate(config);
+	const auto config = AutoLoadConfigFile(config_path);
 
 	EventThread io_thread;
 	io_thread.Start();

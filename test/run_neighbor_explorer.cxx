@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2018 The Music Player Daemon Project
+ * Copyright 2003-2019 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,9 +17,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "config/File.hxx"
-#include "config/Migrate.hxx"
-#include "config/Data.hxx"
+#include "ConfigGlue.hxx"
 #include "neighbor/Listener.hxx"
 #include "neighbor/Info.hxx"
 #include "neighbor/Glue.hxx"
@@ -57,14 +55,12 @@ try {
 
 	/* initialize the core */
 
-	ConfigData config;
 	EventLoop loop;
 	const ShutdownHandler shutdown_handler(loop);
 
 	/* read configuration file (mpd.conf) */
 
-	ReadConfigFile(config, config_path);
-	Migrate(config);
+	const auto config = AutoLoadConfigFile(config_path);
 
 	/* initialize neighbor plugins */
 
