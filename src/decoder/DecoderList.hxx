@@ -40,11 +40,11 @@ decoder_plugin_init_all(const ConfigData &config);
 
 /* this is where we "unload" all the "plugins" */
 void
-decoder_plugin_deinit_all();
+decoder_plugin_deinit_all() noexcept;
 
 template<typename F>
 static inline const DecoderPlugin *
-decoder_plugins_find(F f)
+decoder_plugins_find(F f) noexcept
 {
 	for (unsigned i = 0; decoder_plugins[i] != nullptr; ++i)
 		if (decoder_plugins_enabled[i] && f(*decoder_plugins[i]))
