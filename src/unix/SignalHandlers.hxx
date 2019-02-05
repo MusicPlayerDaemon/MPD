@@ -28,4 +28,15 @@ SignalHandlersInit(EventLoop &loop);
 void
 SignalHandlersFinish() noexcept;
 
+class ScopeSignalHandlersInit {
+public:
+	ScopeSignalHandlersInit(EventLoop &loop) {
+		SignalHandlersInit(loop);
+	}
+
+	~ScopeSignalHandlersInit() noexcept {
+		SignalHandlersFinish();
+	}
+};
+
 #endif

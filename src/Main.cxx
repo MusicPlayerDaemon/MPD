@@ -564,7 +564,7 @@ mpd_main_after_fork(const ConfigData &raw_config, const Config &config)
 #ifndef ANDROID
 	setup_log_output();
 
-	SignalHandlersInit(instance->event_loop);
+	const ScopeSignalHandlersInit signal_handlers_init(instance->event_loop);
 #endif
 
 	instance->io_thread.Start();
@@ -676,9 +676,6 @@ mpd_main_after_fork(const ConfigData &raw_config, const Config &config)
 #endif
 	instance->rtio_thread.Stop();
 	instance->io_thread.Stop();
-#ifndef ANDROID
-	SignalHandlersFinish();
-#endif
 
 	return EXIT_SUCCESS;
 }
