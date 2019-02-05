@@ -517,6 +517,7 @@ static int
 mpd_main_after_fork(const ConfigData &raw_config, const Config &config)
 {
 	ConfigureFS(raw_config);
+	AtScopeExit() { DeinitFS(); };
 
 	glue_mapper_init(raw_config);
 
@@ -654,8 +655,6 @@ mpd_main_after_fork(const ConfigData &raw_config, const Config &config)
 #endif
 
 	playlist_list_global_finish();
-
-	DeinitFS();
 
 	return EXIT_SUCCESS;
 }
