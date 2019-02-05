@@ -26,6 +26,6 @@ void
 SignalHandlersInit(EventLoop &loop);
 
 void
-SignalHandlersFinish();
+SignalHandlersFinish() noexcept;
 
 #endif

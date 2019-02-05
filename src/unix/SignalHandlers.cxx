@@ -33,7 +33,7 @@
 static constexpr Domain signal_handlers_domain("signal_handlers");
 
 static void
-HandleShutdownSignal(void *ctx)
+HandleShutdownSignal(void *ctx) noexcept
 {
 	auto &loop = *(EventLoop *)ctx;
 	loop.Break();
@@ -47,7 +47,7 @@ x_sigaction(int signum, const struct sigaction *act)
 }
 
 static void
-handle_reload_event(void *)
+handle_reload_event(void *) noexcept
 {
 	LogDebug(signal_handlers_domain, "got SIGHUP, reopening log files");
 	cycle_log_files();
@@ -76,7 +76,7 @@ SignalHandlersInit(EventLoop &loop)
 }
 
 void
-SignalHandlersFinish()
+SignalHandlersFinish() noexcept
 {
 	SignalMonitorFinish();
 }
