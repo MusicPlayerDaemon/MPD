@@ -429,6 +429,23 @@
 {
    <insert_a_suppression_name_here>
    Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:*alloc
+   ...
+   fun:g_type_register_static
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   fun:*alloc
+   ...
+   fun:gobject_init_ctor
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
    fun:*alloc
    ...
    fun:intern_header_name
@@ -482,6 +499,19 @@
    fun:expand_dynamic_string_token
    ...
    fun:do_preload
+}
+
+#
+# libgcrypt
+#
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:*alloc
+   ...
+   fun:_gcry_mpi_init
 }
 
 #
@@ -547,6 +577,14 @@
    ...
    fun:smbc_setDebug
    fun:smbc_init
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   fun:*alloc
+   ...
+   fun:SMBC_module_init
 }
 
 #
