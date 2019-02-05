@@ -285,11 +285,6 @@ command_init()
 #endif
 }
 
-void
-command_finish()
-{
-}
-
 static const struct command *
 command_lookup(const char *name)
 {

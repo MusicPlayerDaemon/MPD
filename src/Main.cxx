@@ -668,7 +668,6 @@ mpd_main_after_fork(const ConfigData &raw_config, const Config &config)
 	DeinitFS();
 
 	instance->FinishShutdownPartitions();
-	command_finish();
 
 	return EXIT_SUCCESS;
 }
