@@ -47,6 +47,17 @@ playlist_list_global_init(const ConfigData &config);
 void
 playlist_list_global_finish() noexcept;
 
+class ScopePlaylistPluginsInit {
+public:
+	explicit ScopePlaylistPluginsInit(const ConfigData &config) {
+		playlist_list_global_init(config);
+	}
+
+	~ScopePlaylistPluginsInit() noexcept {
+		playlist_list_global_finish();
+	}
+};
+
 /**
  * Opens a playlist by its URI.
  */

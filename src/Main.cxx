@@ -550,7 +550,7 @@ mpd_main_after_fork(const ConfigData &raw_config, const Config &config)
 	client_manager_init(raw_config);
 	const ScopeInputPluginsInit input_plugins_init(raw_config,
 						       instance->io_thread.GetEventLoop());
-	playlist_list_global_init(raw_config);
+	const ScopePlaylistPluginsInit playlist_plugins_init(raw_config);
 
 #ifdef ENABLE_DAEMON
 	daemonize_commit();
@@ -653,8 +653,6 @@ mpd_main_after_fork(const ConfigData &raw_config, const Config &config)
 #ifdef ENABLE_SQLITE
 	sticker_global_finish();
 #endif
-
-	playlist_list_global_finish();
 
 	return EXIT_SUCCESS;
 }

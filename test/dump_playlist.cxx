@@ -65,7 +65,7 @@ try {
 	io_thread.Start();
 
 	const ScopeInputPluginsInit input_plugins_init(config, io_thread.GetEventLoop());
-	playlist_list_global_init(config);
+	const ScopePlaylistPluginsInit playlist_plugins_init(config);
 	const ScopeDecoderPluginsInit decoder_plugins_init(config);
 
 	/* open the playlist */
@@ -115,8 +115,6 @@ try {
 
 	playlist.reset();
 	is.reset();
-
-	playlist_list_global_finish();
 
 	return EXIT_SUCCESS;
 } catch (...) {
