@@ -58,11 +58,6 @@ mapper_init(AllocatedPath &&_playlist_dir)
 		mapper_set_playlist_dir(std::move(_playlist_dir));
 }
 
-void
-mapper_finish() noexcept
-{
-}
-
 #ifdef ENABLE_DATABASE
 
 AllocatedPath

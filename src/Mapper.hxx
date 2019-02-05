@@ -37,9 +37,6 @@ class AllocatedPath;
 void
 mapper_init(AllocatedPath &&playlist_dir);
 
-void
-mapper_finish() noexcept;
-
 #ifdef ENABLE_DATABASE
 
 /**

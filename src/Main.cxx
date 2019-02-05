@@ -655,10 +655,6 @@ mpd_main_after_fork(const ConfigData &raw_config, const Config &config)
 
 	playlist_list_global_finish();
 
-#ifdef ENABLE_DATABASE
-	mapper_finish();
-#endif
-
 	DeinitFS();
 
 	return EXIT_SUCCESS;
