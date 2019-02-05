@@ -381,12 +381,6 @@ Instance::BeginShutdownPartitions() noexcept
 	}
 }
 
-inline void
-Instance::FinishShutdownPartitions() noexcept
-{
-	partitions.clear();
-}
-
 void
 Instance::OnIdle(unsigned flags)
 {
@@ -666,8 +660,6 @@ mpd_main_after_fork(const ConfigData &raw_config, const Config &config)
 #endif
 
 	DeinitFS();
-
-	instance->FinishShutdownPartitions();
 
 	return EXIT_SUCCESS;
 }

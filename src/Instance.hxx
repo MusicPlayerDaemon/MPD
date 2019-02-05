@@ -147,7 +147,6 @@ struct Instance final
 	Partition *FindPartition(const char *name) noexcept;
 
 	void BeginShutdownPartitions() noexcept;
-	void FinishShutdownPartitions() noexcept;
 
 #ifdef ENABLE_DATABASE
 	/**
