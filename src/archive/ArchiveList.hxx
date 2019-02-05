@@ -33,10 +33,10 @@ extern const ArchivePlugin *const archive_plugins[];
 /* interface for using plugins */
 
 const ArchivePlugin *
-archive_plugin_from_suffix(const char *suffix);
+archive_plugin_from_suffix(const char *suffix) noexcept;
 
 const ArchivePlugin *
-archive_plugin_from_name(const char *name);
+archive_plugin_from_name(const char *name) noexcept;
 
 /* this is where we "load" all the "plugins" ;-) */
 void
@@ -44,6 +44,6 @@ archive_plugin_init_all();
 
 /* this is where we "unload" all the "plugins" */
 void
-archive_plugin_deinit_all();
+archive_plugin_deinit_all() noexcept;
 
 #endif

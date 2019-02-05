@@ -49,7 +49,7 @@ static bool archive_plugins_enabled[ARRAY_SIZE(archive_plugins) - 1];
 		if (archive_plugins_enabled[archive_plugin_iterator - archive_plugins])
 
 const ArchivePlugin *
-archive_plugin_from_suffix(const char *suffix)
+archive_plugin_from_suffix(const char *suffix) noexcept
 {
 	if (suffix == nullptr)
 		return nullptr;
@@ -63,7 +63,7 @@ archive_plugin_from_suffix(const char *suffix)
 }
 
 const ArchivePlugin *
-archive_plugin_from_name(const char *name)
+archive_plugin_from_name(const char *name) noexcept
 {
 	archive_plugins_for_each_enabled(plugin)
 		if (strcmp(plugin->name, name) == 0)
@@ -81,7 +81,8 @@ void archive_plugin_init_all(void)
 	}
 }
 
-void archive_plugin_deinit_all(void)
+void
+archive_plugin_deinit_all() noexcept
 {
 	archive_plugins_for_each_enabled(plugin)
 		if (plugin->finish != nullptr)
