@@ -672,9 +672,6 @@ mpd_main_after_fork(const ConfigData &raw_config, const Config &config)
 	command_finish();
 	decoder_plugin_deinit_all();
 
-	instance->rtio_thread.Stop();
-	instance->io_thread.Stop();
-
 	return EXIT_SUCCESS;
 }
 
