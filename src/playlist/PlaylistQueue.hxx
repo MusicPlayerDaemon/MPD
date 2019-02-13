@@ -49,7 +49,7 @@ playlist_load_into_queue(const char *uri, SongEnumerator &e,
  * play queue.
  */
 void
-playlist_open_into_queue(const char *uri,
+playlist_open_into_queue(const LocatedUri &uri,
 			 unsigned start_index, unsigned end_index,
 			 playlist &dest, PlayerControl &pc,
 			 const SongLoader &loader);
