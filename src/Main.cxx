@@ -352,14 +352,6 @@ Instance::BeginShutdownUpdate() noexcept
 }
 
 inline void
-Instance::FinishShutdownUpdate() noexcept
-{
-#ifdef ENABLE_DATABASE
-	delete update;
-#endif
-}
-
-inline void
 Instance::BeginShutdownPartitions() noexcept
 {
 	for (auto &partition : partitions) {
@@ -633,8 +625,6 @@ mpd_main_after_fork(const ConfigData &raw_config, const Config &config)
 		delete instance->neighbors;
 	}
 #endif
-
-	instance->FinishShutdownUpdate();
 
 #ifdef ENABLE_SQLITE
 	sticker_global_finish();

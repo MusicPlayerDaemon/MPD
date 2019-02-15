@@ -167,7 +167,6 @@ struct Instance final
 #endif
 
 	void BeginShutdownUpdate() noexcept;
-	void FinishShutdownUpdate() noexcept;
 
 #ifdef ENABLE_CURL
 	void LookupRemoteTag(const char *uri) noexcept;

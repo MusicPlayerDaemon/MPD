@@ -31,6 +31,7 @@
 #ifdef ENABLE_DATABASE
 #include "db/DatabaseError.hxx"
 #include "db/Interface.hxx"
+#include "db/update/Service.hxx"
 #include "storage/StorageInterface.hxx"
 
 #ifdef ENABLE_SQLITE
@@ -53,6 +54,8 @@ Instance::Instance()
 Instance::~Instance() noexcept
 {
 #ifdef ENABLE_DATABASE
+	delete update;
+
 	if (database != nullptr) {
 		database->Close();
 		delete database;
