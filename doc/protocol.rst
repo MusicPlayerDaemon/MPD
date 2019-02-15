@@ -909,7 +909,7 @@ The music database
 
 .. _command_lsinfo:
 
-:command:`lsinfo {URI}`
+:command:`lsinfo [URI]`
     Lists the contents of the directory
     ``URI``.  The response contains records
     starting with ``file``,
@@ -1131,7 +1131,7 @@ Connection settings
     ``tagtypes`` sub commands configure this
     list.
 
-:command:`tagtypes disable {NAME...]`
+:command:`tagtypes disable {NAME...}`
     Remove one or more tags from the list of tag types the
     client is interested in.  These will be omitted from
     responses to this client.
