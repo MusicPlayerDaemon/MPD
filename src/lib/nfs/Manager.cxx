@@ -73,7 +73,7 @@ NfsManager::Compare::operator()(const ManagedConnection &a,
 
 NfsManager::~NfsManager() noexcept
 {
-	assert(GetEventLoop().IsInside());
+	assert(!GetEventLoop().IsAlive() || GetEventLoop().IsInside());
 
 	CollectGarbage();
 
@@ -103,7 +103,7 @@ NfsManager::GetConnection(const char *server, const char *export_name) noexcept
 void
 NfsManager::CollectGarbage() noexcept
 {
-	assert(GetEventLoop().IsInside());
+	assert(!GetEventLoop().IsAlive() || GetEventLoop().IsInside());
 
 	garbage.clear_and_dispose(DeleteDisposer());
 }

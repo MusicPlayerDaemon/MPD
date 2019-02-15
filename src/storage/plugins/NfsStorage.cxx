@@ -192,7 +192,7 @@ private:
 	}
 
 	void Disconnect() noexcept {
-		assert(GetEventLoop().IsInside());
+		assert(!GetEventLoop().IsAlive() || GetEventLoop().IsInside());
 
 		switch (state) {
 		case State::INITIAL:
