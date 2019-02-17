@@ -24,6 +24,9 @@
 #include "mixer/MixerInternal.hxx"
 #include "mixer/Listener.hxx"
 #include "output/plugins/PulseOutputPlugin.hxx"
+#include "util/NumberParser.hxx"
+#include "util/RuntimeError.hxx"
+#include "config/Block.hxx"
 
 #include <pulse/context.h>
 #include <pulse/introspect.h>
@@ -39,11 +42,14 @@ class PulseMixer final : public Mixer {
 
 	bool online;
 	struct pa_cvolume volume;
+	float volume_scale_factor;
 
 public:
-	PulseMixer(PulseOutput &_output, MixerListener &_listener)
+	PulseMixer(PulseOutput &_output, MixerListener &_listener,
+		   double _volume_scale_factor)
 		:Mixer(pulse_mixer_plugin, _listener),
-		 output(_output), online(false)
+		 output(_output), online(false),
+		 volume_scale_factor(_volume_scale_factor)
 	{
 	}
 
@@ -159,13 +165,30 @@ pulse_mixer_on_change(PulseMixer &pm,
 	pm.Update(context, stream);
 }
 
+static float
+parse_volume_scale_factor(const char *value) {
+	if (value == nullptr)
+		return 1.0;
+
+	char *endptr;
+	float factor = ParseFloat(value, &endptr);
+
+	if (*endptr != '\0' || factor < 0.5 || factor > 5.0)
+		throw FormatRuntimeError("scale \"%s\" is not a number in the "
+					 "range 0.5 to 5.0",
+					 value);
+
+	return factor;
+}
+
 static Mixer *
 pulse_mixer_init(gcc_unused EventLoop &event_loop, AudioOutput &ao,
 		 MixerListener &listener,
-		 gcc_unused const ConfigBlock &block)
+		 const ConfigBlock &block)
 {
 	PulseOutput &po = (PulseOutput &)ao;
-	PulseMixer *pm = new PulseMixer(po, listener);
+	float scale = parse_volume_scale_factor(block.GetBlockValue("scale"));
+	PulseMixer *pm = new PulseMixer(po, listener, scale);
 
 	pulse_output_set_mixer(po, *pm);
 
@@ -191,8 +214,9 @@ PulseMixer::GetVolume()
 int
 PulseMixer::GetVolumeInternal()
 {
+	pa_volume_t max_pa_volume = volume_scale_factor * PA_VOLUME_NORM;
 	return online ?
-		(int)((100 * (pa_cvolume_avg(&volume) + 1)) / PA_VOLUME_NORM)
+		(int)((100 * (pa_cvolume_avg(&volume) + 1)) / max_pa_volume)
 		: -1;
 }
 
@@ -204,9 +228,11 @@ PulseMixer::SetVolume(unsigned new_volume)
 	if (!online)
 		throw std::runtime_error("disconnected");
 
+	pa_volume_t max_pa_volume = volume_scale_factor * PA_VOLUME_NORM;
+
 	struct pa_cvolume cvolume;
 	pa_cvolume_set(&cvolume, volume.channels,
-		       (new_volume * PA_VOLUME_NORM + 50) / 100);
+		       (new_volume * max_pa_volume + 50) / 100);
 	pulse_output_set_volume(output, &cvolume);
 	volume = cvolume;
 }
