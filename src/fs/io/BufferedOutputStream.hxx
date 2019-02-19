@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2018 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2014-2019 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -87,5 +87,14 @@ private:
 	void WriteWideToUTF8(const wchar_t *p, size_t length);
 #endif
 };
+
+template<typename F>
+void
+WithBufferedOutputStream(OutputStream &os, F &&f)
+{
+	BufferedOutputStream bos(os);
+	f(bos);
+	bos.Flush();
+}
 
 #endif
