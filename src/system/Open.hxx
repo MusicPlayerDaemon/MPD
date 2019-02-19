@@ -39,7 +39,6 @@ OpenReadOnly(const char *path);
 UniqueFileDescriptor
 OpenWriteOnly(const char *path, int flags=0);
 
-
 #ifndef _WIN32
 
 UniqueFileDescriptor

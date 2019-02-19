@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2018 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2014-2019 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -27,8 +27,8 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MPD_OUTPUT_STREAM_HXX
-#define MPD_OUTPUT_STREAM_HXX
+#ifndef OUTPUT_STREAM_HXX
+#define OUTPUT_STREAM_HXX
 
 #include <stddef.h>
 
