@@ -32,9 +32,7 @@
 
 #include "UniqueFileDescriptor.hxx"
 
-#include <assert.h>
 #include <sys/epoll.h>
-#include <unistd.h>
 #include <stdint.h>
 
 struct epoll_event;
