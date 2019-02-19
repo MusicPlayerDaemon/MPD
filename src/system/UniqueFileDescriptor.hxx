@@ -60,7 +60,8 @@ public:
 	}
 
 	UniqueFileDescriptor &operator=(UniqueFileDescriptor &&other) noexcept {
-		std::swap(fd, other.fd);
+		using std::swap;
+		swap(fd, other.fd);
 		return *this;
 	}
 
