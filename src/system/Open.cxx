@@ -43,6 +43,30 @@ OpenReadOnly(const char *path)
 	return fd;
 }
 
+UniqueFileDescriptor
+OpenWriteOnly(const char *path, int flags)
+{
+	UniqueFileDescriptor fd;
+	if (!fd.Open(path, O_WRONLY|flags))
+		throw FormatErrno("Failed to open '%s'", path);
+
+	return fd;
+}
+
+#ifndef _WIN32
+
+UniqueFileDescriptor
+OpenDirectory(const char *path, int flags)
+{
+	UniqueFileDescriptor fd;
+	if (!fd.Open(path, O_DIRECTORY|O_RDONLY|flags))
+		throw FormatErrno("Failed to open '%s'", path);
+
+	return fd;
+}
+
+#endif
+
 #ifdef __linux__
 
 UniqueFileDescriptor
@@ -70,6 +94,16 @@ OpenReadOnly(FileDescriptor directory, const char *name, int flags)
 {
 	UniqueFileDescriptor fd;
 	if (!fd.Open(directory, name, O_RDONLY|flags))
+		throw FormatErrno("Failed to open '%s'", name);
+
+	return fd;
+}
+
+UniqueFileDescriptor
+OpenWriteOnly(FileDescriptor directory, const char *name, int flags)
+{
+	UniqueFileDescriptor fd;
+	if (!fd.Open(directory, name, O_WRONLY|flags))
 		throw FormatErrno("Failed to open '%s'", name);
 
 	return fd;
