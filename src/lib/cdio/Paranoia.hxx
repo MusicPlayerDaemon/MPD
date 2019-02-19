@@ -82,6 +82,14 @@ public:
 			throw std::runtime_error("Failed to open disc");
 	}
 
+	auto GetDiscSectorRange() const {
+		auto first = cdio_cddap_disc_firstsector(drv);
+		auto last = cdio_cddap_disc_lastsector(drv);
+		if (first < 0 || last < 0)
+			throw std::runtime_error("Failed to get disc audio sectors");
+		return std::make_pair(first, last);
+	}
+
 	gcc_pure
 	bool IsAudioTrack(track_t i) const noexcept {
 		return cdio_cddap_track_audiop(drv, i);
