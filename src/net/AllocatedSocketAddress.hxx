@@ -147,6 +147,14 @@ public:
 	StringView GetLocalRaw() const noexcept;
 
 	/**
+	 * @see SocketAddress::GetLocalPath()
+	 */
+	gcc_pure
+	const char *GetLocalPath() const noexcept {
+		return ((SocketAddress)*this).GetLocalPath();
+	}
+
+	/**
 	 * Make this a "local" address (UNIX domain socket).  If the path
 	 * begins with a '@', then the rest specifies an "abstract" local
 	 * address.

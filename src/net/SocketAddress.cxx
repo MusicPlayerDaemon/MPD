@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2017 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2012-2019 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -71,6 +71,21 @@ SocketAddress::GetLocalRaw() const noexcept
 		return nullptr;
 
 	return {path, size - header_size};
+}
+
+const char *
+SocketAddress::GetLocalPath() const noexcept
+{
+	const auto raw = GetLocalRaw();
+	return !raw.empty() &&
+		/* must be an absolute path */
+		raw.front() == '/' &&
+		/* must be null-terminated */
+		raw.back() == 0 &&
+		/* there must not be any other null byte */
+		memchr(raw.data, 0, raw.size - 1) == nullptr
+		? raw.data
+		: nullptr;
 }
 
 #endif
