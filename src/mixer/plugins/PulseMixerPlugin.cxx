@@ -42,7 +42,7 @@ class PulseMixer final : public Mixer {
 
 	bool online = false;
 	struct pa_cvolume volume;
-	float volume_scale_factor;
+	const float volume_scale_factor;
 
 public:
 	PulseMixer(PulseOutput &_output, MixerListener &_listener,
