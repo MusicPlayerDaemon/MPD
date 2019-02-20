@@ -40,7 +40,7 @@
 class PulseMixer final : public Mixer {
 	PulseOutput &output;
 
-	bool online;
+	bool online = false;
 	struct pa_cvolume volume;
 	float volume_scale_factor;
 
@@ -48,7 +48,7 @@ public:
 	PulseMixer(PulseOutput &_output, MixerListener &_listener,
 		   double _volume_scale_factor)
 		:Mixer(pulse_mixer_plugin, _listener),
-		 output(_output), online(false),
+		 output(_output),
 		 volume_scale_factor(_volume_scale_factor)
 	{
 	}
