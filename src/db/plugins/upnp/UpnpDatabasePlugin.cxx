@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2018 The Music Player Daemon Project
+ * Copyright 2003-2019 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -82,10 +82,10 @@ public:
 		:Database(upnp_db_plugin),
 		 event_loop(_event_loop) {}
 
-	static Database *Create(EventLoop &main_event_loop,
-				EventLoop &io_event_loop,
-				DatabaseListener &listener,
-				const ConfigBlock &block) noexcept;
+	static DatabasePtr Create(EventLoop &main_event_loop,
+				  EventLoop &io_event_loop,
+				  DatabaseListener &listener,
+				  const ConfigBlock &block) noexcept;
 
 	void Open() override;
 	void Close() noexcept override;
@@ -146,12 +146,12 @@ private:
 			      const UPnPDirObject& dirent) const;
 };
 
-Database *
+DatabasePtr
 UpnpDatabase::Create(EventLoop &, EventLoop &io_event_loop,
 		     gcc_unused DatabaseListener &listener,
 		     const ConfigBlock &) noexcept
 {
-	return new UpnpDatabase(io_event_loop);
+	return std::make_unique<UpnpDatabase>(io_event_loop);
 }
 
 void

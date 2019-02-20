@@ -17,26 +17,13 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_DATABASE_GLUE_HXX
-#define MPD_DATABASE_GLUE_HXX
+#ifndef MPD_DATABASE_PTR_HXX
+#define MPD_DATABASE_PTR_HXX
 
-#include "Ptr.hxx"
+#include <memory>
 
-struct ConfigBlock;
-class EventLoop;
-class DatabaseListener;
+class Database;
 
-/**
- * Initialize the database library.
- *
- * Throws #std::runtime_error on error.
- *
- * @param block the database configuration block
- */
-DatabasePtr
-DatabaseGlobalInit(EventLoop &main_event_loop,
-		   EventLoop &io_event_loop,
-		   DatabaseListener &listener,
-		   const ConfigBlock &block);
+typedef std::unique_ptr<Database> DatabasePtr;
 
 #endif

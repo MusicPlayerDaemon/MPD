@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2018 The Music Player Daemon Project
+ * Copyright 2003-2019 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -21,6 +21,7 @@
 #define MPD_SIMPLE_DATABASE_PLUGIN_HXX
 
 #include "db/Interface.hxx"
+#include "db/Ptr.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "song/LightSong.hxx"
 #include "util/Manual.hxx"
@@ -68,15 +69,14 @@ class SimpleDatabase : public Database {
 	mutable unsigned borrowed_song_count;
 #endif
 
+public:
 	SimpleDatabase(const ConfigBlock &block);
-
 	SimpleDatabase(AllocatedPath &&_path, bool _compress) noexcept;
 
-public:
-	static Database *Create(EventLoop &main_event_loop,
-				EventLoop &io_event_loop,
-				DatabaseListener &listener,
-				const ConfigBlock &block);
+	static DatabasePtr Create(EventLoop &main_event_loop,
+				  EventLoop &io_event_loop,
+				  DatabaseListener &listener,
+				  const ConfigBlock &block);
 
 	gcc_pure
 	Directory &GetRoot() noexcept {
@@ -99,7 +99,7 @@ public:
 	 * success, this object gains ownership of the given #Database
 	 */
 	gcc_nonnull_all
-	void Mount(const char *uri, Database *db);
+	void Mount(const char *uri, DatabasePtr db);
 
 	/**
 	 * Throws #std::runtime_error on error.
@@ -142,7 +142,7 @@ private:
 	 */
 	void Load();
 
-	Database *LockUmountSteal(const char *uri) noexcept;
+	DatabasePtr LockUmountSteal(const char *uri) noexcept;
 };
 
 extern const DatabasePlugin simple_db_plugin;

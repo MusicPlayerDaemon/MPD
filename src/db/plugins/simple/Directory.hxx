@@ -23,6 +23,7 @@
 #include "util/Compiler.h"
 #include "db/Visitor.hxx"
 #include "db/PlaylistVector.hxx"
+#include "db/Ptr.hxx"
 #include "Song.hxx"
 
 #include <boost/intrusive/list.hpp>
@@ -43,7 +44,6 @@ static constexpr unsigned DEVICE_INARCHIVE = -1;
 static constexpr unsigned DEVICE_CONTAINER = -2;
 
 class SongFilter;
-class Database;
 
 struct Directory {
 	static constexpr auto link_mode = boost::intrusive::normal_link;
@@ -96,7 +96,7 @@ struct Directory {
 	 * If this is not nullptr, then this directory does not really
 	 * exist, but is a mount point for another #Database.
 	 */
-	Database *mounted_database = nullptr;
+	DatabasePtr mounted_database;
 
 public:
 	Directory(std::string &&_path_utf8, Directory *_parent) noexcept;

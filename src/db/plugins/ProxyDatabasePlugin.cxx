@@ -112,10 +112,10 @@ public:
 	ProxyDatabase(EventLoop &_loop, DatabaseListener &_listener,
 		      const ConfigBlock &block);
 
-	static Database *Create(EventLoop &main_event_loop,
-				EventLoop &io_event_loop,
-				DatabaseListener &listener,
-				const ConfigBlock &block);
+	static DatabasePtr Create(EventLoop &main_event_loop,
+				  EventLoop &io_event_loop,
+				  DatabaseListener &listener,
+				  const ConfigBlock &block);
 
 	void Open() override;
 	void Close() noexcept override;
@@ -440,12 +440,12 @@ ProxyDatabase::ProxyDatabase(EventLoop &_loop, DatabaseListener &_listener,
 {
 }
 
-Database *
+DatabasePtr
 ProxyDatabase::Create(EventLoop &loop, EventLoop &,
 		      DatabaseListener &listener,
 		      const ConfigBlock &block)
 {
-	return new ProxyDatabase(loop, listener, block);
+	return std::make_unique<ProxyDatabase>(loop, listener, block);
 }
 
 void

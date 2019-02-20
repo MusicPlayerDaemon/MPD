@@ -94,7 +94,7 @@ UpdateService::CancelMount(const char *uri)
 		cancel_current = next.IsDefined() && next.storage == storage2;
 	}
 
-	if (auto *db2 = dynamic_cast<SimpleDatabase *>(lr.directory->mounted_database)) {
+	if (auto *db2 = dynamic_cast<SimpleDatabase *>(lr.directory->mounted_database.get())) {
 		queue.Erase(*db2);
 		cancel_current |= next.IsDefined() && next.db == db2;
 	}
@@ -188,7 +188,7 @@ UpdateService::Enqueue(const char *path, bool discard)
 		/* follow the mountpoint, update the mounted
 		   database */
 
-		db2 = dynamic_cast<SimpleDatabase *>(lr.directory->mounted_database);
+		db2 = dynamic_cast<SimpleDatabase *>(lr.directory->mounted_database.get());
 		if (db2 == nullptr)
 			throw std::runtime_error("Cannot update this type of database");
 

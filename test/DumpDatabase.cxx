@@ -133,15 +133,13 @@ try {
 	if (path != nullptr)
 		block.AddBlockParam("path", path->value, path->line);
 
-	Database *db = plugin->create(init.GetEventLoop(),
-				      init.GetEventLoop(),
-				      database_listener, block);
-
-	AtScopeExit(db) { delete db; };
+	auto db = plugin->create(init.GetEventLoop(),
+				 init.GetEventLoop(),
+				 database_listener, block);
 
 	db->Open();
 
-	AtScopeExit(db) { db->Close(); };
+	AtScopeExit(&db) { db->Close(); };
 
 	const DatabaseSelection selection("", true);
 

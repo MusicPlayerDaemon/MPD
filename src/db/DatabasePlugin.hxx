@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2018 The Music Player Daemon Project
+ * Copyright 2003-2019 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -26,10 +26,11 @@
 #ifndef MPD_DATABASE_PLUGIN_HXX
 #define MPD_DATABASE_PLUGIN_HXX
 
+#include "Ptr.hxx"
+
 struct ConfigBlock;
 class EventLoop;
 class DatabaseListener;
-class Database;
 
 struct DatabasePlugin {
 	/**
@@ -52,10 +53,10 @@ struct DatabasePlugin {
 	 * @param io_event_loop the #EventLoop running on the
 	 * #EventThread, i.e. the one used for background I/O
 	 */
-	Database *(*create)(EventLoop &main_event_loop,
-			    EventLoop &io_event_loop,
-			    DatabaseListener &listener,
-			    const ConfigBlock &block);
+	DatabasePtr (*create)(EventLoop &main_event_loop,
+			      EventLoop &io_event_loop,
+			      DatabaseListener &listener,
+			      const ConfigBlock &block);
 
 	constexpr bool RequireStorage() const {
 		return flags & FLAG_REQUIRE_STORAGE;

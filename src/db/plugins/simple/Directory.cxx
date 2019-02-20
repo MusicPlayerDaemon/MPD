@@ -45,8 +45,6 @@ Directory::Directory(std::string &&_path_utf8, Directory *_parent) noexcept
 
 Directory::~Directory() noexcept
 {
-	delete mounted_database;
-
 	songs.clear_and_dispose(Song::Disposer());
 	children.clear_and_dispose(DeleteDisposer());
 }
