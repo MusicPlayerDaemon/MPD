@@ -185,18 +185,16 @@ InitStorage(const ConfigData &config, EventLoop &event_loop)
 static bool
 glue_db_init_and_load(const ConfigData &config)
 {
-	instance->database =
-		CreateConfiguredDatabase(config, instance->event_loop,
-					 instance->io_thread.GetEventLoop(),
-					 *instance);
-	if (instance->database == nullptr)
+	auto db = CreateConfiguredDatabase(config, instance->event_loop,
+					   instance->io_thread.GetEventLoop(),
+					   *instance);
+	if (!db)
 		return true;
 
-	if (instance->database->GetPlugin().RequireStorage()) {
+	if (db->GetPlugin().RequireStorage()) {
 		InitStorage(config, instance->io_thread.GetEventLoop());
 
 		if (instance->storage == nullptr) {
-			instance->database.reset();
 			LogDefault(config_domain,
 				   "Found database setting without "
 				   "music_directory - disabling database");
@@ -210,22 +208,24 @@ glue_db_init_and_load(const ConfigData &config)
 	}
 
 	try {
-		instance->database->Open();
+		db->Open();
 	} catch (...) {
 		std::throw_with_nested(std::runtime_error("Failed to open database plugin"));
 	}
 
-	auto *db = dynamic_cast<SimpleDatabase *>(instance->database.get());
-	if (db == nullptr)
+	instance->database = std::move(db);
+
+	auto *sdb = dynamic_cast<SimpleDatabase *>(instance->database.get());
+	if (sdb == nullptr)
 		return true;
 
 	instance->update = new UpdateService(config,
-					     instance->event_loop, *db,
+					     instance->event_loop, *sdb,
 					     static_cast<CompositeStorage &>(*instance->storage),
 					     *instance);
 
 	/* run database update after daemonization? */
-	return db->FileExists();
+	return sdb->FileExists();
 }
 
 static bool
