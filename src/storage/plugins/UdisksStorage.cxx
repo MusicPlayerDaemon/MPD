@@ -156,16 +156,27 @@ UdisksStorage::OnListReply(ODBus::Message reply) noexcept
 	using namespace UDisks2;
 
 	try {
-		ParseObjects(reply, [this](Object &&o) {
+		std::string mount_point;
+
+		ParseObjects(reply, [this, &mount_point](Object &&o) {
 			if (!o.IsId(id))
 				return;
 
 			dbus_path = std::move(o.path);
+			mount_point = std::move(o.mount_point);
 		});
 
 		if (dbus_path.empty())
 			throw FormatRuntimeError("No such UDisks2 object: %s",
 						 id.c_str());
+
+		if (!mount_point.empty()) {
+			/* already mounted: don't attempt to mount
+			   again, because this would result in
+			   org.freedesktop.UDisks2.Error.AlreadyMounted */
+			LockSetMountPoint(mount_point.c_str());
+			return;
+		}
 	} catch (...) {
 		const std::lock_guard<Mutex> lock(mutex);
 		mount_error = std::current_exception();
