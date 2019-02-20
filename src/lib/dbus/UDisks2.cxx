@@ -22,6 +22,7 @@
 #include "ReadIter.hxx"
 #include "ObjectManager.hxx"
 #include "util/StringAPI.hxx"
+#include "util/StringView.hxx"
 #include "util/Compiler.h"
 
 #include <functional>
@@ -37,6 +38,40 @@ CheckString(I &&i) noexcept
 		return nullptr;
 
 	return i.GetString();
+}
+
+template<typename I>
+gcc_pure
+static StringView
+CheckRecursedByteArrayToString(I &&i) noexcept
+{
+	if (i.GetArgType() != DBUS_TYPE_BYTE)
+		return nullptr;
+
+	auto value = i.template GetFixedArray<char>();
+	return { value.data, value.size };
+}
+
+template<typename I>
+gcc_pure
+static StringView
+CheckByteArrayToString(I &&i) noexcept
+{
+	if (i.GetArgType() != DBUS_TYPE_ARRAY)
+		return nullptr;
+
+	return CheckRecursedByteArrayToString(i.Recurse());
+}
+
+template<typename I>
+gcc_pure
+static StringView
+CheckByteArrayArrayFrontToString(I &&i) noexcept
+{
+	if (i.GetArgType() != DBUS_TYPE_ARRAY)
+		return nullptr;
+
+	return CheckByteArrayToString(i.Recurse());
 }
 
 static void
@@ -62,6 +97,25 @@ ParseBlockDictEntry(Object &o, const char *name,
 }
 
 static void
+ParseFileesystemDictEntry(Object &o, const char *name,
+			  ODBus::ReadMessageIter &&value_i) noexcept
+{
+	if (StringIsEqual(name, "MountPoints")) {
+		if (!o.mount_point.empty())
+			/* we already know one mount point, and we're
+			   not interested in more */
+			return;
+
+		/* get the first string in the array */
+		auto value = CheckByteArrayArrayFrontToString(value_i);
+		if (value != nullptr)
+			o.mount_point = {value.data, value.size};
+
+		// TODO: check whether the string is a valid filesystem path
+	}
+}
+
+static void
 ParseInterface(Object &o, const char *interface,
 	       ODBus::ReadMessageIter &&i) noexcept
 {
@@ -74,6 +128,10 @@ ParseInterface(Object &o, const char *interface,
 					    std::ref(o), _1, _2));
 	} else if (StringIsEqual(interface, "org.freedesktop.UDisks2.Filesystem")) {
 		o.is_filesystem = true;
+
+		i.ForEachProperty(std::bind(ParseFileesystemDictEntry,
+					    std::ref(o), _1, _2));
+
 	}
 }
 

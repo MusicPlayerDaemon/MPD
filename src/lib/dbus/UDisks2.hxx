@@ -39,6 +39,13 @@ struct Object {
 
 	std::string drive_id, block_id;
 
+	/**
+	 * The first element of the "MountPoints" array of the
+	 * "Filesystem" interface.  Empty if no "MountPoints" property
+	 * exists.
+	 */
+	std::string mount_point;
+
 	bool is_filesystem = false;
 
 	explicit Object(const char *_path) noexcept
