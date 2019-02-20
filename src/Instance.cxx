@@ -58,7 +58,7 @@ Instance::~Instance() noexcept
 
 	if (database != nullptr) {
 		database->Close();
-		delete database;
+		database.reset();
 	}
 
 	delete storage;

@@ -188,7 +188,7 @@ glue_db_init_and_load(const ConfigData &config)
 	instance->database =
 		CreateConfiguredDatabase(config, instance->event_loop,
 					 instance->io_thread.GetEventLoop(),
-					 *instance).release();
+					 *instance);
 	if (instance->database == nullptr)
 		return true;
 
@@ -196,8 +196,7 @@ glue_db_init_and_load(const ConfigData &config)
 		InitStorage(config, instance->io_thread.GetEventLoop());
 
 		if (instance->storage == nullptr) {
-			delete instance->database;
-			instance->database = nullptr;
+			instance->database.reset();
 			LogDefault(config_domain,
 				   "Found database setting without "
 				   "music_directory - disabling database");
@@ -216,7 +215,7 @@ glue_db_init_and_load(const ConfigData &config)
 		std::throw_with_nested(std::runtime_error("Failed to open database plugin"));
 	}
 
-	auto *db = dynamic_cast<SimpleDatabase *>(instance->database);
+	auto *db = dynamic_cast<SimpleDatabase *>(instance->database.get());
 	if (db == nullptr)
 		return true;
 

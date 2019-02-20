@@ -209,7 +209,7 @@ handle_mount(Client &client, Request args, Response &r)
 	instance.EmitIdle(IDLE_MOUNT);
 
 #ifdef ENABLE_DATABASE
-	if (auto *db = dynamic_cast<SimpleDatabase *>(instance.database)) {
+	if (auto *db = dynamic_cast<SimpleDatabase *>(instance.GetDatabase())) {
 		try {
 			db->Mount(local_uri, remote_uri);
 		} catch (...) {
@@ -253,7 +253,7 @@ handle_unmount(Client &client, Request args, Response &r)
 		   destroy here */
 		instance.update->CancelMount(local_uri);
 
-	if (auto *db = dynamic_cast<SimpleDatabase *>(instance.database)) {
+	if (auto *db = dynamic_cast<SimpleDatabase *>(instance.GetDatabase())) {
 		if (db->Unmount(local_uri))
 			// TODO: call Instance::OnDatabaseModified()?
 			instance.EmitIdle(IDLE_DATABASE);

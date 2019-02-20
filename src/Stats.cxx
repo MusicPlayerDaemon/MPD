@@ -124,7 +124,7 @@ stats_print(Response &r, const Partition &partition)
 		 std::lround(partition.pc.GetTotalPlayTime().count()));
 
 #ifdef ENABLE_DATABASE
-	const Database *db = partition.instance.database;
+	const Database *db = partition.instance.GetDatabase();
 	if (db != nullptr)
 		db_stats_print(r, *db);
 #endif

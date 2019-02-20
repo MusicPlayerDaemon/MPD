@@ -106,7 +106,7 @@ storage_state_restore(const char *line, TextFile &file, Instance &instance)
 		return true;
 	}
 
-	if (auto *db = dynamic_cast<SimpleDatabase *>(instance.database)) {
+	if (auto *db = dynamic_cast<SimpleDatabase *>(instance.GetDatabase())) {
 		try {
 			db->Mount(uri.c_str(), url.c_str());
 		} catch (...) {

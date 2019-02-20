@@ -119,7 +119,7 @@ try {
 	TextFile file(config.path);
 
 #ifdef ENABLE_DATABASE
-	const SongLoader song_loader(partition.instance.database,
+	const SongLoader song_loader(partition.instance.GetDatabase(),
 				     partition.instance.storage);
 #else
 	const SongLoader song_loader(nullptr, nullptr);

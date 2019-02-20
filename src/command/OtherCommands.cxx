@@ -294,7 +294,7 @@ handle_update(Client &client, Request args, Response &r, bool discard)
 	if (update != nullptr)
 		return handle_update(r, *update, path, discard);
 
-	Database *db = client.GetInstance().database;
+	Database *db = client.GetInstance().GetDatabase();
 	if (db != nullptr)
 		return handle_update(r, *db, path, discard);
 #else
