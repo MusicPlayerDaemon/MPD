@@ -4,6 +4,7 @@ ver 0.21.5 (not yet released)
   - fix "tagtypes disable" command
 * database
   - simple: fix assertion failure
+  - fix assertion failures with mount points
 * input
   - buffer: fix crash bug when playing remote WAV file
 * tags

@@ -45,6 +45,11 @@ Directory::Directory(std::string &&_path_utf8, Directory *_parent) noexcept
 
 Directory::~Directory() noexcept
 {
+	if (mounted_database != nullptr) {
+		mounted_database->Close();
+		mounted_database.reset();
+	}
+
 	songs.clear_and_dispose(Song::Disposer());
 	children.clear_and_dispose(DeleteDisposer());
 }
