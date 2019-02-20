@@ -138,9 +138,11 @@ UdisksStorage::OnListReply(ODBus::Message reply) noexcept
 
 	try {
 		ParseObjects(reply, [this](Object &&o) {
-				if (o.IsId(id))
-					dbus_path = std::move(o.path);
-			});
+			if (!o.IsId(id))
+				return;
+
+			dbus_path = std::move(o.path);
+		});
 
 		if (dbus_path.empty())
 			throw FormatRuntimeError("No such UDisks2 object: %s",
