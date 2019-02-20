@@ -120,6 +120,9 @@ public:
 	const char *MapToRelativeUTF8(const char *uri_utf8) const noexcept override;
 
 private:
+	void SetMountPoint(const char *mount_point);
+	void LockSetMountPoint(const char *mount_point);
+
 	void OnListReply(ODBus::Message reply) noexcept;
 
 	void MountWait();
@@ -130,6 +133,22 @@ private:
 	void DeferredUnmount() noexcept;
 	void OnUnmountNotify(ODBus::Message reply) noexcept;
 };
+
+inline void
+UdisksStorage::SetMountPoint(const char *mount_point)
+{
+	mounted_storage = CreateLocalStorage(Path::FromFS(mount_point));
+	mount_error = {};
+	want_mount = false;
+	cond.broadcast();
+}
+
+void
+UdisksStorage::LockSetMountPoint(const char *mount_point)
+{
+	const std::lock_guard<Mutex> lock(mutex);
+	SetMountPoint(mount_point);
+}
 
 void
 UdisksStorage::OnListReply(ODBus::Message reply) noexcept
@@ -224,12 +243,7 @@ try {
 		throw std::runtime_error("Malformed 'Mount' response");
 
 	const char *mount_path = i.GetString();
-
-	const std::lock_guard<Mutex> lock(mutex);
-	mounted_storage = CreateLocalStorage(Path::FromFS(mount_path));
-	mount_error = {};
-	want_mount = false;
-	cond.broadcast();
+	LockSetMountPoint(mount_path);
 } catch (...) {
 	const std::lock_guard<Mutex> lock(mutex);
 	mount_error = std::current_exception();
