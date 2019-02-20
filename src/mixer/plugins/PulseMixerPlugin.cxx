@@ -174,7 +174,7 @@ parse_volume_scale_factor(const char *value) {
 	float factor = ParseFloat(value, &endptr);
 
 	if (*endptr != '\0' || factor < 0.5 || factor > 5.0)
-		throw FormatRuntimeError("scale \"%s\" is not a number in the "
+		throw FormatRuntimeError("\"%s\" is not a number in the "
 					 "range 0.5 to 5.0",
 					 value);
 
@@ -187,7 +187,7 @@ pulse_mixer_init(gcc_unused EventLoop &event_loop, AudioOutput &ao,
 		 const ConfigBlock &block)
 {
 	PulseOutput &po = (PulseOutput &)ao;
-	float scale = parse_volume_scale_factor(block.GetBlockValue("scale"));
+	float scale = parse_volume_scale_factor(block.GetBlockValue("scale_volume"));
 	PulseMixer *pm = new PulseMixer(po, listener, scale);
 
 	pulse_output_set_mixer(po, *pm);
