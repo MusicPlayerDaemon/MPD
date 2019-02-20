@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2018 The Music Player Daemon Project
+ * Copyright 2003-2019 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -99,18 +99,18 @@ struct Directory {
 	Database *mounted_database = nullptr;
 
 public:
-	Directory(std::string &&_path_utf8, Directory *_parent);
-	~Directory();
+	Directory(std::string &&_path_utf8, Directory *_parent) noexcept;
+	~Directory() noexcept;
 
 	/**
 	 * Create a new root #Directory object.
 	 */
 	gcc_malloc gcc_returns_nonnull
-	static Directory *NewRoot() {
+	static Directory *NewRoot() noexcept {
 		return new Directory(std::string(), nullptr);
 	}
 
-	bool IsMount() const {
+	bool IsMount() const noexcept {
 		return mounted_database != nullptr;
 	}
 
@@ -120,7 +120,7 @@ public:
 	 *
 	 * Caller must lock the #db_mutex.
 	 */
-	void Delete();
+	void Delete() noexcept;
 
 	/**
 	 * Create a new #Directory object as a child of the given one.
@@ -129,7 +129,7 @@ public:
 	 *
 	 * @param name_utf8 the UTF-8 encoded name of the new sub directory
 	 */
-	Directory *CreateChild(const char *name_utf8);
+	Directory *CreateChild(const char *name_utf8) noexcept;
 
 	/**
 	 * Caller must lock the #db_mutex.
@@ -149,7 +149,7 @@ public:
 	 *
 	 * Caller must lock the #db_mutex.
 	 */
-	Directory *MakeChild(const char *name_utf8) {
+	Directory *MakeChild(const char *name_utf8) noexcept {
 		Directory *child = FindChild(name_utf8);
 		if (child == nullptr)
 			child = CreateChild(name_utf8);
@@ -242,7 +242,7 @@ public:
 	 * Add a song object to this directory.  Its "parent" attribute must
 	 * be set already.
 	 */
-	void AddSong(Song *song);
+	void AddSong(Song *song) noexcept;
 
 	/**
 	 * Remove a song object from this directory (which effectively
