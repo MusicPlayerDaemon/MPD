@@ -251,7 +251,7 @@ void
 SimpleDatabase::ReturnSong(gcc_unused const LightSong *song) const noexcept
 {
 	assert(song != nullptr);
-	assert(song == &light_song.Get() || song == prefixed_light_song);
+	assert(song == prefixed_light_song || song == &light_song.Get());
 
 	if (prefixed_light_song != nullptr) {
 		delete prefixed_light_song;
