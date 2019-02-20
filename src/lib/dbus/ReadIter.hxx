@@ -35,6 +35,7 @@
 
 #include "Iter.hxx"
 #include "util/Compiler.h"
+#include "util/ConstBuffer.hxx"
 
 #if GCC_OLDER_THAN(8,0)
 /* switch off completely bogus shadow warnings in older GCC
@@ -79,6 +80,14 @@ public:
 		const char *value;
 		GetBasic(&value);
 		return value;
+	}
+
+	template<typename T>
+	ConstBuffer<T> GetFixedArray() noexcept {
+		void *value;
+		int n_elements;
+		dbus_message_iter_get_fixed_array(&iter, &value, &n_elements);
+		return {(const T *)value, size_t(n_elements)};
 	}
 
 	/**
