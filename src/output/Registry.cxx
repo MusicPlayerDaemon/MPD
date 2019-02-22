@@ -23,6 +23,7 @@
 #include "plugins/AlsaOutputPlugin.hxx"
 #include "plugins/AoOutputPlugin.hxx"
 #include "plugins/FifoOutputPlugin.hxx"
+#include "plugins/SockOutputPlugin.hxx"
 #include "plugins/SndioOutputPlugin.hxx"
 #include "plugins/httpd/HttpdOutputPlugin.hxx"
 #include "plugins/HaikuOutputPlugin.hxx"
@@ -51,6 +52,9 @@ const AudioOutputPlugin *const audio_output_plugins[] = {
 #endif
 #ifdef HAVE_FIFO
 	&fifo_output_plugin,
+#endif
+#ifdef HAVE_SOCK
+  &sock_output_plugin,
 #endif
 #ifdef ENABLE_SNDIO
 	&sndio_output_plugin,

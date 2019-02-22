@@ -26,6 +26,12 @@ if enable_fifo_output
   output_plugins_sources += 'FifoOutputPlugin.cxx'
 endif
 
+enable_sock_output = get_option('sock') and not is_windows
+conf.set('HAVE_SOCK', enable_sock_output)
+if enable_sock_output
+  output_plugins_sources += 'SockOutputPlugin.cxx'
+endif
+
 if is_haiku
   output_plugins_sources += 'HaikuOutputPlugin.cxx'
 endif
