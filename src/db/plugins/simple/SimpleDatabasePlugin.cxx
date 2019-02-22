@@ -60,8 +60,7 @@ inline SimpleDatabase::SimpleDatabase(const ConfigBlock &block)
 #ifdef ENABLE_ZLIB
 	 compress(block.GetBlockValue("compress", true)),
 #endif
-	 cache_path(block.GetPath("cache_directory")),
-	 prefixed_light_song(nullptr)
+	 cache_path(block.GetPath("cache_directory"))
 {
 	if (path.IsNull())
 		throw std::runtime_error("No \"path\" parameter specified");

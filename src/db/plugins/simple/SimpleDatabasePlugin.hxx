@@ -58,7 +58,7 @@ class SimpleDatabase : public Database {
 	 * A buffer for GetSong() when prefixing the #LightSong
 	 * instance from a mounted #Database.
 	 */
-	mutable PrefixedLightSong *prefixed_light_song;
+	mutable PrefixedLightSong *prefixed_light_song = nullptr;
 
 	/**
 	 * A buffer for GetSong().
