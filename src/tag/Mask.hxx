@@ -72,7 +72,7 @@ public:
 	}
 
 	TagMask &operator^=(TagMask other) {
-		value |= other.value;
+		value ^= other.value;
 		return *this;
 	}
 
