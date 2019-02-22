@@ -25,8 +25,9 @@
 void
 tag_print_types(Response &r) noexcept
 {
+	const auto tag_mask = global_tag_mask & r.GetTagMask();
 	for (unsigned i = 0; i < TAG_NUM_OF_ITEM_TYPES; i++)
-		if (IsTagEnabled(i))
+		if (tag_mask.Test(TagType(i)))
 			r.Format("tagtype: %s\n", tag_item_names[i]);
 }
 
