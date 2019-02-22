@@ -87,6 +87,22 @@ Mount file systems (e.g. USB sticks or other removable media) using
 the udisks2 daemon via D-Bus.  To obtain a valid udisks2 URI, consult
 :ref:`the according neighbor plugin <neighbor_plugin>`.
 
+It might be necessary to grant :program:`MPD` privileges to control
+:program:`udisks2` through :program:`policykit`.  To do this, create a
+file called :file:`/usr/share/polkit-1/rules.d/mpd-udisks.rules` with
+the following text::
+
+ polkit.addRule(function(action, subject) {
+   if ((action.id == "org.freedesktop.udisks2.filesystem-mount" ||
+        action.id == "org.freedesktop.udisks2.filesystem-mount-other-seat") &&
+       subject.user == "mpd") {
+       return polkit.Result.YES;
+   }
+ });
+
+If you run MPD as a different user, change ``mpd`` to the name of your
+MPD user.
+
 .. _neighbor_plugin:
 
 Neighbor plugins
