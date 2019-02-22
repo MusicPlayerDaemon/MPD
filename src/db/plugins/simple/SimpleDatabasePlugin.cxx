@@ -218,6 +218,7 @@ SimpleDatabase::GetSong(const char *uri) const
 
 		prefixed_light_song =
 			new PrefixedLightSong(*song, r.directory->GetPath());
+		r.directory->mounted_database->ReturnSong(song);
 		return prefixed_light_song;
 	}
 
