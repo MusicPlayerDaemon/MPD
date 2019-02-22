@@ -2,8 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           package="org.musicpd"
           android:installLocation="auto"
-          android:versionCode="27"
-          android:versionName="0.21.5">
+          android:versionCode="28"
+          android:versionName="0.21.6">
 
   <uses-sdk android:minSdkVersion="21" android:targetSdkVersion="26"/>
 

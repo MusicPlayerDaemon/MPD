@@ -1,3 +1,5 @@
+ver 0.21.6 (not yet released)
+
 ver 0.21.5 (2019/02/22)
 * protocol
   - fix deadlock in "albumart" command
