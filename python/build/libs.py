@@ -112,8 +112,8 @@ liblame = AutotoolsProject(
 )
 
 ffmpeg = FfmpegProject(
-    'http://ffmpeg.org/releases/ffmpeg-4.1.tar.xz',
-    'a38ec4d026efb58506a99ad5cd23d5a9793b4bf415f2c4c2e9c1bb444acd1994',
+    'http://ffmpeg.org/releases/ffmpeg-4.1.1.tar.xz',
+    '373749824dfd334d84e55dff406729edfd1606575ee44dd485d97d45ea4d2d86',
     'lib/libavcodec.a',
     [
         '--disable-shared', '--enable-static',
