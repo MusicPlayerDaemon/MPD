@@ -46,6 +46,8 @@ class UdisksStorage final : public Storage {
 	const std::string base_uri;
 	const std::string id;
 
+	const AllocatedPath inside_path;
+
 	std::string dbus_path;
 
 	SafeSingleton<ODBus::Glue> dbus_glue;
@@ -64,10 +66,12 @@ class UdisksStorage final : public Storage {
 	DeferEvent defer_mount, defer_unmount;
 
 public:
-	template<typename B, typename I>
-	UdisksStorage(EventLoop &_event_loop, B &&_base_uri, I &&_id)
+	template<typename B, typename I, typename IP>
+	UdisksStorage(EventLoop &_event_loop, B &&_base_uri, I &&_id,
+		      IP &&_inside_path)
 		:base_uri(std::forward<B>(_base_uri)),
 		 id(std::forward<I>(_id)),
+		 inside_path(std::forward<IP>(_inside_path)),
 		 dbus_glue(_event_loop),
 		 defer_mount(_event_loop, BIND_THIS_METHOD(DeferredMount)),
 		 defer_unmount(_event_loop, BIND_THIS_METHOD(DeferredUnmount)) {}
@@ -137,7 +141,10 @@ private:
 inline void
 UdisksStorage::SetMountPoint(Path mount_point)
 {
-	mounted_storage = CreateLocalStorage(mount_point);
+	mounted_storage = inside_path.IsNull()
+		? CreateLocalStorage(mount_point)
+		: CreateLocalStorage(mount_point / inside_path);
+
 	mount_error = {};
 	want_mount = false;
 	cond.broadcast();
@@ -360,12 +367,17 @@ CreateUdisksStorageURI(EventLoop &event_loop, const char *base_uri)
 	} else {
 		id = {id_begin, relative_path};
 		++relative_path;
+		while (*relative_path == '/')
+			++relative_path;
 	}
 
-	// TODO: use relative_path
+	auto inside_path = *relative_path != 0
+		? AllocatedPath::FromUTF8Throw(relative_path)
+		: nullptr;
 
 	return std::make_unique<UdisksStorage>(event_loop, base_uri,
-					       std::move(id));
+					       std::move(id),
+					       std::move(inside_path));
 }
 
 const StoragePlugin udisks_storage_plugin = {

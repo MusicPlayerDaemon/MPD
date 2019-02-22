@@ -7,6 +7,7 @@ ver 0.21.5 (not yet released)
   - fix assertion failures with mount points
 * storage
   - udisks: fix "AlreadyMounted" error
+  - udisks: use relative path from mount URI
 * input
   - buffer: fix crash bug when playing remote WAV file
 * tags
