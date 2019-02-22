@@ -120,8 +120,8 @@ public:
 	const char *MapToRelativeUTF8(const char *uri_utf8) const noexcept override;
 
 private:
-	void SetMountPoint(const char *mount_point);
-	void LockSetMountPoint(const char *mount_point);
+	void SetMountPoint(Path mount_point);
+	void LockSetMountPoint(Path mount_point);
 
 	void OnListReply(ODBus::Message reply) noexcept;
 
@@ -135,16 +135,16 @@ private:
 };
 
 inline void
-UdisksStorage::SetMountPoint(const char *mount_point)
+UdisksStorage::SetMountPoint(Path mount_point)
 {
-	mounted_storage = CreateLocalStorage(Path::FromFS(mount_point));
+	mounted_storage = CreateLocalStorage(mount_point);
 	mount_error = {};
 	want_mount = false;
 	cond.broadcast();
 }
 
 void
-UdisksStorage::LockSetMountPoint(const char *mount_point)
+UdisksStorage::LockSetMountPoint(Path mount_point)
 {
 	const std::lock_guard<Mutex> lock(mutex);
 	SetMountPoint(mount_point);
@@ -174,7 +174,7 @@ UdisksStorage::OnListReply(ODBus::Message reply) noexcept
 			/* already mounted: don't attempt to mount
 			   again, because this would result in
 			   org.freedesktop.UDisks2.Error.AlreadyMounted */
-			LockSetMountPoint(mount_point.c_str());
+			LockSetMountPoint(Path::FromFS(mount_point.c_str()));
 			return;
 		}
 	} catch (...) {
@@ -254,7 +254,7 @@ try {
 		throw std::runtime_error("Malformed 'Mount' response");
 
 	const char *mount_path = i.GetString();
-	LockSetMountPoint(mount_path);
+	LockSetMountPoint(Path::FromFS(mount_path));
 } catch (...) {
 	const std::lock_guard<Mutex> lock(mutex);
 	mount_error = std::current_exception();
