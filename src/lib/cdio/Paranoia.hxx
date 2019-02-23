@@ -43,6 +43,8 @@
 #include <stdexcept>
 #include <utility>
 
+#include <cstdio>
+
 class CdromDrive {
 	cdrom_drive_t *drv = nullptr;
 
