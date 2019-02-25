@@ -1,6 +1,7 @@
 ver 0.21.6 (not yet released)
 * input
   - cdio_paranoia: fix build failure due to missing #include
+* support abstract sockets on Linux
 
 ver 0.21.5 (2019/02/22)
 * protocol

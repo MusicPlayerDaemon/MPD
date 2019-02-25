@@ -396,3 +396,19 @@ ServerSocket::AddPath(AllocatedPath &&path)
 #endif /* !HAVE_UN */
 }
 
+
+#ifdef __linux__
+
+void
+ServerSocket::AddAbstract(const char *name)
+{
+	assert(name != nullptr);
+	assert(*name == '@');
+
+	AllocatedSocketAddress address;
+	address.SetLocal(name);
+
+	AddAddress(std::move(address));
+}
+
+#endif

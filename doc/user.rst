@@ -531,6 +531,12 @@ choice::
 
  bind_to_address "/var/run/mpd/socket"
 
+On Linux, local sockets can be bound to a name without a socket inode
+on the filesystem; MPD implements this by prepending ``@`` to the
+address::
+
+ bind_to_address "@mpd"
+
 If no port is specified, the default port is 6600.  This default can
 be changed with the port setting::
 
