@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2017 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2012-2019 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -188,6 +188,12 @@ public:
 	bool SetCork(bool value=true) noexcept;
 
 	bool SetTcpDeferAccept(const int &seconds) noexcept;
+
+	/**
+	 * Setter for TCP_USER_TIMEOUT.
+	 */
+	bool SetTcpUserTimeout(const unsigned &milliseconds) noexcept;
+
 	bool SetV6Only(bool value) noexcept;
 
 	/**
