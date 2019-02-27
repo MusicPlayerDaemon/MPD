@@ -66,14 +66,6 @@ public:
 		return reinterpret_cast<const struct sockaddr *>(&address);
 	}
 
-	struct sockaddr *GetAddress() noexcept {
-		return reinterpret_cast<struct sockaddr *>(&address);
-	}
-
-	const struct sockaddr *GetAddress() const noexcept {
-		return reinterpret_cast<const struct sockaddr *>(&address);
-	}
-
 	constexpr size_type GetCapacity() const noexcept {
 		return sizeof(address);
 	}
