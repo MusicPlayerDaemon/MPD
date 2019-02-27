@@ -714,7 +714,9 @@ and without the `.m3u` suffix).
 Some of the commands described in this section can be used to
 run playlist plugins instead of the hard-coded simple
 `m3u` parser.  They can access playlists in
-the music directory (relative path including the suffix) or
+the music directory (relative path including the suffix),
+playlists in arbitrary location (absolute path including the suffix;
+allowed only for clients that are connected via UNIX domain socket), or
 remote playlists (absolute URI with a supported scheme).
 
 :command:`listplaylist {NAME}`

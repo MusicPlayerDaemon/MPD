@@ -1,4 +1,6 @@
 ver 0.21.6 (not yet released)
+* protocol
+  - allow loading playlists specified as absolute filesystem paths
 * input
   - cdio_paranoia: fix build failure due to missing #include
 * support abstract sockets on Linux

@@ -18,6 +18,7 @@
  */
 
 #include "config.h"
+#include "LocateUri.hxx"
 #include "Print.hxx"
 #include "PlaylistAny.hxx"
 #include "PlaylistSong.hxx"
@@ -55,7 +56,7 @@ playlist_provider_print(Response &r,
 bool
 playlist_file_print(Response &r, Partition &partition,
 		    const SongLoader &loader,
-		    const char *uri, bool detail)
+		    const LocatedUri &uri, bool detail)
 {
 	Mutex mutex;
 
@@ -71,6 +72,6 @@ playlist_file_print(Response &r, Partition &partition,
 	if (playlist == nullptr)
 		return false;
 
-	playlist_provider_print(r, loader, uri, *playlist, detail);
+	playlist_provider_print(r, loader, uri.canonical_uri, *playlist, detail);
 	return true;
 }

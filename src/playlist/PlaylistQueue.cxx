@@ -18,6 +18,7 @@
  */
 
 #include "config.h"
+#include "LocateUri.hxx"
 #include "PlaylistQueue.hxx"
 #include "PlaylistAny.hxx"
 #include "PlaylistSong.hxx"
@@ -63,7 +64,7 @@ playlist_load_into_queue(const char *uri, SongEnumerator &e,
 }
 
 void
-playlist_open_into_queue(const char *uri,
+playlist_open_into_queue(const LocatedUri &uri,
 			 unsigned start_index, unsigned end_index,
 			 playlist &dest, PlayerControl &pc,
 			 const SongLoader &loader)
@@ -78,7 +79,7 @@ playlist_open_into_queue(const char *uri,
 	if (playlist == nullptr)
 		throw PlaylistError::NoSuchList();
 
-	playlist_load_into_queue(uri, *playlist,
+	playlist_load_into_queue(uri.canonical_uri, *playlist,
 				 start_index, end_index,
 				 dest, pc, loader);
 }

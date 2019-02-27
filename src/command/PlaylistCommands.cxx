@@ -38,6 +38,7 @@
 #include "util/UriUtil.hxx"
 #include "util/ConstBuffer.hxx"
 #include "util/ChronoUtil.hxx"
+#include "LocateUri.hxx"
 
 bool
 playlist_commands_available() noexcept
@@ -66,12 +67,17 @@ handle_save(Client &client, Request args, gcc_unused Response &r)
 CommandResult
 handle_load(Client &client, Request args, gcc_unused Response &r)
 {
+	const auto uri = LocateUri(args.front(), &client
+#ifdef ENABLE_DATABASE
+					   , nullptr
+#endif
+					   );
 	RangeArg range = args.ParseOptional(1, RangeArg::All());
 
 	const ScopeBulkEdit bulk_edit(client.GetPartition());
 
 	const SongLoader loader(client);
-	playlist_open_into_queue(args.front(),
+	playlist_open_into_queue(uri,
 				 range.start, range.end,
 				 client.GetPlaylist(),
 				 client.GetPlayerControl(), loader);
@@ -81,7 +87,11 @@ handle_load(Client &client, Request args, gcc_unused Response &r)
 CommandResult
 handle_listplaylist(Client &client, Request args, Response &r)
 {
-	const char *const name = args.front();
+	const auto name = LocateUri(args.front(), &client
+#ifdef ENABLE_DATABASE
+					   , nullptr
+#endif
+					   );
 
 	if (playlist_file_print(r, client.GetPartition(), SongLoader(client),
 				name, false))
@@ -93,7 +103,11 @@ handle_listplaylist(Client &client, Request args, Response &r)
 CommandResult
 handle_listplaylistinfo(Client &client, Request args, Response &r)
 {
-	const char *const name = args.front();
+	const auto name = LocateUri(args.front(), &client
+#ifdef ENABLE_DATABASE
+					   , nullptr
+#endif
+					   );
 
 	if (playlist_file_print(r, client.GetPartition(), SongLoader(client),
 				name, true))

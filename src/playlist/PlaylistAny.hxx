@@ -34,7 +34,7 @@ class Storage;
  * music or playlist directory.
  */
 std::unique_ptr<SongEnumerator>
-playlist_open_any(const char *uri,
+playlist_open_any(const LocatedUri &located_uri,
 #ifdef ENABLE_DATABASE
 		  const Storage *storage,
 #endif

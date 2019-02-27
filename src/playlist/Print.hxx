@@ -34,6 +34,6 @@ struct Partition;
 bool
 playlist_file_print(Response &r, Partition &partition,
 		    const SongLoader &loader,
-		    const char *uri, bool detail);
+		    const LocatedUri &uri, bool detail);
 
 #endif
