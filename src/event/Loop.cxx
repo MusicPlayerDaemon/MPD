@@ -162,6 +162,18 @@ EventLoop::HandleTimers() noexcept
 	return Event::Duration(-1);
 }
 
+template<class ToDuration, class Rep, class Period>
+static constexpr ToDuration
+duration_cast_round_up(std::chrono::duration<Rep, Period> d) noexcept
+{
+	using FromDuration = decltype(d);
+	constexpr auto one = std::chrono::duration_cast<FromDuration>(ToDuration(1));
+	constexpr auto round_add = one > one.zero()
+		? one - FromDuration(1)
+		: one.zero();
+	return std::chrono::duration_cast<ToDuration>(d + round_add);
+}
+
 /**
  * Convert the given timeout specification to a milliseconds integer,
  * to be used by functions like poll() and epoll_wait().  Any negative
@@ -171,8 +183,7 @@ static constexpr int
 ExportTimeoutMS(Event::Duration timeout)
 {
 	return timeout >= timeout.zero()
-		/* round up (+1) to avoid unnecessary wakeups */
-		? int(std::chrono::duration_cast<std::chrono::milliseconds>(timeout).count()) + 1
+		? int(duration_cast_round_up<std::chrono::milliseconds>(timeout).count())
 		: -1;
 }
 
