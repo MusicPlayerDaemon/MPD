@@ -28,6 +28,7 @@
 #include "util/StaticFifoBuffer.hxx"
 #include "util/NumberParser.hxx"
 #include "util/MimeType.hxx"
+#include "AudioParser.hxx"
 #include "Log.hxx"
 
 #include <exception>
@@ -133,6 +134,20 @@ pcm_stream_decode(DecoderClient &client, InputStream &is)
 
 			audio_format.channels = value;
 		}
+
+		if (GetMimeTypeBase(mime) == "audio/x-mpd-alsa-pcm") {
+			i = mime_parameters.find("format");
+			if (i != mime_parameters.end()) {
+				const char *s = i->second.c_str();
+				audio_format = ParseAudioFormat(s, false);
+				if (!audio_format.IsFullyDefined()) {
+					FormatWarning(pcm_decoder_domain,
+							  "Invalid audio format specification: %s",
+							  mime);
+					return;
+				}
+			}
+		}
 	}
 
 	if (audio_format.sample_rate == 0) {
@@ -220,6 +235,9 @@ static const char *const pcm_mime_types[] = {
 
 	/* same as above, but with reverse byte order */
 	"audio/x-mpd-cdda-pcm-reverse",
+
+	/* for streams obtained by the alsa input plugin */
+	"audio/x-mpd-alsa-pcm",
 
 	nullptr
 };
