@@ -31,6 +31,7 @@
 #include "../AsyncInputStream.hxx"
 #include "event/Call.hxx"
 #include "thread/Cond.hxx"
+#include "config/Block.hxx"
 #include "util/Domain.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/StringCompare.hxx"
@@ -56,6 +57,15 @@ static constexpr auto BUILTIN_DEFAULT_FORMAT = "44100:16:2";
 
 static constexpr auto DEFAULT_BUFFER_TIME = std::chrono::milliseconds(1000);
 static constexpr auto DEFAULT_RESUME_TIME = DEFAULT_BUFFER_TIME / 2;
+
+
+static struct {
+	EventLoop *event_loop;
+	const char *default_device;
+	const char *default_format;
+	int mode;
+} global_config;
+
 
 class AlsaInputStream final
 	: public AsyncInputStream,
@@ -143,11 +153,11 @@ public:
 		}
 		else {
 			device_name = StringAfterPrefixCaseASCII(uri, ALSA_URI_PREFIX);
-			format_string = BUILTIN_DEFAULT_FORMAT;
+			format_string = global_config.default_format;
 		}
 		if (IsValidScheme()) {
 			if (*device_name == 0)
-				device_name = BUILTIN_DEFAULT_DEVICE;
+				device_name = global_config.default_device;
 			if (format_string != nullptr)
 				audio_format = ParseAudioFormat(format_string, false);
 		}
@@ -417,7 +427,7 @@ AlsaInputStream::OpenDevice(const SourceSpec &spec)
 
 	if ((err = snd_pcm_open(&capture_handle, spec.GetDeviceName(),
 				SND_PCM_STREAM_CAPTURE,
-				SND_PCM_NONBLOCK)) < 0)
+				SND_PCM_NONBLOCK | global_config.mode)) < 0)
 		throw FormatRuntimeError("Failed to open device: %s (%s)",
 					 spec.GetDeviceName(), snd_strerror(err));
 
@@ -433,18 +443,35 @@ AlsaInputStream::OpenDevice(const SourceSpec &spec)
 
 /*#########################  Plugin Functions  ##############################*/
 
-static EventLoop *alsa_input_event_loop;
 
 static void
-alsa_input_init(EventLoop &event_loop, const ConfigBlock &)
+alsa_input_init(EventLoop &event_loop, const ConfigBlock &block)
 {
-	alsa_input_event_loop = &event_loop;
+	global_config.event_loop = &event_loop;
+	global_config.default_device = block.GetBlockValue("default_device", BUILTIN_DEFAULT_DEVICE);
+	global_config.default_format = block.GetBlockValue("default_format", BUILTIN_DEFAULT_FORMAT);
+	global_config.mode = 0;
+
+#ifdef SND_PCM_NO_AUTO_RESAMPLE
+	if (!block.GetBlockValue("auto_resample", true))
+		global_config.mode |= SND_PCM_NO_AUTO_RESAMPLE;
+#endif
+
+#ifdef SND_PCM_NO_AUTO_CHANNELS
+	if (!block.GetBlockValue("auto_channels", true))
+		global_config.mode |= SND_PCM_NO_AUTO_CHANNELS;
+#endif
+
+#ifdef SND_PCM_NO_AUTO_FORMAT
+	if (!block.GetBlockValue("auto_format", true))
+		global_config.mode |= SND_PCM_NO_AUTO_FORMAT;
+#endif
 }
 
 static InputStreamPtr
 alsa_input_open(const char *uri, Mutex &mutex)
 {
-	return AlsaInputStream::Create(*alsa_input_event_loop, uri,
+	return AlsaInputStream::Create(*global_config.event_loop, uri,
 				       mutex);
 }
 
