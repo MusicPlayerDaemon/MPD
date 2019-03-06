@@ -52,8 +52,8 @@ static constexpr Domain alsa_input_domain("alsa");
 
 static constexpr auto ALSA_URI_PREFIX = "alsa://";
 
-static constexpr auto BUILTIN_DEFAULT_DEVICE = "hw:0,0";
-static constexpr auto BUILTIN_DEFAULT_FORMAT = "44100:16:2";
+static constexpr auto BUILTIN_DEFAULT_DEVICE = "default";
+static constexpr auto BUILTIN_DEFAULT_FORMAT = "48000:16:2";
 
 static constexpr auto DEFAULT_BUFFER_TIME = std::chrono::milliseconds(1000);
 static constexpr auto DEFAULT_RESUME_TIME = DEFAULT_BUFFER_TIME / 2;

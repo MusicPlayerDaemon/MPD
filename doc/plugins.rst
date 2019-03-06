@@ -134,7 +134,7 @@ Allows :program:`MPD` on Linux to play audio directly from a soundcard using the
 
 .. code-block:: none
 
-    mpc add alsa:// plays audio from device hw:0,0
+    mpc add alsa:// plays audio from device default
 
 .. code-block:: none
 
