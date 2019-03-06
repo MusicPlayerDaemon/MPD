@@ -26,6 +26,7 @@
 
 #include "AlsaInputPlugin.hxx"
 #include "lib/alsa/NonBlock.hxx"
+#include "lib/alsa/Format.hxx"
 #include "../InputPlugin.hxx"
 #include "../AsyncInputStream.hxx"
 #include "event/Call.hxx"
@@ -34,6 +35,9 @@
 #include "util/RuntimeError.hxx"
 #include "util/StringCompare.hxx"
 #include "util/ASCII.hxx"
+#include "util/DivideString.hxx"
+#include "AudioParser.hxx"
+#include "AudioFormat.hxx"
 #include "Log.hxx"
 #include "event/MultiSocketMonitor.hxx"
 #include "event/DeferEvent.hxx"
@@ -45,15 +49,13 @@
 
 static constexpr Domain alsa_input_domain("alsa");
 
-static constexpr const char *default_device = "hw:0,0";
+static constexpr auto ALSA_URI_PREFIX = "alsa://";
 
-// the following defaults are because the PcmDecoderPlugin forces CD format
-static constexpr snd_pcm_format_t default_format = SND_PCM_FORMAT_S16;
-static constexpr int default_channels = 2; // stereo
-static constexpr unsigned int default_rate = 44100; // cd quality
+static constexpr auto BUILTIN_DEFAULT_DEVICE = "hw:0,0";
+static constexpr auto BUILTIN_DEFAULT_FORMAT = "44100:16:2";
 
-static constexpr size_t ALSA_MAX_BUFFERED = default_rate * default_channels * 2;
-static constexpr size_t ALSA_RESUME_AT = ALSA_MAX_BUFFERED / 2;
+static constexpr auto DEFAULT_BUFFER_TIME = std::chrono::milliseconds(1000);
+static constexpr auto DEFAULT_RESUME_TIME = DEFAULT_BUFFER_TIME / 2;
 
 class AlsaInputStream final
 	: public AsyncInputStream,
@@ -64,7 +66,7 @@ class AlsaInputStream final
 	 */
 	const std::string device;
 
-	snd_pcm_t *const capture_handle;
+	snd_pcm_t *capture_handle;
 	const size_t frame_size;
 
 	AlsaNonBlockPcm non_block;
@@ -72,32 +74,12 @@ class AlsaInputStream final
 	DeferEvent defer_invalidate_sockets;
 
 public:
+
+	class SourceSpec;
+
 	AlsaInputStream(EventLoop &_loop,
-			const char *_uri, Mutex &_mutex,
-			const char *_device,
-			snd_pcm_t *_handle, int _frame_size)
-		:AsyncInputStream(_loop, _uri, _mutex,
-				  ALSA_MAX_BUFFERED, ALSA_RESUME_AT),
-		 MultiSocketMonitor(_loop),
-		 device(_device),
-		 capture_handle(_handle),
-		 frame_size(_frame_size),
-		 defer_invalidate_sockets(_loop,
-					  BIND_THIS_METHOD(InvalidateSockets))
-	{
-		assert(_uri != nullptr);
-		assert(_handle != nullptr);
-
-		/* this mime type forces use of the PcmDecoderPlugin.
-		   Needs to be generalised when/if that decoder is
-		   updated to support other audio formats */
-		SetMimeType("audio/x-mpd-cdda-pcm");
-		InputStream::SetReady();
-
-		snd_pcm_start(capture_handle);
-
-		defer_invalidate_sockets.Schedule();
-	}
+			Mutex &_mutex,
+			const SourceSpec &spec);
 
 	~AlsaInputStream() {
 		BlockingCall(MultiSocketMonitor::GetEventLoop(), [this](){
@@ -125,8 +107,8 @@ protected:
 	}
 
 private:
-	static snd_pcm_t *OpenDevice(const char *device, int rate,
-				     snd_pcm_format_t format, int channels);
+	void OpenDevice(const SourceSpec &spec);
+	void ConfigureCapture(AudioFormat audio_format);
 
 	void Pause() {
 		AsyncInputStream::Pause();
@@ -135,39 +117,97 @@ private:
 
 	int Recover(int err);
 
-	void SafeInvalidateSockets() {
-		defer_invalidate_sockets.Schedule();
-	}
-
 	/* virtual methods from class MultiSocketMonitor */
 	std::chrono::steady_clock::duration PrepareSockets() noexcept override;
 	void DispatchSockets() noexcept override;
 };
 
+
+class AlsaInputStream::SourceSpec {
+	const char *uri;
+	const char *device_name;
+	const char *format_string;
+	AudioFormat audio_format;
+	DivideString components;
+
+public:
+	SourceSpec(const char *_uri)
+		: uri(_uri)
+		, components(uri, '?')
+	{
+		if (components.IsDefined()) {
+			device_name = StringAfterPrefixCaseASCII(components.GetFirst(),
+			                                                  ALSA_URI_PREFIX);
+			format_string = StringAfterPrefixCaseASCII(components.GetSecond(),
+			                                                        "format=");
+		}
+		else {
+			device_name = StringAfterPrefixCaseASCII(uri, ALSA_URI_PREFIX);
+			format_string = BUILTIN_DEFAULT_FORMAT;
+		}
+		if (IsValidScheme()) {
+			if (*device_name == 0)
+				device_name = BUILTIN_DEFAULT_DEVICE;
+			if (format_string != nullptr)
+				audio_format = ParseAudioFormat(format_string, false);
+		}
+	}
+	bool IsValidScheme() const noexcept {
+		return device_name != nullptr;
+	}
+	bool IsValid() const noexcept {
+		return (device_name != nullptr) && (format_string != nullptr);
+	}
+	const char *GetURI() const noexcept {
+		return uri;
+	}
+	const char *GetDeviceName() const noexcept {
+		return device_name;
+	}
+	const char *GetFormatString() const noexcept {
+		return format_string;
+	}
+	AudioFormat GetAudioFormat() const noexcept {
+		return audio_format;
+	}
+};
+
+AlsaInputStream::AlsaInputStream(EventLoop &_loop,
+		Mutex &_mutex,
+		const SourceSpec &spec)
+	:AsyncInputStream(_loop, spec.GetURI(), _mutex,
+		 spec.GetAudioFormat().TimeToSize(DEFAULT_BUFFER_TIME),
+		 spec.GetAudioFormat().TimeToSize(DEFAULT_RESUME_TIME)),
+	 MultiSocketMonitor(_loop),
+	 device(spec.GetDeviceName()),
+	 frame_size(spec.GetAudioFormat().GetFrameSize()),
+	 defer_invalidate_sockets(_loop,
+				  BIND_THIS_METHOD(InvalidateSockets))
+{
+	OpenDevice(spec);
+
+	std::string mimestr = "audio/x-mpd-alsa-pcm;format=";
+	mimestr += spec.GetFormatString();
+	SetMimeType(mimestr.c_str());
+
+	InputStream::SetReady();
+
+	snd_pcm_start(capture_handle);
+
+	defer_invalidate_sockets.Schedule();
+}
+
 inline InputStreamPtr
 AlsaInputStream::Create(EventLoop &event_loop, const char *uri,
 			Mutex &mutex)
 {
-	const char *device = StringAfterPrefixCaseASCII(uri, "alsa://");
-	if (device == nullptr)
+	assert(uri != nullptr);
+
+	AlsaInputStream::SourceSpec spec(uri);
+	if (!spec.IsValidScheme())
 		return nullptr;
 
-	if (*device == 0)
-		device = default_device;
-
-	/* placeholders - eventually user-requested audio format will
-	   be passed via the URI. For now we just force the
-	   defaults */
-	int rate = default_rate;
-	snd_pcm_format_t format = default_format;
-	int channels = default_channels;
-
-	snd_pcm_t *handle = OpenDevice(device, rate, format, channels);
-
-	int frame_size = snd_pcm_format_width(format) / 8 * channels;
-	return std::make_unique<AlsaInputStream>(event_loop,
-						 uri, mutex,
-						 device, handle, frame_size);
+	return std::make_unique<AlsaInputStream>(event_loop, mutex, spec);
 }
 
 std::chrono::steady_clock::duration
@@ -268,13 +308,11 @@ AlsaInputStream::Recover(int err)
 		break;
 	}
 
-
 	return err;
 }
 
-static void
-ConfigureCapture(snd_pcm_t *capture_handle,
-		 int rate, snd_pcm_format_t format, int channels)
+void
+AlsaInputStream::ConfigureCapture(AudioFormat audio_format)
 {
 	int err;
 
@@ -285,19 +323,23 @@ ConfigureCapture(snd_pcm_t *capture_handle,
 		throw FormatRuntimeError("Cannot initialize hardware parameter structure (%s)",
 					 snd_strerror(err));
 
-	if ((err = snd_pcm_hw_params_set_access(capture_handle, hw_params, SND_PCM_ACCESS_RW_INTERLEAVED)) < 0)
+	if ((err = snd_pcm_hw_params_set_access(capture_handle, hw_params,
+	                                       SND_PCM_ACCESS_RW_INTERLEAVED)) < 0)
 		throw FormatRuntimeError("Cannot set access type (%s)",
 					 snd_strerror(err));
 
-	if ((err = snd_pcm_hw_params_set_format(capture_handle, hw_params, format)) < 0)
+	if ((err = snd_pcm_hw_params_set_format(capture_handle, hw_params,
+	                               	ToAlsaPcmFormat(audio_format.format))) < 0)
 		throw FormatRuntimeError("Cannot set sample format (%s)",
 					 snd_strerror(err));
 
-	if ((err = snd_pcm_hw_params_set_channels(capture_handle, hw_params, channels)) < 0)
+	if ((err = snd_pcm_hw_params_set_channels(capture_handle,
+	                                    hw_params, audio_format.channels)) < 0)
 		throw FormatRuntimeError("Cannot set channels (%s)",
 					 snd_strerror(err));
 
-	if ((err = snd_pcm_hw_params_set_rate(capture_handle, hw_params, rate, 0)) < 0)
+	if ((err = snd_pcm_hw_params_set_rate(capture_handle,
+	                              hw_params, audio_format.sample_rate, 0)) < 0)
 		throw FormatRuntimeError("Cannot set sample rate (%s)",
 					 snd_strerror(err));
 
@@ -332,8 +374,8 @@ ConfigureCapture(snd_pcm_t *capture_handle,
 	if (snd_pcm_hw_params_get_buffer_size(hw_params, &buffer_size) == 0) {
 		snd_pcm_uframes_t period_size = buffer_size / 4;
 		int direction = -1;
-		if ((err = snd_pcm_hw_params_set_period_size_near(capture_handle, hw_params,
-								  &period_size, &direction)) < 0)
+		if ((err = snd_pcm_hw_params_set_period_size_near(capture_handle,
+		                             hw_params, &period_size, &direction)) < 0)
 			throw FormatRuntimeError("Cannot set period size (%s)",
 						 snd_strerror(err));
 	}
@@ -368,28 +410,25 @@ ConfigureCapture(snd_pcm_t *capture_handle,
 					 snd_strerror(err));
 }
 
-inline snd_pcm_t *
-AlsaInputStream::OpenDevice(const char *device,
-			    int rate, snd_pcm_format_t format, int channels)
+inline void
+AlsaInputStream::OpenDevice(const SourceSpec &spec)
 {
-	snd_pcm_t *capture_handle;
 	int err;
-	if ((err = snd_pcm_open(&capture_handle, device,
+
+	if ((err = snd_pcm_open(&capture_handle, spec.GetDeviceName(),
 				SND_PCM_STREAM_CAPTURE,
 				SND_PCM_NONBLOCK)) < 0)
 		throw FormatRuntimeError("Failed to open device: %s (%s)",
-					 device, snd_strerror(err));
+					 spec.GetDeviceName(), snd_strerror(err));
 
 	try {
-		ConfigureCapture(capture_handle, rate, format, channels);
+		ConfigureCapture(spec.GetAudioFormat());
 	} catch (...) {
 		snd_pcm_close(capture_handle);
 		throw;
 	}
 
 	snd_pcm_prepare(capture_handle);
-
-	return capture_handle;
 }
 
 /*#########################  Plugin Functions  ##############################*/
@@ -410,7 +449,7 @@ alsa_input_open(const char *uri, Mutex &mutex)
 }
 
 static constexpr const char *alsa_prefixes[] = {
-	"alsa://",
+	ALSA_URI_PREFIX,
 	nullptr
 };
 
