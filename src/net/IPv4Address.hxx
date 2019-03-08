@@ -31,7 +31,7 @@
 #define IPV4_ADDRESS_HXX
 
 #include "SocketAddress.hxx"
-#include "system/ByteOrder.hxx"
+#include "util/ByteOrder.hxx"
 
 #include <stdint.h>
 

@@ -22,7 +22,7 @@
 #include "AudioFormat.hxx"
 #include "config/Domain.hxx"
 #include "util/Alloc.hxx"
-#include "system/ByteOrder.hxx"
+#include "util/ByteOrder.hxx"
 #include "util/StringUtil.hxx"
 
 #include <opus.h>

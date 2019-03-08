@@ -32,7 +32,7 @@
 #include "util/Macros.hxx"
 #include "util/StringFormat.hxx"
 #include "util/Domain.hxx"
-#include "system/ByteOrder.hxx"
+#include "util/ByteOrder.hxx"
 #include "Log.hxx"
 
 #ifdef HAVE_SIDPLAYFP

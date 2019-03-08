@@ -30,7 +30,7 @@
 #include "util/StringCompare.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/Domain.hxx"
-#include "system/ByteOrder.hxx"
+#include "util/ByteOrder.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "Log.hxx"
 #include "config/Block.hxx"

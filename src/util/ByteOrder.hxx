@@ -30,7 +30,7 @@
 #ifndef BYTE_ORDER_HXX
 #define BYTE_ORDER_HXX
 
-#include "util/Compiler.h"
+#include "Compiler.h"
 
 #include <stdint.h>
 
