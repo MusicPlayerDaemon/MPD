@@ -35,7 +35,7 @@
 #include "util/Domain.hxx"
 #include "util/AllocatedString.hxx"
 #include "util/CharUtil.hxx"
-#include "system/ByteOrder.hxx"
+#include "util/ByteOrder.hxx"
 #include "Log.hxx"
 
 #ifdef HAVE_SIDPLAYFP

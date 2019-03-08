@@ -18,7 +18,7 @@
  */
 
 #include "ApeLoader.hxx"
-#include "system/ByteOrder.hxx"
+#include "util/ByteOrder.hxx"
 #include "input/InputStream.hxx"
 #include "util/StringView.hxx"
 

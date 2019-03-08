@@ -18,7 +18,7 @@
  */
 
 #include "PcmPack.hxx"
-#include "system/ByteOrder.hxx"
+#include "util/ByteOrder.hxx"
 
 static void
 pack_sample(uint8_t *dest, const int32_t *src0) noexcept

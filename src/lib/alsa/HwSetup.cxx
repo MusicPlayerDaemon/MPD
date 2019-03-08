@@ -19,7 +19,7 @@
 
 #include "HwSetup.hxx"
 #include "Format.hxx"
-#include "system/ByteOrder.hxx"
+#include "util/ByteOrder.hxx"
 #include "util/Domain.hxx"
 #include "util/RuntimeError.hxx"
 #include "AudioFormat.hxx"

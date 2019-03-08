@@ -22,7 +22,7 @@
 #include "CheckAudioFormat.hxx"
 #include "pcm/PcmPack.hxx"
 #include "input/InputStream.hxx"
-#include "system/ByteOrder.hxx"
+#include "util/ByteOrder.hxx"
 #include "util/Domain.hxx"
 #include "util/ByteReverse.hxx"
 #include "util/StaticFifoBuffer.hxx"

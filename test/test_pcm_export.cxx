@@ -20,7 +20,7 @@
 #include "config.h"
 #include "pcm/PcmExport.hxx"
 #include "pcm/Traits.hxx"
-#include "system/ByteOrder.hxx"
+#include "util/ByteOrder.hxx"
 #include "util/ConstBuffer.hxx"
 
 #include <gtest/gtest.h>

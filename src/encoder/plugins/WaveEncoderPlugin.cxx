@@ -19,7 +19,7 @@
 
 #include "WaveEncoderPlugin.hxx"
 #include "../EncoderAPI.hxx"
-#include "system/ByteOrder.hxx"
+#include "util/ByteOrder.hxx"
 #include "util/DynamicFifoBuffer.hxx"
 
 #include <assert.h>
