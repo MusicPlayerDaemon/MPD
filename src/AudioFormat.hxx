@@ -178,8 +178,8 @@ struct AudioFormat {
  *
  * @param sample_rate the sample rate in Hz
  */
-static constexpr inline bool
-audio_valid_sample_rate(unsigned sample_rate)
+constexpr bool
+audio_valid_sample_rate(unsigned sample_rate) noexcept
 {
 	return sample_rate > 0 && sample_rate < (1 << 30);
 }
@@ -187,8 +187,8 @@ audio_valid_sample_rate(unsigned sample_rate)
 /**
  * Checks whether the number of channels is valid.
  */
-static constexpr inline bool
-audio_valid_channel_count(unsigned channels)
+constexpr bool
+audio_valid_channel_count(unsigned channels) noexcept
 {
 	return channels >= 1 && channels <= MAX_CHANNELS;
 }

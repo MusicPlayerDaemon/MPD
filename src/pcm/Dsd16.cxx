@@ -24,7 +24,7 @@
 /**
  * Construct a 16 bit integer from two bytes.
  */
-static constexpr inline uint16_t
+static constexpr uint16_t
 Construct16(uint8_t a, uint8_t b) noexcept
 {
 	/* "a" is the oldest byte, which must be in the most
@@ -33,7 +33,7 @@ Construct16(uint8_t a, uint8_t b) noexcept
 	return uint16_t(b) | (uint16_t(a) << 8);
 }
 
-static constexpr inline uint16_t
+static constexpr uint16_t
 Dsd8To16Sample(const uint8_t *src, unsigned channels) noexcept
 {
 	return Construct16(src[0], src[channels]);
