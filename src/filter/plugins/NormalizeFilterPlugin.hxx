@@ -23,8 +23,6 @@
 #include <memory>
 
 class PreparedFilter;
-class Filter;
-struct AudioFormat;
 
 std::unique_ptr<PreparedFilter>
 normalize_filter_prepare() noexcept;
