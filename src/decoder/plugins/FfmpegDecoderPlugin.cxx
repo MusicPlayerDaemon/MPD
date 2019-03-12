@@ -216,16 +216,8 @@ FfmpegSendFrame(DecoderClient &client, InputStream &is,
 		size_t &skip_bytes,
 		FfmpegBuffer &buffer)
 {
-	ConstBuffer<void> output_buffer;
-
-	try {
-		output_buffer = copy_interleave_frame(codec_context, frame,
-						      buffer);
-	} catch (...) {
-		/* this must be a serious error, e.g. OOM */
-		LogError(std::current_exception());
-		return DecoderCommand::STOP;
-	}
+	ConstBuffer<void> output_buffer =
+		copy_interleave_frame(codec_context, frame, buffer);
 
 	if (skip_bytes > 0) {
 		if (skip_bytes >= output_buffer.size) {
@@ -636,14 +628,8 @@ ffmpeg_decode(DecoderClient &client, InputStream &input)
 		return;
 	}
 
-	AVFormatContext *format_context;
-	try {
-		format_context =FfmpegOpenInput(stream.io, input.GetURI(),
-						nullptr);
-	} catch (...) {
-		LogError(std::current_exception());
-		return;
-	}
+	AVFormatContext *format_context =
+		FfmpegOpenInput(stream.io, input.GetURI(), nullptr);
 
 	AtScopeExit(&format_context) {
 		avformat_close_input(&format_context);
