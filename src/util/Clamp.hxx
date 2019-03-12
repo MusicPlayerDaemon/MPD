@@ -37,7 +37,7 @@
  * value is outside.
  */
 template<typename T>
-static inline constexpr const T &
+constexpr const T &
 Clamp(const T &value, const T &min, const T &max)
 {
 	return gcc_unlikely(value < min)
