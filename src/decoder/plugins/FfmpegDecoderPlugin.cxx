@@ -27,6 +27,7 @@
 #include "lib/ffmpeg/LogError.hxx"
 #include "lib/ffmpeg/Init.hxx"
 #include "lib/ffmpeg/Buffer.hxx"
+#include "lib/ffmpeg/Frame.hxx"
 #include "../DecoderAPI.hxx"
 #include "FfmpegMetaData.hxx"
 #include "FfmpegIo.hxx"
@@ -574,15 +575,7 @@ FfmpegDecode(DecoderClient &client, InputStream &input,
 
 	FfmpegParseMetaData(client, format_context, audio_stream);
 
-	AVFrame *frame = av_frame_alloc();
-	if (!frame) {
-		LogError(ffmpeg_domain, "Could not allocate frame");
-		return;
-	}
-
-	AtScopeExit(&frame) {
-		av_frame_free(&frame);
-	};
+	Ffmpeg::Frame frame;
 
 	FfmpegBuffer interleaved_buffer;
 
