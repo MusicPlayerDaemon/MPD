@@ -22,7 +22,7 @@
 
 #include "pcm/SampleFormat.hxx"
 
-constexpr inline SampleFormat
+constexpr SampleFormat
 FlacSampleFormat(unsigned bits_per_sample) noexcept
 {
 	switch (bits_per_sample) {
