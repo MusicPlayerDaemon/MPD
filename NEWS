@@ -2,6 +2,7 @@ ver 0.22 (not yet released)
 * input
   - ffmpeg: allow partial reads
 * filter
+  - ffmpeg: new plugin based on FFmpeg's libavfilter library
   - hdcd: new plugin based on FFmpeg's "af_hdcd" for HDCD playback
 
 ver 0.21.7 (not yet released)

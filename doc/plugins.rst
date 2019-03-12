@@ -1078,6 +1078,27 @@ The "Solaris" plugin runs only on SUN Solaris, and plays via /dev/audio.
 Filter plugins
 --------------
 
+ffmpeg
+~~~~~~
+
+Decode `HDCD
+<https://en.wikipedia.org/wiki/High_Definition_Compatible_Digital>`_.
+
+This plugin requires building with ``libavfilter`` (FFmpeg).
+
+.. list-table::
+   :widths: 20 80
+   :header-rows: 1
+
+   * - Setting
+     - Description
+   * - **graph "..."**
+     - Specifies the ``libavfilter`` graph; read the `FFmpeg
+       documentation
+       <https://libav.org/documentation/libavfilter.html#Filtergraph-syntax-1>`_
+       for details
+
+
 hdcd
 ~~~~
 
