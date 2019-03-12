@@ -28,6 +28,7 @@
 #include "lib/ffmpeg/Init.hxx"
 #include "lib/ffmpeg/Buffer.hxx"
 #include "lib/ffmpeg/Frame.hxx"
+#include "lib/ffmpeg/Format.hxx"
 #include "../DecoderAPI.hxx"
 #include "FfmpegMetaData.hxx"
 #include "FfmpegIo.hxx"
@@ -58,24 +59,18 @@ extern "C" {
  */
 static AVDictionary *avformat_options = nullptr;
 
-static AVFormatContext *
+static Ffmpeg::FormatContext
 FfmpegOpenInput(AVIOContext *pb,
 		const char *filename,
 		AVInputFormat *fmt)
 {
-	AVFormatContext *context = avformat_alloc_context();
-	if (context == nullptr)
-		throw std::runtime_error("avformat_alloc_context() failed");
-
-	context->pb = pb;
+	Ffmpeg::FormatContext context(pb);
 
 	AVDictionary *options = nullptr;
 	AtScopeExit(&options) { av_dict_free(&options); };
 	av_dict_copy(&options, avformat_options, 0);
 
-	int err = avformat_open_input(&context, filename, fmt, &options);
-	if (err < 0)
-		throw MakeFfmpegError(err, "avformat_open_input() failed");
+	context.OpenInput(filename, fmt, &options);
 
 	return context;
 }
@@ -628,12 +623,8 @@ ffmpeg_decode(DecoderClient &client, InputStream &input)
 		return;
 	}
 
-	AVFormatContext *format_context =
+	auto format_context =
 		FfmpegOpenInput(stream.io, input.GetURI(), nullptr);
-
-	AtScopeExit(&format_context) {
-		avformat_close_input(&format_context);
-	};
 
 	const auto *input_format = format_context->iformat;
 	FormatDebug(ffmpeg_domain, "detected input format '%s' (%s)",
@@ -683,11 +674,7 @@ try {
 	if (!stream.Open())
 		return false;
 
-	AVFormatContext *f = FfmpegOpenInput(stream.io, is.GetURI(), nullptr);
-	AtScopeExit(&f) {
-		avformat_close_input(&f);
-	};
-
+	auto f = FfmpegOpenInput(stream.io, is.GetURI(), nullptr);
 	return FfmpegScanStream(*f, handler);
 } catch (...) {
 	return false;
