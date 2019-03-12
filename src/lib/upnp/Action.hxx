@@ -24,14 +24,14 @@
 
 #include <upnptools.h>
 
-static inline constexpr unsigned
+static constexpr unsigned
 CountNameValuePairs() noexcept
 {
 	return 0;
 }
 
 template<typename... Args>
-static inline constexpr unsigned
+static constexpr unsigned
 CountNameValuePairs(gcc_unused const char *name, gcc_unused const char *value,
 		    Args... args) noexcept
 {
