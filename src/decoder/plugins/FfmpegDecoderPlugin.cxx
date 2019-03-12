@@ -678,23 +678,19 @@ FfmpegScanStream(AVFormatContext &format_context,
 
 static bool
 ffmpeg_scan_stream(InputStream &is, TagHandler &handler) noexcept
-{
+try {
 	AvioStream stream(nullptr, is);
 	if (!stream.Open())
 		return false;
 
-	AVFormatContext *f;
-	try {
-		f = FfmpegOpenInput(stream.io, is.GetURI(), nullptr);
-	} catch (...) {
-		return false;
-	}
-
+	AVFormatContext *f = FfmpegOpenInput(stream.io, is.GetURI(), nullptr);
 	AtScopeExit(&f) {
 		avformat_close_input(&f);
 	};
 
 	return FfmpegScanStream(*f, handler);
+} catch (...) {
+	return false;
 }
 
 /**
