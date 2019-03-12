@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2018 The Music Player Daemon Project
+ * Copyright 2003-2019 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -39,13 +39,13 @@
  * one of them takes effect.
  */
 
+#include "RouteFilterPlugin.hxx"
 #include "config/Domain.hxx"
 #include "config/Block.hxx"
 #include "AudioFormat.hxx"
 #include "filter/FilterPlugin.hxx"
 #include "filter/Filter.hxx"
 #include "filter/Prepared.hxx"
-#include "filter/FilterRegistry.hxx"
 #include "pcm/PcmBuffer.hxx"
 #include "pcm/Silence.hxx"
 #include "util/StringStrip.hxx"

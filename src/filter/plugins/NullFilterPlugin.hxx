@@ -17,27 +17,11 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "FilterRegistry.hxx"
-#include "FilterPlugin.hxx"
-#include "plugins/NullFilterPlugin.hxx"
-#include "plugins/RouteFilterPlugin.hxx"
-#include "plugins/NormalizeFilterPlugin.hxx"
+#ifndef MPD_NULL_FILTER_PLUGIN_HXX
+#define MPD_NULL_FILTER_PLUGIN_HXX
 
-#include <string.h>
+struct FilterPlugin;
 
-static const FilterPlugin *const filter_plugins[] = {
-	&null_filter_plugin,
-	&route_filter_plugin,
-	&normalize_filter_plugin,
-	nullptr,
-};
+extern const FilterPlugin null_filter_plugin;
 
-const FilterPlugin *
-filter_plugin_by_name(const char *name) noexcept
-{
-	for (unsigned i = 0; filter_plugins[i] != nullptr; ++i)
-		if (strcmp(filter_plugins[i]->name, name) == 0)
-			return filter_plugins[i];
-
-	return nullptr;
-}
+#endif
