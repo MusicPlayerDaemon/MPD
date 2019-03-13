@@ -51,7 +51,7 @@ struct FfmpegInputStream final : public InputStream {
 		SetReady();
 	}
 
-	~FfmpegInputStream() {
+	~FfmpegInputStream() noexcept {
 		avio_close(h);
 	}
 
@@ -61,8 +61,9 @@ struct FfmpegInputStream final : public InputStream {
 	void Seek(offset_type offset) override;
 };
 
+gcc_const
 static inline bool
-input_ffmpeg_supported(void)
+input_ffmpeg_supported() noexcept
 {
 	void *opaque = nullptr;
 	return avio_enum_protocols(&opaque, 0) != nullptr;
