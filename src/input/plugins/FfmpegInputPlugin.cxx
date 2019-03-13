@@ -34,13 +34,13 @@ extern "C" {
 class FfmpegInputStream final : public InputStream {
 	AVIOContext *h;
 
-	bool eof;
+	bool eof = false;
 
 public:
 	FfmpegInputStream(const char *_uri, Mutex &_mutex,
 			  AVIOContext *_h)
 		:InputStream(_uri, _mutex),
-		 h(_h), eof(false) {
+		 h(_h) {
 		seekable = (h->seekable & AVIO_SEEKABLE_NORMAL) != 0;
 		size = avio_size(h);
 
