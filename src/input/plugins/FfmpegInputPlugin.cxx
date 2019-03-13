@@ -31,11 +31,12 @@ extern "C" {
 #include <libavformat/avio.h>
 }
 
-struct FfmpegInputStream final : public InputStream {
+class FfmpegInputStream final : public InputStream {
 	AVIOContext *h;
 
 	bool eof;
 
+public:
 	FfmpegInputStream(const char *_uri, Mutex &_mutex,
 			  AVIOContext *_h)
 		:InputStream(_uri, _mutex),
