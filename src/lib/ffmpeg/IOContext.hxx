@@ -70,6 +70,11 @@ public:
 		return avio_size(io_context);
 	}
 
+	gcc_pure
+	bool IsEOF() const noexcept {
+		return avio_feof(io_context) != 0;
+	}
+
 	size_t Read(void *buffer, size_t size) {
 		int result = avio_read_partial(io_context,
 					       (unsigned char *)buffer, size);

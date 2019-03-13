@@ -31,8 +31,6 @@
 class FfmpegInputStream final : public InputStream {
 	Ffmpeg::IOContext io;
 
-	bool eof = false;
-
 public:
 	FfmpegInputStream(const char *_uri, Mutex &_mutex)
 		:InputStream(_uri, _mutex),
@@ -90,11 +88,6 @@ FfmpegInputStream::Read(void *ptr, size_t read_size)
 		result = io.Read(ptr, read_size);
 	}
 
-	if (result == 0) {
-		eof = true;
-		return 0;
-	}
-
 	offset += result;
 	return (size_t)result;
 }
@@ -102,7 +95,7 @@ FfmpegInputStream::Read(void *ptr, size_t read_size)
 bool
 FfmpegInputStream::IsEOF() noexcept
 {
-	return eof;
+	return io.IsEOF();
 }
 
 void
@@ -116,7 +109,6 @@ FfmpegInputStream::Seek(offset_type new_offset)
 	}
 
 	offset = result;
-	eof = false;
 }
 
 static constexpr const char *ffmpeg_prefixes[] = {
