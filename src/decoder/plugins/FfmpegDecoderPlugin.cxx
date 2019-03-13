@@ -29,6 +29,7 @@
 #include "lib/ffmpeg/Buffer.hxx"
 #include "lib/ffmpeg/Frame.hxx"
 #include "lib/ffmpeg/Format.hxx"
+#include "lib/ffmpeg/Codec.hxx"
 #include "../DecoderAPI.hxx"
 #include "FfmpegMetaData.hxx"
 #include "FfmpegIo.hxx"
@@ -524,23 +525,9 @@ FfmpegDecode(DecoderClient &client, InputStream &input,
 		return;
 	}
 
-	AVCodecContext *codec_context = avcodec_alloc_context3(codec);
-	if (codec_context == nullptr) {
-		LogError(ffmpeg_domain, "avcodec_alloc_context3() failed");
-		return;
-	}
-
-	AtScopeExit(&codec_context) {
-		avcodec_free_context(&codec_context);
-	};
-
-	avcodec_parameters_to_context(codec_context, av_stream.codecpar);
-
-	const int open_result = avcodec_open2(codec_context, codec, nullptr);
-	if (open_result < 0) {
-		LogError(ffmpeg_domain, "Could not open codec");
-		return;
-	}
+	Ffmpeg::CodecContext codec_context(*codec);
+	codec_context.FillFromParameters(*av_stream.codecpar);
+	codec_context.Open(*codec, nullptr);
 
 	const SampleFormat sample_format =
 		ffmpeg_sample_format(codec_context->sample_fmt);
@@ -583,7 +570,7 @@ FfmpegDecode(DecoderClient &client, InputStream &input,
 					  AVSEEK_FLAG_ANY|AVSEEK_FLAG_BACKWARD) < 0)
 				client.SeekError();
 			else {
-				avcodec_flush_buffers(codec_context);
+				codec_context.FlushBuffers();
 				min_frame = client.GetSeekFrame();
 				client.CommandFinished();
 			}
