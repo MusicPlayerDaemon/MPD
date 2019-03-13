@@ -71,8 +71,8 @@ public:
 	}
 
 	size_t Read(void *buffer, size_t size) {
-		int result = avio_read(io_context,
-				       (unsigned char *)buffer, size);
+		int result = avio_read_partial(io_context,
+					       (unsigned char *)buffer, size);
 		if (result < 0)
 			throw MakeFfmpegError(result, "avio_read() failed");
 
