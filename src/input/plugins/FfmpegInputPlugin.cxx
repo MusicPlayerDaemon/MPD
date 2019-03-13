@@ -21,28 +21,25 @@
 #define __STDC_CONSTANT_MACROS
 
 #include "FfmpegInputPlugin.hxx"
+#include "lib/ffmpeg/IOContext.hxx"
 #include "lib/ffmpeg/Init.hxx"
 #include "lib/ffmpeg/Error.hxx"
 #include "../InputStream.hxx"
 #include "../InputPlugin.hxx"
 #include "PluginUnavailable.hxx"
 
-extern "C" {
-#include <libavformat/avio.h>
-}
-
 class FfmpegInputStream final : public InputStream {
-	AVIOContext *h;
+	Ffmpeg::IOContext io;
 
 	bool eof = false;
 
 public:
-	FfmpegInputStream(const char *_uri, Mutex &_mutex,
-			  AVIOContext *_h)
+	FfmpegInputStream(const char *_uri, Mutex &_mutex)
 		:InputStream(_uri, _mutex),
-		 h(_h) {
-		seekable = (h->seekable & AVIO_SEEKABLE_NORMAL) != 0;
-		size = avio_size(h);
+		 io(_uri, AVIO_FLAG_READ)
+	{
+		seekable = (io->seekable & AVIO_SEEKABLE_NORMAL) != 0;
+		size = io.GetSize();
 
 		/* hack to make MPD select the "ffmpeg" decoder plugin
 		   - since avio.h doesn't tell us the MIME type of the
@@ -50,10 +47,6 @@ public:
 		   "ffmpeg" plugin is quite good at auto-detection */
 		SetMimeType("audio/x-mpd-ffmpeg");
 		SetReady();
-	}
-
-	~FfmpegInputStream() noexcept {
-		avio_close(h);
 	}
 
 	/* virtual methods from InputStream */
@@ -84,28 +77,20 @@ static InputStreamPtr
 input_ffmpeg_open(const char *uri,
 		  Mutex &mutex)
 {
-	AVIOContext *h;
-	auto result = avio_open(&h, uri, AVIO_FLAG_READ);
-	if (result != 0)
-		throw MakeFfmpegError(result);
-
-	return std::make_unique<FfmpegInputStream>(uri, mutex, h);
+	return std::make_unique<FfmpegInputStream>(uri, mutex);
 }
 
 size_t
 FfmpegInputStream::Read(void *ptr, size_t read_size)
 {
-	int result;
+	size_t result;
 
 	{
 		const ScopeUnlock unlock(mutex);
-		result = avio_read(h, (unsigned char *)ptr, read_size);
+		result = io.Read(ptr, read_size);
 	}
 
-	if (result <= 0) {
-		if (result < 0)
-			throw MakeFfmpegError(result, "avio_read() failed");
-
+	if (result == 0) {
 		eof = true;
 		return 0;
 	}
@@ -123,15 +108,12 @@ FfmpegInputStream::IsEOF() noexcept
 void
 FfmpegInputStream::Seek(offset_type new_offset)
 {
-	int64_t result;
+	uint64_t result;
 
 	{
 		const ScopeUnlock unlock(mutex);
-		result = avio_seek(h, new_offset, SEEK_SET);
+		result = io.Seek(new_offset);
 	}
-
-	if (result < 0)
-		throw MakeFfmpegError(result, "avio_seek() failed");
 
 	offset = result;
 	eof = false;
