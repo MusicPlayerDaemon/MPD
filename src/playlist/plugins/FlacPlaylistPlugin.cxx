@@ -34,7 +34,7 @@
 #include <FLAC/metadata.h>
 
 class FlacPlaylist final : public SongEnumerator {
-	const char *const uri;
+	const std::string uri;
 
 	FLAC__StreamMetadata *const cuesheet;
 	const unsigned sample_rate;
