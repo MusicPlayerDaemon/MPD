@@ -7,6 +7,8 @@ ver 0.21.6 (not yet released)
 * playlist
   - flac: fix use-after-free bug
 * support abstract sockets on Linux
+* Windows
+  - remove the unused libwinpthread-1.dll dependency
 
 ver 0.21.5 (2019/02/22)
 * protocol
