@@ -3,6 +3,8 @@ ver 0.21.6 (not yet released)
   - allow loading playlists specified as absolute filesystem paths
 * input
   - cdio_paranoia: fix build failure due to missing #include
+* playlist
+  - flac: fix use-after-free bug
 * support abstract sockets on Linux
 
 ver 0.21.5 (2019/02/22)
