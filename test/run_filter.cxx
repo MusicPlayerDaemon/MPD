@@ -61,8 +61,6 @@ LoadFilter(const ConfigData &config, const char *name)
 
 int main(int argc, char **argv)
 try {
-	char buffer[4096];
-
 	if (argc < 3 || argc > 4) {
 		fprintf(stderr, "Usage: run_filter CONFIG NAME [FORMAT] <IN\n");
 		return EXIT_FAILURE;
@@ -97,6 +95,8 @@ try {
 	/* play */
 
 	while (true) {
+		char buffer[4096];
+
 		ssize_t nbytes;
 
 		nbytes = read(0, buffer, sizeof(buffer));
