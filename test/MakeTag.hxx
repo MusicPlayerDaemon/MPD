@@ -22,13 +22,14 @@
 #include "util/Compiler.h"
 
 inline void
-BuildTag(gcc_unused TagBuilder &tag)
+BuildTag(gcc_unused TagBuilder &tag) noexcept
 {
 }
 
 template<typename... Args>
 inline void
-BuildTag(TagBuilder &tag, TagType type, const char *value, Args&&... args)
+BuildTag(TagBuilder &tag, TagType type, const char *value,
+	 Args&&... args) noexcept
 {
 	tag.AddItem(type, value);
 	BuildTag(tag, std::forward<Args>(args)...);
@@ -36,7 +37,7 @@ BuildTag(TagBuilder &tag, TagType type, const char *value, Args&&... args)
 
 template<typename... Args>
 inline Tag
-MakeTag(Args&&... args)
+MakeTag(Args&&... args) noexcept
 {
 	TagBuilder tag;
 	BuildTag(tag, std::forward<Args>(args)...);
