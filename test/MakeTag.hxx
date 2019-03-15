@@ -21,13 +21,13 @@
 #include "tag/Tag.hxx"
 #include "util/Compiler.h"
 
-static void
+inline void
 BuildTag(gcc_unused TagBuilder &tag)
 {
 }
 
 template<typename... Args>
-static void
+inline void
 BuildTag(TagBuilder &tag, TagType type, const char *value, Args&&... args)
 {
 	tag.AddItem(type, value);
@@ -35,7 +35,7 @@ BuildTag(TagBuilder &tag, TagType type, const char *value, Args&&... args)
 }
 
 template<typename... Args>
-static Tag
+inline Tag
 MakeTag(Args&&... args)
 {
 	TagBuilder tag;
