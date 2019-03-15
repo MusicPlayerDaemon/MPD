@@ -207,11 +207,11 @@ backslash.
 
 Example expression which matches an artist named ``foo'bar"``::
 
- (artist "foo\'bar\"")
+ (Artist == "foo\'bar\"")
 
 At the protocol level, the command must look like this::
 
- find "(artist \"foo\\'bar\\\"\")"
+ find "(Artist == \"foo\\'bar\\\"\")"
 
 The double quotes enclosing the artist name must be escaped because
 they are inside a double-quoted ``find`` parameter.  The single quote
