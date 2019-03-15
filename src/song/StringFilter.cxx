@@ -25,10 +25,7 @@
 bool
 StringFilter::MatchWithoutNegation(const char *s) const noexcept
 {
-#if !CLANG_CHECK_VERSION(3,6)
-	/* disabled on clang due to -Wtautological-pointer-compare */
 	assert(s != nullptr);
-#endif
 
 #ifdef HAVE_PCRE
 	if (regex)
