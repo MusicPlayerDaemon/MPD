@@ -55,21 +55,20 @@ TagSongFilter::Match(const Tag &tag) const noexcept
 
 	if (type < TAG_NUM_OF_ITEM_TYPES && !visited_types[type]) {
 		bool result = false;
-		if (ApplyTagFallback(type,
-				     [&](TagType tag2) {
-			     if (!visited_types[tag2])
-				     return false;
+		if (ApplyTagFallback(type, [&](TagType tag2) {
+			if (!visited_types[tag2])
+				return false;
 
-			     for (const auto &item : tag) {
-				     if (item.type == tag2 &&
-					 filter.Match(item.value)) {
-					     result = true;
-					     break;
-				     }
-			     }
+			for (const auto &item : tag) {
+				if (item.type == tag2 &&
+				    filter.Match(item.value)) {
+					result = true;
+					break;
+				}
+			}
 
-			     return true;
-		     }))
+			return true;
+		}))
 			return result;
 
 		/* If the search critieron was not visited during the
