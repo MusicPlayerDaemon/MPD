@@ -146,9 +146,9 @@ of:
 
 - ``(TAG == 'VALUE')``: match a tag value.
   ``(TAG != 'VALUE')``: mismatch a tag value.
-  The special tag "*any*" checks all
+  The special tag ``any`` checks all
   tag types.
-  *albumartist* looks for
+  ``AlbumArtist`` looks for
   ``VALUE`` in ``AlbumArtist``
   and falls back to ``Artist`` tags if
   ``AlbumArtist`` does not exist.
@@ -178,7 +178,7 @@ of:
 
 - ``(AudioFormat =~ 'SAMPLERATE:BITS:CHANNELS')``:
   matches the audio format with the given mask (i.e. one
-  or more attributes may be "*").
+  or more attributes may be ``*``).
 
 - ``(!EXPRESSION)``: negate an expression.  Note that each expression
   must be enclosed in parantheses, e.g. :code:`(!(artist == 'VALUE'))`
