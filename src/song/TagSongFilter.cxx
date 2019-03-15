@@ -35,13 +35,6 @@ TagSongFilter::ToExpression() const noexcept
 }
 
 bool
-TagSongFilter::Match(const TagItem &item) const noexcept
-{
-	return (type == TAG_NUM_OF_ITEM_TYPES || item.type == type) &&
-		filter.Match(item.value);
-}
-
-bool
 TagSongFilter::Match(const Tag &tag) const noexcept
 {
 	bool visited_types[TAG_NUM_OF_ITEM_TYPES]{};
@@ -49,7 +42,8 @@ TagSongFilter::Match(const Tag &tag) const noexcept
 	for (const auto &i : tag) {
 		visited_types[i.type] = true;
 
-		if (Match(i))
+		if ((type == TAG_NUM_OF_ITEM_TYPES || i.type == type) &&
+		    filter.Match(i.value))
 			return true;
 	}
 

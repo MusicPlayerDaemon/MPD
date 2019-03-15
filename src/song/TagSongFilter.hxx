@@ -69,7 +69,6 @@ public:
 
 private:
 	bool Match(const Tag &tag) const noexcept;
-	bool Match(const TagItem &tag) const noexcept;
 };
 
 #endif
