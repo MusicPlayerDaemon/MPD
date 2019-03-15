@@ -2,6 +2,7 @@
  * Unit tests for playlist_check_translate_song().
  */
 
+#include "MakeTag.hxx"
 #include "playlist/PlaylistSong.hxx"
 #include "song/DetachedSong.hxx"
 #include "SongLoader.hxx"
@@ -37,28 +38,6 @@ uri_supported_scheme(const char *uri) noexcept
 
 static constexpr auto music_directory = PATH_LITERAL("/music");
 static Storage *storage;
-
-static void
-BuildTag(gcc_unused TagBuilder &tag)
-{
-}
-
-template<typename... Args>
-static void
-BuildTag(TagBuilder &tag, TagType type, const char *value, Args&&... args)
-{
-	tag.AddItem(type, value);
-	BuildTag(tag, std::forward<Args>(args)...);
-}
-
-template<typename... Args>
-static Tag
-MakeTag(Args&&... args)
-{
-	TagBuilder tag;
-	BuildTag(tag, std::forward<Args>(args)...);
-	return tag.Commit();
-}
 
 static Tag
 MakeTag1a()
