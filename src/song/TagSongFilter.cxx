@@ -54,9 +54,15 @@ TagSongFilter::Match(const Tag &tag) const noexcept
 	}
 
 	if (type < TAG_NUM_OF_ITEM_TYPES && !visited_types[type]) {
+		/* if the specified tag is not present, try the
+		   fallback tags */
+
 		bool result = false;
 		if (ApplyTagFallback(type, [&](TagType tag2) {
 			if (!visited_types[tag2])
+				/* we already know that this tag type
+				   isn't present, so let's bail out
+				   without checking again */
 				return false;
 
 			for (const auto &item : tag) {
