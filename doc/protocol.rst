@@ -147,7 +147,7 @@ of:
 - ``(TAG == 'VALUE')``: match a tag value.
   ``(TAG != 'VALUE')``: mismatch a tag value.
   The special tag "*any*" checks all
-  tag values.
+  tag types.
   *albumartist* looks for
   ``VALUE`` in ``AlbumArtist``
   and falls back to ``Artist`` tags if
