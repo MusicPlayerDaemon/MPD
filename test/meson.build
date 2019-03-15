@@ -215,6 +215,19 @@ executable(
   ],
 )
 
+test(
+  'TestSongFilter',
+  executable(
+    'TestSongFilter',
+    'TestTagSongFilter.cxx',
+    include_directories: inc,
+    dependencies: [
+      song_dep,
+      gtest_dep,
+    ],
+  )
+)
+
 #
 # Neighbor
 #
