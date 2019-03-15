@@ -22,6 +22,11 @@
 
 #include <utility>
 
+/**
+ * Invoke the given function for all fallback tags of the given
+ * #TagType, until the function returns true (or until there are no
+ * more fallback tags).
+ */
 template<typename F>
 bool
 ApplyTagFallback(TagType type, F &&f) noexcept
@@ -43,6 +48,11 @@ ApplyTagFallback(TagType type, F &&f) noexcept
 	return false;
 }
 
+/**
+ * Invoke the given function for the given #TagType and all of its
+ * fallback tags, until the function returns true (or until there are
+ * no more fallback tags).
+ */
 template<typename F>
 bool
 ApplyTagWithFallback(TagType type, F &&f) noexcept
