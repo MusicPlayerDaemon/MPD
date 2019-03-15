@@ -22,7 +22,7 @@
 
 #include <assert.h>
 
-inline bool
+bool
 StringFilter::MatchWithoutNegation(const char *s) const noexcept
 {
 #if !CLANG_CHECK_VERSION(3,6)
