@@ -35,14 +35,14 @@ TagSongFilter::ToExpression() const noexcept
 }
 
 bool
-TagSongFilter::MatchNN(const TagItem &item) const noexcept
+TagSongFilter::Match(const TagItem &item) const noexcept
 {
 	return (type == TAG_NUM_OF_ITEM_TYPES || item.type == type) &&
 		filter.Match(item.value);
 }
 
 bool
-TagSongFilter::MatchNN(const Tag &tag) const noexcept
+TagSongFilter::Match(const Tag &tag) const noexcept
 {
 	bool visited_types[TAG_NUM_OF_ITEM_TYPES];
 	std::fill_n(visited_types, size_t(TAG_NUM_OF_ITEM_TYPES), false);
@@ -50,7 +50,7 @@ TagSongFilter::MatchNN(const Tag &tag) const noexcept
 	for (const auto &i : tag) {
 		visited_types[i.type] = true;
 
-		if (MatchNN(i))
+		if (Match(i))
 			return true;
 	}
 
@@ -89,5 +89,5 @@ TagSongFilter::MatchNN(const Tag &tag) const noexcept
 bool
 TagSongFilter::Match(const LightSong &song) const noexcept
 {
-	return MatchNN(song.tag);
+	return Match(song.tag);
 }
