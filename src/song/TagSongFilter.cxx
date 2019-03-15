@@ -43,8 +43,8 @@ TagSongFilter::Match(const Tag &tag) const noexcept
 		visited_types[i.type] = true;
 
 		if ((type == TAG_NUM_OF_ITEM_TYPES || i.type == type) &&
-		    filter.Match(i.value))
-			return true;
+		    filter.MatchWithoutNegation(i.value))
+			return !filter.IsNegated();
 	}
 
 	if (type < TAG_NUM_OF_ITEM_TYPES && !visited_types[type]) {
@@ -61,7 +61,7 @@ TagSongFilter::Match(const Tag &tag) const noexcept
 
 			for (const auto &item : tag) {
 				if (item.type == tag2 &&
-				    filter.Match(item.value)) {
+				    filter.MatchWithoutNegation(item.value)) {
 					result = true;
 					break;
 				}
@@ -69,7 +69,7 @@ TagSongFilter::Match(const Tag &tag) const noexcept
 
 			return true;
 		}))
-			return result;
+			return result != filter.IsNegated();
 
 		/* If the search critieron was not visited during the
 		   sweep through the song's tag, it means this field
@@ -78,10 +78,10 @@ TagSongFilter::Match(const Tag &tag) const noexcept
 		   then it's a match as well and we should return
 		   true. */
 		if (filter.empty())
-			return true;
+			return !filter.IsNegated();
 	}
 
-	return false;
+	return filter.IsNegated();
 }
 
 bool
