@@ -581,8 +581,8 @@ PulseOutput::SetupStream(const pa_sample_spec &ss)
 
 	/* WAVE-EX is been adopted as the speaker map for most media files */
 	pa_channel_map chan_map;
-	pa_channel_map_init_auto(&chan_map, ss.channels,
-				 PA_CHANNEL_MAP_WAVEEX);
+	pa_channel_map_init_extend(&chan_map, ss.channels,
+				   PA_CHANNEL_MAP_WAVEEX);
 	stream = pa_stream_new(context, name, &ss, &chan_map);
 	if (stream == nullptr)
 		throw MakePulseError(context,
