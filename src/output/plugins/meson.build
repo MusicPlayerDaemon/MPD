@@ -76,7 +76,10 @@ if is_darwin
   audiounit_dep = declare_dependency(
     link_args: [
       '-framework', 'AudioUnit', '-framework', 'CoreAudio', '-framework', 'CoreServices',
-    ]
+    ],
+    dependencies: [
+      boost_dep,
+    ],
   )
 else
   audiounit_dep = dependency('', required: false)

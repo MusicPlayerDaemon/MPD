@@ -9,6 +9,7 @@ ver 0.21.6 (not yet released)
   - opus: fix replay gain when there are no other tags
 * output
   - pulse: work around error with unusual channel count
+  - osx: fix build failure
 * playlist
   - flac: fix use-after-free bug
 * support abstract sockets on Linux
