@@ -144,8 +144,10 @@ syntax::
 ``EXPRESSION`` is a string enclosed in parantheses which can be one
 of:
 
-- ``(TAG == 'VALUE')``: match a tag value.
-  ``(TAG != 'VALUE')``: mismatch a tag value.
+- ``(TAG == 'VALUE')``: match a tag value; if there are multiple
+  values of the given type, at least one must match.
+  ``(TAG != 'VALUE')``: mismatch a tag value; if there are multiple
+  values of the given type, none of them must match.
   The special tag ``any`` checks all
   tag types.
   ``AlbumArtist`` looks for
@@ -153,6 +155,9 @@ of:
   and falls back to ``Artist`` tags if
   ``AlbumArtist`` does not exist.
   ``VALUE`` is what to find.
+  An empty value string means: match only if the given tag type does
+  not exist at all; this implies that negation with an empty value
+  checks for the existence of the given tag type.
 
 - ``(TAG contains 'VALUE')`` checks if the given value is a substring
   of the tag value.
