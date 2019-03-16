@@ -5,9 +5,14 @@ ver 0.22 (not yet released)
 ver 0.21.6 (not yet released)
 * protocol
   - allow loading playlists specified as absolute filesystem paths
+  - fix negated filter expressions with multiple tag values
   - fix "list" with filter expression
 * input
   - cdio_paranoia: fix build failure due to missing #include
+* decoder
+  - opus: fix replay gain when there are no other tags
+* output
+  - pulse: work around error with unusual channel count
 * playlist
   - flac: fix use-after-free bug
 * support abstract sockets on Linux

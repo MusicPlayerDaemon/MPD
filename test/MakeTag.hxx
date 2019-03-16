@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2018 The Music Player Daemon Project
+ * Copyright 2003-2019 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,34 +17,29 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "StringFilter.hxx"
-#include "util/StringCompare.hxx"
+#include "tag/Builder.hxx"
+#include "tag/Tag.hxx"
+#include "util/Compiler.h"
 
-#include <assert.h>
-
-bool
-StringFilter::MatchWithoutNegation(const char *s) const noexcept
+inline void
+BuildTag(gcc_unused TagBuilder &tag) noexcept
 {
-	assert(s != nullptr);
-
-#ifdef HAVE_PCRE
-	if (regex)
-		return regex->Match(s);
-#endif
-
-	if (fold_case) {
-		return substring
-			? fold_case.IsIn(s)
-			: fold_case == s;
-	} else {
-		return substring
-			? StringFind(s, value.c_str()) != nullptr
-			: value == s;
-	}
 }
 
-bool
-StringFilter::Match(const char *s) const noexcept
+template<typename... Args>
+inline void
+BuildTag(TagBuilder &tag, TagType type, const char *value,
+	 Args&&... args) noexcept
 {
-	return MatchWithoutNegation(s) != negated;
+	tag.AddItem(type, value);
+	BuildTag(tag, std::forward<Args>(args)...);
+}
+
+template<typename... Args>
+inline Tag
+MakeTag(Args&&... args) noexcept
+{
+	TagBuilder tag;
+	BuildTag(tag, std::forward<Args>(args)...);
+	return tag.Commit();
 }

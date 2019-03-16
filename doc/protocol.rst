@@ -144,15 +144,20 @@ syntax::
 ``EXPRESSION`` is a string enclosed in parantheses which can be one
 of:
 
-- ``(TAG == 'VALUE')``: match a tag value.
-  ``(TAG != 'VALUE')``: mismatch a tag value.
-  The special tag "*any*" checks all
-  tag values.
-  *albumartist* looks for
+- ``(TAG == 'VALUE')``: match a tag value; if there are multiple
+  values of the given type, at least one must match.
+  ``(TAG != 'VALUE')``: mismatch a tag value; if there are multiple
+  values of the given type, none of them must match.
+  The special tag ``any`` checks all
+  tag types.
+  ``AlbumArtist`` looks for
   ``VALUE`` in ``AlbumArtist``
   and falls back to ``Artist`` tags if
   ``AlbumArtist`` does not exist.
   ``VALUE`` is what to find.
+  An empty value string means: match only if the given tag type does
+  not exist at all; this implies that negation with an empty value
+  checks for the existence of the given tag type.
 
 - ``(TAG contains 'VALUE')`` checks if the given value is a substring
   of the tag value.
@@ -178,7 +183,7 @@ of:
 
 - ``(AudioFormat =~ 'SAMPLERATE:BITS:CHANNELS')``:
   matches the audio format with the given mask (i.e. one
-  or more attributes may be "*").
+  or more attributes may be ``*``).
 
 - ``(!EXPRESSION)``: negate an expression.  Note that each expression
   must be enclosed in parantheses, e.g. :code:`(!(artist == 'VALUE'))`
@@ -207,11 +212,11 @@ backslash.
 
 Example expression which matches an artist named ``foo'bar"``::
 
- (artist "foo\'bar\"")
+ (Artist == "foo\'bar\"")
 
 At the protocol level, the command must look like this::
 
- find "(artist \"foo\\'bar\\\"\")"
+ find "(Artist == \"foo\\'bar\\\"\")"
 
 The double quotes enclosing the artist name must be escaped because
 they are inside a double-quoted ``find`` parameter.  The single quote

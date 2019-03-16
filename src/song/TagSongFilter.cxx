@@ -35,42 +35,41 @@ TagSongFilter::ToExpression() const noexcept
 }
 
 bool
-TagSongFilter::MatchNN(const TagItem &item) const noexcept
-{
-	return (type == TAG_NUM_OF_ITEM_TYPES || item.type == type) &&
-		filter.Match(item.value);
-}
-
-bool
-TagSongFilter::MatchNN(const Tag &tag) const noexcept
+TagSongFilter::Match(const Tag &tag) const noexcept
 {
 	bool visited_types[TAG_NUM_OF_ITEM_TYPES]{};
 
 	for (const auto &i : tag) {
 		visited_types[i.type] = true;
 
-		if (MatchNN(i))
-			return true;
+		if ((type == TAG_NUM_OF_ITEM_TYPES || i.type == type) &&
+		    filter.MatchWithoutNegation(i.value))
+			return !filter.IsNegated();
 	}
 
 	if (type < TAG_NUM_OF_ITEM_TYPES && !visited_types[type]) {
+		/* if the specified tag is not present, try the
+		   fallback tags */
+
 		bool result = false;
-		if (ApplyTagFallback(type,
-				     [&](TagType tag2) {
-			     if (!visited_types[tag2])
-				     return false;
+		if (ApplyTagFallback(type, [&](TagType tag2) {
+			if (!visited_types[tag2])
+				/* we already know that this tag type
+				   isn't present, so let's bail out
+				   without checking again */
+				return false;
 
-			     for (const auto &item : tag) {
-				     if (item.type == tag2 &&
-					 filter.Match(item.value)) {
-					     result = true;
-					     break;
-				     }
-			     }
+			for (const auto &item : tag) {
+				if (item.type == tag2 &&
+				    filter.MatchWithoutNegation(item.value)) {
+					result = true;
+					break;
+				}
+			}
 
-			     return true;
-		     }))
-			return result;
+			return true;
+		}))
+			return result != filter.IsNegated();
 
 		/* If the search critieron was not visited during the
 		   sweep through the song's tag, it means this field
@@ -79,14 +78,14 @@ TagSongFilter::MatchNN(const Tag &tag) const noexcept
 		   then it's a match as well and we should return
 		   true. */
 		if (filter.empty())
-			return true;
+			return !filter.IsNegated();
 	}
 
-	return false;
+	return filter.IsNegated();
 }
 
 bool
 TagSongFilter::Match(const LightSong &song) const noexcept
 {
-	return MatchNN(song.tag);
+	return Match(song.tag);
 }

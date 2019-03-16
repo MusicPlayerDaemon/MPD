@@ -208,10 +208,12 @@ MPDOpusDecoder::HandleTags(const ogg_packet &packet)
 	TagBuilder tag_builder;
 	AddTagHandler h(tag_builder);
 
-	if (ScanOpusTags(packet.packet, packet.bytes, &rgi, h) &&
-	    !tag_builder.empty()) {
-		client.SubmitReplayGain(&rgi);
+	if (!ScanOpusTags(packet.packet, packet.bytes, &rgi, h))
+		return;
 
+	client.SubmitReplayGain(&rgi);
+
+	if (!tag_builder.empty()) {
 		Tag tag = tag_builder.Commit();
 		auto cmd = client.SubmitTag(input_stream, std::move(tag));
 		if (cmd != DecoderCommand::NONE)

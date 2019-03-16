@@ -105,7 +105,9 @@ public:
 	gcc_pure
 	bool Match(const char *s) const noexcept;
 
-private:
+	/**
+	 * Like Match(), but ignore the "negated" flag.
+	 */
 	gcc_pure
 	bool MatchWithoutNegation(const char *s) const noexcept;
 };

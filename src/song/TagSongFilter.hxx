@@ -68,8 +68,7 @@ public:
 	bool Match(const LightSong &song) const noexcept override;
 
 private:
-	bool MatchNN(const Tag &tag) const noexcept;
-	bool MatchNN(const TagItem &tag) const noexcept;
+	bool Match(const Tag &tag) const noexcept;
 };
 
 #endif

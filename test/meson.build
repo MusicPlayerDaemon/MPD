@@ -21,16 +21,6 @@ gtest_dep = declare_dependency(
 subdir('net')
 
 executable(
-  'ParseSongFilter',
-  'ParseSongFilter.cxx',
-  include_directories: inc,
-  dependencies: [
-    song_dep,
-    pcm_dep,
-  ],
-)
-
-executable(
   'read_conf',
   'read_conf.cxx',
   '../src/Log.cxx',
@@ -210,6 +200,33 @@ if zlib_dep.found()
     ],
   )
 endif
+
+#
+# Filter
+#
+
+executable(
+  'ParseSongFilter',
+  'ParseSongFilter.cxx',
+  include_directories: inc,
+  dependencies: [
+    song_dep,
+    pcm_dep,
+  ],
+)
+
+test(
+  'TestSongFilter',
+  executable(
+    'TestSongFilter',
+    'TestTagSongFilter.cxx',
+    include_directories: inc,
+    dependencies: [
+      song_dep,
+      gtest_dep,
+    ],
+  )
+)
 
 #
 # Neighbor
