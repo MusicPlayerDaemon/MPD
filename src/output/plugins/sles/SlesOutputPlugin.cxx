@@ -27,7 +27,7 @@
 #include "thread/Cond.hxx"
 #include "util/Macros.hxx"
 #include "util/Domain.hxx"
-#include "system/ByteOrder.hxx"
+#include "util/ByteOrder.hxx"
 #include "Log.hxx"
 
 #include <SLES/OpenSLES.h>

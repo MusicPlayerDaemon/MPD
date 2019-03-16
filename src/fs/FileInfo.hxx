@@ -35,7 +35,7 @@
 
 #ifdef _WIN32
 
-static inline constexpr uint64_t
+static constexpr uint64_t
 ConstructUint64(DWORD lo, DWORD hi)
 {
 	return uint64_t(lo) | (uint64_t(hi) << 32);

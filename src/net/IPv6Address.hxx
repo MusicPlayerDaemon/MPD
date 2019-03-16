@@ -31,7 +31,7 @@
 #define IPV6_ADDRESS_HXX
 
 #include "SocketAddress.hxx"
-#include "system/ByteOrder.hxx"
+#include "util/ByteOrder.hxx"
 #include "util/Compiler.h"
 
 #include <stdint.h>

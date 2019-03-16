@@ -19,7 +19,7 @@
 
 #include "Aiff.hxx"
 #include "input/InputStream.hxx"
-#include "system/ByteOrder.hxx"
+#include "util/ByteOrder.hxx"
 
 #include <limits>
 #include <stdexcept>

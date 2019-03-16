@@ -79,6 +79,11 @@ public:
 		return FileDescriptor::CreatePipe(r, w);
 	}
 
+	static bool CreatePipeNonBlock(UniqueFileDescriptor &r,
+				       UniqueFileDescriptor &w) noexcept {
+		return FileDescriptor::CreatePipeNonBlock(r, w);
+	}
+
 	static bool CreatePipe(FileDescriptor &r, FileDescriptor &w) noexcept;
 #endif
 

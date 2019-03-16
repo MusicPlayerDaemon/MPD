@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2017 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2012-2019 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -66,14 +66,6 @@ public:
 		return reinterpret_cast<const struct sockaddr *>(&address);
 	}
 
-	struct sockaddr *GetAddress() noexcept {
-		return reinterpret_cast<struct sockaddr *>(&address);
-	}
-
-	const struct sockaddr *GetAddress() const noexcept {
-		return reinterpret_cast<const struct sockaddr *>(&address);
-	}
-
 	constexpr size_type GetCapacity() const noexcept {
 		return sizeof(address);
 	}
@@ -108,6 +100,14 @@ public:
 		size = sizeof(address.ss_family);
 		address.ss_family = AF_UNSPEC;
 	}
+
+#ifdef HAVE_UN
+	/**
+	 * @see SocketAddress::GetLocalRaw()
+	 */
+	gcc_pure
+	StringView GetLocalRaw() const noexcept;
+#endif
 
 #ifdef HAVE_TCP
 	/**

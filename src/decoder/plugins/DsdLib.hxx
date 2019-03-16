@@ -20,7 +20,7 @@
 #ifndef MPD_DECODER_DSDLIB_HXX
 #define MPD_DECODER_DSDLIB_HXX
 
-#include "system/ByteOrder.hxx"
+#include "util/ByteOrder.hxx"
 #include "input/Offset.hxx"
 #include "util/Compiler.h"
 

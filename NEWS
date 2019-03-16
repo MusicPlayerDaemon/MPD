@@ -1,8 +1,19 @@
+ver 0.22 (not yet released)
+* input
+  - ffmpeg: allow partial reads
+
 ver 0.21.6 (not yet released)
+* protocol
+  - allow loading playlists specified as absolute filesystem paths
+  - fix "list" with filter expression
 * input
   - cdio_paranoia: fix build failure due to missing #include
+* playlist
+  - flac: fix use-after-free bug
 * support abstract sockets on Linux
-* require Meson 0.49.0 for native libgcrypt-config support
+* require Meson 0.49.0 for Mesons native libgcrypt-config support
+* Windows
+  - remove the unused libwinpthread-1.dll dependency
 
 ver 0.21.5 (2019/02/22)
 * protocol

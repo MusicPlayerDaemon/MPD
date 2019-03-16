@@ -18,7 +18,7 @@
  */
 
 #include "ByteReverse.hxx"
-#include "system/ByteOrder.hxx"
+#include "util/ByteOrder.hxx"
 #include "Compiler.h"
 
 #include <assert.h>

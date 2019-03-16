@@ -45,13 +45,13 @@ static constexpr int PCM_VOLUME_1S = PCM_VOLUME_1;
  * Converts a float value (0.0 = silence, 1.0 = 100% volume) to an
  * integer volume value (1000 = 100%).
  */
-static constexpr inline int
+constexpr int
 pcm_float_to_volume(float volume) noexcept
 {
 	return volume * PCM_VOLUME_1 + 0.5;
 }
 
-static constexpr inline float
+constexpr float
 pcm_volume_to_float(int volume) noexcept
 {
 	return (float)volume / (float)PCM_VOLUME_1;

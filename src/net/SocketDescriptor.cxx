@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2017 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2012-2019 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -313,6 +313,13 @@ bool
 SocketDescriptor::SetTcpDeferAccept(const int &seconds) noexcept
 {
 	return SetOption(IPPROTO_TCP, TCP_DEFER_ACCEPT, &seconds, sizeof(seconds));
+}
+
+bool
+SocketDescriptor::SetTcpUserTimeout(const unsigned &milliseconds) noexcept
+{
+	return SetOption(IPPROTO_TCP, TCP_USER_TIMEOUT,
+			 &milliseconds, sizeof(milliseconds));
 }
 
 bool

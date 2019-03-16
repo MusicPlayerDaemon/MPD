@@ -29,7 +29,7 @@
 #include "pcm/PcmExport.hxx"
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
-#include "system/ByteOrder.hxx"
+#include "util/ByteOrder.hxx"
 #include "util/StringBuffer.hxx"
 #include "util/StringFormat.hxx"
 #include "Log.hxx"

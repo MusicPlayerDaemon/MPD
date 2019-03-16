@@ -268,7 +268,10 @@ handle_list(Client &client, Request args, Response &r)
 	std::unique_ptr<SongFilter> filter;
 	TagType group = TAG_NUM_OF_ITEM_TYPES;
 
-	if (args.size == 1) {
+	if (args.size == 1 &&
+	    /* parantheses are the syntax for filter expressions: no
+	       compatibility mode */
+	    args.front()[0] != '(') {
 		/* for compatibility with < 0.12.0 */
 		if (tagType != TAG_ALBUM) {
 			r.FormatError(ACK_ERROR_ARG,

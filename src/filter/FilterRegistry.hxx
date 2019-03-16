@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2018 The Music Player Daemon Project
+ * Copyright 2003-2019 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -29,10 +29,6 @@
 #include "util/Compiler.h"
 
 struct FilterPlugin;
-
-extern const FilterPlugin null_filter_plugin;
-extern const FilterPlugin route_filter_plugin;
-extern const FilterPlugin normalize_filter_plugin;
 
 gcc_pure
 const FilterPlugin *

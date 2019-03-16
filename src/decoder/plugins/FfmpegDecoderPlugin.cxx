@@ -27,6 +27,9 @@
 #include "lib/ffmpeg/LogError.hxx"
 #include "lib/ffmpeg/Init.hxx"
 #include "lib/ffmpeg/Buffer.hxx"
+#include "lib/ffmpeg/Frame.hxx"
+#include "lib/ffmpeg/Format.hxx"
+#include "lib/ffmpeg/Codec.hxx"
 #include "../DecoderAPI.hxx"
 #include "FfmpegMetaData.hxx"
 #include "FfmpegIo.hxx"
@@ -57,24 +60,18 @@ extern "C" {
  */
 static AVDictionary *avformat_options = nullptr;
 
-static AVFormatContext *
+static Ffmpeg::FormatContext
 FfmpegOpenInput(AVIOContext *pb,
 		const char *filename,
 		AVInputFormat *fmt)
 {
-	AVFormatContext *context = avformat_alloc_context();
-	if (context == nullptr)
-		throw std::runtime_error("avformat_alloc_context() failed");
-
-	context->pb = pb;
+	Ffmpeg::FormatContext context(pb);
 
 	AVDictionary *options = nullptr;
 	AtScopeExit(&options) { av_dict_free(&options); };
 	av_dict_copy(&options, avformat_options, 0);
 
-	int err = avformat_open_input(&context, filename, fmt, &options);
-	if (err < 0)
-		throw MakeFfmpegError(err, "avformat_open_input() failed");
+	context.OpenInput(filename, fmt, &options);
 
 	return context;
 }
@@ -215,16 +212,8 @@ FfmpegSendFrame(DecoderClient &client, InputStream &is,
 		size_t &skip_bytes,
 		FfmpegBuffer &buffer)
 {
-	ConstBuffer<void> output_buffer;
-
-	try {
-		output_buffer = copy_interleave_frame(codec_context, frame,
-						      buffer);
-	} catch (...) {
-		/* this must be a serious error, e.g. OOM */
-		LogError(std::current_exception());
-		return DecoderCommand::STOP;
-	}
+	ConstBuffer<void> output_buffer =
+		copy_interleave_frame(codec_context, frame, buffer);
 
 	if (skip_bytes > 0) {
 		if (skip_bytes >= output_buffer.size) {
@@ -536,23 +525,9 @@ FfmpegDecode(DecoderClient &client, InputStream &input,
 		return;
 	}
 
-	AVCodecContext *codec_context = avcodec_alloc_context3(codec);
-	if (codec_context == nullptr) {
-		LogError(ffmpeg_domain, "avcodec_alloc_context3() failed");
-		return;
-	}
-
-	AtScopeExit(&codec_context) {
-		avcodec_free_context(&codec_context);
-	};
-
-	avcodec_parameters_to_context(codec_context, av_stream.codecpar);
-
-	const int open_result = avcodec_open2(codec_context, codec, nullptr);
-	if (open_result < 0) {
-		LogError(ffmpeg_domain, "Could not open codec");
-		return;
-	}
+	Ffmpeg::CodecContext codec_context(*codec);
+	codec_context.FillFromParameters(*av_stream.codecpar);
+	codec_context.Open(*codec, nullptr);
 
 	const SampleFormat sample_format =
 		ffmpeg_sample_format(codec_context->sample_fmt);
@@ -574,15 +549,7 @@ FfmpegDecode(DecoderClient &client, InputStream &input,
 
 	FfmpegParseMetaData(client, format_context, audio_stream);
 
-	AVFrame *frame = av_frame_alloc();
-	if (!frame) {
-		LogError(ffmpeg_domain, "Could not allocate frame");
-		return;
-	}
-
-	AtScopeExit(&frame) {
-		av_frame_free(&frame);
-	};
+	Ffmpeg::Frame frame;
 
 	FfmpegBuffer interleaved_buffer;
 
@@ -603,7 +570,7 @@ FfmpegDecode(DecoderClient &client, InputStream &input,
 					  AVSEEK_FLAG_ANY|AVSEEK_FLAG_BACKWARD) < 0)
 				client.SeekError();
 			else {
-				avcodec_flush_buffers(codec_context);
+				codec_context.FlushBuffers();
 				min_frame = client.GetSeekFrame();
 				client.CommandFinished();
 			}
@@ -643,18 +610,8 @@ ffmpeg_decode(DecoderClient &client, InputStream &input)
 		return;
 	}
 
-	AVFormatContext *format_context;
-	try {
-		format_context =FfmpegOpenInput(stream.io, input.GetURI(),
-						nullptr);
-	} catch (...) {
-		LogError(std::current_exception());
-		return;
-	}
-
-	AtScopeExit(&format_context) {
-		avformat_close_input(&format_context);
-	};
+	auto format_context =
+		FfmpegOpenInput(stream.io, input.GetURI(), nullptr);
 
 	const auto *input_format = format_context->iformat;
 	FormatDebug(ffmpeg_domain, "detected input format '%s' (%s)",
@@ -699,23 +656,15 @@ FfmpegScanStream(AVFormatContext &format_context,
 
 static bool
 ffmpeg_scan_stream(InputStream &is, TagHandler &handler) noexcept
-{
+try {
 	AvioStream stream(nullptr, is);
 	if (!stream.Open())
 		return false;
 
-	AVFormatContext *f;
-	try {
-		f = FfmpegOpenInput(stream.io, is.GetURI(), nullptr);
-	} catch (...) {
-		return false;
-	}
-
-	AtScopeExit(&f) {
-		avformat_close_input(&f);
-	};
-
+	auto f = FfmpegOpenInput(stream.io, is.GetURI(), nullptr);
 	return FfmpegScanStream(*f, handler);
+} catch (...) {
+	return false;
 }
 
 /**

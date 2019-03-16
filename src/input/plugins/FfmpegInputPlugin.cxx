@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2018 The Music Player Daemon Project
+ * Copyright 2003-2019 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -21,29 +21,23 @@
 #define __STDC_CONSTANT_MACROS
 
 #include "FfmpegInputPlugin.hxx"
+#include "lib/ffmpeg/IOContext.hxx"
 #include "lib/ffmpeg/Init.hxx"
-#include "lib/ffmpeg/Domain.hxx"
 #include "lib/ffmpeg/Error.hxx"
 #include "../InputStream.hxx"
 #include "../InputPlugin.hxx"
 #include "PluginUnavailable.hxx"
-#include "util/ASCII.hxx"
 
-extern "C" {
-#include <libavformat/avio.h>
-}
+class FfmpegInputStream final : public InputStream {
+	Ffmpeg::IOContext io;
 
-struct FfmpegInputStream final : public InputStream {
-	AVIOContext *h;
-
-	bool eof;
-
-	FfmpegInputStream(const char *_uri, Mutex &_mutex,
-			  AVIOContext *_h)
+public:
+	FfmpegInputStream(const char *_uri, Mutex &_mutex)
 		:InputStream(_uri, _mutex),
-		 h(_h), eof(false) {
-		seekable = (h->seekable & AVIO_SEEKABLE_NORMAL) != 0;
-		size = avio_size(h);
+		 io(_uri, AVIO_FLAG_READ)
+	{
+		seekable = (io->seekable & AVIO_SEEKABLE_NORMAL) != 0;
+		size = io.GetSize();
 
 		/* hack to make MPD select the "ffmpeg" decoder plugin
 		   - since avio.h doesn't tell us the MIME type of the
@@ -53,18 +47,15 @@ struct FfmpegInputStream final : public InputStream {
 		SetReady();
 	}
 
-	~FfmpegInputStream() {
-		avio_close(h);
-	}
-
 	/* virtual methods from InputStream */
 	bool IsEOF() noexcept override;
 	size_t Read(void *ptr, size_t size) override;
 	void Seek(offset_type offset) override;
 };
 
+gcc_const
 static inline bool
-input_ffmpeg_supported(void)
+input_ffmpeg_supported() noexcept
 {
 	void *opaque = nullptr;
 	return avio_enum_protocols(&opaque, 0) != nullptr;
@@ -84,30 +75,17 @@ static InputStreamPtr
 input_ffmpeg_open(const char *uri,
 		  Mutex &mutex)
 {
-	AVIOContext *h;
-	auto result = avio_open(&h, uri, AVIO_FLAG_READ);
-	if (result != 0)
-		throw MakeFfmpegError(result);
-
-	return std::make_unique<FfmpegInputStream>(uri, mutex, h);
+	return std::make_unique<FfmpegInputStream>(uri, mutex);
 }
 
 size_t
 FfmpegInputStream::Read(void *ptr, size_t read_size)
 {
-	int result;
+	size_t result;
 
 	{
 		const ScopeUnlock unlock(mutex);
-		result = avio_read(h, (unsigned char *)ptr, read_size);
-	}
-
-	if (result <= 0) {
-		if (result < 0)
-			throw MakeFfmpegError(result, "avio_read() failed");
-
-		eof = true;
-		return 0;
+		result = io.Read(ptr, read_size);
 	}
 
 	offset += result;
@@ -117,24 +95,20 @@ FfmpegInputStream::Read(void *ptr, size_t read_size)
 bool
 FfmpegInputStream::IsEOF() noexcept
 {
-	return eof;
+	return io.IsEOF();
 }
 
 void
 FfmpegInputStream::Seek(offset_type new_offset)
 {
-	int64_t result;
+	uint64_t result;
 
 	{
 		const ScopeUnlock unlock(mutex);
-		result = avio_seek(h, new_offset, SEEK_SET);
+		result = io.Seek(new_offset);
 	}
 
-	if (result < 0)
-		throw MakeFfmpegError(result, "avio_seek() failed");
-
 	offset = result;
-	eof = false;
 }
 
 static constexpr const char *ffmpeg_prefixes[] = {

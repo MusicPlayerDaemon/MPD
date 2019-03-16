@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2018 The Music Player Daemon Project
+ * Copyright 2003-2019 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,23 +17,38 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_PLAYLIST__PRINT_HXX
-#define MPD_PLAYLIST__PRINT_HXX
+#ifndef MPD_FFMPEG_FRAME_HXX
+#define MPD_FFMPEG_FRAME_HXX
 
-class Response;
-class SongLoader;
-struct Partition;
+extern "C" {
+#include <libavutil/frame.h>
+}
 
-/**
- * Send the playlist file to the client.
- *
- * @param uri the URI of the playlist file in UTF-8 encoding
- * @param detail true if all details should be printed
- * @return true on success, false if the playlist does not exist
- */
-bool
-playlist_file_print(Response &r, Partition &partition,
-		    const SongLoader &loader,
-		    const LocatedUri &uri, bool detail);
+#include <new>
+
+namespace Ffmpeg {
+
+class Frame {
+	AVFrame *frame;
+
+public:
+	Frame():frame(av_frame_alloc()) {
+		if (frame == nullptr)
+			throw std::bad_alloc();
+	}
+
+	~Frame() noexcept {
+		av_frame_free(&frame);
+	}
+
+	Frame(const Frame &) = delete;
+	Frame &operator=(const Frame &) = delete;
+
+	AVFrame &operator*() noexcept {
+		return *frame;
+	}
+};
+
+} // namespace Ffmpeg
 
 #endif

@@ -44,8 +44,7 @@ TagSongFilter::MatchNN(const TagItem &item) const noexcept
 bool
 TagSongFilter::MatchNN(const Tag &tag) const noexcept
 {
-	bool visited_types[TAG_NUM_OF_ITEM_TYPES];
-	std::fill_n(visited_types, size_t(TAG_NUM_OF_ITEM_TYPES), false);
+	bool visited_types[TAG_NUM_OF_ITEM_TYPES]{};
 
 	for (const auto &i : tag) {
 		visited_types[i.type] = true;

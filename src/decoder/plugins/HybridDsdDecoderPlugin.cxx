@@ -20,7 +20,7 @@
 #include "HybridDsdDecoderPlugin.hxx"
 #include "../DecoderAPI.hxx"
 #include "input/InputStream.hxx"
-#include "system/ByteOrder.hxx"
+#include "util/ByteOrder.hxx"
 #include "util/Domain.hxx"
 #include "util/WritableBuffer.hxx"
 #include "util/StaticFifoBuffer.hxx"

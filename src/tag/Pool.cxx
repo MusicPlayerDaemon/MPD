@@ -90,7 +90,7 @@ calc_hash(TagType type, const char *p) noexcept
 	return hash ^ type;
 }
 
-static inline constexpr TagPoolSlot *
+static constexpr TagPoolSlot *
 tag_item_to_slot(TagItem *item) noexcept
 {
 	return &ContainerCast(*item, &TagPoolSlot::item);

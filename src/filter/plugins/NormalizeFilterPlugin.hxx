@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2018 The Music Player Daemon Project
+ * Copyright 2003-2019 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -22,9 +22,10 @@
 
 #include <memory>
 
+struct FilterPlugin;
 class PreparedFilter;
-class Filter;
-struct AudioFormat;
+
+extern const FilterPlugin normalize_filter_plugin;
 
 std::unique_ptr<PreparedFilter>
 normalize_filter_prepare() noexcept;

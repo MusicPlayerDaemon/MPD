@@ -1,7 +1,7 @@
 project(
   'mpd',
   ['c', 'cpp'],
-  version: '0.21.6',
+  version: '0.22~git',
   meson_version: '>= 0.49.0',
   default_options: [
     'c_std=c99',
@@ -20,7 +20,7 @@ conf.set_quoted('PACKAGE', meson.project_name())
 conf.set_quoted('PACKAGE_NAME', meson.project_name())
 conf.set_quoted('PACKAGE_VERSION', meson.project_version())
 conf.set_quoted('VERSION', meson.project_version())
-conf.set_quoted('PROTOCOL_VERSION', '0.21.4')
+conf.set_quoted('PROTOCOL_VERSION', '0.22.0')
 conf.set_quoted('SYSTEM_CONFIG_FILE_LOCATION', join_paths(get_option('prefix'), get_option('sysconfdir'), 'mpd.conf'))
 
 common_cppflags = [

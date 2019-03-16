@@ -130,15 +130,39 @@ Input plugins
 alsa
 ~~~~
 
-Allows :program:`MPD` on Linux to play audio directly from a soundcard using the scheme alsa://. Audio is formatted as 44.1 kHz 16-bit stereo (CD format). Examples:
+Allows :program:`MPD` on Linux to play audio directly from a soundcard using the scheme alsa://. Audio is by default formatted as 48 kHz 16-bit stereo, but this default can be overidden by a config file setting or by the URI. Examples:
 
 .. code-block:: none
 
-    mpc add alsa:// plays audio from device hw:0,0
+    mpc add alsa:// plays audio from device default
 
 .. code-block:: none
 
-    mpc add alsa://hw:1,0 plays audio from device hw:1,0 cdio_paranoia
+    mpc add alsa://hw:1,0 plays audio from device hw:1,0
+
+.. code-block:: none
+
+    mpc add alsa://hw:1,0?format=44100:16:2 plays audio from device hw:1,0 sampling 16-bit stereo at 44.1kHz.
+
+.. list-table::
+   :widths: 20 80
+   :header-rows: 1
+
+   * - Setting
+     - Description
+   * - **default_device NAME**
+     - The alsa device id to use to none is specified in the uri.
+   * - **default_format F**
+     - The sampling rate, size and channels to use. Wildcards are not allowed.
+
+       Example - "44100:16:2"
+
+   * - **auto_resample yes|no**
+     - If set to no, then libasound will not attempt to resample. In this case, the user is responsible for ensuring that the requested sample rate can be produced natively by the device, otherwise an error will occur.
+   * - **auto_channels yes|no**
+     - If set to no, then libasound will not attempt to convert between different channel numbers. The user must ensure that the device supports the requested channels when sampling.
+   * - **auto_format yes|no**
+     - If set to no, then libasound will not attempt to convert between different sample formats (16 bit, 24 bit, floating point, ...). Again the user must ensure that the requested format is available natively from the device.
 
 cdio_paranoia
 ~~~~~~~~~~~~~
