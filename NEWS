@@ -8,6 +8,7 @@ ver 0.21.6 (not yet released)
 * decoder
   - opus: fix replay gain when there are no other tags
   - opus: fix seeking to beginning of song
+  - vorbis: fix Tremor conflict resulting in crash
 * output
   - pulse: work around error with unusual channel count
   - osx: fix build failure
