@@ -39,6 +39,14 @@ class OggVisitor {
 
 	bool has_stream = false;
 
+	/**
+	 * This is true after seeking; its one-time effect is to
+	 * ignore the BOS packet, just in case we have been seeking to
+	 * the beginning of the file, because that would disrupt
+	 * playback.
+	 */
+	bool post_seek = false;
+
 public:
 	explicit OggVisitor(Reader &reader)
 		:sync(reader), stream(0) {}
