@@ -20,6 +20,7 @@
 #include "OggVisitor.hxx"
 
 #include <stdexcept>
+#include <utility>
 
 void
 OggVisitor::EndStream()
@@ -51,7 +52,13 @@ OggVisitor::ReadNextPage()
 inline void
 OggVisitor::HandlePacket(const ogg_packet &packet)
 {
+	const bool _post_seek = std::exchange(post_seek, false);
+
 	if (packet.b_o_s) {
+		if (_post_seek)
+			/* ignore the BOS packet after seeking */
+			return;
+
 		EndStream();
 		has_stream = true;
 		OnOggBeginning(packet);
@@ -97,4 +104,6 @@ OggVisitor::PostSeek()
 
 	/* find the next Ogg page and feed it into the stream */
 	sync.ExpectPageSeekIn(stream);
+
+	post_seek = true;
 }

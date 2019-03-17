@@ -134,7 +134,9 @@ LoadPlaylistFileInfo(PlaylistInfo &info,
 	const auto *const name_fs_end =
 		FindStringSuffix(name_fs_str,
 				 PATH_LITERAL(PLAYLIST_FILE_SUFFIX));
-	if (name_fs_end == nullptr)
+	if (name_fs_end == nullptr ||
+	    /* no empty playlist names (raw file name = ".m3u") */
+	    name_fs_end == name_fs_str)
 		return false;
 
 	FileInfo fi;
