@@ -3,6 +3,7 @@ ver 0.21.6 (not yet released)
   - allow loading playlists specified as absolute filesystem paths
   - fix negated filter expressions with multiple tag values
   - fix "list" with filter expression
+  - omit empty playlist names in "listplaylists"
 * input
   - cdio_paranoia: fix build failure due to missing #include
 * decoder
