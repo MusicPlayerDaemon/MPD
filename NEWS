@@ -1,4 +1,4 @@
-ver 0.21.6 (not yet released)
+ver 0.21.6 (2019/03/17)
 * protocol
   - allow loading playlists specified as absolute filesystem paths
   - fix negated filter expressions with multiple tag values
