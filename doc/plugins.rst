@@ -690,6 +690,8 @@ Valid quality values for libsoxr:
 * "low"
 * "quick"
 
+.. _output_plugins:
+
 Output plugins
 --------------
 
