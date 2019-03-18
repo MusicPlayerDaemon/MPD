@@ -465,6 +465,9 @@ The following table lists the filter options valid for all plugins:
    * - **name**
      - The name of the filter
 
+More information can be found in the :ref:`filter_plugins` reference.
+
+
 Configuring playlist plugins
 ----------------------------
 

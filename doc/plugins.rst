@@ -1039,8 +1039,41 @@ The "Solaris" plugin runs only on SUN Solaris, and plays via /dev/audio.
    * - **device PATH**
      - Sets the path of the audio device, defaults to /dev/audio.
 
+
+.. _filter_plugins:
+
+Filter plugins
+--------------
+
+normalize
+~~~~~~~~~
+
+Normalize the volume during playback (at the expensve of quality).
+
+
+null
+~~~~
+
+A no-op filter.  Audio data is returned as-is.
+
+
+route
+~~~~~
+
+Reroute channels.
+
+.. list-table::
+   :widths: 20 80
+   :header-rows: 1
+
+   * - Setting
+     - Description
+   * - **routes "0>0, 1>1, ..."**
+     - Specifies the channel mapping.
+
+
 .. _playlist_plugins:
-     
+
 Playlist plugins
 ----------------
 
