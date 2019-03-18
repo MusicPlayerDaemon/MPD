@@ -24,12 +24,7 @@
 #include "filter/NullFilter.hxx"
 #include "filter/Prepared.hxx"
 #include "lib/ffmpeg/Filter.hxx"
-#include "lib/ffmpeg/Frame.hxx"
-#include "lib/ffmpeg/SampleFormat.hxx"
-#include "config/Block.hxx"
 #include "AudioFormat.hxx"
-
-#include <string.h>
 
 static constexpr const char *hdcd_graph = "hdcd";
 
