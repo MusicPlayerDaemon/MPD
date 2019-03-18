@@ -1078,6 +1078,14 @@ The "Solaris" plugin runs only on SUN Solaris, and plays via /dev/audio.
 Filter plugins
 --------------
 
+hdcd
+~~~~
+
+Decode `HDCD
+<https://en.wikipedia.org/wiki/High_Definition_Compatible_Digital>`_.
+
+This plugin requires building with ``libavfilter`` (FFmpeg).
+
 normalize
 ~~~~~~~~~
 
