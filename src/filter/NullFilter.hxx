@@ -17,34 +17,19 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-/** \file
- *
- * This filter plugin does nothing.  That is not quite useful, except
- * for testing the filter core, or as a template for new filter
- * plugins.
- */
+#ifndef MPD_NULL_FILTER_HXX
+#define MPD_NULL_FILTER_HXX
 
-#include "NullFilterPlugin.hxx"
-#include "filter/FilterPlugin.hxx"
-#include "filter/NullFilter.hxx"
-#include "filter/Prepared.hxx"
-#include "AudioFormat.hxx"
-#include "util/Compiler.h"
+#include "filter/Filter.hxx"
+#include "util/ConstBuffer.hxx"
 
-class PreparedNullFilter final : public PreparedFilter {
+class NullFilter final : public Filter {
 public:
-	virtual std::unique_ptr<Filter> Open(AudioFormat &af) override {
-		return std::make_unique<NullFilter>(af);
+	explicit NullFilter(const AudioFormat &af):Filter(af) {}
+
+	virtual ConstBuffer<void> FilterPCM(ConstBuffer<void> src) override {
+		return src;
 	}
 };
 
-static std::unique_ptr<PreparedFilter>
-null_filter_init(gcc_unused const ConfigBlock &block)
-{
-	return std::make_unique<PreparedNullFilter>();
-}
-
-const FilterPlugin null_filter_plugin = {
-	"null",
-	null_filter_init,
-};
+#endif
