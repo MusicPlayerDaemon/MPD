@@ -26,6 +26,8 @@ extern "C" {
 #include <libavfilter/avfilter.h>
 }
 
+#include <utility>
+
 namespace Ffmpeg {
 
 class FilterInOut {
