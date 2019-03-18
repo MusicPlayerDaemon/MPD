@@ -53,6 +53,28 @@ FromFfmpegSampleFormat(AVSampleFormat sample_fmt) noexcept
 	}
 }
 
+/**
+ * Convert a MPD #SampleFormat to a FFmpeg #AVSampleFormat.  Returns
+ * AV_SAMPLE_FMT_NONE if there is no direct mapping.
+ */
+constexpr AVSampleFormat
+ToFfmpegSampleFormat(SampleFormat f) noexcept
+{
+	switch (f) {
+	case SampleFormat::S16:
+		return AV_SAMPLE_FMT_S16;
+
+	case SampleFormat::S32:
+		return AV_SAMPLE_FMT_S32;
+
+	case SampleFormat::FLOAT:
+		return AV_SAMPLE_FMT_FLT;
+
+	default:
+		return AV_SAMPLE_FMT_NONE;
+	}
+}
+
 } // namespace Ffmpeg
 
 #endif
