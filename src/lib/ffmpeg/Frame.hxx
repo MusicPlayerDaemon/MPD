@@ -20,6 +20,8 @@
 #ifndef MPD_FFMPEG_FRAME_HXX
 #define MPD_FFMPEG_FRAME_HXX
 
+#include "Error.hxx"
+
 extern "C" {
 #include <libavutil/frame.h>
 }
@@ -46,6 +48,30 @@ public:
 
 	AVFrame &operator*() noexcept {
 		return *frame;
+	}
+
+	AVFrame *operator->() noexcept {
+		return frame;
+	}
+
+	AVFrame *get() noexcept {
+		return frame;
+	}
+
+	void GetBuffer() {
+		int err = av_frame_get_buffer(frame, 0);
+		if (err < 0)
+			throw MakeFfmpegError(err, "av_frame_get_buffer() failed");
+	}
+
+	void MakeWritable() {
+		int err = av_frame_make_writable(frame);
+		if (err < 0)
+			throw MakeFfmpegError(err, "av_frame_make_writable() failed");
+	}
+
+	void *GetData(unsigned plane) noexcept {
+		return frame->data[plane];
 	}
 };
 
