@@ -30,6 +30,7 @@
 #include "lib/ffmpeg/Frame.hxx"
 #include "lib/ffmpeg/Format.hxx"
 #include "lib/ffmpeg/Codec.hxx"
+#include "lib/ffmpeg/SampleFormat.hxx"
 #include "../DecoderAPI.hxx"
 #include "FfmpegMetaData.hxx"
 #include "FfmpegIo.hxx"
@@ -361,22 +362,9 @@ gcc_const
 static SampleFormat
 ffmpeg_sample_format(enum AVSampleFormat sample_fmt) noexcept
 {
-	switch (sample_fmt) {
-	case AV_SAMPLE_FMT_S16:
-	case AV_SAMPLE_FMT_S16P:
-		return SampleFormat::S16;
-
-	case AV_SAMPLE_FMT_S32:
-	case AV_SAMPLE_FMT_S32P:
-		return SampleFormat::S32;
-
-	case AV_SAMPLE_FMT_FLT:
-	case AV_SAMPLE_FMT_FLTP:
-		return SampleFormat::FLOAT;
-
-	default:
-		break;
-	}
+	const auto result = Ffmpeg::FromFfmpegSampleFormat(sample_fmt);
+	if (result != SampleFormat::UNDEFINED)
+		return result;
 
 	char buffer[64];
 	const char *name = av_get_sample_fmt_string(buffer, sizeof(buffer),
