@@ -17,6 +17,11 @@ if not enable_ffmpeg
   subdir_done()
 endif
 
+ffmpeg_sources = []
+if libavfilter_dep.found()
+  ffmpeg_sources += 'Filter.cxx'
+endif
+
 ffmpeg = static_library(
   'ffmpeg',
   'Init.cxx',
@@ -24,6 +29,7 @@ ffmpeg = static_library(
   'LogCallback.cxx',
   'Error.cxx',
   'Domain.cxx',
+  ffmpeg_sources,
   include_directories: inc,
   dependencies: [
     libavformat_dep,

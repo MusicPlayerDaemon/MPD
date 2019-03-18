@@ -28,6 +28,8 @@ extern "C" {
 
 #include <utility>
 
+struct AudioFormat;
+
 namespace Ffmpeg {
 
 class FilterInOut {
@@ -105,6 +107,20 @@ public:
 		swap(context, src.context);
 		return *this;
 	}
+
+	/**
+	 * Create an "abuffer" filter.
+	 *
+	 * @param the input audio format; may be modified by the
+	 * function to ask the caller to do format conversion
+	 */
+	static FilterContext MakeAudioBufferSource(AudioFormat &audio_format,
+						   AVFilterGraph &graph_ctx);
+
+	/**
+	 * Create an "abuffersink" filter.
+	 */
+	static FilterContext MakeAudioBufferSink(AVFilterGraph &graph_ctx);
 
 	auto &operator*() noexcept {
 		return *context;
