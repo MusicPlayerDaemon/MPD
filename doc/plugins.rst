@@ -714,6 +714,8 @@ Valid quality values for libsoxr:
 * "low"
 * "quick"
 
+.. _output_plugins:
+
 Output plugins
 --------------
 
@@ -823,6 +825,15 @@ The fifo plugin writes raw PCM data to a FIFO (First In, First Out) file. The da
      - Description
    * - **path P**
      - This specifies the path of the FIFO to write to. Must be an absolute path. If the path does not exist, it will be created when MPD is started, and removed when MPD is stopped. The FIFO will be created with the same user and group as MPD is running as. Default permissions can be modified by using the builtin shell command umask. If a FIFO already exists at the specified path it will be reused, and will not be removed when MPD is stopped. You can use the "mkfifo" command to create this, and then you may modify the permissions to your liking.
+
+haiku
+~~~~~
+
+Use the SoundPlayer API on the Haiku operating system.
+
+This plugin is unmaintained and contains known bugs.  It will be
+removed soon, unless there is a new maintainer.
+
 
 jack
 ~~~~
@@ -1061,8 +1072,41 @@ The "Solaris" plugin runs only on SUN Solaris, and plays via /dev/audio.
    * - **device PATH**
      - Sets the path of the audio device, defaults to /dev/audio.
 
+
+.. _filter_plugins:
+
+Filter plugins
+--------------
+
+normalize
+~~~~~~~~~
+
+Normalize the volume during playback (at the expensve of quality).
+
+
+null
+~~~~
+
+A no-op filter.  Audio data is returned as-is.
+
+
+route
+~~~~~
+
+Reroute channels.
+
+.. list-table::
+   :widths: 20 80
+   :header-rows: 1
+
+   * - Setting
+     - Description
+   * - **routes "0>0, 1>1, ..."**
+     - Specifies the channel mapping.
+
+
 .. _playlist_plugins:
-     
+
 Playlist plugins
 ----------------
 
