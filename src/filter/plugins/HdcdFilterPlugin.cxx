@@ -92,7 +92,7 @@ HdcdFilter::HdcdFilter(AudioFormat &audio_format)
 	out_audio_format.format = SampleFormat::S32;
 
 	in_audio_frame_size = audio_format.GetFrameSize();
-	out_audio_frame_size = audio_format.GetFrameSize();
+	out_audio_frame_size = out_audio_format.GetFrameSize();
 }
 
 class PreparedHdcdFilter final : public PreparedFilter {
