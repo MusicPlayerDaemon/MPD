@@ -3,6 +3,7 @@ filter_plugins_deps = []
 
 if libavfilter_dep.found()
   filter_plugins_sources += [
+    'FfmpegFilter.cxx',
     'HdcdFilterPlugin.cxx',
   ]
   filter_plugins_deps += ffmpeg_dep

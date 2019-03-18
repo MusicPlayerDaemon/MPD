@@ -1,0 +1,76 @@
+/*
+ * Copyright 2003-2019 The Music Player Daemon Project
+ * http://www.musicpd.org
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ */
+
+#include "FfmpegFilter.hxx"
+#include "lib/ffmpeg/SampleFormat.hxx"
+#include "util/ConstBuffer.hxx"
+
+extern "C" {
+#include <libavfilter/buffersrc.h>
+#include <libavfilter/buffersink.h>
+}
+
+FfmpegFilter::FfmpegFilter(const AudioFormat &in_audio_format,
+			   const AudioFormat &_out_audio_format,
+			   Ffmpeg::FilterGraph &&_graph,
+			   Ffmpeg::FilterContext &&_buffer_src,
+			   Ffmpeg::FilterContext &&_buffer_sink) noexcept
+	:Filter(_out_audio_format),
+	 graph(std::move(_graph)),
+	 buffer_src(std::move(_buffer_src)),
+	 buffer_sink(std::move(_buffer_sink)),
+	 in_audio_frame_size(in_audio_format.GetFrameSize()),
+	 out_audio_frame_size(_out_audio_format.GetFrameSize())
+{
+	in_frame->format = Ffmpeg::ToFfmpegSampleFormat(in_audio_format.format);
+	in_frame->sample_rate = in_audio_format.sample_rate;
+	in_frame->channels = in_audio_format.channels;
+}
+
+ConstBuffer<void>
+FfmpegFilter::FilterPCM(ConstBuffer<void> src)
+{
+	/* submit source data into the FFmpeg audio buffer source */
+
+	in_frame->nb_samples = src.size / in_audio_frame_size;
+
+	in_frame.GetBuffer();
+	in_frame.MakeWritable();
+
+	memcpy(in_frame.GetData(0), src.data, src.size);
+
+	int err = av_buffersrc_write_frame(buffer_src.get(), in_frame.get());
+	if (err < 0)
+		throw MakeFfmpegError(err, "av_buffersrc_write_frame() failed");
+
+	/* collect filtered data from the FFmpeg audio buffer sink */
+
+	err = av_buffersink_get_frame(buffer_sink.get(), out_frame.get());
+	if (err < 0) {
+		if (err == AVERROR(EAGAIN) || err == AVERROR_EOF)
+			return nullptr;
+
+		throw MakeFfmpegError(err, "av_buffersink_get_frame() failed");
+	}
+
+	/* TODO: call av_buffersink_get_frame() repeatedly?  Not
+	   possible with MPD's current Filter API */
+
+	return {out_frame.GetData(0), out_frame->nb_samples * GetOutAudioFormat().GetFrameSize()};
+}

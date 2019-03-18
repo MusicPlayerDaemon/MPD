@@ -18,6 +18,7 @@
  */
 
 #include "HdcdFilterPlugin.hxx"
+#include "FfmpegFilter.hxx"
 #include "filter/FilterPlugin.hxx"
 #include "filter/Filter.hxx"
 #include "filter/NullFilter.hxx"
@@ -27,12 +28,6 @@
 #include "lib/ffmpeg/SampleFormat.hxx"
 #include "config/Block.hxx"
 #include "AudioFormat.hxx"
-#include "util/ConstBuffer.hxx"
-
-extern "C" {
-#include <libavfilter/buffersrc.h>
-#include <libavfilter/buffersink.h>
-}
 
 #include <string.h>
 
@@ -47,32 +42,20 @@ MaybeHdcd(const AudioFormat &audio_format) noexcept
 		audio_format.channels == 2;
 }
 
-class HdcdFilter final : public Filter {
-	Ffmpeg::FilterGraph graph;
-	Ffmpeg::FilterContext buffer_src, buffer_sink;
-	Ffmpeg::Frame frame, out_frame;
-
-	size_t in_audio_frame_size;
-	size_t out_audio_frame_size;
-
-public:
-	explicit HdcdFilter(AudioFormat &audio_format);
-
-	/* virtual methods from class Filter */
-	ConstBuffer<void> FilterPCM(ConstBuffer<void> src) override;
-};
-
-inline
-HdcdFilter::HdcdFilter(AudioFormat &audio_format)
-	:Filter(audio_format)
+static auto
+OpenHdcdFilter(AudioFormat &in_audio_format)
 {
-	buffer_src = Ffmpeg::FilterContext::MakeAudioBufferSource(audio_format,
-								  *graph);
+	Ffmpeg::FilterGraph graph;
 
-	buffer_sink = Ffmpeg::FilterContext::MakeAudioBufferSink(*graph);
+	auto buffer_src =
+		Ffmpeg::FilterContext::MakeAudioBufferSource(in_audio_format,
+							     *graph);
+
+	auto buffer_sink = Ffmpeg::FilterContext::MakeAudioBufferSink(*graph);
 
 	Ffmpeg::FilterInOut io_sink("out", *buffer_sink);
 	Ffmpeg::FilterInOut io_src("in", *buffer_src);
+
 	auto io = graph.Parse(hdcd_graph, std::move(io_sink),
 			      std::move(io_src));
 
@@ -84,15 +67,15 @@ HdcdFilter::HdcdFilter(AudioFormat &audio_format)
 
 	graph.CheckAndConfigure();
 
-	frame->format = Ffmpeg::ToFfmpegSampleFormat(audio_format.format);
-	frame->sample_rate = audio_format.sample_rate;
-	frame->channels = audio_format.channels;
-
+	auto out_audio_format = in_audio_format;
 	// TODO: convert to 32 bit only if HDCD actually detected
 	out_audio_format.format = SampleFormat::S32;
 
-	in_audio_frame_size = audio_format.GetFrameSize();
-	out_audio_frame_size = out_audio_format.GetFrameSize();
+	return std::make_unique<FfmpegFilter>(in_audio_format,
+					      out_audio_format,
+					      std::move(graph),
+					      std::move(buffer_src),
+					      std::move(buffer_sink));
 }
 
 class PreparedHdcdFilter final : public PreparedFilter {
@@ -105,43 +88,11 @@ std::unique_ptr<Filter>
 PreparedHdcdFilter::Open(AudioFormat &audio_format)
 {
 	if (MaybeHdcd(audio_format))
-		return std::make_unique<HdcdFilter>(audio_format);
+		return OpenHdcdFilter(audio_format);
 	else
 		/* this cannot be HDCD, so let's copy as-is using
 		   NullFilter */
 		return std::make_unique<NullFilter>(audio_format);
-}
-
-ConstBuffer<void>
-HdcdFilter::FilterPCM(ConstBuffer<void> src)
-{
-	/* submit source data into the FFmpeg audio buffer source */
-
-	frame->nb_samples = src.size / in_audio_frame_size;
-
-	frame.GetBuffer();
-	frame.MakeWritable();
-
-	memcpy(frame.GetData(0), src.data, src.size);
-
-	int err = av_buffersrc_write_frame(buffer_src.get(), frame.get());
-	if (err < 0)
-		throw MakeFfmpegError(err, "av_buffersrc_write_frame() failed");
-
-	/* collect filtered data from the FFmpeg audio buffer sink */
-
-	err = av_buffersink_get_frame(buffer_sink.get(), out_frame.get());
-	if (err < 0) {
-		if (err == AVERROR(EAGAIN) || err == AVERROR_EOF)
-			return nullptr;
-
-		throw MakeFfmpegError(err, "av_buffersink_get_frame() failed");
-	}
-
-	/* TODO: call av_buffersink_get_frame() repeatedly?  Not
-	   possible with MPD's current Filter API */
-
-	return {out_frame.GetData(0), out_frame->nb_samples * GetOutAudioFormat().GetFrameSize()};
 }
 
 static std::unique_ptr<PreparedFilter>
