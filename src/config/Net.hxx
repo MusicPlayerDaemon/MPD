@@ -23,14 +23,14 @@
 class ServerSocket;
 
 /**
- * Sets the address or unix socket of a ServerSocket instance
+ * Sets the address or local socket of a ServerSocket instance
  * There are three possible ways
  * 1) Set address to a valid ip address and specify port.
  *    server_socket will listen on this address/port tuple.
  * 2) Set address to null and specify port.
  *    server_socket will listen on ANY address on that port.
- * 3) Set address to a path of a unix socket. port is ignored.
- *    server_socket will listen on this unix socket.
+ * 3) Set address to a path of a local socket. port is ignored.
+ *    server_socket will listen on this local socket.
  *
  * Throws #std::runtime_error on error.
  *

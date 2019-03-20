@@ -392,7 +392,7 @@ ServerSocket::AddPath(AllocatedPath &&path)
 #else /* !HAVE_UN */
 	(void)path;
 
-	throw std::runtime_error("UNIX domain socket support is disabled");
+	throw std::runtime_error("Local socket support is disabled");
 #endif /* !HAVE_UN */
 }
 

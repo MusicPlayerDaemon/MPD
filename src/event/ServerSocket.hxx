@@ -90,7 +90,7 @@ public:
 	void AddHost(const char *hostname, unsigned port);
 
 	/**
-	 * Add a listener on a Unix domain socket.
+	 * Add a listener on a local socket.
 	 *
 	 * Throws #std::runtime_error on error.
 	 *

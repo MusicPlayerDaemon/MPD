@@ -721,7 +721,7 @@ run playlist plugins instead of the hard-coded simple
 `m3u` parser.  They can access playlists in
 the music directory (relative path including the suffix),
 playlists in arbitrary location (absolute path including the suffix;
-allowed only for clients that are connected via UNIX domain socket), or
+allowed only for clients that are connected via local socket), or
 remote playlists (absolute URI with a supported scheme).
 
 :command:`listplaylist {NAME}`
@@ -931,7 +931,7 @@ The music database
     This command may be used to list metadata of remote
     files (e.g. URI beginning with "http://" or "smb://").
 
-    Clients that are connected via UNIX domain socket may
+    Clients that are connected via local socket may
     use this command to read the tags of an arbitrary local
     file (URI is an absolute path).
 
@@ -1222,7 +1222,7 @@ Reflection
 :command:`config`
     Dumps configuration values that may be interesting for
     the client.  This command is only permitted to "local"
-    clients (connected via UNIX domain socket).
+    clients (connected via local socket).
 
     The following response attributes are available:
 

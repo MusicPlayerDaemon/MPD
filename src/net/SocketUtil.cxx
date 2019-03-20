@@ -35,7 +35,7 @@ socket_bind_listen(int domain, int type, int protocol,
 		throw MakeSocketError("Failed to create socket");
 
 #ifdef HAVE_UN
-	if (domain == AF_UNIX) {
+	if (domain == AF_LOCAL) {
 		/* Prevent access until right permissions are set */
 		fchmod(fd.Get(), 0);
 	}
