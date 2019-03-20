@@ -99,7 +99,6 @@ public:
 	 */
 	void AddPath(AllocatedPath &&path);
 
-#ifdef __linux__
 	/**
 	 * Add a listener on an abstract local socket (Linux specific).
 	 *
@@ -109,7 +108,6 @@ public:
 	 * instead of a null byte
 	 */
 	void AddAbstract(const char *name);
-#endif
 
 	/**
 	 * Add a socket descriptor that is accepting connections.  After this

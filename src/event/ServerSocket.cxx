@@ -397,12 +397,14 @@ ServerSocket::AddPath(AllocatedPath &&path)
 }
 
 
-#ifdef __linux__
-
 void
 ServerSocket::AddAbstract(const char *name)
 {
-#if !defined(HAVE_UN)
+#if !defined(__linux__)
+	(void)name;
+
+	throw std::runtime_error("Abstract sockets are only available on Linux");
+#elif !defined(HAVE_UN)
 	(void)name;
 
 	throw std::runtime_error("Local socket support is disabled");
@@ -416,5 +418,3 @@ ServerSocket::AddAbstract(const char *name)
 	AddAddress(std::move(address));
 #endif
 }
-
-#endif
