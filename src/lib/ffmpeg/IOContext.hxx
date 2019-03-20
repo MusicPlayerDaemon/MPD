@@ -76,8 +76,13 @@ public:
 	}
 
 	size_t Read(void *buffer, size_t size) {
+#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(57, 81, 100)
 		int result = avio_read_partial(io_context,
 					       (unsigned char *)buffer, size);
+#else
+		int result = avio_read(io_context,
+				       (unsigned char *)buffer, size);
+#endif
 		if (result < 0)
 			throw MakeFfmpegError(result, "avio_read() failed");
 
