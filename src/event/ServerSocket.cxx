@@ -402,6 +402,11 @@ ServerSocket::AddPath(AllocatedPath &&path)
 void
 ServerSocket::AddAbstract(const char *name)
 {
+#if !defined(HAVE_UN)
+	(void)name;
+
+	throw std::runtime_error("Local socket support is disabled");
+#else
 	assert(name != nullptr);
 	assert(*name == '@');
 
@@ -409,6 +414,7 @@ ServerSocket::AddAbstract(const char *name)
 	address.SetLocal(name);
 
 	AddAddress(std::move(address));
+#endif
 }
 
 #endif
