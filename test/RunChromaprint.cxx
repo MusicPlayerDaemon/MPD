@@ -165,8 +165,8 @@ public:
 		return GetCommand();
 	}
 
-	void SubmitReplayGain(const ReplayGainInfo *) {}
-	void SubmitMixRamp(MixRampInfo &&) {}
+	void SubmitReplayGain(const ReplayGainInfo *) override {}
+	void SubmitMixRamp(MixRampInfo &&) override {}
 };
 
 void

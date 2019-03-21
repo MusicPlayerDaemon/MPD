@@ -106,7 +106,7 @@ ToString(SocketAddress address) noexcept
 {
 #ifdef HAVE_UN
 	if (address.GetFamily() == AF_LOCAL)
-		/* return path of UNIX domain sockets */
+		/* return path of local socket */
 		return LocalAddressToString(*(const sockaddr_un *)address.GetAddress(),
 					    address.GetSize());
 #endif
