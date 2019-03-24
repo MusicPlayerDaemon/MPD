@@ -60,7 +60,7 @@ FfmpegFilter::FilterPCM(ConstBuffer<void> src)
 
 	memcpy(in_frame.GetData(0), src.data, src.size);
 
-	int err = av_buffersrc_write_frame(buffer_src.get(), in_frame.get());
+	int err = av_buffersrc_add_frame(buffer_src.get(), in_frame.get());
 	if (err < 0)
 		throw MakeFfmpegError(err, "av_buffersrc_write_frame() failed");
 
