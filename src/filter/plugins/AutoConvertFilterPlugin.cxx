@@ -56,6 +56,7 @@ public:
 	}
 
 	ConstBuffer<void> FilterPCM(ConstBuffer<void> src) override;
+	ConstBuffer<void> Flush() override;
 };
 
 class PreparedAutoConvertFilter final : public PreparedFilter {
@@ -102,6 +103,18 @@ AutoConvertFilter::FilterPCM(ConstBuffer<void> src)
 		src = convert->FilterPCM(src);
 
 	return filter->FilterPCM(src);
+}
+
+ConstBuffer<void>
+AutoConvertFilter::Flush()
+{
+	if (convert != nullptr) {
+		auto result = convert->Flush();
+		if (!result.IsNull())
+			return filter->FilterPCM(result);
+	}
+
+	return filter->Flush();
 }
 
 std::unique_ptr<PreparedFilter>
