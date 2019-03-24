@@ -65,7 +65,7 @@ public:
 
 	/**
 	 * Flush pending data and return it.  This should be called
-	 * repepatedly until it returns nullptr.
+	 * repeatedly until it returns nullptr.
 	 */
 	virtual ConstBuffer<void> Flush();
 };
