@@ -66,6 +66,8 @@ FfmpegFilter::FilterPCM(ConstBuffer<void> src)
 
 	/* collect filtered data from the FFmpeg audio buffer sink */
 
+	out_frame.Unref();
+
 	err = av_buffersink_get_frame(buffer_sink.get(), out_frame.get());
 	if (err < 0) {
 		if (err == AVERROR(EAGAIN) || err == AVERROR_EOF)
