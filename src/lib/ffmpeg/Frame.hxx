@@ -58,6 +58,10 @@ public:
 		return frame;
 	}
 
+	void Unref() noexcept {
+		av_frame_unref(frame);
+	}
+
 	void GetBuffer() {
 		int err = av_frame_get_buffer(frame, 0);
 		if (err < 0)
