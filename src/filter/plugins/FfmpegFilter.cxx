@@ -50,25 +50,25 @@ FfmpegFilter::FilterPCM(ConstBuffer<void> src)
 {
 	/* submit source data into the FFmpeg audio buffer source */
 
-	in_frame.Unref();
-	in_frame->format = in_format;
-	in_frame->sample_rate = in_sample_rate;
-	in_frame->channels = in_channels;
-	in_frame->nb_samples = src.size / in_audio_frame_size;
+	frame.Unref();
+	frame->format = in_format;
+	frame->sample_rate = in_sample_rate;
+	frame->channels = in_channels;
+	frame->nb_samples = src.size / in_audio_frame_size;
 
-	in_frame.GetBuffer();
+	frame.GetBuffer();
 
-	memcpy(in_frame.GetData(0), src.data, src.size);
+	memcpy(frame.GetData(0), src.data, src.size);
 
-	int err = av_buffersrc_add_frame(buffer_src.get(), in_frame.get());
+	int err = av_buffersrc_add_frame(buffer_src.get(), frame.get());
 	if (err < 0)
 		throw MakeFfmpegError(err, "av_buffersrc_write_frame() failed");
 
 	/* collect filtered data from the FFmpeg audio buffer sink */
 
-	out_frame.Unref();
+	frame.Unref();
 
-	err = av_buffersink_get_frame(buffer_sink.get(), out_frame.get());
+	err = av_buffersink_get_frame(buffer_sink.get(), frame.get());
 	if (err < 0) {
 		if (err == AVERROR(EAGAIN) || err == AVERROR_EOF)
 			return nullptr;
@@ -79,5 +79,5 @@ FfmpegFilter::FilterPCM(ConstBuffer<void> src)
 	/* TODO: call av_buffersink_get_frame() repeatedly?  Not
 	   possible with MPD's current Filter API */
 
-	return {out_frame.GetData(0), out_frame->nb_samples * GetOutAudioFormat().GetFrameSize()};
+	return {frame.GetData(0), frame->nb_samples * GetOutAudioFormat().GetFrameSize()};
 }
