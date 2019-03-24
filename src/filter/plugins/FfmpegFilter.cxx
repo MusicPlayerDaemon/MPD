@@ -37,12 +37,12 @@ FfmpegFilter::FfmpegFilter(const AudioFormat &in_audio_format,
 	 graph(std::move(_graph)),
 	 buffer_src(std::move(_buffer_src)),
 	 buffer_sink(std::move(_buffer_sink)),
+	 in_format(Ffmpeg::ToFfmpegSampleFormat(in_audio_format.format)),
+	 in_sample_rate(in_audio_format.sample_rate),
+	 in_channels(in_audio_format.channels),
 	 in_audio_frame_size(in_audio_format.GetFrameSize()),
 	 out_audio_frame_size(_out_audio_format.GetFrameSize())
 {
-	in_frame->format = Ffmpeg::ToFfmpegSampleFormat(in_audio_format.format);
-	in_frame->sample_rate = in_audio_format.sample_rate;
-	in_frame->channels = in_audio_format.channels;
 }
 
 ConstBuffer<void>
@@ -50,6 +50,10 @@ FfmpegFilter::FilterPCM(ConstBuffer<void> src)
 {
 	/* submit source data into the FFmpeg audio buffer source */
 
+	in_frame.Unref();
+	in_frame->format = in_format;
+	in_frame->sample_rate = in_sample_rate;
+	in_frame->channels = in_channels;
 	in_frame->nb_samples = src.size / in_audio_frame_size;
 
 	in_frame.GetBuffer();
