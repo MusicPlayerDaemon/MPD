@@ -70,8 +70,13 @@ ParseSortTag(const char *s)
 	return tag;
 }
 
-static CommandResult
-handle_match(Client &client, Request args, Response &r, bool fold_case)
+/**
+ * Convert all remaining arguments to a #DatabaseSelection.
+ *
+ * @param filter a buffer to be used for DatabaseSelection::filter
+ */
+static DatabaseSelection
+ParseDatabaseSelection(Request args, bool fold_case, SongFilter &filter)
 {
 	RangeArg window = RangeArg::All();
 	if (args.size >= 2 && StringIsEqual(args[args.size - 2], "window")) {
@@ -96,13 +101,11 @@ handle_match(Client &client, Request args, Response &r, bool fold_case)
 		args.pop_back();
 	}
 
-	SongFilter filter;
 	try {
 		filter.Parse(args, fold_case);
 	} catch (...) {
-		r.Error(ACK_ERROR_ARG,
-			GetFullMessage(std::current_exception()).c_str());
-		return CommandResult::ERROR;
+		throw ProtocolError(ACK_ERROR_ARG,
+				    GetFullMessage(std::current_exception()).c_str());
 	}
 	filter.Optimize();
 
@@ -110,6 +113,14 @@ handle_match(Client &client, Request args, Response &r, bool fold_case)
 	selection.window = window;
 	selection.sort = sort;
 	selection.descending = descending;
+	return selection;
+}
+
+static CommandResult
+handle_match(Client &client, Request args, Response &r, bool fold_case)
+{
+	SongFilter filter;
+	const auto selection = ParseDatabaseSelection(args, fold_case, filter);
 
 	db_selection_print(r, client.GetPartition(),
 			   selection, true, false);
