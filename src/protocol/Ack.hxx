@@ -48,8 +48,9 @@ class ProtocolError : public std::runtime_error {
 	enum ack code;
 
 public:
-	ProtocolError(enum ack _code, const char *msg)
-		:std::runtime_error(msg), code(_code) {}
+	template<typename M>
+	ProtocolError(enum ack _code, M &&msg)
+		:std::runtime_error(std::forward<M>(msg)), code(_code) {}
 
 	enum ack GetCode() const {
 		return code;
