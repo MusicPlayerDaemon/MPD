@@ -94,6 +94,21 @@ FullRead(FileDescriptor fd, void *_buffer, size_t size)
 	}
 }
 
+static void
+FullWrite(FileDescriptor fd, const void *_buffer, size_t size)
+{
+	auto buffer = (const uint8_t *)_buffer;
+
+	while (size > 0) {
+		size_t nbytes = WriteOrThrow(fd, buffer, size);
+		if (nbytes == 0)
+			throw std::runtime_error("Premature end of input");
+
+		buffer += nbytes;
+		size -= nbytes;
+	}
+}
+
 static size_t
 ReadFrames(FileDescriptor fd, void *_buffer, size_t size, size_t frame_size)
 {
@@ -162,7 +177,7 @@ try {
 			break;
 
 		auto dest = filter->FilterPCM({(const void *)buffer, (size_t)nbytes});
-		WriteOrThrow(output_fd, dest.data, dest.size);
+		FullWrite(output_fd, dest.data, dest.size);
 	}
 
 	/* cleanup and exit */
