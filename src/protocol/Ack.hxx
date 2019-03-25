@@ -49,10 +49,10 @@ class ProtocolError : public std::runtime_error {
 
 public:
 	template<typename M>
-	ProtocolError(enum ack _code, M &&msg)
+	ProtocolError(enum ack _code, M &&msg) noexcept
 		:std::runtime_error(std::forward<M>(msg)), code(_code) {}
 
-	enum ack GetCode() const {
+	enum ack GetCode() const noexcept {
 		return code;
 	}
 };
