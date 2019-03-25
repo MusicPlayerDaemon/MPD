@@ -69,6 +69,16 @@ ReadOrThrow(FileDescriptor fd, void *buffer, size_t size)
 	return nbytes;
 }
 
+static size_t
+WriteOrThrow(FileDescriptor fd, const void *buffer, size_t size)
+{
+	auto nbytes = fd.Write(buffer, size);
+	if (nbytes < 0)
+		throw MakeErrno("Write failed");
+
+	return nbytes;
+}
+
 static void
 FullRead(FileDescriptor fd, void *_buffer, size_t size)
 {
@@ -152,13 +162,7 @@ try {
 			break;
 
 		auto dest = filter->FilterPCM({(const void *)buffer, (size_t)nbytes});
-
-		nbytes = output_fd.Write(dest.data, dest.size);
-		if (nbytes < 0) {
-			fprintf(stderr, "Failed to write: %s\n",
-				strerror(errno));
-			return 1;
-		}
+		WriteOrThrow(output_fd, dest.data, dest.size);
 	}
 
 	/* cleanup and exit */
