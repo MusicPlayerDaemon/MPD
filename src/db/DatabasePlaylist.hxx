@@ -24,12 +24,12 @@
 
 class Database;
 class Storage;
-class SongFilter;
+struct DatabaseSelection;
 
-gcc_nonnull(3,4)
+gcc_nonnull(3)
 void
 search_add_to_playlist(const Database &db, const Storage *storage,
-		       const char *uri, const char *path_utf8,
-		       const SongFilter *filter);
+		       const char *playlist_path_utf8,
+		       const DatabaseSelection &selection);
 
 #endif

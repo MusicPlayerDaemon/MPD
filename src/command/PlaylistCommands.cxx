@@ -20,6 +20,7 @@
 #include "config.h"
 #include "PlaylistCommands.hxx"
 #include "Request.hxx"
+#include "db/Selection.hxx"
 #include "db/DatabasePlaylist.hxx"
 #include "CommandError.hxx"
 #include "PlaylistSave.hxx"
@@ -180,9 +181,10 @@ handle_playlistadd(Client &client, Request args, gcc_unused Response &r)
 	} else {
 #ifdef ENABLE_DATABASE
 		const Database &db = client.GetDatabaseOrThrow();
+		const DatabaseSelection selection(uri, true, nullptr);
 
 		search_add_to_playlist(db, client.GetStorage(),
-				       uri, playlist, nullptr);
+				       playlist, selection);
 #else
 		r.Error(ACK_ERROR_NO_EXIST, "directory or file not found");
 		return CommandResult::ERROR;

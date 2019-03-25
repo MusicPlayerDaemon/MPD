@@ -188,9 +188,10 @@ handle_searchaddpl(Client &client, Request args, Response &r)
 	filter.Optimize();
 
 	const Database &db = client.GetDatabaseOrThrow();
+	const DatabaseSelection selection("", true, &filter);
 
 	search_add_to_playlist(db, client.GetStorage(),
-			       "", playlist, &filter);
+			       playlist, selection);
 	return CommandResult::OK;
 }
 
