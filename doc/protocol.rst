@@ -849,7 +849,7 @@ The music database
 
 .. _command_findadd:
 
-:command:`findadd {FILTER}`
+:command:`findadd {FILTER} [sort {TYPE}] [window {START:END}]`
     Search the database for songs matching
     ``FILTER`` (see :ref:`Filters <filter_syntax>`) and add them to
     the queue.  Parameters have the same meaning as for
@@ -961,14 +961,14 @@ The music database
 
 .. _command_searchadd:
 
-:command:`searchadd {FILTER}`
+:command:`searchadd {FILTER} [sort {TYPE}] [window {START:END}]`
     Search the database for songs matching
     ``FILTER`` (see :ref:`Filters <filter_syntax>`) and add them to
     the queue.
 
     Parameters have the same meaning as for :ref:`search <command_search>`.
 
-:command:`searchaddpl {NAME} {FILTER}`
+:command:`searchaddpl {NAME} {FILTER} [sort {TYPE}] [window {START:END}]`
     Search the database for songs matching
     ``FILTER`` (see :ref:`Filters <filter_syntax>`) and add them to
     the playlist named ``NAME``.

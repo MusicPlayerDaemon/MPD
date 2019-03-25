@@ -140,55 +140,37 @@ handle_search(Client &client, Request args, Response &r)
 }
 
 static CommandResult
-handle_match_add(Client &client, Request args, Response &r, bool fold_case)
+handle_match_add(Client &client, Request args, bool fold_case)
 {
 	SongFilter filter;
-	try {
-		filter.Parse(args, fold_case);
-	} catch (...) {
-		r.Error(ACK_ERROR_ARG,
-			GetFullMessage(std::current_exception()).c_str());
-		return CommandResult::ERROR;
-	}
-	filter.Optimize();
+	const auto selection = ParseDatabaseSelection(args, fold_case, filter);
 
 	auto &partition = client.GetPartition();
-	const ScopeBulkEdit bulk_edit(partition);
-
-	const DatabaseSelection selection("", true, &filter);
 	AddFromDatabase(partition, selection);
 	return CommandResult::OK;
 }
 
 CommandResult
-handle_findadd(Client &client, Request args, Response &r)
+handle_findadd(Client &client, Request args, Response &)
 {
-	return handle_match_add(client, args, r, false);
+	return handle_match_add(client, args, false);
 }
 
 CommandResult
-handle_searchadd(Client &client, Request args, Response &r)
+handle_searchadd(Client &client, Request args, Response &)
 {
-	return handle_match_add(client, args, r, true);
+	return handle_match_add(client, args, true);
 }
 
 CommandResult
-handle_searchaddpl(Client &client, Request args, Response &r)
+handle_searchaddpl(Client &client, Request args, Response &)
 {
 	const char *playlist = args.shift();
 
 	SongFilter filter;
-	try {
-		filter.Parse(args, true);
-	} catch (...) {
-		r.Error(ACK_ERROR_ARG,
-			GetFullMessage(std::current_exception()).c_str());
-		return CommandResult::ERROR;
-	}
-	filter.Optimize();
+	const auto selection = ParseDatabaseSelection(args, true, filter);
 
 	const Database &db = client.GetDatabaseOrThrow();
-	const DatabaseSelection selection("", true, &filter);
 
 	search_add_to_playlist(db, client.GetStorage(),
 			       playlist, selection);

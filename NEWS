@@ -1,4 +1,7 @@
 ver 0.22 (not yet released)
+* protocol
+  - "findadd"/"searchadd"/"searchaddpl" support the "sort" and
+    "window" parameters
 * input
   - ffmpeg: allow partial reads
 * filter
