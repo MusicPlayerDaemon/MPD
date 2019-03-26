@@ -1,5 +1,5 @@
-rc = meson.find_program('rc')
-xres = meson.find_program('xres')
+rc = find_program('rc')
+xres = find_program('xres')
 
 rsrc = custom_target(
   'mpd.rsrc',
@@ -9,7 +9,7 @@ rsrc = custom_target(
 )
 
 custom_target(
-  'mpd.rsrc',
+  'mpd.xres',
   output: 'mpd',
   input: [mpd, rsrc],
   command: [xres, '-o', '@OUTPUT@', '--', '@INPUT@'],
