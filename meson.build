@@ -399,6 +399,12 @@ if is_android
     declare_dependency(sources: [classes_jar]),
     java_dep,
   ]
+elif is_haiku
+  target_type = 'executable'
+  link_args += [
+    '-lnetwork',
+    '-lbe',
+  ]
 else
   target_type = 'executable'
 endif
