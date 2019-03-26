@@ -1,6 +1,8 @@
 ver 0.21.7 (not yet released)
 * require Meson 0.49.0 for native libgcrypt-config support
 * fix build failure with -Dlocal_socket=false
+* Haiku
+  - fix build
 
 ver 0.21.6 (2019/03/17)
 * protocol
