@@ -8,11 +8,4 @@ rsrc = custom_target(
   command: [rc, '-o', '@OUTPUT@', '@INPUT@'],
 )
 
-custom_target(
-  'mpd.xres',
-  output: 'mpd',
-  input: [mpd, rsrc],
-  command: [xres, '-o', '@OUTPUT@', '--', '@INPUT@'],
-  install: true,
-  install_dir: get_option('bindir'),
-)
+addres = files('add_resources.sh')
