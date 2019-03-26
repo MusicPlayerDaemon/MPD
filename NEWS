@@ -3,6 +3,7 @@ ver 0.21.7 (not yet released)
 * fix build failure with -Dlocal_socket=false
 * Haiku
   - fix build
+  - add version info
 
 ver 0.21.6 (2019/03/17)
 * protocol
