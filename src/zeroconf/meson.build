@@ -5,8 +5,7 @@ libavahi_client_dep = dependency('', required: false)
 if zeroconf_option == 'auto'
   if is_darwin
     # Bonjour disabled for now because its build is broken
-    #zeroconf_option = 'bonjour'
-    zeroconf_option = 'disabled'
+    zeroconf_option = 'bonjour'
   elif is_android or is_windows
     zeroconf_option = 'disabled'
   elif dbus_dep.found()
@@ -32,7 +31,7 @@ if zeroconf_option == 'bonjour'
   endif
 
   if is_darwin
-    bonjour_dep = declare_dependency(link_args: ['-framework', 'dnssd'])
+    bonjour_dep = declare_dependency(link_args: ['-framework', 'System'])
   else
     bonjour_dep = declare_dependency(link_args: ['-ldns_sd'])
   endif
