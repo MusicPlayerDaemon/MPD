@@ -39,8 +39,8 @@ InitHybridDsdDecoder(const ConfigBlock &block)
 	   without a DSD DAC, the PCM (=ALAC) part of the file is
 	   better */
 	if (block.GetBlockParam("enabled") == nullptr) {
-		LogInfo(hybrid_dsd_domain,
-			"The Hybrid DSD decoder is disabled because it was not explicitly enabled");
+		LogDebug(hybrid_dsd_domain,
+			 "The Hybrid DSD decoder is disabled because it was not explicitly enabled");
 		return false;
 	}
 
