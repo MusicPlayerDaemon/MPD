@@ -29,8 +29,9 @@
  */
 class PluginUnavailable final : public std::runtime_error {
 public:
-	explicit PluginUnavailable(const char *msg)
-		:std::runtime_error(msg) {}
+	template<typename M>
+	explicit PluginUnavailable(M &&msg) noexcept
+		:std::runtime_error(std::forward<M>(msg)) {}
 };
 
 #endif
