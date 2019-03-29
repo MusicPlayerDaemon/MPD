@@ -306,9 +306,8 @@ input_curl_init(EventLoop &event_loop, const ConfigBlock &block)
 {
 	try {
 		curl_init = new CurlInit(event_loop);
-	} catch (const std::runtime_error &e) {
-		LogError(e);
-		throw PluginUnavailable(e.what());
+	} catch (...) {
+		std::throw_with_nested(PluginUnavailable("CURL initialization failed"));
 	}
 
 	const auto version_info = curl_version_info(CURLVERSION_FIRST);
