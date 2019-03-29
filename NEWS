@@ -1,4 +1,6 @@
 ver 0.21.7 (not yet released)
+* input
+  - qobuz/tidal: scan tags when loading a playlist
 * require Meson 0.49.0 for native libgcrypt-config support
 * fix build failure with -Dlocal_socket=false
 * Haiku
