@@ -28,8 +28,6 @@
 
 #include <libsmbclient.h>
 
-#include <stdexcept>
-
 class SmbclientInputStream final : public InputStream {
 	SMBCCTX *ctx;
 	int fd;
@@ -72,9 +70,8 @@ input_smbclient_init(EventLoop &, const ConfigBlock &)
 {
 	try {
 		SmbclientInit();
-	} catch (const std::runtime_error &e) {
-		// TODO: use std::throw_with_nested()?
-		throw PluginUnavailable(e.what());
+	} catch (...) {
+		std::throw_with_nested(PluginUnavailable("libsmbclient initialization failed"));
 	}
 
 	// TODO: create one global SMBCCTX here?
