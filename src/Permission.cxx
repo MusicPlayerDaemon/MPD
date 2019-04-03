@@ -131,7 +131,8 @@ initPermissions(const ConfigData &config)
 #endif
 }
 
-int getPermissionFromPassword(char const* password, unsigned* permission)
+int
+getPermissionFromPassword(const char *password, unsigned *permission) noexcept
 {
 	auto i = permission_passwords.find(password);
 	if (i == permission_passwords.end())
@@ -141,7 +142,8 @@ int getPermissionFromPassword(char const* password, unsigned* permission)
 	return 0;
 }
 
-unsigned getDefaultPermissions(void)
+unsigned
+getDefaultPermissions() noexcept
 {
 	return permission_default;
 }

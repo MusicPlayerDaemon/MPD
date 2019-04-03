@@ -30,10 +30,11 @@ static constexpr unsigned PERMISSION_ADD = 2;
 static constexpr unsigned PERMISSION_CONTROL = 4;
 static constexpr unsigned PERMISSION_ADMIN = 8;
 
-int getPermissionFromPassword(char const* password, unsigned* permission);
+int
+getPermissionFromPassword(const char *password, unsigned *permission) noexcept;
 
 unsigned
-getDefaultPermissions();
+getDefaultPermissions() noexcept;
 
 #ifdef HAVE_UN
 unsigned
