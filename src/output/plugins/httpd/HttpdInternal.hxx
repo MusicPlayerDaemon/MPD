@@ -208,10 +208,15 @@ public:
 		return HasClients();
 	}
 
+	/**
+	 * Caller must lock the mutex.
+	 */
 	void AddClient(UniqueSocketDescriptor fd) noexcept;
 
 	/**
 	 * Removes a client from the httpd_output.clients linked list.
+	 *
+	 * Caller must lock the mutex.
 	 */
 	void RemoveClient(HttpdClient &client) noexcept;
 
@@ -239,10 +244,14 @@ public:
 
 	/**
 	 * Broadcasts data from the encoder to all clients.
+	 *
+	 * Mutext must not be locked.
 	 */
 	void BroadcastFromEncoder();
 
 	/**
+	 * Mutext must not be locked.
+	 *
 	 * Throws #std::runtime_error on error.
 	 */
 	void EncodeAndPlay(const void *chunk, size_t size);
@@ -251,6 +260,9 @@ public:
 
 	size_t Play(const void *chunk, size_t size) override;
 
+	/**
+	 * Mutext must not be locked.
+	 */
 	void CancelAllClients() noexcept;
 
 	void Cancel() noexcept override;
