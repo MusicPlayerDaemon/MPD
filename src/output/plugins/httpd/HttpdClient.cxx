@@ -428,6 +428,7 @@ void
 HttpdClient::OnSocketError(std::exception_ptr ep) noexcept
 {
 	LogError(ep);
+	LockClose();
 }
 
 void
