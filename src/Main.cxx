@@ -28,7 +28,7 @@
 #include "Permission.hxx"
 #include "Listen.hxx"
 #include "client/Listener.hxx"
-#include "client/Client.hxx"
+#include "client/Config.hxx"
 #include "client/List.hxx"
 #include "command/AllCommands.hxx"
 #include "Partition.hxx"

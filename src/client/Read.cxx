@@ -17,7 +17,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "Internal.hxx"
+#include "Client.hxx"
+#include "Config.hxx"
 #include "Partition.hxx"
 #include "Instance.hxx"
 #include "event/Loop.hxx"

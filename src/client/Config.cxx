@@ -17,7 +17,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "Internal.hxx"
+#include "Config.hxx"
 #include "config/Data.hxx"
 
 #define CLIENT_TIMEOUT_DEFAULT			(60)
