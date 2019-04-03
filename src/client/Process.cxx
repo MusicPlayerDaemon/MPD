@@ -34,22 +34,23 @@ inline CommandResult
 Client::ProcessCommandList(bool list_ok,
 			   std::list<std::string> &&list) noexcept
 {
-	CommandResult ret = CommandResult::OK;
 	unsigned n = 0;
 
 	for (auto &&i : list) {
 		char *cmd = &*i.begin();
 
 		FormatDebug(client_domain, "process command \"%s\"", cmd);
-		ret = command_process(*this, n++, cmd);
+		auto ret = command_process(*this, n++, cmd);
 		FormatDebug(client_domain, "command returned %i", int(ret));
-		if (ret != CommandResult::OK || IsExpired())
-			break;
+		if (IsExpired())
+			return CommandResult::CLOSE;
+		else if (ret != CommandResult::OK)
+			return ret;
 		else if (list_ok)
 			Write("list_OK\n");
 	}
 
-	return ret;
+	return CommandResult::OK;
 }
 
 CommandResult
@@ -100,9 +101,10 @@ Client::ProcessLine(char *line) noexcept
 				    "[%u] process command "
 				    "list returned %i", num, int(ret));
 
-			if (ret == CommandResult::CLOSE ||
-			    IsExpired())
+			if (ret == CommandResult::CLOSE)
 				return CommandResult::CLOSE;
+
+			assert(!IsExpired());
 
 			if (ret == CommandResult::OK)
 				command_success(*this);
@@ -138,7 +140,7 @@ Client::ProcessLine(char *line) noexcept
 				    "[%u] command returned %i",
 				    num, int(ret));
 
-			if (ret == CommandResult::CLOSE || IsExpired())
+			if (IsExpired())
 				return CommandResult::CLOSE;
 
 			if (ret == CommandResult::OK)
