@@ -56,7 +56,6 @@ class Client final
 
 	Partition *partition;
 
-public:
 	unsigned permission;
 
 	/** the uid of the client process, or -1 if unknown */
@@ -76,11 +75,14 @@ public:
 	/** idle flags that the client wants to receive */
 	unsigned idle_subscriptions;
 
+public:
+	// TODO: make this attribute "private"
 	/**
 	 * The tags this client is interested in.
 	 */
 	TagMask tag_mask = TagMask::All();
 
+private:
 	/**
 	 * A list of channel names this client is subscribed to.
 	 */
@@ -97,6 +99,7 @@ public:
 	 */
 	std::list<ClientMessage> messages;
 
+public:
 	Client(EventLoop &loop, Partition &partition,
 	       UniqueSocketDescriptor fd, int uid,
 	       unsigned _permission,
@@ -175,10 +178,22 @@ public:
 		return subscriptions.find(channel_name) != subscriptions.end();
 	}
 
+	const auto &GetSubscriptions() const noexcept {
+		return subscriptions;
+	}
+
 	SubscribeResult Subscribe(const char *channel) noexcept;
 	bool Unsubscribe(const char *channel) noexcept;
 	void UnsubscribeAll() noexcept;
 	bool PushMessage(const ClientMessage &msg) noexcept;
+
+	template<typename F>
+	void ConsumeMessages(F &&f) {
+		while (!messages.empty()) {
+			f(messages.front());
+			messages.pop_front();
+		}
+	}
 
 	/**
 	 * Is this client allowed to use the specified local file?

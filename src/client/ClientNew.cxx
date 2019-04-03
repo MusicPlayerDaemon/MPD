@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2018 The Music Player Daemon Project
+ * Copyright 2003-2019 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -70,14 +70,15 @@ client_new(EventLoop &loop, Partition &partition,
 
 	(void)fd.Write(GREETING, sizeof(GREETING) - 1);
 
+	const unsigned num = next_client_num++;
 	Client *client = new Client(loop, partition, std::move(fd), uid,
 				    permission,
-				    next_client_num++);
+				    num);
 
 	client_list.Add(*client);
 
 	FormatInfo(client_domain, "[%u] opened from %s",
-		   client->num, remote.c_str());
+		   num, remote.c_str());
 }
 
 void

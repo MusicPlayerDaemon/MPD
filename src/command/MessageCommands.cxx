@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2018 The Music Player Daemon Project
+ * Copyright 2003-2019 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -78,9 +78,11 @@ handle_channels(Client &client, gcc_unused Request args, Response &r)
 	assert(args.empty());
 
 	std::set<std::string> channels;
-	for (const auto &c : *client.GetInstance().client_list)
-		channels.insert(c.subscriptions.begin(),
-				c.subscriptions.end());
+	for (const auto &c : *client.GetInstance().client_list) {
+		const auto &subscriptions = c.GetSubscriptions();
+		channels.insert(subscriptions.begin(),
+				subscriptions.end());
+	}
 
 	for (const auto &channel : channels)
 		r.Format("channel: %s\n", channel.c_str());
@@ -94,13 +96,10 @@ handle_read_messages(Client &client,
 {
 	assert(args.empty());
 
-	while (!client.messages.empty()) {
-		const ClientMessage &msg = client.messages.front();
-
+	client.ConsumeMessages([&r](const auto &msg){
 		r.Format("channel: %s\nmessage: %s\n",
 			 msg.GetChannel(), msg.GetMessage());
-		client.messages.pop_front();
-	}
+	});
 
 	return CommandResult::OK;
 }
