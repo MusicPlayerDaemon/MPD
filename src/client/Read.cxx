@@ -29,6 +29,9 @@
 BufferedSocket::InputResult
 Client::OnSocketInput(void *data, size_t length) noexcept
 {
+	if (background_command)
+		return InputResult::PAUSE;
+
 	char *p = (char *)data;
 	char *newline = (char *)memchr(p, '\n', length);
 	if (newline == nullptr)
@@ -48,6 +51,7 @@ Client::OnSocketInput(void *data, size_t length) noexcept
 	switch (result) {
 	case CommandResult::OK:
 	case CommandResult::IDLE:
+	case CommandResult::BACKGROUND:
 	case CommandResult::ERROR:
 		break;
 

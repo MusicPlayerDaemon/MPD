@@ -42,6 +42,11 @@ enum class CommandResult {
 	IDLE,
 
 	/**
+	 * A #BackgroundCommand has been installed.
+	 */
+	BACKGROUND,
+
+	/**
 	 * There was an error.  The "ACK" response was sent to the
 	 * client.
 	 */

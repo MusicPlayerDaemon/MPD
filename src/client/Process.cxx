@@ -54,6 +54,8 @@ Client::ProcessCommandList(bool list_ok,
 CommandResult
 Client::ProcessLine(char *line) noexcept
 {
+	assert(!background_command);
+
 	if (!IsLowerAlphaASCII(*line)) {
 		/* all valid MPD commands begin with a lower case
 		   letter; this could be a badly routed HTTP

@@ -21,6 +21,7 @@
 #include "Config.hxx"
 #include "Domain.hxx"
 #include "List.hxx"
+#include "BackgroundCommand.hxx"
 #include "Partition.hxx"
 #include "Instance.hxx"
 #include "net/UniqueSocketDescriptor.hxx"

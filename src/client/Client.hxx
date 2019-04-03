@@ -34,6 +34,7 @@
 #include <set>
 #include <string>
 #include <list>
+#include <memory>
 
 #include <stddef.h>
 
@@ -47,6 +48,7 @@ class PlayerControl;
 struct playlist;
 class Database;
 class Storage;
+class BackgroundCommand;
 
 class Client final
 	: FullyBufferedSocket,
@@ -102,6 +104,14 @@ private:
 	 */
 	std::list<ClientMessage> messages;
 
+	/**
+	 * The command currently running in background.  If this is
+	 * set, then the client is occupied and will not process any
+	 * new input.  If the connection gets closed, the
+	 * #BackgroundCommand will be cancelled.
+	 */
+	std::unique_ptr<BackgroundCommand> background_command;
+
 public:
 	Client(EventLoop &loop, Partition &partition,
 	       UniqueSocketDescriptor fd, int uid,
@@ -151,6 +161,19 @@ public:
 	void IdleNotify() noexcept;
 	void IdleAdd(unsigned flags) noexcept;
 	bool IdleWait(unsigned flags) noexcept;
+
+	/**
+	 * Called by a command handler to defer execution to a
+	 * #BackgroundCommand.
+	 */
+	void SetBackgroundCommand(std::unique_ptr<BackgroundCommand> _bc) noexcept;
+
+	/**
+	 * Called by the current #BackgroundCommand when it has
+	 * finished, after sending the response.  This method then
+	 * deletes the #BackgroundCommand.
+	 */
+	void OnBackgroundCommandFinished() noexcept;
 
 	enum class SubscribeResult {
 		/** success */

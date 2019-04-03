@@ -25,6 +25,7 @@ void
 Client::OnTimeout() noexcept
 {
 	assert(!idle_waiting);
+	assert(!background_command);
 
 	FormatDebug(client_domain, "[%u] timeout", num);
 

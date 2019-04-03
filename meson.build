@@ -220,6 +220,7 @@ sources = [
   'src/client/Subscribe.cxx',
   'src/client/File.cxx',
   'src/client/Response.cxx',
+  'src/client/ThreadBackgroundCommand.cxx',
   'src/Listen.cxx',
   'src/LogInit.cxx',
   'src/LogBackend.cxx',
