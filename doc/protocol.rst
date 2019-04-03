@@ -782,11 +782,12 @@ The music database
 ==================
 
 :command:`albumart {URI} {OFFSET}`
-    Searches the directory the file ``URI``
-    resides in and attempts to return a chunk of an album
+    Locate album art for the given song and return a chunk of an album
     art image file at offset ``OFFSET``.
-    Uses the filename "cover" with any of ".png, .jpg,
-    .tiff, .bmp".
+
+    This is currently implemented by searching the directory the file
+    resides in for a file called :file:`cover.png`, :file:`cover.jpg`,
+    :file:`cover.tiff` or :file:`cover.bmp`.
 
     Returns the file size and actual number
     of bytes read at the requested offset, followed
