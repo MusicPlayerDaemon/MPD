@@ -23,7 +23,7 @@
 #include <assert.h>
 
 void
-ClientList::Remove(Client &client)
+ClientList::Remove(Client &client) noexcept
 {
 	assert(!list.empty());
 
@@ -31,13 +31,13 @@ ClientList::Remove(Client &client)
 }
 
 void
-ClientList::CloseAll()
+ClientList::CloseAll() noexcept
 {
 	list.clear_and_dispose(DeleteDisposer());
 }
 
 void
-ClientList::IdleAdd(unsigned flags)
+ClientList::IdleAdd(unsigned flags) noexcept
 {
 	assert(flags != 0);
 

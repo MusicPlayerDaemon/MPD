@@ -33,33 +33,34 @@ class ClientList {
 	List list;
 
 public:
-	ClientList(unsigned _max_size)
+	explicit ClientList(unsigned _max_size) noexcept
 		:max_size(_max_size) {}
-	~ClientList() {
+
+	~ClientList() noexcept {
 		CloseAll();
 	}
 
-	List::iterator begin() {
+	List::iterator begin() noexcept {
 		return list.begin();
 	}
 
-	List::iterator end() {
+	List::iterator end() noexcept {
 		return list.end();
 	}
 
-	bool IsFull() const {
+	bool IsFull() const noexcept {
 		return list.size() >= max_size;
 	}
 
-	void Add(Client &client) {
+	void Add(Client &client) noexcept {
 		list.push_front(client);
 	}
 
-	void Remove(Client &client);
+	void Remove(Client &client) noexcept;
 
-	void CloseAll();
+	void CloseAll() noexcept;
 
-	void IdleAdd(unsigned flags);
+	void IdleAdd(unsigned flags) noexcept;
 };
 
 #endif
