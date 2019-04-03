@@ -44,7 +44,7 @@ class Response {
 	const char *command;
 
 public:
-	Response(Client &_client, unsigned _list_index)
+	Response(Client &_client, unsigned _list_index) noexcept
 		:client(_client), list_index(_list_index), command("") {}
 
 	Response(const Response &) = delete;
@@ -56,7 +56,7 @@ public:
 	 * determine how to format the response.  For this reason, the
 	 * returned reference is "const".
 	 */
-	const Client &GetClient() const {
+	const Client &GetClient() const noexcept {
 		return client;
 	}
 
@@ -67,17 +67,17 @@ public:
 	gcc_pure
 	TagMask GetTagMask() const noexcept;
 
-	void SetCommand(const char *_command) {
+	void SetCommand(const char *_command) noexcept {
 		command = _command;
 	}
 
-	bool Write(const void *data, size_t length);
-	bool Write(const char *data);
-	bool FormatV(const char *fmt, va_list args);
-	bool Format(const char *fmt, ...);
+	bool Write(const void *data, size_t length) noexcept;
+	bool Write(const char *data) noexcept;
+	bool FormatV(const char *fmt, va_list args) noexcept;
+	bool Format(const char *fmt, ...) noexcept;
 
-	void Error(enum ack code, const char *msg);
-	void FormatError(enum ack code, const char *fmt, ...);
+	void Error(enum ack code, const char *msg) noexcept;
+	void FormatError(enum ack code, const char *fmt, ...) noexcept;
 };
 
 #endif
