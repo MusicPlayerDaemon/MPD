@@ -568,7 +568,8 @@ ProxyDatabase::OnSocketReady(gcc_unused unsigned flags) noexcept
 	if (!is_idle) {
 		// TODO: can this happen?
 		IdleMonitor::Schedule();
-		return false;
+		SocketMonitor::Cancel();
+		return true;
 	}
 
 	unsigned idle = (unsigned)mpd_recv_idle(connection, false);
@@ -586,7 +587,8 @@ ProxyDatabase::OnSocketReady(gcc_unused unsigned flags) noexcept
 	idle_received |= idle;
 	is_idle = false;
 	IdleMonitor::Schedule();
-	return false;
+	SocketMonitor::Cancel();
+	return true;
 }
 
 void
