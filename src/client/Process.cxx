@@ -18,6 +18,7 @@
  */
 
 #include "Internal.hxx"
+#include "Domain.hxx"
 #include "protocol/Result.hxx"
 #include "command/AllCommands.hxx"
 #include "Log.hxx"

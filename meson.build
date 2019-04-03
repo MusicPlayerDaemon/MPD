@@ -206,6 +206,7 @@ sources = [
   'src/decoder/DecoderPrint.cxx',
   'src/client/Listener.cxx',
   'src/client/Client.cxx',
+  'src/client/Domain.cxx',
   'src/client/Event.cxx',
   'src/client/Expire.cxx',
   'src/client/Global.cxx',

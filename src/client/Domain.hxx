@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2018 The Music Player Daemon Project
+ * Copyright 2003-2019 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,27 +17,9 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "Client.hxx"
-#include "Domain.hxx"
-#include "Log.hxx"
+#ifndef MPD_CLIENT_DOMAIN_HXX
+#define MPD_CLIENT_DOMAIN_HXX
 
-void
-Client::SetExpired() noexcept
-{
-	if (IsExpired())
-		return;
+extern const class Domain client_domain;
 
-	FullyBufferedSocket::Close();
-	timeout_event.Schedule(std::chrono::steady_clock::duration::zero());
-}
-
-void
-Client::OnTimeout() noexcept
-{
-	if (!IsExpired()) {
-		assert(!idle_waiting);
-		FormatDebug(client_domain, "[%u] timeout", num);
-	}
-
-	Close();
-}
+#endif

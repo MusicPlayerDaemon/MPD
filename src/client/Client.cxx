@@ -17,13 +17,11 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "Internal.hxx"
+#include "Client.hxx"
 #include "Partition.hxx"
 #include "Instance.hxx"
 #include "util/Domain.hxx"
 #include "config.h"
-
-const Domain client_domain("client");
 
 Client::~Client() noexcept
 {

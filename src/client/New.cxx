@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "Internal.hxx"
+#include "Domain.hxx"
 #include "List.hxx"
 #include "Partition.hxx"
 #include "Instance.hxx"
