@@ -21,7 +21,6 @@
 #include "OggEncoder.hxx"
 #include "AudioFormat.hxx"
 #include "config/Domain.hxx"
-#include "util/Alloc.hxx"
 #include "util/ByteOrder.hxx"
 #include "util/StringUtil.hxx"
 
@@ -134,7 +133,7 @@ OpusEncoder::OpusEncoder(AudioFormat &_audio_format, ::OpusEncoder *_enc, bool _
 	 frame_size(_audio_format.GetFrameSize()),
 	 buffer_frames(_audio_format.sample_rate / 50),
 	 buffer_size(frame_size * buffer_frames),
-	 buffer((unsigned char *)xalloc(buffer_size)),
+	 buffer(new uint8_t[buffer_size]),
 	 enc(_enc)
 {
 	opus_encoder_ctl(enc, OPUS_GET_LOOKAHEAD(&lookahead));
@@ -181,7 +180,7 @@ PreparedOpusEncoder::Open(AudioFormat &audio_format)
 
 OpusEncoder::~OpusEncoder()
 {
-	free(buffer);
+	delete[] buffer;
 	opus_encoder_destroy(enc);
 }
 
@@ -325,7 +324,7 @@ OpusEncoder::GenerateTags(const Tag *tag)
 		}
 	}
 
-	unsigned char *comments = (unsigned char *)xalloc(comments_size);
+	unsigned char *comments = new unsigned char[comments_size];
 	unsigned char *p = comments;
 
 	memcpy(comments, "OpusTags", 8);
@@ -369,7 +368,7 @@ OpusEncoder::GenerateTags(const Tag *tag)
 	stream.PacketIn(packet);
 	Flush();
 
-	free(comments);
+	delete[] comments;
 }
 
 void
