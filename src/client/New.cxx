@@ -26,15 +26,9 @@
 #include "net/UniqueSocketDescriptor.hxx"
 #include "net/SocketAddress.hxx"
 #include "net/ToString.hxx"
-#include "Permission.hxx"
 #include "Log.hxx"
 
 #include <assert.h>
-#ifdef _WIN32
-#include <winsock2.h>
-#else
-#include <sys/socket.h>
-#endif
 
 static constexpr char GREETING[] = "OK MPD " PROTOCOL_VERSION "\n";
 
