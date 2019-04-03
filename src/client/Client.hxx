@@ -124,12 +124,12 @@ public:
 	void Close() noexcept;
 	void SetExpired() noexcept;
 
-	bool Write(const void *data, size_t length);
+	bool Write(const void *data, size_t length) noexcept;
 
 	/**
 	 * Write a null-terminated string.
 	 */
-	bool Write(const char *data);
+	bool Write(const char *data) noexcept;
 
 	/**
 	 * returns the uid of the client process, or a negative value
