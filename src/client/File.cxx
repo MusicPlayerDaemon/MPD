@@ -22,8 +22,6 @@
 #include "fs/Path.hxx"
 #include "fs/FileInfo.hxx"
 
-#include <unistd.h>
-
 void
 Client::AllowFile(Path path_fs) const
 {
