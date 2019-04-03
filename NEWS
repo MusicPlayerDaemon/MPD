@@ -1,4 +1,5 @@
 ver 0.21.8 (not yet released)
+* fix build failure with GCC 9
 
 ver 0.21.7 (2019/04/03)
 * input
