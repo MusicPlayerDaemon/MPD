@@ -37,6 +37,7 @@ public:
 		 output(normal_size, peak_size) {
 	}
 
+	using BufferedSocket::GetEventLoop;
 	using BufferedSocket::IsDefined;
 
 	void Close() noexcept {

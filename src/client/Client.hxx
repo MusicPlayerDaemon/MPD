@@ -106,6 +106,8 @@ public:
 			FullyBufferedSocket::Close();
 	}
 
+	using FullyBufferedSocket::GetEventLoop;
+
 	bool IsConnected() const noexcept {
 		return FullyBufferedSocket::IsDefined();
 	}

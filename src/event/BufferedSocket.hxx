@@ -42,6 +42,7 @@ public:
 		ScheduleRead();
 	}
 
+	using SocketMonitor::GetEventLoop;
 	using SocketMonitor::IsDefined;
 	using SocketMonitor::Close;
 
