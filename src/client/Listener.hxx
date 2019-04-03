@@ -28,7 +28,7 @@ class ClientListener final : public ServerSocket {
 	Partition &partition;
 
 public:
-	ClientListener(EventLoop &_loop, Partition &_partition)
+	ClientListener(EventLoop &_loop, Partition &_partition) noexcept
 		:ServerSocket(_loop), partition(_partition) {}
 
 private:
