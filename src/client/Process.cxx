@@ -76,7 +76,7 @@ Client::ProcessLine(char *line) noexcept
 
 		/* do nothing if the client wasn't idling: the client
 		   has already received the full idle response from
-		   client_idle_notify(), which he can now evaluate */
+		   IdleNotify(), which he can now evaluate */
 
 		return CommandResult::OK;
 	} else if (idle_waiting) {
