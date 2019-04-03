@@ -17,23 +17,30 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "ClientMessage.hxx"
-#include "util/CharUtil.hxx"
+#include "List.hxx"
+#include "util/DeleteDisposer.hxx"
 
-static constexpr bool
-valid_channel_char(const char ch) noexcept
+#include <assert.h>
+
+void
+ClientList::Remove(Client &client)
 {
-	return IsAlphaNumericASCII(ch) ||
-		ch == '_' || ch == '-' || ch == '.' || ch == ':';
+	assert(!list.empty());
+
+	list.erase(list.iterator_to(client));
 }
 
-bool
-client_message_valid_channel_name(const char *name) noexcept
+void
+ClientList::CloseAll()
 {
-	do {
-		if (!valid_channel_char(*name))
-			return false;
-	} while (*++name != 0);
+	list.clear_and_dispose(DeleteDisposer());
+}
 
-	return true;
+void
+ClientList::IdleAdd(unsigned flags)
+{
+	assert(flags != 0);
+
+	for (auto &client : list)
+		client.IdleAdd(flags);
 }

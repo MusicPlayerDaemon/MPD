@@ -20,7 +20,7 @@
 #ifndef MPD_CLIENT_H
 #define MPD_CLIENT_H
 
-#include "ClientMessage.hxx"
+#include "Message.hxx"
 #include "command/CommandResult.hxx"
 #include "command/CommandListBuilder.hxx"
 #include "tag/Mask.hxx"

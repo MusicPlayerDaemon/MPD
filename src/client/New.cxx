@@ -18,8 +18,8 @@
  */
 
 #include "config.h"
-#include "ClientInternal.hxx"
-#include "ClientList.hxx"
+#include "Internal.hxx"
+#include "List.hxx"
 #include "Partition.hxx"
 #include "Instance.hxx"
 #include "net/UniqueSocketDescriptor.hxx"

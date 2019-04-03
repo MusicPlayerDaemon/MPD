@@ -20,7 +20,7 @@
 #include "MessageCommands.hxx"
 #include "Request.hxx"
 #include "client/Client.hxx"
-#include "client/ClientList.hxx"
+#include "client/List.hxx"
 #include "client/Response.hxx"
 #include "Instance.hxx"
 #include "util/ConstBuffer.hxx"
