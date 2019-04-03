@@ -1,4 +1,6 @@
 ver 0.21.8 (not yet released)
+* output
+  - httpd: add missing mutex lock
 * fix build failure with GCC 9
 
 ver 0.21.7 (2019/04/03)
