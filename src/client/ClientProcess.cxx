@@ -30,7 +30,7 @@
 
 static CommandResult
 client_process_command_list(Client &client, bool list_ok,
-			    std::list<std::string> &&list)
+			    std::list<std::string> &&list) noexcept
 {
 	CommandResult ret = CommandResult::OK;
 	unsigned num = 0;
@@ -51,7 +51,7 @@ client_process_command_list(Client &client, bool list_ok,
 }
 
 CommandResult
-client_process_line(Client &client, char *line)
+client_process_line(Client &client, char *line) noexcept
 {
 	CommandResult ret;
 
