@@ -1,4 +1,4 @@
-ver 0.21.7 (not yet released)
+ver 0.21.7 (2019/04/03)
 * input
   - qobuz/tidal: scan tags when loading a playlist
 * require Meson 0.49.0 for native libgcrypt-config support
