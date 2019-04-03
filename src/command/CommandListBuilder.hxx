@@ -97,7 +97,7 @@ public:
 	/**
 	 * Finishes the list and returns it.
 	 */
-	std::list<std::string> &&Commit() {
+	std::list<std::string> Commit() {
 		assert(IsActive());
 
 		return std::move(list);

@@ -93,23 +93,18 @@ Client::ProcessLine(char *line) noexcept
 				    "[%u] process command list",
 				    num);
 
-			auto &&list = cmd_list.Commit();
+			const bool ok_mode = cmd_list.IsOKMode();
+			auto list = cmd_list.Commit();
+			cmd_list.Reset();
 
-			auto ret = ProcessCommandList(cmd_list.IsOKMode(),
+			auto ret = ProcessCommandList(ok_mode,
 						      std::move(list));
 			FormatDebug(client_domain,
 				    "[%u] process command "
 				    "list returned %i", num, int(ret));
 
-			if (ret == CommandResult::CLOSE)
-				return CommandResult::CLOSE;
-
-			assert(!IsExpired());
-
 			if (ret == CommandResult::OK)
 				command_success(*this);
-
-			cmd_list.Reset();
 
 			return ret;
 		} else {
