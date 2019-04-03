@@ -796,7 +796,7 @@ The music database
 
     Example::
 
-     albumart
+     albumart foo/bar.ogg 0
      size: 1024768
      binary: 8192
      <8192 bytes>
