@@ -43,7 +43,7 @@ Client::OnSocketInput(void *data, size_t length) noexcept
 	/* terminate the string at the end of the line */
 	*end = 0;
 
-	CommandResult result = client_process_line(*this, p);
+	CommandResult result = ProcessLine(p);
 	switch (result) {
 	case CommandResult::OK:
 	case CommandResult::IDLE:

@@ -21,7 +21,6 @@
 #define MPD_CLIENT_INTERNAL_HXX
 
 #include "Client.hxx"
-#include "command/CommandResult.hxx"
 
 #include <chrono>
 
@@ -33,8 +32,5 @@ extern const class Domain client_domain;
 extern std::chrono::steady_clock::duration client_timeout;
 extern size_t client_max_command_list_size;
 extern size_t client_max_output_buffer_size;
-
-CommandResult
-client_process_line(Client &client, char *line) noexcept;
 
 #endif

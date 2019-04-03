@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2018 The Music Player Daemon Project
+ * Copyright 2003-2019 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -28,38 +28,38 @@
 #define CLIENT_LIST_OK_MODE_BEGIN "command_list_ok_begin"
 #define CLIENT_LIST_MODE_END "command_list_end"
 
-static CommandResult
-client_process_command_list(Client &client, bool list_ok,
-			    std::list<std::string> &&list) noexcept
+inline CommandResult
+Client::ProcessCommandList(bool list_ok,
+			   std::list<std::string> &&list) noexcept
 {
 	CommandResult ret = CommandResult::OK;
-	unsigned num = 0;
+	unsigned n = 0;
 
 	for (auto &&i : list) {
 		char *cmd = &*i.begin();
 
 		FormatDebug(client_domain, "process command \"%s\"", cmd);
-		ret = command_process(client, num++, cmd);
+		ret = command_process(*this, n++, cmd);
 		FormatDebug(client_domain, "command returned %i", int(ret));
-		if (ret != CommandResult::OK || client.IsExpired())
+		if (ret != CommandResult::OK || IsExpired())
 			break;
 		else if (list_ok)
-			client.Write("list_OK\n");
+			Write("list_OK\n");
 	}
 
 	return ret;
 }
 
 CommandResult
-client_process_line(Client &client, char *line) noexcept
+Client::ProcessLine(char *line) noexcept
 {
 	CommandResult ret;
 
 	if (StringIsEqual(line, "noidle")) {
-		if (client.idle_waiting) {
+		if (idle_waiting) {
 			/* send empty idle response and leave idle mode */
-			client.idle_waiting = false;
-			command_success(client);
+			idle_waiting = false;
+			command_success(*this);
 		}
 
 		/* do nothing if the client wasn't idling: the client
@@ -67,44 +67,43 @@ client_process_line(Client &client, char *line) noexcept
 		   client_idle_notify(), which he can now evaluate */
 
 		return CommandResult::OK;
-	} else if (client.idle_waiting) {
+	} else if (idle_waiting) {
 		/* during idle mode, clients must not send anything
 		   except "noidle" */
 		FormatWarning(client_domain,
 			      "[%u] command \"%s\" during idle",
-			      client.num, line);
+			      num, line);
 		return CommandResult::CLOSE;
 	}
 
-	if (client.cmd_list.IsActive()) {
+	if (cmd_list.IsActive()) {
 		if (StringIsEqual(line, CLIENT_LIST_MODE_END)) {
 			FormatDebug(client_domain,
 				    "[%u] process command list",
-				    client.num);
+				    num);
 
-			auto &&cmd_list = client.cmd_list.Commit();
+			auto &&list = cmd_list.Commit();
 
-			ret = client_process_command_list(client,
-							  client.cmd_list.IsOKMode(),
-							  std::move(cmd_list));
+			ret = ProcessCommandList(cmd_list.IsOKMode(),
+						 std::move(list));
 			FormatDebug(client_domain,
 				    "[%u] process command "
-				    "list returned %i", client.num, int(ret));
+				    "list returned %i", num, int(ret));
 
 			if (ret == CommandResult::CLOSE ||
-			    client.IsExpired())
+			    IsExpired())
 				return CommandResult::CLOSE;
 
 			if (ret == CommandResult::OK)
-				command_success(client);
+				command_success(*this);
 
-			client.cmd_list.Reset();
+			cmd_list.Reset();
 		} else {
-			if (!client.cmd_list.Add(line)) {
+			if (!cmd_list.Add(line)) {
 				FormatWarning(client_domain,
 					      "[%u] command list size "
 					      "is larger than the max (%lu)",
-					      client.num,
+					      num,
 					      (unsigned long)client_max_command_list_size);
 				return CommandResult::CLOSE;
 			}
@@ -113,10 +112,10 @@ client_process_line(Client &client, char *line) noexcept
 		}
 	} else {
 		if (StringIsEqual(line, CLIENT_LIST_MODE_BEGIN)) {
-			client.cmd_list.Begin(false);
+			cmd_list.Begin(false);
 			ret = CommandResult::OK;
 		} else if (StringIsEqual(line, CLIENT_LIST_OK_MODE_BEGIN)) {
-			client.cmd_list.Begin(true);
+			cmd_list.Begin(true);
 			ret = CommandResult::OK;
 		} else if (IsUpperAlphaASCII(*line)) {
 			/* no valid MPD command begins with an upper
@@ -124,23 +123,22 @@ client_process_line(Client &client, char *line) noexcept
 			   HTTP request */
 			FormatWarning(client_domain,
 				      "[%u] malformed command \"%s\"",
-				      client.num, line);
+				      num, line);
 			ret = CommandResult::CLOSE;
 		} else {
 			FormatDebug(client_domain,
 				    "[%u] process command \"%s\"",
-				    client.num, line);
-			ret = command_process(client, 0, line);
+				    num, line);
+			ret = command_process(*this, 0, line);
 			FormatDebug(client_domain,
 				    "[%u] command returned %i",
-				    client.num, int(ret));
+				    num, int(ret));
 
-			if (ret == CommandResult::CLOSE ||
-			    client.IsExpired())
+			if (ret == CommandResult::CLOSE || IsExpired())
 				return CommandResult::CLOSE;
 
 			if (ret == CommandResult::OK)
-				command_success(client);
+				command_success(*this);
 		}
 	}
 

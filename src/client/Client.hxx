@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2018 The Music Player Daemon Project
+ * Copyright 2003-2019 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -21,6 +21,7 @@
 #define MPD_CLIENT_H
 
 #include "ClientMessage.hxx"
+#include "command/CommandResult.hxx"
 #include "command/CommandListBuilder.hxx"
 #include "tag/Mask.hxx"
 #include "event/FullyBufferedSocket.hxx"
@@ -226,6 +227,11 @@ public:
 	const Storage *GetStorage() const noexcept;
 
 private:
+	CommandResult ProcessCommandList(bool list_ok,
+					 std::list<std::string> &&list) noexcept;
+
+	CommandResult ProcessLine(char *line) noexcept;
+
 	/* virtual methods from class BufferedSocket */
 	InputResult OnSocketInput(void *data, size_t length) noexcept override;
 	void OnSocketError(std::exception_ptr ep) noexcept override;
