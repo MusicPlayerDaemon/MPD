@@ -25,6 +25,12 @@
 
 const Domain client_domain("client");
 
+Client::~Client() noexcept
+{
+	if (FullyBufferedSocket::IsDefined())
+		FullyBufferedSocket::Close();
+}
+
 Instance &
 Client::GetInstance() noexcept
 {

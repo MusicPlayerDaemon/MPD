@@ -101,10 +101,7 @@ public:
 	       unsigned _permission,
 	       int num) noexcept;
 
-	~Client() noexcept {
-		if (FullyBufferedSocket::IsDefined())
-			FullyBufferedSocket::Close();
-	}
+	~Client() noexcept;
 
 	using FullyBufferedSocket::GetEventLoop;
 
