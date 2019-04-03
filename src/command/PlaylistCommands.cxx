@@ -20,6 +20,7 @@
 #include "config.h"
 #include "PlaylistCommands.hxx"
 #include "Request.hxx"
+#include "Instance.hxx"
 #include "db/Selection.hxx"
 #include "db/DatabasePlaylist.hxx"
 #include "CommandError.hxx"
@@ -28,6 +29,7 @@
 #include "PlaylistError.hxx"
 #include "db/PlaylistVector.hxx"
 #include "SongLoader.hxx"
+#include "song/DetachedSong.hxx"
 #include "BulkEdit.hxx"
 #include "playlist/PlaylistQueue.hxx"
 #include "playlist/Print.hxx"
@@ -77,11 +79,21 @@ handle_load(Client &client, Request args, gcc_unused Response &r)
 
 	const ScopeBulkEdit bulk_edit(client.GetPartition());
 
+	auto &playlist = client.GetPlaylist();
+	const unsigned old_size = playlist.GetLength();
+
 	const SongLoader loader(client);
 	playlist_open_into_queue(uri,
 				 range.start, range.end,
-				 client.GetPlaylist(),
+				 playlist,
 				 client.GetPlayerControl(), loader);
+
+	/* invoke the RemoteTagScanner on all newly added songs */
+	auto &instance = client.GetInstance();
+	const unsigned new_size = playlist.GetLength();
+	for (unsigned i = old_size; i < new_size; ++i)
+		instance.LookupRemoteTag(playlist.queue.Get(i).GetURI());
+
 	return CommandResult::OK;
 }
 

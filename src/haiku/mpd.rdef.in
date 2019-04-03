@@ -2,7 +2,15 @@ resource app_signature "application/x-vnd.MusicPD";
 
 resource app_flags B_BACKGROUND_APP;
 
-// TODO: resource app_version {};
+resource app_version {
+	major = @VERSION_MAJOR@,
+	middle = @VERSION_MINOR@,
+	minor = @VERSION_REVISION@,
+	variety = B_APPV_ALPHA,
+	internal = @VERSION_EXTRA@,
+	short_info = "Music Player Daemon @VERSION@",
+    long_info  = "Music Player Daemon @VERSION@ ©The Music Player Daemon Project"
+};
 
 resource vector_icon {
 	$"6E6369661F050102031604BEE29BBEC5403EC540BEE29B4A10004A10000001C6"

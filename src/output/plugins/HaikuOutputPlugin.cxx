@@ -140,9 +140,6 @@ HaikuOutput::Close() noexcept
 
 HaikuOutput::~HaikuOutput()
 {
-	delete_sem(new_buffer);
-	delete_sem(buffer_done);
-
 	finalize_application();
 }
 

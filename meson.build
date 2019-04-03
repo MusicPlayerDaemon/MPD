@@ -390,6 +390,7 @@ more_deps = []
 if is_android
   subdir('src/java')
   target_type = 'shared_library'
+  target_name = 'mpd'
   link_args += [
     '-Wl,--no-undefined,-shared,-Bsymbolic',
     '-llog',
@@ -399,12 +400,20 @@ if is_android
     declare_dependency(sources: [classes_jar]),
     java_dep,
   ]
+elif is_haiku
+  target_type = 'executable'
+  target_name = 'mpd.nores'
+  link_args += [
+    '-lnetwork',
+    '-lbe',
+  ]
 else
   target_type = 'executable'
+  target_name = 'mpd'
 endif
 
 mpd = build_target(
-  'mpd',
+  target_name,
   sources,
   target_type: target_type,
   include_directories: inc,
@@ -443,6 +452,14 @@ endif
 
 if is_haiku
   subdir('src/haiku')
+  custom_target(
+    'mpd',
+    output: 'mpd',
+    input: [mpd, rsrc],
+    command: [addres, '@OUTPUT@', '@INPUT0@', '@INPUT1@'],
+    install: true,
+    install_dir: get_option('bindir'),
+  )
 endif
 
 configure_file(output: 'config.h', configuration: conf)

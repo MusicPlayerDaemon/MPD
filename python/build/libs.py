@@ -112,8 +112,8 @@ liblame = AutotoolsProject(
 )
 
 ffmpeg = FfmpegProject(
-    'http://ffmpeg.org/releases/ffmpeg-4.1.1.tar.xz',
-    '373749824dfd334d84e55dff406729edfd1606575ee44dd485d97d45ea4d2d86',
+    'http://ffmpeg.org/releases/ffmpeg-4.1.3.tar.xz',
+    '0c3020452880581a8face91595b239198078645e7d7184273b8bcc7758beb63d',
     'lib/libavcodec.a',
     [
         '--disable-shared', '--enable-static',
@@ -341,8 +341,8 @@ ffmpeg = FfmpegProject(
 )
 
 curl = AutotoolsProject(
-    'http://curl.haxx.se/download/curl-7.64.0.tar.xz',
-    '2f2f13fa34d44aa29cb444077ad7dc4dc6d189584ad552e0aaeb06e608af6001',
+    'http://curl.haxx.se/download/curl-7.64.1.tar.xz',
+    '9252332a7f871ce37bfa7f78bdd0a0e3924d8187cc27cb57c76c9474a7168fb3',
     'lib/libcurl.a',
     [
         '--disable-shared', '--enable-static',
@@ -375,8 +375,8 @@ libexpat = AutotoolsProject(
 )
 
 libnfs = AutotoolsProject(
-    'https://github.com/sahlberg/libnfs/archive/libnfs-3.0.0.tar.gz',
-    '445d92c5fc55e4a5b115e358e60486cf8f87ee50e0103d46a02e7fb4618566a5',
+    'https://github.com/sahlberg/libnfs/archive/libnfs-4.0.0.tar.gz',
+    '6ee77e9fe220e2d3e3b1f53cfea04fb319828cc7dbb97dd9df09e46e901d797d',
     'lib/libnfs.a',
     [
         '--disable-shared', '--enable-static',
@@ -387,7 +387,7 @@ libnfs = AutotoolsProject(
 
         '--disable-utils', '--disable-examples',
     ],
-    base='libnfs-libnfs-3.0.0',
+    base='libnfs-libnfs-4.0.0',
     autoreconf=True,
 )
 
