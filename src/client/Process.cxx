@@ -65,8 +65,6 @@ Client::ProcessLine(char *line) noexcept
 		return CommandResult::CLOSE;
 	}
 
-	CommandResult ret;
-
 	if (StringIsEqual(line, "noidle")) {
 		if (idle_waiting) {
 			/* send empty idle response and leave idle mode */
@@ -96,8 +94,8 @@ Client::ProcessLine(char *line) noexcept
 
 			auto &&list = cmd_list.Commit();
 
-			ret = ProcessCommandList(cmd_list.IsOKMode(),
-						 std::move(list));
+			auto ret = ProcessCommandList(cmd_list.IsOKMode(),
+						      std::move(list));
 			FormatDebug(client_domain,
 				    "[%u] process command "
 				    "list returned %i", num, int(ret));
@@ -110,6 +108,8 @@ Client::ProcessLine(char *line) noexcept
 				command_success(*this);
 
 			cmd_list.Reset();
+
+			return ret;
 		} else {
 			if (!cmd_list.Add(line)) {
 				FormatWarning(client_domain,
@@ -120,20 +120,20 @@ Client::ProcessLine(char *line) noexcept
 				return CommandResult::CLOSE;
 			}
 
-			ret = CommandResult::OK;
+			return CommandResult::OK;
 		}
 	} else {
 		if (StringIsEqual(line, CLIENT_LIST_MODE_BEGIN)) {
 			cmd_list.Begin(false);
-			ret = CommandResult::OK;
+			return CommandResult::OK;
 		} else if (StringIsEqual(line, CLIENT_LIST_OK_MODE_BEGIN)) {
 			cmd_list.Begin(true);
-			ret = CommandResult::OK;
+			return CommandResult::OK;
 		} else {
 			FormatDebug(client_domain,
 				    "[%u] process command \"%s\"",
 				    num, line);
-			ret = command_process(*this, 0, line);
+			auto ret = command_process(*this, 0, line);
 			FormatDebug(client_domain,
 				    "[%u] command returned %i",
 				    num, int(ret));
@@ -143,8 +143,8 @@ Client::ProcessLine(char *line) noexcept
 
 			if (ret == CommandResult::OK)
 				command_success(*this);
+
+			return ret;
 		}
 	}
-
-	return ret;
 }
