@@ -23,6 +23,7 @@
 #include "config/Data.hxx"
 #include "config/Option.hxx"
 #include "util/RuntimeError.hxx"
+#include "util/StringView.hxx"
 
 #include <algorithm>
 #include <map>
@@ -54,13 +55,14 @@ static unsigned local_permissions;
 #endif
 
 static unsigned
-ParsePermission(const char *p)
+ParsePermission(StringView s)
 {
 	for (auto i = permission_names; i->name != nullptr; ++i)
-		if (strcmp(p, i->name) == 0)
+		if (s.Equals(i->name))
 			return i->value;
 
-	throw FormatRuntimeError("unknown permission \"%s\"", p);
+	throw FormatRuntimeError("unknown permission \"%.*s\"",
+				 int(s.size), s.data);
 }
 
 static unsigned parsePermissions(const char *string)
@@ -74,8 +76,7 @@ static unsigned parsePermissions(const char *string)
 		const char *comma = std::find(string, end,
 					      PERMISSION_SEPARATOR);
 		if (comma > string) {
-			const std::string name(string, comma);
-			permission |= ParsePermission(name.c_str());
+			permission |= ParsePermission({string, comma});
 		}
 
 		if (comma == end)
