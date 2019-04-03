@@ -17,7 +17,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "Internal.hxx"
+#include "Client.hxx"
 #include "Partition.hxx"
 #include "Idle.hxx"
 
@@ -31,7 +31,7 @@ Client::Subscribe(const char *channel) noexcept
 	if (!client_message_valid_channel_name(channel))
 		return Client::SubscribeResult::INVALID;
 
-	if (num_subscriptions >= CLIENT_MAX_SUBSCRIPTIONS)
+	if (num_subscriptions >= MAX_SUBSCRIPTIONS)
 		return Client::SubscribeResult::FULL;
 
 	auto r = subscriptions.insert(channel);
@@ -75,7 +75,7 @@ Client::UnsubscribeAll() noexcept
 bool
 Client::PushMessage(const ClientMessage &msg) noexcept
 {
-	if (messages.size() >= CLIENT_MAX_MESSAGES ||
+	if (messages.size() >= MAX_MESSAGES ||
 	    !IsSubscribed(msg.GetChannel()))
 		return false;
 

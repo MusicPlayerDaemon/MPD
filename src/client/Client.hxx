@@ -83,6 +83,8 @@ public:
 	TagMask tag_mask = TagMask::All();
 
 private:
+	static constexpr size_t MAX_SUBSCRIPTIONS = 16;
+
 	/**
 	 * A list of channel names this client is subscribed to.
 	 */
@@ -93,6 +95,8 @@ private:
 	 * limit the number of subscriptions.
 	 */
 	unsigned num_subscriptions = 0;
+
+	static constexpr size_t MAX_MESSAGES = 64;
 
 	/**
 	 * A list of messages this client has received.
