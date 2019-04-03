@@ -41,11 +41,11 @@ class Response {
 	/**
 	 * This command's name.  Used to generate error messages.
 	 */
-	const char *command;
+	const char *command = "";
 
 public:
 	Response(Client &_client, unsigned _list_index) noexcept
-		:client(_client), list_index(_list_index), command("") {}
+		:client(_client), list_index(_list_index) {}
 
 	Response(const Response &) = delete;
 	Response &operator=(const Response &) = delete;
