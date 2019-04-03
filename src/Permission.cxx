@@ -22,6 +22,7 @@
 #include "config/Param.hxx"
 #include "config/Data.hxx"
 #include "config/Option.hxx"
+#include "util/IterableSplitString.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/StringView.hxx"
 
@@ -69,21 +70,11 @@ static unsigned parsePermissions(const char *string)
 {
 	assert(string != nullptr);
 
-	const char *const end = string + strlen(string);
-
 	unsigned permission = 0;
-	while (true) {
-		const char *comma = std::find(string, end,
-					      PERMISSION_SEPARATOR);
-		if (comma > string) {
-			permission |= ParsePermission({string, comma});
-		}
 
-		if (comma == end)
-			break;
-
-		string = comma + 1;
-	}
+	for (const auto i : IterableSplitString(string, PERMISSION_SEPARATOR))
+		if (!i.empty())
+			permission |= ParsePermission(i);
 
 	return permission;
 }
