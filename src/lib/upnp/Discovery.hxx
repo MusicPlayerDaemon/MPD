@@ -168,7 +168,7 @@ public:
 	UPnPDeviceDirectory(const UPnPDeviceDirectory &) = delete;
 	UPnPDeviceDirectory& operator=(const UPnPDeviceDirectory &) = delete;
 
-	EventLoop &GetEventLoop() noexcept;
+	EventLoop &GetEventLoop() const noexcept;
 
 	void Start();
 

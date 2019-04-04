@@ -68,7 +68,7 @@ public:
 
 	~SocketMonitor() noexcept;
 
-	EventLoop &GetEventLoop() noexcept {
+	auto &GetEventLoop() const noexcept {
 		return loop;
 	}
 

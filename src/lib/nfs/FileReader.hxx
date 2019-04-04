@@ -69,7 +69,7 @@ public:
 	NfsFileReader() noexcept;
 	~NfsFileReader() noexcept;
 
-	EventLoop &GetEventLoop() noexcept {
+	auto &GetEventLoop() const noexcept {
 		return defer_open.GetEventLoop();
 	}
 

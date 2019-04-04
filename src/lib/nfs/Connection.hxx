@@ -161,9 +161,7 @@ public:
 		return export_name.c_str();
 	}
 
-	EventLoop &GetEventLoop() noexcept {
-		return SocketMonitor::GetEventLoop();
-	}
+	using SocketMonitor::GetEventLoop;
 
 	/**
 	 * Ensure that the connection is established.  The connection

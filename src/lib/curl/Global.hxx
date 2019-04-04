@@ -50,7 +50,7 @@ class CurlGlobal final {
 public:
 	explicit CurlGlobal(EventLoop &_loop);
 
-	EventLoop &GetEventLoop() noexcept {
+	auto &GetEventLoop() const noexcept {
 		return timeout_event.GetEventLoop();
 	}
 

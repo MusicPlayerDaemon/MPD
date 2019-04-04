@@ -76,7 +76,7 @@ public:
 
 	virtual ~AsyncInputStream();
 
-	EventLoop &GetEventLoop() {
+	auto &GetEventLoop() const noexcept {
 		return deferred_resume.GetEventLoop();
 	}
 

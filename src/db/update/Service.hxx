@@ -66,7 +66,7 @@ public:
 
 	~UpdateService();
 
-	EventLoop &GetEventLoop() noexcept {
+	auto &GetEventLoop() const noexcept {
 		return defer.GetEventLoop();
 	}
 

@@ -129,7 +129,7 @@ public:
 	}
 
 private:
-	EventLoop &GetEventLoop() noexcept {
+	EventLoop &GetEventLoop() const noexcept {
 		return defer_connect.GetEventLoop();
 	}
 
