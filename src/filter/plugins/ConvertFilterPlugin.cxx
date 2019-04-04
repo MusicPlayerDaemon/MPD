@@ -41,30 +41,24 @@ class ConvertFilter final : public Filter {
 	 * This object is only "open" if #in_audio_format !=
 	 * #out_audio_format.
 	 */
-	PcmConvert state;
+	std::unique_ptr<PcmConvert> state;
 
 public:
 	ConvertFilter(const AudioFormat &audio_format);
-	~ConvertFilter();
 
 	void Set(const AudioFormat &_out_audio_format);
 
 	void Reset() noexcept override {
-		if (IsActive())
-			state.Reset();
+		if (state)
+			state->Reset();
 	}
 
 	ConstBuffer<void> FilterPCM(ConstBuffer<void> src) override;
 
 	ConstBuffer<void> Flush() override {
-		return IsActive()
-			? state.Flush()
+		return state
+			? state->Flush()
 			: nullptr;
-	}
-
-private:
-	bool IsActive() const noexcept {
-		return out_audio_format != in_audio_format;
 	}
 };
 
@@ -82,16 +76,17 @@ ConvertFilter::Set(const AudioFormat &_out_audio_format)
 		/* no change */
 		return;
 
-	if (IsActive()) {
+	if (state) {
 		out_audio_format = in_audio_format;
-		state.Close();
+		state.reset();
 	}
 
 	if (_out_audio_format == in_audio_format)
 		/* optimized special case: no-op */
 		return;
 
-	state.Open(in_audio_format, _out_audio_format);
+	state = std::make_unique<PcmConvert>(in_audio_format,
+					     _out_audio_format);
 
 	out_audio_format = _out_audio_format;
 }
@@ -110,17 +105,11 @@ PreparedConvertFilter::Open(AudioFormat &audio_format)
 	return std::make_unique<ConvertFilter>(audio_format);
 }
 
-ConvertFilter::~ConvertFilter()
-{
-	if (IsActive())
-		state.Close();
-}
-
 ConstBuffer<void>
 ConvertFilter::FilterPCM(ConstBuffer<void> src)
 {
-	return IsActive()
-		? state.Convert(src)
+	return state
+		? state->Convert(src)
 		/* optimized special case: no-op */
 		: src;
 }

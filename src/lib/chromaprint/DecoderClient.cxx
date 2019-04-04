@@ -18,8 +18,12 @@
  */
 
 #include "DecoderClient.hxx"
+#include "pcm/PcmConvert.hxx"
 #include "input/InputStream.hxx"
 #include "util/ConstBuffer.hxx"
+
+ChromaprintDecoderClient::ChromaprintDecoderClient() = default;
+ChromaprintDecoderClient::~ChromaprintDecoderClient() noexcept = default;
 
 void
 ChromaprintDecoderClient::PrintResult()
@@ -27,8 +31,8 @@ ChromaprintDecoderClient::PrintResult()
 	if (!ready)
 		throw std::runtime_error("Decoding failed");
 
-	if (need_convert) {
-		auto flushed = convert.Flush();
+	if (convert) {
+		auto flushed = convert->Flush();
 		auto data = ConstBuffer<int16_t>::FromVoid(flushed);
 		chromaprint.Feed(data.data, data.size);
 	}
@@ -48,8 +52,8 @@ ChromaprintDecoderClient::Ready(AudioFormat audio_format, bool, SignedSongTime)
 		const AudioFormat src_audio_format = audio_format;
 		audio_format.format = SampleFormat::S16;
 
-		convert.Open(src_audio_format, audio_format);
-		need_convert = true;
+		convert = std::make_unique<PcmConvert>(src_audio_format,
+						       audio_format);
 	}
 
 	chromaprint.Start(audio_format.sample_rate, audio_format.channels);
@@ -70,8 +74,8 @@ ChromaprintDecoderClient::SubmitData(InputStream *,
 	ConstBuffer<void> src{_data, length};
 	ConstBuffer<int16_t> data;
 
-	if (need_convert) {
-		auto result = convert.Convert(src);
+	if (convert) {
+		auto result = convert->Convert(src);
 		data = ConstBuffer<int16_t>::FromVoid(result);
 	} else
 		data = ConstBuffer<int16_t>::FromVoid(src);

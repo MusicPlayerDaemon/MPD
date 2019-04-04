@@ -37,15 +37,16 @@
 #include <string.h>
 #include <math.h>
 
+DecoderBridge::DecoderBridge(DecoderControl &_dc, bool _initial_seek_pending,
+			     std::unique_ptr<Tag> _tag) noexcept
+	:dc(_dc),
+	 initial_seek_pending(_initial_seek_pending),
+	 song_tag(std::move(_tag)) {}
+
 DecoderBridge::~DecoderBridge()
 {
 	/* caller must flush the chunk */
 	assert(current_chunk == nullptr);
-
-	if (convert != nullptr) {
-		convert->Close();
-		delete convert;
-	}
 }
 
 bool
@@ -255,11 +256,9 @@ DecoderBridge::Ready(const AudioFormat audio_format,
 		FormatDebug(decoder_domain, "converting to %s",
 			    ToString(dc.out_audio_format).c_str());
 
-		convert = new PcmConvert();
-
 		try {
-			convert->Open(dc.in_audio_format,
-					      dc.out_audio_format);
+			convert = std::make_unique<PcmConvert>(dc.in_audio_format,
+							       dc.out_audio_format);
 		} catch (...) {
 			error = std::current_exception();
 		}

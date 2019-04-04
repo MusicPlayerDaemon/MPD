@@ -22,17 +22,18 @@
 
 #include "Context.hxx"
 #include "decoder/Client.hxx"
-#include "pcm/PcmConvert.hxx"
 #include "thread/Mutex.hxx"
 
+#include <memory>
+
 #include <stdint.h>
+
+class PcmConvert;
 
 class ChromaprintDecoderClient : public DecoderClient {
 	bool ready = false;
 
-	bool need_convert = false;
-
-	PcmConvert convert;
+	std::unique_ptr<PcmConvert> convert;
 
 	Chromaprint::Context chromaprint;
 
@@ -41,10 +42,8 @@ class ChromaprintDecoderClient : public DecoderClient {
 public:
 	Mutex mutex;
 
-	~ChromaprintDecoderClient() noexcept {
-		if (need_convert)
-			convert.Close();
-	}
+	ChromaprintDecoderClient();
+	~ChromaprintDecoderClient() noexcept;
 
 	void PrintResult();
 

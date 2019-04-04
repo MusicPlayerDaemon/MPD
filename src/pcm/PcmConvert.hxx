@@ -47,26 +47,18 @@ class PcmConvert {
 	PcmFormatConverter format_converter;
 	PcmChannelsConverter channels_converter;
 
-	AudioFormat src_format, dest_format;
+	const AudioFormat src_format, dest_format;
 
 	bool enable_resampler, enable_format, enable_channels;
 
 public:
-	PcmConvert() noexcept;
+
+	/**
+	 * Throws on error.
+	 */
+	PcmConvert(AudioFormat _src_format, AudioFormat _dest_format);
+
 	~PcmConvert() noexcept;
-
-	/**
-	 * Prepare the object.  Call Close() when done.
-	 *
-	 * Throws std::runtime_error on error.
-	 */
-	void Open(AudioFormat _src_format, AudioFormat _dest_format);
-
-	/**
-	 * Close the object after it was prepared with Open().  After
-	 * that, it may be reused by calling Open() again.
-	 */
-	void Close() noexcept;
 
 	/**
 	 * Reset the filter's state, e.g. drop/flush buffers.

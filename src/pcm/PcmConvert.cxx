@@ -29,27 +29,12 @@ pcm_convert_global_init(const ConfigData &config)
 	pcm_resampler_global_init(config);
 }
 
-PcmConvert::PcmConvert() noexcept
+PcmConvert::PcmConvert(const AudioFormat _src_format,
+		       const AudioFormat _dest_format)
+	:src_format(_src_format), dest_format(_dest_format)
 {
-#ifndef NDEBUG
-	src_format.Clear();
-	dest_format.Clear();
-#endif
-}
-
-PcmConvert::~PcmConvert() noexcept
-{
-	assert(!src_format.IsValid());
-	assert(!dest_format.IsValid());
-}
-
-void
-PcmConvert::Open(const AudioFormat _src_format, const AudioFormat _dest_format)
-{
-	assert(!src_format.IsValid());
-	assert(!dest_format.IsValid());
-	assert(_src_format.IsValid());
-	assert(_dest_format.IsValid());
+	assert(src_format.IsValid());
+	assert(dest_format.IsValid());
 
 	AudioFormat format = _src_format;
 	if (format.format == SampleFormat::DSD)
@@ -90,13 +75,9 @@ PcmConvert::Open(const AudioFormat _src_format, const AudioFormat _dest_format)
 			throw;
 		}
 	}
-
-	src_format = _src_format;
-	dest_format = _dest_format;
 }
 
-void
-PcmConvert::Close() noexcept
+PcmConvert::~PcmConvert() noexcept
 {
 	if (enable_channels)
 		channels_converter.Close();
@@ -107,11 +88,6 @@ PcmConvert::Close() noexcept
 
 #ifdef ENABLE_DSD
 	dsd.Reset();
-#endif
-
-#ifndef NDEBUG
-	src_format.Clear();
-	dest_format.Clear();
 #endif
 }
 

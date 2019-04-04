@@ -53,8 +53,7 @@ try {
 
 	const size_t in_frame_size = in_audio_format.GetFrameSize();
 
-	PcmConvert state;
-	state.Open(in_audio_format, out_audio_format);
+	PcmConvert state(in_audio_format, out_audio_format);
 
 	StaticFifoBuffer<uint8_t, 4096> buffer;
 
@@ -93,8 +92,6 @@ try {
 		gcc_unused ssize_t ignored = write(1, output.data,
 						   output.size);
 	}
-
-	state.Close();
 
 	return EXIT_SUCCESS;
 } catch (...) {

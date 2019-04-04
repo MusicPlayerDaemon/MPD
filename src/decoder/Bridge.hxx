@@ -44,7 +44,7 @@ public:
 	 * For converting input data to the configured audio format.
 	 * nullptr means no conversion necessary.
 	 */
-	PcmConvert *convert = nullptr;
+	std::unique_ptr<PcmConvert> convert;
 
 	/**
 	 * The time stamp of the next data chunk, in seconds.
@@ -107,10 +107,7 @@ public:
 	std::exception_ptr error;
 
 	DecoderBridge(DecoderControl &_dc, bool _initial_seek_pending,
-		      std::unique_ptr<Tag> _tag)
-		:dc(_dc),
-		 initial_seek_pending(_initial_seek_pending),
-		 song_tag(std::move(_tag)) {}
+		      std::unique_ptr<Tag> _tag) noexcept;
 
 	~DecoderBridge();
 
