@@ -409,6 +409,7 @@ if chromaprint_dep.found()
   executable(
     'RunChromaprint',
     'RunChromaprint.cxx',
+    '../src/lib/chromaprint/DecoderClient.cxx',
     '../src/Log.cxx',
     '../src/LogBackend.cxx',
     include_directories: inc,
