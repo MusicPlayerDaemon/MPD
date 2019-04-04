@@ -50,11 +50,11 @@ public:
 	CurlInit(const CurlInit &) = delete;
 	CurlInit &operator=(const CurlInit &) = delete;
 
-	CurlGlobal &operator*() {
+	CurlGlobal &operator*() noexcept {
 		return *instance;
 	}
 
-	CurlGlobal *operator->() {
+	CurlGlobal *operator->() noexcept {
 		return instance;
 	}
 };
