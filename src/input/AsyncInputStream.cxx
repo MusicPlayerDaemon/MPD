@@ -31,7 +31,7 @@
 AsyncInputStream::AsyncInputStream(EventLoop &event_loop, const char *_url,
 				   Mutex &_mutex,
 				   size_t _buffer_size,
-				   size_t _resume_at)
+				   size_t _resume_at) noexcept
 	:InputStream(_url, _mutex),
 	 deferred_resume(event_loop, BIND_THIS_METHOD(DeferredResume)),
 	 deferred_seek(event_loop, BIND_THIS_METHOD(DeferredSeek)),
@@ -42,7 +42,7 @@ AsyncInputStream::AsyncInputStream(EventLoop &event_loop, const char *_url,
 	allocation.ForkCow(false);
 }
 
-AsyncInputStream::~AsyncInputStream()
+AsyncInputStream::~AsyncInputStream() noexcept
 {
 	buffer.Clear();
 }
