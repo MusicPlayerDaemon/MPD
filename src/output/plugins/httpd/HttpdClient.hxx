@@ -142,6 +142,8 @@ public:
 
 	/**
 	 * Frees the client and removes it from the server's client list.
+	 *
+	 * Caller must lock the mutex.
 	 */
 	void Close() noexcept;
 

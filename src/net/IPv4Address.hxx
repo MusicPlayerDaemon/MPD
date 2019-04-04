@@ -168,7 +168,7 @@ public:
 	}
 
 	constexpr operator SocketAddress() const noexcept {
-		return SocketAddress((const struct sockaddr *)&address,
+		return SocketAddress((const struct sockaddr *)(const void *)&address,
 				     sizeof(address));
 	}
 

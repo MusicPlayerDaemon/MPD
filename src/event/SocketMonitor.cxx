@@ -33,8 +33,8 @@ SocketMonitor::Dispatch(unsigned flags) noexcept
 {
 	flags &= GetScheduledFlags();
 
-	if (flags != 0 && !OnSocketReady(flags) && IsDefined())
-		Cancel();
+	if (flags != 0)
+		OnSocketReady(flags);
 }
 
 SocketMonitor::~SocketMonitor() noexcept

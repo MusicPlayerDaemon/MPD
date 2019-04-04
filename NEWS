@@ -8,6 +8,13 @@ ver 0.22 (not yet released)
   - ffmpeg: new plugin based on FFmpeg's libavfilter library
   - hdcd: new plugin based on FFmpeg's "af_hdcd" for HDCD playback
 
+ver 0.21.8 (not yet released)
+* output
+  - httpd: add missing mutex lock
+  - httpd: fix use-after-free bug
+* fix Bonjour bug
+* fix build failure with GCC 9
+
 ver 0.21.7 (2019/04/03)
 * input
   - qobuz/tidal: scan tags when loading a playlist

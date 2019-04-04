@@ -154,7 +154,7 @@ HttpdClient::SendResponse() noexcept
 		FormatWarning(httpd_output_domain,
 			      "failed to write to client: %s",
 			      (const char *)msg);
-		Close();
+		LockClose();
 		return false;
 	}
 
@@ -428,6 +428,7 @@ void
 HttpdClient::OnSocketError(std::exception_ptr ep) noexcept
 {
 	LogError(ep);
+	LockClose();
 }
 
 void
