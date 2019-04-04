@@ -272,7 +272,7 @@ UPnPDeviceDirectory::~UPnPDeviceDirectory() noexcept
 }
 
 inline EventLoop &
-UPnPDeviceDirectory::GetEventLoop() noexcept
+UPnPDeviceDirectory::GetEventLoop() const noexcept
 {
 	return curl->GetEventLoop();
 }

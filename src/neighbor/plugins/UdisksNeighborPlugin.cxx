@@ -70,7 +70,7 @@ public:
 			       NeighborListener &_listener) noexcept
 		:NeighborExplorer(_listener), event_loop(_event_loop) {}
 
-	auto &GetEventLoop() noexcept {
+	auto &GetEventLoop() const noexcept {
 		return event_loop;
 	}
 

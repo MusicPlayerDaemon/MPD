@@ -42,7 +42,7 @@ public:
 		DisconnectIndirect();
 	}
 
-	EventLoop &GetEventLoop() noexcept {
+	auto &GetEventLoop() const noexcept {
 		return watch.GetEventLoop();
 	}
 

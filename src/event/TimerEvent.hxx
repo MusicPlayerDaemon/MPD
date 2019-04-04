@@ -62,7 +62,7 @@ public:
 		Cancel();
 	}
 
-	EventLoop &GetEventLoop() noexcept {
+	auto &GetEventLoop() const noexcept {
 		return loop;
 	}
 

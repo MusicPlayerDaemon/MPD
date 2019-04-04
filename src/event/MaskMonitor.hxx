@@ -44,7 +44,7 @@ public:
 		:defer(_loop, BIND_THIS_METHOD(RunDeferred)),
 		 callback(_callback), pending_mask(0) {}
 
-	EventLoop &GetEventLoop() noexcept {
+	auto &GetEventLoop() const noexcept {
 		return defer.GetEventLoop();
 	}
 

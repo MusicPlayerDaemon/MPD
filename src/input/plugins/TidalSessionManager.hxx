@@ -102,7 +102,7 @@ public:
 
 	~TidalSessionManager() noexcept;
 
-	EventLoop &GetEventLoop() noexcept {
+	auto &GetEventLoop() const noexcept {
 		return defer_invoke_handlers.GetEventLoop();
 	}
 
