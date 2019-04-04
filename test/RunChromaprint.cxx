@@ -18,7 +18,7 @@
  */
 
 #include "ConfigGlue.hxx"
-#include "tag/Chromaprint.hxx"
+#include "lib/chromaprint/Context.hxx"
 #include "pcm/PcmConvert.hxx"
 #include "event/Thread.hxx"
 #include "decoder/DecoderList.hxx"
