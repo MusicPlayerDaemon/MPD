@@ -54,7 +54,15 @@ public:
 		return *instance;
 	}
 
+	const CurlGlobal &operator*() const noexcept {
+		return *instance;
+	}
+
 	CurlGlobal *operator->() noexcept {
+		return instance;
+	}
+
+	const CurlGlobal *operator->() const noexcept {
 		return instance;
 	}
 };
