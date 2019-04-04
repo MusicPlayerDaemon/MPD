@@ -50,7 +50,7 @@ protected:
 	/* virtual methods from class SocketMonitor */
 	bool OnSocketReady(gcc_unused unsigned flags) noexcept override {
 		DNSServiceProcessResult(service_ref);
-		return false;
+		return true;
 	}
 };
 
