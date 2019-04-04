@@ -35,7 +35,7 @@ class ConvertFilter final : public Filter {
 	 * The input audio format; PCM data is passed to the filter()
 	 * method in this format.
 	 */
-	AudioFormat in_audio_format;
+	const AudioFormat in_audio_format;
 
 	/**
 	 * This object is only "open" if #in_audio_format !=
@@ -76,7 +76,6 @@ public:
 void
 ConvertFilter::Set(const AudioFormat &_out_audio_format)
 {
-	assert(in_audio_format.IsValid());
 	assert(_out_audio_format.IsValid());
 
 	if (_out_audio_format == out_audio_format)
@@ -100,6 +99,7 @@ ConvertFilter::Set(const AudioFormat &_out_audio_format)
 ConvertFilter::ConvertFilter(const AudioFormat &audio_format)
 	:Filter(audio_format), in_audio_format(audio_format)
 {
+	assert(in_audio_format.IsValid());
 }
 
 std::unique_ptr<Filter>
@@ -112,8 +112,6 @@ PreparedConvertFilter::Open(AudioFormat &audio_format)
 
 ConvertFilter::~ConvertFilter()
 {
-	assert(in_audio_format.IsValid());
-
 	if (IsActive())
 		state.Close();
 }
@@ -121,8 +119,6 @@ ConvertFilter::~ConvertFilter()
 ConstBuffer<void>
 ConvertFilter::FilterPCM(ConstBuffer<void> src)
 {
-	assert(in_audio_format.IsValid());
-
 	return IsActive()
 		? state.Convert(src)
 		/* optimized special case: no-op */
