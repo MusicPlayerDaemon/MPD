@@ -40,19 +40,19 @@ class MaskMonitor final {
 	std::atomic_uint pending_mask;
 
 public:
-	MaskMonitor(EventLoop &_loop, Callback _callback)
+	MaskMonitor(EventLoop &_loop, Callback _callback) noexcept
 		:defer(_loop, BIND_THIS_METHOD(RunDeferred)),
 		 callback(_callback), pending_mask(0) {}
 
-	EventLoop &GetEventLoop() {
+	EventLoop &GetEventLoop() noexcept {
 		return defer.GetEventLoop();
 	}
 
-	void Cancel() {
+	void Cancel() noexcept {
 		defer.Cancel();
 	}
 
-	void OrMask(unsigned new_mask);
+	void OrMask(unsigned new_mask) noexcept;
 
 protected:
 	/* DeferEvent callback */
