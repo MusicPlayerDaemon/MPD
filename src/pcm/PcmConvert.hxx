@@ -47,7 +47,7 @@ class PcmConvert {
 	PcmFormatConverter format_converter;
 	PcmChannelsConverter channels_converter;
 
-	const AudioFormat src_format, dest_format;
+	const AudioFormat src_format;
 
 	bool enable_resampler, enable_format, enable_channels;
 
