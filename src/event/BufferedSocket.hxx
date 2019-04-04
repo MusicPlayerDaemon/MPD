@@ -46,6 +46,11 @@ public:
 	using SocketMonitor::Close;
 
 private:
+	/**
+	 * @return the number of bytes read from the socket, 0 if the
+	 * socket isn't ready for reading, -1 on error (the socket has
+	 * been closed and probably destructed)
+	 */
 	ssize_t DirectRead(void *data, size_t length) noexcept;
 
 	/**

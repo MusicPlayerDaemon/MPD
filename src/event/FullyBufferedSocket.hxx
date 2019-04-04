@@ -45,6 +45,11 @@ public:
 	}
 
 private:
+	/**
+	 * @return the number of bytes written to the socket, 0 if the
+	 * socket isn't ready for writing, -1 on error (the socket has
+	 * been closed and probably destructed)
+	 */
 	ssize_t DirectWrite(const void *data, size_t length) noexcept;
 
 protected:
