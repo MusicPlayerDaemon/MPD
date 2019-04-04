@@ -42,9 +42,7 @@ Client::ProcessCommandList(bool list_ok,
 		FormatDebug(client_domain, "process command \"%s\"", cmd);
 		auto ret = command_process(*this, n++, cmd);
 		FormatDebug(client_domain, "command returned %i", int(ret));
-		if (IsExpired())
-			return CommandResult::CLOSE;
-		else if (ret != CommandResult::OK)
+		if (ret != CommandResult::OK)
 			return ret;
 		else if (list_ok)
 			Write("list_OK\n");
@@ -89,9 +87,11 @@ Client::ProcessLine(char *line) noexcept
 
 	if (cmd_list.IsActive()) {
 		if (StringIsEqual(line, CLIENT_LIST_MODE_END)) {
+			const unsigned id = num;
+
 			FormatDebug(client_domain,
 				    "[%u] process command list",
-				    num);
+				    id);
 
 			const bool ok_mode = cmd_list.IsOKMode();
 			auto list = cmd_list.Commit();
@@ -101,7 +101,7 @@ Client::ProcessLine(char *line) noexcept
 						      std::move(list));
 			FormatDebug(client_domain,
 				    "[%u] process command "
-				    "list returned %i", num, int(ret));
+				    "list returned %i", id, int(ret));
 
 			if (ret == CommandResult::OK)
 				command_success(*this);
@@ -127,16 +127,15 @@ Client::ProcessLine(char *line) noexcept
 			cmd_list.Begin(true);
 			return CommandResult::OK;
 		} else {
+			const unsigned id = num;
+
 			FormatDebug(client_domain,
 				    "[%u] process command \"%s\"",
-				    num, line);
+				    id, line);
 			auto ret = command_process(*this, 0, line);
 			FormatDebug(client_domain,
 				    "[%u] command returned %i",
-				    num, int(ret));
-
-			if (IsExpired())
-				return CommandResult::CLOSE;
+				    id, int(ret));
 
 			if (ret == CommandResult::OK)
 				command_success(*this);

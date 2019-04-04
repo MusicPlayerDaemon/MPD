@@ -22,22 +22,11 @@
 #include "Log.hxx"
 
 void
-Client::SetExpired() noexcept
-{
-	if (IsExpired())
-		return;
-
-	FullyBufferedSocket::Close();
-	timeout_event.Schedule(std::chrono::steady_clock::duration::zero());
-}
-
-void
 Client::OnTimeout() noexcept
 {
-	if (!IsExpired()) {
-		assert(!idle_waiting);
-		FormatDebug(client_domain, "[%u] timeout", num);
-	}
+	assert(!idle_waiting);
+
+	FormatDebug(client_domain, "[%u] timeout", num);
 
 	Close();
 }

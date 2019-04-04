@@ -25,11 +25,11 @@ Client::OnSocketError(std::exception_ptr ep) noexcept
 {
 	FormatError(ep, "error on client %d", num);
 
-	SetExpired();
+	Close();
 }
 
 void
 Client::OnSocketClosed() noexcept
 {
-	SetExpired();
+	Close();
 }

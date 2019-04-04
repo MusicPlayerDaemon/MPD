@@ -81,7 +81,7 @@ Client::Close() noexcept
 {
 	partition->instance.client_list->Remove(*this);
 
-	SetExpired();
+	FullyBufferedSocket::Close();
 
 	FormatInfo(client_domain, "[%u] closed", num);
 	delete this;

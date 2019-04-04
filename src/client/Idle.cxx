@@ -54,9 +54,6 @@ Client::IdleNotify() noexcept
 void
 Client::IdleAdd(unsigned flags) noexcept
 {
-	if (IsExpired())
-		return;
-
 	idle_flags |= flags;
 	if (idle_waiting && (idle_flags & idle_subscriptions))
 		IdleNotify();
