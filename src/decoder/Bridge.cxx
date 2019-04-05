@@ -272,7 +272,7 @@ DecoderBridge::GetCommand() noexcept
 }
 
 void
-DecoderBridge::CommandFinished()
+DecoderBridge::CommandFinished() noexcept
 {
 	const std::lock_guard<Mutex> protect(dc.mutex);
 
@@ -335,7 +335,7 @@ DecoderBridge::GetSeekFrame() noexcept
 }
 
 void
-DecoderBridge::SeekError()
+DecoderBridge::SeekError() noexcept
 {
 	assert(dc.pipe != nullptr);
 
@@ -411,7 +411,7 @@ try {
 }
 
 void
-DecoderBridge::SubmitTimestamp(FloatDuration t)
+DecoderBridge::SubmitTimestamp(FloatDuration t) noexcept
 {
 	assert(t.count() >= 0);
 
@@ -422,7 +422,7 @@ DecoderBridge::SubmitTimestamp(FloatDuration t)
 DecoderCommand
 DecoderBridge::SubmitData(InputStream *is,
 			  const void *data, size_t length,
-			  uint16_t kbit_rate)
+			  uint16_t kbit_rate) noexcept
 {
 	assert(dc.state == DecoderState::DECODE);
 	assert(dc.pipe != nullptr);
@@ -539,7 +539,7 @@ DecoderBridge::SubmitData(InputStream *is,
 }
 
 DecoderCommand
-DecoderBridge::SubmitTag(InputStream *is, Tag &&tag)
+DecoderBridge::SubmitTag(InputStream *is, Tag &&tag) noexcept
 {
 	DecoderCommand cmd;
 
@@ -575,7 +575,7 @@ DecoderBridge::SubmitTag(InputStream *is, Tag &&tag)
 }
 
 void
-DecoderBridge::SubmitReplayGain(const ReplayGainInfo *new_replay_gain_info)
+DecoderBridge::SubmitReplayGain(const ReplayGainInfo *new_replay_gain_info) noexcept
 {
 	if (new_replay_gain_info != nullptr) {
 		static unsigned serial;
@@ -607,7 +607,7 @@ DecoderBridge::SubmitReplayGain(const ReplayGainInfo *new_replay_gain_info)
 }
 
 void
-DecoderBridge::SubmitMixRamp(MixRampInfo &&mix_ramp)
+DecoderBridge::SubmitMixRamp(MixRampInfo &&mix_ramp) noexcept
 {
 	dc.SetMixRamp(std::move(mix_ramp));
 }

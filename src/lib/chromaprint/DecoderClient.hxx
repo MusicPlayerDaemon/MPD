@@ -57,7 +57,7 @@ public:
 			: DecoderCommand::STOP;
 	}
 
-	void CommandFinished() override {}
+	void CommandFinished() noexcept override {}
 
 	SongTime GetSeekTime() noexcept override {
 		return SongTime::zero();
@@ -67,23 +67,23 @@ public:
 		return 0;
 	}
 
-	void SeekError() override {}
+	void SeekError() noexcept override {}
 
 	//InputStreamPtr OpenUri(const char *) override;
 
 	size_t Read(InputStream &is, void *buffer, size_t length) override;
 
-	void SubmitTimestamp(FloatDuration) override {}
+	void SubmitTimestamp(FloatDuration) noexcept override {}
 	DecoderCommand SubmitData(InputStream *is,
 				  const void *data, size_t length,
-				  uint16_t kbit_rate) override;
+				  uint16_t kbit_rate) noexcept override;
 
-	DecoderCommand SubmitTag(InputStream *, Tag &&) override {
+	DecoderCommand SubmitTag(InputStream *, Tag &&) noexcept override {
 		return GetCommand();
 	}
 
-	void SubmitReplayGain(const ReplayGainInfo *) override {}
-	void SubmitMixRamp(MixRampInfo &&) override {}
+	void SubmitReplayGain(const ReplayGainInfo *) noexcept override {}
+	void SubmitMixRamp(MixRampInfo &&) noexcept override {}
 };
 
 #endif

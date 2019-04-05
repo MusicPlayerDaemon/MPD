@@ -64,7 +64,7 @@ public:
 	 * (dc->command).  This function resets dc->command and wakes up the
 	 * player thread.
 	 */
-	virtual void CommandFinished() = 0;
+	virtual void CommandFinished() noexcept = 0;
 
 	/**
 	 * Call this when you have received the DecoderCommand::SEEK command.
@@ -86,7 +86,7 @@ public:
 	 * Call this instead of CommandFinished() when seeking has
 	 * failed.
 	 */
-	virtual void SeekError() = 0;
+	virtual void SeekError() noexcept = 0;
 
 	/**
 	 * Open a new #InputStream and wait until it's ready.
@@ -114,7 +114,7 @@ public:
 	 * use this function if it thinks that adding to the time stamp based
 	 * on the buffer size won't work.
 	 */
-	virtual void SubmitTimestamp(FloatDuration t) = 0;
+	virtual void SubmitTimestamp(FloatDuration t) noexcept = 0;
 
 	/**
 	 * This function is called by the decoder plugin when it has
@@ -129,11 +129,11 @@ public:
 	 */
 	virtual DecoderCommand SubmitData(InputStream *is,
 					  const void *data, size_t length,
-					  uint16_t kbit_rate) = 0;
+					  uint16_t kbit_rate) noexcept = 0;
 
 	DecoderCommand SubmitData(InputStream &is,
 				  const void *data, size_t length,
-				  uint16_t kbit_rate) {
+				  uint16_t kbit_rate) noexcept {
 		return SubmitData(&is, data, length, kbit_rate);
 	}
 
@@ -147,9 +147,9 @@ public:
 	 * @return the current command, or DecoderCommand::NONE if there is no
 	 * command pending
 	 */
-	virtual DecoderCommand SubmitTag(InputStream *is, Tag &&tag) = 0 ;
+	virtual DecoderCommand SubmitTag(InputStream *is, Tag &&tag) noexcept = 0 ;
 
-	DecoderCommand SubmitTag(InputStream &is, Tag &&tag) {
+	DecoderCommand SubmitTag(InputStream &is, Tag &&tag) noexcept {
 		return SubmitTag(&is, std::move(tag));
 	}
 
@@ -159,12 +159,12 @@ public:
 	 * @param replay_gain_info the replay_gain_info object; may be nullptr
 	 * to invalidate the previous replay gain values
 	 */
-	virtual void SubmitReplayGain(const ReplayGainInfo *replay_gain_info) = 0;
+	virtual void SubmitReplayGain(const ReplayGainInfo *replay_gain_info) noexcept = 0;
 
 	/**
 	 * Store MixRamp tags.
 	 */
-	virtual void SubmitMixRamp(MixRampInfo &&mix_ramp) = 0;
+	virtual void SubmitMixRamp(MixRampInfo &&mix_ramp) noexcept = 0;
 };
 
 #endif

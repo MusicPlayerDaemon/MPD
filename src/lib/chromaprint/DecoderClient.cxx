@@ -64,7 +64,7 @@ ChromaprintDecoderClient::Ready(AudioFormat audio_format, bool, SignedSongTime)
 DecoderCommand
 ChromaprintDecoderClient::SubmitData(InputStream *,
 				     const void *_data, size_t length,
-				     uint16_t)
+				     uint16_t) noexcept
 {
 	if (length > remaining_bytes)
 		remaining_bytes = 0;
