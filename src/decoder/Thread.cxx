@@ -47,38 +47,6 @@
 
 static constexpr Domain decoder_thread_domain("decoder_thread");
 
-/**
- * Opens the input stream with InputStream::Open(), and waits until
- * the stream gets ready.
- *
- * Unlock the decoder before calling this function.
- */
-static InputStreamPtr
-decoder_input_stream_open(DecoderControl &dc, const char *uri)
-{
-	auto is = InputStream::Open(uri, dc.mutex);
-	is->SetHandler(&dc);
-
-	/* wait for the input stream to become ready; its metadata
-	   will be available then */
-
-	const std::lock_guard<Mutex> protect(dc.mutex);
-
-	is->Update();
-	while (!is->IsReady()) {
-		if (dc.command == DecoderCommand::STOP)
-			throw StopDecoder();
-
-		dc.Wait();
-
-		is->Update();
-	}
-
-	is->Check();
-
-	return is;
-}
-
 static InputStreamPtr
 decoder_input_stream_open(DecoderControl &dc, Path path)
 {
@@ -286,7 +254,7 @@ decoder_run_stream(DecoderBridge &bridge, const char *uri)
 {
 	DecoderControl &dc = bridge.dc;
 
-	auto input_stream = decoder_input_stream_open(dc, uri);
+	auto input_stream = bridge.OpenUri(uri);
 	assert(input_stream);
 
 	MaybeLoadReplayGain(bridge, *input_stream);
