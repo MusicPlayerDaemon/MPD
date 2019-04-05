@@ -47,16 +47,6 @@
 
 static constexpr Domain decoder_thread_domain("decoder_thread");
 
-static InputStreamPtr
-decoder_input_stream_open(DecoderControl &dc, Path path)
-{
-	auto is = OpenLocalInputStream(path, dc.mutex);
-
-	assert(is->IsReady());
-
-	return is;
-}
-
 /**
  * Decode a stream with the given decoder plugin.
  *
@@ -351,7 +341,7 @@ decoder_run_file(DecoderBridge &bridge, const char *uri_utf8, Path path_fs)
 	InputStreamPtr input_stream;
 
 	try {
-		input_stream = decoder_input_stream_open(bridge.dc, path_fs);
+		input_stream = OpenLocalInputStream(path_fs, bridge.dc.mutex);
 	} catch (const std::system_error &e) {
 		if (IsPathNotFound(e) &&
 		    /* ENOTDIR means this may be a path inside a
