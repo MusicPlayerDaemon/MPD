@@ -53,7 +53,7 @@ ThreadBackgroundCommand::DeferredFinish() noexcept
 	/* send the response */
 	Response response(client, 0);
 
-	if (!error) {
+	if (error) {
 		PrintError(response, std::move(error));
 	} else {
 		SendResponse(response);
