@@ -45,6 +45,13 @@ public:
 	ChromaprintDecoderClient();
 	~ChromaprintDecoderClient() noexcept;
 
+	bool IsReady() const noexcept {
+		return ready;
+	}
+
+	void Reset() noexcept {
+	}
+
 	void Finish();
 
 	std::string GetFingerprint() const {

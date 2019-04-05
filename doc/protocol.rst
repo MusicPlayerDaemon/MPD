@@ -824,6 +824,17 @@ The music database
     don't this group tag.  It exists only if at least one such song is
     found.
 
+:command:`getfingerprint {URI}`
+
+    Calculate the song's audio fingerprint.  Example (abbreviated fingerprint)::
+
+      getfingerprint "foo/bar.ogg"
+      chromaprint: AQACcEmSREmWJJmkIT_6CCf64...
+      OK
+
+    This command is only available if MPD was built with
+    :file:`libchromaprint` (``-Dchromaprint=enabled``).
+
 .. _command_find:
 
 :command:`find {FILTER} [sort {TYPE}] [window {START:END}]`

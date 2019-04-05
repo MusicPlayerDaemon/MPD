@@ -33,6 +33,7 @@
 #include "NeighborCommands.hxx"
 #include "ClientCommands.hxx"
 #include "PartitionCommands.hxx"
+#include "FingerprintCommands.hxx"
 #include "OtherCommands.hxx"
 #include "Permission.hxx"
 #include "tag/Type.h"
@@ -106,6 +107,9 @@ static constexpr struct command commands[] = {
 #ifdef ENABLE_DATABASE
 	{ "find", PERMISSION_READ, 1, -1, handle_find },
 	{ "findadd", PERMISSION_ADD, 1, -1, handle_findadd},
+#endif
+#ifdef ENABLE_CHROMAPRINT
+	{ "getfingerprint", PERMISSION_READ, 1, 1, handle_getfingerprint },
 #endif
 	{ "idle", PERMISSION_READ, 0, -1, handle_idle },
 	{ "kill", PERMISSION_ADMIN, -1, -1, handle_kill },

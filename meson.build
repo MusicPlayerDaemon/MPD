@@ -356,6 +356,13 @@ if sqlite_dep.found()
   ]
 endif
 
+if chromaprint_dep.found()
+  sources += [
+    'src/command/FingerprintCommands.cxx',
+    'src/lib/chromaprint/DecoderClient.cxx',
+  ]
+endif
+
 basic = static_library(
   'basic',
   'src/ReplayGainInfo.cxx',
@@ -444,6 +451,7 @@ mpd = build_target(
     sqlite_dep,
     zeroconf_dep,
     more_deps,
+    chromaprint_dep,
   ],
   link_args: link_args,
   install: not is_android and not is_haiku,
