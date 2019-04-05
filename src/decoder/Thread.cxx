@@ -210,7 +210,7 @@ decoder_run_stream_plugin(DecoderBridge &bridge, InputStream &is,
 	if (!decoder_check_plugin(plugin, is, suffix))
 		return false;
 
-	bridge.error = std::exception_ptr();
+	bridge.Reset();
 
 	tried_r = true;
 	return decoder_stream_decode(plugin, bridge, is);
@@ -316,7 +316,7 @@ TryDecoderFile(DecoderBridge &bridge, Path path_fs, const char *suffix,
 	if (!plugin.SupportsSuffix(suffix))
 		return false;
 
-	bridge.error = std::exception_ptr();
+	bridge.Reset();
 
 	DecoderControl &dc = bridge.dc;
 
@@ -344,7 +344,7 @@ TryContainerDecoder(DecoderBridge &bridge, Path path_fs, const char *suffix,
 	    !plugin.SupportsSuffix(suffix))
 		return false;
 
-	bridge.error = nullptr;
+	bridge.Reset();
 
 	DecoderControl &dc = bridge.dc;
 	const std::lock_guard<Mutex> protect(dc.mutex);
@@ -472,19 +472,16 @@ decoder_run_song(DecoderControl &dc,
 
 		AtScopeExit(&bridge) {
 			/* flush the last chunk */
-			if (bridge.current_chunk != nullptr)
-				bridge.FlushChunk();
+			bridge.CheckFlushChunk();
 		};
 
 		success = DecoderUnlockedRunUri(bridge, uri, path_fs);
 
 	}
 
-	if (bridge.error) {
-		/* copy the Error from struct Decoder to
-		   DecoderControl */
-		std::rethrow_exception(bridge.error);
-	} else if (success)
+	bridge.CheckRethrowError();
+
+	if (success)
 		dc.state = DecoderState::STOP;
 	else {
 		const char *error_uri = song.GetURI();

@@ -40,6 +40,7 @@ class DecoderBridge final : public DecoderClient {
 public:
 	DecoderControl &dc;
 
+private:
 	/**
 	 * For converting input data to the configured audio format.
 	 * nullptr means no conversion necessary.
@@ -83,12 +84,14 @@ public:
 	 */
 	std::unique_ptr<Tag> song_tag;
 
+public:
 	/** the last tag received from the stream */
 	std::unique_ptr<Tag> stream_tag;
 
 	/** the last tag received from the decoder plugin */
 	std::unique_ptr<Tag> decoder_tag;
 
+private:
 	/** the chunk currently being written to */
 	MusicChunkPtr current_chunk;
 
@@ -106,10 +109,15 @@ public:
 	 */
 	std::exception_ptr error;
 
+public:
 	DecoderBridge(DecoderControl &_dc, bool _initial_seek_pending,
 		      std::unique_ptr<Tag> _tag) noexcept;
 
 	~DecoderBridge() noexcept;
+
+	void Reset() noexcept {
+		error = {};
+	}
 
 	/**
 	 * Should be read operation be cancelled?  That is the case when the
@@ -134,6 +142,16 @@ public:
 	 * Caller must not lock the #DecoderControl object.
 	 */
 	void FlushChunk() noexcept;
+
+	void CheckFlushChunk() {
+		if (current_chunk != nullptr)
+			FlushChunk();
+	}
+
+	void CheckRethrowError() {
+		if (error)
+			std::rethrow_exception(error);
+	}
 
 	/* virtual methods from DecoderClient */
 	void Ready(AudioFormat audio_format,
