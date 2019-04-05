@@ -174,7 +174,7 @@ private:
 	 */
 	DecoderCommand DoSendTag(const Tag &tag);
 
-	bool UpdateStreamTag(InputStream *is);
+	bool UpdateStreamTag(InputStream *is) noexcept;
 };
 
 #endif

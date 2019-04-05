@@ -65,7 +65,7 @@ public:
 
 	/* virtual methods from InputStream */
 	void Update() noexcept override;
-	std::unique_ptr<Tag> ReadTag() override;
+	std::unique_ptr<Tag> ReadTag() noexcept override;
 	size_t Read(void *ptr, size_t size) override;
 };
 

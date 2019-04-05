@@ -92,13 +92,13 @@ InputStream::LockSkip(offset_type _offset)
 }
 
 std::unique_ptr<Tag>
-InputStream::ReadTag()
+InputStream::ReadTag() noexcept
 {
 	return nullptr;
 }
 
 std::unique_ptr<Tag>
-InputStream::LockReadTag()
+InputStream::LockReadTag() noexcept
 {
 	const std::lock_guard<Mutex> protect(mutex);
 	return ReadTag();

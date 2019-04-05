@@ -53,10 +53,6 @@ public:
 		return false;
 	}
 
-	std::unique_ptr<Tag> ReadTag() override {
-		std::rethrow_exception(error);
-	}
-
 	size_t Read(void *, size_t) override {
 		std::rethrow_exception(error);
 	}

@@ -105,7 +105,7 @@ ProxyInputStream::IsEOF() noexcept
 }
 
 std::unique_ptr<Tag>
-ProxyInputStream::ReadTag()
+ProxyInputStream::ReadTag() noexcept
 {
 	if (!input)
 		return nullptr;

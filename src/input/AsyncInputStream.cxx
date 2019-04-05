@@ -157,7 +157,7 @@ AsyncInputStream::SeekDone() noexcept
 }
 
 std::unique_ptr<Tag>
-AsyncInputStream::ReadTag()
+AsyncInputStream::ReadTag() noexcept
 {
 	return std::exchange(tag, nullptr);
 }

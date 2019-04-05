@@ -325,13 +325,13 @@ public:
 	 * @return a tag object or nullptr if the tag has not changed
 	 * since the last call
 	 */
-	virtual std::unique_ptr<Tag> ReadTag();
+	virtual std::unique_ptr<Tag> ReadTag() noexcept;
 
 	/**
 	 * Wrapper for ReadTag() which locks and unlocks the mutex;
 	 * the caller must not be holding it already.
 	 */
-	std::unique_ptr<Tag> LockReadTag();
+	std::unique_ptr<Tag> LockReadTag() noexcept;
 
 	/**
 	 * Returns true if the next read operation will not block: either data

@@ -47,7 +47,7 @@ IcyInputStream::Update() noexcept
 }
 
 std::unique_ptr<Tag>
-IcyInputStream::ReadTag()
+IcyInputStream::ReadTag() noexcept
 {
 	auto new_input_tag = ProxyInputStream::ReadTag();
 	if (!IsEnabled())

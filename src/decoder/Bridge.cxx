@@ -214,7 +214,7 @@ DecoderBridge::DoSendTag(const Tag &tag)
 }
 
 bool
-DecoderBridge::UpdateStreamTag(InputStream *is)
+DecoderBridge::UpdateStreamTag(InputStream *is) noexcept
 {
 	auto tag = is != nullptr
 		? is->LockReadTag()
