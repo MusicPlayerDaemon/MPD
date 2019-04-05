@@ -369,8 +369,10 @@ DecoderBridge::OpenUri(const char *uri)
 	const std::lock_guard<Mutex> lock(mutex);
 	while (true) {
 		is->Update();
-		if (is->IsReady())
+		if (is->IsReady()) {
+			is->Check();
 			return is;
+		}
 
 		if (dc.command == DecoderCommand::STOP)
 			throw StopDecoder();
