@@ -26,7 +26,7 @@ ChromaprintDecoderClient::ChromaprintDecoderClient() = default;
 ChromaprintDecoderClient::~ChromaprintDecoderClient() noexcept = default;
 
 void
-ChromaprintDecoderClient::PrintResult()
+ChromaprintDecoderClient::Finish()
 {
 	if (!ready)
 		throw std::runtime_error("Decoding failed");
@@ -38,8 +38,6 @@ ChromaprintDecoderClient::PrintResult()
 	}
 
 	chromaprint.Finish();
-
-	printf("%s\n", chromaprint.GetFingerprint().c_str());
 }
 
 void

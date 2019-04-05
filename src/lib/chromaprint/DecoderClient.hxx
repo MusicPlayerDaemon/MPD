@@ -45,7 +45,11 @@ public:
 	ChromaprintDecoderClient();
 	~ChromaprintDecoderClient() noexcept;
 
-	void PrintResult();
+	void Finish();
+
+	std::string GetFingerprint() const {
+		return chromaprint.GetFingerprint();
+	}
 
 	/* virtual methods from DecoderClient */
 	void Ready(AudioFormat audio_format,
