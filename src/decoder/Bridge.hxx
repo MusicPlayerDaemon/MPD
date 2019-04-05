@@ -109,7 +109,7 @@ public:
 	DecoderBridge(DecoderControl &_dc, bool _initial_seek_pending,
 		      std::unique_ptr<Tag> _tag) noexcept;
 
-	~DecoderBridge();
+	~DecoderBridge() noexcept;
 
 	/**
 	 * Should be read operation be cancelled?  That is the case when the
@@ -133,7 +133,7 @@ public:
 	 *
 	 * Caller must not lock the #DecoderControl object.
 	 */
-	void FlushChunk();
+	void FlushChunk() noexcept;
 
 	/* virtual methods from DecoderClient */
 	void Ready(AudioFormat audio_format,
@@ -158,7 +158,7 @@ private:
 	 * Checks if we need an "initial seek".  If so, then the
 	 * initial seek is prepared, and the function returns true.
 	 */
-	bool PrepareInitialSeek();
+	bool PrepareInitialSeek() noexcept;
 
 	/**
 	 * Returns the current decoder command.  May return a
@@ -172,7 +172,7 @@ private:
 	 * Sends a #Tag as-is to the #MusicPipe.  Flushes the current
 	 * chunk (DecoderBridge::chunk) if there is one.
 	 */
-	DecoderCommand DoSendTag(const Tag &tag);
+	DecoderCommand DoSendTag(const Tag &tag) noexcept;
 
 	bool UpdateStreamTag(InputStream *is) noexcept;
 };

@@ -43,7 +43,7 @@ DecoderBridge::DecoderBridge(DecoderControl &_dc, bool _initial_seek_pending,
 	 initial_seek_pending(_initial_seek_pending),
 	 song_tag(std::move(_tag)) {}
 
-DecoderBridge::~DecoderBridge()
+DecoderBridge::~DecoderBridge() noexcept
 {
 	/* caller must flush the chunk */
 	assert(current_chunk == nullptr);
@@ -114,7 +114,7 @@ DecoderBridge::GetChunk() noexcept
 }
 
 void
-DecoderBridge::FlushChunk()
+DecoderBridge::FlushChunk() noexcept
 {
 	assert(!seeking);
 	assert(!initial_seek_running);
@@ -131,7 +131,7 @@ DecoderBridge::FlushChunk()
 }
 
 bool
-DecoderBridge::PrepareInitialSeek()
+DecoderBridge::PrepareInitialSeek() noexcept
 {
 	assert(dc.pipe != nullptr);
 
@@ -193,7 +193,7 @@ DecoderBridge::LockGetVirtualCommand() noexcept
 }
 
 DecoderCommand
-DecoderBridge::DoSendTag(const Tag &tag)
+DecoderBridge::DoSendTag(const Tag &tag) noexcept
 {
 	if (current_chunk != nullptr) {
 		/* there is a partial chunk - flush it, we want the
