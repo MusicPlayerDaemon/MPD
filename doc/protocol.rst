@@ -599,7 +599,7 @@ Whenever possible, ids should be used.
     Deletes the song ``SONGID`` from the
     playlist
 
-:command:`move {FROM} [{START:END} | {TO}]`
+:command:`move [{FROM} | {START:END}] {TO}`
     Moves the song at ``FROM`` or range of songs
     at ``START:END`` [#since_0_15]_ to ``TO``
     in the playlist.
