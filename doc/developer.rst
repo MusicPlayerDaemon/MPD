@@ -96,10 +96,8 @@ When the whole patch series is finished, convert stgit patches to git commits:
 Submitting Patches
 ==================
 
-Send your patches to the mailing list:
-Email: `mpd-devel <mpd-devel@musicpd.org>`_
-
-:program:`git pull` requests are preferred.
+Submit pull requests on GitHub:
+https://github.com/MusicPlayerDaemon/MPD/pulls
 
 Development Tools
 =================
