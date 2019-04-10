@@ -414,9 +414,10 @@ Querying :program:`MPD`'s status
     - ``songid``: playlist songid of the current song stopped on or playing
     - ``nextsong`` [#since_0_15]_: playlist song number of the next song to be played
     - ``nextsongid`` [#since_0_15]_: playlist songid of the next song to be played
-    - ``time``: total time elapsed (of current playing/paused song)
+    - ``time``: total time elapsed (of current playing/paused song) in seconds
       (deprecated, use ``elapsed`` instead)
-    - ``elapsed`` [#since_0_16]_: Total time elapsed within the current song, but with higher resolution.
+    - ``elapsed`` [#since_0_16]_: Total time elapsed within the
+      current song in seconds, but with higher resolution.
     - ``duration`` [#since_0_20]_: Duration of the current song in seconds.
     - ``bitrate``: instantaneous bitrate in kbps
     - ``xfade``: ``crossfade`` in seconds
@@ -437,7 +438,7 @@ Querying :program:`MPD`'s status
     - ``albums``: number of albums
     - ``songs``: number of songs
     - ``uptime``: daemon uptime in seconds
-    - ``db_playtime``: sum of all song times in the db
+    - ``db_playtime``: sum of all song times in the database in seconds
     - ``db_update``: last db update in UNIX time
     - ``playtime``: time length of music played
 
@@ -599,7 +600,7 @@ Whenever possible, ids should be used.
     Deletes the song ``SONGID`` from the
     playlist
 
-:command:`move {FROM} [{START:END} | {TO}]`
+:command:`move [{FROM} | {START:END}] {TO}`
     Moves the song at ``FROM`` or range of songs
     at ``START:END`` [#since_0_15]_ to ``TO``
     in the playlist.
@@ -1065,7 +1066,8 @@ Stickers
 "Stickers" [#since_0_15]_ are pieces of
 information attached to existing
 :program:`MPD` objects (e.g. song files,
-directories, albums).  Clients can create arbitrary name/value
+directories, albums; but currently, they are only implemented for
+song).  Clients can create arbitrary name/value
 pairs.  :program:`MPD` itself does not assume
 any special meaning in them.
 
