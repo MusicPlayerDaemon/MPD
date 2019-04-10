@@ -1054,7 +1054,8 @@ Stickers
 "Stickers" [#since_0_15]_ are pieces of
 information attached to existing
 :program:`MPD` objects (e.g. song files,
-directories, albums).  Clients can create arbitrary name/value
+directories, albums; but currently, they are only implemented for
+song).  Clients can create arbitrary name/value
 pairs.  :program:`MPD` itself does not assume
 any special meaning in them.
 
