@@ -4,6 +4,7 @@ ver 0.21.8 (not yet released)
   - httpd: fix use-after-free bug
 * fix Bonjour bug
 * fix build failure with GCC 9
+* systemd: add user socket unit
 
 ver 0.21.7 (2019/04/03)
 * input
