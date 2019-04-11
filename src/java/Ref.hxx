@@ -47,13 +47,13 @@ namespace Java {
 
 	public:
 		/**
-		 * The local reference is obtained by the caller.
+		 * The local reference is obtained by the caller.  May
+		 * be nullptr.
 		 */
 		LocalRef(JNIEnv *_env, T _value) noexcept
 			:env(_env), value(_value)
 		{
 			assert(env != nullptr);
-			assert(value != nullptr);
 		}
 
 		~LocalRef() noexcept {
@@ -65,6 +65,10 @@ namespace Java {
 
 		JNIEnv *GetEnv() const noexcept {
 			return env;
+		}
+
+		operator bool() const noexcept {
+			return value != nullptr;
 		}
 
 		T Get() const noexcept {
