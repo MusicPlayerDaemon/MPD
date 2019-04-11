@@ -34,6 +34,8 @@
 
 #include <jni.h>
 
+#include <utility>
+
 #include <assert.h>
 
 namespace Java {
@@ -55,6 +57,10 @@ namespace Java {
 		{
 			assert(env != nullptr);
 		}
+
+		LocalRef(LocalRef &&src) noexcept
+			:env(src.env),
+			 value(std::exchange(src.value, nullptr)) {}
 
 		~LocalRef() noexcept {
 			env->DeleteLocalRef(value);
