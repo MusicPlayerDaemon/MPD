@@ -25,7 +25,7 @@
 #include <memory>
 
 struct Id3Delete {
-	void operator()(struct id3_tag *tag) {
+	void operator()(struct id3_tag *tag) noexcept {
 		id3_tag_delete(tag);
 	}
 };
