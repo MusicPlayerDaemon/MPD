@@ -9,7 +9,7 @@ matrix:
           sources:
             - ubuntu-toolchain-r-test
             - sourceline: 'ppa:mhier/libboost-latest'
-            - sourceline: 'ppa:saiarcot895/chromium-dev' # for ninja-build
+            - sourceline: 'ppa:mstipicevic/ninja-build-1-7-2'
             - sourceline: 'ppa:deadsnakes/ppa' # for Python 3.7 (required by Meson)
           packages:
             - g++-6
@@ -34,7 +34,7 @@ matrix:
           sources:
             - ubuntu-toolchain-r-test
             - sourceline: 'ppa:mhier/libboost-latest'
-            - sourceline: 'ppa:saiarcot895/chromium-dev' # for ninja-build
+            - sourceline: 'ppa:mstipicevic/ninja-build-1-7-2'
             - sourceline: 'ppa:deadsnakes/ppa' # for Python 3.7 (required by Meson)
           packages:
             - g++-8
