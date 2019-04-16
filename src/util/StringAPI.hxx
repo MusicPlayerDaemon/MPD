@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2018 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2010-2019 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -132,6 +132,13 @@ static inline int
 StringCompare(const char *a, const char *b) noexcept
 {
 	return strcmp(a, b);
+}
+
+gcc_pure gcc_nonnull_all
+static inline int
+StringCompare(const char *a, const char *b, size_t n) noexcept
+{
+	return strncmp(a, b, n);
 }
 
 /**
