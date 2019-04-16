@@ -118,6 +118,8 @@ static constexpr const char *ffmpeg_prefixes[] = {
 	"rtmp://",
 	"rtmpt://",
 	"rtmps://",
+	"http://",
+	"https://",
 	nullptr
 };
 
