@@ -37,7 +37,7 @@
 
 class SmbclientNeighborExplorer final : public NeighborExplorer {
 	struct Server {
-		std::string name, comment;
+		const std::string name, comment;
 
 		Server(std::string &&_name, std::string &&_comment)
 			:name(std::move(_name)),
