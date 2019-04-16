@@ -378,6 +378,9 @@ basic_dep = declare_dependency(
 if enable_database
   subdir('src/storage')
   subdir('src/db')
+else
+  db_glue_dep = dependency('', required: false)
+  storage_glue_dep = dependency('', required: false)
 endif
 
 if neighbor_glue_dep.found()
