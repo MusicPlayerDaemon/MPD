@@ -27,6 +27,7 @@
 #include "../InputStream.hxx"
 #include "../InputPlugin.hxx"
 #include "PluginUnavailable.hxx"
+#include "config.h"
 
 class FfmpegInputStream final : public InputStream {
 	Ffmpeg::IOContext io;
@@ -118,8 +119,10 @@ static constexpr const char *ffmpeg_prefixes[] = {
 	"rtmp://",
 	"rtmpt://",
 	"rtmps://",
+#ifndef ENABLE_CURL
 	"http://",
 	"https://",
+#endif
 	nullptr
 };
 
