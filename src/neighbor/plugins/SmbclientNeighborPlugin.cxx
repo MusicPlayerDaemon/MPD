@@ -39,11 +39,10 @@ class SmbclientNeighborExplorer final : public NeighborExplorer {
 	struct Server {
 		std::string name, comment;
 
-		bool alive;
-
 		Server(std::string &&_name, std::string &&_comment)
-			:name(std::move(_name)), comment(std::move(_comment)),
-			 alive(true) {}
+			:name(std::move(_name)),
+			 comment(std::move(_comment)) {}
+
 		Server(const Server &) = delete;
 
 		gcc_pure
