@@ -150,8 +150,6 @@ ReadServers(NeighborExplorer::List &list, int fd)
 	smbc_dirent *e;
 	while ((e = smbc_readdir(fd)) != nullptr)
 		ReadEntry(list, *e);
-
-	smbc_closedir(fd);
 }
 
 static void
