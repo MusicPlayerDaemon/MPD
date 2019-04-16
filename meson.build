@@ -367,8 +367,10 @@ basic_dep = declare_dependency(
 
 if enable_database
   subdir('src/storage')
-  subdir('src/db')
+else
+  storage_glue_dep = dependency('', required: false)
 endif
+subdir('src/db')
 
 if neighbor_glue_dep.found()
   sources += 'src/command/NeighborCommands.cxx'
