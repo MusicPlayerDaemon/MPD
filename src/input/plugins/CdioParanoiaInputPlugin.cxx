@@ -357,4 +357,5 @@ const InputPlugin input_plugin_cdio_paranoia = {
 	input_cdio_init,
 	nullptr,
 	input_cdio_open,
+	nullptr
 };

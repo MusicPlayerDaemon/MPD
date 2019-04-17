@@ -162,4 +162,5 @@ const InputPlugin input_plugin_smbclient = {
 	input_smbclient_init,
 	nullptr,
 	input_smbclient_open,
+	nullptr
 };

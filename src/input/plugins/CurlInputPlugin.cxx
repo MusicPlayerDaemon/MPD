@@ -471,16 +471,25 @@ input_curl_open(const char *url, Mutex &mutex)
 	return CurlInputStream::Open(url, {}, mutex);
 }
 
-static constexpr const char *curl_prefixes[] = {
-	"http://",
-	"https://",
-	nullptr
-};
+static std::set<std::string>
+input_curl_protocols() {
+	std::set<std::string> protocols;
+	auto version_info = curl_version_info(CURLVERSION_FIRST);
+	for (auto proto_ptr = version_info->protocols; *proto_ptr != nullptr; proto_ptr++) {
+		if (protocol_is_whitelisted(*proto_ptr)) {
+			std::string schema(*proto_ptr);
+			schema.append("://");
+			protocols.emplace(schema);
+		}
+	}
+	return protocols;
+}
 
 const struct InputPlugin input_plugin_curl = {
 	"curl",
-	curl_prefixes,
+	nullptr,
 	input_curl_init,
 	input_curl_finish,
 	input_curl_open,
+	input_curl_protocols
 };

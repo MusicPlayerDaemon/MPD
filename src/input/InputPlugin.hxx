@@ -22,6 +22,9 @@
 
 #include "Ptr.hxx"
 #include "util/Compiler.h"
+#include <assert.h>
+#include <set>
+#include <string>
 
 struct ConfigBlock;
 class Mutex;
@@ -63,6 +66,11 @@ struct InputPlugin {
 	InputStreamPtr (*open)(const char *uri, Mutex &mutex);
 
 	/**
+	 * return a set of supported protocols
+	 */
+	std::set<std::string> (*protocols)();
+
+	/**
 	 * Prepare a #RemoteTagScanner.  The operation must be started
 	 * using RemoteTagScanner::Start().  Returns nullptr if the
 	 * plugin does not support this URI.
@@ -76,6 +84,25 @@ struct InputPlugin {
 
 	gcc_pure
 	bool SupportsUri(const char *uri) const noexcept;
+
+	template<typename F>
+	void ForeachSupportedUri(F lambda) const noexcept {
+		assert(prefixes || protocols);
+
+		if (prefixes != nullptr) {
+			for (auto schema = prefixes; *schema != nullptr; ++schema) {
+				lambda(*schema);
+			}
+		}
+		if (protocols != nullptr) {
+			for (auto schema : protocols()) {
+				lambda(schema.c_str());
+			}
+		}
+	}
 };
+
+bool
+protocol_is_whitelisted(const char *proto);
 
 #endif

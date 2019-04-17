@@ -486,4 +486,5 @@ const struct InputPlugin input_plugin_alsa = {
 	alsa_input_init,
 	nullptr,
 	alsa_input_open,
+	nullptr
 };

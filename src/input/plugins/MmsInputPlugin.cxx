@@ -110,4 +110,5 @@ const InputPlugin input_plugin_mms = {
 	nullptr,
 	nullptr,
 	input_mms_open,
+	nullptr
 };

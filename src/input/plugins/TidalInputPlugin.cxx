@@ -249,5 +249,6 @@ const InputPlugin tidal_input_plugin = {
 	InitTidalInput,
 	FinishTidalInput,
 	OpenTidalInput,
+	nullptr,
 	ScanTidalTags,
 };

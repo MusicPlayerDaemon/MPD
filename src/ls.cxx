@@ -22,28 +22,41 @@
 #include "input/Registry.hxx"
 #include "input/InputPlugin.hxx"
 #include "client/Response.hxx"
-#include "util/ASCII.hxx"
 #include "util/UriUtil.hxx"
 
 #include <assert.h>
+
+#include <string>
 
 void print_supported_uri_schemes_to_fp(FILE *fp)
 {
 #ifdef HAVE_UN
 	fprintf(fp, " file://");
 #endif
+	std::set<std::string> protocols;
 	input_plugins_for_each(plugin)
-		for (auto i = plugin->prefixes; *i != nullptr; ++i)
-			fprintf(fp, " %s", *i);
+		plugin->ForeachSupportedUri([&](const char* uri) {
+			protocols.emplace(uri);
+		});
+	
+	for (auto protocol : protocols) {
+		fprintf(fp, " %s", protocol.c_str());
+	}
 	fprintf(fp,"\n");
 }
 
 void
 print_supported_uri_schemes(Response &r)
 {
+	std::set<std::string> protocols;
 	input_plugins_for_each_enabled(plugin)
-		for (auto i = plugin->prefixes; *i != nullptr; ++i)
-			r.Format("handler: %s\n", *i);
+		plugin->ForeachSupportedUri([&](const char* uri) {
+			protocols.emplace(uri);
+		});
+
+	for (auto protocol : protocols) {
+		r.Format("handler: %s\n", protocol.c_str());
+	}
 }
 
 bool
@@ -52,9 +65,7 @@ uri_supported_scheme(const char *uri) noexcept
 	assert(uri_has_scheme(uri));
 
 	input_plugins_for_each_enabled(plugin)
-		for (auto i = plugin->prefixes; *i != nullptr; ++i)
-			if (StringStartsWithCaseASCII(uri, *i))
-				return true;
+		return plugin->SupportsUri(uri);
 
 	return false;
 }

@@ -219,5 +219,6 @@ const InputPlugin qobuz_input_plugin = {
 	InitQobuzInput,
 	FinishQobuzInput,
 	OpenQobuzInput,
+	nullptr,
 	ScanQobuzTags,
 };
