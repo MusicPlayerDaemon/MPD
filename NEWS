@@ -2,6 +2,8 @@ ver 0.21.8 (not yet released)
 * output
   - httpd: add missing mutex lock
   - httpd: fix use-after-free bug
+* playlist
+  - soundcloud: fix "Unsupported URI scheme" (0.21.6 regression)
 * fix Bonjour bug
 * fix build failure with GCC 9
 * fix build failure with -Ddatabase=false

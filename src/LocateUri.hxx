@@ -41,6 +41,12 @@ class Client;
 class Storage;
 #endif
 
+enum class UriPluginKind {
+	INPUT,
+	STORAGE,
+	PLAYLIST,
+};
+
 struct LocatedUri {
 	enum class Type {
 		/**
@@ -84,7 +90,8 @@ struct LocatedUri {
  * that feature is disabled if this parameter is nullptr
  */
 LocatedUri
-LocateUri(const char *uri, const Client *client
+LocateUri(UriPluginKind kind,
+	  const char *uri, const Client *client
 #ifdef ENABLE_DATABASE
 	  , const Storage *storage
 #endif

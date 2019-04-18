@@ -94,7 +94,8 @@ SongLoader::LoadSong(const char *uri_utf8) const
 	assert(uri_utf8 != nullptr);
 #endif
 
-	const auto located_uri = LocateUri(uri_utf8, client
+	const auto located_uri = LocateUri(UriPluginKind::INPUT,
+					   uri_utf8, client
 #ifdef ENABLE_DATABASE
 					   , storage
 #endif
