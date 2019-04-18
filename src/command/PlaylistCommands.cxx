@@ -70,7 +70,8 @@ handle_save(Client &client, Request args, gcc_unused Response &r)
 CommandResult
 handle_load(Client &client, Request args, gcc_unused Response &r)
 {
-	const auto uri = LocateUri(args.front(), &client
+	const auto uri = LocateUri(UriPluginKind::PLAYLIST, args.front(),
+				   &client
 #ifdef ENABLE_DATABASE
 					   , nullptr
 #endif
@@ -100,7 +101,8 @@ handle_load(Client &client, Request args, gcc_unused Response &r)
 CommandResult
 handle_listplaylist(Client &client, Request args, Response &r)
 {
-	const auto name = LocateUri(args.front(), &client
+	const auto name = LocateUri(UriPluginKind::PLAYLIST, args.front(),
+				    &client
 #ifdef ENABLE_DATABASE
 					   , nullptr
 #endif
@@ -116,7 +118,8 @@ handle_listplaylist(Client &client, Request args, Response &r)
 CommandResult
 handle_listplaylistinfo(Client &client, Request args, Response &r)
 {
-	const auto name = LocateUri(args.front(), &client
+	const auto name = LocateUri(UriPluginKind::PLAYLIST, args.front(),
+				    &client
 #ifdef ENABLE_DATABASE
 					   , nullptr
 #endif

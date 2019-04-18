@@ -55,14 +55,26 @@ LocateFileUri(const char *uri, const Client *client
 }
 
 static LocatedUri
-LocateAbsoluteUri(const char *uri
+LocateAbsoluteUri(UriPluginKind kind, const char *uri
 #ifdef ENABLE_DATABASE
 		  , const Storage *storage
 #endif
 		  )
 {
-	if (!uri_supported_scheme(uri))
-		throw std::runtime_error("Unsupported URI scheme");
+	switch (kind) {
+	case UriPluginKind::INPUT:
+	case UriPluginKind::STORAGE: // TODO: separate check for storage plugins
+		if (!uri_supported_scheme(uri))
+			throw std::runtime_error("Unsupported URI scheme");
+		break;
+
+	case UriPluginKind::PLAYLIST:
+		/* for now, no validation for playlist URIs; this is
+		   more complicated because there are three ways to
+		   identify which plugin to use: URI scheme, filename
+		   suffix and MIME type */
+		break;
+	}
 
 #ifdef ENABLE_DATABASE
 	if (storage != nullptr) {
@@ -76,7 +88,8 @@ LocateAbsoluteUri(const char *uri
 }
 
 LocatedUri
-LocateUri(const char *uri, const Client *client
+LocateUri(UriPluginKind kind,
+	  const char *uri, const Client *client
 #ifdef ENABLE_DATABASE
 	  , const Storage *storage
 #endif
@@ -100,7 +113,7 @@ LocateUri(const char *uri, const Client *client
 #endif
 				     );
 	else if (uri_has_scheme(uri))
-		return LocateAbsoluteUri(uri
+		return LocateAbsoluteUri(kind, uri
 #ifdef ENABLE_DATABASE
 					 , storage
 #endif

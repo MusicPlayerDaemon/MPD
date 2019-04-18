@@ -83,7 +83,8 @@ handle_add(Client &client, Request args, Response &r)
 		   here */
 		uri = "";
 
-	const auto located_uri = LocateUri(uri, &client
+	const auto located_uri = LocateUri(UriPluginKind::INPUT, uri,
+					   &client
 #ifdef ENABLE_DATABASE
 					   , nullptr
 #endif

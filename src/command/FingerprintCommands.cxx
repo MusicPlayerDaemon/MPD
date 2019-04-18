@@ -314,7 +314,7 @@ handle_getfingerprint(Client &client, Request args, Response &)
 {
 	const char *_uri = args.front();
 
-	auto lu = LocateUri(_uri, &client
+	auto lu = LocateUri(UriPluginKind::INPUT, _uri, &client
 #ifdef ENABLE_DATABASE
 			    , nullptr
 #endif

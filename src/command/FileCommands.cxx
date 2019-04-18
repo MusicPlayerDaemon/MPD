@@ -218,7 +218,7 @@ handle_read_comments(Client &client, Request args, Response &r)
 
 	const char *const uri = args.front();
 
-	const auto located_uri = LocateUri(uri, &client
+	const auto located_uri = LocateUri(UriPluginKind::INPUT, uri, &client
 #ifdef ENABLE_DATABASE
 					   , nullptr
 #endif
@@ -331,7 +331,7 @@ handle_album_art(Client &client, Request args, Response &r)
 	const char *uri = args.front();
 	size_t offset = args.ParseUnsigned(1);
 
-	const auto located_uri = LocateUri(uri, &client
+	const auto located_uri = LocateUri(UriPluginKind::INPUT, uri, &client
 #ifdef ENABLE_DATABASE
 					   , nullptr
 #endif

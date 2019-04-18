@@ -9,6 +9,11 @@ db_api_dep = declare_dependency(
   link_with: db_api,
 )
 
+if not enable_database
+  db_glue_dep = db_api_dep
+  subdir_done()
+endif
+
 subdir('plugins')
 
 db_glue_sources = [
