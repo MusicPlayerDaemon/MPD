@@ -108,17 +108,17 @@ static constexpr Domain cmdline_domain("cmdline");
 gcc_noreturn
 static void version(void)
 {
-	printf("Music Player Daemon " VERSION " (%s)\n"
+	printf("Music Player Daemon " VERSION " (%s)"
 	       "\n"
 	       "Copyright 2003-2007 Warren Dukes <warren.dukes@gmail.com>\n"
 	       "Copyright 2008-2018 Max Kellermann <max.kellermann@gmail.com>\n"
 	       "This is free software; see the source for copying conditions.  There is NO\n"
-	       "warranty; not even MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n"
+	       "warranty; not even MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n",
+	       GIT_VERSION);
 
 #ifdef ENABLE_DATABASE
-	       "\n"
-	       "Database plugins:\n",
-	       GIT_VERSION);
+	printf("\n"
+	       "Database plugins:\n");
 
 	for (auto i = database_plugins; *i != nullptr; ++i)
 		printf(" %s", (*i)->name);
@@ -129,18 +129,18 @@ static void version(void)
 	for (auto i = storage_plugins; *i != nullptr; ++i)
 		printf(" %s", (*i)->name);
 
-	printf("\n"
+	printf("\n");
 #endif
 
 #ifdef ENABLE_NEIGHBOR_PLUGINS
-	       "\n"
+	printf("\n"
 	       "Neighbor plugins:\n");
 	for (auto i = neighbor_plugins; *i != nullptr; ++i)
 		printf(" %s", (*i)->name);
 
-	printf("\n"
 #endif
 
+	printf("\n"
 	       "\n"
 	       "Decoders plugins:\n");
 
