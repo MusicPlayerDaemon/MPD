@@ -1,4 +1,4 @@
-ver 0.21.8 (not yet released)
+ver 0.21.8 (2019/04/23)
 * input
   - smbclient: download to buffer instead of throttling transfer
 * output
