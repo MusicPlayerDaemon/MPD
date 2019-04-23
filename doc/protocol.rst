@@ -861,8 +861,7 @@ The music database
 :command:`list {TYPE} {FILTER} [group {GROUPTYPE}]`
     Lists unique tags values of the specified type.
     ``TYPE`` can be any tag supported by
-    :program:`MPD` or
-    *file*.
+    :program:`MPD`.
 
     Additional arguments may specify a :ref:`filter <filter_syntax>`.
     The *group* keyword may be used
@@ -872,6 +871,10 @@ The music database
     grouped by their respective (album) artist::
 
      list album group albumartist
+
+    ``list file`` was implemented in an early :program:`MPD` version,
+    but does not appear to make a lot of sense.  It still works (to
+    avoid breaking compatibility), but is deprecated.
 
 .. _command_listall:
 

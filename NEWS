@@ -10,6 +10,7 @@ ver 0.21.8 (not yet released)
 * fix build failure with GCC 9
 * fix build failure with -Ddatabase=false
 * systemd: add user socket unit
+* doc: "list file" is deprecated
 
 ver 0.21.7 (2019/04/03)
 * input
