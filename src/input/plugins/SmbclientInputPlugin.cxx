@@ -22,6 +22,7 @@
 #include "lib/smbclient/Mutex.hxx"
 #include "../InputStream.hxx"
 #include "../InputPlugin.hxx"
+#include "../MaybeBufferedInputStream.hxx"
 #include "PluginUnavailable.hxx"
 #include "system/Error.hxx"
 #include "util/ASCII.hxx"
@@ -112,8 +113,9 @@ input_smbclient_open(const char *uri,
 		throw MakeErrno(e, "smbc_fstat() failed");
 	}
 
-	return std::make_unique<SmbclientInputStream>(uri, mutex,
-						      ctx, fd, st);
+	return std::make_unique<MaybeBufferedInputStream>
+		(std::make_unique<SmbclientInputStream>(uri, mutex,
+							ctx, fd, st));
 }
 
 size_t
