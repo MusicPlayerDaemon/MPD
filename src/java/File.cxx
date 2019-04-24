@@ -31,6 +31,7 @@
 #include "Class.hxx"
 #include "String.hxx"
 #include "Object.hxx"
+#include "Exception.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "fs/Limits.hxx"
 
@@ -54,10 +55,8 @@ Java::File::ToAbsolutePath(JNIEnv *env, jobject _file) noexcept
 	LocalObject file(env, _file);
 
 	const jstring path = getAbsolutePath(env, file);
-	if (path == nullptr) {
-		env->ExceptionClear();
+	if (DiscardException(env) || path == nullptr)
 		return nullptr;
-	}
 
 	Java::String path2(env, path);
 	return AllocatedPath::FromFS(path2.ToString());
