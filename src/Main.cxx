@@ -237,22 +237,22 @@ InitDatabaseAndStorage(const ConfigData &config)
 
 #endif
 
+#ifdef ENABLE_SQLITE
+
 /**
  * Configure and initialize the sticker subsystem.
  */
-static void
-glue_sticker_init(const ConfigData &config)
+static std::unique_ptr<StickerDatabase>
+LoadStickerDatabase(const ConfigData &config)
 {
-#ifdef ENABLE_SQLITE
 	auto sticker_file = config.GetPath(ConfigOption::STICKER_FILE);
 	if (sticker_file.IsNull())
-		return;
+		return nullptr;
 
-	sticker_global_init(std::move(sticker_file));
-#else
-	(void)config;
-#endif
+	return std::make_unique<StickerDatabase>(std::move(sticker_file));
 }
+
+#endif
 
 static void
 glue_state_file_init(const ConfigData &raw_config)
@@ -513,7 +513,9 @@ mpd_main_after_fork(const ConfigData &raw_config, const Config &config)
 	const bool create_db = InitDatabaseAndStorage(raw_config);
 #endif
 
-	glue_sticker_init(raw_config);
+#ifdef ENABLE_SQLITE
+	instance->sticker_database = LoadStickerDatabase(raw_config);
+#endif
 
 	command_init();
 
@@ -623,10 +625,6 @@ mpd_main_after_fork(const ConfigData &raw_config, const Config &config)
 		instance->neighbors->Close();
 		delete instance->neighbors;
 	}
-#endif
-
-#ifdef ENABLE_SQLITE
-	sticker_global_finish();
 #endif
 
 	return EXIT_SUCCESS;

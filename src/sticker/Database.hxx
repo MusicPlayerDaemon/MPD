@@ -45,96 +45,116 @@
 #include "Match.hxx"
 #include "util/Compiler.h"
 
+#include <sqlite3.h>
+
+#include <map>
 #include <string>
 
 class Path;
 struct Sticker;
 
-/**
- * Opens the sticker database.
- *
- * Throws std::runtime_error on error.
- */
-void
-sticker_global_init(Path path);
+class StickerDatabase {
+	enum SQL {
+		  SQL_GET,
+		  SQL_LIST,
+		  SQL_UPDATE,
+		  SQL_INSERT,
+		  SQL_DELETE,
+		  SQL_DELETE_VALUE,
+		  SQL_FIND,
+		  SQL_FIND_VALUE,
+		  SQL_FIND_LT,
+		  SQL_FIND_GT,
 
-/**
- * Close the sticker database.
- */
-void
-sticker_global_finish() noexcept;
+		  SQL_COUNT
+	};
 
-/**
- * Returns true if the sticker database is configured and available.
- */
-gcc_const
-bool
-sticker_enabled() noexcept;
+	sqlite3 *db;
+	sqlite3_stmt *stmt[SQL_COUNT];
 
-/**
- * Returns one value from an object's sticker record.  Returns an
- * empty string if the value doesn't exist.
- *
- * Throws #SqliteError on error.
- */
-std::string
-sticker_load_value(const char *type, const char *uri, const char *name);
+public:
+	/**
+	 * Opens the sticker database.
+	 *
+	 * Throws on error.
+	 */
+	StickerDatabase(Path path);
+	~StickerDatabase() noexcept;
 
-/**
- * Sets a sticker value in the specified object.  Overwrites existing
- * values.
- *
- * Throws #SqliteError on error.
- */
-void
-sticker_store_value(const char *type, const char *uri,
-		    const char *name, const char *value);
+	/**
+	 * Returns one value from an object's sticker record.  Returns an
+	 * empty string if the value doesn't exist.
+	 *
+	 * Throws #SqliteError on error.
+	 */
+	std::string LoadValue(const char *type, const char *uri,
+			      const char *name);
 
-/**
- * Deletes a sticker from the database.  All sticker values of the
- * specified object are deleted.
- *
- * Throws #SqliteError on error.
- */
-bool
-sticker_delete(const char *type, const char *uri);
+	/**
+	 * Sets a sticker value in the specified object.  Overwrites existing
+	 * values.
+	 *
+	 * Throws #SqliteError on error.
+	 */
+	void StoreValue(const char *type, const char *uri,
+			const char *name, const char *value);
 
-/**
- * Deletes a sticker value.  Fails if no sticker with this name
- * exists.
- *
- * Throws #SqliteError on error.
- */
-bool
-sticker_delete_value(const char *type, const char *uri, const char *name);
+	/**
+	 * Deletes a sticker from the database.  All sticker values of the
+	 * specified object are deleted.
+	 *
+	 * Throws #SqliteError on error.
+	 */
+	bool Delete(const char *type, const char *uri);
 
-/**
- * Loads the sticker for the specified resource.
- *
- * Throws #SqliteError on error.
- *
- * @param type the resource type, e.g. "song"
- * @param uri the URI of the resource, e.g. the song path
- * @return a sticker object
- */
-Sticker
-sticker_load(const char *type, const char *uri);
+	/**
+	 * Deletes a sticker value.  Fails if no sticker with this name
+	 * exists.
+	 *
+	 * Throws #SqliteError on error.
+	 */
+	bool DeleteValue(const char *type, const char *uri, const char *name);
 
-/**
- * Finds stickers with the specified name below the specified URI.
- *
- * @param type the resource type, e.g. "song"
- * @param base_uri the URI prefix of the resources, or nullptr if all
- * resources should be searched
- * @param name the name of the sticker
- * @param op the comparison operator
- * @param value the operand
- */
-void
-sticker_find(const char *type, const char *base_uri, const char *name,
-	     StickerOperator op, const char *value,
-	     void (*func)(const char *uri, const char *value,
-			  void *user_data),
-	     void *user_data);
+	/**
+	 * Loads the sticker for the specified resource.
+	 *
+	 * Throws #SqliteError on error.
+	 *
+	 * @param type the resource type, e.g. "song"
+	 * @param uri the URI of the resource, e.g. the song path
+	 * @return a sticker object
+	 */
+	Sticker Load(const char *type, const char *uri);
+
+	/**
+	 * Finds stickers with the specified name below the specified URI.
+	 *
+	 * @param type the resource type, e.g. "song"
+	 * @param base_uri the URI prefix of the resources, or nullptr if all
+	 * resources should be searched
+	 * @param name the name of the sticker
+	 * @param op the comparison operator
+	 * @param value the operand
+	 */
+	void Find(const char *type, const char *base_uri, const char *name,
+		  StickerOperator op, const char *value,
+		  void (*func)(const char *uri, const char *value,
+			       void *user_data),
+		  void *user_data);
+
+private:
+	void ListValues(std::map<std::string, std::string> &table,
+			const char *type, const char *uri);
+
+	bool UpdateValue(const char *type, const char *uri,
+			 const char *name, const char *value);
+
+	void InsertValue(const char *type, const char *uri,
+			 const char *name, const char *value);
+
+	sqlite3_stmt *BindFind(const char *type, const char *base_uri,
+			       const char *name,
+			       StickerOperator op, const char *value);
+};
 
 #endif

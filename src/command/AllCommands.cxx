@@ -38,6 +38,7 @@
 #include "Permission.hxx"
 #include "tag/Type.h"
 #include "Partition.hxx"
+#include "Instance.hxx"
 #include "client/Client.hxx"
 #include "client/Response.hxx"
 #include "util/Macros.hxx"
@@ -216,7 +217,7 @@ command_available(gcc_unused const Partition &partition,
 {
 #ifdef ENABLE_SQLITE
 	if (StringIsEqual(cmd->cmd, "sticker"))
-		return sticker_enabled();
+		return partition.instance.HasStickerDatabase();
 #endif
 
 #ifdef ENABLE_NEIGHBOR_PLUGINS

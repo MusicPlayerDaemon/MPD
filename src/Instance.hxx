@@ -53,6 +53,7 @@ class ClientList;
 struct Partition;
 class StateFile;
 class RemoteTagCache;
+class StickerDatabase;
 
 /**
  * A utility class which, when used as the first base class, ensures
@@ -125,6 +126,10 @@ struct Instance final
 
 	StateFile *state_file = nullptr;
 
+#ifdef ENABLE_SQLITE
+	std::unique_ptr<StickerDatabase> sticker_database;
+#endif
+
 	Instance();
 	~Instance() noexcept;
 
@@ -164,6 +169,12 @@ struct Instance final
 	 * music_directory was configured).
 	 */
 	const Database &GetDatabaseOrThrow() const;
+#endif
+
+#ifdef ENABLE_SQLITE
+	bool HasStickerDatabase() noexcept {
+		return sticker_database != nullptr;
+	}
 #endif
 
 	void BeginShutdownUpdate() noexcept;

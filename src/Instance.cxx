@@ -107,9 +107,9 @@ Instance::OnDatabaseSongRemoved(const char *uri) noexcept
 
 #ifdef ENABLE_SQLITE
 	/* if the song has a sticker, remove it */
-	if (sticker_enabled()) {
+	if (HasStickerDatabase()) {
 		try {
-			sticker_song_delete(uri);
+			sticker_song_delete(*sticker_database, uri);
 		} catch (...) {
 		}
 	}
