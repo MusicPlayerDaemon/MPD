@@ -21,6 +21,7 @@
 #include "Request.hxx"
 #include "SongPrint.hxx"
 #include "db/Interface.hxx"
+#include "sticker/Sticker.hxx"
 #include "sticker/SongSticker.hxx"
 #include "sticker/StickerPrint.hxx"
 #include "sticker/StickerDatabase.hxx"
@@ -76,11 +77,8 @@ handle_sticker_song(Response &r, Partition &partition, Request args)
 		assert(song != nullptr);
 		AtScopeExit(&db, song) { db.ReturnSong(song); };
 
-		Sticker *sticker = sticker_song_get(*song);
-		if (sticker) {
-			sticker_print(r, *sticker);
-			sticker_free(sticker);
-		}
+		const auto sticker = sticker_song_get(*song);
+		sticker_print(r, sticker);
 
 		return CommandResult::OK;
 	/* set song song_id id key */

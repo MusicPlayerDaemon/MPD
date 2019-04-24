@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2018 The Music Player Daemon Project
+ * Copyright 2003-2019 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -72,9 +72,9 @@ sticker_song_delete_value(const LightSong &song, const char *name);
  * Throws #SqliteError on error.
  *
  * @param song the song object
- * @return a sticker object, or nullptr if there is no sticker
+ * @return a sticker object
  */
-Sticker *
+Sticker
 sticker_song_get(const LightSong &song);
 
 /**

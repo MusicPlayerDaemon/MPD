@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2018 The Music Player Daemon Project
+ * Copyright 2003-2019 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,6 +18,7 @@
  */
 
 #include "SongSticker.hxx"
+#include "Sticker.hxx"
 #include "StickerDatabase.hxx"
 #include "song/LightSong.hxx"
 #include "db/Interface.hxx"
@@ -61,7 +62,7 @@ sticker_song_delete_value(const LightSong &song, const char *name)
 	return sticker_delete_value("song", uri.c_str(), name);
 }
 
-Sticker *
+Sticker
 sticker_song_get(const LightSong &song)
 {
 	const auto uri = song.GetURI();

@@ -314,12 +314,6 @@ sticker_delete_value(const char *type, const char *uri, const char *name)
 	return modified;
 }
 
-void
-sticker_free(Sticker *sticker) noexcept
-{
-	delete sticker;
-}
-
 const char *
 sticker_get_value(const Sticker &sticker, const char *name) noexcept
 {
@@ -340,18 +334,14 @@ sticker_foreach(const Sticker &sticker,
 		func(i.first.c_str(), i.second.c_str(), user_data);
 }
 
-Sticker *
+Sticker
 sticker_load(const char *type, const char *uri)
 {
 	Sticker s;
 
 	sticker_list_values(s.table, type, uri);
 
-	if (s.table.empty())
-		/* don't return empty sticker objects */
-		return nullptr;
-
-	return new Sticker(std::move(s));
+	return s;
 }
 
 static sqlite3_stmt *

@@ -109,14 +109,6 @@ bool
 sticker_delete_value(const char *type, const char *uri, const char *name);
 
 /**
- * Frees resources held by the sticker object.
- *
- * @param sticker the sticker object to be freed
- */
-void
-sticker_free(Sticker *sticker) noexcept;
-
-/**
  * Determines a single value in a sticker.
  *
  * @param sticker the sticker object
@@ -147,9 +139,9 @@ sticker_foreach(const Sticker &sticker,
  *
  * @param type the resource type, e.g. "song"
  * @param uri the URI of the resource, e.g. the song path
- * @return a sticker object, or nullptr if there is no sticker
+ * @return a sticker object
  */
-Sticker *
+Sticker
 sticker_load(const char *type, const char *uri);
 
 /**
