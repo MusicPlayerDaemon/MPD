@@ -19,6 +19,7 @@
 
 #include "Context.hxx"
 #include "java/Class.hxx"
+#include "java/Exception.hxx"
 #include "java/File.hxx"
 #include "fs/AllocatedPath.hxx"
 
@@ -33,10 +34,8 @@ Context::GetCacheDir(JNIEnv *env) const
 	assert(method);
 
 	jobject file = env->CallObjectMethod(Get(), method);
-	if (file == nullptr) {
-		env->ExceptionClear();
+	if (Java::DiscardException(env) || file == nullptr)
 		return nullptr;
-	}
 
 	return Java::File::ToAbsolutePath(env, file);
 }
