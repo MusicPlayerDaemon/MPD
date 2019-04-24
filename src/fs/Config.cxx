@@ -35,7 +35,7 @@ ConfigureFS(const ConfigData &config)
 }
 
 void
-DeinitFS()
+DeinitFS() noexcept
 {
 #ifdef HAVE_FS_CHARSET
 	DeinitFSCharset();

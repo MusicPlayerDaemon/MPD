@@ -31,6 +31,6 @@ void
 ConfigureFS(const ConfigData &config);
 
 void
-DeinitFS();
+DeinitFS() noexcept;
 
 #endif
