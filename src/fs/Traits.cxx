@@ -25,7 +25,7 @@
 template<typename Traits>
 typename Traits::string
 BuildPathImpl(typename Traits::const_pointer_type a, size_t a_size,
-	      typename Traits::const_pointer_type b, size_t b_size)
+	      typename Traits::const_pointer_type b, size_t b_size) noexcept
 {
 	assert(a != nullptr);
 	assert(b != nullptr);
@@ -50,7 +50,7 @@ BuildPathImpl(typename Traits::const_pointer_type a, size_t a_size,
 
 template<typename Traits>
 typename Traits::const_pointer_type
-GetBasePathImpl(typename Traits::const_pointer_type p)
+GetBasePathImpl(typename Traits::const_pointer_type p) noexcept
 {
 #if !CLANG_CHECK_VERSION(3,6)
 	/* disabled on clang due to -Wtautological-pointer-compare */
@@ -65,7 +65,7 @@ GetBasePathImpl(typename Traits::const_pointer_type p)
 
 template<typename Traits>
 typename Traits::string
-GetParentPathImpl(typename Traits::const_pointer_type p)
+GetParentPathImpl(typename Traits::const_pointer_type p) noexcept
 {
 #if !CLANG_CHECK_VERSION(3,6)
 	/* disabled on clang due to -Wtautological-pointer-compare */
@@ -87,7 +87,7 @@ GetParentPathImpl(typename Traits::const_pointer_type p)
 template<typename Traits>
 typename Traits::const_pointer_type
 RelativePathImpl(typename Traits::const_pointer_type base,
-		 typename Traits::const_pointer_type other)
+		 typename Traits::const_pointer_type other) noexcept
 {
 	assert(base != nullptr);
 	assert(other != nullptr);
