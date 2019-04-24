@@ -31,7 +31,7 @@ namespace Environment {
 };
 
 void
-Environment::Initialise(JNIEnv *env)
+Environment::Initialise(JNIEnv *env) noexcept
 {
 	cls.Find(env, "android/os/Environment");
 
@@ -45,13 +45,13 @@ Environment::Initialise(JNIEnv *env)
 }
 
 void
-Environment::Deinitialise(JNIEnv *env)
+Environment::Deinitialise(JNIEnv *env) noexcept
 {
 	cls.Clear(env);
 }
 
 AllocatedPath
-Environment::getExternalStorageDirectory()
+Environment::getExternalStorageDirectory() noexcept
 {
 	JNIEnv *env = Java::GetEnv();
 
@@ -65,7 +65,7 @@ Environment::getExternalStorageDirectory()
 }
 
 AllocatedPath
-Environment::getExternalStoragePublicDirectory(const char *type)
+Environment::getExternalStoragePublicDirectory(const char *type) noexcept
 {
 	if (getExternalStoragePublicDirectory_method == nullptr)
 		/* needs API level 8 */
