@@ -35,7 +35,7 @@
 #include "storage/StorageInterface.hxx"
 
 #ifdef ENABLE_SQLITE
-#include "sticker/StickerDatabase.hxx"
+#include "sticker/Database.hxx"
 #include "sticker/SongSticker.hxx"
 #endif
 #endif

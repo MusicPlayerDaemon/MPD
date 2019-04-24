@@ -19,7 +19,7 @@
 
 #include "SongSticker.hxx"
 #include "Sticker.hxx"
-#include "StickerDatabase.hxx"
+#include "Database.hxx"
 #include "song/LightSong.hxx"
 #include "db/Interface.hxx"
 #include "util/Alloc.hxx"
