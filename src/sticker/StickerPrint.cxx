@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2018 The Music Player Daemon Project
+ * Copyright 2003-2019 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,7 +18,7 @@
  */
 
 #include "StickerPrint.hxx"
-#include "StickerDatabase.hxx"
+#include "Sticker.hxx"
 #include "client/Response.hxx"
 
 void
@@ -28,16 +28,9 @@ sticker_print_value(Response &r,
 	r.Format("sticker: %s=%s\n", name, value);
 }
 
-static void
-print_sticker_cb(const char *name, const char *value, void *data)
-{
-	auto &r = *(Response *)data;
-
-	sticker_print_value(r, name, value);
-}
-
 void
 sticker_print(Response &r, const Sticker &sticker)
 {
-	sticker_foreach(sticker, print_sticker_cb, &r);
+	for (const auto &i : sticker.table)
+		sticker_print_value(r, i.first.c_str(), i.second.c_str());
 }

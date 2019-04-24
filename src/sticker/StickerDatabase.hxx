@@ -109,19 +109,6 @@ bool
 sticker_delete_value(const char *type, const char *uri, const char *name);
 
 /**
- * Iterates over all sticker items in a sticker.
- *
- * @param sticker the sticker object
- * @param func a callback function
- * @param user_data an opaque pointer for the callback function
- */
-void
-sticker_foreach(const Sticker &sticker,
-		void (*func)(const char *name, const char *value,
-			     void *user_data),
-		void *user_data);
-
-/**
  * Loads the sticker for the specified resource.
  *
  * Throws #SqliteError on error.

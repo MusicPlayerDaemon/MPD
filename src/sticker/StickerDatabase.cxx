@@ -314,16 +314,6 @@ sticker_delete_value(const char *type, const char *uri, const char *name)
 	return modified;
 }
 
-void
-sticker_foreach(const Sticker &sticker,
-		void (*func)(const char *name, const char *value,
-			     void *user_data),
-		void *user_data)
-{
-	for (const auto &i : sticker.table)
-		func(i.first.c_str(), i.second.c_str(), user_data);
-}
-
 Sticker
 sticker_load(const char *type, const char *uri)
 {
