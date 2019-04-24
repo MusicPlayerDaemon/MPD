@@ -639,6 +639,7 @@ JNIEXPORT void JNICALL
 Java_org_musicpd_Bridge_run(JNIEnv *env, jclass, jobject _context, jobject _logListener)
 {
 	Java::Init(env);
+	Java::Object::Initialise(env);
 	Java::File::Initialise(env);
 	Environment::Initialise(env);
 

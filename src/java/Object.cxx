@@ -27,50 +27,19 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef JAVA_OBJECT_HXX
-#define JAVA_OBJECT_HXX
+#include "Object.hxx"
+#include "Class.hxx"
 
-#include "Ref.hxx"
+jmethodID Java::Object::toString_method;
 
-#include <jni.h>
+void
+Java::Object::Initialise(JNIEnv *env)
+{
+	assert(env != nullptr);
 
-#include <assert.h>
+	Class cls(env, "java/lang/Object");
 
-namespace Java {
-	/**
-	 * Wrapper for a local "jobject" reference.
-	 */
-	typedef LocalRef<jobject> LocalObject;
-
-	class GlobalObject : public GlobalRef<jobject> {
-	public:
-		/**
-		 * Constructs an uninitialized object.  The method
-		 * set() must be called before it is destructed.
-		 */
-		GlobalObject() = default;
-
-		GlobalObject(JNIEnv *env, jobject obj) noexcept
-			:GlobalRef<jobject>(env, obj) {}
-	};
-
-	/**
-	 * Utilities for java.net.Object.
-	 */
-	class Object {
-		static jmethodID toString_method;
-
-	public:
-		static void Initialise(JNIEnv *env);
-
-		static jstring toString(JNIEnv *env, jobject o) {
-			assert(env != nullptr);
-			assert(o != nullptr);
-			assert(toString_method != nullptr);
-
-			return (jstring)env->CallObjectMethod(o, toString_method);
-		}
-	};
+	toString_method = env->GetMethodID(cls, "toString",
+					   "()Ljava/lang/String;");
+	assert(toString_method != nullptr);
 }
-
-#endif
