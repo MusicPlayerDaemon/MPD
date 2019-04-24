@@ -22,9 +22,9 @@
 
 #include "java/Object.hxx"
 
-class LogListener : public Java::Object {
+class LogListener : public Java::GlobalObject {
 public:
-	LogListener(JNIEnv *env, jobject obj):Java::Object(env, obj) {}
+	LogListener(JNIEnv *env, jobject obj):Java::GlobalObject(env, obj) {}
 
 	void OnLog(JNIEnv *env, int priority, const char *fmt, ...) const;
 };

@@ -24,9 +24,9 @@
 
 class AllocatedPath;
 
-class Context : public Java::Object {
+class Context : public Java::GlobalObject {
 public:
-	Context(JNIEnv *env, jobject obj):Java::Object(env, obj) {}
+	Context(JNIEnv *env, jobject obj):Java::GlobalObject(env, obj) {}
 
 	gcc_pure
 	AllocatedPath GetCacheDir(JNIEnv *env) const;
