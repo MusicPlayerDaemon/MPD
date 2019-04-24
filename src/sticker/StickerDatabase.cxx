@@ -314,16 +314,6 @@ sticker_delete_value(const char *type, const char *uri, const char *name)
 	return modified;
 }
 
-const char *
-sticker_get_value(const Sticker &sticker, const char *name) noexcept
-{
-	auto i = sticker.table.find(name);
-	if (i == sticker.table.end())
-		return nullptr;
-
-	return i->second.c_str();
-}
-
 void
 sticker_foreach(const Sticker &sticker,
 		void (*func)(const char *name, const char *value,

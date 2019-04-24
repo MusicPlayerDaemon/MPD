@@ -109,17 +109,6 @@ bool
 sticker_delete_value(const char *type, const char *uri, const char *name);
 
 /**
- * Determines a single value in a sticker.
- *
- * @param sticker the sticker object
- * @param name the name of the sticker
- * @return the sticker value, or nullptr if none was found
- */
-gcc_pure
-const char *
-sticker_get_value(const Sticker &sticker, const char *name) noexcept;
-
-/**
  * Iterates over all sticker items in a sticker.
  *
  * @param sticker the sticker object
