@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2018 The Music Player Daemon Project
+ * Copyright 2003-2019 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -62,7 +62,7 @@ sticker_global_init(Path path);
  * Close the sticker database.
  */
 void
-sticker_global_finish();
+sticker_global_finish() noexcept;
 
 /**
  * Returns true if the sticker database is configured and available.
@@ -114,7 +114,7 @@ sticker_delete_value(const char *type, const char *uri, const char *name);
  * @param sticker the sticker object to be freed
  */
 void
-sticker_free(Sticker *sticker);
+sticker_free(Sticker *sticker) noexcept;
 
 /**
  * Determines a single value in a sticker.
