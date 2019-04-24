@@ -17,28 +17,13 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "Config.hxx"
-#include "Charset.hxx"
-#include "Features.hxx"
-#include "config/Data.hxx"
+#ifndef MPD_FS_FEATURES_HXX
+#define MPD_FS_FEATURES_HXX
+
 #include "config.h"
 
-void
-ConfigureFS(const ConfigData &config)
-{
-#ifdef HAVE_FS_CHARSET
-	const char *charset = config.GetString(ConfigOption::FS_CHARSET);
-	if (charset != nullptr)
-		SetFSCharset(charset);
-#else
-	(void)config;
+#if (defined(HAVE_ICU) || defined(HAVE_ICONV)) && !defined(_WIN32)
+#define HAVE_FS_CHARSET
 #endif
-}
 
-void
-DeinitFS() noexcept
-{
-#ifdef HAVE_FS_CHARSET
-	DeinitFSCharset();
 #endif
-}
