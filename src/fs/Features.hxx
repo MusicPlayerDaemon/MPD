@@ -26,4 +26,11 @@
 #define HAVE_FS_CHARSET
 #endif
 
+#if !defined(HAVE_FS_CHARSET) && !defined(_WIN32)
+/**
+ * Is the filesystem character set hard-coded to UTF-8?
+ */
+#define FS_CHARSET_ALWAYS_UTF8
+#endif
+
 #endif
