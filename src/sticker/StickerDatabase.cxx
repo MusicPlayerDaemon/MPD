@@ -18,6 +18,7 @@
  */
 
 #include "StickerDatabase.hxx"
+#include "Sticker.hxx"
 #include "lib/sqlite/Util.hxx"
 #include "fs/Path.hxx"
 #include "Idle.hxx"
@@ -25,14 +26,7 @@
 #include "util/StringCompare.hxx"
 #include "util/ScopeExit.hxx"
 
-#include <string>
-#include <map>
-
 #include <assert.h>
-
-struct Sticker {
-	std::map<std::string, std::string> table;
-};
 
 enum sticker_sql {
 	STICKER_SQL_GET,
