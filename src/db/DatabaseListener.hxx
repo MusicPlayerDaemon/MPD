@@ -34,13 +34,13 @@ public:
 	 * thread that has created the #Database instance and that
 	 * runs the #EventLoop.
 	 */
-	virtual void OnDatabaseModified() = 0;
+	virtual void OnDatabaseModified() noexcept = 0;
 
 	/**
 	 * During database update, a song is about to be removed from
 	 * the database because the file has disappeared.
 	 */
-	virtual void OnDatabaseSongRemoved(const char *uri) = 0;
+	virtual void OnDatabaseSongRemoved(const char *uri) noexcept = 0;
 };
 
 #endif

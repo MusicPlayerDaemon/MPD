@@ -68,11 +68,11 @@ InputStream::LockRead(void *, size_t)
 
 class MyDatabaseListener final : public DatabaseListener {
 public:
-	virtual void OnDatabaseModified() override {
+	virtual void OnDatabaseModified() noexcept override {
 		cout << "DatabaseModified" << endl;
 	}
 
-	virtual void OnDatabaseSongRemoved(const char *uri) override {
+	virtual void OnDatabaseSongRemoved(const char *uri) noexcept override {
 		cout << "SongRemoved " << uri << endl;
 	}
 };

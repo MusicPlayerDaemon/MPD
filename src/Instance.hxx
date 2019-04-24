@@ -178,8 +178,9 @@ struct Instance final
 
 private:
 #ifdef ENABLE_DATABASE
-	void OnDatabaseModified() override;
-	void OnDatabaseSongRemoved(const char *uri) override;
+	/* virtual methods from class DatabaseListener */
+	void OnDatabaseModified() noexcept override;
+	void OnDatabaseSongRemoved(const char *uri) noexcept override;
 #endif
 
 #ifdef ENABLE_NEIGHBOR_PLUGINS
