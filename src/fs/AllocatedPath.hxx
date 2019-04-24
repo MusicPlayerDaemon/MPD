@@ -157,6 +157,19 @@ public:
 		return AllocatedPath(std::move(fs));
 	}
 
+#ifdef ANDROID
+	gcc_pure
+	static AllocatedPath FromUTF8(std::string &&utf8) noexcept {
+		/* on Android, the filesystem charset is hard-coded to
+		   UTF-8 */
+		/* note: we should be using FS_CHARSET_ALWAYS_UTF8
+		   here, but that would require adding a dependency on
+		   header Features.hxx which I'd like to avoid for
+		   now */
+		return FromFS(std::move(utf8));
+	}
+#endif
+
 	/**
 	 * Convert a UTF-8 C string to an #AllocatedPath instance.
 	 * Returns return a "nulled" instance on error.
