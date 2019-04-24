@@ -148,14 +148,14 @@ try {
 }
 
 void
-StateFile::CheckModified()
+StateFile::CheckModified() noexcept
 {
 	if (!timer_event.IsActive() && IsModified())
 		timer_event.Schedule(config.interval);
 }
 
 void
-StateFile::OnTimeout()
+StateFile::OnTimeout() noexcept
 {
 	Write();
 }

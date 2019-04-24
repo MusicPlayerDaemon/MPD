@@ -63,7 +63,7 @@ public:
 	/**
 	 * Schedules a write if MPD's state was modified.
 	 */
-	void CheckModified();
+	void CheckModified() noexcept;
 
 private:
 	void Write(OutputStream &os);
@@ -82,7 +82,7 @@ private:
 	bool IsModified() const noexcept;
 
 	/* callback for #timer_event */
-	void OnTimeout();
+	void OnTimeout() noexcept;
 };
 
 #endif /* STATE_FILE_H */
