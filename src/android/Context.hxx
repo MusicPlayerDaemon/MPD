@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2018 The Music Player Daemon Project
+ * Copyright 2003-2019 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -26,10 +26,11 @@ class AllocatedPath;
 
 class Context : public Java::GlobalObject {
 public:
-	Context(JNIEnv *env, jobject obj):Java::GlobalObject(env, obj) {}
+	Context(JNIEnv *env, jobject obj) noexcept
+		:Java::GlobalObject(env, obj) {}
 
 	gcc_pure
-	AllocatedPath GetCacheDir(JNIEnv *env) const;
+	AllocatedPath GetCacheDir(JNIEnv *env) const noexcept;
 };
 
 #endif
