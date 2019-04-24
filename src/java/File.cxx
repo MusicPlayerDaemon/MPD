@@ -60,7 +60,5 @@ Java::File::ToAbsolutePath(JNIEnv *env, jobject _file) noexcept
 	}
 
 	Java::String path2(env, path);
-	char buffer[MPD_PATH_MAX];
-	path2.CopyTo(env, buffer, sizeof(buffer));
-	return AllocatedPath::FromUTF8(buffer);
+	return AllocatedPath::FromFS(path2.ToString());
 }
