@@ -40,15 +40,15 @@ namespace Java {
 	 */
 	typedef LocalRef<jobject> LocalObject;
 
-	class Object : public GlobalRef<jobject> {
+	class GlobalObject : public GlobalRef<jobject> {
 	public:
 		/**
 		 * Constructs an uninitialized object.  The method
 		 * set() must be called before it is destructed.
 		 */
-		Object() = default;
+		GlobalObject() = default;
 
-		Object(JNIEnv *env, jobject obj) noexcept
+		GlobalObject(JNIEnv *env, jobject obj) noexcept
 			:GlobalRef<jobject>(env, obj) {}
 	};
 }
