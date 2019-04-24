@@ -27,36 +27,24 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef JAVA_EXCEPTION_HXX
-#define JAVA_EXCEPTION_HXX
+#include "Exception.hxx"
+#include "Object.hxx"
+#include "String.hxx"
 
-#include <stdexcept>
-
-#include <jni.h>
-
-namespace Java {
-	class Exception : public std::runtime_error {
-	public:
-		explicit Exception(JNIEnv *env, jthrowable e) noexcept;
-	};
-
-	/**
-	 * Check if a Java exception has occurred, and if yes, convert
-	 * it to a C++ #Exception and throw that.
-	 */
-	void RethrowException(JNIEnv *env);
-
-	/**
-	 * Check if an exception has occurred, and discard it.
-	 *
-	 * @return true if an exception was found (and discarded)
-	 */
-	static inline bool DiscardException(JNIEnv *env) noexcept {
-		bool result = env->ExceptionCheck();
-		if (result)
-			env->ExceptionClear();
-		return result;
-	}
+Java::Exception::Exception(JNIEnv *env, jthrowable e) noexcept
+	:std::runtime_error(Java::String(env, Object::toString(env, e)).ToString())
+{
 }
 
-#endif
+void
+Java::RethrowException(JNIEnv *env)
+{
+	jthrowable exception = env->ExceptionOccurred();
+	if (exception == nullptr)
+		return;
+
+	LocalRef<jthrowable> ref(env, exception);
+
+	env->ExceptionClear();
+	throw Exception(env, exception);
+}
