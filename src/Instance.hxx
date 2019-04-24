@@ -131,11 +131,11 @@ struct Instance final
 	/**
 	 * Wrapper for EventLoop::Break().  Call to initiate shutdown.
 	 */
-	void Break() {
+	void Break() noexcept {
 		event_loop.Break();
 	}
 
-	void EmitIdle(unsigned mask) {
+	void EmitIdle(unsigned mask) noexcept {
 		idle_monitor.OrMask(mask);
 	}
 
@@ -154,7 +154,7 @@ struct Instance final
 	 * if this MPD configuration has no database (no
 	 * music_directory was configured).
 	 */
-	Database *GetDatabase() {
+	Database *GetDatabase() noexcept {
 		return database.get();
 	}
 
@@ -194,7 +194,7 @@ private:
 #endif
 
 	/* callback for #idle_monitor */
-	void OnIdle(unsigned mask);
+	void OnIdle(unsigned mask) noexcept;
 };
 
 #endif

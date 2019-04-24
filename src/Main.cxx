@@ -360,7 +360,7 @@ Instance::BeginShutdownPartitions() noexcept
 }
 
 void
-Instance::OnIdle(unsigned flags)
+Instance::OnIdle(unsigned flags) noexcept
 {
 	/* send "idle" notifications to all subscribed
 	   clients */
