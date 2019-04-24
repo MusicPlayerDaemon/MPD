@@ -26,7 +26,7 @@
 #include <exception>
 
 /* no inlining, please */
-AllocatedPath::~AllocatedPath() {}
+AllocatedPath::~AllocatedPath() noexcept = default;
 
 AllocatedPath
 AllocatedPath::FromUTF8(const char *path_utf8) noexcept

@@ -43,15 +43,18 @@ class AllocatedPath {
 
 	string value;
 
-	explicit AllocatedPath(const_pointer_type _value):value(_value) {}
+	explicit AllocatedPath(const_pointer_type _value) noexcept
+		:value(_value) {}
 
-	AllocatedPath(const_pointer_type _begin, const_pointer_type _end)
+	AllocatedPath(const_pointer_type _begin,
+		      const_pointer_type _end) noexcept
 		:value(_begin, _end) {}
 
-	AllocatedPath(string &&_value):value(std::move(_value)) {}
+	AllocatedPath(string &&_value) noexcept
+		:value(std::move(_value)) {}
 
 	static AllocatedPath Build(const_pointer_type a, size_t a_size,
-				   const_pointer_type b, size_t b_size) {
+				   const_pointer_type b, size_t b_size) noexcept {
 		return AllocatedPath(Traits::Build(a, a_size, b, b_size));
 	}
 public:
@@ -61,7 +64,7 @@ public:
 	 *
 	 * @see IsNull()
 	 */
-	AllocatedPath(std::nullptr_t):value() {}
+	AllocatedPath(std::nullptr_t) noexcept:value() {}
 
 	/**
 	 * Copy an #AllocatedPath object.
@@ -71,11 +74,13 @@ public:
 	/**
 	 * Move an #AllocatedPath object.
 	 */
-	AllocatedPath(AllocatedPath &&other):value(std::move(other.value)) {}
+	AllocatedPath(AllocatedPath &&other) noexcept
+		:value(std::move(other.value)) {}
 
-	explicit AllocatedPath(Path other):value(other.c_str()) {}
+	explicit AllocatedPath(Path other) noexcept
+		:value(other.c_str()) {}
 
-	~AllocatedPath();
+	~AllocatedPath() noexcept;
 
 	gcc_pure
 	operator Path() const noexcept {
@@ -174,7 +179,7 @@ public:
 	/**
 	 * Move an #AllocatedPath object.
 	 */
-	AllocatedPath &operator=(AllocatedPath &&other) {
+	AllocatedPath &operator=(AllocatedPath &&other) noexcept {
 		value = std::move(other.value);
 		return *this;
 	}
@@ -193,7 +198,7 @@ public:
 	 * Allows the caller to "steal" the internal value by
 	 * providing a rvalue reference to the std::string attribute.
 	 */
-	string &&Steal() {
+	string &&Steal() noexcept {
 		return std::move(value);
 	}
 
