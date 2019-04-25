@@ -71,10 +71,9 @@ private:
 			exception = std::current_exception();
 		}
 
-		mutex.lock();
+		const std::lock_guard<Mutex> lock(mutex);
 		done = true;
 		cond.signal();
-		mutex.unlock();
 	}
 };
 
