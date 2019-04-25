@@ -28,6 +28,18 @@
 
 namespace Sqlite {
 
+static inline sqlite3_stmt *
+Prepare(sqlite3 *db, const char *sql)
+{
+	sqlite3_stmt *stmt;
+	int ret = sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr);
+	if (ret != SQLITE_OK)
+		throw SqliteError(db, ret,
+				  "sqlite3_prepare_v2() failed");
+
+	return stmt;
+}
+
 /**
  * Throws #SqliteError on error.
  */

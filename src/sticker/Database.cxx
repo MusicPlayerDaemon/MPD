@@ -83,18 +83,6 @@ static const char sticker_sql_create[] =
 static sqlite3 *sticker_db;
 static sqlite3_stmt *sticker_stmt[ARRAY_SIZE(sticker_sql)];
 
-static sqlite3_stmt *
-sticker_prepare(const char *sql)
-{
-	sqlite3_stmt *stmt;
-	int ret = sqlite3_prepare_v2(sticker_db, sql, -1, &stmt, nullptr);
-	if (ret != SQLITE_OK)
-		throw SqliteError(sticker_db, ret,
-				  "sqlite3_prepare_v2() failed");
-
-	return stmt;
-}
-
 void
 sticker_global_init(Path path)
 {
@@ -125,7 +113,7 @@ sticker_global_init(Path path)
 	for (unsigned i = 0; i < ARRAY_SIZE(sticker_sql); ++i) {
 		assert(sticker_sql[i] != nullptr);
 
-		sticker_stmt[i] = sticker_prepare(sticker_sql[i]);
+		sticker_stmt[i] = Prepare(sticker_db, sticker_sql[i]);
 	}
 }
 
