@@ -94,10 +94,11 @@ SmbclientNeighborExplorer::Open()
 void
 SmbclientNeighborExplorer::Close() noexcept
 {
-	mutex.lock();
-	quit = true;
-	cond.signal();
-	mutex.unlock();
+	{
+		const std::lock_guard<Mutex> lock(mutex);
+		quit = true;
+		cond.signal();
+	}
 
 	thread.Join();
 }
@@ -237,7 +238,7 @@ SmbclientNeighborExplorer::ThreadFunc() noexcept
 {
 	SetThreadName("smbclient");
 
-	mutex.lock();
+	const std::lock_guard<Mutex> lock(mutex);
 
 	while (!quit) {
 		Run();
@@ -248,8 +249,6 @@ SmbclientNeighborExplorer::ThreadFunc() noexcept
 		// TODO: sleep for how long?
 		cond.timed_wait(mutex, std::chrono::seconds(10));
 	}
-
-	mutex.unlock();
 }
 
 static std::unique_ptr<NeighborExplorer>
