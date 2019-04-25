@@ -450,7 +450,7 @@ decoder_run_song(DecoderControl &dc,
 		throw FormatRuntimeError("Failed to decode %s", error_uri);
 	}
 
-	dc.client_cond.signal();
+	dc.client_cond.notify_one();
 }
 
 /**
@@ -479,7 +479,7 @@ try {
 	dc.state = DecoderState::ERROR;
 	dc.command = DecoderCommand::NONE;
 	dc.error = std::current_exception();
-	dc.client_cond.signal();
+	dc.client_cond.notify_one();
 }
 
 void

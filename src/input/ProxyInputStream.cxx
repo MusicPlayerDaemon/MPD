@@ -46,7 +46,7 @@ ProxyInputStream::SetInput(InputStreamPtr _input) noexcept
 	   ready */
 	CopyAttributes();
 
-	set_input_cond.signal();
+	set_input_cond.notify_one();
 }
 
 void

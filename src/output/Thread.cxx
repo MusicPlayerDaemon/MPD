@@ -39,7 +39,7 @@ AudioOutputControl::CommandFinished() noexcept
 	assert(command != Command::NONE);
 	command = Command::NONE;
 
-	client_cond.signal();
+	client_cond.notify_one();
 }
 
 inline void
@@ -215,7 +215,7 @@ AudioOutputControl::WaitForDelay() noexcept
 		if (delay <= std::chrono::steady_clock::duration::zero())
 			return true;
 
-		(void)wake_cond.timed_wait(mutex, delay);
+		(void)wake_cond.wait_for(mutex, delay);
 
 		if (command != Command::NONE)
 			return false;

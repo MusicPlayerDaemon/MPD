@@ -127,7 +127,7 @@ DecoderBridge::FlushChunk() noexcept
 
 	const std::lock_guard<Mutex> protect(dc.mutex);
 	if (dc.client_is_waiting)
-		dc.client_cond.signal();
+		dc.client_cond.notify_one();
 }
 
 bool
@@ -310,7 +310,7 @@ DecoderBridge::CommandFinished() noexcept
 	}
 
 	dc.command = DecoderCommand::NONE;
-	dc.client_cond.signal();
+	dc.client_cond.notify_one();
 }
 
 SongTime

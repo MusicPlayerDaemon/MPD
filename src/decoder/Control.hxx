@@ -199,7 +199,7 @@ public:
 	 * calling this function.
 	 */
 	void Signal() noexcept {
-		cond.signal();
+		cond.notify_one();
 	}
 
 	/**
@@ -367,7 +367,7 @@ public:
 		assert(command != DecoderCommand::NONE);
 
 		command = DecoderCommand::NONE;
-		client_cond.signal();
+		client_cond.notify_one();
 	}
 
 	/**
@@ -428,11 +428,11 @@ private:
 
 	/* virtual methods from class InputStreamHandler */
 	void OnInputStreamReady() noexcept override {
-		cond.signal();
+		cond.notify_one();
 	}
 
 	void OnInputStreamAvailable() noexcept override {
-		cond.signal();
+		cond.notify_one();
 	}
 };
 

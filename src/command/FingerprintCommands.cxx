@@ -67,7 +67,7 @@ protected:
 	void CancelThread() noexcept override {
 		const std::lock_guard<Mutex> lock(mutex);
 		cancel = true;
-		cond.signal();
+		cond.notify_one();
 	}
 
 private:
@@ -87,11 +87,11 @@ private:
 
 	/* virtual methods from class InputStreamHandler */
 	void OnInputStreamReady() noexcept override {
-		cond.signal();
+		cond.notify_one();
 	}
 
 	void OnInputStreamAvailable() noexcept override {
-		cond.signal();
+		cond.notify_one();
 	}
 };
 

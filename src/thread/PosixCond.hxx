@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2015 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2009-2019 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -62,11 +62,11 @@ public:
 	PosixCond(const PosixCond &other) = delete;
 	PosixCond &operator=(const PosixCond &other) = delete;
 
-	void signal() noexcept {
+	void notify_one() noexcept {
 		pthread_cond_signal(&cond);
 	}
 
-	void broadcast() noexcept {
+	void notify_all() noexcept {
 		pthread_cond_broadcast(&cond);
 	}
 
@@ -75,7 +75,7 @@ public:
 	}
 
 private:
-	bool timed_wait(PosixMutex &mutex, uint_least32_t timeout_us) noexcept {
+	bool wait_for(PosixMutex &mutex, uint_least32_t timeout_us) noexcept {
 		struct timeval now;
 		gettimeofday(&now, nullptr);
 
@@ -92,15 +92,15 @@ private:
 	}
 
 public:
-	bool timed_wait(PosixMutex &mutex,
-			std::chrono::steady_clock::duration timeout) noexcept {
+	bool wait_for(PosixMutex &mutex,
+		      std::chrono::steady_clock::duration timeout) noexcept {
 		auto timeout_us = std::chrono::duration_cast<std::chrono::microseconds>(timeout).count();
 		if (timeout_us < 0)
 			timeout_us = 0;
 		else if (timeout_us > std::numeric_limits<uint_least32_t>::max())
 			timeout_us = std::numeric_limits<uint_least32_t>::max();
 
-		return timed_wait(mutex, timeout_us);
+		return wait_for(mutex, timeout_us);
 	}
 };
 

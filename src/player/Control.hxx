@@ -351,7 +351,7 @@ private:
 	 * calling this function.
 	 */
 	void Signal() noexcept {
-		cond.signal();
+		cond.notify_one();
 	}
 
 	/**
@@ -382,7 +382,7 @@ private:
 	void ClientSignal() noexcept {
 		assert(thread.IsInside());
 
-		client_cond.signal();
+		client_cond.notify_one();
 	}
 
 	/**

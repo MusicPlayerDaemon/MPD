@@ -138,7 +138,7 @@ protected:
 
 		request.Stop();
 		done = true;
-		cond.signal();
+		cond.notify_one();
 	}
 
 	void LockSetDone() {

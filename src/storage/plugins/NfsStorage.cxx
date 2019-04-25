@@ -138,7 +138,7 @@ private:
 
 		const std::lock_guard<Mutex> protect(mutex);
 		state = _state;
-		cond.broadcast();
+		cond.notify_all();
 	}
 
 	void SetState(State _state, std::exception_ptr &&e) noexcept {
@@ -147,7 +147,7 @@ private:
 		const std::lock_guard<Mutex> protect(mutex);
 		state = _state;
 		last_exception = std::move(e);
-		cond.broadcast();
+		cond.notify_all();
 	}
 
 	void Connect() noexcept {

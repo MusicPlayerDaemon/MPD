@@ -31,11 +31,11 @@ struct CondInputStreamHandler final : InputStreamHandler {
 
 	/* virtual methods from class InputStreamHandler */
 	void OnInputStreamReady() noexcept override {
-		cond.signal();
+		cond.notify_one();
 	}
 
 	void OnInputStreamAvailable() noexcept override {
-		cond.signal();
+		cond.notify_one();
 	}
 };
 

@@ -99,7 +99,7 @@ public:
 	}
 
 	void OnInputStreamAvailable() noexcept override {
-		wake_cond.signal();
+		wake_cond.notify_one();
 	}
 
 private:

@@ -305,7 +305,7 @@ private:
 		const std::lock_guard<Mutex> lock(mutex);
 		/* notify the OutputThread that there is now
 		   room in ring_buffer */
-		cond.signal();
+		cond.notify_one();
 
 		return true;
 	}
@@ -330,7 +330,7 @@ private:
 		const std::lock_guard<Mutex> lock(mutex);
 		error = std::current_exception();
 		active = false;
-		cond.signal();
+		cond.notify_one();
 	}
 
 	/* virtual methods from class MultiSocketMonitor */
@@ -956,7 +956,7 @@ try {
 			}
 
 			drain = false;
-			cond.signal();
+			cond.notify_one();
 			return;
 		}
 	}
@@ -984,7 +984,7 @@ try {
 			{
 				const std::lock_guard<Mutex> lock(mutex);
 				active = false;
-				cond.signal();
+				cond.notify_one();
 			}
 
 			/* avoid race condition: see if data has

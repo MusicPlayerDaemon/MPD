@@ -46,7 +46,7 @@ ThreadInputStream::Stop() noexcept
 	{
 		const std::lock_guard<Mutex> lock(mutex);
 		close = true;
-		wake_cond.signal();
+		wake_cond.notify_one();
 	}
 
 	Cancel();
@@ -145,7 +145,7 @@ ThreadInputStream::Read(void *ptr, size_t read_size)
 			size_t nbytes = std::min(read_size, r.size);
 			memcpy(ptr, r.data, nbytes);
 			buffer.Consume(nbytes);
-			wake_cond.broadcast();
+			wake_cond.notify_all();
 			offset += nbytes;
 			return nbytes;
 		}

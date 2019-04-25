@@ -67,7 +67,7 @@ DecoderControl::SetReady(const AudioFormat audio_format,
 	total_time = _duration;
 
 	state = DecoderState::DECODE;
-	client_cond.signal();
+	client_cond.notify_one();
 }
 
 bool

@@ -397,7 +397,7 @@ SlesOutput::PlayedCallback()
 	const std::lock_guard<Mutex> protect(mutex);
 	assert(n_queued > 0);
 	--n_queued;
-	cond.signal();
+	cond.notify_one();
 }
 
 static bool

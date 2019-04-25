@@ -73,7 +73,7 @@ private:
 
 		const std::lock_guard<Mutex> lock(mutex);
 		done = true;
-		cond.signal();
+		cond.notify_one();
 	}
 };
 

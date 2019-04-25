@@ -147,7 +147,7 @@ UdisksStorage::SetMountPoint(Path mount_point)
 
 	mount_error = {};
 	want_mount = false;
-	cond.broadcast();
+	cond.notify_all();
 }
 
 void
@@ -188,7 +188,7 @@ UdisksStorage::OnListReply(ODBus::Message reply) noexcept
 		const std::lock_guard<Mutex> lock(mutex);
 		mount_error = std::current_exception();
 		want_mount = false;
-		cond.broadcast();
+		cond.notify_all();
 		return;
 	}
 
@@ -247,7 +247,7 @@ try {
 	const std::lock_guard<Mutex> lock(mutex);
 	mount_error = std::current_exception();
 	want_mount = false;
-	cond.broadcast();
+	cond.notify_all();
 }
 
 void
@@ -266,7 +266,7 @@ try {
 	const std::lock_guard<Mutex> lock(mutex);
 	mount_error = std::current_exception();
 	want_mount = false;
-	cond.broadcast();
+	cond.notify_all();
 }
 
 void
@@ -306,7 +306,7 @@ try {
 	const std::lock_guard<Mutex> lock(mutex);
 	mount_error = std::current_exception();
 	mounted_storage.reset();
-	cond.broadcast();
+	cond.notify_all();
 }
 
 void
@@ -318,12 +318,12 @@ try {
 	const std::lock_guard<Mutex> lock(mutex);
 	mount_error = {};
 	mounted_storage.reset();
-	cond.broadcast();
+	cond.notify_all();
 } catch (...) {
 	const std::lock_guard<Mutex> lock(mutex);
 	mount_error = std::current_exception();
 	mounted_storage.reset();
-	cond.broadcast();
+	cond.notify_all();
 }
 
 std::string
