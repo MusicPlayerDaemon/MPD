@@ -37,7 +37,7 @@ CommandResult
 handle_listneighbors(Client &client, gcc_unused Request args, Response &r)
 {
 	const NeighborGlue *const neighbors =
-		client.GetInstance().neighbors;
+		client.GetInstance().neighbors.get();
 	if (neighbors == nullptr) {
 		r.Error(ACK_ERROR_UNKNOWN, "No neighbor plugin configured");
 		return CommandResult::ERROR;

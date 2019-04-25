@@ -34,6 +34,10 @@
 #include "db/update/Service.hxx"
 #include "storage/StorageInterface.hxx"
 
+#ifdef ENABLE_NEIGHBOR_PLUGINS
+#include "neighbor/Glue.hxx"
+#endif
+
 #ifdef ENABLE_SQLITE
 #include "sticker/Database.hxx"
 #include "sticker/SongSticker.hxx"

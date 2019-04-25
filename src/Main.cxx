@@ -448,15 +448,13 @@ MainOrThrow(int argc, char *argv[])
 	};
 
 #ifdef ENABLE_NEIGHBOR_PLUGINS
-	instance->neighbors = new NeighborGlue();
+	instance->neighbors = std::make_unique<NeighborGlue>();
 	instance->neighbors->Init(raw_config,
 				  instance->io_thread.GetEventLoop(),
 				  *instance);
 
-	if (instance->neighbors->IsEmpty()) {
-		delete instance->neighbors;
-		instance->neighbors = nullptr;
-	}
+	if (instance->neighbors->IsEmpty())
+		instance->neighbors.reset();
 #endif
 
 	const unsigned max_clients =
@@ -624,10 +622,6 @@ mpd_main_after_fork(const ConfigData &raw_config, const Config &config)
 	instance->BeginShutdownPartitions();
 
 	delete instance->client_list;
-
-#ifdef ENABLE_NEIGHBOR_PLUGINS
-	delete instance->neighbors;
-#endif
 
 	return EXIT_SUCCESS;
 }

@@ -101,7 +101,7 @@ struct Instance final
 	MaskMonitor idle_monitor;
 
 #ifdef ENABLE_NEIGHBOR_PLUGINS
-	NeighborGlue *neighbors;
+	std::unique_ptr<NeighborGlue> neighbors;
 #endif
 
 #ifdef ENABLE_DATABASE
