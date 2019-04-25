@@ -76,7 +76,11 @@ public:
 	List GetList() const noexcept override;
 
 private:
+	/**
+	 * Caller must lock the mutex.
+	 */
 	void Run() noexcept;
+
 	void ThreadFunc() noexcept;
 };
 
@@ -189,9 +193,12 @@ FindBeforeServerByURI(NeighborExplorer::List::const_iterator prev,
 inline void
 SmbclientNeighborExplorer::Run() noexcept
 {
-	List found = DetectServers(), lost;
+	List found, lost;
 
-	mutex.lock();
+	{
+		const ScopeUnlock unlock(mutex);
+		found = DetectServers();
+	}
 
 	const auto found_before_begin = found.before_begin();
 	const auto found_end = found.end();
@@ -216,7 +223,7 @@ SmbclientNeighborExplorer::Run() noexcept
 	     i != found_end; prev = i, i = std::next(prev))
 		list.push_front(*i);
 
-	mutex.unlock();
+	const ScopeUnlock unlock(mutex);
 
 	for (auto &i : lost)
 		listener.LostNeighbor(i);
@@ -233,11 +240,8 @@ SmbclientNeighborExplorer::ThreadFunc() noexcept
 	mutex.lock();
 
 	while (!quit) {
-		mutex.unlock();
-
 		Run();
 
-		mutex.lock();
 		if (quit)
 			break;
 
