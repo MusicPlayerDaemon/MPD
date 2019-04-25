@@ -43,6 +43,7 @@
 #define MPD_STICKER_DATABASE_HXX
 
 #include "Match.hxx"
+#include "lib/sqlite/Database.hxx"
 #include "util/Compiler.h"
 
 #include <sqlite3.h>
@@ -69,7 +70,7 @@ class StickerDatabase {
 		  SQL_COUNT
 	};
 
-	sqlite3 *db;
+	Sqlite::Database db;
 	sqlite3_stmt *stmt[SQL_COUNT];
 
 public:

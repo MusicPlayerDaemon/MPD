@@ -82,20 +82,11 @@ static const char sticker_sql_create[] =
 	"";
 
 StickerDatabase::StickerDatabase(Path path)
+	:db(path.c_str())
 {
 	assert(!path.IsNull());
 
 	int ret;
-
-	/* open/create the sqlite database */
-
-	ret = sqlite3_open(path.c_str(), &db);
-	if (ret != SQLITE_OK) {
-		const std::string utf8 = path.ToUTF8();
-		throw SqliteError(db, ret,
-				  ("Failed to open sqlite database '" +
-				   utf8 + "'").c_str());
-	}
 
 	/* create the table and index */
 
@@ -123,8 +114,6 @@ StickerDatabase::~StickerDatabase() noexcept
 
 		sqlite3_finalize(stmt[i]);
 	}
-
-	sqlite3_close(db);
 }
 
 std::string
