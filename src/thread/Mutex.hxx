@@ -39,8 +39,7 @@ using Mutex = CriticalSection;
 
 #else
 
-#include "PosixMutex.hxx"
-using Mutex = PosixMutex;
+using Mutex = std::mutex;
 
 #endif
 

@@ -37,8 +37,8 @@ class Cond : public WindowsCond {};
 
 #else
 
-#include "PosixCond.hxx"
-class Cond : public PosixCond {};
+#include <condition_variable>
+using Cond = std::condition_variable;
 
 #endif
 
