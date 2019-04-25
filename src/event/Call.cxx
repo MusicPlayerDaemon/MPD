@@ -51,10 +51,11 @@ public:
 
 		defer_event.Schedule();
 
-		mutex.lock();
-		while (!done)
-			cond.wait(mutex);
-		mutex.unlock();
+		{
+			const std::lock_guard<Mutex> lock(mutex);
+			while (!done)
+				cond.wait(mutex);
+		}
 
 		if (exception)
 			std::rethrow_exception(exception);
