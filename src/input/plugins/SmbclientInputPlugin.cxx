@@ -45,10 +45,9 @@ public:
 	}
 
 	~SmbclientInputStream() {
-		smbclient_mutex.lock();
+		const std::lock_guard<Mutex> lock(smbclient_mutex);
 		smbc_close(fd);
 		smbc_free_context(ctx, 1);
-		smbclient_mutex.unlock();
 	}
 
 	/* virtual methods from InputStream */
