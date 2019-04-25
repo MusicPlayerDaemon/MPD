@@ -59,9 +59,8 @@ public:
 		:base(_base), ctx(_ctx) {}
 
 	virtual ~SmbclientStorage() {
-		smbclient_mutex.lock();
+		const std::lock_guard<Mutex> lock(smbclient_mutex);
 		smbc_free_context(ctx, 1);
-		smbclient_mutex.unlock();
 	}
 
 	/* virtual methods from class Storage */
@@ -153,9 +152,8 @@ SkipNameFS(const char *name) noexcept
 
 SmbclientDirectoryReader::~SmbclientDirectoryReader()
 {
-	smbclient_mutex.lock();
+	const std::lock_guard<Mutex> lock(smbclient_mutex);
 	smbc_close(handle);
-	smbclient_mutex.unlock();
 }
 
 const char *
