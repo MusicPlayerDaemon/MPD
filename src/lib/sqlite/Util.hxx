@@ -26,6 +26,8 @@
 
 #include <assert.h>
 
+namespace Sqlite {
+
 /**
  * Throws #SqliteError on error.
  */
@@ -157,5 +159,7 @@ ExecuteForEach(sqlite3_stmt *stmt, F &&f)
 		}
 	}
 }
+
+} // namespace Sqlite
 
 #endif

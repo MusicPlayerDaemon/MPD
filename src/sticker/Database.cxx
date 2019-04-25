@@ -28,6 +28,8 @@
 
 #include <assert.h>
 
+using namespace Sqlite;
+
 enum sticker_sql {
 	STICKER_SQL_GET,
 	STICKER_SQL_LIST,
