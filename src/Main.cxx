@@ -548,6 +548,11 @@ mpd_main_after_fork(const ConfigData &raw_config, const Config &config)
 #ifdef ENABLE_NEIGHBOR_PLUGINS
 	if (instance->neighbors != nullptr)
 		instance->neighbors->Open();
+
+	AtScopeExit() {
+		if (instance->neighbors != nullptr)
+			instance->neighbors->Close();
+	};
 #endif
 
 	ZeroconfInit(raw_config, instance->event_loop);
@@ -621,10 +626,7 @@ mpd_main_after_fork(const ConfigData &raw_config, const Config &config)
 	delete instance->client_list;
 
 #ifdef ENABLE_NEIGHBOR_PLUGINS
-	if (instance->neighbors != nullptr) {
-		instance->neighbors->Close();
-		delete instance->neighbors;
-	}
+	delete instance->neighbors;
 #endif
 
 	return EXIT_SUCCESS;
