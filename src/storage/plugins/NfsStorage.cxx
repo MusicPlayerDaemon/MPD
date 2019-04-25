@@ -173,9 +173,11 @@ private:
 			switch (state) {
 			case State::INITIAL:
 				/* schedule connect */
-				mutex.unlock();
-				defer_connect.Schedule();
-				mutex.lock();
+				{
+					const ScopeUnlock unlock(mutex);
+					defer_connect.Schedule();
+				}
+
 				if (state == State::INITIAL)
 					cond.wait(mutex);
 				break;
