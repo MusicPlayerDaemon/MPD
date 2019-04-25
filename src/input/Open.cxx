@@ -57,14 +57,14 @@ InputStream::OpenReady(const char *uri, Mutex &mutex)
 	is->SetHandler(&handler);
 
 	{
-		const std::lock_guard<Mutex> protect(mutex);
+		std::unique_lock<Mutex> lock(mutex);
 
 		while (true) {
 			is->Update();
 			if (is->IsReady())
 				break;
 
-			handler.cond.wait(mutex);
+			handler.cond.wait(lock);
 		}
 
 		is->Check();

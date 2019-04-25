@@ -198,7 +198,7 @@ UdisksStorage::OnListReply(ODBus::Message reply) noexcept
 void
 UdisksStorage::MountWait()
 {
-	const std::lock_guard<Mutex> lock(mutex);
+	std::unique_lock<Mutex> lock(mutex);
 
 	if (mounted_storage)
 		/* already mounted */
@@ -210,7 +210,7 @@ UdisksStorage::MountWait()
 	}
 
 	while (want_mount)
-		cond.wait(mutex);
+		cond.wait(lock);
 
 	if (mount_error)
 		std::rethrow_exception(mount_error);
@@ -272,7 +272,7 @@ try {
 void
 UdisksStorage::UnmountWait()
 {
-	const std::lock_guard<Mutex> lock(mutex);
+	std::unique_lock<Mutex> lock(mutex);
 
 	if (!mounted_storage)
 		/* not mounted */
@@ -281,7 +281,7 @@ UdisksStorage::UnmountWait()
 	defer_unmount.Schedule();
 
 	while (mounted_storage)
-		cond.wait(mutex);
+		cond.wait(lock);
 
 	if (mount_error)
 		std::rethrow_exception(mount_error);

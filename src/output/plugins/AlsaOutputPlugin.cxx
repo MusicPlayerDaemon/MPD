@@ -796,7 +796,7 @@ AlsaOutput::DrainInternal()
 void
 AlsaOutput::Drain()
 {
-	const std::lock_guard<Mutex> lock(mutex);
+	std::unique_lock<Mutex> lock(mutex);
 
 	if (error)
 		std::rethrow_exception(error);
@@ -806,7 +806,7 @@ AlsaOutput::Drain()
 	Activate();
 
 	while (drain && active)
-		cond.wait(mutex);
+		cond.wait(lock);
 
 	if (error)
 		std::rethrow_exception(error);
@@ -882,7 +882,7 @@ AlsaOutput::Play(const void *chunk, size_t size)
 		   been played */
 		return size;
 
-	const std::lock_guard<Mutex> lock(mutex);
+	std::unique_lock<Mutex> lock(mutex);
 
 	while (true) {
 		if (error)
@@ -905,7 +905,7 @@ AlsaOutput::Play(const void *chunk, size_t size)
 
 		/* wait for the DispatchSockets() to make room in the
 		   ring_buffer */
-		cond.wait(mutex);
+		cond.wait(lock);
 	}
 }
 

@@ -149,7 +149,7 @@ BufferedInputStream::RunThread() noexcept
 {
 	SetThreadName("input_buffered");
 
-	const std::lock_guard<Mutex> lock(mutex);
+	std::unique_lock<Mutex> lock(mutex);
 
 	while (!stop) {
 		assert(size == buffer.size());
@@ -205,6 +205,6 @@ BufferedInputStream::RunThread() noexcept
 			client_cond.notify_one();
 			InvokeOnAvailable();
 		} else
-			wake_cond.wait(mutex);
+			wake_cond.wait(lock);
 	}
 }

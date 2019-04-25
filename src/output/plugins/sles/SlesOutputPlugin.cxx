@@ -317,13 +317,13 @@ SlesOutput::Play(const void *chunk, size_t size)
 		pause = false;
 	}
 
-	const std::lock_guard<Mutex> protect(mutex);
+	std::unique_lock<Mutex> lock(mutex);
 
 	assert(filled < BUFFER_SIZE);
 
 	while (n_queued == N_BUFFERS) {
 		assert(filled == 0);
-		cond.wait(mutex);
+		cond.wait(lock);
 	}
 
 	size_t nbytes = std::min(BUFFER_SIZE - filled, size);
@@ -346,12 +346,12 @@ SlesOutput::Play(const void *chunk, size_t size)
 void
 SlesOutput::Drain()
 {
-	const std::lock_guard<Mutex> protect(mutex);
+	std::unique_lock<Mutex> lock(mutex);
 
 	assert(filled < BUFFER_SIZE);
 
 	while (n_queued > 0)
-		cond.wait(mutex);
+		cond.wait(lock);
 }
 
 void

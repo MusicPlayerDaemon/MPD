@@ -412,7 +412,7 @@ AudioOutputControl::Task() noexcept
 
 	SetThreadTimerSlackUS(100);
 
-	const std::lock_guard<Mutex> lock(mutex);
+	std::unique_lock<Mutex> lock(mutex);
 
 	while (true) {
 		switch (command) {
@@ -516,7 +516,7 @@ AudioOutputControl::Task() noexcept
 
 		if (command == Command::NONE) {
 			woken_for_play = false;
-			wake_cond.wait(mutex);
+			wake_cond.wait(lock);
 		}
 	}
 }

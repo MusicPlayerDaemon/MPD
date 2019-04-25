@@ -33,6 +33,7 @@
 #include "PosixMutex.hxx"
 
 #include <chrono>
+#include <mutex>
 
 #include <sys/time.h>
 
@@ -74,6 +75,11 @@ public:
 		pthread_cond_wait(&cond, &mutex.mutex);
 	}
 
+	template<typename M>
+	void wait(std::unique_lock<M> &lock) noexcept {
+		wait(*lock.mutex());
+	}
+
 private:
 	bool wait_for(PosixMutex &mutex, uint_least32_t timeout_us) noexcept {
 		struct timeval now;
@@ -101,6 +107,12 @@ public:
 			timeout_us = std::numeric_limits<uint_least32_t>::max();
 
 		return wait_for(mutex, timeout_us);
+	}
+
+	template<typename M>
+	bool wait_for(std::unique_lock<M> &lock,
+		      std::chrono::steady_clock::duration timeout) noexcept {
+		return wait_for(*lock.mutex(), timeout);
 	}
 };
 

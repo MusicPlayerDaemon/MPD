@@ -167,7 +167,7 @@ private:
 	}
 
 	void WaitConnected() {
-		const std::lock_guard<Mutex> protect(mutex);
+		std::unique_lock<Mutex> lock(mutex);
 
 		while (true) {
 			switch (state) {
@@ -179,7 +179,7 @@ private:
 				}
 
 				if (state == State::INITIAL)
-					cond.wait(mutex);
+					cond.wait(lock);
 				break;
 
 			case State::CONNECTING:

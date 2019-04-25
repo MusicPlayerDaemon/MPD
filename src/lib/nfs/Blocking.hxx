@@ -59,9 +59,9 @@ public:
 
 private:
 	bool LockWaitFinished() noexcept {
-		const std::lock_guard<Mutex> protect(mutex);
+		std::unique_lock<Mutex> lock(mutex);
 		while (!finished)
-			if (!cond.wait_for(mutex, timeout))
+			if (!cond.wait_for(lock, timeout))
 				return false;
 
 		return true;

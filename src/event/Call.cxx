@@ -52,9 +52,9 @@ public:
 		defer_event.Schedule();
 
 		{
-			const std::lock_guard<Mutex> lock(mutex);
+			std::unique_lock<Mutex> lock(mutex);
 			while (!done)
-				cond.wait(mutex);
+				cond.wait(lock);
 		}
 
 		if (exception)

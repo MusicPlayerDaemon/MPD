@@ -277,9 +277,9 @@ HttpdOutput::BroadcastFromEncoder()
 {
 	/* synchronize with the IOThread */
 	{
-		const std::lock_guard<Mutex> lock(mutex);
+		std::unique_lock<Mutex> lock(mutex);
 		while (!pages.empty())
-			cond.wait(mutex);
+			cond.wait(lock);
 	}
 
 	bool empty = true;

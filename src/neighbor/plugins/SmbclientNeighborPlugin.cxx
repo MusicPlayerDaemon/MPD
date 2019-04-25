@@ -238,7 +238,7 @@ SmbclientNeighborExplorer::ThreadFunc() noexcept
 {
 	SetThreadName("smbclient");
 
-	const std::lock_guard<Mutex> lock(mutex);
+	std::unique_lock<Mutex> lock(mutex);
 
 	while (!quit) {
 		Run();
@@ -247,7 +247,7 @@ SmbclientNeighborExplorer::ThreadFunc() noexcept
 			break;
 
 		// TODO: sleep for how long?
-		cond.wait_for(mutex, std::chrono::seconds(10));
+		cond.wait_for(lock, std::chrono::seconds(10));
 	}
 }
 

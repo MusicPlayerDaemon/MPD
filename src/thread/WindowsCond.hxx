@@ -33,6 +33,7 @@
 #include "CriticalSection.hxx"
 
 #include <chrono>
+#include <mutex>
 
 /**
  * Wrapper for a CONDITION_VARIABLE, backend for the Cond class.
@@ -69,8 +70,19 @@ public:
 		return wait_for(mutex, timeout_ms);
 	}
 
+	template<typename M>
+	bool wait_for(std::unique_lock<M> &lock,
+		      std::chrono::steady_clock::duration timeout) noexcept {
+		return wait_for(*lock.mutex(), timeout);
+	}
+
 	void wait(CriticalSection &mutex) noexcept {
 		wait_for(mutex, INFINITE);
+	}
+
+	template<typename M>
+	void wait(std::unique_lock<M> &lock) noexcept {
+		wait(*lock.mutex());
 	}
 };
 

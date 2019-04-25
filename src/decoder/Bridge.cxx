@@ -366,7 +366,7 @@ DecoderBridge::OpenUri(const char *uri)
 	auto is = InputStream::Open(uri, mutex);
 	is->SetHandler(&dc);
 
-	const std::lock_guard<Mutex> lock(mutex);
+	std::unique_lock<Mutex> lock(mutex);
 	while (true) {
 		if (dc.command == DecoderCommand::STOP)
 			throw StopDecoder();
@@ -377,7 +377,7 @@ DecoderBridge::OpenUri(const char *uri)
 			return is;
 		}
 
-		cond.wait(mutex);
+		cond.wait(lock);
 	}
 }
 
@@ -391,7 +391,7 @@ try {
 	if (length == 0)
 		return 0;
 
-	std::lock_guard<Mutex> lock(is.mutex);
+	std::unique_lock<Mutex> lock(is.mutex);
 
 	while (true) {
 		if (CheckCancelRead())
@@ -400,7 +400,7 @@ try {
 		if (is.IsAvailable())
 			break;
 
-		dc.cond.wait(is.mutex);
+		dc.cond.wait(lock);
 	}
 
 	size_t nbytes = is.Read(buffer, length);

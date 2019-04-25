@@ -67,7 +67,7 @@ ThreadInputStream::ThreadFunc() noexcept
 {
 	FormatThreadName("input:%s", plugin);
 
-	const std::lock_guard<Mutex> lock(mutex);
+	std::unique_lock<Mutex> lock(mutex);
 
 	try {
 		Open();
@@ -85,7 +85,7 @@ ThreadInputStream::ThreadFunc() noexcept
 
 		auto w = buffer.Write();
 		if (w.empty()) {
-			wake_cond.wait(mutex);
+			wake_cond.wait(lock);
 		} else {
 			size_t nbytes;
 
