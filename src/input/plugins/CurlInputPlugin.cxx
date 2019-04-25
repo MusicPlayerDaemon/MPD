@@ -158,9 +158,8 @@ CurlInputStream::DoResume()
 {
 	assert(GetEventLoop().IsInside());
 
-	mutex.unlock();
+	const ScopeUnlock unlock(mutex);
 	request->Resume();
-	mutex.lock();
 }
 
 void
