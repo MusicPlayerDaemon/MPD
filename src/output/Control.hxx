@@ -404,7 +404,7 @@ public:
 	gcc_pure
 	bool LockIsChunkConsumed(const MusicChunk &chunk) const noexcept;
 
-	void ClearTailChunk(const MusicChunk &chunk) {
+	void ClearTailChunk(const MusicChunk &chunk) noexcept {
 		source.ClearTailChunk(chunk);
 	}
 
