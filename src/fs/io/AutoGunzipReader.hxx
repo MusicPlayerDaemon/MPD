@@ -35,9 +35,9 @@ class AutoGunzipReader final : public Reader {
 	GunzipReader *gunzip = nullptr;
 
 public:
-	explicit AutoGunzipReader(Reader &_next)
+	explicit AutoGunzipReader(Reader &_next) noexcept
 		:peek(_next) {}
-	~AutoGunzipReader();
+	~AutoGunzipReader() noexcept;
 
 	/* virtual methods from class Reader */
 	virtual size_t Read(void *data, size_t size) override;

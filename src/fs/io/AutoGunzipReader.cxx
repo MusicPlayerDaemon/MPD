@@ -20,7 +20,7 @@
 #include "AutoGunzipReader.hxx"
 #include "GunzipReader.hxx"
 
-AutoGunzipReader::~AutoGunzipReader()
+AutoGunzipReader::~AutoGunzipReader() noexcept
 {
 	delete gunzip;
 }
