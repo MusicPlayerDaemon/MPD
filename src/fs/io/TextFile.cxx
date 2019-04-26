@@ -40,7 +40,7 @@ TextFile::TextFile(Path path_fs)
 {
 }
 
-TextFile::~TextFile() = default;
+TextFile::~TextFile() noexcept = default;
 
 char *
 TextFile::ReadLine()

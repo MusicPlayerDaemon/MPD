@@ -44,7 +44,7 @@ public:
 
 	TextFile(const TextFile &other) = delete;
 
-	~TextFile();
+	~TextFile() noexcept;
 
 	/**
 	 * Reads a line from the input file, and strips trailing
