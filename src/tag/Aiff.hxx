@@ -25,9 +25,12 @@
 #ifndef MPD_AIFF_HXX
 #define MPD_AIFF_HXX
 
+#include <mutex>
+
 #include <stddef.h>
 
 class InputStream;
+class Mutex;
 
 /**
  * Seeks the AIFF file to the ID3 chunk.
@@ -38,6 +41,6 @@ class InputStream;
  * @return the size of the ID3 chunk
  */
 size_t
-aiff_seek_id3(InputStream &is);
+aiff_seek_id3(InputStream &is, std::unique_lock<Mutex> &lock);
 
 #endif

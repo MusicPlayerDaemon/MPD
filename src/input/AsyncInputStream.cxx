@@ -95,7 +95,8 @@ AsyncInputStream::IsEOF() noexcept
 }
 
 void
-AsyncInputStream::Seek(offset_type new_offset)
+AsyncInputStream::Seek(std::unique_lock<Mutex> &lock,
+		       offset_type new_offset)
 {
 	assert(IsReady());
 	assert(seek_state == SeekState::NONE);
@@ -136,7 +137,7 @@ AsyncInputStream::Seek(offset_type new_offset)
 	CondInputStreamHandler cond_handler;
 	const ScopeExchangeInputStreamHandler h(*this, &cond_handler);
 	while (seek_state != SeekState::NONE)
-		cond_handler.cond.wait(mutex);
+		cond_handler.cond.wait(lock);
 
 	Check();
 }
@@ -171,7 +172,8 @@ AsyncInputStream::IsAvailable() noexcept
 }
 
 size_t
-AsyncInputStream::Read(void *ptr, size_t read_size)
+AsyncInputStream::Read(std::unique_lock<Mutex> &lock,
+		       void *ptr, size_t read_size)
 {
 	assert(!GetEventLoop().IsInside());
 
@@ -187,7 +189,7 @@ AsyncInputStream::Read(void *ptr, size_t read_size)
 			break;
 
 		const ScopeExchangeInputStreamHandler h(*this, &cond_handler);
-		cond_handler.cond.wait(mutex);
+		cond_handler.cond.wait(lock);
 	}
 
 	const size_t nbytes = std::min(read_size, r.size);

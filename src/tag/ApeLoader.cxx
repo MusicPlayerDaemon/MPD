@@ -40,15 +40,15 @@ struct ApeFooter {
 bool
 tag_ape_scan(InputStream &is, ApeTagCallback callback)
 try {
-	const std::lock_guard<Mutex> protect(is.mutex);
+	std::unique_lock<Mutex> lock(is.mutex);
 
 	if (!is.KnownSize() || !is.CheapSeeking())
 		return false;
 
 	/* determine if file has an apeV2 tag */
 	ApeFooter footer;
-	is.Seek(is.GetSize() - sizeof(footer));
-	is.ReadFull(&footer, sizeof(footer));
+	is.Seek(lock, is.GetSize() - sizeof(footer));
+	is.ReadFull(lock, &footer, sizeof(footer));
 
 	if (memcmp(footer.id, "APETAGEX", sizeof(footer.id)) != 0 ||
 	    FromLE32(footer.version) != 2000)
@@ -61,14 +61,14 @@ try {
 	    remaining > 1024 * 1024)
 		return false;
 
-	is.Seek(is.GetSize() - remaining);
+	is.Seek(lock, is.GetSize() - remaining);
 
 	/* read tag into buffer */
 	remaining -= sizeof(footer);
 	assert(remaining > 10);
 
 	std::unique_ptr<char[]> buffer(new char[remaining]);
-	is.ReadFull(buffer.get(), remaining);
+	is.ReadFull(lock, buffer.get(), remaining);
 
 	/* read tags */
 	unsigned n = FromLE32(footer.count);

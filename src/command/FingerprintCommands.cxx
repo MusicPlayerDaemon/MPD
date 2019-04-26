@@ -305,7 +305,7 @@ GetChromaprintCommand::Read(InputStream &is, void *buffer, size_t length)
 		cond.wait(lock);
 	}
 
-	return is.Read(buffer, length);
+	return is.Read(lock, buffer, length);
 }
 
 CommandResult

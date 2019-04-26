@@ -64,7 +64,8 @@ BufferedInputStream::Check()
 }
 
 void
-BufferedInputStream::Seek(offset_type new_offset)
+BufferedInputStream::Seek(std::unique_lock<Mutex> &lock,
+			  offset_type new_offset)
 {
 	if (new_offset >= size) {
 		offset = size;
@@ -84,7 +85,7 @@ BufferedInputStream::Seek(offset_type new_offset)
 	wake_cond.notify_one();
 
 	while (seek)
-		client_cond.wait(mutex);
+		client_cond.wait(lock);
 
 	if (seek_error)
 		std::rethrow_exception(std::exchange(seek_error, {}));
@@ -105,7 +106,8 @@ BufferedInputStream::IsAvailable() noexcept
 }
 
 size_t
-BufferedInputStream::Read(void *ptr, size_t s)
+BufferedInputStream::Read(std::unique_lock<Mutex> &lock,
+			  void *ptr, size_t s)
 {
 	if (offset >= size)
 		return 0;
@@ -140,7 +142,7 @@ BufferedInputStream::Read(void *ptr, size_t s)
 			wake_cond.notify_one();
 		}
 
-		client_cond.wait(mutex);
+		client_cond.wait(lock);
 	}
 }
 
@@ -156,7 +158,7 @@ BufferedInputStream::RunThread() noexcept
 
 		if (seek) {
 			try {
-				input->Seek(seek_offset);
+				input->Seek(lock, seek_offset);
 			} catch (...) {
 				seek_error = std::current_exception();
 			}
@@ -183,7 +185,7 @@ BufferedInputStream::RunThread() noexcept
 					   offset to prepare filling
 					   the buffer from there */
 					try {
-						input->Seek(offset);
+						input->Seek(lock, offset);
 					} catch (...) {
 						read_error = std::current_exception();
 						client_cond.notify_one();
@@ -195,7 +197,8 @@ BufferedInputStream::RunThread() noexcept
 			}
 
 			try {
-				size_t nbytes = input->Read(w.data, w.size);
+				size_t nbytes = input->Read(lock,
+							    w.data, w.size);
 				buffer.Commit(read_offset,
 					      read_offset + nbytes);
 			} catch (...) {

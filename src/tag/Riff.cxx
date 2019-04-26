@@ -39,14 +39,14 @@ struct riff_chunk_header {
 };
 
 size_t
-riff_seek_id3(InputStream &is)
+riff_seek_id3(InputStream &is, std::unique_lock<Mutex> &lock)
 {
 	/* seek to the beginning and read the RIFF header */
 
-	is.Rewind();
+	is.Rewind(lock);
 
 	riff_header header;
-	is.ReadFull(&header, sizeof(header));
+	is.ReadFull(lock, &header, sizeof(header));
 	if (memcmp(header.id, "RIFF", 4) != 0 ||
 	    (is.KnownSize() && FromLE32(header.size) > is.GetSize()))
 		throw std::runtime_error("Not a RIFF file");
@@ -55,7 +55,7 @@ riff_seek_id3(InputStream &is)
 		/* read the chunk header */
 
 		riff_chunk_header chunk;
-		is.ReadFull(&chunk, sizeof(chunk));
+		is.ReadFull(lock, &chunk, sizeof(chunk));
 
 		size_t size = FromLE32(chunk.size);
 		if (size > size_t(std::numeric_limits<int>::max()))
@@ -72,6 +72,6 @@ riff_seek_id3(InputStream &is)
 			/* pad byte */
 			++size;
 
-		is.Skip(size);
+		is.Skip(lock, size);
 	}
 }

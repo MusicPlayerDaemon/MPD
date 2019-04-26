@@ -157,7 +157,8 @@ public:
 
 	/* virtual methods from InputStream */
 	bool IsEOF() noexcept override;
-	size_t Read(void *ptr, size_t size) override;
+	size_t Read(std::unique_lock<Mutex> &lock,
+		    void *ptr, size_t size) override;
 };
 
 InputStreamPtr
@@ -174,7 +175,8 @@ Iso9660ArchiveFile::OpenStream(const char *pathname,
 }
 
 size_t
-Iso9660InputStream::Read(void *ptr, size_t read_size)
+Iso9660InputStream::Read(std::unique_lock<Mutex> &,
+			 void *ptr, size_t read_size)
 {
 	const ScopeUnlock unlock(mutex);
 

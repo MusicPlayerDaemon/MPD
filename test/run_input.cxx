@@ -131,7 +131,7 @@ tag_save(FILE *file, const Tag &tag)
 static int
 dump_input_stream(InputStream *is)
 {
-	const std::lock_guard<Mutex> protect(is->mutex);
+	std::unique_lock<Mutex> lock(is->mutex);
 
 	/* print meta data */
 
@@ -150,7 +150,7 @@ dump_input_stream(InputStream *is)
 		}
 
 		char buffer[4096];
-		size_t num_read = is->Read(buffer, sizeof(buffer));
+		size_t num_read = is->Read(lock, buffer, sizeof(buffer));
 		if (num_read == 0)
 			break;
 

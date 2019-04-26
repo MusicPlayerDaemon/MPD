@@ -56,8 +56,9 @@ public:
 		return offset >= size;
 	}
 
-	size_t Read(void *ptr, size_t size) override;
-	void Seek(offset_type offset) override;
+	size_t Read(std::unique_lock<Mutex> &lock,
+		    void *ptr, size_t size) override;
+	void Seek(std::unique_lock<Mutex> &lock, offset_type offset) override;
 };
 
 /*
@@ -118,7 +119,8 @@ input_smbclient_open(const char *uri,
 }
 
 size_t
-SmbclientInputStream::Read(void *ptr, size_t read_size)
+SmbclientInputStream::Read(std::unique_lock<Mutex> &,
+			   void *ptr, size_t read_size)
 {
 	ssize_t nbytes;
 
@@ -136,7 +138,8 @@ SmbclientInputStream::Read(void *ptr, size_t read_size)
 }
 
 void
-SmbclientInputStream::Seek(offset_type new_offset)
+SmbclientInputStream::Seek(std::unique_lock<Mutex> &,
+			   offset_type new_offset)
 {
 	off_t result;
 

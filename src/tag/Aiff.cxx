@@ -39,14 +39,14 @@ struct aiff_chunk_header {
 };
 
 size_t
-aiff_seek_id3(InputStream &is)
+aiff_seek_id3(InputStream &is, std::unique_lock<Mutex> &lock)
 {
 	/* seek to the beginning and read the AIFF header */
 
-	is.Rewind();
+	is.Rewind(lock);
 
 	aiff_header header;
-	is.ReadFull(&header, sizeof(header));
+	is.ReadFull(lock, &header, sizeof(header));
 	if (memcmp(header.id, "FORM", 4) != 0 ||
 	    (is.KnownSize() && FromBE32(header.size) > is.GetSize()) ||
 	    (memcmp(header.format, "AIFF", 4) != 0 &&
@@ -57,7 +57,7 @@ aiff_seek_id3(InputStream &is)
 		/* read the chunk header */
 
 		aiff_chunk_header chunk;
-		is.ReadFull(&chunk, sizeof(chunk));
+		is.ReadFull(lock, &chunk, sizeof(chunk));
 
 		size_t size = FromBE32(chunk.size);
 		if (size > size_t(std::numeric_limits<int>::max()))
@@ -73,6 +73,6 @@ aiff_seek_id3(InputStream &is)
 			/* pad byte */
 			++size;
 
-		is.Skip(size);
+		is.Skip(lock, size);
 	}
 }

@@ -45,7 +45,7 @@ public:
 		std::rethrow_exception(error);
 	}
 
-	void Seek(offset_type) override {
+	void Seek(std::unique_lock<Mutex> &, offset_type) override {
 		std::rethrow_exception(error);
 	}
 
@@ -53,7 +53,7 @@ public:
 		return false;
 	}
 
-	size_t Read(void *, size_t) override {
+	size_t Read(std::unique_lock<Mutex> &, void *, size_t) override {
 		std::rethrow_exception(error);
 	}
 };

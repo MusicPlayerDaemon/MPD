@@ -130,7 +130,8 @@ ThreadInputStream::IsAvailable() noexcept
 }
 
 inline size_t
-ThreadInputStream::Read(void *ptr, size_t read_size)
+ThreadInputStream::Read(std::unique_lock<Mutex> &lock,
+			void *ptr, size_t read_size)
 {
 	assert(!thread.IsInside());
 
@@ -154,7 +155,7 @@ ThreadInputStream::Read(void *ptr, size_t read_size)
 			return 0;
 
 		const ScopeExchangeInputStreamHandler h(*this, &cond_handler);
-		cond_handler.cond.wait(mutex);
+		cond_handler.cond.wait(lock);
 	}
 }
 

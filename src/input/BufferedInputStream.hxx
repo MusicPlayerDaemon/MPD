@@ -85,12 +85,13 @@ public:
 	/* we don't need to implement Update() because all attributes
 	   have been copied already in our constructor */
 	//void Update() noexcept;
-	void Seek(offset_type offset) override;
+	void Seek(std::unique_lock<Mutex> &lock, offset_type offset) override;
 	bool IsEOF() noexcept override;
 	/* we don't support tags */
 	// std::unique_ptr<Tag> ReadTag() override;
 	bool IsAvailable() noexcept override;
-	size_t Read(void *ptr, size_t size) override;
+	size_t Read(std::unique_lock<Mutex> &lock,
+		    void *ptr, size_t size) override;
 
 	/* virtual methods from class InputStreamHandler */
 	void OnInputStreamReady() noexcept override {

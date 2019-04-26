@@ -403,7 +403,7 @@ try {
 		dc.cond.wait(lock);
 	}
 
-	size_t nbytes = is.Read(buffer, length);
+	size_t nbytes = is.Read(lock, buffer, length);
 	assert(nbytes > 0 || is.IsEOF());
 
 	return nbytes;

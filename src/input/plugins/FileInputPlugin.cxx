@@ -48,8 +48,10 @@ public:
 		return GetOffset() >= GetSize();
 	}
 
-	size_t Read(void *ptr, size_t size) override;
-	void Seek(offset_type offset) override;
+	size_t Read(std::unique_lock<Mutex> &lock,
+		    void *ptr, size_t size) override;
+	void Seek(std::unique_lock<Mutex> &lock,
+		  offset_type offset) override;
 };
 
 InputStreamPtr
@@ -74,7 +76,8 @@ OpenFileInputStream(Path path, Mutex &mutex)
 }
 
 void
-FileInputStream::Seek(offset_type new_offset)
+FileInputStream::Seek(std::unique_lock<Mutex> &,
+		      offset_type new_offset)
 {
 	{
 		const ScopeUnlock unlock(mutex);
@@ -85,7 +88,8 @@ FileInputStream::Seek(offset_type new_offset)
 }
 
 size_t
-FileInputStream::Read(void *ptr, size_t read_size)
+FileInputStream::Read(std::unique_lock<Mutex> &,
+		      void *ptr, size_t read_size)
 {
 	size_t nbytes;
 

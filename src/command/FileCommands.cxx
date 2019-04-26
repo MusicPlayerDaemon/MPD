@@ -292,9 +292,9 @@ read_stream_art(Response &r, const char *uri, size_t offset)
 	size_t read_size;
 
 	{
-		const std::lock_guard<Mutex> protect(mutex);
-		is->Seek(offset);
-		read_size = is->Read(&buffer, CHUNK_SIZE);
+		std::unique_lock<Mutex> lock(mutex);
+		is->Seek(lock, offset);
+		read_size = is->Read(lock, &buffer, CHUNK_SIZE);
 	}
 
 	r.Format("size: %" PRIoffset "\n"

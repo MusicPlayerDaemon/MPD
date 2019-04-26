@@ -55,7 +55,8 @@ static constexpr Domain decoder_thread_domain("decoder_thread");
 static bool
 decoder_stream_decode(const DecoderPlugin &plugin,
 		      DecoderBridge &bridge,
-		      InputStream &input_stream)
+		      InputStream &input_stream,
+		      std::unique_lock<Mutex> &lock)
 {
 	assert(plugin.stream_decode != nullptr);
 	assert(bridge.stream_tag == nullptr);
@@ -70,7 +71,7 @@ decoder_stream_decode(const DecoderPlugin &plugin,
 
 	/* rewind the stream, so each plugin gets a fresh start */
 	try {
-		input_stream.Rewind();
+		input_stream.Rewind(lock);
 	} catch (...) {
 	}
 
@@ -161,6 +162,7 @@ decoder_check_plugin(const DecoderPlugin &plugin, const InputStream &is,
 
 static bool
 decoder_run_stream_plugin(DecoderBridge &bridge, InputStream &is,
+			  std::unique_lock<Mutex> &lock,
 			  const char *suffix,
 			  const DecoderPlugin &plugin,
 			  bool &tried_r)
@@ -171,11 +173,12 @@ decoder_run_stream_plugin(DecoderBridge &bridge, InputStream &is,
 	bridge.Reset();
 
 	tried_r = true;
-	return decoder_stream_decode(plugin, bridge, is);
+	return decoder_stream_decode(plugin, bridge, is, lock);
 }
 
 static bool
 decoder_run_stream_locked(DecoderBridge &bridge, InputStream &is,
+			  std::unique_lock<Mutex> &lock,
 			  const char *uri, bool &tried_r)
 {
 	UriSuffixBuffer suffix_buffer;
@@ -183,7 +186,8 @@ decoder_run_stream_locked(DecoderBridge &bridge, InputStream &is,
 
 	using namespace std::placeholders;
 	const auto f = std::bind(decoder_run_stream_plugin,
-				 std::ref(bridge), std::ref(is), suffix,
+				 std::ref(bridge), std::ref(is), std::ref(lock),
+				 suffix,
 				 _1, std::ref(tried_r));
 	return decoder_plugins_try(f);
 }
@@ -192,7 +196,8 @@ decoder_run_stream_locked(DecoderBridge &bridge, InputStream &is,
  * Try decoding a stream, using the fallback plugin.
  */
 static bool
-decoder_run_stream_fallback(DecoderBridge &bridge, InputStream &is)
+decoder_run_stream_fallback(DecoderBridge &bridge, InputStream &is,
+			    std::unique_lock<Mutex> &lock)
 {
 	const struct DecoderPlugin *plugin;
 
@@ -202,7 +207,7 @@ decoder_run_stream_fallback(DecoderBridge &bridge, InputStream &is)
 	plugin = decoder_plugin_from_name("mad");
 #endif
 	return plugin != nullptr && plugin->stream_decode != nullptr &&
-		decoder_stream_decode(*plugin, bridge, is);
+		decoder_stream_decode(*plugin, bridge, is, lock);
 }
 
 /**
@@ -249,16 +254,16 @@ decoder_run_stream(DecoderBridge &bridge, const char *uri)
 
 	MaybeLoadReplayGain(bridge, *input_stream);
 
-	const std::lock_guard<Mutex> protect(dc.mutex);
+	std::unique_lock<Mutex> lock(dc.mutex);
 
 	bool tried = false;
 	return dc.command == DecoderCommand::STOP ||
-		decoder_run_stream_locked(bridge, *input_stream, uri,
+		decoder_run_stream_locked(bridge, *input_stream, lock, uri,
 					  tried) ||
 		/* fallback to mp3: this is needed for bastard streams
 		   that don't have a suffix or set the mimeType */
 		(!tried &&
-		 decoder_run_stream_fallback(bridge, *input_stream));
+		 decoder_run_stream_fallback(bridge, *input_stream, lock));
 }
 
 /**
@@ -282,8 +287,9 @@ TryDecoderFile(DecoderBridge &bridge, Path path_fs, const char *suffix,
 		const std::lock_guard<Mutex> protect(dc.mutex);
 		return decoder_file_decode(plugin, bridge, path_fs);
 	} else if (plugin.stream_decode != nullptr) {
-		const std::lock_guard<Mutex> protect(dc.mutex);
-		return decoder_stream_decode(plugin, bridge, input_stream);
+		std::unique_lock<Mutex> lock(dc.mutex);
+		return decoder_stream_decode(plugin, bridge, input_stream,
+					     lock);
 	} else
 		return false;
 }

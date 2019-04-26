@@ -89,12 +89,13 @@ ProxyInputStream::Update() noexcept
 }
 
 void
-ProxyInputStream::Seek(offset_type new_offset)
+ProxyInputStream::Seek(std::unique_lock<Mutex> &lock,
+		       offset_type new_offset)
 {
 	while (!input)
-		set_input_cond.wait(mutex);
+		set_input_cond.wait(lock);
 
-	input->Seek(new_offset);
+	input->Seek(lock, new_offset);
 	CopyAttributes();
 }
 
@@ -120,12 +121,13 @@ ProxyInputStream::IsAvailable() noexcept
 }
 
 size_t
-ProxyInputStream::Read(void *ptr, size_t read_size)
+ProxyInputStream::Read(std::unique_lock<Mutex> &lock,
+		       void *ptr, size_t read_size)
 {
 	while (!input)
-		set_input_cond.wait(mutex);
+		set_input_cond.wait(lock);
 
-	size_t nbytes = input->Read(ptr, read_size);
+	size_t nbytes = input->Read(lock, ptr, read_size);
 	CopyAttributes();
 	return nbytes;
 }

@@ -72,7 +72,7 @@ InputStream::CheapSeeking() const noexcept
 }
 
 void
-InputStream::Seek(gcc_unused offset_type new_offset)
+InputStream::Seek(std::unique_lock<Mutex> &, gcc_unused offset_type new_offset)
 {
 	throw std::runtime_error("Seeking is not implemented");
 }
@@ -80,15 +80,15 @@ InputStream::Seek(gcc_unused offset_type new_offset)
 void
 InputStream::LockSeek(offset_type _offset)
 {
-	const std::lock_guard<Mutex> protect(mutex);
-	Seek(_offset);
+	std::unique_lock<Mutex> lock(mutex);
+	Seek(lock, _offset);
 }
 
 void
 InputStream::LockSkip(offset_type _offset)
 {
-	const std::lock_guard<Mutex> protect(mutex);
-	Skip(_offset);
+	std::unique_lock<Mutex> lock(mutex);
+	Skip(lock, _offset);
 }
 
 std::unique_ptr<Tag>
@@ -119,18 +119,18 @@ InputStream::LockRead(void *ptr, size_t _size)
 #endif
 	assert(_size > 0);
 
-	const std::lock_guard<Mutex> protect(mutex);
-	return Read(ptr, _size);
+	std::unique_lock<Mutex> lock(mutex);
+	return Read(lock, ptr, _size);
 }
 
 void
-InputStream::ReadFull(void *_ptr, size_t _size)
+InputStream::ReadFull(std::unique_lock<Mutex> &lock, void *_ptr, size_t _size)
 {
 	uint8_t *ptr = (uint8_t *)_ptr;
 
 	size_t nbytes_total = 0;
 	while (_size > 0) {
-		size_t nbytes = Read(ptr + nbytes_total, _size);
+		size_t nbytes = Read(lock, ptr + nbytes_total, _size);
 		if (nbytes == 0)
 			throw std::runtime_error("Unexpected end of file");
 
@@ -148,8 +148,8 @@ InputStream::LockReadFull(void *ptr, size_t _size)
 #endif
 	assert(_size > 0);
 
-	const std::lock_guard<Mutex> protect(mutex);
-	ReadFull(ptr, _size);
+	std::unique_lock<Mutex> lock(mutex);
+	ReadFull(lock, ptr, _size);
 }
 
 bool
