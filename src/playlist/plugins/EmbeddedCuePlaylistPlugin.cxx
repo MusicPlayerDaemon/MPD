@@ -59,15 +59,15 @@ public:
 	CueParser *parser;
 
 public:
-	EmbeddedCuePlaylist()
+	EmbeddedCuePlaylist() noexcept
 		:parser(nullptr) {
 	}
 
-	virtual ~EmbeddedCuePlaylist() {
+	~EmbeddedCuePlaylist() noexcept override {
 		delete parser;
 	}
 
-	virtual std::unique_ptr<DetachedSong> NextSong() override;
+	std::unique_ptr<DetachedSong> NextSong() override;
 };
 
 class ExtractCuesheetTagHandler final : public NullTagHandler {
