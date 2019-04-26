@@ -44,7 +44,7 @@ public:
 	 */
 	explicit GunzipReader(Reader &_next);
 
-	~GunzipReader() {
+	~GunzipReader() noexcept {
 		inflateEnd(&z);
 	}
 
