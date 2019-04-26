@@ -112,10 +112,10 @@ AudioOutputControl::LockToggleEnabled() noexcept
 }
 
 void
-AudioOutputControl::WaitForCommand() noexcept
+AudioOutputControl::WaitForCommand(std::unique_lock<Mutex> &lock) noexcept
 {
 	while (!IsCommandFinished())
-		client_cond.wait(mutex);
+		client_cond.wait(lock);
 }
 
 void
@@ -128,17 +128,18 @@ AudioOutputControl::CommandAsync(Command cmd) noexcept
 }
 
 void
-AudioOutputControl::CommandWait(Command cmd) noexcept
+AudioOutputControl::CommandWait(std::unique_lock<Mutex> &lock,
+				Command cmd) noexcept
 {
 	CommandAsync(cmd);
-	WaitForCommand();
+	WaitForCommand(lock);
 }
 
 void
 AudioOutputControl::LockCommandWait(Command cmd) noexcept
 {
-	const std::lock_guard<Mutex> protect(mutex);
-	CommandWait(cmd);
+	std::unique_lock<Mutex> lock(mutex);
+	CommandWait(lock, cmd);
 }
 
 void
@@ -189,7 +190,8 @@ AudioOutputControl::EnableDisableAsync()
 }
 
 inline bool
-AudioOutputControl::Open(const AudioFormat audio_format,
+AudioOutputControl::Open(std::unique_lock<Mutex> &lock,
+			 const AudioFormat audio_format,
 			 const MusicPipe &mp) noexcept
 {
 	assert(allow_play);
@@ -218,7 +220,7 @@ AudioOutputControl::Open(const AudioFormat audio_format,
 		}
 	}
 
-	CommandWait(Command::OPEN);
+	CommandWait(lock, Command::OPEN);
 	const bool open2 = open;
 
 	if (open2 && output->mixer != nullptr) {
@@ -236,7 +238,7 @@ AudioOutputControl::Open(const AudioFormat audio_format,
 }
 
 void
-AudioOutputControl::CloseWait() noexcept
+AudioOutputControl::CloseWait(std::unique_lock<Mutex> &lock) noexcept
 {
 	assert(allow_play);
 
@@ -246,7 +248,7 @@ AudioOutputControl::CloseWait() noexcept
 	assert(!open || !fail_timer.IsDefined());
 
 	if (open)
-		CommandWait(Command::CLOSE);
+		CommandWait(lock, Command::CLOSE);
 	else
 		fail_timer.Reset();
 }
@@ -256,15 +258,15 @@ AudioOutputControl::LockUpdate(const AudioFormat audio_format,
 			       const MusicPipe &mp,
 			       bool force) noexcept
 {
-	const std::lock_guard<Mutex> protect(mutex);
+	std::unique_lock<Mutex> lock(mutex);
 
 	if (enabled && really_enabled) {
 		if (force || !fail_timer.IsDefined() ||
 		    fail_timer.Check(REOPEN_AFTER * 1000)) {
-			return Open(audio_format, mp);
+			return Open(lock, audio_format, mp);
 		}
 	} else if (IsOpen())
-		CloseWait();
+		CloseWait(lock);
 
 	return false;
 }
@@ -355,13 +357,13 @@ AudioOutputControl::LockRelease() noexcept
 		   mixer_auto_close()) */
 		mixer_auto_close(output->mixer);
 
-	const std::lock_guard<Mutex> protect(mutex);
+	std::unique_lock<Mutex> lock(mutex);
 
 	assert(!open || !fail_timer.IsDefined());
 	assert(allow_play);
 
 	if (IsOpen())
-		CommandWait(Command::RELEASE);
+		CommandWait(lock, Command::RELEASE);
 	else
 		fail_timer.Reset();
 }
@@ -371,8 +373,8 @@ AudioOutputControl::LockCloseWait() noexcept
 {
 	assert(!open || !fail_timer.IsDefined());
 
-	const std::lock_guard<Mutex> protect(mutex);
-	CloseWait();
+	std::unique_lock<Mutex> lock(mutex);
+	CloseWait(lock);
 }
 
 void

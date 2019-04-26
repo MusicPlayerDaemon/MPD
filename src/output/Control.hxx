@@ -307,11 +307,11 @@ public:
 	 *
 	 * Caller must lock the mutex.
 	 */
-	void WaitForCommand() noexcept;
+	void WaitForCommand(std::unique_lock<Mutex> &lock) noexcept;
 
 	void LockWaitForCommand() noexcept {
-		const std::lock_guard<Mutex> protect(mutex);
-		WaitForCommand();
+		std::unique_lock<Mutex> lock(mutex);
+		WaitForCommand(lock);
 	}
 
 	/**
@@ -326,7 +326,7 @@ public:
 	 *
 	 * Caller must lock the mutex.
 	 */
-	void CommandWait(Command cmd) noexcept;
+	void CommandWait(std::unique_lock<Mutex> &lock, Command cmd) noexcept;
 
 	/**
 	 * Lock the object and execute the command synchronously.
@@ -368,7 +368,7 @@ public:
 
 	void LockPauseAsync() noexcept;
 
-	void CloseWait() noexcept;
+	void CloseWait(std::unique_lock<Mutex> &lock) noexcept;
 	void LockCloseWait() noexcept;
 
 	/**
@@ -391,7 +391,8 @@ public:
 	/**
 	 * Caller must lock the mutex.
 	 */
-	bool Open(AudioFormat audio_format, const MusicPipe &mp) noexcept;
+	bool Open(std::unique_lock<Mutex> &lock,
+		  AudioFormat audio_format, const MusicPipe &mp) noexcept;
 
 	/**
 	 * Opens or closes the device, depending on the "enabled"
@@ -522,7 +523,7 @@ private:
 	 * @return true if playback should be continued, false if a
 	 * command was issued
 	 */
-	bool WaitForDelay() noexcept;
+	bool WaitForDelay(std::unique_lock<Mutex> &lock) noexcept;
 
 	/**
 	 * Caller must lock the mutex.
@@ -532,7 +533,7 @@ private:
 	/**
 	 * Caller must lock the mutex.
 	 */
-	bool PlayChunk() noexcept;
+	bool PlayChunk(std::unique_lock<Mutex> &lock) noexcept;
 
 	/**
 	 * Plays all remaining chunks, until the tail of the pipe has
@@ -546,14 +547,14 @@ private:
 	 * @return true if at least one chunk has been available,
 	 * false if the tail of the pipe was already reached
 	 */
-	bool InternalPlay() noexcept;
+	bool InternalPlay(std::unique_lock<Mutex> &lock) noexcept;
 
 	/**
 	 * Runs inside the OutputThread.
 	 * Caller must lock the mutex.
 	 * Handles exceptions.
 	 */
-	void InternalPause() noexcept;
+	void InternalPause(std::unique_lock<Mutex> &lock) noexcept;
 
 	/**
 	 * Runs inside the OutputThread.

@@ -208,14 +208,14 @@ AudioOutputControl::InternalCheckClose(bool drain) noexcept
  * was issued
  */
 inline bool
-AudioOutputControl::WaitForDelay() noexcept
+AudioOutputControl::WaitForDelay(std::unique_lock<Mutex> &lock) noexcept
 {
 	while (true) {
 		const auto delay = output->Delay();
 		if (delay <= std::chrono::steady_clock::duration::zero())
 			return true;
 
-		(void)wake_cond.wait_for(mutex, delay);
+		(void)wake_cond.wait_for(lock, delay);
 
 		if (command != Command::NONE)
 			return false;
@@ -234,7 +234,7 @@ try {
 }
 
 inline bool
-AudioOutputControl::PlayChunk() noexcept
+AudioOutputControl::PlayChunk(std::unique_lock<Mutex> &lock) noexcept
 {
 	// ensure pending tags are flushed in all cases
 	const auto *tag = source.ReadTag();
@@ -256,7 +256,7 @@ AudioOutputControl::PlayChunk() noexcept
 
 		if (skip_delay)
 			skip_delay = false;
-		else if (!WaitForDelay())
+		else if (!WaitForDelay(lock))
 			break;
 
 		size_t nbytes;
@@ -282,7 +282,7 @@ AudioOutputControl::PlayChunk() noexcept
 }
 
 inline bool
-AudioOutputControl::InternalPlay() noexcept
+AudioOutputControl::InternalPlay(std::unique_lock<Mutex> &lock) noexcept
 {
 	if (!FillSourceOrClose())
 		/* no chunk available */
@@ -311,7 +311,7 @@ AudioOutputControl::InternalPlay() noexcept
 			n = 0;
 		}
 
-		if (!PlayChunk())
+		if (!PlayChunk(lock))
 			break;
 	} while (FillSourceOrClose());
 
@@ -322,7 +322,7 @@ AudioOutputControl::InternalPlay() noexcept
 }
 
 inline void
-AudioOutputControl::InternalPause() noexcept
+AudioOutputControl::InternalPause(std::unique_lock<Mutex> &lock) noexcept
 {
 	{
 		const ScopeUnlock unlock(mutex);
@@ -334,7 +334,7 @@ AudioOutputControl::InternalPause() noexcept
 	CommandFinished();
 
 	do {
-		if (!WaitForDelay())
+		if (!WaitForDelay(lock))
 			break;
 
 		bool success;
@@ -448,7 +448,7 @@ AudioOutputControl::Task() noexcept
 				break;
 			}
 
-			InternalPause();
+			InternalPause(lock);
 			/* don't "break" here: this might cause
 			   Play() to be called when command==CLOSE
 			   ends the paused state - "continue" checks
@@ -472,7 +472,7 @@ AudioOutputControl::Task() noexcept
 				   have been invalidated by stopping
 				   the actual playback */
 				source.Cancel();
-				InternalPause();
+				InternalPause(lock);
 			} else {
 				InternalClose(false);
 				CommandFinished();
@@ -509,7 +509,7 @@ AudioOutputControl::Task() noexcept
 			return;
 		}
 
-		if (open && allow_play && InternalPlay())
+		if (open && allow_play && InternalPlay(lock))
 			/* don't wait for an event if there are more
 			   chunks in the pipe */
 			continue;
