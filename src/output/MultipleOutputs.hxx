@@ -34,6 +34,7 @@
 #include "Chrono.hxx"
 #include "util/Compiler.h"
 
+#include <memory>
 #include <vector>
 
 #include <assert.h>
@@ -48,7 +49,7 @@ struct ReplayGainConfig;
 class MultipleOutputs final : public PlayerOutputs {
 	MixerListener &mixer_listener;
 
-	std::vector<AudioOutputControl *> outputs;
+	std::vector<std::unique_ptr<AudioOutputControl>> outputs;
 
 	AudioFormat input_audio_format = AudioFormat::Undefined();
 

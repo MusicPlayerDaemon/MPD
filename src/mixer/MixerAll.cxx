@@ -56,7 +56,7 @@ MultipleOutputs::GetVolume() const noexcept
 	unsigned ok = 0;
 	int total = 0;
 
-	for (auto *ao : outputs) {
+	for (const auto &ao : outputs) {
 		int volume = output_mixer_get_volume(*ao);
 		if (volume >= 0) {
 			total += volume;
@@ -99,7 +99,7 @@ MultipleOutputs::SetVolume(unsigned volume) noexcept
 	assert(volume <= 100);
 
 	bool success = false;
-	for (auto *ao : outputs)
+	for (const auto &ao : outputs)
 		success = output_mixer_set_volume(*ao, volume)
 			|| success;
 
@@ -125,7 +125,7 @@ MultipleOutputs::GetSoftwareVolume() const noexcept
 	unsigned ok = 0;
 	int total = 0;
 
-	for (auto *ao : outputs) {
+	for (const auto &ao : outputs) {
 		int volume = output_mixer_get_software_volume(*ao);
 		if (volume >= 0) {
 			total += volume;
@@ -144,7 +144,7 @@ MultipleOutputs::SetSoftwareVolume(unsigned volume) noexcept
 {
 	assert(volume <= PCM_VOLUME_1);
 
-	for (auto *ao : outputs) {
+	for (const auto &ao : outputs) {
 		auto *mixer = ao->GetMixer();
 
 		if (mixer != nullptr &&
