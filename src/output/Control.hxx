@@ -404,8 +404,29 @@ public:
 	gcc_pure
 	bool LockIsChunkConsumed(const MusicChunk &chunk) const noexcept;
 
+	/**
+	 * There's only one chunk left in the pipe (#pipe), and all
+	 * audio outputs have consumed it already.  Clear the
+	 * reference.
+	 *
+	 * This stalls playback to give the caller a chance to shift
+	 * the #MusicPipe without getting disturbed; after this,
+	 * LockAllowPlay() must be called to resume playback.
+	 */
 	void ClearTailChunk(const MusicChunk &chunk) noexcept {
+		if (!IsOpen())
+			return;
+
 		source.ClearTailChunk(chunk);
+		allow_play = false;
+	}
+
+	/**
+	 * Locking wrapper for ClearTailChunk().
+	 */
+	void LockClearTailChunk(const MusicChunk &chunk) noexcept {
+		const std::lock_guard<Mutex> lock(mutex);
+		ClearTailChunk(chunk);
 	}
 
 	void LockPlay() noexcept;

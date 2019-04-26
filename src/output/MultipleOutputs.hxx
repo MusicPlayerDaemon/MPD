@@ -171,13 +171,6 @@ private:
 	 */
 	bool IsChunkConsumed(const MusicChunk *chunk) const noexcept;
 
-	/**
-	 * There's only one chunk left in the pipe (#pipe), and all
-	 * audio outputs have consumed it already.  Clear the
-	 * reference.
-	 */
-	void ClearTailChunk(const MusicChunk *chunk, bool *locked) noexcept;
-
 	/* virtual methods from class PlayerOutputs */
 	void EnableDisable() override;
 	void Open(const AudioFormat audio_format) override;

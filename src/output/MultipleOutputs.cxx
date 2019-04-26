@@ -271,35 +271,10 @@ MultipleOutputs::IsChunkConsumed(const MusicChunk *chunk) const noexcept
 	return true;
 }
 
-inline void
-MultipleOutputs::ClearTailChunk(const MusicChunk *chunk,
-				bool *locked) noexcept
-{
-	assert(chunk->next == nullptr);
-	assert(pipe->Contains(chunk));
-
-	for (unsigned i = 0, n = outputs.size(); i != n; ++i) {
-		auto &ao = *outputs[i];
-
-		/* this mutex will be unlocked by the caller when it's
-		   ready */
-		ao.mutex.lock();
-		locked[i] = ao.IsOpen();
-
-		if (!locked[i]) {
-			ao.mutex.unlock();
-			continue;
-		}
-
-		ao.ClearTailChunk(*chunk);
-	}
-}
-
 unsigned
 MultipleOutputs::CheckPipe() noexcept
 {
 	const MusicChunk *chunk;
-	bool locked[outputs.size()];
 
 	assert(pipe != nullptr);
 
@@ -320,18 +295,18 @@ MultipleOutputs::CheckPipe() noexcept
 		if (is_tail)
 			/* this is the tail of the pipe - clear the
 			   chunk reference in all outputs */
-			ClearTailChunk(chunk, locked);
+			for (const auto &ao : outputs)
+				ao->LockClearTailChunk(*chunk);
 
 		/* remove the chunk from the pipe */
 		const auto shifted = pipe->Shift();
 		assert(shifted.get() == chunk);
 
 		if (is_tail)
-			/* unlock all audio outputs which were locked
-			   by clear_tail_chunk() */
-			for (unsigned i = 0, n = outputs.size(); i != n; ++i)
-				if (locked[i])
-					outputs[i]->mutex.unlock();
+			/* resume playback which has been suspended by
+			   LockClearTailChunk() */
+			for (const auto &ao : outputs)
+				ao->LockAllowPlay();
 
 		/* chunk is automatically returned to the buffer by
 		   ~MusicChunkPtr() */
