@@ -26,6 +26,8 @@
 #include "thread/Thread.hxx"
 #include "util/Compiler.h"
 
+#include <memory>
+
 class SimpleDatabase;
 class DatabaseListener;
 class UpdateWalk;
@@ -56,7 +58,7 @@ class UpdateService final {
 
 	UpdateQueueItem next;
 
-	UpdateWalk *walk = nullptr;
+	std::unique_ptr<UpdateWalk> walk;
 
 public:
 	UpdateService(const ConfigData &_config,
