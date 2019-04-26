@@ -299,7 +299,6 @@ unsigned
 MultipleOutputs::CheckPipe() noexcept
 {
 	const MusicChunk *chunk;
-	bool is_tail;
 	bool locked[outputs.size()];
 
 	assert(pipe != nullptr);
@@ -317,7 +316,7 @@ MultipleOutputs::CheckPipe() noexcept
 			   provides a defined value */
 			elapsed_time = chunk->time;
 
-		is_tail = chunk->next == nullptr;
+		const bool is_tail = chunk->next == nullptr;
 		if (is_tail)
 			/* this is the tail of the pipe - clear the
 			   chunk reference in all outputs */
