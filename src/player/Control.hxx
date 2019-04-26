@@ -368,10 +368,10 @@ private:
 	 * valid in the player thread.  The object must be locked
 	 * prior to calling this function.
 	 */
-	void Wait() noexcept {
+	void Wait(std::unique_lock<Mutex> &lock) noexcept {
 		assert(thread.IsInside());
 
-		cond.wait(mutex);
+		cond.wait(lock);
 	}
 
 	/**
@@ -391,10 +391,10 @@ private:
 	 *
 	 * Caller must lock the object.
 	 */
-	void ClientWait() noexcept {
+	void ClientWait(std::unique_lock<Mutex> &lock) noexcept {
 		assert(!thread.IsInside());
 
-		client_cond.wait(mutex);
+		client_cond.wait(lock);
 	}
 
 	/**
@@ -426,11 +426,12 @@ private:
 	 * @param threshold the maximum number of chunks in the pipe
 	 * @return true if there are less than #threshold chunks in the pipe
 	 */
-	bool WaitOutputConsumed(unsigned threshold) noexcept;
+	bool WaitOutputConsumed(std::unique_lock<Mutex> &lock,
+				unsigned threshold) noexcept;
 
 	bool LockWaitOutputConsumed(unsigned threshold) noexcept {
-		const std::lock_guard<Mutex> protect(mutex);
-		return WaitOutputConsumed(threshold);
+		std::unique_lock<Mutex> lock(mutex);
+		return WaitOutputConsumed(lock, threshold);
 	}
 
 	/**
@@ -439,9 +440,9 @@ private:
 	 * To be called from the main thread.  Caller must lock the
 	 * object.
 	 */
-	void WaitCommandLocked() noexcept {
+	void WaitCommandLocked(std::unique_lock<Mutex> &lock) noexcept {
 		while (command != PlayerCommand::NONE)
-			ClientWait();
+			ClientWait(lock);
 	}
 
 	/**
@@ -451,12 +452,13 @@ private:
 	 * To be called from the main thread.  Caller must lock the
 	 * object.
 	 */
-	void SynchronousCommand(PlayerCommand cmd) noexcept {
+	void SynchronousCommand(std::unique_lock<Mutex> &lock,
+				PlayerCommand cmd) noexcept {
 		assert(command == PlayerCommand::NONE);
 
 		command = cmd;
 		Signal();
-		WaitCommandLocked();
+		WaitCommandLocked(lock);
 	}
 
 	/**
@@ -467,11 +469,11 @@ private:
 	 * object.
 	 */
 	void LockSynchronousCommand(PlayerCommand cmd) noexcept {
-		const std::lock_guard<Mutex> protect(mutex);
-		SynchronousCommand(cmd);
+		std::unique_lock<Mutex> lock(mutex);
+		SynchronousCommand(lock, cmd);
 	}
 
-	void PauseLocked() noexcept;
+	void PauseLocked(std::unique_lock<Mutex> &lock) noexcept;
 
 	void ClearError() noexcept {
 		error_type = PlayerError::NONE;
@@ -535,12 +537,14 @@ private:
 	 */
 	std::unique_ptr<DetachedSong> ReadTaggedSong() noexcept;
 
-	void EnqueueSongLocked(std::unique_ptr<DetachedSong> song) noexcept;
+	void EnqueueSongLocked(std::unique_lock<Mutex> &lock,
+			       std::unique_ptr<DetachedSong> song) noexcept;
 
 	/**
 	 * Throws on error.
 	 */
-	void SeekLocked(std::unique_ptr<DetachedSong> song, SongTime t);
+	void SeekLocked(std::unique_lock<Mutex> &lock,
+			std::unique_ptr<DetachedSong> song, SongTime t);
 
 	/**
 	 * Caller must lock the object.

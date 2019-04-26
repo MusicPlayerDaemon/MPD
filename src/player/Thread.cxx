@@ -515,7 +515,7 @@ Player::CheckDecoderStartup(std::unique_lock<Mutex> &lock) noexcept
 		/* the decoder is ready and ok */
 
 		if (output_open &&
-		    !pc.WaitOutputConsumed(1))
+		    !pc.WaitOutputConsumed(lock, 1))
 			/* the output devices havn't finished playing
 			   all chunks yet - wait for that */
 			return true;
@@ -1037,7 +1037,7 @@ Player::Run() noexcept
 
 		if (paused) {
 			if (pc.command == PlayerCommand::NONE)
-				pc.Wait();
+				pc.Wait(lock);
 		} else if (!pipe->IsEmpty()) {
 			/* at least one music chunk is ready - send it
 			   to the audio output */
@@ -1128,7 +1128,7 @@ try {
 
 	MusicBuffer buffer(buffer_chunks);
 
-	const std::lock_guard<Mutex> lock(mutex);
+	std::unique_lock<Mutex> lock(mutex);
 
 	while (1) {
 		switch (command) {
@@ -1201,7 +1201,7 @@ try {
 			break;
 
 		case PlayerCommand::NONE:
-			Wait();
+			Wait(lock);
 			break;
 		}
 	}

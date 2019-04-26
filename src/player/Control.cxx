@@ -45,11 +45,12 @@ PlayerControl::~PlayerControl() noexcept
 }
 
 bool
-PlayerControl::WaitOutputConsumed(unsigned threshold) noexcept
+PlayerControl::WaitOutputConsumed(std::unique_lock<Mutex> &lock,
+				  unsigned threshold) noexcept
 {
 	bool result = outputs.CheckPipe() < threshold;
 	if (!result && command == PlayerCommand::NONE) {
-		Wait();
+		Wait(lock);
 		result = outputs.CheckPipe() < threshold;
 	}
 
@@ -64,13 +65,13 @@ PlayerControl::Play(std::unique_ptr<DetachedSong> song)
 
 	assert(song != nullptr);
 
-	const std::lock_guard<Mutex> protect(mutex);
-	SeekLocked(std::move(song), SongTime::zero());
+	std::unique_lock<Mutex> lock(mutex);
+	SeekLocked(lock, std::move(song), SongTime::zero());
 
 	if (state == PlayerState::PAUSE)
 		/* if the player was paused previously, we need to
 		   unpause it */
-		PauseLocked();
+		PauseLocked(lock);
 }
 
 void
@@ -116,10 +117,10 @@ PlayerControl::Kill() noexcept
 }
 
 void
-PlayerControl::PauseLocked() noexcept
+PlayerControl::PauseLocked(std::unique_lock<Mutex> &lock) noexcept
 {
 	if (state != PlayerState::STOP) {
-		SynchronousCommand(PlayerCommand::PAUSE);
+		SynchronousCommand(lock, PlayerCommand::PAUSE);
 		idle_add(IDLE_PLAYER);
 	}
 }
@@ -127,8 +128,8 @@ PlayerControl::PauseLocked() noexcept
 void
 PlayerControl::LockPause() noexcept
 {
-	const std::lock_guard<Mutex> protect(mutex);
-	PauseLocked();
+	std::unique_lock<Mutex> lock(mutex);
+	PauseLocked(lock);
 }
 
 void
@@ -137,7 +138,7 @@ PlayerControl::LockSetPause(bool pause_flag) noexcept
 	if (!thread.IsDefined())
 		return;
 
-	const std::lock_guard<Mutex> protect(mutex);
+	std::unique_lock<Mutex> lock(mutex);
 
 	switch (state) {
 	case PlayerState::STOP:
@@ -145,12 +146,12 @@ PlayerControl::LockSetPause(bool pause_flag) noexcept
 
 	case PlayerState::PLAY:
 		if (pause_flag)
-			PauseLocked();
+			PauseLocked(lock);
 		break;
 
 	case PlayerState::PAUSE:
 		if (!pause_flag)
-			PauseLocked();
+			PauseLocked(lock);
 		break;
 	}
 }
@@ -167,9 +168,9 @@ PlayerControl::LockGetStatus() noexcept
 {
 	PlayerStatus status;
 
-	const std::lock_guard<Mutex> protect(mutex);
+	std::unique_lock<Mutex> lock(mutex);
 	if (!occupied && thread.IsDefined())
-		SynchronousCommand(PlayerCommand::REFRESH);
+		SynchronousCommand(lock, PlayerCommand::REFRESH);
 
 	status.state = state;
 
@@ -233,23 +234,25 @@ PlayerControl::LockEnqueueSong(std::unique_ptr<DetachedSong> song) noexcept
 	assert(thread.IsDefined());
 	assert(song != nullptr);
 
-	const std::lock_guard<Mutex> protect(mutex);
-	EnqueueSongLocked(std::move(song));
+	std::unique_lock<Mutex> lock(mutex);
+	EnqueueSongLocked(lock, std::move(song));
 }
 
 void
-PlayerControl::EnqueueSongLocked(std::unique_ptr<DetachedSong> song) noexcept
+PlayerControl::EnqueueSongLocked(std::unique_lock<Mutex> &lock,
+				 std::unique_ptr<DetachedSong> song) noexcept
 {
 	assert(song != nullptr);
 	assert(next_song == nullptr);
 
 	next_song = std::move(song);
 	seek_time = SongTime::zero();
-	SynchronousCommand(PlayerCommand::QUEUE);
+	SynchronousCommand(lock, PlayerCommand::QUEUE);
 }
 
 void
-PlayerControl::SeekLocked(std::unique_ptr<DetachedSong> song, SongTime t)
+PlayerControl::SeekLocked(std::unique_lock<Mutex> &lock,
+			  std::unique_ptr<DetachedSong> song, SongTime t)
 {
 	assert(song != nullptr);
 
@@ -258,21 +261,21 @@ PlayerControl::SeekLocked(std::unique_ptr<DetachedSong> song, SongTime t)
 	/* optimization TODO: if the decoder happens to decode that
 	   song already, don't cancel that */
 	if (next_song != nullptr)
-		SynchronousCommand(PlayerCommand::CANCEL);
+		SynchronousCommand(lock, PlayerCommand::CANCEL);
 
 	assert(next_song == nullptr);
 
 	ClearError();
 	next_song = std::move(song);
 	seek_time = t;
-	SynchronousCommand(PlayerCommand::SEEK);
+	SynchronousCommand(lock, PlayerCommand::SEEK);
 
 	assert(next_song == nullptr);
 
 	/* the SEEK command is asynchronous; until completion, the
 	   "seeking" flag is set */
 	while (seeking)
-		ClientWait();
+		ClientWait(lock);
 
 	if (error_type != PlayerError::NONE) {
 		assert(error);
@@ -290,8 +293,8 @@ PlayerControl::LockSeek(std::unique_ptr<DetachedSong> song, SongTime t)
 
 	assert(song != nullptr);
 
-	const std::lock_guard<Mutex> protect(mutex);
-	SeekLocked(std::move(song), t);
+	std::unique_lock<Mutex> lock(mutex);
+	SeekLocked(lock, std::move(song), t);
 }
 
 void
