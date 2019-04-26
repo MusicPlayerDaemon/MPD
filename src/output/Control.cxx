@@ -42,6 +42,8 @@ AudioOutputControl::AudioOutputControl(std::unique_ptr<FilteredAudioOutput> _out
 
 AudioOutputControl::~AudioOutputControl() noexcept
 {
+	BeginDestroy();
+
 	if (thread.IsDefined())
 		thread.Join();
 }
@@ -378,6 +380,7 @@ AudioOutputControl::BeginDestroy() noexcept
 {
 	if (thread.IsDefined()) {
 		const std::lock_guard<Mutex> protect(mutex);
-		CommandAsync(Command::KILL);
+		if (IsCommandFinished())
+			CommandAsync(Command::KILL);
 	}
 }

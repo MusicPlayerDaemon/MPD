@@ -84,7 +84,6 @@ LoadOutputControl(EventLoop &event_loop,
 	try {
 		control->Configure(block);
 	} catch (...) {
-		control->BeginDestroy();
 		delete control;
 		throw;
 	}
