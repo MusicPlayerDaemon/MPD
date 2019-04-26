@@ -309,6 +309,11 @@ public:
 	 */
 	void WaitForCommand() noexcept;
 
+	void LockWaitForCommand() noexcept {
+		const std::lock_guard<Mutex> protect(mutex);
+		WaitForCommand();
+	}
+
 	/**
 	 * Sends a command, but does not wait for completion.
 	 *
