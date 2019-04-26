@@ -21,7 +21,8 @@
 #define MPD_AUTO_GUNZIP_READER_HXX
 
 #include "PeekReader.hxx"
-#include "util/Compiler.h"
+
+#include <memory>
 
 class GunzipReader;
 
@@ -32,11 +33,10 @@ class GunzipReader;
 class AutoGunzipReader final : public Reader {
 	Reader *next = nullptr;
 	PeekReader peek;
-	GunzipReader *gunzip = nullptr;
+	std::unique_ptr<GunzipReader> gunzip;
 
 public:
-	explicit AutoGunzipReader(Reader &_next) noexcept
-		:peek(_next) {}
+	explicit AutoGunzipReader(Reader &_next) noexcept;
 	~AutoGunzipReader() noexcept;
 
 	/* virtual methods from class Reader */

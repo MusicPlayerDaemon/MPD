@@ -20,10 +20,10 @@
 #include "AutoGunzipReader.hxx"
 #include "GunzipReader.hxx"
 
-AutoGunzipReader::~AutoGunzipReader() noexcept
-{
-	delete gunzip;
-}
+AutoGunzipReader::AutoGunzipReader(Reader &_next) noexcept
+	:peek(_next) {}
+
+AutoGunzipReader::~AutoGunzipReader() noexcept = default;
 
 gcc_pure
 static bool
@@ -43,7 +43,7 @@ AutoGunzipReader::Detect()
 	}
 
 	if (IsGzip(data))
-		next = gunzip = new GunzipReader(peek);
+		next = (gunzip = std::make_unique<GunzipReader>(peek)).get();
 	else
 		next = &peek;
 }
