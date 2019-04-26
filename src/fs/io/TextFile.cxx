@@ -26,28 +26,21 @@
 #include <assert.h>
 
 TextFile::TextFile(Path path_fs)
-	:file_reader(new FileReader(path_fs)),
+	:file_reader(std::make_unique<FileReader>(path_fs)),
 #ifdef ENABLE_ZLIB
-	 gunzip_reader(new AutoGunzipReader(*file_reader)),
+	 gunzip_reader(std::make_unique<AutoGunzipReader>(*file_reader)),
 #endif
-	 buffered_reader(new BufferedReader(*
+	 buffered_reader(std::make_unique<BufferedReader>(*
 #ifdef ENABLE_ZLIB
-					    gunzip_reader
+							  gunzip_reader
 #else
-					    file_reader
+							  file_reader
 #endif
-					    ))
+							  ))
 {
 }
 
-TextFile::~TextFile()
-{
-	delete buffered_reader;
-#ifdef ENABLE_ZLIB
-	delete gunzip_reader;
-#endif
-	delete file_reader;
-}
+TextFile::~TextFile() = default;
 
 char *
 TextFile::ReadLine()

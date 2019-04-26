@@ -23,19 +23,21 @@
 #include "util/Compiler.h"
 #include "config.h"
 
+#include <memory>
+
 class Path;
 class FileReader;
 class AutoGunzipReader;
 class BufferedReader;
 
 class TextFile {
-	FileReader *const file_reader;
+	const std::unique_ptr<FileReader> file_reader;
 
 #ifdef ENABLE_ZLIB
-	AutoGunzipReader *const gunzip_reader;
+	const std::unique_ptr<AutoGunzipReader> gunzip_reader;
 #endif
 
-	BufferedReader *const buffered_reader;
+	const std::unique_ptr<BufferedReader> buffered_reader;
 
 public:
 	explicit TextFile(Path path_fs);
