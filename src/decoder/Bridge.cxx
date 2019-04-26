@@ -74,10 +74,10 @@ DecoderBridge::CheckCancelRead() const noexcept
  * one.
  */
 static DecoderCommand
-need_chunks(DecoderControl &dc) noexcept
+NeedChunks(DecoderControl &dc, std::unique_lock<Mutex> &lock) noexcept
 {
 	if (dc.command == DecoderCommand::NONE)
-		dc.Wait();
+		dc.Wait(lock);
 
 	return dc.command;
 }
@@ -85,8 +85,8 @@ need_chunks(DecoderControl &dc) noexcept
 static DecoderCommand
 LockNeedChunks(DecoderControl &dc) noexcept
 {
-	const std::lock_guard<Mutex> protect(dc.mutex);
-	return need_chunks(dc);
+	std::unique_lock<Mutex> lock(dc.mutex);
+	return NeedChunks(dc, lock);
 }
 
 MusicChunk *

@@ -487,7 +487,7 @@ DecoderControl::RunThread() noexcept
 {
 	SetThreadName("decoder");
 
-	const std::lock_guard<Mutex> protect(mutex);
+	std::unique_lock<Mutex> lock(mutex);
 
 	do {
 		assert(state == DecoderState::STOP ||
@@ -528,7 +528,7 @@ DecoderControl::RunThread() noexcept
 			break;
 
 		case DecoderCommand::NONE:
-			Wait();
+			Wait(lock);
 			break;
 		}
 	} while (command != DecoderCommand::NONE || !quit);

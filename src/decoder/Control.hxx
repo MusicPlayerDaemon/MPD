@@ -207,8 +207,8 @@ public:
 	 * is only valid in the decoder thread.  The object must be locked
 	 * prior to calling this function.
 	 */
-	void Wait() noexcept {
-		cond.wait(mutex);
+	void Wait(std::unique_lock<Mutex> &lock) noexcept {
+		cond.wait(lock);
 	}
 
 	/**
@@ -218,7 +218,7 @@ public:
 	 *
 	 * Caller must hold the lock.
 	 */
-	void WaitForDecoder() noexcept;
+	void WaitForDecoder(std::unique_lock<Mutex> &lock) noexcept;
 
 	bool IsIdle() const noexcept {
 		return state == DecoderState::STOP ||
@@ -318,9 +318,9 @@ private:
 	 * To be called from the client thread.  Caller must lock the
 	 * object.
 	 */
-	void WaitCommandLocked() noexcept {
+	void WaitCommandLocked(std::unique_lock<Mutex> &lock) noexcept {
 		while (command != DecoderCommand::NONE)
-			WaitForDecoder();
+			WaitForDecoder(lock);
 	}
 
 	/**
@@ -330,10 +330,11 @@ private:
 	 * To be called from the client thread.  Caller must lock the
 	 * object.
 	 */
-	void SynchronousCommandLocked(DecoderCommand cmd) noexcept {
+	void SynchronousCommandLocked(std::unique_lock<Mutex> &lock,
+				      DecoderCommand cmd) noexcept {
 		command = cmd;
 		Signal();
-		WaitCommandLocked();
+		WaitCommandLocked(lock);
 	}
 
 	/**
@@ -344,9 +345,9 @@ private:
 	 * object.
 	 */
 	void LockSynchronousCommand(DecoderCommand cmd) noexcept {
-		const std::lock_guard<Mutex> protect(mutex);
+		std::unique_lock<Mutex> lock(mutex);
 		ClearError();
-		SynchronousCommandLocked(cmd);
+		SynchronousCommandLocked(lock, cmd);
 	}
 
 	void LockAsynchronousCommand(DecoderCommand cmd) noexcept {
@@ -382,7 +383,8 @@ public:
 	 * @param pipe the pipe which receives the decoded chunks (owned by
 	 * the caller)
 	 */
-	void Start(std::unique_ptr<DetachedSong> song,
+	void Start(std::unique_lock<Mutex> &lock,
+		   std::unique_ptr<DetachedSong> song,
 		   SongTime start_time, SongTime end_time,
 		   MusicBuffer &buffer,
 		   std::shared_ptr<MusicPipe> pipe) noexcept;
@@ -390,14 +392,14 @@ public:
 	/**
 	 * Caller must lock the object.
 	 */
-	void Stop() noexcept;
+	void Stop(std::unique_lock<Mutex> &lock) noexcept;
 
 	/**
 	 * Throws #std::runtime_error on error.
 	 *
 	 * Caller must lock the object.
 	 */
-	void Seek(SongTime t);
+	void Seek(std::unique_lock<Mutex> &lock, SongTime t);
 
 	void Quit() noexcept;
 

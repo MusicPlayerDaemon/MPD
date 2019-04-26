@@ -39,12 +39,12 @@ DecoderControl::~DecoderControl() noexcept
 }
 
 void
-DecoderControl::WaitForDecoder() noexcept
+DecoderControl::WaitForDecoder(std::unique_lock<Mutex> &lock) noexcept
 {
 	assert(!client_is_waiting);
 	client_is_waiting = true;
 
-	client_cond.wait(mutex);
+	client_cond.wait(lock);
 
 	assert(client_is_waiting);
 	client_is_waiting = false;
@@ -88,7 +88,8 @@ DecoderControl::IsCurrentSong(const DetachedSong &_song) const noexcept
 }
 
 void
-DecoderControl::Start(std::unique_ptr<DetachedSong> _song,
+DecoderControl::Start(std::unique_lock<Mutex> &lock,
+		      std::unique_ptr<DetachedSong> _song,
 		      SongTime _start_time, SongTime _end_time,
 		      MusicBuffer &_buffer,
 		      std::shared_ptr<MusicPipe> _pipe) noexcept
@@ -103,25 +104,25 @@ DecoderControl::Start(std::unique_ptr<DetachedSong> _song,
 	pipe = std::move(_pipe);
 
 	ClearError();
-	SynchronousCommandLocked(DecoderCommand::START);
+	SynchronousCommandLocked(lock, DecoderCommand::START);
 }
 
 void
-DecoderControl::Stop() noexcept
+DecoderControl::Stop(std::unique_lock<Mutex> &lock) noexcept
 {
 	if (command != DecoderCommand::NONE)
 		/* Attempt to cancel the current command.  If it's too
 		   late and the decoder thread is already executing
 		   the old command, we'll call STOP again in this
 		   function (see below). */
-		SynchronousCommandLocked(DecoderCommand::STOP);
+		SynchronousCommandLocked(lock, DecoderCommand::STOP);
 
 	if (state != DecoderState::STOP && state != DecoderState::ERROR)
-		SynchronousCommandLocked(DecoderCommand::STOP);
+		SynchronousCommandLocked(lock, DecoderCommand::STOP);
 }
 
 void
-DecoderControl::Seek(SongTime t)
+DecoderControl::Seek(std::unique_lock<Mutex> &lock, SongTime t)
 {
 	assert(state != DecoderState::START);
 	assert(state != DecoderState::ERROR);
@@ -145,7 +146,7 @@ DecoderControl::Seek(SongTime t)
 
 	seek_time = t;
 	seek_error = false;
-	SynchronousCommandLocked(DecoderCommand::SEEK);
+	SynchronousCommandLocked(lock, DecoderCommand::SEEK);
 
 	if (seek_error)
 		throw std::runtime_error("Decoder failed to seek");
