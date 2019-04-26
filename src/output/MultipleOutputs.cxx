@@ -147,10 +147,8 @@ MultipleOutputs::EnableDisable()
 {
 	/* parallel execution */
 
-	for (const auto &ao : outputs) {
-		const std::lock_guard<Mutex> lock(ao->mutex);
-		ao->EnableDisableAsync();
-	}
+	for (const auto &ao : outputs)
+		ao->LockEnableDisableAsync();
 
 	WaitAll();
 }

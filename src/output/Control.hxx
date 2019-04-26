@@ -360,6 +360,12 @@ public:
 	 * Caller must lock the mutex.
 	 */
 	void EnableDisableAsync();
+
+	void LockEnableDisableAsync() {
+		const std::lock_guard<Mutex> protect(mutex);
+		EnableDisableAsync();
+	}
+
 	void LockPauseAsync() noexcept;
 
 	void CloseWait() noexcept;
