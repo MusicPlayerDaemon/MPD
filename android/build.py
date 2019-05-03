@@ -138,6 +138,12 @@ class AndroidNdkToolchain:
         libstdcxx_ldflags = libstdcxx_flags + ' -L' + libcxx_libs_path
         libstdcxx_libs = '-lc++_static -lc++abi'
 
+        if self.is_armv7:
+            # On 32 bit ARM, clang generates no ".eh_frame" section;
+            # instead, the LLVM unwinder library is used for unwinding
+            # the stack after a C++ exception was thrown
+            libstdcxx_libs += ' -lunwind'
+
         if use_cxx:
             self.cxxflags += ' ' + libstdcxx_cxxflags
             self.ldflags += ' ' + libstdcxx_ldflags

@@ -1,4 +1,6 @@
 ver 0.21.9 (not yet released)
+* Android
+  - fix crash on ARMv7
 
 ver 0.21.8 (2019/04/23)
 * input
