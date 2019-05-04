@@ -21,10 +21,12 @@ package org.musicpd;
 
 import java.util.LinkedList;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -178,6 +180,14 @@ public class Settings extends Activity {
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
+		/* TODO: this sure is the wrong place to request
+		   permissions - it will cause MPD to quit
+		   immediately; we should request permissions when we
+		   need them, but implementing that is complicated, so
+		   for now, we do it here to give users a quick
+		   solution for the problem */
+		requestAllPermissions();
+
 		setContentView(R.layout.settings);
 		mRunButton = (ToggleButton) findViewById(R.id.run);
 		mRunButton.setOnCheckedChangeListener(mOnRunChangeListener);
@@ -201,6 +211,31 @@ public class Settings extends Activity {
 			checkbox.setChecked(true);
 
 		super.onCreate(savedInstanceState);
+	}
+
+	private void checkRequestPermission(String permission) {
+		if (checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED)
+			return;
+
+		try {
+			this.requestPermissions(new String[]{permission}, 0);
+		} catch (Exception e) {
+			Log.e(TAG, "requestPermissions(" + permission + ") failed",
+			      e);
+		}
+	}
+
+	private void requestAllPermissions() {
+		if (android.os.Build.VERSION.SDK_INT < 23)
+			/* we don't need to request permissions on
+			   this old Android version */
+			return;
+
+		/* starting with Android 6.0, we need to explicitly
+		   request all permissions before using them;
+		   mentioning them in the manifest is not enough */
+
+		checkRequestPermission(Manifest.permission.READ_EXTERNAL_STORAGE);
 	}
 
 	private void connectClient() {

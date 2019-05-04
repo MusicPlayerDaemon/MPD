@@ -8,6 +8,11 @@ ver 0.22 (not yet released)
   - ffmpeg: new plugin based on FFmpeg's libavfilter library
   - hdcd: new plugin based on FFmpeg's "af_hdcd" for HDCD playback
 
+ver 0.21.9 (not yet released)
+* Android
+  - fix crash on ARMv7
+  - request storage permission on Android 6+
+
 ver 0.21.8 (2019/04/23)
 * input
   - smbclient: download to buffer instead of throttling transfer

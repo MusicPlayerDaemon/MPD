@@ -6,7 +6,7 @@ android_sdk = get_option('android_sdk')
 android_abi = get_option('android_abi')
 
 android_sdk_build_tools_version = '27.0.0'
-android_sdk_platform = 'android-21'
+android_sdk_platform = 'android-23'
 
 android_build_tools_dir = join_paths(android_sdk, 'build-tools', android_sdk_build_tools_version)
 android_sdk_platform_dir = join_paths(android_sdk, 'platforms', android_sdk_platform)
