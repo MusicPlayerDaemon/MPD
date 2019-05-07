@@ -105,6 +105,19 @@ public:
 
 		return wait_for(lock, timeout_us);
 	}
+
+	template<typename M, typename P>
+	bool wait_for(std::unique_lock<M> &lock,
+		      std::chrono::steady_clock::duration timeout,
+		      P &&predicate) noexcept {
+		while (!predicate()) {
+			// TODO: without wait_until(), this multiplies the timeout
+			if (!wait_for(lock, timeout))
+				return predicate();
+		}
+
+		return true;
+	}
 };
 
 #endif

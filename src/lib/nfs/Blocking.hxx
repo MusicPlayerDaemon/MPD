@@ -60,11 +60,7 @@ public:
 private:
 	bool LockWaitFinished() noexcept {
 		std::unique_lock<Mutex> lock(mutex);
-		while (!finished)
-			if (!cond.wait_for(lock, timeout))
-				return false;
-
-		return true;
+		return cond.wait_for(lock, timeout, [this]{ return finished; });
 	}
 
 	/**
