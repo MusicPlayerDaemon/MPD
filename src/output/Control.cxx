@@ -114,8 +114,7 @@ AudioOutputControl::LockToggleEnabled() noexcept
 void
 AudioOutputControl::WaitForCommand(std::unique_lock<Mutex> &lock) noexcept
 {
-	while (!IsCommandFinished())
-		client_cond.wait(lock);
+	client_cond.wait(lock, [this]{ return IsCommandFinished(); });
 }
 
 void

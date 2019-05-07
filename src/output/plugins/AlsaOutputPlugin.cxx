@@ -805,8 +805,7 @@ AlsaOutput::Drain()
 
 	Activate();
 
-	while (drain && active)
-		cond.wait(lock);
+	cond.wait(lock, [this]{ return !drain || !active; });
 
 	if (error)
 		std::rethrow_exception(error);

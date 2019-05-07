@@ -176,8 +176,7 @@ class DumpRemoteTagHandler final : public RemoteTagHandler {
 public:
 	Tag Wait() {
 		std::unique_lock<Mutex> lock(mutex);
-		while (!done)
-			cond.wait(lock);
+		cond.wait(lock, [this]{ return done; });
 
 		if (error)
 			std::rethrow_exception(error);

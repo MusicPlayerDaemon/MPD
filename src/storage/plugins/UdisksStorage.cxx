@@ -209,8 +209,7 @@ UdisksStorage::MountWait()
 		defer_mount.Schedule();
 	}
 
-	while (want_mount)
-		cond.wait(lock);
+	cond.wait(lock, [this]{ return !want_mount; });
 
 	if (mount_error)
 		std::rethrow_exception(mount_error);
@@ -280,8 +279,7 @@ UdisksStorage::UnmountWait()
 
 	defer_unmount.Schedule();
 
-	while (mounted_storage)
-		cond.wait(lock);
+	cond.wait(lock, [this]{ return !mounted_storage; });
 
 	if (mount_error)
 		std::rethrow_exception(mount_error);

@@ -92,8 +92,7 @@ void
 ProxyInputStream::Seek(std::unique_lock<Mutex> &lock,
 		       offset_type new_offset)
 {
-	while (!input)
-		set_input_cond.wait(lock);
+	set_input_cond.wait(lock, [this]{ return !!input; });
 
 	input->Seek(lock, new_offset);
 	CopyAttributes();
@@ -124,8 +123,7 @@ size_t
 ProxyInputStream::Read(std::unique_lock<Mutex> &lock,
 		       void *ptr, size_t read_size)
 {
-	while (!input)
-		set_input_cond.wait(lock);
+	set_input_cond.wait(lock, [this]{ return !!input; });
 
 	size_t nbytes = input->Read(lock, ptr, read_size);
 	CopyAttributes();

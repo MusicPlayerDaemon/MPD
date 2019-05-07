@@ -59,13 +59,10 @@ InputStream::OpenReady(const char *uri, Mutex &mutex)
 	{
 		std::unique_lock<Mutex> lock(mutex);
 
-		while (true) {
+		handler.cond.wait(lock, [&is]{
 			is->Update();
-			if (is->IsReady())
-				break;
-
-			handler.cond.wait(lock);
-		}
+			return is->IsReady();
+		});
 
 		is->Check();
 	}

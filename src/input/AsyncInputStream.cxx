@@ -136,8 +136,8 @@ AsyncInputStream::Seek(std::unique_lock<Mutex> &lock,
 
 	CondInputStreamHandler cond_handler;
 	const ScopeExchangeInputStreamHandler h(*this, &cond_handler);
-	while (seek_state != SeekState::NONE)
-		cond_handler.cond.wait(lock);
+	cond_handler.cond.wait(lock,
+			       [this]{ return seek_state == SeekState::NONE; });
 
 	Check();
 }

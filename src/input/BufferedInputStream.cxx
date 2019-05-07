@@ -84,8 +84,7 @@ BufferedInputStream::Seek(std::unique_lock<Mutex> &lock,
 	seek = true;
 	wake_cond.notify_one();
 
-	while (seek)
-		client_cond.wait(lock);
+	client_cond.wait(lock, [this]{ return !seek; });
 
 	if (seek_error)
 		std::rethrow_exception(std::exchange(seek_error, {}));

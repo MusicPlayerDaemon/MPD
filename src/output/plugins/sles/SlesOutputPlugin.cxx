@@ -321,10 +321,10 @@ SlesOutput::Play(const void *chunk, size_t size)
 
 	assert(filled < BUFFER_SIZE);
 
-	while (n_queued == N_BUFFERS) {
+	cond.wait(lock, [this]{
 		assert(filled == 0);
-		cond.wait(lock);
-	}
+		return n_queued != N_BUFFERS;
+	});
 
 	size_t nbytes = std::min(BUFFER_SIZE - filled, size);
 	memcpy(buffers[next] + filled, chunk, nbytes);
@@ -350,8 +350,7 @@ SlesOutput::Drain()
 
 	assert(filled < BUFFER_SIZE);
 
-	while (n_queued > 0)
-		cond.wait(lock);
+	cond.wait(lock, [this]{ return n_queued == 0; });
 }
 
 void

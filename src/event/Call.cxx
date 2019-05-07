@@ -53,8 +53,7 @@ public:
 
 		{
 			std::unique_lock<Mutex> lock(mutex);
-			while (!done)
-				cond.wait(lock);
+			cond.wait(lock, [this]{ return done; });
 		}
 
 		if (exception)
