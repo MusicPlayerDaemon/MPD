@@ -63,6 +63,13 @@ public:
 					 INFINITE);
 	}
 
+	template<typename M, typename P>
+	void wait(std::unique_lock<M> &lock,
+		  P &&predicate) noexcept {
+		while (!predicate())
+			wait(lock);
+	}
+
 	bool wait_for(std::unique_lock<CriticalSection> &lock,
 		      std::chrono::steady_clock::duration timeout) noexcept {
 		auto timeout_ms = std::chrono::duration_cast<std::chrono::milliseconds>(timeout).count();
