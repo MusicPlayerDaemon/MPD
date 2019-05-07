@@ -71,17 +71,13 @@ public:
 		pthread_cond_broadcast(&cond);
 	}
 
-	void wait(PosixMutex &mutex) noexcept {
-		pthread_cond_wait(&cond, &mutex.mutex);
-	}
-
-	template<typename M>
-	void wait(std::unique_lock<M> &lock) noexcept {
-		wait(*lock.mutex());
+	void wait(std::unique_lock<PosixMutex> &lock) noexcept {
+		pthread_cond_wait(&cond, &lock.mutex()->mutex);
 	}
 
 private:
-	bool wait_for(PosixMutex &mutex, uint_least32_t timeout_us) noexcept {
+	bool wait_for(std::unique_lock<PosixMutex> &lock,
+		      uint_least32_t timeout_us) noexcept {
 		struct timeval now;
 		gettimeofday(&now, nullptr);
 
@@ -94,11 +90,12 @@ private:
 			ts.tv_sec++;
 		}
 
-		return pthread_cond_timedwait(&cond, &mutex.mutex, &ts) == 0;
+		return pthread_cond_timedwait(&cond, &lock.mutex()->mutex, &ts) == 0;
 	}
 
 public:
-	bool wait_for(PosixMutex &mutex,
+	template<typename M>
+	bool wait_for(std::unique_lock<M> &lock,
 		      std::chrono::steady_clock::duration timeout) noexcept {
 		auto timeout_us = std::chrono::duration_cast<std::chrono::microseconds>(timeout).count();
 		if (timeout_us < 0)
@@ -106,13 +103,7 @@ public:
 		else if (timeout_us > std::numeric_limits<uint_least32_t>::max())
 			timeout_us = std::numeric_limits<uint_least32_t>::max();
 
-		return wait_for(mutex, timeout_us);
-	}
-
-	template<typename M>
-	bool wait_for(std::unique_lock<M> &lock,
-		      std::chrono::steady_clock::duration timeout) noexcept {
-		return wait_for(*lock.mutex(), timeout);
+		return wait_for(lock, timeout_us);
 	}
 };
 
