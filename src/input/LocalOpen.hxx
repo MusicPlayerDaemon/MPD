@@ -21,9 +21,9 @@
 #define MPD_INPUT_LOCAL_OPEN_HXX
 
 #include "Ptr.hxx"
+#include "thread/Mutex.hxx"
 
 class Path;
-class Mutex;
 
 /**
  * Open a "local" file.  This is a wrapper for the input plugins

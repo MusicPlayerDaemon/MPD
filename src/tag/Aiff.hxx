@@ -25,12 +25,11 @@
 #ifndef MPD_AIFF_HXX
 #define MPD_AIFF_HXX
 
-#include <mutex>
+#include "thread/Mutex.hxx"
 
 #include <stddef.h>
 
 class InputStream;
-class Mutex;
 
 /**
  * Seeks the AIFF file to the ID3 chunk.

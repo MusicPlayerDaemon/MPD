@@ -21,10 +21,10 @@
 #define MPD_PLAYLIST_REGISTRY_HXX
 
 #include "input/Ptr.hxx"
+#include "thread/Mutex.hxx"
 #include "util/Compiler.h"
 
 struct ConfigData;
-class Mutex;
 class SongEnumerator;
 
 extern const struct playlist_plugin *const playlist_plugins[];

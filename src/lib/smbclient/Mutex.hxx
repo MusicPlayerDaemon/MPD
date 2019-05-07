@@ -20,7 +20,7 @@
 #ifndef MPD_SMBCLIENT_MUTEX_HXX
 #define MPD_SMBCLIENT_MUTEX_HXX
 
-class Mutex;
+#include "thread/Mutex.hxx"
 
 /**
  * Since libsmbclient is not thread-safe, this mutex must be locked

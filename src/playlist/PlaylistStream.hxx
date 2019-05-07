@@ -20,11 +20,11 @@
 #ifndef MPD_PLAYLIST_STREAM_HXX
 #define MPD_PLAYLIST_STREAM_HXX
 
+#include "thread/Mutex.hxx"
 #include "util/Compiler.h"
 
 #include <memory>
 
-class Mutex;
 class SongEnumerator;
 class Path;
 

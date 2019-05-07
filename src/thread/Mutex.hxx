@@ -35,12 +35,12 @@
 #ifdef _WIN32
 
 #include "CriticalSection.hxx"
-class Mutex : public CriticalSection {};
+using Mutex = CriticalSection;
 
 #else
 
 #include "PosixMutex.hxx"
-class Mutex : public PosixMutex {};
+using Mutex = PosixMutex;
 
 #endif
 

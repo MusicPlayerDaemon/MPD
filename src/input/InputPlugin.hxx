@@ -21,10 +21,10 @@
 #define MPD_INPUT_PLUGIN_HXX
 
 #include "Ptr.hxx"
+#include "thread/Mutex.hxx"
 #include "util/Compiler.h"
 
 struct ConfigBlock;
-class Mutex;
 class EventLoop;
 class RemoteTagScanner;
 class RemoteTagHandler;

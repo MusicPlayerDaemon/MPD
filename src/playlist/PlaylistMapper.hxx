@@ -20,11 +20,11 @@
 #ifndef MPD_PLAYLIST_MAPPER_HXX
 #define MPD_PLAYLIST_MAPPER_HXX
 
+#include "thread/Mutex.hxx"
 #include "config.h"
 
 #include <memory>
 
-class Mutex;
 class SongEnumerator;
 class Storage;
 

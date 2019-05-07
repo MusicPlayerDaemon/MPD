@@ -21,10 +21,10 @@
 #define MPD_PLAYLIST_PLUGIN_HXX
 
 #include "input/Ptr.hxx"
+#include "thread/Mutex.hxx"
 
 struct ConfigBlock;
 struct Tag;
-class Mutex;
 class SongEnumerator;
 
 struct playlist_plugin {

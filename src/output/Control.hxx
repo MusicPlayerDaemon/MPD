@@ -45,7 +45,6 @@ struct FilteredAudioOutput;
 struct MusicChunk;
 struct ConfigBlock;
 class MusicPipe;
-class Mutex;
 class Mixer;
 class AudioOutputClient;
 

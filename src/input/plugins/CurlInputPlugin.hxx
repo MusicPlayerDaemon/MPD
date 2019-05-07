@@ -21,11 +21,10 @@
 #define MPD_INPUT_CURL_HXX
 
 #include "input/Ptr.hxx"
+#include "thread/Mutex.hxx"
 
 #include <string>
 #include <map>
-
-class Mutex;
 
 extern const struct InputPlugin input_plugin_curl;
 

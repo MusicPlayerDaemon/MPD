@@ -26,6 +26,7 @@
 #include "ReplayGainMode.hxx"
 #include "pcm/PcmBuffer.hxx"
 #include "pcm/PcmDither.hxx"
+#include "thread/Mutex.hxx"
 #include "util/ConstBuffer.hxx"
 
 #include <utility>
@@ -36,7 +37,6 @@
 
 struct MusicChunk;
 struct Tag;
-class Mutex;
 class Filter;
 class PreparedFilter;
 

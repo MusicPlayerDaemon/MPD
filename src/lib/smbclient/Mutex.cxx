@@ -18,6 +18,5 @@
  */
 
 #include "Mutex.hxx"
-#include "thread/Mutex.hxx"
 
 Mutex smbclient_mutex;

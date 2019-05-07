@@ -25,11 +25,10 @@
 #ifndef MPD_RIFF_HXX
 #define MPD_RIFF_HXX
 
-#include <mutex>
+#include "thread/Mutex.hxx"
 
 #include <stddef.h>
 
-class Mutex;
 class InputStream;
 
 /**

@@ -21,9 +21,9 @@
 #define MPD_INPUT_FILE_HXX
 
 #include "input/Ptr.hxx"
+#include "thread/Mutex.hxx"
 
 class Path;
-class Mutex;
 
 InputStreamPtr
 OpenFileInputStream(Path path, Mutex &mutex);
