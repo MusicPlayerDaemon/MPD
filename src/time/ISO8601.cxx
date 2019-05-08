@@ -30,54 +30,32 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "TimeConvert.hxx"
+#include "ISO8601.hxx"
+#include "Convert.hxx"
+#include "Parser.hxx"
 
-#include <stdexcept>
-
-#include <time.h>
-
-struct tm
-GmTime(std::chrono::system_clock::time_point tp)
+StringBuffer<64>
+FormatISO8601(const struct tm &tm) noexcept
 {
-	const time_t t = std::chrono::system_clock::to_time_t(tp);
+	StringBuffer<64> buffer;
+	strftime(buffer.data(), buffer.capacity(),
 #ifdef _WIN32
-	const struct tm *tm = gmtime(&t);
+		 "%Y-%m-%dT%H:%M:%SZ",
 #else
-	struct tm buffer, *tm = gmtime_r(&t, &buffer);
+		 "%FT%TZ",
 #endif
-	if (tm == nullptr)
-		throw std::runtime_error("gmtime_r() failed");
-
-	return *tm;
+		 &tm);
+	return buffer;
 }
 
-struct tm
-LocalTime(std::chrono::system_clock::time_point tp)
+StringBuffer<64>
+FormatISO8601(std::chrono::system_clock::time_point tp)
 {
-	const time_t t = std::chrono::system_clock::to_time_t(tp);
-#ifdef _WIN32
-	const struct tm *tm = localtime(&t);
-#else
-	struct tm buffer, *tm = localtime_r(&t, &buffer);
-#endif
-	if (tm == nullptr)
-		throw std::runtime_error("localtime_r() failed");
-
-	return *tm;
+	return FormatISO8601(GmTime(tp));
 }
-
-#ifdef __GLIBC__
 
 std::chrono::system_clock::time_point
-TimeGm(struct tm &tm)
+ParseISO8601(const char *s)
 {
-	return std::chrono::system_clock::from_time_t(timegm(&tm));
-}
-
-#endif
-
-std::chrono::system_clock::time_point
-MakeTime(struct tm &tm)
-{
-	return std::chrono::system_clock::from_time_t(mktime(&tm));
+	return ParseTimePoint(s, "%FT%TZ");
 }

@@ -21,8 +21,8 @@
 #include "db/PlaylistVector.hxx"
 #include "fs/io/TextFile.hxx"
 #include "fs/io/BufferedOutputStream.hxx"
+#include "time/ChronoUtil.hxx"
 #include "util/StringStrip.hxx"
-#include "util/ChronoUtil.hxx"
 #include "util/RuntimeError.hxx"
 
 #include <string.h>

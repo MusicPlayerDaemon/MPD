@@ -24,6 +24,7 @@ song_dep = declare_dependency(
     icu_dep,
     pcre_dep,
     tag_dep,
+    time_dep,
     util_dep,
   ],
 )

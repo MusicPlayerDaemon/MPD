@@ -29,8 +29,9 @@
 #include "AudioParser.hxx"
 #include "tag/ParseName.hxx"
 #include "tag/Tag.hxx"
+#include "time/ChronoUtil.hxx"
+#include "time/ISO8601.hxx"
 #include "util/CharUtil.hxx"
-#include "util/ChronoUtil.hxx"
 #include "util/ConstBuffer.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/StringAPI.hxx"
@@ -38,7 +39,6 @@
 #include "util/StringStrip.hxx"
 #include "util/StringView.hxx"
 #include "util/ASCII.hxx"
-#include "util/TimeISO8601.hxx"
 #include "util/UriUtil.hxx"
 #include "lib/icu/CaseFold.hxx"
 

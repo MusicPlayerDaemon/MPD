@@ -57,5 +57,6 @@ storage_plugins_dep = declare_dependency(
   dependencies: [
     storage_api_dep,
     fs_dep,
+    time_dep,
   ],
 )

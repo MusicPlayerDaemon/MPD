@@ -304,6 +304,7 @@ if enable_database
 endif
 
 subdir('src/util')
+subdir('src/time')
 subdir('src/system')
 subdir('src/thread')
 subdir('src/event')

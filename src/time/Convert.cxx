@@ -1,5 +1,8 @@
 /*
- * Copyright (C) 2014-2017 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2007-2017 Content Management AG
+ * All rights reserved.
+ *
+ * author: Max Kellermann <mk@cm4all.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -27,58 +30,54 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "TimeParser.hxx"
-#include "Compiler.h"
+#include "Convert.hxx"
 
 #include <stdexcept>
 
-#include <assert.h>
 #include <time.h>
 
-#if !defined(__GLIBC__) && !defined(_WIN32)
-
-/**
- * Determine the time zone offset in a portable way.
- */
-gcc_const
-static time_t
-GetTimeZoneOffset() noexcept
+struct tm
+GmTime(std::chrono::system_clock::time_point tp)
 {
-	time_t t = 1234567890;
-	struct tm tm;
-	tm.tm_isdst = 0;
-	gmtime_r(&t, &tm);
-	return t - mktime(&tm);
+	const time_t t = std::chrono::system_clock::to_time_t(tp);
+#ifdef _WIN32
+	const struct tm *tm = gmtime(&t);
+#else
+	struct tm buffer, *tm = gmtime_r(&t, &buffer);
+#endif
+	if (tm == nullptr)
+		throw std::runtime_error("gmtime_r() failed");
+
+	return *tm;
+}
+
+struct tm
+LocalTime(std::chrono::system_clock::time_point tp)
+{
+	const time_t t = std::chrono::system_clock::to_time_t(tp);
+#ifdef _WIN32
+	const struct tm *tm = localtime(&t);
+#else
+	struct tm buffer, *tm = localtime_r(&t, &buffer);
+#endif
+	if (tm == nullptr)
+		throw std::runtime_error("localtime_r() failed");
+
+	return *tm;
+}
+
+#ifdef __GLIBC__
+
+std::chrono::system_clock::time_point
+TimeGm(struct tm &tm)
+{
+	return std::chrono::system_clock::from_time_t(timegm(&tm));
 }
 
 #endif
 
 std::chrono::system_clock::time_point
-ParseTimePoint(const char *s, const char *format)
+MakeTime(struct tm &tm)
 {
-	assert(s != nullptr);
-	assert(format != nullptr);
-
-#ifdef _WIN32
-	/* TODO: emulate strptime()? */
-	(void)s;
-	(void)format;
-	throw std::runtime_error("Time parsing not implemented on Windows");
-#else
-	struct tm tm;
-	const char *end = strptime(s, format, &tm);
-	if (end == nullptr || *end != 0)
-		throw std::runtime_error("Failed to parse time stamp");
-
-#ifdef __GLIBC__
-	/* timegm() is a GNU extension */
-	const auto t = timegm(&tm);
-#else
-	tm.tm_isdst = 0;
-	const auto t = mktime(&tm) + GetTimeZoneOffset();
-#endif /* !__GLIBC__ */
-
-	return std::chrono::system_clock::from_time_t(t);
-
-#endif /* !_WIN32 */
+	return std::chrono::system_clock::from_time_t(mktime(&tm));
 }

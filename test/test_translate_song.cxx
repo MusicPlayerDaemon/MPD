@@ -17,7 +17,7 @@
 #include "storage/StorageInterface.hxx"
 #include "storage/plugins/LocalStorage.hxx"
 #include "Mapper.hxx"
-#include "util/ChronoUtil.hxx"
+#include "time/ChronoUtil.hxx"
 
 #include <gtest/gtest.h>
 
