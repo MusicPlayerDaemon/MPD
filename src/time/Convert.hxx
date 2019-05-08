@@ -56,7 +56,7 @@ LocalTime(std::chrono::system_clock::time_point tp);
  */
 gcc_pure
 std::chrono::system_clock::time_point
-TimeGm(struct tm &tm);
+TimeGm(struct tm &tm) noexcept;
 
 #endif
 
@@ -65,6 +65,6 @@ TimeGm(struct tm &tm);
  */
 gcc_pure
 std::chrono::system_clock::time_point
-MakeTime(struct tm &tm);
+MakeTime(struct tm &tm) noexcept;
 
 #endif
