@@ -19,7 +19,7 @@
 
 #include "TimePrint.hxx"
 #include "client/Response.hxx"
-#include "util/TimeISO8601.hxx"
+#include "time/ISO8601.hxx"
 
 void
 time_print(Response &r, const char *name,

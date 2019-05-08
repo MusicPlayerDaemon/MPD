@@ -34,7 +34,7 @@
 #include "PlaylistInfo.hxx"
 #include "Interface.hxx"
 #include "fs/Traits.hxx"
-#include "util/ChronoUtil.hxx"
+#include "time/ChronoUtil.hxx"
 
 #include <functional>
 

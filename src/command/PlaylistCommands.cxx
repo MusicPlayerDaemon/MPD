@@ -38,9 +38,9 @@
 #include "client/Response.hxx"
 #include "Mapper.hxx"
 #include "fs/AllocatedPath.hxx"
+#include "time/ChronoUtil.hxx"
 #include "util/UriUtil.hxx"
 #include "util/ConstBuffer.hxx"
-#include "util/ChronoUtil.hxx"
 #include "LocateUri.hxx"
 
 bool

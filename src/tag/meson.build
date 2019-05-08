@@ -45,6 +45,7 @@ tag = static_library(
 tag_dep = declare_dependency(
   link_with: tag,
   dependencies: [
+    time_dep,
     util_dep,
   ],
 )

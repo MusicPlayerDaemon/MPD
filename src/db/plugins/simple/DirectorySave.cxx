@@ -25,7 +25,7 @@
 #include "PlaylistDatabase.hxx"
 #include "fs/io/TextFile.hxx"
 #include "fs/io/BufferedOutputStream.hxx"
-#include "util/ChronoUtil.hxx"
+#include "time/ChronoUtil.hxx"
 #include "util/StringCompare.hxx"
 #include "util/NumberParser.hxx"
 #include "util/RuntimeError.hxx"

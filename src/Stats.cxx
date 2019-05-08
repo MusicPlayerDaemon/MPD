@@ -28,7 +28,7 @@
 #include "db/Stats.hxx"
 #include "system/Clock.hxx"
 #include "Log.hxx"
-#include "util/ChronoUtil.hxx"
+#include "time/ChronoUtil.hxx"
 
 #include <chrono>
 #include <cmath>

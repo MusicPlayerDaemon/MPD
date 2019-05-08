@@ -20,9 +20,9 @@
 #include "Format.hxx"
 #include "Tag.hxx"
 #include "ParseName.hxx"
+#include "time/Convert.hxx"
 #include "util/format.h"
 #include "util/TruncateString.hxx"
-#include "util/TimeConvert.hxx"
 
 #include <algorithm>
 
