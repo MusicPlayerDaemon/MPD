@@ -20,6 +20,7 @@
 #include "ModifiedSinceSongFilter.hxx"
 #include "LightSong.hxx"
 #include "time/ISO8601.hxx"
+#include "util/StringBuffer.hxx"
 
 std::string
 ModifiedSinceSongFilter::ToExpression() const noexcept

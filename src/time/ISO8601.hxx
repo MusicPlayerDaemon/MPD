@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 Content Management AG
+ * Copyright 2007-2019 Content Management AG
  * All rights reserved.
  *
  * author: Max Kellermann <mk@cm4all.com>
@@ -33,13 +33,15 @@
 #ifndef TIME_ISO8601_HXX
 #define TIME_ISO8601_HXX
 
-#include "util/StringBuffer.hxx"
 #include "util/Compiler.h"
 
 #include <string>
 #include <chrono>
 
+#include <stddef.h>
+
 struct tm;
+template<size_t CAPACITY> class StringBuffer;
 
 gcc_pure
 StringBuffer<64>
