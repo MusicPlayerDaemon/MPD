@@ -42,11 +42,16 @@ ConstructUint64(DWORD lo, DWORD hi) noexcept
 	return uint64_t(lo) | (uint64_t(hi) << 32);
 }
 
+constexpr uint64_t
+ToUint64(FILETIME ft) noexcept
+{
+	return ConstructUint64(ft.dwLowDateTime, ft.dwHighDateTime);
+}
+
 constexpr time_t
 FileTimeToTimeT(FILETIME ft) noexcept
 {
-	return (ConstructUint64(ft.dwLowDateTime, ft.dwHighDateTime)
-		- 116444736000000000) / 10000000;
+	return (ToUint64(ft) - 116444736000000000) / 10000000;
 }
 
 inline std::chrono::system_clock::time_point
