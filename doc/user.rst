@@ -334,6 +334,39 @@ The following table lists the input options valid for all plugins:
 
 More information can be found in the :ref:`input_plugins` reference.
 
+Configuring the Input Cache
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The input cache prefetches queued song files before they are going to
+be played.  This has several advantages:
+
+- risk of buffer underruns during playback is reduced because this
+  decouples playback from disk (or network) I/O
+- bulk transfers may be faster and more energy efficient than loading
+  small chunks on-the-fly
+- by prefetching several songs at a time, the hard disk can spin down
+  for longer periods of time
+
+This comes at a cost:
+
+- memory usage
+- bulk transfers may reduce the performance of other applications
+  which also want to access the disk (if the kernel's I/O scheduler
+  isn't doing its job properly)
+
+To enable the input cache, add an ``input_cache`` block to the
+configuration file:
+
+.. code-block:: none
+
+    input_cache {
+        size "1 GB"
+    }
+
+This allocates a cache of 1 GB.  If the cache grows larger than that,
+older files will be evicted.
+
+
 Configuring decoder plugins
 ---------------------------
 

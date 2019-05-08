@@ -46,6 +46,7 @@
 class DetachedSong;
 class MusicBuffer;
 class MusicPipe;
+class InputCacheManager;
 
 enum class DecoderState : uint8_t {
 	STOP = 0,
@@ -68,6 +69,8 @@ class DecoderControl final : public InputStreamHandler {
 	Thread thread;
 
 public:
+	InputCacheManager *const input_cache;
+
 	/**
 	 * This lock protects #state and #command.
 	 *
@@ -181,6 +184,7 @@ public:
 	 * @param _client_cond see #client_cond
 	 */
 	DecoderControl(Mutex &_mutex, Cond &_client_cond,
+		       InputCacheManager *_input_cache,
 		       const AudioFormat _configured_audio_format,
 		       const ReplayGainConfig &_replay_gain_config) noexcept;
 	~DecoderControl() noexcept;

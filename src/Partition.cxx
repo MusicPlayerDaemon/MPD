@@ -20,10 +20,15 @@
 #include "config.h"
 #include "Partition.hxx"
 #include "Instance.hxx"
+#include "Log.hxx"
 #include "song/DetachedSong.hxx"
 #include "mixer/Volume.hxx"
 #include "IdleFlags.hxx"
 #include "client/Listener.hxx"
+#include "input/cache/Manager.hxx"
+#include "util/Domain.hxx"
+
+static constexpr Domain cache_domain("cache");
 
 Partition::Partition(Instance &_instance,
 		     const char *_name,
@@ -37,7 +42,9 @@ Partition::Partition(Instance &_instance,
 	 global_events(instance.event_loop, BIND_THIS_METHOD(OnGlobalEvent)),
 	 playlist(max_length, *this),
 	 outputs(*this),
-	 pc(*this, outputs, buffer_chunks,
+	 pc(*this, outputs,
+	    instance.input_cache.get(),
+	    buffer_chunks,
 	    configured_audio_format, replay_gain_config)
 {
 	UpdateEffectiveReplayGainMode();
@@ -49,6 +56,43 @@ void
 Partition::EmitIdle(unsigned mask) noexcept
 {
 	instance.EmitIdle(mask);
+}
+
+static void
+PrefetchSong(InputCacheManager &cache, const char *uri) noexcept
+{
+	if (cache.Contains(uri))
+		return;
+
+	FormatDebug(cache_domain, "Prefetch '%s'", uri);
+
+	try {
+		cache.Prefetch(uri);
+	} catch (...) {
+		FormatError(std::current_exception(),
+			    "Prefetch '%s' failed", uri);
+	}
+}
+
+static void
+PrefetchSong(InputCacheManager &cache, const DetachedSong &song) noexcept
+{
+	PrefetchSong(cache, song.GetURI());
+}
+
+inline void
+Partition::PrefetchQueue() noexcept
+{
+	if (!instance.input_cache)
+		return;
+
+	auto &cache = *instance.input_cache;
+
+	int next = playlist.GetNextPosition();
+	if (next >= 0)
+		PrefetchSong(cache, playlist.queue.Get(next));
+
+	// TODO: prefetch more songs
 }
 
 void
@@ -106,6 +150,10 @@ void
 Partition::SyncWithPlayer() noexcept
 {
 	playlist.SyncWithPlayer(pc);
+
+	/* TODO: invoke this function in batches, to let the hard disk
+	   spin down in between */
+	PrefetchQueue();
 }
 
 void

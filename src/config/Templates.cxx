@@ -86,6 +86,7 @@ const ConfigTemplate config_block_templates[] = {
 	{ "audio_output", true },
 	{ "decoder", true },
 	{ "input", true },
+	{ "input_cache" },
 	{ "playlist_plugin", true },
 	{ "resampler" },
 	{ "filter", true },

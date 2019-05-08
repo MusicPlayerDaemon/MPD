@@ -39,6 +39,7 @@
 struct Tag;
 class PlayerListener;
 class PlayerOutputs;
+class InputCacheManager;
 class DetachedSong;
 
 enum class PlayerState : uint8_t {
@@ -115,6 +116,8 @@ class PlayerControl final : public AudioOutputClient {
 	PlayerListener &listener;
 
 	PlayerOutputs &outputs;
+
+	InputCacheManager *const input_cache;
 
 	const unsigned buffer_chunks;
 
@@ -234,6 +237,7 @@ class PlayerControl final : public AudioOutputClient {
 public:
 	PlayerControl(PlayerListener &_listener,
 		      PlayerOutputs &_outputs,
+		      InputCacheManager *_input_cache,
 		      unsigned buffer_chunks,
 		      AudioFormat _configured_audio_format,
 		      const ReplayGainConfig &_replay_gain_config) noexcept;

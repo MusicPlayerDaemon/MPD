@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2018 The Music Player Daemon Project
+ * Copyright 2003-2019 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -54,6 +54,7 @@ struct Partition;
 class StateFile;
 class RemoteTagCache;
 class StickerDatabase;
+class InputCacheManager;
 
 /**
  * A utility class which, when used as the first base class, ensures
@@ -97,6 +98,8 @@ struct Instance final
 #ifdef ENABLE_SYSTEMD_DAEMON
 	Systemd::Watchdog systemd_watchdog;
 #endif
+
+	std::unique_ptr<InputCacheManager> input_cache;
 
 	MaskMonitor idle_monitor;
 

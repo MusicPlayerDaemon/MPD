@@ -81,6 +81,14 @@ struct Partition final : QueueListener, PlayerListener, MixerListener {
 
 	void EmitIdle(unsigned mask) noexcept;
 
+	/**
+	 * Populate the #InputCacheManager with soon-to-be-played song
+	 * files.
+	 *
+	 * Errors will be logged.
+	 */
+	void PrefetchQueue() noexcept;
+
 	void ClearQueue() noexcept {
 		playlist.Clear(pc);
 	}

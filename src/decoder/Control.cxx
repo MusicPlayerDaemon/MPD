@@ -26,9 +26,11 @@
 #include <assert.h>
 
 DecoderControl::DecoderControl(Mutex &_mutex, Cond &_client_cond,
+			       InputCacheManager *_input_cache,
 			       const AudioFormat _configured_audio_format,
 			       const ReplayGainConfig &_replay_gain_config) noexcept
 	:thread(BIND_THIS_METHOD(RunThread)),
+	 input_cache(_input_cache),
 	 mutex(_mutex), client_cond(_client_cond),
 	 configured_audio_format(_configured_audio_format),
 	 replay_gain_config(_replay_gain_config) {}

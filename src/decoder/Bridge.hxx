@@ -157,7 +157,7 @@ public:
 	/**
 	 * Open a local file.
 	 */
-	InputStreamPtr OpenLocal(Path path_fs);
+	InputStreamPtr OpenLocal(Path path_fs, const char *uri_utf8);
 
 	/* virtual methods from DecoderClient */
 	void Ready(AudioFormat audio_format,

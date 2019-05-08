@@ -1132,6 +1132,7 @@ try {
 	SetThreadName("player");
 
 	DecoderControl dc(mutex, cond,
+			  input_cache,
 			  configured_audio_format,
 			  replay_gain_config);
 	dc.StartThread();

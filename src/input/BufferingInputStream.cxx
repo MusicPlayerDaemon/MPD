@@ -152,6 +152,18 @@ BufferingInputStream::RunThreadLocked(std::unique_lock<Mutex> &lock)
 				continue;
 			}
 
+			/* enforce an upper limit for each
+			   InputStream::Read() call; this is necessary
+			   for plugins which are unable to do partial
+			   reads, e.g. when reading local files, the
+			   read() system call will not return until
+			   all requested bytes have been read from the
+			   hard disk, instead of returning when "some"
+			   data has been read */
+			constexpr size_t MAX_READ = 64 * 1024;
+			if (w.size > MAX_READ)
+				w.size = MAX_READ;
+
 			size_t nbytes = input->Read(lock, w.data, w.size);
 			buffer.Commit(read_offset, read_offset + nbytes);
 

@@ -38,6 +38,8 @@
 #include "Log.hxx"
 #include "LogInit.hxx"
 #include "input/Init.hxx"
+#include "input/cache/Config.hxx"
+#include "input/cache/Manager.hxx"
 #include "event/Loop.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "fs/Config.hxx"
@@ -414,6 +416,12 @@ MainConfigured(const struct options &options, const ConfigData &raw_config)
 		raw_config.GetPositive(ConfigOption::MAX_CONN, 10);
 	instance.client_list = std::make_unique<ClientList>(max_clients);
 
+	const auto *input_cache_config = raw_config.GetBlock(ConfigBlockOption::INPUT_CACHE);
+	if (input_cache_config != nullptr) {
+		const InputCacheConfig c(*input_cache_config);
+		instance.input_cache = std::make_unique<InputCacheManager>(c);
+	}
+
 	initialize_decoder_and_player(instance,
 				      raw_config, config.replay_gain);
 
@@ -461,6 +469,7 @@ MainConfigured(const struct options &options, const ConfigData &raw_config)
 	client_manager_init(raw_config);
 	const ScopeInputPluginsInit input_plugins_init(raw_config,
 						       instance.io_thread.GetEventLoop());
+
 	const ScopePlaylistPluginsInit playlist_plugins_init(raw_config);
 
 #ifdef ENABLE_DAEMON

@@ -346,7 +346,7 @@ decoder_run_file(DecoderBridge &bridge, const char *uri_utf8, Path path_fs)
 	InputStreamPtr input_stream;
 
 	try {
-		input_stream = bridge.OpenLocal(path_fs);
+		input_stream = bridge.OpenLocal(path_fs, uri_utf8);
 	} catch (const std::system_error &e) {
 		if (IsPathNotFound(e) &&
 		    /* ENOTDIR means this may be a path inside a
