@@ -39,12 +39,16 @@
 
 /**
  * Convert a UTC-based time point to a UTC-based "struct tm".
+ *
+ * Throws on error.
  */
 struct tm
 GmTime(std::chrono::system_clock::time_point tp);
 
 /**
  * Convert a UTC-based time point to a local "struct tm".
+ *
+ * Throws on error.
  */
 struct tm
 LocalTime(std::chrono::system_clock::time_point tp);
