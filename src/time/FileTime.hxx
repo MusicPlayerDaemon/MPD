@@ -37,20 +37,20 @@
 #include <stdint.h>
 
 static constexpr uint64_t
-ConstructUint64(DWORD lo, DWORD hi)
+ConstructUint64(DWORD lo, DWORD hi) noexcept
 {
 	return uint64_t(lo) | (uint64_t(hi) << 32);
 }
 
 static constexpr time_t
-FileTimeToTimeT(FILETIME ft)
+FileTimeToTimeT(FILETIME ft) noexcept
 {
 	return (ConstructUint64(ft.dwLowDateTime, ft.dwHighDateTime)
 		- 116444736000000000) / 10000000;
 }
 
 static inline std::chrono::system_clock::time_point
-FileTimeToChrono(FILETIME ft)
+FileTimeToChrono(FILETIME ft) noexcept
 {
 	// TODO: eliminate the time_t roundtrip, preserve sub-second resolution
 	return std::chrono::system_clock::from_time_t(FileTimeToTimeT(ft));
@@ -58,7 +58,7 @@ FileTimeToChrono(FILETIME ft)
 
 gcc_const
 static inline std::chrono::seconds
-DeltaFileTimeS(FILETIME a, FILETIME b)
+DeltaFileTimeS(FILETIME a, FILETIME b) noexcept
 {
 	ULARGE_INTEGER a2, b2;
 	b2.LowPart = b.dwLowDateTime;
