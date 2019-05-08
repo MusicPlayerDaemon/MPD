@@ -67,6 +67,7 @@ else
     dependencies: [
       libavahi_client_dep,
       dbus_dep,
+      time_dep,
     ],
   )
 
