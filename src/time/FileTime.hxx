@@ -61,16 +61,10 @@ FileTimeToChrono(FILETIME ft) noexcept
 	return std::chrono::system_clock::from_time_t(FileTimeToTimeT(ft));
 }
 
-gcc_const
-inline std::chrono::seconds
+constexpr std::chrono::seconds
 DeltaFileTimeS(FILETIME a, FILETIME b) noexcept
 {
-	ULARGE_INTEGER a2, b2;
-	b2.LowPart = b.dwLowDateTime;
-	b2.HighPart = b.dwHighDateTime;
-	a2.LowPart = a.dwLowDateTime;
-	a2.HighPart = a.dwHighDateTime;
-	return std::chrono::seconds((a2.QuadPart - b2.QuadPart) / 10000000);
+	return std::chrono::seconds((ToUint64(a) - ToUint64(b)) / 10000000);
 }
 
 #endif
