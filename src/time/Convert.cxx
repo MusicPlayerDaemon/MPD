@@ -81,3 +81,10 @@ MakeTime(struct tm &tm) noexcept
 {
 	return std::chrono::system_clock::from_time_t(mktime(&tm));
 }
+
+std::chrono::steady_clock::duration
+ToSteadyClockDuration(const struct timeval &tv) noexcept
+{
+	return std::chrono::steady_clock::duration(std::chrono::seconds(tv.tv_sec)) +
+		std::chrono::steady_clock::duration(std::chrono::microseconds(tv.tv_usec));
+}
