@@ -153,17 +153,17 @@ public:
 	explicit HugeArray(size_type _size)
 		:buffer(Buffer::FromVoidFloor(HugeAllocate(sizeof(value_type) * _size))) {}
 
-	constexpr HugeArray(HugeArray &&other)
+	constexpr HugeArray(HugeArray &&other) noexcept
 		:buffer(std::exchange(other.buffer, nullptr)) {}
 
-	~HugeArray() {
+	~HugeArray() noexcept {
 		if (buffer != nullptr) {
 			auto v = buffer.ToVoid();
 			HugeFree(v.data, v.size);
 		}
 	}
 
-	HugeArray &operator=(HugeArray &&other) {
+	HugeArray &operator=(HugeArray &&other) noexcept {
 		std::swap(buffer, other.buffer);
 		return *this;
 	}
@@ -178,64 +178,64 @@ public:
 		HugeDiscard(v.data, v.size);
 	}
 
-	constexpr bool operator==(std::nullptr_t) const {
+	constexpr bool operator==(std::nullptr_t) const noexcept {
 		return buffer == nullptr;
 	}
 
-	constexpr bool operator!=(std::nullptr_t) const {
+	constexpr bool operator!=(std::nullptr_t) const noexcept {
 		return buffer != nullptr;
 	}
 
 	/**
 	 * Returns the number of allocated elements.
 	 */
-	constexpr size_type size() const {
+	constexpr size_type size() const noexcept {
 		return buffer.size;
 	}
 
-	reference front() {
+	reference front() noexcept {
 		return buffer.front();
 	}
 
-	const_reference front() const {
+	const_reference front() const noexcept {
 		return buffer.front();
 	}
 
-	reference back() {
+	reference back() noexcept {
 		return buffer.back();
 	}
 
-	const_reference back() const {
+	const_reference back() const noexcept {
 		return buffer.back();
 	}
 
 	/**
 	 * Returns one element.  No bounds checking.
 	 */
-	reference operator[](size_type i) {
+	reference operator[](size_type i) noexcept {
 		return buffer[i];
 	}
 
 	/**
 	 * Returns one constant element.  No bounds checking.
 	 */
-	const_reference operator[](size_type i) const {
+	const_reference operator[](size_type i) const noexcept {
 		return buffer[i];
 	}
 
-	iterator begin() {
+	iterator begin() noexcept {
 		return buffer.begin();
 	}
 
-	constexpr const_iterator begin() const {
+	constexpr const_iterator begin() const noexcept {
 		return buffer.cbegin();
 	}
 
-	iterator end() {
+	iterator end() noexcept {
 		return buffer.end();
 	}
 
-	constexpr const_iterator end() const {
+	constexpr const_iterator end() const noexcept {
 		return buffer.cend();
 	}
 };
