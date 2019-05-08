@@ -106,7 +106,7 @@ class SparseBuffer {
 	SparseMap map;
 
 public:
-	explicit SparseBuffer(size_type size) noexcept
+	explicit SparseBuffer(size_type size)
 		:buffer(size), map(size) {
 		buffer.ForkCow(false);
 	}
