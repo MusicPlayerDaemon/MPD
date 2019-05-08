@@ -23,7 +23,7 @@
 #include <windows.h>
 
 gcc_const
-static unsigned
+static std::chrono::seconds
 DeltaFileTimeS(FILETIME a, FILETIME b)
 {
 	ULARGE_INTEGER a2, b2;
@@ -31,10 +31,10 @@ DeltaFileTimeS(FILETIME a, FILETIME b)
 	b2.HighPart = b.dwHighDateTime;
 	a2.LowPart = a.dwLowDateTime;
 	a2.HighPart = a.dwHighDateTime;
-	return (a2.QuadPart - b2.QuadPart) / 10000000;
+	return std::chrono::seconds((a2.QuadPart - b2.QuadPart) / 10000000);
 }
 
-unsigned
+std::chrono::seconds
 GetProcessUptimeS()
 {
 	FILETIME creation_time, exit_time, kernel_time, user_time, now;

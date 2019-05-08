@@ -114,13 +114,15 @@ db_stats_print(Response &r, const Database &db)
 void
 stats_print(Response &r, const Partition &partition)
 {
+#ifdef _WIN32
+	const auto uptime = GetProcessUptimeS();
+#else
+	const auto uptime = std::chrono::steady_clock::now() - start_time;
+#endif
+
 	r.Format("uptime: %u\n"
 		 "playtime: %lu\n",
-#ifdef _WIN32
-		 GetProcessUptimeS(),
-#else
-		 (unsigned)std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - start_time).count(),
-#endif
+		 (unsigned)std::chrono::duration_cast<std::chrono::seconds>(uptime).count(),
 		 std::lround(partition.pc.GetTotalPlayTime().count()));
 
 #ifdef ENABLE_DATABASE
