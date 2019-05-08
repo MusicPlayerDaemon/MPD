@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 Content Management AG
+ * Copyright 2007-2019 Content Management AG
  * All rights reserved.
  *
  * author: Max Kellermann <mk@cm4all.com>
@@ -33,6 +33,7 @@
 #include "ISO8601.hxx"
 #include "Convert.hxx"
 #include "Parser.hxx"
+#include "util/StringBuffer.hxx"
 
 StringBuffer<64>
 FormatISO8601(const struct tm &tm) noexcept
