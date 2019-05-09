@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2018 The Music Player Daemon Project
+ * Copyright 2003-2019 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -21,13 +21,7 @@
 #define MPD_BUFFERED_INPUT_STREAM_BUFFER_HXX
 
 #include "InputStream.hxx"
-#include "Ptr.hxx"
-#include "Handler.hxx"
-#include "thread/Thread.hxx"
-#include "thread/Cond.hxx"
-#include "util/SparseBuffer.hxx"
-
-#include <exception>
+#include "BufferingInputStream.hxx"
 
 #include <assert.h>
 
@@ -36,37 +30,12 @@
  * #InputStream.  This works only if the #InputStream is a "file", not
  * a "stream"; see IsEligible() for details.
  */
-class BufferedInputStream final : public InputStream, InputStreamHandler {
-	InputStreamPtr input;
-
-	Thread thread;
-
-	/**
-	 * This #Cond wakes up the #Thread.  It is used by both the
-	 * "client" thread (to submit commands) and #input's handler
-	 * (to notify new data being available).
-	 */
-	Cond wake_cond;
-
-	/**
-	 * This #Cond wakes up the client upon command completion.
-	 */
-	Cond client_cond;
-
-	SparseBuffer<uint8_t> buffer;
-
-	bool stop = false, seek = false, idle = false;
-
-	offset_type seek_offset;
-
-	std::exception_ptr read_error, seek_error;
-
+class BufferedInputStream final : public InputStream, BufferingInputStream {
 	// TODO: make configurable
 	static constexpr offset_type MAX_SIZE = 128 * 1024 * 1024;
 
 public:
 	BufferedInputStream(InputStreamPtr _input);
-	~BufferedInputStream() noexcept override;
 
 	/**
 	 * Check whether the given #InputStream can be used as input
@@ -93,18 +62,11 @@ public:
 	size_t Read(std::unique_lock<Mutex> &lock,
 		    void *ptr, size_t size) override;
 
-	/* virtual methods from class InputStreamHandler */
-	void OnInputStreamReady() noexcept override {
-		/* this should never be called, because our input must
-		   be "ready" already */
-	}
-
-	void OnInputStreamAvailable() noexcept override {
-		wake_cond.notify_one();
-	}
-
 private:
-	void RunThread() noexcept;
+	/* virtual methods from class BufferingInputStream */
+	void OnBufferAvailable() noexcept override {
+		InvokeOnAvailable();
+	}
 };
 
 #endif
