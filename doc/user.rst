@@ -504,6 +504,8 @@ reference.
 Audio Format Settings
 ---------------------
 
+.. _audio_output_format:
+
 Global Audio Format
 ~~~~~~~~~~~~~~~~~~~
 
@@ -915,7 +917,7 @@ Check list for bit-perfect playback:
   device (:samp:`hw:0,0` or similar).
 * Don't use software volume (setting :code:`mixer_type`).
 * Don't force :program:`MPD` to use a specific audio format (settings
-  :code:`format`, :code:`audio_output_format`).
+  :code:`format`, :ref:`audio_output_format <audio_output_format>`).
 * Verify that you are really doing bit-perfect playback using :program:`MPD`'s verbose log and :file:`/proc/asound/card*/pcm*p/sub*/hw_params`. Some DACs can also indicate the audio format.
 
 Direct Stream Digital (DSD)
