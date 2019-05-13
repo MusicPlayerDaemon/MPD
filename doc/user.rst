@@ -885,7 +885,7 @@ To verify if :program:`MPD` converts the audio format, enable verbose logging, a
 .. code-block:: none
 
     decoder: audio_format=44100:24:2, seekable=true
-    output: opened plugin=alsa name="An ALSA output"audio_format=44100:16:2
+    output: opened plugin=alsa name="An ALSA output" audio_format=44100:16:2
     output: converting from 44100:24:2
 
 This example shows that a 24 bit file is being played, but the sound chip cannot play 24 bit. It falls back to 16 bit, discarding 8 bit.
