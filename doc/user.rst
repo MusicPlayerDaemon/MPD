@@ -507,7 +507,10 @@ Audio Format Settings
 Global Audio Format
 ~~~~~~~~~~~~~~~~~~~
 
-The setting audio_output_format forces :program:`MPD` to use one audio format for all outputs. Doing that is usually not a good idea. The values are the same as in format in the audio_output section.
+The setting ``audio_output_format`` forces :program:`MPD` to use one
+audio format for all outputs.  Doing that is usually not a good idea.
+The values are the same as in ``format`` in the :ref:`audio_output
+section <config_audio_output>`.
 
 Resampler
 ~~~~~~~~~
