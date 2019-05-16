@@ -1,4 +1,6 @@
 ver 0.21.9 (not yet released)
+* input
+  - buffer: fix deadlock bug
 * Android
   - fix crash on ARMv7
   - request storage permission on Android 6+
