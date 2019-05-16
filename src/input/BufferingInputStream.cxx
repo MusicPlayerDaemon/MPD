@@ -48,6 +48,9 @@ BufferingInputStream::~BufferingInputStream() noexcept
 void
 BufferingInputStream::Check()
 {
+	if (read_error)
+		std::rethrow_exception(read_error);
+
 	if (input)
 		input->Check();
 }
@@ -165,6 +168,8 @@ BufferingInputStream::RunThread() noexcept
 				   own InputStream interface) is in
 				   "read" mode */
 				read_error = std::current_exception();
+				client_cond.notify_one();
+				OnBufferAvailable();
 			}
 		} else if (!idle && !read_error &&
 			   input->IsAvailable() && !input->IsEOF()) {
