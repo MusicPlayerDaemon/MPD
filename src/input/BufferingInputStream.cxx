@@ -146,9 +146,10 @@ BufferingInputStream::RunThread() noexcept
 			seek = false;
 			read_error = {};
 			client_cond.notify_one();
-		} else if (!idle && !read_error &&
-			   offset != input->GetOffset() &&
-			   !IsAvailable()) {
+		} else if (read_error || idle) {
+			/* wait for client to consume the read error */
+			wake_cond.wait(lock);
+		} else if (offset != input->GetOffset() && !IsAvailable()) {
 			/* a past Seek() call was a no-op because data
 			   was already available at that position, but
 			   now we've reached a new position where
@@ -172,8 +173,7 @@ BufferingInputStream::RunThread() noexcept
 				client_cond.notify_one();
 				OnBufferAvailable();
 			}
-		} else if (!idle && !read_error &&
-			   input->IsAvailable() && !input->IsEOF()) {
+		} else if (input->IsAvailable() && !input->IsEOF()) {
 			const auto read_offset = input->GetOffset();
 			auto w = buffer.Write(read_offset);
 
