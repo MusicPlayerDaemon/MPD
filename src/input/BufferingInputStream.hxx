@@ -55,7 +55,7 @@ class BufferingInputStream : InputStreamHandler {
 
 	SparseBuffer<uint8_t> buffer;
 
-	bool stop = false, seek = false, idle = false;
+	bool stop = false, seek = false;
 
 	size_t offset = 0;
 

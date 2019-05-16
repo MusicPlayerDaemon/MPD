@@ -105,7 +105,6 @@ BufferingInputStream::Read(std::unique_lock<Mutex> &lock, void *ptr, size_t s)
 
 			if (!IsAvailable()) {
 				/* wake up the sleeping thread */
-				idle = false;
 				wake_cond.notify_one();
 			}
 
@@ -115,12 +114,6 @@ BufferingInputStream::Read(std::unique_lock<Mutex> &lock, void *ptr, size_t s)
 		if (read_error) {
 			wake_cond.notify_one();
 			std::rethrow_exception(std::exchange(read_error, {}));
-		}
-
-		if (idle) {
-			/* wake up the sleeping thread */
-			idle = false;
-			wake_cond.notify_one();
 		}
 
 		client_cond.wait(lock);
@@ -158,11 +151,10 @@ BufferingInputStream::RunThread() noexcept
 				seek_error = std::current_exception();
 			}
 
-			idle = false;
 			seek = false;
 			read_error = {};
 			client_cond.notify_one();
-		} else if (read_error || idle) {
+		} else if (read_error) {
 			/* wait for client to consume the read error */
 			wake_cond.wait(lock);
 		} else if (offset != input->GetOffset() && !IsAvailable()) {
@@ -214,9 +206,22 @@ BufferingInputStream::RunThread() noexcept
 			if (w.empty()) {
 				if (IsAvailable()) {
 					/* we still have enough data
-					   for the next Read() - sleep
-					   until we need more data */
-					idle = true;
+					   for the next Read() - seek
+					   to the first hole */
+
+					size_t new_offset = FindFirstHole();
+					if (new_offset == INVALID_OFFSET)
+						/* the file has been
+						   read completely */
+						break;
+
+					try {
+						input->Seek(lock, new_offset);
+					} catch (...) {
+						read_error = std::current_exception();
+						client_cond.notify_one();
+						OnBufferAvailable();
+					}
 				} else {
 					/* we need more data at our
 					   current position, because
