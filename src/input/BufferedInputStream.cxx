@@ -59,6 +59,9 @@ BufferedInputStream::~BufferedInputStream() noexcept
 void
 BufferedInputStream::Check()
 {
+	if (read_error)
+		std::rethrow_exception(read_error);
+
 	if (input)
 		input->Check();
 }
