@@ -127,7 +127,7 @@ BufferingInputStream::Read(std::unique_lock<Mutex> &lock, void *ptr, size_t s)
 void
 BufferingInputStream::RunThread() noexcept
 {
-	SetThreadName("input_buffered");
+	SetThreadName("buffering");
 
 	std::unique_lock<Mutex> lock(mutex);
 
