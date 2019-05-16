@@ -144,6 +144,7 @@ BufferingInputStream::RunThread() noexcept
 
 			idle = false;
 			seek = false;
+			read_error = {};
 			client_cond.notify_one();
 		} else if (!idle && !read_error &&
 			   offset != input->GetOffset() &&
