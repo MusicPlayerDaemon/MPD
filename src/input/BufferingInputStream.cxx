@@ -127,6 +127,22 @@ BufferingInputStream::Read(std::unique_lock<Mutex> &lock, void *ptr, size_t s)
 	}
 }
 
+size_t
+BufferingInputStream::FindFirstHole() const noexcept
+{
+	auto r = buffer.Read(0);
+	if (r.undefined_size > 0)
+		/* a hole at the beginning */
+		return 0;
+
+	if (r.defined_buffer.size < size())
+		/* a hole in the middle */
+		return r.defined_buffer.size;
+
+	/* the file has been read completely */
+	return INVALID_OFFSET;
+}
+
 void
 BufferingInputStream::RunThread() noexcept
 {
@@ -173,7 +189,26 @@ BufferingInputStream::RunThread() noexcept
 				client_cond.notify_one();
 				OnBufferAvailable();
 			}
-		} else if (input->IsAvailable() && !input->IsEOF()) {
+		} else if (input->IsEOF()) {
+			/* our input has reached its end: prepare
+			   reading the first remaining hole */
+
+			size_t new_offset = FindFirstHole();
+			if (new_offset == INVALID_OFFSET) {
+				/* the file has been read completely */
+				wake_cond.wait(lock);
+				continue;
+			}
+
+			/* seek to the first hole */
+			try {
+				input->Seek(lock, new_offset);
+			} catch (...) {
+				read_error = std::current_exception();
+				client_cond.notify_one();
+				OnBufferAvailable();
+			}
+		} else if (input->IsAvailable()) {
 			const auto read_offset = input->GetOffset();
 			auto w = buffer.Write(read_offset);
 

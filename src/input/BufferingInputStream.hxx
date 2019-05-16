@@ -63,6 +63,8 @@ class BufferingInputStream : InputStreamHandler {
 
 	std::exception_ptr read_error, seek_error;
 
+	static constexpr size_t INVALID_OFFSET = ~size_t(0);
+
 public:
 	explicit BufferingInputStream(InputStreamPtr _input);
 	~BufferingInputStream() noexcept;
@@ -84,6 +86,8 @@ protected:
 	virtual void OnBufferAvailable() noexcept {}
 
 private:
+	size_t FindFirstHole() const noexcept;
+
 	void RunThread() noexcept;
 
 	/* virtual methods from class InputStreamHandler */
