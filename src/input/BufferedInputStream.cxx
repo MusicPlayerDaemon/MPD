@@ -187,6 +187,8 @@ BufferedInputStream::RunThread() noexcept
 				   own InputStream interface) is in
 				   "read" mode */
 				read_error = std::current_exception();
+				client_cond.signal();
+				InvokeOnAvailable();
 			}
 		} else if (!idle && !read_error &&
 			   input->IsAvailable() && !input->IsEOF()) {
