@@ -140,7 +140,6 @@ of database.
 .B auto_update_depth <N>
 Limit the depth of the directories being watched, 0 means only watch
 the music directory itself.  There is no limit by default.
-.TP
 .SH REQUIRED AUDIO OUTPUT PARAMETERS
 .TP
 .B type <type>
@@ -164,57 +163,12 @@ Specifies how replay gain is applied.  The default is "software",
 which uses an internal software volume control.  "mixer" uses the
 configured (hardware) mixer control.  "none" disables replay gain on
 this audio output.
-.SH OPTIONAL ALSA OUTPUT PARAMETERS
-.TP
-.B device <dev>
-This specifies the device to use for audio output.  The default is "default".
 .TP
 .B mixer_type <hardware, software or none>
 Specifies which mixer should be used for this audio output: the
 hardware mixer (available for ALSA, OSS and PulseAudio), the software
 mixer or no mixer ("none").  By default, the hardware mixer is used
 for devices which support it, and none for the others.
-.TP
-.B mixer_device <mixer dev>
-This specifies which mixer to use.  The default is "default".  To use
-the second sound card in a system, use "hw:1".
-.TP
-.B mixer_control <mixer ctrl>
-This specifies which mixer control to use (sometimes referred to as
-the "device").  The default is "PCM".  Use "amixer scontrols" to see
-the list of possible controls.
-.TP
-.B mixer_index <mixer index>
-A number identifying the index of the named mixer control.  This is
-probably only useful if your alsa device has more than one
-identically\-named mixer control.  The default is "0".  Use "amixer
-scontrols" to see the list of controls with their indexes.
-.TP
-.B auto_resample <yes or no>
-Setting this to "no" disables ALSA's software resampling, if the
-hardware does not support a specific sample rate.  This lets MPD do
-the resampling.  "yes" is the default and allows ALSA to resample.
-.TP
-.B auto_channels <yes or no>
-Setting this to "no" disables ALSA's channel conversion, if the
-hardware does not support a specific number of channels.  Default: "yes".
-.TP
-.B auto_format <yes or no>
-Setting this to "no" disables ALSA's sample format conversion, if the
-hardware does not support a specific sample format.  Default: "yes".
-.TP
-.B buffer_time <time in microseconds>
-This sets the length of the hardware sample buffer in microseconds.  Increasing
-it may help to reduce or eliminate skipping on certain setups.  Most users do
-not need to change this.  The default is 500000 microseconds (0.5 seconds).
-.TP
-.B period_time <time in microseconds>
-This sets the time between hardware sample transfers in microseconds.
-Increasing this can reduce CPU usage while lowering it can reduce underrun
-errors on bandwidth-limited devices.  Some users have reported good results
-with this set to 50000, but not all devices support values this high.  Most
-users do not need to change this.  The default is 256000000 / sample_rate(kHz),
-or 5804 microseconds for CD-quality audio.
 .SH FILES
 .TP
 .BI ~/.mpdconf

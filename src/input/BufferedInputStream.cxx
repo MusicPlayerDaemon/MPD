@@ -166,6 +166,30 @@ BufferedInputStream::RunThread() noexcept
 			seek = false;
 			client_cond.notify_one();
 		} else if (!idle && !read_error &&
+			   offset != input->GetOffset() &&
+			   !IsAvailable()) {
+			/* a past Seek() call was a no-op because data
+			   was already available at that position, but
+			   now we've reached a new position where
+			   there is no more data in the buffer, and
+			   our input is reading somewhere else (maybe
+			   stuck at the end of the file); to find a
+			   way out, we now seek our input to our
+			   reading position to be able to fill our
+			   buffer */
+
+			try {
+				input->Seek(lock, offset);
+			} catch (...) {
+				/* this is really a seek error, but we
+				   register it as a read_error,
+				   because seek_error is only checked
+				   by Seek(), and at our frontend (our
+				   own InputStream interface) is in
+				   "read" mode */
+				read_error = std::current_exception();
+			}
+		} else if (!idle && !read_error &&
 			   input->IsAvailable() && !input->IsEOF()) {
 			const auto read_offset = input->GetOffset();
 			auto w = buffer.Write(read_offset);

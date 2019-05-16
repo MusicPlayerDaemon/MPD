@@ -178,8 +178,9 @@ of:
   file's time stamp with the given value (ISO 8601 or UNIX
   time stamp).
 
-- ``(AudioFormat == 'SAMPLERATE:BITS:CHANNELS')``:
-  compares the audio format with the given value.
+- ``(AudioFormat == 'SAMPLERATE:BITS:CHANNELS')``: compares the audio
+  format with the given value.  See :ref:`audio_output_format` for a
+  detailed explanation.
 
 - ``(AudioFormat =~ 'SAMPLERATE:BITS:CHANNELS')``:
   matches the audio format with the given mask (i.e. one
@@ -423,7 +424,9 @@ Querying :program:`MPD`'s status
     - ``xfade``: ``crossfade`` in seconds
     - ``mixrampdb``: ``mixramp`` threshold in dB
     - ``mixrampdelay``: ``mixrampdelay`` in seconds
-    - ``audio``: The format emitted by the decoder plugin during playback, format: ``*samplerate:bits:channels*``. Check the user manual for a detailed explanation.
+    - ``audio``: The format emitted by the decoder plugin during
+      playback, format: ``samplerate:bits:channels``.  See
+      :ref:`audio_output_format` for a detailed explanation.
     - ``updating_db``: ``job id``
     - ``error``: if there is an error, returns message here
 

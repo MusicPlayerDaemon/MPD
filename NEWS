@@ -9,6 +9,8 @@ ver 0.22 (not yet released)
   - hdcd: new plugin based on FFmpeg's "af_hdcd" for HDCD playback
 
 ver 0.21.9 (not yet released)
+* input
+  - buffer: fix deadlock bug
 * Android
   - fix crash on ARMv7
   - request storage permission on Android 6+

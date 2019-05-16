@@ -402,14 +402,9 @@ The following table lists the audio_output options valid for all plugins:
      - The name of the plugin
    * - **name**
      - The name of the audio output. It is visible to the client. Some plugins also use it internally, e.g. as a name registered in the PULSE server.
-   * - **format**
-     -  Always open the audio output with the specified audio format samplerate:bits:channels), regardless of the format of the input file. This is optional for most plugins.
-
-        Any of the three attributes may be an asterisk to specify that this attribute should not be enforced, example: 48000:16:*. *:*:* is equal to not having a format specification.
-
-        The following values are valid for bits: 8 (signed 8 bit integer samples), 16, 24 (signed 24 bit integer samples padded to 32 bit), 32 (signed 32 bit integer samples), f (32 bit floating point, -1.0 to 1.0), "dsd" means DSD (Direct Stream Digital). For DSD, there are special cases such as "dsd64", which allows you to omit the sample rate (e.g. dsd512:2 for stereo DSD512, i.e. 22.5792 MHz).
-
-        The sample rate is special for DSD: :program:`MPD` counts the number of bytes, not bits. Thus, a DSD "bit" rate of 22.5792 MHz (DSD512) is 2822400 from :program:`MPD`'s point of view (44100*512/8).
+   * - **format samplerate:bits:channels**
+     -  Always open the audio output with the specified audio format, regardless of the format of the input file. This is optional for most plugins.
+        See :ref:`audio_output_format` for a detailed description of the value.
    * - **enabed yes|no**
      - Specifies whether this audio output is enabled when :program:`MPD` is started. By default, all audio outputs are enabled. This is just the default setting when there is no state file; with a state file, the previous state is restored.
    * - **tags yes|no**
@@ -504,10 +499,31 @@ reference.
 Audio Format Settings
 ---------------------
 
+.. _audio_output_format:
+
 Global Audio Format
 ~~~~~~~~~~~~~~~~~~~
 
-The setting audio_output_format forces :program:`MPD` to use one audio format for all outputs. Doing that is usually not a good idea. The values are the same as in format in the audio_output section.
+The setting ``audio_output_format`` forces :program:`MPD` to use one
+audio format for all outputs.  Doing that is usually not a good idea.
+
+The value is specified as ``samplerate:bits:channels``.
+
+Any of the three attributes may be an asterisk to specify that this
+attribute should not be enforced, example: ``48000:16:*``.
+``*:*:*`` is equal to not having a format specification.
+
+The following values are valid for bits: ``8`` (signed 8 bit integer
+samples), ``16``, ``24`` (signed 24 bit integer samples padded to 32
+bit), ``32`` (signed 32 bit integer samples), ``f`` (32 bit floating
+point, -1.0 to 1.0), ``dsd`` means DSD (Direct Stream Digital). For
+DSD, there are special cases such as ``dsd64``, which allows you to
+omit the sample rate (e.g. ``dsd512:2`` for stereo DSD512,
+i.e. 22.5792 MHz).
+
+The sample rate is special for DSD: :program:`MPD` counts the number
+of bytes, not bits. Thus, a DSD "bit" rate of 22.5792 MHz (DSD512) is
+2822400 from :program:`MPD`'s point of view (44100*512/8).
 
 Resampler
 ~~~~~~~~~
@@ -885,7 +901,7 @@ To verify if :program:`MPD` converts the audio format, enable verbose logging, a
 .. code-block:: none
 
     decoder: audio_format=44100:24:2, seekable=true
-    output: opened plugin=alsa name="An ALSA output"audio_format=44100:16:2
+    output: opened plugin=alsa name="An ALSA output" audio_format=44100:16:2
     output: converting from 44100:24:2
 
 This example shows that a 24 bit file is being played, but the sound chip cannot play 24 bit. It falls back to 16 bit, discarding 8 bit.
@@ -912,7 +928,7 @@ Check list for bit-perfect playback:
   device (:samp:`hw:0,0` or similar).
 * Don't use software volume (setting :code:`mixer_type`).
 * Don't force :program:`MPD` to use a specific audio format (settings
-  :code:`format`, :code:`audio_output_format`).
+  :code:`format`, :ref:`audio_output_format <audio_output_format>`).
 * Verify that you are really doing bit-perfect playback using :program:`MPD`'s verbose log and :file:`/proc/asound/card*/pcm*p/sub*/hw_params`. Some DACs can also indicate the audio format.
 
 Direct Stream Digital (DSD)
