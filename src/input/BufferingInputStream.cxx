@@ -196,7 +196,6 @@ BufferingInputStream::RunThread() noexcept
 			size_t new_offset = FindFirstHole();
 			if (new_offset == INVALID_OFFSET) {
 				/* the file has been read completely */
-				input.reset();
 				break;
 			}
 
@@ -251,4 +250,14 @@ BufferingInputStream::RunThread() noexcept
 		} else
 			wake_cond.wait(lock);
 	}
+
+	/* clear the "input" attribute while holding the mutex */
+	auto _input = std::move(input);
+
+	/* the mutex must be unlocked while an InputStream can be
+	   destructed */
+	lock.unlock();
+
+	/* and now actually destruct the InputStream */
+	_input.reset();
 }
