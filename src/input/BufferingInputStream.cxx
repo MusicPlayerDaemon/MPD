@@ -196,8 +196,8 @@ BufferingInputStream::RunThread() noexcept
 			size_t new_offset = FindFirstHole();
 			if (new_offset == INVALID_OFFSET) {
 				/* the file has been read completely */
-				wake_cond.wait(lock);
-				continue;
+				input.reset();
+				break;
 			}
 
 			/* seek to the first hole */
