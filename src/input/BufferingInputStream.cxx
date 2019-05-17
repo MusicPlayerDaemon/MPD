@@ -58,7 +58,7 @@ BufferingInputStream::Check()
 bool
 BufferingInputStream::IsAvailable(size_t offset) noexcept
 {
-	if (offset >= size())
+	if (offset >= size() || error)
 		return true;
 
 	if (buffer.Read(offset).HasData())
