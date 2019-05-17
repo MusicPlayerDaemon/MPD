@@ -135,7 +135,7 @@ BufferingInputStream::FindFirstHole() const noexcept
 }
 
 inline void
-BufferingInputStream::RunThreadLocked(std::unique_lock<Mutex> &lock) noexcept
+BufferingInputStream::RunThreadLocked(std::unique_lock<Mutex> &lock)
 {
 	while (!stop) {
 		if (seek) {
@@ -158,20 +158,7 @@ BufferingInputStream::RunThreadLocked(std::unique_lock<Mutex> &lock) noexcept
 			   reading position to be able to fill our
 			   buffer */
 
-			try {
-				input->Seek(lock, offset);
-			} catch (...) {
-				/* this is really a seek error, but we
-				   register it as a read_error,
-				   because seek_error is only checked
-				   by Seek(), and at our frontend (our
-				   own InputStream interface) is in
-				   "read" mode */
-				read_error = std::current_exception();
-				client_cond.notify_all();
-				OnBufferAvailable();
-				break;
-			}
+			input->Seek(lock, offset);
 		} else if (input->IsEOF()) {
 			/* our input has reached its end: prepare
 			   reading the first remaining hole */
@@ -183,14 +170,7 @@ BufferingInputStream::RunThreadLocked(std::unique_lock<Mutex> &lock) noexcept
 			}
 
 			/* seek to the first hole */
-			try {
-				input->Seek(lock, new_offset);
-			} catch (...) {
-				read_error = std::current_exception();
-				client_cond.notify_all();
-				OnBufferAvailable();
-				break;
-			}
+			input->Seek(lock, new_offset);
 		} else if (input->IsAvailable()) {
 			const auto read_offset = input->GetOffset();
 			auto w = buffer.Write(read_offset);
@@ -207,14 +187,7 @@ BufferingInputStream::RunThreadLocked(std::unique_lock<Mutex> &lock) noexcept
 						   read completely */
 						break;
 
-					try {
-						input->Seek(lock, new_offset);
-					} catch (...) {
-						read_error = std::current_exception();
-						client_cond.notify_all();
-						OnBufferAvailable();
-						break;
-					}
+					input->Seek(lock, new_offset);
 				} else {
 					/* we need more data at our
 					   current position, because
@@ -222,30 +195,14 @@ BufferingInputStream::RunThreadLocked(std::unique_lock<Mutex> &lock) noexcept
 					   - seek our input to our
 					   offset to prepare filling
 					   the buffer from there */
-					try {
-						input->Seek(lock, offset);
-					} catch (...) {
-						read_error = std::current_exception();
-						client_cond.notify_all();
-						OnBufferAvailable();
-						break;
-					}
+					input->Seek(lock, offset);
 				}
 
 				continue;
 			}
 
-			try {
-				size_t nbytes = input->Read(lock,
-							    w.data, w.size);
-				buffer.Commit(read_offset,
-					      read_offset + nbytes);
-			} catch (...) {
-				read_error = std::current_exception();
-				client_cond.notify_all();
-				OnBufferAvailable();
-				break;
-			}
+			size_t nbytes = input->Read(lock, w.data, w.size);
+			buffer.Commit(read_offset, read_offset + nbytes);
 
 			client_cond.notify_all();
 			OnBufferAvailable();
@@ -261,7 +218,13 @@ BufferingInputStream::RunThread() noexcept
 
 	std::unique_lock<Mutex> lock(mutex);
 
-	RunThreadLocked(lock);
+	try {
+		RunThreadLocked(lock);
+	} catch (...) {
+		read_error = std::current_exception();
+		client_cond.notify_all();
+		OnBufferAvailable();
+	}
 
 	/* clear the "input" attribute while holding the mutex */
 	auto _input = std::move(input);
