@@ -104,7 +104,7 @@ BufferedInputStream::IsEOF() noexcept
 bool
 BufferedInputStream::IsAvailable() noexcept
 {
-	return IsEOF() || buffer.Read(offset).HasData();
+	return IsEOF() || buffer.Read(offset).HasData() || read_error;
 }
 
 size_t
