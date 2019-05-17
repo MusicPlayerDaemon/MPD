@@ -102,12 +102,6 @@ BufferingInputStream::Read(std::unique_lock<Mutex> &lock, void *ptr, size_t s)
 			size_t nbytes = std::min(s, r.defined_buffer.size);
 			memcpy(ptr, r.defined_buffer.data, nbytes);
 			offset += nbytes;
-
-			if (!IsAvailable()) {
-				/* wake up the sleeping thread */
-				wake_cond.notify_all();
-			}
-
 			return nbytes;
 		}
 
