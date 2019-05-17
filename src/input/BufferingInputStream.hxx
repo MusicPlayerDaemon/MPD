@@ -61,7 +61,7 @@ class BufferingInputStream : InputStreamHandler {
 
 	size_t seek_offset;
 
-	std::exception_ptr read_error, seek_error;
+	std::exception_ptr error, seek_error;
 
 	static constexpr size_t INVALID_OFFSET = ~size_t(0);
 

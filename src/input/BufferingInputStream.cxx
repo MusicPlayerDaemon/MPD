@@ -48,8 +48,8 @@ BufferingInputStream::~BufferingInputStream() noexcept
 void
 BufferingInputStream::Check()
 {
-	if (read_error)
-		std::rethrow_exception(read_error);
+	if (error)
+		std::rethrow_exception(error);
 
 	if (input)
 		input->Check();
@@ -111,8 +111,8 @@ BufferingInputStream::Read(std::unique_lock<Mutex> &lock, void *ptr, size_t s)
 			return nbytes;
 		}
 
-		if (read_error)
-			std::rethrow_exception(read_error);
+		if (error)
+			std::rethrow_exception(error);
 
 		client_cond.wait(lock);
 	}
@@ -221,7 +221,7 @@ BufferingInputStream::RunThread() noexcept
 	try {
 		RunThreadLocked(lock);
 	} catch (...) {
-		read_error = std::current_exception();
+		error = std::current_exception();
 		client_cond.notify_all();
 		OnBufferAvailable();
 	}
