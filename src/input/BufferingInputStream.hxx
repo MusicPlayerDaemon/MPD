@@ -88,6 +88,7 @@ protected:
 private:
 	size_t FindFirstHole() const noexcept;
 
+	void RunThreadLocked(std::unique_lock<Mutex> &lock) noexcept;
 	void RunThread() noexcept;
 
 	/* virtual methods from class InputStreamHandler */

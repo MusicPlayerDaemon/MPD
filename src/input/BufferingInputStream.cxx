@@ -134,13 +134,9 @@ BufferingInputStream::FindFirstHole() const noexcept
 	return INVALID_OFFSET;
 }
 
-void
-BufferingInputStream::RunThread() noexcept
+inline void
+BufferingInputStream::RunThreadLocked(std::unique_lock<Mutex> &lock) noexcept
 {
-	SetThreadName("buffering");
-
-	std::unique_lock<Mutex> lock(mutex);
-
 	while (!stop) {
 		if (seek) {
 			try {
@@ -256,6 +252,16 @@ BufferingInputStream::RunThread() noexcept
 		} else
 			wake_cond.wait(lock);
 	}
+}
+
+void
+BufferingInputStream::RunThread() noexcept
+{
+	SetThreadName("buffering");
+
+	std::unique_lock<Mutex> lock(mutex);
+
+	RunThreadLocked(lock);
 
 	/* clear the "input" attribute while holding the mutex */
 	auto _input = std::move(input);
