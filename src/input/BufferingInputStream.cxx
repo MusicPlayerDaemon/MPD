@@ -39,7 +39,7 @@ BufferingInputStream::~BufferingInputStream() noexcept
 	{
 		const std::lock_guard<Mutex> lock(mutex);
 		stop = true;
-		wake_cond.notify_all();
+		wake_cond.notify_one();
 	}
 
 	thread.Join();
@@ -73,7 +73,7 @@ BufferingInputStream::Seek(std::unique_lock<Mutex> &lock, size_t new_offset)
 
 	seek_offset = new_offset;
 	seek = true;
-	wake_cond.notify_all();
+	wake_cond.notify_one();
 
 	client_cond.wait(lock, [this]{ return !seek; });
 
