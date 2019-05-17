@@ -46,11 +46,10 @@ BufferedInputStream::Check()
 }
 
 void
-BufferedInputStream::Seek(std::unique_lock<Mutex> &lock,
+BufferedInputStream::Seek(std::unique_lock<Mutex> &,
 			  offset_type new_offset)
 {
-	BufferingInputStream::Seek(lock, new_offset);
-	InputStream::offset = new_offset;
+	offset = new_offset;
 }
 
 bool
@@ -62,14 +61,14 @@ BufferedInputStream::IsEOF() noexcept
 bool
 BufferedInputStream::IsAvailable() noexcept
 {
-	return BufferingInputStream::IsAvailable();
+	return BufferingInputStream::IsAvailable(offset);
 }
 
 size_t
 BufferedInputStream::Read(std::unique_lock<Mutex> &lock,
 			  void *ptr, size_t s)
 {
-	size_t nbytes = BufferingInputStream::Read(lock, ptr, s);
+	size_t nbytes = BufferingInputStream::Read(lock, offset, ptr, s);
 	InputStream::offset += nbytes;
 	return nbytes;
 }

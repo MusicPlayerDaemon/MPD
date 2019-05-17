@@ -55,11 +55,9 @@ class BufferingInputStream : InputStreamHandler {
 
 	SparseBuffer<uint8_t> buffer;
 
-	bool stop = false, seek = false;
+	bool stop = false;
 
-	size_t offset = 0;
-
-	size_t seek_offset;
+	size_t want_offset = INVALID_OFFSET;
 
 	std::exception_ptr error, seek_error;
 
@@ -78,9 +76,9 @@ public:
 	}
 
 	void Check();
-	void Seek(std::unique_lock<Mutex> &lock, size_t new_offset);
-	bool IsAvailable() noexcept;
-	size_t Read(std::unique_lock<Mutex> &lock, void *ptr, size_t size);
+	bool IsAvailable(size_t offset) noexcept;
+	size_t Read(std::unique_lock<Mutex> &lock, size_t offset,
+		    void *ptr, size_t size);
 
 protected:
 	virtual void OnBufferAvailable() noexcept {}
