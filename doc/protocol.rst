@@ -14,6 +14,9 @@ Once the client is connected to the server, they conduct a
 conversation until the client closes the connection. The
 conversation flow is always initiated by the client.
 
+All data between the client and the server is encoded in
+UTF-8.
+
 The client transmits a command sequence, terminated by the
 newline character ``\n``.  The server will
 respond with one or more lines, the last of which will be a
@@ -42,15 +45,34 @@ quotation marks.
 Argument strings are separated from the command and any other
 arguments by linear white-space (' ' or '\\t').
 
-All data between the client and the server is encoded in
-UTF-8.
-
 Responses
 =========
 
 A command returns ``OK`` on completion or
 ``ACK some error`` on failure.  These
 denote the end of command execution.
+
+Some commands return more data before the response ends with ``OK``.
+Each line is usually in the form ``NAME: VALUE``.  Example::
+
+  foo: bar
+  OK
+
+.. _binary:
+
+Binary Responses
+----------------
+
+Some commands can return binary data.  This is initiated by a line
+containing ``binary: 1234`` (followed as usual by a newline).  After
+that, the specified number of bytes of binary data follows (without an
+extra newline, because this binary data is not a text line), and
+finally the ``OK`` line.  Example::
+
+  foo: bar
+  binary: 42
+  <42 bytes>OK
+
 
 Failure responses
 -----------------
@@ -112,9 +134,9 @@ list begins with `command_list_begin` or
 `command_list_ok_begin` and ends with
 `command_list_end`.
 
-It does not execute any commands until the list has ended.
-The return value is whatever the return for a list of commands
-is.  On success for all commands,
+It does not execute any commands until the list has ended.  The
+response is a concatentation of all individual responses.
+On success for all commands,
 ``OK`` is returned.  If a command
 fails, no more commands are executed and the appropriate
 ``ACK`` error is returned. If
@@ -795,7 +817,7 @@ The music database
 
     Returns the file size and actual number
     of bytes read at the requested offset, followed
-    by the chunk requested as raw bytes, then a
+    by the chunk requested as raw bytes (see :ref:`binary`), then a
     newline and the completion code.
 
     Example::
@@ -803,8 +825,7 @@ The music database
      albumart foo/bar.ogg 0
      size: 1024768
      binary: 8192
-     <8192 bytes>
-     OK
+     <8192 bytes>OK
 
 :command:`count {FILTER} [group {GROUPTYPE}]`
     Count the number of songs and their total playtime in

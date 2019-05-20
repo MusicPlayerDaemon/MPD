@@ -999,7 +999,7 @@ Player::Run() noexcept
 			}
 		}
 
-		if (dc.IsIdle() && queued && dc.pipe == pipe) {
+		if (dc.IsIdle() && queued) {
 			/* the decoder has finished the current song;
 			   make it decode the next song */
 
@@ -1061,6 +1061,16 @@ Player::Run() noexcept
 
 			SongBorder();
 		} else if (dc.IsIdle()) {
+			if (queued)
+				/* the decoder has just stopped,
+				   between the two IsIdle() checks,
+				   probably while UnlockCheckOutputs()
+				   left the mutex unlocked; to restart
+				   the decoder instead of stopping
+				   playback completely, let's re-enter
+				   this loop */
+				continue;
+
 			/* check the size of the pipe again, because
 			   the decoder thread may have added something
 			   since we last checked */

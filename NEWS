@@ -8,12 +8,13 @@ ver 0.22 (not yet released)
   - ffmpeg: new plugin based on FFmpeg's libavfilter library
   - hdcd: new plugin based on FFmpeg's "af_hdcd" for HDCD playback
 
-ver 0.21.9 (not yet released)
+ver 0.21.9 (2019/05/20)
 * input
   - buffer: fix deadlock bug
 * Android
   - fix crash on ARMv7
   - request storage permission on Android 6+
+* fix spurious "single" mode bug
 
 ver 0.21.8 (2019/04/23)
 * input
