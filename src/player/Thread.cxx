@@ -996,7 +996,7 @@ Player::Run() noexcept
 			}
 		}
 
-		if (dc.IsIdle() && queued && dc.pipe == pipe) {
+		if (dc.IsIdle() && queued) {
 			/* the decoder has finished the current song;
 			   make it decode the next song */
 
