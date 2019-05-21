@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2018 The Music Player Daemon Project
+ * Copyright 2003-2019 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -27,18 +27,20 @@
 #include <assert.h>
 #include <string.h>
 
-inline Song::Song(const char *_uri, size_t uri_length, Directory &_parent)
+inline
+Song::Song(const char *_uri, size_t uri_length, Directory &_parent) noexcept
 	:parent(&_parent)
 {
 	memcpy(uri, _uri, uri_length + 1);
 }
 
-inline Song::~Song()
+inline
+Song::~Song() noexcept
 {
 }
 
 static Song *
-song_alloc(const char *uri, Directory &parent)
+song_alloc(const char *uri, Directory &parent) noexcept
 {
 	size_t uri_length;
 
@@ -52,7 +54,7 @@ song_alloc(const char *uri, Directory &parent)
 }
 
 Song *
-Song::NewFrom(DetachedSong &&other, Directory &parent)
+Song::NewFrom(DetachedSong &&other, Directory &parent) noexcept
 {
 	Song *song = song_alloc(other.GetURI(), parent);
 	song->tag = std::move(other.WritableTag());
@@ -63,13 +65,13 @@ Song::NewFrom(DetachedSong &&other, Directory &parent)
 }
 
 Song *
-Song::NewFile(const char *path, Directory &parent)
+Song::NewFile(const char *path, Directory &parent) noexcept
 {
 	return song_alloc(path, parent);
 }
 
 void
-Song::Free()
+Song::Free() noexcept
 {
 	DeleteVarSize(this);
 }

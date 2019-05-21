@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2018 The Music Player Daemon Project
+ * Copyright 2003-2019 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -46,7 +46,7 @@ struct Song {
 	typedef boost::intrusive::list_member_hook<LinkMode> Hook;
 
 	struct Disposer {
-		void operator()(Song *song) const {
+		void operator()(Song *song) const noexcept {
 			song->Free();
 		}
 	};
@@ -98,15 +98,15 @@ struct Song {
 	 */
 	char uri[sizeof(int)];
 
-	Song(const char *_uri, size_t uri_length, Directory &parent);
-	~Song();
+	Song(const char *_uri, size_t uri_length, Directory &parent) noexcept;
+	~Song() noexcept;
 
 	gcc_malloc gcc_returns_nonnull
-	static Song *NewFrom(DetachedSong &&other, Directory &parent);
+	static Song *NewFrom(DetachedSong &&other, Directory &parent) noexcept;
 
 	/** allocate a new song with a local file name */
 	gcc_malloc gcc_returns_nonnull
-	static Song *NewFile(const char *path_utf8, Directory &parent);
+	static Song *NewFile(const char *path_utf8, Directory &parent) noexcept;
 
 	/**
 	 * allocate a new song structure with a local file name and attempt to
@@ -117,7 +117,7 @@ struct Song {
 	static Song *LoadFile(Storage &storage, const char *name_utf8,
 			      Directory &parent) noexcept;
 
-	void Free();
+	void Free() noexcept;
 
 	bool UpdateFile(Storage &storage) noexcept;
 
