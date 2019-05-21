@@ -35,8 +35,11 @@ class TagBuilder;
 bool
 tag_stream_scan(InputStream &is, TagHandler &handler) noexcept;
 
+/**
+ * Throws on error.
+ */
 bool
-tag_stream_scan(const char *uri, TagHandler &handler) noexcept;
+tag_stream_scan(const char *uri, TagHandler &handler);
 
 /**
  * Scan the tags of an #InputStream.  Invokes matching decoder
@@ -50,8 +53,11 @@ bool
 tag_stream_scan(InputStream &is, TagBuilder &builder,
 		AudioFormat *audio_format=nullptr) noexcept;
 
+/**
+ * Throws on error.
+ */
 bool
 tag_stream_scan(const char *uri, TagBuilder &builder,
-		AudioFormat *audio_format=nullptr) noexcept;
+		AudioFormat *audio_format=nullptr);
 
 #endif
