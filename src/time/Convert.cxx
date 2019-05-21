@@ -35,6 +35,7 @@
 #include <stdexcept>
 
 #include <time.h>
+#include <sys/time.h> /* for struct timeval */
 
 struct tm
 GmTime(std::chrono::system_clock::time_point tp)
