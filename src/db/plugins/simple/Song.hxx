@@ -30,8 +30,6 @@
 
 #include <string>
 
-#include <time.h>
-
 struct LightSong;
 struct Directory;
 class DetachedSong;
