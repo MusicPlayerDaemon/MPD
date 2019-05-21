@@ -105,13 +105,23 @@ struct Song {
 	 * allocate a new song structure with a local file name and attempt to
 	 * load its metadata.  If all decoder plugin fail to read its meta
 	 * data, nullptr is returned.
+	 *
+	 * Throws on error.
+	 *
+	 * @return the song on success, nullptr if the file was not
+	 * recognized
 	 */
 	static SongPtr LoadFile(Storage &storage, const char *name_utf8,
-				Directory &parent) noexcept;
+				Directory &parent);
 
 	void Free() noexcept;
 
-	bool UpdateFile(Storage &storage) noexcept;
+	/**
+	 * Throws on error.
+	 *
+	 * @return true on success, false if the file was not recognized
+	 */
+	bool UpdateFile(Storage &storage);
 
 #ifdef ENABLE_ARCHIVE
 	static SongPtr LoadFromArchive(ArchiveFile &archive,

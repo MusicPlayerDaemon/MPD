@@ -42,8 +42,7 @@
 #ifdef ENABLE_DATABASE
 
 SongPtr
-Song::LoadFile(Storage &storage, const char *path_utf8,
-	       Directory &parent) noexcept
+Song::LoadFile(Storage &storage, const char *path_utf8, Directory &parent)
 {
 	assert(!uri_has_scheme(path_utf8));
 	assert(strchr(path_utf8, '\n') == nullptr);
@@ -60,17 +59,11 @@ Song::LoadFile(Storage &storage, const char *path_utf8,
 #ifdef ENABLE_DATABASE
 
 bool
-Song::UpdateFile(Storage &storage) noexcept
+Song::UpdateFile(Storage &storage)
 {
 	const auto &relative_uri = GetURI();
 
-	StorageFileInfo info;
-	try {
-		info = storage.GetInfo(relative_uri.c_str(), true);
-	} catch (...) {
-		return false;
-	}
-
+	const auto info = storage.GetInfo(relative_uri.c_str(), true);
 	if (!info.IsRegular())
 		return false;
 
