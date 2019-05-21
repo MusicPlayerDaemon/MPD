@@ -2,6 +2,8 @@ ver 0.22 (not yet released)
 * protocol
   - "findadd"/"searchadd"/"searchaddpl" support the "sort" and
     "window" parameters
+* tags
+  - new tag "Grouping" (for ID3 "TIT1")
 * input
   - ffmpeg: allow partial reads
 * filter

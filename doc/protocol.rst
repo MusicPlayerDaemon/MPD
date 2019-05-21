@@ -274,6 +274,9 @@ The following tags are supported by :program:`MPD`:
 * **date**: the song's release date. This is usually a 4-digit year.
 * **composer**: the artist who composed the song.
 * **performer**: the artist who performed the song.
+* **grouping**: "used if the sound belongs to a larger category of
+  sounds/music" (`from the IDv2.4.0 TIT1 description
+  <http://id3.org/id3v2.4.0-frames>`_).
 * **comment**: a human-readable comment about this song. The exact meaning of this tag is not well-defined.
 * **disc**: the decimal disc number in a multi-disc album.
 * **label**: the name of the label or publisher.
