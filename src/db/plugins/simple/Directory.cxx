@@ -164,13 +164,13 @@ Directory::LookupDirectory(const char *uri) noexcept
 }
 
 void
-Directory::AddSong(Song *song) noexcept
+Directory::AddSong(SongPtr song) noexcept
 {
 	assert(holding_db_lock());
 	assert(song != nullptr);
 	assert(song->parent == this);
 
-	songs.push_back(*song);
+	songs.push_back(*song.release());
 }
 
 void

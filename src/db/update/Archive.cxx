@@ -82,11 +82,11 @@ UpdateWalk::UpdateArchiveTree(ArchiveFile &archive, Directory &directory,
 		//add file
 		Song *song = LockFindSong(directory, name);
 		if (song == nullptr) {
-			song = Song::LoadFromArchive(archive, name, directory);
-			if (song != nullptr) {
+			auto new_song = Song::LoadFromArchive(archive, name, directory);
+			if (!new_song) {
 				{
 					const ScopeDatabaseLock protect;
-					directory.AddSong(song);
+					directory.AddSong(std::move(new_song));
 				}
 
 				modified = true;

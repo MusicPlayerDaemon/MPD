@@ -20,6 +20,7 @@
 #ifndef MPD_DIRECTORY_HXX
 #define MPD_DIRECTORY_HXX
 
+#include "Ptr.hxx"
 #include "util/Compiler.h"
 #include "db/Visitor.hxx"
 #include "db/PlaylistVector.hxx"
@@ -242,7 +243,7 @@ public:
 	 * Add a song object to this directory.  Its "parent" attribute must
 	 * be set already.
 	 */
-	void AddSong(Song *song) noexcept;
+	void AddSong(SongPtr song) noexcept;
 
 	/**
 	 * Remove a song object from this directory (which effectively

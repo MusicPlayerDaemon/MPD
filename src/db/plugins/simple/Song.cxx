@@ -40,7 +40,7 @@ Song::~Song() noexcept
 {
 }
 
-static Song *
+static SongPtr
 song_alloc(const char *uri, Directory &parent) noexcept
 {
 	size_t uri_length;
@@ -49,15 +49,16 @@ song_alloc(const char *uri, Directory &parent) noexcept
 	uri_length = strlen(uri);
 	assert(uri_length);
 
-	return NewVarSize<Song>(sizeof(Song::uri),
-				uri_length + 1,
-				uri, uri_length, parent);
+	auto *song = NewVarSize<Song>(sizeof(Song::uri),
+				      uri_length + 1,
+				      uri, uri_length, parent);
+	return SongPtr(song);
 }
 
-Song *
+SongPtr
 Song::NewFrom(DetachedSong &&other, Directory &parent) noexcept
 {
-	Song *song = song_alloc(other.GetURI(), parent);
+	SongPtr song(song_alloc(other.GetURI(), parent));
 	song->tag = std::move(other.WritableTag());
 	song->mtime = other.GetLastModified();
 	song->start_time = other.GetStartTime();
@@ -65,10 +66,10 @@ Song::NewFrom(DetachedSong &&other, Directory &parent) noexcept
 	return song;
 }
 
-Song *
+SongPtr
 Song::NewFile(const char *path, Directory &parent) noexcept
 {
-	return song_alloc(path, parent);
+	return SongPtr(song_alloc(path, parent));
 }
 
 void

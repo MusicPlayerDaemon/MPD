@@ -41,18 +41,16 @@
 
 #ifdef ENABLE_DATABASE
 
-Song *
+SongPtr
 Song::LoadFile(Storage &storage, const char *path_utf8,
 	       Directory &parent) noexcept
 {
 	assert(!uri_has_scheme(path_utf8));
 	assert(strchr(path_utf8, '\n') == nullptr);
 
-	Song *song = NewFile(path_utf8, parent);
-	if (!song->UpdateFile(storage)) {
-		song->Free();
+	auto song = NewFile(path_utf8, parent);
+	if (!song->UpdateFile(storage))
 		return nullptr;
-	}
 
 	return song;
 }
@@ -102,19 +100,17 @@ Song::UpdateFile(Storage &storage) noexcept
 
 #ifdef ENABLE_ARCHIVE
 
-Song *
+SongPtr
 Song::LoadFromArchive(ArchiveFile &archive, const char *name_utf8,
 		      Directory &parent) noexcept
 {
 	assert(!uri_has_scheme(name_utf8));
 	assert(strchr(name_utf8, '\n') == nullptr);
 
-	Song *song = NewFile(name_utf8, parent);
+	auto song = NewFile(name_utf8, parent);
 
-	if (!song->UpdateFileInArchive(archive)) {
-		song->Free();
+	if (!song->UpdateFileInArchive(archive))
 		return nullptr;
-	}
 
 	return song;
 }
