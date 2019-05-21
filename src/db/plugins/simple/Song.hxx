@@ -45,12 +45,6 @@ struct Song {
 	typedef boost::intrusive::link_mode<link_mode> LinkMode;
 	typedef boost::intrusive::list_member_hook<LinkMode> Hook;
 
-	struct Disposer {
-		void operator()(Song *song) const noexcept {
-			song->Free();
-		}
-	};
-
 	/**
 	 * Pointers to the siblings of this directory within the
 	 * parent directory.  It is unused (undefined) if this song is

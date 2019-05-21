@@ -20,6 +20,7 @@
 #include "Directory.hxx"
 #include "SongSort.hxx"
 #include "Song.hxx"
+#include "Disposer.hxx"
 #include "Mount.hxx"
 #include "db/LightDirectory.hxx"
 #include "song/LightSong.hxx"
@@ -50,7 +51,7 @@ Directory::~Directory() noexcept
 		mounted_database.reset();
 	}
 
-	songs.clear_and_dispose(Song::Disposer());
+	songs.clear_and_dispose(SongDisposer());
 	children.clear_and_dispose(DeleteDisposer());
 }
 

@@ -18,6 +18,7 @@
  */
 
 #include "Song.hxx"
+#include "Disposer.hxx"
 #include "Directory.hxx"
 #include "tag/Tag.hxx"
 #include "util/VarSize.hxx"
@@ -74,6 +75,12 @@ void
 Song::Free() noexcept
 {
 	DeleteVarSize(this);
+}
+
+void
+SongDisposer::operator()(Song *song) const noexcept
+{
+	song->Free();
 }
 
 std::string
