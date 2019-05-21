@@ -135,10 +135,10 @@ Song::UpdateFileInArchive(ArchiveFile &archive) noexcept
 #endif
 
 bool
-DetachedSong::LoadFile(Path path) noexcept
+DetachedSong::LoadFile(Path path)
 {
-	FileInfo fi;
-	if (!GetFileInfo(path, fi) || !fi.IsRegular())
+	const FileInfo fi(path);
+	if (!fi.IsRegular())
 		return false;
 
 	TagBuilder tag_builder;
@@ -151,13 +151,11 @@ DetachedSong::LoadFile(Path path) noexcept
 }
 
 bool
-DetachedSong::Update() noexcept
+DetachedSong::Update()
 {
 	if (IsAbsoluteFile()) {
 		const AllocatedPath path_fs =
-			AllocatedPath::FromUTF8(GetRealURI());
-		if (path_fs.IsNull())
-			return false;
+			AllocatedPath::FromUTF8Throw(GetRealURI());
 
 		return LoadFile(path_fs);
 	} else if (IsRemote()) {

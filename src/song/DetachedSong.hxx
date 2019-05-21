@@ -234,14 +234,18 @@ public:
 	/**
 	 * Update the #tag and #mtime.
 	 *
+	 * Throws on error.
+	 *
 	 * @return true on success
 	 */
-	bool Update() noexcept;
+	bool Update();
 
 	/**
 	 * Load #tag and #mtime from a local file.
+	 *
+	 * Throws on error.
 	 */
-	bool LoadFile(Path path) noexcept;
+	bool LoadFile(Path path);
 };
 
 #endif
