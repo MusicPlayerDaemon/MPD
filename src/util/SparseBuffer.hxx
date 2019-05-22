@@ -90,8 +90,6 @@ private:
 	Iterator CheckCollapseNext(Iterator i) noexcept;
 };
 
-#endif
-
 /**
  * A buffer which caches the contents of a "huge" array, and remembers
  * which chunks are available.
@@ -139,3 +137,5 @@ public:
 		map.Commit(start_offset, end_offset);
 	}
 };
+
+#endif
