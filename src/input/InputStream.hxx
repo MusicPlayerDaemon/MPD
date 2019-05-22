@@ -56,9 +56,8 @@ public:
 
 private:
 	/**
-	 * A cond that gets signalled when the state of this object
-	 * changes from the I/O thread.  The client of this object may
-	 * wait on it.
+	 * An (optional) object which gets receives events from this
+	 * #InputStream.
 	 *
 	 * This object is allocated by the client, and the client is
 	 * responsible for freeing it.
