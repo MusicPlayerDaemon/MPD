@@ -25,7 +25,7 @@
 #include <stdio.h>
 
 void
-Log(const Domain &domain, gcc_unused LogLevel level, const char *msg) noexcept
+Log(LogLevel, const Domain &domain, const char *msg) noexcept
 {
 	fprintf(stderr, "[%s] %s\n", domain.GetName(), msg);
 }
