@@ -19,8 +19,7 @@
 
 #include "LogV.hxx"
 #include "util/Domain.hxx"
-
-#include <exception>
+#include "util/Exception.hxx"
 
 #include <stdio.h>
 #include <string.h>
@@ -94,31 +93,13 @@ FormatError(const Domain &domain, const char *fmt, ...) noexcept
 void
 LogError(const std::exception &e) noexcept
 {
-	Log(exception_domain, LogLevel::ERROR, e.what());
-
-	try {
-		std::rethrow_if_nested(e);
-	} catch (const std::exception &nested) {
-		LogError(nested, "nested");
-	} catch (...) {
-		Log(exception_domain, LogLevel::ERROR,
-		    "Unrecognized nested exception");
-	}
+	LogError(exception_domain, GetFullMessage(e).c_str());
 }
 
 void
 LogError(const std::exception &e, const char *msg) noexcept
 {
-	FormatError(exception_domain, "%s: %s", msg, e.what());
-
-	try {
-		std::rethrow_if_nested(e);
-	} catch (const std::exception &nested) {
-		LogError(nested);
-	} catch (...) {
-		Log(exception_domain, LogLevel::ERROR,
-		    "Unrecognized nested exception");
-	}
+	FormatError(exception_domain, "%s: %s", msg, GetFullMessage(e).c_str());
 }
 
 void
@@ -136,27 +117,14 @@ FormatError(const std::exception &e, const char *fmt, ...) noexcept
 void
 LogError(const std::exception_ptr &ep) noexcept
 {
-	try {
-		std::rethrow_exception(ep);
-	} catch (const std::exception &e) {
-		LogError(e);
-	} catch (...) {
-		Log(exception_domain, LogLevel::ERROR,
-		    "Unrecognized exception");
-	}
+	LogError(exception_domain, GetFullMessage(ep).c_str());
 }
 
 void
 LogError(const std::exception_ptr &ep, const char *msg) noexcept
 {
-	try {
-		std::rethrow_exception(ep);
-	} catch (const std::exception &e) {
-		LogError(e, msg);
-	} catch (...) {
-		FormatError(exception_domain,
-			    "%s: Unrecognized exception", msg);
-	}
+	FormatError(exception_domain, "%s: %s", msg,
+		    GetFullMessage(ep).c_str());
 }
 
 void
