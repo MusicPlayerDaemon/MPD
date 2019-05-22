@@ -18,7 +18,6 @@
  */
 
 #include "Id3Load.hxx"
-#include "Log.hxx"
 #include "Riff.hxx"
 #include "Aiff.hxx"
 #include "input/InputStream.hxx"
