@@ -76,7 +76,7 @@ protected:
 	 */
 	bool seekable = false;
 
-	static constexpr offset_type UNKNOWN_SIZE = -1;
+	static constexpr offset_type UNKNOWN_SIZE = ~offset_type(0);
 
 	/**
 	 * the size of the resource, or #UNKNOWN_SIZE if unknown
