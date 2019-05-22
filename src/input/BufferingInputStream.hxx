@@ -64,9 +64,21 @@ class BufferingInputStream : InputStreamHandler {
 	static constexpr size_t INVALID_OFFSET = ~size_t(0);
 
 public:
+	/**
+	 * Allocate a buffer which fits the given #InputStream and
+	 * start a thread reading into the buffer.
+	 *
+	 * Throws on error.
+	 *
+	 * @param _input a seekable #InputStream with a known size
+	 */
 	explicit BufferingInputStream(InputStreamPtr _input);
+
 	~BufferingInputStream() noexcept;
 
+	/**
+	 * Caller must lock the mutex.
+	 */
 	const auto &GetInput() const noexcept {
 		return *input;
 	}
@@ -75,12 +87,35 @@ public:
 		return buffer.size();
 	}
 
+	/**
+	 * Wrapper for InputStream::Check().
+	 *
+	 * Throws on error.
+	 *
+	 * Caller must lock the mutex.
+	 */
 	void Check();
+
+	/**
+	 * Check whether data is available in the buffer at the given
+	 * offset..
+	 */
 	bool IsAvailable(size_t offset) noexcept;
+
+	/**
+	 * Copy data from the buffer into the given pointer.
+	 *
+	 * @return the number of bytes copied into the given pointer.
+	 */
 	size_t Read(std::unique_lock<Mutex> &lock, size_t offset,
 		    void *ptr, size_t size);
 
 protected:
+	/**
+	 * This virtual method gets called each time data has been
+	 * added to the buffer.  During this method call, the mutex is
+	 * locked.
+	 */
 	virtual void OnBufferAvailable() noexcept {}
 
 private:
