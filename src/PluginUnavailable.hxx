@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2018 The Music Player Daemon Project
+ * Copyright 2003-2019 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -27,11 +27,24 @@
  * that this plugin is unavailable.  It will be disabled, and MPD can
  * continue initialization.
  */
-class PluginUnavailable final : public std::runtime_error {
+class PluginUnavailable : public std::runtime_error {
 public:
 	template<typename M>
 	explicit PluginUnavailable(M &&msg) noexcept
 		:std::runtime_error(std::forward<M>(msg)) {}
+};
+
+/**
+ * Like #PluginUnavailable, but denotes that the plugin is not
+ * available because it was not explicitly enabled in the
+ * configuration.  The message may describe the necessary steps to
+ * enable it.
+ */
+class PluginUnconfigured : public PluginUnavailable {
+public:
+	template<typename M>
+	explicit PluginUnconfigured(M &&msg) noexcept
+		:PluginUnavailable(std::forward<M>(msg)) {}
 };
 
 #endif
