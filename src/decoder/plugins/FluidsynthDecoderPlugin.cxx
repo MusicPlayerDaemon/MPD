@@ -70,8 +70,8 @@ fluidsynth_mpd_log_function(int level,
 			    char *message,
 			    void *)
 {
-	Log(fluidsynth_domain,
-	    fluidsynth_level_to_mpd(fluid_log_level(level)),
+	Log(fluidsynth_level_to_mpd(fluid_log_level(level)),
+	    fluidsynth_domain,
 	    message);
 }
 

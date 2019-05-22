@@ -54,7 +54,7 @@ FormatFatalError(const char *fmt, ...)
 {
 	va_list ap;
 	va_start(ap, fmt);
-	LogFormatV(fatal_error_domain, LogLevel::ERROR, fmt, ap);
+	LogFormatV(LogLevel::ERROR, fatal_error_domain, fmt, ap);
 	va_end(ap);
 
 	Abort();

@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2018 The Music Player Daemon Project
+ * Copyright 2003-2019 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -28,16 +28,16 @@
 class Domain;
 
 void
-Log(const Domain &domain, LogLevel level, const char *msg) noexcept;
+Log(LogLevel level, const Domain &domain, const char *msg) noexcept;
 
 gcc_printf(3,4)
 void
-LogFormat(const Domain &domain, LogLevel level, const char *fmt, ...) noexcept;
+LogFormat(LogLevel level, const Domain &domain, const char *fmt, ...) noexcept;
 
 static inline void
 LogDebug(const Domain &domain, const char *msg) noexcept
 {
-	Log(domain, LogLevel::DEBUG, msg);
+	Log(LogLevel::DEBUG, domain, msg);
 }
 
 gcc_printf(2,3)
@@ -47,7 +47,7 @@ FormatDebug(const Domain &domain, const char *fmt, ...) noexcept;
 static inline void
 LogInfo(const Domain &domain, const char *msg) noexcept
 {
-	Log(domain, LogLevel::INFO, msg);
+	Log(LogLevel::INFO, domain, msg);
 }
 
 gcc_printf(2,3)
@@ -57,7 +57,7 @@ FormatInfo(const Domain &domain, const char *fmt, ...) noexcept;
 static inline void
 LogDefault(const Domain &domain, const char *msg) noexcept
 {
-	Log(domain, LogLevel::DEFAULT, msg);
+	Log(LogLevel::DEFAULT, domain, msg);
 }
 
 gcc_printf(2,3)
@@ -67,7 +67,7 @@ FormatDefault(const Domain &domain, const char *fmt, ...) noexcept;
 static inline void
 LogWarning(const Domain &domain, const char *msg) noexcept
 {
-	Log(domain, LogLevel::WARNING, msg);
+	Log(LogLevel::WARNING, domain, msg);
 }
 
 gcc_printf(2,3)
@@ -77,7 +77,7 @@ FormatWarning(const Domain &domain, const char *fmt, ...) noexcept;
 static inline void
 LogError(const Domain &domain, const char *msg) noexcept
 {
-	Log(domain, LogLevel::ERROR, msg);
+	Log(LogLevel::ERROR, domain, msg);
 }
 
 void
