@@ -34,6 +34,28 @@ gcc_printf(3,4)
 void
 LogFormat(LogLevel level, const Domain &domain, const char *fmt, ...) noexcept;
 
+void
+Log(LogLevel level, const std::exception &e) noexcept;
+
+void
+Log(LogLevel level, const std::exception &e, const char *msg) noexcept;
+
+gcc_printf(3,4)
+void
+LogFormat(LogLevel level, const std::exception &e,
+	  const char *fmt, ...) noexcept;
+
+void
+Log(LogLevel level, const std::exception_ptr &ep) noexcept;
+
+void
+Log(LogLevel level, const std::exception_ptr &ep, const char *msg) noexcept;
+
+gcc_printf(3,4)
+void
+LogFormat(LogLevel level, const std::exception_ptr &ep,
+	  const char *fmt, ...) noexcept;
+
 static inline void
 LogDebug(const Domain &domain, const char *msg) noexcept
 {
@@ -80,25 +102,44 @@ LogError(const Domain &domain, const char *msg) noexcept
 	Log(LogLevel::ERROR, domain, msg);
 }
 
-void
-LogError(const std::exception &e) noexcept;
+inline void
+LogError(const std::exception &e) noexcept
+{
+	Log(LogLevel::ERROR, e);
+}
 
-void
-LogError(const std::exception &e, const char *msg) noexcept;
+inline void
+LogError(const std::exception &e, const char *msg) noexcept
+{
+	Log(LogLevel::ERROR, e, msg);
+}
 
-gcc_printf(2,3)
-void
-FormatError(const std::exception &e, const char *fmt, ...) noexcept;
+template<typename... Args>
+inline void
+FormatError(const std::exception &e, const char *fmt, Args&&... args) noexcept
+{
+	LogFormat(LogLevel::ERROR, e, fmt, std::forward<Args>(args)...);
+}
 
-void
-LogError(const std::exception_ptr &ep) noexcept;
+inline void
+LogError(const std::exception_ptr &ep) noexcept
+{
+	Log(LogLevel::ERROR, ep);
+}
 
-void
-LogError(const std::exception_ptr &ep, const char *msg) noexcept;
+inline void
+LogError(const std::exception_ptr &ep, const char *msg) noexcept
+{
+	Log(LogLevel::ERROR, ep, msg);
+}
 
-gcc_printf(2,3)
-void
-FormatError(const std::exception_ptr &ep, const char *fmt, ...) noexcept;
+template<typename... Args>
+inline void
+FormatError(const std::exception_ptr &ep,
+	    const char *fmt, Args&&... args) noexcept
+{
+	LogFormat(LogLevel::ERROR, ep, fmt, std::forward<Args>(args)...);
+}
 
 gcc_printf(2,3)
 void

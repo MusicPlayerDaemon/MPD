@@ -91,19 +91,19 @@ FormatError(const Domain &domain, const char *fmt, ...) noexcept
 }
 
 void
-LogError(const std::exception &e) noexcept
+Log(LogLevel level, const std::exception &e) noexcept
 {
-	LogError(exception_domain, GetFullMessage(e).c_str());
+	Log(level, exception_domain, GetFullMessage(e).c_str());
 }
 
 void
-LogError(const std::exception &e, const char *msg) noexcept
+Log(LogLevel level, const std::exception &e, const char *msg) noexcept
 {
-	FormatError(exception_domain, "%s: %s", msg, GetFullMessage(e).c_str());
+	LogFormat(level, exception_domain, "%s: %s", msg, GetFullMessage(e).c_str());
 }
 
 void
-FormatError(const std::exception &e, const char *fmt, ...) noexcept
+LogFormat(LogLevel level, const std::exception &e, const char *fmt, ...) noexcept
 {
 	char msg[1024];
 	va_list ap;
@@ -111,24 +111,24 @@ FormatError(const std::exception &e, const char *fmt, ...) noexcept
 	vsnprintf(msg, sizeof(msg), fmt, ap);
 	va_end(ap);
 
-	LogError(e, msg);
+	Log(level, e, msg);
 }
 
 void
-LogError(const std::exception_ptr &ep) noexcept
+Log(LogLevel level, const std::exception_ptr &ep) noexcept
 {
-	LogError(exception_domain, GetFullMessage(ep).c_str());
+	Log(level, exception_domain, GetFullMessage(ep).c_str());
 }
 
 void
-LogError(const std::exception_ptr &ep, const char *msg) noexcept
+Log(LogLevel level, const std::exception_ptr &ep, const char *msg) noexcept
 {
-	FormatError(exception_domain, "%s: %s", msg,
-		    GetFullMessage(ep).c_str());
+	LogFormat(level, exception_domain, "%s: %s", msg,
+		  GetFullMessage(ep).c_str());
 }
 
 void
-FormatError(const std::exception_ptr &ep, const char *fmt, ...) noexcept
+LogFormat(LogLevel level, const std::exception_ptr &ep, const char *fmt, ...) noexcept
 {
 	char msg[1024];
 	va_list ap;
@@ -136,7 +136,7 @@ FormatError(const std::exception_ptr &ep, const char *fmt, ...) noexcept
 	vsnprintf(msg, sizeof(msg), fmt, ap);
 	va_end(ap);
 
-	LogError(ep, msg);
+	Log(level, ep, msg);
 }
 
 void
