@@ -57,8 +57,8 @@ EventThread::Run() noexcept
 		try {
 			SetThreadRealtime();
 		} catch (...) {
-			LogError(std::current_exception(),
-				 "RTIOThread could not get realtime scheduling, continuing anyway");
+			Log(LogLevel::INFO, std::current_exception(),
+			    "RTIOThread could not get realtime scheduling, continuing anyway");
 		}
 	}
 
