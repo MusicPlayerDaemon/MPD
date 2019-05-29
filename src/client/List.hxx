@@ -25,8 +25,9 @@
 #include <boost/intrusive/list.hpp>
 
 class ClientList {
-	typedef boost::intrusive::list<Client,
-				       boost::intrusive::constant_time_size<true>> List;
+	using List =
+		boost::intrusive::list<Client,
+				       boost::intrusive::constant_time_size<true>>;
 
 	const unsigned max_size;
 
