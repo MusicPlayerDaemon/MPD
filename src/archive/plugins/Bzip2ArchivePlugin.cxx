@@ -71,7 +71,7 @@ public:
 	~Bzip2InputStream();
 
 	/* virtual methods from InputStream */
-	bool IsEOF() noexcept override;
+	bool IsEOF() const noexcept override;
 	size_t Read(std::unique_lock<Mutex> &lock,
 		    void *ptr, size_t size) override;
 
@@ -183,7 +183,7 @@ Bzip2InputStream::Read(std::unique_lock<Mutex> &, void *ptr, size_t length)
 }
 
 bool
-Bzip2InputStream::IsEOF() noexcept
+Bzip2InputStream::IsEOF() const noexcept
 {
 	return eof;
 }

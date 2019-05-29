@@ -57,7 +57,9 @@ class BufferingInputStream : InputStreamHandler {
 
 	bool stop = false;
 
-	size_t want_offset = INVALID_OFFSET;
+	/* must be mutable because IsAvailable() acts as a hint to
+	   modify this attribute */
+	mutable size_t want_offset = INVALID_OFFSET;
 
 	std::exception_ptr error, seek_error;
 
@@ -100,7 +102,7 @@ public:
 	 * Check whether data is available in the buffer at the given
 	 * offset..
 	 */
-	bool IsAvailable(size_t offset) noexcept;
+	bool IsAvailable(size_t offset) const noexcept;
 
 	/**
 	 * Copy data from the buffer into the given pointer.

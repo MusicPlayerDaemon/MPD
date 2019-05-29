@@ -48,7 +48,7 @@ public:
 	}
 
 	/* virtual methods from InputStream */
-	bool IsEOF() noexcept override;
+	bool IsEOF() const noexcept override;
 	size_t Read(std::unique_lock<Mutex> &lock,
 		    void *ptr, size_t size) override;
 	void Seek(std::unique_lock<Mutex> &lock,
@@ -96,7 +96,7 @@ FfmpegInputStream::Read(std::unique_lock<Mutex> &,
 }
 
 bool
-FfmpegInputStream::IsEOF() noexcept
+FfmpegInputStream::IsEOF() const noexcept
 {
 	return io.IsEOF();
 }

@@ -49,7 +49,7 @@ public:
 		std::rethrow_exception(error);
 	}
 
-	bool IsEOF() noexcept override {
+	bool IsEOF() const noexcept override {
 		return false;
 	}
 

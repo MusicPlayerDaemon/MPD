@@ -55,10 +55,10 @@ public:
 	   have been copied already in our constructor */
 	//void Update() noexcept;
 	void Seek(std::unique_lock<Mutex> &lock, offset_type offset) override;
-	bool IsEOF() noexcept override;
+	bool IsEOF() const noexcept override;
 	/* we don't support tags */
 	// std::unique_ptr<Tag> ReadTag() override;
-	bool IsAvailable() noexcept override;
+	bool IsAvailable() const noexcept override;
 	size_t Read(std::unique_lock<Mutex> &lock,
 		    void *ptr, size_t size) override;
 

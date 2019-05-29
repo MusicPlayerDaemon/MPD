@@ -105,7 +105,7 @@ InputStream::LockReadTag() noexcept
 }
 
 bool
-InputStream::IsAvailable() noexcept
+InputStream::IsAvailable() const noexcept
 {
 	return true;
 }
@@ -153,7 +153,7 @@ InputStream::LockReadFull(void *ptr, size_t _size)
 }
 
 bool
-InputStream::LockIsEOF() noexcept
+InputStream::LockIsEOF() const noexcept
 {
 	const std::lock_guard<Mutex> protect(mutex);
 	return IsEOF();

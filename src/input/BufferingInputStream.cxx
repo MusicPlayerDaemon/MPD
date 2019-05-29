@@ -56,7 +56,7 @@ BufferingInputStream::Check()
 }
 
 bool
-BufferingInputStream::IsAvailable(size_t offset) noexcept
+BufferingInputStream::IsAvailable(size_t offset) const noexcept
 {
 	if (offset >= size() || error)
 		return true;

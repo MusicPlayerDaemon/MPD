@@ -62,9 +62,9 @@ public:
 	void Update() noexcept override;
 	void Seek(std::unique_lock<Mutex> &lock,
 		  offset_type new_offset) override;
-	bool IsEOF() noexcept override;
+	bool IsEOF() const noexcept override;
 	std::unique_ptr<Tag> ReadTag() noexcept override;
-	bool IsAvailable() noexcept override;
+	bool IsAvailable() const noexcept override;
 	size_t Read(std::unique_lock<Mutex> &lock,
 		    void *ptr, size_t read_size) override;
 

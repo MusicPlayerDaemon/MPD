@@ -99,7 +99,7 @@ ProxyInputStream::Seek(std::unique_lock<Mutex> &lock,
 }
 
 bool
-ProxyInputStream::IsEOF() noexcept
+ProxyInputStream::IsEOF() const noexcept
 {
 	return input && input->IsEOF();
 }
@@ -114,7 +114,7 @@ ProxyInputStream::ReadTag() noexcept
 }
 
 bool
-ProxyInputStream::IsAvailable() noexcept
+ProxyInputStream::IsAvailable() const noexcept
 {
 	return input && input->IsAvailable();
 }

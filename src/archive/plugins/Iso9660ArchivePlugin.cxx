@@ -156,7 +156,7 @@ public:
 	}
 
 	/* virtual methods from InputStream */
-	bool IsEOF() noexcept override;
+	bool IsEOF() const noexcept override;
 	size_t Read(std::unique_lock<Mutex> &lock,
 		    void *ptr, size_t size) override;
 };
@@ -210,7 +210,7 @@ Iso9660InputStream::Read(std::unique_lock<Mutex> &,
 }
 
 bool
-Iso9660InputStream::IsEOF() noexcept
+Iso9660InputStream::IsEOF() const noexcept
 {
 	return offset == size;
 }

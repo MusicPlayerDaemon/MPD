@@ -122,7 +122,7 @@ ThreadInputStream::Check()
 }
 
 bool
-ThreadInputStream::IsAvailable() noexcept
+ThreadInputStream::IsAvailable() const noexcept
 {
 	assert(!thread.IsInside());
 
@@ -160,7 +160,7 @@ ThreadInputStream::Read(std::unique_lock<Mutex> &lock,
 }
 
 bool
-ThreadInputStream::IsEOF() noexcept
+ThreadInputStream::IsEOF() const noexcept
 {
 	assert(!thread.IsInside());
 

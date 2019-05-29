@@ -24,7 +24,7 @@ public:
 	}
 
 	/* virtual methods from InputStream */
-	bool IsEOF() noexcept override {
+	bool IsEOF() const noexcept override {
 		return remaining == 0;
 	}
 

@@ -56,7 +56,7 @@ public:
 			ProxyInputStream::Update();
 	}
 
-	bool IsEOF() noexcept override {
+	bool IsEOF() const noexcept override {
 		return !ReadingFromBuffer() && ProxyInputStream::IsEOF();
 	}
 

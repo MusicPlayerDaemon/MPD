@@ -310,14 +310,14 @@ public:
 	 * The caller must lock the mutex.
 	 */
 	gcc_pure
-	virtual bool IsEOF() noexcept = 0;
+	virtual bool IsEOF() const noexcept = 0;
 
 	/**
 	 * Wrapper for IsEOF() which locks and unlocks the mutex; the
 	 * caller must not be holding it already.
 	 */
 	gcc_pure
-	bool LockIsEOF() noexcept;
+	bool LockIsEOF() const noexcept;
 
 	/**
 	 * Reads the tag from the stream.
@@ -343,7 +343,7 @@ public:
 	 * The caller must lock the mutex.
 	 */
 	gcc_pure
-	virtual bool IsAvailable() noexcept;
+	virtual bool IsAvailable() const noexcept;
 
 	/**
 	 * Reads data from the stream into the caller-supplied buffer.

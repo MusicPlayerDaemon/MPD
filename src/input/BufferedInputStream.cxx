@@ -53,13 +53,13 @@ BufferedInputStream::Seek(std::unique_lock<Mutex> &,
 }
 
 bool
-BufferedInputStream::IsEOF() noexcept
+BufferedInputStream::IsEOF() const noexcept
 {
 	return InputStream::offset == BufferingInputStream::size();
 }
 
 bool
-BufferedInputStream::IsAvailable() noexcept
+BufferedInputStream::IsAvailable() const noexcept
 {
 	return BufferingInputStream::IsAvailable(offset);
 }

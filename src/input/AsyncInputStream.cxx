@@ -88,7 +88,7 @@ AsyncInputStream::Check()
 }
 
 bool
-AsyncInputStream::IsEOF() noexcept
+AsyncInputStream::IsEOF() const noexcept
 {
 	return (KnownSize() && offset >= size) ||
 		(!open && buffer.empty());
@@ -164,7 +164,7 @@ AsyncInputStream::ReadTag() noexcept
 }
 
 bool
-AsyncInputStream::IsAvailable() noexcept
+AsyncInputStream::IsAvailable() const noexcept
 {
 	return postponed_exception ||
 		IsEOF() ||
