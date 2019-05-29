@@ -385,11 +385,11 @@ main(int argc, char *argv[]) noexcept
 
 #endif
 
-static int
+static void
 mpd_main_after_fork(const ConfigData &raw_config,
 		    const Config &config);
 
-static inline int
+static inline void
 MainOrThrow(int argc, char *argv[])
 {
 	struct options options;
@@ -471,7 +471,7 @@ MainOrThrow(int argc, char *argv[])
 	AtScopeExit() { daemonize_finish(); };
 #endif
 
-	return mpd_main_after_fork(raw_config, config);
+	mpd_main_after_fork(raw_config, config);
 }
 
 #ifdef ANDROID
@@ -482,14 +482,15 @@ int mpd_main(int argc, char *argv[]) noexcept
 	AtScopeExit() { log_deinit(); };
 
 	try {
-		return MainOrThrow(argc, argv);
+		MainOrThrow(argc, argv);
+		return EXIT_SUCCESS;
 	} catch (...) {
 		LogError(std::current_exception());
 		return EXIT_FAILURE;
 	}
 }
 
-static int
+static void
 mpd_main_after_fork(const ConfigData &raw_config, const Config &config)
 {
 	ConfigureFS(raw_config);
@@ -622,8 +623,6 @@ mpd_main_after_fork(const ConfigData &raw_config, const Config &config)
 	instance->BeginShutdownPartitions();
 
 	delete instance->client_list;
-
-	return EXIT_SUCCESS;
 }
 
 #ifdef ANDROID
