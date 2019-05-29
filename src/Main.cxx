@@ -382,11 +382,6 @@ main(int argc, char *argv[]) noexcept
 
 #endif
 
-static void
-mpd_main_after_fork(Instance &instance,
-		    const ConfigData &raw_config,
-		    const Config &config);
-
 static inline void
 MainConfigured(const struct options &options, const ConfigData &raw_config)
 {
@@ -448,41 +443,6 @@ MainConfigured(const struct options &options, const ConfigData &raw_config)
 	AtScopeExit() { daemonize_finish(); };
 #endif
 
-	mpd_main_after_fork(instance, raw_config, config);
-}
-
-#ifndef ANDROID
-
-static inline void
-MainOrThrow(int argc, char *argv[])
-{
-	struct options options;
-	ConfigData raw_config;
-
-	ParseCommandLine(argc, argv, options, raw_config);
-
-	MainConfigured(options, raw_config);
-}
-
-int mpd_main(int argc, char *argv[]) noexcept
-{
-	AtScopeExit() { log_deinit(); };
-
-	try {
-		MainOrThrow(argc, argv);
-		return EXIT_SUCCESS;
-	} catch (...) {
-		LogError(std::current_exception());
-		return EXIT_FAILURE;
-	}
-}
-
-#endif /* !ANDROID */
-
-static void
-mpd_main_after_fork(Instance &instance,
-		    const ConfigData &raw_config, const Config &config)
-{
 	ConfigureFS(raw_config);
 	AtScopeExit() { DeinitFS(); };
 
@@ -612,6 +572,34 @@ mpd_main_after_fork(Instance &instance,
 
 	instance.BeginShutdownPartitions();
 }
+
+#ifndef ANDROID
+
+static inline void
+MainOrThrow(int argc, char *argv[])
+{
+	struct options options;
+	ConfigData raw_config;
+
+	ParseCommandLine(argc, argv, options, raw_config);
+
+	MainConfigured(options, raw_config);
+}
+
+int mpd_main(int argc, char *argv[]) noexcept
+{
+	AtScopeExit() { log_deinit(); };
+
+	try {
+		MainOrThrow(argc, argv);
+		return EXIT_SUCCESS;
+	} catch (...) {
+		LogError(std::current_exception());
+		return EXIT_FAILURE;
+	}
+}
+
+#endif /* !ANDROID */
 
 #ifdef ANDROID
 
