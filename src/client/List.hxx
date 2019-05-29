@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2018 The Music Player Daemon Project
+ * Copyright 2003-2019 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -40,11 +40,11 @@ public:
 		CloseAll();
 	}
 
-	List::iterator begin() noexcept {
+	auto begin() noexcept {
 		return list.begin();
 	}
 
-	List::iterator end() noexcept {
+	auto end() noexcept {
 		return list.end();
 	}
 
