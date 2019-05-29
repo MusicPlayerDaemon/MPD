@@ -129,7 +129,7 @@ Context *context;
 LogListener *logListener;
 #endif
 
-Instance *instance;
+Instance *global_instance;
 
 struct Config {
 	ReplayGainConfig replay_gain;
@@ -166,14 +166,15 @@ glue_mapper_init(const ConfigData &config)
 #ifdef ENABLE_DATABASE
 
 static void
-InitStorage(const ConfigData &config, EventLoop &event_loop)
+InitStorage(Instance &instance, EventLoop &event_loop,
+	    const ConfigData &config)
 {
 	auto storage = CreateConfiguredStorage(config, event_loop);
 	if (storage == nullptr)
 		return;
 
 	CompositeStorage *composite = new CompositeStorage();
-	instance->storage = composite;
+	instance.storage = composite;
 	composite->Mount("", std::move(storage));
 }
 
@@ -183,18 +184,19 @@ InitStorage(const ConfigData &config, EventLoop &event_loop)
  * process has been daemonized.
  */
 static bool
-glue_db_init_and_load(const ConfigData &config)
+glue_db_init_and_load(Instance &instance, const ConfigData &config)
 {
-	auto db = CreateConfiguredDatabase(config, instance->event_loop,
-					   instance->io_thread.GetEventLoop(),
-					   *instance);
+	auto db = CreateConfiguredDatabase(config, instance.event_loop,
+					   instance.io_thread.GetEventLoop(),
+					   instance);
 	if (!db)
 		return true;
 
 	if (db->GetPlugin().RequireStorage()) {
-		InitStorage(config, instance->io_thread.GetEventLoop());
+		InitStorage(instance, instance.io_thread.GetEventLoop(),
+			    config);
 
-		if (instance->storage == nullptr) {
+		if (instance.storage == nullptr) {
 			LogDefault(config_domain,
 				   "Found database setting without "
 				   "music_directory - disabling database");
@@ -213,25 +215,25 @@ glue_db_init_and_load(const ConfigData &config)
 		std::throw_with_nested(std::runtime_error("Failed to open database plugin"));
 	}
 
-	instance->database = std::move(db);
+	instance.database = std::move(db);
 
-	auto *sdb = dynamic_cast<SimpleDatabase *>(instance->database.get());
+	auto *sdb = dynamic_cast<SimpleDatabase *>(instance.database.get());
 	if (sdb == nullptr)
 		return true;
 
-	instance->update = new UpdateService(config,
-					     instance->event_loop, *sdb,
-					     static_cast<CompositeStorage &>(*instance->storage),
-					     *instance);
+	instance.update = new UpdateService(config,
+					    instance.event_loop, *sdb,
+					    static_cast<CompositeStorage &>(*instance.storage),
+					    instance);
 
 	/* run database update after daemonization? */
 	return sdb->FileExists();
 }
 
 static bool
-InitDatabaseAndStorage(const ConfigData &config)
+InitDatabaseAndStorage(Instance &instance, const ConfigData &config)
 {
-	const bool create_db = !glue_db_init_and_load(config);
+	const bool create_db = !glue_db_init_and_load(instance, config);
 	return create_db;
 }
 
@@ -255,23 +257,24 @@ LoadStickerDatabase(const ConfigData &config)
 #endif
 
 static void
-glue_state_file_init(const ConfigData &raw_config)
+glue_state_file_init(Instance &instance, const ConfigData &raw_config)
 {
 	StateFileConfig config(raw_config);
 	if (!config.IsEnabled())
 		return;
 
-	instance->state_file = new StateFile(std::move(config),
-					     instance->partitions.front(),
-					     instance->event_loop);
-	instance->state_file->Read();
+	instance.state_file = new StateFile(std::move(config),
+					    instance.partitions.front(),
+					    instance.event_loop);
+	instance.state_file->Read();
 }
 
 /**
  * Initialize the decoder and player core, including the music pipe.
  */
 static void
-initialize_decoder_and_player(const ConfigData &config,
+initialize_decoder_and_player(Instance &instance,
+			      const ConfigData &config,
 			      const ReplayGainConfig &replay_gain_config)
 {
 	const ConfigParam *param;
@@ -318,13 +321,13 @@ initialize_decoder_and_player(const ConfigData &config,
 		}
 	}
 
-	instance->partitions.emplace_back(*instance,
-					  "default",
-					  max_length,
-					  buffered_chunks,
-					  configured_audio_format,
-					  replay_gain_config);
-	auto &partition = instance->partitions.back();
+	instance.partitions.emplace_back(instance,
+					 "default",
+					 max_length,
+					 buffered_chunks,
+					 configured_audio_format,
+					 replay_gain_config);
+	auto &partition = instance.partitions.back();
 
 	try {
 		param = config.GetParam(ConfigOption::REPLAYGAIN);
@@ -386,7 +389,8 @@ main(int argc, char *argv[]) noexcept
 #endif
 
 static void
-mpd_main_after_fork(const ConfigData &raw_config,
+mpd_main_after_fork(Instance &instance,
+		    const ConfigData &raw_config,
 		    const Config &config);
 
 static inline void
@@ -422,29 +426,27 @@ MainConfigured(const struct options &options, const ConfigData &raw_config)
 
 	log_init(raw_config, options.verbose, options.log_stderr);
 
-	instance = new Instance();
-	AtScopeExit() {
-		delete instance;
-		instance = nullptr;
-	};
+	Instance instance;
+	global_instance = &instance;
 
 #ifdef ENABLE_NEIGHBOR_PLUGINS
-	instance->neighbors = std::make_unique<NeighborGlue>();
-	instance->neighbors->Init(raw_config,
-				  instance->io_thread.GetEventLoop(),
-				  *instance);
+	instance.neighbors = std::make_unique<NeighborGlue>();
+	instance.neighbors->Init(raw_config,
+				 instance.io_thread.GetEventLoop(),
+				 instance);
 
-	if (instance->neighbors->IsEmpty())
-		instance->neighbors.reset();
+	if (instance.neighbors->IsEmpty())
+		instance.neighbors.reset();
 #endif
 
 	const unsigned max_clients =
 		raw_config.GetPositive(ConfigOption::MAX_CONN, 10);
-	instance->client_list = new ClientList(max_clients);
+	instance.client_list = new ClientList(max_clients);
 
-	initialize_decoder_and_player(raw_config, config.replay_gain);
+	initialize_decoder_and_player(instance,
+				      raw_config, config.replay_gain);
 
-	listen_global_init(raw_config, *instance->partitions.front().listener);
+	listen_global_init(raw_config, *instance.partitions.front().listener);
 
 #ifdef ENABLE_DAEMON
 	daemonize_set_user();
@@ -452,7 +454,7 @@ MainConfigured(const struct options &options, const ConfigData &raw_config)
 	AtScopeExit() { daemonize_finish(); };
 #endif
 
-	mpd_main_after_fork(raw_config, config);
+	mpd_main_after_fork(instance, raw_config, config);
 }
 
 #ifndef ANDROID
@@ -484,7 +486,8 @@ int mpd_main(int argc, char *argv[]) noexcept
 #endif /* !ANDROID */
 
 static void
-mpd_main_after_fork(const ConfigData &raw_config, const Config &config)
+mpd_main_after_fork(Instance &instance,
+		    const ConfigData &raw_config, const Config &config)
 {
 	ConfigureFS(raw_config);
 	AtScopeExit() { DeinitFS(); };
@@ -502,17 +505,17 @@ mpd_main_after_fork(const ConfigData &raw_config, const Config &config)
 	const ScopeDecoderPluginsInit decoder_plugins_init(raw_config);
 
 #ifdef ENABLE_DATABASE
-	const bool create_db = InitDatabaseAndStorage(raw_config);
+	const bool create_db = InitDatabaseAndStorage(instance, raw_config);
 #endif
 
 #ifdef ENABLE_SQLITE
-	instance->sticker_database = LoadStickerDatabase(raw_config);
+	instance.sticker_database = LoadStickerDatabase(raw_config);
 #endif
 
 	command_init();
 
-	for (auto &partition : instance->partitions) {
-		partition.outputs.Configure(instance->rtio_thread.GetEventLoop(),
+	for (auto &partition : instance.partitions) {
+		partition.outputs.Configure(instance.rtio_thread.GetEventLoop(),
 					    raw_config,
 					    config.replay_gain,
 					    partition.pc);
@@ -521,7 +524,7 @@ mpd_main_after_fork(const ConfigData &raw_config, const Config &config)
 
 	client_manager_init(raw_config);
 	const ScopeInputPluginsInit input_plugins_init(raw_config,
-						       instance->io_thread.GetEventLoop());
+						       instance.io_thread.GetEventLoop());
 	const ScopePlaylistPluginsInit playlist_plugins_init(raw_config);
 
 #ifdef ENABLE_DAEMON
@@ -531,42 +534,42 @@ mpd_main_after_fork(const ConfigData &raw_config, const Config &config)
 #ifndef ANDROID
 	setup_log_output();
 
-	const ScopeSignalHandlersInit signal_handlers_init(instance->event_loop);
+	const ScopeSignalHandlersInit signal_handlers_init(instance.event_loop);
 #endif
 
-	instance->io_thread.Start();
-	instance->rtio_thread.Start();
+	instance.io_thread.Start();
+	instance.rtio_thread.Start();
 
 #ifdef ENABLE_NEIGHBOR_PLUGINS
-	if (instance->neighbors != nullptr)
-		instance->neighbors->Open();
+	if (instance.neighbors != nullptr)
+		instance.neighbors->Open();
 
-	AtScopeExit() {
-		if (instance->neighbors != nullptr)
-			instance->neighbors->Close();
+	AtScopeExit(&instance) {
+		if (instance.neighbors != nullptr)
+			instance.neighbors->Close();
 	};
 #endif
 
-	ZeroconfInit(raw_config, instance->event_loop);
+	ZeroconfInit(raw_config, instance.event_loop);
 
 #ifdef ENABLE_DATABASE
 	if (create_db) {
 		/* the database failed to load: recreate the
 		   database */
-		instance->update->Enqueue("", true);
+		instance.update->Enqueue("", true);
 	}
 #endif
 
-	glue_state_file_init(raw_config);
+	glue_state_file_init(instance, raw_config);
 
 #ifdef ENABLE_DATABASE
 	if (raw_config.GetBool(ConfigOption::AUTO_UPDATE, false)) {
 #ifdef ENABLE_INOTIFY
-		if (instance->storage != nullptr &&
-		    instance->update != nullptr)
-			mpd_inotify_init(instance->event_loop,
-					 *instance->storage,
-					 *instance->update,
+		if (instance.storage != nullptr &&
+		    instance.update != nullptr)
+			mpd_inotify_init(instance.event_loop,
+					 *instance.storage,
+					 *instance.update,
 					 raw_config.GetUnsigned(ConfigOption::AUTO_UPDATE_DEPTH,
 								INT_MAX));
 #else
@@ -580,7 +583,7 @@ mpd_main_after_fork(const ConfigData &raw_config, const Config &config)
 
 	/* enable all audio outputs (if not already done by
 	   playlist_state_restore() */
-	for (auto &partition : instance->partitions)
+	for (auto &partition : instance.partitions)
 		partition.pc.LockUpdateAudio();
 
 #ifdef _WIN32
@@ -596,7 +599,7 @@ mpd_main_after_fork(const ConfigData &raw_config, const Config &config)
 #endif
 
 	/* run the main loop */
-	instance->event_loop.Run();
+	instance.event_loop.Run();
 
 #ifdef _WIN32
 	win32_app_stopping();
@@ -604,18 +607,18 @@ mpd_main_after_fork(const ConfigData &raw_config, const Config &config)
 
 	/* cleanup */
 
-	instance->BeginShutdownUpdate();
+	instance.BeginShutdownUpdate();
 
-	if (instance->state_file != nullptr) {
-		instance->state_file->Write();
-		delete instance->state_file;
+	if (instance.state_file != nullptr) {
+		instance.state_file->Write();
+		delete instance.state_file;
 	}
 
 	ZeroconfDeinit();
 
-	instance->BeginShutdownPartitions();
+	instance.BeginShutdownPartitions();
 
-	delete instance->client_list;
+	delete instance.client_list;
 }
 
 #ifdef ANDROID
@@ -665,8 +668,8 @@ gcc_visibility_default
 JNIEXPORT void JNICALL
 Java_org_musicpd_Bridge_shutdown(JNIEnv *, jclass)
 {
-	if (instance != nullptr)
-		instance->Break();
+	if (global_instance != nullptr)
+		global_instance->Break();
 }
 
 #endif

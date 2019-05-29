@@ -33,5 +33,5 @@ idle_add(unsigned flags)
 {
 	assert(flags != 0);
 
-	instance->EmitIdle(flags);
+	global_instance->EmitIdle(flags);
 }

@@ -31,7 +31,7 @@ extern Context *context;
 extern LogListener *logListener;
 #endif
 
-extern Instance *instance;
+extern Instance *global_instance;
 
 #ifndef ANDROID
 

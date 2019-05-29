@@ -66,10 +66,10 @@ map_uri_fs(const char *uri) noexcept
 	assert(uri != nullptr);
 	assert(*uri != '/');
 
-	if (instance->storage == nullptr)
+	if (global_instance->storage == nullptr)
 		return nullptr;
 
-	const auto music_dir_fs = instance->storage->MapFS("");
+	const auto music_dir_fs = global_instance->storage->MapFS("");
 	if (music_dir_fs.IsNull())
 		return nullptr;
 
@@ -84,10 +84,10 @@ std::string
 map_fs_to_utf8(Path path_fs) noexcept
 {
 	if (path_fs.IsAbsolute()) {
-		if (instance->storage == nullptr)
+		if (global_instance->storage == nullptr)
 			return std::string();
 
-		const auto music_dir_fs = instance->storage->MapFS("");
+		const auto music_dir_fs = global_instance->storage->MapFS("");
 		if (music_dir_fs.IsNull())
 			return std::string();
 

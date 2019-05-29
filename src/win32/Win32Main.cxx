@@ -70,7 +70,7 @@ service_dispatcher(gcc_unused DWORD control, gcc_unused DWORD event_type,
 	switch (control) {
 	case SERVICE_CONTROL_SHUTDOWN:
 	case SERVICE_CONTROL_STOP:
-		instance->Break();
+		global_instance->Break();
 		return NO_ERROR;
 	default:
 		return NO_ERROR;
@@ -106,7 +106,7 @@ console_handler(DWORD event)
 			// regardless our thread is still active.
 			// If this did not happen within 3 seconds
 			// let's shutdown anyway.
-			instance->Break();
+			global_instance->Break();
 			// Under debugger it's better to wait indefinitely
 			// to allow debugging of shutdown code.
 			Sleep(IsDebuggerPresent() ? INFINITE : 3000);
