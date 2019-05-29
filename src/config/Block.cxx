@@ -26,6 +26,13 @@
 #include <assert.h>
 #include <stdlib.h>
 
+void
+BlockParam::ThrowWithNested() const
+{
+	std::throw_with_nested(FormatRuntimeError("Error in setting \"%s\" on line %i",
+						  name.c_str(), line));
+}
+
 int
 BlockParam::GetIntValue() const
 {

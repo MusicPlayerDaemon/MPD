@@ -51,6 +51,14 @@ struct BlockParam {
 	unsigned GetPositiveValue() const;
 
 	bool GetBoolValue() const;
+
+	/**
+	 * Call this method in a "catch" block to throw a nested
+	 * exception showing the location of this setting in the
+	 * configuration file.
+	 */
+	[[noreturn]]
+	void ThrowWithNested() const;
 };
 
 struct ConfigBlock {
