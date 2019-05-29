@@ -59,6 +59,19 @@ struct BlockParam {
 	 */
 	[[noreturn]]
 	void ThrowWithNested() const;
+
+	/**
+	 * Invoke a function with the configured value; if the
+	 * function throws, call ThrowWithNested().
+	 */
+	template<typename F>
+	auto With(F &&f) const {
+		try {
+			return f(value.c_str());
+		} catch (...) {
+			ThrowWithNested();
+		}
+	}
 };
 
 struct ConfigBlock {
