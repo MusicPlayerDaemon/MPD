@@ -559,34 +559,6 @@ MainConfigured(const struct options &options, const ConfigData &raw_config)
 	instance.BeginShutdownPartitions();
 }
 
-#ifndef ANDROID
-
-static inline void
-MainOrThrow(int argc, char *argv[])
-{
-	struct options options;
-	ConfigData raw_config;
-
-	ParseCommandLine(argc, argv, options, raw_config);
-
-	MainConfigured(options, raw_config);
-}
-
-int mpd_main(int argc, char *argv[]) noexcept
-{
-	AtScopeExit() { log_deinit(); };
-
-	try {
-		MainOrThrow(argc, argv);
-		return EXIT_SUCCESS;
-	} catch (...) {
-		LogError(std::current_exception());
-		return EXIT_FAILURE;
-	}
-}
-
-#endif /* !ANDROID */
-
 #ifdef ANDROID
 
 static void
@@ -639,6 +611,30 @@ Java_org_musicpd_Bridge_shutdown(JNIEnv *, jclass)
 }
 
 #else
+
+static inline void
+MainOrThrow(int argc, char *argv[])
+{
+	struct options options;
+	ConfigData raw_config;
+
+	ParseCommandLine(argc, argv, options, raw_config);
+
+	MainConfigured(options, raw_config);
+}
+
+int mpd_main(int argc, char *argv[]) noexcept
+{
+	AtScopeExit() { log_deinit(); };
+
+	try {
+		MainOrThrow(argc, argv);
+		return EXIT_SUCCESS;
+	} catch (...) {
+		LogError(std::current_exception());
+		return EXIT_FAILURE;
+	}
+}
 
 int
 main(int argc, char *argv[]) noexcept
