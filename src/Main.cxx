@@ -455,33 +455,19 @@ MainConfigured(const struct options &options, const ConfigData &raw_config)
 	mpd_main_after_fork(raw_config, config);
 }
 
+#ifndef ANDROID
+
 static inline void
 MainOrThrow(int argc, char *argv[])
 {
 	struct options options;
 	ConfigData raw_config;
 
-#ifdef ANDROID
-	(void)argc;
-	(void)argv;
-
-	const auto sdcard = Environment::getExternalStorageDirectory();
-	if (!sdcard.IsNull()) {
-		const auto config_path =
-			sdcard / Path::FromFS("mpd.conf");
-		if (FileExists(config_path))
-			ReadConfigFile(raw_config, config_path);
-	}
-#else
 	ParseCommandLine(argc, argv, options, raw_config);
-#endif
 
 	MainConfigured(options, raw_config);
 }
 
-#ifdef ANDROID
-static inline
-#endif
 int mpd_main(int argc, char *argv[]) noexcept
 {
 	AtScopeExit() { log_deinit(); };
@@ -494,6 +480,8 @@ int mpd_main(int argc, char *argv[]) noexcept
 		return EXIT_FAILURE;
 	}
 }
+
+#endif /* !ANDROID */
 
 static void
 mpd_main_after_fork(const ConfigData &raw_config, const Config &config)
@@ -632,6 +620,23 @@ mpd_main_after_fork(const ConfigData &raw_config, const Config &config)
 
 #ifdef ANDROID
 
+static void
+AndroidMain()
+{
+	struct options options;
+	ConfigData raw_config;
+
+	const auto sdcard = Environment::getExternalStorageDirectory();
+	if (!sdcard.IsNull()) {
+		const auto config_path =
+			sdcard / Path::FromFS("mpd.conf");
+		if (FileExists(config_path))
+			ReadConfigFile(raw_config, config_path);
+	}
+
+	MainConfigured(options, raw_config);
+}
+
 gcc_visibility_default
 JNIEXPORT void JNICALL
 Java_org_musicpd_Bridge_run(JNIEnv *env, jclass, jobject _context, jobject _logListener)
@@ -649,7 +654,11 @@ Java_org_musicpd_Bridge_run(JNIEnv *env, jclass, jobject _context, jobject _logL
 		logListener = new LogListener(env, _logListener);
 	AtScopeExit() { delete logListener; };
 
-	mpd_main(0, nullptr);
+	try {
+		AndroidMain();
+	} catch (...) {
+		LogError(std::current_exception());
+	}
 }
 
 gcc_visibility_default
