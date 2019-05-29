@@ -126,19 +126,11 @@ ConfigData::GetPositive(ConfigOption option, unsigned default_value) const
 bool
 ConfigData::GetBool(ConfigOption option, bool default_value) const
 {
-	const auto *param = GetParam(option);
-	bool success, value;
-
-	if (param == nullptr)
-		return default_value;
-
-	success = get_bool(param->value.c_str(), &value);
-	if (!success)
-		throw FormatRuntimeError("Expected boolean value (yes, true, 1) or "
-					 "(no, false, 0) on line %i\n",
-					 param->line);
-
-	return value;
+	return With(option, [default_value](const char *s){
+		return s != nullptr
+			? ParseBool(s)
+			: default_value;
+	});
 }
 
 ConfigBlock &

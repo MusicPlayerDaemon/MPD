@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2018 The Music Player Daemon Project
+ * Copyright 2003-2019 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,23 +18,20 @@
  */
 
 #include "Parser.hxx"
+#include "util/RuntimeError.hxx"
 #include "util/StringUtil.hxx"
 
 bool
-get_bool(const char *value, bool *value_r)
+ParseBool(const char *value)
 {
 	static const char *const t[] = { "yes", "true", "1", nullptr };
 	static const char *const f[] = { "no", "false", "0", nullptr };
 
-	if (StringArrayContainsCase(t, value)) {
-		*value_r = true;
+	if (StringArrayContainsCase(t, value))
 		return true;
-	}
 
-	if (StringArrayContainsCase(f, value)) {
-		*value_r = false;
-		return true;
-	}
+	if (StringArrayContainsCase(f, value))
+		return false;
 
-	return false;
+	throw FormatRuntimeError("Not a valid boolean (\"yes\" or \"no\"): \"%s\"", value);
 }

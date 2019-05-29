@@ -75,13 +75,7 @@ BlockParam::GetPositiveValue() const
 bool
 BlockParam::GetBoolValue() const
 {
-	bool value2;
-	if (!get_bool(value.c_str(), &value2))
-		throw FormatRuntimeError("%s is not a boolean value (yes, true, 1) or "
-					 "(no, false, 0) on line %i\n",
-					 name.c_str(), line);
-
-	return value2;
+	return With(ParseBool);
 }
 
 const BlockParam *

@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2018 The Music Player Daemon Project
+ * Copyright 2003-2019 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -20,7 +20,10 @@
 #ifndef MPD_CONFIG_PARSER_HXX
 #define MPD_CONFIG_PARSER_HXX
 
+/**
+ * Throws on error.
+ */
 bool
-get_bool(const char *value, bool *value_r);
+ParseBool(const char *value);
 
 #endif
