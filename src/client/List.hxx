@@ -36,9 +36,7 @@ public:
 	explicit ClientList(unsigned _max_size) noexcept
 		:max_size(_max_size) {}
 
-	~ClientList() noexcept {
-		CloseAll();
-	}
+	~ClientList() noexcept;
 
 	auto begin() noexcept {
 		return list.begin();
@@ -57,8 +55,6 @@ public:
 	}
 
 	void Remove(Client &client) noexcept;
-
-	void CloseAll() noexcept;
 
 	void IdleAdd(unsigned flags) noexcept;
 };

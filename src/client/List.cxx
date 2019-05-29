@@ -22,18 +22,17 @@
 
 #include <assert.h>
 
+ClientList::~ClientList() noexcept
+{
+	list.clear_and_dispose(DeleteDisposer());
+}
+
 void
 ClientList::Remove(Client &client) noexcept
 {
 	assert(!list.empty());
 
 	list.erase(list.iterator_to(client));
-}
-
-void
-ClientList::CloseAll() noexcept
-{
-	list.clear_and_dispose(DeleteDisposer());
 }
 
 void
