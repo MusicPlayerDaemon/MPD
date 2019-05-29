@@ -640,16 +640,16 @@ Java_org_musicpd_Bridge_run(JNIEnv *env, jclass, jobject _context, jobject _logL
 	Java::Object::Initialise(env);
 	Java::File::Initialise(env);
 	Environment::Initialise(env);
+	AtScopeExit(env) { Environment::Deinitialise(env); };
 
 	context = new Context(env, _context);
+	AtScopeExit() { delete context; };
+
 	if (_logListener != nullptr)
 		logListener = new LogListener(env, _logListener);
+	AtScopeExit() { delete logListener; };
 
 	mpd_main(0, nullptr);
-
-	delete logListener;
-	delete context;
-	Environment::Deinitialise(env);
 }
 
 gcc_visibility_default
