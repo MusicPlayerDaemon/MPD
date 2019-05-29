@@ -390,10 +390,8 @@ mpd_main_after_fork(const ConfigData &raw_config,
 		    const Config &config);
 
 static inline void
-MainOrThrow(int argc, char *argv[])
+MainConfigured(const struct options &options, const ConfigData &raw_config)
 {
-	struct options options;
-
 #ifdef ENABLE_DAEMON
 	daemonize_close_stdin();
 #endif
@@ -411,23 +409,6 @@ MainOrThrow(int argc, char *argv[])
 
 #ifdef ENABLE_DBUS
 	const ODBus::ScopeInit dbus_init;
-#endif
-
-	ConfigData raw_config;
-
-#ifdef ANDROID
-	(void)argc;
-	(void)argv;
-
-	const auto sdcard = Environment::getExternalStorageDirectory();
-	if (!sdcard.IsNull()) {
-		const auto config_path =
-			sdcard / Path::FromFS("mpd.conf");
-		if (FileExists(config_path))
-			ReadConfigFile(raw_config, config_path);
-	}
-#else
-	ParseCommandLine(argc, argv, options, raw_config);
 #endif
 
 	InitPathParser(raw_config);
@@ -472,6 +453,30 @@ MainOrThrow(int argc, char *argv[])
 #endif
 
 	mpd_main_after_fork(raw_config, config);
+}
+
+static inline void
+MainOrThrow(int argc, char *argv[])
+{
+	struct options options;
+	ConfigData raw_config;
+
+#ifdef ANDROID
+	(void)argc;
+	(void)argv;
+
+	const auto sdcard = Environment::getExternalStorageDirectory();
+	if (!sdcard.IsNull()) {
+		const auto config_path =
+			sdcard / Path::FromFS("mpd.conf");
+		if (FileExists(config_path))
+			ReadConfigFile(raw_config, config_path);
+	}
+#else
+	ParseCommandLine(argc, argv, options, raw_config);
+#endif
+
+	MainConfigured(options, raw_config);
 }
 
 #ifdef ANDROID
