@@ -133,13 +133,10 @@ Instance *global_instance;
 
 struct Config {
 	ReplayGainConfig replay_gain;
-};
 
-static Config
-LoadConfig(const ConfigData &config)
-{
-	return {LoadReplayGainConfig(config)};
-}
+	explicit Config(const ConfigData &raw)
+		:replay_gain(LoadReplayGainConfig(raw)) {}
+};
 
 #ifdef ENABLE_DAEMON
 
@@ -391,7 +388,7 @@ MainConfigured(const struct options &options, const ConfigData &raw_config)
 #endif
 
 	InitPathParser(raw_config);
-	const auto config = LoadConfig(raw_config);
+	const Config config(raw_config);
 
 #ifdef ENABLE_DAEMON
 	glue_daemonize_init(&options, raw_config);
