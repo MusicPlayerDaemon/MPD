@@ -37,8 +37,10 @@
 class BufferingInputStream : InputStreamHandler {
 	InputStreamPtr input;
 
+public:
 	Mutex &mutex;
 
+private:
 	Thread thread;
 
 	/**
