@@ -589,7 +589,7 @@ mpd_main_after_fork(const ConfigData &raw_config, const Config &config)
 
 	/* the MPD frontend does not care about timer slack; set it to
 	   a huge value to allow the kernel to reduce CPU wakeups */
-	SetThreadTimerSlackMS(100);
+	SetThreadTimerSlack(std::chrono::milliseconds(100));
 
 #ifdef ENABLE_SYSTEMD_DAEMON
 	sd_notify(0, "READY=1");

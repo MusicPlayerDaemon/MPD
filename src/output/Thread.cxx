@@ -410,7 +410,7 @@ AudioOutputControl::Task() noexcept
 		    "OutputThread could not get realtime scheduling, continuing anyway");
 	}
 
-	SetThreadTimerSlackUS(100);
+	SetThreadTimerSlack(std::chrono::microseconds(100));
 
 	std::unique_lock<Mutex> lock(mutex);
 

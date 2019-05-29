@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2018 The Music Player Daemon Project
+ * Copyright 2003-2019 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -22,6 +22,8 @@
 
 #include "config.h"
 
+#include <chrono>
+
 #ifdef HAVE_PRCTL
 #include <sys/prctl.h>
 #endif
@@ -41,16 +43,11 @@ SetThreadTimerSlackNS(unsigned long slack_ns) noexcept
 #endif
 }
 
-static inline void
-SetThreadTimerSlackUS(unsigned long slack_us) noexcept
+template<class Rep, class Period>
+static inline auto
+SetThreadTimerSlack(const std::chrono::duration<Rep,Period> &slack) noexcept
 {
-	SetThreadTimerSlackNS(slack_us * 1000ul);
-}
-
-static inline void
-SetThreadTimerSlackMS(unsigned long slack_ms) noexcept
-{
-	SetThreadTimerSlackNS(slack_ms * 1000000ul);
+	SetThreadTimerSlackNS(std::chrono::duration_cast<std::chrono::nanoseconds>(slack).count());
 }
 
 #endif

@@ -52,7 +52,7 @@ EventThread::Run() noexcept
 	SetThreadName(realtime ? "rtio" : "io");
 
 	if (realtime) {
-		SetThreadTimerSlackUS(10);
+		SetThreadTimerSlack(std::chrono::microseconds(10));
 
 		try {
 			SetThreadRealtime();
