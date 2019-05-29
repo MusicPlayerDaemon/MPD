@@ -54,6 +54,14 @@ struct ConfigData {
 		return list.empty() ? nullptr : &list.front();
 	}
 
+	template<typename F>
+	auto With(ConfigOption option, F &&f) const {
+		const auto *param = GetParam(option);
+		return param != nullptr
+			? param->With(std::forward<F>(f))
+			: f(nullptr);
+	}
+
 	gcc_pure
 	const char *GetString(ConfigOption option,
 			      const char *default_value=nullptr) const noexcept;

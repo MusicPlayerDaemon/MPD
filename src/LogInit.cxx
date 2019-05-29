@@ -93,7 +93,7 @@ log_init_file(int line)
 }
 
 static inline LogLevel
-parse_log_level(const char *value, int line)
+parse_log_level(const char *value)
 {
 	if (0 == strcmp(value, "default"))
 		return LogLevel::DEFAULT;
@@ -102,8 +102,7 @@ parse_log_level(const char *value, int line)
 	else if (0 == strcmp(value, "verbose"))
 		return LogLevel::DEBUG;
 	else
-		throw FormatRuntimeError("unknown log level \"%s\" at line %d",
-					 value, line);
+		throw FormatRuntimeError("unknown log level \"%s\"", value);
 }
 
 #endif
@@ -132,9 +131,12 @@ log_init(const ConfigData &config, bool verbose, bool use_stdout)
 #else
 	if (verbose)
 		SetLogThreshold(LogLevel::DEBUG);
-	else if (const auto &param = config.GetParam(ConfigOption::LOG_LEVEL))
-		SetLogThreshold(parse_log_level(param->value.c_str(),
-						param->line));
+	else
+		SetLogThreshold(config.With(ConfigOption::LOG_LEVEL, [](const char *s){
+			return s != nullptr
+				? parse_log_level(s)
+				: LogLevel::DEFAULT;
+		}));
 
 	if (use_stdout) {
 		out_fd = STDOUT_FILENO;

@@ -282,20 +282,23 @@ initialize_decoder_and_player(Instance &instance,
 	size_t buffer_size;
 	param = config.GetParam(ConfigOption::AUDIO_BUFFER_SIZE);
 	if (param != nullptr) {
-		char *test;
-		long tmp = strtol(param->value.c_str(), &test, 10);
-		if (*test != '\0' || tmp <= 0 || tmp == LONG_MAX)
-			throw FormatRuntimeError("buffer size \"%s\" is not a "
-						 "positive integer, line %i",
-						 param->value.c_str(), param->line);
-		buffer_size = tmp * KILOBYTE;
+		buffer_size = param->With([](const char *s){
+			char *test;
+			long tmp = strtol(s, &test, 10);
+			if (*test != '\0' || tmp <= 0 || tmp == LONG_MAX)
+				throw FormatRuntimeError("buffer size \"%s\" is not a "
+							 "positive integer", s);
+			size_t result = tmp * KILOBYTE;
 
-		if (buffer_size < MIN_BUFFER_SIZE) {
-			FormatWarning(config_domain, "buffer size %lu is too small, using %lu bytes instead",
-				      (unsigned long)buffer_size,
-				      (unsigned long)MIN_BUFFER_SIZE);
-			buffer_size = MIN_BUFFER_SIZE;
-		}
+			if (result < MIN_BUFFER_SIZE) {
+				FormatWarning(config_domain, "buffer size %lu is too small, using %lu bytes instead",
+					      (unsigned long)result,
+					      (unsigned long)MIN_BUFFER_SIZE);
+				result = MIN_BUFFER_SIZE;
+			}
+
+			return result;
+		});
 	} else
 		buffer_size = DEFAULT_BUFFER_SIZE;
 
@@ -309,17 +312,12 @@ initialize_decoder_and_player(Instance &instance,
 		config.GetPositive(ConfigOption::MAX_PLAYLIST_LENGTH,
 				   DEFAULT_PLAYLIST_MAX_LENGTH);
 
-	AudioFormat configured_audio_format = AudioFormat::Undefined();
-	param = config.GetParam(ConfigOption::AUDIO_OUTPUT_FORMAT);
-	if (param != nullptr) {
-		try {
-			configured_audio_format = ParseAudioFormat(param->value.c_str(),
-								   true);
-		} catch (...) {
-			std::throw_with_nested(FormatRuntimeError("error parsing line %i",
-								  param->line));
-		}
-	}
+	AudioFormat configured_audio_format = config.With(ConfigOption::AUDIO_OUTPUT_FORMAT, [](const char *s){
+		if (s == nullptr)
+			return AudioFormat::Undefined();
+
+		return ParseAudioFormat(s, true);
+	});
 
 	instance.partitions.emplace_back(instance,
 					 "default",
@@ -329,15 +327,11 @@ initialize_decoder_and_player(Instance &instance,
 					 replay_gain_config);
 	auto &partition = instance.partitions.back();
 
-	try {
-		param = config.GetParam(ConfigOption::REPLAYGAIN);
-		if (param != nullptr)
-			partition.replay_gain_mode =
-				FromString(param->value.c_str());
-	} catch (...) {
-		std::throw_with_nested(FormatRuntimeError("Failed to parse line %i",
-							  param->line));
-	}
+	partition.replay_gain_mode = config.With(ConfigOption::REPLAYGAIN, [](const char *s){
+		return s != nullptr
+			? FromString(s)
+			: ReplayGainMode::OFF;
+	});
 }
 
 inline void

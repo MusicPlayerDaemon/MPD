@@ -43,29 +43,22 @@ ParsePreamp(const char *s)
 	return pow(10, f / 20.0);
 }
 
-static float
-ParsePreamp(const ConfigParam &p)
-{
-	try {
-		return ParsePreamp(p.value.c_str());
-	} catch (...) {
-		std::throw_with_nested(FormatRuntimeError("Failed to parse line %i",
-							  p.line));
-	}
-}
-
 ReplayGainConfig
 LoadReplayGainConfig(const ConfigData &config)
 {
 	ReplayGainConfig replay_gain_config;
 
-	const auto *param = config.GetParam(ConfigOption::REPLAYGAIN_PREAMP);
-	if (param)
-		replay_gain_config.preamp = ParsePreamp(*param);
+	replay_gain_config.preamp = config.With(ConfigOption::REPLAYGAIN_PREAMP, [](const char *s){
+		return s != nullptr
+			? ParsePreamp(s)
+			: 1.0;
+	});
 
-	param = config.GetParam(ConfigOption::REPLAYGAIN_MISSING_PREAMP);
-	if (param)
-		replay_gain_config.missing_preamp = ParsePreamp(*param);
+	replay_gain_config.missing_preamp = config.With(ConfigOption::REPLAYGAIN_MISSING_PREAMP, [](const char *s){
+		return s != nullptr
+			? ParsePreamp(s)
+			: 1.0;
+	});
 
 	replay_gain_config.limit = config.GetBool(ConfigOption::REPLAYGAIN_LIMIT,
 						  ReplayGainConfig::DEFAULT_LIMIT);
