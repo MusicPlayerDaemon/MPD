@@ -441,7 +441,7 @@ MainConfigured(const struct options &options, const ConfigData &raw_config)
 
 	const unsigned max_clients =
 		raw_config.GetPositive(ConfigOption::MAX_CONN, 10);
-	instance.client_list = new ClientList(max_clients);
+	instance.client_list = std::make_unique<ClientList>(max_clients);
 
 	initialize_decoder_and_player(instance,
 				      raw_config, config.replay_gain);
@@ -617,8 +617,6 @@ mpd_main_after_fork(Instance &instance,
 	ZeroconfDeinit();
 
 	instance.BeginShutdownPartitions();
-
-	delete instance.client_list;
 }
 
 #ifdef ANDROID

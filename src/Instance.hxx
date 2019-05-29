@@ -120,7 +120,7 @@ struct Instance final
 	std::unique_ptr<RemoteTagCache> remote_tag_cache;
 #endif
 
-	ClientList *client_list;
+	std::unique_ptr<ClientList> client_list;
 
 	std::list<Partition> partitions;
 

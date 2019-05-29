@@ -22,6 +22,7 @@
 #include "Partition.hxx"
 #include "Idle.hxx"
 #include "Stats.hxx"
+#include "client/List.hxx"
 
 #ifdef ENABLE_CURL
 #include "RemoteTagCache.hxx"
