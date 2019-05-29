@@ -368,20 +368,6 @@ Instance::OnIdle(unsigned flags) noexcept
 		state_file->CheckModified();
 }
 
-#ifndef ANDROID
-
-int
-main(int argc, char *argv[]) noexcept
-{
-#ifdef _WIN32
-	return win32_main(argc, argv);
-#else
-	return mpd_main(argc, argv);
-#endif
-}
-
-#endif
-
 static inline void
 MainConfigured(const struct options &options, const ConfigData &raw_config)
 {
@@ -650,6 +636,18 @@ Java_org_musicpd_Bridge_shutdown(JNIEnv *, jclass)
 {
 	if (global_instance != nullptr)
 		global_instance->Break();
+}
+
+#else
+
+int
+main(int argc, char *argv[]) noexcept
+{
+#ifdef _WIN32
+	return win32_main(argc, argv);
+#else
+	return mpd_main(argc, argv);
+#endif
 }
 
 #endif
