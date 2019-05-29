@@ -19,6 +19,7 @@
 
 #include "Parser.hxx"
 #include "util/RuntimeError.hxx"
+#include "util/StringStrip.hxx"
 #include "util/StringUtil.hxx"
 
 bool
@@ -34,4 +35,70 @@ ParseBool(const char *value)
 		return false;
 
 	throw FormatRuntimeError("Not a valid boolean (\"yes\" or \"no\"): \"%s\"", value);
+}
+
+template<size_t OPERAND>
+static size_t
+Multiply(size_t value)
+{
+	static constexpr size_t MAX_INPUT = SIZE_MAX / OPERAND;
+	if (value > MAX_INPUT)
+		throw std::runtime_error("Value too large");
+
+	return value * OPERAND;
+}
+
+size_t
+ParseSize(const char *s, size_t default_factor)
+{
+	char *endptr;
+	size_t value = strtoul(s, &endptr, 10);
+	if (endptr == s)
+		throw std::runtime_error("Failed to parse integer");
+
+	static constexpr size_t KILO = 1024;
+	static constexpr size_t MEGA = 1024 * KILO;
+	static constexpr size_t GIGA = 1024 * MEGA;
+
+	s = StripLeft(endptr);
+
+	bool apply_factor = false;
+
+	switch (*s) {
+	case 'k':
+		value = Multiply<KILO>(value);
+		++s;
+		break;
+
+	case 'M':
+		value = Multiply<MEGA>(value);
+		++s;
+		break;
+
+	case 'G':
+		value = Multiply<GIGA>(value);
+		++s;
+		break;
+
+	case '\0':
+		apply_factor = true;
+		break;
+
+	default:
+		throw std::runtime_error("Unknown size suffix");
+	}
+
+	/* ignore 'B' for "byte" */
+	if (*s == 'B') {
+		apply_factor = false;
+		++s;
+	}
+
+	if (*s != '\0')
+		throw std::runtime_error("Unknown size suffix");
+
+	if (apply_factor)
+		value *= default_factor;
+
+	return value;
 }

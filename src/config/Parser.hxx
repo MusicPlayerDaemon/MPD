@@ -20,10 +20,20 @@
 #ifndef MPD_CONFIG_PARSER_HXX
 #define MPD_CONFIG_PARSER_HXX
 
+#include <stddef.h>
+
 /**
  * Throws on error.
  */
 bool
 ParseBool(const char *value);
+
+/**
+ * Parse a string as a byte size.
+ *
+ * Throws on error.
+ */
+size_t
+ParseSize(const char *s, size_t default_factor=1);
 
 #endif

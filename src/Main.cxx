@@ -58,6 +58,7 @@
 #include "config/Defaults.hxx"
 #include "config/Option.hxx"
 #include "config/Domain.hxx"
+#include "config/Parser.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/ScopeExit.hxx"
 
@@ -280,12 +281,10 @@ initialize_decoder_and_player(Instance &instance,
 	param = config.GetParam(ConfigOption::AUDIO_BUFFER_SIZE);
 	if (param != nullptr) {
 		buffer_size = param->With([](const char *s){
-			char *test;
-			long tmp = strtol(s, &test, 10);
-			if (*test != '\0' || tmp <= 0 || tmp == LONG_MAX)
+			size_t result = ParseSize(s, KILOBYTE);
+			if (result <= 0)
 				throw FormatRuntimeError("buffer size \"%s\" is not a "
 							 "positive integer", s);
-			size_t result = tmp * KILOBYTE;
 
 			if (result < MIN_BUFFER_SIZE) {
 				FormatWarning(config_domain, "buffer size %lu is too small, using %lu bytes instead",

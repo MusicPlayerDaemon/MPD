@@ -712,8 +712,9 @@ Do not change these unless you know what you are doing.
 
    * - Setting
      - Description
-   * - **audio_buffer_size KBYTES**
-     - Adjust the size of the internal audio buffer. Default is 4096 (4 MiB).
+   * - **audio_buffer_size SIZE**
+     - Adjust the size of the internal audio buffer. Default is
+       :samp:`4 MB` (4 MiB).
 
 Zeroconf
 ~~~~~~~~
