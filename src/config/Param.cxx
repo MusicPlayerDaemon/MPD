@@ -24,13 +24,19 @@
 
 #include <stdexcept>
 
+void
+ConfigParam::ThrowWithNested() const
+{
+	std::throw_with_nested(FormatRuntimeError("Error on line %i", line));
+}
+
 AllocatedPath
 ConfigParam::GetPath() const
 {
 	try {
 		return ParsePath(value.c_str());
 	} catch (...) {
-		std::throw_with_nested(FormatRuntimeError("Invalid path at line %i: ", line));
+		ThrowWithNested();
 	}
 
 }
