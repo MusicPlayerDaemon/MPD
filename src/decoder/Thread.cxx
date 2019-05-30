@@ -27,7 +27,6 @@
 #include "fs/AllocatedPath.hxx"
 #include "DecoderAPI.hxx"
 #include "input/InputStream.hxx"
-#include "input/LocalOpen.hxx"
 #include "input/Registry.hxx"
 #include "DecoderList.hxx"
 #include "system/Error.hxx"
@@ -347,7 +346,7 @@ decoder_run_file(DecoderBridge &bridge, const char *uri_utf8, Path path_fs)
 	InputStreamPtr input_stream;
 
 	try {
-		input_stream = OpenLocalInputStream(path_fs, bridge.dc.mutex);
+		input_stream = bridge.OpenLocal(path_fs);
 	} catch (const std::system_error &e) {
 		if (IsPathNotFound(e) &&
 		    /* ENOTDIR means this may be a path inside a

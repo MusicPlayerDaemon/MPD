@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2018 The Music Player Daemon Project
+ * Copyright 2003-2019 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -30,6 +30,7 @@
 class PcmConvert;
 struct MusicChunk;
 class DecoderControl;
+class Path;
 struct Tag;
 
 /**
@@ -152,6 +153,11 @@ public:
 		if (error)
 			std::rethrow_exception(error);
 	}
+
+	/**
+	 * Open a local file.
+	 */
+	InputStreamPtr OpenLocal(Path path_fs);
 
 	/* virtual methods from DecoderClient */
 	void Ready(AudioFormat audio_format,

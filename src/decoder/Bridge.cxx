@@ -30,6 +30,8 @@
 #include "tag/Tag.hxx"
 #include "Log.hxx"
 #include "input/InputStream.hxx"
+#include "input/LocalOpen.hxx"
+#include "fs/Path.hxx"
 #include "util/ConstBuffer.hxx"
 #include "util/StringBuffer.hxx"
 
@@ -47,6 +49,12 @@ DecoderBridge::~DecoderBridge() noexcept
 {
 	/* caller must flush the chunk */
 	assert(current_chunk == nullptr);
+}
+
+InputStreamPtr
+DecoderBridge::OpenLocal(Path path_fs)
+{
+	return OpenLocalInputStream(path_fs, dc.mutex);
 }
 
 bool
