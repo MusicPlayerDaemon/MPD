@@ -58,6 +58,8 @@ OpenArchiveInputStream(Path path, Mutex &mutex)
 	}
 
 	const char *suffix = Path::FromFS(archive).GetSuffix();
+	if (suffix == nullptr)
+		return nullptr;
 
 	//check which archive plugin to use (by ext)
 	arplug = archive_plugin_from_suffix(suffix);
