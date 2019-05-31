@@ -198,12 +198,20 @@ public:
 		 lsn(_lsn)
 	{
 		size = _size;
+		seekable = true;
 		SetReady();
 	}
 
 	/* virtual methods from InputStream */
 	bool IsEOF() noexcept override;
 	size_t Read(void *ptr, size_t size) override;
+
+	void Seek(offset_type new_offset) override {
+		if (new_offset > size)
+			throw std::runtime_error("Invalid seek offset");
+
+		offset = new_offset;
+	}
 };
 
 InputStreamPtr
