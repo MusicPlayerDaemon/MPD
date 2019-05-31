@@ -502,7 +502,7 @@ Audio Format Settings
 .. _audio_output_format:
 
 Global Audio Format
-~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^
 
 The setting ``audio_output_format`` forces :program:`MPD` to use one
 audio format for all outputs.  Doing that is usually not a good idea.
@@ -526,7 +526,7 @@ of bytes, not bits. Thus, a DSD "bit" rate of 22.5792 MHz (DSD512) is
 2822400 from :program:`MPD`'s point of view (44100*512/8).
 
 Resampler
-~~~~~~~~~
+^^^^^^^^^
 
 Sometimes, music needs to be resampled before it can be played; for example, CDs use a sample rate of 44,100 Hz while many cheap audio chips can only handle 48,000 Hz. Resampling reduces the quality and consumes a lot of CPU. There are different options, some of them optimized for high quality and others for low CPU usage, but you can't have both at the same time. Often, the resampler is the component that is responsible for most of :program:`MPD`'s CPU usage. Since :program:`MPD` comes with high quality defaults, it may appear that :program:`MPD` consumes more CPU than other software.
 
@@ -539,7 +539,7 @@ Client Connections
 .. _listeners:
 
 Listeners
-~~~~~~~~~
+^^^^^^^^^
 
 The setting :code:`bind_to_address` specifies which addresses
 :program:`MPD` listens on for connections from clients.  It can be
@@ -582,7 +582,7 @@ used.
 
 
 Permissions and Passwords
-~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
 By default, all clients are unauthenticated and have a full set of permissions. This can be restricted with the settings :code:`default_permissions` and :code:`password`.
 
@@ -645,7 +645,7 @@ Other Settings
        Section :ref:`tags` contains a list of supported tags.
 
 The State File
-~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^
 
  The state file is a file where :program:`MPD` saves and restores its state (play queue, playback position etc.) to keep it persistent across restarts and reboots. It is an optional setting.
 
@@ -663,7 +663,7 @@ The State File
      - Auto-save the state file this number of seconds after each state change. Defaults to 120 (2 minutes).
 
 The Sticker Database
-~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^
 
 "Stickers" are pieces of information attached to songs. Some clients
 use them to store ratings and other volatile data. This feature
@@ -680,7 +680,7 @@ requires :program:`SQLite`, compile-time configure option
      - The location of the sticker database.
 
 Resource Limitations
-~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^
 
 These settings are various limitations to prevent :program:`MPD` from using too many resources (denial of service).
 
@@ -702,7 +702,7 @@ These settings are various limitations to prevent :program:`MPD` from using too 
      - The maximum size of the output buffer to a client (maximum response size). Default is 8192 (8 MiB).
 
 Buffer Settings
-~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^
 
 Do not change these unless you know what you are doing.
 
@@ -716,7 +716,7 @@ Do not change these unless you know what you are doing.
      - Adjust the size of the internal audio buffer. Default is 4096 (4 MiB).
 
 Zeroconf
-~~~~~~~~
+^^^^^^^^
 
 If Zeroconf support (`Avahi <http://avahi.org/>`_ or Apple's Bonjour)
 was enabled at compile time with :code:`-Dzeroconf=...`,
@@ -835,7 +835,7 @@ Depending on the size of your music collection and the speed of the storage, thi
 To exclude a file from the update, create a file called :file:`.mpdignore` in its parent directory. Each line of that file may contain a list of shell wildcards. Matching files in the current directory and all subdirectories are excluded.
 
 Mounting other storages into the music directory
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 :program:`MPD` has various storage plugins of which multiple instances can be "mounted" into the music directory. This way, you can use local music, file servers and USB sticks at the same time. Example:
 
@@ -981,18 +981,18 @@ Support
 -------
 
 Getting Help
-~~~~~~~~~~~~
+^^^^^^^^^^^^
 
 The :program:`MPD` project runs a `forum <https://forum.musicpd.org/>`_ and an IRC channel (#mpd on Freenode) for requesting help. Visit the MPD help page for details on how to get help.
 
 Common Problems
-~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^
 
 1. Database
-^^^^^^^^^^^
+"""""""""""
 
 Question: I can't see my music in the MPD database!
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Check your :code:`music_directory` setting. 
 * Does the MPD user have read permission on all music files, and read+execute permission on all music directories (and all of their parent directories)? 
@@ -1000,22 +1000,22 @@ Question: I can't see my music in the MPD database!
 * Did you enable all relevant decoder plugins at compile time? :command:`mpd --version` will tell you. 
 
 Question: MPD doesn't read ID3 tags!
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * You probably compiled :program:`MPD` without libid3tag. :command:`mpd --version` will tell you.
 
 2. Playback
-^^^^^^^^^^^
+"""""""""""
 
 Question: I can't hear music on my client!
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * That problem usually follows a misunderstanding of the nature of :program:`MPD`. :program:`MPD` is a remote-controlled music player, not a music distribution system. Usually, the speakers are connected to the box where :program:`MPD` runs, and the :program:`MPD` client only sends control commands, but the client does not actually play your music.
 
   :program:`MPD` has output plugins which allow hearing music on a remote host (such as httpd), but that is not :program:`MPD`'s primary design goal. 
 
 Question: "Device or resource busy"
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 *  This ALSA error means that another program uses your sound hardware exclusively. You can stop that program to allow :program:`MPD` to use it.
 
@@ -1034,7 +1034,7 @@ Your bug report should contain:
 * be clear about what you expect MPD to do, and what is actually happening
 
 MPD crashes
-~~~~~~~~~~~
+^^^^^^^^^^^
 
 All :program:`MPD` crashes are bugs which must be fixed by a developer, and you should write a bug report. (Many crash bugs are caused by codec libraries used by :program:`MPD`, and then that library must be fixed; but in any case, the :program:`MPD` `bug tracker <https://github.com/MusicPlayerDaemon/MPD/issues>`_ is a good place to report it first if you don't know.)
 

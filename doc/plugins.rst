@@ -4,10 +4,10 @@ Plugin reference
 .. _database_plugins:
 
 Database plugins
-----------------
+================
 
 simple
-~~~~~~
+------
 
 The default plugin. Stores a copy of the database in memory. A file is used for permanent storage.
 
@@ -25,7 +25,7 @@ The default plugin. Stores a copy of the database in memory. A file is used for 
      - Compress the database file using gzip? Enabled by default (if built with zlib).
 
 proxy
-~~~~~
+-----
 
 Provides access to the database of another :program:`MPD` instance using libmpdclient. This is useful when you run mount the music directory via NFS/SMB, and the file server already runs a :program:`MPD` instance. Only the file server needs to update the database.
 
@@ -45,30 +45,30 @@ Provides access to the database of another :program:`MPD` instance using libmpdc
      - Send TCP keepalive packets to the "master" :program:`MPD` instance? This option can help avoid certain firewalls dropping inactive connections, at the expensive of a very small amount of additional network traffic. Disabled by default.
 
 upnp
-~~~~
+----
 
 Provides access to UPnP media servers.
 
 Storage plugins
----------------
+===============
 
 local
-~~~~~
+-----
 
 The default plugin which gives :program:`MPD` access to local files. It is used when music_directory refers to a local directory.
 
 curl
-~~~~
+----
 
 A WebDAV client using libcurl. It is used when :code:`music_directory` contains a http:// or https:// URI, for example :samp:`https://the.server/dav/`.
 
 smbclient
-~~~~~~~~~
+---------
 
 Load music files from a SMB/CIFS server. It is used when :code:`music_directory` contains a smb:// URI, for example :samp:`smb://myfileserver/Music`.
 
 nfs
-~~~
+---
 
 Load music files from a NFS server. It is used when :code:`music_directory` contains a nfs:// URI according to RFC2224, for example :samp:`nfs://servername/path`.
 
@@ -81,7 +81,7 @@ This plugin uses libnfs, which supports only NFS version 3. Since :program:`MPD`
 Don't fear: "insecure" does not mean that your NFS server is insecure. A few decades ago, people thought the concept of "privileged ports" would make network services "secure", which was a fallacy. The absence of this obsolete "security" measure means little.
 
 udisks
-~~~~~~
+------
 
 Mount file systems (e.g. USB sticks or other removable media) using
 the udisks2 daemon via D-Bus.  To obtain a valid udisks2 URI, consult
@@ -106,29 +106,30 @@ MPD user.
 .. _neighbor_plugin:
 
 Neighbor plugins
-----------------
+================
 
 smbclient
-~~~~~~~~~
+---------
 
 Provides a list of SMB/CIFS servers on the local network.
 
 udisks
-~~~~~~
+------
+
 Queries the udisks2 daemon via D-Bus and obtain a list of file systems (e.g. USB sticks or other removable media).
 
 upnp
-~~~~
+----
 
 Provides a list of UPnP servers on the local network.
 
 .. _input_plugins:
 
 Input plugins
--------------
+=============
 
 alsa
-~~~~
+----
 
 Allows :program:`MPD` on Linux to play audio directly from a soundcard using the scheme alsa://. Audio is formatted as 44.1 kHz 16-bit stereo (CD format). Examples:
 
@@ -141,7 +142,7 @@ Allows :program:`MPD` on Linux to play audio directly from a soundcard using the
     mpc add alsa://hw:1,0 plays audio from device hw:1,0 cdio_paranoia
 
 cdio_paranoia
-~~~~~~~~~~~~~
+-------------
 
 Plays audio CDs using libcdio. The URI has the form: "cdda://[DEVICE][/TRACK]". The simplest form cdda:// plays the whole disc in the default drive.
 
@@ -157,7 +158,7 @@ Plays audio CDs using libcdio. The URI has the form: "cdda://[DEVICE][/TRACK]". 
      - Request CDParanoia cap the extraction speed to Nx normal CD audio rotation speed, keeping the drive quiet.
 
 curl
-~~~~
+----
 
 Opens remote files or streams over HTTP using libcurl.
 
@@ -179,22 +180,22 @@ Note that unless overridden by the below settings (e.g. by setting them to a bla
      - Verify the certificate's name against host? `More information <http://curl.haxx.se/libcurl/c/CURLOPT_SSL_VERIFYHOST.html>`_.
 
 ffmpeg
-~~~~~~
+------
 
 Access to various network protocols implemented by the FFmpeg library: gopher://, rtp://, rtsp://, rtmp://, rtmpt://, rtmps://
 
 file
-~~~~
+----
 
 Opens local files
 
 mms
-~~~
+---
 
 Plays streams with the MMS protocol using `libmms <https://launchpad.net/libmms>`_.
 
 nfs
-~~~
+---
 
 Allows :program:`MPD` to access files on NFSv3 servers without actually mounting them (i.e. in userspace, without help from the kernel's VFS layer). All URIs with the nfs:// scheme are used according to RFC2224. Example:
 
@@ -205,7 +206,7 @@ Allows :program:`MPD` to access files on NFSv3 servers without actually mounting
 Note that this usually requires enabling the "insecure" flag in the server's /etc/exports file, because :program:`MPD` cannot bind to so-called "privileged" ports. Don't fear: this will not make your file server insecure; the flag was named in a time long ago when privileged ports were thought to be meaningful for security. By today's standards, NFSv3 is not secure at all, and if you believe it is, you're already doomed.
 
 smbclient
-~~~~~~~~~
+---------
 
 Allows :program:`MPD` to access files on SMB/CIFS servers (e.g. Samba or Microsoft Windows). All URIs with the smb:// scheme are used. Example:
 
@@ -214,7 +215,7 @@ Allows :program:`MPD` to access files on SMB/CIFS servers (e.g. Samba or Microso
     mpc add smb://servername/sharename/filename.ogg
 
 qobuz
-~~~~~
+-----
 
 Play songs from the commercial streaming service Qobuz. It plays URLs in the form qobuz://track/ID, e.g.:
 
@@ -240,7 +241,7 @@ Play songs from the commercial streaming service Qobuz. It plays URLs in the for
      - The `Qobuz format identifier <https://github.com/Qobuz/api-documentation/blob/master/endpoints/track/getFileUrl.md#parameters>`_, i.e. a number which chooses the format and quality to be requested from Qobuz. The default is "5" (320 kbit/s MP3).
 
 tidal
-~~~~~
+-----
 
 Play songs from the commercial streaming service `Tidal <http://tidal.com/>`_. It plays URLs in the form tidal://track/ID, e.g.:
 
@@ -266,10 +267,10 @@ Play songs from the commercial streaming service `Tidal <http://tidal.com/>`_. I
 .. _decoder_plugins:
      
 Decoder plugins
----------------
+===============
 
 adplug
-~~~~~~
+------
 
 Decodes AdLib files using libadplug.
 
@@ -283,17 +284,17 @@ Decodes AdLib files using libadplug.
      - The sample rate that shall be synthesized by the plugin. Defaults to 48000.
 
 audiofile
-~~~~~~~~~
+---------
 
 Decodes WAV and AIFF files using libaudiofile.
 
 faad
-~~~~
+----
 
 Decodes AAC files using libfaad.
 
 ffmpeg
-~~~~~~
+------
 
 Decodes various codecs using FFmpeg.
 
@@ -309,12 +310,12 @@ Decodes various codecs using FFmpeg.
      - Sets the FFmpeg muxer option probesize, which specifies probing size in bytes, i.e. the size of the data to analyze to get stream information. The `FFmpeg formats documentation <https://ffmpeg.org/ffmpeg-formats.html>`_ has more information.
 
 flac
-~~~~
+----
 
 Decodes FLAC files using libFLAC.
 
 dsdiff
-~~~~~~
+------
 
 Decodes DFF files containing DSDIFF data (e.g. SACD rips).
 
@@ -328,12 +329,12 @@ Decodes DFF files containing DSDIFF data (e.g. SACD rips).
      - Decode the least significant bit first. Default is no.
 
 dsf
-~~~
+---
 
 Decodes DSF files containing DSDIFF data (e.g. SACD rips).
 
 fluidsynth
-~~~~~~~~~~
+----------
 
 MIDI decoder based on `FluidSynth <http://www.fluidsynth.org/>`_.
 
@@ -349,7 +350,7 @@ MIDI decoder based on `FluidSynth <http://www.fluidsynth.org/>`_.
      - The absolute path of the soundfont file. Defaults to :file:`/usr/share/sounds/sf2/FluidR3_GM.sf2`.
 
 gme
-~~~
+---
 
 Video game music file emulator based on `game-music-emu <https://bitbucket.org/mpyne/game-music-emu/wiki/Home>`_.
 
@@ -363,7 +364,7 @@ Video game music file emulator based on `game-music-emu <https://bitbucket.org/m
      - Enable more accurate sound emulation.
 
 hybrid_dsd
-~~~~~~~~~~
+----------
 
 `Hybrid-DSD
 <http://dsdmaster.blogspot.de/p/bitperfect-introduces-hybrid-dsd-file.html>`_
@@ -386,12 +387,12 @@ of the file is better.
      - This specifies whether to support gapless playback of MP3s which have the necessary headers. Useful if your MP3s have headers with incorrect information. If you have such MP3s, it is highly recommended that you fix them using `vbrfix <http://www.willwap.co.uk/Programs/vbrfix.php>`_ instead of disabling gapless MP3 playback. The default is to support gapless MP3 playback.
 
 mad
-~~~
+---
 
 Decodes MP3 files using `libmad <http://www.underbit.com/products/mad/>`_.
 
 mikmod
-~~~~~~
+------
 
 Module player based on `MikMod <http://mikmod.sourceforge.net/>`_.
 
@@ -407,7 +408,7 @@ Module player based on `MikMod <http://mikmod.sourceforge.net/>`_.
      - Sets the sample rate generated by libmikmod. Default is 44100.
 
 modplug
-~~~~~~~
+-------
 
 Module player based on MODPlug.
 
@@ -421,27 +422,27 @@ Module player based on MODPlug.
      - Number of times to loop the module if it uses backward loops. Default is 0 which prevents looping. -1 loops forever.
 
 mpcdec
-~~~~~~
+------
 
 Decodes Musepack files using `libmpcdec <http://www.musepack.net/>`_.
 
 mpg123
-~~~~~~
+------
 
 Decodes MP3 files using `libmpg123 <http://www.mpg123.de/>`_.
 
 opus
-~~~~
+----
 
 Decodes Opus files using `libopus <http://www.opus-codec.org/>`_.
 
 pcm
-~~~
+---
 
 Read raw PCM samples. It understands the "audio/L16" MIME type with parameters "rate" and "channels" according to RFC 2586. It also understands the MPD-specific MIME type "audio/x-mpd-float".
 
 sidplay
-~~~~~~~
+-------
 
 C64 SID decoder based on `libsidplayfp <https://sourceforge.net/projects/sidplay-residfp/>`_ or `libsidplay2 <https://sourceforge.net/projects/sidplay2/>`_.
 
@@ -463,23 +464,23 @@ C64 SID decoder based on `libsidplayfp <https://sourceforge.net/projects/sidplay
      - Only libsidplayfp. Absolute path to basic rom image file.
 
 sndfile
-~~~~~~~
+-------
 
 Decodes WAV and AIFF files using `libsndfile <http://www.mega-nerd.com/libsndfile/>`_.
 
 
 vorbis
-~~~~~~
+------
 
 Decodes Ogg-Vorbis files using `libvorbis <http://www.xiph.org/ogg/vorbis/>`_.
 
 wavpack
-~~~~~~~
+-------
 
 Decodes WavPack files using `libwavpack <http://www.wavpack.com/>`_.
 
 wildmidi
-~~~~~~~~
+--------
 
 MIDI decoder based on `libwildmidi <http://www.mindwerks.net/projects/wildmidi/>`_.
 
@@ -495,10 +496,11 @@ MIDI decoder based on `libwildmidi <http://www.mindwerks.net/projects/wildmidi/>
 .. _encoder_plugins:
      
 Encoder plugins
----------------
+===============
 
 flac
-~~~~
+----
+
 Encodes into `FLAC <https://xiph.org/flac/>`_ (lossless).
 
 .. list-table::
@@ -511,7 +513,7 @@ Encodes into `FLAC <https://xiph.org/flac/>`_ (lossless).
      - Sets the libFLAC compression level. The levels range from 0 (fastest, least compression) to 8 (slowest, most compression).
 
 lame
-~~~~
+----
 
 Encodes into MP3 using the `LAME <http://lame.sourceforge.net/>`_ library.
 
@@ -527,12 +529,12 @@ Encodes into MP3 using the `LAME <http://lame.sourceforge.net/>`_ library.
      - Sets the bit rate in kilobit per second. Cannot be used with quality.
 
 null
-~~~~
+----
 
 Does not encode anything, passes the input PCM data as-is.
 
 shine
-~~~~~
+-----
 
 Encodes into MP3 using the `Shine <https://github.com/savonet/shine>`_ library.
 
@@ -546,7 +548,7 @@ Encodes into MP3 using the `Shine <https://github.com/savonet/shine>`_ library.
      - Sets the bit rate in kilobit per second.
 
 twolame
-~~~~~~~
+-------
 
 Encodes into MP2 using the `TwoLAME <http://www.twolame.org/>`_ library.
 
@@ -562,7 +564,7 @@ Encodes into MP2 using the `TwoLAME <http://www.twolame.org/>`_ library.
      - Sets the bit rate in kilobit per second. Cannot be used with quality.
 
 opus
-~~~~
+----
 
 Encodes into `Ogg Opus <http://www.opus-codec.org/>`_.
 
@@ -584,7 +586,7 @@ Encodes into `Ogg Opus <http://www.opus-codec.org/>`_.
 .. _vorbis_plugin:
 
 vorbis
-~~~~~~
+------
 
 Encodes into `Ogg Vorbis <http://www.vorbis.com/>`_.
 
@@ -600,13 +602,13 @@ Encodes into `Ogg Vorbis <http://www.vorbis.com/>`_.
      - Sets the bit rate in kilobit per second. Cannot be used with quality.
 
 wave
-~~~~
+----
 Encodes into WAV (lossless).
 
 .. _resampler_plugins:
 
 Resampler plugins
------------------
+=================
 
 The resampler can be configured in a block named resampler, for example:
 
@@ -629,12 +631,12 @@ The following table lists the resampler options valid for all plugins:
      - The name of the plugin.
 
 internal
-~~~~~~~~
+--------
 
 A resampler built into :program:`MPD`. Its quality is very poor, but its CPU usage is low. This is the fallback if :program:`MPD` was compiled without an external resampler.
 
 libsamplerate
-~~~~~~~~~~~~~
+-------------
 
 A resampler using `libsamplerate <http://www.mega-nerd.com/SRC/>`_ a.k.a. Secret Rabbit Code (SRC).
 
@@ -667,7 +669,7 @@ The following converter types are provided by libsamplerate:
      - Linear interpolator, very fast, poor quality.
 
 soxr
-~~~~
+----
 
 A resampler using `libsoxr <http://sourceforge.net/projects/soxr/>`_, the SoX Resampler library
 
@@ -693,12 +695,12 @@ Valid quality values for libsoxr:
 .. _output_plugins:
 
 Output plugins
---------------
+==============
 
 .. _alsa_plugin:
 
 alsa
-~~~~
+----
 
 The `Advanced Linux Sound Architecture (ALSA) <http://www.alsa-project.org/>`_ plugin uses libasound. It is recommended if you are using Linux.
 
@@ -757,7 +759,7 @@ The following attributes can be configured at runtime using the outputset comman
 
 
 ao
-~~
+--
 The ao plugin uses the portable `libao <https://www.xiph.org/ao/>`_ library. Use only if there is no native plugin for your operating system.
 
 .. list-table::
@@ -774,7 +776,8 @@ The ao plugin uses the portable `libao <https://www.xiph.org/ao/>`_ library. Use
      - This specifies how many bytes to write to the audio device at once. This parameter is to work around a bug in older versions of libao on sound cards with very small buffers. The default is 1024.
 
 sndio
-~~~~~
+-----
+
 The sndio plugin uses the `sndio <http://www.sndio.org/>`_ library. It should normally be used on OpenBSD.
 
 .. list-table::
@@ -789,7 +792,7 @@ The sndio plugin uses the `sndio <http://www.sndio.org/>`_ library. It should no
      - Set the application buffer time in milliseconds.
 
 fifo
-~~~~
+----
 
 The fifo plugin writes raw PCM data to a FIFO (First In, First Out) file. The data can be read by another program.
 
@@ -803,7 +806,7 @@ The fifo plugin writes raw PCM data to a FIFO (First In, First Out) file. The da
      - This specifies the path of the FIFO to write to. Must be an absolute path. If the path does not exist, it will be created when MPD is started, and removed when MPD is stopped. The FIFO will be created with the same user and group as MPD is running as. Default permissions can be modified by using the builtin shell command umask. If a FIFO already exists at the specified path it will be reused, and will not be removed when MPD is stopped. You can use the "mkfifo" command to create this, and then you may modify the permissions to your liking.
 
 haiku
-~~~~~
+-----
 
 Use the SoundPlayer API on the Haiku operating system.
 
@@ -812,7 +815,8 @@ removed soon, unless there is a new maintainer.
 
 
 jack
-~~~~
+----
+
 The jack plugin connects to a `JACK server <http://jackaudio.org/>`_.
 
 .. list-table::
@@ -835,7 +839,8 @@ The jack plugin connects to a `JACK server <http://jackaudio.org/>`_.
      - Sets the size of the ring buffer for each channel. Do not configure this value unless you know what you're doing.
 
 httpd
-~~~~~
+-----
+
 The httpd plugin creates a HTTP server, similar to `ShoutCast <http://www.shoutcast.com/>`_ / `IceCast <http://icecast.org/>`_. HTTP streaming clients like mplayer, VLC, and mpv can connect to it.
 
 It is highly recommended to configure a fixed format, because a stream cannot switch its audio format on-the-fly when the song changes.
@@ -856,7 +861,8 @@ It is highly recommended to configure a fixed format, because a stream cannot sw
      - Sets a limit, number of concurrent clients. When set to 0 no limit will apply.
 
 null
-~~~~
+----
+
 The null plugin does nothing. It discards everything sent to it.
 
 .. list-table::
@@ -871,7 +877,8 @@ The null plugin does nothing. It discards everything sent to it.
 .. _oss_plugin:
 
 oss
-~~~
+---
+
 The "Open Sound System" plugin is supported on most Unix platforms.
 
 On Linux, OSS has been superseded by ALSA. Use the ALSA output plugin :ref:`alsa_plugin` instead of this one on Linux.
@@ -899,7 +906,7 @@ The according hardware mixer plugin understands the following settings:
      - Choose a mixer control, defaulting to PCM.
 
 openal
-~~~~~~
+------
 The "OpenAL" plugin uses `libopenal <http://kcat.strangesoft.net/openal.html>`_. It is supported on many platforms. Use only if there is no native plugin for your operating system.
 
 .. list-table::
@@ -912,7 +919,7 @@ The "OpenAL" plugin uses `libopenal <http://kcat.strangesoft.net/openal.html>`_.
      - Sets the device which should be used. This can be any valid OpenAL device name. If not specified, then libopenal will choose a default device.
 
 osx
-~~~
+---
 The "Mac OS X" plugin uses Apple's CoreAudio API.
 
 .. list-table::
@@ -933,7 +940,7 @@ The "Mac OS X" plugin uses Apple's CoreAudio API.
        The channel map may not refer to outputs that do not exist according to the format. If the format is "*:*:1" (mono) and you have a four-channel sound card then "-1,-1,0,0" (dual mono output on the second pair of sound card outputs) is a valid channel map but "-1,-1,0,1" is not because the second channel ('1') does not exist when the output is mono.
 
 pipe
-~~~~
+----
 
 The pipe plugin starts a program and writes raw PCM data into its standard input.
 
@@ -949,7 +956,7 @@ The pipe plugin starts a program and writes raw PCM data into its standard input
 .. _pulse_plugin:
 
 pulse
-~~~~~
+-----
 The pulse plugin connects to a `PulseAudio <http://www.freedesktop.org/wiki/Software/PulseAudio/>`_ server. Requires libpulse.
 
 .. list-table::
@@ -966,7 +973,7 @@ The pulse plugin connects to a `PulseAudio <http://www.freedesktop.org/wiki/Soft
      - Specifies a linear scaling coefficient (ranging from 0.5 to 5.0) to apply when adjusting volume through :program:`MPD`.  For example, chosing a factor equal to ``"0.7"`` means that setting the volume to 100 in :program:`MPD` will set the PulseAudio volume to 70%, and a factor equal to ``"3.5"`` means that volume 100 in :program:`MPD` corresponds to a 350% PulseAudio volume.
 
 recorder
-~~~~~~~~
+--------
 The recorder plugin writes the audio played by :program:`MPD` to a file. This may be useful for recording radio streams.
 
 .. list-table::
@@ -978,13 +985,13 @@ The recorder plugin writes the audio played by :program:`MPD` to a file. This ma
    * - **path P**
      - Write to this file.
    * - **format_path P**
-     - An alternative to path which provides a format string referring to tag values. The special tag iso8601 emits the current date and time in `ISO8601 <https://en.wikipedia.org/wiki/ISO_8601>`_ format (UTC). Every time a new song starts or a new tag gets received from a radio station, a new file is opened. If the format does not render a file name, nothing is recorded. A tag name enclosed in percent signs ('%') is replaced with the tag value. Example: :file:`~/.mpd/recorder/%artist% - %title%.ogg`. Square brackets can be used to group a substring. If none of the tags referred in the group can be found, the whole group is omitted. Example: [~/.mpd/recorder/[%artist% - ]%title%.ogg] (this omits the dash when no artist tag exists; if title also doesn't exist, no file is written). The operators "|" (logical "or") and "&" (logical "and") can be used to select portions of the format string depending on the existing tag values. Example: ~/.mpd/recorder/[%title%|%name%].ogg (use the "name" tag if no title exists)
+     - An alternative to path which provides a format string referring to tag values. The special tag iso8601 emits the current date and time in `ISO8601 <https://en.wikipedia.org/wiki/ISO_8601>`_ format (UTC). Every time a new song starts or a new tag gets received from a radio station, a new file is opened. If the format does not render a file name, nothing is recorded. A tag name enclosed in percent signs ('%') is replaced with the tag value. Example: :file:`-/.mpd/recorder/%artist% - %title%.ogg`. Square brackets can be used to group a substring. If none of the tags referred in the group can be found, the whole group is omitted. Example: [-/.mpd/recorder/[%artist% - ]%title%.ogg] (this omits the dash when no artist tag exists; if title also doesn't exist, no file is written). The operators "|" (logical "or") and "&" (logical "and") can be used to select portions of the format string depending on the existing tag values. Example: -/.mpd/recorder/[%title%|%name%].ogg (use the "name" tag if no title exists)
    * - **encoder NAME**
      - Chooses an encoder plugin. A list of encoder plugins can be found in the encoder plugin reference :ref:`encoder_plugins`.
 
 
 shout
-~~~~~
+-----
 The shout plugin connects to a ShoutCast or IceCast server using libshout. It forwards tags to this server.
 
 You must set a format.
@@ -1028,7 +1035,7 @@ You must set a format.
 .. _sles_output:
 
 sles
-~~~~
+----
 
 Plugin using the `OpenSL ES <https://www.khronos.org/opensles/>`__
 audio API.  Its primary use is local playback on Android, where
@@ -1036,7 +1043,7 @@ audio API.  Its primary use is local playback on Android, where
 
 
 solaris
-~~~~~~~
+-------
 The "Solaris" plugin runs only on SUN Solaris, and plays via /dev/audio.
 
 .. list-table::
@@ -1052,22 +1059,22 @@ The "Solaris" plugin runs only on SUN Solaris, and plays via /dev/audio.
 .. _filter_plugins:
 
 Filter plugins
---------------
+==============
 
 normalize
-~~~~~~~~~
+---------
 
 Normalize the volume during playback (at the expensve of quality).
 
 
 null
-~~~~
+----
 
 A no-op filter.  Audio data is returned as-is.
 
 
 route
-~~~~~
+-----
 
 Reroute channels.
 
@@ -1084,43 +1091,44 @@ Reroute channels.
 .. _playlist_plugins:
 
 Playlist plugins
-----------------
+================
 
 asx
-~~~
+---
 
 Reads .asx playlist files.
 
 cue
-~~~
+---
 Reads .cue files.
 
 embcue
-~~~~~~
+------
 Reads CUE sheets from the "CUESHEET" tag of song files.
 
 m3u
-~~~
+---
 Reads .m3u playlist files.
 
 extm3u
-~~~~~~
+------
 Reads extended .m3u playlist files.
 
 flac
-~~~~
+----
 Reads the cuesheet metablock from a FLAC file.
 
 pls
-~~~
+---
 Reads .pls playlist files.
 
 rss
-~~~
+---
 Reads music links from .rss files.
 
 soundcloud
-~~~~~~~~~~
+----------
+
 Download playlist from SoundCloud. It accepts URIs starting with soundcloud://.
 
 .. list-table::
@@ -1133,5 +1141,5 @@ Download playlist from SoundCloud. It accepts URIs starting with soundcloud://.
      - An API key to access the SoundCloud servers.
 
 xspf
-~~~~
+----
 Reads XSPF playlist files. 

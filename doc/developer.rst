@@ -2,12 +2,12 @@ Developer's Manual
 ##################
 
 Introduction
-============
+************
 
 This is a guide for those who wish to hack on the MPD source code.  MPD is an open project, and we are always happy about contributions.  So far, more than 150 people have contributed patches. This document is work in progress.  Most of it may be incomplete yet.  Please help!
 
 Code Style
-==========
+**********
 
 * indent with tabs (width 8)
 * don't write CPP when you can write C++: use inline functions and constexpr instead of macros
@@ -18,7 +18,6 @@ Code Style
 * classes and functions names use CamelCase; variables are lower-case with words separated by underscore
 
 Some example code:
-~~~~~~~~~~~~~~~~~~
 
 .. code-block:: c
 
@@ -33,7 +32,7 @@ Some example code:
     }
 
 Hacking The Source
-==================
+******************
 
 MPD sources are managed in a git repository on
 `Github <https://github.com/MusicPlayerDaemon/>`_.
@@ -59,7 +58,7 @@ possible, to be sure that you don't break any disabled code.
 Don't mix several changes in one single patch.  Create a separate patch for every change. Tools like :program:`stgit` help you with that. This way, we can review your patches more easily, and we can pick the patches we like most first.
 
 Basic stgit usage
------------------
+=================
 
 stgit allows you to create a set of patches and refine all of them: you can go back to any patch at any time, and re-edit it (both the code and the commit message). You can reorder patches and insert new patches at any position. It encourages creating separate patches for tiny changes.
 
@@ -94,7 +93,7 @@ When the whole patch series is finished, convert stgit patches to git commits:
     stg commit
 
 Submitting Patches
-==================
+******************
 
 Submit pull requests on GitHub:
 https://github.com/MusicPlayerDaemon/MPD/pulls
