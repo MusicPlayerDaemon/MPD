@@ -148,6 +148,7 @@ public:
 		:InputStream(_uri, _mutex),
 		 iso(_iso), statbuf(_statbuf) {
 		size = statbuf->size;
+		seekable = true;
 		SetReady();
 	}
 
@@ -159,6 +160,10 @@ public:
 	bool IsEOF() const noexcept override;
 	size_t Read(std::unique_lock<Mutex> &lock,
 		    void *ptr, size_t size) override;
+
+	void Seek(std::unique_lock<Mutex> &, offset_type new_offset) override {
+		offset = new_offset;
+	}
 };
 
 InputStreamPtr
