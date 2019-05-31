@@ -30,7 +30,7 @@ Partition::Partition(Instance &_instance,
 		     unsigned max_length,
 		     unsigned buffer_chunks,
 		     AudioFormat configured_audio_format,
-		     const ReplayGainConfig &replay_gain_config)
+		     const ReplayGainConfig &replay_gain_config) noexcept
 	:instance(_instance),
 	 name(_name),
 	 listener(new ClientListener(instance.event_loop, *this)),
@@ -46,13 +46,13 @@ Partition::Partition(Instance &_instance,
 Partition::~Partition() noexcept = default;
 
 void
-Partition::EmitIdle(unsigned mask)
+Partition::EmitIdle(unsigned mask) noexcept
 {
 	instance.EmitIdle(mask);
 }
 
 void
-Partition::UpdateEffectiveReplayGainMode()
+Partition::UpdateEffectiveReplayGainMode() noexcept
 {
 	auto mode = replay_gain_mode;
 	if (mode == ReplayGainMode::AUTO)
@@ -68,7 +68,7 @@ Partition::UpdateEffectiveReplayGainMode()
 #ifdef ENABLE_DATABASE
 
 const Database *
-Partition::GetDatabase() const
+Partition::GetDatabase() const noexcept
 {
 	return instance.GetDatabase();
 }
@@ -80,7 +80,7 @@ Partition::GetDatabaseOrThrow() const
 }
 
 void
-Partition::DatabaseModified(const Database &db)
+Partition::DatabaseModified(const Database &db) noexcept
 {
 	playlist.DatabaseModified(db);
 	EmitIdle(IDLE_DATABASE);
@@ -89,7 +89,7 @@ Partition::DatabaseModified(const Database &db)
 #endif
 
 void
-Partition::TagModified()
+Partition::TagModified() noexcept
 {
 	auto song = pc.LockReadTaggedSong();
 	if (song)
@@ -103,13 +103,13 @@ Partition::TagModified(const char *uri, const Tag &tag) noexcept
 }
 
 void
-Partition::SyncWithPlayer()
+Partition::SyncWithPlayer() noexcept
 {
 	playlist.SyncWithPlayer(pc);
 }
 
 void
-Partition::BorderPause()
+Partition::BorderPause() noexcept
 {
 	playlist.BorderPause(pc);
 }
