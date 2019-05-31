@@ -72,7 +72,7 @@ public:
 	 * Check if this is a "nulled" instance.  A "nulled" instance
 	 * must not be used.
 	 */
-	bool IsNull() const noexcept {
+	constexpr bool IsNull() const noexcept {
 		return Base::IsNull();
 	}
 
@@ -101,8 +101,7 @@ public:
 	 * pointer is invalidated whenever the value of life of this
 	 * instance ends.
 	 */
-	gcc_pure
-	const_pointer_type c_str() const noexcept {
+	constexpr const_pointer_type c_str() const noexcept {
 		return Base::c_str();
 	}
 
@@ -110,8 +109,7 @@ public:
 	 * Returns a pointer to the raw value, not necessarily
 	 * null-terminated.
 	 */
-	gcc_pure
-	const_pointer_type data() const noexcept {
+	constexpr const_pointer_type data() const noexcept {
 		return c_str();
 	}
 
