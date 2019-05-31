@@ -115,19 +115,19 @@ Partition::BorderPause()
 }
 
 void
-Partition::OnQueueModified()
+Partition::OnQueueModified() noexcept
 {
 	EmitIdle(IDLE_PLAYLIST);
 }
 
 void
-Partition::OnQueueOptionsChanged()
+Partition::OnQueueOptionsChanged() noexcept
 {
 	EmitIdle(IDLE_OPTIONS);
 }
 
 void
-Partition::OnQueueSongStarted()
+Partition::OnQueueSongStarted() noexcept
 {
 	EmitIdle(IDLE_PLAYER);
 }

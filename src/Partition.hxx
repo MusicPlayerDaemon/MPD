@@ -247,9 +247,9 @@ struct Partition final : QueueListener, PlayerListener, MixerListener {
 
 private:
 	/* virtual methods from class QueueListener */
-	void OnQueueModified() override;
-	void OnQueueOptionsChanged() override;
-	void OnQueueSongStarted() override;
+	void OnQueueModified() noexcept override;
+	void OnQueueOptionsChanged() noexcept override;
+	void OnQueueSongStarted() noexcept override;
 
 	/* virtual methods from class PlayerListener */
 	void OnPlayerSync() noexcept override;
