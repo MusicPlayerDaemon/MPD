@@ -98,9 +98,6 @@ struct playlist {
 	{
 	}
 
-	~playlist() {
-	}
-
 	uint32_t GetVersion() const {
 		return queue.version;
 	}
