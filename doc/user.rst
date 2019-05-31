@@ -802,10 +802,12 @@ You can verify whether the real-time scheduler is active with the ps command:
 
 The CLS column shows the CPU scheduler; TS is the normal scheduler; FF and RR are real-time schedulers. In this example, two threads use the real-time scheduler: the output thread and the rtio (real-time I/O) thread; these two are the important ones. The database update thread uses the idle scheduler ("IDL in ps), which only gets CPU when no other process needs it.
 
-Note
-~~~~
+.. note::
 
-There is a rumor that real-time scheduling improves audio quality. That is not true. All it does is reduce the probability of skipping (audio buffer xruns) when the computer is under heavy load.
+   There is a rumor that real-time scheduling improves audio
+   quality. That is not true. All it does is reduce the probability of
+   skipping (audio buffer xruns) when the computer is under heavy
+   load.
 
 Using MPD
 *********
