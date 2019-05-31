@@ -65,13 +65,13 @@ Binary Responses
 
 Some commands can return binary data.  This is initiated by a line
 containing ``binary: 1234`` (followed as usual by a newline).  After
-that, the specified number of bytes of binary data follows (without an
-extra newline, because this binary data is not a text line), and
-finally the ``OK`` line.  Example::
+that, the specified number of bytes of binary data follows, then a
+newline, and finally the ``OK`` line.  Example::
 
   foo: bar
   binary: 42
-  <42 bytes>OK
+  <42 bytes>
+  OK
 
 
 Failure responses
