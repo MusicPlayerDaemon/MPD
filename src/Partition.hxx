@@ -257,7 +257,7 @@ private:
 	void OnBorderPause() noexcept override;
 
 	/* virtual methods from class MixerListener */
-	void OnMixerVolumeChanged(Mixer &mixer, int volume) override;
+	void OnMixerVolumeChanged(Mixer &mixer, int volume) noexcept override;
 
 	/* callback for #global_events */
 	void OnGlobalEvent(unsigned mask);

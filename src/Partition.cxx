@@ -151,7 +151,7 @@ Partition::OnBorderPause() noexcept
 }
 
 void
-Partition::OnMixerVolumeChanged(gcc_unused Mixer &mixer, gcc_unused int volume)
+Partition::OnMixerVolumeChanged(Mixer &, int) noexcept
 {
 	InvalidateHardwareVolume();
 
