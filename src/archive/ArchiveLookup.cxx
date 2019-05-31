@@ -20,11 +20,10 @@
 #include "ArchiveLookup.hxx"
 #include "ArchiveDomain.hxx"
 #include "Log.hxx"
+#include "fs/FileInfo.hxx"
 #include "system/Error.hxx"
 
 #include <string.h>
-#include <sys/stat.h>
-#include <errno.h>
 
 gcc_pure
 static char *
@@ -58,19 +57,16 @@ archive_lookup(char *pathname, const char **archive,
 	char *slash = nullptr;
 
 	while (true) {
-		//try to stat if its real directory
-		struct stat st_info;
-		if (stat(pathname, &st_info) == -1) {
-			int e = errno;
-			if (e != ENOTDIR)
-				throw FormatErrno(e, "Failed to stat %s", pathname);
-		} else {
+		try {
+			//try to stat if its real directory
+			const FileInfo file_info(Path::FromFS(pathname));
+
 			//is something found ins original path (is not an archive)
 			if (slash == nullptr)
 				return false;
 
 			//its a file ?
-			if (S_ISREG(st_info.st_mode)) {
+			if (file_info.IsRegular()) {
 				//so the upper should be file
 				*archive = pathname;
 				*inpath = slash + 1;
@@ -84,6 +80,9 @@ archive_lookup(char *pathname, const char **archive,
 					    pathname);
 				return false;
 			}
+		} catch (const std::system_error &e) {
+			if (!IsPathNotFound(e))
+				throw;
 		}
 
 		//find one dir up
