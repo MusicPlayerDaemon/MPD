@@ -46,7 +46,7 @@ struct playlist {
 	 * This value is true if the player is currently playing (or
 	 * should be playing).
 	 */
-	bool playing;
+	bool playing = false;
 
 	/**
 	 * If true, then any error is fatal; if false, MPD will
@@ -60,7 +60,7 @@ struct playlist {
 	 * BeginBulk(), and UpdateQueuedSong() and OnModified() will
 	 * be postponed until CommitBulk()
 	 */
-	bool bulk_edit;
+	bool bulk_edit = false;
 
 	/**
 	 * Has the queue been modified during bulk edit mode?
@@ -79,7 +79,7 @@ struct playlist {
 	 * song which is played when we get the "play" command.  It is
 	 * also the song which is currently being played.
 	 */
-	int current;
+	int current = -1;
 
 	/**
 	 * The "next" song to be played (the order number), when the
@@ -89,15 +89,13 @@ struct playlist {
 	 *
 	 * This variable is only valid if #playing is true.
 	 */
-	int queued;
+	int queued = -1;
 
 	playlist(unsigned max_length,
 		 QueueListener &_listener)
 		:queue(max_length),
-		 listener(_listener),
-		 playing(false),
-		 bulk_edit(false),
-		 current(-1), queued(-1) {
+		 listener(_listener)
+	{
 	}
 
 	~playlist() {
