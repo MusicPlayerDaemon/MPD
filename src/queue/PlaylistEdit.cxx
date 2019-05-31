@@ -35,7 +35,7 @@
 #include <stdlib.h>
 
 void
-playlist::OnModified()
+playlist::OnModified() noexcept
 {
 	if (bulk_edit) {
 		/* postponed to CommitBulk() */
@@ -49,7 +49,7 @@ playlist::OnModified()
 }
 
 void
-playlist::Clear(PlayerControl &pc)
+playlist::Clear(PlayerControl &pc) noexcept
 {
 	Stop(pc);
 
@@ -60,7 +60,7 @@ playlist::Clear(PlayerControl &pc)
 }
 
 void
-playlist::BeginBulk()
+playlist::BeginBulk() noexcept
 {
 	assert(!bulk_edit);
 
@@ -69,7 +69,7 @@ playlist::BeginBulk()
 }
 
 void
-playlist::CommitBulk(PlayerControl &pc)
+playlist::CommitBulk(PlayerControl &pc) noexcept
 {
 	assert(bulk_edit);
 
@@ -213,7 +213,7 @@ playlist::SetPriorityId(PlayerControl &pc,
 
 void
 playlist::DeleteInternal(PlayerControl &pc,
-			 unsigned song, const DetachedSong **queued_p)
+			 unsigned song, const DetachedSong **queued_p) noexcept
 {
 	assert(song < GetLength());
 
@@ -306,7 +306,7 @@ playlist::DeleteId(PlayerControl &pc, unsigned id)
 }
 
 void
-playlist::StaleSong(PlayerControl &pc, const char *uri)
+playlist::StaleSong(PlayerControl &pc, const char *uri) noexcept
 {
 	/* don't remove the song if it's currently being played, to
 	   avoid disrupting playback; a deleted file may still be
@@ -322,7 +322,8 @@ playlist::StaleSong(PlayerControl &pc, const char *uri)
 }
 
 void
-playlist::MoveRange(PlayerControl &pc, unsigned start, unsigned end, int to)
+playlist::MoveRange(PlayerControl &pc,
+		    unsigned start, unsigned end, int to)
 {
 	if (!queue.IsValidPosition(start) || !queue.IsValidPosition(end - 1))
 		throw PlaylistError::BadRange();
@@ -383,7 +384,7 @@ playlist::MoveId(PlayerControl &pc, unsigned id1, int to)
 }
 
 void
-playlist::Shuffle(PlayerControl &pc, unsigned start, unsigned end)
+playlist::Shuffle(PlayerControl &pc, unsigned start, unsigned end) noexcept
 {
 	if (end > GetLength())
 		/* correct the "end" offset */

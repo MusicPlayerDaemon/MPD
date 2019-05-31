@@ -28,7 +28,7 @@
 #include <assert.h>
 
 void
-playlist::TagModified(DetachedSong &&song)
+playlist::TagModified(DetachedSong &&song) noexcept
 {
 	if (!playing)
 		return;
@@ -62,7 +62,7 @@ playlist::TagModified(const char *uri, const Tag &tag) noexcept
 }
 
 inline void
-playlist::QueueSongOrder(PlayerControl &pc, unsigned order)
+playlist::QueueSongOrder(PlayerControl &pc, unsigned order) noexcept
 
 {
 	assert(queue.IsValidOrder(order));
@@ -78,7 +78,7 @@ playlist::QueueSongOrder(PlayerControl &pc, unsigned order)
 }
 
 void
-playlist::SongStarted()
+playlist::SongStarted() noexcept
 {
 	assert(current >= 0);
 
@@ -88,7 +88,7 @@ playlist::SongStarted()
 }
 
 inline void
-playlist::QueuedSongStarted(PlayerControl &pc)
+playlist::QueuedSongStarted(PlayerControl &pc) noexcept
 {
 	assert(!pc.LockGetSyncInfo().has_next_song);
 	assert(queued >= -1);
@@ -118,7 +118,8 @@ playlist::GetQueuedSong() const noexcept
 }
 
 void
-playlist::UpdateQueuedSong(PlayerControl &pc, const DetachedSong *prev)
+playlist::UpdateQueuedSong(PlayerControl &pc,
+			   const DetachedSong *prev) noexcept
 {
 	if (!playing)
 		return;
@@ -187,7 +188,7 @@ playlist::PlayOrder(PlayerControl &pc, unsigned order)
 }
 
 void
-playlist::SyncWithPlayer(PlayerControl &pc)
+playlist::SyncWithPlayer(PlayerControl &pc) noexcept
 {
 	if (!playing)
 		/* this event has reached us out of sync: we aren't
@@ -216,7 +217,7 @@ playlist::SyncWithPlayer(PlayerControl &pc)
 }
 
 inline void
-playlist::ResumePlayback(PlayerControl &pc)
+playlist::ResumePlayback(PlayerControl &pc) noexcept
 {
 	assert(playing);
 	assert(pc.GetState() == PlayerState::STOP);
@@ -243,7 +244,7 @@ playlist::ResumePlayback(PlayerControl &pc)
 }
 
 void
-playlist::SetRepeat(PlayerControl &pc, bool status)
+playlist::SetRepeat(PlayerControl &pc, bool status) noexcept
 {
 	if (status == queue.repeat)
 		return;
@@ -260,7 +261,7 @@ playlist::SetRepeat(PlayerControl &pc, bool status)
 }
 
 static void
-playlist_order(playlist &playlist)
+playlist_order(playlist &playlist) noexcept
 {
 	if (playlist.current >= 0)
 		/* update playlist.current, order==position now */
@@ -270,7 +271,7 @@ playlist_order(playlist &playlist)
 }
 
 void
-playlist::SetSingle(PlayerControl &pc, SingleMode status)
+playlist::SetSingle(PlayerControl &pc, SingleMode status) noexcept
 {
 	if (status == queue.single)
 		return;
@@ -288,7 +289,7 @@ playlist::SetSingle(PlayerControl &pc, SingleMode status)
 }
 
 void
-playlist::SetConsume(bool status)
+playlist::SetConsume(bool status) noexcept
 {
 	if (status == queue.consume)
 		return;
@@ -298,7 +299,7 @@ playlist::SetConsume(bool status)
 }
 
 void
-playlist::SetRandom(PlayerControl &pc, bool status)
+playlist::SetRandom(PlayerControl &pc, bool status) noexcept
 {
 	if (status == queue.random)
 		return;
@@ -358,7 +359,7 @@ playlist::GetNextPosition() const noexcept
 }
 
 void
-playlist::BorderPause(PlayerControl &pc)
+playlist::BorderPause(PlayerControl &pc) noexcept
 {
 	if (queue.single == SingleMode::ONE_SHOT) {
 		queue.single = SingleMode::OFF;

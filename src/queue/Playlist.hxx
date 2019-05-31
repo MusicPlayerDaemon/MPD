@@ -92,21 +92,21 @@ struct playlist {
 	int queued = -1;
 
 	playlist(unsigned max_length,
-		 QueueListener &_listener)
+		 QueueListener &_listener) noexcept
 		:queue(max_length),
 		 listener(_listener)
 	{
 	}
 
-	uint32_t GetVersion() const {
+	uint32_t GetVersion() const noexcept {
 		return queue.version;
 	}
 
-	unsigned GetLength() const {
+	unsigned GetLength() const noexcept {
 		return queue.GetLength();
 	}
 
-	unsigned PositionToId(unsigned position) const {
+	unsigned PositionToId(unsigned position) const noexcept {
 		return queue.PositionToId(position);
 	}
 
@@ -128,13 +128,13 @@ struct playlist {
 	 * player thread whenever it requests a new queued song, or
 	 * when it exits.
 	 */
-	void SyncWithPlayer(PlayerControl &pc);
+	void SyncWithPlayer(PlayerControl &pc) noexcept;
 
 	/**
 	 * This is the "BORDER_PAUSE" event handler.  It is invoked by
 	 * the player thread whenever playback goes into border pause.
 	 */
-	void BorderPause(PlayerControl &pc);
+	void BorderPause(PlayerControl &pc) noexcept;
 
 protected:
 	/**
@@ -142,7 +142,7 @@ protected:
 	 * Updates the queue version and invokes
 	 * QueueListener::OnQueueModified().
 	 */
-	void OnModified();
+	void OnModified() noexcept;
 
 	/**
 	 * Called when playback of a new song starts.  Unlike
@@ -153,7 +153,7 @@ protected:
 	 * The song being started is specified by the #current
 	 * attribute.
 	 */
-	void SongStarted();
+	void SongStarted() noexcept;
 
 	/**
 	 * Updates the "queued song".  Calculates the next song
@@ -164,38 +164,38 @@ protected:
 	 * @param prev the song which was previously queued, as
 	 * determined by playlist_get_queued_song()
 	 */
-	void UpdateQueuedSong(PlayerControl &pc, const DetachedSong *prev);
+	void UpdateQueuedSong(PlayerControl &pc, const DetachedSong *prev) noexcept;
 
 	/**
 	 * Queue a song, addressed by its order number.
 	 */
-	void QueueSongOrder(PlayerControl &pc, unsigned order);
+	void QueueSongOrder(PlayerControl &pc, unsigned order) noexcept;
 
 	/**
 	 * Called when the player thread has started playing the
 	 * "queued" song, i.e. it has switched from one song to the
 	 * next automatically.
 	 */
-	void QueuedSongStarted(PlayerControl &pc);
+	void QueuedSongStarted(PlayerControl &pc) noexcept;
 
 	/**
 	 * The player has stopped for some reason.  Check the error,
 	 * and decide whether to re-start playback.
 	 */
-	void ResumePlayback(PlayerControl &pc);
+	void ResumePlayback(PlayerControl &pc) noexcept;
 
 public:
-	void BeginBulk();
-	void CommitBulk(PlayerControl &pc);
+	void BeginBulk() noexcept;
+	void CommitBulk(PlayerControl &pc) noexcept;
 
-	void Clear(PlayerControl &pc);
+	void Clear(PlayerControl &pc) noexcept;
 
 	/**
 	 * A tag in the play queue has been modified by the player
 	 * thread.  Apply the given song's tag to the current song if
 	 * the song matches.
 	 */
-	void TagModified(DetachedSong &&song);
+	void TagModified(DetachedSong &&song) noexcept;
 	void TagModified(const char *uri, const Tag &tag) noexcept;
 
 #ifdef ENABLE_DATABASE
@@ -223,7 +223,7 @@ public:
 
 protected:
 	void DeleteInternal(PlayerControl &pc,
-			    unsigned song, const DetachedSong **queued_p);
+			    unsigned song, const DetachedSong **queued_p) noexcept;
 
 public:
 	void DeletePosition(PlayerControl &pc, unsigned position);
@@ -248,9 +248,9 @@ public:
 	 * database.  The method attempts to remove all instances of
 	 * this song from the queue.
 	 */
-	void StaleSong(PlayerControl &pc, const char *uri);
+	void StaleSong(PlayerControl &pc, const char *uri) noexcept;
 
-	void Shuffle(PlayerControl &pc, unsigned start, unsigned end);
+	void Shuffle(PlayerControl &pc, unsigned start, unsigned end) noexcept;
 
 	void MoveRange(PlayerControl &pc, unsigned start,
 		       unsigned end, int to);
@@ -271,14 +271,24 @@ public:
 	/**
 	 * Sets the start_time and end_time attributes on the song
 	 * with the specified id.
+	 *
+	 * Throws on error.
 	 */
 	void SetSongIdRange(PlayerControl &pc, unsigned id,
 			    SongTime start, SongTime end);
 
-	void AddSongIdTag(unsigned id, TagType tag_type, const char *value);
+	/**
+	 * Throws on error.
+	 */
+	void AddSongIdTag(unsigned id, TagType tag_type,
+			  const char *value);
+
+	/**
+	 * Throws on error.
+	 */
 	void ClearSongIdTag(unsigned id, TagType tag_type);
 
-	void Stop(PlayerControl &pc);
+	void Stop(PlayerControl &pc) noexcept;
 
 	/**
 	 * Throws on error.
@@ -338,29 +348,29 @@ public:
 	void SeekCurrent(PlayerControl &pc,
 			 SignedSongTime seek_time, bool relative);
 
-	bool GetRepeat() const {
+	bool GetRepeat() const noexcept {
 		return queue.repeat;
 	}
 
-	void SetRepeat(PlayerControl &pc, bool new_value);
+	void SetRepeat(PlayerControl &pc, bool new_value) noexcept;
 
-	bool GetRandom() const {
+	bool GetRandom() const noexcept {
 		return queue.random;
 	}
 
-	void SetRandom(PlayerControl &pc, bool new_value);
+	void SetRandom(PlayerControl &pc, bool new_value) noexcept;
 
-	SingleMode GetSingle() const {
+	SingleMode GetSingle() const noexcept {
 		return queue.single;
 	}
 
-	void SetSingle(PlayerControl &pc, SingleMode new_value);
+	void SetSingle(PlayerControl &pc, SingleMode new_value) noexcept;
 
-	bool GetConsume() const {
+	bool GetConsume() const noexcept {
 		return queue.consume;
 	}
 
-	void SetConsume(bool new_value);
+	void SetConsume(bool new_value) noexcept;
 
 private:
 	/**
@@ -372,7 +382,7 @@ private:
 	 *
 	 * @return the new order number of the given song
 	 */
-	unsigned MoveOrderToCurrent(unsigned old_order);
+	unsigned MoveOrderToCurrent(unsigned old_order) noexcept;
 };
 
 #endif

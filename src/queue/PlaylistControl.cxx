@@ -29,7 +29,7 @@
 #include "Log.hxx"
 
 void
-playlist::Stop(PlayerControl &pc)
+playlist::Stop(PlayerControl &pc) noexcept
 {
 	if (!playing)
 		return;
@@ -56,7 +56,7 @@ playlist::Stop(PlayerControl &pc)
 }
 
 unsigned
-playlist::MoveOrderToCurrent(unsigned old_order)
+playlist::MoveOrderToCurrent(unsigned old_order) noexcept
 {
 	if (!queue.random)
 		/* no-op because there is no order list */
