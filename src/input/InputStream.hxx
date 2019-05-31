@@ -287,11 +287,13 @@ public:
 	 * for Seek(0, error).
 	 */
 	void Rewind(std::unique_lock<Mutex> &lock) {
-		Seek(lock, 0);
+		if (offset > 0)
+			Seek(lock, 0);
 	}
 
 	void LockRewind() {
-		LockSeek(0);
+		std::unique_lock<Mutex> lock(mutex);
+		Rewind(lock);
 	}
 
 	/**
