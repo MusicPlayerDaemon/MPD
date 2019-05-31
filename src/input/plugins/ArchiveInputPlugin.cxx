@@ -23,15 +23,12 @@
 #include "archive/ArchiveList.hxx"
 #include "archive/ArchivePlugin.hxx"
 #include "archive/ArchiveFile.hxx"
-#include "../InputPlugin.hxx"
 #include "../InputStream.hxx"
 #include "fs/Path.hxx"
 #include "Log.hxx"
 #include "util/ScopeExit.hxx"
 
-#include <stdexcept>
-
-#include <stdlib.h>
+#include <string.h>
 
 InputStreamPtr
 OpenArchiveInputStream(Path path, Mutex &mutex)
