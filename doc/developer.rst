@@ -98,29 +98,3 @@ Submitting Patches
 
 Submit pull requests on GitHub:
 https://github.com/MusicPlayerDaemon/MPD/pulls
-
-Development Tools
-=================
-
-Clang Static Analyzer
----------------------
-
- The `static analyzer <http://clang-analyzer.llvm.org/>`_ is a tool that helps find bugs. To run it on the MPD code base, install LLVM and clang. configure MPD to use clang:
-
-.. code-block:: sh
-
-    ./configure --enable-debug CXX=clang++ CC=clang ...
-
-It is recommended to use :code:`--enable-debug`, because the analyzer
-takes advantage of :dfn:`assert()` calls, which are only enabled in
-the debug build.
-
-Now run the analyzer:
-
-.. code-block:: sh
-
-    scan-build --use-c++=clang++ --use-cc=clang make
-
-The options :code:`--use-c++` and :code:`--use-cc` are necessary
-because it invokes :command:`cc` for actually compiling the sources by
-default. That breaks, because MPD requires a C99 compiler.
