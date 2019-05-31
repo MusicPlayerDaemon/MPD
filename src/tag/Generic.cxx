@@ -31,6 +31,9 @@
 bool
 ScanGenericTags(InputStream &is, TagHandler &handler)
 {
+	if (!is.IsSeekable())
+		return false;
+
 	if (tag_ape_scan2(is, handler))
 		return true;
 
