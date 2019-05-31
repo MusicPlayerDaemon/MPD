@@ -44,9 +44,9 @@ OpenArchiveInputStream(Path path, Mutex &mutex)
 	};
 
 	// archive_lookup will modify pname when true is returned
-	const char *archive, *filename, *suffix;
+	const char *archive, *filename;
 	try {
-		if (!archive_lookup(pname, &archive, &filename, &suffix)) {
+		if (!archive_lookup(pname, &archive, &filename)) {
 			FormatDebug(archive_domain,
 				    "not an archive, lookup %s failed", pname);
 			return nullptr;
@@ -56,6 +56,8 @@ OpenArchiveInputStream(Path path, Mutex &mutex)
 			  "not an archive, lookup %s failed", pname);
 		return nullptr;
 	}
+
+	const char *suffix = Path::FromFS(archive).GetSuffix();
 
 	//check which archive plugin to use (by ext)
 	arplug = archive_plugin_from_suffix(suffix);

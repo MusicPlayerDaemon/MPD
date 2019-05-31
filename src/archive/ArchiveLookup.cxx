@@ -36,21 +36,9 @@ FindSlash(char *p, size_t i) noexcept
 	return nullptr;
 }
 
-gcc_pure
-static const char *
-FindSuffix(const char *p, const char *i) noexcept
-{
-	for (; i > p; --i) {
-		if (*i == '.')
-			return i + 1;
-	}
-
-	return nullptr;
-}
-
 bool
 archive_lookup(char *pathname, const char **archive,
-	       const char **inpath, const char **suffix)
+	       const char **inpath)
 {
 	size_t idx = strlen(pathname);
 
@@ -70,9 +58,6 @@ archive_lookup(char *pathname, const char **archive,
 				//so the upper should be file
 				*archive = pathname;
 				*inpath = slash + 1;
-
-				//try to get suffix
-				*suffix = FindSuffix(pathname, slash - 1);
 				return true;
 			} else {
 				FormatError(archive_domain,
