@@ -11,7 +11,8 @@ TEST(ArchiveTest, Lookup)
 	const char *archive, *inpath, *suffix;
 
 	char *path = strdup("");
-	EXPECT_FALSE(archive_lookup(path, &archive, &inpath, &suffix));
+	EXPECT_THROW(archive_lookup(path, &archive, &inpath, &suffix),
+		     std::system_error);
 	free(path);
 
 	path = strdup(".");
@@ -23,7 +24,8 @@ TEST(ArchiveTest, Lookup)
 	free(path);
 
 	path = strdup("src/foo/bar");
-	EXPECT_FALSE(archive_lookup(path, &archive, &inpath, &suffix));
+	EXPECT_THROW(archive_lookup(path, &archive, &inpath, &suffix),
+		     std::system_error);
 	free(path);
 
 	fclose(fopen("dummy", "w"));

@@ -20,6 +20,7 @@
 #include "ArchiveLookup.hxx"
 #include "ArchiveDomain.hxx"
 #include "Log.hxx"
+#include "system/Error.hxx"
 
 #include <string.h>
 #include <sys/stat.h>
@@ -60,11 +61,9 @@ archive_lookup(char *pathname, const char **archive,
 		//try to stat if its real directory
 		struct stat st_info;
 		if (stat(pathname, &st_info) == -1) {
-			if (errno != ENOTDIR) {
-				FormatErrno(archive_domain,
-					    "Failed to stat %s", pathname);
-				return false;
-			}
+			int e = errno;
+			if (e != ENOTDIR)
+				throw FormatErrno(e, "Failed to stat %s", pathname);
 		} else {
 			//is something found ins original path (is not an archive)
 			if (slash == nullptr)

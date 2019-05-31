@@ -45,9 +45,15 @@ OpenArchiveInputStream(Path path, Mutex &mutex)
 
 	// archive_lookup will modify pname when true is returned
 	const char *archive, *filename, *suffix;
-	if (!archive_lookup(pname, &archive, &filename, &suffix)) {
-		FormatDebug(archive_domain,
-			    "not an archive, lookup %s failed", pname);
+	try {
+		if (!archive_lookup(pname, &archive, &filename, &suffix)) {
+			FormatDebug(archive_domain,
+				    "not an archive, lookup %s failed", pname);
+			return nullptr;
+		}
+	} catch (...) {
+		LogFormat(LogLevel::DEBUG, std::current_exception(),
+			  "not an archive, lookup %s failed", pname);
 		return nullptr;
 	}
 

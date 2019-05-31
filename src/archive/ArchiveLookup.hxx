@@ -36,6 +36,8 @@
  * is split into archive:	/music/path/Talco.zip
  * inarchive pathname:		Talco - Combat Circus/12 - A la pachenka.mp3
  * and suffix:			 zip
+ *
+ * Throws on error.
  */
 bool
 archive_lookup(char *pathname, const char **archive,
