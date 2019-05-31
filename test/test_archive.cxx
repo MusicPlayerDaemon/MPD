@@ -8,39 +8,37 @@
 
 TEST(ArchiveTest, Lookup)
 {
-	const char *archive, *inpath;
-
 	char *path = strdup("");
-	EXPECT_THROW(archive_lookup(path, &archive, &inpath),
-		     std::system_error);
+	EXPECT_THROW(archive_lookup(path), std::system_error);
 	free(path);
 
 	path = strdup(".");
-	EXPECT_FALSE(archive_lookup(path, &archive, &inpath));
+	EXPECT_FALSE(archive_lookup(path));
 	free(path);
 
 	path = strdup("config.h");
-	EXPECT_FALSE(archive_lookup(path, &archive, &inpath));
+	EXPECT_FALSE(archive_lookup(path));
 	free(path);
 
 	path = strdup("src/foo/bar");
-	EXPECT_THROW(archive_lookup(path, &archive, &inpath),
-		     std::system_error);
+	EXPECT_THROW(archive_lookup(path), std::system_error);
 	free(path);
 
 	fclose(fopen("dummy", "w"));
 
 	path = strdup("dummy/foo/bar");
-	EXPECT_TRUE(archive_lookup(path, &archive, &inpath));
-	EXPECT_EQ((const char *)path, archive);
-	EXPECT_STREQ(archive, "dummy");
-	EXPECT_STREQ(inpath, "foo/bar");
+	auto result = archive_lookup(path);
+	EXPECT_TRUE(result);
+	EXPECT_EQ((const char *)path, result.archive.c_str());
+	EXPECT_STREQ(result.archive.c_str(), "dummy");
+	EXPECT_STREQ(result.inside.c_str(), "foo/bar");
 	free(path);
 
 	path = strdup("config.h/foo/bar");
-	EXPECT_TRUE(archive_lookup(path, &archive, &inpath));
-	EXPECT_EQ((const char *)path, archive);
-	EXPECT_STREQ(archive, "config.h");
-	EXPECT_STREQ(inpath, "foo/bar");
+	result = archive_lookup(path);
+	EXPECT_TRUE(result);
+	EXPECT_EQ((const char *)path, result.archive.c_str());
+	EXPECT_STREQ(result.archive.c_str(), "config.h");
+	EXPECT_STREQ(result.inside.c_str(), "foo/bar");
 	free(path);
 }

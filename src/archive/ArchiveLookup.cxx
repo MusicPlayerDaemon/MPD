@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2018 The Music Player Daemon Project
+ * Copyright 2003-2019 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -36,9 +36,8 @@ FindSlash(char *p, size_t i) noexcept
 	return nullptr;
 }
 
-bool
-archive_lookup(char *pathname, const char **archive,
-	       const char **inpath)
+ArchiveLookupResult
+archive_lookup(char *pathname)
 {
 	size_t idx = strlen(pathname);
 
@@ -51,19 +50,17 @@ archive_lookup(char *pathname, const char **archive,
 
 			//is something found ins original path (is not an archive)
 			if (slash == nullptr)
-				return false;
+				return {};
 
 			//its a file ?
 			if (file_info.IsRegular()) {
 				//so the upper should be file
-				*archive = pathname;
-				*inpath = slash + 1;
-				return true;
+				return {Path::FromFS(pathname), Path::FromFS(slash + 1)};
 			} else {
 				FormatError(archive_domain,
 					    "Not a regular file: %s",
 					    pathname);
-				return false;
+				return {};
 			}
 		} catch (const std::system_error &e) {
 			if (!IsPathNotFound(e))
@@ -76,7 +73,7 @@ archive_lookup(char *pathname, const char **archive,
 
 		slash = FindSlash(pathname, idx - 1);
 		if (slash == nullptr)
-			return false;
+			return {};
 
 		*slash = 0;
 		idx = slash - pathname;

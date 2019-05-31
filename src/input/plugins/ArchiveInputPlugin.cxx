@@ -44,9 +44,10 @@ OpenArchiveInputStream(Path path, Mutex &mutex)
 	};
 
 	// archive_lookup will modify pname when true is returned
-	const char *archive, *filename;
+	ArchiveLookupResult l;
 	try {
-		if (!archive_lookup(pname, &archive, &filename)) {
+		l = archive_lookup(pname);
+		if (l.archive.IsNull()) {
 			FormatDebug(archive_domain,
 				    "not an archive, lookup %s failed", pname);
 			return nullptr;
@@ -57,7 +58,7 @@ OpenArchiveInputStream(Path path, Mutex &mutex)
 		return nullptr;
 	}
 
-	const char *suffix = Path::FromFS(archive).GetSuffix();
+	const char *suffix = l.archive.GetSuffix();
 	if (suffix == nullptr)
 		return nullptr;
 
@@ -65,10 +66,10 @@ OpenArchiveInputStream(Path path, Mutex &mutex)
 	arplug = archive_plugin_from_suffix(suffix);
 	if (!arplug) {
 		FormatWarning(archive_domain,
-			      "can't handle archive %s", archive);
+			      "can't handle archive %s", l.archive.c_str());
 		return nullptr;
 	}
 
-	return archive_file_open(arplug, Path::FromFS(archive))
-		->OpenStream(filename, mutex);
+	return archive_file_open(arplug, l.archive)
+		->OpenStream(l.inside.c_str(), mutex);
 }

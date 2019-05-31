@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2018 The Music Player Daemon Project
+ * Copyright 2003-2019 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -20,6 +20,17 @@
 #ifndef MPD_ARCHIVE_LOOKUP_HXX
 #define MPD_ARCHIVE_LOOKUP_HXX
 
+#include "fs/Path.hxx"
+
+struct ArchiveLookupResult {
+	Path archive = nullptr;
+	Path inside = nullptr;
+
+	constexpr operator bool() const noexcept {
+		return !archive.IsNull();
+	}
+};
+
 /**
  *
  * archive_lookup is used to determine if part of pathname refers to an regular
@@ -38,9 +49,8 @@
  *
  * Throws on error.
  */
-bool
-archive_lookup(char *pathname, const char **archive,
-	       const char **inpath);
+ArchiveLookupResult
+archive_lookup(char *pathname);
 
 #endif
 
