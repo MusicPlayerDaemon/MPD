@@ -1,6 +1,5 @@
 archive_api = static_library(
   'archive_api',
-  'ArchiveDomain.cxx',
   'ArchiveList.cxx',
   include_directories: inc,
 )
