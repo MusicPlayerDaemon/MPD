@@ -83,6 +83,11 @@ class HttpdClient final
 	 */
 	bool head_method = false;
 
+	/**
+	 * Should we reject this request?
+	 */
+	bool should_reject = false;
+
 	/* ICY */
 
 	/**

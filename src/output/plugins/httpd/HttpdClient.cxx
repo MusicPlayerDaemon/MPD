@@ -83,6 +83,17 @@ HttpdClient::HandleLine(const char *line) noexcept
 			return false;
 		}
 
+		/* blacklist some well-known request paths */
+		if ((strncmp(line, "favicon.ico", 11) == 0 &&
+		     (line[11] == '\0' || line[11] == ' ')) ||
+		    (strncmp(line, "robots.txt", 10) == 0 &&
+		     (line[10] == '\0' || line[10] == ' ')) ||
+		    (strncmp(line, "sitemap.xml", 11) == 0 &&
+		     (line[11] == '\0' || line[11] == ' ')) ||
+		    (strncmp(line, ".well-known/", 12) == 0)) {
+			should_reject = true;
+		}
+
 		line = strchr(line, ' ');
 		if (line == nullptr || strncmp(line + 1, "HTTP/", 5) != 0) {
 			/* HTTP/0.9 without request headers */
@@ -129,7 +140,14 @@ HttpdClient::SendResponse() noexcept
 
 	assert(state == State::RESPONSE);
 
-	if (metadata_requested) {
+	if (should_reject) {
+		response =
+			"HTTP/1.1 404 not found\r\n"
+			"Content-Type: text/plain\r\n"
+			"Connection: close\r\n"
+			"\r\n"
+			"404 not found";
+	} else if (metadata_requested) {
 		allocated =
 			icy_server_metadata_header(httpd.name, httpd.genre,
 						   httpd.website,
@@ -415,7 +433,7 @@ HttpdClient::OnSocketInput(void *data, size_t length) noexcept
 		if (!SendResponse())
 			return InputResult::CLOSED;
 
-		if (head_method) {
+		if (head_method || should_reject) {
 			LockClose();
 			return InputResult::CLOSED;
 		}
