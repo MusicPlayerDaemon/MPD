@@ -18,8 +18,6 @@
  */
 
 #include "ArchiveLookup.hxx"
-#include "ArchiveDomain.hxx"
-#include "Log.hxx"
 #include "fs/FileInfo.hxx"
 #include "system/Error.hxx"
 
@@ -57,9 +55,6 @@ archive_lookup(char *pathname)
 				//so the upper should be file
 				return {Path::FromFS(pathname), Path::FromFS(slash + 1)};
 			} else {
-				FormatError(archive_domain,
-					    "Not a regular file: %s",
-					    pathname);
 				return {};
 			}
 		} catch (const std::system_error &e) {

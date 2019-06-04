@@ -18,7 +18,6 @@
  */
 
 #include "ArchiveInputPlugin.hxx"
-#include "archive/ArchiveDomain.hxx"
 #include "archive/ArchiveLookup.hxx"
 #include "archive/ArchiveList.hxx"
 #include "archive/ArchivePlugin.hxx"
@@ -45,8 +44,6 @@ OpenArchiveInputStream(Path path, Mutex &mutex)
 	try {
 		l = archive_lookup(pname);
 		if (l.archive.IsNull()) {
-			FormatDebug(archive_domain,
-				    "not an archive, lookup %s failed", pname);
 			return nullptr;
 		}
 	} catch (...) {
@@ -62,8 +59,6 @@ OpenArchiveInputStream(Path path, Mutex &mutex)
 	//check which archive plugin to use (by ext)
 	arplug = archive_plugin_from_suffix(suffix);
 	if (!arplug) {
-		FormatWarning(archive_domain,
-			      "can't handle archive %s", l.archive.c_str());
 		return nullptr;
 	}
 
