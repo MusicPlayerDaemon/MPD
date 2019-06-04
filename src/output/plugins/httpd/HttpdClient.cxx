@@ -71,10 +71,10 @@ HttpdClient::HandleLine(const char *line) noexcept
 	assert(state != State::RESPONSE);
 
 	if (state == State::REQUEST) {
-		if (memcmp(line, "HEAD /", 6) == 0) {
+		if (strncmp(line, "HEAD /", 6) == 0) {
 			line += 6;
 			head_method = true;
-		} else if (memcmp(line, "GET /", 5) == 0) {
+		} else if (strncmp(line, "GET /", 5) == 0) {
 			line += 5;
 		} else {
 			/* only GET is supported */
@@ -84,7 +84,7 @@ HttpdClient::HandleLine(const char *line) noexcept
 		}
 
 		line = strchr(line, ' ');
-		if (line == nullptr || memcmp(line + 1, "HTTP/", 5) != 0) {
+		if (line == nullptr || strncmp(line + 1, "HTTP/", 5) != 0) {
 			/* HTTP/0.9 without request headers */
 
 			if (head_method)
