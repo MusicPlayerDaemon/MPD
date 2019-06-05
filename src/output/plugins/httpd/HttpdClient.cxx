@@ -136,7 +136,7 @@ HttpdClient::SendResponse() noexcept
 						   httpd.content_type,
 						   metaint);
 		response = allocated.c_str();
-       } else { /* revert to a normal HTTP request */
+	} else { /* revert to a normal HTTP request */
 		snprintf(buffer, sizeof(buffer),
 			 "HTTP/1.1 200 OK\r\n"
 			 "Content-Type: %s\r\n"
