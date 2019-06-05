@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2018 The Music Player Daemon Project
+ * Copyright 2003-2019 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -19,6 +19,8 @@
 
 #ifndef MPD_OPUS_READER_HXX
 #define MPD_OPUS_READER_HXX
+
+#include "util/StringView.hxx"
 
 #include <algorithm>
 
@@ -81,18 +83,16 @@ public:
 		return ReadWord(length) && Skip(length);
 	}
 
-	char *ReadString() {
+	StringView ReadString() {
 		uint32_t length;
-		if (!ReadWord(length) || length >= 65536)
+		if (!ReadWord(length))
 			return nullptr;
 
 		const char *src = (const char *)Read(length);
 		if (src == nullptr)
 			return nullptr;
 
-		char *dest = new char[length + 1];
-		*std::copy_n(src, length, dest) = 0;
-		return dest;
+		return {src, length};
 	}
 };
 

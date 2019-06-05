@@ -12,7 +12,11 @@ ver 0.22 (not yet released)
   - ffmpeg: new plugin based on FFmpeg's libavfilter library
   - hdcd: new plugin based on FFmpeg's "af_hdcd" for HDCD playback
 
-ver 0.21.10 (not yet released)
+ver 0.21.10 (2019/06/05)
+* decoder
+  - opus: fix duplicate tags
+* output
+  - httpd: reject some well-known URIs
 * fix crash bug (0.21.9 regression)
 
 ver 0.21.9 (2019/05/20)
