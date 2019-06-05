@@ -24,6 +24,8 @@
 #include "tag/ParseName.hxx"
 #include "ReplayGainInfo.hxx"
 
+#include <string>
+
 #include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
@@ -91,18 +93,25 @@ ScanOpusTags(const void *data, size_t size,
 		return false;
 
 	while (n-- > 0) {
-		char *p = r.ReadString();
-		if (p == nullptr)
+		const auto s = r.ReadString();
+		if (s == nullptr)
 			return false;
 
-		char *eq = strchr(p, '=');
-		if (eq != nullptr && eq > p) {
-			*eq = 0;
+		if (s.size >= 4096)
+			continue;
 
-			ScanOneOpusTag(p, eq + 1, rgi, handler);
-		}
+		const auto eq = s.Find('=');
+		if (eq == nullptr || eq == s.data)
+			continue;
 
-		delete[] p;
+		auto name = s, value = s;
+		name.SetEnd(eq);
+		value.MoveFront(eq + 1);
+
+		const std::string name2(name.data, name.size);
+		const std::string value2(value.data, value.size);
+
+		ScanOneOpusTag(name2.c_str(), value2.c_str(), rgi, handler);
 	}
 
 	return true;
