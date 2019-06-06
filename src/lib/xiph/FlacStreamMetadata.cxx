@@ -32,6 +32,8 @@
 #include "ReplayGainInfo.hxx"
 #include "util/DivideString.hxx"
 
+#include <assert.h>
+
 bool
 flac_parse_replay_gain(ReplayGainInfo &rgi,
 		       const FLAC__StreamMetadata_VorbisComment &vc)
