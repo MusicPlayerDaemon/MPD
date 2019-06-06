@@ -37,6 +37,8 @@ test_common_flags = [
   '-Wall',
   '-Wextra',
 
+  '-Wvla',
+
   '-fvisibility=hidden',
 
   '-ffast-math',
