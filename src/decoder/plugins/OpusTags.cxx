@@ -27,12 +27,11 @@
 #include <string>
 
 #include <stdint.h>
-#include <string.h>
 #include <stdlib.h>
 
 gcc_pure
 static TagType
-ParseOpusTagName(const char *name) noexcept
+ParseOpusTagName(StringView name) noexcept
 {
 	TagType type = tag_name_parse_i(name);
 	if (type != TAG_NUM_OF_ITEM_TYPES)
@@ -42,11 +41,11 @@ ParseOpusTagName(const char *name) noexcept
 }
 
 static void
-ScanOneOpusTag(const char *name, const char *value,
+ScanOneOpusTag(StringView name, const char *value,
 	       ReplayGainInfo *rgi,
 	       TagHandler &handler) noexcept
 {
-	if (rgi != nullptr && strcmp(name, "R128_TRACK_GAIN") == 0) {
+	if (rgi != nullptr && name.Equals("R128_TRACK_GAIN")) {
 		/* R128_TRACK_GAIN is a Q7.8 fixed point number in
 		   dB */
 
@@ -54,7 +53,7 @@ ScanOneOpusTag(const char *name, const char *value,
 		long l = strtol(value, &endptr, 10);
 		if (endptr > value && *endptr == 0)
 			rgi->track.gain = double(l) / 256.;
-	} else if (rgi != nullptr && strcmp(name, "R128_ALBUM_GAIN") == 0) {
+	} else if (rgi != nullptr && name.Equals("R128_ALBUM_GAIN")) {
 		/* R128_ALBUM_GAIN is a Q7.8 fixed point number in
 		   dB */
 
@@ -100,18 +99,13 @@ ScanOpusTags(const void *data, size_t size,
 		if (s.size >= 4096)
 			continue;
 
-		const auto eq = s.Find('=');
-		if (eq == nullptr || eq == s.data)
+		const auto split = s.Split('=');
+		if (split.first.empty() || split.second.IsNull())
 			continue;
 
-		auto name = s, value = s;
-		name.SetEnd(eq);
-		value.MoveFront(eq + 1);
+		const std::string value2(split.second.data, split.second.size);
 
-		const std::string name2(name.data, name.size);
-		const std::string value2(value.data, value.size);
-
-		ScanOneOpusTag(name2.c_str(), value2.c_str(), rgi, handler);
+		ScanOneOpusTag(split.first, value2.c_str(), rgi, handler);
 	}
 
 	return true;
