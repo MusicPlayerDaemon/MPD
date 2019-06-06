@@ -8,7 +8,7 @@
 
 TEST(CircularBuffer, Basic)
 {
-	static size_t N = 8;
+	constexpr size_t N = 8;
 	int data[N];
 	CircularBuffer<int> buffer(data, N);
 
