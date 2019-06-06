@@ -24,6 +24,7 @@
 #include "fs/Path.hxx"
 #include "util/Domain.hxx"
 #include "util/Macros.hxx"
+#include "util/StringView.hxx"
 #include "Log.hxx"
 
 #include <adplug/adplug.h>
@@ -85,7 +86,7 @@ adplug_scan_tag(TagType type, const std::string &value,
 		TagHandler &handler) noexcept
 {
 	if (!value.empty())
-		handler.OnTag(type, value.c_str());
+		handler.OnTag(type, {value.data(), value.size()});
 }
 
 static bool

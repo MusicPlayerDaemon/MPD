@@ -25,10 +25,14 @@
 enum TagType : uint8_t;
 
 struct Tag;
+struct StringView;
 class Response;
 
 void
 tag_print_types(Response &response) noexcept;
+
+void
+tag_print(Response &response, TagType type, StringView value) noexcept;
 
 void
 tag_print(Response &response, TagType type, const char *value) noexcept;

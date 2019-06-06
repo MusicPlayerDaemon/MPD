@@ -31,6 +31,7 @@
 #endif
 #include "util/Macros.hxx"
 #include "util/StringFormat.hxx"
+#include "util/StringView.hxx"
 #include "util/Domain.hxx"
 #include "util/ByteOrder.hxx"
 #include "Log.hxx"
@@ -460,7 +461,7 @@ ScanSidTuneInfo(const SidTuneInfo &info, unsigned track, unsigned n_tracks,
 		const auto tag_title =
 			StringFormat<1024>("%s (%u/%u)",
 					   title, track, n_tracks);
-		handler.OnTag(TAG_TITLE, tag_title);
+		handler.OnTag(TAG_TITLE, tag_title.c_str());
 	} else
 		handler.OnTag(TAG_TITLE, title);
 
@@ -475,7 +476,7 @@ ScanSidTuneInfo(const SidTuneInfo &info, unsigned track, unsigned n_tracks,
 		handler.OnTag(TAG_DATE, date);
 
 	/* track */
-	handler.OnTag(TAG_TRACK, StringFormat<16>("%u", track));
+	handler.OnTag(TAG_TRACK, StringFormat<16>("%u", track).c_str());
 }
 
 static bool

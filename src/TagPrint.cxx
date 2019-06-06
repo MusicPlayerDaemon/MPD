@@ -21,6 +21,7 @@
 #include "tag/Tag.hxx"
 #include "tag/Settings.hxx"
 #include "client/Response.hxx"
+#include "util/StringView.hxx"
 
 void
 tag_print_types(Response &r) noexcept
@@ -29,6 +30,13 @@ tag_print_types(Response &r) noexcept
 	for (unsigned i = 0; i < TAG_NUM_OF_ITEM_TYPES; i++)
 		if (tag_mask.Test(TagType(i)))
 			r.Format("tagtype: %s\n", tag_item_names[i]);
+}
+
+void
+tag_print(Response &r, TagType type, StringView value) noexcept
+{
+	r.Format("%s: %.*s\n", tag_item_names[type],
+		 int(value.size), value.data);
 }
 
 void

@@ -30,6 +30,7 @@
 #include "AudioFormat.hxx"
 #include "util/ScopeExit.hxx"
 #include "util/StringBuffer.hxx"
+#include "util/StringView.hxx"
 #include "util/PrintException.hxx"
 
 #include <stdexcept>
@@ -58,13 +59,16 @@ public:
 		printf("duration=%f\n", duration.ToDoubleS());
 	}
 
-	void OnTag(TagType type, const char *value) noexcept override {
-		printf("[%s]=%s\n", tag_item_names[type], value);
+	void OnTag(TagType type, StringView value) noexcept override {
+		printf("[%s]=%.*s\n", tag_item_names[type],
+		       int(value.size), value.data);
 		empty = false;
 	}
 
-	void OnPair(const char *key, const char *value) noexcept override {
-		printf("\"%s\"=%s\n", key, value);
+	void OnPair(StringView key, StringView value) noexcept override {
+		printf("\"%.*s\"=%.*s\n",
+		       int(key.size), key.data,
+		       int(value.size), value.data);
 	}
 
 	void OnAudioFormat(AudioFormat af) noexcept override {

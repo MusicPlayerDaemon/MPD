@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2018 The Music Player Daemon Project
+ * Copyright 2003-2019 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -21,9 +21,20 @@
 #include "Builder.hxx"
 #include "AudioFormat.hxx"
 #include "util/ASCII.hxx"
-#include "util/StringFormat.hxx"
+#include "util/CharUtil.hxx"
+#include "util/StringView.hxx"
 
-#include <stdlib.h>
+#include <algorithm>
+
+void
+NullTagHandler::OnTag(TagType, StringView) noexcept
+{
+}
+
+void
+NullTagHandler::OnPair(StringView, StringView) noexcept
+{
+}
 
 void
 NullTagHandler::OnAudioFormat(gcc_unused AudioFormat af) noexcept
@@ -36,23 +47,35 @@ AddTagHandler::OnDuration(SongTime duration) noexcept
 	tag.SetDuration(duration);
 }
 
-void
-AddTagHandler::OnTag(TagType type, const char *value) noexcept
+/**
+ * Skip leading zeroes and a non-decimal suffix.
+ */
+static StringView
+NormalizeDecimal(StringView s)
 {
-	if (type == TAG_TRACK || type == TAG_DISC) {
-		/* filter out this extra data and leading zeroes */
-		char *end;
-		unsigned n = strtoul(value, &end, 10);
-		if (value != end)
-			tag.AddItem(type, StringFormat<21>("%u", n));
-	} else
-		tag.AddItem(type, value);
+	auto start = std::find_if(s.begin(), s.end(),
+				  [](char ch){ return ch != '0'; });
+	auto end = std::find_if(start, s.end(),
+				[](char ch){ return !IsDigitASCII(ch); });
+	return {start, end};
 }
 
 void
-FullTagHandler::OnPair(const char *name, gcc_unused const char *value) noexcept
+AddTagHandler::OnTag(TagType type, StringView value) noexcept
 {
-	if (StringEqualsCaseASCII(name, "cuesheet"))
+	if (type == TAG_TRACK || type == TAG_DISC) {
+		/* filter out this extra data and leading zeroes */
+
+		value = NormalizeDecimal(value);
+	}
+
+	tag.AddItem(type, value);
+}
+
+void
+FullTagHandler::OnPair(StringView name, StringView) noexcept
+{
+	if (name.EqualsIgnoreCase("cuesheet"))
 		tag.SetHasPlaylist(true);
 }
 

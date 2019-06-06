@@ -27,6 +27,7 @@
 #include "client/Client.hxx"
 #include "client/Response.hxx"
 #include "util/CharUtil.hxx"
+#include "util/StringView.hxx"
 #include "util/UriUtil.hxx"
 #include "tag/Handler.hxx"
 #include "tag/Generic.hxx"
@@ -110,13 +111,12 @@ handle_listfiles_local(Response &r, Path path_fs)
 
 gcc_pure
 static bool
-IsValidName(const char *p) noexcept
+IsValidName(const StringView s) noexcept
 {
-	if (!IsAlphaASCII(*p))
+	if (s.empty() || !IsAlphaASCII(s.front()))
 		return false;
 
-	while (*++p) {
-		const char ch = *p;
+	for (const char ch : s) {
 		if (!IsAlphaASCII(ch) && ch != '_' && ch != '-')
 			return false;
 	}
@@ -126,11 +126,9 @@ IsValidName(const char *p) noexcept
 
 gcc_pure
 static bool
-IsValidValue(const char *p) noexcept
+IsValidValue(const StringView s) noexcept
 {
-	while (*p) {
-		const char ch = *p++;
-
+	for (const char ch : s) {
 		if ((unsigned char)ch < 0x20)
 			return false;
 	}
@@ -145,9 +143,11 @@ public:
 	explicit PrintCommentHandler(Response &_response) noexcept
 		:NullTagHandler(WANT_PAIR), response(_response) {}
 
-	void OnPair(const char *key, const char *value) noexcept override {
+	void OnPair(StringView key, StringView value) noexcept override {
 		if (IsValidName(key) && IsValidValue(value))
-			response.Format("%s: %s\n", key, value);
+			response.Format("%.*s: %.*s\n",
+					int(key.size), key.data,
+					int(value.size), value.data);
 	}
 };
 

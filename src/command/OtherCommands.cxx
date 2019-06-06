@@ -38,6 +38,7 @@
 #include "time/ChronoUtil.hxx"
 #include "util/UriUtil.hxx"
 #include "util/StringAPI.hxx"
+#include "util/StringView.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "Stats.hxx"
 #include "PlaylistFile.hxx"
@@ -147,7 +148,7 @@ public:
 	explicit PrintTagHandler(Response &_response) noexcept
 		:NullTagHandler(WANT_TAG), response(_response) {}
 
-	void OnTag(TagType type, const char *value) noexcept override {
+	void OnTag(TagType type, StringView value) noexcept override {
 		if (response.GetClient().tag_mask.Test(type))
 			tag_print(response, type, value);
 	}

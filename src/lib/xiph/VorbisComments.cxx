@@ -26,7 +26,7 @@
 #include "tag/VorbisComment.hxx"
 #include "tag/ReplayGain.hxx"
 #include "ReplayGainInfo.hxx"
-#include "util/DivideString.hxx"
+#include "util/StringView.hxx"
 
 bool
 vorbis_comments_to_replay_gain(ReplayGainInfo &rgi, char **comments) noexcept
@@ -69,9 +69,9 @@ static void
 vorbis_scan_comment(const char *comment, TagHandler &handler) noexcept
 {
 	if (handler.WantPair()) {
-		const DivideString split(comment, '=');
-		if (split.IsDefined() && !split.empty())
-			handler.OnPair(split.GetFirst(), split.GetSecond());
+		const auto split = StringView(comment).Split('=');
+		if (!split.first.empty() && !split.second.IsNull())
+			handler.OnPair(split.first, split.second);
 	}
 
 	for (const struct tag_table *i = xiph_tags; i->name != nullptr; ++i)

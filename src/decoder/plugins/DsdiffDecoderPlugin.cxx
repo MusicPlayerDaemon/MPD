@@ -33,6 +33,7 @@
 #include "CheckAudioFormat.hxx"
 #include "util/bit_reverse.h"
 #include "util/ByteOrder.hxx"
+#include "util/StringView.hxx"
 #include "tag/Handler.hxx"
 #include "DsdLib.hxx"
 #include "Log.hxx"
@@ -205,15 +206,14 @@ dsdiff_handle_native_tag(DecoderClient *client, InputStream &is,
 	if (length == 0 || length > MAX_LENGTH)
 		return;
 
-	char string[MAX_LENGTH + 1];
+	char string[MAX_LENGTH];
 	char *label;
 	label = string;
 
 	if (!decoder_read_full(client, is, label, (size_t)length))
 		return;
 
-	string[length] = '\0';
-	handler.OnTag(type, label);
+	handler.OnTag(type, {label, length});
 	return;
 }
 

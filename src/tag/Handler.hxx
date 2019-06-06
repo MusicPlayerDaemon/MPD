@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2018 The Music Player Daemon Project
+ * Copyright 2003-2019 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -24,6 +24,7 @@
 #include "Chrono.hxx"
 #include "util/Compiler.h"
 
+struct StringView;
 struct AudioFormat;
 class TagBuilder;
 
@@ -74,13 +75,13 @@ public:
 	 * @param the value of the tag; the pointer will become
 	 * invalid after returning
 	 */
-	virtual void OnTag(TagType type, const char *value) noexcept = 0;
+	virtual void OnTag(TagType type, StringView value) noexcept = 0;
 
 	/**
 	 * A name-value pair has been read.  It is the codec specific
 	 * representation of tags.
 	 */
-	virtual void OnPair(const char *key, const char *value) noexcept = 0;
+	virtual void OnPair(StringView key, StringView value) noexcept = 0;
 
 	/**
 	 * Declare the audio format of a song.
@@ -106,10 +107,8 @@ public:
 		:TagHandler(_want_mask) {}
 
 	void OnDuration(gcc_unused SongTime duration) noexcept override {}
-	void OnTag(gcc_unused TagType type,
-		   gcc_unused const char *value) noexcept override {}
-	void OnPair(gcc_unused const char *key,
-		    gcc_unused const char *value) noexcept override {}
+	void OnTag(TagType type, StringView value) noexcept override;
+	void OnPair(StringView key, StringView value) noexcept override;
 	void OnAudioFormat(AudioFormat af) noexcept override;
 };
 
@@ -130,7 +129,7 @@ public:
 		:AddTagHandler(0, _builder) {}
 
 	void OnDuration(SongTime duration) noexcept override;
-	void OnTag(TagType type, const char *value) noexcept override;
+	void OnTag(TagType type, StringView value) noexcept override;
 };
 
 /**
@@ -154,7 +153,7 @@ public:
 				AudioFormat *_audio_format=nullptr) noexcept
 		:FullTagHandler(0, _builder, _audio_format) {}
 
-	void OnPair(const char *key, const char *value) noexcept override;
+	void OnPair(StringView key, StringView value) noexcept override;
 	void OnAudioFormat(AudioFormat af) noexcept override;
 };
 

@@ -33,7 +33,7 @@
 #include "TagFile.hxx"
 #include "fs/Traits.hxx"
 #include "fs/AllocatedPath.hxx"
-#include "util/ASCII.hxx"
+#include "util/StringView.hxx"
 
 #include <memory>
 
@@ -70,15 +70,14 @@ public:
 
 	ExtractCuesheetTagHandler() noexcept:NullTagHandler(WANT_PAIR) {}
 
-	void OnPair(const char *key, const char *value) noexcept override;
+	void OnPair(StringView key, StringView value) noexcept override;
 };
 
 void
-ExtractCuesheetTagHandler::OnPair(const char *name, const char *value) noexcept
+ExtractCuesheetTagHandler::OnPair(StringView name, StringView value) noexcept
 {
-	if (cuesheet.empty() &&
-	    StringEqualsCaseASCII(name, "cuesheet"))
-		cuesheet = value;
+	if (cuesheet.empty() && name.EqualsIgnoreCase("cuesheet"))
+		cuesheet = {value.data, value.size};
 }
 
 static std::unique_ptr<SongEnumerator>
