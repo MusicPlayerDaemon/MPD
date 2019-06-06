@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2018 The Music Player Daemon Project
+ * Copyright 2003-2019 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -23,10 +23,7 @@
 #include "Table.hxx"
 #include "Handler.hxx"
 #include "util/StringView.hxx"
-
-#include <string>
-
-#include <string.h>
+#include "util/IterableSplitString.hxx"
 
 static constexpr struct tag_table ape_tags[] = {
 	{ "album artist", TAG_ALBUM_ARTIST },
@@ -45,32 +42,6 @@ tag_ape_name_parse(const char *name)
 }
 
 /**
- * Invoke the given callback for each string inside the given range.
- * The strings are separated by null bytes, but the last one may not
- * be terminated.
- */
-template<typename C>
-static void
-ForEachValue(const char *value, const char *end, C &&callback)
-{
-	while (true) {
-		const char *n = (const char *)memchr(value, 0, end - value);
-		if (n == nullptr)
-			break;
-
-		if (n > value)
-			callback(value);
-
-		value = n + 1;
-	}
-
-	if (value < end) {
-		const std::string value2(value, end);
-		callback(value2.c_str());
-	}
-}
-
-/**
  * @return true if the item was recognized
  */
 static bool
@@ -82,21 +53,16 @@ tag_ape_import_item(unsigned long flags,
 	if ((flags & (0x3 << 1)) != 0)
 		return false;
 
-	const auto begin = value.begin();
-	const auto end = value.end();
-
 	if (handler.WantPair())
-		ForEachValue(begin, end, [&handler, key](const char *_value) {
-				handler.OnPair(key, _value);
-			});
+		for (const auto &i : IterableSplitString(value, '\0'))
+			handler.OnPair(key, i);
 
 	TagType type = tag_ape_name_parse(key);
 	if (type == TAG_NUM_OF_ITEM_TYPES)
 		return false;
 
-	ForEachValue(begin, end, [&handler, type](const char *_value) {
-			handler.OnTag(type, _value);
-		});
+	for (const auto &i : IterableSplitString(value, '\0'))
+		handler.OnTag(type, i);
 
 	return true;
 }
