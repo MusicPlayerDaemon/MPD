@@ -23,11 +23,12 @@
 #include "tag/Handler.hxx"
 #include "tag/ParseName.hxx"
 #include "ReplayGainInfo.hxx"
+#include "util/NumberParser.hxx"
+#include "util/StringView.hxx"
 
 #include <string>
 
 #include <stdint.h>
-#include <stdlib.h>
 
 gcc_pure
 static TagType
@@ -41,7 +42,7 @@ ParseOpusTagName(StringView name) noexcept
 }
 
 static void
-ScanOneOpusTag(StringView name, const char *value,
+ScanOneOpusTag(StringView name, StringView value,
 	       ReplayGainInfo *rgi,
 	       TagHandler &handler) noexcept
 {
@@ -49,17 +50,17 @@ ScanOneOpusTag(StringView name, const char *value,
 		/* R128_TRACK_GAIN is a Q7.8 fixed point number in
 		   dB */
 
-		char *endptr;
-		long l = strtol(value, &endptr, 10);
-		if (endptr > value && *endptr == 0)
+		const char *endptr;
+		const auto l = ParseInt64(value, &endptr, 10);
+		if (endptr > value.begin() && endptr == value.end())
 			rgi->track.gain = double(l) / 256.;
 	} else if (rgi != nullptr && name.Equals("R128_ALBUM_GAIN")) {
 		/* R128_ALBUM_GAIN is a Q7.8 fixed point number in
 		   dB */
 
-		char *endptr;
-		long l = strtol(value, &endptr, 10);
-		if (endptr > value && *endptr == 0)
+		const char *endptr;
+		const auto l = ParseInt64(value, &endptr, 10);
+		if (endptr > value.begin() && endptr == value.end())
 			rgi->album.gain = double(l) / 256.;
 	}
 
@@ -103,9 +104,7 @@ ScanOpusTags(const void *data, size_t size,
 		if (split.first.empty() || split.second.IsNull())
 			continue;
 
-		const std::string value2(split.second.data, split.second.size);
-
-		ScanOneOpusTag(split.first, value2.c_str(), rgi, handler);
+		ScanOneOpusTag(split.first, split.second, rgi, handler);
 	}
 
 	return true;
