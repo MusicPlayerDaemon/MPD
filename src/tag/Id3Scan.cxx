@@ -32,7 +32,6 @@
 
 #include <id3tag.h>
 
-#include <string>
 #include <exception>
 
 #include <string.h>
@@ -282,8 +281,8 @@ tag_id3_import_ufid(const struct id3_tag *id3_tag,
 		if (value == nullptr || length == 0)
 			continue;
 
-		std::string p((const char *)value, length);
-		handler.OnTag(TAG_MUSICBRAINZ_TRACKID, p.c_str());
+		handler.OnTag(TAG_MUSICBRAINZ_TRACKID,
+			      {(const char *)value, length});
 	}
 }
 
