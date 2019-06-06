@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2018 The Music Player Daemon Project
+ * Copyright 2003-2019 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -23,6 +23,8 @@
 #include "Type.h"
 #include "util/Compiler.h"
 
+struct StringView;
+
 /**
  * Parse the string, and convert it into a #TagType.  Returns
  * #TAG_NUM_OF_ITEM_TYPES if the string could not be recognized.
@@ -30,6 +32,10 @@
 gcc_pure
 TagType
 tag_name_parse(const char *name) noexcept;
+
+gcc_pure
+TagType
+tag_name_parse(StringView name) noexcept;
 
 /**
  * Parse the string, and convert it into a #TagType.  Returns
@@ -40,5 +46,9 @@ tag_name_parse(const char *name) noexcept;
 gcc_pure
 TagType
 tag_name_parse_i(const char *name) noexcept;
+
+gcc_pure
+TagType
+tag_name_parse_i(StringView name) noexcept;
 
 #endif
