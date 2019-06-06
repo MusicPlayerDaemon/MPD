@@ -28,67 +28,23 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef NUMBER_PARSER_HXX
-#define NUMBER_PARSER_HXX
+#include "NumberParser.hxx"
+#include "StringView.hxx"
+#include "Macros.hxx"
 
-#include <assert.h>
-#include <stdint.h>
-#include <stdlib.h>
-
-struct StringView;
-
-static inline unsigned
-ParseUnsigned(const char *p, char **endptr=nullptr, int base=10) noexcept
-{
-	assert(p != nullptr);
-
-	return (unsigned)strtoul(p, endptr, base);
-}
-
-static inline int
-ParseInt(const char *p, char **endptr=nullptr, int base=10) noexcept
-{
-	assert(p != nullptr);
-
-	return (int)strtol(p, endptr, base);
-}
-
-static inline uint64_t
-ParseUint64(const char *p, char **endptr=nullptr, int base=10) noexcept
-{
-	assert(p != nullptr);
-
-	return strtoull(p, endptr, base);
-}
-
-static inline int64_t
-ParseInt64(const char *p, char **endptr=nullptr, int base=10) noexcept
-{
-	assert(p != nullptr);
-
-	return strtoll(p, endptr, base);
-}
+#include <algorithm>
 
 int64_t
-ParseInt64(StringView s, const char **endptr_r=nullptr, int base=10) noexcept;
-
-static inline double
-ParseDouble(const char *p, char **endptr=nullptr) noexcept
+ParseInt64(StringView s, const char **endptr_r, int base) noexcept
 {
-	assert(p != nullptr);
+	char buffer[32];
+	*std::copy_n(s.data, std::min(s.size, ARRAY_SIZE(buffer) - 1),
+		     buffer) = 0;
 
-	return (double)strtod(p, endptr);
+	char *endptr;
+	const auto result = ParseInt64(buffer, &endptr, base);
+	if (endptr_r != nullptr)
+		*endptr_r = s.data + (endptr - buffer);
+
+	return result;
 }
-
-static inline float
-ParseFloat(const char *p, char **endptr=nullptr) noexcept
-{
-#if defined(__BIONIC__) && __ANDROID_API__ < 21
-	/* strtof() requires API level 21 */
-	return (float)ParseDouble(p, endptr);
-#else
-	return strtof(p, endptr);
-#endif
-}
-
-#endif

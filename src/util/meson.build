@@ -5,6 +5,7 @@ util = static_library(
   'UTF8.cxx',
   'HexFormat.cxx',
   'MimeType.cxx',
+  'NumberParser.cxx',
   'StringView.cxx',
   'AllocatedString.cxx',
   'TruncateString.cxx',
