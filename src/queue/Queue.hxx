@@ -105,11 +105,6 @@ struct Queue {
 	LazyRandomEngine rand;
 
 	explicit Queue(unsigned max_length) noexcept;
-
-	/**
-	 * Deinitializes a queue object.  It does not free the queue
-	 * pointer itself.
-	 */
 	~Queue() noexcept;
 
 	Queue(const Queue &) = delete;
