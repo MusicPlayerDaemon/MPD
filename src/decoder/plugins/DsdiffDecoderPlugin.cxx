@@ -201,7 +201,7 @@ dsdiff_handle_native_tag(DecoderClient *client, InputStream &is,
 	uint32_t length = FromBE32(metatag.size);
 
 	/* Check and limit size of the tag to prevent a stack overflow */
-	constexpr size_t MAX_LENGTH = 60;
+	constexpr size_t MAX_LENGTH = 1024;
 	if (length == 0 || length > MAX_LENGTH)
 		return;
 
