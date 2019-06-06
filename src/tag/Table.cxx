@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2018 The Music Player Daemon Project
+ * Copyright 2003-2019 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -37,6 +37,16 @@ tag_table_lookup(const struct tag_table *table, const char *name) noexcept
 	return TAG_NUM_OF_ITEM_TYPES;
 }
 
+TagType
+tag_table_lookup(const struct tag_table *table, StringView name) noexcept
+{
+	for (; table->name != nullptr; ++table)
+		if (name.Equals(table->name))
+			return table->type;
+
+	return TAG_NUM_OF_ITEM_TYPES;
+}
+
 /**
  * Looks up a string in a tag translation table (case insensitive).
  * Returns TAG_NUM_OF_ITEM_TYPES if the specified name was not found
@@ -47,6 +57,16 @@ tag_table_lookup_i(const struct tag_table *table, const char *name) noexcept
 {
 	for (; table->name != nullptr; ++table)
 		if (StringEqualsCaseASCII(name, table->name))
+			return table->type;
+
+	return TAG_NUM_OF_ITEM_TYPES;
+}
+
+TagType
+tag_table_lookup_i(const struct tag_table *table, StringView name) noexcept
+{
+	for (; table->name != nullptr; ++table)
+		if (name.EqualsIgnoreCase(table->name))
 			return table->type;
 
 	return TAG_NUM_OF_ITEM_TYPES;

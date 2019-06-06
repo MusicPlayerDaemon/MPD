@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2018 The Music Player Daemon Project
+ * Copyright 2003-2019 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -23,6 +23,8 @@
 #include "Type.h"
 #include "util/Compiler.h"
 
+struct StringView;
+
 struct tag_table {
 	const char *name;
 
@@ -38,6 +40,10 @@ gcc_pure
 TagType
 tag_table_lookup(const tag_table *table, const char *name) noexcept;
 
+gcc_pure
+TagType
+tag_table_lookup(const tag_table *table, StringView name) noexcept;
+
 /**
  * Looks up a string in a tag translation table (case insensitive).
  * Returns TAG_NUM_OF_ITEM_TYPES if the specified name was not found
@@ -46,6 +52,10 @@ tag_table_lookup(const tag_table *table, const char *name) noexcept;
 gcc_pure
 TagType
 tag_table_lookup_i(const tag_table *table, const char *name) noexcept;
+
+gcc_pure
+TagType
+tag_table_lookup_i(const tag_table *table, StringView name) noexcept;
 
 /**
  * Looks up a #TagType in a tag translation table and returns its
