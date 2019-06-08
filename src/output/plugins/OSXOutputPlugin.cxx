@@ -923,13 +923,15 @@ void
 OSXOutput::Cancel() noexcept
 {
 #ifdef ENABLE_DSD
-        pcm_export->Reset();
-        if (!dop_enabled) {
-                ring_buffer->reset();
-        }
-#else
-        ring_buffer->reset();
+        if (dop_enabled) 
+                return;
 #endif
+        AudioOutputUnitStop(au);
+        ring_buffer->reset();
+#ifdef ENABLE_DSD
+        pcm_export->Reset();
+#endif  
+        AudioOutputUnitStart(au);
 }
 
 int
