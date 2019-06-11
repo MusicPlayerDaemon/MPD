@@ -165,11 +165,9 @@ playlist_list_open_uri(const char *uri, Mutex &mutex)
 {
 	/** this array tracks which plugins have already been tried by
 	    playlist_list_open_uri_scheme() */
-	bool tried[n_playlist_plugins];
+	bool tried[n_playlist_plugins]{};
 
 	assert(uri != nullptr);
-
-	memset(tried, false, sizeof(tried));
 
 	auto playlist = playlist_list_open_uri_scheme(uri, mutex, tried);
 	if (playlist == nullptr)
