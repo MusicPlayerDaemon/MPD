@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2018 The Music Player Daemon Project
+ * Copyright 2003-2019 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -35,6 +35,7 @@
 #include "util/MimeType.hxx"
 #include "util/UriUtil.hxx"
 #include "util/StringUtil.hxx"
+#include "util/StringView.hxx"
 #include "util/Macros.hxx"
 #include "config/Data.hxx"
 #include "config/Block.hxx"
@@ -178,10 +179,8 @@ playlist_list_open_uri(const char *uri, Mutex &mutex)
 }
 
 static std::unique_ptr<SongEnumerator>
-playlist_list_open_stream_mime2(InputStreamPtr &&is, const char *mime)
+playlist_list_open_stream_mime2(InputStreamPtr &&is, StringView mime)
 {
-	assert(mime != nullptr);
-
 	playlist_plugins_for_each_enabled(plugin) {
 		if (plugin->open_stream != nullptr &&
 		    plugin->mime_types != nullptr &&
