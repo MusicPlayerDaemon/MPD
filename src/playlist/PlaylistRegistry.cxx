@@ -201,22 +201,29 @@ playlist_list_open_stream_mime2(InputStreamPtr &&is, StringView mime)
 	return nullptr;
 }
 
+/**
+ * Extract the "main" part of a MIME type string, i.e. the portion
+ * before the semicolon (if one exists).
+ */
+gcc_pure
+static StringView
+ExtractMimeTypeMainPart(StringView s) noexcept
+{
+	const auto separator = s.Find(';');
+	if (separator != nullptr)
+		s.SetEnd(separator);
+
+	return s;
+}
+
 static std::unique_ptr<SongEnumerator>
 playlist_list_open_stream_mime(InputStreamPtr &&is, const char *full_mime)
 {
 	assert(full_mime != nullptr);
 
-	const char *semicolon = strchr(full_mime, ';');
-	if (semicolon == nullptr)
-		return playlist_list_open_stream_mime2(std::move(is),
-						       full_mime);
-
-	if (semicolon == full_mime)
-		return nullptr;
-
 	/* probe only the portion before the semicolon*/
-	const std::string mime(full_mime, semicolon);
-	return playlist_list_open_stream_mime2(std::move(is), mime.c_str());
+	return playlist_list_open_stream_mime2(std::move(is),
+					       ExtractMimeTypeMainPart(full_mime));
 }
 
 std::unique_ptr<SongEnumerator>
