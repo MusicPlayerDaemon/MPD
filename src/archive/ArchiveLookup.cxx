@@ -24,8 +24,8 @@
 #include <string.h>
 
 gcc_pure
-static char *
-FindSlash(char *p, size_t i) noexcept
+static PathTraitsFS::pointer_type
+FindSlash(PathTraitsFS::pointer_type p, size_t i) noexcept
 {
 	for (; i > 0; --i)
 		if (p[i] == '/')
@@ -35,11 +35,11 @@ FindSlash(char *p, size_t i) noexcept
 }
 
 ArchiveLookupResult
-archive_lookup(char *pathname)
+archive_lookup(PathTraitsFS::pointer_type pathname)
 {
 	size_t idx = strlen(pathname);
 
-	char *slash = nullptr;
+	PathTraitsFS::pointer_type slash = nullptr;
 
 	while (true) {
 		try {
