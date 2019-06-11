@@ -3,7 +3,7 @@ ver 0.22 (not yet released)
   - "findadd"/"searchadd"/"searchaddpl" support the "sort" and
     "window" parameters
 * tags
-  - new tag "Grouping" (for ID3 "TIT1")
+  - new tags "Grouping" (for ID3 "TIT1") and "Work"
 * input
   - ffmpeg: allow partial reads
 * archive
