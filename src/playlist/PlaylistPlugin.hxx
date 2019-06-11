@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2018 The Music Player Daemon Project
+ * Copyright 2003-2019 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -33,8 +33,8 @@ struct playlist_plugin {
 	/**
 	 * Initialize the plugin.  Optional method.
 	 *
-	 * @param block a configuration block for this plugin, or nullptr
-	 * if none is configured
+	 * @param block a configuration block for this plugin (may be
+	 * empty if none is configured)
 	 * @return true if the plugin was initialized successfully,
 	 * false if the plugin is not available
 	 */
