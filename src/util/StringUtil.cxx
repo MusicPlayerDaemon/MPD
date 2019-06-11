@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2018 The Music Player Daemon Project
+ * Copyright 2003-2019 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,6 +18,7 @@
  */
 
 #include "StringUtil.hxx"
+#include "StringView.hxx"
 #include "CharUtil.hxx"
 #include "ASCII.hxx"
 
@@ -32,6 +33,20 @@ StringArrayContainsCase(const char *const*haystack,
 
 	for (; *haystack != nullptr; ++haystack)
 		if (StringEqualsCaseASCII(*haystack, needle))
+			return true;
+
+	return false;
+}
+
+bool
+StringArrayContainsCase(const char *const*haystack,
+			StringView needle) noexcept
+{
+	assert(haystack != nullptr);
+	assert(needle != nullptr);
+
+	for (; *haystack != nullptr; ++haystack)
+		if (needle.EqualsIgnoreCase(*haystack))
 			return true;
 
 	return false;

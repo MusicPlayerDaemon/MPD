@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2018 The Music Player Daemon Project
+ * Copyright 2003-2019 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -24,6 +24,8 @@
 
 #include <stddef.h>
 
+struct StringView;
+
 /**
  * Checks whether a string array contains the specified string.
  *
@@ -36,6 +38,11 @@ gcc_pure
 bool
 StringArrayContainsCase(const char *const*haystack,
 			const char *needle) noexcept;
+
+gcc_pure
+bool
+StringArrayContainsCase(const char *const*haystack,
+			StringView needle) noexcept;
 
 /**
  * Convert the specified ASCII string (0x00..0x7f) to upper case.
