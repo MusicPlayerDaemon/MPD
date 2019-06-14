@@ -83,8 +83,6 @@ struct OSXOutput final : AudioOutput {
 	AudioStreamBasicDescription asbd;
 
 	boost::lockfree::spsc_queue<uint8_t> *ring_buffer;
-	/* A buffer used to keep temporary result from ring_buffer */
-	uint8_t *temp_buffer;
 
 	OSXOutput(const ConfigBlock &block);
 
@@ -131,8 +129,7 @@ osx_output_test_default_device(void)
 
 OSXOutput::OSXOutput(const ConfigBlock &block)
 	:AudioOutput(FLAG_ENABLE_DISABLE|FLAG_PAUSE),
-	 ring_buffer(nullptr),
-	 temp_buffer(nullptr)
+	 ring_buffer(nullptr)
 {
 	const char *device = block.GetBlockValue("device");
 
@@ -683,6 +680,14 @@ osx_render(void *vdata,
 {
 	OSXOutput *od = (OSXOutput *) vdata;
 
+	if (od->cancel) {
+		od->ring_buffer->reset();
+		od->cancel = false;
+	}
+
+	// Wait until data is available.
+	while (!od->ring_buffer->read_available()); 
+
 	size_t copy_frames =
 		od->ring_buffer->read_available() / od->asbd.mBytesPerFrame;
 	if (copy_frames > in_number_frames) {
@@ -700,31 +705,6 @@ osx_render(void *vdata,
 	buffer_list->mBuffers[0].mDataByteSize =
 		od->ring_buffer->pop((uint8_t *)buffer_list->mBuffers[0].mData,
 				     count);
-	if (od->cancel) {
-		// We copy the beginning of ring_buffer to a temp buffer, and
-		// reset the ring buffer. After that, we push the frames from
-		// temp buffer back to the ring buffer. The reason to that is
-		// Play() might not finish populating the data next time
-		// os_render is called, so we need to try the best to make
-		// osx_render have enough data to read when called.
-		static const size_t max_frames = 8192;
-		copy_frames =
-			od->ring_buffer->read_available() / od->asbd.mBytesPerFrame;
-		if (copy_frames > max_frames)
-			copy_frames = max_frames;
-#ifdef ENABLE_DSD
-		// In DoP, we always cut off at even frames to preserve the
-		// DoP marker bits pattern.
-		if (od->dop_enabled) {
-			copy_frames = copy_frames / 2 * 2;
-		}
-#endif
-		count = copy_frames * od->asbd.mBytesPerFrame;
-		od->ring_buffer->pop(od->temp_buffer, count);
-		od->ring_buffer->reset();
-		od->ring_buffer->push(od->temp_buffer, count);
-		od->cancel = false;
-	}
  	return noErr;
 }
 
@@ -788,10 +768,6 @@ OSXOutput::Close() noexcept
 	if (ring_buffer) {
 		delete ring_buffer;
 		ring_buffer = nullptr;
-	}
-	if (temp_buffer) {
-		delete temp_buffer;
-		temp_buffer = nullptr;
 	}
 }
 
@@ -898,7 +874,6 @@ OSXOutput::Open(AudioFormat &audio_format)
 	}
 #endif
 	ring_buffer = new boost::lockfree::spsc_queue<uint8_t>(ring_buffer_size);
-	temp_buffer = new uint8_t[ring_buffer_size];
 
 	status = AudioOutputUnitStart(au);
 	if (status != 0) {
@@ -916,9 +891,6 @@ size_t
 OSXOutput::Play(const void *chunk, size_t size)
 {
 	assert(size > 0);
-	if (cancel) {
-		return 0;
-	}
 	if(pause) {
 		pause = false;
 		OSStatus status = AudioOutputUnitStart(au);
@@ -926,6 +898,9 @@ OSXOutput::Play(const void *chunk, size_t size)
 			AudioUnitUninitialize(au);
 			throw std::runtime_error("Unable to restart audio output after pause");
 		}
+	}
+	if (cancel) {
+		return 0;
 	}
 #ifdef ENABLE_DSD
         if (dop_enabled) {
@@ -949,7 +924,7 @@ OSXOutput::Play(const void *chunk, size_t size)
 std::chrono::steady_clock::duration
 OSXOutput::Delay() const noexcept
 {
-	return cancel || (!pause && ring_buffer->write_available())
+	return !pause && (cancel || ring_buffer->write_available())
 		? std::chrono::steady_clock::duration::zero()
 		: std::chrono::milliseconds(MPD_OSX_BUFFER_TIME_MS / 4);
 }
