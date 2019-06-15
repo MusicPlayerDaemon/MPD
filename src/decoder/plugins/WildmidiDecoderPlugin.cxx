@@ -150,15 +150,7 @@ static const char *const wildmidi_suffixes[] = {
 	nullptr
 };
 
-const struct DecoderPlugin wildmidi_decoder_plugin = {
-	"wildmidi",
-	wildmidi_init,
-	wildmidi_finish,
-	nullptr,
-	wildmidi_file_decode,
-	wildmidi_scan_file,
-	nullptr,
-	nullptr,
-	wildmidi_suffixes,
-	nullptr,
-};
+constexpr DecoderPlugin wildmidi_decoder_plugin =
+	DecoderPlugin("wildmidi", wildmidi_file_decode, wildmidi_scan_file)
+	.WithInit(wildmidi_init, wildmidi_finish)
+	.WithSuffixes(wildmidi_suffixes);

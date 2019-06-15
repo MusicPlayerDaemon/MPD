@@ -223,15 +223,8 @@ static const char *const mikmod_decoder_suffixes[] = {
 	nullptr
 };
 
-const struct DecoderPlugin mikmod_decoder_plugin = {
-	"mikmod",
-	mikmod_decoder_init,
-	mikmod_decoder_finish,
-	nullptr,
-	mikmod_decoder_file_decode,
-	mikmod_decoder_scan_file,
-	nullptr,
-	nullptr,
-	mikmod_decoder_suffixes,
-	nullptr,
-};
+constexpr DecoderPlugin mikmod_decoder_plugin =
+	DecoderPlugin("mikmod",
+		      mikmod_decoder_file_decode, mikmod_decoder_scan_file)
+	.WithInit(mikmod_decoder_init, mikmod_decoder_finish)
+	.WithSuffixes(mikmod_decoder_suffixes);

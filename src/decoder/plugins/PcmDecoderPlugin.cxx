@@ -251,15 +251,6 @@ static const char *const pcm_mime_types[] = {
 	nullptr
 };
 
-const struct DecoderPlugin pcm_decoder_plugin = {
-	"pcm",
-	nullptr,
-	nullptr,
-	pcm_stream_decode,
-	nullptr,
-	nullptr,
-	nullptr,
-	nullptr,
-	nullptr,
-	pcm_mime_types,
-};
+constexpr DecoderPlugin pcm_decoder_plugin =
+	DecoderPlugin("pcm", pcm_stream_decode, nullptr)
+	.WithMimeTypes(pcm_mime_types);

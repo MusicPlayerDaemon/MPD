@@ -331,15 +331,8 @@ static const char *const sndfile_mime_types[] = {
 	nullptr
 };
 
-const struct DecoderPlugin sndfile_decoder_plugin = {
-	"sndfile",
-	sndfile_init,
-	nullptr,
-	sndfile_stream_decode,
-	nullptr,
-	nullptr,
-	sndfile_scan_stream,
-	nullptr,
-	sndfile_suffixes,
-	sndfile_mime_types,
-};
+constexpr DecoderPlugin sndfile_decoder_plugin =
+	DecoderPlugin("sndfile", sndfile_stream_decode, sndfile_scan_stream)
+	.WithInit(sndfile_init)
+	.WithSuffixes(sndfile_suffixes)
+	.WithMimeTypes(sndfile_mime_types);

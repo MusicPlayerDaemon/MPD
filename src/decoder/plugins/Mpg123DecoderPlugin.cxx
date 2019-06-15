@@ -316,16 +316,7 @@ static const char *const mpg123_suffixes[] = {
 	nullptr
 };
 
-const struct DecoderPlugin mpg123_decoder_plugin = {
-	"mpg123",
-	mpd_mpg123_init,
-	mpd_mpg123_finish,
-	/* streaming not yet implemented */
-	nullptr,
-	mpd_mpg123_file_decode,
-	mpd_mpg123_scan_file,
-	nullptr,
-	nullptr,
-	mpg123_suffixes,
-	nullptr,
-};
+constexpr DecoderPlugin mpg123_decoder_plugin =
+	DecoderPlugin("mpg123", mpd_mpg123_file_decode, mpd_mpg123_scan_file)
+	.WithInit(mpd_mpg123_init, mpd_mpg123_finish)
+	.WithSuffixes(mpg123_suffixes);

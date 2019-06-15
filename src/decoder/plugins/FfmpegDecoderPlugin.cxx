@@ -774,15 +774,8 @@ static const char *const ffmpeg_mime_types[] = {
 	nullptr
 };
 
-const struct DecoderPlugin ffmpeg_decoder_plugin = {
-	"ffmpeg",
-	ffmpeg_init,
-	ffmpeg_finish,
-	ffmpeg_decode,
-	nullptr,
-	nullptr,
-	ffmpeg_scan_stream,
-	nullptr,
-	ffmpeg_suffixes,
-	ffmpeg_mime_types
-};
+constexpr DecoderPlugin ffmpeg_decoder_plugin =
+	DecoderPlugin("ffmpeg", ffmpeg_decode, ffmpeg_scan_stream)
+	.WithInit(ffmpeg_init, ffmpeg_finish)
+	.WithSuffixes(ffmpeg_suffixes)
+	.WithMimeTypes(ffmpeg_mime_types);

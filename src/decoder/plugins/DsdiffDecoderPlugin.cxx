@@ -488,15 +488,8 @@ static const char *const dsdiff_mime_types[] = {
 	nullptr
 };
 
-const struct DecoderPlugin dsdiff_decoder_plugin = {
-	"dsdiff",
-	dsdiff_init,
-	nullptr,
-	dsdiff_stream_decode,
-	nullptr,
-	nullptr,
-	dsdiff_scan_stream,
-	nullptr,
-	dsdiff_suffixes,
-	dsdiff_mime_types,
-};
+constexpr DecoderPlugin dsdiff_decoder_plugin =
+	DecoderPlugin("dsdiff", dsdiff_stream_decode, dsdiff_scan_stream)
+	.WithInit(dsdiff_init)
+	.WithSuffixes(dsdiff_suffixes)
+	.WithMimeTypes(dsdiff_mime_types);

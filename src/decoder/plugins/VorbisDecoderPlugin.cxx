@@ -434,15 +434,8 @@ static const char *const vorbis_mime_types[] = {
 	nullptr
 };
 
-const struct DecoderPlugin vorbis_decoder_plugin = {
-	"vorbis",
-	vorbis_init,
-	nullptr,
-	vorbis_stream_decode,
-	nullptr,
-	nullptr,
-	vorbis_scan_stream,
-	nullptr,
-	vorbis_suffixes,
-	vorbis_mime_types
-};
+constexpr DecoderPlugin vorbis_decoder_plugin =
+	DecoderPlugin("vorbis", vorbis_stream_decode, vorbis_scan_stream)
+	.WithInit(vorbis_init)
+	.WithSuffixes(vorbis_suffixes)
+	.WithMimeTypes(vorbis_mime_types);

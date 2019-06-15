@@ -568,15 +568,8 @@ static const char *const sidplay_suffixes[] = {
 	nullptr
 };
 
-const struct DecoderPlugin sidplay_decoder_plugin = {
-	"sidplay",
-	sidplay_init,
-	sidplay_finish,
-	nullptr, /* stream_decode() */
-	sidplay_file_decode,
-	sidplay_scan_file,
-	nullptr, /* stream_tag() */
-	sidplay_container_scan,
-	sidplay_suffixes,
-	nullptr, /* mime_types */
-};
+constexpr DecoderPlugin sidplay_decoder_plugin =
+	DecoderPlugin("sidplay", sidplay_file_decode, sidplay_scan_file)
+	.WithInit(sidplay_init, sidplay_finish)
+	.WithContainer(sidplay_container_scan)
+	.WithSuffixes(sidplay_suffixes);

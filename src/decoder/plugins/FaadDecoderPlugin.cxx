@@ -430,15 +430,7 @@ static const char *const faad_mime_types[] = {
 	"audio/aac", "audio/aacp", nullptr
 };
 
-const DecoderPlugin faad_decoder_plugin = {
-	"faad",
-	nullptr,
-	nullptr,
-	faad_stream_decode,
-	nullptr,
-	nullptr,
-	faad_scan_stream,
-	nullptr,
-	faad_suffixes,
-	faad_mime_types,
-};
+constexpr DecoderPlugin faad_decoder_plugin =
+	DecoderPlugin("faad", faad_stream_decode, faad_scan_stream)
+	.WithSuffixes(faad_suffixes)
+	.WithMimeTypes(faad_mime_types);

@@ -125,15 +125,7 @@ static const char *const adplug_suffixes[] = {
 	nullptr
 };
 
-const struct DecoderPlugin adplug_decoder_plugin = {
-	"adplug",
-	adplug_init,
-	nullptr,
-	nullptr,
-	adplug_file_decode,
-	adplug_scan_file,
-	nullptr,
-	nullptr,
-	adplug_suffixes,
-	nullptr,
-};
+constexpr DecoderPlugin adplug_decoder_plugin =
+	DecoderPlugin("adplug", adplug_file_decode, adplug_scan_file)
+	.WithInit(adplug_init)
+	.WithSuffixes(adplug_suffixes);

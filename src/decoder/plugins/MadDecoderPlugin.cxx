@@ -1014,15 +1014,8 @@ mad_decoder_scan_stream(InputStream &is, TagHandler &handler) noexcept
 static const char *const mp3_suffixes[] = { "mp3", "mp2", nullptr };
 static const char *const mp3_mime_types[] = { "audio/mpeg", nullptr };
 
-const struct DecoderPlugin mad_decoder_plugin = {
-	"mad",
-	mp3_plugin_init,
-	nullptr,
-	mp3_decode,
-	nullptr,
-	nullptr,
-	mad_decoder_scan_stream,
-	nullptr,
-	mp3_suffixes,
-	mp3_mime_types,
-};
+constexpr DecoderPlugin mad_decoder_plugin =
+	DecoderPlugin("mad", mp3_decode, mad_decoder_scan_stream)
+	.WithInit(mp3_plugin_init)
+	.WithSuffixes(mp3_suffixes)
+	.WithMimeTypes(mp3_mime_types);

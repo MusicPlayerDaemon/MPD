@@ -207,15 +207,8 @@ static const char *const fluidsynth_suffixes[] = {
 	nullptr
 };
 
-const struct DecoderPlugin fluidsynth_decoder_plugin = {
-	"fluidsynth",
-	fluidsynth_init,
-	nullptr,
-	nullptr,
-	fluidsynth_file_decode,
-	fluidsynth_scan_file,
-	nullptr,
-	nullptr,
-	fluidsynth_suffixes,
-	nullptr,
-};
+constexpr DecoderPlugin fluidsynth_decoder_plugin =
+	DecoderPlugin("fluidsynth",
+		      fluidsynth_file_decode, fluidsynth_scan_file)
+	.WithInit(fluidsynth_init)
+	.WithSuffixes(fluidsynth_suffixes);

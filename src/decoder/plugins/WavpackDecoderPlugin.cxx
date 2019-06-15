@@ -644,15 +644,8 @@ static char const *const wavpack_mime_types[] = {
 	nullptr
 };
 
-const struct DecoderPlugin wavpack_decoder_plugin = {
-	"wavpack",
-	nullptr,
-	nullptr,
-	wavpack_streamdecode,
-	wavpack_filedecode,
-	wavpack_scan_file,
-	wavpack_scan_stream,
-	nullptr,
-	wavpack_suffixes,
-	wavpack_mime_types
-};
+constexpr DecoderPlugin wavpack_decoder_plugin =
+	DecoderPlugin("wavpack", wavpack_streamdecode, wavpack_scan_stream,
+		      wavpack_filedecode, wavpack_scan_file)
+	.WithSuffixes(wavpack_suffixes)
+	.WithMimeTypes(wavpack_mime_types);
