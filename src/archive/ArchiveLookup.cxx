@@ -53,7 +53,7 @@ archive_lookup(PathTraitsFS::pointer_type pathname)
 			//its a file ?
 			if (file_info.IsRegular()) {
 				//so the upper should be file
-				return {Path::FromFS(pathname), Path::FromFS(slash + 1)};
+				return {AllocatedPath::FromFS(pathname), AllocatedPath::FromFS(slash + 1)};
 			} else {
 				return {};
 			}

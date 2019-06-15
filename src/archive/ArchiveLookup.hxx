@@ -20,13 +20,13 @@
 #ifndef MPD_ARCHIVE_LOOKUP_HXX
 #define MPD_ARCHIVE_LOOKUP_HXX
 
-#include "fs/Path.hxx"
+#include "fs/AllocatedPath.hxx"
 
 struct ArchiveLookupResult {
-	Path archive = nullptr;
-	Path inside = nullptr;
+	AllocatedPath archive = nullptr;
+	AllocatedPath inside = nullptr;
 
-	constexpr operator bool() const noexcept {
+	operator bool() const noexcept {
 		return !archive.IsNull();
 	}
 };

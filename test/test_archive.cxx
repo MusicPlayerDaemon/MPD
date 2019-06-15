@@ -29,7 +29,6 @@ TEST(ArchiveTest, Lookup)
 	path = strdup("dummy/foo/bar");
 	auto result = archive_lookup(path);
 	EXPECT_TRUE(result);
-	EXPECT_EQ((const char *)path, result.archive.c_str());
 	EXPECT_STREQ(result.archive.c_str(), "dummy");
 	EXPECT_STREQ(result.inside.c_str(), "foo/bar");
 	free(path);
@@ -37,7 +36,6 @@ TEST(ArchiveTest, Lookup)
 	path = strdup("config.h/foo/bar");
 	result = archive_lookup(path);
 	EXPECT_TRUE(result);
-	EXPECT_EQ((const char *)path, result.archive.c_str());
 	EXPECT_STREQ(result.archive.c_str(), "config.h");
 	EXPECT_STREQ(result.inside.c_str(), "foo/bar");
 	free(path);
