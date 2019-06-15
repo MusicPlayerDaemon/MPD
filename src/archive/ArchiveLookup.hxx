@@ -50,7 +50,7 @@ struct ArchiveLookupResult {
  * Throws on error.
  */
 ArchiveLookupResult
-archive_lookup(PathTraitsFS::const_pointer_type pathname);
+archive_lookup(Path pathname);
 
 #endif
 

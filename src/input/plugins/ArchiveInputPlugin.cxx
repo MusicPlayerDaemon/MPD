@@ -34,7 +34,7 @@ OpenArchiveInputStream(Path path, Mutex &mutex)
 	// archive_lookup will modify pname when true is returned
 	ArchiveLookupResult l;
 	try {
-		l = archive_lookup(path.c_str());
+		l = archive_lookup(path);
 		if (l.archive.IsNull()) {
 			return nullptr;
 		}

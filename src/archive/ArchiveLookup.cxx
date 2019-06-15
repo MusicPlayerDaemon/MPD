@@ -21,8 +21,6 @@
 #include "fs/FileInfo.hxx"
 #include "system/Error.hxx"
 
-#include <string.h>
-
 gcc_pure
 static PathTraitsFS::pointer_type
 FindSlash(PathTraitsFS::pointer_type p, size_t i) noexcept
@@ -35,9 +33,9 @@ FindSlash(PathTraitsFS::pointer_type p, size_t i) noexcept
 }
 
 ArchiveLookupResult
-archive_lookup(PathTraitsFS::const_pointer_type pathname)
+archive_lookup(Path pathname)
 {
-	PathTraitsFS::string buffer(pathname);
+	PathTraitsFS::string buffer(pathname.c_str());
 	size_t idx = buffer.size();
 
 	PathTraitsFS::pointer_type slash = nullptr;
