@@ -568,7 +568,6 @@ static const char *const sidplay_suffixes[] = {
 	nullptr
 };
 
-extern const struct DecoderPlugin sidplay_decoder_plugin;
 const struct DecoderPlugin sidplay_decoder_plugin = {
 	"sidplay",
 	sidplay_init,
