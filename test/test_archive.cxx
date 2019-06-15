@@ -8,35 +8,23 @@
 
 TEST(ArchiveTest, Lookup)
 {
-	char *path = strdup("");
-	EXPECT_THROW(archive_lookup(path), std::system_error);
-	free(path);
+	EXPECT_THROW(archive_lookup(""), std::system_error);
 
-	path = strdup(".");
-	EXPECT_FALSE(archive_lookup(path));
-	free(path);
+	EXPECT_FALSE(archive_lookup("."));
 
-	path = strdup("config.h");
-	EXPECT_FALSE(archive_lookup(path));
-	free(path);
+	EXPECT_FALSE(archive_lookup("config.h"));
 
-	path = strdup("src/foo/bar");
-	EXPECT_THROW(archive_lookup(path), std::system_error);
-	free(path);
+	EXPECT_THROW(archive_lookup("src/foo/bar"), std::system_error);
 
 	fclose(fopen("dummy", "w"));
 
-	path = strdup("dummy/foo/bar");
-	auto result = archive_lookup(path);
+	auto result = archive_lookup("dummy/foo/bar");
 	EXPECT_TRUE(result);
 	EXPECT_STREQ(result.archive.c_str(), "dummy");
 	EXPECT_STREQ(result.inside.c_str(), "foo/bar");
-	free(path);
 
-	path = strdup("config.h/foo/bar");
-	result = archive_lookup(path);
+	result = archive_lookup("config.h/foo/bar");
 	EXPECT_TRUE(result);
 	EXPECT_STREQ(result.archive.c_str(), "config.h");
 	EXPECT_STREQ(result.inside.c_str(), "foo/bar");
-	free(path);
 }

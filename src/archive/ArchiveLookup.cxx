@@ -35,16 +35,17 @@ FindSlash(PathTraitsFS::pointer_type p, size_t i) noexcept
 }
 
 ArchiveLookupResult
-archive_lookup(PathTraitsFS::pointer_type pathname)
+archive_lookup(PathTraitsFS::const_pointer_type pathname)
 {
-	size_t idx = strlen(pathname);
+	PathTraitsFS::string buffer(pathname);
+	size_t idx = buffer.size();
 
 	PathTraitsFS::pointer_type slash = nullptr;
 
 	while (true) {
 		try {
 			//try to stat if its real directory
-			const FileInfo file_info(Path::FromFS(pathname));
+			const FileInfo file_info(Path::FromFS(buffer.c_str()));
 
 			//is something found ins original path (is not an archive)
 			if (slash == nullptr)
@@ -53,7 +54,7 @@ archive_lookup(PathTraitsFS::pointer_type pathname)
 			//its a file ?
 			if (file_info.IsRegular()) {
 				//so the upper should be file
-				return {AllocatedPath::FromFS(pathname), AllocatedPath::FromFS(slash + 1)};
+				return {AllocatedPath::FromFS(buffer.c_str()), AllocatedPath::FromFS(slash + 1)};
 			} else {
 				return {};
 			}
@@ -66,12 +67,12 @@ archive_lookup(PathTraitsFS::pointer_type pathname)
 		if (slash != nullptr)
 			*slash = '/';
 
-		slash = FindSlash(pathname, idx - 1);
+		slash = FindSlash(&buffer.front(), idx - 1);
 		if (slash == nullptr)
 			return {};
 
 		*slash = 0;
-		idx = slash - pathname;
+		idx = slash - buffer.c_str();
 	}
 }
 
