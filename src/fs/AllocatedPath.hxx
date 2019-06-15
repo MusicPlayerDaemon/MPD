@@ -294,6 +294,11 @@ public:
 		return Traits::Relative(c_str(), other_fs.c_str());
 	}
 
+	gcc_pure
+	const_pointer_type GetSuffix() const noexcept {
+		return ((Path)*this).GetSuffix();
+	}
+
 	/**
 	 * Chop trailing directory separators.
 	 */
