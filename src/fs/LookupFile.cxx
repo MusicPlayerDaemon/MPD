@@ -17,8 +17,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "ArchiveLookup.hxx"
-#include "fs/FileInfo.hxx"
+#include "LookupFile.hxx"
+#include "FileInfo.hxx"
 #include "system/Error.hxx"
 
 gcc_pure
@@ -33,7 +33,7 @@ FindSlash(PathTraitsFS::pointer_type p, size_t i) noexcept
 }
 
 ArchiveLookupResult
-archive_lookup(Path pathname)
+LookupFile(Path pathname)
 {
 	PathTraitsFS::string buffer(pathname.c_str());
 	size_t idx = buffer.size();

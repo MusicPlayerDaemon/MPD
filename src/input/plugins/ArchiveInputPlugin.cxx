@@ -18,11 +18,11 @@
  */
 
 #include "ArchiveInputPlugin.hxx"
-#include "archive/ArchiveLookup.hxx"
 #include "archive/ArchiveList.hxx"
 #include "archive/ArchivePlugin.hxx"
 #include "archive/ArchiveFile.hxx"
 #include "../InputStream.hxx"
+#include "fs/LookupFile.hxx"
 #include "fs/Path.hxx"
 #include "Log.hxx"
 
@@ -31,10 +31,9 @@ OpenArchiveInputStream(Path path, Mutex &mutex)
 {
 	const ArchivePlugin *arplug;
 
-	// archive_lookup will modify pname when true is returned
 	ArchiveLookupResult l;
 	try {
-		l = archive_lookup(path);
+		l = LookupFile(path);
 		if (l.archive.IsNull()) {
 			return nullptr;
 		}

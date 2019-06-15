@@ -17,10 +17,10 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_ARCHIVE_LOOKUP_HXX
-#define MPD_ARCHIVE_LOOKUP_HXX
+#ifndef MPD_LOOKUP_FILE_HXX
+#define MPD_LOOKUP_FILE_HXX
 
-#include "fs/AllocatedPath.hxx"
+#include "AllocatedPath.hxx"
 
 struct ArchiveLookupResult {
 	AllocatedPath archive = nullptr;
@@ -50,7 +50,7 @@ struct ArchiveLookupResult {
  * Throws on error.
  */
 ArchiveLookupResult
-archive_lookup(Path pathname);
+LookupFile(Path pathname);
 
 #endif
 
