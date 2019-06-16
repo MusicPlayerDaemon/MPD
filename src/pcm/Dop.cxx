@@ -24,15 +24,13 @@
 
 #include <assert.h>
 
-constexpr
-static inline uint32_t
+static constexpr uint32_t
 pcm_two_dsd_to_dop_marker1(uint8_t a, uint8_t b) noexcept
 {
 	return 0xff050000 | (a << 8) | b;
 }
 
-constexpr
-static inline uint32_t
+static constexpr uint32_t
 pcm_two_dsd_to_dop_marker2(uint8_t a, uint8_t b) noexcept
 {
 	return 0xfffa0000 | (a << 8) | b;
