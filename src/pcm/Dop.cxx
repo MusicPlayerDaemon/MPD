@@ -36,26 +36,15 @@ pcm_two_dsd_to_dop_marker2(uint8_t a, uint8_t b) noexcept
 	return 0xfffa0000 | (a << 8) | b;
 }
 
-ConstBuffer<uint32_t>
-pcm_dsd_to_dop(PcmBuffer &buffer, unsigned channels,
-	       ConstBuffer<uint8_t> _src) noexcept
+/**
+ * @param num_dop_quads the number of "quad" bytes per channel in the
+ * source buffer; each "quad" will be converted to two 24 bit samples
+ * in the destination buffer, one for each marker
+ */
+static void
+DsdToDop(uint32_t *dest, const uint8_t *src,
+	 size_t num_dop_quads, unsigned channels) noexcept
 {
-	assert(audio_valid_channel_count(channels));
-	assert(_src.size % channels == 0);
-
-	const size_t num_src_samples = _src.size;
-	const size_t num_src_frames = num_src_samples / channels;
-
-	/* this rounds down and discards up to 3 odd frames; not
-	   elegant, but good enough for now */
-	const size_t num_dop_quads = num_src_frames / 4;
-	const size_t num_frames = num_dop_quads * 2;
-	const size_t num_samples = num_frames * channels;
-
-	uint32_t *const dest0 = (uint32_t *)buffer.GetT<uint32_t>(num_samples),
-		*dest = dest0;
-
-	auto src = _src.data;
 	for (size_t i = num_dop_quads; i > 0; --i) {
 		for (unsigned c = channels; c > 0; --c) {
 			/* each 24 bit sample has 16 DSD sample bits
@@ -87,6 +76,25 @@ pcm_dsd_to_dop(PcmBuffer &buffer, unsigned channels,
 		   have already copied it */
 		src += channels;
 	}
+}
 
-	return { dest0, num_samples };
+ConstBuffer<uint32_t>
+pcm_dsd_to_dop(PcmBuffer &buffer, unsigned channels,
+	       ConstBuffer<uint8_t> src) noexcept
+{
+	assert(audio_valid_channel_count(channels));
+	assert(src.size % channels == 0);
+
+	const size_t num_src_samples = src.size;
+	const size_t num_src_frames = num_src_samples / channels;
+
+	/* this rounds down and discards up to 3 odd frames; not
+	   elegant, but good enough for now */
+	const size_t num_dop_quads = num_src_frames / 4;
+	const size_t num_frames = num_dop_quads * 2;
+	const size_t num_samples = num_frames * channels;
+
+	uint32_t *const dest = (uint32_t *)buffer.GetT<uint32_t>(num_samples);
+	DsdToDop(dest, src.data, num_dop_quads, channels);
+	return { dest, num_samples };
 }
