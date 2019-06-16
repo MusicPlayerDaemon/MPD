@@ -26,7 +26,7 @@
 #include "lib/alsa/Version.hxx"
 #include "../OutputAPI.hxx"
 #include "mixer/MixerList.hxx"
-#include "pcm/PcmExport.hxx"
+#include "pcm/Export.hxx"
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
 #include "util/Manual.hxx"

@@ -17,7 +17,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "PcmExport.hxx"
+#include "Export.hxx"
 #include "AudioFormat.hxx"
 #include "Order.hxx"
 #include "PcmPack.hxx"
@@ -28,7 +28,7 @@
 #include "Dsd16.hxx"
 #include "Dsd32.hxx"
 #include "PcmDsd.hxx"
-#include "PcmDop.hxx"
+#include "Dop.hxx"
 #endif
 
 #include <assert.h>

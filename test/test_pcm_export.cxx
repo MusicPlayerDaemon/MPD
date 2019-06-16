@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#include "pcm/PcmExport.hxx"
+#include "pcm/Export.hxx"
 #include "pcm/Traits.hxx"
 #include "util/ByteOrder.hxx"
 #include "util/ConstBuffer.hxx"

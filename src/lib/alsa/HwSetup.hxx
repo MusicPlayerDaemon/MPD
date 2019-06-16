@@ -20,7 +20,7 @@
 #ifndef MPD_ALSA_HW_SETUP_HXX
 #define MPD_ALSA_HW_SETUP_HXX
 
-#include "pcm/PcmExport.hxx"
+#include "pcm/Export.hxx"
 
 #include <alsa/asoundlib.h>
 

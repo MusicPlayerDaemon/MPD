@@ -54,7 +54,7 @@
 #endif
 
 #ifdef AFMT_S24_PACKED
-#include "pcm/PcmExport.hxx"
+#include "pcm/Export.hxx"
 #include "util/Manual.hxx"
 #endif
 
