@@ -109,7 +109,7 @@ mad_fixed_to_24_buffer(int32_t *dest, const struct mad_synth *synth,
 }
 
 static bool
-mp3_plugin_init(const ConfigBlock &block)
+mad_plugin_init(const ConfigBlock &block)
 {
 	gapless_playback = block.GetBlockValue("gapless",
 					       DEFAULT_GAPLESS_MP3_PLAYBACK);
@@ -647,7 +647,7 @@ parse_lame(struct lame *lame, struct mad_bitptr *ptr, int *bitlen)
 }
 
 static inline SongTime
-mp3_frame_duration(const struct mad_frame *frame)
+mad_frame_duration(const struct mad_frame *frame)
 {
 	return ToSongTime(frame->header.duration);
 }
@@ -677,7 +677,7 @@ MadDecoder::FileSizeToSongLength()
 	if (input_stream.KnownSize()) {
 		offset_type rest = RestIncludingThisFrame();
 
-		const SongTime frame_duration = mp3_frame_duration(&frame);
+		const SongTime frame_duration = mad_frame_duration(&frame);
 		const SongTime duration =
 			SongTime::FromScale<uint64_t>(rest,
 						      frame.header.bitrate / 8);
@@ -965,7 +965,7 @@ MadDecoder::Read()
 }
 
 static void
-mp3_decode(DecoderClient &client, InputStream &input_stream)
+mad_decode(DecoderClient &client, InputStream &input_stream)
 {
 	MadDecoder data(&client, input_stream);
 
@@ -1011,11 +1011,11 @@ mad_decoder_scan_stream(InputStream &is, TagHandler &handler) noexcept
 	return true;
 }
 
-static const char *const mp3_suffixes[] = { "mp3", "mp2", nullptr };
-static const char *const mp3_mime_types[] = { "audio/mpeg", nullptr };
+static const char *const mad_suffixes[] = { "mp3", "mp2", nullptr };
+static const char *const mad_mime_types[] = { "audio/mpeg", nullptr };
 
 constexpr DecoderPlugin mad_decoder_plugin =
-	DecoderPlugin("mad", mp3_decode, mad_decoder_scan_stream)
-	.WithInit(mp3_plugin_init)
-	.WithSuffixes(mp3_suffixes)
-	.WithMimeTypes(mp3_mime_types);
+	DecoderPlugin("mad", mad_decode, mad_decoder_scan_stream)
+	.WithInit(mad_plugin_init)
+	.WithSuffixes(mad_suffixes)
+	.WithMimeTypes(mad_mime_types);
