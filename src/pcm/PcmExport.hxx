@@ -30,7 +30,7 @@ struct AudioFormat;
 /**
  * An object that handles export of PCM samples to some instance
  * outside of MPD.  It has a few more options to tweak the binary
- * representation which are not supported by the pcm_convert library.
+ * representation which are not supported by the #PcmConvert library.
  */
 class PcmExport {
 	/**
