@@ -17,34 +17,18 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_PCM_DSD_HXX
-#define MPD_PCM_DSD_HXX
+#ifndef MPD_PCM_CHANNEL_DEFS_HXX
+#define MPD_PCM_CHANNEL_DEFS_HXX
 
-#include "Buffer.hxx"
-#include "ChannelDefs.hxx"
-
-#include <array>
-
-#include <stdint.h>
-
-template<typename T> struct ConstBuffer;
+static constexpr unsigned MAX_CHANNELS = 8;
 
 /**
- * Wrapper for the dsd2pcm library.
+ * Checks whether the number of channels is valid.
  */
-class PcmDsd {
-	PcmBuffer buffer;
-
-	std::array<struct dsd2pcm_ctx_s *, MAX_CHANNELS> dsd2pcm;
-
-public:
-	PcmDsd() noexcept;
-	~PcmDsd() noexcept;
-
-	void Reset() noexcept;
-
-	ConstBuffer<float> ToFloat(unsigned channels,
-				   ConstBuffer<uint8_t> src) noexcept;
-};
+constexpr bool
+audio_valid_channel_count(unsigned channels) noexcept
+{
+	return channels >= 1 && channels <= MAX_CHANNELS;
+}
 
 #endif

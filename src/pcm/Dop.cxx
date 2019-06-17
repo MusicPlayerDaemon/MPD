@@ -19,7 +19,7 @@
 
 #include "Dop.hxx"
 #include "Buffer.hxx"
-#include "AudioFormat.hxx"
+#include "ChannelDefs.hxx"
 #include "util/ConstBuffer.hxx"
 
 #include <assert.h>
