@@ -173,7 +173,8 @@ public:
 	 * Export a PCM buffer.
 	 *
 	 * @param src the source PCM buffer
-	 * @return the destination buffer (may be a pointer to the source buffer)
+	 * @return the destination buffer; may be empty (and may be a
+	 * pointer to the source buffer)
 	 */
 	ConstBuffer<void> Export(ConstBuffer<void> src) noexcept;
 
