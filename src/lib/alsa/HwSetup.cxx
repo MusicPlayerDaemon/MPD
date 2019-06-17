@@ -95,8 +95,7 @@ TryFormatDsd(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
 
 #if defined(ENABLE_DSD) && defined(HAVE_ALSA_DSD_U32)
 	if (err == 0) {
-		params.dsd_u16 = false;
-		params.dsd_u32 = false;
+		params.dsd_mode = PcmExport::DsdMode::NONE;
 	}
 
 	if (err == -EINVAL && fmt == SND_PCM_FORMAT_DSD_U8) {
@@ -106,7 +105,7 @@ TryFormatDsd(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
 			: SND_PCM_FORMAT_DSD_U32_BE;
 		err = TryFormatOrByteSwap(pcm, hwparams, fmt, params);
 		if (err == 0)
-			params.dsd_u32 = true;
+			params.dsd_mode = PcmExport::DsdMode::U32;
 		else
 			fmt = SND_PCM_FORMAT_DSD_U8;
 	}
@@ -118,7 +117,7 @@ TryFormatDsd(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
 			: SND_PCM_FORMAT_DSD_U16_BE;
 		err = TryFormatOrByteSwap(pcm, hwparams, fmt, params);
 		if (err == 0)
-			params.dsd_u16 = true;
+			params.dsd_mode = PcmExport::DsdMode::U16;
 		else
 			fmt = SND_PCM_FORMAT_DSD_U8;
 	}

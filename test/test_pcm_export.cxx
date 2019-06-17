@@ -141,7 +141,7 @@ TEST(PcmTest, ExportDsdU16)
 	};
 
 	PcmExport::Params params;
-	params.dsd_u16 = true;
+	params.dsd_mode = PcmExport::DsdMode::U16;
 
 	EXPECT_EQ(params.CalcOutputSampleRate(705600u), 352800u);
 	EXPECT_EQ(params.CalcInputSampleRate(352800u), 705600u);
@@ -171,7 +171,7 @@ TEST(PcmTest, ExportDsdU32)
 	};
 
 	PcmExport::Params params;
-	params.dsd_u32 = true;
+	params.dsd_mode = PcmExport::DsdMode::U32;
 
 	EXPECT_EQ(params.CalcOutputSampleRate(705600u), 176400u);
 	EXPECT_EQ(params.CalcInputSampleRate(176400u), 705600u);
@@ -199,7 +199,7 @@ TEST(PcmTest, ExportDop)
 	};
 
 	PcmExport::Params params;
-	params.dop = true;
+	params.dsd_mode = PcmExport::DsdMode::DOP;
 
 	EXPECT_EQ(params.CalcOutputSampleRate(705600u), 352800u);
 	EXPECT_EQ(params.CalcInputSampleRate(352800u), 705600u);

@@ -787,7 +787,7 @@ OSXOutput::Open(AudioFormat &audio_format)
 #ifdef ENABLE_DSD
 	if (dop && audio_format.format == SampleFormat::DSD) {
 		asbd.mBitsPerChannel = 24;
-		params.dop = true;
+		params.dsd_mode = PcmExport::DsdMode::DOP;
 		asbd.mSampleRate = params.CalcOutputSampleRate(audio_format.sample_rate);
 		asbd.mBytesPerPacket = 4 * audio_format.channels;
 
@@ -802,14 +802,14 @@ OSXOutput::Open(AudioFormat &audio_format)
 
 #ifdef ENABLE_DSD
 	if(audio_format.format == SampleFormat::DSD && sample_rate != asbd.mSampleRate) { // fall back to PCM in case sample_rate cannot be synchronized
-		params.dop = false;
+		params.dsd_mode = PcmExport::DsdMode::NONE;
 		audio_format.format = SampleFormat::S32;
 		asbd.mBitsPerChannel = 32;
 		asbd.mBytesPerPacket = audio_format.GetFrameSize();
 		asbd.mSampleRate = params.CalcOutputSampleRate(audio_format.sample_rate);
 		asbd.mBytesPerFrame = asbd.mBytesPerPacket;
 	}
-	dop_enabled = params.dop;
+	dop_enabled = params.dsd_mode == PcmExport::DsdMode::DOP;
 #endif
 
 	OSStatus status =

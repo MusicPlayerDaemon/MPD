@@ -558,12 +558,12 @@ AlsaOutput::SetupOrDop(AudioFormat &audio_format, PcmExport::Params &params
 	std::exception_ptr dop_error;
 	if (dop && audio_format.format == SampleFormat::DSD) {
 		try {
-			params.dop = true;
+			params.dsd_mode = PcmExport::DsdMode::DOP;
 			SetupDop(audio_format, params);
 			return;
 		} catch (...) {
 			dop_error = std::current_exception();
-			params.dop = false;
+			params.dsd_mode = PcmExport::DsdMode::NONE;
 		}
 	}
 
@@ -663,7 +663,7 @@ AlsaOutput::Open(AudioFormat &audio_format)
 	snd_pcm_nonblock(pcm, 1);
 
 #ifdef ENABLE_DSD
-	if (params.dop)
+	if (params.dsd_mode == PcmExport::DsdMode::DOP)
 		FormatDebug(alsa_output_domain, "DoP (DSD over PCM) enabled");
 #endif
 

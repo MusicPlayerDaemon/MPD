@@ -28,6 +28,8 @@
 #include "Dop.hxx"
 #endif
 
+#include <stdint.h>
+
 template<typename T> struct ConstBuffer;
 struct AudioFormat;
 
@@ -88,22 +90,30 @@ class PcmExport {
 	SampleFormat alsa_channel_order;
 
 #ifdef ENABLE_DSD
-	/**
-	 * Convert DSD (U8) to DSD_U16?
-	 */
-	bool dsd_u16;
+public:
+	enum class DsdMode : uint8_t {
+		NONE,
 
-	/**
-	 * Convert DSD (U8) to DSD_U32?
-	 */
-	bool dsd_u32;
+		/**
+		 * Convert DSD (U8) to DSD_U16?
+		 */
+		U16,
 
-	/**
-	 * Convert DSD to DSD-over-PCM (DoP)?  Input format must be
-	 * SampleFormat::DSD and output format must be
-	 * SampleFormat::S24_P32.
-	 */
-	bool dop;
+		/**
+		 * Convert DSD (U8) to DSD_U32?
+		 */
+		U32,
+
+		/**
+		 * Convert DSD to DSD-over-PCM (DoP)?  Input format
+		 * must be SampleFormat::DSD and output format must be
+		 * SampleFormat::S24_P32.
+		 */
+		DOP,
+	};
+
+private:
+	DsdMode dsd_mode;
 #endif
 
 	/**
@@ -128,9 +138,7 @@ public:
 	struct Params {
 		bool alsa_channel_order = false;
 #ifdef ENABLE_DSD
-		bool dsd_u16 = false;
-		bool dsd_u32 = false;
-		bool dop = false;
+		DsdMode dsd_mode = DsdMode::NONE;
 #endif
 		bool shift8 = false;
 		bool pack24 = false;
