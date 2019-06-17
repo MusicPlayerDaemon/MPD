@@ -41,6 +41,18 @@ Dsd8To32Sample(const uint8_t *src, unsigned channels) noexcept
 			   src[2 * channels], src[3 * channels]);
 }
 
+static void
+Dsd8To32(uint32_t *dest, const uint8_t *src,
+	 size_t out_frames, unsigned channels) noexcept
+{
+	for (size_t i = 0; i < out_frames; ++i) {
+		for (size_t c = 0; c < channels; ++c)
+			*dest++ = Dsd8To32Sample(src++, channels);
+
+		src += 3 * channels;
+	}
+}
+
 ConstBuffer<uint32_t>
 Dsd8To32(PcmBuffer &buffer, unsigned channels,
 	 ConstBuffer<uint8_t> _src) noexcept
@@ -50,15 +62,8 @@ Dsd8To32(PcmBuffer &buffer, unsigned channels,
 	const size_t out_samples = out_frames * channels;
 
 	const uint8_t *src = _src.data;
-	uint32_t *const dest0 = buffer.GetT<uint32_t>(out_samples);
-	uint32_t *dest = dest0;
+	const auto dest = buffer.GetT<uint32_t>(out_samples);
+	Dsd8To32(dest, src, out_frames, channels);
 
-	for (size_t i = 0; i < out_frames; ++i) {
-		for (size_t c = 0; c < channels; ++c)
-			*dest++ = Dsd8To32Sample(src++, channels);
-
-		src += 3 * channels;
-	}
-
-	return {dest0, out_samples};
+	return {dest, out_samples};
 }
