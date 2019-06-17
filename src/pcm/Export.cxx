@@ -61,10 +61,13 @@ PcmExport::Open(SampleFormat sample_format, unsigned _channels,
 		sample_format = SampleFormat::S32;
 
 	dop = params.dop && sample_format == SampleFormat::DSD;
-	if (dop)
+	if (dop) {
+		dop_converter.Open(_channels);
+
 		/* after the conversion to DoP, the DSD
 		   samples are stuffed inside fake 24 bit samples */
 		sample_format = SampleFormat::S24_P32;
+	}
 #endif
 
 	shift8 = params.shift8 && sample_format == SampleFormat::S24_P32;
@@ -82,6 +85,15 @@ PcmExport::Open(SampleFormat sample_format, unsigned _channels,
 		if (sample_size > 1)
 			reverse_endian = sample_size;
 	}
+}
+
+void
+PcmExport::Reset() noexcept
+{
+#ifdef ENABLE_DSD
+	if (dop)
+		dop_converter.Reset();
+#endif
 }
 
 size_t
@@ -168,8 +180,7 @@ PcmExport::Export(ConstBuffer<void> data) noexcept
 			.ToVoid();
 
 	if (dop)
-		data = pcm_dsd_to_dop(dop_buffer, channels,
-				      ConstBuffer<uint8_t>::FromVoid(data))
+		data = dop_converter.Convert(ConstBuffer<uint8_t>::FromVoid(data))
 			.ToVoid();
 #endif
 

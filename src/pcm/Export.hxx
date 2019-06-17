@@ -24,6 +24,10 @@
 #include "Buffer.hxx"
 #include "config.h"
 
+#ifdef ENABLE_DSD
+#include "Dop.hxx"
+#endif
+
 template<typename T> struct ConstBuffer;
 struct AudioFormat;
 
@@ -49,12 +53,9 @@ class PcmExport {
 	PcmBuffer dsd_buffer;
 
 	/**
-	 * The buffer is used to convert DSD samples to the
-	 * DoP format.
-	 *
 	 * @see #dop
 	 */
-	PcmBuffer dop_buffer;
+	DsdToDopConverter dop_converter;
 #endif
 
 	/**
@@ -167,8 +168,7 @@ public:
 	/**
 	 * Reset the filter's state, e.g. drop/flush buffers.
 	 */
-	void Reset() noexcept {
-	}
+	void Reset() noexcept;
 
 	/**
 	 * Calculate the size of one output frame.

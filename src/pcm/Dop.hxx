@@ -20,9 +20,10 @@
 #ifndef MPD_PCM_DOP_HXX
 #define MPD_PCM_DOP_HXX
 
+#include "Buffer.hxx"
+
 #include <stdint.h>
 
-class PcmBuffer;
 template<typename T> struct ConstBuffer;
 
 /**
@@ -30,8 +31,18 @@ template<typename T> struct ConstBuffer;
  * playback over USB, according to the DoP standard:
  * http://dsd-guide.com/dop-open-standard
  */
-ConstBuffer<uint32_t>
-pcm_dsd_to_dop(PcmBuffer &buffer, unsigned channels,
-	       ConstBuffer<uint8_t> src) noexcept;
+class DsdToDopConverter {
+	unsigned channels;
+
+	PcmBuffer buffer;
+
+public:
+	void Open(unsigned _channels) noexcept;
+
+	void Reset() noexcept {
+	}
+
+	ConstBuffer<uint32_t> Convert(ConstBuffer<uint8_t> src) noexcept;
+};
 
 #endif

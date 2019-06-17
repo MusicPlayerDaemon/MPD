@@ -18,7 +18,6 @@
  */
 
 #include "Dop.hxx"
-#include "Buffer.hxx"
 #include "ChannelDefs.hxx"
 #include "util/ConstBuffer.hxx"
 
@@ -78,9 +77,16 @@ DsdToDop(uint32_t *dest, const uint8_t *src,
 	}
 }
 
+void
+DsdToDopConverter::Open(unsigned _channels) noexcept
+{
+	assert(audio_valid_channel_count(_channels));
+
+	channels = _channels;
+}
+
 ConstBuffer<uint32_t>
-pcm_dsd_to_dop(PcmBuffer &buffer, unsigned channels,
-	       ConstBuffer<uint8_t> src) noexcept
+DsdToDopConverter::Convert(ConstBuffer<uint8_t> src) noexcept
 {
 	assert(audio_valid_channel_count(channels));
 	assert(src.size % channels == 0);
