@@ -42,6 +42,13 @@ class PcmExport {
 
 #ifdef ENABLE_DSD
 	/**
+	 * The buffer is used to convert DSD samples to DSD_U16 or DSD_U32.
+	 *
+	 * @see #dsd_u16, #dsd_u32
+	 */
+	PcmBuffer dsd_buffer;
+
+	/**
 	 * The buffer is used to convert DSD samples to the
 	 * DoP format.
 	 *

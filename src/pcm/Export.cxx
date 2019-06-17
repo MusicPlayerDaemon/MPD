@@ -158,12 +158,12 @@ PcmExport::Export(ConstBuffer<void> data) noexcept
 
 #ifdef ENABLE_DSD
 	if (dsd_u16)
-		data = Dsd8To16(dop_buffer, channels,
+		data = Dsd8To16(dsd_buffer, channels,
 				ConstBuffer<uint8_t>::FromVoid(data))
 			.ToVoid();
 
 	if (dsd_u32)
-		data = Dsd8To32(dop_buffer, channels,
+		data = Dsd8To32(dsd_buffer, channels,
 				ConstBuffer<uint8_t>::FromVoid(data))
 			.ToVoid();
 
