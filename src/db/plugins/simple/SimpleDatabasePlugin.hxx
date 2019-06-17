@@ -122,9 +122,8 @@ public:
 		   VisitSong visit_song,
 		   VisitPlaylist visit_playlist) const override;
 
-	std::map<std::string, std::set<std::string>> CollectUniqueTags(const DatabaseSelection &selection,
-								       TagType tag_type,
-								       TagType group) const override;
+	RecursiveMap<std::string> CollectUniqueTags(const DatabaseSelection &selection,
+						    ConstBuffer<TagType> tag_types) const override;
 
 	DatabaseStats GetStats(const DatabaseSelection &selection) const override;
 

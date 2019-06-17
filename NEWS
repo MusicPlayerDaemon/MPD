@@ -12,6 +12,12 @@ ver 0.22 (not yet released)
   - ffmpeg: new plugin based on FFmpeg's libavfilter library
   - hdcd: new plugin based on FFmpeg's "af_hdcd" for HDCD playback
 
+ver 0.21.11 (not yet released)
+* output
+  - alsa, osx: fix distortions with DSD_U32 and DoP on 32 bit CPUs
+* protocol
+  - fix "list" with multiple "group" levels
+
 ver 0.21.10 (2019/06/05)
 * decoder
   - opus: fix duplicate tags

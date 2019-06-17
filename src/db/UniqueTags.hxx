@@ -29,9 +29,11 @@
 class TagMask;
 class Database;
 struct DatabaseSelection;
+template<typename Key> class RecursiveMap;
+template<typename T> struct ConstBuffer;
 
-std::map<std::string, std::set<std::string>>
+RecursiveMap<std::string>
 CollectUniqueTags(const Database &db, const DatabaseSelection &selection,
-		  TagType tag_type, TagType group);
+		  ConstBuffer<TagType> tag_types);
 
 #endif

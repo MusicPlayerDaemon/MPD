@@ -670,11 +670,12 @@ OssOutput::Play(const void *chunk, size_t size)
 
 #ifdef AFMT_S24_PACKED
 	const auto e = pcm_export->Export({chunk, size});
+	if (e.empty())
+		return size;
+
 	chunk = e.data;
 	size = e.size;
 #endif
-
-	assert(size > 0);
 
 	while (true) {
 		ret = fd.Write(chunk, size);
