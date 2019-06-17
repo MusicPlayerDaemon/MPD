@@ -939,7 +939,7 @@ AlsaOutput::Play(const void *chunk, size_t size)
 	assert(size % in_frame_size == 0);
 
 	const auto e = pcm_export->Export({chunk, size});
-	if (e.size == 0)
+	if (e.empty())
 		/* the DoP (DSD over PCM) filter converts two frames
 		   at a time and ignores the last odd frame; if there
 		   was only one frame (e.g. the last frame in the

@@ -921,7 +921,7 @@ OSXOutput::Play(const void *chunk, size_t size)
 		   file), the result is empty; to avoid an endless
 		   loop, bail out here, and pretend the one frame has
 		   been played */
-		if (e.size == 0)
+		if (e.empty())
 			return size;
 
 		size_t bytes_written = ring_buffer->push((const uint8_t *)e.data, e.size);
