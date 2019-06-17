@@ -53,9 +53,14 @@ Dsd8To32(uint32_t *dest, const uint8_t *src,
 	}
 }
 
+void
+Dsd32Converter::Open(unsigned _channels) noexcept
+{
+	channels = _channels;
+}
+
 ConstBuffer<uint32_t>
-Dsd8To32(PcmBuffer &buffer, unsigned channels,
-	 ConstBuffer<uint8_t> _src) noexcept
+Dsd32Converter::Convert(ConstBuffer<uint8_t> _src) noexcept
 {
 	const size_t in_frames = _src.size / channels;
 	const size_t out_frames = in_frames / 4;

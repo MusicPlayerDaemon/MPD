@@ -25,6 +25,8 @@
 #include "config.h"
 
 #ifdef ENABLE_DSD
+#include "Dsd16.hxx"
+#include "Dsd32.hxx"
 #include "Dop.hxx"
 #endif
 
@@ -48,11 +50,14 @@ class PcmExport {
 
 #ifdef ENABLE_DSD
 	/**
-	 * The buffer is used to convert DSD samples to DSD_U16 or DSD_U32.
-	 *
-	 * @see DsdMode::U16, DsdMode::U32
+	 * @see DsdMode::U16
 	 */
-	PcmBuffer dsd_buffer;
+	Dsd16Converter dsd16_converter;
+
+	/**
+	 * @see DsdMode::U32
+	 */
+	Dsd32Converter dsd32_converter;
 
 	/**
 	 * @see DsdMode::DOP

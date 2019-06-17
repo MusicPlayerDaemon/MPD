@@ -18,7 +18,6 @@
  */
 
 #include "Dsd16.hxx"
-#include "Buffer.hxx"
 #include "util/ConstBuffer.hxx"
 
 /**
@@ -51,9 +50,14 @@ Dsd8To16(uint16_t *dest, const uint8_t *src,
 	}
 }
 
+void
+Dsd16Converter::Open(unsigned _channels) noexcept
+{
+	channels = _channels;
+}
+
 ConstBuffer<uint16_t>
-Dsd8To16(PcmBuffer &buffer, unsigned channels,
-	 ConstBuffer<uint8_t> _src) noexcept
+Dsd16Converter::Convert(ConstBuffer<uint8_t> _src) noexcept
 {
 	const size_t in_frames = _src.size / channels;
 	const size_t out_frames = in_frames / 2;

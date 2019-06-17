@@ -20,16 +20,27 @@
 #ifndef MPD_PCM_DSD_32_HXX
 #define MPD_PCM_DSD_32_HXX
 
+#include "Buffer.hxx"
+
 #include <stdint.h>
 
 template<typename T> struct ConstBuffer;
-class PcmBuffer;
 
 /**
  * Convert DSD_U8 to DSD_U32 (native endian, oldest bits in MSB).
  */
-ConstBuffer<uint32_t>
-Dsd8To32(PcmBuffer &buffer, unsigned channels,
-	 ConstBuffer<uint8_t> src) noexcept;
+class Dsd32Converter {
+	unsigned channels;
+
+	PcmBuffer buffer;
+
+public:
+	void Open(unsigned _channels) noexcept;
+
+	void Reset() noexcept {
+	}
+
+	ConstBuffer<uint32_t> Convert(ConstBuffer<uint8_t> src) noexcept;
+};
 
 #endif

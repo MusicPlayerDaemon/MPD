@@ -24,13 +24,6 @@
 #include "util/ByteReverse.hxx"
 #include "util/ConstBuffer.hxx"
 
-#ifdef ENABLE_DSD
-#include "Dsd16.hxx"
-#include "Dsd32.hxx"
-#include "PcmDsd.hxx"
-#include "Dop.hxx"
-#endif
-
 #include <assert.h>
 
 void
@@ -57,12 +50,16 @@ PcmExport::Open(SampleFormat sample_format, unsigned _channels,
 		break;
 
 	case DsdMode::U16:
+		dsd16_converter.Open(_channels);
+
 		/* after the conversion to DSD_U16, the DSD samples
 		   are stuffed inside fake 16 bit samples */
 		sample_format = SampleFormat::S16;
 		break;
 
 	case DsdMode::U32:
+		dsd32_converter.Open(_channels);
+
 		/* after the conversion to DSD_U32, the DSD samples
 		   are stuffed inside fake 32 bit samples */
 		sample_format = SampleFormat::S32;
@@ -101,8 +98,14 @@ PcmExport::Reset() noexcept
 #ifdef ENABLE_DSD
 	switch (dsd_mode) {
 	case DsdMode::NONE:
+		break;
+
 	case DsdMode::U16:
+		dsd16_converter.Reset();
+		break;
+
 	case DsdMode::U32:
+		dsd32_converter.Reset();
 		break;
 
 	case DsdMode::DOP:
@@ -211,14 +214,12 @@ PcmExport::Export(ConstBuffer<void> data) noexcept
 		break;
 
 	case DsdMode::U16:
-		data = Dsd8To16(dsd_buffer, channels,
-				ConstBuffer<uint8_t>::FromVoid(data))
+		data = dsd16_converter.Convert(ConstBuffer<uint8_t>::FromVoid(data))
 			.ToVoid();
 		break;
 
 	case DsdMode::U32:
-		data = Dsd8To32(dsd_buffer, channels,
-				ConstBuffer<uint8_t>::FromVoid(data))
+		data = dsd32_converter.Convert(ConstBuffer<uint8_t>::FromVoid(data))
 			.ToVoid();
 		break;
 
