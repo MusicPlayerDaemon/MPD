@@ -21,6 +21,8 @@
 #include "ChannelDefs.hxx"
 #include "util/ConstBuffer.hxx"
 
+#include <functional>
+
 #include <assert.h>
 
 static constexpr uint32_t
@@ -83,24 +85,14 @@ DsdToDopConverter::Open(unsigned _channels) noexcept
 	assert(audio_valid_channel_count(_channels));
 
 	channels = _channels;
+
+	rest_buffer.Open(channels);
 }
 
 ConstBuffer<uint32_t>
 DsdToDopConverter::Convert(ConstBuffer<uint8_t> src) noexcept
 {
-	assert(audio_valid_channel_count(channels));
-	assert(src.size % channels == 0);
-
-	const size_t num_src_samples = src.size;
-	const size_t num_src_frames = num_src_samples / channels;
-
-	/* this rounds down and discards up to 3 odd frames; not
-	   elegant, but good enough for now */
-	const size_t num_dop_quads = num_src_frames / 4;
-	const size_t num_frames = num_dop_quads * 2;
-	const size_t num_samples = num_frames * channels;
-
-	uint32_t *const dest = (uint32_t *)buffer.GetT<uint32_t>(num_samples);
-	DsdToDop(dest, src.data, num_dop_quads, channels);
-	return { dest, num_samples };
+	using namespace std::placeholders;
+	return rest_buffer.Process<uint32_t>(buffer, src, 2 * channels,
+					     std::bind(DsdToDop, _1, _2, _3, channels));
 }

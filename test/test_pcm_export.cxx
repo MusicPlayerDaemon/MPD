@@ -210,6 +210,41 @@ TEST(PcmTest, ExportDop)
 	auto dest = e.Export({src, sizeof(src)});
 	EXPECT_EQ(sizeof(expected), dest.size);
 	EXPECT_TRUE(memcmp(dest.data, expected, dest.size) == 0);
+
+	/* not enough data: 2/8 */
+	static constexpr uint8_t src2[] = { 0x12, 0x34 };
+	static constexpr uint32_t expected2[] = {};
+	dest = e.Export({src2, sizeof(src2)});
+	ASSERT_EQ(sizeof(expected2), dest.size);
+	ASSERT_TRUE(memcmp(dest.data, expected2, dest.size) == 0);
+
+	/* not enough data: 6/8 */
+	static constexpr uint8_t src3[] = { 0x56, 0x78, 0x9a, 0xbc };
+	static constexpr uint32_t expected3[] = {};
+	dest = e.Export({src3, sizeof(src3)});
+	ASSERT_EQ(sizeof(expected3), dest.size);
+	ASSERT_TRUE(memcmp(dest.data, expected3, dest.size) == 0);
+
+	/* just enough data: 8/8 */
+	static constexpr uint8_t src4[] = { 0xde, 0xf0 };
+	static constexpr uint32_t expected4[] = { 0xff051256, 0xff053478, 0xfffa9ade, 0xfffabcf0 };
+	dest = e.Export({src4, sizeof(src4)});
+	ASSERT_EQ(sizeof(expected4), dest.size);
+	ASSERT_TRUE(memcmp(dest.data, expected4, dest.size) == 0);
+
+	/* not enough data: 6/8 */
+	static constexpr uint8_t src5[] = { 0x11, 0x22, 0x33, 0x44, 0x55, 0x66 };
+	static constexpr uint32_t expected5[] = {};
+	dest = e.Export({src5, sizeof(src5)});
+	ASSERT_EQ(sizeof(expected5), dest.size);
+	ASSERT_TRUE(memcmp(dest.data, expected5, dest.size) == 0);
+
+	/* two quads returned, not enough data for more: 2/8 */
+	static constexpr uint8_t src6[] = { 0x77, 0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff, 0x00, 0x10, 0x20 };
+	static constexpr uint32_t expected6[] = { 0xff051133, 0xff052244, 0xfffa5577, 0xfffa6688, 0xff0599bb, 0xff05aacc, 0xfffaddff, 0xfffaee00 };
+	dest = e.Export({src6, sizeof(src6)});
+	ASSERT_EQ(sizeof(expected6), dest.size);
+	ASSERT_TRUE(memcmp(dest.data, expected6, dest.size) == 0);
 }
 
 #endif

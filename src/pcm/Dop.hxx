@@ -21,6 +21,7 @@
 #define MPD_PCM_DOP_HXX
 
 #include "Buffer.hxx"
+#include "RestBuffer.hxx"
 
 #include <stdint.h>
 
@@ -36,10 +37,13 @@ class DsdToDopConverter {
 
 	PcmBuffer buffer;
 
+	PcmRestBuffer<uint8_t, 4> rest_buffer;
+
 public:
 	void Open(unsigned _channels) noexcept;
 
 	void Reset() noexcept {
+		rest_buffer.Reset();
 	}
 
 	ConstBuffer<uint32_t> Convert(ConstBuffer<uint8_t> src) noexcept;
