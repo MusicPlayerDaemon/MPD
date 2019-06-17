@@ -21,7 +21,7 @@
 #define PCM_EXPORT_HXX
 
 #include "SampleFormat.hxx"
-#include "PcmBuffer.hxx"
+#include "Buffer.hxx"
 #include "config.h"
 
 template<typename T> struct ConstBuffer;

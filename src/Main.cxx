@@ -47,7 +47,7 @@
 #include "zeroconf/ZeroconfGlue.hxx"
 #include "decoder/DecoderList.hxx"
 #include "AudioParser.hxx"
-#include "pcm/PcmConvert.hxx"
+#include "pcm/Convert.hxx"
 #include "unix/SignalHandlers.hxx"
 #include "thread/Slack.hxx"
 #include "net/Init.hxx"

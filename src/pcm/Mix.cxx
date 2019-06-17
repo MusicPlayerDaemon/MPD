@@ -17,13 +17,13 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "PcmMix.hxx"
+#include "Mix.hxx"
 #include "Volume.hxx"
 #include "Clamp.hxx"
 #include "Traits.hxx"
 #include "util/Clamp.hxx"
 
-#include "PcmDither.cxx" // including the .cxx file to get inlined templates
+#include "Dither.cxx" // including the .cxx file to get inlined templates
 
 #include <cmath>
 

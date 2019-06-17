@@ -24,8 +24,8 @@
 #include "SharedPipeConsumer.hxx"
 #include "AudioFormat.hxx"
 #include "ReplayGainMode.hxx"
-#include "pcm/PcmBuffer.hxx"
-#include "pcm/PcmDither.hxx"
+#include "pcm/Buffer.hxx"
+#include "pcm/Dither.hxx"
 #include "thread/Mutex.hxx"
 #include "util/ConstBuffer.hxx"
 

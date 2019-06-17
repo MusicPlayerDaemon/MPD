@@ -21,8 +21,8 @@
 #define MPD_PCM_FORMAT_CONVERTER_HXX
 
 #include "SampleFormat.hxx"
-#include "PcmBuffer.hxx"
-#include "PcmDither.hxx"
+#include "Buffer.hxx"
+#include "Dither.hxx"
 
 #ifndef NDEBUG
 #include <assert.h>

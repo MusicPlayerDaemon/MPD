@@ -20,7 +20,7 @@
 #ifndef MPD_PCM_DSD_HXX
 #define MPD_PCM_DSD_HXX
 
-#include "PcmBuffer.hxx"
+#include "Buffer.hxx"
 #include "AudioFormat.hxx"
 
 #include <array>

@@ -20,7 +20,7 @@
 #include "Export.hxx"
 #include "AudioFormat.hxx"
 #include "Order.hxx"
-#include "PcmPack.hxx"
+#include "Pack.hxx"
 #include "util/ByteReverse.hxx"
 #include "util/ConstBuffer.hxx"
 

@@ -19,7 +19,7 @@
 
 #include "test_pcm_util.hxx"
 #include "pcm/PcmChannels.hxx"
-#include "pcm/PcmBuffer.hxx"
+#include "pcm/Buffer.hxx"
 #include "util/ConstBuffer.hxx"
 
 #include <gtest/gtest.h>

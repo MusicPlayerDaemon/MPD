@@ -24,7 +24,7 @@
 #include "util/WritableBuffer.hxx"
 #include "util/RuntimeError.hxx"
 
-#include "PcmDither.cxx" // including the .cxx file to get inlined templates
+#include "Dither.cxx" // including the .cxx file to get inlined templates
 
 #include <assert.h>
 #include <stdint.h>

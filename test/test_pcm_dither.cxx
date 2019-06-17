@@ -18,7 +18,7 @@
  */
 
 #include "test_pcm_util.hxx"
-#include "pcm/PcmDither.cxx"
+#include "pcm/Dither.cxx"
 
 #include <gtest/gtest.h>
 

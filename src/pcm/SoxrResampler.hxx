@@ -21,7 +21,7 @@
 #define MPD_PCM_SOXR_RESAMPLER_HXX
 
 #include "Resampler.hxx"
-#include "PcmBuffer.hxx"
+#include "Buffer.hxx"
 #include "util/Compiler.h"
 
 struct AudioFormat;

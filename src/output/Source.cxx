@@ -22,7 +22,7 @@
 #include "filter/Filter.hxx"
 #include "filter/Prepared.hxx"
 #include "filter/plugins/ReplayGainFilterPlugin.hxx"
-#include "pcm/PcmMix.hxx"
+#include "pcm/Mix.hxx"
 #include "thread/Mutex.hxx"
 #include "util/ConstBuffer.hxx"
 #include "util/RuntimeError.hxx"

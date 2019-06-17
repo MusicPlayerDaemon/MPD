@@ -18,7 +18,7 @@
  */
 
 #include "Order.hxx"
-#include "PcmBuffer.hxx"
+#include "Buffer.hxx"
 #include "util/ConstBuffer.hxx"
 
 template<typename V>

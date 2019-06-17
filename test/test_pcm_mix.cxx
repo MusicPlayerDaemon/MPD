@@ -18,8 +18,8 @@
  */
 
 #include "test_pcm_util.hxx"
-#include "pcm/PcmMix.hxx"
-#include "pcm/PcmDither.hxx"
+#include "pcm/Mix.hxx"
+#include "pcm/Dither.hxx"
 
 #include <gtest/gtest.h>
 

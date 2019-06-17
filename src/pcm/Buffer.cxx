@@ -17,7 +17,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "PcmBuffer.hxx"
+#include "Buffer.hxx"
 
 void *
 PcmBuffer::Get(size_t new_size) noexcept

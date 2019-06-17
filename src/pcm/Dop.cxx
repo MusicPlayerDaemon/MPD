@@ -18,7 +18,7 @@
  */
 
 #include "Dop.hxx"
-#include "PcmBuffer.hxx"
+#include "Buffer.hxx"
 #include "AudioFormat.hxx"
 #include "util/ConstBuffer.hxx"
 

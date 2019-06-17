@@ -18,7 +18,7 @@
  */
 
 #include "DecoderClient.hxx"
-#include "pcm/PcmConvert.hxx"
+#include "pcm/Convert.hxx"
 #include "input/InputStream.hxx"
 #include "util/ConstBuffer.hxx"
 

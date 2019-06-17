@@ -18,7 +18,7 @@
  */
 
 #include "PcmChannels.hxx"
-#include "PcmBuffer.hxx"
+#include "Buffer.hxx"
 #include "Silence.hxx"
 #include "Traits.hxx"
 #include "AudioFormat.hxx"

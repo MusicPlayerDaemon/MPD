@@ -18,7 +18,7 @@
  */
 
 #include "test_pcm_util.hxx"
-#include "pcm/PcmPack.hxx"
+#include "pcm/Pack.hxx"
 #include "util/ByteOrder.hxx"
 
 #include <gtest/gtest.h>

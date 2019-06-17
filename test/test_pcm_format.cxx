@@ -19,8 +19,8 @@
 
 #include "test_pcm_util.hxx"
 #include "pcm/PcmFormat.hxx"
-#include "pcm/PcmDither.hxx"
-#include "pcm/PcmBuffer.hxx"
+#include "pcm/Dither.hxx"
+#include "pcm/Buffer.hxx"
 #include "pcm/SampleFormat.hxx"
 
 #include <gtest/gtest.h>

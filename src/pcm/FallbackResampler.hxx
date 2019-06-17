@@ -21,7 +21,7 @@
 #define MPD_PCM_FALLBACK_RESAMPLER_HXX
 
 #include "Resampler.hxx"
-#include "PcmBuffer.hxx"
+#include "Buffer.hxx"
 #include "AudioFormat.hxx"
 #include "util/Compiler.h"
 

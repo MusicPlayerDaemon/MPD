@@ -18,7 +18,7 @@
  */
 
 #include "Dsd16.hxx"
-#include "PcmBuffer.hxx"
+#include "Buffer.hxx"
 #include "util/ConstBuffer.hxx"
 
 /**

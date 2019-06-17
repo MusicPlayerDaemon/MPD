@@ -17,8 +17,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "PcmDither.hxx"
-#include "PcmPrng.hxx"
+#include "Dither.hxx"
+#include "Prng.hxx"
 #include "Traits.hxx"
 
 template<typename T, T MIN, T MAX, unsigned scale_bits>

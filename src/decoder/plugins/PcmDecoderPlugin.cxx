@@ -22,7 +22,7 @@
 #include "PcmDecoderPlugin.hxx"
 #include "../DecoderAPI.hxx"
 #include "CheckAudioFormat.hxx"
-#include "pcm/PcmPack.hxx"
+#include "pcm/Pack.hxx"
 #include "input/InputStream.hxx"
 #include "util/ByteOrder.hxx"
 #include "util/Domain.hxx"

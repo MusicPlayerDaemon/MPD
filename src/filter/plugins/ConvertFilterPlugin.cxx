@@ -20,7 +20,7 @@
 #include "ConvertFilterPlugin.hxx"
 #include "filter/Filter.hxx"
 #include "filter/Prepared.hxx"
-#include "pcm/PcmConvert.hxx"
+#include "pcm/Convert.hxx"
 #include "util/Manual.hxx"
 #include "util/ConstBuffer.hxx"
 #include "AudioFormat.hxx"

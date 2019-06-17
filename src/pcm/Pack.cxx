@@ -17,7 +17,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "PcmPack.hxx"
+#include "Pack.hxx"
 #include "util/ByteOrder.hxx"
 
 static void
