@@ -19,7 +19,7 @@
 
 #include "WinmmOutputPlugin.hxx"
 #include "../OutputAPI.hxx"
-#include "pcm/PcmBuffer.hxx"
+#include "pcm/Buffer.hxx"
 #include "mixer/MixerList.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "util/RuntimeError.hxx"
