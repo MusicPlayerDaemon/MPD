@@ -887,7 +887,7 @@ OSXOutput::Play(const void *chunk, size_t size)
 #ifdef ENABLE_DSD
         if (dop_enabled) {
 		const auto e = pcm_export->Export({chunk, size});
-		if (e.size == 0)
+		if (e.empty())
 			return size;
 
 		size_t bytes_written = ring_buffer->push((const uint8_t *)e.data, e.size);

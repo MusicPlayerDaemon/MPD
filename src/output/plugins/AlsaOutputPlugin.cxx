@@ -872,7 +872,7 @@ AlsaOutput::Play(const void *chunk, size_t size)
 	assert(size % in_frame_size == 0);
 
 	const auto e = pcm_export->Export({chunk, size});
-	if (e.size == 0)
+	if (e.empty())
 		return size;
 
 	std::unique_lock<Mutex> lock(mutex);
