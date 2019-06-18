@@ -40,7 +40,7 @@
 #include <CoreServices/CoreServices.h>
 #include <boost/lockfree/spsc_queue.hpp>
 
-static constexpr unsigned MPD_OSX_BUFFER_TIME_MS = 1000;
+static constexpr unsigned MPD_OSX_BUFFER_TIME_MS = 100;
 
 static StringBuffer<64>
 StreamDescriptionToString(const AudioStreamBasicDescription desc) {
