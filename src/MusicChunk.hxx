@@ -43,15 +43,7 @@ struct MusicChunk;
 /**
  * Meta information for #MusicChunk.
  */
-struct alignas(8) MusicChunkInfo {
-	/* align to multiple of 8 bytes, which adds padding at the
-	   end, so the size of MusicChunk::data is also a multiple of
-	   8 bytes; this is a workaround for a bug in the DSD_U32 and
-	   DoP converters which require processing 8 bytes at a time,
-	   discarding the remainder */
-	/* TODO: once all converters have been fixed, we should remove
-	   this workaround */
-
+struct MusicChunkInfo {
 	/** the next chunk in a linked list */
 	MusicChunkPtr next;
 
@@ -126,10 +118,6 @@ struct alignas(8) MusicChunkInfo {
 struct MusicChunk : MusicChunkInfo {
 	/** the data (probably PCM) */
 	uint8_t data[CHUNK_SIZE - sizeof(MusicChunkInfo)];
-
-	/* TODO: remove this check once all converters have been fixed
-	   (see comment in struct MusicChunkInfo for details) */
-	static_assert(sizeof(data) % 8 == 0, "Wrong alignment");
 
 	/**
 	 * Prepares appending to the music chunk.  Returns a buffer
