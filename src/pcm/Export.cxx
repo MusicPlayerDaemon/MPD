@@ -32,10 +32,9 @@ PcmExport::Open(SampleFormat sample_format, unsigned _channels,
 {
 	assert(audio_valid_sample_format(sample_format));
 
+	src_sample_format = sample_format;
 	channels = _channels;
-	alsa_channel_order = params.alsa_channel_order
-		? sample_format
-		: SampleFormat::UNDEFINED;
+	alsa_channel_order = params.alsa_channel_order;
 
 #ifdef ENABLE_DSD
 	assert(params.dsd_mode != DsdMode::DOP ||
@@ -204,9 +203,9 @@ PcmExport::Params::CalcInputSampleRate(unsigned sample_rate) const noexcept
 ConstBuffer<void>
 PcmExport::Export(ConstBuffer<void> data) noexcept
 {
-	if (alsa_channel_order != SampleFormat::UNDEFINED)
+	if (alsa_channel_order)
 		data = ToAlsaChannelOrder(order_buffer, data,
-					  alsa_channel_order, channels);
+					  src_sample_format, channels);
 
 #ifdef ENABLE_DSD
 	switch (dsd_mode) {

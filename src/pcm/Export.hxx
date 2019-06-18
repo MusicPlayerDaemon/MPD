@@ -80,6 +80,11 @@ class PcmExport {
 	PcmBuffer reverse_buffer;
 
 	/**
+	 * The sample format of input data.
+	 */
+	SampleFormat src_sample_format;
+
+	/**
 	 * The number of channels.
 	 */
 	uint8_t channels;
@@ -87,12 +92,8 @@ class PcmExport {
 	/**
 	 * Convert the given buffer from FLAC channel order to ALSA
 	 * channel order using ToAlsaChannelOrder()?
-	 *
-	 * If this value is SampleFormat::UNDEFINED, then no channel
-	 * reordering is applied, otherwise this is the input sample
-	 * format.
 	 */
-	SampleFormat alsa_channel_order;
+	bool alsa_channel_order;
 
 #ifdef ENABLE_DSD
 public:
