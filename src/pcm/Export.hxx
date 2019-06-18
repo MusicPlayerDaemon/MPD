@@ -50,12 +50,12 @@ class PcmExport {
 	/**
 	 * The buffer is used to convert DSD samples to DSD_U16 or DSD_U32.
 	 *
-	 * @see #dsd_u16, #dsd_u32
+	 * @see DsdMode::U16, DsdMode::U32
 	 */
 	PcmBuffer dsd_buffer;
 
 	/**
-	 * @see #dop
+	 * @see DsdMode::DOP
 	 */
 	DsdToDopConverter dop_converter;
 #endif
