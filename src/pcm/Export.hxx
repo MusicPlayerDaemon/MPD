@@ -199,7 +199,7 @@ public:
 	ConstBuffer<void> Export(ConstBuffer<void> src) noexcept;
 
 	/**
-	 * Converts the number of consumed bytes from the pcm_export()
+	 * Converts the number of consumed bytes from the Export()
 	 * destination buffer to the according number of bytes from the
 	 * pcm_export() source buffer.
 	 */
