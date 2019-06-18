@@ -21,6 +21,7 @@
 #define MPD_PCM_DSD_16_HXX
 
 #include "Buffer.hxx"
+#include "RestBuffer.hxx"
 
 #include <stdint.h>
 
@@ -34,10 +35,13 @@ class Dsd16Converter {
 
 	PcmBuffer buffer;
 
+	PcmRestBuffer<uint8_t, 2> rest_buffer;
+
 public:
 	void Open(unsigned _channels) noexcept;
 
 	void Reset() noexcept {
+		rest_buffer.Reset();
 	}
 
 	ConstBuffer<uint16_t> Convert(ConstBuffer<uint8_t> src) noexcept;

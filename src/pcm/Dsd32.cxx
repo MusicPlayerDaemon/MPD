@@ -18,8 +18,9 @@
  */
 
 #include "Dsd32.hxx"
-#include "Buffer.hxx"
 #include "util/ConstBuffer.hxx"
+
+#include <functional>
 
 /**
  * Construct a 32 bit integer from four bytes.
@@ -57,18 +58,14 @@ void
 Dsd32Converter::Open(unsigned _channels) noexcept
 {
 	channels = _channels;
+
+	rest_buffer.Open(channels);
 }
 
 ConstBuffer<uint32_t>
-Dsd32Converter::Convert(ConstBuffer<uint8_t> _src) noexcept
+Dsd32Converter::Convert(ConstBuffer<uint8_t> src) noexcept
 {
-	const size_t in_frames = _src.size / channels;
-	const size_t out_frames = in_frames / 4;
-	const size_t out_samples = out_frames * channels;
-
-	const uint8_t *src = _src.data;
-	const auto dest = buffer.GetT<uint32_t>(out_samples);
-	Dsd8To32(dest, src, out_frames, channels);
-
-	return {dest, out_samples};
+	using namespace std::placeholders;
+	return rest_buffer.Process<uint32_t>(buffer, src, channels,
+					     std::bind(Dsd8To32, _1, _2, _3, channels));
 }

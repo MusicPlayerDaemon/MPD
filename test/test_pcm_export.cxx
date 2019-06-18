@@ -152,6 +152,27 @@ TEST(PcmTest, ExportDsdU16)
 	auto dest = e.Export({src, sizeof(src)});
 	EXPECT_EQ(sizeof(expected), dest.size);
 	EXPECT_TRUE(memcmp(dest.data, expected, dest.size) == 0);
+
+	/* no output, 2/4 remains */
+	static constexpr uint8_t src2[] = { 0x11, 0x22 };
+	static constexpr uint16_t expected2[] = {};
+	dest = e.Export({src2, sizeof(src2)});
+	EXPECT_EQ(sizeof(expected2), dest.size);
+	EXPECT_TRUE(memcmp(dest.data, expected2, dest.size) == 0);
+
+	/* one full frame and 2/4 remains */
+	static constexpr uint8_t src3[] = { 0x33, 0x44, 0x55, 0x66 };
+	static constexpr uint16_t expected3[] = { 0x1133, 0x2244 };
+	dest = e.Export({src3, sizeof(src3)});
+	EXPECT_EQ(sizeof(expected3), dest.size);
+	EXPECT_TRUE(memcmp(dest.data, expected3, dest.size) == 0);
+
+	/* two full frames and 2/4 remains again */
+	static constexpr uint8_t src4[] = { 0x77, 0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee };
+	static constexpr uint16_t expected4[] = { 0x5577, 0x6688, 0x99bb, 0xaacc };
+	dest = e.Export({src4, sizeof(src4)});
+	EXPECT_EQ(sizeof(expected4), dest.size);
+	EXPECT_TRUE(memcmp(dest.data, expected4, dest.size) == 0);
 }
 
 TEST(PcmTest, ExportDsdU32)
@@ -182,6 +203,27 @@ TEST(PcmTest, ExportDsdU32)
 	auto dest = e.Export({src, sizeof(src)});
 	EXPECT_EQ(sizeof(expected), dest.size);
 	EXPECT_TRUE(memcmp(dest.data, expected, dest.size) == 0);
+
+	/* no output, 4/8 remains */
+	static constexpr uint8_t src2[] = { 0x11, 0x22, 0x33, 0x44 };
+	static constexpr uint32_t expected2[] = {};
+	dest = e.Export({src2, sizeof(src2)});
+	EXPECT_EQ(sizeof(expected2), dest.size);
+	EXPECT_TRUE(memcmp(dest.data, expected2, dest.size) == 0);
+
+	/* one full frame and 4/8 remains */
+	static constexpr uint8_t src3[] = { 0x55, 0x66, 0x77, 0x88, 0x99, 0xaa, 0xbb, 0xcc };
+	static constexpr uint32_t expected3[] = { 0x11335577, 0x22446688 };
+	dest = e.Export({src3, sizeof(src3)});
+	EXPECT_EQ(sizeof(expected3), dest.size);
+	EXPECT_TRUE(memcmp(dest.data, expected3, dest.size) == 0);
+
+	/* two full frames and 2/4 remains again */
+	static constexpr uint8_t src4[] = { 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08 };
+	static constexpr uint32_t expected4[] = { 0x99bb0103, 0xaacc0204 };
+	dest = e.Export({src4, sizeof(src4)});
+	EXPECT_EQ(sizeof(expected4), dest.size);
+	EXPECT_TRUE(memcmp(dest.data, expected4, dest.size) == 0);
 }
 
 TEST(PcmTest, ExportDop)

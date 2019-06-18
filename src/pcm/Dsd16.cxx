@@ -20,6 +20,8 @@
 #include "Dsd16.hxx"
 #include "util/ConstBuffer.hxx"
 
+#include <functional>
+
 /**
  * Construct a 16 bit integer from two bytes.
  */
@@ -54,18 +56,14 @@ void
 Dsd16Converter::Open(unsigned _channels) noexcept
 {
 	channels = _channels;
+
+	rest_buffer.Open(channels);
 }
 
 ConstBuffer<uint16_t>
-Dsd16Converter::Convert(ConstBuffer<uint8_t> _src) noexcept
+Dsd16Converter::Convert(ConstBuffer<uint8_t> src) noexcept
 {
-	const size_t in_frames = _src.size / channels;
-	const size_t out_frames = in_frames / 2;
-	const size_t out_samples = out_frames * channels;
-
-	const uint8_t *src = _src.data;
-	const auto dest = buffer.GetT<uint16_t>(out_samples);
-	Dsd8To16(dest, src, out_frames, channels);
-
-	return {dest, out_samples};
+	using namespace std::placeholders;
+	return rest_buffer.Process<uint16_t>(buffer, src, channels,
+					     std::bind(Dsd8To16, _1, _2, _3, channels));
 }
