@@ -58,6 +58,7 @@ public:
 		size = 0;
 	}
 
+private:
 	ConstBuffer<T> Complete(ConstBuffer<T> &src) noexcept {
 		assert(audio_valid_channel_count(GetChannelCount()));
 		assert(src.size % GetChannelCount() == 0);
@@ -87,6 +88,7 @@ public:
 		size += src.size;
 	}
 
+public:
 	/**
 	 * A helper function which attempts to complete the rest
 	 * buffer, allocates a destination buffer and invokes the
