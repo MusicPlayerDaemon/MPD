@@ -20,6 +20,8 @@
 #include "config.h"
 #include "DecoderList.hxx"
 #include "DecoderPlugin.hxx"
+#include "PluginUnavailable.hxx"
+#include "Log.hxx"
 #include "config/Data.hxx"
 #include "config/Block.hxx"
 #include "plugins/AudiofileDecoderPlugin.hxx"
@@ -151,6 +153,10 @@ decoder_plugin_init_all(const ConfigData &config)
 		try {
 			if (plugin.Init(*param))
 				decoder_plugins_enabled[i] = true;
+		} catch (const PluginUnavailable &e) {
+			FormatError(e,
+				    "Decoder plugin '%s' is unavailable",
+				    plugin.name);
 		} catch (...) {
 			std::throw_with_nested(FormatRuntimeError("Failed to initialize decoder plugin '%s'",
 								  plugin.name));
