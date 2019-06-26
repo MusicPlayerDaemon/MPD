@@ -20,7 +20,6 @@
 #include "WildmidiDecoderPlugin.hxx"
 #include "../DecoderAPI.hxx"
 #include "tag/Handler.hxx"
-#include "util/Domain.hxx"
 #include "util/ScopeExit.hxx"
 #include "util/StringFormat.hxx"
 #include "fs/AllocatedPath.hxx"
@@ -32,8 +31,6 @@
 extern "C" {
 #include <wildmidi_lib.h>
 }
-
-static constexpr Domain wildmidi_domain("wildmidi");
 
 static constexpr AudioFormat wildmidi_audio_format{48000, SampleFormat::S16, 2};
 
