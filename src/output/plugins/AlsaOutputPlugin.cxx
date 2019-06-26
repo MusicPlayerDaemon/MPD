@@ -674,7 +674,7 @@ AlsaOutput::Open(AudioFormat &audio_format)
 #ifndef NDEBUG
 	in_frame_size = audio_format.GetFrameSize();
 #endif
-	out_frame_size = pcm_export->GetFrameSize();
+	out_frame_size = pcm_export->GetOutputFrameSize();
 
 	drain = false;
 

@@ -115,7 +115,7 @@ PcmExport::Reset() noexcept
 }
 
 size_t
-PcmExport::GetFrameSize() const noexcept
+PcmExport::GetOutputFrameSize() const noexcept
 {
 	if (pack24)
 		/* packed 24 bit samples (3 bytes per sample) */

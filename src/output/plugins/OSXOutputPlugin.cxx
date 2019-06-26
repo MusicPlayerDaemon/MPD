@@ -856,7 +856,7 @@ OSXOutput::Open(AudioFormat &audio_format)
         if (dop_enabled) {
 		pcm_export->Open(audio_format.format, audio_format.channels, params);
 		ring_buffer_size = std::max<size_t>(buffer_frame_size,
-						   MPD_OSX_BUFFER_TIME_MS * pcm_export->GetFrameSize() * asbd.mSampleRate / 1000);
+						   MPD_OSX_BUFFER_TIME_MS * pcm_export->GetOutputFrameSize() * asbd.mSampleRate / 1000);
 	}
 #endif
 	ring_buffer = new boost::lockfree::spsc_queue<uint8_t>(ring_buffer_size);
