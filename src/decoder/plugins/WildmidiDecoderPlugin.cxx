@@ -47,12 +47,21 @@ wildmidi_init(const ConfigBlock &block)
 							   utf8.c_str()));
 	}
 
+#ifdef LIBWILDMIDI_VERSION
+	/* WildMidi_ClearError() requires libwildmidi 0.4 */
 	WildMidi_ClearError();
 	AtScopeExit() { WildMidi_ClearError(); };
+#endif
 
 	if (WildMidi_Init(path.c_str(), wildmidi_audio_format.sample_rate,
-			  0) != 0)
+			  0) != 0) {
+#ifdef LIBWILDMIDI_VERSION
+		/* WildMidi_GetError() requires libwildmidi 0.4 */
 		throw PluginUnavailable(WildMidi_GetError());
+#else
+		throw PluginUnavailable("WildMidi_Init() failed");
+#endif
+	}
 
 	return true;
 }
