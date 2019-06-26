@@ -266,7 +266,7 @@ PcmExport::Export(ConstBuffer<void> data) noexcept
 }
 
 size_t
-PcmExport::CalcSourceSize(size_t size) const noexcept
+PcmExport::CalcInputSize(size_t size) const noexcept
 {
 	if (pack24)
 		/* 32 bit to 24 bit conversion (4 to 3 bytes) */

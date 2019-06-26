@@ -890,7 +890,7 @@ OSXOutput::Play(const void *chunk, size_t size)
 			return size;
 
 		size_t bytes_written = ring_buffer->push((const uint8_t *)e.data, e.size);
-		return pcm_export->CalcSourceSize(bytes_written);
+		return pcm_export->CalcInputSize(bytes_written);
 	}
 #endif
 	return ring_buffer->push((const uint8_t *)chunk, size);

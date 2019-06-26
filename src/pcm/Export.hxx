@@ -205,7 +205,7 @@ public:
 	 * pcm_export() source buffer.
 	 */
 	gcc_pure
-	size_t CalcSourceSize(size_t dest_size) const noexcept;
+	size_t CalcInputSize(size_t dest_size) const noexcept;
 };
 
 #endif

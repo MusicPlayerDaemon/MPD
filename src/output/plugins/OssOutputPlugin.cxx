@@ -681,7 +681,7 @@ OssOutput::Play(const void *chunk, size_t size)
 		ret = fd.Write(chunk, size);
 		if (ret > 0) {
 #ifdef AFMT_S24_PACKED
-			ret = pcm_export->CalcSourceSize(ret);
+			ret = pcm_export->CalcInputSize(ret);
 #endif
 			return ret;
 		}

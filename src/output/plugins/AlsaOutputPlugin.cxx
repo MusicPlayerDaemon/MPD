@@ -884,7 +884,7 @@ AlsaOutput::Play(const void *chunk, size_t size)
 		size_t bytes_written = ring_buffer->push((const uint8_t *)e.data,
 							 e.size);
 		if (bytes_written > 0)
-			return pcm_export->CalcSourceSize(bytes_written);
+			return pcm_export->CalcInputSize(bytes_written);
 
 		/* now that the ring_buffer is full, we can activate
 		   the socket handlers to trigger the first
