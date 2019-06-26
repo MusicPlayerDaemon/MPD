@@ -79,6 +79,10 @@ class PcmExport {
 	 */
 	PcmBuffer reverse_buffer;
 
+	size_t silence_size;
+
+	uint8_t silence_buffer[64]; /* worst-case size */
+
 	/**
 	 * The sample format of input data.
 	 */
@@ -209,6 +213,14 @@ public:
 	 */
 	gcc_pure
 	size_t GetOutputBlockSize() const noexcept;
+
+	/**
+	 * @return one block of silence output; its size is the same
+	 * as GetOutputBlockSize(); the pointer is valid as long as
+	 * this #PcmExport object exists and until the next Open()
+	 * call
+	 */
+	ConstBuffer<void> GetSilence() const noexcept;
 
 	/**
 	 * Export a PCM buffer.

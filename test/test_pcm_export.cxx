@@ -49,6 +49,12 @@ TEST(PcmTest, ExportShift8)
 	auto dest = e.Export({src, sizeof(src)});
 	EXPECT_EQ(sizeof(expected), dest.size);
 	EXPECT_TRUE(memcmp(dest.data, expected, dest.size) == 0);
+
+	const auto silence = e.GetSilence();
+	constexpr uint8_t expected_silence[8]{};
+	EXPECT_EQ(silence.size, sizeof(expected_silence));
+	EXPECT_EQ(memcmp(silence.data, expected_silence,
+			 sizeof(expected_silence)), 0);
 }
 
 TEST(PcmTest, ExportPack24)
@@ -92,6 +98,12 @@ TEST(PcmTest, ExportPack24)
 	auto dest = e.Export({src, sizeof(src)});
 	EXPECT_EQ(expected_size, dest.size);
 	EXPECT_TRUE(memcmp(dest.data, expected, dest.size) == 0);
+
+	const auto silence = e.GetSilence();
+	constexpr uint8_t expected_silence[6]{};
+	EXPECT_EQ(silence.size, sizeof(expected_silence));
+	EXPECT_EQ(memcmp(silence.data, expected_silence,
+			 sizeof(expected_silence)), 0);
 }
 
 TEST(PcmTest, ExportReverseEndian)
@@ -147,6 +159,12 @@ TEST(PcmTest, ExportReverseEndian)
 	dest = e.Export({src, sizeof(src)});
 	EXPECT_EQ(sizeof(expected4), dest.size);
 	EXPECT_TRUE(memcmp(dest.data, expected4, dest.size) == 0);
+
+	const auto silence = e.GetSilence();
+	constexpr uint8_t expected_silence[8]{};
+	EXPECT_EQ(silence.size, sizeof(expected_silence));
+	EXPECT_EQ(memcmp(silence.data, expected_silence,
+			 sizeof(expected_silence)), 0);
 }
 
 #ifdef ENABLE_DSD
@@ -205,6 +223,12 @@ TEST(PcmTest, ExportDsdU16)
 	dest = e.Export({src4, sizeof(src4)});
 	EXPECT_EQ(sizeof(expected4), dest.size);
 	EXPECT_TRUE(memcmp(dest.data, expected4, dest.size) == 0);
+
+	const auto silence = e.GetSilence();
+	constexpr uint8_t expected_silence[]{0x69, 0x69, 0x69, 0x69};
+	EXPECT_EQ(silence.size, sizeof(expected_silence));
+	EXPECT_EQ(memcmp(silence.data, expected_silence,
+			 sizeof(expected_silence)), 0);
 }
 
 TEST(PcmTest, ExportDsdU32)
@@ -261,6 +285,12 @@ TEST(PcmTest, ExportDsdU32)
 	dest = e.Export({src4, sizeof(src4)});
 	EXPECT_EQ(sizeof(expected4), dest.size);
 	EXPECT_TRUE(memcmp(dest.data, expected4, dest.size) == 0);
+
+	const auto silence = e.GetSilence();
+	constexpr uint8_t expected_silence[]{0x69, 0x69, 0x69, 0x69, 0x69, 0x69, 0x69, 0x69};
+	EXPECT_EQ(silence.size, sizeof(expected_silence));
+	EXPECT_EQ(memcmp(silence.data, expected_silence,
+			 sizeof(expected_silence)), 0);
 }
 
 TEST(PcmTest, ExportDop)
@@ -329,6 +359,12 @@ TEST(PcmTest, ExportDop)
 	dest = e.Export({src6, sizeof(src6)});
 	ASSERT_EQ(sizeof(expected6), dest.size);
 	ASSERT_TRUE(memcmp(dest.data, expected6, dest.size) == 0);
+
+	const auto silence = e.GetSilence();
+	constexpr uint32_t expected_silence[]{0xff056969, 0xff056969, 0xfffa6969, 0xfffa6969};
+	EXPECT_EQ(silence.size, sizeof(expected_silence));
+	EXPECT_EQ(memcmp(silence.data, expected_silence,
+			 sizeof(expected_silence)), 0);
 }
 
 #endif
@@ -391,6 +427,12 @@ TestAlsaChannelOrder71()
 	auto dest = e.Export({src, sizeof(src)});
 	EXPECT_EQ(sizeof(expected), dest.size);
 	EXPECT_TRUE(memcmp(dest.data, expected, dest.size) == 0);
+
+	const auto silence = e.GetSilence();
+	constexpr value_type expected_silence[8]{};
+	EXPECT_EQ(silence.size, sizeof(expected_silence));
+	EXPECT_EQ(memcmp(silence.data, expected_silence,
+			 sizeof(expected_silence)), 0);
 }
 
 TEST(PcmTest, ExportAlsaChannelOrder)

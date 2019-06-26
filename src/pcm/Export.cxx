@@ -21,10 +21,13 @@
 #include "AudioFormat.hxx"
 #include "Order.hxx"
 #include "Pack.hxx"
+#include "Silence.hxx"
 #include "util/ByteReverse.hxx"
 #include "util/ConstBuffer.hxx"
+#include "util/WritableBuffer.hxx"
 
 #include <assert.h>
+#include <string.h>
 
 void
 PcmExport::Open(SampleFormat sample_format, unsigned _channels,
@@ -89,6 +92,16 @@ PcmExport::Open(SampleFormat sample_format, unsigned _channels,
 		if (sample_size > 1)
 			reverse_endian = sample_size;
 	}
+
+	/* prepare a moment of silence for GetSilence() */
+	char buffer[sizeof(silence_buffer)];
+	const size_t buffer_size = GetInputBlockSize();
+	assert(buffer_size < sizeof(buffer));
+	PcmSilence({buffer, buffer_size}, src_sample_format);
+	auto s = Export({buffer, buffer_size});
+	assert(s.size < sizeof(silence_buffer));
+	silence_size = s.size;
+	memcpy(silence_buffer, s.data, s.size);
 }
 
 void
@@ -188,6 +201,12 @@ PcmExport::GetOutputBlockSize() const noexcept
 #endif
 
 	return GetOutputFrameSize();
+}
+
+ConstBuffer<void>
+PcmExport::GetSilence() const noexcept
+{
+	return {silence_buffer, silence_size};
 }
 
 unsigned
