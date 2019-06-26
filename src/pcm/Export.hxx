@@ -185,6 +185,14 @@ public:
 	void Reset() noexcept;
 
 	/**
+	 * Calculate the size of one input frame.
+	 */
+	gcc_pure
+	size_t GetInputFrameSize() const noexcept {
+		return channels * sample_format_size(src_sample_format);
+	}
+
+	/**
 	 * Calculate the size of one output frame.
 	 */
 	gcc_pure

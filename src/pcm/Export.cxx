@@ -141,7 +141,7 @@ PcmExport::GetOutputFrameSize() const noexcept
 	}
 #endif
 
-	return channels * sample_format_size(src_sample_format);
+	return GetInputFrameSize();
 }
 
 unsigned
