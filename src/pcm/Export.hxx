@@ -188,7 +188,7 @@ public:
 	 * Calculate the size of one output frame.
 	 */
 	gcc_pure
-	size_t GetFrameSize(const AudioFormat &audio_format) const noexcept;
+	size_t GetFrameSize() const noexcept;
 
 	/**
 	 * Export a PCM buffer.

@@ -115,7 +115,7 @@ PcmExport::Reset() noexcept
 }
 
 size_t
-PcmExport::GetFrameSize(const AudioFormat &audio_format) const noexcept
+PcmExport::GetFrameSize() const noexcept
 {
 	if (pack24)
 		/* packed 24 bit samples (3 bytes per sample) */
@@ -141,7 +141,7 @@ PcmExport::GetFrameSize(const AudioFormat &audio_format) const noexcept
 	}
 #endif
 
-	return audio_format.GetFrameSize();
+	return channels * sample_format_size(src_sample_format);
 }
 
 unsigned
