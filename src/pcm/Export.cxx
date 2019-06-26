@@ -119,7 +119,7 @@ PcmExport::GetFrameSize(const AudioFormat &audio_format) const noexcept
 {
 	if (pack24)
 		/* packed 24 bit samples (3 bytes per sample) */
-		return audio_format.channels * 3;
+		return channels * 3;
 
 #ifdef ENABLE_DSD
 	switch (dsd_mode) {
