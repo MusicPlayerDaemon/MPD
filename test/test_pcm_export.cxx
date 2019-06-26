@@ -41,6 +41,11 @@ TEST(PcmTest, ExportShift8)
 	PcmExport e;
 	e.Open(SampleFormat::S24_P32, 2, params);
 
+	EXPECT_EQ(e.GetInputFrameSize(), 8u);
+	EXPECT_EQ(e.GetOutputFrameSize(), 8u);
+	EXPECT_EQ(e.GetInputBlockSize(), 8u);
+	EXPECT_EQ(e.GetOutputBlockSize(), 8u);
+
 	auto dest = e.Export({src, sizeof(src)});
 	EXPECT_EQ(sizeof(expected), dest.size);
 	EXPECT_TRUE(memcmp(dest.data, expected, dest.size) == 0);
@@ -79,6 +84,11 @@ TEST(PcmTest, ExportPack24)
 	PcmExport e;
 	e.Open(SampleFormat::S24_P32, 2, params);
 
+	EXPECT_EQ(e.GetInputFrameSize(), 8u);
+	EXPECT_EQ(e.GetOutputFrameSize(), 6u);
+	EXPECT_EQ(e.GetInputBlockSize(), 8u);
+	EXPECT_EQ(e.GetOutputBlockSize(), 6u);
+
 	auto dest = e.Export({src, sizeof(src)});
 	EXPECT_EQ(expected_size, dest.size);
 	EXPECT_TRUE(memcmp(dest.data, expected, dest.size) == 0);
@@ -107,16 +117,33 @@ TEST(PcmTest, ExportReverseEndian)
 	PcmExport e;
 	e.Open(SampleFormat::S8, 2, params);
 
+	EXPECT_EQ(e.GetInputFrameSize(), 2u);
+	EXPECT_EQ(e.GetOutputFrameSize(), 2u);
+	EXPECT_EQ(e.GetInputBlockSize(), 2u);
+	EXPECT_EQ(e.GetOutputBlockSize(), 2u);
+
 	auto dest = e.Export({src, sizeof(src)});
 	EXPECT_EQ(sizeof(src), dest.size);
 	EXPECT_TRUE(memcmp(dest.data, src, dest.size) == 0);
 
 	e.Open(SampleFormat::S16, 2, params);
+
+	EXPECT_EQ(e.GetInputFrameSize(), 4u);
+	EXPECT_EQ(e.GetOutputFrameSize(), 4u);
+	EXPECT_EQ(e.GetInputBlockSize(), 4u);
+	EXPECT_EQ(e.GetOutputBlockSize(), 4u);
+
 	dest = e.Export({src, sizeof(src)});
 	EXPECT_EQ(sizeof(expected2), dest.size);
 	EXPECT_TRUE(memcmp(dest.data, expected2, dest.size) == 0);
 
 	e.Open(SampleFormat::S32, 2, params);
+
+	EXPECT_EQ(e.GetInputFrameSize(), 8u);
+	EXPECT_EQ(e.GetOutputFrameSize(), 8u);
+	EXPECT_EQ(e.GetInputBlockSize(), 8u);
+	EXPECT_EQ(e.GetOutputBlockSize(), 8u);
+
 	dest = e.Export({src, sizeof(src)});
 	EXPECT_EQ(sizeof(expected4), dest.size);
 	EXPECT_TRUE(memcmp(dest.data, expected4, dest.size) == 0);
@@ -148,6 +175,11 @@ TEST(PcmTest, ExportDsdU16)
 
 	PcmExport e;
 	e.Open(SampleFormat::DSD, 2, params);
+
+	EXPECT_EQ(e.GetInputFrameSize(), 2u);
+	EXPECT_EQ(e.GetOutputFrameSize(), 4u);
+	EXPECT_EQ(e.GetInputBlockSize(), 4u);
+	EXPECT_EQ(e.GetOutputBlockSize(), 4u);
 
 	auto dest = e.Export({src, sizeof(src)});
 	EXPECT_EQ(sizeof(expected), dest.size);
@@ -200,6 +232,11 @@ TEST(PcmTest, ExportDsdU32)
 	PcmExport e;
 	e.Open(SampleFormat::DSD, 2, params);
 
+	EXPECT_EQ(e.GetInputFrameSize(), 2u);
+	EXPECT_EQ(e.GetOutputFrameSize(), 8u);
+	EXPECT_EQ(e.GetInputBlockSize(), 8u);
+	EXPECT_EQ(e.GetOutputBlockSize(), 8u);
+
 	auto dest = e.Export({src, sizeof(src)});
 	EXPECT_EQ(sizeof(expected), dest.size);
 	EXPECT_TRUE(memcmp(dest.data, expected, dest.size) == 0);
@@ -248,6 +285,11 @@ TEST(PcmTest, ExportDop)
 
 	PcmExport e;
 	e.Open(SampleFormat::DSD, 2, params);
+
+	EXPECT_EQ(e.GetInputFrameSize(), 2u);
+	EXPECT_EQ(e.GetOutputFrameSize(), 8u);
+	EXPECT_EQ(e.GetInputBlockSize(), 8u);
+	EXPECT_EQ(e.GetOutputBlockSize(), 16u);
 
 	auto dest = e.Export({src, sizeof(src)});
 	EXPECT_EQ(sizeof(expected), dest.size);
