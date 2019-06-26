@@ -45,6 +45,7 @@
 #include "plugins/FluidsynthDecoderPlugin.hxx"
 #include "plugins/SidplayDecoderPlugin.hxx"
 #include "util/Macros.hxx"
+#include "util/RuntimeError.hxx"
 
 #include <string.h>
 
@@ -147,8 +148,13 @@ decoder_plugin_init_all(const ConfigData &config)
 		if (param != nullptr)
 			param->SetUsed();
 
-		if (plugin.Init(*param))
-			decoder_plugins_enabled[i] = true;
+		try {
+			if (plugin.Init(*param))
+				decoder_plugins_enabled[i] = true;
+		} catch (...) {
+			std::throw_with_nested(FormatRuntimeError("Failed to initialize decoder plugin '%s'",
+								  plugin.name));
+		}
 	}
 }
 
