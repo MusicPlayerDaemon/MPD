@@ -1,4 +1,6 @@
 ver 0.21.11 (not yet released)
+* input
+  - tidal: deprecated because Tidal has changed the protocol
 * decoder
   - wildmidi: log error if library initialization fails
 * output
