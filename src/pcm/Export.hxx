@@ -199,6 +199,18 @@ public:
 	size_t GetOutputFrameSize() const noexcept;
 
 	/**
+	 * @return the size of one input block in bytes
+	 */
+	gcc_pure
+	size_t GetInputBlockSize() const noexcept;
+
+	/**
+	 * @return the size of one output block in bytes
+	 */
+	gcc_pure
+	size_t GetOutputBlockSize() const noexcept;
+
+	/**
 	 * Export a PCM buffer.
 	 *
 	 * @param src the source PCM buffer

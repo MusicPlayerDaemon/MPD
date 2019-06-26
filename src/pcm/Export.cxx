@@ -144,6 +144,52 @@ PcmExport::GetOutputFrameSize() const noexcept
 	return GetInputFrameSize();
 }
 
+size_t
+PcmExport::GetInputBlockSize() const noexcept
+{
+#ifdef ENABLE_DSD
+	switch (dsd_mode) {
+	case DsdMode::NONE:
+		break;
+
+	case DsdMode::U16:
+		return dsd16_converter.GetInputBlockSize();
+
+	case DsdMode::U32:
+		return dsd32_converter.GetInputBlockSize();
+		break;
+
+	case DsdMode::DOP:
+		return dop_converter.GetInputBlockSize();
+	}
+#endif
+
+	return GetInputFrameSize();
+}
+
+size_t
+PcmExport::GetOutputBlockSize() const noexcept
+{
+#ifdef ENABLE_DSD
+	switch (dsd_mode) {
+	case DsdMode::NONE:
+		break;
+
+	case DsdMode::U16:
+		return dsd16_converter.GetOutputBlockSize();
+
+	case DsdMode::U32:
+		return dsd32_converter.GetOutputBlockSize();
+		break;
+
+	case DsdMode::DOP:
+		return dop_converter.GetOutputBlockSize();
+	}
+#endif
+
+	return GetOutputFrameSize();
+}
+
 unsigned
 PcmExport::Params::CalcOutputSampleRate(unsigned sample_rate) const noexcept
 {

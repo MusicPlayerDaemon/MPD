@@ -44,6 +44,20 @@ public:
 		rest_buffer.Reset();
 	}
 
+	/**
+	 * @return the size of one input block in bytes
+	 */
+	size_t GetInputBlockSize() const noexcept {
+		return rest_buffer.GetInputBlockSize();
+	}
+
+	/**
+	 * @return the size of one output block in bytes
+	 */
+	size_t GetOutputBlockSize() const noexcept {
+		return GetInputBlockSize();
+	}
+
 	ConstBuffer<uint16_t> Convert(ConstBuffer<uint8_t> src) noexcept;
 };
 

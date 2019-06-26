@@ -48,6 +48,13 @@ public:
 		size = 0;
 	}
 
+	/**
+	 * @return the size of one input block in #T samples
+	 */
+	size_t GetInputBlockSize() const noexcept {
+		return capacity;
+	}
+
 	unsigned GetChannelCount() const noexcept {
 		return capacity / n_frames;
 	}
