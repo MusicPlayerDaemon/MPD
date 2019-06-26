@@ -21,6 +21,7 @@
 #include "../DecoderAPI.hxx"
 #include "tag/Handler.hxx"
 #include "util/Domain.hxx"
+#include "util/ScopeExit.hxx"
 #include "util/StringFormat.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "fs/FileSystem.hxx"
@@ -49,8 +50,14 @@ wildmidi_init(const ConfigBlock &block)
 							   utf8.c_str()));
 	}
 
-	return WildMidi_Init(path.c_str(), wildmidi_audio_format.sample_rate,
-			     0) == 0;
+	WildMidi_ClearError();
+	AtScopeExit() { WildMidi_ClearError(); };
+
+	if (WildMidi_Init(path.c_str(), wildmidi_audio_format.sample_rate,
+			  0) != 0)
+		throw PluginUnavailable(WildMidi_GetError());
+
+	return true;
 }
 
 static void
