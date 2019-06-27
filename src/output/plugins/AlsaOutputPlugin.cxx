@@ -746,8 +746,7 @@ AlsaOutput::DrainInternal()
 	/* drain ring_buffer */
 	CopyRingToPeriodBuffer();
 
-	auto period_position = period_buffer.GetPeriodPosition(out_frame_size);
-	if (period_position > 0)
+	if (period_buffer.WasConsumed())
 		/* generate some silence to finish the partial
 		   period */
 		period_buffer.FillWithSilence(silence, out_frame_size);

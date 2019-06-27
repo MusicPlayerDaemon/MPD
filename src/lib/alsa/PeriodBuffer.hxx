@@ -74,6 +74,14 @@ public:
 	}
 
 	/**
+	 * Has some data already been consumed at the buffer's head in
+	 * this period?
+	 */
+	bool WasConsumed() const noexcept {
+		return head > 0;
+	}
+
+	/**
 	 * Returns the tail of the buffer, i.e. where new data can be
 	 * written.  Call GetSpaceBytes() to find out how much may be
 	 * copied to the returned pointer, and call AppendBytes() to
@@ -161,10 +169,6 @@ public:
 
 	void ConsumeFrames(snd_pcm_uframes_t n, size_t frame_size) noexcept {
 		ConsumeBytes(n * frame_size);
-	}
-
-	snd_pcm_uframes_t GetPeriodPosition(size_t frame_size) const noexcept {
-		return head / frame_size;
 	}
 
 	void Rewind() noexcept {
