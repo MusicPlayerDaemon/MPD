@@ -499,7 +499,7 @@ osx_output_set_buffer_size(AudioUnit au)
 				   &buffer_frame_size,
 				   sizeof(buffer_frame_size));
 	if (err != noErr)
-                FormatWarning(osx_output_domain,
+		FormatWarning(osx_output_domain,
 			      "Failed to set maximum buffer size: %d",
 			      err);
 
@@ -511,7 +511,7 @@ osx_output_set_buffer_size(AudioUnit au)
 				   &buffer_frame_size,
 				   &property_size);
 	if (err != noErr) {
-                FormatWarning(osx_output_domain,
+		FormatWarning(osx_output_domain,
 			      "Cannot get the buffer frame size: %d",
 			      err);
 		return err;
@@ -637,7 +637,7 @@ osx_output_set_device(OSXOutput *oo)
 		}
 	}
 	if (i == numdevices) {
-                throw FormatRuntimeError("Found no audio device with name '%s' ",
+ 		throw FormatRuntimeError("Found no audio device with name '%s' ",
 			      oo->device_name);
 	}
 
@@ -795,6 +795,7 @@ OSXOutput::Open(AudioFormat &audio_format)
 	PcmExport::Params params;
 	params.alsa_channel_order = true;
 	bool dop = dop_setting;
+	params.dsd_mode = PcmExport::DsdMode::NONE;
 #endif
 
 	memset(&asbd, 0, sizeof(asbd));
@@ -822,7 +823,6 @@ OSXOutput::Open(AudioFormat &audio_format)
 		params.dsd_mode = PcmExport::DsdMode::DOP;
 		asbd.mSampleRate = params.CalcOutputSampleRate(audio_format.sample_rate);
 		asbd.mBytesPerPacket = 4 * audio_format.channels;
-
 	}
 #endif
 
@@ -918,7 +918,7 @@ OSXOutput::Play(const void *chunk, size_t size)
 		return 0;
 	}
 #ifdef ENABLE_DSD
-        if (dop_enabled) {
+	if (dop_enabled) {
 		const auto e = pcm_export->Export({chunk, size});
 		if (e.empty())
 			return size;
