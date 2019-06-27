@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2018 The Music Player Daemon Project
+ * Copyright 2003-2019 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -774,15 +774,8 @@ static const char *const ffmpeg_mime_types[] = {
 	nullptr
 };
 
-const struct DecoderPlugin ffmpeg_decoder_plugin = {
-	"ffmpeg",
-	ffmpeg_init,
-	ffmpeg_finish,
-	ffmpeg_decode,
-	nullptr,
-	nullptr,
-	ffmpeg_scan_stream,
-	nullptr,
-	ffmpeg_suffixes,
-	ffmpeg_mime_types
-};
+constexpr DecoderPlugin ffmpeg_decoder_plugin =
+	DecoderPlugin("ffmpeg", ffmpeg_decode, ffmpeg_scan_stream)
+	.WithInit(ffmpeg_init, ffmpeg_finish)
+	.WithSuffixes(ffmpeg_suffixes)
+	.WithMimeTypes(ffmpeg_mime_types);

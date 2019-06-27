@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2018 The Music Player Daemon Project
+ * Copyright 2003-2019 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -20,7 +20,7 @@
 #include "ConvertFilterPlugin.hxx"
 #include "filter/Filter.hxx"
 #include "filter/Prepared.hxx"
-#include "pcm/PcmConvert.hxx"
+#include "pcm/Convert.hxx"
 #include "util/Manual.hxx"
 #include "util/ConstBuffer.hxx"
 #include "AudioFormat.hxx"

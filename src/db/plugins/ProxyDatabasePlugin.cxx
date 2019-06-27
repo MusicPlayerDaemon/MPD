@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2018 The Music Player Daemon Project
+ * Copyright 2003-2019 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -38,6 +38,8 @@
 #include "tag/Tag.hxx"
 #include "tag/Mask.hxx"
 #include "tag/ParseName.hxx"
+#include "util/ConstBuffer.hxx"
+#include "util/RecursiveMap.hxx"
 #include "util/ScopeExit.hxx"
 #include "util/RuntimeError.hxx"
 #include "protocol/Ack.hxx"
@@ -127,9 +129,8 @@ public:
 		   VisitSong visit_song,
 		   VisitPlaylist visit_playlist) const override;
 
-	std::map<std::string, std::set<std::string>> CollectUniqueTags(const DatabaseSelection &selection,
-								       TagType tag_type,
-								       TagType group) const override;
+	RecursiveMap<std::string> CollectUniqueTags(const DatabaseSelection &selection,
+						    ConstBuffer<TagType> tag_types) const override;
 
 	DatabaseStats GetStats(const DatabaseSelection &selection) const override;
 
@@ -412,8 +413,7 @@ SendConstraints(mpd_connection *connection, const DatabaseSelection &selection)
 static bool
 SendGroup(mpd_connection *connection, TagType group)
 {
-	if (group == TAG_NUM_OF_ITEM_TYPES)
-		return true;
+	assert(group != TAG_NUM_OF_ITEM_TYPES);
 
 #if LIBMPDCLIENT_CHECK_VERSION(2,12,0)
 	const auto tag = Convert(group);
@@ -426,6 +426,19 @@ SendGroup(mpd_connection *connection, TagType group)
 
 	throw std::runtime_error("Grouping requires libmpdclient 2.12");
 #endif
+}
+
+static bool
+SendGroup(mpd_connection *connection, ConstBuffer<TagType> group)
+{
+	while (!group.empty()) {
+		if (!SendGroup(connection, group.back()))
+		    return false;
+
+		group.pop_back();
+	}
+
+	return true;
 }
 
 ProxyDatabase::ProxyDatabase(EventLoop &_loop, DatabaseListener &_listener,
@@ -983,16 +996,19 @@ ProxyDatabase::Visit(const DatabaseSelection &selection,
 	helper.Commit();
 }
 
-std::map<std::string, std::set<std::string>>
+RecursiveMap<std::string>
 ProxyDatabase::CollectUniqueTags(const DatabaseSelection &selection,
-				 TagType tag_type, TagType group) const
+				 ConstBuffer<TagType> tag_types) const
 try {
 	// TODO: eliminate the const_cast
 	const_cast<ProxyDatabase *>(this)->EnsureConnected();
 
-	enum mpd_tag_type tag_type2 = Convert(tag_type);
+	enum mpd_tag_type tag_type2 = Convert(tag_types.back());
 	if (tag_type2 == MPD_TAG_COUNT)
 		throw std::runtime_error("Unsupported tag");
+
+	auto group = tag_types;
+	group.pop_back();
 
 	if (!mpd_search_db_tags(connection, tag_type2) ||
 	    !SendConstraints(connection, selection) ||
@@ -1002,44 +1018,33 @@ try {
 	if (!mpd_search_commit(connection))
 		ThrowError(connection);
 
-	std::map<std::string, std::set<std::string>> result;
+	RecursiveMap<std::string> result;
+	std::vector<RecursiveMap<std::string> *> position;
+	position.emplace_back(&result);
 
-	if (group == TAG_NUM_OF_ITEM_TYPES) {
-		auto &values = result[std::string()];
+	while (auto *pair = mpd_recv_pair(connection)) {
+		AtScopeExit(this, pair) {
+			mpd_return_pair(connection, pair);
+		};
 
-		while (auto *pair = mpd_recv_pair(connection)) {
-			AtScopeExit(this, pair) {
-				mpd_return_pair(connection, pair);
-			};
+		const auto current_type = tag_name_parse_i(pair->name);
+		if (current_type == TAG_NUM_OF_ITEM_TYPES)
+			continue;
 
-			const auto current_type = tag_name_parse_i(pair->name);
-			if (current_type == TAG_NUM_OF_ITEM_TYPES)
-				continue;
+		auto it = std::find(tag_types.begin(), tag_types.end(),
+				    current_type);
+		if (it == tag_types.end())
+			continue;
 
-			if (current_type == tag_type)
-				values.emplace(pair->value);
-		}
-	} else {
-		std::set<std::string> *current_group = nullptr;
+		size_t i = std::distance(tag_types.begin(), it);
+		if (i > position.size())
+			continue;
 
-		while (auto *pair = mpd_recv_pair(connection)) {
-			AtScopeExit(this, pair) {
-				mpd_return_pair(connection, pair);
-			};
+		if (i + 1 < position.size())
+			position.resize(i + 1);
 
-			const auto current_type = tag_name_parse_i(pair->name);
-			if (current_type == TAG_NUM_OF_ITEM_TYPES)
-				continue;
-
-			if (current_type == tag_type) {
-				if (current_group == nullptr)
-					current_group = &result[std::string()];
-
-				current_group->emplace(pair->value);
-			} else if (current_type == group) {
-				current_group = &result[pair->value];
-			}
-		}
+		auto &parent = *position[i];
+		position.emplace_back(&parent[pair->value]);
 	}
 
 	if (!mpd_response_finish(connection))

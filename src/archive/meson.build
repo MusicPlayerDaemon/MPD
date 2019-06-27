@@ -18,7 +18,6 @@ endif
 
 archive_glue = static_library(
   'archive_glue',
-  'ArchiveLookup.cxx',
   'ArchivePlugin.cxx',
   '../input/plugins/ArchiveInputPlugin.cxx',
   include_directories: inc,

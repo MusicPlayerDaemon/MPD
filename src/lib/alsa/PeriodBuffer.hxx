@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2018 The Music Player Daemon Project
+ * Copyright 2003-2019 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -24,10 +24,22 @@
 
 #include <algorithm>
 
+#include <assert.h>
 #include <stdint.h>
 
 namespace Alsa {
 
+/**
+ * A buffer which shall hold the audio data of one period.  It is
+ * filled by the #AlsaOutput, and then submitted to ALSA via
+ * snd_pcm_writei().  After that, it is cleared and can be reused for
+ * the next period.
+ *
+ * It is used to keep track how much of the current period was written
+ * already.  Some methods such as AlsaOutput::Drain() need to make
+ * sure that the current period is finished before snd_pcm_drain() can
+ * be called.
+ */
 class PeriodBuffer {
 	size_t capacity, head, tail;
 
@@ -61,16 +73,32 @@ public:
 		return tail >= capacity;
 	}
 
+	/**
+	 * Returns the tail of the buffer, i.e. where new data can be
+	 * written.  Call GetSpaceBytes() to find out how much may be
+	 * copied to the returned pointer, and call AppendBytes() to
+	 * commit the operation.
+	 */
 	uint8_t *GetTail() noexcept {
 		return buffer + tail;
 	}
 
+	/**
+	 * Determine how much data can be appended at GetTail().
+	 *
+	 * @return the number of free bytes at the end of the buffer
+	 * in bytes
+	 */
 	size_t GetSpaceBytes() const noexcept {
 		assert(tail <= capacity);
 
 		return capacity - tail;
 	}
 
+	/**
+	 * After copying data to the pointer returned by GetTail(),
+	 * this methods commits the operation.
+	 */
 	void AppendBytes(size_t n) noexcept {
 		assert(n <= capacity);
 		assert(tail <= capacity - n);
@@ -78,6 +106,13 @@ public:
 		tail += n;
 	}
 
+	/**
+	 * Fill the rest of this period with silence.  We do this when
+	 * the decoder misses its deadline and we don't have enough
+	 * data.
+	 *
+	 * @param _silence one period worth of silence
+	 */
 	void FillWithSilence(const uint8_t *_silence,
 			     const size_t frame_size) noexcept {
 		size_t partial_frame = tail % frame_size;
@@ -92,10 +127,20 @@ public:
 		tail = capacity + partial_frame;
 	}
 
+	/**
+	 * Returns the head of the buffer, i.e. where data can be
+	 * read.  Call GetFrames() to find out how much may be read
+	 * from the returned pointer, and call ConsumeBytes() to
+	 * commit the operation.
+	 */
 	const uint8_t *GetHead() const noexcept {
 		return buffer + head;
 	}
 
+	/**
+	 * Determine how many frames are available for reading from
+	 * GetHead().
+	 */
 	snd_pcm_uframes_t GetFrames(size_t frame_size) const noexcept {
 		return (tail - head) / frame_size;
 	}

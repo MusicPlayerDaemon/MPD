@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2018 The Music Player Daemon Project
+ * Copyright 2003-2019 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -22,11 +22,10 @@
 #include "Domain.hxx"
 #include "Control.hxx"
 #include "song/DetachedSong.hxx"
-#include "pcm/PcmConvert.hxx"
+#include "pcm/Convert.hxx"
 #include "MusicPipe.hxx"
 #include "MusicBuffer.hxx"
 #include "MusicChunk.hxx"
-#include "pcm/PcmConvert.hxx"
 #include "tag/Tag.hxx"
 #include "Log.hxx"
 #include "input/InputStream.hxx"

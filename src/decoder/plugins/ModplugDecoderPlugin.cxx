@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2018 The Music Player Daemon Project
+ * Copyright 2003-2019 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -199,15 +199,7 @@ static const char *const mod_suffixes[] = {
 	nullptr
 };
 
-const struct DecoderPlugin modplug_decoder_plugin = {
-	"modplug",
-	modplug_decoder_init,
-	nullptr,
-	mod_decode,
-	nullptr,
-	nullptr,
-	modplug_scan_stream,
-	nullptr,
-	mod_suffixes,
-	nullptr,
-};
+constexpr DecoderPlugin modplug_decoder_plugin =
+	DecoderPlugin("modplug", mod_decode, modplug_scan_stream)
+	.WithInit(modplug_decoder_init)
+	.WithSuffixes(mod_suffixes);

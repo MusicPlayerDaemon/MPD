@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2018 The Music Player Daemon Project
+ * Copyright 2003-2019 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -35,6 +35,7 @@
 #include "Interface.hxx"
 #include "fs/Traits.hxx"
 #include "time/ChronoUtil.hxx"
+#include "util/RecursiveMap.hxx"
 
 #include <functional>
 
@@ -186,42 +187,29 @@ PrintSongUris(Response &r, Partition &partition,
 }
 
 static void
-PrintUniqueTags(Response &r, TagType tag_type,
-		const std::set<std::string> &values)
+PrintUniqueTags(Response &r, ConstBuffer<TagType> tag_types,
+		const RecursiveMap<std::string> &map) noexcept
 {
-	const char *const name = tag_item_names[tag_type];
-	for (const auto &i : values)
-		r.Format("%s: %s\n", name, i.c_str());
-}
+	const char *const name = tag_item_names[tag_types.front()];
+	tag_types.pop_front();
 
-static void
-PrintGroupedUniqueTags(Response &r, TagType tag_type, TagType group,
-		       const std::map<std::string, std::set<std::string>> &groups)
-{
-	if (group == TAG_NUM_OF_ITEM_TYPES) {
-		for (const auto &i : groups)
-			PrintUniqueTags(r, tag_type, i.second);
-		return;
-	}
+	for (const auto &i : map) {
+		r.Format("%s: %s\n", name, i.first.c_str());
 
-	const char *const group_name = tag_item_names[group];
-	for (const auto &i : groups) {
-		r.Format("%s: %s\n", group_name, i.first.c_str());
-		PrintUniqueTags(r, tag_type, i.second);
+		if (!tag_types.empty())
+			PrintUniqueTags(r, tag_types, i.second);
 	}
 }
 
 void
 PrintUniqueTags(Response &r, Partition &partition,
-		TagType type, TagType group,
+		ConstBuffer<TagType> tag_types,
 		const SongFilter *filter)
 {
-	assert(type < TAG_NUM_OF_ITEM_TYPES);
-
 	const Database &db = partition.GetDatabaseOrThrow();
 
 	const DatabaseSelection selection("", true, filter);
 
-	PrintGroupedUniqueTags(r, type, group,
-			       db.CollectUniqueTags(selection, type, group));
+	PrintUniqueTags(r, tag_types,
+			db.CollectUniqueTags(selection, tag_types));
 }

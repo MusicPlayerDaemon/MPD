@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2018 The Music Player Daemon Project
+ * Copyright 2003-2019 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -274,15 +274,9 @@ static const char *const audiofile_mime_types[] = {
 	nullptr
 };
 
-const struct DecoderPlugin audiofile_decoder_plugin = {
-	"audiofile",
-	audiofile_init,
-	nullptr,
-	audiofile_stream_decode,
-	nullptr,
-	nullptr,
-	audiofile_scan_stream,
-	nullptr,
-	audiofile_suffixes,
-	audiofile_mime_types,
-};
+constexpr DecoderPlugin audiofile_decoder_plugin =
+	DecoderPlugin("audiofile",
+		      audiofile_stream_decode, audiofile_scan_stream)
+	.WithInit(audiofile_init)
+	.WithSuffixes(audiofile_suffixes)
+	.WithMimeTypes(audiofile_mime_types);

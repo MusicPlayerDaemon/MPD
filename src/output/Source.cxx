@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2018 The Music Player Daemon Project
+ * Copyright 2003-2019 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -22,7 +22,7 @@
 #include "filter/Filter.hxx"
 #include "filter/Prepared.hxx"
 #include "filter/plugins/ReplayGainFilterPlugin.hxx"
-#include "pcm/PcmMix.hxx"
+#include "pcm/Mix.hxx"
 #include "thread/Mutex.hxx"
 #include "util/ConstBuffer.hxx"
 #include "util/RuntimeError.hxx"

@@ -3,7 +3,7 @@ ver 0.22 (not yet released)
   - "findadd"/"searchadd"/"searchaddpl" support the "sort" and
     "window" parameters
 * tags
-  - new tag "Grouping" (for ID3 "TIT1")
+  - new tags "Grouping" (for ID3 "TIT1") and "Work"
 * input
   - ffmpeg: allow partial reads
 * archive
@@ -11,6 +11,16 @@ ver 0.22 (not yet released)
 * filter
   - ffmpeg: new plugin based on FFmpeg's libavfilter library
   - hdcd: new plugin based on FFmpeg's "af_hdcd" for HDCD playback
+
+ver 0.21.11 (not yet released)
+* input
+  - tidal: deprecated because Tidal has changed the protocol
+* decoder
+  - wildmidi: log error if library initialization fails
+* output
+  - alsa, osx: fix distortions with DSD_U32 and DoP on 32 bit CPUs
+* protocol
+  - fix "list" with multiple "group" levels
 
 ver 0.21.10 (2019/06/05)
 * decoder

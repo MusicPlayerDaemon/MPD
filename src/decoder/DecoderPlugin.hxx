@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2018 The Music Player Daemon Project
+ * Copyright 2003-2019 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -42,13 +42,13 @@ struct DecoderPlugin {
 	 * @return true if the plugin was initialized successfully,
 	 * false if the plugin is not available
 	 */
-	bool (*init)(const ConfigBlock &block);
+	bool (*init)(const ConfigBlock &block) = nullptr;
 
 	/**
 	 * Deinitialize a decoder plugin which was initialized
 	 * successfully.  Optional method.
 	 */
-	void (*finish)() noexcept;
+	void (*finish)() noexcept = nullptr;
 
 	/**
 	 * Decode a stream (data read from an #InputStream object).
@@ -57,28 +57,28 @@ struct DecoderPlugin {
 	 * possible, it is recommended to implement this method,
 	 * because it is more versatile.
 	 */
-	void (*stream_decode)(DecoderClient &client, InputStream &is);
+	void (*stream_decode)(DecoderClient &client, InputStream &is) = nullptr;
 
 	/**
 	 * Decode a local file.
 	 *
 	 * Either implement this method or stream_decode().
 	 */
-	void (*file_decode)(DecoderClient &client, Path path_fs);
+	void (*file_decode)(DecoderClient &client, Path path_fs) = nullptr;
 
 	/**
 	 * Scan metadata of a file.
 	 *
 	 * @return false if the operation has failed
 	 */
-	bool (*scan_file)(Path path_fs, TagHandler &handler) noexcept;
+	bool (*scan_file)(Path path_fs, TagHandler &handler) noexcept = nullptr;
 
 	/**
 	 * Scan metadata of a file.
 	 *
 	 * @return false if the operation has failed
 	 */
-	bool (*scan_stream)(InputStream &is, TagHandler &handler) noexcept;
+	bool (*scan_stream)(InputStream &is, TagHandler &handler) noexcept = nullptr;
 
 	/**
 	 * @brief Return a "virtual" filename for subtracks in
@@ -89,11 +89,67 @@ struct DecoderPlugin {
 	 * a filename for every single track;
 	 * do not include full pathname here, just the "virtual" file
 	 */
-	std::forward_list<DetachedSong> (*container_scan)(Path path_fs);
+	std::forward_list<DetachedSong> (*container_scan)(Path path_fs) = nullptr;
 
 	/* last element in these arrays must always be a nullptr: */
-	const char *const*suffixes;
-	const char *const*mime_types;
+	const char *const*suffixes = nullptr;
+	const char *const*mime_types = nullptr;
+
+	constexpr DecoderPlugin(const char *_name,
+				void (*_file_decode)(DecoderClient &client,
+						     Path path_fs),
+				bool (*_scan_file)(Path path_fs,
+						   TagHandler &handler) noexcept) noexcept
+		:name(_name),
+		 file_decode(_file_decode), scan_file(_scan_file) {}
+
+	constexpr DecoderPlugin(const char *_name,
+				void (*_stream_decode)(DecoderClient &client,
+						       InputStream &is),
+				bool (*_scan_stream)(InputStream &is, TagHandler &handler) noexcept) noexcept
+		:name(_name),
+		 stream_decode(_stream_decode),
+		 scan_stream(_scan_stream) {}
+
+	constexpr DecoderPlugin(const char *_name,
+				void (*_stream_decode)(DecoderClient &client,
+						       InputStream &is),
+				bool (*_scan_stream)(InputStream &is, TagHandler &handler) noexcept,
+				void (*_file_decode)(DecoderClient &client,
+						     Path path_fs),
+				bool (*_scan_file)(Path path_fs,
+						   TagHandler &handler) noexcept) noexcept
+		:name(_name),
+		 stream_decode(_stream_decode),
+		 file_decode(_file_decode),
+		 scan_file(_scan_file),
+		 scan_stream(_scan_stream) {}
+
+	constexpr auto WithInit(bool (*_init)(const ConfigBlock &block),
+				void (*_finish)() noexcept = nullptr) noexcept {
+		auto copy = *this;
+		copy.init = _init;
+		copy.finish = _finish;
+		return copy;
+	}
+
+	constexpr auto WithContainer(std::forward_list<DetachedSong> (*_container_scan)(Path path_fs)) noexcept {
+		auto copy = *this;
+		copy.container_scan = _container_scan;
+		return copy;
+	}
+
+	constexpr auto WithSuffixes(const char *const*_suffixes) noexcept {
+		auto copy = *this;
+		copy.suffixes = _suffixes;
+		return copy;
+	}
+
+	constexpr auto WithMimeTypes(const char *const*_mime_types) noexcept {
+		auto copy = *this;
+		copy.mime_types = _mime_types;
+		return copy;
+	}
 
 	/**
 	 * Initialize a decoder plugin.

@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2018 The Music Player Daemon Project
+ * Copyright 2003-2019 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,17 +17,15 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_PCM_PRNG_HXX
-#define MPD_PCM_PRNG_HXX
+#include "Buffer.hxx"
 
-/**
- * A very simple linear congruential PRNG.  It's good enough for PCM
- * dithering.
- */
-constexpr static inline unsigned long
-pcm_prng(unsigned long state) noexcept
+void *
+PcmBuffer::Get(size_t new_size) noexcept
 {
-	return (state * 0x0019660dL + 0x3c6ef35fL) & 0xffffffffL;
-}
+	if (new_size == 0)
+		/* never return nullptr, because nullptr would be
+		   assumed to be an error condition */
+		new_size = 1;
 
-#endif
+	return buffer.Get(new_size);
+}

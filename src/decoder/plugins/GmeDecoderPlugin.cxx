@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2018 The Music Player Daemon Project
+ * Copyright 2003-2019 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -324,15 +324,8 @@ static const char *const gme_suffixes[] = {
 	nullptr
 };
 
-const struct DecoderPlugin gme_decoder_plugin = {
-	"gme",
-	gme_plugin_init,
-	nullptr,
-	nullptr,
-	gme_file_decode,
-	gme_scan_file,
-	nullptr,
-	gme_container_scan,
-	gme_suffixes,
-	nullptr,
-};
+constexpr DecoderPlugin gme_decoder_plugin =
+	DecoderPlugin("gme", gme_file_decode, gme_scan_file)
+	.WithInit(gme_plugin_init)
+	.WithContainer(gme_container_scan)
+	.WithSuffixes(gme_suffixes);

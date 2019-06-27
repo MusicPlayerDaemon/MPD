@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2018 The Music Player Daemon Project
+ * Copyright 2003-2019 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -20,8 +20,8 @@
 #ifndef MPD_PCM_DSD_HXX
 #define MPD_PCM_DSD_HXX
 
-#include "PcmBuffer.hxx"
-#include "AudioFormat.hxx"
+#include "Buffer.hxx"
+#include "ChannelDefs.hxx"
 
 #include <array>
 

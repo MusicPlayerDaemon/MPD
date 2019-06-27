@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2018 The Music Player Daemon Project
+ * Copyright 2003-2019 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -568,16 +568,8 @@ static const char *const sidplay_suffixes[] = {
 	nullptr
 };
 
-extern const struct DecoderPlugin sidplay_decoder_plugin;
-const struct DecoderPlugin sidplay_decoder_plugin = {
-	"sidplay",
-	sidplay_init,
-	sidplay_finish,
-	nullptr, /* stream_decode() */
-	sidplay_file_decode,
-	sidplay_scan_file,
-	nullptr, /* stream_tag() */
-	sidplay_container_scan,
-	sidplay_suffixes,
-	nullptr, /* mime_types */
-};
+constexpr DecoderPlugin sidplay_decoder_plugin =
+	DecoderPlugin("sidplay", sidplay_file_decode, sidplay_scan_file)
+	.WithInit(sidplay_init, sidplay_finish)
+	.WithContainer(sidplay_container_scan)
+	.WithSuffixes(sidplay_suffixes);

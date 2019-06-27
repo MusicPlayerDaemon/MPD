@@ -46,7 +46,7 @@
 #include "filter/FilterPlugin.hxx"
 #include "filter/Filter.hxx"
 #include "filter/Prepared.hxx"
-#include "pcm/PcmBuffer.hxx"
+#include "pcm/Buffer.hxx"
 #include "pcm/Silence.hxx"
 #include "util/StringStrip.hxx"
 #include "util/RuntimeError.hxx"

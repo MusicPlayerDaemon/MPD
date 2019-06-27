@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2018 The Music Player Daemon Project
+ * Copyright 2003-2019 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -266,17 +266,9 @@ static const char *const hybrid_dsd_suffixes[] = {
 	nullptr
 };
 
-const struct DecoderPlugin hybrid_dsd_decoder_plugin = {
-	"hybrid_dsd",
-	InitHybridDsdDecoder,
-	nullptr,
-	HybridDsdDecode,
-	nullptr,
-	nullptr,
+constexpr DecoderPlugin hybrid_dsd_decoder_plugin =
 	/* no scan method here; the FFmpeg plugin will do that for us,
 	   and we only do the decoding */
-	nullptr,
-	nullptr,
-	hybrid_dsd_suffixes,
-	nullptr,
-};
+	DecoderPlugin("hybrid_dsd", HybridDsdDecode, nullptr)
+	.WithInit(InitHybridDsdDecoder)
+	.WithSuffixes(hybrid_dsd_suffixes);

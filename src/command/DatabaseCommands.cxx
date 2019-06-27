@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2018 The Music Player Daemon Project
+ * Copyright 2003-2019 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -260,7 +260,7 @@ handle_list(Client &client, Request args, Response &r)
 	}
 
 	std::unique_ptr<SongFilter> filter;
-	TagType group = TAG_NUM_OF_ITEM_TYPES;
+	std::vector<TagType> tag_types;
 
 	if (args.size == 1 &&
 	    /* parantheses are the syntax for filter expressions: no
@@ -278,19 +278,30 @@ handle_list(Client &client, Request args, Response &r)
 					    args.shift()));
 	}
 
-	if  (args.size >= 2 &&
-	     StringIsEqual(args[args.size - 2], "group")) {
+	while (args.size >= 2 &&
+	       StringIsEqual(args[args.size - 2], "group")) {
 		const char *s = args[args.size - 1];
-		group = tag_name_parse_i(s);
+		const auto group = tag_name_parse_i(s);
 		if (group == TAG_NUM_OF_ITEM_TYPES) {
 			r.FormatError(ACK_ERROR_ARG,
 				      "Unknown tag type: %s", s);
 			return CommandResult::ERROR;
 		}
 
+		if (group == tagType ||
+		    std::find(tag_types.begin(), tag_types.end(),
+			      group) != tag_types.end()) {
+			r.Error(ACK_ERROR_ARG, "Conflicting group");
+			return CommandResult::ERROR;
+		}
+
+		tag_types.emplace_back(group);
+
 		args.pop_back();
 		args.pop_back();
 	}
+
+	tag_types.emplace_back(tagType);
 
 	if (!args.empty()) {
 		filter.reset(new SongFilter());
@@ -304,13 +315,9 @@ handle_list(Client &client, Request args, Response &r)
 		filter->Optimize();
 	}
 
-	if (tagType < TAG_NUM_OF_ITEM_TYPES && tagType == group) {
-		r.Error(ACK_ERROR_ARG, "Conflicting group");
-		return CommandResult::ERROR;
-	}
-
 	PrintUniqueTags(r, client.GetPartition(),
-			tagType, group, filter.get());
+			{&tag_types.front(), tag_types.size()},
+			filter.get());
 	return CommandResult::OK;
 }
 

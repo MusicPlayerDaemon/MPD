@@ -274,6 +274,8 @@ The following tags are supported by :program:`MPD`:
 * **date**: the song's release date. This is usually a 4-digit year.
 * **composer**: the artist who composed the song.
 * **performer**: the artist who performed the song.
+* **work**: `"a work is a distinct intellectual or artistic creation,
+  which can be expressed in the form of one or more audio recordings" <https://musicbrainz.org/doc/Work>`_
 * **grouping**: "used if the sound belongs to a larger category of
   sounds/music" (`from the IDv2.4.0 TIT1 description
   <http://id3.org/id3v2.4.0-frames>`_).

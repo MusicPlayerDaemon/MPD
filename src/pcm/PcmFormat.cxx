@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2018 The Music Player Daemon Project
+ * Copyright 2003-2019 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,14 +18,14 @@
  */
 
 #include "PcmFormat.hxx"
-#include "PcmBuffer.hxx"
+#include "Buffer.hxx"
 #include "Clamp.hxx"
 #include "Traits.hxx"
 #include "FloatConvert.hxx"
 #include "ShiftConvert.hxx"
 #include "util/ConstBuffer.hxx"
 
-#include "PcmDither.cxx" // including the .cxx file to get inlined templates
+#include "Dither.cxx" // including the .cxx file to get inlined templates
 
 /**
  * Wrapper for a class that converts one sample at a time into one

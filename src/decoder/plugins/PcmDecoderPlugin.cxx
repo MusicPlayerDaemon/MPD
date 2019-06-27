@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2018 The Music Player Daemon Project
+ * Copyright 2003-2019 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -22,7 +22,7 @@
 #include "PcmDecoderPlugin.hxx"
 #include "../DecoderAPI.hxx"
 #include "CheckAudioFormat.hxx"
-#include "pcm/PcmPack.hxx"
+#include "pcm/Pack.hxx"
 #include "input/InputStream.hxx"
 #include "util/ByteOrder.hxx"
 #include "util/Domain.hxx"
@@ -251,15 +251,6 @@ static const char *const pcm_mime_types[] = {
 	nullptr
 };
 
-const struct DecoderPlugin pcm_decoder_plugin = {
-	"pcm",
-	nullptr,
-	nullptr,
-	pcm_stream_decode,
-	nullptr,
-	nullptr,
-	nullptr,
-	nullptr,
-	nullptr,
-	pcm_mime_types,
-};
+constexpr DecoderPlugin pcm_decoder_plugin =
+	DecoderPlugin("pcm", pcm_stream_decode, nullptr)
+	.WithMimeTypes(pcm_mime_types);

@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2018 The Music Player Daemon Project
+ * Copyright 2003-2019 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -179,6 +179,8 @@ InitTidalInput(EventLoop &event_loop, const ConfigBlock &block)
 	const char *password = block.GetBlockValue("password");
 	if (password == nullptr)
 		throw PluginUnconfigured("No Tidal password configured");
+
+	FormatWarning(tidal_domain, "The Tidal input plugin is deprecated because Tidal has changed the protocol and doesn't share documentation");
 
 	tidal_audioquality = block.GetBlockValue("audioquality", "HIGH");
 

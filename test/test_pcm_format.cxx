@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2018 The Music Player Daemon Project
+ * Copyright 2003-2019 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -19,8 +19,8 @@
 
 #include "test_pcm_util.hxx"
 #include "pcm/PcmFormat.hxx"
-#include "pcm/PcmDither.hxx"
-#include "pcm/PcmBuffer.hxx"
+#include "pcm/Dither.hxx"
+#include "pcm/Buffer.hxx"
 #include "pcm/SampleFormat.hxx"
 
 #include <gtest/gtest.h>

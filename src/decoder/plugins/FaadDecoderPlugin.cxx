@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2018 The Music Player Daemon Project
+ * Copyright 2003-2019 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -430,15 +430,7 @@ static const char *const faad_mime_types[] = {
 	"audio/aac", "audio/aacp", nullptr
 };
 
-const DecoderPlugin faad_decoder_plugin = {
-	"faad",
-	nullptr,
-	nullptr,
-	faad_stream_decode,
-	nullptr,
-	nullptr,
-	faad_scan_stream,
-	nullptr,
-	faad_suffixes,
-	faad_mime_types,
-};
+constexpr DecoderPlugin faad_decoder_plugin =
+	DecoderPlugin("faad", faad_stream_decode, faad_scan_stream)
+	.WithSuffixes(faad_suffixes)
+	.WithMimeTypes(faad_mime_types);

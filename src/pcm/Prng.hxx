@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2018 The Music Player Daemon Project
+ * Copyright 2003-2019 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,21 +17,17 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_PCM_DOP_HXX
-#define MPD_PCM_DOP_HXX
-
-#include <stdint.h>
-
-class PcmBuffer;
-template<typename T> struct ConstBuffer;
+#ifndef MPD_PCM_PRNG_HXX
+#define MPD_PCM_PRNG_HXX
 
 /**
- * Pack DSD 1 bit samples into (padded) 24 bit PCM samples for
- * playback over USB, according to the DoP standard:
- * http://dsd-guide.com/dop-open-standard
+ * A very simple linear congruential PRNG.  It's good enough for PCM
+ * dithering.
  */
-ConstBuffer<uint32_t>
-pcm_dsd_to_dop(PcmBuffer &buffer, unsigned channels,
-	       ConstBuffer<uint8_t> src) noexcept;
+constexpr static inline unsigned long
+pcm_prng(unsigned long state) noexcept
+{
+	return (state * 0x0019660dL + 0x3c6ef35fL) & 0xffffffffL;
+}
 
 #endif

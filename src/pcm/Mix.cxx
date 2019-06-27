@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2018 The Music Player Daemon Project
+ * Copyright 2003-2019 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,13 +17,13 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "PcmMix.hxx"
+#include "Mix.hxx"
 #include "Volume.hxx"
 #include "Clamp.hxx"
 #include "Traits.hxx"
 #include "util/Clamp.hxx"
 
-#include "PcmDither.cxx" // including the .cxx file to get inlined templates
+#include "Dither.cxx" // including the .cxx file to get inlined templates
 
 #include <cmath>
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2018 The Music Player Daemon Project
+ * Copyright 2003-2019 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -368,18 +368,12 @@ static const char *const oggflac_mime_types[] = {
 	nullptr
 };
 
-const struct DecoderPlugin oggflac_decoder_plugin = {
-	"oggflac",
-	oggflac_init,
-	nullptr,
-	oggflac_decode,
-	nullptr,
-	oggflac_scan_file,
-	oggflac_scan_stream,
-	nullptr,
-	oggflac_suffixes,
-	oggflac_mime_types,
-};
+constexpr DecoderPlugin oggflac_decoder_plugin =
+	DecoderPlugin("oggflac", oggflac_decode, oggflac_scan_stream,
+		      nullptr, oggflac_scan_file)
+	.WithInit(oggflac_init)
+	.WithSuffixes(oggflac_suffixes)
+	.WithMimeTypes(oggflac_mime_types);
 
 static const char *const flac_suffixes[] = { "flac", nullptr };
 static const char *const flac_mime_types[] = {
@@ -390,15 +384,8 @@ static const char *const flac_mime_types[] = {
 	nullptr
 };
 
-const struct DecoderPlugin flac_decoder_plugin = {
-	"flac",
-	nullptr,
-	nullptr,
-	flac_decode,
-	nullptr,
-	flac_scan_file,
-	flac_scan_stream,
-	nullptr,
-	flac_suffixes,
-	flac_mime_types,
-};
+constexpr DecoderPlugin flac_decoder_plugin =
+	DecoderPlugin("flac", flac_decode, flac_scan_stream,
+		      nullptr, flac_scan_file)
+	.WithSuffixes(flac_suffixes)
+	.WithMimeTypes(flac_mime_types);

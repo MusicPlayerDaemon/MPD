@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2018 The Music Player Daemon Project
+ * Copyright 2003-2019 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,15 +17,18 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "PcmBuffer.hxx"
+#ifndef MPD_PCM_CHANNEL_DEFS_HXX
+#define MPD_PCM_CHANNEL_DEFS_HXX
 
-void *
-PcmBuffer::Get(size_t new_size) noexcept
+static constexpr unsigned MAX_CHANNELS = 8;
+
+/**
+ * Checks whether the number of channels is valid.
+ */
+constexpr bool
+audio_valid_channel_count(unsigned channels) noexcept
 {
-	if (new_size == 0)
-		/* never return nullptr, because nullptr would be
-		   assumed to be an error condition */
-		new_size = 1;
-
-	return buffer.Get(new_size);
+	return channels >= 1 && channels <= MAX_CHANNELS;
 }
+
+#endif

@@ -10,6 +10,7 @@ fs_sources = [
   'List.cxx',
   'StandardDirectory.cxx',
   'CheckFile.cxx',
+  'LookupFile.cxx',
   'DirectoryReader.cxx',
   'io/PeekReader.cxx',
   'io/FileReader.cxx',

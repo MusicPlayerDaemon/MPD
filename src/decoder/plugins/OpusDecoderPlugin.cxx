@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2018 The Music Player Daemon Project
+ * Copyright 2003-2019 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -384,15 +384,8 @@ static const char *const opus_mime_types[] = {
 
 } /* anonymous namespace */
 
-const struct DecoderPlugin opus_decoder_plugin = {
-	"opus",
-	mpd_opus_init,
-	nullptr,
-	mpd_opus_stream_decode,
-	nullptr,
-	nullptr,
-	mpd_opus_scan_stream,
-	nullptr,
-	opus_suffixes,
-	opus_mime_types,
-};
+constexpr DecoderPlugin opus_decoder_plugin =
+	DecoderPlugin("opus", mpd_opus_stream_decode, mpd_opus_scan_stream)
+	.WithInit(mpd_opus_init)
+	.WithSuffixes(opus_suffixes)
+	.WithMimeTypes(opus_mime_types);

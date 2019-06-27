@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2018 The Music Player Daemon Project
+ * Copyright 2003-2019 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -26,7 +26,7 @@
 #include "lib/alsa/Version.hxx"
 #include "../OutputAPI.hxx"
 #include "mixer/MixerList.hxx"
-#include "pcm/PcmExport.hxx"
+#include "pcm/Export.hxx"
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
 #include "util/Manual.hxx"
@@ -558,12 +558,12 @@ AlsaOutput::SetupOrDop(AudioFormat &audio_format, PcmExport::Params &params
 	std::exception_ptr dop_error;
 	if (dop && audio_format.format == SampleFormat::DSD) {
 		try {
-			params.dop = true;
+			params.dsd_mode = PcmExport::DsdMode::DOP;
 			SetupDop(audio_format, params);
 			return;
 		} catch (...) {
 			dop_error = std::current_exception();
-			params.dop = false;
+			params.dsd_mode = PcmExport::DsdMode::NONE;
 		}
 	}
 
@@ -663,7 +663,7 @@ AlsaOutput::Open(AudioFormat &audio_format)
 	snd_pcm_nonblock(pcm, 1);
 
 #ifdef ENABLE_DSD
-	if (params.dop)
+	if (params.dsd_mode == PcmExport::DsdMode::DOP)
 		FormatDebug(alsa_output_domain, "DoP (DSD over PCM) enabled");
 #endif
 
@@ -674,7 +674,7 @@ AlsaOutput::Open(AudioFormat &audio_format)
 #ifndef NDEBUG
 	in_frame_size = audio_format.GetFrameSize();
 #endif
-	out_frame_size = pcm_export->GetFrameSize(audio_format);
+	out_frame_size = pcm_export->GetOutputFrameSize();
 
 	drain = false;
 
@@ -872,13 +872,7 @@ AlsaOutput::Play(const void *chunk, size_t size)
 	assert(size % in_frame_size == 0);
 
 	const auto e = pcm_export->Export({chunk, size});
-	if (e.size == 0)
-		/* the DoP (DSD over PCM) filter converts two frames
-		   at a time and ignores the last odd frame; if there
-		   was only one frame (e.g. the last frame in the
-		   file), the result is empty; to avoid an endless
-		   loop, bail out here, and pretend the one frame has
-		   been played */
+	if (e.empty())
 		return size;
 
 	std::unique_lock<Mutex> lock(mutex);
@@ -890,7 +884,7 @@ AlsaOutput::Play(const void *chunk, size_t size)
 		size_t bytes_written = ring_buffer->push((const uint8_t *)e.data,
 							 e.size);
 		if (bytes_written > 0)
-			return pcm_export->CalcSourceSize(bytes_written);
+			return pcm_export->CalcInputSize(bytes_written);
 
 		/* now that the ring_buffer is full, we can activate
 		   the socket handlers to trigger the first

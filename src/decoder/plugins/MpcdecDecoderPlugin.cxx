@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2018 The Music Player Daemon Project
+ * Copyright 2003-2019 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -268,15 +268,6 @@ mpcdec_scan_stream(InputStream &is, TagHandler &handler) noexcept
 
 static const char *const mpcdec_suffixes[] = { "mpc", nullptr };
 
-const struct DecoderPlugin mpcdec_decoder_plugin = {
-	"mpcdec",
-	nullptr,
-	nullptr,
-	mpcdec_decode,
-	nullptr,
-	nullptr,
-	mpcdec_scan_stream,
-	nullptr,
-	mpcdec_suffixes,
-	nullptr,
-};
+constexpr DecoderPlugin mpcdec_decoder_plugin =
+	DecoderPlugin("mpcdec", mpcdec_decode, mpcdec_scan_stream)
+	.WithSuffixes(mpcdec_suffixes);

@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2018 The Music Player Daemon Project
+ * Copyright 2003-2019 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -292,6 +292,11 @@ public:
 	gcc_pure
 	const_pointer_type Relative(Path other_fs) const noexcept {
 		return Traits::Relative(c_str(), other_fs.c_str());
+	}
+
+	gcc_pure
+	const_pointer_type GetSuffix() const noexcept {
+		return ((Path)*this).GetSuffix();
 	}
 
 	/**

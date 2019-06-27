@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2018 The Music Player Daemon Project
+ * Copyright 2003-2019 The Music Player Daemon Project
  * Copyright (C) 2010-2011 Philipp 'ph3-der-loewe' Schafft
  * Copyright (C) 2010-2011 Hans-Kristian 'maister' Arntzen
  * Copyright (C) 2014-2015 François 'mmu_man' Revol

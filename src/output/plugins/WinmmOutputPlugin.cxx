@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2018 The Music Player Daemon Project
+ * Copyright 2003-2019 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -19,7 +19,7 @@
 
 #include "WinmmOutputPlugin.hxx"
 #include "../OutputAPI.hxx"
-#include "pcm/PcmBuffer.hxx"
+#include "pcm/Buffer.hxx"
 #include "mixer/MixerList.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "util/RuntimeError.hxx"
