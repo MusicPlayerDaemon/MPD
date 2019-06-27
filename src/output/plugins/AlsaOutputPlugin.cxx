@@ -311,8 +311,8 @@ private:
 	}
 
 	snd_pcm_sframes_t WriteFromPeriodBuffer() noexcept {
-		assert(!period_buffer.IsEmpty());
 		assert(period_buffer.IsFull());
+		assert(period_buffer.GetFrames(out_frame_size) > 0);
 
 		auto frames_written = snd_pcm_writei(pcm, period_buffer.GetHead(),
 						     period_buffer.GetFrames(out_frame_size));
