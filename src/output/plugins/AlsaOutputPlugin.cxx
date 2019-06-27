@@ -956,7 +956,7 @@ try {
 
 	CopyRingToPeriodBuffer();
 
-	if (period_buffer.IsEmpty()) {
+	if (!period_buffer.IsFull()) {
 		if (snd_pcm_state(pcm) == SND_PCM_STATE_PREPARED ||
 		    snd_pcm_avail(pcm) <= max_avail_frames) {
 			/* at SND_PCM_STATE_PREPARED (not yet switched
