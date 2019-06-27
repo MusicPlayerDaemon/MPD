@@ -123,6 +123,8 @@ public:
 	 */
 	void FillWithSilence(const uint8_t *_silence,
 			     const size_t frame_size) noexcept {
+		assert(!IsFull());
+
 		size_t partial_frame = tail % frame_size;
 		auto *dest = GetTail() - partial_frame;
 
