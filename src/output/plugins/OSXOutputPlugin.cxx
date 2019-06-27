@@ -795,7 +795,6 @@ OSXOutput::Open(AudioFormat &audio_format)
 	PcmExport::Params params;
 	params.alsa_channel_order = true;
 	bool dop = dop_setting;
-	params.dsd_mode = PcmExport::DsdMode::NONE;
 #endif
 
 	memset(&asbd, 0, sizeof(asbd));
