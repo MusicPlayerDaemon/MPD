@@ -747,26 +747,30 @@ AlsaOutput::DrainInternal()
 	/* drain ring_buffer */
 	CopyRingToPeriodBuffer();
 
-	if (period_buffer.WasConsumed() && !period_buffer.IsFull())
-		/* generate some silence to finish the partial
-		   period */
-		period_buffer.FillWithSilence(silence, out_frame_size);
-
 	/* drain period_buffer */
-	if (!period_buffer.IsDrained()) {
-		auto frames_written = WriteFromPeriodBuffer();
-		if (frames_written < 0) {
-			if (frames_written == -EAGAIN)
-				return false;
+	if (!period_buffer.IsCleared()) {
+		if (!period_buffer.IsFull())
+			/* generate some silence to finish the partial
+			   period */
+			period_buffer.FillWithSilence(silence, out_frame_size);
 
-			throw FormatRuntimeError("snd_pcm_writei() failed: %s",
-						 snd_strerror(-frames_written));
+		/* drain period_buffer */
+		if (!period_buffer.IsDrained()) {
+			auto frames_written = WriteFromPeriodBuffer();
+			if (frames_written < 0) {
+				if (frames_written == -EAGAIN)
+					return false;
+
+				throw FormatRuntimeError("snd_pcm_writei() failed: %s",
+							 snd_strerror(-frames_written));
+			}
+
+			/* need to call CopyRingToPeriodBuffer() and
+			   WriteFromPeriodBuffer() again in the next
+			   iteration, so don't finish the drain just
+			   yet */
+			return false;
 		}
-
-		/* need to call CopyRingToPeriodBuffer() and
-		   WriteFromPeriodBuffer() again in the next
-		   iteration, so don't finish the drain just yet */
-		return false;
 	}
 
 	if (!written)

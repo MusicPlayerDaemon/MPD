@@ -78,14 +78,6 @@ public:
 	}
 
 	/**
-	 * Has some data already been consumed at the buffer's head in
-	 * this period?
-	 */
-	bool WasConsumed() const noexcept {
-		return head > 0;
-	}
-
-	/**
 	 * Has all data for the current period been drained?  If not,
 	 * then there is pending data.  This ignores the partial frame
 	 * which may have been postponed by FillWithSilence().
