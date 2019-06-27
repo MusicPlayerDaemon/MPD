@@ -1091,7 +1091,7 @@ Filter plugins
 ==============
 
 ffmpeg
-~~~~~~
+------
 
 Configures a FFmpeg filter graph.
 
@@ -1111,7 +1111,7 @@ This plugin requires building with ``libavfilter`` (FFmpeg).
 
 
 hdcd
-~~~~
+----
 
 Decode `HDCD
 <https://en.wikipedia.org/wiki/High_Definition_Compatible_Digital>`_.
