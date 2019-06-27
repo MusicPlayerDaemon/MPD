@@ -685,8 +685,24 @@ osx_render(void *vdata,
 		od->cancel = false;
 	}
 
-	// Wait until data is available.
-	while (!od->ring_buffer->read_available()); 
+	// If data is not available, fill the buffer with silence,
+	if (!od->ring_buffer->read_available()) {
+#ifdef ENABLE_DSD
+		if (od->dop_enabled) {
+			const auto silence = od->pcm_export->GetSilence();
+			size_t count = in_number_frames * od->asbd.mBytesPerFrame / silence.size * silence.size;
+			for (size_t i = 0; i < count; ++i) {
+				memcpy((uint8_t *)buffer_list->mBuffers[0].mData + i * silence.size, silence.data, silence.size);
+			}
+			buffer_list->mBuffers[0].mDataByteSize = count;
+			return noErr;
+		}
+#endif
+		size_t count = in_number_frames * od->asbd.mBytesPerFrame;
+		bzero(buffer_list->mBuffers[0].mData, count);
+		buffer_list->mBuffers[0].mDataByteSize = count;
+		return noErr;
+	}
 
 	size_t copy_frames =
 		od->ring_buffer->read_available() / od->asbd.mBytesPerFrame;
@@ -867,7 +883,7 @@ OSXOutput::Open(AudioFormat &audio_format)
 	size_t ring_buffer_size = MPD_OSX_BUFFER_TIME_MS * audio_format.GetFrameSize() * audio_format.sample_rate / 1000;
 
 #ifdef ENABLE_DSD
- 	if (dop_enabled) {
+	if (dop_enabled) {
 		pcm_export->Open(audio_format.format, audio_format.channels, params);
 		ring_buffer_size = MPD_OSX_BUFFER_TIME_MS * pcm_export->GetOutputFrameSize() * asbd.mSampleRate / 1000;
 	}
