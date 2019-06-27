@@ -65,8 +65,12 @@ public:
 		delete[] buffer;
 	}
 
-	bool IsEmpty() const noexcept {
-		return head == tail;
+	/**
+	 * Has there no data been appended since the last Clear()
+	 * call?
+	 */
+	bool IsCleared() const noexcept {
+		return tail == 0;
 	}
 
 	bool IsFull() const noexcept {

@@ -857,7 +857,7 @@ AlsaOutput::Cancel() noexcept
 		   synchronization */
 
 		pcm_export->Reset();
-		assert(period_buffer.IsEmpty());
+		assert(period_buffer.IsCleared());
 		ring_buffer->reset();
 
 		return;
