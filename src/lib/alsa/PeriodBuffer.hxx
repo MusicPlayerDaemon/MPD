@@ -82,6 +82,17 @@ public:
 	}
 
 	/**
+	 * Has all data for the current period been drained?  If not,
+	 * then there is pending data.  This ignores the partial frame
+	 * which may have been postponed by FillWithSilence().
+	 */
+	bool IsDrained() const noexcept {
+		/* compare head with capacity, not with tail; this
+		   method makes only sense if the period is full */
+		return head >= capacity;
+	}
+
+	/**
 	 * Returns the tail of the buffer, i.e. where new data can be
 	 * written.  Call GetSpaceBytes() to find out how much may be
 	 * copied to the returned pointer, and call AppendBytes() to

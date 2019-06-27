@@ -753,7 +753,7 @@ AlsaOutput::DrainInternal()
 		period_buffer.FillWithSilence(silence, out_frame_size);
 
 	/* drain period_buffer */
-	if (!period_buffer.IsEmpty()) {
+	if (!period_buffer.IsDrained()) {
 		auto frames_written = WriteFromPeriodBuffer();
 		if (frames_written < 0) {
 			if (frames_written == -EAGAIN)
