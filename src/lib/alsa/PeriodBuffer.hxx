@@ -83,6 +83,8 @@ public:
 	 * which may have been postponed by FillWithSilence().
 	 */
 	bool IsDrained() const noexcept {
+		assert(IsFull());
+
 		/* compare head with capacity, not with tail; this
 		   method makes only sense if the period is full */
 		return head >= capacity;
@@ -95,6 +97,8 @@ public:
 	 * commit the operation.
 	 */
 	uint8_t *GetTail() noexcept {
+		assert(!IsFull());
+
 		return buffer + tail;
 	}
 
@@ -105,7 +109,7 @@ public:
 	 * in bytes
 	 */
 	size_t GetSpaceBytes() const noexcept {
-		assert(tail <= capacity);
+		assert(!IsFull());
 
 		return capacity - tail;
 	}
@@ -159,10 +163,14 @@ public:
 	 * GetHead().
 	 */
 	snd_pcm_uframes_t GetFrames(size_t frame_size) const noexcept {
+		assert(IsFull());
+
 		return (tail - head) / frame_size;
 	}
 
 	void ConsumeBytes(size_t n) noexcept {
+		assert(IsFull());
+
 		head += n;
 
 		assert(head <= capacity);
@@ -177,6 +185,8 @@ public:
 	}
 
 	void ConsumeFrames(snd_pcm_uframes_t n, size_t frame_size) noexcept {
+		assert(IsFull());
+
 		ConsumeBytes(n * frame_size);
 	}
 
