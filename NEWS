@@ -13,6 +13,10 @@ ver 0.22 (not yet released)
   - hdcd: new plugin based on FFmpeg's "af_hdcd" for HDCD playback
 
 ver 0.21.11 (not yet released)
+* input
+  - tidal: deprecated because Tidal has changed the protocol
+* decoder
+  - wildmidi: log error if library initialization fails
 * output
   - alsa, osx: fix distortions with DSD_U32 and DoP on 32 bit CPUs
 * protocol

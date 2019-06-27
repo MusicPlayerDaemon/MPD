@@ -269,6 +269,11 @@ tidal
 
 Play songs from the commercial streaming service `Tidal <http://tidal.com/>`_. It plays URLs in the form tidal://track/ID, e.g.:
 
+.. warning::
+
+   This plugin is currently defunct because Tidal has changed the
+   protocol and decided not to share documentation.
+
 .. code-block:: none
 
     mpc add tidal://track/59727857

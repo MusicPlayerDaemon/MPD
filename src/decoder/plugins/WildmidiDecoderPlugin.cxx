@@ -20,17 +20,17 @@
 #include "WildmidiDecoderPlugin.hxx"
 #include "../DecoderAPI.hxx"
 #include "tag/Handler.hxx"
-#include "util/Domain.hxx"
+#include "util/ScopeExit.hxx"
+#include "util/StringFormat.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "fs/FileSystem.hxx"
 #include "fs/Path.hxx"
 #include "Log.hxx"
+#include "PluginUnavailable.hxx"
 
 extern "C" {
 #include <wildmidi_lib.h>
 }
-
-static constexpr Domain wildmidi_domain("wildmidi");
 
 static constexpr AudioFormat wildmidi_audio_format{48000, SampleFormat::S16, 2};
 
@@ -43,14 +43,27 @@ wildmidi_init(const ConfigBlock &block)
 
 	if (!FileExists(path)) {
 		const auto utf8 = path.ToUTF8();
-		FormatDebug(wildmidi_domain,
-			    "configuration file does not exist: %s",
-			    utf8.c_str());
-		return false;
+		throw PluginUnavailable(StringFormat<1024>("configuration file does not exist: %s",
+							   utf8.c_str()));
 	}
 
-	return WildMidi_Init(path.c_str(), wildmidi_audio_format.sample_rate,
-			     0) == 0;
+#ifdef LIBWILDMIDI_VERSION
+	/* WildMidi_ClearError() requires libwildmidi 0.4 */
+	WildMidi_ClearError();
+	AtScopeExit() { WildMidi_ClearError(); };
+#endif
+
+	if (WildMidi_Init(path.c_str(), wildmidi_audio_format.sample_rate,
+			  0) != 0) {
+#ifdef LIBWILDMIDI_VERSION
+		/* WildMidi_GetError() requires libwildmidi 0.4 */
+		throw PluginUnavailable(WildMidi_GetError());
+#else
+		throw PluginUnavailable("WildMidi_Init() failed");
+#endif
+	}
+
+	return true;
 }
 
 static void
