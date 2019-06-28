@@ -766,13 +766,31 @@ AlsaOutput::DrainInternal()
 		/* need to call CopyRingToPeriodBuffer() and
 		   WriteFromPeriodBuffer() again in the next
 		   iteration, so don't finish the drain just yet */
-		return period_buffer.IsEmpty();
+		return false;
 	}
 
 	if (!written)
 		/* if nothing has ever been written to the PCM, we
 		   don't need to drain it */
 		return true;
+
+	switch (snd_pcm_state(pcm)) {
+	case SND_PCM_STATE_PREPARED:
+	case SND_PCM_STATE_RUNNING:
+		/* these states require a call to snd_pcm_drain() */
+		break;
+
+	case SND_PCM_STATE_DRAINING:
+		/* already draining, but not yet finished; this is
+		   probably a spurious epoll event, and we should wait
+		   for the next one */
+		return false;
+
+	default:
+		/* all other states cannot be drained, and we're
+		   done */
+		return true;
+	}
 
 	/* .. and finally drain the ALSA hardware buffer */
 
