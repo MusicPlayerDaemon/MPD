@@ -4,6 +4,7 @@ ver 0.21.11 (not yet released)
 * decoder
   - wildmidi: log error if library initialization fails
 * output
+  - alsa: fix busy loop while draining
   - alsa, osx: fix distortions with DSD_U32 and DoP on 32 bit CPUs
 * protocol
   - fix "list" with multiple "group" levels
