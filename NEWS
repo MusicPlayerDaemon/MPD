@@ -6,6 +6,7 @@ ver 0.21.11 (not yet released)
 * output
   - alsa: fix busy loop while draining
   - alsa: fix missing drain call
+  - alsa: improve xrun-avoiding silence generator
   - alsa, osx: fix distortions with DSD_U32 and DoP on 32 bit CPUs
 * protocol
   - fix "list" with multiple "group" levels

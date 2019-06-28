@@ -56,6 +56,15 @@ class AlsaOutput final
 
 	DeferEvent defer_invalidate_sockets;
 
+	/**
+	 * This timer is used to re-schedule the #MultiSocketMonitor
+	 * after it had been disabled to wait for the next Play() call
+	 * to deliver more data.  This timer is necessary to start
+	 * generating silence if Play() doesn't get called soon enough
+	 * to avoid the xrun.
+	 */
+	TimerEvent silence_timer;
+
 	Manual<PcmExport> pcm_export;
 
 	/**
@@ -108,6 +117,8 @@ class AlsaOutput final
 	 * The size of one period, in number of frames.
 	 */
 	snd_pcm_uframes_t period_frames;
+
+	std::chrono::steady_clock::duration effective_period_duration;
 
 	/**
 	 * If snd_pcm_avail() goes above this value and no more data
@@ -348,6 +359,19 @@ private:
 		cond.signal();
 	}
 
+	/**
+	 * Callback for @silence_timer
+	 */
+	void OnSilenceTimer() noexcept {
+		{
+			const std::lock_guard<Mutex> lock(mutex);
+			assert(active);
+			waiting = false;
+		}
+
+		MultiSocketMonitor::InvalidateSockets();
+	}
+
 	/* virtual methods from class MultiSocketMonitor */
 	std::chrono::steady_clock::duration PrepareSockets() noexcept override;
 	void DispatchSockets() noexcept override;
@@ -359,6 +383,7 @@ AlsaOutput::AlsaOutput(EventLoop &_loop, const ConfigBlock &block)
 	:AudioOutput(FLAG_ENABLE_DISABLE),
 	 MultiSocketMonitor(_loop),
 	 defer_invalidate_sockets(_loop, BIND_THIS_METHOD(InvalidateSockets)),
+	 silence_timer(_loop, BIND_THIS_METHOD(OnSilenceTimer)),
 	 device(block.GetBlockValue("device", "")),
 #ifdef ENABLE_DSD
 	 dop_setting(block.GetBlockValue("dop", false) ||
@@ -515,6 +540,7 @@ AlsaOutput::Setup(AudioFormat &audio_format,
 		alsa_period_size = 1;
 
 	period_frames = alsa_period_size;
+	effective_period_duration = audio_format.FramesToTime<decltype(effective_period_duration)>(period_frames);
 
 	/* generate silence if there's less than one period of data
 	   in the ALSA-PCM buffer */
@@ -865,6 +891,7 @@ AlsaOutput::CancelInternal() noexcept
 
 	MultiSocketMonitor::Reset();
 	defer_invalidate_sockets.Cancel();
+	silence_timer.Cancel();
 }
 
 void
@@ -893,6 +920,7 @@ AlsaOutput::Close() noexcept
 	BlockingCall(GetEventLoop(), [this](){
 			MultiSocketMonitor::Reset();
 			defer_invalidate_sockets.Cancel();
+			silence_timer.Cancel();
 		});
 
 	period_buffer.Free();
@@ -1029,6 +1057,17 @@ try {
 			if (!CopyRingToPeriodBuffer()) {
 				MultiSocketMonitor::Reset();
 				defer_invalidate_sockets.Cancel();
+
+				/* just in case Play() doesn't get
+				   called soon enough, schedule a
+				   timer which generates silence
+				   before the xrun occurs */
+				/* the timer fires in half of a
+				   period; this short duration may
+				   produce a few more wakeups than
+				   necessary, but should be small
+				   enough to avoid the xrun */
+				silence_timer.Schedule(effective_period_duration / 2);
 			}
 
 			return;
