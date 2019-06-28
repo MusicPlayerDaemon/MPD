@@ -766,7 +766,7 @@ AlsaOutput::DrainInternal()
 		/* need to call CopyRingToPeriodBuffer() and
 		   WriteFromPeriodBuffer() again in the next
 		   iteration, so don't finish the drain just yet */
-		return period_buffer.IsEmpty();
+		return false;
 	}
 
 	if (!written)
