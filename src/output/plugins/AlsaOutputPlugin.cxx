@@ -501,7 +501,7 @@ AlsaOutput::Setup(AudioFormat &audio_format,
 
 	period_frames = alsa_period_size;
 
-	/* generate silence if there's less than once period of data
+	/* generate silence if there's less than one period of data
 	   in the ALSA-PCM buffer */
 	max_avail_frames = hw_result.buffer_size - hw_result.period_size;
 
