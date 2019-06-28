@@ -136,6 +136,13 @@ class AlsaOutput final
 	bool active;
 
 	/**
+	 * Is this output waiting for more data?
+	 *
+	 * Protected by #mutex.
+	 */
+	bool waiting;
+
+	/**
 	 * Do we need to call snd_pcm_prepare() before the next write?
 	 * It means that we put the device to SND_PCM_STATE_SETUP by
 	 * calling snd_pcm_drop().
@@ -176,7 +183,7 @@ class AlsaOutput final
 	Alsa::PeriodBuffer period_buffer;
 
 	/**
-	 * Protects #cond, #error, #active, #drain.
+	 * Protects #cond, #error, #active, #waiting, #drain.
 	 */
 	mutable Mutex mutex;
 
@@ -248,6 +255,12 @@ private:
 		return active;
 	}
 
+	gcc_pure
+	bool LockIsActiveAndNotWaiting() const noexcept {
+		const std::lock_guard<Mutex> lock(mutex);
+		return active && !waiting;
+	}
+
 	/**
 	 * Activate the output by registering the sockets in the
 	 * #EventLoop.  Before calling this, filling the ring buffer
@@ -260,10 +273,11 @@ private:
 	 * was never unlocked
 	 */
 	bool Activate() noexcept {
-		if (active)
+		if (active && !waiting)
 			return false;
 
 		active = true;
+		waiting = false;
 
 		const ScopeUnlock unlock(mutex);
 		defer_invalidate_sockets.Schedule();
@@ -330,6 +344,7 @@ private:
 		const std::lock_guard<Mutex> lock(mutex);
 		error = std::current_exception();
 		active = false;
+		waiting = false;
 		cond.signal();
 	}
 
@@ -684,6 +699,7 @@ AlsaOutput::Open(AudioFormat &audio_format)
 	period_buffer.Allocate(period_frames, out_frame_size);
 
 	active = false;
+	waiting = false;
 	must_prepare = false;
 	written = false;
 	error = {};
@@ -845,6 +861,7 @@ AlsaOutput::CancelInternal() noexcept
 	ring_buffer->reset();
 
 	active = false;
+	waiting = false;
 
 	MultiSocketMonitor::Reset();
 	defer_invalidate_sockets.Cancel();
@@ -930,7 +947,7 @@ AlsaOutput::Play(const void *chunk, size_t size)
 std::chrono::steady_clock::duration
 AlsaOutput::PrepareSockets() noexcept
 {
-	if (!LockIsActive()) {
+	if (!LockIsActiveAndNotWaiting()) {
 		ClearSocketList();
 		return std::chrono::steady_clock::duration(-1);
 	}
@@ -1001,13 +1018,13 @@ try {
 
 			{
 				const std::lock_guard<Mutex> lock(mutex);
-				active = false;
+				waiting = true;
 				cond.signal();
 			}
 
 			/* avoid race condition: see if data has
 			   arrived meanwhile before disabling the
-			   event (but after clearing the "active"
+			   event (but after setting the "waiting"
 			   flag) */
 			if (!CopyRingToPeriodBuffer()) {
 				MultiSocketMonitor::Reset();
