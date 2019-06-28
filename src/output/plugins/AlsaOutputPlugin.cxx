@@ -27,6 +27,7 @@
 #include "../OutputAPI.hxx"
 #include "mixer/MixerList.hxx"
 #include "pcm/PcmExport.hxx"
+#include "system/PeriodClock.hxx"
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
 #include "util/Manual.hxx"
@@ -64,6 +65,8 @@ class AlsaOutput final
 	 * to avoid the xrun.
 	 */
 	TimerEvent silence_timer;
+
+	PeriodClock throttle_silence_log;
 
 	Manual<PcmExport> pcm_export;
 
@@ -1072,6 +1075,9 @@ try {
 
 			return;
 		}
+
+		if (throttle_silence_log.CheckUpdate(std::chrono::seconds(5)))
+			FormatWarning(alsa_output_domain, "Decoder is too slow; playing silence to avoid xrun");
 
 		/* insert some silence if the buffer has not enough
 		   data yet, to avoid ALSA xrun */
