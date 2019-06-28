@@ -128,8 +128,8 @@ class AlsaOutput final
 	bool work_around_drain_bug;
 
 	/**
-	 * After Open(), has this output been activated by a Play()
-	 * command?
+	 * After Open() or Cancel(), has this output been activated by
+	 * a Play() command?
 	 *
 	 * Protected by #mutex.
 	 */
