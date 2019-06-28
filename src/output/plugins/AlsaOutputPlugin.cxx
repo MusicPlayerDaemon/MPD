@@ -995,7 +995,7 @@ try {
 			   whenever more data arrives */
 			/* the same applies when there is still enough
 			   data in the ALSA-PCM buffer (determined by
-			   snd_pcm_avail()); this can happend at the
+			   snd_pcm_avail()); this can happen at the
 			   start of playback, when our ring_buffer is
 			   smaller than the ALSA-PCM buffer */
 
