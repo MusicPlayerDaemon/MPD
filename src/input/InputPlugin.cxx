@@ -21,15 +21,54 @@
 #include "util/StringCompare.hxx"
 
 #include <assert.h>
+#include <algorithm>
+#include <iterator>
 
 bool
 InputPlugin::SupportsUri(const char *uri) const noexcept
 {
-	assert(prefixes != nullptr);
-
-	for (auto i = prefixes; *i != nullptr; ++i)
-		if (StringStartsWithIgnoreCase(uri, *i))
-			return true;
-
+	assert(prefixes || protocols);
+	if (prefixes != nullptr) {
+		for (auto i = prefixes; *i != nullptr; ++i)
+			if (StringStartsWithIgnoreCase(uri, *i))
+				return true;
+	} else {
+		for (auto schema : protocols()) {
+			if (StringStartsWithIgnoreCase(uri, schema.c_str())){
+				return true;
+			}
+		}
+	}
 	return false;
+}
+
+// Note: The whitelist has to be ordered alphabetically
+constexpr static const char *whitelist[] = {
+	"ftp",
+	"ftps",
+	"gopher",
+	"http",
+	"https",
+	"mmsh",
+	"mmst",
+	"rtmp",
+	"rtmpe",
+	"rtmps",
+	"rtmpt",
+	"rtmpte",
+	"rtmpts",
+	"rtp",
+	"scp",
+	"sftp",
+	"smb",
+	"srtp",
+};
+
+bool
+protocol_is_whitelisted(const char *proto) {
+	auto begin = std::begin(whitelist);
+	auto end = std::end(whitelist);
+	return std::binary_search(begin, end, proto, [](const char* a, const char* b) {
+		return strcasecmp(a,b) < 0;
+	});
 }

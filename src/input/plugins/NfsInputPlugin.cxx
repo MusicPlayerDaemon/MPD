@@ -232,4 +232,5 @@ const InputPlugin input_plugin_nfs = {
 	input_nfs_init,
 	input_nfs_finish,
 	input_nfs_open,
+	nullptr
 };

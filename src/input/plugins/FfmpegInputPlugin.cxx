@@ -25,8 +25,13 @@
 #include "lib/ffmpeg/Init.hxx"
 #include "lib/ffmpeg/Error.hxx"
 #include "../InputStream.hxx"
-#include "../InputPlugin.hxx"
 #include "PluginUnavailable.hxx"
+#include "util/StringAPI.hxx"
+#include "../InputPlugin.hxx"
+#include <iostream>
+#include <exception>
+#include <typeinfo>
+#include <stdexcept>
 
 class FfmpegInputStream final : public InputStream {
 	Ffmpeg::IOContext io;
@@ -73,6 +78,22 @@ input_ffmpeg_init(EventLoop &, const ConfigBlock &)
 		throw PluginUnavailable("No protocol");
 }
 
+static std::set<std::string>
+input_ffmpeg_protocols() {
+	void *opaque = nullptr;
+	const char* protocol;
+	std::set<std::string> protocols;
+	while ((protocol = avio_enum_protocols(&opaque, 0))) {
+		if (protocol_is_whitelisted(protocol)) {
+			std::string schema(protocol);
+			schema.append("://");
+			protocols.emplace(schema);
+		}
+	}
+	
+	return protocols;
+}
+
 static InputStreamPtr
 input_ffmpeg_open(const char *uri,
 		  Mutex &mutex)
@@ -114,20 +135,11 @@ FfmpegInputStream::Seek(std::unique_lock<Mutex> &, offset_type new_offset)
 	offset = result;
 }
 
-static constexpr const char *ffmpeg_prefixes[] = {
-	"gopher://",
-	"rtp://",
-	"rtsp://",
-	"rtmp://",
-	"rtmpt://",
-	"rtmps://",
-	nullptr
-};
-
 const InputPlugin input_plugin_ffmpeg = {
 	"ffmpeg",
-	ffmpeg_prefixes,
+	nullptr,
 	input_ffmpeg_init,
 	nullptr,
 	input_ffmpeg_open,
+	input_ffmpeg_protocols
 };
