@@ -690,11 +690,11 @@ osx_render(void *vdata,
 #ifdef ENABLE_DSD
 		if (od->dop_enabled) {
 			const auto silence = od->pcm_export->GetSilence();
-			size_t count = in_number_frames * od->asbd.mBytesPerFrame / silence.size * silence.size;
+			size_t count = in_number_frames * od->asbd.mBytesPerFrame / silence.size;
 			for (size_t i = 0; i < count; ++i) {
 				memcpy((uint8_t *)buffer_list->mBuffers[0].mData + i * silence.size, silence.data, silence.size);
 			}
-			buffer_list->mBuffers[0].mDataByteSize = count;
+			buffer_list->mBuffers[0].mDataByteSize = count * silence.size;
 			return noErr;
 		}
 #endif
