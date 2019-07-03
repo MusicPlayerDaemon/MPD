@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2017 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2011-2019 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -31,6 +31,7 @@
 #include "ToString.hxx"
 #include "Features.hxx"
 #include "SocketAddress.hxx"
+#include "IPv4Address.hxx"
 
 #include <algorithm>
 
@@ -84,19 +85,20 @@ LocalAddressToString(const struct sockaddr_un &s_un, size_t size) noexcept
 /**
  * Convert "::ffff:127.0.0.1" to "127.0.0.1".
  */
-static SocketAddress
-UnmapV4(SocketAddress src, struct sockaddr_in &buffer) noexcept
+static IPv4Address
+UnmapV4(SocketAddress src) noexcept
 {
 	assert(src.IsV4Mapped());
 
 	const auto &src6 = *(const struct sockaddr_in6 *)src.GetAddress();
-	memset(&buffer, 0, sizeof(buffer));
+
+	struct sockaddr_in buffer{};
 	buffer.sin_family = AF_INET;
 	memcpy(&buffer.sin_addr, ((const char *)&src6.sin6_addr) + 12,
 	       sizeof(buffer.sin_addr));
 	buffer.sin_port = src6.sin6_port;
 
-	return { (const struct sockaddr *)&buffer, sizeof(buffer) };
+	return buffer;
 }
 
 #endif
@@ -112,9 +114,9 @@ ToString(SocketAddress address) noexcept
 #endif
 
 #if defined(HAVE_IPV6) && defined(IN6_IS_ADDR_V4MAPPED)
-	struct sockaddr_in in_buffer;
+	IPv4Address ipv4_buffer;
 	if (address.IsV4Mapped())
-		address = UnmapV4(address, in_buffer);
+		address = ipv4_buffer = UnmapV4(address);
 #endif
 
 	char host[NI_MAXHOST], serv[NI_MAXSERV];
