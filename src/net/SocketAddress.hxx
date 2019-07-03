@@ -43,6 +43,7 @@
 
 template<typename T> struct ConstBuffer;
 struct StringView;
+class IPv4Address;
 
 /**
  * An OO wrapper for struct sockaddr.
@@ -127,6 +128,12 @@ public:
 	 */
 	gcc_pure
 	bool IsV4Mapped() const noexcept;
+
+	/**
+	 * Convert "::ffff:127.0.0.1" to "127.0.0.1".
+	 */
+	gcc_pure
+	IPv4Address UnmapV4() const noexcept;
 
 	/**
 	 * Extract the port number.  Returns 0 if not applicable.

@@ -33,6 +33,7 @@
 #include "IPv6Address.hxx"
 #include "util/StringView.hxx"
 
+#include <assert.h>
 #include <string.h>
 
 #ifdef HAVE_UN
@@ -102,6 +103,14 @@ bool
 SocketAddress::IsV4Mapped() const noexcept
 {
 	return GetFamily() == AF_INET6 && IPv6Address::Cast(*this).IsV4Mapped();
+}
+
+IPv4Address
+SocketAddress::UnmapV4() const noexcept
+{
+	assert(IsV4Mapped());
+
+	return IPv6Address::Cast(*this).UnmapV4();
 }
 
 unsigned

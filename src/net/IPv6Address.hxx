@@ -43,6 +43,8 @@
 #include <netinet/in.h>
 #endif
 
+class IPv4Address;
+
 /**
  * An OO wrapper for struct sockaddr_in.
  */
@@ -182,6 +184,12 @@ public:
 	bool IsV4Mapped() const noexcept {
 		return IN6_IS_ADDR_V4MAPPED(&address.sin6_addr);
 	}
+
+	/**
+	 * Convert "::ffff:127.0.0.1" to "127.0.0.1".
+	 */
+	gcc_pure
+	IPv4Address UnmapV4() const noexcept;
 
 	/**
 	 * Bit-wise AND of two addresses.  This is useful for netmask
