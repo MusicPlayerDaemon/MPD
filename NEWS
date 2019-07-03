@@ -12,7 +12,7 @@ ver 0.22 (not yet released)
   - ffmpeg: new plugin based on FFmpeg's libavfilter library
   - hdcd: new plugin based on FFmpeg's "af_hdcd" for HDCD playback
 
-ver 0.21.11 (not yet released)
+ver 0.21.11 (2019/07/03)
 * input
   - tidal: deprecated because Tidal has changed the protocol
 * decoder
@@ -20,6 +20,8 @@ ver 0.21.11 (not yet released)
 * output
   - alsa: fix busy loop while draining
   - alsa: fix missing drain call
+  - alsa: improve xrun-avoiding silence generator
+  - alsa: log when generating silence due to slow decoder
   - alsa, osx: fix distortions with DSD_U32 and DoP on 32 bit CPUs
 * protocol
   - fix "list" with multiple "group" levels

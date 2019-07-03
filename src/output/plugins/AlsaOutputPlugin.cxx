@@ -27,6 +27,7 @@
 #include "../OutputAPI.hxx"
 #include "mixer/MixerList.hxx"
 #include "pcm/Export.hxx"
+#include "system/PeriodClock.hxx"
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
 #include "util/Manual.hxx"
@@ -55,6 +56,17 @@ class AlsaOutput final
 	: AudioOutput, MultiSocketMonitor {
 
 	DeferEvent defer_invalidate_sockets;
+
+	/**
+	 * This timer is used to re-schedule the #MultiSocketMonitor
+	 * after it had been disabled to wait for the next Play() call
+	 * to deliver more data.  This timer is necessary to start
+	 * generating silence if Play() doesn't get called soon enough
+	 * to avoid the xrun.
+	 */
+	TimerEvent silence_timer;
+
+	PeriodClock throttle_silence_log;
 
 	Manual<PcmExport> pcm_export;
 
@@ -109,6 +121,8 @@ class AlsaOutput final
 	 */
 	snd_pcm_uframes_t period_frames;
 
+	std::chrono::steady_clock::duration effective_period_duration;
+
 	/**
 	 * If snd_pcm_avail() goes above this value and no more data
 	 * is available in the #ring_buffer, we need to play some
@@ -128,12 +142,19 @@ class AlsaOutput final
 	bool work_around_drain_bug;
 
 	/**
-	 * After Open(), has this output been activated by a Play()
-	 * command?
+	 * After Open() or Cancel(), has this output been activated by
+	 * a Play() command?
 	 *
 	 * Protected by #mutex.
 	 */
 	bool active;
+
+	/**
+	 * Is this output waiting for more data?
+	 *
+	 * Protected by #mutex.
+	 */
+	bool waiting;
 
 	/**
 	 * Do we need to call snd_pcm_prepare() before the next write?
@@ -176,7 +197,7 @@ class AlsaOutput final
 	Alsa::PeriodBuffer period_buffer;
 
 	/**
-	 * Protects #cond, #error, #active, #drain.
+	 * Protects #cond, #error, #active, #waiting, #drain.
 	 */
 	mutable Mutex mutex;
 
@@ -248,6 +269,12 @@ private:
 		return active;
 	}
 
+	gcc_pure
+	bool LockIsActiveAndNotWaiting() const noexcept {
+		const std::lock_guard<Mutex> lock(mutex);
+		return active && !waiting;
+	}
+
 	/**
 	 * Activate the output by registering the sockets in the
 	 * #EventLoop.  Before calling this, filling the ring buffer
@@ -260,10 +287,11 @@ private:
 	 * was never unlocked
 	 */
 	bool Activate() noexcept {
-		if (active)
+		if (active && !waiting)
 			return false;
 
 		active = true;
+		waiting = false;
 
 		const ScopeUnlock unlock(mutex);
 		defer_invalidate_sockets.Schedule();
@@ -331,7 +359,21 @@ private:
 		const std::lock_guard<Mutex> lock(mutex);
 		error = std::current_exception();
 		active = false;
+		waiting = false;
 		cond.notify_one();
+	}
+
+	/**
+	 * Callback for @silence_timer
+	 */
+	void OnSilenceTimer() noexcept {
+		{
+			const std::lock_guard<Mutex> lock(mutex);
+			assert(active);
+			waiting = false;
+		}
+
+		MultiSocketMonitor::InvalidateSockets();
 	}
 
 	/* virtual methods from class MultiSocketMonitor */
@@ -345,6 +387,7 @@ AlsaOutput::AlsaOutput(EventLoop &_loop, const ConfigBlock &block)
 	:AudioOutput(FLAG_ENABLE_DISABLE),
 	 MultiSocketMonitor(_loop),
 	 defer_invalidate_sockets(_loop, BIND_THIS_METHOD(InvalidateSockets)),
+	 silence_timer(_loop, BIND_THIS_METHOD(OnSilenceTimer)),
 	 device(block.GetBlockValue("device", "")),
 #ifdef ENABLE_DSD
 	 dop_setting(block.GetBlockValue("dop", false) ||
@@ -501,8 +544,9 @@ AlsaOutput::Setup(AudioFormat &audio_format,
 		alsa_period_size = 1;
 
 	period_frames = alsa_period_size;
+	effective_period_duration = audio_format.FramesToTime<decltype(effective_period_duration)>(period_frames);
 
-	/* generate silence if there's less than once period of data
+	/* generate silence if there's less than one period of data
 	   in the ALSA-PCM buffer */
 	max_avail_frames = hw_result.buffer_size - hw_result.period_size;
 
@@ -685,6 +729,7 @@ AlsaOutput::Open(AudioFormat &audio_format)
 	period_buffer.Allocate(period_frames, out_frame_size);
 
 	active = false;
+	waiting = false;
 	must_prepare = false;
 	written = false;
 	error = {};
@@ -848,9 +893,11 @@ AlsaOutput::CancelInternal() noexcept
 	ring_buffer->reset();
 
 	active = false;
+	waiting = false;
 
 	MultiSocketMonitor::Reset();
 	defer_invalidate_sockets.Cancel();
+	silence_timer.Cancel();
 }
 
 void
@@ -879,6 +926,7 @@ AlsaOutput::Close() noexcept
 	BlockingCall(GetEventLoop(), [this](){
 			MultiSocketMonitor::Reset();
 			defer_invalidate_sockets.Cancel();
+			silence_timer.Cancel();
 		});
 
 	period_buffer.Free();
@@ -927,7 +975,7 @@ AlsaOutput::Play(const void *chunk, size_t size)
 std::chrono::steady_clock::duration
 AlsaOutput::PrepareSockets() noexcept
 {
-	if (!LockIsActive()) {
+	if (!LockIsActiveAndNotWaiting()) {
 		ClearSocketList();
 		return std::chrono::steady_clock::duration(-1);
 	}
@@ -992,27 +1040,41 @@ try {
 			   whenever more data arrives */
 			/* the same applies when there is still enough
 			   data in the ALSA-PCM buffer (determined by
-			   snd_pcm_avail()); this can happend at the
+			   snd_pcm_avail()); this can happen at the
 			   start of playback, when our ring_buffer is
 			   smaller than the ALSA-PCM buffer */
 
 			{
 				const std::lock_guard<Mutex> lock(mutex);
-				active = false;
+				waiting = true;
 				cond.notify_one();
 			}
 
 			/* avoid race condition: see if data has
 			   arrived meanwhile before disabling the
-			   event (but after clearing the "active"
+			   event (but after setting the "waiting"
 			   flag) */
 			if (!CopyRingToPeriodBuffer()) {
 				MultiSocketMonitor::Reset();
 				defer_invalidate_sockets.Cancel();
+
+				/* just in case Play() doesn't get
+				   called soon enough, schedule a
+				   timer which generates silence
+				   before the xrun occurs */
+				/* the timer fires in half of a
+				   period; this short duration may
+				   produce a few more wakeups than
+				   necessary, but should be small
+				   enough to avoid the xrun */
+				silence_timer.Schedule(effective_period_duration / 2);
 			}
 
 			return;
 		}
+
+		if (throttle_silence_log.CheckUpdate(std::chrono::seconds(5)))
+			FormatWarning(alsa_output_domain, "Decoder is too slow; playing silence to avoid xrun");
 
 		/* insert some silence if the buffer has not enough
 		   data yet, to avoid ALSA xrun */
