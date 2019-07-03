@@ -79,8 +79,9 @@ public:
 	}
 
 	AllocatedSocketAddress &operator=(AllocatedSocketAddress &&src) noexcept {
-		std::swap(address, src.address);
-		std::swap(size, src.size);
+		using std::swap;
+		swap(address, src.address);
+		swap(size, src.size);
 		return *this;
 	}
 
