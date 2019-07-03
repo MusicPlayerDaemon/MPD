@@ -1,4 +1,4 @@
-ver 0.21.11 (not yet released)
+ver 0.21.11 (2019/07/03)
 * input
   - tidal: deprecated because Tidal has changed the protocol
 * decoder
