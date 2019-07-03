@@ -89,7 +89,7 @@ private:
 	}
 
 	/**
-	 * Throws #std::runtime_error on error.
+	 * Throws on error.
 	 */
 	void SetupContext();
 };

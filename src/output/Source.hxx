@@ -147,7 +147,7 @@ public:
 	/**
 	 * Ensure that ReadTag() or PeekData() return any input.
 	 *
-	 * Throws std::runtime_error on error
+	 * Throws on error
 	 *
 	 * @param mutex the #Mutex which protects the
 	 * #SharedPipeConsumer; it is locked by the caller, and may be

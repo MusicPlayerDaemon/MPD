@@ -248,7 +248,7 @@ private:
 	 * Set up the snd_pcm_t object which was opened by the caller.
 	 * Set up the configured settings and the audio format.
 	 *
-	 * Throws #std::runtime_error on error.
+	 * Throws on error.
 	 */
 	void Setup(AudioFormat &audio_format, PcmExport::Params &params);
 

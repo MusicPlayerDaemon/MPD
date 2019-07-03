@@ -175,7 +175,7 @@ public:
 	/**
 	 * Caller must lock the mutex.
 	 *
-	 * Throws #std::runtime_error on error.
+	 * Throws on error.
 	 */
 	void OpenEncoder(AudioFormat &audio_format);
 
@@ -252,7 +252,7 @@ public:
 	/**
 	 * Mutext must not be locked.
 	 *
-	 * Throws #std::runtime_error on error.
+	 * Throws on error.
 	 */
 	void EncodeAndPlay(const void *chunk, size_t size);
 

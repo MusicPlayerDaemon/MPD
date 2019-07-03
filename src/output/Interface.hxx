@@ -80,7 +80,7 @@ public:
 	 * Enable the device.  This may allocate resources, preparing
 	 * for the device to be opened.
 	 *
-	 * Throws #std::runtime_error on error.
+	 * Throws on error.
 	 */
 	virtual void Enable() {}
 
@@ -93,7 +93,7 @@ public:
 	/**
 	 * Really open the device.
 	 *
-	 * Throws #std::runtime_error on error.
+	 * Throws on error.
 	 *
 	 * @param audio_format the audio format in which data is going
 	 * to be delivered; may be modified by the plugin
@@ -150,7 +150,7 @@ public:
 	 * Play a chunk of audio data.  The method blocks until at
 	 * least one audio frame is consumed.
 	 *
-	 * Throws #std::runtime_error on error.
+	 * Throws on error.
 	 *
 	 * @return the number of bytes played (must be a multiple of
 	 * the frame size)

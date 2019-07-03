@@ -52,7 +52,7 @@ struct AudioOutputPlugin {
 	 * Configure and initialize the device, but do not open it
 	 * yet.
 	 *
-	 * Throws #std::runtime_error on error.
+	 * Throws on error.
 	 *
 	 * @param param the configuration section, or nullptr if there is
 	 * no configuration

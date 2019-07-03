@@ -120,7 +120,7 @@ private:
 	/**
 	 * Reopen the device with the saved audio_format, without any probing.
 	 *
-	 * Throws #std::runtime_error on error.
+	 * Throws on error.
 	 */
 	void Reopen();
 
@@ -284,7 +284,7 @@ oss_try_ioctl(FileDescriptor fd, unsigned long request, int value,
  * Set up the channel number, and attempts to find alternatives if the
  * specified number is not supported.
  *
- * Throws #std::runtime_error on error.
+ * Throws on error.
  */
 static void
 oss_setup_channels(FileDescriptor fd, AudioFormat &audio_format)
@@ -333,7 +333,7 @@ oss_setup_channels(FileDescriptor fd, AudioFormat &audio_format)
  * Set up the sample rate, and attempts to find alternatives if the
  * specified sample rate is not supported.
  *
- * Throws #std::runtime_error on error.
+ * Throws on error.
  */
 static void
 oss_setup_sample_rate(FileDescriptor fd, AudioFormat &audio_format)

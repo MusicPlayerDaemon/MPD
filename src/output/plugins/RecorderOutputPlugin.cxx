@@ -97,7 +97,7 @@ private:
 	/**
 	 * Finish the encoder and commit the file.
 	 *
-	 * Throws #std::runtime_error on error.
+	 * Throws on error.
 	 */
 	void Commit();
 

@@ -232,7 +232,7 @@ public:
 	AudioOutputControl &operator=(const AudioOutputControl &) = delete;
 
 	/**
-	 * Throws #std::runtime_error on error.
+	 * Throws on error.
 	 */
 	void Configure(const ConfigBlock &block);
 
@@ -383,7 +383,7 @@ public:
 	/**
 	 * Caller must lock the mutex.
 	 *
-	 * Throws #std::runtime_error on error.
+	 * Throws on error.
 	 */
 	void InternalOpen2(AudioFormat in_audio_format);
 

@@ -125,7 +125,7 @@ public:
 	FilterObserver convert_filter;
 
 	/**
-	 * Throws #std::runtime_error on error.
+	 * Throws on error.
 	 */
 	FilteredAudioOutput(const char *_plugin_name,
 			    std::unique_ptr<AudioOutput> &&_output,
@@ -176,7 +176,7 @@ public:
 	void SetAttribute(std::string &&name, std::string &&value);
 
 	/**
-	 * Throws #std::runtime_error on error.
+	 * Throws on error.
 	 */
 	void Enable();
 
@@ -195,7 +195,7 @@ public:
 	 * Invoke OutputPlugin::open() and configure the
 	 * #ConvertFilter.
 	 *
-	 * Throws #std::runtime_error on error.
+	 * Throws on error.
 	 *
 	 * Caller must not lock the mutex.
 	 */
@@ -236,7 +236,7 @@ public:
 };
 
 /**
- * Throws #std::runtime_error on error.
+ * Throws on error.
  */
 std::unique_ptr<FilteredAudioOutput>
 audio_output_new(EventLoop &event_loop,

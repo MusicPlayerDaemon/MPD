@@ -83,7 +83,7 @@ struct JackOutput final : AudioOutput {
 	 * Connect the JACK client and performs some basic setup
 	 * (e.g. register callbacks).
 	 *
-	 * Throws #std::runtime_error on error.
+	 * Throws on error.
 	 */
 	void Connect();
 
@@ -97,7 +97,7 @@ struct JackOutput final : AudioOutput {
 	}
 
 	/**
-	 * Throws #std::runtime_error on error.
+	 * Throws on error.
 	 */
 	void Start();
 	void Stop() noexcept;
@@ -141,7 +141,7 @@ struct JackOutput final : AudioOutput {
 static constexpr Domain jack_output_domain("jack_output");
 
 /**
- * Throws #std::runtime_error on error.
+ * Throws on error.
  */
 static unsigned
 parse_port_list(const char *source, std::string dest[])

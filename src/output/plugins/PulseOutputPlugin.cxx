@@ -109,7 +109,7 @@ private:
 	/**
 	 * Attempt to connect asynchronously to the PulseAudio server.
 	 *
-	 * Throws #std::runtime_error on error.
+	 * Throws on error.
 	 */
 	void Connect();
 
@@ -118,7 +118,7 @@ private:
 	 *
 	 * Caller must lock the main loop.
 	 *
-	 * Throws #std::runtime_error on error.
+	 * Throws on error.
 	 */
 	void SetupContext();
 
@@ -140,7 +140,7 @@ private:
 	 *
 	 * Caller must lock the main loop.
 	 *
-	 * Throws #std::runtime_error on error.
+	 * Throws on error.
 	 */
 	void WaitConnection();
 
@@ -149,7 +149,7 @@ private:
 	 *
 	 * Caller must lock the main loop.
 	 *
-	 * Throws #std::runtime_error on error.
+	 * Throws on error.
 	 */
 	void SetupStream(const pa_sample_spec &ss);
 
@@ -163,14 +163,14 @@ private:
 	 * not.  The mainloop must be locked before calling this
 	 * function.
 	 *
-	 * Throws #std::runtime_error on error.
+	 * Throws on error.
 	 */
 	void WaitStream();
 
 	/**
 	 * Sets cork mode on the stream.
 	 *
-	 * Throws #std::runtime_error on error.
+	 * Throws on error.
 	 */
 	void StreamPause(bool pause);
 };
