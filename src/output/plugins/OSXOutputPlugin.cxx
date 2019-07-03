@@ -396,7 +396,7 @@ osx_output_set_device_format(AudioDeviceID dev_id,
 	OSStatus err = AudioObjectGetPropertyDataSize(dev_id, &aopa, 0, NULL,
 						      &property_size);
 	if (err != noErr)
-		throw FormatRuntimeError("Cannot get number of streams: %d\n", err);
+		throw FormatRuntimeError("Cannot get number of streams: %d", err);
 
 	const size_t n_streams = property_size / sizeof(AudioStreamID);
 	static constexpr size_t MAX_STREAMS = 64;
@@ -407,7 +407,7 @@ osx_output_set_device_format(AudioDeviceID dev_id,
 	err = AudioObjectGetPropertyData(dev_id, &aopa, 0, NULL,
 					 &property_size, streams);
 	if (err != noErr)
-		throw FormatRuntimeError("Cannot get streams: %d\n", err);
+		throw FormatRuntimeError("Cannot get streams: %d", err);
 
 	bool format_found = false;
 	int output_stream;
@@ -425,7 +425,7 @@ osx_output_set_device_format(AudioDeviceID dev_id,
 						 &property_size,
 						 &direction);
 		if (err != noErr)
-			throw FormatRuntimeError("Cannot get streams direction: %d\n",
+			throw FormatRuntimeError("Cannot get streams direction: %d",
 						 err);
 
 		if (direction != 0)
@@ -485,7 +485,7 @@ osx_output_set_device_format(AudioDeviceID dev_id,
 						 sizeof(output_format),
 						 &output_format);
 		if (err != noErr)
-			throw FormatRuntimeError("Failed to change the stream format: %d\n",
+			throw FormatRuntimeError("Failed to change the stream format: %d",
 						 err);
 	}
 
