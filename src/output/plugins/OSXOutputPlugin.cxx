@@ -40,7 +40,7 @@
 #include <CoreServices/CoreServices.h>
 #include <boost/lockfree/spsc_queue.hpp>
 
-#include <memory>
+#include <atomic>
 
 static constexpr unsigned MPD_OSX_BUFFER_TIME_MS = 100;
 
@@ -77,6 +77,7 @@ struct OSXOutput final : AudioOutput {
 	 */
 	bool dop_setting;
 	bool dop_enabled;
+	std::atomic_bool cancel;
 	Manual<PcmExport> pcm_export;
 #endif
 
@@ -493,8 +494,7 @@ osx_output_set_device_format(AudioDeviceID dev_id,
 }
 
 static OSStatus
-osx_output_set_buffer_size(AudioUnit au, AudioStreamBasicDescription desc,
-			   UInt32 *frame_size)
+osx_output_set_buffer_size(AudioUnit au)
 {
 	AudioValueRange value_range = {0, 0};
 	UInt32 property_size = sizeof(AudioValueRange);
@@ -531,14 +531,6 @@ osx_output_set_buffer_size(AudioUnit au, AudioStreamBasicDescription desc,
 			      "Cannot get the buffer frame size: %d",
 			      err);
 		return err;
-	}
-
-	buffer_frame_size *= desc.mBytesPerFrame;
-
-	// We set the frame size to a power of two integer that
-	// is larger than buffer_frame_size.
-	while (*frame_size < buffer_frame_size + 1) {
-		*frame_size <<= 1;
 	}
 
 	return noErr;
@@ -717,7 +709,28 @@ osx_render(void *vdata,
 {
 	OSXOutput *od = (OSXOutput *) vdata;
 
-	int count = in_number_frames * od->asbd.mBytesPerFrame;
+	if (od->cancel) {
+		od->ring_buffer->reset();
+		od->cancel = false;
+	}
+
+	// Wait until data is available.
+	while (!od->ring_buffer->read_available());
+
+	size_t copy_frames =
+		od->ring_buffer->read_available() / od->asbd.mBytesPerFrame;
+	if (copy_frames > in_number_frames) {
+		copy_frames = in_number_frames;
+	}
+#ifdef ENABLE_DSD
+	// In DoP, we always cut off at even frames to preserve the
+	// DoP marker bits pattern.
+	if (od->dop_enabled) {
+		copy_frames = copy_frames / 2 * 2;
+	}
+#endif
+	size_t count = copy_frames * od->asbd.mBytesPerFrame;
+
 	buffer_list->mBuffers[0].mDataByteSize =
 		od->ring_buffer->pop((uint8_t *)buffer_list->mBuffers[0].mData,
 				     count);
@@ -872,22 +885,19 @@ OSXOutput::Open(AudioFormat &audio_format)
 					 errormsg);
 	}
 
-	UInt32 buffer_frame_size = 1;
-	status = osx_output_set_buffer_size(au, asbd, &buffer_frame_size);
+	status = osx_output_set_buffer_size(au);
 	if (status != noErr) {
 		osx_os_status_to_cstring(status, errormsg, sizeof(errormsg));
 		throw FormatRuntimeError("Unable to set frame size: %s",
 					 errormsg);
 	}
 
-	size_t ring_buffer_size = std::max<size_t>(buffer_frame_size,
-						   MPD_OSX_BUFFER_TIME_MS * audio_format.GetFrameSize() * audio_format.sample_rate / 1000);
+	size_t ring_buffer_size = MPD_OSX_BUFFER_TIME_MS * audio_format.GetFrameSize() * audio_format.sample_rate / 1000;
 
 #ifdef ENABLE_DSD
 	if (dop_enabled) {
 		pcm_export->Open(audio_format.format, audio_format.channels, params);
-		ring_buffer_size = std::max<size_t>(buffer_frame_size,
-						   MPD_OSX_BUFFER_TIME_MS * pcm_export->GetOutputFrameSize() * asbd.mSampleRate / 1000);
+		ring_buffer_size = MPD_OSX_BUFFER_TIME_MS * pcm_export->GetOutputFrameSize() * asbd.mSampleRate / 1000;
 	}
 #endif
 	ring_buffer = new boost::lockfree::spsc_queue<uint8_t>(ring_buffer_size);
@@ -900,6 +910,7 @@ OSXOutput::Open(AudioFormat &audio_format)
 					 errormsg);
 	}
 	pause = false;
+	cancel = false;
 }
 
 size_t
@@ -914,6 +925,7 @@ OSXOutput::Play(const void *chunk, size_t size)
 			throw std::runtime_error("Unable to restart audio output after pause");
 		}
 	}
+	while (cancel);
 #ifdef ENABLE_DSD
 	if (dop_enabled) {
 		const auto e = pcm_export->Export({chunk, size});
@@ -930,7 +942,7 @@ OSXOutput::Play(const void *chunk, size_t size)
 std::chrono::steady_clock::duration
 OSXOutput::Delay() const noexcept
 {
-	return ring_buffer->write_available() && !pause
+	return !pause && (cancel || ring_buffer->write_available())
 		? std::chrono::steady_clock::duration::zero()
 		: std::chrono::milliseconds(MPD_OSX_BUFFER_TIME_MS / 4);
 }
@@ -947,12 +959,10 @@ bool OSXOutput::Pause()
 void
 OSXOutput::Cancel() noexcept
 {
-	AudioOutputUnitStop(au);
-	ring_buffer->reset();
+	cancel = true;
 #ifdef ENABLE_DSD
 	pcm_export->Reset();
 #endif
-	AudioOutputUnitStart(au);
 }
 
 int
