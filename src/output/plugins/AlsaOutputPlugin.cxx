@@ -104,12 +104,10 @@ class AlsaOutput final
 	/** the libasound PCM device handle */
 	snd_pcm_t *pcm;
 
-#ifndef NDEBUG
 	/**
 	 * The size of one audio frame passed to method play().
 	 */
 	size_t in_frame_size;
-#endif
 
 	/**
 	 * The size of one audio frame passed to libasound.
@@ -297,6 +295,17 @@ private:
 		defer_invalidate_sockets.Schedule();
 		return true;
 	}
+
+	/**
+	 * Wait until there is some space available in the ring buffer.
+	 *
+	 * Caller must not lock the mutex.
+	 *
+	 * Throws on error.
+	 *
+	 * @return the number of frames available for writing
+	 */
+	size_t LockWaitWriteAvailable();
 
 	int Recover(int err) noexcept;
 
@@ -716,9 +725,7 @@ AlsaOutput::Open(AudioFormat &audio_format)
 			 audio_format.channels,
 			 params);
 
-#ifndef NDEBUG
 	in_frame_size = audio_format.GetFrameSize();
-#endif
 	out_frame_size = pcm_export->GetOutputFrameSize();
 
 	drain = false;
@@ -939,14 +946,10 @@ AlsaOutput::Close() noexcept
 }
 
 size_t
-AlsaOutput::Play(const void *chunk, size_t size)
+AlsaOutput::LockWaitWriteAvailable()
 {
-	assert(size > 0);
-	assert(size % in_frame_size == 0);
-
-	const auto e = pcm_export->Export({chunk, size});
-	if (e.empty())
-		return size;
+	const size_t out_block_size = pcm_export->GetOutputBlockSize();
+	const size_t min_available = 2 * out_block_size;
 
 	std::unique_lock<Mutex> lock(mutex);
 
@@ -954,10 +957,15 @@ AlsaOutput::Play(const void *chunk, size_t size)
 		if (error)
 			std::rethrow_exception(error);
 
-		size_t bytes_written = ring_buffer->push((const uint8_t *)e.data,
-							 e.size);
-		if (bytes_written > 0)
-			return pcm_export->CalcInputSize(bytes_written);
+		size_t write_available = ring_buffer->write_available();
+		if (write_available >= min_available) {
+			/* reserve room for one extra block, just in
+			   case PcmExport::Export() has some partial
+			   block data in its internal buffer */
+			write_available -= out_block_size;
+
+			return write_available / out_frame_size;
+		}
 
 		/* now that the ring_buffer is full, we can activate
 		   the socket handlers to trigger the first
@@ -973,6 +981,29 @@ AlsaOutput::Play(const void *chunk, size_t size)
 		   ring_buffer */
 		cond.wait(lock);
 	}
+}
+
+size_t
+AlsaOutput::Play(const void *chunk, size_t size)
+{
+	assert(size > 0);
+	assert(size % in_frame_size == 0);
+
+	const size_t max_frames = LockWaitWriteAvailable();
+	const size_t max_size = max_frames * in_frame_size;
+	if (size > max_size)
+		size = max_size;
+
+	const auto e = pcm_export->Export({chunk, size});
+	if (e.empty())
+		return size;
+
+	size_t bytes_written = ring_buffer->push((const uint8_t *)e.data,
+						 e.size);
+	assert(bytes_written == e.size);
+	(void)bytes_written;
+
+	return size;
 }
 
 std::chrono::steady_clock::duration
