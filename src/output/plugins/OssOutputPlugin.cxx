@@ -605,7 +605,6 @@ try {
 	result = oss_try_ioctl(fd, SNDCTL_DSP_CHANNELS,
 			       audio_format.channels, msg1);
 	if (result != SUCCESS) {
-		DoClose();
 		throw std::runtime_error(msg1);
 	}
 
@@ -613,7 +612,6 @@ try {
 	result = oss_try_ioctl(fd, SNDCTL_DSP_SPEED,
 			       audio_format.sample_rate, msg2);
 	if (result != SUCCESS) {
-		DoClose();
 		throw std::runtime_error(msg2);
 	}
 
@@ -622,7 +620,6 @@ try {
 			       oss_format,
 			       msg3);
 	if (result != SUCCESS) {
-		DoClose();
 		throw std::runtime_error(msg3);
 	}
 } catch (...) {
