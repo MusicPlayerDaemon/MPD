@@ -50,7 +50,7 @@ public:
 	 * usable for more data, and only Read() and Close() can be
 	 * called.
 	 *
-	 * Throws #std::runtime_error on error.
+	 * Throws on error.
 	 */
 	virtual void End() {
 	}
@@ -59,7 +59,7 @@ public:
 	 * Flushes an encoder object, make everything which might
 	 * currently be buffered available by Read().
 	 *
-	 * Throws #std::runtime_error on error.
+	 * Throws on error.
 	 */
 	virtual void Flush() {
 	}
@@ -69,7 +69,7 @@ public:
 	 * some encoders to flush the previous sub-stream, in
 	 * preparation to begin a new one.
 	 *
-	 * Throws #std::runtime_error on error.
+	 * Throws on error.
 	 */
 	virtual void PreTag() {
 	}
@@ -80,7 +80,7 @@ public:
 	 * Instructions: call PreTag(); then obtain flushed data with
 	 * Read(); finally call Tag().
 	 *
-	 * Throws #std::runtime_error on error.
+	 * Throws on error.
 	 *
 	 * @param tag the tag object
 	 */
@@ -90,7 +90,7 @@ public:
 	/**
 	 * Writes raw PCM data to the encoder.
 	 *
-	 * Throws #std::runtime_error on error.
+	 * Throws on error.
 	 *
 	 * @param data the buffer containing PCM samples
 	 * @param length the length of the buffer in bytes
@@ -122,7 +122,7 @@ public:
 	 * first encoder_write() call, you should invoke
 	 * encoder_read() to obtain the file header.
 	 *
-	 * Throws #std::runtime_error on error.
+	 * Throws on error.
 	 *
 	 * @param audio_format the encoder's input audio format; the plugin
 	 * may modify the struct to adapt it to its abilities
