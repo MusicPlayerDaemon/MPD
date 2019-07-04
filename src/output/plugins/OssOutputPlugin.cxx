@@ -124,7 +124,7 @@ private:
 	 */
 	void Reopen();
 
-	void DoClose();
+	void DoClose() noexcept;
 };
 
 static constexpr Domain oss_output_domain("oss_output");
@@ -138,7 +138,7 @@ enum oss_stat {
 };
 
 static enum oss_stat
-oss_stat_device(const char *device, int *errno_r)
+oss_stat_device(const char *device, int *errno_r) noexcept
 {
 	struct stat st;
 
@@ -166,7 +166,7 @@ oss_stat_device(const char *device, int *errno_r)
 static const char *const default_devices[] = { "/dev/sound/dsp", "/dev/dsp" };
 
 static bool
-oss_output_test_default_device(void)
+oss_output_test_default_device() noexcept
 {
 	for (int i = ARRAY_SIZE(default_devices); --i >= 0; ) {
 		UniqueFileDescriptor fd;
@@ -231,7 +231,7 @@ OssOutput::Create(EventLoop &, const ConfigBlock &block)
 }
 
 void
-OssOutput::DoClose()
+OssOutput::DoClose() noexcept
 {
 	if (fd.IsDefined())
 		fd.Close();
