@@ -55,7 +55,7 @@ class OpusEncoder final : public OggEncoder {
 
 public:
 	OpusEncoder(AudioFormat &_audio_format, ::OpusEncoder *_enc, bool _chaining);
-	~OpusEncoder() override;
+	~OpusEncoder() noexcept override;
 
 	/* virtual methods from class Encoder */
 	void End() override;
@@ -68,9 +68,9 @@ private:
 	void DoEncode(bool eos);
 	void WriteSilence(unsigned fill_frames);
 
-	void GenerateHeaders(const Tag *tag);
-	void GenerateHead();
-	void GenerateTags(const Tag *tag);
+	void GenerateHeaders(const Tag *tag) noexcept;
+	void GenerateHead() noexcept;
+	void GenerateTags(const Tag *tag) noexcept;
 };
 
 class PreparedOpusEncoder final : public PreparedEncoder {
@@ -85,7 +85,7 @@ public:
 	/* virtual methods from class PreparedEncoder */
 	Encoder *Open(AudioFormat &audio_format) override;
 
-	const char *GetMimeType() const override {
+	const char *GetMimeType() const noexcept override {
 		return "audio/ogg";
 	}
 };
@@ -178,7 +178,7 @@ PreparedOpusEncoder::Open(AudioFormat &audio_format)
 	return new OpusEncoder(audio_format, enc, chaining);
 }
 
-OpusEncoder::~OpusEncoder()
+OpusEncoder::~OpusEncoder() noexcept
 {
 	delete[] buffer;
 	opus_encoder_destroy(enc);
@@ -277,14 +277,14 @@ OpusEncoder::Write(const void *_data, size_t length)
 }
 
 void
-OpusEncoder::GenerateHeaders(const Tag *tag)
+OpusEncoder::GenerateHeaders(const Tag *tag) noexcept
 {
 	GenerateHead();
 	GenerateTags(tag);
 }
 
 void
-OpusEncoder::GenerateHead()
+OpusEncoder::GenerateHead() noexcept
 {
 	unsigned char header[19];
 	memcpy(header, "OpusHead", 8);
@@ -308,7 +308,7 @@ OpusEncoder::GenerateHead()
 }
 
 void
-OpusEncoder::GenerateTags(const Tag *tag)
+OpusEncoder::GenerateTags(const Tag *tag) noexcept
 {
 	const char *version = opus_get_version_string();
 	size_t version_length = strlen(version);

@@ -33,12 +33,12 @@ class WaveEncoder final : public Encoder {
 	DynamicFifoBuffer<uint8_t> buffer;
 
 public:
-	WaveEncoder(AudioFormat &audio_format);
+	WaveEncoder(AudioFormat &audio_format) noexcept;
 
 	/* virtual methods from class Encoder */
 	void Write(const void *data, size_t length) override;
 
-	size_t Read(void *dest, size_t length) override {
+	size_t Read(void *dest, size_t length) noexcept override {
 		return buffer.Read((uint8_t *)dest, length);
 	}
 };
@@ -49,7 +49,7 @@ class PreparedWaveEncoder final : public PreparedEncoder {
 		return new WaveEncoder(audio_format);
 	}
 
-	const char *GetMimeType() const override {
+	const char *GetMimeType() const noexcept override {
 		return "audio/wav";
 	}
 };
@@ -72,7 +72,7 @@ struct WaveHeader {
 
 static void
 fill_wave_header(WaveHeader *header, int channels, int bits,
-		int freq, int block_size)
+		int freq, int block_size) noexcept
 {
 	int data_size = 0x0FFFFFFF;
 
@@ -102,7 +102,7 @@ wave_encoder_init(gcc_unused const ConfigBlock &block)
 	return new PreparedWaveEncoder();
 }
 
-WaveEncoder::WaveEncoder(AudioFormat &audio_format)
+WaveEncoder::WaveEncoder(AudioFormat &audio_format) noexcept
 	:Encoder(false),
 	 buffer(8192)
 {
@@ -157,7 +157,7 @@ pcm16_to_wave(uint16_t *dst16, const uint16_t *src16, size_t length)
 }
 
 static size_t
-pcm32_to_wave(uint32_t *dst32, const uint32_t *src32, size_t length)
+pcm32_to_wave(uint32_t *dst32, const uint32_t *src32, size_t length) noexcept
 {
 	size_t cnt = length >> 2;
 	while (cnt > 0){
@@ -168,7 +168,7 @@ pcm32_to_wave(uint32_t *dst32, const uint32_t *src32, size_t length)
 }
 
 static size_t
-pcm24_to_wave(uint8_t *dst8, const uint32_t *src32, size_t length)
+pcm24_to_wave(uint8_t *dst8, const uint32_t *src32, size_t length) noexcept
 {
 	uint32_t value;
 	uint8_t *dst_old = dst8;

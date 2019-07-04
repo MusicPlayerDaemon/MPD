@@ -33,11 +33,11 @@ class Encoder {
 	const bool implements_tag;
 
 public:
-	explicit Encoder(bool _implements_tag)
+	explicit Encoder(bool _implements_tag) noexcept
 		:implements_tag(_implements_tag) {}
-	virtual ~Encoder() {}
+	virtual ~Encoder() noexcept {}
 
-	bool ImplementsTag() const {
+	bool ImplementsTag() const noexcept {
 		return implements_tag;
 	}
 
@@ -111,7 +111,7 @@ public:
 
 class PreparedEncoder {
 public:
-	virtual ~PreparedEncoder() {}
+	virtual ~PreparedEncoder() noexcept {}
 
 	/**
 	 * Opens the object.  You must call this prior to using it.
@@ -134,7 +134,7 @@ public:
 	 *
 	 * @return an constant string, nullptr on failure
 	 */
-	virtual const char *GetMimeType() const {
+	virtual const char *GetMimeType() const noexcept {
 		return nullptr;
 	}
 };

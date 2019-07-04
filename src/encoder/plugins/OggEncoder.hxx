@@ -50,7 +50,7 @@ public:
 		flush = true;
 	}
 
-	size_t Read(void *dest, size_t length) override {
+	size_t Read(void *dest, size_t length) noexcept override {
 		ogg_page page;
 		bool success = stream.PageOut(page);
 		if (!success) {

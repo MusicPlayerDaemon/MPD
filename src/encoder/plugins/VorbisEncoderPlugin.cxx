@@ -38,7 +38,7 @@ class VorbisEncoder final : public OggEncoder {
 public:
 	VorbisEncoder(float quality, int bitrate, AudioFormat &_audio_format);
 
-	virtual ~VorbisEncoder() {
+	~VorbisEncoder() noexcept override {
 		vorbis_block_clear(&vb);
 		vorbis_dsp_clear(&vd);
 		vorbis_info_clear(&vi);
@@ -70,7 +70,7 @@ public:
 	/* virtual methods from class PreparedEncoder */
 	Encoder *Open(AudioFormat &audio_format) override;
 
-	const char *GetMimeType() const override {
+	const char *GetMimeType() const noexcept override {
 		return "audio/ogg";
 	}
 };
