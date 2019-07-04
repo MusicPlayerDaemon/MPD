@@ -767,13 +767,16 @@ AlsaOutput::Recover(int err) noexcept
 		written = false;
 		err = snd_pcm_prepare(pcm);
 		break;
+
 	case SND_PCM_STATE_DISCONNECTED:
+	case SND_PCM_STATE_DRAINING:
+		/* can't play in this state; throw the error */
 		break;
-	/* this is no error, so just keep running */
+
 	case SND_PCM_STATE_PREPARED:
 	case SND_PCM_STATE_RUNNING:
-	case SND_PCM_STATE_DRAINING:
-		err = 0;
+		/* the state is ok, but the error was unexpected;
+		   throw it */
 		break;
 
 	default:
