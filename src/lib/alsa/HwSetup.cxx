@@ -94,10 +94,6 @@ TryFormatDsd(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
 	int err = TryFormatOrByteSwap(pcm, hwparams, fmt, params);
 
 #if defined(ENABLE_DSD) && defined(HAVE_ALSA_DSD_U32)
-	if (err == 0) {
-		params.dsd_mode = PcmExport::DsdMode::NONE;
-	}
-
 	if (err == -EINVAL && fmt == SND_PCM_FORMAT_DSD_U8) {
 		/* attempt to switch to DSD_U32 */
 		fmt = IsLittleEndian()
