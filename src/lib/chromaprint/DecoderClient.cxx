@@ -44,7 +44,8 @@ ChromaprintDecoderClient::Finish()
 }
 
 void
-ChromaprintDecoderClient::Ready(AudioFormat audio_format, bool, SignedSongTime)
+ChromaprintDecoderClient::Ready(AudioFormat audio_format, bool,
+				SignedSongTime) noexcept
 {
 	/* feed the first two minutes into libchromaprint */
 	remaining_bytes = audio_format.TimeToSize(std::chrono::minutes(2));
@@ -87,7 +88,8 @@ ChromaprintDecoderClient::SubmitData(InputStream *,
 }
 
 size_t
-ChromaprintDecoderClient::Read(InputStream &is, void *buffer, size_t length)
+ChromaprintDecoderClient::Read(InputStream &is,
+			       void *buffer, size_t length) noexcept
 {
 	try {
 		return is.LockRead(buffer, length);

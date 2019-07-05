@@ -161,14 +161,15 @@ public:
 
 	/* virtual methods from DecoderClient */
 	void Ready(AudioFormat audio_format,
-		   bool seekable, SignedSongTime duration) override;
+		   bool seekable, SignedSongTime duration) noexcept override;
 	DecoderCommand GetCommand() noexcept override;
 	void CommandFinished() noexcept override;
 	SongTime GetSeekTime() noexcept override;
 	uint64_t GetSeekFrame() noexcept override;
 	void SeekError() noexcept override;
 	InputStreamPtr OpenUri(const char *uri) override;
-	size_t Read(InputStream &is, void *buffer, size_t length) override;
+	size_t Read(InputStream &is,
+		    void *buffer, size_t length) noexcept override;
 	void SubmitTimestamp(FloatDuration t) noexcept override;
 	DecoderCommand SubmitData(InputStream *is,
 				  const void *data, size_t length,

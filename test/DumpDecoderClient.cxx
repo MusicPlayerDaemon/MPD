@@ -29,7 +29,7 @@
 void
 DumpDecoderClient::Ready(const AudioFormat audio_format,
 			 gcc_unused bool seekable,
-			 SignedSongTime duration)
+			 SignedSongTime duration) noexcept
 {
 	assert(!initialized);
 	assert(audio_format.IsValid());
@@ -76,7 +76,7 @@ DumpDecoderClient::OpenUri(const char *uri)
 }
 
 size_t
-DumpDecoderClient::Read(InputStream &is, void *buffer, size_t length)
+DumpDecoderClient::Read(InputStream &is, void *buffer, size_t length) noexcept
 {
 	try {
 		return is.LockRead(buffer, length);

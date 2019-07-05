@@ -255,7 +255,7 @@ DecoderBridge::UpdateStreamTag(InputStream *is) noexcept
 
 void
 DecoderBridge::Ready(const AudioFormat audio_format,
-		     bool seekable, SignedSongTime duration)
+		     bool seekable, SignedSongTime duration) noexcept
 {
 	assert(convert == nullptr);
 	assert(stream_tag == nullptr);
@@ -401,7 +401,7 @@ DecoderBridge::OpenUri(const char *uri)
 }
 
 size_t
-DecoderBridge::Read(InputStream &is, void *buffer, size_t length)
+DecoderBridge::Read(InputStream &is, void *buffer, size_t length) noexcept
 try {
 	assert(buffer != nullptr);
 	assert(dc.state == DecoderState::START ||

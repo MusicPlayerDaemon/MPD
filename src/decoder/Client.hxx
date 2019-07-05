@@ -48,7 +48,8 @@ public:
 	 * unknown
 	 */
 	virtual void Ready(AudioFormat audio_format,
-			   bool seekable, SignedSongTime duration) = 0;
+			   bool seekable,
+			   SignedSongTime duration) noexcept = 0;
 
 	/**
 	 * Determines the pending decoder command.
@@ -106,7 +107,8 @@ public:
 	 * @return the number of bytes read, or 0 if one of the following
 	 * occurs: end of file; error; command (like SEEK or STOP).
 	 */
-	virtual size_t Read(InputStream &is, void *buffer, size_t length) = 0;
+	virtual size_t Read(InputStream &is,
+			    void *buffer, size_t length) noexcept = 0;
 
 	/**
 	 * Sets the time stamp for the next data chunk [seconds].  The MPD
