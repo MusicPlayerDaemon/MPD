@@ -33,19 +33,19 @@
 #include <wchar.h>
 
 constexpr bool
-IsASCII(const wchar_t ch)
+IsASCII(const wchar_t ch) noexcept
 {
 	return (ch & ~0x7f) == 0;
 }
 
 constexpr bool
-IsWhitespaceOrNull(const wchar_t ch)
+IsWhitespaceOrNull(const wchar_t ch) noexcept
 {
 	return (unsigned)ch <= 0x20;
 }
 
 constexpr bool
-IsWhitespaceNotNull(const wchar_t ch)
+IsWhitespaceNotNull(const wchar_t ch) noexcept
 {
 	return ch > 0 && ch <= 0x20;
 }
@@ -57,43 +57,43 @@ IsWhitespaceNotNull(const wchar_t ch)
  * matches.
  */
 constexpr bool
-IsWhitespaceFast(const wchar_t ch)
+IsWhitespaceFast(const wchar_t ch) noexcept
 {
 	return IsWhitespaceOrNull(ch);
 }
 
 constexpr bool
-IsPrintableASCII(wchar_t ch)
+IsPrintableASCII(wchar_t ch) noexcept
 {
 	return IsASCII(ch) && ch >= 0x20;
 }
 
 constexpr bool
-IsDigitASCII(wchar_t ch)
+IsDigitASCII(wchar_t ch) noexcept
 {
 	return ch >= '0' && ch <= '9';
 }
 
 constexpr bool
-IsUpperAlphaASCII(wchar_t ch)
+IsUpperAlphaASCII(wchar_t ch) noexcept
 {
 	return ch >= 'A' && ch <= 'Z';
 }
 
 constexpr bool
-IsLowerAlphaASCII(wchar_t ch)
+IsLowerAlphaASCII(wchar_t ch) noexcept
 {
 	return ch >= 'a' && ch <= 'z';
 }
 
 constexpr bool
-IsAlphaASCII(wchar_t ch)
+IsAlphaASCII(wchar_t ch) noexcept
 {
 	return IsUpperAlphaASCII(ch) || IsLowerAlphaASCII(ch);
 }
 
 constexpr bool
-IsAlphaNumericASCII(wchar_t ch)
+IsAlphaNumericASCII(wchar_t ch) noexcept
 {
 	return IsAlphaASCII(ch) || IsDigitASCII(ch);
 }
@@ -103,7 +103,7 @@ IsAlphaNumericASCII(wchar_t ch)
  * Unlike toupper(), it ignores the system locale.
  */
 constexpr wchar_t
-ToUpperASCII(wchar_t ch)
+ToUpperASCII(wchar_t ch) noexcept
 {
 	return ch >= 'a' && ch <= 'z'
 		? (ch - ('a' - 'A'))
@@ -115,7 +115,7 @@ ToUpperASCII(wchar_t ch)
  * Unlike tolower(), it ignores the system locale.
  */
 constexpr wchar_t
-ToLowerASCII(wchar_t ch)
+ToLowerASCII(wchar_t ch) noexcept
 {
 	return ch >= 'A' && ch <= 'Z'
 		? (ch + ('a' - 'A'))

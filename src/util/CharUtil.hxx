@@ -35,25 +35,25 @@
 #endif
 
 constexpr bool
-IsASCII(const unsigned char ch)
+IsASCII(const unsigned char ch) noexcept
 {
 	return ch < 0x80;
 }
 
 constexpr bool
-IsASCII(const char ch)
+IsASCII(const char ch) noexcept
 {
 	return IsASCII((unsigned char)ch);
 }
 
 constexpr bool
-IsWhitespaceOrNull(const char ch)
+IsWhitespaceOrNull(const char ch) noexcept
 {
 	return (unsigned char)ch <= 0x20;
 }
 
 constexpr bool
-IsWhitespaceNotNull(const char ch)
+IsWhitespaceNotNull(const char ch) noexcept
 {
 	return ch > 0 && ch <= 0x20;
 }
@@ -65,43 +65,43 @@ IsWhitespaceNotNull(const char ch)
  * matches.
  */
 constexpr bool
-IsWhitespaceFast(const char ch)
+IsWhitespaceFast(const char ch) noexcept
 {
 	return IsWhitespaceOrNull(ch);
 }
 
 constexpr bool
-IsPrintableASCII(char ch)
+IsPrintableASCII(char ch) noexcept
 {
 	return (signed char)ch >= 0x20;
 }
 
 constexpr bool
-IsDigitASCII(char ch)
+IsDigitASCII(char ch) noexcept
 {
 	return ch >= '0' && ch <= '9';
 }
 
 constexpr bool
-IsUpperAlphaASCII(char ch)
+IsUpperAlphaASCII(char ch) noexcept
 {
 	return ch >= 'A' && ch <= 'Z';
 }
 
 constexpr bool
-IsLowerAlphaASCII(char ch)
+IsLowerAlphaASCII(char ch) noexcept
 {
 	return ch >= 'a' && ch <= 'z';
 }
 
 constexpr bool
-IsAlphaASCII(char ch)
+IsAlphaASCII(char ch) noexcept
 {
 	return IsUpperAlphaASCII(ch) || IsLowerAlphaASCII(ch);
 }
 
 constexpr bool
-IsAlphaNumericASCII(char ch)
+IsAlphaNumericASCII(char ch) noexcept
 {
 	return IsAlphaASCII(ch) || IsDigitASCII(ch);
 }
@@ -111,7 +111,7 @@ IsAlphaNumericASCII(char ch)
  * Unlike toupper(), it ignores the system locale.
  */
 constexpr char
-ToUpperASCII(char ch)
+ToUpperASCII(char ch) noexcept
 {
 	return ch >= 'a' && ch <= 'z'
 		? (ch - ('a' - 'A'))
@@ -123,7 +123,7 @@ ToUpperASCII(char ch)
  * Unlike tolower(), it ignores the system locale.
  */
 constexpr char
-ToLowerASCII(char ch)
+ToLowerASCII(char ch) noexcept
 {
 	return ch >= 'A' && ch <= 'Z'
 		? (ch + ('a' - 'A'))
