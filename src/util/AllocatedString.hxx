@@ -32,7 +32,6 @@
 
 #include "StringPointer.hxx"
 
-#include <utility>
 #include <algorithm>
 
 /**

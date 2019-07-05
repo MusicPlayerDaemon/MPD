@@ -36,7 +36,6 @@
 #include "util/StringView.hxx"
 #include "tag/Handler.hxx"
 #include "DsdLib.hxx"
-#include "Log.hxx"
 
 struct DsdiffHeader {
 	DsdId id;

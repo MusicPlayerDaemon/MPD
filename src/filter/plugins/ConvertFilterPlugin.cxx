@@ -21,11 +21,9 @@
 #include "filter/Filter.hxx"
 #include "filter/Prepared.hxx"
 #include "pcm/Convert.hxx"
-#include "util/Manual.hxx"
 #include "util/ConstBuffer.hxx"
 #include "AudioFormat.hxx"
 
-#include <stdexcept>
 #include <memory>
 
 #include <assert.h>

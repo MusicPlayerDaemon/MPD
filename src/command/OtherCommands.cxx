@@ -22,7 +22,6 @@
 #include "Request.hxx"
 #include "FileCommands.hxx"
 #include "StorageCommands.hxx"
-#include "CommandError.hxx"
 #include "db/Uri.hxx"
 #include "storage/StorageInterface.hxx"
 #include "LocateUri.hxx"
@@ -47,7 +46,7 @@
 #include "client/Response.hxx"
 #include "Partition.hxx"
 #include "Instance.hxx"
-#include "Idle.hxx"
+#include "IdleFlags.hxx"
 #include "Log.hxx"
 
 #ifdef ENABLE_DATABASE
@@ -57,7 +56,6 @@
 #endif
 
 #include <assert.h>
-#include <string.h>
 
 static void
 print_spl_list(Response &r, const PlaylistVector &list)

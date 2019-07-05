@@ -20,7 +20,6 @@
 #include "Handler.hxx"
 #include "Builder.hxx"
 #include "AudioFormat.hxx"
-#include "util/ASCII.hxx"
 #include "util/CharUtil.hxx"
 #include "util/StringView.hxx"
 

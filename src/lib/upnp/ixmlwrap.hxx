@@ -19,8 +19,6 @@
 
 #include <ixml.h>
 
-#include <string>
-
 namespace ixmlwrap {
 	/**
 	 * Retrieve the text content for the first element of given

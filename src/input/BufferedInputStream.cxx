@@ -18,8 +18,6 @@
  */
 
 #include "BufferedInputStream.hxx"
-#include "thread/Cond.hxx"
-#include "thread/Name.hxx"
 
 #include <string.h>
 

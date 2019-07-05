@@ -19,9 +19,9 @@
 
 #include "AudioFormat.hxx"
 #include "util/StringBuffer.hxx"
-#include "util/StringFormat.hxx"
 
 #include <assert.h>
+#include <stdio.h>
 
 void
 AudioFormat::ApplyMask(AudioFormat mask) noexcept

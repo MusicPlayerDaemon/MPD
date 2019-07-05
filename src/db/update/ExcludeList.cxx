@@ -27,13 +27,9 @@
 #include "fs/NarrowPath.hxx"
 #include "input/TextInputStream.hxx"
 #include "util/StringStrip.hxx"
-#include "Log.hxx"
 #include "config.h"
 
-#include <exception>
-
 #include <assert.h>
-#include <string.h>
 
 #ifdef HAVE_CLASS_GLOB
 

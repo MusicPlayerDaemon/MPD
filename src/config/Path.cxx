@@ -21,7 +21,6 @@
 #include "Data.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "fs/Traits.hxx"
-#include "fs/Domain.hxx"
 #include "fs/StandardDirectory.hxx"
 #include "util/RuntimeError.hxx"
 

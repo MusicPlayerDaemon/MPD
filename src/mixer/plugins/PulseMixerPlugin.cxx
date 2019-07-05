@@ -18,7 +18,6 @@
  */
 
 #include "PulseMixerPlugin.hxx"
-#include "lib/pulse/Domain.hxx"
 #include "lib/pulse/LogError.hxx"
 #include "lib/pulse/LockGuard.hxx"
 #include "mixer/MixerInternal.hxx"

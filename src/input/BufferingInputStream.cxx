@@ -18,7 +18,7 @@
  */
 
 #include "BufferingInputStream.hxx"
-#include "thread/Cond.hxx"
+#include "InputStream.hxx"
 #include "thread/Name.hxx"
 
 #include <string.h>

@@ -19,6 +19,7 @@
 
 #include "Item.hxx"
 #include "Lease.hxx"
+#include "input/InputStream.hxx"
 
 #include <assert.h>
 

@@ -35,8 +35,6 @@
 #include <sys/epoll.h>
 #include <stdint.h>
 
-struct epoll_event;
-
 /**
  * A class that wraps Linux epoll.
  */

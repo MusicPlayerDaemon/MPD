@@ -21,7 +21,6 @@
 #include "Daemon.hxx"
 #include "system/Error.hxx"
 #include "fs/AllocatedPath.hxx"
-#include "fs/FileSystem.hxx"
 #include "util/RuntimeError.hxx"
 
 #ifndef _WIN32

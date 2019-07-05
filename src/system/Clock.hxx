@@ -20,11 +20,11 @@
 #ifndef MPD_CLOCK_H
 #define MPD_CLOCK_H
 
+#ifdef _WIN32
+
 #include "util/Compiler.h"
 
 #include <chrono>
-
-#ifdef _WIN32
 
 /**
  * Returns the uptime of the current process in seconds.

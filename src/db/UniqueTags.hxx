@@ -22,11 +22,8 @@
 
 #include "tag/Type.h"
 
-#include <map>
-#include <set>
 #include <string>
 
-class TagMask;
 class Database;
 struct DatabaseSelection;
 template<typename Key> class RecursiveMap;

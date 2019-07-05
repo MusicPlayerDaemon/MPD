@@ -20,9 +20,6 @@
 #ifndef MPD_CONFIG_CHECK_HXX
 #define MPD_CONFIG_CHECK_HXX
 
-#include "Option.hxx"
-#include "util/Compiler.h"
-
 struct ConfigData;
 
 /**

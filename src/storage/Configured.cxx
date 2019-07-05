@@ -22,13 +22,10 @@
 #include "StorageInterface.hxx"
 #include "plugins/LocalStorage.hxx"
 #include "config/Data.hxx"
-#include "config/Domain.hxx"
 #include "fs/StandardDirectory.hxx"
 #include "fs/CheckFile.hxx"
 #include "util/UriUtil.hxx"
 #include "util/RuntimeError.hxx"
-
-#include <assert.h>
 
 static std::unique_ptr<Storage>
 CreateConfiguredStorageUri(EventLoop &event_loop, const char *uri)

@@ -33,7 +33,7 @@
 #ifndef PRINT_EXCEPTION_HXX
 #define PRINT_EXCEPTION_HXX
 
-#include <stdexcept>
+#include <exception>
 
 /**
  * Print this exception (and its nested exceptions, if any) to stderr.

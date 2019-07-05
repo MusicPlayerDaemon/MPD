@@ -20,9 +20,10 @@
 #ifndef MPD_GLUE_RESAMPLER_HXX
 #define MPD_GLUE_RESAMPLER_HXX
 
-#include "AudioFormat.hxx"
+#include "SampleFormat.hxx"
 #include "FormatConverter.hxx"
 
+struct AudioFormat;
 class PcmResampler;
 template<typename T> struct ConstBuffer;
 

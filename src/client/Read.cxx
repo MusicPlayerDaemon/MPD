@@ -21,7 +21,6 @@
 #include "Config.hxx"
 #include "Partition.hxx"
 #include "Instance.hxx"
-#include "event/Loop.hxx"
 #include "util/StringStrip.hxx"
 
 #include <string.h>

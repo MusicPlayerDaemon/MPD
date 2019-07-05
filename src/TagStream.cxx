@@ -28,8 +28,6 @@
 #include "input/InputStream.hxx"
 #include "thread/Mutex.hxx"
 
-#include <exception>
-
 #include <assert.h>
 
 /**

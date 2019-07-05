@@ -18,7 +18,7 @@
  */
 
 #include "StringFilter.hxx"
-#include "util/StringCompare.hxx"
+#include "util/StringAPI.hxx"
 
 #include <assert.h>
 

@@ -24,7 +24,6 @@
 #include "util/ASCII.hxx"
 #include "util/StringView.hxx"
 #include "lib/expat/ExpatParser.hxx"
-#include "Log.hxx"
 
 /**
  * This is the state object for the our XML parser.

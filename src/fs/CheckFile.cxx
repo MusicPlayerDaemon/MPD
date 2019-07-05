@@ -26,8 +26,6 @@
 #include "DirectoryReader.hxx"
 #include "system/Error.hxx"
 
-#include <errno.h>
-
 void
 CheckDirectoryReadable(Path path_fs)
 try {

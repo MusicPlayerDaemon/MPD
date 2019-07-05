@@ -20,8 +20,6 @@
 #ifndef MPD_MIXER_TYPE_HXX
 #define MPD_MIXER_TYPE_HXX
 
-#include "util/Compiler.h"
-
 enum class MixerType {
 	/** mixer disabled */
 	NONE,

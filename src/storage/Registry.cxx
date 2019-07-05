@@ -27,7 +27,6 @@
 #include "plugins/CurlStorage.hxx"
 #include "config.h"
 
-#include <assert.h>
 #include <string.h>
 
 const StoragePlugin *const storage_plugins[] = {

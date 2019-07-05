@@ -25,7 +25,6 @@
 #include "Log.hxx"
 
 #include <sys/inotify.h>
-#include <unistd.h>
 #include <errno.h>
 #include <stdint.h>
 #include <limits.h>

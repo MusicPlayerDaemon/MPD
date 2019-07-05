@@ -20,8 +20,6 @@
 #include "Timer.hxx"
 #include "AudioFormat.hxx"
 
-#include <limits>
-
 #include <assert.h>
 
 Timer::Timer(const AudioFormat af)

@@ -19,7 +19,6 @@
 
 #include "DatabaseSave.hxx"
 #include "db/DatabaseLock.hxx"
-#include "Directory.hxx"
 #include "DirectorySave.hxx"
 #include "fs/io/BufferedOutputStream.hxx"
 #include "fs/io/TextFile.hxx"

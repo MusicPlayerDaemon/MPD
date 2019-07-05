@@ -33,7 +33,6 @@
 #ifndef NET_RESOLVER_HXX
 #define NET_RESOLVER_HXX
 
-struct addrinfo;
 class AddressInfoList;
 
 /**

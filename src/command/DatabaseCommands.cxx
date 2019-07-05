@@ -24,20 +24,18 @@
 #include "db/DatabasePrint.hxx"
 #include "db/Count.hxx"
 #include "db/Selection.hxx"
-#include "CommandError.hxx"
 #include "protocol/RangeArg.hxx"
 #include "client/Client.hxx"
 #include "client/Response.hxx"
 #include "tag/ParseName.hxx"
-#include "tag/Mask.hxx"
 #include "util/ConstBuffer.hxx"
 #include "util/Exception.hxx"
 #include "util/StringAPI.hxx"
 #include "util/ASCII.hxx"
 #include "song/Filter.hxx"
-#include "BulkEdit.hxx"
 
 #include <memory>
+#include <vector>
 
 CommandResult
 handle_listfiles_db(Client &client, Response &r, const char *uri)

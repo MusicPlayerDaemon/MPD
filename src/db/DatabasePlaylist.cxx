@@ -19,7 +19,6 @@
 
 #include "DatabasePlaylist.hxx"
 #include "DatabaseSong.hxx"
-#include "Selection.hxx"
 #include "PlaylistFile.hxx"
 #include "Interface.hxx"
 #include "song/DetachedSong.hxx"

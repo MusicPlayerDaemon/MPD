@@ -22,7 +22,6 @@
 #include "QobuzSession.hxx"
 #include "lib/curl/Form.hxx"
 #include "lib/yajl/Callbacks.hxx"
-#include "util/RuntimeError.hxx"
 
 using Wrapper = Yajl::CallbacksWrapper<QobuzLoginRequest::ResponseParser>;
 static constexpr yajl_callbacks parse_callbacks = {

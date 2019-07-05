@@ -28,8 +28,6 @@
 #include "AudioFormat.hxx"
 #endif
 
-#include <assert.h>
-
 /**
  * A queue of #MusicChunk objects.  One party appends chunks at the
  * tail, and the other consumes them from the head.

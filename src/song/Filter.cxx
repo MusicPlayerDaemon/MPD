@@ -25,24 +25,17 @@
 #include "TagSongFilter.hxx"
 #include "ModifiedSinceSongFilter.hxx"
 #include "AudioFormatSongFilter.hxx"
-#include "LightSong.hxx"
 #include "AudioParser.hxx"
 #include "tag/ParseName.hxx"
-#include "tag/Tag.hxx"
-#include "time/ChronoUtil.hxx"
 #include "time/ISO8601.hxx"
 #include "util/CharUtil.hxx"
 #include "util/ConstBuffer.hxx"
 #include "util/RuntimeError.hxx"
-#include "util/StringAPI.hxx"
 #include "util/StringCompare.hxx"
 #include "util/StringStrip.hxx"
 #include "util/StringView.hxx"
 #include "util/ASCII.hxx"
 #include "util/UriUtil.hxx"
-#include "lib/icu/CaseFold.hxx"
-
-#include <exception>
 
 #include <assert.h>
 #include <stdlib.h>

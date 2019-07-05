@@ -22,7 +22,6 @@
 #include "DeferEvent.hxx"
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
-#include "util/Compiler.h"
 
 #include <exception>
 

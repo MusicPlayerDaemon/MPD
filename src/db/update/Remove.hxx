@@ -22,12 +22,10 @@
 
 #include "event/DeferEvent.hxx"
 #include "thread/Mutex.hxx"
-#include "util/Compiler.h"
 
 #include <forward_list>
 #include <string>
 
-struct Song;
 class DatabaseListener;
 
 /**

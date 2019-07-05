@@ -31,7 +31,7 @@
 
 #include <wavpack/wavpack.h>
 
-#include <stdexcept>
+#include <algorithm>
 #include <memory>
 
 #include <cstdlib>

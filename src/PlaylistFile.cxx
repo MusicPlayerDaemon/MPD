@@ -39,15 +39,11 @@
 #include "fs/FileSystem.hxx"
 #include "fs/FileInfo.hxx"
 #include "fs/DirectoryReader.hxx"
-#include "util/Macros.hxx"
 #include "util/StringCompare.hxx"
 #include "util/UriUtil.hxx"
 
-#include <memory>
-
 #include <assert.h>
 #include <string.h>
-#include <errno.h>
 
 static const char PLAYLIST_COMMENT = '#';
 

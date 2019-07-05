@@ -24,8 +24,6 @@
 #include "AudioFormat.hxx"
 #include "util/ConstBuffer.hxx"
 
-#include <stdexcept>
-
 class VolumeFilter final : public Filter {
 	PcmVolume pv;
 

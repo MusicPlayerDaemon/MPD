@@ -19,7 +19,7 @@
 
 #include "Client.hxx"
 #include "Partition.hxx"
-#include "Idle.hxx"
+#include "IdleFlags.hxx"
 
 #include <assert.h>
 

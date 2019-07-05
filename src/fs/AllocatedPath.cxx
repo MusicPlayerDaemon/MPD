@@ -18,13 +18,8 @@
  */
 
 #include "AllocatedPath.hxx"
-#include "Domain.hxx"
 #include "Charset.hxx"
 #include "Features.hxx"
-#include "util/Compiler.h"
-#include "config.h"
-
-#include <exception>
 
 /* no inlining, please */
 AllocatedPath::~AllocatedPath() noexcept = default;

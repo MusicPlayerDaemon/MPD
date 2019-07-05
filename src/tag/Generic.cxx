@@ -26,8 +26,6 @@
 #include "input/LocalOpen.hxx"
 #include "config.h"
 
-#include <exception>
-
 bool
 ScanGenericTags(InputStream &is, TagHandler &handler)
 {

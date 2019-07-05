@@ -31,7 +31,6 @@
 #include <neaacdec.h>
 
 #include <cmath>
-#include <exception>
 
 #include <assert.h>
 #include <string.h>

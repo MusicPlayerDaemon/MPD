@@ -31,7 +31,6 @@
 #define GZIP_OUTPUT_STREAM_HXX
 
 #include "OutputStream.hxx"
-#include "util/Compiler.h"
 
 #include <zlib.h>
 

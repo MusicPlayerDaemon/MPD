@@ -23,7 +23,6 @@
 #include "Resampler.hxx"
 #include "Buffer.hxx"
 #include "AudioFormat.hxx"
-#include "util/Compiler.h"
 
 #include <samplerate.h>
 

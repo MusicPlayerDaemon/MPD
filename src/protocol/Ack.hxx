@@ -23,6 +23,7 @@
 #include "util/StringFormat.hxx"
 
 #include <stdexcept>
+#include <utility>
 
 class Domain;
 

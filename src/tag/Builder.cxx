@@ -25,6 +25,7 @@
 #include "util/WritableBuffer.hxx"
 #include "util/StringView.hxx"
 
+#include <algorithm>
 #include <array>
 
 #include <assert.h>

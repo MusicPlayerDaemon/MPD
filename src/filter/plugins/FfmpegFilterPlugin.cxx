@@ -22,10 +22,8 @@
 #include "filter/FilterPlugin.hxx"
 #include "filter/Filter.hxx"
 #include "filter/Prepared.hxx"
-#include "filter/FilterRegistry.hxx"
 #include "lib/ffmpeg/Filter.hxx"
 #include "config/Block.hxx"
-#include "AudioFormat.hxx"
 
 class PreparedFfmpegFilter final : public PreparedFilter {
 	const char *const graph_string;

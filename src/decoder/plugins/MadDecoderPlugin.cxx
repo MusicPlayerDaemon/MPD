@@ -21,10 +21,8 @@
 #include "MadDecoderPlugin.hxx"
 #include "../DecoderAPI.hxx"
 #include "input/InputStream.hxx"
-#include "config/Block.hxx"
 #include "tag/Id3Scan.hxx"
 #include "tag/Id3ReplayGain.hxx"
-#include "tag/Rva2.hxx"
 #include "tag/Handler.hxx"
 #include "tag/ReplayGain.hxx"
 #include "tag/MixRamp.hxx"
@@ -39,8 +37,6 @@
 #include "tag/Id3Unique.hxx"
 #include <id3tag.h>
 #endif
-
-#include <stdexcept>
 
 #include <assert.h>
 #include <stdlib.h>

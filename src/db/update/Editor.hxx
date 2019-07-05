@@ -21,7 +21,6 @@
 #define MPD_UPDATE_DATABASE_HXX
 
 #include "Remove.hxx"
-#include "util/Compiler.h"
 
 struct Directory;
 struct Song;

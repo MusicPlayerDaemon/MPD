@@ -26,9 +26,9 @@
 #include "util/RuntimeError.hxx"
 #include "util/StringView.hxx"
 
-#include <algorithm>
 #include <map>
 #include <string>
+#include <utility>
 
 #include <assert.h>
 #include <string.h>

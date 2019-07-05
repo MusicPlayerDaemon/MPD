@@ -18,7 +18,6 @@
  */
 
 #include "Directory.hxx"
-#include "lib/upnp/Util.hxx"
 #include "lib/expat/ExpatParser.hxx"
 #include "Tags.hxx"
 #include "tag/Builder.hxx"

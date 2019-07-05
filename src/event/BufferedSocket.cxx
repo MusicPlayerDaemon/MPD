@@ -21,7 +21,7 @@
 #include "net/SocketError.hxx"
 #include "util/Compiler.h"
 
-#include <algorithm>
+#include <stdexcept>
 
 BufferedSocket::ssize_t
 BufferedSocket::DirectRead(void *data, size_t length) noexcept

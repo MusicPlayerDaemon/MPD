@@ -20,7 +20,6 @@
 #include "config.h"
 #include "QueueCommands.hxx"
 #include "Request.hxx"
-#include "CommandError.hxx"
 #include "protocol/RangeArg.hxx"
 #include "db/DatabaseQueue.hxx"
 #include "db/Selection.hxx"
@@ -40,7 +39,6 @@
 #include "util/StringAPI.hxx"
 #include "util/NumberParser.hxx"
 
-#include <memory>
 #include <limits>
 
 static void

@@ -21,7 +21,6 @@
 #include "Filtered.hxx"
 #include "Client.hxx"
 #include "Domain.hxx"
-#include "mixer/MixerInternal.hxx"
 #include "thread/Util.hxx"
 #include "thread/Slack.hxx"
 #include "thread/Name.hxx"

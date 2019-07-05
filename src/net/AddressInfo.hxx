@@ -32,7 +32,6 @@
 
 #include "SocketAddress.hxx"
 
-#include <algorithm>
 #include <utility>
 
 #ifdef _WIN32

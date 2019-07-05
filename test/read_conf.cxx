@@ -21,11 +21,9 @@
 #include "config/Param.hxx"
 #include "config/File.hxx"
 #include "fs/Path.hxx"
-#include "fs/Path.hxx"
 #include "util/PrintException.hxx"
 #include "util/RuntimeError.hxx"
 
-#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 

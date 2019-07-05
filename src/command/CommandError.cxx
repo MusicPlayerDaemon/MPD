@@ -27,8 +27,6 @@
 
 #include <system_error>
 
-#include <assert.h>
-
 gcc_const
 static enum ack
 ToAck(PlaylistResult result) noexcept

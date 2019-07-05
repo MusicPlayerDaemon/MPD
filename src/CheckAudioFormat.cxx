@@ -21,10 +21,6 @@
 #include "AudioFormat.hxx"
 #include "util/RuntimeError.hxx"
 
-#include <stdexcept>
-
-#include <assert.h>
-
 void
 CheckSampleRate(unsigned long sample_rate)
 {

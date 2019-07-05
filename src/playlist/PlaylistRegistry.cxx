@@ -41,7 +41,6 @@
 #include "config/Block.hxx"
 
 #include <assert.h>
-#include <string.h>
 
 const struct playlist_plugin *const playlist_plugins[] = {
 	&extm3u_playlist_plugin,

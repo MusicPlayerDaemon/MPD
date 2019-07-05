@@ -24,7 +24,6 @@
 #include "util/NumberParser.hxx"
 
 #include <assert.h>
-#include <stdlib.h>
 
 template<typename T>
 static bool

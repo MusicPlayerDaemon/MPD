@@ -21,7 +21,6 @@
 #define MPD_BASE_SONG_FILTER_HXX
 
 #include "ISongFilter.hxx"
-#include "util/Compiler.h"
 
 class BaseSongFilter final : public ISongFilter {
 	std::string value;

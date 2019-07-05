@@ -33,7 +33,6 @@
 #include <stdint.h>
 
 template<typename T> struct ConstBuffer;
-struct AudioFormat;
 
 /**
  * An object that handles export of PCM samples to some instance

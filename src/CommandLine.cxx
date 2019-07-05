@@ -36,12 +36,14 @@
 #include "fs/Traits.hxx"
 #include "fs/FileSystem.hxx"
 #include "fs/StandardDirectory.hxx"
-#include "system/Error.hxx"
 #include "util/Macros.hxx"
-#include "util/RuntimeError.hxx"
 #include "util/Domain.hxx"
 #include "util/OptionDef.hxx"
 #include "util/OptionParser.hxx"
+
+#ifdef _WIN32
+#include "system/Error.hxx"
+#endif
 
 #ifdef ENABLE_DATABASE
 #include "db/Registry.hxx"

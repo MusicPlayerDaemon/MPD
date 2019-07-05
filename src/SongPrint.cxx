@@ -19,9 +19,6 @@
 
 #include "SongPrint.hxx"
 #include "song/LightSong.hxx"
-#include "Partition.hxx"
-#include "Instance.hxx"
-#include "storage/StorageInterface.hxx"
 #include "song/DetachedSong.hxx"
 #include "TimePrint.hxx"
 #include "TagPrint.hxx"

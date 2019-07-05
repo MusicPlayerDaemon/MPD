@@ -22,7 +22,6 @@
 
 #include "Visitor.hxx"
 #include "Selection.hxx"
-#include "song/DetachedSong.hxx"
 
 #include <vector>
 

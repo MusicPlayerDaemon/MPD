@@ -31,8 +31,6 @@
 #include "IterableSplitString.hxx"
 #include "StringStrip.hxx"
 
-#include <string.h>
-
 std::forward_list<std::string>
 SplitString(const char *s, char separator, bool strip) noexcept
 {

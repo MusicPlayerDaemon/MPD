@@ -22,8 +22,6 @@
 #include "util/RuntimeError.hxx"
 #include "util/StringCompare.hxx"
 
-#include <string.h>
-
 inline const char *
 OptionParser::CheckShiftValue(const char *s, const OptionDef &option)
 {

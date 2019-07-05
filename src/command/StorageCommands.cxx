@@ -22,14 +22,12 @@
 #include "config.h"
 #include "StorageCommands.hxx"
 #include "Request.hxx"
-#include "CommandError.hxx"
 #include "time/ChronoUtil.hxx"
 #include "util/UriUtil.hxx"
 #include "util/ConstBuffer.hxx"
 #include "fs/Traits.hxx"
 #include "client/Client.hxx"
 #include "client/Response.hxx"
-#include "Partition.hxx"
 #include "Instance.hxx"
 #include "storage/Registry.hxx"
 #include "storage/CompositeStorage.hxx"
@@ -37,7 +35,7 @@
 #include "db/plugins/simple/SimpleDatabasePlugin.hxx"
 #include "db/update/Service.hxx"
 #include "TimePrint.hxx"
-#include "Idle.hxx"
+#include "IdleFlags.hxx"
 
 #include <memory>
 

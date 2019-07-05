@@ -21,7 +21,6 @@
 #define MPD_PEEK_READER_HXX
 
 #include "Reader.hxx"
-#include "util/Compiler.h"
 
 #include <stdint.h>
 

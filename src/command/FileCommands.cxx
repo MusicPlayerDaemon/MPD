@@ -22,7 +22,6 @@
 #include "config.h"
 #include "FileCommands.hxx"
 #include "Request.hxx"
-#include "CommandError.hxx"
 #include "protocol/Ack.hxx"
 #include "client/Client.hxx"
 #include "client/Response.hxx"

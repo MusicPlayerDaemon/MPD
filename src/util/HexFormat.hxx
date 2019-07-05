@@ -34,6 +34,7 @@
 #include "StringBuffer.hxx"
 #include "Compiler.h"
 
+#include <stddef.h>
 #include <stdint.h>
 
 /**

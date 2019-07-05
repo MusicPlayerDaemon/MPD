@@ -24,10 +24,8 @@
 
 template<typename T> struct ConstBuffer;
 enum TagType : uint8_t;
-class TagMask;
 class SongFilter;
 struct DatabaseSelection;
-struct RangeArg;
 struct Partition;
 class Response;
 

@@ -20,7 +20,7 @@
 #include "ProxyInputStream.hxx"
 #include "tag/Tag.hxx"
 
-#include <stdexcept>
+#include <utility>
 
 ProxyInputStream::ProxyInputStream(InputStreamPtr _input) noexcept
 	:InputStream(_input->GetURI(), _input->mutex),

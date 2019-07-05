@@ -29,11 +29,9 @@
 #include "lib/curl/Handler.hxx"
 #include "lib/expat/ExpatParser.hxx"
 #include "fs/Traits.hxx"
-#include "event/Call.hxx"
 #include "event/DeferEvent.hxx"
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
-#include "time/ChronoUtil.hxx"
 #include "time/Parser.hxx"
 #include "util/ASCII.hxx"
 #include "util/IterableSplitString.hxx"
@@ -42,10 +40,9 @@
 #include "util/StringFormat.hxx"
 #include "util/UriUtil.hxx"
 
-#include <algorithm>
 #include <memory>
 #include <string>
-#include <list>
+#include <utility>
 
 #include <assert.h>
 

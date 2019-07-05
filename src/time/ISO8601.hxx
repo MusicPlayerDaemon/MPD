@@ -35,7 +35,6 @@
 
 #include "util/Compiler.h"
 
-#include <string>
 #include <chrono>
 
 #include <stddef.h>

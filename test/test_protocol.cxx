@@ -1,11 +1,8 @@
 #include "protocol/ArgParser.hxx"
 #include "protocol/Ack.hxx"
 #include "protocol/RangeArg.hxx"
-#include "util/Compiler.h"
 
 #include <gtest/gtest.h>
-
-#include <stdlib.h>
 
 TEST(ArgParser, Range)
 {

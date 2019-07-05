@@ -31,7 +31,6 @@
 #endif
 
 #include <algorithm>
-#include <stdexcept>
 
 #include <assert.h>
 #include <string.h>

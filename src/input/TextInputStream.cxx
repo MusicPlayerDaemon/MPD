@@ -20,9 +20,6 @@
 #include "TextInputStream.hxx"
 #include "InputStream.hxx"
 #include "util/TextFile.hxx"
-#include "Log.hxx"
-
-#include <stdexcept>
 
 #include <assert.h>
 

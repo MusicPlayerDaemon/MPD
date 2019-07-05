@@ -18,7 +18,6 @@
  */
 
 #include "Export.hxx"
-#include "AudioFormat.hxx"
 #include "Order.hxx"
 #include "Pack.hxx"
 #include "Silence.hxx"

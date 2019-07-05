@@ -20,8 +20,6 @@
 #ifndef MPD_AVAHI_POLL_HXX
 #define MPD_AVAHI_POLL_HXX
 
-#include "util/Compiler.h"
-
 #include <avahi-common/watch.h>
 
 class EventLoop;

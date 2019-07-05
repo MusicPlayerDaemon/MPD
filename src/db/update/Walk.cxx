@@ -40,7 +40,7 @@
 #include "util/UriUtil.hxx"
 #include "Log.hxx"
 
-#include <stdexcept>
+#include <exception>
 #include <memory>
 
 #include <assert.h>

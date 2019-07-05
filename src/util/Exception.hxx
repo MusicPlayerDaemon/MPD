@@ -34,6 +34,7 @@
 
 #include <exception>
 #include <string>
+#include <utility>
 
 /**
  * Throws the specified exception.  There is an overload for

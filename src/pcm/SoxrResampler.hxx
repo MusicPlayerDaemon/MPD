@@ -22,7 +22,6 @@
 
 #include "Resampler.hxx"
 #include "Buffer.hxx"
-#include "util/Compiler.h"
 
 struct AudioFormat;
 struct ConfigBlock;

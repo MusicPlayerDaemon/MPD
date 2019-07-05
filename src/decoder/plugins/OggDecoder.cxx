@@ -21,8 +21,6 @@
 #include "lib/xiph/OggFind.hxx"
 #include "input/InputStream.hxx"
 
-#include <exception>
-
 /**
  * Load the end-of-stream packet and restore the previous file
  * position.

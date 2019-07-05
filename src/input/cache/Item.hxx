@@ -22,12 +22,10 @@
 
 #include "input/BufferingInputStream.hxx"
 #include "thread/Mutex.hxx"
-#include "util/SparseBuffer.hxx"
 
 #include <boost/intrusive/list.hpp>
 #include <boost/intrusive/set_hook.hpp>
 
-#include <memory>
 #include <string>
 
 class InputCacheLease;

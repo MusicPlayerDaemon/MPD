@@ -24,7 +24,6 @@
 
 #include "State.hxx"
 #include "MultipleOutputs.hxx"
-#include "Filtered.hxx"
 #include "Domain.hxx"
 #include "Log.hxx"
 #include "fs/io/BufferedOutputStream.hxx"

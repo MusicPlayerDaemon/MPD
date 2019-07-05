@@ -24,7 +24,6 @@
 #include "sticker/Sticker.hxx"
 #include "sticker/SongSticker.hxx"
 #include "sticker/Print.hxx"
-#include "sticker/Database.hxx"
 #include "client/Client.hxx"
 #include "client/Response.hxx"
 #include "Partition.hxx"

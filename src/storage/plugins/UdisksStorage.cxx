@@ -25,7 +25,6 @@
 #include "lib/dbus/Glue.hxx"
 #include "lib/dbus/AsyncRequest.hxx"
 #include "lib/dbus/Message.hxx"
-#include "lib/dbus/PendingCall.hxx"
 #include "lib/dbus/AppendIter.hxx"
 #include "lib/dbus/ReadIter.hxx"
 #include "lib/dbus/ObjectManager.hxx"

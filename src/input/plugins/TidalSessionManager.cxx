@@ -18,7 +18,6 @@
  */
 
 #include "TidalSessionManager.hxx"
-#include "lib/curl/Global.hxx"
 #include "util/Domain.hxx"
 
 #include "Log.hxx"

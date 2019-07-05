@@ -21,7 +21,6 @@
  * CD-Audio handling (requires libcdio_paranoia)
  */
 
-#include "config.h"
 #include "CdioParanoiaInputPlugin.hxx"
 #include "lib/cdio/Paranoia.hxx"
 #include "../InputStream.hxx"
@@ -34,7 +33,6 @@
 #include "fs/AllocatedPath.hxx"
 #include "Log.hxx"
 #include "config/Block.hxx"
-#include "config/Domain.hxx"
 
 #include <stdio.h>
 #include <stdint.h>

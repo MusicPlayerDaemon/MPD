@@ -21,10 +21,11 @@
 #include "UniqueIxml.hxx"
 #include "Device.hxx"
 #include "ixmlwrap.hxx"
-#include "Action.hxx"
 #include "util/UriUtil.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/SplitString.hxx"
+
+#include <upnptools.h>
 
 ContentDirectoryService::ContentDirectoryService(const UPnPDevice &device,
 						 const UPnPService &service) noexcept

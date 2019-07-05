@@ -30,9 +30,6 @@
 #include <memory>
 #include <string>
 
-class CurlRequest;
-class TidalLoginRequest;
-
 /**
  * Callback class for #TidalSessionManager.
  *

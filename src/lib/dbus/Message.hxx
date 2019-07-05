@@ -35,8 +35,8 @@
 
 #include <dbus/dbus.h>
 
-#include <algorithm>
 #include <stdexcept>
+#include <utility>
 
 namespace ODBus {
 

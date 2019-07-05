@@ -33,8 +33,6 @@
 #include <id3tag.h>
 #endif
 
-#include <stdexcept>
-
 #include <string.h>
 #include <stdlib.h>
 

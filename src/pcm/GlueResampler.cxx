@@ -20,6 +20,7 @@
 #include "GlueResampler.hxx"
 #include "ConfiguredResampler.hxx"
 #include "Resampler.hxx"
+#include "AudioFormat.hxx"
 
 #include <assert.h>
 

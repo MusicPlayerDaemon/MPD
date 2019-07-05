@@ -28,7 +28,6 @@
 #include "filter/FilterPlugin.hxx"
 #include "filter/NullFilter.hxx"
 #include "filter/Prepared.hxx"
-#include "AudioFormat.hxx"
 #include "util/Compiler.h"
 
 class PreparedNullFilter final : public PreparedFilter {

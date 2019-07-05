@@ -19,13 +19,9 @@
 
 #include "Control.hxx"
 #include "Filtered.hxx"
-#include "Domain.hxx"
 #include "mixer/MixerControl.hxx"
-#include "filter/plugins/ReplayGainFilterPlugin.hxx"
 #include "config/Block.hxx"
 #include "Log.hxx"
-
-#include <stdexcept>
 
 #include <assert.h>
 

@@ -31,10 +31,7 @@
 #include "thread/Mutex.hxx"
 #include "util/StringCompare.hxx"
 
-#include <stdexcept>
 #include <memory>
-
-#include <time.h>
 
 static QobuzClient *qobuz_client;
 

@@ -20,7 +20,6 @@
 #ifndef MPD_INPUT_CACHE_MANAGER_HXX
 #define MPD_INPUT_CACHE_MANAGER_HXX
 
-#include "input/Offset.hxx"
 #include "thread/Mutex.hxx"
 #include "util/Compiler.h"
 

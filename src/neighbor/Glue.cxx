@@ -23,7 +23,6 @@
 #include "NeighborPlugin.hxx"
 #include "Info.hxx"
 #include "config/Data.hxx"
-#include "config/Domain.hxx"
 #include "config/Block.hxx"
 #include "util/RuntimeError.hxx"
 

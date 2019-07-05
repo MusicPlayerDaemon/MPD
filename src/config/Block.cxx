@@ -23,7 +23,6 @@
 #include "fs/AllocatedPath.hxx"
 #include "util/RuntimeError.hxx"
 
-#include <assert.h>
 #include <stdlib.h>
 
 void

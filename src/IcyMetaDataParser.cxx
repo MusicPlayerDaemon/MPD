@@ -24,6 +24,8 @@
 #include "util/StringView.hxx"
 #include "Log.hxx"
 
+#include <algorithm>
+
 #include <assert.h>
 #include <string.h>
 

@@ -21,6 +21,7 @@
 #define MPD_PCM_FLOAT_CONVERT_HXX
 
 #include "Traits.hxx"
+#include "Clamp.hxx"
 
 /**
  * Convert from float to an integer sample format.

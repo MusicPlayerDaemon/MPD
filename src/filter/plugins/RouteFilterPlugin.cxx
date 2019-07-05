@@ -40,7 +40,6 @@
  */
 
 #include "RouteFilterPlugin.hxx"
-#include "config/Domain.hxx"
 #include "config/Block.hxx"
 #include "AudioFormat.hxx"
 #include "filter/FilterPlugin.hxx"
@@ -53,8 +52,8 @@
 #include "util/ConstBuffer.hxx"
 #include "util/WritableBuffer.hxx"
 
-#include <algorithm>
 #include <array>
+#include <stdexcept>
 
 #include <string.h>
 #include <stdint.h>

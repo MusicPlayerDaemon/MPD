@@ -25,8 +25,6 @@
 
 #include <ogg/ogg.h>
 
-#include <stddef.h>
-
 class Reader;
 
 /**

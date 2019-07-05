@@ -30,8 +30,6 @@ extern "C" {
 #include <libavutil/log.h>
 }
 
-#include <stdio.h>
-
 gcc_const
 static LogLevel
 FfmpegImportLogLevel(int level) noexcept

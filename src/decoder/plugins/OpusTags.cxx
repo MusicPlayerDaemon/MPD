@@ -26,8 +26,6 @@
 #include "util/NumberParser.hxx"
 #include "util/StringView.hxx"
 
-#include <string>
-
 #include <stdint.h>
 
 gcc_pure

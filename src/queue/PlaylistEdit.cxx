@@ -30,8 +30,6 @@
 #include "song/DetachedSong.hxx"
 #include "SongLoader.hxx"
 
-#include <memory>
-
 #include <stdlib.h>
 
 void

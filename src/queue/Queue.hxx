@@ -25,7 +25,7 @@
 #include "SingleMode.hxx"
 #include "util/LazyRandomEngine.hxx"
 
-#include <algorithm>
+#include <utility>
 
 #include <assert.h>
 #include <stdint.h>

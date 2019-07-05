@@ -23,12 +23,9 @@
 #include "lib/upnp/Action.hxx"
 #include "Directory.hxx"
 #include "util/NumberParser.hxx"
-#include "util/UriUtil.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/ScopeExit.hxx"
 #include "util/StringFormat.hxx"
-
-#include <stdio.h>
 
 static void
 ReadResultTag(UPnPDirContent &dirbuf, IXML_Document *response)

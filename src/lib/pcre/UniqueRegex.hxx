@@ -34,9 +34,8 @@
 #define UNIQUE_REGEX_HXX
 
 #include "RegexPointer.hxx"
-#include "util/StringView.hxx"
 
-#include <algorithm>
+#include <utility>
 
 #include <pcre.h>
 

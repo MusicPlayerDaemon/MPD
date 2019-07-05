@@ -20,7 +20,7 @@
 #ifndef MPD_FLAC_STREAM_METADATA_HXX
 #define MPD_FLAC_STREAM_METADATA_HXX
 
-#include <FLAC/metadata.h>
+#include <FLAC/format.h>
 
 class TagHandler;
 class MixRampInfo;

@@ -24,7 +24,6 @@
 #include "FfmpegDecoderPlugin.hxx"
 #include "lib/ffmpeg/Domain.hxx"
 #include "lib/ffmpeg/Error.hxx"
-#include "lib/ffmpeg/LogError.hxx"
 #include "lib/ffmpeg/Init.hxx"
 #include "lib/ffmpeg/Buffer.hxx"
 #include "lib/ffmpeg/Frame.hxx"

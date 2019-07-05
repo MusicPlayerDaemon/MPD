@@ -20,13 +20,9 @@
 #include "SocketMonitor.hxx"
 #include "Loop.hxx"
 
-#include <assert.h>
+#include <utility>
 
-#ifdef _WIN32
-#include <winsock2.h>
-#else
-#include <sys/socket.h>
-#endif
+#include <assert.h>
 
 void
 SocketMonitor::Dispatch(unsigned flags) noexcept

@@ -24,6 +24,7 @@
 #include "event/SocketMonitor.hxx"
 #include "event/TimerEvent.hxx"
 #include "event/DeferEvent.hxx"
+#include "util/Compiler.h"
 
 #include <string>
 #include <list>

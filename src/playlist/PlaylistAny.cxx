@@ -22,7 +22,6 @@
 #include "PlaylistStream.hxx"
 #include "PlaylistMapper.hxx"
 #include "SongEnumerator.hxx"
-#include "util/UriUtil.hxx"
 #include "config.h"
 
 std::unique_ptr<SongEnumerator>

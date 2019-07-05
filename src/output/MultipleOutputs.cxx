@@ -20,7 +20,6 @@
 #include "MultipleOutputs.hxx"
 #include "Filtered.hxx"
 #include "Defaults.hxx"
-#include "Domain.hxx"
 #include "MusicPipe.hxx"
 #include "MusicChunk.hxx"
 #include "filter/Factory.hxx"

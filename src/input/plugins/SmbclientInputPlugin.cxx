@@ -25,7 +25,6 @@
 #include "../MaybeBufferedInputStream.hxx"
 #include "PluginUnavailable.hxx"
 #include "system/Error.hxx"
-#include "util/ASCII.hxx"
 
 #include <libsmbclient.h>
 

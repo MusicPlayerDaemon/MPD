@@ -23,7 +23,6 @@
 #include "encoder/ToOutputStream.hxx"
 #include "encoder/EncoderInterface.hxx"
 #include "encoder/Configured.hxx"
-#include "config/Domain.hxx"
 #include "config/Path.hxx"
 #include "Log.hxx"
 #include "fs/AllocatedPath.hxx"

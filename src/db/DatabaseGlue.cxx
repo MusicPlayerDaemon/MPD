@@ -20,7 +20,6 @@
 #include "DatabaseGlue.hxx"
 #include "Interface.hxx"
 #include "Registry.hxx"
-#include "DatabaseError.hxx"
 #include "util/RuntimeError.hxx"
 #include "config/Block.hxx"
 #include "DatabasePlugin.hxx"

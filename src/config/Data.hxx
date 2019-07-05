@@ -28,8 +28,6 @@
 #include <chrono>
 #include <forward_list>
 
-struct ConfigParam;
-struct ConfigBlock;
 class AllocatedPath;
 
 struct ConfigData {

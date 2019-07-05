@@ -20,7 +20,7 @@
 #include "config.h"
 #include "Instance.hxx"
 #include "Partition.hxx"
-#include "Idle.hxx"
+#include "IdleFlags.hxx"
 #include "Stats.hxx"
 #include "client/List.hxx"
 #include "input/cache/Manager.hxx"
@@ -45,8 +45,6 @@
 #include "sticker/SongSticker.hxx"
 #endif
 #endif
-
-#include <exception>
 
 Instance::Instance()
 	:rtio_thread(true),

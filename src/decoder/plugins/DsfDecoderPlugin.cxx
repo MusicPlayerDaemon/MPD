@@ -36,7 +36,6 @@
 #include "util/ByteOrder.hxx"
 #include "DsdLib.hxx"
 #include "tag/Handler.hxx"
-#include "Log.hxx"
 
 #include <string.h>
 

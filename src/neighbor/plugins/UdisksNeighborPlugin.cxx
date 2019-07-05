@@ -36,9 +36,7 @@
 #include "util/Manual.hxx"
 #include "Log.hxx"
 
-#include <stdexcept>
 #include <string>
-#include <list>
 #include <map>
 
 static NeighborInfo

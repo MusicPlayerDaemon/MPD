@@ -23,7 +23,6 @@
 #include <map>
 #include <string>
 #include <chrono>
-#include <stdexcept>
 
 struct AudioFormat;
 struct Tag;

@@ -18,7 +18,6 @@
  */
 
 #include "PulseOutputPlugin.hxx"
-#include "lib/pulse/Domain.hxx"
 #include "lib/pulse/Error.hxx"
 #include "lib/pulse/LogError.hxx"
 #include "lib/pulse/LockGuard.hxx"
@@ -26,7 +25,6 @@
 #include "mixer/MixerList.hxx"
 #include "mixer/plugins/PulseMixerPlugin.hxx"
 #include "util/ScopeExit.hxx"
-#include "Log.hxx"
 
 #include <pulse/thread-mainloop.h>
 #include <pulse/context.h>

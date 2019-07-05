@@ -20,7 +20,6 @@
 #include "EventPipe.hxx"
 #include "FileDescriptor.hxx"
 #include "system/Error.hxx"
-#include "util/ScopeExit.hxx"
 #include "util/Compiler.h"
 
 #include <assert.h>

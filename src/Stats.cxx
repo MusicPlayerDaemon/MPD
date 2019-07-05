@@ -26,9 +26,12 @@
 #include "db/Selection.hxx"
 #include "db/Interface.hxx"
 #include "db/Stats.hxx"
-#include "system/Clock.hxx"
 #include "Log.hxx"
 #include "time/ChronoUtil.hxx"
+
+#ifdef _WIN32
+#include "system/Clock.hxx"
+#endif
 
 #include <chrono>
 #include <cmath>

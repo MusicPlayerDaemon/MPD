@@ -27,8 +27,6 @@
 #include "input/InputStream.hxx"
 #include "input/LocalOpen.hxx"
 
-#include <exception>
-
 #include <assert.h>
 
 class TagFileScan {

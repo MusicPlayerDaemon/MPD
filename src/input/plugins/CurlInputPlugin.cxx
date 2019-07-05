@@ -19,7 +19,6 @@
 
 #include "CurlInputPlugin.hxx"
 #include "lib/curl/Error.hxx"
-#include "lib/curl/Easy.hxx"
 #include "lib/curl/Global.hxx"
 #include "lib/curl/Init.hxx"
 #include "lib/curl/Request.hxx"
@@ -36,10 +35,8 @@
 #include "event/Call.hxx"
 #include "event/Loop.hxx"
 #include "util/ASCII.hxx"
-#include "util/StringUtil.hxx"
 #include "util/StringFormat.hxx"
 #include "util/NumberParser.hxx"
-#include "util/RuntimeError.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
 #include "PluginUnavailable.hxx"

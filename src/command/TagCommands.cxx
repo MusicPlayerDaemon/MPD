@@ -22,7 +22,7 @@
 #include "client/Client.hxx"
 #include "client/Response.hxx"
 #include "tag/ParseName.hxx"
-#include "Partition.hxx"
+#include "queue/Playlist.hxx"
 #include "util/ConstBuffer.hxx"
 
 CommandResult

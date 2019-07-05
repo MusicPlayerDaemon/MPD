@@ -32,8 +32,6 @@
 #include "event/Call.hxx"
 #include "thread/Mutex.hxx"
 
-#include <atomic>
-
 #include <assert.h>
 
 Mutex CurlInit::mutex;

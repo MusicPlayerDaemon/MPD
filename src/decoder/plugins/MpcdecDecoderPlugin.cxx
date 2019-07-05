@@ -31,8 +31,6 @@
 
 #include <mpc/mpcdec.h>
 
-#include <exception>
-
 #include <math.h>
 
 struct mpc_decoder_data {

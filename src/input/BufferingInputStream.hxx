@@ -20,10 +20,10 @@
 #ifndef MPD_BUFFERING_INPUT_STREAM_BUFFER_HXX
 #define MPD_BUFFERING_INPUT_STREAM_BUFFER_HXX
 
-#include "InputStream.hxx"
 #include "Ptr.hxx"
 #include "Handler.hxx"
 #include "thread/Thread.hxx"
+#include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
 #include "util/SparseBuffer.hxx"
 

@@ -30,12 +30,10 @@
 
 class FilterFactory;
 class PreparedFilter;
-class MusicPipe;
 class EventLoop;
 class Mixer;
 class MixerListener;
 struct MixerPlugin;
-struct MusicChunk;
 struct ConfigBlock;
 class AudioOutput;
 struct AudioOutputDefaults;

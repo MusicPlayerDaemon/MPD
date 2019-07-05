@@ -20,8 +20,6 @@
 #ifndef MPD_DIVIDE_STRING_HXX
 #define MPD_DIVIDE_STRING_HXX
 
-#include "Compiler.h"
-
 #include <assert.h>
 
 /**

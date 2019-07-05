@@ -25,10 +25,8 @@
 
 #include <stdint.h>
 
-template<typename T> struct ConstBuffer;
 enum TagType : uint8_t;
 struct Tag;
-struct TagItem;
 struct LightSong;
 
 class TagSongFilter final : public ISongFilter {

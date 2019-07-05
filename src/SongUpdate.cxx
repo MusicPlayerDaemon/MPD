@@ -34,8 +34,6 @@
 #include "TagArchive.hxx"
 #endif
 
-#include <exception>
-
 #include <assert.h>
 #include <string.h>
 

@@ -19,9 +19,7 @@
 
 #include "ReplayGainGlobal.hxx"
 #include "ReplayGainConfig.hxx"
-#include "config/Param.hxx"
 #include "config/Data.hxx"
-#include "util/RuntimeError.hxx"
 
 #include <assert.h>
 #include <stdlib.h>

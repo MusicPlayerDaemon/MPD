@@ -36,7 +36,6 @@
 #include "config/Block.hxx"
 #include "tag/Builder.hxx"
 #include "tag/Tag.hxx"
-#include "tag/Mask.hxx"
 #include "tag/ParseName.hxx"
 #include "util/ConstBuffer.hxx"
 #include "util/RecursiveMap.hxx"

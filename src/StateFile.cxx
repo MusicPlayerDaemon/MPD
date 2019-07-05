@@ -34,8 +34,6 @@
 
 #include <exception>
 
-#include <string.h>
-
 static constexpr Domain state_file_domain("state_file");
 
 StateFile::StateFile(StateFileConfig &&_config,

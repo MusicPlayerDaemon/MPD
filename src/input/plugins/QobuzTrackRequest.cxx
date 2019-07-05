@@ -21,7 +21,6 @@
 #include "QobuzErrorParser.hxx"
 #include "QobuzClient.hxx"
 #include "lib/yajl/Callbacks.hxx"
-#include "util/RuntimeError.hxx"
 
 using Wrapper = Yajl::CallbacksWrapper<QobuzTrackRequest::ResponseParser>;
 static constexpr yajl_callbacks parse_callbacks = {

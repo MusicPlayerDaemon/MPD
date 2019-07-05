@@ -18,8 +18,11 @@
  */
 
 #include "VHelper.hxx"
+#include "song/DetachedSong.hxx"
 #include "song/LightSong.hxx"
 #include "song/Filter.hxx"
+
+#include <algorithm>
 
 #include <assert.h>
 #include <stdlib.h>

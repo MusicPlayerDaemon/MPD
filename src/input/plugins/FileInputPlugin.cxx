@@ -19,7 +19,6 @@
 
 #include "FileInputPlugin.hxx"
 #include "../InputStream.hxx"
-#include "../InputPlugin.hxx"
 #include "fs/Path.hxx"
 #include "fs/FileInfo.hxx"
 #include "fs/io/FileReader.hxx"

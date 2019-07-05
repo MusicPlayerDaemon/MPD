@@ -19,8 +19,6 @@
 
 #include "Util.hxx"
 
-#include <assert.h>
-
 /** Get rid of white space at both ends */
 void
 trimstring(std::string &s, const char *ws) noexcept

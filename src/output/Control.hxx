@@ -28,15 +28,10 @@
 #include "system/PeriodClock.hxx"
 #include "util/Compiler.h"
 
-#include <utility>
 #include <exception>
 #include <memory>
 #include <string>
 #include <map>
-
-#ifndef NDEBUG
-#include <assert.h>
-#endif
 
 #include <stdint.h>
 

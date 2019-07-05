@@ -21,11 +21,8 @@
 #include "MixerControl.hxx"
 #include "MixerInternal.hxx"
 #include "MixerList.hxx"
-#include "output/Filtered.hxx"
 #include "pcm/Volume.hxx"
 #include "Log.hxx"
-
-#include <stdexcept>
 
 #include <assert.h>
 

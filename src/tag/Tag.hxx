@@ -25,8 +25,8 @@
 #include "Chrono.hxx"
 #include "util/Compiler.h"
 
-#include <algorithm>
 #include <memory>
+#include <utility>
 
 /**
  * The meta information about a song file.  It is a MPD specific

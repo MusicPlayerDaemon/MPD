@@ -22,12 +22,10 @@
 
 #include "StateFileConfig.hxx"
 #include "event/TimerEvent.hxx"
-#include "fs/AllocatedPath.hxx"
 #include "util/Compiler.h"
 #include "config.h"
 
 #include <string>
-#include <chrono>
 
 struct Partition;
 class OutputStream;

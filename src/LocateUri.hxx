@@ -21,7 +21,6 @@
 #define MPD_LOCATE_URI_HXX
 
 #include "config.h"
-#include "util/Compiler.h"
 #include "fs/AllocatedPath.hxx"
 
 #ifdef _WIN32

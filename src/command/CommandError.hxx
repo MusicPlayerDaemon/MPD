@@ -20,8 +20,6 @@
 #ifndef MPD_COMMAND_ERROR_HXX
 #define MPD_COMMAND_ERROR_HXX
 
-#include "CommandResult.hxx"
-
 #include <exception>
 
 class Response;

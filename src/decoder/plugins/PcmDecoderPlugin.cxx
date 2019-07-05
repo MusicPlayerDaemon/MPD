@@ -38,7 +38,6 @@
 
 #include <exception>
 
-#include <assert.h>
 #include <string.h>
 
 static constexpr Domain pcm_decoder_domain("pcm_decoder");

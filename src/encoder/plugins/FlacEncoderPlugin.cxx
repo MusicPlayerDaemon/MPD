@@ -21,7 +21,6 @@
 #include "../EncoderAPI.hxx"
 #include "AudioFormat.hxx"
 #include "pcm/Buffer.hxx"
-#include "config/Domain.hxx"
 #include "util/DynamicFifoBuffer.hxx"
 #include "util/RuntimeError.hxx"
 

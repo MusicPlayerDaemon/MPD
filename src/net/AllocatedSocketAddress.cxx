@@ -39,14 +39,6 @@
 #include <sys/un.h>
 #endif
 
-#ifdef HAVE_TCP
-#ifdef _WIN32
-#include <ws2tcpip.h>
-#else
-#include <netinet/in.h>
-#endif
-#endif
-
 AllocatedSocketAddress &
 AllocatedSocketAddress::operator=(SocketAddress src) noexcept
 {

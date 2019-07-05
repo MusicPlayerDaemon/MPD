@@ -23,15 +23,9 @@
 #include "FfmpegInputPlugin.hxx"
 #include "lib/ffmpeg/IOContext.hxx"
 #include "lib/ffmpeg/Init.hxx"
-#include "lib/ffmpeg/Error.hxx"
 #include "../InputStream.hxx"
 #include "PluginUnavailable.hxx"
-#include "util/StringAPI.hxx"
 #include "../InputPlugin.hxx"
-#include <iostream>
-#include <exception>
-#include <typeinfo>
-#include <stdexcept>
 
 class FfmpegInputStream final : public InputStream {
 	Ffmpeg::IOContext io;
@@ -90,7 +84,7 @@ input_ffmpeg_protocols() {
 			protocols.emplace(schema);
 		}
 	}
-	
+
 	return protocols;
 }
 

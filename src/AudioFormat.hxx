@@ -24,9 +24,8 @@
 #include "pcm/ChannelDefs.hxx"
 #include "util/Compiler.h"
 
-#include <chrono>
+#include <cstdint>
 
-#include <stdint.h>
 #include <stddef.h>
 
 template<size_t CAPACITY> class StringBuffer;

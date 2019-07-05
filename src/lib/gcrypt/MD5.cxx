@@ -31,8 +31,6 @@
 #include "Hash.hxx"
 #include "util/HexFormat.hxx"
 
-#include <stdio.h>
-
 std::array<uint8_t, 16>
 MD5(ConstBuffer<void> input) noexcept
 {

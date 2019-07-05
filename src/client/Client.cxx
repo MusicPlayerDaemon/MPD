@@ -22,7 +22,6 @@
 #include "Partition.hxx"
 #include "Instance.hxx"
 #include "BackgroundCommand.hxx"
-#include "util/Domain.hxx"
 #include "config.h"
 
 Client::~Client() noexcept

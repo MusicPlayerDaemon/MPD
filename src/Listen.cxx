@@ -34,8 +34,6 @@
 #include "fs/XDG.hxx"
 
 #include <sys/stat.h>
-#include <string.h>
-#include <assert.h>
 
 #ifdef ENABLE_SYSTEMD_DAEMON
 #include <systemd/sd-daemon.h>

@@ -21,9 +21,7 @@
 #define MPD_INPUT_READER_HXX
 
 #include "fs/io/Reader.hxx"
-#include "util/Compiler.h"
 
-struct Decoder;
 class InputStream;
 
 /**

@@ -32,8 +32,6 @@
 #include "fs/io/BufferedOutputStream.hxx"
 #include "util/UriUtil.hxx"
 
-#include <exception>
-
 static void
 playlist_print_path(BufferedOutputStream &os, const Path path)
 {

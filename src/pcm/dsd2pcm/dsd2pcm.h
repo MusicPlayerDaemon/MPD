@@ -32,7 +32,6 @@ or implied, of Sebastian Gesemann.
 #define DSD2PCM_H_INCLUDED
 
 #include <stddef.h>
-#include <string.h>
 
 #ifdef __cplusplus
 extern "C" {

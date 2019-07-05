@@ -25,7 +25,6 @@
 #include "tag/Builder.hxx"
 #include "util/StringView.hxx"
 #include "lib/expat/ExpatParser.hxx"
-#include "Log.hxx"
 
 #include <string.h>
 

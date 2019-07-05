@@ -21,7 +21,6 @@
 #include "input/ThreadInputStream.hxx"
 #include "input/InputPlugin.hxx"
 #include "system/Error.hxx"
-#include "util/ASCII.hxx"
 
 #include <libmms/mmsx.h>
 

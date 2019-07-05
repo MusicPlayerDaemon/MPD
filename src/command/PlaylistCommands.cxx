@@ -23,7 +23,6 @@
 #include "Instance.hxx"
 #include "db/Selection.hxx"
 #include "db/DatabasePlaylist.hxx"
-#include "CommandError.hxx"
 #include "PlaylistSave.hxx"
 #include "PlaylistFile.hxx"
 #include "PlaylistError.hxx"

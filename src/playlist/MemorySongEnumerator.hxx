@@ -22,7 +22,6 @@
 
 #include "SongEnumerator.hxx"
 #include "song/DetachedSong.hxx"
-#include "util/Compiler.h"
 
 #include <forward_list>
 

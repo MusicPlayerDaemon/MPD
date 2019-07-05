@@ -22,7 +22,6 @@
 
 #include "Reader.hxx"
 #include "util/StaticFifoBuffer.hxx"
-#include "util/Compiler.h"
 
 #include <zlib.h>
 

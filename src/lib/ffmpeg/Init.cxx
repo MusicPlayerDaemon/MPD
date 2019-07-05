@@ -37,4 +37,3 @@ FfmpegInit()
 	av_register_all();
 #endif
 }
-

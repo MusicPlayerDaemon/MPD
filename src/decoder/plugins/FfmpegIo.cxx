@@ -24,8 +24,6 @@
 #include "../DecoderAPI.hxx"
 #include "input/InputStream.hxx"
 
-#include <exception>
-
 AvioStream::~AvioStream()
 {
 	if (io != nullptr) {

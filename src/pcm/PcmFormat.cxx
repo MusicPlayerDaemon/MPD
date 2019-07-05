@@ -19,7 +19,6 @@
 
 #include "PcmFormat.hxx"
 #include "Buffer.hxx"
-#include "Clamp.hxx"
 #include "Traits.hxx"
 #include "FloatConvert.hxx"
 #include "ShiftConvert.hxx"

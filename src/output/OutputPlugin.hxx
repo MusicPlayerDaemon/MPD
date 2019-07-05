@@ -22,13 +22,7 @@
 
 #include "util/Compiler.h"
 
-#include <chrono>
-
-#include <stddef.h>
-
 struct ConfigBlock;
-struct AudioFormat;
-struct Tag;
 class AudioOutput;
 struct MixerPlugin;
 class EventLoop;

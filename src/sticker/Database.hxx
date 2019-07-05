@@ -44,7 +44,6 @@
 
 #include "Match.hxx"
 #include "lib/sqlite/Database.hxx"
-#include "util/Compiler.h"
 
 #include <sqlite3.h>
 

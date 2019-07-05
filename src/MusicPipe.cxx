@@ -20,6 +20,8 @@
 #include "MusicPipe.hxx"
 #include "MusicChunk.hxx"
 
+#include <assert.h>
+
 #ifndef NDEBUG
 
 bool

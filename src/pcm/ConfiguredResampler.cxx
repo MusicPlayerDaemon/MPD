@@ -21,7 +21,6 @@
 #include "FallbackResampler.hxx"
 #include "config/Data.hxx"
 #include "config/Option.hxx"
-#include "config/Domain.hxx"
 #include "config/Block.hxx"
 #include "config/Param.hxx"
 #include "util/RuntimeError.hxx"

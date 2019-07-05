@@ -33,7 +33,7 @@
 
 #include <libsmbclient.h>
 
-#include <algorithm>
+#include <utility>
 
 class SmbclientNeighborExplorer final : public NeighborExplorer {
 	struct Server {

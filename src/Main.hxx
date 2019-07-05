@@ -20,14 +20,12 @@
 #ifndef MPD_MAIN_HXX
 #define MPD_MAIN_HXX
 
-class EventLoop;
-class Context;
 struct Instance;
 
 #ifdef ANDROID
 #include "android/LogListener.hxx"
 
-extern Context *context;
+extern class Context *context;
 extern LogListener *logListener;
 #endif
 

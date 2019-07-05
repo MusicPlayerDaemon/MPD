@@ -26,8 +26,6 @@
 #include "fs/AllocatedPath.hxx"
 #include "Log.hxx"
 
-#include <stdexcept>
-
 #include <errno.h>
 
 bool
