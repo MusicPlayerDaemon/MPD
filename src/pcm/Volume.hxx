@@ -94,9 +94,10 @@ public:
 	 *
 	 * Throws on error.
 	 *
-	 * @param format the sample format
+	 * @param format the input sample format
+	 * @return the output sample format
 	 */
-	void Open(SampleFormat format);
+	SampleFormat Open(SampleFormat format);
 
 	/**
 	 * Closes the object.  After that, you may call Open() again.

@@ -30,7 +30,7 @@ class VolumeFilter final : public Filter {
 public:
 	explicit VolumeFilter(const AudioFormat &audio_format)
 		:Filter(audio_format) {
-		pv.Open(out_audio_format.format);
+		out_audio_format.format = pv.Open(out_audio_format.format);
 	}
 
 	unsigned GetVolume() const noexcept {

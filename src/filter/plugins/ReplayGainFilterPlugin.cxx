@@ -77,7 +77,7 @@ public:
 		 mixer(_mixer), base(_base) {
 		info.Clear();
 
-		pv.Open(out_audio_format.format);
+		out_audio_format.format = pv.Open(out_audio_format.format);
 	}
 
 	void SetInfo(const ReplayGainInfo *_info) {

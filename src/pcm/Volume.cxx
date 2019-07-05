@@ -96,7 +96,7 @@ pcm_volume_change_float(float *dest, const float *src, size_t n,
 		dest[i] = src[i] * volume;
 }
 
-void
+SampleFormat
 PcmVolume::Open(SampleFormat _format)
 {
 	assert(format == SampleFormat::UNDEFINED);
@@ -118,7 +118,7 @@ PcmVolume::Open(SampleFormat _format)
 		break;
 	}
 
-	format = _format;
+	return format = _format;
 }
 
 ConstBuffer<void>
