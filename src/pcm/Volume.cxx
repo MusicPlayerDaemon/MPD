@@ -23,6 +23,7 @@
 #include "util/ConstBuffer.hxx"
 #include "util/WritableBuffer.hxx"
 #include "util/RuntimeError.hxx"
+#include "util/TransformN.hxx"
 
 #include "Dither.cxx" // including the .cxx file to get inlined templates
 
@@ -94,8 +95,11 @@ pcm_volume_change(PcmDither &dither,
 		  size_t n,
 		  int volume) noexcept
 {
-	for (size_t i = 0; i != n; ++i)
-		dest[i] = pcm_volume_sample<F, Traits>(dither, src[i], volume);
+	transform_n(src, n, dest,
+		    [&dither, volume](auto x){
+			    return pcm_volume_sample<F, Traits>(dither, x,
+								volume);
+		    });
 }
 
 static void
@@ -118,10 +122,12 @@ static void
 PcmVolumeChange16to32(int32_t *dest, const int16_t *src, size_t n,
 		      int volume) noexcept
 {
-	for (size_t i = 0; i != n; ++i)
-		dest[i] = PcmVolumeConvert<SampleFormat::S16,
-					   SampleFormat::S24_P32>(src[i],
-								  volume);
+	transform_n(src, n, dest,
+		    [volume](auto x){
+			    return PcmVolumeConvert<SampleFormat::S16,
+						    SampleFormat::S24_P32>(x,
+									   volume);
+		    });
 }
 
 static void
@@ -145,8 +151,8 @@ static void
 pcm_volume_change_float(float *dest, const float *src, size_t n,
 			float volume) noexcept
 {
-	for (size_t i = 0; i != n; ++i)
-		dest[i] = src[i] * volume;
+	transform_n(src, n, dest,
+		    [volume](float x){ return x * volume; });
 }
 
 SampleFormat
