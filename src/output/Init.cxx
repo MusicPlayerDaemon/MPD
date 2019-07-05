@@ -213,12 +213,18 @@ FilteredAudioOutput::Setup(EventLoop &event_loop,
 		block.GetBlockValue("replay_gain_handler", "software");
 
 	if (strcmp(replay_gain_handler, "none") != 0) {
+		/* when using software volume, we lose quality by
+		   invoking PcmVolume::Apply() twice; to avoid losing
+		   too much precision, we allow the ReplayGainFilter
+		   to convert 16 bit to 24 bit */
+		const bool allow_convert = mixer_type == MixerType::SOFTWARE;
+
 		prepared_replay_gain_filter =
-			NewReplayGainFilter(replay_gain_config);
+			NewReplayGainFilter(replay_gain_config, allow_convert);
 		assert(prepared_replay_gain_filter != nullptr);
 
 		prepared_other_replay_gain_filter =
-			NewReplayGainFilter(replay_gain_config);
+			NewReplayGainFilter(replay_gain_config, allow_convert);
 		assert(prepared_other_replay_gain_filter != nullptr);
 	}
 

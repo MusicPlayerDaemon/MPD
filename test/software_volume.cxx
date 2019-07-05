@@ -50,7 +50,7 @@ try {
 		audio_format = ParseAudioFormat(argv[1], false);
 
 	PcmVolume pv;
-	const auto out_sample_format = pv.Open(audio_format.format);
+	const auto out_sample_format = pv.Open(audio_format.format, false);
 
 	if (out_sample_format != audio_format.format)
 		fprintf(stderr, "Converting to %s\n",

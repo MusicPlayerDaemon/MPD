@@ -30,6 +30,49 @@
 #include <stdint.h>
 #include <string.h>
 
+#if GCC_OLDER_THAN(8,0)
+/* GCC 6.3 emits this bogus warning in PcmVolumeConvert() because it
+   checks an unreachable branch */
+#pragma GCC diagnostic ignored "-Wshift-count-overflow"
+#endif
+
+/**
+ * Apply software volume, converting to a different sample type.
+ */
+template<SampleFormat SF, SampleFormat DF,
+	 class STraits=SampleTraits<SF>,
+	 class DTraits=SampleTraits<DF>>
+#if !GCC_OLDER_THAN(8,0)
+constexpr
+#endif
+static typename DTraits::value_type
+PcmVolumeConvert(typename STraits::value_type _sample, int volume) noexcept
+{
+	typename STraits::long_type sample(_sample);
+	sample *= volume;
+
+	static_assert(DTraits::BITS > STraits::BITS,
+		      "Destination sample must be larger than source sample");
+
+	/* after multiplying with the volume value, the "sample"
+	   variable contains this number of precision bits: source
+	   bits plus the volume bits */
+	constexpr unsigned BITS = STraits::BITS + PCM_VOLUME_BITS;
+
+	/* .. and now we need to scale to the requested destination
+	   bits */
+
+	typename DTraits::value_type result;
+	if (BITS > DTraits::BITS)
+		result = sample >> (BITS - DTraits::BITS);
+	else if (BITS < DTraits::BITS)
+		result = sample << (DTraits::BITS - BITS);
+	else
+		result = sample;
+
+	return result;
+}
+
 template<SampleFormat F, class Traits=SampleTraits<F>>
 static inline typename Traits::value_type
 pcm_volume_sample(PcmDither &dither,
@@ -72,6 +115,16 @@ pcm_volume_change_16(PcmDither &dither,
 }
 
 static void
+PcmVolumeChange16to32(int32_t *dest, const int16_t *src, size_t n,
+		      int volume) noexcept
+{
+	for (size_t i = 0; i != n; ++i)
+		dest[i] = PcmVolumeConvert<SampleFormat::S16,
+					   SampleFormat::S24_P32>(src[i],
+								  volume);
+}
+
+static void
 pcm_volume_change_24(PcmDither &dither,
 		     int32_t *dest, const int32_t *src, size_t n,
 		     int volume) noexcept
@@ -97,9 +150,11 @@ pcm_volume_change_float(float *dest, const float *src, size_t n,
 }
 
 SampleFormat
-PcmVolume::Open(SampleFormat _format)
+PcmVolume::Open(SampleFormat _format, bool allow_convert)
 {
 	assert(format == SampleFormat::UNDEFINED);
+
+	convert = false;
 
 	switch (_format) {
 	case SampleFormat::UNDEFINED:
@@ -107,7 +162,19 @@ PcmVolume::Open(SampleFormat _format)
 					 sample_format_to_string(_format));
 
 	case SampleFormat::S8:
+		break;
+
 	case SampleFormat::S16:
+		if (allow_convert) {
+			/* convert S16 to S24 to avoid discarding too
+			   many bits of precision in this stage */
+			format = _format;
+			convert = true;
+			return SampleFormat::S24_P32;
+		}
+
+		break;
+
 	case SampleFormat::S24_P32:
 	case SampleFormat::S32:
 	case SampleFormat::FLOAT:
@@ -124,10 +191,17 @@ PcmVolume::Open(SampleFormat _format)
 ConstBuffer<void>
 PcmVolume::Apply(ConstBuffer<void> src) noexcept
 {
-	if (volume == PCM_VOLUME_1)
+	if (volume == PCM_VOLUME_1 && !convert)
 		return src;
 
 	size_t dest_size = src.size;
+	if (convert) {
+		assert(format == SampleFormat::S16);
+
+		/* converting to S24_P32 */
+		dest_size *= 2;
+	}
+
 	void *data = buffer.Get(dest_size);
 
 	if (volume == 0) {
@@ -149,10 +223,16 @@ PcmVolume::Apply(ConstBuffer<void> src) noexcept
 		break;
 
 	case SampleFormat::S16:
-		pcm_volume_change_16(dither, (int16_t *)data,
-				     (const int16_t *)src.data,
-				     src.size / sizeof(int16_t),
-				     volume);
+		if (convert)
+			PcmVolumeChange16to32((int32_t *)data,
+					      (const int16_t *)src.data,
+					      src.size / sizeof(int16_t),
+					      volume);
+		else
+			pcm_volume_change_16(dither, (int16_t *)data,
+					     (const int16_t *)src.data,
+					     src.size / sizeof(int16_t),
+					     volume);
 		break;
 
 	case SampleFormat::S24_P32:

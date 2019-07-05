@@ -11,6 +11,7 @@ ver 0.22 (not yet released)
 * filter
   - ffmpeg: new plugin based on FFmpeg's libavfilter library
   - hdcd: new plugin based on FFmpeg's "af_hdcd" for HDCD playback
+  - volume: convert S16 to S24 to preserve quality and reduce dithering noise
 
 ver 0.21.12 (not yet released)
 * decoder

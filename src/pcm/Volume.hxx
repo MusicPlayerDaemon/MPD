@@ -63,6 +63,12 @@ pcm_volume_to_float(int volume) noexcept
 class PcmVolume {
 	SampleFormat format;
 
+	/**
+	 * Are we currently converting to a different #SampleFormat?
+	 * This is set by Open().
+	 */
+	bool convert;
+
 	unsigned volume;
 
 	PcmBuffer buffer;
@@ -95,9 +101,11 @@ public:
 	 * Throws on error.
 	 *
 	 * @param format the input sample format
+	 * @param allow_convert allow the class to convert to a
+	 * different #SampleFormat to preserve quality?
 	 * @return the output sample format
 	 */
-	SampleFormat Open(SampleFormat format);
+	SampleFormat Open(SampleFormat format, bool allow_convert);
 
 	/**
 	 * Closes the object.  After that, you may call Open() again.

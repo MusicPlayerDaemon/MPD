@@ -69,7 +69,7 @@ class ReplayGainFilter final : public Filter {
 	PcmVolume pv;
 
 public:
-	ReplayGainFilter(const ReplayGainConfig &_config,
+	ReplayGainFilter(const ReplayGainConfig &_config, bool allow_convert,
 			 const AudioFormat &audio_format,
 			 Mixer *_mixer, unsigned _base)
 		:Filter(audio_format),
@@ -77,7 +77,8 @@ public:
 		 mixer(_mixer), base(_base) {
 		info.Clear();
 
-		out_audio_format.format = pv.Open(out_audio_format.format);
+		out_audio_format.format = pv.Open(out_audio_format.format,
+						  allow_convert);
 	}
 
 	void SetInfo(const ReplayGainInfo *_info) {
@@ -121,14 +122,21 @@ class PreparedReplayGainFilter final : public PreparedFilter {
 	Mixer *mixer = nullptr;
 
 	/**
+	 * Allow the class to convert to a different #SampleFormat to
+	 * preserve quality?
+	 */
+	const bool allow_convert;
+
+	/**
 	 * The base volume level for scale=1.0, between 1 and 100
 	 * (including).
 	 */
 	unsigned base;
 
 public:
-	explicit PreparedReplayGainFilter(const ReplayGainConfig _config)
-		:config(_config) {}
+	explicit PreparedReplayGainFilter(const ReplayGainConfig _config,
+					  bool _allow_convert)
+		:config(_config), allow_convert(_allow_convert) {}
 
 	void SetMixer(Mixer *_mixer, unsigned _base) {
 		assert(_mixer == nullptr || (_base > 0 && _base <= 100));
@@ -172,15 +180,18 @@ ReplayGainFilter::Update()
 }
 
 std::unique_ptr<PreparedFilter>
-NewReplayGainFilter(const ReplayGainConfig &config) noexcept
+NewReplayGainFilter(const ReplayGainConfig &config,
+		    bool allow_convert) noexcept
 {
-	return std::make_unique<PreparedReplayGainFilter>(config);
+	return std::make_unique<PreparedReplayGainFilter>(config,
+							  allow_convert);
 }
 
 std::unique_ptr<Filter>
 PreparedReplayGainFilter::Open(AudioFormat &af)
 {
-	return std::make_unique<ReplayGainFilter>(config, af, mixer, base);
+	return std::make_unique<ReplayGainFilter>(config, allow_convert,
+						  af, mixer, base);
 }
 
 ConstBuffer<void>

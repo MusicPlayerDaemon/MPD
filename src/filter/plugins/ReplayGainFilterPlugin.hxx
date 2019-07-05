@@ -30,8 +30,13 @@ class Mixer;
 struct ReplayGainConfig;
 struct ReplayGainInfo;
 
+/**
+ * @param allow_convert allow the class to convert to a different
+ * #SampleFormat to preserve quality?
+ */
 std::unique_ptr<PreparedFilter>
-NewReplayGainFilter(const ReplayGainConfig &config) noexcept;
+NewReplayGainFilter(const ReplayGainConfig &config,
+		    bool allow_convert) noexcept;
 
 /**
  * Enables or disables the hardware mixer for applying replay gain.
