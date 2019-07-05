@@ -92,7 +92,7 @@ public:
 	/**
 	 * Opens the object, prepare for Apply().
 	 *
-	 * Throws std::runtime_error on error.
+	 * Throws on error.
 	 *
 	 * @param format the sample format
 	 */
