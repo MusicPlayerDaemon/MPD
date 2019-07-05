@@ -305,7 +305,12 @@ GetChromaprintCommand::Read(InputStream &is, void *buffer, size_t length)
 		cond.wait(lock);
 	}
 
-	return is.Read(lock, buffer, length);
+	try {
+		return is.Read(lock, buffer, length);
+	} catch (...) {
+		ChromaprintDecoderClient::error = std::current_exception();
+		return 0;
+	}
 }
 
 CommandResult

@@ -24,6 +24,7 @@
 #include "decoder/Client.hxx"
 #include "thread/Mutex.hxx"
 
+#include <exception>
 #include <memory>
 
 #include <stdint.h>
@@ -38,6 +39,13 @@ class ChromaprintDecoderClient : public DecoderClient {
 	Chromaprint::Context chromaprint;
 
 	uint64_t remaining_bytes;
+
+protected:
+	/**
+	 * This is set when an I/O error occurs while decoding; it
+	 * will be rethrown by Finish().
+	 */
+	std::exception_ptr error;
 
 public:
 	Mutex mutex;
@@ -63,7 +71,7 @@ public:
 		   bool seekable, SignedSongTime duration) override;
 
 	DecoderCommand GetCommand() noexcept override {
-		return remaining_bytes > 0
+		return !error && remaining_bytes > 0
 			? DecoderCommand::NONE
 			: DecoderCommand::STOP;
 	}

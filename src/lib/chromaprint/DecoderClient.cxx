@@ -28,6 +28,9 @@ ChromaprintDecoderClient::~ChromaprintDecoderClient() noexcept = default;
 void
 ChromaprintDecoderClient::Finish()
 {
+	if (error)
+		std::rethrow_exception(error);
+
 	if (!ready)
 		throw std::runtime_error("Decoding failed");
 
@@ -86,5 +89,10 @@ ChromaprintDecoderClient::SubmitData(InputStream *,
 size_t
 ChromaprintDecoderClient::Read(InputStream &is, void *buffer, size_t length)
 {
-	return is.LockRead(buffer, length);
+	try {
+		return is.LockRead(buffer, length);
+	} catch (...) {
+		error = std::current_exception();
+		return 0;
+	}
 }
