@@ -67,18 +67,16 @@ IcyMetaDataParser::Data(size_t length) noexcept
 }
 
 static void
-icy_add_item(TagBuilder &tag, TagType type, const char *value) noexcept
+icy_add_item(TagBuilder &tag, TagType type, StringView value) noexcept
 {
-	size_t length = strlen(value);
-
-	if (length >= 2 && value[0] == '\'' && value[length - 1] == '\'') {
+	if (value.size >= 2 && value.front() == '\'' && value.back() == '\'') {
 		/* strip the single quotes */
-		++value;
-		length -= 2;
+		++value.data;
+		value.size -= 2;
 	}
 
-	if (length > 0)
-		tag.AddItem(type, {value, length});
+	if (value.size > 0)
+		tag.AddItem(type, value);
 }
 
 static void
