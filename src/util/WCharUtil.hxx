@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2017 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2011-2019 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -32,22 +32,19 @@
 
 #include <wchar.h>
 
-constexpr
-static inline bool
+constexpr bool
 IsASCII(const wchar_t ch)
 {
 	return (ch & ~0x7f) == 0;
 }
 
-constexpr
-static inline bool
+constexpr bool
 IsWhitespaceOrNull(const wchar_t ch)
 {
 	return (unsigned)ch <= 0x20;
 }
 
-constexpr
-static inline bool
+constexpr bool
 IsWhitespaceNotNull(const wchar_t ch)
 {
 	return ch > 0 && ch <= 0x20;
@@ -59,50 +56,43 @@ IsWhitespaceNotNull(const wchar_t ch)
  * want the fastest implementation, and you don't care if a null byte
  * matches.
  */
-constexpr
-static inline bool
+constexpr bool
 IsWhitespaceFast(const wchar_t ch)
 {
 	return IsWhitespaceOrNull(ch);
 }
 
-constexpr
-static inline bool
+constexpr bool
 IsPrintableASCII(wchar_t ch)
 {
 	return IsASCII(ch) && ch >= 0x20;
 }
 
-constexpr
-static inline bool
+constexpr bool
 IsDigitASCII(wchar_t ch)
 {
 	return ch >= '0' && ch <= '9';
 }
 
-constexpr
-static inline bool
+constexpr bool
 IsUpperAlphaASCII(wchar_t ch)
 {
 	return ch >= 'A' && ch <= 'Z';
 }
 
-constexpr
-static inline bool
+constexpr bool
 IsLowerAlphaASCII(wchar_t ch)
 {
 	return ch >= 'a' && ch <= 'z';
 }
 
-constexpr
-static inline bool
+constexpr bool
 IsAlphaASCII(wchar_t ch)
 {
 	return IsUpperAlphaASCII(ch) || IsLowerAlphaASCII(ch);
 }
 
-constexpr
-static inline bool
+constexpr bool
 IsAlphaNumericASCII(wchar_t ch)
 {
 	return IsAlphaASCII(ch) || IsDigitASCII(ch);
@@ -112,8 +102,7 @@ IsAlphaNumericASCII(wchar_t ch)
  * Convert the specified ASCII character (0x00..0x7f) to upper case.
  * Unlike toupper(), it ignores the system locale.
  */
-constexpr
-static inline wchar_t
+constexpr wchar_t
 ToUpperASCII(wchar_t ch)
 {
 	return ch >= 'a' && ch <= 'z'
@@ -125,8 +114,7 @@ ToUpperASCII(wchar_t ch)
  * Convert the specified ASCII character (0x00..0x7f) to lower case.
  * Unlike tolower(), it ignores the system locale.
  */
-constexpr
-static inline wchar_t
+constexpr wchar_t
 ToLowerASCII(wchar_t ch)
 {
 	return ch >= 'A' && ch <= 'Z'
