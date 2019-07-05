@@ -58,7 +58,7 @@ pcm_volume_to_float(int volume) noexcept
 }
 
 /**
- * A class that converts samples from one format to another.
+ * Software volume implementation.
  */
 class PcmVolume {
 	SampleFormat format;
