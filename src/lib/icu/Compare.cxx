@@ -22,8 +22,6 @@
 #include "util/StringAPI.hxx"
 #include "config.h"
 
-#include <string.h>
-
 #ifdef HAVE_ICU_CASE_FOLD
 
 IcuCompare::IcuCompare(const char *_needle) noexcept
@@ -42,7 +40,7 @@ IcuCompare::operator==(const char *haystack) const noexcept
 #ifdef HAVE_ICU_CASE_FOLD
 	return StringIsEqual(IcuCaseFold(haystack).c_str(), needle.c_str());
 #else
-	return strcasecmp(haystack, needle.c_str());
+	return StringIsEqualIgnoreCase(haystack, needle.c_str());
 #endif
 }
 
