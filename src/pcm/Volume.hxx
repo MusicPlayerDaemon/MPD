@@ -38,7 +38,7 @@ static constexpr unsigned PCM_VOLUME_BITS = 10;
 /**
  * This value means "100% volume".
  */
-static constexpr unsigned PCM_VOLUME_1 = 1024;
+static constexpr unsigned PCM_VOLUME_1 = 1u << PCM_VOLUME_BITS;
 static constexpr int PCM_VOLUME_1S = PCM_VOLUME_1;
 
 /**
