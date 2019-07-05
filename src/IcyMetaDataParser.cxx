@@ -22,14 +22,11 @@
 #include "tag/Builder.hxx"
 #include "util/Domain.hxx"
 #include "util/StringView.hxx"
-#include "Log.hxx"
 
 #include <algorithm>
 
 #include <assert.h>
 #include <string.h>
-
-static constexpr Domain icy_metadata_domain("icy_metadata");
 
 void
 IcyMetaDataParser::Reset() noexcept
@@ -85,9 +82,6 @@ icy_parse_tag_item(TagBuilder &tag,
 {
 	if (strcmp(name, "StreamTitle") == 0)
 		icy_add_item(tag, TAG_TITLE, value);
-	else
-		FormatDebug(icy_metadata_domain,
-			    "unknown icy-tag: '%s'", name);
 }
 
 /**
