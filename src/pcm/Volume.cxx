@@ -127,12 +127,13 @@ PcmVolume::Apply(ConstBuffer<void> src) noexcept
 	if (volume == PCM_VOLUME_1)
 		return src;
 
-	void *data = buffer.Get(src.size);
+	size_t dest_size = src.size;
+	void *data = buffer.Get(dest_size);
 
 	if (volume == 0) {
 		/* optimized special case: 0% volume = memset(0) */
-		PcmSilence({data, src.size}, format);
-		return { data, src.size };
+		PcmSilence({data, dest_size}, format);
+		return { data, dest_size };
 	}
 
 	switch (format) {
@@ -180,5 +181,5 @@ PcmVolume::Apply(ConstBuffer<void> src) noexcept
 		return src;
 	}
 
-	return { data, src.size };
+	return { data, dest_size };
 }
