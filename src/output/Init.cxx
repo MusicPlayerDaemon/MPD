@@ -105,14 +105,14 @@ audio_output_mixer_type(const ConfigBlock &block,
 static Mixer *
 audio_output_load_mixer(EventLoop &event_loop, FilteredAudioOutput &ao,
 			const ConfigBlock &block,
-			const AudioOutputDefaults &defaults,
+			const MixerType mixer_type,
 			const MixerPlugin *plugin,
 			PreparedFilter &filter_chain,
 			MixerListener &listener)
 {
 	Mixer *mixer;
 
-	switch (audio_output_mixer_type(block, defaults)) {
+	switch (mixer_type) {
 	case MixerType::NONE:
 		return nullptr;
 
@@ -205,6 +205,8 @@ FilteredAudioOutput::Setup(EventLoop &event_loop,
 	    !config_audio_format.IsFullyDefined())
 		throw std::runtime_error("Need full audio format specification");
 
+	const auto mixer_type = audio_output_mixer_type(block, defaults);
+
 	/* create the replay_gain filter */
 
 	const char *replay_gain_handler =
@@ -224,7 +226,7 @@ FilteredAudioOutput::Setup(EventLoop &event_loop,
 
 	try {
 		mixer = audio_output_load_mixer(event_loop, *this, block,
-						defaults,
+						mixer_type,
 						mixer_plugin,
 						*prepared_filter,
 						mixer_listener);
