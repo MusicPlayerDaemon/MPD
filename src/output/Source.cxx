@@ -99,16 +99,21 @@ try {
 	assert(audio_format.IsValid());
 
 	/* the replay_gain filter cannot fail here */
-	if (prepared_replay_gain_filter) {
-		replay_gain_serial = 0;
-		replay_gain_filter =
-			prepared_replay_gain_filter->Open(audio_format);
-	}
-
 	if (prepared_other_replay_gain_filter) {
 		other_replay_gain_serial = 0;
 		other_replay_gain_filter =
 			prepared_other_replay_gain_filter->Open(audio_format);
+	}
+
+	if (prepared_replay_gain_filter) {
+		replay_gain_serial = 0;
+		replay_gain_filter =
+			prepared_replay_gain_filter->Open(audio_format);
+
+		audio_format = replay_gain_filter->GetOutAudioFormat();
+
+		assert(replay_gain_filter->GetOutAudioFormat() ==
+		       other_replay_gain_filter->GetOutAudioFormat());
 	}
 
 	filter = prepared_filter.Open(audio_format);
