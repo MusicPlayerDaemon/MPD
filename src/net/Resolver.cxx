@@ -149,8 +149,7 @@ Resolve(const char *host_and_port, int default_port,
 AddressInfoList
 Resolve(const char *host_port, unsigned default_port, int flags, int socktype)
 {
-	addrinfo hints;
-	memset(&hints, 0, sizeof(hints));
+	struct addrinfo hints{};
 	hints.ai_flags = flags;
 	hints.ai_family = AF_UNSPEC;
 	hints.ai_socktype = socktype;
