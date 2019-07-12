@@ -1,6 +1,7 @@
 ver 0.21.12 (not yet released)
 * decoder
   - opus: ignore case in replay gain tag names
+  - opus, vorbis: decode the "end of stream" packet
 * Windows
   - support backslash in relative URIs loaded from playlists
 
