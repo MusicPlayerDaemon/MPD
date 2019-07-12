@@ -23,7 +23,7 @@
 #include "event/Thread.hxx"
 #include "decoder/DecoderList.hxx"
 #include "decoder/DecoderPlugin.hxx"
-#include "decoder/Client.hxx"
+#include "decoder/DecoderAPI.hxx" /* for class StopDecoder */
 #include "input/Init.hxx"
 #include "input/InputStream.hxx"
 #include "fs/Path.hxx"
@@ -244,10 +244,16 @@ try {
 
 	ChromaprintDecoderClient client;
 	if (plugin->file_decode != nullptr) {
-		plugin->FileDecode(client, Path::FromFS(c.uri));
+		try {
+			plugin->FileDecode(client, Path::FromFS(c.uri));
+		} catch (StopDecoder) {
+		}
 	} else if (plugin->stream_decode != nullptr) {
 		auto is = InputStream::OpenReady(c.uri, client.mutex);
-		plugin->StreamDecode(client, *is);
+		try {
+			plugin->StreamDecode(client, *is);
+		} catch (StopDecoder) {
+		}
 	} else {
 		fprintf(stderr, "Decoder plugin is not usable\n");
 		return EXIT_FAILURE;
