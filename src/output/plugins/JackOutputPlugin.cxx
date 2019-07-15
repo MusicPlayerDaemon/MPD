@@ -57,6 +57,8 @@ struct JackOutput final : AudioOutput {
 
 	std::string destination_ports[MAX_PORTS];
 	unsigned num_destination_ports;
+	/* overrides num_destination_ports*/
+	bool no_auto_connect;
 
 	size_t ringbuffer_size;
 
@@ -200,6 +202,8 @@ JackOutput::JackOutput(const ConfigBlock &block)
 	} else {
 		num_destination_ports = 0;
 	}
+
+	no_auto_connect = block.GetBlockValue("no_auto_connect", false);
 
 	if (num_destination_ports > 0 &&
 	    num_destination_ports != num_source_ports)
@@ -493,6 +497,12 @@ JackOutput::Start()
 	if ( jack_activate(client) ) {
 		Stop();
 		throw std::runtime_error("cannot activate client");
+	}
+
+	/* The rest of this function deals with auto-connecting ports, so we can return now if we are
+	 * not connecting anything */
+	if (no_auto_connect) {
+		return;
 	}
 
 	const char *dports[MAX_PORTS], **jports;
