@@ -280,6 +280,7 @@ input {
 #	name		"My Pulse Output"
 ##	server		"remote_server"		# optional
 ##	sink		"remote_server_sink"	# optional
+##	media_role	"media_role"		#optional
 #}
 #
 # An example of a winmm output (Windows multimedia API).
