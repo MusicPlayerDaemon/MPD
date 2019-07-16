@@ -14,6 +14,7 @@ ver 0.22 (not yet released)
   - volume: convert S16 to S24 to preserve quality and reduce dithering noise
 * output
   - jack: add option "auto_destination_ports"
+  - pulse: add option "media_role"
 * switch to C++17
   - GCC 7 or clang 4 (or newer) recommended
 

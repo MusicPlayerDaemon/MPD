@@ -1002,6 +1002,8 @@ The pulse plugin connects to a `PulseAudio <http://www.freedesktop.org/wiki/Soft
      - Sets the host name of the PulseAudio server. By default, :program:`MPD` connects to the local PulseAudio server.
    * - **sink NAME**
      - Specifies the name of the PulseAudio sink :program:`MPD` should play on.
+   * - **media_role ROLE**
+     - Specifies a custom media role that :program:`MPD` reports to PulseAudio. Default is "music". (optional).
    * - **scale_volume FACTOR**
      - Specifies a linear scaling coefficient (ranging from 0.5 to 5.0) to apply when adjusting volume through :program:`MPD`.  For example, chosing a factor equal to ``"0.7"`` means that setting the volume to 100 in :program:`MPD` will set the PulseAudio volume to 70%, and a factor equal to ``"3.5"`` means that volume 100 in :program:`MPD` corresponds to a 350% PulseAudio volume.
 

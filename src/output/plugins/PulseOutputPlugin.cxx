@@ -45,6 +45,7 @@ class PulseOutput final : AudioOutput {
 	const char *name;
 	const char *server;
 	const char *sink;
+	const char *const media_role;
 
 	PulseMixer *mixer = nullptr;
 
@@ -177,7 +178,8 @@ PulseOutput::PulseOutput(const ConfigBlock &block)
 	:AudioOutput(FLAG_ENABLE_DISABLE|FLAG_PAUSE),
 	 name(block.GetBlockValue("name", "mpd_pulse")),
 	 server(block.GetBlockValue("server")),
-	 sink(block.GetBlockValue("sink"))
+	 sink(block.GetBlockValue("sink")),
+	 media_role(block.GetBlockValue("media_role"))
 {
 	setenv("PULSE_PROP_media.role", "music", true);
 	setenv("PULSE_PROP_application.icon_name", "mpd", true);
@@ -393,8 +395,16 @@ PulseOutput::SetupContext()
 {
 	assert(mainloop != nullptr);
 
-	context = pa_context_new(pa_threaded_mainloop_get_api(mainloop),
-				 MPD_PULSE_NAME);
+	pa_proplist *proplist = pa_proplist_new();
+	if (media_role)
+		pa_proplist_sets(proplist, PA_PROP_MEDIA_ROLE, media_role);
+
+	context = pa_context_new_with_proplist(pa_threaded_mainloop_get_api(mainloop),
+					       MPD_PULSE_NAME,
+					       proplist);
+
+	pa_proplist_free(proplist);
+
 	if (context == nullptr)
 		throw std::runtime_error("pa_context_new() has failed");
 
