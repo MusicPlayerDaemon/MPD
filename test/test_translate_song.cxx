@@ -207,7 +207,6 @@ TEST_F(TranslateSongTest, Insecure)
 TEST_F(TranslateSongTest, Secure)
 {
 	DetachedSong song1(uri1, MakeTag1b());
-	auto s1 = ToString(song1);
 	auto se = ToString(DetachedSong(uri1, MakeTag1c()));
 
 	const SongLoader loader(nullptr, nullptr);
@@ -226,14 +225,12 @@ TEST_F(TranslateSongTest, InDatabase)
 						   loader));
 
 	DetachedSong song2(uri2, MakeTag2b());
-	auto s1 = ToString(song2);
 	auto se = ToString(DetachedSong(uri2, MakeTag2c()));
 	EXPECT_TRUE(playlist_check_translate_song(song2, nullptr,
 						  loader));
 	EXPECT_EQ(se, ToString(song2));
 
 	DetachedSong song3("/music/foo/bar.ogg", MakeTag2b());
-	s1 = ToString(song3);
 	se = ToString(DetachedSong(uri2, MakeTag2c()));
 	EXPECT_TRUE(playlist_check_translate_song(song3, nullptr,
 						  loader));
@@ -249,7 +246,6 @@ TEST_F(TranslateSongTest, Relative)
 
 	/* map to music_directory */
 	DetachedSong song1("bar.ogg", MakeTag2b());
-	auto s1 = ToString(song1);
 	auto se = ToString(DetachedSong(uri2, MakeTag2c()));
 	EXPECT_TRUE(playlist_check_translate_song(song1, "/music/foo",
 						  insecure_loader));
@@ -262,7 +258,6 @@ TEST_F(TranslateSongTest, Relative)
 
 	/* legal because secure=true */
 	DetachedSong song3("bar.ogg", MakeTag1b());
-	s1 = ToString(song3);
 	se = ToString(DetachedSong(uri1, MakeTag1c()));
 	EXPECT_TRUE(playlist_check_translate_song(song3, "/foo",
 						  secure_loader));
@@ -270,7 +265,6 @@ TEST_F(TranslateSongTest, Relative)
 
 	/* relative to http:// */
 	DetachedSong song4("bar.ogg", MakeTag2a());
-	s1 = ToString(song4);
 	se = ToString(DetachedSong("http://example.com/foo/bar.ogg", MakeTag2a()));
 	EXPECT_TRUE(playlist_check_translate_song(song4, "http://example.com/foo",
 						  insecure_loader));
