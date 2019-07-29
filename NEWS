@@ -1,4 +1,6 @@
 ver 0.21.12 (not yet released)
+* decoder
+  - opus: ignore case in replay gain tag names
 * Windows
   - support backslash in relative URIs loaded from playlists
 

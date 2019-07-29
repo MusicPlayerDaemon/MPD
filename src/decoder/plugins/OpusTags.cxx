@@ -22,12 +22,12 @@
 #include "lib/xiph/XiphTags.hxx"
 #include "tag/Handler.hxx"
 #include "tag/ParseName.hxx"
+#include "util/ASCII.hxx"
 #include "ReplayGainInfo.hxx"
 
 #include <string>
 
 #include <stdint.h>
-#include <string.h>
 #include <stdlib.h>
 
 gcc_pure
@@ -46,7 +46,7 @@ ScanOneOpusTag(const char *name, const char *value,
 	       ReplayGainInfo *rgi,
 	       TagHandler &handler) noexcept
 {
-	if (rgi != nullptr && strcmp(name, "R128_TRACK_GAIN") == 0) {
+	if (rgi != nullptr && StringEqualsCaseASCII(name, "R128_TRACK_GAIN")) {
 		/* R128_TRACK_GAIN is a Q7.8 fixed point number in
 		   dB */
 
@@ -54,7 +54,8 @@ ScanOneOpusTag(const char *name, const char *value,
 		long l = strtol(value, &endptr, 10);
 		if (endptr > value && *endptr == 0)
 			rgi->track.gain = double(l) / 256.;
-	} else if (rgi != nullptr && strcmp(name, "R128_ALBUM_GAIN") == 0) {
+	} else if (rgi != nullptr &&
+		   StringEqualsCaseASCII(name, "R128_ALBUM_GAIN")) {
 		/* R128_ALBUM_GAIN is a Q7.8 fixed point number in
 		   dB */
 
