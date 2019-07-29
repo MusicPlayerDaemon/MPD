@@ -1,4 +1,6 @@
 ver 0.21.12 (not yet released)
+* Windows
+  - support backslash in relative URIs loaded from playlists
 
 ver 0.21.11 (2019/07/03)
 * input

@@ -66,6 +66,22 @@ playlist_check_translate_song(DetachedSong &song, const char *base_uri,
 		base_uri = nullptr;
 
 	const char *uri = song.GetURI();
+
+#ifdef _WIN32
+	if (!PathTraitsUTF8::IsAbsolute(uri) && strchr(uri, '\\') != nullptr) {
+		/* Windows uses the backslash as path separator, but
+		   the MPD protocol uses the (forward) slash by
+		   definition; to allow backslashes in relative URIs
+		   loaded from playlist files, this step converts all
+		   backslashes to (forward) slashes */
+
+		std::string new_uri(uri);
+		std::replace(new_uri.begin(), new_uri.end(), '\\', '/');
+		song.SetURI(std::move(new_uri));
+		uri = song.GetURI();
+	}
+#endif
+
 	if (base_uri != nullptr && !uri_has_scheme(uri) &&
 	    !PathTraitsUTF8::IsAbsolute(uri))
 		song.SetURI(PathTraitsUTF8::Build(base_uri, uri));

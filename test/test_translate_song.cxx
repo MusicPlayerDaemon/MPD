@@ -270,3 +270,23 @@ TEST_F(TranslateSongTest, Relative)
 						  insecure_loader));
 	EXPECT_EQ(se, ToString(song4));
 }
+
+TEST_F(TranslateSongTest, Backslash)
+{
+	const SongLoader loader(reinterpret_cast<const Database *>(1),
+				storage);
+
+	DetachedSong song1("foo\\bar.ogg", MakeTag2b());
+#ifdef _WIN32
+	/* on Windows, all backslashes are converted to slashes in
+	   relative paths from playlists */
+	auto se = ToString(DetachedSong(uri2, MakeTag2c()));
+	EXPECT_TRUE(playlist_check_translate_song(song1, nullptr,
+						  loader));
+	EXPECT_EQ(se, ToString(song1));
+#else
+	/* backslash only supported on Windows */
+	EXPECT_FALSE(playlist_check_translate_song(song1, nullptr,
+						   loader));
+#endif
+}
