@@ -12,6 +12,12 @@ ver 0.22 (not yet released)
   - ffmpeg: new plugin based on FFmpeg's libavfilter library
   - hdcd: new plugin based on FFmpeg's "af_hdcd" for HDCD playback
 
+ver 0.21.12 (not yet released)
+* decoder
+  - opus: ignore case in replay gain tag names
+* Windows
+  - support backslash in relative URIs loaded from playlists
+
 ver 0.21.11 (2019/07/03)
 * input
   - tidal: deprecated because Tidal has changed the protocol
