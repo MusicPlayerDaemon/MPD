@@ -25,6 +25,9 @@
 #include "util/UriUtil.hxx"
 #include "song/DetachedSong.hxx"
 
+#include <algorithm>
+#include <string>
+
 #include <string.h>
 
 static void
