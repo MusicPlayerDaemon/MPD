@@ -65,7 +65,8 @@ uri_supported_scheme(const char *uri) noexcept
 	assert(uri_has_scheme(uri));
 
 	input_plugins_for_each_enabled(plugin)
-		return plugin->SupportsUri(uri);
+		if (plugin->SupportsUri(uri))
+			return true;
 
 	return false;
 }
