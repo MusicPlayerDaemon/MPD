@@ -864,9 +864,10 @@ The jack plugin connects to a `JACK server <http://jackaudio.org/>`_.
      - The names of the JACK source ports to be created. By default, the ports "left" and "right" are created. To use more ports, you have to tweak this option.
    * - **destination_ports A,B**
      - The names of the JACK destination ports to connect to.
-   * - **no_auto_connect yes|no**
-     - If set to yes, then mpd won't make any automatic connections between mpd ports and other
-       jack ports. This means that *destination_ports* will have no effect.
+   * - **auto_destination_ports yes|no**
+     - If set to *yes*, then MPD will automatically create connections between the send ports of
+       MPD and receive ports of the first sound card; if set to *no*, then MPD will only create
+       connections to the contents of *destination_ports* if it is set. Enabled by default.
    * - **ringbuffer_size NBYTES**
      - Sets the size of the ring buffer for each channel. Do not configure this value unless you know what you're doing.
 
