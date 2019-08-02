@@ -44,7 +44,7 @@ class TimerEvent final {
 
 	EventLoop &loop;
 
-	typedef BoundMethod<void()> Callback;
+	typedef BoundMethod<void() noexcept> Callback;
 	const Callback callback;
 
 	/**

@@ -5,7 +5,7 @@ project(
   meson_version: '>= 0.49.0',
   default_options: [
     'c_std=c99',
-    'cpp_std=c++14'
+    'cpp_std=c++17'
   ],
   license: 'GPLv2+',
 )
@@ -15,10 +15,10 @@ version_cxx = vcs_tag(input: 'src/GitVersion.cxx', output: 'GitVersion.cxx')
 compiler = meson.get_compiler('cpp')
 c_compiler = meson.get_compiler('c')
 
-if compiler.get_id() == 'gcc' and compiler.version().version_compare('<6')
-  warning('Your GCC version is too old.  You need at least version 6.')
-elif compiler.get_id() == 'clang' and compiler.version().version_compare('<3')
-  warning('Your clang version is too old.  You need at least version 3.')
+if compiler.get_id() == 'gcc' and compiler.version().version_compare('<7')
+  warning('Your GCC version is too old.  You need at least version 7.')
+elif compiler.get_id() == 'clang' and compiler.version().version_compare('<4')
+  warning('Your clang version is too old.  You need at least version 4.')
 endif
 
 conf = configuration_data()

@@ -32,7 +32,7 @@
 #include <assert.h>
 
 class Thread {
-	typedef BoundMethod<void()> Function;
+	typedef BoundMethod<void() noexcept> Function;
 	const Function f;
 
 #ifdef _WIN32

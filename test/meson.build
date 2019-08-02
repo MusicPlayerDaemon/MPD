@@ -49,6 +49,8 @@ test('TestUtil', executable(
 test('TestRewindInputStream', executable(
   'TestRewindInputStream',
   'TestRewindInputStream.cxx',
+  '../src/Log.cxx',
+  '../src/LogBackend.cxx',
   include_directories: inc,
   dependencies: [
     input_glue_dep,

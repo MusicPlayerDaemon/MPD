@@ -34,7 +34,7 @@
 class MaskMonitor final {
 	DeferEvent defer;
 
-	typedef BoundMethod<void(unsigned)> Callback;
+	typedef BoundMethod<void(unsigned) noexcept> Callback;
 	const Callback callback;
 
 	std::atomic_uint pending_mask;
