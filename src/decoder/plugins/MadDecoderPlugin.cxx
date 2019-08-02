@@ -223,18 +223,14 @@ MadDecoder::Seek(long offset)
 inline bool
 MadDecoder::FillBuffer()
 {
-	size_t remaining, length;
-	unsigned char *dest;
+	size_t remaining = 0, length = READ_BUFFER_SIZE;
+	unsigned char *dest = input_buffer;
 
 	if (stream.next_frame != nullptr) {
 		remaining = stream.bufend - stream.next_frame;
 		memmove(input_buffer, stream.next_frame, remaining);
-		dest = input_buffer + remaining;
-		length = READ_BUFFER_SIZE - remaining;
-	} else {
-		remaining = 0;
-		length = READ_BUFFER_SIZE;
-		dest = input_buffer;
+		dest += remaining;
+		length -= remaining;
 	}
 
 	/* we've exhausted the read buffer, so give up!, these potential
