@@ -223,26 +223,31 @@ MadDecoder::Seek(long offset)
 inline bool
 MadDecoder::FillBuffer()
 {
-	size_t remaining = 0, length = sizeof(input_buffer);
+	/* amount of rest data still residing in the buffer */
+	size_t rest_size = 0;
+
+	size_t max_read_size = sizeof(input_buffer);
 	unsigned char *dest = input_buffer;
 
 	if (stream.next_frame != nullptr) {
-		remaining = stream.bufend - stream.next_frame;
-		memmove(input_buffer, stream.next_frame, remaining);
-		dest += remaining;
-		length -= remaining;
+		rest_size = stream.bufend - stream.next_frame;
+		memmove(input_buffer, stream.next_frame, rest_size);
+		dest += rest_size;
+		max_read_size -= rest_size;
 	}
 
 	/* we've exhausted the read buffer, so give up!, these potential
 	 * mp3 frames are way too big, and thus unlikely to be mp3 frames */
-	if (length == 0)
+	if (max_read_size == 0)
 		return false;
 
-	length = decoder_read(client, input_stream, dest, length);
-	if (length == 0)
+	size_t nbytes = decoder_read(client, input_stream,
+				     dest, max_read_size);
+	if (nbytes == 0) {
 		return false;
+	}
 
-	mad_stream_buffer(&stream, input_buffer, length + remaining);
+	mad_stream_buffer(&stream, input_buffer, rest_size + nbytes);
 	stream.error = MAD_ERROR_NONE;
 
 	return true;
