@@ -132,6 +132,14 @@ class MadDecoder {
 	bool found_replay_gain = false;
 	bool found_first_frame = false;
 	bool decoded_first_frame = false;
+
+	/**
+	 * If this flag is true, then end-of-file was seen and a
+	 * padding of 8 zero bytes were appended to #input_buffer, to
+	 * allow libmad to decode the last frame.
+	 */
+	bool was_eof = false;
+
 	DecoderClient *const client;
 	InputStream &input_stream;
 	enum mad_layer layer = mad_layer(0);
@@ -247,7 +255,12 @@ MadDecoder::FillBuffer() noexcept
 	size_t nbytes = decoder_read(client, input_stream,
 				     dest, max_read_size);
 	if (nbytes == 0) {
-		return false;
+		if (was_eof || max_read_size < MAD_BUFFER_GUARD)
+			return false;
+
+		was_eof = true;
+		nbytes = MAD_BUFFER_GUARD;
+		memset(dest, 0, nbytes);
 	}
 
 	mad_stream_buffer(&stream, input_buffer, rest_size + nbytes);
@@ -922,6 +935,7 @@ MadDecoder::Read() noexcept
 			if (j < highest_frame) {
 				if (Seek(frame_offsets[j])) {
 					current_frame = j;
+					was_eof = false;
 					client->CommandFinished();
 				} else
 					client->SeekError();
