@@ -27,6 +27,7 @@
 #include "tag/ReplayGain.hxx"
 #include "tag/MixRamp.hxx"
 #include "CheckAudioFormat.hxx"
+#include "util/Clamp.hxx"
 #include "util/StringCompare.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
@@ -84,14 +85,9 @@ mad_fixed_to_24_sample(mad_fixed_t sample)
 	/* round */
 	sample = sample + (1L << (MAD_F_FRACBITS - bits));
 
-	/* clip */
-	if (gcc_unlikely(sample > MAX))
-		sample = MAX;
-	else if (gcc_unlikely(sample < MIN))
-		sample = MIN;
-
 	/* quantize */
-	return sample >> (MAD_F_FRACBITS + 1 - bits);
+	return Clamp(sample, MIN, MAX)
+		>> (MAD_F_FRACBITS + 1 - bits);
 }
 
 static void
