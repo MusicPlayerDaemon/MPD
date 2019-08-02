@@ -969,7 +969,7 @@ mad_decode(DecoderClient &client, InputStream &input_stream)
 	if (!data.DecodeFirstFrame(&tag)) {
 		if (client.GetCommand() == DecoderCommand::NONE)
 			LogError(mad_domain,
-				 "input/Input does not appear to be a mp3 bit stream");
+				 "input does not appear to be a mp3 bit stream");
 		return;
 	}
 
