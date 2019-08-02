@@ -132,7 +132,6 @@ struct MadDecoder {
 	bool found_replay_gain = false;
 	bool found_first_frame = false;
 	bool decoded_first_frame = false;
-	unsigned long bit_rate;
 	DecoderClient *const client;
 	InputStream &input_stream;
 	enum mad_layer layer = mad_layer(0);
@@ -788,7 +787,6 @@ MadDecoder::UpdateTimerNextFrame() noexcept
 	if (current_frame >= highest_frame) {
 		/* record this frame's properties in frame_offsets
 		   (for seeking) and times */
-		bit_rate = frame.header.bitrate;
 
 		if (current_frame >= max_frames)
 			/* cap current_frame */
@@ -829,7 +827,7 @@ MadDecoder::SendPCM(unsigned i, unsigned pcm_length) noexcept
 
 		auto cmd = client->SubmitData(input_stream, output_buffer,
 					      sizeof(output_buffer[0]) * num_samples,
-					      bit_rate / 1000);
+					      frame.header.bitrate / 1000);
 		if (cmd != DecoderCommand::NONE)
 			return cmd;
 	}
