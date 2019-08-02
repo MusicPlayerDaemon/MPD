@@ -56,11 +56,11 @@ protected:
 	T data[size];
 
 public:
-	constexpr size_type GetCapacity() const {
+	constexpr size_type GetCapacity() const noexcept {
 		return size;
 	}
 
-	void Shift() {
+	void Shift() noexcept {
 		if (head == 0)
 			return;
 
@@ -74,15 +74,15 @@ public:
 		head = 0;
 	}
 
-	void Clear() {
+	void Clear() noexcept {
 		head = tail = 0;
 	}
 
-	bool empty() const {
+	bool empty() const noexcept {
 		return head == tail;
 	}
 
-	bool IsFull() const {
+	bool IsFull() const noexcept {
 		return head == 0 && tail == size;
 	}
 
@@ -90,7 +90,7 @@ public:
 	 * Prepares writing.  Returns a buffer range which may be written.
 	 * When you are finished, call Append().
 	 */
-	Range Write() {
+	Range Write() noexcept {
 		if (empty())
 			Clear();
 		else if (tail == size)
@@ -103,7 +103,7 @@ public:
 	 * Expands the tail of the buffer, after data has been written to
 	 * the buffer returned by Write().
 	 */
-	void Append(size_type n) {
+	void Append(size_type n) noexcept {
 		assert(tail <= size);
 		assert(n <= size);
 		assert(tail + n <= size);
@@ -115,14 +115,14 @@ public:
 	 * Return a buffer range which may be read.  The buffer pointer is
 	 * writable, to allow modifications while parsing.
 	 */
-	Range Read() {
+	Range Read() noexcept {
 		return Range(data + head, tail - head);
 	}
 
 	/**
 	 * Marks a chunk as consumed.
 	 */
-	void Consume(size_type n) {
+	void Consume(size_type n) noexcept {
 		assert(tail <= size);
 		assert(head <= tail);
 		assert(n <= tail);
