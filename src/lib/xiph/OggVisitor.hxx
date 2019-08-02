@@ -69,8 +69,21 @@ private:
 	void HandlePackets();
 
 protected:
+	/**
+	 * Called when the "beginning of stream" packet has been seen.
+	 *
+	 * @param packet the "beginning of stream" packet
+	 */
 	virtual void OnOggBeginning(const ogg_packet &packet) = 0;
+
+	/**
+	 * Called for each follow-up packet.
+	 */
 	virtual void OnOggPacket(const ogg_packet &packet) = 0;
+
+	/**
+	 * Called after the "end of stream" packet has been processed.
+	 */
 	virtual void OnOggEnd() = 0;
 };
 
