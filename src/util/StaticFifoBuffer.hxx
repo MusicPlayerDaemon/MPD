@@ -111,6 +111,10 @@ public:
 		tail += n;
 	}
 
+	constexpr size_type GetAvailable() const noexcept {
+		return tail - head;
+	}
+
 	/**
 	 * Return a buffer range which may be read.  The buffer pointer is
 	 * writable, to allow modifications while parsing.
