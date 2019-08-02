@@ -540,7 +540,7 @@ JackOutput::Start()
 		std::fill(dports + num_dports, dports + audio_format.channels,
 			  dports[0]);
 	} else if (num_dports > audio_format.channels) {
-		if (audio_format.channels == 1 && num_dports > 2) {
+		if (audio_format.channels == 1 && num_dports >= 2) {
 			/* mono input file: connect the one source
 			   channel to the both destination channels */
 			duplicate_port = dports[1];
