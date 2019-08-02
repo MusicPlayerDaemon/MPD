@@ -106,7 +106,7 @@ UpdateService::CancelMount(const char *uri)
 }
 
 inline void
-UpdateService::Task()
+UpdateService::Task() noexcept
 {
 	assert(walk != nullptr);
 

@@ -107,7 +107,7 @@ public:
 	}
 
 private:
-	void OnTimeout() {
+	void OnTimeout() noexcept {
 		callback(this, userdata);
 	}
 };

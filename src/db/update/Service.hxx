@@ -110,7 +110,7 @@ private:
 	void RunDeferred() noexcept;
 
 	/* the update thread */
-	void Task();
+	void Task() noexcept;
 
 	void StartThread(UpdateQueueItem &&i);
 

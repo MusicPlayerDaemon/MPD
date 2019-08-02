@@ -208,7 +208,7 @@ Partition::OnMixerVolumeChanged(Mixer &, int) noexcept
 }
 
 void
-Partition::OnGlobalEvent(unsigned mask)
+Partition::OnGlobalEvent(unsigned mask) noexcept
 {
 	if ((mask & SYNC_WITH_PLAYER) != 0)
 		SyncWithPlayer();

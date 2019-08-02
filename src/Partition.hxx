@@ -267,7 +267,7 @@ private:
 	void OnMixerVolumeChanged(Mixer &mixer, int volume) noexcept override;
 
 	/* callback for #global_events */
-	void OnGlobalEvent(unsigned mask);
+	void OnGlobalEvent(unsigned mask) noexcept;
 };
 
 #endif

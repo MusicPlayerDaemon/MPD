@@ -122,7 +122,7 @@ public:
 	}
 
 	/* callback for #reconnect_timer */
-	void OnReconnectTimer() {
+	void OnReconnectTimer() noexcept {
 		assert(state == State::DELAY);
 
 		Connect();
