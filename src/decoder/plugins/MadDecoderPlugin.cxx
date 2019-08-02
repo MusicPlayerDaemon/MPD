@@ -76,7 +76,7 @@ ToSongTime(mad_timer_t t) noexcept
 }
 
 static inline int32_t
-mad_fixed_to_24_sample(mad_fixed_t sample)
+mad_fixed_to_24_sample(mad_fixed_t sample) noexcept
 {
 	static constexpr unsigned bits = 24;
 
@@ -137,14 +137,14 @@ struct MadDecoder {
 	InputStream &input_stream;
 	enum mad_layer layer = mad_layer(0);
 
-	MadDecoder(DecoderClient *client, InputStream &input_stream);
-	~MadDecoder();
+	MadDecoder(DecoderClient *client, InputStream &input_stream) noexcept;
+	~MadDecoder() noexcept;
 
-	bool Seek(long offset);
-	bool FillBuffer();
-	void ParseId3(size_t tagsize, Tag *tag);
-	MadDecoderAction DecodeNextFrameHeader(Tag *tag);
-	MadDecoderAction DecodeNextFrame();
+	bool Seek(long offset) noexcept;
+	bool FillBuffer() noexcept;
+	void ParseId3(size_t tagsize, Tag *tag) noexcept;
+	MadDecoderAction DecodeNextFrameHeader(Tag *tag) noexcept;
+	MadDecoderAction DecodeNextFrame() noexcept;
 
 	gcc_pure
 	offset_type ThisFrameOffset() const noexcept;
@@ -155,11 +155,11 @@ struct MadDecoder {
 	/**
 	 * Attempt to calulcate the length of the song from filesize
 	 */
-	void FileSizeToSongLength();
+	void FileSizeToSongLength() noexcept;
 
-	bool DecodeFirstFrame(Tag *tag);
+	bool DecodeFirstFrame(Tag *tag) noexcept;
 
-	void AllocateBuffers() {
+	void AllocateBuffers() noexcept {
 		assert(max_frames > 0);
 		assert(frame_offsets == nullptr);
 		assert(times == nullptr);
@@ -171,25 +171,25 @@ struct MadDecoder {
 	gcc_pure
 	long TimeToFrame(SongTime t) const noexcept;
 
-	void UpdateTimerNextFrame();
+	void UpdateTimerNextFrame() noexcept;
 
 	/**
 	 * Sends the synthesized current frame via
 	 * DecoderClient::SubmitData().
 	 */
-	DecoderCommand SendPCM(unsigned i, unsigned pcm_length);
+	DecoderCommand SendPCM(unsigned i, unsigned pcm_length) noexcept;
 
 	/**
 	 * Synthesize the current frame and send it via
 	 * DecoderClient::SubmitData().
 	 */
-	DecoderCommand SyncAndSend();
+	DecoderCommand SyncAndSend() noexcept;
 
-	bool Read();
+	bool Read() noexcept;
 };
 
 MadDecoder::MadDecoder(DecoderClient *_client,
-		       InputStream &_input_stream)
+		       InputStream &_input_stream) noexcept
 	:client(_client), input_stream(_input_stream)
 {
 	mad_stream_init(&stream);
@@ -200,7 +200,7 @@ MadDecoder::MadDecoder(DecoderClient *_client,
 }
 
 inline bool
-MadDecoder::Seek(long offset)
+MadDecoder::Seek(long offset) noexcept
 {
 	try {
 		input_stream.LockSeek(offset);
@@ -215,7 +215,7 @@ MadDecoder::Seek(long offset)
 }
 
 inline bool
-MadDecoder::FillBuffer()
+MadDecoder::FillBuffer() noexcept
 {
 	/* amount of rest data still residing in the buffer */
 	size_t rest_size = 0;
@@ -277,7 +277,7 @@ parse_id3_mixramp(struct id3_tag *tag) noexcept
 #endif
 
 inline void
-MadDecoder::ParseId3(size_t tagsize, Tag *mpd_tag)
+MadDecoder::ParseId3(size_t tagsize, Tag *mpd_tag) noexcept
 {
 #ifdef ENABLE_ID3TAG
 	std::unique_ptr<id3_byte_t[]> allocated;
@@ -345,7 +345,7 @@ MadDecoder::ParseId3(size_t tagsize, Tag *mpd_tag)
  * of the ID3 frame.
  */
 static signed long
-id3_tag_query(const void *p0, size_t length)
+id3_tag_query(const void *p0, size_t length) noexcept
 {
 	const char *p = (const char *)p0;
 
@@ -356,7 +356,7 @@ id3_tag_query(const void *p0, size_t length)
 #endif /* !ENABLE_ID3TAG */
 
 static MadDecoderAction
-RecoverFrameError(struct mad_stream &stream)
+RecoverFrameError(struct mad_stream &stream) noexcept
 {
 	if (MAD_RECOVERABLE(stream.error))
 		return MadDecoderAction::SKIP;
@@ -370,7 +370,7 @@ RecoverFrameError(struct mad_stream &stream)
 }
 
 MadDecoderAction
-MadDecoder::DecodeNextFrameHeader(Tag *tag)
+MadDecoder::DecodeNextFrameHeader(Tag *tag) noexcept
 {
 	if ((stream.buffer == nullptr || stream.error == MAD_ERROR_BUFLEN) &&
 	    !FillBuffer())
@@ -408,7 +408,7 @@ MadDecoder::DecodeNextFrameHeader(Tag *tag)
 }
 
 MadDecoderAction
-MadDecoder::DecodeNextFrame()
+MadDecoder::DecodeNextFrame() noexcept
 {
 	if ((stream.buffer == nullptr || stream.error == MAD_ERROR_BUFLEN) &&
 	    !FillBuffer())
@@ -467,7 +467,7 @@ struct lame {
 };
 
 static bool
-parse_xing(struct xing *xing, struct mad_bitptr *ptr, int *oldbitlen)
+parse_xing(struct xing *xing, struct mad_bitptr *ptr, int *oldbitlen) noexcept
 {
 	int bitlen = *oldbitlen;
 
@@ -547,7 +547,7 @@ parse_xing(struct xing *xing, struct mad_bitptr *ptr, int *oldbitlen)
 }
 
 static bool
-parse_lame(struct lame *lame, struct mad_bitptr *ptr, int *bitlen)
+parse_lame(struct lame *lame, struct mad_bitptr *ptr, int *bitlen) noexcept
 {
 	/* Unlike the xing header, the lame tag has a fixed length.  Fail if
 	 * not all 36 bytes (288 bits) are there. */
@@ -638,7 +638,7 @@ parse_lame(struct lame *lame, struct mad_bitptr *ptr, int *bitlen)
 }
 
 static inline SongTime
-mad_frame_duration(const struct mad_frame *frame)
+mad_frame_duration(const struct mad_frame *frame) noexcept
 {
 	return ToSongTime(frame->header.duration);
 }
@@ -663,7 +663,7 @@ MadDecoder::RestIncludingThisFrame() const noexcept
 }
 
 inline void
-MadDecoder::FileSizeToSongLength()
+MadDecoder::FileSizeToSongLength() noexcept
 {
 	if (input_stream.KnownSize()) {
 		offset_type rest = RestIncludingThisFrame();
@@ -685,7 +685,7 @@ MadDecoder::FileSizeToSongLength()
 }
 
 inline bool
-MadDecoder::DecodeFirstFrame(Tag *tag)
+MadDecoder::DecodeFirstFrame(Tag *tag) noexcept
 {
 	struct xing xing;
 
@@ -758,7 +758,7 @@ MadDecoder::DecodeFirstFrame(Tag *tag)
 	return true;
 }
 
-MadDecoder::~MadDecoder()
+MadDecoder::~MadDecoder() noexcept
 {
 	mad_synth_finish(&synth);
 	mad_frame_finish(&frame);
@@ -783,7 +783,7 @@ MadDecoder::TimeToFrame(SongTime t) const noexcept
 }
 
 void
-MadDecoder::UpdateTimerNextFrame()
+MadDecoder::UpdateTimerNextFrame() noexcept
 {
 	if (current_frame >= highest_frame) {
 		/* record this frame's properties in frame_offsets
@@ -809,7 +809,7 @@ MadDecoder::UpdateTimerNextFrame()
 }
 
 DecoderCommand
-MadDecoder::SendPCM(unsigned i, unsigned pcm_length)
+MadDecoder::SendPCM(unsigned i, unsigned pcm_length) noexcept
 {
 	unsigned max_samples = sizeof(output_buffer) /
 		sizeof(output_buffer[0]) /
@@ -838,7 +838,7 @@ MadDecoder::SendPCM(unsigned i, unsigned pcm_length)
 }
 
 inline DecoderCommand
-MadDecoder::SyncAndSend()
+MadDecoder::SyncAndSend() noexcept
 {
 	mad_synth_frame(&synth, &frame);
 
@@ -890,7 +890,7 @@ MadDecoder::SyncAndSend()
 }
 
 inline bool
-MadDecoder::Read()
+MadDecoder::Read() noexcept
 {
 	UpdateTimerNextFrame();
 
