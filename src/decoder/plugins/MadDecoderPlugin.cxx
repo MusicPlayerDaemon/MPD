@@ -202,6 +202,11 @@ private:
 	 */
 	DecoderCommand SyncAndSend() noexcept;
 
+	/**
+	 * @return false to stop decoding
+	 */
+	bool HandleCurrentFrame() noexcept;
+
 	bool Read() noexcept;
 };
 
@@ -919,7 +924,7 @@ MadDecoder::SyncAndSend() noexcept
 }
 
 inline bool
-MadDecoder::Read() noexcept
+MadDecoder::HandleCurrentFrame() noexcept
 {
 	switch (mute_frame) {
 		DecoderCommand cmd;
@@ -955,6 +960,15 @@ MadDecoder::Read() noexcept
 		} else if (cmd != DecoderCommand::NONE)
 			return false;
 	}
+
+	return true;
+}
+
+inline bool
+MadDecoder::Read() noexcept
+{
+	if (!HandleCurrentFrame())
+		return false;
 
 	while (true) {
 		MadDecoderAction ret;
