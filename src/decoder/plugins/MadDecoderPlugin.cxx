@@ -388,8 +388,6 @@ RecoverFrameError(const struct mad_stream &stream) noexcept
 {
 	if (MAD_RECOVERABLE(stream.error))
 		return MadDecoderAction::SKIP;
-	else if (stream.error == MAD_ERROR_BUFLEN)
-		return MadDecoderAction::CONT;
 
 	FormatWarning(mad_domain,
 		      "unrecoverable frame level error: %s",
@@ -405,6 +403,9 @@ MadDecoder::DecodeNextFrameHeader(Tag *tag) noexcept
 		return MadDecoderAction::BREAK;
 
 	if (mad_header_decode(&frame.header, &stream)) {
+		if (stream.error == MAD_ERROR_BUFLEN)
+			return MadDecoderAction::CONT;
+
 		if (stream.error == MAD_ERROR_LOSTSYNC && stream.this_frame) {
 			signed long tagsize = id3_tag_query(stream.this_frame,
 							    stream.bufend -
@@ -438,23 +439,8 @@ MadDecoder::DecodeNextFrameHeader(Tag *tag) noexcept
 MadDecoderAction
 MadDecoder::DecodeNextFrame() noexcept
 {
-	if ((stream.buffer == nullptr || stream.error == MAD_ERROR_BUFLEN) &&
-	    !FillBuffer())
-		return MadDecoderAction::BREAK;
-
-	if (mad_frame_decode(&frame, &stream)) {
-		if (stream.error == MAD_ERROR_LOSTSYNC) {
-			signed long tagsize = id3_tag_query(stream.this_frame,
-							    stream.bufend -
-							    stream.this_frame);
-			if (tagsize > 0) {
-				mad_stream_skip(&stream, tagsize);
-				return MadDecoderAction::CONT;
-			}
-		}
-
+	if (mad_frame_decode(&frame, &stream))
 		return RecoverFrameError(stream);
-	}
 
 	return MadDecoderAction::OK;
 }
