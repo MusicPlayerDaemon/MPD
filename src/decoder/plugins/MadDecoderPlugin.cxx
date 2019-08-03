@@ -89,13 +89,13 @@ mad_fixed_to_24_sample(mad_fixed_t sample) noexcept
 }
 
 static void
-mad_fixed_to_24_buffer(int32_t *dest, const struct mad_synth *synth,
+mad_fixed_to_24_buffer(int32_t *dest, const struct mad_pcm &src,
 		       unsigned int start, unsigned int end,
 		       unsigned int num_channels)
 {
 	for (unsigned i = start; i < end; ++i)
 		for (unsigned c = 0; c < num_channels; ++c)
-			*dest++ = mad_fixed_to_24_sample(synth->pcm.samples[c][i]);
+			*dest++ = mad_fixed_to_24_sample(src.samples[c][i]);
 }
 
 static bool
@@ -848,7 +848,7 @@ MadDecoder::SubmitPCM(unsigned i, unsigned pcm_length) noexcept
 {
 	unsigned int num_samples = pcm_length - i;
 
-	mad_fixed_to_24_buffer(output_buffer, &synth,
+	mad_fixed_to_24_buffer(output_buffer, synth.pcm,
 			       i, i + num_samples,
 			       MAD_NCHANNELS(&frame.header));
 	num_samples *= MAD_NCHANNELS(&frame.header);
