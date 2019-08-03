@@ -125,8 +125,8 @@ class MadDecoder {
 	unsigned long highest_frame = 0;
 	unsigned long max_frames = 0;
 	unsigned long current_frame = 0;
-	unsigned int drop_start_frames = 0;
-	unsigned int drop_end_frames = 0;
+	unsigned int drop_start_frames;
+	unsigned int drop_end_frames;
 	unsigned int drop_start_samples = 0;
 	unsigned int drop_end_samples = 0;
 	bool found_replay_gain = false;
