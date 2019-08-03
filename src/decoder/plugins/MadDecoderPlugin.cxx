@@ -194,13 +194,13 @@ private:
 	 * Sends the synthesized current frame via
 	 * DecoderClient::SubmitData().
 	 */
-	DecoderCommand SendPCM(unsigned i, unsigned pcm_length) noexcept;
+	DecoderCommand SubmitPCM(unsigned i, unsigned pcm_length) noexcept;
 
 	/**
 	 * Synthesize the current frame and send it via
 	 * DecoderClient::SubmitData().
 	 */
-	DecoderCommand SyncAndSend() noexcept;
+	DecoderCommand SynthAndSubmit() noexcept;
 
 	/**
 	 * @return false to stop decoding
@@ -845,7 +845,7 @@ MadDecoder::UpdateTimerNextFrame() noexcept
 }
 
 DecoderCommand
-MadDecoder::SendPCM(unsigned i, unsigned pcm_length) noexcept
+MadDecoder::SubmitPCM(unsigned i, unsigned pcm_length) noexcept
 {
 	unsigned max_samples = sizeof(output_buffer) /
 		sizeof(output_buffer[0]) /
@@ -874,7 +874,7 @@ MadDecoder::SendPCM(unsigned i, unsigned pcm_length) noexcept
 }
 
 inline DecoderCommand
-MadDecoder::SyncAndSend() noexcept
+MadDecoder::SynthAndSubmit() noexcept
 {
 	mad_synth_frame(&synth, &frame);
 
@@ -912,7 +912,7 @@ MadDecoder::SyncAndSend() noexcept
 			pcm_length -= drop_end_samples;
 	}
 
-	auto cmd = SendPCM(i, pcm_length);
+	auto cmd = SubmitPCM(i, pcm_length);
 	if (cmd != DecoderCommand::NONE)
 		return cmd;
 
@@ -940,7 +940,7 @@ MadDecoder::HandleCurrentFrame() noexcept
 		UpdateTimerNextFrame();
 		break;
 	case MadDecoderMuteFrame::NONE:
-		cmd = SyncAndSend();
+		cmd = SynthAndSubmit();
 		UpdateTimerNextFrame();
 		if (cmd == DecoderCommand::SEEK) {
 			assert(input_stream.IsSeekable());
