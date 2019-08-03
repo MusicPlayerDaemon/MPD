@@ -19,7 +19,6 @@
 
 #include "Registry.hxx"
 #include "InputPlugin.hxx"
-#include "util/Macros.hxx"
 #include "plugins/TidalInputPlugin.hxx"
 #include "plugins/QobuzInputPlugin.hxx"
 #include "config.h"
@@ -83,7 +82,7 @@ const InputPlugin *const input_plugins[] = {
 	nullptr
 };
 
-bool input_plugins_enabled[ARRAY_SIZE(input_plugins) - 1];
+bool input_plugins_enabled[std::size(input_plugins) - 1];
 
 bool
 HasRemoteTagScanner(const char *uri) noexcept

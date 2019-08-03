@@ -29,7 +29,6 @@
 #include "input/Reader.hxx"
 #include "OggCodec.hxx"
 #include "pcm/Interleave.hxx"
-#include "util/Macros.hxx"
 #include "util/ScopeExit.hxx"
 #include "CheckAudioFormat.hxx"
 #include "tag/Handler.hxx"
@@ -41,6 +40,7 @@
 #include <tremor/ivorbiscodec.h>
 #endif /* HAVE_TREMOR */
 
+#include <iterator>
 #include <stdexcept>
 
 class VorbisDecoder final : public OggDecoder {
@@ -209,7 +209,7 @@ VorbisDecoder::SubmitSomePcm()
 
 	out_sample_t buffer[4096];
 	const unsigned channels = audio_format.channels;
-	size_t max_frames = ARRAY_SIZE(buffer) / channels;
+	size_t max_frames = std::size(buffer) / channels;
 	size_t n_frames = std::min(size_t(result), max_frames);
 
 #ifdef HAVE_TREMOR

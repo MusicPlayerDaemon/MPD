@@ -24,7 +24,6 @@
 #include "CheckAudioFormat.hxx"
 #include "tag/Handler.hxx"
 #include "fs/Path.hxx"
-#include "util/Macros.hxx"
 #include "util/Alloc.hxx"
 #include "util/ScopeExit.hxx"
 #include "util/RuntimeError.hxx"
@@ -32,6 +31,7 @@
 #include <wavpack/wavpack.h>
 
 #include <algorithm>
+#include <iterator>
 #include <memory>
 
 #include <cstdlib>
@@ -235,7 +235,7 @@ wavpack_decode(DecoderClient &client, WavpackContext *wpc, bool can_seek)
 
 	/* wavpack gives us all kind of samples in a 32-bit space */
 	int32_t chunk[1024];
-	const uint32_t samples_requested = ARRAY_SIZE(chunk) /
+	const uint32_t samples_requested = std::size(chunk) /
 		audio_format.channels;
 
 	DecoderCommand cmd = client.GetCommand();

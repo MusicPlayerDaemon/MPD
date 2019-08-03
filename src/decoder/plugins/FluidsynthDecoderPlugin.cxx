@@ -22,7 +22,6 @@
 #include "CheckAudioFormat.hxx"
 #include "fs/Path.hxx"
 #include "util/Domain.hxx"
-#include "util/Macros.hxx"
 #include "Log.hxx"
 
 #include <fluidsynth.h>
@@ -169,7 +168,7 @@ fluidsynth_file_decode(DecoderClient &client, Path path_fs)
 	DecoderCommand cmd;
 	while (fluid_player_get_status(player) == FLUID_PLAYER_PLAYING) {
 		int16_t buffer[2048];
-		const unsigned max_frames = ARRAY_SIZE(buffer) / 2;
+		const unsigned max_frames = std::size(buffer) / 2;
 
 		/* read samples from fluidsynth and send them to the
 		   MPD core */

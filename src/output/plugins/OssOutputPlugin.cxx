@@ -24,10 +24,10 @@
 #include "system/Error.hxx"
 #include "util/ConstBuffer.hxx"
 #include "util/Domain.hxx"
-#include "util/Macros.hxx"
 #include "util/ByteOrder.hxx"
 #include "Log.hxx"
 
+#include <iterator>
 #include <stdexcept>
 
 #include <sys/stat.h>
@@ -168,7 +168,7 @@ static const char *const default_devices[] = { "/dev/sound/dsp", "/dev/dsp" };
 static bool
 oss_output_test_default_device() noexcept
 {
-	for (int i = ARRAY_SIZE(default_devices); --i >= 0; ) {
+	for (int i = std::size(default_devices); --i >= 0; ) {
 		UniqueFileDescriptor fd;
 		if (fd.Open(default_devices[i], O_WRONLY, 0))
 			return true;
@@ -184,16 +184,16 @@ oss_output_test_default_device() noexcept
 static OssOutput *
 oss_open_default()
 {
-	int err[ARRAY_SIZE(default_devices)];
-	enum oss_stat ret[ARRAY_SIZE(default_devices)];
+	int err[std::size(default_devices)];
+	enum oss_stat ret[std::size(default_devices)];
 
-	for (int i = ARRAY_SIZE(default_devices); --i >= 0; ) {
+	for (int i = std::size(default_devices); --i >= 0; ) {
 		ret[i] = oss_stat_device(default_devices[i], &err[i]);
 		if (ret[i] == OSS_STAT_NO_ERROR)
 			return new OssOutput(default_devices[i]);
 	}
 
-	for (int i = ARRAY_SIZE(default_devices); --i >= 0; ) {
+	for (int i = std::size(default_devices); --i >= 0; ) {
 		const char *dev = default_devices[i];
 		switch(ret[i]) {
 		case OSS_STAT_NO_ERROR:

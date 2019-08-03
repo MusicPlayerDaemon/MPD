@@ -19,7 +19,8 @@
 
 #include "Templates.hxx"
 #include "Option.hxx"
-#include "util/Macros.hxx"
+
+#include <iterator>
 
 #include <string.h>
 
@@ -77,7 +78,7 @@ const ConfigTemplate config_param_templates[] = {
 };
 
 static constexpr unsigned n_config_param_templates =
-	ARRAY_SIZE(config_param_templates);
+	std::size(config_param_templates);
 
 static_assert(n_config_param_templates == unsigned(ConfigOption::MAX),
 	      "Wrong number of config_param_templates");
@@ -95,7 +96,7 @@ const ConfigTemplate config_block_templates[] = {
 };
 
 static constexpr unsigned n_config_block_templates =
-	ARRAY_SIZE(config_block_templates);
+	std::size(config_block_templates);
 
 static_assert(n_config_block_templates == unsigned(ConfigBlockOption::MAX),
 	      "Wrong number of config_block_templates");

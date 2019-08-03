@@ -29,7 +29,6 @@
 #include "fs/io/FileReader.hxx"
 #include "util/RuntimeError.hxx"
 #endif
-#include "util/Macros.hxx"
 #include "util/StringFormat.hxx"
 #include "util/StringView.hxx"
 #include "util/Domain.hxx"
@@ -51,6 +50,8 @@
 #include <sidplay/utils/SidTuneMod.h>
 #include <sidplay/utils/SidDatabase.h>
 #endif
+
+#include <iterator>
 
 #include <string.h>
 #include <stdio.h>
@@ -392,7 +393,7 @@ sidplay_file_decode(DecoderClient &client, Path path_fs)
 	do {
 		short buffer[4096];
 
-		const auto result = player.play(buffer, ARRAY_SIZE(buffer));
+		const auto result = player.play(buffer, std::size(buffer));
 		if (result <= 0)
 			break;
 
@@ -421,7 +422,7 @@ sidplay_file_decode(DecoderClient &client, Path path_fs)
 
 			/* ignore data until target time is reached */
 			while (data_time < target_time &&
-			       player.play(buffer, ARRAY_SIZE(buffer)) > 0)
+			       player.play(buffer, std::size(buffer)) > 0)
 				data_time = player.time();
 
 			client.CommandFinished();

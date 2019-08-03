@@ -18,7 +18,6 @@
  */
 
 #include "pcm/Interleave.hxx"
-#include "util/Macros.hxx"
 
 #include <gtest/gtest.h>
 
@@ -33,15 +32,15 @@ TestInterleaveN()
 	static constexpr T src3[] = { 3, 6, 9 };
 	static constexpr const T *src_all[] = { src1, src2, src3 };
 
-	static constexpr size_t n_frames = ARRAY_SIZE(src1);
-	static constexpr unsigned channels = ARRAY_SIZE(src_all);
+	static constexpr size_t n_frames = std::size(src1);
+	static constexpr unsigned channels = std::size(src_all);
 
 	static const ConstBuffer<const void *> src((const void *const*)src_all,
 						   channels);
 
 	static constexpr T poison = T(0xdeadbeef);
 	T dest[n_frames * channels + 1];
-	std::fill_n(dest, ARRAY_SIZE(dest), poison);
+	std::fill_n(dest, std::size(dest), poison);
 
 	PcmInterleave(dest, src, n_frames, sizeof(T));
 
@@ -75,15 +74,15 @@ TEST(PcmTest, Interleave24)
 	static constexpr T src3[] = { 13, 14, 15, 16, 17, 18 };
 	static constexpr const T *src_all[] = { src1, src2, src3 };
 
-	static constexpr size_t n_frames = ARRAY_SIZE(src1) / 3;
-	static constexpr unsigned channels = ARRAY_SIZE(src_all);
+	static constexpr size_t n_frames = std::size(src1) / 3;
+	static constexpr unsigned channels = std::size(src_all);
 
 	static const ConstBuffer<const void *> src((const void *const*)src_all,
 						   channels);
 
 	static constexpr T poison = 0xff;
 	T dest[n_frames * channels * 3 + 1];
-	std::fill_n(dest, ARRAY_SIZE(dest), poison);
+	std::fill_n(dest, std::size(dest), poison);
 
 	PcmInterleave(dest, src, n_frames, 3);
 

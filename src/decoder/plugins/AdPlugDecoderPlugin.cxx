@@ -23,7 +23,6 @@
 #include "CheckAudioFormat.hxx"
 #include "fs/Path.hxx"
 #include "util/Domain.hxx"
-#include "util/Macros.hxx"
 #include "util/StringView.hxx"
 #include "Log.hxx"
 
@@ -71,7 +70,7 @@ adplug_file_decode(DecoderClient &client, Path path_fs)
 			break;
 
 		int16_t buffer[2048];
-		constexpr unsigned frames_per_buffer = ARRAY_SIZE(buffer) / 2;
+		constexpr unsigned frames_per_buffer = std::size(buffer) / 2;
 		opl.update(buffer, frames_per_buffer);
 		cmd = client.SubmitData(nullptr,
 					buffer, sizeof(buffer),

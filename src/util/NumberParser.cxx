@@ -30,15 +30,15 @@
 
 #include "NumberParser.hxx"
 #include "StringView.hxx"
-#include "Macros.hxx"
 
 #include <algorithm>
+#include <iterator>
 
 int64_t
 ParseInt64(StringView s, const char **endptr_r, int base) noexcept
 {
 	char buffer[32];
-	*std::copy_n(s.data, std::min(s.size, ARRAY_SIZE(buffer) - 1),
+	*std::copy_n(s.data, std::min(s.size, std::size(buffer) - 1),
 		     buffer) = 0;
 
 	char *endptr;

@@ -23,10 +23,10 @@
 #include "mixer/MixerList.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "util/RuntimeError.hxx"
-#include "util/Macros.hxx"
 #include "util/StringCompare.hxx"
 
 #include <array>
+#include <iterator>
 
 #include <stdlib.h>
 #include <string.h>
@@ -86,7 +86,7 @@ MakeWaveOutError(MMRESULT result, const char *prefix)
 {
 	char buffer[256];
 	if (waveOutGetErrorTextA(result, buffer,
-				 ARRAY_SIZE(buffer)) == MMSYSERR_NOERROR)
+				 std::size(buffer)) == MMSYSERR_NOERROR)
 		return FormatRuntimeError("%s: %s", prefix, buffer);
 	else
 		return std::runtime_error(prefix);

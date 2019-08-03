@@ -25,7 +25,6 @@
 #include "../../OutputAPI.hxx"
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
-#include "util/Macros.hxx"
 #include "util/Domain.hxx"
 #include "util/ByteOrder.hxx"
 #include "Log.hxx"
@@ -33,6 +32,7 @@
 #include <SLES/OpenSLES.h>
 #include <SLES/OpenSLES_Android.h>
 
+#include <iterator>
 #include <stdexcept>
 
 class SlesOutput final : AudioOutput  {
@@ -212,7 +212,7 @@ SlesOutput::Open(AudioFormat &audio_format)
 	};
 
 	result = engine.CreateAudioPlayer(&_object, &audioSrc, &audioSnk,
-					  ARRAY_SIZE(ids2), ids2, req2);
+					  std::size(ids2), ids2, req2);
 	if (result != SL_RESULT_SUCCESS) {
 		mix_object.Destroy();
 		engine_object.Destroy();

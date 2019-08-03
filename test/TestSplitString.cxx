@@ -3,10 +3,10 @@
  */
 
 #include "util/SplitString.hxx"
-#include "util/Macros.hxx"
 
 #include <gtest/gtest.h>
 
+#include <iterator>
 
 TEST(SplitString, Basic)
 {
@@ -14,12 +14,12 @@ TEST(SplitString, Basic)
 	const char *const output[] = { "foo", "bar" };
 	size_t i = 0;
 	for (auto p : SplitString(input, '.')) {
-		EXPECT_LT(i, ARRAY_SIZE(output));
+		EXPECT_LT(i, std::size(output));
 		EXPECT_EQ(p, output[i]);
 		++i;
 	}
 
-	EXPECT_EQ(ARRAY_SIZE(output), i);
+	EXPECT_EQ(std::size(output), i);
 }
 
 TEST(SplitString, Strip)
@@ -28,12 +28,12 @@ TEST(SplitString, Strip)
 	const char *const output[] = { "foo", "bar\r\n2" };
 	size_t i = 0;
 	for (auto p : SplitString(input, '.')) {
-		EXPECT_LT(i, ARRAY_SIZE(output));
+		EXPECT_LT(i, std::size(output));
 		EXPECT_EQ(p, output[i]);
 		++i;
 	}
 
-	EXPECT_EQ(ARRAY_SIZE(output), i);
+	EXPECT_EQ(std::size(output), i);
 }
 
 TEST(SplitString, NoStrip)
@@ -42,12 +42,12 @@ TEST(SplitString, NoStrip)
 	const char *const output[] = { " foo\t", "\r\nbar\r\n2" };
 	size_t i = 0;
 	for (auto p : SplitString(input, '.', false)) {
-		EXPECT_LT(i, ARRAY_SIZE(output));
+		EXPECT_LT(i, std::size(output));
 		EXPECT_EQ(p, output[i]);
 		++i;
 	}
 
-	EXPECT_EQ(ARRAY_SIZE(output), i);
+	EXPECT_EQ(std::size(output), i);
 }
 
 TEST(SplitString, Empty)

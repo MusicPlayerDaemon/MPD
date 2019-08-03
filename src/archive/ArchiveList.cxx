@@ -24,7 +24,8 @@
 #include "plugins/Bzip2ArchivePlugin.hxx"
 #include "plugins/Iso9660ArchivePlugin.hxx"
 #include "plugins/ZzipArchivePlugin.hxx"
-#include "util/Macros.hxx"
+
+#include <iterator>
 
 #include <assert.h>
 #include <string.h>
@@ -43,7 +44,7 @@ const ArchivePlugin *const archive_plugins[] = {
 };
 
 /** which plugins have been initialized successfully? */
-static bool archive_plugins_enabled[ARRAY_SIZE(archive_plugins) - 1];
+static bool archive_plugins_enabled[std::size(archive_plugins) - 1];
 
 #define archive_plugins_for_each_enabled(plugin) \
 	archive_plugins_for_each(plugin) \

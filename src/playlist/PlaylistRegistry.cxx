@@ -36,9 +36,10 @@
 #include "util/UriUtil.hxx"
 #include "util/StringUtil.hxx"
 #include "util/StringView.hxx"
-#include "util/Macros.hxx"
 #include "config/Data.hxx"
 #include "config/Block.hxx"
+
+#include <iterator>
 
 #include <assert.h>
 
@@ -65,7 +66,7 @@ const struct playlist_plugin *const playlist_plugins[] = {
 };
 
 static constexpr unsigned n_playlist_plugins =
-	ARRAY_SIZE(playlist_plugins) - 1;
+	std::size(playlist_plugins) - 1;
 
 /** which plugins have been initialized successfully? */
 static bool playlist_plugins_enabled[n_playlist_plugins];

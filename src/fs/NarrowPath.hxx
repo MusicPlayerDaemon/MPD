@@ -21,7 +21,6 @@
 #define MPD_FS_NARROW_PATH_HXX
 
 #include "Path.hxx"
-#include "util/Macros.hxx"
 
 #ifdef _UNICODE
 #include "lib/icu/Win32.hxx"

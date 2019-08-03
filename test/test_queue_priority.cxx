@@ -1,8 +1,9 @@
 #include "queue/Queue.hxx"
 #include "song/DetachedSong.hxx"
-#include "util/Macros.hxx"
 
 #include <gtest/gtest.h>
+
+#include <iterator>
 
 Tag::Tag(const Tag &) noexcept {}
 void Tag::Clear() noexcept {}
@@ -46,10 +47,10 @@ TEST(QueuePriority, Priority)
 
 	Queue queue(32);
 
-	for (unsigned i = 0; i < ARRAY_SIZE(songs); ++i)
+	for (unsigned i = 0; i < std::size(songs); ++i)
 		queue.Append(DetachedSong(songs[i]), 0);
 
-	EXPECT_EQ(unsigned(ARRAY_SIZE(songs)), queue.GetLength());
+	EXPECT_EQ(unsigned(std::size(songs)), queue.GetLength());
 
 	/* priority=10 for 4 items */
 
@@ -67,7 +68,7 @@ TEST(QueuePriority, Priority)
 		assert(queue.PositionToOrder(i) < 4);
 	}
 
-	for (unsigned i = 8; i < ARRAY_SIZE(songs); ++i) {
+	for (unsigned i = 8; i < std::size(songs); ++i) {
 		assert(queue.PositionToOrder(i) >= 4);
 	}
 

@@ -22,9 +22,10 @@
 #include "lib/sqlite/Util.hxx"
 #include "fs/Path.hxx"
 #include "Idle.hxx"
-#include "util/Macros.hxx"
 #include "util/StringCompare.hxx"
 #include "util/ScopeExit.hxx"
+
+#include <iterator>
 
 #include <assert.h>
 
@@ -98,7 +99,7 @@ StickerDatabase::StickerDatabase(Path path)
 
 	/* prepare the statements we're going to use */
 
-	for (unsigned i = 0; i < ARRAY_SIZE(sticker_sql); ++i) {
+	for (unsigned i = 0; i < std::size(sticker_sql); ++i) {
 		assert(sticker_sql[i] != nullptr);
 
 		stmt[i] = Prepare(db, sticker_sql[i]);
@@ -109,7 +110,7 @@ StickerDatabase::~StickerDatabase() noexcept
 {
 	assert(db != nullptr);
 
-	for (unsigned i = 0; i < ARRAY_SIZE(stmt); ++i) {
+	for (unsigned i = 0; i < std::size(stmt); ++i) {
 		assert(stmt[i] != nullptr);
 
 		sqlite3_finalize(stmt[i]);

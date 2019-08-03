@@ -41,13 +41,14 @@
 #include "Instance.hxx"
 #include "client/Client.hxx"
 #include "client/Response.hxx"
-#include "util/Macros.hxx"
 #include "util/Tokenizer.hxx"
 #include "util/StringAPI.hxx"
 
 #ifdef ENABLE_SQLITE
 #include "StickerCommands.hxx"
 #endif
+
+#include <iterator>
 
 #include <assert.h>
 #include <string.h>
@@ -208,7 +209,7 @@ static constexpr struct command commands[] = {
 	{ "volume", PERMISSION_CONTROL, 1, 1, handle_volume },
 };
 
-static constexpr unsigned num_commands = ARRAY_SIZE(commands);
+static constexpr unsigned num_commands = std::size(commands);
 
 static bool
 command_available(gcc_unused const Partition &partition,

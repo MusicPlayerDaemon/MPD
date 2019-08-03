@@ -18,13 +18,13 @@
  */
 
 #include "Converter.hxx"
-#include "util/Macros.hxx"
 #include "util/AllocatedString.hxx"
 #include "util/AllocatedArray.hxx"
 #include "util/ConstBuffer.hxx"
 #include "util/FormatString.hxx"
 #include "config.h"
 
+#include <iterator>
 #include <stdexcept>
 
 #include <string.h>
@@ -115,7 +115,7 @@ IcuConverter::ToUTF8(const char *s) const
 
 	UErrorCode code = U_ZERO_ERROR;
 
-	ucnv_toUnicode(converter, &target, buffer + ARRAY_SIZE(buffer),
+	ucnv_toUnicode(converter, &target, buffer + std::size(buffer),
 		       &source, source + strlen(source),
 		       nullptr, true, &code);
 	if (code != U_ZERO_ERROR)
@@ -144,7 +144,7 @@ IcuConverter::FromUTF8(const char *s) const
 	const UChar *source = u.begin();
 	UErrorCode code = U_ZERO_ERROR;
 
-	ucnv_fromUnicode(converter, &target, buffer + ARRAY_SIZE(buffer),
+	ucnv_fromUnicode(converter, &target, buffer + std::size(buffer),
 			 &source, u.end(),
 			 nullptr, true, &code);
 

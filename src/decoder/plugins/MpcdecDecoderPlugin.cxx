@@ -24,12 +24,13 @@
 #include "pcm/Traits.hxx"
 #include "tag/Handler.hxx"
 #include "util/Domain.hxx"
-#include "util/Macros.hxx"
 #include "util/Clamp.hxx"
 #include "util/ScopeExit.hxx"
 #include "Log.hxx"
 
 #include <mpc/mpcdec.h>
+
+#include <iterator>
 
 #include <math.h>
 
@@ -216,7 +217,7 @@ mpcdec_decode(DecoderClient &client, InputStream &is)
 		mpc_uint32_t ret = frame.samples;
 		ret *= info.channels;
 
-		MpcdecSampleTraits::value_type chunk[ARRAY_SIZE(sample_buffer)];
+		MpcdecSampleTraits::value_type chunk[std::size(sample_buffer)];
 		mpc_to_mpd_buffer(chunk, sample_buffer, ret);
 
 		long bit_rate = unsigned(frame.bits) * audio_format.sample_rate

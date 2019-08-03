@@ -46,8 +46,9 @@
 #include "plugins/MpcdecDecoderPlugin.hxx"
 #include "plugins/FluidsynthDecoderPlugin.hxx"
 #include "plugins/SidplayDecoderPlugin.hxx"
-#include "util/Macros.hxx"
 #include "util/RuntimeError.hxx"
+
+#include <iterator>
 
 #include <string.h>
 
@@ -117,7 +118,7 @@ const struct DecoderPlugin *const decoder_plugins[] = {
 };
 
 static constexpr unsigned num_decoder_plugins =
-	ARRAY_SIZE(decoder_plugins) - 1;
+	std::size(decoder_plugins) - 1;
 
 /** which plugins have been initialized successfully? */
 bool decoder_plugins_enabled[num_decoder_plugins];

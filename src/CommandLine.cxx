@@ -36,7 +36,6 @@
 #include "fs/Traits.hxx"
 #include "fs/FileSystem.hxx"
 #include "fs/StandardDirectory.hxx"
-#include "util/Macros.hxx"
 #include "util/Domain.hxx"
 #include "util/OptionDef.hxx"
 #include "util/OptionParser.hxx"
@@ -385,7 +384,7 @@ ParseCommandLine(int argc, char **argv, struct options &options,
 #ifdef _UNICODE
 		wchar_t buffer[MAX_PATH];
 		auto result = MultiByteToWideChar(CP_ACP, 0, config_file, -1,
-						  buffer, ARRAY_SIZE(buffer));
+						  buffer, std::size(buffer));
 		if (result <= 0)
 			throw MakeLastError("MultiByteToWideChar() failed");
 
