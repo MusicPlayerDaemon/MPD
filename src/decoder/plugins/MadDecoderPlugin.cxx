@@ -207,6 +207,8 @@ private:
 	 */
 	bool HandleCurrentFrame() noexcept;
 
+	bool LoadNextFrame() noexcept;
+
 	bool Read() noexcept;
 };
 
@@ -965,11 +967,8 @@ MadDecoder::HandleCurrentFrame() noexcept
 }
 
 inline bool
-MadDecoder::Read() noexcept
+MadDecoder::LoadNextFrame() noexcept
 {
-	if (!HandleCurrentFrame())
-		return false;
-
 	while (true) {
 		MadDecoderAction ret;
 		do {
@@ -997,6 +996,13 @@ MadDecoder::Read() noexcept
 		if (!skip && ret == MadDecoderAction::OK)
 			return true;
 	}
+}
+
+inline bool
+MadDecoder::Read() noexcept
+{
+	return HandleCurrentFrame() &&
+		LoadNextFrame();
 }
 
 inline void
