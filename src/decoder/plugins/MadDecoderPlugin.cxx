@@ -108,14 +108,13 @@ mad_plugin_init(const ConfigBlock &block)
 
 class MadDecoder {
 	static constexpr size_t READ_BUFFER_SIZE = 40960;
-	static constexpr size_t MP3_DATA_OUTPUT_BUFFER_SIZE = 2048;
 
 	struct mad_stream stream;
 	struct mad_frame frame;
 	struct mad_synth synth;
 	mad_timer_t timer;
 	unsigned char input_buffer[READ_BUFFER_SIZE];
-	int32_t output_buffer[MP3_DATA_OUTPUT_BUFFER_SIZE];
+	int32_t output_buffer[sizeof(mad_pcm::samples) / sizeof(mad_fixed_t)];
 	SignedSongTime total_time;
 	SongTime elapsed_time;
 	SongTime seek_time;
@@ -847,30 +846,16 @@ MadDecoder::UpdateTimerNextFrame() noexcept
 DecoderCommand
 MadDecoder::SubmitPCM(unsigned i, unsigned pcm_length) noexcept
 {
-	unsigned max_samples = sizeof(output_buffer) /
-		sizeof(output_buffer[0]) /
-		MAD_NCHANNELS(&frame.header);
+	unsigned int num_samples = pcm_length - i;
 
-	while (i < pcm_length) {
-		unsigned int num_samples = pcm_length - i;
-		if (num_samples > max_samples)
-			num_samples = max_samples;
+	mad_fixed_to_24_buffer(output_buffer, &synth,
+			       i, i + num_samples,
+			       MAD_NCHANNELS(&frame.header));
+	num_samples *= MAD_NCHANNELS(&frame.header);
 
-		i += num_samples;
-
-		mad_fixed_to_24_buffer(output_buffer, &synth,
-				       i - num_samples, i,
-				       MAD_NCHANNELS(&frame.header));
-		num_samples *= MAD_NCHANNELS(&frame.header);
-
-		auto cmd = client->SubmitData(input_stream, output_buffer,
-					      sizeof(output_buffer[0]) * num_samples,
-					      frame.header.bitrate / 1000);
-		if (cmd != DecoderCommand::NONE)
-			return cmd;
-	}
-
-	return DecoderCommand::NONE;
+	return client->SubmitData(input_stream, output_buffer,
+				  sizeof(output_buffer[0]) * num_samples,
+				  frame.header.bitrate / 1000);
 }
 
 inline DecoderCommand
