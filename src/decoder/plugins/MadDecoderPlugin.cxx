@@ -863,7 +863,7 @@ MadDecoder::SyncAndSend() noexcept
 		drop_start_frames--;
 		return DecoderCommand::NONE;
 	} else if ((drop_end_frames > 0) &&
-		   (current_frame == (max_frames + 1 - drop_end_frames))) {
+		   current_frame == max_frames - drop_end_frames) {
 		/* stop decoding, effectively dropping all remaining
 		   frames */
 		return DecoderCommand::STOP;
@@ -877,7 +877,7 @@ MadDecoder::SyncAndSend() noexcept
 
 	unsigned pcm_length = synth.pcm.length;
 	if (drop_end_samples &&
-	    (current_frame == max_frames - drop_end_frames)) {
+	    current_frame == max_frames - drop_end_frames - 1) {
 		if (drop_end_samples >= pcm_length)
 			pcm_length = 0;
 		else
@@ -889,7 +889,7 @@ MadDecoder::SyncAndSend() noexcept
 		return cmd;
 
 	if (drop_end_samples &&
-	    (current_frame == max_frames - drop_end_frames))
+	    current_frame == max_frames - drop_end_frames - 1)
 		/* stop decoding, effectively dropping
 		 * all remaining samples */
 		return DecoderCommand::STOP;
@@ -900,20 +900,21 @@ MadDecoder::SyncAndSend() noexcept
 inline bool
 MadDecoder::Read() noexcept
 {
-	UpdateTimerNextFrame();
-
 	switch (mute_frame) {
 		DecoderCommand cmd;
 
 	case MadDecoderMuteFrame::SKIP:
 		mute_frame = MadDecoderMuteFrame::NONE;
+		UpdateTimerNextFrame();
 		break;
 	case MadDecoderMuteFrame::SEEK:
 		if (elapsed_time >= seek_time)
 			mute_frame = MadDecoderMuteFrame::NONE;
+		UpdateTimerNextFrame();
 		break;
 	case MadDecoderMuteFrame::NONE:
 		cmd = SyncAndSend();
+		UpdateTimerNextFrame();
 		if (cmd == DecoderCommand::SEEK) {
 			assert(input_stream.IsSeekable());
 
