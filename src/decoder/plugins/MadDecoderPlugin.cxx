@@ -905,7 +905,6 @@ MadDecoder::Read() noexcept
 
 	case MadDecoderMuteFrame::SKIP:
 		mute_frame = MadDecoderMuteFrame::NONE;
-		UpdateTimerNextFrame();
 		break;
 	case MadDecoderMuteFrame::SEEK:
 		if (elapsed_time >= seek_time)
