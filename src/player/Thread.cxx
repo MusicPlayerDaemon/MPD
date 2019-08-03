@@ -599,6 +599,19 @@ Player::SeekDecoder() noexcept
 {
 	assert(pc.next_song != nullptr);
 
+	if (pc.seek_time > SongTime::zero() && // TODO: allow this only if the song duration is known
+	    dc.IsUnseekableCurrentSong(*pc.next_song)) {
+		/* seeking into the current song; but we already know
+		   it's not seekable, so let's fail early */
+		/* note the seek_time>0 check: if seeking to the
+		   beginning, we can simply restart the decoder */
+		pc.next_song.reset();
+		pc.SetError(PlayerError::DECODER,
+			    std::make_exception_ptr(std::runtime_error("Not seekable")));
+		pc.CommandFinished();
+		return true;
+	}
+
 	CancelPendingSeek();
 
 	{

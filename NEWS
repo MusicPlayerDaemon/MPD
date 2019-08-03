@@ -6,6 +6,8 @@ ver 0.21.12 (not yet released)
   - opus, vorbis: decode the "end of stream" packet
 * output
   - jack: fix mono-to-stereo conversion
+* player
+  - don't restart unseekable song after failed seek attempt
 * Windows
   - support backslash in relative URIs loaded from playlists
 
