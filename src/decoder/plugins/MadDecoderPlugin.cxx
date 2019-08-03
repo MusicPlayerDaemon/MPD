@@ -90,10 +90,10 @@ mad_fixed_to_24_sample(mad_fixed_t sample) noexcept
 
 static void
 mad_fixed_to_24_buffer(int32_t *dest, const struct mad_pcm &src,
-		       unsigned int start, unsigned int end,
+		       size_t start, size_t end,
 		       unsigned int num_channels)
 {
-	for (unsigned i = start; i < end; ++i)
+	for (size_t i = start; i < end; ++i)
 		for (unsigned c = 0; c < num_channels; ++c)
 			*dest++ = mad_fixed_to_24_sample(src.samples[c][i]);
 }
@@ -121,9 +121,9 @@ class MadDecoder {
 	MadDecoderMuteFrame mute_frame = MadDecoderMuteFrame::NONE;
 	long *frame_offsets = nullptr;
 	mad_timer_t *times = nullptr;
-	unsigned long highest_frame = 0;
-	unsigned long max_frames = 0;
-	unsigned long current_frame = 0;
+	size_t highest_frame = 0;
+	size_t max_frames = 0;
+	size_t current_frame = 0;
 	unsigned int drop_start_frames;
 	unsigned int drop_end_frames;
 	unsigned int drop_start_samples = 0;
@@ -180,7 +180,7 @@ private:
 	}
 
 	gcc_pure
-	long TimeToFrame(SongTime t) const noexcept;
+	size_t TimeToFrame(SongTime t) const noexcept;
 
 	/**
 	 * Record the current frame's offset in the "frame_offsets"
@@ -193,7 +193,7 @@ private:
 	 * Sends the synthesized current frame via
 	 * DecoderClient::SubmitData().
 	 */
-	DecoderCommand SubmitPCM(unsigned i, unsigned pcm_length) noexcept;
+	DecoderCommand SubmitPCM(size_t start, size_t n) noexcept;
 
 	/**
 	 * Synthesize the current frame and send it via
@@ -804,10 +804,10 @@ MadDecoder::~MadDecoder() noexcept
 	delete[] times;
 }
 
-long
+size_t
 MadDecoder::TimeToFrame(SongTime t) const noexcept
 {
-	unsigned long i;
+	size_t i;
 
 	for (i = 0; i < highest_frame; ++i) {
 		auto frame_time = ToSongTime(times[i]);
@@ -844,9 +844,9 @@ MadDecoder::UpdateTimerNextFrame() noexcept
 }
 
 DecoderCommand
-MadDecoder::SubmitPCM(unsigned i, unsigned pcm_length) noexcept
+MadDecoder::SubmitPCM(size_t i, size_t pcm_length) noexcept
 {
-	unsigned int num_samples = pcm_length - i;
+	size_t num_samples = pcm_length - i;
 
 	mad_fixed_to_24_buffer(output_buffer, synth.pcm,
 			       i, i + num_samples,
@@ -882,13 +882,13 @@ MadDecoder::SynthAndSubmit() noexcept
 		return DecoderCommand::STOP;
 	}
 
-	unsigned i = 0;
+	size_t i = 0;
 	if (!decoded_first_frame) {
 		i = drop_start_samples;
 		decoded_first_frame = true;
 	}
 
-	unsigned pcm_length = synth.pcm.length;
+	size_t pcm_length = synth.pcm.length;
 	if (drop_end_samples &&
 	    current_frame == max_frames - drop_end_frames - 1) {
 		if (drop_end_samples >= pcm_length)
@@ -931,7 +931,7 @@ MadDecoder::HandleCurrentFrame() noexcept
 			assert(input_stream.IsSeekable());
 
 			const auto t = client->GetSeekTime();
-			unsigned long j = TimeToFrame(t);
+			size_t j = TimeToFrame(t);
 			if (j < highest_frame) {
 				if (Seek(frame_offsets[j])) {
 					current_frame = j;
