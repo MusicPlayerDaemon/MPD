@@ -69,12 +69,12 @@ OggVisitor::HandlePacket(const ogg_packet &packet)
 		/* fail if BOS is missing */
 		throw std::runtime_error("BOS packet expected");
 
+	OnOggPacket(packet);
+
 	if (packet.e_o_s) {
 		EndStream();
 		return;
 	}
-
-	OnOggPacket(packet);
 }
 
 inline void

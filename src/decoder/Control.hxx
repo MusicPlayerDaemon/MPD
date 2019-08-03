@@ -311,6 +311,11 @@ public:
 	bool IsCurrentSong(const DetachedSong &_song) const noexcept;
 
 	gcc_pure
+	bool IsUnseekableCurrentSong(const DetachedSong &_song) const noexcept {
+		return !seekable && IsCurrentSong(_song);
+	}
+
+	gcc_pure
 	bool IsSeekableCurrentSong(const DetachedSong &_song) const noexcept {
 		return seekable && IsCurrentSong(_song);
 	}

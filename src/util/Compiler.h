@@ -57,18 +57,6 @@
 	(GCC_VERSION > 0 && CLANG_VERSION == 0 && \
 	 GCC_VERSION < GCC_MAKE_VERSION(major, minor, 0))
 
-#ifdef __clang__
-#  if __clang_major__ < 3
-#    error Sorry, your clang version is too old.  You need at least version 3.1.
-#  endif
-#elif defined(__GNUC__)
-#  if GCC_OLDER_THAN(6,0)
-#    error Sorry, your gcc version is too old.  You need at least version 6.0.
-#  endif
-#else
-#  warning Untested compiler.  Use at your own risk!
-#endif
-
 /**
  * Are we building with the specified version of clang or newer?
  */

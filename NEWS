@@ -13,9 +13,16 @@ ver 0.22 (not yet released)
   - hdcd: new plugin based on FFmpeg's "af_hdcd" for HDCD playback
   - volume: convert S16 to S24 to preserve quality and reduce dithering noise
 
-ver 0.21.12 (not yet released)
+ver 0.21.12 (2019/08/03)
 * decoder
+  - mad: update bit rate after seeking
+  - mad: fix several bugs preventing the plugin from decoding the last frame
   - opus: ignore case in replay gain tag names
+  - opus, vorbis: decode the "end of stream" packet
+* output
+  - jack: fix mono-to-stereo conversion
+* player
+  - don't restart unseekable song after failed seek attempt
 * Windows
   - support backslash in relative URIs loaded from playlists
 

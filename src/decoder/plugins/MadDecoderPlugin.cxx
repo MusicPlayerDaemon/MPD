@@ -27,6 +27,7 @@
 #include "tag/ReplayGain.hxx"
 #include "tag/MixRamp.hxx"
 #include "CheckAudioFormat.hxx"
+#include "util/Clamp.hxx"
 #include "util/StringCompare.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
@@ -75,33 +76,26 @@ ToSongTime(mad_timer_t t) noexcept
 }
 
 static inline int32_t
-mad_fixed_to_24_sample(mad_fixed_t sample)
+mad_fixed_to_24_sample(mad_fixed_t sample) noexcept
 {
 	static constexpr unsigned bits = 24;
-	static constexpr mad_fixed_t MIN = -MAD_F_ONE;
-	static constexpr mad_fixed_t MAX = MAD_F_ONE - 1;
 
 	/* round */
 	sample = sample + (1L << (MAD_F_FRACBITS - bits));
 
-	/* clip */
-	if (gcc_unlikely(sample > MAX))
-		sample = MAX;
-	else if (gcc_unlikely(sample < MIN))
-		sample = MIN;
-
 	/* quantize */
-	return sample >> (MAD_F_FRACBITS + 1 - bits);
+	return Clamp(sample, MAD_F_MIN, MAD_F_MAX)
+		>> (MAD_F_FRACBITS + 1 - bits);
 }
 
 static void
-mad_fixed_to_24_buffer(int32_t *dest, const struct mad_synth *synth,
-		       unsigned int start, unsigned int end,
+mad_fixed_to_24_buffer(int32_t *dest, const struct mad_pcm &src,
+		       size_t start, size_t end,
 		       unsigned int num_channels)
 {
-	for (unsigned i = start; i < end; ++i)
+	for (size_t i = start; i < end; ++i)
 		for (unsigned c = 0; c < num_channels; ++c)
-			*dest++ = mad_fixed_to_24_sample(synth->pcm.samples[c][i]);
+			*dest++ = mad_fixed_to_24_sample(src.samples[c][i]);
 }
 
 static bool
@@ -112,45 +106,56 @@ mad_plugin_init(const ConfigBlock &block)
 	return true;
 }
 
-struct MadDecoder {
+class MadDecoder {
 	static constexpr size_t READ_BUFFER_SIZE = 40960;
-	static constexpr size_t MP3_DATA_OUTPUT_BUFFER_SIZE = 2048;
 
 	struct mad_stream stream;
 	struct mad_frame frame;
 	struct mad_synth synth;
 	mad_timer_t timer;
 	unsigned char input_buffer[READ_BUFFER_SIZE];
-	int32_t output_buffer[MP3_DATA_OUTPUT_BUFFER_SIZE];
+	int32_t output_buffer[sizeof(mad_pcm::samples) / sizeof(mad_fixed_t)];
 	SignedSongTime total_time;
 	SongTime elapsed_time;
 	SongTime seek_time;
 	MadDecoderMuteFrame mute_frame = MadDecoderMuteFrame::NONE;
 	long *frame_offsets = nullptr;
 	mad_timer_t *times = nullptr;
-	unsigned long highest_frame = 0;
-	unsigned long max_frames = 0;
-	unsigned long current_frame = 0;
-	unsigned int drop_start_frames = 0;
-	unsigned int drop_end_frames = 0;
+	size_t highest_frame = 0;
+	size_t max_frames = 0;
+	size_t current_frame = 0;
+	unsigned int drop_start_frames;
+	unsigned int drop_end_frames;
 	unsigned int drop_start_samples = 0;
 	unsigned int drop_end_samples = 0;
 	bool found_replay_gain = false;
 	bool found_first_frame = false;
 	bool decoded_first_frame = false;
-	unsigned long bit_rate;
+
+	/**
+	 * If this flag is true, then end-of-file was seen and a
+	 * padding of 8 zero bytes were appended to #input_buffer, to
+	 * allow libmad to decode the last frame.
+	 */
+	bool was_eof = false;
+
 	DecoderClient *const client;
 	InputStream &input_stream;
 	enum mad_layer layer = mad_layer(0);
 
-	MadDecoder(DecoderClient *client, InputStream &input_stream);
-	~MadDecoder();
+public:
+	MadDecoder(DecoderClient *client, InputStream &input_stream) noexcept;
+	~MadDecoder() noexcept;
 
-	bool Seek(long offset);
-	bool FillBuffer();
-	void ParseId3(size_t tagsize, Tag *tag);
-	MadDecoderAction DecodeNextFrameHeader(Tag *tag);
-	MadDecoderAction DecodeNextFrame();
+	void RunDecoder() noexcept;
+	bool RunScan(TagHandler &handler) noexcept;
+
+private:
+	bool Seek(long offset) noexcept;
+	bool FillBuffer() noexcept;
+	void ParseId3(size_t tagsize, Tag *tag) noexcept;
+	MadDecoderAction DecodeNextFrameHeader(Tag *tag) noexcept;
+	MadDecoderAction DecodeNextFrame() noexcept;
 
 	gcc_pure
 	offset_type ThisFrameOffset() const noexcept;
@@ -161,11 +166,11 @@ struct MadDecoder {
 	/**
 	 * Attempt to calulcate the length of the song from filesize
 	 */
-	void FileSizeToSongLength();
+	void FileSizeToSongLength() noexcept;
 
-	bool DecodeFirstFrame(Tag *tag);
+	bool DecodeFirstFrame(Tag *tag) noexcept;
 
-	void AllocateBuffers() {
+	void AllocateBuffers() noexcept {
 		assert(max_frames > 0);
 		assert(frame_offsets == nullptr);
 		assert(times == nullptr);
@@ -175,27 +180,39 @@ struct MadDecoder {
 	}
 
 	gcc_pure
-	long TimeToFrame(SongTime t) const noexcept;
+	size_t TimeToFrame(SongTime t) const noexcept;
 
-	void UpdateTimerNextFrame();
+	/**
+	 * Record the current frame's offset in the "frame_offsets"
+	 * buffer and go forward to the next frame, updating the
+	 * attributes "current_frame" and "timer".
+	 */
+	void UpdateTimerNextFrame() noexcept;
 
 	/**
 	 * Sends the synthesized current frame via
 	 * DecoderClient::SubmitData().
 	 */
-	DecoderCommand SendPCM(unsigned i, unsigned pcm_length);
+	DecoderCommand SubmitPCM(size_t start, size_t n) noexcept;
 
 	/**
 	 * Synthesize the current frame and send it via
 	 * DecoderClient::SubmitData().
 	 */
-	DecoderCommand SyncAndSend();
+	DecoderCommand SynthAndSubmit() noexcept;
 
-	bool Read();
+	/**
+	 * @return false to stop decoding
+	 */
+	bool HandleCurrentFrame() noexcept;
+
+	bool LoadNextFrame() noexcept;
+
+	bool Read() noexcept;
 };
 
 MadDecoder::MadDecoder(DecoderClient *_client,
-		       InputStream &_input_stream)
+		       InputStream &_input_stream) noexcept
 	:client(_client), input_stream(_input_stream)
 {
 	mad_stream_init(&stream);
@@ -206,7 +223,7 @@ MadDecoder::MadDecoder(DecoderClient *_client,
 }
 
 inline bool
-MadDecoder::Seek(long offset)
+MadDecoder::Seek(long offset) noexcept
 {
 	try {
 		input_stream.LockSeek(offset);
@@ -221,32 +238,38 @@ MadDecoder::Seek(long offset)
 }
 
 inline bool
-MadDecoder::FillBuffer()
+MadDecoder::FillBuffer() noexcept
 {
-	size_t remaining, length;
-	unsigned char *dest;
+	/* amount of rest data still residing in the buffer */
+	size_t rest_size = 0;
+
+	size_t max_read_size = sizeof(input_buffer);
+	unsigned char *dest = input_buffer;
 
 	if (stream.next_frame != nullptr) {
-		remaining = stream.bufend - stream.next_frame;
-		memmove(input_buffer, stream.next_frame, remaining);
-		dest = input_buffer + remaining;
-		length = READ_BUFFER_SIZE - remaining;
-	} else {
-		remaining = 0;
-		length = READ_BUFFER_SIZE;
-		dest = input_buffer;
+		rest_size = stream.bufend - stream.next_frame;
+		memmove(input_buffer, stream.next_frame, rest_size);
+		dest += rest_size;
+		max_read_size -= rest_size;
 	}
 
 	/* we've exhausted the read buffer, so give up!, these potential
 	 * mp3 frames are way too big, and thus unlikely to be mp3 frames */
-	if (length == 0)
+	if (max_read_size == 0)
 		return false;
 
-	length = decoder_read(client, input_stream, dest, length);
-	if (length == 0)
-		return false;
+	size_t nbytes = decoder_read(client, input_stream,
+				     dest, max_read_size);
+	if (nbytes == 0) {
+		if (was_eof || max_read_size < MAD_BUFFER_GUARD)
+			return false;
 
-	mad_stream_buffer(&stream, input_buffer, length + remaining);
+		was_eof = true;
+		nbytes = MAD_BUFFER_GUARD;
+		memset(dest, 0, nbytes);
+	}
+
+	mad_stream_buffer(&stream, input_buffer, rest_size + nbytes);
 	stream.error = MAD_ERROR_NONE;
 
 	return true;
@@ -282,7 +305,7 @@ parse_id3_mixramp(struct id3_tag *tag) noexcept
 #endif
 
 inline void
-MadDecoder::ParseId3(size_t tagsize, Tag *mpd_tag)
+MadDecoder::ParseId3(size_t tagsize, Tag *mpd_tag) noexcept
 {
 #ifdef ENABLE_ID3TAG
 	std::unique_ptr<id3_byte_t[]> allocated;
@@ -350,7 +373,7 @@ MadDecoder::ParseId3(size_t tagsize, Tag *mpd_tag)
  * of the ID3 frame.
  */
 static signed long
-id3_tag_query(const void *p0, size_t length)
+id3_tag_query(const void *p0, size_t length) noexcept
 {
 	const char *p = (const char *)p0;
 
@@ -361,7 +384,7 @@ id3_tag_query(const void *p0, size_t length)
 #endif /* !ENABLE_ID3TAG */
 
 static MadDecoderAction
-RecoverFrameError(struct mad_stream &stream)
+RecoverFrameError(const struct mad_stream &stream) noexcept
 {
 	if (MAD_RECOVERABLE(stream.error))
 		return MadDecoderAction::SKIP;
@@ -375,7 +398,7 @@ RecoverFrameError(struct mad_stream &stream)
 }
 
 MadDecoderAction
-MadDecoder::DecodeNextFrameHeader(Tag *tag)
+MadDecoder::DecodeNextFrameHeader(Tag *tag) noexcept
 {
 	if ((stream.buffer == nullptr || stream.error == MAD_ERROR_BUFLEN) &&
 	    !FillBuffer())
@@ -413,7 +436,7 @@ MadDecoder::DecodeNextFrameHeader(Tag *tag)
 }
 
 MadDecoderAction
-MadDecoder::DecodeNextFrame()
+MadDecoder::DecodeNextFrame() noexcept
 {
 	if ((stream.buffer == nullptr || stream.error == MAD_ERROR_BUFLEN) &&
 	    !FillBuffer())
@@ -472,7 +495,7 @@ struct lame {
 };
 
 static bool
-parse_xing(struct xing *xing, struct mad_bitptr *ptr, int *oldbitlen)
+parse_xing(struct xing *xing, struct mad_bitptr *ptr, int *oldbitlen) noexcept
 {
 	int bitlen = *oldbitlen;
 
@@ -552,7 +575,7 @@ parse_xing(struct xing *xing, struct mad_bitptr *ptr, int *oldbitlen)
 }
 
 static bool
-parse_lame(struct lame *lame, struct mad_bitptr *ptr, int *bitlen)
+parse_lame(struct lame *lame, struct mad_bitptr *ptr, int *bitlen) noexcept
 {
 	/* Unlike the xing header, the lame tag has a fixed length.  Fail if
 	 * not all 36 bytes (288 bits) are there. */
@@ -643,7 +666,7 @@ parse_lame(struct lame *lame, struct mad_bitptr *ptr, int *bitlen)
 }
 
 static inline SongTime
-mad_frame_duration(const struct mad_frame *frame)
+mad_frame_duration(const struct mad_frame *frame) noexcept
 {
 	return ToSongTime(frame->header.duration);
 }
@@ -668,7 +691,7 @@ MadDecoder::RestIncludingThisFrame() const noexcept
 }
 
 inline void
-MadDecoder::FileSizeToSongLength()
+MadDecoder::FileSizeToSongLength() noexcept
 {
 	if (input_stream.KnownSize()) {
 		offset_type rest = RestIncludingThisFrame();
@@ -690,7 +713,7 @@ MadDecoder::FileSizeToSongLength()
 }
 
 inline bool
-MadDecoder::DecodeFirstFrame(Tag *tag)
+MadDecoder::DecodeFirstFrame(Tag *tag) noexcept
 {
 	struct xing xing;
 
@@ -732,9 +755,17 @@ MadDecoder::DecodeFirstFrame(Tag *tag)
 		struct lame lame;
 		if (parse_lame(&lame, &ptr, &bitlen)) {
 			if (gapless_playback && input_stream.IsSeekable()) {
+				/* libmad inserts 529 samples of
+				   silence at the beginning and
+				   removes those 529 samples at the
+				   end */
 				drop_start_samples = lame.encoder_delay +
 				                           DECODERDELAY;
 				drop_end_samples = lame.encoder_padding;
+				if (drop_end_samples > DECODERDELAY)
+					drop_end_samples -= DECODERDELAY;
+				else
+					drop_end_samples = 0;
 			}
 
 			/* Album gain isn't currently used.  See comment in
@@ -763,7 +794,7 @@ MadDecoder::DecodeFirstFrame(Tag *tag)
 	return true;
 }
 
-MadDecoder::~MadDecoder()
+MadDecoder::~MadDecoder() noexcept
 {
 	mad_synth_finish(&synth);
 	mad_frame_finish(&frame);
@@ -773,10 +804,10 @@ MadDecoder::~MadDecoder()
 	delete[] times;
 }
 
-long
+size_t
 MadDecoder::TimeToFrame(SongTime t) const noexcept
 {
-	unsigned long i;
+	size_t i;
 
 	for (i = 0; i < highest_frame; ++i) {
 		auto frame_time = ToSongTime(times[i]);
@@ -788,12 +819,11 @@ MadDecoder::TimeToFrame(SongTime t) const noexcept
 }
 
 void
-MadDecoder::UpdateTimerNextFrame()
+MadDecoder::UpdateTimerNextFrame() noexcept
 {
 	if (current_frame >= highest_frame) {
 		/* record this frame's properties in frame_offsets
 		   (for seeking) and times */
-		bit_rate = frame.header.bitrate;
 
 		if (current_frame >= max_frames)
 			/* cap current_frame */
@@ -814,36 +844,22 @@ MadDecoder::UpdateTimerNextFrame()
 }
 
 DecoderCommand
-MadDecoder::SendPCM(unsigned i, unsigned pcm_length)
+MadDecoder::SubmitPCM(size_t i, size_t pcm_length) noexcept
 {
-	unsigned max_samples = sizeof(output_buffer) /
-		sizeof(output_buffer[0]) /
-		MAD_NCHANNELS(&frame.header);
+	size_t num_samples = pcm_length - i;
 
-	while (i < pcm_length) {
-		unsigned int num_samples = pcm_length - i;
-		if (num_samples > max_samples)
-			num_samples = max_samples;
+	mad_fixed_to_24_buffer(output_buffer, synth.pcm,
+			       i, i + num_samples,
+			       MAD_NCHANNELS(&frame.header));
+	num_samples *= MAD_NCHANNELS(&frame.header);
 
-		i += num_samples;
-
-		mad_fixed_to_24_buffer(output_buffer, &synth,
-				       i - num_samples, i,
-				       MAD_NCHANNELS(&frame.header));
-		num_samples *= MAD_NCHANNELS(&frame.header);
-
-		auto cmd = client->SubmitData(input_stream, output_buffer,
-					      sizeof(output_buffer[0]) * num_samples,
-					      bit_rate / 1000);
-		if (cmd != DecoderCommand::NONE)
-			return cmd;
-	}
-
-	return DecoderCommand::NONE;
+	return client->SubmitData(input_stream, output_buffer,
+				  sizeof(output_buffer[0]) * num_samples,
+				  frame.header.bitrate / 1000);
 }
 
 inline DecoderCommand
-MadDecoder::SyncAndSend()
+MadDecoder::SynthAndSubmit() noexcept
 {
 	mad_synth_frame(&synth, &frame);
 
@@ -860,33 +876,33 @@ MadDecoder::SyncAndSend()
 		drop_start_frames--;
 		return DecoderCommand::NONE;
 	} else if ((drop_end_frames > 0) &&
-		   (current_frame == (max_frames + 1 - drop_end_frames))) {
+		   current_frame == max_frames - drop_end_frames) {
 		/* stop decoding, effectively dropping all remaining
 		   frames */
 		return DecoderCommand::STOP;
 	}
 
-	unsigned i = 0;
+	size_t i = 0;
 	if (!decoded_first_frame) {
 		i = drop_start_samples;
 		decoded_first_frame = true;
 	}
 
-	unsigned pcm_length = synth.pcm.length;
+	size_t pcm_length = synth.pcm.length;
 	if (drop_end_samples &&
-	    (current_frame == max_frames - drop_end_frames)) {
+	    current_frame == max_frames - drop_end_frames - 1) {
 		if (drop_end_samples >= pcm_length)
-			pcm_length = 0;
-		else
-			pcm_length -= drop_end_samples;
+			return DecoderCommand::STOP;
+
+		pcm_length -= drop_end_samples;
 	}
 
-	auto cmd = SendPCM(i, pcm_length);
+	auto cmd = SubmitPCM(i, pcm_length);
 	if (cmd != DecoderCommand::NONE)
 		return cmd;
 
 	if (drop_end_samples &&
-	    (current_frame == max_frames - drop_end_frames))
+	    current_frame == max_frames - drop_end_frames - 1)
 		/* stop decoding, effectively dropping
 		 * all remaining samples */
 		return DecoderCommand::STOP;
@@ -895,10 +911,8 @@ MadDecoder::SyncAndSend()
 }
 
 inline bool
-MadDecoder::Read()
+MadDecoder::HandleCurrentFrame() noexcept
 {
-	UpdateTimerNextFrame();
-
 	switch (mute_frame) {
 		DecoderCommand cmd;
 
@@ -908,17 +922,20 @@ MadDecoder::Read()
 	case MadDecoderMuteFrame::SEEK:
 		if (elapsed_time >= seek_time)
 			mute_frame = MadDecoderMuteFrame::NONE;
+		UpdateTimerNextFrame();
 		break;
 	case MadDecoderMuteFrame::NONE:
-		cmd = SyncAndSend();
+		cmd = SynthAndSubmit();
+		UpdateTimerNextFrame();
 		if (cmd == DecoderCommand::SEEK) {
 			assert(input_stream.IsSeekable());
 
 			const auto t = client->GetSeekTime();
-			unsigned long j = TimeToFrame(t);
+			size_t j = TimeToFrame(t);
 			if (j < highest_frame) {
 				if (Seek(frame_offsets[j])) {
 					current_frame = j;
+					was_eof = false;
 					client->CommandFinished();
 				} else
 					client->SeekError();
@@ -931,6 +948,12 @@ MadDecoder::Read()
 			return false;
 	}
 
+	return true;
+}
+
+inline bool
+MadDecoder::LoadNextFrame() noexcept
+{
 	while (true) {
 		MadDecoderAction ret;
 		do {
@@ -960,51 +983,71 @@ MadDecoder::Read()
 	}
 }
 
+inline bool
+MadDecoder::Read() noexcept
+{
+	return HandleCurrentFrame() &&
+		LoadNextFrame();
+}
+
+inline void
+MadDecoder::RunDecoder() noexcept
+{
+	assert(client != nullptr);
+
+	Tag tag;
+	if (!DecodeFirstFrame(&tag)) {
+		if (client->GetCommand() == DecoderCommand::NONE)
+			LogError(mad_domain,
+				 "input does not appear to be a mp3 bit stream");
+		return;
+	}
+
+	AllocateBuffers();
+
+	client->Ready(CheckAudioFormat(frame.header.samplerate,
+				       SampleFormat::S24_P32,
+				       MAD_NCHANNELS(&frame.header)),
+		      input_stream.IsSeekable(),
+		      total_time);
+
+	if (!tag.IsEmpty())
+		client->SubmitTag(input_stream, std::move(tag));
+
+	while (Read()) {}
+}
+
 static void
 mad_decode(DecoderClient &client, InputStream &input_stream)
 {
 	MadDecoder data(&client, input_stream);
+	data.RunDecoder();
+}
 
-	Tag tag;
-	if (!data.DecodeFirstFrame(&tag)) {
-		if (client.GetCommand() == DecoderCommand::NONE)
-			LogError(mad_domain,
-				 "input/Input does not appear to be a mp3 bit stream");
-		return;
+inline bool
+MadDecoder::RunScan(TagHandler &handler) noexcept
+{
+	if (!DecodeFirstFrame(nullptr))
+		return false;
+
+	if (!total_time.IsNegative())
+		handler.OnDuration(SongTime(total_time));
+
+	try {
+		handler.OnAudioFormat(CheckAudioFormat(frame.header.samplerate,
+						       SampleFormat::S24_P32,
+						       MAD_NCHANNELS(&frame.header)));
+	} catch (...) {
 	}
 
-	data.AllocateBuffers();
-
-	client.Ready(CheckAudioFormat(data.frame.header.samplerate,
-				      SampleFormat::S24_P32,
-				      MAD_NCHANNELS(&data.frame.header)),
-		     input_stream.IsSeekable(),
-		     data.total_time);
-
-	if (!tag.IsEmpty())
-		client.SubmitTag(input_stream, std::move(tag));
-
-	while (data.Read()) {}
+	return true;
 }
 
 static bool
 mad_decoder_scan_stream(InputStream &is, TagHandler &handler) noexcept
 {
 	MadDecoder data(nullptr, is);
-	if (!data.DecodeFirstFrame(nullptr))
-		return false;
-
-	if (!data.total_time.IsNegative())
-		handler.OnDuration(SongTime(data.total_time));
-
-	try {
-		handler.OnAudioFormat(CheckAudioFormat(data.frame.header.samplerate,
-						       SampleFormat::S24_P32,
-						       MAD_NCHANNELS(&data.frame.header)));
-	} catch (...) {
-	}
-
-	return true;
+	return data.RunScan(handler);
 }
 
 static const char *const mad_suffixes[] = { "mp3", "mp2", nullptr };
