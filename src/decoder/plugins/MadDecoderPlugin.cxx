@@ -106,7 +106,7 @@ mad_plugin_init(const ConfigBlock &block)
 	return true;
 }
 
-struct MadDecoder {
+class MadDecoder {
 	static constexpr size_t READ_BUFFER_SIZE = 40960;
 	static constexpr size_t MP3_DATA_OUTPUT_BUFFER_SIZE = 2048;
 
@@ -136,12 +136,14 @@ struct MadDecoder {
 	InputStream &input_stream;
 	enum mad_layer layer = mad_layer(0);
 
+public:
 	MadDecoder(DecoderClient *client, InputStream &input_stream) noexcept;
 	~MadDecoder() noexcept;
 
 	void RunDecoder() noexcept;
 	bool RunScan(TagHandler &handler) noexcept;
 
+private:
 	bool Seek(long offset) noexcept;
 	bool FillBuffer() noexcept;
 	void ParseId3(size_t tagsize, Tag *tag) noexcept;
