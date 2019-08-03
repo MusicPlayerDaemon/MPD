@@ -175,6 +175,11 @@ private:
 	gcc_pure
 	long TimeToFrame(SongTime t) const noexcept;
 
+	/**
+	 * Record the current frame's offset in the "frame_offsets"
+	 * buffer and go forward to the next frame, updating the
+	 * attributes "current_frame" and "timer".
+	 */
 	void UpdateTimerNextFrame() noexcept;
 
 	/**
