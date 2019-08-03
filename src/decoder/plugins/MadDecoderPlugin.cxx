@@ -384,7 +384,7 @@ id3_tag_query(const void *p0, size_t length) noexcept
 #endif /* !ENABLE_ID3TAG */
 
 static MadDecoderAction
-RecoverFrameError(struct mad_stream &stream) noexcept
+RecoverFrameError(const struct mad_stream &stream) noexcept
 {
 	if (MAD_RECOVERABLE(stream.error))
 		return MadDecoderAction::SKIP;
