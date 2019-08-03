@@ -139,6 +139,9 @@ struct MadDecoder {
 	MadDecoder(DecoderClient *client, InputStream &input_stream) noexcept;
 	~MadDecoder() noexcept;
 
+	void RunDecoder() noexcept;
+	bool RunScan(TagHandler &handler) noexcept;
+
 	bool Seek(long offset) noexcept;
 	bool FillBuffer() noexcept;
 	void ParseId3(size_t tagsize, Tag *tag) noexcept;
@@ -953,51 +956,64 @@ MadDecoder::Read() noexcept
 	}
 }
 
-static void
-mad_decode(DecoderClient &client, InputStream &input_stream)
+inline void
+MadDecoder::RunDecoder() noexcept
 {
-	MadDecoder data(&client, input_stream);
+	assert(client != nullptr);
 
 	Tag tag;
-	if (!data.DecodeFirstFrame(&tag)) {
-		if (client.GetCommand() == DecoderCommand::NONE)
+	if (!DecodeFirstFrame(&tag)) {
+		if (client->GetCommand() == DecoderCommand::NONE)
 			LogError(mad_domain,
 				 "input does not appear to be a mp3 bit stream");
 		return;
 	}
 
-	data.AllocateBuffers();
+	AllocateBuffers();
 
-	client.Ready(CheckAudioFormat(data.frame.header.samplerate,
-				      SampleFormat::S24_P32,
-				      MAD_NCHANNELS(&data.frame.header)),
-		     input_stream.IsSeekable(),
-		     data.total_time);
+	client->Ready(CheckAudioFormat(frame.header.samplerate,
+				       SampleFormat::S24_P32,
+				       MAD_NCHANNELS(&frame.header)),
+		      input_stream.IsSeekable(),
+		      total_time);
 
 	if (!tag.IsEmpty())
-		client.SubmitTag(input_stream, std::move(tag));
+		client->SubmitTag(input_stream, std::move(tag));
 
-	while (data.Read()) {}
+	while (Read()) {}
+}
+
+static void
+mad_decode(DecoderClient &client, InputStream &input_stream)
+{
+	MadDecoder data(&client, input_stream);
+	data.RunDecoder();
+}
+
+inline bool
+MadDecoder::RunScan(TagHandler &handler) noexcept
+{
+	if (!DecodeFirstFrame(nullptr))
+		return false;
+
+	if (!total_time.IsNegative())
+		handler.OnDuration(SongTime(total_time));
+
+	try {
+		handler.OnAudioFormat(CheckAudioFormat(frame.header.samplerate,
+						       SampleFormat::S24_P32,
+						       MAD_NCHANNELS(&frame.header)));
+	} catch (...) {
+	}
+
+	return true;
 }
 
 static bool
 mad_decoder_scan_stream(InputStream &is, TagHandler &handler) noexcept
 {
 	MadDecoder data(nullptr, is);
-	if (!data.DecodeFirstFrame(nullptr))
-		return false;
-
-	if (!data.total_time.IsNegative())
-		handler.OnDuration(SongTime(data.total_time));
-
-	try {
-		handler.OnAudioFormat(CheckAudioFormat(data.frame.header.samplerate,
-						       SampleFormat::S24_P32,
-						       MAD_NCHANNELS(&data.frame.header)));
-	} catch (...) {
-	}
-
-	return true;
+	return data.RunScan(handler);
 }
 
 static const char *const mad_suffixes[] = { "mp3", "mp2", nullptr };
