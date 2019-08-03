@@ -892,9 +892,9 @@ MadDecoder::SynthAndSubmit() noexcept
 	if (drop_end_samples &&
 	    current_frame == max_frames - drop_end_frames - 1) {
 		if (drop_end_samples >= pcm_length)
-			pcm_length = 0;
-		else
-			pcm_length -= drop_end_samples;
+			return DecoderCommand::STOP;
+
+		pcm_length -= drop_end_samples;
 	}
 
 	auto cmd = SubmitPCM(i, pcm_length);
