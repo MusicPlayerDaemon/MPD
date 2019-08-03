@@ -154,8 +154,7 @@ private:
 	bool Seek(long offset) noexcept;
 	bool FillBuffer() noexcept;
 	void ParseId3(size_t tagsize, Tag *tag) noexcept;
-	MadDecoderAction DecodeNextFrameHeader(Tag *tag) noexcept;
-	MadDecoderAction DecodeNextFrame() noexcept;
+	MadDecoderAction DecodeNextFrame(bool skip, Tag *tag) noexcept;
 
 	gcc_pure
 	offset_type ThisFrameOffset() const noexcept;
@@ -396,7 +395,7 @@ RecoverFrameError(const struct mad_stream &stream) noexcept
 }
 
 MadDecoderAction
-MadDecoder::DecodeNextFrameHeader(Tag *tag) noexcept
+MadDecoder::DecodeNextFrame(bool skip, Tag *tag) noexcept
 {
 	if ((stream.buffer == nullptr || stream.error == MAD_ERROR_BUFLEN) &&
 	    !FillBuffer())
@@ -433,13 +432,7 @@ MadDecoder::DecodeNextFrameHeader(Tag *tag) noexcept
 		return MadDecoderAction::SKIP;
 	}
 
-	return MadDecoderAction::OK;
-}
-
-MadDecoderAction
-MadDecoder::DecodeNextFrame() noexcept
-{
-	if (mad_frame_decode(&frame, &stream))
+	if (!skip && mad_frame_decode(&frame, &stream))
 		return RecoverFrameError(stream);
 
 	return MadDecoderAction::OK;
@@ -704,20 +697,20 @@ MadDecoder::DecodeFirstFrame(Tag *tag) noexcept
 	struct xing xing;
 
 	while (true) {
-		MadDecoderAction ret;
-		do {
-			ret = DecodeNextFrameHeader(tag);
-		} while (ret == MadDecoderAction::CONT);
-		if (ret == MadDecoderAction::BREAK)
-			return false;
-		if (ret == MadDecoderAction::SKIP) continue;
+		const auto action = DecodeNextFrame(false, tag);
+		switch (action) {
+		case MadDecoderAction::SKIP:
+		case MadDecoderAction::CONT:
+			continue;
 
-		do {
-			ret = DecodeNextFrame();
-		} while (ret == MadDecoderAction::CONT);
-		if (ret == MadDecoderAction::BREAK)
+		case MadDecoderAction::BREAK:
 			return false;
-		if (ret == MadDecoderAction::OK) break;
+
+		case MadDecoderAction::OK:
+			break;
+		}
+
+		break;
 	}
 
 	struct mad_bitptr ptr = stream.anc_ptr;
@@ -941,31 +934,25 @@ inline bool
 MadDecoder::LoadNextFrame() noexcept
 {
 	while (true) {
-		MadDecoderAction ret;
-		do {
-			Tag tag;
+		Tag tag;
 
-			ret = DecodeNextFrameHeader(&tag);
+		const auto action =
+			DecodeNextFrame(mute_frame != MadDecoderMuteFrame::NONE,
+					&tag);
+		if (!tag.IsEmpty())
+			client->SubmitTag(input_stream, std::move(tag));
 
-			if (!tag.IsEmpty())
-				client->SubmitTag(input_stream,
-						  std::move(tag));
-		} while (ret == MadDecoderAction::CONT);
-		if (ret == MadDecoderAction::BREAK)
+		switch (action) {
+		case MadDecoderAction::SKIP:
+		case MadDecoderAction::CONT:
+			continue;
+
+		case MadDecoderAction::BREAK:
 			return false;
 
-		const bool skip = ret == MadDecoderAction::SKIP;
-
-		if (mute_frame == MadDecoderMuteFrame::NONE) {
-			do {
-				ret = DecodeNextFrame();
-			} while (ret == MadDecoderAction::CONT);
-			if (ret == MadDecoderAction::BREAK)
-				return false;
-		}
-
-		if (!skip && ret == MadDecoderAction::OK)
+		case MadDecoderAction::OK:
 			return true;
+		}
 	}
 }
 
