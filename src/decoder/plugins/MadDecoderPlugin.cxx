@@ -749,9 +749,17 @@ MadDecoder::DecodeFirstFrame(Tag *tag) noexcept
 		struct lame lame;
 		if (parse_lame(&lame, &ptr, &bitlen)) {
 			if (gapless_playback && input_stream.IsSeekable()) {
+				/* libmad inserts 529 samples of
+				   silence at the beginning and
+				   removes those 529 samples at the
+				   end */
 				drop_start_samples = lame.encoder_delay +
 				                           DECODERDELAY;
 				drop_end_samples = lame.encoder_padding;
+				if (drop_end_samples > DECODERDELAY)
+					drop_end_samples -= DECODERDELAY;
+				else
+					drop_end_samples = 0;
 			}
 
 			/* Album gain isn't currently used.  See comment in

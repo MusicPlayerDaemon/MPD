@@ -1,6 +1,7 @@
 ver 0.21.12 (not yet released)
 * decoder
   - mad: update bit rate after seeking
+  - mad: fix several bugs preventing the plugin from decoding the last frame
   - opus: ignore case in replay gain tag names
   - opus, vorbis: decode the "end of stream" packet
 * output
