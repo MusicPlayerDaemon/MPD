@@ -1,4 +1,4 @@
-ver 0.21.12 (not yet released)
+ver 0.21.12 (2019/08/03)
 * decoder
   - mad: update bit rate after seeking
   - mad: fix several bugs preventing the plugin from decoding the last frame
