@@ -609,7 +609,7 @@ JackOutput::WriteSamples(const float *src, size_t n_frames)
 	const unsigned n_channels = audio_format.channels;
 
 	float *dest[MAX_CHANNELS];
-	size_t space = -1;
+	size_t space = SIZE_MAX;
 	for (unsigned i = 0; i < n_channels; ++i) {
 		jack_ringbuffer_data_t d[2];
 		jack_ringbuffer_get_write_vector(ringbuffer[i], d);
