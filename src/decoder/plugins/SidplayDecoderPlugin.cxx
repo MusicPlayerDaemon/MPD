@@ -549,6 +549,10 @@ sidplay_container_scan(Path path_fs)
 		AddTagHandler h(tag_builder);
 		ScanSidTuneInfo(info, i, n_tracks, h);
 
+		const SignedSongTime duration = get_song_length(tune);
+		if (!duration.IsNegative())
+			h.OnDuration(SongTime(duration));
+
 		char track_name[32];
 		/* Construct container/tune path names, eg.
 		   Delta.sid/tune_001.sid */
