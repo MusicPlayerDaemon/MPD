@@ -20,6 +20,7 @@
 #include "config.h"
 #include "JackOutputPlugin.hxx"
 #include "../OutputAPI.hxx"
+#include "thread/Mutex.hxx"
 #include "util/ScopeExit.hxx"
 #include "util/ConstBuffer.hxx"
 #include "util/IterableSplitString.hxx"
@@ -80,6 +81,16 @@ struct JackOutput final : AudioOutput {
 	 */
 	std::atomic_bool pause;
 
+	/**
+	 * Protects #error.
+	 */
+	Mutex mutex;
+
+	/**
+	 * The error reported to the "on_info_shutdown" callback.
+	 */
+	std::exception_ptr error;
+
 	explicit JackOutput(const ConfigBlock &block);
 
 	/**
@@ -95,8 +106,10 @@ struct JackOutput final : AudioOutput {
 	 */
 	void Disconnect() noexcept;
 
-	void Shutdown() noexcept {
+	void Shutdown(std::exception_ptr e) noexcept {
+		const std::lock_guard<Mutex> lock(mutex);
 		shutdown = true;
+		error = std::move(e);
 	}
 
 	/**
@@ -344,11 +357,12 @@ mpd_jack_process(jack_nframes_t nframes, void *arg)
 }
 
 static void
-mpd_jack_shutdown(void *arg)
+mpd_jack_shutdown(jack_status_t, const char *reason, void *arg)
 {
 	JackOutput &jo = *(JackOutput *) arg;
 
-	jo.Shutdown();
+	jo.Shutdown(std::make_exception_ptr(FormatRuntimeError("JACK connection shutdown: %s",
+							       reason)));
 }
 
 static void
@@ -395,6 +409,7 @@ void
 JackOutput::Connect()
 {
 	shutdown = false;
+	error = {};
 
 	jack_status_t status;
 	client = jack_client_open(name, options, &status, server_name);
@@ -403,7 +418,7 @@ JackOutput::Connect()
 					 status);
 
 	jack_set_process_callback(client, mpd_jack_process, this);
-	jack_on_shutdown(client, mpd_jack_shutdown, this);
+	jack_on_info_shutdown(client, mpd_jack_shutdown, this);
 
 	for (unsigned i = 0; i < num_source_ports; ++i) {
 		ports[i] = jack_port_register(client,
@@ -654,9 +669,11 @@ JackOutput::Play(const void *chunk, size_t size)
 	size /= frame_size;
 
 	while (true) {
-		if (shutdown)
-			throw std::runtime_error("Refusing to play, because "
-						 "there is no client thread");
+		{
+			const std::lock_guard<Mutex> lock(mutex);
+			if (error)
+				std::rethrow_exception(error);
+		}
 
 		size_t frames_written =
 			WriteSamples((const float *)chunk, size);
@@ -672,8 +689,11 @@ JackOutput::Play(const void *chunk, size_t size)
 inline bool
 JackOutput::Pause()
 {
-	if (shutdown)
-		return false;
+	{
+		const std::lock_guard<Mutex> lock(mutex);
+		if (error)
+			std::rethrow_exception(error);
+	}
 
 	pause = true;
 
