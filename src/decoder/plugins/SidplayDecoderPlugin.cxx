@@ -486,17 +486,19 @@ ScanSidTuneInfo(const SidTuneInfo &info, unsigned track, unsigned n_tracks,
 		TagHandler &handler) noexcept
 {
 	try {
-		/* title */
-		AllocatedString<char> title = GetInfoString(info, 0);
+		/* album */
+		AllocatedString<char> album = GetInfoString(info, 0);
+
+		handler.OnTag(TAG_ALBUM, album.c_str());
 
 		if (n_tracks > 1) {
 			const auto tag_title =
 				StringFormat<1024>("%s (%u/%u)",
-						   title.c_str(),
+						   album.c_str(),
 						   track, n_tracks);
 			handler.OnTag(TAG_TITLE, tag_title.c_str());
 		} else
-			handler.OnTag(TAG_TITLE, title.c_str());
+			handler.OnTag(TAG_TITLE, album.c_str());
 	} catch (...) { }
 
 	try {
