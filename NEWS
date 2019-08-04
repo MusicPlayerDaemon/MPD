@@ -1,4 +1,6 @@
 ver 0.21.14 (not yet released)
+* decoder
+  - sidplay: show track durations in database
 
 ver 0.21.13 (2019/08/06)
 * input
