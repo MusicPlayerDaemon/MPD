@@ -28,6 +28,8 @@
 #include "util/Domain.hxx"
 #include "Log.hxx"
 
+#include <atomic>
+
 #include <assert.h>
 
 #include <jack/jack.h>
@@ -69,13 +71,13 @@ struct JackOutput final : AudioOutput {
 	jack_client_t *client;
 	jack_ringbuffer_t *ringbuffer[MAX_PORTS];
 
-	bool shutdown;
+	std::atomic_bool shutdown;
 
 	/**
 	 * While this flag is set, the "process" callback generates
 	 * silence.
 	 */
-	bool pause;
+	std::atomic_bool pause;
 
 	explicit JackOutput(const ConfigBlock &block);
 
