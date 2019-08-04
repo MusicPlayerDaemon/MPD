@@ -25,6 +25,7 @@
 #include "song/DetachedSong.hxx"
 #include "fs/Path.hxx"
 #include "fs/AllocatedPath.hxx"
+#include "lib/icu/Converter.hxx"
 #ifdef HAVE_SIDPLAYFP
 #include "fs/io/FileReader.hxx"
 #include "util/RuntimeError.hxx"
@@ -33,6 +34,8 @@
 #include "util/StringView.hxx"
 #include "util/Domain.hxx"
 #include "util/ByteOrder.hxx"
+#include "util/AllocatedString.hxx"
+#include "util/CharUtil.hxx"
 #include "Log.hxx"
 
 #ifdef HAVE_SIDPLAYFP
@@ -437,19 +440,46 @@ sidplay_file_decode(DecoderClient &client, Path path_fs)
 	} while (cmd != DecoderCommand::STOP);
 }
 
+static AllocatedString<char>
+Windows1252ToUTF8(const char *s)
+{
+#ifdef HAVE_ICU_CONVERTER
+	try {
+		std::unique_ptr<IcuConverter>
+			converter(IcuConverter::Create("windows-1252"));
+
+		return converter->ToUTF8(s);
+	} catch (...) { }
+#endif
+
+	/*
+	 * Fallback to not transcoding windows-1252 to utf-8, that may result
+	 * in invalid utf-8 unless nonprintable characters are replaced.
+	 */
+	auto t = AllocatedString<char>::Duplicate(s);
+
+	for (size_t i = 0; t[i] != AllocatedString<char>::SENTINEL; i++)
+		if (!IsPrintableASCII(t[i]))
+			t[i] = '?';
+
+	return t;
+}
+
 gcc_pure
-static const char *
-GetInfoString(const SidTuneInfo &info, unsigned i) noexcept
+static AllocatedString<char>
+GetInfoString(const SidTuneInfo &info, unsigned i)
 {
 #ifdef HAVE_SIDPLAYFP
-	return info.numberOfInfoStrings() > i
+	const char *s = info.numberOfInfoStrings() > i
 		? info.infoString(i)
-		: nullptr;
+		: "";
 #else
-	return info.numberOfInfoStrings > i
+	const char *s = info.numberOfInfoStrings > i
 		? info.infoString[i]
-		: nullptr;
+		: "";
 #endif
+
+	return Windows1252ToUTF8(s);
 }
 
 static void
@@ -457,31 +487,29 @@ ScanSidTuneInfo(const SidTuneInfo &info, unsigned track, unsigned n_tracks,
 		TagHandler &handler) noexcept
 {
 	/* title */
-	const char *title = GetInfoString(info, 0);
-	if (title == nullptr)
-		title = "";
+	AllocatedString<char> title = GetInfoString(info, 0);
 
 	if (n_tracks > 1) {
 		const auto tag_title =
 			StringFormat<1024>("%s (%u/%u)",
-					   title, track, n_tracks);
+					   title.c_str(), track, n_tracks);
 		handler.OnTag(TAG_TITLE, tag_title.c_str());
 	} else
-		handler.OnTag(TAG_TITLE, title);
+		handler.OnTag(TAG_TITLE, title.c_str());
 
 	/* artist */
-	const char *artist = GetInfoString(info, 1);
-	if (artist != nullptr)
-		handler.OnTag(TAG_ARTIST, artist);
+	AllocatedString<char> artist = GetInfoString(info, 1);
+	if (!artist.empty())
+		handler.OnTag(TAG_ARTIST, artist.c_str());
 
 	/* genre */
 	if (!default_genre.empty())
 		handler.OnTag(TAG_GENRE, default_genre.c_str());
 
 	/* date */
-	const char *date = GetInfoString(info, 2);
-	if (date != nullptr)
-		handler.OnTag(TAG_DATE, date);
+	AllocatedString<char> date = GetInfoString(info, 2);
+	if (!date.empty())
+		handler.OnTag(TAG_DATE, date.c_str());
 
 	/* track */
 	handler.OnTag(TAG_TRACK, StringFormat<16>("%u", track).c_str());
