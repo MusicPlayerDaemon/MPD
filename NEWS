@@ -3,6 +3,8 @@ ver 0.21.13 (not yet released)
   - cdio_paranoia: require libcdio-paranoia 10.2+0.93+1
 * decoder
   - mad: fix crackling sound (0.21.12 regression)
+* output
+  - jack: improved Windows compatibility
 
 ver 0.21.12 (2019/08/03)
 * decoder

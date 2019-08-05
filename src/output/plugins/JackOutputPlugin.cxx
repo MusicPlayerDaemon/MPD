@@ -531,7 +531,10 @@ JackOutput::Start()
 		jports = nullptr;
 	}
 
-	AtScopeExit(jports) { free(jports); };
+	AtScopeExit(jports) {
+		if (jports != nullptr)
+			jack_free(jports);
+	};
 
 	assert(num_dports > 0);
 
