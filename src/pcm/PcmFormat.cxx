@@ -23,6 +23,7 @@
 #include "FloatConvert.hxx"
 #include "ShiftConvert.hxx"
 #include "util/ConstBuffer.hxx"
+#include "util/TransformN.hxx"
 
 #include "Dither.cxx" // including the .cxx file to get inlined templates
 
@@ -38,8 +39,7 @@ struct PerSampleConvert : C {
 	void Convert(typename DstTraits::pointer_type gcc_restrict out,
 		     typename SrcTraits::const_pointer_type gcc_restrict in,
 		     size_t n) const {
-		for (size_t i = 0; i != n; ++i)
-			out[i] = C::Convert(in[i]);
+		transform_n(in, n, out, C::Convert);
 	}
 };
 
