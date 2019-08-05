@@ -369,22 +369,6 @@ mpd_jack_shutdown(jack_status_t, const char *reason, void *arg)
 }
 
 static void
-set_audioformat(JackOutput *jd, AudioFormat &audio_format)
-{
-	audio_format.sample_rate = jack_get_sample_rate(jd->client);
-
-	if (jd->num_source_ports == 1)
-		audio_format.channels = 1;
-	else if (audio_format.channels > jd->num_source_ports)
-		audio_format.channels = 2;
-
-	/* JACK uses 32 bit float in the range [-1 .. 1] - just like
-	   MPD's SampleFormat::FLOAT*/
-	static_assert(jack_sample_size == sizeof(float), "Expected float32");
-	audio_format.format = SampleFormat::FLOAT;
-}
-
-static void
 mpd_jack_error(const char *msg)
 {
 	LogError(jack_output_domain, msg);
@@ -614,7 +598,17 @@ JackOutput::Open(AudioFormat &new_audio_format)
 	if (client == nullptr)
 		Connect();
 
-	set_audioformat(this, new_audio_format);
+	new_audio_format.sample_rate = jack_get_sample_rate(client);
+
+	if (num_source_ports == 1)
+		new_audio_format.channels = 1;
+	else if (new_audio_format.channels > num_source_ports)
+		new_audio_format.channels = 2;
+
+	/* JACK uses 32 bit float in the range [-1 .. 1] - just like
+	   MPD's SampleFormat::FLOAT*/
+	static_assert(jack_sample_size == sizeof(float), "Expected float32");
+	new_audio_format.format = SampleFormat::FLOAT;
 	audio_format = new_audio_format;
 
 	Start();
