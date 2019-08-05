@@ -1,4 +1,6 @@
 ver 0.21.13 (not yet released)
+* decoder
+  - mad: fix crackling sound (0.21.12 regression)
 
 ver 0.21.12 (2019/08/03)
 * decoder
