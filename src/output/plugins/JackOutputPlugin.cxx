@@ -43,7 +43,7 @@ static constexpr unsigned MAX_PORTS = 16;
 
 static constexpr size_t jack_sample_size = sizeof(jack_default_audio_sample_t);
 
-struct JackOutput final : AudioOutput {
+class JackOutput final : public AudioOutput {
 	/**
 	 * libjack options passed to jack_client_open().
 	 */
@@ -89,8 +89,10 @@ struct JackOutput final : AudioOutput {
 	 */
 	std::exception_ptr error;
 
+public:
 	explicit JackOutput(const ConfigBlock &block);
 
+private:
 	/**
 	 * Connect the JACK client and performs some basic setup
 	 * (e.g. register callbacks).
@@ -142,6 +144,7 @@ struct JackOutput final : AudioOutput {
 	 */
 	size_t WriteSamples(const float *src, size_t n_frames);
 
+public:
 	/* virtual methods from class AudioOutput */
 
 	void Enable() override;
