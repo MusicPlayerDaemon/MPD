@@ -104,10 +104,18 @@ struct JackOutput final : AudioOutput {
 	 */
 	void Disconnect() noexcept;
 
-	void Shutdown(std::exception_ptr e) noexcept {
+	void Shutdown(const char *reason) noexcept {
 		const std::lock_guard<Mutex> lock(mutex);
-		error = std::move(e);
+		error = std::make_exception_ptr(FormatRuntimeError("JACK connection shutdown: %s",
+								   reason));
 	}
+
+	static void OnShutdown(jack_status_t, const char *reason,
+			       void *arg) noexcept {
+		auto &j = *(JackOutput *)arg;
+		j.Shutdown(reason);
+	}
+
 
 	/**
 	 * Throws on error.
@@ -123,6 +131,11 @@ struct JackOutput final : AudioOutput {
 	jack_nframes_t GetAvailable() const noexcept;
 
 	void Process(jack_nframes_t nframes);
+	static int Process(jack_nframes_t nframes, void *arg) noexcept {
+		auto &j = *(JackOutput *)arg;
+		j.Process(nframes);
+		return 0;
+	}
 
 	/**
 	 * @return the number of frames that were written
@@ -350,24 +363,6 @@ JackOutput::Process(jack_nframes_t nframes)
 			  nframes);
 }
 
-static int
-mpd_jack_process(jack_nframes_t nframes, void *arg)
-{
-	JackOutput &jo = *(JackOutput *) arg;
-
-	jo.Process(nframes);
-	return 0;
-}
-
-static void
-mpd_jack_shutdown(jack_status_t, const char *reason, void *arg)
-{
-	JackOutput &jo = *(JackOutput *) arg;
-
-	jo.Shutdown(std::make_exception_ptr(FormatRuntimeError("JACK connection shutdown: %s",
-							       reason)));
-}
-
 static void
 mpd_jack_error(const char *msg)
 {
@@ -403,8 +398,8 @@ JackOutput::Connect()
 		throw FormatRuntimeError("Failed to connect to JACK server, status=%d",
 					 status);
 
-	jack_set_process_callback(client, mpd_jack_process, this);
-	jack_on_info_shutdown(client, mpd_jack_shutdown, this);
+	jack_set_process_callback(client, Process, this);
+	jack_on_info_shutdown(client, OnShutdown, this);
 
 	for (unsigned i = 0; i < num_source_ports; ++i) {
 		ports[i] = jack_port_register(client,
