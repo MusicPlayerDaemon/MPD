@@ -73,8 +73,6 @@ struct JackOutput final : AudioOutput {
 	jack_client_t *client;
 	jack_ringbuffer_t *ringbuffer[MAX_PORTS];
 
-	std::atomic_bool shutdown;
-
 	/**
 	 * While this flag is set, the "process" callback generates
 	 * silence.
@@ -84,7 +82,7 @@ struct JackOutput final : AudioOutput {
 	/**
 	 * Protects #error.
 	 */
-	Mutex mutex;
+	mutable Mutex mutex;
 
 	/**
 	 * The error reported to the "on_info_shutdown" callback.
@@ -108,7 +106,6 @@ struct JackOutput final : AudioOutput {
 
 	void Shutdown(std::exception_ptr e) noexcept {
 		const std::lock_guard<Mutex> lock(mutex);
-		shutdown = true;
 		error = std::move(e);
 	}
 
@@ -144,7 +141,7 @@ struct JackOutput final : AudioOutput {
 	}
 
 	std::chrono::steady_clock::duration Delay() const noexcept override {
-		return pause && !shutdown
+		return pause && !LockWasShutdown()
 			? std::chrono::seconds(1)
 			: std::chrono::steady_clock::duration::zero();
 	}
@@ -152,6 +149,12 @@ struct JackOutput final : AudioOutput {
 	size_t Play(const void *chunk, size_t size) override;
 
 	bool Pause() override;
+
+private:
+	bool LockWasShutdown() const noexcept {
+		const std::lock_guard<Mutex> lock(mutex);
+		return !!error;
+	}
 };
 
 static constexpr Domain jack_output_domain("jack_output");
@@ -408,7 +411,6 @@ JackOutput::Disconnect() noexcept
 void
 JackOutput::Connect()
 {
-	shutdown = false;
 	error = {};
 
 	jack_status_t status;
@@ -483,7 +485,7 @@ JackOutput::Stop() noexcept
 	if (client == nullptr)
 		return;
 
-	if (shutdown)
+	if (LockWasShutdown())
 		/* the connection has failed; close it */
 		Disconnect();
 	else
@@ -606,7 +608,7 @@ JackOutput::Open(AudioFormat &new_audio_format)
 {
 	pause = false;
 
-	if (client != nullptr && shutdown)
+	if (client != nullptr && LockWasShutdown())
 		Disconnect();
 
 	if (client == nullptr)
