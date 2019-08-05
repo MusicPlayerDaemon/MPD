@@ -477,6 +477,30 @@ GetInfoString(const SidTuneInfo &info, unsigned i) noexcept
 	return Windows1252ToUTF8(s);
 }
 
+gcc_pure
+static AllocatedString<char>
+GetDateString(const SidTuneInfo &info) noexcept
+{
+	/*
+	 * Field 2 is called <released>, previously used as <copyright>.
+	 * It is formatted <year><space><company or author or group>,
+	 * where <year> may be <YYYY>, <YYY?>, <YY??> or <YYYY-YY>, for
+	 * example "1987", "199?", "19??" or "1985-87". The <company or
+	 * author or group> may be for example Rob Hubbard. A full field
+	 * may be for example "1987 Rob Hubbard".
+	 */
+	AllocatedString<char> release = GetInfoString(info, 2);
+
+	/* Keep the <year> part only for the date. */
+	for (size_t i = 0; release[i] != AllocatedString<char>::SENTINEL; i++)
+		if (std::isspace(release[i])) {
+			release[i] = AllocatedString<char>::SENTINEL;
+			break;
+		}
+
+	return release;
+}
+
 static void
 ScanSidTuneInfo(const SidTuneInfo &info, unsigned track, unsigned n_tracks,
 		TagHandler &handler) noexcept
@@ -498,7 +522,7 @@ ScanSidTuneInfo(const SidTuneInfo &info, unsigned track, unsigned n_tracks,
 		handler.OnTag(TAG_ARTIST, artist.c_str());
 
 	/* date */
-	const auto date = GetInfoString(info, 2);
+	const auto date = GetDateString(info);
 	if (!date.empty())
 		handler.OnTag(TAG_DATE, date.c_str());
 
