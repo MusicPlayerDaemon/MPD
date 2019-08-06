@@ -79,12 +79,14 @@ static inline int32_t
 mad_fixed_to_24_sample(mad_fixed_t sample) noexcept
 {
 	static constexpr unsigned bits = 24;
+	static constexpr mad_fixed_t MIN = -MAD_F_ONE;
+	static constexpr mad_fixed_t MAX = MAD_F_ONE - 1;
 
 	/* round */
 	sample = sample + (1L << (MAD_F_FRACBITS - bits));
 
 	/* quantize */
-	return Clamp(sample, MAD_F_MIN, MAD_F_MAX)
+	return Clamp(sample, MIN, MAX)
 		>> (MAD_F_FRACBITS + 1 - bits);
 }
 

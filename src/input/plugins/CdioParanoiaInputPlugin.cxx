@@ -299,11 +299,7 @@ CdioParanoiaInputStream::Read(std::unique_lock<Mutex> &,
 				if (s_err) {
 					FormatError(cdio_domain,
 						    "paranoia_read: %s", s_err);
-#if LIBCDIO_VERSION_NUM >= 90
 					cdio_cddap_free_messages(s_err);
-#else
-					free(s_err);
-#endif
 				}
 
 				throw;

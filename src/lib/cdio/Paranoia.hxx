@@ -34,11 +34,7 @@
 #include "util/Compiler.h"
 
 #include <cdio/version.h>
-#if LIBCDIO_VERSION_NUM >= 90
 #include <cdio/paranoia/paranoia.h>
-#else
-#include <cdio/paranoia.h>
-#endif
 
 #include <stdexcept>
 #include <utility>
