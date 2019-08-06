@@ -1,4 +1,6 @@
 ver 0.21.13 (not yet released)
+* input
+  - cdio_paranoia: require libcdio-paranoia 10.2+0.93+1
 * decoder
   - mad: fix crackling sound (0.21.12 regression)
 
