@@ -30,7 +30,7 @@
 #include "util/ScopeExit.hxx"
 #include "util/StringFormat.hxx"
 #include "util/StringView.hxx"
-#include "util/UriUtil.hxx"
+#include "util/UriExtract.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
 

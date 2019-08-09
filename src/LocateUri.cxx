@@ -22,8 +22,8 @@
 #include "client/Client.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "ls.hxx"
-#include "util/UriUtil.hxx"
 #include "util/ASCII.hxx"
+#include "util/UriExtract.hxx"
 
 #ifdef ENABLE_DATABASE
 #include "storage/StorageInterface.hxx"

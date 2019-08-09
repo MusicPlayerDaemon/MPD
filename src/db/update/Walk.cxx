@@ -37,7 +37,7 @@
 #include "input/Error.hxx"
 #include "util/Alloc.hxx"
 #include "util/StringCompare.hxx"
-#include "util/UriUtil.hxx"
+#include "util/UriExtract.hxx"
 #include "Log.hxx"
 
 #include <exception>

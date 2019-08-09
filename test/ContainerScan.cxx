@@ -25,8 +25,8 @@
 #include "fs/Path.hxx"
 #include "fs/io/StdioOutputStream.hxx"
 #include "fs/io/BufferedOutputStream.hxx"
-#include "util/UriUtil.hxx"
 #include "util/PrintException.hxx"
+#include "util/UriExtract.hxx"
 
 #include <stdexcept>
 

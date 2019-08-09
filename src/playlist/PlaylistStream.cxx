@@ -20,10 +20,10 @@
 #include "PlaylistStream.hxx"
 #include "PlaylistRegistry.hxx"
 #include "SongEnumerator.hxx"
-#include "util/UriUtil.hxx"
 #include "input/InputStream.hxx"
 #include "input/LocalOpen.hxx"
 #include "fs/Path.hxx"
+#include "util/UriExtract.hxx"
 #include "Log.hxx"
 
 #include <exception>

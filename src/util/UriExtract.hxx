@@ -27,33 +27,49 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef URI_UTIL_HXX
-#define URI_UTIL_HXX
+#ifndef URI_EXTRACT_HXX
+#define URI_EXTRACT_HXX
 
 #include "Compiler.h"
 
 #include <string>
 
 /**
- * Returns true if this is a safe "local" URI:
- *
- * - non-empty
- * - does not begin or end with a slash
- * - no double slashes
- * - no path component begins with a dot
+ * Checks whether the specified URI has a scheme in the form
+ * "scheme://".
  */
 gcc_pure
 bool
-uri_safe_local(const char *uri) noexcept;
+uri_has_scheme(const char *uri) noexcept;
 
 /**
- * Removes HTTP username and password from the URI.  This may be
- * useful for displaying an URI without disclosing secrets.  Returns
- * an empty string if nothing needs to be removed, or if the URI is
- * not recognized.
+ * Returns the scheme name of the specified URI, or an empty string.
  */
 gcc_pure
 std::string
-uri_remove_auth(const char *uri) noexcept;
+uri_get_scheme(const char *uri) noexcept;
+
+/**
+ * Returns the URI path (including the query string) or nullptr if the
+ * given URI has no path.
+ */
+gcc_pure gcc_nonnull_all
+const char *
+uri_get_path(const char *uri) noexcept;
+
+gcc_pure
+const char *
+uri_get_suffix(const char *uri) noexcept;
+
+struct UriSuffixBuffer {
+	char data[8];
+};
+
+/**
+ * Returns the file name suffix, ignoring the query string.
+ */
+gcc_pure
+const char *
+uri_get_suffix(const char *uri, UriSuffixBuffer &buffer) noexcept;
 
 #endif

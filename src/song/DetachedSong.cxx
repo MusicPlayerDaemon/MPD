@@ -19,7 +19,7 @@
 
 #include "song/DetachedSong.hxx"
 #include "song/LightSong.hxx"
-#include "util/UriUtil.hxx"
+#include "util/UriExtract.hxx"
 #include "fs/Traits.hxx"
 
 DetachedSong::DetachedSong(const LightSong &other)

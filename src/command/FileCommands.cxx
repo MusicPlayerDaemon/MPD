@@ -27,7 +27,7 @@
 #include "client/Response.hxx"
 #include "util/CharUtil.hxx"
 #include "util/StringView.hxx"
-#include "util/UriUtil.hxx"
+#include "util/UriExtract.hxx"
 #include "tag/Handler.hxx"
 #include "tag/Generic.hxx"
 #include "TagStream.hxx"

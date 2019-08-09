@@ -22,7 +22,7 @@
 #include "input/Registry.hxx"
 #include "input/InputPlugin.hxx"
 #include "client/Response.hxx"
-#include "util/UriUtil.hxx"
+#include "util/UriExtract.hxx"
 
 #include <assert.h>
 
@@ -38,7 +38,7 @@ void print_supported_uri_schemes_to_fp(FILE *fp)
 		plugin->ForeachSupportedUri([&](const char* uri) {
 			protocols.emplace(uri);
 		});
-	
+
 	for (auto protocol : protocols) {
 		fprintf(fp, " %s", protocol.c_str());
 	}

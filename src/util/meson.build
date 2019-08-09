@@ -17,6 +17,8 @@ util = static_library(
   'SplitString.cxx',
   'FormatString.cxx',
   'Tokenizer.cxx',
+  'UriExtract.cxx',
+  'UriRelative.cxx',
   'UriUtil.cxx',
   'LazyRandomEngine.cxx',
   'HugeAllocator.cxx',

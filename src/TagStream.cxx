@@ -22,11 +22,11 @@
 #include "tag/Handler.hxx"
 #include "tag/Builder.hxx"
 #include "util/MimeType.hxx"
-#include "util/UriUtil.hxx"
 #include "decoder/DecoderList.hxx"
 #include "decoder/DecoderPlugin.hxx"
 #include "input/InputStream.hxx"
 #include "thread/Mutex.hxx"
+#include "util/UriExtract.hxx"
 
 #include <assert.h>
 

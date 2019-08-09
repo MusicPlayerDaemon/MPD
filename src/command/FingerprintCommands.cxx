@@ -35,7 +35,7 @@
 #include "thread/Cond.hxx"
 #include "system/Error.hxx"
 #include "util/MimeType.hxx"
-#include "util/UriUtil.hxx"
+#include "util/UriExtract.hxx"
 
 class GetChromaprintCommand final
 	: public ThreadBackgroundCommand, ChromaprintDecoderClient, InputStreamHandler

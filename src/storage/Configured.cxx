@@ -24,8 +24,8 @@
 #include "config/Data.hxx"
 #include "fs/StandardDirectory.hxx"
 #include "fs/CheckFile.hxx"
-#include "util/UriUtil.hxx"
 #include "util/RuntimeError.hxx"
+#include "util/UriExtract.hxx"
 
 static std::unique_ptr<Storage>
 CreateConfiguredStorageUri(EventLoop &event_loop, const char *uri)

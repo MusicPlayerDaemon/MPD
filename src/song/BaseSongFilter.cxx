@@ -20,7 +20,7 @@
 #include "BaseSongFilter.hxx"
 #include "Escape.hxx"
 #include "LightSong.hxx"
-#include "util/UriUtil.hxx"
+#include "util/UriRelative.hxx"
 
 std::string
 BaseSongFilter::ToExpression() const noexcept

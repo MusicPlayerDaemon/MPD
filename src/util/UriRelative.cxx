@@ -27,79 +27,56 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "UriUtil.hxx"
-#include "ASCII.hxx"
+#include "UriRelative.hxx"
 
 #include <assert.h>
 #include <string.h>
 
-static const char *
-verify_uri_segment(const char *p) noexcept
+bool
+uri_is_child(const char *parent, const char *child) noexcept
 {
-	unsigned dots = 0;
-	while (*p == '.') {
-		++p;
-		++dots;
-	}
+#if !CLANG_CHECK_VERSION(3,6)
+	/* disabled on clang due to -Wtautological-pointer-compare */
+	assert(parent != nullptr);
+	assert(child != nullptr);
+#endif
 
-	if (dots <= 2 && (*p == 0 || *p == '/'))
-		return nullptr;
-
-	const char *q = strchr(p + 1, '/');
-	return q != nullptr ? q : "";
+	const size_t parent_length = strlen(parent);
+	return memcmp(parent, child, parent_length) == 0 &&
+		child[parent_length] == '/';
 }
+
 
 bool
-uri_safe_local(const char *uri) noexcept
+uri_is_child_or_same(const char *parent, const char *child) noexcept
 {
-	while (true) {
-		uri = verify_uri_segment(uri);
-		if (uri == nullptr)
-			return false;
-
-		if (*uri == 0)
-			return true;
-
-		assert(*uri == '/');
-
-		++uri;
-	}
-}
-
-gcc_pure
-static const char *
-SkipUriScheme(const char *uri) noexcept
-{
-	const char *const schemes[] = { "http://", "https://", "ftp://" };
-	for (auto scheme : schemes) {
-		auto result = StringAfterPrefixCaseASCII(uri, scheme);
-		if (result != nullptr)
-			return result;
-	}
-
-	return nullptr;
+	return strcmp(parent, child) == 0 || uri_is_child(parent, child);
 }
 
 std::string
-uri_remove_auth(const char *uri) noexcept
+uri_apply_base(const std::string &uri, const std::string &base) noexcept
 {
-	const char *auth = SkipUriScheme(uri);
-	if (auth == nullptr)
-		/* unrecognized URI */
-		return std::string();
+	if (uri.front() == '/') {
+		/* absolute path: replace the whole URI path in base */
 
-	const char *slash = strchr(auth, '/');
-	if (slash == nullptr)
-		slash = auth + strlen(auth);
+		auto i = base.find("://");
+		if (i == base.npos)
+			/* no scheme: override base completely */
+			return uri;
 
-	const char *at = (const char *)memchr(auth, '@', slash - auth);
-	if (at == nullptr)
-		/* no auth info present, do nothing */
-		return std::string();
+		/* find the first slash after the host part */
+		i = base.find('/', i + 3);
+		if (i == base.npos)
+			/* there's no URI path - simply append uri */
+			i = base.length();
 
-	/* duplicate the full URI and then delete the auth
-	   information */
-	std::string result(uri);
-	result.erase(auth - uri, at + 1 - auth);
-	return result;
+		return base.substr(0, i) + uri;
+	}
+
+	std::string out(base);
+	if (out.back() != '/')
+		out.push_back('/');
+
+	out += uri;
+	return out;
 }

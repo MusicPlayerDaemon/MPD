@@ -31,6 +31,7 @@
 #include "DecoderList.hxx"
 #include "system/Error.hxx"
 #include "util/MimeType.hxx"
+#include "util/UriExtract.hxx"
 #include "util/UriUtil.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/Domain.hxx"

@@ -22,8 +22,8 @@
 #include "tag/Tag.hxx"
 #include "tag/Builder.hxx"
 #include "fs/Traits.hxx"
-#include "util/UriUtil.hxx"
 #include "song/DetachedSong.hxx"
+#include "util/UriExtract.hxx"
 
 #include <algorithm>
 #include <string>

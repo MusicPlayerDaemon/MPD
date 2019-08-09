@@ -33,9 +33,9 @@
 #include "plugins/EmbeddedCuePlaylistPlugin.hxx"
 #include "input/InputStream.hxx"
 #include "util/MimeType.hxx"
-#include "util/UriUtil.hxx"
 #include "util/StringUtil.hxx"
 #include "util/StringView.hxx"
+#include "util/UriExtract.hxx"
 #include "config/Data.hxx"
 #include "config/Block.hxx"
 

@@ -27,79 +27,32 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "UriUtil.hxx"
-#include "ASCII.hxx"
+#ifndef URI_RELATIVE_HXX
+#define URI_RELATIVE_HXX
 
-#include <assert.h>
-#include <string.h>
+#include "Compiler.h"
 
-static const char *
-verify_uri_segment(const char *p) noexcept
-{
-	unsigned dots = 0;
-	while (*p == '.') {
-		++p;
-		++dots;
-	}
+#include <string>
 
-	if (dots <= 2 && (*p == 0 || *p == '/'))
-		return nullptr;
-
-	const char *q = strchr(p + 1, '/');
-	return q != nullptr ? q : "";
-}
-
+/**
+ * Check whether #child specifies a resource "inside" the directory
+ * specified by #parent.  If the strings are equal, the function
+ * returns false.
+ */
+gcc_pure gcc_nonnull_all
 bool
-uri_safe_local(const char *uri) noexcept
-{
-	while (true) {
-		uri = verify_uri_segment(uri);
-		if (uri == nullptr)
-			return false;
+uri_is_child(const char *parent, const char *child) noexcept;
 
-		if (*uri == 0)
-			return true;
+gcc_pure gcc_nonnull_all
+bool
+uri_is_child_or_same(const char *parent, const char *child) noexcept;
 
-		assert(*uri == '/');
-
-		++uri;
-	}
-}
-
+/**
+ * Translate the given URI in the context of #base.  For example,
+ * uri_apply_base("foo", "http://bar/a/")=="http://bar/a/foo".
+ */
 gcc_pure
-static const char *
-SkipUriScheme(const char *uri) noexcept
-{
-	const char *const schemes[] = { "http://", "https://", "ftp://" };
-	for (auto scheme : schemes) {
-		auto result = StringAfterPrefixCaseASCII(uri, scheme);
-		if (result != nullptr)
-			return result;
-	}
-
-	return nullptr;
-}
-
 std::string
-uri_remove_auth(const char *uri) noexcept
-{
-	const char *auth = SkipUriScheme(uri);
-	if (auth == nullptr)
-		/* unrecognized URI */
-		return std::string();
+uri_apply_base(const std::string &uri, const std::string &base) noexcept;
 
-	const char *slash = strchr(auth, '/');
-	if (slash == nullptr)
-		slash = auth + strlen(auth);
-
-	const char *at = (const char *)memchr(auth, '@', slash - auth);
-	if (at == nullptr)
-		/* no auth info present, do nothing */
-		return std::string();
-
-	/* duplicate the full URI and then delete the auth
-	   information */
-	std::string result(uri);
-	result.erase(auth - uri, at + 1 - auth);
-	return result;
-}
+#endif

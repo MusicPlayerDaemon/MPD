@@ -21,7 +21,7 @@
 #include "UniqueIxml.hxx"
 #include "Device.hxx"
 #include "ixmlwrap.hxx"
-#include "util/UriUtil.hxx"
+#include "util/UriRelative.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/SplitString.hxx"
 

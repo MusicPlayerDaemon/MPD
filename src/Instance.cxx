@@ -27,7 +27,7 @@
 
 #ifdef ENABLE_CURL
 #include "RemoteTagCache.hxx"
-#include "util/UriUtil.hxx"
+#include "util/UriExtract.hxx"
 #endif
 
 #ifdef ENABLE_DATABASE

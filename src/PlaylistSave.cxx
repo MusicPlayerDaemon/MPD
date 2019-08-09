@@ -30,7 +30,7 @@
 #include "fs/FileSystem.hxx"
 #include "fs/io/FileOutputStream.hxx"
 #include "fs/io/BufferedOutputStream.hxx"
-#include "util/UriUtil.hxx"
+#include "util/UriExtract.hxx"
 
 static void
 playlist_print_path(BufferedOutputStream &os, const Path path)
