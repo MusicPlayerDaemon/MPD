@@ -32,7 +32,7 @@
 
 #include "Compiler.h"
 
-#include <string>
+struct StringView;
 
 /**
  * Checks whether the specified URI has a scheme in the form
@@ -46,7 +46,7 @@ uri_has_scheme(const char *uri) noexcept;
  * Returns the scheme name of the specified URI, or an empty string.
  */
 gcc_pure
-std::string
+StringView
 uri_get_scheme(const char *uri) noexcept;
 
 /**

@@ -85,14 +85,14 @@ uri_has_scheme(const char *uri) noexcept
 	return strstr(uri, "://") != nullptr;
 }
 
-std::string
+StringView
 uri_get_scheme(const char *uri) noexcept
 {
 	const char *end = strstr(uri, "://");
 	if (end == nullptr)
-		end = uri;
+		return nullptr;
 
-	return std::string(uri, end);
+	return {uri, end};
 }
 
 const char *

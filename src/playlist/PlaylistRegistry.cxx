@@ -123,7 +123,7 @@ playlist_list_open_uri_scheme(const char *uri, Mutex &mutex,
 
 		if (playlist_plugins_enabled[i] && plugin->open_uri != nullptr &&
 		    plugin->schemes != nullptr &&
-		    StringArrayContainsCase(plugin->schemes, scheme.c_str())) {
+		    StringArrayContainsCase(plugin->schemes, scheme)) {
 			auto playlist = plugin->open_uri(uri, mutex);
 			if (playlist)
 				return playlist;
