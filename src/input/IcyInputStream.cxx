@@ -20,11 +20,27 @@
 #include "IcyInputStream.hxx"
 #include "IcyMetaDataParser.hxx"
 #include "tag/Tag.hxx"
+#include "util/UriExtract.hxx"
+#include "util/UriQueryParser.hxx"
+#include "util/StringView.hxx"
+
+#include <string>
 
 IcyInputStream::IcyInputStream(InputStreamPtr _input,
-			       std::shared_ptr<IcyMetaDataParser> _parser) noexcept
+			       std::shared_ptr<IcyMetaDataParser> _parser)
 	:ProxyInputStream(std::move(_input)), parser(std::move(_parser))
 {
+#ifdef HAVE_ICU_CONVERTER
+	const char *fragment = uri_get_fragment(GetURI());
+	if (fragment != nullptr) {
+		const auto charset = UriFindRawQueryParameter(fragment,
+							      "charset");
+		if (charset != nullptr) {
+			const std::string copy(charset.data, charset.size);
+			parser->SetCharset(copy.c_str());
+		}
+	}
+#endif
 }
 
 IcyInputStream::~IcyInputStream() noexcept = default;

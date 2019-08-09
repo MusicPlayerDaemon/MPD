@@ -5,6 +5,7 @@ ver 0.22 (not yet released)
 * tags
   - new tags "Grouping" (for ID3 "TIT1") and "Work"
 * input
+  - curl: support "charset" parameter in URI fragment
   - ffmpeg: allow partial reads
 * archive
   - iso9660: support seeking

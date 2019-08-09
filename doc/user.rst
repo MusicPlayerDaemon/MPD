@@ -985,6 +985,22 @@ is no way for :program:`MPD` to find out whether the DAC supports
 it. DSD to PCM conversion is the fallback if DSD cannot be used
 directly.
 
+ICY-MetaData
+------------
+
+Some MP3 streams send information about the current song with a
+protocol named `"ICY-MetaData"
+<http://www.smackfu.com/stuff/programming/shoutcast.html>`_.
+:program:`MPD` makes its ``StreamTitle`` value available as ``Title``
+tag.
+
+By default, :program:`MPD` assumes this tag is UTF-8-encoded.  To tell
+:program:`MPD` to assume a different character set, specify it in the
+``charset`` URL fragment parameter, e.g.::
+
+ mpc add 'http://radio.example.com/stream#charset=cp1251'
+
+
 Client Hacks
 ************
 
