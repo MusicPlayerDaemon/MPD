@@ -13,7 +13,6 @@ Code Style
 * don't write CPP when you can write C++: use inline functions and constexpr instead of macros
 * comment your code, document your APIs
 * the code should be C++17 compliant, and must compile with :program:`GCC` 7 and :program:`clang` 4
-* report error conditions with C++ exceptions, preferable derived from :envvar:`std::runtime_error`
 * all code must be exception-safe
 * classes and functions names use CamelCase; variables are lower-case with words separated by underscore
 
@@ -30,6 +29,37 @@ Some example code:
 
         return xyz;
     }
+
+
+Error handling
+==============
+
+If an error occurs, throw a C++ exception, preferably derived from
+:code:`std::runtime_error`.  The function's API documentation should
+mention that.  If a function cannot throw exceptions, add
+:code:`noexcept` to its prototype.
+
+Some parts of MPD use callbacks to report completion; the handler
+classes usually have an "error" callback which receives a
+:code:`std::exception_ptr`
+(e.g. :code:`BufferedSocket::OnSocketError()`).  Wrapping errors in
+:code:`std::exception_ptr` allows propagating details about the error
+across thread boundaries to the entity which is interested in handling
+it (e.g. giving the MPD client details about an I/O error caught by
+the decoder thread).
+
+Out-of-memory errors (i.e. :code:`std::bad_alloc`) do not need to be
+handled.  Some operating systems such as Linux do not report
+out-of-memory to userspace, and instead kill a process to recover.
+Even if we know we are out of memory, there is little we can do except
+for aborting the process quickly.  Any other attempts to give back
+memory may cause page faults on the way which make the situation
+worse.
+
+Error conditions which are caused by a bug do not need to be handled
+at runtime; instead, use :code:`assert()` to detect them in debug
+builds.
+
 
 Hacking The Source
 ******************
