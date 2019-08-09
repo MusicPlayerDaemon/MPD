@@ -38,6 +38,7 @@ test('TestUtil', executable(
   'TestMimeType.cxx',
   'TestSplitString.cxx',
   'TestUriExtract.cxx',
+  'TestUriQueryParser.cxx',
   'TestUriUtil.cxx',
   'test_byte_reverse.cxx',
   include_directories: inc,

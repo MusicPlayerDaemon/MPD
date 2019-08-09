@@ -18,6 +18,7 @@ util = static_library(
   'FormatString.cxx',
   'Tokenizer.cxx',
   'UriExtract.cxx',
+  'UriQueryParser.cxx',
   'UriRelative.cxx',
   'UriUtil.cxx',
   'LazyRandomEngine.cxx',
