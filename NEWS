@@ -8,6 +8,8 @@ ver 0.22 (not yet released)
   - ffmpeg: allow partial reads
 * archive
   - iso9660: support seeking
+* decoder
+  - sidplay: add option "default_genre"
 * filter
   - ffmpeg: new plugin based on FFmpeg's libavfilter library
   - hdcd: new plugin based on FFmpeg's "af_hdcd" for HDCD playback

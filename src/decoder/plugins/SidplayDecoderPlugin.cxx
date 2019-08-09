@@ -68,6 +68,7 @@ static SidDatabase *songlength_database;
 
 static bool all_files_are_containers;
 static unsigned default_songlength;
+static std::string default_genre;
 
 static bool filter_setting;
 
@@ -115,6 +116,8 @@ sidplay_init(const ConfigBlock &block)
 		songlength_database = sidplay_load_songlength_db(database_path);
 
 	default_songlength = block.GetPositiveValue("default_songlength", 0u);
+
+	default_genre = block.GetBlockValue("default_genre", "");
 
 	all_files_are_containers =
 		block.GetBlockValue("all_files_are_containers", true);
@@ -470,6 +473,10 @@ ScanSidTuneInfo(const SidTuneInfo &info, unsigned track, unsigned n_tracks,
 	const char *artist = GetInfoString(info, 1);
 	if (artist != nullptr)
 		handler.OnTag(TAG_ARTIST, artist);
+
+	/* genre */
+	if (!default_genre.empty())
+		handler.OnTag(TAG_GENRE, default_genre.c_str());
 
 	/* date */
 	const char *date = GetInfoString(info, 2);
