@@ -335,6 +335,7 @@ if curl_dep.found()
     '../src/LogBackend.cxx',
     include_directories: inc,
     dependencies: [
+      icu_dep,
       tag_dep,
       gtest_dep,
     ],

@@ -19,12 +19,23 @@
 
 #include "IcyMetaDataParser.hxx"
 #include "tag/Builder.hxx"
+#include "util/AllocatedString.hxx"
 #include "util/StringView.hxx"
 
 #include <algorithm>
 
 #include <assert.h>
 #include <string.h>
+
+#ifdef HAVE_ICU_CONVERTER
+
+void
+IcyMetaDataParser::SetCharset(const char *charset)
+{
+	icu_converter.reset(IcuConverter::Create(charset));
+}
+
+#endif
 
 void
 IcyMetaDataParser::Reset() noexcept
@@ -76,10 +87,26 @@ icy_add_item(TagBuilder &tag, TagType type, StringView value) noexcept
 
 static void
 icy_parse_tag_item(TagBuilder &tag,
+#ifdef HAVE_ICU_CONVERTER
+		   const IcuConverter *icu_converter,
+#endif
 		   const char *name, const char *value) noexcept
 {
-	if (strcmp(name, "StreamTitle") == 0)
+	if (strcmp(name, "StreamTitle") == 0) {
+#ifdef HAVE_ICU_CONVERTER
+		if (icu_converter != nullptr) {
+			try {
+				icy_add_item(tag, TAG_TITLE,
+					     icu_converter->ToUTF8(value).c_str());
+			} catch (...) {
+			}
+
+			return;
+		}
+#endif
+
 		icy_add_item(tag, TAG_TITLE, value);
+	}
 }
 
 /**
@@ -108,7 +135,11 @@ find_end_quote(char *p, char *const end) noexcept
 }
 
 static std::unique_ptr<Tag>
-icy_parse_tag(char *p, char *const end) noexcept
+icy_parse_tag(
+#ifdef HAVE_ICU_CONVERTER
+	      const IcuConverter *icu_converter,
+#endif
+	      char *p, char *const end) noexcept
 {
 	assert(p != nullptr);
 	assert(end != nullptr);
@@ -145,7 +176,11 @@ icy_parse_tag(char *p, char *const end) noexcept
 		*quote = 0;
 		p = quote + 1;
 
-		icy_parse_tag_item(tag, name, value);
+		icy_parse_tag_item(tag,
+#ifdef HAVE_ICU_CONVERTER
+				   icu_converter,
+#endif
+				   name, value);
 
 		char *semicolon = std::find(p, end, ';');
 		if (semicolon == end)
@@ -200,7 +235,11 @@ IcyMetaDataParser::Meta(const void *data, size_t length) noexcept
 	if (meta_position == meta_size) {
 		/* parse */
 
-		tag = icy_parse_tag(meta_data, meta_data + meta_size);
+		tag = icy_parse_tag(
+#ifdef HAVE_ICU_CONVERTER
+				    icu_converter.get(),
+#endif
+				    meta_data, meta_data + meta_size);
 		delete[] meta_data;
 
 		/* change back to normal data mode */

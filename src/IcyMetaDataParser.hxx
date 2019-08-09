@@ -20,7 +20,9 @@
 #ifndef MPD_ICY_META_DATA_PARSER_HXX
 #define MPD_ICY_META_DATA_PARSER_HXX
 
+#include "lib/icu/Converter.hxx"
 #include "tag/Tag.hxx"
+#include "config.h"
 
 #include <memory>
 
@@ -32,12 +34,23 @@ class IcyMetaDataParser {
 	size_t meta_size, meta_position;
 	char *meta_data;
 
+#ifdef HAVE_ICU_CONVERTER
+	std::unique_ptr<IcuConverter> icu_converter;
+#endif
+
 	std::unique_ptr<Tag> tag;
 
 public:
 	~IcyMetaDataParser() noexcept {
 		Reset();
 	}
+
+#ifdef HAVE_ICU_CONVERTER
+	/**
+	 * Throws on error.
+	 */
+	void SetCharset(const char *charset);
+#endif
 
 	/**
 	 * Initialize an enabled icy_metadata object with the specified

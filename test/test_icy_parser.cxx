@@ -18,7 +18,11 @@ icy_parse_tag(const char *p)
 {
 	char *q = strdup(p);
 	AtScopeExit(q) { free(q); };
-	return icy_parse_tag(q, q + strlen(q));
+	return icy_parse_tag(
+#ifdef HAVE_ICU_CONVERTER
+			     nullptr,
+#endif
+			     q, q + strlen(q));
 }
 
 static void
