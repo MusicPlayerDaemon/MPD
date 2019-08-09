@@ -138,3 +138,13 @@ uri_get_suffix(const char *uri, UriSuffixBuffer &buffer) noexcept
 
 	return suffix;
 }
+
+const char *
+uri_get_fragment(const char *uri) noexcept
+{
+	const char *fragment = strchr(uri, '#');
+	if (fragment == nullptr)
+		return nullptr;
+
+	return fragment + 1;
+}
