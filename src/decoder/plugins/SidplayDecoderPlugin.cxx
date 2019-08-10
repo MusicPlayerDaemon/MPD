@@ -91,7 +91,7 @@ static void loadRom(const Path rom_path, uint8_t *dump)
 #endif
 
 static SidDatabase *
-sidplay_load_songlength_db(const Path path)
+sidplay_load_songlength_db(const Path path) noexcept
 {
 	SidDatabase *db = new SidDatabase();
 #ifdef HAVE_SIDPLAYFP
@@ -186,7 +186,7 @@ ParseSubtuneName(const char *base) noexcept
  * and the track number (or 1 if no "tune_xxx" suffix is present).
  */
 static SidplayContainerPath
-ParseContainerPath(Path path_fs)
+ParseContainerPath(Path path_fs) noexcept
 {
 	const Path base = path_fs.GetBase();
 	unsigned track;
@@ -203,7 +203,7 @@ ParseContainerPath(Path path_fs)
  */
 template<typename T>
 static SignedSongTime
-get_song_length(T &tune)
+get_song_length(T &tune) noexcept
 {
 	assert(tune.getStatus());
 
