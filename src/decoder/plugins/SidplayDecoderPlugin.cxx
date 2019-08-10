@@ -36,7 +36,7 @@
 #include "util/AllocatedString.hxx"
 #include "util/CharUtil.hxx"
 #include "util/ByteOrder.hxx"
-#include "util/Manual.hxx"
+#include "util/RuntimeError.hxx"
 #include "Log.hxx"
 
 #ifdef HAVE_SIDPLAYFP
@@ -101,8 +101,11 @@ static void loadRom(const Path rom_path, uint8_t *dump)
 }
 #endif
 
+/**
+ * Throws on error.
+ */
 static std::unique_ptr<SidDatabase>
-sidplay_load_songlength_db(const Path path) noexcept
+sidplay_load_songlength_db(const Path path)
 {
 	auto db = std::make_unique<SidDatabase>();
 #ifdef HAVE_SIDPLAYFP
@@ -110,12 +113,9 @@ sidplay_load_songlength_db(const Path path) noexcept
 #else
 	bool error = db->open(path.c_str()) < 0;
 #endif
-	if (error) {
-		FormatError(sidplay_domain,
-			    "unable to read songlengths file %s: %s",
-			    path.c_str(), db->error());
-		return nullptr;
-	}
+	if (error)
+		throw FormatRuntimeError("unable to read songlengths file %s: %s",
+					 path.c_str(), db->error());
 
 	return db;
 }
