@@ -56,6 +56,7 @@
 #endif
 
 #include <iterator>
+#include <memory>
 
 #include <string.h>
 #include <stdio.h>
@@ -69,7 +70,7 @@
 static constexpr Domain sidplay_domain("sidplay");
 
 struct SidplayGlobal {
-	SidDatabase *songlength_database;
+	std::unique_ptr<SidDatabase> songlength_database;
 
 	bool all_files_are_containers;
 	unsigned default_songlength;
@@ -78,19 +79,10 @@ struct SidplayGlobal {
 	bool filter_setting;
 
 #ifdef HAVE_SIDPLAYFP
-	uint8_t *kernal = nullptr, *basic = nullptr;
+	std::unique_ptr<uint8_t[]> kernal, basic;
 #endif
 
 	explicit SidplayGlobal(const ConfigBlock &block);
-
-	~SidplayGlobal() noexcept {
-		delete songlength_database;
-
-#ifdef HAVE_SIDPLAYFP
-		delete[] basic;
-		delete[] kernal;
-#endif
-	}
 };
 
 static SidplayGlobal *sidplay_global;
@@ -109,10 +101,10 @@ static void loadRom(const Path rom_path, uint8_t *dump)
 }
 #endif
 
-static SidDatabase *
+static std::unique_ptr<SidDatabase>
 sidplay_load_songlength_db(const Path path) noexcept
 {
-	SidDatabase *db = new SidDatabase();
+	auto db = std::make_unique<SidDatabase>();
 #ifdef HAVE_SIDPLAYFP
 	bool error = !db->open(path.c_str());
 #else
@@ -122,7 +114,6 @@ sidplay_load_songlength_db(const Path path) noexcept
 		FormatError(sidplay_domain,
 			    "unable to read songlengths file %s: %s",
 			    path.c_str(), db->error());
-		delete db;
 		return nullptr;
 	}
 
@@ -151,16 +142,16 @@ SidplayGlobal::SidplayGlobal(const ConfigBlock &block)
 	const auto kernal_path = block.GetPath("kernal");
 	if (!kernal_path.IsNull())
 	{
-		kernal = new uint8_t[rom_size];
-		loadRom(kernal_path, kernal);
+		kernal.reset(new uint8_t[rom_size]);
+		loadRom(kernal_path, kernal.get());
 	}
 
 	/* read basic rom dump file */
 	const auto basic_path = block.GetPath("basic");
 	if (!basic_path.IsNull())
 	{
-		basic = new uint8_t[rom_size];
-		loadRom(basic_path, basic);
+		basic.reset(new uint8_t[rom_size]);
+		loadRom(basic_path, basic.get());
 	}
 #endif
 }
@@ -272,7 +263,9 @@ sidplay_file_decode(DecoderClient &client, Path path_fs)
 #ifdef HAVE_SIDPLAYFP
 	sidplayfp player;
 
-	player.setRoms(sidplay_global->kernal, sidplay_global->basic, nullptr);
+	player.setRoms(sidplay_global->kernal.get(),
+		       sidplay_global->basic.get(),
+		       nullptr);
 #else
 	sidplay2 player;
 #endif
