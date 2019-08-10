@@ -59,7 +59,6 @@
 #include <memory>
 
 #include <string.h>
-#include <stdio.h>
 
 #ifdef HAVE_SIDPLAYFP
 #define LIBSIDPLAYFP_VERSION GCC_MAKE_VERSION(LIBSIDPLAYFP_VERSION_MAJ, LIBSIDPLAYFP_VERSION_MIN, LIBSIDPLAYFP_VERSION_LEV)
@@ -627,11 +626,10 @@ sidplay_container_scan(Path path_fs)
 		if (!duration.IsNegative())
 			h.OnDuration(SongTime(duration));
 
-		char track_name[32];
 		/* Construct container/tune path names, eg.
 		   Delta.sid/tune_001.sid */
-		sprintf(track_name, SUBTUNE_PREFIX "%03u.sid", i);
-		tail = list.emplace_after(tail, track_name,
+		tail = list.emplace_after(tail,
+					  StringFormat<32>(SUBTUNE_PREFIX "%03u.sid", i),
 					  tag_builder.Commit());
 	}
 
