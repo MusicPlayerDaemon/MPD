@@ -36,6 +36,7 @@
 #include "util/AllocatedString.hxx"
 #include "util/CharUtil.hxx"
 #include "util/ByteOrder.hxx"
+#include "util/Manual.hxx"
 #include "Log.hxx"
 
 #ifdef HAVE_SIDPLAYFP
@@ -67,17 +68,35 @@
 
 static constexpr Domain sidplay_domain("sidplay");
 
-static SidDatabase *songlength_database;
+struct SidplayGlobal {
+	SidDatabase *songlength_database;
 
-static bool all_files_are_containers;
-static unsigned default_songlength;
-static std::string default_genre;
+	bool all_files_are_containers;
+	unsigned default_songlength;
+	std::string default_genre;
 
-static bool filter_setting;
+	bool filter_setting;
+
+#ifdef HAVE_SIDPLAYFP
+	uint8_t *kernal = nullptr, *basic = nullptr;
+#endif
+
+	explicit SidplayGlobal(const ConfigBlock &block);
+
+	~SidplayGlobal() noexcept {
+		delete songlength_database;
+
+#ifdef HAVE_SIDPLAYFP
+		delete[] basic;
+		delete[] kernal;
+#endif
+	}
+};
+
+static SidplayGlobal *sidplay_global;
 
 #ifdef HAVE_SIDPLAYFP
 static constexpr unsigned rom_size = 8192;
-static uint8_t *kernal, *basic = nullptr;
 
 static void loadRom(const Path rom_path, uint8_t *dump)
 {
@@ -110,8 +129,8 @@ sidplay_load_songlength_db(const Path path) noexcept
 	return db;
 }
 
-static bool
-sidplay_init(const ConfigBlock &block)
+inline
+SidplayGlobal::SidplayGlobal(const ConfigBlock &block)
 {
 	/* read the songlengths database file */
 	const auto database_path = block.GetPath("songlength_database");
@@ -144,19 +163,19 @@ sidplay_init(const ConfigBlock &block)
 		loadRom(basic_path, basic);
 	}
 #endif
+}
 
+static bool
+sidplay_init(const ConfigBlock &block)
+{
+	sidplay_global = new SidplayGlobal(block);
 	return true;
 }
 
 static void
 sidplay_finish() noexcept
 {
-	delete songlength_database;
-
-#ifdef HAVE_SIDPLAYFP
-	delete[] basic;
-	delete[] kernal;
-#endif
+	delete sidplay_global;
 }
 
 struct SidplayContainerPath {
@@ -207,10 +226,10 @@ get_song_length(T &tune) noexcept
 {
 	assert(tune.getStatus());
 
-	if (songlength_database == nullptr)
+	if (sidplay_global->songlength_database == nullptr)
 		return SignedSongTime::Negative();
 
-	const auto length = songlength_database->length(tune);
+	const auto length = sidplay_global->songlength_database->length(tune);
 	if (length < 0)
 		return SignedSongTime::Negative();
 
@@ -245,15 +264,15 @@ sidplay_file_decode(DecoderClient &client, Path path_fs)
 	tune.selectSong(song_num);
 
 	auto duration = get_song_length(tune);
-	if (duration.IsNegative() && default_songlength > 0)
-		duration = SongTime::FromS(default_songlength);
+	if (duration.IsNegative() && sidplay_global->default_songlength > 0)
+		duration = SongTime::FromS(sidplay_global->default_songlength);
 
 	/* initialize the player */
 
 #ifdef HAVE_SIDPLAYFP
 	sidplayfp player;
 
-	player.setRoms(kernal, basic, nullptr);
+	player.setRoms(sidplay_global->kernal, sidplay_global->basic, nullptr);
 #else
 	sidplay2 player;
 #endif
@@ -296,7 +315,7 @@ sidplay_file_decode(DecoderClient &client, Path path_fs)
 	}
 #endif
 
-	builder.filter(filter_setting);
+	builder.filter(sidplay_global->filter_setting);
 #ifdef HAVE_SIDPLAYFP
 	if (!builder.getStatus()) {
 		FormatWarning(sidplay_domain,
@@ -529,8 +548,9 @@ ScanSidTuneInfo(const SidTuneInfo &info, unsigned track, unsigned n_tracks,
 		handler.OnTag(TAG_ARTIST, artist.c_str());
 
 	/* genre */
-	if (!default_genre.empty())
-		handler.OnTag(TAG_GENRE, default_genre.c_str());
+	if (!sidplay_global->default_genre.empty())
+		handler.OnTag(TAG_GENRE,
+			      sidplay_global->default_genre.c_str());
 
 	/* date */
 	const auto date = GetDateString(info);
@@ -598,7 +618,7 @@ sidplay_container_scan(Path path_fs)
 
 	/* Don't treat sids containing a single tune
 		as containers */
-	if(!all_files_are_containers && n_tracks < 2)
+	if (!sidplay_global->all_files_are_containers && n_tracks < 2)
 		return list;
 
 	TagBuilder tag_builder;
