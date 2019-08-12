@@ -77,6 +77,8 @@ public:
 	bool FormatV(const char *fmt, va_list args) noexcept;
 	bool Format(const char *fmt, ...) noexcept;
 
+	static constexpr size_t MAX_BINARY_SIZE = 8192;
+
 	/**
 	 * Write a binary chunk; this writes the "binary" line, the
 	 * given chunk and the trailing newline.

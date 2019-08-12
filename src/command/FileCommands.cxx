@@ -286,14 +286,13 @@ read_stream_art(Response &r, const char *uri, size_t offset)
 
 	const offset_type art_file_size = is->GetSize();
 
-	constexpr size_t CHUNK_SIZE = 8192;
-	uint8_t buffer[CHUNK_SIZE];
+	uint8_t buffer[Response::MAX_BINARY_SIZE];
 	size_t read_size;
 
 	{
 		std::unique_lock<Mutex> lock(mutex);
 		is->Seek(lock, offset);
-		read_size = is->Read(lock, &buffer, CHUNK_SIZE);
+		read_size = is->Read(lock, &buffer, sizeof(buffer));
 	}
 
 	r.Format("size: %" PRIoffset "\n", art_file_size);
