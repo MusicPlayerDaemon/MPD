@@ -24,6 +24,7 @@
 #include "Chrono.hxx"
 #include "util/Compiler.h"
 
+template<typename T> struct ConstBuffer;
 struct StringView;
 struct AudioFormat;
 class TagBuilder;
@@ -39,6 +40,7 @@ public:
 	static constexpr unsigned WANT_TAG = 0x2;
 	static constexpr unsigned WANT_PAIR = 0x4;
 	static constexpr unsigned WANT_AUDIO_FORMAT = 0x8;
+	static constexpr unsigned WANT_PICTURE = 0x10;
 
 	explicit TagHandler(unsigned _want_mask) noexcept
 		:want_mask(_want_mask) {}
@@ -60,6 +62,10 @@ public:
 
 	bool WantAudioFormat() const noexcept {
 		return want_mask & WANT_AUDIO_FORMAT;
+	}
+
+	bool WantPicture() const noexcept {
+		return want_mask & WANT_PICTURE;
 	}
 
 	/**
@@ -99,6 +105,18 @@ public:
 	 * too expensive.
 	 */
 	virtual void OnAudioFormat(AudioFormat af) noexcept = 0;
+
+	/**
+	 * A picture has been read.
+	 *
+	 * This method will only be called if #WANT_PICTURE was enabled.
+	 *
+	 * @param mime_type an optional MIME type string
+	 * @param buffer the picture file contents; the buffer will be
+	 * invalidated after this method returns
+	 */
+	virtual void OnPicture(const char *mime_type,
+			       ConstBuffer<void> buffer) noexcept = 0;
 };
 
 class NullTagHandler : public TagHandler {
@@ -110,6 +128,8 @@ public:
 	void OnTag(TagType type, StringView value) noexcept override;
 	void OnPair(StringView key, StringView value) noexcept override;
 	void OnAudioFormat(AudioFormat af) noexcept override;
+	void OnPicture(const char *mime_type,
+		       ConstBuffer<void> buffer) noexcept override;
 };
 
 /**

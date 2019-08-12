@@ -36,6 +36,11 @@ NullTagHandler::OnPair(StringView, StringView) noexcept
 }
 
 void
+NullTagHandler::OnPicture(const char *, ConstBuffer<void>) noexcept
+{
+}
+
+void
 NullTagHandler::OnAudioFormat(gcc_unused AudioFormat af) noexcept
 {
 }
