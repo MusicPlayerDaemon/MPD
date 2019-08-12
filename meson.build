@@ -277,6 +277,7 @@ sources = [
   'src/TagSave.cxx',
   'src/TagFile.cxx',
   'src/TagStream.cxx',
+  'src/TagAny.cxx',
   'src/TimePrint.cxx',
   'src/mixer/Volume.cxx',
   'src/PlaylistFile.cxx',
