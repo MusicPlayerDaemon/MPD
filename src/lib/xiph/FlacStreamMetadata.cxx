@@ -149,6 +149,21 @@ Scan(const FLAC__StreamMetadata_StreamInfo &stream_info,
 	}
 }
 
+static void
+Scan(const FLAC__StreamMetadata_Picture &picture, TagHandler &handler) noexcept
+{
+	if (!handler.WantPicture())
+		return;
+
+	if (picture.mime_type != nullptr &&
+	    StringIsEqual(picture.mime_type, "-->"))
+		/* this is a URL, not image data */
+		return;
+
+	handler.OnPicture(picture.mime_type,
+			  {picture.data, picture.data_length});
+}
+
 void
 flac_scan_metadata(const FLAC__StreamMetadata *block,
 		   TagHandler &handler) noexcept
@@ -161,6 +176,10 @@ flac_scan_metadata(const FLAC__StreamMetadata *block,
 
 	case FLAC__METADATA_TYPE_STREAMINFO:
 		Scan(block->data.stream_info, handler);
+		break;
+
+	case FLAC__METADATA_TYPE_PICTURE:
+		Scan(block->data.picture, handler);
 		break;
 
 	default:
