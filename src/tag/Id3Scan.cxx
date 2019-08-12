@@ -286,6 +286,47 @@ tag_id3_import_ufid(const struct id3_tag *id3_tag,
 	}
 }
 
+/**
+ * Handle "APIC" ("attached picture") tags.
+ */
+static void
+tag_id3_handle_apic(const struct id3_tag *id3_tag,
+		    TagHandler &handler) noexcept
+{
+	if (!handler.WantPicture())
+		return;
+
+	for (unsigned i = 0;; ++i) {
+		const id3_frame *frame = id3_tag_findframe(id3_tag, "APIC", i);
+		if (frame == nullptr)
+			break;
+
+		id3_field *mime_type_field = id3_frame_field(frame, 1);
+		if (mime_type_field == nullptr)
+			continue;
+
+		const char *mime_type = (const char *)
+			id3_field_getlatin1(mime_type_field);
+		if (mime_type != nullptr &&
+		    StringIsEqual(mime_type, "-->"))
+			/* this is a URL, not image data */
+			continue;
+
+		id3_field *data_field = id3_frame_field(frame, 4);
+		if (data_field == nullptr ||
+		    data_field->type != ID3_FIELD_TYPE_BINARYDATA)
+			continue;
+
+		id3_length_t size;
+		const id3_byte_t *data =
+			id3_field_getbinarydata(data_field, &size);
+		if (data == nullptr || size == 0)
+			continue;
+
+		handler.OnPicture(mime_type, {data, size});
+	}
+}
+
 void
 scan_id3_tag(const struct id3_tag *tag, TagHandler &handler) noexcept
 {
@@ -327,6 +368,7 @@ scan_id3_tag(const struct id3_tag *tag, TagHandler &handler) noexcept
 
 	tag_id3_import_musicbrainz(tag, handler);
 	tag_id3_import_ufid(tag, handler);
+	tag_id3_handle_apic(tag, handler);
 }
 
 Tag
