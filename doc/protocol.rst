@@ -66,7 +66,16 @@ Binary Responses
 Some commands can return binary data.  This is initiated by a line
 containing ``binary: 1234`` (followed as usual by a newline).  After
 that, the specified number of bytes of binary data follows, then a
-newline, and finally the ``OK`` line.  Example::
+newline, and finally the ``OK`` line.
+
+If the object to be transmitted is large, the server may choose a
+reasonable chunk size and transmit only a portion.  Usually, the
+response also contains a ``size`` line which specifies the total
+(uncropped) size, and the command usually has a way to specify an
+offset into the object; this way, the client can copy the whole file
+without blocking the connection for too long.
+
+Example::
 
   foo: bar
   binary: 42
