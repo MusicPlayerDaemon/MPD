@@ -56,6 +56,14 @@ Response::Format(const char *fmt, ...) noexcept
 	return success;
 }
 
+bool
+Response::WriteBinary(ConstBuffer<void> payload) noexcept
+{
+	return Format("binary: %zu\n", payload.size) &&
+		Write(payload.data, payload.size) &&
+		Write("\n");
+}
+
 void
 Response::Error(enum ack code, const char *msg) noexcept
 {

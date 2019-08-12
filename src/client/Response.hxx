@@ -26,6 +26,7 @@
 #include <stddef.h>
 #include <stdarg.h>
 
+template<typename T> struct ConstBuffer;
 class Client;
 class TagMask;
 
@@ -75,6 +76,14 @@ public:
 	bool Write(const char *data) noexcept;
 	bool FormatV(const char *fmt, va_list args) noexcept;
 	bool Format(const char *fmt, ...) noexcept;
+
+	/**
+	 * Write a binary chunk; this writes the "binary" line, the
+	 * given chunk and the trailing newline.
+	 *
+	 * @return true on success
+	 */
+	bool WriteBinary(ConstBuffer<void> payload) noexcept;
 
 	void Error(enum ack code, const char *msg) noexcept;
 	void FormatError(enum ack code, const char *fmt, ...) noexcept;

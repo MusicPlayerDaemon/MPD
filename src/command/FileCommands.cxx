@@ -296,14 +296,8 @@ read_stream_art(Response &r, const char *uri, size_t offset)
 		read_size = is->Read(lock, &buffer, CHUNK_SIZE);
 	}
 
-	r.Format("size: %" PRIoffset "\n"
-			 "binary: %u\n",
-			 art_file_size,
-			 read_size
-			 );
-
-	r.Write(buffer, read_size);
-	r.Write("\n");
+	r.Format("size: %" PRIoffset "\n", art_file_size);
+	r.WriteBinary({buffer, read_size});
 
 	return CommandResult::OK;
 }
