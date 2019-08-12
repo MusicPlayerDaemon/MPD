@@ -61,6 +61,25 @@ at runtime; instead, use :code:`assert()` to detect them in debug
 builds.
 
 
+git Branches
+************
+
+There are two active branches in the git repository:
+
+- the "unstable" branch called ``master`` where new features are
+  merged.  This will become the next major release eventually.
+- the "stable" branch (currently called ``v0.21.x``) where only bug
+  fixes are merged.
+
+Once :program:`MPD` 0.22 is released, a new branch called ``v0.22.x``
+will be created for 0.22 bug-fix releases; after that, ``v0.21.x``
+will eventually cease to be maintained.
+
+After bug fixes have been added to the "stable" branch, it will be
+merged into ``master``.  This ensures that all known bugs are fixed in
+all active branches.
+
+
 Hacking The Source
 ******************
 
