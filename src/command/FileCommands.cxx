@@ -26,6 +26,7 @@
 #include "client/Client.hxx"
 #include "client/Response.hxx"
 #include "util/CharUtil.hxx"
+#include "util/OffsetPointer.hxx"
 #include "util/StringView.hxx"
 #include "util/UriExtract.hxx"
 #include "tag/Handler.hxx"
@@ -270,3 +271,62 @@ handle_album_art(Client &client, Request args, Response &r)
 	return CommandResult::ERROR;
 }
 
+class PrintPictureHandler final : public NullTagHandler {
+	Response &response;
+
+	const size_t offset;
+
+	bool found = false;
+
+	bool bad_offset = false;
+
+public:
+	PrintPictureHandler(Response &_response, size_t _offset) noexcept
+		:NullTagHandler(WANT_PICTURE), response(_response),
+		 offset(_offset) {}
+
+	void RethrowError() const {
+		if (bad_offset)
+			throw ProtocolError(ACK_ERROR_ARG, "Bad file offset");
+	}
+
+	void OnPicture(const char *mime_type,
+		       ConstBuffer<void> buffer) noexcept override {
+		if (found)
+			/* only use the first picture */
+			return;
+
+		found = true;
+
+		if (offset > buffer.size) {
+			bad_offset = true;
+			return;
+		}
+
+		response.Format("size: %" PRIoffset "\n", buffer.size);
+
+		if (mime_type != nullptr)
+			response.Format("type: %s\n", mime_type);
+
+		buffer.size -= offset;
+		if (buffer.size > Response::MAX_BINARY_SIZE)
+			buffer.size = Response::MAX_BINARY_SIZE;
+		buffer.data = OffsetPointer(buffer.data, offset);
+
+		response.WriteBinary(buffer);
+	}
+};
+
+CommandResult
+handle_read_picture(Client &client, Request args, Response &r)
+{
+	assert(args.size == 2);
+
+	const char *const uri = args.front();
+	const size_t offset = args.ParseUnsigned(1);
+
+	PrintPictureHandler handler(r, offset);
+	TagScanAny(client, uri, handler);
+	handler.RethrowError();
+	return CommandResult::OK;
+}

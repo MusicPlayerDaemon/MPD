@@ -1005,6 +1005,30 @@ The music database
     decoder plugins support it.  For example, on Ogg files,
     this lists the Vorbis comments.
 
+:command:`readpicture {URI} {OFFSET}`
+    Locate a picture for the given song and return a chunk of the
+    image file at offset ``OFFSET``.  This is usually implemented by
+    reading embedded pictures from binary tags (e.g. ID3v2's ``APIC``
+    tag).
+
+    Returns the following values:
+
+    - ``size``: the total file size
+    - ``type``: the file's MIME type (optional)
+    - ``binary``: see :ref:`binary`
+
+    If the song file was recognized, but there is no picture, the
+    response is successful, but is otherwise empty.
+
+    Example::
+
+     readpicture foo/bar.ogg 0
+     size: 1024768
+     type: image/jpeg
+     binary: 8192
+     <8192 bytes>
+     OK
+
 .. _command_search:
 
 :command:`search {FILTER} [sort {TYPE}] [window {START:END}]`

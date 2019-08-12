@@ -36,4 +36,7 @@ handle_read_comments(Client &client, Request request, Response &response);
 CommandResult
 handle_album_art(Client &client, Request request, Response &response);
 
+CommandResult
+handle_read_picture(Client &client, Request request, Response &response);
+
 #endif

@@ -168,6 +168,7 @@ static constexpr struct command commands[] = {
 	{ "rangeid", PERMISSION_ADD, 2, 2, handle_rangeid },
 	{ "readcomments", PERMISSION_READ, 1, 1, handle_read_comments },
 	{ "readmessages", PERMISSION_READ, 0, 0, handle_read_messages },
+	{ "readpicture", PERMISSION_READ, 2, 2, handle_read_picture },
 	{ "rename", PERMISSION_CONTROL, 2, 2, handle_rename },
 	{ "repeat", PERMISSION_CONTROL, 1, 1, handle_repeat },
 	{ "replay_gain_mode", PERMISSION_CONTROL, 1, 1,
