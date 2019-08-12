@@ -62,11 +62,7 @@ enum class MadDecoderMuteFrame {
 /* the number of samples of silence the decoder inserts at start */
 static constexpr unsigned DECODERDELAY = 529;
 
-static constexpr bool DEFAULT_GAPLESS_MP3_PLAYBACK = true;
-
 static constexpr Domain mad_domain("mad");
-
-static bool gapless_playback;
 
 gcc_const
 static SongTime
@@ -98,14 +94,6 @@ mad_fixed_to_24_buffer(int32_t *dest, const struct mad_pcm &src,
 	for (size_t i = start; i < end; ++i)
 		for (unsigned c = 0; c < num_channels; ++c)
 			*dest++ = mad_fixed_to_24_sample(src.samples[c][i]);
-}
-
-static bool
-mad_plugin_init(const ConfigBlock &block)
-{
-	gapless_playback = block.GetBlockValue("gapless",
-					       DEFAULT_GAPLESS_MP3_PLAYBACK);
-	return true;
 }
 
 class MadDecoder {
@@ -735,7 +723,7 @@ MadDecoder::DecodeFirstFrame(Tag *tag) noexcept
 
 		struct lame lame;
 		if (parse_lame(&lame, &ptr, &bitlen)) {
-			if (gapless_playback && input_stream.IsSeekable()) {
+			if (input_stream.IsSeekable()) {
 				/* libmad inserts 529 samples of
 				   silence at the beginning and
 				   removes those 529 samples at the
@@ -1030,6 +1018,5 @@ static const char *const mad_mime_types[] = { "audio/mpeg", nullptr };
 
 constexpr DecoderPlugin mad_decoder_plugin =
 	DecoderPlugin("mad", mad_decode, mad_decoder_scan_stream)
-	.WithInit(mad_plugin_init)
 	.WithSuffixes(mad_suffixes)
 	.WithMimeTypes(mad_mime_types);

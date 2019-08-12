@@ -406,15 +406,6 @@ plugin should be enabled only if you have a bit-perfect playback path
 to a DSD-capable DAC; for everybody else, playing back the ALAC copy
 of the file is better.
 
-.. list-table::
-   :widths: 20 80
-   :header-rows: 1
-
-   * - Setting
-     - Description
-   * - **gapless yes|no**
-     - This specifies whether to support gapless playback of MP3s which have the necessary headers. Useful if your MP3s have headers with incorrect information. If you have such MP3s, it is highly recommended that you fix them using `vbrfix <http://www.willwap.co.uk/Programs/vbrfix.php>`_ instead of disabling gapless MP3 playback. The default is to support gapless MP3 playback.
-
 mad
 ---
 

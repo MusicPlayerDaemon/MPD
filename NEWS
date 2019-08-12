@@ -10,6 +10,7 @@ ver 0.22 (not yet released)
 * archive
   - iso9660: support seeking
 * decoder
+  - mad: remove option "gapless", always do gapless
   - sidplay: add option "default_genre"
   - sidplay: map SID name field to "Album" tag
 * filter
