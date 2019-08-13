@@ -192,6 +192,7 @@ decoder_plugins = static_library(
 decoder_plugins_dep = declare_dependency(
   link_with: decoder_plugins,
   dependencies: [
+    crypto_base64_dep,
     decoder_api_dep,
     pcm_dep,
   ],

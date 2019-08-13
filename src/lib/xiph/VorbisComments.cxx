@@ -18,6 +18,7 @@
  */
 
 #include "VorbisComments.hxx"
+#include "VorbisPicture.hxx"
 #include "XiphTags.hxx"
 #include "tag/Table.hxx"
 #include "tag/Handler.hxx"
@@ -84,6 +85,12 @@ vorbis_copy_comment(StringView comment,
 static void
 vorbis_scan_comment(StringView comment, TagHandler &handler) noexcept
 {
+	const auto picture_b64 = handler.WantPicture()
+		? GetVorbisCommentValue(comment, "METADATA_BLOCK_PICTURE")
+		: nullptr;
+	if (!picture_b64.IsNull())
+		return ScanVorbisPicture(picture_b64, handler);
+
 	if (handler.WantPair()) {
 		const auto split = comment.Split('=');
 		if (!split.first.empty() && !split.second.IsNull())

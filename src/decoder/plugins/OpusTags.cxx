@@ -19,6 +19,7 @@
 
 #include "OpusTags.hxx"
 #include "OpusReader.hxx"
+#include "lib/xiph/VorbisPicture.hxx"
 #include "lib/xiph/XiphTags.hxx"
 #include "tag/Handler.hxx"
 #include "tag/ParseName.hxx"
@@ -45,6 +46,10 @@ ScanOneOpusTag(StringView name, StringView value,
 	       ReplayGainInfo *rgi,
 	       TagHandler &handler) noexcept
 {
+	if (handler.WantPicture() &&
+	    name.EqualsIgnoreCase("METADATA_BLOCK_PICTURE"))
+		return ScanVorbisPicture(value, handler);
+
 	if (value.size >= 4096)
 		/* ignore large values */
 		return;

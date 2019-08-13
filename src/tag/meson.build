@@ -15,6 +15,7 @@ tag_sources = [
   'MixRamp.cxx',
   'Generic.cxx',
   'Id3MusicBrainz.cxx',
+  'Id3Picture.cxx',
   'ApeLoader.cxx',
   'ApeReplayGain.cxx',
   'ApeTag.cxx',
