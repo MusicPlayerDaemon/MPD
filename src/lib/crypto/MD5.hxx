@@ -27,8 +27,8 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef GCRYPT_MD5_HXX
-#define GCRYPT_MD5_HXX
+#ifndef MD5_HXX
+#define MD5_HXX
 
 #include "util/StringBuffer.hxx"
 #include "util/Compiler.h"
@@ -37,12 +37,15 @@
 
 template<typename T> struct ConstBuffer;
 
-namespace Gcrypt {
+void
+GlobalInitMD5() noexcept;
 
 gcc_pure
 std::array<uint8_t, 16>
 MD5(ConstBuffer<void> input) noexcept;
 
-} // namespace Gcrypt
+gcc_pure
+StringBuffer<33>
+MD5Hex(ConstBuffer<void> input) noexcept;
 
 #endif

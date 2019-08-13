@@ -335,6 +335,8 @@ subdir('src/lib/systemd')
 subdir('src/lib/upnp')
 subdir('src/lib/yajl')
 
+subdir('src/lib/crypto')
+
 subdir('src/fs')
 subdir('src/config')
 subdir('src/net')

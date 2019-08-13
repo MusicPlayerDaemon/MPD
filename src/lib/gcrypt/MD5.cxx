@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2018-2019 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -29,7 +29,8 @@
 
 #include "MD5.hxx"
 #include "Hash.hxx"
-#include "util/HexFormat.hxx"
+
+namespace Gcrypt {
 
 std::array<uint8_t, 16>
 MD5(ConstBuffer<void> input) noexcept
@@ -37,9 +38,4 @@ MD5(ConstBuffer<void> input) noexcept
 	return Gcrypt::Hash<GCRY_MD_MD5, 16>(input);
 }
 
-StringBuffer<33>
-MD5Hex(ConstBuffer<void> input) noexcept
-{
-	const auto raw = MD5(input);
-	return HexFormatBuffer<raw.size()>(&raw.front());
-}
+} // namespace Gcrypt

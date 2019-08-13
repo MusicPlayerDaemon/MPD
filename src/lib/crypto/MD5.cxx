@@ -27,22 +27,26 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef GCRYPT_MD5_HXX
-#define GCRYPT_MD5_HXX
+#include "MD5.hxx"
+#include "lib/gcrypt/MD5.hxx"
+#include "lib/gcrypt/Init.hxx"
+#include "util/HexFormat.hxx"
 
-#include "util/StringBuffer.hxx"
-#include "util/Compiler.h"
+void
+GlobalInitMD5() noexcept
+{
+	Gcrypt::Init();
+}
 
-#include <array>
-
-template<typename T> struct ConstBuffer;
-
-namespace Gcrypt {
-
-gcc_pure
 std::array<uint8_t, 16>
-MD5(ConstBuffer<void> input) noexcept;
+MD5(ConstBuffer<void> input) noexcept
+{
+	return Gcrypt::MD5(input);
+}
 
-} // namespace Gcrypt
-
-#endif
+StringBuffer<33>
+MD5Hex(ConstBuffer<void> input) noexcept
+{
+	const auto raw = MD5(input);
+	return HexFormatBuffer<raw.size()>(&raw.front());
+}
