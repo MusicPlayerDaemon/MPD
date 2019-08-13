@@ -45,7 +45,7 @@ auto
 Hash(ConstBuffer<void> input) noexcept
 {
 	std::array<uint8_t, size> result;
-	gcry_md_hash_buffer(GCRY_MD_MD5, &result.front(),
+	gcry_md_hash_buffer(algo, &result.front(),
 			    input.data, input.size);
 	return result;
 }
