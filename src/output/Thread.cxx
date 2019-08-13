@@ -458,7 +458,7 @@ AudioOutputControl::Task() noexcept
 		case Command::RELEASE:
 			if (!open) {
 				/* the output has failed after
-				   the PAUSE command was submitted; bail
+				   the RELEASE command was submitted; bail
 				   out */
 				CommandFinished();
 				break;
