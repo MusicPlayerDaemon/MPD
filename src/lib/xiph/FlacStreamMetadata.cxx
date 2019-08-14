@@ -69,26 +69,15 @@ flac_parse_mixramp(const FLAC__StreamMetadata_VorbisComment &vc)
 }
 
 /**
- * Checks if the specified name matches the entry's name, and if yes,
- * returns the comment value;
- */
-static StringView
-GetFlacCommentValue(const FLAC__StreamMetadata_VorbisComment_Entry *entry,
-		    StringView name) noexcept
-{
-	return GetVorbisCommentValue(ToStringView(*entry), name);
-}
-
-/**
  * Check if the comment's name equals the passed name, and if so, copy
  * the comment value into the tag.
  */
 static bool
-flac_copy_comment(const FLAC__StreamMetadata_VorbisComment_Entry *entry,
+flac_copy_comment(StringView comment,
 		  StringView name, TagType tag_type,
 		  TagHandler &handler) noexcept
 {
-	const auto value = GetFlacCommentValue(entry, name);
+	const auto value = GetVorbisCommentValue(comment, name);
 	if (!value.IsNull()) {
 		handler.OnTag(tag_type, value);
 		return true;
@@ -98,22 +87,20 @@ flac_copy_comment(const FLAC__StreamMetadata_VorbisComment_Entry *entry,
 }
 
 static void
-flac_scan_comment(const FLAC__StreamMetadata_VorbisComment_Entry *entry,
-		  TagHandler &handler) noexcept
+flac_scan_comment(StringView comment, TagHandler &handler) noexcept
 {
 	if (handler.WantPair()) {
-		const auto comment = ToStringView(*entry);
-		const auto split = StringView(comment).Split('=');
+		const auto split = comment.Split('=');
 		if (!split.first.empty() && !split.second.IsNull())
 			handler.OnPair(split.first, split.second);
 	}
 
 	for (const struct tag_table *i = xiph_tags; i->name != nullptr; ++i)
-		if (flac_copy_comment(entry, i->name, i->type, handler))
+		if (flac_copy_comment(comment, i->name, i->type, handler))
 			return;
 
 	for (unsigned i = 0; i < TAG_NUM_OF_ITEM_TYPES; ++i)
-		if (flac_copy_comment(entry,
+		if (flac_copy_comment(comment,
 				      tag_item_names[i], (TagType)i,
 				      handler))
 			return;
@@ -124,8 +111,7 @@ flac_scan_comments(const FLAC__StreamMetadata_VorbisComment *comment,
 		   TagHandler &handler) noexcept
 {
 	for (unsigned i = 0; i < comment->num_comments; ++i)
-		flac_scan_comment(&comment->comments[i],
-				  handler);
+		flac_scan_comment(ToStringView(comment->comments[i]), handler);
 }
 
 gcc_pure
