@@ -157,10 +157,10 @@ VorbisDecoder::OnOggBeginning(const ogg_packet &_packet)
 }
 
 static void
-vorbis_send_comments(DecoderClient &client, InputStream &is,
-		     char **comments)
+SubmitVorbisComment(DecoderClient &client, InputStream &is,
+		    const vorbis_comment &vc)
 {
-	auto tag = vorbis_comments_to_tag(comments);
+	auto tag = VorbisCommentToTag(vc);
 	if (!tag)
 		return;
 
@@ -269,10 +269,10 @@ VorbisDecoder::OnOggPacket(const ogg_packet &_packet)
 		} else
 			SubmitInit();
 
-		vorbis_send_comments(client, input_stream, vc.user_comments);
+		SubmitVorbisComment(client, input_stream, vc);
 
 		ReplayGainInfo rgi;
-		if (vorbis_comments_to_replay_gain(rgi, vc.user_comments))
+		if (VorbisCommentToReplayGain(rgi, vc))
 			client.SubmitReplayGain(&rgi);
 	} else {
 		if (!dsp_initialized) {
@@ -404,7 +404,7 @@ vorbis_scan_stream(InputStream &is, TagHandler &handler) noexcept
 
 	/* visit the Vorbis comments we just read */
 
-	vorbis_comments_scan(vc.user_comments, handler);
+	VorbisCommentScan(vc, handler);
 
 	/* check the song duration by locating the e_o_s packet */
 

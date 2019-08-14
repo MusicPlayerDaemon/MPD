@@ -27,20 +27,38 @@
 #include "tag/ReplayGain.hxx"
 #include "ReplayGainInfo.hxx"
 #include "util/StringView.hxx"
+#include "config.h"
+
+#ifndef HAVE_TREMOR
+#include <vorbis/codec.h>
+#else
+#include <tremor/ivorbiscodec.h>
+#endif /* HAVE_TREMOR */
+
+template<typename F>
+static void
+ForEachUserComment(const vorbis_comment &vc, F &&f)
+{
+	const char *const*const user_comments = vc.user_comments;
+	const int*const comment_lengths = vc.comment_lengths;
+
+	const size_t n = vc.comments;
+	for (size_t i = 0; i < n; ++i)
+		f(StringView{user_comments[i], size_t(comment_lengths[i])});
+}
 
 bool
-vorbis_comments_to_replay_gain(ReplayGainInfo &rgi, char **comments) noexcept
+VorbisCommentToReplayGain(ReplayGainInfo &rgi,
+			  const vorbis_comment &vc) noexcept
 {
 	rgi.Clear();
 
 	bool found = false;
 
-	while (*comments) {
-		if (ParseReplayGainVorbis(rgi, *comments))
+	ForEachUserComment(vc, [&](StringView s){
+		if (ParseReplayGainVorbis(rgi, s.data))
 			found = true;
-
-		comments++;
-	}
+	});
 
 	return found;
 }
@@ -64,10 +82,10 @@ vorbis_copy_comment(StringView comment,
 }
 
 static void
-vorbis_scan_comment(const char *comment, TagHandler &handler) noexcept
+vorbis_scan_comment(StringView comment, TagHandler &handler) noexcept
 {
 	if (handler.WantPair()) {
-		const auto split = StringView(comment).Split('=');
+		const auto split = comment.Split('=');
 		if (!split.first.empty() && !split.second.IsNull())
 			handler.OnPair(split.first, split.second);
 	}
@@ -85,19 +103,19 @@ vorbis_scan_comment(const char *comment, TagHandler &handler) noexcept
 }
 
 void
-vorbis_comments_scan(char **comments, TagHandler &handler) noexcept
+VorbisCommentScan(const vorbis_comment &vc, TagHandler &handler) noexcept
 {
-	while (*comments)
-		vorbis_scan_comment(*comments++, handler);
-
+	ForEachUserComment(vc, [&](StringView s){
+		vorbis_scan_comment(s, handler);
+	});
 }
 
 std::unique_ptr<Tag>
-vorbis_comments_to_tag(char **comments) noexcept
+VorbisCommentToTag(const vorbis_comment &vc) noexcept
 {
 	TagBuilder tag_builder;
 	AddTagHandler h(tag_builder);
-	vorbis_comments_scan(comments, h);
+	VorbisCommentScan(vc, h);
 	return tag_builder.empty()
 		? nullptr
 		: tag_builder.CommitNew();

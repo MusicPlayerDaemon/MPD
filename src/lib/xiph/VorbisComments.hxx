@@ -22,17 +22,19 @@
 
 #include <memory>
 
+struct vorbis_comment;
 struct ReplayGainInfo;
 class TagHandler;
 struct Tag;
 
 bool
-vorbis_comments_to_replay_gain(ReplayGainInfo &rgi, char **comments) noexcept;
+VorbisCommentToReplayGain(ReplayGainInfo &rgi,
+			  const vorbis_comment &vc) noexcept;
 
 void
-vorbis_comments_scan(char **comments, TagHandler &handler) noexcept;
+VorbisCommentScan(const vorbis_comment &vc, TagHandler &handler) noexcept;
 
 std::unique_ptr<Tag>
-vorbis_comments_to_tag(char **comments) noexcept;
+VorbisCommentToTag(const vorbis_comment &vc) noexcept;
 
 #endif
