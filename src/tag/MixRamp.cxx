@@ -21,6 +21,7 @@
 #include "VorbisComment.hxx"
 #include "MixRampInfo.hxx"
 #include "util/ASCII.hxx"
+#include "util/StringView.hxx"
 
 #include <assert.h>
 
@@ -28,17 +29,19 @@ template<typename T>
 static bool
 ParseMixRampTagTemplate(MixRampInfo &info, const T t)
 {
-	const char *value;
-
-	if ((value = t["mixramp_start"]) != nullptr) {
-		info.SetStart(value);
+	const auto start = t["mixramp_start"];
+	if (!start.IsNull()) {
+		info.SetStart(std::string(start.data, start.size));
 		return true;
-	} else if ((value = t["mixramp_end"]) != nullptr) {
-		info.SetEnd(value);
-		return true;
-	} else
-		return false;
+	}
 
+	const auto end = t["mixramp_end"];
+	if (!start.IsNull()) {
+		info.SetEnd(std::string(end.data, end.size));
+		return true;
+	}
+
+	return false;
 }
 
 bool
@@ -52,7 +55,7 @@ ParseMixRampTag(MixRampInfo &info, const char *name, const char *value)
 		const char *value;
 
 		gcc_pure
-		const char *operator[](const char *n) const noexcept {
+		StringView operator[](const char *n) const noexcept {
 			return StringEqualsCaseASCII(name, n)
 				? value
 				: nullptr;
@@ -69,7 +72,7 @@ ParseMixRampVorbis(MixRampInfo &info, const char *entry)
 		const char *entry;
 
 		gcc_pure
-		const char *operator[](const char *n) const noexcept {
+		StringView operator[](const char *n) const noexcept {
 			return vorbis_comment_value(entry, n);
 		}
 	};
