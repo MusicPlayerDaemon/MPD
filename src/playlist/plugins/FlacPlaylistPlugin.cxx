@@ -45,13 +45,13 @@ class FlacPlaylist final : public SongEnumerator {
 public:
 	FlacPlaylist(const char *_uri,
 		     FLAC__StreamMetadata *_cuesheet,
-		     const FLAC__StreamMetadata &streaminfo)
+		     const FLAC__StreamMetadata &streaminfo) noexcept
 		:uri(_uri), cuesheet(_cuesheet),
 		 sample_rate(streaminfo.data.stream_info.sample_rate),
 		 total_samples(streaminfo.data.stream_info.total_samples) {
 	}
 
-	virtual ~FlacPlaylist() {
+	~FlacPlaylist() noexcept override {
 		FLAC__metadata_object_delete(cuesheet);
 	}
 
