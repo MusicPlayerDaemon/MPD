@@ -28,14 +28,15 @@ class FlacMetadataIterator {
 	FLAC__Metadata_Iterator *iterator;
 
 public:
-	FlacMetadataIterator():iterator(::FLAC__metadata_iterator_new()) {}
+	FlacMetadataIterator() noexcept
+		:iterator(::FLAC__metadata_iterator_new()) {}
 
-	FlacMetadataIterator(FLAC__Metadata_Chain *chain)
+	explicit FlacMetadataIterator(FLAC__Metadata_Chain *chain) noexcept
 		:FlacMetadataIterator() {
 		::FLAC__metadata_iterator_init(iterator, chain);
 	}
 
-	~FlacMetadataIterator() {
+	~FlacMetadataIterator() noexcept {
 		::FLAC__metadata_iterator_delete(iterator);
 	}
 
