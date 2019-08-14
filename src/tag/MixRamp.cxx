@@ -67,10 +67,10 @@ ParseMixRampTag(MixRampInfo &info,
 }
 
 bool
-ParseMixRampVorbis(MixRampInfo &info, const char *entry) noexcept
+ParseMixRampVorbis(MixRampInfo &info, StringView entry) noexcept
 {
 	struct VorbisCommentEntry {
-		const char *entry;
+		StringView entry;
 
 		gcc_pure
 		StringView operator[](StringView n) const noexcept {
