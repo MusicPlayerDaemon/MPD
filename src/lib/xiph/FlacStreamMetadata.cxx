@@ -34,6 +34,12 @@
 
 #include <assert.h>
 
+static StringView
+ToStringView(const FLAC__StreamMetadata_VorbisComment_Entry &entry) noexcept
+{
+	return {(const char *)entry.entry, entry.length};
+}
+
 bool
 flac_parse_replay_gain(ReplayGainInfo &rgi,
 		       const FLAC__StreamMetadata_VorbisComment &vc)
@@ -44,8 +50,7 @@ flac_parse_replay_gain(ReplayGainInfo &rgi,
 
 	const auto *comments = vc.comments;
 	for (FLAC__uint32 i = 0, n = vc.num_comments; i < n; ++i)
-		if (ParseReplayGainVorbis(rgi,
-					  (const char *)comments[i].entry))
+		if (ParseReplayGainVorbis(rgi, ToStringView(comments[i])))
 			found = true;
 
 	return found;
@@ -58,8 +63,7 @@ flac_parse_mixramp(const FLAC__StreamMetadata_VorbisComment &vc)
 
 	const auto *comments = vc.comments;
 	for (FLAC__uint32 i = 0, n = vc.num_comments; i < n; ++i)
-		ParseMixRampVorbis(mix_ramp,
-				   (const char *)comments[i].entry);
+		ParseMixRampVorbis(mix_ramp, ToStringView(comments[i]));
 
 	return mix_ramp;
 }
@@ -72,8 +76,7 @@ static StringView
 GetFlacCommentValue(const FLAC__StreamMetadata_VorbisComment_Entry *entry,
 		    StringView name) noexcept
 {
-	return GetVorbisCommentValue({(const char *)entry->entry, entry->length},
-				     name);
+	return GetVorbisCommentValue(ToStringView(*entry), name);
 }
 
 /**
@@ -99,7 +102,7 @@ flac_scan_comment(const FLAC__StreamMetadata_VorbisComment_Entry *entry,
 		  TagHandler &handler) noexcept
 {
 	if (handler.WantPair()) {
-		const StringView comment((const char *)entry->entry);
+		const auto comment = ToStringView(*entry);
 		const auto split = StringView(comment).Split('=');
 		if (!split.first.empty() && !split.second.IsNull())
 			handler.OnPair(split.first, split.second);
