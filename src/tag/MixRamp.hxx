@@ -23,9 +23,10 @@
 class MixRampInfo;
 
 bool
-ParseMixRampTag(MixRampInfo &info, const char *name, const char *value);
+ParseMixRampTag(MixRampInfo &info,
+		const char *name, const char *value) noexcept;
 
 bool
-ParseMixRampVorbis(MixRampInfo &info, const char *entry);
+ParseMixRampVorbis(MixRampInfo &info, const char *entry) noexcept;
 
 #endif

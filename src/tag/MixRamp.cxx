@@ -27,7 +27,7 @@
 
 template<typename T>
 static bool
-ParseMixRampTagTemplate(MixRampInfo &info, const T t)
+ParseMixRampTagTemplate(MixRampInfo &info, const T t) noexcept
 {
 	const auto start = t["mixramp_start"];
 	if (!start.IsNull()) {
@@ -45,7 +45,8 @@ ParseMixRampTagTemplate(MixRampInfo &info, const T t)
 }
 
 bool
-ParseMixRampTag(MixRampInfo &info, const char *name, const char *value)
+ParseMixRampTag(MixRampInfo &info,
+		const char *name, const char *value) noexcept
 {
 	assert(name != nullptr);
 	assert(value != nullptr);
@@ -66,7 +67,7 @@ ParseMixRampTag(MixRampInfo &info, const char *name, const char *value)
 }
 
 bool
-ParseMixRampVorbis(MixRampInfo &info, const char *entry)
+ParseMixRampVorbis(MixRampInfo &info, const char *entry) noexcept
 {
 	struct VorbisCommentEntry {
 		const char *entry;
