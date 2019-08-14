@@ -19,8 +19,7 @@
 
 #include "VorbisComments.hxx"
 #include "VorbisPicture.hxx"
-#include "XiphTags.hxx"
-#include "tag/Table.hxx"
+#include "ScanVorbisComment.hxx"
 #include "tag/Handler.hxx"
 #include "tag/Builder.hxx"
 #include "tag/Tag.hxx"
@@ -64,24 +63,6 @@ VorbisCommentToReplayGain(ReplayGainInfo &rgi,
 	return found;
 }
 
-/**
- * Check if the comment's name equals the passed name, and if so, copy
- * the comment value into the tag.
- */
-static bool
-vorbis_copy_comment(StringView comment,
-		    StringView name, TagType tag_type,
-		    TagHandler &handler) noexcept
-{
-	const auto value = GetVorbisCommentValue(comment, name);
-	if (!value.IsNull()) {
-		handler.OnTag(tag_type, value);
-		return true;
-	}
-
-	return false;
-}
-
 static void
 vorbis_scan_comment(StringView comment, TagHandler &handler) noexcept
 {
@@ -91,22 +72,7 @@ vorbis_scan_comment(StringView comment, TagHandler &handler) noexcept
 	if (!picture_b64.IsNull())
 		return ScanVorbisPicture(picture_b64, handler);
 
-	if (handler.WantPair()) {
-		const auto split = comment.Split('=');
-		if (!split.first.empty() && !split.second.IsNull())
-			handler.OnPair(split.first, split.second);
-	}
-
-	for (const struct tag_table *i = xiph_tags; i->name != nullptr; ++i)
-		if (vorbis_copy_comment(comment, i->name, i->type,
-					handler))
-			return;
-
-	for (unsigned i = 0; i < TAG_NUM_OF_ITEM_TYPES; ++i)
-		if (vorbis_copy_comment(comment,
-					tag_item_names[i], TagType(i),
-					handler))
-			return;
+	ScanVorbisComment(comment, handler);
 }
 
 void

@@ -19,14 +19,12 @@
 
 #include "FlacStreamMetadata.hxx"
 #include "FlacAudioFormat.hxx"
-#include "XiphTags.hxx"
+#include "ScanVorbisComment.hxx"
 #include "CheckAudioFormat.hxx"
 #include "MixRampInfo.hxx"
 #include "tag/Handler.hxx"
-#include "tag/Table.hxx"
 #include "tag/Builder.hxx"
 #include "tag/Tag.hxx"
-#include "tag/VorbisComment.hxx"
 #include "tag/ReplayGain.hxx"
 #include "tag/MixRamp.hxx"
 #include "ReplayGainInfo.hxx"
@@ -68,50 +66,12 @@ flac_parse_mixramp(const FLAC__StreamMetadata_VorbisComment &vc)
 	return mix_ramp;
 }
 
-/**
- * Check if the comment's name equals the passed name, and if so, copy
- * the comment value into the tag.
- */
-static bool
-flac_copy_comment(StringView comment,
-		  StringView name, TagType tag_type,
-		  TagHandler &handler) noexcept
-{
-	const auto value = GetVorbisCommentValue(comment, name);
-	if (!value.IsNull()) {
-		handler.OnTag(tag_type, value);
-		return true;
-	}
-
-	return false;
-}
-
-static void
-flac_scan_comment(StringView comment, TagHandler &handler) noexcept
-{
-	if (handler.WantPair()) {
-		const auto split = comment.Split('=');
-		if (!split.first.empty() && !split.second.IsNull())
-			handler.OnPair(split.first, split.second);
-	}
-
-	for (const struct tag_table *i = xiph_tags; i->name != nullptr; ++i)
-		if (flac_copy_comment(comment, i->name, i->type, handler))
-			return;
-
-	for (unsigned i = 0; i < TAG_NUM_OF_ITEM_TYPES; ++i)
-		if (flac_copy_comment(comment,
-				      tag_item_names[i], (TagType)i,
-				      handler))
-			return;
-}
-
 static void
 flac_scan_comments(const FLAC__StreamMetadata_VorbisComment *comment,
 		   TagHandler &handler) noexcept
 {
 	for (unsigned i = 0; i < comment->num_comments; ++i)
-		flac_scan_comment(ToStringView(comment->comments[i]), handler);
+		ScanVorbisComment(ToStringView(comment->comments[i]), handler);
 }
 
 gcc_pure

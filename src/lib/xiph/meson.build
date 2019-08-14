@@ -46,6 +46,7 @@ endif
 
 xiph = static_library(
   'xiph',
+  'ScanVorbisComment.cxx',
   'VorbisComments.cxx',
   'VorbisPicture.cxx',
   'XiphTags.cxx',
