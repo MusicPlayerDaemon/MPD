@@ -128,6 +128,19 @@ struct BasicStringView : ConstBuffer<T> {
 	}
 
 	gcc_pure
+	bool StartsWithIgnoreCase(BasicStringView<T> needle) const noexcept {
+		return this->size >= needle.size &&
+			StringIsEqualIgnoreCase(data, needle.data, needle.size);
+	}
+
+	gcc_pure
+	bool EndsWithIgnoreCase(BasicStringView<T> needle) const noexcept {
+		return this->size >= needle.size &&
+			StringIsEqualIgnoreCase(data + this->size - needle.size,
+						needle.data, needle.size);
+	}
+
+	gcc_pure
 	bool EqualsIgnoreCase(BasicStringView<T> other) const noexcept {
 		return this->size == other.size &&
 			StringIsEqualIgnoreCase(data, other.data, this->size);
