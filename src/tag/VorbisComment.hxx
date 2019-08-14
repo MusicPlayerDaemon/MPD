@@ -22,12 +22,14 @@
 
 #include "util/Compiler.h"
 
+struct StringView;
+
 /**
  * Checks if the specified name matches the entry's name, and if yes,
  * returns the comment value.
  */
 gcc_pure
-const char *
-vorbis_comment_value(const char *entry, const char *name) noexcept;
+StringView
+GetVorbisCommentValue(StringView entry, StringView name) noexcept;
 
 #endif

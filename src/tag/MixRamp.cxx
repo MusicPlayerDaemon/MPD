@@ -72,8 +72,8 @@ ParseMixRampVorbis(MixRampInfo &info, const char *entry)
 		const char *entry;
 
 		gcc_pure
-		StringView operator[](const char *n) const noexcept {
-			return vorbis_comment_value(entry, n);
+		StringView operator[](StringView n) const noexcept {
+			return GetVorbisCommentValue(entry, n);
 		}
 	};
 

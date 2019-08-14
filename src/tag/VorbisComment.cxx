@@ -18,23 +18,21 @@
  */
 
 #include "VorbisComment.hxx"
-#include "util/ASCII.hxx"
+#include "util/StringView.hxx"
 
 #include <assert.h>
-#include <string.h>
 
-const char *
-vorbis_comment_value(const char *entry, const char *name) noexcept
+StringView
+GetVorbisCommentValue(StringView entry, StringView name) noexcept
 {
-	assert(entry != nullptr);
-	assert(name != nullptr);
-	assert(*name != 0);
+	assert(!name.empty());
 
-	const size_t length = strlen(name);
-
-	if (StringEqualsCaseASCII(entry, name, length) &&
-	    entry[length] == '=')
-		return entry + length + 1;
+	if (entry.StartsWithIgnoreCase(name) &&
+	    entry.size > name.size &&
+	    entry[name.size] == '=') {
+		entry.skip_front(name.size + 1);
+		return entry;
+	}
 
 	return nullptr;
 }

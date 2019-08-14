@@ -70,14 +70,14 @@ ParseReplayGainTag(ReplayGainInfo &info, const char *name, const char *value)
 }
 
 bool
-ParseReplayGainVorbis(ReplayGainInfo &info, const char *entry)
+ParseReplayGainVorbis(ReplayGainInfo &info, StringView entry)
 {
 	struct VorbisCommentEntry {
-		const char *entry;
+		StringView entry;
 
 		gcc_pure
-		const char *operator[](const char *n) const noexcept {
-			return vorbis_comment_value(entry, n);
+		const char *operator[](StringView n) const noexcept {
+			return GetVorbisCommentValue(entry, n).data;
 		}
 	};
 

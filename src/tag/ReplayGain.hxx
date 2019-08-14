@@ -20,12 +20,13 @@
 #ifndef MPD_TAG_REPLAY_GAIN_HXX
 #define MPD_TAG_REPLAY_GAIN_HXX
 
+struct StringView;
 struct ReplayGainInfo;
 
 bool
 ParseReplayGainTag(ReplayGainInfo &info, const char *name, const char *value);
 
 bool
-ParseReplayGainVorbis(ReplayGainInfo &info, const char *entry);
+ParseReplayGainVorbis(ReplayGainInfo &info, StringView entry);
 
 #endif

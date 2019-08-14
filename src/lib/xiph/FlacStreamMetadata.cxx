@@ -68,11 +68,12 @@ flac_parse_mixramp(const FLAC__StreamMetadata_VorbisComment &vc)
  * Checks if the specified name matches the entry's name, and if yes,
  * returns the comment value;
  */
-static const char *
-flac_comment_value(const FLAC__StreamMetadata_VorbisComment_Entry *entry,
-		   const char *name) noexcept
+static StringView
+GetFlacCommentValue(const FLAC__StreamMetadata_VorbisComment_Entry *entry,
+		    StringView name) noexcept
 {
-	return vorbis_comment_value((const char *)entry->entry, name);
+	return GetVorbisCommentValue({(const char *)entry->entry, entry->length},
+				     name);
 }
 
 /**
@@ -81,11 +82,11 @@ flac_comment_value(const FLAC__StreamMetadata_VorbisComment_Entry *entry,
  */
 static bool
 flac_copy_comment(const FLAC__StreamMetadata_VorbisComment_Entry *entry,
-		  const char *name, TagType tag_type,
+		  StringView name, TagType tag_type,
 		  TagHandler &handler) noexcept
 {
-	const char *value = flac_comment_value(entry, name);
-	if (value != nullptr) {
+	const auto value = GetFlacCommentValue(entry, name);
+	if (!value.IsNull()) {
 		handler.OnTag(tag_type, value);
 		return true;
 	}

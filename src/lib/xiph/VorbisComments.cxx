@@ -50,14 +50,12 @@ vorbis_comments_to_replay_gain(ReplayGainInfo &rgi, char **comments) noexcept
  * the comment value into the tag.
  */
 static bool
-vorbis_copy_comment(const char *comment,
-		    const char *name, TagType tag_type,
+vorbis_copy_comment(StringView comment,
+		    StringView name, TagType tag_type,
 		    TagHandler &handler) noexcept
 {
-	const char *value;
-
-	value = vorbis_comment_value(comment, name);
-	if (value != nullptr) {
+	const auto value = GetVorbisCommentValue(comment, name);
+	if (!value.IsNull()) {
 		handler.OnTag(tag_type, value);
 		return true;
 	}
