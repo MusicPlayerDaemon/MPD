@@ -1,6 +1,7 @@
 libavformat_dep = dependency('libavformat', version: '>= 57.40', required: get_option('ffmpeg'))
 libavcodec_dep = dependency('libavcodec', version: '>= 57.48', required: get_option('ffmpeg'))
 libavutil_dep = dependency('libavutil', version: '>= 55.27', required: get_option('ffmpeg'))
+conf.set('HAVE_LIBAVUTIL', libavutil_dep.found())
 
 enable_ffmpeg = libavformat_dep.found() and libavcodec_dep.found() and libavutil_dep.found()
 conf.set('ENABLE_FFMPEG', enable_ffmpeg)

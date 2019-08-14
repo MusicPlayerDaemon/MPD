@@ -28,20 +28,38 @@
  */
 
 #include "MD5.hxx"
+#include "util/HexFormat.hxx"
+#include "config.h"
+
+#ifdef HAVE_LIBAVUTIL
+extern "C" {
+#include <libavutil/md5.h>
+}
+#else
 #include "lib/gcrypt/MD5.hxx"
 #include "lib/gcrypt/Init.hxx"
-#include "util/HexFormat.hxx"
+#endif
 
 void
 GlobalInitMD5() noexcept
 {
+#ifdef HAVE_LIBAVUTIL
+	/* no initialization necessary */
+#else
 	Gcrypt::Init();
+#endif
 }
 
 std::array<uint8_t, 16>
 MD5(ConstBuffer<void> input) noexcept
 {
+#ifdef HAVE_LIBAVUTIL
+	std::array<uint8_t, 16> result;
+	av_md5_sum(&result.front(), (const uint8_t *)input.data, input.size);
+	return result;
+#else
 	return Gcrypt::MD5(input);
+#endif
 }
 
 StringBuffer<33>

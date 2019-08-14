@@ -1,9 +1,10 @@
-if gcrypt_dep.found()
+if libavutil_dep.found() or gcrypt_dep.found()
   crypto_md5 = static_library(
     'crypto_md5',
     'MD5.cxx',
     include_directories: inc,
     dependencies: [
+      libavutil_dep,
       gcrypt_dep,
     ],
   )

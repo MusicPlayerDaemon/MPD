@@ -1,3 +1,10 @@
+if libavutil_dep.found()
+  # if we have FFmpeg, we can use its MD5 implementation and we don't
+  # need libgcrypt
+  gcrypt_dep = dependency('', required: false)
+  subdir_done()
+endif
+
 # Since version 0.49.0 Meson has native libgcrypt dependency support, which has
 # the advantage over find_library() as it uses libgcrypt-config to query the
 # required linker flags.
