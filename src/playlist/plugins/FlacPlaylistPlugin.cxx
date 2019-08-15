@@ -102,7 +102,7 @@ flac_playlist_open_uri(const char *uri,
 		return nullptr;
 
 	FLAC__StreamMetadata streaminfo;
-	if (!FLAC__metadata_get_streaminfo(uri, &streaminfo) ||
+	if (!FLAC__metadata_get_streaminfo(narrow_path_fs, &streaminfo) ||
 	    streaminfo.data.stream_info.sample_rate == 0) {
 		FLAC__metadata_object_delete(cuesheet);
 		return nullptr;
