@@ -21,8 +21,6 @@
 #include "Domain.hxx"
 #include "Log.hxx"
 
-#include <cstdint> /* needed due to libavutil bug */
-
 extern "C" {
 #include <libavutil/error.h>
 }

@@ -33,7 +33,6 @@
 #include <algorithm>
 
 #include <assert.h>
-#include <string.h>
 
 #ifdef HAVE_FS_CHARSET
 

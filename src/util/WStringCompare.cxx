@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2018 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2013-2019 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -28,6 +28,8 @@
  */
 
 #include "WStringCompare.hxx"
+
+#include <string.h>
 
 bool
 StringEndsWith(const wchar_t *haystack, const wchar_t *needle) noexcept

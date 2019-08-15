@@ -27,11 +27,11 @@
 #include "fs/io/StdioOutputStream.hxx"
 #include "util/PrintException.hxx"
 
+#include <exception>
 #include <memory>
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <stddef.h>
 #include <unistd.h>
 
 int main(int argc, char **argv)

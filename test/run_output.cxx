@@ -24,7 +24,7 @@
 #include "event/Thread.hxx"
 #include "fs/Path.hxx"
 #include "AudioParser.hxx"
-#include "pcm/Convert.hxx"
+#include "AudioFormat.hxx"
 #include "util/StringBuffer.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/ScopeExit.hxx"

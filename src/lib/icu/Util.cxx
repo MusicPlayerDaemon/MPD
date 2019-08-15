@@ -20,7 +20,6 @@
 #include "Util.hxx"
 #include "util/AllocatedString.hxx"
 #include "util/AllocatedArray.hxx"
-#include "util/WritableBuffer.hxx"
 #include "util/ConstBuffer.hxx"
 
 #include <unicode/ustring.h>

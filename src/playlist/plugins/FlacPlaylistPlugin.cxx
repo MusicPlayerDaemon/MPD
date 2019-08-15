@@ -31,7 +31,6 @@
 #include "song/DetachedSong.hxx"
 #include "input/InputStream.hxx"
 #include "util/RuntimeError.hxx"
-#include "util/ScopeExit.hxx"
 
 #include <FLAC/metadata.h>
 

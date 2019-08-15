@@ -30,6 +30,8 @@
 #include "Delegate.hxx"
 #include "Parser.hxx"
 
+#include <utility>
+
 #include <assert.h>
 
 void

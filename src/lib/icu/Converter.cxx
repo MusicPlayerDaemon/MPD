@@ -20,7 +20,6 @@
 #include "Converter.hxx"
 #include "util/AllocatedString.hxx"
 #include "util/AllocatedArray.hxx"
-#include "util/ConstBuffer.hxx"
 #include "util/FormatString.hxx"
 #include "config.h"
 

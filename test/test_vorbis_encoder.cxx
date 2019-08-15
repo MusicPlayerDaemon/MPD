@@ -30,8 +30,8 @@
 
 #include <memory>
 
+#include <assert.h>
 #include <stddef.h>
-#include <unistd.h>
 
 static uint8_t zero[256];
 

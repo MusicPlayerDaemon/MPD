@@ -27,7 +27,6 @@
 #ifdef HAVE_ICU
 #include "Util.hxx"
 #include "util/AllocatedArray.hxx"
-#include "util/ConstBuffer.hxx"
 
 #include <unicode/ucol.h>
 #include <unicode/ustring.h>

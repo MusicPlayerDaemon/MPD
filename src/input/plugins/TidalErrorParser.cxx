@@ -20,7 +20,6 @@
 #include "TidalErrorParser.hxx"
 #include "TidalError.hxx"
 #include "lib/yajl/Callbacks.hxx"
-#include "util/ConstBuffer.hxx"
 #include "util/RuntimeError.hxx"
 
 using Wrapper = Yajl::CallbacksWrapper<TidalErrorParser>;

@@ -31,7 +31,6 @@
 #define HUGE_ALLOCATOR_HXX
 
 #include "WritableBuffer.hxx"
-#include "Compiler.h"
 
 #include <utility>
 
@@ -85,7 +84,7 @@ WritableBuffer<void>
 HugeAllocate(size_t size);
 
 static inline void
-HugeFree(void *p, gcc_unused size_t size) noexcept
+HugeFree(void *p, size_t) noexcept
 {
 	VirtualFree(p, 0, MEM_RELEASE);
 }
