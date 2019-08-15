@@ -26,10 +26,13 @@
 #include "FlacPlaylistPlugin.hxx"
 #include "../PlaylistPlugin.hxx"
 #include "../MemorySongEnumerator.hxx"
+#include "lib/xiph/FlacMetadataChain.hxx"
+#include "lib/xiph/FlacMetadataIterator.hxx"
 #include "song/DetachedSong.hxx"
 #include "fs/Traits.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "fs/NarrowPath.hxx"
+#include "util/RuntimeError.hxx"
 #include "util/ScopeExit.hxx"
 
 #include <FLAC/metadata.h>
@@ -74,23 +77,37 @@ flac_playlist_open_uri(const char *uri,
 
 	const NarrowPath narrow_path_fs(path_fs);
 
-	FLAC__StreamMetadata *cuesheet;
-	if (!FLAC__metadata_get_cuesheet(narrow_path_fs, &cuesheet))
-		return nullptr;
+	FlacMetadataChain chain;
+	if (!chain.Read(narrow_path_fs))
+		throw FormatRuntimeError("Failed to read FLAC metadata: %s",
+					 chain.GetStatusString());
 
-	AtScopeExit(cuesheet) { FLAC__metadata_object_delete(cuesheet); };
+	FlacMetadataIterator iterator((FLAC__Metadata_Chain *)chain);
 
-	FLAC__StreamMetadata streaminfo;
-	if (!FLAC__metadata_get_streaminfo(narrow_path_fs, &streaminfo) ||
-	    streaminfo.data.stream_info.sample_rate == 0) {
-		return nullptr;
-	}
+	unsigned sample_rate = 0;
+	FLAC__uint64 total_samples;
 
-	const unsigned sample_rate = streaminfo.data.stream_info.sample_rate;
-	const FLAC__uint64 total_samples = streaminfo.data.stream_info.total_samples;
+	do {
+		auto &block = *iterator.GetBlock();
+		switch (block.type) {
+		case FLAC__METADATA_TYPE_STREAMINFO:
+			sample_rate = block.data.stream_info.sample_rate;
+			total_samples = block.data.stream_info.total_samples;
+			break;
 
-	return ToSongEnumerator(uri, cuesheet->data.cue_sheet,
-				sample_rate, total_samples);
+		case FLAC__METADATA_TYPE_CUESHEET:
+			if (sample_rate == 0)
+				break;
+
+			return ToSongEnumerator(uri, block.data.cue_sheet,
+						sample_rate, total_samples);
+
+		default:
+			break;
+		}
+	} while (iterator.Next());
+
+	return nullptr;
 }
 
 static const char *const flac_playlist_suffixes[] = {
