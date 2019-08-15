@@ -25,65 +25,14 @@
 
 #include "FlacPlaylistPlugin.hxx"
 #include "../PlaylistPlugin.hxx"
-#include "../SongEnumerator.hxx"
+#include "../MemorySongEnumerator.hxx"
 #include "song/DetachedSong.hxx"
 #include "fs/Traits.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "fs/NarrowPath.hxx"
+#include "util/ScopeExit.hxx"
 
 #include <FLAC/metadata.h>
-
-class FlacPlaylist final : public SongEnumerator {
-	const std::string uri;
-
-	FLAC__StreamMetadata *const cuesheet;
-	const unsigned sample_rate;
-	const FLAC__uint64 total_samples;
-
-	unsigned next_track = 0;
-
-public:
-	FlacPlaylist(const char *_uri,
-		     FLAC__StreamMetadata *_cuesheet,
-		     const FLAC__StreamMetadata &streaminfo) noexcept
-		:uri(_uri), cuesheet(_cuesheet),
-		 sample_rate(streaminfo.data.stream_info.sample_rate),
-		 total_samples(streaminfo.data.stream_info.total_samples) {
-	}
-
-	~FlacPlaylist() noexcept override {
-		FLAC__metadata_object_delete(cuesheet);
-	}
-
-	virtual std::unique_ptr<DetachedSong> NextSong() override;
-};
-
-std::unique_ptr<DetachedSong>
-FlacPlaylist::NextSong()
-{
-	const FLAC__StreamMetadata_CueSheet &c = cuesheet->data.cue_sheet;
-
-	/* find the next audio track */
-
-	while (next_track < c.num_tracks &&
-	       (c.tracks[next_track].number > c.num_tracks ||
-		c.tracks[next_track].type != 0))
-		++next_track;
-
-	if (next_track >= c.num_tracks)
-		return nullptr;
-
-	FLAC__uint64 start = c.tracks[next_track].offset;
-	++next_track;
-	FLAC__uint64 end = next_track < c.num_tracks
-		? c.tracks[next_track].offset
-		: total_samples;
-
-	auto song = std::make_unique<DetachedSong>(uri);
-	song->SetStartTime(SongTime::FromScale(start, sample_rate));
-	song->SetEndTime(SongTime::FromScale(end, sample_rate));
-	return song;
-}
 
 static std::unique_ptr<SongEnumerator>
 flac_playlist_open_uri(const char *uri,
@@ -101,14 +50,38 @@ flac_playlist_open_uri(const char *uri,
 	if (!FLAC__metadata_get_cuesheet(narrow_path_fs, &cuesheet))
 		return nullptr;
 
+	AtScopeExit(cuesheet) { FLAC__metadata_object_delete(cuesheet); };
+
 	FLAC__StreamMetadata streaminfo;
 	if (!FLAC__metadata_get_streaminfo(narrow_path_fs, &streaminfo) ||
 	    streaminfo.data.stream_info.sample_rate == 0) {
-		FLAC__metadata_object_delete(cuesheet);
 		return nullptr;
 	}
 
-	return std::make_unique<FlacPlaylist>(uri, cuesheet, streaminfo);
+	const unsigned sample_rate = streaminfo.data.stream_info.sample_rate;
+	const FLAC__uint64 total_samples = streaminfo.data.stream_info.total_samples;
+
+	std::forward_list<DetachedSong> songs;
+	auto tail = songs.before_begin();
+
+	const auto &c = cuesheet->data.cue_sheet;
+	for (unsigned i = 0; i < c.num_tracks; ++i) {
+		const auto &track = c.tracks[i];
+		if (track.type != 0)
+			continue;
+
+		const FLAC__uint64 start = track.offset;
+		const FLAC__uint64 end = i + 1 < c.num_tracks
+			? c.tracks[i + 1].offset
+			: total_samples;
+
+		tail = songs.emplace_after(tail, uri);
+		auto &song = *tail;
+		song.SetStartTime(SongTime::FromScale(start, sample_rate));
+		song.SetEndTime(SongTime::FromScale(end, sample_rate));
+	}
+
+	return std::make_unique<MemorySongEnumerator>(std::move(songs));
 }
 
 static const char *const flac_playlist_suffixes[] = {
