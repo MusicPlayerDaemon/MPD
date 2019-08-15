@@ -34,6 +34,34 @@
 
 #include <FLAC/metadata.h>
 
+static auto
+ToSongEnumerator(const char *uri,
+		 const FLAC__StreamMetadata_CueSheet &c,
+		 const unsigned sample_rate,
+		 const FLAC__uint64 total_samples) noexcept
+{
+	std::forward_list<DetachedSong> songs;
+	auto tail = songs.before_begin();
+
+	for (unsigned i = 0; i < c.num_tracks; ++i) {
+		const auto &track = c.tracks[i];
+		if (track.type != 0)
+			continue;
+
+		const FLAC__uint64 start = track.offset;
+		const FLAC__uint64 end = i + 1 < c.num_tracks
+			? c.tracks[i + 1].offset
+			: total_samples;
+
+		tail = songs.emplace_after(tail, uri);
+		auto &song = *tail;
+		song.SetStartTime(SongTime::FromScale(start, sample_rate));
+		song.SetEndTime(SongTime::FromScale(end, sample_rate));
+	}
+
+	return std::make_unique<MemorySongEnumerator>(std::move(songs));
+}
+
 static std::unique_ptr<SongEnumerator>
 flac_playlist_open_uri(const char *uri,
 		       gcc_unused Mutex &mutex)
@@ -61,27 +89,8 @@ flac_playlist_open_uri(const char *uri,
 	const unsigned sample_rate = streaminfo.data.stream_info.sample_rate;
 	const FLAC__uint64 total_samples = streaminfo.data.stream_info.total_samples;
 
-	std::forward_list<DetachedSong> songs;
-	auto tail = songs.before_begin();
-
-	const auto &c = cuesheet->data.cue_sheet;
-	for (unsigned i = 0; i < c.num_tracks; ++i) {
-		const auto &track = c.tracks[i];
-		if (track.type != 0)
-			continue;
-
-		const FLAC__uint64 start = track.offset;
-		const FLAC__uint64 end = i + 1 < c.num_tracks
-			? c.tracks[i + 1].offset
-			: total_samples;
-
-		tail = songs.emplace_after(tail, uri);
-		auto &song = *tail;
-		song.SetStartTime(SongTime::FromScale(start, sample_rate));
-		song.SetEndTime(SongTime::FromScale(end, sample_rate));
-	}
-
-	return std::make_unique<MemorySongEnumerator>(std::move(songs));
+	return ToSongEnumerator(uri, cuesheet->data.cue_sheet,
+				sample_rate, total_samples);
 }
 
 static const char *const flac_playlist_suffixes[] = {
