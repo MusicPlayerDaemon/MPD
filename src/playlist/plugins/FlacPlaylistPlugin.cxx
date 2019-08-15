@@ -29,9 +29,7 @@
 #include "lib/xiph/FlacMetadataChain.hxx"
 #include "lib/xiph/FlacMetadataIterator.hxx"
 #include "song/DetachedSong.hxx"
-#include "fs/Traits.hxx"
-#include "fs/AllocatedPath.hxx"
-#include "fs/NarrowPath.hxx"
+#include "input/InputStream.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/ScopeExit.hxx"
 
@@ -66,21 +64,14 @@ ToSongEnumerator(const char *uri,
 }
 
 static std::unique_ptr<SongEnumerator>
-flac_playlist_open_uri(const char *uri,
-		       gcc_unused Mutex &mutex)
+flac_playlist_open_stream(InputStreamPtr &&is)
 {
-	if (!PathTraitsUTF8::IsAbsolute(uri))
-		/* only local files supported */
-		return nullptr;
-
-	const auto path_fs = AllocatedPath::FromUTF8Throw(uri);
-
-	const NarrowPath narrow_path_fs(path_fs);
-
 	FlacMetadataChain chain;
-	if (!chain.Read(narrow_path_fs))
+	if (!chain.Read(*is))
 		throw FormatRuntimeError("Failed to read FLAC metadata: %s",
 					 chain.GetStatusString());
+
+	const char *const uri = is->GetURI();
 
 	FlacMetadataIterator iterator((FLAC__Metadata_Chain *)chain);
 
@@ -120,8 +111,8 @@ const struct playlist_plugin flac_playlist_plugin = {
 
 	nullptr,
 	nullptr,
-	flac_playlist_open_uri,
 	nullptr,
+	flac_playlist_open_stream,
 
 	nullptr,
 	flac_playlist_suffixes,

@@ -14,6 +14,8 @@ ver 0.22 (not yet released)
   - mad: remove option "gapless", always do gapless
   - sidplay: add option "default_genre"
   - sidplay: map SID name field to "Album" tag
+* playlist
+  - flac: support reading CUE sheets from remote FLAC files
 * filter
   - ffmpeg: new plugin based on FFmpeg's libavfilter library
   - hdcd: new plugin based on FFmpeg's "af_hdcd" for HDCD playback
