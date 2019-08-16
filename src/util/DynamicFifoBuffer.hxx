@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2018 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2003-2019 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -40,10 +40,10 @@
 template<typename T>
 class DynamicFifoBuffer : protected ForeignFifoBuffer<T> {
 public:
-	typedef typename ForeignFifoBuffer<T>::size_type size_type;
-	typedef typename ForeignFifoBuffer<T>::pointer_type pointer_type;
-	typedef typename ForeignFifoBuffer<T>::const_pointer_type const_pointer_type;
-	typedef typename ForeignFifoBuffer<T>::Range Range;
+	using typename ForeignFifoBuffer<T>::size_type;
+	using typename ForeignFifoBuffer<T>::pointer_type;
+	using typename ForeignFifoBuffer<T>::const_pointer_type;
+	using typename ForeignFifoBuffer<T>::Range;
 
 	explicit DynamicFifoBuffer(size_type _capacity) noexcept
 		:ForeignFifoBuffer<T>(new T[_capacity], _capacity) {}

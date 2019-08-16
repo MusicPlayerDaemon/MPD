@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2017 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2003-2019 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -46,10 +46,8 @@
 template<class T, size_t size>
 class StaticFifoBuffer {
 public:
-	typedef size_t size_type;
-
-public:
-	typedef WritableBuffer<T> Range;
+	using size_type = size_t;
+	using Range = WritableBuffer<T>;
 
 protected:
 	size_type head = 0, tail = 0;
