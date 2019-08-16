@@ -126,6 +126,13 @@ StringCompare(const wchar_t *a, const wchar_t *b) noexcept
 	return wcscmp(a, b);
 }
 
+gcc_pure gcc_nonnull_all
+static inline int
+StringCompare(const wchar_t *a, const wchar_t *b, size_t n) noexcept
+{
+	return wcsncmp(a, b, n);
+}
+
 /**
  * Checks whether str1 and str2 are equal.
  * @param str1 String 1
