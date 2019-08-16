@@ -82,7 +82,7 @@ public:
 		return *this;
 	}
 
-	void Swap(ForeignFifoBuffer<T> &other) noexcept {
+	void swap(ForeignFifoBuffer<T> &other) noexcept {
 		using std::swap;
 		swap(head, other.head);
 		swap(tail, other.tail);
