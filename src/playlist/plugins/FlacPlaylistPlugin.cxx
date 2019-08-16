@@ -70,8 +70,6 @@ flac_playlist_open_stream(InputStreamPtr &&is)
 		throw FormatRuntimeError("Failed to read FLAC metadata: %s",
 					 chain.GetStatusString());
 
-	const char *const uri = is->GetURI();
-
 	FlacMetadataIterator iterator((FLAC__Metadata_Chain *)chain);
 
 	unsigned sample_rate = 0;
@@ -89,7 +87,7 @@ flac_playlist_open_stream(InputStreamPtr &&is)
 			if (sample_rate == 0)
 				break;
 
-			return ToSongEnumerator(uri, block.data.cue_sheet,
+			return ToSongEnumerator("", block.data.cue_sheet,
 						sample_rate, total_samples);
 
 		default:
