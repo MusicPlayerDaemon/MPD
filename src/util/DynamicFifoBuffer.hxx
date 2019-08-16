@@ -46,6 +46,12 @@ public:
 	using typename ForeignFifoBuffer<T>::Range;
 
 	/**
+	 * Construct without allocating a buffer.
+	 */
+	explicit constexpr DynamicFifoBuffer(std::nullptr_t n) noexcept
+		:ForeignFifoBuffer<T>(n) {}
+
+	/**
 	 * Allocate a buffer with the given capacity.
 	 */
 	explicit DynamicFifoBuffer(size_type _capacity) noexcept
