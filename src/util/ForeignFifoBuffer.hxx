@@ -90,6 +90,10 @@ public:
 		swap(data, other.data);
 	}
 
+	friend void swap(ForeignFifoBuffer<T> &a, ForeignFifoBuffer<T> &b) noexcept {
+		a.swap(b);
+	}
+
 	constexpr bool IsNull() const noexcept {
 		return data == nullptr;
 	}
