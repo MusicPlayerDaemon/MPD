@@ -45,8 +45,12 @@ public:
 	using typename ForeignFifoBuffer<T>::const_pointer_type;
 	using typename ForeignFifoBuffer<T>::Range;
 
+	/**
+	 * Allocate a buffer with the given capacity.
+	 */
 	explicit DynamicFifoBuffer(size_type _capacity) noexcept
 		:ForeignFifoBuffer<T>(new T[_capacity], _capacity) {}
+
 	~DynamicFifoBuffer() noexcept {
 		delete[] GetBuffer();
 	}
