@@ -83,10 +83,11 @@ public:
 	}
 
 	void Swap(ForeignFifoBuffer<T> &other) noexcept {
-		std::swap(head, other.head);
-		std::swap(tail, other.tail);
-		std::swap(capacity, other.capacity);
-		std::swap(data, other.data);
+		using std::swap;
+		swap(head, other.head);
+		swap(tail, other.tail);
+		swap(capacity, other.capacity);
+		swap(data, other.data);
 	}
 
 	constexpr bool IsNull() const noexcept {
