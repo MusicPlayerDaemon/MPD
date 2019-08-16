@@ -122,6 +122,23 @@ struct BasicStringView : ConstBuffer<T> {
 	}
 
 	gcc_pure
+	int Compare(BasicStringView<T> other) const noexcept {
+		if (size < other.size) {
+			int result = StringCompare(data, other.data, size);
+			if (result == 0)
+				result = -1;
+			return result;
+		} else if (size > other.size) {
+			int result = StringCompare(data, other.data,
+						   other.size);
+			if (result == 0)
+				result = 1;
+			return result;
+		} else
+			return StringCompare(data, other.data, size);
+	}
+
+	gcc_pure
 	bool Equals(BasicStringView<T> other) const noexcept {
 		return this->size == other.size &&
 			StringIsEqual(data, other.data, this->size);
