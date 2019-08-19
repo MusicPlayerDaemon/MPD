@@ -58,6 +58,56 @@ FormatISO8601(std::chrono::system_clock::time_point tp)
 	return FormatISO8601(GmTime(tp));
 }
 
+static std::pair<unsigned, unsigned>
+ParseTimeZoneOffsetRaw(const char *&s)
+{
+	char *endptr;
+	unsigned long value = strtoul(s, &endptr, 10);
+	if (endptr == s + 4) {
+		s = endptr;
+		return std::make_pair(value / 100, value % 100);
+	} else if (endptr == s + 2) {
+		s = endptr;
+
+		unsigned hours = value, minutes = 0;
+		if (*s == ':') {
+			++s;
+			minutes = strtoul(s, &endptr, 10);
+			if (endptr != s + 2)
+				throw std::runtime_error("Failed to parse time zone offset");
+
+			s = endptr;
+		}
+
+		return std::make_pair(hours, minutes);
+	} else
+		throw std::runtime_error("Failed to parse time zone offset");
+}
+
+static std::chrono::system_clock::duration
+ParseTimeZoneOffset(const char *&s)
+{
+	assert(*s == '+' || *s == '-');
+
+	bool negative = *s == '-';
+	++s;
+
+	auto raw = ParseTimeZoneOffsetRaw(s);
+	if (raw.first > 13)
+		throw std::runtime_error("Time offset hours out of range");
+
+	if (raw.second >= 60)
+		throw std::runtime_error("Time offset minutes out of range");
+
+	std::chrono::system_clock::duration d = std::chrono::hours(raw.first);
+	d += std::chrono::minutes(raw.second);
+
+	if (negative)
+		d = -d;
+
+	return d;
+}
+
 std::pair<std::chrono::system_clock::time_point,
 	  std::chrono::system_clock::duration>
 ParseISO8601(const char *s)
@@ -93,8 +143,11 @@ ParseISO8601(const char *s)
 
 	auto tp = TimeGm(tm);
 
+	/* time zone */
 	if (*s == 'Z')
 		++s;
+	else if (*s == '+' || *s == '-')
+		tp -= ParseTimeZoneOffset(s);
 
 	if (*s != 0)
 		throw std::runtime_error("Garbage at end of time stamp");
