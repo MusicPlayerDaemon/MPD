@@ -140,7 +140,7 @@ CurlRequest::FinishHeaders()
 	state = State::BODY;
 
 	long status = 0;
-	curl_easy_getinfo(easy.Get(), CURLINFO_RESPONSE_CODE, &status);
+	easy.GetInfo(CURLINFO_RESPONSE_CODE, &status);
 
 	handler.OnHeaders(status, std::move(headers));
 }

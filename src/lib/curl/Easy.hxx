@@ -30,6 +30,8 @@
 #ifndef CURL_EASY_HXX
 #define CURL_EASY_HXX
 
+#include "util/Compiler.h"
+
 #include <curl/curl.h>
 
 #include <utility>
@@ -158,6 +160,22 @@ public:
 
 	void SetHttpPost(const struct curl_httppost *post) {
 		SetOption(CURLOPT_HTTPPOST, post);
+	}
+
+	template<typename T>
+	bool GetInfo(CURLINFO info, T value_r) const noexcept {
+		return ::curl_easy_getinfo(handle, info, value_r) == CURLE_OK;
+	}
+
+	/**
+	 * Returns the response body's size, or -1 if that is unknown.
+	 */
+	gcc_pure
+	int64_t GetContentLength() const noexcept {
+		double value;
+		return GetInfo(CURLINFO_CONTENT_LENGTH_DOWNLOAD, &value)
+			? (int64_t)value
+			: -1;
 	}
 
 	bool Unpause() noexcept {
