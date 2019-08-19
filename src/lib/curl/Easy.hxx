@@ -160,6 +160,10 @@ public:
 		SetOption(CURLOPT_HTTPPOST, post);
 	}
 
+	bool Unpause() noexcept {
+		return ::curl_easy_pause(handle, CURLPAUSE_CONT) == CURLE_OK;
+	}
+
 	char *Escape(const char *string, int length=0) const noexcept {
 		return curl_easy_escape(handle, string, length);
 	}
