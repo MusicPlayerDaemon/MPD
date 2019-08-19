@@ -176,6 +176,10 @@ CurlGlobal::Remove(CurlRequest &r) noexcept
 	InvalidateSockets();
 }
 
+/**
+ * Find a request by its CURL "easy" handle.
+ */
+gcc_pure
 static CurlRequest *
 ToRequest(CURL *easy) noexcept
 {
