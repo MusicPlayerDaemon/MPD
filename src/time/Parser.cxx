@@ -28,6 +28,7 @@
  */
 
 #include "Parser.hxx"
+#include "Convert.hxx"
 #include "util/Compiler.h"
 
 #include <stdexcept>
@@ -72,13 +73,11 @@ ParseTimePoint(const char *s, const char *format)
 
 #ifdef __GLIBC__
 	/* timegm() is a GNU extension */
-	const auto t = timegm(&tm);
+	return TimeGm(tm);
 #else
 	tm.tm_isdst = 0;
 	const auto t = mktime(&tm) + GetTimeZoneOffset();
-#endif /* !__GLIBC__ */
-
 	return std::chrono::system_clock::from_time_t(t);
-
+#endif /* !__GLIBC__ */
 #endif /* !_WIN32 */
 }
