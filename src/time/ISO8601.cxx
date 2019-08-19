@@ -70,13 +70,31 @@ ParseISO8601(const char *s)
 	throw std::runtime_error("Time parsing not implemented on Windows");
 #else
 	struct tm tm{};
-	const char *end = strptime(s, "%FT%TZ", &tm);
-	if (end == nullptr || *end != 0)
-		throw std::runtime_error("Failed to parse time stamp");
 
-	std::chrono::system_clock::duration precision = std::chrono::seconds(1);
+	/* parse the date */
+	const char *end = strptime(s, "%F", &tm);
+	if (end == nullptr)
+		throw std::runtime_error("Failed to parse date");
+
+	s = end;
+
+	std::chrono::system_clock::duration precision = std::chrono::hours(24);
+
+	/* parse the time of day */
+	if (*s == 'T') {
+		++s;
+		end = strptime(s, "%TZ", &tm);
+		if (end == nullptr)
+			throw std::runtime_error("Failed to parse time of day");
+
+		s = end;
+		precision = std::chrono::seconds(1);
+	}
 
 	auto tp = TimeGm(tm);
+
+	if (*s != 0)
+		throw std::runtime_error("Garbage at end of time stamp");
 
 	return std::make_pair(tp, precision);
 #endif /* !_WIN32 */

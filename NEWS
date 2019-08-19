@@ -3,6 +3,7 @@ ver 0.22 (not yet released)
   - "findadd"/"searchadd"/"searchaddpl" support the "sort" and
     "window" parameters
   - add command "readpicture" to download embedded pictures
+  - relax the ISO 8601 parser: allow omitting the time of day
 * tags
   - new tags "Grouping" (for ID3 "TIT1") and "Work"
 * input
