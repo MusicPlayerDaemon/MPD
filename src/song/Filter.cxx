@@ -113,7 +113,7 @@ ParseTimeStamp(const char *s)
 		return std::chrono::system_clock::from_time_t((time_t)value);
 
 	/* try ISO 8601 */
-	return ParseISO8601(s);
+	return ParseISO8601(s).first;
 }
 
 static constexpr bool

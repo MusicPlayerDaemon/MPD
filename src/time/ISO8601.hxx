@@ -36,6 +36,7 @@
 #include "util/Compiler.h"
 
 #include <chrono>
+#include <utility>
 
 #include <stddef.h>
 
@@ -50,7 +51,16 @@ gcc_pure
 StringBuffer<64>
 FormatISO8601(std::chrono::system_clock::time_point tp);
 
-std::chrono::system_clock::time_point
+/**
+ * Parse a time stamp in ISO8601 format.
+ *
+ * Throws on error.
+ *
+ * @return a pair consisting of the time point and the specified
+ * precision; e.g. for a date, the second value is "one day"
+ */
+std::pair<std::chrono::system_clock::time_point,
+	  std::chrono::system_clock::duration>
 ParseISO8601(const char *s);
 
 #endif

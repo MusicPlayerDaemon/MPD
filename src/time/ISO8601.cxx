@@ -58,7 +58,8 @@ FormatISO8601(std::chrono::system_clock::time_point tp)
 	return FormatISO8601(GmTime(tp));
 }
 
-std::chrono::system_clock::time_point
+std::pair<std::chrono::system_clock::time_point,
+	  std::chrono::system_clock::duration>
 ParseISO8601(const char *s)
 {
 	assert(s != nullptr);
@@ -73,6 +74,10 @@ ParseISO8601(const char *s)
 	if (end == nullptr || *end != 0)
 		throw std::runtime_error("Failed to parse time stamp");
 
-	return TimeGm(tm);
+	std::chrono::system_clock::duration precision = std::chrono::seconds(1);
+
+	auto tp = TimeGm(tm);
+
+	return std::make_pair(tp, precision);
 #endif /* !_WIN32 */
 }
