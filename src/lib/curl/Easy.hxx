@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2018 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2016-2018 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -86,6 +86,78 @@ public:
 		CURLcode code = curl_easy_setopt(handle, option, value);
 		if (code != CURLE_OK)
 			throw std::runtime_error(curl_easy_strerror(code));
+	}
+
+	void SetPrivate(void *pointer) {
+		SetOption(CURLOPT_PRIVATE, pointer);
+	}
+
+	void SetErrorBuffer(char *buf) {
+		SetOption(CURLOPT_ERRORBUFFER, buf);
+	}
+
+	void SetURL(const char *value) {
+		SetOption(CURLOPT_URL, value);
+	}
+
+	void SetUserAgent(const char *value) {
+		SetOption(CURLOPT_USERAGENT, value);
+	}
+
+	void SetRequestHeaders(struct curl_slist *headers) {
+		SetOption(CURLOPT_HTTPHEADER, headers);
+	}
+
+	void SetBasicAuth(const char *userpwd) {
+		SetOption(CURLOPT_USERPWD, userpwd);
+	}
+
+	void SetNoProgress(bool value=true) {
+		SetOption(CURLOPT_NOPROGRESS, (long)value);
+	}
+
+	void SetNoSignal(bool value=true) {
+		SetOption(CURLOPT_NOSIGNAL, (long)value);
+	}
+
+	void SetFailOnError(bool value=true) {
+		SetOption(CURLOPT_FAILONERROR, (long)value);
+	}
+
+	void SetConnectTimeout(long timeout) {
+		SetOption(CURLOPT_CONNECTTIMEOUT, timeout);
+	}
+
+	void SetHeaderFunction(size_t (*function)(char *buffer, size_t size,
+						  size_t nitems,
+						  void *userdata),
+			       void *userdata) {
+		SetOption(CURLOPT_HEADERFUNCTION, function);
+		SetOption(CURLOPT_HEADERDATA, userdata);
+	}
+
+	void SetWriteFunction(size_t (*function)(char *ptr, size_t size,
+						 size_t nmemb, void *userdata),
+			      void *userdata) {
+		SetOption(CURLOPT_WRITEFUNCTION, function);
+		SetOption(CURLOPT_WRITEDATA, userdata);
+	}
+
+	void SetNoBody(bool value=true) {
+		SetOption(CURLOPT_NOBODY, (long)value);
+	}
+
+	void SetPost(bool value=true) {
+		SetOption(CURLOPT_POST, (long)value);
+	}
+
+	void SetRequestBody(const void *data, size_t size) {
+		SetOption(CURLOPT_POSTFIELDS, data);
+		SetOption(CURLOPT_POSTFIELDSIZE, (long)size);
+	}
+
+	void SetHttpPost(const struct curl_httppost *post) {
+		SetOption(CURLOPT_HTTPPOST, post);
 	}
 
 	char *Escape(const char *string, int length=0) const noexcept {
