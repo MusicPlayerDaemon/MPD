@@ -53,16 +53,12 @@ GmTime(std::chrono::system_clock::time_point tp);
 struct tm
 LocalTime(std::chrono::system_clock::time_point tp);
 
-#ifdef __GLIBC__
-
 /**
  * Convert a UTC-based "struct tm" to a UTC-based time point.
  */
 gcc_pure
 std::chrono::system_clock::time_point
 TimeGm(struct tm &tm) noexcept;
-
-#endif
 
 /**
  * Convert a local "struct tm" to a UTC-based time point.

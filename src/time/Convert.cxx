@@ -67,15 +67,42 @@ LocalTime(std::chrono::system_clock::time_point tp)
 	return *tm;
 }
 
-#ifdef __GLIBC__
+#ifndef __GLIBC__
+
+/**
+ * Determine the time zone offset in a portable way.
+ */
+gcc_const
+static time_t
+GetTimeZoneOffset() noexcept
+{
+	time_t t = 1234567890;
+	struct tm tm;
+	tm.tm_isdst = 0;
+#ifdef _WIN32
+	struct tm *p = gmtime(&t);
+#else
+	struct tm *p = &tm;
+	gmtime_r(&t, p);
+#endif
+	return t - mktime(&tm);
+}
+
+#endif /* !__GLIBC__ */
 
 std::chrono::system_clock::time_point
 TimeGm(struct tm &tm) noexcept
 {
-	return std::chrono::system_clock::from_time_t(timegm(&tm));
-}
+#ifdef __GLIBC__
+	/* timegm() is a GNU extension */
+	const auto t = timegm(&tm);
+#else
+	tm.tm_isdst = 0;
+	const auto t = mktime(&tm) + GetTimeZoneOffset();
+#endif /* !__GLIBC__ */
 
-#endif
+	return std::chrono::system_clock::from_time_t(t);
+}
 
 std::chrono::system_clock::time_point
 MakeTime(struct tm &tm) noexcept
