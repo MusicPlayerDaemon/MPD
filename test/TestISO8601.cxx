@@ -58,6 +58,10 @@ static constexpr struct {
 	/* without time zone */
 	{ "2019-02-04T16:46:41", 1549298801, std::chrono::seconds(1) },
 
+	/* without seconds */
+	{ "2019-02-04T16:46", 1549298760, std::chrono::minutes(1) },
+	{ "2019-02-04T16:46Z", 1549298760, std::chrono::minutes(1) },
+
 	/* with time zone */
 	{ "2019-02-04T16:46:41+02", 1549291601, std::chrono::seconds(1) },
 	{ "2019-02-04T16:46:41+0200", 1549291601, std::chrono::seconds(1) },
