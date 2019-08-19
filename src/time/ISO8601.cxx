@@ -133,12 +133,15 @@ ParseISO8601(const char *s)
 	/* parse the time of day */
 	if (*s == 'T') {
 		++s;
-		end = strptime(s, "%T", &tm);
-		if (end == nullptr)
+
+		if ((end = strptime(s, "%T", &tm)) != nullptr)
+			precision = std::chrono::seconds(1);
+		else if ((end = strptime(s, "%H:%M", &tm)) != nullptr)
+			precision = std::chrono::minutes(1);
+		else
 			throw std::runtime_error("Failed to parse time of day");
 
 		s = end;
-		precision = std::chrono::seconds(1);
 	}
 
 	auto tp = TimeGm(tm);
