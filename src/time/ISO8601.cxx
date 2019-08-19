@@ -32,8 +32,11 @@
 
 #include "ISO8601.hxx"
 #include "Convert.hxx"
-#include "Parser.hxx"
 #include "util/StringBuffer.hxx"
+
+#include <stdexcept>
+
+#include <assert.h>
 
 StringBuffer<64>
 FormatISO8601(const struct tm &tm) noexcept
@@ -58,5 +61,18 @@ FormatISO8601(std::chrono::system_clock::time_point tp)
 std::chrono::system_clock::time_point
 ParseISO8601(const char *s)
 {
-	return ParseTimePoint(s, "%FT%TZ");
+	assert(s != nullptr);
+
+#ifdef _WIN32
+	/* TODO: emulate strptime()? */
+	(void)s;
+	throw std::runtime_error("Time parsing not implemented on Windows");
+#else
+	struct tm tm{};
+	const char *end = strptime(s, "%FT%TZ", &tm);
+	if (end == nullptr || *end != 0)
+		throw std::runtime_error("Failed to parse time stamp");
+
+	return TimeGm(tm);
+#endif /* !_WIN32 */
 }
