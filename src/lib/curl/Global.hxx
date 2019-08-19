@@ -57,13 +57,6 @@ public:
 	void Add(CURL *easy, CurlRequest &request);
 	void Remove(CURL *easy) noexcept;
 
-	/**
-	 * Check for finished HTTP responses.
-	 *
-	 * Runs in the I/O thread.  The caller must not hold locks.
-	 */
-	void ReadInfo() noexcept;
-
 	void Assign(curl_socket_t fd, CurlSocket &cs) noexcept {
 		curl_multi_assign(multi.Get(), fd, &cs);
 	}
@@ -85,6 +78,13 @@ public:
 	}
 
 private:
+	/**
+	 * Check for finished HTTP responses.
+	 *
+	 * Runs in the I/O thread.  The caller must not hold locks.
+	 */
+	void ReadInfo() noexcept;
+
 	void UpdateTimeout(long timeout_ms) noexcept;
 	static int TimerFunction(CURLM *multi, long timeout_ms,
 				 void *userp) noexcept;
