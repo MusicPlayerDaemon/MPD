@@ -154,11 +154,6 @@ CurlSocket::OnSocketReady(unsigned flags) noexcept
 	return true;
 }
 
-/**
- * Runs in the I/O thread.  No lock needed.
- *
- * Throws std::runtime_error on error.
- */
 void
 CurlGlobal::Add(CURL *easy, CurlRequest &request)
 {
@@ -195,11 +190,6 @@ ToRequest(CURL *easy) noexcept
 	return (CurlRequest *)p;
 }
 
-/**
- * Check for finished HTTP responses.
- *
- * Runs in the I/O thread.  The caller must not hold locks.
- */
 inline void
 CurlGlobal::ReadInfo() noexcept
 {
