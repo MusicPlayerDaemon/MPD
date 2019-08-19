@@ -48,6 +48,19 @@ test('TestUtil', executable(
   ],
 ))
 
+test(
+  'TestTime',
+  executable(
+    'TestTime',
+    'TestISO8601.cxx',
+    include_directories: inc,
+    dependencies: [
+      time_dep,
+      gtest_dep,
+    ],
+  ),
+)
+
 test('TestRewindInputStream', executable(
   'TestRewindInputStream',
   'TestRewindInputStream.cxx',
