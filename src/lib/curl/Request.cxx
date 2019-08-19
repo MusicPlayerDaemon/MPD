@@ -119,7 +119,7 @@ CurlRequest::Resume() noexcept
 {
 	assert(registered);
 
-	curl_easy_pause(easy.Get(), CURLPAUSE_CONT);
+	easy.Unpause();
 
 	global.InvalidateSockets();
 }
