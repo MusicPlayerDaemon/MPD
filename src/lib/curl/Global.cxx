@@ -155,14 +155,11 @@ CurlSocket::OnSocketReady(unsigned flags) noexcept
 }
 
 void
-CurlGlobal::Add(CURL *easy, CurlRequest &request)
+CurlGlobal::Add(CurlRequest &r)
 {
 	assert(GetEventLoop().IsInside());
-	assert(easy != nullptr);
 
-	curl_easy_setopt(easy, CURLOPT_PRIVATE, &request);
-
-	CURLMcode mcode = curl_multi_add_handle(multi.Get(), easy);
+	CURLMcode mcode = curl_multi_add_handle(multi.Get(), r.Get());
 	if (mcode != CURLM_OK)
 		throw FormatRuntimeError("curl_multi_add_handle() failed: %s",
 					 curl_multi_strerror(mcode));
@@ -171,13 +168,11 @@ CurlGlobal::Add(CURL *easy, CurlRequest &request)
 }
 
 void
-CurlGlobal::Remove(CURL *easy) noexcept
+CurlGlobal::Remove(CurlRequest &r) noexcept
 {
 	assert(GetEventLoop().IsInside());
-	assert(easy != nullptr);
 
-	curl_multi_remove_handle(multi.Get(), easy);
-
+	curl_multi_remove_handle(multi.Get(), r.Get());
 	InvalidateSockets();
 }
 

@@ -54,8 +54,8 @@ public:
 		return timeout_event.GetEventLoop();
 	}
 
-	void Add(CURL *easy, CurlRequest &request);
-	void Remove(CURL *easy) noexcept;
+	void Add(CurlRequest &r);
+	void Remove(CurlRequest &r) noexcept;
 
 	void Assign(curl_socket_t fd, CurlSocket &cs) noexcept {
 		curl_multi_assign(multi.Get(), fd, &cs);

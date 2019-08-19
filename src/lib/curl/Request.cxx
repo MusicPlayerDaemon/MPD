@@ -75,7 +75,7 @@ CurlRequest::Start()
 {
 	assert(!registered);
 
-	global.Add(easy.Get(), *this);
+	global.Add(*this);
 	registered = true;
 }
 
@@ -93,7 +93,7 @@ CurlRequest::Stop() noexcept
 	if (!registered)
 		return;
 
-	global.Remove(easy.Get());
+	global.Remove(*this);
 	registered = false;
 }
 
