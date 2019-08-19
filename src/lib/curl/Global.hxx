@@ -70,7 +70,7 @@ public:
 
 	void SocketAction(curl_socket_t fd, int ev_bitmask) noexcept;
 
-	void InvalidateSockets() {
+	void InvalidateSockets() noexcept {
 		SocketAction(CURL_SOCKET_TIMEOUT, 0);
 	}
 
@@ -86,7 +86,7 @@ public:
 
 private:
 	void UpdateTimeout(long timeout_ms) noexcept;
-	static int TimerFunction(CURLM *global, long timeout_ms,
+	static int TimerFunction(CURLM *multi, long timeout_ms,
 				 void *userp) noexcept;
 
 	/* callback for #timeout_event */

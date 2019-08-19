@@ -48,7 +48,7 @@ public:
 	CurlSocket(CurlGlobal &_global, EventLoop &_loop, SocketDescriptor _fd)
 		:SocketMonitor(_fd, _loop), global(_global) {}
 
-	~CurlSocket() {
+	~CurlSocket() noexcept {
 		/* TODO: sometimes, CURL uses CURL_POLL_REMOVE after
 		   closing the socket, and sometimes, it uses
 		   CURL_POLL_REMOVE just to move the (still open)
@@ -109,7 +109,8 @@ CurlGlobal::CurlGlobal(EventLoop &_loop)
 int
 CurlSocket::SocketFunction(gcc_unused CURL *easy,
 			   curl_socket_t s, int action,
-			   void *userp, void *socketp) noexcept {
+			   void *userp, void *socketp) noexcept
+{
 	auto &global = *(CurlGlobal *)userp;
 	CurlSocket *cs = (CurlSocket *)socketp;
 
@@ -219,6 +220,20 @@ CurlGlobal::ReadInfo() noexcept
 	}
 }
 
+void
+CurlGlobal::SocketAction(curl_socket_t fd, int ev_bitmask) noexcept
+{
+	int running_handles;
+	CURLMcode mcode = curl_multi_socket_action(multi.Get(), fd, ev_bitmask,
+						   &running_handles);
+	if (mcode != CURLM_OK)
+		FormatError(curlm_domain,
+			    "curl_multi_socket_action() failed: %s",
+			    curl_multi_strerror(mcode));
+
+	defer_read_info.Schedule();
+}
+
 inline void
 CurlGlobal::UpdateTimeout(long timeout_ms) noexcept
 {
@@ -238,11 +253,11 @@ CurlGlobal::UpdateTimeout(long timeout_ms) noexcept
 }
 
 int
-CurlGlobal::TimerFunction(gcc_unused CURLM *_global, long timeout_ms,
+CurlGlobal::TimerFunction(gcc_unused CURLM *_multi, long timeout_ms,
 			  void *userp) noexcept
 {
 	auto &global = *(CurlGlobal *)userp;
-	assert(_global == global.multi.Get());
+	assert(_multi == global.multi.Get());
 
 	global.UpdateTimeout(timeout_ms);
 	return 0;
@@ -252,18 +267,4 @@ void
 CurlGlobal::OnTimeout() noexcept
 {
 	SocketAction(CURL_SOCKET_TIMEOUT, 0);
-}
-
-void
-CurlGlobal::SocketAction(curl_socket_t fd, int ev_bitmask) noexcept
-{
-	int running_handles;
-	CURLMcode mcode = curl_multi_socket_action(multi.Get(), fd, ev_bitmask,
-						   &running_handles);
-	if (mcode != CURLM_OK)
-		FormatError(curlm_domain,
-			    "curl_multi_socket_action() failed: %s",
-			    curl_multi_strerror(mcode));
-
-	defer_read_info.Schedule();
 }

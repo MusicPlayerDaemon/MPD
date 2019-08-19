@@ -41,7 +41,7 @@ class CurlSlist {
 	struct curl_slist *head = nullptr;
 
 public:
-	CurlSlist() = default;
+	CurlSlist() noexcept = default;
 
 	CurlSlist(CurlSlist &&src) noexcept
 		:head(std::exchange(src.head, nullptr)) {}
