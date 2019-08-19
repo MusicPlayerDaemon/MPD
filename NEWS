@@ -1,6 +1,7 @@
 ver 0.21.17 (not yet released)
 * protocol
-  - relax the ISO 8601 parser: allow omitting the time of day
+  - relax the ISO 8601 parser: allow omitting the time of day and the "Z"
+    suffix
 * archive
   - zzip: improve error reporting
 * outputs
