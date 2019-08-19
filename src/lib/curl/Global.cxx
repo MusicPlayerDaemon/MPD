@@ -112,7 +112,7 @@ CurlSocket::SocketFunction(gcc_unused CURL *easy,
 			   void *userp, void *socketp) noexcept
 {
 	auto &global = *(CurlGlobal *)userp;
-	CurlSocket *cs = (CurlSocket *)socketp;
+	auto *cs = (CurlSocket *)socketp;
 
 	assert(global.GetEventLoop().IsInside());
 
