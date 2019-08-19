@@ -57,6 +57,11 @@ public:
 			throw std::runtime_error("curl_easy_init() failed");
 	}
 
+	explicit CurlEasy(const char *url)
+		:CurlEasy() {
+		SetURL(url);
+	}
+
 	/**
 	 * Create an empty instance.
 	 */
