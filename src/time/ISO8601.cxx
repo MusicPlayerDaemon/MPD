@@ -83,7 +83,7 @@ ParseISO8601(const char *s)
 	/* parse the time of day */
 	if (*s == 'T') {
 		++s;
-		end = strptime(s, "%TZ", &tm);
+		end = strptime(s, "%T", &tm);
 		if (end == nullptr)
 			throw std::runtime_error("Failed to parse time of day");
 
@@ -92,6 +92,9 @@ ParseISO8601(const char *s)
 	}
 
 	auto tp = TimeGm(tm);
+
+	if (*s == 'Z')
+		++s;
 
 	if (*s != 0)
 		throw std::runtime_error("Garbage at end of time stamp");
