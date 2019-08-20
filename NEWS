@@ -3,6 +3,8 @@ ver 0.21.14 (not yet released)
   - sidplay: show track durations in database
   - sidplay: convert tag values from Windows-1252 charset
   - sidplay: strip text from "Date" tag
+* player
+  - fix crash after song change
 
 ver 0.21.13 (2019/08/06)
 * input
