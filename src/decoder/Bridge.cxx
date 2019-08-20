@@ -145,8 +145,7 @@ DecoderBridge::FlushChunk() noexcept
 		dc.pipe->Push(std::move(chunk));
 
 	const std::lock_guard<Mutex> protect(dc.mutex);
-	if (dc.client_is_waiting)
-		dc.client_cond.notify_one();
+	dc.client_cond.notify_one();
 }
 
 bool

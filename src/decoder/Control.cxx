@@ -43,13 +43,7 @@ DecoderControl::~DecoderControl() noexcept
 void
 DecoderControl::WaitForDecoder(std::unique_lock<Mutex> &lock) noexcept
 {
-	assert(!client_is_waiting);
-	client_is_waiting = true;
-
 	client_cond.wait(lock);
-
-	assert(client_is_waiting);
-	client_is_waiting = false;
 }
 
 void
