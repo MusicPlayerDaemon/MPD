@@ -409,12 +409,10 @@ try {
 	const struct command *cmd =
 		command_checked_lookup(r, client.GetPermission(),
 				       cmd_name, args);
+	if (cmd == nullptr)
+		return CommandResult::ERROR;
 
-	CommandResult ret = cmd
-		? cmd->handler(client, args, r)
-		: CommandResult::ERROR;
-
-	return ret;
+	return cmd->handler(client, args, r);
 } catch (...) {
 	Response r(client, num);
 	PrintError(r, std::current_exception());
