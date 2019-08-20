@@ -41,12 +41,6 @@ DecoderControl::~DecoderControl() noexcept
 }
 
 void
-DecoderControl::WaitForDecoder(std::unique_lock<Mutex> &lock) noexcept
-{
-	client_cond.wait(lock);
-}
-
-void
 DecoderControl::SetReady(const AudioFormat audio_format,
 			 bool _seekable, SignedSongTime _duration) noexcept
 {

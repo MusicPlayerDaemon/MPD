@@ -215,7 +215,9 @@ public:
 	 *
 	 * Caller must hold the lock.
 	 */
-	void WaitForDecoder(std::unique_lock<Mutex> &lock) noexcept;
+	void WaitForDecoder(std::unique_lock<Mutex> &lock) noexcept {
+		client_cond.wait(lock);
+	}
 
 	bool IsIdle() const noexcept {
 		return state == DecoderState::STOP ||
