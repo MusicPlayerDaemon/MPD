@@ -25,9 +25,9 @@
 class Client;
 
 void
-command_init();
+command_init() noexcept;
 
 CommandResult
-command_process(Client &client, unsigned num, char *line);
+command_process(Client &client, unsigned num, char *line) noexcept;
 
 #endif

@@ -35,6 +35,6 @@ extern size_t client_max_command_list_size;
 extern size_t client_max_output_buffer_size;
 
 CommandResult
-client_process_line(Client &client, char *line);
+client_process_line(Client &client, char *line) noexcept;
 
 #endif
