@@ -5,6 +5,7 @@ ver 0.21.14 (not yet released)
   - sidplay: strip text from "Date" tag
 * player
   - fix crash after song change
+  - fix seek position after restarting the decoder
 
 ver 0.21.13 (2019/08/06)
 * input
