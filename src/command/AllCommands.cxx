@@ -363,7 +363,7 @@ command_checked_lookup(Response &r, unsigned permission,
 
 CommandResult
 command_process(Client &client, unsigned num, char *line) noexcept
-try {
+{
 	Response r(client, num);
 
 	/* get the command name (first word on the line) */
@@ -391,32 +391,33 @@ try {
 	char *argv[COMMAND_ARGV_MAX];
 	Request args(argv, 0);
 
-	/* now parse the arguments (quoted or unquoted) */
+	try {
+		/* now parse the arguments (quoted or unquoted) */
 
-	while (true) {
-		if (args.size == COMMAND_ARGV_MAX) {
-			r.Error(ACK_ERROR_ARG, "Too many arguments");
-			return CommandResult::ERROR;
+		while (true) {
+			if (args.size == COMMAND_ARGV_MAX) {
+				r.Error(ACK_ERROR_ARG, "Too many arguments");
+				return CommandResult::ERROR;
+			}
+
+			char *a = tokenizer.NextParam();
+			if (a == nullptr)
+				break;
+
+			argv[args.size++] = a;
 		}
 
-		char *a = tokenizer.NextParam();
-		if (a == nullptr)
-			break;
+		/* look up and invoke the command handler */
 
-		argv[args.size++] = a;
-	}
+		const struct command *cmd =
+			command_checked_lookup(r, client.GetPermission(),
+					       cmd_name, args);
+		if (cmd == nullptr)
+			return CommandResult::ERROR;
 
-	/* look up and invoke the command handler */
-
-	const struct command *cmd =
-		command_checked_lookup(r, client.GetPermission(),
-				       cmd_name, args);
-	if (cmd == nullptr)
+		return cmd->handler(client, args, r);
+	} catch (...) {
+		PrintError(r, std::current_exception());
 		return CommandResult::ERROR;
-
-	return cmd->handler(client, args, r);
-} catch (...) {
-	Response r(client, num);
-	PrintError(r, std::current_exception());
-	return CommandResult::ERROR;
+	}
 }
