@@ -415,7 +415,7 @@ try {
 		: CommandResult::ERROR;
 
 	return ret;
-} catch (const std::exception &e) {
+} catch (...) {
 	Response r(client, num);
 	PrintError(r, std::current_exception());
 	return CommandResult::ERROR;
