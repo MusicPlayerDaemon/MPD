@@ -839,7 +839,8 @@ The music database
      albumart foo/bar.ogg 0
      size: 1024768
      binary: 8192
-     <8192 bytes>OK
+     <8192 bytes>
+     OK
 
 :command:`count {FILTER} [group {GROUPTYPE}]`
     Count the number of songs and their total playtime in

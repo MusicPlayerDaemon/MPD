@@ -158,6 +158,7 @@ AudioOutputControl::InternalOpen(const AudioFormat in_audio_format,
 	} catch (...) {
 		LogError(std::current_exception());
 		Failure(std::current_exception());
+		return;
 	}
 
 	if (f != in_audio_format || f != output->out_audio_format)
@@ -457,7 +458,7 @@ AudioOutputControl::Task() noexcept
 		case Command::RELEASE:
 			if (!open) {
 				/* the output has failed after
-				   the PAUSE command was submitted; bail
+				   the RELEASE command was submitted; bail
 				   out */
 				CommandFinished();
 				break;

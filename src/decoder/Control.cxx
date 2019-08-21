@@ -138,6 +138,18 @@ DecoderControl::Seek(std::unique_lock<Mutex> &lock, SongTime t)
 	seek_error = false;
 	SynchronousCommandLocked(lock, DecoderCommand::SEEK);
 
+	while (state == DecoderState::START)
+		/* If the decoder falls back to DecoderState::START,
+		   this means that our SEEK command arrived too late,
+		   and the decoder had meanwhile finished decoding and
+		   went idle.  Our SEEK command is finished, but that
+		   means only that the decoder thread has launched the
+		   decoder.  To work around illegal states, we wait
+		   until the decoder plugin has become ready.  This is
+		   a kludge, built on top of the "late seek" kludge.
+		   Not exactly elegant, sorry. */
+		WaitForDecoder(lock);
+
 	if (seek_error)
 		throw std::runtime_error("Decoder failed to seek");
 }

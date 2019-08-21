@@ -418,6 +418,11 @@ static void
 decoder_run_song(DecoderControl &dc,
 		 const DetachedSong &song, const char *uri, Path path_fs)
 {
+	if (dc.command == DecoderCommand::SEEK)
+		/* if the SEEK command arrived too late, start the
+		   decoder at the seek position */
+		dc.start_time = dc.seek_time;
+
 	DecoderBridge bridge(dc, dc.start_time.IsPositive(),
 			     /* pass the song tag only if it's
 				authoritative, i.e. if it's a local
