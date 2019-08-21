@@ -159,6 +159,7 @@ AudioOutputControl::InternalOpen(const AudioFormat in_audio_format,
 	} catch (...) {
 		LogError(std::current_exception());
 		Failure(std::current_exception());
+		return;
 	}
 
 	if (f != in_audio_format || f != output->out_audio_format)
