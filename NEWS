@@ -1,4 +1,4 @@
-ver 0.21.14 (not yet released)
+ver 0.21.14 (2019/08/21)
 * decoder
   - sidplay: show track durations in database
   - sidplay: convert tag values from Windows-1252 charset
