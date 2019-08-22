@@ -122,9 +122,15 @@ public:
 
 	using FullyBufferedSocket::GetEventLoop;
 
-	void Close() noexcept;
+	gcc_pure
+	bool IsExpired() const noexcept {
+		return !FullyBufferedSocket::IsDefined();
+	}
 
-	using FullyBufferedSocket::Write;
+	void Close() noexcept;
+	void SetExpired() noexcept;
+
+	bool Write(const void *data, size_t length) noexcept;
 
 	/**
 	 * Write a null-terminated string.

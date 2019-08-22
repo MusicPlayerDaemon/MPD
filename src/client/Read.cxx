@@ -69,5 +69,10 @@ Client::OnSocketInput(void *data, size_t length) noexcept
 		return InputResult::CLOSED;
 	}
 
+	if (IsExpired()) {
+		Close();
+		return InputResult::CLOSED;
+	}
+
 	return InputResult::AGAIN;
 }

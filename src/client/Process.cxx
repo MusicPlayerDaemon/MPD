@@ -42,7 +42,9 @@ Client::ProcessCommandList(bool list_ok,
 		FormatDebug(client_domain, "process command \"%s\"", cmd);
 		auto ret = command_process(*this, n++, cmd);
 		FormatDebug(client_domain, "command returned %i", int(ret));
-		if (ret != CommandResult::OK)
+		if (IsExpired())
+			return CommandResult::CLOSE;
+		else if (ret != CommandResult::OK)
 			return ret;
 		else if (list_ok)
 			Write("list_OK\n");
@@ -138,6 +140,9 @@ Client::ProcessLine(char *line) noexcept
 			FormatDebug(client_domain,
 				    "[%u] command returned %i",
 				    id, int(ret));
+
+			if (IsExpired())
+				return CommandResult::CLOSE;
 
 			if (ret == CommandResult::OK)
 				command_success(*this);

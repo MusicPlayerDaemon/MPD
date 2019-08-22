@@ -18,16 +18,31 @@
  */
 
 #include "Client.hxx"
+#include "BackgroundCommand.hxx"
 #include "Domain.hxx"
 #include "Log.hxx"
 
 void
+Client::SetExpired() noexcept
+{
+	if (IsExpired())
+		return;
+
+	background_command.reset();
+
+	FullyBufferedSocket::Close();
+	timeout_event.Schedule(std::chrono::steady_clock::duration::zero());
+}
+
+void
 Client::OnTimeout() noexcept
 {
-	assert(!idle_waiting);
-	assert(!background_command);
+	if (!IsExpired()) {
+		assert(!idle_waiting);
+		assert(!background_command);
 
-	FormatDebug(client_domain, "[%u] timeout", num);
+		FormatDebug(client_domain, "[%u] timeout", num);
+	}
 
 	Close();
 }

@@ -22,6 +22,13 @@
 #include <string.h>
 
 bool
+Client::Write(const void *data, size_t length) noexcept
+{
+	/* if the client is going to be closed, do nothing */
+	return !IsExpired() && FullyBufferedSocket::Write(data, length);
+}
+
+bool
 Client::Write(const char *data) noexcept
 {
 	return Write(data, strlen(data));
