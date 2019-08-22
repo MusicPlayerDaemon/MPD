@@ -82,7 +82,8 @@ Client::Close() noexcept
 {
 	partition->instance.client_list->Remove(*this);
 
-	FullyBufferedSocket::Close();
+	if (FullyBufferedSocket::IsDefined())
+		FullyBufferedSocket::Close();
 
 	FormatInfo(client_domain, "[%u] closed", num);
 	delete this;
