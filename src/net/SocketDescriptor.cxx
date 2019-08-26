@@ -27,7 +27,6 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
 #include "SocketDescriptor.hxx"
 #include "SocketAddress.hxx"
 #include "StaticSocketAddress.hxx"

@@ -27,7 +27,6 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
 #include "StaticSocketAddress.hxx"
 #include "IPv4Address.hxx"
 #include "IPv6Address.hxx"
