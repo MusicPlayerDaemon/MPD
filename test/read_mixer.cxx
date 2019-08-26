@@ -20,7 +20,7 @@
 #include "NullMixerListener.hxx"
 #include "mixer/MixerControl.hxx"
 #include "mixer/MixerList.hxx"
-#include "filter/FilterRegistry.hxx"
+#include "filter/Registry.hxx"
 #include "event/Loop.hxx"
 #include "config/Block.hxx"
 #include "util/PrintException.hxx"

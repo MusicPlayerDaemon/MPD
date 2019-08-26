@@ -17,7 +17,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "FilterRegistry.hxx"
+#include "Registry.hxx"
 #include "FilterPlugin.hxx"
 #include "plugins/NullFilterPlugin.hxx"
 #include "plugins/RouteFilterPlugin.hxx"

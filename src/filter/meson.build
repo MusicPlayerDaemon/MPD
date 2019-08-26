@@ -13,7 +13,7 @@ subdir('plugins')
 
 filter_glue = static_library(
   'filter_glue',
-  'FilterRegistry.cxx',
+  'Registry.cxx',
   'Factory.cxx',
   'LoadOne.cxx',
   'LoadChain.cxx',

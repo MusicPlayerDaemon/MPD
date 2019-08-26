@@ -19,7 +19,7 @@
 
 #include "LoadOne.hxx"
 #include "FilterPlugin.hxx"
-#include "FilterRegistry.hxx"
+#include "Registry.hxx"
 #include "Prepared.hxx"
 #include "config/Block.hxx"
 #include "util/RuntimeError.hxx"
