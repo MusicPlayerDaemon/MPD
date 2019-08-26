@@ -54,7 +54,7 @@ public:
 	/**
 	 * Filters a block of PCM data.
 	 *
-	 * Throws std::runtime_error on error.
+	 * Throws on error.
 	 *
 	 * @param src the input buffer
 	 * @return the destination buffer on success (will be

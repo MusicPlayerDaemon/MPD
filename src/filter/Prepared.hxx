@@ -32,7 +32,7 @@ public:
 	/**
 	 * Opens the filter, preparing it for FilterPCM().
 	 *
-	 * Throws std::runtime_error on error.
+	 * Throws on error.
 	 *
 	 * @param af the audio format of incoming data; the
 	 * plugin may modify the object to enforce another input

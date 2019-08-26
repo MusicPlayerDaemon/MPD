@@ -39,7 +39,7 @@ convert_filter_new(AudioFormat in_audio_format,
  * format switch is a violation of the filter API, this filter must be
  * the last in a chain.
  *
- * Throws std::runtime_error on error.
+ * Throws on error.
  */
 void
 convert_filter_set(Filter *filter, AudioFormat out_audio_format);

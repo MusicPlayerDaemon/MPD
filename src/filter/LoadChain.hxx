@@ -28,7 +28,7 @@ class PreparedFilter;
  * "name1, name2, name3, ..." by looking up each name among the
  * configured filter sections.
  *
- * Throws std::runtime_error on error.
+ * Throws on error.
  *
  * @param chain the chain to append filters on
  * @param config the global configuration to load filter definitions from

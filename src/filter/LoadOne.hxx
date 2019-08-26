@@ -29,7 +29,7 @@ class PreparedFilter;
  * Creates a new filter, loads configuration and the plugin name from
  * the specified configuration section.
  *
- * Throws std::runtime_error on error.
+ * Throws on error.
  *
  * @param block the configuration section
  */
