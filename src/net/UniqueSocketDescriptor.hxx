@@ -68,7 +68,8 @@ public:
 	}
 
 	UniqueSocketDescriptor &operator=(UniqueSocketDescriptor &&src) {
-		std::swap(fd, src.fd);
+		using std::swap;
+		swap(fd, src.fd);
 		return *this;
 	}
 
