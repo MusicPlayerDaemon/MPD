@@ -183,6 +183,13 @@ try {
 		FullWrite(output_fd, dest);
 	}
 
+	while (true) {
+		auto dest = filter->Flush();
+		if (dest.IsNull())
+			break;
+		FullWrite(output_fd, dest);
+	}
+
 	/* cleanup and exit */
 
 	return EXIT_SUCCESS;
