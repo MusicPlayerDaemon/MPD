@@ -115,6 +115,7 @@ public:
 	using FileDescriptor::SetNonBlocking;
 	using FileDescriptor::SetBlocking;
 	using FileDescriptor::Duplicate;
+	using FileDescriptor::CheckDuplicate;
 	using FileDescriptor::Close;
 #else
 	bool SetNonBlocking() noexcept;
