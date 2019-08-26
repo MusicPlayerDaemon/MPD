@@ -226,7 +226,7 @@ of:
   be enclosed in parantheses, e.g. :code:`((artist == 'FOO') AND
   (album == 'BAR'))`
 
-The :command:`find` commands are case sensitive, which
+The :command:`find` commands are case sensitive, while
 :command:`search` and related commands ignore case.
 
 Prior to MPD 0.21, the syntax looked like this::
