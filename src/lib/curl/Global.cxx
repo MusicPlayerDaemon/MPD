@@ -36,6 +36,8 @@
 #include "util/Domain.hxx"
 #include "config.h"
 
+#include <assert.h>
+
 static constexpr Domain curlm_domain("curlm");
 
 /**
