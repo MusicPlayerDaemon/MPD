@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2016 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2008-2019 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -34,7 +34,6 @@
 #include "event/SocketMonitor.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/Domain.hxx"
-#include "config.h"
 
 #include <assert.h>
 
@@ -127,18 +126,6 @@ CurlSocket::SocketFunction(gcc_unused CURL *easy,
 		cs = new CurlSocket(global, global.GetEventLoop(),
 				    SocketDescriptor(s));
 		global.Assign(s, *cs);
-	} else {
-#ifdef USE_EPOLL
-		/* when using epoll, we need to unregister the socket
-		   each time this callback is invoked, because older
-		   CURL versions may omit the CURL_POLL_REMOVE call
-		   when the socket has been closed and recreated with
-		   the same file number (bug found in CURL 7.26, CURL
-		   7.33 not affected); in that case, epoll refuses the
-		   EPOLL_CTL_MOD because it does not know the new
-		   socket yet */
-		cs->Cancel();
-#endif
 	}
 
 	unsigned flags = CurlPollToFlags(action);

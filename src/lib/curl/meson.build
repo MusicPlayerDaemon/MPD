@@ -1,4 +1,4 @@
-curl_dep = dependency('libcurl', version: '>= 7.18', required: get_option('curl'))
+curl_dep = dependency('libcurl', version: '>= 7.33', required: get_option('curl'))
 conf.set('ENABLE_CURL', curl_dep.found())
 if not curl_dep.found()
   subdir_done()

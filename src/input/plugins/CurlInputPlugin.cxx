@@ -48,10 +48,6 @@
 
 #include <curl/curl.h>
 
-#if LIBCURL_VERSION_NUM < 0x071200
-#error libcurl is too old
-#endif
-
 /**
  * Do not buffer more than this number of bytes.  It should be a
  * reasonable limit that doesn't make low-end machines suffer too
