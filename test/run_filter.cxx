@@ -95,18 +95,21 @@ FullRead(FileDescriptor fd, void *_buffer, size_t size)
 }
 
 static void
-FullWrite(FileDescriptor fd, const void *_buffer, size_t size)
+FullWrite(FileDescriptor fd, ConstBuffer<uint8_t> src)
 {
-	auto buffer = (const uint8_t *)_buffer;
-
-	while (size > 0) {
-		size_t nbytes = WriteOrThrow(fd, buffer, size);
+	while (!src.empty()) {
+		size_t nbytes = WriteOrThrow(fd, src.data, src.size);
 		if (nbytes == 0)
 			throw std::runtime_error("Write failed");
 
-		buffer += nbytes;
-		size -= nbytes;
+		src.skip_front(nbytes);
 	}
+}
+
+static void
+FullWrite(FileDescriptor fd, ConstBuffer<void> src)
+{
+	FullWrite(fd, ConstBuffer<uint8_t>::FromVoid(src));
 }
 
 static size_t
@@ -177,7 +180,7 @@ try {
 			break;
 
 		auto dest = filter->FilterPCM({(const void *)buffer, (size_t)nbytes});
-		FullWrite(output_fd, dest.data, dest.size);
+		FullWrite(output_fd, dest);
 	}
 
 	/* cleanup and exit */
