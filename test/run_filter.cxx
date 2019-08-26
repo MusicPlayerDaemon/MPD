@@ -102,7 +102,7 @@ FullWrite(FileDescriptor fd, const void *_buffer, size_t size)
 	while (size > 0) {
 		size_t nbytes = WriteOrThrow(fd, buffer, size);
 		if (nbytes == 0)
-			throw std::runtime_error("Premature end of input");
+			throw std::runtime_error("Write failed");
 
 		buffer += nbytes;
 		size -= nbytes;
