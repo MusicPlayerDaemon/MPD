@@ -41,7 +41,7 @@ public:
 	 */
 	std::unique_ptr<PreparedFilter> Set(std::unique_ptr<PreparedFilter> pf);
 
-	Filter *Get();
+	Filter *Get() noexcept;
 };
 
 #endif

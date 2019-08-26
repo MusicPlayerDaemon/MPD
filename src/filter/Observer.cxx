@@ -32,23 +32,23 @@ class FilterObserver::PreparedProxy final : public PreparedFilter {
 
 public:
 	PreparedProxy(FilterObserver &_observer,
-		      std::unique_ptr<PreparedFilter> _prepared_filter)
+		      std::unique_ptr<PreparedFilter> _prepared_filter) noexcept
 		:observer(_observer),
 		 prepared_filter(std::move(_prepared_filter)) {}
 
-	~PreparedProxy() {
+	~PreparedProxy() noexcept {
 		assert(child == nullptr);
 		assert(observer.proxy == this);
 
 		observer.proxy = nullptr;
 	}
 
-	void Clear(gcc_unused Proxy *_child) {
+	void Clear(gcc_unused Proxy *_child) noexcept {
 		assert(child == _child);
 		child = nullptr;
 	}
 
-	Filter *Get();
+	Filter *Get() noexcept;
 
 	std::unique_ptr<Filter> Open(AudioFormat &af) override;
 };
@@ -59,15 +59,15 @@ class FilterObserver::Proxy final : public Filter {
 	std::unique_ptr<Filter> filter;
 
 public:
-	Proxy(PreparedProxy &_parent, std::unique_ptr<Filter> _filter)
+	Proxy(PreparedProxy &_parent, std::unique_ptr<Filter> _filter) noexcept
 		:Filter(_filter->GetOutAudioFormat()),
 		 parent(_parent), filter(std::move(_filter)) {}
 
-	~Proxy() {
+	~Proxy() noexcept {
 		parent.Clear(this);
 	}
 
-	Filter *Get() {
+	Filter *Get() noexcept {
 		return filter.get();
 	}
 
@@ -85,7 +85,7 @@ public:
 };
 
 Filter *
-FilterObserver::PreparedProxy::Get()
+FilterObserver::PreparedProxy::Get() noexcept
 {
 	return child != nullptr
 		? child->Get()
@@ -113,7 +113,7 @@ FilterObserver::Set(std::unique_ptr<PreparedFilter> pf)
 }
 
 Filter *
-FilterObserver::Get()
+FilterObserver::Get() noexcept
 {
 	return proxy != nullptr
 		? proxy->Get()
