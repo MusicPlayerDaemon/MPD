@@ -107,7 +107,8 @@ class AudioOutputSource {
 	const MusicChunk *current_chunk = nullptr;
 
 	/**
-	 * The #Tag to be processed by the #AudioOutput.
+	 * The #Tag to be processed by the #AudioOutput.  It is owned
+	 * by #current_chunk (MusicChunk::tag).
 	 */
 	const Tag *pending_tag;
 
