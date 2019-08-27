@@ -216,7 +216,7 @@ AudioOutputSource::Fill(Mutex &mutex)
 {
 	if (current_chunk != nullptr && pending_tag == nullptr &&
 	    pending_data.empty())
-		pipe.Consume(*std::exchange(current_chunk, nullptr));
+		DropCurrentChunk();
 
 	if (current_chunk != nullptr)
 		return true;
@@ -247,7 +247,7 @@ AudioOutputSource::ConsumeData(size_t nbytes) noexcept
 	pending_data.skip_front(nbytes);
 
 	if (pending_data.empty())
-		pipe.Consume(*std::exchange(current_chunk, nullptr));
+		DropCurrentChunk();
 }
 
 ConstBuffer<void>

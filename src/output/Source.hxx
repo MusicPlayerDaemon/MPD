@@ -212,6 +212,12 @@ private:
 				       unsigned *replay_gain_serial_p);
 
 	ConstBuffer<void> FilterChunk(const MusicChunk &chunk);
+
+	void DropCurrentChunk() noexcept {
+		assert(current_chunk != nullptr);
+
+		pipe.Consume(*std::exchange(current_chunk, nullptr));
+	}
 };
 
 #endif
