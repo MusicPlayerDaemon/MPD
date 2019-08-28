@@ -187,6 +187,12 @@ public:
 			: -1;
 	}
 
+	void Perform() {
+		CURLcode code = curl_easy_perform(handle);
+		if (code != CURLE_OK)
+			throw std::runtime_error(curl_easy_strerror(code));
+	}
+
 	bool Unpause() noexcept {
 		return ::curl_easy_pause(handle, CURLPAUSE_CONT) == CURLE_OK;
 	}
