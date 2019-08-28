@@ -135,6 +135,10 @@ public:
 		SetOption(CURLOPT_CONNECTTIMEOUT, timeout);
 	}
 
+	void SetTimeout(long timeout) {
+		SetOption(CURLOPT_TIMEOUT, timeout);
+	}
+
 	void SetHeaderFunction(size_t (*function)(char *buffer, size_t size,
 						  size_t nitems,
 						  void *userdata),
