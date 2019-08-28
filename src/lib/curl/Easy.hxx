@@ -119,6 +119,10 @@ public:
 		SetOption(CURLOPT_USERPWD, userpwd);
 	}
 
+	void SetUpload(bool value=true) {
+		SetOption(CURLOPT_UPLOAD, (long)value);
+	}
+
 	void SetNoProgress(bool value=true) {
 		SetOption(CURLOPT_NOPROGRESS, (long)value);
 	}
@@ -152,6 +156,13 @@ public:
 			      void *userdata) {
 		SetOption(CURLOPT_WRITEFUNCTION, function);
 		SetOption(CURLOPT_WRITEDATA, userdata);
+	}
+
+	void SetReadFunction(size_t (*function)(char *ptr, size_t size,
+						size_t nmemb, void *userdata),
+			      void *userdata) {
+		SetOption(CURLOPT_READFUNCTION, function);
+		SetOption(CURLOPT_READDATA, userdata);
 	}
 
 	void SetNoBody(bool value=true) {
