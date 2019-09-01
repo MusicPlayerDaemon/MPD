@@ -15,8 +15,8 @@ libmpdclient = MesonProject(
 )
 
 libogg = AutotoolsProject(
-    'http://downloads.xiph.org/releases/ogg/libogg-1.3.3.tar.xz',
-    '4f3fc6178a533d392064f14776b23c397ed4b9f48f5de297aba73b643f955c08',
+    'http://downloads.xiph.org/releases/ogg/libogg-1.3.4.tar.xz',
+    'c163bc12bc300c401b6aa35907ac682671ea376f13ae0969a220f7ddf71893fe',
     'lib/libogg.a',
     [
         '--disable-shared', '--enable-static',
