@@ -20,6 +20,6 @@
 #ifndef MPD_RSS_PLAYLIST_PLUGIN_HXX
 #define MPD_RSS_PLAYLIST_PLUGIN_HXX
 
-extern const struct playlist_plugin rss_playlist_plugin;
+extern const struct PlaylistPlugin rss_playlist_plugin;
 
 #endif

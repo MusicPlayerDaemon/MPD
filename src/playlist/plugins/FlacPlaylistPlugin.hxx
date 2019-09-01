@@ -20,6 +20,6 @@
 #ifndef MPD_FLAC_PLAYLIST_PLUGIN_HXX
 #define MPD_FLAC_PLAYLIST_PLUGIN_HXX
 
-extern const struct playlist_plugin flac_playlist_plugin;
+extern const struct PlaylistPlugin flac_playlist_plugin;
 
 #endif

@@ -20,6 +20,6 @@
 #ifndef MPD_XSPF_PLAYLIST_PLUGIN_HXX
 #define MPD_XSPF_PLAYLIST_PLUGIN_HXX
 
-extern const struct playlist_plugin xspf_playlist_plugin;
+extern const struct PlaylistPlugin xspf_playlist_plugin;
 
 #endif

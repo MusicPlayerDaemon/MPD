@@ -27,7 +27,7 @@ struct ConfigBlock;
 struct Tag;
 class SongEnumerator;
 
-struct playlist_plugin {
+struct PlaylistPlugin {
 	const char *name;
 
 	/**
@@ -77,7 +77,7 @@ struct playlist_plugin {
  * the plugin is not available
  */
 static inline bool
-playlist_plugin_init(const struct playlist_plugin *plugin,
+playlist_plugin_init(const PlaylistPlugin *plugin,
 		     const ConfigBlock &block)
 {
 	return plugin->init != nullptr
@@ -89,7 +89,7 @@ playlist_plugin_init(const struct playlist_plugin *plugin,
  * Deinitialize a plugin which was initialized successfully.
  */
 static inline void
-playlist_plugin_finish(const struct playlist_plugin *plugin) noexcept
+playlist_plugin_finish(const PlaylistPlugin *plugin) noexcept
 {
 	if (plugin->finish != nullptr)
 		plugin->finish();

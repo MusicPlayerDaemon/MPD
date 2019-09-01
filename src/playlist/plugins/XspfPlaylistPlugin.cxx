@@ -211,7 +211,7 @@ static const char *const xspf_mime_types[] = {
 	nullptr
 };
 
-const struct playlist_plugin xspf_playlist_plugin = {
+const PlaylistPlugin xspf_playlist_plugin = {
 	"xspf",
 
 	nullptr,

@@ -69,7 +69,7 @@ static const char *const m3u_mime_types[] = {
 	nullptr
 };
 
-const struct playlist_plugin m3u_playlist_plugin = {
+const PlaylistPlugin m3u_playlist_plugin = {
 	"m3u",
 
 	nullptr,

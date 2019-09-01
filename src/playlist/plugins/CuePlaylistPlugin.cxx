@@ -70,7 +70,7 @@ static const char *const cue_playlist_mime_types[] = {
 	nullptr
 };
 
-const struct playlist_plugin cue_playlist_plugin = {
+const PlaylistPlugin cue_playlist_plugin = {
 	"cue",
 
 	nullptr,

@@ -20,6 +20,6 @@
 #ifndef MPD_SOUNDCLOUD_PLAYLIST_PLUGIN_HXX
 #define MPD_SOUNDCLOUD_PLAYLIST_PLUGIN_HXX
 
-extern const struct playlist_plugin soundcloud_playlist_plugin;
+extern const struct PlaylistPlugin soundcloud_playlist_plugin;
 
 #endif

@@ -20,6 +20,6 @@
 #ifndef MPD_ASX_PLAYLIST_PLUGIN_HXX
 #define MPD_ASX_PLAYLIST_PLUGIN_HXX
 
-extern const struct playlist_plugin asx_playlist_plugin;
+extern const struct PlaylistPlugin asx_playlist_plugin;
 
 #endif

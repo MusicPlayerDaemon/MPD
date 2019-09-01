@@ -288,7 +288,7 @@ static const char *const soundcloud_schemes[] = {
 	nullptr
 };
 
-const struct playlist_plugin soundcloud_playlist_plugin = {
+const PlaylistPlugin soundcloud_playlist_plugin = {
 	"soundcloud",
 
 	soundcloud_init,

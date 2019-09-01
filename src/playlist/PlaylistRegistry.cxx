@@ -43,7 +43,7 @@
 
 #include <assert.h>
 
-const struct playlist_plugin *const playlist_plugins[] = {
+const PlaylistPlugin *const playlist_plugins[] = {
 	&extm3u_playlist_plugin,
 	&m3u_playlist_plugin,
 	&pls_playlist_plugin,
@@ -81,7 +81,7 @@ playlist_list_global_init(const ConfigData &config)
 	const ConfigBlock empty;
 
 	for (unsigned i = 0; playlist_plugins[i] != nullptr; ++i) {
-		const struct playlist_plugin *plugin = playlist_plugins[i];
+		const auto *plugin = playlist_plugins[i];
 		const auto *param =
 			config.FindBlock(ConfigBlockOption::PLAYLIST_PLUGIN,
 					 "name", plugin->name);
@@ -117,7 +117,7 @@ playlist_list_open_uri_scheme(const char *uri, Mutex &mutex,
 		return nullptr;
 
 	for (unsigned i = 0; playlist_plugins[i] != nullptr; ++i) {
-		const struct playlist_plugin *plugin = playlist_plugins[i];
+		const auto *plugin = playlist_plugins[i];
 
 		assert(!tried[i]);
 
@@ -147,7 +147,7 @@ playlist_list_open_uri_suffix(const char *uri, Mutex &mutex,
 		return nullptr;
 
 	for (unsigned i = 0; playlist_plugins[i] != nullptr; ++i) {
-		const struct playlist_plugin *plugin = playlist_plugins[i];
+		const auto *plugin = playlist_plugins[i];
 
 		if (playlist_plugins_enabled[i] && !tried[i] &&
 		    plugin->open_uri != nullptr && plugin->suffixes != nullptr &&

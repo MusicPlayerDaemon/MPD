@@ -147,7 +147,7 @@ static const char *const extm3u_mime_types[] = {
 	nullptr
 };
 
-const struct playlist_plugin extm3u_playlist_plugin = {
+const PlaylistPlugin extm3u_playlist_plugin = {
 	"extm3u",
 
 	nullptr,

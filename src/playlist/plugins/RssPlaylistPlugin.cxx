@@ -165,7 +165,7 @@ static const char *const rss_mime_types[] = {
 	nullptr
 };
 
-const struct playlist_plugin rss_playlist_plugin = {
+const PlaylistPlugin rss_playlist_plugin = {
 	"rss",
 
 	nullptr,

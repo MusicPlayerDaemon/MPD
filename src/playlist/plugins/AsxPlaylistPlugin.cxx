@@ -166,7 +166,7 @@ static const char *const asx_mime_types[] = {
 	nullptr
 };
 
-const struct playlist_plugin asx_playlist_plugin = {
+const PlaylistPlugin asx_playlist_plugin = {
 	"asx",
 
 	nullptr,

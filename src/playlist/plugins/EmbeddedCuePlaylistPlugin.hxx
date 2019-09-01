@@ -20,6 +20,6 @@
 #ifndef MPD_EMBCUE_PLAYLIST_PLUGIN_HXX
 #define MPD_EMBCUE_PLAYLIST_PLUGIN_HXX
 
-extern const struct playlist_plugin embcue_playlist_plugin;
+extern const struct PlaylistPlugin embcue_playlist_plugin;
 
 #endif

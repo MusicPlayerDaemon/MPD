@@ -103,7 +103,7 @@ static const char *const flac_playlist_suffixes[] = {
 	nullptr
 };
 
-const struct playlist_plugin flac_playlist_plugin = {
+const PlaylistPlugin flac_playlist_plugin = {
 	"flac",
 
 	nullptr,

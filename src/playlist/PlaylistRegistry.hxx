@@ -25,12 +25,13 @@
 #include "util/Compiler.h"
 
 struct ConfigData;
+struct PlaylistPlugin;
 class SongEnumerator;
 
-extern const struct playlist_plugin *const playlist_plugins[];
+extern const PlaylistPlugin *const playlist_plugins[];
 
 #define playlist_plugins_for_each(plugin) \
-	for (const struct playlist_plugin *plugin, \
+	for (const PlaylistPlugin *plugin, \
 		*const*playlist_plugin_iterator = &playlist_plugins[0]; \
 		(plugin = *playlist_plugin_iterator) != nullptr; \
 		++playlist_plugin_iterator)

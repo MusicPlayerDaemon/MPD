@@ -172,7 +172,7 @@ static const char *const pls_mime_types[] = {
 	nullptr
 };
 
-const struct playlist_plugin pls_playlist_plugin = {
+const PlaylistPlugin pls_playlist_plugin = {
 	"pls",
 
 	nullptr,
