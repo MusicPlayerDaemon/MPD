@@ -35,11 +35,11 @@ class InotifyQueue final {
 	TimerEvent delay_event;
 
 public:
-	InotifyQueue(EventLoop &_loop, UpdateService &_update)
+	InotifyQueue(EventLoop &_loop, UpdateService &_update) noexcept
 		:update(_update),
 		 delay_event(_loop, BIND_THIS_METHOD(OnDelay)) {}
 
-	void Enqueue(const char *uri_utf8);
+	void Enqueue(const char *uri_utf8) noexcept;
 
 private:
 	void OnDelay() noexcept;
