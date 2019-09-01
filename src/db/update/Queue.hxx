@@ -36,20 +36,20 @@ struct UpdateQueueItem {
 	unsigned id;
 	bool discard;
 
-	UpdateQueueItem():id(0) {}
+	UpdateQueueItem() noexcept:id(0) {}
 
 	UpdateQueueItem(SimpleDatabase &_db,
 			Storage &_storage,
 			const char *_path, bool _discard,
-			unsigned _id)
+			unsigned _id) noexcept
 		:db(&_db), storage(&_storage), path_utf8(_path),
 		 id(_id), discard(_discard) {}
 
-	bool IsDefined() const {
+	bool IsDefined() const noexcept {
 		return id != 0;
 	}
 
-	void Clear() {
+	void Clear() noexcept {
 		id = 0;
 	}
 };
@@ -62,19 +62,19 @@ class UpdateQueue {
 public:
 	gcc_nonnull_all
 	bool Push(SimpleDatabase &db, Storage &storage,
-		  const char *path, bool discard, unsigned id);
+		  const char *path, bool discard, unsigned id) noexcept;
 
-	UpdateQueueItem Pop();
+	UpdateQueueItem Pop() noexcept;
 
-	void Clear() {
+	void Clear() noexcept {
 		update_queue.clear();
 	}
 
 	gcc_nonnull_all
-	void Erase(SimpleDatabase &db);
+	void Erase(SimpleDatabase &db) noexcept;
 
 	gcc_nonnull_all
-	void Erase(Storage &storage);
+	void Erase(Storage &storage) noexcept;
 };
 
 #endif
