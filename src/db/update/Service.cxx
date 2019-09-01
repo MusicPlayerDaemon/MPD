@@ -126,8 +126,9 @@ UpdateService::Task() noexcept
 	if (modified || !next.db->FileExists()) {
 		try {
 			next.db->Save();
-		} catch (const std::exception &e) {
-			LogError(e, "Failed to save database");
+		} catch (...) {
+			LogError(std::current_exception(),
+				 "Failed to save database");
 		}
 	}
 
