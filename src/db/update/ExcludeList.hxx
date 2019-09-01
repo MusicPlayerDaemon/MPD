@@ -44,10 +44,10 @@ class ExcludeList {
 #endif
 
 public:
-	ExcludeList()
+	ExcludeList() noexcept
 		:parent(nullptr) {}
 
-	ExcludeList(const ExcludeList &_parent)
+	ExcludeList(const ExcludeList &_parent) noexcept
 		:parent(&_parent) {}
 
 	gcc_pure
@@ -62,6 +62,8 @@ public:
 
 	/**
 	 * Loads and parses a .mpdignore file.
+	 *
+	 * Throws on I/O error.
 	 */
 	bool Load(InputStreamPtr is);
 
