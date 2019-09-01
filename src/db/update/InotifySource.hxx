@@ -42,7 +42,7 @@ public:
 	InotifySource(EventLoop &_loop,
 		      mpd_inotify_callback_t callback, void *ctx);
 
-	~InotifySource() {
+	~InotifySource() noexcept {
 		Close();
 	}
 
@@ -60,7 +60,7 @@ public:
 	 *
 	 * @param wd the watch descriptor returned by mpd_inotify_source_add()
 	 */
-	void Remove(unsigned wd);
+	void Remove(unsigned wd) noexcept;
 
 private:
 	bool OnSocketReady(unsigned flags) noexcept override;
