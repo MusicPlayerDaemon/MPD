@@ -288,17 +288,7 @@ static const char *const soundcloud_schemes[] = {
 	nullptr
 };
 
-const PlaylistPlugin soundcloud_playlist_plugin = {
-	"soundcloud",
-
-	soundcloud_init,
-	nullptr,
-	soundcloud_open_uri,
-	nullptr,
-
-	soundcloud_schemes,
-	nullptr,
-	nullptr,
-};
-
-
+const PlaylistPlugin soundcloud_playlist_plugin =
+	PlaylistPlugin("soundcloud", soundcloud_open_uri)
+	.WithInit(soundcloud_init)
+	.WithSchemes(soundcloud_schemes);

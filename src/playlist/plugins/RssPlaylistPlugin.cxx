@@ -165,15 +165,7 @@ static const char *const rss_mime_types[] = {
 	nullptr
 };
 
-const PlaylistPlugin rss_playlist_plugin = {
-	"rss",
-
-	nullptr,
-	nullptr,
-	nullptr,
-	rss_open_stream,
-
-	nullptr,
-	rss_suffixes,
-	rss_mime_types,
-};
+const PlaylistPlugin rss_playlist_plugin =
+	PlaylistPlugin("rss", rss_open_stream)
+	.WithSuffixes(rss_suffixes)
+	.WithMimeTypes(rss_mime_types);

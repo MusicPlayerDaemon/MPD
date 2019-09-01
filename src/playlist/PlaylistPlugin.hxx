@@ -38,20 +38,20 @@ struct PlaylistPlugin {
 	 * @return true if the plugin was initialized successfully,
 	 * false if the plugin is not available
 	 */
-	bool (*init)(const ConfigBlock &block);
+	bool (*init)(const ConfigBlock &block) = nullptr;
 
 	/**
 	 * Deinitialize a plugin which was initialized successfully.
 	 * Optional method.
 	 */
-	void (*finish)();
+	void (*finish)() = nullptr;
 
 	/**
 	 * Opens the playlist on the specified URI.  This URI has
 	 * either matched one of the schemes or one of the suffixes.
 	 */
 	std::unique_ptr<SongEnumerator> (*open_uri)(const char *uri,
-						    Mutex &mutex);
+						    Mutex &mutex) = nullptr;
 
 	/**
 	 * Opens the playlist in the specified input stream.  It has
@@ -61,11 +61,46 @@ struct PlaylistPlugin {
 	 * @parm is the input stream; the pointer will not be
 	 * invalidated when the function returns nullptr
 	 */
-	std::unique_ptr<SongEnumerator> (*open_stream)(InputStreamPtr &&is);
+	std::unique_ptr<SongEnumerator> (*open_stream)(InputStreamPtr &&is) = nullptr;
 
-	const char *const*schemes;
-	const char *const*suffixes;
-	const char *const*mime_types;
+	const char *const*schemes = nullptr;
+	const char *const*suffixes = nullptr;
+	const char *const*mime_types = nullptr;
+
+	constexpr PlaylistPlugin(const char *_name,
+				 std::unique_ptr<SongEnumerator> (*_open_uri)(const char *uri,
+									      Mutex &mutex)) noexcept
+		:name(_name), open_uri(_open_uri) {}
+
+	constexpr PlaylistPlugin(const char *_name,
+				 std::unique_ptr<SongEnumerator> (*_open_stream)(InputStreamPtr &&is)) noexcept
+		:name(_name), open_stream(_open_stream) {}
+
+	constexpr auto WithInit(bool (*_init)(const ConfigBlock &block),
+				void (*_finish)() noexcept = nullptr) noexcept {
+		auto copy = *this;
+		copy.init = _init;
+		copy.finish = _finish;
+		return copy;
+	}
+
+	constexpr auto WithSchemes(const char *const*_schemes) noexcept {
+		auto copy = *this;
+		copy.schemes = _schemes;
+		return copy;
+	}
+
+	constexpr auto WithSuffixes(const char *const*_suffixes) noexcept {
+		auto copy = *this;
+		copy.suffixes = _suffixes;
+		return copy;
+	}
+
+	constexpr auto WithMimeTypes(const char *const*_mime_types) noexcept {
+		auto copy = *this;
+		copy.mime_types = _mime_types;
+		return copy;
+	}
 };
 
 /**

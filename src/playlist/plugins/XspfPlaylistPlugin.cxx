@@ -211,15 +211,7 @@ static const char *const xspf_mime_types[] = {
 	nullptr
 };
 
-const PlaylistPlugin xspf_playlist_plugin = {
-	"xspf",
-
-	nullptr,
-	nullptr,
-	nullptr,
-	xspf_open_stream,
-
-	nullptr,
-	xspf_suffixes,
-	xspf_mime_types,
-};
+const PlaylistPlugin xspf_playlist_plugin =
+	PlaylistPlugin("xspf", xspf_open_stream)
+	.WithSuffixes(xspf_suffixes)
+	.WithMimeTypes(xspf_mime_types);

@@ -103,15 +103,6 @@ static const char *const flac_playlist_suffixes[] = {
 	nullptr
 };
 
-const PlaylistPlugin flac_playlist_plugin = {
-	"flac",
-
-	nullptr,
-	nullptr,
-	nullptr,
-	flac_playlist_open_stream,
-
-	nullptr,
-	flac_playlist_suffixes,
-	nullptr,
-};
+const PlaylistPlugin flac_playlist_plugin =
+	PlaylistPlugin("flac", flac_playlist_open_stream)
+	.WithSuffixes(flac_playlist_suffixes);

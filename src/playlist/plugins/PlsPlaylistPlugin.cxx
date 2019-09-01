@@ -172,15 +172,7 @@ static const char *const pls_mime_types[] = {
 	nullptr
 };
 
-const PlaylistPlugin pls_playlist_plugin = {
-	"pls",
-
-	nullptr,
-	nullptr,
-	nullptr,
-	pls_open_stream,
-
-	nullptr,
-	pls_suffixes,
-	pls_mime_types,
-};
+const PlaylistPlugin pls_playlist_plugin =
+	PlaylistPlugin("pls", pls_open_stream)
+	.WithSuffixes(pls_suffixes)
+	.WithMimeTypes(pls_mime_types);

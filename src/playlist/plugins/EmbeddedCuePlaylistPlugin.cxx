@@ -159,15 +159,6 @@ static const char *const embcue_playlist_suffixes[] = {
 	nullptr
 };
 
-const PlaylistPlugin embcue_playlist_plugin = {
-	"embcue",
-
-	nullptr,
-	nullptr,
-	embcue_playlist_open_uri,
-	nullptr,
-
-	nullptr,
-	embcue_playlist_suffixes,
-	nullptr,
-};
+const PlaylistPlugin embcue_playlist_plugin =
+	PlaylistPlugin("embcue", embcue_playlist_open_uri)
+	.WithSuffixes(embcue_playlist_suffixes);

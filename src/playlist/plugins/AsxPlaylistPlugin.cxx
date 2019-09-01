@@ -166,15 +166,7 @@ static const char *const asx_mime_types[] = {
 	nullptr
 };
 
-const PlaylistPlugin asx_playlist_plugin = {
-	"asx",
-
-	nullptr,
-	nullptr,
-	nullptr,
-	asx_open_stream,
-
-	nullptr,
-	asx_suffixes,
-	asx_mime_types,
-};
+const PlaylistPlugin asx_playlist_plugin =
+	PlaylistPlugin("asx", asx_open_stream)
+	.WithSuffixes(asx_suffixes)
+	.WithMimeTypes(asx_mime_types);

@@ -69,15 +69,7 @@ static const char *const m3u_mime_types[] = {
 	nullptr
 };
 
-const PlaylistPlugin m3u_playlist_plugin = {
-	"m3u",
-
-	nullptr,
-	nullptr,
-	nullptr,
-	m3u_open_stream,
-
-	nullptr,
-	m3u_suffixes,
-	m3u_mime_types,
-};
+const PlaylistPlugin m3u_playlist_plugin =
+	PlaylistPlugin("m3u", m3u_open_stream)
+	.WithSuffixes(m3u_suffixes)
+	.WithMimeTypes(m3u_mime_types);
