@@ -27,7 +27,7 @@
 #include <assert.h>
 
 DetachedSong
-DatabaseDetachSong(const Storage *storage, const LightSong &song)
+DatabaseDetachSong(const Storage *storage, const LightSong &song) noexcept
 {
 	DetachedSong detached(song);
 	assert(detached.IsInDatabase());

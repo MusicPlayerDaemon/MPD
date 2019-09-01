@@ -30,7 +30,7 @@ class DetachedSong;
  * instance.
  */
 DetachedSong
-DatabaseDetachSong(const Storage *storage, const LightSong &song);
+DatabaseDetachSong(const Storage *storage, const LightSong &song) noexcept;
 
 /**
  * Look up a song in the database and convert it to a #DetachedSong
