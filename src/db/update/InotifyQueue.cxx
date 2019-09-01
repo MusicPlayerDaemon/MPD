@@ -79,7 +79,7 @@ path_in(const char *path, const char *possible_parent) noexcept
 }
 
 void
-InotifyQueue::Enqueue(const char *uri_utf8)
+InotifyQueue::Enqueue(const char *uri_utf8) noexcept
 {
 	delay_event.Schedule(INOTIFY_UPDATE_DELAY);
 
