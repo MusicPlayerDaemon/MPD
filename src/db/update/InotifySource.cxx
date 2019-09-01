@@ -97,7 +97,7 @@ InotifySource::Add(const char *path_fs, unsigned mask)
 }
 
 void
-InotifySource::Remove(unsigned wd)
+InotifySource::Remove(unsigned wd) noexcept
 {
 	auto ifd = GetSocket().ToFileDescriptor();
 	int ret = inotify_rm_watch(ifd.Get(), wd);
