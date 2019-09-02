@@ -78,12 +78,19 @@ playlist_list_open_stream_suffix(InputStreamPtr &&is, const char *suffix);
 std::unique_ptr<SongEnumerator>
 playlist_list_open_stream(InputStreamPtr &&is, const char *uri);
 
+gcc_pure
+const PlaylistPlugin *
+FindPlaylistPluginBySuffix(const char *suffix) noexcept;
+
 /**
  * Determines if there is a playlist plugin which can handle the
  * specified file name suffix.
  */
 gcc_pure
-bool
-playlist_suffix_supported(const char *suffix) noexcept;
+inline bool
+playlist_suffix_supported(const char *suffix) noexcept
+{
+	return FindPlaylistPluginBySuffix(suffix) != nullptr;
+}
 
 #endif

@@ -274,15 +274,15 @@ playlist_list_open_stream(InputStreamPtr &&is, const char *uri)
 	return nullptr;
 }
 
-bool
-playlist_suffix_supported(const char *suffix) noexcept
+const PlaylistPlugin *
+FindPlaylistPluginBySuffix(const char *suffix) noexcept
 {
 	assert(suffix != nullptr);
 
 	playlist_plugins_for_each_enabled(plugin) {
 		if (plugin->SupportsSuffix(suffix))
-			return true;
+			return plugin;
 	}
 
-	return false;
+	return nullptr;
 }
