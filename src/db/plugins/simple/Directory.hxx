@@ -111,6 +111,15 @@ public:
 		return new Directory(std::string(), nullptr);
 	}
 
+	/**
+	 * Is this really a regular file which is being treated like a
+	 * directory?
+	 */
+	bool IsReallyAFile() const noexcept {
+		return device == DEVICE_INARCHIVE ||
+			device == DEVICE_CONTAINER;
+	}
+
 	bool IsMount() const noexcept {
 		return mounted_database != nullptr;
 	}

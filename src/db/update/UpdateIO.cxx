@@ -59,8 +59,7 @@ DirectoryExists(Storage &storage, const Directory &directory) noexcept
 		return false;
 	}
 
-	return directory.device == DEVICE_INARCHIVE ||
-		directory.device == DEVICE_CONTAINER
+	return directory.IsReallyAFile()
 		? info.IsRegular()
 		: info.IsDirectory();
 }
