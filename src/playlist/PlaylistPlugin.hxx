@@ -22,9 +22,11 @@
 
 #include "input/Ptr.hxx"
 #include "thread/Mutex.hxx"
+#include "util/Compiler.h"
 
 struct ConfigBlock;
 struct Tag;
+struct StringView;
 class SongEnumerator;
 
 struct PlaylistPlugin {
@@ -101,6 +103,24 @@ struct PlaylistPlugin {
 		copy.mime_types = _mime_types;
 		return copy;
 	}
+
+	/**
+	 * Does the plugin announce the specified URI scheme?
+	 */
+	gcc_pure gcc_nonnull_all
+	bool SupportsScheme(StringView scheme) const noexcept;
+
+	/**
+	 * Does the plugin announce the specified file name suffix?
+	 */
+	gcc_pure gcc_nonnull_all
+	bool SupportsSuffix(const char *suffix) const noexcept;
+
+	/**
+	 * Does the plugin announce the specified MIME type?
+	 */
+	gcc_pure gcc_nonnull_all
+	bool SupportsMimeType(StringView mime_type) const noexcept;
 };
 
 /**

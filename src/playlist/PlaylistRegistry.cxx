@@ -33,7 +33,6 @@
 #include "plugins/EmbeddedCuePlaylistPlugin.hxx"
 #include "input/InputStream.hxx"
 #include "util/MimeType.hxx"
-#include "util/StringUtil.hxx"
 #include "util/StringView.hxx"
 #include "util/UriExtract.hxx"
 #include "config/Data.hxx"
@@ -122,8 +121,7 @@ playlist_list_open_uri_scheme(const char *uri, Mutex &mutex,
 		assert(!tried[i]);
 
 		if (playlist_plugins_enabled[i] && plugin->open_uri != nullptr &&
-		    plugin->schemes != nullptr &&
-		    StringArrayContainsCase(plugin->schemes, scheme)) {
+		    plugin->SupportsScheme(scheme)) {
 			auto playlist = plugin->open_uri(uri, mutex);
 			if (playlist)
 				return playlist;
@@ -150,8 +148,8 @@ playlist_list_open_uri_suffix(const char *uri, Mutex &mutex,
 		const auto *plugin = playlist_plugins[i];
 
 		if (playlist_plugins_enabled[i] && !tried[i] &&
-		    plugin->open_uri != nullptr && plugin->suffixes != nullptr &&
-		    StringArrayContainsCase(plugin->suffixes, suffix)) {
+		    plugin->open_uri != nullptr &&
+		    plugin->SupportsSuffix(suffix)) {
 			auto playlist = plugin->open_uri(uri, mutex);
 			if (playlist != nullptr)
 				return playlist;
@@ -183,8 +181,7 @@ playlist_list_open_stream_mime2(InputStreamPtr &&is, StringView mime)
 {
 	playlist_plugins_for_each_enabled(plugin) {
 		if (plugin->open_stream != nullptr &&
-		    plugin->mime_types != nullptr &&
-		    StringArrayContainsCase(plugin->mime_types, mime)) {
+		    plugin->SupportsMimeType(mime)) {
 			/* rewind the stream, so each plugin gets a
 			   fresh start */
 			try {
@@ -233,8 +230,7 @@ playlist_list_open_stream_suffix(InputStreamPtr &&is, const char *suffix)
 
 	playlist_plugins_for_each_enabled(plugin) {
 		if (plugin->open_stream != nullptr &&
-		    plugin->suffixes != nullptr &&
-		    StringArrayContainsCase(plugin->suffixes, suffix)) {
+		    plugin->SupportsSuffix(suffix)) {
 			/* rewind the stream, so each plugin gets a
 			   fresh start */
 			try {
@@ -284,8 +280,7 @@ playlist_suffix_supported(const char *suffix) noexcept
 	assert(suffix != nullptr);
 
 	playlist_plugins_for_each_enabled(plugin) {
-		if (plugin->suffixes != nullptr &&
-		    StringArrayContainsCase(plugin->suffixes, suffix))
+		if (plugin->SupportsSuffix(suffix))
 			return true;
 	}
 

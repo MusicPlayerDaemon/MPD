@@ -1,5 +1,6 @@
 playlist_api = static_library(
   'playlist_api',
+  'PlaylistPlugin.cxx',
   'MemorySongEnumerator.cxx',
   include_directories: inc,
 )
