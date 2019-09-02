@@ -138,6 +138,8 @@ ParseISO8601(const char *s)
 			precision = std::chrono::seconds(1);
 		else if ((end = strptime(s, "%H:%M", &tm)) != nullptr)
 			precision = std::chrono::minutes(1);
+		else if ((end = strptime(s, "%H", &tm)) != nullptr)
+			precision = std::chrono::hours(1);
 		else
 			throw std::runtime_error("Failed to parse time of day");
 
