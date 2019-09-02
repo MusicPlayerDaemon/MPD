@@ -69,6 +69,12 @@ struct PlaylistPlugin {
 	const char *const*suffixes = nullptr;
 	const char *const*mime_types = nullptr;
 
+	/**
+	 * If true, then playlists of this type are shown in the
+	 * database as folders.
+	 */
+	bool as_folder = false;
+
 	constexpr PlaylistPlugin(const char *_name,
 				 std::unique_ptr<SongEnumerator> (*_open_uri)(const char *uri,
 									      Mutex &mutex)) noexcept
@@ -101,6 +107,12 @@ struct PlaylistPlugin {
 	constexpr auto WithMimeTypes(const char *const*_mime_types) noexcept {
 		auto copy = *this;
 		copy.mime_types = _mime_types;
+		return copy;
+	}
+
+	constexpr auto WithAsFolder(bool value=true) noexcept {
+		auto copy = *this;
+		copy.as_folder = value;
 		return copy;
 	}
 

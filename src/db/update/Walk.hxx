@@ -30,6 +30,7 @@
 struct StorageFileInfo;
 struct Directory;
 struct ArchivePlugin;
+struct PlaylistPlugin;
 class ArchiveFile;
 class Storage;
 class ExcludeList;
@@ -117,6 +118,10 @@ private:
 		return false;
 	}
 #endif
+
+	void UpdatePlaylistFile(Directory &parent, const char *name,
+				const StorageFileInfo &info,
+				const PlaylistPlugin &plugin) noexcept;
 
 	bool UpdatePlaylistFile(Directory &directory,
 				const char *name, const char *suffix,

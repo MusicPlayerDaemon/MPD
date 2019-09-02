@@ -44,6 +44,12 @@ static constexpr unsigned DEVICE_INARCHIVE = -1;
  */
 static constexpr unsigned DEVICE_CONTAINER = -2;
 
+/**
+ * Virtual directory that is really a playlist file (special value for
+ * Directory::device).
+ */
+static constexpr unsigned DEVICE_PLAYLIST = -3;
+
 class SongFilter;
 
 struct Directory {
@@ -117,6 +123,7 @@ public:
 	 */
 	bool IsReallyAFile() const noexcept {
 		return device == DEVICE_INARCHIVE ||
+			device == DEVICE_PLAYLIST ||
 			device == DEVICE_CONTAINER;
 	}
 

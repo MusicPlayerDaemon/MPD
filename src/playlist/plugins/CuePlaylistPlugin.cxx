@@ -72,5 +72,6 @@ static const char *const cue_playlist_mime_types[] = {
 
 const PlaylistPlugin cue_playlist_plugin =
 	PlaylistPlugin("cue", cue_playlist_open_stream)
+	.WithAsFolder()
 	.WithSuffixes(cue_playlist_suffixes)
 	.WithMimeTypes(cue_playlist_mime_types);

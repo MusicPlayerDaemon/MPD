@@ -50,6 +50,9 @@ DeviceToTypeString(unsigned device) noexcept
 	case DEVICE_CONTAINER:
 		return "container";
 
+	case DEVICE_PLAYLIST:
+		return "playlist";
+
 	default:
 		return nullptr;
 	}
@@ -63,6 +66,8 @@ ParseTypeString(const char *type) noexcept
 		return DEVICE_INARCHIVE;
 	else if (StringIsEqual(type, "container"))
 		return DEVICE_CONTAINER;
+	else if (StringIsEqual(type, "playlist"))
+		return DEVICE_PLAYLIST;
 	else
 		return 0;
 }

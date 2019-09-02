@@ -12,6 +12,8 @@ ver 0.22 (not yet released)
   - ffmpeg: allow partial reads
 * archive
   - iso9660: support seeking
+* playlist
+  - cue: integrate contents in database
 * decoder
   - mad: remove option "gapless", always do gapless
   - sidplay: add option "default_genre"
