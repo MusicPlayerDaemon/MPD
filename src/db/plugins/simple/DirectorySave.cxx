@@ -26,6 +26,7 @@
 #include "fs/io/TextFile.hxx"
 #include "fs/io/BufferedOutputStream.hxx"
 #include "time/ChronoUtil.hxx"
+#include "util/StringAPI.hxx"
 #include "util/StringCompare.hxx"
 #include "util/NumberParser.hxx"
 #include "util/RuntimeError.hxx"
@@ -58,9 +59,9 @@ gcc_pure
 static unsigned
 ParseTypeString(const char *type) noexcept
 {
-	if (strcmp(type, "archive") == 0)
+	if (StringIsEqual(type, "archive"))
 		return DEVICE_INARCHIVE;
-	else if (strcmp(type, "container") == 0)
+	else if (StringIsEqual(type, "container"))
 		return DEVICE_CONTAINER;
 	else
 		return 0;
