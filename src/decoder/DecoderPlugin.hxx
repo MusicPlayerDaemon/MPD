@@ -225,6 +225,10 @@ struct DecoderPlugin {
 	 */
 	gcc_pure gcc_nonnull_all
 	bool SupportsMimeType(const char *mime_type) const noexcept;
+
+	bool SupportsContainerSuffix(const char *suffix) const noexcept {
+		return container_scan != nullptr && SupportsSuffix(suffix);
+	}
 };
 
 #endif
