@@ -23,7 +23,8 @@
 
 Directory *
 UpdateWalk::MakeVirtualDirectoryIfModified(Directory &parent, const char *name,
-					   const StorageFileInfo &info) noexcept
+					   const StorageFileInfo &info,
+					   unsigned virtual_device) noexcept
 {
 	Directory *directory = parent.FindChild(name);
 
@@ -32,7 +33,9 @@ UpdateWalk::MakeVirtualDirectoryIfModified(Directory &parent, const char *name,
 		if (directory->IsMount())
 			return nullptr;
 
-		if (directory->mtime == info.mtime && !walk_discard) {
+		if (directory->mtime == info.mtime &&
+		    directory->device == virtual_device &&
+		    !walk_discard) {
 			/* not modified */
 			return nullptr;
 		}
@@ -43,5 +46,6 @@ UpdateWalk::MakeVirtualDirectoryIfModified(Directory &parent, const char *name,
 
 	directory = parent.MakeChild(name);
 	directory->mtime = info.mtime;
+	directory->device = virtual_device;
 	return directory;
 }

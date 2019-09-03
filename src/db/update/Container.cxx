@@ -46,12 +46,11 @@ UpdateWalk::UpdateContainerFile(Directory &directory,
 	{
 		const ScopeDatabaseLock protect;
 		contdir = MakeVirtualDirectoryIfModified(directory, name,
-							 info);
+							 info,
+							 DEVICE_CONTAINER);
 		if (contdir == nullptr)
 			/* not modified */
 			return true;
-
-		contdir->device = DEVICE_CONTAINER;
 	}
 
 	const auto pathname = storage.MapFS(contdir->GetPath());

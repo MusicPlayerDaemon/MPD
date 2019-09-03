@@ -141,10 +141,14 @@ private:
 	 * exists already and is unmodified.
 	 *
 	 * The caller must lock the database.
+	 *
+	 * @param virtual_device one of the DEVICE_* constants
+	 * specifying the kind of virtual directory
 	 */
 	Directory *MakeVirtualDirectoryIfModified(Directory &parent,
 						  const char *name,
-						  const StorageFileInfo &info) noexcept;
+						  const StorageFileInfo &info,
+						  unsigned virtual_device) noexcept;
 
 	Directory *DirectoryMakeChildChecked(Directory &parent,
 					     const char *uri_utf8,
