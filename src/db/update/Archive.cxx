@@ -100,17 +100,17 @@ UpdateWalk::UpdateArchiveTree(ArchiveFile &archive, Directory &directory,
 class UpdateArchiveVisitor final : public ArchiveVisitor {
 	UpdateWalk &walk;
 	ArchiveFile &archive;
-	Directory *directory;
+	Directory &directory;
 
  public:
 	UpdateArchiveVisitor(UpdateWalk &_walk, ArchiveFile &_archive,
-			     Directory *_directory) noexcept
+			     Directory &_directory) noexcept
 		:walk(_walk), archive(_archive), directory(_directory) {}
 
 	virtual void VisitArchiveEntry(const char *path_utf8) override {
 		FormatDebug(update_domain,
 			    "adding archive file: %s", path_utf8);
-		walk.UpdateArchiveTree(archive, *directory, path_utf8);
+		walk.UpdateArchiveTree(archive, directory, path_utf8);
 	}
 };
 
@@ -152,7 +152,7 @@ UpdateWalk::UpdateArchiveFile(Directory &parent, const char *name,
 
 	FormatDebug(update_domain, "archive %s opened", path_fs.c_str());
 
-	UpdateArchiveVisitor visitor(*this, *file, directory);
+	UpdateArchiveVisitor visitor(*this, *file, *directory);
 	file->Visit(visitor);
 }
 
