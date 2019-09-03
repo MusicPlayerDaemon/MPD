@@ -150,6 +150,11 @@ private:
 						  const StorageFileInfo &info,
 						  unsigned virtual_device) noexcept;
 
+	Directory *LockMakeVirtualDirectoryIfModified(Directory &parent,
+						      const char *name,
+						      const StorageFileInfo &info,
+						      unsigned virtual_device) noexcept;
+
 	Directory *DirectoryMakeChildChecked(Directory &parent,
 					     const char *uri_utf8,
 					     const char *name_utf8) noexcept;

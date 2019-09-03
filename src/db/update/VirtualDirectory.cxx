@@ -18,6 +18,7 @@
  */
 
 #include "Walk.hxx"
+#include "db/DatabaseLock.hxx"
 #include "db/plugins/simple/Directory.hxx"
 #include "storage/FileInfo.hxx"
 
@@ -48,4 +49,15 @@ UpdateWalk::MakeVirtualDirectoryIfModified(Directory &parent, const char *name,
 	directory->mtime = info.mtime;
 	directory->device = virtual_device;
 	return directory;
+}
+
+Directory *
+UpdateWalk::LockMakeVirtualDirectoryIfModified(Directory &parent,
+					       const char *name,
+					       const StorageFileInfo &info,
+					       unsigned virtual_device) noexcept
+{
+	const ScopeDatabaseLock protect;
+	return MakeVirtualDirectoryIfModified(parent, name,
+					      info, virtual_device);
 }
