@@ -27,6 +27,7 @@ db_glue_sources = [
   'update/Walk.cxx',
   'update/UpdateSong.cxx',
   'update/Container.cxx',
+  'update/Playlist.cxx',
   'update/Remove.cxx',
   'update/ExcludeList.cxx',
   'DatabaseGlue.cxx',

@@ -22,12 +22,10 @@
 #include "Editor.hxx"
 #include "UpdateDomain.hxx"
 #include "db/DatabaseLock.hxx"
-#include "db/PlaylistVector.hxx"
 #include "db/Uri.hxx"
 #include "db/plugins/simple/Directory.hxx"
 #include "db/plugins/simple/Song.hxx"
 #include "storage/StorageInterface.hxx"
-#include "playlist/PlaylistRegistry.hxx"
 #include "ExcludeList.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "fs/Traits.hxx"
@@ -173,22 +171,6 @@ FindAncestorLoop(Storage &storage, Directory *parent,
 #endif
 
 	return 0;
-}
-
-inline bool
-UpdateWalk::UpdatePlaylistFile(Directory &directory,
-			       const char *name, const char *suffix,
-			       const StorageFileInfo &info) noexcept
-{
-	if (!playlist_suffix_supported(suffix))
-		return false;
-
-	PlaylistInfo pi(name, info.mtime);
-
-	const ScopeDatabaseLock protect;
-	if (directory.playlists.UpdateOrInsert(std::move(pi)))
-		modified = true;
-	return true;
 }
 
 inline bool
