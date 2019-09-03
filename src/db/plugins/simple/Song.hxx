@@ -31,6 +31,7 @@
 
 #include <string>
 
+struct StringView;
 struct LightSong;
 struct Directory;
 class DetachedSong;
@@ -93,7 +94,7 @@ struct Song {
 	 */
 	char uri[sizeof(int)];
 
-	Song(const char *_uri, size_t uri_length, Directory &parent) noexcept;
+	Song(StringView _uri, Directory &parent) noexcept;
 	~Song() noexcept;
 
 	static SongPtr NewFrom(DetachedSong &&other, Directory &parent) noexcept;

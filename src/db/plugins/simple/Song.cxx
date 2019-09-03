@@ -24,15 +24,16 @@
 #include "util/VarSize.hxx"
 #include "song/DetachedSong.hxx"
 #include "song/LightSong.hxx"
+#include "util/StringView.hxx"
 
 #include <assert.h>
 #include <string.h>
 
 inline
-Song::Song(const char *_uri, size_t uri_length, Directory &_parent) noexcept
+Song::Song(StringView _uri, Directory &_parent) noexcept
 	:parent(&_parent)
 {
-	memcpy(uri, _uri, uri_length + 1);
+	memcpy(uri, _uri.data, _uri.size + 1);
 }
 
 inline
@@ -41,17 +42,11 @@ Song::~Song() noexcept
 }
 
 static SongPtr
-song_alloc(const char *uri, Directory &parent) noexcept
+song_alloc(StringView uri, Directory &parent) noexcept
 {
-	size_t uri_length;
-
-	assert(uri);
-	uri_length = strlen(uri);
-	assert(uri_length);
-
 	auto *song = NewVarSize<Song>(sizeof(Song::uri),
-				      uri_length + 1,
-				      uri, uri_length, parent);
+				      uri.size + 1,
+				      uri, parent);
 	return SongPtr(song);
 }
 
