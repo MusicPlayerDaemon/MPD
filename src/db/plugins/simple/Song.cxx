@@ -74,9 +74,8 @@ LightSong
 Song::Export() const noexcept
 {
 	LightSong dest(uri.c_str(), tag);
-	dest.directory = parent->IsRoot()
-		? nullptr : parent->GetPath();
-	dest.real_uri = nullptr;
+	if (!parent->IsRoot())
+		dest.directory = parent->GetPath();
 	dest.mtime = mtime;
 	dest.start_time = start_time;
 	dest.end_time = end_time;
