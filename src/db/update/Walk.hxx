@@ -142,8 +142,9 @@ private:
 	 *
 	 * The caller must lock the database.
 	 */
-	Directory *MakeDirectoryIfModified(Directory &parent, const char *name,
-					   const StorageFileInfo &info) noexcept;
+	Directory *MakeVirtualDirectoryIfModified(Directory &parent,
+						  const char *name,
+						  const StorageFileInfo &info) noexcept;
 
 	Directory *DirectoryMakeChildChecked(Directory &parent,
 					     const char *uri_utf8,

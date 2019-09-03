@@ -45,7 +45,8 @@ UpdateWalk::UpdateContainerFile(Directory &directory,
 	Directory *contdir;
 	{
 		const ScopeDatabaseLock protect;
-		contdir = MakeDirectoryIfModified(directory, name, info);
+		contdir = MakeVirtualDirectoryIfModified(directory, name,
+							 info);
 		if (contdir == nullptr)
 			/* not modified */
 			return true;

@@ -22,8 +22,8 @@
 #include "storage/FileInfo.hxx"
 
 Directory *
-UpdateWalk::MakeDirectoryIfModified(Directory &parent, const char *name,
-				    const StorageFileInfo &info) noexcept
+UpdateWalk::MakeVirtualDirectoryIfModified(Directory &parent, const char *name,
+					   const StorageFileInfo &info) noexcept
 {
 	Directory *directory = parent.FindChild(name);
 
