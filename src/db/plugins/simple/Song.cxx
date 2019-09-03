@@ -18,36 +18,22 @@
  */
 
 #include "Song.hxx"
-#include "Disposer.hxx"
 #include "Directory.hxx"
 #include "tag/Tag.hxx"
-#include "util/VarSize.hxx"
 #include "song/DetachedSong.hxx"
 #include "song/LightSong.hxx"
 #include "util/StringView.hxx"
 
-#include <assert.h>
-#include <string.h>
-
 inline
 Song::Song(StringView _uri, Directory &_parent) noexcept
-	:parent(&_parent)
-{
-	memcpy(uri, _uri.data, _uri.size + 1);
-}
-
-inline
-Song::~Song() noexcept
+	:parent(&_parent), uri(_uri.data, _uri.size)
 {
 }
 
 static SongPtr
 song_alloc(StringView uri, Directory &parent) noexcept
 {
-	auto *song = NewVarSize<Song>(sizeof(Song::uri),
-				      uri.size + 1,
-				      uri, parent);
-	return SongPtr(song);
+	return std::make_unique<Song>(uri, parent);
 }
 
 SongPtr
@@ -67,30 +53,16 @@ Song::NewFile(const char *path, Directory &parent) noexcept
 	return SongPtr(song_alloc(path, parent));
 }
 
-void
-Song::Free() noexcept
-{
-	DeleteVarSize(this);
-}
-
-void
-SongDisposer::operator()(Song *song) const noexcept
-{
-	song->Free();
-}
-
 std::string
 Song::GetURI() const noexcept
 {
-	assert(*uri);
-
 	if (parent->IsRoot())
-		return std::string(uri);
+		return uri;
 	else {
 		const char *path = parent->GetPath();
 
 		std::string result;
-		result.reserve(strlen(path) + 1 + strlen(uri));
+		result.reserve(strlen(path) + 1 + uri.length());
 		result.assign(path);
 		result.push_back('/');
 		result.append(uri);
@@ -101,7 +73,7 @@ Song::GetURI() const noexcept
 LightSong
 Song::Export() const noexcept
 {
-	LightSong dest(uri, tag);
+	LightSong dest(uri.c_str(), tag);
 	dest.directory = parent->IsRoot()
 		? nullptr : parent->GetPath();
 	dest.real_uri = nullptr;

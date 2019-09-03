@@ -92,10 +92,9 @@ struct Song {
 	/**
 	 * The file name.
 	 */
-	char uri[sizeof(int)];
+	std::string uri;
 
 	Song(StringView _uri, Directory &parent) noexcept;
-	~Song() noexcept;
 
 	static SongPtr NewFrom(DetachedSong &&other, Directory &parent) noexcept;
 
@@ -114,8 +113,6 @@ struct Song {
 	 */
 	static SongPtr LoadFile(Storage &storage, const char *name_utf8,
 				Directory &parent);
-
-	void Free() noexcept;
 
 	/**
 	 * Throws on error.

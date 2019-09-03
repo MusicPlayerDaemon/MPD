@@ -20,10 +20,10 @@
 #ifndef MPD_SONG_PTR_HXX
 #define MPD_SONG_PTR_HXX
 
-#include "Disposer.hxx"
-
 #include <memory>
 
-using SongPtr = std::unique_ptr<Song, SongDisposer>;
+struct Song;
+
+using SongPtr = std::unique_ptr<Song>;
 
 #endif

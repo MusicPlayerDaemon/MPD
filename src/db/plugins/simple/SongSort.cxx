@@ -96,7 +96,7 @@ song_cmp(const Song &a, const Song &b) noexcept
 		return ret < 0;
 
 	/* still no difference?  compare file name */
-	return IcuCollate(a.uri, b.uri) < 0;
+	return IcuCollate(a.uri.c_str(), b.uri.c_str()) < 0;
 }
 
 void

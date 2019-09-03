@@ -75,7 +75,7 @@ UpdateWalk::UpdateContainerFile(Directory &directory,
 			song->mtime = info.mtime;
 
 			FormatDefault(update_domain, "added %s/%s",
-				      contdir->GetPath(), song->uri);
+				      contdir->GetPath(), song->uri.c_str());
 
 			{
 				const ScopeDatabaseLock protect;

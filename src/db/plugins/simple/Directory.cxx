@@ -20,7 +20,6 @@
 #include "Directory.hxx"
 #include "SongSort.hxx"
 #include "Song.hxx"
-#include "Disposer.hxx"
 #include "Mount.hxx"
 #include "db/LightDirectory.hxx"
 #include "song/LightSong.hxx"
@@ -51,7 +50,7 @@ Directory::~Directory() noexcept
 		mounted_database.reset();
 	}
 
-	songs.clear_and_dispose(SongDisposer());
+	songs.clear_and_dispose(DeleteDisposer());
 	children.clear_and_dispose(DeleteDisposer());
 }
 
@@ -192,7 +191,7 @@ Directory::FindSong(const char *name_utf8) const noexcept
 	for (auto &song : songs) {
 		assert(song.parent == this);
 
-		if (strcmp(song.uri, name_utf8) == 0)
+		if (song.uri == name_utf8)
 			return &song;
 	}
 

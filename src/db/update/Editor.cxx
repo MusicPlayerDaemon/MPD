@@ -41,7 +41,7 @@ DatabaseEditor::DeleteSong(Directory &dir, Song *del)
 	remove.Remove(del->GetURI());
 
 	/* finally, all possible references gone, free it */
-	del->Free();
+	delete del;
 }
 
 void
