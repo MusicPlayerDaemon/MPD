@@ -30,31 +30,6 @@
 #include "storage/FileInfo.hxx"
 #include "Log.hxx"
 
-Directory *
-UpdateWalk::MakeDirectoryIfModified(Directory &parent, const char *name,
-				    const StorageFileInfo &info) noexcept
-{
-	Directory *directory = parent.FindChild(name);
-
-	// directory exists already
-	if (directory != nullptr) {
-		if (directory->IsMount())
-			return nullptr;
-
-		if (directory->mtime == info.mtime && !walk_discard) {
-			/* not modified */
-			return nullptr;
-		}
-
-		editor.DeleteDirectory(directory);
-		modified = true;
-	}
-
-	directory = parent.MakeChild(name);
-	directory->mtime = info.mtime;
-	return directory;
-}
-
 bool
 UpdateWalk::UpdateContainerFile(Directory &directory,
 				const char *name, const char *suffix,
