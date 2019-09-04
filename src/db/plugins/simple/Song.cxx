@@ -22,6 +22,7 @@
 #include "tag/Tag.hxx"
 #include "song/DetachedSong.hxx"
 #include "song/LightSong.hxx"
+#include "fs/Traits.hxx"
 #include "util/StringView.hxx"
 
 inline
@@ -60,13 +61,7 @@ Song::GetURI() const noexcept
 		return uri;
 	else {
 		const char *path = parent.GetPath();
-
-		std::string result;
-		result.reserve(strlen(path) + 1 + uri.length());
-		result.assign(path);
-		result.push_back('/');
-		result.append(uri);
-		return result;
+		return PathTraitsUTF8::Build(path, uri.c_str());
 	}
 }
 
