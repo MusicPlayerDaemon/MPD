@@ -93,6 +93,10 @@ struct Song {
 	 */
 	std::string uri;
 
+	template<typename U>
+	Song(U &&_uri, Directory &_parent) noexcept
+		:parent(_parent), uri(std::forward<U>(_uri)) {}
+
 	Song(StringView _uri, Directory &parent) noexcept;
 
 	static SongPtr NewFrom(DetachedSong &&other, Directory &parent) noexcept;
