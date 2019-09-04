@@ -91,11 +91,11 @@ struct Song {
 	/**
 	 * The file name.
 	 */
-	std::string uri;
+	std::string filename;
 
-	template<typename U>
-	Song(U &&_uri, Directory &_parent) noexcept
-		:parent(_parent), uri(std::forward<U>(_uri)) {}
+	template<typename F>
+	Song(F &&_filename, Directory &_parent) noexcept
+		:parent(_parent), filename(std::forward<F>(_filename)) {}
 
 	Song(DetachedSong &&other, Directory &_parent) noexcept;
 

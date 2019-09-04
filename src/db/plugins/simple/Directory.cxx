@@ -191,7 +191,7 @@ Directory::FindSong(const char *name_utf8) const noexcept
 	for (auto &song : songs) {
 		assert(&song.parent == this);
 
-		if (song.uri == name_utf8)
+		if (song.filename == name_utf8)
 			return &song;
 	}
 

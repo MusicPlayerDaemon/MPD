@@ -81,7 +81,7 @@ UpdateWalk::RemoveExcludedFromDirectory(Directory &directory,
 	directory.ForEachSongSafe([&](Song &song){
 			assert(&song.parent == &directory);
 
-			const auto name_fs = AllocatedPath::FromUTF8(song.uri.c_str());
+			const auto name_fs = AllocatedPath::FromUTF8(song.filename.c_str());
 			if (name_fs.IsNull() || exclude_list.Check(name_fs)) {
 				editor.DeleteSong(directory, &song);
 				modified = true;
@@ -103,7 +103,7 @@ UpdateWalk::PurgeDeletedFromDirectory(Directory &directory) noexcept
 
 	directory.ForEachSongSafe([&](Song &song){
 			if (!directory_child_is_regular(storage, directory,
-							song.uri.c_str())) {
+							song.filename.c_str())) {
 				editor.LockDeleteSong(directory, &song);
 
 				modified = true;

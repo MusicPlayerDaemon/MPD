@@ -30,7 +30,7 @@ Song::Song(DetachedSong &&other, Directory &_parent) noexcept
 	 mtime(other.GetLastModified()),
 	 start_time(other.GetStartTime()),
 	 end_time(other.GetEndTime()),
-	 uri(other.GetURI())
+	 filename(other.GetURI())
 {
 }
 
@@ -38,17 +38,17 @@ std::string
 Song::GetURI() const noexcept
 {
 	if (parent.IsRoot())
-		return uri;
+		return filename;
 	else {
 		const char *path = parent.GetPath();
-		return PathTraitsUTF8::Build(path, uri.c_str());
+		return PathTraitsUTF8::Build(path, filename.c_str());
 	}
 }
 
 LightSong
 Song::Export() const noexcept
 {
-	LightSong dest(uri.c_str(), tag);
+	LightSong dest(filename.c_str(), tag);
 	if (!parent.IsRoot())
 		dest.directory = parent.GetPath();
 	dest.mtime = mtime;

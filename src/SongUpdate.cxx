@@ -110,7 +110,7 @@ Song::UpdateFileInArchive(ArchiveFile &archive) noexcept
 {
 	assert(parent.device == DEVICE_INARCHIVE);
 
-	std::string path_utf8(uri);
+	std::string path_utf8(filename);
 
 	for (const Directory *directory = &parent;
 	     directory->parent != nullptr &&
