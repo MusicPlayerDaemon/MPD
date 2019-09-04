@@ -97,8 +97,6 @@ struct Song {
 	Song(U &&_uri, Directory &_parent) noexcept
 		:parent(_parent), uri(std::forward<U>(_uri)) {}
 
-	Song(StringView _uri, Directory &parent) noexcept;
-
 	Song(DetachedSong &&other, Directory &_parent) noexcept;
 
 	/**

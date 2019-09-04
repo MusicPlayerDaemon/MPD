@@ -23,13 +23,6 @@
 #include "song/DetachedSong.hxx"
 #include "song/LightSong.hxx"
 #include "fs/Traits.hxx"
-#include "util/StringView.hxx"
-
-inline
-Song::Song(StringView _uri, Directory &_parent) noexcept
-	:parent(_parent), uri(_uri.data, _uri.size)
-{
-}
 
 Song::Song(DetachedSong &&other, Directory &_parent) noexcept
 	:tag(std::move(other.WritableTag())),
