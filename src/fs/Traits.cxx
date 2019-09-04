@@ -35,7 +35,10 @@ BuildPathImpl(typename Traits::const_pointer_type a, size_t a_size,
 	if (b_size == 0)
 		return typename Traits::string(a, a_size);
 
-	typename Traits::string result(a, a_size);
+	typename Traits::string result;
+	result.reserve(a_size + 1 + b_size);
+
+	result.append(a, a_size);
 
 	if (!Traits::IsSeparator(a[a_size - 1]))
 		result.push_back(Traits::SEPARATOR);
