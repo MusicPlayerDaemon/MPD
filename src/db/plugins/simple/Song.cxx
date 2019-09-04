@@ -51,6 +51,8 @@ Song::Export() const noexcept
 	LightSong dest(filename.c_str(), tag);
 	if (!parent.IsRoot())
 		dest.directory = parent.GetPath();
+	if (!target.empty())
+		dest.real_uri = target.c_str();
 	dest.mtime = mtime;
 	dest.start_time = start_time;
 	dest.end_time = end_time;

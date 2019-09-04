@@ -93,6 +93,15 @@ struct Song {
 	 */
 	std::string filename;
 
+	/**
+	 * If non-empty, then this object does not describe a file
+	 * within the `music_directory`, but some sort of symbolic
+	 * link pointing to this value.  It can be an absolute URI
+	 * (i.e. with URI scheme) or a URI relative to this object
+	 * (which may begin with one or more "../").
+	 */
+	std::string target;
+
 	template<typename F>
 	Song(F &&_filename, Directory &_parent) noexcept
 		:parent(_parent), filename(std::forward<F>(_filename)) {}

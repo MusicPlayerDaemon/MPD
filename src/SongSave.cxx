@@ -53,6 +53,9 @@ song_save(BufferedOutputStream &os, const Song &song)
 {
 	os.Format(SONG_BEGIN "%s\n", song.filename.c_str());
 
+	if (!song.target.empty())
+		os.Format("Target: %s\n", song.target.c_str());
+
 	range_save(os, song.start_time.ToMS(), song.end_time.ToMS());
 
 	tag_save(os, song.tag);
@@ -83,6 +86,7 @@ song_save(BufferedOutputStream &os, const DetachedSong &song)
 
 DetachedSong
 song_load(TextFile &file, const char *uri,
+	  std::string *target_r,
 	  AudioFormat *audio_format_r)
 {
 	DetachedSong song(uri);
@@ -105,6 +109,9 @@ song_load(TextFile &file, const char *uri,
 			tag.AddItem(type, value);
 		} else if (StringIsEqual(line, "Time")) {
 			tag.SetDuration(SignedSongTime::FromS(ParseDouble(value)));
+		} else if (StringIsEqual(line, "Target")) {
+			if (target_r != nullptr)
+				*target_r = value;
 		} else if (StringIsEqual(line, "Format")) {
 			if (audio_format_r != nullptr) {
 				try {
