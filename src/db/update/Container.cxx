@@ -69,7 +69,8 @@ UpdateWalk::UpdateContainerFile(Directory &directory,
 		}
 
 		for (auto &vtrack : v) {
-			auto song = Song::NewFrom(std::move(vtrack), *contdir);
+			auto song = std::make_unique<Song>(std::move(vtrack),
+							   *contdir);
 
 			// shouldn't be necessary but it's there..
 			song->mtime = info.mtime;

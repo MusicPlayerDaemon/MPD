@@ -99,7 +99,7 @@ struct Song {
 
 	Song(StringView _uri, Directory &parent) noexcept;
 
-	static SongPtr NewFrom(DetachedSong &&other, Directory &parent) noexcept;
+	Song(DetachedSong &&other, Directory &_parent) noexcept;
 
 	/**
 	 * allocate a new song structure with a local file name and attempt to

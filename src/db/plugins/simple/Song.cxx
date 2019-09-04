@@ -31,21 +31,14 @@ Song::Song(StringView _uri, Directory &_parent) noexcept
 {
 }
 
-static SongPtr
-song_alloc(StringView uri, Directory &parent) noexcept
+Song::Song(DetachedSong &&other, Directory &_parent) noexcept
+	:tag(std::move(other.WritableTag())),
+	 parent(_parent),
+	 mtime(other.GetLastModified()),
+	 start_time(other.GetStartTime()),
+	 end_time(other.GetEndTime()),
+	 uri(other.GetURI())
 {
-	return std::make_unique<Song>(uri, parent);
-}
-
-SongPtr
-Song::NewFrom(DetachedSong &&other, Directory &parent) noexcept
-{
-	SongPtr song(song_alloc(other.GetURI(), parent));
-	song->tag = std::move(other.WritableTag());
-	song->mtime = other.GetLastModified();
-	song->start_time = other.GetStartTime();
-	song->end_time = other.GetEndTime();
-	return song;
 }
 
 std::string
