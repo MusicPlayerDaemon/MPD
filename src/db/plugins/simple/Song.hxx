@@ -101,9 +101,6 @@ struct Song {
 
 	static SongPtr NewFrom(DetachedSong &&other, Directory &parent) noexcept;
 
-	/** allocate a new song with a local file name */
-	static SongPtr NewFile(const char *path_utf8, Directory &parent) noexcept;
-
 	/**
 	 * allocate a new song structure with a local file name and attempt to
 	 * load its metadata.  If all decoder plugin fail to read its meta

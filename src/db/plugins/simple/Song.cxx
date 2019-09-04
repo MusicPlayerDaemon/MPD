@@ -48,12 +48,6 @@ Song::NewFrom(DetachedSong &&other, Directory &parent) noexcept
 	return song;
 }
 
-SongPtr
-Song::NewFile(const char *path, Directory &parent) noexcept
-{
-	return SongPtr(song_alloc(path, parent));
-}
-
 std::string
 Song::GetURI() const noexcept
 {
