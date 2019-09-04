@@ -34,7 +34,6 @@
 #include "util/RuntimeError.hxx"
 #include "util/NumberParser.hxx"
 
-#include <string.h>
 #include <stdlib.h>
 
 #define SONG_MTIME "mtime"
@@ -92,7 +91,7 @@ song_load(TextFile &file, const char *uri,
 
 	char *line;
 	while ((line = file.ReadLine()) != nullptr &&
-	       strcmp(line, SONG_END) != 0) {
+	       !StringIsEqual(line, SONG_END)) {
 		char *colon = strchr(line, ':');
 		if (colon == nullptr || colon == line) {
 			throw FormatRuntimeError("unknown line in db: %s", line);
@@ -104,7 +103,7 @@ song_load(TextFile &file, const char *uri,
 		TagType type;
 		if ((type = tag_name_parse(line)) != TAG_NUM_OF_ITEM_TYPES) {
 			tag.AddItem(type, value);
-		} else if (strcmp(line, "Time") == 0) {
+		} else if (StringIsEqual(line, "Time")) {
 			tag.SetDuration(SignedSongTime::FromS(ParseDouble(value)));
 		} else if (StringIsEqual(line, "Format")) {
 			if (audio_format_r != nullptr) {
@@ -115,11 +114,11 @@ song_load(TextFile &file, const char *uri,
 					/* ignore parser errors */
 				}
 			}
-		} else if (strcmp(line, "Playlist") == 0) {
-			tag.SetHasPlaylist(strcmp(value, "yes") == 0);
-		} else if (strcmp(line, SONG_MTIME) == 0) {
+		} else if (StringIsEqual(line, "Playlist")) {
+			tag.SetHasPlaylist(StringIsEqual(value, "yes"));
+		} else if (StringIsEqual(line, SONG_MTIME)) {
 			song->SetLastModified(std::chrono::system_clock::from_time_t(atoi(value)));
-		} else if (strcmp(line, "Range") == 0) {
+		} else if (StringIsEqual(line, "Range")) {
 			char *endptr;
 
 			unsigned start_ms = strtoul(value, &endptr, 10);
