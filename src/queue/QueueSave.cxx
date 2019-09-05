@@ -73,7 +73,7 @@ queue_save(BufferedOutputStream &os, const Queue &queue)
 	}
 }
 
-static std::unique_ptr<DetachedSong>
+static DetachedSong
 LoadQueueSong(TextFile &file, const char *line)
 {
 	std::unique_ptr<DetachedSong> song;
@@ -89,7 +89,7 @@ LoadQueueSong(TextFile &file, const char *line)
 
 		const char *uri = endptr + 1;
 
-		return std::make_unique<DetachedSong>(uri);
+		return DetachedSong(uri);
 	}
 }
 
@@ -112,8 +112,8 @@ queue_load_song(TextFile &file, const SongLoader &loader,
 
 	auto song = LoadQueueSong(file, line);
 
-	if (!playlist_check_translate_song(*song, nullptr, loader))
+	if (!playlist_check_translate_song(song, nullptr, loader))
 		return;
 
-	queue.Append(std::move(*song), priority);
+	queue.Append(std::move(song), priority);
 }

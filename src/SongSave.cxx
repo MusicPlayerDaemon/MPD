@@ -81,11 +81,11 @@ song_save(BufferedOutputStream &os, const DetachedSong &song)
 	os.Format(SONG_END "\n");
 }
 
-std::unique_ptr<DetachedSong>
+DetachedSong
 song_load(TextFile &file, const char *uri,
 	  AudioFormat *audio_format_r)
 {
-	auto song = std::make_unique<DetachedSong>(uri);
+	DetachedSong song(uri);
 
 	TagBuilder tag;
 
@@ -117,7 +117,7 @@ song_load(TextFile &file, const char *uri,
 		} else if (StringIsEqual(line, "Playlist")) {
 			tag.SetHasPlaylist(StringIsEqual(value, "yes"));
 		} else if (StringIsEqual(line, SONG_MTIME)) {
-			song->SetLastModified(std::chrono::system_clock::from_time_t(atoi(value)));
+			song.SetLastModified(std::chrono::system_clock::from_time_t(atoi(value)));
 		} else if (StringIsEqual(line, "Range")) {
 			char *endptr;
 
@@ -126,13 +126,13 @@ song_load(TextFile &file, const char *uri,
 				? strtoul(endptr + 1, nullptr, 10)
 				: 0;
 
-			song->SetStartTime(SongTime::FromMS(start_ms));
-			song->SetEndTime(SongTime::FromMS(end_ms));
+			song.SetStartTime(SongTime::FromMS(start_ms));
+			song.SetEndTime(SongTime::FromMS(end_ms));
 		} else {
 			throw FormatRuntimeError("unknown line in db: %s", line);
 		}
 	}
 
-	song->SetTag(tag.Commit());
+	song.SetTag(tag.Commit());
 	return song;
 }

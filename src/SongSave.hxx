@@ -42,7 +42,7 @@ song_save(BufferedOutputStream &os, const DetachedSong &song);
  *
  * Throws on error.
  */
-std::unique_ptr<DetachedSong>
+DetachedSong
 song_load(TextFile &file, const char *uri,
 	  AudioFormat *audio_format_r=nullptr);
 
