@@ -73,6 +73,26 @@ queue_save(BufferedOutputStream &os, const Queue &queue)
 	}
 }
 
+static std::unique_ptr<DetachedSong>
+LoadQueueSong(TextFile &file, const char *line)
+{
+	std::unique_ptr<DetachedSong> song;
+
+	if (const char *p = StringAfterPrefix(line, SONG_BEGIN)) {
+		const char *uri = p;
+		return song_load(file, uri);
+	} else {
+		char *endptr;
+		long ret = strtol(line, &endptr, 10);
+		if (ret < 0 || *endptr != ':' || endptr[1] == 0)
+			throw std::runtime_error("Malformed playlist line in state file");
+
+		const char *uri = endptr + 1;
+
+		return std::make_unique<DetachedSong>(uri);
+	}
+}
+
 void
 queue_load_song(TextFile &file, const SongLoader &loader,
 		const char *line, Queue &queue)
@@ -90,22 +110,7 @@ queue_load_song(TextFile &file, const SongLoader &loader,
 			return;
 	}
 
-	std::unique_ptr<DetachedSong> song;
-
-	if ((p = StringAfterPrefix(line, SONG_BEGIN))) {
-		const char *uri = p;
-
-		song = song_load(file, uri);
-	} else {
-		char *endptr;
-		long ret = strtol(line, &endptr, 10);
-		if (ret < 0 || *endptr != ':' || endptr[1] == 0)
-			throw std::runtime_error("Malformed playlist line in state file");
-
-		const char *uri = endptr + 1;
-
-		song = std::make_unique<DetachedSong>(uri);
-	}
+	auto song = LoadQueueSong(file, line);
 
 	if (!playlist_check_translate_song(*song, nullptr, loader))
 		return;
