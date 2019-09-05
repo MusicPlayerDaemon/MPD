@@ -35,6 +35,8 @@ queue_save(BufferedOutputStream &os, const Queue &queue);
 
 /**
  * Loads one song from the state file and appends it to the queue.
+ *
+ * Throws on error.
  */
 void
 queue_load_song(TextFile &file, const SongLoader &loader,

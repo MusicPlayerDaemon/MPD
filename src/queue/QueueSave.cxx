@@ -95,20 +95,12 @@ queue_load_song(TextFile &file, const SongLoader &loader,
 	if ((p = StringAfterPrefix(line, SONG_BEGIN))) {
 		const char *uri = p;
 
-		try {
-			song = song_load(file, uri);
-		} catch (...) {
-			LogError(std::current_exception());
-			return;
-		}
+		song = song_load(file, uri);
 	} else {
 		char *endptr;
 		long ret = strtol(line, &endptr, 10);
-		if (ret < 0 || *endptr != ':' || endptr[1] == 0) {
-			LogError(playlist_domain,
-				 "Malformed playlist line in state file");
-			return;
-		}
+		if (ret < 0 || *endptr != ':' || endptr[1] == 0)
+			throw std::runtime_error("Malformed playlist line in state file");
 
 		const char *uri = endptr + 1;
 
