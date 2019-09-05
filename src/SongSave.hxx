@@ -40,7 +40,7 @@ song_save(BufferedOutputStream &os, const DetachedSong &song);
  * Loads a song from the input file.  Reading stops after the
  * "song_end" line.
  *
- * Throws #std::runtime_error on error.
+ * Throws on error.
  */
 std::unique_ptr<DetachedSong>
 song_load(TextFile &file, const char *uri,
