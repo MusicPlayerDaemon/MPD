@@ -32,7 +32,7 @@ DatabaseEditor::DeleteSong(Directory &dir, Song *del)
 	assert(&del->parent == &dir);
 
 	/* first, prevent traversers in main task from getting this */
-	dir.RemoveSong(del);
+	const SongPtr song = dir.RemoveSong(del);
 
 	/* temporary unlock, because update_remove_song() blocks */
 	const ScopeDatabaseUnlock unlock;
@@ -40,8 +40,8 @@ DatabaseEditor::DeleteSong(Directory &dir, Song *del)
 	/* now take it out of the playlist (in the main_task) */
 	remove.Remove(del->GetURI());
 
-	/* finally, all possible references gone, free it */
-	delete del;
+	/* the Song object will be freed here because its owning
+	   SongPtr lives on our stack, see above */
 }
 
 void

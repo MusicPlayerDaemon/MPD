@@ -172,7 +172,7 @@ Directory::AddSong(SongPtr song) noexcept
 	songs.push_back(*song.release());
 }
 
-void
+SongPtr
 Directory::RemoveSong(Song *song) noexcept
 {
 	assert(holding_db_lock());
@@ -180,6 +180,7 @@ Directory::RemoveSong(Song *song) noexcept
 	assert(&song->parent == this);
 
 	songs.erase(songs.iterator_to(*song));
+	return SongPtr(song);
 }
 
 const Song *

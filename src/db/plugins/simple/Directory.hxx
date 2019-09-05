@@ -257,9 +257,9 @@ public:
 	/**
 	 * Remove a song object from this directory (which effectively
 	 * invalidates the song object, because the "parent" attribute becomes
-	 * stale), but does not free it.
+	 * stale), and return ownership to the caller.
 	 */
-	void RemoveSong(Song *song) noexcept;
+	SongPtr RemoveSong(Song *song) noexcept;
 
 	/**
 	 * Caller must lock the #db_mutex.
