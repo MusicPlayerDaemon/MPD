@@ -44,8 +44,8 @@ uri_is_child(const char *parent, const char *child) noexcept
 #endif
 
 	const char *suffix = StringAfterPrefix(child, parent);
-	return suffix != nullptr &&
-		*suffix == '/';
+	return suffix != nullptr && *suffix != 0 &&
+		(suffix == child || suffix[-1] == '/' || *suffix == '/');
 }
 
 
