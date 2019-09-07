@@ -50,3 +50,47 @@ TEST(UriRelative, ApplyBase)
 		EXPECT_STREQ(uri_apply_base(i.uri, i.base).c_str(), i.result);
 	}
 }
+
+TEST(UriRelative, ApplyRelative)
+{
+	static constexpr struct {
+		const char *relative;
+		const char *base;
+		const char *result;
+	} tests[] = {
+		{ "", "bar", "bar" },
+		{ ".", "bar", "" },
+		{ "foo", "bar", "foo" },
+		{ "", "/bar", "/bar" },
+		{ ".", "/bar", "/" },
+		{ "foo", "/bar", "/foo" },
+		{ "", "/bar/", "/bar/" },
+		{ ".", "/bar/", "/bar/" },
+		{ ".", "/bar/foo", "/bar/" },
+		{ "/foo", "/bar/", "/foo" },
+		{ "foo", "/bar/", "/bar/foo" },
+		{ "../foo", "/bar/", "/foo" },
+		{ "./foo", "/bar/", "/bar/foo" },
+		{ "./../foo", "/bar/", "/foo" },
+		{ ".././foo", "/bar/", "/foo" },
+		{ "../../foo", "/bar/", "" },
+		{ "/foo", "http://localhost/bar/", "http://localhost/foo" },
+		{ "/foo", "http://localhost/bar", "http://localhost/foo" },
+		{ "/foo", "http://localhost/", "http://localhost/foo" },
+		{ "/foo", "http://localhost", "http://localhost/foo" },
+		{ "/", "http://localhost", "http://localhost/" },
+		{ "/", "http://localhost/bar", "http://localhost/" },
+		{ "/", "http://localhost/bar/", "http://localhost/" },
+		{ "/", "http://localhost/bar/foo", "http://localhost/" },
+		{ "../foo", "http://localhost/bar/", "http://localhost/foo" },
+		{ "../foo", "http://localhost/bar", "" },
+		{ "../foo", "http://localhost/", "" },
+		{ "../foo", "http://localhost", "" },
+		{ ".", "http://localhost", "http://localhost/" },
+	};
+
+	for (const auto &i : tests) {
+		EXPECT_STREQ(uri_apply_relative(i.relative, i.base).c_str(),
+			     i.result);
+	}
+}

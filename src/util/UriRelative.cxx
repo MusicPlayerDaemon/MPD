@@ -28,6 +28,7 @@
  */
 
 #include "UriRelative.hxx"
+#include "UriExtract.hxx"
 #include "StringAPI.hxx"
 #include "StringCompare.hxx"
 
@@ -81,4 +82,108 @@ uri_apply_base(const std::string &uri, const std::string &base) noexcept
 
 	out += uri;
 	return out;
+}
+
+static void
+ClearFilename(StringView &path) noexcept
+{
+	const char *slash = path.FindLast('/');
+	if (slash != nullptr)
+		path.SetEnd(slash + 1);
+	else
+		path.size = 0;
+}
+
+static bool
+ConsumeLastSegment(StringView &path) noexcept
+{
+	assert(!path.empty());
+	assert(path.back() == '/');
+
+	path.pop_back();
+	const char *slash = path.FindLast('/');
+	if (slash == nullptr)
+		return false;
+
+	path.SetEnd(slash + 1);
+	return true;
+}
+
+static bool
+ConsumeSpecial(const char *&relative_path, StringView &base_path) noexcept
+{
+	while (true) {
+		if (const char *a = StringAfterPrefix(relative_path, "./")) {
+			while (*a == '/')
+				++a;
+			relative_path = a;
+		} else if (const char *b = StringAfterPrefix(relative_path, "../")) {
+			while (*b == '/')
+				++b;
+			relative_path = b;
+
+			if (!ConsumeLastSegment(base_path))
+				return false;
+		} else if (StringIsEqual(relative_path, ".")) {
+			++relative_path;
+			return true;
+		} else
+			return true;
+	}
+}
+
+std::string
+uri_apply_relative(const std::string &relative_uri,
+		   const std::string &base_uri) noexcept
+{
+	if (relative_uri.empty())
+		return base_uri;
+
+	if (uri_has_scheme(relative_uri.c_str()))
+		return relative_uri;
+
+	const char *relative_path = relative_uri.c_str();
+
+	// TODO: support double slash at beginning of relative_uri
+	if (relative_uri.front() == '/') {
+		/* absolute path: replace the whole URI path in base */
+
+		auto i = base_uri.find("://");
+		if (i == base_uri.npos)
+			/* no scheme: override base completely */
+			return relative_uri;
+
+		/* find the first slash after the host part */
+		i = base_uri.find('/', i + 3);
+		if (i == base_uri.npos)
+			/* there's no URI path - simply append uri */
+			i = base_uri.length();
+
+		return base_uri.substr(0, i) + relative_uri;
+	}
+
+	const char *_base_path = uri_get_path(base_uri.c_str());
+	if (_base_path == nullptr) {
+		std::string result(base_uri);
+		if (relative_uri.front() != '/')
+			result.push_back('/');
+		while (const char *a = StringAfterPrefix(relative_path, "./"))
+			relative_path = a;
+		if (StringStartsWith(relative_path, "../"))
+			return {};
+		if (!StringIsEqual(relative_path, "."))
+			result += relative_uri;
+		return result;
+	}
+
+	StringView base_path(_base_path);
+	ClearFilename(base_path);
+
+	if (!ConsumeSpecial(relative_path, base_path))
+		return {};
+
+	std::string result(base_uri.c_str(), _base_path);
+	result.append(base_path.data, base_path.size);
+	result.append(relative_path);
+	return result;
 }

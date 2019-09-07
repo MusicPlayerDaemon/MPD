@@ -55,4 +55,9 @@ gcc_pure
 std::string
 uri_apply_base(const std::string &uri, const std::string &base) noexcept;
 
+gcc_pure
+std::string
+uri_apply_relative(const std::string &relative_uri,
+		   const std::string &base_uri) noexcept;
+
 #endif
