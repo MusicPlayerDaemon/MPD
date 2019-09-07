@@ -39,6 +39,7 @@ test('TestUtil', executable(
   'TestSplitString.cxx',
   'TestUriExtract.cxx',
   'TestUriQueryParser.cxx',
+  'TestUriRelative.cxx',
   'TestUriUtil.cxx',
   'test_byte_reverse.cxx',
   include_directories: inc,
