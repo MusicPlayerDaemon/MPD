@@ -29,6 +29,7 @@
 
 #include "UriRelative.hxx"
 #include "StringAPI.hxx"
+#include "StringCompare.hxx"
 
 #include <assert.h>
 #include <string.h>
@@ -42,9 +43,9 @@ uri_is_child(const char *parent, const char *child) noexcept
 	assert(child != nullptr);
 #endif
 
-	const size_t parent_length = strlen(parent);
-	return memcmp(parent, child, parent_length) == 0 &&
-		child[parent_length] == '/';
+	const char *suffix = StringAfterPrefix(child, parent);
+	return suffix != nullptr &&
+		*suffix == '/';
 }
 
 
