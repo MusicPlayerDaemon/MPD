@@ -82,7 +82,7 @@ uri_after_scheme(const char *uri) noexcept
 bool
 uri_has_scheme(const char *uri) noexcept
 {
-	return strstr(uri, "://") != nullptr;
+	return !uri_get_scheme(uri).IsNull();
 }
 
 StringView
