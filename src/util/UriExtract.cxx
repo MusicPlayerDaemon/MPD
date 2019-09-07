@@ -95,6 +95,12 @@ uri_get_scheme(const char *uri) noexcept
 	return {uri, end};
 }
 
+bool
+uri_is_relative_path(const char *uri) noexcept
+{
+	return !uri_has_scheme(uri) && *uri != '/';
+}
+
 const char *
 uri_get_path(const char *uri) noexcept
 {

@@ -49,6 +49,10 @@ gcc_pure
 StringView
 uri_get_scheme(const char *uri) noexcept;
 
+gcc_pure
+bool
+uri_is_relative_path(const char *uri) noexcept;
+
 /**
  * Returns the URI path (including the query string) or nullptr if the
  * given URI has no path.
