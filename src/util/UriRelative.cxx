@@ -28,6 +28,7 @@
  */
 
 #include "UriRelative.hxx"
+#include "StringAPI.hxx"
 
 #include <assert.h>
 #include <string.h>
@@ -50,7 +51,7 @@ uri_is_child(const char *parent, const char *child) noexcept
 bool
 uri_is_child_or_same(const char *parent, const char *child) noexcept
 {
-	return strcmp(parent, child) == 0 || uri_is_child(parent, child);
+	return StringIsEqual(parent, child) || uri_is_child(parent, child);
 }
 
 std::string
