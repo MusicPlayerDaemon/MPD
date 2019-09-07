@@ -94,6 +94,11 @@ struct BasicStringView : ConstBuffer<T> {
 		return StringFind(data, ch, this->size);
 	}
 
+	gcc_pure
+	pointer_type FindLast(value_type ch) const noexcept {
+		return StringFindLast(data, ch, size);
+	}
+
 	/**
 	 * Split the string at the first occurrence of the given
 	 * character.  If the character is not found, then the first

@@ -92,6 +92,21 @@ StringFindLast(wchar_t *haystack, wchar_t needle) noexcept
 
 gcc_pure gcc_nonnull_all
 static inline const wchar_t *
+StringFindLast(const wchar_t *haystack, wchar_t needle, size_t size) noexcept
+{
+	/* there's no wmemrchr() unfortunately */
+	const auto *p = haystack + size;
+	while (p > haystack) {
+		--p;
+		if (*p == needle)
+			return p;
+	}
+
+	return nullptr;
+}
+
+gcc_pure gcc_nonnull_all
+static inline const wchar_t *
 StringFindAny(const wchar_t *haystack, const wchar_t *accept) noexcept
 {
 	return wcspbrk(haystack, accept);
