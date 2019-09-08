@@ -1,6 +1,8 @@
 ver 0.21.15 (not yet released)
 * decoder
   - dsdiff, dsf: fix displayed bit rate
+* output
+  - solaris: fix build with glibc 2.30
 
 ver 0.21.14 (2019/08/21)
 * decoder
