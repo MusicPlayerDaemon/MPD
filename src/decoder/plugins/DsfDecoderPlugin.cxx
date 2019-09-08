@@ -291,7 +291,7 @@ dsf_decode_chunk(DecoderClient &client, InputStream &is,
 
 		cmd = client.SubmitData(is,
 					interleaved_buffer, block_size,
-					sample_rate / 1000);
+					channels * sample_rate / 1000);
 		++i;
 	}
 

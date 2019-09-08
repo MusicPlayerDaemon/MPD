@@ -408,7 +408,7 @@ dsdiff_decode_chunk(DecoderClient &client, InputStream &is,
 			bit_reverse_buffer(buffer, buffer + nbytes);
 
 		cmd = client.SubmitData(is, buffer, nbytes,
-					sample_rate / 1000);
+					channels * sample_rate / 1000);
 	}
 
 	return true;

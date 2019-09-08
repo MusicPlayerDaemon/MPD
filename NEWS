@@ -1,4 +1,6 @@
 ver 0.21.15 (not yet released)
+* decoder
+  - dsdiff, dsf: fix displayed bit rate
 
 ver 0.21.14 (2019/08/21)
 * decoder
