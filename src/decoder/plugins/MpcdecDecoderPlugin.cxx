@@ -141,8 +141,12 @@ static constexpr ReplayGainTuple
 ImportMpcdecReplayGain(mpc_uint16_t gain, mpc_uint16_t peak) noexcept
 {
 	auto t = ReplayGainTuple::Undefined();
-	t.gain = MPC_OLD_GAIN_REF - (gain  / 256.);
-	t.peak = pow(10, peak / 256. / 20) / 32767;
+
+	if (gain != 0 && peak != 0) {
+		t.gain = MPC_OLD_GAIN_REF - (gain  / 256.);
+		t.peak = pow(10, peak / 256. / 20) / 32767;
+	}
+
 	return t;
 }
 
@@ -187,7 +191,8 @@ mpcdec_decode(DecoderClient &client, InputStream &is)
 
 	{
 		const auto rgi = ImportMpcdecReplayGain(info);
-		client.SubmitReplayGain(&rgi);
+		if (rgi.IsDefined())
+			client.SubmitReplayGain(&rgi);
 	}
 
 	client.Ready(audio_format, is.IsSeekable(),

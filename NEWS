@@ -1,6 +1,7 @@
 ver 0.21.15 (not yet released)
 * decoder
   - dsdiff, dsf: fix displayed bit rate
+  - mpcdec: fix bogus ReplayGain values
 * output
   - solaris: fix build with glibc 2.30
 
