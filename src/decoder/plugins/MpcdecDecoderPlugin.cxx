@@ -146,6 +146,15 @@ ImportMpcdecReplayGain(mpc_uint16_t gain, mpc_uint16_t peak) noexcept
 	return t;
 }
 
+static constexpr ReplayGainInfo
+ImportMpcdecReplayGain(const mpc_streaminfo &info) noexcept
+{
+	auto rgi = ReplayGainInfo::Undefined();
+	rgi.album = ImportMpcdecReplayGain(info.gain_album, info.peak_album);
+	rgi.track = ImportMpcdecReplayGain(info.gain_title, info.peak_title);
+	return rgi;
+}
+
 static void
 mpcdec_decode(DecoderClient &client, InputStream &is)
 {
@@ -176,12 +185,10 @@ mpcdec_decode(DecoderClient &client, InputStream &is)
 					     mpcdec_sample_format,
 					     info.channels);
 
-	ReplayGainInfo rgi;
-	rgi.Clear();
-	rgi.album = ImportMpcdecReplayGain(info.gain_album, info.peak_album);
-	rgi.track = ImportMpcdecReplayGain(info.gain_title, info.peak_title);
-
-	client.SubmitReplayGain(&rgi);
+	{
+		const auto rgi = ImportMpcdecReplayGain(info);
+		client.SubmitReplayGain(&rgi);
+	}
 
 	client.Ready(audio_format, is.IsSeekable(),
 		     SongTime::FromS(mpc_streaminfo_get_length(&info)));
