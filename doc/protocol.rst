@@ -1226,6 +1226,13 @@ The music database
     decoder plugins support it.  For example, on Ogg files,
     this lists the Vorbis comments.
 
+.. _command_readlyrics:
+
+:command:`readlyrics {URI}`
+    Read lyrics from the file specified by "URI". This "URI"
+    can be a path relative to the music directory or an
+    absolute path.
+
 .. _command_readpicture:
 
 :command:`readpicture {URI} {OFFSET}`

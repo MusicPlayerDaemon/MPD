@@ -27,6 +27,7 @@
 #include "TimePrint.hxx"
 #include "thread/Mutex.hxx"
 #include "Log.hxx"
+#include "tag/Type.hxx"
 
 #include <fmt/format.h>
 
@@ -356,5 +357,31 @@ handle_read_picture(Client &client, Request args, Response &r)
 	PrintPictureHandler handler(r, offset);
 	TagScanAny(client, uri, handler);
 	handler.RethrowError();
+	return CommandResult::OK;
+}
+
+class PrintLyricsHandler final : public NullTagHandler {
+	Response &response;
+
+public:
+	explicit PrintLyricsHandler(Response &_response) noexcept
+		:NullTagHandler(WANT_PAIR), response(_response) {}
+
+        void OnTag(TagType type, std::string_view value) noexcept override {
+                // if (type == TAG_LYRICS)
+                        // response.Format("%.*s\n",
+                        //                 int(value.size), value.data);
+	}
+};
+
+CommandResult
+handle_read_lyrics(Client &client, Request args, Response &r)
+{
+        assert(args.size() == 1);
+
+	const char *const uri = args.front();
+
+	PrintLyricsHandler handler(r);
+	TagScanAny(client, uri, handler);
 	return CommandResult::OK;
 }

@@ -55,6 +55,10 @@
 #define ID3_FRAME_MOOD "TMOO"
 #endif
 
+#ifndef ID3_FRAME_LYRICS
+#define ID3_FRAME_LYRICS "USLT"
+#endif
+
 [[gnu::pure]]
 static Id3String
 tag_id3_getstring(const struct id3_frame *frame, unsigned i) noexcept
@@ -341,6 +345,8 @@ scan_id3_tag(const struct id3_tag *tag, TagHandler &handler) noexcept
 			    handler);
 	tag_id3_import_text(tag, ID3_FRAME_MOOD, TAG_MOOD, handler);
 	tag_id3_import_text(tag, ID3_FRAME_TITLE_SORT, TAG_TITLE_SORT, handler);
+        tag_id3_import_comment(tag, ID3_FRAME_LYRICS, TAG_LYRICS,
+                            handler);
 
 	tag_id3_import_musicbrainz(tag, handler);
 	tag_id3_import_ufid(tag, handler);

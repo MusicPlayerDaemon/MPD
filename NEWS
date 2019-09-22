@@ -9,6 +9,7 @@ ver 0.24 (not yet released)
   - operator "starts_with"
   - show PCRE support in "config" response
   - apply Unicode normalization to case-insensitive filter expressions
+  - add command "readlyrics" to obtain embedded lyrics
 * database
   - proxy: require MPD 0.21 or later
   - proxy: require libmpdclient 2.15 or later
@@ -396,6 +397,7 @@ ver 0.22 (2020/09/23)
   - command "moveoutput" moves an output between partitions
   - command "delpartition" deletes a partition
   - show partition name in "status" response
+
 * tags
   - new tags "Grouping" (for ID3 "TIT1"), "Work" and "Conductor"
 * input

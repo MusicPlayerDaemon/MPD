@@ -23,4 +23,7 @@ handle_album_art(Client &client, Request request, Response &response);
 CommandResult
 handle_read_picture(Client &client, Request request, Response &response);
 
+CommandResult
+handle_read_lyrics(Client &client, Request request, Response &response);
+
 #endif
