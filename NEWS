@@ -3,6 +3,7 @@ ver 0.22 (not yet released)
   - "findadd"/"searchadd"/"searchaddpl" support the "sort" and
     "window" parameters
   - add command "readpicture" to download embedded pictures
+  - add command "readlyrics" to obtain embedded lyrics
 * tags
   - new tags "Grouping" (for ID3 "TIT1"), "Work" and "Conductor"
 * input
@@ -1947,7 +1948,7 @@ ver 0.12.0 (2006/9/22)
 * New --kill argument for killing MPD if pid_file is specified
 * Removed --update-db argument (use the update function in your client instead)
 * New mpdconf.example
-* New mpd.conf man page 
+* New mpd.conf man page
 * Removed bundled libmad and libid3tag
 * Lots of bug fixes, cleaned up code, and performance improvements
 
@@ -1988,7 +1989,7 @@ the write() becomes successful)
 7) If "user" is specified, then convert ~ in paths to the user's home path
 specified by "user" config paramter (not the actual current user running mpd).
 
-ver 0.11.2 (2004/7/5) 
+ver 0.11.2 (2004/7/5)
 1) Work around in computing total time for mp3's whose first valid mpeg frame is
 not layer III
 2) Fix mp3 and mp4 decoders when seeking past the end of the file
@@ -2162,7 +2163,7 @@ non existing file.  This causes parsing errors for clients.
 ver 0.8.4 (2003/8/13)
 1) Fix a bug where garbage is returned with errors in "list" command
 
-ver 0.8.3 (2003/8/12) 
+ver 0.8.3 (2003/8/12)
 1) Fix a compilation error on older linux systems
 2) Fix a bug in searching by title
 3) Add "list" command

@@ -65,6 +65,10 @@
 #define ID3_FRAME_LABEL "TPUB"
 #endif
 
+#ifndef ID3_FRAME_LYRICS
+#define ID3_FRAME_LYRICS "USLT"
+#endif
+
 gcc_pure
 static id3_utf8_t *
 tag_id3_getstring(const struct id3_frame *frame, unsigned i) noexcept
@@ -364,6 +368,8 @@ scan_id3_tag(const struct id3_tag *tag, TagHandler &handler) noexcept
 	tag_id3_import_text(tag, ID3_FRAME_DISC, TAG_DISC,
 			    handler);
 	tag_id3_import_text(tag, ID3_FRAME_LABEL, TAG_LABEL,
+			    handler);
+	tag_id3_import_comment(tag, ID3_FRAME_LYRICS, TAG_LYRICS,
 			    handler);
 
 	tag_id3_import_musicbrainz(tag, handler);

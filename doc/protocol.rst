@@ -1007,6 +1007,11 @@ The music database
     decoder plugins support it.  For example, on Ogg files,
     this lists the Vorbis comments.
 
+:command:`readlyrics {URI}`
+    Read lyrics from the file specified by "URI". This "URI"
+    can be a path relative to the music directory or an
+    absolute path.
+
 :command:`readpicture {URI} {OFFSET}`
     Locate a picture for the given song and return a chunk of the
     image file at offset ``OFFSET``.  This is usually implemented by
@@ -1275,7 +1280,7 @@ Audio output devices
 
 :command:`outputs`
     Shows information about all outputs.
-    
+
     ::
 
         outputid: 0

@@ -40,6 +40,7 @@ const char *const tag_item_names[TAG_NUM_OF_ITEM_TYPES] = {
 	[TAG_COMMENT] = "Comment",
 	[TAG_DISC] = "Disc",
 	[TAG_LABEL] = "Label",
+	[TAG_LYRICS] = "Lyrics",
 
 	/* MusicBrainz tags from http://musicbrainz.org/doc/MusicBrainzTag */
 	[TAG_MUSICBRAINZ_ARTISTID] = "MUSICBRAINZ_ARTISTID",
