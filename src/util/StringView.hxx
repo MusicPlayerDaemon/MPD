@@ -36,7 +36,7 @@
 
 #include <utility>
 
-#if !GCC_OLDER_THAN(7,0)
+#if __cplusplus >= 201703L && !GCC_OLDER_THAN(7,0)
 #include <string_view>
 #endif
 
@@ -71,7 +71,7 @@ struct BasicStringView : ConstBuffer<T> {
 	constexpr BasicStringView(std::nullptr_t n) noexcept
 		:ConstBuffer<T>(n) {}
 
-#if !GCC_OLDER_THAN(7,0)
+#if __cplusplus >= 201703L && !GCC_OLDER_THAN(7,0)
 	constexpr BasicStringView(std::basic_string_view<T> src) noexcept
 		:ConstBuffer<T>(src.data(), src.size()) {}
 
