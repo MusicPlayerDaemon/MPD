@@ -22,7 +22,6 @@
 #include "system/FileDescriptor.hxx"
 #include "system/Error.hxx"
 
-#include <sys/stropts.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -31,10 +30,17 @@
 
 #ifdef __sun
 #include <sys/audio.h>
+#include <sys/stropts.h>
 #else
 
 /* some fake declarations that allow build this plugin on systems
    other than Solaris, just to see if it compiles */
+
+#include <sys/ioctl.h>
+
+#ifndef I_FLUSH
+#define I_FLUSH 0
+#endif
 
 #define AUDIO_GETINFO 0
 #define AUDIO_SETINFO 0

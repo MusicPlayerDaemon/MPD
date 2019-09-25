@@ -136,6 +136,28 @@ mpc_to_mpd_buffer(MpcdecSampleTraits::pointer_type dest,
 		*dest++ = mpc_to_mpd_sample(*src++);
 }
 
+static constexpr ReplayGainTuple
+ImportMpcdecReplayGain(mpc_uint16_t gain, mpc_uint16_t peak) noexcept
+{
+	auto t = ReplayGainTuple::Undefined();
+
+	if (gain != 0 && peak != 0) {
+		t.gain = MPC_OLD_GAIN_REF - (gain  / 256.);
+		t.peak = pow(10, peak / 256. / 20) / 32767;
+	}
+
+	return t;
+}
+
+static constexpr ReplayGainInfo
+ImportMpcdecReplayGain(const mpc_streaminfo &info) noexcept
+{
+	auto rgi = ReplayGainInfo::Undefined();
+	rgi.album = ImportMpcdecReplayGain(info.gain_album, info.peak_album);
+	rgi.track = ImportMpcdecReplayGain(info.gain_title, info.peak_title);
+	return rgi;
+}
+
 static void
 mpcdec_decode(DecoderClient &client, InputStream &is)
 {
@@ -166,14 +188,11 @@ mpcdec_decode(DecoderClient &client, InputStream &is)
 					     mpcdec_sample_format,
 					     info.channels);
 
-	ReplayGainInfo rgi;
-	rgi.Clear();
-	rgi.album.gain = MPC_OLD_GAIN_REF  - (info.gain_album  / 256.);
-	rgi.album.peak = pow(10, info.peak_album / 256. / 20) / 32767;
-	rgi.track.gain = MPC_OLD_GAIN_REF  - (info.gain_title  / 256.);
-	rgi.track.peak = pow(10, info.peak_title / 256. / 20) / 32767;
-
-	client.SubmitReplayGain(&rgi);
+	{
+		const auto rgi = ImportMpcdecReplayGain(info);
+		if (rgi.IsDefined())
+			client.SubmitReplayGain(&rgi);
+	}
 
 	client.Ready(audio_format, is.IsSeekable(),
 		     SongTime::FromS(mpc_streaminfo_get_length(&info)));

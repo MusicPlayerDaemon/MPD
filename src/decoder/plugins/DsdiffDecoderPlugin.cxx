@@ -362,6 +362,7 @@ dsdiff_decode_chunk(DecoderClient &client, InputStream &is,
 		    unsigned channels, unsigned sample_rate,
 		    const offset_type total_bytes)
 {
+	const unsigned kbit_rate = channels * sample_rate / 1000;
 	const offset_type start_offset = is.GetOffset();
 
 	uint8_t buffer[8192];
@@ -408,7 +409,7 @@ dsdiff_decode_chunk(DecoderClient &client, InputStream &is,
 			bit_reverse_buffer(buffer, buffer + nbytes);
 
 		cmd = client.SubmitData(is, buffer, nbytes,
-					sample_rate / 1000);
+					kbit_rate);
 	}
 
 	return true;
