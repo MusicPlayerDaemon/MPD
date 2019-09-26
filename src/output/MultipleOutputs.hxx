@@ -113,6 +113,14 @@ public:
 	gcc_pure
 	AudioOutputControl *FindByName(const char *name) noexcept;
 
+	/**
+	 * Does an audio output device with this name exist?
+	 */
+	gcc_pure
+	bool HasName(const char *name) noexcept {
+		return FindByName(name) != nullptr;
+	}
+
 	void SetReplayGainMode(ReplayGainMode mode) noexcept;
 
 	/**

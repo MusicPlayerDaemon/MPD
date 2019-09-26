@@ -98,7 +98,7 @@ MultipleOutputs::Configure(EventLoop &event_loop,
 						mixer_listener,
 						client, block, defaults,
 						&filter_factory);
-		if (FindByName(output->GetName()) != nullptr)
+		if (HasName(output->GetName()))
 			throw FormatRuntimeError("output devices with identical "
 						 "names: %s", output->GetName());
 
