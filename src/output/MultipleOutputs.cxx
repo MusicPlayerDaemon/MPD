@@ -28,6 +28,7 @@
 #include "config/Data.hxx"
 #include "config/Option.hxx"
 #include "util/RuntimeError.hxx"
+#include "util/StringAPI.hxx"
 
 #include <stdexcept>
 
@@ -147,7 +148,7 @@ AudioOutputControl *
 MultipleOutputs::FindByName(const char *name) noexcept
 {
 	for (auto *i : outputs)
-		if (strcmp(i->GetName(), name) == 0)
+		if (StringIsEqual(i->GetName(), name))
 			return i;
 
 	return nullptr;

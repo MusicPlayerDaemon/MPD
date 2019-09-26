@@ -35,7 +35,6 @@
 
 #include <assert.h>
 #include <stdlib.h>
-#include <string.h>
 #include <stdio.h>
 
 static constexpr unsigned DEFAULT_CONN_TIMEOUT = 2;
@@ -123,15 +122,15 @@ ShoutOutput::ShoutOutput(const ConfigBlock &block)
 	unsigned protocol;
 	const char *value = block.GetBlockValue("protocol");
 	if (value != nullptr) {
-		if (0 == strcmp(value, "shoutcast") &&
+		if (StringIsEqual(value, "shoutcast") &&
 		    !StringIsEqual(mime_type, "audio/mpeg"))
 			throw FormatRuntimeError("you cannot stream \"%s\" to shoutcast, use mp3",
 						 mime_type);
-		else if (0 == strcmp(value, "shoutcast"))
+		else if (StringIsEqual(value, "shoutcast"))
 			protocol = SHOUT_PROTOCOL_ICY;
-		else if (0 == strcmp(value, "icecast1"))
+		else if (StringIsEqual(value, "icecast1"))
 			protocol = SHOUT_PROTOCOL_XAUDIOCAST;
-		else if (0 == strcmp(value, "icecast2"))
+		else if (StringIsEqual(value, "icecast2"))
 			protocol = SHOUT_PROTOCOL_HTTP;
 		else
 			throw FormatRuntimeError("shout protocol \"%s\" is not \"shoutcast\" or "
@@ -145,15 +144,15 @@ ShoutOutput::ShoutOutput(const ConfigBlock &block)
 	unsigned tls;
 	value = block.GetBlockValue("tls");
 	if (value != nullptr) {
-		if (0 == strcmp(value, "disabled"))
+		if (StringIsEqual(value, "disabled"))
 			tls = SHOUT_TLS_DISABLED;
-		else if(0 == strcmp(value, "auto"))
+		else if (StringIsEqual(value, "auto"))
 			tls = SHOUT_TLS_AUTO;
-		else if(0 == strcmp(value, "auto_no_plain"))
+		else if (StringIsEqual(value, "auto_no_plain"))
 			tls = SHOUT_TLS_AUTO_NO_PLAIN;
-		else if(0 == strcmp(value, "rfc2818"))
+		else if (StringIsEqual(value, "rfc2818"))
 			tls = SHOUT_TLS_RFC2818;
-		else if(0 == strcmp(value, "rfc2817"))
+		else if (StringIsEqual(value, "rfc2817"))
 			tls = SHOUT_TLS_RFC2817;
 		else
 			throw FormatRuntimeError("invalid shout TLS option \"%s\"", value);

@@ -39,6 +39,7 @@
 #include "config/Option.hxx"
 #include "config/Block.hxx"
 #include "util/RuntimeError.hxx"
+#include "util/StringAPI.hxx"
 #include "util/StringFormat.hxx"
 #include "Log.hxx"
 
@@ -214,7 +215,7 @@ FilteredAudioOutput::Setup(EventLoop &event_loop,
 	const char *replay_gain_handler =
 		block.GetBlockValue("replay_gain_handler", "software");
 
-	if (strcmp(replay_gain_handler, "none") != 0) {
+	if (!StringIsEqual(replay_gain_handler, "none")) {
 		prepared_replay_gain_filter =
 			NewReplayGainFilter(replay_gain_config);
 		assert(prepared_replay_gain_filter != nullptr);
@@ -240,14 +241,14 @@ FilteredAudioOutput::Setup(EventLoop &event_loop,
 
 	/* use the hardware mixer for replay gain? */
 
-	if (strcmp(replay_gain_handler, "mixer") == 0) {
+	if (StringIsEqual(replay_gain_handler, "mixer")) {
 		if (mixer != nullptr)
 			replay_gain_filter_set_mixer(*prepared_replay_gain_filter,
 						     mixer, 100);
 		else
 			FormatError(output_domain,
 				    "No such mixer for output '%s'", name);
-	} else if (strcmp(replay_gain_handler, "software") != 0 &&
+	} else if (!StringIsEqual(replay_gain_handler, "software") &&
 		   prepared_replay_gain_filter != nullptr) {
 		throw std::runtime_error("Invalid \"replay_gain_handler\" value");
 	}
