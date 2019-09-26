@@ -30,6 +30,7 @@
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
 #include "util/ByteOrder.hxx"
+#include "util/StringAPI.hxx"
 #include "util/StringBuffer.hxx"
 #include "util/StringFormat.hxx"
 #include "Log.hxx"
@@ -135,11 +136,11 @@ OSXOutput::OSXOutput(const ConfigBlock &block)
 {
 	const char *device = block.GetBlockValue("device");
 
-	if (device == nullptr || 0 == strcmp(device, "default")) {
+	if (device == nullptr || StringIsEqual(device, "default")) {
 		component_subtype = kAudioUnitSubType_DefaultOutput;
 		device_name = nullptr;
 	}
-	else if (0 == strcmp(device, "system")) {
+	else if (StringIsEqual(device, "system")) {
 		component_subtype = kAudioUnitSubType_SystemOutput;
 		device_name = nullptr;
 	}
@@ -666,7 +667,7 @@ osx_output_set_device(OSXOutput *oo)
 					kCFStringEncodingUTF8))
 			throw std::runtime_error("Unable to convert device name from CFStringRef to char*");
 
-		if (strcmp(oo->device_name, name) == 0) {
+		if (StringIsEqual(oo->device_name, name)) {
 			FormatDebug(osx_output_domain,
 				    "found matching device: ID=%u, name=%s",
 				    (unsigned)deviceids[i], name);

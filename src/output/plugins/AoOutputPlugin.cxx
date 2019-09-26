@@ -25,11 +25,10 @@
 #include "util/SplitString.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/Domain.hxx"
+#include "util/StringAPI.hxx"
 #include "Log.hxx"
 
 #include <ao/ao.h>
-
-#include <string.h>
 
 /* An ao_sample_format, with all fields set to zero: */
 static ao_sample_format OUR_AO_FORMAT_INITIALIZER;
@@ -105,7 +104,7 @@ AoOutput::AoOutput(const ConfigBlock &block)
 	 write_size(block.GetPositiveValue("write_size", 1024u))
 {
 	const char *value = block.GetBlockValue("driver", "default");
-	if (0 == strcmp(value, "default"))
+	if (StringIsEqual(value, "default"))
 		driver = ao_default_driver_id();
 	else
 		driver = ao_driver_id(value);
