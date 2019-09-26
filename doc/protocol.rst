@@ -1258,6 +1258,9 @@ client is assigned to one partition at a time.
 :command:`newpartition {NAME}`
     Create a new partition.
 
+:command:`moveoutput {OUTPUTNAME}`
+    Move an output to the current partition.
+
 Audio output devices
 ====================
 

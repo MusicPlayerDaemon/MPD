@@ -139,6 +139,7 @@ static constexpr struct command commands[] = {
 #endif
 	{ "move", PERMISSION_CONTROL, 2, 2, handle_move },
 	{ "moveid", PERMISSION_CONTROL, 2, 2, handle_moveid },
+	{ "moveoutput", PERMISSION_ADMIN, 1, 1, handle_moveoutput },
 	{ "newpartition", PERMISSION_ADMIN, 1, 1, handle_newpartition },
 	{ "next", PERMISSION_CONTROL, 0, 0, handle_next },
 	{ "notcommands", PERMISSION_NONE, 0, 0, handle_not_commands },

@@ -18,6 +18,7 @@
  */
 
 #include "MultipleOutputs.hxx"
+#include "Client.hxx"
 #include "Filtered.hxx"
 #include "Defaults.hxx"
 #include "MusicPipe.hxx"
@@ -140,6 +141,21 @@ MultipleOutputs::FindByName(const char *name) noexcept
 			return i.get();
 
 	return nullptr;
+}
+
+void
+MultipleOutputs::Add(std::unique_ptr<FilteredAudioOutput> output,
+		     bool enable) noexcept
+{
+	auto &client = GetAnyClient();
+
+	// TODO: this operation needs to be protected with a mutex
+	outputs.emplace_back(std::make_unique<AudioOutputControl>(std::move(output),
+								  client));
+
+	outputs.back()->LockSetEnabled(enable);
+
+	client.ApplyEnabled();
 }
 
 void

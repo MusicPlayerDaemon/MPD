@@ -22,6 +22,7 @@
 #include "Instance.hxx"
 #include "Partition.hxx"
 #include "IdleFlags.hxx"
+#include "output/Filtered.hxx"
 #include "client/Client.hxx"
 #include "client/Response.hxx"
 #include "util/CharUtil.hxx"
@@ -112,4 +113,45 @@ handle_newpartition(Client &client, Request request, Response &response)
 	instance.EmitIdle(IDLE_PARTITION);
 
 	return CommandResult::OK;
+}
+
+CommandResult
+handle_moveoutput(Client &client, Request request, Response &response)
+{
+	const char *output_name = request[0];
+
+	auto &dest_partition = client.GetPartition();
+	auto *existing_output = dest_partition.outputs.FindByName(output_name);
+	if (existing_output != nullptr && !existing_output->IsDummy())
+		/* this output is already in the specified partition,
+		   so nothing needs to be done */
+		return CommandResult::OK;
+
+	/* find the partition which owns this output currently */
+	auto &instance = client.GetInstance();
+	for (auto &partition : instance.partitions) {
+		if (&partition == &dest_partition)
+			continue;
+
+		auto *output = partition.outputs.FindByName(output_name);
+		if (output == nullptr || output->IsDummy())
+			continue;
+
+		const bool was_enabled = output->IsEnabled();
+
+		if (existing_output != nullptr)
+			/* move the output back where it once was */
+			existing_output->ReplaceDummy(output->Steal(),
+						      was_enabled);
+		else
+			/* add it to the output list */
+			dest_partition.outputs.Add(output->Steal(),
+						   was_enabled);
+
+		instance.EmitIdle(IDLE_OUTPUT);
+		return CommandResult::OK;
+	}
+
+	response.Error(ACK_ERROR_NO_EXIST, "No such output");
+	return CommandResult::ERROR;
 }

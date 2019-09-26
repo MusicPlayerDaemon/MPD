@@ -50,6 +50,13 @@ class AudioOutputControl {
 	std::unique_ptr<FilteredAudioOutput> output;
 
 	/**
+	 * A copy of FilteredAudioOutput::name which we need just in
+	 * case this is a "dummy" output (output==nullptr) because
+	 * this output has been moved to another partitioncommands.
+	 */
+	const std::string name;
+
+	/**
 	 * The PlayerControl object which "owns" this output.  This
 	 * object is needed to signal command completion.
 	 */
@@ -256,6 +263,10 @@ public:
 	gcc_pure
 	Mixer *GetMixer() const noexcept;
 
+	bool IsDummy() const noexcept {
+		return !output;
+	}
+
 	/**
 	 * Caller must lock the mutex.
 	 */
@@ -293,6 +304,14 @@ public:
 	const std::exception_ptr &GetLastError() const noexcept {
 		return last_error;
 	}
+
+	/**
+	 * Detach and return the #FilteredAudioOutput instance and,
+	 * replacing it here with a "dummy" object.
+	 */
+	std::unique_ptr<FilteredAudioOutput> Steal() noexcept;
+	void ReplaceDummy(std::unique_ptr<FilteredAudioOutput> new_output,
+			  bool _enabled) noexcept;
 
 	void StartThread();
 

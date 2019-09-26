@@ -119,6 +119,9 @@ public:
 		return FindByName(name) != nullptr;
 	}
 
+	void Add(std::unique_ptr<FilteredAudioOutput> output,
+		 bool enable) noexcept;
+
 	void SetReplayGainMode(ReplayGainMode mode) noexcept;
 
 	/**
@@ -153,6 +156,10 @@ public:
 	void SetSoftwareVolume(unsigned volume) noexcept;
 
 private:
+	AudioOutputClient &GetAnyClient() noexcept {
+		return outputs.front()->GetClient();
+	}
+
 	/**
 	 * Was Open() called successfully?
 	 *

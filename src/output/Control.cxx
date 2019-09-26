@@ -19,6 +19,7 @@
 
 #include "Control.hxx"
 #include "Filtered.hxx"
+#include "Client.hxx"
 #include "mixer/MixerControl.hxx"
 #include "config/Block.hxx"
 #include "Log.hxx"
@@ -31,7 +32,9 @@ static constexpr PeriodClock::Duration REOPEN_AFTER = std::chrono::seconds(10);
 
 AudioOutputControl::AudioOutputControl(std::unique_ptr<FilteredAudioOutput> _output,
 				       AudioOutputClient &_client) noexcept
-	:output(std::move(_output)), client(_client),
+	:output(std::move(_output)),
+	 name(output->GetName()),
+	 client(_client),
 	 thread(BIND_THIS_METHOD(Task))
 {
 }
@@ -49,40 +52,86 @@ AudioOutputControl::Configure(const ConfigBlock &block)
 	enabled = block.GetBlockValue("enabled", true);
 }
 
+std::unique_ptr<FilteredAudioOutput>
+AudioOutputControl::Steal() noexcept
+{
+	assert(!IsDummy());
+
+	/* close and disable the output */
+	{
+		std::unique_lock<Mutex> lock(mutex);
+		if (really_enabled && output->SupportsEnableDisable())
+			CommandWait(lock, Command::DISABLE);
+
+		enabled = really_enabled = false;
+	}
+
+	/* stop the thread */
+	StopThread();
+
+	/* now we can finally remove it */
+	const std::lock_guard<Mutex> protect(mutex);
+	return std::exchange(output, nullptr);
+}
+
+void
+AudioOutputControl::ReplaceDummy(std::unique_ptr<FilteredAudioOutput> new_output,
+				 bool _enabled) noexcept
+{
+	assert(IsDummy());
+	assert(new_output);
+
+	{
+		const std::lock_guard<Mutex> protect(mutex);
+		output = std::move(new_output);
+		enabled = _enabled;
+	}
+
+	client.ApplyEnabled();
+}
+
 const char *
 AudioOutputControl::GetName() const noexcept
 {
-	return output->GetName();
+	return name.c_str();
 }
 
 const char *
 AudioOutputControl::GetPluginName() const noexcept
 {
-	return output->GetPluginName();
+	return output ? output->GetPluginName() : "dummy";
 }
 
 const char *
 AudioOutputControl::GetLogName() const noexcept
 {
+	assert(!IsDummy());
+
 	return output->GetLogName();
 }
 
 Mixer *
 AudioOutputControl::GetMixer() const noexcept
 {
-	return output->mixer;
+	return output ? output->mixer : nullptr;
 }
 
 const std::map<std::string, std::string>
 AudioOutputControl::GetAttributes() const noexcept
 {
-	return output->GetAttributes();
+	return output
+		? output->GetAttributes()
+		: std::map<std::string, std::string>{};
 }
 
 void
-AudioOutputControl::SetAttribute(std::string &&name, std::string &&value)
+AudioOutputControl::SetAttribute(std::string &&attribute_name,
+				 std::string &&value)
 {
-	output->SetAttribute(std::move(name), std::move(value));
+	if (!output)
+		throw std::runtime_error("Cannot set attribute on dummy output");
+
+	output->SetAttribute(std::move(attribute_name), std::move(value));
 }
 
 bool
@@ -137,6 +186,9 @@ AudioOutputControl::LockCommandWait(Command cmd) noexcept
 void
 AudioOutputControl::EnableAsync()
 {
+	if (!output)
+		return;
+
 	if (!thread.IsDefined()) {
 		if (!output->SupportsEnableDisable()) {
 			/* don't bother to start the thread now if the
@@ -155,6 +207,9 @@ AudioOutputControl::EnableAsync()
 void
 AudioOutputControl::DisableAsync() noexcept
 {
+	if (!output)
+		return;
+
 	if (!thread.IsDefined()) {
 		if (!output->SupportsEnableDisable())
 			really_enabled = false;
@@ -233,6 +288,9 @@ void
 AudioOutputControl::CloseWait(std::unique_lock<Mutex> &lock) noexcept
 {
 	assert(allow_play);
+
+	if (IsDummy())
+		return;
 
 	if (output->mixer != nullptr)
 		mixer_auto_close(output->mixer);
