@@ -172,7 +172,7 @@ MultipleOutputs::Update(bool force) noexcept
 {
 	bool ret = false;
 
-	if (!input_audio_format.IsDefined())
+	if (!IsOpen())
 		return false;
 
 	for (const auto &ao : outputs)

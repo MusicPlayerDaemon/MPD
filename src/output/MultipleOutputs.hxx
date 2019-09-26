@@ -156,6 +156,15 @@ public:
 
 private:
 	/**
+	 * Was Open() called successfully?
+	 *
+	 * This method may only be called from the player thread.
+	 */
+	bool IsOpen() const noexcept {
+		return input_audio_format.IsDefined();
+	}
+
+	/**
 	 * Wait until all (active) outputs have finished the current
 	 * command.
 	 */
