@@ -20,7 +20,7 @@ if icu_dep.found()
 elif not get_option('iconv').disabled()
   have_iconv = compiler.has_function('iconv')
   conf.set('HAVE_ICONV', have_iconv)
-  if get_option('iconv').enabled()
+  if not have_iconv and get_option('iconv').enabled()
     error('iconv() not available')
   endif
 endif

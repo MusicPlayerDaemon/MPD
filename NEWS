@@ -3,6 +3,7 @@ ver 0.21.16 (not yet released)
   - curl: request the "resourcetype" property to fix database update
 * update
   - fix crash when music_directory is not a directory
+* fix build with iconv() instead of ICU
 
 ver 0.21.15 (2019/09/25)
 * decoder
