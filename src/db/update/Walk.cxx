@@ -493,6 +493,12 @@ UpdateWalk::Walk(Directory &root, const char *path, bool discard) noexcept
 		if (!GetInfo(storage, "", info))
 			return false;
 
+		if (!info.IsDirectory()) {
+			FormatError(update_domain, "Not a directory: %s",
+				    storage.MapUTF8("").c_str());
+			return false;
+		}
+
 		ExcludeList exclude_list;
 
 		UpdateDirectory(root, exclude_list, info);

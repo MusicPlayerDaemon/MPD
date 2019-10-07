@@ -1,4 +1,6 @@
 ver 0.21.16 (not yet released)
+* update
+  - fix crash when music_directory is not a directory
 
 ver 0.21.15 (2019/09/25)
 * decoder
