@@ -277,6 +277,7 @@ public:
 		request.SetOption(CURLOPT_POSTFIELDS,
 				  "<?xml version=\"1.0\"?>\n"
 				  "<a:propfind xmlns:a=\"DAV:\">"
+				  "<a:prop><a:resourcetype/></a:prop>"
 				  "<a:prop><a:getcontenttype/></a:prop>"
 				  "<a:prop><a:getcontentlength/></a:prop>"
 				  "</a:propfind>");
