@@ -101,7 +101,7 @@ SetThreadRealtime()
 {
 #ifdef __linux__
 	struct sched_param sched_param;
-	sched_param.sched_priority = 50;
+	sched_param.sched_priority = 40;
 
 	int policy = SCHED_FIFO;
 #ifdef SCHED_RESET_ON_FORK

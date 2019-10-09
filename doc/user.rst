@@ -804,13 +804,13 @@ This is only possible you allow :program:`MPD` to do it. This privilege is contr
 
 .. code-block:: none
 
-    ulimit -HS -r 50; mpd
+    ulimit -HS -r 40; mpd
 
 Or you can use the :command:`prlimit` program from the util-linux package:
 
 .. code-block:: none
 
-    prlimit --rtprio=50 --rttime=unlimited mpd
+    prlimit --rtprio=40 --rttime=unlimited mpd
 
 The systemd service file shipped with :program:`MPD` comes with this setting.
 
@@ -828,10 +828,10 @@ You can verify whether the real-time scheduler is active with the ps command:
       PID   TID CLS RTPRIO COMMAND
     16257 16257  TS      - mpd
     16257 16258  TS      - io
-    16257 16259  FF     50 rtio
+    16257 16259  FF     40 rtio
     16257 16260  TS      - player
     16257 16261  TS      - decoder
-    16257 16262  FF     50 output:ALSA
+    16257 16262  FF     40 output:ALSA
     16257 16263 IDL      0 update
 
 The CLS column shows the CPU scheduler; TS is the normal scheduler; FF and RR are real-time schedulers. In this example, two threads use the real-time scheduler: the output thread and the rtio (real-time I/O) thread; these two are the important ones. The database update thread uses the idle scheduler ("IDL in ps), which only gets CPU when no other process needs it.

@@ -12,8 +12,8 @@ ExecStart=@prefix@/bin/mpd --no-daemon
 # periodic wakeups which are unnecessary if MPD is not playing.
 #WatchdogSec=120
 
-# allow MPD to use real-time priority 50
-LimitRTPRIO=50
+# allow MPD to use real-time priority 40
+LimitRTPRIO=40
 LimitRTTIME=infinity
 
 # disallow writing to /usr, /bin, /sbin, ...
