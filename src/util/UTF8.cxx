@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2014 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2011-2019 Max Kellermann <max.kellermann@gmail.com>
  * http://www.musicpd.org
  *
  * Redistribution and use in source and binary forms, with or without
@@ -37,13 +37,13 @@
  * Is this a leading byte that is followed by 1 continuation byte?
  */
 static constexpr bool
-IsLeading1(unsigned char ch)
+IsLeading1(unsigned char ch) noexcept
 {
 	return (ch & 0xe0) == 0xc0;
 }
 
 static constexpr unsigned char
-MakeLeading1(unsigned char value)
+MakeLeading1(unsigned char value) noexcept
 {
 	return 0xc0 | value;
 }
@@ -52,13 +52,13 @@ MakeLeading1(unsigned char value)
  * Is this a leading byte that is followed by 2 continuation byte?
  */
 static constexpr bool
-IsLeading2(unsigned char ch)
+IsLeading2(unsigned char ch) noexcept
 {
 	return (ch & 0xf0) == 0xe0;
 }
 
 static constexpr unsigned char
-MakeLeading2(unsigned char value)
+MakeLeading2(unsigned char value) noexcept
 {
 	return 0xe0 | value;
 }
@@ -67,13 +67,13 @@ MakeLeading2(unsigned char value)
  * Is this a leading byte that is followed by 3 continuation byte?
  */
 static constexpr bool
-IsLeading3(unsigned char ch)
+IsLeading3(unsigned char ch) noexcept
 {
 	return (ch & 0xf8) == 0xf0;
 }
 
 static constexpr unsigned char
-MakeLeading3(unsigned char value)
+MakeLeading3(unsigned char value) noexcept
 {
 	return 0xf0 | value;
 }
@@ -82,13 +82,13 @@ MakeLeading3(unsigned char value)
  * Is this a leading byte that is followed by 4 continuation byte?
  */
 static constexpr bool
-IsLeading4(unsigned char ch)
+IsLeading4(unsigned char ch) noexcept
 {
 	return (ch & 0xfc) == 0xf8;
 }
 
 static constexpr unsigned char
-MakeLeading4(unsigned char value)
+MakeLeading4(unsigned char value) noexcept
 {
 	return 0xf8 | value;
 }
@@ -97,19 +97,19 @@ MakeLeading4(unsigned char value)
  * Is this a leading byte that is followed by 5 continuation byte?
  */
 static constexpr bool
-IsLeading5(unsigned char ch)
+IsLeading5(unsigned char ch) noexcept
 {
 	return (ch & 0xfe) == 0xfc;
 }
 
 static constexpr unsigned char
-MakeLeading5(unsigned char value)
+MakeLeading5(unsigned char value) noexcept
 {
 	return 0xfc | value;
 }
 
 static constexpr bool
-IsContinuation(unsigned char ch)
+IsContinuation(unsigned char ch) noexcept
 {
 	return (ch & 0xc0) == 0x80;
 }
@@ -118,7 +118,7 @@ IsContinuation(unsigned char ch)
  * Generate a continuation byte of the low 6 bit.
  */
 static constexpr unsigned char
-MakeContinuation(unsigned char value)
+MakeContinuation(unsigned char value) noexcept
 {
 	return 0x80 | (value & 0x3f);
 }
