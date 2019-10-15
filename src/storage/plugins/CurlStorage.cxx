@@ -445,9 +445,7 @@ CurlStorage::GetInfo(const char *uri_utf8, gcc_unused bool follow)
 {
 	// TODO: escape the given URI
 
-	std::string uri = base;
-	uri += uri_utf8;
-
+	const auto uri = MapUTF8(uri_utf8);
 	return HttpGetInfoOperation(*curl, uri.c_str()).Perform();
 }
 
@@ -537,10 +535,7 @@ protected:
 std::unique_ptr<StorageDirectoryReader>
 CurlStorage::OpenDirectory(const char *uri_utf8)
 {
-	// TODO: escape the given URI
-
-	std::string uri = base;
-	uri += uri_utf8;
+	std::string uri = MapUTF8(uri_utf8);
 
 	/* collection URIs must end with a slash */
 	if (uri.back() != '/')

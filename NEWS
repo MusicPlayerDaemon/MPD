@@ -1,6 +1,7 @@
 ver 0.21.16 (not yet released)
 * storage
   - curl: request the "resourcetype" property to fix database update
+  - curl: URL-encode more paths
 * update
   - fix crash when music_directory is not a directory
 * fix build with iconv() instead of ICU
