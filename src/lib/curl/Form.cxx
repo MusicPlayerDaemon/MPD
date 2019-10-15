@@ -28,6 +28,7 @@
  */
 
 #include "Form.hxx"
+#include "String.hxx"
 
 std::string
 EncodeForm(CURL *curl,
@@ -43,12 +44,10 @@ EncodeForm(CURL *curl,
 		result.push_back('=');
 
 		if (!i.second.empty()) {
-			char *value = curl_easy_escape(curl, i.second.data(),
-						       i.second.length());
-			if (value != nullptr) {
+			CurlString value(curl_easy_escape(curl, i.second.data(),
+							  i.second.length()));
+			if (value)
 				result.append(value);
-				curl_free(value);
-			}
 		}
 	}
 

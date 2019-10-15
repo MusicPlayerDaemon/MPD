@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2018 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2019 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -27,71 +27,50 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CURL_EASY_HXX
-#define CURL_EASY_HXX
-
-#include "String.hxx"
+#ifndef CURL_STRING_HXX
+#define CURL_STRING_HXX
 
 #include <curl/curl.h>
 
 #include <utility>
-#include <stdexcept>
-#include <cstddef>
 
 /**
- * An OO wrapper for a "CURL*" (a libCURL "easy" handle).
+ * An OO wrapper for an allocated string to be freed with curl_free().
  */
-class CurlEasy {
-	CURL *handle = nullptr;
+class CurlString {
+	char *p = nullptr;
 
 public:
-	/**
-	 * Allocate a new CURL*.
-	 *
-	 * Throws std::runtime_error on error.
-	 */
-	CurlEasy()
-		:handle(curl_easy_init())
-	{
-		if (handle == nullptr)
-			throw std::runtime_error("curl_easy_init() failed");
+	CurlString() noexcept = default;
+	CurlString(std::nullptr_t) noexcept {}
+
+	explicit CurlString(char *_p) noexcept
+		:p(_p) {}
+
+	CurlString(CurlString &&src) noexcept
+		:p(std::exchange(src.p, nullptr)) {}
+
+	~CurlString() noexcept {
+		if (p != nullptr)
+			curl_free(p);
 	}
 
-	/**
-	 * Create an empty instance.
-	 */
-	CurlEasy(std::nullptr_t) noexcept:handle(nullptr) {}
-
-	CurlEasy(CurlEasy &&src) noexcept
-		:handle(std::exchange(src.handle, nullptr)) {}
-
-	~CurlEasy() noexcept {
-		if (handle != nullptr)
-			curl_easy_cleanup(handle);
-	}
-
-	operator bool() const noexcept {
-		return handle != nullptr;
-	}
-
-	CurlEasy &operator=(CurlEasy &&src) noexcept {
-		std::swap(handle, src.handle);
+	CurlString &operator=(CurlString &&src) noexcept {
+		using std::swap;
+		swap(p, src.p);
 		return *this;
 	}
 
-	CURL *Get() noexcept {
-		return handle;
+	operator bool() const noexcept {
+		return p != nullptr;
 	}
 
-	template<typename T>
-	void SetOption(CURLoption option, T value) {
-		CURLcode code = curl_easy_setopt(handle, option, value);
-		if (code != CURLE_OK)
-			throw std::runtime_error(curl_easy_strerror(code));
+	operator const char *() const noexcept {
+		return p;
 	}
 
-	CurlString Escape(const char *string, int length=0) const noexcept {
-		return CurlString(curl_easy_escape(handle, string, length));
+	const char *c_str() const noexcept {
+		return p;
 	}
 };
 
