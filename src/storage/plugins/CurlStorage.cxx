@@ -492,7 +492,11 @@ private:
 		if (path == nullptr)
 			return nullptr;
 
-		path = StringAfterPrefix(path, base_path.c_str());
+		/* kludge: ignoring case in this comparison to avoid
+		   false negatives if the web server uses a different
+		   case in hex digits in escaped characters; TODO:
+		   implement properly */
+		path = StringAfterPrefixIgnoreCase(path, base_path.c_str());
 		if (path == nullptr || *path == 0)
 			return nullptr;
 
