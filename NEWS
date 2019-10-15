@@ -1,4 +1,6 @@
 ver 0.21.16 (not yet released)
+* queue
+  - fix relative destination offset when moving a range
 * storage
   - curl: request the "resourcetype" property to fix database update
   - curl: URL-encode more paths

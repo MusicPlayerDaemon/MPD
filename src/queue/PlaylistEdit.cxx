@@ -353,7 +353,7 @@ playlist::MoveRange(PlayerControl &pc, unsigned start, unsigned end, int to)
 			return;
 		to = (currentSong + abs(to)) % GetLength();
 		if (start < (unsigned)to)
-			to--;
+			to -= end - start;
 	}
 
 	queue.MoveRange(start, end, to);
