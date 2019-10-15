@@ -53,3 +53,19 @@ CurlEscapeUriPath(StringView src) noexcept
 	CurlEasy easy;
 	return CurlEscapeUriPath(easy.Get(), src);
 }
+
+std::string
+CurlUnescape(CURL *curl, StringView src) noexcept
+{
+	int outlength;
+	CurlString tmp(curl_easy_unescape(curl, src.data, src.size,
+					  &outlength));
+	return std::string(tmp.c_str(), outlength);
+}
+
+std::string
+CurlUnescape(StringView src) noexcept
+{
+	CurlEasy easy;
+	return CurlUnescape(easy.Get(), src);
+}

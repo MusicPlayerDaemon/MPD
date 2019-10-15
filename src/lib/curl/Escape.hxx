@@ -42,4 +42,10 @@ CurlEscapeUriPath(CURL *curl, StringView src) noexcept;
 std::string
 CurlEscapeUriPath(StringView src) noexcept;
 
+std::string
+CurlUnescape(CURL *curl, StringView src) noexcept;
+
+std::string
+CurlUnescape(StringView src) noexcept;
+
 #endif
