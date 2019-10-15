@@ -122,6 +122,10 @@ public:
 			std::rethrow_exception(postponed_error);
 	}
 
+	CURL *GetEasy() noexcept {
+		return request.Get();
+	}
+
 protected:
 	void SetDone() {
 		assert(!done);
@@ -277,6 +281,7 @@ public:
 		// TODO: send request body
 	}
 
+	using BlockingHttpRequest::GetEasy;
 	using BlockingHttpRequest::Wait;
 
 protected:
@@ -524,10 +529,7 @@ protected:
 		if (escaped_name.IsNull())
 			return;
 
-		// TODO: unescape
-		const auto name = escaped_name;
-
-		entries.emplace_front(std::string(name.data, name.size));
+		entries.emplace_front(CurlUnescape(GetEasy(), escaped_name));
 
 		auto &info = entries.front().info;
 		info = StorageFileInfo(r.collection
