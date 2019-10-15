@@ -28,6 +28,7 @@
 #include "lib/curl/String.hxx"
 #include "lib/curl/Request.hxx"
 #include "lib/curl/Handler.hxx"
+#include "lib/curl/Escape.hxx"
 #include "lib/expat/ExpatParser.hxx"
 #include "fs/Traits.hxx"
 #include "event/Call.hxx"
@@ -36,7 +37,6 @@
 #include "thread/Cond.hxx"
 #include "util/ASCII.hxx"
 #include "util/ChronoUtil.hxx"
-#include "util/IterableSplitString.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/StringCompare.hxx"
 #include "util/StringFormat.hxx"
@@ -78,16 +78,7 @@ CurlStorage::MapUTF8(const char *uri_utf8) const noexcept
 	if (StringIsEmpty(uri_utf8))
 		return base;
 
-	CurlEasy easy;
-	std::string path_esc;
-
-	for (auto elt: IterableSplitString(uri_utf8, '/')) {
-		const auto elt_esc = easy.Escape(elt.data, elt.size);
-		if (!path_esc.empty())
-			path_esc.push_back('/');
-		path_esc += elt_esc.c_str();
-	}
-
+	std::string path_esc = CurlEscapeUriPath(uri_utf8);
 	return PathTraitsUTF8::Build(base.c_str(), path_esc.c_str());
 }
 
