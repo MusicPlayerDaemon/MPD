@@ -27,29 +27,45 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "Form.hxx"
+#include "Escape.hxx"
+#include "Easy.hxx"
 #include "String.hxx"
+#include "util/IterableSplitString.hxx"
 
 std::string
-EncodeForm(CURL *curl,
-	   const std::multimap<std::string, std::string> &fields) noexcept
+CurlEscapeUriPath(CURL *curl, StringView src) noexcept
 {
-	std::string result;
+	std::string dest;
 
-	for (const auto &i : fields) {
-		if (!result.empty())
-			result.push_back('&');
-
-		result.append(i.first);
-		result.push_back('=');
-
-		if (!i.second.empty()) {
-			CurlString value(curl_easy_escape(curl, i.second.data(),
-							  i.second.length()));
-			if (value)
-				result.append(value);
-		}
+	for (const auto i : IterableSplitString(src, '/')) {
+		CurlString escaped(curl_easy_escape(curl, i.data, i.size));
+		if (!dest.empty())
+			dest.push_back('/');
+		dest += escaped.c_str();
 	}
 
-	return result;
+	return dest;
+}
+
+std::string
+CurlEscapeUriPath(StringView src) noexcept
+{
+	CurlEasy easy;
+	return CurlEscapeUriPath(easy.Get(), src);
+}
+
+std::string
+CurlUnescape(CURL *curl, StringView src) noexcept
+{
+	int outlength;
+	CurlString tmp(curl_easy_unescape(curl, src.data, src.size,
+					  &outlength));
+	return std::string(tmp.c_str(), outlength);
+}
+
+std::string
+CurlUnescape(StringView src) noexcept
+{
+	CurlEasy easy;
+	return CurlUnescape(easy.Get(), src);
 }

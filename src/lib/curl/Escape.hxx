@@ -27,29 +27,25 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "Form.hxx"
-#include "String.hxx"
+#ifndef CURL_ESCAPE_HXX
+#define CURL_ESCAPE_HXX
+
+#include <curl/curl.h>
+
+#include <string>
+
+struct StringView;
 
 std::string
-EncodeForm(CURL *curl,
-	   const std::multimap<std::string, std::string> &fields) noexcept
-{
-	std::string result;
+CurlEscapeUriPath(CURL *curl, StringView src) noexcept;
 
-	for (const auto &i : fields) {
-		if (!result.empty())
-			result.push_back('&');
+std::string
+CurlEscapeUriPath(StringView src) noexcept;
 
-		result.append(i.first);
-		result.push_back('=');
+std::string
+CurlUnescape(CURL *curl, StringView src) noexcept;
 
-		if (!i.second.empty()) {
-			CurlString value(curl_easy_escape(curl, i.second.data(),
-							  i.second.length()));
-			if (value)
-				result.append(value);
-		}
-	}
+std::string
+CurlUnescape(StringView src) noexcept;
 
-	return result;
-}
+#endif

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2019 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -27,29 +27,51 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "Form.hxx"
-#include "String.hxx"
+#ifndef CURL_STRING_HXX
+#define CURL_STRING_HXX
 
-std::string
-EncodeForm(CURL *curl,
-	   const std::multimap<std::string, std::string> &fields) noexcept
-{
-	std::string result;
+#include <curl/curl.h>
 
-	for (const auto &i : fields) {
-		if (!result.empty())
-			result.push_back('&');
+#include <utility>
 
-		result.append(i.first);
-		result.push_back('=');
+/**
+ * An OO wrapper for an allocated string to be freed with curl_free().
+ */
+class CurlString {
+	char *p = nullptr;
 
-		if (!i.second.empty()) {
-			CurlString value(curl_easy_escape(curl, i.second.data(),
-							  i.second.length()));
-			if (value)
-				result.append(value);
-		}
+public:
+	CurlString() noexcept = default;
+	CurlString(std::nullptr_t) noexcept {}
+
+	explicit CurlString(char *_p) noexcept
+		:p(_p) {}
+
+	CurlString(CurlString &&src) noexcept
+		:p(std::exchange(src.p, nullptr)) {}
+
+	~CurlString() noexcept {
+		if (p != nullptr)
+			curl_free(p);
 	}
 
-	return result;
-}
+	CurlString &operator=(CurlString &&src) noexcept {
+		using std::swap;
+		swap(p, src.p);
+		return *this;
+	}
+
+	operator bool() const noexcept {
+		return p != nullptr;
+	}
+
+	operator const char *() const noexcept {
+		return p;
+	}
+
+	const char *c_str() const noexcept {
+		return p;
+	}
+};
+
+#endif
