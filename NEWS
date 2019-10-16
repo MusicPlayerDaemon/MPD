@@ -1,3 +1,5 @@
+ver 0.21.17 (not yet released)
+
 ver 0.21.16 (2019/10/16)
 * queue
   - fix relative destination offset when moving a range
