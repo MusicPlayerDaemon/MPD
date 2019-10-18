@@ -68,15 +68,7 @@ playlist_ytdl_open_uri(const char *uri, Mutex &mutex)
 	return std::make_unique<MemorySongEnumerator>(std::move(songs));
 }
 
-const struct playlist_plugin ytdl_playlist_plugin = {
-	"youtube-dl",
-
-	playlist_ytdl_init,
-	playlist_ytdl_finish,
-	playlist_ytdl_open_uri,
-	nullptr,
-
-	playlist_ytdl_schemes,
-	nullptr,
-	nullptr,
-};
+const PlaylistPlugin ytdl_playlist_plugin =
+	PlaylistPlugin("youtube-dl", playlist_ytdl_open_uri)
+	.WithInit(playlist_ytdl_init, playlist_ytdl_finish)
+	.WithSchemes(playlist_ytdl_schemes);

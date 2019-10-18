@@ -46,14 +46,14 @@ void YtdlInputStream::Update() noexcept {
 	}
 }
 
-void YtdlInputStream::Seek(offset_type by_offset) {
+void YtdlInputStream::Seek(std::unique_lock<Mutex> &lock, offset_type by_offset) {
 	if (inner != nullptr) {
-		inner->Seek(by_offset);
+		inner->Seek(lock, by_offset);
 	}
 }
 
 gcc_pure
-bool YtdlInputStream::IsEOF() noexcept {
+bool YtdlInputStream::IsEOF() const noexcept {
 	if (inner != nullptr) {
 		return inner->IsEOF();
 	} else {
@@ -61,7 +61,7 @@ bool YtdlInputStream::IsEOF() noexcept {
 	}
 }
 
-std::unique_ptr<Tag> YtdlInputStream::ReadTag() {
+std::unique_ptr<Tag> YtdlInputStream::ReadTag() noexcept {
 	if (tag != nullptr) {
 		return std::move(tag);
 	} else if (inner != nullptr) {
@@ -81,9 +81,9 @@ bool YtdlInputStream::IsAvailable() noexcept {
 }
 
 gcc_nonnull_all
-size_t YtdlInputStream::Read(void *ptr, size_t sz) {
+size_t YtdlInputStream::Read(std::unique_lock<Mutex> &lock, void *ptr, size_t sz) {
 	if (inner != nullptr) {
-		size_t res = inner->Read(ptr, sz);
+		size_t res = inner->Read(lock, ptr, sz);
 		SyncFields();
 		return res;
 	} else {

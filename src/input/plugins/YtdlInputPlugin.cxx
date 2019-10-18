@@ -48,8 +48,15 @@ input_ytdl_open(const char *uri, Mutex &mutex)
 	return nullptr;
 }
 
+static std::set<std::string> input_ytdl_protocols()
+{
+	std::set<std::string> protocols;
+	protocols.emplace("ytdl");
+	return protocols;
+}
+
 static std::unique_ptr<RemoteTagScanner>
-input_ytdl_scan_tags(const char *uri, RemoteTagHandler &handler)
+input_ytdl_scan_tags(const char* uri, RemoteTagHandler &handler)
 {
 	uri = ytdl_init->UriSupported(uri);
 	if (uri) {
@@ -59,17 +66,13 @@ input_ytdl_scan_tags(const char *uri, RemoteTagHandler &handler)
 	return nullptr;
 }
 
-static constexpr const char *ytdl_prefixes[] = {
-	"ytdl://",
-	nullptr
-};
-
 const struct InputPlugin input_plugin_ytdl = {
 	"youtube-dl",
-	ytdl_prefixes,
+	nullptr,
 	input_ytdl_init,
 	input_ytdl_finish,
 	input_ytdl_open,
+	input_ytdl_protocols,
 	input_ytdl_scan_tags,
 	input_ytdl_supports_uri,
 };

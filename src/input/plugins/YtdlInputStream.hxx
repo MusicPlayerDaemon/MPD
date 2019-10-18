@@ -21,17 +21,17 @@ public:
 	virtual ~YtdlInputStream() noexcept;
 	virtual void Check();
 	virtual void Update() noexcept;
-	virtual void Seek(offset_type offset);
+	virtual void Seek(std::unique_lock<Mutex> &lock, offset_type by_offset);
 
 	gcc_pure
-	virtual bool IsEOF() noexcept;
-	virtual std::unique_ptr<Tag> ReadTag();
+	virtual bool IsEOF() const noexcept;
+	virtual std::unique_ptr<Tag> ReadTag() noexcept;
 
 	gcc_pure
 	virtual bool IsAvailable() noexcept;
 
 	gcc_nonnull_all
-	virtual size_t Read(void *ptr, size_t size);
+	virtual size_t Read(std::unique_lock<Mutex> &lock, void *ptr, size_t size);
 
 	void OnComplete(Ytdl::YtdlMonitor* monitor);
 	void OnError(Ytdl::YtdlMonitor* monitor, std::exception_ptr e);
