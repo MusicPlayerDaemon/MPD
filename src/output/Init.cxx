@@ -117,6 +117,11 @@ audio_output_load_mixer(EventLoop &event_loop, FilteredAudioOutput &ao,
 	case MixerType::NONE:
 		return nullptr;
 
+        case MixerType::HTTPD:
+                return mixer_new(event_loop, httpd_mixer_plugin,
+                                 *ao.output, listener,
+                                 block);
+
 	case MixerType::NULL_:
 		return mixer_new(event_loop, null_mixer_plugin,
 				 *ao.output, listener,

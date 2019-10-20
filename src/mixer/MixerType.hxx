@@ -24,6 +24,9 @@ enum class MixerType {
 	/** mixer disabled */
 	NONE,
 
+	/** Sonos / Symfonisk controller for http output */
+	HTTPD,
+
 	/** "null" mixer (virtual fake) */
 	NULL_,
 
