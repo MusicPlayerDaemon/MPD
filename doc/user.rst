@@ -62,16 +62,16 @@ In any case, you need:
 Each plugin usually needs a codec library, which you also need to
 install. Check the :doc:`plugins` for details about required libraries
 
-For example, the following installs a fairly complete list of build dependencies on Debian Jessie:
+For example, the following installs a fairly complete list of build dependencies on Debian Buster:
 
 .. code-block:: none
 
-    apt install g++ \
+    apt install meson g++ \
       libpcre3-dev \
       libmad0-dev libmpg123-dev libid3tag0-dev \
-      libflac-dev libvorbis-dev libopus-dev \
+      libflac-dev libvorbis-dev libopus-dev libogg-dev \
       libadplug-dev libaudiofile-dev libsndfile1-dev libfaad-dev \
-      libfluidsynth-dev libgme-dev libmikmod2-dev libmodplug-dev \
+      libfluidsynth-dev libgme-dev libmikmod-dev libmodplug-dev \
       libmpcdec-dev libwavpack-dev libwildmidi-dev \
       libsidplay2-dev libsidutils-dev libresid-builder-dev \
       libavcodec-dev libavformat-dev \
@@ -91,7 +91,9 @@ For example, the following installs a fairly complete list of build dependencies
       libsystemd-dev \
       libgtest-dev \
       libboost-dev \
-      libicu-dev
+      libicu-dev \
+      libchromaprint-dev \
+      libgcrypt20-dev
       
 
 Now configure the source tree:
