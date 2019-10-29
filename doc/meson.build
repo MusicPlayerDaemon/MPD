@@ -1,6 +1,11 @@
 install_man(['mpd.1', 'mpd.conf.5'])
 
 sphinx = find_program('sphinx-build')
+py = import('python').find_installation()
+if run_command(py, '-c', 'import sphinx_rtd_theme').returncode() != 0
+  error('python module "sphinx_rtd_theme" not found')
+endif
+
 sphinx_output = custom_target(
   'HTML documentation',
   output: 'html',
@@ -10,7 +15,7 @@ sphinx_output = custom_target(
     'protocol.rst',
     'conf.py',
   ],
-  command: [sphinx, '-q', '-b', 'html', '-d', '@OUTDIR@/doctrees', meson.current_source_dir(), '@OUTPUT@'],
+  command: [sphinx, '-q', '-b', 'html', '-d', '@OUTDIR@/doctrees', meson.current_source_dir(), '@OUTPUT@', '-D',  'html_theme=sphinx_rtd_theme'],
   build_by_default: true,
   install: true,
   install_dir: join_paths(get_option('datadir'), 'doc', meson.project_name()),
