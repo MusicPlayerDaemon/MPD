@@ -40,6 +40,14 @@
 #include "util/Domain.hxx"
 #include "Log.hxx"
 #include "PluginUnavailable.hxx"
+#include "config.h"
+
+#ifdef HAVE_ICU_CONVERTER
+#include "lib/icu/Converter.hxx"
+#include "util/AllocatedString.hxx"
+#include "util/UriExtract.hxx"
+#include "util/UriQueryParser.hxx"
+#endif
 
 #include <cinttypes>
 
@@ -176,6 +184,45 @@ CurlInputStream::FreeEasyIndirect() noexcept
 		});
 }
 
+#ifdef HAVE_ICU_CONVERTER
+
+static std::unique_ptr<IcuConverter>
+CreateIcuConverterForUri(const char *uri)
+{
+	const char *fragment = uri_get_fragment(uri);
+	if (fragment == nullptr)
+		return nullptr;
+
+	const auto charset = UriFindRawQueryParameter(fragment, "charset");
+	if (charset == nullptr)
+		return nullptr;
+
+	const std::string copy(charset.data, charset.size);
+	return IcuConverter::Create(copy.c_str());
+}
+
+#endif
+
+template<typename F>
+static void
+WithConvertedTagValue(const char *uri, const char *value, F &&f) noexcept
+{
+#ifdef HAVE_ICU_CONVERTER
+	try {
+		auto converter = CreateIcuConverterForUri(uri);
+		if (converter) {
+			f(converter->ToUTF8(value).c_str());
+			return;
+		}
+	} catch (...) {
+	}
+#else
+	(void)uri;
+#endif
+
+	f(value);
+}
+
 void
 CurlInputStream::OnHeaders(unsigned status,
 			   std::multimap<std::string, std::string> &&headers)
@@ -217,7 +264,12 @@ CurlInputStream::OnHeaders(unsigned status,
 
 	if (i != headers.end()) {
 		TagBuilder tag_builder;
-		tag_builder.AddItem(TAG_NAME, i->second.c_str());
+
+		WithConvertedTagValue(GetURI(), i->second.c_str(),
+				      [&tag_builder](const char *value){
+					      tag_builder.AddItem(TAG_NAME,
+								  value);
+				      });
 
 		SetTag(tag_builder.CommitNew());
 	}
