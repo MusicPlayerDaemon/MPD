@@ -38,7 +38,7 @@
 
 static std::string fs_charset;
 
-static IcuConverter *fs_converter;
+static std::unique_ptr<IcuConverter> fs_converter;
 
 void
 SetFSCharset(const char *charset)
@@ -59,8 +59,7 @@ void
 DeinitFSCharset() noexcept
 {
 #ifdef HAVE_ICU_CONVERTER
-	delete fs_converter;
-	fs_converter = nullptr;
+	fs_converter.reset();
 #endif
 }
 

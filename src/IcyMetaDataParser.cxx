@@ -32,7 +32,7 @@
 void
 IcyMetaDataParser::SetCharset(const char *charset)
 {
-	icu_converter.reset(IcuConverter::Create(charset));
+	icu_converter = IcuConverter::Create(charset);
 }
 
 #endif

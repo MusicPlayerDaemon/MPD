@@ -30,8 +30,7 @@ TEST(IcuConverter, InvalidCharset)
 
 TEST(IcuConverter, Latin1)
 {
-	IcuConverter *const converter =
-		IcuConverter::Create("iso-8859-1");
+	const auto converter = IcuConverter::Create("iso-8859-1");
 	ASSERT_NE(converter, nullptr);
 
 	for (const auto i : invalid_utf8) {
@@ -45,8 +44,6 @@ TEST(IcuConverter, Latin1)
 		auto t = converter->ToUTF8(i.other);
 		EXPECT_STREQ(t.c_str(), i.utf8);
 	}
-
-	delete converter;
 }
 
 #endif

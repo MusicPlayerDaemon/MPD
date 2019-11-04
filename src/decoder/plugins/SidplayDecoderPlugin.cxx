@@ -456,10 +456,7 @@ Windows1252ToUTF8(const char *s) noexcept
 {
 #ifdef HAVE_ICU_CONVERTER
 	try {
-		std::unique_ptr<IcuConverter>
-			converter(IcuConverter::Create("windows-1252"));
-
-		return converter->ToUTF8(s);
+		return IcuConverter::Create("windows-1252")->ToUTF8(s);
 	} catch (...) { }
 #endif
 
