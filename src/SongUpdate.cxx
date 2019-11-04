@@ -98,8 +98,6 @@ Song::UpdateFile(Storage &storage) noexcept
 	return true;
 }
 
-#endif
-
 #ifdef ENABLE_ARCHIVE
 
 Song *
@@ -144,6 +142,8 @@ Song::UpdateFileInArchive(ArchiveFile &archive) noexcept
 }
 
 #endif
+
+#endif /* ENABLE_DATABASE */
 
 bool
 DetachedSong::LoadFile(Path path) noexcept
