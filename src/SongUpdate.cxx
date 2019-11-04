@@ -87,8 +87,6 @@ Song::UpdateFile(Storage &storage)
 	return true;
 }
 
-#endif
-
 #ifdef ENABLE_ARCHIVE
 
 SongPtr
@@ -129,6 +127,8 @@ Song::UpdateFileInArchive(ArchiveFile &archive) noexcept
 }
 
 #endif
+
+#endif /* ENABLE_DATABASE */
 
 bool
 DetachedSong::LoadFile(Path path)

@@ -1,4 +1,4 @@
-if not get_option('neighbor')
+if not get_option('neighbor') or not enable_database
   conf.set('ENABLE_NEIGHBOR_PLUGINS', false)
   neighbor_glue_dep = dependency('', required: false)
   subdir_done()

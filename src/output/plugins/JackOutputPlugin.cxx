@@ -405,10 +405,11 @@ JackOutput::Connect()
 	jack_on_info_shutdown(client, OnShutdown, this);
 
 	for (unsigned i = 0; i < num_source_ports; ++i) {
+		unsigned long portflags = JackPortIsOutput | JackPortIsTerminal;
 		ports[i] = jack_port_register(client,
 					      source_ports[i].c_str(),
 					      JACK_DEFAULT_AUDIO_TYPE,
-					      JackPortIsOutput, 0);
+					      portflags, 0);
 		if (ports[i] == nullptr) {
 			Disconnect();
 			throw FormatRuntimeError("Cannot register output port \"%s\"",

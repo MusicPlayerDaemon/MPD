@@ -112,8 +112,8 @@ liblame = AutotoolsProject(
 )
 
 ffmpeg = FfmpegProject(
-    'http://ffmpeg.org/releases/ffmpeg-4.2.tar.xz',
-    '023f10831a97ad93d798f53a3640e55cd564abfeba807ecbe8524dac4fedecd5',
+    'http://ffmpeg.org/releases/ffmpeg-4.2.1.tar.xz',
+    'cec7c87e9b60d174509e263ac4011b522385fd0775292e1670ecc1180c9bb6d4',
     'lib/libavcodec.a',
     [
         '--disable-shared', '--enable-static',
@@ -341,8 +341,8 @@ ffmpeg = FfmpegProject(
 )
 
 curl = AutotoolsProject(
-    'http://curl.haxx.se/download/curl-7.65.3.tar.xz',
-    'f2d98854813948d157f6a91236ae34ca4a1b4cb302617cebad263d79b0235fea',
+    'http://curl.haxx.se/download/curl-7.66.0.tar.xz',
+    'dbb48088193016d079b97c5c3efde8efa56ada2ebf336e8a97d04eb8e2ed98c1',
     'lib/libcurl.a',
     [
         '--disable-shared', '--enable-static',

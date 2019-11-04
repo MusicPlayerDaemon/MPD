@@ -401,8 +401,11 @@ endif
 if archive_glue_dep.found()
   sources += [
     'src/TagArchive.cxx',
-    'src/db/update/Archive.cxx',
   ]
+
+  if enable_database
+    sources += ['src/db/update/Archive.cxx']
+  endif
 endif
 
 if is_windows

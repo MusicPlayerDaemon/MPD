@@ -1,4 +1,9 @@
-sqlite_dep = dependency('sqlite3', version: '>= 3.7.3', required: get_option('sqlite'))
+if enable_database
+  sqlite_dep = dependency('sqlite3', version: '>= 3.7.3', required: get_option('sqlite'))
+else
+  sqlite_dep = dependency('', required: false)
+endif
+
 conf.set('ENABLE_SQLITE', sqlite_dep.found())
 if not sqlite_dep.found()
   subdir_done()
