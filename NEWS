@@ -1,6 +1,7 @@
 ver 0.21.17 (not yet released)
 * outputs
   - jack: mark ports as terminal
+* fix build failure with -Ddatabase=false
 
 ver 0.21.16 (2019/10/16)
 * queue
