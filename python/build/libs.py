@@ -341,8 +341,8 @@ ffmpeg = FfmpegProject(
 )
 
 curl = AutotoolsProject(
-    'http://curl.haxx.se/download/curl-7.65.3.tar.xz',
-    'f2d98854813948d157f6a91236ae34ca4a1b4cb302617cebad263d79b0235fea',
+    'http://curl.haxx.se/download/curl-7.66.0.tar.xz',
+    'dbb48088193016d079b97c5c3efde8efa56ada2ebf336e8a97d04eb8e2ed98c1',
     'lib/libcurl.a',
     [
         '--disable-shared', '--enable-static',
