@@ -146,6 +146,7 @@ alsa_mixer_elem_callback(snd_mixer_elem_t *elem, unsigned mask)
 		snd_mixer_elem_get_callback_private(elem);
 
 	if (mask & SND_CTL_EVENT_MASK_REMOVE) {
+		mixer.open = false;
 		return -ENODEV;
 	}
 
