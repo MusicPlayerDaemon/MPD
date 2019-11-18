@@ -81,21 +81,6 @@ WriteOrThrow(FileDescriptor fd, const void *buffer, size_t size)
 }
 
 static void
-FullRead(FileDescriptor fd, void *_buffer, size_t size)
-{
-	auto buffer = (uint8_t *)_buffer;
-
-	while (size > 0) {
-		size_t nbytes = ReadOrThrow(fd, buffer, size);
-		if (nbytes == 0)
-			throw std::runtime_error("Premature end of input");
-
-		buffer += nbytes;
-		size -= nbytes;
-	}
-}
-
-static void
 FullWrite(FileDescriptor fd, ConstBuffer<uint8_t> src)
 {
 	while (!src.empty()) {
@@ -125,7 +110,7 @@ ReadFrames(FileDescriptor fd, void *_buffer, size_t size, size_t frame_size)
 	const size_t modulo = nbytes % frame_size;
 	if (modulo > 0) {
 		size_t rest = frame_size - modulo;
-		FullRead(fd, buffer + nbytes, rest);
+		fd.FullRead(buffer + nbytes, rest);
 		nbytes += rest;
 	}
 
