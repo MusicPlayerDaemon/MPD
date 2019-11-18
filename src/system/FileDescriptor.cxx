@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2018 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2012-2019 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -28,8 +28,10 @@
  */
 
 #include "FileDescriptor.hxx"
+#include "system/Error.hxx"
 
 #include <assert.h>
+#include <stdint.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 
@@ -283,6 +285,24 @@ FileDescriptor::GetSize() const noexcept
 	return ::fstat(fd, &st) >= 0
 		? (long)st.st_size
 		: -1;
+}
+
+void
+FileDescriptor::FullRead(void *_buffer, size_t length)
+{
+	uint8_t *buffer = (uint8_t *)_buffer;
+
+	while (length > 0) {
+		ssize_t nbytes = Read(buffer, length);
+		if (nbytes <= 0) {
+			if (nbytes < 0)
+				throw MakeErrno("Failed to read");
+			throw std::runtime_error("Unexpected end of file");
+		}
+
+		buffer += nbytes;
+		length -= nbytes;
+	}
 }
 
 #ifndef _WIN32
