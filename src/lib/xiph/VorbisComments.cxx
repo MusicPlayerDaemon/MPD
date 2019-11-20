@@ -29,6 +29,8 @@
 #include "util/StringView.hxx"
 #include "config.h"
 
+#ifdef ENABLE_VORBIS_DECODER
+
 #ifndef HAVE_TREMOR
 #include <vorbis/codec.h>
 #else
@@ -62,6 +64,8 @@ VorbisCommentToReplayGain(ReplayGainInfo &rgi,
 
 	return found;
 }
+
+#endif /* ENABLE_VORBIS_DECODER */
 
 static void
 vorbis_scan_comment(StringView comment, TagHandler &handler) noexcept
