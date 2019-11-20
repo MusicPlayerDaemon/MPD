@@ -40,6 +40,7 @@ endif
 if not libogg_dep.found() and not libflac_dep.found()
   xiph_dep = dependency('', required: false)
   ogg_dep = dependency('', required: false)
+  vorbis_dep = dependency('', required: false)
   flac_dep = dependency('', required: false)
   subdir_done()
 endif
@@ -80,6 +81,29 @@ if libogg_dep.found()
   )
 else
   ogg_dep = dependency('', required: false)
+endif
+
+if libvorbis_dep.found() or libvorbisidec_dep.found()
+  vorbis = static_library(
+    'vorbis',
+    'VorbisComments.cxx',
+    include_directories: inc,
+    dependencies: [
+      libvorbis_dep,
+      libvorbisidec_dep,
+    ],
+  )
+
+  vorbis_dep = declare_dependency(
+    link_with: vorbis,
+    dependencies: [
+      ogg_dep,
+      libvorbis_dep,
+      libvorbisidec_dep,
+    ],
+  )
+else
+  vorbis_dep = dependency('', required: false)
 endif
 
 if libflac_dep.found()
