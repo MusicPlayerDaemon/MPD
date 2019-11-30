@@ -42,7 +42,7 @@ Provides access to the database of another :program:`MPD` instance using libmpdc
    * - **password**
      - The password used to log in to the "master" :program:`MPD` instance.
    * - **keepalive yes|no**
-     - Send TCP keepalive packets to the "master" :program:`MPD` instance? This option can help avoid certain firewalls dropping inactive connections, at the expensive of a very small amount of additional network traffic. Disabled by default.
+     - Send TCP keepalive packets to the "master" :program:`MPD` instance? This option can help avoid certain firewalls dropping inactive connections, at the expense of a very small amount of additional network traffic. Disabled by default.
 
 upnp
 ----
@@ -1069,7 +1069,7 @@ Filter plugins
 normalize
 ---------
 
-Normalize the volume during playback (at the expensve of quality).
+Normalize the volume during playback (at the expense of quality).
 
 
 null
