@@ -32,6 +32,9 @@ enum class MixerType {
 
 	/** hardware mixer (output's plugin) */
 	HARDWARE,
+
+	/** Sonos / Symfonisk controller for http output */
+	HTTPD,
 };
 
 /**
