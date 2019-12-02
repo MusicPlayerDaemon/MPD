@@ -14,6 +14,12 @@ if is_haiku
   mixer_plugins_sources += 'HaikuMixerPlugin.cxx'
 endif
 
+if noson_dep.found()
+  if  openssl_dep.found()
+    mixer_plugins_sources += 'HttpdMixerPlugin.cxx'
+  endif
+endif
+
 if enable_oss
   mixer_plugins_sources += 'OssMixerPlugin.cxx'
 endif
@@ -46,6 +52,8 @@ mixer_plugins = static_library(
     alsa_dep,
     pulse_dep,
     libsndio_dep,
+    noson_dep,
+    openssl_dep,
   ]
 )
 

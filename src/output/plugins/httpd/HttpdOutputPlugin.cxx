@@ -23,6 +23,7 @@
 #include "output/OutputAPI.hxx"
 #include "encoder/EncoderInterface.hxx"
 #include "encoder/Configured.hxx"
+#include "mixer/MixerList.hxx"
 #include "net/UniqueSocketDescriptor.hxx"
 #include "net/SocketAddress.hxx"
 #include "Page.hxx"
@@ -408,5 +409,9 @@ const struct AudioOutputPlugin httpd_output_plugin = {
 	"httpd",
 	nullptr,
 	&HttpdOutput::Create,
+#ifdef ENABLE_NOSON
+	&httpd_mixer_plugin,
+#else
 	nullptr,
+#endif
 };
