@@ -345,7 +345,7 @@ handle_getfingerprint(Client &client, Request args, Response &)
 			lu.path = storage->MapFS(lu.canonical_uri);
 			if (lu.path.IsNull()) {
 				uri = storage->MapUTF8(lu.canonical_uri);
-				if (uri_has_scheme(uri.c_str()))
+				if (!uri_has_scheme(uri.c_str()))
 					throw ProtocolError(ACK_ERROR_NO_EXIST, "No such song");
 			}
 		}
