@@ -1,4 +1,6 @@
 ver 0.21.17 (not yet released)
+* archive
+  - zzip: improve error reporting
 * outputs
   - jack: mark ports as terminal
   - shout: declare metadata as UTF-8

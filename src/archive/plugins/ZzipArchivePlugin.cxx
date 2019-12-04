@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2018 The Music Player Daemon Project
+ * Copyright 2003-2019 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -27,6 +27,7 @@
 #include "../ArchiveVisitor.hxx"
 #include "input/InputStream.hxx"
 #include "fs/Path.hxx"
+#include "system/Error.hxx"
 #include "util/RuntimeError.hxx"
 
 #include <zzip/zzip.h>
@@ -120,9 +121,19 @@ ZzipArchiveFile::OpenStream(const char *pathname,
 			    Mutex &mutex)
 {
 	ZZIP_FILE *_file = zzip_file_open(dir->dir, pathname, 0);
-	if (_file == nullptr)
-		throw FormatRuntimeError("not found in the ZIP file: %s",
-					 pathname);
+	if (_file == nullptr) {
+		const auto error = (zzip_error_t)zzip_error(dir->dir);
+		switch (error) {
+		case ZZIP_ENOENT:
+			throw FormatFileNotFound("Failed to open '%s' in ZIP file",
+						 pathname);
+
+		default:
+			throw FormatRuntimeError("Failed to open '%s' in ZIP file: %s",
+						 pathname,
+						 zzip_strerror(error));
+		}
+	}
 
 	return std::make_unique<ZzipInputStream>(dir, pathname,
 						 mutex,
