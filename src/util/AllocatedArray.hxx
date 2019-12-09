@@ -106,6 +106,14 @@ public:
 		return *this;
 	}
 
+	operator ConstBuffer<T>() const noexcept {
+		return buffer;
+	}
+
+	operator WritableBuffer<T>() noexcept {
+		return buffer;
+	}
+
 	constexpr bool IsNull() const noexcept {
 		return buffer.IsNull();
 	}
