@@ -49,6 +49,9 @@ xiph = static_library(
   'VorbisComments.cxx',
   'XiphTags.cxx',
   include_directories: inc,
+  dependencies: [
+    libvorbis_dep,
+  ],
 )
 
 xiph_dep = declare_dependency(
