@@ -61,21 +61,31 @@ public:
 	explicit AllocatedArray(size_type _size) noexcept
 		:buffer{new T[_size], _size} {}
 
-	explicit AllocatedArray(const AllocatedArray &other) noexcept {
-		assert(other.size() == 0 || other.buffer.data != nullptr);
-
-		if (other == nullptr)
+	explicit AllocatedArray(ConstBuffer<T> src) noexcept {
+		if (src == nullptr)
 			return;
 
-		buffer = {new T[other.buffer.size], other.buffer.size};
-		std::copy_n(other.buffer.data, buffer.size, buffer.data);
+		buffer = {new T[src.size], src.size};
+		std::copy_n(src.data, src.size, buffer.data);
 	}
+
+	explicit AllocatedArray(const AllocatedArray &other) noexcept
+		:AllocatedArray(other.buffer) {}
 
 	AllocatedArray(AllocatedArray &&other) noexcept
 		:buffer(std::exchange(other.buffer, nullptr)) {}
 
 	~AllocatedArray() noexcept {
 		delete[] buffer.data;
+	}
+
+	AllocatedArray &operator=(ConstBuffer<T> src) noexcept {
+		assert(size() == 0 || buffer.data != nullptr);
+		assert(src.size == 0 || src.data != nullptr);
+
+		ResizeDiscard(src.size);
+		std::copy_n(src.data, src.size, buffer.data);
+		return *this;
 	}
 
 	AllocatedArray &operator=(const AllocatedArray &other) noexcept {
