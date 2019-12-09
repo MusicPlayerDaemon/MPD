@@ -40,6 +40,9 @@ input_glue = static_library(
   'cache/Item.cxx',
   'cache/Stream.cxx',
   include_directories: inc,
+  dependencies: [
+    boost_dep,
+  ],
 )
 
 input_glue_dep = declare_dependency(
