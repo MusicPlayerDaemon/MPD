@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2018 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2010-2019 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -71,9 +71,7 @@ public:
 	}
 
 	AllocatedArray(AllocatedArray &&other) noexcept
-		:buffer(other.buffer) {
-		other.buffer = nullptr;
-	}
+		:buffer(std::exchange(other.buffer, nullptr)) {}
 
 	~AllocatedArray() noexcept {
 		delete[] buffer.data;
