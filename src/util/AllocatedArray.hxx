@@ -58,9 +58,7 @@ public:
 	constexpr AllocatedArray() = default;
 
 	explicit AllocatedArray(size_type _size) noexcept
-		:buffer{new T[_size], _size} {
-		assert(size() == 0 || buffer.data != nullptr);
-	}
+		:buffer{new T[_size], _size} {}
 
 	explicit AllocatedArray(const AllocatedArray &other) noexcept {
 		assert(other.size() == 0 || other.buffer.data != nullptr);
@@ -190,8 +188,6 @@ public:
 		delete[] buffer.data;
 		buffer.size = _size;
 		buffer.data = new T[buffer.size];
-
-		assert(size() == 0 || buffer.data != nullptr);
 	}
 
 	/**
@@ -213,7 +209,6 @@ public:
 			return;
 
 		T *new_data = new T[_size];
-		assert(_size == 0 || new_data != nullptr);
 
 		std::move(buffer.data, buffer.data + preserve, new_data);
 
