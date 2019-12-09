@@ -23,6 +23,9 @@ filter_plugins = static_library(
   'VolumeFilterPlugin.cxx',
   filter_plugins_sources,
   include_directories: inc,
+  dependencies: [
+    filter_plugins_deps,
+  ],
 )
 
 filter_plugins_dep = declare_dependency(
