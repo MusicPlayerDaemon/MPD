@@ -62,11 +62,13 @@ public:
 		assert(size() == 0 || buffer.data != nullptr);
 	}
 
-	explicit AllocatedArray(const AllocatedArray &other) noexcept
-		:buffer{new T[other.buffer.size], other.buffer.size} {
-		assert(size() == 0 || buffer.data != nullptr);
+	explicit AllocatedArray(const AllocatedArray &other) noexcept {
 		assert(other.size() == 0 || other.buffer.data != nullptr);
 
+		if (other == nullptr)
+			return;
+
+		buffer = {new T[other.buffer.size], other.buffer.size};
 		std::copy_n(other.buffer.data, buffer.size, buffer.data);
 	}
 
