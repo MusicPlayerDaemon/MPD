@@ -30,6 +30,7 @@
 #ifndef ALLOCATED_ARRAY_HXX
 #define ALLOCATED_ARRAY_HXX
 
+#include "ConstBuffer.hxx"
 #include "WritableBuffer.hxx"
 #include "Compiler.h"
 
@@ -148,18 +149,14 @@ public:
 	 * Returns one element.  No bounds checking.
 	 */
 	reference_type operator[](size_type i) noexcept {
-		assert(i < size());
-
-		return buffer.data[i];
+		return buffer[i];
 	}
 
 	/**
 	 * Returns one constant element.  No bounds checking.
 	 */
 	const_reference_type operator[](size_type i) const noexcept {
-		assert(i < size());
-
-		return buffer.data[i];
+		return buffer[i];
 	}
 
 	iterator begin() noexcept {
