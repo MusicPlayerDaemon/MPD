@@ -121,6 +121,13 @@ public:
 		return buffer.size;
 	}
 
+	/**
+	 * Returns the number of allocated elements.
+	 */
+	constexpr size_type capacity() const noexcept {
+		return buffer.size;
+	}
+
 	reference_type front() noexcept {
 		return buffer.front();
 	}
