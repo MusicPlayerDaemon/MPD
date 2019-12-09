@@ -35,6 +35,9 @@ input_glue = static_library(
   'BufferedInputStream.cxx',
   'MaybeBufferedInputStream.cxx',
   include_directories: inc,
+  dependencies: [
+    boost_dep,
+  ],
 )
 
 input_glue_dep = declare_dependency(
