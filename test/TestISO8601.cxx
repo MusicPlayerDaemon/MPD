@@ -71,6 +71,15 @@ static constexpr struct {
 	{ "2019-02-04T16:46:41+0200", 1549291601, std::chrono::seconds(1) },
 	{ "2019-02-04T16:46:41+02:00", 1549291601, std::chrono::seconds(1) },
 	{ "2019-02-04T16:46:41-0200", 1549306001, std::chrono::seconds(1) },
+
+	/* without field separators */
+	{ "19700101T000000Z", 0, std::chrono::seconds(1) },
+	{ "19700101T000001Z", 1, std::chrono::seconds(1) },
+	{ "20190204T164641Z", 1549298801, std::chrono::seconds(1) },
+	{ "19700101", 0, std::chrono::hours(24) },
+	{ "20190204", 1549238400, std::chrono::hours(24) },
+	{ "20190204T1646", 1549298760, std::chrono::minutes(1) },
+	{ "20190204T16", 1549296000, std::chrono::hours(1) },
 };
 
 TEST(ISO8601, Parse)

@@ -123,8 +123,12 @@ ParseISO8601(const char *s)
 
 	/* parse the date */
 	const char *end = strptime(s, "%F", &tm);
-	if (end == nullptr)
-		throw std::runtime_error("Failed to parse date");
+	if (end == nullptr) {
+		/* try without field separators */
+		end = strptime(s, "%Y%m%d", &tm);
+		if (end == nullptr)
+			throw std::runtime_error("Failed to parse date");
+	}
 
 	s = end;
 
@@ -136,6 +140,12 @@ ParseISO8601(const char *s)
 
 		if ((end = strptime(s, "%T", &tm)) != nullptr)
 			precision = std::chrono::seconds(1);
+		else if ((end = strptime(s, "%H%M%S", &tm)) != nullptr)
+			/* no field separators */
+			precision = std::chrono::seconds(1);
+		else if ((end = strptime(s, "%H%M", &tm)) != nullptr)
+			/* no field separators */
+			precision = std::chrono::minutes(1);
 		else if ((end = strptime(s, "%H:%M", &tm)) != nullptr)
 			precision = std::chrono::minutes(1);
 		else if ((end = strptime(s, "%H", &tm)) != nullptr)
