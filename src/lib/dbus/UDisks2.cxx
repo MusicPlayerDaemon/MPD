@@ -26,6 +26,7 @@
 #include "util/Compiler.h"
 
 #include <functional>
+#include <stdexcept>
 
 namespace UDisks2 {
 
