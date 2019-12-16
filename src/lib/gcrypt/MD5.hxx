@@ -35,6 +35,8 @@
 
 #include <array>
 
+#include <stdint.h>
+
 template<typename T> struct ConstBuffer;
 
 gcc_pure
