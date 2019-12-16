@@ -719,6 +719,11 @@ MadDecoder::DecodeFirstFrame(Tag *tag) noexcept
 {
 	struct xing xing;
 
+#if GCC_CHECK_VERSION(10,0)
+	/* work around bogus -Wuninitialized in GCC 10 */
+	xing.frames = 0;
+#endif
+
 	while (true) {
 		MadDecoderAction ret;
 		do {
