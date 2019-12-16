@@ -147,6 +147,18 @@ FormatErrno(const char *fmt, Args&&... args) noexcept
 	return FormatErrno(errno, fmt, std::forward<Args>(args)...);
 }
 
+template<typename... Args>
+static inline std::system_error
+FormatFileNotFound(const char *fmt, Args&&... args) noexcept
+{
+#ifdef _WIN32
+	return FormatLastError(ERROR_FILE_NOT_FOUND, fmt,
+			       std::forward<Args>(args)...);
+#else
+	return FormatErrno(ENOENT, fmt, std::forward<Args>(args)...);
+#endif
+}
+
 gcc_pure
 inline bool
 IsErrno(const std::system_error &e, int code) noexcept

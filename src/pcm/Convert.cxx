@@ -21,6 +21,8 @@
 #include "ConfiguredResampler.hxx"
 #include "util/ConstBuffer.hxx"
 
+#include <stdexcept>
+
 #include <assert.h>
 
 void

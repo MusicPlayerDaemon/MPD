@@ -52,6 +52,9 @@ xiph = static_library(
   'VorbisPicture.cxx',
   'XiphTags.cxx',
   include_directories: inc,
+  dependencies: [
+    libvorbis_dep,
+  ],
 )
 
 xiph_dep = declare_dependency(

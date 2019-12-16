@@ -25,6 +25,7 @@
 #include "util/ASCII.hxx"
 
 #include <utility>
+#include <stdexcept>
 
 #include <assert.h>
 #include <string.h>

@@ -106,14 +106,19 @@ ParseTimeStamp(const char *s)
 {
 	assert(s != nullptr);
 
-	char *endptr;
-	unsigned long long value = strtoull(s, &endptr, 10);
-	if (*endptr == 0 && endptr > s)
-		/* it's an integral UNIX time stamp */
-		return std::chrono::system_clock::from_time_t((time_t)value);
+	try {
+		/* try ISO 8601 */
+		return ParseISO8601(s).first;
+	} catch (...) {
+		char *endptr;
+		unsigned long long value = strtoull(s, &endptr, 10);
+		if (*endptr == 0 && endptr > s)
+			/* it's an integral UNIX time stamp */
+			return std::chrono::system_clock::from_time_t((time_t)value);
 
-	/* try ISO 8601 */
-	return ParseISO8601(s).first;
+		/* rethrow the ParseISO8601() error */
+		throw;
+	}
 }
 
 static constexpr bool

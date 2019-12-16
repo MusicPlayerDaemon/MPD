@@ -3,8 +3,6 @@ ver 0.22 (not yet released)
   - "findadd"/"searchadd"/"searchaddpl" support the "sort" and
     "window" parameters
   - add command "readpicture" to download embedded pictures
-  - relax the ISO 8601 parser: allow omitting the time of day and the "Z"
-    suffix
 * tags
   - new tags "Grouping" (for ID3 "TIT1"), "Work" and "Conductor"
 * input
@@ -32,9 +30,15 @@ ver 0.22 (not yet released)
 * switch to C++17
   - GCC 7 or clang 4 (or newer) recommended
 
-ver 0.21.17 (not yet released)
+ver 0.21.17 (2019/12/16)
+* protocol
+  - relax the ISO 8601 parser: allow omitting field separators, the
+    time of day and the "Z" suffix
+* archive
+  - zzip: improve error reporting
 * outputs
   - jack: mark ports as terminal
+  - shout: declare metadata as UTF-8
 * fix build failure with -Ddatabase=false
 
 ver 0.21.16 (2019/10/16)
