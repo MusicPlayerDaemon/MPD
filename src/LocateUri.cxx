@@ -29,6 +29,8 @@
 #include "storage/StorageInterface.hxx"
 #endif
 
+#include <stdexcept>
+
 static LocatedUri
 LocateFileUri(const char *uri, const Client *client
 #ifdef ENABLE_DATABASE
