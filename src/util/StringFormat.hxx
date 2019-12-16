@@ -36,13 +36,13 @@
 
 template<typename... Args>
 static inline void
-StringFormat(char *buffer, size_t size,
+StringFormat(char *buffer, std::size_t size,
 	     const char *fmt, Args&&... args) noexcept
 {
 	snprintf(buffer, size, fmt, args...);
 }
 
-template<size_t CAPACITY, typename... Args>
+template<std::size_t CAPACITY, typename... Args>
 static inline void
 StringFormat(StringBuffer<CAPACITY> &buffer,
 	     const char *fmt, Args&&... args) noexcept
@@ -50,7 +50,7 @@ StringFormat(StringBuffer<CAPACITY> &buffer,
 	StringFormat(buffer.data(), buffer.capacity(), fmt, args...);
 }
 
-template<size_t CAPACITY, typename... Args>
+template<std::size_t CAPACITY, typename... Args>
 static inline StringBuffer<CAPACITY>
 StringFormat(const char *fmt, Args&&... args) noexcept
 {

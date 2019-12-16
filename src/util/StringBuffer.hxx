@@ -35,14 +35,14 @@
 /**
  * A statically allocated string buffer.
  */
-template<typename T, size_t CAPACITY>
+template<typename T, std::size_t CAPACITY>
 class BasicStringBuffer {
 public:
 	typedef T value_type;
 	typedef T &reference;
 	typedef T *pointer;
 	typedef const T *const_pointer;
-	typedef size_t size_type;
+	typedef std::size_t size_type;
 
 	static constexpr value_type SENTINEL = '\0';
 
@@ -104,7 +104,7 @@ public:
 	}
 };
 
-template<size_t CAPACITY>
+template<std::size_t CAPACITY>
 class StringBuffer : public BasicStringBuffer<char, CAPACITY> {};
 
 #endif
