@@ -60,6 +60,15 @@ FfmpegScanPairs(AVDictionary *dict, TagHandler &handler) noexcept
 		handler.OnPair(i->key, i->value);
 }
 
+static void
+FfmpegScanLyrics(AVDictionary *dict, TagHandler &handler) noexcept
+{
+	AVDictionaryEntry *mt = nullptr;
+
+	while ((mt = av_dict_get(dict, "lyrics", mt, 0)) != nullptr)
+		handler.OnLyrics(mt->value);
+}
+
 void
 FfmpegScanDictionary(AVDictionary *dict, TagHandler &handler) noexcept
 {
@@ -81,4 +90,8 @@ FfmpegScanDictionary(AVDictionary *dict, TagHandler &handler) noexcept
 
 	if (handler.WantPair())
 		FfmpegScanPairs(dict, handler);
+
+	if (handler.WantLyrics())
+		FfmpegScanLyrics(dict, handler);
+
 }

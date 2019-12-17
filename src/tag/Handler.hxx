@@ -41,6 +41,7 @@ public:
 	static constexpr unsigned WANT_PAIR = 0x4;
 	static constexpr unsigned WANT_AUDIO_FORMAT = 0x8;
 	static constexpr unsigned WANT_PICTURE = 0x10;
+	static constexpr unsigned WANT_LYRICS = 0x20;
 
 	explicit TagHandler(unsigned _want_mask) noexcept
 		:want_mask(_want_mask) {}
@@ -66,6 +67,10 @@ public:
 
 	bool WantPicture() const noexcept {
 		return want_mask & WANT_PICTURE;
+	}
+
+	bool WantLyrics() const noexcept {
+		return want_mask & WANT_LYRICS;
 	}
 
 	/**
@@ -117,6 +122,15 @@ public:
 	 */
 	virtual void OnPicture(const char *mime_type,
 			       ConstBuffer<void> buffer) noexcept = 0;
+
+	/**
+	 * Lyrics have been read.
+	 *
+	 * @param the text of the lyrics; the pointer will become
+	 * invalid after returning
+	 */
+	virtual void OnLyrics(StringView value) noexcept = 0;
+
 };
 
 class NullTagHandler : public TagHandler {
@@ -130,6 +144,7 @@ public:
 	void OnAudioFormat(AudioFormat af) noexcept override;
 	void OnPicture(const char *mime_type,
 		       ConstBuffer<void> buffer) noexcept override;
+	void OnLyrics(StringView value) noexcept override;
 };
 
 /**

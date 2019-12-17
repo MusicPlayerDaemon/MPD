@@ -50,6 +50,10 @@ ScanOneOpusTag(StringView name, StringView value,
 	    name.EqualsIgnoreCase("METADATA_BLOCK_PICTURE"))
 		return ScanVorbisPicture(value, handler);
 
+	if (handler.WantLyrics() && name.EqualsIgnoreCase("LYRICS")) {
+		return handler.OnLyrics(value);
+	}
+
 	if (value.size >= 4096)
 		/* ignore large values */
 		return;
