@@ -6,6 +6,8 @@
 #include "ParseName.hxx"
 #include "Table.hxx"
 #include "Handler.hxx"
+#include "util/ASCII.hxx"
+#include "util/StringView.hxx"
 #include "util/IterableSplitString.hxx"
 
 static constexpr struct tag_table ape_tags[] = {
@@ -35,6 +37,11 @@ tag_ape_import_item(unsigned long flags,
 	/* we only care about utf-8 text tags */
 	if ((flags & (0x3 << 1)) != 0)
 		return false;
+
+        if (handler.WantLyrics() && StringEqualsCaseASCII("lyrics", key)) {
+                handler.OnLyrics(value);
+                return true;
+        }
 
 	if (handler.WantPair())
 		for (const auto i : IterableSplitString(value, '\0'))

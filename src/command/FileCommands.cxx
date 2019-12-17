@@ -27,7 +27,6 @@
 #include "TimePrint.hxx"
 #include "thread/Mutex.hxx"
 #include "Log.hxx"
-#include "tag/Type.hxx"
 
 #include <fmt/format.h>
 
@@ -365,10 +364,10 @@ class PrintLyricsHandler final : public NullTagHandler {
 
 public:
 	explicit PrintLyricsHandler(Response &_response) noexcept
-		:NullTagHandler(WANT_PAIR), response(_response) {}
+                :NullTagHandler(WANT_LYRICS), response(_response) {}
 
-        void OnTag(TagType type, std::string_view value) noexcept override {
-                // if (type == TAG_LYRICS)
+
+        void OnLyrics(std::string_view value) noexcept override {
                         // response.Format("%.*s\n",
                         //                 int(value.size), value.data);
 	}

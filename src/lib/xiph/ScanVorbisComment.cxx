@@ -36,6 +36,13 @@ ScanVorbisComment(std::string_view comment, TagHandler &handler) noexcept
 			handler.OnPair(split.first, split.second);
 	}
 
+	if (handler.WantLyrics()) {
+		const auto value = GetVorbisCommentValue(comment, "lyrics");
+		if (!value.IsNull()) {
+			handler.OnLyrics(value);
+		}
+	}
+
 	for (const struct tag_table *i = xiph_tags; i->name != nullptr; ++i)
 		if (vorbis_copy_comment(comment, i->name, i->type,
 					handler))

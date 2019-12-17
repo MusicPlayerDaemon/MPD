@@ -37,6 +37,11 @@ AddTagHandler::OnDuration(SongTime duration) noexcept
 	tag.SetDuration(duration);
 }
 
+void
+NullTagHandler::OnLyrics(StringView) noexcept
+{
+}
+
 /**
  * Skip leading zeroes and a non-decimal suffix.
  */

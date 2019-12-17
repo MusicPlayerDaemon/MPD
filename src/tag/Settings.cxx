@@ -4,4 +4,4 @@
 #include "Settings.hxx"
 #include "Type.hxx"
 
-TagMask global_tag_mask = TagMask::All() & ~TagMask(TAG_COMMENT) & ~TagMask(TAG_LYRICS);
+TagMask global_tag_mask = TagMask::All() & ~TagMask(TAG_COMMENT);
