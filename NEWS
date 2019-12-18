@@ -1,3 +1,5 @@
+ver 0.21.18 (not yet released)
+
 ver 0.21.17 (2019/12/16)
 * protocol
   - relax the ISO 8601 parser: allow omitting field separators, the
