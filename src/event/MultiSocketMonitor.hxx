@@ -50,12 +50,10 @@ class MultiSocketMonitor : IdleMonitor
 		unsigned revents;
 
 	public:
-		SingleFD(MultiSocketMonitor &_multi, SocketDescriptor _fd,
-			 unsigned events) noexcept
+		SingleFD(MultiSocketMonitor &_multi,
+			 SocketDescriptor _fd) noexcept
 			:SocketMonitor(_fd, _multi.GetEventLoop()),
-			multi(_multi), revents(0) {
-			Schedule(events);
-		}
+			multi(_multi), revents(0) {}
 
 		SocketDescriptor GetSocket() const noexcept {
 			return SocketMonitor::GetSocket();
@@ -147,8 +145,14 @@ public:
 	 *
 	 * May only be called from PrepareSockets().
 	 */
-	void AddSocket(SocketDescriptor fd, unsigned events) noexcept {
-		fds.emplace_front(*this, fd, events);
+	bool AddSocket(SocketDescriptor fd, unsigned events) noexcept {
+		fds.emplace_front(*this, fd);
+		bool success = fds.front().Schedule(events);
+		if (!success) {
+			fds.pop_front();
+		}
+
+		return success;
 	}
 
 	/**
