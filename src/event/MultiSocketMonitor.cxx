@@ -64,9 +64,7 @@ MultiSocketMonitor::ReplaceSocketList(pollfd *pfds, unsigned n) noexcept
 			if (i == end)
 				return 0;
 
-			auto events = i->events;
-			i->events = 0;
-			return events;
+			return std::exchange(i->events, 0);
 		});
 
 	for (auto i = pfds; i != end; ++i)
