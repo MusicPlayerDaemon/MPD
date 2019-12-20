@@ -102,6 +102,21 @@ class MultiSocketMonitor : IdleMonitor
 
 	std::forward_list<SingleFD> fds;
 
+#ifdef USE_EPOLL
+	struct AlwaysReady {
+		const SocketDescriptor fd;
+		const unsigned revents;
+	};
+
+	/**
+	 * A list of file descriptors which are always ready.  This is
+	 * a kludge needed because the ALSA output plugin gives us a
+	 * file descriptor to /dev/null, which is incompatible with
+	 * epoll (epoll_ctl() returns -EPERM).
+	 */
+	std::forward_list<AlwaysReady> always_ready_fds;
+#endif
+
 public:
 	static constexpr unsigned READ = SocketMonitor::READ;
 	static constexpr unsigned WRITE = SocketMonitor::WRITE;
@@ -198,6 +213,11 @@ public:
 				i.ClearReturnedEvents();
 			}
 		}
+
+#ifdef USE_EPOLL
+		for (const auto &i : always_ready_fds)
+			f(i.fd, i.revents);
+#endif
 	}
 
 protected:
