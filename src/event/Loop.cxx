@@ -137,7 +137,8 @@ static constexpr int
 ExportTimeoutMS(std::chrono::steady_clock::duration timeout)
 {
 	return timeout >= timeout.zero()
-		? int(std::chrono::duration_cast<std::chrono::milliseconds>(timeout).count())
+		/* round up (+1) to avoid unnecessary wakeups */
+		? int(std::chrono::duration_cast<std::chrono::milliseconds>(timeout).count()) + 1
 		: -1;
 }
 
