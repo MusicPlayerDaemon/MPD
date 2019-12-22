@@ -145,15 +145,7 @@ public:
 	 *
 	 * May only be called from PrepareSockets().
 	 */
-	bool AddSocket(SocketDescriptor fd, unsigned events) noexcept {
-		fds.emplace_front(*this, fd);
-		bool success = fds.front().Schedule(events);
-		if (!success) {
-			fds.pop_front();
-		}
-
-		return success;
-	}
+	bool AddSocket(SocketDescriptor fd, unsigned events) noexcept;
 
 	/**
 	 * Remove all sockets.

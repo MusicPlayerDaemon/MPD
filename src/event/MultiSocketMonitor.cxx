@@ -42,6 +42,18 @@ MultiSocketMonitor::Reset() noexcept
 	ready = refresh = false;
 }
 
+bool
+MultiSocketMonitor::AddSocket(SocketDescriptor fd, unsigned events) noexcept
+{
+	fds.emplace_front(*this, fd);
+	bool success = fds.front().Schedule(events);
+	if (!success) {
+		fds.pop_front();
+	}
+
+	return success;
+}
+
 void
 MultiSocketMonitor::ClearSocketList() noexcept
 {
