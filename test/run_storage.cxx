@@ -90,6 +90,29 @@ Ls(Storage &storage, const char *path)
 	return EXIT_SUCCESS;
 }
 
+static int
+Stat(Storage &storage, const char *path)
+{
+	const auto info = storage.GetInfo(path, false);
+	switch (info.type) {
+	case StorageFileInfo::Type::OTHER:
+		printf("other\n");
+		break;
+
+	case StorageFileInfo::Type::REGULAR:
+		printf("regular\n");
+		break;
+
+	case StorageFileInfo::Type::DIRECTORY:
+		printf("directory\n");
+		break;
+	}
+
+	printf("size: %llu\n", (unsigned long long)info.size);
+
+	return EXIT_SUCCESS;
+}
+
 int
 main(int argc, char **argv)
 try {
@@ -117,6 +140,18 @@ try {
 					   storage_uri);
 
 		return Ls(*storage, path);
+	} else if (strcmp(command, "stat") == 0) {
+		if (argc != 4) {
+			fprintf(stderr, "Usage: run_storage stat URI PATH\n");
+			return EXIT_FAILURE;
+		}
+
+		const char *const path = argv[3];
+
+		auto storage = MakeStorage(io_thread.GetEventLoop(),
+					   storage_uri);
+
+		return Stat(*storage, path);
 	} else {
 		fprintf(stderr, "Unknown command\n");
 		return EXIT_FAILURE;
