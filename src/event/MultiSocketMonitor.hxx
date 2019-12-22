@@ -228,7 +228,6 @@ private:
 
 	void OnTimeout() noexcept {
 		SetReady();
-		IdleMonitor::Schedule();
 	}
 
 	virtual void OnIdle() noexcept final;
