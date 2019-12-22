@@ -84,8 +84,6 @@ class MultiSocketMonitor : IdleMonitor
 		}
 	};
 
-	friend class SingleFD;
-
 	TimerEvent timeout_event;
 
 	/**
