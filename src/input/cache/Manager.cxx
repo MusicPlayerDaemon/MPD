@@ -81,11 +81,9 @@ InputCacheManager::Get(const char *uri, bool create)
 	if (!PathTraitsUTF8::IsAbsolute(uri))
 		return {};
 
-	UriMap::insert_commit_data hint;
-	auto result = items_by_uri.insert_check(uri, items_by_uri.key_comp(),
-						hint);
-	if (!result.second) {
-		auto &item = *result.first;
+	auto iter = items_by_uri.find(uri, items_by_uri.key_comp());
+	if (iter != items_by_uri.end()) {
+		auto &item = *iter;
 
 		/* refresh */
 		items_by_time.erase(items_by_time.iterator_to(item));
@@ -112,7 +110,7 @@ InputCacheManager::Get(const char *uri, bool create)
 	while (total_size > max_total_size && EvictOldestUnused()) {}
 
 	auto *item = new InputCacheItem(std::move(is));
-	items_by_uri.insert_commit(*item, hint);
+	items_by_uri.insert(*item);
 	items_by_time.push_back(*item);
 
 	return InputCacheLease(*item);
