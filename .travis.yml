@@ -83,6 +83,11 @@ matrix:
 cache:
   apt: true
   ccache: true
+  directories:
+    - $HOME/Library/Caches/Homebrew
+
+before_cache:
+  - test "$TRAVIS_OS_NAME" != "osx" || brew cleanup
 
 before_install:
   - eval "${MATRIX_EVAL}"
