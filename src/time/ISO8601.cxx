@@ -108,6 +108,30 @@ ParseTimeZoneOffset(const char *&s)
 	return d;
 }
 
+static const char *
+ParseTimeOfDay(const char *s, struct tm &tm,
+	       std::chrono::system_clock::duration &precision) noexcept
+{
+	const char *end;
+
+	if ((end = strptime(s, "%T", &tm)) != nullptr)
+		precision = std::chrono::seconds(1);
+	else if ((end = strptime(s, "%H%M%S", &tm)) != nullptr)
+		/* no field separators */
+		precision = std::chrono::seconds(1);
+	else if ((end = strptime(s, "%H%M", &tm)) != nullptr)
+		/* no field separators */
+		precision = std::chrono::minutes(1);
+	else if ((end = strptime(s, "%H:%M", &tm)) != nullptr)
+		precision = std::chrono::minutes(1);
+	else if ((end = strptime(s, "%H", &tm)) != nullptr)
+		precision = std::chrono::hours(1);
+	else
+		return nullptr;
+
+	return end;
+}
+
 std::pair<std::chrono::system_clock::time_point,
 	  std::chrono::system_clock::duration>
 ParseISO8601(const char *s)
@@ -138,22 +162,9 @@ ParseISO8601(const char *s)
 	if (*s == 'T') {
 		++s;
 
-		if ((end = strptime(s, "%T", &tm)) != nullptr)
-			precision = std::chrono::seconds(1);
-		else if ((end = strptime(s, "%H%M%S", &tm)) != nullptr)
-			/* no field separators */
-			precision = std::chrono::seconds(1);
-		else if ((end = strptime(s, "%H%M", &tm)) != nullptr)
-			/* no field separators */
-			precision = std::chrono::minutes(1);
-		else if ((end = strptime(s, "%H:%M", &tm)) != nullptr)
-			precision = std::chrono::minutes(1);
-		else if ((end = strptime(s, "%H", &tm)) != nullptr)
-			precision = std::chrono::hours(1);
-		else
+		s = ParseTimeOfDay(s, tm, precision);
+		if (s == nullptr)
 			throw std::runtime_error("Failed to parse time of day");
-
-		s = end;
 	}
 
 	auto tp = TimeGm(tm);
