@@ -3,6 +3,7 @@ ver 0.21.18 (not yet released)
   - alsa: fix hang bug with ALSA "null" outputs
 * storage
   - curl: fix crash bug
+* drop support for CURL versions older than 7.32.0
 * reduce unnecessary CPU wakeups
 
 ver 0.21.17 (2019/12/16)
