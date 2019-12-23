@@ -221,7 +221,6 @@ EventLoop::Run() noexcept
 	} while (!quit);
 
 #ifndef NDEBUG
-	assert(busy);
 	assert(thread.IsInside());
 #endif
 }
