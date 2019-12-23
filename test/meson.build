@@ -334,6 +334,18 @@ executable(
 )
 
 if curl_dep.found()
+  executable(
+    'RunCurl',
+    'RunCurl.cxx',
+    'ShutdownHandler.cxx',
+    '../src/Log.cxx',
+    '../src/LogBackend.cxx',
+    include_directories: inc,
+    dependencies: [
+      curl_dep,
+    ],
+  )
+
   test('test_icy_parser', executable(
     'test_icy_parser',
     'test_icy_parser.cxx',
