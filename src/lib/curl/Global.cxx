@@ -227,13 +227,6 @@ CurlGlobal::UpdateTimeout(long timeout_ms) noexcept
 		return;
 	}
 
-	if (timeout_ms < 10)
-		/* CURL 7.21.1 likes to report "timeout=0", which
-		   means we're running in a busy loop.  Quite a bad
-		   idea to waste so much CPU.  Let's use a lower limit
-		   of 10ms. */
-		timeout_ms = 10;
-
 	timeout_event.Schedule(std::chrono::milliseconds(timeout_ms));
 }
 
