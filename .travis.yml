@@ -76,7 +76,7 @@ matrix:
         - MATRIX_EVAL="export CC='ccache gcc-8' CXX='ccache g++-8' LDFLAGS=-fuse-ld=gold PATH=\$HOME/.local/bin:\$PATH"
 
     - os: osx
-      osx_image: xcode9.3beta
+      osx_image: xcode9.4
       env:
         - MATRIX_EVAL="export PATH=/usr/local/opt/ccache/libexec:$PATH HOMEBREW_NO_ANALYTICS=1"
 
@@ -96,6 +96,11 @@ before_install:
 
 install:
   # C++14
+
+  # Work around "Target /usr/local/lib/libgtest.a is a symlink
+  # belonging to nss. You can unlink it" during gtest install
+  - test "$TRAVIS_OS_NAME" != "osx" || brew unlink nss
+
   - test "$TRAVIS_OS_NAME" != "osx" || brew install ccache meson
   - test "$TRAVIS_OS_NAME" != "osx" || brew install --HEAD https://gist.githubusercontent.com/Kronuz/96ac10fbd8472eb1e7566d740c4034f8/raw/gtest.rb
 
