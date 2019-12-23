@@ -55,7 +55,7 @@ matrix:
     - os: osx
       osx_image: xcode9.3beta
       env:
-        - MATRIX_EVAL=""
+        - MATRIX_EVAL="export PATH=/usr/local/opt/ccache/libexec:$PATH"
 
 cache:
   - apt
