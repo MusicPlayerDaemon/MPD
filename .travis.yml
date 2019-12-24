@@ -91,8 +91,6 @@ before_cache:
 
 before_install:
   - eval "${MATRIX_EVAL}"
-  # C++14
-  - test "$TRAVIS_OS_NAME" != "osx" || brew update
 
 install:
   # C++14
