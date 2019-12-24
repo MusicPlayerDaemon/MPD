@@ -21,7 +21,7 @@ matrix:
       install:
         - /usr/bin/python3.6 $HOME/.local/bin/pip install --user meson
       env:
-        - MATRIX_EVAL="export PATH=$HOME/.local/bin:$PATH"
+        - MATRIX_EVAL="export PATH=\$HOME/.local/bin:\$PATH"
 
     # Ubuntu Trusty (16.04) with GCC 6
     - os: linux
@@ -47,7 +47,7 @@ matrix:
         - /usr/bin/python3.6 $HOME/.local/bin/pip install --user meson
       env:
         # use gold as workaround for https://sourceware.org/bugzilla/show_bug.cgi?id=17068
-        - MATRIX_EVAL="export CC='ccache gcc-6' CXX='ccache g++-6' LDFLAGS=-fuse-ld=gold PATH=$HOME/.local/bin:$PATH"
+        - MATRIX_EVAL="export CC='ccache gcc-6' CXX='ccache g++-6' LDFLAGS=-fuse-ld=gold PATH=\$HOME/.local/bin:\$PATH"
 
     # Ubuntu Trusty (16.04) with GCC 8
     - os: linux
@@ -73,7 +73,7 @@ matrix:
         - /usr/bin/python3.6 $HOME/.local/bin/pip install --user meson
       env:
         # use gold as workaround for https://sourceware.org/bugzilla/show_bug.cgi?id=17068
-        - MATRIX_EVAL="export CC='ccache gcc-8' CXX='ccache g++-8' LDFLAGS=-fuse-ld=gold PATH=$HOME/.local/bin:$PATH"
+        - MATRIX_EVAL="export CC='ccache gcc-8' CXX='ccache g++-8' LDFLAGS=-fuse-ld=gold PATH=\$HOME/.local/bin:\$PATH"
 
     - os: osx
       osx_image: xcode9.3beta
