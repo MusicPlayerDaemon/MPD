@@ -1,4 +1,4 @@
-ver 0.21.18 (not yet released)
+ver 0.21.18 (2019/12/24)
 * protocol
   - work around Mac OS X bug in the ISO 8601 parser
 * output
