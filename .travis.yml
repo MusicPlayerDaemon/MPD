@@ -23,6 +23,28 @@ matrix:
       env:
         - MATRIX_EVAL="export PATH=\$HOME/.local/bin:\$PATH"
 
+    # Ubuntu Bionic (18.04) with GCC 7 on big-endian
+    - os: linux
+      arch: s390x
+      dist: bionic
+      addons:
+        apt:
+          sources:
+            - sourceline: 'ppa:deadsnakes/ppa' # for Python 3.7 (required by Meson)
+          packages:
+            - libgtest-dev
+            - libboost-dev
+            - python3.6
+            - python3-urllib3
+            - ninja-build
+      before_install:
+        - wget https://bootstrap.pypa.io/get-pip.py
+        - /usr/bin/python3.6 get-pip.py --user
+      install:
+        - /usr/bin/python3.6 $HOME/.local/bin/pip install --user meson
+      env:
+        - MATRIX_EVAL="export PATH=\$HOME/.local/bin:\$PATH"
+
     # Ubuntu Trusty (16.04) with GCC 6
     - os: linux
       dist: trusty
