@@ -58,6 +58,8 @@ FormatISO8601(std::chrono::system_clock::time_point tp)
 	return FormatISO8601(GmTime(tp));
 }
 
+#ifndef _WIN32
+
 static std::pair<unsigned, unsigned>
 ParseTimeZoneOffsetRaw(const char *&s)
 {
@@ -166,6 +168,8 @@ ParseTimeOfDay(const char *s, struct tm &tm,
 	precision = std::chrono::seconds(1);
 	return end;
 }
+
+#endif
 
 std::pair<std::chrono::system_clock::time_point,
 	  std::chrono::system_clock::duration>
