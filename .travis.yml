@@ -81,8 +81,8 @@ matrix:
         - MATRIX_EVAL="export PATH=/usr/local/opt/ccache/libexec:$PATH"
 
 cache:
-  - apt
-  - ccache
+  apt: true
+  ccache: true
 
 before_install:
   - eval "${MATRIX_EVAL}"
