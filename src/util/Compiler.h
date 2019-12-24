@@ -143,6 +143,14 @@
 #define gcc_flatten
 #endif
 
+#if GCC_CHECK_VERSION(7,0)
+#define gcc_fallthrough __attribute__((fallthrough))
+#elif CLANG_CHECK_VERSION(10,0)
+#define gcc_fallthrough [[fallthrough]]
+#else
+#define gcc_fallthrough
+#endif
+
 #ifndef __cplusplus
 /* plain C99 has "restrict" */
 #define gcc_restrict restrict

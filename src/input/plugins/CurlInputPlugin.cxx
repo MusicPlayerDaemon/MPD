@@ -180,7 +180,6 @@ CurlInputStream::FreeEasyIndirect() noexcept
 {
 	BlockingCall(GetEventLoop(), [this](){
 			FreeEasy();
-			(*curl_init)->InvalidateSockets();
 		});
 }
 

@@ -105,7 +105,9 @@ public:
 			     BIND_THIS_METHOD(OnDeferredStart)),
 		 request(curl, uri, *this) {
 		// TODO: use CurlInputStream's configuration
+	}
 
+	void DeferStart() noexcept {
 		/* start the transfer inside the IOThread */
 		defer_start.Schedule();
 	}
@@ -278,6 +280,7 @@ public:
 	}
 
 	using BlockingHttpRequest::GetEasy;
+	using BlockingHttpRequest::DeferStart;
 	using BlockingHttpRequest::Wait;
 
 protected:
@@ -425,6 +428,7 @@ public:
 	}
 
 	const StorageFileInfo &Perform() {
+		DeferStart();
 		Wait();
 		return info;
 	}
@@ -476,6 +480,7 @@ public:
 		 base_path(UriPathOrSlash(uri)) {}
 
 	std::unique_ptr<StorageDirectoryReader> Perform() {
+		DeferStart();
 		Wait();
 		return ToReader();
 	}

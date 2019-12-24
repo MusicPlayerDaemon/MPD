@@ -22,6 +22,10 @@
 
 #include <algorithm>
 
+#ifdef USE_EPOLL
+#include <errno.h>
+#endif
+
 #ifndef _WIN32
 #include <poll.h>
 #endif
@@ -37,9 +41,31 @@ MultiSocketMonitor::Reset() noexcept
 	assert(GetEventLoop().IsInside());
 
 	fds.clear();
+#ifdef USE_EPOLL
+	always_ready_fds.clear();
+#endif
 	IdleMonitor::Cancel();
 	timeout_event.Cancel();
 	ready = refresh = false;
+}
+
+bool
+MultiSocketMonitor::AddSocket(SocketDescriptor fd, unsigned events) noexcept
+{
+	fds.emplace_front(*this, fd);
+	bool success = fds.front().Schedule(events);
+	if (!success) {
+		fds.pop_front();
+
+#ifdef USE_EPOLL
+		if (errno == EPERM)
+			/* not supported by epoll (e.g. "/dev/null"):
+			   add it to the "always ready" list */
+			always_ready_fds.push_front({fd, events});
+#endif
+	}
+
+	return success;
 }
 
 void
@@ -48,6 +74,9 @@ MultiSocketMonitor::ClearSocketList() noexcept
 	assert(GetEventLoop().IsInside());
 
 	fds.clear();
+#ifdef USE_EPOLL
+	always_ready_fds.clear();
+#endif
 }
 
 #ifndef _WIN32
@@ -55,6 +84,10 @@ MultiSocketMonitor::ClearSocketList() noexcept
 void
 MultiSocketMonitor::ReplaceSocketList(pollfd *pfds, unsigned n) noexcept
 {
+#ifdef USE_EPOLL
+	always_ready_fds.clear();
+#endif
+
 	pollfd *const end = pfds + n;
 
 	UpdateSocketList([pfds, end](SocketDescriptor fd) -> unsigned {
@@ -64,9 +97,7 @@ MultiSocketMonitor::ReplaceSocketList(pollfd *pfds, unsigned n) noexcept
 			if (i == end)
 				return 0;
 
-			auto events = i->events;
-			i->events = 0;
-			return events;
+			return std::exchange(i->events, 0);
 		});
 
 	for (auto i = pfds; i != end; ++i)
@@ -79,7 +110,20 @@ MultiSocketMonitor::ReplaceSocketList(pollfd *pfds, unsigned n) noexcept
 void
 MultiSocketMonitor::Prepare() noexcept
 {
-	const auto timeout = PrepareSockets();
+	auto timeout = PrepareSockets();
+
+#ifdef USE_EPOLL
+	if (!always_ready_fds.empty()) {
+		/* if there was at least one file descriptor not
+		   supported by epoll, install a very short timeout
+		   because we assume it's always ready */
+		constexpr std::chrono::steady_clock::duration ready_timeout =
+			std::chrono::milliseconds(1);
+		if (timeout < timeout.zero() || timeout > ready_timeout)
+			timeout = ready_timeout;
+	}
+#endif
+
 	if (timeout >= timeout.zero())
 		timeout_event.Schedule(timeout);
 	else

@@ -67,16 +67,6 @@ public:
 		SocketAction(CURL_SOCKET_TIMEOUT, 0);
 	}
 
-	/**
-	 * This is a kludge to allow pausing/resuming a stream with
-	 * libcurl < 7.32.0.  Read the curl_easy_pause manpage for
-	 * more information.
-	 */
-	void ResumeSockets() {
-		int running_handles;
-		curl_multi_socket_all(multi.Get(), &running_handles);
-	}
-
 private:
 	/**
 	 * Check for finished HTTP responses.

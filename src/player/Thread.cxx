@@ -46,6 +46,7 @@
 #include "CrossFade.hxx"
 #include "tag/Tag.hxx"
 #include "Idle.hxx"
+#include "util/Compiler.h"
 #include "util/Domain.hxx"
 #include "thread/Name.hxx"
 #include "Log.hxx"
@@ -1175,6 +1176,7 @@ try {
 			}
 
 			/* fall through */
+			gcc_fallthrough;
 
 		case PlayerCommand::PAUSE:
 			next_song.reset();

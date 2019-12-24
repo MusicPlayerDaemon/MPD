@@ -162,7 +162,6 @@ CurlGlobal::Remove(CurlRequest &r) noexcept
 	assert(GetEventLoop().IsInside());
 
 	curl_multi_remove_handle(multi.Get(), r.Get());
-	InvalidateSockets();
 }
 
 /**
@@ -220,12 +219,12 @@ CurlGlobal::UpdateTimeout(long timeout_ms) noexcept
 		return;
 	}
 
-	if (timeout_ms < 10)
-		/* CURL 7.21.1 likes to report "timeout=0", which
+	if (timeout_ms < 1)
+		/* CURL's threaded resolver sets a timeout of 0ms, which
 		   means we're running in a busy loop.  Quite a bad
 		   idea to waste so much CPU.  Let's use a lower limit
-		   of 10ms. */
-		timeout_ms = 10;
+		   of 1ms. */
+		timeout_ms = 1;
 
 	timeout_event.Schedule(std::chrono::milliseconds(timeout_ms));
 }
