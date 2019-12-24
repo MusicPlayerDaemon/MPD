@@ -225,6 +225,13 @@ CurlGlobal::UpdateTimeout(long timeout_ms) noexcept
 		return;
 	}
 
+	if (timeout_ms < 1)
+		/* CURL's threaded resolver sets a timeout of 0ms, which
+		   means we're running in a busy loop.  Quite a bad
+		   idea to waste so much CPU.  Let's use a lower limit
+		   of 1ms. */
+		timeout_ms = 1;
+
 	timeout_event.Schedule(std::chrono::milliseconds(timeout_ms));
 }
 
