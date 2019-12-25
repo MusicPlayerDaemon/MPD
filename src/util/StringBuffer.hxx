@@ -31,6 +31,7 @@
 #define STRING_BUFFER_HXX
 
 #include <array>
+#include <cstddef>
 
 /**
  * A statically allocated string buffer.
