@@ -19,7 +19,6 @@
  */
 
 #include "format.h"
-#include "util/Compiler.h"
 
 #include <stdbool.h>
 #include <stdio.h>
@@ -239,7 +238,6 @@ format_object2(const char *format, const char **last, const void *object,
 			}
 
 			/* fall through */
-			gcc_fallthrough;
 
 		default:
 			/* pass-through non-escaped portions of the format string */
