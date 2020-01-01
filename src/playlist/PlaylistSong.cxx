@@ -40,6 +40,13 @@ merge_song_metadata(DetachedSong &add, const DetachedSong &base) noexcept
 	}
 
 	add.SetLastModified(base.GetLastModified());
+
+	if (add.GetStartTime().IsZero()) {
+		add.SetStartTime(base.GetStartTime());
+	}
+	if (add.GetEndTime().IsZero()) {
+		add.SetEndTime(base.GetEndTime());
+	}
 }
 
 static bool
