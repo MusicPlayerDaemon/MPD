@@ -45,12 +45,19 @@ if not libogg_dep.found() and not libflac_dep.found()
   subdir_done()
 endif
 
-xiph = static_library(
-  'xiph',
+xiph_sources = [
   'ScanVorbisComment.cxx',
-  'VorbisComments.cxx',
   'VorbisPicture.cxx',
   'XiphTags.cxx',
+]
+
+if libvorbis_dep.found() or libvorbisidec_dep.found()
+  xiph_sources += 'VorbisComments.cxx'
+endif
+
+xiph = static_library(
+  'xiph',
+  xiph_sources,
   include_directories: inc,
   dependencies: [
     libvorbis_dep,
