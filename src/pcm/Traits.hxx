@@ -43,12 +43,12 @@ struct SampleTraits<SampleFormat::S8> {
 	/**
 	 * A writable pointer.
 	 */
-	typedef value_type *pointer_type;
+	typedef value_type *pointer;
 
 	/**
 	 * A read-only pointer.
 	 */
-	typedef const value_type *const_pointer_type;
+	typedef const value_type *const_pointer;
 
 	/**
 	 * A "long" type that is large and accurate enough for adding
@@ -94,8 +94,8 @@ struct SampleTraits<SampleFormat::S8> {
 template<>
 struct SampleTraits<SampleFormat::S16> {
 	typedef int16_t value_type;
-	typedef value_type *pointer_type;
-	typedef const value_type *const_pointer_type;
+	typedef value_type *pointer;
+	typedef const value_type *const_pointer;
 
 	typedef int_least32_t sum_type;
 	typedef int_least32_t long_type;
@@ -111,8 +111,8 @@ struct SampleTraits<SampleFormat::S16> {
 template<>
 struct SampleTraits<SampleFormat::S32> {
 	typedef int32_t value_type;
-	typedef value_type *pointer_type;
-	typedef const value_type *const_pointer_type;
+	typedef value_type *pointer;
+	typedef const value_type *const_pointer;
 
 	typedef int_least64_t sum_type;
 	typedef int_least64_t long_type;
@@ -128,8 +128,8 @@ struct SampleTraits<SampleFormat::S32> {
 template<>
 struct SampleTraits<SampleFormat::S24_P32> {
 	typedef int32_t value_type;
-	typedef value_type *pointer_type;
-	typedef const value_type *const_pointer_type;
+	typedef value_type *pointer;
+	typedef const value_type *const_pointer;
 
 	typedef int_least32_t sum_type;
 	typedef int_least64_t long_type;
@@ -145,8 +145,8 @@ struct SampleTraits<SampleFormat::S24_P32> {
 template<>
 struct SampleTraits<SampleFormat::FLOAT> {
 	typedef float value_type;
-	typedef value_type *pointer_type;
-	typedef const value_type *const_pointer_type;
+	typedef value_type *pointer;
+	typedef const value_type *const_pointer;
 
 	typedef float sum_type;
 	typedef float long_type;
@@ -161,8 +161,8 @@ struct SampleTraits<SampleFormat::FLOAT> {
 template<>
 struct SampleTraits<SampleFormat::DSD> {
 	typedef uint8_t value_type;
-	typedef value_type *pointer_type;
-	typedef const value_type *const_pointer_type;
+	typedef value_type *pointer;
+	typedef const value_type *const_pointer;
 
 	static constexpr size_t SAMPLE_SIZE = sizeof(value_type);
 

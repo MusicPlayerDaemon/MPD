@@ -90,8 +90,8 @@ pcm_volume_sample(PcmDither &dither,
 template<SampleFormat F, class Traits=SampleTraits<F>>
 static void
 pcm_volume_change(PcmDither &dither,
-		  typename Traits::pointer_type dest,
-		  typename Traits::const_pointer_type src,
+		  typename Traits::pointer dest,
+		  typename Traits::const_pointer src,
 		  size_t n,
 		  int volume) noexcept
 {

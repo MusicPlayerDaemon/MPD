@@ -89,9 +89,9 @@ PcmDither::DitherConvert(typename ST::value_type sample) noexcept
 
 template<typename ST, typename DT>
 inline void
-PcmDither::DitherConvert(typename DT::pointer_type dest,
-			 typename ST::const_pointer_type src,
-			 typename ST::const_pointer_type src_end) noexcept
+PcmDither::DitherConvert(typename DT::pointer dest,
+			 typename ST::const_pointer src,
+			 typename ST::const_pointer src_end) noexcept
 {
 	while (src < src_end)
 		*dest++ = DitherConvert<ST, DT>(*src++);

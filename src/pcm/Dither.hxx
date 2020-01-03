@@ -76,9 +76,9 @@ private:
 	typename DT::value_type DitherConvert(typename ST::value_type sample) noexcept;
 
 	template<typename ST, typename DT>
-	void DitherConvert(typename DT::pointer_type dest,
-			   typename ST::const_pointer_type src,
-			   typename ST::const_pointer_type src_end) noexcept;
+	void DitherConvert(typename DT::pointer dest,
+			   typename ST::const_pointer src,
+			   typename ST::const_pointer src_end) noexcept;
 };
 
 #endif

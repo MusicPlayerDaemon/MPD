@@ -128,7 +128,7 @@ mpc_to_mpd_sample(MPC_SAMPLE_FORMAT sample)
 }
 
 static void
-mpc_to_mpd_buffer(MpcdecSampleTraits::pointer_type dest,
+mpc_to_mpd_buffer(MpcdecSampleTraits::pointer dest,
 		  const MPC_SAMPLE_FORMAT *src,
 		  unsigned num_samples)
 {

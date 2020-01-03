@@ -36,8 +36,8 @@ struct PerSampleConvert : C {
 	typedef typename C::SrcTraits SrcTraits;
 	typedef typename C::DstTraits DstTraits;
 
-	void Convert(typename DstTraits::pointer_type gcc_restrict out,
-		     typename SrcTraits::const_pointer_type gcc_restrict in,
+	void Convert(typename DstTraits::pointer gcc_restrict out,
+		     typename SrcTraits::const_pointer gcc_restrict in,
 		     size_t n) const {
 		transform_n(in, n, out, C::Convert);
 	}
@@ -91,8 +91,8 @@ public:
 	typedef typename Portable::SrcTraits SrcTraits;
 	typedef typename Portable::DstTraits DstTraits;
 
-	void Convert(typename DstTraits::pointer_type out,
-		     typename SrcTraits::const_pointer_type in,
+	void Convert(typename DstTraits::pointer out,
+		     typename SrcTraits::const_pointer in,
 		     size_t n) const {
 		Optimized::Convert(out, in, n);
 

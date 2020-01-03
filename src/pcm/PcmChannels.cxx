@@ -55,10 +55,10 @@ StereoToMono(typename Traits::value_type _a,
 }
 
 template<SampleFormat F, class Traits=SampleTraits<F>>
-static typename Traits::pointer_type
-StereoToMono(typename Traits::pointer_type dest,
-	     typename Traits::const_pointer_type src,
-	     typename Traits::const_pointer_type end) noexcept
+static typename Traits::pointer
+StereoToMono(typename Traits::pointer dest,
+	     typename Traits::const_pointer src,
+	     typename Traits::const_pointer end) noexcept
 {
 	while (src != end) {
 		const auto a = *src++;
@@ -71,11 +71,11 @@ StereoToMono(typename Traits::pointer_type dest,
 }
 
 template<SampleFormat F, class Traits=SampleTraits<F>>
-static typename Traits::pointer_type
-NToStereo(typename Traits::pointer_type dest,
+static typename Traits::pointer
+NToStereo(typename Traits::pointer dest,
 	  unsigned src_channels,
-	  typename Traits::const_pointer_type src,
-	  typename Traits::const_pointer_type end) noexcept
+	  typename Traits::const_pointer src,
+	  typename Traits::const_pointer end) noexcept
 {
 	assert((end - src) % src_channels == 0);
 
@@ -100,11 +100,11 @@ NToStereo(typename Traits::pointer_type dest,
  * remaining (surround) channels are filled with silence.
  */
 template<SampleFormat F, class Traits=SampleTraits<F>>
-static typename Traits::pointer_type
-StereoToN(typename Traits::pointer_type dest,
+static typename Traits::pointer
+StereoToN(typename Traits::pointer dest,
 	  unsigned dest_channels,
-	  typename Traits::const_pointer_type src,
-	  typename Traits::const_pointer_type end) noexcept
+	  typename Traits::const_pointer src,
+	  typename Traits::const_pointer end) noexcept
 {
 	assert(dest_channels > 2);
 	assert((end - src) % 2 == 0);
@@ -127,12 +127,12 @@ StereoToN(typename Traits::pointer_type dest,
 }
 
 template<SampleFormat F, class Traits=SampleTraits<F>>
-static typename Traits::pointer_type
-NToM(typename Traits::pointer_type dest,
+static typename Traits::pointer
+NToM(typename Traits::pointer dest,
      unsigned dest_channels,
      unsigned src_channels,
-     typename Traits::const_pointer_type src,
-     typename Traits::const_pointer_type end) noexcept
+     typename Traits::const_pointer src,
+     typename Traits::const_pointer end) noexcept
 {
 	assert((end - src) % src_channels == 0);
 
