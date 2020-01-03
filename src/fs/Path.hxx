@@ -39,7 +39,7 @@ class Path : public PathTraitsFS::Pointer {
 	using Traits = PathTraitsFS;
 	typedef Traits::Pointer Base;
 
-	constexpr Path(const_pointer_type _value) noexcept:Base(_value) {}
+	constexpr Path(const_pointer _value) noexcept:Base(_value) {}
 
 public:
 	/**
@@ -59,7 +59,7 @@ public:
 	 * Create a new instance pointing to the specified path
 	 * string.
 	 */
-	static constexpr Path FromFS(const_pointer_type fs) noexcept {
+	static constexpr Path FromFS(const_pointer fs) noexcept {
 		return Path(fs);
 	}
 
@@ -101,7 +101,7 @@ public:
 	 * pointer is invalidated whenever the value of life of this
 	 * instance ends.
 	 */
-	constexpr const_pointer_type c_str() const noexcept {
+	constexpr const_pointer c_str() const noexcept {
 		return Base::c_str();
 	}
 
@@ -109,7 +109,7 @@ public:
 	 * Returns a pointer to the raw value, not necessarily
 	 * null-terminated.
 	 */
-	constexpr const_pointer_type data() const noexcept {
+	constexpr const_pointer data() const noexcept {
 		return c_str();
 	}
 
@@ -159,7 +159,7 @@ public:
 	 * nullptr on mismatch.
 	 */
 	gcc_pure
-	const_pointer_type Relative(Path other_fs) const noexcept {
+	const_pointer Relative(Path other_fs) const noexcept {
 		return Traits::Relative(c_str(), other_fs.c_str());
 	}
 
@@ -169,7 +169,7 @@ public:
 	}
 
 	gcc_pure
-	const_pointer_type GetSuffix() const noexcept;
+	const_pointer GetSuffix() const noexcept;
 };
 
 /**

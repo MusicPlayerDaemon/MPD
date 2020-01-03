@@ -146,7 +146,7 @@ LocalStorage::OpenDirectory(const char *uri_utf8)
 
 gcc_pure
 static bool
-SkipNameFS(PathTraitsFS::const_pointer_type name_fs) noexcept
+SkipNameFS(PathTraitsFS::const_pointer name_fs) noexcept
 {
 	return name_fs[0] == '.' &&
 		(name_fs[1] == 0 ||

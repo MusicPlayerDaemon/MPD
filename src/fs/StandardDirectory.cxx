@@ -87,20 +87,20 @@ public:
 
 #ifndef ANDROID
 static inline bool
-IsValidPathString(PathTraitsFS::const_pointer_type path)
+IsValidPathString(PathTraitsFS::const_pointer path)
 {
 	return path != nullptr && *path != '\0';
 }
 
 static inline bool
-IsValidDir(PathTraitsFS::const_pointer_type dir)
+IsValidDir(PathTraitsFS::const_pointer dir)
 {
 	return PathTraitsFS::IsAbsolute(dir) &&
 	       DirectoryExists(Path::FromFS(dir));
 }
 
 static inline AllocatedPath
-SafePathFromFS(PathTraitsFS::const_pointer_type dir)
+SafePathFromFS(PathTraitsFS::const_pointer dir)
 {
 	if (IsValidPathString(dir) && IsValidDir(dir))
 		return AllocatedPath::FromFS(dir);

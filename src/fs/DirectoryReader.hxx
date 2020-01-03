@@ -36,10 +36,10 @@ class DirectoryReader {
 	bool first = true;
 
 	class MakeWildcardPath {
-		PathTraitsFS::pointer_type path;
+		PathTraitsFS::pointer path;
 
 	public:
-		MakeWildcardPath(PathTraitsFS::const_pointer_type _path) {
+		MakeWildcardPath(PathTraitsFS::const_pointer _path) {
 			auto l = _tcslen(_path);
 			path = new PathTraitsFS::value_type[l + 3];
 			_tcscpy(path, _path);
@@ -52,7 +52,7 @@ class DirectoryReader {
 			delete[] path;
 		}
 
-		operator PathTraitsFS::const_pointer_type() const {
+		operator PathTraitsFS::const_pointer() const {
 			return path;
 		}
 	};

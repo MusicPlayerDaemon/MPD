@@ -91,7 +91,7 @@ FixSeparators(PathTraitsUTF8::string &&s)
 }
 
 PathTraitsUTF8::string
-PathToUTF8(PathTraitsFS::const_pointer_type path_fs)
+PathToUTF8(PathTraitsFS::const_pointer path_fs)
 {
 #if !CLANG_CHECK_VERSION(3,6)
 	/* disabled on clang due to -Wtautological-pointer-compare */
@@ -117,7 +117,7 @@ PathToUTF8(PathTraitsFS::const_pointer_type path_fs)
 #if defined(HAVE_FS_CHARSET) || defined(_WIN32)
 
 PathTraitsFS::string
-PathFromUTF8(PathTraitsUTF8::const_pointer_type path_utf8)
+PathFromUTF8(PathTraitsUTF8::const_pointer path_utf8)
 {
 #if !CLANG_CHECK_VERSION(3,6)
 	/* disabled on clang due to -Wtautological-pointer-compare */

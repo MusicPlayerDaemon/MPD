@@ -36,7 +36,7 @@ Path::ToUTF8Throw() const
 	return ::PathToUTF8(c_str());
 }
 
-Path::const_pointer_type
+Path::const_pointer
 Path::GetSuffix() const noexcept
 {
 	const auto base = GetBase().c_str();

@@ -246,7 +246,7 @@ struct FunctionTraits<R(Args...) noexcept(NoExcept)> {
 	 * A function pointer type which describes the "plain"
 	 * function signature.
 	 */
-	typedef R (*pointer_type)(Args...)
+	typedef R (*pointer)(Args...)
 #if !GCC_OLDER_THAN(7,0)
 		noexcept(NoExcept)
 #endif
@@ -289,12 +289,12 @@ struct BindFunctionWrapperGenerator<R(Args...) noexcept(NoExcept), P, function>
 	: BindFunctionWrapperGenerator2<NoExcept, P, function, R, Args...> {
 };
 
-template<typename T, typename T::pointer_type function>
+template<typename T, typename T::pointer function>
 typename MethodWrapperWithSignature<typename T::function_type>::function_pointer
 MakeBindFunctionWrapper() noexcept
 {
 	return BindFunctionWrapperGenerator<typename T::function_type,
-					    typename T::pointer_type,
+					    typename T::pointer,
 					    function>::Invoke;
 }
 
@@ -338,7 +338,7 @@ BindMethod(T &_instance) noexcept
  * @param T the #FunctionTraits class
  * @param function the function pointer
  */
-template<typename T, typename T::pointer_type function>
+template<typename T, typename T::pointer function>
 constexpr BoundMethod<typename T::function_type>
 BindFunction() noexcept
 {

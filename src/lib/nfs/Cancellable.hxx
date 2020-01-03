@@ -32,12 +32,12 @@ template<typename T>
 class CancellablePointer
 	: public boost::intrusive::list_base_hook<boost::intrusive::link_mode<boost::intrusive::normal_link>> {
 public:
-	typedef T *pointer_type;
+	typedef T *pointer;
 	typedef T &reference_type;
 	typedef const T &const_reference_type;
 
 private:
-	pointer_type p;
+	pointer p;
 
 public:
 	explicit CancellablePointer(reference_type _p):p(&_p) {}

@@ -32,7 +32,7 @@
 
 template<>
 AllocatedString<char>
-AllocatedString<char>::Duplicate(const_pointer_type src)
+AllocatedString<char>::Duplicate(const_pointer src)
 {
 	return Duplicate(src, StringLength(src));
 }
@@ -41,7 +41,7 @@ AllocatedString<char>::Duplicate(const_pointer_type src)
 
 template<>
 AllocatedString<wchar_t>
-AllocatedString<wchar_t>::Duplicate(const_pointer_type src)
+AllocatedString<wchar_t>::Duplicate(const_pointer src)
 {
 	return Duplicate(src, StringLength(src));
 }

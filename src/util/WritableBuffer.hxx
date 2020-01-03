@@ -46,12 +46,12 @@ template<>
 struct WritableBuffer<void> {
 	typedef std::size_t size_type;
 	typedef void value_type;
-	typedef void *pointer_type;
-	typedef const void *const_pointer_type;
-	typedef pointer_type iterator;
-	typedef const_pointer_type const_iterator;
+	typedef void *pointer;
+	typedef const void *const_pointer;
+	typedef pointer iterator;
+	typedef const_pointer const_iterator;
 
-	pointer_type data;
+	pointer data;
 	size_type size;
 
 	WritableBuffer() = default;
@@ -59,7 +59,7 @@ struct WritableBuffer<void> {
 	constexpr WritableBuffer(std::nullptr_t) noexcept
 		:data(nullptr), size(0) {}
 
-	constexpr WritableBuffer(pointer_type _data, size_type _size) noexcept
+	constexpr WritableBuffer(pointer _data, size_type _size) noexcept
 		:data(_data), size(_size) {}
 
 	constexpr operator ConstBuffer<void>() const noexcept {
@@ -94,12 +94,12 @@ struct WritableBuffer {
 	typedef T value_type;
 	typedef T &reference_type;
 	typedef const T &const_reference_type;
-	typedef T *pointer_type;
-	typedef const T *const_pointer_type;
-	typedef pointer_type iterator;
-	typedef const_pointer_type const_iterator;
+	typedef T *pointer;
+	typedef const T *const_pointer;
+	typedef pointer iterator;
+	typedef const_pointer const_iterator;
 
-	pointer_type data;
+	pointer data;
 	size_type size;
 
 	WritableBuffer() = default;
@@ -107,11 +107,10 @@ struct WritableBuffer {
 	constexpr WritableBuffer(std::nullptr_t) noexcept
 		:data(nullptr), size(0) {}
 
-	constexpr WritableBuffer(pointer_type _data, size_type _size) noexcept
+	constexpr WritableBuffer(pointer _data, size_type _size) noexcept
 		:data(_data), size(_size) {}
 
-	constexpr WritableBuffer(pointer_type _data,
-				 pointer_type _end) noexcept
+	constexpr WritableBuffer(pointer _data, pointer _end) noexcept
 		:data(_data), size(_end - _data) {}
 
 	/**
@@ -131,7 +130,7 @@ struct WritableBuffer {
 	 */
 	static constexpr WritableBuffer<T> FromVoidFloor(WritableBuffer<void> other) noexcept {
 		static_assert(sizeof(T) > 0, "Empty base type");
-		return WritableBuffer<T>(pointer_type(other.data),
+		return WritableBuffer<T>(pointer(other.data),
 					 other.size / sizeof(T));
 	}
 
@@ -272,7 +271,7 @@ struct WritableBuffer {
 	 * Move the front pointer to the given address, and adjust the
 	 * size attribute to retain the old end address.
 	 */
-	void MoveFront(pointer_type new_data) noexcept {
+	void MoveFront(pointer new_data) noexcept {
 #ifndef NDEBUG
 		assert(IsNull() == (new_data == nullptr));
 		assert(new_data <= end());
@@ -286,7 +285,7 @@ struct WritableBuffer {
 	 * Move the end pointer to the given address (by adjusting the
 	 * size).
 	 */
-	void SetEnd(pointer_type new_end) noexcept {
+	void SetEnd(pointer new_end) noexcept {
 #ifndef NDEBUG
 		assert(IsNull() == (new_end == nullptr));
 		assert(new_end >= begin());

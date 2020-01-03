@@ -39,7 +39,7 @@ class AllocatedPath;
  * Wrapper for fopen() that uses #Path names.
  */
 static inline FILE *
-FOpen(Path file, PathTraitsFS::const_pointer_type mode)
+FOpen(Path file, PathTraitsFS::const_pointer mode)
 {
 #ifdef _WIN32
 	return _tfopen(file.c_str(), mode);

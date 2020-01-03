@@ -41,8 +41,8 @@ template<typename T>
 class DynamicFifoBuffer : protected ForeignFifoBuffer<T> {
 public:
 	using typename ForeignFifoBuffer<T>::size_type;
-	using typename ForeignFifoBuffer<T>::pointer_type;
-	using typename ForeignFifoBuffer<T>::const_pointer_type;
+	using typename ForeignFifoBuffer<T>::pointer;
+	using typename ForeignFifoBuffer<T>::const_pointer;
 	using typename ForeignFifoBuffer<T>::Range;
 
 	/**
@@ -101,7 +101,7 @@ public:
 	 * Write data to the buffer, growing it as needed.  Returns a
 	 * writable pointer.
 	 */
-	pointer_type Write(size_type n) noexcept {
+	pointer Write(size_type n) noexcept {
 		WantWrite(n);
 		return Write().data;
 	}
@@ -109,7 +109,7 @@ public:
 	/**
 	 * Append data to the buffer, growing it as needed.
 	 */
-	void Append(const_pointer_type p, size_type n) noexcept {
+	void Append(const_pointer p, size_type n) noexcept {
 		std::copy_n(p, n, Write(n));
 		Append(n);
 	}

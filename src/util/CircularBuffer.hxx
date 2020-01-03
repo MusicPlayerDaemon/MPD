@@ -51,7 +51,7 @@ template<typename T>
 class CircularBuffer {
 public:
 	typedef WritableBuffer<T> Range;
-	typedef typename Range::pointer_type pointer_type;
+	typedef typename Range::pointer pointer;
 	typedef typename Range::size_type size_type;
 
 protected:
@@ -66,10 +66,10 @@ protected:
 	size_type tail;
 
 	const size_type capacity;
-	const pointer_type data;
+	const pointer data;
 
 public:
-	constexpr CircularBuffer(pointer_type _data, size_type _capacity)
+	constexpr CircularBuffer(pointer _data, size_type _capacity)
 		:head(0), tail(0), capacity(_capacity), data(_data) {}
 
 	CircularBuffer(const CircularBuffer &other) = delete;

@@ -38,23 +38,22 @@ class AllocatedPath {
 	using Traits = PathTraitsFS;
 	typedef Traits::string string;
 	typedef Traits::value_type value_type;
-	typedef Traits::pointer_type pointer_type;
-	typedef Traits::const_pointer_type const_pointer_type;
+	typedef Traits::pointer pointer;
+	typedef Traits::const_pointer const_pointer;
 
 	string value;
 
-	explicit AllocatedPath(const_pointer_type _value) noexcept
+	explicit AllocatedPath(const_pointer _value) noexcept
 		:value(_value) {}
 
-	AllocatedPath(const_pointer_type _begin,
-		      const_pointer_type _end) noexcept
+	AllocatedPath(const_pointer _begin, const_pointer _end) noexcept
 		:value(_begin, _end) {}
 
 	AllocatedPath(string &&_value) noexcept
 		:value(std::move(_value)) {}
 
-	static AllocatedPath Build(const_pointer_type a, size_t a_size,
-				   const_pointer_type b, size_t b_size) noexcept {
+	static AllocatedPath Build(const_pointer a, size_t a_size,
+				   const_pointer b, size_t b_size) noexcept {
 		return AllocatedPath(Traits::Build(a, a_size, b, b_size));
 	}
 public:
@@ -91,14 +90,13 @@ public:
 	 * Join two path components with the path separator.
 	 */
 	gcc_pure gcc_nonnull_all
-	static AllocatedPath Build(const_pointer_type a,
-				   const_pointer_type b) noexcept {
+	static AllocatedPath Build(const_pointer a, const_pointer b) noexcept {
 		return Build(a, Traits::GetLength(a),
 			     b, Traits::GetLength(b));
 	}
 
 	gcc_pure gcc_nonnull_all
-	static AllocatedPath Build(Path a, const_pointer_type b) noexcept {
+	static AllocatedPath Build(Path a, const_pointer b) noexcept {
 		return Build(a.c_str(), b);
 	}
 
@@ -108,7 +106,7 @@ public:
 	}
 
 	gcc_pure gcc_nonnull_all
-	static AllocatedPath Build(const_pointer_type a,
+	static AllocatedPath Build(const_pointer a,
 				   const AllocatedPath &b) noexcept {
 		return Build(a, Traits::GetLength(a),
 			     b.value.c_str(), b.value.size());
@@ -116,7 +114,7 @@ public:
 
 	gcc_pure gcc_nonnull_all
 	static AllocatedPath Build(const AllocatedPath &a,
-				   const_pointer_type b) noexcept {
+				   const_pointer b) noexcept {
 		return Build(a.value.c_str(), a.value.size(),
 			     b, Traits::GetLength(b));
 	}
@@ -138,13 +136,13 @@ public:
 	 * character set to a #Path instance.
 	 */
 	gcc_pure
-	static AllocatedPath FromFS(const_pointer_type fs) noexcept {
+	static AllocatedPath FromFS(const_pointer fs) noexcept {
 		return AllocatedPath(fs);
 	}
 
 	gcc_pure
-	static AllocatedPath FromFS(const_pointer_type _begin,
-				    const_pointer_type _end) noexcept {
+	static AllocatedPath FromFS(const_pointer _begin,
+				    const_pointer _end) noexcept {
 		return AllocatedPath(_begin, _end);
 	}
 
@@ -247,7 +245,7 @@ public:
 	 * instance ends.
 	 */
 	gcc_pure
-	const_pointer_type c_str() const noexcept {
+	const_pointer c_str() const noexcept {
 		return value.c_str();
 	}
 
@@ -256,7 +254,7 @@ public:
 	 * null-terminated.
 	 */
 	gcc_pure
-	const_pointer_type data() const noexcept {
+	const_pointer data() const noexcept {
 		return value.data();
 	}
 
@@ -290,12 +288,12 @@ public:
 	 * nullptr on mismatch.
 	 */
 	gcc_pure
-	const_pointer_type Relative(Path other_fs) const noexcept {
+	const_pointer Relative(Path other_fs) const noexcept {
 		return Traits::Relative(c_str(), other_fs.c_str());
 	}
 
 	gcc_pure
-	const_pointer_type GetSuffix() const noexcept {
+	const_pointer GetSuffix() const noexcept {
 		return ((Path)*this).GetSuffix();
 	}
 
