@@ -33,6 +33,7 @@
 #include "StringPointer.hxx"
 
 #include <algorithm>
+#include <cstddef>
 
 /**
  * A string pointer whose memory is managed by this class.
@@ -47,7 +48,7 @@ public:
 	typedef typename StringPointer<T>::const_reference_type const_reference_type;
 	typedef typename StringPointer<T>::pointer_type pointer_type;
 	typedef typename StringPointer<T>::const_pointer_type const_pointer_type;
-	typedef size_t size_type;
+	typedef std::size_t size_type;
 
 	static constexpr value_type SENTINEL = '\0';
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2018 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2013-2020 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -44,7 +44,7 @@ struct WritableBuffer;
 
 template<>
 struct WritableBuffer<void> {
-	typedef size_t size_type;
+	typedef std::size_t size_type;
 	typedef void value_type;
 	typedef void *pointer_type;
 	typedef const void *const_pointer_type;
@@ -90,7 +90,7 @@ struct WritableBuffer<void> {
  */
 template<typename T>
 struct WritableBuffer {
-	typedef size_t size_type;
+	typedef std::size_t size_type;
 	typedef T value_type;
 	typedef T &reference_type;
 	typedef const T &const_reference_type;

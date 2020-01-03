@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2017 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2013-2020 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -43,7 +43,7 @@ struct ConstBuffer;
 
 template<>
 struct ConstBuffer<void> {
-	typedef size_t size_type;
+	typedef std::size_t size_type;
 	typedef void value_type;
 	typedef const void *pointer_type;
 	typedef pointer_type const_pointer_type;
@@ -91,7 +91,7 @@ struct ConstBuffer<void> {
  */
 template<typename T>
 struct ConstBuffer {
-	typedef size_t size_type;
+	typedef std::size_t size_type;
 	typedef T value_type;
 	typedef const T &reference_type;
 	typedef reference_type const_reference_type;
