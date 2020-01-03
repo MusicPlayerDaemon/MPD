@@ -42,9 +42,9 @@
 
 template<typename T>
 struct BasicStringView : ConstBuffer<T> {
-	typedef typename ConstBuffer<T>::size_type size_type;
-	typedef typename ConstBuffer<T>::value_type value_type;
-	typedef typename ConstBuffer<T>::pointer_type pointer_type;
+	using typename ConstBuffer<T>::size_type;
+	using typename ConstBuffer<T>::value_type;
+	using typename ConstBuffer<T>::pointer_type;
 
 	using ConstBuffer<T>::data;
 	using ConstBuffer<T>::size;
