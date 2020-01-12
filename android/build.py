@@ -117,10 +117,6 @@ class AndroidNdkToolchain:
         self.ldflags = common_flags
         self.libs = ''
 
-        # required flags from https://android.googlesource.com/platform/ndk/+/ndk-release-r20/docs/BuildSystemMaintainers.md#additional-required-arguments
-        if ndk_arch == 'x86' and int(android_api_level) < 24:
-            self.ldflags += ' -lmstackrealign'
-
         self.is_arm = ndk_arch == 'arm'
         self.is_armv7 = self.is_arm and 'armv7' in self.cflags
         self.is_aarch64 = ndk_arch == 'arm64'
