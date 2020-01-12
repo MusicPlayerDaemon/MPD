@@ -92,7 +92,7 @@ class AndroidNdkToolchain:
 
         toolchain_path = os.path.join(ndk_path, 'toolchains', abi_info['toolchain_arch'] + '-' + gcc_version, 'prebuilt', build_arch)
         llvm_path = os.path.join(ndk_path, 'toolchains', 'llvm', 'prebuilt', build_arch)
-        llvm_triple = abi_info['llvm_triple']
+        llvm_triple = abi_info['llvm_triple'] + android_api_level
 
         common_flags = '-Os -g'
         common_flags += ' -fPIC'
@@ -115,8 +115,7 @@ class AndroidNdkToolchain:
         self.cxxflags = common_flags
         self.cppflags = '--sysroot=' + sysroot + \
             ' -isystem ' + os.path.join(install_prefix, 'include') + \
-            ' -isystem ' + os.path.join(sysroot, 'usr', 'include', arch) + \
-            ' -D__ANDROID_API__=' + android_api_level
+            ' -isystem ' + os.path.join(sysroot, 'usr', 'include', arch)
         self.ldflags = '--sysroot=' + sysroot + \
             ' -L' + os.path.join(install_prefix, 'lib') + \
             ' -L' + os.path.join(target_root, 'usr', 'lib') + \
