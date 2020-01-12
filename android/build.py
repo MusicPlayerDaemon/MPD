@@ -100,6 +100,9 @@ class AndroidNdkToolchain:
 
         common_flags += ' -fvisibility=hidden -fdata-sections -ffunction-sections'
 
+        # required flags from https://android.googlesource.com/platform/ndk/+/ndk-release-r20/docs/BuildSystemMaintainers.md#additional-required-arguments
+        common_flags += ' -fno-addrsig'
+
         self.ar = os.path.join(toolchain_bin, arch + '-ar')
         self.ranlib = os.path.join(toolchain_bin, arch + '-ranlib')
         self.nm = os.path.join(toolchain_bin, arch + '-nm')
@@ -112,6 +115,10 @@ class AndroidNdkToolchain:
             ' ' + common_flags
         self.ldflags = common_flags
         self.libs = ''
+
+        # required flags from https://android.googlesource.com/platform/ndk/+/ndk-release-r20/docs/BuildSystemMaintainers.md#additional-required-arguments
+        if ndk_arch == 'x86' and int(android_api_level) < 24:
+            self.ldflags += ' -lmstackrealign'
 
         self.is_arm = ndk_arch == 'arm'
         self.is_armv7 = self.is_arm and 'armv7' in self.cflags
