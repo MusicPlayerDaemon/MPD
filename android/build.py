@@ -112,6 +112,7 @@ class AndroidNdkToolchain:
         self.cxxflags = common_flags
         self.cppflags = ' -isystem ' + os.path.join(install_prefix, 'include')
         self.ldflags = ' -L' + os.path.join(install_prefix, 'lib') + \
+            ' -Wl,--exclude-libs=ALL' + \
             ' ' + common_flags
         self.ldflags = common_flags
         self.libs = ''
