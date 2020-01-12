@@ -30,7 +30,6 @@ android_abis = {
     },
 
     'arm64-v8a': {
-        'android_api_level': '21',
         'arch': 'aarch64-linux-android',
         'ndk_arch': 'arm64',
         'toolchain_arch': 'aarch64-linux-android',
