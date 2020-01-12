@@ -44,6 +44,14 @@ android_abis = {
         'llvm_triple': 'i686-linux-android',
         'cflags': '-march=i686 -mtune=intel -mssse3 -mfpmath=sse -m32',
     },
+
+    'x86_64': {
+        'arch': 'x86_64-linux-android',
+        'ndk_arch': 'x86_64',
+        'toolchain_arch': 'x86_64',
+        'llvm_triple': 'x86_64-linux-android',
+        'cflags': '-m64',
+    },
 }
 
 # select the NDK target
