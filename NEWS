@@ -2,6 +2,7 @@ ver 0.21.19 (not yet released)
 * output
   - pulse: obey Pulse's maximum sample rate (fixes DSD128 playback)
 * fix build failure with clang 10
+* fix build failure with Android NDK r20
 
 ver 0.21.18 (2019/12/24)
 * protocol
