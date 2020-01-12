@@ -25,7 +25,7 @@ android_abis = {
         'arch': 'arm-linux-androideabi',
         'ndk_arch': 'arm',
         'toolchain_arch': 'arm-linux-androideabi',
-        'llvm_triple': 'armv7-none-linux-androideabi',
+        'llvm_triple': 'armv7-linux-androideabi',
         'cflags': '-march=armv7-a -mfpu=vfp -mfloat-abi=softfp',
     },
 
@@ -33,7 +33,7 @@ android_abis = {
         'arch': 'aarch64-linux-android',
         'ndk_arch': 'arm64',
         'toolchain_arch': 'aarch64-linux-android',
-        'llvm_triple': 'aarch64-none-linux-android',
+        'llvm_triple': 'aarch64-linux-android',
         'cflags': '',
     },
 
@@ -41,7 +41,7 @@ android_abis = {
         'arch': 'i686-linux-android',
         'ndk_arch': 'x86',
         'toolchain_arch': 'x86',
-        'llvm_triple': 'i686-none-linux-android',
+        'llvm_triple': 'i686-linux-android',
         'cflags': '-march=i686 -mtune=intel -mssse3 -mfpmath=sse -m32',
     },
 }
