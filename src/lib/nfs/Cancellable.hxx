@@ -33,14 +33,14 @@ class CancellablePointer
 	: public boost::intrusive::list_base_hook<boost::intrusive::link_mode<boost::intrusive::normal_link>> {
 public:
 	typedef T *pointer;
-	typedef T &reference_type;
-	typedef const T &const_reference_type;
+	typedef T &reference;
+	typedef const T &const_reference;
 
 private:
 	pointer p;
 
 public:
-	explicit CancellablePointer(reference_type _p):p(&_p) {}
+	explicit CancellablePointer(reference _p):p(&_p) {}
 
 	CancellablePointer(const CancellablePointer &) = delete;
 
@@ -54,13 +54,13 @@ public:
 		p = nullptr;
 	}
 
-	reference_type Get() {
+	reference Get() {
 		assert(p != nullptr);
 
 		return *p;
 	}
 
-	constexpr bool Is(const_reference_type other) const {
+	constexpr bool Is(const_reference other) const {
 		return p == &other;
 	}
 };
@@ -68,8 +68,8 @@ public:
 template<typename T, typename CT=CancellablePointer<T>>
 class CancellableList {
 public:
-	typedef typename CT::reference_type reference_type;
-	typedef typename CT::const_reference_type const_reference_type;
+	typedef typename CT::reference reference;
+	typedef typename CT::const_reference const_reference;
 
 private:
 	typedef boost::intrusive::list<CT,
@@ -79,10 +79,10 @@ private:
 	List list;
 
 	class MatchPointer {
-		const_reference_type p;
+		const_reference p;
 
 	public:
-		explicit constexpr MatchPointer(const_reference_type _p)
+		explicit constexpr MatchPointer(const_reference _p)
 			:p(_p) {}
 
 		constexpr bool operator()(const CT &a) const {
@@ -91,12 +91,12 @@ private:
 	};
 
 	gcc_pure
-	iterator Find(reference_type p) noexcept {
+	iterator Find(reference p) noexcept {
 		return std::find_if(list.begin(), list.end(), MatchPointer(p));
 	}
 
 	gcc_pure
-	const_iterator Find(const_reference_type p) const noexcept {
+	const_iterator Find(const_reference p) const noexcept {
 		return std::find_if(list.begin(), list.end(), MatchPointer(p));
 	}
 
@@ -123,12 +123,12 @@ public:
 #endif
 
 	gcc_pure
-	bool Contains(const_reference_type p) const noexcept {
+	bool Contains(const_reference p) const noexcept {
 		return Find(p) != list.end();
 	}
 
 	template<typename... Args>
-	CT &Add(reference_type p, Args&&... args) {
+	CT &Add(reference p, Args&&... args) {
 		assert(Find(p) == list.end());
 
 		CT *c = new CT(p, std::forward<Args>(args)...);
@@ -144,14 +144,14 @@ public:
 		delete &ct;
 	}
 
-	void Cancel(reference_type p) {
+	void Cancel(reference p) {
 		auto i = Find(p);
 		assert(i != list.end());
 
 		i->Cancel();
 	}
 
-	CT &Get(reference_type p) noexcept {
+	CT &Get(reference p) noexcept {
 		auto i = Find(p);
 		assert(i != list.end());
 

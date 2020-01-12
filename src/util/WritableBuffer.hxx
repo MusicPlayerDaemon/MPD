@@ -92,8 +92,8 @@ template<typename T>
 struct WritableBuffer {
 	typedef std::size_t size_type;
 	typedef T value_type;
-	typedef T &reference_type;
-	typedef const T &const_reference_type;
+	typedef T &reference;
+	typedef const T &const_reference;
 	typedef T *pointer;
 	typedef const T *const_pointer;
 	typedef pointer iterator;
@@ -191,7 +191,7 @@ struct WritableBuffer {
 #ifdef NDEBUG
 	constexpr
 #endif
-	reference_type operator[](size_type i) const noexcept {
+	reference operator[](size_type i) const noexcept {
 #ifndef NDEBUG
 		assert(i < size);
 #endif
@@ -206,7 +206,7 @@ struct WritableBuffer {
 #ifdef NDEBUG
 	constexpr
 #endif
-	reference_type front() const noexcept {
+	reference front() const noexcept {
 #ifndef NDEBUG
 		assert(!empty());
 #endif
@@ -220,7 +220,7 @@ struct WritableBuffer {
 #ifdef NDEBUG
 	constexpr
 #endif
-	reference_type back() const noexcept {
+	reference back() const noexcept {
 #ifndef NDEBUG
 		assert(!empty());
 #endif
@@ -252,8 +252,8 @@ struct WritableBuffer {
 	 * Remove the first element and return a reference to it.
 	 * Buffer must not be empty.
 	 */
-	reference_type shift() noexcept {
-		reference_type result = front();
+	reference shift() noexcept {
+		reference result = front();
 		pop_front();
 		return result;
 	}

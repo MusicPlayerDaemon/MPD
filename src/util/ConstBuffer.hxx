@@ -93,8 +93,8 @@ template<typename T>
 struct ConstBuffer {
 	typedef std::size_t size_type;
 	typedef T value_type;
-	typedef const T &reference_type;
-	typedef reference_type const_reference_type;
+	typedef const T &reference;
+	typedef reference const_reference;
 	typedef const T *pointer;
 	typedef pointer const_pointer;
 	typedef pointer iterator;
@@ -198,7 +198,7 @@ struct ConstBuffer {
 #ifdef NDEBUG
 	constexpr
 #endif
-	reference_type operator[](size_type i) const noexcept {
+	reference operator[](size_type i) const noexcept {
 #ifndef NDEBUG
 		assert(i < size);
 #endif
@@ -213,7 +213,7 @@ struct ConstBuffer {
 #ifdef NDEBUG
 	constexpr
 #endif
-	reference_type front() const noexcept {
+	reference front() const noexcept {
 #ifndef NDEBUG
 		assert(!empty());
 #endif
@@ -227,7 +227,7 @@ struct ConstBuffer {
 #ifdef NDEBUG
 	constexpr
 #endif
-	reference_type back() const noexcept {
+	reference back() const noexcept {
 #ifndef NDEBUG
 		assert(!empty());
 #endif
@@ -263,8 +263,8 @@ struct ConstBuffer {
 	 * Remove the first element and return a reference to it.
 	 * Buffer must not be empty.
 	 */
-	reference_type shift() noexcept {
-		reference_type result = front();
+	reference shift() noexcept {
+		reference result = front();
 		pop_front();
 		return result;
 	}

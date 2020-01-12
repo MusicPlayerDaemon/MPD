@@ -37,8 +37,8 @@ template<typename T=char>
 class StringPointer {
 public:
 	typedef T value_type;
-	typedef T &reference_type;
-	typedef const T &const_reference_type;
+	typedef T &reference;
+	typedef const T &const_reference;
 	typedef T *pointer;
 	typedef const T *const_pointer;
 

@@ -44,8 +44,8 @@ template<typename T=char>
 class AllocatedString {
 public:
 	typedef typename StringPointer<T>::value_type value_type;
-	typedef typename StringPointer<T>::reference_type reference_type;
-	typedef typename StringPointer<T>::const_reference_type const_reference_type;
+	typedef typename StringPointer<T>::reference reference;
+	typedef typename StringPointer<T>::const_reference const_reference;
 	typedef typename StringPointer<T>::pointer pointer;
 	typedef typename StringPointer<T>::const_pointer const_pointer;
 	typedef std::size_t size_type;
@@ -127,11 +127,11 @@ public:
 		return value;
 	}
 
-	reference_type operator[](size_type i) {
+	reference operator[](size_type i) {
 		return value[i];
 	}
 
-	const reference_type operator[](size_type i) const {
+	const reference operator[](size_type i) const {
 		return value[i];
 	}
 

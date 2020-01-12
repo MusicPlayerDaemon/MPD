@@ -47,8 +47,8 @@ class AllocatedArray {
 
 public:
 	typedef typename Buffer::size_type size_type;
-	typedef typename Buffer::reference_type reference_type;
-	typedef typename Buffer::const_reference_type const_reference_type;
+	typedef typename Buffer::reference reference;
+	typedef typename Buffer::const_reference const_reference;
 	typedef typename Buffer::iterator iterator;
 	typedef typename Buffer::const_iterator const_iterator;
 
@@ -147,33 +147,33 @@ public:
 		return buffer.size;
 	}
 
-	reference_type front() noexcept {
+	reference front() noexcept {
 		return buffer.front();
 	}
 
-	const_reference_type front() const noexcept {
+	const_reference front() const noexcept {
 		return buffer.front();
 	}
 
-	reference_type back() noexcept {
+	reference back() noexcept {
 		return buffer.back();
 	}
 
-	const_reference_type back() const noexcept {
+	const_reference back() const noexcept {
 		return buffer.back();
 	}
 
 	/**
 	 * Returns one element.  No bounds checking.
 	 */
-	reference_type operator[](size_type i) noexcept {
+	reference operator[](size_type i) noexcept {
 		return buffer[i];
 	}
 
 	/**
 	 * Returns one constant element.  No bounds checking.
 	 */
-	const_reference_type operator[](size_type i) const noexcept {
+	const_reference operator[](size_type i) const noexcept {
 		return buffer[i];
 	}
 
