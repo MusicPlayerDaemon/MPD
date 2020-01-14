@@ -41,7 +41,7 @@ or implied, of Sebastian Gesemann.
 static constexpr size_t HTAPS = 48;
 
 /** number of "8 MACs" lookup tables */
-static constexpr int CTABLES = (HTAPS + 7) / 8;
+static constexpr size_t CTABLES = (HTAPS + 7) / 8;
 
 static_assert(Dsd2Pcm::FIFOSIZE * 8 >= HTAPS * 2, "FIFOSIZE too small");
 
@@ -117,7 +117,7 @@ static constexpr double htaps[HTAPS] = {
 };
 
 static constexpr float
-CalculateCtableValue(int t, int k, int e) noexcept
+CalculateCtableValue(size_t t, int k, int e) noexcept
 {
 	double acc = 0;
 	for (int m = 0; m < k; ++m) {
@@ -130,7 +130,8 @@ CalculateCtableValue(int t, int k, int e) noexcept
 /* this needs to be a struct because GCC 6 doesn't have constexpr
    lambdas (C++17) */
 struct GenerateCtableValue {
-	int t, k;
+	size_t t;
+	int k;
 
 	constexpr auto operator()(int e) const noexcept {
 		return CalculateCtableValue(t, k, e);

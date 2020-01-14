@@ -40,7 +40,7 @@ or implied, of Sebastian Gesemann.
 class Dsd2Pcm {
 public:
 	/* must be a power of two */
-	static constexpr int FIFOSIZE = 16;
+	static constexpr size_t FIFOSIZE = 16;
 
 private:
 	/** bit mask for FIFO offsets */
