@@ -38,8 +38,8 @@ PcmDsd::ToFloat(unsigned channels, ConstBuffer<uint8_t> src) noexcept
 	assert(src.size % channels == 0);
 	assert(channels <= dsd2pcm.max_size());
 
-	const unsigned num_samples = src.size;
-	const unsigned num_frames = src.size / channels;
+	const size_t num_samples = src.size;
+	const size_t num_frames = src.size / channels;
 
 	float *dest = buffer.GetT<float>(num_samples);
 
