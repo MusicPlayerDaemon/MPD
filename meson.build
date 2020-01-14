@@ -90,6 +90,10 @@ test_ldflags = [
 ]
 
 if get_option('buildtype') != 'debug'
+  test_cxxflags += [
+    '-ffunction-sections',
+    '-fdata-sections',
+  ]
   test_cflags += [
     '-ffunction-sections',
     '-fdata-sections',

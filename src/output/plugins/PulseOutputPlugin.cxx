@@ -658,7 +658,7 @@ PulseOutput::Open(AudioFormat &audio_format)
 		break;
 	}
 
-	ss.rate = audio_format.sample_rate;
+	ss.rate = std::min(audio_format.sample_rate, PA_RATE_MAX);
 	ss.channels = audio_format.channels;
 
 	/* create a stream .. */
