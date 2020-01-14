@@ -22,13 +22,13 @@
 
 #include "Buffer.hxx"
 #include "ChannelDefs.hxx"
+#include "Dsd2Pcm.hxx"
 
 #include <array>
 
 #include <stdint.h>
 
 template<typename T> struct ConstBuffer;
-class Dsd2Pcm;
 
 /**
  * Wrapper for the dsd2pcm library.
@@ -36,12 +36,9 @@ class Dsd2Pcm;
 class PcmDsd {
 	PcmBuffer buffer;
 
-	std::array<Dsd2Pcm *, MAX_CHANNELS> dsd2pcm;
+	std::array<Dsd2Pcm, MAX_CHANNELS> dsd2pcm;
 
 public:
-	PcmDsd() noexcept;
-	~PcmDsd() noexcept;
-
 	void Reset() noexcept;
 
 	ConstBuffer<float> ToFloat(unsigned channels,

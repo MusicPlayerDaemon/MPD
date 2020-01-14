@@ -23,23 +23,11 @@
 
 #include <assert.h>
 
-PcmDsd::PcmDsd() noexcept
-{
-	dsd2pcm.fill(nullptr);
-}
-
-PcmDsd::~PcmDsd() noexcept
-{
-	for (auto i : dsd2pcm)
-		delete i;
-}
-
 void
 PcmDsd::Reset() noexcept
 {
-	for (auto i : dsd2pcm)
-		if (i != nullptr)
-			i->Reset();
+	for (auto &i : dsd2pcm)
+		i.Reset();
 }
 
 ConstBuffer<float>
@@ -56,12 +44,9 @@ PcmDsd::ToFloat(unsigned channels, ConstBuffer<uint8_t> src) noexcept
 	float *dest = buffer.GetT<float>(num_samples);
 
 	for (unsigned c = 0; c < channels; ++c) {
-		if (dsd2pcm[c] == nullptr)
-			dsd2pcm[c] = new Dsd2Pcm();
-
-		dsd2pcm[c]->Translate(num_frames,
-				      src.data + c, channels,
-				      dest + c, channels);
+		dsd2pcm[c].Translate(num_frames,
+				     src.data + c, channels,
+				     dest + c, channels);
 	}
 
 	return { dest, num_samples };
