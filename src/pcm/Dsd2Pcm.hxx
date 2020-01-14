@@ -33,58 +33,47 @@ or implied, of Sebastian Gesemann.
 
 #include <stddef.h>
 
-struct dsd2pcm_ctx_s;
-
-typedef struct dsd2pcm_ctx_s dsd2pcm_ctx;
-
 /**
- * initializes a "dsd2pcm engine" for one channel
- * (precomputes tables and allocates memory)
- *
- * This is the only function that is not thread-safe in terms of the
- * POSIX thread-safety definition because it modifies global state
- * (lookup tables are computed during the first call)
+ * A "dsd2pcm engine" for one channel.
  */
-dsd2pcm_ctx *
-dsd2pcm_init() noexcept;
+class Dsd2Pcm {
+public:
+	/* must be a power of two */
+	static constexpr int FIFOSIZE = 16;
 
-/**
- * deinitializes a "dsd2pcm engine"
- * (releases memory, don't forget!)
- */
-void
-dsd2pcm_destroy(dsd2pcm_ctx *ctx) noexcept;
+private:
+	/** bit mask for FIFO offsets */
+	static constexpr size_t FIFOMASK = FIFOSIZE - 1;
 
-/**
- * clones the context and returns a pointer to the
- * newly allocated copy
- */
-dsd2pcm_ctx *
-dsd2pcm_clone(dsd2pcm_ctx *ctx) noexcept;
+	unsigned char fifo[FIFOSIZE];
+	unsigned fifopos;
 
-/**
- * resets the internal state for a fresh new stream
- */
-void
-dsd2pcm_reset(dsd2pcm_ctx *ctx) noexcept;
+public:
+	Dsd2Pcm() noexcept {
+		Reset();
+	}
 
-/**
- * "translates" a stream of octets to a stream of floats
- * (8:1 decimation)
- * @param ctx -- pointer to abstract context (buffers)
- * @param samples -- number of octets/samples to "translate"
- * @param src -- pointer to first octet (input)
- * @param src_stride -- src pointer increment
- * @param lsbitfirst -- bitorder, 0=msb first, 1=lsbfirst
- * @param dst -- pointer to first float (output)
- * @param dst_stride -- dst pointer increment
- */
-void
-dsd2pcm_translate(dsd2pcm_ctx *ctx,
-		  size_t samples,
-		  const unsigned char *src, ptrdiff_t src_stride,
-		  bool lsbitfirst,
-		  float *dst, ptrdiff_t dst_stride) noexcept;
+	/**
+	 * resets the internal state for a fresh new stream
+	 */
+	void Reset() noexcept;
+
+	/**
+	 * "translates" a stream of octets to a stream of floats
+	 * (8:1 decimation)
+	 * @param ctx -- pointer to abstract context (buffers)
+	 * @param samples -- number of octets/samples to "translate"
+	 * @param src -- pointer to first octet (input)
+	 * @param src_stride -- src pointer increment
+	 * @param lsbitfirst -- bitorder, 0=msb first, 1=lsbfirst
+	 * @param dst -- pointer to first float (output)
+	 * @param dst_stride -- dst pointer increment
+	 */
+	void Translate(size_t samples,
+		       const unsigned char *src, ptrdiff_t src_stride,
+		       bool lsbitfirst,
+		       float *dst, ptrdiff_t dst_stride) noexcept;
+};
 
 #endif /* include guard DSD2PCM_H_INCLUDED */
 

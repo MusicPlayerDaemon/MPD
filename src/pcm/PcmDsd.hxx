@@ -28,6 +28,7 @@
 #include <stdint.h>
 
 template<typename T> struct ConstBuffer;
+class Dsd2Pcm;
 
 /**
  * Wrapper for the dsd2pcm library.
@@ -35,7 +36,7 @@ template<typename T> struct ConstBuffer;
 class PcmDsd {
 	PcmBuffer buffer;
 
-	std::array<struct dsd2pcm_ctx_s *, MAX_CHANNELS> dsd2pcm;
+	std::array<Dsd2Pcm *, MAX_CHANNELS> dsd2pcm;
 
 public:
 	PcmDsd() noexcept;

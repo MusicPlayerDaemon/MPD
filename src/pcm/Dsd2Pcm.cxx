@@ -43,13 +43,7 @@ static constexpr size_t HTAPS = 48;
 /** number of "8 MACs" lookup tables */
 static constexpr int CTABLES = (HTAPS + 7) / 8;
 
-/* must be a power of two */
-static constexpr int FIFOSIZE = 16;
-
-/** bit mask for FIFO offsets */
-static constexpr size_t FIFOMASK = FIFOSIZE - 1;
-
-static_assert(FIFOSIZE*8 >= HTAPS*2, "FIFOSIZE too small");
+static_assert(Dsd2Pcm::FIFOSIZE * 8 >= HTAPS * 2, "FIFOSIZE too small");
 
 /*
  * Properties of this 96-tap lowpass filter when applied on a signal
@@ -154,34 +148,13 @@ GenerateCtable(int t) noexcept
 
 static constexpr auto ctables = GenerateArray<CTABLES>(GenerateCtable);
 
-struct dsd2pcm_ctx_s
-{
-	unsigned char fifo[FIFOSIZE];
-	unsigned fifopos;
-};
-
-dsd2pcm_ctx *
-dsd2pcm_init() noexcept
-{
-	dsd2pcm_ctx* ptr;
-	ptr = (dsd2pcm_ctx*) malloc(sizeof(dsd2pcm_ctx));
-	if (ptr) dsd2pcm_reset(ptr);
-	return ptr;
-}
-
 void
-dsd2pcm_destroy(dsd2pcm_ctx *ptr) noexcept
-{
-	free(ptr);
-}
-
-void
-dsd2pcm_reset(dsd2pcm_ctx *ptr) noexcept
+Dsd2Pcm::Reset() noexcept
 {
 	int i;
 	for (i=0; i<FIFOSIZE; ++i)
-		ptr->fifo[i] = 0x69; /* my favorite silence pattern */
-	ptr->fifopos = 0;
+		fifo[i] = 0x69; /* my favorite silence pattern */
+	fifopos = 0;
 	/* 0x69 = 01101001
 	 * This pattern "on repeat" makes a low energy 352.8 kHz tone
 	 * and a high energy 1.0584 MHz tone which should be filtered
@@ -190,32 +163,31 @@ dsd2pcm_reset(dsd2pcm_ctx *ptr) noexcept
 }
 
 void
-dsd2pcm_translate(dsd2pcm_ctx *ptr,
-		  size_t samples,
-		  const unsigned char *src, ptrdiff_t src_stride,
-		  bool lsbf,
-		  float *dst, ptrdiff_t dst_stride) noexcept
+Dsd2Pcm::Translate(size_t samples,
+		   const unsigned char *src, ptrdiff_t src_stride,
+		   bool lsbf,
+		   float *dst, ptrdiff_t dst_stride) noexcept
 {
 	unsigned ffp;
 	unsigned i;
 	unsigned bite1, bite2;
 	unsigned char* p;
 	double acc;
-	ffp = ptr->fifopos;
+	ffp = fifopos;
 	while (samples-- > 0) {
 		bite1 = *src & 0xFFu;
 		if (lsbf) bite1 = bit_reverse(bite1);
-		ptr->fifo[ffp] = bite1; src += src_stride;
-		p = ptr->fifo + ((ffp-CTABLES) & FIFOMASK);
+		fifo[ffp] = bite1; src += src_stride;
+		p = fifo + ((ffp-CTABLES) & FIFOMASK);
 		*p = bit_reverse(*p);
 		acc = 0;
 		for (i=0; i<CTABLES; ++i) {
-			bite1 = ptr->fifo[(ffp              -i) & FIFOMASK] & 0xFF;
-			bite2 = ptr->fifo[(ffp-(CTABLES*2-1)+i) & FIFOMASK] & 0xFF;
+			bite1 = fifo[(ffp              -i) & FIFOMASK] & 0xFF;
+			bite2 = fifo[(ffp-(CTABLES*2-1)+i) & FIFOMASK] & 0xFF;
 			acc += ctables[i][bite1] + ctables[i][bite2];
 		}
 		*dst = (float)acc; dst += dst_stride;
 		ffp = (ffp + 1) & FIFOMASK;
 	}
-	ptr->fifopos = ffp;
+	fifopos = ffp;
 }

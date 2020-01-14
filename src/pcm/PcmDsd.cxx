@@ -31,8 +31,7 @@ PcmDsd::PcmDsd() noexcept
 PcmDsd::~PcmDsd() noexcept
 {
 	for (auto i : dsd2pcm)
-		if (i != nullptr)
-			dsd2pcm_destroy(i);
+		delete i;
 }
 
 void
@@ -40,7 +39,7 @@ PcmDsd::Reset() noexcept
 {
 	for (auto i : dsd2pcm)
 		if (i != nullptr)
-			dsd2pcm_reset(i);
+			i->Reset();
 }
 
 ConstBuffer<float>
@@ -57,15 +56,12 @@ PcmDsd::ToFloat(unsigned channels, ConstBuffer<uint8_t> src) noexcept
 	float *dest = buffer.GetT<float>(num_samples);
 
 	for (unsigned c = 0; c < channels; ++c) {
-		if (dsd2pcm[c] == nullptr) {
-			dsd2pcm[c] = dsd2pcm_init();
-			if (dsd2pcm[c] == nullptr)
-				return nullptr;
-		}
+		if (dsd2pcm[c] == nullptr)
+			dsd2pcm[c] = new Dsd2Pcm();
 
-		dsd2pcm_translate(dsd2pcm[c], num_frames,
-				  src.data + c, channels,
-				  false, dest + c, channels);
+		dsd2pcm[c]->Translate(num_frames,
+				      src.data + c, channels,
+				      false, dest + c, channels);
 	}
 
 	return { dest, num_samples };
