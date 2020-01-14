@@ -76,6 +76,7 @@ public:
 		       float *dst, ptrdiff_t dst_stride) noexcept;
 
 private:
+	void ApplySample(size_t ffp, uint8_t src) noexcept;
 	float CalcOutputSample(size_t ffp) const noexcept;
 };
 

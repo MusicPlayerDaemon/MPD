@@ -163,6 +163,14 @@ Dsd2Pcm::Reset() noexcept
 	 */
 }
 
+inline void
+Dsd2Pcm::ApplySample(size_t ffp, uint8_t src) noexcept
+{
+	fifo[ffp] = src;
+	uint8_t *p = fifo + ((ffp-CTABLES) & FIFOMASK);
+	*p = bit_reverse(*p);
+}
+
 inline float
 Dsd2Pcm::CalcOutputSample(size_t ffp) const noexcept
 {
@@ -184,10 +192,9 @@ Dsd2Pcm::Translate(size_t samples,
 	size_t ffp = fifopos;
 	while (samples-- > 0) {
 		unsigned bite1 = *src & 0xFFu;
+		src += src_stride;
 		if (lsbf) bite1 = bit_reverse(bite1);
-		fifo[ffp] = bite1; src += src_stride;
-		uint8_t *p = fifo + ((ffp-CTABLES) & FIFOMASK);
-		*p = bit_reverse(*p);
+		ApplySample(ffp, bite1);
 		*dst = CalcOutputSample(ffp);
 		dst += dst_stride;
 		ffp = (ffp + 1) & FIFOMASK;
