@@ -83,7 +83,7 @@ void
 dsd2pcm_translate(dsd2pcm_ctx *ctx,
 		  size_t samples,
 		  const unsigned char *src, ptrdiff_t src_stride,
-		  int lsbitfirst,
+		  bool lsbitfirst,
 		  float *dst, ptrdiff_t dst_stride) noexcept;
 
 #endif /* include guard DSD2PCM_H_INCLUDED */

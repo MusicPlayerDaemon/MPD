@@ -195,7 +195,7 @@ void
 dsd2pcm_translate(dsd2pcm_ctx *ptr,
 		  size_t samples,
 		  const unsigned char *src, ptrdiff_t src_stride,
-		  int lsbf,
+		  bool lsbf,
 		  float *dst, ptrdiff_t dst_stride) noexcept
 {
 	unsigned ffp;
@@ -204,7 +204,6 @@ dsd2pcm_translate(dsd2pcm_ctx *ptr,
 	unsigned char* p;
 	double acc;
 	ffp = ptr->fifopos;
-	lsbf = lsbf ? 1 : 0;
 	while (samples-- > 0) {
 		bite1 = *src & 0xFFu;
 		if (lsbf) bite1 = bit_reverse(bite1);
