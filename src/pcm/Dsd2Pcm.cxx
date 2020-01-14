@@ -175,7 +175,7 @@ Dsd2Pcm::CalcOutputSample(unsigned ffp) const noexcept
 
 void
 Dsd2Pcm::Translate(size_t samples,
-		   const unsigned char *src, ptrdiff_t src_stride,
+		   const uint8_t *src, ptrdiff_t src_stride,
 		   bool lsbf,
 		   float *dst, ptrdiff_t dst_stride) noexcept
 {
@@ -184,7 +184,7 @@ Dsd2Pcm::Translate(size_t samples,
 		unsigned bite1 = *src & 0xFFu;
 		if (lsbf) bite1 = bit_reverse(bite1);
 		fifo[ffp] = bite1; src += src_stride;
-		unsigned char *p = fifo + ((ffp-CTABLES) & FIFOMASK);
+		uint8_t *p = fifo + ((ffp-CTABLES) & FIFOMASK);
 		*p = bit_reverse(*p);
 		*dst = CalcOutputSample(ffp);
 		dst += dst_stride;

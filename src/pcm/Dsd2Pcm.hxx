@@ -32,6 +32,7 @@ or implied, of Sebastian Gesemann.
 #define DSD2PCM_H_INCLUDED
 
 #include <stddef.h>
+#include <stdint.h>
 
 /**
  * A "dsd2pcm engine" for one channel.
@@ -45,7 +46,7 @@ private:
 	/** bit mask for FIFO offsets */
 	static constexpr size_t FIFOMASK = FIFOSIZE - 1;
 
-	unsigned char fifo[FIFOSIZE];
+	uint8_t fifo[FIFOSIZE];
 	unsigned fifopos;
 
 public:
@@ -70,7 +71,7 @@ public:
 	 * @param dst_stride -- dst pointer increment
 	 */
 	void Translate(size_t samples,
-		       const unsigned char *src, ptrdiff_t src_stride,
+		       const uint8_t *src, ptrdiff_t src_stride,
 		       bool lsbitfirst,
 		       float *dst, ptrdiff_t dst_stride) noexcept;
 
