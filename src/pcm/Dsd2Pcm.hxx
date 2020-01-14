@@ -42,6 +42,8 @@ or implied, of Sebastian Gesemann.
  * A "dsd2pcm engine" for one channel.
  */
 class Dsd2Pcm {
+	friend class MultiDsd2Pcm;
+
 public:
 	/* must be a power of two */
 	static constexpr size_t FIFOSIZE = 16;
@@ -86,14 +88,24 @@ private:
 class MultiDsd2Pcm {
 	std::array<Dsd2Pcm, MAX_CHANNELS> per_channel;
 
+	size_t fifopos = 0;
+
 public:
 	void Reset() noexcept {
 		for (auto &i : per_channel)
 			i.Reset();
+		fifopos = 0;
 	}
 
 	void Translate(unsigned channels, size_t n_frames,
 		       const uint8_t *src, float *dest) noexcept;
+
+private:
+	/**
+	 * Optimized implementation for the common case.
+	 */
+	void TranslateStereo(size_t n_frames,
+			     const uint8_t *src, float *dest) noexcept;
 };
 
 #endif /* include guard DSD2PCM_H_INCLUDED */

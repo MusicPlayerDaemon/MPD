@@ -213,9 +213,27 @@ MultiDsd2Pcm::Translate(unsigned channels, size_t n_frames,
 {
 	assert(channels <= per_channel.max_size());
 
+	if (channels == 2) {
+		TranslateStereo(n_frames, src, dest);
+		return;
+	}
+
 	for (unsigned i = 0; i < channels; ++i) {
 		per_channel[i].Translate(n_frames,
 					 src++, channels,
 					 dest++, channels);
 	}
+}
+
+inline void
+MultiDsd2Pcm::TranslateStereo(size_t n_frames,
+			      const uint8_t *src, float *dest) noexcept
+{
+	size_t ffp = fifopos;
+	while (n_frames-- > 0) {
+		*dest++ = per_channel[0].TranslateSample(ffp, *src++);
+		*dest++ = per_channel[1].TranslateSample(ffp, *src++);
+		ffp = (ffp + 1) & Dsd2Pcm::FIFOMASK;
+	}
+	fifopos = ffp;
 }
