@@ -124,21 +124,27 @@ static constexpr double htaps[HTAPS] = {
 static float ctables[CTABLES][256];
 static int precalculated = 0;
 
+static constexpr float
+CalculateCtableValue(int t, int k, int e) noexcept
+{
+	double acc = 0;
+	for (int m = 0; m < k; ++m) {
+		acc += (((e >> (7 - m)) & 1) * 2 - 1) * htaps[t * 8 + m];
+	}
+
+	return acc;
+}
+
 static void
 precalc() noexcept
 {
-	int t, e, m, k;
-	double acc;
+	int t, e, k;
 	if (precalculated) return;
 	for (t=0; t<CTABLES; ++t) {
 		k = HTAPS - t*8;
 		if (k>8) k=8;
 		for (e=0; e<256; ++e) {
-			acc = 0.0;
-			for (m=0; m<k; ++m) {
-				acc += (((e >> (7-m)) & 1)*2-1) * htaps[t*8+m];
-			}
-			ctables[CTABLES-1-t][e] = (float)acc;
+			ctables[CTABLES-1-t][e] = CalculateCtableValue(t, k, e);
 		}
 	}
 	precalculated = 1;
