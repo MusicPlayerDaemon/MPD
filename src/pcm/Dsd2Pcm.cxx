@@ -175,17 +175,6 @@ dsd2pcm_destroy(dsd2pcm_ctx *ptr) noexcept
 	free(ptr);
 }
 
-dsd2pcm_ctx *
-dsd2pcm_clone(dsd2pcm_ctx *ptr) noexcept
-{
-	dsd2pcm_ctx* p2;
-	p2 = (dsd2pcm_ctx*) malloc(sizeof(dsd2pcm_ctx));
-	if (p2) {
-		memcpy(p2,ptr,sizeof(dsd2pcm_ctx));
-	}
-	return p2;
-}
-
 void
 dsd2pcm_reset(dsd2pcm_ctx *ptr) noexcept
 {
