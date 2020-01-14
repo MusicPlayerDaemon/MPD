@@ -193,14 +193,12 @@ Dsd2Pcm::TranslateSample(size_t ffp, uint8_t src) noexcept
 void
 Dsd2Pcm::Translate(size_t samples,
 		   const uint8_t *gcc_restrict src, ptrdiff_t src_stride,
-		   bool lsbf,
 		   float *dst, ptrdiff_t dst_stride) noexcept
 {
 	size_t ffp = fifopos;
 	while (samples-- > 0) {
 		uint8_t bite1 = *src;
 		src += src_stride;
-		if (lsbf) bite1 = bit_reverse(bite1);
 		*dst = TranslateSample(ffp, bite1);
 		dst += dst_stride;
 		ffp = (ffp + 1) & FIFOMASK;

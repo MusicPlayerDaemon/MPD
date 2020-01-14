@@ -61,7 +61,7 @@ PcmDsd::ToFloat(unsigned channels, ConstBuffer<uint8_t> src) noexcept
 
 		dsd2pcm[c]->Translate(num_frames,
 				      src.data + c, channels,
-				      false, dest + c, channels);
+				      dest + c, channels);
 	}
 
 	return { dest, num_samples };

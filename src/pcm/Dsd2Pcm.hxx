@@ -66,13 +66,11 @@ public:
 	 * @param samples -- number of octets/samples to "translate"
 	 * @param src -- pointer to first octet (input)
 	 * @param src_stride -- src pointer increment
-	 * @param lsbitfirst -- bitorder, 0=msb first, 1=lsbfirst
 	 * @param dst -- pointer to first float (output)
 	 * @param dst_stride -- dst pointer increment
 	 */
 	void Translate(size_t samples,
 		       const uint8_t *src, ptrdiff_t src_stride,
-		       bool lsbitfirst,
 		       float *dst, ptrdiff_t dst_stride) noexcept;
 
 private:
