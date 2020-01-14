@@ -124,7 +124,8 @@ static constexpr double htaps[HTAPS] = {
 static float ctables[CTABLES][256];
 static int precalculated = 0;
 
-static void precalc()
+static void
+precalc() noexcept
 {
 	int t, e, m, k;
 	double acc;
@@ -149,7 +150,8 @@ struct dsd2pcm_ctx_s
 	unsigned fifopos;
 };
 
-extern dsd2pcm_ctx* dsd2pcm_init()
+dsd2pcm_ctx *
+dsd2pcm_init() noexcept
 {
 	dsd2pcm_ctx* ptr;
 	if (!precalculated) precalc();
@@ -158,12 +160,14 @@ extern dsd2pcm_ctx* dsd2pcm_init()
 	return ptr;
 }
 
-extern void dsd2pcm_destroy(dsd2pcm_ctx* ptr)
+void
+dsd2pcm_destroy(dsd2pcm_ctx *ptr) noexcept
 {
 	free(ptr);
 }
 
-extern dsd2pcm_ctx* dsd2pcm_clone(dsd2pcm_ctx* ptr)
+dsd2pcm_ctx *
+dsd2pcm_clone(dsd2pcm_ctx *ptr) noexcept
 {
 	dsd2pcm_ctx* p2;
 	p2 = (dsd2pcm_ctx*) malloc(sizeof(dsd2pcm_ctx));
@@ -173,7 +177,8 @@ extern dsd2pcm_ctx* dsd2pcm_clone(dsd2pcm_ctx* ptr)
 	return p2;
 }
 
-extern void dsd2pcm_reset(dsd2pcm_ctx* ptr)
+void
+dsd2pcm_reset(dsd2pcm_ctx *ptr) noexcept
 {
 	int i;
 	for (i=0; i<FIFOSIZE; ++i)
@@ -186,12 +191,12 @@ extern void dsd2pcm_reset(dsd2pcm_ctx* ptr)
 	 */
 }
 
-extern void dsd2pcm_translate(
-	dsd2pcm_ctx* ptr,
-	size_t samples,
-	const unsigned char *src, ptrdiff_t src_stride,
-	int lsbf,
-	float *dst, ptrdiff_t dst_stride)
+void
+dsd2pcm_translate(dsd2pcm_ctx *ptr,
+		  size_t samples,
+		  const unsigned char *src, ptrdiff_t src_stride,
+		  int lsbf,
+		  float *dst, ptrdiff_t dst_stride) noexcept
 {
 	unsigned ffp;
 	unsigned i;

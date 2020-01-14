@@ -45,24 +45,28 @@ typedef struct dsd2pcm_ctx_s dsd2pcm_ctx;
  * POSIX thread-safety definition because it modifies global state
  * (lookup tables are computed during the first call)
  */
-extern dsd2pcm_ctx* dsd2pcm_init();
+dsd2pcm_ctx *
+dsd2pcm_init() noexcept;
 
 /**
  * deinitializes a "dsd2pcm engine"
  * (releases memory, don't forget!)
  */
-extern void dsd2pcm_destroy(dsd2pcm_ctx *ctx);
+void
+dsd2pcm_destroy(dsd2pcm_ctx *ctx) noexcept;
 
 /**
  * clones the context and returns a pointer to the
  * newly allocated copy
  */
-extern dsd2pcm_ctx* dsd2pcm_clone(dsd2pcm_ctx *ctx);
+dsd2pcm_ctx *
+dsd2pcm_clone(dsd2pcm_ctx *ctx) noexcept;
 
 /**
  * resets the internal state for a fresh new stream
  */
-extern void dsd2pcm_reset(dsd2pcm_ctx *ctx);
+void
+dsd2pcm_reset(dsd2pcm_ctx *ctx) noexcept;
 
 /**
  * "translates" a stream of octets to a stream of floats
@@ -75,11 +79,12 @@ extern void dsd2pcm_reset(dsd2pcm_ctx *ctx);
  * @param dst -- pointer to first float (output)
  * @param dst_stride -- dst pointer increment
  */
-extern void dsd2pcm_translate(dsd2pcm_ctx *ctx,
-	size_t samples,
-	const unsigned char *src, ptrdiff_t src_stride,
-	int lsbitfirst,
-	float *dst, ptrdiff_t dst_stride);
+void
+dsd2pcm_translate(dsd2pcm_ctx *ctx,
+		  size_t samples,
+		  const unsigned char *src, ptrdiff_t src_stride,
+		  int lsbitfirst,
+		  float *dst, ptrdiff_t dst_stride) noexcept;
 
 #endif /* include guard DSD2PCM_H_INCLUDED */
 
