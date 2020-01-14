@@ -47,7 +47,7 @@ private:
 	static constexpr size_t FIFOMASK = FIFOSIZE - 1;
 
 	uint8_t fifo[FIFOSIZE];
-	unsigned fifopos;
+	size_t fifopos;
 
 public:
 	Dsd2Pcm() noexcept {
@@ -76,7 +76,7 @@ public:
 		       float *dst, ptrdiff_t dst_stride) noexcept;
 
 private:
-	float CalcOutputSample(unsigned ffp) const noexcept;
+	float CalcOutputSample(size_t ffp) const noexcept;
 };
 
 #endif /* include guard DSD2PCM_H_INCLUDED */
