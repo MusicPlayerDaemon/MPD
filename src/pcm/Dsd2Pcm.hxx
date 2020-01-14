@@ -73,6 +73,9 @@ public:
 		       const unsigned char *src, ptrdiff_t src_stride,
 		       bool lsbitfirst,
 		       float *dst, ptrdiff_t dst_stride) noexcept;
+
+private:
+	float CalcOutputSample(unsigned ffp) const noexcept;
 };
 
 #endif /* include guard DSD2PCM_H_INCLUDED */

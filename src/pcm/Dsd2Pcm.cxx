@@ -161,6 +161,18 @@ Dsd2Pcm::Reset() noexcept
 	 */
 }
 
+inline float
+Dsd2Pcm::CalcOutputSample(unsigned ffp) const noexcept
+{
+	double acc = 0;
+	for (unsigned i = 0; i < CTABLES; ++i) {
+		unsigned bite1 = fifo[(ffp              -i) & FIFOMASK] & 0xFF;
+		unsigned bite2 = fifo[(ffp-(CTABLES*2-1)+i) & FIFOMASK] & 0xFF;
+		acc += ctables[i][bite1] + ctables[i][bite2];
+	}
+	return acc;
+}
+
 void
 Dsd2Pcm::Translate(size_t samples,
 		   const unsigned char *src, ptrdiff_t src_stride,
@@ -174,13 +186,8 @@ Dsd2Pcm::Translate(size_t samples,
 		fifo[ffp] = bite1; src += src_stride;
 		unsigned char *p = fifo + ((ffp-CTABLES) & FIFOMASK);
 		*p = bit_reverse(*p);
-		double acc = 0;
-		for (unsigned i = 0; i < CTABLES; ++i) {
-			bite1 = fifo[(ffp              -i) & FIFOMASK] & 0xFF;
-			unsigned bite2 = fifo[(ffp-(CTABLES*2-1)+i) & FIFOMASK] & 0xFF;
-			acc += ctables[i][bite1] + ctables[i][bite2];
-		}
-		*dst = (float)acc; dst += dst_stride;
+		*dst = CalcOutputSample(ffp);
+		dst += dst_stride;
 		ffp = (ffp + 1) & FIFOMASK;
 	}
 	fifopos = ffp;
