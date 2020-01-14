@@ -176,8 +176,8 @@ Dsd2Pcm::CalcOutputSample(size_t ffp) const noexcept
 {
 	double acc = 0;
 	for (size_t i = 0; i < CTABLES; ++i) {
-		unsigned bite1 = fifo[(ffp              -i) & FIFOMASK] & 0xFF;
-		unsigned bite2 = fifo[(ffp-(CTABLES*2-1)+i) & FIFOMASK] & 0xFF;
+		uint8_t bite1 = fifo[(ffp              -i) & FIFOMASK];
+		uint8_t bite2 = fifo[(ffp-(CTABLES*2-1)+i) & FIFOMASK];
 		acc += ctables[i][bite1] + ctables[i][bite2];
 	}
 	return acc;
@@ -198,7 +198,7 @@ Dsd2Pcm::Translate(size_t samples,
 {
 	size_t ffp = fifopos;
 	while (samples-- > 0) {
-		unsigned bite1 = *src & 0xFFu;
+		uint8_t bite1 = *src;
 		src += src_stride;
 		if (lsbf) bite1 = bit_reverse(bite1);
 		*dst = TranslateSample(ffp, bite1);
