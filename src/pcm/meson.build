@@ -28,7 +28,7 @@ if get_option('dsd')
     'Dsd16.cxx',
     'Dsd32.cxx',
     'PcmDsd.cxx',
-    'dsd2pcm/dsd2pcm.c',
+    'Dsd2Pcm.cxx',
   ]
 endif
 

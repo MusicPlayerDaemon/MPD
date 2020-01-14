@@ -18,7 +18,7 @@
  */
 
 #include "PcmDsd.hxx"
-#include "dsd2pcm/dsd2pcm.h"
+#include "Dsd2Pcm.hxx"
 #include "util/ConstBuffer.hxx"
 
 #include <assert.h>

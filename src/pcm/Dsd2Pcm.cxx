@@ -2,6 +2,8 @@
 
 Copyright 2009, 2011 Sebastian Gesemann. All rights reserved.
 
+Copyright 2020 Max Kellermann <max.kellermann@gmail.com>
+
 Redistribution and use in source and binary forms, with or without modification, are
 permitted provided that the following conditions are met:
 
@@ -28,21 +30,25 @@ or implied, of Sebastian Gesemann.
 
  */
 
+#include "Dsd2Pcm.hxx"
 #include "util/bit_reverse.h"
 
 #include <stdlib.h>
 #include <string.h>
 
-#include "dsd2pcm.h"
+/** number of FIR constants */
+static constexpr size_t HTAPS = 48;
 
-#define HTAPS    48             /* number of FIR constants */
-#define FIFOSIZE 16             /* must be a power of two */
-#define FIFOMASK (FIFOSIZE-1)   /* bit mask for FIFO offsets */
-#define CTABLES ((HTAPS+7)/8)   /* number of "8 MACs" lookup tables */
+/** number of "8 MACs" lookup tables */
+static constexpr int CTABLES = (HTAPS + 7) / 8;
 
-#if FIFOSIZE*8 < HTAPS*2
-#error "FIFOSIZE too small"
-#endif
+/* must be a power of two */
+static constexpr int FIFOSIZE = 16;
+
+/** bit mask for FIFO offsets */
+static constexpr size_t FIFOMASK = FIFOSIZE - 1;
+
+static_assert(FIFOSIZE*8 >= HTAPS*2, "FIFOSIZE too small");
 
 /*
  * Properties of this 96-tap lowpass filter when applied on a signal
@@ -64,7 +70,7 @@ or implied, of Sebastian Gesemann.
 /*
  * The 2nd half (48 coeffs) of a 96-tap symmetric lowpass filter
  */
-static const double htaps[HTAPS] = {
+static constexpr double htaps[HTAPS] = {
   0.09950731974056658,
   0.09562845727714668,
   0.08819647126516944,
@@ -118,7 +124,7 @@ static const double htaps[HTAPS] = {
 static float ctables[CTABLES][256];
 static int precalculated = 0;
 
-static void precalc(void)
+static void precalc()
 {
 	int t, e, m, k;
 	double acc;
@@ -143,7 +149,7 @@ struct dsd2pcm_ctx_s
 	unsigned fifopos;
 };
 
-extern dsd2pcm_ctx* dsd2pcm_init(void)
+extern dsd2pcm_ctx* dsd2pcm_init()
 {
 	dsd2pcm_ctx* ptr;
 	if (!precalculated) precalc();
@@ -211,4 +217,3 @@ extern void dsd2pcm_translate(
 	}
 	ptr->fifopos = ffp;
 }
-

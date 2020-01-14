@@ -33,10 +33,6 @@ or implied, of Sebastian Gesemann.
 
 #include <stddef.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 struct dsd2pcm_ctx_s;
 
 typedef struct dsd2pcm_ctx_s dsd2pcm_ctx;
@@ -49,7 +45,7 @@ typedef struct dsd2pcm_ctx_s dsd2pcm_ctx;
  * POSIX thread-safety definition because it modifies global state
  * (lookup tables are computed during the first call)
  */
-extern dsd2pcm_ctx* dsd2pcm_init(void);
+extern dsd2pcm_ctx* dsd2pcm_init();
 
 /**
  * deinitializes a "dsd2pcm engine"
@@ -84,10 +80,6 @@ extern void dsd2pcm_translate(dsd2pcm_ctx *ctx,
 	const unsigned char *src, ptrdiff_t src_stride,
 	int lsbitfirst,
 	float *dst, ptrdiff_t dst_stride);
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
 
 #endif /* include guard DSD2PCM_H_INCLUDED */
 
