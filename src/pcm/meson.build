@@ -30,19 +30,6 @@ if get_option('dsd')
     'PcmDsd.cxx',
     'dsd2pcm/dsd2pcm.c',
   ]
-
-  executable(
-    'dsd2pcm',
-    'dsd2pcm/main.cpp',
-    'dsd2pcm/dsd2pcm.c',
-    'dsd2pcm/noiseshape.c',
-    include_directories: inc,
-    dependencies: [
-      util_dep,
-    ],
-    build_by_default: get_option('test'),
-    install: false,
-  )
 endif
 
 libsamplerate_dep = dependency('samplerate', version: '>= 0.1.3', required: get_option('libsamplerate'))
