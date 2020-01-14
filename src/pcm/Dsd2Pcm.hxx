@@ -78,6 +78,7 @@ public:
 private:
 	void ApplySample(size_t ffp, uint8_t src) noexcept;
 	float CalcOutputSample(size_t ffp) const noexcept;
+	float TranslateSample(size_t ffp, uint8_t src) noexcept;
 };
 
 #endif /* include guard DSD2PCM_H_INCLUDED */

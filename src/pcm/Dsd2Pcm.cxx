@@ -183,6 +183,13 @@ Dsd2Pcm::CalcOutputSample(size_t ffp) const noexcept
 	return acc;
 }
 
+inline float
+Dsd2Pcm::TranslateSample(size_t ffp, uint8_t src) noexcept
+{
+	ApplySample(ffp, src);
+	return CalcOutputSample(ffp);
+}
+
 void
 Dsd2Pcm::Translate(size_t samples,
 		   const uint8_t *src, ptrdiff_t src_stride,
@@ -194,8 +201,7 @@ Dsd2Pcm::Translate(size_t samples,
 		unsigned bite1 = *src & 0xFFu;
 		src += src_stride;
 		if (lsbf) bite1 = bit_reverse(bite1);
-		ApplySample(ffp, bite1);
-		*dst = CalcOutputSample(ffp);
+		*dst = TranslateSample(ffp, bite1);
 		dst += dst_stride;
 		ffp = (ffp + 1) & FIFOMASK;
 	}
