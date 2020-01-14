@@ -39,7 +39,10 @@ _GenerateArray(F &&f, std::index_sequence<I...>) noexcept
 {
 	using T = decltype(f(0));
 
-	return std::array<T, N>{f(I)...};
+	/* double curly braces for compatibility with older compilers
+	   which are not 100% C++17 compliant (e.g. Apple xcode
+	   9.4) */
+	return std::array<T, N>{{f(I)...}};
 }
 
 /**
