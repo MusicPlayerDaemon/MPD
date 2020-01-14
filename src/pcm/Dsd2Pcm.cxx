@@ -151,8 +151,9 @@ static constexpr auto ctables = GenerateArray<CTABLES>(GenerateCtable);
 void
 Dsd2Pcm::Reset() noexcept
 {
-	for (int i = 0; i < FIFOSIZE; ++i)
-		fifo[i] = 0x69; /* my favorite silence pattern */
+	/* my favorite silence pattern */
+	std::fill_n(fifo, std::size(fifo), 0x69);
+
 	fifopos = 0;
 	/* 0x69 = 01101001
 	 * This pattern "on repeat" makes a low energy 352.8 kHz tone
