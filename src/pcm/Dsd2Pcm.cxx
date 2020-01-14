@@ -192,7 +192,7 @@ Dsd2Pcm::TranslateSample(size_t ffp, uint8_t src) noexcept
 
 void
 Dsd2Pcm::Translate(size_t samples,
-		   const uint8_t *src, ptrdiff_t src_stride,
+		   const uint8_t *gcc_restrict src, ptrdiff_t src_stride,
 		   bool lsbf,
 		   float *dst, ptrdiff_t dst_stride) noexcept
 {
