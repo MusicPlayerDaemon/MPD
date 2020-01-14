@@ -151,8 +151,7 @@ static constexpr auto ctables = GenerateArray<CTABLES>(GenerateCtable);
 void
 Dsd2Pcm::Reset() noexcept
 {
-	int i;
-	for (i=0; i<FIFOSIZE; ++i)
+	for (int i = 0; i < FIFOSIZE; ++i)
 		fifo[i] = 0x69; /* my favorite silence pattern */
 	fifopos = 0;
 	/* 0x69 = 01101001
@@ -168,22 +167,17 @@ Dsd2Pcm::Translate(size_t samples,
 		   bool lsbf,
 		   float *dst, ptrdiff_t dst_stride) noexcept
 {
-	unsigned ffp;
-	unsigned i;
-	unsigned bite1, bite2;
-	unsigned char* p;
-	double acc;
-	ffp = fifopos;
+	unsigned ffp = fifopos;
 	while (samples-- > 0) {
-		bite1 = *src & 0xFFu;
+		unsigned bite1 = *src & 0xFFu;
 		if (lsbf) bite1 = bit_reverse(bite1);
 		fifo[ffp] = bite1; src += src_stride;
-		p = fifo + ((ffp-CTABLES) & FIFOMASK);
+		unsigned char *p = fifo + ((ffp-CTABLES) & FIFOMASK);
 		*p = bit_reverse(*p);
-		acc = 0;
-		for (i=0; i<CTABLES; ++i) {
+		double acc = 0;
+		for (unsigned i = 0; i < CTABLES; ++i) {
 			bite1 = fifo[(ffp              -i) & FIFOMASK] & 0xFF;
-			bite2 = fifo[(ffp-(CTABLES*2-1)+i) & FIFOMASK] & 0xFF;
+			unsigned bite2 = fifo[(ffp-(CTABLES*2-1)+i) & FIFOMASK] & 0xFF;
 			acc += ctables[i][bite1] + ctables[i][bite2];
 		}
 		*dst = (float)acc; dst += dst_stride;
