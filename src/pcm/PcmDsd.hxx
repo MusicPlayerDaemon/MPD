@@ -21,10 +21,7 @@
 #define MPD_PCM_DSD_HXX
 
 #include "Buffer.hxx"
-#include "ChannelDefs.hxx"
 #include "Dsd2Pcm.hxx"
-
-#include <array>
 
 #include <stdint.h>
 
@@ -36,10 +33,12 @@ template<typename T> struct ConstBuffer;
 class PcmDsd {
 	PcmBuffer buffer;
 
-	std::array<Dsd2Pcm, MAX_CHANNELS> dsd2pcm;
+	MultiDsd2Pcm dsd2pcm;
 
 public:
-	void Reset() noexcept;
+	void Reset() noexcept {
+		dsd2pcm.Reset();
+	}
 
 	ConstBuffer<float> ToFloat(unsigned channels,
 				   ConstBuffer<uint8_t> src) noexcept;

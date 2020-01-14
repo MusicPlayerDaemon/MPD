@@ -34,6 +34,7 @@ or implied, of Sebastian Gesemann.
 #include "util/bit_reverse.h"
 #include "util/GenerateArray.hxx"
 
+#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -204,4 +205,17 @@ Dsd2Pcm::Translate(size_t samples,
 		ffp = (ffp + 1) & FIFOMASK;
 	}
 	fifopos = ffp;
+}
+
+void
+MultiDsd2Pcm::Translate(unsigned channels, size_t n_frames,
+			const uint8_t *src, float *dest) noexcept
+{
+	assert(channels <= per_channel.max_size());
+
+	for (unsigned i = 0; i < channels; ++i) {
+		per_channel[i].Translate(n_frames,
+					 src++, channels,
+					 dest++, channels);
+	}
 }

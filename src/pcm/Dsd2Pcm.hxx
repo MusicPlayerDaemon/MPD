@@ -31,6 +31,10 @@ or implied, of Sebastian Gesemann.
 #ifndef DSD2PCM_H_INCLUDED
 #define DSD2PCM_H_INCLUDED
 
+#include "ChannelDefs.hxx"
+
+#include <array>
+
 #include <stddef.h>
 #include <stdint.h>
 
@@ -77,6 +81,19 @@ private:
 	void ApplySample(size_t ffp, uint8_t src) noexcept;
 	float CalcOutputSample(size_t ffp) const noexcept;
 	float TranslateSample(size_t ffp, uint8_t src) noexcept;
+};
+
+class MultiDsd2Pcm {
+	std::array<Dsd2Pcm, MAX_CHANNELS> per_channel;
+
+public:
+	void Reset() noexcept {
+		for (auto &i : per_channel)
+			i.Reset();
+	}
+
+	void Translate(unsigned channels, size_t n_frames,
+		       const uint8_t *src, float *dest) noexcept;
 };
 
 #endif /* include guard DSD2PCM_H_INCLUDED */
