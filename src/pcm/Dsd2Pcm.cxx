@@ -32,6 +32,7 @@ or implied, of Sebastian Gesemann.
 
 #include "Dsd2Pcm.hxx"
 #include "util/bit_reverse.h"
+#include "util/GenerateArray.hxx"
 
 #include <stdlib.h>
 #include <string.h>
@@ -121,9 +122,6 @@ static constexpr double htaps[HTAPS] = {
   3.130441005359396e-08
 };
 
-static float ctables[CTABLES][256];
-static int precalculated = 0;
-
 static constexpr float
 CalculateCtableValue(int t, int k, int e) noexcept
 {
@@ -135,20 +133,26 @@ CalculateCtableValue(int t, int k, int e) noexcept
 	return acc;
 }
 
-static void
-precalc() noexcept
-{
-	int t, e, k;
-	if (precalculated) return;
-	for (t=0; t<CTABLES; ++t) {
-		k = HTAPS - t*8;
-		if (k>8) k=8;
-		for (e=0; e<256; ++e) {
-			ctables[CTABLES-1-t][e] = CalculateCtableValue(t, k, e);
-		}
+/* this needs to be a struct because GCC 6 doesn't have constexpr
+   lambdas (C++17) */
+struct GenerateCtableValue {
+	int t, k;
+
+	constexpr auto operator()(int e) const noexcept {
+		return CalculateCtableValue(t, k, e);
 	}
-	precalculated = 1;
+};
+
+static constexpr auto
+GenerateCtable(int t) noexcept
+{
+	int k = HTAPS - t*8;
+	if (k>8) k=8;
+
+	return GenerateArray<256>(GenerateCtableValue{CTABLES - 1 - t, k});
 }
+
+static constexpr auto ctables = GenerateArray<CTABLES>(GenerateCtable);
 
 struct dsd2pcm_ctx_s
 {
@@ -160,7 +164,6 @@ dsd2pcm_ctx *
 dsd2pcm_init() noexcept
 {
 	dsd2pcm_ctx* ptr;
-	if (!precalculated) precalc();
 	ptr = (dsd2pcm_ctx*) malloc(sizeof(dsd2pcm_ctx));
 	if (ptr) dsd2pcm_reset(ptr);
 	return ptr;
