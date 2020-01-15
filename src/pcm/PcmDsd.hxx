@@ -42,6 +42,9 @@ public:
 
 	ConstBuffer<float> ToFloat(unsigned channels,
 				   ConstBuffer<uint8_t> src) noexcept;
+
+	ConstBuffer<int32_t> ToS24(unsigned channels,
+				   ConstBuffer<uint8_t> src) noexcept;
 };
 
 #endif

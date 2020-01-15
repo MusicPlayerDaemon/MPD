@@ -31,6 +31,7 @@ or implied, of Sebastian Gesemann.
  */
 
 #include "Dsd2Pcm.hxx"
+#include "Traits.hxx"
 #include "util/bit_reverse.h"
 #include "util/GenerateArray.hxx"
 
@@ -150,6 +151,29 @@ GenerateCtable(int t) noexcept
 
 static constexpr auto ctables = GenerateArray<CTABLES>(GenerateCtable);
 
+template<typename Traits=SampleTraits<SampleFormat::S24_P32>>
+static constexpr auto
+CalculateCtableS24Value(size_t i, size_t j) noexcept
+{
+	return typename Traits::value_type(ctables[i][j] * Traits::MAX);
+}
+
+struct GenerateCtableS24Value {
+	size_t i;
+
+	constexpr auto operator()(size_t j) const noexcept {
+		return CalculateCtableS24Value(i, j);
+	}
+};
+
+static constexpr auto
+GenerateCtableS24(size_t i) noexcept
+{
+	return GenerateArray<256>(GenerateCtableS24Value{i});
+}
+
+static constexpr auto ctables_s24 = GenerateArray<CTABLES>(GenerateCtableS24);
+
 void
 Dsd2Pcm::Reset() noexcept
 {
@@ -191,6 +215,25 @@ Dsd2Pcm::TranslateSample(size_t ffp, uint8_t src) noexcept
 	return CalcOutputSample(ffp);
 }
 
+inline int32_t
+Dsd2Pcm::CalcOutputSampleS24(size_t ffp) const noexcept
+{
+	int32_t acc = 0;
+	for (size_t i = 0; i < CTABLES; ++i) {
+		uint8_t bite1 = fifo[(ffp              -i) & FIFOMASK];
+		uint8_t bite2 = fifo[(ffp-(CTABLES*2-1)+i) & FIFOMASK];
+		acc += ctables_s24[i][bite1] + ctables_s24[i][bite2];
+	}
+	return acc;
+}
+
+inline int32_t
+Dsd2Pcm::TranslateSampleS24(size_t ffp, uint8_t src) noexcept
+{
+	ApplySample(ffp, src);
+	return CalcOutputSampleS24(ffp);
+}
+
 void
 Dsd2Pcm::Translate(size_t samples,
 		   const uint8_t *gcc_restrict src, ptrdiff_t src_stride,
@@ -201,6 +244,22 @@ Dsd2Pcm::Translate(size_t samples,
 		uint8_t bite1 = *src;
 		src += src_stride;
 		*dst = TranslateSample(ffp, bite1);
+		dst += dst_stride;
+		ffp = (ffp + 1) & FIFOMASK;
+	}
+	fifopos = ffp;
+}
+
+void
+Dsd2Pcm::TranslateS24(size_t samples,
+		      const uint8_t *gcc_restrict src, ptrdiff_t src_stride,
+		      int32_t *dst, ptrdiff_t dst_stride) noexcept
+{
+	size_t ffp = fifopos;
+	while (samples-- > 0) {
+		uint8_t bite1 = *src;
+		src += src_stride;
+		*dst = TranslateSampleS24(ffp, bite1);
 		dst += dst_stride;
 		ffp = (ffp + 1) & FIFOMASK;
 	}
@@ -233,6 +292,37 @@ MultiDsd2Pcm::TranslateStereo(size_t n_frames,
 	while (n_frames-- > 0) {
 		*dest++ = per_channel[0].TranslateSample(ffp, *src++);
 		*dest++ = per_channel[1].TranslateSample(ffp, *src++);
+		ffp = (ffp + 1) & Dsd2Pcm::FIFOMASK;
+	}
+	fifopos = ffp;
+}
+
+void
+MultiDsd2Pcm::TranslateS24(unsigned channels, size_t n_frames,
+			   const uint8_t *src, int32_t *dest) noexcept
+{
+	assert(channels <= per_channel.max_size());
+
+	if (channels == 2) {
+		TranslateStereoS24(n_frames, src, dest);
+		return;
+	}
+
+	for (unsigned i = 0; i < channels; ++i) {
+		per_channel[i].TranslateS24(n_frames,
+					    src++, channels,
+					    dest++, channels);
+	}
+}
+
+inline void
+MultiDsd2Pcm::TranslateStereoS24(size_t n_frames,
+				 const uint8_t *src, int32_t *dest) noexcept
+{
+	size_t ffp = fifopos;
+	while (n_frames-- > 0) {
+		*dest++ = per_channel[0].TranslateSampleS24(ffp, *src++);
+		*dest++ = per_channel[1].TranslateSampleS24(ffp, *src++);
 		ffp = (ffp + 1) & Dsd2Pcm::FIFOMASK;
 	}
 	fifopos = ffp;

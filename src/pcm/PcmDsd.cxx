@@ -38,3 +38,19 @@ PcmDsd::ToFloat(unsigned channels, ConstBuffer<uint8_t> src) noexcept
 	dsd2pcm.Translate(channels, num_frames, src.data, dest);
 	return { dest, num_samples };
 }
+
+ConstBuffer<int32_t>
+PcmDsd::ToS24(unsigned channels, ConstBuffer<uint8_t> src) noexcept
+{
+	assert(!src.IsNull());
+	assert(!src.empty());
+	assert(src.size % channels == 0);
+
+	const size_t num_samples = src.size;
+	const size_t num_frames = src.size / channels;
+
+	auto *dest = buffer.GetT<int32_t>(num_samples);
+
+	dsd2pcm.TranslateS24(channels, num_frames, src.data, dest);
+	return { dest, num_samples };
+}

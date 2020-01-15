@@ -79,10 +79,17 @@ public:
 		       const uint8_t *src, ptrdiff_t src_stride,
 		       float *dst, ptrdiff_t dst_stride) noexcept;
 
+	void TranslateS24(size_t samples,
+			  const uint8_t *src, ptrdiff_t src_stride,
+			  int32_t *dst, ptrdiff_t dst_stride) noexcept;
+
 private:
 	void ApplySample(size_t ffp, uint8_t src) noexcept;
 	float CalcOutputSample(size_t ffp) const noexcept;
 	float TranslateSample(size_t ffp, uint8_t src) noexcept;
+
+	int32_t CalcOutputSampleS24(size_t ffp) const noexcept;
+	int32_t TranslateSampleS24(size_t ffp, uint8_t src) noexcept;
 };
 
 class MultiDsd2Pcm {
@@ -100,12 +107,18 @@ public:
 	void Translate(unsigned channels, size_t n_frames,
 		       const uint8_t *src, float *dest) noexcept;
 
+	void TranslateS24(unsigned channels, size_t n_frames,
+			  const uint8_t *src, int32_t *dest) noexcept;
+
 private:
 	/**
 	 * Optimized implementation for the common case.
 	 */
 	void TranslateStereo(size_t n_frames,
 			     const uint8_t *src, float *dest) noexcept;
+
+	void TranslateStereoS24(size_t n_frames,
+				const uint8_t *src, int32_t *dest) noexcept;
 };
 
 #endif /* include guard DSD2PCM_H_INCLUDED */
