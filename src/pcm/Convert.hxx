@@ -51,6 +51,10 @@ class PcmConvert {
 
 	bool enable_resampler, enable_format, enable_channels;
 
+#ifdef ENABLE_DSD
+	bool dsd2pcm_float;
+#endif
+
 public:
 
 	/**

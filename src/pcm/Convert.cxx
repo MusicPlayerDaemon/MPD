@@ -41,7 +41,10 @@ PcmConvert::PcmConvert(const AudioFormat _src_format,
 	AudioFormat format = _src_format;
 	if (format.format == SampleFormat::DSD) {
 #ifdef ENABLE_DSD
-		format.format = SampleFormat::FLOAT;
+		dsd2pcm_float = dest_format.format == SampleFormat::FLOAT;
+		format.format = dsd2pcm_float
+			? SampleFormat::FLOAT
+			: SampleFormat::S24_P32;
 #else
 		throw std::runtime_error("DSD support is disabled");
 #endif
@@ -115,11 +118,13 @@ PcmConvert::Convert(ConstBuffer<void> buffer)
 #ifdef ENABLE_DSD
 	if (src_format.format == SampleFormat::DSD) {
 		auto s = ConstBuffer<uint8_t>::FromVoid(buffer);
-		auto d = dsd.ToFloat(src_format.channels, s);
+		auto d = dsd2pcm_float
+			? dsd.ToFloat(src_format.channels, s).ToVoid()
+			: dsd.ToS24(src_format.channels, s).ToVoid();
 		if (d.IsNull())
 			throw std::runtime_error("DSD to PCM conversion failed");
 
-		buffer = d.ToVoid();
+		buffer = d;
 	}
 #endif
 
