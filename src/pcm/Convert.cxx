@@ -19,16 +19,35 @@
 
 #include "Convert.hxx"
 #include "ConfiguredResampler.hxx"
+#include "config/Data.hxx"
 #include "util/ConstBuffer.hxx"
+#include "util/StringAPI.hxx"
 
 #include <stdexcept>
 
 #include <assert.h>
 
+#ifdef ENABLE_DSD
+static bool dsd2pcm_integer = false;
+#endif
+
 void
 pcm_convert_global_init(const ConfigData &config)
 {
 	pcm_resampler_global_init(config);
+
+#ifdef ENABLE_DSD
+	dsd2pcm_integer = config.With(ConfigOption::DSD2PCM_CONVERTER, [](const char *s){
+		if (s == nullptr)
+			return false;
+		else if (StringIsEqual(s, "float"))
+			return false;
+		else if (StringIsEqual(s, "integer"))
+			return true;
+		else
+			throw std::runtime_error("Unrecognized value");
+	});
+#endif
 }
 
 PcmConvert::PcmConvert(const AudioFormat _src_format,

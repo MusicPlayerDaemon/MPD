@@ -568,6 +568,26 @@ Sometimes, music needs to be resampled before it can be played; for example, CDs
 Check the :ref:`resampler_plugins` reference for a list of resamplers
 and how to configure them.
 
+DSD
+^^^
+
+There are three ways to play back DSD (Direct Stream Digital):
+
+- natively if your output supports it (ALSA only and requires a sound
+  card with native DSD support)
+- `DSD over PCM <http://dsd-guide.com/dop-open-standard>`_: wrapped
+  inside fake 24 bit PCM samples (ALSA and OSX only and requires an
+  external DAC with DoP support)
+- for everything else, MPD automatically converts DSD to PCM
+
+For the last option, the setting ``dsd2pcm_converter`` selects a
+conversion method.  The default is ``float`` which converts to
+floating point samples.  For CPUs with a weak floating point unit
+(e.g. some ARMs like the one in the Raspberry Pi), it may be faster to
+use ``integer``, which is an integer-only implementation of the
+conversion algorithm.
+
+
 Client Connections
 ------------------
 
