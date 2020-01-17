@@ -30,7 +30,9 @@ ver 0.22 (not yet released)
 * switch to C++17
   - GCC 7 or clang 4 (or newer) recommended
 
-ver 0.21.19 (not yet released)
+ver 0.21.19 (2020/01/17)
+* configuration
+  - allow overriding top-level settings in includes
 * output
   - pulse: obey Pulse's maximum sample rate (fixes DSD128 playback)
 * fix build failure with clang 10

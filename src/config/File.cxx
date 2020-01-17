@@ -153,11 +153,9 @@ ReadConfigParam(ConfigData &config_data, BufferedReader &reader,
 			      name, reader.GetLineNumber());
 
 	if (!option.repeatable)
-		if (const auto *param = config_data.GetParam(o))
-			throw FormatRuntimeError("config parameter \"%s\" is first defined "
-						 "on line %d and redefined on line %u\n",
-						 name, param->line,
-						 reader.GetLineNumber());
+		/* if the option is not repeatable, override the old
+		   value by removing it first */
+		config_data.GetParamList(o).clear();
 
 	/* now parse the block or the value */
 
