@@ -22,7 +22,6 @@ ver 0.22 (not yet released)
   - ffmpeg: new plugin based on FFmpeg's libavfilter library
   - hdcd: new plugin based on FFmpeg's "af_hdcd" for HDCD playback
   - volume: convert S16 to S24 to preserve quality and reduce dithering noise
-  - dsd: add integer-only DSD to PCM converter
 * output
   - jack: add option "auto_destination_ports"
   - jack: report error details
