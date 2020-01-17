@@ -358,6 +358,11 @@ curl = AutotoolsProject(
         '--disable-manual',
         '--disable-threaded-resolver', '--disable-verbose', '--disable-sspi',
         '--disable-crypto-auth', '--disable-ntlm-wb', '--disable-tls-srp', '--disable-cookies',
+        '--disable-doh',
+        '--disable-mime',
+        '--disable-netrc',
+        '--disable-progress-meter',
+        '--disable-alt-svc',
         '--without-ssl', '--without-gnutls', '--without-nss', '--without-libssh2',
     ],
 
