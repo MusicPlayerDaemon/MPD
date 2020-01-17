@@ -39,8 +39,13 @@ PcmConvert::PcmConvert(const AudioFormat _src_format,
 	assert(dest_format.IsValid());
 
 	AudioFormat format = _src_format;
-	if (format.format == SampleFormat::DSD)
+	if (format.format == SampleFormat::DSD) {
+#ifdef ENABLE_DSD
 		format.format = SampleFormat::FLOAT;
+#else
+		throw std::runtime_error("DSD support is disabled");
+#endif
+	}
 
 	enable_resampler = format.sample_rate != dest_format.sample_rate;
 	if (enable_resampler) {
