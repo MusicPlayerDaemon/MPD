@@ -17,12 +17,6 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-/*
- * Functions for dealing with all configured (enabled) audion outputs
- * at once.
- *
- */
-
 #ifndef OUTPUT_ALL_H
 #define OUTPUT_ALL_H
 
@@ -46,6 +40,10 @@ class AudioOutputClient;
 struct ConfigData;
 struct ReplayGainConfig;
 
+/*
+ * Wrap multiple #AudioOutputControl objects a single interface which
+ * keeps them synchronized.
+ */
 class MultipleOutputs final : public PlayerOutputs {
 	MixerListener &mixer_listener;
 
