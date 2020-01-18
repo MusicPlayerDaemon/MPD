@@ -22,6 +22,7 @@
 #include "Partition.hxx"
 #include "Instance.hxx"
 #include "BackgroundCommand.hxx"
+#include "IdleFlags.hxx"
 #include "config.h"
 
 Client::~Client() noexcept
@@ -59,6 +60,25 @@ Client::OnBackgroundCommandFinished() noexcept
 	ResumeInput();
 
 	timeout_event.Schedule(client_timeout);
+}
+
+void
+Client::SetPartition(Partition &new_partition) noexcept
+{
+	if (partition == &new_partition)
+		return;
+
+	partition = &new_partition;
+
+	/* set idle flags for those subsystems which are specific to
+	   the current partition to force the client to reload its
+	   state */
+	idle_flags |= IDLE_PLAYLIST|IDLE_PLAYER|IDLE_MIXER|IDLE_OUTPUT|IDLE_OPTIONS;
+	/* note: we're not using IdleAdd() here because we don't need
+	   to notify the client; the method is only used while this
+	   client's "partition" command is handled, which means the
+	   client is currently active and doesn't need to be woken
+	   up */
 }
 
 Instance &

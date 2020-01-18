@@ -234,11 +234,7 @@ public:
 		return *partition;
 	}
 
-	void SetPartition(Partition &new_partition) noexcept {
-		partition = &new_partition;
-
-		// TODO: set various idle flags?
-	}
+	void SetPartition(Partition &new_partition) noexcept;
 
 	gcc_pure
 	Instance &GetInstance() noexcept;
