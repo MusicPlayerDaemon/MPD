@@ -25,8 +25,11 @@ class TagHandler;
 struct Tag;
 struct id3_tag;
 
+/**
+ * Throws on I/O error.
+ */
 bool
-tag_id3_scan(InputStream &is, TagHandler &handler) noexcept;
+tag_id3_scan(InputStream &is, TagHandler &handler);
 
 Tag
 tag_id3_import(const struct id3_tag *) noexcept;

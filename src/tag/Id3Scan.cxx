@@ -28,11 +28,8 @@
 #include "util/ScopeExit.hxx"
 #include "util/StringStrip.hxx"
 #include "util/StringView.hxx"
-#include "Log.hxx"
 
 #include <id3tag.h>
-
-#include <exception>
 
 #include <string.h>
 #include <stdlib.h>
@@ -381,18 +378,11 @@ tag_id3_import(const struct id3_tag *tag) noexcept
 }
 
 bool
-tag_id3_scan(InputStream &is, TagHandler &handler) noexcept
+tag_id3_scan(InputStream &is, TagHandler &handler)
 {
-	UniqueId3Tag tag;
-
-	try {
-		tag = tag_id3_load(is);
-		if (!tag)
-			return false;
-	} catch (...) {
-		LogError(std::current_exception());
+	auto tag = tag_id3_load(is);
+	if (!tag)
 		return false;
-	}
 
 	scan_id3_tag(tag.get(), handler);
 	return true;
