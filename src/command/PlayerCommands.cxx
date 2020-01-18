@@ -108,7 +108,8 @@ handle_pause(Client &client, Request args, gcc_unused Response &r)
 CommandResult
 handle_status(Client &client, gcc_unused Request args, Response &r)
 {
-	auto &pc = client.GetPlayerControl();
+	auto &partition = client.GetPartition();
+	auto &pc = partition.pc;
 
 	const char *state = nullptr;
 	int song;
@@ -127,9 +128,9 @@ handle_status(Client &client, gcc_unused Request args, Response &r)
 		break;
 	}
 
-	const playlist &playlist = client.GetPlaylist();
+	const auto &playlist = partition.playlist;
 
-	const auto volume = volume_level_get(client.GetPartition().outputs);
+	const auto volume = volume_level_get(partition.outputs);
 	if (volume >= 0)
 		r.Format("volume: %i\n", volume);
 
@@ -186,7 +187,7 @@ handle_status(Client &client, gcc_unused Request args, Response &r)
 	}
 
 #ifdef ENABLE_DATABASE
-	const UpdateService *update_service = client.GetInstance().update;
+	const UpdateService *update_service = partition.instance.update;
 	unsigned updateJobId = update_service != nullptr
 		? update_service->GetId()
 		: 0;
