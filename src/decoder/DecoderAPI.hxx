@@ -35,7 +35,7 @@
 #include "DecoderPlugin.hxx"
 #include "ReplayGainInfo.hxx"
 #include "tag/Tag.hxx"
-#include "AudioFormat.hxx"
+#include "pcm/AudioFormat.hxx"
 #include "MixRampInfo.hxx"
 #include "config/Block.hxx"
 #include "Chrono.hxx"

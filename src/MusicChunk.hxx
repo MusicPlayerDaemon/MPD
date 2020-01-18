@@ -26,7 +26,7 @@
 #include "util/WritableBuffer.hxx"
 
 #ifndef NDEBUG
-#include "AudioFormat.hxx"
+#include "pcm/AudioFormat.hxx"
 #endif
 
 #include <memory>

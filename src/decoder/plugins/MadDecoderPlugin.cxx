@@ -26,7 +26,7 @@
 #include "tag/Handler.hxx"
 #include "tag/ReplayGain.hxx"
 #include "tag/MixRamp.hxx"
-#include "CheckAudioFormat.hxx"
+#include "pcm/CheckAudioFormat.hxx"
 #include "util/Clamp.hxx"
 #include "util/StringCompare.hxx"
 #include "util/Domain.hxx"

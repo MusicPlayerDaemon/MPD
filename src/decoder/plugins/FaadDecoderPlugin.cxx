@@ -21,7 +21,7 @@
 #include "../DecoderAPI.hxx"
 #include "../DecoderBuffer.hxx"
 #include "input/InputStream.hxx"
-#include "CheckAudioFormat.hxx"
+#include "pcm/CheckAudioFormat.hxx"
 #include "tag/Handler.hxx"
 #include "util/ScopeExit.hxx"
 #include "util/ConstBuffer.hxx"

@@ -20,7 +20,7 @@
 #ifndef MPD_FILTER_HXX
 #define MPD_FILTER_HXX
 
-#include "AudioFormat.hxx"
+#include "pcm/AudioFormat.hxx"
 
 #include <assert.h>
 

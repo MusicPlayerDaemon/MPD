@@ -23,7 +23,7 @@
 #include "Control.hxx"
 #include "MusicChunkPtr.hxx"
 #include "player/Outputs.hxx"
-#include "AudioFormat.hxx"
+#include "pcm/AudioFormat.hxx"
 #include "ReplayGainMode.hxx"
 #include "Chrono.hxx"
 #include "util/Compiler.h"

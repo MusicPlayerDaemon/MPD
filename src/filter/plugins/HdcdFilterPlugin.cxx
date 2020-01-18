@@ -24,7 +24,7 @@
 #include "filter/NullFilter.hxx"
 #include "filter/Prepared.hxx"
 #include "lib/ffmpeg/Filter.hxx"
-#include "AudioFormat.hxx"
+#include "pcm/AudioFormat.hxx"
 
 static constexpr const char *hdcd_graph = "hdcd";
 

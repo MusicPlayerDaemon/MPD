@@ -21,7 +21,7 @@
 #define MPD_FLAC_PCM_HXX
 
 #include "pcm/Buffer.hxx"
-#include "AudioFormat.hxx"
+#include "pcm/AudioFormat.hxx"
 
 #include <FLAC/ordinals.h>
 

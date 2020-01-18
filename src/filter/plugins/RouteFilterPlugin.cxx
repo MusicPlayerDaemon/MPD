@@ -41,10 +41,10 @@
 
 #include "RouteFilterPlugin.hxx"
 #include "config/Block.hxx"
-#include "AudioFormat.hxx"
 #include "filter/FilterPlugin.hxx"
 #include "filter/Filter.hxx"
 #include "filter/Prepared.hxx"
+#include "pcm/AudioFormat.hxx"
 #include "pcm/Buffer.hxx"
 #include "pcm/Silence.hxx"
 #include "util/StringStrip.hxx"

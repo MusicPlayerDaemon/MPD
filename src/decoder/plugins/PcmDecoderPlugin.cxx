@@ -21,7 +21,7 @@
 
 #include "PcmDecoderPlugin.hxx"
 #include "../DecoderAPI.hxx"
-#include "CheckAudioFormat.hxx"
+#include "pcm/CheckAudioFormat.hxx"
 #include "pcm/Pack.hxx"
 #include "input/InputStream.hxx"
 #include "util/ByteOrder.hxx"
@@ -33,7 +33,7 @@
 #include "Log.hxx"
 
 #ifdef ENABLE_ALSA
-#include "AudioParser.hxx"
+#include "pcm/AudioParser.hxx"
 #endif
 
 #include <exception>

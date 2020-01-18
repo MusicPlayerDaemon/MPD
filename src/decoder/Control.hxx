@@ -21,7 +21,7 @@
 #define MPD_DECODER_CONTROL_HXX
 
 #include "Command.hxx"
-#include "AudioFormat.hxx"
+#include "pcm/AudioFormat.hxx"
 #include "MixRampInfo.hxx"
 #include "input/Handler.hxx"
 #include "thread/Mutex.hxx"

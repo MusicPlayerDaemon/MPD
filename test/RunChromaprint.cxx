@@ -27,7 +27,7 @@
 #include "input/Init.hxx"
 #include "input/InputStream.hxx"
 #include "fs/Path.hxx"
-#include "AudioFormat.hxx"
+#include "pcm/AudioFormat.hxx"
 #include "util/OptionDef.hxx"
 #include "util/OptionParser.hxx"
 #include "util/PrintException.hxx"

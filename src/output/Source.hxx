@@ -21,8 +21,8 @@
 #define AUDIO_OUTPUT_SOURCE_HXX
 
 #include "SharedPipeConsumer.hxx"
-#include "AudioFormat.hxx"
 #include "ReplayGainMode.hxx"
+#include "pcm/AudioFormat.hxx"
 #include "pcm/Buffer.hxx"
 #include "pcm/Dither.hxx"
 #include "thread/Mutex.hxx"

@@ -22,7 +22,7 @@
 #include "util/ByteOrder.hxx"
 #include "util/Domain.hxx"
 #include "util/RuntimeError.hxx"
-#include "AudioFormat.hxx"
+#include "pcm/AudioFormat.hxx"
 #include "Log.hxx"
 #include "config.h"
 

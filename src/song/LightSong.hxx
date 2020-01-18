@@ -21,7 +21,7 @@
 #define MPD_LIGHT_SONG_HXX
 
 #include "Chrono.hxx"
-#include "AudioFormat.hxx"
+#include "pcm/AudioFormat.hxx"
 #include "util/Compiler.h"
 
 #include <string>

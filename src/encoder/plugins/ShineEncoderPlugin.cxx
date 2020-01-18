@@ -19,7 +19,7 @@
 
 #include "ShineEncoderPlugin.hxx"
 #include "../EncoderAPI.hxx"
-#include "AudioFormat.hxx"
+#include "pcm/AudioFormat.hxx"
 #include "util/DynamicFifoBuffer.hxx"
 #include "util/RuntimeError.hxx"
 

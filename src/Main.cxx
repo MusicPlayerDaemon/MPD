@@ -46,7 +46,7 @@
 #include "playlist/PlaylistRegistry.hxx"
 #include "zeroconf/ZeroconfGlue.hxx"
 #include "decoder/DecoderList.hxx"
-#include "AudioParser.hxx"
+#include "pcm/AudioParser.hxx"
 #include "pcm/Convert.hxx"
 #include "unix/SignalHandlers.hxx"
 #include "thread/Slack.hxx"

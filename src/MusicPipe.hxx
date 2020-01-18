@@ -25,7 +25,7 @@
 #include "util/Compiler.h"
 
 #ifndef NDEBUG
-#include "AudioFormat.hxx"
+#include "pcm/AudioFormat.hxx"
 #endif
 
 /**

@@ -19,7 +19,7 @@
 
 #include "Mpg123DecoderPlugin.hxx"
 #include "../DecoderAPI.hxx"
-#include "CheckAudioFormat.hxx"
+#include "pcm/CheckAudioFormat.hxx"
 #include "tag/Handler.hxx"
 #include "tag/Builder.hxx"
 #include "tag/ReplayGain.hxx"

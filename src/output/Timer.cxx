@@ -18,7 +18,7 @@
  */
 
 #include "Timer.hxx"
-#include "AudioFormat.hxx"
+#include "pcm/AudioFormat.hxx"
 
 #include <assert.h>
 

@@ -20,9 +20,9 @@
 #include "ConvertFilterPlugin.hxx"
 #include "filter/Filter.hxx"
 #include "filter/Prepared.hxx"
+#include "pcm/AudioFormat.hxx"
 #include "pcm/Convert.hxx"
 #include "util/ConstBuffer.hxx"
-#include "AudioFormat.hxx"
 
 #include <memory>
 

@@ -23,7 +23,7 @@
 #include "Ptr.hxx"
 #include "Chrono.hxx"
 #include "tag/Tag.hxx"
-#include "AudioFormat.hxx"
+#include "pcm/AudioFormat.hxx"
 #include "util/Compiler.h"
 #include "config.h"
 

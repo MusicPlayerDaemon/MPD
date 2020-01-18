@@ -18,7 +18,7 @@
  */
 
 #include "FlacPcm.hxx"
-#include "CheckAudioFormat.hxx"
+#include "pcm/CheckAudioFormat.hxx"
 #include "lib/xiph/FlacAudioFormat.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/ConstBuffer.hxx"

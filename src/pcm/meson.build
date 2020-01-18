@@ -1,7 +1,7 @@
 pcm_basic_sources = [
-  '../CheckAudioFormat.cxx',
-  '../AudioFormat.cxx',
-  '../AudioParser.cxx',
+  'CheckAudioFormat.cxx',
+  'AudioFormat.cxx',
+  'AudioParser.cxx',
   'SampleFormat.cxx',
   'Interleave.cxx',
   'Buffer.cxx',

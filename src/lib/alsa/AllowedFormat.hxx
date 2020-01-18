@@ -20,7 +20,7 @@
 #ifndef MPD_ALSA_ALLOWED_FORMAT_HXX
 #define MPD_ALSA_ALLOWED_FORMAT_HXX
 
-#include "AudioFormat.hxx"
+#include "pcm/AudioFormat.hxx"
 #include "config.h"
 
 #include <forward_list>

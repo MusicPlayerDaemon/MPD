@@ -29,7 +29,7 @@
 
 #include "EncoderInterface.hxx"
 #include "EncoderPlugin.hxx"
-#include "AudioFormat.hxx"
+#include "pcm/AudioFormat.hxx"
 #include "tag/Tag.hxx"
 #include "config/Block.hxx"
 

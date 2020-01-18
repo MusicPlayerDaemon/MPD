@@ -28,9 +28,9 @@
 #include "input/InputStream.hxx"
 #include "input/Reader.hxx"
 #include "OggCodec.hxx"
+#include "pcm/CheckAudioFormat.hxx"
 #include "pcm/Interleave.hxx"
 #include "util/ScopeExit.hxx"
-#include "CheckAudioFormat.hxx"
 #include "tag/Handler.hxx"
 #include "Log.hxx"
 

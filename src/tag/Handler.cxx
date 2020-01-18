@@ -19,7 +19,7 @@
 
 #include "Handler.hxx"
 #include "Builder.hxx"
-#include "AudioFormat.hxx"
+#include "pcm/AudioFormat.hxx"
 #include "util/CharUtil.hxx"
 #include "util/StringView.hxx"
 

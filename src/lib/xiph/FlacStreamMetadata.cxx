@@ -20,7 +20,7 @@
 #include "FlacStreamMetadata.hxx"
 #include "FlacAudioFormat.hxx"
 #include "ScanVorbisComment.hxx"
-#include "CheckAudioFormat.hxx"
+#include "pcm/CheckAudioFormat.hxx"
 #include "MixRampInfo.hxx"
 #include "tag/Handler.hxx"
 #include "tag/Builder.hxx"

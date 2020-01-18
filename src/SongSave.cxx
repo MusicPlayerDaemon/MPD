@@ -18,7 +18,7 @@
  */
 
 #include "SongSave.hxx"
-#include "AudioParser.hxx"
+#include "pcm/AudioParser.hxx"
 #include "db/plugins/simple/Song.hxx"
 #include "song/DetachedSong.hxx"
 #include "TagSave.hxx"

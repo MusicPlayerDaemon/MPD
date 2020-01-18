@@ -22,7 +22,7 @@
 #include "filter/Filter.hxx"
 #include "filter/Prepared.hxx"
 #include "pcm/Buffer.hxx"
-#include "AudioFormat.hxx"
+#include "pcm/AudioFormat.hxx"
 #include "AudioCompress/compress.h"
 #include "util/ConstBuffer.hxx"
 

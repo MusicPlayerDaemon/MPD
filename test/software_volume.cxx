@@ -24,8 +24,8 @@
  */
 
 #include "pcm/Volume.hxx"
-#include "AudioParser.hxx"
-#include "AudioFormat.hxx"
+#include "pcm/AudioParser.hxx"
+#include "pcm/AudioFormat.hxx"
 #include "util/ConstBuffer.hxx"
 #include "util/PrintException.hxx"
 

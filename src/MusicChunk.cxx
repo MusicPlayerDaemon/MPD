@@ -18,7 +18,7 @@
  */
 
 #include "MusicChunk.hxx"
-#include "AudioFormat.hxx"
+#include "pcm/AudioFormat.hxx"
 #include "tag/Tag.hxx"
 
 #include <assert.h>

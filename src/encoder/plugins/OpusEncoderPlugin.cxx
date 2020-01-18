@@ -19,7 +19,7 @@
 
 #include "OpusEncoderPlugin.hxx"
 #include "OggEncoder.hxx"
-#include "AudioFormat.hxx"
+#include "pcm/AudioFormat.hxx"
 #include "util/ByteOrder.hxx"
 #include "util/StringUtil.hxx"
 

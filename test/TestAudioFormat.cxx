@@ -17,8 +17,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "AudioFormat.hxx"
-#include "AudioParser.hxx"
+#include "pcm/AudioFormat.hxx"
+#include "pcm/AudioParser.hxx"
 #include "util/StringBuffer.hxx"
 
 #include <gtest/gtest.h>

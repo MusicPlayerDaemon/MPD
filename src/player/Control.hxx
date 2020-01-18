@@ -21,7 +21,7 @@
 #define MPD_PLAYER_CONTROL_HXX
 
 #include "output/Client.hxx"
-#include "AudioFormat.hxx"
+#include "pcm/AudioFormat.hxx"
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
 #include "thread/Thread.hxx"

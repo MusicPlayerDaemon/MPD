@@ -21,7 +21,7 @@
 #define MPD_OUTPUT_CONTROL_HXX
 
 #include "Source.hxx"
-#include "AudioFormat.hxx"
+#include "pcm/AudioFormat.hxx"
 #include "thread/Thread.hxx"
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"

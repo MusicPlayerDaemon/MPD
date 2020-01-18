@@ -24,8 +24,8 @@
  */
 
 #include "AudioCompress/compress.h"
-#include "AudioParser.hxx"
-#include "AudioFormat.hxx"
+#include "pcm/AudioParser.hxx"
+#include "pcm/AudioFormat.hxx"
 #include "util/PrintException.hxx"
 
 #include <stdexcept>

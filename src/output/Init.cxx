@@ -22,7 +22,7 @@
 #include "Domain.hxx"
 #include "OutputAPI.hxx"
 #include "Defaults.hxx"
-#include "AudioParser.hxx"
+#include "pcm/AudioParser.hxx"
 #include "mixer/MixerList.hxx"
 #include "mixer/MixerType.hxx"
 #include "mixer/MixerControl.hxx"

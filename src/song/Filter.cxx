@@ -25,7 +25,7 @@
 #include "TagSongFilter.hxx"
 #include "ModifiedSinceSongFilter.hxx"
 #include "AudioFormatSongFilter.hxx"
-#include "AudioParser.hxx"
+#include "pcm/AudioParser.hxx"
 #include "tag/ParseName.hxx"
 #include "time/ISO8601.hxx"
 #include "util/CharUtil.hxx"

@@ -21,7 +21,7 @@
 #include "filter/Filter.hxx"
 #include "filter/Prepared.hxx"
 #include "pcm/Volume.hxx"
-#include "AudioFormat.hxx"
+#include "pcm/AudioFormat.hxx"
 #include "util/ConstBuffer.hxx"
 
 class VolumeFilter final : public Filter {

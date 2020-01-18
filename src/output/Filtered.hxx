@@ -20,7 +20,7 @@
 #ifndef MPD_FILTERED_AUDIO_OUTPUT_HXX
 #define MPD_FILTERED_AUDIO_OUTPUT_HXX
 
-#include "AudioFormat.hxx"
+#include "pcm/AudioFormat.hxx"
 #include "filter/Observer.hxx"
 
 #include <memory>

@@ -19,7 +19,7 @@
 
 #include "Filter.hxx"
 #include "SampleFormat.hxx"
-#include "AudioFormat.hxx"
+#include "pcm/AudioFormat.hxx"
 #include "util/RuntimeError.hxx"
 
 #include <stdio.h>

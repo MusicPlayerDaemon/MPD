@@ -18,7 +18,7 @@
  */
 
 #include "AllowedFormat.hxx"
-#include "AudioParser.hxx"
+#include "pcm/AudioParser.hxx"
 #include "util/IterableSplitString.hxx"
 #include "util/StringBuffer.hxx"
 #include "config.h"

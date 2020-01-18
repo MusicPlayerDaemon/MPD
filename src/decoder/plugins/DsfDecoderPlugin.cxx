@@ -31,7 +31,7 @@
 #include "DsfDecoderPlugin.hxx"
 #include "../DecoderAPI.hxx"
 #include "input/InputStream.hxx"
-#include "CheckAudioFormat.hxx"
+#include "pcm/CheckAudioFormat.hxx"
 #include "util/bit_reverse.h"
 #include "util/ByteOrder.hxx"
 #include "DsdLib.hxx"

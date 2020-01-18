@@ -20,7 +20,7 @@
 #include "CrossFade.hxx"
 #include "Chrono.hxx"
 #include "MusicChunk.hxx"
-#include "AudioFormat.hxx"
+#include "pcm/AudioFormat.hxx"
 #include "util/NumberParser.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"

@@ -21,7 +21,7 @@
 #define MPD_AUDIO_FORMAT_SONG_FILTER_HXX
 
 #include "ISongFilter.hxx"
-#include "AudioFormat.hxx"
+#include "pcm/AudioFormat.hxx"
 
 class AudioFormatSongFilter final : public ISongFilter {
 	AudioFormat value;

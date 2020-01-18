@@ -19,11 +19,11 @@
 
 #include "ConfigGlue.hxx"
 #include "fs/Path.hxx"
-#include "AudioParser.hxx"
-#include "AudioFormat.hxx"
 #include "filter/LoadOne.hxx"
 #include "filter/Filter.hxx"
 #include "filter/Prepared.hxx"
+#include "pcm/AudioParser.hxx"
+#include "pcm/AudioFormat.hxx"
 #include "pcm/Volume.hxx"
 #include "mixer/MixerControl.hxx"
 #include "system/Error.hxx"

@@ -29,7 +29,6 @@
 #include "Partition.hxx"
 #include "Instance.hxx"
 #include "IdleFlags.hxx"
-#include "AudioFormat.hxx"
 #include "util/StringBuffer.hxx"
 #include "util/ScopeExit.hxx"
 #include "util/Exception.hxx"

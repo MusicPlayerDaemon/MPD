@@ -21,7 +21,7 @@
 #include "encoder/EncoderPlugin.hxx"
 #include "encoder/EncoderInterface.hxx"
 #include "encoder/ToOutputStream.hxx"
-#include "AudioFormat.hxx"
+#include "pcm/AudioFormat.hxx"
 #include "config/Block.hxx"
 #include "fs/io/StdioOutputStream.hxx"
 #include "tag/Tag.hxx"
