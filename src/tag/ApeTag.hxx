@@ -26,9 +26,11 @@ class TagHandler;
 /**
  * Scan the APE tags of a stream.
  *
+ * Throws on I/O error.
+ *
  * @param path_fs the path of the file in filesystem encoding
  */
 bool
-tag_ape_scan2(InputStream &is, TagHandler &handler) noexcept;
+tag_ape_scan2(InputStream &is, TagHandler &handler);
 
 #endif

@@ -23,6 +23,9 @@
 class InputStream;
 struct ReplayGainInfo;
 
+/**
+ * Throws on I/O error.
+ */
 bool
 replay_gain_ape_read(InputStream &is, ReplayGainInfo &info);
 

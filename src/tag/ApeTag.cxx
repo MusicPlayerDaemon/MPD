@@ -68,7 +68,7 @@ tag_ape_import_item(unsigned long flags,
 }
 
 bool
-tag_ape_scan2(InputStream &is, TagHandler &handler) noexcept
+tag_ape_scan2(InputStream &is, TagHandler &handler)
 {
 	bool recognized = false;
 

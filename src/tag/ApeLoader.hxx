@@ -31,6 +31,8 @@ typedef std::function<bool(unsigned long flags, const char *key,
 /**
  * Scans the APE tag values from a file.
  *
+ * Throws on I/O error.
+ *
  * @return false if the file could not be opened or if no APE tag is
  * present
  */
