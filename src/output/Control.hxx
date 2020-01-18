@@ -566,6 +566,8 @@ private:
 	 */
 	void InternalDrain() noexcept;
 
+	void StopThread() noexcept;
+
 	/**
 	 * The OutputThread.
 	 */
