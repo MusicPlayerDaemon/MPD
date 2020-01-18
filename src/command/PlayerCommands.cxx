@@ -138,6 +138,7 @@ handle_status(Client &client, gcc_unused Request args, Response &r)
 		 COMMAND_STATUS_RANDOM ": %i\n"
 		 COMMAND_STATUS_SINGLE ": %s\n"
 		 COMMAND_STATUS_CONSUME ": %i\n"
+		 "partition: %s\n"
 		 COMMAND_STATUS_PLAYLIST ": %li\n"
 		 COMMAND_STATUS_PLAYLIST_LENGTH ": %i\n"
 		 COMMAND_STATUS_MIXRAMPDB ": %f\n"
@@ -146,6 +147,7 @@ handle_status(Client &client, gcc_unused Request args, Response &r)
 		 playlist.GetRandom(),
 		 SingleToString(playlist.GetSingle()),
 		 playlist.GetConsume(),
+		 partition.name.c_str(),
 		 (unsigned long)playlist.GetVersion(),
 		 playlist.GetLength(),
 		 pc.GetMixRampDb(),

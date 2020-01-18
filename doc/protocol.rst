@@ -439,6 +439,8 @@ Querying :program:`MPD`'s status
     Reports the current status of the player and the volume
     level.
 
+    - ``partition``: the name of the current partition (see
+      :ref:`partition_commands`)
     - ``volume``: ``0-100`` (deprecated: ``-1`` if the volume cannot
       be determined)
     - ``repeat``: ``0`` or ``1``
@@ -1237,6 +1239,8 @@ Connection settings
 :command:`tagtypes all`
     Announce that this client is interested in all tag
     types.  This is the default setting for new clients.
+
+.. _partition_commands:
 
 Partition commands
 ==================
