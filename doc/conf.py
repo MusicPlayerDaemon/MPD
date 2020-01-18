@@ -30,7 +30,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'Music Player Daemon'
-copyright = '2003-2019 The Music Player Daemon Project'
+copyright = '2003-2020 The Music Player Daemon Project'
 author = 'Max Kellermann'
 
 # The version info for the project you're documenting, acts as replacement for
