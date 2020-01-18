@@ -377,7 +377,9 @@ AudioOutputControl::BeginDestroy() noexcept
 {
 	if (thread.IsDefined()) {
 		const std::lock_guard<Mutex> protect(mutex);
-		if (IsCommandFinished())
+		if (!killed) {
+			killed = true;
 			CommandAsync(Command::KILL);
+		}
 	}
 }

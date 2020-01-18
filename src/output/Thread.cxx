@@ -526,6 +526,8 @@ AudioOutputControl::StartThread()
 {
 	assert(command == Command::NONE);
 
+	killed = false;
+
 	const ScopeUnlock unlock(mutex);
 	thread.Start();
 }

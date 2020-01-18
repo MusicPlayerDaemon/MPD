@@ -212,6 +212,15 @@ class AudioOutputControl {
 	 */
 	bool skip_delay;
 
+	/**
+	 * Has Command::KILL already been sent?  This field is only
+	 * defined if `thread` is defined.  It shall avoid sending the
+	 * command twice.
+	 *
+	 * Protected by #mutex.
+	 */
+	bool killed;
+
 public:
 	/**
 	 * This mutex protects #open, #fail_timer, #pipe.
