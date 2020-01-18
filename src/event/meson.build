@@ -18,6 +18,7 @@ event = static_library(
   include_directories: inc,
   dependencies: [
     boost_dep,
+    log_dep,
   ],
 )
 

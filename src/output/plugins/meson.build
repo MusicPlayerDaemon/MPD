@@ -6,6 +6,7 @@ output_plugins_deps = [
   output_api_dep,
   config_dep,
   tag_dep,
+  log_dep,
 ]
 
 need_encoder = false

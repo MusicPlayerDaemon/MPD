@@ -85,6 +85,7 @@ input_plugins = static_library(
   input_plugins_sources,
   include_directories: inc,
   dependencies: [
+    log_dep,
     alsa_dep,
     curl_dep,
     ffmpeg_dep,

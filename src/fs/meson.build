@@ -40,6 +40,7 @@ fs = static_library(
   include_directories: inc,
   dependencies: [
     zlib_dep,
+    log_dep,
   ],
 )
 

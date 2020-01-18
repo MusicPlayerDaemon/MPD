@@ -12,6 +12,9 @@ config = static_library(
   'Domain.cxx',
   'Net.cxx',
   include_directories: inc,
+  dependencies: [
+    log_dep,
+  ],
 )
 
 config_dep = declare_dependency(

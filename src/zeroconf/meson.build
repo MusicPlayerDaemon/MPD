@@ -49,6 +49,7 @@ if zeroconf_option == 'bonjour'
     link_with: zeroconf,
     dependencies: [
       bonjour_dep,
+      log_dep,
     ],
   )
 else
@@ -68,6 +69,7 @@ else
       libavahi_client_dep,
       dbus_dep,
       time_dep,
+      log_dep,
     ],
   )
 

@@ -190,6 +190,17 @@ if boost_dep.version() == '1.67'
   warning('Your Boost version 1.67 is known to be buggy, and the MPD build will fail. Please upgrade to Boost 1.68 or later.')
 endif
 
+log = static_library(
+  'log',
+  'src/Log.cxx',
+  'src/LogBackend.cxx',
+  include_directories: inc,
+)
+
+log_dep = declare_dependency(
+  link_with: log,
+)
+
 sources = [
   version_cxx,
   'src/Main.cxx',
@@ -235,8 +246,6 @@ sources = [
   'src/client/ThreadBackgroundCommand.cxx',
   'src/Listen.cxx',
   'src/LogInit.cxx',
-  'src/LogBackend.cxx',
-  'src/Log.cxx',
   'src/ls.cxx',
   'src/Instance.cxx',
   'src/win32/Win32Main.cxx',

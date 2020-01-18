@@ -15,6 +15,7 @@ curl = static_library(
   'Form.cxx',
   include_directories: inc,
   dependencies: [
+    log_dep,
     curl_dep,
   ],
 )
