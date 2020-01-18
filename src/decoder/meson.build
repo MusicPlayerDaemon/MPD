@@ -7,6 +7,7 @@ decoder_api = static_library(
   include_directories: inc,
   dependencies: [
     log_dep,
+    pcm_basic_dep,
   ],
 )
 

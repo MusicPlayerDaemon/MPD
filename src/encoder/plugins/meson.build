@@ -44,6 +44,7 @@ encoder_plugins = static_library(
   encoder_plugins_sources,
   include_directories: inc,
   dependencies: [
+    pcm_basic_dep,
     flac_dep,
     ogg_dep,
     libopus_dep,

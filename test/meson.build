@@ -271,13 +271,11 @@ if enable_database
     '../src/db/Selection.cxx',
     '../src/db/PlaylistVector.cxx',
     '../src/db/DatabaseLock.cxx',
-    '../src/AudioFormat.cxx',
-    '../src/AudioParser.cxx',
-    '../src/pcm/SampleFormat.cxx',
     '../src/SongSave.cxx',
     '../src/TagSave.cxx',
     include_directories: inc,
     dependencies: [
+      pcm_basic_dep,
       song_dep,
       fs_dep,
       event_dep,
@@ -540,7 +538,6 @@ if encoder_glue_dep.found()
   executable(
     'run_encoder',
     'run_encoder.cxx',
-    '../src/AudioParser.cxx',
     include_directories: inc,
     dependencies: [
       encoder_glue_dep,
