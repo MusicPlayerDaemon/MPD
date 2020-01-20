@@ -130,15 +130,13 @@ Instance::OnDatabaseSongRemoved(const char *uri) noexcept
 void
 Instance::FoundNeighbor(gcc_unused const NeighborInfo &info) noexcept
 {
-	for (auto &partition : partitions)
-		partition.EmitIdle(IDLE_NEIGHBOR);
+	EmitIdle(IDLE_NEIGHBOR);
 }
 
 void
 Instance::LostNeighbor(gcc_unused const NeighborInfo &info) noexcept
 {
-	for (auto &partition : partitions)
-		partition.EmitIdle(IDLE_NEIGHBOR);
+	EmitIdle(IDLE_NEIGHBOR);
 }
 
 #endif
