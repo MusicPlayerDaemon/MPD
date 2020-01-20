@@ -106,8 +106,7 @@ handle_newpartition(Client &client, Request request, Response &response)
 					 ReplayGainConfig());
 	auto &partition = instance.partitions.back();
 	partition.outputs.AddNullOutput(instance.io_thread.GetEventLoop(),
-					ReplayGainConfig(),
-					partition.pc);
+					ReplayGainConfig());
 	partition.UpdateEffectiveReplayGainMode();
 
 	instance.EmitIdle(IDLE_PARTITION);

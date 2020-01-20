@@ -45,6 +45,8 @@ struct ReplayGainConfig;
  * keeps them synchronized.
  */
 class MultipleOutputs final : public PlayerOutputs {
+	AudioOutputClient &client;
+
 	MixerListener &mixer_listener;
 
 	std::vector<std::unique_ptr<AudioOutputControl>> outputs;
@@ -68,17 +70,16 @@ public:
 	 * Load audio outputs from the configuration file and
 	 * initialize them.
 	 */
-	MultipleOutputs(MixerListener &_mixer_listener) noexcept;
+	MultipleOutputs(AudioOutputClient &_client,
+			MixerListener &_mixer_listener) noexcept;
 	~MultipleOutputs() noexcept;
 
 	void Configure(EventLoop &event_loop,
 		       const ConfigData &config,
-		       const ReplayGainConfig &replay_gain_config,
-		       AudioOutputClient &client);
+		       const ReplayGainConfig &replay_gain_config);
 
 	void AddNullOutput(EventLoop &event_loop,
-			   const ReplayGainConfig &replay_gain_config,
-			   AudioOutputClient &client);
+			   const ReplayGainConfig &replay_gain_config);
 
 	/**
 	 * Returns the total number of audio output devices, including
@@ -156,10 +157,6 @@ public:
 	void SetSoftwareVolume(unsigned volume) noexcept;
 
 private:
-	AudioOutputClient &GetAnyClient() noexcept {
-		return outputs.front()->GetClient();
-	}
-
 	/**
 	 * Was Open() called successfully?
 	 *

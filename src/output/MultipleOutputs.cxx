@@ -35,8 +35,9 @@
 #include <assert.h>
 #include <string.h>
 
-MultipleOutputs::MultipleOutputs(MixerListener &_mixer_listener) noexcept
-	:mixer_listener(_mixer_listener)
+MultipleOutputs::MultipleOutputs(AudioOutputClient &_client,
+				 MixerListener &_mixer_listener) noexcept
+	:client(_client), mixer_listener(_mixer_listener)
 {
 }
 
@@ -86,8 +87,7 @@ LoadOutputControl(EventLoop &event_loop,
 void
 MultipleOutputs::Configure(EventLoop &event_loop,
 			   const ConfigData &config,
-			   const ReplayGainConfig &replay_gain_config,
-			   AudioOutputClient &client)
+			   const ReplayGainConfig &replay_gain_config)
 {
 	const AudioOutputDefaults defaults(config);
 	FilterFactory filter_factory(config);
@@ -119,8 +119,7 @@ MultipleOutputs::Configure(EventLoop &event_loop,
 
 void
 MultipleOutputs::AddNullOutput(EventLoop &event_loop,
-			       const ReplayGainConfig &replay_gain_config,
-			       AudioOutputClient &client)
+			       const ReplayGainConfig &replay_gain_config)
 {
 	const AudioOutputDefaults defaults;
 
@@ -147,8 +146,6 @@ void
 MultipleOutputs::Add(std::unique_ptr<FilteredAudioOutput> output,
 		     bool enable) noexcept
 {
-	auto &client = GetAnyClient();
-
 	// TODO: this operation needs to be protected with a mutex
 	outputs.emplace_back(std::make_unique<AudioOutputControl>(std::move(output),
 								  client));
