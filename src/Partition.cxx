@@ -40,6 +40,7 @@ Partition::Partition(Instance &_instance,
 	:instance(_instance),
 	 name(_name),
 	 listener(new ClientListener(instance.event_loop, *this)),
+	 idle_monitor(instance.event_loop, BIND_THIS_METHOD(OnIdleMonitor)),
 	 global_events(instance.event_loop, BIND_THIS_METHOD(OnGlobalEvent)),
 	 playlist(max_length, *this),
 	 outputs(*this),
@@ -58,12 +59,6 @@ Partition::BeginShutdown() noexcept
 {
 	pc.Kill();
 	listener.reset();
-}
-
-void
-Partition::EmitIdle(unsigned mask) noexcept
-{
-	instance.EmitIdle(mask);
 }
 
 static void
@@ -213,6 +208,18 @@ Partition::OnMixerVolumeChanged(Mixer &, int) noexcept
 
 	/* notify clients */
 	EmitIdle(IDLE_MIXER);
+}
+
+void
+Partition::OnIdleMonitor(unsigned mask) noexcept
+{
+	/* send "idle" notifications to all subscribed
+	   clients */
+	for (auto &client : clients)
+		client.IdleAdd(mask);
+
+	if (mask & (IDLE_PLAYLIST|IDLE_PLAYER|IDLE_MIXER|IDLE_OUTPUT))
+		instance.OnStateModified();
 }
 
 void

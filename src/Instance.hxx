@@ -101,6 +101,10 @@ struct Instance final
 
 	std::unique_ptr<InputCacheManager> input_cache;
 
+	/**
+	 * Monitor for global idle events to be broadcasted to all
+	 * partitions.
+	 */
 	MaskMonitor idle_monitor;
 
 #ifdef ENABLE_NEIGHBOR_PLUGINS

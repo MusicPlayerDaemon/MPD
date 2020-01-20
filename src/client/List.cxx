@@ -34,12 +34,3 @@ ClientList::Remove(Client &client) noexcept
 
 	list.erase(list.iterator_to(client));
 }
-
-void
-ClientList::IdleAdd(unsigned flags) noexcept
-{
-	assert(flags != 0);
-
-	for (auto &client : list)
-		client.IdleAdd(flags);
-}

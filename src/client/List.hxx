@@ -56,8 +56,6 @@ public:
 	}
 
 	void Remove(Client &client) noexcept;
-
-	void IdleAdd(unsigned flags) noexcept;
 };
 
 #endif

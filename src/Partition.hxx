@@ -63,6 +63,11 @@ struct Partition final : QueueListener, PlayerListener, MixerListener {
 											    boost::intrusive::link_mode<boost::intrusive::normal_link>>>,
 			       boost::intrusive::constant_time_size<false>> clients;
 
+	/**
+	 * Monitor for idle events local to this partition.
+	 */
+	MaskMonitor idle_monitor;
+
 	MaskMonitor global_events;
 
 	struct playlist playlist;
@@ -91,10 +96,11 @@ struct Partition final : QueueListener, PlayerListener, MixerListener {
 	/**
 	 * Emit an "idle" event to all clients of this partition.
 	 *
-	 * This method is not thread-safe and may only be called from
-	 * the main thread.
+	 * This method can be called from any thread.
 	 */
-	void EmitIdle(unsigned mask) noexcept;
+	void EmitIdle(unsigned mask) noexcept {
+		idle_monitor.OrMask(mask);
+	}
 
 	/**
 	 * Populate the #InputCacheManager with soon-to-be-played song
@@ -281,6 +287,9 @@ private:
 
 	/* virtual methods from class MixerListener */
 	void OnMixerVolumeChanged(Mixer &mixer, int volume) noexcept override;
+
+	/* callback for #idle_monitor */
+	void OnIdleMonitor(unsigned mask) noexcept;
 
 	/* callback for #global_events */
 	void OnGlobalEvent(unsigned mask) noexcept;
