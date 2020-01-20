@@ -74,6 +74,8 @@ struct Partition final : QueueListener, PlayerListener, MixerListener {
 
 	~Partition() noexcept;
 
+	void BeginShutdown() noexcept;
+
 	void EmitGlobalEvent(unsigned mask) noexcept {
 		global_events.OrMask(mask);
 	}

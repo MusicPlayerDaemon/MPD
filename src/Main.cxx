@@ -27,7 +27,6 @@
 #include "Mapper.hxx"
 #include "Permission.hxx"
 #include "Listen.hxx"
-#include "client/Listener.hxx"
 #include "client/Config.hxx"
 #include "client/List.hxx"
 #include "command/AllCommands.hxx"
@@ -349,8 +348,7 @@ inline void
 Instance::BeginShutdownPartitions() noexcept
 {
 	for (auto &partition : partitions) {
-		partition.pc.Kill();
-		partition.listener.reset();
+		partition.BeginShutdown();
 	}
 }
 

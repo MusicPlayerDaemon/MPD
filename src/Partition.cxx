@@ -53,6 +53,13 @@ Partition::Partition(Instance &_instance,
 Partition::~Partition() noexcept = default;
 
 void
+Partition::BeginShutdown() noexcept
+{
+	pc.Kill();
+	listener.reset();
+}
+
+void
 Partition::EmitIdle(unsigned mask) noexcept
 {
 	instance.EmitIdle(mask);
