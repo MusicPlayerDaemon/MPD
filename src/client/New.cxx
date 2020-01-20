@@ -72,6 +72,7 @@ client_new(EventLoop &loop, Partition &partition,
 				    num);
 
 	client_list.Add(*client);
+	partition.clients.push_back(*client);
 
 	FormatInfo(client_domain, "[%u] opened from %s",
 		   num, remote.c_str());
@@ -81,6 +82,7 @@ void
 Client::Close() noexcept
 {
 	partition->instance.client_list->Remove(*this);
+	partition->clients.erase(partition->clients.iterator_to(*this));
 
 	if (FullyBufferedSocket::IsDefined())
 		FullyBufferedSocket::Close();

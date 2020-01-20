@@ -22,8 +22,8 @@
 #include "client/Client.hxx"
 #include "client/List.hxx"
 #include "client/Response.hxx"
-#include "Instance.hxx"
 #include "util/ConstBuffer.hxx"
+#include "Partition.hxx"
 
 #include <set>
 #include <string>
@@ -79,11 +79,7 @@ handle_channels(Client &client, gcc_unused Request args, Response &r)
 
 	std::set<std::string> channels;
 
-	const auto &partition = client.GetPartition();
-	for (const auto &c : *client.GetInstance().client_list) {
-		if (&c.GetPartition() != &partition)
-			continue;
-
+	for (const auto &c : client.GetPartition().clients) {
 		const auto &subscriptions = c.GetSubscriptions();
 		channels.insert(subscriptions.begin(),
 				subscriptions.end());
@@ -125,10 +121,8 @@ handle_send_message(Client &client, Request args, Response &r)
 	bool sent = false;
 	const ClientMessage msg(channel_name, message_text);
 
-	const auto &partition = client.GetPartition();
-	for (auto &c : *client.GetInstance().client_list)
-		if (&c.GetPartition() == &partition &&
-		    c.PushMessage(msg))
+	for (auto &c : client.GetPartition().clients)
+		if (c.PushMessage(msg))
 			sent = true;
 
 	if (sent)

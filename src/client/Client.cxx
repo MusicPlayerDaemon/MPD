@@ -68,7 +68,9 @@ Client::SetPartition(Partition &new_partition) noexcept
 	if (partition == &new_partition)
 		return;
 
+	partition->clients.erase(partition->clients.iterator_to(*this));
 	partition = &new_partition;
+	partition->clients.push_back(*this);
 
 	/* set idle flags for those subsystems which are specific to
 	   the current partition to force the client to reload its

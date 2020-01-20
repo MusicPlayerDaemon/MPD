@@ -25,6 +25,7 @@
 #include "mixer/Volume.hxx"
 #include "IdleFlags.hxx"
 #include "client/Listener.hxx"
+#include "client/Client.hxx"
 #include "input/cache/Manager.hxx"
 #include "util/Domain.hxx"
 

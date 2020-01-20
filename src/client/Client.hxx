@@ -52,6 +52,8 @@ class BackgroundCommand;
 
 class Client final
 	: FullyBufferedSocket,
+	  public boost::intrusive::list_base_hook<boost::intrusive::tag<Partition>,
+						  boost::intrusive::link_mode<boost::intrusive::normal_link>>,
 	  public boost::intrusive::list_base_hook<boost::intrusive::link_mode<boost::intrusive::normal_link>> {
 	TimerEvent timeout_event;
 
