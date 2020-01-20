@@ -352,17 +352,6 @@ Instance::BeginShutdownPartitions() noexcept
 	}
 }
 
-void
-Instance::OnIdle(unsigned flags) noexcept
-{
-	/* send "idle" notifications to all subscribed
-	   clients */
-	client_list->IdleAdd(flags);
-
-	if (flags & (IDLE_PLAYLIST|IDLE_PLAYER|IDLE_MIXER|IDLE_OUTPUT))
-		OnStateModified();
-}
-
 static inline void
 MainConfigured(const struct options &options, const ConfigData &raw_config)
 {

@@ -176,3 +176,14 @@ Instance::OnRemoteTag(const char *uri, const Tag &tag) noexcept
 }
 
 #endif
+
+void
+Instance::OnIdle(unsigned flags) noexcept
+{
+	/* send "idle" notifications to all subscribed
+	   clients */
+	client_list->IdleAdd(flags);
+
+	if (flags & (IDLE_PLAYLIST|IDLE_PLAYER|IDLE_MIXER|IDLE_OUTPUT))
+		OnStateModified();
+}
