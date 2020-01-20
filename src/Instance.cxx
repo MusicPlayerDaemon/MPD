@@ -87,6 +87,20 @@ Instance::FindPartition(const char *name) noexcept
 	return nullptr;
 }
 
+void
+Instance::DeletePartition(Partition &partition) noexcept
+{
+	// TODO: use boost::intrusive::list to avoid this loop
+	for (auto i = partitions.begin();; ++i) {
+		assert(i != partitions.end());
+
+		if (&*i == &partition) {
+			partitions.erase(i);
+			break;
+		}
+	}
+}
+
 #ifdef ENABLE_DATABASE
 
 const Database &

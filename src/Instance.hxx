@@ -171,6 +171,8 @@ struct Instance final
 	gcc_pure
 	Partition *FindPartition(const char *name) noexcept;
 
+	void DeletePartition(Partition &partition) noexcept;
+
 	void BeginShutdownPartitions() noexcept;
 
 #ifdef ENABLE_DATABASE

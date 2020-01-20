@@ -1262,6 +1262,10 @@ client is assigned to one partition at a time.
 :command:`newpartition {NAME}`
     Create a new partition.
 
+:command:`delpartition {NAME}`
+    Delete a partition.  The partition must be empty (no connected
+    clients and no outputs).
+
 :command:`moveoutput {OUTPUTNAME}`
     Move an output to the current partition.
 

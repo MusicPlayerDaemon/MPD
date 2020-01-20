@@ -36,6 +36,9 @@ CommandResult
 handle_newpartition(Client &client, Request request, Response &response);
 
 CommandResult
+handle_delpartition(Client &client, Request request, Response &response);
+
+CommandResult
 handle_moveoutput(Client &client, Request request, Response &response);
 
 #endif

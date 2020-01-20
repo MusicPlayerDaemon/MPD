@@ -103,6 +103,18 @@ public:
 	}
 
 	/**
+	 * Are all outputs dummy?
+	 */
+	gcc_pure
+	bool IsDummy() const noexcept {
+		for (const auto &i : outputs)
+			if (!i->IsDummy())
+				return false;
+
+		return true;
+	}
+
+	/**
 	 * Returns the audio output device with the specified name.
 	 * Returns nullptr if the name does not exist.
 	 */

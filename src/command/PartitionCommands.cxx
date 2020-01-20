@@ -113,6 +113,48 @@ handle_newpartition(Client &client, Request request, Response &response)
 }
 
 CommandResult
+handle_delpartition(Client &client, Request request, Response &response)
+{
+	const char *name = request.front();
+	if (!IsValidPartitionName(name)) {
+		response.Error(ACK_ERROR_ARG, "bad name");
+		return CommandResult::ERROR;
+	}
+
+	auto &instance = client.GetInstance();
+	auto *partition = instance.FindPartition(name);
+	if (partition == nullptr) {
+		response.Error(ACK_ERROR_NO_EXIST, "no such partition");
+		return CommandResult::ERROR;
+	}
+
+	if (partition == &instance.partitions.front()) {
+		response.Error(ACK_ERROR_UNKNOWN,
+			       "cannot delete the default partition");
+		return CommandResult::ERROR;
+	}
+
+	if (!partition->clients.empty()) {
+		response.Error(ACK_ERROR_UNKNOWN,
+			       "partition still has clients");
+		return CommandResult::ERROR;
+	}
+
+	if (!partition->outputs.IsDummy()) {
+		response.Error(ACK_ERROR_UNKNOWN,
+			       "partition still has outputs");
+		return CommandResult::ERROR;
+	}
+
+	partition->BeginShutdown();
+	instance.DeletePartition(*partition);
+
+	instance.EmitIdle(IDLE_PARTITION);
+
+	return CommandResult::OK;
+}
+
+CommandResult
 handle_moveoutput(Client &client, Request request, Response &response)
 {
 	const char *output_name = request[0];

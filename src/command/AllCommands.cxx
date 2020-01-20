@@ -103,6 +103,7 @@ static constexpr struct command commands[] = {
 	{ "decoders", PERMISSION_READ, 0, 0, handle_decoders },
 	{ "delete", PERMISSION_CONTROL, 1, 1, handle_delete },
 	{ "deleteid", PERMISSION_CONTROL, 1, 1, handle_deleteid },
+	{ "delpartition", PERMISSION_ADMIN, 1, 1, handle_delpartition },
 	{ "disableoutput", PERMISSION_ADMIN, 1, 1, handle_disableoutput },
 	{ "enableoutput", PERMISSION_ADMIN, 1, 1, handle_enableoutput },
 #ifdef ENABLE_DATABASE
