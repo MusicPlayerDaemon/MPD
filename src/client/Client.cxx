@@ -82,19 +82,19 @@ Client::SetPartition(Partition &new_partition) noexcept
 }
 
 Instance &
-Client::GetInstance() noexcept
+Client::GetInstance() const noexcept
 {
 	return partition->instance;
 }
 
 playlist &
-Client::GetPlaylist() noexcept
+Client::GetPlaylist() const noexcept
 {
 	return partition->playlist;
 }
 
 PlayerControl &
-Client::GetPlayerControl() noexcept
+Client::GetPlayerControl() const noexcept
 {
 	return partition->pc;
 }

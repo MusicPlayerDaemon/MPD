@@ -230,20 +230,20 @@ public:
 	 */
 	void AllowFile(Path path_fs) const;
 
-	Partition &GetPartition() noexcept {
+	Partition &GetPartition() const noexcept {
 		return *partition;
 	}
 
 	void SetPartition(Partition &new_partition) noexcept;
 
 	gcc_pure
-	Instance &GetInstance() noexcept;
+	Instance &GetInstance() const noexcept;
 
 	gcc_pure
-	playlist &GetPlaylist() noexcept;
+	playlist &GetPlaylist() const noexcept;
 
 	gcc_pure
-	PlayerControl &GetPlayerControl() noexcept;
+	PlayerControl &GetPlayerControl() const noexcept;
 
 	/**
 	 * Wrapper for Instance::GetDatabase().
