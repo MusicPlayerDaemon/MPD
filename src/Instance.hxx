@@ -127,7 +127,7 @@ struct Instance final
 
 	std::list<Partition> partitions;
 
-	StateFile *state_file = nullptr;
+	std::unique_ptr<StateFile> state_file;
 
 #ifdef ENABLE_SQLITE
 	std::unique_ptr<StickerDatabase> sticker_database;

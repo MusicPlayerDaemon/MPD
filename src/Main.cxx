@@ -262,9 +262,9 @@ glue_state_file_init(Instance &instance, const ConfigData &raw_config)
 	if (!config.IsEnabled())
 		return;
 
-	instance.state_file = new StateFile(std::move(config),
-					    instance.partitions.front(),
-					    instance.event_loop);
+	instance.state_file = std::make_unique< StateFile>(std::move(config),
+							   instance.partitions.front(),
+							   instance.event_loop);
 	instance.state_file->Read();
 }
 
@@ -551,11 +551,6 @@ MainConfigured(const struct options &options, const ConfigData &raw_config)
 	/* cleanup */
 
 	instance.BeginShutdownUpdate();
-
-	if (instance.state_file != nullptr) {
-		instance.state_file->Write();
-		delete instance.state_file;
-	}
 
 	ZeroconfDeinit();
 
