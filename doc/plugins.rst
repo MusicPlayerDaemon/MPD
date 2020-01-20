@@ -705,6 +705,10 @@ A resampler using `libsoxr <http://sourceforge.net/projects/soxr/>`_, the SoX Re
      - The libsoxr quality setting. Valid values see below.
    * - **threads**
      - The number of libsoxr threads. "0" means "automatic". The default is "1" which disables multi-threading.
+   * - **advanced_settings**
+     - `squeezelite <http://manpages.ubuntu.com/manpages/bionic/man1/squeezelite.1.html/>`_ '-u' settings (Valid if **quality** is set to advanced).
+
+       Example: "v::3.05:28:99.7:100:45".
 
 Valid quality values for libsoxr:
 
@@ -713,6 +717,7 @@ Valid quality values for libsoxr:
 * "medium"
 * "low"
 * "quick"
+* "advanced"
 
 .. _output_plugins:
 
