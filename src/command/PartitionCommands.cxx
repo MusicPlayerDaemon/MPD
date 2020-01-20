@@ -105,8 +105,6 @@ handle_newpartition(Client &client, Request request, Response &response)
 					 AudioFormat::Undefined(),
 					 ReplayGainConfig());
 	auto &partition = instance.partitions.back();
-	partition.outputs.AddNullOutput(instance.io_thread.GetEventLoop(),
-					ReplayGainConfig());
 	partition.UpdateEffectiveReplayGainMode();
 
 	instance.EmitIdle(IDLE_PARTITION);

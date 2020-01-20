@@ -117,21 +117,6 @@ MultipleOutputs::Configure(EventLoop &event_loop,
 	}
 }
 
-void
-MultipleOutputs::AddNullOutput(EventLoop &event_loop,
-			       const ReplayGainConfig &replay_gain_config)
-{
-	const AudioOutputDefaults defaults;
-
-	ConfigBlock block;
-	block.AddBlockParam("type", "null");
-
-	outputs.emplace_back(LoadOutputControl(event_loop, replay_gain_config,
-					       mixer_listener,
-					       client, block, defaults,
-					       nullptr));
-}
-
 AudioOutputControl *
 MultipleOutputs::FindByName(const char *name) noexcept
 {
