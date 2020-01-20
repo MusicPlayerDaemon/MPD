@@ -80,6 +80,12 @@ struct Partition final : QueueListener, PlayerListener, MixerListener {
 		global_events.OrMask(mask);
 	}
 
+	/**
+	 * Emit an "idle" event to all clients of this partition.
+	 *
+	 * This method is not thread-safe and may only be called from
+	 * the main thread.
+	 */
 	void EmitIdle(unsigned mask) noexcept;
 
 	/**

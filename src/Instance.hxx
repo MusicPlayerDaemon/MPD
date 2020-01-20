@@ -143,6 +143,11 @@ struct Instance final
 		event_loop.Break();
 	}
 
+	/**
+	 * Emit an "idle" event to all clients of all partitions.
+	 *
+	 * This method can be called from any thread.
+	 */
 	void EmitIdle(unsigned mask) noexcept {
 		idle_monitor.OrMask(mask);
 	}
