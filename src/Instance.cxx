@@ -70,6 +70,13 @@ Instance::~Instance() noexcept
 #endif
 }
 
+void
+Instance::OnStateModified() noexcept
+{
+	if (state_file)
+		state_file->CheckModified();
+}
+
 Partition *
 Instance::FindPartition(const char *name) noexcept
 {

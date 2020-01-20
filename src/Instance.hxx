@@ -153,6 +153,14 @@ struct Instance final
 	}
 
 	/**
+	 * Notify the #Instance that the state has been modified, and
+	 * the #StateFile may need to be saved.
+	 *
+	 * This method must be called from the main thread.
+	 */
+	void OnStateModified() noexcept;
+
+	/**
 	 * Find a #Partition with the given name.  Returns nullptr if
 	 * no such partition was found.
 	 */

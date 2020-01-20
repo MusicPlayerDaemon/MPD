@@ -359,9 +359,8 @@ Instance::OnIdle(unsigned flags) noexcept
 	   clients */
 	client_list->IdleAdd(flags);
 
-	if (flags & (IDLE_PLAYLIST|IDLE_PLAYER|IDLE_MIXER|IDLE_OUTPUT) &&
-	    state_file != nullptr)
-		state_file->CheckModified();
+	if (flags & (IDLE_PLAYLIST|IDLE_PLAYER|IDLE_MIXER|IDLE_OUTPUT))
+		OnStateModified();
 }
 
 static inline void
