@@ -1354,6 +1354,9 @@ additional services.
 New messages are indicated by the ``message``
 idle event.
 
+If your MPD instance has multiple partitions, note that
+client-to-client messages are local to the current partition.
+
 :command:`subscribe {NAME}`
     Subscribe to a channel.  The channel is created if it
     does not exist already.  The name may consist of

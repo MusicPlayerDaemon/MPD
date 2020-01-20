@@ -78,7 +78,12 @@ handle_channels(Client &client, gcc_unused Request args, Response &r)
 	assert(args.empty());
 
 	std::set<std::string> channels;
+
+	const auto &partition = client.GetPartition();
 	for (const auto &c : *client.GetInstance().client_list) {
+		if (&c.GetPartition() != &partition)
+			continue;
+
 		const auto &subscriptions = c.GetSubscriptions();
 		channels.insert(subscriptions.begin(),
 				subscriptions.end());
@@ -119,8 +124,11 @@ handle_send_message(Client &client, Request args, Response &r)
 
 	bool sent = false;
 	const ClientMessage msg(channel_name, message_text);
+
+	const auto &partition = client.GetPartition();
 	for (auto &c : *client.GetInstance().client_list)
-		if (c.PushMessage(msg))
+		if (&c.GetPartition() == &partition &&
+		    c.PushMessage(msg))
 			sent = true;
 
 	if (sent)
