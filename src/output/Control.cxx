@@ -400,6 +400,9 @@ AudioOutputControl::LockAllowPlay() noexcept
 void
 AudioOutputControl::LockRelease() noexcept
 {
+	if (!output)
+		return;
+
 	if (output->mixer != nullptr &&
 	    (!always_on || !output->SupportsPause()))
 		/* the device has no pause mode: close the mixer,
