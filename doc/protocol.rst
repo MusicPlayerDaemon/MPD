@@ -298,18 +298,22 @@ The following tags are supported by :program:`MPD`:
 * **musicbrainz_trackid**: the track id in the `MusicBrainz <https://picard.musicbrainz.org/docs/mappings/>`_ database.
 * **musicbrainz_releasetrackid**: the release track id in the `MusicBrainz <https://picard.musicbrainz.org/docs/mappings/>`_ database.
 * **musicbrainz_workid**: the work id in the `MusicBrainz <https://picard.musicbrainz.org/docs/mappings/>`_ database.
-* **replaygain_reference_loudness**: LUFS reference loudness in the `MusicBrainz <https://picard.musicbrainz.org/docs/mappings/>`_ database.
-* **replaygain_album_gain**: dB replay gain for the album in the `MusicBrainz <https://picard.musicbrainz.org/docs/mappings/>`_ database.
-* **replaygain_album_peak**: peak amplitude for the album in the `MusicBrainz <https://picard.musicbrainz.org/docs/mappings/>`_ database.
-* **replaygain_album_range**: dB range for the album in the `MusicBrainz <https://picard.musicbrainz.org/docs/mappings/>`_ database.
-* **replaygain_track_gain**: dB replay gain for the track in the `MusicBrainz <https://picard.musicbrainz.org/docs/mappings/>`_ database.
-* **replaygain_track_peak**: peak amplitude for the track in the `MusicBrainz <https://picard.musicbrainz.org/docs/mappings/>`_ database.
-* **replaygain_track_range**: dB range for the track in the `MusicBrainz <https://picard.musicbrainz.org/docs/mappings/>`_ database.
+* **replaygain_reference_loudness** [#since_0_22]_: LUFS reference loudness in the `MusicBrainz <https://picard.musicbrainz.org/docs/mappings/>`_ database.
+* **replaygain_album_gain** [#since_0_22]_: dB replay gain for the album in the `MusicBrainz <https://picard.musicbrainz.org/docs/mappings/>`_ database.
+* **replaygain_album_peak** [#since_0_22]_: peak amplitude for the album in the `MusicBrainz <https://picard.musicbrainz.org/docs/mappings/>`_ database.
+* **replaygain_album_range** [#since_0_22]_: dB range for the album in the `MusicBrainz <https://picard.musicbrainz.org/docs/mappings/>`_ database.
+* **replaygain_track_gain** [#since_0_22]_: dB replay gain for the track in the `MusicBrainz <https://picard.musicbrainz.org/docs/mappings/>`_ database.
+* **replaygain_track_peak** [#since_0_22]_: peak amplitude for the track in the `MusicBrainz <https://picard.musicbrainz.org/docs/mappings/>`_ database.
+* **replaygain_track_range** [#since_0_22]_: dB range for the track in the `MusicBrainz <https://picard.musicbrainz.org/docs/mappings/>`_ database.
 
 There can be multiple values for some of these tags.  For
 example, :program:`MPD` may return multiple
 lines with a ``performer`` tag.  A tag value is
 a UTF-8 string.
+
+.. note:: ReplayGain playback support has been present since
+   :program:`MPD` 0.12, however the ReplayGain tags were only added to
+   :program:`MPD` 0.22.
 
 .. _other_metadata:
 
