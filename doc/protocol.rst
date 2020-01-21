@@ -1402,3 +1402,4 @@ client-to-client messages are local to the current partition.
 .. [#since_0_19] Since :program:`MPD` 0.20
 .. [#since_0_20] Since :program:`MPD` 0.20
 .. [#since_0_21] Since :program:`MPD` 0.21
+.. [#since_0_22] Since :program:`MPD` 0.22
