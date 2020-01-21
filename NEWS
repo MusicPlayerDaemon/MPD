@@ -8,6 +8,9 @@ ver 0.22 (not yet released)
   - show partition name in "status" response
 * tags
   - new tags "Grouping" (for ID3 "TIT1"), "Work" and "Conductor"
+  - new tags "REPLAYGAIN_REFERENCE_LOUDNESS", "REPLAYGAIN_ALBUM_GAIN",
+    "REPLAYGAIN_ALBUM_PEAK", REPLAYGAIN_ALBUM_RANGE", "REPLAYGAIN_TRACK_GAIN",
+    "REPLAYGAIN_TRACK_PEAK", "REPLAYGAIN_TRACK_RANGE".
 * input
   - curl: support "charset" parameter in URI fragment
   - ffmpeg: allow partial reads

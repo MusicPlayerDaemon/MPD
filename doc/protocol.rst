@@ -298,6 +298,13 @@ The following tags are supported by :program:`MPD`:
 * **musicbrainz_trackid**: the track id in the `MusicBrainz <https://picard.musicbrainz.org/docs/mappings/>`_ database.
 * **musicbrainz_releasetrackid**: the release track id in the `MusicBrainz <https://picard.musicbrainz.org/docs/mappings/>`_ database.
 * **musicbrainz_workid**: the work id in the `MusicBrainz <https://picard.musicbrainz.org/docs/mappings/>`_ database.
+* **replaygain_reference_loudness**: LUFS reference loudness in the `MusicBrainz <https://picard.musicbrainz.org/docs/mappings/>`_ database.
+* **replaygain_album_gain**: dB replay gain for the album in the `MusicBrainz <https://picard.musicbrainz.org/docs/mappings/>`_ database.
+* **replaygain_album_peak**: peak amplitude for the album in the `MusicBrainz <https://picard.musicbrainz.org/docs/mappings/>`_ database.
+* **replaygain_album_range**: dB range for the album in the `MusicBrainz <https://picard.musicbrainz.org/docs/mappings/>`_ database.
+* **replaygain_track_gain**: dB replay gain for the track in the `MusicBrainz <https://picard.musicbrainz.org/docs/mappings/>`_ database.
+* **replaygain_track_peak**: peak amplitude for the track in the `MusicBrainz <https://picard.musicbrainz.org/docs/mappings/>`_ database.
+* **replaygain_track_range**: dB range for the track in the `MusicBrainz <https://picard.musicbrainz.org/docs/mappings/>`_ database.
 
 There can be multiple values for some of these tags.  For
 example, :program:`MPD` may return multiple
