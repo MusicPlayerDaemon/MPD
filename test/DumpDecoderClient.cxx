@@ -28,15 +28,15 @@
 
 void
 DumpDecoderClient::Ready(const AudioFormat audio_format,
-			 gcc_unused bool seekable,
+			 bool seekable,
 			 SignedSongTime duration)
 {
 	assert(!initialized);
 	assert(audio_format.IsValid());
 
-	fprintf(stderr, "audio_format=%s duration=%f\n",
+	fprintf(stderr, "audio_format=%s duration=%f seekable=%d\n",
 		ToString(audio_format).c_str(),
-		duration.ToDoubleS());
+		duration.ToDoubleS(), seekable);
 
 	initialized = true;
 }
