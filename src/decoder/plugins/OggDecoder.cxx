@@ -47,8 +47,12 @@ OggDecoder::LoadEndPacket(ogg_packet &packet) const
 		DecoderReader reader(client, input_stream);
 		OggSyncState sync2(reader);
 		OggStreamState stream2(GetSerialNo());
+
+		/* passing synced=false because we're inside an
+		   OggVisitor callback, and our InputStream may be in
+		   the middle of an Ogg packet */
 		result = OggSeekFindEOS(sync2, stream2, packet,
-					input_stream);
+					input_stream, false);
 	}
 
 	/* restore the previous file position */
