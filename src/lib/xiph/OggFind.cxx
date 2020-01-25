@@ -57,13 +57,14 @@ OggSeekPageAtOffset(OggSyncState &oy, ogg_stream_state &os, InputStream &is,
 
 bool
 OggSeekFindEOS(OggSyncState &oy, ogg_stream_state &os, ogg_packet &packet,
-	       InputStream &is)
+	       InputStream &is, bool synced)
 {
 	if (!is.KnownSize())
 		return false;
 
 	if (is.GetRest() < 65536)
-		return OggFindEOS(oy, os, packet);
+		return (synced || oy.ExpectPageSeekIn(os)) &&
+			OggFindEOS(oy, os, packet);
 
 	if (!is.CheapSeeking())
 		return false;
