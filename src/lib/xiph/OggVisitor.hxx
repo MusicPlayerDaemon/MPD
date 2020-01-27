@@ -53,12 +53,18 @@ public:
 		return stream.GetSerialNo();
 	}
 
+	uint64_t GetStartOffset() const noexcept {
+		return sync.GetStartOffset();
+	}
+
 	void Visit();
 
 	/**
 	 * Call this method after seeking the #Reader.
+	 *
+	 * @param offset the current #Reader offset
 	 */
-	void PostSeek();
+	void PostSeek(uint64_t offset);
 
 private:
 	void EndStream();

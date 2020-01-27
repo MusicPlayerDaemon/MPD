@@ -72,7 +72,7 @@ inline void
 OggDecoder::SeekByte(offset_type offset)
 {
 	input_stream.LockSeek(offset);
-	PostSeek();
+	PostSeek(offset);
 }
 
 void

@@ -94,9 +94,10 @@ OggVisitor::Visit()
 }
 
 void
-OggVisitor::PostSeek()
+OggVisitor::PostSeek(uint64_t offset)
 {
 	sync.Reset();
+	sync.SetOffset(offset);
 
 	/* reset the stream to clear any previous partial packet
 	   data */
