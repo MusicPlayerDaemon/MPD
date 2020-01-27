@@ -80,12 +80,66 @@ OggDecoder::SeekGranulePos(ogg_int64_t where_granulepos)
 {
 	assert(IsSeekable());
 
-	/* interpolate the file offset where we expect to find the
-	   given granule position */
-	/* TODO: implement binary search */
-	offset_type offset(where_granulepos * input_stream.GetSize()
-			   / end_granulepos);
+	/* binary search: interpolate the file offset where we expect
+	   to find the given granule position, and repeat until we're
+	   close enough */
 
-	SeekByte(offset);
+	static const ogg_int64_t MARGIN_BEFORE = 44100 / 3;
+	static const ogg_int64_t MARGIN_AFTER = 44100 / 10;
+
+	offset_type min_offset = 0, max_offset = input_stream.GetSize();
+	ogg_int64_t min_granule = 0, max_granule = end_granulepos;
+
+	while (true) {
+		const offset_type delta_offset = max_offset - min_offset;
+		const ogg_int64_t delta_granule = max_granule - min_granule;
+		const ogg_int64_t relative_granule = where_granulepos - min_granule;
+
+		const offset_type offset = min_offset + relative_granule * delta_offset
+			/ delta_granule;
+
+		SeekByte(offset);
+
+		const auto new_granule = ReadGranulepos();
+		if (new_granule < 0)
+			/* no granulepos here, which shouldn't happen
+			   - we can't improve, so stop */
+			return;
+
+		if (new_granule > where_granulepos + MARGIN_AFTER) {
+			if (new_granule > max_granule)
+				/* something went wrong */
+				return;
+
+			if (max_granule == new_granule)
+				/* break out of the infinite loop, we
+				   can't get any closer */
+				break;
+
+			/* reduce the max bounds and interpolate again */
+			max_granule = new_granule;
+			max_offset = GetStartOffset();
+		} else if (new_granule + MARGIN_BEFORE < where_granulepos) {
+			if (new_granule < min_granule)
+				/* something went wrong */
+				return;
+
+			if (min_granule == new_granule)
+				/* break out of the infinite loop, we
+				   can't get any closer */
+				break;
+
+			/* increase the min bounds and interpolate
+			   again */
+			min_granule = new_granule;
+			min_offset = GetStartOffset();
+		} else {
+			break;
+		}
+	}
+
+	/* go back to the last page start so OggVisitor can start
+	   visiting from here (we have consumed a few pages
+	   already) */
+	SeekByte(GetStartOffset());
 }
-
