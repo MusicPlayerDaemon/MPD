@@ -22,6 +22,7 @@
 
 #include "lib/xiph/OggVisitor.hxx"
 #include "decoder/Reader.hxx"
+#include "input/Offset.hxx"
 
 class OggDecoder : public OggVisitor {
 	ogg_int64_t end_granulepos;
@@ -52,6 +53,13 @@ protected:
 	bool IsSeekable() const {
 		return end_granulepos > 0;
 	}
+
+	/**
+	 * Seek the #InputStream and update the #OggVisitor.
+	 *
+	 * Throws on error.
+	 */
+	void SeekByte(offset_type offset);
 
 	void SeekGranulePos(ogg_int64_t where_granulepos);
 };

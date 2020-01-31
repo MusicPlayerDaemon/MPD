@@ -68,6 +68,13 @@ OggDecoder::LoadEndGranulePos() const
 	return packet.granulepos;
 }
 
+inline void
+OggDecoder::SeekByte(offset_type offset)
+{
+	input_stream.LockSeek(offset);
+	PostSeek();
+}
+
 void
 OggDecoder::SeekGranulePos(ogg_int64_t where_granulepos)
 {
@@ -79,7 +86,6 @@ OggDecoder::SeekGranulePos(ogg_int64_t where_granulepos)
 	offset_type offset(where_granulepos * input_stream.GetSize()
 			   / end_granulepos);
 
-	input_stream.LockSeek(offset);
-	PostSeek();
+	SeekByte(offset);
 }
 
