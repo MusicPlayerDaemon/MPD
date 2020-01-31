@@ -108,3 +108,14 @@ OggVisitor::PostSeek(uint64_t offset)
 
 	post_seek = true;
 }
+
+ogg_int64_t
+OggVisitor::ReadGranulepos() noexcept
+{
+	ogg_packet packet;
+	while (stream.PacketOut(packet) == 1)
+		if (packet.granulepos >= 0)
+			return packet.granulepos;
+
+	return -1;
+}
