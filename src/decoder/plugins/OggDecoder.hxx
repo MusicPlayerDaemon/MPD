@@ -36,8 +36,6 @@ public:
 		 client(reader.GetClient()),
 		 input_stream(reader.GetInputStream()) {}
 
-	bool Seek(OggSyncState &oy, uint64_t where_frame);
-
 private:
 	/**
 	 * Load the end-of-stream packet and restore the previous file
