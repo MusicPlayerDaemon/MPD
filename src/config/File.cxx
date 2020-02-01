@@ -112,7 +112,7 @@ ReadConfigBlock(ConfigData &config_data, BufferedReader &reader,
 		const char *name, ConfigBlockOption o,
 		Tokenizer &tokenizer)
 {
-	const unsigned i = unsigned(o);
+	const auto i = unsigned(o);
 	const ConfigTemplate &option = config_block_templates[i];
 
 	if (option.deprecated)
@@ -144,7 +144,7 @@ ReadConfigParam(ConfigData &config_data, BufferedReader &reader,
 		const char *name, ConfigOption o,
 		Tokenizer &tokenizer)
 {
-	const unsigned i = unsigned(o);
+	const auto i = unsigned(o);
 	const ConfigTemplate &option = config_param_templates[i];
 
 	if (option.deprecated)

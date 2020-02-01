@@ -102,7 +102,7 @@ FlacInput::Read(gcc_unused const FLAC__StreamDecoder *flac_decoder,
 		FLAC__byte buffer[], size_t *bytes,
 		void *client_data)
 {
-	FlacInput *i = (FlacInput *)client_data;
+	auto *i = (FlacInput *)client_data;
 
 	return i->Read(buffer, bytes);
 }
@@ -111,7 +111,7 @@ FLAC__StreamDecoderSeekStatus
 FlacInput::Seek(gcc_unused const FLAC__StreamDecoder *flac_decoder,
 		FLAC__uint64 absolute_byte_offset, void *client_data)
 {
-	FlacInput *i = (FlacInput *)client_data;
+	auto *i = (FlacInput *)client_data;
 
 	return i->Seek(absolute_byte_offset);
 }
@@ -120,7 +120,7 @@ FLAC__StreamDecoderTellStatus
 FlacInput::Tell(gcc_unused const FLAC__StreamDecoder *flac_decoder,
 		FLAC__uint64 *absolute_byte_offset, void *client_data)
 {
-	FlacInput *i = (FlacInput *)client_data;
+	auto *i = (FlacInput *)client_data;
 
 	return i->Tell(absolute_byte_offset);
 }
@@ -129,7 +129,7 @@ FLAC__StreamDecoderLengthStatus
 FlacInput::Length(gcc_unused const FLAC__StreamDecoder *flac_decoder,
 		  FLAC__uint64 *stream_length, void *client_data)
 {
-	FlacInput *i = (FlacInput *)client_data;
+	auto *i = (FlacInput *)client_data;
 
 	return i->Length(stream_length);
 }
@@ -138,7 +138,7 @@ FLAC__bool
 FlacInput::Eof(gcc_unused const FLAC__StreamDecoder *flac_decoder,
 	       void *client_data)
 {
-	FlacInput *i = (FlacInput *)client_data;
+	auto *i = (FlacInput *)client_data;
 
 	return i->Eof();
 }
@@ -147,7 +147,7 @@ void
 FlacInput::Error(gcc_unused const FLAC__StreamDecoder *decoder,
 		 FLAC__StreamDecoderErrorStatus status, void *client_data)
 {
-	FlacInput *i = (FlacInput *)client_data;
+	auto *i = (FlacInput *)client_data;
 
 	i->Error(status);
 }

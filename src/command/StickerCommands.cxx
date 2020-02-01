@@ -42,7 +42,7 @@ static void
 sticker_song_find_print_cb(const LightSong &song, const char *value,
 			   void *user_data)
 {
-	struct sticker_song_find_data *data =
+	auto *data =
 		(struct sticker_song_find_data *)user_data;
 
 	song_print_uri(data->r, song);

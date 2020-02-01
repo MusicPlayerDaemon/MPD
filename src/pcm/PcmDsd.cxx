@@ -33,7 +33,7 @@ PcmDsd::ToFloat(unsigned channels, ConstBuffer<uint8_t> src) noexcept
 	const size_t num_samples = src.size;
 	const size_t num_frames = src.size / channels;
 
-	float *dest = buffer.GetT<float>(num_samples);
+	auto *dest = buffer.GetT<float>(num_samples);
 
 	dsd2pcm.Translate(channels, num_frames, src.data, dest);
 	return { dest, num_samples };

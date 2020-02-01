@@ -127,7 +127,7 @@ template<typename T>
 static void
 format_samples_int(void *buffer, uint32_t count)
 {
-	int32_t *src = (int32_t *)buffer;
+	auto *src = (int32_t *)buffer;
 	T *dst = (T *)buffer;
 	/*
 	 * The asserts like the following one are because we do the
@@ -368,7 +368,7 @@ wavpack_input_read_bytes(void *id, void *data, int32_t bcount)
 int32_t
 WavpackInput::ReadBytes(void *data, size_t bcount)
 {
-	uint8_t *buf = (uint8_t *)data;
+	auto *buf = (uint8_t *)data;
 	int32_t i = 0;
 
 	if (last_byte != EOF) {

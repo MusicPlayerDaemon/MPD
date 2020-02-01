@@ -87,7 +87,7 @@ struct sticker_song_find_data {
 static void
 sticker_song_find_cb(const char *uri, const char *value, void *user_data)
 {
-	struct sticker_song_find_data *data =
+	auto *data =
 		(struct sticker_song_find_data *)user_data;
 
 	if (memcmp(uri, data->base_uri, data->base_uri_length) != 0)

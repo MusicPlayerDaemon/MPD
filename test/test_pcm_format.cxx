@@ -94,7 +94,7 @@ TEST(PcmTest, FormatFloat16)
 		EXPECT_EQ(src[i], d[i]);
 
 	/* check if clamping works */
-	float *writable = const_cast<float *>(f.data);
+	auto *writable = const_cast<float *>(f.data);
 	*writable++ = 1.01;
 	*writable++ = 10;
 	*writable++ = -1.01;
@@ -140,7 +140,7 @@ TEST(PcmTest, FormatFloat32)
 		EXPECT_NEAR(src[i], d[i], error);
 
 	/* check if clamping works */
-	float *writable = const_cast<float *>(f.data);
+	auto *writable = const_cast<float *>(f.data);
 	*writable++ = 1.01;
 	*writable++ = 10;
 	*writable++ = -1.01;

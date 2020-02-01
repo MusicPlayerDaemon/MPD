@@ -181,7 +181,7 @@ void
 filter_chain_append(PreparedFilter &_chain, const char *name,
 		    std::unique_ptr<PreparedFilter> filter) noexcept
 {
-	PreparedChainFilter &chain = (PreparedChainFilter &)_chain;
+	auto &chain = (PreparedChainFilter &)_chain;
 
 	chain.Append(name, std::move(filter));
 }

@@ -160,7 +160,7 @@ NfsConnection::CancellableCallback::Callback(int err, void *data) noexcept
 			assert(close_fh == nullptr);
 
 			if (err >= 0) {
-				struct nfsfh *fh = (struct nfsfh *)data;
+				auto *fh = (struct nfsfh *)data;
 				connection.Close(fh);
 			}
 		} else if (close_fh != nullptr)
@@ -574,7 +574,7 @@ void
 NfsConnection::MountCallback(int status, nfs_context *nfs, void *data,
 			     void *private_data) noexcept
 {
-	NfsConnection *c = (NfsConnection *)private_data;
+	auto *c = (NfsConnection *)private_data;
 
 	c->MountCallback(status, nfs, data);
 }

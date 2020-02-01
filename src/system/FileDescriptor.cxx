@@ -290,7 +290,7 @@ FileDescriptor::GetSize() const noexcept
 void
 FileDescriptor::FullRead(void *_buffer, size_t length)
 {
-	uint8_t *buffer = (uint8_t *)_buffer;
+	auto *buffer = (uint8_t *)_buffer;
 
 	while (length > 0) {
 		ssize_t nbytes = Read(buffer, length);

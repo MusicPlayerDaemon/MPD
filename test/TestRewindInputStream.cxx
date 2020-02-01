@@ -43,7 +43,7 @@ TEST(RewindInputStream, Basic)
 {
 	Mutex mutex;
 
-	StringInputStream *sis =
+	auto *sis =
 		new StringInputStream("foo://", mutex,
 				      "foo bar");
 	EXPECT_TRUE(sis->IsReady());

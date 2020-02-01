@@ -28,7 +28,7 @@
 static size_t
 FlacIORead(void *ptr, size_t size, size_t nmemb, FLAC__IOHandle handle)
 {
-	InputStream *is = (InputStream *)handle;
+	auto *is = (InputStream *)handle;
 
 	uint8_t *const p0 = (uint8_t *)ptr, *p = p0,
 		*const end = p0 + size * nmemb;
@@ -70,7 +70,7 @@ FlacIORead(void *ptr, size_t size, size_t nmemb, FLAC__IOHandle handle)
 static int
 FlacIOSeek(FLAC__IOHandle handle, FLAC__int64 _offset, int whence)
 {
-	InputStream *is = (InputStream *)handle;
+	auto *is = (InputStream *)handle;
 
 	offset_type offset = _offset;
 	switch (whence) {
@@ -104,7 +104,7 @@ FlacIOSeek(FLAC__IOHandle handle, FLAC__int64 _offset, int whence)
 static FLAC__int64
 FlacIOTell(FLAC__IOHandle handle)
 {
-	InputStream *is = (InputStream *)handle;
+	auto *is = (InputStream *)handle;
 
 	return is->GetOffset();
 }
@@ -112,7 +112,7 @@ FlacIOTell(FLAC__IOHandle handle)
 static int
 FlacIOEof(FLAC__IOHandle handle)
 {
-	InputStream *is = (InputStream *)handle;
+	auto *is = (InputStream *)handle;
 
 	return is->LockIsEOF();
 }

@@ -83,7 +83,7 @@ Directory::CreateChild(const char *name_utf8) noexcept
 		? std::string(name_utf8)
 		: PathTraitsUTF8::Build(GetPath(), name_utf8);
 
-	Directory *child = new Directory(std::move(path_utf8), this);
+	auto *child = new Directory(std::move(path_utf8), this);
 	children.push_back(*child);
 	return child;
 }

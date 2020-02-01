@@ -108,6 +108,6 @@ SoftwareMixer::SetFilter(Filter *_filter) noexcept
 void
 software_mixer_set_filter(Mixer &mixer, Filter *filter) noexcept
 {
-	SoftwareMixer &sm = (SoftwareMixer &)mixer;
+	auto &sm = (SoftwareMixer &)mixer;
 	sm.SetFilter(filter);
 }

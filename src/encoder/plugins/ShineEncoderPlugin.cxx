@@ -167,7 +167,7 @@ ShineEncoder::WriteChunk(bool flush)
 void
 ShineEncoder::Write(const void *_data, size_t length)
 {
-	const int16_t *data = (const int16_t*)_data;
+	const auto *data = (const int16_t*)_data;
 	length /= sizeof(*data) * audio_format.channels;
 	size_t written = 0;
 

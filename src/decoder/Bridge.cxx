@@ -480,7 +480,7 @@ DecoderBridge::SubmitData(InputStream *is,
 	if (dc.end_time.IsPositive()) {
 		/* enforce the given end time */
 
-		const uint64_t end_frame =
+		const auto end_frame =
 			dc.end_time.ToScale<uint64_t>(dc.in_audio_format.sample_rate);
 		if (absolute_frame >= end_frame)
 			return DecoderCommand::STOP;

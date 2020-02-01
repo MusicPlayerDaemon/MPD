@@ -209,10 +209,10 @@ audiofile_stream_decode(DecoderClient &client, InputStream &is)
 	const auto audio_format = CheckAudioFormat(fh);
 	const auto total_time = audiofile_get_duration(fh);
 
-	const uint16_t kbit_rate = (uint16_t)
+	const auto kbit_rate = (uint16_t)
 		(is.GetSize() * uint64_t(8) / total_time.ToMS());
 
-	const unsigned frame_size = (unsigned)
+	const auto frame_size = (unsigned)
 		afGetVirtualFrameSize(fh, AF_DEFAULT_TRACK, true);
 
 	client.Ready(audio_format, true, total_time);

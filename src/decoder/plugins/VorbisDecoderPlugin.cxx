@@ -146,7 +146,7 @@ void
 VorbisDecoder::OnOggBeginning(const ogg_packet &_packet)
 {
 	/* libvorbis wants non-const packets */
-	ogg_packet &packet = const_cast<ogg_packet &>(_packet);
+	auto &packet = const_cast<ogg_packet &>(_packet);
 
 	ReinitVorbis();
 
@@ -251,7 +251,7 @@ void
 VorbisDecoder::OnOggPacket(const ogg_packet &_packet)
 {
 	/* libvorbis wants non-const packets */
-	ogg_packet &packet = const_cast<ogg_packet &>(_packet);
+	auto &packet = const_cast<ogg_packet &>(_packet);
 
 	if (remaining_header_packets > 0) {
 		if (vorbis_synthesis_headerin(&vi, &vc, &packet) != 0)

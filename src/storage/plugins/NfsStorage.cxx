@@ -358,7 +358,7 @@ protected:
 
 	void HandleResult(gcc_unused unsigned status,
 			  void *data) noexcept override {
-		struct nfsdir *const dir = (struct nfsdir *)data;
+		auto *const dir = (struct nfsdir *)data;
 
 		CollectEntries(dir);
 		connection.CloseDirectory(dir);

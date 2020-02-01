@@ -584,7 +584,7 @@ ProxyDatabase::OnSocketReady(gcc_unused unsigned flags) noexcept
 		return true;
 	}
 
-	unsigned idle = (unsigned)mpd_recv_idle(connection, false);
+	auto idle = (unsigned)mpd_recv_idle(connection, false);
 	if (idle == 0) {
 		try {
 			CheckError(connection);
@@ -666,7 +666,7 @@ ProxyDatabase::ReturnSong(const LightSong *_song) const noexcept
 {
 	assert(_song != nullptr);
 
-	AllocatedProxySong *song = (AllocatedProxySong *)
+	auto *song = (AllocatedProxySong *)
 		const_cast<LightSong *>(_song);
 	delete song;
 }

@@ -67,7 +67,7 @@ client_new(EventLoop &loop, Partition &partition,
 	(void)fd.Write(GREETING, sizeof(GREETING) - 1);
 
 	const unsigned num = next_client_num++;
-	Client *client = new Client(loop, partition, std::move(fd), uid,
+	auto *client = new Client(loop, partition, std::move(fd), uid,
 				    permission,
 				    num);
 

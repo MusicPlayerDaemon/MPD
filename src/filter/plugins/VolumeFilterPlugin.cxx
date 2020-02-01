@@ -73,7 +73,7 @@ volume_filter_prepare() noexcept
 unsigned
 volume_filter_get(const Filter *_filter) noexcept
 {
-	const VolumeFilter *filter =
+	const auto *filter =
 		(const VolumeFilter *)_filter;
 
 	return filter->GetVolume();
@@ -82,7 +82,7 @@ volume_filter_get(const Filter *_filter) noexcept
 void
 volume_filter_set(Filter *_filter, unsigned volume) noexcept
 {
-	VolumeFilter *filter = (VolumeFilter *)_filter;
+	auto *filter = (VolumeFilter *)_filter;
 
 	filter->SetVolume(volume);
 }

@@ -46,7 +46,7 @@ bool
 decoder_read_full(DecoderClient *client, InputStream &is,
 		  void *_buffer, size_t size)
 {
-	uint8_t *buffer = (uint8_t *)_buffer;
+	auto *buffer = (uint8_t *)_buffer;
 
 	while (size > 0) {
 		size_t nbytes = decoder_read(client, is, buffer, size);

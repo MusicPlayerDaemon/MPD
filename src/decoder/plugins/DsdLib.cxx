@@ -133,7 +133,7 @@ dsdlib_tag_id3(InputStream &is, TagHandler &handler,
 
 	const id3_length_t count = count64;
 
-	id3_byte_t *const id3_buf = new id3_byte_t[count];
+	auto *const id3_buf = new id3_byte_t[count];
 	if (id3_buf == nullptr)
 		return;
 

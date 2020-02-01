@@ -56,7 +56,7 @@
 static std::string
 LocalAddressToString(const struct sockaddr_un &s_un, size_t size) noexcept
 {
-	const size_t prefix_size = (size_t)
+	const auto prefix_size = (size_t)
 		((struct sockaddr_un *)nullptr)->sun_path;
 	assert(size >= prefix_size);
 

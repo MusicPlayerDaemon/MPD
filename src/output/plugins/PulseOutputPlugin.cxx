@@ -326,9 +326,9 @@ inline void
 PulseOutput::OnServerLayoutChanged(pa_subscription_event_type_t t,
 				   uint32_t idx)
 {
-	pa_subscription_event_type_t facility =
+	auto facility =
 		pa_subscription_event_type_t(t & PA_SUBSCRIPTION_EVENT_FACILITY_MASK);
-	pa_subscription_event_type_t type =
+	auto type =
 		pa_subscription_event_type_t(t & PA_SUBSCRIPTION_EVENT_TYPE_MASK);
 
 	if (mixer != nullptr &&

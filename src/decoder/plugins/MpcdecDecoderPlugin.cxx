@@ -50,7 +50,7 @@ using MpcdecSampleTraits = SampleTraits<mpcdec_sample_format>;
 static mpc_int32_t
 mpc_read_cb(mpc_reader *reader, void *ptr, mpc_int32_t size)
 {
-	struct mpc_decoder_data *data =
+	auto *data =
 		(struct mpc_decoder_data *)reader->data;
 
 	return decoder_read(data->client, data->is, ptr, size);
@@ -59,7 +59,7 @@ mpc_read_cb(mpc_reader *reader, void *ptr, mpc_int32_t size)
 static mpc_bool_t
 mpc_seek_cb(mpc_reader *reader, mpc_int32_t offset)
 {
-	struct mpc_decoder_data *data =
+	auto *data =
 		(struct mpc_decoder_data *)reader->data;
 
 	try {
@@ -73,7 +73,7 @@ mpc_seek_cb(mpc_reader *reader, mpc_int32_t offset)
 static mpc_int32_t
 mpc_tell_cb(mpc_reader *reader)
 {
-	struct mpc_decoder_data *data =
+	auto *data =
 		(struct mpc_decoder_data *)reader->data;
 
 	return (long)data->is.GetOffset();
@@ -82,7 +82,7 @@ mpc_tell_cb(mpc_reader *reader)
 static mpc_bool_t
 mpc_canseek_cb(mpc_reader *reader)
 {
-	struct mpc_decoder_data *data =
+	auto *data =
 		(struct mpc_decoder_data *)reader->data;
 
 	return data->is.IsSeekable();
@@ -91,7 +91,7 @@ mpc_canseek_cb(mpc_reader *reader)
 static mpc_int32_t
 mpc_getsize_cb(mpc_reader *reader)
 {
-	struct mpc_decoder_data *data =
+	auto *data =
 		(struct mpc_decoder_data *)reader->data;
 
 	if (!data->is.KnownSize())
