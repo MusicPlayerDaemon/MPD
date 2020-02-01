@@ -101,8 +101,8 @@ inline void
 PcmDither::Dither24To16(int16_t *dest, const int32_t *src,
 			const int32_t *src_end) noexcept
 {
-	typedef SampleTraits<SampleFormat::S24_P32> ST;
-	typedef SampleTraits<SampleFormat::S16> DT;
+	using ST = SampleTraits<SampleFormat::S24_P32>;
+	using DT = SampleTraits<SampleFormat::S16>;
 	DitherConvert<ST, DT>(dest, src, src_end);
 }
 
@@ -110,7 +110,7 @@ inline void
 PcmDither::Dither32To16(int16_t *dest, const int32_t *src,
 			const int32_t *src_end) noexcept
 {
-	typedef SampleTraits<SampleFormat::S32> ST;
-	typedef SampleTraits<SampleFormat::S16> DT;
+	using ST = SampleTraits<SampleFormat::S32>;
+	using DT = SampleTraits<SampleFormat::S16>;
 	DitherConvert<ST, DT>(dest, src, src_end);
 }
