@@ -23,14 +23,15 @@
 #include "song/Filter.hxx"
 
 #include <algorithm>
+#include <utility>
 
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 
-DatabaseVisitorHelper::DatabaseVisitorHelper(const DatabaseSelection &_selection,
+DatabaseVisitorHelper::DatabaseVisitorHelper(DatabaseSelection _selection,
 					     VisitSong &visit_song) noexcept
-	:selection(_selection)
+	:selection(std::move(_selection))
 {
 	// TODO: apply URI and SongFilter
 	assert(selection.uri.empty());

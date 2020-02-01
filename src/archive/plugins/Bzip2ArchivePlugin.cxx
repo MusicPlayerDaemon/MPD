@@ -32,6 +32,7 @@
 #include <bzlib.h>
 
 #include <stdexcept>
+#include <utility>
 
 class Bzip2ArchiveFile final : public ArchiveFile {
 	std::string name;
@@ -65,7 +66,7 @@ class Bzip2InputStream final : public InputStream {
 	char buffer[5000];
 
 public:
-	Bzip2InputStream(const std::shared_ptr<InputStream> &_input,
+	Bzip2InputStream(std::shared_ptr<InputStream> _input,
 			 const char *uri,
 			 Mutex &mutex);
 	~Bzip2InputStream() override;
@@ -111,11 +112,11 @@ bz2_open(Path pathname)
 
 /* single archive handling */
 
-Bzip2InputStream::Bzip2InputStream(const std::shared_ptr<InputStream> &_input,
+Bzip2InputStream::Bzip2InputStream(std::shared_ptr<InputStream> _input,
 				   const char *_uri,
 				   Mutex &_mutex)
 	:InputStream(_uri, _mutex),
-	 input(_input)
+	 input(std::move(_input))
 {
 	Open();
 }
