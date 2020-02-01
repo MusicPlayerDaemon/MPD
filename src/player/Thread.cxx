@@ -1155,7 +1155,7 @@ try {
 
 	std::unique_lock<Mutex> lock(mutex);
 
-	while (1) {
+	while (true) {
 		switch (command) {
 		case PlayerCommand::SEEK:
 		case PlayerCommand::QUEUE:

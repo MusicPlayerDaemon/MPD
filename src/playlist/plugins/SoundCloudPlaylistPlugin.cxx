@@ -177,11 +177,11 @@ SoundCloudJsonData::EndMap() noexcept
 {
 	if (got_url > 1) {
 		got_url--;
-		return 1;
+		return true;
 	}
 
 	if (got_url == 0)
-		return 1;
+		return true;
 
 	/* got_url == 1, track finished, make it into a song */
 	got_url = 0;
