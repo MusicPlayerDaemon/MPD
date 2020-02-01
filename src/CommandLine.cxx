@@ -107,7 +107,7 @@ static constexpr OptionDef option_defs[] = {
 static constexpr Domain cmdline_domain("cmdline");
 
 gcc_noreturn
-static void version(void)
+static void version()
 {
 	printf("Music Player Daemon " VERSION " (%s)"
 	       "\n"
@@ -273,7 +273,7 @@ static void PrintOption(const OptionDef &opt)
 }
 
 gcc_noreturn
-static void help(void)
+static void help()
 {
 	printf("Usage:\n"
 	       "  mpd [OPTION...] [path/to/mpd.conf]\n"

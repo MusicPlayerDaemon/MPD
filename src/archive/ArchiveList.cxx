@@ -73,7 +73,7 @@ archive_plugin_from_name(const char *name) noexcept
 	return nullptr;
 }
 
-void archive_plugin_init_all(void)
+void archive_plugin_init_all()
 {
 	for (unsigned i = 0; archive_plugins[i] != nullptr; ++i) {
 		const ArchivePlugin *plugin = archive_plugins[i];

@@ -162,7 +162,7 @@ parse_cdio_uri(const char *src)
 }
 
 static AllocatedPath
-cdio_detect_device(void)
+cdio_detect_device()
 {
 	char **devices = cdio_get_devices_with_cap(nullptr, CDIO_FS_AUDIO,
 						   false);

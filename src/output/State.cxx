@@ -80,7 +80,7 @@ audio_output_state_read(const char *line, MultipleOutputs &outputs)
 }
 
 unsigned
-audio_output_state_get_version(void)
+audio_output_state_get_version()
 {
 	return audio_output_state_version;
 }

@@ -38,24 +38,24 @@ static constexpr Domain mikmod_domain("mikmod");
 static constexpr size_t MIKMOD_FRAME_SIZE = 4096;
 
 static BOOL
-mikmod_mpd_init(void)
+mikmod_mpd_init()
 {
 	return VC_Init();
 }
 
 static void
-mikmod_mpd_exit(void)
+mikmod_mpd_exit()
 {
 	VC_Exit();
 }
 
 static void
-mikmod_mpd_update(void)
+mikmod_mpd_update()
 {
 }
 
 static BOOL
-mikmod_mpd_is_present(void)
+mikmod_mpd_is_present()
 {
 	return true;
 }
