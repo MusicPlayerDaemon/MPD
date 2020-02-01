@@ -227,7 +227,7 @@ handle_list_file(Client &client, Request args, Response &r)
 	std::unique_ptr<SongFilter> filter;
 
 	if (!args.empty()) {
-		filter.reset(new SongFilter());
+		filter = std::make_unique<SongFilter>();
 		try {
 			filter->Parse(args, false);
 		} catch (...) {
@@ -272,8 +272,8 @@ handle_list(Client &client, Request args, Response &r)
 			return CommandResult::ERROR;
 		}
 
-		filter.reset(new SongFilter(TAG_ARTIST,
-					    args.shift()));
+		filter = std::make_unique<SongFilter>(TAG_ARTIST,
+					    args.shift());
 	}
 
 	while (args.size >= 2 &&
@@ -302,7 +302,7 @@ handle_list(Client &client, Request args, Response &r)
 	tag_types.emplace_back(tagType);
 
 	if (!args.empty()) {
-		filter.reset(new SongFilter());
+		filter = std::make_unique<SongFilter>();
 		try {
 			filter->Parse(args, false);
 		} catch (...) {

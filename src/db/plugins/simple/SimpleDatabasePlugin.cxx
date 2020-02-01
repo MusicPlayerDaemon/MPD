@@ -365,7 +365,7 @@ SimpleDatabase::Save()
 #ifdef ENABLE_ZLIB
 	std::unique_ptr<GzipOutputStream> gzip;
 	if (compress) {
-		gzip.reset(new GzipOutputStream(*os));
+		gzip = std::make_unique<GzipOutputStream>(*os);
 		os = gzip.get();
 	}
 #endif

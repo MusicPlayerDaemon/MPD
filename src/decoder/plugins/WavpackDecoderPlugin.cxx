@@ -544,7 +544,7 @@ wavpack_streamdecode(DecoderClient &client, InputStream &is)
 		open_flags |= OPEN_WVC;
 		can_seek &= is_wvc->IsSeekable();
 
-		wvc.reset(new WavpackInput(&client, *is_wvc));
+		wvc = std::make_unique<WavpackInput>(&client, *is_wvc);
 	}
 
 	if (!can_seek) {
