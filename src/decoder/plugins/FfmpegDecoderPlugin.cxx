@@ -775,6 +775,7 @@ static const char *const ffmpeg_mime_types[] = {
 	"audio/qcelp",
 	"audio/vorbis",
 	"audio/vorbis+ogg",
+	"audio/wav",
 	"audio/x-8svx",
 	"audio/x-16sv",
 	"audio/x-aac",
