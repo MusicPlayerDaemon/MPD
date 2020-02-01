@@ -139,7 +139,7 @@ storage_state_get_hash(const Instance &instance)
 
 	boost::crc_32_type result;
 
-	for (auto mount: mounts) {
+	for (const auto& mount : mounts) {
 		result.process_bytes(mount.c_str(), mount.length());
 	}
 
