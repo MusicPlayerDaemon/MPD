@@ -26,7 +26,7 @@
 TextInputStream::TextInputStream(InputStreamPtr &&_is) noexcept
 	:is(std::move(_is)) {}
 
-TextInputStream::~TextInputStream() noexcept {}
+TextInputStream::~TextInputStream() noexcept = default;
 
 char *
 TextInputStream::ReadLine()

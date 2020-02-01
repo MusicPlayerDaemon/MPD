@@ -28,8 +28,8 @@
 
 #include <stdexcept>
 
-NeighborGlue::NeighborGlue() noexcept {}
-NeighborGlue::~NeighborGlue() noexcept {}
+NeighborGlue::NeighborGlue() noexcept = default;
+NeighborGlue::~NeighborGlue() noexcept = default;
 
 static std::unique_ptr<NeighborExplorer>
 CreateNeighborExplorer(EventLoop &loop, NeighborListener &listener,

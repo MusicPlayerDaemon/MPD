@@ -26,9 +26,7 @@
 
 #include <assert.h>
 
-InputStream::~InputStream() noexcept
-{
-}
+InputStream::~InputStream() noexcept = default;
 
 void
 InputStream::Check()

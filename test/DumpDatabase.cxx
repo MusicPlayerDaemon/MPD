@@ -49,8 +49,7 @@ public:
 		io_thread.Start();
 	}
 
-	~GlobalInit() {
-	}
+	~GlobalInit() = default;
 
 	EventLoop &GetEventLoop() {
 		return io_thread.GetEventLoop();

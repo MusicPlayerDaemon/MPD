@@ -179,13 +179,8 @@ CompositeStorage::Directory::MapToRelativeUTF8(std::string &buffer,
 	return false;
 }
 
-CompositeStorage::CompositeStorage() noexcept
-{
-}
-
-CompositeStorage::~CompositeStorage()
-{
-}
+CompositeStorage::CompositeStorage() noexcept = default;
+CompositeStorage::~CompositeStorage() = default;
 
 Storage *
 CompositeStorage::GetMount(const char *uri) noexcept
