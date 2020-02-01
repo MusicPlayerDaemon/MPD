@@ -276,10 +276,10 @@ parse_id3_mixramp(struct id3_tag *tag) noexcept
 		if (frame->nfields < 3)
 			continue;
 
-		char *const key = (char *)
+		auto const key = (char *)
 		    id3_ucs4_latin1duplicate(id3_field_getstring
 					     (&frame->fields[1]));
-		char *const value = (char *)
+		auto const value = (char *)
 		    id3_ucs4_latin1duplicate(id3_field_getstring
 					     (&frame->fields[2]));
 

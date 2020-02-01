@@ -248,7 +248,7 @@ OpusEncoder::WriteSilence(unsigned fill_frames)
 void
 OpusEncoder::Write(const void *_data, size_t length)
 {
-	const auto *data = (const uint8_t *)_data;
+	auto data = (const uint8_t *)_data;
 
 	if (lookahead > 0) {
 		/* generate some silence at the beginning of the
@@ -323,7 +323,7 @@ OpusEncoder::GenerateTags(const Tag *tag) noexcept
 		}
 	}
 
-	auto *comments = new unsigned char[comments_size];
+	auto comments = new unsigned char[comments_size];
 	unsigned char *p = comments;
 
 	memcpy(comments, "OpusTags", 8);

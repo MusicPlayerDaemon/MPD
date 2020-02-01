@@ -172,7 +172,7 @@ InitStorage(Instance &instance, EventLoop &event_loop,
 	if (storage == nullptr)
 		return;
 
-	auto *composite = new CompositeStorage();
+	auto composite = new CompositeStorage();
 	instance.storage = composite;
 	composite->Mount("", std::move(storage));
 }

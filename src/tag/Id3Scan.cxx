@@ -294,7 +294,7 @@ tag_id3_handle_apic(const struct id3_tag *id3_tag,
 		return;
 
 	for (unsigned i = 0;; ++i) {
-		const id3_frame *frame = id3_tag_findframe(id3_tag, "APIC", i);
+		auto frame = id3_tag_findframe(id3_tag, "APIC", i);
 		if (frame == nullptr)
 			break;
 
@@ -302,7 +302,7 @@ tag_id3_handle_apic(const struct id3_tag *id3_tag,
 		if (mime_type_field == nullptr)
 			continue;
 
-		const char *mime_type = (const char *)
+		auto mime_type = (const char *)
 			id3_field_getlatin1(mime_type_field);
 		if (mime_type != nullptr &&
 		    StringIsEqual(mime_type, "-->"))
@@ -315,8 +315,7 @@ tag_id3_handle_apic(const struct id3_tag *id3_tag,
 			continue;
 
 		id3_length_t size;
-		const id3_byte_t *data =
-			id3_field_getbinarydata(data_field, &size);
+		auto data = id3_field_getbinarydata(data_field, &size);
 		if (data == nullptr || size == 0)
 			continue;
 

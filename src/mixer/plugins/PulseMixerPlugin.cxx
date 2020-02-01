@@ -108,7 +108,7 @@ static void
 pulse_mixer_volume_cb(gcc_unused pa_context *context, const pa_sink_input_info *i,
 		      int eol, void *userdata)
 {
-	auto *pm = (PulseMixer *)userdata;
+	auto pm = (PulseMixer *)userdata;
 	pm->VolumeCallback(i, eol);
 }
 
@@ -189,7 +189,7 @@ pulse_mixer_init(gcc_unused EventLoop &event_loop, AudioOutput &ao,
 {
 	auto &po = (PulseOutput &)ao;
 	float scale = parse_volume_scale_factor(block.GetBlockValue("scale_volume"));
-	auto *pm = new PulseMixer(po, listener, scale);
+	auto pm = new PulseMixer(po, listener, scale);
 
 	pulse_output_set_mixer(po, *pm);
 

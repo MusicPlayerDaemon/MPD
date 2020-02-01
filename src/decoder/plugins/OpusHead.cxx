@@ -33,7 +33,7 @@ struct OpusHead {
 bool
 ScanOpusHeader(const void *data, size_t size, unsigned &channels_r)
 {
-	const auto *h = (const OpusHead *)data;
+	const auto h = (const OpusHead *)data;
 	if (size < 19 || (h->version & 0xf0) != 0)
 		return false;
 

@@ -186,7 +186,7 @@ TwolameEncoder::~TwolameEncoder() noexcept
 void
 TwolameEncoder::Write(const void *data, size_t length)
 {
-	const auto *src = (const int16_t*)data;
+	auto src = (const int16_t*)data;
 
 	assert(output_buffer_position == output_buffer_length);
 

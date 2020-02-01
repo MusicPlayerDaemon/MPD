@@ -145,7 +145,7 @@ mikmod_decoder_file_decode(DecoderClient &client, Path path_fs)
 {
 	/* deconstify the path because libmikmod wants a non-const
 	   string pointer */
-	char *const path2 = const_cast<char *>(path_fs.c_str());
+	auto const path2 = const_cast<char *>(path_fs.c_str());
 
 	MODULE *handle;
 	int ret;
@@ -183,7 +183,7 @@ mikmod_decoder_scan_file(Path path_fs, TagHandler &handler) noexcept
 {
 	/* deconstify the path because libmikmod wants a non-const
 	   string pointer */
-	char *const path2 = const_cast<char *>(path_fs.c_str());
+	auto const path2 = const_cast<char *>(path_fs.c_str());
 
 	MODULE *handle = Player_Load(path2, 128, 0);
 

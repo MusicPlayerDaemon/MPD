@@ -72,7 +72,7 @@ adts_find_frame(DecoderBuffer &buffer)
 			return 0;
 
 		/* find the 0xff marker */
-		const auto *p = (const uint8_t *)
+		const auto p = (const uint8_t *)
 			memchr(data.data, 0xff, data.size);
 		if (p == nullptr) {
 			/* no marker - discard the buffer */

@@ -198,7 +198,7 @@ AoOutput::Play(const void *chunk, size_t size)
 	/* For whatever reason, libao wants a non-const pointer.
 	   Let's hope it does not write to the buffer, and use the
 	   union deconst hack to * work around this API misdesign. */
-	char *data = const_cast<char *>((const char *)chunk);
+	auto data = const_cast<char *>((const char *)chunk);
 
 	if (ao_play(device, data, size) == 0)
 		throw MakeAoError();

@@ -280,7 +280,7 @@ CdioParanoiaInputStream::Read(std::unique_lock<Mutex> &,
 			      void *ptr, size_t length)
 {
 	size_t nbytes = 0;
-	char *wptr = (char *) ptr;
+	auto wptr = (char *) ptr;
 
 	while (length > 0) {
 		/* end of track ? */

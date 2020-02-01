@@ -130,7 +130,7 @@ convert_filter_new(const AudioFormat in_audio_format,
 void
 convert_filter_set(Filter *_filter, AudioFormat out_audio_format)
 {
-	auto *filter = (ConvertFilter *)_filter;
+	auto filter = (ConvertFilter *)_filter;
 
 	filter->Set(out_audio_format);
 }

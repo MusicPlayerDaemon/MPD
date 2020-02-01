@@ -57,7 +57,7 @@ patch_utf8(StringView src, const char *_invalid)
 {
 	/* duplicate the string, and replace invalid bytes in that
 	   buffer */
-	char *dest = (char *)xmemdup(src.data, src.size);
+	auto dest = (char *)xmemdup(src.data, src.size);
 	char *const end = dest + src.size;
 
 	char *invalid = dest + (_invalid - src.data);
@@ -110,7 +110,7 @@ clear_non_printable(StringView src)
 	if (first == nullptr)
 		return nullptr;
 
-	char *dest = (char *)xmemdup(src.data, src.size);
+	auto dest = (char *)xmemdup(src.data, src.size);
 
 	for (size_t i = first - src.data; i < src.size; ++i)
 		if (char_is_non_printable(dest[i]))

@@ -30,8 +30,8 @@
 #include "UriUtil.hxx"
 #include "ASCII.hxx"
 
-#include <assert.h>
-#include <string.h>
+#include <cassert>
+#include <cstring>
 
 static const char *
 verify_uri_segment(const char *p) noexcept
@@ -45,7 +45,7 @@ verify_uri_segment(const char *p) noexcept
 	if (dots <= 2 && (*p == 0 || *p == '/'))
 		return nullptr;
 
-	const char *q = strchr(p + 1, '/');
+	auto q = std::strchr(p + 1, '/');
 	return q != nullptr ? q : "";
 }
 
@@ -83,16 +83,16 @@ SkipUriScheme(const char *uri) noexcept
 std::string
 uri_remove_auth(const char *uri) noexcept
 {
-	const char *auth = SkipUriScheme(uri);
+	auto auth = SkipUriScheme(uri);
 	if (auth == nullptr)
 		/* unrecognized URI */
 		return std::string();
 
-	const char *slash = strchr(auth, '/');
+	auto slash = std::strchr(auth, '/');
 	if (slash == nullptr)
 		slash = auth + strlen(auth);
 
-	const char *at = (const char *)memchr(auth, '@', slash - auth);
+	auto at = (const char *)std::memchr(auth, '@', slash - auth);
 	if (at == nullptr)
 		/* no auth info present, do nothing */
 		return std::string();

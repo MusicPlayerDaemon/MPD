@@ -283,7 +283,7 @@ MultiReadAdvance(ConstBuffer<jack_ringbuffer_t *> buffers,
 static void
 WriteSilence(jack_port_t &port, jack_nframes_t nframes)
 {
-	auto *out =
+	auto out =
 		(jack_default_audio_sample_t *)
 		jack_port_get_buffer(&port, nframes);
 	if (out == nullptr)
@@ -313,7 +313,7 @@ static void
 Copy(jack_port_t &dest, jack_nframes_t nframes,
      jack_ringbuffer_t &src, jack_nframes_t available)
 {
-	auto *out =
+	auto out =
 		(jack_default_audio_sample_t *)
 		jack_port_get_buffer(&dest, nframes);
 	if (out == nullptr)

@@ -177,7 +177,7 @@ alsa_mixer_init(EventLoop &event_loop, gcc_unused AudioOutput &ao,
 		MixerListener &listener,
 		const ConfigBlock &block)
 {
-	auto *am = new AlsaMixer(event_loop, listener);
+	auto am = new AlsaMixer(event_loop, listener);
 	am->Configure(block);
 
 	return am;

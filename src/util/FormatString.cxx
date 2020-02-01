@@ -35,7 +35,7 @@ FormatStringV(const char *fmt, va_list args) noexcept
 		/* wtf.. */
 		abort();
 
-	char *buffer = new char[length + 1];
+	auto buffer = new char[length + 1];
 	vsnprintf(buffer, length + 1, fmt, args);
 	return AllocatedString<>::Donate(buffer);
 }

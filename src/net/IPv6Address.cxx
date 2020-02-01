@@ -39,7 +39,7 @@ CastToIPv6(const struct sockaddr *p) noexcept
 	assert(p->sa_family == AF_INET6);
 
 	/* cast through void to work around the bogus alignment warning */
-	const void *q = reinterpret_cast<const void *>(p);
+	const auto q = reinterpret_cast<const void *>(p);
 	return reinterpret_cast<const struct sockaddr_in6 *>(q);
 }
 

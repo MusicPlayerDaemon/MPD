@@ -81,7 +81,7 @@ void
 GzipOutputStream::Write(const void *_data, size_t size)
 {
 	/* zlib's API requires non-const input pointer */
-	void *data = const_cast<void *>(_data);
+	auto data = const_cast<void *>(_data);
 
 	z.next_in = reinterpret_cast<Bytef *>(data);
 	z.avail_in = size;

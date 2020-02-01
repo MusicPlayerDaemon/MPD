@@ -45,7 +45,7 @@ FormatNfsClientError(struct nfs_context *nfs, const char *msg) noexcept
 {
 	assert(msg != nullptr);
 
-	const char *msg2 = nfs_get_error(nfs);
+	auto msg2 = nfs_get_error(nfs);
 	return StringFormat<256>("%s: %s", msg, msg2);
 }
 
@@ -60,7 +60,7 @@ FormatNfsClientError(int err, struct nfs_context *nfs, void *data,
 	assert(msg != nullptr);
 	assert(err < 0);
 
-	const char *msg2 = (const char *)data;
+	auto msg2 = (const char *)data;
 	if (data == nullptr || *(const char *)data == 0) {
 		msg2 = nfs_get_error(nfs);
 		if (msg2 == nullptr)

@@ -83,7 +83,7 @@ try {
 
 		/* get the key */
 		const char *key = p;
-		const char *key_end = (const char *)memchr(p, '\0', remaining);
+		auto key_end = (const char *)memchr(p, '\0', remaining);
 		if (key_end == nullptr)
 			break;
 

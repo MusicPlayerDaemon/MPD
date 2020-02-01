@@ -178,7 +178,7 @@ UpnpDatabase::ReturnSong(const LightSong *_song) const noexcept
 {
 	assert(_song != nullptr);
 
-	auto *song = (UpnpSong *)const_cast<LightSong *>(_song);
+	auto song = (UpnpSong *)const_cast<LightSong *>(_song);
 	delete song;
 }
 

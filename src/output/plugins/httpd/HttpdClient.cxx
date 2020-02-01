@@ -411,8 +411,8 @@ HttpdClient::OnSocketInput(void *data, size_t length) noexcept
 		return InputResult::CLOSED;
 	}
 
-	char *line = (char *)data;
-	char *newline = (char *)memchr(line, '\n', length);
+	auto line = (char *)data;
+	auto newline = (char *)memchr(line, '\n', length);
 	if (newline == nullptr)
 		return InputResult::MORE;
 

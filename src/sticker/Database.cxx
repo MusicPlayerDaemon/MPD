@@ -160,8 +160,8 @@ StickerDatabase::ListValues(std::map<std::string, std::string> &table,
 	};
 
 	ExecuteForEach(s, [s, &table](){
-		const char *name = (const char *)sqlite3_column_text(s, 0);
-		const char *value = (const char *)sqlite3_column_text(s, 1);
+		auto name = (const char *)sqlite3_column_text(s, 0);
+		auto value = (const char *)sqlite3_column_text(s, 1);
 		table.insert(std::make_pair(name, value));
 	});
 }
