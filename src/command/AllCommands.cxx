@@ -246,8 +246,8 @@ static CommandResult
 PrintAvailableCommands(Response &r, const Partition &partition,
 		     unsigned permission) noexcept
 {
-	for (unsigned i = 0; i < num_commands; ++i) {
-		const struct command *cmd = &commands[i];
+	for (const auto & i : commands) {
+		const struct command *cmd = &i;
 
 		if (cmd->permission == (permission & cmd->permission) &&
 		    command_available(partition, cmd))
@@ -260,8 +260,8 @@ PrintAvailableCommands(Response &r, const Partition &partition,
 static CommandResult
 PrintUnavailableCommands(Response &r, unsigned permission) noexcept
 {
-	for (unsigned i = 0; i < num_commands; ++i) {
-		const struct command *cmd = &commands[i];
+	for (const auto & i : commands) {
+		const struct command *cmd = &i;
 
 		if (cmd->permission != (permission & cmd->permission))
 			r.Format("command: %s\n", cmd->cmd);
