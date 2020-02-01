@@ -29,6 +29,8 @@
 
 #include "Exception.hxx"
 
+#include <utility>
+
 template<typename T>
 static void
 AppendNestedMessage(std::string &result, T &&e,
@@ -65,7 +67,7 @@ GetFullMessage(std::exception_ptr ep,
 	       const char *fallback, const char *separator) noexcept
 {
 	try {
-		std::rethrow_exception(ep);
+		std::rethrow_exception(std::move(ep));
 	} catch (const std::exception &e) {
 		return GetFullMessage(e, fallback, separator);
 	} catch (const std::nested_exception &ne) {
