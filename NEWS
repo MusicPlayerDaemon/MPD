@@ -1,6 +1,6 @@
 ver 0.21.20 (not yet released)
 * decoder
-  - ffmpeg: handle MIME type "audio/wav"
+  - audiofile, ffmpeg, sndfile: handle MIME type "audio/wav"
   - vorbis, opus: fix seeking in small files
 
 ver 0.21.19 (2020/01/17)

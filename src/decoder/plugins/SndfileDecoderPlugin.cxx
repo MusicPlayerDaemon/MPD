@@ -322,6 +322,8 @@ static const char *const sndfile_suffixes[] = {
 };
 
 static const char *const sndfile_mime_types[] = {
+	"audio/wav",
+	"audio/aiff",
 	"audio/x-wav",
 	"audio/x-aiff",
 
