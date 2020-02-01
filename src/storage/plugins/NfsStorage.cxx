@@ -80,7 +80,7 @@ public:
 		nfs_init(_loop);
 	}
 
-	~NfsStorage() {
+	~NfsStorage() override {
 		BlockingCall(GetEventLoop(), [this](){ Disconnect(); });
 		nfs_finish();
 	}

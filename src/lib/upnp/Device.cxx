@@ -45,7 +45,7 @@ public:
 		 value(nullptr) {}
 
 protected:
-	virtual void StartElement(const XML_Char *name, const XML_Char **) {
+	void StartElement(const XML_Char *name, const XML_Char **) override {
 		value = nullptr;
 
 		switch (name[0]) {
@@ -80,7 +80,7 @@ protected:
 		}
 	}
 
-	virtual void EndElement(const XML_Char *name) {
+	void EndElement(const XML_Char *name) override {
 		if (value != nullptr) {
 			trimstring(*value);
 			value = nullptr;
@@ -90,7 +90,7 @@ protected:
 		}
 	}
 
-	virtual void CharacterData(const XML_Char *s, int len) {
+	void CharacterData(const XML_Char *s, int len) override {
 		if (value != nullptr)
 			value->append(s, len);
 	}

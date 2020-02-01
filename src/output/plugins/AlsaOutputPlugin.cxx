@@ -210,7 +210,7 @@ class AlsaOutput final
 public:
 	AlsaOutput(EventLoop &loop, const ConfigBlock &block);
 
-	~AlsaOutput() noexcept {
+	~AlsaOutput() noexcept override {
 		/* free libasound's config cache */
 		snd_config_update_free_global();
 	}

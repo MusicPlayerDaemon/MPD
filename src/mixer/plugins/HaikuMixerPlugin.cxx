@@ -36,14 +36,14 @@ public:
 		 self(_output) {}
 
 	/* virtual methods from class Mixer */
-	virtual void Open() override {
+	void Open() override {
 	}
 
 	void Close() noexcept override {
 	}
 
-	virtual int GetVolume() override;
-	virtual void SetVolume(unsigned volume) override;
+	int GetVolume() override;
+	void SetVolume(unsigned volume) override;
 };
 
 static Mixer *

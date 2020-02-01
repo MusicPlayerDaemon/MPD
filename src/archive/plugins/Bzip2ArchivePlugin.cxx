@@ -47,7 +47,7 @@ public:
 			name.erase(len - 4);
 	}
 
-	virtual void Visit(ArchiveVisitor &visitor) override {
+	void Visit(ArchiveVisitor &visitor) override {
 		visitor.VisitArchiveEntry(name.c_str());
 	}
 
@@ -68,7 +68,7 @@ public:
 	Bzip2InputStream(const std::shared_ptr<InputStream> &_input,
 			 const char *uri,
 			 Mutex &mutex);
-	~Bzip2InputStream();
+	~Bzip2InputStream() override;
 
 	/* virtual methods from InputStream */
 	bool IsEOF() const noexcept override;

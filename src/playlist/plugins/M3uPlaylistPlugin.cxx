@@ -32,7 +32,7 @@ public:
 		:tis(std::move(is)) {
 	}
 
-	virtual std::unique_ptr<DetachedSong> NextSong() override;
+	std::unique_ptr<DetachedSong> NextSong() override;
 };
 
 static std::unique_ptr<SongEnumerator>

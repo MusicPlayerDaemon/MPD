@@ -49,7 +49,7 @@ struct ShoutOutput final : AudioOutput {
 	uint8_t buffer[32768];
 
 	explicit ShoutOutput(const ConfigBlock &block);
-	~ShoutOutput();
+	~ShoutOutput() override;
 
 	static AudioOutput *Create(EventLoop &event_loop,
 				   const ConfigBlock &block);

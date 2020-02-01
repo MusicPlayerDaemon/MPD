@@ -47,7 +47,7 @@ public:
 				  NFS_MAX_BUFFERED,
 				  NFS_RESUME_AT) {}
 
-	virtual ~NfsInputStream() {
+	~NfsInputStream() override {
 		DeferClose();
 	}
 
@@ -62,8 +62,8 @@ private:
 
 protected:
 	/* virtual methods from AsyncInputStream */
-	virtual void DoResume() override;
-	virtual void DoSeek(offset_type new_offset) override;
+	void DoResume() override;
+	void DoSeek(offset_type new_offset) override;
 
 private:
 	/* virtual methods from NfsFileReader */

@@ -65,7 +65,7 @@ public:
 		tidal_session->AddLoginHandler(*this);
 	}
 
-	~TidalInputStream() {
+	~TidalInputStream() override {
 		tidal_session->RemoveLoginHandler(*this);
 	}
 

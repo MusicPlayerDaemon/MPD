@@ -74,7 +74,7 @@ public:
 			 size_t _buffer_size,
 			 size_t _resume_at) noexcept;
 
-	virtual ~AsyncInputStream() noexcept;
+	~AsyncInputStream() noexcept override;
 
 	auto &GetEventLoop() const noexcept {
 		return deferred_resume.GetEventLoop();

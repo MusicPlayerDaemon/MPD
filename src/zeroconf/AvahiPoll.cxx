@@ -71,7 +71,7 @@ public:
 
 private:
 	/* virtual methods from class SocketMonitor */
-	bool OnSocketReady(unsigned flags) noexcept {
+	bool OnSocketReady(unsigned flags) noexcept override {
 		received = ToAvahiWatchEvent(flags);
 		callback(this, GetSocket().Get(), received, userdata);
 		received = AvahiWatchEvent(0);

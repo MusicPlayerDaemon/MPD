@@ -42,7 +42,7 @@ public:
 	SmbclientDirectoryReader(std::string &&_base, unsigned _handle)
 		:base(std::move(_base)), handle(_handle) {}
 
-	virtual ~SmbclientDirectoryReader();
+	~SmbclientDirectoryReader() override;
 
 	/* virtual methods from class StorageDirectoryReader */
 	const char *Read() noexcept override;
@@ -58,7 +58,7 @@ public:
 	SmbclientStorage(const char *_base, SMBCCTX *_ctx)
 		:base(_base), ctx(_ctx) {}
 
-	virtual ~SmbclientStorage() {
+	~SmbclientStorage() override {
 		const std::lock_guard<Mutex> lock(smbclient_mutex);
 		smbc_free_context(ctx, 1);
 	}

@@ -81,7 +81,7 @@ class CdioParanoiaInputStream final : public InputStream {
 		SetReady();
 	}
 
-	~CdioParanoiaInputStream() {
+	~CdioParanoiaInputStream() override {
 		para = {};
 		cdio_cddap_close_no_free_cdio(drv);
 		cdio_destroy(cdio);

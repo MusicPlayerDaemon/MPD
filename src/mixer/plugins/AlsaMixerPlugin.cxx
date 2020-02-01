@@ -86,7 +86,7 @@ public:
 		:Mixer(alsa_mixer_plugin, _listener),
 		 event_loop(_event_loop) {}
 
-	virtual ~AlsaMixer();
+	~AlsaMixer() override;
 
 	void Configure(const ConfigBlock &block);
 	void Setup();

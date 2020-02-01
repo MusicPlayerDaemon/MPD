@@ -71,7 +71,7 @@ public:
 	void Visit(char *path, size_t length, size_t capacity,
 		   ArchiveVisitor &visitor);
 
-	virtual void Visit(ArchiveVisitor &visitor) override;
+	void Visit(ArchiveVisitor &visitor) override;
 
 	InputStreamPtr OpenStream(const char *path,
 				  Mutex &mutex) override;
@@ -152,7 +152,7 @@ public:
 		SetReady();
 	}
 
-	~Iso9660InputStream() {
+	~Iso9660InputStream() override {
 		free(statbuf);
 	}
 

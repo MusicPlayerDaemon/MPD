@@ -38,7 +38,7 @@ public:
 		:Filter(audio_format), compressor(Compressor_new(0)) {
 	}
 
-	~NormalizeFilter() {
+	~NormalizeFilter() override {
 		Compressor_delete(compressor);
 	}
 

@@ -69,7 +69,7 @@ protected:
 	/* virtual methods from class SocketMonitor */
 	bool OnSocketReady(unsigned flags) noexcept override;
 
-	virtual void OnIdle() noexcept override;
+	void OnIdle() noexcept override;
 };
 
 #endif

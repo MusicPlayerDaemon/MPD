@@ -27,7 +27,7 @@ class NullFilter final : public Filter {
 public:
 	explicit NullFilter(const AudioFormat &af):Filter(af) {}
 
-	virtual ConstBuffer<void> FilterPCM(ConstBuffer<void> src) override {
+	ConstBuffer<void> FilterPCM(ConstBuffer<void> src) override {
 		return src;
 	}
 };

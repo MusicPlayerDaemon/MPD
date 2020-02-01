@@ -107,7 +107,7 @@ class UpdateArchiveVisitor final : public ArchiveVisitor {
 			     Directory &_directory) noexcept
 		:walk(_walk), archive(_archive), directory(_directory) {}
 
-	virtual void VisitArchiveEntry(const char *path_utf8) override {
+	void VisitArchiveEntry(const char *path_utf8) override {
 		FormatDebug(update_domain,
 			    "adding archive file: %s", path_utf8);
 		walk.UpdateArchiveTree(archive, directory, path_utf8);

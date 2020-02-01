@@ -53,7 +53,7 @@ public:
 		qobuz_client->AddLoginHandler(*this);
 	}
 
-	~QobuzInputStream() {
+	~QobuzInputStream() override {
 		qobuz_client->RemoveLoginHandler(*this);
 	}
 

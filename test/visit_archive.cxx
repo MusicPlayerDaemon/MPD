@@ -54,7 +54,7 @@ public:
 
 class MyArchiveVisitor final : public ArchiveVisitor {
 public:
-	virtual void VisitArchiveEntry(const char *path_utf8) override {
+	void VisitArchiveEntry(const char *path_utf8) override {
 		printf("%s\n", path_utf8);
 	}
 };

@@ -43,7 +43,7 @@ public:
 		SetReady();
 	}
 
-	~SmbclientInputStream() {
+	~SmbclientInputStream() override {
 		const std::lock_guard<Mutex> lock(smbclient_mutex);
 		smbc_close(fd);
 		smbc_free_context(ctx, 1);

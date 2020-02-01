@@ -42,8 +42,8 @@ public:
 	}
 
 protected:
-	virtual void Open() override;
-	virtual size_t ThreadRead(void *ptr, size_t size) override;
+	void Open() override;
+	size_t ThreadRead(void *ptr, size_t size) override;
 
 	void Close() noexcept override {
 		mmsx_close(mms);

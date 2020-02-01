@@ -89,7 +89,7 @@ public:
 			Mutex &_mutex,
 			const SourceSpec &spec);
 
-	~AlsaInputStream() {
+	~AlsaInputStream() override {
 		BlockingCall(MultiSocketMonitor::GetEventLoop(), [this](){
 				MultiSocketMonitor::Reset();
 				defer_invalidate_sockets.Cancel();
@@ -103,13 +103,13 @@ public:
 
 protected:
 	/* virtual methods from AsyncInputStream */
-	virtual void DoResume() override {
+	void DoResume() override {
 		snd_pcm_resume(capture_handle);
 
 		InvalidateSockets();
 	}
 
-	virtual void DoSeek(gcc_unused offset_type new_offset) override {
+	void DoSeek(gcc_unused offset_type new_offset) override {
 		/* unreachable because seekable==false */
 		SeekDone();
 	}

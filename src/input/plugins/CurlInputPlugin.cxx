@@ -85,7 +85,7 @@ public:
 			I &&_icy,
 			Mutex &_mutex);
 
-	~CurlInputStream() noexcept;
+	~CurlInputStream() noexcept override;
 
 	CurlInputStream(const CurlInputStream &) = delete;
 	CurlInputStream &operator=(const CurlInputStream &) = delete;
@@ -137,8 +137,8 @@ private:
 	void OnError(std::exception_ptr e) noexcept override;
 
 	/* virtual methods from AsyncInputStream */
-	virtual void DoResume() override;
-	virtual void DoSeek(offset_type new_offset) override;
+	void DoResume() override;
+	void DoSeek(offset_type new_offset) override;
 };
 
 /** libcurl should accept "ICY 200 OK" */

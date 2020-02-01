@@ -44,7 +44,7 @@ class FifoOutput final : AudioOutput {
 public:
 	FifoOutput(const ConfigBlock &block);
 
-	~FifoOutput() {
+	~FifoOutput() override {
 		CloseFifo();
 	}
 

@@ -32,7 +32,7 @@
 
 class PreparedNullFilter final : public PreparedFilter {
 public:
-	virtual std::unique_ptr<Filter> Open(AudioFormat &af) override {
+	std::unique_ptr<Filter> Open(AudioFormat &af) override {
 		return std::make_unique<NullFilter>(af);
 	}
 };

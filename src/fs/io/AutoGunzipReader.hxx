@@ -40,7 +40,7 @@ public:
 	~AutoGunzipReader() noexcept;
 
 	/* virtual methods from class Reader */
-	virtual size_t Read(void *data, size_t size) override;
+	size_t Read(void *data, size_t size) override;
 
 private:
 	void Detect();

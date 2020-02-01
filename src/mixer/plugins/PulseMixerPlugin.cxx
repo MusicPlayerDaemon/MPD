@@ -54,7 +54,7 @@ public:
 	{
 	}
 
-	virtual ~PulseMixer();
+	~PulseMixer() override;
 
 	void Offline();
 	void VolumeCallback(const pa_sink_input_info *i, int eol);
