@@ -65,7 +65,7 @@ ContentDirectoryService::readDirSlice(UpnpClient_Handle hdl,
 
 	IXML_Document *response;
 	int code = UpnpSendAction(hdl, m_actionURL.c_str(), m_serviceType.c_str(),
-				  0 /*devUDN*/, request, &response);
+				  nullptr /*devUDN*/, request, &response);
 	if (code != UPNP_E_SUCCESS)
 		throw FormatRuntimeError("UpnpSendAction() failed: %s",
 					 UpnpGetErrorMessage(code));
@@ -124,7 +124,7 @@ ContentDirectoryService::search(UpnpClient_Handle hdl,
 		IXML_Document *_response;
 		auto code = UpnpSendAction(hdl, m_actionURL.c_str(),
 					   m_serviceType.c_str(),
-					   0 /*devUDN*/,
+					   nullptr /*devUDN*/,
 					   request.get(), &_response);
 		if (code != UPNP_E_SUCCESS)
 			throw FormatRuntimeError("UpnpSendAction() failed: %s",
@@ -170,7 +170,7 @@ ContentDirectoryService::getMetadata(UpnpClient_Handle hdl,
 	IXML_Document *_response;
 	auto code = UpnpSendAction(hdl, m_actionURL.c_str(),
 				   m_serviceType.c_str(),
-				   0 /*devUDN*/, request.get(), &_response);
+				   nullptr /*devUDN*/, request.get(), &_response);
 	if (code != UPNP_E_SUCCESS)
 		throw FormatRuntimeError("UpnpSendAction() failed: %s",
 					 UpnpGetErrorMessage(code));

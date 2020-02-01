@@ -100,7 +100,7 @@ try {
 	const ScopeDecoderPluginsInit decoder_plugins_init({});
 
 	plugin = decoder_plugin_from_name(decoder_name);
-	if (plugin == NULL) {
+	if (plugin == nullptr) {
 		fprintf(stderr, "No such decoder: %s\n", decoder_name);
 		return EXIT_FAILURE;
 	}
@@ -117,7 +117,7 @@ try {
 	Mutex mutex;
 	InputStreamPtr is;
 
-	if (!success && plugin->scan_stream != NULL) {
+	if (!success && plugin->scan_stream != nullptr) {
 		is = InputStream::OpenReady(path, mutex);
 		success = plugin->ScanStream(*is, h);
 	}

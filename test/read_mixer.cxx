@@ -36,7 +36,7 @@ const FilterPlugin *
 filter_plugin_by_name(gcc_unused const char *name) noexcept
 {
 	assert(false);
-	return NULL;
+	return nullptr;
 }
 
 int main(int argc, gcc_unused char **argv)

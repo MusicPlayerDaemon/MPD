@@ -27,7 +27,7 @@
 MixerType
 mixer_type_parse(const char *input)
 {
-	assert(input != NULL);
+	assert(input != nullptr);
 
 	if (strcmp(input, "none") == 0 || strcmp(input, "disabled") == 0)
 		return MixerType::NONE;

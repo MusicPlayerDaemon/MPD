@@ -70,7 +70,7 @@ try {
 	auto is = OpenLocalInputStream(path, mutex);
 
 	const auto tag = tag_id3_load(*is);
-	if (tag == NULL) {
+	if (tag == nullptr) {
 		fprintf(stderr, "No ID3 tag found\n");
 		return EXIT_FAILURE;
 	}

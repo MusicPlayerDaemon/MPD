@@ -112,7 +112,7 @@ try {
 	const char *const plugin_name = argv[2];
 
 	const DatabasePlugin *plugin = GetDatabasePluginByName(plugin_name);
-	if (plugin == NULL) {
+	if (plugin == nullptr) {
 		cerr << "No such database plugin: " << plugin_name << endl;
 		return EXIT_FAILURE;
 	}

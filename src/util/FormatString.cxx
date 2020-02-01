@@ -28,7 +28,7 @@ FormatStringV(const char *fmt, va_list args) noexcept
 {
 	va_list tmp;
 	va_copy(tmp, args);
-	const int length = vsnprintf(NULL, 0, fmt, tmp);
+	const int length = vsnprintf(nullptr, 0, fmt, tmp);
 	va_end(tmp);
 
 	if (length <= 0)

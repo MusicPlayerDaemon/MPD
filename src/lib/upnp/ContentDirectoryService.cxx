@@ -60,7 +60,7 @@ ContentDirectoryService::getSearchCapabilities(UpnpClient_Handle hdl) const
 	IXML_Document *_response;
 	auto code = UpnpSendAction(hdl, m_actionURL.c_str(),
 				   m_serviceType.c_str(),
-				   0 /*devUDN*/, request.get(), &_response);
+				   nullptr /*devUDN*/, request.get(), &_response);
 	if (code != UPNP_E_SUCCESS)
 		throw FormatRuntimeError("UpnpSendAction() failed: %s",
 					 UpnpGetErrorMessage(code));

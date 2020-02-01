@@ -101,7 +101,7 @@ initPermissions(const ConfigData &config)
 		const char *separator = strchr(param.value.c_str(),
 					       PERMISSION_PASSWORD_CHAR);
 
-		if (separator == NULL)
+		if (separator == nullptr)
 			throw FormatRuntimeError("\"%c\" not found in password string "
 						 "\"%s\", line %i",
 						 PERMISSION_PASSWORD_CHAR,
