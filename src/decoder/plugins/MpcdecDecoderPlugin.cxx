@@ -45,7 +45,7 @@ struct mpc_decoder_data {
 static constexpr Domain mpcdec_domain("mpcdec");
 
 static constexpr SampleFormat mpcdec_sample_format = SampleFormat::S24_P32;
-typedef SampleTraits<mpcdec_sample_format> MpcdecSampleTraits;
+using MpcdecSampleTraits = SampleTraits<mpcdec_sample_format>;
 
 static mpc_int32_t
 mpc_read_cb(mpc_reader *reader, void *ptr, mpc_int32_t size)

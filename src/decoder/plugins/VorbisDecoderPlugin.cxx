@@ -50,8 +50,8 @@ class VorbisDecoder final : public OggDecoder {
 	typedef int16_t out_sample_t;
 #else
 	static constexpr SampleFormat sample_format = SampleFormat::FLOAT;
-	typedef float in_sample_t;
-	typedef float out_sample_t;
+	using in_sample_t = float;
+	using out_sample_t = float;
 #endif
 
 	unsigned remaining_header_packets;
