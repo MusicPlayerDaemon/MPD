@@ -220,8 +220,8 @@ Directory::Sort() noexcept
 
 void
 Directory::Walk(bool recursive, const SongFilter *filter,
-		VisitDirectory visit_directory, VisitSong visit_song,
-		VisitPlaylist visit_playlist) const
+		const VisitDirectory& visit_directory, const VisitSong& visit_song,
+		const VisitPlaylist& visit_playlist) const
 {
 	if (IsMount()) {
 		assert(IsEmpty());

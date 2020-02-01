@@ -41,6 +41,7 @@
 #include "util/SplitString.hxx"
 
 #include <string>
+#include <utility>
 
 #include <assert.h>
 #include <string.h>
@@ -107,9 +108,9 @@ private:
 	void VisitServer(const ContentDirectoryService &server,
 			 std::forward_list<std::string> &&vpath,
 			 const DatabaseSelection &selection,
-			 VisitDirectory visit_directory,
-			 VisitSong visit_song,
-			 VisitPlaylist visit_playlist) const;
+			 const VisitDirectory& visit_directory,
+			 const VisitSong& visit_song,
+			 const VisitPlaylist& visit_playlist) const;
 
 	/**
 	 * Run an UPnP search according to MPD parameters, and
@@ -118,7 +119,7 @@ private:
 	void SearchSongs(const ContentDirectoryService &server,
 			 const char *objid,
 			 const DatabaseSelection &selection,
-			 VisitSong visit_song) const;
+			 const VisitSong& visit_song) const;
 
 	UPnPDirContent SearchSongs(const ContentDirectoryService &server,
 				   const char *objid,
@@ -311,7 +312,7 @@ UpnpDatabase::SearchSongs(const ContentDirectoryService &server,
 static void
 visitSong(const UPnPDirObject &meta, const char *path,
 	  const DatabaseSelection &selection,
-	  VisitSong visit_song)
+	  const VisitSong& visit_song)
 {
 	if (!visit_song)
 		return;
@@ -339,7 +340,7 @@ void
 UpnpDatabase::SearchSongs(const ContentDirectoryService &server,
 			  const char *objid,
 			  const DatabaseSelection &selection,
-			  VisitSong visit_song) const
+			  const VisitSong& visit_song) const
 {
 	if (!visit_song)
 		return;
@@ -440,13 +441,13 @@ UpnpDatabase::Namei(const ContentDirectoryService &server,
 static void
 VisitItem(const UPnPDirObject &object, const char *uri,
 	  const DatabaseSelection &selection,
-	  VisitSong visit_song, VisitPlaylist visit_playlist)
+	  const VisitSong& visit_song, const VisitPlaylist& visit_playlist)
 {
 	assert(object.type == UPnPDirObject::Type::ITEM);
 
 	switch (object.item_class) {
 	case UPnPDirObject::ItemClass::MUSIC:
-		visitSong(object, uri, selection, visit_song);
+		visitSong(object, uri, selection, std::move(visit_song));
 		break;
 
 	case UPnPDirObject::ItemClass::PLAYLIST:
@@ -469,9 +470,9 @@ VisitItem(const UPnPDirObject &object, const char *uri,
 static void
 VisitObject(const UPnPDirObject &object, const char *uri,
 	    const DatabaseSelection &selection,
-	    VisitDirectory visit_directory,
-	    VisitSong visit_song,
-	    VisitPlaylist visit_playlist)
+	    const VisitDirectory& visit_directory,
+	    const VisitSong& visit_song,
+	    const VisitPlaylist& visit_playlist)
 {
 	switch (object.type) {
 	case UPnPDirObject::Type::UNKNOWN:
@@ -486,7 +487,7 @@ VisitObject(const UPnPDirObject &object, const char *uri,
 
 	case UPnPDirObject::Type::ITEM:
 		VisitItem(object, uri, selection,
-			  visit_song, visit_playlist);
+			  std::move(visit_song), std::move(visit_playlist));
 		break;
 	}
 }
@@ -497,9 +498,9 @@ void
 UpnpDatabase::VisitServer(const ContentDirectoryService &server,
 			  std::forward_list<std::string> &&vpath,
 			  const DatabaseSelection &selection,
-			  VisitDirectory visit_directory,
-			  VisitSong visit_song,
-			  VisitPlaylist visit_playlist) const
+			  const VisitDirectory& visit_directory,
+			  const VisitSong& visit_song,
+			  const VisitPlaylist& visit_playlist) const
 {
 	/* If the path begins with rootid, we know that this is a
 	   song, not a directory (because that's how we set things

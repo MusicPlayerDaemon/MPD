@@ -82,7 +82,7 @@ ToAck(DatabaseErrorCode code) noexcept
 
 gcc_pure
 static enum ack
-ToAck(std::exception_ptr ep) noexcept
+ToAck(const std::exception_ptr& ep) noexcept
 {
 	try {
 		std::rethrow_exception(ep);
@@ -113,7 +113,7 @@ ToAck(std::exception_ptr ep) noexcept
 }
 
 void
-PrintError(Response &r, std::exception_ptr ep)
+PrintError(Response &r, const std::exception_ptr& ep)
 {
 	LogError(ep);
 	r.Error(ToAck(ep), GetFullMessage(ep).c_str());

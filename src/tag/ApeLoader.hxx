@@ -37,6 +37,6 @@ typedef std::function<bool(unsigned long flags, const char *key,
  * present
  */
 bool
-tag_ape_scan(InputStream &is, ApeTagCallback callback);
+tag_ape_scan(InputStream &is, const ApeTagCallback& callback);
 
 #endif

@@ -30,11 +30,13 @@
 #include <nfsc/libnfs-raw-nfs.h>
 #endif
 
+#include <utility>
+
 bool
 IsFileNotFound(std::exception_ptr ep) noexcept
 {
 	try {
-		std::rethrow_exception(ep);
+		std::rethrow_exception(std::move(ep));
 	} catch (const std::system_error &e) {
 		return IsFileNotFound(e);
 #ifdef ENABLE_CURL
