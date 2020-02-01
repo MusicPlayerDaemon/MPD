@@ -863,10 +863,7 @@ IsFilterSupported(const ISongFilter &f) noexcept
 			return true;
 
 		const auto tag = Convert(t->GetTagType());
-		if (tag == MPD_TAG_COUNT)
-			return false;
-
-		return true;
+		return tag != MPD_TAG_COUNT;
 	} else if (auto u = dynamic_cast<const UriSongFilter *>(&f)) {
 		if (u->IsNegated())
 			// TODO implement

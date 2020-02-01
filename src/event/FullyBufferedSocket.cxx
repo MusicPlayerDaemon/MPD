@@ -102,10 +102,7 @@ FullyBufferedSocket::OnSocketReady(unsigned flags) noexcept
 			return false;
 	}
 
-	if (!BufferedSocket::OnSocketReady(flags))
-		return false;
-
-	return true;
+	return BufferedSocket::OnSocketReady(flags);
 }
 
 void
