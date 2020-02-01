@@ -33,7 +33,7 @@ template<SampleFormat F, class Traits=SampleTraits<F>,
 static void
 TestVolume(G g=G())
 {
-	typedef typename Traits::value_type value_type;
+	using value_type = typename Traits::value_type;
 
 	PcmVolume pv;
 	EXPECT_EQ(pv.Open(F, false), F);
@@ -80,7 +80,7 @@ TEST(PcmTest, Volume16)
 TEST(PcmTest, Volume16to32)
 {
 	constexpr SampleFormat F = SampleFormat::S16;
-	typedef int16_t value_type;
+	using value_type = int16_t;
 	RandomInt<value_type> g;
 
 	PcmVolume pv;

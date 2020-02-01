@@ -68,7 +68,7 @@ TEST(PcmTest, Interleave16)
 
 TEST(PcmTest, Interleave24)
 {
-	typedef uint8_t T;
+	using T = uint8_t;
 	static constexpr T src1[] = { 1, 2, 3, 4, 5, 6 };
 	static constexpr T src2[] = { 7, 8, 9, 10, 11, 12 };
 	static constexpr T src3[] = { 13, 14, 15, 16, 17, 18 };

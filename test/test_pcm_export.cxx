@@ -373,7 +373,7 @@ template<SampleFormat F, class Traits=SampleTraits<F>>
 static void
 TestAlsaChannelOrder51()
 {
-	typedef typename Traits::value_type value_type;
+	using value_type = typename Traits::value_type;
 
 	static constexpr value_type src[] = {
 		0, 1, 2, 3, 4, 5,
@@ -403,7 +403,7 @@ template<SampleFormat F, class Traits=SampleTraits<F>>
 static void
 TestAlsaChannelOrder71()
 {
-	typedef typename Traits::value_type value_type;
+	using value_type = typename Traits::value_type;
 
 	static constexpr value_type src[] = {
 		0, 1, 2, 3, 4, 5, 6, 7,
