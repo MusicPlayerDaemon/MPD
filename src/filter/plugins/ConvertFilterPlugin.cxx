@@ -42,7 +42,7 @@ class ConvertFilter final : public Filter {
 	std::unique_ptr<PcmConvert> state;
 
 public:
-	ConvertFilter(const AudioFormat &audio_format);
+	explicit ConvertFilter(const AudioFormat &audio_format);
 
 	void Set(const AudioFormat &_out_audio_format);
 

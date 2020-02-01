@@ -139,7 +139,7 @@ class AlsaInputStream::SourceSpec {
 	DivideString components;
 
 public:
-	SourceSpec(const char *_uri)
+	explicit SourceSpec(const char *_uri)
 		: uri(_uri)
 		, components(uri, '?')
 	{

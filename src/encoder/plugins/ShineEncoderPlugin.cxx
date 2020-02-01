@@ -86,7 +86,7 @@ class PreparedShineEncoder final : public PreparedEncoder {
 	shine_config_t config;
 
 public:
-	PreparedShineEncoder(const ConfigBlock &block);
+	explicit PreparedShineEncoder(const ConfigBlock &block);
 
 	/* virtual methods from class PreparedEncoder */
 	Encoder *Open(AudioFormat &audio_format) override;

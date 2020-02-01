@@ -130,7 +130,7 @@ public:
 	 * @param block the configuration block to read
 	 * @param filter a route_filter whose min_channels and sources[] to set
 	 */
-	PreparedRouteFilter(const ConfigBlock &block);
+	explicit PreparedRouteFilter(const ConfigBlock &block);
 
 	/* virtual methods from class PreparedFilter */
 	std::unique_ptr<Filter> Open(AudioFormat &af) override;

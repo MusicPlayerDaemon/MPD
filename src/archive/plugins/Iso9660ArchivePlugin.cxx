@@ -62,7 +62,7 @@ class Iso9660ArchiveFile final : public ArchiveFile {
 	std::shared_ptr<Iso9660> iso;
 
 public:
-	Iso9660ArchiveFile(std::shared_ptr<Iso9660> &&_iso)
+	explicit Iso9660ArchiveFile(std::shared_ptr<Iso9660> &&_iso)
 		:iso(std::move(_iso)) {}
 
 	/**

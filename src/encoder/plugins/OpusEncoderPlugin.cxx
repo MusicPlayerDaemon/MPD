@@ -79,7 +79,7 @@ class PreparedOpusEncoder final : public PreparedEncoder {
 	const bool chaining;
 
 public:
-	PreparedOpusEncoder(const ConfigBlock &block);
+	explicit PreparedOpusEncoder(const ConfigBlock &block);
 
 	/* virtual methods from class PreparedEncoder */
 	Encoder *Open(AudioFormat &audio_format) override;

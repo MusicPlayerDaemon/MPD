@@ -57,7 +57,7 @@ class PreparedLameEncoder final : public PreparedEncoder {
 	int bitrate;
 
 public:
-	PreparedLameEncoder(const ConfigBlock &block);
+	explicit PreparedLameEncoder(const ConfigBlock &block);
 
 	/* virtual methods from class PreparedEncoder */
 	Encoder *Open(AudioFormat &audio_format) override;

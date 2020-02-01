@@ -65,7 +65,7 @@ class PreparedVorbisEncoder final : public PreparedEncoder {
 	int bitrate;
 
 public:
-	PreparedVorbisEncoder(const ConfigBlock &block);
+	explicit PreparedVorbisEncoder(const ConfigBlock &block);
 
 	/* virtual methods from class PreparedEncoder */
 	Encoder *Open(AudioFormat &audio_format) override;

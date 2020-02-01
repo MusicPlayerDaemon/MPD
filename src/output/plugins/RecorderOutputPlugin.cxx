@@ -67,7 +67,7 @@ class RecorderOutput final : AudioOutput {
 	 */
 	FileOutputStream *file;
 
-	RecorderOutput(const ConfigBlock &block);
+	explicit RecorderOutput(const ConfigBlock &block);
 
 public:
 	static AudioOutput *Create(EventLoop &, const ConfigBlock &block) {

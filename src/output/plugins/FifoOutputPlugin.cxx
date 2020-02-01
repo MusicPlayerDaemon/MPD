@@ -42,7 +42,7 @@ class FifoOutput final : AudioOutput {
 	Timer *timer;
 
 public:
-	FifoOutput(const ConfigBlock &block);
+	explicit FifoOutput(const ConfigBlock &block);
 
 	~FifoOutput() override {
 		CloseFifo();

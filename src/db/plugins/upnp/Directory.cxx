@@ -111,7 +111,7 @@ class UPnPDirParser final : public CommonExpatParser {
 	TagBuilder tag;
 
 public:
-	UPnPDirParser(UPnPDirContent &_directory)
+	explicit UPnPDirParser(UPnPDirContent &_directory)
 		:directory(_directory),
 		 state(NONE),
 		 tag_type(TAG_NUM_OF_ITEM_TYPES)

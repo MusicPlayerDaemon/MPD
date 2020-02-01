@@ -34,7 +34,7 @@ class SoftwareMixer final : public Mixer {
 	unsigned volume = 100;
 
 public:
-	SoftwareMixer(MixerListener &_listener)
+	explicit SoftwareMixer(MixerListener &_listener)
 		:Mixer(software_mixer_plugin, _listener)
 	{
 	}

@@ -53,7 +53,7 @@ class SignalMonitor final : private SocketMonitor {
 #endif
 
 public:
-	SignalMonitor(EventLoop &_loop)
+	explicit SignalMonitor(EventLoop &_loop)
 		:SocketMonitor(_loop) {
 #ifndef USE_SIGNALFD
 		SocketMonitor::Open(SocketDescriptor(fd.Get()));

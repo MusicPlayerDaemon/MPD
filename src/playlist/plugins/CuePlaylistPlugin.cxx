@@ -28,7 +28,7 @@ class CuePlaylist final : public SongEnumerator {
 	CueParser parser;
 
  public:
-	CuePlaylist(InputStreamPtr &&is)
+	explicit CuePlaylist(InputStreamPtr &&is)
 		:tis(std::move(is)) {
 	}
 

@@ -52,7 +52,7 @@ class AoOutput final : AudioOutput, SafeSingleton<AoInit> {
 
 	size_t frame_size;
 
-	AoOutput(const ConfigBlock &block);
+	explicit AoOutput(const ConfigBlock &block);
 	~AoOutput() override;
 
 public:

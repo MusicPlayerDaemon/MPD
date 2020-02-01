@@ -33,7 +33,7 @@ class WaveEncoder final : public Encoder {
 	DynamicFifoBuffer<uint8_t> buffer;
 
 public:
-	WaveEncoder(AudioFormat &audio_format) noexcept;
+	explicit WaveEncoder(AudioFormat &audio_format) noexcept;
 
 	/* virtual methods from class Encoder */
 	void Write(const void *data, size_t length) override;

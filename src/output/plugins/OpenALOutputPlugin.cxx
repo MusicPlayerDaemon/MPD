@@ -44,7 +44,7 @@ class OpenALOutput final : AudioOutput {
 	ALenum format;
 	ALuint frequency;
 
-	OpenALOutput(const ConfigBlock &block);
+	explicit OpenALOutput(const ConfigBlock &block);
 
 public:
 	static AudioOutput *Create(EventLoop &,

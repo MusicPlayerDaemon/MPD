@@ -36,7 +36,7 @@ class LocalDirectoryReader final : public StorageDirectoryReader {
 	std::string name_utf8;
 
 public:
-	LocalDirectoryReader(AllocatedPath &&_base_fs)
+	explicit LocalDirectoryReader(AllocatedPath &&_base_fs)
 		:base_fs(std::move(_base_fs)), reader(base_fs) {}
 
 	/* virtual methods from class StorageDirectoryReader */

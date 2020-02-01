@@ -40,7 +40,7 @@ class UPnPDeviceParser final : public CommonExpatParser {
 	UPnPService m_tservice;
 
 public:
-	UPnPDeviceParser(UPnPDevice& device)
+	explicit UPnPDeviceParser(UPnPDevice& device)
 		:m_device(device),
 		 value(nullptr) {}
 

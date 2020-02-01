@@ -54,7 +54,7 @@ class ZzipArchiveFile final : public ArchiveFile {
 	std::shared_ptr<ZzipDir> dir;
 
 public:
-	ZzipArchiveFile(std::shared_ptr<ZzipDir> &&_dir)
+	explicit ZzipArchiveFile(std::shared_ptr<ZzipDir> &&_dir)
 		:dir(std::move(_dir)) {}
 
 	void Visit(ArchiveVisitor &visitor) override;

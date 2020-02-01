@@ -35,7 +35,7 @@ class ExtM3uPlaylist final : public SongEnumerator {
 	TextInputStream tis;
 
 public:
-	ExtM3uPlaylist(InputStreamPtr &&is)
+	explicit ExtM3uPlaylist(InputStreamPtr &&is)
 		:tis(std::move(is)) {
 	}
 

@@ -82,7 +82,7 @@ class PreparedFlacEncoder final : public PreparedEncoder {
 	const unsigned compression;
 
 public:
-	PreparedFlacEncoder(const ConfigBlock &block);
+	explicit PreparedFlacEncoder(const ConfigBlock &block);
 
 	/* virtual methods from class PreparedEncoder */
 	Encoder *Open(AudioFormat &audio_format) override;

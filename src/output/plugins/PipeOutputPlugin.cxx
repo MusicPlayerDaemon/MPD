@@ -30,7 +30,7 @@ class PipeOutput final : AudioOutput {
 	const std::string cmd;
 	FILE *fh;
 
-	PipeOutput(const ConfigBlock &block);
+	explicit PipeOutput(const ConfigBlock &block);
 
 public:
 	static AudioOutput *Create(EventLoop &,

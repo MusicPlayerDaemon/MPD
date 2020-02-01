@@ -64,7 +64,7 @@ class PreparedAutoConvertFilter final : public PreparedFilter {
 	std::unique_ptr<PreparedFilter> filter;
 
 public:
-	PreparedAutoConvertFilter(std::unique_ptr<PreparedFilter> _filter) noexcept
+	explicit PreparedAutoConvertFilter(std::unique_ptr<PreparedFilter> _filter) noexcept
 		:filter(std::move(_filter)) {}
 
 	std::unique_ptr<Filter> Open(AudioFormat &af) override;

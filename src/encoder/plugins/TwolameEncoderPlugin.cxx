@@ -73,7 +73,7 @@ class PreparedTwolameEncoder final : public PreparedEncoder {
 	int bitrate;
 
 public:
-	PreparedTwolameEncoder(const ConfigBlock &block);
+	explicit PreparedTwolameEncoder(const ConfigBlock &block);
 
 	/* virtual methods from class PreparedEncoder */
 	Encoder *Open(AudioFormat &audio_format) override;

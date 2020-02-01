@@ -66,7 +66,7 @@ class SmbclientNeighborExplorer final : public NeighborExplorer {
 	bool quit;
 
 public:
-	SmbclientNeighborExplorer(NeighborListener &_listener) noexcept
+	explicit SmbclientNeighborExplorer(NeighborListener &_listener) noexcept
 		:NeighborExplorer(_listener),
 		 thread(BIND_THIS_METHOD(ThreadFunc)) {}
 

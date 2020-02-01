@@ -27,7 +27,7 @@ class NullOutput final  : AudioOutput {
 	Timer *timer;
 
 public:
-	NullOutput(const ConfigBlock &block)
+	explicit NullOutput(const ConfigBlock &block)
 		:AudioOutput(0),
 		 sync(block.GetBlockValue("sync", true)) {}
 

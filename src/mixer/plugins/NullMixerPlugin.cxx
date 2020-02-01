@@ -26,7 +26,7 @@ class NullMixer final : public Mixer {
 	unsigned volume;
 
 public:
-	NullMixer(MixerListener &_listener)
+	explicit NullMixer(MixerListener &_listener)
 		:Mixer(null_mixer_plugin, _listener),
 		 volume(100)
 	{

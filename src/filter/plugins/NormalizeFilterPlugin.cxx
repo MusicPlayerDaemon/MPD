@@ -34,7 +34,7 @@ class NormalizeFilter final : public Filter {
 	PcmBuffer buffer;
 
 public:
-	NormalizeFilter(const AudioFormat &audio_format)
+	explicit NormalizeFilter(const AudioFormat &audio_format)
 		:Filter(audio_format), compressor(Compressor_new(0)) {
 	}
 

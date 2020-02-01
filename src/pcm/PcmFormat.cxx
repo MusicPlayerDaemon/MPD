@@ -53,7 +53,7 @@ struct Convert24To16 {
 
 	PcmDither &dither;
 
-	Convert24To16(PcmDither &_dither):dither(_dither) {}
+	explicit Convert24To16(PcmDither &_dither):dither(_dither) {}
 
 	void Convert(int16_t *out, const int32_t *in, size_t n) {
 		dither.Dither24To16(out, in, in + n);
@@ -66,7 +66,7 @@ struct Convert32To16 {
 
 	PcmDither &dither;
 
-	Convert32To16(PcmDither &_dither):dither(_dither) {}
+	explicit Convert32To16(PcmDither &_dither):dither(_dither) {}
 
 	void Convert(int16_t *out, const int32_t *in, size_t n) {
 		dither.Dither32To16(out, in, in + n);
