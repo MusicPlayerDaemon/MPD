@@ -33,8 +33,8 @@
  */
 template<typename C>
 struct PerSampleConvert : C {
-	typedef typename C::SrcTraits SrcTraits;
-	typedef typename C::DstTraits DstTraits;
+	using SrcTraits = typename C::SrcTraits;
+	using DstTraits = typename C::DstTraits;
 
 	void Convert(typename DstTraits::pointer gcc_restrict out,
 		     typename SrcTraits::const_pointer gcc_restrict in,
@@ -48,8 +48,8 @@ struct Convert8To16
 						  SampleFormat::S16>> {};
 
 struct Convert24To16 {
-	typedef SampleTraits<SampleFormat::S24_P32> SrcTraits;
-	typedef SampleTraits<SampleFormat::S16> DstTraits;
+	using SrcTraits = SampleTraits<SampleFormat::S24_P32>;
+	using DstTraits = SampleTraits<SampleFormat::S16>;
 
 	PcmDither &dither;
 
@@ -61,8 +61,8 @@ struct Convert24To16 {
 };
 
 struct Convert32To16 {
-	typedef SampleTraits<SampleFormat::S32> SrcTraits;
-	typedef SampleTraits<SampleFormat::S16> DstTraits;
+	using SrcTraits = SampleTraits<SampleFormat::S32>;
+	using DstTraits = SampleTraits<SampleFormat::S16>;
 
 	PcmDither &dither;
 
@@ -88,8 +88,8 @@ struct FloatToInteger : PortableFloatToInteger<F, Traits> {};
 template<typename Optimized, typename Portable>
 class GlueOptimizedConvert : Optimized, Portable {
 public:
-	typedef typename Portable::SrcTraits SrcTraits;
-	typedef typename Portable::DstTraits DstTraits;
+	using SrcTraits = typename Portable::SrcTraits;
+	using DstTraits = typename Portable::DstTraits;
 
 	void Convert(typename DstTraits::pointer out,
 		     typename SrcTraits::const_pointer in,
