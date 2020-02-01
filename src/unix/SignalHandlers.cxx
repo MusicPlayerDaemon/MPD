@@ -42,7 +42,7 @@ HandleShutdownSignal(void *ctx) noexcept
 static void
 x_sigaction(int signum, const struct sigaction *act)
 {
-	if (sigaction(signum, act, NULL) < 0)
+	if (sigaction(signum, act, nullptr) < 0)
 		throw MakeErrno("sigaction() failed");
 }
 

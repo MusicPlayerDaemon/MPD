@@ -41,7 +41,7 @@ try {
 	/* create the encoder */
 
 	const auto plugin = encoder_plugin_get("vorbis");
-	assert(plugin != NULL);
+	assert(plugin != nullptr);
 
 	ConfigBlock block;
 	block.AddBlockParam("quality", "5.0", -1);

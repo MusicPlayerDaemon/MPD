@@ -52,7 +52,7 @@ LoadFilter(const ConfigData &config, const char *name)
 {
 	const auto *param = config.FindBlock(ConfigBlockOption::AUDIO_FILTER,
 					     "name", name);
-	if (param == NULL)
+	if (param == nullptr)
 		throw FormatRuntimeError("No such configured filter: %s",
 					 name);
 

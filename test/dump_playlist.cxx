@@ -74,7 +74,7 @@ try {
 
 	InputStreamPtr is;
 	auto playlist = playlist_list_open_uri(uri, mutex);
-	if (playlist == NULL) {
+	if (playlist == nullptr) {
 		/* open the stream and wait until it becomes ready */
 
 		is = InputStream::OpenReady(uri, mutex);
@@ -82,7 +82,7 @@ try {
 		/* open the playlist */
 
 		playlist = playlist_list_open_stream(std::move(is), uri);
-		if (playlist == NULL) {
+		if (playlist == nullptr) {
 			fprintf(stderr, "Failed to open playlist\n");
 			return 2;
 		}
@@ -91,7 +91,7 @@ try {
 	/* dump the playlist */
 
 	std::unique_ptr<DetachedSong> song;
-	while ((song = playlist->NextSong()) != NULL) {
+	while ((song = playlist->NextSong()) != nullptr) {
 		printf("%s\n", song->GetURI());
 
 		const unsigned start_ms = song->GetStartTime().ToMS();

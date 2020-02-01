@@ -55,7 +55,7 @@ try {
 	/* create the encoder */
 
 	const auto plugin = encoder_plugin_get(encoder_name);
-	if (plugin == NULL) {
+	if (plugin == nullptr) {
 		fprintf(stderr, "No such encoder: %s\n", encoder_name);
 		return EXIT_FAILURE;
 	}
