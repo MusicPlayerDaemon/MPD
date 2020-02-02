@@ -71,7 +71,7 @@ protected:
 	}
 
 private:
-	void DecodeStream(InputStream &is, const DecoderPlugin &plugin);
+	void DecodeStream(InputStream &input_stream, const DecoderPlugin &plugin);
 	bool DecodeStream(InputStream &is, const char *suffix,
 			  const DecoderPlugin &plugin);
 	void DecodeStream(InputStream &is);

@@ -61,7 +61,7 @@ public:
 	 * actually global, nothing really bad will happen if you mix
 	 * up...
 	 */
-	void Parse(const char *didltext);
+	void Parse(const char *input);
 };
 
 #endif /* _UPNPDIRCONTENT_H_X_INCLUDED_ */

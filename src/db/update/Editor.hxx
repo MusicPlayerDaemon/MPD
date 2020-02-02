@@ -35,7 +35,7 @@ public:
 	/**
 	 * Caller must lock the #db_mutex.
 	 */
-	void DeleteSong(Directory &parent, Song *song);
+	void DeleteSong(Directory &dir, Song *del);
 
 	/**
 	 * DeleteSong() with automatic locking.

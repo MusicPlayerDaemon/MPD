@@ -226,7 +226,7 @@ protected:
 			    unsigned song, const DetachedSong **queued_p) noexcept;
 
 public:
-	void DeletePosition(PlayerControl &pc, unsigned position);
+	void DeletePosition(PlayerControl &pc, unsigned song);
 
 	void DeleteOrder(PlayerControl &pc, unsigned order) {
 		DeletePosition(pc, queue.OrderToPosition(order));
@@ -293,7 +293,7 @@ public:
 	/**
 	 * Throws on error.
 	 */
-	void PlayPosition(PlayerControl &pc, int position);
+	void PlayPosition(PlayerControl &pc, int song);
 
 	/**
 	 * Throws on error.
@@ -319,14 +319,14 @@ public:
 	 * Throws on error.
 	 */
 	void SeekSongOrder(PlayerControl &pc,
-			   unsigned song_order,
+			   unsigned i,
 			   SongTime seek_time);
 
 	/**
 	 * Throws on error.
 	 */
 	void SeekSongPosition(PlayerControl &pc,
-			      unsigned sonag_position,
+			      unsigned song,
 			      SongTime seek_time);
 
 	/**
@@ -352,25 +352,25 @@ public:
 		return queue.repeat;
 	}
 
-	void SetRepeat(PlayerControl &pc, bool new_value) noexcept;
+	void SetRepeat(PlayerControl &pc, bool status) noexcept;
 
 	bool GetRandom() const noexcept {
 		return queue.random;
 	}
 
-	void SetRandom(PlayerControl &pc, bool new_value) noexcept;
+	void SetRandom(PlayerControl &pc, bool status) noexcept;
 
 	SingleMode GetSingle() const noexcept {
 		return queue.single;
 	}
 
-	void SetSingle(PlayerControl &pc, SingleMode new_value) noexcept;
+	void SetSingle(PlayerControl &pc, SingleMode status) noexcept;
 
 	bool GetConsume() const noexcept {
 		return queue.consume;
 	}
 
-	void SetConsume(bool new_value) noexcept;
+	void SetConsume(bool status) noexcept;
 
 private:
 	/**

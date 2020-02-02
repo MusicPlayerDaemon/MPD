@@ -21,72 +21,73 @@
 #define MPD_PLAYER_COMMANDS_HXX
 
 #include "CommandResult.hxx"
+#include "util/Compiler.h"
 
 class Client;
 class Request;
 class Response;
 
 CommandResult
-handle_play(Client &client, Request request, Response &response);
+handle_play(Client &client, Request args, Response &response);
 
 CommandResult
-handle_playid(Client &client, Request request, Response &response);
+handle_playid(Client &client, Request args, Response &response);
 
 CommandResult
-handle_stop(Client &client, Request request, Response &response);
+handle_stop(Client &client, gcc_unused Request args, gcc_unused Response &r);
 
 CommandResult
-handle_currentsong(Client &client, Request request, Response &response);
+handle_currentsong(Client &client, gcc_unused Request args, Response &r);
 
 CommandResult
-handle_pause(Client &client, Request request, Response &response);
+handle_pause(Client &client, Request args, Response &response);
 
 CommandResult
-handle_status(Client &client, Request request, Response &response);
+handle_status(Client &client, gcc_unused Request args, Response &r);
 
 CommandResult
-handle_next(Client &client, Request request, Response &response);
+handle_next(Client &client, gcc_unused Request args, gcc_unused Response &r);
 
 CommandResult
-handle_previous(Client &client, Request request, Response &response);
+handle_previous(Client &client, gcc_unused Request args, gcc_unused Response &r);
 
 CommandResult
-handle_repeat(Client &client, Request request, Response &response);
+handle_repeat(Client &client, Request args, Response &response);
 
 CommandResult
-handle_single(Client &client, Request request, Response &response);
+handle_single(Client &client, Request args, Response &response);
 
 CommandResult
-handle_consume(Client &client, Request request, Response &response);
+handle_consume(Client &client, Request args, Response &response);
 
 CommandResult
-handle_random(Client &client, Request request, Response &response);
+handle_random(Client &client, Request args, Response &response);
 
 CommandResult
-handle_clearerror(Client &client, Request request, Response &response);
+handle_clearerror(Client &client, gcc_unused Request args, Response &r);
 
 CommandResult
-handle_seek(Client &client, Request request, Response &response);
+handle_seek(Client &client, Request args, Response &response);
 
 CommandResult
-handle_seekid(Client &client, Request request, Response &response);
+handle_seekid(Client &client, Request args, Response &response);
 
 CommandResult
-handle_seekcur(Client &client, Request request, Response &response);
+handle_seekcur(Client &client, Request args, Response &response);
 
 CommandResult
-handle_crossfade(Client &client, Request request, Response &response);
+handle_crossfade(Client &client, Request args, Response &response);
 
 CommandResult
-handle_mixrampdb(Client &client, Request request, Response &response);
+handle_mixrampdb(Client &client, Request args, Response &response);
 
 CommandResult
-handle_mixrampdelay(Client &client, Request request, Response &response);
+handle_mixrampdelay(Client &client, Request args, Response &response);
 
 CommandResult
-handle_replay_gain_mode(Client &client, Request request, Response &response);
+handle_replay_gain_mode(Client &client, Request args, Response &response);
 
 CommandResult
-handle_replay_gain_status(Client &client, Request request, Response &response);
+handle_replay_gain_status(Client &client, Request args, Response &r);
 
 #endif

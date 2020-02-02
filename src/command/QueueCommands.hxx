@@ -21,69 +21,70 @@
 #define MPD_QUEUE_COMMANDS_HXX
 
 #include "CommandResult.hxx"
+#include "util/Compiler.h"
 
 class Client;
 class Request;
 class Response;
 
 CommandResult
-handle_add(Client &client, Request request, Response &response);
+handle_add(Client &client, Request args, Response &response);
 
 CommandResult
-handle_addid(Client &client, Request request, Response &response);
+handle_addid(Client &client, Request args, Response &response);
 
 CommandResult
-handle_rangeid(Client &client, Request request, Response &response);
+handle_rangeid(Client &client, Request args, Response &response);
 
 CommandResult
-handle_delete(Client &client, Request request, Response &response);
+handle_delete(Client &client, Request args, Response &response);
 
 CommandResult
-handle_deleteid(Client &client, Request request, Response &response);
+handle_deleteid(Client &client, Request args, Response &response);
 
 CommandResult
-handle_playlist(Client &client, Request request, Response &response);
+handle_playlist(Client &client, gcc_unused Request args, Response &r);
 
 CommandResult
-handle_shuffle(Client &client, Request request, Response &response);
+handle_shuffle(Client &client, Request args, Response &response);
 
 CommandResult
-handle_clear(Client &client, Request request, Response &response);
+handle_clear(Client &client, gcc_unused Request args, gcc_unused Response &r);
 
 CommandResult
-handle_plchanges(Client &client, Request request, Response &response);
+handle_plchanges(Client &client, Request args, Response &response);
 
 CommandResult
-handle_plchangesposid(Client &client, Request request, Response &response);
+handle_plchangesposid(Client &client, Request args, Response &response);
 
 CommandResult
-handle_playlistinfo(Client &client, Request request, Response &response);
+handle_playlistinfo(Client &client, Request args, Response &response);
 
 CommandResult
-handle_playlistid(Client &client, Request request, Response &response);
+handle_playlistid(Client &client, Request args, Response &response);
 
 CommandResult
-handle_playlistfind(Client &client, Request request, Response &response);
+handle_playlistfind(Client &client, Request args, Response &response);
 
 CommandResult
-handle_playlistsearch(Client &client, Request request, Response &response);
+handle_playlistsearch(Client &client, Request args, Response &response);
 
 CommandResult
-handle_prio(Client &client, Request request, Response &response);
+handle_prio(Client &client, Request args, Response &response);
 
 CommandResult
-handle_prioid(Client &client, Request request, Response &response);
+handle_prioid(Client &client, Request args, Response &response);
 
 CommandResult
-handle_move(Client &client, Request request, Response &response);
+handle_move(Client &client, Request args, Response &response);
 
 CommandResult
-handle_moveid(Client &client, Request request, Response &response);
+handle_moveid(Client &client, Request args, Response &response);
 
 CommandResult
-handle_swap(Client &client, Request request, Response &response);
+handle_swap(Client &client, Request args, Response &response);
 
 CommandResult
-handle_swapid(Client &client, Request request, Response &response);
+handle_swapid(Client &client, Request args, Response &response);
 
 #endif

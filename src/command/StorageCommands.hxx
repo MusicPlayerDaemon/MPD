@@ -21,6 +21,7 @@
 #define MPD_STORAGE_COMMANDS_HXX
 
 #include "CommandResult.hxx"
+#include "util/Compiler.h"
 
 class Client;
 class Storage;
@@ -34,12 +35,12 @@ CommandResult
 handle_listfiles_storage(Client &client, Response &r, const char *uri);
 
 CommandResult
-handle_listmounts(Client &client, Request request, Response &response);
+handle_listmounts(Client &client, gcc_unused Request args, Response &r);
 
 CommandResult
-handle_mount(Client &client, Request request, Response &response);
+handle_mount(Client &client, Request args, Response &response);
 
 CommandResult
-handle_unmount(Client &client, Request request, Response &response);
+handle_unmount(Client &client, Request args, Response &response);
 
 #endif

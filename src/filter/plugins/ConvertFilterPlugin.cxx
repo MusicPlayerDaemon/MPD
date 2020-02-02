@@ -62,7 +62,7 @@ public:
 
 class PreparedConvertFilter final : public PreparedFilter {
 public:
-	std::unique_ptr<Filter> Open(AudioFormat &af) override;
+	std::unique_ptr<Filter> Open(AudioFormat &audio_format) override;
 };
 
 void

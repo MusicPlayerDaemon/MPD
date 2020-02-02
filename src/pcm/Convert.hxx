@@ -77,7 +77,7 @@ public:
 	 * @param src the source PCM buffer
 	 * @return the destination buffer
 	 */
-	ConstBuffer<void> Convert(ConstBuffer<void> src);
+	ConstBuffer<void> Convert(ConstBuffer<void> buffer);
 
 	/**
 	 * Flush pending data and return it.  This should be called

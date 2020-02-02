@@ -283,7 +283,7 @@ public:
 	/**
 	 * Caller must lock #db_mutex.
 	 */
-	void Walk(bool recursive, const SongFilter *match,
+	void Walk(bool recursive, const SongFilter *filter,
 		  const VisitDirectory& visit_directory, const VisitSong& visit_song,
 		  const VisitPlaylist& visit_playlist) const;
 

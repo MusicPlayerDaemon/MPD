@@ -49,7 +49,7 @@ public:
 class PreparedVolumeFilter final : public PreparedFilter {
 public:
 	/* virtual methods from class Filter */
-	std::unique_ptr<Filter> Open(AudioFormat &af) override;
+	std::unique_ptr<Filter> Open(AudioFormat &audio_format) override;
 };
 
 std::unique_ptr<Filter>

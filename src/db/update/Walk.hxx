@@ -98,14 +98,14 @@ private:
 
 
 #ifdef ENABLE_ARCHIVE
-	void UpdateArchiveTree(ArchiveFile &archive, Directory &parent,
+	void UpdateArchiveTree(ArchiveFile &archive, Directory &directory,
 			       const char *name) noexcept;
 
 	bool UpdateArchiveFile(Directory &directory,
 			       const char *name, const char *suffix,
 			       const StorageFileInfo &info) noexcept;
 
-	void UpdateArchiveFile(Directory &directory, const char *name,
+	void UpdateArchiveFile(Directory &parent, const char *name,
 			       const StorageFileInfo &info,
 			       const ArchivePlugin &plugin) noexcept;
 

@@ -27,9 +27,9 @@ class Request;
 class Response;
 
 CommandResult
-handle_addtagid(Client &client, Request request, Response &response);
+handle_addtagid(Client &client, Request args, Response &response);
 
 CommandResult
-handle_cleartagid(Client &client, Request request, Response &response);
+handle_cleartagid(Client &client, Request args, Response &response);
 
 #endif

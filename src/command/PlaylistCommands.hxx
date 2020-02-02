@@ -32,36 +32,36 @@ bool
 playlist_commands_available() noexcept;
 
 CommandResult
-handle_save(Client &client, Request request, Response &response);
+handle_save(Client &client, Request args, Response &response);
 
 CommandResult
-handle_load(Client &client, Request request, Response &response);
+handle_load(Client &client, Request args, Response &response);
 
 CommandResult
-handle_listplaylist(Client &client, Request request, Response &response);
+handle_listplaylist(Client &client, Request args, Response &response);
 
 CommandResult
-handle_listplaylistinfo(Client &client, Request request, Response &response);
+handle_listplaylistinfo(Client &client, Request args, Response &response);
 
 CommandResult
-handle_rm(Client &client, Request request, Response &response);
+handle_rm(Client &client, Request args, Response &response);
 
 CommandResult
-handle_rename(Client &client, Request request, Response &response);
+handle_rename(Client &client, Request args, Response &response);
 
 CommandResult
-handle_playlistdelete(Client &client, Request request, Response &response);
+handle_playlistdelete(Client &client, Request args, Response &response);
 
 CommandResult
-handle_playlistmove(Client &client, Request request, Response &response);
+handle_playlistmove(Client &client, Request args, Response &response);
 
 CommandResult
-handle_playlistclear(Client &client, Request request, Response &response);
+handle_playlistclear(Client &client, Request args, Response &response);
 
 CommandResult
-handle_playlistadd(Client &client, Request request, Response &response);
+handle_playlistadd(Client &client, Request args, Response &response);
 
 CommandResult
-handle_listplaylists(Client &client, Request request, Response &response);
+handle_listplaylists(gcc_unused Client &client, gcc_unused Request args, Response &r);
 
 #endif

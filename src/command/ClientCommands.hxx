@@ -21,19 +21,20 @@
 #define MPD_CLIENT_COMMANDS_HXX
 
 #include "CommandResult.hxx"
+#include "util/Compiler.h"
 
 class Client;
 class Request;
 class Response;
 
 CommandResult
-handle_close(Client &client, Request request, Response &response);
+handle_close(gcc_unused Client &client, gcc_unused Request args, Response &r);
 
 CommandResult
-handle_ping(Client &client, Request request, Response &response);
+handle_ping(gcc_unused Client &client, gcc_unused Request args, Response &r);
 
 CommandResult
-handle_password(Client &client, Request request, Response &response);
+handle_password(Client &client, Request args, Response &response);
 
 CommandResult
 handle_tagtypes(Client &client, Request request, Response &response);

@@ -42,7 +42,7 @@ OpenWriteOnly(const char *path, int flags=0);
 #ifndef _WIN32
 
 UniqueFileDescriptor
-OpenDirectory(const char *name, int flags=0);
+OpenDirectory(const char *path, int flags=0);
 
 #endif
 

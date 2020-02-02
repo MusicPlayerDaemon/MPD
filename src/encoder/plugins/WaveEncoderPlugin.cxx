@@ -36,7 +36,7 @@ public:
 	explicit WaveEncoder(AudioFormat &audio_format) noexcept;
 
 	/* virtual methods from class Encoder */
-	void Write(const void *data, size_t length) override;
+	void Write(const void *src, size_t length) override;
 
 	size_t Read(void *dest, size_t length) noexcept override {
 		return buffer.Read((uint8_t *)dest, length);

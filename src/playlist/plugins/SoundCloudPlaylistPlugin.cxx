@@ -111,7 +111,7 @@ struct SoundCloudJsonData {
 
 	std::forward_list<DetachedSong> songs;
 
-	bool Integer(long long value) noexcept;
+	bool Integer(long long intval) noexcept;
 	bool String(StringView value) noexcept;
 	bool StartMap() noexcept;
 	bool MapKey(StringView value) noexcept;

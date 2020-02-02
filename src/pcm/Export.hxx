@@ -228,7 +228,7 @@ public:
 	 * @return the destination buffer; may be empty (and may be a
 	 * pointer to the source buffer)
 	 */
-	ConstBuffer<void> Export(ConstBuffer<void> src) noexcept;
+	ConstBuffer<void> Export(ConstBuffer<void> data) noexcept;
 
 	/**
 	 * Converts the number of consumed bytes from the Export()

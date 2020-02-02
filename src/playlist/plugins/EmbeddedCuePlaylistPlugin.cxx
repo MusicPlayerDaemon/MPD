@@ -70,7 +70,7 @@ public:
 
 	ExtractCuesheetTagHandler() noexcept:NullTagHandler(WANT_PAIR) {}
 
-	void OnPair(StringView key, StringView value) noexcept override;
+	void OnPair(StringView name, StringView value) noexcept override;
 };
 
 void

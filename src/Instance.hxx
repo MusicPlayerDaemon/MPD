@@ -228,7 +228,7 @@ private:
 #endif
 
 	/* callback for #idle_monitor */
-	void OnIdle(unsigned mask) noexcept;
+	void OnIdle(unsigned flags) noexcept;
 };
 
 #endif

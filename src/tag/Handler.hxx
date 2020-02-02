@@ -173,7 +173,7 @@ public:
 				AudioFormat *_audio_format=nullptr) noexcept
 		:FullTagHandler(0, _builder, _audio_format) {}
 
-	void OnPair(StringView key, StringView value) noexcept override;
+	void OnPair(StringView name, StringView value) noexcept override;
 	void OnAudioFormat(AudioFormat af) noexcept override;
 };
 

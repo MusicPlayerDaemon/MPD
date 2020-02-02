@@ -69,7 +69,7 @@ class WatchManager {
 		void Toggled() noexcept;
 
 	private:
-		bool OnSocketReady(unsigned flags) noexcept override;
+		bool OnSocketReady(unsigned events) noexcept override;
 	};
 
 	std::map<DBusWatch *, Watch> watches;

@@ -36,7 +36,7 @@ void Compressor_setHistory(struct Compressor *, unsigned int history);
 struct CompressorConfig *Compressor_getConfig(struct Compressor *);
 
 //! Process 16-bit signed data
-void Compressor_Process_int16(struct Compressor *, int16_t *data, unsigned int count);
+void Compressor_Process_int16(struct Compressor *, int16_t *audio, unsigned int count);
 
 #ifdef __cplusplus
 }

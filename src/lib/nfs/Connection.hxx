@@ -66,12 +66,12 @@ class NfsConnection : SocketMonitor {
 			 connection(_connection),
 			 open(_open), close_fh(nullptr) {}
 
-		void Stat(nfs_context *context, const char *path);
-		void Lstat(nfs_context *context, const char *path);
-		void OpenDirectory(nfs_context *context, const char *path);
-		void Open(nfs_context *context, const char *path, int flags);
-		void Stat(nfs_context *context, struct nfsfh *fh);
-		void Read(nfs_context *context, struct nfsfh *fh,
+		void Stat(nfs_context *ctx, const char *path);
+		void Lstat(nfs_context *ctx, const char *path);
+		void OpenDirectory(nfs_context *ctx, const char *path);
+		void Open(nfs_context *ctx, const char *path, int flags);
+		void Stat(nfs_context *ctx, struct nfsfh *fh);
+		void Read(nfs_context *ctx, struct nfsfh *fh,
 			  uint64_t offset, size_t size);
 
 		/**

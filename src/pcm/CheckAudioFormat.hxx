@@ -29,7 +29,7 @@ void
 CheckSampleFormat(SampleFormat sample_format);
 
 void
-CheckChannelCount(unsigned sample_format);
+CheckChannelCount(unsigned channels);
 
 /**
  * Check #AudioFormat attributes and construct an #AudioFormat

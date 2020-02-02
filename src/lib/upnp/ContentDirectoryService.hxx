@@ -79,7 +79,7 @@ public:
 	UPnPDirContent readDir(UpnpClient_Handle handle,
 			       const char *objectId) const;
 
-	void readDirSlice(UpnpClient_Handle handle,
+	void readDirSlice(UpnpClient_Handle hdl,
 			  const char *objectId, unsigned offset,
 			  unsigned count, UPnPDirContent& dirbuf,
 			  unsigned &didread, unsigned &total) const;
@@ -93,15 +93,15 @@ public:
 	 * UPnP document: UPnP-av-ContentDirectory-v1-Service-20020625.pdf
 	 * section 2.5.5. Maybe we'll provide an easier way some day...
 	 */
-	UPnPDirContent search(UpnpClient_Handle handle,
+	UPnPDirContent search(UpnpClient_Handle hdl,
 			      const char *objectId,
-			      const char *searchstring) const;
+			      const char *ss) const;
 
 	/** Read metadata for a given node.
 	 *
 	 * @param objectId the UPnP object Id. Root has Id "0"
 	 */
-	UPnPDirContent getMetadata(UpnpClient_Handle handle,
+	UPnPDirContent getMetadata(UpnpClient_Handle hdl,
 				   const char *objectId) const;
 
 	/** Retrieve search capabilities
@@ -111,7 +111,7 @@ public:
 	 * @param[out] result an empty vector: no search, or a single '*' element:
 	 *     any tag can be used in a search, or a list of usable tag names.
 	 */
-	std::forward_list<std::string> getSearchCapabilities(UpnpClient_Handle handle) const;
+	std::forward_list<std::string> getSearchCapabilities(UpnpClient_Handle hdl) const;
 
 	gcc_pure
 	std::string GetURI() const noexcept {

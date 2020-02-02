@@ -49,7 +49,7 @@ public:
 class PreparedNormalizeFilter final : public PreparedFilter {
 public:
 	/* virtual methods from class PreparedFilter */
-	std::unique_ptr<Filter> Open(AudioFormat &af) override;
+	std::unique_ptr<Filter> Open(AudioFormat &audio_format) override;
 };
 
 static std::unique_ptr<PreparedFilter>

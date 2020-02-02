@@ -133,7 +133,7 @@ public:
 	explicit PreparedRouteFilter(const ConfigBlock &block);
 
 	/* virtual methods from class PreparedFilter */
-	std::unique_ptr<Filter> Open(AudioFormat &af) override;
+	std::unique_ptr<Filter> Open(AudioFormat &audio_format) override;
 };
 
 PreparedRouteFilter::PreparedRouteFilter(const ConfigBlock &block)

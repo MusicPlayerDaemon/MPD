@@ -31,12 +31,12 @@ CommandResult
 handle_listfiles_local(Response &response, Path path_fs);
 
 CommandResult
-handle_read_comments(Client &client, Request request, Response &response);
+handle_read_comments(Client &client, Request args, Response &response);
 
 CommandResult
-handle_album_art(Client &client, Request request, Response &response);
+handle_album_art(Client &client, Request args, Response &response);
 
 CommandResult
-handle_read_picture(Client &client, Request request, Response &response);
+handle_read_picture(Client &client, Request args, Response &response);
 
 #endif

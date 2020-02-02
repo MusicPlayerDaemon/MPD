@@ -62,7 +62,7 @@ class StopDecoder {};
  * occurs: end of file; error; command (like SEEK or STOP).
  */
 size_t
-decoder_read(DecoderClient *decoder, InputStream &is,
+decoder_read(DecoderClient *client, InputStream &is,
 	     void *buffer, size_t length);
 
 static inline size_t
@@ -80,7 +80,7 @@ decoder_read(DecoderClient &decoder, InputStream &is,
  * data
  */
 bool
-decoder_read_full(DecoderClient *decoder, InputStream &is,
+decoder_read_full(DecoderClient *client, InputStream &is,
 		  void *buffer, size_t size);
 
 /**
@@ -89,6 +89,6 @@ decoder_read_full(DecoderClient *decoder, InputStream &is,
  * @return true on success, false on error or command
  */
 bool
-decoder_skip(DecoderClient *decoder, InputStream &is, size_t size);
+decoder_skip(DecoderClient *client, InputStream &is, size_t size);
 
 #endif

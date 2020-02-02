@@ -33,30 +33,30 @@ CommandResult
 handle_lsinfo2(Client &client, const char *uri, Response &response);
 
 CommandResult
-handle_find(Client &client, Request request, Response &response);
+handle_find(Client &client, Request args, Response &response);
 
 CommandResult
-handle_findadd(Client &client, Request request, Response &response);
+handle_findadd(Client &client, Request args, Response &response);
 
 CommandResult
-handle_search(Client &client, Request request, Response &response);
+handle_search(Client &client, Request args, Response &response);
 
 CommandResult
-handle_searchadd(Client &client, Request request, Response &response);
+handle_searchadd(Client &client, Request args, Response &response);
 
 CommandResult
-handle_searchaddpl(Client &client, Request request, Response &response);
+handle_searchaddpl(Client &client, Request args, Response &response);
 
 CommandResult
-handle_count(Client &client, Request request, Response &response);
+handle_count(Client &client, Request args, Response &response);
 
 CommandResult
-handle_listall(Client &client, Request request, Response &response);
+handle_listall(Client &client, Request args, Response &response);
 
 CommandResult
-handle_list(Client &client, Request request, Response &response);
+handle_list(Client &client, Request args, Response &response);
 
 CommandResult
-handle_listallinfo(Client &client, Request request, Response &response);
+handle_listallinfo(Client &client, Request args, Response &response);
 
 #endif

@@ -27,18 +27,18 @@ class Request;
 class Response;
 
 CommandResult
-handle_enableoutput(Client &client, Request request, Response &response);
+handle_enableoutput(Client &client, Request args, Response &response);
 
 CommandResult
-handle_disableoutput(Client &client, Request request, Response &response);
+handle_disableoutput(Client &client, Request args, Response &response);
 
 CommandResult
-handle_toggleoutput(Client &client, Request request, Response &response);
+handle_toggleoutput(Client &client, Request args, Response &response);
 
 CommandResult
 handle_outputset(Client &client, Request request, Response &response);
 
 CommandResult
-handle_devices(Client &client, Request request, Response &response);
+handle_devices(Client &client, Request args, Response &response);
 
 #endif

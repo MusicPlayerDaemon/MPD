@@ -77,8 +77,8 @@ spl_append_song(const char *utf8path, const DetachedSong &song);
  * Throws #std::runtime_error on error.
  */
 void
-spl_append_uri(const char *path_utf8,
-	       const SongLoader &loader, const char *uri_utf8);
+spl_append_uri(const char *utf8file,
+	       const SongLoader &loader, const char *url);
 
 void
 spl_rename(const char *utf8from, const char *utf8to);

@@ -98,7 +98,7 @@ public:
 	}
 
 	/* virtual methods from class PreparedFilter */
-	std::unique_ptr<Filter> Open(AudioFormat &af) override;
+	std::unique_ptr<Filter> Open(AudioFormat &in_audio_format) override;
 };
 
 std::unique_ptr<Filter>

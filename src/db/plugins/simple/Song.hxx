@@ -118,7 +118,7 @@ struct Song {
 	 * @return the song on success, nullptr if the file was not
 	 * recognized
 	 */
-	static SongPtr LoadFile(Storage &storage, const char *name_utf8,
+	static SongPtr LoadFile(Storage &storage, const char *path_utf8,
 				Directory &parent);
 
 	/**

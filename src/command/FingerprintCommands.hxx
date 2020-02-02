@@ -27,6 +27,6 @@ class Request;
 class Response;
 
 CommandResult
-handle_getfingerprint(Client &client, Request request, Response &response);
+handle_getfingerprint(Client &client, Request args, Response &response);
 
 #endif

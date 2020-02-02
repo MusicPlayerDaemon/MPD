@@ -182,7 +182,7 @@ private:
 	 * Sends the synthesized current frame via
 	 * DecoderClient::SubmitData().
 	 */
-	DecoderCommand SubmitPCM(size_t start, size_t n) noexcept;
+	DecoderCommand SubmitPCM(size_t i, size_t pcm_length) noexcept;
 
 	/**
 	 * Synthesize the current frame and send it via

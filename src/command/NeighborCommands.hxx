@@ -33,6 +33,6 @@ bool
 neighbor_commands_available(const Instance &instance) noexcept;
 
 CommandResult
-handle_listneighbors(Client &client, Request request, Response &response);
+handle_listneighbors(Client &client, gcc_unused Request args, Response &r);
 
 #endif
