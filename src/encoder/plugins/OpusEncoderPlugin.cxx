@@ -105,7 +105,7 @@ PreparedOpusEncoder::PreparedOpusEncoder(const ConfigBlock &block)
 			throw std::runtime_error("Invalid bit rate");
 	}
 
-	complexity = block.GetBlockValue("complexity", 10u);
+	complexity = block.GetBlockValue("complexity", 10U);
 	if (complexity > 10)
 		throw std::runtime_error("Invalid complexity");
 

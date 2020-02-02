@@ -93,7 +93,7 @@ public:
 };
 
 PreparedFlacEncoder::PreparedFlacEncoder(const ConfigBlock &block)
-	:compression(block.GetBlockValue("compression", 5u))
+	:compression(block.GetBlockValue("compression", 5U))
 {
 }
 

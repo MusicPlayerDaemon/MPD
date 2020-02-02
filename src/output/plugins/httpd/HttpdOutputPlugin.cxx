@@ -50,11 +50,11 @@ HttpdOutput::HttpdOutput(EventLoop &_loop, const ConfigBlock &block)
 	genre = block.GetBlockValue("genre", "Set genre in config");
 	website = block.GetBlockValue("website", "Set website in config");
 
-	clients_max = block.GetBlockValue("max_clients", 0u);
+	clients_max = block.GetBlockValue("max_clients", 0U);
 
 	/* set up bind_to_address */
 
-	ServerSocketAddGeneric(*this, block.GetBlockValue("bind_to_address"), block.GetBlockValue("port", 8000u));
+	ServerSocketAddGeneric(*this, block.GetBlockValue("bind_to_address"), block.GetBlockValue("port", 8000U));
 
 	/* determine content type */
 	content_type = prepared_encoder->GetMimeType();

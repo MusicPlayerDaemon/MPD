@@ -448,7 +448,7 @@ ProxyDatabase::ProxyDatabase(EventLoop &_loop, DatabaseListener &_listener,
 	 listener(_listener),
 	 host(block.GetBlockValue("host", "")),
 	 password(block.GetBlockValue("password", "")),
-	 port(block.GetBlockValue("port", 0u)),
+	 port(block.GetBlockValue("port", 0U)),
 	 keepalive(block.GetBlockValue("keepalive", false))
 {
 }
@@ -517,7 +517,7 @@ ProxyDatabase::Connect()
 	(void)keepalive;
 #endif
 
-	idle_received = ~0u;
+	idle_received = ~0U;
 	is_idle = false;
 
 	SocketMonitor::Open(SocketDescriptor(mpd_async_get_fd(mpd_connection_get_async(connection))));

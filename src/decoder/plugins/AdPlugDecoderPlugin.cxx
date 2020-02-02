@@ -41,7 +41,7 @@ adplug_init(const ConfigBlock &block)
 	FormatDebug(adplug_domain, "adplug %s",
 		    CAdPlug::get_version().c_str());
 
-	sample_rate = block.GetPositiveValue("sample_rate", 48000u);
+	sample_rate = block.GetPositiveValue("sample_rate", 48000U);
 	CheckSampleRate(sample_rate);
 
 	return true;
