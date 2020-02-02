@@ -516,8 +516,8 @@ parse_xing(struct xing *xing, struct mad_bitptr *ptr, int *oldbitlen) noexcept
 	if (xing->flags & XING_TOC) {
 		if (bitlen < 800)
 			return false;
-		for (unsigned i = 0; i < 100; ++i)
-			xing->toc[i] = mad_bit_read(ptr, 8);
+		for (unsigned char & i : xing->toc)
+			i = mad_bit_read(ptr, 8);
 		bitlen -= 800;
 	}
 

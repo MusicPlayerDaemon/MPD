@@ -330,7 +330,7 @@ mpd_inotify_init(EventLoop &loop, Storage &storage, UpdateService &update,
 }
 
 void
-mpd_inotify_finish(void) noexcept
+mpd_inotify_finish() noexcept
 {
 	if (inotify_source == nullptr)
 		return;

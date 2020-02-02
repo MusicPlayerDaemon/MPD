@@ -872,7 +872,7 @@ try {
 }
 
 static bool
-pulse_output_test_default_device(void)
+pulse_output_test_default_device()
 {
 	return PulseOutput::TestDefaultDevice();
 }

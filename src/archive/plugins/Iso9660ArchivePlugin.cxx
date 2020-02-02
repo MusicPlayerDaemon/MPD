@@ -34,6 +34,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <utility>
+
 #define CEILING(x, y) ((x+(y-1))/y)
 
 struct Iso9660 {
@@ -141,12 +143,12 @@ class Iso9660InputStream final : public InputStream {
 	iso9660_stat_t *statbuf;
 
 public:
-	Iso9660InputStream(const std::shared_ptr<Iso9660> &_iso,
+	Iso9660InputStream(std::shared_ptr<Iso9660> _iso,
 			   const char *_uri,
 			   Mutex &_mutex,
 			   iso9660_stat_t *_statbuf)
 		:InputStream(_uri, _mutex),
-		 iso(_iso), statbuf(_statbuf) {
+		 iso(std::move(_iso)), statbuf(_statbuf) {
 		size = statbuf->size;
 		seekable = true;
 		SetReady();

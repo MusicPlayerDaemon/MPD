@@ -60,7 +60,7 @@ public:
 	 * @param visit_song the callback function passed to
 	 * Database::Visit(); may be replaced by this class
 	 */
-	DatabaseVisitorHelper(const DatabaseSelection &selection,
+	DatabaseVisitorHelper(DatabaseSelection selection,
 			      VisitSong &visit_song) noexcept;
 	~DatabaseVisitorHelper() noexcept;
 

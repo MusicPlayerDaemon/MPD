@@ -39,7 +39,7 @@ void print_supported_uri_schemes_to_fp(FILE *fp)
 			protocols.emplace(uri);
 		});
 
-	for (auto protocol : protocols) {
+	for (const auto& protocol : protocols) {
 		fprintf(fp, " %s", protocol.c_str());
 	}
 	fprintf(fp,"\n");
@@ -54,7 +54,7 @@ print_supported_uri_schemes(Response &r)
 			protocols.emplace(uri);
 		});
 
-	for (auto protocol : protocols) {
+	for (const auto& protocol : protocols) {
 		r.Format("handler: %s\n", protocol.c_str());
 	}
 }

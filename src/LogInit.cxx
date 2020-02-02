@@ -63,7 +63,7 @@ static void redirect_logs(int fd)
 }
 
 static int
-open_log_file(void)
+open_log_file()
 {
 	assert(!out_path.IsNull());
 

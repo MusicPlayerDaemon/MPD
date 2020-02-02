@@ -44,7 +44,7 @@ mixramp_interpolate(const char *ramp_list, float required_db) noexcept
 	 * between the dB and seconds of a pair.
 	 * The dB values must be monotonically increasing for this to work. */
 
-	while (1) {
+	while (true) {
 		/* Parse the dB value. */
 		char *endptr;
 		const float db = ParseFloat(ramp_list, &endptr);

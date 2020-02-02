@@ -66,7 +66,7 @@ static bool had_group = false;
 static int detach_fd = -1;
 
 void
-daemonize_kill(void)
+daemonize_kill()
 {
 	if (pidfile.IsNull())
 		throw std::runtime_error("no pid_file specified in the config file");
@@ -85,14 +85,14 @@ daemonize_kill(void)
 }
 
 void
-daemonize_close_stdin(void)
+daemonize_close_stdin()
 {
 	close(STDIN_FILENO);
 	open("/dev/null", O_RDONLY);
 }
 
 void
-daemonize_set_user(void)
+daemonize_set_user()
 {
 	if (user_name == nullptr)
 		return;
@@ -245,7 +245,7 @@ daemonize_init(const char *user, const char *group, AllocatedPath &&_pidfile)
 }
 
 void
-daemonize_finish(void)
+daemonize_finish()
 {
 	if (!pidfile.IsNull()) {
 		unlink(pidfile.c_str());

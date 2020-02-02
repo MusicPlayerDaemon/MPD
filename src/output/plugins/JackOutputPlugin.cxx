@@ -419,7 +419,7 @@ JackOutput::Connect()
 }
 
 static bool
-mpd_jack_test_default_device(void)
+mpd_jack_test_default_device()
 {
 	return true;
 }

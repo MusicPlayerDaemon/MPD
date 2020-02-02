@@ -84,8 +84,8 @@ NeighborGlue::Open()
 void
 NeighborGlue::Close() noexcept
 {
-	for (auto i = explorers.begin(), end = explorers.end(); i != end; ++i)
-		i->explorer->Close();
+	for (auto & explorer : explorers)
+		explorer.explorer->Close();
 }
 
 NeighborGlue::List
