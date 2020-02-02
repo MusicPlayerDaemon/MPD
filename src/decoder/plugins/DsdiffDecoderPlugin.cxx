@@ -342,7 +342,7 @@ dsdiff_read_metadata(DecoderClient *client, InputStream &is,
 }
 
 static void
-bit_reverse_buffer(uint8_t *p, uint8_t *end)
+bit_reverse_buffer(uint8_t *p, const uint8_t *end)
 {
 	for (; p < end; ++p)
 		*p = bit_reverse(*p);
