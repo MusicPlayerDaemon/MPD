@@ -78,7 +78,7 @@ fluidsynth_mpd_log_function(int level,
 static bool
 fluidsynth_init(const ConfigBlock &block)
 {
-	sample_rate = block.GetPositiveValue("sample_rate", 48000u);
+	sample_rate = block.GetPositiveValue("sample_rate", 48000U);
 	CheckSampleRate(sample_rate);
 
 	soundfont_path = block.GetBlockValue("soundfont",

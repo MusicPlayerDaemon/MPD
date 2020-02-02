@@ -101,7 +101,7 @@ ShoutOutput::ShoutOutput(const ConfigBlock &block)
 {
 	const char *host = require_block_string(block, "host");
 	const char *mount = require_block_string(block, "mount");
-	unsigned port = block.GetBlockValue("port", 0u);
+	unsigned port = block.GetBlockValue("port", 0U);
 	if (port == 0)
 		throw std::runtime_error("shout port must be configured");
 

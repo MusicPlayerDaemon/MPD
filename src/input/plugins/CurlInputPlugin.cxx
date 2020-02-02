@@ -320,7 +320,7 @@ input_curl_init(EventLoop &event_loop, const ConfigBlock &block)
 	http_200_aliases = curl_slist_append(http_200_aliases, "ICY 200 OK");
 
 	proxy = block.GetBlockValue("proxy");
-	proxy_port = block.GetBlockValue("proxy_port", 0u);
+	proxy_port = block.GetBlockValue("proxy_port", 0U);
 	proxy_user = block.GetBlockValue("proxy_user");
 	proxy_password = block.GetBlockValue("proxy_password");
 
@@ -365,9 +365,9 @@ CurlInputStream::InitEasy()
 	request = new CurlRequest(**curl_init, GetURI(), *this);
 
 	request->SetOption(CURLOPT_HTTP200ALIASES, http_200_aliases);
-	request->SetOption(CURLOPT_FOLLOWLOCATION, 1l);
-	request->SetOption(CURLOPT_MAXREDIRS, 5l);
-	request->SetOption(CURLOPT_FAILONERROR, 1l);
+	request->SetOption(CURLOPT_FOLLOWLOCATION, 1L);
+	request->SetOption(CURLOPT_MAXREDIRS, 5L);
+	request->SetOption(CURLOPT_FAILONERROR, 1L);
 
 	if (proxy != nullptr)
 		request->SetOption(CURLOPT_PROXY, proxy);
@@ -380,8 +380,8 @@ CurlInputStream::InitEasy()
 				   StringFormat<1024>("%s:%s", proxy_user,
 						      proxy_password).c_str());
 
-	request->SetOption(CURLOPT_SSL_VERIFYPEER, verify_peer ? 1l : 0l);
-	request->SetOption(CURLOPT_SSL_VERIFYHOST, verify_host ? 2l : 0l);
+	request->SetOption(CURLOPT_SSL_VERIFYPEER, verify_peer ? 1L : 0L);
+	request->SetOption(CURLOPT_SSL_VERIFYHOST, verify_host ? 2L : 0L);
 	request->SetOption(CURLOPT_HTTPHEADER, request_headers.Get());
 }
 

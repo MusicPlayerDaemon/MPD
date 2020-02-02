@@ -395,7 +395,7 @@ AlsaOutput::AlsaOutput(EventLoop &_loop, const ConfigBlock &block)
 #endif
 	 buffer_time(block.GetPositiveValue("buffer_time",
 					    MPD_ALSA_BUFFER_TIME_US)),
-	 period_time(block.GetPositiveValue("period_time", 0u))
+	 period_time(block.GetPositiveValue("period_time", 0U))
 {
 #ifdef SND_PCM_NO_AUTO_RESAMPLE
 	if (!block.GetBlockValue("auto_resample", true))

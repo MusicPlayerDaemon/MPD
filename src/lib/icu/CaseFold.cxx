@@ -59,7 +59,7 @@ try {
 	if (u.IsNull())
 		return AllocatedString<>::Duplicate(src);
 
-	AllocatedArray<UChar> folded(u.size() * 2u);
+	AllocatedArray<UChar> folded(u.size() * 2U);
 
 	UErrorCode error_code = U_ZERO_ERROR;
 	size_t folded_length = u_strFoldCase(folded.begin(), folded.size(),
