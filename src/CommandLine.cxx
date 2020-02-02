@@ -297,7 +297,7 @@ public:
 	explicit ConfigLoader(ConfigData &_config) noexcept
 		:config(_config) {}
 
-	bool TryFile(const Path path);
+	bool TryFile(Path path);
 	bool TryFile(const AllocatedPath &base_path, Path path);
 };
 
