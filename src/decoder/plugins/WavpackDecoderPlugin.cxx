@@ -25,6 +25,7 @@
 #include "tag/Handler.hxx"
 #include "fs/Path.hxx"
 #include "util/Alloc.hxx"
+#include "util/Math.hxx"
 #include "util/ScopeExit.hxx"
 #include "util/RuntimeError.hxx"
 
@@ -263,8 +264,7 @@ wavpack_decode(DecoderClient &client, WavpackContext *wpc, bool can_seek)
 		if (samples_got == 0)
 			break;
 
-		int bitrate = (int)(WavpackGetInstantBitrate(wpc) / 1000 +
-				    0.5);
+		int bitrate = lround(WavpackGetInstantBitrate(wpc) / 1000);
 		format_samples(chunk, samples_got * audio_format.channels);
 
 		cmd = client.SubmitData(nullptr, chunk,
