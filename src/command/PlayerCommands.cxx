@@ -32,12 +32,11 @@
 #include "util/StringBuffer.hxx"
 #include "util/ScopeExit.hxx"
 #include "util/Exception.hxx"
+#include "util/Math.hxx"
 
 #ifdef ENABLE_DATABASE
 #include "db/update/Service.hxx"
 #endif
-
-#include <cmath>
 
 #define COMMAND_STATUS_STATE            "state"
 #define COMMAND_STATUS_REPEAT           "repeat"
@@ -155,7 +154,7 @@ handle_status(Client &client, gcc_unused Request args, Response &r)
 
 	if (pc.GetCrossFade() > FloatDuration::zero())
 		r.Format(COMMAND_STATUS_CROSSFADE ": %lu\n",
-			 std::lround(pc.GetCrossFade().count()));
+			 lround(pc.GetCrossFade().count()));
 
 	if (pc.GetMixRampDelay() > FloatDuration::zero())
 		r.Format(COMMAND_STATUS_MIXRAMPDELAY ": %f\n",

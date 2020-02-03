@@ -28,13 +28,13 @@
 #include "db/Stats.hxx"
 #include "Log.hxx"
 #include "time/ChronoUtil.hxx"
+#include "util/Math.hxx"
 
 #ifdef _WIN32
 #include "system/Clock.hxx"
 #endif
 
 #include <chrono>
-#include <cmath>
 
 #ifndef _WIN32
 /**
@@ -126,7 +126,7 @@ stats_print(Response &r, const Partition &partition)
 	r.Format("uptime: %u\n"
 		 "playtime: %lu\n",
 		 (unsigned)std::chrono::duration_cast<std::chrono::seconds>(uptime).count(),
-		 std::lround(partition.pc.GetTotalPlayTime().count()));
+		 lround(partition.pc.GetTotalPlayTime().count()));
 
 #ifdef ENABLE_DATABASE
 	const Database *db = partition.instance.GetDatabase();
