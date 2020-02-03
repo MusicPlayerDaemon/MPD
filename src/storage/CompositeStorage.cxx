@@ -179,7 +179,10 @@ CompositeStorage::Directory::MapToRelativeUTF8(std::string &buffer,
 	return false;
 }
 
-CompositeStorage::CompositeStorage() noexcept = default;
+CompositeStorage::CompositeStorage() noexcept
+{
+}
+
 CompositeStorage::~CompositeStorage() = default;
 
 Storage *
