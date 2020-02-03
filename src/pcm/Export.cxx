@@ -142,8 +142,6 @@ PcmExport::GetOutputFrameSize() const noexcept
 		return channels * 2;
 
 	case DsdMode::U32:
-		return channels * 4;
-
 	case DsdMode::DOP:
 		/* the DSD-over-USB draft says that DSD 1-bit samples
 		   are enclosed within 24 bit samples, and MPD's

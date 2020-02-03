@@ -777,14 +777,10 @@ AlsaOutput::Recover(int err) noexcept
 	case SND_PCM_STATE_DISCONNECTED:
 	case SND_PCM_STATE_DRAINING:
 		/* can't play in this state; throw the error */
-		break;
-
 	case SND_PCM_STATE_PREPARED:
 	case SND_PCM_STATE_RUNNING:
 		/* the state is ok, but the error was unexpected;
 		   throw it */
-		break;
-
 	default:
 		/* this default case is just here to work around
 		   -Wswitch due to SND_PCM_STATE_PRIVATE1 (libasound

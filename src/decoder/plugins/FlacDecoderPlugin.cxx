@@ -213,8 +213,6 @@ flac_decoder_loop(FlacDecoder *data, FLAC__StreamDecoder *flac_dec)
 		case FLAC__STREAM_DECODER_MEMORY_ALLOCATION_ERROR:
 			/* an error, fatal enough for us to abort the
 			   decoder */
-			return;
-
 		case FLAC__STREAM_DECODER_UNINITIALIZED:
 			/* we shouldn't see this, ever - bail out */
 			return;

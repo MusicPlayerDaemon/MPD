@@ -330,8 +330,6 @@ handle_getfingerprint(Client &client, Request args, Response &)
 
 	switch (lu.type) {
 	case LocatedUri::Type::ABSOLUTE:
-		break;
-
 	case LocatedUri::Type::PATH:
 		break;
 

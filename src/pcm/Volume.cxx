@@ -167,9 +167,6 @@ PcmVolume::Open(SampleFormat _format, bool allow_convert)
 		throw FormatRuntimeError("Software volume for %s is not implemented",
 					 sample_format_to_string(_format));
 
-	case SampleFormat::S8:
-		break;
-
 	case SampleFormat::S16:
 		if (allow_convert) {
 			/* convert S16 to S24 to avoid discarding too
@@ -181,11 +178,10 @@ PcmVolume::Open(SampleFormat _format, bool allow_convert)
 
 		break;
 
+	case SampleFormat::S8:
 	case SampleFormat::S24_P32:
 	case SampleFormat::S32:
 	case SampleFormat::FLOAT:
-		break;
-
 	case SampleFormat::DSD:
 		// TODO: implement this; currently, it's a no-op
 		break;

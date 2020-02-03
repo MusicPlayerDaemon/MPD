@@ -218,8 +218,6 @@ QobuzLoginRequest::ResponseParser::MapKey(StringView value) noexcept
 		break;
 
 	case State::DEVICE_ID:
-		break;
-
 	case State::USER_AUTH_TOKEN:
 		break;
 	}
