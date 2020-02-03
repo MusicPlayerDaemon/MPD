@@ -26,6 +26,7 @@
 #include "event/Call.hxx"
 #include "util/ASCII.hxx"
 #include "util/Domain.hxx"
+#include "util/Math.hxx"
 #include "util/RuntimeError.hxx"
 #include "Log.hxx"
 
@@ -34,8 +35,6 @@ extern "C" {
 }
 
 #include <alsa/asoundlib.h>
-
-#include <math.h>
 
 #define VOLUME_MIXER_ALSA_DEFAULT		"default"
 #define VOLUME_MIXER_ALSA_CONTROL_DEFAULT	"PCM"

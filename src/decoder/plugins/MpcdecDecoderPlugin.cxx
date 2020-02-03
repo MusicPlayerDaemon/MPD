@@ -25,14 +25,13 @@
 #include "tag/Handler.hxx"
 #include "util/Domain.hxx"
 #include "util/Clamp.hxx"
+#include "util/Math.hxx"
 #include "util/ScopeExit.hxx"
 #include "Log.hxx"
 
 #include <mpc/mpcdec.h>
 
 #include <iterator>
-
-#include <math.h>
 
 struct mpc_decoder_data {
 	InputStream &is;

@@ -31,10 +31,16 @@
 #define MATH_HXX
 
 #ifdef __UCLIBC__
+#include <boost/math/special_functions/pow.hpp>
 #include <boost/math/special_functions/round.hpp>
+using boost::math::iround;
+using boost::math::pow;
 using boost::math::lround;
+#define lrint iround
 #else
 #include <cmath>
+using std::pow;
+using std::lrint;
 using std::lround;
 #endif
 
