@@ -762,7 +762,7 @@ static const char *const ffmpeg_mime_types[] = {
 	"audio/aac",
 	"audio/aacp",
 	"audio/ac3",
-	"audio/aiff"
+	"audio/aiff",
 	"audio/amr",
 	"audio/basic",
 	"audio/flac",
