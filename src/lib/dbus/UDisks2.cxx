@@ -167,7 +167,7 @@ ParseObjects(ODBus::ReadMessageIter &&i,
 
 	ForEachInterface(std::move(i), [&callback](const char *path, auto &&j){
 			Object o(path);
-			ParseObject(o, std::move(j));
+			ParseObject(o, std::forward<decltype(j)>(j));
 			if (o.IsValid())
 				callback(std::move(o));
 		});
