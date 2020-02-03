@@ -31,6 +31,7 @@
 #include <wavpack/wavpack.h>
 
 #include <algorithm>
+#include <cmath>
 #include <iterator>
 #include <memory>
 
@@ -265,8 +266,7 @@ wavpack_decode(DecoderClient &client, WavpackContext *wpc, bool can_seek)
 		if (samples_got == 0)
 			break;
 
-		int bitrate = (int)(WavpackGetInstantBitrate(wpc) / 1000 +
-				    0.5);
+		int bitrate = lround(WavpackGetInstantBitrate(wpc) / 1000);
 		format_samples(chunk, samples_got * audio_format.channels);
 
 		cmd = client.SubmitData(nullptr, chunk,
