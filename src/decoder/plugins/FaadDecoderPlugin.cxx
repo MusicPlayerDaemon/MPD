@@ -26,11 +26,11 @@
 #include "util/ScopeExit.hxx"
 #include "util/ConstBuffer.hxx"
 #include "util/Domain.hxx"
+#include "util/Math.hxx"
 #include "Log.hxx"
 
 #include <neaacdec.h>
 
-#include <cmath>
 #include <exception>
 
 #include <assert.h>
