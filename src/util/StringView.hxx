@@ -88,6 +88,19 @@ struct BasicStringView : ConstBuffer<T> {
 	using ConstBuffer<T>::pop_back;
 	using ConstBuffer<T>::skip_front;
 
+	constexpr BasicStringView<T> substr(size_type pos,
+					    size_type count) const noexcept {
+		return {data + pos, count};
+	}
+
+	constexpr BasicStringView<T> substr(size_type pos) const noexcept {
+		return {data + pos, size - pos};
+	}
+
+	constexpr BasicStringView<T> substr(const char *start) const noexcept {
+		return {start, size_t(data + size - start)};
+	}
+
 	gcc_pure
 	pointer Find(value_type ch) const noexcept {
 		return StringFind(data, ch, this->size);
