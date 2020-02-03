@@ -17,9 +17,9 @@ matrix:
             - ninja-build
       before_install:
         - wget https://bootstrap.pypa.io/get-pip.py
-        - /usr/bin/python3.6 get-pip.py --user
+        - /usr/bin/python3.6 get-pip.py --user --no-cache-dir
       install:
-        - /usr/bin/python3.6 $HOME/.local/bin/pip install --user meson
+        - /usr/bin/python3.6 $HOME/.local/bin/pip install --user meson --no-cache-dir
       env:
         - MATRIX_EVAL="export PATH=\$HOME/.local/bin:\$PATH"
 
@@ -39,9 +39,9 @@ matrix:
             - ninja-build
       before_install:
         - wget https://bootstrap.pypa.io/get-pip.py
-        - /usr/bin/python3.6 get-pip.py --user
+        - /usr/bin/python3.6 get-pip.py --user --no-cache-dir
       install:
-        - /usr/bin/python3.6 $HOME/.local/bin/pip install --user meson
+        - /usr/bin/python3.6 $HOME/.local/bin/pip install --user meson --no-cache-dir
       env:
         - MATRIX_EVAL="export PATH=\$HOME/.local/bin:\$PATH"
 
@@ -61,9 +61,9 @@ matrix:
             - ninja-build
       before_install:
         - wget https://bootstrap.pypa.io/get-pip.py
-        - /usr/bin/python3.6 get-pip.py --user
+        - /usr/bin/python3.6 get-pip.py --user --no-cache-dir
       install:
-        - /usr/bin/python3.6 $HOME/.local/bin/pip install --user meson
+        - /usr/bin/python3.6 $HOME/.local/bin/pip install --user meson --no-cache-dir
       env:
         - MATRIX_EVAL="export PATH=\$HOME/.local/bin:\$PATH"
 
@@ -86,9 +86,9 @@ matrix:
             - ninja-build
       before_install:
         - wget https://bootstrap.pypa.io/get-pip.py
-        - /usr/bin/python3.6 get-pip.py --user
+        - /usr/bin/python3.6 get-pip.py --user --no-cache-dir
       install:
-        - /usr/bin/python3.6 $HOME/.local/bin/pip install --user meson
+        - /usr/bin/python3.6 $HOME/.local/bin/pip install --user meson --no-cache-dir
       env:
         # use gold as workaround for https://sourceware.org/bugzilla/show_bug.cgi?id=17068
         - MATRIX_EVAL="export CC='ccache gcc-6' CXX='ccache g++-6' LDFLAGS=-fuse-ld=gold PATH=\$HOME/.local/bin:\$PATH"
@@ -112,9 +112,9 @@ matrix:
             - ninja-build
       before_install:
         - wget https://bootstrap.pypa.io/get-pip.py
-        - /usr/bin/python3.6 get-pip.py --user
+        - /usr/bin/python3.6 get-pip.py --user --no-cache-dir
       install:
-        - /usr/bin/python3.6 $HOME/.local/bin/pip install --user meson
+        - /usr/bin/python3.6 $HOME/.local/bin/pip install --user meson --no-cache-dir
       env:
         # use gold as workaround for https://sourceware.org/bugzilla/show_bug.cgi?id=17068
         - MATRIX_EVAL="export CC='ccache gcc-8' CXX='ccache g++-8' LDFLAGS=-fuse-ld=gold PATH=\$HOME/.local/bin:\$PATH"
