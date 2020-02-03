@@ -34,11 +34,6 @@
 #include <stdbool.h>
 #include "volume_mapping.h"
 
-#ifdef __UCLIBC__
-/* 10^x = 10^(log e^x) = (e^x)^log10 = e^(x * log 10) */
-#define exp10(x) (exp((x) * log(10)))
-#endif /* __UCLIBC__ */
-
 #define MAX_LINEAR_DB_SCALE	24
 
 static inline bool use_linear_dB_scale(long dBmin, long dBmax)
@@ -111,9 +106,9 @@ static double get_normalized_volume(snd_mixer_elem_t *elem,
 	if (use_linear_dB_scale(min, max))
 		return (value - min) / (double)(max - min);
 
-	normalized = exp10((value - max) / 6000.0);
+	normalized = pow(10, (value - max) / 6000.0);
 	if (min != SND_CTL_TLV_DB_GAIN_MUTE) {
-		min_norm = exp10((min - max) / 6000.0);
+		min_norm = pow(10, (min - max) / 6000.0);
 		normalized = (normalized - min_norm) / (1 - min_norm);
 	}
 
@@ -159,7 +154,7 @@ static int set_normalized_volume(snd_mixer_elem_t *elem,
 	}
 
 	if (min != SND_CTL_TLV_DB_GAIN_MUTE) {
-		min_norm = exp10((min - max) / 6000.0);
+		min_norm = pow(10, (min - max) / 6000.0);
 		volume = volume * (1 - min_norm) + min_norm;
 	}
 	value = lrint_dir(6000.0 * log10(volume), dir) + max;
