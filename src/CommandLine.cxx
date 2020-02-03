@@ -78,7 +78,7 @@ constexpr auto USER_CONFIG_FILE_LOCATION1 = Path::FromFS(PATH_LITERAL(".mpdconf"
 constexpr auto USER_CONFIG_FILE_LOCATION2 = Path::FromFS(PATH_LITERAL(".mpd/mpd.conf"));
 constexpr auto USER_CONFIG_FILE_LOCATION_XDG = Path::FromFS(PATH_LITERAL("mpd/mpd.conf"));
 #endif
-}
+} // namespace
 
 enum Option {
 	OPTION_KILL,

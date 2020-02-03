@@ -38,4 +38,4 @@ getFirstElementValue(IXML_Document *doc, const char *name) noexcept
 	return ixmlNode_getNodeValue(dnode);
 }
 
-}
+} // namespace ixmlwrap

@@ -36,7 +36,7 @@ struct sticker_song_find_data {
 	Response &r;
 	const char *name;
 };
-}
+} // namespace
 
 static void
 sticker_song_find_print_cb(const LightSong &song, const char *value,

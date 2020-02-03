@@ -44,7 +44,7 @@ public:
 	}
 };
 
-}
+} // namespace
 
 QobuzClient::QobuzClient(EventLoop &event_loop,
 			 const char *_base_url,
