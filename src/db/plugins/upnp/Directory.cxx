@@ -30,10 +30,8 @@
 
 #include <string.h>
 
-UPnPDirContent::~UPnPDirContent()
-{
-	/* this destructor exists here just so it won't get inlined */
-}
+/* this destructor exists here just so it won't get inlined */
+UPnPDirContent::~UPnPDirContent() = default;
 
 gcc_pure
 static UPnPDirObject::ItemClass

@@ -44,10 +44,8 @@ ContentDirectoryService::ContentDirectoryService(const UPnPDevice &device,
 	}
 }
 
-ContentDirectoryService::~ContentDirectoryService() noexcept
-{
-	/* this destructor exists here just so it won't get inlined */
-}
+/* this destructor exists here just so it won't get inlined */
+ContentDirectoryService::~ContentDirectoryService() noexcept = default;
 
 std::forward_list<std::string>
 ContentDirectoryService::getSearchCapabilities(UpnpClient_Handle hdl) const
