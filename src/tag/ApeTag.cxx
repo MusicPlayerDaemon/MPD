@@ -54,14 +54,14 @@ tag_ape_import_item(unsigned long flags,
 		return false;
 
 	if (handler.WantPair())
-		for (const auto &i : IterableSplitString(value, '\0'))
+		for (const auto i : IterableSplitString(value, '\0'))
 			handler.OnPair(key, i);
 
 	TagType type = tag_ape_name_parse(key);
 	if (type == TAG_NUM_OF_ITEM_TYPES)
 		return false;
 
-	for (const auto &i : IterableSplitString(value, '\0'))
+	for (const auto i : IterableSplitString(value, '\0'))
 		handler.OnTag(type, i);
 
 	return true;
