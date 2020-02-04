@@ -6,10 +6,6 @@ if compiler.get_id() == 'gcc'
   gtest_compile_args += [
     '-Wno-suggest-attribute=format',
     '-Wno-suggest-attribute=noreturn',
-    '-Wno-missing-declarations',
-
-    # needed on Jessie for gtest's IsNullLiteralHelper
-    '-Wno-conversion-null',
   ]
 endif
 
