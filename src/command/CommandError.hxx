@@ -28,6 +28,6 @@ class Response;
  * Send the exception to the client.
  */
 void
-PrintError(Response &r, std::exception_ptr ep);
+PrintError(Response &r, const std::exception_ptr& ep);
 
 #endif

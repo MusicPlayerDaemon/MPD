@@ -65,5 +65,5 @@ Dsd16Converter::Convert(ConstBuffer<uint8_t> src) noexcept
 {
 	using namespace std::placeholders;
 	return rest_buffer.Process<uint16_t>(buffer, src, channels,
-					     std::bind(Dsd8To16, _1, _2, _3, channels));
+					     [=](auto && arg1, auto && arg2, auto && arg3) { return Dsd8To16(arg1, arg2, arg3, channels); });
 }

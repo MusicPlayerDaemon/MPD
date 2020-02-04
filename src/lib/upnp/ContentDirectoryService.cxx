@@ -37,7 +37,7 @@ ContentDirectoryService::ContentDirectoryService(const UPnPDevice &device,
 	 m_modelName(device.modelName),
 	 m_rdreqcnt(200)
 {
-	if (!m_modelName.compare("MediaTomb")) {
+	if (m_modelName == "MediaTomb") {
 		// Readdir by 200 entries is good for most, but MediaTomb likes
 		// them really big. Actually 1000 is better but I don't dare
 		m_rdreqcnt = 500;
