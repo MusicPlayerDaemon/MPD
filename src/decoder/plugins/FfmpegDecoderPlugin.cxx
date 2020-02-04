@@ -781,7 +781,7 @@ static const char *const ffmpeg_mime_types[] = {
 	"audio/x-aac",
 	"audio/x-ac3",
 	"audio/x-adx",
-	"audio/x-aiff"
+	"audio/x-aiff",
 	"audio/x-alaw",
 	"audio/x-au",
 	"audio/x-dca",
@@ -801,7 +801,7 @@ static const char *const ffmpeg_mime_types[] = {
 	"audio/x-pn-realaudio",
 	"audio/x-pn-multirate-realaudio",
 	"audio/x-speex",
-	"audio/x-tta"
+	"audio/x-tta",
 	"audio/x-voc",
 	"audio/x-wav",
 	"audio/x-wma",
