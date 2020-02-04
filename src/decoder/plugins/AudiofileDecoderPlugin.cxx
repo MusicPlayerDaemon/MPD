@@ -269,6 +269,8 @@ static const char *const audiofile_suffixes[] = {
 };
 
 static const char *const audiofile_mime_types[] = {
+	"audio/wav",
+	"audio/aiff",
 	"audio/x-wav",
 	"audio/x-aiff",
 	nullptr

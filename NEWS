@@ -35,6 +35,12 @@ ver 0.22 (not yet released)
 * switch to C++17
   - GCC 7 or clang 4 (or newer) recommended
 
+ver 0.21.20 (not yet released)
+* decoder
+  - audiofile, ffmpeg, sndfile: handle MIME type "audio/wav"
+  - ffmpeg: fix playback of AIFF and TTA
+  - vorbis, opus: fix seeking in small files
+
 ver 0.21.19 (2020/01/17)
 * configuration
   - allow overriding top-level settings in includes
