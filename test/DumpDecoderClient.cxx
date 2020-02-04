@@ -101,7 +101,7 @@ DumpDecoderClient::SubmitData(gcc_unused InputStream *is,
 	}
 
 	gcc_unused ssize_t nbytes = write(STDOUT_FILENO, data, datalen);
-	return DecoderCommand::NONE;
+	return GetCommand();
 }
 
 DecoderCommand
@@ -113,7 +113,7 @@ DumpDecoderClient::SubmitTag(gcc_unused InputStream *is,
 	for (const auto &i : tag)
 		fprintf(stderr, "  %s=%s\n", tag_item_names[i.type], i.value);
 
-	return DecoderCommand::NONE;
+	return GetCommand();
 }
 
 static void
