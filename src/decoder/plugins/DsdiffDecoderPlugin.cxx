@@ -31,7 +31,7 @@
 #include "../DecoderAPI.hxx"
 #include "input/InputStream.hxx"
 #include "pcm/CheckAudioFormat.hxx"
-#include "util/bit_reverse.h"
+#include "util/BitReverse.hxx"
 #include "util/ByteOrder.hxx"
 #include "util/StringView.hxx"
 #include "tag/Handler.hxx"

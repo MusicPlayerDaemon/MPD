@@ -17,20 +17,15 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_BIT_REVERSE_H
-#define MPD_BIT_REVERSE_H
+#include "BitReverse.hxx"
 
-#include "Compiler.h"
-
-#include <stdint.h>
-
-extern const uint8_t bit_reverse_table[256];
-
-gcc_const
-static inline uint8_t
-bit_reverse(uint8_t x)
+/**
+ * @see http://graphics.stanford.edu/~seander/bithacks.html#BitReverseTable
+ */
+const uint8_t bit_reverse_table[256] =
 {
-	return bit_reverse_table[x];
-}
-
-#endif
+#define R2(n)     n,     n + 2*64,     n + 1*64,     n + 3*64
+#define R4(n) R2(n), R2(n + 2*16), R2(n + 1*16), R2(n + 3*16)
+#define R6(n) R4(n), R4(n + 2*4 ), R4(n + 1*4 ), R4(n + 3*4 )
+    R6(0), R6(2), R6(1), R6(3)
+};

@@ -29,7 +29,7 @@ util = static_library(
   'OptionParser.cxx',
   'ByteReverse.cxx',
   'format.c',
-  'bit_reverse.c',
+  'BitReverse.cxx',
   include_directories: inc,
 )
 

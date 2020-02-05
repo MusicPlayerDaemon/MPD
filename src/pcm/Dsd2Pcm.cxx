@@ -32,7 +32,7 @@ or implied, of Sebastian Gesemann.
 
 #include "Dsd2Pcm.hxx"
 #include "Traits.hxx"
-#include "util/bit_reverse.h"
+#include "util/BitReverse.hxx"
 #include "util/GenerateArray.hxx"
 
 #include <assert.h>
