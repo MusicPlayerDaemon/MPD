@@ -36,7 +36,11 @@
 
 #include <utility>
 
-#define CEILING(x, y) ((x+(y-1))/y)
+static constexpr size_t
+CEILING(size_t x, size_t y) noexcept
+{
+	return (x + y - 1) / y;
+}
 
 struct Iso9660 {
 	iso9660_t *const iso;
