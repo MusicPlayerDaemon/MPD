@@ -64,7 +64,7 @@ public:
 	 *
 	 * This method must be thread-safe.
 	 */
-	virtual const std::map<std::string, std::string> GetAttributes() const noexcept {
+	virtual std::map<std::string, std::string> GetAttributes() const noexcept {
 		return {};
 	}
 

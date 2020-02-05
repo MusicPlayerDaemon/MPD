@@ -50,7 +50,7 @@ template<typename T>
 static auto
 Append(std::forward_list<T> &list, T &&src)
 {
-	return list.emplace_after(FindLast(list), std::move(src));
+	return list.emplace_after(FindLast(list), std::forward<T>(src));
 }
 
 void

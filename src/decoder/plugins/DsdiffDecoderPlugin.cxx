@@ -213,7 +213,6 @@ dsdiff_handle_native_tag(DecoderClient *client, InputStream &is,
 		return;
 
 	handler.OnTag(type, {label, length});
-	return;
 }
 
 /**

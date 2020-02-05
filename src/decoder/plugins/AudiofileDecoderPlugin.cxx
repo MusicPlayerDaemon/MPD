@@ -200,7 +200,7 @@ audiofile_stream_decode(DecoderClient &client, InputStream &is)
 	AudioFileInputStream afis{&client, is};
 	AFvirtualfile *const vf = setup_virtual_fops(afis);
 
-	const AFfilehandle fh = afOpenVirtualFile(vf, "r", nullptr);
+	auto fh = afOpenVirtualFile(vf, "r", nullptr);
 	if (fh == AF_NULL_FILEHANDLE)
 		return;
 
@@ -269,6 +269,8 @@ static const char *const audiofile_suffixes[] = {
 };
 
 static const char *const audiofile_mime_types[] = {
+	"audio/wav",
+	"audio/aiff",
 	"audio/x-wav",
 	"audio/x-aiff",
 	nullptr

@@ -101,7 +101,7 @@ MakeAoError()
 
 AoOutput::AoOutput(const ConfigBlock &block)
 	:AudioOutput(0),
-	 write_size(block.GetPositiveValue("write_size", 1024u))
+	 write_size(block.GetPositiveValue("write_size", 1024U))
 {
 	const char *value = block.GetBlockValue("driver", "default");
 	if (StringIsEqual(value, "default"))

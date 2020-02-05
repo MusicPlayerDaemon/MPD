@@ -50,8 +50,9 @@
 #include <mpd/async.h>
 
 #include <cassert>
-#include <string>
 #include <list>
+#include <string>
+#include <utility>
 
 class LibmpdclientError final : public std::runtime_error {
 	enum mpd_error code;
@@ -447,7 +448,7 @@ ProxyDatabase::ProxyDatabase(EventLoop &_loop, DatabaseListener &_listener,
 	 listener(_listener),
 	 host(block.GetBlockValue("host", "")),
 	 password(block.GetBlockValue("password", "")),
-	 port(block.GetBlockValue("port", 0u)),
+	 port(block.GetBlockValue("port", 0U)),
 	 keepalive(block.GetBlockValue("keepalive", false))
 {
 }
@@ -516,7 +517,7 @@ ProxyDatabase::Connect()
 	(void)keepalive;
 #endif
 
-	idle_received = ~0u;
+	idle_received = ~0U;
 	is_idle = false;
 
 	SocketMonitor::Open(SocketDescriptor(mpd_async_get_fd(mpd_connection_get_async(connection))));
@@ -674,15 +675,15 @@ ProxyDatabase::ReturnSong(const LightSong *_song) const noexcept
 static void
 Visit(struct mpd_connection *connection, const char *uri,
       bool recursive, const SongFilter *filter,
-      VisitDirectory visit_directory, VisitSong visit_song,
-      VisitPlaylist visit_playlist);
+      const VisitDirectory& visit_directory, const VisitSong& visit_song,
+      const VisitPlaylist& visit_playlist);
 
 static void
 Visit(struct mpd_connection *connection,
       bool recursive, const SongFilter *filter,
       const struct mpd_directory *directory,
-      VisitDirectory visit_directory, VisitSong visit_song,
-      VisitPlaylist visit_playlist)
+      const VisitDirectory& visit_directory, const VisitSong& visit_song,
+      const VisitPlaylist& visit_playlist)
 {
 	const char *path = mpd_directory_get_path(directory);
 
@@ -697,7 +698,7 @@ Visit(struct mpd_connection *connection,
 
 	if (recursive)
 		Visit(connection, path, recursive, filter,
-		      visit_directory, visit_song, visit_playlist);
+		      visit_directory, std::move(visit_song), std::move(visit_playlist));
 }
 
 gcc_pure
@@ -710,7 +711,7 @@ Match(const SongFilter *filter, const LightSong &song) noexcept
 static void
 Visit(const SongFilter *filter,
       const mpd_song *_song,
-      VisitSong visit_song)
+      const VisitSong& visit_song)
 {
 	if (!visit_song)
 		return;
@@ -722,7 +723,7 @@ Visit(const SongFilter *filter,
 
 static void
 Visit(const struct mpd_playlist *playlist,
-      VisitPlaylist visit_playlist)
+      const VisitPlaylist& visit_playlist)
 {
 	if (!visit_playlist)
 		return;
@@ -778,8 +779,8 @@ ReceiveEntities(struct mpd_connection *connection) noexcept
 static void
 Visit(struct mpd_connection *connection, const char *uri,
       bool recursive, const SongFilter *filter,
-      VisitDirectory visit_directory, VisitSong visit_song,
-      VisitPlaylist visit_playlist)
+      const VisitDirectory& visit_directory, const VisitSong& visit_song,
+      const VisitPlaylist& visit_playlist)
 {
 	if (!mpd_send_list_meta(connection, uri))
 		ThrowError(connection);
@@ -813,7 +814,7 @@ Visit(struct mpd_connection *connection, const char *uri,
 static void
 SearchSongs(struct mpd_connection *connection,
 	    const DatabaseSelection &selection,
-	    VisitSong visit_song)
+	    const VisitSong& visit_song)
 try {
 	assert(selection.recursive);
 	assert(visit_song);

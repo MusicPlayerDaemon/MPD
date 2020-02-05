@@ -39,7 +39,7 @@ FilteredAudioOutput::SupportsPause() const noexcept
 	return output->SupportsPause();
 }
 
-const std::map<std::string, std::string>
+std::map<std::string, std::string>
 FilteredAudioOutput::GetAttributes() const noexcept
 {
 	return output->GetAttributes();

@@ -35,6 +35,7 @@
 #include "Log.hxx"
 
 #include <memory>
+#include <utility>
 
 static constexpr Domain tidal_domain("tidal");
 
@@ -77,7 +78,7 @@ public:
 	}
 
 private:
-	void Failed(std::exception_ptr e) {
+	void Failed(const std::exception_ptr& e) {
 		SetInput(std::make_unique<FailingInputStream>(GetURI(), e,
 							      mutex));
 	}
@@ -133,7 +134,7 @@ static bool
 IsInvalidSession(std::exception_ptr e) noexcept
 {
 	try {
-		std::rethrow_exception(e);
+		std::rethrow_exception(std::move(e));
 	} catch (const TidalError &te) {
 		return te.IsInvalidSession();
 	} catch (...) {

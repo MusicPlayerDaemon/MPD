@@ -760,7 +760,7 @@ MadDecoder::DecodeFirstFrame(Tag *tag) noexcept
 
 	if (max_frames > 8 * 1024 * 1024) {
 		FormatWarning(mad_domain,
-			      "mp3 file header indicates too many frames: %lu",
+			      "mp3 file header indicates too many frames: %zu",
 			      max_frames);
 		return false;
 	}

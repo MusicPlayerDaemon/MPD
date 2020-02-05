@@ -150,6 +150,5 @@ dsdlib_tag_id3(InputStream &is, TagHandler &handler,
 	scan_id3_tag(id3_tag, handler);
 
 	id3_tag_delete(id3_tag);
-	return;
 }
 #endif

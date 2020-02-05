@@ -38,7 +38,7 @@ struct ApeFooter {
 };
 
 bool
-tag_ape_scan(InputStream &is, ApeTagCallback callback)
+tag_ape_scan(InputStream &is, const ApeTagCallback& callback)
 try {
 	std::unique_lock<Mutex> lock(is.mutex);
 

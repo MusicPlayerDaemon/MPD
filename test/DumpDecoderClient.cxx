@@ -28,15 +28,15 @@
 
 void
 DumpDecoderClient::Ready(const AudioFormat audio_format,
-			 gcc_unused bool seekable,
+			 bool seekable,
 			 SignedSongTime duration) noexcept
 {
 	assert(!initialized);
 	assert(audio_format.IsValid());
 
-	fprintf(stderr, "audio_format=%s duration=%f\n",
+	fprintf(stderr, "audio_format=%s duration=%f seekable=%d\n",
 		ToString(audio_format).c_str(),
-		duration.ToDoubleS());
+		duration.ToDoubleS(), seekable);
 
 	initialized = true;
 }
@@ -101,7 +101,7 @@ DumpDecoderClient::SubmitData(gcc_unused InputStream *is,
 	}
 
 	gcc_unused ssize_t nbytes = write(STDOUT_FILENO, data, datalen);
-	return DecoderCommand::NONE;
+	return GetCommand();
 }
 
 DecoderCommand
@@ -113,7 +113,7 @@ DumpDecoderClient::SubmitTag(gcc_unused InputStream *is,
 	for (const auto &i : tag)
 		fprintf(stderr, "  %s=%s\n", tag_item_names[i.type], i.value);
 
-	return DecoderCommand::NONE;
+	return GetCommand();
 }
 
 static void

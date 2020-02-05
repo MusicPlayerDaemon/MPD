@@ -65,7 +65,7 @@ public:
 	}
 
 private:
-	void Failed(std::exception_ptr e) {
+	void Failed(const std::exception_ptr& e) {
 		SetInput(std::make_unique<FailingInputStream>(GetURI(), e,
 							      mutex));
 	}

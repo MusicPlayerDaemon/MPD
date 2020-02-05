@@ -112,7 +112,7 @@ input_cdio_init(EventLoop &, const ConfigBlock &block)
 			throw FormatRuntimeError("Unrecognized 'default_byte_order' setting: %s",
 						 value);
 	}
-	speed = block.GetBlockValue("speed",0u);
+	speed = block.GetBlockValue("speed",0U);
 }
 
 struct CdioUri {

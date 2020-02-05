@@ -94,5 +94,5 @@ DsdToDopConverter::Convert(ConstBuffer<uint8_t> src) noexcept
 {
 	using namespace std::placeholders;
 	return rest_buffer.Process<uint32_t>(buffer, src, 2 * channels,
-					     std::bind(DsdToDop, _1, _2, _3, channels));
+					     [=](auto && arg1, auto && arg2, auto && arg3) { return DsdToDop(arg1, arg2, arg3, channels); });
 }

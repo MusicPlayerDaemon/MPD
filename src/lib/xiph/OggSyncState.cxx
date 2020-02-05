@@ -43,7 +43,7 @@ OggSyncState::ExpectPage(ogg_page &page)
 		if (r != 0) {
 			if (r > 0) {
 				start_offset = offset;
-				offset += r;
+				offset += page.header_len + page.body_len;
 			}
 			return r > 0;
 		}

@@ -6,10 +6,14 @@ if compiler.get_id() == 'gcc'
   gtest_compile_args += [
     '-Wno-suggest-attribute=format',
     '-Wno-suggest-attribute=noreturn',
-    '-Wno-missing-declarations',
+  ]
+endif
 
-    # needed on Jessie for gtest's IsNullLiteralHelper
-    '-Wno-conversion-null',
+if compiler.get_id() == 'clang' and compiler.version().version_compare('>=9')
+  gtest_compile_args += [
+    # work around clang warning caused by GTest's wrong "-lpthread"
+    # compiler flag
+    '-Wno-unused-command-line-argument',
   ]
 endif
 

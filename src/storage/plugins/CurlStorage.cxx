@@ -261,8 +261,8 @@ public:
 		 CommonExpatParser(ExpatNamespaceSeparator{'|'})
 	{
 		request.SetOption(CURLOPT_CUSTOMREQUEST, "PROPFIND");
-		request.SetOption(CURLOPT_FOLLOWLOCATION, 1l);
-		request.SetOption(CURLOPT_MAXREDIRS, 1l);
+		request.SetOption(CURLOPT_FOLLOWLOCATION, 1L);
+		request.SetOption(CURLOPT_MAXREDIRS, 1L);
 
 		request_headers.Append(StringFormat<40>("depth: %u", depth));
 

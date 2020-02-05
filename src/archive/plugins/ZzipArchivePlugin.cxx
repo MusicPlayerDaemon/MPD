@@ -91,7 +91,7 @@ class ZzipInputStream final : public InputStream {
 	ZZIP_FILE *const file;
 
 public:
-	ZzipInputStream(const std::shared_ptr<ZzipDir> _dir, const char *_uri,
+	ZzipInputStream(const std::shared_ptr<ZzipDir>& _dir, const char *_uri,
 			Mutex &_mutex,
 			ZZIP_FILE *_file)
 		:InputStream(_uri, _mutex),

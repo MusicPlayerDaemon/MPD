@@ -231,7 +231,7 @@ faad_song_duration(DecoderBuffer &buffer, InputStream &is)
 static NeAACDecHandle
 faad_decoder_new()
 {
-	const NeAACDecHandle decoder = NeAACDecOpen();
+	auto decoder = NeAACDecOpen();
 
 	NeAACDecConfigurationPtr config =
 		NeAACDecGetCurrentConfiguration(decoder);
@@ -324,7 +324,7 @@ faad_get_file_time(InputStream &is)
 
 static void
 faad_stream_decode(DecoderClient &client, InputStream &is,
-		   DecoderBuffer &buffer, const NeAACDecHandle decoder)
+		   DecoderBuffer &buffer, NeAACDecHandle decoder)
 {
 	const auto total_time = faad_song_duration(buffer, is);
 
@@ -406,7 +406,7 @@ faad_stream_decode(DecoderClient &client, InputStream &is)
 
 	/* create the libfaad decoder */
 
-	const NeAACDecHandle decoder = faad_decoder_new();
+	auto decoder = faad_decoder_new();
 	AtScopeExit(decoder) { NeAACDecClose(decoder); };
 
 	faad_stream_decode(client, is, buffer, decoder);
