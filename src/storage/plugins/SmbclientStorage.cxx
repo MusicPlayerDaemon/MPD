@@ -137,7 +137,7 @@ SmbclientStorage::OpenDirectory(const char *uri_utf8)
 			throw MakeErrno("Failed to open directory");
 	}
 
-	return std::make_unique<SmbclientDirectoryReader>(std::move(mapped.c_str()),
+	return std::make_unique<SmbclientDirectoryReader>(mapped.c_str(),
 							  handle);
 }
 

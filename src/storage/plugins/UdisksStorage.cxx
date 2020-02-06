@@ -168,7 +168,7 @@ UdisksStorage::OnListReply(ODBus::Message reply) noexcept
 			if (!o.IsId(id))
 				return;
 
-			dbus_path = std::move(o.path);
+			dbus_path = o.path;
 			mount_point = std::move(o.mount_point);
 		});
 

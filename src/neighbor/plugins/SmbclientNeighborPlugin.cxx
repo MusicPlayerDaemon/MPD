@@ -211,7 +211,7 @@ SmbclientNeighborExplorer::Run() noexcept
 		if (f != found_end) {
 			/* still visible: remove from "found" so we
 			   don't believe it's a new one */
-			*i = std::move(*std::next(f));
+			*i = *std::next(f);
 			found.erase_after(f);
 			prev = i;
 		} else {
