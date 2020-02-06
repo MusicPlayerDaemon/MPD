@@ -368,7 +368,7 @@ UpnpDatabase::SearchSongs(const ContentDirectoryService &server,
 		// which we later have to detect.
 		const std::string path = songPath(server.getFriendlyName(),
 						  dirent.id);
-		visitSong(std::move(dirent), path.c_str(),
+		visitSong(dirent, path.c_str(),
 			  selection, visit_song);
 	}
 }
@@ -447,7 +447,7 @@ VisitItem(const UPnPDirObject &object, const char *uri,
 
 	switch (object.item_class) {
 	case UPnPDirObject::ItemClass::MUSIC:
-		visitSong(object, uri, selection, std::move(visit_song));
+		visitSong(object, uri, selection, visit_song);
 		break;
 
 	case UPnPDirObject::ItemClass::PLAYLIST:
@@ -487,7 +487,7 @@ VisitObject(const UPnPDirObject &object, const char *uri,
 
 	case UPnPDirObject::Type::ITEM:
 		VisitItem(object, uri, selection,
-			  std::move(visit_song), std::move(visit_playlist));
+			  visit_song, visit_playlist);
 		break;
 	}
 }
@@ -531,7 +531,7 @@ UpnpDatabase::VisitServer(const ContentDirectoryService &server,
 
 			std::string path = songPath(server.getFriendlyName(),
 						    dirent.id);
-			visitSong(std::move(dirent), path.c_str(),
+			visitSong(dirent, path.c_str(),
 				  selection, visit_song);
 		}
 

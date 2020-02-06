@@ -72,7 +72,7 @@ config_read_name_value(ConfigBlock &block, char *input, unsigned line)
 		throw FormatRuntimeError("\"%s\" is duplicate, first defined on line %i",
 					 name, bp->line);
 
-	block.AddBlockParam(name, std::move(value), line);
+	block.AddBlockParam(name, value, line);
 }
 
 static ConfigBlock

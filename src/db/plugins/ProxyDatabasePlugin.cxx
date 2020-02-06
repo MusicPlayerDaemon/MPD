@@ -698,7 +698,7 @@ Visit(struct mpd_connection *connection,
 
 	if (recursive)
 		Visit(connection, path, recursive, filter,
-		      visit_directory, std::move(visit_song), std::move(visit_playlist));
+		      visit_directory, visit_song, visit_playlist);
 }
 
 gcc_pure
