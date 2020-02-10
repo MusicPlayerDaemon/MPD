@@ -3,6 +3,7 @@ ver 0.21.20 (not yet released)
   - audiofile, ffmpeg, sndfile: handle MIME type "audio/wav"
   - ffmpeg: fix playback of AIFF and TTA
   - vorbis, opus: fix seeking in small files
+* fix backwards seeking on ARM (and other non-x86 CPUs)
 
 ver 0.21.19 (2020/01/17)
 * configuration
