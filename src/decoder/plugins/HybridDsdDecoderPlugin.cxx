@@ -32,7 +32,7 @@ static constexpr Domain hybrid_dsd_domain("hybrid_dsd");
 
 namespace {
 
-static bool
+bool
 InitHybridDsdDecoder(const ConfigBlock &block)
 {
 	/* this plugin is disabled by default because for people

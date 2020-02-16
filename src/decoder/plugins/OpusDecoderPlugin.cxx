@@ -41,29 +41,29 @@
 
 namespace {
 
-static constexpr opus_int32 opus_sample_rate = 48000;
+constexpr opus_int32 opus_sample_rate = 48000;
 
 /**
  * Allocate an output buffer for 16 bit PCM samples big enough to hold
  * a quarter second, larger than 120ms required by libopus.
  */
-static constexpr unsigned opus_output_buffer_frames = opus_sample_rate / 4;
+constexpr unsigned opus_output_buffer_frames = opus_sample_rate / 4;
 
 gcc_pure
-static bool
+bool
 IsOpusHead(const ogg_packet &packet) noexcept
 {
 	return packet.bytes >= 8 && memcmp(packet.packet, "OpusHead", 8) == 0;
 }
 
 gcc_pure
-static bool
+bool
 IsOpusTags(const ogg_packet &packet) noexcept
 {
 	return packet.bytes >= 8 && memcmp(packet.packet, "OpusTags", 8) == 0;
 }
 
-static bool
+bool
 mpd_opus_init(gcc_unused const ConfigBlock &block)
 {
 	LogDebug(opus_domain, opus_get_version_string());
@@ -266,7 +266,7 @@ MPDOpusDecoder::Seek(uint64_t where_frame)
 	}
 }
 
-static void
+void
 mpd_opus_stream_decode(DecoderClient &client,
 		       InputStream &input_stream)
 {
@@ -300,7 +300,7 @@ mpd_opus_stream_decode(DecoderClient &client,
 	}
 }
 
-static bool
+bool
 ReadAndParseOpusHead(OggSyncState &sync, OggStreamState &stream,
 		     unsigned &channels)
 {
@@ -312,7 +312,7 @@ ReadAndParseOpusHead(OggSyncState &sync, OggStreamState &stream,
 		audio_valid_channel_count(channels);
 }
 
-static bool
+bool
 ReadAndVisitOpusTags(OggSyncState &sync, OggStreamState &stream,
 		     TagHandler &handler)
 {
@@ -325,7 +325,7 @@ ReadAndVisitOpusTags(OggSyncState &sync, OggStreamState &stream,
 			     handler);
 }
 
-static void
+void
 VisitOpusDuration(InputStream &is, OggSyncState &sync, OggStreamState &stream,
 		  TagHandler &handler)
 {
@@ -339,7 +339,7 @@ VisitOpusDuration(InputStream &is, OggSyncState &sync, OggStreamState &stream,
 	}
 }
 
-static bool
+bool
 mpd_opus_scan_stream(InputStream &is, TagHandler &handler) noexcept
 {
 	InputStreamReader reader(is);
@@ -363,14 +363,14 @@ mpd_opus_scan_stream(InputStream &is, TagHandler &handler) noexcept
 	return true;
 }
 
-static const char *const opus_suffixes[] = {
+const char *const opus_suffixes[] = {
 	"opus",
 	"ogg",
 	"oga",
 	nullptr
 };
 
-static const char *const opus_mime_types[] = {
+const char *const opus_mime_types[] = {
 	/* the official MIME type (RFC 5334) */
 	"audio/ogg",
 

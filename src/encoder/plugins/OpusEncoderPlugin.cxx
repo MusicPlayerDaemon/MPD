@@ -120,7 +120,7 @@ PreparedOpusEncoder::PreparedOpusEncoder(const ConfigBlock &block)
 		throw std::runtime_error("Invalid signal");
 }
 
-static PreparedEncoder *
+PreparedEncoder *
 opus_encoder_init(const ConfigBlock &block)
 {
 	return new PreparedOpusEncoder(block);
