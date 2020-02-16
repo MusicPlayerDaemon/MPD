@@ -47,10 +47,14 @@ x_sigaction(int signum, const struct sigaction *act)
 }
 
 static void
-handle_reload_event(void *) noexcept
+handle_reload_event(void *ctx) noexcept
 {
-	LogDebug(signal_handlers_domain, "got SIGHUP, reopening log files");
+	auto &instance = *(Instance *)ctx;
+
+	LogDebug(signal_handlers_domain, "got SIGHUP, reopening log files and flushing caches");
 	cycle_log_files();
+
+	instance.FlushCaches();
 }
 
 #endif
@@ -73,7 +77,7 @@ SignalHandlersInit(Instance &instance)
 	SignalMonitorRegister(SIGINT, {&loop, HandleShutdownSignal});
 	SignalMonitorRegister(SIGTERM, {&loop, HandleShutdownSignal});
 
-	SignalMonitorRegister(SIGHUP, {nullptr, handle_reload_event});
+	SignalMonitorRegister(SIGHUP, {&instance, handle_reload_event});
 #endif
 }
 

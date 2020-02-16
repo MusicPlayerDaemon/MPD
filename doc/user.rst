@@ -295,6 +295,8 @@ The following table lists the input options valid for all plugins:
 
 More information can be found in the :ref:`input_plugins` reference.
 
+.. _input_cache:
+
 Configuring the Input Cache
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -326,6 +328,9 @@ configuration file:
 
 This allocates a cache of 1 GB.  If the cache grows larger than that,
 older files will be evicted.
+
+You flush the cache at any time by sending ``SIGHUP`` to the
+:program:`MPD` process, see :ref:`signals`.
 
 
 Configuring decoder plugins
@@ -878,6 +883,7 @@ To auto-start :program:`MPD` upon login, type:
 
     systemctl --user enable mpd
 
+.. _signals:
 
 Signals
 -------
@@ -885,7 +891,8 @@ Signals
 :program:`MPD` understands the following UNIX signals:
 
 - ``SIGTERM``, ``SIGINT``: shut down MPD
-- ``SIGHUP``: reopen log files (send this after log rotation)
+- ``SIGHUP``: reopen log files (send this after log rotation) and
+  flush caches (see :ref:`input_cache`)
 
 
 The client

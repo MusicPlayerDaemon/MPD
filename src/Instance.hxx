@@ -209,6 +209,8 @@ struct Instance final
 	}
 #endif
 
+	void FlushCaches() noexcept;
+
 private:
 #ifdef ENABLE_DATABASE
 	/* virtual methods from class DatabaseListener */

@@ -198,3 +198,10 @@ Instance::OnIdle(unsigned flags) noexcept
 	for (auto &partition : partitions)
 		partition.EmitIdle(flags);
 }
+
+void
+Instance::FlushCaches() noexcept
+{
+	if (input_cache)
+		input_cache->Flush();
+}
