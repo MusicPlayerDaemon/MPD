@@ -175,5 +175,5 @@ SignedSongTime
 ParseCommandArgSignedSongTime(const char *s)
 {
 	auto value = ParseCommandArgFloat(s);
-	return SongTime::FromS(value);
+	return SignedSongTime::FromS(value);
 }
