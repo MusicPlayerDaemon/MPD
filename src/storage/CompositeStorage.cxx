@@ -179,7 +179,15 @@ CompositeStorage::Directory::MapToRelativeUTF8(std::string &buffer,
 	return false;
 }
 
-CompositeStorage::CompositeStorage() noexcept = default;
+CompositeStorage::CompositeStorage() noexcept
+{
+	/* note: no "=default" here because members of this class are
+	   allowed to throw during construction according to the C++
+	   standard (e.g. std::map), but we choose to ignore these
+	   exceptions; if construction of std::map goes wrong, MPD has
+	   no chance to work at all, so it's ok to std::terminate() */
+}
+
 CompositeStorage::~CompositeStorage() = default;
 
 Storage *
