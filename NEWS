@@ -1,4 +1,4 @@
-ver 0.21.20 (not yet released)
+ver 0.21.20 (2020/02/16)
 * decoder
   - audiofile, ffmpeg, sndfile: handle MIME type "audio/wav"
   - ffmpeg: fix playback of AIFF and TTA
