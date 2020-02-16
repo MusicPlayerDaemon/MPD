@@ -72,6 +72,8 @@ public:
 	explicit InputCacheManager(const InputCacheConfig &config) noexcept;
 	~InputCacheManager() noexcept;
 
+	void Flush() noexcept;
+
 	gcc_pure
 	bool Contains(const char *uri) noexcept;
 

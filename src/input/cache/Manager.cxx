@@ -58,6 +58,22 @@ InputCacheManager::~InputCacheManager() noexcept
 	items_by_time.clear_and_dispose(DeleteDisposer());
 }
 
+void
+InputCacheManager::Flush() noexcept
+{
+	items_by_time.remove_and_dispose_if([](const InputCacheItem &item){
+		return !item.IsInUse();
+	}, [this](InputCacheItem *item){
+		// TODO: eliminate code duplication, see method Remove()
+		assert(total_size >= item->size());
+		total_size -= item->size();
+		items_by_uri.erase(items_by_uri.iterator_to(*item));
+		delete item;
+	});
+
+	// TODO: invalidate busy items and flush them later
+}
+
 bool
 InputCacheManager::IsEligible(const InputStream &input) noexcept
 {
