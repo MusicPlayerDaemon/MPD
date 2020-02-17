@@ -154,7 +154,9 @@ DetachedSong::Update()
 			AllocatedPath::FromUTF8Throw(GetRealURI());
 
 		return LoadFile(path_fs);
-	} else if (IsRemote()) {
+	}
+
+	if (IsRemote()) {
 		TagBuilder tag_builder;
 		if (!tag_stream_scan(uri.c_str(), tag_builder))
 			return false;
@@ -162,7 +164,8 @@ DetachedSong::Update()
 		mtime = std::chrono::system_clock::time_point::min();
 		tag_builder.Commit(tag);
 		return true;
-	} else
-		// TODO: implement
-		return false;
+	}
+
+	// TODO: implement
+	return false;
 }

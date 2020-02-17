@@ -67,15 +67,17 @@ playlist::MoveOrderToCurrent(unsigned old_order) noexcept
 		   current one (because the current one has already
 		   been playing and shall not be played again) */
 		return queue.MoveOrderAfter(old_order, current);
-	} else if (current >= 0) {
+	}
+
+	if (current >= 0) {
 		/* not playing: move the specified song before the
 		   current one, so it will be played eventually */
 		return queue.MoveOrderBefore(old_order, current);
-	} else {
-		/* not playing anything: move the specified song to
-		   the front */
-		return queue.MoveOrderBefore(old_order, 0);
 	}
+
+	/* not playing anything: move the specified song to
+	   the front */
+	return queue.MoveOrderBefore(old_order, 0);
 }
 
 void

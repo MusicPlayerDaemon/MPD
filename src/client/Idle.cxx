@@ -73,9 +73,9 @@ Client::IdleWait(unsigned flags) noexcept
 	if (idle_flags & idle_subscriptions) {
 		IdleNotify();
 		return true;
-	} else {
-		/* disable timeouts while in "idle" */
-		timeout_event.Cancel();
-		return false;
 	}
+
+	/* disable timeouts while in "idle" */
+	timeout_event.Cancel();
+	return false;
 }

@@ -116,7 +116,9 @@ try {
 	auto tag = ReadId3Tag(is, lock);
 	if (!tag) {
 		return nullptr;
-	} else if (tag_is_id3v1(tag.get())) {
+	}
+
+	if (tag_is_id3v1(tag.get())) {
 		/* id3v1 tags don't belong here */
 		return nullptr;
 	}

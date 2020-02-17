@@ -119,12 +119,11 @@ ParsePath(const char *path)
 			return nullptr;
 
 		return home / AllocatedPath::FromUTF8Throw(path);
-	} else if (!PathTraitsUTF8::IsAbsolute(path)) {
+	}
+
+	if (!PathTraitsUTF8::IsAbsolute(path)) {
 		throw FormatRuntimeError("not an absolute path: %s", path);
-	} else {
-#endif
-		return AllocatedPath::FromUTF8Throw(path);
-#ifndef _WIN32
 	}
 #endif
+	return AllocatedPath::FromUTF8Throw(path);
 }

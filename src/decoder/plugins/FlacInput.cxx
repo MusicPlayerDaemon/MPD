@@ -37,8 +37,8 @@ FlacInput::Read(FLAC__byte buffer[], size_t *bytes)
 		    (client != nullptr &&
 		     client->GetCommand() != DecoderCommand::NONE))
 			return FLAC__STREAM_DECODER_READ_STATUS_END_OF_STREAM;
-		else
-			return FLAC__STREAM_DECODER_READ_STATUS_ABORT;
+
+		return FLAC__STREAM_DECODER_READ_STATUS_ABORT;
 	}
 
 	return FLAC__STREAM_DECODER_READ_STATUS_CONTINUE;

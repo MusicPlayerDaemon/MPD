@@ -87,7 +87,9 @@ stringToTokens(const std::string &str,
 		if (pos == std::string::npos) {
 			tokens.emplace_back(str, startPos);
 			break;
-		} else if (pos == startPos) {
+		}
+
+		if (pos == startPos) {
 			// Dont' push empty tokens after first
 			if (tokens.empty())
 				tokens.emplace_back();

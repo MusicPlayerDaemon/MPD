@@ -332,9 +332,9 @@ struct WavpackInput {
 		if (last_byte == EOF) {
 			last_byte = c;
 			return c;
-		} else {
-			return EOF;
 		}
+
+		return EOF;
 	}
 
 	InputStream::offset_type GetLength() const {

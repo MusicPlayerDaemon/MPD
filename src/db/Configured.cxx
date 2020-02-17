@@ -43,26 +43,28 @@ CreateConfiguredDatabase(const ConfigData &config,
 		param->SetUsed();
 		return DatabaseGlobalInit(main_event_loop, io_event_loop,
 					  listener, *param);
-	} else if (path != nullptr) {
+	}
+
+	if (path != nullptr) {
 		ConfigBlock block(path->line);
 		block.AddBlockParam("path", path->value, path->line);
 		return DatabaseGlobalInit(main_event_loop, io_event_loop,
 					  listener, block);
-	} else {
-		/* if there is no override, use the cache directory */
-
-		const AllocatedPath cache_dir = GetUserCacheDir();
-		if (cache_dir.IsNull())
-			return nullptr;
-
-		const auto db_file = cache_dir / Path::FromFS(PATH_LITERAL("mpd.db"));
-		auto db_file_utf8 = db_file.ToUTF8();
-		if (db_file_utf8.empty())
-			return nullptr;
-
-		ConfigBlock block;
-		block.AddBlockParam("path", std::move(db_file_utf8), -1);
-		return DatabaseGlobalInit(main_event_loop, io_event_loop,
-					  listener, block);
 	}
+
+	/* if there is no override, use the cache directory */
+
+	const AllocatedPath cache_dir = GetUserCacheDir();
+	if (cache_dir.IsNull())
+		return nullptr;
+
+	const auto db_file = cache_dir / Path::FromFS(PATH_LITERAL("mpd.db"));
+	auto db_file_utf8 = db_file.ToUTF8();
+	if (db_file_utf8.empty())
+		return nullptr;
+
+	ConfigBlock block;
+	block.AddBlockParam("path", std::move(db_file_utf8), -1);
+	return DatabaseGlobalInit(main_event_loop, io_event_loop,
+				  listener, block);
 }

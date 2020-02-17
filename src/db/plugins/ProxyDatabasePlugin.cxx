@@ -293,10 +293,9 @@ ThrowError(struct mpd_connection *connection)
 			mpd_connection_get_server_error(connection);
 		throw ProtocolError((enum ack)server_error,
 				    mpd_connection_get_error_message(connection));
-	} else {
-		throw LibmpdclientError(code,
-					mpd_connection_get_error_message(connection));
 	}
+
+	throw LibmpdclientError(code, mpd_connection_get_error_message(connection));
 }
 
 static void

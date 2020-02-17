@@ -66,10 +66,9 @@ handle_unsubscribe(Client &client, Request args, Response &r)
 
 	if (client.Unsubscribe(channel_name))
 		return CommandResult::OK;
-	else {
-		r.Error(ACK_ERROR_NO_EXIST, "not subscribed to this channel");
-		return CommandResult::ERROR;
-	}
+
+	r.Error(ACK_ERROR_NO_EXIST, "not subscribed to this channel");
+	return CommandResult::ERROR;
 }
 
 CommandResult
@@ -127,9 +126,8 @@ handle_send_message(Client &client, Request args, Response &r)
 
 	if (sent)
 		return CommandResult::OK;
-	else {
-		r.Error(ACK_ERROR_NO_EXIST,
-			"nobody is subscribed to this channel");
-		return CommandResult::ERROR;
-	}
+
+	r.Error(ACK_ERROR_NO_EXIST,
+		"nobody is subscribed to this channel");
+	return CommandResult::ERROR;
 }

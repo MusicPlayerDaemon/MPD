@@ -52,12 +52,12 @@ FromString(const char *s)
 
 	if (strcmp(s, "off") == 0)
 		return ReplayGainMode::OFF;
-	else if (strcmp(s, "track") == 0)
+	if (strcmp(s, "track") == 0)
 		return ReplayGainMode::TRACK;
-	else if (strcmp(s, "album") == 0)
+	if (strcmp(s, "album") == 0)
 		return ReplayGainMode::ALBUM;
-	else if (strcmp(s, "auto") == 0)
+	if (strcmp(s, "auto") == 0)
 		return ReplayGainMode::AUTO;
-	else
-		throw std::invalid_argument("Unrecognized replay gain mode");
+
+	throw std::invalid_argument("Unrecognized replay gain mode");
 }

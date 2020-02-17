@@ -49,10 +49,10 @@ SingleFromString(const char *s)
 
 	if (strcmp(s, "0") == 0)
 		return SingleMode::OFF;
-	else if (strcmp(s, "1") == 0)
+	if (strcmp(s, "1") == 0)
 		return SingleMode::ON;
-	else if (strcmp(s, "oneshot") == 0)
+	if (strcmp(s, "oneshot") == 0)
 		return SingleMode::ONE_SHOT;
-	else
-		throw std::invalid_argument("Unrecognized single mode, expected 0, 1, or oneshot");
+
+	throw std::invalid_argument("Unrecognized single mode, expected 0, 1, or oneshot");
 }

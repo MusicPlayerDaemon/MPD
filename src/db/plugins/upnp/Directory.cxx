@@ -39,10 +39,10 @@ ParseItemClass(StringView name) noexcept
 {
 	if (name.Equals("object.item.audioItem.musicTrack"))
 		return UPnPDirObject::ItemClass::MUSIC;
-	else if (name.Equals("object.item.playlistItem"))
+	if (name.Equals("object.item.playlistItem"))
 		return UPnPDirObject::ItemClass::PLAYLIST;
-	else
-		return UPnPDirObject::ItemClass::UNKNOWN;
+
+	return UPnPDirObject::ItemClass::UNKNOWN;
 }
 
 gcc_pure

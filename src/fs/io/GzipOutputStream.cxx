@@ -72,7 +72,8 @@ GzipOutputStream::Flush()
 
 		if (result == Z_STREAM_END)
 			break;
-		else if (result != Z_OK)
+
+		if (result != Z_OK)
 			throw ZlibError(result);
 	}
 }

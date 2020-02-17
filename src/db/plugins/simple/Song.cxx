@@ -39,10 +39,9 @@ Song::GetURI() const noexcept
 {
 	if (parent.IsRoot())
 		return filename;
-	else {
-		const char *path = parent.GetPath();
-		return PathTraitsUTF8::Build(path, filename.c_str());
-	}
+
+	const char *path = parent.GetPath();
+	return PathTraitsUTF8::Build(path, filename.c_str());
 }
 
 LightSong

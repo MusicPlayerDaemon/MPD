@@ -44,7 +44,9 @@ ParseSampleRate(const char *src, bool mask, const char **endptr_r)
 	value = strtoul(src, &endptr, 10);
 	if (endptr == src) {
 		throw std::invalid_argument("Failed to parse the sample rate");
-	} else if (!audio_valid_sample_rate(value))
+	}
+
+	if (!audio_valid_sample_rate(value))
 		throw FormatInvalidArgument("Invalid sample rate: %lu", value);
 
 	*endptr_r = endptr;
@@ -123,7 +125,8 @@ ParseChannelCount(const char *src, bool mask, const char **endptr_r)
 	value = strtoul(src, &endptr, 10);
 	if (endptr == src)
 		throw std::invalid_argument("Failed to parse the channel count");
-	else if (!audio_valid_channel_count(value))
+
+	if (!audio_valid_channel_count(value))
 		throw FormatInvalidArgument("Invalid channel count: %u",
 					    value);
 

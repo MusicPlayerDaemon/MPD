@@ -64,12 +64,12 @@ ParseTypeString(const char *type) noexcept
 {
 	if (StringIsEqual(type, "archive"))
 		return DEVICE_INARCHIVE;
-	else if (StringIsEqual(type, "container"))
+	if (StringIsEqual(type, "container"))
 		return DEVICE_CONTAINER;
-	else if (StringIsEqual(type, "playlist"))
+	if (StringIsEqual(type, "playlist"))
 		return DEVICE_PLAYLIST;
-	else
-		return 0;
+
+	return 0;
 }
 
 void

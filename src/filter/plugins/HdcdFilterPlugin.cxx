@@ -84,10 +84,10 @@ PreparedHdcdFilter::Open(AudioFormat &audio_format)
 {
 	if (MaybeHdcd(audio_format))
 		return OpenHdcdFilter(audio_format);
-	else
-		/* this cannot be HDCD, so let's copy as-is using
-		   NullFilter */
-		return std::make_unique<NullFilter>(audio_format);
+
+	/* this cannot be HDCD, so let's copy as-is using
+	   NullFilter */
+	return std::make_unique<NullFilter>(audio_format);
 }
 
 static std::unique_ptr<PreparedFilter>

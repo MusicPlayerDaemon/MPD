@@ -33,11 +33,11 @@ SharedPipeConsumer::Get() noexcept
 
 		consumed = false;
 		return chunk = chunk->next.get();
-	} else {
-		/* get the first chunk from the pipe */
-		consumed = false;
-		return chunk = pipe->Peek();
 	}
+
+	/* get the first chunk from the pipe */
+	consumed = false;
+	return chunk = pipe->Peek();
 }
 
 bool

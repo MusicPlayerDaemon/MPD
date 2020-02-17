@@ -171,6 +171,6 @@ Tokenizer::NextParam()
 {
 	if (*input == '"')
 		return NextString();
-	else
-		return NextUnquoted();
+
+	return NextUnquoted();
 }

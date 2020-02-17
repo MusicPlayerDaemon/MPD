@@ -50,10 +50,10 @@ static long lrint_dir(double x, int dir)
 {
 	if (dir > 0)
 		return lrint(ceil(x));
-	else if (dir < 0)
+	if (dir < 0)
 		return lrint(floor(x));
-	else
-		return lrint(x);
+
+	return lrint(x);
 }
 
 enum ctl_dir { PLAYBACK, CAPTURE };
@@ -139,7 +139,8 @@ static int set_normalized_volume(snd_mixer_elem_t *elem,
 		   100% */
 		if (volume <= 0)
 			return set_raw[ctl_dir](elem, min);
-		else if (volume >= 1)
+
+		if (volume >= 1)
 			return set_raw[ctl_dir](elem, max);
 
 		value = lrint_dir(volume * (max - min), dir) + min;
@@ -150,7 +151,8 @@ static int set_normalized_volume(snd_mixer_elem_t *elem,
 	   100% */
 	if (volume <= 0)
 		return set_dB[ctl_dir](elem, min, dir);
-	else if (volume >= 1)
+
+	if (volume >= 1)
 		return set_dB[ctl_dir](elem, max, dir);
 
 	if (use_linear_dB_scale(min, max)) {

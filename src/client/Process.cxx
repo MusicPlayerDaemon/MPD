@@ -44,9 +44,9 @@ Client::ProcessCommandList(bool list_ok,
 		FormatDebug(client_domain, "command returned %i", int(ret));
 		if (IsExpired())
 			return CommandResult::CLOSE;
-		else if (ret != CommandResult::OK)
+		if (ret != CommandResult::OK)
 			return ret;
-		else if (list_ok)
+		if (list_ok)
 			Write("list_OK\n");
 	}
 
@@ -80,7 +80,9 @@ Client::ProcessLine(char *line) noexcept
 		   IdleNotify(), which he can now evaluate */
 
 		return CommandResult::OK;
-	} else if (idle_waiting) {
+	}
+
+	if (idle_waiting) {
 		/* during idle mode, clients must not send anything
 		   except "noidle" */
 		FormatWarning(client_domain,
@@ -111,43 +113,45 @@ Client::ProcessLine(char *line) noexcept
 				command_success(*this);
 
 			return ret;
-		} else {
-			if (!cmd_list.Add(line)) {
-				FormatWarning(client_domain,
-					      "[%u] command list size "
-					      "is larger than the max (%lu)",
-					      num,
-					      (unsigned long)client_max_command_list_size);
-				return CommandResult::CLOSE;
-			}
-
-			return CommandResult::OK;
 		}
-	} else {
-		if (StringIsEqual(line, CLIENT_LIST_MODE_BEGIN)) {
-			cmd_list.Begin(false);
-			return CommandResult::OK;
-		} else if (StringIsEqual(line, CLIENT_LIST_OK_MODE_BEGIN)) {
-			cmd_list.Begin(true);
-			return CommandResult::OK;
-		} else {
-			const unsigned id = num;
 
-			FormatDebug(client_domain,
-				    "[%u] process command \"%s\"",
-				    id, line);
-			auto ret = command_process(*this, 0, line);
-			FormatDebug(client_domain,
-				    "[%u] command returned %i",
-				    id, int(ret));
-
-			if (IsExpired())
-				return CommandResult::CLOSE;
-
-			if (ret == CommandResult::OK)
-				command_success(*this);
-
-			return ret;
+		if (!cmd_list.Add(line)) {
+			FormatWarning(client_domain,
+				      "[%u] command list size "
+				      "is larger than the max (%lu)",
+				      num,
+				      (unsigned long)client_max_command_list_size);
+			return CommandResult::CLOSE;
 		}
+
+		return CommandResult::OK;
 	}
+
+	if (StringIsEqual(line, CLIENT_LIST_MODE_BEGIN)) {
+		cmd_list.Begin(false);
+		return CommandResult::OK;
+	}
+
+	if (StringIsEqual(line, CLIENT_LIST_OK_MODE_BEGIN)) {
+		cmd_list.Begin(true);
+		return CommandResult::OK;
+	}
+
+	const unsigned id = num;
+
+	FormatDebug(client_domain,
+		    "[%u] process command \"%s\"",
+		    id, line);
+	auto ret = command_process(*this, 0, line);
+	FormatDebug(client_domain,
+		    "[%u] command returned %i",
+		    id, int(ret));
+
+	if (IsExpired())
+		return CommandResult::CLOSE;
+
+	if (ret == CommandResult::OK)
+			command_success(*this);
+
+	return ret;
 }

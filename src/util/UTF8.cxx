@@ -173,25 +173,30 @@ SequenceLengthUTF8(char ch) noexcept
 {
 	if (IsASCII(ch))
 		return 1;
-	else if (IsLeading1(ch))
+
+	if (IsLeading1(ch))
 		/* 1 continuation */
 		return 2;
-	else if (IsLeading2(ch))
+
+	if (IsLeading2(ch))
 		/* 2 continuations */
 		return 3;
-	else if (IsLeading3(ch))
+
+	if (IsLeading3(ch))
 		/* 3 continuations */
 		return 4;
-	else if (IsLeading4(ch))
+
+	if (IsLeading4(ch))
 		/* 4 continuations */
 		return 5;
-	else if (IsLeading5(ch))
+
+	if (IsLeading5(ch))
 		/* 5 continuations */
 		return 6;
-	else
-		/* continuation without a prefix or some other illegal
-		   start byte */
-		return 0;
+
+	/* continuation without a prefix or some other illegal
+	   start byte */
+	return 0;
 
 }
 
@@ -227,25 +232,30 @@ SequenceLengthUTF8(const char *p) noexcept
 
 	if (IsASCII(ch))
 		return 1;
-	else if (IsLeading1(ch))
+
+	if (IsLeading1(ch))
 		/* 1 continuation */
 		return InnerSequenceLengthUTF8<1>(p);
-	else if (IsLeading2(ch))
+
+	if (IsLeading2(ch))
 		/* 2 continuations */
 		return InnerSequenceLengthUTF8<2>(p);
-	else if (IsLeading3(ch))
+
+	if (IsLeading3(ch))
 		/* 3 continuations */
 		return InnerSequenceLengthUTF8<3>(p);
-	else if (IsLeading4(ch))
+
+	if (IsLeading4(ch))
 		/* 4 continuations */
 		return InnerSequenceLengthUTF8<4>(p);
-	else if (IsLeading5(ch))
+
+	if (IsLeading5(ch))
 		/* 5 continuations */
 		return InnerSequenceLengthUTF8<5>(p);
-	else
-		/* continuation without a prefix or some other illegal
-		   start byte */
-		return 0;
+
+	/* continuation without a prefix or some other illegal
+	   start byte */
+	return 0;
 }
 
 gcc_pure

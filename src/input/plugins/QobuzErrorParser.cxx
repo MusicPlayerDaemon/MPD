@@ -55,8 +55,8 @@ QobuzErrorParser::OnEnd()
 	if (!message.empty())
 		throw FormatRuntimeError("Error from Qobuz: %s",
 					 message.c_str());
-	else
-		throw FormatRuntimeError("Status %u from Qobuz", status);
+
+	throw FormatRuntimeError("Status %u from Qobuz", status);
 }
 
 inline bool

@@ -99,10 +99,10 @@ parse_log_level(const char *value)
 		return LogLevel::DEFAULT;
 	if (0 == strcmp(value, "secure"))
 		return LOG_LEVEL_SECURE;
-	else if (0 == strcmp(value, "verbose"))
+	if (0 == strcmp(value, "verbose"))
 		return LogLevel::DEBUG;
-	else
-		throw FormatRuntimeError("unknown log level \"%s\"", value);
+
+	throw FormatRuntimeError("unknown log level \"%s\"", value);
 }
 
 #endif

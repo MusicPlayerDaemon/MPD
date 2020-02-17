@@ -36,11 +36,11 @@ StringFilter::MatchWithoutNegation(const char *s) const noexcept
 		return substring
 			? fold_case.IsIn(s)
 			: fold_case == s;
-	} else {
-		return substring
-			? StringFind(s, value.c_str()) != nullptr
-			: value == s;
 	}
+
+	return substring
+		? StringFind(s, value.c_str()) != nullptr
+		: value == s;
 }
 
 bool

@@ -125,7 +125,8 @@ ShoutOutput::ShoutOutput(const ConfigBlock &block)
 		    !StringIsEqual(mime_type, "audio/mpeg"))
 			throw FormatRuntimeError("you cannot stream \"%s\" to shoutcast, use mp3",
 						 mime_type);
-		else if (StringIsEqual(value, "shoutcast"))
+
+		if (StringIsEqual(value, "shoutcast"))
 			protocol = SHOUT_PROTOCOL_ICY;
 		else if (StringIsEqual(value, "icecast1"))
 			protocol = SHOUT_PROTOCOL_XAUDIOCAST;

@@ -201,7 +201,9 @@ faad_song_duration(DecoderBuffer &buffer, InputStream &is)
 		buffer.Clear();
 
 		return song_length;
-	} else if (data.size >= 5 && memcmp(data.data, "ADIF", 4) == 0) {
+	}
+
+	if (data.size >= 5 && memcmp(data.data, "ADIF", 4) == 0) {
 		/* obtain the duration from the ADIF header */
 
 		if (!is.KnownSize())
@@ -224,8 +226,9 @@ faad_song_duration(DecoderBuffer &buffer, InputStream &is)
 			return SignedSongTime::Negative();
 
 		return SongTime::FromScale(size, bit_rate / 8);
-	} else
-		return SignedSongTime::Negative();
+	}
+
+	return SignedSongTime::Negative();
 }
 
 static NeAACDecHandle

@@ -485,8 +485,9 @@ alsa_test_default_device()
 			    "Error opening default ALSA device: %s",
 			    snd_strerror(-ret));
 		return false;
-	} else
-		snd_pcm_close(handle);
+	}
+
+	snd_pcm_close(handle);
 
 	return true;
 }
@@ -862,11 +863,12 @@ AlsaOutput::DrainInternal()
 
 	if (result == 0)
 		return true;
-	else if (result == -EAGAIN)
+
+	if (result == -EAGAIN)
 		return false;
-	else
-		throw FormatRuntimeError("snd_pcm_drain() failed: %s",
-					 snd_strerror(-result));
+
+	throw FormatRuntimeError("snd_pcm_drain() failed: %s",
+				 snd_strerror(-result));
 }
 
 void

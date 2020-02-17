@@ -34,17 +34,24 @@ ParseReplayGainTagTemplate(ReplayGainInfo &info, const T t)
 	if ((value = t["replaygain_track_gain"]) != nullptr) {
 		info.track.gain = ParseFloat(value);
 		return true;
-	} else if ((value = t["replaygain_album_gain"]) != nullptr) {
+	}
+
+	if ((value = t["replaygain_album_gain"]) != nullptr) {
 		info.album.gain = ParseFloat(value);
 		return true;
-	} else if ((value = t["replaygain_track_peak"]) != nullptr) {
+	}
+
+	if ((value = t["replaygain_track_peak"]) != nullptr) {
 		info.track.peak = ParseFloat(value);
 		return true;
-	} else if ((value = t["replaygain_album_peak"]) != nullptr) {
+	}
+
+	if ((value = t["replaygain_album_peak"]) != nullptr) {
 		info.album.peak = ParseFloat(value);
 		return true;
-	} else
-		return false;
+	}
+
+	return false;
 
 }
 

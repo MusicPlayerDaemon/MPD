@@ -512,12 +512,13 @@ private:
 		if (slash == nullptr)
 			/* regular file */
 			return path;
-		else if (slash[1] == 0)
+
+		if (slash[1] == 0)
 			/* trailing slash: collection; strip the slash */
 			return {path, slash};
-		else
-			/* strange, better ignore it */
-			return nullptr;
+
+		/* strange, better ignore it */
+		return nullptr;
 	}
 
 protected:

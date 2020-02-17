@@ -95,9 +95,9 @@ NfsManager::GetConnection(const char *server, const char *export_name) noexcept
 					       server, export_name);
 		connections.insert_commit(*c, hint);
 		return *c;
-	} else {
-		return *result.first;
 	}
+
+	return *result.first;
 }
 
 void

@@ -179,9 +179,9 @@ dsdiff_read_prop(DecoderClient *client, InputStream &is,
 
 	if (prop_id.Equals("SND "))
 		return dsdiff_read_prop_snd(client, is, metadata, end_offset);
-	else
-		/* ignore unknown PROP chunk */
-		return dsdlib_skip_to(client, is, end_offset);
+
+	/* ignore unknown PROP chunk */
+	return dsdlib_skip_to(client, is, end_offset);
 }
 
 static void

@@ -248,7 +248,9 @@ UpdateWalk::SkipSymlink(const Directory *directory,
 	    !config.follow_outside_symlinks) {
 		/* ignore all symlinks */
 		return true;
-	} else if (config.follow_inside_symlinks &&
+	}
+
+	if (config.follow_inside_symlinks &&
 		   config.follow_outside_symlinks) {
 		/* consider all symlinks */
 		return false;

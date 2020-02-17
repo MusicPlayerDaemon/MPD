@@ -68,7 +68,9 @@ ParseTimeZoneOffsetRaw(const char *&s)
 	if (endptr == s + 4) {
 		s = endptr;
 		return std::make_pair(value / 100, value % 100);
-	} else if (endptr == s + 2) {
+	}
+
+	if (endptr == s + 2) {
 		s = endptr;
 
 		unsigned hours = value, minutes = 0;
@@ -82,8 +84,9 @@ ParseTimeZoneOffsetRaw(const char *&s)
 		}
 
 		return std::make_pair(hours, minutes);
-	} else
-		throw std::runtime_error("Failed to parse time zone offset");
+	}
+
+	throw std::runtime_error("Failed to parse time zone offset");
 }
 
 static std::chrono::system_clock::duration

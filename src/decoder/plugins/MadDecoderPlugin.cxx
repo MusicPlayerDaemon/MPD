@@ -533,7 +533,8 @@ parse_xing(struct xing *xing, struct mad_bitptr *ptr, int *oldbitlen) noexcept
 	const int bitsleft = 960 - (*oldbitlen - bitlen);
 	if (bitsleft < 0)
 		return false;
-	else if (bitsleft > 0) {
+
+	if (bitsleft > 0) {
 		mad_bit_skip(ptr, bitsleft);
 		bitlen -= bitsleft;
 	}
@@ -849,7 +850,9 @@ MadDecoder::SynthAndSubmit() noexcept
 	if (drop_start_frames > 0) {
 		drop_start_frames--;
 		return DecoderCommand::NONE;
-	} else if ((drop_end_frames > 0) &&
+	}
+
+	if ((drop_end_frames > 0) &&
 		   current_frame == max_frames - drop_end_frames) {
 		/* stop decoding, effectively dropping all remaining
 		   frames */

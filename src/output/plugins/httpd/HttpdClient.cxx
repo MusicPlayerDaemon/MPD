@@ -108,24 +108,24 @@ HttpdClient::HandleLine(const char *line) noexcept
 		/* after the request line, request headers follow */
 		state = State::HEADERS;
 		return true;
-	} else {
-		if (*line == 0) {
-			/* empty line: request is finished */
+	}
 
-			BeginResponse();
-			return true;
-		}
+	if (*line == 0) {
+		/* empty line: request is finished */
 
-		if (StringEqualsCaseASCII(line, "Icy-MetaData: 1", 15) ||
-		    StringEqualsCaseASCII(line, "Icy-MetaData:1", 14)) {
-			/* Send icy metadata */
-			metadata_requested = metadata_supported;
-			return true;
-		}
-
-		/* expect more request headers */
+		BeginResponse();
 		return true;
 	}
+
+	if (StringEqualsCaseASCII(line, "Icy-MetaData: 1", 15) ||
+	    StringEqualsCaseASCII(line, "Icy-MetaData:1", 14)) {
+		/* Send icy metadata */
+		metadata_requested = metadata_supported;
+		return true;
+	}
+
+	/* expect more request headers */
+	return true;
 }
 
 /**

@@ -102,9 +102,10 @@ ExtractHost(const char *src) noexcept
 					result.end = FindIPv6End(src + 1);
 					result.host = {hostname, result.end};
 					return result;
-				} else
-					/* remember the position of the first colon */
-					colon = src;
+				}
+
+				/* remember the position of the first colon */
+				colon = src;
 			}
 
 			++src;

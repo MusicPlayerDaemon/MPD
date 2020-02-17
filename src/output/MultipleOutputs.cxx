@@ -243,7 +243,9 @@ MultipleOutputs::Open(const AudioFormat audio_format)
 		/* close all devices if there was an error */
 		Close();
 		throw std::runtime_error("All audio outputs are disabled");
-	} else if (!ret) {
+	}
+
+	if (!ret) {
 		/* close all devices if there was an error */
 		Close();
 

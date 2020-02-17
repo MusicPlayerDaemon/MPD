@@ -350,9 +350,11 @@ playlist::GetNextPosition() const noexcept
 
 	if (queue.single != SingleMode::OFF && queue.repeat)
 		return queue.OrderToPosition(current);
-	else if (queue.IsValidOrder(current + 1))
+
+	if (queue.IsValidOrder(current + 1))
 		return queue.OrderToPosition(current + 1);
-	else if (queue.repeat)
+
+	if (queue.repeat)
 		return queue.OrderToPosition(0);
 
 	return -1;

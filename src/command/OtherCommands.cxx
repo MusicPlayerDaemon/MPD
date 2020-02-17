@@ -260,12 +260,12 @@ handle_update(Response &r, Database &db,
 	if (id > 0) {
 		r.Format("updating_db: %i\n", id);
 		return CommandResult::OK;
-	} else {
-		/* Database::Update() has returned 0 without setting
-		   the Error: the method is not implemented */
-		r.Error(ACK_ERROR_NO_EXIST, "Not implemented");
-		return CommandResult::ERROR;
 	}
+
+	/* Database::Update() has returned 0 without setting
+	   the Error: the method is not implemented */
+	r.Error(ACK_ERROR_NO_EXIST, "Not implemented");
+	return CommandResult::ERROR;
 }
 
 #endif

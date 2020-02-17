@@ -108,18 +108,18 @@ LocateUri(UriPluginKind kind,
 				     , storage
 #endif
 				     );
-	} else if (PathTraitsUTF8::IsAbsolute(uri))
+	}
+	if (PathTraitsUTF8::IsAbsolute(uri))
 		return LocateFileUri(uri, client
 #ifdef ENABLE_DATABASE
 				     , storage
 #endif
 				     );
-	else if (uri_has_scheme(uri))
+	if (uri_has_scheme(uri))
 		return LocateAbsoluteUri(kind, uri
 #ifdef ENABLE_DATABASE
 					 , storage
 #endif
 					 );
-	else
-		return LocatedUri(LocatedUri::Type::RELATIVE, uri);
+	return LocatedUri(LocatedUri::Type::RELATIVE, uri);
 }

@@ -53,9 +53,9 @@ LookupFile(Path pathname)
 			if (file_info.IsRegular()) {
 				//so the upper should be file
 				return {AllocatedPath::FromFS(buffer.c_str()), AllocatedPath::FromFS(slash + 1)};
-			} else {
-				return {};
 			}
+
+			return {};
 		} catch (const std::system_error &e) {
 			if (!IsPathNotFound(e))
 				throw;

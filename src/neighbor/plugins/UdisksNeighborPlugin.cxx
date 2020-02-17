@@ -237,13 +237,16 @@ UdisksNeighborExplorer::HandleMessage(DBusConnection *, DBusMessage *message) no
 			});
 
 		return DBUS_HANDLER_RESULT_HANDLED;
-	} else if (dbus_message_is_signal(message, DBUS_OM_INTERFACE,
+	}
+
+	if (dbus_message_is_signal(message, DBUS_OM_INTERFACE,
 					  "InterfacesRemoved") &&
 		   dbus_message_has_signature(message, InterfacesRemovedType::value)) {
 		Remove(ReadMessageIter(*message).GetString());
 		return DBUS_HANDLER_RESULT_HANDLED;
-	} else
-		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+	}
+
+	return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 }
 
 DBusHandlerResult

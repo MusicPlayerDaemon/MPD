@@ -90,10 +90,10 @@ NextSegment(const char *&uri_r)
 	if (slash == nullptr) {
 		uri_r += strlen(uri);
 		return std::string(uri);
-	} else {
-		uri_r = slash + 1;
-		return std::string(uri, slash);
 	}
+
+	uri_r = slash + 1;
+	return std::string(uri, slash);
 }
 
 const CompositeStorage::Directory *

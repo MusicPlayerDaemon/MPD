@@ -137,12 +137,12 @@ tag_pool_dup_item(TagItem *item) noexcept
 	if (slot->ref < TagPoolSlot::MAX_REF) {
 		++slot->ref;
 		return item;
-	} else {
-		/* the reference counter overflows above MAX_REF;
-		   obtain a reference to a different TagPoolSlot which
-		   isn't yet "full" */
-		return tag_pool_get_item(item->type, item->value);
 	}
+
+	/* the reference counter overflows above MAX_REF;
+	   obtain a reference to a different TagPoolSlot which
+	   isn't yet "full" */
+	return tag_pool_get_item(item->type, item->value);
 }
 
 void

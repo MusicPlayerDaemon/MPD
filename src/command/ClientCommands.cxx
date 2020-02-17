@@ -90,7 +90,9 @@ handle_tagtypes(Client &client, Request request, Response &r)
 
 		client.tag_mask = TagMask::All();
 		return CommandResult::OK;
-	} else if (StringIsEqual(cmd, "clear")) {
+	}
+
+	if (StringIsEqual(cmd, "clear")) {
 		if (!request.empty()) {
 			r.Error(ACK_ERROR_ARG, "Too many arguments");
 			return CommandResult::ERROR;
@@ -98,14 +100,18 @@ handle_tagtypes(Client &client, Request request, Response &r)
 
 		client.tag_mask = TagMask::None();
 		return CommandResult::OK;
-	} else if (StringIsEqual(cmd, "enable")) {
+	}
+
+	if (StringIsEqual(cmd, "enable")) {
 		client.tag_mask |= ParseTagMask(request);
 		return CommandResult::OK;
-	} else if (StringIsEqual(cmd, "disable")) {
+	}
+
+	if (StringIsEqual(cmd, "disable")) {
 		client.tag_mask &= ~ParseTagMask(request);
 		return CommandResult::OK;
-	} else {
-		r.Error(ACK_ERROR_ARG, "Unknown sub command");
-		return CommandResult::ERROR;
 	}
+
+	r.Error(ACK_ERROR_ARG, "Unknown sub command");
+	return CommandResult::ERROR;
 }

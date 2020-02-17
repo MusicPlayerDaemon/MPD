@@ -43,14 +43,16 @@ Queue::GetNextOrder(unsigned _order) const noexcept
 
 	if (single != SingleMode::OFF && repeat && !consume)
 		return _order;
-	else if (_order + 1 < length)
+
+	if (_order + 1 < length)
 		return _order + 1;
-	else if (repeat && (_order > 0 || !consume))
+
+	if (repeat && (_order > 0 || !consume))
 		/* restart at first song */
 		return 0;
-	else
-		/* end of queue */
-		return -1;
+
+	/* end of queue */
+	return -1;
 }
 
 void

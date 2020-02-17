@@ -288,8 +288,7 @@ spl_clear(const char *utf8path)
 		if (IsFileNotFound(e))
 			throw PlaylistError(PlaylistResult::NO_SUCH_LIST,
 					    "No such playlist");
-		else
-			throw;
+		throw;
 	}
 
 	idle_add(IDLE_STORED_PLAYLIST);
@@ -307,8 +306,7 @@ spl_delete(const char *name_utf8)
 		if (IsFileNotFound(e))
 			throw PlaylistError(PlaylistResult::NO_SUCH_LIST,
 					    "No such playlist");
-		else
-			throw;
+		throw;
 	}
 
 	idle_add(IDLE_STORED_PLAYLIST);
@@ -374,8 +372,7 @@ spl_rename_internal(Path from_path_fs, Path to_path_fs)
 		if (IsFileNotFound(e))
 			throw PlaylistError(PlaylistResult::NO_SUCH_LIST,
 					    "No such playlist");
-		else
-			throw;
+		throw;
 	}
 
 	idle_add(IDLE_STORED_PLAYLIST);

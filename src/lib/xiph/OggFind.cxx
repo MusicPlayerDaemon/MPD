@@ -31,7 +31,9 @@ OggFindEOS(OggSyncState &oy, ogg_stream_state &os, ogg_packet &packet)
 				return false;
 
 			continue;
-		} else if (r > 0 && packet.e_o_s)
+		}
+
+		if (r > 0 && packet.e_o_s)
 			return true;
 	}
 }

@@ -307,9 +307,11 @@ command_lookup(const char *name) noexcept
 		const auto cmp = strcmp(name, commands[i].cmd);
 		if (cmp == 0)
 			return &commands[i];
-		else if (cmp < 0)
+
+		if (cmp < 0)
 			b = i;
-		else if (cmp > 0)
+
+		if (cmp > 0)
 			a = i + 1;
 	} while (a < b);
 
@@ -338,16 +340,21 @@ command_check_request(const struct command *cmd, Response &r,
 			      "wrong number of arguments for \"%s\"",
 			      cmd->cmd);
 		return false;
-	} else if (args.size < unsigned(min)) {
+	}
+
+	if (args.size < unsigned(min)) {
 		r.FormatError(ACK_ERROR_ARG,
 			      "too few arguments for \"%s\"", cmd->cmd);
 		return false;
-	} else if (max >= 0 && args.size > unsigned(max)) {
+	}
+
+	if (max >= 0 && args.size > unsigned(max)) {
 		r.FormatError(ACK_ERROR_ARG,
 			      "too many arguments for \"%s\"", cmd->cmd);
 		return false;
-	} else
-		return true;
+	}
+
+	return true;
 }
 
 static const struct command *

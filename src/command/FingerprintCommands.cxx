@@ -213,11 +213,14 @@ GetChromaprintCommand::DecodeFile(const char *suffix, InputStream &is,
 	if (plugin.file_decode != nullptr) {
 		plugin.FileDecode(*this, path);
 		return IsReady();
-	} else if (plugin.stream_decode != nullptr) {
+	}
+
+	if (plugin.stream_decode != nullptr) {
 		plugin.StreamDecode(*this, is);
 		return IsReady();
-	} else
-		return false;
+	}
+
+	return false;
 }
 
 inline void

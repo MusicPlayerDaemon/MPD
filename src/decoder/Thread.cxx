@@ -285,12 +285,15 @@ TryDecoderFile(DecoderBridge &bridge, Path path_fs, const char *suffix,
 	if (plugin.file_decode != nullptr) {
 		const std::lock_guard<Mutex> protect(dc.mutex);
 		return decoder_file_decode(plugin, bridge, path_fs);
-	} else if (plugin.stream_decode != nullptr) {
+	}
+
+	if (plugin.stream_decode != nullptr) {
 		std::unique_lock<Mutex> lock(dc.mutex);
 		return decoder_stream_decode(plugin, bridge, input_stream,
 					     lock);
-	} else
-		return false;
+	}
+
+	return false;
 }
 
 /**

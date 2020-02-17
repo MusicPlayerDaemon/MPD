@@ -80,8 +80,8 @@ cue_next_value(char **pp)
 
 	if (*p == '"')
 		return cue_next_quoted(p + 1, pp);
-	else
-		return cue_next_word(p, pp);
+
+	return cue_next_word(p, pp);
 }
 
 static void
@@ -110,10 +110,10 @@ CueParser::GetCurrentTag() noexcept
 {
 	if (state == HEADER)
 		return &header_tag;
-	else if (state == TRACK)
+	if (state == TRACK)
 		return &song_tag;
-	else
-		return nullptr;
+
+	return nullptr;
 }
 
 static int

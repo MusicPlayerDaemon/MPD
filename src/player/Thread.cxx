@@ -512,7 +512,9 @@ Player::CheckDecoderStartup(std::unique_lock<Mutex> &lock) noexcept
 	if (!ForwardDecoderError()) {
 		/* the decoder failed */
 		return false;
-	} else if (!dc.IsStarting()) {
+	}
+
+	if (!dc.IsStarting()) {
 		/* the decoder is ready and ok */
 
 		if (output_open &&
@@ -563,13 +565,13 @@ Player::CheckDecoderStartup(std::unique_lock<Mutex> &lock) noexcept
 		}
 
 		return true;
-	} else {
-		/* the decoder is not yet ready; wait
-		   some more */
-		dc.WaitForDecoder(lock);
-
-		return true;
 	}
+
+	/* the decoder is not yet ready; wait
+	   some more */
+	dc.WaitForDecoder(lock);
+
+	return true;
 }
 
 bool
@@ -645,33 +647,33 @@ Player::SeekDecoder(std::unique_lock<Mutex> &lock) noexcept
 		assert(xfade_state == CrossFadeState::UNKNOWN);
 
 		return true;
-	} else {
-		if (!IsDecoderAtCurrentSong()) {
-			/* the decoder is already decoding the "next" song,
-			   but it is the same song file; exchange the pipe */
-			ReplacePipe(dc.pipe);
-		}
+	}
 
-		pc.next_song.reset();
-		queued = false;
+	if (!IsDecoderAtCurrentSong()) {
+		/* the decoder is already decoding the "next" song,
+		   but it is the same song file; exchange the pipe */
+		ReplacePipe(dc.pipe);
+	}
 
-		if (decoder_starting) {
-			/* wait for the decoder to complete
-			   initialization; postpone the SEEK
-			   command */
+	pc.next_song.reset();
+	queued = false;
 
-			pending_seek = pc.seek_time;
-			pc.seeking = true;
-			pc.CommandFinished();
-			return true;
-		} else {
-			/* send the SEEK command */
+	if (decoder_starting) {
+		/* wait for the decoder to complete
+		   initialization; postpone the SEEK
+		   command */
 
-			if (!SeekDecoder(lock, pc.seek_time)) {
-				pc.CommandFinished();
-				return false;
-			}
-		}
+		pending_seek = pc.seek_time;
+		pc.seeking = true;
+		pc.CommandFinished();
+		return true;
+	}
+
+	/* send the SEEK command */
+
+	if (!SeekDecoder(lock, pc.seek_time)) {
+		pc.CommandFinished();
+		return false;
 	}
 
 	pc.CommandFinished();
@@ -1007,10 +1009,10 @@ Player::Run() noexcept
 
 				dc.WaitForDecoder(lock);
 				continue;
-			} else {
-				/* buffering is complete */
-				buffering = false;
 			}
+
+			/* buffering is complete */
+			buffering = false;
 		}
 
 		if (dc.IsIdle() && queued && IsDecoderAtCurrentSong()) {

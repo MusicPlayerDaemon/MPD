@@ -298,14 +298,18 @@ SongFilter::ParseExpression(const char *&s, bool fold_case)
 			throw std::runtime_error("')' expected");
 		s = StripLeft(s + 1);
 		return std::make_unique<ModifiedSinceSongFilter>(ParseTimeStamp(value_s.c_str()));
-	} else if (type == LOCATE_TAG_BASE_TYPE) {
+	}
+
+	if (type == LOCATE_TAG_BASE_TYPE) {
 		auto value = ExpectQuoted(s);
 		if (*s != ')')
 			throw std::runtime_error("')' expected");
 		s = StripLeft(s + 1);
 
 		return std::make_unique<BaseSongFilter>(std::move(value));
-	} else if (type == LOCATE_TAG_AUDIO_FORMAT) {
+	}
+
+	if (type == LOCATE_TAG_AUDIO_FORMAT) {
 		bool mask;
 		if (s[0] == '=' && s[1] == '=')
 			mask = false;
@@ -324,22 +328,22 @@ SongFilter::ParseExpression(const char *&s, bool fold_case)
 		s = StripLeft(s + 1);
 
 		return std::make_unique<AudioFormatSongFilter>(value);
-	} else {
-		auto string_filter = ParseStringFilter(s, fold_case);
-		if (*s != ')')
-			throw std::runtime_error("')' expected");
-
-		s = StripLeft(s + 1);
-
-		if (type == LOCATE_TAG_ANY_TYPE)
-			type = TAG_NUM_OF_ITEM_TYPES;
-
-		if (type == LOCATE_TAG_FILE_TYPE)
-			return std::make_unique<UriSongFilter>(std::move(string_filter));
-
-		return std::make_unique<TagSongFilter>(TagType(type),
-						       std::move(string_filter));
 	}
+
+	auto string_filter = ParseStringFilter(s, fold_case);
+	if (*s != ')')
+		throw std::runtime_error("')' expected");
+
+	s = StripLeft(s + 1);
+
+	if (type == LOCATE_TAG_ANY_TYPE)
+		type = TAG_NUM_OF_ITEM_TYPES;
+
+	if (type == LOCATE_TAG_FILE_TYPE)
+		return std::make_unique<UriSongFilter>(std::move(string_filter));
+
+	return std::make_unique<TagSongFilter>(TagType(type),
+					       std::move(string_filter));
 }
 
 void

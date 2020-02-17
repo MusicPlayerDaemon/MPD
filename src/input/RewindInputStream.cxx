@@ -92,27 +92,26 @@ RewindInputStream::Read(std::unique_lock<Mutex> &lock,
 		offset += read_size;
 
 		return read_size;
-	} else {
-		/* pass method call to underlying stream */
-
-		size_t nbytes = input->Read(lock, ptr, read_size);
-
-		if (input->GetOffset() > (offset_type)sizeof(buffer))
-			/* disable buffering */
-			tail = 0;
-		else if (tail == (size_t)offset) {
-			/* append to buffer */
-
-			memcpy(buffer + tail, ptr, nbytes);
-			tail += nbytes;
-
-			assert(tail == (size_t)input->GetOffset());
-		}
-
-		CopyAttributes();
-
-		return nbytes;
 	}
+
+	/* pass method call to underlying stream */
+
+	size_t nbytes = input->Read(lock, ptr, read_size);
+
+	if (input->GetOffset() > (offset_type)sizeof(buffer))
+		/* disable buffering */
+		tail = 0;
+	else if (tail == (size_t)offset) {
+		/* append to buffer */
+
+		memcpy(buffer + tail, ptr, nbytes);
+		tail += nbytes;
+
+		assert(tail == (size_t)input->GetOffset());
+	}
+
+	CopyAttributes();
+	return nbytes;
 }
 
 void

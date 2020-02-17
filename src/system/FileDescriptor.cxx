@@ -231,8 +231,9 @@ FileDescriptor::CheckDuplicate(FileDescriptor new_fd) noexcept
 	if (*this == new_fd) {
 		DisableCloseOnExec();
 		return true;
-	} else
-		return Duplicate(new_fd);
+	}
+
+	return Duplicate(new_fd);
 }
 
 #endif

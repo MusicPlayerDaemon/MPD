@@ -85,7 +85,9 @@ GunzipReader::Read(void *data, size_t size)
 		if (result == Z_STREAM_END) {
 			eof = true;
 			return size - z.avail_out;
-		} else if (result != Z_OK)
+		}
+
+		if (result != Z_OK)
 			throw ZlibError(result);
 
 		buffer.Consume(r.size - z.avail_in);

@@ -28,8 +28,8 @@ AlsaNonBlockPcm::PrepareSockets(MultiSocketMonitor &m, snd_pcm_t *pcm)
 	if (count <= 0) {
 		if (count == 0)
 			throw std::runtime_error("snd_pcm_poll_descriptors_count() failed");
-		else
-			throw FormatRuntimeError("snd_pcm_poll_descriptors_count() failed: %s",
+
+		throw FormatRuntimeError("snd_pcm_poll_descriptors_count() failed: %s",
 						 snd_strerror(-count));
 	}
 
@@ -39,8 +39,8 @@ AlsaNonBlockPcm::PrepareSockets(MultiSocketMonitor &m, snd_pcm_t *pcm)
 	if (count <= 0) {
 		if (count == 0)
 			throw std::runtime_error("snd_pcm_poll_descriptors() failed");
-		else
-			throw FormatRuntimeError("snd_pcm_poll_descriptors() failed: %s",
+
+		throw FormatRuntimeError("snd_pcm_poll_descriptors() failed: %s",
 						 snd_strerror(-count));
 	}
 
