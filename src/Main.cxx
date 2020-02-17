@@ -222,7 +222,7 @@ glue_db_init_and_load(Instance &instance, const ConfigData &config)
 
 	instance.update = new UpdateService(config,
 					    instance.event_loop, *sdb,
-					    static_cast<CompositeStorage &>(*instance.storage),
+					    dynamic_cast<CompositeStorage &>(*instance.storage),
 					    instance);
 
 	/* run database update after daemonization? */
