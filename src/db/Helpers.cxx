@@ -34,7 +34,7 @@ struct StringLess {
 	}
 };
 
-typedef std::set<const char *, StringLess> StringSet;
+using StringSet = std::set<const char *, StringLess>;
 
 static void
 StatsVisitTag(DatabaseStats &stats, StringSet &artists, StringSet &albums,
