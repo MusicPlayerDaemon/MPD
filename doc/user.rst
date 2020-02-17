@@ -185,47 +185,6 @@ ABI is the Android ABI to be built, e.g. ":code:`arm64-v8a`".
 
 This downloads various library sources, and then configures and builds :program:`MPD`. 
 
-systemd socket activation
--------------------------
-
-Using systemd, you can launch :program:`MPD` on demand when the first client attempts to connect.
-
-:program:`MPD` comes with two systemd unit files: a "service" unit and
-a "socket" unit.  These will be installed to the directory specified
-with :code:`-Dsystemd_system_unit_dir=...`,
-e.g. :file:`/lib/systemd/system`.
-
-To enable socket activation, type:
-
-.. code-block:: none
-
-    systemctl enable mpd.socket
-    systemctl start mpd.socket
-
-In this configuration, :program:`MPD` will ignore the :ref:`listener
-settings <listeners>` (``bind_to_address`` and ``port``).
-
-systemd user unit
------------------
-
-You can launch :program:`MPD` as a systemd user unit.  These will be
-installed to the directory specified with
-:code:`-Dsystemd_user_unit_dir=...`,
-e.g. :file:`/usr/lib/systemd/user` or
-:file:`$HOME/.local/share/systemd/user`.
-
-Once the user unit is installed, you can start and stop :program:`MPD` like any other service:
-
-.. code-block:: none
-
-    systemctl --user start mpd
-
-To auto-start :program:`MPD` upon login, type:
-
-.. code-block:: none
-
-    systemctl --user enable mpd
-
 Configuration
 *************
 
@@ -847,6 +806,78 @@ The CLS column shows the CPU scheduler; TS is the normal scheduler; FF and RR ar
 
 Using MPD
 *********
+
+Starting and Stopping MPD
+-------------------------
+
+The simplest (but not the best) way to start :program:`MPD` is to
+simply type::
+
+ mpd
+
+This will start :program:`MPD` as a daemon process (which means it
+detaches from your terminal and continues to run in background).  To
+stop it, send ``SIGTERM`` to the process; if you have configured a
+``pid_file``, you can use the ``--kill`` option::
+
+ mpd --kill
+
+The best way to manage :program:`MPD` processes is to use a service
+manager such as :program:`systemd`.
+
+systemd
+^^^^^^^
+
+:program:`MPD` ships with :program:`systemd` service units.
+
+If you have installed :program:`MPD` with your operating system's
+package manager, these are probably preinstalled, so you can start and
+stop :program:`MPD` this way (like any other service)::
+
+ systemctl start mpd
+ systemctl stop mpd
+
+systemd socket activation
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Using systemd, you can launch :program:`MPD` on demand when the first client attempts to connect.
+
+:program:`MPD` comes with two systemd unit files: a "service" unit and
+a "socket" unit.  These will be installed to the directory specified
+with :code:`-Dsystemd_system_unit_dir=...`,
+e.g. :file:`/lib/systemd/system`.
+
+To enable socket activation, type:
+
+.. code-block:: none
+
+    systemctl enable mpd.socket
+    systemctl start mpd.socket
+
+In this configuration, :program:`MPD` will ignore the :ref:`listener
+settings <listeners>` (``bind_to_address`` and ``port``).
+
+systemd user unit
+^^^^^^^^^^^^^^^^^
+
+You can launch :program:`MPD` as a systemd user unit.  These will be
+installed to the directory specified with
+:code:`-Dsystemd_user_unit_dir=...`,
+e.g. :file:`/usr/lib/systemd/user` or
+:file:`$HOME/.local/share/systemd/user`.
+
+Once the user unit is installed, you can start and stop :program:`MPD` like any other service:
+
+.. code-block:: none
+
+    systemctl --user start mpd
+
+To auto-start :program:`MPD` upon login, type:
+
+.. code-block:: none
+
+    systemctl --user enable mpd
+
 
 The client
 ----------
