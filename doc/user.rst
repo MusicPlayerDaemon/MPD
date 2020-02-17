@@ -879,6 +879,15 @@ To auto-start :program:`MPD` upon login, type:
     systemctl --user enable mpd
 
 
+Signals
+-------
+
+:program:`MPD` understands the following UNIX signals:
+
+- ``SIGTERM``, ``SIGINT``: shut down MPD
+- ``SIGHUP``: reopen log files (send this after log rotation)
+
+
 The client
 ----------
 
