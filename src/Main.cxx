@@ -464,7 +464,7 @@ MainConfigured(const struct options &options, const ConfigData &raw_config)
 #ifndef ANDROID
 	setup_log_output();
 
-	const ScopeSignalHandlersInit signal_handlers_init(instance.event_loop);
+	const ScopeSignalHandlersInit signal_handlers_init(instance);
 #endif
 
 	instance.io_thread.Start();

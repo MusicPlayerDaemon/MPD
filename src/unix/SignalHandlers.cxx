@@ -18,13 +18,13 @@
  */
 
 #include "SignalHandlers.hxx"
+#include "Instance.hxx"
 #include "event/SignalMonitor.hxx"
 
 #ifndef _WIN32
 
 #include "Log.hxx"
 #include "LogInit.hxx"
-#include "event/Loop.hxx"
 #include "system/Error.hxx"
 #include "util/Domain.hxx"
 
@@ -56,8 +56,10 @@ handle_reload_event(void *) noexcept
 #endif
 
 void
-SignalHandlersInit(EventLoop &loop)
+SignalHandlersInit(Instance &instance)
 {
+	auto &loop = instance.event_loop;
+
 	SignalMonitorInit(loop);
 
 #ifndef _WIN32
