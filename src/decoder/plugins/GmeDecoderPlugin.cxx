@@ -223,7 +223,7 @@ ScanGmeInfo(const gme_info_t &info, unsigned song_num, int track_count,
 	if (track_count > 1)
 		handler.OnTag(TAG_TRACK, StringFormat<16>("%u", song_num + 1).c_str());
 
-	if (info.song != nullptr) {
+	if (info.song[0] != '\0') {
 		if (track_count > 1) {
 			/* start numbering subtunes from 1 */
 			const auto tag_title =
@@ -235,16 +235,16 @@ ScanGmeInfo(const gme_info_t &info, unsigned song_num, int track_count,
 			handler.OnTag(TAG_TITLE, info.song);
 	}
 
-	if (info.author != nullptr)
+	if (info.author[0] != '\0')
 		handler.OnTag(TAG_ARTIST, info.author);
 
-	if (info.game != nullptr)
+	if (info.game[0] != '\0')
 		handler.OnTag(TAG_ALBUM, info.game);
 
-	if (info.comment != nullptr)
+	if (info.comment[0] != '\0')
 		handler.OnTag(TAG_COMMENT, info.comment);
 
-	if (info.copyright != nullptr)
+	if (info.copyright[0] != '\0')
 		handler.OnTag(TAG_DATE, info.copyright);
 }
 
