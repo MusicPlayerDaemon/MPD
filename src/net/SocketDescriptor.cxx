@@ -322,12 +322,6 @@ SocketDescriptor::SetTcpUserTimeout(const unsigned &milliseconds) noexcept
 }
 
 bool
-SocketDescriptor::SetV6Only(bool value) noexcept
-{
-	return SetBoolOption(IPPROTO_IPV6, IPV6_V6ONLY, value);
-}
-
-bool
 SocketDescriptor::SetBindToDevice(const char *name) noexcept
 {
 	return SetOption(SOL_SOCKET, SO_BINDTODEVICE, name, strlen(name));
@@ -377,6 +371,12 @@ SocketDescriptor::AddMembership(SocketAddress address) noexcept
 }
 
 #endif
+
+bool
+SocketDescriptor::SetV6Only(bool value) noexcept
+{
+	return SetBoolOption(IPPROTO_IPV6, IPV6_V6ONLY, value);
+}
 
 bool
 SocketDescriptor::Bind(SocketAddress address) noexcept
