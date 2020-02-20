@@ -117,7 +117,7 @@ CompositeStorage::Directory::Make(const char *uri)
 {
 	Directory *directory = this;
 	while (*uri != 0) {
-		const std::string name = NextSegment(uri);
+		auto name = NextSegment(uri);
 		auto i = directory->children.emplace(std::move(name),
 						     Directory());
 		directory = &i.first->second;
