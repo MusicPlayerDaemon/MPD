@@ -35,7 +35,7 @@ class ReadMessageIter;
 namespace UDisks2 {
 
 struct Object {
-	const std::string path;
+	std::string path;
 
 	std::string drive_id, block_id;
 
