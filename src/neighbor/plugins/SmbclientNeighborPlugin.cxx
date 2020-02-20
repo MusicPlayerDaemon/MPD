@@ -179,9 +179,9 @@ DetectServers() noexcept
 }
 
 gcc_pure
-static NeighborExplorer::List::const_iterator
-FindBeforeServerByURI(NeighborExplorer::List::const_iterator prev,
-		      NeighborExplorer::List::const_iterator end,
+static NeighborExplorer::List::iterator
+FindBeforeServerByURI(NeighborExplorer::List::iterator prev,
+		      NeighborExplorer::List::iterator end,
 		      const std::string &uri) noexcept
 {
 	for (auto i = std::next(prev); i != end; prev = i, i = std::next(prev))
