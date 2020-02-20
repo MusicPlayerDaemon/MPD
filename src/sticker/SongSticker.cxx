@@ -82,7 +82,7 @@ struct sticker_song_find_data {
 		     void *user_data);
 	void *user_data;
 };
-}
+} // namespace
 
 static void
 sticker_song_find_cb(const char *uri, const char *value, void *user_data)

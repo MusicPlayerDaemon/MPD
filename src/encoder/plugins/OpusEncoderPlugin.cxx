@@ -387,7 +387,7 @@ OpusEncoder::SendTag(const Tag &tag)
 	GenerateHeaders(&tag);
 }
 
-}
+} // namespace
 
 const EncoderPlugin opus_encoder_plugin = {
 	"opus",

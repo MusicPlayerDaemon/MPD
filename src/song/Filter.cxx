@@ -90,10 +90,8 @@ SongFilter::SongFilter(TagType tag, const char *value, bool fold_case)
 							   StringFilter(value, fold_case, fold_case, false)));
 }
 
-SongFilter::~SongFilter()
-{
-	/* this destructor exists here just so it won't get inlined */
-}
+/* this destructor exists here just so it won't get inlined */
+SongFilter::~SongFilter() = default;
 
 std::string
 SongFilter::ToExpression() const noexcept

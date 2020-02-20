@@ -770,7 +770,7 @@ ReceiveEntities(struct mpd_connection *connection) noexcept
 	std::list<ProxyEntity> entities;
 	struct mpd_entity *entity;
 	while ((entity = mpd_recv_entity(connection)) != nullptr)
-		entities.push_back(ProxyEntity(entity));
+		entities.emplace_back(entity);
 
 	mpd_response_finish(connection);
 	return entities;

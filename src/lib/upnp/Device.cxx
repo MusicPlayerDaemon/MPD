@@ -23,10 +23,8 @@
 
 #include <string.h>
 
-UPnPDevice::~UPnPDevice() noexcept
-{
-	/* this destructor exists here just so it won't get inlined */
-}
+/* this destructor exists here just so it won't get inlined */
+UPnPDevice::~UPnPDevice() noexcept = default;
 
 /**
  * An XML parser which constructs an UPnP device object from the

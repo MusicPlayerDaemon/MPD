@@ -56,4 +56,4 @@ Glue::OnDBusClosed() noexcept
 	// TODO: reconnect
 }
 
-}
+} // namespace ODBus
