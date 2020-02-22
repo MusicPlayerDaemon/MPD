@@ -25,6 +25,9 @@
 #ifndef MPD_AUDIO_PARSER_HXX
 #define MPD_AUDIO_PARSER_HXX
 
+#include "Compiler.h"
+#include "AudioFormat.hxx"
+
 struct AudioFormat;
 
 /**
@@ -38,5 +41,8 @@ struct AudioFormat;
  */
 AudioFormat
 ParseAudioFormat(const char *src, bool mask);
+
+SampleFormat
+ParseSampleFormat(const char *src, bool mask, const char **endptr_r);
 
 #endif
