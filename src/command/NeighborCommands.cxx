@@ -25,6 +25,7 @@
 #include "Instance.hxx"
 #include "neighbor/Glue.hxx"
 #include "neighbor/Info.hxx"
+#include "db/plugins/upnp/UpnpDatabasePlugin.hxx"
 
 #include <string>
 
@@ -49,5 +50,13 @@ handle_listneighbors(Client &client, gcc_unused Request args, Response &r)
 			 "name: %s\n",
 			 i.uri.c_str(),
 			 i.display_name.c_str());
+	return CommandResult::OK;
+}
+
+CommandResult
+handle_clear_upnp_cache(gcc_unused Client &client, gcc_unused Request args, gcc_unused Response &r)
+{
+	ClearUpnpCache();
+
 	return CommandResult::OK;
 }
