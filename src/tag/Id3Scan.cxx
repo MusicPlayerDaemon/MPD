@@ -153,6 +153,91 @@ tag_id3_import_text(struct id3_tag *tag, const char *id, TagType type,
 					  handler, handler_ctx);
 }
 
+static inline void
+tag_id3_handler_invoke_cover(const TagHandler &handler, void *ctx,
+			CoverType type, const char *value, size_t length=0)
+{
+	assert((unsigned)type < COVER_NUM_OF_ITEM_TYPES);
+	assert(value != nullptr);
+	assert(handler.cover != nullptr);
+
+	handler.cover(type, value, ctx, length);
+}
+
+static bool
+tag_id3_copy_cover_paramer(CoverType type, unsigned value,
+						 const TagHandler &handler, void *handler_ctx)
+{
+	char buf[21];
+
+	if (snprintf(buf, sizeof(buf)-1, "%u", value)) {
+		tag_id3_handler_invoke_cover(handler, handler_ctx, type, (const char*)buf);
+		return true;
+	}
+
+	return false;
+}
+
+/**
+ * Import a "cover frame" (ID3v2.4.0 section 4.2).
+ */
+static bool
+tag_id3_import_cover_frame(const struct id3_frame *frame,
+			  const TagHandler &handler, void *handler_ctx)
+{
+	if (frame->nfields != 5) {
+		return false;
+	}
+
+	const id3_field *field = id3_frame_field(frame, 0);
+	if (field == nullptr ||
+		field->type != ID3_FIELD_TYPE_TEXTENCODING) {
+		return false;
+	}
+
+	//mime  image/jpeg
+	id3_latin1_t const * latin1 = nullptr;
+	field = id3_frame_field(frame, 1);
+	if (field != nullptr &&
+		field->type == ID3_FIELD_TYPE_LATIN1) {
+		latin1 = id3_field_getlatin1(field);
+	}
+
+	field = id3_frame_field(frame, 4);
+	id3_byte_t const *binarydata = nullptr;
+	if (field != nullptr &&
+		field->type == ID3_FIELD_TYPE_BINARYDATA) {
+		id3_length_t length;
+		binarydata = id3_field_getbinarydata(field,&length);
+		if(binarydata != nullptr) {
+			tag_id3_copy_cover_paramer(COVER_TYPE, 0, handler, handler_ctx);
+			if (latin1 != nullptr) {
+				tag_handler_invoke_cover(handler, handler_ctx, COVER_MIME, (const char*)latin1);
+			}
+			tag_id3_copy_cover_paramer(COVER_WIDTH, 0, handler, handler_ctx);
+			tag_id3_copy_cover_paramer(COVER_HEIGHT, 0, handler, handler_ctx);
+			tag_id3_copy_cover_paramer(COVER_LENGTH, length, handler, handler_ctx);
+			tag_handler_invoke_cover(handler, handler_ctx, COVER_DATA, (const char*)binarydata, length);
+			return true;
+		}
+	}
+
+	return false;
+}
+
+/**
+ * Import Attached picture with the specified id (ID3v2.4.0 section
+ * 4.2).  This is a wrapper for tag_id3_import_cover_frame().
+ */
+static void
+tag_id3_import_cover(struct id3_tag *tag, const char *id,
+		    const TagHandler &handler, void *handler_ctx)
+{
+	const struct id3_frame *frame;
+	for (unsigned i=0; (frame=id3_tag_findframe(tag, id, i)) != nullptr; ++i)
+		tag_id3_import_cover_frame(frame, handler, handler_ctx);
+}
+
 /**
  * Import a "Comment frame" (ID3v2.4.0 section 4.10).  It
  * contains 4 fields:
@@ -293,6 +378,12 @@ void
 scan_id3_tag(struct id3_tag *tag,
 	     const TagHandler &handler, void *handler_ctx)
 {
+	if (handler.tag == nullptr &&
+		handler.duration == nullptr &&
+		handler.pair == nullptr) {
+		return;
+	}
+
 	tag_id3_import_text(tag, ID3_FRAME_ARTIST, TAG_ARTIST,
 			    handler, handler_ctx);
 	tag_id3_import_text(tag, ID3_FRAME_ALBUM_ARTIST,
@@ -328,6 +419,10 @@ scan_id3_tag(struct id3_tag *tag,
 
 	tag_id3_import_musicbrainz(tag, handler, handler_ctx);
 	tag_id3_import_ufid(tag, handler, handler_ctx);
+
+	if (handler.cover != nullptr) {
+		tag_id3_import_cover(tag, "APIC", handler, handler_ctx);
+	}
 }
 
 std::unique_ptr<Tag>
