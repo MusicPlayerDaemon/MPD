@@ -31,6 +31,7 @@
 #include "plugins/FlacPlaylistPlugin.hxx"
 #include "plugins/CuePlaylistPlugin.hxx"
 #include "plugins/EmbeddedCuePlaylistPlugin.hxx"
+#include "plugins/MpdPlaylistPlugin.hxx"
 #include "input/InputStream.hxx"
 #include "util/MimeType.hxx"
 #include "util/UriUtil.hxx"
@@ -43,6 +44,7 @@
 #include <string.h>
 
 const struct playlist_plugin *const playlist_plugins[] = {
+	&mpd_playlist_plugin,
 	&extm3u_playlist_plugin,
 	&m3u_playlist_plugin,
 	&pls_playlist_plugin,

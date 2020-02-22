@@ -28,9 +28,12 @@
 #include "fs/AllocatedPath.hxx"
 #include "fs/Traits.hxx"
 #include "fs/FileSystem.hxx"
+#include "fs/NarrowPath.hxx"
 #include "fs/io/FileOutputStream.hxx"
 #include "fs/io/BufferedOutputStream.hxx"
 #include "util/UriUtil.hxx"
+#include "util/StringCompare.hxx"
+#include "external/jaijson/Serializer.hxx"
 
 #include <exception>
 
@@ -48,16 +51,22 @@ playlist_print_path(BufferedOutputStream &os, const Path path)
 }
 
 void
-playlist_print_song(BufferedOutputStream &os, const DetachedSong &song)
+playlist_print_song(BufferedOutputStream &os, const DetachedSong &song, bool full)
 {
-	const char *uri_utf8 = playlist_saveAbsolutePaths
-		? song.GetRealURI()
-		: song.GetURI();
+	if (full) {
+		auto s = str(song);
+		os.Write(s.c_str(), s.size());
+		os.Write("\n", 1);
+	} else {
+		const char *uri_utf8 = playlist_saveAbsolutePaths
+			? song.GetRealURI()
+			: song.GetURI();
 
-	try {
-		const auto uri_fs = AllocatedPath::FromUTF8Throw(uri_utf8);
-		playlist_print_path(os, uri_fs);
-	} catch (...) {
+		try {
+			const auto uri_fs = AllocatedPath::FromUTF8Throw(uri_utf8);
+			playlist_print_path(os, uri_fs);
+		} catch (...) {
+		}
 	}
 }
 
@@ -93,8 +102,12 @@ spl_save_queue(const char *name_utf8, const Queue &queue)
 	FileOutputStream fos(path_fs);
 	BufferedOutputStream bos(fos);
 
+	bool full = StringStartsWith(name_utf8, "upnp_");
+	if (full) {
+		bos.Write("#MPDM3U\n");
+	}
 	for (unsigned i = 0; i < queue.GetLength(); i++)
-		playlist_print_song(bos, queue.Get(i));
+		playlist_print_song(bos, queue.Get(i), full);
 
 	bos.Flush();
 	fos.Commit();

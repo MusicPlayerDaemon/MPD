@@ -1668,6 +1668,8 @@ libplaylist_plugins_a_SOURCES = \
 	src/playlist/plugins/M3uPlaylistPlugin.hxx \
 	src/playlist/plugins/PlsPlaylistPlugin.cxx \
 	src/playlist/plugins/PlsPlaylistPlugin.hxx \
+	src/playlist/plugins/MpdPlaylistPlugin.cxx \
+	src/playlist/plugins/MpdPlaylistPlugin.hxx \
 	src/playlist/PlaylistRegistry.cxx src/playlist/PlaylistRegistry.hxx
 libplaylist_plugins_a_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(EXPAT_CFLAGS) \

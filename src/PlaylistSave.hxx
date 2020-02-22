@@ -26,7 +26,7 @@ class BufferedOutputStream;
 class DetachedSong;
 
 void
-playlist_print_song(BufferedOutputStream &os, const DetachedSong &song);
+playlist_print_song(BufferedOutputStream &os, const DetachedSong &song, bool full=false);
 
 void
 playlist_print_uri(BufferedOutputStream &os, const char *uri);

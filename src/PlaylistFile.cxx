@@ -50,6 +50,7 @@
 #include <errno.h>
 
 static const char PLAYLIST_COMMENT = '#';
+static const char *MPD_PLAYLIST_BEGIN = "#MPDM3U";
 
 static unsigned playlist_max_length;
 bool playlist_saveAbsolutePaths = DEFAULT_PLAYLIST_SAVE_ABSOLUTE_PATHS;
@@ -183,12 +184,63 @@ SavePlaylistFile(const PlaylistFileContents &contents, const char *utf8path)
 	FileOutputStream fos(path_fs);
 	BufferedOutputStream bos(fos);
 
-	for (const auto &uri_utf8 : contents)
-		playlist_print_uri(bos, uri_utf8.c_str());
+	bool full = StringStartsWith(utf8path, "upnp_");
+	if (full) {
+		bos.Write(MPD_PLAYLIST_BEGIN);
+		bos.Write("\n");
+	}
+
+	for (const auto &song : contents)
+		playlist_print_song(bos, song, full);
 
 	bos.Flush();
 
 	fos.Commit();
+}
+
+bool
+is_mpd_playlist_file(const char *utf8path)
+try {
+	const auto path_fs = spl_map_to_fs(utf8path);
+	if (path_fs.IsNull())
+		return false;
+
+	TextFile file(path_fs);
+
+	char *s = file.ReadLine();
+	return (s != nullptr
+		&& strcmp(s, MPD_PLAYLIST_BEGIN) == 0);
+} catch (...) {
+	return false;
+}
+
+static PlaylistFileContents
+LoadPlaylistFileFull(TextFile &file)
+{
+	PlaylistFileContents contents;
+
+	char *s;
+	while ((s = file.ReadLine()) != nullptr) {
+		if (*s == 0 || *s == PLAYLIST_COMMENT)
+			continue;
+		jaijson::Document doc;
+		bool fail = true;
+		try {
+			fail= doc.Parse(s).HasParseError();
+		} catch(...) {
+
+		}
+		if (fail) {
+			continue;
+		}
+		DetachedSong song("");
+		deserialize(doc, song);
+		contents.emplace_back(std::move(song));
+		if (contents.size() >= playlist_max_length)
+			break;
+	}
+
+	return contents;
 }
 
 PlaylistFileContents
@@ -203,6 +255,8 @@ try {
 
 	char *s;
 	while ((s = file.ReadLine()) != nullptr) {
+		if (strcmp(s, MPD_PLAYLIST_BEGIN) == 0)
+			return LoadPlaylistFileFull(file);
 		if (*s == 0 || *s == PLAYLIST_COMMENT)
 			continue;
 
@@ -239,7 +293,8 @@ try {
 				continue;
 		}
 
-		contents.emplace_back(std::move(uri_utf8));
+		DetachedSong song(uri_utf8);
+		contents.emplace_back(std::move(song));
 		if (contents.size() >= playlist_max_length)
 			break;
 	}
@@ -331,7 +386,27 @@ spl_remove_index(const char *utf8path, unsigned pos)
 void
 spl_append_song(const char *utf8path, const DetachedSong &song)
 try {
+	bool full = StringStartsWith(utf8path, "upnp_");
 	const auto path_fs = spl_map_to_fs(utf8path);
+	bool file_exist = FileExists(path_fs);
+	PlaylistFileContents contents;
+	if (file_exist) {
+		contents = LoadPlaylistFile(utf8path);
+	}
+
+	if (!contents.empty()) {
+		const char *uri_utf8 = (playlist_saveAbsolutePaths || song.HasRealURI())
+			? song.GetRealURI()
+			: song.GetURI();
+		for (const auto &s : contents) {
+			const char *s_utf8 = (playlist_saveAbsolutePaths || s.HasRealURI())
+			? s.GetRealURI()
+			: s.GetURI();
+			if (strcmp(uri_utf8, s_utf8) == 0) {
+				return;
+			}
+		}
+	}
 	assert(!path_fs.IsNull());
 
 	FileOutputStream fos(path_fs, FileOutputStream::Mode::APPEND_OR_CREATE);
@@ -342,7 +417,15 @@ try {
 
 	BufferedOutputStream bos(fos);
 
-	playlist_print_song(bos, song);
+	if (full && !file_exist) {
+		bos.Write(MPD_PLAYLIST_BEGIN);
+		bos.Write("\n");
+	}
+
+	if (full && file_exist) {
+		full = is_mpd_playlist_file(utf8path);
+	}
+	playlist_print_song(bos, song, full);
 
 	bos.Flush();
 	fos.Commit();
