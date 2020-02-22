@@ -26,6 +26,7 @@
 
 struct StringView;
 class InputStream;
+class Path;
 
 typedef std::function<bool(unsigned long flags, const char *key,
 			   StringView value)> ApeTagCallback;
@@ -38,5 +39,8 @@ typedef std::function<bool(unsigned long flags, const char *key,
  */
 bool
 tag_ape_scan(InputStream &is, ApeTagCallback callback);
+
+bool
+tag_ape_scan(Path path_fs, ApeTagCallback callback);
 
 #endif
