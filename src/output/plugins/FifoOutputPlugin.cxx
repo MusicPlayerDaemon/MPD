@@ -28,6 +28,7 @@
 #include "util/RuntimeError.hxx"
 #include "Log.hxx"
 #include "open.h"
+#include "FifoFormat.cxx"
 
 #include <sys/stat.h>
 #include <errno.h>
@@ -42,6 +43,8 @@ class FifoOutput final : AudioOutput {
 	bool created = false;
 	unsigned delay_size = 16 * 1024;
 	Timer *timer;
+
+	FifoFormat format;
 
 public:
 	FifoOutput(const ConfigBlock &block);
@@ -75,7 +78,8 @@ static constexpr Domain fifo_output_domain("fifo_output");
 
 FifoOutput::FifoOutput(const ConfigBlock &block)
 	:AudioOutput(0),
-	 path(block.GetPath("path"))
+	 path(block.GetPath("path")),
+	 format(block.GetPath("format_path"))
 {
 	if (path.IsNull())
 		throw std::runtime_error("No \"path\" parameter specified");
@@ -191,12 +195,14 @@ FifoOutput::Open(AudioFormat &audio_format)
 		delay_size = 64 * 1024 / 4;
 	}
 	OpenFifo(fifo_size);
+	format.Open(audio_format);
 }
 
 void
 FifoOutput::Close() noexcept
 {
 	delete timer;
+	format.Close();
 	CloseFifo();
 }
 
@@ -216,6 +222,7 @@ FifoOutput::Cancel() noexcept
 			    "Flush of FIFO \"%s\" failed",
 			    path_utf8.c_str());
 	}
+	format.Cancel();
 }
 
 std::chrono::steady_clock::duration
