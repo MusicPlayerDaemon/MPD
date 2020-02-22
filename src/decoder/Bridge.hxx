@@ -132,6 +132,8 @@ public:
 	 */
 	void FlushChunk();
 
+	std::unique_ptr<Tag> DuplicateAllTag();
+
 	/* virtual methods from DecoderClient */
 	void Ready(AudioFormat audio_format,
 		   bool seekable, SignedSongTime duration) override;

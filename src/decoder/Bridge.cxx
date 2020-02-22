@@ -29,6 +29,7 @@
 #include "MusicChunk.hxx"
 #include "pcm/PcmConvert.hxx"
 #include "tag/Tag.hxx"
+#include "tag/Builder.hxx"
 #include "Log.hxx"
 #include "input/InputStream.hxx"
 #include "util/ConstBuffer.hxx"
@@ -132,6 +133,24 @@ DecoderBridge::FlushChunk()
 		dc.client_cond.signal();
 }
 
+std::unique_ptr<Tag>
+DecoderBridge::DuplicateAllTag()
+{
+	TagBuilder builder;
+
+	if (decoder_tag != nullptr) { // must use decoder_tag for base, because mqa may change the tag
+		builder.Complement(*decoder_tag);
+	}
+	if (song_tag != nullptr) {
+		builder.Complement(*song_tag);
+	}
+	if (stream_tag != nullptr) {
+		builder.Complement(*stream_tag);
+	}
+
+	return builder.CommitNew();
+}
+
 bool
 DecoderBridge::PrepareInitialSeek()
 {
@@ -221,19 +240,12 @@ DecoderBridge::UpdateStreamTag(InputStream *is)
 	auto tag = is != nullptr
 		? is->LockReadTag()
 		: nullptr;
-	if (tag == nullptr) {
-		tag = std::move(song_tag);
-		if (tag == nullptr)
-			return false;
+	if (tag != nullptr) {
+		stream_tag = std::move(tag);
+		return true;
+	}
 
-		/* no stream tag present - submit the song tag
-		   instead */
-	} else
-		/* discard the song tag; we don't need it */
-		song_tag.reset();
-
-	stream_tag = std::move(tag);
-	return true;
+	return false;
 }
 
 void
@@ -443,14 +455,8 @@ DecoderBridge::SubmitData(InputStream *is,
 	/* send stream tags */
 
 	if (UpdateStreamTag(is)) {
-		if (decoder_tag != nullptr)
-			/* merge with tag from decoder plugin */
-			cmd = DoSendTag(*Tag::Merge(*decoder_tag,
-						    *stream_tag));
-		else
-			/* send only the stream tag */
-			cmd = DoSendTag(*stream_tag);
-
+		auto tag = DuplicateAllTag();
+		cmd = DoSendTag(*tag);
 		if (cmd != DecoderCommand::NONE)
 			return cmd;
 	}
@@ -548,13 +554,8 @@ DecoderBridge::SubmitTag(InputStream *is, Tag &&tag)
 		return DecoderCommand::SEEK;
 
 	/* send tag to music pipe */
-
-	if (stream_tag != nullptr)
-		/* merge with tag from input stream */
-		cmd = DoSendTag(*Tag::Merge(*stream_tag, *decoder_tag));
-	else
-		/* send only the decoder tag */
-		cmd = DoSendTag(*decoder_tag);
+	auto merged = DuplicateAllTag();
+	cmd = DoSendTag(*merged);
 
 	return cmd;
 }
