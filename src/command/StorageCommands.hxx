@@ -42,4 +42,7 @@ handle_mount(Client &client, Request request, Response &response);
 CommandResult
 handle_unmount(Client &client, Request request, Response &response);
 
+CommandResult
+handle_unmount_all(Client &client, Request request, Response &response);
+
 #endif

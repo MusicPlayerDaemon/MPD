@@ -275,3 +275,32 @@ handle_unmount(Client &client, Request args, Response &r)
 
 	return CommandResult::OK;
 }
+
+CommandResult
+handle_unmount_all(Client &client, gcc_unused Request args, Response &r)
+{
+	UpdateService *update = client.GetPartition().instance.update;
+	if (update != nullptr) {
+		update->CancelAllAsync();
+	}
+	Storage *_composite = client.GetPartition().instance.storage;
+	if (_composite == nullptr) {
+		r.Error(ACK_ERROR_NO_EXIST, "No database");
+		return CommandResult::ERROR;
+	}
+
+	CompositeStorage &composite = *(CompositeStorage *)_composite;
+	std::vector<std::string> list = composite.ListMounts();
+	CommandResult ret = CommandResult::OK;
+	for (const auto &i : list) {
+		const char *argv[1];
+		Request args2(argv, 0);
+		argv[args2.size++] = i.c_str();
+		CommandResult ret2 = handle_unmount(client, args2, r);
+		if (ret2 != CommandResult::OK) {
+			ret = ret2;
+		}
+	}
+
+	return ret;
+}
