@@ -441,7 +441,8 @@ libmpd_a_SOURCES += \
 	src/sticker/Match.hxx \
 	src/sticker/StickerDatabase.cxx src/sticker/StickerDatabase.hxx \
 	src/sticker/StickerPrint.cxx src/sticker/StickerPrint.hxx \
-	src/sticker/SongSticker.cxx src/sticker/SongSticker.hxx
+	src/sticker/SongSticker.cxx src/sticker/SongSticker.hxx \
+	src/sticker/MiscSticker.cxx src/sticker/MiscSticker.hxx
 endif
 
 # Generic utility library
