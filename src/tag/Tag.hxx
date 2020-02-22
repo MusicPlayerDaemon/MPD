@@ -25,6 +25,8 @@
 #include "Chrono.hxx"
 #include "Compiler.h"
 
+#include "external/jaijson/jaijson.hxx"
+
 #include <algorithm>
 #include <memory>
 
@@ -204,5 +206,8 @@ struct Tag {
 		return const_iterator{items + num_items};
 	}
 };
+
+bool deserialize(const jaijson::Value &d, Tag &m);
+void serialize(jaijson::Writer &w, const Tag &m);
 
 #endif

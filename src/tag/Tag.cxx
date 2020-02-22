@@ -21,6 +21,8 @@
 #include "Tag.hxx"
 #include "Pool.hxx"
 #include "Builder.hxx"
+#include "external/jaijson/Deserializer.hxx"
+#include "external/jaijson/Serializer.hxx"
 
 #include <assert.h>
 
@@ -156,4 +158,64 @@ Tag::GetSortValue(TagType type) const noexcept
 	/* finally fall back to empty string */
 
 	return "";
+}
+
+bool
+deserialize(const jaijson::Value &d, Tag &m)
+{
+	TagBuilder builder;
+	double duration = -1.0;
+	int duration_ms = -1;
+	deserialize(d, "duration", duration);
+	deserialize(d, "duration_ms", duration_ms);
+	if (duration_ms >= 0) {
+		duration = duration_ms / 1000.0;
+	}
+	builder.SetDuration(SignedSongTime::FromS(duration));
+
+	bool ret;
+	const auto &items = d.FindMember("items");
+	if (items != d.MemberEnd()) {
+		for (const auto &item : items->value.GetArray()) {
+			TagType type = TAG_NUM_OF_ITEM_TYPES;
+			std::string value;
+			deserialize(item, "type", type, tag_item_names, TAG_NUM_OF_ITEM_TYPES);
+			deserialize(item, "value", value);
+			if (type != TAG_NUM_OF_ITEM_TYPES) {
+				builder.AddItem(type, value.c_str());
+			} else {
+				for (const auto &it : item.GetObject()) {
+					deserialize(it.value, value);
+					ret = deserialize(it.name.GetString(), type, tag_item_names, TAG_NUM_OF_ITEM_TYPES);
+					if (ret) {
+						builder.AddItem(type, value.c_str());
+					} else {
+						return false;
+					}
+				}
+			}
+		}
+	}
+	builder.Commit(m);
+
+	return true;
+}
+
+void
+serialize(jaijson::Writer &w, const Tag &m)
+{
+	w.StartObject();
+
+	serialize(w, "duration", m.duration.ToDoubleS());
+
+	w.String("items");
+	w.StartArray();
+	for (const auto &item : m) {
+		w.StartObject();
+		serialize(w, tag_item_names[(unsigned)item.type], item.value);
+		w.EndObject();
+	}
+	w.EndArray();
+
+	w.EndObject();
 }
