@@ -39,6 +39,12 @@ const char *const tag_item_names[TAG_NUM_OF_ITEM_TYPES] = {
 	[TAG_DISC] = "Disc",
 	[TAG_ALBUM_URI] = "AlbumUri",
 	[TAG_SUFFIX] = "Suffix",
+	[TAG_TOTAL_TRACKS] = "TotalTracks",
+	[TAG_ENCODER] = "ENCODER",
+	[TAG_BAND_WIDTH] = "BandWidth",
+	[TAG_BOOKMARK_URL] = "BookmarkUrl",
+	[TAG_UUID] = "uuid",
+	[TAG_AUDIO_QUALITY] = "AudioQuality",
 
 	/* MusicBrainz tags from http://musicbrainz.org/doc/MusicBrainzTag */
 	[TAG_MUSICBRAINZ_ARTISTID] = "MUSICBRAINZ_ARTISTID",
