@@ -335,6 +335,16 @@ UpdateWalk::UpdateDirectory(Directory &directory,
 
 	directory_set_stat(directory, info);
 
+	if (!directory.IsRoot()) {
+		auto name = directory.GetName();
+		if (name != nullptr && name[0] == '.') {
+			FormatDebug(update_domain,
+				    "ignoring hidden directory %s/%s",
+				    directory.GetPath(), name);
+			return false;
+		}
+	}
+
 	std::unique_ptr<StorageDirectoryReader> reader;
 
 	try {
