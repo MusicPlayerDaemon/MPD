@@ -26,6 +26,7 @@
 #include "util/UriUtil.hxx"
 #include "util/ChronoUtil.hxx"
 #include "util/ConstBuffer.hxx"
+#include "util/StringCompare.hxx"
 #include "fs/Traits.hxx"
 #include "client/Client.hxx"
 #include "client/Response.hxx"
@@ -159,8 +160,10 @@ handle_listmounts(Client &client, gcc_unused Request args, Response &r)
 
 	const auto visitor = [&client, &r](const char *mount_uri,
 					   const Storage &storage){
-		r.Format("mount: %s\n", mount_uri);
-		print_storage_uri(client, r, storage);
+		if (!StringIsEmpty(mount_uri)) {
+			r.Format("mount: %s\n", mount_uri);
+			print_storage_uri(client, r, storage);
+		}
 	};
 
 	composite.VisitMounts(visitor);
