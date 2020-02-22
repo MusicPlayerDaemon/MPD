@@ -831,6 +831,7 @@ MadDecoder::~MadDecoder()
 	delete[] times;
 }
 
+#if 0
 /* this is primarily used for getting total time for tags */
 static std::pair<bool, SignedSongTime>
 mad_decoder_total_file_time(InputStream &is)
@@ -840,6 +841,7 @@ mad_decoder_total_file_time(InputStream &is)
 		? std::make_pair(true, data.total_time)
 		: std::make_pair(false, SignedSongTime::Negative());
 }
+#endif
 
 long
 MadDecoder::TimeToFrame(SongTime t) const noexcept
@@ -1061,6 +1063,7 @@ mp3_decode(DecoderClient &client, InputStream &input_stream)
 	while (data.Read()) {}
 }
 
+#if 0
 static bool
 mad_decoder_scan_stream(InputStream &is,
 			const TagHandler &handler, void *handler_ctx) noexcept
@@ -1074,6 +1077,7 @@ mad_decoder_scan_stream(InputStream &is,
 					    SongTime(result.second));
 	return true;
 }
+#endif
 
 static const char *const mp3_suffixes[] = { "mp3", "mp2", nullptr };
 static const char *const mp3_mime_types[] = { "audio/mpeg", nullptr };
@@ -1085,7 +1089,7 @@ const struct DecoderPlugin mad_decoder_plugin = {
 	mp3_decode,
 	nullptr,
 	nullptr,
-	mad_decoder_scan_stream,
+	nullptr,//mad_decoder_scan_stream, // some chinese charset maybe show "??", wo let ffmpeg to scan mp3
 	nullptr,
 	mp3_suffixes,
 	mp3_mime_types,

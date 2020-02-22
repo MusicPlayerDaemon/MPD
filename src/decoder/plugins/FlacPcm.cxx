@@ -110,6 +110,22 @@ FlacPcmImport::Import(const FLAC__int32 *const src[], size_t n_frames)
 					   audio_format.channels);
 
 	case SampleFormat::S24_P32:
+	{
+		auto data = FlacImport<int32_t>(buffer, src, n_frames,
+					   audio_format.channels);
+
+		/**
+		 * Convert (padded) 24 bit samples to 32 bit by shifting 8
+		 * bits to the left?
+		 */
+		const auto source = ConstBuffer<int32_t>::FromVoid(data);
+		int32_t *dest = const_cast<int32_t*>(source.data);
+		for (auto i : source)
+			*dest++ = i << 8;
+
+		return data;
+	}
+
 	case SampleFormat::S32:
 		return FlacImport<int32_t>(buffer, src, n_frames,
 					   audio_format.channels);
