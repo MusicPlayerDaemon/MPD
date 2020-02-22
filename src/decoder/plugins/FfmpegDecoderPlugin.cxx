@@ -992,6 +992,10 @@ FfmpegScanStream(AVFormatContext &format_context,
 
 	FfmpegScanMetadata(format_context, audio_stream, handler, handler_ctx);
 
+	if (handler.cover != nullptr) {
+		FfmpegScanCover(format_context, handler, handler_ctx);
+	}
+
 	return true;
 }
 
