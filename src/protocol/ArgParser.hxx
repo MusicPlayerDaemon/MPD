@@ -28,6 +28,7 @@
 
 class SongTime;
 class SignedSongTime;
+struct Tag;
 
 uint32_t
 ParseCommandArgU32(const char *s);
@@ -71,5 +72,8 @@ ParseCommandArgSongTime(const char *s);
 
 SignedSongTime
 ParseCommandArgSignedSongTime(const char *s);
+
+Tag
+ParseCommandArgTag(const char *s);
 
 #endif
