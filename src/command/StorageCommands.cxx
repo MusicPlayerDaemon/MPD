@@ -122,7 +122,7 @@ handle_listfiles_storage(Client &client, Response &r, const char *uri)
 }
 
 static void
-print_storage_uri(Client &client, Response &r, const Storage &storage)
+print_storage_uri(gcc_unused Client &client, Response &r, const Storage &storage)
 {
 	std::string uri = storage.MapUTF8("");
 	if (uri.empty())
@@ -217,9 +217,13 @@ handle_mount(Client &client, Request args, Response &r)
 	Database *_db = instance.database;
 	if (_db != nullptr && _db->IsPlugin(simple_db_plugin)) {
 		SimpleDatabase &db = *(SimpleDatabase *)_db;
+		std::string remote_uri2(remote_uri);
+		if (StringStartsWith(remote_uri, "/mnt")) {
+			remote_uri2 = local_uri;
+		}
 
 		try {
-			db.Mount(local_uri, remote_uri);
+			db.Mount(local_uri, remote_uri2.c_str());
 		} catch (...) {
 			composite.Unmount(local_uri);
 			throw;
