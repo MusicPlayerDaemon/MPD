@@ -85,6 +85,7 @@ public:
 	}
 
 	void Save();
+	void PruneEmpty();
 
 	/**
 	 * Returns true if there is a valid database file on the disk.

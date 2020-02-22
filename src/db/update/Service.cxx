@@ -136,6 +136,12 @@ UpdateService::Task()
 		} catch (const std::exception &e) {
 			LogError(e, "Failed to save database");
 		}
+	} else {
+		try {
+			next.db->PruneEmpty();
+		} catch (const std::exception &e) {
+			LogError(e, "Failed to prune empty directory");
+		}
 	}
 
 	if (!next.path_utf8.empty())

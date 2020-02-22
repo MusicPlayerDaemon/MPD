@@ -375,6 +375,17 @@ SimpleDatabase::Save()
 }
 
 void
+SimpleDatabase::PruneEmpty()
+{
+	{
+		const ScopeDatabaseLock protect;
+
+		LogDebug(simple_db_domain, "removing empty directories from DB");
+		root->PruneEmpty();
+	}
+}
+
+void
 SimpleDatabase::Mount(const char *uri, Database *db)
 {
 #if !CLANG_CHECK_VERSION(3,6)
