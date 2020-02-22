@@ -25,6 +25,8 @@
 #include "Chrono.hxx"
 #include "Compiler.h"
 
+#include "external/jaijson/jaijson.hxx"
+
 #include <chrono>
 #include <string>
 #include <utility>
@@ -244,5 +246,8 @@ public:
 	 */
 	bool LoadFile(Path path) noexcept;
 };
+
+bool deserialize(const jaijson::Value &d, DetachedSong &m);
+void serialize(jaijson::Writer &w, const DetachedSong &m);
 
 #endif

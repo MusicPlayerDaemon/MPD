@@ -22,6 +22,8 @@
 #include "db/LightSong.hxx"
 #include "util/UriUtil.hxx"
 #include "fs/Traits.hxx"
+#include "external/jaijson/Deserializer.hxx"
+#include "external/jaijson/Serializer.hxx"
 
 DetachedSong::DetachedSong(const LightSong &other)
 	:uri(other.GetURI()),
@@ -78,4 +80,34 @@ DetachedSong::GetDuration() const noexcept
 	}
 
 	return SignedSongTime(b - a);
+}
+
+bool
+deserialize(const jaijson::Value &d, DetachedSong &m)
+{
+	bool ret = true;
+
+	std::string uri;
+	std::string real_uri;
+	ret &= deserialize(d, "uri", uri);
+	m.SetURI(uri);
+	ret &= deserialize(d, "real_uri", real_uri);
+	m.SetRealURI(real_uri);
+	ret &= deserialize(d, "tag", m.WritableTag());
+
+	return ret;
+}
+
+void
+serialize(jaijson::Writer &w, const DetachedSong &m)
+{
+	w.StartObject();
+
+	serialize(w, "uri", m.GetURI());
+	if (m.HasRealURI()) {
+		serialize(w, "real_uri", m.GetRealURI());
+	}
+	serialize(w, "tag", m.GetTag());
+
+	w.EndObject();
 }
