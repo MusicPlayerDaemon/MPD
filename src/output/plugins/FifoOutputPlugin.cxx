@@ -40,6 +40,7 @@ class FifoOutput final : AudioOutput {
 	int input = -1;
 	int output = -1;
 	bool created = false;
+	unsigned delay_size = 16 * 1024;
 	Timer *timer;
 
 public:
@@ -59,7 +60,7 @@ private:
 	void Check();
 	void Delete();
 
-	void OpenFifo();
+	void OpenFifo(int fifo_size=64*1024);
 	void CloseFifo();
 
 	void Open(AudioFormat &audio_format) override;
@@ -80,8 +81,6 @@ FifoOutput::FifoOutput(const ConfigBlock &block)
 		throw std::runtime_error("No \"path\" parameter specified");
 
 	path_utf8 = path.ToUTF8();
-
-	OpenFifo();
 }
 
 inline void
@@ -114,7 +113,7 @@ FifoOutput::CloseFifo()
 	}
 
 	FileInfo fi;
-	if (created && GetFileInfo(path, fi))
+	if (GetFileInfo(path, fi))
 		Delete();
 }
 
@@ -149,7 +148,7 @@ FifoOutput::Check()
 }
 
 inline void
-FifoOutput::OpenFifo()
+FifoOutput::OpenFifo(int fifo_size)
 try {
 	Check();
 
@@ -162,6 +161,9 @@ try {
 	if (output < 0)
 		throw FormatErrno("Could not open FIFO \"%s\" for writing",
 				  path_utf8.c_str());
+	fcntl(output, F_SETPIPE_SZ, fifo_size);
+	auto size = fcntl(output,F_GETPIPE_SZ);
+	FormatDefault(fifo_output_domain, "fifo size = %d k", size / 1024);
 } catch (...) {
 	CloseFifo();
 	throw;
@@ -171,12 +173,31 @@ void
 FifoOutput::Open(AudioFormat &audio_format)
 {
 	timer = new Timer(audio_format);
+	int fifo_size;
+	if (audio_format.sample_rate >= 705600) {
+		delay_size = 64 * 1024 / 4;
+		fifo_size = 64 * 1024 * 8;
+	} else if (audio_format.sample_rate >= 352800) {
+		delay_size = 64 * 1024 / 4;
+		fifo_size = 64 * 1024 * 4;
+	} else if (audio_format.sample_rate >= 176400) {
+		delay_size = 64 * 1024 / 4;
+		fifo_size = 64 * 1024 * 2;
+	} else if (audio_format.sample_rate >= 88200) {
+		delay_size = 64 * 1024 / 4;
+		fifo_size = 64 * 1024;
+	} else {
+		fifo_size = 64 * 1024;
+		delay_size = 64 * 1024 / 4;
+	}
+	OpenFifo(fifo_size);
 }
 
 void
 FifoOutput::Close() noexcept
 {
 	delete timer;
+	CloseFifo();
 }
 
 void
@@ -208,10 +229,6 @@ FifoOutput::Delay() const noexcept
 size_t
 FifoOutput::Play(const void *chunk, size_t size)
 {
-	if (!timer->IsStarted())
-		timer->Start();
-	timer->Add(size);
-
 	while (true) {
 		ssize_t bytes = write(output, chunk, size);
 		if (bytes > 0)
@@ -220,9 +237,10 @@ FifoOutput::Play(const void *chunk, size_t size)
 		if (bytes < 0) {
 			switch (errno) {
 			case EAGAIN:
-				/* The pipe is full, so empty it */
-				Cancel();
-				continue;
+				/* The pipe is full, start delay */
+				timer->Start();
+				timer->Add(delay_size);
+				return 0;
 			case EINTR:
 				continue;
 			}
