@@ -64,6 +64,11 @@ DecoderControl::SetReady(const AudioFormat audio_format,
 
 	in_audio_format = audio_format;
 	out_audio_format = audio_format.WithMask(configured_audio_format);
+	// only support dsd2pcm
+	if (out_audio_format.format == SampleFormat::DSD) {
+		out_audio_format.format = SampleFormat::FLOAT;
+		out_audio_format.sample_rate = 352800;
+	}
 
 	seekable = _seekable;
 	total_time = _duration;
