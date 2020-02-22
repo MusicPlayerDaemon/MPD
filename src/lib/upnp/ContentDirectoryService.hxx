@@ -29,7 +29,7 @@
 
 class UPnPDevice;
 struct UPnPService;
-class UPnPDirContent;
+class UPnPDirObject;
 
 /**
  * Content Directory Service class.
@@ -57,6 +57,7 @@ class ContentDirectoryService {
 	std::string m_deviceIconUrl;
 	std::string m_URLBase;
 
+public:
 	int m_rdreqcnt; // Slice size to use when reading
 
 public:
@@ -78,12 +79,12 @@ public:
 	 *
 	 * @param objectId the UPnP object Id for the container. Root has Id "0"
 	 */
-	UPnPDirContent readDir(UpnpClient_Handle handle,
+	UPnPDirObject readDir(UpnpClient_Handle handle,
 			       const char *objectId) const;
 
 	void readDirSlice(UpnpClient_Handle handle,
 			  const char *objectId, unsigned offset,
-			  unsigned count, UPnPDirContent& dirbuf,
+			  unsigned count, UPnPDirObject& dirbuf,
 			  unsigned &didread, unsigned &total) const;
 
 	/** Search the content directory service.
@@ -95,7 +96,7 @@ public:
 	 * UPnP document: UPnP-av-ContentDirectory-v1-Service-20020625.pdf
 	 * section 2.5.5. Maybe we'll provide an easier way some day...
 	 */
-	UPnPDirContent search(UpnpClient_Handle handle,
+	UPnPDirObject search(UpnpClient_Handle handle,
 			      const char *objectId,
 			      const char *searchstring) const;
 
@@ -103,7 +104,7 @@ public:
 	 *
 	 * @param objectId the UPnP object Id. Root has Id "0"
 	 */
-	UPnPDirContent getMetadata(UpnpClient_Handle handle,
+	UPnPDirObject getMetadata(UpnpClient_Handle handle,
 				   const char *objectId) const;
 
 	/** Retrieve search capabilities

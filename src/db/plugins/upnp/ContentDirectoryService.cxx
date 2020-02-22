@@ -27,16 +27,14 @@
 #include "util/UriUtil.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/ScopeExit.hxx"
-#include "util/StringFormat.hxx"
 
 #include <stdio.h>
-#include <string.h>
 
 #define PIDNULL  "parentID=\"\""
 #define PIDOK    "parentID=\"-1\""
 
 static void
-ReadResultTag(UPnPDirContent &dirbuf, IXML_Document *response)
+ReadResultTag(UPnPDirObject &dirbuf, IXML_Document *response)
 {
 	const char *p = ixmlwrap::getFirstElementValue(response, "Result");
 	if (p == nullptr)
@@ -53,24 +51,26 @@ ReadResultTag(UPnPDirContent &dirbuf, IXML_Document *response)
 	}
 }
 
-inline void
+void
 ContentDirectoryService::readDirSlice(UpnpClient_Handle hdl,
 				      const char *objectId, unsigned offset,
-				      unsigned count, UPnPDirContent &dirbuf,
+				      unsigned count, UPnPDirObject &dirbuf,
 				      unsigned &didreadp,
 				      unsigned &totalp) const
 {
+	// Create request
+	char ofbuf[100], cntbuf[100];
+	sprintf(ofbuf, "%u", offset);
+	sprintf(cntbuf, "%u", count);
 	// Some devices require an empty SortCriteria, else bad params
 	IXML_Document *request =
 		MakeActionHelper("Browse", m_serviceType.c_str(),
 				 "ObjectID", objectId,
 				 "BrowseFlag", "BrowseDirectChildren",
 				 "Filter", "*",
-				 "SortCriteria", "",
-				 "StartingIndex",
-				 StringFormat<32>("%u", offset).c_str(),
-				 "RequestedCount",
-				 StringFormat<32>("%u", count).c_str());
+				 "StartingIndex", ofbuf,
+				 "RequestedCount", cntbuf,
+                                 "SortCriteria", "");
 	if (request == nullptr)
 		throw std::runtime_error("UpnpMakeAction() failed");
 
@@ -97,11 +97,11 @@ ContentDirectoryService::readDirSlice(UpnpClient_Handle hdl,
 	ReadResultTag(dirbuf, response);
 }
 
-UPnPDirContent
+UPnPDirObject
 ContentDirectoryService::readDir(UpnpClient_Handle handle,
 				 const char *objectId) const
 {
-	UPnPDirContent dirbuf;
+	UPnPDirObject dirbuf;
 	unsigned offset = 0, total = -1, count;
 
 	do {
@@ -114,23 +114,25 @@ ContentDirectoryService::readDir(UpnpClient_Handle handle,
 	return dirbuf;
 }
 
-UPnPDirContent
+UPnPDirObject
 ContentDirectoryService::search(UpnpClient_Handle hdl,
 				const char *objectId,
 				const char *ss) const
 {
-	UPnPDirContent dirbuf;
+	UPnPDirObject dirbuf;
 	unsigned offset = 0, total = -1, count;
 
 	do {
+		char ofbuf[100];
+		sprintf(ofbuf, "%d", offset);
+
 		UniqueIxmlDocument request(MakeActionHelper("Search", m_serviceType.c_str(),
-							    "ContainerID", objectId,
-							    "SearchCriteria", ss,
-							    "Filter", "*",
-							    "SortCriteria", "",
-							    "StartingIndex",
-							    StringFormat<32>("%u", offset).c_str(),
-							    "RequestedCount", "0")); // Setting a value here gets twonky into fits
+								"ContainerID", objectId,
+								"SearchCriteria", ss,
+								"Filter", "*",
+								"StartingIndex", ofbuf,
+								"RequestedCount", "0",
+								"SortCriteria", "")); // Setting a value here gets twonky into fits
 		if (!request)
 			throw std::runtime_error("UpnpMakeAction() failed");
 
@@ -165,18 +167,18 @@ ContentDirectoryService::search(UpnpClient_Handle hdl,
 	return dirbuf;
 }
 
-UPnPDirContent
+UPnPDirObject
 ContentDirectoryService::getMetadata(UpnpClient_Handle hdl,
 				     const char *objectId) const
 {
 	// Create request
 	UniqueIxmlDocument request(MakeActionHelper("Browse", m_serviceType.c_str(),
-						    "ObjectID", objectId,
-						    "BrowseFlag", "BrowseMetadata",
-						    "Filter", "*",
-						    "SortCriteria", "",
-						    "StartingIndex", "0",
-						    "RequestedCount", "1"));
+							"ObjectID", objectId,
+							"BrowseFlag", "BrowseMetadata",
+							"Filter", "*",
+							"StartingIndex", "0",
+							"RequestedCount", "1",
+							"SortCriteria", ""));
 	if (request == nullptr)
 		throw std::runtime_error("UpnpMakeAction() failed");
 
@@ -189,7 +191,7 @@ ContentDirectoryService::getMetadata(UpnpClient_Handle hdl,
 					 UpnpGetErrorMessage(code));
 
 	UniqueIxmlDocument response(_response);
-	UPnPDirContent dirbuf;
+	UPnPDirObject dirbuf;
 	ReadResultTag(dirbuf, response.get());
 	return dirbuf;
 }

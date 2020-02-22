@@ -55,7 +55,7 @@ class UpnpNeighborExplorer final
 
 	EventLoop &event_loop;
 
-	UPnPDeviceDirectory *discovery;
+	UPnPDeviceDirectory *discovery = nullptr;
 
 public:
 	UpnpNeighborExplorer(EventLoop &_event_loop,
@@ -82,8 +82,10 @@ UpnpNeighborExplorer::Open()
 
 	try {
 		discovery->Start();
+		SetUpnpDiscovery(discovery);
 	} catch (...) {
 		delete discovery;
+		discovery = nullptr;
 		UpnpClientGlobalFinish();
 		throw;
 	}
@@ -92,8 +94,12 @@ UpnpNeighborExplorer::Open()
 void
 UpnpNeighborExplorer::Close() noexcept
 {
-	delete discovery;
-	UpnpClientGlobalFinish();
+	if (discovery != nullptr) {
+		SetUpnpDiscovery(nullptr);
+		delete discovery;
+		discovery = nullptr;
+		UpnpClientGlobalFinish();
+	}
 }
 
 NeighborExplorer::List

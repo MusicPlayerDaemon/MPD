@@ -26,6 +26,8 @@
 #include "util/DeleteDisposer.hxx"
 #include "util/ScopeExit.hxx"
 #include "util/RuntimeError.hxx"
+#include "util/FormatString.hxx"
+#include "util/AllocatedString.hxx"
 
 #include <upnptools.h>
 
@@ -344,5 +346,5 @@ UPnPDeviceDirectory::GetServer(const char *friendly_name)
 							       service);
 	}
 
-	throw std::runtime_error("Server not found");
+	throw std::runtime_error(FormatString("Server(%s) not found", friendly_name).c_str());
 }

@@ -24,10 +24,18 @@
 
 #include <upnp.h>
 
+class UPnPDeviceDirectory;
+
 UpnpClient_Handle
 UpnpClientGlobalInit();
 
 void
 UpnpClientGlobalFinish() noexcept;
+
+UPnPDeviceDirectory *
+GetUpnpDiscovery();
+
+void
+SetUpnpDiscovery(UPnPDeviceDirectory *d);
 
 #endif
