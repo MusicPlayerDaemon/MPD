@@ -21,6 +21,7 @@
 #include "LocalOpen.hxx"
 #include "InputStream.hxx"
 #include "plugins/FileInputPlugin.hxx"
+#include "plugins/BufferedFileInputPlugin.hxx"
 
 #ifdef ENABLE_ARCHIVE
 #include "plugins/ArchiveInputPlugin.hxx"
@@ -32,14 +33,16 @@
 #include <assert.h>
 
 InputStreamPtr
-OpenLocalInputStream(Path path, Mutex &mutex, Cond &cond)
+OpenLocalInputStream(Path path, Mutex &mutex, Cond &cond, bool use_buffered)
 {
 	InputStreamPtr is;
 
 #ifdef ENABLE_ARCHIVE
 	try {
 #endif
-		is = OpenFileInputStream(path, mutex, cond);
+		is = use_buffered
+		? OpenBufferedFileInputStream(path, mutex, cond)
+		: OpenFileInputStream(path, mutex, cond);
 #ifdef ENABLE_ARCHIVE
 	} catch (const std::system_error &e) {
 		if (IsPathNotFound(e)) {

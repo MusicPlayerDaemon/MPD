@@ -1,6 +1,5 @@
 /*
- * Copyright 2003-2017 The Music Player Daemon Project
- * http://www.musicpd.org
+ * Copyright 2015-2018 Cary Audio
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,23 +16,13 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_INPUT_LOCAL_OPEN_HXX
-#define MPD_INPUT_LOCAL_OPEN_HXX
+#pragma once
 
-#include "check.h"
-#include "Ptr.hxx"
+#include "input/Ptr.hxx"
 
-class Path;
 class Mutex;
 class Cond;
 
-/**
- * Open a "local" file.  This is a wrapper for the input plugins
- * "file" and "archive".
- *
- * Throws std::runtime_error on error.
- */
 InputStreamPtr
-OpenLocalInputStream(Path path, Mutex &mutex, Cond &cond, bool use_buffered=false);
-
-#endif
+OpenBufferedSmbclientInputPlugin(const char *uri,
+		    Mutex &mutex, Cond &cond);

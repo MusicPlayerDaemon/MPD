@@ -128,7 +128,7 @@ public:
 	 * @return an #InputStream object on success
 	 */
 	gcc_nonnull_all
-	static InputStreamPtr Open(const char *uri, Mutex &mutex, Cond &cond);
+	static InputStreamPtr Open(const char *uri, Mutex &mutex, Cond &cond, bool buffered_open=true);
 
 	/**
 	 * Just like Open(), but waits for the stream to become ready.
@@ -136,7 +136,7 @@ public:
 	 */
 	gcc_nonnull_all
 	static InputStreamPtr OpenReady(const char *uri,
-					Mutex &mutex, Cond &cond);
+					Mutex &mutex, Cond &cond, bool buffered_open=true);
 
 	/**
 	 * The absolute URI which was used to open this stream.

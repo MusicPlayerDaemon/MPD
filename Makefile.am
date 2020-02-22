@@ -1345,7 +1345,8 @@ libinput_a_SOURCES = \
 	src/input/AsyncInputStream.cxx src/input/AsyncInputStream.hxx \
 	src/input/ProxyInputStream.cxx src/input/ProxyInputStream.hxx \
 	src/input/plugins/RewindInputPlugin.cxx src/input/plugins/RewindInputPlugin.hxx \
-	src/input/plugins/FileInputPlugin.cxx src/input/plugins/FileInputPlugin.hxx
+	src/input/plugins/FileInputPlugin.cxx src/input/plugins/FileInputPlugin.hxx \
+	src/input/plugins/BufferedFileInputPlugin.cxx src/input/plugins/BufferedFileInputPlugin.hxx
 
 libinput_a_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(CURL_CFLAGS) \
@@ -1411,7 +1412,8 @@ endif
 if ENABLE_SMBCLIENT
 libinput_a_SOURCES += \
 	$(SMBCLIENT_SOURCES) \
-	src/input/plugins/SmbclientInputPlugin.cxx src/input/plugins/SmbclientInputPlugin.hxx
+	src/input/plugins/SmbclientInputPlugin.cxx src/input/plugins/SmbclientInputPlugin.hxx \
+	src/input/plugins/BufferedSmbclientInputPlugin.cxx src/input/plugins/BufferedSmbclientInputPlugin.hxx
 endif
 
 if ENABLE_NFS

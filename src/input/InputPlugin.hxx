@@ -64,6 +64,12 @@ struct InputPlugin {
 	 */
 	std::unique_ptr<RemoteTagScanner> (*scan_tags)(const char *uri,
 						       RemoteTagHandler &handler) = nullptr;
+
+	/**
+	 * Throws std::runtime_error on error.
+	 */
+	InputStreamPtr (*buffered_open)(const char *uri,
+			     Mutex &mutex, Cond &cond) = nullptr;
 };
 
 #endif

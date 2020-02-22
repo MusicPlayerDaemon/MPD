@@ -26,6 +26,7 @@
 #include "PluginUnavailable.hxx"
 #include "system/Error.hxx"
 #include "util/StringCompare.hxx"
+#include "BufferedSmbclientInputPlugin.hxx"
 
 #include <libsmbclient.h>
 
@@ -163,4 +164,6 @@ const InputPlugin input_plugin_smbclient = {
 	input_smbclient_init,
 	nullptr,
 	input_smbclient_open,
+	nullptr,
+	OpenBufferedSmbclientInputPlugin,
 };

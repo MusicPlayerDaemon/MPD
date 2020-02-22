@@ -30,17 +30,24 @@
 
 InputStreamPtr
 InputStream::Open(const char *url,
-		  Mutex &mutex, Cond &cond)
+		  Mutex &mutex, Cond &cond, bool buffered_open)
 {
 	if (PathTraitsUTF8::IsAbsolute(url)) {
 		const auto path = AllocatedPath::FromUTF8Throw(url);
-		return OpenLocalInputStream(path, mutex, cond);
+		return OpenLocalInputStream(path, mutex, cond, true);
 	}
 
 	input_plugins_for_each_enabled(plugin) {
-		auto is = plugin->open(url, mutex, cond);
-		if (is != nullptr)
+		InputStreamPtr is;
+
+		if (buffered_open && plugin->buffered_open) {
+			is = plugin->buffered_open(url, mutex, cond);
+		} else {
+			is = plugin->open(url, mutex, cond);
+		}
+		if (is != nullptr) {
 			return input_rewind_open(std::move(is));
+		}
 	}
 
 	throw std::runtime_error("Unrecognized URI");
@@ -48,9 +55,9 @@ InputStream::Open(const char *url,
 
 InputStreamPtr
 InputStream::OpenReady(const char *uri,
-		       Mutex &mutex, Cond &cond)
+		       Mutex &mutex, Cond &cond, bool buffered_open)
 {
-	auto is = Open(uri, mutex, cond);
+	auto is = Open(uri, mutex, cond, buffered_open);
 
 	{
 		const std::lock_guard<Mutex> protect(mutex);
