@@ -65,6 +65,12 @@ struct AudioFormat {
 	 */
 	uint8_t channels;
 
+	/**
+	 * Bits per sample.
+	 * If raw_bits = 0, use sample_format_size().
+	 */
+	uint8_t raw_bits = 0;
+
 	AudioFormat() = default;
 
 	constexpr AudioFormat(uint32_t _sample_rate,
