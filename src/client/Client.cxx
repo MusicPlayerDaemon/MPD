@@ -57,6 +57,18 @@ Client::GetDatabaseOrThrow() const
 	return partition->instance.GetDatabaseOrThrow();
 }
 
+const Database *
+Client::GetUpnpDatabase() const noexcept
+{
+	return partition->instance.GetUpnpDatabase();
+}
+
+const Database &
+Client::GetUpnpDatabaseOrThrow() const
+{
+	return partition->instance.GetUpnpDatabaseOrThrow();
+}
+
 const Storage *
 Client::GetStorage() const noexcept
 {

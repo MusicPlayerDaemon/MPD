@@ -65,3 +65,10 @@ CreateConfiguredDatabase(EventLoop &main_event_loop, EventLoop &io_event_loop,
 					  listener, block);
 	}
 }
+
+Database *
+CreateUpnpDatabase(EventLoop &main_event_loop, EventLoop &io_event_loop,
+			 DatabaseListener &listener)
+{
+	return UpnpDatabaseInit(main_event_loop, io_event_loop, listener);
+}

@@ -232,6 +232,12 @@ glue_db_init_and_load(void)
 					     static_cast<CompositeStorage &>(*instance->storage),
 					     *instance);
 
+	instance->upnpdatabase = CreateUpnpDatabase(instance->event_loop, instance->io_thread.GetEventLoop(), *instance);
+
+	if (instance->upnpdatabase == nullptr)  {
+		LogDefault(config_domain, "upbp database create fail!");
+	}
+
 	/* run database update after daemonization? */
 	return db.FileExists();
 }
@@ -437,6 +443,10 @@ Instance::ShutdownDatabase() noexcept
 	}
 
 	delete instance->storage;
+	if (instance->upnpdatabase != nullptr) {
+		instance->upnpdatabase->Close();
+		delete instance->upnpdatabase;
+	}
 #endif
 }
 
@@ -629,6 +639,13 @@ try {
 #ifdef ENABLE_NEIGHBOR_PLUGINS
 	if (instance->neighbors != nullptr)
 		instance->neighbors->Open();
+#endif
+#ifdef ENABLE_DATABASE
+	try {
+		instance->upnpdatabase->Open();
+	} catch (...) {
+		LogDefault(config_domain, "open upnp error");
+	}
 #endif
 
 	ZeroconfInit(instance->event_loop);
