@@ -634,12 +634,14 @@ libpcm_a_SOURCES = \
 	src/pcm/PcmUtils.hxx
 libpcm_a_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(SOXR_CFLAGS) \
-	$(LIBSAMPLERATE_CFLAGS)
+	$(LIBSAMPLERATE_CFLAGS) \
+	-fopenmp
 
 PCM_LIBS = \
 	libpcm.a \
 	$(SOXR_LIBS) \
-	$(LIBSAMPLERATE_LIBS)
+	$(LIBSAMPLERATE_LIBS) \
+	-lgomp
 
 if ENABLE_DSD
 libpcm_a_SOURCES += \
