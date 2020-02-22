@@ -14,7 +14,8 @@ For basic installation instructions
 
 This is a branch of Cary Audio product. We use FIFO output plugin. And 
 the other program read audio data from FIFO, then dsp and playback it.
-"build-arm.sh" and "build-x64.sh" are build scripts for this branch.
+"build-arm.sh" and "build-x64.sh" are build scripts for this branch. This program
+use [rapidjson](https://github.com/Tencent/rapidjson), you should download  rapidjson-1.1.0.tar.gz, and copy include/rapidjson to  /usr/local/include/. rapidjson is under MIT license.
 
 # Users
 
