@@ -365,6 +365,13 @@ static bool
 vorbis_scan_stream(InputStream &is,
 		   const TagHandler &handler, void *handler_ctx) noexcept
 {
+	if (handler.tag == nullptr &&
+		handler.duration == nullptr &&
+		handler.pair == nullptr &&
+		handler.cover == nullptr) {
+		return true;
+	}
+
 	/* initialize libogg */
 
 	InputStreamReader reader(is);

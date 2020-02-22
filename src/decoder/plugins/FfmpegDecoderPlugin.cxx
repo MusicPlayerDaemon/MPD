@@ -341,7 +341,7 @@ FfmpegSendFrame(DecoderClient &client, InputStream &is,
 		output_buffer = start_gapless_filter(output_buffer);
 		if (size != output_buffer.size) {
 			enable_gapless_start = false;
-			FormatDefault(ffmpeg_domain, "start gap size=%d total size=%d",
+			FormatDefault(ffmpeg_domain, "start gap size=%lu total size=%lu",
 				size-output_buffer.size, size);
 		}
 	} else if (enable_gapless_end) {
@@ -351,7 +351,7 @@ FfmpegSendFrame(DecoderClient &client, InputStream &is,
 			output_buffer = end_gapless_filter(output_buffer);
 			if (size != output_buffer.size) {
 				enable_gapless_end = false;
-				FormatDefault(ffmpeg_domain, "end gap size=%d total size=%d",
+				FormatDefault(ffmpeg_domain, "end gap size=%lu total size=%lu",
 					size-output_buffer.size, size);
 			}
 		}

@@ -334,6 +334,12 @@ sndfile_scan_stream(InputStream &is,
 
 	SF_INFO info;
 
+	if (handler.tag == nullptr &&
+		handler.duration == nullptr &&
+		handler.pair == nullptr &&
+		handler.cover == nullptr) {
+		return true;
+	}
 	info.format = 0;
 
 	SndfileInputStream sis{nullptr, is};

@@ -150,8 +150,13 @@ struct MadDecoder {
 
 	bool Seek(long offset);
 	bool FillBuffer();
-	void ParseId3(size_t tagsize, Tag **mpd_tag);
-	enum mp3_action DecodeNextFrameHeader(Tag **tag);
+	void ParseId3(size_t tagsize, Tag **mpd_tag,
+		const TagHandler *handler = nullptr,
+		void *handler_ctx = nullptr);
+	enum mp3_action DecodeNextFrameHeader(Tag **tag,
+		const TagHandler *handler = nullptr,
+		void *handler_ctx = nullptr);
+
 	enum mp3_action DecodeNextFrame();
 
 	gcc_pure
@@ -165,7 +170,9 @@ struct MadDecoder {
 	 */
 	void FileSizeToSongLength();
 
-	bool DecodeFirstFrame(Tag **tag);
+	bool DecodeFirstFrame(Tag **tag,
+		const TagHandler *handler = nullptr,
+		void *handler_ctx = nullptr);
 
 	void AllocateBuffers() {
 		assert(max_frames > 0);
@@ -318,7 +325,8 @@ parse_id3_mixramp(struct id3_tag *tag) noexcept
 #endif
 
 inline void
-MadDecoder::ParseId3(size_t tagsize, Tag **mpd_tag)
+MadDecoder::ParseId3(size_t tagsize, Tag **mpd_tag,
+	const TagHandler *handler, void *handler_ctx)
 {
 #ifdef ENABLE_ID3TAG
 	std::unique_ptr<id3_byte_t[]> allocated;
@@ -353,6 +361,10 @@ MadDecoder::ParseId3(size_t tagsize, Tag **mpd_tag)
 			delete *mpd_tag;
 			*mpd_tag = tmp_tag.release();
 		}
+	}
+
+	if (handler != nullptr) {
+		scan_id3_tag(id3_tag, *handler, handler_ctx);
 	}
 
 	if (client != nullptr) {
@@ -418,7 +430,8 @@ RecoverFrameError(struct mad_stream &stream)
 }
 
 enum mp3_action
-MadDecoder::DecodeNextFrameHeader(Tag **tag)
+MadDecoder::DecodeNextFrameHeader(Tag **tag,
+	const TagHandler *handler, void *handler_ctx)
 {
 	if ((stream.buffer == nullptr || stream.error == MAD_ERROR_BUFLEN) &&
 	    !FillBuffer())
@@ -431,8 +444,9 @@ MadDecoder::DecodeNextFrameHeader(Tag **tag)
 							    stream.this_frame);
 
 			if (tagsize > 0) {
-				if (tag && !(*tag)) {
-					ParseId3((size_t)tagsize, tag);
+				if ((tag && !(*tag))
+					|| handler != nullptr) {
+					ParseId3((size_t)tagsize, tag, handler, handler_ctx);
 				} else {
 					mad_stream_skip(&stream, tagsize);
 				}
@@ -747,7 +761,8 @@ MadDecoder::FileSizeToSongLength()
 }
 
 inline bool
-MadDecoder::DecodeFirstFrame(Tag **tag)
+MadDecoder::DecodeFirstFrame(Tag **tag,
+	const TagHandler *handler, void *handler_ctx)
 {
 	struct xing xing;
 	xing.frames = 0;
@@ -755,7 +770,7 @@ MadDecoder::DecodeFirstFrame(Tag **tag)
 	while (true) {
 		enum mp3_action ret;
 		do {
-			ret = DecodeNextFrameHeader(tag);
+			ret = DecodeNextFrameHeader(tag, handler, handler_ctx);
 		} while (ret == DECODE_CONT);
 		if (ret == DECODE_BREAK)
 			return false;

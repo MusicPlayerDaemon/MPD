@@ -191,7 +191,8 @@ dsdiff_handle_native_tag(InputStream &is,
 			 void *handler_ctx, offset_type tagoffset,
 			 TagType type)
 {
-	if (!dsdlib_skip_to(nullptr, is, tagoffset))
+	if (handler.tag == nullptr ||
+		!dsdlib_skip_to(nullptr, is, tagoffset))
 		return;
 
 	struct dsdiff_native_tag metatag;
