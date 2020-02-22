@@ -98,6 +98,7 @@ SmbclientNeighborExplorer::Close() noexcept
 	mutex.unlock();
 
 	thread.Join();
+	scanning = 0;
 }
 
 NeighborExplorer::List
@@ -235,22 +236,26 @@ SmbclientNeighborExplorer::Run()
 inline void
 SmbclientNeighborExplorer::ThreadFunc()
 {
-	SetThreadName("smbclient");
+	SetThreadName("smbclientNeighbor");
 
 	mutex.lock();
+	scanning = 10;
 
-	while (!quit) {
+	do {
 		mutex.unlock();
-
+		//FormatDefault(smbclient_neighbor, "%s start", __func__);
 		Run();
+		//FormatDefault(smbclient_neighbor, "%s end", __func__);
 
 		mutex.lock();
 		if (quit)
 			break;
 
 		// TODO: sleep for how long?
-		cond.timed_wait(mutex, std::chrono::seconds(10));
-	}
+		scanning--;
+		cond.timed_wait(mutex, std::chrono::seconds(2));
+	} while (!quit && scanning);
+	scanning = 0;
 
 	mutex.unlock();
 }

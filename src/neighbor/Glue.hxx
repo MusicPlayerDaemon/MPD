@@ -75,6 +75,8 @@ public:
 	 */
 	gcc_pure
 	List GetList() const noexcept;
+
+	int Scanning() const;
 };
 
 #endif

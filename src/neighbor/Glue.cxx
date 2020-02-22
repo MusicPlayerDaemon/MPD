@@ -100,3 +100,16 @@ NeighborGlue::GetList() const noexcept
 	return result;
 }
 
+
+int
+NeighborGlue::Scanning() const
+{
+	int scanning = 0;
+	for (const auto &i : explorers) {
+		int n = i.explorer->Scanning();
+		if (n > scanning) {
+			scanning = n;
+		}
+	}
+	return scanning;
+}
