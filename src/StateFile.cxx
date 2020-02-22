@@ -81,7 +81,8 @@ StateFile::Write(BufferedOutputStream &os)
 	save_sw_volume_state(os);
 	audio_output_state_save(os, partition.outputs);
 
-#ifdef ENABLE_DATABASE
+#if 0 // no need for caryaudio product
+//#ifdef ENABLE_DATABASE
 	storage_state_save(os, partition.instance);
 #endif
 
