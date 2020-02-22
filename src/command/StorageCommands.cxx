@@ -38,6 +38,7 @@
 #include "db/update/Service.hxx"
 #include "TimePrint.hxx"
 #include "Idle.hxx"
+#include "Stats.hxx"
 
 #include <memory>
 
@@ -205,6 +206,7 @@ handle_mount(Client &client, Request args, Response &r)
 		return CommandResult::ERROR;
 	}
 
+	stats_invalidate();
 	composite.Mount(local_uri, std::move(storage));
 	instance.EmitIdle(IDLE_MOUNT);
 
@@ -271,6 +273,7 @@ handle_unmount(Client &client, Request args, Response &r)
 		return CommandResult::ERROR;
 	}
 
+	stats_invalidate();
 	instance.EmitIdle(IDLE_MOUNT);
 
 	return CommandResult::OK;
