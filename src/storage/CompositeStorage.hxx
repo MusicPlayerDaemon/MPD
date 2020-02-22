@@ -28,6 +28,7 @@
 #include <memory>
 #include <string>
 #include <map>
+#include <vector>
 
 /**
  * A #Storage implementation that combines multiple other #Storage
@@ -100,6 +101,8 @@ public:
 	 */
 	gcc_pure gcc_nonnull_all
 	Storage *GetMount(const char *uri) noexcept;
+
+	std::vector<std::string> ListMounts() const;
 
 	/**
 	 * Call the given function for each mounted storage, including
