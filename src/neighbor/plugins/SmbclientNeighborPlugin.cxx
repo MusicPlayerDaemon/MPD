@@ -36,6 +36,11 @@
 
 #include <algorithm>
 
+#include "util/Domain.hxx"
+#include "Log.hxx"
+
+static constexpr Domain smbclient_neighbor("smbclient_neighbor");
+
 class SmbclientNeighborExplorer final : public NeighborExplorer {
 	struct Server {
 		std::string name, comment, workgroup;
@@ -74,6 +79,7 @@ public:
 
 	/* virtual methods from class NeighborExplorer */
 	void Open() override;
+	void Reopen(int n) override;
 	void Close() noexcept override;
 	List GetList() const noexcept override;
 
@@ -86,7 +92,19 @@ void
 SmbclientNeighborExplorer::Open()
 {
 	quit = false;
+	list.clear();
 	thread.Start();
+}
+
+void
+SmbclientNeighborExplorer::Reopen(int n)
+{
+	FormatDefault(smbclient_neighbor, "%s %d", __func__, __LINE__);
+	Close();
+	if (n > 0) {
+		SmbclientReinit();
+		Open();
+	}
 }
 
 void
@@ -97,7 +115,9 @@ SmbclientNeighborExplorer::Close() noexcept
 	cond.signal();
 	mutex.unlock();
 
-	thread.Join();
+	if (thread.IsDefined()) {
+		thread.Join();
+	}
 	scanning = 0;
 }
 

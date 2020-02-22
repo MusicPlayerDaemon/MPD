@@ -88,6 +88,14 @@ NeighborGlue::Close() noexcept
 		i->explorer->Close();
 }
 
+void
+NeighborGlue::Reopen(int n)
+{
+	for (auto i = explorers.begin(), end = explorers.end(); i != end; ++i) {
+		i->explorer->Reopen(n);
+	}
+}
+
 NeighborGlue::List
 NeighborGlue::GetList() const noexcept
 {

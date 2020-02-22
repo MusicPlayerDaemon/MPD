@@ -65,6 +65,7 @@ public:
 	/* virtual methods from class NeighborExplorer */
 	void Open() override;
 	void Close() noexcept override;
+	void Reopen(int n) override;
 	List GetList() const noexcept override;
 
 private:
@@ -100,6 +101,13 @@ UpnpNeighborExplorer::Close() noexcept
 		discovery = nullptr;
 		UpnpClientGlobalFinish();
 	}
+}
+
+void
+UpnpNeighborExplorer::Reopen(gcc_unused int n)
+{
+	Close();
+	Open();
 }
 
 NeighborExplorer::List

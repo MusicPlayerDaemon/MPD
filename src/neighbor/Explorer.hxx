@@ -65,6 +65,8 @@ public:
 	 */
 	virtual void Close() noexcept = 0;
 
+	virtual void Reopen(int) { Close(); Open();}
+
 	/**
 	 * Obtain a list of currently known neighbors.
 	 */

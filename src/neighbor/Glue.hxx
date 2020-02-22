@@ -68,6 +68,7 @@ public:
 
 	void Open();
 	void Close() noexcept;
+	void Reopen(int n);
 
 	/**
 	 * Get the combined list of all neighbors from all active

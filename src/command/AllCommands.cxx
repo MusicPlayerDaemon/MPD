@@ -173,6 +173,7 @@ static constexpr struct command commands[] = {
 	{ "rescan", PERMISSION_CONTROL, 0, 1, handle_rescan },
 	{ "rm", PERMISSION_CONTROL, 1, 1, handle_rm },
 	{ "save", PERMISSION_CONTROL, 1, 1, handle_save },
+	{ "scanneighbors", PERMISSION_CONTROL, 0, 1, handle_scanNeighbors },
 #ifdef ENABLE_DATABASE
 	{ "search", PERMISSION_READ, 2, -1, handle_search },
 	{ "searchadd", PERMISSION_ADD, 2, -1, handle_searchadd },
