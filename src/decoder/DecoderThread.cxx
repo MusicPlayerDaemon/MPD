@@ -89,7 +89,7 @@ decoder_input_stream_open(DecoderControl &dc, const char *uri)
 static InputStreamPtr
 decoder_input_stream_open(DecoderControl &dc, Path path)
 {
-	auto is = OpenLocalInputStream(path, dc.mutex, dc.cond);
+	auto is = OpenLocalInputStream(path, dc.mutex, dc.cond, true);
 
 	assert(is->IsReady());
 
