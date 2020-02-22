@@ -60,6 +60,12 @@ UpdateWalk::UpdateSongFile2(Directory &directory,
 	}
 
 	if (song == nullptr) {
+		if (name != nullptr && name[0] == '.') {
+			FormatDebug(update_domain,
+				    "ignoring hidden file %s/%s",
+				    directory.GetPath(), name);
+			return;
+		}
 		FormatDebug(update_domain, "reading %s/%s",
 			    directory.GetPath(), name);
 		song = Song::LoadFile(storage, name, directory);
@@ -79,6 +85,14 @@ UpdateWalk::UpdateSongFile2(Directory &directory,
 		FormatDefault(update_domain, "added %s/%s",
 			      directory.GetPath(), name);
 	} else if (info.mtime != song->mtime || walk_discard) {
+		if (name != nullptr && name[0] == '.') {
+			FormatDebug(update_domain,
+				    "ignoring hidden file %s/%s",
+				    directory.GetPath(), name);
+			editor.LockDeleteSong(directory, song);
+			modified = true;
+			return;
+		}
 		FormatDefault(update_domain, "updating %s/%s",
 			      directory.GetPath(), name);
 		if (!song->UpdateFile(storage)) {
