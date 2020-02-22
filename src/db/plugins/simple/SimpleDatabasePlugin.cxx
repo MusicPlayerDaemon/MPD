@@ -265,6 +265,7 @@ SimpleDatabase::ReturnSong(gcc_unused const LightSong *song) const
 
 void
 SimpleDatabase::Visit(const DatabaseSelection &selection,
+		      gcc_unused VisitDirectoryInfo visit_directory_info,
 		      VisitDirectory visit_directory,
 		      VisitSong visit_song,
 		      VisitPlaylist visit_playlist) const

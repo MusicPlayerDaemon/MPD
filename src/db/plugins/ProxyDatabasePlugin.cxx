@@ -118,6 +118,7 @@ public:
 	void ReturnSong(const LightSong *song) const override;
 
 	void Visit(const DatabaseSelection &selection,
+		   VisitDirectoryInfo visit_directory_info,
 		   VisitDirectory visit_directory,
 		   VisitSong visit_song,
 		   VisitPlaylist visit_playlist) const override;
@@ -748,6 +749,7 @@ ServerSupportsSearchBase(const struct mpd_connection *connection) noexcept
 
 void
 ProxyDatabase::Visit(const DatabaseSelection &selection,
+		     gcc_unused VisitDirectoryInfo visit_directory_info,
 		     VisitDirectory visit_directory,
 		     VisitSong visit_song,
 		     VisitPlaylist visit_playlist) const
