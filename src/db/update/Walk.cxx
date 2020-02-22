@@ -43,6 +43,7 @@
 
 #include <stdexcept>
 #include <memory>
+#include <vector>
 
 #include <assert.h>
 #include <string.h>
@@ -326,6 +327,12 @@ UpdateWalk::SkipSymlink(const Directory *directory,
 #endif
 }
 
+struct FileInfo
+{
+	std::string name;
+	StorageFileInfo info;
+};
+
 bool
 UpdateWalk::UpdateDirectory(Directory &directory,
 			    const ExcludeList &exclude_list,
@@ -368,6 +375,7 @@ UpdateWalk::UpdateDirectory(Directory &directory,
 
 	PurgeDeletedFromDirectory(directory);
 
+	std::vector<FileInfo> list;
 	const char *name_utf8;
 	while (!cancel && (name_utf8 = reader->Read()) != nullptr) {
 		if (skip_path(name_utf8))
@@ -389,8 +397,14 @@ UpdateWalk::UpdateDirectory(Directory &directory,
 			modified |= editor.DeleteNameIn(directory, name_utf8);
 			continue;
 		}
+		list.push_back({name_utf8, info2});
+	}
 
-		UpdateDirectoryChild(directory, child_exclude_list, name_utf8, info2);
+	for (const auto &i : list) {
+		if(cancel) {
+			break;
+		}
+		UpdateDirectoryChild(directory, child_exclude_list, i.name.c_str(), i.info);
 	}
 
 	directory.mtime = info.mtime;
