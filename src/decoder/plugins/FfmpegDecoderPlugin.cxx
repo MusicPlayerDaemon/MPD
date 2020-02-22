@@ -807,10 +807,14 @@ FfmpegDecode(DecoderClient &client, InputStream &input,
 		return;
 	}
 
-	const auto audio_format = CheckAudioFormat(codec_params.sample_rate,
+	auto audio_format = CheckAudioFormat(codec_params.sample_rate,
 						   sample_format,
 						   codec_params.channels);
 
+	if (audio_format.format == SampleFormat::FLOAT &&
+		codec_context->bits_per_coded_sample > 0) {
+		audio_format.raw_bits = codec_context->bits_per_coded_sample;
+	}
 	/* the audio format must be read from AVCodecContext by now,
 	   because avcodec_open() has been demonstrated to fill bogus
 	   values into AVCodecContext.channels - a change that will be
