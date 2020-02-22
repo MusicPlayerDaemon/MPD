@@ -36,7 +36,7 @@ static constexpr Domain sndfile_domain("sndfile");
 static bool
 is_dts(SampleFormat fmt, char *buffer)
 {
-	char dts[6];
+	uint8_t dts[6];
 	switch (fmt) {
 	case SampleFormat::S16:
 		dts[0] = buffer[2];
