@@ -407,12 +407,17 @@ try {
 
 	std::lock_guard<Mutex> lock(is.mutex);
 
+	int try_cnt = 5;
 	while (true) {
 		if (CheckCancelRead())
 			return 0;
 
 		if (is.IsAvailable())
 			break;
+
+		if (--try_cnt <= 0) { // walkaround for some curl input no respond.
+			return 0;
+		}
 
 		is.cond.wait(is.mutex);
 	}
