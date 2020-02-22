@@ -48,6 +48,10 @@ SmbclientInit()
 	constexpr int debug = 0;
 	if (smbc_init(mpd_smbc_get_auth_data, debug) < 0)
 		throw MakeErrno("smbc_init() failed");
+	SMBCCTX *context = smbc_set_context(NULL);
+	smbc_setOptionBrowseMaxLmbCount (context, 3);
+	smbc_setTimeout(context, 5000);
+	smbc_setOptionUseCCache(context, false);
 }
 
 void
@@ -64,6 +68,9 @@ SmbclientReinit()
 
 	smbc_setDebug(context, debug);
 	smbc_setFunctionAuthData(context, mpd_smbc_get_auth_data);
+	smbc_setOptionBrowseMaxLmbCount (context, 3);
+	smbc_setTimeout(context, 5000);
+	smbc_setOptionUseCCache(context, false);
 
 	if (!smbc_init_context(context)) {
 		smbc_free_context(context, false);
