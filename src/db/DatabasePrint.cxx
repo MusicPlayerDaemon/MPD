@@ -137,11 +137,30 @@ PrintSongBrief(Response &r, Partition &partition,
 					    song.directory, song.uri);
 }
 
+static std::string
+get_parent(std::string str)
+{
+	auto p1 = str.rfind('/');
+	if (p1 == std::string::npos) {
+		return std::string("Folder");
+	}
+
+	auto p2 = str.rfind('/', p1-1);
+	if (p2 == std::string::npos) {
+		return std::string("Folder");
+	}
+	return str.substr(p2+1, p1-p2-1);
+}
+
 static void
 PrintSongFull(Response &r, Partition &partition,
 	      bool base, const LightSong &song) noexcept
 {
 	song_print_info(r, partition, song, base);
+	if (song.tag && !song.tag->HasType(TAG_ALBUM)) {
+		auto str = get_parent(song.GetURI());
+		r.Format("%s: %s\n", tag_item_names[TAG_ALBUM], str.c_str());
+	}
 
 	if (song.tag->has_playlist)
 		/* this song file has an embedded CUE sheet */
