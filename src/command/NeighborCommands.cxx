@@ -48,11 +48,14 @@ handle_listneighbors(Client &client, gcc_unused Request args, Response &r)
 		return CommandResult::ERROR;
 	}
 
-	for (const auto &i : neighbors->GetList())
+	for (const auto &i : neighbors->GetList()) {
 		r.Format("neighbor: %s\n"
 			 "name: %s\n",
 			 i.uri.c_str(),
 			 i.display_name.c_str());
+		if (!i.device_icon_url.empty())
+			r.Format("icon_url: %s\n", i.device_icon_url.c_str());
+	}
 	return CommandResult::OK;
 }
 
