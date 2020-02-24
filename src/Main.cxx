@@ -86,6 +86,8 @@
 #include "archive/ArchiveList.hxx"
 #endif
 
+#include "external/common/Context.hxx"
+
 #ifdef ANDROID
 #include "java/Global.hxx"
 #include "java/File.hxx"
@@ -139,6 +141,15 @@ Context *context;
 #endif
 
 Instance *instance;
+
+dms::Context &
+GetContext()
+{
+	assert(instance);
+	assert(instance->context);
+
+	return *instance->context;
+}
 
 struct Config {
 	ReplayGainConfig replay_gain;
@@ -543,6 +554,8 @@ try {
 	log_init(options.verbose, options.log_stderr);
 
 	instance = new Instance();
+
+	instance->context = new dms::Context();
 
 #ifdef ENABLE_NEIGHBOR_PLUGINS
 	instance->neighbors = new NeighborGlue();

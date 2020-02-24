@@ -50,6 +50,10 @@ struct Partition;
 class StateFile;
 class RemoteTagCache;
 
+namespace dms {
+	struct Context;
+}
+
 /**
  * A utility class which, when used as the first base class, ensures
  * that the #EventLoop gets initialized before the other base classes.
@@ -106,6 +110,8 @@ struct Instance final
 	std::list<Partition> partitions;
 
 	StateFile *state_file = nullptr;
+
+	dms::Context *context = nullptr;
 
 	Instance();
 	~Instance() noexcept;

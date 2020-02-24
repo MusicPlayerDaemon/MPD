@@ -30,6 +30,12 @@ extern Context *context;
 
 extern Instance *instance;
 
+namespace dms {
+	struct Context;
+}
+
+extern dms::Context &GetContext();
+
 #ifndef ANDROID
 
 /**

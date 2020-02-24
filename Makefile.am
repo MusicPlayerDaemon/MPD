@@ -93,6 +93,7 @@ libmpd_a_SOURCES = \
 	src/command/MessageCommands.cxx src/command/MessageCommands.hxx \
 	src/command/ClientCommands.cxx src/command/ClientCommands.hxx \
 	src/command/PartitionCommands.cxx src/command/PartitionCommands.hxx \
+	src/external/common/MiscCommands.cxx src/external/common/MiscCommands.hxx \
 	src/command/OtherCommands.cxx src/command/OtherCommands.hxx \
 	src/command/CommandListBuilder.cxx src/command/CommandListBuilder.hxx \
 	src/Idle.cxx src/Idle.hxx \
@@ -1381,7 +1382,14 @@ libinput_a_SOURCES += \
 	src/input/IcyInputStream.cxx src/input/IcyInputStream.hxx \
 	src/input/plugins/CurlInputPlugin.cxx src/input/plugins/CurlInputPlugin.hxx \
 	$(CURL_SOURCES) \
-	src/IcyMetaDataParser.cxx src/IcyMetaDataParser.hxx
+	src/IcyMetaDataParser.cxx src/IcyMetaDataParser.hxx \
+	src/external/common/CurlCommand.cxx src/external/common/CurlCommand.hxx \
+	src/external/common/CurlSocket.cxx src/external/common/CurlSocket.hxx \
+	src/external/common/RealUrl.cxx src/external/common/RealUrl.hxx \
+	src/external/common/HttpError.cxx src/external/common/HttpError.hxx \
+	src/external/common/TidalConfig.cxx src/external/common/TidalConfig.hxx \
+	src/external/common/QobuzSession.cxx src/external/common/QobuzSession.hxx \
+	src/external/common/Context.cxx src/external/common/Context.hxx
 endif
 
 if ENABLE_TIDAL

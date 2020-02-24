@@ -159,11 +159,20 @@ struct Partition final : QueueListener, PlayerListener, MixerListener {
 	}
 
 	void PlayNext() {
-		return playlist.PlayNext(pc);
+		if (!playlist.playing) {
+			return playlist.PlayPosition(pc, -1);
+		} else {
+			return playlist.PlayNext(pc);
+		}
 	}
 
 	void PlayPrevious() {
-		return playlist.PlayPrevious(pc);
+		if (!playlist.playing) {
+			int length = playlist.queue.GetLength();
+			playlist.PlayPosition(pc, length-1);
+		} else {
+			return playlist.PlayPrevious(pc);
+		}
 	}
 
 	void SeekSongPosition(unsigned song_position, SongTime seek_time) {

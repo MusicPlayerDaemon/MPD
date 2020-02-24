@@ -39,11 +39,14 @@
 #include "util/ASCII.hxx"
 #include "util/StringUtil.hxx"
 #include "util/StringFormat.hxx"
+#include "util/StringAPI.hxx"
 #include "util/NumberParser.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
 #include "PluginUnavailable.hxx"
+#include "external/common/Context.hxx"
+#include "Main.hxx"
 
 #include <cinttypes>
 
@@ -375,7 +378,7 @@ CurlInputStream::~CurlInputStream() noexcept
 void
 CurlInputStream::InitEasy()
 {
-	request = new CurlRequest(**curl_init, GetURI(), *this);
+	request = new CurlRequest(**curl_init, GetRealURI(), *this);
 
 	request->SetOption(CURLOPT_HTTP200ALIASES, http_200_aliases);
 	request->SetOption(CURLOPT_FOLLOWLOCATION, 1l);
@@ -450,12 +453,25 @@ CurlInputStream::Open(const char *url,
 		      const std::multimap<std::string, std::string> &headers,
 		      Mutex &mutex, Cond &cond)
 {
+	std::string uri;
+	try {
+		auto &context = GetContext();
+		uri = context.acquireRealUrl(url);
+	} catch (const std::runtime_error &e) {
+		FormatError(curl_domain, "%s", e.what());
+		throw;
+	}
+
 	auto icy = std::make_shared<IcyMetaDataParser>();
 
 	auto c = std::make_unique<CurlInputStream>((*curl_init)->GetEventLoop(),
 						   url, headers,
 						   icy,
 						   mutex, cond);
+
+	if (!uri.empty()) {
+		c->SetRealURI(uri);
+	}
 
 	BlockingCall(c->GetEventLoop(), [&c](){
 			c->InitEasy();
@@ -477,7 +493,8 @@ static InputStreamPtr
 input_curl_open(const char *url, Mutex &mutex, Cond &cond)
 {
 	if (strncmp(url, "http://", 7) != 0 &&
-	    strncmp(url, "https://", 8) != 0)
+	    strncmp(url, "https://", 8) != 0 &&
+	    strncmp(url, "qobuz://", 8) != 0)
 		return nullptr;
 
 	return CurlInputStream::Open(url, {}, mutex, cond);

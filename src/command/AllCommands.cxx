@@ -34,6 +34,7 @@
 #include "ClientCommands.hxx"
 #include "PartitionCommands.hxx"
 #include "OtherCommands.hxx"
+#include "external/common/MiscCommands.hxx"
 #include "Permission.hxx"
 #include "tag/Type.h"
 #include "Partition.hxx"
@@ -210,6 +211,7 @@ static constexpr struct command commands[] = {
 	{ "swapid", PERMISSION_CONTROL, 2, 2, handle_swapid },
 	{ "tagtypes", PERMISSION_READ, 0, -1, handle_tagtypes },
 	{ "toggleoutput", PERMISSION_ADMIN, 1, 1, handle_toggleoutput },
+	{ "tpm", PERMISSION_ADD, 2, -1, handle_tpm_commands },
 #ifdef ENABLE_DATABASE
 	{ "unmount", PERMISSION_ADMIN, 1, 1, handle_unmount },
 	{ "unmountall", PERMISSION_ADMIN, 0, 0, handle_unmount_all },
