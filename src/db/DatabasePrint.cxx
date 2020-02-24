@@ -34,9 +34,13 @@
 #include "PlaylistInfo.hxx"
 #include "Interface.hxx"
 #include "fs/Traits.hxx"
+#include "Instance.hxx"
 #include "util/ChronoUtil.hxx"
 #include "util/UriUtil.hxx"
 #include "util/StringCompare.hxx"
+#include "storage/StorageInterface.hxx"
+
+#include "external/jaijson/Serializer.hxx"
 
 #include <functional>
 
@@ -50,8 +54,24 @@ ApplyBaseFlag(const char *uri, bool base) noexcept
 }
 
 static void
-PrintDirectoryURI(Response &r, bool base,
-		  const LightDirectory &directory) noexcept
+PrintDirectoryInfoBrief(gcc_unused Response &r, gcc_unused bool base, gcc_unused const LightDirectory &directory) noexcept
+{
+}
+
+static void
+PrintDirectoryInfoFull(Response &r, bool base, const LightDirectory &directory)
+{
+	if (!directory.IsRoot()) {
+		r.Format("current_directory: %s\n",
+				  ApplyBaseFlag(directory.GetPath(), base));
+		if (directory.total < std::numeric_limits<unsigned>::max()) {
+			r.Format("total: %u\n", directory.total);
+		}
+	}
+}
+
+static void
+PrintDirectoryURI(Response &r, bool base, const LightDirectory &directory)
 {
 	r.Format("directory: %s\n",
 		 ApplyBaseFlag(directory.GetPath(), base));
@@ -72,6 +92,9 @@ PrintDirectoryFull(Response &r, bool base,
 	if (!directory.IsRoot()) {
 		PrintDirectoryURI(r, base, directory);
 
+		if (directory.total < std::numeric_limits<unsigned>::max()) {
+			r.Format("total: %u\n", directory.total);
+		}
 		if (!IsNegative(directory.mtime))
 			time_print(r, "Last-Modified", directory.mtime);
 	}
@@ -201,6 +224,10 @@ db_selection_print(Response &r, Partition &partition,
 	unsigned i = 0;
 
 	using namespace std::placeholders;
+	const auto di = selection.filter == nullptr
+		? std::bind(full ? PrintDirectoryInfoFull : PrintDirectoryInfoBrief,
+			    std::ref(r), base, _1)
+		: VisitDirectoryInfo();
 	const auto d = selection.filter == nullptr
 		? std::bind(full ? PrintDirectoryFull : PrintDirectoryBrief,
 			    std::ref(r), base, _1)
@@ -222,7 +249,7 @@ db_selection_print(Response &r, Partition &partition,
 					s(song);
 			};
 
-		db.Visit(selection, d, s, p);
+		db.Visit(selection, di, d, s, p);
 	} else {
 		// TODO: allow the database plugin to sort internally
 
@@ -237,7 +264,7 @@ db_selection_print(Response &r, Partition &partition,
 				songs.emplace_back(song);
 			};
 
-			db.Visit(selection, d, collect_songs, p);
+			db.Visit(selection, di, d, collect_songs, p);
 		}
 
 		if (sort == TagType(SORT_TAG_LAST_MODIFIED))
