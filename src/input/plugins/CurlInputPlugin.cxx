@@ -408,6 +408,8 @@ CurlInputStream::InitEasy()
 	request->SetOption(CURLOPT_SSL_VERIFYPEER, verify_peer ? 1l : 0l);
 	request->SetOption(CURLOPT_SSL_VERIFYHOST, verify_host ? 2l : 0l);
 	request->SetOption(CURLOPT_HTTPHEADER, request_headers.Get());
+	request->SetOption(CURLOPT_TCP_KEEPALIVE , 1L);
+	request->SetOption(CURLOPT_TCP_KEEPINTVL , 20L);
 }
 
 void
