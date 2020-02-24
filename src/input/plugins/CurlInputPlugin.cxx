@@ -62,12 +62,12 @@
  * reasonable limit that doesn't make low-end machines suffer too
  * much, but doesn't cause stuttering on high-latency lines.
  */
-static const size_t CURL_MAX_BUFFERED = 10 * 1024 * 1024;
+static const size_t CURL_MAX_BUFFERED = 5 * 1024 * 1024;
 
 /**
  * Resume the stream at this number of bytes after it has been paused.
  */
-static const size_t CURL_RESUME_AT = CURL_MAX_BUFFERED * 8 / 10;
+static const size_t CURL_RESUME_AT = CURL_MAX_BUFFERED * 6 / 10;
 
 class CurlInputStream final : public AsyncInputStream, CurlResponseHandler {
 	/* some buffers which were passed to libcurl, which we have
