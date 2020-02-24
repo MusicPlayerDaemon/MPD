@@ -29,6 +29,8 @@
 #include "db/PlaylistVector.hxx"
 #include "SongLoader.hxx"
 #include "BulkEdit.hxx"
+#include "tag/Tag.hxx"
+#include "DetachedSong.hxx"
 #include "playlist/PlaylistQueue.hxx"
 #include "playlist/Print.hxx"
 #include "TimePrint.hxx"
@@ -157,11 +159,27 @@ handle_playlistclear(gcc_unused Client &client,
 	return CommandResult::OK;
 }
 
+// playlistadd {NAME} {URI} [START:END] [TAG_JSON]
 CommandResult
 handle_playlistadd(Client &client, Request args, gcc_unused Response &r)
 {
 	const char *const playlist = args[0];
 	const char *uri = args[1];
+
+	Tag tag;
+	if (args.size >= 3 &&
+		StringStartsWith(args.back(), "{") &&
+		StringEndsWith(args.back(), "}")) {
+		try {
+			jaijson::Document d;
+			if (!d.Parse(args.back()).HasParseError()) {
+				deserialize(d, tag);
+				args.pop_back();
+			}
+		} catch (...) {
+			throw FormatProtocolError(ACK_ERROR_ARG, "parse json %s fail", args.back());
+		}
+	}
 
 	RangeArg range = args.ParseOptional(2, RangeArg::All());
 	bool is_upnp = StringStartsWith(uri, "upnp://");
@@ -174,7 +192,12 @@ handle_playlistadd(Client &client, Request args, gcc_unused Response &r)
 
 	if (uri_has_scheme(uri)) {
 		const SongLoader loader(client);
-		spl_append_uri(playlist, loader, uri);
+		if (tag.IsEmpty()) {
+			spl_append_uri(playlist, loader, uri);
+		} else {
+			auto song = loader.LoadSong(uri, tag);
+			spl_append_song(playlist, song);
+		}
 	} else {
 #ifdef ENABLE_DATABASE
 		const Database &db = client.GetDatabaseOrThrow();
