@@ -23,6 +23,7 @@
 #include "PlaylistError.hxx"
 #include "player/Control.hxx"
 #include "DetachedSong.hxx"
+#include "tag/Builder.hxx"
 #include "Log.hxx"
 
 #include <assert.h>
@@ -52,6 +53,27 @@ playlist::TagModified(const char *uri, const Tag &tag) noexcept
 		auto &song = *queue.items[i].song;
 		if (song.IsURI(uri)) {
 			song.SetTag(tag);
+			queue.ModifyAtPosition(i);
+			modified = true;
+		}
+	}
+
+	if (modified)
+		OnModified();
+}
+
+void
+playlist::TagItemReplaced(const char *uri, TagType type, const char *value) noexcept
+{
+	bool modified = false;
+
+	for (unsigned i = 0; i < queue.length; ++i) {
+		auto &song = *queue.items[i].song;
+		if (song.IsURI(uri)) {
+			TagBuilder builder(std::move(song.WritableTag()));
+			builder.RemoveType(type);
+			builder.AddItem(type, value);
+			song.SetTag(std::move(builder.Commit()));
 			queue.ModifyAtPosition(i);
 			modified = true;
 		}

@@ -104,6 +104,12 @@ Partition::TagModified(const char *uri, const Tag &tag) noexcept
 }
 
 void
+Partition::TagItemReplaced(const char *uri, TagType type, const char *value) noexcept
+{
+	playlist.TagItemReplaced(uri, type, value);
+}
+
+void
 Partition::SyncWithPlayer()
 {
 	playlist.SyncWithPlayer(pc);

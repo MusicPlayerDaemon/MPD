@@ -36,6 +36,7 @@
 #include "sticker/SongSticker.hxx"
 #endif
 #endif
+#include "tag/Type.h"
 
 #include <exception>
 
@@ -147,3 +148,13 @@ Instance::OnRemoteTag(const char *uri, const Tag &tag) noexcept
 }
 
 #endif
+
+void
+Instance::OnTagItemReplaced(const char *uri, TagType type, const char *value) noexcept
+{
+	if (type == TAG_NUM_OF_ITEM_TYPES)
+		return;
+
+	for (auto &partition : partitions)
+		partition.TagItemReplaced(uri, type, value);
+}

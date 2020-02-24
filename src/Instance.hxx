@@ -49,7 +49,14 @@ class ClientList;
 struct Partition;
 class StateFile;
 class RemoteTagCache;
-
+enum TagType
+#ifdef __cplusplus
+/* the size of this enum is 1 byte; this is only relevant for C++
+   code; the only C sources including this header don't use instances
+   of this enum, they only refer to the integer values */
+: uint8_t
+#endif
+;
 
 /**
  * A utility class which, when used as the first base class, ensures
@@ -160,6 +167,7 @@ struct Instance final
 		/* no-op */
 	}
 #endif
+	void OnTagItemReplaced(const char *uri, TagType type, const char *value) noexcept;
 
 private:
 #ifdef ENABLE_DATABASE

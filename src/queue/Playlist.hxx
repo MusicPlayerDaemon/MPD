@@ -194,6 +194,7 @@ public:
 	 */
 	void TagModified(DetachedSong &&song);
 	void TagModified(const char *uri, const Tag &tag) noexcept;
+	void TagItemReplaced(const char *uri, TagType type, const char *value) noexcept;
 
 #ifdef ENABLE_DATABASE
 	/**
