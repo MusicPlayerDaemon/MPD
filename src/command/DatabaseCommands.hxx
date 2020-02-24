@@ -69,4 +69,7 @@ handle_findsavepl(Client &client, Request request, Response &response);
 CommandResult
 handle_searchsavepl(Client &client, Request request, Response &response);
 
+CommandResult
+handle_listext(Client &client, Request request, Response &response);
+
 #endif

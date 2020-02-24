@@ -331,3 +331,66 @@ handle_searchsavepl(Client &client, Request args, Response &r)
 	return handle_match_save_pl(client, args, r, true);
 }
 
+CommandResult
+handle_listext(Client &client, Request args, Response &r)
+{
+	const char *tag_name = args.shift();
+	unsigned tagType = locate_parse_type(tag_name);
+
+	if (tagType >= TAG_NUM_OF_ITEM_TYPES &&
+	    tagType != LOCATE_TAG_FILE_TYPE) {
+		r.FormatError(ACK_ERROR_ARG,
+			      "Unknown tag type: %s", tag_name);
+		return CommandResult::ERROR;
+	}
+
+	std::unique_ptr<SongFilter> filter;
+	TagMask group_mask = TagMask::None();
+
+	if (args.size == 1) {
+		/* for compatibility with < 0.12.0 */
+		if (tagType != TAG_ALBUM) {
+			r.FormatError(ACK_ERROR_ARG,
+				      "should be \"%s\" for 3 arguments",
+				      tag_item_names[TAG_ALBUM]);
+			return CommandResult::ERROR;
+		}
+
+		filter.reset(new SongFilter((unsigned)TAG_ARTIST,
+					    args.shift()));
+	}
+
+	while (args.size >= 2 &&
+	       StringIsEqual(args[args.size - 2], "group")) {
+		const char *s = args[args.size - 1];
+		TagType gt = tag_name_parse_i(s);
+		if (gt == TAG_NUM_OF_ITEM_TYPES) {
+			r.FormatError(ACK_ERROR_ARG,
+				      "Unknown tag type: %s", s);
+			return CommandResult::ERROR;
+		}
+
+		group_mask |= gt;
+
+		args.pop_back();
+		args.pop_back();
+	}
+
+	if (!args.empty()) {
+		filter.reset(new SongFilter());
+		if (!filter->Parse(args, false)) {
+			r.Error(ACK_ERROR_ARG, "not able to parse args");
+			return CommandResult::ERROR;
+		}
+	}
+
+	if (tagType < TAG_NUM_OF_ITEM_TYPES &&
+	    group_mask.Test(TagType(tagType))) {
+		r.Error(ACK_ERROR_ARG, "Conflicting group");
+		return CommandResult::ERROR;
+	}
+
+	PrintUniqueTagsExt(r, client.GetPartition(),
+			tagType, filter.get());
+	return CommandResult::OK;
+}

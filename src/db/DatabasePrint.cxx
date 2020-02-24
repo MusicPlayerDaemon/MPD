@@ -28,6 +28,7 @@
 #include "client/Response.hxx"
 #include "Partition.hxx"
 #include "tag/Tag.hxx"
+#include "tag/SetExt.hxx"
 #include "tag/Mask.hxx"
 #include "LightSong.hxx"
 #include "LightDirectory.hxx"
@@ -369,5 +370,58 @@ PrintUniqueTags(Response &r, Partition &partition,
 					 (TagType)type, _1);
 		db.VisitUniqueTags(selection, (TagType)type,
 				   group_mask, f);
+	}
+}
+
+static bool
+CollectTags(Partition &partition, TagExtSet &set, TagType tag_type, const LightSong &song)
+{
+	assert(song.tag != nullptr);
+	const Tag &tag = *song.tag;
+
+	std::string uri = song.GetURI();
+#ifdef ENABLE_DATABASE
+	const Storage *storage = partition.instance.storage;
+	if (storage != nullptr) {
+		const char *suffix = storage->MapToRelativeUTF8(uri.c_str());
+		if (suffix != nullptr)
+			uri = std::string(suffix);
+	}
+#endif
+
+	std::string allocated = uri_remove_auth(uri.c_str());
+	if (!allocated.empty())
+		uri = allocated;
+
+	set.InsertUnique(tag, tag_type, uri);
+	return true;
+}
+
+void
+PrintUniqueTagsExt(Response &r, Partition &partition, unsigned type,
+		const SongFilter *filter)
+{
+	const Database &db = partition.GetDatabaseOrThrow();
+
+	std::string uri = "";
+	const DatabaseSelection selection(uri.c_str(), true, filter);
+
+	if (type == LOCATE_TAG_FILE_TYPE) {
+		using namespace std::placeholders;
+		const auto f = std::bind(PrintSongURIVisitor,
+					 std::ref(r), std::ref(partition), _1);
+		db.Visit(selection, f);
+	} else {
+		assert(type < TAG_NUM_OF_ITEM_TYPES);
+
+		using namespace std::placeholders;
+		TagExtSet set;
+		const auto f = std::bind(CollectTags, std::ref(partition), std::ref(set),
+					 (TagType)type, _1);
+		db.Visit(selection, f);
+
+		for (const auto &tag : set) {
+			tag_print(r, (TagType)type, str(tag).c_str());
+		}
 	}
 }

@@ -118,6 +118,7 @@ static constexpr struct command commands[] = {
 	{ "list", PERMISSION_READ, 1, -1, handle_list },
 	{ "listall", PERMISSION_READ, 0, 1, handle_listall },
 	{ "listallinfo", PERMISSION_READ, 0, 1, handle_listallinfo },
+	{ "listext", PERMISSION_READ, 1, -1, handle_listext },
 #endif
 	{ "listfiles", PERMISSION_READ, 0, 1, handle_listfiles },
 #ifdef ENABLE_DATABASE

@@ -54,4 +54,9 @@ PrintUniqueTags(Response &r, Partition &partition,
 		unsigned type, TagMask group_mask,
 		const SongFilter *filter);
 
+void
+PrintUniqueTagsExt(Response &r, Partition &partition,
+		unsigned type,
+		const SongFilter *filter);
+
 #endif
