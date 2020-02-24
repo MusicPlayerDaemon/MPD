@@ -37,13 +37,11 @@ AddSong(const Storage *storage, const char *playlist_path_utf8,
 
 void
 search_add_to_playlist(const Database &db, const Storage *storage,
-		       const char *uri, const char *playlist_path_utf8,
-		       const SongFilter *filter)
+		       const char *playlist_path_utf8,
+		       const DatabaseSelection &selection)
 {
-	const DatabaseSelection selection(uri, true, filter);
-
 	using namespace std::placeholders;
-	const auto f = std::bind(AddSong, storage,
+	const auto f = std::bind(AddSong, std::ref(storage),
 				 playlist_path_utf8, _1);
 	db.Visit(selection, f);
 }

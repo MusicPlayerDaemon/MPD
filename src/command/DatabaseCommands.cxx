@@ -154,22 +154,29 @@ handle_searchadd(Client &client, Request args, Response &r)
 	return handle_match_add(client, args, r, true);
 }
 
-CommandResult
-handle_searchaddpl(Client &client, Request args, Response &r)
+static CommandResult
+handle_match_add_pl(Client &client, Request args, Response &r, bool fold_case)
 {
 	const char *playlist = args.shift();
 
 	SongFilter filter;
-	if (!filter.Parse(args, true)) {
+	if (!filter.Parse(args, fold_case)) {
 		r.Error(ACK_ERROR_ARG, "incorrect arguments");
 		return CommandResult::ERROR;
 	}
 
+	const DatabaseSelection selection("", true, &filter);
 	const Database &db = client.GetDatabaseOrThrow();
-
 	search_add_to_playlist(db, client.GetStorage(),
-			       "", playlist, &filter);
+				      playlist, selection);
+
 	return CommandResult::OK;
+}
+
+CommandResult
+handle_searchaddpl(Client &client, Request args, Response &r)
+{
+	return handle_match_add_pl(client, args, r, true);
 }
 
 CommandResult

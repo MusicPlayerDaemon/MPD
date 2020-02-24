@@ -21,6 +21,7 @@
 #include "PlaylistCommands.hxx"
 #include "Request.hxx"
 #include "db/DatabasePlaylist.hxx"
+#include "db/Selection.hxx"
 #include "CommandError.hxx"
 #include "PlaylistSave.hxx"
 #include "PlaylistFile.hxx"
@@ -159,8 +160,16 @@ CommandResult
 handle_playlistadd(Client &client, Request args, gcc_unused Response &r)
 {
 	const char *const playlist = args[0];
-	bool is_upnp = StringStartsWith(args[1], "upnp://");
-	const char *uri = is_upnp ? (args[1] + 7) : args[1];
+	const char *uri = args[1];
+
+	RangeArg range = args.ParseOptional(2, RangeArg::All());
+	bool is_upnp = StringStartsWith(uri, "upnp://");
+	if (is_upnp) {
+		uri = uri + 7;
+	}
+	DatabaseSelection selection(uri, true);
+	selection.window_start = range.start;
+	selection.window_end = range.end;
 
 	if (uri_has_scheme(uri)) {
 		const SongLoader loader(client);
@@ -170,7 +179,7 @@ handle_playlistadd(Client &client, Request args, gcc_unused Response &r)
 		const Database &db = is_upnp ? client.GetUpnpDatabaseOrThrow() : client.GetDatabaseOrThrow();
 
 		search_add_to_playlist(db, client.GetStorage(),
-				       uri, playlist, nullptr);
+				       playlist, selection);
 #else
 		r.Error(ACK_ERROR_NO_EXIST, "directory or file not found");
 		return CommandResult::ERROR;
