@@ -58,7 +58,7 @@ tag_stream_scan(InputStream &is, const TagHandler &handler, void *ctx)
 
 	if (suffix == nullptr && mime == nullptr)
 		return false;
-	if (suffix != nullptr) {
+	if (suffix != nullptr && handler.tag != nullptr) {
 		char name[64];
 		ToUpperASCII(name, suffix, sizeof(name));
 		tag_handler_invoke_tag(handler, ctx, TAG_SUFFIX, name);

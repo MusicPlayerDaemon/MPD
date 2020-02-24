@@ -380,7 +380,8 @@ scan_id3_tag(struct id3_tag *tag,
 {
 	if (handler.tag == nullptr &&
 		handler.duration == nullptr &&
-		handler.pair == nullptr) {
+		handler.pair == nullptr &&
+		handler.cover == nullptr) {
 		return;
 	}
 

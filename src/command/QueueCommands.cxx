@@ -164,7 +164,9 @@ handle_addid(Client &client, Request args, Response &r)
 	const SongLoader loader(client, db, client.GetStorage());
 	unsigned added_id = tag.IsEmpty() ? partition.AppendURI(loader, uri)
 			: partition.AppendURI(loader, uri, tag);
-	partition.instance.LookupRemoteTag(uri);
+	if (tag.IsEmpty()) {
+		partition.instance.LookupRemoteTag(uri);
+	}
 
 	if (args.size == 2) {
 		unsigned to = args.ParseUnsigned(1);
