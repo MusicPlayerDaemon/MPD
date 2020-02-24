@@ -194,6 +194,10 @@ QobuzInputStream::OnQobuzSuccess() noexcept
 	FormatDebug(domain, "real_url: %s\nmime_type: %s", stream_track.url.c_str(), stream_track.mime_type.c_str());
 
 	try {
+		auto suffix = stream_track.mime_type.find("flac") != std::string::npos
+			? "FLAC" : "MP3";
+		auto track_uri = std::string("qobuz://track/") + track_id;
+		instance->OnTagItemReplaced(track_uri.c_str(), TAG_SUFFIX, suffix);
 		SetInput(OpenCurlInputStream(stream_track.url.c_str(), {},
 					     mutex, cond));
 
