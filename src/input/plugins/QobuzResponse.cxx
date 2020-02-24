@@ -16,18 +16,16 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#pragma once
+#include "config.h"
+#include "QobuzResponse.hxx"
+#include "external/jaijson/Deserializer.hxx"
 
-#include "Compiler.h"
-#include "external/jaijson/jaijson.hxx"
+bool
+deserialize(const jaijson::Value &d, QobuzResponse &m)
+{
+	deserialize(d, "status", m.status);
+	deserialize(d, "code", m.code);
+	deserialize(d, "message", m.message);
 
-#include <string>
-
-struct QobuzSession {
-	std::string app_id;
-	std::string app_secret;
-	std::string user_auth_token;
-	int format_id = 5;
-};
-
-bool deserialize(const jaijson::Value &d, QobuzSession &m);
+	return !m.status.empty();
+}

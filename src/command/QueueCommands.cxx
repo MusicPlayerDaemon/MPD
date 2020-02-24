@@ -42,6 +42,7 @@
 #include "StateFile.hxx"
 #include "config/ConfigOption.hxx"
 #include "config/ConfigGlobal.hxx"
+#include "input/plugins/QobuzQueue.hxx"
 
 #include <memory>
 #include <limits>
@@ -104,6 +105,13 @@ handle_add(Client &client, Request args, Response &r)
 		}
 	}
 	RangeArg range = args.ParseOptional(1, RangeArg::All());
+	if (StringStartsWith(uri, "qobuz://")) {
+		QobuzQueue queue;
+		if (queue.Add(client, uri, range)) {
+			return CommandResult::OK;
+		}
+		// fall through, so can add qobuz://track/XXXX ?
+	}
 	const auto located_uri = StringStartsWith(uri, "upnp://")
 		? LocatedUri(LocatedUri::Type::RELATIVE, uri)
 		: LocateUri(uri, &client

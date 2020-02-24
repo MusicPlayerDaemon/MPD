@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2018 Cary Audio
+ * Copyright 2018 Goldhorn
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,11 +18,15 @@
 
 #pragma once
 
-#include "command/CommandResult.hxx"
+#include "Compiler.h"
+#include "external/jaijson/jaijson.hxx"
 
-class Client;
-class Request;
-class Response;
+#include <string>
 
-CommandResult
-handle_tpm_tidal_session(Client &client, Request request, Response &response);
+struct QobuzResponse {
+	std::string status;
+	int code = 0;
+	std::string message;
+};
+
+bool deserialize(const jaijson::Value &d, QobuzResponse &m);

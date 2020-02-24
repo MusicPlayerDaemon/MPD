@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2018 Cary Audio
+ * Copyright 2018 Goldhorn
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,18 +16,26 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "config.h"
-#include "QobuzSession.hxx"
-#include "external/jaijson/Deserializer.hxx"
-#include "external/jaijson/Serializer.hxx"
+#pragma once
 
-bool
-deserialize(const jaijson::Value &d, QobuzSession &m)
-{
-	deserialize(d, "app_id", m.app_id);
-	deserialize(d, "app_secret", m.app_secret);
-	deserialize(d, "user_auth_token", m.user_auth_token);
-	deserialize(d, "format_id", m.format_id);
+#include "Compiler.h"
+#include "external/jaijson/jaijson.hxx"
 
-	return !m.user_auth_token.empty();
-}
+#include <string>
+
+struct QobuzEvent {
+	std::string user_id;
+	uint64_t date;
+	uint64_t duration = 0;
+	bool online = true;
+	std::string intent = "streaming";
+	bool sample = false;
+	std::string device_id;
+	std::string track_id;
+	bool purchase = false;
+	bool local = false;
+	std::string credential_id;
+	int format_id = 5;
+};
+
+void serialize(jaijson::Writer &w, const QobuzEvent &m);

@@ -120,7 +120,7 @@ TidalTagScanner::FinishParser(std::unique_ptr<CurlResponseParser> p)
 }
 
 void
-TidalTagScanner::OnError(std::exception_ptr e) noexcept
+TidalTagScanner::OnError(std::exception_ptr e, gcc_unused int code) noexcept
 {
 	handler.OnRemoteTagError(e);
 }

@@ -48,9 +48,6 @@ struct playlist;
 class Database;
 class Storage;
 
-namespace dms {
-	struct Context;
-}
 class Client final
 	: FullyBufferedSocket,
 	  public boost::intrusive::list_base_hook<boost::intrusive::link_mode<boost::intrusive::normal_link>> {
@@ -206,9 +203,6 @@ public:
 
 	gcc_pure
 	Instance &GetInstance() noexcept;
-
-	gcc_pure
-	dms::Context &GetContext() noexcept;
 
 	gcc_pure
 	playlist &GetPlaylist() noexcept;

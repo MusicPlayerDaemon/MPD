@@ -83,8 +83,10 @@ TidalTrackRequest::TidalTrackRequest(CurlGlobal &curl,
 		 *this),
 	 handler(_handler)
 {
-	request_headers.Append((std::string("X-Tidal-Token:")
-				+ token).c_str());
+	if (token != nullptr && *token != 0) {
+		request_headers.Append((std::string("X-Tidal-Token:")
+					+ token).c_str());
+	}
 	request_headers.Append((std::string("X-Tidal-SessionId:")
 				+ session).c_str());
 	request.SetOption(CURLOPT_HTTPHEADER, request_headers.Get());
@@ -118,7 +120,7 @@ TidalTrackRequest::FinishParser(std::unique_ptr<CurlResponseParser> p)
 }
 
 void
-TidalTrackRequest::OnError(std::exception_ptr e) noexcept
+TidalTrackRequest::OnError(std::exception_ptr e, gcc_unused int code) noexcept
 {
 	handler.OnTidalTrackError(e);
 }

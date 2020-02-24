@@ -64,7 +64,7 @@ public:
 	 * An error has occurred.  The method is allowed delete the
 	 * #CurlRequest here.
 	 */
-	virtual void OnError(std::exception_ptr e) noexcept = 0;
+	virtual void OnError(std::exception_ptr e, int code = 0) noexcept = 0;
 };
 
 #endif

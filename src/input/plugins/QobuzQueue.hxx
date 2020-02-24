@@ -1,5 +1,6 @@
 /*
- * Copyright 2015-2018 Cary Audio
+ * Copyright 2003-2018 The Music Player Daemon Project
+ * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,23 +17,38 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#pragma once
+#ifndef QOBUZ_QUEUE_HXX
+#define QOBUZ_QUEUE_HXX
 
 #include "Compiler.h"
-#include "RealUrl.hxx"
-#include "TidalConfig.hxx"
+#include "check.h"
+#include "QobuzRequest.hxx"
 
-#include <string>
+#include <mutex>
+#include <condition_variable>
+#include <exception>
 
-namespace dms {
+struct Album;
+struct Playlist;
+struct RangeArg;
+class Client;
 
-struct Context
-{
-	TidalConfig tidal;
+class QobuzQueue : public QobuzHandler {
+	static constexpr int DEFAULT_TIMEOUT = 30; // seconds
+	std::mutex mutex;
+	std::condition_variable cond;
+	std::exception_ptr exception_ptr;
 
-	std::string getTidalOldRealUrl(std::string uri);
-	std::string getTidalRealUrl(std::string uri);
-	std::string acquireRealUrl(const std::string &uri);
+public:
+	QobuzQueue();
+
+	~QobuzQueue() noexcept;
+
+	bool Add(Client &client, const char *uri, const RangeArg &range);
+
+private: // override QobuzHandler
+	void OnQobuzSuccess() noexcept override;
+	void OnQobuzError(std::exception_ptr error) noexcept override;
 };
 
-}
+#endif

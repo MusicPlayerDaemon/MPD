@@ -16,13 +16,23 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#pragma once
+#include "config.h"
+#include "QobuzSession.hxx"
+#include "external/jaijson/Deserializer.hxx"
+#include "external/jaijson/Serializer.hxx"
 
-#include "command/CommandResult.hxx"
+bool
+deserialize(const jaijson::Value &d, QobuzSession &m)
+{
+	deserialize(d, "app_id", m.app_id);
+	deserialize(d, "app_secret", m.app_secret);
+	deserialize(d, "user_auth_token", m.user_auth_token);
+	deserialize(d, "format_id", m.format_id);
+	deserialize(d, "user_id", m.user_id);
+	deserialize(d, "device_id", m.device_id);
+	deserialize(d, "credential_id", m.credential_id);
+	m.user_purchases_track_ids.clear();
+	deserialize(d, "user_purchases_track_ids", m.user_purchases_track_ids);
 
-class Client;
-class Request;
-class Response;
-
-CommandResult
-handle_tpm_tidal_session(Client &client, Request request, Response &response);
+	return !m.user_auth_token.empty();
+}

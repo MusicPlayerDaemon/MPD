@@ -37,16 +37,29 @@
 
 #include <stdexcept>
 #include <memory>
+#include <assert.h>
 
 static constexpr Domain tidal_domain("tidal");
 
 static TidalSessionManager *tidal_session;
-static const char *tidal_audioquality;
+
+TidalSessionManager &GetTidalSession()
+{
+	assert(tidal_session);
+
+	return *tidal_session;
+}
+
+struct TrackSession {
+	std::string track_id;
+	std::string audioquality;
+};
 
 class TidalInputStream final
 	: public ProxyInputStream, TidalSessionHandler, TidalTrackHandler {
 
 	const std::string track_id;
+	std::string track_audioquality;
 
 	std::unique_ptr<TidalTrackRequest> track_request;
 
@@ -59,10 +72,11 @@ class TidalInputStream final
 	bool retry_login = true;
 
 public:
-	TidalInputStream(const char *_uri, const char *_track_id,
+	TidalInputStream(const char *_uri, TrackSession &&_ts,
 			 Mutex &_mutex, Cond &_cond) noexcept
 		:ProxyInputStream(_uri, _mutex, _cond),
-		 track_id(_track_id)
+		 track_id(std::move(_ts.track_id)),
+		 track_audioquality(std::move(_ts.audioquality))
 	{
 		tidal_session->AddLoginHandler(*this);
 	}
@@ -99,12 +113,14 @@ TidalInputStream::OnTidalSession() noexcept
 
 	try {
 		TidalTrackHandler &handler = *this;
+		auto audioquality = track_audioquality.empty() ?
+			 tidal_session->GetQudioQuality() : track_audioquality;
 		track_request = std::make_unique<TidalTrackRequest>(tidal_session->GetCurl(),
 								    tidal_session->GetBaseUrl(),
 								    tidal_session->GetToken(),
 								    tidal_session->GetSession().c_str(),
 								    track_id.c_str(),
-								    tidal_audioquality,
+								    audioquality.c_str(),
 								    handler);
 		track_request->Start();
 	} catch (...) {
@@ -170,21 +186,21 @@ InitTidalInput(EventLoop &event_loop, const ConfigBlock &block)
 						   "https://api.tidal.com/v1");
 
 	const char *token = block.GetBlockValue("token");
-	if (token == nullptr)
-		throw PluginUnavailable("No Tidal application token configured");
+	//if (token == nullptr)
+	//	throw PluginUnavailable("No Tidal application token configured");
 
 	const char *username = block.GetBlockValue("username");
-	if (username == nullptr)
-		throw PluginUnavailable("No Tidal username configured");
+	//if (username == nullptr)
+	//	throw PluginUnavailable("No Tidal username configured");
 
 	const char *password = block.GetBlockValue("password");
-	if (password == nullptr)
-		throw PluginUnavailable("No Tidal password configured");
+	//if (password == nullptr)
+	//	throw PluginUnavailable("No Tidal password configured");
 
-	tidal_audioquality = block.GetBlockValue("audioquality", "HIGH");
+	const char *audioquality = block.GetBlockValue("audioquality", "HIGH");
 
 	tidal_session = new TidalSessionManager(event_loop, base_url, token,
-						username, password);
+						username, password, audioquality);
 }
 
 static void
@@ -210,18 +226,51 @@ ExtractTidalTrackId(const char *uri)
 	return track_id;
 }
 
+static TrackSession
+ExtractCaryTidalTrackId(const char *uri)
+{
+	TrackSession ts;
+	const char *track_id = StringAfterPrefix(uri, "https://api.tidal.com/v1/tracks/");
+	if (track_id == nullptr || *track_id == 0)
+		return ts;
+
+	std::string track_id_str = std::string(track_id);
+	auto slash = track_id_str.find('/');
+	if (slash != std::string::npos) {
+		track_id_str = track_id_str.substr(0, slash);
+	}
+	ts.track_id = std::move(track_id_str);
+	auto audioquality_key_str = StringFind(uri, "audioquality=");
+	if (audioquality_key_str) {
+		ts.audioquality = audioquality_key_str + strlen("audioquality=");
+		auto pos = ts.audioquality.find('&');
+		if (pos != std::string::npos) {
+			ts.audioquality = ts.audioquality.substr(0, pos);
+		}
+	}
+
+	return ts;
+}
+
 static InputStreamPtr
 OpenTidalInput(const char *uri, Mutex &mutex, Cond &cond)
 {
 	assert(tidal_session != nullptr);
 
 	const char *track_id = ExtractTidalTrackId(uri);
-	if (track_id == nullptr)
-		return nullptr;
+	TrackSession track_session;
+	if (track_id == nullptr) {
+		track_session = ExtractCaryTidalTrackId(uri);
+		if (track_session.track_id.empty()) {
+			return nullptr;
+		}
+	} else {
+		track_session.track_id = track_id;
+	}
 
 	// TODO: validate track_id
 
-	return std::make_unique<TidalInputStream>(uri, track_id, mutex, cond);
+	return std::make_unique<TidalInputStream>(uri, std::move(track_session), mutex, cond);
 }
 
 static std::unique_ptr<RemoteTagScanner>

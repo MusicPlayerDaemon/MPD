@@ -1,6 +1,5 @@
 /*
- * Copyright 2003-2018 The Music Player Daemon Project
- * http://www.musicpd.org
+ * Copyright 2018 Goldhorn
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,24 +16,23 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef QOBUZ_SESSION_HXX
-#define QOBUZ_SESSION_HXX
+#pragma once
+
+#include "Compiler.h"
+#include "external/jaijson/jaijson.hxx"
 
 #include <string>
-
-class CurlRequest;
+#include <list>
 
 struct QobuzSession {
-	std::string user_auth_token, device_id;
-
-	bool IsDefined() const noexcept {
-		return !user_auth_token.empty();
-	}
-
-	void Clear() {
-		user_auth_token.clear();
-		device_id.clear();
-	}
+	std::string app_id;
+	std::string app_secret;
+	std::string user_auth_token;
+	int format_id = 5;
+	int64_t user_id = 0;
+	int64_t device_id = 0;
+	int64_t credential_id = 0;
+	std::list<int64_t> user_purchases_track_ids;
 };
 
-#endif
+bool deserialize(const jaijson::Value &d, QobuzSession &m);

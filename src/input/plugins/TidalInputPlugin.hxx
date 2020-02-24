@@ -20,6 +20,10 @@
 #ifndef INPUT_TIDAL_HXX
 #define INPUT_TIDAL_HXX
 
+class TidalSessionManager;
+
 extern const struct InputPlugin tidal_input_plugin;
+
+TidalSessionManager &GetTidalSession();
 
 #endif

@@ -88,6 +88,11 @@ class TidalSessionManager final : TidalLoginHandler {
 	 */
 	std::string session;
 
+	/**
+	 * The current audio quality.
+	 */
+	std::string audioquality;
+
 	typedef boost::intrusive::list<TidalSessionHandler,
 				       boost::intrusive::constant_time_size<false>> LoginHandlerList;
 
@@ -99,7 +104,8 @@ public:
 	TidalSessionManager(EventLoop &event_loop,
 			    const char *_base_url, const char *_token,
 			    const char *_username,
-			    const char *_password);
+			    const char *_password,
+			    const char *_audioquality);
 
 	~TidalSessionManager() noexcept;
 
@@ -148,6 +154,18 @@ public:
 			throw std::runtime_error("No session");
 
 		return session;
+	}
+
+	void SetSession(const std::string &_session) noexcept {
+		session = _session;
+	}
+
+	std::string GetQudioQuality() const noexcept {
+		return audioquality;
+	}
+
+	void SetQudioQuality(const std::string &_audioquality) noexcept {
+		audioquality = _audioquality;
 	}
 
 private:

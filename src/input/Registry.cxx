@@ -59,7 +59,7 @@ const InputPlugin *const input_plugins[] = {
 	&tidal_input_plugin,
 #endif
 #ifdef ENABLE_QOBUZ
-	//&qobuz_input_plugin,
+	&qobuz_input_plugin,
 #endif
 #ifdef ENABLE_CURL
 	&input_plugin_curl,

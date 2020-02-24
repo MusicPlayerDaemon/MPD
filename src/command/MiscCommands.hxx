@@ -25,4 +25,4 @@ class Request;
 class Response;
 
 CommandResult
-handle_tpm_tidal_session(Client &client, Request request, Response &response);
+handle_tpm_commands(Client &client, Request request, Response &response);

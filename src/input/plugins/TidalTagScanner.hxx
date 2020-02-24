@@ -56,7 +56,7 @@ private:
 	void FinishParser(std::unique_ptr<CurlResponseParser> p) override;
 
 	/* virtual methods from CurlResponseHandler */
-	void OnError(std::exception_ptr e) noexcept override;
+	void OnError(std::exception_ptr e, int code) noexcept override;
 };
 
 #endif

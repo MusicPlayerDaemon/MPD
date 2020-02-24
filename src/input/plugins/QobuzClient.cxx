@@ -47,19 +47,9 @@ public:
 
 }
 
-QobuzClient::QobuzClient(EventLoop &event_loop,
-			 const char *_base_url,
-			 const char *_app_id, const char *_app_secret,
-			 const char *_device_manufacturer_id,
-			 const char *_username, const char *_email,
-			 const char *_password,
-			 const char *_format_id)
-	:base_url(_base_url), app_id(_app_id), app_secret(_app_secret),
-	 device_manufacturer_id(_device_manufacturer_id),
-	 username(_username), email(_email), password(_password),
-	 format_id(_format_id),
-	 curl(event_loop),
-	 defer_invoke_handlers(event_loop, BIND_THIS_METHOD(InvokeHandlers))
+QobuzClient::QobuzClient(EventLoop &event_loop, const char *_base_url)
+	: curl(event_loop)
+	, base_url(_base_url)
 {
 }
 
@@ -69,99 +59,16 @@ QobuzClient::GetCurl() noexcept
 	return *curl;
 }
 
-void
-QobuzClient::StartLogin()
+QobuzSession &
+QobuzClient::GetSession() noexcept
 {
-	assert(!session.IsDefined());
-	assert(!login_request);
-	assert(!handlers.empty());
-
-	QobuzLoginHandler &handler = *this;
-	login_request = std::make_unique<QobuzLoginRequest>(*curl, base_url,
-							    app_id,
-							    username, email,
-							    password,
-							    device_manufacturer_id,
-							    handler);
-	login_request->Start();
-}
-
-void
-QobuzClient::AddLoginHandler(QobuzSessionHandler &h) noexcept
-{
-	const std::lock_guard<Mutex> protect(mutex);
-	assert(!h.is_linked());
-
-	const bool was_empty = handlers.empty();
-	handlers.push_front(h);
-
-	if (!was_empty || login_request)
-		return;
-
-	if (session.IsDefined()) {
-		ScheduleInvokeHandlers();
-	} else {
-		// TODO: throttle login attempts?
-
-		try {
-			StartLogin();
-		} catch (...) {
-			error = std::current_exception();
-			ScheduleInvokeHandlers();
-			return;
-		}
-	}
-}
-
-QobuzSession
-QobuzClient::GetSession() const
-{
-	const std::lock_guard<Mutex> protect(mutex);
-
-	if (error)
-		std::rethrow_exception(error);
-
-	if (!session.IsDefined())
-		throw std::runtime_error("No session");
-
 	return session;
 }
 
-void
-QobuzClient::OnQobuzLoginSuccess(QobuzSession &&_session) noexcept
+std::string
+QobuzClient::GetFormatId() const noexcept
 {
-	{
-		const std::lock_guard<Mutex> protect(mutex);
-		session = std::move(_session);
-		login_request.reset();
-	}
-
-	ScheduleInvokeHandlers();
-}
-
-void
-QobuzClient::OnQobuzLoginError(std::exception_ptr _error) noexcept
-{
-	{
-		const std::lock_guard<Mutex> protect(mutex);
-		error = std::move(_error);
-		login_request.reset();
-	}
-
-	ScheduleInvokeHandlers();
-}
-
-void
-QobuzClient::InvokeHandlers() noexcept
-{
-	const std::lock_guard<Mutex> protect(mutex);
-	while (!handlers.empty()) {
-		auto &h = handlers.front();
-		handlers.pop_front();
-
-		const ScopeUnlock unlock(mutex);
-		h.OnQobuzSession();
-	}
+	return std::to_string(session.format_id);
 }
 
 std::string
@@ -179,7 +86,7 @@ QobuzClient::MakeUrl(const char *object, const char *method,
 	for (const auto &i : query)
 		q(uri, i.first.c_str(), i.second.c_str());
 
-	q(uri, "app_id", app_id);
+	q(uri, "app_id", session.app_id.c_str());
 	return uri;
 }
 
@@ -204,16 +111,17 @@ QobuzClient::MakeSignedUrl(const char *object, const char *method,
 		concatenated_query += i.second;
 	}
 
-	q(uri, "app_id", app_id);
+	q(uri, "app_id", session.app_id.c_str());
 
 	const auto request_ts = std::to_string(time(nullptr));
 	q(uri, "request_ts", request_ts.c_str());
 	concatenated_query += request_ts;
 
-	concatenated_query += app_secret;
+	concatenated_query += session.app_secret;
 
 	const auto md5_hex = MD5Hex({concatenated_query.data(), concatenated_query.size()});
 	q(uri, "request_sig", &md5_hex.front());
 
 	return uri;
 }
+

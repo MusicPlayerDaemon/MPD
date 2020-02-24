@@ -20,6 +20,11 @@
 #ifndef INPUT_QOBUZ_HXX
 #define INPUT_QOBUZ_HXX
 
+struct QobuzSession;
+struct QobuzClient;
+
 extern const struct InputPlugin qobuz_input_plugin;
+QobuzSession &GetQobuzSession();
+QobuzClient &GetQobuzClient();
 
 #endif

@@ -118,7 +118,7 @@ class UPnPDeviceDirectory final : UpnpCallback {
 			try {
 				request.Start();
 			} catch (...) {
-				OnError(std::current_exception());
+				OnError(std::current_exception(), 0);
 			}
 		}
 
@@ -127,7 +127,7 @@ class UPnPDeviceDirectory final : UpnpCallback {
 			       std::multimap<std::string, std::string> &&headers) override;
 		void OnData(ConstBuffer<void> data) override;
 		void OnEnd() override;
-		void OnError(std::exception_ptr e) noexcept override;
+		void OnError(std::exception_ptr e, int code) noexcept override;
 	};
 
 	CurlInit curl;

@@ -126,6 +126,14 @@ protected:
 		return buffer.GetSpace();
 	}
 
+	/**
+	 * Determine how many bytes in the buffer.
+	 */
+	gcc_pure
+	size_t GetBufferSize() const noexcept {
+		return buffer.GetSize();
+	}
+
 	CircularBuffer<uint8_t>::Range PrepareWriteBuffer() noexcept {
 		return buffer.Write();
 	}

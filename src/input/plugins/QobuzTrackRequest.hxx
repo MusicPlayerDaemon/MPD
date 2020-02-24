@@ -30,7 +30,7 @@ struct QobuzSession;
 
 class QobuzTrackHandler {
 public:
-	virtual void OnQobuzTrackSuccess(std::string url) noexcept = 0;
+	virtual void OnQobuzTrackSuccess(std::string url, std::string mime_type) noexcept = 0;
 	virtual void OnQobuzTrackError(std::exception_ptr error) noexcept = 0;
 };
 
@@ -61,7 +61,7 @@ private:
 	void FinishParser(std::unique_ptr<CurlResponseParser> p) override;
 
 	/* virtual methods from CurlResponseHandler */
-	void OnError(std::exception_ptr e) noexcept override;
+	void OnError(std::exception_ptr e, int code) noexcept override;
 };
 
 #endif

@@ -16,13 +16,30 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#pragma once
+#include "config.h"
+#include "QobuzEvent.hxx"
+#include "external/jaijson/Deserializer.hxx"
+#include "external/jaijson/Serializer.hxx"
 
-#include "command/CommandResult.hxx"
+void
+serialize(jaijson::Writer &w, const QobuzEvent &m)
+{
+	w.StartObject();
 
-class Client;
-class Request;
-class Response;
+	serialize(w, "user_id", m.user_id);
+	serialize(w, "date", m.date);
+	if (m.duration > 0) {
+		serialize(w, "duration", m.duration);
+	}
+	serialize(w, "online", m.online);
+	serialize(w, "intent", m.intent);
+	serialize(w, "sample", m.sample);
+	serialize(w, "device_id", m.device_id);
+	serialize(w, "track_id", m.track_id);
+	serialize(w, "purchase", m.purchase);
+	serialize(w, "local", m.local);
+	serialize(w, "credential_id", m.credential_id);
+	serialize(w, "format_id", m.format_id);
 
-CommandResult
-handle_tpm_tidal_session(Client &client, Request request, Response &response);
+	w.EndObject();
+}

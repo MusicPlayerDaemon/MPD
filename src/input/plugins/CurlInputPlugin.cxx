@@ -45,8 +45,6 @@
 #include "util/Domain.hxx"
 #include "Log.hxx"
 #include "PluginUnavailable.hxx"
-#include "external/common/Context.hxx"
-#include "Main.hxx"
 
 #include <cinttypes>
 
@@ -132,12 +130,14 @@ private:
 	 */
 	void SeekInternal(offset_type new_offset);
 
+	void ResumeBreakpoint(offset_type new_offset);
+
 	/* virtual methods from CurlResponseHandler */
 	void OnHeaders(unsigned status,
 		       std::multimap<std::string, std::string> &&headers) override;
 	void OnData(ConstBuffer<void> data) override;
 	void OnEnd() override;
-	void OnError(std::exception_ptr e) noexcept override;
+	void OnError(std::exception_ptr e, int code) noexcept override;
 
 	/* virtual methods from AsyncInputStream */
 	virtual void DoResume() override;
@@ -286,8 +286,17 @@ CurlInputStream::OnEnd()
 }
 
 void
-CurlInputStream::OnError(std::exception_ptr e) noexcept
+CurlInputStream::OnError(std::exception_ptr e, int code) noexcept
 {
+	FormatError(curl_domain, "code: %d", code);
+	if (code == CURLE_PARTIAL_FILE) {
+		offset_type new_offset = offset + GetBufferSize();
+		BlockingCall(GetEventLoop(), [this, new_offset](){
+				ResumeBreakpoint(new_offset);
+			});
+		return;
+	}
+
 	const std::lock_guard<Mutex> protect(mutex);
 	postponed_exception = std::move(e);
 
@@ -436,6 +445,26 @@ CurlInputStream::SeekInternal(offset_type new_offset)
 }
 
 void
+CurlInputStream::ResumeBreakpoint(offset_type new_offset)
+{
+	FormatWarning(curl_domain, "resume from breakpoint: %" PRIoffset "/%" PRIoffset,
+		new_offset, size);
+
+	/* close the old connection and open a new one */
+	FreeEasy();
+	InitEasy();
+
+	/* send the "Range" header */
+
+	if (new_offset > 0)
+		request->SetOption(CURLOPT_RANGE,
+				   StringFormat<40>("%" PRIoffset "-",
+						    new_offset).c_str());
+
+	StartRequest();
+}
+
+void
 CurlInputStream::DoSeek(offset_type new_offset)
 {
 	assert(IsReady());
@@ -453,25 +482,12 @@ CurlInputStream::Open(const char *url,
 		      const std::multimap<std::string, std::string> &headers,
 		      Mutex &mutex, Cond &cond)
 {
-	std::string uri;
-	try {
-		auto &context = GetContext();
-		uri = context.acquireRealUrl(url);
-	} catch (const std::runtime_error &e) {
-		FormatError(curl_domain, "%s", e.what());
-		throw;
-	}
-
 	auto icy = std::make_shared<IcyMetaDataParser>();
 
 	auto c = std::make_unique<CurlInputStream>((*curl_init)->GetEventLoop(),
 						   url, headers,
 						   icy,
 						   mutex, cond);
-
-	if (!uri.empty()) {
-		c->SetRealURI(uri);
-	}
 
 	BlockingCall(c->GetEventLoop(), [&c](){
 			c->InitEasy();
@@ -493,8 +509,7 @@ static InputStreamPtr
 input_curl_open(const char *url, Mutex &mutex, Cond &cond)
 {
 	if (strncmp(url, "http://", 7) != 0 &&
-	    strncmp(url, "https://", 8) != 0 &&
-	    strncmp(url, "qobuz://", 8) != 0)
+	    strncmp(url, "https://", 8) != 0)
 		return nullptr;
 
 	return CurlInputStream::Open(url, {}, mutex, cond);

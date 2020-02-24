@@ -114,7 +114,7 @@ TidalLoginRequest::FinishParser(std::unique_ptr<CurlResponseParser> p)
 }
 
 void
-TidalLoginRequest::OnError(std::exception_ptr e) noexcept
+TidalLoginRequest::OnError(std::exception_ptr e, gcc_unused int code) noexcept
 {
 	handler.OnTidalLoginError(e);
 }

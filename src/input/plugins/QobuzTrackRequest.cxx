@@ -23,6 +23,10 @@
 #include "QobuzClient.hxx"
 #include "lib/yajl/Callbacks.hxx"
 #include "util/RuntimeError.hxx"
+#include "util/Domain.hxx"
+#include "Log.hxx"
+
+static const Domain domain("qobuz");
 
 using Wrapper = Yajl::CallbacksWrapper<QobuzTrackRequest::ResponseParser>;
 static constexpr yajl_callbacks parse_callbacks = {
@@ -43,9 +47,11 @@ class QobuzTrackRequest::ResponseParser final : public YajlResponseParser {
 	enum class State {
 		NONE,
 		URL,
+		MIME_TYPE,
 	} state = State::NONE;
 
 	std::string url;
+	std::string mime_type;
 
 public:
 	explicit ResponseParser() noexcept
@@ -58,6 +64,13 @@ public:
 		return std::move(url);
 	}
 
+	std::string &&GetMimeType() {
+		if (mime_type.empty())
+			throw std::runtime_error("No mime_type in track response");
+
+		return std::move(mime_type);
+	}
+
 	/* yajl callbacks */
 	bool String(StringView value) noexcept;
 	bool MapKey(StringView value) noexcept;
@@ -67,11 +80,13 @@ public:
 static std::string
 MakeTrackUrl(QobuzClient &client, const char *track_id)
 {
-	return client.MakeSignedUrl("track", "getFileUrl",
+	auto str = client.MakeSignedUrl("track", "getFileUrl",
 				    {
 					    {"track_id", track_id},
 					    {"format_id", client.GetFormatId()},
 				    });
+	FormatDebug(domain, "request: %s", str.c_str());
+	return str;
 }
 
 QobuzTrackRequest::QobuzTrackRequest(QobuzClient &client,
@@ -112,11 +127,11 @@ QobuzTrackRequest::FinishParser(std::unique_ptr<CurlResponseParser> p)
 {
 	assert(dynamic_cast<ResponseParser *>(p.get()) != nullptr);
 	auto &rp = (ResponseParser &)*p;
-	handler.OnQobuzTrackSuccess(rp.GetUrl());
+	handler.OnQobuzTrackSuccess(rp.GetUrl(), rp.GetMimeType());
 }
 
 void
-QobuzTrackRequest::OnError(std::exception_ptr e) noexcept
+QobuzTrackRequest::OnError(std::exception_ptr e, gcc_unused int code) noexcept
 {
 	handler.OnQobuzTrackError(e);
 }
@@ -131,6 +146,10 @@ QobuzTrackRequest::ResponseParser::String(StringView value) noexcept
 	case State::URL:
 		url.assign(value.data, value.size);
 		break;
+
+	case State::MIME_TYPE:
+		mime_type.assign(value.data, value.size);
+		break;
 	}
 
 	return true;
@@ -141,6 +160,8 @@ QobuzTrackRequest::ResponseParser::MapKey(StringView value) noexcept
 {
 	if (value.Equals("url"))
 		state = State::URL;
+	else if (value.Equals("mime_type"))
+		state = State::MIME_TYPE;
 	else
 		state = State::NONE;
 

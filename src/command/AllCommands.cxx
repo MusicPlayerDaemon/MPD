@@ -34,7 +34,7 @@
 #include "ClientCommands.hxx"
 #include "PartitionCommands.hxx"
 #include "OtherCommands.hxx"
-#include "external/common/MiscCommands.hxx"
+#include "MiscCommands.hxx"
 #include "Permission.hxx"
 #include "tag/Type.h"
 #include "Partition.hxx"

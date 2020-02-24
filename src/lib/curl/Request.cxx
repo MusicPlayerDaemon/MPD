@@ -175,7 +175,7 @@ CurlRequest::Done(CURLcode result) noexcept
 		FinishBody();
 	} catch (...) {
 		state = State::CLOSED;
-		handler.OnError(std::current_exception());
+		handler.OnError(std::current_exception(), result);
 	}
 }
 

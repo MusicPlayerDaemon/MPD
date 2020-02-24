@@ -22,7 +22,6 @@
 #include "util/Domain.hxx"
 #include "Partition.hxx"
 #include "Instance.hxx"
-#include "external/common/Context.hxx"
 
 const Domain client_domain("client");
 
@@ -30,14 +29,6 @@ Instance &
 Client::GetInstance() noexcept
 {
 	return partition->instance;
-}
-
-dms::Context &
-Client::GetContext() noexcept
-{
-	assert(GetInstance().context);
-
-	return *GetInstance().context;
 }
 
 playlist &

@@ -144,12 +144,12 @@ private:
 		try {
 			request.Start();
 		} catch (...) {
-			OnError(std::current_exception());
+			OnError(std::current_exception(), 0);
 		}
 	}
 
 	/* virtual methods from CurlResponseHandler */
-	void OnError(std::exception_ptr e) noexcept final {
+	void OnError(std::exception_ptr e, gcc_unused int code) noexcept final {
 		const std::lock_guard<Mutex> lock(mutex);
 		postponed_error = std::move(e);
 		SetDone();

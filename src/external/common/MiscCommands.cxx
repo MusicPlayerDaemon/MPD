@@ -26,63 +26,27 @@
 #include "util/StringAPI.hxx"
 #include "protocol/Ack.hxx"
 
-static CommandResult
+CommandResult
 handle_tpm_tidal_session(Client &client, Request args, Response &r)
 {
 	auto &context = client.GetContext();
 
-	if (StringIsEqual(args[0], "session")) {
-		if (args.size == 1) { // get
+
+	if (StringIsEqual(args[0], "tidal") &&
+		StringIsEqual(args[1], "session")) {
+		if (args.size == 2) { // get
 			r.Format("audioquality: %s\n", context.tidal.audioquality.c_str());
 			r.Format("sessionId: %s\n", context.tidal.sessionId.c_str());
 			return CommandResult::OK;
 		}
 
 		jaijson::Document doc;
-		if (doc.Parse(args[1]).HasParseError()) {
-			throw FormatProtocolError(ACK_ERROR_ARG, "parse json %s fail", args[1]);
+		if (doc.Parse(args[2]).HasParseError()) {
+			throw FormatProtocolError(ACK_ERROR_ARG, "parse json %s fail", args[2]);
 		}
 		deserialize(doc, context.tidal);
 		return CommandResult::OK;
 	}
 
-	throw FormatProtocolError(ACK_ERROR_ARG, "unkown config(%s)", args[0]);
+	throw FormatProtocolError(ACK_ERROR_ARG, "unkown domain(%s) or config(%s)", args[0], args[1]);
 }
-
-static CommandResult
-handle_tpm_qobuz_session(Client &client, Request args, Response &r)
-{
-	auto &context = client.GetContext();
-
-	if (StringIsEqual(args[0], "session")) {
-		if (args.size == 1) { // get
-			r.Format("format_id: %d\n", context.qobuz.format_id);
-			r.Format("user_auth_token: %s\n", context.qobuz.user_auth_token.c_str());
-			return CommandResult::OK;
-		}
-
-		jaijson::Document doc;
-		if (doc.Parse(args[1]).HasParseError()) {
-			throw FormatProtocolError(ACK_ERROR_ARG, "parse json %s fail", args[1]);
-		}
-		deserialize(doc, context.qobuz);
-		return CommandResult::OK;
-	}
-
-	throw FormatProtocolError(ACK_ERROR_ARG, "unkown config(%s)", args[0]);
-}
-
-CommandResult
-handle_tpm_commands(Client &client, Request args, Response &r)
-{
-	if (StringIsEqual(args[0], "tidal")) {
-		args.pop_front();
-		return handle_tpm_tidal_session(client, args, r);
-	} else if (StringIsEqual(args[0], "qobuz")) {
-		args.pop_front();
-		return handle_tpm_qobuz_session(client, args, r);
-	} else {
-		throw FormatProtocolError(ACK_ERROR_ARG, "unkown domain(%s)", args[0]);
-	}
-}
-

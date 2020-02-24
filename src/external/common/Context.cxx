@@ -21,9 +21,6 @@
 #include "CurlSocket.hxx"
 #include "util/StringAPI.hxx"
 #include "util/RuntimeError.hxx"
-#include "util/ConstBuffer.hxx"
-#include "util/StringCompare.hxx"
-#include "lib/gcrypt/MD5.hxx"
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -36,7 +33,6 @@
 #include <sys/wait.h>
 #include <ifaddrs.h>
 #include <unistd.h>
-#include <time.h>
 
 namespace dms {
 
@@ -141,47 +137,13 @@ Context::getTidalRealUrl(std::string uri)
 }
 
 std::string
-Context::getQobuzRealUrl(std::string track_id)
-{
-	const std::string url_base = "http://www.qobuz.com/api.json/0.2/";
-
-	std::string uri = url_base +"track/getFileUrl?";
-	uri.append("track_id=").append(track_id);
-	uri.append("&format_id=").append(std::to_string(qobuz.format_id));
-	uri.append("&app_id=").append(qobuz.app_id);
-	uri.append("&user_auth_token=").append(qobuz.user_auth_token);
-	const auto request_ts = std::to_string(time(nullptr));
-	uri.append("&request_ts=").append(request_ts);
-
-	std::string concatenated_query("track");
-	concatenated_query += "getFileUrl";
-	concatenated_query += "format_id";
-	concatenated_query += std::to_string(qobuz.format_id);
-	concatenated_query += "track_id";
-	concatenated_query += track_id;
-	concatenated_query += request_ts;
-	concatenated_query += qobuz.app_secret;
-
-	const auto md5_hex = MD5Hex({concatenated_query.data(), concatenated_query.size()});
-	uri.append("&request_sig=").append(&md5_hex.front());
-
-	RealUrl real_url;
-	CurlSocket::get(uri, real_url);
-
-	return real_url.url;
-}
-
-std::string
-Context::acquireRealUrl(const char *uri)
-{
-	if (StringFind(uri, "api.tidalhifi.com") != nullptr ||
-		StringFind(uri, "api.tidal.com") != nullptr) {
+Context::acquireRealUrl(const std::string &uri)
+try {
+	if (StringFind(uri.c_str(), "api.tidalhifi.com") != nullptr ||
+		StringFind(uri.c_str(), "api.tidal.com") != nullptr) {
 		auto real_url = getTidalRealUrl(uri);
 		return real_url;
-	} else if (StringStartsWith(uri, "qobuz://")) {
-		std::string track_id = std::string(uri+strlen("qobuz://track/"));
-		return getQobuzRealUrl(track_id);
-	} else if (StringFind(uri, "caryaudio.vtuner.com") != nullptr) {
+	} else if (StringFind(uri.c_str(), "caryaudio.vtuner.com") != nullptr) {
 		std::string cmd("/system/bin/curl_redirect \"");
 		cmd.append(uri);
 		cmd.append("\"");
@@ -192,12 +154,14 @@ Context::acquireRealUrl(const char *uri)
 			new_uri.pop_back();
 		}
 		if (len <= 0 || new_uri.empty()) {
-			throw FormatRuntimeError("acquireRealUrl fail: %s", uri);
+			throw FormatRuntimeError("acquireRealUrl fail: %s", uri.c_str());
 		}
 		return new_uri;
 	}
 
-	return std::string();
+	return uri;
+} catch (...) {
+	return uri;
 }
 
 }

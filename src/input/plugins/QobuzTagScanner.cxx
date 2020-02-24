@@ -51,11 +51,15 @@ class QobuzTagScanner::ResponseParser final : public YajlResponseParser {
 		ALBUM_TITLE,
 		ALBUM_ARTIST,
 		ALBUM_ARTIST_NAME,
+		ALBUM_IMAGE,
+		ALBUM_IMAGE_URL,
 		PERFORMER,
 		PERFORMER_NAME,
 	} state = State::NONE;
 
 	unsigned map_depth = 0;
+	unsigned image_type = 0;
+	unsigned biggest_image_type = 0;
 
 	TagBuilder tag;
 
@@ -81,6 +85,7 @@ MakeTrackUrl(QobuzClient &client, const char *track_id)
 	return client.MakeUrl("track", "get",
 			      {
 				      {"track_id", track_id},
+				      {"user_auth_token", client.GetSession().user_auth_token.c_str()},
 			      });
 }
 
@@ -122,7 +127,7 @@ QobuzTagScanner::FinishParser(std::unique_ptr<CurlResponseParser> p)
 }
 
 void
-QobuzTagScanner::OnError(std::exception_ptr e) noexcept
+QobuzTagScanner::OnError(std::exception_ptr e, gcc_unused int code) noexcept
 {
 	handler.OnRemoteTagError(e);
 }
@@ -165,6 +170,21 @@ QobuzTagScanner::ResponseParser::String(StringView value) noexcept
 	case State::ALBUM_ARTIST_NAME:
 		if (map_depth == 3)
 			tag.AddItem(TAG_ALBUM_ARTIST, value);
+		break;
+
+	case State::ALBUM_IMAGE_URL:
+		if (map_depth == 3) {
+			if (tag.HasType(TAG_ALBUM_URI)) {
+				if (biggest_image_type <= image_type) {
+					biggest_image_type = image_type;
+					tag.RemoveType(TAG_ALBUM_URI);
+					tag.AddItem(TAG_ALBUM_URI, value);
+				}
+			} else {
+				biggest_image_type = image_type;
+				tag.AddItem(TAG_ALBUM_URI, value);
+			}
+		}
 		break;
 
 	case State::PERFORMER_NAME:
@@ -224,10 +244,14 @@ QobuzTagScanner::ResponseParser::MapKey(StringView value) noexcept
 		case State::ALBUM_TITLE:
 		case State::ALBUM_ARTIST:
 		case State::ALBUM_ARTIST_NAME:
+		case State::ALBUM_IMAGE:
+		case State::ALBUM_IMAGE_URL:
 			if (value.Equals("title"))
 				state = State::ALBUM_TITLE;
 			else if (value.Equals("artist"))
 				state = State::ALBUM_ARTIST;
+			else if (value.Equals("image"))
+				state = State::ALBUM_IMAGE;
 			else
 				state = State::ALBUM;
 			break;
@@ -255,6 +279,21 @@ QobuzTagScanner::ResponseParser::MapKey(StringView value) noexcept
 				state = State::ALBUM_ARTIST;
 			break;
 
+		case State::ALBUM_IMAGE:
+		case State::ALBUM_IMAGE_URL:
+			if (value.Equals("large")) {
+				state = State::ALBUM_IMAGE_URL;
+				image_type = 4;
+			} else if (value.Equals("small")) {
+				state = State::ALBUM_IMAGE_URL;
+				image_type = 3;
+			} else if (value.Equals("back")) {
+				state = State::ALBUM_IMAGE_URL;
+				image_type = 2;
+			} else if (value.Equals("thumbnail")) {
+				state = State::ALBUM_IMAGE_URL;
+				image_type = 1;
+			}
 		default:
 			break;
 		}

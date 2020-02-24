@@ -28,6 +28,7 @@
 #include <map>
 #include <unordered_map>
 #include <utility>
+#include <stdexcept>
 
 template<typename T>
 static bool
@@ -258,4 +259,14 @@ static bool inline
 deserialize(const jaijson::Value &d, const std::string &key, T &value)
 {
 	return deserialize(d, key.c_str(), value);
+}
+
+template<typename T>
+static bool deserialize(const char *str, T &m)
+{
+	jaijson::Document doc;
+	if (doc.Parse(str).HasParseError()) {
+		throw std::runtime_error("parse json fail");
+	}
+	return deserialize(doc, m);
 }
