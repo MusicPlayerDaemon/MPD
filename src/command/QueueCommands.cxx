@@ -125,6 +125,14 @@ CommandResult
 handle_addid(Client &client, Request args, Response &r)
 {
 	const char *uri = args.front();
+	if (StringIsEqual(uri, "/"))
+		/* this URI is malformed, but some clients are buggy
+		   and use "add /" to add the whole database, which
+		   was never intended to work, but once did; in order
+		   to retain backwards compatibility, work around this
+		   here */
+		uri = "";
+
 	Tag tag;
 	if (args.size >= 2 &&
 		StringStartsWith(args.back(), "{") &&
