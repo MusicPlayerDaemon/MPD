@@ -390,24 +390,6 @@ try {
 	bool full = StringStartsWith(utf8path, "upnp_");
 	const auto path_fs = spl_map_to_fs(utf8path);
 	bool file_exist = FileExists(path_fs);
-	PlaylistFileContents contents;
-	if (file_exist) {
-		contents = LoadPlaylistFile(utf8path);
-	}
-
-	if (!contents.empty()) {
-		const char *uri_utf8 = (playlist_saveAbsolutePaths || song.HasRealURI())
-			? song.GetRealURI()
-			: song.GetURI();
-		for (const auto &s : contents) {
-			const char *s_utf8 = (playlist_saveAbsolutePaths || s.HasRealURI())
-			? s.GetRealURI()
-			: s.GetURI();
-			if (strcmp(uri_utf8, s_utf8) == 0) {
-				return;
-			}
-		}
-	}
 	assert(!path_fs.IsNull());
 
 	FileOutputStream fos(path_fs, FileOutputStream::Mode::APPEND_OR_CREATE);
@@ -423,9 +405,6 @@ try {
 		bos.Write("\n");
 	}
 
-	if (full && file_exist) {
-		full = is_mpd_playlist_file(utf8path);
-	}
 	playlist_print_song(bos, song, full);
 
 	bos.Flush();
@@ -482,7 +461,6 @@ spl_append_queue(const char *utf8path, const Queue &queue,
 	unsigned start, unsigned end)
 {
 	bool full = StringStartsWith(utf8path, "upnp_");
-	PlaylistFileContents contents = LoadPlaylistFile(utf8path);
 	const auto path_fs = spl_map_to_fs(utf8path);
 
 	FileOutputStream fos(path_fs, FileOutputStream::Mode::APPEND_OR_CREATE);
@@ -494,27 +472,8 @@ spl_append_queue(const char *utf8path, const Queue &queue,
 
 	BufferedOutputStream bos(fos);
 
-	if (full) {
-		full = is_mpd_playlist_file(utf8path);
-	}
-
 	unsigned stop = std::min(end, queue.GetLength());
 	for (unsigned i = start; i < stop; i++) {
-		bool found = false;
-		const char *uri_utf8 = (playlist_saveAbsolutePaths && !full)
-			? queue.Get(i).GetRealURI()
-			: queue.Get(i).GetURI();
-		for (const auto &s : contents) {
-			const char *s_utf8 = (playlist_saveAbsolutePaths || s.HasRealURI())
-			? s.GetRealURI()
-			: s.GetURI();
-			if (strcmp(uri_utf8, s_utf8) == 0) {
-				found = true;
-				break;
-			}
-		}
-		if (found)
-			continue;
 		playlist_print_song(bos, queue.Get(i), full);
 	}
 
