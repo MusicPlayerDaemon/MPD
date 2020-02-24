@@ -28,7 +28,7 @@
 #define HAVE_ICU_CONVERTER
 #elif defined(HAVE_ICONV)
 #include <iconv.h>
-#define HAVE_ICU_CONVERTER
+#define HAVE_ICU_CONVERTER // do not use glib charset, some bugs happen
 #endif
 
 #ifdef HAVE_ICU_CONVERTER

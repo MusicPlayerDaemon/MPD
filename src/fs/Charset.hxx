@@ -25,7 +25,7 @@
 #include "Traits.hxx"
 
 #if (defined(HAVE_ICU) || defined(HAVE_ICONV)) && !defined(_WIN32)
-#define HAVE_FS_CHARSET
+#define HAVE_FS_CHARSET // do not use glib charset, some bugs happen
 #endif
 
 /**

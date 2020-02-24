@@ -23,7 +23,9 @@
 #include "check.h"
 #include "Type.h"
 #include "Chrono.hxx"
+#include "lib/iconv/Converter.hxx"
 
+#include <string.h>
 #include <assert.h>
 
 /**
@@ -75,8 +77,11 @@ tag_handler_invoke_tag(const TagHandler &handler, void *ctx,
 	assert((unsigned)type < TAG_NUM_OF_ITEM_TYPES);
 	assert(value != nullptr);
 
-	if (handler.tag != nullptr)
-		handler.tag(type, value, ctx);
+	if (handler.tag != nullptr) {
+		Iconv::Converter conv;
+		std::string v = conv.toUTF8(value, strlen(value));
+		handler.tag(type, v.c_str(), ctx);
+	}
 }
 
 static inline void
@@ -86,8 +91,11 @@ tag_handler_invoke_pair(const TagHandler &handler, void *ctx,
 	assert(name != nullptr);
 	assert(value != nullptr);
 
-	if (handler.pair != nullptr)
-		handler.pair(name, value, ctx);
+	if (handler.pair != nullptr) {
+		Iconv::Converter conv;
+		std::string v = conv.toUTF8(value, strlen(value));
+		handler.pair(name, v.c_str(), ctx);
+	}
 }
 
 static inline void

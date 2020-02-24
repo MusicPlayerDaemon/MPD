@@ -583,7 +583,8 @@ libicu_a_SOURCES = \
 	src/lib/icu/CaseFold.cxx src/lib/icu/CaseFold.hxx \
 	src/lib/icu/Compare.cxx src/lib/icu/Compare.hxx \
 	src/lib/icu/Collate.cxx src/lib/icu/Collate.hxx \
-	src/lib/icu/Converter.cxx src/lib/icu/Converter.hxx
+	src/lib/icu/Converter.cxx src/lib/icu/Converter.hxx \
+	src/lib/iconv/Converter.cxx src/lib/iconv/Converter.hxx
 
 if HAVE_ICU
 libicu_a_SOURCES += \
