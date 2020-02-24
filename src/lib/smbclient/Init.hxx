@@ -20,6 +20,8 @@
 #ifndef MPD_SMBCLIENT_INIT_HXX
 #define MPD_SMBCLIENT_INIT_HXX
 
+struct ConfigBlock;
+
 /**
  * Initialize libsmbclient.
  *
@@ -30,5 +32,8 @@ SmbclientInit();
 
 void
 SmbclientReinit();
+
+void
+SmbclientConfig(const ConfigBlock &block);
 
 #endif

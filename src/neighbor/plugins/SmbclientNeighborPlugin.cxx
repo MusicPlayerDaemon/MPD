@@ -277,8 +277,9 @@ SmbclientNeighborExplorer::ThreadFunc()
 static std::unique_ptr<NeighborExplorer>
 smbclient_neighbor_create(gcc_unused EventLoop &loop,
 			  NeighborListener &listener,
-			  gcc_unused const ConfigBlock &block)
+			  const ConfigBlock &block)
 {
+	SmbclientConfig(block);
 	SmbclientInit();
 
 	return std::make_unique<SmbclientNeighborExplorer>(listener);

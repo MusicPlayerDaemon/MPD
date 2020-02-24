@@ -70,9 +70,10 @@ public:
  */
 
 static void
-input_smbclient_init(EventLoop &, const ConfigBlock &)
+input_smbclient_init(EventLoop &, const ConfigBlock &block)
 {
 	try {
+		SmbclientConfig(block);
 		SmbclientInit();
 	} catch (const std::runtime_error &e) {
 		// TODO: use std::throw_with_nested()?

@@ -22,10 +22,13 @@
 #include "Mutex.hxx"
 #include "thread/Mutex.hxx"
 #include "system/Error.hxx"
+#include "config/Block.hxx"
 
 #include <libsmbclient.h>
 
 #include <string.h>
+
+static int log_level= 0;
 
 static void
 mpd_smbc_get_auth_data(gcc_unused const char *srv,
@@ -40,13 +43,17 @@ mpd_smbc_get_auth_data(gcc_unused const char *srv,
 	strcpy(pw, "");
 }
 
+void SmbclientConfig(const ConfigBlock &block)
+{
+	log_level = block.GetBlockValue("log_level", log_level);
+}
+
 void
 SmbclientInit()
 {
 	const std::lock_guard<Mutex> protect(smbclient_mutex);
 
-	constexpr int debug = 0;
-	if (smbc_init(mpd_smbc_get_auth_data, debug) < 0)
+	if (smbc_init(mpd_smbc_get_auth_data, log_level) < 0)
 		throw MakeErrno("smbc_init() failed");
 	SMBCCTX *context = smbc_set_context(NULL);
 	smbc_setOptionBrowseMaxLmbCount (context, 3);
@@ -59,14 +66,12 @@ SmbclientReinit()
 {
 	const std::lock_guard<Mutex> protect(smbclient_mutex);
 
-	int debug = 0;
-
 	SMBCCTX *context = smbc_new_context();
 	if (!context) {
 		throw MakeErrno("smbc_new_context() failed");
 	}
 
-	smbc_setDebug(context, debug);
+	smbc_setDebug(context, log_level);
 	smbc_setFunctionAuthData(context, mpd_smbc_get_auth_data);
 	smbc_setOptionBrowseMaxLmbCount (context, 3);
 	smbc_setTimeout(context, 5000);
