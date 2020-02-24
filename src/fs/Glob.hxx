@@ -22,7 +22,7 @@
 
 #include "check.h"
 
-#ifdef HAVE_FNMATCH
+#if 0//def HAVE_FNMATCH // run error
 #define HAVE_CLASS_GLOB
 #include <string>
 #include <fnmatch.h>
