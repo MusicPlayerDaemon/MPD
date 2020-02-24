@@ -285,7 +285,7 @@ sndfile_stream_decode(DecoderClient &client, InputStream &is)
 				FormatDefault(sndfile_domain, "dts detected!");
 				break;
 			}
-			client.Ready(audio_format, info.seekable, sndfile_duration(info));
+			client.Ready(audio_format, is.IsSeekable(), sndfile_duration(info));
 		}
 		cmd = client.SubmitData(is,
 					buffer, num_frames * frame_size,
