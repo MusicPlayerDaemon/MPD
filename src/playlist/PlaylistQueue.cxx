@@ -28,6 +28,8 @@
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
 #include "fs/Traits.hxx"
+#include "Main.hxx"
+#include "Instance.hxx"
 
 #ifdef ENABLE_DATABASE
 #include "SongLoader.hxx"
@@ -59,6 +61,7 @@ playlist_load_into_queue(const char *uri, SongEnumerator &e,
 			continue;
 		}
 
+		instance->LookupRemoteTag(song->GetURI()); // for "hifiok://" etc.
 		dest.AppendSong(pc, std::move(*song));
 	}
 }
