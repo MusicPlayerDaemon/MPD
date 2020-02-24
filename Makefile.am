@@ -990,6 +990,7 @@ libtag_a_SOURCES =\
 	src/tag/Pool.cxx src/tag/Pool.hxx \
 	src/tag/Table.cxx src/tag/Table.hxx \
 	src/tag/Set.cxx src/tag/Set.hxx \
+	src/tag/SetExt.cxx src/tag/SetExt.hxx \
 	src/tag/Format.cxx src/tag/Format.hxx \
 	src/tag/VorbisComment.cxx src/tag/VorbisComment.hxx \
 	src/tag/ReplayGain.cxx src/tag/ReplayGain.hxx \
