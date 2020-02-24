@@ -98,6 +98,14 @@ playlist::AppendSong(PlayerControl &pc, DetachedSong &&song)
 		throw PlaylistError(PlaylistResult::TOO_LARGE,
 				    "Playlist is too large");
 
+#if 0
+	for (unsigned i=0;i<queue.length;i++) {
+		if (queue.items[i].song->IsSame(song)) {
+			return queue.items[i].id;
+		}
+	}
+#endif
+
 	const DetachedSong *const queued_song = GetQueuedSong();
 
 	id = queue.Append(std::move(song), 0);
