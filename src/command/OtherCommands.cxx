@@ -50,6 +50,7 @@
 #include "Instance.hxx"
 #include "Idle.hxx"
 #include "Log.hxx"
+#include "storage/CompositeStorage.hxx"
 
 #ifdef ENABLE_DATABASE
 #include "DatabaseCommands.hxx"
@@ -255,10 +256,35 @@ handle_lsinfo(Client &client, Request args, Response &r)
 
 #ifdef ENABLE_DATABASE
 
+static unsigned
+update_all(Client &client, UpdateService &update, bool discard)
+{
+	unsigned ret = 0;
+	CompositeStorage *composite = (CompositeStorage*)client.GetPartition().instance.storage;
+
+	if (composite != nullptr) {
+		std::vector<std::string> list = composite->ListMounts();
+		for (const auto &str : list) {
+			FormatDefault(domain, "update enqueue: %s", str.c_str());
+			ret = update.Enqueue(str.c_str(), discard);
+		}
+	}
+
+	return ret;
+}
+
 static CommandResult
-handle_update(Response &r, UpdateService &update,
+handle_update(Client &client, Response &r, UpdateService &update,
 	      const char *uri_utf8, bool discard)
 {
+	if (StringIsEmpty(uri_utf8)) {
+		unsigned ret = update_all(client, update, discard);
+		if (ret > 0) {
+			r.Format("updating_db: %i\n", ret);
+			return CommandResult::OK;
+		}
+	}
+
 	unsigned ret = update.Enqueue(uri_utf8, discard);
 	if (ret > 0) {
 		r.Format("updating_db: %i\n", ret);
@@ -308,7 +334,7 @@ handle_update(Client &client, Request args, Response &r, bool discard)
 
 	UpdateService *update = client.GetInstance().update;
 	if (update != nullptr)
-		return handle_update(r, *update, path, discard);
+		return handle_update(client, r, *update, path, discard);
 
 	Database *db = client.GetInstance().database;
 	if (db != nullptr)
