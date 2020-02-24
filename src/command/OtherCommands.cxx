@@ -214,6 +214,10 @@ handle_lsinfo_path(Client &client, Response &r,
 CommandResult
 handle_lsinfo(Client &client, Request args, Response &r)
 {
+	RangeArg window = args.size >= 2
+		? args.ParseRange(args.size - 1)
+		: RangeArg::All();
+
 	/* default is root directory */
 	auto uri = args.GetOptional(0, "");
 	if (StringIsEqual(uri, "/"))
@@ -238,7 +242,7 @@ handle_lsinfo(Client &client, Request args, Response &r)
 
 	case LocatedUri::Type::RELATIVE:
 		return handle_lsinfo_relative(client, r,
-					      located_uri.canonical_uri);
+					      located_uri.canonical_uri, window);
 
 	case LocatedUri::Type::PATH:
 		/* print information about an arbitrary local file */

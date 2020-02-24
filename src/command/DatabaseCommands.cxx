@@ -47,9 +47,12 @@ handle_listfiles_db(Client &client, Response &r, const char *uri)
 }
 
 CommandResult
-handle_lsinfo2(Client &client, const char *uri, Response &r)
+handle_lsinfo2(Client &client, const char *uri, Response &r, const RangeArg &window)
 {
 	DatabaseSelection selection(uri, false);
+	selection.window_start = window.start;
+	selection.window_end = window.end;
+
 	db_selection_print(r, client.GetPartition(),
 			   selection, true, false);
 	return CommandResult::OK;

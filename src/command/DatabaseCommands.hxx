@@ -25,12 +25,13 @@
 class Client;
 class Request;
 class Response;
+struct RangeArg;
 
 CommandResult
 handle_listfiles_db(Client &client, Response &r, const char *uri);
 
 CommandResult
-handle_lsinfo2(Client &client, const char *uri, Response &response);
+handle_lsinfo2(Client &client, const char *uri, Response &response, const RangeArg &window);
 
 CommandResult
 handle_find(Client &client, Request request, Response &response);
