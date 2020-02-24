@@ -2,8 +2,8 @@
 
 ./autogen.sh
 
-mkdir build/x64
-cd build/x64
+mkdir build/native
+cd build/native
 
 ../../configure \
 --enable-syslog=no \
@@ -27,22 +27,22 @@ cd build/x64
 --enable-soundcloud=no \
 --enable-audiofile=no \
 --enable-sndfile=yes \
---enable-fluidsynth=yes \
+--enable-fluidsynth=no \
 --enable-lsr=no \
 --enable-opus=yes \
 --enable-sidplay=no \
 --enable-gme=no \
---enable-modplug=yes \
+--enable-modplug=no \
 --with-zeroconf=avahi \
 --enable-ao=no \
 --enable-openal=no \
 --disable-icu \
 --disable-iconv \
---enable-tidal=no \
+--enable-tidal=yes \
 --enable-qobuz=yes \
---enable-twolame-encoder=no \
---enable-shine-encoder=no \
+ac_cv_file__usr_local_include_rapidjson_rapidjson_h=yes \
 $* \
 || exit 0
 
 make -j4 || exit 0
+sudo make -j4 install-strip || exit 0
