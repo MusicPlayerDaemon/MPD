@@ -68,6 +68,10 @@ DecoderControl::SetReady(const AudioFormat audio_format,
 	if (out_audio_format.format == SampleFormat::DSD) {
 		out_audio_format.format = SampleFormat::FLOAT;
 		out_audio_format.sample_rate = 352800;
+		// only support 2 channels
+		if (out_audio_format.channels > 2) {
+			out_audio_format.channels = 2;
+		}
 	}
 	// only support (44.1/48 * n) kHz, n=(1,2,4,8,16)
 	if (out_audio_format.format != SampleFormat::DSD) {
