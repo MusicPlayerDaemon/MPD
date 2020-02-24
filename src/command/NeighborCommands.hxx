@@ -35,5 +35,7 @@ neighbor_commands_available(const Instance &instance) noexcept;
 CommandResult
 handle_listneighbors(Client &client, Request request, Response &response);
 
+CommandResult
+handle_neighborsset(Client &client, Request request, Response &response);
 
 #endif

@@ -25,10 +25,7 @@
 #include "Instance.hxx"
 #include "neighbor/Glue.hxx"
 #include "neighbor/Info.hxx"
-#include "util/StringCompare.hxx"
-#include "db/Interface.hxx"
-#include "Partition.hxx"
-#include "db/plugins/upnp/UpnpDatabasePlugin.hxx"
+#include "lib/smbclient/Init.hxx"
 
 #include <string>
 
@@ -56,3 +53,24 @@ handle_listneighbors(Client &client, gcc_unused Request args, Response &r)
 	return CommandResult::OK;
 }
 
+CommandResult
+handle_neighborsset(Client &client, Request args, gcc_unused Response &r)
+{
+	NeighborGlue *neighbors =
+		client.GetInstance().neighbors;
+	if (neighbors == nullptr) {
+		r.Error(ACK_ERROR_UNKNOWN, "No neighbor plugin configured");
+		return CommandResult::ERROR;
+	}
+
+	auto enable = args.ParseUnsigned(0);
+	if (enable == 11) {
+		SmbclientReinit();
+	} else if (enable) {
+		neighbors->Open();
+	} else {
+		neighbors->Close();
+	}
+
+	return CommandResult::OK;
+}
