@@ -179,17 +179,17 @@ FifoOutput::Open(AudioFormat &audio_format)
 	timer = new Timer(audio_format);
 	int fifo_size;
 	if (audio_format.sample_rate >= 705600) {
-		delay_size = 64 * 1024 / 4;
-		fifo_size = 64 * 1024 * 8;
+		delay_size = 64 * 1024 / 16;
+		fifo_size = 64 * 1024 * 16;
 	} else if (audio_format.sample_rate >= 352800) {
-		delay_size = 64 * 1024 / 4;
-		fifo_size = 64 * 1024 * 4;
+		delay_size = 64 * 1024 / 16;
+		fifo_size = 64 * 1024 * 8;
 	} else if (audio_format.sample_rate >= 176400) {
-		delay_size = 64 * 1024 / 4;
-		fifo_size = 64 * 1024 * 2;
+		delay_size = 64 * 1024 / 16;
+		fifo_size = 64 * 1024 * 4;
 	} else if (audio_format.sample_rate >= 88200) {
-		delay_size = 64 * 1024 / 4;
-		fifo_size = 64 * 1024;
+		delay_size = 64 * 1024 / 8;
+		fifo_size = 64 * 1024 * 2;
 	} else {
 		fifo_size = 64 * 1024;
 		delay_size = 64 * 1024 / 4;
