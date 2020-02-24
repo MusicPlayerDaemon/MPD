@@ -147,7 +147,7 @@ private:
 void
 BufferedSmbclientInputPlugin::ThreadFunc()
 {
-	FormatThreadName("input:%s", "BufferedSmbclientInputPlugin");
+	FormatThreadName("input:%s", "BSMB");
 
 	{
 		std::unique_lock<Mutex> lock(mutex);
