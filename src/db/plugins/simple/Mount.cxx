@@ -66,7 +66,7 @@ PrefixVisitPlaylist(const char *base, const VisitPlaylist &visit_playlist,
 
 void
 WalkMount(const char *base, const Database &db,
-	  const char* uri, bool recursive, const SongFilter *filter,
+	  const DatabaseSelection &selection,
 	  const VisitDirectory &visit_directory, const VisitSong &visit_song,
 	  const VisitPlaylist &visit_playlist)
 {
@@ -88,6 +88,7 @@ WalkMount(const char *base, const Database &db,
 			       base, std::ref(visit_playlist), _1, _2);
 
 	SongFilter prefix_filter;
+	const SongFilter *filter = selection.filter;
 
 	if (base != nullptr && filter != nullptr) {
 		/* if the SongFilter contains a LOCATE_TAG_BASE_TYPE
@@ -98,5 +99,5 @@ WalkMount(const char *base, const Database &db,
 		filter = &prefix_filter;
 	}
 
-	db.Visit(DatabaseSelection(uri, recursive, filter), vd, vs, vp);
+	db.Visit(DatabaseSelection(selection.uri.c_str(), selection.recursive, filter), vd, vs, vp);
 }

@@ -36,4 +36,10 @@ handle_read_comments(Client &client, Request request, Response &response);
 CommandResult
 handle_album_art(Client &client, Request request, Response &response);
 
+CommandResult
+handle_read_cover(Client &client, Request request, Response &response);
+
+CommandResult
+handle_read_folder_cover(Client &client, Request request, Response &response);
+
 #endif

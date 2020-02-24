@@ -38,6 +38,10 @@
 #include "util/StringAPI.hxx"
 #include "util/NumberParser.hxx"
 #include "util/StringCompare.hxx"
+#include "tag/Builder.hxx"
+#include "StateFile.hxx"
+#include "config/ConfigOption.hxx"
+#include "config/ConfigGlobal.hxx"
 
 #include <memory>
 #include <limits>
@@ -394,5 +398,31 @@ handle_swapid(Client &client, Request args, gcc_unused Response &r)
 	unsigned id1 = args.ParseUnsigned(0);
 	unsigned id2 = args.ParseUnsigned(1);
 	client.GetPartition().SwapIds(id1, id2);
+	return CommandResult::OK;
+}
+
+CommandResult
+handle_savequeue(Client &client, gcc_unused Request args, gcc_unused Response &r)
+{
+	auto &ins = client.GetInstance();
+	ins.state_file->Write();
+	return CommandResult::OK;
+}
+
+CommandResult
+handle_loadqueue(Client &client, Request args, gcc_unused Response &r)
+{
+	auto &ins = client.GetInstance();
+	delete ins.state_file;
+
+	const auto interval =
+		config_get_unsigned(ConfigOption::STATE_FILE_INTERVAL,
+				    StateFile::DEFAULT_INTERVAL);
+	auto path_fs = AllocatedPath::FromUTF8Throw(args.front());
+	ins.state_file = new StateFile(std::move(path_fs), interval,
+					     ins.partitions.front(),
+					     ins.event_loop);
+	ins.state_file->Read();
+
 	return CommandResult::OK;
 }

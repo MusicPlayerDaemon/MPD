@@ -42,6 +42,7 @@
 #include "util/Macros.hxx"
 #include "util/StringCompare.hxx"
 #include "util/UriUtil.hxx"
+#include "queue/Queue.hxx"
 
 #include <memory>
 
@@ -475,3 +476,51 @@ spl_rename(const char *utf8from, const char *utf8to)
 
 	spl_rename_internal(from_path_fs, to_path_fs);
 }
+
+void
+spl_append_queue(const char *utf8path, const Queue &queue,
+	unsigned start, unsigned end)
+{
+	bool full = StringStartsWith(utf8path, "upnp_");
+	PlaylistFileContents contents = LoadPlaylistFile(utf8path);
+	const auto path_fs = spl_map_to_fs(utf8path);
+
+	FileOutputStream fos(path_fs, FileOutputStream::Mode::APPEND_OR_CREATE);
+
+	if (fos.Tell() / (MPD_PATH_MAX + 1) >= playlist_max_length) {
+		throw PlaylistError(PlaylistResult::TOO_LARGE,
+				    "Stored playlist is too large");
+	}
+
+	BufferedOutputStream bos(fos);
+
+	if (full) {
+		full = is_mpd_playlist_file(utf8path);
+	}
+
+	unsigned stop = std::min(end, queue.GetLength());
+	for (unsigned i = start; i < stop; i++) {
+		bool found = false;
+		const char *uri_utf8 = (playlist_saveAbsolutePaths && !full)
+			? queue.Get(i).GetRealURI()
+			: queue.Get(i).GetURI();
+		for (const auto &s : contents) {
+			const char *s_utf8 = (playlist_saveAbsolutePaths || s.HasRealURI())
+			? s.GetRealURI()
+			: s.GetURI();
+			if (strcmp(uri_utf8, s_utf8) == 0) {
+				found = true;
+				break;
+			}
+		}
+		if (found)
+			continue;
+		playlist_print_song(bos, queue.Get(i), full);
+	}
+
+	bos.Flush();
+	fos.Commit();
+
+	idle_add(IDLE_STORED_PLAYLIST);
+}
+

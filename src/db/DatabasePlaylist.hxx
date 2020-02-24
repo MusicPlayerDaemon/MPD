@@ -26,11 +26,19 @@ class Database;
 class Storage;
 class SongFilter;
 struct DatabaseSelection;
+class SongLoader;
 
 gcc_nonnull(3)
 void
 search_add_to_playlist(const Database &db, const Storage *storage,
 		       const char *path_utf8,
 		       const DatabaseSelection &selection);
+
+gcc_nonnull(1,4)
+void
+playlist_open_into_playlist(const char *uri,
+			 unsigned start_index, unsigned end_index,
+			 const char *dest,
+			 const SongLoader &loader);
 
 #endif

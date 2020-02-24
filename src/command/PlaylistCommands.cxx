@@ -36,6 +36,7 @@
 #include "client/Response.hxx"
 #include "Mapper.hxx"
 #include "fs/AllocatedPath.hxx"
+#include "fs/FileSystem.hxx"
 #include "util/UriUtil.hxx"
 #include "util/ConstBuffer.hxx"
 #include "util/ChronoUtil.hxx"
@@ -195,4 +196,41 @@ handle_listplaylists(gcc_unused Client &client, gcc_unused Request args,
 {
 	print_spl_list(r, ListPlaylistFiles());
 	return CommandResult::OK;
+}
+
+CommandResult
+handle_addQueueToPlaylist(Client &client, Request args, gcc_unused Response &r)
+{
+	RangeArg range = args.ParseOptional(1, RangeArg::All());
+
+	spl_append_queue(args.front(), client.GetPlaylist().queue, range.start, range.end);
+	return CommandResult::OK;
+}
+
+CommandResult
+handle_playlistload(Client &client, Request args, gcc_unused Response &r)
+{
+	RangeArg range = args.ParseOptional(2, RangeArg::All());
+
+	const ScopeBulkEdit bulk_edit(client.GetPartition());
+
+	const SongLoader loader(client);
+	playlist_open_into_playlist(args[0],
+				      range.start, range.end,
+				      args[1],
+				      loader);
+
+	return CommandResult::OK;
+}
+
+CommandResult
+handle_playlistsave(Client &client, Request args, Response &r)
+{
+	const auto path_fs = spl_map_to_fs(args.front());
+	if (FileExists(path_fs)) {
+		throw PlaylistError(PlaylistResult::LIST_EXISTS,
+				    "Playlist already exists");
+	}
+
+	return handle_playlistadd(client, args, r);
 }

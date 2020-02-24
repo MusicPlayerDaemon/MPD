@@ -42,6 +42,7 @@
 #include "util/CharUtil.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
+#include "Mount.hxx"
 
 #ifdef ENABLE_ZLIB
 #include "fs/io/GzipOutputStream.hxx"
@@ -287,14 +288,16 @@ SimpleDatabase::Visit(const DatabaseSelection &selection,
 
 	auto r = root->LookupDirectory(selection.uri.c_str());
 
-	if (r.directory->IsMount()) {
+	if (r.directory->IsMount()
+		&& r.uri != nullptr) {
 		/* pass the request and the remaining uri to the mounted database */
 		protect.unlock();
-
+		const DatabaseSelection sel = DatabaseSelection(r.uri == nullptr ? "" : r.uri
+			, selection.recursive, selection.filter);
 		WalkMount(r.directory->GetPath(), *(r.directory->mounted_database),
-			(r.uri == nullptr)?"":r.uri, selection.recursive, selection.filter,
-			visit_directory, visit_song, visit_playlist);
-
+					sel,
+					visit_directory, visit_song,
+					visit_playlist);
 		return;
 	}
 

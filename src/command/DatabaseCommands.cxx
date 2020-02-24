@@ -34,6 +34,10 @@
 #include "util/StringAPI.hxx"
 #include "SongFilter.hxx"
 #include "BulkEdit.hxx"
+#include "PlaylistFile.hxx"
+#include "PlaylistError.hxx"
+#include "fs/FileSystem.hxx"
+#include "fs/AllocatedPath.hxx"
 
 #include <memory>
 
@@ -295,3 +299,35 @@ handle_listallinfo(Client &client, Request args, Response &r)
 			   true, false);
 	return CommandResult::OK;
 }
+
+CommandResult
+handle_findaddpl(Client &client, Request args, Response &r)
+{
+	return handle_match_add_pl(client, args, r, false);
+}
+
+static CommandResult
+handle_match_save_pl(Client &client, Request args, Response &r, bool fold_case)
+{
+	const auto path_fs = spl_map_to_fs(args.front());
+
+	if (FileExists(path_fs)) {
+		throw PlaylistError(PlaylistResult::LIST_EXISTS,
+				    "Playlist already exists");
+	}
+
+	return handle_match_add_pl(client, args, r, fold_case);
+}
+
+CommandResult
+handle_findsavepl(Client &client, Request args, Response &r)
+{
+	return handle_match_save_pl(client, args, r, false);
+}
+
+CommandResult
+handle_searchsavepl(Client &client, Request args, Response &r)
+{
+	return handle_match_save_pl(client, args, r, true);
+}
+

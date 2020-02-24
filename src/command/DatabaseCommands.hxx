@@ -60,4 +60,13 @@ handle_list(Client &client, Request request, Response &response);
 CommandResult
 handle_listallinfo(Client &client, Request request, Response &response);
 
+CommandResult
+handle_findaddpl(Client &client, Request request, Response &response);
+
+CommandResult
+handle_findsavepl(Client &client, Request request, Response &response);
+
+CommandResult
+handle_searchsavepl(Client &client, Request request, Response &response);
+
 #endif

@@ -83,6 +83,10 @@ spl_append_uri(const char *path_utf8,
 	       const SongLoader &loader, const char *uri_utf8);
 
 void
+spl_append_queue(const char *utf8path, const Queue &queue,
+	unsigned start, unsigned end);
+
+void
 spl_rename(const char *utf8from, const char *utf8to);
 
 #endif
