@@ -218,6 +218,11 @@ public:
 			   const SongLoader &loader,
 			   const char *uri_utf8);
 
+	unsigned AppendURI(PlayerControl &pc,
+			   const SongLoader &loader,
+			   const char *uri_utf8,
+			   const Tag &tag);
+
 protected:
 	void DeleteInternal(PlayerControl &pc,
 			    unsigned song, const DetachedSong **queued_p);

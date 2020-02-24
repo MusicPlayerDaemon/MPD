@@ -128,6 +128,14 @@ playlist::AppendURI(PlayerControl &pc, const SongLoader &loader,
 	return AppendSong(pc, loader.LoadSong(uri));
 }
 
+unsigned
+playlist::AppendURI(PlayerControl &pc, const SongLoader &loader,
+		    const char *uri,
+		    const Tag &tag)
+{
+	return AppendSong(pc, loader.LoadSong(uri, tag));
+}
+
 void
 playlist::SwapPositions(PlayerControl &pc, unsigned song1, unsigned song2)
 {

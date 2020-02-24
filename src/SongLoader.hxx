@@ -31,6 +31,7 @@ class Storage;
 class DetachedSong;
 class Path;
 struct LocatedUri;
+struct Tag;
 
 /**
  * A utility class that loads a #DetachedSong object by its URI.  If
@@ -74,6 +75,9 @@ public:
 	 */
 	gcc_nonnull_all
 	DetachedSong LoadSong(const char *uri_utf8) const;
+
+	gcc_nonnull_all
+	DetachedSong LoadSong(const char *uri_utf8, const Tag &tag) const;
 
 private:
 	gcc_nonnull_all

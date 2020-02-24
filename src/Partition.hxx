@@ -88,6 +88,12 @@ struct Partition final : QueueListener, PlayerListener, MixerListener {
 		return playlist.AppendURI(pc, loader, uri_utf8);
 	}
 
+	unsigned AppendURI(const SongLoader &loader,
+			   const char *uri_utf8,
+			   const Tag &tag) {
+		return playlist.AppendURI(pc, loader, uri_utf8, tag);
+	}
+
 	void DeletePosition(unsigned position) {
 		playlist.DeletePosition(pc, position);
 	}

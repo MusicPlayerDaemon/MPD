@@ -43,11 +43,13 @@
 #include <limits>
 
 static void
-AddUri(Client &client, const LocatedUri &uri)
+AddUri(Client &client, const char *uri, const Tag &tag)
 {
 	auto &partition = client.GetPartition();
 	partition.playlist.AppendSong(partition.pc,
-				      SongLoader(client).LoadSong(uri));
+				       tag.IsEmpty()
+				           ? SongLoader(client).LoadSong(uri)
+				           : SongLoader(client).LoadSong(uri, tag));
 }
 
 static CommandResult
@@ -82,6 +84,20 @@ handle_add(Client &client, Request args, Response &r)
 		   here */
 		uri = "";
 
+	Tag tag;
+	if (args.size >= 2 &&
+		StringStartsWith(args.back(), "{") &&
+		StringEndsWith(args.back(), "}")) {
+		try {
+			jaijson::Document d;
+			if (!d.Parse(args.back()).HasParseError()) {
+				deserialize(d, tag);
+				args.pop_back();
+			}
+		} catch (...) {
+			throw FormatProtocolError(ACK_ERROR_ARG, "parse json %s fail", args.back());
+		}
+	}
 	const auto located_uri = StringStartsWith(uri, "upnp://")
 		? LocatedUri(LocatedUri::Type::RELATIVE, uri)
 		: LocateUri(uri, &client
@@ -91,12 +107,8 @@ handle_add(Client &client, Request args, Response &r)
 					   );
 	switch (located_uri.type) {
 	case LocatedUri::Type::ABSOLUTE:
-		AddUri(client, located_uri);
-		client.GetInstance().LookupRemoteTag(located_uri.canonical_uri);
-		return CommandResult::OK;
-
 	case LocatedUri::Type::PATH:
-		AddUri(client, located_uri);
+		AddUri(client, uri, tag);
 		return CommandResult::OK;
 
 	case LocatedUri::Type::RELATIVE:
@@ -110,12 +122,30 @@ handle_add(Client &client, Request args, Response &r)
 CommandResult
 handle_addid(Client &client, Request args, Response &r)
 {
-	bool is_upnp = StringStartsWith(args.front(), "upnp://");
-	const char *const uri = is_upnp ? (args.front() + 7) : args.front();
-
+	const char *uri = args.front();
+	Tag tag;
+	if (args.size >= 2 &&
+		StringStartsWith(args.back(), "{") &&
+		StringEndsWith(args.back(), "}")) {
+		try {
+			jaijson::Document d;
+			if (!d.Parse(args.back()).HasParseError()) {
+				deserialize(d, tag);
+				args.pop_back();
+			}
+		} catch (...) {
+			throw FormatProtocolError(ACK_ERROR_ARG, "parse json %s fail", args.back());
+		}
+	}
 	auto &partition = client.GetPartition();
-	const SongLoader loader(client);
-	unsigned added_id = partition.AppendURI(loader, uri);
+	bool is_upnp = StringStartsWith(uri, "upnp://");
+	const Database *db = is_upnp ? client.GetUpnpDatabase() : client.GetDatabase();
+	if (is_upnp) {
+		uri = uri + 7;
+	}
+	const SongLoader loader(client, db, client.GetStorage());
+	unsigned added_id = tag.IsEmpty() ? partition.AppendURI(loader, uri)
+			: partition.AppendURI(loader, uri, tag);
 	partition.instance.LookupRemoteTag(uri);
 
 	if (args.size == 2) {
