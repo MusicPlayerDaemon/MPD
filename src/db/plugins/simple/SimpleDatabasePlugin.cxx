@@ -252,15 +252,28 @@ SimpleDatabase::ReturnSong(gcc_unused const LightSong *song) const
 	assert(song != nullptr);
 	assert(song == &light_song || song == prefixed_light_song);
 
-	delete prefixed_light_song;
-	prefixed_light_song = nullptr;
-
 #ifndef NDEBUG
+	if (song == prefixed_light_song) {
+		db_lock();
+		auto r = root->LookupDirectory(song->GetURI().c_str());
+		if (r.directory->IsMount()) {
+			/* pass the request to the mounted database */
+			db_unlock();
+			if (r.directory->mounted_database) {
+				SimpleDatabase *sd = (SimpleDatabase*)r.directory->mounted_database;
+				assert(sd->borrowed_song_count > 0);
+				sd->borrowed_song_count--;
+			}
+		}
+	}
 	if (song == &light_song) {
 		assert(borrowed_song_count > 0);
 		--borrowed_song_count;
 	}
 #endif
+
+	delete prefixed_light_song;
+	prefixed_light_song = nullptr;
 }
 
 void
@@ -409,6 +422,7 @@ SimpleDatabase::Mount(const char *uri, Database *db)
 
 	Directory *mnt = r.directory->CreateChild(r.uri);
 	mnt->mounted_database = db;
+	mnt->Sort();
 }
 
 static constexpr bool
