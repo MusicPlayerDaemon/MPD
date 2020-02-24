@@ -405,14 +405,16 @@ AudioOutputControl::Task() noexcept
 {
 	FormatThreadName("output:%s", GetName());
 
+#if 0 //  disable this for caryaudio
 	try {
 		SetThreadRealtime();
 	} catch (...) {
 		LogError(std::current_exception(),
 			 "OutputThread could not get realtime scheduling, continuing anyway");
 	}
+#endif
 
-	SetThreadTimerSlackUS(100);
+	SetThreadTimerSlackUS(10);
 
 	const std::lock_guard<Mutex> lock(mutex);
 
