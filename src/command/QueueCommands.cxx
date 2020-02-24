@@ -53,14 +53,15 @@ AddUri(Client &client, const char *uri, const Tag &tag)
 }
 
 static CommandResult
-AddDatabaseSelection(Client &client, const char *uri,
-		     gcc_unused Response &r)
+AddDatabaseSelection(Client &client, const RangeArg &range, const char *uri, gcc_unused Response &r)
 {
 #ifdef ENABLE_DATABASE
 	auto &partition = client.GetPartition();
 	const ScopeBulkEdit bulk_edit(partition);
 
 	DatabaseSelection selection(uri, true);
+	selection.window_start = range.start;
+	selection.window_end = range.end;
 	AddFromDatabase(partition, selection);
 	return CommandResult::OK;
 #else
@@ -98,6 +99,7 @@ handle_add(Client &client, Request args, Response &r)
 			throw FormatProtocolError(ACK_ERROR_ARG, "parse json %s fail", args.back());
 		}
 	}
+	RangeArg range = args.ParseOptional(1, RangeArg::All());
 	const auto located_uri = StringStartsWith(uri, "upnp://")
 		? LocatedUri(LocatedUri::Type::RELATIVE, uri)
 		: LocateUri(uri, &client
@@ -112,7 +114,7 @@ handle_add(Client &client, Request args, Response &r)
 		return CommandResult::OK;
 
 	case LocatedUri::Type::RELATIVE:
-		return AddDatabaseSelection(client, located_uri.canonical_uri,
+		return AddDatabaseSelection(client, range, located_uri.canonical_uri,
 					    r);
 	}
 
