@@ -171,10 +171,10 @@ handle_lsinfo_absolute(Response &r, const char *uri)
 }
 
 static CommandResult
-handle_lsinfo_relative(Client &client, Response &r, const char *uri)
+handle_lsinfo_relative(Client &client, Response &r, const char *uri, const RangeArg &window)
 {
 #ifdef ENABLE_DATABASE
-	CommandResult result = handle_lsinfo2(client, uri, r);
+	CommandResult result = handle_lsinfo2(client, uri, r, window);
 	if (result != CommandResult::OK)
 		return result;
 #else
