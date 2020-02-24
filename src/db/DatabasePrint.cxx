@@ -101,9 +101,10 @@ print_playlist_in_directory(Response &r, bool base,
 }
 
 static void
-PrintSongBrief(Response &r, bool base, const LightSong &song) noexcept
+PrintSongBrief(Response &r, Partition &partition,
+	       bool base, const LightSong &song) noexcept
 {
-	song_print_uri(r, song, base);
+	song_print_uri(r, partition, song, base);
 
 	if (song.tag->has_playlist)
 		/* this song file has an embedded CUE sheet */
@@ -112,9 +113,10 @@ PrintSongBrief(Response &r, bool base, const LightSong &song) noexcept
 }
 
 static void
-PrintSongFull(Response &r, bool base, const LightSong &song) noexcept
+PrintSongFull(Response &r, Partition &partition,
+	      bool base, const LightSong &song) noexcept
 {
-	song_print_info(r, song, base);
+	song_print_info(r, partition, song, base);
 
 	if (song.tag->has_playlist)
 		/* this song file has an embedded CUE sheet */
@@ -192,7 +194,7 @@ db_selection_print(Response &r, Partition &partition,
 			    std::ref(r), base, _1)
 		: VisitDirectory();
 	VisitSong s = std::bind(full ? PrintSongFull : PrintSongBrief,
-				std::ref(r), base, _1);
+				std::ref(r), std::ref(partition), base, _1);
 	const auto p = selection.filter == nullptr
 		? std::bind(full ? PrintPlaylistFull : PrintPlaylistBrief,
 			    std::ref(r), base, _1, _2)
@@ -268,9 +270,9 @@ db_selection_print(Response &r, Partition &partition,
 }
 
 static void
-PrintSongURIVisitor(Response &r, const LightSong &song) noexcept
+PrintSongURIVisitor(Response &r, Partition &partition, const LightSong &song) noexcept
 {
-	song_print_uri(r, song);
+	song_print_uri(r, partition, song);
 }
 
 static void
@@ -299,7 +301,7 @@ PrintUniqueTags(Response &r, Partition &partition,
 	if (type == LOCATE_TAG_FILE_TYPE) {
 		using namespace std::placeholders;
 		const auto f = std::bind(PrintSongURIVisitor,
-					 std::ref(r), _1);
+					 std::ref(r), std::ref(partition), _1);
 		db.Visit(selection, f);
 	} else {
 		assert(type < TAG_NUM_OF_ITEM_TYPES);

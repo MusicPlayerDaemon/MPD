@@ -194,7 +194,7 @@ handle_lsinfo_relative(Client &client, Response &r, const char *uri)
 }
 
 static CommandResult
-handle_lsinfo_path(Client &, Response &r,
+handle_lsinfo_path(Client &client, Response &r,
 		   const char *path_utf8, Path path_fs)
 {
 	DetachedSong song(path_utf8);
@@ -203,7 +203,7 @@ handle_lsinfo_path(Client &, Response &r,
 		return CommandResult::ERROR;
 	}
 
-	song_print_info(r, song);
+	song_print_info(r, client.GetPartition(), song);
 	return CommandResult::OK;
 }
 

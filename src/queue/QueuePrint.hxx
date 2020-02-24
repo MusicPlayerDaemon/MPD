@@ -28,19 +28,20 @@
 #include <stdint.h>
 
 struct Queue;
+struct Partition;
 class SongFilter;
 class Response;
 
 void
-queue_print_info(Response &r, const Queue &queue,
+queue_print_info(Response &r, Partition &partition, const Queue &queue,
 		 unsigned start, unsigned end);
 
 void
-queue_print_uris(Response &r, const Queue &queue,
+queue_print_uris(Response &r, Partition &partition, const Queue &queue,
 		 unsigned start, unsigned end);
 
 void
-queue_print_changes_info(Response &r, const Queue &queue,
+queue_print_changes_info(Response &r, Partition &partition, const Queue &queue,
 			 uint32_t version,
 			 unsigned start, unsigned end);
 
@@ -50,7 +51,7 @@ queue_print_changes_position(Response &r, const Queue &queue,
 			     unsigned start, unsigned end);
 
 void
-queue_find(Response &response, const Queue &queue,
+queue_find(Response &response, Partition &partition, const Queue &queue,
 	   const SongFilter &filter);
 
 #endif

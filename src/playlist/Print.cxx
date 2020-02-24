@@ -31,7 +31,7 @@
 #include "Instance.hxx"
 
 static void
-playlist_provider_print(Response &r,
+playlist_provider_print(Response &r, Partition &partition,
 			const SongLoader &loader,
 			const char *uri,
 			SongEnumerator &e, bool detail) noexcept
@@ -45,11 +45,11 @@ playlist_provider_print(Response &r,
 		if (playlist_check_translate_song(*song, base_uri.c_str(),
 						  loader) &&
 		    detail)
-			song_print_info(r, *song);
+			song_print_info(r, partition, *song);
 		else
 			/* fallback if no detail was requested or no
 			   detail was available */
-			song_print_uri(r, *song);
+			song_print_uri(r, partition, *song);
 	}
 }
 
@@ -73,6 +73,6 @@ playlist_file_print(Response &r, Partition &partition,
 	if (playlist == nullptr)
 		return false;
 
-	playlist_provider_print(r, loader, uri, *playlist, detail);
+	playlist_provider_print(r, partition, loader, uri, *playlist, detail);
 	return true;
 }
