@@ -67,6 +67,9 @@ static const char *const remoteUrlPrefixes[] = {
 #ifdef ENABLE_TIDAL
 	"tidal://",
 #endif
+#ifdef ENABLE_UPNP
+	"upnp://",
+#endif
 	NULL
 };
 
