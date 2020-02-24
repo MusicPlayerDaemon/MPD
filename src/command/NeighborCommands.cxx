@@ -48,65 +48,11 @@ handle_listneighbors(Client &client, gcc_unused Request args, Response &r)
 		return CommandResult::ERROR;
 	}
 
-	for (const auto &i : neighbors->GetList()) {
+	for (const auto &i : neighbors->GetList())
 		r.Format("neighbor: %s\n"
 			 "name: %s\n",
 			 i.uri.c_str(),
 			 i.display_name.c_str());
-		if (!i.device_icon_url.empty())
-			r.Format("icon_url: %s\n", i.device_icon_url.c_str());
-	}
 	return CommandResult::OK;
 }
 
-CommandResult
-handle_scanNeighbors(Client &client, Request args, Response &r)
-{
-	Database *upnpdatabase = client.GetPartition().instance.upnpdatabase;
-	NeighborGlue *neighbors =
-		client.GetPartition().instance.neighbors;
-	if (neighbors == nullptr) {
-		r.Error(ACK_ERROR_UNKNOWN,
-			      "No neighbor plugin configured");
-		return CommandResult::ERROR;
-	}
-
-	auto n = args.ParseOptional(0, 10);
-
-	auto state = client.GetPlayerControl().GetState();
-	if (state == PlayerState::PLAY) {
-		client.GetPlayerControl().LockPause();
-	}
-
-	if (upnpdatabase != nullptr) {
-		upnpdatabase->Close();
-	}
-
-	try {
-		neighbors->Reopen(n);
-	} catch (...) {
-		r.Error(ACK_ERROR_SYSTEM,
-				  "reopen neighbors error");
-		return CommandResult::ERROR;
-	}
-
-	if (upnpdatabase != nullptr) {
-		try {
-			upnpdatabase->Open();
-		} catch (...) {
-			r.Error(ACK_ERROR_SYSTEM,
-					  "open upnp error");
-			return CommandResult::ERROR;
-		}
-	}
-
-	return CommandResult::OK;
-}
-
-CommandResult
-handle_clear_upnp_cache(gcc_unused Client &client, gcc_unused Request args, gcc_unused Response &r)
-{
-	ClearUpnpCache();
-
-	return CommandResult::OK;
-}

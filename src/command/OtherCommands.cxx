@@ -229,9 +229,7 @@ handle_lsinfo(Client &client, Request args, Response &r)
 		   compatibility, work around this here */
 		uri = "";
 
-	const auto located_uri = StringStartsWith(uri, "upnp://")
-		? LocatedUri(LocatedUri::Type::RELATIVE, uri)
-		: LocateUri(uri, &client
+	const auto located_uri = LocateUri(uri, &client
 #ifdef ENABLE_DATABASE
 					   , nullptr
 #endif

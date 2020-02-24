@@ -227,17 +227,6 @@ public:
 	 */
 	const Database &GetDatabaseOrThrow() const;
 
-	/**
-	 * Wrapper for Instance::GetUpnpDatabase().
-	 */
-	gcc_pure
-	const Database *GetUpnpDatabase() const noexcept;
-
-	/**
-	 * Wrapper for Instance::GetUpnpDatabaseOrThrow().
-	 */
-	const Database &GetUpnpDatabaseOrThrow() const;
-
 	gcc_pure
 	const Storage *GetStorage() const noexcept;
 

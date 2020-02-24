@@ -90,7 +90,6 @@ struct Instance final
 
 #ifdef ENABLE_DATABASE
 	Database *database;
-	Database *upnpdatabase;
 
 	/**
 	 * This is really a #CompositeStorage.  To avoid heavy include
@@ -146,9 +145,6 @@ struct Instance final
 	Database *GetDatabase() {
 		return database;
 	}
-	Database *GetUpnpDatabase() {
-		return upnpdatabase;
-	}
 
 	/**
 	 * Returns the global #Database instance.  Throws
@@ -156,8 +152,6 @@ struct Instance final
 	 * music_directory was configured).
 	 */
 	const Database &GetDatabaseOrThrow() const;
-
-	const Database &GetUpnpDatabaseOrThrow() const;
 #endif
 
 	void BeginShutdownUpdate() noexcept;

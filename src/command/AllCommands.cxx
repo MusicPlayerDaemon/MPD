@@ -90,7 +90,6 @@ static constexpr struct command commands[] = {
 	{ "albumart", PERMISSION_READ, 2, 2, handle_album_art },
 	{ "channels", PERMISSION_READ, 0, 0, handle_channels },
 	{ "clear", PERMISSION_CONTROL, 0, 0, handle_clear },
-	{ "clearcache", PERMISSION_CONTROL, 0, 0, handle_clear_upnp_cache },
 	{ "clearerror", PERMISSION_CONTROL, 0, 0, handle_clearerror },
 	{ "cleartagid", PERMISSION_ADD, 1, 2, handle_cleartagid },
 	{ "close", PERMISSION_NONE, -1, -1, handle_close },
@@ -186,7 +185,6 @@ static constexpr struct command commands[] = {
 	{ "rm", PERMISSION_CONTROL, 1, 1, handle_rm },
 	{ "save", PERMISSION_CONTROL, 1, 1, handle_save },
 	{ "savequeue", PERMISSION_CONTROL, 0, 0, handle_savequeue },
-	{ "scanneighbors", PERMISSION_CONTROL, 0, 1, handle_scanNeighbors },
 #ifdef ENABLE_DATABASE
 	{ "search", PERMISSION_READ, 2, -1, handle_search },
 	{ "searchadd", PERMISSION_ADD, 2, -1, handle_searchadd },

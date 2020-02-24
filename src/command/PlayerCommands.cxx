@@ -37,10 +37,6 @@
 #ifdef ENABLE_DATABASE
 #include "db/update/Service.hxx"
 #endif
-#ifdef ENABLE_NEIGHBOR_PLUGINS
-#include "neighbor/Glue.hxx"
-#include "neighbor/Info.hxx"
-#endif
 
 #define COMMAND_STATUS_STATE            "state"
 #define COMMAND_STATUS_REPEAT           "repeat"
@@ -196,13 +192,6 @@ handle_status(Client &client, gcc_unused Request args, Response &r)
 	if (updateJobId != 0) {
 		r.Format(COMMAND_STATUS_UPDATING_DB ": %i\n",
 			 updateJobId);
-	}
-#endif
-#ifdef ENABLE_NEIGHBOR_PLUGINS
-	const NeighborGlue *const neighbors = client.GetPartition().instance.neighbors;
-	if (neighbors != nullptr &&
-		neighbors->Scanning()) {
-		r.Format("scanning_neighbors: %d\n", neighbors->Scanning());
 	}
 #endif
 

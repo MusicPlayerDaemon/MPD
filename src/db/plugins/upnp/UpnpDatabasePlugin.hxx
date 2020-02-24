@@ -24,6 +24,4 @@ struct DatabasePlugin;
 
 extern const DatabasePlugin upnp_db_plugin;
 
-void ClearUpnpCache();
-
 #endif

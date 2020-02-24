@@ -49,7 +49,7 @@ class UpnpNeighborExplorer final
 
 		gcc_pure
 		NeighborInfo Export() const noexcept {
-			return { "smb://" + name + "/", comment,"", ""};  //???why smb
+			return { "smb://" + name + "/", comment };
 		}
 	};
 
@@ -65,7 +65,6 @@ public:
 	/* virtual methods from class NeighborExplorer */
 	void Open() override;
 	void Close() noexcept override;
-	void Reopen(int n) override;
 	List GetList() const noexcept override;
 
 private:
@@ -83,10 +82,8 @@ UpnpNeighborExplorer::Open()
 
 	try {
 		discovery->Start();
-		SetUpnpDiscovery(discovery);
 	} catch (...) {
 		delete discovery;
-		discovery = nullptr;
 		UpnpClientGlobalFinish();
 		throw;
 	}
@@ -95,19 +92,11 @@ UpnpNeighborExplorer::Open()
 void
 UpnpNeighborExplorer::Close() noexcept
 {
-	if (discovery != nullptr) {
-		SetUpnpDiscovery(nullptr);
+	if (discovery) {
 		delete discovery;
 		discovery = nullptr;
 		UpnpClientGlobalFinish();
 	}
-}
-
-void
-UpnpNeighborExplorer::Reopen(gcc_unused int n)
-{
-	Close();
-	Open();
 }
 
 NeighborExplorer::List
@@ -123,21 +112,21 @@ UpnpNeighborExplorer::GetList() const noexcept
 
 	List result;
 	for (const auto &i : tmp)
-		result.emplace_front(i.GetURI(), i.getFriendlyName(), i.getDeviceIconUrl(), "");
+		result.emplace_front(i.GetURI(), i.getFriendlyName());
 	return result;
 }
 
 void
 UpnpNeighborExplorer::FoundUPnP(const ContentDirectoryService &service)
 {
-	const NeighborInfo n(service.GetURI(), service.getFriendlyName(), service.getDeviceIconUrl(), "");
+	const NeighborInfo n(service.GetURI(), service.getFriendlyName());
 	listener.FoundNeighbor(n);
 }
 
 void
 UpnpNeighborExplorer::LostUPnP(const ContentDirectoryService &service)
 {
-	const NeighborInfo n(service.GetURI(), service.getFriendlyName(), service.getDeviceIconUrl(), "");
+	const NeighborInfo n(service.GetURI(), service.getFriendlyName());
 	listener.LostNeighbor(n);
 }
 

@@ -46,8 +46,6 @@ protected:
 public:
 	typedef std::forward_list<NeighborInfo> List;
 
-	int scanning = 0;
-
 	/**
 	 * Free instance data.
          */
@@ -65,14 +63,10 @@ public:
 	 */
 	virtual void Close() noexcept = 0;
 
-	virtual void Reopen(int) { Close(); Open();}
-
 	/**
 	 * Obtain a list of currently known neighbors.
 	 */
 	virtual List GetList() const noexcept = 0;
-
-	inline int Scanning() const noexcept {return scanning;}
 };
 
 #endif

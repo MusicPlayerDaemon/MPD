@@ -152,11 +152,7 @@ handle_addid(Client &client, Request args, Response &r)
 		}
 	}
 	auto &partition = client.GetPartition();
-	bool is_upnp = StringStartsWith(uri, "upnp://");
-	const Database *db = is_upnp ? client.GetUpnpDatabase() : client.GetDatabase();
-	if (is_upnp) {
-		uri = uri + 7;
-	}
+	const Database *db = client.GetDatabase();
 	const SongLoader loader(client, db, client.GetStorage());
 	unsigned added_id = tag.IsEmpty() ? partition.AppendURI(loader, uri)
 			: partition.AppendURI(loader, uri, tag);

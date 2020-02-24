@@ -29,7 +29,7 @@
 
 class UPnPDevice;
 struct UPnPService;
-class UPnPDirObject;
+class UPnPDirContent;
 
 /**
  * Content Directory Service class.
@@ -54,10 +54,7 @@ class ContentDirectoryService {
 	std::string m_friendlyName;
 	std::string m_manufacturer;
 	std::string m_modelName;
-	std::string m_deviceIconUrl;
-	std::string m_URLBase;
 
-public:
 	int m_rdreqcnt; // Slice size to use when reading
 
 public:
@@ -79,12 +76,12 @@ public:
 	 *
 	 * @param objectId the UPnP object Id for the container. Root has Id "0"
 	 */
-	UPnPDirObject readDir(UpnpClient_Handle handle,
+	UPnPDirContent readDir(UpnpClient_Handle handle,
 			       const char *objectId) const;
 
 	void readDirSlice(UpnpClient_Handle handle,
 			  const char *objectId, unsigned offset,
-			  unsigned count, UPnPDirObject& dirbuf,
+			  unsigned count, UPnPDirContent& dirbuf,
 			  unsigned &didread, unsigned &total) const;
 
 	/** Search the content directory service.
@@ -96,7 +93,7 @@ public:
 	 * UPnP document: UPnP-av-ContentDirectory-v1-Service-20020625.pdf
 	 * section 2.5.5. Maybe we'll provide an easier way some day...
 	 */
-	UPnPDirObject search(UpnpClient_Handle handle,
+	UPnPDirContent search(UpnpClient_Handle handle,
 			      const char *objectId,
 			      const char *searchstring) const;
 
@@ -104,7 +101,7 @@ public:
 	 *
 	 * @param objectId the UPnP object Id. Root has Id "0"
 	 */
-	UPnPDirObject getMetadata(UpnpClient_Handle handle,
+	UPnPDirContent getMetadata(UpnpClient_Handle handle,
 				   const char *objectId) const;
 
 	/** Retrieve search capabilities
@@ -121,24 +118,9 @@ public:
 		return "upnp://" + m_deviceId + "/" + m_serviceType;
 	}
 
-	gcc_pure
-	std::string GetDeviceId() const noexcept {
-		return m_deviceId;
-	}
-
-	gcc_pure
-	std::string GetURLBase() const noexcept {
-		return m_URLBase;
-	}
-
 	/** Retrieve the "friendly name" for this server, useful for display. */
 	const char *getFriendlyName() const noexcept {
 		return m_friendlyName.c_str();
-	}
-
-	/**Return upnp server LOGO icon url*/
-	const char *getDeviceIconUrl() const noexcept {
-		return m_deviceIconUrl.c_str();
 	}
 };
 

@@ -222,25 +222,15 @@ CompareTags(TagType type, bool descending, const Tag &a, const Tag &b) noexcept
 	}
 }
 
-static const Database &
-get_database(DatabaseSelection &selection, Partition &partition)
-{
-	if (StringStartsWith(selection.uri.c_str(), "upnp://")) {
-		selection.uri = selection.uri.substr(7);
-		return partition.GetUpnpDatabaseOrThrow();
-	} else {
-		return partition.GetDatabaseOrThrow();
-	}
-}
-
 void
 db_selection_print(Response &r, Partition &partition,
-		   DatabaseSelection &selection,
+		   const DatabaseSelection &selection,
 		   bool full, bool base,
 		   TagType sort, bool descending,
 		   unsigned window_start, unsigned window_end)
 {
-	const Database &db = get_database(selection, partition);
+	const Database &db = partition.GetDatabaseOrThrow();
+
 	unsigned i = 0;
 
 	using namespace std::placeholders;
@@ -320,7 +310,7 @@ db_selection_print(Response &r, Partition &partition,
 
 void
 db_selection_print(Response &r, Partition &partition,
-		   DatabaseSelection &selection,
+		   const DatabaseSelection &selection,
 		   bool full, bool base)
 {
 	db_selection_print(r, partition, selection, full, base,

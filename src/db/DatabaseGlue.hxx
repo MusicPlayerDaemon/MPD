@@ -40,14 +40,4 @@ DatabaseGlobalInit(EventLoop &main_event_loop,
 		   DatabaseListener &listener,
 		   const ConfigBlock &block);
 
-/**
- * Initialize the database library By database name
- *
- * @param block the database configuration block
- */
-Database *
-UpnpDatabaseInit(EventLoop &main_event_loop,
-		 EventLoop &io_event_loop,
-		 DatabaseListener &listener) ;
-
 #endif

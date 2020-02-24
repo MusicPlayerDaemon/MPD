@@ -177,7 +177,7 @@ handle_playlistadd(Client &client, Request args, gcc_unused Response &r)
 		spl_append_uri(playlist, loader, uri);
 	} else {
 #ifdef ENABLE_DATABASE
-		const Database &db = is_upnp ? client.GetUpnpDatabaseOrThrow() : client.GetDatabaseOrThrow();
+		const Database &db = client.GetDatabaseOrThrow();
 
 		search_add_to_playlist(db, client.GetStorage(),
 				       playlist, selection);

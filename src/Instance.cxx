@@ -68,15 +68,6 @@ Instance::GetDatabaseOrThrow() const
 	return *database;
 }
 
-const Database &
-Instance::GetUpnpDatabaseOrThrow() const
-{
-	if (upnpdatabase == nullptr)
-		throw DatabaseError(DatabaseErrorCode::DISABLED,
-				    "No upnpdatabase");
-	return *upnpdatabase;
-}
-
 void
 Instance::OnDatabaseModified()
 {

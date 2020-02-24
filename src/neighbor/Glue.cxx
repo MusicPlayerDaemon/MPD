@@ -90,14 +90,6 @@ NeighborGlue::Close() noexcept
 		i->explorer->Close();
 }
 
-void
-NeighborGlue::Reopen(int n)
-{
-	for (auto i = explorers.begin(), end = explorers.end(); i != end; ++i) {
-		i->explorer->Reopen(n);
-	}
-}
-
 NeighborGlue::List
 NeighborGlue::GetList() const noexcept
 {
@@ -110,16 +102,3 @@ NeighborGlue::GetList() const noexcept
 	return result;
 }
 
-
-int
-NeighborGlue::Scanning() const
-{
-	int scanning = 0;
-	for (const auto &i : explorers) {
-		int n = i.explorer->Scanning();
-		if (n > scanning) {
-			scanning = n;
-		}
-	}
-	return scanning;
-}

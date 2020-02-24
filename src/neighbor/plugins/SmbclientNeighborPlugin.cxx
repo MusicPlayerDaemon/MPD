@@ -30,38 +30,20 @@
 #include "thread/Cond.hxx"
 #include "thread/Thread.hxx"
 #include "thread/Name.hxx"
-#include "util/Macros.hxx"
-#include "util/Domain.hxx"
 #include "Log.hxx"
 
 #include <libsmbclient.h>
 
-#include <list>
 #include <algorithm>
-
-#include "util/Domain.hxx"
-#include "Log.hxx"
-
-#include "Instance.hxx"
-#include "player/Control.hxx"
-#include "Partition.hxx"
-#include <unistd.h>
-
-//This value determines the maximum number of local master browsers to query for the list of workgroups
-#define MAX_LMB_COUNT  10
-
-extern Instance *instance;
-
-static constexpr Domain smbclient_neighbor("smbclient_neighbor");
 
 class SmbclientNeighborExplorer final : public NeighborExplorer {
 	struct Server {
-		std::string name, comment, workgroup;
+		std::string name, comment;
 
 		bool alive;
 
-		Server(std::string &&_name, std::string &&_comment, std::string &&_workgroup)
-			:name(std::move(_name)), comment(std::move(_comment)), workgroup(_workgroup),
+		Server(std::string &&_name, std::string &&_comment)
+			:name(std::move(_name)), comment(std::move(_comment)),
 			 alive(true) {}
 		Server(const Server &) = delete;
 
@@ -72,7 +54,7 @@ class SmbclientNeighborExplorer final : public NeighborExplorer {
 
 		gcc_pure
 		NeighborInfo Export() const noexcept {
-			return { "smb://" + name + "/", comment,"", workgroup};
+			return { "smb://" + name + "/", comment };
 		}
 	};
 
@@ -92,7 +74,6 @@ public:
 
 	/* virtual methods from class NeighborExplorer */
 	void Open() override;
-	void Reopen(int n) override;
 	void Close() noexcept override;
 	List GetList() const noexcept override;
 
@@ -105,18 +86,11 @@ void
 SmbclientNeighborExplorer::Open()
 {
 	quit = false;
-	list.clear();
-	thread.Start();
-}
-
-void
-SmbclientNeighborExplorer::Reopen(int n)
-{
-	FormatDefault(smbclient_neighbor, "%s %d", __func__, __LINE__);
-	Close();
-	if (n > 0) {
-		SmbclientReinit();
-		Open();
+	if (!thread.IsDefined()) {
+		for (auto &i : list)
+			listener.LostNeighbor(i);
+		list.clear();
+		thread.Start();
 	}
 }
 
@@ -128,10 +102,9 @@ SmbclientNeighborExplorer::Close() noexcept
 	cond.signal();
 	mutex.unlock();
 
-	if (thread.IsDefined()) {
+	if(thread.IsDefined()) {
 		thread.Join();
 	}
-	scanning = 0;
 }
 
 NeighborExplorer::List
@@ -147,7 +120,7 @@ SmbclientNeighborExplorer::GetList() const noexcept
 }
 
 static void
-ReadServer(NeighborExplorer::List &list, const smbc_dirent &e, const char *wg)
+ReadServer(NeighborExplorer::List &list, const smbc_dirent &e)
 {
 	const std::string name(e.name, e.namelen);
 	std::string comment(e.comment, e.commentlen);
@@ -155,21 +128,21 @@ ReadServer(NeighborExplorer::List &list, const smbc_dirent &e, const char *wg)
 	if (comment.empty() || comment.compare("")==0) {
 		comment = name;
 	}
-	list.emplace_front("smb://" + name, comment, "", wg);
+	list.emplace_front("smb://" + name, comment);
 }
 
 static void
-ReadServers(NeighborExplorer::List &list, const char *uri, const char *wg);
+ReadServers(NeighborExplorer::List &list, const char *uri);
 
 static void
 ReadWorkgroup(NeighborExplorer::List &list, const std::string &name)
 {
 	std::string uri = "smb://" + name;
-	ReadServers(list, uri.c_str(), name.c_str());
+	ReadServers(list, uri.c_str());
 }
 
 static void
-ReadEntry(NeighborExplorer::List &list, const smbc_dirent &e, const char *wg)
+ReadEntry(NeighborExplorer::List &list, const smbc_dirent &e)
 {
 	switch (e.smbc_type) {
 	case SMBC_WORKGROUP:
@@ -177,27 +150,27 @@ ReadEntry(NeighborExplorer::List &list, const smbc_dirent &e, const char *wg)
 		break;
 
 	case SMBC_SERVER:
-		ReadServer(list, e, wg);
+		ReadServer(list, e);
 		break;
 	}
 }
 
 static void
-ReadServers(NeighborExplorer::List &list, int fd, const char *wg)
+ReadServers(NeighborExplorer::List &list, int fd)
 {
 	smbc_dirent *e;
 	while ((e = smbc_readdir(fd)) != nullptr)
-		ReadEntry(list, *e, wg);
+		ReadEntry(list, *e);
 
 	smbc_closedir(fd);
 }
 
 static void
-ReadServers(NeighborExplorer::List &list, const char *uri, const char *wg)
+ReadServers(NeighborExplorer::List &list, const char *uri)
 {
 	int fd = smbc_opendir(uri);
 	if (fd >= 0) {
-		ReadServers(list, fd, wg);
+		ReadServers(list, fd);
 		smbc_closedir(fd);
 	} else
 		FormatErrno(smbclient_domain, "smbc_opendir('%s') failed",
@@ -210,66 +183,87 @@ DetectServers() noexcept
 {
 	NeighborExplorer::List list;
 	const std::lock_guard<Mutex> protect(smbclient_mutex);
-	ReadServers(list, "smb://", "");
+	ReadServers(list, "smb://");
 	return list;
+}
+
+gcc_pure
+static NeighborExplorer::List::const_iterator
+FindBeforeServerByURI(NeighborExplorer::List::const_iterator prev,
+		      NeighborExplorer::List::const_iterator end,
+		      const std::string &uri) noexcept
+{
+	for (auto i = std::next(prev); i != end; prev = i, i = std::next(prev))
+		if (i->uri == uri)
+			return prev;
+
+	return end;
 }
 
 inline void
 SmbclientNeighborExplorer::Run()
 {
-	List found = DetectServers(), found2;
+	List found = DetectServers(), lost;
 
 	mutex.lock();
 
+	const auto found_before_begin = found.before_begin();
+	const auto found_end = found.end();
 
-	for (auto &i : found) {
-		bool is_in_list = false;
-		for (auto &j : list) {
-			if (i.uri == j.uri) {
-				is_in_list = true;
-				break;
-			}
-		}
-		if (!is_in_list) {
-			found2.push_front(i);
+	for (auto prev = list.before_begin(), i = std::next(prev), end = list.end();
+	     i != end; i = std::next(prev)) {
+		auto f = FindBeforeServerByURI(found_before_begin, found_end,
+					       i->uri);
+		if (f != found_end) {
+			/* still visible: remove from "found" so we
+			   don't believe it's a new one */
+			*i = std::move(*std::next(f));
+			found.erase_after(f);
+			prev = i;
+		} else {
+			/* can't see it anymore: move to "lost" */
+			lost.splice_after(lost.before_begin(), list, prev);
 		}
 	}
-	for (auto &i : found2) {
-		list.push_front(i);
-	}
+
+	for (auto prev = found_before_begin, i = std::next(prev);
+	     i != found_end; prev = i, i = std::next(prev))
+		list.push_front(*i);
 
 	mutex.unlock();
 
-	for (auto &i : found2) {
+	for (auto &i : lost)
+		listener.LostNeighbor(i);
+
+	for (auto &i : found)
 		listener.FoundNeighbor(i);
-		FormatDefault(smbclient_neighbor, "FoundNeighbor\n workgroup:%s\n uri:%s\n display_name:%s",
-			i.workgroup.c_str(), i.uri.c_str(), i.display_name.c_str());
-	}
 }
 
 inline void
 SmbclientNeighborExplorer::ThreadFunc()
 {
-	SetThreadName("smbclientNeighbor");
+	SetThreadName("smbclient");
 
 	mutex.lock();
-	scanning = 10;
+	unsigned quick_run_cnt = 5;
 
-	do {
+	while (!quit) {
 		mutex.unlock();
-		//FormatDefault(smbclient_neighbor, "%s start", __func__);
+
 		Run();
-		//FormatDefault(smbclient_neighbor, "%s end", __func__);
 
 		mutex.lock();
 		if (quit)
 			break;
 
 		// TODO: sleep for how long?
-		scanning--;
-		cond.timed_wait(mutex, std::chrono::seconds(2));
-	} while (!quit && scanning);
-	scanning = 0;
+		if (quick_run_cnt) {
+			quick_run_cnt--;
+			cond.timed_wait(mutex, std::chrono::seconds(1));
+		} else {
+			cond.timed_wait(mutex, std::chrono::seconds(10));
+		}
+	}
 
 	mutex.unlock();
 }

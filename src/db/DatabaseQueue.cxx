@@ -25,8 +25,6 @@
 #include "Instance.hxx"
 #include "DetachedSong.hxx"
 #include "tag/Builder.hxx"
-#include "Selection.hxx"
-#include "util/StringCompare.hxx"
 
 #include <functional>
 
@@ -60,21 +58,10 @@ AddToQueue(Partition &partition, const LightSong &song)
 	partition.playlist.AppendSong(partition.pc, std::move(dsong));
 }
 
-static const Database &
-get_database(DatabaseSelection &selection, Partition &partition)
-{
-	if (StringStartsWith(selection.uri.c_str(), "upnp://")) {
-		selection.uri = selection.uri.substr(7);
-		return partition.GetUpnpDatabaseOrThrow();
-	} else {
-		return partition.GetDatabaseOrThrow();
-	}
-}
-
 void
-AddFromDatabase(Partition &partition, DatabaseSelection &selection)
+AddFromDatabase(Partition &partition, const DatabaseSelection &selection)
 {
-	const Database &db = get_database(selection, partition);
+	const Database &db = partition.instance.GetDatabaseOrThrow();
 
 	using namespace std::placeholders;
 	const auto f = std::bind(AddToQueue, std::ref(partition), _1);

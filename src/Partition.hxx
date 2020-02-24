@@ -228,10 +228,6 @@ struct Partition final : QueueListener, PlayerListener, MixerListener {
 
 	const Database &GetDatabaseOrThrow() const;
 
-	const Database *GetUpnpDatabase() const;
-
-	const Database &GetUpnpDatabaseOrThrow() const;
-
 	/**
 	 * The database has been modified.  Propagate the change to
 	 * all subsystems.

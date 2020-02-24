@@ -44,7 +44,7 @@
 CommandResult
 handle_listfiles_db(Client &client, Response &r, const char *uri)
 {
-	DatabaseSelection selection(uri, false);
+	const DatabaseSelection selection(uri, false);
 	db_selection_print(r, client.GetPartition(),
 			   selection, false, true);
 	return CommandResult::OK;
@@ -108,7 +108,7 @@ handle_match(Client &client, Request args, Response &r, bool fold_case)
 		return CommandResult::ERROR;
 	}
 
-	DatabaseSelection selection("", true, &filter);
+	const DatabaseSelection selection("", true, &filter);
 
 	db_selection_print(r, client.GetPartition(),
 			   selection, true, false,
@@ -141,7 +141,7 @@ handle_match_add(Client &client, Request args, Response &r, bool fold_case)
 	auto &partition = client.GetPartition();
 	const ScopeBulkEdit bulk_edit(partition);
 
-	DatabaseSelection selection("", true, &filter);
+	const DatabaseSelection selection("", true, &filter);
 	AddFromDatabase(partition, selection);
 	return CommandResult::OK;
 }
@@ -216,9 +216,8 @@ handle_listall(Client &client, Request args, Response &r)
 	/* default is root directory */
 	const auto uri = args.GetOptional(0, "");
 
-	DatabaseSelection selection(uri, true);
 	db_selection_print(r, client.GetPartition(),
-			   selection,
+			   DatabaseSelection(uri, true),
 			   false, false);
 	return CommandResult::OK;
 }
@@ -293,9 +292,8 @@ handle_listallinfo(Client &client, Request args, Response &r)
 	/* default is root directory */
 	const auto uri = args.GetOptional(0, "");
 
-	DatabaseSelection selection(uri, true);
 	db_selection_print(r, client.GetPartition(),
-			   selection,
+			   DatabaseSelection(uri, true),
 			   true, false);
 	return CommandResult::OK;
 }

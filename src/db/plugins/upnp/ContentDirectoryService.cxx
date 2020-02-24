@@ -27,50 +27,38 @@
 #include "util/UriUtil.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/ScopeExit.hxx"
+#include "util/StringFormat.hxx"
 
 #include <stdio.h>
 
-#define PIDNULL  "parentID=\"\""
-#define PIDOK    "parentID=\"-1\""
-
 static void
-ReadResultTag(UPnPDirObject &dirbuf, IXML_Document *response)
+ReadResultTag(UPnPDirContent &dirbuf, IXML_Document *response)
 {
 	const char *p = ixmlwrap::getFirstElementValue(response, "Result");
 	if (p == nullptr)
 		p = "";
 
-	const char *pid = strstr(p, PIDNULL);
-	if (pid != nullptr) {
-		std::string str = p;
-		auto pos = str.find(PIDNULL);
-		str.replace(pos, strlen(PIDNULL), PIDOK);
-		dirbuf.Parse(str.c_str());
-	} else {
-		dirbuf.Parse(p);
-	}
+	dirbuf.Parse(p);
 }
 
-void
+inline void
 ContentDirectoryService::readDirSlice(UpnpClient_Handle hdl,
 				      const char *objectId, unsigned offset,
-				      unsigned count, UPnPDirObject &dirbuf,
+				      unsigned count, UPnPDirContent &dirbuf,
 				      unsigned &didreadp,
 				      unsigned &totalp) const
 {
-	// Create request
-	char ofbuf[100], cntbuf[100];
-	sprintf(ofbuf, "%u", offset);
-	sprintf(cntbuf, "%u", count);
 	// Some devices require an empty SortCriteria, else bad params
 	IXML_Document *request =
 		MakeActionHelper("Browse", m_serviceType.c_str(),
 				 "ObjectID", objectId,
 				 "BrowseFlag", "BrowseDirectChildren",
 				 "Filter", "*",
-				 "StartingIndex", ofbuf,
-				 "RequestedCount", cntbuf,
-                                 "SortCriteria", "");
+				 "SortCriteria", "",
+				 "StartingIndex",
+				 StringFormat<32>("%u", offset).c_str(),
+				 "RequestedCount",
+				 StringFormat<32>("%u", count).c_str());
 	if (request == nullptr)
 		throw std::runtime_error("UpnpMakeAction() failed");
 
@@ -97,11 +85,11 @@ ContentDirectoryService::readDirSlice(UpnpClient_Handle hdl,
 	ReadResultTag(dirbuf, response);
 }
 
-UPnPDirObject
+UPnPDirContent
 ContentDirectoryService::readDir(UpnpClient_Handle handle,
 				 const char *objectId) const
 {
-	UPnPDirObject dirbuf;
+	UPnPDirContent dirbuf;
 	unsigned offset = 0, total = -1, count;
 
 	do {
@@ -114,25 +102,23 @@ ContentDirectoryService::readDir(UpnpClient_Handle handle,
 	return dirbuf;
 }
 
-UPnPDirObject
+UPnPDirContent
 ContentDirectoryService::search(UpnpClient_Handle hdl,
 				const char *objectId,
 				const char *ss) const
 {
-	UPnPDirObject dirbuf;
+	UPnPDirContent dirbuf;
 	unsigned offset = 0, total = -1, count;
 
 	do {
-		char ofbuf[100];
-		sprintf(ofbuf, "%d", offset);
-
 		UniqueIxmlDocument request(MakeActionHelper("Search", m_serviceType.c_str(),
-								"ContainerID", objectId,
-								"SearchCriteria", ss,
-								"Filter", "*",
-								"StartingIndex", ofbuf,
-								"RequestedCount", "0",
-								"SortCriteria", "")); // Setting a value here gets twonky into fits
+							    "ContainerID", objectId,
+							    "SearchCriteria", ss,
+							    "Filter", "*",
+							    "SortCriteria", "",
+							    "StartingIndex",
+							    StringFormat<32>("%u", offset).c_str(),
+							    "RequestedCount", "0")); // Setting a value here gets twonky into fits
 		if (!request)
 			throw std::runtime_error("UpnpMakeAction() failed");
 
@@ -167,18 +153,18 @@ ContentDirectoryService::search(UpnpClient_Handle hdl,
 	return dirbuf;
 }
 
-UPnPDirObject
+UPnPDirContent
 ContentDirectoryService::getMetadata(UpnpClient_Handle hdl,
 				     const char *objectId) const
 {
 	// Create request
 	UniqueIxmlDocument request(MakeActionHelper("Browse", m_serviceType.c_str(),
-							"ObjectID", objectId,
-							"BrowseFlag", "BrowseMetadata",
-							"Filter", "*",
-							"StartingIndex", "0",
-							"RequestedCount", "1",
-							"SortCriteria", ""));
+						    "ObjectID", objectId,
+						    "BrowseFlag", "BrowseMetadata",
+						    "Filter", "*",
+						    "SortCriteria", "",
+						    "StartingIndex", "0",
+						    "RequestedCount", "1"));
 	if (request == nullptr)
 		throw std::runtime_error("UpnpMakeAction() failed");
 
@@ -191,7 +177,7 @@ ContentDirectoryService::getMetadata(UpnpClient_Handle hdl,
 					 UpnpGetErrorMessage(code));
 
 	UniqueIxmlDocument response(_response);
-	UPnPDirObject dirbuf;
+	UPnPDirContent dirbuf;
 	ReadResultTag(dirbuf, response.get());
 	return dirbuf;
 }
