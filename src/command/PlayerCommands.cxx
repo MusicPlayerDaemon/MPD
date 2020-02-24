@@ -219,6 +219,10 @@ handle_status(Client &client, gcc_unused Request args, Response &r)
 			 COMMAND_STATUS_NEXTSONGID ": %u\n",
 			 song, playlist.PositionToId(song));
 
+	if (player_status.state != PlayerState::STOP) {
+		r.Format("buffered: %1.3f\n", player_status.buffered_time);
+	}
+
 	return CommandResult::OK;
 }
 
