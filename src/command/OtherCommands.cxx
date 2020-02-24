@@ -38,6 +38,8 @@
 #include "util/ChronoUtil.hxx"
 #include "util/UriUtil.hxx"
 #include "util/StringAPI.hxx"
+#include "util/StringCompare.hxx"
+#include "util/Domain.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "Stats.hxx"
 #include "PlaylistFile.hxx"
@@ -57,6 +59,8 @@
 
 #include <assert.h>
 #include <string.h>
+
+static constexpr Domain domain("OtherCommands");
 
 static void
 print_spl_list(Response &r, const PlaylistVector &list)
@@ -220,7 +224,9 @@ handle_lsinfo(Client &client, Request args, Response &r)
 		   compatibility, work around this here */
 		uri = "";
 
-	const auto located_uri = LocateUri(uri, &client
+	const auto located_uri = StringStartsWith(uri, "upnp://")
+		? LocatedUri(LocatedUri::Type::RELATIVE, uri)
+		: LocateUri(uri, &client
 #ifdef ENABLE_DATABASE
 					   , nullptr
 #endif

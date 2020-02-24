@@ -37,6 +37,7 @@
 #include "util/ConstBuffer.hxx"
 #include "util/StringAPI.hxx"
 #include "util/NumberParser.hxx"
+#include "util/StringCompare.hxx"
 
 #include <memory>
 #include <limits>
@@ -57,7 +58,7 @@ AddDatabaseSelection(Client &client, const char *uri,
 	auto &partition = client.GetPartition();
 	const ScopeBulkEdit bulk_edit(partition);
 
-	const DatabaseSelection selection(uri, true);
+	DatabaseSelection selection(uri, true);
 	AddFromDatabase(partition, selection);
 	return CommandResult::OK;
 #else
@@ -81,7 +82,9 @@ handle_add(Client &client, Request args, Response &r)
 		   here */
 		uri = "";
 
-	const auto located_uri = LocateUri(uri, &client
+	const auto located_uri = StringStartsWith(uri, "upnp://")
+		? LocatedUri(LocatedUri::Type::RELATIVE, uri)
+		: LocateUri(uri, &client
 #ifdef ENABLE_DATABASE
 					   , nullptr
 #endif
@@ -107,7 +110,8 @@ handle_add(Client &client, Request args, Response &r)
 CommandResult
 handle_addid(Client &client, Request args, Response &r)
 {
-	const char *const uri = args.front();
+	bool is_upnp = StringStartsWith(args.front(), "upnp://");
+	const char *const uri = is_upnp ? (args.front() + 7) : args.front();
 
 	auto &partition = client.GetPartition();
 	const SongLoader loader(client);

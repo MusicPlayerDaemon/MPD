@@ -38,6 +38,7 @@
 #include "util/UriUtil.hxx"
 #include "util/ConstBuffer.hxx"
 #include "util/ChronoUtil.hxx"
+#include "util/StringCompare.hxx"
 
 bool
 playlist_commands_available() noexcept
@@ -158,14 +159,15 @@ CommandResult
 handle_playlistadd(Client &client, Request args, gcc_unused Response &r)
 {
 	const char *const playlist = args[0];
-	const char *const uri = args[1];
+	bool is_upnp = StringStartsWith(args[1], "upnp://");
+	const char *uri = is_upnp ? (args[1] + 7) : args[1];
 
 	if (uri_has_scheme(uri)) {
 		const SongLoader loader(client);
 		spl_append_uri(playlist, loader, uri);
 	} else {
 #ifdef ENABLE_DATABASE
-		const Database &db = client.GetDatabaseOrThrow();
+		const Database &db = is_upnp ? client.GetUpnpDatabaseOrThrow() : client.GetDatabaseOrThrow();
 
 		search_add_to_playlist(db, client.GetStorage(),
 				       uri, playlist, nullptr);

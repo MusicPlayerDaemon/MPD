@@ -40,7 +40,7 @@
 CommandResult
 handle_listfiles_db(Client &client, Response &r, const char *uri)
 {
-	const DatabaseSelection selection(uri, false);
+	DatabaseSelection selection(uri, false);
 	db_selection_print(r, client.GetPartition(),
 			   selection, false, true);
 	return CommandResult::OK;
@@ -49,7 +49,7 @@ handle_listfiles_db(Client &client, Response &r, const char *uri)
 CommandResult
 handle_lsinfo2(Client &client, const char *uri, Response &r)
 {
-	const DatabaseSelection selection(uri, false);
+	DatabaseSelection selection(uri, false);
 	db_selection_print(r, client.GetPartition(),
 			   selection, true, false);
 	return CommandResult::OK;
@@ -101,7 +101,7 @@ handle_match(Client &client, Request args, Response &r, bool fold_case)
 		return CommandResult::ERROR;
 	}
 
-	const DatabaseSelection selection("", true, &filter);
+	DatabaseSelection selection("", true, &filter);
 
 	db_selection_print(r, client.GetPartition(),
 			   selection, true, false,
@@ -134,7 +134,7 @@ handle_match_add(Client &client, Request args, Response &r, bool fold_case)
 	auto &partition = client.GetPartition();
 	const ScopeBulkEdit bulk_edit(partition);
 
-	const DatabaseSelection selection("", true, &filter);
+	DatabaseSelection selection("", true, &filter);
 	AddFromDatabase(partition, selection);
 	return CommandResult::OK;
 }
@@ -202,8 +202,9 @@ handle_listall(Client &client, Request args, Response &r)
 	/* default is root directory */
 	const auto uri = args.GetOptional(0, "");
 
+	DatabaseSelection selection(uri, true);
 	db_selection_print(r, client.GetPartition(),
-			   DatabaseSelection(uri, true),
+			   selection,
 			   false, false);
 	return CommandResult::OK;
 }
@@ -278,8 +279,9 @@ handle_listallinfo(Client &client, Request args, Response &r)
 	/* default is root directory */
 	const auto uri = args.GetOptional(0, "");
 
+	DatabaseSelection selection(uri, true);
 	db_selection_print(r, client.GetPartition(),
-			   DatabaseSelection(uri, true),
+			   selection,
 			   true, false);
 	return CommandResult::OK;
 }
