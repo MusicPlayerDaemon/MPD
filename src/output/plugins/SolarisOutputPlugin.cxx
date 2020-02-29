@@ -22,21 +22,22 @@
 #include "system/FileDescriptor.hxx"
 #include "system/Error.hxx"
 
+#include <sys/ioctl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <errno.h>
 
-#ifdef __sun
+#if defined(__sun)
 #include <sys/audio.h>
 #include <sys/stropts.h>
+#elif defined(__NetBSD__)
+#include <sys/audioio.h>
 #else
 
 /* some fake declarations that allow build this plugin on systems
    other than Solaris, just to see if it compiles */
-
-#include <sys/ioctl.h>
 
 #ifndef I_FLUSH
 #define I_FLUSH 0
@@ -147,7 +148,11 @@ SolarisOutput::Play(const void *chunk, size_t size)
 void
 SolarisOutput::Cancel() noexcept
 {
+#if defined(AUDIO_FLUSH)
+	ioctl(fd.Get(), AUDIO_FLUSH);
+#elif defined(I_FLUSH)
 	ioctl(fd.Get(), I_FLUSH);
+#endif
 }
 
 const struct AudioOutputPlugin solaris_output_plugin = {

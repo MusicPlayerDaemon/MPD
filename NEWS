@@ -1,6 +1,8 @@
 ver 0.21.21 (not yet released)
 * decoder
   - gme: ignore empty tags
+* output
+  - solaris: port to NetBSD
 
 ver 0.21.20 (2020/02/16)
 * decoder
