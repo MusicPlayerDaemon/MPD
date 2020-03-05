@@ -29,6 +29,7 @@
 #include "Log.hxx"
 #include "time/ChronoUtil.hxx"
 #include "tag/Mask.hxx"
+#include "tag/Settings.hxx"
 #include "client/Client.hxx"
 
 #ifdef _WIN32
@@ -120,7 +121,7 @@ db_tagstats_print(Response &r, const Database &db)
 	if (!stats_update(db))
 		return;
 
-	TagMask tag_mask = r.GetClient().tag_mask;
+	TagMask tag_mask = global_tag_mask & r.GetTagMask();
 
 	for (unsigned type = TagType::TAG_BEGIN;
 		 type < TagType::TAG_END;
