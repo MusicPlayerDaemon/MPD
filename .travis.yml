@@ -126,6 +126,7 @@ matrix:
           packages:
             - ccache
             - meson
+          update: true
       env:
         - MATRIX_EVAL="export PATH=/usr/local/opt/ccache/libexec:$PATH HOMEBREW_NO_ANALYTICS=1"
 
