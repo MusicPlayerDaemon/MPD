@@ -1,6 +1,6 @@
 language: cpp
 
-matrix:
+jobs:
   include:
     # Ubuntu Bionic (18.04) with GCC 7
     - os: linux
