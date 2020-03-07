@@ -109,6 +109,12 @@ struct PathTraitsFS {
 	}
 
 	gcc_pure gcc_nonnull_all
+	static bool IsSpecialFilename(const_pointer_type name) noexcept {
+		return (name[0] == '.' && name[1] == 0) ||
+			(name[0] == '.' && name[1] == '.' && name[2] == 0);
+	}
+
+	gcc_pure gcc_nonnull_all
 	static size_t GetLength(const_pointer_type p) noexcept {
 		return StringLength(p);
 	}
@@ -214,6 +220,12 @@ struct PathTraitsUTF8 {
 			return true;
 #endif
 		return IsSeparator(*p);
+	}
+
+	gcc_pure gcc_nonnull_all
+	static bool IsSpecialFilename(const_pointer_type name) noexcept {
+		return (name[0] == '.' && name[1] == 0) ||
+			(name[0] == '.' && name[1] == '.' && name[2] == 0);
 	}
 
 	gcc_pure gcc_nonnull_all

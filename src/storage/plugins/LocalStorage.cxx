@@ -144,21 +144,12 @@ LocalStorage::OpenDirectory(const char *uri_utf8)
 	return std::make_unique<LocalDirectoryReader>(MapFSOrThrow(uri_utf8));
 }
 
-gcc_pure
-static bool
-SkipNameFS(PathTraitsFS::const_pointer_type name_fs) noexcept
-{
-	return name_fs[0] == '.' &&
-		(name_fs[1] == 0 ||
-		 (name_fs[1] == '.' && name_fs[2] == 0));
-}
-
 const char *
 LocalDirectoryReader::Read() noexcept
 {
 	while (reader.ReadEntry()) {
 		const Path name_fs = reader.GetEntry();
-		if (SkipNameFS(name_fs.c_str()))
+		if (PathTraitsFS::IsSpecialFilename(name_fs.c_str()))
 			continue;
 
 		try {
