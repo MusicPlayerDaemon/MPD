@@ -532,6 +532,26 @@ Sometimes, music needs to be resampled before it can be played; for example, CDs
 Check the :ref:`resampler_plugins` reference for a list of resamplers
 and how to configure them.
 
+Adhere 44.1/48 base when resampling
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The samplerate of most regular digital audio is based on two different base clocks; 44.1kHz and 48 kHz.
+
+* The 44.1kHz based samplerates are 44.1 , 88.2, 176.4 and 352.8 kHz.
+* The 48kHz based samplerates are 48, 96, 192 and 384 kHz.
+
+If the conversion (up or down) isn't in the same base range, the conversion 
+gets more complex. And due this will also consume more cpu resources.
+
+When the target samplerate is set with  ``audio_output_format``,  the ``selective_44k_resample`` option adheres the clock base 44.1/48.
+``audio_output_format`` is set to the  target samplerate with for the 48k range, but now for source from 44.1 base range the nearest, lower, 
+44.1 base samplerate is used.
+
+For example:
+* source 44.1k target 96k final is 88.2k
+* source 88.2k target 96k final is 88.2k
+* source 48k target 96k final is 96k
+
 Client Connections
 ------------------
 
