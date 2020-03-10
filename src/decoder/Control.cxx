@@ -28,11 +28,13 @@
 DecoderControl::DecoderControl(Mutex &_mutex, Cond &_client_cond,
 			       InputCacheManager *_input_cache,
 			       const AudioFormat _configured_audio_format,
+				   const bool _selective_44k_resample,
 			       const ReplayGainConfig &_replay_gain_config) noexcept
 	:thread(BIND_THIS_METHOD(RunThread)),
 	 input_cache(_input_cache),
 	 mutex(_mutex), client_cond(_client_cond),
 	 configured_audio_format(_configured_audio_format),
+	 selective_44k_resample(_selective_44k_resample),
 	 replay_gain_config(_replay_gain_config) {}
 
 DecoderControl::~DecoderControl() noexcept
@@ -51,7 +53,12 @@ DecoderControl::SetReady(const AudioFormat audio_format,
 	assert(audio_format.IsValid());
 
 	in_audio_format = audio_format;
-	out_audio_format = audio_format.WithMask(configured_audio_format);
+
+	if(selective_44k_resample) {
+		out_audio_format = audio_format.WithMaskSelective(configured_audio_format);
+	} else {
+		out_audio_format = audio_format.WithMask(configured_audio_format);
+	}
 
 	seekable = _seekable;
 	total_time = _duration;

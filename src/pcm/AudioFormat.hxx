@@ -123,12 +123,23 @@ struct AudioFormat {
 		return !(*this == other);
 	}
 
-	void ApplyMask(AudioFormat mask) noexcept;
+	void ApplyMask(AudioFormat mask, bool selective_44k_resample = false) noexcept;
 
 	gcc_pure
 	AudioFormat WithMask(AudioFormat mask) const noexcept {
 		AudioFormat result = *this;
 		result.ApplyMask(mask);
+		return result;
+	}
+
+	/**
+	 * If current samplerate is is 44k clock based, the nearest 44k clock of mask is used.
+	 * For example is mask.samplerate is 96, than the 88.2l samplerate is set.
+	 */
+	gcc_pure
+	AudioFormat WithMaskSelective(AudioFormat mask) const noexcept {
+		AudioFormat result = *this;
+		result.ApplyMask(mask, true);
 		return result;
 	}
 

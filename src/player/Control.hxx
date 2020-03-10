@@ -127,6 +127,11 @@ class PlayerControl final : public AudioOutputClient {
 	const AudioFormat configured_audio_format;
 
 	/**
+	 * The "selective_44k_resample" setting.
+	 */
+	bool selective_44k_resample;
+
+	/**
 	 * The handle of the player thread.
 	 */
 	Thread thread;
@@ -240,6 +245,7 @@ public:
 		      InputCacheManager *_input_cache,
 		      unsigned buffer_chunks,
 		      AudioFormat _configured_audio_format,
+			  bool selective_44k_resample,
 		      const ReplayGainConfig &_replay_gain_config) noexcept;
 	~PlayerControl() noexcept;
 

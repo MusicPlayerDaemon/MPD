@@ -103,6 +103,7 @@ handle_newpartition(Client &client, Request request, Response &response)
 					 16384,
 					 1024,
 					 AudioFormat::Undefined(),
+					 false,
 					 ReplayGainConfig());
 	auto &partition = instance.partitions.back();
 	partition.UpdateEffectiveReplayGainMode();

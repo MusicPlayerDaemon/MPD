@@ -1148,6 +1148,7 @@ try {
 	DecoderControl dc(mutex, cond,
 			  input_cache,
 			  configured_audio_format,
+			  selective_44k_resample,
 			  replay_gain_config);
 	dc.StartThread();
 

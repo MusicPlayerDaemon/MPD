@@ -31,11 +31,13 @@ PlayerControl::PlayerControl(PlayerListener &_listener,
 			     InputCacheManager *_input_cache,
 			     unsigned _buffer_chunks,
 			     AudioFormat _configured_audio_format,
+				 bool _selective_44k_resample,
 			     const ReplayGainConfig &_replay_gain_config) noexcept
 	:listener(_listener), outputs(_outputs),
 	 input_cache(_input_cache),
 	 buffer_chunks(_buffer_chunks),
 	 configured_audio_format(_configured_audio_format),
+	 selective_44k_resample(_selective_44k_resample),
 	 thread(BIND_THIS_METHOD(RunThread)),
 	 replay_gain_config(_replay_gain_config)
 {

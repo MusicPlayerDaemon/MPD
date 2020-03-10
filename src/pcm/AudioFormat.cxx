@@ -22,15 +22,46 @@
 
 #include <assert.h>
 #include <stdio.h>
+#include <map>
+
+/**
+ * If source is based on 44.1k get nearest valid 44.1k variant from the target sample rate.
+ * For exmple if the source is 44.1k and the target is 96k it will return 88.2k
+ */
+unsigned
+determine_selective_resample_rate(unsigned source_rate, unsigned target_rate) noexcept;
+
+unsigned
+determine_selective_resample_rate(unsigned source_rate, unsigned target_rate) noexcept
+{
+	unsigned out_sample_rate = source_rate;
+	const std::map<unsigned, unsigned> lut48to41 = {
+		{384000, 352800 },
+		{192000, 176400 },
+	 	 {96000,  88200 },
+		 {48000,  44100 }
+	};	
+
+	if( source_rate % 44100 == 0 && lut48to41.find(target_rate) != lut48to41.end() )
+		out_sample_rate = lut48to41.find(target_rate)->second;
+	else if(target_rate)
+		out_sample_rate = target_rate;
+
+    return out_sample_rate;
+}
 
 void
-AudioFormat::ApplyMask(AudioFormat mask) noexcept
+AudioFormat::ApplyMask(AudioFormat mask, bool selective_44k_resample) noexcept
 {
 	assert(IsValid());
 	assert(mask.IsMaskValid());
 
-	if (mask.sample_rate != 0)
-		sample_rate = mask.sample_rate;
+	if (mask.sample_rate != 0) {
+		if(selective_44k_resample)
+			sample_rate = determine_selective_resample_rate(sample_rate, mask.sample_rate);
+		else
+			sample_rate = mask.sample_rate;
+	}
 
 	if (mask.format != SampleFormat::UNDEFINED)
 		format = mask.format;

@@ -316,11 +316,14 @@ initialize_decoder_and_player(Instance &instance,
 		return ParseAudioFormat(s, true);
 	});
 
+	bool selective_44k_resample = config.GetBool(ConfigOption::SELECTIVE_44K_RESAMPLE, false);
+
 	instance.partitions.emplace_back(instance,
 					 "default",
 					 max_length,
 					 buffered_chunks,
 					 configured_audio_format,
+					 selective_44k_resample,
 					 replay_gain_config);
 	auto &partition = instance.partitions.back();
 

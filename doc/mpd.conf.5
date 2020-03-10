@@ -108,6 +108,11 @@ for the format of this parameter.  Multiple audio_output sections may be
 specified.  If no audio_output section is specified, then MPD will scan for a
 usable audio output.
 .TP
+.B selective_44k_resample <yes or no>
+When enabled adhere the 44.1k or 48k clock base if a song requires resampling.
+For example if the \fBaudio_output\fP is set to 96k, a 44.1 song will be resampled to 88.2.
+The default is no.
+.TP
 .B replaygain <off or album or track or auto>
 If specified, mpd will adjust the volume of songs played using ReplayGain tags
 (see <\fBhttp://www.replaygain.org/\fP>).  Setting this to "album" will adjust

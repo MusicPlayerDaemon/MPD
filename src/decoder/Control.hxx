@@ -121,6 +121,11 @@ private:
 	 */
 	const AudioFormat configured_audio_format;
 
+	/**
+	 * The "selective_44k_resample" setting.
+	 */
+	const bool selective_44k_resample;
+
 public:
 	/** the format of the song file */
 	AudioFormat in_audio_format;
@@ -179,6 +184,7 @@ public:
 	DecoderControl(Mutex &_mutex, Cond &_client_cond,
 		       InputCacheManager *_input_cache,
 		       const AudioFormat _configured_audio_format,
+			   const bool _selective_44k_resample,
 		       const ReplayGainConfig &_replay_gain_config) noexcept;
 	~DecoderControl() noexcept;
 

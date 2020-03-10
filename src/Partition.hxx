@@ -83,6 +83,7 @@ struct Partition final : QueueListener, PlayerListener, MixerListener {
 		  unsigned max_length,
 		  unsigned buffer_chunks,
 		  AudioFormat configured_audio_format,
+		  bool selective_44k_resample,
 		  const ReplayGainConfig &replay_gain_config) noexcept;
 
 	~Partition() noexcept;
