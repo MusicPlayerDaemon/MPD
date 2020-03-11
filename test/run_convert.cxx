@@ -28,8 +28,11 @@
 #include "pcm/Convert.hxx"
 #include "util/ConstBuffer.hxx"
 #include "util/StaticFifoBuffer.hxx"
+#include "util/OptionDef.hxx"
 #include "util/OptionParser.hxx"
 #include "util/PrintException.hxx"
+#include "Log.hxx"
+#include "LogBackend.hxx"
 
 #include <stdexcept>
 
@@ -41,6 +44,16 @@
 
 struct CommandLine {
 	AudioFormat in_audio_format, out_audio_format;
+
+	bool verbose = false;
+};
+
+enum Option {
+	OPTION_VERBOSE,
+};
+
+static constexpr OptionDef option_defs[] = {
+	{"verbose", 'v', false, "Verbose logging"},
 };
 
 static CommandLine
@@ -48,8 +61,13 @@ ParseCommandLine(int argc, char **argv)
 {
 	CommandLine c;
 
-	OptionParser option_parser(nullptr, argc, argv);
-	while (option_parser.Next()) {
+	OptionParser option_parser(option_defs, argc, argv);
+	while (auto o = option_parser.Next()) {
+		switch (Option(o.index)) {
+		case OPTION_VERBOSE:
+			c.verbose = true;
+			break;
+		}
 	}
 
 	auto args = option_parser.GetRemaining();
@@ -65,6 +83,8 @@ int
 main(int argc, char **argv)
 try {
 	const auto c = ParseCommandLine(argc, argv);
+
+	SetLogThreshold(c.verbose ? LogLevel::DEBUG : LogLevel::INFO);
 
 	const size_t in_frame_size = c.in_audio_format.GetFrameSize();
 
