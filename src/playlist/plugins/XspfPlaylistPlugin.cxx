@@ -61,6 +61,8 @@ struct XspfParser {
 	std::string location;
 
 	TagBuilder tag_builder;
+
+	std::string value;
 };
 
 static constexpr struct tag_table xspf_tag_elements[] = {
@@ -81,6 +83,7 @@ xspf_start_element(void *user_data, const XML_Char *element_name,
 		   gcc_unused const XML_Char **atts)
 {
 	XspfParser *parser = (XspfParser *)user_data;
+	parser->value.clear();
 
 	switch (parser->state) {
 	case XspfParser::ROOT:
@@ -154,10 +157,21 @@ xspf_end_element(void *user_data, const XML_Char *element_name)
 		break;
 
 	case XspfParser::TAG:
+		if (!parser->value.empty())
+			parser->tag_builder.AddItem(parser->tag_type,
+						    StringView(parser->value.data(),
+							       parser->value.length()));
+
+		parser->state = XspfParser::TRACK;
+		break;
+
 	case XspfParser::LOCATION:
+		parser->location = std::move(parser->value);
 		parser->state = XspfParser::TRACK;
 		break;
 	}
+
+	parser->value.clear();
 }
 
 static void XMLCALL
@@ -173,13 +187,8 @@ xspf_char_data(void *user_data, const XML_Char *s, int len)
 		break;
 
 	case XspfParser::TAG:
-		parser->tag_builder.AddItem(parser->tag_type,
-					    StringView(s, len));
-		break;
-
 	case XspfParser::LOCATION:
-		parser->location.assign(s, len);
-
+		parser->value.append(s, len);
 		break;
 	}
 }

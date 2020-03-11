@@ -1,6 +1,8 @@
 ver 0.21.21 (not yet released)
 * configuration
   - fix bug in "metadata_to_use" setting
+* playlist
+  - xspf: fix corrupt tags in the presence of XML entities
 * archive
   - iso9660: skip empty file names to work around libcdio bug
 * decoder
