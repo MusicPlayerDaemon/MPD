@@ -45,7 +45,7 @@ struct XspfParser {
 	enum {
 		ROOT, PLAYLIST, TRACKLIST, TRACK,
 		LOCATION,
-	} state;
+	} state = ROOT;
 
 	/**
 	 * The current tag within the "track" element.  This is only
@@ -60,9 +60,6 @@ struct XspfParser {
 	std::string location;
 
 	TagBuilder tag_builder;
-
-	XspfParser()
-		:state(ROOT) {}
 };
 
 static void XMLCALL
