@@ -28,7 +28,10 @@
 #include "pcm/Convert.hxx"
 #include "util/ConstBuffer.hxx"
 #include "util/StaticFifoBuffer.hxx"
+#include "util/OptionParser.hxx"
 #include "util/PrintException.hxx"
+
+#include <stdexcept>
 
 #include <assert.h>
 #include <stddef.h>
@@ -36,24 +39,36 @@
 #include <stdio.h>
 #include <unistd.h>
 
+struct CommandLine {
+	AudioFormat in_audio_format, out_audio_format;
+};
+
+static CommandLine
+ParseCommandLine(int argc, char **argv)
+{
+	CommandLine c;
+
+	OptionParser option_parser(nullptr, argc, argv);
+	while (option_parser.Next()) {
+	}
+
+	auto args = option_parser.GetRemaining();
+	if (args.size != 2)
+		throw std::runtime_error("Usage: run_convert IN_FORMAT OUT_FORMAT <IN >OUT");
+
+	c.in_audio_format = ParseAudioFormat(args[0], false);
+	c.out_audio_format = c.in_audio_format.WithMask(ParseAudioFormat(args[1], false));
+	return c;
+}
+
 int
 main(int argc, char **argv)
 try {
-	if (argc != 3) {
-		fprintf(stderr,
-			"Usage: run_convert IN_FORMAT OUT_FORMAT <IN >OUT\n");
-		return 1;
-	}
+	const auto c = ParseCommandLine(argc, argv);
 
-	const auto in_audio_format = ParseAudioFormat(argv[1], false);
-	const auto out_audio_format_mask = ParseAudioFormat(argv[2], false);
+	const size_t in_frame_size = c.in_audio_format.GetFrameSize();
 
-	const auto out_audio_format =
-		in_audio_format.WithMask(out_audio_format_mask);
-
-	const size_t in_frame_size = in_audio_format.GetFrameSize();
-
-	PcmConvert state(in_audio_format, out_audio_format);
+	PcmConvert state(c.in_audio_format, c.out_audio_format);
 
 	StaticFifoBuffer<uint8_t, 4096> buffer;
 
