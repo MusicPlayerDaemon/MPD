@@ -23,9 +23,11 @@
  *
  */
 
+#include "ConfigGlue.hxx"
 #include "pcm/AudioParser.hxx"
 #include "pcm/AudioFormat.hxx"
 #include "pcm/Convert.hxx"
+#include "fs/Path.hxx"
 #include "util/ConstBuffer.hxx"
 #include "util/StaticFifoBuffer.hxx"
 #include "util/OptionDef.hxx"
@@ -45,14 +47,18 @@
 struct CommandLine {
 	AudioFormat in_audio_format, out_audio_format;
 
+	Path config_path = nullptr;
+
 	bool verbose = false;
 };
 
 enum Option {
+	OPTION_CONFIG,
 	OPTION_VERBOSE,
 };
 
 static constexpr OptionDef option_defs[] = {
+	{"config", 0, true, "Load a MPD configuration file"},
 	{"verbose", 'v', false, "Verbose logging"},
 };
 
@@ -64,6 +70,10 @@ ParseCommandLine(int argc, char **argv)
 	OptionParser option_parser(option_defs, argc, argv);
 	while (auto o = option_parser.Next()) {
 		switch (Option(o.index)) {
+		case OPTION_CONFIG:
+			c.config_path = Path::FromFS(o.value);
+			break;
+
 		case OPTION_VERBOSE:
 			c.verbose = true;
 			break;
@@ -79,12 +89,24 @@ ParseCommandLine(int argc, char **argv)
 	return c;
 }
 
+class GlobalInit {
+	const ConfigData config;
+
+public:
+	explicit GlobalInit(Path config_path)
+		:config(AutoLoadConfigFile(config_path))
+	{
+		pcm_convert_global_init(config);
+	}
+};
+
 int
 main(int argc, char **argv)
 try {
 	const auto c = ParseCommandLine(argc, argv);
 
 	SetLogThreshold(c.verbose ? LogLevel::DEBUG : LogLevel::INFO);
+	const GlobalInit init(c.config_path);
 
 	const size_t in_frame_size = c.in_audio_format.GetFrameSize();
 
