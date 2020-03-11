@@ -31,7 +31,7 @@ PlayerControl::PlayerControl(PlayerListener &_listener,
 			     InputCacheManager *_input_cache,
 			     unsigned _buffer_chunks,
 			     AudioFormat _configured_audio_format,
-				 bool _selective_44k_resample,
+			     bool _selective_44k_resample,
 			     const ReplayGainConfig &_replay_gain_config) noexcept
 	:listener(_listener), outputs(_outputs),
 	 input_cache(_input_cache),

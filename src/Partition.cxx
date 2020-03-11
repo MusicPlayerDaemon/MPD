@@ -36,7 +36,7 @@ Partition::Partition(Instance &_instance,
 		     unsigned max_length,
 		     unsigned buffer_chunks,
 		     AudioFormat configured_audio_format,
-			 bool selective_44k_resample,
+		     bool selective_44k_resample,
 		     const ReplayGainConfig &replay_gain_config) noexcept
 	:instance(_instance),
 	 name(_name),
@@ -49,8 +49,8 @@ Partition::Partition(Instance &_instance,
 	    instance.input_cache.get(),
 	    buffer_chunks,
 	    configured_audio_format, 
-		selective_44k_resample,
-		replay_gain_config)
+	    selective_44k_resample,
+	    replay_gain_config)
 {
 	UpdateEffectiveReplayGainMode();
 }
