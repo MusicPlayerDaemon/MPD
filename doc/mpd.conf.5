@@ -109,9 +109,26 @@ specified.  If no audio_output section is specified, then MPD will scan for a
 usable audio output.
 .TP
 .B selective_44k_resample <yes or no>
-When enabled adhere the 44.1k or 48k clock base if a song requires resampling.
-For example if the \fBaudio_output\fP is set to 96k, a 44.1 song will be resampled to 88.2.
+The samplerate of most regular digital audio is based on two different base clocks; 44.1kHz and 48 kHz.
+
+* The 44.1kHz based samplerates are 44.1 , 88.2, 176.4 and 352.8 kHz.
+* The 48kHz based samplerates are 48, 96, 192 and 384 kHz.
+
+If the conversion (up or down) isn't in the same base range, the conversion 
+gets more complex. And due this will also consume more cpu resources.
+
+When the target samplerate is set with  audio_output_format,  the selective_44k_resample option adheres the clock base 44.1/48.
+audio_output_format is set to the  target samplerate with for the 48k range, but now for source from 44.1 base range the nearest, lower, 
+44.1 base samplerate is used.
+
+For example:
+* source 44.1 kHz target 96 kHz final is 88.2kHz.
+* source 88.2 kHz target 96 kHz final is 88.2kHz.
+* source 48 kHz target 96 kHz final is 96 kHz.
+
 The default is no.
+
+
 .TP
 .B replaygain <off or album or track or auto>
 If specified, mpd will adjust the volume of songs played using ReplayGain tags
