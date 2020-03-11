@@ -107,7 +107,7 @@ xspf_start_element(void *user_data, const XML_Char *element_name,
 	case XspfParser::TRACK:
 		if (strcmp(element_name, "location") == 0)
 			parser->state = XspfParser::LOCATION;
-		else
+		else if (!parser->location.empty())
 			parser->tag_type = tag_table_lookup(xspf_tag_elements,
 							    element_name);
 
@@ -169,8 +169,7 @@ xspf_char_data(void *user_data, const XML_Char *s, int len)
 		break;
 
 	case XspfParser::TRACK:
-		if (!parser->location.empty() &&
-		    parser->tag_type != TAG_NUM_OF_ITEM_TYPES)
+		if (parser->tag_type != TAG_NUM_OF_ITEM_TYPES)
 			parser->tag_builder.AddItem(parser->tag_type,
 						    StringView(s, len));
 
