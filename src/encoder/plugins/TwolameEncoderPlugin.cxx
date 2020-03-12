@@ -78,7 +78,7 @@ public:
 	/* virtual methods from class PreparedEncoder */
 	Encoder *Open(AudioFormat &audio_format) override;
 
-	const char *GetMimeType() const noexcept override {
+	[[nodiscard]] const char *GetMimeType() const noexcept override {
 		return  "audio/mpeg";
 	}
 };

@@ -51,7 +51,7 @@ struct DsdiffChunkHeader {
 	 * Read the "size" attribute from the specified header, converting it
 	 * to the host byte order if needed.
 	 */
-	constexpr
+	[[nodiscard]] constexpr
 	uint64_t GetSize() const {
 		return size.Read();
 	}

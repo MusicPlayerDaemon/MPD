@@ -88,7 +88,7 @@ private:
 	size_t Play(const void *chunk, size_t size) override;
 
 private:
-	gcc_pure
+	[[nodiscard]] gcc_pure
 	bool HasDynamicPath() const noexcept {
 		return !format_path.empty();
 	}

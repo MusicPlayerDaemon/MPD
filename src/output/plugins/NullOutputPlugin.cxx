@@ -47,7 +47,7 @@ private:
 			delete timer;
 	}
 
-	std::chrono::steady_clock::duration Delay() const noexcept override {
+	[[nodiscard]] std::chrono::steady_clock::duration Delay() const noexcept override {
 		return sync && timer->IsStarted()
 			? timer->GetDelay()
 			: std::chrono::steady_clock::duration::zero();

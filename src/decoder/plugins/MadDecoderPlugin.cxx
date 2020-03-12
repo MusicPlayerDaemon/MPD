@@ -146,10 +146,10 @@ private:
 	void ParseId3(size_t tagsize, Tag *tag) noexcept;
 	MadDecoderAction DecodeNextFrame(bool skip, Tag *tag) noexcept;
 
-	gcc_pure
+	[[nodiscard]] gcc_pure
 	offset_type ThisFrameOffset() const noexcept;
 
-	gcc_pure
+	[[nodiscard]] gcc_pure
 	offset_type RestIncludingThisFrame() const noexcept;
 
 	/**
@@ -168,7 +168,7 @@ private:
 		times = new mad_timer_t[max_frames];
 	}
 
-	gcc_pure
+	[[nodiscard]] gcc_pure
 	size_t TimeToFrame(SongTime t) const noexcept;
 
 	/**

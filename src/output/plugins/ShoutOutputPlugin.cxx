@@ -57,7 +57,7 @@ struct ShoutOutput final : AudioOutput {
 	void Open(AudioFormat &audio_format) override;
 	void Close() noexcept override;
 
-	std::chrono::steady_clock::duration Delay() const noexcept override;
+	[[nodiscard]] std::chrono::steady_clock::duration Delay() const noexcept override;
 	void SendTag(const Tag &tag) override;
 	size_t Play(const void *chunk, size_t size) override;
 	void Cancel() noexcept override;

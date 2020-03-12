@@ -50,7 +50,7 @@ class SmbclientNeighborExplorer final : public NeighborExplorer {
 			return name == other.name;
 		}
 
-		gcc_pure
+		[[nodiscard]] gcc_pure
 		NeighborInfo Export() const noexcept {
 			return { "smb://" + name + "/", comment };
 		}

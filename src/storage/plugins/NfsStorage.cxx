@@ -129,7 +129,7 @@ public:
 	}
 
 private:
-	EventLoop &GetEventLoop() const noexcept {
+	[[nodiscard]] EventLoop &GetEventLoop() const noexcept {
 		return defer_connect.GetEventLoop();
 	}
 
@@ -276,7 +276,7 @@ public:
 		:BlockingNfsOperation(_connection), path(_path),
 		 follow(_follow) {}
 
-	const StorageFileInfo &GetInfo() const {
+	[[nodiscard]] const StorageFileInfo &GetInfo() const {
 		return info;
 	}
 

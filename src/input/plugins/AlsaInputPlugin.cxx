@@ -160,22 +160,22 @@ public:
 				audio_format = ParseAudioFormat(format_string, false);
 		}
 	}
-	bool IsValidScheme() const noexcept {
+	[[nodiscard]] bool IsValidScheme() const noexcept {
 		return device_name != nullptr;
 	}
-	bool IsValid() const noexcept {
+	[[nodiscard]] bool IsValid() const noexcept {
 		return (device_name != nullptr) && (format_string != nullptr);
 	}
-	const char *GetURI() const noexcept {
+	[[nodiscard]] const char *GetURI() const noexcept {
 		return uri;
 	}
-	const char *GetDeviceName() const noexcept {
+	[[nodiscard]] const char *GetDeviceName() const noexcept {
 		return device_name;
 	}
-	const char *GetFormatString() const noexcept {
+	[[nodiscard]] const char *GetFormatString() const noexcept {
 		return format_string;
 	}
-	AudioFormat GetAudioFormat() const noexcept {
+	[[nodiscard]] AudioFormat GetAudioFormat() const noexcept {
 		return audio_format;
 	}
 };

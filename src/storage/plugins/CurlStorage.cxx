@@ -169,7 +169,7 @@ struct DavResponse {
 		std::chrono::system_clock::time_point::min();
 	uint64_t length = 0;
 
-	bool Check() const {
+	[[nodiscard]] bool Check() const {
 		return !href.empty();
 	}
 };

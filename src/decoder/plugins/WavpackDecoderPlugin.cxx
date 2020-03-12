@@ -291,7 +291,7 @@ struct WavpackInput {
 
 	int32_t ReadBytes(void *data, size_t bcount);
 
-	InputStream::offset_type GetPos() const {
+	[[nodiscard]] InputStream::offset_type GetPos() const {
 		return is.GetOffset();
 	}
 
@@ -337,14 +337,14 @@ struct WavpackInput {
 		}
 	}
 
-	InputStream::offset_type GetLength() const {
+	[[nodiscard]] InputStream::offset_type GetLength() const {
 		if (!is.KnownSize())
 			return 0;
 
 		return is.GetSize();
 	}
 
-	bool CanSeek() const {
+	[[nodiscard]] bool CanSeek() const {
 		return is.IsSeekable();
 	}
 };

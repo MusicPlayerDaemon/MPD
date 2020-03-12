@@ -86,7 +86,7 @@ public:
 		return ::CheckAudioFormat(vi.rate, sample_format, vi.channels);
 	}
 
-	AudioFormat CheckAudioFormat() const {
+	[[nodiscard]] AudioFormat CheckAudioFormat() const {
 		return CheckAudioFormat(vi);
 	}
 

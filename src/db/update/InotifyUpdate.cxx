@@ -61,10 +61,10 @@ struct WatchDirectory {
 	WatchDirectory(const WatchDirectory &) = delete;
 	WatchDirectory &operator=(const WatchDirectory &) = delete;
 
-	gcc_pure
+	[[nodiscard]] gcc_pure
 	unsigned GetDepth() const noexcept;
 
-	gcc_pure
+	[[nodiscard]] gcc_pure
 	AllocatedPath GetUriFS() const noexcept;
 };
 

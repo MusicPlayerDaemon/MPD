@@ -61,7 +61,7 @@ public:
 	LibmpdclientError(enum mpd_error _code, const char *_msg)
 		:std::runtime_error(_msg), code(_code) {}
 
-	enum mpd_error GetCode() const {
+	[[nodiscard]] enum mpd_error GetCode() const {
 		return code;
 	}
 };

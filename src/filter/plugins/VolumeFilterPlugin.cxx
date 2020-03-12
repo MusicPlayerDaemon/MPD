@@ -34,7 +34,7 @@ public:
 						  true);
 	}
 
-	unsigned GetVolume() const noexcept {
+	[[nodiscard]] unsigned GetVolume() const noexcept {
 		return pv.GetVolume();
 	}
 

@@ -43,7 +43,7 @@ public:
 
 	/* virtual methods from InputStream */
 
-	bool IsEOF() const noexcept override {
+	[[nodiscard]] bool IsEOF() const noexcept override {
 		return GetOffset() >= GetSize();
 	}
 

@@ -56,7 +56,7 @@ public:
 			ProxyInputStream::Update();
 	}
 
-	bool IsEOF() const noexcept override {
+	[[nodiscard]] bool IsEOF() const noexcept override {
 		return !ReadingFromBuffer() && ProxyInputStream::IsEOF();
 	}
 
@@ -69,7 +69,7 @@ private:
 	 * Are we currently reading from the buffer, and does the
 	 * buffer contain more data for the next read operation?
 	 */
-	bool ReadingFromBuffer() const noexcept {
+	[[nodiscard]] bool ReadingFromBuffer() const noexcept {
 		return tail > 0 && offset < input->GetOffset();
 	}
 };

@@ -94,7 +94,7 @@ public:
 	/**
 	 * Has DecoderClient::Ready() been called yet?
 	 */
-	bool IsInitialized() const {
+	[[nodiscard]] bool IsInitialized() const {
 		return previous_channels != 0;
 	}
 

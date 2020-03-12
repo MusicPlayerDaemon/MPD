@@ -95,12 +95,12 @@ public:
 		   VisitSong visit_song,
 		   VisitPlaylist visit_playlist) const override;
 
-	RecursiveMap<std::string> CollectUniqueTags(const DatabaseSelection &selection,
+	[[nodiscard]] RecursiveMap<std::string> CollectUniqueTags(const DatabaseSelection &selection,
 						    ConstBuffer<TagType> tag_types) const override;
 
-	DatabaseStats GetStats(const DatabaseSelection &selection) const override;
+	[[nodiscard]] DatabaseStats GetStats(const DatabaseSelection &selection) const override;
 
-	std::chrono::system_clock::time_point GetUpdateStamp() const noexcept override {
+	[[nodiscard]] std::chrono::system_clock::time_point GetUpdateStamp() const noexcept override {
 		return std::chrono::system_clock::time_point::min();
 	}
 
@@ -139,7 +139,7 @@ private:
 	 * except easier cause our inodes have a parent id. Not used
 	 * any more actually (see comments in SearchSongs).
 	 */
-	std::string BuildPath(const ContentDirectoryService &server,
+	[[nodiscard]] std::string BuildPath(const ContentDirectoryService &server,
 			      const UPnPDirObject& dirent) const;
 };
 

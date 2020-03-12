@@ -44,7 +44,7 @@ class UpnpNeighborExplorer final
 			return name == other.name;
 		}
 
-		gcc_pure
+		[[nodiscard]] gcc_pure
 		NeighborInfo Export() const noexcept {
 			return { "smb://" + name + "/", comment };
 		}
@@ -62,7 +62,7 @@ public:
 	/* virtual methods from class NeighborExplorer */
 	void Open() override;
 	void Close() noexcept override;
-	List GetList() const noexcept override;
+	[[nodiscard]] List GetList() const noexcept override;
 
 private:
 	/* virtual methods from class UPnPDiscoveryListener */

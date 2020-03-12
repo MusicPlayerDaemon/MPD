@@ -56,7 +56,7 @@ private:
 	void Open(AudioFormat &audio_format) override;
 	void Close() noexcept override;
 
-	gcc_pure
+	[[nodiscard]] gcc_pure
 	std::chrono::steady_clock::duration Delay() const noexcept override {
 		return filled < NUM_BUFFERS || HasProcessed()
 			? std::chrono::steady_clock::duration::zero()
@@ -71,19 +71,19 @@ private:
 	void Cancel() noexcept override;
 
 private:
-	gcc_pure
+	[[nodiscard]] gcc_pure
 	ALint GetSourceI(ALenum param) const noexcept {
 		ALint value;
 		alGetSourcei(source, param, &value);
 		return value;
 	}
 
-	gcc_pure
+	[[nodiscard]] gcc_pure
 	bool HasProcessed() const noexcept {
 		return GetSourceI(AL_BUFFERS_PROCESSED) > 0;
 	}
 
-	gcc_pure
+	[[nodiscard]] gcc_pure
 	bool IsPlaying() const noexcept {
 		return GetSourceI(AL_SOURCE_STATE) == AL_PLAYING;
 	}

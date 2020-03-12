@@ -77,7 +77,7 @@ public:
 			Close();
 	}
 
-	unsigned GetSerial() const noexcept {
+	[[nodiscard]] unsigned GetSerial() const noexcept {
 		return serial;
 	}
 
@@ -94,7 +94,7 @@ public:
 	using SocketMonitor::IsDefined;
 	using SocketMonitor::Close;
 
-	gcc_pure
+	[[nodiscard]] gcc_pure
 	std::string ToString() const noexcept {
 		return ::ToString(address);
 	}

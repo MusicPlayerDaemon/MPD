@@ -49,7 +49,7 @@ class PreparedWaveEncoder final : public PreparedEncoder {
 		return new WaveEncoder(audio_format);
 	}
 
-	const char *GetMimeType() const noexcept override {
+	[[nodiscard]] const char *GetMimeType() const noexcept override {
 		return "audio/wav";
 	}
 };

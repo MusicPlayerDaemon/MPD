@@ -111,7 +111,7 @@ public:
 	}
 
 	/* virtual methods from InputStream */
-	bool IsEOF() const noexcept override;
+	[[nodiscard]] bool IsEOF() const noexcept override;
 	size_t Read(std::unique_lock<Mutex> &lock,
 		    void *ptr, size_t size) override;
 	void Seek(std::unique_lock<Mutex> &lock, offset_type offset) override;
