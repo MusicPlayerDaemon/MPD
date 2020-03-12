@@ -21,8 +21,8 @@
 #include "DynamicFifoBuffer.hxx"
 
 #include <algorithm>
+#include <cassert>
 
-#include <assert.h>
 #include <string.h>
 
 PeakBuffer::~PeakBuffer()

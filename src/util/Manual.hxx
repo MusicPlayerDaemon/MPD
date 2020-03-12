@@ -30,10 +30,9 @@
 #ifndef MANUAL_HXX
 #define MANUAL_HXX
 
+#include <cassert>
 #include <new>
 #include <utility>
-
-#include <assert.h>
 
 #if defined(__GNUC__) || defined(__clang__)
 #pragma GCC diagnostic push

@@ -34,7 +34,7 @@
 #include "Features.hxx"
 #include "util/Compiler.h"
 
-#include <assert.h>
+#include <cassert>
 
 /**
  * An OO wrapper for struct sockaddr_storage.

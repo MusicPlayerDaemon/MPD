@@ -26,9 +26,8 @@
 #include "util/UriExtract.hxx"
 #include "Log.hxx"
 
+#include <cassert>
 #include <exception>
-
-#include <assert.h>
 
 static std::unique_ptr<SongEnumerator>
 playlist_open_path_suffix(Path path, Mutex &mutex)

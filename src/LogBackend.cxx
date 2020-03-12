@@ -23,7 +23,8 @@
 #include "util/StringStrip.hxx"
 #include "config.h"
 
-#include <assert.h>
+#include <cassert>
+
 #include <stdio.h>
 #include <string.h>
 #include <time.h>

@@ -25,9 +25,9 @@
 #include "SingleMode.hxx"
 #include "util/LazyRandomEngine.hxx"
 
+#include <cassert>
 #include <utility>
 
-#include <assert.h>
 #include <stdint.h>
 
 class DetachedSong;

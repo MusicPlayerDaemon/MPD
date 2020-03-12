@@ -42,9 +42,9 @@ extern "C" {
 #include <nfsc/libnfs-raw-nfs.h>
 }
 
+#include <cassert>
 #include <string>
 
-#include <assert.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 

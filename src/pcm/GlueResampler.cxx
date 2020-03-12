@@ -22,7 +22,7 @@
 #include "Resampler.hxx"
 #include "AudioFormat.hxx"
 
-#include <assert.h>
+#include <cassert>
 
 GluePcmResampler::GluePcmResampler()
 	:resampler(pcm_resampler_create()) {}

@@ -26,7 +26,8 @@
 #include "AudioFormat.hxx"
 #include "util/RuntimeError.hxx"
 
-#include <assert.h>
+#include <cassert>
+
 #include <string.h>
 #include <stdlib.h>
 

@@ -40,10 +40,10 @@
 #include "util/RecursiveMap.hxx"
 #include "util/SplitString.hxx"
 
+#include <cassert>
 #include <string>
 #include <utility>
 
-#include <assert.h>
 #include <string.h>
 
 static const char *const rootid = "0";

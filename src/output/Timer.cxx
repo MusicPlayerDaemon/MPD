@@ -20,7 +20,7 @@
 #include "Timer.hxx"
 #include "pcm/AudioFormat.hxx"
 
-#include <assert.h>
+#include <cassert>
 
 Timer::Timer(const AudioFormat af)
 	:rate(af.sample_rate * af.GetFrameSize())

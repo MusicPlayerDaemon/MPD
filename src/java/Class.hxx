@@ -33,7 +33,7 @@
 #include "Ref.hxx"
 #include "Exception.hxx"
 
-#include <assert.h>
+#include <cassert>
 
 namespace Java {
 	/**

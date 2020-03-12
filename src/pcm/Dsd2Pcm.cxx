@@ -35,7 +35,8 @@ or implied, of Sebastian Gesemann.
 #include "util/BitReverse.hxx"
 #include "util/GenerateArray.hxx"
 
-#include <assert.h>
+#include <cassert>
+
 #include <stdlib.h>
 #include <string.h>
 

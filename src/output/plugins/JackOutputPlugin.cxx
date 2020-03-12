@@ -29,8 +29,7 @@
 #include "Log.hxx"
 
 #include <atomic>
-
-#include <assert.h>
+#include <cassert>
 
 #include <jack/jack.h>
 #include <jack/types.h>

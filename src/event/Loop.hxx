@@ -34,10 +34,9 @@
 #include <boost/intrusive/set.hpp>
 #include <boost/intrusive/list.hpp>
 
-#include <chrono>
 #include <atomic>
-
-#include <assert.h>
+#include <cassert>
+#include <chrono>
 
 /**
  * An event loop that polls for events on file/socket descriptors.

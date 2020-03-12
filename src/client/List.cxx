@@ -20,7 +20,7 @@
 #include "List.hxx"
 #include "util/DeleteDisposer.hxx"
 
-#include <assert.h>
+#include <cassert>
 
 ClientList::~ClientList() noexcept
 {

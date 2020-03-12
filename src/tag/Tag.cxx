@@ -21,7 +21,7 @@
 #include "Pool.hxx"
 #include "Builder.hxx"
 
-#include <assert.h>
+#include <cassert>
 
 void
 Tag::Clear() noexcept

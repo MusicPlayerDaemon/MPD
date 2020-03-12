@@ -24,7 +24,7 @@
 #include "client/Response.hxx"
 #include "util/UriExtract.hxx"
 
-#include <assert.h>
+#include <cassert>
 
 #include <string>
 

@@ -20,8 +20,8 @@
 #include "PeekReader.hxx"
 
 #include <algorithm>
+#include <cassert>
 
-#include <assert.h>
 #include <string.h>
 
 const void *

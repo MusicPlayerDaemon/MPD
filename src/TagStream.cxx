@@ -28,7 +28,7 @@
 #include "thread/Mutex.hxx"
 #include "util/UriExtract.hxx"
 
-#include <assert.h>
+#include <cassert>
 
 /**
  * Does the #DecoderPlugin support either the suffix or the MIME type?

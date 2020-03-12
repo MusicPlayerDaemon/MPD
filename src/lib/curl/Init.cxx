@@ -32,7 +32,7 @@
 #include "event/Call.hxx"
 #include "thread/Mutex.hxx"
 
-#include <assert.h>
+#include <cassert>
 
 Mutex CurlInit::mutex;
 unsigned CurlInit::ref;

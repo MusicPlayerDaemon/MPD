@@ -21,8 +21,7 @@
 #include "db/DatabaseLock.hxx"
 
 #include <algorithm>
-
-#include <assert.h>
+#include <cassert>
 
 PlaylistVector::iterator
 PlaylistVector::find(const char *name) noexcept

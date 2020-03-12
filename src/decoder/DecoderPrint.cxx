@@ -22,9 +22,8 @@
 #include "DecoderPlugin.hxx"
 #include "client/Response.hxx"
 
+#include <cassert>
 #include <functional>
-
-#include <assert.h>
 
 static void
 decoder_plugin_print(Response &r,

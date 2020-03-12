@@ -23,8 +23,8 @@
 #include "util/StringView.hxx"
 
 #include <algorithm>
+#include <cassert>
 
-#include <assert.h>
 #include <string.h>
 
 #ifdef HAVE_ICU_CONVERTER

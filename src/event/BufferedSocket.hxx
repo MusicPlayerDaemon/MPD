@@ -23,9 +23,9 @@
 #include "SocketMonitor.hxx"
 #include "util/StaticFifoBuffer.hxx"
 
+#include <cassert>
 #include <exception>
 
-#include <assert.h>
 #include <stdint.h>
 
 class EventLoop;

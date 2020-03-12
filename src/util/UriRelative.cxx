@@ -32,7 +32,8 @@
 #include "StringAPI.hxx"
 #include "StringCompare.hxx"
 
-#include <assert.h>
+#include <cassert>
+
 #include <string.h>
 
 bool

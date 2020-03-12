@@ -21,9 +21,8 @@
 #include "lib/crypto/MD5.hxx"
 #include "util/ConstBuffer.hxx"
 
+#include <cassert>
 #include <stdexcept>
-
-#include <assert.h>
 
 namespace {
 

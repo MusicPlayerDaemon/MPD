@@ -31,8 +31,7 @@
 #endif
 
 #include <algorithm>
-
-#include <assert.h>
+#include <cassert>
 
 #ifdef HAVE_FS_CHARSET
 

@@ -20,7 +20,7 @@
 #include "MusicBuffer.hxx"
 #include "MusicChunk.hxx"
 
-#include <assert.h>
+#include <cassert>
 
 MusicBuffer::MusicBuffer(unsigned num_chunks)
 	:buffer(num_chunks) {

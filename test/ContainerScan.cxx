@@ -28,9 +28,9 @@
 #include "util/PrintException.hxx"
 #include "util/UriExtract.hxx"
 
+#include <cassert>
 #include <stdexcept>
 
-#include <assert.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>

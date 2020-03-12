@@ -23,7 +23,7 @@
 #include "BufferedReader.hxx"
 #include "fs/Path.hxx"
 
-#include <assert.h>
+#include <cassert>
 
 TextFile::TextFile(Path path_fs)
 	:file_reader(std::make_unique<FileReader>(path_fs)),

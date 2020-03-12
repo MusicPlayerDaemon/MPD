@@ -21,7 +21,7 @@
 #include "Lease.hxx"
 #include "input/InputStream.hxx"
 
-#include <assert.h>
+#include <cassert>
 
 InputCacheItem::InputCacheItem(InputStreamPtr _input) noexcept
 	:BufferingInputStream(std::move(_input)),

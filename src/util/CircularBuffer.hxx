@@ -32,7 +32,8 @@
 
 #include "WritableBuffer.hxx"
 
-#include <assert.h>
+#include <cassert>
+
 #include <stddef.h>
 
 /**

@@ -21,7 +21,7 @@
 #include "InputStream.hxx"
 #include "util/TextFile.hxx"
 
-#include <assert.h>
+#include <cassert>
 
 TextInputStream::TextInputStream(InputStreamPtr &&_is) noexcept
 	:is(std::move(_is)) {}

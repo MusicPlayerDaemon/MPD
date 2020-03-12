@@ -23,7 +23,8 @@
 #include "EncoderPlugin.hxx"
 #include "util/Compiler.h"
 
-#include <assert.h>
+#include <cassert>
+
 #include <stddef.h>
 
 struct AudioFormat;

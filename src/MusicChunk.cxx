@@ -21,7 +21,7 @@
 #include "pcm/AudioFormat.hxx"
 #include "tag/Tag.hxx"
 
-#include <assert.h>
+#include <cassert>
 
 MusicChunkInfo::MusicChunkInfo() noexcept = default;
 MusicChunkInfo::~MusicChunkInfo() noexcept = default;

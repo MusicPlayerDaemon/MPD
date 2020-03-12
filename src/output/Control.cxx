@@ -24,7 +24,7 @@
 #include "config/Block.hxx"
 #include "Log.hxx"
 
-#include <assert.h>
+#include <cassert>
 
 /** after a failure, wait this duration before
     automatically reopening the device */

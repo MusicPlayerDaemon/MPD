@@ -22,7 +22,8 @@
 
 #include <ogg/ogg.h>
 
-#include <assert.h>
+#include <cassert>
+
 #include <string.h>
 #include <stdint.h>
 

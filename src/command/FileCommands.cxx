@@ -43,7 +43,8 @@
 #include "thread/Mutex.hxx"
 #include "Log.hxx"
 
-#include <assert.h>
+#include <cassert>
+
 #include <inttypes.h> /* for PRIu64 */
 
 gcc_pure

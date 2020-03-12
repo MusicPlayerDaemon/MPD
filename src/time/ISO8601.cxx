@@ -34,9 +34,9 @@
 #include "Convert.hxx"
 #include "util/StringBuffer.hxx"
 
+#include <cassert>
 #include <stdexcept>
 
-#include <assert.h>
 #include <stdlib.h>
 
 StringBuffer<64>

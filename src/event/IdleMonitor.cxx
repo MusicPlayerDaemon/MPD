@@ -20,7 +20,7 @@
 #include "IdleMonitor.hxx"
 #include "Loop.hxx"
 
-#include <assert.h>
+#include <cassert>
 
 void
 IdleMonitor::Cancel() noexcept

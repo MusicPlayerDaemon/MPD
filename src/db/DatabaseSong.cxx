@@ -26,7 +26,7 @@
 #include "util/UriExtract.hxx"
 #include "util/UriRelative.hxx"
 
-#include <assert.h>
+#include <cassert>
 
 DetachedSong
 DatabaseDetachSong(const Storage *storage, const LightSong &song) noexcept

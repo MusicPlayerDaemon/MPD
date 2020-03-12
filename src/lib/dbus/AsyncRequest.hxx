@@ -33,9 +33,8 @@
 #include "PendingCall.hxx"
 #include "Message.hxx"
 
+#include <cassert>
 #include <functional>
-
-#include <assert.h>
 
 namespace ODBus {
 

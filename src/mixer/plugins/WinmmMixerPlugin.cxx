@@ -23,9 +23,9 @@
 
 #include <mmsystem.h>
 
+#include <cassert>
 #include <stdexcept>
 
-#include <assert.h>
 #include <math.h>
 #include <windows.h>
 

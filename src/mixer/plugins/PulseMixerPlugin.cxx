@@ -32,9 +32,8 @@
 #include <pulse/stream.h>
 #include <pulse/subscribe.h>
 
+#include <cassert>
 #include <stdexcept>
-
-#include <assert.h>
 
 class PulseMixer final : public Mixer {
 	PulseOutput &output;

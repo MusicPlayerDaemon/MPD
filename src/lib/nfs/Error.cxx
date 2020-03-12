@@ -37,7 +37,8 @@ extern "C" {
 #include <nfsc/libnfs.h>
 }
 
-#include <assert.h>
+#include <cassert>
+
 #include <string.h>
 
 static StringBuffer<256>

@@ -26,7 +26,8 @@
 #include "util/RuntimeError.hxx"
 #include "Log.hxx"
 
-#include <assert.h>
+#include <cassert>
+
 #include <string.h>
 #include <sys/ioctl.h>
 #include <fcntl.h>

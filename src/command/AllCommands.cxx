@@ -48,9 +48,9 @@
 #include "StickerCommands.hxx"
 #endif
 
+#include <cassert>
 #include <iterator>
 
-#include <assert.h>
 #include <string.h>
 
 /*

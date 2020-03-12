@@ -29,9 +29,9 @@
 #include <audiofile.h>
 #include <af_vfs.h>
 
+#include <cassert>
 #include <exception>
 
-#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 

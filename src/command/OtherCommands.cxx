@@ -55,7 +55,7 @@
 #include "db/update/Service.hxx"
 #endif
 
-#include <assert.h>
+#include <cassert>
 
 static void
 print_spl_list(Response &r, const PlaylistVector &list)

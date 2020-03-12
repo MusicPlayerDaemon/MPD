@@ -26,7 +26,7 @@
 
 #include <alsa/asoundlib.h>
 
-#include <assert.h>
+#include <cassert>
 
 #if SND_LIB_VERSION >= 0x1001c
 /* alsa-lib supports DSD since version 1.0.27.1 */

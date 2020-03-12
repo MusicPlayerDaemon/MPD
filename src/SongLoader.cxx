@@ -26,7 +26,7 @@
 #include "PlaylistError.hxx"
 #include "config.h"
 
-#include <assert.h>
+#include <cassert>
 
 #ifdef ENABLE_DATABASE
 

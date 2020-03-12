@@ -22,7 +22,7 @@
 #include "event/Call.hxx"
 #include "util/Manual.hxx"
 
-#include <assert.h>
+#include <cassert>
 
 static Manual<NfsManager> nfs_glue;
 static unsigned in_use;

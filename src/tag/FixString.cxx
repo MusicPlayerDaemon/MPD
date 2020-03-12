@@ -23,7 +23,8 @@
 #include "util/StringView.hxx"
 #include "util/UTF8.hxx"
 
-#include <assert.h>
+#include <cassert>
+
 #include <stdlib.h>
 
 gcc_pure

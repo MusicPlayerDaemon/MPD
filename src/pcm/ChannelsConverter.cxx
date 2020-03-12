@@ -22,7 +22,7 @@
 #include "util/ConstBuffer.hxx"
 #include "util/RuntimeError.hxx"
 
-#include <assert.h>
+#include <cassert>
 
 void
 PcmChannelsConverter::Open(SampleFormat _format,

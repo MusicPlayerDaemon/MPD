@@ -34,7 +34,7 @@
 
 #include <jni.h>
 
-#include <assert.h>
+#include <cassert>
 
 namespace Java {
 	/**

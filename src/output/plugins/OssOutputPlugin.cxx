@@ -27,6 +27,7 @@
 #include "util/ByteOrder.hxx"
 #include "Log.hxx"
 
+#include <cassert>
 #include <iterator>
 #include <stdexcept>
 
@@ -36,7 +37,6 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <assert.h>
 
 #if defined(__OpenBSD__) || defined(__NetBSD__)
 # include <soundcard.h>

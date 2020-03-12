@@ -34,7 +34,8 @@
 #include "TagArchive.hxx"
 #endif
 
-#include <assert.h>
+#include <cassert>
+
 #include <string.h>
 
 #ifdef ENABLE_DATABASE

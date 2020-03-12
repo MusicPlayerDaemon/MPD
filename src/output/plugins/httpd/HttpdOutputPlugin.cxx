@@ -32,7 +32,7 @@
 #include "util/DeleteDisposer.hxx"
 #include "config/Net.hxx"
 
-#include <assert.h>
+#include <cassert>
 
 #include <string.h>
 

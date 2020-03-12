@@ -22,7 +22,7 @@
 
 #include "util/Compiler.h"
 
-#include <assert.h>
+#include <cassert>
 
 struct MusicChunk;
 class MusicPipe;

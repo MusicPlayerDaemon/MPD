@@ -21,7 +21,7 @@
 #include "ArchiveFile.hxx"
 #include "fs/Path.hxx"
 
-#include <assert.h>
+#include <cassert>
 
 std::unique_ptr<ArchiveFile>
 archive_file_open(const ArchivePlugin *plugin, Path path)

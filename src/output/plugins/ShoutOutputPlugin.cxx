@@ -30,10 +30,10 @@
 
 #include <shout/shout.h>
 
-#include <stdexcept>
+#include <cassert>
 #include <memory>
+#include <stdexcept>
 
-#include <assert.h>
 #include <stdio.h>
 
 static constexpr unsigned DEFAULT_CONN_TIMEOUT = 2;

@@ -23,9 +23,8 @@
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
 
+#include <cassert>
 #include <exception>
-
-#include <assert.h>
 
 class BlockingCallMonitor final
 {

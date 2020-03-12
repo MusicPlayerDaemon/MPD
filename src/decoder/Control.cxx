@@ -21,9 +21,8 @@
 #include "MusicPipe.hxx"
 #include "song/DetachedSong.hxx"
 
+#include <cassert>
 #include <stdexcept>
-
-#include <assert.h>
 
 DecoderControl::DecoderControl(Mutex &_mutex, Cond &_client_cond,
 			       InputCacheManager *_input_cache,

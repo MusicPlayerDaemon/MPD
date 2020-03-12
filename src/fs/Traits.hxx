@@ -29,9 +29,8 @@
 #include <tchar.h>
 #endif
 
+#include <cassert>
 #include <string>
-
-#include <assert.h>
 
 #ifdef _WIN32
 #define PATH_LITERAL(s) _T(s)

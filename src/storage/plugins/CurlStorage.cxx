@@ -41,11 +41,10 @@
 #include "util/StringFormat.hxx"
 #include "util/UriExtract.hxx"
 
+#include <cassert>
 #include <memory>
 #include <string>
 #include <utility>
-
-#include <assert.h>
 
 class CurlStorage final : public Storage {
 	const std::string base;

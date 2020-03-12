@@ -31,7 +31,8 @@
 #ifndef NUMBER_PARSER_HXX
 #define NUMBER_PARSER_HXX
 
-#include <assert.h>
+#include <cassert>
+
 #include <stdint.h>
 #include <stdlib.h>
 

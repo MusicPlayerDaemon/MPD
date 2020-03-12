@@ -37,12 +37,12 @@
 #endif
 
 #include <algorithm>
+#include <cassert>
 
 #ifdef USE_SIGNALFD
 #include <pthread.h>
 #endif
 
-#include <assert.h>
 #include <signal.h>
 
 class SignalMonitor final : private SocketMonitor {

@@ -20,9 +20,8 @@
 #ifndef MPD_LAZY_RANDOM_ENGINE_HXX
 #define MPD_LAZY_RANDOM_ENGINE_HXX
 
+#include <cassert>
 #include <random>
-
-#include <assert.h>
 
 /**
  * A random engine that will be created and seeded on demand.

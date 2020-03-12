@@ -22,7 +22,8 @@
 #include "system/Error.hxx"
 #include "util/Compiler.h"
 
-#include <assert.h>
+#include <cassert>
+
 #include <unistd.h>
 
 #ifdef _WIN32

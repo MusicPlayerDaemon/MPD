@@ -30,9 +30,9 @@
 #include "Parser.hxx"
 #include "Convert.hxx"
 
+#include <cassert>
 #include <stdexcept>
 
-#include <assert.h>
 #include <time.h>
 
 std::chrono::system_clock::time_point

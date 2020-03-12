@@ -27,7 +27,7 @@
 #include "input/InputStream.hxx"
 #include "input/LocalOpen.hxx"
 
-#include <assert.h>
+#include <cassert>
 
 class TagFileScan {
 	const Path path_fs;

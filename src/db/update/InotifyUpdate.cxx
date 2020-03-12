@@ -27,11 +27,11 @@
 #include "fs/Traits.hxx"
 #include "Log.hxx"
 
-#include <string>
-#include <map>
+#include <cassert>
 #include <forward_list>
+#include <map>
+#include <string>
 
-#include <assert.h>
 #include <sys/inotify.h>
 #include <string.h>
 #include <dirent.h>

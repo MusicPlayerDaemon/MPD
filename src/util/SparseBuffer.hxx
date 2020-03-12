@@ -34,9 +34,8 @@
 #include "ConstBuffer.hxx"
 #include "WritableBuffer.hxx"
 
+#include <cassert>
 #include <map>
-
-#include <assert.h>
 
 /**
  * Helper class for #SparseBuffer which describes which portions of

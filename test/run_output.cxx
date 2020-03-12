@@ -30,9 +30,9 @@
 #include "util/ScopeExit.hxx"
 #include "util/PrintException.hxx"
 
+#include <cassert>
 #include <memory>
 
-#include <assert.h>
 #include <string.h>
 #include <unistd.h>
 #include <stdlib.h>

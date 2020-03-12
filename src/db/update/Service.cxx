@@ -36,7 +36,7 @@
 #include "event/Loop.hxx"
 #endif
 
-#include <assert.h>
+#include <cassert>
 
 UpdateService::UpdateService(const ConfigData &_config,
 			     EventLoop &_loop, SimpleDatabase &_db,

@@ -26,11 +26,11 @@
 #include "util/RuntimeError.hxx"
 #include "util/StringView.hxx"
 
+#include <cassert>
 #include <map>
 #include <string>
 #include <utility>
 
-#include <assert.h>
 #include <string.h>
 
 static constexpr char PERMISSION_PASSWORD_CHAR = '@';

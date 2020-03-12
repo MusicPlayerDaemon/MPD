@@ -21,7 +21,7 @@
 #include "Dsd2Pcm.hxx"
 #include "util/ConstBuffer.hxx"
 
-#include <assert.h>
+#include <cassert>
 
 ConstBuffer<float>
 PcmDsd::ToFloat(unsigned channels, ConstBuffer<uint8_t> src) noexcept

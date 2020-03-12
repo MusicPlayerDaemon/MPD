@@ -20,7 +20,8 @@
 #include "AudioFormat.hxx"
 #include "util/StringBuffer.hxx"
 
-#include <assert.h>
+#include <cassert>
+
 #include <stdio.h>
 
 void

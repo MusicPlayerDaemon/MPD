@@ -23,7 +23,7 @@
 #include "InputStream.hxx"
 #include "BufferingInputStream.hxx"
 
-#include <assert.h>
+#include <cassert>
 
 /**
  * A "huge" buffer which remembers the (partial) contents of an

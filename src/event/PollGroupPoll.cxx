@@ -23,7 +23,7 @@
 
 #include "PollGroupPoll.hxx"
 
-#include <assert.h>
+#include <cassert>
 
 PollGroupPoll::PollGroupPoll() noexcept = default;
 PollGroupPoll::~PollGroupPoll() noexcept = default;

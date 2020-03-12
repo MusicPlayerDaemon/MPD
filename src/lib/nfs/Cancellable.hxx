@@ -25,8 +25,7 @@
 #include <boost/intrusive/list.hpp>
 
 #include <algorithm>
-
-#include <assert.h>
+#include <cassert>
 
 template<typename T>
 class CancellablePointer

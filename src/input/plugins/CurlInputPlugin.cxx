@@ -49,9 +49,9 @@
 #include "util/UriQueryParser.hxx"
 #endif
 
+#include <cassert>
 #include <cinttypes>
 
-#include <assert.h>
 #include <string.h>
 
 #include <curl/curl.h>

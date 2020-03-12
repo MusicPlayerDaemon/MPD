@@ -25,10 +25,9 @@
 #include "util/StringBuffer.hxx"
 #include "util/RuntimeError.hxx"
 
-#include <memory>
+#include <cassert>
 #include <list>
-
-#include <assert.h>
+#include <memory>
 
 class ChainFilter final : public Filter {
 	struct Child {

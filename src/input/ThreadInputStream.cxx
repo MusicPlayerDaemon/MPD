@@ -21,7 +21,8 @@
 #include "CondHandler.hxx"
 #include "thread/Name.hxx"
 
-#include <assert.h>
+#include <cassert>
+
 #include <string.h>
 
 ThreadInputStream::ThreadInputStream(const char *_plugin,

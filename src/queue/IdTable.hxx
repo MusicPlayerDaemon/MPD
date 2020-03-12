@@ -23,8 +23,7 @@
 #include "util/Compiler.h"
 
 #include <algorithm>
-
-#include <assert.h>
+#include <cassert>
 
 /**
  * A table that maps id numbers to position numbers.

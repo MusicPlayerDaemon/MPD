@@ -25,7 +25,7 @@
 
 #include <upnptools.h>
 
-#include <assert.h>
+#include <cassert>
 
 static Mutex upnp_client_init_mutex;
 static unsigned upnp_client_ref;

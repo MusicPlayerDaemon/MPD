@@ -26,9 +26,9 @@
 #include "util/HugeAllocator.hxx"
 #include "util/CircularBuffer.hxx"
 
+#include <cassert>
 #include <exception>
 
-#include <assert.h>
 #include <stdint.h>
 
 /**

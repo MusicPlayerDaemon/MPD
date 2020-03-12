@@ -21,7 +21,7 @@
 #include "util/ByteOrder.hxx"
 #include "Compiler.h"
 
-#include <assert.h>
+#include <cassert>
 
 void
 reverse_bytes_16(uint16_t *gcc_restrict dest,

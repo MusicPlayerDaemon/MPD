@@ -25,9 +25,8 @@
 #include "util/StringCompare.hxx"
 #include "util/ScopeExit.hxx"
 
+#include <cassert>
 #include <iterator>
-
-#include <assert.h>
 
 using namespace Sqlite;
 

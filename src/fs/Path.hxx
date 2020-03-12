@@ -23,9 +23,8 @@
 #include "util/Compiler.h"
 #include "Traits.hxx"
 
+#include <cassert>
 #include <string>
-
-#include <assert.h>
 
 class AllocatedPath;
 

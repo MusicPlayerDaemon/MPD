@@ -23,7 +23,8 @@
 #include "Ptr.hxx"
 #include "thread/Mutex.hxx"
 #include "util/Compiler.h"
-#include <assert.h>
+
+#include <cassert>
 #include <set>
 #include <string>
 

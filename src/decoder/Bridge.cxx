@@ -36,7 +36,8 @@
 #include "util/ConstBuffer.hxx"
 #include "util/StringBuffer.hxx"
 
-#include <assert.h>
+#include <cassert>
+
 #include <string.h>
 #include <math.h>
 

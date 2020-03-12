@@ -25,9 +25,8 @@
 #include "Chrono.hxx"
 #include "util/ConstBuffer.hxx"
 
+#include <cassert>
 #include <utility>
-
-#include <assert.h>
 
 class Response;
 

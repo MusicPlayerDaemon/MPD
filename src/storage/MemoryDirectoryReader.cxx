@@ -19,7 +19,7 @@
 
 #include "MemoryDirectoryReader.hxx"
 
-#include <assert.h>
+#include <cassert>
 
 const char *
 MemoryStorageDirectoryReader::Read() noexcept

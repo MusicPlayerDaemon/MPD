@@ -25,7 +25,7 @@
 #include "IdleFlags.hxx"
 #include "util/ASCII.hxx"
 
-#include <assert.h>
+#include <cassert>
 
 static const char *const idle_names[] = {
 	"database",

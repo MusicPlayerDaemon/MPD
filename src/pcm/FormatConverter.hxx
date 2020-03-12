@@ -25,7 +25,7 @@
 #include "Dither.hxx"
 
 #ifndef NDEBUG
-#include <assert.h>
+#include <cassert>
 #endif
 
 template<typename T> struct ConstBuffer;

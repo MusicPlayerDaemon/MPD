@@ -20,7 +20,7 @@
 #include "VorbisComment.hxx"
 #include "util/StringView.hxx"
 
-#include <assert.h>
+#include <cassert>
 
 StringView
 GetVorbisCommentValue(StringView entry, StringView name) noexcept

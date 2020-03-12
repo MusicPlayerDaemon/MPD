@@ -26,7 +26,7 @@
 #include "Main.hxx"
 #include "Instance.hxx"
 
-#include <assert.h>
+#include <cassert>
 
 void
 idle_add(unsigned flags)

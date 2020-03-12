@@ -30,7 +30,7 @@
 #include "ReplayGainInfo.hxx"
 #include "util/StringView.hxx"
 
-#include <assert.h>
+#include <cassert>
 
 static StringView
 ToStringView(const FLAC__StreamMetadata_VorbisComment_Entry &entry) noexcept

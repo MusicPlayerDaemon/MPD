@@ -38,9 +38,8 @@
 #include "config/Data.hxx"
 #include "config/Block.hxx"
 
+#include <cassert>
 #include <iterator>
-
-#include <assert.h>
 
 const PlaylistPlugin *const playlist_plugins[] = {
 	&extm3u_playlist_plugin,

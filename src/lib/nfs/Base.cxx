@@ -19,7 +19,8 @@
 
 #include "Base.hxx"
 
-#include <assert.h>
+#include <cassert>
+
 #include <string.h>
 
 static char nfs_base_server[64];

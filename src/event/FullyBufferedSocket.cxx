@@ -21,7 +21,8 @@
 #include "net/SocketError.hxx"
 #include "util/Compiler.h"
 
-#include <assert.h>
+#include <cassert>
+
 #include <string.h>
 
 FullyBufferedSocket::ssize_t

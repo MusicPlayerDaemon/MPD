@@ -29,8 +29,7 @@
 
 #include <libmodplug/modplug.h>
 
-
-#include <assert.h>
+#include <cassert>
 
 static constexpr Domain modplug_domain("modplug");
 

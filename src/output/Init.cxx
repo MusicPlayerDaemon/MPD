@@ -39,9 +39,9 @@
 #include "util/StringFormat.hxx"
 #include "Log.hxx"
 
+#include <cassert>
 #include <stdexcept>
 
-#include <assert.h>
 #include <string.h>
 
 #define AUDIO_OUTPUT_TYPE	"type"

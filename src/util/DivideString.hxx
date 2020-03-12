@@ -20,7 +20,7 @@
 #ifndef MPD_DIVIDE_STRING_HXX
 #define MPD_DIVIDE_STRING_HXX
 
-#include <assert.h>
+#include <cassert>
 
 /**
  * Split a given constant string at a separator character.  Duplicates

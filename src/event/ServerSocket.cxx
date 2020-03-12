@@ -35,10 +35,9 @@
 #include "util/Domain.hxx"
 #include "Log.hxx"
 
+#include <cassert>
 #include <string>
 #include <utility>
-
-#include <assert.h>
 
 #ifdef HAVE_UN
 #include <sys/stat.h>

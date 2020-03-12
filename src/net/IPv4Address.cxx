@@ -29,7 +29,7 @@
 
 #include "IPv4Address.hxx"
 
-#include <assert.h>
+#include <cassert>
 
 static const struct sockaddr_in *
 CastToIPv4(const struct sockaddr *p) noexcept

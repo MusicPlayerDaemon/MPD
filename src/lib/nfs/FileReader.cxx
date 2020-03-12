@@ -24,10 +24,10 @@
 #include "event/Call.hxx"
 #include "util/ASCII.hxx"
 
-#include <utility>
+#include <cassert>
 #include <stdexcept>
+#include <utility>
 
-#include <assert.h>
 #include <string.h>
 #include <fcntl.h>
 

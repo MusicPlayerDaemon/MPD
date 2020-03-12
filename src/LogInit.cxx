@@ -30,11 +30,12 @@
 #include "util/RuntimeError.hxx"
 #include "system/Error.hxx"
 
+#include <cassert>
+
 #ifdef ENABLE_SYSTEMD_DAEMON
 #include <systemd/sd-daemon.h>
 #endif
 
-#include <assert.h>
 #include <string.h>
 #include <fcntl.h>
 #include <stdio.h>

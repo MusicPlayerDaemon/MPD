@@ -33,10 +33,10 @@
 #include "util/RuntimeError.hxx"
 #include "util/PrintException.hxx"
 
+#include <cassert>
 #include <memory>
 #include <stdexcept>
 
-#include <assert.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>

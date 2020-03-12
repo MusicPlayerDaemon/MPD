@@ -29,7 +29,7 @@
 #include "net/ToString.hxx"
 #include "Log.hxx"
 
-#include <assert.h>
+#include <cassert>
 
 static constexpr char GREETING[] = "OK MPD " PROTOCOL_VERSION "\n";
 

@@ -22,7 +22,7 @@
 
 #include "pcm/AudioFormat.hxx"
 
-#include <assert.h>
+#include <cassert>
 
 template<typename T> struct ConstBuffer;
 

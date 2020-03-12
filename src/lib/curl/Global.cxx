@@ -35,7 +35,7 @@
 #include "util/RuntimeError.hxx"
 #include "util/Domain.hxx"
 
-#include <assert.h>
+#include <cassert>
 
 static constexpr Domain curlm_domain("curlm");
 

@@ -21,7 +21,7 @@
 #include "input/InputStream.hxx"
 #include "Log.hxx"
 
-#include <assert.h>
+#include <cassert>
 
 size_t
 decoder_read(DecoderClient *client,

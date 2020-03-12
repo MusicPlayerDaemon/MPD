@@ -28,10 +28,9 @@
 #include "Chrono.hxx"
 #include "util/Compiler.h"
 
+#include <cassert>
 #include <memory>
 #include <vector>
-
-#include <assert.h>
 
 class MusicPipe;
 class EventLoop;

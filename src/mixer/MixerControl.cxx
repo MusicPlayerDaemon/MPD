@@ -20,7 +20,7 @@
 #include "MixerControl.hxx"
 #include "MixerInternal.hxx"
 
-#include <assert.h>
+#include <cassert>
 
 Mixer *
 mixer_new(EventLoop &event_loop,

@@ -35,8 +35,7 @@
 #include "Compiler.h"
 
 #include <algorithm>
-
-#include <assert.h>
+#include <cassert>
 
 /**
  * An array allocated on the heap with a length determined at runtime.

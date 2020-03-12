@@ -30,7 +30,8 @@
 #include "UriUtil.hxx"
 #include "ASCII.hxx"
 
-#include <assert.h>
+#include <cassert>
+
 #include <string.h>
 
 static const char *

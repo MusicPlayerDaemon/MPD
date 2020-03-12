@@ -25,10 +25,9 @@
 #include "util/ConstBuffer.hxx"
 #include "Partition.hxx"
 
+#include <cassert>
 #include <set>
 #include <string>
-
-#include <assert.h>
 
 CommandResult
 handle_subscribe(Client &client, Request args, Response &r)

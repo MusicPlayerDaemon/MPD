@@ -33,7 +33,7 @@
 #include "Main.hxx"
 #endif
 
-#include <assert.h>
+#include <cassert>
 
 /**
  * The absolute path of the playlist directory encoded in the

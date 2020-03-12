@@ -34,6 +34,7 @@
 #include "IPv4Address.hxx"
 
 #include <algorithm>
+#include <cassert>
 
 #ifdef _WIN32
 #include <ws2tcpip.h>
@@ -48,7 +49,6 @@
 #include <sys/un.h>
 #endif
 
-#include <assert.h>
 #include <string.h>
 
 #ifdef HAVE_UN

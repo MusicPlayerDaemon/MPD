@@ -24,7 +24,8 @@
 #include "fs/AllocatedPath.hxx"
 #include "system/Error.hxx"
 
-#include <assert.h>
+#include <cassert>
+
 #include <string.h>
 #include <unistd.h>
 #include <stdlib.h>

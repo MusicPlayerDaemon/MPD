@@ -26,7 +26,8 @@
 #include "fs/io/BufferedOutputStream.hxx"
 #include "Log.hxx"
 
-#include <assert.h>
+#include <cassert>
+
 #include <stdlib.h>
 
 #define SW_VOLUME_STATE                         "sw_volume: "

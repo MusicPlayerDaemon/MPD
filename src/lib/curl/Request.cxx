@@ -40,8 +40,8 @@
 #include <curl/curl.h>
 
 #include <algorithm>
+#include <cassert>
 
-#include <assert.h>
 #include <string.h>
 
 CurlRequest::CurlRequest(CurlGlobal &_global,

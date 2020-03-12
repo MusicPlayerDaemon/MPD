@@ -30,10 +30,10 @@
 #include "util/Domain.hxx"
 #include "util/ScopeExit.hxx"
 
-#include <stdexcept>
+#include <cassert>
 #include <memory>
+#include <stdexcept>
 
-#include <assert.h>
 #include <stdlib.h>
 
 static constexpr Domain recorder_domain("recorder");

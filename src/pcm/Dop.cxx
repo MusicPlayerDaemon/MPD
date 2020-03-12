@@ -21,9 +21,8 @@
 #include "ChannelDefs.hxx"
 #include "util/ConstBuffer.hxx"
 
+#include <cassert>
 #include <functional>
-
-#include <assert.h>
 
 static constexpr uint32_t
 pcm_two_dsd_to_dop_marker1(uint8_t a, uint8_t b) noexcept

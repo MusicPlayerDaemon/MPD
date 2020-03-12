@@ -29,7 +29,7 @@
 #include <adplug/adplug.h>
 #include <adplug/emuopl.h>
 
-#include <assert.h>
+#include <cassert>
 
 static constexpr Domain adplug_domain("adplug");
 

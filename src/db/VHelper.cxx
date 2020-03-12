@@ -23,9 +23,9 @@
 #include "song/Filter.hxx"
 
 #include <algorithm>
+#include <cassert>
 #include <utility>
 
-#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 

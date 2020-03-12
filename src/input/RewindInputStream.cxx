@@ -20,7 +20,8 @@
 #include "RewindInputStream.hxx"
 #include "ProxyInputStream.hxx"
 
-#include <assert.h>
+#include <cassert>
+
 #include <string.h>
 
 class RewindInputStream final : public ProxyInputStream {

@@ -27,7 +27,8 @@
 #include "net/UniqueSocketDescriptor.hxx"
 #include "Log.hxx"
 
-#include <assert.h>
+#include <cassert>
+
 #include <string.h>
 #include <stdio.h>
 

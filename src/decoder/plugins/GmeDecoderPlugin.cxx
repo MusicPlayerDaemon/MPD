@@ -37,7 +37,8 @@
 
 #include <gme/gme.h>
 
-#include <assert.h>
+#include <cassert>
+
 #include <stdlib.h>
 #include <string.h>
 

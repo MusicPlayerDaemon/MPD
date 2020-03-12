@@ -31,11 +31,11 @@
 #include "ReplayGainConfig.hxx"
 #include "ReplayGainMode.hxx"
 
+#include <cassert>
 #include <exception>
-#include <utility>
 #include <memory>
+#include <utility>
 
-#include <assert.h>
 #include <stdint.h>
 
 /* damn you, windows.h! */

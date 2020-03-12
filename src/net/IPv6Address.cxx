@@ -30,7 +30,8 @@
 #include "IPv6Address.hxx"
 #include "IPv4Address.hxx"
 
-#include <assert.h>
+#include <cassert>
+
 #include <string.h>
 
 static const struct sockaddr_in6 *

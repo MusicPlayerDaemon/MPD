@@ -34,7 +34,8 @@
 #include "SoxrResampler.hxx"
 #endif
 
-#include <assert.h>
+#include <cassert>
+
 #include <string.h>
 
 enum class SelectedResampler {

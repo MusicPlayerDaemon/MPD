@@ -23,8 +23,8 @@
 #include <alsa/asoundlib.h>
 
 #include <algorithm>
+#include <cassert>
 
-#include <assert.h>
 #include <stdint.h>
 
 namespace Alsa {

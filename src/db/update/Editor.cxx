@@ -24,7 +24,7 @@
 #include "db/plugins/simple/Directory.hxx"
 #include "db/plugins/simple/Song.hxx"
 
-#include <assert.h>
+#include <cassert>
 
 void
 DatabaseEditor::DeleteSong(Directory &dir, Song *del)

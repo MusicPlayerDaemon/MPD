@@ -23,9 +23,9 @@
 #include "thread/Cond.hxx"
 #include "event/Loop.hxx"
 
+#include <cassert>
 #include <stdexcept>
 
-#include <assert.h>
 #include <string.h>
 
 AsyncInputStream::AsyncInputStream(EventLoop &event_loop, const char *_url,

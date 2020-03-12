@@ -35,7 +35,7 @@
 #include "fs/io/BufferedReader.hxx"
 #include "Log.hxx"
 
-#include <assert.h>
+#include <cassert>
 
 static constexpr char CONF_COMMENT = '#';
 

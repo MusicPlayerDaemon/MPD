@@ -22,7 +22,7 @@
 #include "Response.hxx"
 #include "Idle.hxx"
 
-#include <assert.h>
+#include <cassert>
 
 static void
 WriteIdleResponse(Response &r, unsigned flags) noexcept

@@ -21,9 +21,8 @@
 #include "ConfiguredResampler.hxx"
 #include "util/ConstBuffer.hxx"
 
+#include <cassert>
 #include <stdexcept>
-
-#include <assert.h>
 
 void
 pcm_convert_global_init(const ConfigData &config)

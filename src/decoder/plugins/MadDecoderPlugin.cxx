@@ -39,7 +39,8 @@
 #include <id3tag.h>
 #endif
 
-#include <assert.h>
+#include <cassert>
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>

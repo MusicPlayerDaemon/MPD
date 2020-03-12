@@ -30,7 +30,8 @@
 #include "FileDescriptor.hxx"
 #include "system/Error.hxx"
 
-#include <assert.h>
+#include <cassert>
+
 #include <stdint.h>
 #include <sys/stat.h>
 #include <fcntl.h>

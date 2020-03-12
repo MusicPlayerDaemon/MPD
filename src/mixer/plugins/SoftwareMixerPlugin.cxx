@@ -22,7 +22,8 @@
 #include "filter/plugins/VolumeFilterPlugin.hxx"
 #include "pcm/Volume.hxx"
 
-#include <assert.h>
+#include <cassert>
+
 #include <math.h>
 
 class SoftwareMixer final : public Mixer {

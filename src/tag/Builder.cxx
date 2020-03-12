@@ -27,8 +27,8 @@
 
 #include <algorithm>
 #include <array>
+#include <cassert>
 
-#include <assert.h>
 #include <stdlib.h>
 
 TagBuilder::TagBuilder(const Tag &other) noexcept

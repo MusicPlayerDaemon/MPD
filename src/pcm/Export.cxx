@@ -25,7 +25,8 @@
 #include "util/ConstBuffer.hxx"
 #include "util/WritableBuffer.hxx"
 
-#include <assert.h>
+#include <cassert>
+
 #include <string.h>
 
 void

@@ -26,9 +26,9 @@
 #include <opus.h>
 #include <ogg/ogg.h>
 
+#include <cassert>
 #include <stdexcept>
 
-#include <assert.h>
 #include <stdlib.h>
 
 namespace {

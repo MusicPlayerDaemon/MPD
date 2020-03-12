@@ -28,7 +28,8 @@ extern "C" {
 #include <libavutil/mathematics.h>
 }
 
-#include <assert.h>
+#include <cassert>
+
 #include <stdint.h>
 
 /* suppress the ffmpeg compatibility macro */

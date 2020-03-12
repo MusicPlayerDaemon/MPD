@@ -42,7 +42,8 @@
 #include "util/StringCompare.hxx"
 #include "util/UriExtract.hxx"
 
-#include <assert.h>
+#include <cassert>
+
 #include <string.h>
 
 static const char PLAYLIST_COMMENT = '#';

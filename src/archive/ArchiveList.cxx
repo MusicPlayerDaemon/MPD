@@ -25,9 +25,9 @@
 #include "plugins/Iso9660ArchivePlugin.hxx"
 #include "plugins/ZzipArchivePlugin.hxx"
 
+#include <cassert>
 #include <iterator>
 
-#include <assert.h>
 #include <string.h>
 
 const ArchivePlugin *const archive_plugins[] = {

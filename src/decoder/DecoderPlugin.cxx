@@ -20,7 +20,7 @@
 #include "DecoderPlugin.hxx"
 #include "util/StringUtil.hxx"
 
-#include <assert.h>
+#include <cassert>
 
 bool
 DecoderPlugin::SupportsSuffix(const char *suffix) const noexcept

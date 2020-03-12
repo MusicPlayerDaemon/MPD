@@ -25,7 +25,7 @@
 
 #include <sqlite3.h>
 
-#include <assert.h>
+#include <cassert>
 
 namespace Sqlite {
 

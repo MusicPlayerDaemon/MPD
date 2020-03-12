@@ -24,9 +24,8 @@
 #include "pcm/AudioFormat.hxx"
 #include "util/ConstBuffer.hxx"
 
+#include <cassert>
 #include <memory>
-
-#include <assert.h>
 
 class AutoConvertFilter final : public Filter {
 	/**

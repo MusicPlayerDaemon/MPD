@@ -30,9 +30,9 @@
 
 #include <neaacdec.h>
 
+#include <cassert>
 #include <cmath>
 
-#include <assert.h>
 #include <string.h>
 
 static const unsigned adts_sample_rates[] =

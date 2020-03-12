@@ -25,9 +25,8 @@
 #include "util/Domain.hxx"
 #include "Log.hxx"
 
+#include <cassert>
 #include <cmath>
-
-#include <assert.h>
 
 static constexpr Domain cross_fade_domain("cross_fade");
 

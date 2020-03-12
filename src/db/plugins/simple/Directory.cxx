@@ -33,7 +33,8 @@
 #include "util/Alloc.hxx"
 #include "util/DeleteDisposer.hxx"
 
-#include <assert.h>
+#include <cassert>
+
 #include <string.h>
 #include <stdlib.h>
 

@@ -20,10 +20,9 @@
 #ifndef MPD_COMMAND_LIST_BUILDER_HXX
 #define MPD_COMMAND_LIST_BUILDER_HXX
 
+#include <cassert>
 #include <list>
 #include <string>
-
-#include <assert.h>
 
 class CommandListBuilder {
 	/**

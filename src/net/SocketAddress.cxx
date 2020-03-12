@@ -32,7 +32,8 @@
 #include "IPv6Address.hxx"
 #include "util/StringView.hxx"
 
-#include <assert.h>
+#include <cassert>
+
 #include <string.h>
 
 #ifdef HAVE_UN

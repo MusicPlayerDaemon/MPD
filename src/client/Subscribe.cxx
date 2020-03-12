@@ -21,7 +21,7 @@
 #include "Partition.hxx"
 #include "IdleFlags.hxx"
 
-#include <assert.h>
+#include <cassert>
 
 Client::SubscribeResult
 Client::Subscribe(const char *channel) noexcept

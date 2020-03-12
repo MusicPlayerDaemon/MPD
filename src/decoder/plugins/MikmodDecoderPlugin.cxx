@@ -29,7 +29,7 @@
 
 #include <mikmod.h>
 
-#include <assert.h>
+#include <cassert>
 
 static constexpr Domain mikmod_domain("mikmod");
 

@@ -40,9 +40,9 @@
 #include <windows.h>
 #endif
 
+#include <cassert>
 #include <memory>
 
-#include <assert.h>
 #include <string.h>
 
 AllocatedString<>

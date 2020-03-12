@@ -27,9 +27,8 @@
 #include "PluginUnavailable.hxx"
 #include "util/RuntimeError.hxx"
 
+#include <cassert>
 #include <stdexcept>
-
-#include <assert.h>
 
 void
 input_stream_global_init(const ConfigData &config, EventLoop &event_loop)

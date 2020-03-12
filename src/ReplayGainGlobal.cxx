@@ -21,9 +21,9 @@
 #include "ReplayGainConfig.hxx"
 #include "config/Data.hxx"
 
+#include <cassert>
 #include <stdexcept>
 
-#include <assert.h>
 #include <stdlib.h>
 #include <math.h>
 

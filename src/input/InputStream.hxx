@@ -25,10 +25,9 @@
 #include "thread/Mutex.hxx"
 #include "util/Compiler.h"
 
-#include <string>
+#include <cassert>
 #include <memory>
-
-#include <assert.h>
+#include <string>
 
 struct Tag;
 class InputStreamHandler;

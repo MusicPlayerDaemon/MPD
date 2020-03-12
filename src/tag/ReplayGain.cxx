@@ -23,7 +23,7 @@
 #include "util/ASCII.hxx"
 #include "util/NumberParser.hxx"
 
-#include <assert.h>
+#include <cassert>
 
 template<typename T>
 static bool

@@ -23,7 +23,7 @@
 #include "util/RuntimeError.hxx"
 #include "util/ConstBuffer.hxx"
 
-#include <assert.h>
+#include <cassert>
 
 void
 FlacPcmImport::Open(unsigned sample_rate, unsigned bits_per_sample,

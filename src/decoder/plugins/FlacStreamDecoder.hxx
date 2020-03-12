@@ -22,10 +22,9 @@
 
 #include <FLAC/stream_decoder.h>
 
-#include <utility>
+#include <cassert>
 #include <stdexcept>
-
-#include <assert.h>
+#include <utility>
 
 /**
  * OO wrapper for a FLAC__StreamDecoder.

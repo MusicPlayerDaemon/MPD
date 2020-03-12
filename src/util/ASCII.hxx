@@ -33,7 +33,8 @@
 #include "StringView.hxx"
 #include "Compiler.h"
 
-#include <assert.h>
+#include <cassert>
+
 #include <strings.h>
 
 /**

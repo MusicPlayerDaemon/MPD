@@ -29,7 +29,7 @@
 #include "fs/Path.hxx"
 #include "system/Error.hxx"
 
-#include <assert.h>
+#include <cassert>
 
 InputStreamPtr
 OpenLocalInputStream(Path path, Mutex &mutex)

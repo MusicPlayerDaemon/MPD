@@ -29,7 +29,7 @@
 #include "util/StringStrip.hxx"
 #include "config.h"
 
-#include <assert.h>
+#include <cassert>
 
 #ifdef HAVE_CLASS_GLOB
 

@@ -25,7 +25,7 @@
 #include "SingleMode.hxx"
 #include "Log.hxx"
 
-#include <assert.h>
+#include <cassert>
 
 void
 playlist::TagModified(DetachedSong &&song) noexcept

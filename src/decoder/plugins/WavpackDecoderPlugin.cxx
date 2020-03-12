@@ -31,12 +31,10 @@
 #include <wavpack/wavpack.h>
 
 #include <algorithm>
+#include <cassert>
+#include <cstdlib>
 #include <iterator>
 #include <memory>
-
-#include <cstdlib>
-
-#include <assert.h>
 
 #define ERRORLEN 80
 

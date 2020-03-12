@@ -23,8 +23,8 @@
 #include "ChannelDefs.hxx"
 
 #include <algorithm>
+#include <cassert>
 
-#include <assert.h>
 #include <stddef.h>
 
 template<typename T> struct ConstBuffer;

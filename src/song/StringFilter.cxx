@@ -20,7 +20,7 @@
 #include "StringFilter.hxx"
 #include "util/StringAPI.hxx"
 
-#include <assert.h>
+#include <cassert>
 
 bool
 StringFilter::MatchWithoutNegation(const char *s) const noexcept

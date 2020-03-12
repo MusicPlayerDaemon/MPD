@@ -38,10 +38,10 @@
 #include "util/UriExtract.hxx"
 #include "Log.hxx"
 
+#include <cassert>
 #include <exception>
 #include <memory>
 
-#include <assert.h>
 #include <string.h>
 #include <stdlib.h>
 #include <errno.h>

@@ -22,7 +22,7 @@
 #include "CharUtil.hxx"
 #include "ASCII.hxx"
 
-#include <assert.h>
+#include <cassert>
 
 bool
 StringArrayContainsCase(const char *const*haystack,

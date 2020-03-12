@@ -28,9 +28,9 @@
 #include "tag/Builder.hxx"
 #include "util/PrintException.hxx"
 
+#include <cassert>
 #include <memory>
 
-#include <assert.h>
 #include <stddef.h>
 
 static uint8_t zero[256];

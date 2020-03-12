@@ -33,9 +33,9 @@
 #include <pulse/subscribe.h>
 #include <pulse/version.h>
 
+#include <cassert>
 #include <stdexcept>
 
-#include <assert.h>
 #include <stddef.h>
 #include <stdlib.h>
 

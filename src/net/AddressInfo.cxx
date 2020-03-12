@@ -30,7 +30,7 @@
 #include "AddressInfo.hxx"
 #include "Features.hxx"
 
-#include <assert.h>
+#include <cassert>
 
 static constexpr int address_family_ranking[] = {
 #ifdef HAVE_UN

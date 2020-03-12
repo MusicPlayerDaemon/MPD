@@ -31,7 +31,8 @@
 #include "system/Error.hxx"
 #include "util/Compiler.h"
 
-#include <assert.h>
+#include <cassert>
+
 #include <sys/eventfd.h>
 
 EventFD::EventFD()

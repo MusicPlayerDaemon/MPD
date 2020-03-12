@@ -22,10 +22,10 @@
 #include "input/InputStream.hxx"
 #include "util/StringView.hxx"
 
+#include <cassert>
 #include <memory>
 
 #include <stdint.h>
-#include <assert.h>
 #include <string.h>
 
 struct ApeFooter {

@@ -26,7 +26,7 @@
 #include "storage/StorageInterface.hxx"
 #include "util/UriUtil.hxx"
 
-#include <assert.h>
+#include <cassert>
 
 /**
  * Load a playlist from the configured playlist directory.

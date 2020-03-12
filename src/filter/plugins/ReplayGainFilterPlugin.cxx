@@ -29,9 +29,8 @@
 #include "util/Domain.hxx"
 #include "Log.hxx"
 
+#include <cassert>
 #include <exception>
-
-#include <assert.h>
 
 static constexpr Domain replay_gain_domain("replay_gain");
 

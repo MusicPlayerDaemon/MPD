@@ -25,7 +25,8 @@
 #include "config/Block.hxx"
 #include "util/PrintException.hxx"
 
-#include <assert.h>
+#include <cassert>
+
 #include <stdlib.h>
 
 const FilterPlugin *

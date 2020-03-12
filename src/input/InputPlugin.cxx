@@ -20,8 +20,8 @@
 #include "InputPlugin.hxx"
 #include "util/StringCompare.hxx"
 
-#include <assert.h>
 #include <algorithm>
+#include <cassert>
 #include <iterator>
 
 bool

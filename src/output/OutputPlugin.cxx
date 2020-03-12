@@ -19,7 +19,7 @@
 
 #include "OutputPlugin.hxx"
 
-#include <assert.h>
+#include <cassert>
 
 AudioOutput *
 ao_plugin_init(EventLoop &event_loop,

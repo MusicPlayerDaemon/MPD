@@ -24,10 +24,10 @@
 
 #include <unicode/ustring.h>
 
+#include <cassert>
 #include <memory>
 #include <stdexcept>
 
-#include <assert.h>
 #include <string.h>
 
 AllocatedArray<UChar>

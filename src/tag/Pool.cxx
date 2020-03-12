@@ -23,9 +23,9 @@
 #include "util/VarSize.hxx"
 #include "util/StringView.hxx"
 
+#include <cassert>
 #include <limits>
 
-#include <assert.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdint.h>

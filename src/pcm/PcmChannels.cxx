@@ -27,8 +27,7 @@
 
 #include <array>
 #include <algorithm>
-
-#include <assert.h>
+#include <cassert>
 
 template<typename D, typename S>
 static void

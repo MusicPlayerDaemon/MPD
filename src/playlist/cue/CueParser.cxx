@@ -23,7 +23,8 @@
 #include "util/StringStrip.hxx"
 #include "util/CharUtil.hxx"
 
-#include <assert.h>
+#include <cassert>
+
 #include <string.h>
 #include <stdlib.h>
 

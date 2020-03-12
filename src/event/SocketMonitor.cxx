@@ -20,9 +20,8 @@
 #include "SocketMonitor.hxx"
 #include "Loop.hxx"
 
+#include <cassert>
 #include <utility>
-
-#include <assert.h>
 
 void
 SocketMonitor::Dispatch(unsigned flags) noexcept

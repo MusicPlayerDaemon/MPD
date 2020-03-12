@@ -24,10 +24,9 @@
 #include "TimerEvent.hxx"
 #include "SocketMonitor.hxx"
 
+#include <cassert>
 #include <forward_list>
 #include <iterator>
-
-#include <assert.h>
 
 #ifndef _WIN32
 struct pollfd;

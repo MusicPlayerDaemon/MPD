@@ -35,7 +35,7 @@
 #include <cstddef>
 
 #ifndef NDEBUG
-#include <assert.h>
+#include <cassert>
 #endif
 
 template<typename T>

@@ -32,7 +32,7 @@
 #include "system/Error.hxx"
 #include "system/Open.hxx"
 
-#include <assert.h>
+#include <cassert>
 
 #ifdef _WIN32
 

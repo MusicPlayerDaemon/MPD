@@ -23,8 +23,7 @@
 #include "song/DetachedSong.hxx"
 
 #include <algorithm>
-
-#include <assert.h>
+#include <cassert>
 
 PlayerControl::PlayerControl(PlayerListener &_listener,
 			     PlayerOutputs &_outputs,

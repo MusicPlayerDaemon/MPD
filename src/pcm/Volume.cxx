@@ -27,7 +27,8 @@
 
 #include "Dither.cxx" // including the .cxx file to get inlined templates
 
-#include <assert.h>
+#include <cassert>
+
 #include <stdint.h>
 #include <string.h>
 

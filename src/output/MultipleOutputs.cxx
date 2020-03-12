@@ -30,9 +30,9 @@
 #include "util/RuntimeError.hxx"
 #include "util/StringAPI.hxx"
 
+#include <cassert>
 #include <stdexcept>
 
-#include <assert.h>
 #include <string.h>
 
 MultipleOutputs::MultipleOutputs(AudioOutputClient &_client,

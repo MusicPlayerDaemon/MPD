@@ -22,7 +22,7 @@
 #include "Prepared.hxx"
 #include "util/ConstBuffer.hxx"
 
-#include <assert.h>
+#include <cassert>
 
 class FilterObserver::PreparedProxy final : public PreparedFilter {
 	FilterObserver &observer;

@@ -21,7 +21,8 @@
 #include "util/ASCII.hxx"
 #include "util/StringView.hxx"
 
-#include <assert.h>
+#include <cassert>
+
 #include <string.h>
 
 TagType

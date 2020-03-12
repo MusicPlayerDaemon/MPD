@@ -22,7 +22,7 @@
 #include "util/ConstBuffer.hxx"
 #include "util/RuntimeError.hxx"
 
-#include <assert.h>
+#include <cassert>
 
 void
 PcmFormatConverter::Open(SampleFormat _src_format, SampleFormat _dest_format)

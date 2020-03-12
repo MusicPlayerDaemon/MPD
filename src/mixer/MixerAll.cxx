@@ -24,7 +24,7 @@
 #include "pcm/Volume.hxx"
 #include "Log.hxx"
 
-#include <assert.h>
+#include <cassert>
 
 gcc_pure
 static int

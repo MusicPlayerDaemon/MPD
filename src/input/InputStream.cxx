@@ -22,9 +22,8 @@
 #include "tag/Tag.hxx"
 #include "util/ASCII.hxx"
 
+#include <cassert>
 #include <stdexcept>
-
-#include <assert.h>
 
 InputStream::~InputStream() noexcept = default;
 

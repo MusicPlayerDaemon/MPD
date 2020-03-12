@@ -38,10 +38,10 @@
 #include <windows.h>
 #endif
 
+#include <cassert>
 #include <memory>
 #include <stdexcept>
 
-#include <assert.h>
 #include <string.h>
 
 #ifdef HAVE_ICU

@@ -28,10 +28,10 @@
 #include "thread/Mutex.hxx"
 #include "util/ConstBuffer.hxx"
 
-#include <utility>
+#include <cassert>
 #include <memory>
+#include <utility>
 
-#include <assert.h>
 #include <stdint.h>
 
 struct MusicChunk;

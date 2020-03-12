@@ -52,7 +52,8 @@ extern "C" {
 #include <libavutil/frame.h>
 }
 
-#include <assert.h>
+#include <cassert>
+
 #include <string.h>
 
 /**

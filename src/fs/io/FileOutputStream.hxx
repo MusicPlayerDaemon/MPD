@@ -38,7 +38,8 @@
 #include "system/FileDescriptor.hxx"
 #endif
 
-#include <assert.h>
+#include <cassert>
+
 #include <stdint.h>
 
 #ifdef _WIN32

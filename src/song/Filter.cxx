@@ -37,7 +37,8 @@
 #include "util/ASCII.hxx"
 #include "util/UriUtil.hxx"
 
-#include <assert.h>
+#include <cassert>
+
 #include <stdlib.h>
 
 #define LOCATE_TAG_FILE_KEY     "file"

@@ -24,7 +24,8 @@
 #include "util/Domain.hxx"
 #include "Log.hxx"
 
-#include <assert.h>
+#include <cassert>
+
 #include <stdlib.h>
 #include <string.h>
 

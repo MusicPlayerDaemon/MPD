@@ -23,9 +23,9 @@
 #include "PollGroup.hxx"
 #include "net/SocketDescriptor.hxx"
 
+#include <cassert>
 #include <type_traits>
 
-#include <assert.h>
 #include <stddef.h>
 
 class EventLoop;

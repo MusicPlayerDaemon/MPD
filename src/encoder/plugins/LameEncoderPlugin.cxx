@@ -26,9 +26,9 @@
 
 #include <lame/lame.h>
 
+#include <cassert>
 #include <stdexcept>
 
-#include <assert.h>
 #include <string.h>
 
 class LameEncoder final : public Encoder {

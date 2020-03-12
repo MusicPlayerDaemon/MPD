@@ -23,13 +23,13 @@
 #include "util/BindMethod.hxx"
 #include "util/Compiler.h"
 
+#include <cassert>
+
 #ifdef _WIN32
 #include <windows.h>
 #else
 #include <pthread.h>
 #endif
-
-#include <assert.h>
 
 class Thread {
 	typedef BoundMethod<void() noexcept> Function;

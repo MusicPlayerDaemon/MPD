@@ -19,7 +19,7 @@
 
 #include "FallbackResampler.hxx"
 
-#include <assert.h>
+#include <cassert>
 
 AudioFormat
 FallbackPcmResampler::Open(AudioFormat &af, unsigned new_sample_rate)

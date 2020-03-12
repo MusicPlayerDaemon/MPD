@@ -22,7 +22,8 @@
 #include "util/ByteOrder.hxx"
 #include "util/DynamicFifoBuffer.hxx"
 
-#include <assert.h>
+#include <cassert>
+
 #include <string.h>
 
 static constexpr uint16_t WAVE_FORMAT_PCM = 1;

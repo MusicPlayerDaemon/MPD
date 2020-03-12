@@ -23,10 +23,10 @@
 #include "HugeAllocator.hxx"
 #include "Compiler.h"
 
-#include <utility>
+#include <cassert>
 #include <new>
+#include <utility>
 
-#include <assert.h>
 #include <stddef.h>
 
 /**
