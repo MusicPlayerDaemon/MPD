@@ -20,9 +20,9 @@
 #ifndef MPD_FFMPEG_LOG_CALLBACK_HXX
 #define MPD_FFMPEG_LOG_CALLBACK_HXX
 
-#include <stdarg.h>
+#include <cstdarg>
 
 void
-FfmpegLogCallback(void *ptr, int level, const char *fmt, va_list vl);
+FfmpegLogCallback(void *ptr, int level, const char *fmt, std::va_list vl);
 
 #endif

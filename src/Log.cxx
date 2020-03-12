@@ -30,7 +30,7 @@ static constexpr Domain exception_domain("exception");
 
 void
 LogFormatV(LogLevel level, const Domain &domain,
-	   const char *fmt, va_list ap) noexcept
+	   const char *fmt, std::va_list ap) noexcept
 {
 	char msg[1024];
 	vsnprintf(msg, sizeof(msg), fmt, ap);
@@ -40,7 +40,7 @@ LogFormatV(LogLevel level, const Domain &domain,
 void
 LogFormat(LogLevel level, const Domain &domain, const char *fmt, ...) noexcept
 {
-	va_list ap;
+	std::va_list ap;
 	va_start(ap, fmt);
 	LogFormatV(level, domain, fmt, ap);
 	va_end(ap);
@@ -49,7 +49,7 @@ LogFormat(LogLevel level, const Domain &domain, const char *fmt, ...) noexcept
 void
 FormatDebug(const Domain &domain, const char *fmt, ...) noexcept
 {
-	va_list ap;
+	std::va_list ap;
 	va_start(ap, fmt);
 	LogFormatV(LogLevel::DEBUG, domain, fmt, ap);
 	va_end(ap);
@@ -58,7 +58,7 @@ FormatDebug(const Domain &domain, const char *fmt, ...) noexcept
 void
 FormatInfo(const Domain &domain, const char *fmt, ...) noexcept
 {
-	va_list ap;
+	std::va_list ap;
 	va_start(ap, fmt);
 	LogFormatV(LogLevel::INFO, domain, fmt, ap);
 	va_end(ap);
@@ -67,7 +67,7 @@ FormatInfo(const Domain &domain, const char *fmt, ...) noexcept
 void
 FormatDefault(const Domain &domain, const char *fmt, ...) noexcept
 {
-	va_list ap;
+	std::va_list ap;
 	va_start(ap, fmt);
 	LogFormatV(LogLevel::DEFAULT, domain, fmt, ap);
 	va_end(ap);
@@ -76,7 +76,7 @@ FormatDefault(const Domain &domain, const char *fmt, ...) noexcept
 void
 FormatWarning(const Domain &domain, const char *fmt, ...) noexcept
 {
-	va_list ap;
+	std::va_list ap;
 	va_start(ap, fmt);
 	LogFormatV(LogLevel::WARNING, domain, fmt, ap);
 	va_end(ap);
@@ -85,7 +85,7 @@ FormatWarning(const Domain &domain, const char *fmt, ...) noexcept
 void
 FormatError(const Domain &domain, const char *fmt, ...) noexcept
 {
-	va_list ap;
+	std::va_list ap;
 	va_start(ap, fmt);
 	LogFormatV(LogLevel::ERROR, domain, fmt, ap);
 	va_end(ap);
@@ -107,7 +107,7 @@ void
 LogFormat(LogLevel level, const std::exception &e, const char *fmt, ...) noexcept
 {
 	char msg[1024];
-	va_list ap;
+	std::va_list ap;
 	va_start(ap, fmt);
 	vsnprintf(msg, sizeof(msg), fmt, ap);
 	va_end(ap);
@@ -132,7 +132,7 @@ void
 LogFormat(LogLevel level, const std::exception_ptr &ep, const char *fmt, ...) noexcept
 {
 	char msg[1024];
-	va_list ap;
+	std::va_list ap;
 	va_start(ap, fmt);
 	vsnprintf(msg, sizeof(msg), fmt, ap);
 	va_end(ap);
@@ -153,7 +153,7 @@ LogErrno(const Domain &domain, const char *msg) noexcept
 }
 
 static void
-FormatErrnoV(const Domain &domain, int e, const char *fmt, va_list ap) noexcept
+FormatErrnoV(const Domain &domain, int e, const char *fmt, std::va_list ap) noexcept
 {
 	char msg[1024];
 	vsnprintf(msg, sizeof(msg), fmt, ap);
@@ -164,7 +164,7 @@ FormatErrnoV(const Domain &domain, int e, const char *fmt, va_list ap) noexcept
 void
 FormatErrno(const Domain &domain, int e, const char *fmt, ...) noexcept
 {
-	va_list ap;
+	std::va_list ap;
 	va_start(ap, fmt);
 	FormatErrnoV(domain, e, fmt, ap);
 	va_end(ap);
@@ -175,7 +175,7 @@ FormatErrno(const Domain &domain, const char *fmt, ...) noexcept
 {
 	const int e = errno;
 
-	va_list ap;
+	std::va_list ap;
 	va_start(ap, fmt);
 	FormatErrnoV(domain, e, fmt, ap);
 	va_end(ap);

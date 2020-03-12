@@ -23,8 +23,9 @@
 #include "protocol/Ack.hxx"
 #include "util/Compiler.h"
 
+#include <cstdarg>
+
 #include <stddef.h>
-#include <stdarg.h>
 
 template<typename T> struct ConstBuffer;
 class Client;
@@ -74,7 +75,7 @@ public:
 
 	bool Write(const void *data, size_t length) noexcept;
 	bool Write(const char *data) noexcept;
-	bool FormatV(const char *fmt, va_list args) noexcept;
+	bool FormatV(const char *fmt, std::va_list args) noexcept;
 	bool Format(const char *fmt, ...) noexcept;
 
 	static constexpr size_t MAX_BINARY_SIZE = 8192;

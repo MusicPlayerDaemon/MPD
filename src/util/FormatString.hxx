@@ -22,7 +22,7 @@
 
 #include "Compiler.h"
 
-#include <stdarg.h>
+#include <cstdarg>
 
 template<typename T> class AllocatedString;
 
@@ -32,7 +32,7 @@ template<typename T> class AllocatedString;
  */
 gcc_nonnull_all
 AllocatedString<char>
-FormatStringV(const char *fmt, va_list args) noexcept;
+FormatStringV(const char *fmt, std::va_list args) noexcept;
 
 /**
  * Format into a newly allocated string.  The caller frees the return

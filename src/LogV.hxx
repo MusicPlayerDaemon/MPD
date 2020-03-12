@@ -22,10 +22,10 @@
 
 #include "Log.hxx" // IWYU pragma: export
 
-#include <stdarg.h>
+#include <cstdarg>
 
 void
 LogFormatV(LogLevel level, const Domain &domain,
-	   const char *fmt, va_list ap) noexcept;
+	   const char *fmt, std::va_list ap) noexcept;
 
 #endif /* LOG_H */

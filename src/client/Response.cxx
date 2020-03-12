@@ -41,7 +41,7 @@ Response::Write(const char *data) noexcept
 }
 
 bool
-Response::FormatV(const char *fmt, va_list args) noexcept
+Response::FormatV(const char *fmt, std::va_list args) noexcept
 {
 	return Write(FormatStringV(fmt, args).c_str());
 }
@@ -49,7 +49,7 @@ Response::FormatV(const char *fmt, va_list args) noexcept
 bool
 Response::Format(const char *fmt, ...) noexcept
 {
-	va_list args;
+	std::va_list args;
 	va_start(args, fmt);
 	bool success = FormatV(fmt, args);
 	va_end(args);
@@ -78,7 +78,7 @@ Response::FormatError(enum ack code, const char *fmt, ...) noexcept
 	Format("ACK [%i@%u] {%s} ",
 	       (int)code, list_index, command);
 
-	va_list args;
+	std::va_list args;
 	va_start(args, fmt);
 	FormatV(fmt, args);
 	va_end(args);

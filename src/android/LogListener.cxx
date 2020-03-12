@@ -36,7 +36,7 @@ LogListener::OnLog(JNIEnv *env, int priority,
 
 	assert(method);
 
-	va_list args;
+	std::va_list args;
 	va_start(args, fmt);
 	const auto log = FormatStringV(fmt, args);
 	va_end(args);

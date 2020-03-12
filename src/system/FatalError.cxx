@@ -21,8 +21,9 @@
 #include "util/Domain.hxx"
 #include "LogV.hxx"
 
+#include <cstdarg>
+
 #include <unistd.h>
-#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -52,7 +53,7 @@ FatalError(const char *msg)
 void
 FormatFatalError(const char *fmt, ...)
 {
-	va_list ap;
+	std::va_list ap;
 	va_start(ap, fmt);
 	LogFormatV(LogLevel::ERROR, fatal_error_domain, fmt, ap);
 	va_end(ap);
@@ -91,7 +92,7 @@ void
 FormatFatalSystemError(const char *fmt, ...)
 {
 	char buffer[1024];
-	va_list ap;
+	std::va_list ap;
 	va_start(ap, fmt);
 	vsnprintf(buffer, sizeof(buffer), fmt, ap);
 	va_end(ap);
