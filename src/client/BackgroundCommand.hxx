@@ -24,7 +24,7 @@
  * A command running in background.  It can take some time to finish,
  * and will then call Client::OnBackgroundCommandFinished() from
  * inside the client's #EventLoop thread.  The important point is that
- * sucha long-running command does not block MPD's main loop, and
+ * such a long-running command does not block MPD's main loop, and
  * other clients can still be handled meanwhile.
  *
  * (Note: "idle" is not a "background command" by this definition; it
