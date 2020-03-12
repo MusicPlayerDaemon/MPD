@@ -32,7 +32,6 @@
 #include <unicode/ustring.h>
 #else
 #include <algorithm>
-#include <ctype.h>
 #endif
 
 #ifdef _WIN32

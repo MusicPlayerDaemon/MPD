@@ -266,7 +266,7 @@ osx_output_parse_channel_map(const char *device_name,
 		}
 
 		if (want_number &&
-			(isdigit(*channel_map_str) || *channel_map_str == '-')
+			(std::isdigit(*channel_map_str) || *channel_map_str == '-')
 		) {
 			channel_map[inserted_channels] = strtol(channel_map_str, &endptr, 10);
 			if (channel_map[inserted_channels] < -1)
