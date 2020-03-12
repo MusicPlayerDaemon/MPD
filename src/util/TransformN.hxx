@@ -30,7 +30,7 @@
 #ifndef TRANSFORM_N_HXX
 #define TRANSFORM_N_HXX
 
-#include <stddef.h>
+#include <cstddef>
 
 /**
  * The std::transform_n() function that is missing in the C++ standard

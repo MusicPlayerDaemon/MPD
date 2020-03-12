@@ -20,7 +20,7 @@
 #ifndef MPD_OPUS_HEAD_HXX
 #define MPD_OPUS_HEAD_HXX
 
-#include <stddef.h>
+#include <cstddef>
 
 bool
 ScanOpusHeader(const void *data, size_t size, unsigned &channels_r);

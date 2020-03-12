@@ -24,8 +24,7 @@
 #include "util/Compiler.h"
 
 #include <cstdarg>
-
-#include <stddef.h>
+#include <cstddef>
 
 template<typename T> struct ConstBuffer;
 class Client;

@@ -27,10 +27,9 @@
 #include <boost/intrusive/link_mode.hpp>
 #include <boost/intrusive/list_hook.hpp>
 
-#include <queue>
+#include <cstddef>
 #include <list>
-
-#include <stddef.h>
+#include <queue>
 
 class UniqueSocketDescriptor;
 class HttpdOutput;

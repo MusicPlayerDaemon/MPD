@@ -30,7 +30,7 @@
 #ifndef OUTPUT_STREAM_HXX
 #define OUTPUT_STREAM_HXX
 
-#include <stddef.h>
+#include <cstddef>
 
 class OutputStream {
 public:

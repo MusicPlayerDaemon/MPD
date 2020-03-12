@@ -22,10 +22,10 @@
 
 #include "PollResultGeneric.hxx"
 
+#include <cstddef>
 #include <vector>
 #include <unordered_map>
 
-#include <stddef.h>
 #include <sys/poll.h>
 
 class PollGroupPoll

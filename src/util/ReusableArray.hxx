@@ -32,9 +32,8 @@
 
 #include "Compiler.h"
 
+#include <cstddef>
 #include <utility>
-
-#include <stddef.h>
 
 /**
  * Manager for a temporary array which grows as needed.  This attempts

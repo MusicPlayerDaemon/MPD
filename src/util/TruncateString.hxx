@@ -32,7 +32,7 @@
 
 #include "Compiler.h"
 
-#include <stddef.h>
+#include <cstddef>
 
 /**
  * Copy a string.  If the buffer is too small, then the string is

@@ -32,9 +32,8 @@
 
 #include "WritableBuffer.hxx"
 
+#include <cstddef>
 #include <utility>
-
-#include <stddef.h>
 
 #ifdef __linux__
 

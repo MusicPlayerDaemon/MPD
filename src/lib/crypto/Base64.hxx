@@ -30,7 +30,7 @@
 #ifndef BASE64_HXX
 #define BASE64_HXX
 
-#include <stddef.h>
+#include <cstddef>
 
 template<typename T> struct WritableBuffer;
 struct StringView;

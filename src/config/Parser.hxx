@@ -20,7 +20,7 @@
 #ifndef MPD_CONFIG_PARSER_HXX
 #define MPD_CONFIG_PARSER_HXX
 
-#include <stddef.h>
+#include <cstddef>
 
 /**
  * Throws on error.

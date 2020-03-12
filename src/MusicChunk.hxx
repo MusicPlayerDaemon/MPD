@@ -29,10 +29,10 @@
 #include "pcm/AudioFormat.hxx"
 #endif
 
+#include <cstddef>
 #include <memory>
 
 #include <stdint.h>
-#include <stddef.h>
 
 static constexpr size_t CHUNK_SIZE = 4096;
 

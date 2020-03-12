@@ -34,8 +34,8 @@ or implied, of Sebastian Gesemann.
 #include "ChannelDefs.hxx"
 
 #include <array>
+#include <cstddef>
 
-#include <stddef.h>
 #include <stdint.h>
 
 /**

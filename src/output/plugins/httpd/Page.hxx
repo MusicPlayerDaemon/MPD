@@ -22,9 +22,8 @@
 
 #include "util/AllocatedArray.hxx"
 
+#include <cstddef>
 #include <memory>
-
-#include <stddef.h>
 #include <stdint.h>
 
 /**

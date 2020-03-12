@@ -24,9 +24,8 @@
 #include "tag/Tag.hxx"
 #include "config.h"
 
+#include <cstddef>
 #include <memory>
-
-#include <stddef.h>
 
 class IcyMetaDataParser {
 	size_t data_size = 0, data_rest;

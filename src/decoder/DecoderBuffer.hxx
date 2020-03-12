@@ -24,7 +24,8 @@
 #include "util/DynamicFifoBuffer.hxx"
 #include "util/ConstBuffer.hxx"
 
-#include <stddef.h>
+#include <cstddef>
+
 #include <stdint.h>
 
 class DecoderClient;

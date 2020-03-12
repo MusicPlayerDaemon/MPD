@@ -34,9 +34,9 @@
 #include <pulse/version.h>
 
 #include <cassert>
+#include <cstddef>
 #include <stdexcept>
 
-#include <stddef.h>
 #include <stdlib.h>
 
 #define MPD_PULSE_NAME "Music Player Daemon"

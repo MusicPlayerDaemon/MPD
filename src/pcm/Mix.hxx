@@ -23,7 +23,7 @@
 #include "SampleFormat.hxx"
 #include "util/Compiler.h"
 
-#include <stddef.h>
+#include <cstddef>
 
 class PcmDither;
 

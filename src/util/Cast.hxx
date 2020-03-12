@@ -33,7 +33,7 @@
 #include "OffsetPointer.hxx"
 #include "Compiler.h"
 
-#include <stddef.h>
+#include <cstddef>
 
 template<typename T, typename U>
 constexpr T *

@@ -20,8 +20,9 @@
 #ifndef MPD_BYTE_REVERSE_HXX
 #define MPD_BYTE_REVERSE_HXX
 
+#include <cstddef>
+
 #include <stdint.h>
-#include <stddef.h>
 
 /**
  * Reverse the bytes in each 16 bit "frame".  This function can be

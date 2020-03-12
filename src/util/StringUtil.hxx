@@ -22,7 +22,7 @@
 
 #include "Compiler.h"
 
-#include <stddef.h>
+#include <cstddef>
 
 struct StringView;
 

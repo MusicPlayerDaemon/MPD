@@ -33,7 +33,7 @@
 #include "util/Compiler.h"
 #include "util/DynamicFifoBuffer.hxx"
 
-#include <stddef.h>
+#include <cstddef>
 
 class Reader;
 

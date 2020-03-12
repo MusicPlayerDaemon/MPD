@@ -32,7 +32,7 @@
 
 #include "Compiler.h"
 
-#include <stddef.h>
+#include <cstddef>
 
 /**
  * Skips whitespace at the beginning of the string, and returns the

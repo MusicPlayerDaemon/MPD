@@ -24,9 +24,8 @@
 #include "net/SocketDescriptor.hxx"
 
 #include <cassert>
+#include <cstddef>
 #include <type_traits>
-
-#include <stddef.h>
 
 class EventLoop;
 

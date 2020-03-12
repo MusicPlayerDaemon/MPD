@@ -27,7 +27,7 @@
 
 #include "thread/Mutex.hxx"
 
-#include <stddef.h>
+#include <cstddef>
 
 class InputStream;
 

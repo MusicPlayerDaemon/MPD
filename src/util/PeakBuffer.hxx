@@ -22,7 +22,8 @@
 
 #include "Compiler.h"
 
-#include <stddef.h>
+#include <cstddef>
+
 #include <stdint.h>
 
 template<typename T> struct WritableBuffer;

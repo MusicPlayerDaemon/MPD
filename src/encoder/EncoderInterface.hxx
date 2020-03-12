@@ -24,8 +24,7 @@
 #include "util/Compiler.h"
 
 #include <cassert>
-
-#include <stddef.h>
+#include <cstddef>
 
 struct AudioFormat;
 struct Tag;

@@ -24,8 +24,7 @@
 
 #include <algorithm>
 #include <cassert>
-
-#include <stddef.h>
+#include <cstddef>
 
 template<typename T> struct ConstBuffer;
 class PcmBuffer;

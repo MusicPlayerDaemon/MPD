@@ -20,9 +20,8 @@
 #ifndef MPD_EVENT_POLLRESULT_GENERIC_HXX
 #define MPD_EVENT_POLLRESULT_GENERIC_HXX
 
+#include <cstddef>
 #include <vector>
-
-#include <stddef.h>
 
 class PollResultGeneric
 {

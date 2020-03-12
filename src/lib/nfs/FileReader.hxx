@@ -25,11 +25,11 @@
 #include "event/DeferEvent.hxx"
 #include "util/Compiler.h"
 
-#include <string>
+#include <cstddef>
 #include <exception>
+#include <string>
 
 #include <stdint.h>
-#include <stddef.h>
 #include <sys/stat.h>
 
 struct nfsfh;

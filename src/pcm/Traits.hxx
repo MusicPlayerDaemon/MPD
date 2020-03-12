@@ -22,8 +22,9 @@
 
 #include "SampleFormat.hxx"
 
+#include <cstddef>
+
 #include <stdint.h>
-#include <stddef.h>
 
 /**
  * This template describes the specified #SampleFormat.  This is an

@@ -24,7 +24,7 @@ extern "C" {
 #include <libavutil/mem.h>
 }
 
-#include <stddef.h>
+#include <cstddef>
 
 /* suppress the ffmpeg compatibility macro */
 #ifdef SampleFormat

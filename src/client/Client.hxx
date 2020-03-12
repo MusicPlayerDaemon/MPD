@@ -31,12 +31,11 @@
 #include <boost/intrusive/link_mode.hpp>
 #include <boost/intrusive/list_hook.hpp>
 
-#include <set>
-#include <string>
+#include <cstddef>
 #include <list>
 #include <memory>
-
-#include <stddef.h>
+#include <set>
+#include <string>
 
 class SocketAddress;
 class UniqueSocketDescriptor;

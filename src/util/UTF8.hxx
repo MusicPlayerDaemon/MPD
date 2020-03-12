@@ -33,7 +33,7 @@
 
 #include "Compiler.h"
 
-#include <stddef.h>
+#include <cstddef>
 
 /**
  * Is this a valid UTF-8 string?

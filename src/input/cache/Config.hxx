@@ -20,7 +20,7 @@
 #ifndef MPD_INPUT_CACHE_CONFIG_HXX
 #define MPD_INPUT_CACHE_CONFIG_HXX
 
-#include <stddef.h>
+#include <cstddef>
 
 struct ConfigBlock;
 

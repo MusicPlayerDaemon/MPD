@@ -24,10 +24,9 @@
 #include "Compiler.h"
 
 #include <cassert>
+#include <cstddef>
 #include <new>
 #include <utility>
-
-#include <stddef.h>
 
 /**
  * This class pre-allocates a certain number of objects, and allows

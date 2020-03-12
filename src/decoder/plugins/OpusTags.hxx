@@ -20,7 +20,7 @@
 #ifndef MPD_OPUS_TAGS_HXX
 #define MPD_OPUS_TAGS_HXX
 
-#include <stddef.h>
+#include <cstddef>
 
 struct ReplayGainInfo;
 class TagHandler;

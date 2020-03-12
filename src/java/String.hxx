@@ -34,9 +34,8 @@
 
 #include <jni.h>
 
+#include <cstddef>
 #include <string>
-
-#include <stddef.h>
 
 namespace Java {
 	/**

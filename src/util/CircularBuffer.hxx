@@ -33,8 +33,7 @@
 #include "WritableBuffer.hxx"
 
 #include <cassert>
-
-#include <stddef.h>
+#include <cstddef>
 
 /**
  * A circular buffer.
