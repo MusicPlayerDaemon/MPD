@@ -59,6 +59,8 @@ struct AsxParser {
 
 	TagBuilder tag_builder;
 
+	std::string value;
+
 	AsxParser()
 		:state(ROOT) {}
 
@@ -77,6 +79,7 @@ asx_start_element(void *user_data, const XML_Char *element_name,
 		  const XML_Char **atts)
 {
 	AsxParser *parser = (AsxParser *)user_data;
+	parser->value.clear();
 
 	switch (parser->state) {
 	case AsxParser::ROOT:
@@ -128,9 +131,15 @@ asx_end_element(void *user_data, const XML_Char *element_name)
 		break;
 
 	case AsxParser::TAG:
+		if (!parser->value.empty())
+			parser->tag_builder.AddItem(parser->tag_type,
+						    StringView(parser->value.data(),
+							       parser->value.length()));
 		parser->state = AsxParser::ENTRY;
 		break;
 	}
+
+	parser->value.clear();
 }
 
 static void XMLCALL
@@ -144,8 +153,7 @@ asx_char_data(void *user_data, const XML_Char *s, int len)
 		break;
 
 	case AsxParser::TAG:
-		parser->tag_builder.AddItem(parser->tag_type,
-					    StringView(s, len));
+		parser->value.append(s, len);
 		break;
 	}
 }
