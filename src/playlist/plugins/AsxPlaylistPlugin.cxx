@@ -21,6 +21,7 @@
 #include "../PlaylistPlugin.hxx"
 #include "../MemorySongEnumerator.hxx"
 #include "tag/Builder.hxx"
+#include "tag/Table.hxx"
 #include "util/ASCII.hxx"
 #include "util/StringView.hxx"
 #include "lib/expat/ExpatParser.hxx"
@@ -62,6 +63,14 @@ struct AsxParser {
 
 };
 
+static constexpr struct tag_table asx_tag_elements[] = {
+	/* is that correct?  or should it be COMPOSER or PERFORMER? */
+	{ "author", TAG_ARTIST },
+
+	{ "title", TAG_TITLE },
+	{ nullptr, TAG_NUM_OF_ITEM_TYPES }
+};
+
 static void XMLCALL
 asx_start_element(void *user_data, const XML_Char *element_name,
 		  const XML_Char **atts)
@@ -84,12 +93,9 @@ asx_start_element(void *user_data, const XML_Char *element_name,
 				ExpatParser::GetAttributeCase(atts, "href");
 			if (href != nullptr)
 				parser->location = href;
-		} else if (StringEqualsCaseASCII(element_name, "author"))
-			/* is that correct?  or should it be COMPOSER
-			   or PERFORMER? */
-			parser->tag_type = TAG_ARTIST;
-		else if (StringEqualsCaseASCII(element_name, "title"))
-			parser->tag_type = TAG_TITLE;
+		} else
+			parser->tag_type = tag_table_lookup_i(asx_tag_elements,
+							      element_name);
 
 		break;
 	}
