@@ -71,7 +71,7 @@ public:
 		   bool seekable, SignedSongTime duration) noexcept override;
 
 	DecoderCommand GetCommand() noexcept override {
-		return !error && remaining_bytes > 0
+		return !error && (!ready || remaining_bytes > 0)
 			? DecoderCommand::NONE
 			: DecoderCommand::STOP;
 	}
