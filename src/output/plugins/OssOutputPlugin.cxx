@@ -28,13 +28,13 @@
 #include "Log.hxx"
 
 #include <cassert>
+#include <cerrno>
 #include <iterator>
 #include <stdexcept>
 
 #include <sys/stat.h>
 #include <sys/ioctl.h>
 #include <fcntl.h>
-#include <errno.h>
 #include <stdlib.h>
 #include <unistd.h>
 

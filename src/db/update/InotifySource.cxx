@@ -24,8 +24,9 @@
 #include "system/Error.hxx"
 #include "Log.hxx"
 
+#include <cerrno>
+
 #include <sys/inotify.h>
-#include <errno.h>
 #include <stdint.h>
 #include <limits.h>
 

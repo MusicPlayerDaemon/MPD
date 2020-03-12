@@ -20,8 +20,9 @@
 #include "fs/io/FileOutputStream.hxx"
 #include "util/PrintException.hxx"
 
+#include <cerrno>
+
 #include <unistd.h>
-#include <errno.h>
 
 #include <string.h>
 #include <stdlib.h>

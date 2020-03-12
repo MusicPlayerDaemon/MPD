@@ -39,12 +39,12 @@
 #include "Log.hxx"
 
 #include <cassert>
+#include <cerrno>
 #include <exception>
 #include <memory>
 
 #include <string.h>
 #include <stdlib.h>
-#include <errno.h>
 
 UpdateWalk::UpdateWalk(const UpdateConfig &_config,
 		       EventLoop &_loop, DatabaseListener &_listener,

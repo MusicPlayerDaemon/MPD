@@ -158,9 +158,10 @@ FileOutputStream::Cancel() noexcept
 
 #else
 
+#include <cerrno>
+
 #include <fcntl.h>
 #include <unistd.h>
-#include <errno.h>
 
 #ifdef HAVE_O_TMPFILE
 #ifndef O_TMPFILE

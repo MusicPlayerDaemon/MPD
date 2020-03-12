@@ -22,7 +22,8 @@
 #include "Limits.hxx"
 #include "system/Error.hxx"
 
-#include <errno.h>
+#include <cerrno>
+
 #include <fcntl.h>
 
 void

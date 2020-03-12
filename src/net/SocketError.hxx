@@ -27,7 +27,7 @@
 #include <winsock2.h>
 typedef DWORD socket_error_t;
 #else
-#include <errno.h>
+#include <cerrno>
 typedef int socket_error_t;
 #endif
 

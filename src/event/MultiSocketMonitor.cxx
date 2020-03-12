@@ -23,7 +23,7 @@
 #include <algorithm>
 
 #ifdef USE_EPOLL
-#include <errno.h>
+#include <cerrno>
 #endif
 
 #ifndef _WIN32

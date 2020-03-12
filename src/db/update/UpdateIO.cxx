@@ -26,7 +26,7 @@
 #include "fs/AllocatedPath.hxx"
 #include "Log.hxx"
 
-#include <errno.h>
+#include <cerrno>
 
 bool
 GetInfo(Storage &storage, const char *uri_utf8, StorageFileInfo &info) noexcept

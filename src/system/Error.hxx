@@ -92,7 +92,8 @@ FormatLastError(const char *fmt, Args&&... args) noexcept
 
 #endif /* _WIN32 */
 
-#include <errno.h>
+#include <cerrno>
+
 #include <string.h>
 
 /**

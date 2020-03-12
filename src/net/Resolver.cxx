@@ -44,9 +44,10 @@
 #include <net/if.h>
 #endif
 
+#include <cerrno>
+
 #include <string.h>
 #include <stdio.h>
-#include <errno.h>
 
 static inline bool
 ai_is_passive(const struct addrinfo *ai)

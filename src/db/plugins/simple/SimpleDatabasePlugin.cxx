@@ -49,9 +49,8 @@
 #include "fs/io/GzipOutputStream.hxx"
 #endif
 
+#include <cerrno>
 #include <memory>
-
-#include <errno.h>
 
 static constexpr Domain simple_db_domain("simple_db");
 

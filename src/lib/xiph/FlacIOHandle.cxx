@@ -22,7 +22,8 @@
 #include "util/Compiler.h"
 #include "system/Error.hxx"
 
-#include <errno.h>
+#include <cerrno>
+
 #include <stdio.h>
 
 static size_t

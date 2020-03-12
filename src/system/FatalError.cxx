@@ -30,7 +30,7 @@
 #ifdef _WIN32
 #include <windows.h>
 #else
-#include <errno.h>
+#include <cerrno>
 #endif
 
 static constexpr Domain fatal_error_domain("fatal_error");

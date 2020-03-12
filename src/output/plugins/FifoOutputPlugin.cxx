@@ -28,8 +28,9 @@
 #include "Log.hxx"
 #include "open.h"
 
+#include <cerrno>
+
 #include <sys/stat.h>
-#include <errno.h>
 #include <unistd.h>
 
 class FifoOutput final : AudioOutput {
