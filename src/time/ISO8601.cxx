@@ -37,6 +37,7 @@
 #include <stdexcept>
 
 #include <assert.h>
+#include <stdlib.h>
 
 StringBuffer<64>
 FormatISO8601(const struct tm &tm) noexcept

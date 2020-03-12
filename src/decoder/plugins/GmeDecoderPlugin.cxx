@@ -28,6 +28,7 @@
 #include "fs/AllocatedPath.hxx"
 #include "fs/FileSystem.hxx"
 #include "util/ScopeExit.hxx"
+#include "util/StringCompare.hxx"
 #include "util/StringFormat.hxx"
 #include "util/StringView.hxx"
 #include "util/UriExtract.hxx"
@@ -223,7 +224,7 @@ ScanGmeInfo(const gme_info_t &info, unsigned song_num, int track_count,
 	if (track_count > 1)
 		handler.OnTag(TAG_TRACK, StringFormat<16>("%u", song_num + 1).c_str());
 
-	if (info.song != nullptr) {
+	if (!StringIsEmpty(info.song)) {
 		if (track_count > 1) {
 			/* start numbering subtunes from 1 */
 			const auto tag_title =
@@ -235,16 +236,16 @@ ScanGmeInfo(const gme_info_t &info, unsigned song_num, int track_count,
 			handler.OnTag(TAG_TITLE, info.song);
 	}
 
-	if (info.author != nullptr)
+	if (!StringIsEmpty(info.author))
 		handler.OnTag(TAG_ARTIST, info.author);
 
-	if (info.game != nullptr)
+	if (!StringIsEmpty(info.game))
 		handler.OnTag(TAG_ALBUM, info.game);
 
-	if (info.comment != nullptr)
+	if (!StringIsEmpty(info.comment))
 		handler.OnTag(TAG_COMMENT, info.comment);
 
-	if (info.copyright != nullptr)
+	if (!StringIsEmpty(info.copyright))
 		handler.OnTag(TAG_DATE, info.copyright);
 }
 

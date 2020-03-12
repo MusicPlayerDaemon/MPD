@@ -24,6 +24,7 @@
 #include "storage/StorageInterface.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "fs/FileInfo.hxx"
+#include "fs/Traits.hxx"
 #include "Log.hxx"
 
 #include <string>
@@ -146,8 +147,7 @@ WatchDirectory::GetUriFS() const noexcept
 /* we don't look at "." / ".." nor files with newlines in their name */
 static bool skip_path(const char *path)
 {
-	return (path[0] == '.' && path[1] == 0) ||
-		(path[0] == '.' && path[1] == '.' && path[2] == 0) ||
+	return PathTraitsFS::IsSpecialFilename(path) ||
 		strchr(path, '\n') != nullptr;
 }
 

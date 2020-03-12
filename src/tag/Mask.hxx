@@ -89,7 +89,7 @@ public:
 	}
 
 	void Unset(TagType tag) noexcept {
-		*this |= ~TagMask(tag);
+		*this &= ~TagMask(tag);
 	}
 };
 

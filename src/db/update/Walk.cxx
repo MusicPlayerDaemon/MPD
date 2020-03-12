@@ -219,7 +219,7 @@ try {
 	LogError(std::current_exception());
 }
 
-/* we don't look at "." / ".." nor files with newlines in their name */
+/* we don't look at files with newlines in their name */
 gcc_pure
 static bool
 skip_path(const char *name_utf8) noexcept

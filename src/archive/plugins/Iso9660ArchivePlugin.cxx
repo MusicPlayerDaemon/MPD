@@ -28,6 +28,7 @@
 #include "input/InputStream.hxx"
 #include "fs/Path.hxx"
 #include "util/RuntimeError.hxx"
+#include "util/StringCompare.hxx"
 
 #include <cdio/iso9660.h>
 
@@ -99,7 +100,10 @@ Iso9660ArchiveFile::Visit(char *path, size_t length, size_t capacity,
 		auto *statbuf = (iso9660_stat_t *)
 			_cdio_list_node_data(entnode);
 		const char *filename = statbuf->filename;
-		if (strcmp(filename, ".") == 0 || strcmp(filename, "..") == 0)
+		if (StringIsEmpty(filename) ||
+		    PathTraitsUTF8::IsSpecialFilename(filename))
+			/* skip empty names (libcdio bug?) */
+			/* skip special names like "." and ".." */
 			continue;
 
 		size_t filename_length = strlen(filename);

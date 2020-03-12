@@ -35,6 +35,18 @@ ver 0.22 (not yet released)
 * switch to C++17
   - GCC 7 or clang 4 (or newer) recommended
 
+ver 0.21.21 (not yet released)
+* configuration
+  - fix bug in "metadata_to_use" setting
+* playlist
+  - xspf: fix corrupt tags in the presence of XML entities
+* archive
+  - iso9660: skip empty file names to work around libcdio bug
+* decoder
+  - gme: ignore empty tags
+* output
+  - solaris: port to NetBSD
+
 ver 0.21.20 (2020/02/16)
 * decoder
   - audiofile, ffmpeg, sndfile: handle MIME type "audio/wav"
