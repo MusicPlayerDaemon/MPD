@@ -45,7 +45,7 @@ struct XspfParser {
 	 */
 	enum {
 		ROOT, PLAYLIST, TRACKLIST, TRACK,
-		LOCATION,
+		TAG, LOCATION,
 	} state = ROOT;
 
 	/**
@@ -99,7 +99,6 @@ xspf_start_element(void *user_data, const XML_Char *element_name,
 		if (strcmp(element_name, "track") == 0) {
 			parser->state = XspfParser::TRACK;
 			parser->location.clear();
-			parser->tag_type = TAG_NUM_OF_ITEM_TYPES;
 		}
 
 		break;
@@ -107,12 +106,16 @@ xspf_start_element(void *user_data, const XML_Char *element_name,
 	case XspfParser::TRACK:
 		if (strcmp(element_name, "location") == 0)
 			parser->state = XspfParser::LOCATION;
-		else if (!parser->location.empty())
+		else if (!parser->location.empty()) {
 			parser->tag_type = tag_table_lookup(xspf_tag_elements,
 							    element_name);
+			if (parser->tag_type != TAG_NUM_OF_ITEM_TYPES)
+				parser->state = XspfParser::TAG;
+		}
 
 		break;
 
+	case XspfParser::TAG:
 	case XspfParser::LOCATION:
 		break;
 	}
@@ -146,11 +149,11 @@ xspf_end_element(void *user_data, const XML_Char *element_name)
 							    parser->tag_builder.Commit());
 
 			parser->state = XspfParser::TRACKLIST;
-		} else
-			parser->tag_type = TAG_NUM_OF_ITEM_TYPES;
+		}
 
 		break;
 
+	case XspfParser::TAG:
 	case XspfParser::LOCATION:
 		parser->state = XspfParser::TRACK;
 		break;
@@ -166,13 +169,12 @@ xspf_char_data(void *user_data, const XML_Char *s, int len)
 	case XspfParser::ROOT:
 	case XspfParser::PLAYLIST:
 	case XspfParser::TRACKLIST:
+	case XspfParser::TRACK:
 		break;
 
-	case XspfParser::TRACK:
-		if (parser->tag_type != TAG_NUM_OF_ITEM_TYPES)
-			parser->tag_builder.AddItem(parser->tag_type,
-						    StringView(s, len));
-
+	case XspfParser::TAG:
+		parser->tag_builder.AddItem(parser->tag_type,
+					    StringView(s, len));
 		break;
 
 	case XspfParser::LOCATION:
