@@ -27,9 +27,10 @@
 #include "Log.hxx"
 #include "util/Compiler.h"
 
+#include <climits>
+
 #include <string.h>
 #include <unistd.h>
-#include <limits.h>
 
 #ifndef HOST_NAME_MAX
 /* HOST_NAME_MAX is not a portable macro; it is undefined on some

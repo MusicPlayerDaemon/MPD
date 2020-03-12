@@ -115,7 +115,7 @@
 #include <locale.h>
 #endif
 
-#include <limits.h>
+#include <climits>
 
 static constexpr size_t KILOBYTE = 1024;
 static constexpr size_t MEGABYTE = 1024 * KILOBYTE;

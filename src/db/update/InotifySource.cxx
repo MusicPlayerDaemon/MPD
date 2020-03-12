@@ -25,10 +25,10 @@
 #include "Log.hxx"
 
 #include <cerrno>
+#include <climits>
 
 #include <sys/inotify.h>
 #include <stdint.h>
-#include <limits.h>
 
 bool
 InotifySource::OnSocketReady(gcc_unused unsigned flags) noexcept

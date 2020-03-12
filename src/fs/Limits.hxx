@@ -20,8 +20,9 @@
 #ifndef MPD_FS_LIMITS_HXX
 #define MPD_FS_LIMITS_HXX
 
+#include <climits>
+
 #include <stddef.h>
-#include <limits.h>
 
 #if defined(_WIN32)
 static constexpr size_t MPD_PATH_MAX = 260;
