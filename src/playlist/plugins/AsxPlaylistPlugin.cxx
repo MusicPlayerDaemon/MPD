@@ -42,6 +42,7 @@ struct AsxParser {
 	 */
 	enum {
 		ROOT, ENTRY,
+		TAG,
 	} state;
 
 	/**
@@ -82,7 +83,6 @@ asx_start_element(void *user_data, const XML_Char *element_name,
 		if (StringEqualsCaseASCII(element_name, "entry")) {
 			parser->state = AsxParser::ENTRY;
 			parser->location.clear();
-			parser->tag_type = TAG_NUM_OF_ITEM_TYPES;
 		}
 
 		break;
@@ -93,10 +93,16 @@ asx_start_element(void *user_data, const XML_Char *element_name,
 				ExpatParser::GetAttributeCase(atts, "href");
 			if (href != nullptr)
 				parser->location = href;
-		} else
+		} else {
 			parser->tag_type = tag_table_lookup_i(asx_tag_elements,
 							      element_name);
+			if (parser->tag_type != TAG_NUM_OF_ITEM_TYPES)
+				parser->state = AsxParser::TAG;
+		}
 
+		break;
+
+	case AsxParser::TAG:
 		break;
 	}
 }
@@ -117,9 +123,12 @@ asx_end_element(void *user_data, const XML_Char *element_name)
 							    parser->tag_builder.Commit());
 
 			parser->state = AsxParser::ROOT;
-		} else
-			parser->tag_type = TAG_NUM_OF_ITEM_TYPES;
+		}
 
+		break;
+
+	case AsxParser::TAG:
+		parser->state = AsxParser::ENTRY;
 		break;
 	}
 }
@@ -131,13 +140,12 @@ asx_char_data(void *user_data, const XML_Char *s, int len)
 
 	switch (parser->state) {
 	case AsxParser::ROOT:
+	case AsxParser::ENTRY:
 		break;
 
-	case AsxParser::ENTRY:
-		if (parser->tag_type != TAG_NUM_OF_ITEM_TYPES)
-			parser->tag_builder.AddItem(parser->tag_type,
-						    StringView(s, len));
-
+	case AsxParser::TAG:
+		parser->tag_builder.AddItem(parser->tag_type,
+					    StringView(s, len));
 		break;
 	}
 }
