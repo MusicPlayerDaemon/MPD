@@ -104,7 +104,7 @@ PulseMixer::VolumeCallback(const pa_sink_input_info *i, int eol)
  * value.
  */
 static void
-pulse_mixer_volume_cb(gcc_unused pa_context *context, const pa_sink_input_info *i,
+pulse_mixer_volume_cb([[maybe_unused]] pa_context *context, const pa_sink_input_info *i,
 		      int eol, void *userdata)
 {
 	auto *pm = (PulseMixer *)userdata;
@@ -133,7 +133,7 @@ PulseMixer::Update(pa_context *context, pa_stream *stream)
 }
 
 void
-pulse_mixer_on_connect(gcc_unused PulseMixer &pm,
+pulse_mixer_on_connect([[maybe_unused]] PulseMixer &pm,
 		       struct pa_context *context)
 {
 	pa_operation *o;
@@ -182,7 +182,7 @@ parse_volume_scale_factor(const char *value) {
 }
 
 static Mixer *
-pulse_mixer_init(gcc_unused EventLoop &event_loop, AudioOutput &ao,
+pulse_mixer_init([[maybe_unused]] EventLoop &event_loop, AudioOutput &ao,
 		 MixerListener &listener,
 		 const ConfigBlock &block)
 {

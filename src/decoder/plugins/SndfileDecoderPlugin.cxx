@@ -34,7 +34,7 @@
 static constexpr Domain sndfile_domain("sndfile");
 
 static bool
-sndfile_init(gcc_unused const ConfigBlock &block)
+sndfile_init([[maybe_unused]] const ConfigBlock &block)
 {
        LogDebug(sndfile_domain, sf_version_string());
        return true;
@@ -109,9 +109,9 @@ sndfile_vio_read(void *ptr, sf_count_t count, void *user_data)
 }
 
 static sf_count_t
-sndfile_vio_write(gcc_unused const void *ptr,
-		  gcc_unused sf_count_t count,
-		  gcc_unused void *user_data)
+sndfile_vio_write([[maybe_unused]] const void *ptr,
+		  [[maybe_unused]] sf_count_t count,
+		  [[maybe_unused]] void *user_data)
 {
 	/* no writing! */
 	return -1;

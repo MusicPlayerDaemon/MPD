@@ -38,7 +38,7 @@ public:
 };
 
 static std::unique_ptr<PreparedFilter>
-null_filter_init(gcc_unused const ConfigBlock &block)
+null_filter_init([[maybe_unused]] const ConfigBlock &block)
 {
 	return std::make_unique<PreparedNullFilter>();
 }

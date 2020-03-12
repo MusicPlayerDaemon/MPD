@@ -22,7 +22,7 @@
 #include "util/Compiler.h"
 
 inline void
-BuildTag(gcc_unused TagBuilder &tag) noexcept
+BuildTag([[maybe_unused]] TagBuilder &tag) noexcept
 {
 }
 

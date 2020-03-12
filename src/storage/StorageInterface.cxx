@@ -22,7 +22,7 @@
 #include "fs/Traits.hxx"
 
 AllocatedPath
-Storage::MapFS(gcc_unused const char *uri_utf8) const noexcept
+Storage::MapFS([[maybe_unused]] const char *uri_utf8) const noexcept
 {
 	return nullptr;
 }

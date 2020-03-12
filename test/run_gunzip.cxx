@@ -55,7 +55,7 @@ CopyGunzip(FILE *_dest, Path src_path)
 }
 
 int
-main(int argc, gcc_unused char **argv)
+main(int argc, [[maybe_unused]] char **argv)
 try {
 	if (argc != 2) {
 		fprintf(stderr, "Usage: run_gunzip PATH\n");

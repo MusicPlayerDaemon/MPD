@@ -81,7 +81,7 @@ FileOutputStream::Open()
 #ifdef _WIN32
 
 inline void
-FileOutputStream::OpenCreate(gcc_unused bool visible)
+FileOutputStream::OpenCreate([[maybe_unused]] bool visible)
 {
 	handle = CreateFile(path.c_str(), GENERIC_WRITE, 0, nullptr,
 			    CREATE_ALWAYS,

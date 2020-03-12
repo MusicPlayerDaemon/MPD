@@ -97,8 +97,8 @@ OssMixer::Configure(const ConfigBlock &block)
 }
 
 static Mixer *
-oss_mixer_init(gcc_unused EventLoop &event_loop,
-	       gcc_unused AudioOutput &ao,
+oss_mixer_init([[maybe_unused]] EventLoop &event_loop,
+	       [[maybe_unused]] AudioOutput &ao,
 	       MixerListener &listener,
 	       const ConfigBlock &block)
 {

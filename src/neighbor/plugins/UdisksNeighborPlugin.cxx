@@ -259,7 +259,7 @@ UdisksNeighborExplorer::HandleMessage(DBusConnection *connection,
 static std::unique_ptr<NeighborExplorer>
 udisks_neighbor_create(EventLoop &event_loop,
 		     NeighborListener &listener,
-		     gcc_unused const ConfigBlock &block)
+		     [[maybe_unused]] const ConfigBlock &block)
 {
 	return std::make_unique<UdisksNeighborExplorer>(event_loop, listener);
 }

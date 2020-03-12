@@ -311,7 +311,7 @@ VorbisDecoder::OnOggEnd()
 /* public */
 
 static bool
-vorbis_init(gcc_unused const ConfigBlock &block)
+vorbis_init([[maybe_unused]] const ConfigBlock &block)
 {
 #ifndef HAVE_TREMOR
 	LogDebug(vorbis_domain, vorbis_version_string());

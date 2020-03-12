@@ -117,7 +117,7 @@ GetInfo(const char *path)
 }
 
 StorageFileInfo
-SmbclientStorage::GetInfo(const char *uri_utf8, gcc_unused bool follow)
+SmbclientStorage::GetInfo(const char *uri_utf8, [[maybe_unused]] bool follow)
 {
 	const std::string mapped = MapUTF8(uri_utf8);
 	return ::GetInfo(mapped.c_str());
@@ -172,14 +172,14 @@ SmbclientDirectoryReader::Read() noexcept
 }
 
 StorageFileInfo
-SmbclientDirectoryReader::GetInfo(gcc_unused bool follow)
+SmbclientDirectoryReader::GetInfo([[maybe_unused]] bool follow)
 {
 	const std::string path = PathTraitsUTF8::Build(base.c_str(), name);
 	return ::GetInfo(path.c_str());
 }
 
 static std::unique_ptr<Storage>
-CreateSmbclientStorageURI(gcc_unused EventLoop &event_loop, const char *base)
+CreateSmbclientStorageURI([[maybe_unused]] EventLoop &event_loop, const char *base)
 {
 	if (!StringStartsWithCaseASCII(base, "smb://"))
 		return nullptr;

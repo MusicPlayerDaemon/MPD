@@ -145,7 +145,7 @@ private:
 
 DatabasePtr
 UpnpDatabase::Create(EventLoop &, EventLoop &io_event_loop,
-		     gcc_unused DatabaseListener &listener,
+		     [[maybe_unused]] DatabaseListener &listener,
 		     const ConfigBlock &) noexcept
 {
 	return std::make_unique<UpnpDatabase>(io_event_loop);

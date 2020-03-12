@@ -85,7 +85,7 @@ EventPipe::Write() noexcept
 #ifdef _WIN32
 	send(fds[1], "", 1, 0);
 #else
-	gcc_unused ssize_t nbytes = write(fds[1], "", 1);
+	[[maybe_unused]] ssize_t nbytes = write(fds[1], "", 1);
 #endif
 }
 

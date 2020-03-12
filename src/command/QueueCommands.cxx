@@ -51,7 +51,7 @@ AddUri(Client &client, const LocatedUri &uri)
 
 static CommandResult
 AddDatabaseSelection(Client &client, const char *uri,
-		     gcc_unused Response &r)
+		     [[maybe_unused]] Response &r)
 {
 #ifdef ENABLE_DATABASE
 	auto &partition = client.GetPartition();
@@ -179,7 +179,7 @@ handle_rangeid(Client &client, Request args, Response &r)
 }
 
 CommandResult
-handle_delete(Client &client, Request args, gcc_unused Response &r)
+handle_delete(Client &client, Request args, [[maybe_unused]] Response &r)
 {
 	RangeArg range = args.ParseRange(0);
 	client.GetPartition().DeleteRange(range.start, range.end);
@@ -187,7 +187,7 @@ handle_delete(Client &client, Request args, gcc_unused Response &r)
 }
 
 CommandResult
-handle_deleteid(Client &client, Request args, gcc_unused Response &r)
+handle_deleteid(Client &client, Request args, [[maybe_unused]] Response &r)
 {
 	unsigned id = args.ParseUnsigned(0);
 	client.GetPartition().DeleteId(id);
@@ -195,14 +195,14 @@ handle_deleteid(Client &client, Request args, gcc_unused Response &r)
 }
 
 CommandResult
-handle_playlist(Client &client, gcc_unused Request args, Response &r)
+handle_playlist(Client &client, [[maybe_unused]] Request args, Response &r)
 {
 	playlist_print_uris(r, client.GetPlaylist());
 	return CommandResult::OK;
 }
 
 CommandResult
-handle_shuffle(gcc_unused Client &client, Request args, gcc_unused Response &r)
+handle_shuffle([[maybe_unused]] Client &client, Request args, [[maybe_unused]] Response &r)
 {
 	RangeArg range = args.ParseOptional(0, RangeArg::All());
 	client.GetPartition().Shuffle(range.start, range.end);
@@ -210,7 +210,7 @@ handle_shuffle(gcc_unused Client &client, Request args, gcc_unused Response &r)
 }
 
 CommandResult
-handle_clear(Client &client, gcc_unused Request args, gcc_unused Response &r)
+handle_clear(Client &client, [[maybe_unused]] Request args, [[maybe_unused]] Response &r)
 {
 	client.GetPartition().ClearQueue();
 	return CommandResult::OK;
@@ -291,7 +291,7 @@ handle_playlistsearch(Client &client, Request args, Response &r)
 }
 
 CommandResult
-handle_prio(Client &client, Request args, gcc_unused Response &r)
+handle_prio(Client &client, Request args, [[maybe_unused]] Response &r)
 {
 	unsigned priority = args.ParseUnsigned(0, 0xff);
 	args.shift();
@@ -307,7 +307,7 @@ handle_prio(Client &client, Request args, gcc_unused Response &r)
 }
 
 CommandResult
-handle_prioid(Client &client, Request args, gcc_unused Response &r)
+handle_prioid(Client &client, Request args, [[maybe_unused]] Response &r)
 {
 	unsigned priority = args.ParseUnsigned(0, 0xff);
 	args.shift();
@@ -323,7 +323,7 @@ handle_prioid(Client &client, Request args, gcc_unused Response &r)
 }
 
 CommandResult
-handle_move(Client &client, Request args, gcc_unused Response &r)
+handle_move(Client &client, Request args, [[maybe_unused]] Response &r)
 {
 	RangeArg range = args.ParseRange(0);
 	int to = args.ParseInt(1);
@@ -332,7 +332,7 @@ handle_move(Client &client, Request args, gcc_unused Response &r)
 }
 
 CommandResult
-handle_moveid(Client &client, Request args, gcc_unused Response &r)
+handle_moveid(Client &client, Request args, [[maybe_unused]] Response &r)
 {
 	unsigned id = args.ParseUnsigned(0);
 	int to = args.ParseInt(1);
@@ -341,7 +341,7 @@ handle_moveid(Client &client, Request args, gcc_unused Response &r)
 }
 
 CommandResult
-handle_swap(Client &client, Request args, gcc_unused Response &r)
+handle_swap(Client &client, Request args, [[maybe_unused]] Response &r)
 {
 	unsigned song1 = args.ParseUnsigned(0);
 	unsigned song2 = args.ParseUnsigned(1);
@@ -350,7 +350,7 @@ handle_swap(Client &client, Request args, gcc_unused Response &r)
 }
 
 CommandResult
-handle_swapid(Client &client, Request args, gcc_unused Response &r)
+handle_swapid(Client &client, Request args, [[maybe_unused]] Response &r)
 {
 	unsigned id1 = args.ParseUnsigned(0);
 	unsigned id2 = args.ParseUnsigned(1);

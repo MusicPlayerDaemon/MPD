@@ -85,8 +85,8 @@ static const char *uri1 = "/foo/bar.ogg";
 static const char *uri2 = "foo/bar.ogg";
 
 DetachedSong
-DatabaseDetachSong(gcc_unused const Database &db,
-		   gcc_unused const Storage *_storage,
+DatabaseDetachSong([[maybe_unused]] const Database &db,
+		   [[maybe_unused]] const Storage *_storage,
 		   const char *uri)
 {
 	if (strcmp(uri, uri2) == 0)
@@ -119,7 +119,7 @@ Client::GetStorage() const noexcept
 }
 
 void
-Client::AllowFile(gcc_unused Path path_fs) const
+Client::AllowFile([[maybe_unused]] Path path_fs) const
 {
 	/* always fail, so a SongLoader with a non-nullptr
 	   Client pointer will be regarded "insecure", while one with

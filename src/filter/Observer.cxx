@@ -43,7 +43,7 @@ public:
 		observer.proxy = nullptr;
 	}
 
-	void Clear(gcc_unused Proxy *_child) noexcept {
+	void Clear([[maybe_unused]] Proxy *_child) noexcept {
 		assert(child == _child);
 		child = nullptr;
 	}

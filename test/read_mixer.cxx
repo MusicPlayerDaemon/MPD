@@ -30,13 +30,13 @@
 #include <stdlib.h>
 
 const FilterPlugin *
-filter_plugin_by_name(gcc_unused const char *name) noexcept
+filter_plugin_by_name([[maybe_unused]] const char *name) noexcept
 {
 	assert(false);
 	return nullptr;
 }
 
-int main(int argc, gcc_unused char **argv)
+int main(int argc, [[maybe_unused]] char **argv)
 try {
 	int volume;
 

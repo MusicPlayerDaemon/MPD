@@ -46,7 +46,7 @@
 #define LOG_DATE_BUF_SIZE 16
 #define LOG_DATE_LEN (LOG_DATE_BUF_SIZE - 1)
 
-gcc_unused
+[[maybe_unused]]
 static constexpr Domain log_domain("log");
 
 #ifndef ANDROID

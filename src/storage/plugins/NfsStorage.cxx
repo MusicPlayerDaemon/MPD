@@ -288,7 +288,7 @@ protected:
 			connection.Lstat(path, *this);
 	}
 
-	void HandleResult(gcc_unused unsigned status, void *data) noexcept override {
+	void HandleResult([[maybe_unused]] unsigned status, void *data) noexcept override {
 		Copy(info, *(const struct nfs_stat_64 *)data);
 	}
 };
@@ -356,7 +356,7 @@ protected:
 		connection.OpenDirectory(path, *this);
 	}
 
-	void HandleResult(gcc_unused unsigned status,
+	void HandleResult([[maybe_unused]] unsigned status,
 			  void *data) noexcept override {
 		auto *const dir = (struct nfsdir *)data;
 

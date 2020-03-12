@@ -143,7 +143,7 @@ print_storage_uri(Client &client, Response &r, const Storage &storage)
 }
 
 CommandResult
-handle_listmounts(Client &client, gcc_unused Request args, Response &r)
+handle_listmounts(Client &client, [[maybe_unused]] Request args, Response &r)
 {
 	Storage *_composite = client.GetInstance().storage;
 	if (_composite == nullptr) {

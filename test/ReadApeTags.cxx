@@ -34,7 +34,7 @@
 #endif
 
 static bool
-MyApeTagCallback(gcc_unused unsigned long flags,
+MyApeTagCallback([[maybe_unused]] unsigned long flags,
 		 const char *key, StringView value)
 {
 	if ((flags & (0x3 << 1)) == 0)

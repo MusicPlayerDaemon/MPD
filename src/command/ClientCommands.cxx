@@ -27,15 +27,15 @@
 #include "util/StringAPI.hxx"
 
 CommandResult
-handle_close(gcc_unused Client &client, gcc_unused Request args,
-	     gcc_unused Response &r)
+handle_close([[maybe_unused]] Client &client, [[maybe_unused]] Request args,
+	     [[maybe_unused]] Response &r)
 {
 	return CommandResult::FINISH;
 }
 
 CommandResult
-handle_ping(gcc_unused Client &client, gcc_unused Request args,
-	    gcc_unused Response &r)
+handle_ping([[maybe_unused]] Client &client, [[maybe_unused]] Request args,
+	    [[maybe_unused]] Response &r)
 {
 	return CommandResult::OK;
 }

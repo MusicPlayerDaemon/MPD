@@ -49,10 +49,10 @@ public:
 };
 
 static Mixer *
-null_mixer_init(gcc_unused EventLoop &event_loop,
-		gcc_unused AudioOutput &ao,
+null_mixer_init([[maybe_unused]] EventLoop &event_loop,
+		[[maybe_unused]] AudioOutput &ao,
 		MixerListener &listener,
-		gcc_unused const ConfigBlock &block)
+		[[maybe_unused]] const ConfigBlock &block)
 {
 	return new NullMixer(listener);
 }

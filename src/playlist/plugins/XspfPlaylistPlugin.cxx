@@ -79,7 +79,7 @@ static constexpr struct tag_table xspf_tag_elements[] = {
 
 static void XMLCALL
 xspf_start_element(void *user_data, const XML_Char *element_name,
-		   gcc_unused const XML_Char **atts)
+		   [[maybe_unused]] const XML_Char **atts)
 {
 	auto *parser = (XspfParser *)user_data;
 	parser->value.clear();

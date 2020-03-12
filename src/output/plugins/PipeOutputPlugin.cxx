@@ -57,7 +57,7 @@ PipeOutput::PipeOutput(const ConfigBlock &block)
 }
 
 inline void
-PipeOutput::Open(gcc_unused AudioFormat &audio_format)
+PipeOutput::Open([[maybe_unused]] AudioFormat &audio_format)
 {
 	fh = popen(cmd.c_str(), "w");
 	if (fh == nullptr)

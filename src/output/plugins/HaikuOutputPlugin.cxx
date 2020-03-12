@@ -81,9 +81,9 @@ private:
 	std::chrono::steady_clock::duration Delay() const noexcept override;
 
 	static void _FillBuffer(void* cookie, void* _buffer, size_t size,
-		gcc_unused const media_raw_audio_format& _format);
+		[[maybe_unused]] const media_raw_audio_format& _format);
 	void FillBuffer(void* _buffer, size_t size,
-		gcc_unused const media_raw_audio_format& _format);
+		[[maybe_unused]] const media_raw_audio_format& _format);
 
 	void SendTag(const Tag &tag) override;
 };
@@ -154,7 +154,7 @@ HaikuOutput::_FillBuffer(void* cookie, void* buffer, size_t size,
 
 void
 HaikuOutput::FillBuffer(void* _buffer, size_t size,
-	gcc_unused const media_raw_audio_format& _format)
+	[[maybe_unused]] const media_raw_audio_format& _format)
 {
 
 	buffer = (uint8*)_buffer;

@@ -57,7 +57,7 @@ try {
 		Compressor_Process_int16(compressor,
 					 (int16_t *)buffer, nbytes / 2);
 
-		gcc_unused ssize_t ignored = write(1, buffer, nbytes);
+		[[maybe_unused]] ssize_t ignored = write(1, buffer, nbytes);
 	}
 
 	Compressor_delete(compressor);

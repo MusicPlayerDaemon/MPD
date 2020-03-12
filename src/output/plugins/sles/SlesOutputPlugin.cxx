@@ -111,7 +111,7 @@ private:
 	 * been consumed.  It synthesises and enqueues the next
 	 * buffer.
 	 */
-	static void PlayedCallback(gcc_unused SLAndroidSimpleBufferQueueItf caller,
+	static void PlayedCallback([[maybe_unused]] SLAndroidSimpleBufferQueueItf caller,
 				   void *pContext)
 	{
 		SlesOutput &sles = *(SlesOutput *)pContext;

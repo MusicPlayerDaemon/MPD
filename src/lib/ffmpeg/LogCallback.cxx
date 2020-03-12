@@ -47,7 +47,7 @@ FfmpegImportLogLevel(int level) noexcept
 }
 
 void
-FfmpegLogCallback(gcc_unused void *ptr, int level, const char *fmt, std::va_list vl)
+FfmpegLogCallback(void *ptr, int level, const char *fmt, std::va_list vl)
 {
 	const AVClass * cls = nullptr;
 

@@ -108,7 +108,7 @@ CurlGlobal::CurlGlobal(EventLoop &_loop)
 }
 
 int
-CurlSocket::SocketFunction(gcc_unused CURL *easy,
+CurlSocket::SocketFunction([[maybe_unused]] CURL *easy,
 			   curl_socket_t s, int action,
 			   void *userp, void *socketp) noexcept
 {
@@ -230,7 +230,7 @@ CurlGlobal::UpdateTimeout(long timeout_ms) noexcept
 }
 
 int
-CurlGlobal::TimerFunction(gcc_unused CURLM *_multi, long timeout_ms,
+CurlGlobal::TimerFunction([[maybe_unused]] CURLM *_multi, long timeout_ms,
 			  void *userp) noexcept
 {
 	auto &global = *(CurlGlobal *)userp;

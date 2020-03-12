@@ -23,8 +23,8 @@
 #include <stdexcept>
 
 void
-AudioOutput::SetAttribute(gcc_unused std::string &&name,
-			  gcc_unused std::string &&value)
+AudioOutput::SetAttribute([[maybe_unused]] std::string &&name,
+			  [[maybe_unused]] std::string &&value)
 {
 	throw std::invalid_argument("Unsupported attribute");
 }

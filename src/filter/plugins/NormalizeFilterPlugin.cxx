@@ -53,7 +53,7 @@ public:
 };
 
 static std::unique_ptr<PreparedFilter>
-normalize_filter_init(gcc_unused const ConfigBlock &block)
+normalize_filter_init([[maybe_unused]] const ConfigBlock &block)
 {
 	return std::make_unique<PreparedNormalizeFilter>();
 }

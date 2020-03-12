@@ -110,7 +110,7 @@ protected:
 		InvalidateSockets();
 	}
 
-	void DoSeek(gcc_unused offset_type new_offset) override {
+	void DoSeek([[maybe_unused]] offset_type new_offset) override {
 		/* unreachable because seekable==false */
 		SeekDone();
 	}

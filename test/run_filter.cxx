@@ -42,8 +42,8 @@
 #include <stdio.h>
 
 void
-mixer_set_volume(gcc_unused Mixer *mixer,
-		 gcc_unused unsigned volume)
+mixer_set_volume([[maybe_unused]] Mixer *mixer,
+		 [[maybe_unused]] unsigned volume)
 {
 }
 

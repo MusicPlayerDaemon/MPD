@@ -150,13 +150,13 @@ Instance::OnDatabaseSongRemoved(const char *uri) noexcept
 #ifdef ENABLE_NEIGHBOR_PLUGINS
 
 void
-Instance::FoundNeighbor(gcc_unused const NeighborInfo &info) noexcept
+Instance::FoundNeighbor([[maybe_unused]] const NeighborInfo &info) noexcept
 {
 	EmitIdle(IDLE_NEIGHBOR);
 }
 
 void
-Instance::LostNeighbor(gcc_unused const NeighborInfo &info) noexcept
+Instance::LostNeighbor([[maybe_unused]] const NeighborInfo &info) noexcept
 {
 	EmitIdle(IDLE_NEIGHBOR);
 }

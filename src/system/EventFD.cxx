@@ -56,6 +56,6 @@ EventFD::Write() noexcept
 	assert(fd.IsDefined());
 
 	static constexpr eventfd_t value = 1;
-	gcc_unused ssize_t nbytes =
+	[[maybe_unused]] ssize_t nbytes =
 		fd.Write(&value, sizeof(value));
 }

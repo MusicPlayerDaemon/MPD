@@ -34,8 +34,8 @@ static constexpr unsigned IN_MASK =
 	|IN_MOVE|IN_MOVE_SELF;
 
 static void
-my_inotify_callback(gcc_unused int wd, unsigned mask,
-		    const char *name, gcc_unused void *ctx)
+my_inotify_callback([[maybe_unused]] int wd, unsigned mask,
+		    const char *name, [[maybe_unused]] void *ctx)
 {
 	printf("mask=0x%x name='%s'\n", mask, name);
 }

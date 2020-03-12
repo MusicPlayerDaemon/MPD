@@ -89,7 +89,7 @@ public:
 		return epoll.Remove(fd);
 	}
 
-	bool Abandon(gcc_unused int fd) noexcept {
+	bool Abandon([[maybe_unused]] int fd) noexcept {
 		// Nothing to do in this implementation.
 		// Closed descriptors are automatically unregistered.
 		return true;

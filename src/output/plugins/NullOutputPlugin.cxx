@@ -53,7 +53,7 @@ private:
 			: std::chrono::steady_clock::duration::zero();
 	}
 
-	size_t Play(gcc_unused const void *chunk, size_t size) override {
+	size_t Play([[maybe_unused]] const void *chunk, size_t size) override {
 		if (sync) {
 			if (!timer->IsStarted())
 				timer->Start();

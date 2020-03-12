@@ -36,7 +36,7 @@
 static uint8_t zero[256];
 
 int
-main(gcc_unused int argc, gcc_unused char **argv)
+main([[maybe_unused]] int argc, [[maybe_unused]] char **argv)
 try {
 	/* create the encoder */
 

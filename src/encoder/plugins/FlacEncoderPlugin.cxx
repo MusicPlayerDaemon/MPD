@@ -69,8 +69,8 @@ private:
 	static FLAC__StreamEncoderWriteStatus WriteCallback(const FLAC__StreamEncoder *,
 							    const FLAC__byte data[],
 							    size_t bytes,
-							    gcc_unused unsigned samples,
-							    gcc_unused unsigned current_frame,
+							    [[maybe_unused]] unsigned samples,
+							    [[maybe_unused]] unsigned current_frame,
 							    void *client_data) noexcept {
 		auto &encoder = *(FlacEncoder *)client_data;
 		encoder.output_buffer.Append((const uint8_t *)data, bytes);

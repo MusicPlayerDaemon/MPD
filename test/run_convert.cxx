@@ -137,7 +137,7 @@ try {
 
 		auto output = state.Convert({src.data, src.size});
 
-		gcc_unused ssize_t ignored = write(1, output.data,
+		[[maybe_unused]] ssize_t ignored = write(1, output.data,
 						   output.size);
 	}
 
@@ -146,7 +146,7 @@ try {
 		if (output.IsNull())
 			break;
 
-		gcc_unused ssize_t ignored = write(1, output.data,
+		[[maybe_unused]] ssize_t ignored = write(1, output.data,
 						   output.size);
 	}
 

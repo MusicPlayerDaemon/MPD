@@ -575,7 +575,7 @@ ProxyDatabase::Disconnect() noexcept
 }
 
 bool
-ProxyDatabase::OnSocketReady(gcc_unused unsigned flags) noexcept
+ProxyDatabase::OnSocketReady([[maybe_unused]] unsigned flags) noexcept
 {
 	assert(connection != nullptr);
 

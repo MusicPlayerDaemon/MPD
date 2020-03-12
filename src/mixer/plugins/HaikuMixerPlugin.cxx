@@ -47,9 +47,9 @@ public:
 };
 
 static Mixer *
-haiku_mixer_init(gcc_unused EventLoop &event_loop, AudioOutput &ao,
+haiku_mixer_init([[maybe_unused]] EventLoop &event_loop, AudioOutput &ao,
 		MixerListener &listener,
-		gcc_unused const ConfigBlock &block)
+		[[maybe_unused]] const ConfigBlock &block)
 {
 	return new HaikuMixer((HaikuOutput &)ao, listener);
 }

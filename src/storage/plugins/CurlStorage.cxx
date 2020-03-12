@@ -315,7 +315,7 @@ private:
 
 	/* virtual methods from CommonExpatParser */
 	void StartElement(const XML_Char *name,
-			  gcc_unused const XML_Char **attrs) final {
+			  [[maybe_unused]] const XML_Char **attrs) final {
 		switch (state) {
 		case State::ROOT:
 			if (strcmp(name, "DAV:|response") == 0)
@@ -447,7 +447,7 @@ protected:
 };
 
 StorageFileInfo
-CurlStorage::GetInfo(const char *uri_utf8, gcc_unused bool follow)
+CurlStorage::GetInfo(const char *uri_utf8, [[maybe_unused]] bool follow)
 {
 	// TODO: escape the given URI
 

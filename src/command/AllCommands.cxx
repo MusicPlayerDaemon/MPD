@@ -216,8 +216,8 @@ static constexpr unsigned num_commands = std::size(commands);
 
 gcc_pure
 static bool
-command_available(gcc_unused const Partition &partition,
-		  gcc_unused const struct command *cmd) noexcept
+command_available([[maybe_unused]] const Partition &partition,
+		  [[maybe_unused]] const struct command *cmd) noexcept
 {
 #ifdef ENABLE_SQLITE
 	if (StringIsEqual(cmd->cmd, "sticker"))
@@ -272,14 +272,14 @@ PrintUnavailableCommands(Response &r, unsigned permission) noexcept
 
 /* don't be fooled, this is the command handler for "commands" command */
 static CommandResult
-handle_commands(Client &client, gcc_unused Request request, Response &r)
+handle_commands(Client &client, [[maybe_unused]] Request request, Response &r)
 {
 	return PrintAvailableCommands(r, client.GetPartition(),
 				      client.GetPermission());
 }
 
 static CommandResult
-handle_not_commands(Client &client, gcc_unused Request request, Response &r)
+handle_not_commands(Client &client, [[maybe_unused]] Request request, Response &r)
 {
 	return PrintUnavailableCommands(r, client.GetPermission());
 }

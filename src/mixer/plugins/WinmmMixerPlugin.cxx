@@ -63,9 +63,9 @@ winmm_volume_encode(int volume)
 }
 
 static Mixer *
-winmm_mixer_init(gcc_unused EventLoop &event_loop, AudioOutput &ao,
+winmm_mixer_init([[maybe_unused]] EventLoop &event_loop, AudioOutput &ao,
 		 MixerListener &listener,
-		 gcc_unused const ConfigBlock &block)
+		 [[maybe_unused]] const ConfigBlock &block)
 {
 	return new WinmmMixer((WinmmOutput &)ao, listener);
 }

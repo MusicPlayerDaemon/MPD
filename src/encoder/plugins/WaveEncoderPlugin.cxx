@@ -98,7 +98,7 @@ fill_wave_header(WaveHeader *header, int channels, int bits,
 }
 
 static PreparedEncoder *
-wave_encoder_init(gcc_unused const ConfigBlock &block)
+wave_encoder_init([[maybe_unused]] const ConfigBlock &block)
 {
 	return new PreparedWaveEncoder();
 }
