@@ -53,7 +53,7 @@ Download the source tarball from the `MPD home page <https://musicpd.org>`_ and 
 
 In any case, you need:
 
-* a C++14 compiler (e.g. gcc 6.0 or clang 3.9)
+* a C++14 compiler (e.g. GCC 7 or clang 4)
 * `Meson 0.49.0 <http://mesonbuild.com/>`__ and `Ninja
   <https://ninja-build.org/>`__
 * Boost 1.58

@@ -67,32 +67,6 @@ jobs:
       env:
         - MATRIX_EVAL="export PATH=\$HOME/.local/bin:\$PATH"
 
-    # Ubuntu Trusty (16.04) with GCC 6
-    - os: linux
-      dist: trusty
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-            - sourceline: 'ppa:mhier/libboost-latest'
-            - sourceline: 'ppa:mstipicevic/ninja-build-1-7-2'
-            - sourceline: 'ppa:deadsnakes/ppa' # for Python 3.7 (required by Meson)
-          packages:
-            - g++-6
-            - libgtest-dev
-            - boost1.67
-            - python3.6
-            - python3-urllib3
-            - ninja-build
-      before_install:
-        - wget https://bootstrap.pypa.io/get-pip.py
-        - /usr/bin/python3.6 get-pip.py --user --no-cache-dir
-      install:
-        - /usr/bin/python3.6 $HOME/.local/bin/pip install --user meson --no-cache-dir
-      env:
-        # use gold as workaround for https://sourceware.org/bugzilla/show_bug.cgi?id=17068
-        - MATRIX_EVAL="export CC='ccache gcc-6' CXX='ccache g++-6' LDFLAGS=-fuse-ld=gold PATH=\$HOME/.local/bin:\$PATH"
-
     # Ubuntu Trusty (16.04) with GCC 8
     - os: linux
       dist: trusty
