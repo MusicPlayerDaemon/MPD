@@ -32,7 +32,7 @@
 
 #include "UniqueFileDescriptor.hxx"
 
-#include <signal.h>
+#include <csignal>
 
 /**
  * A class that wraps signalfd().

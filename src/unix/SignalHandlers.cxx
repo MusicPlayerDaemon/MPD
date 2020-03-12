@@ -28,7 +28,7 @@
 #include "system/Error.hxx"
 #include "util/Domain.hxx"
 
-#include <signal.h>
+#include <csignal>
 
 static constexpr Domain signal_handlers_domain("signal_handlers");
 

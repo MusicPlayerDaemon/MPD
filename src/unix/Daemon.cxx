@@ -32,8 +32,8 @@
 #include <fcntl.h>
 
 #ifndef _WIN32
+#include <csignal>
 #include <sys/wait.h>
-#include <signal.h>
 #include <pwd.h>
 #include <grp.h>
 #endif

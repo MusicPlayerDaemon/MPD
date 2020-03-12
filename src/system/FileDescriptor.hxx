@@ -38,7 +38,7 @@
 #include <sys/types.h>
 
 #ifdef __linux__
-#include <signal.h>
+#include <csignal>
 #endif
 
 #ifdef _WIN32

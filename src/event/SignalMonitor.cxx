@@ -38,12 +38,11 @@
 
 #include <algorithm>
 #include <cassert>
+#include <csignal>
 
 #ifdef USE_SIGNALFD
 #include <pthread.h>
 #endif
-
-#include <signal.h>
 
 class SignalMonitor final : private SocketMonitor {
 #ifdef USE_SIGNALFD
