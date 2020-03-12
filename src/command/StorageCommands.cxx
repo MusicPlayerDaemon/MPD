@@ -37,9 +37,8 @@
 #include "TimePrint.hxx"
 #include "IdleFlags.hxx"
 
+#include <cinttypes> /* for PRIu64 */
 #include <memory>
-
-#include <inttypes.h> /* for PRIu64 */
 
 gcc_pure
 static bool

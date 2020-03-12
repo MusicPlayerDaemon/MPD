@@ -44,8 +44,7 @@
 #include "Log.hxx"
 
 #include <cassert>
-
-#include <inttypes.h> /* for PRIu64 */
+#include <cinttypes> /* for PRIu64 */
 
 gcc_pure
 static bool
