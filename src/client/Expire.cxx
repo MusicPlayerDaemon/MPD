@@ -28,7 +28,10 @@ Client::SetExpired() noexcept
 	if (IsExpired())
 		return;
 
-	background_command.reset();
+	if (background_command) {
+		background_command->Cancel();
+		background_command.reset();
+	}
 
 	FullyBufferedSocket::Close();
 	timeout_event.Schedule(std::chrono::steady_clock::duration::zero());
