@@ -68,6 +68,8 @@ ChromaprintDecoderClient::SubmitData(InputStream *,
 				     const void *_data, size_t length,
 				     uint16_t) noexcept
 {
+	assert(ready);
+
 	if (length > remaining_bytes)
 		remaining_bytes = 0;
 	else
