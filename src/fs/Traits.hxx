@@ -44,8 +44,10 @@
 struct PathTraitsFS {
 #ifdef _WIN32
 	using string = std::wstring;
+	using string_view = std::wstring_view;
 #else
 	using string = std::string;
+	using string_view = std::string_view;
 #endif
 	using char_traits = string::traits_type;
 	using value_type = char_traits::char_type;
@@ -177,6 +179,7 @@ struct PathTraitsFS {
  */
 struct PathTraitsUTF8 {
 	using string = std::string;
+	using string_view = std::string_view;
 	using char_traits = string::traits_type;
 	using value_type = char_traits::char_type;
 	using pointer = value_type *;

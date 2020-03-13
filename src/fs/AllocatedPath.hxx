@@ -37,6 +37,7 @@
 class AllocatedPath {
 	using Traits = PathTraitsFS;
 	using string = Traits::string;
+	using string_view = Traits::string_view;
 	using value_type = Traits::value_type;
 	using pointer = Traits::pointer;
 	using const_pointer = Traits::const_pointer;
