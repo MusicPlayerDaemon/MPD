@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2019 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2008-2021 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -33,6 +33,7 @@
 #include "Compiler.h"
 
 #include <string>
+#include <string_view>
 
 /**
  * Check whether #child specifies a resource "inside" the directory
@@ -53,11 +54,11 @@ uri_is_child_or_same(const char *parent, const char *child) noexcept;
  */
 gcc_pure
 std::string
-uri_apply_base(const std::string &uri, const std::string &base) noexcept;
+uri_apply_base(std::string_view uri, std::string_view base) noexcept;
 
 gcc_pure
 std::string
-uri_apply_relative(const std::string &relative_uri,
-		   const std::string &base_uri) noexcept;
+uri_apply_relative(std::string_view relative_uri,
+		   std::string_view base_uri) noexcept;
 
 #endif

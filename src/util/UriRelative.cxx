@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2019 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2008-2021 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -58,7 +58,7 @@ uri_is_child_or_same(const char *parent, const char *child) noexcept
 }
 
 std::string
-uri_apply_base(const std::string &uri, const std::string &base) noexcept
+uri_apply_base(std::string_view uri, std::string_view base) noexcept
 {
 	if (uri.front() == '/') {
 		/* absolute path: replace the whole URI path in base */
@@ -66,7 +66,7 @@ uri_apply_base(const std::string &uri, const std::string &base) noexcept
 		auto i = base.find("://");
 		if (i == base.npos)
 			/* no scheme: override base completely */
-			return uri;
+			return std::string(uri);
 
 		/* find the first slash after the host part */
 		i = base.find('/', i + 3);
@@ -74,7 +74,9 @@ uri_apply_base(const std::string &uri, const std::string &base) noexcept
 			/* there's no URI path - simply append uri */
 			i = base.length();
 
-		return base.substr(0, i) + uri;
+		std::string out(base.substr(0, i));
+		out += uri;
+		return out;
 	}
 
 	std::string out(base);
@@ -95,6 +97,13 @@ ClearFilename(StringView &path) noexcept
 		path.size = 0;
 }
 
+static void
+StripLeadingSlashes(StringView &s) noexcept
+{
+	while (!s.empty() && s.front() == '/')
+		s.pop_front();
+}
+
 static bool
 ConsumeLastSegment(StringView &path) noexcept
 {
@@ -111,22 +120,18 @@ ConsumeLastSegment(StringView &path) noexcept
 }
 
 static bool
-ConsumeSpecial(const char *&relative_path, StringView &base_path) noexcept
+ConsumeSpecial(StringView &relative_path, StringView &base_path) noexcept
 {
 	while (true) {
-		if (const char *a = StringAfterPrefix(relative_path, "./")) {
-			while (*a == '/')
-				++a;
-			relative_path = a;
-		} else if (const char *b = StringAfterPrefix(relative_path, "../")) {
-			while (*b == '/')
-				++b;
-			relative_path = b;
+		if (relative_path.SkipPrefix("./")) {
+			StripLeadingSlashes(relative_path);
+		} else if (relative_path.SkipPrefix("../")) {
+			StripLeadingSlashes(relative_path);
 
 			if (!ConsumeLastSegment(base_path))
 				return false;
-		} else if (StringIsEqual(relative_path, ".")) {
-			++relative_path;
+		} else if (relative_path.Equals(".")) {
+			relative_path.pop_front();
 			return true;
 		} else
 			return true;
@@ -134,16 +139,14 @@ ConsumeSpecial(const char *&relative_path, StringView &base_path) noexcept
 }
 
 std::string
-uri_apply_relative(const std::string &relative_uri,
-		   const std::string &base_uri) noexcept
+uri_apply_relative(std::string_view relative_uri,
+		   std::string_view base_uri) noexcept
 {
 	if (relative_uri.empty())
-		return base_uri;
+		return std::string(base_uri);
 
-	if (uri_has_scheme(relative_uri.c_str()))
-		return relative_uri;
-
-	const char *relative_path = relative_uri.c_str();
+	if (uri_has_scheme(relative_uri))
+		return std::string(relative_uri);
 
 	// TODO: support double slash at beginning of relative_uri
 	if (relative_uri.front() == '/') {
@@ -152,7 +155,7 @@ uri_apply_relative(const std::string &relative_uri,
 		auto i = base_uri.find("://");
 		if (i == base_uri.npos)
 			/* no scheme: override base completely */
-			return relative_uri;
+			return std::string{relative_uri};
 
 		/* find the first slash after the host part */
 		i = base_uri.find('/', i + 3);
@@ -160,19 +163,22 @@ uri_apply_relative(const std::string &relative_uri,
 			/* there's no URI path - simply append uri */
 			i = base_uri.length();
 
-		return base_uri.substr(0, i) + relative_uri;
+		std::string result{base_uri.substr(0, i)};
+		result.append(relative_uri);
+		return result;
 	}
+
+	StringView relative_path{relative_uri};
 
 	const auto _base_path = uri_get_path(base_uri);
 	if (_base_path.data() == nullptr) {
 		std::string result(base_uri);
-		if (relative_uri.front() != '/')
+		if (relative_path.front() != '/')
 			result.push_back('/');
-		while (const char *a = StringAfterPrefix(relative_path, "./"))
-			relative_path = a;
-		if (StringStartsWith(relative_path, "../"))
+		while (relative_path.SkipPrefix("./")) {}
+		if (relative_path.StartsWith("../"))
 			return {};
-		if (!StringIsEqual(relative_path, "."))
+		if (!relative_path.Equals("."))
 			result += relative_path;
 		return result;
 	}
