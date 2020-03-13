@@ -47,6 +47,9 @@ class AllocatedPath {
 	explicit AllocatedPath(const_pointer _value) noexcept
 		:value(_value) {}
 
+	explicit AllocatedPath(string_view _value) noexcept
+		:value(_value) {}
+
 	AllocatedPath(const_pointer _begin, const_pointer _end) noexcept
 		:value(_begin, _end) {}
 
@@ -138,6 +141,11 @@ public:
 	 */
 	gcc_pure
 	static AllocatedPath FromFS(const_pointer fs) noexcept {
+		return AllocatedPath(fs);
+	}
+
+	gcc_pure
+	static AllocatedPath FromFS(string_view fs) noexcept {
 		return AllocatedPath(fs);
 	}
 
