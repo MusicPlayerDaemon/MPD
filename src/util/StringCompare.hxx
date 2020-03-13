@@ -81,12 +81,30 @@ StringStartsWithIgnoreCase(const char *haystack, StringView needle) noexcept
 	return StringIsEqualIgnoreCase(haystack, needle.data, needle.size);
 }
 
+gcc_pure
+static inline bool
+StringStartsWithIgnoreCase(StringView haystack, StringView needle) noexcept
+{
+	return haystack.size >= needle.size &&
+		StringIsEqualIgnoreCase(haystack.data, needle.data, needle.size);
+}
+
 gcc_pure gcc_nonnull_all
 static inline const char *
 StringAfterPrefixIgnoreCase(const char *haystack, StringView needle) noexcept
 {
 	return StringStartsWithIgnoreCase(haystack, needle)
 		? haystack + needle.size
+		: nullptr;
+}
+
+gcc_pure
+static inline StringView
+StringAfterPrefixIgnoreCase(StringView haystack,
+			    StringView needle) noexcept
+{
+	return StringStartsWithIgnoreCase(haystack, needle)
+		? haystack.substr(needle.size)
 		: nullptr;
 }
 
