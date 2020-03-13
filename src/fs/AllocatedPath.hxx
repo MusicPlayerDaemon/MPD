@@ -56,10 +56,6 @@ class AllocatedPath {
 	AllocatedPath(string &&_value) noexcept
 		:value(std::move(_value)) {}
 
-	static AllocatedPath Build(const_pointer a, size_t a_size,
-				   const_pointer b, size_t b_size) noexcept {
-		return AllocatedPath(Traits::Build(a, a_size, b, b_size));
-	}
 public:
 	/**
 	 * Construct a "nulled" instance.  Its IsNull() method will
@@ -93,14 +89,13 @@ public:
 	/**
 	 * Join two path components with the path separator.
 	 */
-	gcc_pure gcc_nonnull_all
-	static AllocatedPath Build(const_pointer a, const_pointer b) noexcept {
-		return Build(a, Traits::GetLength(a),
-			     b, Traits::GetLength(b));
+	gcc_pure
+	static AllocatedPath Build(string_view a, string_view b) noexcept {
+		return AllocatedPath(Traits::Build(a, b));
 	}
 
 	gcc_pure gcc_nonnull_all
-	static AllocatedPath Build(Path a, const_pointer b) noexcept {
+	static AllocatedPath Build(Path a, string_view b) noexcept {
 		return Build(a.c_str(), b);
 	}
 
@@ -110,24 +105,21 @@ public:
 	}
 
 	gcc_pure gcc_nonnull_all
-	static AllocatedPath Build(const_pointer a,
+	static AllocatedPath Build(string_view a,
 				   const AllocatedPath &b) noexcept {
-		return Build(a, Traits::GetLength(a),
-			     b.value.c_str(), b.value.size());
+		return Build(a, b.value);
 	}
 
 	gcc_pure gcc_nonnull_all
 	static AllocatedPath Build(const AllocatedPath &a,
-				   const_pointer b) noexcept {
-		return Build(a.value.c_str(), a.value.size(),
-			     b, Traits::GetLength(b));
+				   string_view b) noexcept {
+		return Build(a.value, b);
 	}
 
 	gcc_pure
 	static AllocatedPath Build(const AllocatedPath &a,
 				   const AllocatedPath &b) noexcept {
-		return Build(a.value.c_str(), a.value.size(),
-			     b.value.c_str(), b.value.size());
+		return Build(a.value, b.value);
 	}
 
 	gcc_pure

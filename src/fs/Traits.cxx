@@ -24,29 +24,26 @@
 
 template<typename Traits>
 typename Traits::string
-BuildPathImpl(typename Traits::const_pointer a, size_t a_size,
-	      typename Traits::const_pointer b, size_t b_size) noexcept
+BuildPathImpl(typename Traits::string_view a,
+	      typename Traits::string_view b) noexcept
 {
-	assert(a != nullptr);
-	assert(b != nullptr);
-
-	if (a_size == 0)
-		return typename Traits::string(b, b_size);
-	if (b_size == 0)
-		return typename Traits::string(a, a_size);
+	if (a.empty())
+		return typename Traits::string(b);
+	if (b.empty())
+		return typename Traits::string(a);
 
 	typename Traits::string result;
-	result.reserve(a_size + 1 + b_size);
+	result.reserve(a.length() + 1 + b.length());
 
-	result.append(a, a_size);
+	result.append(a);
 
-	if (!Traits::IsSeparator(a[a_size - 1]))
+	if (!Traits::IsSeparator(a.back()))
 		result.push_back(Traits::SEPARATOR);
 
-	if (Traits::IsSeparator(b[0]))
-		result.append(b + 1, b_size - 1);
+	if (Traits::IsSeparator(b.front()))
+		result.append(b.substr(1));
 	else
-		result.append(b, b_size);
+		result.append(b);
 
 	return result;
 }
@@ -122,10 +119,9 @@ RelativePathImpl(typename Traits::const_pointer base,
 }
 
 PathTraitsFS::string
-PathTraitsFS::Build(const_pointer a, size_t a_size,
-		    const_pointer b, size_t b_size) noexcept
+PathTraitsFS::Build(string_view a, string_view b) noexcept
 {
-	return BuildPathImpl<PathTraitsFS>(a, a_size, b, b_size);
+	return BuildPathImpl<PathTraitsFS>(a, b);
 }
 
 PathTraitsFS::const_pointer
@@ -161,10 +157,9 @@ PathTraitsFS::Apply(const_pointer base, const_pointer path) noexcept
 }
 
 PathTraitsUTF8::string
-PathTraitsUTF8::Build(const_pointer a, size_t a_size,
-		      const_pointer b, size_t b_size) noexcept
+PathTraitsUTF8::Build(string_view a, string_view b) noexcept
 {
-	return BuildPathImpl<PathTraitsUTF8>(a, a_size, b, b_size);
+	return BuildPathImpl<PathTraitsUTF8>(a, b);
 }
 
 PathTraitsUTF8::const_pointer

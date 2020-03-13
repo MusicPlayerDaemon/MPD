@@ -156,14 +156,8 @@ struct PathTraitsFS {
 	 * remaining component is returned unchanged.
 	 * If both components are empty strings, empty string is returned.
 	 */
-	gcc_pure gcc_nonnull_all
-	static string Build(const_pointer a, size_t a_size,
-			    const_pointer b, size_t b_size) noexcept;
-
-	gcc_pure gcc_nonnull_all
-	static string Build(const_pointer a, const_pointer b) noexcept {
-		return Build(a, GetLength(a), b, GetLength(b));
-	}
+	gcc_pure
+	static string Build(string_view a, string_view b) noexcept;
 
 	/**
 	 * Interpret the given path as being relative to the given
@@ -271,14 +265,8 @@ struct PathTraitsUTF8 {
 	 * remaining component is returned unchanged.
 	 * If both components are empty strings, empty string is returned.
 	 */
-	gcc_pure gcc_nonnull_all
-	static string Build(const_pointer a, size_t a_size,
-			    const_pointer b, size_t b_size) noexcept;
-
-	gcc_pure gcc_nonnull_all
-	static string Build(const_pointer a, const_pointer b) noexcept {
-		return Build(a, GetLength(a), b, GetLength(b));
-	}
+	gcc_pure
+	static string Build(string_view a, string_view b) noexcept;
 };
 
 #endif
