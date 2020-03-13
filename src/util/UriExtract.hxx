@@ -57,9 +57,9 @@ uri_is_relative_path(const char *uri) noexcept;
  * Returns the URI path (including the query string) or nullptr if the
  * given URI has no path.
  */
-gcc_pure gcc_nonnull_all
-const char *
-uri_get_path(const char *uri) noexcept;
+gcc_pure
+std::string_view
+uri_get_path(std::string_view uri) noexcept;
 
 gcc_pure
 const char *

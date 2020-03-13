@@ -163,8 +163,8 @@ uri_apply_relative(const std::string &relative_uri,
 		return base_uri.substr(0, i) + relative_uri;
 	}
 
-	const char *_base_path = uri_get_path(base_uri.c_str());
-	if (_base_path == nullptr) {
+	const auto _base_path = uri_get_path(base_uri);
+	if (_base_path.data() == nullptr) {
 		std::string result(base_uri);
 		if (relative_uri.front() != '/')
 			result.push_back('/');
@@ -183,7 +183,7 @@ uri_apply_relative(const std::string &relative_uri,
 	if (!ConsumeSpecial(relative_path, base_path))
 		return {};
 
-	std::string result(base_uri.c_str(), _base_path);
+	std::string result(base_uri.data(), _base_path.data());
 	result.append(base_path.data, base_path.size);
 	result.append(relative_path);
 	return result;

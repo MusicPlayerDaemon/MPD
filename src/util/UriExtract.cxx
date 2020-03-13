@@ -48,12 +48,12 @@ IsValidSchemeChar(char ch)
 
 gcc_pure
 static bool
-IsValidScheme(StringView p) noexcept
+IsValidScheme(std::string_view p) noexcept
 {
 	if (p.empty() || !IsValidSchemeStart(p.front()))
 		return false;
 
-	for (size_t i = 1; i < p.size; ++i)
+	for (size_t i = 1; i < p.size(); ++i)
 		if (!IsValidSchemeChar(p[i]))
 			return false;
 
@@ -65,18 +65,23 @@ IsValidScheme(StringView p) noexcept
  * double slash).
  */
 gcc_pure
-static const char *
-uri_after_scheme(const char *uri) noexcept
+static std::string_view
+uri_after_scheme(std::string_view uri) noexcept
 {
-	if (uri[0] == '/' && uri[1] == '/' && uri[2] != '/')
-		return uri + 2;
+	if (uri.length() > 2 &&
+	    uri[0] == '/' && uri[1] == '/' && uri[2] != '/')
+		return uri.substr(2);
 
-	const char *colon = strchr(uri, ':');
-	return colon != nullptr &&
-		IsValidScheme({uri, colon}) &&
-		colon[1] == '/' && colon[2] == '/'
-		? colon + 3
-		: nullptr;
+	auto colon = uri.find(':');
+	if (colon == std::string_view::npos ||
+	    !IsValidScheme(uri.substr(0, colon)))
+		return {};
+
+	uri = uri.substr(colon + 1);
+	if (uri[0] != '/' || uri[1] != '/')
+		return {};
+
+	return uri.substr(2);
 }
 
 bool
@@ -101,12 +106,16 @@ uri_is_relative_path(const char *uri) noexcept
 	return !uri_has_scheme(uri) && *uri != '/';
 }
 
-const char *
-uri_get_path(const char *uri) noexcept
+std::string_view
+uri_get_path(std::string_view uri) noexcept
 {
-	const char *ap = uri_after_scheme(uri);
-	if (ap != nullptr)
-		return strchr(ap, '/');
+	auto ap = uri_after_scheme(uri);
+	if (ap.data() != nullptr) {
+		auto slash = ap.find('/');
+		if (slash == std::string_view::npos)
+			return {};
+		return ap.substr(slash);
+	}
 
 	return uri;
 }

@@ -456,11 +456,11 @@ CurlStorage::GetInfo(const char *uri_utf8, gcc_unused bool follow)
 }
 
 gcc_pure
-static const char *
+static std::string_view
 UriPathOrSlash(const char *uri) noexcept
 {
-	const char *path = uri_get_path(uri);
-	if (path == nullptr)
+	auto path = uri_get_path(uri);
+	if (path.data() == nullptr)
 		path = "/";
 	return path;
 }
@@ -495,7 +495,7 @@ private:
 	 */
 	gcc_pure
 	StringView HrefToEscapedName(const char *href) const noexcept {
-		const char *path = uri_get_path(href);
+		StringView path = uri_get_path(href);
 		if (path == nullptr)
 			return nullptr;
 
@@ -504,16 +504,16 @@ private:
 		   case in hex digits in escaped characters; TODO:
 		   implement properly */
 		path = StringAfterPrefixIgnoreCase(path, base_path.c_str());
-		if (path == nullptr || *path == 0)
+		if (path == nullptr || path.empty())
 			return nullptr;
 
-		const char *slash = strchr(path, '/');
+		const char *slash = path.Find('/');
 		if (slash == nullptr)
 			/* regular file */
 			return path;
-		else if (slash[1] == 0)
+		else if (slash == &path.back())
 			/* trailing slash: collection; strip the slash */
-			return {path, slash};
+			return {path.data, slash};
 		else
 			/* strange, better ignore it */
 			return nullptr;
