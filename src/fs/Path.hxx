@@ -38,7 +38,7 @@ class Path : public PathTraitsFS::Pointer {
 	using Traits = PathTraitsFS;
 	using Base = Traits::Pointer;
 
-	constexpr Path(const_pointer _value) noexcept:Base(_value) {}
+	explicit constexpr Path(const_pointer _value) noexcept:Base(_value) {}
 
 public:
 	/**
