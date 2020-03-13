@@ -36,12 +36,6 @@ struct UPnPService {
 	// e.g. urn:schemas-upnp-org:service:ConnectionManager:1
 	std::string serviceType;
 	std::string controlURL; // e.g.: /upnp/control/cm
-
-	void clear()
-	{
-		serviceType.clear();
-		controlURL.clear();
-	}
 };
 
 /**
