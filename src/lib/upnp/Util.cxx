@@ -66,37 +66,3 @@ path_getfather(const std::string &s) noexcept
 	path_catslash(father);
 	return father;
 }
-
-std::list<std::string>
-stringToTokens(const std::string &str,
-	       const char delim) noexcept
-{
-	std::list<std::string> tokens;
-
-	std::string::size_type startPos = str.find_first_not_of(delim, 0);
-
-	// Skip initial delims, return empty if this eats all.
-	if (startPos == std::string::npos)
-		return tokens;
-
-	while (startPos < str.size()) {
-		// Find next delimiter or end of string (end of token)
-		auto pos = str.find_first_of(delim, startPos);
-
-		// Add token to the vector and adjust start
-		if (pos == std::string::npos) {
-			tokens.emplace_back(str, startPos);
-			break;
-		} else if (pos == startPos) {
-			// Dont' push empty tokens after first
-			if (tokens.empty())
-				tokens.emplace_back();
-			startPos = ++pos;
-		} else {
-			tokens.emplace_back(str, startPos, pos - startPos);
-			startPos = ++pos;
-		}
-	}
-
-	return tokens;
-}
