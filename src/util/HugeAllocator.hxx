@@ -103,7 +103,7 @@ HugeDiscard(void *p, size_t size) noexcept
 
 /* not Linux: fall back to standard C calls */
 
-#include <stdint.h>
+#include <cstdint>
 
 static inline WritableBuffer<void>
 HugeAllocate(size_t size)

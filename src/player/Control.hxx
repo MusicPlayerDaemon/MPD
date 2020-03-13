@@ -31,10 +31,9 @@
 #include "ReplayGainMode.hxx"
 #include "MusicChunkPtr.hxx"
 
+#include <cstdint>
 #include <exception>
 #include <memory>
-
-#include <stdint.h>
 
 struct Tag;
 class PlayerListener;

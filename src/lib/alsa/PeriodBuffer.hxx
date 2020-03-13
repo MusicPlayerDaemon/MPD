@@ -24,8 +24,7 @@
 
 #include <algorithm>
 #include <cassert>
-
-#include <stdint.h>
+#include <cstdint>
 
 namespace Alsa {
 

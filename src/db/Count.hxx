@@ -22,7 +22,7 @@
 
 #include "util/Compiler.h"
 
-#include <stdint.h>
+#include <cstdint>
 
 enum TagType : uint8_t;
 struct Partition;

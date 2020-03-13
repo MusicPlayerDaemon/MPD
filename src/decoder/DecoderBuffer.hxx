@@ -25,8 +25,7 @@
 #include "util/ConstBuffer.hxx"
 
 #include <cstddef>
-
-#include <stdint.h>
+#include <cstdint>
 
 class DecoderClient;
 class InputStream;

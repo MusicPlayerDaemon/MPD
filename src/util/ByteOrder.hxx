@@ -32,7 +32,7 @@
 
 #include "Compiler.h"
 
-#include <stdint.h>
+#include <cstdint>
 
 #if defined(__i386__) || defined(__x86_64__) || defined(__ARMEL__)
 /* well-known little-endian */

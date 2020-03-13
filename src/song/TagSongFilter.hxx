@@ -23,7 +23,7 @@
 #include "ISongFilter.hxx"
 #include "StringFilter.hxx"
 
-#include <stdint.h>
+#include <cstdint>
 
 enum TagType : uint8_t;
 struct Tag;

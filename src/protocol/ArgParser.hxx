@@ -20,7 +20,7 @@
 #ifndef MPD_PROTOCOL_ARGPARSER_HXX
 #define MPD_PROTOCOL_ARGPARSER_HXX
 
-#include <stdint.h>
+#include <cstdint>
 
 struct RangeArg;
 class SongTime;

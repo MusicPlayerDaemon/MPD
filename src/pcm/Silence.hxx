@@ -20,7 +20,7 @@
 #ifndef MPD_PCM_SILENCE_HXX
 #define MPD_PCM_SILENCE_HXX
 
-#include <stdint.h>
+#include <cstdint>
 
 template<typename T> struct WritableBuffer;
 enum class SampleFormat : uint8_t;

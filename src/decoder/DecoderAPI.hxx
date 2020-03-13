@@ -42,7 +42,7 @@
 
 // IWYU pragma: end_exports
 
-#include <stdint.h>
+#include <cstdint>
 
 /**
  * Throw an instance of this class to stop decoding the current song

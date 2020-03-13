@@ -30,7 +30,7 @@
 #include "Dop.hxx"
 #endif
 
-#include <stdint.h>
+#include <cstdint>
 
 template<typename T> struct ConstBuffer;
 

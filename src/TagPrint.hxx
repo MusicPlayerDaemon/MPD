@@ -20,7 +20,7 @@
 #ifndef MPD_TAG_PRINT_HXX
 #define MPD_TAG_PRINT_HXX
 
-#include <stdint.h>
+#include <cstdint>
 
 enum TagType : uint8_t;
 

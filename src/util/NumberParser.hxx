@@ -32,8 +32,8 @@
 #define NUMBER_PARSER_HXX
 
 #include <cassert>
+#include <cstdint>
 
-#include <stdint.h>
 #include <stdlib.h>
 
 struct StringView;

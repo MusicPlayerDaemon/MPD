@@ -32,11 +32,10 @@
 #include "ReplayGainMode.hxx"
 
 #include <cassert>
+#include <cstdint>
 #include <exception>
 #include <memory>
 #include <utility>
-
-#include <stdint.h>
 
 /* damn you, windows.h! */
 #ifdef ERROR

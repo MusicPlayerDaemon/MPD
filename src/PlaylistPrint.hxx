@@ -20,7 +20,7 @@
 #ifndef MPD_PLAYLIST_PRINT_HXX
 #define MPD_PLAYLIST_PRINT_HXX
 
-#include <stdint.h>
+#include <cstdint>
 
 struct playlist;
 class SongFilter;

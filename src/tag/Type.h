@@ -21,7 +21,7 @@
 #define MPD_TAG_TYPE_H
 
 #ifdef __cplusplus
-#include <stdint.h>
+#include <cstdint>
 #endif
 
 /**

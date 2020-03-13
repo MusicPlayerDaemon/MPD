@@ -22,7 +22,7 @@
 
 #include "util/Compiler.h"
 
-#include <stdint.h>
+#include <cstdint>
 
 enum class ReplayGainMode : uint8_t {
 	OFF,

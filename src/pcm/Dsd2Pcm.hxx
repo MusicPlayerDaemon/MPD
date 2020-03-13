@@ -35,8 +35,7 @@ or implied, of Sebastian Gesemann.
 
 #include <array>
 #include <cstddef>
-
-#include <stdint.h>
+#include <cstdint>
 
 /**
  * A "dsd2pcm engine" for one channel.

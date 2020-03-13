@@ -27,9 +27,8 @@
 #include "util/CircularBuffer.hxx"
 
 #include <cassert>
+#include <cstdint>
 #include <exception>
-
-#include <stdint.h>
 
 /**
  * Helper class for moving InputStream implementations with blocking

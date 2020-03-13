@@ -22,7 +22,7 @@
 
 #include "SampleFormat.hxx"
 
-#include <stdint.h>
+#include <cstdint>
 
 template<typename T> struct ConstBuffer;
 class PcmBuffer;

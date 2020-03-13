@@ -35,8 +35,7 @@
 #include "Compiler.h"
 
 #include <cstddef>
-
-#include <stdint.h>
+#include <cstdint>
 
 /**
  * Format the given byte sequence into a null-terminated hexadecimal

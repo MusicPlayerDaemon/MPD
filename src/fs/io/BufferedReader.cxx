@@ -31,9 +31,9 @@
 #include "Reader.hxx"
 #include "util/TextFile.hxx"
 
+#include <cstdint>
 #include <stdexcept>
 
-#include <stdint.h>
 #include <string.h>
 
 bool

@@ -20,7 +20,7 @@
 #ifndef MPD_OFFSET_HXX
 #define MPD_OFFSET_HXX
 
-#include <stdint.h>
+#include <cstdint>
 
 /**
  * A type for absolute offsets in a file.

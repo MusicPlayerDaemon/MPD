@@ -23,7 +23,7 @@
 #include "util/ReusableArray.hxx"
 #include "util/Compiler.h"
 
-#include <stdint.h>
+#include <cstdint>
 
 /**
  * Manager for a temporary buffer which grows as needed.  We could

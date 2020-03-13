@@ -35,9 +35,9 @@
 #include "config/Block.hxx"
 
 #include <cassert>
+#include <cstdint>
 
 #include <stdio.h>
-#include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
 

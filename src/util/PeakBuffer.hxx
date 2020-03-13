@@ -23,8 +23,7 @@
 #include "Compiler.h"
 
 #include <cstddef>
-
-#include <stdint.h>
+#include <cstdint>
 
 template<typename T> struct WritableBuffer;
 template<typename T> class DynamicFifoBuffer;

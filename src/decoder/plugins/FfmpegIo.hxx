@@ -24,7 +24,7 @@ extern "C" {
 #include "libavformat/avio.h"
 }
 
-#include <stdint.h>
+#include <cstdint>
 
 class DecoderClient;
 class InputStream;

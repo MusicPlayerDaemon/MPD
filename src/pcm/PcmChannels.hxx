@@ -20,7 +20,7 @@
 #ifndef MPD_PCM_CHANNELS_HXX
 #define MPD_PCM_CHANNELS_HXX
 
-#include <stdint.h>
+#include <cstdint>
 
 class PcmBuffer;
 template<typename T> struct ConstBuffer;

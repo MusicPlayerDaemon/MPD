@@ -23,8 +23,8 @@
 #include "util/AllocatedArray.hxx"
 
 #include <cstddef>
+#include <cstdint>
 #include <memory>
-#include <stdint.h>
 
 /**
  * A dynamically allocated buffer.  It is used to pass

@@ -19,7 +19,7 @@
 
 #include "OpusHead.hxx"
 
-#include <stdint.h>
+#include <cstdint>
 
 struct OpusHead {
 	char signature[8];

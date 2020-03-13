@@ -31,8 +31,8 @@
 #include "system/Error.hxx"
 
 #include <cassert>
+#include <cstdint>
 
-#include <stdint.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 

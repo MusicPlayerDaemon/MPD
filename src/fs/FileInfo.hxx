@@ -30,8 +30,7 @@
 #endif
 
 #include <chrono>
-
-#include <stdint.h>
+#include <cstdint>
 
 class FileInfo {
 	friend bool GetFileInfo(Path path, FileInfo &info,

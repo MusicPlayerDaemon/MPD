@@ -23,9 +23,9 @@
 #include "util/StringView.hxx"
 
 #include <cassert>
+#include <cstdint>
 #include <memory>
 
-#include <stdint.h>
 #include <string.h>
 
 struct ApeFooter {

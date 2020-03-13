@@ -26,10 +26,10 @@
 #include "util/Compiler.h"
 
 #include <cstddef>
+#include <cstdint>
 #include <exception>
 #include <string>
 
-#include <stdint.h>
 #include <sys/stat.h>
 
 struct nfsfh;

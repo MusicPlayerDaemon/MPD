@@ -28,12 +28,11 @@
 #include "system/PeriodClock.hxx"
 #include "util/Compiler.h"
 
+#include <cstdint>
 #include <exception>
+#include <map>
 #include <memory>
 #include <string>
-#include <map>
-
-#include <stdint.h>
 
 enum class ReplayGainMode : uint8_t;
 struct FilteredAudioOutput;

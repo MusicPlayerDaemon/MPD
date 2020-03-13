@@ -23,9 +23,8 @@
 #include "AndSongFilter.hxx"
 #include "util/Compiler.h"
 
+#include <cstdint>
 #include <string>
-
-#include <stdint.h>
 
 /**
  * Special value for the db_selection_print() sort parameter.

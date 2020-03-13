@@ -22,9 +22,8 @@
 
 #include "util/Compiler.h"
 
+#include <cstdint>
 #include <limits>
-
-#include <stdint.h>
 
 enum class SampleFormat : uint8_t;
 template<SampleFormat F> struct SampleTraits;

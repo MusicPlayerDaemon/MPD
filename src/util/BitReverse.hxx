@@ -22,7 +22,7 @@
 
 #include "Compiler.h"
 
-#include <stdint.h>
+#include <cstdint>
 
 /**
  * @see http://graphics.stanford.edu/~seander/bithacks.html#ReverseByteWith64BitsDiv

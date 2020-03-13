@@ -28,8 +28,8 @@
 #include "Dither.cxx" // including the .cxx file to get inlined templates
 
 #include <cassert>
+#include <cstdint>
 
-#include <stdint.h>
 #include <string.h>
 
 #if GCC_OLDER_THAN(8,0)

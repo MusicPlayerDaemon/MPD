@@ -32,8 +32,7 @@
 #include "CharUtil.hxx"
 
 #include <algorithm>
-
-#include <stdint.h>
+#include <cstdint>
 
 /**
  * Is this a leading byte that is followed by 1 continuation byte?

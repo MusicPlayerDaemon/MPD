@@ -24,9 +24,8 @@
 #include "util/StaticFifoBuffer.hxx"
 
 #include <cassert>
+#include <cstdint>
 #include <exception>
-
-#include <stdint.h>
 
 class EventLoop;
 

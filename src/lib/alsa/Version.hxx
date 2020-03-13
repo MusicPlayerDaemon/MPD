@@ -22,7 +22,7 @@
 
 #include "util/Compiler.h"
 
-#include <stdint.h>
+#include <cstdint>
 
 static constexpr uint_least32_t
 MakeAlsaVersion(uint_least32_t major, uint_least32_t minor,

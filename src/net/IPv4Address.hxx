@@ -33,7 +33,7 @@
 #include "SocketAddress.hxx"
 #include "util/ByteOrder.hxx"
 
-#include <stdint.h>
+#include <cstdint>
 
 #ifdef _WIN32
 #include <winsock2.h>

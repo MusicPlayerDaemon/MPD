@@ -24,7 +24,7 @@
 #include "input/Offset.hxx"
 #include "util/Compiler.h"
 
-#include <stdint.h>
+#include <cstdint>
 
 class TagHandler;
 class DecoderClient;

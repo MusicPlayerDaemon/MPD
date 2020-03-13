@@ -28,7 +28,7 @@
 #include "util/NumberParser.hxx"
 #include "util/StringView.hxx"
 
-#include <stdint.h>
+#include <cstdint>
 
 gcc_pure
 static TagType

@@ -24,11 +24,11 @@
 #include "util/StringView.hxx"
 
 #include <cassert>
+#include <cstdint>
 #include <limits>
 
 #include <string.h>
 #include <stdlib.h>
-#include <stdint.h>
 
 Mutex tag_pool_lock;
 

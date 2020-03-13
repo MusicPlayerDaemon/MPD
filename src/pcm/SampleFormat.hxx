@@ -22,7 +22,7 @@
 
 #include "util/Compiler.h"
 
-#include <stdint.h>
+#include <cstdint>
 
 #if defined(_WIN32)
 /* on WIN32, "FLOAT" is already defined, and this triggers -Wshadow */

@@ -24,10 +24,9 @@
 #include "decoder/Client.hxx"
 #include "thread/Mutex.hxx"
 
+#include <cstdint>
 #include <exception>
 #include <memory>
-
-#include <stdint.h>
 
 class PcmConvert;
 

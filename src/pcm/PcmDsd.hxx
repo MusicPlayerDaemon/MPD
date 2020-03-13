@@ -23,7 +23,7 @@
 #include "Buffer.hxx"
 #include "Dsd2Pcm.hxx"
 
-#include <stdint.h>
+#include <cstdint>
 
 template<typename T> struct ConstBuffer;
 

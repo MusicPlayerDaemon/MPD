@@ -22,7 +22,8 @@
 
 #include <id3tag.h>
 
-#include <stdint.h>
+#include <cstdint>
+
 #include <string.h>
 
 enum class Rva2Channel : uint8_t {

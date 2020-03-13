@@ -22,7 +22,7 @@
 
 #include "Reader.hxx"
 
-#include <stdint.h>
+#include <cstdint>
 
 /**
  * A filter that allows the caller to peek the first few bytes without

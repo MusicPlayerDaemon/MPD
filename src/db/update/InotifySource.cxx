@@ -26,9 +26,9 @@
 
 #include <cerrno>
 #include <climits>
+#include <cstdint>
 
 #include <sys/inotify.h>
-#include <stdint.h>
 
 bool
 InotifySource::OnSocketReady(gcc_unused unsigned flags) noexcept

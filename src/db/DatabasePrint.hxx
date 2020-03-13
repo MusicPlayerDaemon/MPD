@@ -20,7 +20,7 @@
 #ifndef MPD_DB_PRINT_H
 #define MPD_DB_PRINT_H
 
-#include <stdint.h>
+#include <cstdint>
 
 template<typename T> struct ConstBuffer;
 enum TagType : uint8_t;

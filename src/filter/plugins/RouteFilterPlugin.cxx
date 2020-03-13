@@ -53,10 +53,10 @@
 #include "util/WritableBuffer.hxx"
 
 #include <array>
+#include <cstdint>
 #include <stdexcept>
 
 #include <string.h>
-#include <stdint.h>
 #include <stdlib.h>
 
 class RouteFilter final : public Filter {

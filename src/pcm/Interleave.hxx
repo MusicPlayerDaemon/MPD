@@ -23,7 +23,7 @@
 #include "util/Compiler.h"
 #include "util/ConstBuffer.hxx"
 
-#include <stdint.h>
+#include <cstdint>
 
 /**
  * Interleave planar PCM samples from #src to #dest.

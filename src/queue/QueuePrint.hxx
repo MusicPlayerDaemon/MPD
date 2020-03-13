@@ -25,7 +25,7 @@
 #ifndef MPD_QUEUE_PRINT_HXX
 #define MPD_QUEUE_PRINT_HXX
 
-#include <stdint.h>
+#include <cstdint>
 
 struct Queue;
 class SongFilter;

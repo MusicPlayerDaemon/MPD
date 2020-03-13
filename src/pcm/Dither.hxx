@@ -20,7 +20,7 @@
 #ifndef MPD_PCM_DITHER_HXX
 #define MPD_PCM_DITHER_HXX
 
-#include <stdint.h>
+#include <cstdint>
 
 enum class SampleFormat : uint8_t;
 

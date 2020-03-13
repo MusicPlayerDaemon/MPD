@@ -23,8 +23,8 @@
 #include "util/StringView.hxx"
 
 #include <algorithm>
+#include <cstdint>
 
-#include <stdint.h>
 #include <string.h>
 
 class OpusReader {

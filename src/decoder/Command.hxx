@@ -20,7 +20,7 @@
 #ifndef MPD_DECODER_COMMAND_HXX
 #define MPD_DECODER_COMMAND_HXX
 
-#include <stdint.h>
+#include <cstdint>
 
 enum class DecoderCommand : uint8_t {
 	NONE = 0,

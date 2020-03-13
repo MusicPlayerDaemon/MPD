@@ -21,10 +21,10 @@
 #include "input/InputStream.hxx"
 #include "util/ByteOrder.hxx"
 
+#include <cstdint>
 #include <limits>
 #include <stdexcept>
 
-#include <stdint.h>
 #include <string.h>
 
 struct aiff_header {

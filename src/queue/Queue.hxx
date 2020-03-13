@@ -26,9 +26,8 @@
 #include "util/LazyRandomEngine.hxx"
 
 #include <cassert>
+#include <cstdint>
 #include <utility>
-
-#include <stdint.h>
 
 class DetachedSong;
 

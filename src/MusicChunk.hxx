@@ -30,9 +30,8 @@
 #endif
 
 #include <cstddef>
+#include <cstdint>
 #include <memory>
-
-#include <stdint.h>
 
 static constexpr size_t CHUNK_SIZE = 4096;
 

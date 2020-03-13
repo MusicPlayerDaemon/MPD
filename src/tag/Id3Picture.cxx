@@ -23,9 +23,8 @@
 #include "util/ConstBuffer.hxx"
 #include "util/StringView.hxx"
 
+#include <cstdint>
 #include <string>
-
-#include <stdint.h>
 
 static StringView
 ReadString(ConstBuffer<uint8_t> &src) noexcept

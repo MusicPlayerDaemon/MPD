@@ -29,10 +29,9 @@
 #include "util/ConstBuffer.hxx"
 
 #include <cassert>
+#include <cstdint>
 #include <memory>
 #include <utility>
-
-#include <stdint.h>
 
 struct MusicChunk;
 struct Tag;

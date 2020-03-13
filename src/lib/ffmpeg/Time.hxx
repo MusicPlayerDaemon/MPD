@@ -29,8 +29,7 @@ extern "C" {
 }
 
 #include <cassert>
-
-#include <stdint.h>
+#include <cstdint>
 
 /* suppress the ffmpeg compatibility macro */
 #ifdef SampleFormat

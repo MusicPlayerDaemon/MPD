@@ -25,7 +25,7 @@
 #ifndef PCM_PACK_HXX
 #define PCM_PACK_HXX
 
-#include <stdint.h>
+#include <cstdint>
 
 /**
  * Converts padded 24 bit samples (4 bytes per sample) to packed 24

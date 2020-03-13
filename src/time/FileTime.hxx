@@ -33,8 +33,7 @@
 #include <fileapi.h>
 
 #include <chrono>
-
-#include <stdint.h>
+#include <cstdint>
 
 constexpr uint64_t
 ConstructUint64(DWORD lo, DWORD hi) noexcept

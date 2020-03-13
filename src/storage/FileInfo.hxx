@@ -22,7 +22,7 @@
 
 #include <chrono>
 
-#include <stdint.h>
+#include <cstdint>
 
 struct StorageFileInfo {
 	enum class Type : uint8_t {

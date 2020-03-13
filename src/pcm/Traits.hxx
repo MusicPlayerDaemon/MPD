@@ -23,8 +23,7 @@
 #include "SampleFormat.hxx"
 
 #include <cstddef>
-
-#include <stdint.h>
+#include <cstdint>
 
 /**
  * This template describes the specified #SampleFormat.  This is an

@@ -22,7 +22,7 @@
 
 #include "Type.h"
 
-#include <stdint.h>
+#include <cstdint>
 
 class TagMask {
 	typedef uint_least32_t mask_t;

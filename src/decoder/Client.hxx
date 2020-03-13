@@ -25,7 +25,7 @@
 #include "input/Ptr.hxx"
 #include "util/Compiler.h"
 
-#include <stdint.h>
+#include <cstdint>
 
 struct AudioFormat;
 struct Tag;
