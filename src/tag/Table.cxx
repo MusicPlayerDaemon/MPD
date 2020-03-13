@@ -19,6 +19,7 @@
 
 #include "Table.hxx"
 #include "util/ASCII.hxx"
+#include "util/StringView.hxx"
 
 #include <string.h>
 

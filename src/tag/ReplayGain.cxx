@@ -22,6 +22,7 @@
 #include "ReplayGainInfo.hxx"
 #include "util/ASCII.hxx"
 #include "util/NumberParser.hxx"
+#include "util/StringView.hxx"
 
 #include <cassert>
 

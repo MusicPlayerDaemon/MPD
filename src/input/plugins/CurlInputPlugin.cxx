@@ -36,6 +36,7 @@
 #include "event/Loop.hxx"
 #include "util/ASCII.hxx"
 #include "util/StringFormat.hxx"
+#include "util/StringView.hxx"
 #include "util/NumberParser.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"

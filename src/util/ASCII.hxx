@@ -30,10 +30,10 @@
 #ifndef ASCII_HXX
 #define ASCII_HXX
 
-#include "StringView.hxx"
 #include "Compiler.h"
 
 #include <cassert>
+#include <string_view>
 
 #include <strings.h>
 
@@ -73,17 +73,19 @@ StringEqualsCaseASCII(const char *a, const char *b, size_t n) noexcept
 
 gcc_pure gcc_nonnull_all
 static inline bool
-StringStartsWithCaseASCII(const char *haystack, StringView needle) noexcept
+StringStartsWithCaseASCII(const char *haystack,
+			  std::string_view needle) noexcept
 {
-	return StringEqualsCaseASCII(haystack, needle.data, needle.size);
+	return StringEqualsCaseASCII(haystack, needle.data(), needle.length());
 }
 
 gcc_pure gcc_nonnull_all
 static inline const char *
-StringAfterPrefixCaseASCII(const char *haystack, StringView needle) noexcept
+StringAfterPrefixCaseASCII(const char *haystack,
+			   std::string_view needle) noexcept
 {
 	return StringStartsWithCaseASCII(haystack, needle)
-		? haystack + needle.size
+		? haystack + needle.length()
 		: nullptr;
 }
 
