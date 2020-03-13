@@ -41,9 +41,9 @@ playlist_load_into_queue(const char *uri, SongEnumerator &e,
 			 playlist &dest, PlayerControl &pc,
 			 const SongLoader &loader)
 {
-	const std::string base_uri = uri != nullptr
+	const auto base_uri = uri != nullptr
 		? PathTraitsUTF8::GetParent(uri)
-		: std::string(".");
+		: ".";
 
 	std::unique_ptr<DetachedSong> song;
 	for (unsigned i = 0;
@@ -54,7 +54,7 @@ playlist_load_into_queue(const char *uri, SongEnumerator &e,
 			continue;
 		}
 
-		if (!playlist_check_translate_song(*song, base_uri.c_str(),
+		if (!playlist_check_translate_song(*song, base_uri,
 						   loader)) {
 			continue;
 		}

@@ -169,7 +169,7 @@ handle_read_comments(Client &client, Request args, Response &r)
  * opened file or #nullptr on failure.
  */
 static InputStreamPtr
-find_stream_art(const char *directory, Mutex &mutex)
+find_stream_art(std::string_view directory, Mutex &mutex)
 {
 	static constexpr char const * art_names[] = {
 		"cover.png",
@@ -195,11 +195,11 @@ find_stream_art(const char *directory, Mutex &mutex)
 static CommandResult
 read_stream_art(Response &r, const char *uri, size_t offset)
 {
-	std::string art_directory = PathTraitsUTF8::GetParent(uri);
+	const auto art_directory = PathTraitsUTF8::GetParent(uri);
 
 	Mutex mutex;
 
-	InputStreamPtr is = find_stream_art(art_directory.c_str(), mutex);
+	InputStreamPtr is = find_stream_art(art_directory, mutex);
 
 	if (is == nullptr) {
 		r.Error(ACK_ERROR_NO_EXIST, "No file exists");

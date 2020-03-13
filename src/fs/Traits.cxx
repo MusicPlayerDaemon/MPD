@@ -64,7 +64,7 @@ GetBasePathImpl(typename Traits::const_pointer p) noexcept
 }
 
 template<typename Traits>
-typename Traits::string
+typename Traits::string_view
 GetParentPathImpl(typename Traits::const_pointer p) noexcept
 {
 #if !CLANG_CHECK_VERSION(3,6)
@@ -81,7 +81,7 @@ GetParentPathImpl(typename Traits::const_pointer p) noexcept
 	if (Traits::IsDrive(p) && sep == p + 2)
 		return {p, 3u};
 #endif
-	return {p, sep};
+	return {p, size_t(sep - p)};
 }
 
 template<typename Traits>
@@ -130,7 +130,7 @@ PathTraitsFS::GetBase(PathTraitsFS::const_pointer p) noexcept
 	return GetBasePathImpl<PathTraitsFS>(p);
 }
 
-PathTraitsFS::string
+PathTraitsFS::string_view
 PathTraitsFS::GetParent(PathTraitsFS::const_pointer p) noexcept
 {
 	return GetParentPathImpl<PathTraitsFS>(p);
@@ -168,7 +168,7 @@ PathTraitsUTF8::GetBase(const_pointer p) noexcept
 	return GetBasePathImpl<PathTraitsUTF8>(p);
 }
 
-PathTraitsUTF8::string
+PathTraitsUTF8::string_view
 PathTraitsUTF8::GetParent(const_pointer p) noexcept
 {
 	return GetParentPathImpl<PathTraitsUTF8>(p);

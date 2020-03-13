@@ -138,7 +138,7 @@ struct PathTraitsFS {
 	 * separator in the given input string.
 	 */
 	gcc_pure gcc_nonnull_all
-	static string GetParent(const_pointer p) noexcept;
+	static string_view GetParent(const_pointer p) noexcept;
 
 	/**
 	 * Determine the relative part of the given path to this
@@ -247,7 +247,7 @@ struct PathTraitsUTF8 {
 	 * separator in the given input string.
 	 */
 	gcc_pure gcc_nonnull_all
-	static string GetParent(const_pointer p) noexcept;
+	static string_view GetParent(const_pointer p) noexcept;
 
 	/**
 	 * Determine the relative part of the given path to this
