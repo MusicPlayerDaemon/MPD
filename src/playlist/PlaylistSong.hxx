@@ -20,6 +20,8 @@
 #ifndef MPD_PLAYLIST_SONG_HXX
 #define MPD_PLAYLIST_SONG_HXX
 
+#include <string_view>
+
 class SongLoader;
 class DetachedSong;
 
@@ -30,7 +32,7 @@ class DetachedSong;
  * @return true on success, false if the song should not be used
  */
 bool
-playlist_check_translate_song(DetachedSong &song, const char *base_uri,
+playlist_check_translate_song(DetachedSong &song, std::string_view base_uri,
 			      const SongLoader &loader) noexcept;
 
 #endif

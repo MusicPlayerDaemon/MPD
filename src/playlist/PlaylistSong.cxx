@@ -65,15 +65,15 @@ try {
 }
 
 bool
-playlist_check_translate_song(DetachedSong &song, const char *base_uri,
+playlist_check_translate_song(DetachedSong &song, std::string_view base_uri,
 			      const SongLoader &loader) noexcept
 {
-	if (base_uri != nullptr && strcmp(base_uri, ".") == 0)
+	if (base_uri.compare(".") == 0)
 		/* PathTraitsUTF8::GetParent() returns "." when there
 		   is no directory name in the given path; clear that
 		   now, because it would break the database lookup
 		   functions */
-		base_uri = nullptr;
+		base_uri = {};
 
 	const char *uri = song.GetURI();
 
@@ -92,7 +92,7 @@ playlist_check_translate_song(DetachedSong &song, const char *base_uri,
 	}
 #endif
 
-	if (base_uri != nullptr && !uri_has_scheme(uri) &&
+	if (base_uri.data() != nullptr && !uri_has_scheme(uri) &&
 	    !PathTraitsUTF8::IsAbsolute(uri))
 		song.SetURI(PathTraitsUTF8::Build(base_uri, uri));
 

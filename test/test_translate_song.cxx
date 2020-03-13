@@ -200,7 +200,7 @@ TEST_F(TranslateSongTest, Insecure)
 	/* illegal because secure=false */
 	DetachedSong song1 (uri1);
 	const SongLoader loader(*reinterpret_cast<const Client *>(1));
-	EXPECT_FALSE(playlist_check_translate_song(song1, nullptr,
+	EXPECT_FALSE(playlist_check_translate_song(song1, {},
 						   loader));
 }
 
@@ -221,18 +221,18 @@ TEST_F(TranslateSongTest, InDatabase)
 				storage);
 
 	DetachedSong song1("doesntexist");
-	EXPECT_FALSE(playlist_check_translate_song(song1, nullptr,
+	EXPECT_FALSE(playlist_check_translate_song(song1, {},
 						   loader));
 
 	DetachedSong song2(uri2, MakeTag2b());
 	auto se = ToString(DetachedSong(uri2, MakeTag2c()));
-	EXPECT_TRUE(playlist_check_translate_song(song2, nullptr,
+	EXPECT_TRUE(playlist_check_translate_song(song2, {},
 						  loader));
 	EXPECT_EQ(se, ToString(song2));
 
 	DetachedSong song3("/music/foo/bar.ogg", MakeTag2b());
 	se = ToString(DetachedSong(uri2, MakeTag2c()));
-	EXPECT_TRUE(playlist_check_translate_song(song3, nullptr,
+	EXPECT_TRUE(playlist_check_translate_song(song3, {},
 						  loader));
 	EXPECT_EQ(se, ToString(song3));
 }
@@ -281,12 +281,12 @@ TEST_F(TranslateSongTest, Backslash)
 	/* on Windows, all backslashes are converted to slashes in
 	   relative paths from playlists */
 	auto se = ToString(DetachedSong(uri2, MakeTag2c()));
-	EXPECT_TRUE(playlist_check_translate_song(song1, nullptr,
+	EXPECT_TRUE(playlist_check_translate_song(song1, {},
 						  loader));
 	EXPECT_EQ(se, ToString(song1));
 #else
 	/* backslash only supported on Windows */
-	EXPECT_FALSE(playlist_check_translate_song(song1, nullptr,
+	EXPECT_FALSE(playlist_check_translate_song(song1, {},
 						   loader));
 #endif
 }
