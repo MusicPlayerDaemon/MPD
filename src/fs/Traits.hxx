@@ -43,15 +43,15 @@
  */
 struct PathTraitsFS {
 #ifdef _WIN32
-	typedef std::wstring string;
+	using string = std::wstring;
 #else
-	typedef std::string string;
+	using string = std::string;
 #endif
-	typedef string::traits_type char_traits;
-	typedef char_traits::char_type value_type;
-	typedef StringPointer<value_type> Pointer;
-	typedef Pointer::pointer pointer;
-	typedef Pointer::const_pointer const_pointer;
+	using char_traits = string::traits_type;
+	using value_type = char_traits::char_type;
+	using Pointer = StringPointer<value_type>;
+	using pointer = Pointer::pointer;
+	using const_pointer = Pointer::const_pointer;
 
 #ifdef _WIN32
 	static constexpr value_type SEPARATOR = '\\';
@@ -176,11 +176,11 @@ struct PathTraitsFS {
  * This class describes the nature of a MPD internal filesystem path.
  */
 struct PathTraitsUTF8 {
-	typedef std::string string;
-	typedef string::traits_type char_traits;
-	typedef char_traits::char_type value_type;
-	typedef value_type *pointer;
-	typedef const value_type *const_pointer;
+	using string = std::string;
+	using char_traits = string::traits_type;
+	using value_type = char_traits::char_type;
+	using pointer = value_type *;
+	using const_pointer = const value_type *;
 
 	static constexpr value_type SEPARATOR = '/';
 

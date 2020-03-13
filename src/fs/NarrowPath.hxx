@@ -37,11 +37,11 @@
  */
 class NarrowPath {
 #ifdef _UNICODE
-	typedef AllocatedString<> Value;
+	using Value = AllocatedString<>;
 #else
-	typedef StringPointer<> Value;
+	using Value = StringPointer<>;
 #endif
-	typedef typename Value::const_pointer const_pointer;
+	using const_pointer = typename Value::const_pointer;
 
 	Value value;
 

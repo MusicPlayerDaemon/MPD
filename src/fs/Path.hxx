@@ -36,7 +36,7 @@ class AllocatedPath;
  */
 class Path : public PathTraitsFS::Pointer {
 	using Traits = PathTraitsFS;
-	typedef Traits::Pointer Base;
+	using Base = Traits::Pointer;
 
 	constexpr Path(const_pointer _value) noexcept:Base(_value) {}
 

@@ -36,10 +36,10 @@
  */
 class AllocatedPath {
 	using Traits = PathTraitsFS;
-	typedef Traits::string string;
-	typedef Traits::value_type value_type;
-	typedef Traits::pointer pointer;
-	typedef Traits::const_pointer const_pointer;
+	using string = Traits::string;
+	using value_type = Traits::value_type;
+	using pointer = Traits::pointer;
+	using const_pointer = Traits::const_pointer;
 
 	string value;
 
