@@ -60,7 +60,7 @@ GetBasePathImpl(typename Traits::const_pointer p) noexcept
 	assert(p != nullptr);
 #endif
 
-	typename Traits::const_pointer sep = Traits::FindLastSeparator(p);
+	auto sep = Traits::FindLastSeparator(p);
 	return sep != nullptr
 		? sep + 1
 		: p;
@@ -75,7 +75,7 @@ GetParentPathImpl(typename Traits::const_pointer p) noexcept
 	assert(p != nullptr);
 #endif
 
-	typename Traits::const_pointer sep = Traits::FindLastSeparator(p);
+	auto sep = Traits::FindLastSeparator(p);
 	if (sep == nullptr)
 		return typename Traits::string(Traits::CURRENT_DIRECTORY);
 	if (sep == p)
