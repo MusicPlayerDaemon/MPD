@@ -45,6 +45,7 @@ struct BasicStringView : ConstBuffer<T> {
 	using typename ConstBuffer<T>::size_type;
 	using typename ConstBuffer<T>::value_type;
 	using typename ConstBuffer<T>::pointer;
+	using typename ConstBuffer<T>::const_pointer;
 
 	using ConstBuffer<T>::data;
 	using ConstBuffer<T>::size;
@@ -97,7 +98,7 @@ struct BasicStringView : ConstBuffer<T> {
 		return {data + pos, size - pos};
 	}
 
-	constexpr BasicStringView<T> substr(const char *start) const noexcept {
+	constexpr BasicStringView<T> substr(const_pointer start) const noexcept {
 		return {start, size_t(data + size - start)};
 	}
 
