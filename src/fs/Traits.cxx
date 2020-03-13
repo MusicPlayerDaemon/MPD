@@ -77,14 +77,14 @@ GetParentPathImpl(typename Traits::const_pointer p) noexcept
 
 	auto sep = Traits::FindLastSeparator(p);
 	if (sep == nullptr)
-		return typename Traits::string(Traits::CURRENT_DIRECTORY);
+		return Traits::CURRENT_DIRECTORY;
 	if (sep == p)
-		return typename Traits::string(p, p + 1);
+		return {p, 1u};
 #ifdef _WIN32
 	if (Traits::IsDrive(p) && sep == p + 2)
-		return typename Traits::string(p, p + 3);
+		return {p, 3u};
 #endif
-	return typename Traits::string(p, sep);
+	return {p, sep};
 }
 
 template<typename Traits>
