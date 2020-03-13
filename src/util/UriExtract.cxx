@@ -82,17 +82,17 @@ uri_after_scheme(const char *uri) noexcept
 bool
 uri_has_scheme(const char *uri) noexcept
 {
-	return !uri_get_scheme(uri).IsNull();
+	return !uri_get_scheme(uri).empty();
 }
 
-StringView
-uri_get_scheme(const char *uri) noexcept
+std::string_view
+uri_get_scheme(std::string_view uri) noexcept
 {
-	const char *end = strstr(uri, "://");
-	if (end == nullptr)
-		return nullptr;
+	auto end = uri.find("://");
+	if (end == std::string_view::npos)
+		return {};
 
-	return {uri, end};
+	return uri.substr(0, end);
 }
 
 bool
