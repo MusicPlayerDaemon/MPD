@@ -18,35 +18,19 @@
  */
 
 #include "StringUtil.hxx"
-#include "StringView.hxx"
+#include "StringCompare.hxx"
 #include "CharUtil.hxx"
-#include "ASCII.hxx"
 
 #include <cassert>
 
 bool
 StringArrayContainsCase(const char *const*haystack,
-			const char *needle) noexcept
+			std::string_view needle) noexcept
 {
 	assert(haystack != nullptr);
-	assert(needle != nullptr);
 
 	for (; *haystack != nullptr; ++haystack)
-		if (StringEqualsCaseASCII(*haystack, needle))
-			return true;
-
-	return false;
-}
-
-bool
-StringArrayContainsCase(const char *const*haystack,
-			StringView needle) noexcept
-{
-	assert(haystack != nullptr);
-	assert(needle != nullptr);
-
-	for (; *haystack != nullptr; ++haystack)
-		if (needle.EqualsIgnoreCase(*haystack))
+		if (StringIsEqualIgnoreCase(*haystack, needle))
 			return true;
 
 	return false;

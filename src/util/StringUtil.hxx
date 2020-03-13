@@ -23,8 +23,7 @@
 #include "Compiler.h"
 
 #include <cstddef>
-
-struct StringView;
+#include <string_view>
 
 /**
  * Checks whether a string array contains the specified string.
@@ -37,12 +36,7 @@ struct StringView;
 gcc_pure
 bool
 StringArrayContainsCase(const char *const*haystack,
-			const char *needle) noexcept;
-
-gcc_pure
-bool
-StringArrayContainsCase(const char *const*haystack,
-			StringView needle) noexcept;
+			std::string_view needle) noexcept;
 
 /**
  * Convert the specified ASCII string (0x00..0x7f) to upper case.
