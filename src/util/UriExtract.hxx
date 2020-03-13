@@ -25,8 +25,16 @@ bool
 uri_is_relative_path(const char *uri) noexcept;
 
 /**
- * Returns the URI path (including the query string) or nullptr if the
- * given URI has no path.
+ * Returns the URI path (including query and fragment) or nullptr if
+ * the given URI has no path.
+ */
+[[gnu::pure]]
+std::string_view
+uri_get_path_query_fragment(std::string_view uri) noexcept;
+
+/**
+ * Returns the URI path (excluding query and fragment) or nullptr if
+ * the given URI has no path.
  */
 [[gnu::pure]]
 std::string_view

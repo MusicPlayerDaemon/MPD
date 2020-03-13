@@ -81,7 +81,7 @@ uri_is_relative_path(const char *uri) noexcept
 }
 
 std::string_view
-uri_get_path(std::string_view uri) noexcept
+uri_get_path_query_fragment(std::string_view uri) noexcept
 {
 	auto ap = uri_after_scheme(uri);
 	if (ap.data() != nullptr) {
@@ -99,6 +99,23 @@ static std::string_view
 UriWithoutQueryString(std::string_view uri) noexcept
 {
 	return Split(uri, '?').first;
+}
+
+std::string_view
+uri_get_path(std::string_view uri) noexcept
+{
+	auto path = uri_get_path_query_fragment(uri);
+	if (path.data() == nullptr || path.data() == uri.data())
+		/* preserve query and fragment if this URI doesn't
+		   have a scheme; the question mark may be part of the
+		   file name, after all */
+		return path;
+
+	auto end = path.find('?');
+	if (end == std::string_view::npos)
+		end = path.find('#');
+
+	return path.substr(0, end);
 }
 
 /* suffixes should be ascii only characters */
