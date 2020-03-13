@@ -43,6 +43,22 @@ StringIsEmpty(const wchar_t *string) noexcept
 	return *string == 0;
 }
 
+gcc_pure
+static inline bool
+StringIsEqual(std::wstring_view a, std::wstring_view b) noexcept
+{
+	return a.size() == b.size() &&
+		StringIsEqual(a.data(), b.data(), b.size());
+}
+
+gcc_pure
+static inline bool
+StringIsEqualIgnoreCase(std::wstring_view a, std::wstring_view b) noexcept
+{
+	return a.size() == b.size() &&
+		StringIsEqualIgnoreCase(a.data(), b.data(), b.size());
+}
+
 gcc_pure gcc_nonnull_all
 static inline bool
 StringStartsWith(const wchar_t *haystack, WStringView needle) noexcept
