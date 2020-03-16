@@ -86,7 +86,7 @@ struct WrapVariant : BasicValue<T> {
 template<typename T>
 static WrapVariant<T> Variant(const T &_value) noexcept {
 	return WrapVariant<T>(_value);
-};
+}
 
 template<typename T>
 struct WrapFixedArray {
@@ -103,7 +103,7 @@ template<typename T>
 static WrapFixedArray<T> FixedArray(const T *_data,
 				    size_t _size) noexcept {
 	return WrapFixedArray<T>(_data, _size);
-};
+}
 
 template<typename... T>
 struct WrapStruct {
@@ -118,7 +118,7 @@ struct WrapStruct {
 template<typename... T>
 static WrapStruct<T...> Struct(const T&... values) noexcept {
 	return WrapStruct<T...>(values...);
-};
+}
 
 } /* namespace ODBus */
 
