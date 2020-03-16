@@ -187,7 +187,7 @@ AudioOutputSource::FilterChunk(const MusicChunk &chunk)
 			   only if the mix ratio is non-negative; a
 			   negative mix ratio is a MixRamp special
 			   case */
-			mix_ratio = 1.0 - mix_ratio;
+			mix_ratio = 1.0f - mix_ratio;
 
 		void *dest = cross_fade_buffer.Get(other_data.size);
 		memcpy(dest, other_data.data, other_data.size);

@@ -26,6 +26,8 @@
 
 #include "PcmDither.cxx" // including the .cxx file to get inlined templates
 
+#include <cmath>
+
 #include <assert.h>
 
 template<SampleFormat F, class Traits=SampleTraits<F>>
@@ -221,7 +223,7 @@ pcm_mix(PcmDither &dither, void *buffer1, const void *buffer2, size_t size,
 	if (portion1 < 0)
 		return pcm_add(buffer1, buffer2, size, format);
 
-	s = sin(M_PI_2 * portion1);
+	s = std::sin((float)M_PI_2 * portion1);
 	s *= s;
 
 	int vol1 = lround(s * PCM_VOLUME_1S);

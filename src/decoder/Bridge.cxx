@@ -33,11 +33,11 @@
 #include "util/ConstBuffer.hxx"
 #include "util/StringBuffer.hxx"
 
+#include <cmath>
 #include <stdexcept>
 
 #include <assert.h>
 #include <string.h>
-#include <math.h>
 
 DecoderBridge::~DecoderBridge()
 {
@@ -597,7 +597,7 @@ DecoderBridge::SubmitReplayGain(const ReplayGainInfo *new_replay_gain_info)
 			const auto &tuple = new_replay_gain_info->Get(rgm);
 			const auto scale =
 				tuple.CalculateScale(dc.replay_gain_config);
-			dc.replay_gain_db = 20.0 * log10f(scale);
+			dc.replay_gain_db = 20.0f * std::log10(scale);
 		}
 
 		replay_gain_info = *new_replay_gain_info;

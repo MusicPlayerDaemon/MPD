@@ -148,7 +148,7 @@ handle_status(Client &client, gcc_unused Request args, Response &r)
 		 playlist.GetConsume(),
 		 (unsigned long)playlist.GetVersion(),
 		 playlist.GetLength(),
-		 pc.GetMixRampDb(),
+		 (double)pc.GetMixRampDb(),
 		 state);
 
 	if (pc.GetCrossFade() > FloatDuration::zero())

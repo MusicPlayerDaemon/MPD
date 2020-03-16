@@ -122,7 +122,7 @@ SoxrPcmResampler::Open(AudioFormat &af, unsigned new_sample_rate)
 	ratio = float(new_sample_rate) / float(af.sample_rate);
 	FormatDebug(soxr_domain,
 		    "samplerate conversion ratio to %.2lf",
-		    ratio);
+		    double(ratio));
 
 	/* libsoxr works with floating point samples */
 	af.format = SampleFormat::FLOAT;

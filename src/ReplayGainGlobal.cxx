@@ -23,9 +23,9 @@
 #include "config/Data.hxx"
 #include "util/RuntimeError.hxx"
 
-#include <assert.h>
-#include <stdlib.h>
-#include <math.h>
+#include <cassert>
+#include <cstdlib>
+#include <cmath>
 
 static float
 ParsePreamp(const char *s)
@@ -33,14 +33,14 @@ ParsePreamp(const char *s)
 	assert(s != nullptr);
 
 	char *endptr;
-	float f = strtod(s, &endptr);
+	float f = std::strtof(s, &endptr);
 	if (endptr == s || *endptr != '\0')
 		throw std::invalid_argument("Not a numeric value");
 
-	if (f < -15 || f > 15)
+	if (f < -15.0f || f > 15.0f)
 		throw std::invalid_argument("Number must be between -15 and 15");
 
-	return pow(10, f / 20.0);
+	return std::pow(10.0f, f / 20.0f);
 }
 
 static float
