@@ -41,6 +41,6 @@ public:
 	LockGuard &operator=(const LockGuard &) = delete;
 };
 
-};
+}
 
 #endif

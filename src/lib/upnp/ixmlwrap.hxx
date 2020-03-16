@@ -28,6 +28,6 @@ namespace ixmlwrap {
 	const char *getFirstElementValue(IXML_Document *doc,
 					 const char *name) noexcept;
 
-};
+}
 
 #endif /* _IXMLWRAP_H_INCLUDED_ */
