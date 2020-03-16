@@ -49,7 +49,7 @@ AvahiRegisterService(AvahiClient *c);
 static void
 AvahiGroupCallback(AvahiEntryGroup *g,
 		   AvahiEntryGroupState state,
-		   gcc_unused void *userdata)
+		   [[maybe_unused]] void *userdata)
 {
 	assert(g != nullptr);
 
@@ -149,7 +149,7 @@ AvahiRegisterService(AvahiClient *c)
 /* Callback when avahi changes state */
 static void
 MyAvahiClientCallback(AvahiClient *c, AvahiClientState state,
-		      gcc_unused void *userdata)
+		      [[maybe_unused]] void *userdata)
 {
 	assert(c != nullptr);
 

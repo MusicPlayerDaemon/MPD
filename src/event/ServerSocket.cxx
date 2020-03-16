@@ -161,7 +161,7 @@ ServerSocket::OneServerSocket::Accept() noexcept
 }
 
 bool
-ServerSocket::OneServerSocket::OnSocketReady(gcc_unused unsigned flags) noexcept
+ServerSocket::OneServerSocket::OnSocketReady([[maybe_unused]] unsigned flags) noexcept
 {
 	Accept();
 	return true;

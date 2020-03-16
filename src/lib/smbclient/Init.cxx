@@ -27,11 +27,11 @@
 #include <string.h>
 
 static void
-mpd_smbc_get_auth_data(gcc_unused const char *srv,
-		       gcc_unused const char *shr,
-		       char *wg, gcc_unused int wglen,
-		       char *un, gcc_unused int unlen,
-		       char *pw, gcc_unused int pwlen)
+mpd_smbc_get_auth_data([[maybe_unused]] const char *srv,
+		       [[maybe_unused]] const char *shr,
+		       char *wg, [[maybe_unused]] int wglen,
+		       char *un, [[maybe_unused]] int unlen,
+		       char *pw, [[maybe_unused]] int pwlen)
 {
 	// TODO: implement
 	strcpy(wg, "WORKGROUP");

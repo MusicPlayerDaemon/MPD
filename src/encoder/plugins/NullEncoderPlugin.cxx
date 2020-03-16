@@ -49,7 +49,7 @@ public:
 };
 
 static PreparedEncoder *
-null_encoder_init(gcc_unused const ConfigBlock &block)
+null_encoder_init([[maybe_unused]] const ConfigBlock &block)
 {
 	return new PreparedNullEncoder();
 }

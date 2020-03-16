@@ -50,7 +50,7 @@ static constexpr Domain zeroconf_domain("zeroconf");
 static int zeroconfEnabled;
 
 void
-ZeroconfInit(const ConfigData &config, gcc_unused EventLoop &loop)
+ZeroconfInit(const ConfigData &config, [[maybe_unused]] EventLoop &loop)
 {
 	const char *serviceName;
 

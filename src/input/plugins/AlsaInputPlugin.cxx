@@ -110,7 +110,7 @@ protected:
 		InvalidateSockets();
 	}
 
-	void DoSeek(gcc_unused offset_type new_offset) override {
+	void DoSeek([[maybe_unused]] offset_type new_offset) override {
 		/* unreachable because seekable==false */
 		SeekDone();
 	}
@@ -289,7 +289,7 @@ AlsaInputStream::Recover(int err)
 		if (err == -EAGAIN)
 			return 0;
 		/* fall-through to snd_pcm_prepare: */
-#if GCC_CHECK_VERSION(7,0)
+#if CLANG_OR_GCC_VERSION(7,0)
 		[[fallthrough]];
 #endif
 	case SND_PCM_STATE_OPEN:

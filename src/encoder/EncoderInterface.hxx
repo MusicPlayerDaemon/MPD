@@ -84,7 +84,7 @@ public:
 	 *
 	 * @param tag the tag object
 	 */
-	virtual void SendTag(gcc_unused const Tag &tag) {
+	virtual void SendTag([[maybe_unused]] const Tag &tag) {
 	}
 
 	/**

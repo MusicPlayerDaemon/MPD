@@ -124,7 +124,7 @@ public:
 	explicit NullTagHandler(unsigned _want_mask) noexcept
 		:TagHandler(_want_mask) {}
 
-	void OnDuration(gcc_unused SongTime duration) noexcept override {}
+	void OnDuration([[maybe_unused]] SongTime duration) noexcept override {}
 	void OnTag(TagType type, StringView value) noexcept override;
 	void OnPair(StringView key, StringView value) noexcept override;
 	void OnAudioFormat(AudioFormat af) noexcept override;

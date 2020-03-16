@@ -98,7 +98,7 @@ FlacInput::Error(FLAC__StreamDecoderErrorStatus status)
 }
 
 FLAC__StreamDecoderReadStatus
-FlacInput::Read(gcc_unused const FLAC__StreamDecoder *flac_decoder,
+FlacInput::Read([[maybe_unused]] const FLAC__StreamDecoder *flac_decoder,
 		FLAC__byte buffer[], size_t *bytes,
 		void *client_data)
 {
@@ -108,7 +108,7 @@ FlacInput::Read(gcc_unused const FLAC__StreamDecoder *flac_decoder,
 }
 
 FLAC__StreamDecoderSeekStatus
-FlacInput::Seek(gcc_unused const FLAC__StreamDecoder *flac_decoder,
+FlacInput::Seek([[maybe_unused]] const FLAC__StreamDecoder *flac_decoder,
 		FLAC__uint64 absolute_byte_offset, void *client_data)
 {
 	auto *i = (FlacInput *)client_data;
@@ -117,7 +117,7 @@ FlacInput::Seek(gcc_unused const FLAC__StreamDecoder *flac_decoder,
 }
 
 FLAC__StreamDecoderTellStatus
-FlacInput::Tell(gcc_unused const FLAC__StreamDecoder *flac_decoder,
+FlacInput::Tell([[maybe_unused]] const FLAC__StreamDecoder *flac_decoder,
 		FLAC__uint64 *absolute_byte_offset, void *client_data)
 {
 	auto *i = (FlacInput *)client_data;
@@ -126,7 +126,7 @@ FlacInput::Tell(gcc_unused const FLAC__StreamDecoder *flac_decoder,
 }
 
 FLAC__StreamDecoderLengthStatus
-FlacInput::Length(gcc_unused const FLAC__StreamDecoder *flac_decoder,
+FlacInput::Length([[maybe_unused]] const FLAC__StreamDecoder *flac_decoder,
 		  FLAC__uint64 *stream_length, void *client_data)
 {
 	auto *i = (FlacInput *)client_data;
@@ -135,7 +135,7 @@ FlacInput::Length(gcc_unused const FLAC__StreamDecoder *flac_decoder,
 }
 
 FLAC__bool
-FlacInput::Eof(gcc_unused const FLAC__StreamDecoder *flac_decoder,
+FlacInput::Eof([[maybe_unused]] const FLAC__StreamDecoder *flac_decoder,
 	       void *client_data)
 {
 	auto *i = (FlacInput *)client_data;
@@ -144,7 +144,7 @@ FlacInput::Eof(gcc_unused const FLAC__StreamDecoder *flac_decoder,
 }
 
 void
-FlacInput::Error(gcc_unused const FLAC__StreamDecoder *decoder,
+FlacInput::Error([[maybe_unused]] const FLAC__StreamDecoder *decoder,
 		 FLAC__StreamDecoderErrorStatus status, void *client_data)
 {
 	auto *i = (FlacInput *)client_data;

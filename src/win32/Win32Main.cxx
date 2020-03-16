@@ -64,8 +64,8 @@ service_notify_status(DWORD status_code)
 }
 
 static DWORD WINAPI
-service_dispatcher(gcc_unused DWORD control, gcc_unused DWORD event_type,
-		   gcc_unused void *event_data, gcc_unused void *context)
+service_dispatcher([[maybe_unused]] DWORD control, [[maybe_unused]] DWORD event_type,
+		   [[maybe_unused]] void *event_data, [[maybe_unused]] void *context)
 {
 	switch (control) {
 	case SERVICE_CONTROL_SHUTDOWN:
@@ -78,7 +78,7 @@ service_dispatcher(gcc_unused DWORD control, gcc_unused DWORD event_type,
 }
 
 static void WINAPI
-service_main(gcc_unused DWORD argc, gcc_unused LPTSTR argv[])
+service_main([[maybe_unused]] DWORD argc, [[maybe_unused]] LPTSTR argv[])
 {
 	service_handle =
 		RegisterServiceCtrlHandlerEx(service_name,

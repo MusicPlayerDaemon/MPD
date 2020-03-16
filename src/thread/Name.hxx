@@ -58,7 +58,7 @@ SetThreadName(const char *name) noexcept
 
 template<typename... Args>
 static inline void
-FormatThreadName(const char *fmt, gcc_unused Args&&... args) noexcept
+FormatThreadName(const char *fmt, [[maybe_unused]] Args&&... args) noexcept
 {
 #ifdef HAVE_THREAD_NAME
 	SetThreadName(StringFormat<16>(fmt, args...));

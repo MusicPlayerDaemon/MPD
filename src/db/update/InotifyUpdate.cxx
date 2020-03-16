@@ -236,7 +236,7 @@ WatchDirectory::GetDepth() const noexcept
 
 static void
 mpd_inotify_callback(int wd, unsigned mask,
-		     gcc_unused const char *name, gcc_unused void *ctx)
+		     [[maybe_unused]] const char *name, [[maybe_unused]] void *ctx)
 {
 	WatchDirectory *directory;
 

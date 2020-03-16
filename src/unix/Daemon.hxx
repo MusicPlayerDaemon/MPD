@@ -45,10 +45,12 @@ daemonize_finish()
  * pid file.
  */
 #ifndef _WIN32
+[[noreturn]]
 void
 daemonize_kill();
 #else
 #include <stdexcept>
+[[noreturn]]
 static inline void
 daemonize_kill()
 {

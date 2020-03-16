@@ -126,8 +126,8 @@ public:
 	 *
 	 * @return the job id or 0 if not implemented
 	 */
-	virtual unsigned Update(gcc_unused const char *uri_utf8,
-				gcc_unused bool discard) {
+	virtual unsigned Update([[maybe_unused]] const char *uri_utf8,
+				[[maybe_unused]] bool discard) {
 		/* not implemented: return 0 */
 		return 0;
 	}

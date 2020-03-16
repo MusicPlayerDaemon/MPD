@@ -41,7 +41,7 @@ NullTagHandler::OnPicture(const char *, ConstBuffer<void>) noexcept
 }
 
 void
-NullTagHandler::OnAudioFormat(gcc_unused AudioFormat af) noexcept
+NullTagHandler::OnAudioFormat([[maybe_unused]] AudioFormat af) noexcept
 {
 }
 

@@ -87,7 +87,7 @@ class CompositeStorage final : public Storage {
 
 public:
 	CompositeStorage() noexcept;
-	virtual ~CompositeStorage();
+	~CompositeStorage() override;
 
 	/**
 	 * Get the #Storage at the specified mount point.  Returns

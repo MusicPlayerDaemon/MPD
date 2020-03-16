@@ -118,7 +118,7 @@ handle_outputset(Client &client, Request request, Response &response)
 }
 
 CommandResult
-handle_devices(Client &client, gcc_unused Request args, Response &r)
+handle_devices(Client &client, [[maybe_unused]] Request args, Response &r)
 {
 	assert(args.empty());
 

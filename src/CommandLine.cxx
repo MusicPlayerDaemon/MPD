@@ -106,7 +106,7 @@ static constexpr OptionDef option_defs[] = {
 
 static constexpr Domain cmdline_domain("cmdline");
 
-gcc_noreturn
+[[noreturn]]
 static void version()
 {
 	printf("Music Player Daemon " VERSION " (%s)"
@@ -272,7 +272,7 @@ static void PrintOption(const OptionDef &opt)
 		       opt.GetDescription());
 }
 
-gcc_noreturn
+[[noreturn]]
 static void help()
 {
 	printf("Usage:\n"

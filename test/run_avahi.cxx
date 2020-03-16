@@ -26,7 +26,7 @@
 unsigned listen_port = 1234;
 
 int
-main(gcc_unused int argc, gcc_unused char **argv)
+main([[maybe_unused]] int argc, [[maybe_unused]] char **argv)
 {
 	EventLoop event_loop;
 	const ShutdownHandler shutdown_handler(event_loop);

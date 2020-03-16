@@ -111,10 +111,10 @@ private:
 
 
 #else
-	bool UpdateArchiveFile(gcc_unused Directory &directory,
-			       gcc_unused const char *name,
-			       gcc_unused const char *suffix,
-			       gcc_unused const StorageFileInfo &info) noexcept {
+	bool UpdateArchiveFile([[maybe_unused]] Directory &directory,
+			       [[maybe_unused]] const char *name,
+			       [[maybe_unused]] const char *suffix,
+			       [[maybe_unused]] const StorageFileInfo &info) noexcept {
 		return false;
 	}
 #endif

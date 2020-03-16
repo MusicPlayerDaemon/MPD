@@ -62,7 +62,7 @@ static int gme_accuracy;
 #endif
 
 static bool
-gme_plugin_init(gcc_unused const ConfigBlock &block)
+gme_plugin_init([[maybe_unused]] const ConfigBlock &block)
 {
 #if GME_VERSION >= 0x000600
 	auto accuracy = block.GetBlockParam("accuracy");

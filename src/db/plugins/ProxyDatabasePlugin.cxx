@@ -277,6 +277,7 @@ Convert(TagType tag_type) noexcept
 	return MPD_TAG_COUNT;
 }
 
+[[noreturn]]
 static void
 ThrowError(struct mpd_connection *connection)
 {
@@ -574,7 +575,7 @@ ProxyDatabase::Disconnect() noexcept
 }
 
 bool
-ProxyDatabase::OnSocketReady(gcc_unused unsigned flags) noexcept
+ProxyDatabase::OnSocketReady([[maybe_unused]] unsigned flags) noexcept
 {
 	assert(connection != nullptr);
 

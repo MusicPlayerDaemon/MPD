@@ -34,7 +34,7 @@ neighbor_commands_available(const Instance &instance) noexcept
 }
 
 CommandResult
-handle_listneighbors(Client &client, gcc_unused Request args, Response &r)
+handle_listneighbors(Client &client, [[maybe_unused]] Request args, Response &r)
 {
 	const NeighborGlue *const neighbors =
 		client.GetInstance().neighbors.get();

@@ -52,7 +52,7 @@ public:
 			 Mutex &_mutex) noexcept
 		:InputStream(_uri, _mutex) {}
 
-	virtual ~ProxyInputStream() noexcept;
+	~ProxyInputStream() noexcept override;
 
 	ProxyInputStream(const ProxyInputStream &) = delete;
 	ProxyInputStream &operator=(const ProxyInputStream &) = delete;

@@ -86,26 +86,26 @@ DumpDecoderClient::Read(InputStream &is, void *buffer, size_t length) noexcept
 }
 
 void
-DumpDecoderClient::SubmitTimestamp(gcc_unused FloatDuration t) noexcept
+DumpDecoderClient::SubmitTimestamp([[maybe_unused]] FloatDuration t) noexcept
 {
 }
 
 DecoderCommand
-DumpDecoderClient::SubmitData(gcc_unused InputStream *is,
+DumpDecoderClient::SubmitData([[maybe_unused]] InputStream *is,
 			      const void *data, size_t datalen,
-			      gcc_unused uint16_t kbit_rate) noexcept
+			      [[maybe_unused]] uint16_t kbit_rate) noexcept
 {
 	if (kbit_rate != prev_kbit_rate) {
 		prev_kbit_rate = kbit_rate;
 		fprintf(stderr, "%u kbit/s\n", kbit_rate);
 	}
 
-	gcc_unused ssize_t nbytes = write(STDOUT_FILENO, data, datalen);
+	[[maybe_unused]] ssize_t nbytes = write(STDOUT_FILENO, data, datalen);
 	return GetCommand();
 }
 
 DecoderCommand
-DumpDecoderClient::SubmitTag(gcc_unused InputStream *is,
+DumpDecoderClient::SubmitTag([[maybe_unused]] InputStream *is,
 			     Tag &&tag) noexcept
 {
 	fprintf(stderr, "TAG: duration=%f\n", tag.duration.ToDoubleS());
@@ -139,7 +139,7 @@ DumpDecoderClient::SubmitReplayGain(const ReplayGainInfo *rgi) noexcept
 }
 
 void
-DumpDecoderClient::SubmitMixRamp(gcc_unused MixRampInfo &&mix_ramp) noexcept
+DumpDecoderClient::SubmitMixRamp([[maybe_unused]] MixRampInfo &&mix_ramp) noexcept
 {
 	fprintf(stderr, "MixRamp: start='%s' end='%s'\n",
 		mix_ramp.GetStart(), mix_ramp.GetEnd());

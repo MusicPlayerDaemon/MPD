@@ -70,7 +70,7 @@ inline SimpleDatabase::SimpleDatabase(const ConfigBlock &block)
 
 inline SimpleDatabase::SimpleDatabase(AllocatedPath &&_path,
 #ifndef ENABLE_ZLIB
-				      gcc_unused
+				      [[maybe_unused]]
 #endif
 				      bool _compress) noexcept
 	:Database(simple_db_plugin),
@@ -85,7 +85,7 @@ inline SimpleDatabase::SimpleDatabase(AllocatedPath &&_path,
 
 DatabasePtr
 SimpleDatabase::Create(EventLoop &, EventLoop &,
-		       gcc_unused DatabaseListener &listener,
+		       [[maybe_unused]] DatabaseListener &listener,
 		       const ConfigBlock &block)
 {
 	return std::make_unique<SimpleDatabase>(block);
@@ -248,7 +248,7 @@ SimpleDatabase::GetSong(const char *uri) const
 }
 
 void
-SimpleDatabase::ReturnSong(gcc_unused const LightSong *song) const noexcept
+SimpleDatabase::ReturnSong([[maybe_unused]] const LightSong *song) const noexcept
 {
 	assert(song != nullptr);
 	assert(song == prefixed_light_song || song == &light_song.Get());

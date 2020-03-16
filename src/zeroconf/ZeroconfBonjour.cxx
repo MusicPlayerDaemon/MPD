@@ -48,7 +48,7 @@ public:
 
 protected:
 	/* virtual methods from class SocketMonitor */
-	bool OnSocketReady(gcc_unused unsigned flags) noexcept override {
+	bool OnSocketReady([[maybe_unused]] unsigned flags) noexcept override {
 		DNSServiceProcessResult(service_ref);
 		return true;
 	}
@@ -57,12 +57,12 @@ protected:
 static BonjourMonitor *bonjour_monitor;
 
 static void
-dnsRegisterCallback(gcc_unused DNSServiceRef sdRef,
-		    gcc_unused DNSServiceFlags flags,
+dnsRegisterCallback([[maybe_unused]] DNSServiceRef sdRef,
+		    [[maybe_unused]] DNSServiceFlags flags,
 		    DNSServiceErrorType errorCode, const char *name,
-		    gcc_unused const char *regtype,
-		    gcc_unused const char *domain,
-		    gcc_unused void *context)
+		    [[maybe_unused]] const char *regtype,
+		    [[maybe_unused]] const char *domain,
+		    [[maybe_unused]] void *context)
 {
 	if (errorCode != kDNSServiceErr_NoError) {
 		LogError(bonjour_domain,

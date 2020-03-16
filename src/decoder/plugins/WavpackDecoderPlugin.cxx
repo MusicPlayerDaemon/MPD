@@ -143,7 +143,7 @@ format_samples_int(void *buffer, uint32_t count)
  * No conversion necessary.
  */
 static void
-format_samples_nop(gcc_unused void *buffer, gcc_unused uint32_t count)
+format_samples_nop([[maybe_unused]] void *buffer, [[maybe_unused]] uint32_t count)
 {
 	/* do nothing */
 }

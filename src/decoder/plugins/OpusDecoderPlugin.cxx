@@ -64,7 +64,7 @@ IsOpusTags(const ogg_packet &packet) noexcept
 }
 
 bool
-mpd_opus_init(gcc_unused const ConfigBlock &block)
+mpd_opus_init([[maybe_unused]] const ConfigBlock &block)
 {
 	LogDebug(opus_domain, opus_get_version_string());
 

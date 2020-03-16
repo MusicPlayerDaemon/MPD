@@ -69,7 +69,7 @@ InputStream::CheapSeeking() const noexcept
 }
 
 void
-InputStream::Seek(std::unique_lock<Mutex> &, gcc_unused offset_type new_offset)
+InputStream::Seek(std::unique_lock<Mutex> &, [[maybe_unused]] offset_type new_offset)
 {
 	throw std::runtime_error("Seeking is not implemented");
 }

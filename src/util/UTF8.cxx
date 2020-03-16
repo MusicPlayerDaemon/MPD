@@ -204,7 +204,7 @@ struct CheckSequenceUTF8 {
 
 template<>
 struct CheckSequenceUTF8<0U> {
-	constexpr bool operator()(gcc_unused const char *p) const noexcept {
+	constexpr bool operator()([[maybe_unused]] const char *p) const noexcept {
 		return true;
 	}
 };

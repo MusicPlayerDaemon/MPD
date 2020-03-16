@@ -271,7 +271,7 @@ EventLoop::HandleDeferred() noexcept
 }
 
 bool
-EventLoop::OnSocketReady(gcc_unused unsigned flags) noexcept
+EventLoop::OnSocketReady([[maybe_unused]] unsigned flags) noexcept
 {
 	assert(IsInside());
 

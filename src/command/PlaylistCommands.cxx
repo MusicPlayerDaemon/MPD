@@ -60,14 +60,14 @@ print_spl_list(Response &r, const PlaylistVector &list)
 }
 
 CommandResult
-handle_save(Client &client, Request args, gcc_unused Response &r)
+handle_save(Client &client, Request args, [[maybe_unused]] Response &r)
 {
 	spl_save_playlist(args.front(), client.GetPlaylist());
 	return CommandResult::OK;
 }
 
 CommandResult
-handle_load(Client &client, Request args, gcc_unused Response &r)
+handle_load(Client &client, Request args, [[maybe_unused]] Response &r)
 {
 	const auto uri = LocateUri(UriPluginKind::PLAYLIST, args.front(),
 				   &client
@@ -132,7 +132,7 @@ handle_listplaylistinfo(Client &client, Request args, Response &r)
 }
 
 CommandResult
-handle_rm(gcc_unused Client &client, Request args, gcc_unused Response &r)
+handle_rm([[maybe_unused]] Client &client, Request args, [[maybe_unused]] Response &r)
 {
 	const char *const name = args.front();
 
@@ -141,7 +141,7 @@ handle_rm(gcc_unused Client &client, Request args, gcc_unused Response &r)
 }
 
 CommandResult
-handle_rename(gcc_unused Client &client, Request args, gcc_unused Response &r)
+handle_rename([[maybe_unused]] Client &client, Request args, [[maybe_unused]] Response &r)
 {
 	const char *const old_name = args[0];
 	const char *const new_name = args[1];
@@ -151,8 +151,8 @@ handle_rename(gcc_unused Client &client, Request args, gcc_unused Response &r)
 }
 
 CommandResult
-handle_playlistdelete(gcc_unused Client &client,
-		      Request args, gcc_unused Response &r)
+handle_playlistdelete([[maybe_unused]] Client &client,
+		      Request args, [[maybe_unused]] Response &r)
 {
 	const char *const name = args[0];
 	unsigned from = args.ParseUnsigned(1);
@@ -162,8 +162,8 @@ handle_playlistdelete(gcc_unused Client &client,
 }
 
 CommandResult
-handle_playlistmove(gcc_unused Client &client,
-		    Request args, gcc_unused Response &r)
+handle_playlistmove([[maybe_unused]] Client &client,
+		    Request args, [[maybe_unused]] Response &r)
 {
 	const char *const name = args.front();
 	unsigned from = args.ParseUnsigned(1);
@@ -174,8 +174,8 @@ handle_playlistmove(gcc_unused Client &client,
 }
 
 CommandResult
-handle_playlistclear(gcc_unused Client &client,
-		     Request args, gcc_unused Response &r)
+handle_playlistclear([[maybe_unused]] Client &client,
+		     Request args, [[maybe_unused]] Response &r)
 {
 	const char *const name = args.front();
 
@@ -184,7 +184,7 @@ handle_playlistclear(gcc_unused Client &client,
 }
 
 CommandResult
-handle_playlistadd(Client &client, Request args, gcc_unused Response &r)
+handle_playlistadd(Client &client, Request args, [[maybe_unused]] Response &r)
 {
 	const char *const playlist = args[0];
 	const char *const uri = args[1];
@@ -209,7 +209,7 @@ handle_playlistadd(Client &client, Request args, gcc_unused Response &r)
 }
 
 CommandResult
-handle_listplaylists(gcc_unused Client &client, gcc_unused Request args,
+handle_listplaylists([[maybe_unused]] Client &client, [[maybe_unused]] Request args,
 		     Response &r)
 {
 	print_spl_list(r, ListPlaylistFiles());

@@ -32,7 +32,7 @@ CountNameValuePairs() noexcept
 
 template<typename... Args>
 static constexpr unsigned
-CountNameValuePairs(gcc_unused const char *name, gcc_unused const char *value,
+CountNameValuePairs([[maybe_unused]] const char *name, [[maybe_unused]] const char *value,
 		    Args... args) noexcept
 {
 	return 1 + CountNameValuePairs(args...);

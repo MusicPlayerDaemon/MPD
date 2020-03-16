@@ -53,7 +53,7 @@ static void flacPrintErroredState(FLAC__StreamDecoderState state)
 	LogError(flac_domain, FLAC__StreamDecoderStateString[state]);
 }
 
-static void flacMetadata(gcc_unused const FLAC__StreamDecoder * dec,
+static void flacMetadata([[maybe_unused]] const FLAC__StreamDecoder * dec,
 			 const FLAC__StreamMetadata * block, void *vdata)
 {
 	auto &fd = *(FlacDecoder *)vdata;
@@ -307,7 +307,7 @@ flac_decode(DecoderClient &client, InputStream &input_stream)
 }
 
 static bool
-oggflac_init(gcc_unused const ConfigBlock &block)
+oggflac_init([[maybe_unused]] const ConfigBlock &block)
 {
 	return !!FLAC_API_SUPPORTS_OGG_FLAC;
 }

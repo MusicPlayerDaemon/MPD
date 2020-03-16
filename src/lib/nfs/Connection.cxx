@@ -172,7 +172,7 @@ NfsConnection::CancellableCallback::Callback(int err, void *data) noexcept
 
 void
 NfsConnection::CancellableCallback::Callback(int err,
-					     gcc_unused struct nfs_context *nfs,
+					     [[maybe_unused]] struct nfs_context *nfs,
 					     void *data,
 					     void *private_data) noexcept
 {
@@ -551,8 +551,8 @@ NfsConnection::OnSocketReady(unsigned flags) noexcept
 }
 
 inline void
-NfsConnection::MountCallback(int status, gcc_unused nfs_context *nfs,
-			     gcc_unused void *data) noexcept
+NfsConnection::MountCallback(int status, [[maybe_unused]] nfs_context *nfs,
+			     [[maybe_unused]] void *data) noexcept
 {
 	assert(GetEventLoop().IsInside());
 	assert(context == nfs);

@@ -62,7 +62,7 @@ class PulseOutput final : AudioOutput {
 public:
 	void SetMixer(PulseMixer &_mixer);
 
-	void ClearMixer(gcc_unused PulseMixer &old_mixer) {
+	void ClearMixer([[maybe_unused]] PulseMixer &old_mixer) {
 		assert(mixer == &old_mixer);
 
 		mixer = nullptr;
@@ -277,8 +277,8 @@ pulse_wait_for_operation(struct pa_threaded_mainloop *mainloop,
  * the caller thread, to wake pulse_wait_for_operation() up.
  */
 static void
-pulse_output_stream_success_cb(gcc_unused pa_stream *s,
-			       gcc_unused int success, void *userdata)
+pulse_output_stream_success_cb([[maybe_unused]] pa_stream *s,
+			       [[maybe_unused]] int success, void *userdata)
 {
 	PulseOutput &po = *(PulseOutput *)userdata;
 
@@ -342,7 +342,7 @@ PulseOutput::OnServerLayoutChanged(pa_subscription_event_type_t t,
 }
 
 static void
-pulse_output_subscribe_cb(gcc_unused pa_context *context,
+pulse_output_subscribe_cb([[maybe_unused]] pa_context *context,
 			  pa_subscription_event_type_t t,
 			  uint32_t idx, void *userdata)
 {
@@ -508,7 +508,7 @@ PulseOutput::WaitConnection()
 }
 
 inline void
-PulseOutput::OnStreamSuspended(gcc_unused pa_stream *_stream)
+PulseOutput::OnStreamSuspended([[maybe_unused]] pa_stream *_stream)
 {
 	assert(_stream == stream || stream == nullptr);
 	assert(mainloop != nullptr);
@@ -574,7 +574,7 @@ PulseOutput::OnStreamWrite(size_t nbytes)
 }
 
 static void
-pulse_output_stream_write_cb(gcc_unused pa_stream *stream, size_t nbytes,
+pulse_output_stream_write_cb([[maybe_unused]] pa_stream *stream, size_t nbytes,
 			     void *userdata)
 {
 	PulseOutput &po = *(PulseOutput *)userdata;

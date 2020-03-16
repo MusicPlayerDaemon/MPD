@@ -72,7 +72,7 @@ handle_unsubscribe(Client &client, Request args, Response &r)
 }
 
 CommandResult
-handle_channels(Client &client, gcc_unused Request args, Response &r)
+handle_channels(Client &client, [[maybe_unused]] Request args, Response &r)
 {
 	assert(args.empty());
 
@@ -92,7 +92,7 @@ handle_channels(Client &client, gcc_unused Request args, Response &r)
 
 CommandResult
 handle_read_messages(Client &client,
-		     gcc_unused Request args, Response &r)
+		     [[maybe_unused]] Request args, Response &r)
 {
 	assert(args.empty());
 
