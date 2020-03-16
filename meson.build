@@ -61,6 +61,13 @@ test_cxxflags = test_common_flags + [
   '-Wcast-qual',
   '-Wwrite-strings',
   '-Wsign-compare',
+  '-Wcomma',
+  '-Wextra-semi',
+  '-Wheader-hygiene',
+  '-Winconsistent-missing-destructor-override',
+  '-Wunreachable-code-break',
+  '-Wunused',
+  '-Wused-but-marked-unused',
 
   '-Wno-non-virtual-dtor',
 
