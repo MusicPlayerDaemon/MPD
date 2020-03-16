@@ -53,7 +53,7 @@ class ScopeUnlock {
 public:
 	explicit ScopeUnlock(Mutex &_mutex) noexcept:mutex(_mutex) {
 		mutex.unlock();
-	};
+	}
 
 	~ScopeUnlock() noexcept {
 		mutex.lock();
