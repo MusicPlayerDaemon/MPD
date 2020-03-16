@@ -58,7 +58,7 @@ public:
 	 */
 	IcyInputStream(InputStreamPtr _input,
 		       std::shared_ptr<IcyMetaDataParser> _parser);
-	virtual ~IcyInputStream() noexcept;
+	~IcyInputStream() noexcept override;
 
 	IcyInputStream(const IcyInputStream &) = delete;
 	IcyInputStream &operator=(const IcyInputStream &) = delete;
