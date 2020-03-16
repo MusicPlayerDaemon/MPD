@@ -170,7 +170,6 @@ PcmExport::GetInputBlockSize() const noexcept
 
 	case DsdMode::U32:
 		return dsd32_converter.GetInputBlockSize();
-		break;
 
 	case DsdMode::DOP:
 		return dop_converter.GetInputBlockSize();
@@ -193,7 +192,6 @@ PcmExport::GetOutputBlockSize() const noexcept
 
 	case DsdMode::U32:
 		return dsd32_converter.GetOutputBlockSize();
-		break;
 
 	case DsdMode::DOP:
 		return dop_converter.GetOutputBlockSize();
