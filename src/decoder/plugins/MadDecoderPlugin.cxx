@@ -585,8 +585,8 @@ parse_lame(struct lame *lame, struct mad_bitptr *ptr, int *bitlen) noexcept
 
 	mad_bit_skip(ptr, 16);
 
-	lame->peak = mad_f_todouble(mad_bit_read(ptr, 32) << 5); /* peak */
-	FormatDebug(mad_domain, "LAME peak found: %f", lame->peak);
+	lame->peak = MAD_F(mad_bit_read(ptr, 32) << 5); /* peak */
+	FormatDebug(mad_domain, "LAME peak found: %f", double(lame->peak));
 
 	lame->track_gain = 0;
 	unsigned name = mad_bit_read(ptr, 3); /* gain name */
@@ -594,9 +594,9 @@ parse_lame(struct lame *lame, struct mad_bitptr *ptr, int *bitlen) noexcept
 	unsigned sign = mad_bit_read(ptr, 1); /* sign bit */
 	int gain = mad_bit_read(ptr, 9); /* gain*10 */
 	if (gain && name == 1 && orig != 0) {
-		lame->track_gain = ((sign ? -gain : gain) / 10.0) + adj;
+		lame->track_gain = ((sign ? -gain : gain) / 10.0f) + adj;
 		FormatDebug(mad_domain, "LAME track gain found: %f",
-			    lame->track_gain);
+			    double(lame->track_gain));
 	}
 
 	/* tmz reports that this isn't currently written by any version of lame
@@ -612,7 +612,7 @@ parse_lame(struct lame *lame, struct mad_bitptr *ptr, int *bitlen) noexcept
 	if (gain && name == 2 && orig != 0) {
 		lame->album_gain = ((sign ? -gain : gain) / 10.0) + adj;
 		FormatDebug(mad_domain, "LAME album gain found: %f",
-			    lame->track_gain);
+			    double(lame->track_gain));
 	}
 #else
 	mad_bit_skip(ptr, 16);
@@ -746,7 +746,7 @@ MadDecoder::DecodeFirstFrame(Tag *tag) noexcept
 			/* Album gain isn't currently used.  See comment in
 			 * parse_lame() for details. -- jat */
 			if (client != nullptr && !found_replay_gain &&
-			    lame.track_gain) {
+			    lame.track_gain > 0.0f) {
 				ReplayGainInfo rgi;
 				rgi.Clear();
 				rgi.track.gain = lame.track_gain;

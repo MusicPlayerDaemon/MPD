@@ -48,7 +48,7 @@ static constexpr int PCM_VOLUME_1S = PCM_VOLUME_1;
 constexpr int
 pcm_float_to_volume(float volume) noexcept
 {
-	return volume * PCM_VOLUME_1 + 0.5;
+	return int(volume * PCM_VOLUME_1 + 0.5f);
 }
 
 constexpr float

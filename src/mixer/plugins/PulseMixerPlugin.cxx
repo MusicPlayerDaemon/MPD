@@ -49,7 +49,7 @@ public:
 		   double _volume_scale_factor)
 		:Mixer(pulse_mixer_plugin, _listener),
 		 output(_output),
-		 volume_scale_factor(_volume_scale_factor)
+		 volume_scale_factor(float(_volume_scale_factor))
 	{
 	}
 
@@ -173,7 +173,7 @@ parse_volume_scale_factor(const char *value) {
 	char *endptr;
 	float factor = ParseFloat(value, &endptr);
 
-	if (endptr == value || *endptr != '\0' || factor < 0.5 || factor > 5.0)
+	if (endptr == value || *endptr != '\0' || factor < 0.5f || factor > 5.0f)
 		throw FormatRuntimeError("\"%s\" is not a number in the "
 					 "range 0.5 to 5.0",
 					 value);
@@ -188,7 +188,7 @@ pulse_mixer_init([[maybe_unused]] EventLoop &event_loop, AudioOutput &ao,
 {
 	auto &po = (PulseOutput &)ao;
 	float scale = parse_volume_scale_factor(block.GetBlockValue("scale_volume"));
-	auto *pm = new PulseMixer(po, listener, scale);
+	auto *pm = new PulseMixer(po, listener, (double)scale);
 
 	pulse_output_set_mixer(po, *pm);
 
@@ -214,7 +214,7 @@ PulseMixer::GetVolume()
 int
 PulseMixer::GetVolumeInternal()
 {
-	pa_volume_t max_pa_volume = volume_scale_factor * PA_VOLUME_NORM;
+	pa_volume_t max_pa_volume = pa_volume_t(volume_scale_factor * PA_VOLUME_NORM);
 	return online ?
 		(int)((100 * (pa_cvolume_avg(&volume) + 1)) / max_pa_volume)
 		: -1;
@@ -228,7 +228,7 @@ PulseMixer::SetVolume(unsigned new_volume)
 	if (!online)
 		throw std::runtime_error("disconnected");
 
-	pa_volume_t max_pa_volume = volume_scale_factor * PA_VOLUME_NORM;
+	pa_volume_t max_pa_volume = pa_volume_t(volume_scale_factor * PA_VOLUME_NORM);
 
 	struct pa_cvolume cvolume;
 	pa_cvolume_set(&cvolume, volume.channels,

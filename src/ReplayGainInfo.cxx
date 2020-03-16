@@ -27,13 +27,13 @@ ReplayGainTuple::CalculateScale(const ReplayGainConfig &config) const noexcept
 	float scale;
 
 	if (IsDefined()) {
-		scale = pow(10.0, gain / 20.0);
+		scale = std::pow(10.0f, gain / 20.0f);
 		scale *= config.preamp;
-		if (scale > 15.0)
-			scale = 15.0;
+		if (scale > 15.0f)
+			scale = 15.0f;
 
-		if (config.limit && scale * peak > 1.0)
-			scale = 1.0 / peak;
+		if (config.limit && scale * peak > 1.0f)
+			scale = 1.0f / peak;
 	} else
 		scale = config.missing_preamp;
 

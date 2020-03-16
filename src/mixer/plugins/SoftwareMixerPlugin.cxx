@@ -25,8 +25,6 @@
 #include <cassert>
 #include <cmath>
 
-#include <assert.h>
-
 class SoftwareMixer final : public Mixer {
 	Filter *filter = nullptr;
 
@@ -72,13 +70,14 @@ PercentVolumeToSoftwareVolume(unsigned volume) noexcept
 {
 	assert(volume <= 100);
 
-	if (volume >= 100)
+	if (volume == 100)
 		return PCM_VOLUME_1;
-	else if (volume > 0)
-		return pcm_float_to_volume((std::exp(volume / 25.0) - 1) /
+
+	if (volume > 0)
+		return pcm_float_to_volume((std::exp(volume / 25.0f) - 1) /
 					   (54.5981500331F - 1));
-	else
-		return 0;
+
+	return 0;
 }
 
 void

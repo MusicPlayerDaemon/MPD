@@ -127,7 +127,7 @@ CalculateCtableValue(size_t t, int k, int e) noexcept
 		acc += (((e >> (7 - m)) & 1) * 2 - 1) * htaps[t * 8 + m];
 	}
 
-	return acc;
+	return float(acc);
 }
 
 /* this needs to be a struct because GCC 6 doesn't have constexpr
@@ -204,9 +204,9 @@ Dsd2Pcm::CalcOutputSample(size_t ffp) const noexcept
 	for (size_t i = 0; i < CTABLES; ++i) {
 		uint8_t bite1 = fifo[(ffp              -i) & FIFOMASK];
 		uint8_t bite2 = fifo[(ffp-(CTABLES*2-1)+i) & FIFOMASK];
-		acc += ctables[i][bite1] + ctables[i][bite2];
+		acc += double(ctables[i][bite1] + ctables[i][bite2]);
 	}
-	return acc;
+	return float(acc);
 }
 
 inline float

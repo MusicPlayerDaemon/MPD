@@ -149,7 +149,7 @@ handle_status(Client &client, [[maybe_unused]] Request args, Response &r)
 		 partition.name.c_str(),
 		 (unsigned long)playlist.GetVersion(),
 		 playlist.GetLength(),
-		 pc.GetMixRampDb(),
+		 (double)pc.GetMixRampDb(),
 		 state);
 
 	if (pc.GetCrossFade() > FloatDuration::zero())

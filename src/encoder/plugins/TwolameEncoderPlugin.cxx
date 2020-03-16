@@ -94,9 +94,9 @@ PreparedTwolameEncoder::PreparedTwolameEncoder(const ConfigBlock &block)
 	if (value != nullptr) {
 		/* a quality was configured (VBR) */
 
-		quality = ParseDouble(value, &endptr);
+		quality = float(ParseDouble(value, &endptr));
 
-		if (*endptr != '\0' || quality < -1.0 || quality > 10.0)
+		if (*endptr != '\0' || quality < -1.0f || quality > 10.0f)
 			throw FormatRuntimeError("quality \"%s\" is not a number in the "
 						 "range -1 to 10",
 						 value);
@@ -131,7 +131,7 @@ static void
 twolame_encoder_setup(twolame_options *options, float quality, int bitrate,
 		      const AudioFormat &audio_format)
 {
-	if (quality >= -1.0) {
+	if (quality >= -1.0f) {
 		/* a quality was configured (VBR) */
 
 		if (0 != twolame_set_VBR(options, true))

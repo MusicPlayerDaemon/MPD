@@ -611,7 +611,7 @@ DecoderBridge::SubmitReplayGain(const ReplayGainInfo *new_replay_gain_info) noex
 			const auto &tuple = new_replay_gain_info->Get(rgm);
 			const auto scale =
 				tuple.CalculateScale(dc.replay_gain_config);
-			dc.replay_gain_db = 20.0 * std::log10(scale);
+			dc.replay_gain_db = 20.0f * std::log10(scale);
 		}
 
 		replay_gain_info = *new_replay_gain_info;
