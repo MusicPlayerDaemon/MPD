@@ -20,12 +20,12 @@
 #include "ReplayGainGlobal.hxx"
 #include "ReplayGainConfig.hxx"
 #include "config/Data.hxx"
+#include "util/Math.hxx"
 
 #include <cassert>
 #include <stdexcept>
 
 #include <stdlib.h>
-#include <math.h>
 
 static float
 ParsePreamp(const char *s)
