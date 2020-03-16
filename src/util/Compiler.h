@@ -68,7 +68,6 @@
 /* GCC 4.x */
 
 #define gcc_const __attribute__((const))
-#define gcc_deprecated __attribute__((deprecated))
 #define gcc_may_alias __attribute__((may_alias))
 #define gcc_malloc __attribute__((malloc))
 #define gcc_packed __attribute__((packed))
@@ -97,7 +96,6 @@
 /* generic C compiler */
 
 #define gcc_const
-#define gcc_deprecated
 #define gcc_may_alias
 #define gcc_malloc
 #define gcc_packed
