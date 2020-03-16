@@ -75,7 +75,6 @@
 #define gcc_pure __attribute__((pure))
 #define gcc_sentinel __attribute__((sentinel))
 #define gcc_unused __attribute__((unused))
-#define gcc_warn_unused_result __attribute__((warn_unused_result))
 
 #define gcc_nonnull(...) __attribute__((nonnull(__VA_ARGS__)))
 #define gcc_nonnull_all __attribute__((nonnull))
@@ -103,7 +102,6 @@
 #define gcc_pure
 #define gcc_sentinel
 #define gcc_unused
-#define gcc_warn_unused_result
 
 #define gcc_nonnull(...)
 #define gcc_nonnull_all
