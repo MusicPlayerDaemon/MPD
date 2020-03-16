@@ -1176,7 +1176,9 @@ try {
 			}
 
 			/* fall through */
-			gcc_fallthrough;
+#if CLANG_OR_GCC_VERSION(7,0)
+			[[fallthrough]];
+#endif
 
 		case PlayerCommand::PAUSE:
 			next_song.reset();
