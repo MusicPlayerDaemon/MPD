@@ -36,7 +36,7 @@
 
 static constexpr Domain fatal_error_domain("fatal_error");
 
-gcc_noreturn
+[[noreturn]]
 static void
 Abort()
 {

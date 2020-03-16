@@ -42,14 +42,14 @@
  * the std::exception_ptr itself.
  */
 template<typename T>
-gcc_noreturn
+[[noreturn]]
 inline void
 ThrowException(T &&t)
 {
 	throw std::forward<T>(t);
 }
 
-gcc_noreturn
+[[noreturn]]
 inline void
 ThrowException(std::exception_ptr ep)
 {

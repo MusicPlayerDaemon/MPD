@@ -25,7 +25,7 @@
 #include <string.h>
 #include <unistd.h>
 
-gcc_noreturn
+[[noreturn]]
 static void
 oom()
 {

@@ -71,7 +71,7 @@ public:
 		return error.message;
 	}
 
-	gcc_noreturn
+	[[noreturn]]
 	void Throw(const char *prefix) const;
 	void CheckThrow(const char *prefix) const;
 };

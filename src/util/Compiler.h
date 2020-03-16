@@ -71,7 +71,6 @@
 #define gcc_deprecated __attribute__((deprecated))
 #define gcc_may_alias __attribute__((may_alias))
 #define gcc_malloc __attribute__((malloc))
-#define gcc_noreturn __attribute__((noreturn))
 #define gcc_packed __attribute__((packed))
 #define gcc_printf(a,b) __attribute__((format(printf, a, b)))
 #define gcc_pure __attribute__((pure))
@@ -101,7 +100,6 @@
 #define gcc_deprecated
 #define gcc_may_alias
 #define gcc_malloc
-#define gcc_noreturn
 #define gcc_packed
 #define gcc_printf(a,b)
 #define gcc_pure

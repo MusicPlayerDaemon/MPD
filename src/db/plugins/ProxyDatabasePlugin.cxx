@@ -277,6 +277,7 @@ Convert(TagType tag_type) noexcept
 	return MPD_TAG_COUNT;
 }
 
+[[noreturn]]
 static void
 ThrowError(struct mpd_connection *connection)
 {
