@@ -9,6 +9,8 @@ ver 0.21.22 (not yet released)
   - android: new mixer plugin for "sles" output
 * Android
   - TV support
+* Windows
+  - fix time zone offset check
 * fix build failures with uClibc-ng
 
 ver 0.21.21 (2020/03/19)
