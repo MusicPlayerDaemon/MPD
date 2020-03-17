@@ -54,11 +54,11 @@ public:
 
 	void lock() noexcept {
 		::EnterCriticalSection(&critical_section);
-	};
+	}
 
 	bool try_lock() noexcept {
 		return ::TryEnterCriticalSection(&critical_section) != 0;
-	};
+	}
 
 	void unlock() noexcept {
 		::LeaveCriticalSection(&critical_section);
