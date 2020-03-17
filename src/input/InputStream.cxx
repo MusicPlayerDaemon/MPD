@@ -68,6 +68,7 @@ InputStream::CheapSeeking() const noexcept
 	return IsSeekable() && !ExpensiveSeeking(uri.c_str());
 }
 
+//[[noreturn]]
 void
 InputStream::Seek(std::unique_lock<Mutex> &, [[maybe_unused]] offset_type new_offset)
 {

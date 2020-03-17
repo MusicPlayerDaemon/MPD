@@ -51,6 +51,7 @@ public:
 
 protected:
 	/* virtual methods from CurlResponseParser */
+	[[noreturn]]
 	void OnEnd() override;
 
 public:
