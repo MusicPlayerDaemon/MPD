@@ -32,6 +32,8 @@
 
 #include <zzip/zzip.h>
 
+#include <utility>
+
 struct ZzipDir {
 	ZZIP_DIR *const dir;
 
@@ -91,11 +93,11 @@ class ZzipInputStream final : public InputStream {
 	ZZIP_FILE *const file;
 
 public:
-	ZzipInputStream(const std::shared_ptr<ZzipDir>& _dir, const char *_uri,
+	ZzipInputStream(std::shared_ptr<ZzipDir> _dir, const char *_uri,
 			Mutex &_mutex,
 			ZZIP_FILE *_file)
 		:InputStream(_uri, _mutex),
-		 dir(_dir), file(_file) {
+		 dir(std::move(_dir)), file(_file) {
 		//we are seekable (but its not recommendent to do so)
 		seekable = true;
 

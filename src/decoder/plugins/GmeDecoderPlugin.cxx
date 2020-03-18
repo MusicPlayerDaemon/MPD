@@ -108,7 +108,7 @@ ParseContainerPath(Path path_fs)
 }
 
 static Music_Emu*
-LoadGmeAndM3u(GmeContainerPath container) {
+LoadGmeAndM3u(const GmeContainerPath& container) {
 
 	const char *path = container.path.c_str();
 	const char *suffix = uri_get_suffix(path);
