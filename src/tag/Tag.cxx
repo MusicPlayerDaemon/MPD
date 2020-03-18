@@ -42,8 +42,7 @@ Tag::Clear() noexcept
 
 Tag::Tag(const Tag &other) noexcept
 	:duration(other.duration), has_playlist(other.has_playlist),
-	 num_items(other.num_items),
-	 items(nullptr)
+	 num_items(other.num_items)
 {
 	if (num_items > 0) {
 		items = new TagItem *[num_items];

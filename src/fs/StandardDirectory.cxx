@@ -56,9 +56,9 @@ class PasswdEntry
 	passwd pw;
 #endif
 
-	passwd *result;
+	passwd *result{nullptr};
 public:
-	PasswdEntry() : result(nullptr) { }
+	PasswdEntry() = default;
 
 	bool ReadByName(const char *name) {
 #ifdef HAVE_GETPWNAM_R

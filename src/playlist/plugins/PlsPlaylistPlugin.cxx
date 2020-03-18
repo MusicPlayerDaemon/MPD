@@ -57,9 +57,9 @@ ParsePls(TextInputStream &is, std::forward_list<DetachedSong> &songs)
 
 	struct Entry {
 		std::string file, title;
-		int length;
+		int length{-1};
 
-		Entry():length(-1) {}
+		Entry() = default;
 	};
 
 	static constexpr unsigned MAX_ENTRIES = 65536;

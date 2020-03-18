@@ -40,7 +40,7 @@ struct RssParser {
 	 */
 	enum {
 		ROOT, ITEM,
-	} state;
+	} state{ROOT};
 
 	/**
 	 * The current tag within the "entry" element.  This is only
@@ -57,8 +57,7 @@ struct RssParser {
 
 	TagBuilder tag_builder;
 
-	RssParser()
-		:state(ROOT) {}
+	RssParser() = default;
 };
 
 static void XMLCALL

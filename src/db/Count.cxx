@@ -31,11 +31,11 @@
 #include <map>
 
 struct SearchStats {
-	unsigned n_songs;
+	unsigned n_songs{0};
 	std::chrono::duration<std::uint64_t, SongTime::period> total_duration;
 
 	constexpr SearchStats()
-		:n_songs(0), total_duration(0) {}
+		: total_duration(0) {}
 };
 
 class TagCountMap : public std::map<std::string, SearchStats> {

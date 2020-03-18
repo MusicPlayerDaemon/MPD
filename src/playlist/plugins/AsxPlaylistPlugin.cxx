@@ -40,7 +40,7 @@ struct AsxParser {
 	 */
 	enum {
 		ROOT, ENTRY,
-	} state;
+	} state{ROOT};
 
 	/**
 	 * The current tag within the "entry" element.  This is only
@@ -56,8 +56,7 @@ struct AsxParser {
 
 	TagBuilder tag_builder;
 
-	AsxParser()
-		:state(ROOT) {}
+	AsxParser() = default;
 
 };
 
