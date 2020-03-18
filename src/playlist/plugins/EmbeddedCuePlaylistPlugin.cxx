@@ -60,7 +60,6 @@ public:
 
 	std::unique_ptr<CueParser> parser;
 
-public:
 	std::unique_ptr<DetachedSong> NextSong() override;
 };
 

@@ -70,7 +70,6 @@ private:
 
 	void Cancel() noexcept override;
 
-private:
 	[[nodiscard]] gcc_pure
 	ALint GetSourceI(ALenum param) const noexcept {
 		ALint value;
