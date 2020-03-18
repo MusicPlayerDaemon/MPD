@@ -270,12 +270,7 @@ FileOutputStream::Commit()
 #endif
 
 	if (!Close()) {
-#ifdef _WIN32
-		throw FormatLastError("Failed to commit %s",
-				      path.ToUTF8().c_str());
-#else
 		throw FormatErrno("Failed to commit %s", path.c_str());
-#endif
 	}
 }
 
