@@ -31,7 +31,7 @@ enum ogg_codec {
 	OGG_CODEC_UNKNOWN,
 	OGG_CODEC_VORBIS,
 	OGG_CODEC_FLAC,
-	OGG_CODEC_OPUS,
+	OGG_CODEC_OPUS
 };
 
 enum ogg_codec

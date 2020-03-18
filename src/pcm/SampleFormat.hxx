@@ -54,7 +54,7 @@ enum class SampleFormat : uint8_t {
 	 * Direct Stream Digital.  1-bit samples; each frame has one
 	 * byte (8 samples) per channel.
 	 */
-	DSD,
+	DSD
 };
 
 #if defined(_WIN32)

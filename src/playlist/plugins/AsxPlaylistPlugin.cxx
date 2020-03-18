@@ -39,7 +39,7 @@ struct AsxParser {
 	 * The current position in the XML file.
 	 */
 	enum {
-		ROOT, ENTRY,
+		ROOT, ENTRY
 	} state;
 
 	/**

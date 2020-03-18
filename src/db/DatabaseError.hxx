@@ -31,7 +31,7 @@ enum class DatabaseErrorCode {
 
 	NOT_FOUND,
 
-	CONFLICT,
+	CONFLICT
 };
 
 class DatabaseError final : public std::runtime_error {

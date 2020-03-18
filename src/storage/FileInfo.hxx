@@ -28,7 +28,7 @@ struct StorageFileInfo {
 	enum class Type : uint8_t {
 		OTHER,
 		REGULAR,
-		DIRECTORY,
+		DIRECTORY
 	};
 
 	Type type;

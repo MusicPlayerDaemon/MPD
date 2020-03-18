@@ -39,7 +39,7 @@ struct RssParser {
 	 * The current position in the XML file.
 	 */
 	enum {
-		ROOT, ITEM,
+		ROOT, ITEM
 	} state;
 
 	/**

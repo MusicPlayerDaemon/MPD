@@ -163,7 +163,7 @@ class Player {
 		/**
 		 * Currently cross-fading to the next song.
 		 */
-		ACTIVE,
+		ACTIVE
 	} xfade_state = CrossFadeState::UNKNOWN;
 
 	/**

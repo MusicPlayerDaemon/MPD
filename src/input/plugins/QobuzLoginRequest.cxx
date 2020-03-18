@@ -43,7 +43,7 @@ class QobuzLoginRequest::ResponseParser final : public YajlResponseParser {
 		NONE,
 		DEVICE,
 		DEVICE_ID,
-		USER_AUTH_TOKEN,
+		USER_AUTH_TOKEN
 	} state = State::NONE;
 
 	unsigned map_depth = 0;

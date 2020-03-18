@@ -90,7 +90,7 @@ class UPnPDirParser final : public CommonExpatParser {
 	enum {
 		NONE,
 		RES,
-		CLASS,
+		CLASS
 	} state;
 
 	/**

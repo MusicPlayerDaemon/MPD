@@ -42,7 +42,7 @@ class CommandListBuilder {
 		/**
 		 * Enabled in "list_OK" mode.
 		 */
-		OK = true,
+		OK = true
 	} mode = Mode::DISABLED;
 
 	/**

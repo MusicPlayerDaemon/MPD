@@ -89,7 +89,7 @@ enum Option {
 	OPTION_VERBOSE,
 	OPTION_VERSION,
 	OPTION_HELP,
-	OPTION_HELP2,
+	OPTION_HELP2
 };
 
 static constexpr OptionDef option_defs[] = {

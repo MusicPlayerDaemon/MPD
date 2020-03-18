@@ -40,7 +40,7 @@ enum ack {
 	ACK_ERROR_PLAYLIST_LOAD = 53,
 	ACK_ERROR_UPDATE_ALREADY = 54,
 	ACK_ERROR_PLAYER_SYNC = 55,
-	ACK_ERROR_EXIST = 56,
+	ACK_ERROR_EXIST = 56
 };
 
 extern const Domain ack_domain;

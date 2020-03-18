@@ -34,7 +34,7 @@ enum class PlaylistResult {
 	BAD_RANGE,
 	NOT_PLAYING,
 	TOO_LARGE,
-	DISABLED,
+	DISABLED
 };
 
 extern const Domain playlist_domain;

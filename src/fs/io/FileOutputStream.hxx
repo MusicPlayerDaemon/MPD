@@ -103,7 +103,7 @@ public:
 		 * Like #APPEND_EXISTING, but create the file if it
 		 * does not exist.
 		 */
-		APPEND_OR_CREATE,
+		APPEND_OR_CREATE
 	};
 
 private:

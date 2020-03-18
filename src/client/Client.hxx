@@ -193,7 +193,7 @@ public:
 		ALREADY,
 
 		/** too many subscriptions */
-		FULL,
+		FULL
 	};
 
 	gcc_pure

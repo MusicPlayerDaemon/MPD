@@ -41,7 +41,7 @@ static constexpr yajl_callbacks parse_callbacks = {
 class TidalLoginRequest::ResponseParser final : public YajlResponseParser {
 	enum class State {
 		NONE,
-		SESSION_ID,
+		SESSION_ID
 	} state = State::NONE;
 
 	std::string session;

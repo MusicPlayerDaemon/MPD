@@ -40,7 +40,7 @@ static constexpr yajl_callbacks parse_callbacks = {
 class QobuzTrackRequest::ResponseParser final : public YajlResponseParser {
 	enum class State {
 		NONE,
-		URL,
+		URL
 	} state = State::NONE;
 
 	std::string url;

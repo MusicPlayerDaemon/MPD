@@ -249,7 +249,7 @@ class PropfindOperation : BlockingHttpRequest, CommonExpatParser {
 		STATUS,
 		TYPE,
 		MTIME,
-		LENGTH,
+		LENGTH
 	} state = State::ROOT;
 
 	DavResponse response;

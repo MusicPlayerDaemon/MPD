@@ -52,7 +52,7 @@ class CueParser {
 		/**
 		 * Ignore everything until the next "TRACK".
 		 */
-		IGNORE_TRACK,
+		IGNORE_TRACK
 	} state = HEADER;
 
 	/**

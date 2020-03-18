@@ -46,7 +46,7 @@ class TidalTagScanner::ResponseParser final : public YajlResponseParser {
 		ARTIST,
 		ARTIST_NAME,
 		ALBUM,
-		ALBUM_TITLE,
+		ALBUM_TITLE
 	} state = State::NONE;
 
 	unsigned map_depth = 0;

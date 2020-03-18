@@ -58,7 +58,7 @@ enum class DecoderState : uint8_t {
 	 * This state will only come after START; once the state has
 	 * turned to DECODE, by definition no such error can occur.
 	 */
-	ERROR,
+	ERROR
 };
 
 class DecoderControl final : public InputStreamHandler {

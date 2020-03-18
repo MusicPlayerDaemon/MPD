@@ -84,7 +84,7 @@ enum class PlayerCommand : uint8_t {
 	 * Refresh status information in the #PlayerControl struct,
 	 * e.g. elapsed_time.
 	 */
-	REFRESH,
+	REFRESH
 };
 
 enum class PlayerError : uint8_t {
@@ -98,7 +98,7 @@ enum class PlayerError : uint8_t {
 	/**
 	 * The audio output has failed.
 	 */
-	OUTPUT,
+	OUTPUT
 };
 
 struct PlayerStatus {

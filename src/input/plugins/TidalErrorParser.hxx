@@ -38,7 +38,7 @@ class TidalErrorParser final : public YajlResponseParser {
 	enum class State {
 		NONE,
 		USER_MESSAGE,
-		SUB_STATUS,
+		SUB_STATUS
 	} state = State::NONE;
 
 	unsigned sub_status = 0;

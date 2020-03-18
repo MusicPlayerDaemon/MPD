@@ -66,7 +66,7 @@ enum class CommandResult {
 	/**
 	 * The MPD process shall be shut down.
 	 */
-	KILL,
+	KILL
 };
 
 #endif

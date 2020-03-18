@@ -51,7 +51,7 @@ class QobuzTagScanner::ResponseParser final : public YajlResponseParser {
 		ALBUM_ARTIST,
 		ALBUM_ARTIST_NAME,
 		PERFORMER,
-		PERFORMER_NAME,
+		PERFORMER_NAME
 	} state = State::NONE;
 
 	unsigned map_depth = 0;

@@ -51,7 +51,7 @@ class NfsFileReader : NfsLease, NfsCallback {
 		OPEN,
 		STAT,
 		READ,
-		IDLE,
+		IDLE
 	};
 
 	State state = State::INITIAL;

@@ -46,7 +46,7 @@ enum class SelectedResampler {
 #endif
 
 #ifdef ENABLE_SOXR
-	SOXR,
+	SOXR
 #endif
 };
 

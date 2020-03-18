@@ -118,7 +118,7 @@ public:
 		 * must be SampleFormat::DSD and output format must be
 		 * SampleFormat::S24_P32.
 		 */
-		DOP,
+		DOP
 	};
 
 private:

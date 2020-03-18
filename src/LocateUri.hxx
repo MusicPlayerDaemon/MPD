@@ -43,7 +43,7 @@ class Storage;
 enum class UriPluginKind {
 	INPUT,
 	STORAGE,
-	PLAYLIST,
+	PLAYLIST
 };
 
 struct LocatedUri {
@@ -61,7 +61,7 @@ struct LocatedUri {
 		/**
 		 * A local file.  The #path attribute is valid.
 		 */
-		PATH,
+		PATH
 	} type;
 
 	const char *canonical_uri;

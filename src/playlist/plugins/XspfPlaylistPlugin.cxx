@@ -44,7 +44,7 @@ struct XspfParser {
 	 */
 	enum {
 		ROOT, PLAYLIST, TRACKLIST, TRACK,
-		TAG, LOCATION,
+		TAG, LOCATION
 	} state = ROOT;
 
 	/**

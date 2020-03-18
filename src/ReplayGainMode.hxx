@@ -28,7 +28,7 @@ enum class ReplayGainMode : uint8_t {
 	OFF,
 	ALBUM,
 	TRACK,
-	AUTO,
+	AUTO
 };
 
 /**

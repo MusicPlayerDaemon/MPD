@@ -35,7 +35,7 @@ public:
 	enum class Type {
 		UNKNOWN,
 		ITEM,
-		CONTAINER,
+		CONTAINER
 	};
 
 	// There are actually several kinds of containers:
@@ -48,7 +48,7 @@ public:
 	enum class ItemClass {
 		UNKNOWN,
 		MUSIC,
-		PLAYLIST,
+		PLAYLIST
 	};
 
 	/**

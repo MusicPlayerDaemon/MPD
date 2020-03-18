@@ -53,7 +53,7 @@ class HttpdClient final
 		HEADERS,
 
 		/** sending the HTTP response */
-		RESPONSE,
+		RESPONSE
 	} state = State::REQUEST;
 
 	/**

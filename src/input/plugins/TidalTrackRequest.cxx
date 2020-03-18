@@ -39,7 +39,7 @@ static constexpr yajl_callbacks parse_callbacks = {
 class TidalTrackRequest::ResponseParser final : public YajlResponseParser {
 	enum class State {
 		NONE,
-		URLS,
+		URLS
 	} state = State::NONE;
 
 	std::string url;

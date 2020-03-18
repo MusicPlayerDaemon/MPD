@@ -27,7 +27,7 @@
 enum class SingleMode : uint8_t {
 	OFF,
 	ON,
-	ONE_SHOT,
+	ONE_SHOT
 };
 
 /**

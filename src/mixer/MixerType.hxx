@@ -31,7 +31,7 @@ enum class MixerType {
 	SOFTWARE,
 
 	/** hardware mixer (output's plugin) */
-	HARDWARE,
+	HARDWARE
 };
 
 /**

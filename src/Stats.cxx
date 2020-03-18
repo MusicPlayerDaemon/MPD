@@ -50,7 +50,7 @@ static const std::chrono::steady_clock::time_point start_time =
 static DatabaseStats stats;
 
 enum class StatsValidity : uint8_t {
-	INVALID, VALID, FAILED,
+	INVALID, VALID, FAILED
 };
 
 static StatsValidity stats_validity = StatsValidity::INVALID;

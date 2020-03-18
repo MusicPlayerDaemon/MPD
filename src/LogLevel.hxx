@@ -53,7 +53,7 @@ enum class LogLevel {
 	 * An error has occurred, an operation could not finish
 	 * successfully.
 	 */
-	ERROR,
+	ERROR
 };
 
 #endif

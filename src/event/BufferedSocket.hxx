@@ -101,7 +101,7 @@ protected:
 		/**
 		 * The method has closed the socket.
 		 */
-		CLOSED,
+		CLOSED
 	};
 
 	/**

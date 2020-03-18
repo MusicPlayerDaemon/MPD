@@ -52,7 +52,7 @@ class CurlRequest final {
 	enum class State {
 		HEADERS,
 		BODY,
-		CLOSED,
+		CLOSED
 	} state = State::HEADERS;
 
 	std::multimap<std::string, std::string> headers;

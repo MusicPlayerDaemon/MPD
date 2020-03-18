@@ -36,7 +36,7 @@ class QobuzErrorParser final : public YajlResponseParser {
 
 	enum class State {
 		NONE,
-		MESSAGE,
+		MESSAGE
 	} state = State::NONE;
 
 	std::string message;

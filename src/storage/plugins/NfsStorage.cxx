@@ -52,7 +52,7 @@ class NfsStorage final
 	: public Storage, NfsLease {
 
 	enum class State {
-		INITIAL, CONNECTING, READY, DELAY,
+		INITIAL, CONNECTING, READY, DELAY
 	};
 
 	const std::string base;

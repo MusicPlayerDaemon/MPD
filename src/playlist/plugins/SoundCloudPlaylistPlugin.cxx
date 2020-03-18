@@ -100,7 +100,7 @@ struct SoundCloudJsonData {
 		DURATION,
 		TITLE,
 		STREAM_URL,
-		OTHER,
+		OTHER
 	};
 
 	Key key;
