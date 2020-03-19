@@ -38,6 +38,6 @@ namespace Environment {
 
 	gcc_pure
 	AllocatedPath getExternalStoragePublicDirectory(const char *type) noexcept;
-};
+}
 
 #endif
