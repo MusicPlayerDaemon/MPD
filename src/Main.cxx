@@ -399,7 +399,7 @@ MainConfigured(const struct options &options, const ConfigData &raw_config)
 #endif
 
 	const unsigned max_clients =
-		raw_config.GetPositive(ConfigOption::MAX_CONN, 10);
+		raw_config.GetPositive(ConfigOption::MAX_CONN, 100);
 	instance.client_list = std::make_unique<ClientList>(max_clients);
 
 	const auto *input_cache_config = raw_config.GetBlock(ConfigBlockOption::INPUT_CACHE);
