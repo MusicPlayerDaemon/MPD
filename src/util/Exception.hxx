@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2018 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2016-2020 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -29,8 +29,6 @@
 
 #ifndef EXCEPTION_HXX
 #define EXCEPTION_HXX
-
-#include "Compiler.h"
 
 #include <exception>
 #include <string>
