@@ -9,6 +9,7 @@ ver 0.21.21 (not yet released)
   - gme: ignore empty tags
 * output
   - solaris: port to NetBSD
+* raise default "max_connections" value to 100
 
 ver 0.21.20 (2020/02/16)
 * decoder

@@ -460,7 +460,7 @@ MainOrThrow(int argc, char *argv[])
 #endif
 
 	const unsigned max_clients =
-		raw_config.GetPositive(ConfigOption::MAX_CONN, 10);
+		raw_config.GetPositive(ConfigOption::MAX_CONN, 100);
 	instance->client_list = new ClientList(max_clients);
 
 	initialize_decoder_and_player(raw_config, config.replay_gain);

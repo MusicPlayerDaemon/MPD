@@ -695,7 +695,7 @@ These settings are various limitations to prevent :program:`MPD` from using too 
    * - **connection_timeout SECONDS**
      - If a client does not send any new data in this time period, the connection is closed. Clients waiting in "idle" mode are excluded from this. Default is 60.
    * - **max_connections NUMBER**
-     - This specifies the maximum number of clients that can be connected to :program:`MPD` at the same time. Default is 5.
+     - This specifies the maximum number of clients that can be connected to :program:`MPD` at the same time. Default is 100.
    * - **max_playlist_length NUMBER**
      - The maximum number of songs that can be in the playlist. Default is 16384.
    * - **max_command_list_size KBYTES**
