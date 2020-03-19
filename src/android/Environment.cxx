@@ -28,7 +28,7 @@ namespace Environment {
 	static Java::TrivialClass cls;
 	static jmethodID getExternalStorageDirectory_method;
 	static jmethodID getExternalStoragePublicDirectory_method;
-};
+}
 
 void
 Environment::Initialise(JNIEnv *env) noexcept
