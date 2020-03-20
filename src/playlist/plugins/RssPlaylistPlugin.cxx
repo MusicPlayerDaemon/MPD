@@ -162,6 +162,7 @@ static const char *const rss_suffixes[] = {
 
 static const char *const rss_mime_types[] = {
 	"application/rss+xml",
+	"application/xml",
 	"text/xml",
 	nullptr
 };

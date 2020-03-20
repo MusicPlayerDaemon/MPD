@@ -1,4 +1,6 @@
 ver 0.21.22 (not yet released)
+* playlist
+  - rss: support MIME type application/xml
 
 ver 0.21.21 (2020/03/19)
 * configuration
