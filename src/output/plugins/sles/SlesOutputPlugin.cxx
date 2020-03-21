@@ -322,8 +322,9 @@ SlesOutput::Play(const void *chunk, size_t size)
 	assert(filled < BUFFER_SIZE);
 
 	cond.wait(lock, [this]{
-		assert(filled == 0);
-		return n_queued != N_BUFFERS;
+		bool ret = n_queued != N_BUFFERS;
+		assert(ret || filled == 0);
+		return ret;
 	});
 
 	size_t nbytes = std::min(BUFFER_SIZE - filled, size);
