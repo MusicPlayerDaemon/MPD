@@ -107,6 +107,12 @@ StringStartsWithIgnoreCase(StringView haystack, StringView needle) noexcept
 		StringIsEqualIgnoreCase(haystack.data, needle.data, needle.size);
 }
 
+/**
+ * Returns the portion of the string after a prefix.  If the string
+ * does not begin with the specified prefix, this function returns
+ * nullptr.
+ * This function is case-independent.
+ */
 gcc_pure gcc_nonnull_all
 static inline const char *
 StringAfterPrefixIgnoreCase(const char *haystack, StringView needle) noexcept

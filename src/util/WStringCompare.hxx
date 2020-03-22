@@ -91,6 +91,12 @@ StringAfterPrefix(const wchar_t *haystack, WStringView needle) noexcept
 		: nullptr;
 }
 
+/**
+ * Returns the portion of the string after a prefix.  If the string
+ * does not begin with the specified prefix, this function returns
+ * nullptr.
+ * This function is case-independent.
+ */
 gcc_pure gcc_nonnull_all
 static inline bool
 StringStartsWithIgnoreCase(const wchar_t *haystack,
