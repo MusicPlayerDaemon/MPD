@@ -68,6 +68,12 @@ FilteredAudioOutput::Disable() noexcept
 	output->Disable();
 }
 
+bool
+FilteredAudioOutput::Signal(intptr_t info) noexcept
+{
+	return output->Signal(info);
+}
+
 void
 FilteredAudioOutput::ConfigureConvertFilter()
 {
