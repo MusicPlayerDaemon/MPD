@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2018 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2013-2020 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -37,6 +37,8 @@
 #ifdef _UNICODE
 #include "WStringCompare.hxx"
 #endif
+
+#include <string_view>
 
 gcc_pure gcc_nonnull_all
 static inline bool
