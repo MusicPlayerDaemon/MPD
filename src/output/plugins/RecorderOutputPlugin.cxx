@@ -29,10 +29,14 @@
 #include "fs/io/FileOutputStream.hxx"
 #include "util/Domain.hxx"
 #include "util/ScopeExit.hxx"
+#include "thread/Thread.hxx"
+#include "thread/Name.hxx"
+#include "output/Filtered.hxx"
 
 #include <cassert>
 #include <memory>
 #include <stdexcept>
+#include <fstream>
 
 #include <stdlib.h>
 
@@ -55,6 +59,8 @@ class RecorderOutput final : AudioOutput {
 	 * destination path.
 	 */
 	std::string format_path;
+
+	AllocatedPath archive_path = nullptr;
 
 	/**
 	 * The #AudioFormat that is currently active.  This is used
@@ -87,6 +93,7 @@ private:
 
 	size_t Play(const void *chunk, size_t size) override;
 
+private:
 	[[nodiscard]] gcc_pure
 	bool HasDynamicPath() const noexcept {
 		return !format_path.empty();
@@ -101,11 +108,23 @@ private:
 
 	void FinishFormat();
 	void ReopenFormat(AllocatedPath &&new_path);
+
+	void ArchiveTask();
+
+	/* parent (true) recorder to send archive message to */
+	int archive_requested = 0;
+	int can_archive = 0;
+	int delete_after_record = 0;
+	std::string archive_format_path;
+	Thread archive_thread;
+	char *archive_source = NULL;
+	char *archive_dest = NULL;
 };
 
 RecorderOutput::RecorderOutput(const ConfigBlock &block)
 	:AudioOutput(0),
-	 prepared_encoder(CreateConfiguredEncoder(block))
+	 prepared_encoder(CreateConfiguredEncoder(block)),
+	 archive_thread(BIND_THIS_METHOD(ArchiveTask))
 {
 	/* read configuration */
 
@@ -120,6 +139,14 @@ RecorderOutput::RecorderOutput(const ConfigBlock &block)
 
 	if (!path.IsNull() && fmt != nullptr)
 		throw std::runtime_error("Cannot have both 'path' and 'format_path'");
+
+	const char *archive_fmt = block.GetBlockValue("archive_path", nullptr);
+	if (archive_fmt != nullptr) {
+		archive_format_path = archive_fmt;
+	}
+
+	if (block.GetBlockValue("delete_after_record", nullptr))
+		delete_after_record = 1;
 }
 
 inline void
@@ -199,7 +226,76 @@ RecorderOutput::Commit()
 		throw;
 	}
 
+	/* move file to archive if requested */
+	if (archive_requested && can_archive) {
+
+		// wait for previous move operation to finish
+		if (archive_thread.IsDefined())
+			archive_thread.Join();
+
+		// run move/copy asynchronously to not block output operation
+		//
+		archive_source = strdup(path.c_str());
+		archive_dest = strdup(archive_path.c_str());
+
+		archive_thread.Start();
+
+		archive_requested = 0;
+	}
+	else
+	{
+	    /* delete file if requested */
+	    if (delete_after_record) {
+		    FormatDebug(recorder_domain, "Deleting \"%s\"", path.c_str());
+		    
+		    unlink(path.c_str());
+	    }
+	}
+
 	delete file;
+}
+
+void
+RecorderOutput::ArchiveTask() {
+	int rc;
+
+	SetThreadName("archive_file");
+
+	if (!archive_source || !archive_dest)
+		return;
+
+	if (delete_after_record) {
+		rc = rename (archive_source, archive_dest);
+	} else {
+		try {
+			std::ifstream  src(archive_source, std::ios::binary);
+			std::ofstream  dst(archive_dest,   std::ios::binary);
+
+			dst << src.rdbuf();
+
+			rc = 0;
+		} 
+		catch(...)
+		{
+			rc = -1;
+		}
+	}
+
+	if (rc == 0) {
+		FormatDebug(recorder_domain, "%s \"%s\" to \"%s\"",
+			delete_after_record ? "Moved" : "Copied",
+			archive_source, archive_dest);
+	} else {
+		FormatError(recorder_domain, "Failed to %s \"%s\" to \"%s\", rc=%d",
+			delete_after_record ? "move" : "copy",
+			archive_source, archive_dest, errno);
+	}
+
+
+	free (archive_source);
+	free (archive_dest);
+
+	archive_source = archive_dest = NULL;
 }
 
 void
@@ -313,6 +409,20 @@ RecorderOutput::SendTag(const Tag &tag)
 			} catch (...) {
 				LogError(std::current_exception());
 				return;
+			}
+		}
+
+		can_archive = 0;
+
+		if (!archive_format_path.empty()) {
+			char *ap = FormatTag(tag, archive_format_path.c_str());
+			AtScopeExit(ap) { free(ap); };
+
+			try {
+				archive_path = ParsePath(ap);
+				can_archive = 1;
+			} catch (const std::runtime_error &e) {
+				LogError(e);
 			}
 		}
 	}

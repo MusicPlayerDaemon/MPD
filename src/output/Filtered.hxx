@@ -216,6 +216,8 @@ public:
 	 */
 	void CloseSoftwareMixer() noexcept;
 
+	bool Signal(intptr_t info = 0) noexcept;
+
 	gcc_pure
 	std::chrono::steady_clock::duration Delay() noexcept;
 
