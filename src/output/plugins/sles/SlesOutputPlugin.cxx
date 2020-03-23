@@ -27,6 +27,7 @@
 #include "thread/Cond.hxx"
 #include "util/Domain.hxx"
 #include "util/ByteOrder.hxx"
+#include "mixer/MixerList.hxx"
 #include "Log.hxx"
 
 #include <SLES/OpenSLES.h>
@@ -411,5 +412,5 @@ const struct AudioOutputPlugin sles_output_plugin = {
 	"sles",
 	sles_test_default_device,
 	SlesOutput::Create,
-	nullptr,
+	&android_mixer_plugin,
 };
