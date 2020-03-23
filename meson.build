@@ -290,6 +290,7 @@ if not is_android
 else
   sources += [
     'src/android/Context.cxx',
+    'src/android/AudioManager.cxx',
     'src/android/Environment.cxx',
     'src/android/LogListener.cxx',
   ]
