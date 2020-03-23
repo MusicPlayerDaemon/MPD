@@ -21,7 +21,10 @@
 #include "java/Class.hxx"
 #include "java/Exception.hxx"
 #include "java/File.hxx"
+#include "java/String.hxx"
 #include "fs/AllocatedPath.hxx"
+
+#include "AudioManager.hxx"
 
 AllocatedPath
 Context::GetCacheDir(JNIEnv *env) const noexcept
@@ -38,4 +41,22 @@ Context::GetCacheDir(JNIEnv *env) const noexcept
 		return nullptr;
 
 	return Java::File::ToAbsolutePath(env, file);
+}
+
+AudioManager *
+Context::GetAudioManager(JNIEnv *env) noexcept
+{
+	assert(env != nullptr);
+
+	Java::Class cls(env, env->GetObjectClass(Get()));
+	jmethodID method = env->GetMethodID(cls, "getSystemService",
+					    "(Ljava/lang/String;)Ljava/lang/Object;");
+	assert(method);
+
+	Java::String name(env, "audio");
+	jobject am = env->CallObjectMethod(Get(), method, name.Get());
+	if (Java::DiscardException(env) || am == nullptr)
+		return nullptr;
+
+    return new AudioManager(env, am);
 }
