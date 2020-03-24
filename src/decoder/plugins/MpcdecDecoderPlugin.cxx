@@ -25,12 +25,12 @@
 #include "tag/Handler.hxx"
 #include "util/Domain.hxx"
 #include "util/Clamp.hxx"
-#include "util/Math.hxx"
 #include "util/ScopeExit.hxx"
 #include "Log.hxx"
 
 #include <mpc/mpcdec.h>
 
+#include <cmath>
 #include <iterator>
 
 struct mpc_decoder_data {
@@ -142,7 +142,7 @@ ImportMpcdecReplayGain(mpc_uint16_t gain, mpc_uint16_t peak) noexcept
 
 	if (gain != 0 && peak != 0) {
 		t.gain = MPC_OLD_GAIN_REF - (gain  / 256.);
-		t.peak = pow(10, peak / 256. / 20) / 32767;
+		t.peak = std::pow(10, peak / 256. / 20) / 32767;
 	}
 
 	return t;
