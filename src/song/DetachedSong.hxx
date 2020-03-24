@@ -138,7 +138,7 @@ public:
 	 */
 	gcc_pure
 	const char *GetRealURI() const noexcept {
-		return (HasRealURI() ? real_uri : uri).c_str();
+		return (HasRealURI() ? real_uri.c_str() : uri.c_str());
 	}
 
 	template<typename T>
