@@ -398,21 +398,21 @@ WavpackInput::ReadBytes(void *data, size_t bcount)
 static int64_t
 wavpack_input_get_pos(void *id)
 {
-	WavpackInput &wpi = *wpin(id);
+	const auto &wpi = *wpin(id);
 	return wpi.GetPos();
 }
 
 static int
 wavpack_input_set_pos_abs(void *id, int64_t pos)
 {
-	WavpackInput &wpi = *wpin(id);
+	auto &wpi = *wpin(id);
 	return wpi.SetPosAbs(pos);
 }
 
 static int
 wavpack_input_set_pos_rel(void *id, int64_t delta, int mode)
 {
-	WavpackInput &wpi = *wpin(id);
+	auto &wpi = *wpin(id);
 	return wpi.SetPosRel(delta, mode);
 }
 
@@ -421,21 +421,21 @@ wavpack_input_set_pos_rel(void *id, int64_t delta, int mode)
 static uint32_t
 wavpack_input_get_pos(void *id)
 {
-	WavpackInput &wpi = *wpin(id);
+	const auto &wpi = *wpin(id);
 	return wpi.GetPos();
 }
 
 static int
 wavpack_input_set_pos_abs(void *id, uint32_t pos)
 {
-	WavpackInput &wpi = *wpin(id);
+	auto &wpi = *wpin(id);
 	return wpi.SetPosAbs(pos);
 }
 
 static int
 wavpack_input_set_pos_rel(void *id, int32_t delta, int mode)
 {
-	WavpackInput &wpi = *wpin(id);
+	auto &wpi = *wpin(id);
 	return wpi.SetPosRel(delta, mode);
 }
 
@@ -444,7 +444,7 @@ wavpack_input_set_pos_rel(void *id, int32_t delta, int mode)
 static int
 wavpack_input_push_back_byte(void *id, int c)
 {
-	WavpackInput &wpi = *wpin(id);
+	auto &wpi = *wpin(id);
 	return wpi.PushBackByte(c);
 }
 
@@ -453,7 +453,7 @@ wavpack_input_push_back_byte(void *id, int c)
 static int64_t
 wavpack_input_get_length(void *id)
 {
-	WavpackInput &wpi = *wpin(id);
+	const auto &wpi = *wpin(id);
 	return wpi.GetLength();
 }
 
@@ -462,7 +462,7 @@ wavpack_input_get_length(void *id)
 static uint32_t
 wavpack_input_get_length(void *id)
 {
-	WavpackInput &wpi = *wpin(id);
+	const auto &wpi = *wpin(id);
 	return wpi.GetLength();
 }
 
@@ -471,7 +471,7 @@ wavpack_input_get_length(void *id)
 static int
 wavpack_input_can_seek(void *id)
 {
-	WavpackInput &wpi = *wpin(id);
+	const auto &wpi = *wpin(id);
 	return wpi.CanSeek();
 }
 

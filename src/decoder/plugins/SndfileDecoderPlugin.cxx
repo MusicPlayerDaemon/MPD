@@ -56,8 +56,8 @@ struct SndfileInputStream {
 static sf_count_t
 sndfile_vio_get_filelen(void *user_data)
 {
-	SndfileInputStream &sis = *(SndfileInputStream *)user_data;
-	const InputStream &is = sis.is;
+	const auto &sis = *(SndfileInputStream *)user_data;
+	const auto &is = sis.is;
 
 	if (!is.KnownSize())
 		return -1;
@@ -120,8 +120,8 @@ sndfile_vio_write([[maybe_unused]] const void *ptr,
 static sf_count_t
 sndfile_vio_tell(void *user_data)
 {
-	SndfileInputStream &sis = *(SndfileInputStream *)user_data;
-	const InputStream &is = sis.is;
+	const auto &sis = *(SndfileInputStream *)user_data;
+	const auto &is = sis.is;
 
 	return is.GetOffset();
 }

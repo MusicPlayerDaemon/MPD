@@ -63,7 +63,7 @@ PollGroupPoll::Remove(int fd) noexcept
 {
 	auto item_iter = items.find(fd);
 	assert(item_iter != items.end());
-	auto &item = item_iter->second;
+	const auto &item = item_iter->second;
 	size_t index = item.index;
 	size_t last_index = poll_events.size() - 1;
 	if (index != last_index) {
