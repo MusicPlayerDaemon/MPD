@@ -19,7 +19,8 @@
 
 #include "ReplayGainInfo.hxx"
 #include "ReplayGainConfig.hxx"
-#include "util/Math.hxx"
+
+#include <cmath>
 
 float
 ReplayGainTuple::CalculateScale(const ReplayGainConfig &config) const noexcept

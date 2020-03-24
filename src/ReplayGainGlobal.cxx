@@ -20,9 +20,9 @@
 #include "ReplayGainGlobal.hxx"
 #include "ReplayGainConfig.hxx"
 #include "config/Data.hxx"
-#include "util/Math.hxx"
 
 #include <cassert>
+#include <cmath>
 #include <cstdlib>
 #include <stdexcept>
 
