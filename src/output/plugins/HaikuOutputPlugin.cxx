@@ -347,7 +347,7 @@ HaikuOutput::SendTag(const Tag &tag)
 	unsigned seconds = 0;
 	if (!tag.duration.IsNegative()) {
 		seconds = tag.duration.ToS();
-		snprintf(timebuf, sizeof(timebuf), "%02d:%02d:%02d",
+		snprintf(timebuf, sizeof(timebuf), "%02u:%02u:%02u",
 			 seconds / 3600, (seconds % 3600) / 60, seconds % 60);
 	}
 
