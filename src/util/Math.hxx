@@ -30,7 +30,11 @@
 #ifndef MATH_HXX
 #define MATH_HXX
 
-#ifdef __UCLIBC__
+/*
+ * C99 math can be optionally omitted with gcc's libstdc++.
+ * Use boost if unavailable.
+ */
+#if (defined(__GLIBCPP__) || defined(__GLIBCXX__)) && !defined(_GLIBCXX_USE_C99_MATH)
 #include <boost/math/special_functions/round.hpp>
 using boost::math::lround;
 #else
