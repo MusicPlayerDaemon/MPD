@@ -21,6 +21,7 @@ package org.musicpd;
 
 import android.annotation.TargetApi;
 import android.app.Notification;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.ComponentName;
@@ -34,6 +35,9 @@ import android.os.RemoteCallbackList;
 import android.os.RemoteException;
 import android.util.Log;
 import android.widget.RemoteViews;
+
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 
 public class Main extends Service implements Runnable {
 	private static final String TAG = "Main";
@@ -156,11 +160,36 @@ public class Main extends Service implements Runnable {
 		sendMessage(MSG_SEND_STATUS, mStatus, 0, mError);
 	}
 
+	private Notification.Builder createNotificationBuilderWithChannel() {
+		final NotificationManager notificationManager = (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
+		if (notificationManager == null)
+			return null;
+
+		final String id = "org.musicpd";
+		final String name = "MPD service";
+		final int importance = 3; /* NotificationManager.IMPORTANCE_DEFAULT */
+
+		try {
+			Class<?> ncClass = Class.forName("android.app.NotificationChannel");
+			Constructor<?> ncCtor = ncClass.getConstructor(String.class, CharSequence.class, int.class);
+			Object nc = ncCtor.newInstance(id, name, importance);
+
+			Method nmCreateNotificationChannelMethod =
+				NotificationManager.class.getMethod("createNotificationChannel", ncClass);
+			nmCreateNotificationChannelMethod.invoke(notificationManager, nc);
+
+			Constructor nbCtor = Notification.Builder.class.getConstructor(Context.class, String.class);
+			return (Notification.Builder) nbCtor.newInstance(this, id);
+		} catch (Exception e)
+		{
+			Log.e(TAG, "error creating the NotificationChannel", e);
+			return null;
+		}
+	}
+
 	private void start() {
 		if (mThread != null)
 			return;
-		mThread = new Thread(this);
-		mThread.start();
 
 		final Intent mainIntent = new Intent(this, Settings.class);
 		mainIntent.setAction("android.intent.action.MAIN");
@@ -168,12 +197,24 @@ public class Main extends Service implements Runnable {
 		final PendingIntent contentIntent = PendingIntent.getActivity(this, 0,
 				mainIntent, PendingIntent.FLAG_CANCEL_CURRENT);
 
-		Notification notification = new Notification.Builder(this)
-			.setContentTitle(getText(R.string.notification_title_mpd_running))
+		Notification.Builder nBuilder;
+		if (Build.VERSION.SDK_INT >= 26 /* Build.VERSION_CODES.O */)
+		{
+			nBuilder = createNotificationBuilderWithChannel();
+			if (nBuilder == null)
+				return;
+		}
+		else
+			nBuilder = new Notification.Builder(this);
+
+		Notification notification = nBuilder.setContentTitle(getText(R.string.notification_title_mpd_running))
 			.setContentText(getText(R.string.notification_text_mpd_running))
 			.setSmallIcon(R.drawable.notification_icon)
 			.setContentIntent(contentIntent)
 			.build();
+
+		mThread = new Thread(this);
+		mThread.start();
 
 		startForeground(R.string.notification_title_mpd_running, notification);
 		startService(new Intent(this, Main.class));
