@@ -7,6 +7,11 @@
 
   <uses-sdk android:minSdkVersion="21" android:targetSdkVersion="28"/>
 
+  <uses-feature android:name="android.software.leanback"
+                android:required="false" />
+  <uses-feature android:name="android.hardware.touchscreen"
+                android:required="false" />
+
   <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
   <uses-permission android:name="android.permission.WAKE_LOCK"/>
   <uses-permission android:name="android.permission.INTERNET"/>
@@ -15,6 +20,7 @@
 
   <application android:allowBackup="true"
                android:icon="@drawable/icon"
+               android:banner="@drawable/icon"
                android:label="@string/app_name">
     <activity android:name=".Settings"
               android:label="@string/app_name">
@@ -23,6 +29,14 @@
         <category android:name="android.intent.category.LAUNCHER" />
       </intent-filter>
     </activity>
+    <activity android:name=".Settings"
+              android:label="@string/app_name" >
+      <intent-filter>
+        <action android:name="android.intent.action.MAIN" />
+        <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
+      </intent-filter>
+    </activity>
+
     <receiver android:name=".Receiver">
       <intent-filter>
         <action android:name="android.intent.action.BOOT_COMPLETED" />
