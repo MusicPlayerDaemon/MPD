@@ -105,12 +105,13 @@ public class Settings extends Activity {
 				else
 					mRunButton.setChecked(false);
 				mFirstRun = true;
+				mTextStatus.setText("");
 				break;
 			case MSG_STARTED:
 				Log.d(TAG, "onStarted");
 				mRunButton.setChecked(true);
 				mFirstRun = true;
-				mTextStatus.setText("CAUTION: this version is EXPERIMENTAL!"); // XXX
+				mTextStatus.setText("MPD service started");
 				break;
 			case MSG_LOG:
 				if (mLogListArray.size() > MAX_LOGS)
