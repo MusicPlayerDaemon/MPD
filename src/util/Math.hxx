@@ -32,12 +32,9 @@
 
 #ifdef __UCLIBC__
 #include <boost/math/special_functions/round.hpp>
-using boost::math::iround;
 using boost::math::lround;
-#define lrint iround
 #else
 #include <cmath>
-using std::lrint;
 using std::lround;
 #endif
 
