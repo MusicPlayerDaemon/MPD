@@ -22,6 +22,7 @@
 #include "../OutputAPI.hxx"
 #include "mixer/MixerList.hxx"
 #include "util/Domain.hxx"
+#include "util/Math.hxx"
 #include "system/Error.hxx"
 #include "Log.hxx"
 
@@ -36,8 +37,6 @@
 #include <Resources.h>
 #include <StringList.h>
 #include <SoundPlayer.h>
-
-#include <cmath>
 
 #include <string.h>
 

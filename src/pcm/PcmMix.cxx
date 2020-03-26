@@ -22,10 +22,9 @@
 #include "Clamp.hxx"
 #include "Traits.hxx"
 #include "util/Clamp.hxx"
+#include "util/Math.hxx"
 
 #include "PcmDither.cxx" // including the .cxx file to get inlined templates
-
-#include <cmath>
 
 #include <assert.h>
 
@@ -225,7 +224,7 @@ pcm_mix(PcmDither &dither, void *buffer1, const void *buffer2, size_t size,
 	s = sin(M_PI_2 * portion1);
 	s *= s;
 
-	int vol1 = std::lround(s * PCM_VOLUME_1S);
+	int vol1 = lround(s * PCM_VOLUME_1S);
 	vol1 = Clamp<int>(vol1, 0, PCM_VOLUME_1S);
 
 	return pcm_add_vol(dither, buffer1, buffer2, size,

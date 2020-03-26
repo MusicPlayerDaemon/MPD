@@ -29,9 +29,9 @@
 #include "system/Clock.hxx"
 #include "Log.hxx"
 #include "time/ChronoUtil.hxx"
+#include "util/Math.hxx"
 
 #include <chrono>
-#include <cmath>
 
 #ifndef _WIN32
 /**
@@ -121,7 +121,7 @@ stats_print(Response &r, const Partition &partition)
 #else
 		 (unsigned)std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - start_time).count(),
 #endif
-		 std::lround(partition.pc.GetTotalPlayTime().count()));
+		 lround(partition.pc.GetTotalPlayTime().count()));
 
 #ifdef ENABLE_DATABASE
 	const Database *db = partition.instance.GetDatabase();

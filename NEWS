@@ -5,6 +5,7 @@ ver 0.21.22 (not yet released)
   - rss: support MIME type application/xml
 * mixer
   - android: new mixer plugin for "sles" output
+* fix build failures with uClibc-ng
 
 ver 0.21.21 (2020/03/19)
 * configuration

@@ -23,9 +23,8 @@
 #include "AudioFormat.hxx"
 #include "util/NumberParser.hxx"
 #include "util/Domain.hxx"
+#include "util/Math.hxx"
 #include "Log.hxx"
-
-#include <cmath>
 
 #include <assert.h>
 
@@ -112,7 +111,7 @@ CrossFadeSettings::Calculate(SignedSongTime total_time,
 
 	if (mixramp_delay <= FloatDuration::zero() ||
 	    !mixramp_start || !mixramp_prev_end) {
-		chunks = std::lround(duration / chunk_duration);
+		chunks = lround(duration / chunk_duration);
 	} else {
 		/* Calculate mixramp overlap. */
 		const auto mixramp_overlap_current =

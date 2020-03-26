@@ -20,13 +20,13 @@
 #include "mixer/MixerInternal.hxx"
 #include "output/OutputAPI.hxx"
 #include "output/plugins/WinmmOutputPlugin.hxx"
+#include "util/Math.hxx"
 
 #include <mmsystem.h>
 
 #include <stdexcept>
 
 #include <assert.h>
-#include <math.h>
 #include <windows.h>
 
 class WinmmMixer final : public Mixer {
