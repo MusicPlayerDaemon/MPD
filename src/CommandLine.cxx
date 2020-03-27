@@ -66,9 +66,6 @@
 #include "archive/ArchivePlugin.hxx"
 #endif
 
-#include <stdio.h>
-#include <stdlib.h>
-
 namespace {
 #ifdef _WIN32
 constexpr auto CONFIG_FILE_LOCATION = Path::FromFS(PATH_LITERAL("mpd\\mpd.conf"));
@@ -256,7 +253,7 @@ static void version()
 #endif
 	       "\n");
 
-	exit(EXIT_SUCCESS);
+	std::exit(EXIT_SUCCESS);
 }
 
 static void PrintOption(const OptionDef &opt)
@@ -286,7 +283,7 @@ static void help()
 		if(i.HasDescription()) // hide hidden options from help print
 			PrintOption(i);
 
-	exit(EXIT_SUCCESS);
+	std::exit(EXIT_SUCCESS);
 }
 
 class ConfigLoader

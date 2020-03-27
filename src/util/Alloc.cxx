@@ -21,8 +21,8 @@
 #include "Alloc.hxx"
 #include "ConcatString.hxx"
 
-#include <stdlib.h>
-#include <string.h>
+#include <cstring>
+
 #include <unistd.h>
 
 [[noreturn]]
@@ -30,13 +30,13 @@ static void
 oom()
 {
 	(void)write(STDERR_FILENO, "Out of memory\n", 14);
-	_exit(1);
+	std::_Exit(1);
 }
 
 void *
 xalloc(size_t size)
 {
-	void *p = malloc(size);
+	auto p = std::malloc(size);
 	if (gcc_unlikely(p == nullptr))
 		oom();
 
@@ -46,8 +46,8 @@ xalloc(size_t size)
 void *
 xmemdup(const void *s, size_t size)
 {
-	void *p = xalloc(size);
-	memcpy(p, s, size);
+	auto p = xalloc(size);
+	std::memcpy(p, s, size);
 	return p;
 }
 
@@ -69,8 +69,8 @@ xstrndup(const char *s, size_t n)
 	if (gcc_unlikely(p == nullptr))
 		oom();
 #else
-	char *p = (char *)xalloc(n + 1);
-	memcpy(p, s, n);
+	auto p = (char *)xalloc(n + 1);
+	std::memcpy(p, s, n);
 	p[n] = 0;
 #endif
 
@@ -87,7 +87,7 @@ t_xstrcatdup(Args&&... args)
 	size_t lengths[n];
 	const size_t total = FillLengths(lengths, args...);
 
-	char *p = (char *)xalloc(total + 1);
+	auto p = (char *)xalloc(total + 1);
 	*StringCat(p, lengths, args...) = 0;
 	return p;
 }

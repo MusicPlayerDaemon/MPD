@@ -22,11 +22,9 @@
 #include "LogV.hxx"
 
 #include <cstdarg>
-
-#include <unistd.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -40,7 +38,7 @@ static constexpr Domain fatal_error_domain("fatal_error");
 static void
 Abort()
 {
-	_exit(EXIT_FAILURE);
+	std::_Exit(EXIT_FAILURE);
 }
 
 void
@@ -82,7 +80,7 @@ FatalSystemError(const char *msg)
 #ifdef _WIN32
 	FatalSystemError(msg, GetLastError());
 #else
-	const char *system_error = strerror(errno);
+	auto system_error = std::strerror(errno);
 	FormatError(fatal_error_domain, "%s: %s", msg, system_error);
 	Abort();
 #endif
@@ -94,7 +92,7 @@ FormatFatalSystemError(const char *fmt, ...)
 	char buffer[1024];
 	std::va_list ap;
 	va_start(ap, fmt);
-	vsnprintf(buffer, sizeof(buffer), fmt, ap);
+	std::vsnprintf(buffer, sizeof(buffer), fmt, ap);
 	va_end(ap);
 
 	FatalSystemError(buffer);

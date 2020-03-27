@@ -27,8 +27,6 @@
 #include "PidFile.hxx"
 #endif
 
-#include <stdlib.h>
-#include <unistd.h>
 #include <fcntl.h>
 
 #ifndef _WIN32
@@ -81,7 +79,7 @@ daemonize_kill()
 	if (kill(pid, SIGTERM) < 0)
 		throw FormatErrno("unable to kill process %i", int(pid));
 
-	exit(EXIT_SUCCESS);
+	std::exit(EXIT_SUCCESS);
 }
 
 void
@@ -180,7 +178,7 @@ daemonize_begin(bool detach)
 	if (nbytes == (ssize_t)sizeof(result)) {
 		/* the child process was successful */
 		pidfile2.Write(pid);
-		exit(EXIT_SUCCESS);
+		std::exit(EXIT_SUCCESS);
 	}
 
 	/* something bad happened in the child process */
@@ -196,7 +194,7 @@ daemonize_begin(bool detach)
 		throw FormatErrno("MPD died from signal %d%s", WTERMSIG(status),
 				  WCOREDUMP(status) ? " (core dumped)" : "");
 
-	exit(WEXITSTATUS(status));
+	std::exit(WEXITSTATUS(status));
 }
 
 void
