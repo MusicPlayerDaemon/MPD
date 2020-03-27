@@ -109,13 +109,11 @@
 #include <systemd/sd-daemon.h>
 #endif
 
-#include <stdlib.h>
-
-#ifdef HAVE_LOCALE_H
-#include <locale.h>
-#endif
-
 #include <climits>
+
+#ifdef HAVE_CLOCALE
+#include <clocale>
+#endif
 
 static constexpr size_t KILOBYTE = 1024;
 static constexpr size_t MEGABYTE = 1024 * KILOBYTE;
@@ -360,10 +358,10 @@ MainConfigured(const struct options &options, const ConfigData &raw_config)
 #endif
 
 #ifndef ANDROID
-#ifdef HAVE_LOCALE_H
+#ifdef HAVE_CLOCALE
 	/* initialize locale */
-	setlocale(LC_CTYPE,"");
-	setlocale(LC_COLLATE, "");
+	std::setlocale(LC_CTYPE,"");
+	std::setlocale(LC_COLLATE, "");
 #endif
 #endif
 
