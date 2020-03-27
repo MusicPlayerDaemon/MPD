@@ -113,11 +113,7 @@ public:
 #ifndef NDEBUG
 	gcc_pure
 	bool IsEmpty() const noexcept {
-		for (const auto &c : list)
-			if (!c.IsCancelled())
-				return false;
-
-		return true;
+		return std::all_of(list.begin(), list.end(), [](const auto &c) { return c.IsCancelled(); });
 	}
 #endif
 

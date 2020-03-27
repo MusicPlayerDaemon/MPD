@@ -28,6 +28,7 @@
 #include "Chrono.hxx"
 #include "util/Compiler.h"
 
+#include <algorithm>
 #include <cassert>
 #include <memory>
 #include <vector>
@@ -106,11 +107,7 @@ public:
 	 */
 	gcc_pure
 	bool IsDummy() const noexcept {
-		for (const auto &i : outputs)
-			if (!i->IsDummy())
-				return false;
-
-		return true;
+		return std::all_of(outputs.begin(), outputs.end(), [](const auto &i) { return i->IsDummy(); });
 	}
 
 	/**
