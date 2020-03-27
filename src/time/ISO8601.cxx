@@ -36,14 +36,13 @@
 
 #include <cassert>
 #include <stdexcept>
-
-#include <stdlib.h>
+#include <cstdlib>
 
 StringBuffer<64>
-FormatISO8601(const struct tm &tm) noexcept
+FormatISO8601(const struct std::tm &tm) noexcept
 {
 	StringBuffer<64> buffer;
-	strftime(buffer.data(), buffer.capacity(),
+	std::strftime(buffer.data(), buffer.capacity(),
 #ifdef _WIN32
 		 "%Y-%m-%dT%H:%M:%SZ",
 #else
@@ -65,7 +64,7 @@ static std::pair<unsigned, unsigned>
 ParseTimeZoneOffsetRaw(const char *&s)
 {
 	char *endptr;
-	unsigned long value = strtoul(s, &endptr, 10);
+	unsigned long value = std::strtoul(s, &endptr, 10);
 	if (endptr == s + 4) {
 		s = endptr;
 		return std::make_pair(value / 100, value % 100);
@@ -75,7 +74,7 @@ ParseTimeZoneOffsetRaw(const char *&s)
 		unsigned hours = value, minutes = 0;
 		if (*s == ':') {
 			++s;
-			minutes = strtoul(s, &endptr, 10);
+			minutes = std::strtoul(s, &endptr, 10);
 			if (endptr != s + 2)
 				throw std::runtime_error("Failed to parse time zone offset");
 
@@ -112,7 +111,7 @@ ParseTimeZoneOffset(const char *&s)
 }
 
 static const char *
-ParseTimeOfDay(const char *s, struct tm &tm,
+ParseTimeOfDay(const char *s, struct std::tm &tm,
 	       std::chrono::system_clock::duration &precision) noexcept
 {
 	/* this function always checks "end==s" to work around a
@@ -183,7 +182,7 @@ ParseISO8601(const char *s)
 	(void)s;
 	throw std::runtime_error("Time parsing not implemented on Windows");
 #else
-	struct tm tm{};
+	struct std::tm tm{};
 
 	/* parse the date */
 	const char *end = strptime(s, "%F", &tm);

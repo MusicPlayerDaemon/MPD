@@ -24,8 +24,6 @@
 
 #include <string>
 
-#include <time.h>
-
 struct Tag;
 
 /**

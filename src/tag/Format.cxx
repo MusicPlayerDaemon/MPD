@@ -25,9 +25,7 @@
 #include "util/TruncateString.hxx"
 
 #include <algorithm>
-
-#include <string.h>
-#include <time.h>
+#include <cstring>
 
 struct FormatTagContext {
 	const Tag &tag;
@@ -64,7 +62,7 @@ HasUnsafeChar(const char *s) noexcept
 }
 
 static const char *
-SanitizeString(const char *s, char *buffer, size_t buffer_size) noexcept
+SanitizeString(const char *s, char *buffer, std::size_t buffer_size) noexcept
 {
 	/* skip leading dots to avoid generating "../" sequences */
 	while (*s == '.')
@@ -85,8 +83,8 @@ TagGetter(const void *object, const char *name) noexcept
 	const auto &_ctx = *(const FormatTagContext *)object;
 	auto &ctx = const_cast<FormatTagContext &>(_ctx);
 
-	if (strcmp(name, "iso8601") == 0) {
-		struct tm tm;
+	if (std::strcmp(name, "iso8601") == 0) {
+		struct std::tm tm;
 
 		try {
 			tm = GmTime(std::chrono::system_clock::now());
@@ -94,7 +92,7 @@ TagGetter(const void *object, const char *name) noexcept
 			return "";
 		}
 
-		strftime(ctx.buffer, sizeof(ctx.buffer),
+		std::strftime(ctx.buffer, sizeof(ctx.buffer),
 #ifdef _WIN32
 			 /* kludge: use underscore instead of colon on
 			    Windows because colons are not allowed in

@@ -40,12 +40,11 @@
 
 #include <cstddef>
 
-struct tm;
 template<size_t CAPACITY> class StringBuffer;
 
 gcc_pure
 StringBuffer<64>
-FormatISO8601(const struct tm &tm) noexcept;
+FormatISO8601(const struct std::tm &tm) noexcept;
 
 gcc_pure
 StringBuffer<64>

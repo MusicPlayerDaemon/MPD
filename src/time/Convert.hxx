@@ -38,34 +38,34 @@
 #include <chrono>
 
 /**
- * Convert a UTC-based time point to a UTC-based "struct tm".
+ * Convert a UTC-based time point to a UTC-based "struct std::tm".
  *
  * Throws on error.
  */
-struct tm
+struct std::tm
 GmTime(std::chrono::system_clock::time_point tp);
 
 /**
- * Convert a UTC-based time point to a local "struct tm".
+ * Convert a UTC-based time point to a local "struct std::tm".
  *
  * Throws on error.
  */
-struct tm
+struct std::tm
 LocalTime(std::chrono::system_clock::time_point tp);
 
 /**
- * Convert a UTC-based "struct tm" to a UTC-based time point.
+ * Convert a UTC-based "struct std::tm" to a UTC-based time point.
  */
 gcc_pure
 std::chrono::system_clock::time_point
-TimeGm(struct tm &tm) noexcept;
+TimeGm(struct std::tm &tm) noexcept;
 
 /**
- * Convert a local "struct tm" to a UTC-based time point.
+ * Convert a local "struct std::tm" to a UTC-based time point.
  */
 gcc_pure
 std::chrono::system_clock::time_point
-MakeTime(struct tm &tm) noexcept;
+MakeTime(struct std::tm &tm) noexcept;
 
 gcc_pure
 std::chrono::steady_clock::duration

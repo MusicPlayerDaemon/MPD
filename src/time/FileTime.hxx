@@ -47,7 +47,7 @@ ToUint64(FILETIME ft) noexcept
 	return ConstructUint64(ft.dwLowDateTime, ft.dwHighDateTime);
 }
 
-constexpr time_t
+constexpr std::time_t
 FileTimeToTimeT(FILETIME ft) noexcept
 {
 	return (ToUint64(ft) - 116444736000000000) / 10000000;

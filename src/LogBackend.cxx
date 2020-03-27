@@ -24,10 +24,9 @@
 #include "config.h"
 
 #include <cassert>
-
-#include <stdio.h>
-#include <string.h>
-#include <time.h>
+#include <cstdio>
+#include <cstring>
+#include <ctime>
 
 #ifdef HAVE_SYSLOG
 #include <syslog.h>
@@ -90,10 +89,10 @@ EnableLogTimestamp() noexcept
 static const char *
 log_date() noexcept
 {
-	static constexpr size_t LOG_DATE_BUF_SIZE = 16;
+	static constexpr std::size_t LOG_DATE_BUF_SIZE = 16;
 	static char buf[LOG_DATE_BUF_SIZE];
-	time_t t = time(nullptr);
-	strftime(buf, LOG_DATE_BUF_SIZE, "%b %d %H:%M : ", localtime(&t));
+	std::time_t t = std::time(nullptr);
+	std::strftime(buf, LOG_DATE_BUF_SIZE, "%b %d %H:%M : ", localtime(&t));
 	return buf;
 }
 
@@ -104,7 +103,7 @@ log_date() noexcept
 static int
 chomp_length(const char *p) noexcept
 {
-	size_t length = strlen(p);
+	std::size_t length = std::strlen(p);
 	return StripRight(p, length);
 }
 
@@ -162,7 +161,7 @@ LogFinishSysLog() noexcept
 static void
 FileLog(const Domain &domain, const char *message) noexcept
 {
-	fprintf(stderr, "%s%s: %.*s\n",
+	std::fprintf(stderr, "%s%s: %.*s\n",
 		enable_timestamp ? log_date() : "",
 		domain.GetName(),
 		chomp_length(message), message);
@@ -170,7 +169,7 @@ FileLog(const Domain &domain, const char *message) noexcept
 #ifdef _WIN32
 	/* force-flush the log file, because setvbuf() does not seem
 	   to have an effect on WIN32 */
-	fflush(stderr);
+	std::fflush(std::stderr);
 #endif
 }
 

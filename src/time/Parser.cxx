@@ -33,8 +33,6 @@
 #include <cassert>
 #include <stdexcept>
 
-#include <time.h>
-
 std::chrono::system_clock::time_point
 ParseTimePoint(const char *s, const char *format)
 {
@@ -47,7 +45,7 @@ ParseTimePoint(const char *s, const char *format)
 	(void)format;
 	throw std::runtime_error("Time parsing not implemented on Windows");
 #else
-	struct tm tm{};
+	struct std::tm tm{};
 	const char *end = strptime(s, format, &tm);
 	if (end == nullptr || *end != 0)
 		throw std::runtime_error("Failed to parse time stamp");
