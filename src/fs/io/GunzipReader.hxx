@@ -36,7 +36,7 @@ class GunzipReader final : public Reader {
 
 	z_stream z;
 
-	StaticFifoBuffer<Bytef, 4096> buffer;
+	StaticFifoBuffer<Bytef, 65536> buffer;
 
 public:
 	/**

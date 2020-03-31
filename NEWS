@@ -1,4 +1,6 @@
 ver 0.21.22 (not yet released)
+* database
+  - simple: reduce I/O overhead while reading database file
 * input
   - curl: fix streaming errors on Android
 * playlist
