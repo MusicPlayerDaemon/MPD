@@ -32,7 +32,7 @@
 
 Mutex tag_pool_lock;
 
-static constexpr size_t NUM_SLOTS = 4093;
+static constexpr size_t NUM_SLOTS = 16127;
 
 struct TagPoolSlot {
 	TagPoolSlot *next;
