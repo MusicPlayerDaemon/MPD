@@ -126,6 +126,22 @@ jobs:
           packages:
             - ccache
             - meson
+            - icu4c
+            - ffmpeg
+            - libnfs
+            - yajl
+            - libupnp
+            - libid3tag
+            - chromaprint
+            - libsamplerate
+            - libsoxr
+            - libzzip
+            - flac
+            - opus
+            - libvorbis
+            - faad2
+            - wavpack
+            - libmpdclient
           update: true
       env:
         - MATRIX_EVAL="export PATH=/usr/local/opt/ccache/libexec:$PATH HOMEBREW_NO_ANALYTICS=1"
