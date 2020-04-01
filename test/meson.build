@@ -24,6 +24,7 @@ gtest_dep = declare_dependency(
 )
 
 subdir('net')
+subdir('time')
 
 executable(
   'read_conf',
@@ -50,19 +51,6 @@ test('TestUtil', executable(
     gtest_dep,
   ],
 ))
-
-test(
-  'TestTime',
-  executable(
-    'TestTime',
-    'TestISO8601.cxx',
-    include_directories: inc,
-    dependencies: [
-      time_dep,
-      gtest_dep,
-    ],
-  ),
-)
 
 test('TestRewindInputStream', executable(
   'TestRewindInputStream',
