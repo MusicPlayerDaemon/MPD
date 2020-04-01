@@ -452,14 +452,3 @@ AudioOutputControl::StopThread() noexcept
 
 	assert(IsCommandFinished());
 }
-
-void
-AudioOutputControl::Signal(intptr_t sig) noexcept
-{
-	const std::lock_guard<Mutex> protect(mutex);
-
-	signal = sig;
-
-	if (IsOpen())
-		CommandAsync(Command::SIGNAL);
-}

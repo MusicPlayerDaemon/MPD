@@ -111,24 +111,6 @@ AudioOutputControl::InternalEnable() noexcept
 	}
 }
 
-inline bool
-AudioOutputControl::InternalSignal(intptr_t info) noexcept
-{
-	if (!really_enabled)
-		return false;
-
-	try {
-		{
-			const ScopeUnlock unlock(mutex);
-			return output->Signal(info);
-		}
-	} catch (...) {
-		LogError(std::current_exception());
-		Failure(std::current_exception());
-		return false;
-	}
-}
-
 inline void
 AudioOutputControl::InternalDisable() noexcept
 {
@@ -526,13 +508,6 @@ AudioOutputControl::Task() noexcept
 			source.Cancel();
 			CommandFinished();
 			return;
-
-		case Command::SIGNAL:
-			if (open)
-				InternalSignal(signal);
-
-			CommandFinished();
-			continue;
 		}
 
 		if (open && allow_play && InternalPlay(lock))

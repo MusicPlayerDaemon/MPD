@@ -32,7 +32,6 @@
 #include "thread/Thread.hxx"
 #include "thread/Name.hxx"
 #include "output/Filtered.hxx"
-
 #include <cassert>
 #include <memory>
 #include <stdexcept>
@@ -60,6 +59,9 @@ class RecorderOutput final : AudioOutput {
 	 */
 	std::string format_path;
 
+	/**
+	 * The archive destination file name.
+	 */
 	AllocatedPath archive_path = nullptr;
 
 	/**
@@ -108,7 +110,7 @@ private:
 
 	void FinishFormat();
 	void ReopenFormat(AllocatedPath &&new_path);
-
+	
 	void ArchiveTask();
 
 	/* parent (true) recorder to send archive message to */
