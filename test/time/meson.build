@@ -1,4 +1,5 @@
 test_time_sources = [
+  'TestConvert.cxx',
   'TestISO8601.cxx',
 ]
 
