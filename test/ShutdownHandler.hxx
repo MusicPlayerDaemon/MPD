@@ -29,8 +29,8 @@ public:
 };
 
 #ifdef _WIN32
-ShutdownHandler::ShutdownHandler(EventLoop &loop) {}
-ShutdownHandler::~ShutdownHandler() {}
+inline ShutdownHandler::ShutdownHandler(EventLoop &) {}
+inline ShutdownHandler::~ShutdownHandler() {}
 #endif
 
 #endif
