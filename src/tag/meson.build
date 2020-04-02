@@ -1,3 +1,18 @@
+generate_parse_name = executable(
+  'GenParseName',
+  'GenParseName.cxx',
+  'Names.c',
+  native: true,
+)
+
+parse_name_cxx = custom_target(
+  'RunGenParseName',
+  output: ['ParseName2.cxx'],
+  command : [
+    generate_parse_name, '@OUTPUT@',
+  ],
+)
+
 tag_sources = [
   'Tag.cxx',
   'Builder.cxx',
@@ -5,6 +20,7 @@ tag_sources = [
   'Settings.cxx',
   'Config.cxx',
   'ParseName.cxx',
+  parse_name_cxx,
   'Names.c',
   'FixString.cxx',
   'Pool.cxx',

@@ -26,21 +26,6 @@
 #include <string.h>
 
 TagType
-tag_name_parse(const char *name) noexcept
-{
-	assert(name != nullptr);
-
-	for (unsigned i = 0; i < TAG_NUM_OF_ITEM_TYPES; ++i) {
-		assert(tag_item_names[i] != nullptr);
-
-		if (strcmp(name, tag_item_names[i]) == 0)
-			return (TagType)i;
-	}
-
-	return TAG_NUM_OF_ITEM_TYPES;
-}
-
-TagType
 tag_name_parse(StringView name) noexcept
 {
 	assert(name != nullptr);
