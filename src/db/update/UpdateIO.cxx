@@ -66,7 +66,7 @@ DirectoryExists(Storage &storage, const Directory &directory) noexcept
 
 static StorageFileInfo
 GetDirectoryChildInfo(Storage &storage, const Directory &directory,
-		      const char *name_utf8)
+		      std::string_view name_utf8)
 {
 	const auto uri_utf8 = PathTraitsUTF8::Build(directory.GetPath(),
 						    name_utf8);
@@ -75,7 +75,7 @@ GetDirectoryChildInfo(Storage &storage, const Directory &directory,
 
 bool
 directory_child_is_regular(Storage &storage, const Directory &directory,
-			   const char *name_utf8) noexcept
+			   std::string_view name_utf8) noexcept
 try {
 	return GetDirectoryChildInfo(storage, directory, name_utf8)
 		.IsRegular();

@@ -22,6 +22,8 @@
 
 #include "util/Compiler.h"
 
+#include <string_view>
+
 struct Directory;
 struct StorageFileInfo;
 class Storage;
@@ -48,7 +50,7 @@ DirectoryExists(Storage &storage, const Directory &directory) noexcept;
 gcc_pure
 bool
 directory_child_is_regular(Storage &storage, const Directory &directory,
-			   const char *name_utf8) noexcept;
+			   std::string_view name_utf8) noexcept;
 
 /**
  * Checks if the given permissions on the mapped file are given.

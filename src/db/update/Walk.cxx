@@ -103,7 +103,7 @@ UpdateWalk::PurgeDeletedFromDirectory(Directory &directory) noexcept
 
 	directory.ForEachSongSafe([&](Song &song){
 			if (!directory_child_is_regular(storage, directory,
-							song.filename.c_str())) {
+							song.filename)) {
 				editor.LockDeleteSong(directory, &song);
 
 				modified = true;
@@ -113,8 +113,7 @@ UpdateWalk::PurgeDeletedFromDirectory(Directory &directory) noexcept
 	for (auto i = directory.playlists.begin(),
 		     end = directory.playlists.end();
 	     i != end;) {
-		if (!directory_child_is_regular(storage, directory,
-						i->name.c_str())) {
+		if (!directory_child_is_regular(storage, directory, i->name)) {
 			const ScopeDatabaseLock protect;
 			i = directory.playlists.erase(i);
 		} else
