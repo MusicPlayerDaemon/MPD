@@ -23,9 +23,8 @@
 #include "Path.hxx"
 
 #ifdef _UNICODE
-#include "lib/icu/Win32.hxx"
+#include "AllocatedPath.hxx"
 #include "util/AllocatedString.hxx"
-#include <windows.h>
 #else
 #include "util/StringPointer.hxx"
 #endif
@@ -47,12 +46,7 @@ class NarrowPath {
 
 public:
 #ifdef _UNICODE
-	explicit NarrowPath(Path _path)
-		:value(WideCharToMultiByte(CP_ACP, _path.c_str())) {
-		if (value.IsNull())
-			/* fall back to empty string */
-			value = Value::Empty();
-	}
+	explicit NarrowPath(Path _path) noexcept;
 #else
 	explicit NarrowPath(Path _path):value(_path.c_str()) {}
 #endif
@@ -63,6 +57,40 @@ public:
 
 	const_pointer c_str() const {
 		return value.c_str();
+	}
+};
+
+/**
+ * A path name converted from a "narrow" string.  This is used to
+ * import an existing narrow string to a #Path.
+ */
+class FromNarrowPath {
+#ifdef _UNICODE
+	using Value = AllocatedPath;
+#else
+	using Value = Path;
+#endif
+
+	Value value{nullptr};
+
+public:
+	FromNarrowPath() = default;
+
+#ifdef _UNICODE
+	/**
+	 * Throws on error.
+	 */
+	FromNarrowPath(const char *s);
+#else
+	constexpr FromNarrowPath(const char *s) noexcept
+		:value(Value::FromFS(s)) {}
+#endif
+
+#ifndef _UNICODE
+	constexpr
+#endif
+	operator Path() const noexcept {
+		return value;
 	}
 };
 

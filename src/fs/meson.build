@@ -6,6 +6,7 @@ fs_sources = [
   'Path.cxx',
   'Path2.cxx',
   'AllocatedPath.cxx',
+  'NarrowPath.cxx',
   'FileSystem.cxx',
   'List.cxx',
   'StandardDirectory.cxx',

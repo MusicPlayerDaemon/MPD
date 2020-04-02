@@ -21,6 +21,7 @@
 #include "config/Param.hxx"
 #include "config/File.hxx"
 #include "fs/Path.hxx"
+#include "fs/NarrowPath.hxx"
 #include "util/PrintException.hxx"
 #include "util/RuntimeError.hxx"
 
@@ -34,7 +35,7 @@ try {
 		return EXIT_FAILURE;
 	}
 
-	const Path config_path = Path::FromFS(argv[1]);
+	const FromNarrowPath config_path = argv[1];
 	const char *name = argv[2];
 
 	const auto option = ParseConfigOptionName(name);

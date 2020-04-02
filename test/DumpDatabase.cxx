@@ -29,6 +29,7 @@
 #include "ConfigGlue.hxx"
 #include "tag/Config.hxx"
 #include "fs/Path.hxx"
+#include "fs/NarrowPath.hxx"
 #include "event/Thread.hxx"
 #include "util/ScopeExit.hxx"
 #include "util/PrintException.hxx"
@@ -106,7 +107,7 @@ try {
 		return 1;
 	}
 
-	const Path config_path = Path::FromFS(argv[1]);
+	const FromNarrowPath config_path = argv[1];
 	const char *const plugin_name = argv[2];
 
 	const DatabasePlugin *plugin = GetDatabasePluginByName(plugin_name);

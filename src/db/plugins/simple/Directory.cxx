@@ -32,6 +32,7 @@
 #include "fs/Traits.hxx"
 #include "util/Alloc.hxx"
 #include "util/DeleteDisposer.hxx"
+#include "util/StringCompare.hxx"
 
 #include <cassert>
 
@@ -70,7 +71,15 @@ Directory::GetName() const noexcept
 {
 	assert(!IsRoot());
 
-	return PathTraitsUTF8::GetBase(path.c_str());
+	if (parent->IsRoot())
+		return path.c_str();
+
+	assert(StringAfterPrefix(path.c_str(), parent->path.c_str()) != nullptr);
+	assert(*StringAfterPrefix(path.c_str(), parent->path.c_str()) == PathTraitsUTF8::SEPARATOR);
+
+	/* strip the parent directory path and the slash separator
+	   from this directory's path, and the base name remains */
+	return path.c_str() + parent->path.length() + 1;
 }
 
 Directory *

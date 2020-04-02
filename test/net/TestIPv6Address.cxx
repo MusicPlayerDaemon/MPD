@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2019 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2012-2020 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -34,13 +34,22 @@
 
 #include <stdexcept>
 
+#ifndef _WIN32
 #include <arpa/inet.h>
+#endif
 
 static std::string
 ToString(const struct in6_addr &a)
 {
+#ifdef _WIN32
+	/* on mingw32, the parameter is non-const (PVOID) */
+	const auto p = const_cast<struct in6_addr *>(&a);
+#else
+	const auto p = &a;
+#endif
+
 	char buffer[256];
-	const char *result = inet_ntop(AF_INET6, &a, buffer, sizeof(buffer));
+	const char *result = inet_ntop(AF_INET6, p, buffer, sizeof(buffer));
 	if (result == nullptr)
 		throw std::runtime_error("inet_ntop() failed");
 	return result;

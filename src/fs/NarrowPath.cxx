@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2018 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,20 +17,38 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_TEST_SHUTDOWN_HANDLER_HXX
-#define MPD_TEST_SHUTDOWN_HANDLER_HXX
+#include "NarrowPath.hxx"
 
-class EventLoop;
+#ifdef _UNICODE
 
-class ShutdownHandler {
-public:
-	explicit ShutdownHandler(EventLoop &loop);
-	~ShutdownHandler();
-};
+#include "lib/icu/Win32.hxx"
+#include "system/Error.hxx"
 
-#ifdef _WIN32
-inline ShutdownHandler::ShutdownHandler(EventLoop &) {}
-inline ShutdownHandler::~ShutdownHandler() {}
-#endif
+#include <windows.h>
 
-#endif
+NarrowPath::NarrowPath(Path _path) noexcept
+	:value(WideCharToMultiByte(CP_ACP, _path.c_str()))
+{
+	if (value.IsNull())
+		/* fall back to empty string */
+		value = Value::Empty();
+}
+
+static AllocatedPath
+AcpToAllocatedPath(const char *s)
+{
+	wchar_t buffer[MAX_PATH];
+	auto result = MultiByteToWideChar(CP_ACP, 0, s, -1,
+					  buffer, std::size(buffer));
+	if (result <= 0)
+		throw MakeLastError("MultiByteToWideChar() failed");
+
+	return AllocatedPath::FromFS(buffer);
+}
+
+FromNarrowPath::FromNarrowPath(const char *s)
+	:value(AcpToAllocatedPath(s))
+{
+}
+
+#endif /* _UNICODE */

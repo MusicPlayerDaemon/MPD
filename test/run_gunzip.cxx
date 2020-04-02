@@ -20,6 +20,7 @@
 #include "fs/io/GunzipReader.hxx"
 #include "fs/io/FileReader.hxx"
 #include "fs/io/StdioOutputStream.hxx"
+#include "fs/NarrowPath.hxx"
 #include "util/PrintException.hxx"
 
 #include <stdio.h>
@@ -62,7 +63,7 @@ try {
 		return EXIT_FAILURE;
 	}
 
-	Path path = Path::FromFS(argv[1]);
+	FromNarrowPath path = argv[1];
 
 	CopyGunzip(stdout, path);
 	return EXIT_SUCCESS;

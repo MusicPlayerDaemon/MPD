@@ -32,6 +32,7 @@
 #include "Log.hxx"
 #include "LogBackend.hxx"
 #include "fs/Path.hxx"
+#include "fs/NarrowPath.hxx"
 #include "fs/io/BufferedOutputStream.hxx"
 #include "fs/io/StdioOutputStream.hxx"
 #include "util/ConstBuffer.hxx"
@@ -51,7 +52,7 @@
 struct CommandLine {
 	const char *uri = nullptr;
 
-	Path config_path = nullptr;
+	FromNarrowPath config_path;
 
 	bool verbose = false;
 
@@ -79,7 +80,7 @@ ParseCommandLine(int argc, char **argv)
 	while (auto o = option_parser.Next()) {
 		switch (Option(o.index)) {
 		case OPTION_CONFIG:
-			c.config_path = Path::FromFS(o.value);
+			c.config_path = o.value;
 			break;
 
 		case OPTION_VERBOSE:

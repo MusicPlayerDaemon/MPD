@@ -77,15 +77,15 @@ static time_t
 GetTimeZoneOffset() noexcept
 {
 	time_t t = 1234567890;
-	struct tm tm;
-	tm.tm_isdst = 0;
 #ifdef _WIN32
 	struct tm *p = gmtime(&t);
 #else
+	struct tm tm;
+	tm.tm_isdst = 0;
 	struct tm *p = &tm;
 	gmtime_r(&t, p);
 #endif
-	return t - mktime(&tm);
+	return t - mktime(p);
 }
 
 #endif /* !__GLIBC__ */

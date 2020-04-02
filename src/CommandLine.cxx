@@ -33,6 +33,7 @@
 #include "playlist/PlaylistRegistry.hxx"
 #include "playlist/PlaylistPlugin.hxx"
 #include "fs/AllocatedPath.hxx"
+#include "fs/NarrowPath.hxx"
 #include "fs/Traits.hxx"
 #include "fs/FileSystem.hxx"
 #include "fs/StandardDirectory.hxx"
@@ -378,17 +379,7 @@ ParseCommandLine(int argc, char **argv, struct options &options,
 
 	if (config_file != nullptr) {
 		/* use specified configuration file */
-#ifdef _UNICODE
-		wchar_t buffer[MAX_PATH];
-		auto result = MultiByteToWideChar(CP_ACP, 0, config_file, -1,
-						  buffer, std::size(buffer));
-		if (result <= 0)
-			throw MakeLastError("MultiByteToWideChar() failed");
-
-		ReadConfigFile(config, Path::FromFS(buffer));
-#else
-		ReadConfigFile(config, Path::FromFS(config_file));
-#endif
+		ReadConfigFile(config, FromNarrowPath(config_file));
 		return;
 	}
 

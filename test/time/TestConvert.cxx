@@ -1,5 +1,8 @@
 /*
- * Copyright 2014-2019 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2020 Max Kellermann <max.kellermann@gmail.com>
+ * All rights reserved.
+ *
+ * author: Max Kellermann <mk@cm4all.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -27,41 +30,36 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef GUNZIP_READER_HXX
-#define GUNZIP_READER_HXX
+#include "time/Convert.hxx"
 
-#include "Reader.hxx"
-#include "util/StaticFifoBuffer.hxx"
+#include <gtest/gtest.h>
 
-#include <zlib.h>
-
-/**
- * A filter that decompresses data using zlib.
- */
-class GunzipReader final : public Reader {
-	Reader &next;
-
-	bool eof = false;
-
-	z_stream z;
-
-	StaticFifoBuffer<Bytef, 65536> buffer;
-
-public:
-	/**
-	 * Construct the filter.
-	 */
-	explicit GunzipReader(Reader &_next);
-
-	~GunzipReader() noexcept {
-		inflateEnd(&z);
-	}
-
-	/* virtual methods from class Reader */
-	size_t Read(void *data, size_t size) override;
-
-private:
-	bool FillBuffer();
+static constexpr time_t times[] = {
+	1234567890,
+	1580566807,
+	1585750807,
+	1590934807,
 };
 
-#endif
+TEST(Time, LocalTime)
+{
+	/* convert back and forth using local time zone */
+
+	for (const auto t : times) {
+		auto tp = std::chrono::system_clock::from_time_t(t);
+		auto tm = LocalTime(tp);
+		EXPECT_EQ(MakeTime(tm), tp);
+	}
+}
+
+TEST(Time, GmTime)
+{
+	/* convert back and forth using UTC */
+
+	for (const auto t : times) {
+		auto tp = std::chrono::system_clock::from_time_t(t);
+		auto tm = GmTime(tp);
+		EXPECT_EQ(std::chrono::system_clock::to_time_t(TimeGm(tm)),
+			  t);
+	}
+}

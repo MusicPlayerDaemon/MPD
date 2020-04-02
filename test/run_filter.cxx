@@ -19,6 +19,7 @@
 
 #include "ConfigGlue.hxx"
 #include "fs/Path.hxx"
+#include "fs/NarrowPath.hxx"
 #include "filter/LoadOne.hxx"
 #include "filter/Filter.hxx"
 #include "filter/Prepared.hxx"
@@ -123,7 +124,7 @@ try {
 		return EXIT_FAILURE;
 	}
 
-	const Path config_path = Path::FromFS(argv[1]);
+	const FromNarrowPath config_path = argv[1];
 
 	AudioFormat audio_format(44100, SampleFormat::S16, 2);
 

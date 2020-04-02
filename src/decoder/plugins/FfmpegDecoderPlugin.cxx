@@ -287,7 +287,7 @@ FfmpegReceiveFrames(DecoderClient &client, InputStream &is,
  */
 static DecoderCommand
 ffmpeg_send_packet(DecoderClient &client, InputStream &is,
-		   AVPacket &&packet,
+		   const AVPacket &packet,
 		   AVCodecContext &codec_context,
 		   const AVStream &stream,
 		   AVFrame &frame,
@@ -338,24 +338,6 @@ ffmpeg_send_packet(DecoderClient &client, InputStream &is,
 		cmd = DecoderCommand::STOP;
 
 	return cmd;
-}
-
-static DecoderCommand
-ffmpeg_send_packet(DecoderClient &client, InputStream &is,
-		   const AVPacket &packet,
-		   AVCodecContext &codec_context,
-		   const AVStream &stream,
-		   AVFrame &frame,
-		   uint64_t min_frame, size_t pcm_frame_size,
-		   FfmpegBuffer &buffer)
-{
-	return ffmpeg_send_packet(client, is,
-				  /* copy the AVPacket, because FFmpeg
-				     < 3.0 requires this */
-				  AVPacket(packet),
-				  codec_context, stream,
-				  frame, min_frame, pcm_frame_size,
-				  buffer);
 }
 
 gcc_const

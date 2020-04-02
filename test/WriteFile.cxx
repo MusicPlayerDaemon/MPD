@@ -18,6 +18,7 @@
  */
 
 #include "fs/io/FileOutputStream.hxx"
+#include "fs/NarrowPath.hxx"
 #include "util/PrintException.hxx"
 
 #include <cerrno>
@@ -55,7 +56,7 @@ try {
 		return EXIT_FAILURE;
 	}
 
-	const Path path = Path::FromFS(argv[1]);
+	const FromNarrowPath path = argv[1];
 
 	FileOutputStream fos(path);
 

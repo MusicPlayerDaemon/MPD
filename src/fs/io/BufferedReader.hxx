@@ -50,7 +50,7 @@ class BufferedReader {
 
 public:
 	explicit BufferedReader(Reader &_reader) noexcept
-		:reader(_reader), buffer(4096) {}
+		:reader(_reader), buffer(16384) {}
 
 	/**
 	 * Reset the internal state.  Should be called after rewinding

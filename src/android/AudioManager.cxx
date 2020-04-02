@@ -17,46 +17,40 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "Context.hxx"
+#include "AudioManager.hxx"
 #include "java/Class.hxx"
 #include "java/Exception.hxx"
 #include "java/File.hxx"
-#include "java/String.hxx"
-#include "fs/AllocatedPath.hxx"
 
-#include "AudioManager.hxx"
+#define STREAM_MUSIC 3
 
-AllocatedPath
-Context::GetCacheDir(JNIEnv *env) const noexcept
+AudioManager::AudioManager(JNIEnv *env, jobject obj) noexcept
+	: Java::GlobalObject(env, obj)
 {
-	assert(env != nullptr);
-
 	Java::Class cls(env, env->GetObjectClass(Get()));
-	jmethodID method = env->GetMethodID(cls, "getCacheDir",
-					    "()Ljava/io/File;");
+	jmethodID method = env->GetMethodID(cls, "getStreamMaxVolume", "(I)I");
 	assert(method);
+	maxVolume = env->CallIntMethod(Get(), method, STREAM_MUSIC);
 
-	jobject file = env->CallObjectMethod(Get(), method);
-	if (Java::DiscardException(env) || file == nullptr)
-		return nullptr;
+	getStreamVolumeMethod = env->GetMethodID(cls, "getStreamVolume", "(I)I");
+	assert(getStreamVolumeMethod);
 
-	return Java::File::ToAbsolutePath(env, file);
+	setStreamVolumeMethod = env->GetMethodID(cls, "setStreamVolume", "(III)V");
+	assert(setStreamVolumeMethod);
 }
 
-AudioManager *
-Context::GetAudioManager(JNIEnv *env) noexcept
+int
+AudioManager::GetVolume(JNIEnv *env)
 {
-	assert(env != nullptr);
+	if (maxVolume == 0)
+		return 0;
+	return env->CallIntMethod(Get(), getStreamVolumeMethod, STREAM_MUSIC);
+}
 
-	Java::Class cls(env, env->GetObjectClass(Get()));
-	jmethodID method = env->GetMethodID(cls, "getSystemService",
-					    "(Ljava/lang/String;)Ljava/lang/Object;");
-	assert(method);
-
-	Java::String name(env, "audio");
-	jobject am = env->CallObjectMethod(Get(), method, name.Get());
-	if (Java::DiscardException(env) || am == nullptr)
-		return nullptr;
-
-    return new AudioManager(env, am);
+void
+AudioManager::SetVolume(JNIEnv *env, int volume)
+{
+	if (maxVolume == 0)
+		return;
+	env->CallVoidMethod(Get(), setStreamVolumeMethod, STREAM_MUSIC, volume, 0);
 }

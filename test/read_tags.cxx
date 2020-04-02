@@ -27,6 +27,7 @@
 #include "tag/Handler.hxx"
 #include "tag/Generic.hxx"
 #include "fs/Path.hxx"
+#include "fs/NarrowPath.hxx"
 #include "pcm/AudioFormat.hxx"
 #include "util/ScopeExit.hxx"
 #include "util/StringBuffer.hxx"
@@ -97,7 +98,7 @@ try {
 	}
 
 	decoder_name = argv[1];
-	const Path path = Path::FromFS(argv[2]);
+	const char *path = argv[2];
 
 	EventThread io_thread;
 	io_thread.Start();
@@ -116,7 +117,7 @@ try {
 	DumpTagHandler h;
 	bool success;
 	try {
-		success = plugin->ScanFile(path, h);
+		success = plugin->ScanFile(FromNarrowPath(path), h);
 	} catch (...) {
 		PrintException(std::current_exception());
 		success = false;
@@ -126,7 +127,7 @@ try {
 	InputStreamPtr is;
 
 	if (!success && plugin->scan_stream != nullptr) {
-		is = InputStream::OpenReady(path.c_str(), mutex);
+		is = InputStream::OpenReady(path, mutex);
 		success = plugin->ScanStream(*is, h);
 	}
 
@@ -139,7 +140,7 @@ try {
 		if (is)
 			ScanGenericTags(*is, h);
 		else
-			ScanGenericTags(path, h);
+			ScanGenericTags(FromNarrowPath(path), h);
 	}
 
 	return 0;

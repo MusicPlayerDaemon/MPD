@@ -24,6 +24,7 @@ gtest_dep = declare_dependency(
 )
 
 subdir('net')
+subdir('time')
 
 executable(
   'read_conf',
@@ -51,19 +52,6 @@ test('TestUtil', executable(
     gtest_dep,
   ],
 ))
-
-test(
-  'TestTime',
-  executable(
-    'TestTime',
-    'TestISO8601.cxx',
-    include_directories: inc,
-    dependencies: [
-      time_dep,
-      gtest_dep,
-    ],
-  ),
-)
 
 test('TestRewindInputStream', executable(
   'TestRewindInputStream',
@@ -326,6 +314,11 @@ if curl_dep.found()
     include_directories: inc,
     dependencies: [
       curl_dep,
+
+      # Explicitly linking with zlib here works around a linker
+      # failure on Windows, because our Windows CURL build is
+      # statically linked and thus declares no dependency on zlib
+      zlib_dep,
     ],
   )
 

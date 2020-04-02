@@ -17,20 +17,26 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_TEST_SHUTDOWN_HANDLER_HXX
-#define MPD_TEST_SHUTDOWN_HANDLER_HXX
+#ifndef MPD_ANDROID_AUDIO_MANAGER_HXX
+#define MPD_ANDROID_AUDIO_MANAGER_HXX
 
-class EventLoop;
+#include "java/Object.hxx"
 
-class ShutdownHandler {
+class AudioManager : public Java::GlobalObject {
+	int maxVolume;
+	jmethodID getStreamVolumeMethod;
+	jmethodID setStreamVolumeMethod;
+
 public:
-	explicit ShutdownHandler(EventLoop &loop);
-	~ShutdownHandler();
-};
+	AudioManager(JNIEnv *env, jobject obj) noexcept;
 
-#ifdef _WIN32
-inline ShutdownHandler::ShutdownHandler(EventLoop &) {}
-inline ShutdownHandler::~ShutdownHandler() {}
-#endif
+	AudioManager(std::nullptr_t) noexcept { maxVolume = 0; }
+
+	~AudioManager() noexcept {}
+
+	int GetMaxVolume() { return maxVolume; }
+	int GetVolume(JNIEnv *env);
+	void SetVolume(JNIEnv *env, int);
+};
 
 #endif

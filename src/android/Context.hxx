@@ -23,6 +23,7 @@
 #include "java/Object.hxx"
 
 class AllocatedPath;
+class AudioManager;
 
 class Context : public Java::GlobalObject {
 public:
@@ -31,6 +32,9 @@ public:
 
 	gcc_pure
 	AllocatedPath GetCacheDir(JNIEnv *env) const noexcept;
+
+	gcc_pure
+	AudioManager *GetAudioManager(JNIEnv *env) noexcept;
 };
 
 #endif
