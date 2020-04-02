@@ -29,9 +29,12 @@ class PrefixedLightSong : public LightSong {
 	std::string buffer;
 
 public:
-	PrefixedLightSong(const LightSong &song, const char *base)
+	template<typename B>
+	PrefixedLightSong(const LightSong &song, B &&base)
 		:LightSong(song),
-		 buffer(PathTraitsUTF8::Build(base, GetURI().c_str())) {
+		 buffer(PathTraitsUTF8::Build(std::forward<B>(base),
+					      GetURI()))
+	{
 		uri = buffer.c_str();
 		directory = nullptr;
 	}
