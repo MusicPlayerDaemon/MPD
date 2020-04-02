@@ -30,9 +30,9 @@
 #include "song/Filter.hxx"
 #include "lib/icu/Collate.hxx"
 #include "fs/Traits.hxx"
-#include "util/Alloc.hxx"
 #include "util/DeleteDisposer.hxx"
 #include "util/StringCompare.hxx"
+#include "util/StringView.hxx"
 
 #include <cassert>
 
@@ -127,24 +127,24 @@ Directory::PruneEmpty() noexcept
 }
 
 Directory::LookupResult
-Directory::LookupDirectory(const char *uri) noexcept
+Directory::LookupDirectory(const char *_uri) noexcept
 {
 	assert(holding_db_lock());
-	assert(uri != nullptr);
+	assert(_uri != nullptr);
 
-	if (isRootDirectory(uri))
+	if (isRootDirectory(_uri))
 		return { this, nullptr };
 
-	char *duplicated = xstrdup(uri), *name = duplicated;
+	StringView uri(_uri);
 
 	Directory *d = this;
-	while (true) {
-		char *slash = strchr(name, '/');
-		if (slash == name)
+	do {
+		auto s = uri.Split(PathTraitsUTF8::SEPARATOR);
+		if (s.first.empty())
 			break;
 
-		if (slash != nullptr)
-			*slash = '\0';
+		const auto name = s.first;
+		const auto rest = s.second;
 
 		Directory *tmp = d->FindChild(name);
 		if (tmp == nullptr)
@@ -153,22 +153,10 @@ Directory::LookupDirectory(const char *uri) noexcept
 
 		d = tmp;
 
-		if (slash == nullptr) {
-			/* found everything */
-			name = nullptr;
-			break;
-		}
+		uri = rest;
+	} while (uri != nullptr);
 
-		name = slash + 1;
-	}
-
-	free(duplicated);
-
-	const char *rest = name == nullptr
-		? nullptr
-		: uri + (name - duplicated);
-
-	return { d, rest };
+	return { d, uri.data };
 }
 
 void
