@@ -31,7 +31,7 @@ struct PrefixedLightDirectory : LightDirectory {
 	std::string buffer;
 
 	PrefixedLightDirectory(const LightDirectory &directory,
-			       const char *base)
+			       std::string_view base)
 		:LightDirectory(directory),
 		 buffer(IsRoot()
 			? std::string(base)
@@ -41,21 +41,21 @@ struct PrefixedLightDirectory : LightDirectory {
 };
 
 static void
-PrefixVisitDirectory(const char *base, const VisitDirectory &visit_directory,
+PrefixVisitDirectory(std::string_view base, const VisitDirectory &visit_directory,
 		     const LightDirectory &directory)
 {
 	visit_directory(PrefixedLightDirectory(directory, base));
 }
 
 static void
-PrefixVisitSong(const char *base, const VisitSong &visit_song,
+PrefixVisitSong(std::string_view base, const VisitSong &visit_song,
 		const LightSong &song)
 {
 	visit_song(PrefixedLightSong(song, base));
 }
 
 static void
-PrefixVisitPlaylist(const char *base, const VisitPlaylist &visit_playlist,
+PrefixVisitPlaylist(std::string_view base, const VisitPlaylist &visit_playlist,
 		    const PlaylistInfo &playlist,
 		    const LightDirectory &directory)
 {
@@ -64,8 +64,8 @@ PrefixVisitPlaylist(const char *base, const VisitPlaylist &visit_playlist,
 }
 
 void
-WalkMount(const char *base, const Database &db,
-	  const char *uri,
+WalkMount(std::string_view base, const Database &db,
+	  std::string_view uri,
 	  const DatabaseSelection &old_selection,
 	  const VisitDirectory &visit_directory, const VisitSong &visit_song,
 	  const VisitPlaylist &visit_playlist)
@@ -92,7 +92,7 @@ WalkMount(const char *base, const Database &db,
 
 	SongFilter prefix_filter;
 
-	if (base != nullptr && selection.filter != nullptr) {
+	if (base.data() != nullptr && selection.filter != nullptr) {
 		/* if the SongFilter contains a LOCATE_TAG_BASE_TYPE
 		   item, copy the SongFilter and drop the mount point
 		   from the filter, because the mounted database
