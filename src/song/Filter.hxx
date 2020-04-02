@@ -25,6 +25,7 @@
 
 #include <cstdint>
 #include <string>
+#include <string_view>
 
 /**
  * Special value for the db_selection_print() sort parameter.
@@ -105,7 +106,7 @@ public:
 	 * from all #LOCATE_TAG_BASE_TYPE items.  This is used to
 	 * filter songs in mounted databases.
 	 */
-	SongFilter WithoutBasePrefix(const char *prefix) const noexcept;
+	SongFilter WithoutBasePrefix(std::string_view prefix) const noexcept;
 };
 
 #endif

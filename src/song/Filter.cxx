@@ -467,9 +467,8 @@ SongFilter::GetBase() const noexcept
 }
 
 SongFilter
-SongFilter::WithoutBasePrefix(const char *_prefix) const noexcept
+SongFilter::WithoutBasePrefix(const std::string_view prefix) const noexcept
 {
-	const StringView prefix(_prefix);
 	SongFilter result;
 
 	for (const auto &i : and_filter.GetItems()) {
