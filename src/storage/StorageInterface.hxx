@@ -24,6 +24,7 @@
 
 #include <memory>
 #include <string>
+#include <string_view>
 
 struct StorageFileInfo;
 class AllocatedPath;
@@ -73,8 +74,8 @@ public:
 	virtual AllocatedPath MapFS(const char *uri_utf8) const noexcept;
 
 	gcc_pure
-	AllocatedPath MapChildFS(const char *uri_utf8,
-				 const char *child_utf8) const noexcept;
+	AllocatedPath MapChildFS(std::string_view uri_utf8,
+				 std::string_view child_utf8) const noexcept;
 
 	/**
 	 * Check if the given URI points inside this storage.  If yes,

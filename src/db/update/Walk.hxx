@@ -78,7 +78,7 @@ public:
 private:
 	gcc_pure
 	bool SkipSymlink(const Directory *directory,
-			 const char *utf8_name) const noexcept;
+			 std::string_view utf8_name) const noexcept;
 
 	void RemoveExcludedFromDirectory(Directory &directory,
 					 const ExcludeList &exclude_list) noexcept;
@@ -103,10 +103,10 @@ private:
 			       const char *name) noexcept;
 
 	bool UpdateArchiveFile(Directory &directory,
-			       const char *name, const char *suffix,
+			       std::string_view name, const char *suffix,
 			       const StorageFileInfo &info) noexcept;
 
-	void UpdateArchiveFile(Directory &directory, const char *name,
+	void UpdateArchiveFile(Directory &directory, std::string_view name,
 			       const StorageFileInfo &info,
 			       const ArchivePlugin &plugin) noexcept;
 
@@ -163,7 +163,7 @@ private:
 
 	Directory *DirectoryMakeChildChecked(Directory &parent,
 					     const char *uri_utf8,
-					     const char *name_utf8) noexcept;
+					     std::string_view name_utf8) noexcept;
 
 	Directory *DirectoryMakeUriParentChecked(Directory &root,
 						 const char *uri) noexcept;

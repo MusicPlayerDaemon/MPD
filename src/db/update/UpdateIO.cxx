@@ -85,7 +85,7 @@ try {
 
 bool
 directory_child_access(Storage &storage, const Directory &directory,
-		       const char *name, int mode) noexcept
+		       std::string_view name, int mode) noexcept
 {
 #ifdef _WIN32
 	/* CheckAccess() is useless on WIN32 */

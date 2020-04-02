@@ -122,7 +122,7 @@ class UpdateArchiveVisitor final : public ArchiveVisitor {
  * @param plugin the archive plugin which fits this archive type
  */
 void
-UpdateWalk::UpdateArchiveFile(Directory &parent, const char *name,
+UpdateWalk::UpdateArchiveFile(Directory &parent, std::string_view name,
 			      const StorageFileInfo &info,
 			      const ArchivePlugin &plugin) noexcept
 {
@@ -157,7 +157,7 @@ UpdateWalk::UpdateArchiveFile(Directory &parent, const char *name,
 
 bool
 UpdateWalk::UpdateArchiveFile(Directory &directory,
-			      const char *name, const char *suffix,
+			      std::string_view name, const char *suffix,
 			      const StorageFileInfo &info) noexcept
 {
 	const ArchivePlugin *plugin = archive_plugin_from_suffix(suffix);

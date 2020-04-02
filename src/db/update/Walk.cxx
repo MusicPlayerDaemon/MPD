@@ -229,7 +229,7 @@ skip_path(const char *name_utf8) noexcept
 gcc_pure
 bool
 UpdateWalk::SkipSymlink(const Directory *directory,
-			const char *utf8_name) const noexcept
+			std::string_view utf8_name) const noexcept
 {
 #ifndef _WIN32
 	const auto path_fs = storage.MapChildFS(directory->GetPath(),
@@ -369,7 +369,7 @@ UpdateWalk::UpdateDirectory(Directory &directory,
 inline Directory *
 UpdateWalk::DirectoryMakeChildChecked(Directory &parent,
 				      const char *uri_utf8,
-				      const char *name_utf8) noexcept
+				      std::string_view name_utf8) noexcept
 {
 	Directory *directory;
 	{

@@ -58,6 +58,6 @@ directory_child_is_regular(Storage &storage, const Directory &directory,
 gcc_pure
 bool
 directory_child_access(Storage &storage, const Directory &directory,
-		       const char *name, int mode) noexcept;
+		       std::string_view name, int mode) noexcept;
 
 #endif
