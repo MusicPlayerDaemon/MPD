@@ -21,6 +21,7 @@
 #include "tag/ApeLoader.hxx"
 #include "thread/Mutex.hxx"
 #include "fs/Path.hxx"
+#include "fs/NarrowPath.hxx"
 #include "input/InputStream.hxx"
 #include "input/LocalOpen.hxx"
 #include "util/StringView.hxx"
@@ -58,7 +59,7 @@ try {
 		return EXIT_FAILURE;
 	}
 
-	const Path path = Path::FromFS(argv[1]);
+	const FromNarrowPath path = argv[1];
 
 	Mutex mutex;
 

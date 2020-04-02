@@ -26,6 +26,7 @@
 #include "input/Init.hxx"
 #include "input/InputStream.hxx"
 #include "fs/Path.hxx"
+#include "fs/NarrowPath.hxx"
 #include "AudioFormat.hxx"
 #include "util/OptionDef.hxx"
 #include "util/OptionParser.hxx"
@@ -44,7 +45,7 @@ struct CommandLine {
 	const char *decoder = nullptr;
 	const char *uri = nullptr;
 
-	Path config_path = nullptr;
+	FromNarrowPath config_path;
 
 	bool verbose = false;
 };
@@ -68,7 +69,7 @@ ParseCommandLine(int argc, char **argv)
 	while (auto o = option_parser.Next()) {
 		switch (Option(o.index)) {
 		case OPTION_CONFIG:
-			c.config_path = Path::FromFS(o.value);
+			c.config_path = o.value;
 			break;
 
 		case OPTION_VERBOSE:
@@ -118,7 +119,7 @@ try {
 	DumpDecoderClient client;
 	if (plugin->file_decode != nullptr) {
 		try {
-			plugin->FileDecode(client, Path::FromFS(c.uri));
+			plugin->FileDecode(client, FromNarrowPath(c.uri));
 		} catch (StopDecoder) {
 		}
 	} else if (plugin->stream_decode != nullptr) {

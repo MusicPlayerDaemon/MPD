@@ -28,6 +28,7 @@
 #include "playlist/PlaylistRegistry.hxx"
 #include "playlist/PlaylistPlugin.hxx"
 #include "fs/Path.hxx"
+#include "fs/NarrowPath.hxx"
 #include "fs/io/BufferedOutputStream.hxx"
 #include "fs/io/StdioOutputStream.hxx"
 #include "thread/Cond.hxx"
@@ -54,7 +55,7 @@ try {
 		return EXIT_FAILURE;
 	}
 
-	const Path config_path = Path::FromFS(argv[1]);
+	const FromNarrowPath config_path = argv[1];
 	uri = argv[2];
 
 	/* initialize MPD */

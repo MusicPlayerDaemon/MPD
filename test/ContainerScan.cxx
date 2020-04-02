@@ -23,6 +23,7 @@
 #include "decoder/DecoderList.hxx"
 #include "decoder/DecoderPlugin.hxx"
 #include "fs/Path.hxx"
+#include "fs/NarrowPath.hxx"
 #include "fs/io/StdioOutputStream.hxx"
 #include "fs/io/BufferedOutputStream.hxx"
 #include "util/UriUtil.hxx"
@@ -63,7 +64,7 @@ try {
 		return EXIT_FAILURE;
 	}
 
-	const Path path = Path::FromFS(argv[1]);
+	const FromNarrowPath path = argv[1];
 
 	const ScopeDecoderPluginsInit decoder_plugins_init({});
 
