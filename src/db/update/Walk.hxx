@@ -166,7 +166,7 @@ private:
 					     std::string_view name_utf8) noexcept;
 
 	Directory *DirectoryMakeUriParentChecked(Directory &root,
-						 const char *uri) noexcept;
+						 std::string_view uri) noexcept;
 
 	void UpdateUri(Directory &root, const char *uri) noexcept;
 };

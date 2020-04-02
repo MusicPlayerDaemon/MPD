@@ -409,28 +409,29 @@ UpdateWalk::DirectoryMakeChildChecked(Directory &parent,
 
 inline Directory *
 UpdateWalk::DirectoryMakeUriParentChecked(Directory &root,
-					  const char *uri) noexcept
+					  std::string_view _uri) noexcept
 {
 	Directory *directory = &root;
-	char *duplicated = xstrdup(uri);
-	char *name_utf8 = duplicated, *slash;
+	StringView uri(_uri);
 
-	while ((slash = strchr(name_utf8, '/')) != nullptr) {
-		*slash = 0;
-
-		if (StringIsEmpty(name_utf8))
-			continue;
-
-		directory = DirectoryMakeChildChecked(*directory,
-						      duplicated,
-						      name_utf8);
-		if (directory == nullptr)
+	while (true) {
+		auto s = uri.Split('/');
+		const std::string_view name = s.first;
+		const auto rest = s.second;
+		if (rest == nullptr)
 			break;
 
-		name_utf8 = slash + 1;
+		if (!name.empty()) {
+			directory = DirectoryMakeChildChecked(*directory,
+							      std::string(name).c_str(),
+							      s.first);
+			if (directory == nullptr)
+				break;
+		}
+
+		uri = s.second;
 	}
 
-	free(duplicated);
 	return directory;
 }
 
