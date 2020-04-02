@@ -26,6 +26,7 @@
 #include "config.h"
 
 #include <atomic>
+#include <string_view>
 
 struct StorageFileInfo;
 struct Directory;
@@ -93,7 +94,7 @@ private:
 			    const StorageFileInfo &info) noexcept;
 
 	bool UpdateContainerFile(Directory &directory,
-				 const char *name, const char *suffix,
+				 std::string_view name, const char *suffix,
 				 const StorageFileInfo &info) noexcept;
 
 
@@ -119,12 +120,12 @@ private:
 	}
 #endif
 
-	void UpdatePlaylistFile(Directory &parent, const char *name,
+	void UpdatePlaylistFile(Directory &parent, std::string_view name,
 				const StorageFileInfo &info,
 				const PlaylistPlugin &plugin) noexcept;
 
 	bool UpdatePlaylistFile(Directory &directory,
-				const char *name, const char *suffix,
+				std::string_view name, const char *suffix,
 				const StorageFileInfo &info) noexcept;
 
 	bool UpdateRegularFile(Directory &directory,
@@ -151,12 +152,12 @@ private:
 	 * specifying the kind of virtual directory
 	 */
 	Directory *MakeVirtualDirectoryIfModified(Directory &parent,
-						  const char *name,
+						  std::string_view name,
 						  const StorageFileInfo &info,
 						  unsigned virtual_device) noexcept;
 
 	Directory *LockMakeVirtualDirectoryIfModified(Directory &parent,
-						      const char *name,
+						      std::string_view name,
 						      const StorageFileInfo &info,
 						      unsigned virtual_device) noexcept;
 

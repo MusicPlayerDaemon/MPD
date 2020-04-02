@@ -23,7 +23,7 @@
 #include "storage/FileInfo.hxx"
 
 Directory *
-UpdateWalk::MakeVirtualDirectoryIfModified(Directory &parent, const char *name,
+UpdateWalk::MakeVirtualDirectoryIfModified(Directory &parent, std::string_view name,
 					   const StorageFileInfo &info,
 					   unsigned virtual_device) noexcept
 {
@@ -53,7 +53,7 @@ UpdateWalk::MakeVirtualDirectoryIfModified(Directory &parent, const char *name,
 
 Directory *
 UpdateWalk::LockMakeVirtualDirectoryIfModified(Directory &parent,
-					       const char *name,
+					       std::string_view name,
 					       const StorageFileInfo &info,
 					       unsigned virtual_device) noexcept
 {

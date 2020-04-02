@@ -88,7 +88,7 @@ DatabaseEditor::LockDeleteDirectory(Directory *directory)
 }
 
 bool
-DatabaseEditor::DeleteNameIn(Directory &parent, const char *name)
+DatabaseEditor::DeleteNameIn(Directory &parent, std::string_view name)
 {
 	const ScopeDatabaseLock protect;
 

@@ -32,7 +32,7 @@
 
 bool
 UpdateWalk::UpdateContainerFile(Directory &directory,
-				const char *name, const char *suffix,
+				std::string_view name, const char *suffix,
 				const StorageFileInfo &info) noexcept
 {
 	const DecoderPlugin *_plugin = decoder_plugins_find([suffix](const DecoderPlugin &plugin){

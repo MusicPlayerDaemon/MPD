@@ -59,7 +59,7 @@ public:
 	 *
 	 * @return true if the database was modified
 	 */
-	bool DeleteNameIn(Directory &parent, const char *name);
+	bool DeleteNameIn(Directory &parent, std::string_view name);
 
 private:
 	void ClearDirectory(Directory &directory);

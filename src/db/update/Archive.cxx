@@ -38,14 +38,14 @@
 #include <string.h>
 
 static Directory *
-LockMakeChild(Directory &directory, const char *name) noexcept
+LockMakeChild(Directory &directory, std::string_view name) noexcept
 {
 	const ScopeDatabaseLock protect;
 	return directory.MakeChild(name);
 }
 
 static Song *
-LockFindSong(Directory &directory, const char *name) noexcept
+LockFindSong(Directory &directory, std::string_view name) noexcept
 {
 	const ScopeDatabaseLock protect;
 	return directory.FindSong(name);
@@ -57,10 +57,9 @@ UpdateWalk::UpdateArchiveTree(ArchiveFile &archive, Directory &directory,
 {
 	const char *tmp = strchr(name, '/');
 	if (tmp) {
-		const std::string child_name(name, tmp);
+		const std::string_view child_name(name, tmp - name);
 		//add dir is not there already
-		Directory *subdir = LockMakeChild(directory,
-						  child_name.c_str());
+		Directory *subdir = LockMakeChild(directory, child_name);
 		subdir->device = DEVICE_INARCHIVE;
 
 		//create directories first

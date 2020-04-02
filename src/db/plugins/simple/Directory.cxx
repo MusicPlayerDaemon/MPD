@@ -83,11 +83,10 @@ Directory::GetName() const noexcept
 }
 
 Directory *
-Directory::CreateChild(const char *name_utf8) noexcept
+Directory::CreateChild(std::string_view name_utf8) noexcept
 {
 	assert(holding_db_lock());
-	assert(name_utf8 != nullptr);
-	assert(*name_utf8 != 0);
+	assert(!name_utf8.empty());
 
 	std::string path_utf8 = IsRoot()
 		? std::string(name_utf8)
@@ -99,12 +98,12 @@ Directory::CreateChild(const char *name_utf8) noexcept
 }
 
 const Directory *
-Directory::FindChild(const char *name) const noexcept
+Directory::FindChild(std::string_view name) const noexcept
 {
 	assert(holding_db_lock());
 
 	for (const auto &child : children)
-		if (strcmp(child.GetName(), name) == 0)
+		if (name.compare(child.GetName()) == 0)
 			return &child;
 
 	return nullptr;
@@ -194,10 +193,9 @@ Directory::RemoveSong(Song *song) noexcept
 }
 
 const Song *
-Directory::FindSong(const char *name_utf8) const noexcept
+Directory::FindSong(std::string_view name_utf8) const noexcept
 {
 	assert(holding_db_lock());
-	assert(name_utf8 != nullptr);
 
 	for (auto &song : songs) {
 		assert(&song.parent == this);

@@ -30,6 +30,7 @@
 #include <boost/intrusive/list.hpp>
 
 #include <string>
+#include <string_view>
 
 /**
  * Virtual directory that is really an archive file or a folder inside
@@ -146,16 +147,16 @@ public:
 	 *
 	 * @param name_utf8 the UTF-8 encoded name of the new sub directory
 	 */
-	Directory *CreateChild(const char *name_utf8) noexcept;
+	Directory *CreateChild(std::string_view name_utf8) noexcept;
 
 	/**
 	 * Caller must lock the #db_mutex.
 	 */
 	gcc_pure
-	const Directory *FindChild(const char *name) const noexcept;
+	const Directory *FindChild(std::string_view name) const noexcept;
 
 	gcc_pure
-	Directory *FindChild(const char *name) noexcept {
+	Directory *FindChild(std::string_view name) noexcept {
 		const Directory *cthis = this;
 		return const_cast<Directory *>(cthis->FindChild(name));
 	}
@@ -166,7 +167,7 @@ public:
 	 *
 	 * Caller must lock the #db_mutex.
 	 */
-	Directory *MakeChild(const char *name_utf8) noexcept {
+	Directory *MakeChild(std::string_view name_utf8) noexcept {
 		Directory *child = FindChild(name_utf8);
 		if (child == nullptr)
 			child = CreateChild(name_utf8);
@@ -247,10 +248,10 @@ public:
 	 * Caller must lock the #db_mutex.
 	 */
 	gcc_pure
-	const Song *FindSong(const char *name_utf8) const noexcept;
+	const Song *FindSong(std::string_view name_utf8) const noexcept;
 
 	gcc_pure
-	Song *FindSong(const char *name_utf8) noexcept {
+	Song *FindSong(std::string_view name_utf8) noexcept {
 		const Directory *cthis = this;
 		return const_cast<Song *>(cthis->FindSong(name_utf8));
 	}
