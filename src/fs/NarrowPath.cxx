@@ -22,6 +22,8 @@
 #ifdef _UNICODE
 
 #include "lib/icu/Win32.hxx"
+#include "system/Error.hxx"
+#include "util/Macros.hxx"
 
 #include <windows.h>
 
@@ -31,6 +33,23 @@ NarrowPath::NarrowPath(Path _path) noexcept
 	if (value.IsNull())
 		/* fall back to empty string */
 		value = Value::Empty();
+}
+
+static AllocatedPath
+AcpToAllocatedPath(const char *s)
+{
+	wchar_t buffer[MAX_PATH];
+	auto result = MultiByteToWideChar(CP_ACP, 0, s, -1,
+					  buffer, ARRAY_SIZE(buffer));
+	if (result <= 0)
+		throw MakeLastError("MultiByteToWideChar() failed");
+
+	return AllocatedPath::FromFS(buffer);
+}
+
+FromNarrowPath::FromNarrowPath(const char *s)
+	:value(AcpToAllocatedPath(s))
+{
 }
 
 #endif /* _UNICODE */

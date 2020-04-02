@@ -23,6 +23,7 @@
 #include "Path.hxx"
 
 #ifdef _UNICODE
+#include "AllocatedPath.hxx"
 #include "util/AllocatedString.hxx"
 #else
 #include "util/StringPointer.hxx"
@@ -56,6 +57,40 @@ public:
 
 	const_pointer_type c_str() const {
 		return value.c_str();
+	}
+};
+
+/**
+ * A path name converted from a "narrow" string.  This is used to
+ * import an existing narrow string to a #Path.
+ */
+class FromNarrowPath {
+#ifdef _UNICODE
+	using Value = AllocatedPath;
+#else
+	using Value = Path;
+#endif
+
+	Value value{nullptr};
+
+public:
+	FromNarrowPath() = default;
+
+#ifdef _UNICODE
+	/**
+	 * Throws on error.
+	 */
+	FromNarrowPath(const char *s);
+#else
+	constexpr FromNarrowPath(const char *s) noexcept
+		:value(Value::FromFS(s)) {}
+#endif
+
+#ifndef _UNICODE
+	constexpr
+#endif
+	operator Path() const noexcept {
+		return value;
 	}
 };
 
