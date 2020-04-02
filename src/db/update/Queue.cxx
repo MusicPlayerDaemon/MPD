@@ -21,7 +21,7 @@
 
 bool
 UpdateQueue::Push(SimpleDatabase &db, Storage &storage,
-		  const char *path, bool discard, unsigned id) noexcept
+		  std::string_view path, bool discard, unsigned id) noexcept
 {
 	if (update_queue.size() >= MAX_UPDATE_QUEUE_SIZE)
 		return false;

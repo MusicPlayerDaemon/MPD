@@ -23,6 +23,7 @@
 #include "util/Compiler.h"
 
 #include <string>
+#include <string_view>
 #include <list>
 
 class SimpleDatabase;
@@ -40,7 +41,7 @@ struct UpdateQueueItem {
 
 	UpdateQueueItem(SimpleDatabase &_db,
 			Storage &_storage,
-			const char *_path, bool _discard,
+			std::string_view _path, bool _discard,
 			unsigned _id) noexcept
 		:db(&_db), storage(&_storage), path_utf8(_path),
 		 id(_id), discard(_discard) {}
@@ -62,7 +63,7 @@ class UpdateQueue {
 public:
 	gcc_nonnull_all
 	bool Push(SimpleDatabase &db, Storage &storage,
-		  const char *path, bool discard, unsigned id) noexcept;
+		  std::string_view path, bool discard, unsigned id) noexcept;
 
 	UpdateQueueItem Pop() noexcept;
 
