@@ -17,46 +17,20 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_FS_NARROW_PATH_HXX
-#define MPD_FS_NARROW_PATH_HXX
-
-#include "Path.hxx"
+#include "NarrowPath.hxx"
 
 #ifdef _UNICODE
-#include "util/AllocatedString.hxx"
-#else
-#include "util/StringPointer.hxx"
-#endif
 
-/**
- * A path name that uses the regular (narrow) "char".  This is used to
- * pass a #Path (which may be represented by wchar_t) to a library
- * that accepts only "const char *".
- */
-class NarrowPath {
-#ifdef _UNICODE
-	typedef AllocatedString<> Value;
-#else
-	typedef StringPointer<> Value;
-#endif
-	typedef typename Value::const_pointer_type const_pointer_type;
+#include "lib/icu/Win32.hxx"
 
-	Value value;
+#include <windows.h>
 
-public:
-#ifdef _UNICODE
-	explicit NarrowPath(Path _path) noexcept;
-#else
-	explicit NarrowPath(Path _path):value(_path.c_str()) {}
-#endif
+NarrowPath::NarrowPath(Path _path) noexcept
+	:value(WideCharToMultiByte(CP_ACP, _path.c_str()))
+{
+	if (value.IsNull())
+		/* fall back to empty string */
+		value = Value::Empty();
+}
 
-	operator const_pointer_type() const {
-		return c_str();
-	}
-
-	const_pointer_type c_str() const {
-		return value.c_str();
-	}
-};
-
-#endif
+#endif /* _UNICODE */
