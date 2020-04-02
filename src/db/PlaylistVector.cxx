@@ -24,10 +24,9 @@
 #include <cassert>
 
 PlaylistVector::iterator
-PlaylistVector::find(const char *name) noexcept
+PlaylistVector::find(std::string_view name) noexcept
 {
 	assert(holding_db_lock());
-	assert(name != nullptr);
 
 	return std::find_if(begin(), end(),
 			    PlaylistInfo::CompareName(name));
@@ -51,7 +50,7 @@ PlaylistVector::UpdateOrInsert(PlaylistInfo &&pi) noexcept
 }
 
 bool
-PlaylistVector::erase(const char *name) noexcept
+PlaylistVector::erase(std::string_view name) noexcept
 {
 	assert(holding_db_lock());
 

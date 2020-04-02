@@ -23,6 +23,7 @@
 #include "util/Compiler.h"
 
 #include <string>
+#include <string_view>
 #include <chrono>
 
 /**
@@ -42,14 +43,15 @@ struct PlaylistInfo {
 		std::chrono::system_clock::time_point::min();
 
 	class CompareName {
-		const char *const name;
+		const std::string_view name;
 
 	public:
-		constexpr CompareName(const char *_name):name(_name) {}
+		constexpr CompareName(std::string_view _name) noexcept
+			:name(_name) {}
 
 		gcc_pure
 		bool operator()(const PlaylistInfo &pi) const noexcept {
-			return pi.name.compare(name) == 0;
+			return pi.name == name;
 		}
 	};
 

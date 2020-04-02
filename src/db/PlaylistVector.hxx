@@ -24,6 +24,7 @@
 #include "util/Compiler.h"
 
 #include <list>
+#include <string_view>
 
 class PlaylistVector : protected std::list<PlaylistInfo> {
 protected:
@@ -31,7 +32,7 @@ protected:
 	 * Caller must lock the #db_mutex.
 	 */
 	gcc_pure
-	iterator find(const char *name) noexcept;
+	iterator find(std::string_view name) noexcept;
 
 public:
 	using std::list<PlaylistInfo>::empty;
@@ -50,7 +51,7 @@ public:
 	/**
 	 * Caller must lock the #db_mutex.
 	 */
-	bool erase(const char *name) noexcept;
+	bool erase(std::string_view name) noexcept;
 };
 
 #endif /* SONGVEC_H */
