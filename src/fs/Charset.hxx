@@ -53,8 +53,7 @@ PathToUTF8(PathTraitsFS::const_pointer path_fs);
  *
  * Throws std::runtime_error on error.
  */
-gcc_nonnull_all
 PathTraitsFS::string
-PathFromUTF8(PathTraitsUTF8::const_pointer path_utf8);
+PathFromUTF8(PathTraitsUTF8::string_view path_utf8);
 
 #endif

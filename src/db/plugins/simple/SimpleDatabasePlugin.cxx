@@ -436,7 +436,7 @@ SimpleDatabase::Mount(const char *local_uri, const char *storage_uri)
 	std::string name(storage_uri);
 	std::replace_if(name.begin(), name.end(), IsUnsafeChar, '_');
 
-	const auto name_fs = AllocatedPath::FromUTF8Throw(name.c_str());
+	const auto name_fs = AllocatedPath::FromUTF8Throw(name);
 
 #ifndef ENABLE_ZLIB
 	constexpr bool compress = false;

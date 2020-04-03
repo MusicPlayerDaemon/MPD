@@ -228,7 +228,7 @@ UriToNfsPath(const char *_uri_utf8)
 	/* assume UTF-8 when accessing NFS from Windows */
 	return uri_utf8;
 #else
-	return AllocatedPath::FromUTF8Throw(uri_utf8.c_str()).Steal();
+	return AllocatedPath::FromUTF8Throw(uri_utf8).Steal();
 #endif
 }
 

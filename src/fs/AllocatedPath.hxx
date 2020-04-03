@@ -173,15 +173,18 @@ public:
 	 * Convert a UTF-8 C string to an #AllocatedPath instance.
 	 * Returns return a "nulled" instance on error.
 	 */
-	gcc_pure gcc_nonnull_all
-	static AllocatedPath FromUTF8(const char *path_utf8) noexcept;
+	gcc_pure
+	static AllocatedPath FromUTF8(std::string_view path_utf8) noexcept;
+
+	static AllocatedPath FromUTF8(const char *path_utf8) noexcept {
+		return FromUTF8(std::string_view(path_utf8));
+	}
 
 	/**
 	 * Convert a UTF-8 C string to an #AllocatedPath instance.
 	 * Throws a std::runtime_error on error.
 	 */
-	gcc_nonnull_all
-	static AllocatedPath FromUTF8Throw(const char *path_utf8);
+	static AllocatedPath FromUTF8Throw(std::string_view path_utf8);
 
 	/**
 	 * Copy an #AllocatedPath object.
