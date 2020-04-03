@@ -20,6 +20,7 @@
 #include "CompositeStorage.hxx"
 #include "FileInfo.hxx"
 #include "fs/AllocatedPath.hxx"
+#include "util/IterableSplitString.hxx"
 #include "util/StringCompare.hxx"
 
 #include <set>
@@ -95,8 +96,11 @@ const CompositeStorage::Directory *
 CompositeStorage::Directory::Find(std::string_view uri) const noexcept
 {
 	const Directory *directory = this;
-	while (!uri.empty()) {
-		const auto name = NextSegment(uri);
+
+	for (std::string_view name : IterableSplitString(uri, '/')) {
+		if (name.empty())
+			continue;
+
 		auto i = directory->children.find(name);
 		if (i == directory->children.end())
 			return nullptr;
@@ -111,8 +115,11 @@ CompositeStorage::Directory &
 CompositeStorage::Directory::Make(std::string_view uri)
 {
 	Directory *directory = this;
-	while (!uri.empty()) {
-		auto name = NextSegment(uri);
+
+	for (std::string_view name : IterableSplitString(uri, '/')) {
+		if (name.empty())
+			continue;
+
 		auto i = directory->children.emplace(std::move(name),
 						     Directory());
 		directory = &i.first->second;
