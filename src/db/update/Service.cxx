@@ -192,17 +192,17 @@ UpdateService::Enqueue(const char *path, bool discard)
 		if (db2 == nullptr)
 			throw std::runtime_error("Cannot update this type of database");
 
-		if (lr.uri == nullptr) {
+		if (lr.rest == nullptr) {
 			storage2 = storage.GetMount(path);
 			path = "";
 		} else {
-			assert(lr.uri > path);
-			assert(lr.uri < path + strlen(path));
-			assert(lr.uri[-1] == '/');
+			assert(lr.rest > path);
+			assert(lr.rest < path + strlen(path));
+			assert(lr.rest[-1] == '/');
 
-			const std::string mountpoint(path, lr.uri - 1);
+			const std::string mountpoint(path, lr.rest - 1);
 			storage2 = storage.GetMount(mountpoint.c_str());
-			path = lr.uri;
+			path = lr.rest;
 		}
 	} else {
 		/* use the "root" database/storage */

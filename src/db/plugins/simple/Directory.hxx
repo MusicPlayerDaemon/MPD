@@ -186,7 +186,7 @@ public:
 		 * The remaining URI part (without leading slash) or
 		 * nullptr if the given URI was consumed completely.
 		 */
-		const char *uri;
+		const char *rest;
 	};
 
 	/**
