@@ -29,6 +29,11 @@
 #include <unicode/ustring.h>
 #else
 #include <algorithm>
+
+#ifndef _WIN32
+#include <string>
+#endif
+
 #endif
 
 #ifdef _WIN32
@@ -73,19 +78,14 @@ IcuCollateFinish() noexcept
 
 gcc_pure
 int
-IcuCollate(const char *a, const char *b) noexcept
+IcuCollate(std::string_view a, std::string_view b) noexcept
 {
-#if !CLANG_CHECK_VERSION(3,6)
-	/* disabled on clang due to -Wtautological-pointer-compare */
-	assert(a != nullptr);
-	assert(b != nullptr);
-#endif
-
 #ifdef HAVE_ICU
 	assert(collator != nullptr);
 
 	UErrorCode code = U_ZERO_ERROR;
-	return (int)ucol_strcollUTF8(collator, a, -1, b, -1, &code);
+	return (int)ucol_strcollUTF8(collator, a.data(), a.size(),
+				     b.data(), b.size(), &code);
 
 #elif defined(_WIN32)
 	AllocatedString<wchar_t> wa = nullptr, wb = nullptr;
@@ -120,6 +120,8 @@ IcuCollate(const char *a, const char *b) noexcept
 
 	return result;
 #else
-	return strcoll(a, b);
+	/* need to duplicate for the fallback because std::string_view
+	   is not null-terminated */
+	return strcoll(std::string(a).c_str(), std::string(b).c_str());
 #endif
 }

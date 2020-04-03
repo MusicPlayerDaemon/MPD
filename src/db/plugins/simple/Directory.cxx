@@ -199,7 +199,7 @@ gcc_pure
 static bool
 directory_cmp(const Directory &a, const Directory &b) noexcept
 {
-	return IcuCollate(a.path.c_str(), b.path.c_str()) < 0;
+	return IcuCollate(a.path, b.path) < 0;
 }
 
 void
