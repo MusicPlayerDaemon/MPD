@@ -322,7 +322,7 @@ UpdateWalk::UpdateDirectory(Directory &directory,
 
 	try {
 		Mutex mutex;
-		auto is = InputStream::OpenReady(PathTraitsUTF8::Build(storage.MapUTF8(directory.GetPath()).c_str(),
+		auto is = InputStream::OpenReady(PathTraitsUTF8::Build(storage.MapUTF8(directory.GetPath()),
 								       ".mpdignore").c_str(),
 						 mutex);
 		child_exclude_list.Load(std::move(is));

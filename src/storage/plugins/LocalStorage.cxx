@@ -102,7 +102,7 @@ LocalStorage::MapUTF8(const char *uri_utf8) const noexcept
 	if (StringIsEmpty(uri_utf8))
 		return base_utf8;
 
-	return PathTraitsUTF8::Build(base_utf8.c_str(), uri_utf8);
+	return PathTraitsUTF8::Build(base_utf8, uri_utf8);
 }
 
 AllocatedPath

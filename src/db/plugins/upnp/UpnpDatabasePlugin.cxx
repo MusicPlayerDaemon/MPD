@@ -397,8 +397,7 @@ UpnpDatabase::BuildPath(const ContentDirectoryService &server,
 		if (path.empty())
 			path = dirent.name;
 		else
-			path = PathTraitsUTF8::Build(dirent.name.c_str(),
-						     path.c_str());
+			path = PathTraitsUTF8::Build(dirent.name, path);
 	}
 
 	return PathTraitsUTF8::Build(server.getFriendlyName(),

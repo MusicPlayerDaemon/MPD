@@ -81,7 +81,7 @@ SmbclientStorage::MapUTF8(const char *uri_utf8) const noexcept
 	if (StringIsEmpty(uri_utf8))
 		return base;
 
-	return PathTraitsUTF8::Build(base.c_str(), uri_utf8);
+	return PathTraitsUTF8::Build(base, uri_utf8);
 }
 
 const char *
@@ -174,7 +174,7 @@ SmbclientDirectoryReader::Read() noexcept
 StorageFileInfo
 SmbclientDirectoryReader::GetInfo([[maybe_unused]] bool follow)
 {
-	const std::string path = PathTraitsUTF8::Build(base.c_str(), name);
+	const std::string path = PathTraitsUTF8::Build(base, name);
 	return ::GetInfo(path.c_str());
 }
 

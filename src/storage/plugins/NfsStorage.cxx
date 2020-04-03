@@ -240,7 +240,7 @@ NfsStorage::MapUTF8(const char *uri_utf8) const noexcept
 	if (StringIsEmpty(uri_utf8))
 		return base;
 
-	return PathTraitsUTF8::Build(base.c_str(), uri_utf8);
+	return PathTraitsUTF8::Build(base, uri_utf8);
 }
 
 const char *

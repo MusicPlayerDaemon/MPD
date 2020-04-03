@@ -75,7 +75,7 @@ CurlStorage::MapUTF8(const char *uri_utf8) const noexcept
 		return base;
 
 	std::string path_esc = CurlEscapeUriPath(uri_utf8);
-	return PathTraitsUTF8::Build(base.c_str(), path_esc.c_str());
+	return PathTraitsUTF8::Build(base, path_esc);
 }
 
 const char *

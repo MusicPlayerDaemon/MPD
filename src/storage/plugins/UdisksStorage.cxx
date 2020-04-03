@@ -340,7 +340,7 @@ UdisksStorage::MapUTF8(const char *uri_utf8) const noexcept
 		return mounted_storage->MapUTF8(uri_utf8);
 	} catch (...) {
 		/* fallback - not usable but the best we can do */
-		return PathTraitsUTF8::Build(base_uri.c_str(), uri_utf8);
+		return PathTraitsUTF8::Build(base_uri, uri_utf8);
 	}
 }
 
