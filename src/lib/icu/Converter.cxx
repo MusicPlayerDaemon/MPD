@@ -95,7 +95,7 @@ DoConvert(iconv_t conv, const char *src)
 	if (in_left > 0)
 		throw std::runtime_error("Charset conversion failed");
 
-	return AllocatedString<>::Duplicate(buffer, sizeof(buffer) - out_left);
+	return AllocatedString<>::Duplicate({buffer, sizeof(buffer) - out_left});
 }
 
 #endif
@@ -151,7 +151,7 @@ IcuConverter::FromUTF8(const char *s) const
 		throw std::runtime_error(FormatString("Failed to convert from Unicode: %s",
 						      u_errorName(code)).c_str());
 
-	return AllocatedString<>::Duplicate(buffer, target);
+	return AllocatedString<>::Duplicate({buffer, size_t(target - buffer)});
 
 #elif defined(HAVE_ICONV)
 	return DoConvert(from_utf8, s);

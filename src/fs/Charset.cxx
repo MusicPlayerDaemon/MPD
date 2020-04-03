@@ -99,7 +99,7 @@ PathToUTF8(PathTraitsFS::const_pointer path_fs)
 
 #ifdef _WIN32
 	const auto buffer = WideCharToMultiByte(CP_UTF8, path_fs);
-	return FixSeparators(PathTraitsUTF8::string(buffer.c_str()));
+	return FixSeparators(PathTraitsUTF8::string(buffer));
 #else
 #ifdef HAVE_FS_CHARSET
 	if (fs_converter == nullptr)
@@ -108,7 +108,7 @@ PathToUTF8(PathTraitsFS::const_pointer path_fs)
 #ifdef HAVE_FS_CHARSET
 
 	const auto buffer = fs_converter->ToUTF8(path_fs);
-	return FixSeparators(PathTraitsUTF8::string(buffer.c_str()));
+	return FixSeparators(PathTraitsUTF8::string(buffer));
 #endif
 #endif
 }
@@ -125,13 +125,13 @@ PathFromUTF8(PathTraitsUTF8::const_pointer path_utf8)
 
 #ifdef _WIN32
 	const auto buffer = MultiByteToWideChar(CP_UTF8, path_utf8);
-	return PathTraitsFS::string(buffer.c_str());
+	return PathTraitsFS::string(buffer);
 #else
 	if (fs_converter == nullptr)
 		return path_utf8;
 
 	const auto buffer = fs_converter->FromUTF8(path_utf8);
-	return PathTraitsFS::string(buffer.c_str());
+	return PathTraitsFS::string(buffer);
 #endif
 }
 

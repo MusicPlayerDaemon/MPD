@@ -34,6 +34,7 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <string_view>
 
 /**
  * A string pointer whose memory is managed by this class.
@@ -48,6 +49,7 @@ public:
 	using const_reference = typename StringPointer<T>::const_reference;
 	using pointer = typename StringPointer<T>::pointer;
 	using const_pointer = typename StringPointer<T>::const_pointer;
+	using string_view = std::basic_string_view<T>;
 	using size_type = std::size_t;
 
 	static constexpr value_type SENTINEL = '\0';
@@ -83,19 +85,9 @@ public:
 		return Donate(p);
 	}
 
-	static AllocatedString Duplicate(const_pointer src);
-
-	static AllocatedString Duplicate(const_pointer begin,
-					 const_pointer end) {
-		auto p = new value_type[end - begin + 1];
-		*std::copy(begin, end, p) = SENTINEL;
-		return Donate(p);
-	}
-
-	static AllocatedString Duplicate(const_pointer begin,
-					 size_type length) {
-		auto p = new value_type[length + 1];
-		*std::copy_n(begin, length, p) = SENTINEL;
+	static AllocatedString Duplicate(string_view src) {
+		auto p = new value_type[src.size() + 1];
+		*std::copy_n(src.data(), src.size(), p) = SENTINEL;
 		return Donate(p);
 	}
 
@@ -114,6 +106,10 @@ public:
 
 	constexpr bool IsNull() const noexcept {
 		return value == nullptr;
+	}
+
+	operator string_view() const noexcept {
+		return value;
 	}
 
 	constexpr const_pointer c_str() const noexcept {
@@ -141,7 +137,7 @@ public:
 	}
 
 	AllocatedString Clone() const {
-		return Duplicate(c_str());
+		return Duplicate(*this);
 	}
 };
 
