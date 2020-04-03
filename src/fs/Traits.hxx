@@ -147,8 +147,7 @@ struct PathTraitsFS {
 	 * nullptr on mismatch.
 	 */
 	gcc_pure gcc_nonnull_all
-	static const_pointer Relative(const_pointer base,
-				      const_pointer other) noexcept;
+	static const_pointer Relative(string_view base, const_pointer other) noexcept;
 
 	/**
 	 * Constructs the path from the given components.
@@ -256,8 +255,7 @@ struct PathTraitsUTF8 {
 	 * nullptr on mismatch.
 	 */
 	gcc_pure gcc_nonnull_all
-	static const_pointer Relative(const_pointer base,
-				      const_pointer other) noexcept;
+	static const_pointer Relative(string_view base, const_pointer other) noexcept;
 
 	/**
 	 * Constructs the path from the given components.

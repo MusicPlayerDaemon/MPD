@@ -347,7 +347,7 @@ UdisksStorage::MapUTF8(const char *uri_utf8) const noexcept
 const char *
 UdisksStorage::MapToRelativeUTF8(const char *uri_utf8) const noexcept
 {
-	return PathTraitsUTF8::Relative(base_uri.c_str(), uri_utf8);
+	return PathTraitsUTF8::Relative(base_uri, uri_utf8);
 }
 
 static std::unique_ptr<Storage>

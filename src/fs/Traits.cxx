@@ -86,10 +86,9 @@ GetParentPathImpl(typename Traits::const_pointer p) noexcept
 
 template<typename Traits>
 typename Traits::const_pointer
-RelativePathImpl(typename Traits::const_pointer base,
+RelativePathImpl(typename Traits::string_view base,
 		 typename Traits::const_pointer other) noexcept
 {
-	assert(base != nullptr);
 	assert(other != nullptr);
 
 	other = StringAfterPrefix(other, base);
@@ -99,7 +98,7 @@ RelativePathImpl(typename Traits::const_pointer base,
 
 	if (*other != 0) {
 		if (!Traits::IsSeparator(*other)) {
-			if (*base != 0 && Traits::IsSeparator(other[-1]))
+			if (!base.empty() && Traits::IsSeparator(other[-1]))
 				/* "other" has no more slash, but the
 				   matching base ended with a slash:
 				   enough to detect a match */
@@ -137,7 +136,7 @@ PathTraitsFS::GetParent(PathTraitsFS::const_pointer p) noexcept
 }
 
 PathTraitsFS::const_pointer
-PathTraitsFS::Relative(const_pointer base, const_pointer other) noexcept
+PathTraitsFS::Relative(string_view base, const_pointer other) noexcept
 {
 	return RelativePathImpl<PathTraitsFS>(base, other);
 }
@@ -175,8 +174,7 @@ PathTraitsUTF8::GetParent(const_pointer p) noexcept
 }
 
 PathTraitsUTF8::const_pointer
-PathTraitsUTF8::Relative(const_pointer base,
-			 const_pointer other) noexcept
+PathTraitsUTF8::Relative(string_view base, const_pointer other) noexcept
 {
 	return RelativePathImpl<PathTraitsUTF8>(base, other);
 }

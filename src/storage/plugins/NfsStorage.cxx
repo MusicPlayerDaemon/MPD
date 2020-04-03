@@ -246,7 +246,7 @@ NfsStorage::MapUTF8(const char *uri_utf8) const noexcept
 const char *
 NfsStorage::MapToRelativeUTF8(const char *uri_utf8) const noexcept
 {
-	return PathTraitsUTF8::Relative(base.c_str(), uri_utf8);
+	return PathTraitsUTF8::Relative(base, uri_utf8);
 }
 
 static void

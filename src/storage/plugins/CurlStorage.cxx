@@ -81,7 +81,7 @@ CurlStorage::MapUTF8(const char *uri_utf8) const noexcept
 const char *
 CurlStorage::MapToRelativeUTF8(const char *uri_utf8) const noexcept
 {
-	return PathTraitsUTF8::Relative(base.c_str(),
+	return PathTraitsUTF8::Relative(base,
 					CurlUnescape(uri_utf8).c_str());
 }
 
