@@ -24,12 +24,12 @@
 
 #ifdef HAVE_ICU_CASE_FOLD
 
-IcuCompare::IcuCompare(const char *_needle) noexcept
+IcuCompare::IcuCompare(std::string_view _needle) noexcept
 	:needle(IcuCaseFold(_needle)) {}
 
 #else
 
-IcuCompare::IcuCompare(const char *_needle) noexcept
+IcuCompare::IcuCompare(std::string_view _needle) noexcept
 	:needle(AllocatedString<>::Duplicate(_needle)) {}
 
 #endif

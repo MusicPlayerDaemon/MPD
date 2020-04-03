@@ -25,13 +25,12 @@
 #if defined(HAVE_ICU) || defined(_WIN32)
 #define HAVE_ICU_CASE_FOLD
 
-#include "util/Compiler.h"
+#include <string_view>
 
 template<typename T> class AllocatedString;
 
-gcc_nonnull_all
 AllocatedString<char>
-IcuCaseFold(const char *src) noexcept;
+IcuCaseFold(std::string_view src) noexcept;
 
 #endif
 

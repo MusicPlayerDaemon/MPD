@@ -23,6 +23,8 @@
 #include "util/Compiler.h"
 #include "util/AllocatedString.hxx"
 
+#include <string_view>
+
 /**
  * This class can compare one string ("needle") with lots of other
  * strings ("haystacks") efficiently, ignoring case.  With some
@@ -34,7 +36,7 @@ class IcuCompare {
 public:
 	IcuCompare():needle(nullptr) {}
 
-	explicit IcuCompare(const char *needle) noexcept;
+	explicit IcuCompare(std::string_view needle) noexcept;
 
 	IcuCompare(const IcuCompare &src) noexcept
 		:needle(src

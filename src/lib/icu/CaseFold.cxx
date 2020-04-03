@@ -45,14 +45,9 @@
 #include <string.h>
 
 AllocatedString<>
-IcuCaseFold(const char *src) noexcept
+IcuCaseFold(std::string_view src) noexcept
 try {
 #ifdef HAVE_ICU
-#if !CLANG_CHECK_VERSION(3,6)
-	/* disabled on clang due to -Wtautological-pointer-compare */
-	assert(src != nullptr);
-#endif
-
 	const auto u = UCharFromUTF8(src);
 	if (u.IsNull())
 		return AllocatedString<>::Duplicate(src);
