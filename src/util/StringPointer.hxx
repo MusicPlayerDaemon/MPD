@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2015-2020 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -36,11 +36,11 @@
 template<typename T=char>
 class StringPointer {
 public:
-	typedef T value_type;
-	typedef T &reference;
-	typedef const T &const_reference;
-	typedef T *pointer;
-	typedef const T *const_pointer;
+	using value_type = T;
+	using reference = T &;
+	using const_reference = const T &;
+	using pointer = T *;
+	using const_pointer = const T *;
 
 	static constexpr value_type SENTINEL = '\0';
 
