@@ -52,7 +52,7 @@ LookupFile(Path pathname)
 			//its a file ?
 			if (file_info.IsRegular()) {
 				//so the upper should be file
-				return {AllocatedPath::FromFS(buffer.c_str()), AllocatedPath::FromFS(slash + 1)};
+				return {AllocatedPath::FromFS(buffer), AllocatedPath::FromFS(slash + 1)};
 			} else {
 				return {};
 			}

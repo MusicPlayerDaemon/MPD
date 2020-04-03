@@ -303,7 +303,7 @@ GetAppBaseDir() noexcept
 	if (ret == app.size() && GetLastError() == ERROR_INSUFFICIENT_BUFFER)
 		return nullptr;
 
-	auto app_path = AllocatedPath::FromFS(app.data());
+	auto app_path = AllocatedPath::FromFS(PathTraitsFS::string_view(app.data(), ret));
 	return app_path.GetDirectoryName().GetDirectoryName();
 }
 

@@ -43,7 +43,7 @@ AcpToAllocatedPath(const char *s)
 	if (result <= 0)
 		throw MakeLastError("MultiByteToWideChar() failed");
 
-	return AllocatedPath::FromFS(buffer);
+	return AllocatedPath::FromFS(std::wstring_view(buffer, result));
 }
 
 FromNarrowPath::FromNarrowPath(const char *s)

@@ -55,8 +55,7 @@ ReadLink(Path path)
 		errno = ENOMEM;
 		return nullptr;
 	}
-	buffer[size] = '\0';
-	return AllocatedPath::FromFS(buffer);
+	return AllocatedPath::FromFS(std::string_view{buffer, size_t(size)});
 #endif
 }
 
