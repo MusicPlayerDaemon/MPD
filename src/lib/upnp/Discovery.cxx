@@ -325,7 +325,7 @@ UPnPDeviceDirectory::GetDirectories()
 }
 
 ContentDirectoryService
-UPnPDeviceDirectory::GetServer(const char *friendly_name)
+UPnPDeviceDirectory::GetServer(std::string_view friendly_name)
 {
 	const std::lock_guard<Mutex> protect(mutex);
 

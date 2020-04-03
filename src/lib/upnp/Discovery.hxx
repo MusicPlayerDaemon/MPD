@@ -176,7 +176,7 @@ public:
 	/**
 	 * Get server by friendly name.
 	 */
-	ContentDirectoryService GetServer(const char *friendly_name);
+	ContentDirectoryService GetServer(std::string_view friendly_name);
 
 private:
 	void Search();

@@ -31,28 +31,24 @@
 #include "IterableSplitString.hxx"
 #include "StringStrip.hxx"
 
-std::forward_list<std::string>
+std::forward_list<std::string_view>
 SplitString(std::string_view _s, char separator, bool strip) noexcept
 {
 	StringView s(_s);
 	if (strip)
 		s.StripLeft();
 
-	std::forward_list<std::string> list;
+	std::forward_list<std::string_view> list;
 	if (s.empty())
 		return list;
 
 	auto i = list.before_begin();
 
 	for (auto value : IterableSplitString(s, separator)) {
-		const char *begin = value.begin(), *end = value.end();
+		if (strip)
+			value.Strip();
 
-		if (strip) {
-			begin = StripLeft(begin, end);
-			end = StripRight(begin, end);
-		}
-
-		i = list.emplace_after(i, begin, end);
+		i = list.emplace_after(i, value);
 	}
 
 	return list;

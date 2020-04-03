@@ -31,7 +31,6 @@
 #define SPLIT_STRING_HXX
 
 #include <forward_list>
-#include <string>
 #include <string_view>
 
 /**
@@ -44,7 +43,7 @@
  * An empty input string, as a special case, results in an empty list
  * (and not a list with an empty string).
  */
-std::forward_list<std::string>
+std::forward_list<std::string_view>
 SplitString(std::string_view s, char separator, bool strip=true) noexcept;
 
 #endif

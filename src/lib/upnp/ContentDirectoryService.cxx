@@ -23,7 +23,7 @@
 #include "ixmlwrap.hxx"
 #include "util/UriRelative.hxx"
 #include "util/RuntimeError.hxx"
-#include "util/SplitString.hxx"
+#include "util/IterableSplitString.hxx"
 
 #include <upnptools.h>
 
@@ -73,5 +73,8 @@ ContentDirectoryService::getSearchCapabilities(UpnpClient_Handle hdl) const
 		   understand that */
 		return std::forward_list<std::string>();
 
-	return SplitString(s, ',', false);
+	std::forward_list<std::string> result;
+	for (const auto &i : IterableSplitString(s, ','))
+		result.emplace_front(i);
+	return result;
 }

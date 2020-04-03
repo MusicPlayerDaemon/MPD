@@ -40,7 +40,7 @@ public:
 	~UPnPDirContent();
 
 	gcc_pure
-	UPnPDirObject *FindObject(const char *name) noexcept {
+	UPnPDirObject *FindObject(std::string_view name) noexcept {
 		for (auto &o : objects)
 			if (o.name == name)
 				return &o;

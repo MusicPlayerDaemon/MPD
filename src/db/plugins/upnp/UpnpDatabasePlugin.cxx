@@ -106,7 +106,7 @@ public:
 
 private:
 	void VisitServer(const ContentDirectoryService &server,
-			 std::forward_list<std::string> &&vpath,
+			 std::forward_list<std::string_view> &&vpath,
 			 const DatabaseSelection &selection,
 			 const VisitDirectory& visit_directory,
 			 const VisitSong& visit_song,
@@ -126,7 +126,7 @@ private:
 				   const DatabaseSelection &selection) const;
 
 	UPnPDirObject Namei(const ContentDirectoryService &server,
-			    std::forward_list<std::string> &&vpath) const;
+			    std::forward_list<std::string_view> &&vpath) const;
 
 	/**
 	 * Take server and objid, return metadata.
@@ -192,7 +192,7 @@ UpnpDatabase::GetSong(const char *uri) const
 		throw DatabaseError(DatabaseErrorCode::NOT_FOUND,
 				    "No such song");
 
-	auto server = discovery->GetServer(vpath.front().c_str());
+	auto server = discovery->GetServer(vpath.front());
 	vpath.pop_front();
 
 	if (vpath.empty())
@@ -208,7 +208,7 @@ UpnpDatabase::GetSong(const char *uri) const
 			throw DatabaseError(DatabaseErrorCode::NOT_FOUND,
 					    "No such song");
 
-		dirent = ReadNode(server, vpath.front().c_str());
+		dirent = ReadNode(server, std::string(vpath.front()).c_str());
 	}
 
 	return new UpnpSong(std::move(dirent), uri);
@@ -407,7 +407,7 @@ UpnpDatabase::BuildPath(const ContentDirectoryService &server,
 // Take server and internal title pathname and return objid and metadata.
 UPnPDirObject
 UpnpDatabase::Namei(const ContentDirectoryService &server,
-		    std::forward_list<std::string> &&vpath) const
+		    std::forward_list<std::string_view> &&vpath) const
 {
 	if (vpath.empty())
 		// looking for root info
@@ -420,7 +420,7 @@ UpnpDatabase::Namei(const ContentDirectoryService &server,
 		auto dirbuf = server.readDir(handle, objid.c_str());
 
 		// Look for the name in the sub-container list
-		UPnPDirObject *child = dirbuf.FindObject(vpath.front().c_str());
+		UPnPDirObject *child = dirbuf.FindObject(vpath.front());
 		if (child == nullptr)
 			throw DatabaseError(DatabaseErrorCode::NOT_FOUND,
 					    "No such object");
@@ -495,7 +495,7 @@ VisitObject(const UPnPDirObject &object, const char *uri,
 // really just one path parameter.
 void
 UpnpDatabase::VisitServer(const ContentDirectoryService &server,
-			  std::forward_list<std::string> &&vpath,
+			  std::forward_list<std::string_view> &&vpath,
 			  const DatabaseSelection &selection,
 			  const VisitDirectory& visit_directory,
 			  const VisitSong& visit_song,
@@ -514,7 +514,7 @@ UpnpDatabase::VisitServer(const ContentDirectoryService &server,
 		if (vpath.empty())
 			return;
 
-		const std::string objid(std::move(vpath.front()));
+		const std::string objid(vpath.front());
 		vpath.pop_front();
 		if (!vpath.empty())
 			throw DatabaseError(DatabaseErrorCode::NOT_FOUND,
@@ -611,7 +611,7 @@ UpnpDatabase::Visit(const DatabaseSelection &selection,
 	}
 
 	// We do have a path: the first element selects the server
-	std::string servername(std::move(vpath.front()));
+	std::string servername(vpath.front());
 	vpath.pop_front();
 
 	auto server = discovery->GetServer(servername.c_str());
