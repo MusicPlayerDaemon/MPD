@@ -591,7 +591,7 @@ UpnpDatabase::Visit(const DatabaseSelection &selection,
 {
 	DatabaseVisitorHelper helper(CheckSelection(selection), visit_song);
 
-	auto vpath = SplitString(selection.uri.c_str(), '/');
+	auto vpath = SplitString(selection.uri, '/');
 	if (vpath.empty()) {
 		for (const auto &server : discovery->GetDirectories()) {
 			if (visit_directory) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2016 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2013-2020 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -32,13 +32,14 @@
 #include "StringStrip.hxx"
 
 std::forward_list<std::string>
-SplitString(const char *s, char separator, bool strip) noexcept
+SplitString(std::string_view _s, char separator, bool strip) noexcept
 {
+	StringView s(_s);
 	if (strip)
-		s = StripLeft(s);
+		s.StripLeft();
 
 	std::forward_list<std::string> list;
-	if (*s == 0)
+	if (s.empty())
 		return list;
 
 	auto i = list.before_begin();

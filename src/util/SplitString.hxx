@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2016 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2013-2020 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -32,6 +32,7 @@
 
 #include <forward_list>
 #include <string>
+#include <string_view>
 
 /**
  * Split a string at a certain separator character into sub strings
@@ -44,6 +45,6 @@
  * (and not a list with an empty string).
  */
 std::forward_list<std::string>
-SplitString(const char *s, char separator, bool strip=true) noexcept;
+SplitString(std::string_view s, char separator, bool strip=true) noexcept;
 
 #endif
