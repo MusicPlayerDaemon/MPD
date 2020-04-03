@@ -260,9 +260,9 @@ UpdateWalk::SkipSymlink(const Directory *directory,
 		if (target_utf8.empty())
 			return true;
 
-		const char *relative =
+		auto relative =
 			storage.MapToRelativeUTF8(target_utf8.c_str());
-		return relative != nullptr
+		return relative.data() != nullptr
 			? !config.follow_inside_symlinks
 			: !config.follow_outside_symlinks;
 	}

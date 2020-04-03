@@ -57,21 +57,21 @@ class CompositeStorage final : public Storage {
 		}
 
 		gcc_pure
-		const Directory *Find(const char *uri) const noexcept;
+		const Directory *Find(std::string_view uri) const noexcept;
 
-		Directory &Make(const char *uri);
+		Directory &Make(std::string_view uri);
 
 		bool Unmount() noexcept;
-		bool Unmount(const char *uri) noexcept;
+		bool Unmount(std::string_view uri) noexcept;
 
 		gcc_pure
 		bool MapToRelativeUTF8(std::string &buffer,
-				       const char *uri) const noexcept;
+				       std::string_view uri) const noexcept;
 	};
 
 	struct FindResult {
 		const Directory *directory;
-		const char *uri;
+		std::string_view uri;
 	};
 
 	/**
@@ -98,7 +98,7 @@ public:
 	 * value is being used.
 	 */
 	gcc_pure gcc_nonnull_all
-	Storage *GetMount(const char *uri) noexcept;
+	Storage *GetMount(std::string_view uri) noexcept;
 
 	/**
 	 * Call the given function for each mounted storage, including
@@ -116,15 +116,15 @@ public:
 	bool Unmount(const char *uri);
 
 	/* virtual methods from class Storage */
-	StorageFileInfo GetInfo(const char *uri, bool follow) override;
+	StorageFileInfo GetInfo(std::string_view uri, bool follow) override;
 
-	std::unique_ptr<StorageDirectoryReader> OpenDirectory(const char *uri) override;
+	std::unique_ptr<StorageDirectoryReader> OpenDirectory(std::string_view uri) override;
 
-	std::string MapUTF8(const char *uri) const noexcept override;
+	std::string MapUTF8(std::string_view uri) const noexcept override;
 
-	AllocatedPath MapFS(const char *uri) const noexcept override;
+	AllocatedPath MapFS(std::string_view uri) const noexcept override;
 
-	const char *MapToRelativeUTF8(const char *uri) const noexcept override;
+	std::string_view MapToRelativeUTF8(std::string_view uri) const noexcept override;
 
 private:
 	template<typename T>
@@ -155,7 +155,7 @@ private:
 	 * the URI was used).
 	 */
 	gcc_pure
-	FindResult FindStorage(const char *uri) const noexcept;
+	FindResult FindStorage(std::string_view uri) const noexcept;
 
 	const char *MapToRelativeUTF8(const Directory &directory,
 				      const char *uri) const;

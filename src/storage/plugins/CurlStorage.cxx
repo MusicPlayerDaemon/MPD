@@ -57,29 +57,27 @@ public:
 		 curl(_loop) {}
 
 	/* virtual methods from class Storage */
-	StorageFileInfo GetInfo(const char *uri_utf8, bool follow) override;
+	StorageFileInfo GetInfo(std::string_view uri_utf8, bool follow) override;
 
-	std::unique_ptr<StorageDirectoryReader> OpenDirectory(const char *uri_utf8) override;
+	std::unique_ptr<StorageDirectoryReader> OpenDirectory(std::string_view uri_utf8) override;
 
-	std::string MapUTF8(const char *uri_utf8) const noexcept override;
+	std::string MapUTF8(std::string_view uri_utf8) const noexcept override;
 
-	const char *MapToRelativeUTF8(const char *uri_utf8) const noexcept override;
+	std::string_view MapToRelativeUTF8(std::string_view uri_utf8) const noexcept override;
 };
 
 std::string
-CurlStorage::MapUTF8(const char *uri_utf8) const noexcept
+CurlStorage::MapUTF8(std::string_view uri_utf8) const noexcept
 {
-	assert(uri_utf8 != nullptr);
-
-	if (StringIsEmpty(uri_utf8))
+	if (uri_utf8.empty())
 		return base;
 
 	std::string path_esc = CurlEscapeUriPath(uri_utf8);
 	return PathTraitsUTF8::Build(base, path_esc);
 }
 
-const char *
-CurlStorage::MapToRelativeUTF8(const char *uri_utf8) const noexcept
+std::string_view
+CurlStorage::MapToRelativeUTF8(std::string_view uri_utf8) const noexcept
 {
 	return PathTraitsUTF8::Relative(base,
 					CurlUnescape(uri_utf8).c_str());
@@ -447,7 +445,7 @@ protected:
 };
 
 StorageFileInfo
-CurlStorage::GetInfo(const char *uri_utf8, [[maybe_unused]] bool follow)
+CurlStorage::GetInfo(std::string_view uri_utf8, [[maybe_unused]] bool follow)
 {
 	// TODO: escape the given URI
 
@@ -541,7 +539,7 @@ protected:
 };
 
 std::unique_ptr<StorageDirectoryReader>
-CurlStorage::OpenDirectory(const char *uri_utf8)
+CurlStorage::OpenDirectory(std::string_view uri_utf8)
 {
 	std::string uri = MapUTF8(uri_utf8);
 

@@ -52,18 +52,18 @@ public:
 	/**
 	 * Throws #std::runtime_error on error.
 	 */
-	virtual StorageFileInfo GetInfo(const char *uri_utf8, bool follow) = 0;
+	virtual StorageFileInfo GetInfo(std::string_view uri_utf8, bool follow) = 0;
 
 	/**
 	 * Throws #std::runtime_error on error.
 	 */
-	virtual std::unique_ptr<StorageDirectoryReader> OpenDirectory(const char *uri_utf8) = 0;
+	virtual std::unique_ptr<StorageDirectoryReader> OpenDirectory(std::string_view uri_utf8) = 0;
 
 	/**
 	 * Map the given relative URI to an absolute URI.
 	 */
 	gcc_pure
-	virtual std::string MapUTF8(const char *uri_utf8) const noexcept = 0;
+	virtual std::string MapUTF8(std::string_view uri_utf8) const noexcept = 0;
 
 	/**
 	 * Map the given relative URI to a local file path.  Returns
@@ -71,7 +71,7 @@ public:
 	 * support local files.
 	 */
 	gcc_pure
-	virtual AllocatedPath MapFS(const char *uri_utf8) const noexcept;
+	virtual AllocatedPath MapFS(std::string_view uri_utf8) const noexcept;
 
 	gcc_pure
 	AllocatedPath MapChildFS(std::string_view uri_utf8,
@@ -83,7 +83,7 @@ public:
 	 * string); if not, returns nullptr.
 	 */
 	gcc_pure
-	virtual const char *MapToRelativeUTF8(const char *uri_utf8) const noexcept = 0;
+	virtual std::string_view MapToRelativeUTF8(std::string_view uri_utf8) const noexcept = 0;
 };
 
 #endif

@@ -56,18 +56,18 @@ public:
 	}
 
 	/* virtual methods from class Storage */
-	StorageFileInfo GetInfo(const char *uri_utf8, bool follow) override;
+	StorageFileInfo GetInfo(std::string_view uri_utf8, bool follow) override;
 
-	std::unique_ptr<StorageDirectoryReader> OpenDirectory(const char *uri_utf8) override;
+	std::unique_ptr<StorageDirectoryReader> OpenDirectory(std::string_view uri_utf8) override;
 
-	std::string MapUTF8(const char *uri_utf8) const noexcept override;
+	std::string MapUTF8(std::string_view uri_utf8) const noexcept override;
 
-	AllocatedPath MapFS(const char *uri_utf8) const noexcept override;
+	AllocatedPath MapFS(std::string_view uri_utf8) const noexcept override;
 
-	const char *MapToRelativeUTF8(const char *uri_utf8) const noexcept override;
+	std::string_view MapToRelativeUTF8(std::string_view uri_utf8) const noexcept override;
 
 private:
-	AllocatedPath MapFSOrThrow(const char *uri_utf8) const;
+	AllocatedPath MapFSOrThrow(std::string_view uri_utf8) const;
 };
 
 static StorageFileInfo
@@ -95,29 +95,27 @@ Stat(Path path, bool follow)
 }
 
 std::string
-LocalStorage::MapUTF8(const char *uri_utf8) const noexcept
+LocalStorage::MapUTF8(std::string_view uri_utf8) const noexcept
 {
-	assert(uri_utf8 != nullptr);
-
-	if (StringIsEmpty(uri_utf8))
+	if (uri_utf8.empty())
 		return base_utf8;
 
 	return PathTraitsUTF8::Build(base_utf8, uri_utf8);
 }
 
 AllocatedPath
-LocalStorage::MapFSOrThrow(const char *uri_utf8) const
+LocalStorage::MapFSOrThrow(std::string_view uri_utf8) const
 {
 	assert(uri_utf8 != nullptr);
 
-	if (StringIsEmpty(uri_utf8))
+	if (uri_utf8.empty())
 		return base_fs;
 
 	return base_fs / AllocatedPath::FromUTF8Throw(uri_utf8);
 }
 
 AllocatedPath
-LocalStorage::MapFS(const char *uri_utf8) const noexcept
+LocalStorage::MapFS(std::string_view uri_utf8) const noexcept
 {
 	try {
 		return MapFSOrThrow(uri_utf8);
@@ -126,20 +124,20 @@ LocalStorage::MapFS(const char *uri_utf8) const noexcept
 	}
 }
 
-const char *
-LocalStorage::MapToRelativeUTF8(const char *uri_utf8) const noexcept
+std::string_view
+LocalStorage::MapToRelativeUTF8(std::string_view uri_utf8) const noexcept
 {
 	return PathTraitsUTF8::Relative(base_utf8, uri_utf8);
 }
 
 StorageFileInfo
-LocalStorage::GetInfo(const char *uri_utf8, bool follow)
+LocalStorage::GetInfo(std::string_view uri_utf8, bool follow)
 {
 	return Stat(MapFSOrThrow(uri_utf8), follow);
 }
 
 std::unique_ptr<StorageDirectoryReader>
-LocalStorage::OpenDirectory(const char *uri_utf8)
+LocalStorage::OpenDirectory(std::string_view uri_utf8)
 {
 	return std::make_unique<LocalDirectoryReader>(MapFSOrThrow(uri_utf8));
 }

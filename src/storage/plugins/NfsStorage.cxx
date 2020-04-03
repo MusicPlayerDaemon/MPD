@@ -86,13 +86,13 @@ public:
 	}
 
 	/* virtual methods from class Storage */
-	StorageFileInfo GetInfo(const char *uri_utf8, bool follow) override;
+	StorageFileInfo GetInfo(std::string_view uri_utf8, bool follow) override;
 
-	std::unique_ptr<StorageDirectoryReader> OpenDirectory(const char *uri_utf8) override;
+	std::unique_ptr<StorageDirectoryReader> OpenDirectory(std::string_view uri_utf8) override;
 
-	std::string MapUTF8(const char *uri_utf8) const noexcept override;
+	std::string MapUTF8(std::string_view uri_utf8) const noexcept override;
 
-	const char *MapToRelativeUTF8(const char *uri_utf8) const noexcept override;
+	std::string_view MapToRelativeUTF8(std::string_view uri_utf8) const noexcept override;
 
 	/* virtual methods from NfsLease */
 	void OnNfsConnectionReady() noexcept final {
@@ -216,10 +216,8 @@ private:
 };
 
 static std::string
-UriToNfsPath(const char *_uri_utf8)
+UriToNfsPath(std::string_view _uri_utf8)
 {
-	assert(_uri_utf8 != nullptr);
-
 	/* libnfs paths must begin with a slash */
 	std::string uri_utf8("/");
 	uri_utf8.append(_uri_utf8);
@@ -233,18 +231,16 @@ UriToNfsPath(const char *_uri_utf8)
 }
 
 std::string
-NfsStorage::MapUTF8(const char *uri_utf8) const noexcept
+NfsStorage::MapUTF8(std::string_view uri_utf8) const noexcept
 {
-	assert(uri_utf8 != nullptr);
-
-	if (StringIsEmpty(uri_utf8))
+	if (uri_utf8.empty())
 		return base;
 
 	return PathTraitsUTF8::Build(base, uri_utf8);
 }
 
-const char *
-NfsStorage::MapToRelativeUTF8(const char *uri_utf8) const noexcept
+std::string_view
+NfsStorage::MapToRelativeUTF8(std::string_view uri_utf8) const noexcept
 {
 	return PathTraitsUTF8::Relative(base, uri_utf8);
 }
@@ -294,7 +290,7 @@ protected:
 };
 
 StorageFileInfo
-NfsStorage::GetInfo(const char *uri_utf8, bool follow)
+NfsStorage::GetInfo(std::string_view uri_utf8, bool follow)
 {
 	const std::string path = UriToNfsPath(uri_utf8);
 
@@ -397,7 +393,7 @@ NfsListDirectoryOperation::CollectEntries(struct nfsdir *dir)
 }
 
 std::unique_ptr<StorageDirectoryReader>
-NfsStorage::OpenDirectory(const char *uri_utf8)
+NfsStorage::OpenDirectory(std::string_view uri_utf8)
 {
 	const std::string path = UriToNfsPath(uri_utf8);
 

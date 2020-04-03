@@ -98,19 +98,19 @@ public:
 	}
 
 	/* virtual methods from class Storage */
-	StorageFileInfo GetInfo(const char *uri_utf8, bool follow) override {
+	StorageFileInfo GetInfo(std::string_view uri_utf8, bool follow) override {
 		MountWait();
 		return mounted_storage->GetInfo(uri_utf8, follow);
 	}
 
-	std::unique_ptr<StorageDirectoryReader> OpenDirectory(const char *uri_utf8) override {
+	std::unique_ptr<StorageDirectoryReader> OpenDirectory(std::string_view uri_utf8) override {
 		MountWait();
 		return mounted_storage->OpenDirectory(uri_utf8);
 	}
 
-	std::string MapUTF8(const char *uri_utf8) const noexcept override;
+	std::string MapUTF8(std::string_view uri_utf8) const noexcept override;
 
-	AllocatedPath MapFS(const char *uri_utf8) const noexcept override {
+	AllocatedPath MapFS(std::string_view uri_utf8) const noexcept override {
 		try {
 			const_cast<UdisksStorage *>(this)->MountWait();
 		} catch (...) {
@@ -120,7 +120,7 @@ public:
 		return mounted_storage->MapFS(uri_utf8);
 	}
 
-	const char *MapToRelativeUTF8(const char *uri_utf8) const noexcept override;
+	std::string_view MapToRelativeUTF8(std::string_view uri_utf8) const noexcept override;
 
 private:
 	void SetMountPoint(Path mount_point);
@@ -324,11 +324,9 @@ try {
 }
 
 std::string
-UdisksStorage::MapUTF8(const char *uri_utf8) const noexcept
+UdisksStorage::MapUTF8(std::string_view uri_utf8) const noexcept
 {
-	assert(uri_utf8 != nullptr);
-
-	if (StringIsEmpty(uri_utf8))
+	if (uri_utf8.empty())
 		/* kludge for a special case: return the "udisks://"
 		   URI if the parameter is an empty string to fix the
 		   mount URIs in the state file */
@@ -344,8 +342,8 @@ UdisksStorage::MapUTF8(const char *uri_utf8) const noexcept
 	}
 }
 
-const char *
-UdisksStorage::MapToRelativeUTF8(const char *uri_utf8) const noexcept
+std::string_view
+UdisksStorage::MapToRelativeUTF8(std::string_view uri_utf8) const noexcept
 {
 	return PathTraitsUTF8::Relative(base_uri, uri_utf8);
 }

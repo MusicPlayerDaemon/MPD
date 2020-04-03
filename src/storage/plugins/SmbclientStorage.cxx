@@ -64,28 +64,26 @@ public:
 	}
 
 	/* virtual methods from class Storage */
-	StorageFileInfo GetInfo(const char *uri_utf8, bool follow) override;
+	StorageFileInfo GetInfo(std::string_view uri_utf8, bool follow) override;
 
-	std::unique_ptr<StorageDirectoryReader> OpenDirectory(const char *uri_utf8) override;
+	std::unique_ptr<StorageDirectoryReader> OpenDirectory(std::string_view uri_utf8) override;
 
-	std::string MapUTF8(const char *uri_utf8) const noexcept override;
+	std::string MapUTF8(std::string_view uri_utf8) const noexcept override;
 
-	const char *MapToRelativeUTF8(const char *uri_utf8) const noexcept override;
+	std::string_view MapToRelativeUTF8(std::string_view uri_utf8) const noexcept override;
 };
 
 std::string
-SmbclientStorage::MapUTF8(const char *uri_utf8) const noexcept
+SmbclientStorage::MapUTF8(std::string_view uri_utf8) const noexcept
 {
-	assert(uri_utf8 != nullptr);
-
-	if (StringIsEmpty(uri_utf8))
+	if (uri_utf8.empty())
 		return base;
 
 	return PathTraitsUTF8::Build(base, uri_utf8);
 }
 
-const char *
-SmbclientStorage::MapToRelativeUTF8(const char *uri_utf8) const noexcept
+std::string_view
+SmbclientStorage::MapToRelativeUTF8(std::string_view uri_utf8) const noexcept
 {
 	return PathTraitsUTF8::Relative(base, uri_utf8);
 }
@@ -117,14 +115,14 @@ GetInfo(const char *path)
 }
 
 StorageFileInfo
-SmbclientStorage::GetInfo(const char *uri_utf8, [[maybe_unused]] bool follow)
+SmbclientStorage::GetInfo(std::string_view uri_utf8, [[maybe_unused]] bool follow)
 {
 	const std::string mapped = MapUTF8(uri_utf8);
 	return ::GetInfo(mapped.c_str());
 }
 
 std::unique_ptr<StorageDirectoryReader>
-SmbclientStorage::OpenDirectory(const char *uri_utf8)
+SmbclientStorage::OpenDirectory(std::string_view uri_utf8)
 {
 	std::string mapped = MapUTF8(uri_utf8);
 

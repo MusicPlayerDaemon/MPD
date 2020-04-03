@@ -22,7 +22,7 @@
 #include "fs/Traits.hxx"
 
 AllocatedPath
-Storage::MapFS([[maybe_unused]] const char *uri_utf8) const noexcept
+Storage::MapFS([[maybe_unused]] std::string_view uri_utf8) const noexcept
 {
 	return nullptr;
 }

@@ -54,11 +54,11 @@ SongLoader::LoadFile(const char *path_utf8, Path path_fs) const
 {
 #ifdef ENABLE_DATABASE
 	if (storage != nullptr) {
-		const char *suffix = storage->MapToRelativeUTF8(path_utf8);
-		if (suffix != nullptr)
+		const auto suffix = storage->MapToRelativeUTF8(path_utf8);
+		if (suffix.data() != nullptr)
 			/* this path was relative to the music
 			   directory - obtain it from the database */
-			return LoadFromDatabase(suffix);
+			return LoadFromDatabase(std::string(suffix).c_str());
 	}
 #endif
 

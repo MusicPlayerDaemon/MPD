@@ -42,11 +42,13 @@ LocateFileUri(const char *uri, const Client *client
 
 #ifdef ENABLE_DATABASE
 	if (storage != nullptr) {
-		const char *suffix = storage->MapToRelativeUTF8(uri);
-		if (suffix != nullptr)
+		const auto suffix = storage->MapToRelativeUTF8(uri);
+		if (suffix.data() != nullptr)
 			/* this path was relative to the music
 			   directory */
-			return LocatedUri(LocatedUri::Type::RELATIVE, suffix);
+			// TODO: don't use suffix.data() (ok for now because we know it's null-terminated)
+			return LocatedUri(LocatedUri::Type::RELATIVE,
+					  suffix.data());
 	}
 #endif
 
@@ -80,9 +82,11 @@ LocateAbsoluteUri(UriPluginKind kind, const char *uri
 
 #ifdef ENABLE_DATABASE
 	if (storage != nullptr) {
-		const char *suffix = storage->MapToRelativeUTF8(uri);
-		if (suffix != nullptr)
-			return LocatedUri(LocatedUri::Type::RELATIVE, suffix);
+		const auto suffix = storage->MapToRelativeUTF8(uri);
+		if (suffix.data() != nullptr)
+			// TODO: don't use suffix.data() (ok for now because we know it's null-terminated)
+			return LocatedUri(LocatedUri::Type::RELATIVE,
+					  suffix.data());
 	}
 #endif
 
