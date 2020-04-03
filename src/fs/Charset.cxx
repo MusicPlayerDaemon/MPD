@@ -92,13 +92,8 @@ FixSeparators(const PathTraitsUTF8::string_view _s)
 }
 
 PathTraitsUTF8::string
-PathToUTF8(PathTraitsFS::const_pointer path_fs)
+PathToUTF8(PathTraitsFS::string_view path_fs)
 {
-#if !CLANG_CHECK_VERSION(3,6)
-	/* disabled on clang due to -Wtautological-pointer-compare */
-	assert(path_fs != nullptr);
-#endif
-
 #ifdef _WIN32
 	const auto buffer = WideCharToMultiByte(CP_UTF8, path_fs);
 	return FixSeparators(buffer);

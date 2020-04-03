@@ -44,9 +44,8 @@ DeinitFSCharset() noexcept;
  *
  * Throws std::runtime_error on error.
  */
-gcc_nonnull_all
 PathTraitsUTF8::string
-PathToUTF8(PathTraitsFS::const_pointer path_fs);
+PathToUTF8(PathTraitsFS::string_view path_fs);
 
 /**
  * Convert the path from UTF-8.
