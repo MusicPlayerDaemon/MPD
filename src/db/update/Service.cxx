@@ -169,7 +169,7 @@ UpdateService::GenerateId() noexcept
 }
 
 unsigned
-UpdateService::Enqueue(const char *_path, bool discard)
+UpdateService::Enqueue(std::string_view path, bool discard)
 {
 	assert(GetEventLoop().IsInside());
 
@@ -177,8 +177,6 @@ UpdateService::Enqueue(const char *_path, bool discard)
 	   storage will be scanned */
 	SimpleDatabase *db2;
 	Storage *storage2;
-
-	std::string_view path(_path);
 
 	Directory::LookupResult lr;
 	{

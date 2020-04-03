@@ -27,6 +27,7 @@
 #include "util/Compiler.h"
 
 #include <memory>
+#include <string_view>
 
 class SimpleDatabase;
 class DatabaseListener;
@@ -90,7 +91,7 @@ public:
 	 * @return the job id
 	 */
 	gcc_nonnull_all
-	unsigned Enqueue(const char *path, bool discard);
+	unsigned Enqueue(std::string_view path, bool discard);
 
 	/**
 	 * Clear the queue and cancel the current update.  Does not
