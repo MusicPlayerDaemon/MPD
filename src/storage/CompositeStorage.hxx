@@ -49,7 +49,7 @@ class CompositeStorage final : public Storage {
 		 */
 		std::unique_ptr<Storage> storage;
 
-		std::map<std::string, Directory> children;
+		std::map<std::string, Directory, std::less<>> children;
 
 		gcc_pure
 		bool IsEmpty() const noexcept {

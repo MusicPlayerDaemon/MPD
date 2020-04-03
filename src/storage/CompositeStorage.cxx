@@ -82,17 +82,17 @@ CompositeDirectoryReader::GetInfo(bool follow)
 	return StorageFileInfo(StorageFileInfo::Type::DIRECTORY);
 }
 
-static std::string
+static std::string_view
 NextSegment(const char *&uri_r)
 {
 	const char *uri = uri_r;
 	const char *slash = strchr(uri, '/');
 	if (slash == nullptr) {
 		uri_r += strlen(uri);
-		return std::string(uri);
+		return uri;
 	} else {
 		uri_r = slash + 1;
-		return std::string(uri, slash);
+		return std::string_view(uri, slash - uri);
 	}
 }
 
@@ -101,7 +101,7 @@ CompositeStorage::Directory::Find(const char *uri) const noexcept
 {
 	const Directory *directory = this;
 	while (*uri != 0) {
-		const std::string name = NextSegment(uri);
+		const auto name = NextSegment(uri);
 		auto i = directory->children.find(name);
 		if (i == directory->children.end())
 			return nullptr;
@@ -142,7 +142,7 @@ CompositeStorage::Directory::Unmount(const char *uri) noexcept
 	if (StringIsEmpty(uri))
 		return Unmount();
 
-	const std::string name = NextSegment(uri);
+	const auto name = NextSegment(uri);
 
 	auto i = children.find(name);
 	if (i == children.end() || !i->second.Unmount(uri))
@@ -227,7 +227,7 @@ CompositeStorage::FindStorage(const char *uri) const noexcept
 
 	const Directory *directory = &root;
 	while (*uri != 0) {
-		const std::string name = NextSegment(uri);
+		const auto name = NextSegment(uri);
 
 		auto i = directory->children.find(name);
 		if (i == directory->children.end())
