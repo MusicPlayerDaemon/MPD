@@ -74,19 +74,21 @@ GetFSCharset() noexcept
 #endif
 }
 
-static inline PathTraitsUTF8::string &&
-FixSeparators(PathTraitsUTF8::string &&s)
+static inline PathTraitsUTF8::string
+FixSeparators(const PathTraitsUTF8::string_view _s)
 {
 	// For whatever reason GCC can't convert constexpr to value reference.
 	// This leads to link errors when passing separators directly.
 	auto to = PathTraitsUTF8::SEPARATOR;
 	decltype(to) from = PathTraitsFS::SEPARATOR;
 
+	PathTraitsUTF8::string s(_s);
+
 	if (from != to)
 		/* convert backslash to slash on WIN32 */
 		std::replace(s.begin(), s.end(), from, to);
 
-	return std::move(s);
+	return s;
 }
 
 PathTraitsUTF8::string
@@ -99,7 +101,7 @@ PathToUTF8(PathTraitsFS::const_pointer path_fs)
 
 #ifdef _WIN32
 	const auto buffer = WideCharToMultiByte(CP_UTF8, path_fs);
-	return FixSeparators(PathTraitsUTF8::string(buffer));
+	return FixSeparators(buffer);
 #else
 #ifdef HAVE_FS_CHARSET
 	if (fs_converter == nullptr)
@@ -108,7 +110,7 @@ PathToUTF8(PathTraitsFS::const_pointer path_fs)
 #ifdef HAVE_FS_CHARSET
 
 	const auto buffer = fs_converter->ToUTF8(path_fs);
-	return FixSeparators(PathTraitsUTF8::string(buffer));
+	return FixSeparators(buffer);
 #endif
 #endif
 }
