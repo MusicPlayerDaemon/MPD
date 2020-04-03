@@ -22,7 +22,8 @@
 
 #include <unicode/utypes.h>
 
-template<typename T> struct ConstBuffer;
+#include <string_view>
+
 template<typename T> class AllocatedArray;
 template<typename T> class AllocatedString;
 
@@ -32,7 +33,7 @@ template<typename T> class AllocatedString;
  * Throws std::runtime_error on error.
  */
 AllocatedArray<UChar>
-UCharFromUTF8(const char *src);
+UCharFromUTF8(std::string_view src);
 
 /**
  * Wrapper for u_strToUTF8().
@@ -40,6 +41,6 @@ UCharFromUTF8(const char *src);
  * Throws std::runtime_error on error.
  */
 AllocatedString<char>
-UCharToUTF8(ConstBuffer<UChar> src);
+UCharToUTF8(std::basic_string_view<UChar> src);
 
 #endif
