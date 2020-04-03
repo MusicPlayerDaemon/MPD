@@ -121,7 +121,7 @@ public:
 
 	void Open() override;
 	void Close() noexcept override;
-	const LightSong *GetSong(const char *uri_utf8) const override;
+	const LightSong *GetSong(std::string_view uri_utf8) const override;
 	void ReturnSong(const LightSong *song) const noexcept override;
 
 	void Visit(const DatabaseSelection &selection,
@@ -641,12 +641,12 @@ ProxyDatabase::OnIdle() noexcept
 }
 
 const LightSong *
-ProxyDatabase::GetSong(const char *uri) const
+ProxyDatabase::GetSong(std::string_view uri) const
 {
 	// TODO: eliminate the const_cast
 	const_cast<ProxyDatabase *>(this)->EnsureConnected();
 
-	if (!mpd_send_list_meta(connection, uri))
+	if (!mpd_send_list_meta(connection, std::string(uri).c_str()))
 		ThrowError(connection);
 
 	struct mpd_song *song = mpd_recv_song(connection);

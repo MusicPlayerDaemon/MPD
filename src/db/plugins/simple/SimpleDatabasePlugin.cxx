@@ -197,7 +197,7 @@ SimpleDatabase::Close() noexcept
 }
 
 const LightSong *
-SimpleDatabase::GetSong(const char *uri) const
+SimpleDatabase::GetSong(std::string_view uri) const
 {
 	assert(root != nullptr);
 	assert(prefixed_light_song == nullptr);
@@ -211,10 +211,8 @@ SimpleDatabase::GetSong(const char *uri) const
 		/* pass the request to the mounted database */
 		protect.unlock();
 
-		/* note: r.rest.data() is actually null-terminated
-		   because it points inside the "uri" parameter */
 		const LightSong *song =
-			r.directory->mounted_database->GetSong(r.rest.data());
+			r.directory->mounted_database->GetSong(r.rest);
 		if (song == nullptr)
 			return nullptr;
 
@@ -224,7 +222,7 @@ SimpleDatabase::GetSong(const char *uri) const
 		return prefixed_light_song;
 	}
 
-	if (r.rest.data() == nullptr)
+	if (r.rest.empty())
 		/* it's a directory */
 		throw DatabaseError(DatabaseErrorCode::NOT_FOUND,
 				    "No such song");

@@ -75,7 +75,7 @@ public:
 	 * directory (UTF-8)
 	 * @return a pointer that must be released with ReturnSong()
 	 */
-	virtual const LightSong *GetSong(const char *uri_utf8) const = 0;
+	virtual const LightSong *GetSong(std::string_view uri_utf8) const = 0;
 
 	/**
 	 * Mark the song object as "unused".  Call this on objects

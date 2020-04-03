@@ -62,8 +62,9 @@ class UpnpSong : UpnpSongData, public LightSong {
 	std::string real_uri2;
 
 public:
-	UpnpSong(UPnPDirObject &&object, std::string &&_uri) noexcept
-		:UpnpSongData(std::move(_uri), std::move(object.tag)),
+	template<typename U>
+	UpnpSong(UPnPDirObject &&object, U &&_uri) noexcept
+		:UpnpSongData(std::forward<U>(_uri), std::move(object.tag)),
 		 LightSong(UpnpSongData::uri.c_str(), UpnpSongData::tag),
 		 real_uri2(std::move(object.url)) {
 		real_uri = real_uri2.c_str();
@@ -87,7 +88,7 @@ public:
 
 	void Open() override;
 	void Close() noexcept override;
-	const LightSong *GetSong(const char *uri_utf8) const override;
+	const LightSong *GetSong(std::string_view uri_utf8) const override;
 	void ReturnSong(const LightSong *song) const noexcept override;
 
 	void Visit(const DatabaseSelection &selection,
@@ -185,7 +186,7 @@ UpnpDatabase::ReturnSong(const LightSong *_song) const noexcept
 // Get song info by path. We can receive either the id path, or the titles
 // one
 const LightSong *
-UpnpDatabase::GetSong(const char *uri) const
+UpnpDatabase::GetSong(std::string_view uri) const
 {
 	auto vpath = SplitString(uri, '/');
 	if (vpath.empty())
