@@ -84,7 +84,7 @@ public:
 	 * Throws std::runtime_error on error.
 	 */
 	gcc_nonnull_all
-	AllocatedString<char> ToUTF8(const char *s) const;
+	AllocatedString<char> ToUTF8(std::string_view s) const;
 
 	/**
 	 * Convert the string from UTF-8.
@@ -92,7 +92,7 @@ public:
 	 * Throws std::runtime_error on error.
 	 */
 	gcc_nonnull_all
-	AllocatedString<char> FromUTF8(const char *s) const;
+	AllocatedString<char> FromUTF8(std::string_view s) const;
 };
 
 #endif

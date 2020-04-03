@@ -78,13 +78,13 @@ IcuConverter::Create(const char *charset)
 #elif defined(HAVE_ICONV)
 
 static AllocatedString<char>
-DoConvert(iconv_t conv, const char *src)
+DoConvert(iconv_t conv, std::string_view src)
 {
 	// TODO: dynamic buffer?
 	char buffer[4096];
-	char *in = const_cast<char *>(src);
+	char *in = const_cast<char *>(src.data());
 	char *out = buffer;
-	size_t in_left = strlen(src);
+	size_t in_left = src.size();
 	size_t out_left = sizeof(buffer);
 
 	size_t n = iconv(conv, &in, &in_left, &out, &out_left);
@@ -101,7 +101,7 @@ DoConvert(iconv_t conv, const char *src)
 #endif
 
 AllocatedString<char>
-IcuConverter::ToUTF8(const char *s) const
+IcuConverter::ToUTF8(std::string_view s) const
 {
 #ifdef HAVE_ICU
 	const std::lock_guard<Mutex> protect(mutex);
@@ -110,12 +110,12 @@ IcuConverter::ToUTF8(const char *s) const
 
 	// TODO: dynamic buffer?
 	UChar buffer[4096], *target = buffer;
-	const char *source = s;
+	const char *source = s.data();
 
 	UErrorCode code = U_ZERO_ERROR;
 
 	ucnv_toUnicode(converter, &target, buffer + std::size(buffer),
-		       &source, source + strlen(source),
+		       &source, source + s.size(),
 		       nullptr, true, &code);
 	if (code != U_ZERO_ERROR)
 		throw std::runtime_error(FormatString("Failed to convert to Unicode: %s",
@@ -129,7 +129,7 @@ IcuConverter::ToUTF8(const char *s) const
 }
 
 AllocatedString<char>
-IcuConverter::FromUTF8(const char *s) const
+IcuConverter::FromUTF8(std::string_view s) const
 {
 #ifdef HAVE_ICU
 	const std::lock_guard<Mutex> protect(mutex);
