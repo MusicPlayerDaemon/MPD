@@ -196,11 +196,7 @@ UpdateService::Enqueue(const char *path, bool discard)
 			storage2 = storage.GetMount(path);
 			path = "";
 		} else {
-			assert(lr.rest > path);
-			assert(lr.rest < path + strlen(path));
-			assert(lr.rest[-1] == '/');
-
-			const std::string mountpoint(path, lr.rest - 1);
+			const std::string mountpoint(lr.uri);
 			storage2 = storage.GetMount(mountpoint.c_str());
 			path = lr.rest;
 		}

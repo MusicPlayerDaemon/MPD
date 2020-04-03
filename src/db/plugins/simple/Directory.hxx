@@ -183,6 +183,11 @@ public:
 		Directory *directory;
 
 		/**
+		 * The URI part which resolved to the #directory.
+		 */
+		std::string_view uri;
+
+		/**
 		 * The remaining URI part (without leading slash) or
 		 * nullptr if the given URI was consumed completely.
 		 */
