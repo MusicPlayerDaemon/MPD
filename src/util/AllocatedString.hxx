@@ -55,24 +55,25 @@ public:
 private:
 	pointer value;
 
-	explicit AllocatedString(pointer _value)
+	explicit AllocatedString(pointer _value) noexcept
 		:value(_value) {}
 
 public:
-	AllocatedString(std::nullptr_t n):value(n) {}
+	AllocatedString(std::nullptr_t n) noexcept
+		:value(n) {}
 
-	AllocatedString(AllocatedString &&src)
+	AllocatedString(AllocatedString &&src) noexcept
 		:value(src.Steal()) {}
 
-	~AllocatedString() {
+	~AllocatedString() noexcept {
 		delete[] value;
 	}
 
-	static AllocatedString Donate(pointer value) {
+	static AllocatedString Donate(pointer value) noexcept {
 		return AllocatedString(value);
 	}
 
-	static AllocatedString Null() {
+	static AllocatedString Null() noexcept {
 		return nullptr;
 	}
 
@@ -98,44 +99,44 @@ public:
 		return Donate(p);
 	}
 
-	AllocatedString &operator=(AllocatedString &&src) {
+	AllocatedString &operator=(AllocatedString &&src) noexcept {
 		std::swap(value, src.value);
 		return *this;
 	}
 
-	constexpr bool operator==(std::nullptr_t) const {
+	constexpr bool operator==(std::nullptr_t) const noexcept {
 		return value == nullptr;
 	}
 
-	constexpr bool operator!=(std::nullptr_t) const {
+	constexpr bool operator!=(std::nullptr_t) const noexcept {
 		return value != nullptr;
 	}
 
-	constexpr bool IsNull() const {
+	constexpr bool IsNull() const noexcept {
 		return value == nullptr;
 	}
 
-	constexpr const_pointer c_str() const {
+	constexpr const_pointer c_str() const noexcept {
 		return value;
 	}
 
-	bool empty() const {
+	bool empty() const noexcept {
 		return *value == SENTINEL;
 	}
 
-	constexpr pointer data() const {
+	constexpr pointer data() const noexcept {
 		return value;
 	}
 
-	reference operator[](size_type i) {
+	reference operator[](size_type i) noexcept {
 		return value[i];
 	}
 
-	const reference operator[](size_type i) const {
+	const reference operator[](size_type i) const noexcept {
 		return value[i];
 	}
 
-	pointer Steal() {
+	pointer Steal() noexcept {
 		return std::exchange(value, nullptr);
 	}
 
