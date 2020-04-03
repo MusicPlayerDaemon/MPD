@@ -117,6 +117,37 @@ RelativePathImpl(typename Traits::string_view base,
 	return other;
 }
 
+template<typename Traits>
+typename Traits::string_view
+RelativePathImpl(typename Traits::string_view base,
+		 typename Traits::string_view _other) noexcept
+{
+	BasicStringView<typename Traits::value_type> other(_other);
+
+	if (!other.SkipPrefix(base))
+		/* mismatch */
+		return {};
+
+	if (!other.empty()) {
+		if (!Traits::IsSeparator(other.front())) {
+			if (!base.empty() && Traits::IsSeparator(other.data[-1]))
+				/* "other" has no more slash, but the
+				   matching base ended with a slash:
+				   enough to detect a match */
+				return other;
+
+			/* mismatch */
+			return {};
+		}
+
+		/* skip remaining path separators */
+		while (!other.empty() && Traits::IsSeparator(other.front()))
+			other.pop_front();
+	}
+
+	return other;
+}
+
 PathTraitsFS::string
 PathTraitsFS::Build(string_view a, string_view b) noexcept
 {
@@ -137,6 +168,12 @@ PathTraitsFS::GetParent(PathTraitsFS::const_pointer p) noexcept
 
 PathTraitsFS::const_pointer
 PathTraitsFS::Relative(string_view base, const_pointer other) noexcept
+{
+	return RelativePathImpl<PathTraitsFS>(base, other);
+}
+
+PathTraitsFS::string_view
+PathTraitsFS::Relative(string_view base, string_view other) noexcept
 {
 	return RelativePathImpl<PathTraitsFS>(base, other);
 }
@@ -175,6 +212,12 @@ PathTraitsUTF8::GetParent(const_pointer p) noexcept
 
 PathTraitsUTF8::const_pointer
 PathTraitsUTF8::Relative(string_view base, const_pointer other) noexcept
+{
+	return RelativePathImpl<PathTraitsUTF8>(base, other);
+}
+
+PathTraitsUTF8::string_view
+PathTraitsUTF8::Relative(string_view base, string_view other) noexcept
 {
 	return RelativePathImpl<PathTraitsUTF8>(base, other);
 }

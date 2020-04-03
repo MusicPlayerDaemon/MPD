@@ -149,6 +149,9 @@ struct PathTraitsFS {
 	gcc_pure gcc_nonnull_all
 	static const_pointer Relative(string_view base, const_pointer other) noexcept;
 
+	gcc_pure
+	static string_view Relative(string_view base, string_view other) noexcept;
+
 	/**
 	 * Constructs the path from the given components.
 	 * If either of the components is empty string,
@@ -256,6 +259,9 @@ struct PathTraitsUTF8 {
 	 */
 	gcc_pure gcc_nonnull_all
 	static const_pointer Relative(string_view base, const_pointer other) noexcept;
+
+	gcc_pure
+	static string_view Relative(string_view base, string_view other) noexcept;
 
 	/**
 	 * Constructs the path from the given components.
