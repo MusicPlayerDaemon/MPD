@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2019 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2015-2020 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -43,12 +43,12 @@
 template<typename T=char>
 class AllocatedString {
 public:
-	typedef typename StringPointer<T>::value_type value_type;
-	typedef typename StringPointer<T>::reference reference;
-	typedef typename StringPointer<T>::const_reference const_reference;
-	typedef typename StringPointer<T>::pointer pointer;
-	typedef typename StringPointer<T>::const_pointer const_pointer;
-	typedef std::size_t size_type;
+	using value_type = typename StringPointer<T>::value_type;
+	using reference = typename StringPointer<T>::reference;
+	using const_reference = typename StringPointer<T>::const_reference;
+	using pointer = typename StringPointer<T>::pointer;
+	using const_pointer = typename StringPointer<T>::const_pointer;
+	using size_type = std::size_t;
 
 	static constexpr value_type SENTINEL = '\0';
 
