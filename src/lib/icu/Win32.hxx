@@ -22,7 +22,7 @@
 
 #include "util/Compiler.h"
 
-#include <wchar.h>
+#include <string_view>
 
 template<typename T> class AllocatedString;
 
@@ -31,13 +31,13 @@ template<typename T> class AllocatedString;
  */
 gcc_pure gcc_nonnull_all
 AllocatedString<char>
-WideCharToMultiByte(unsigned code_page, const wchar_t *src);
+WideCharToMultiByte(unsigned code_page, std::wstring_view src);
 
 /**
  * Throws std::system_error on error.
  */
 gcc_pure gcc_nonnull_all
 AllocatedString<wchar_t>
-MultiByteToWideChar(unsigned code_page, const char *src);
+MultiByteToWideChar(unsigned code_page, std::string_view src);
 
 #endif

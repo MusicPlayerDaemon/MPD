@@ -81,13 +81,15 @@ try {
 		return AllocatedString<>::Duplicate(src);
 
 	std::unique_ptr<wchar_t[]> buffer(new wchar_t[size]);
-	if (LCMapStringEx(LOCALE_NAME_INVARIANT,
-			  LCMAP_SORTKEY|LINGUISTIC_IGNORECASE,
-			  u.c_str(), -1, buffer.get(), size,
-			  nullptr, nullptr, 0) <= 0)
+	int result = LCMapStringEx(LOCALE_NAME_INVARIANT,
+				   LCMAP_SORTKEY|LINGUISTIC_IGNORECASE,
+				   u.c_str(), -1, buffer.get(), size,
+				   nullptr, nullptr, 0);
+	if (result <= 0)
 		return AllocatedString<>::Duplicate(src);
 
-	return WideCharToMultiByte(CP_UTF8, buffer.get());
+	return WideCharToMultiByte(CP_UTF8,
+				   {buffer.get(), size_t(result - 1)});
 
 #else
 #error not implemented
