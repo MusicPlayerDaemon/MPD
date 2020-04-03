@@ -127,13 +127,12 @@ Directory::PruneEmpty() noexcept
 }
 
 Directory::LookupResult
-Directory::LookupDirectory(const char *_uri) noexcept
+Directory::LookupDirectory(std::string_view _uri) noexcept
 {
 	assert(holding_db_lock());
-	assert(_uri != nullptr);
 
 	if (isRootDirectory(_uri))
-		return { this, _uri, nullptr };
+		return { this, _uri, {} };
 
 	StringView uri(_uri);
 
@@ -156,7 +155,7 @@ Directory::LookupDirectory(const char *_uri) noexcept
 		uri = rest;
 	} while (uri != nullptr);
 
-	return { d, StringView(_uri, uri.data - 1), uri.data };
+	return { d, _uri.substr(0, uri.data - _uri.data()), uri };
 }
 
 void

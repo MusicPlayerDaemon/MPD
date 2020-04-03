@@ -20,10 +20,18 @@
 #ifndef MPD_DB_URI_HXX
 #define MPD_DB_URI_HXX
 
+#include <string_view>
+
 static inline bool
 isRootDirectory(const char *name)
 {
 	return name[0] == 0 || (name[0] == '/' && name[1] == 0);
+}
+
+static inline bool
+isRootDirectory(std::string_view name) noexcept
+{
+	return name.empty() || (name.size() == 1 && name.front() == '/');
 }
 
 #endif

@@ -189,9 +189,9 @@ public:
 
 		/**
 		 * The remaining URI part (without leading slash) or
-		 * nullptr if the given URI was consumed completely.
+		 * empty if the given URI was consumed completely.
 		 */
-		const char *rest;
+		std::string_view rest;
 	};
 
 	/**
@@ -201,7 +201,7 @@ public:
 	 * @return the Directory, or nullptr if none was found
 	 */
 	gcc_pure
-	LookupResult LookupDirectory(const char *uri) noexcept;
+	LookupResult LookupDirectory(std::string_view uri) noexcept;
 
 	gcc_pure
 	bool IsEmpty() const noexcept {

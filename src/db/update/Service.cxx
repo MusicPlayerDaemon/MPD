@@ -169,7 +169,7 @@ UpdateService::GenerateId() noexcept
 }
 
 unsigned
-UpdateService::Enqueue(const char *path, bool discard)
+UpdateService::Enqueue(const char *_path, bool discard)
 {
 	assert(GetEventLoop().IsInside());
 
@@ -177,6 +177,8 @@ UpdateService::Enqueue(const char *path, bool discard)
 	   storage will be scanned */
 	SimpleDatabase *db2;
 	Storage *storage2;
+
+	std::string_view path(_path);
 
 	Directory::LookupResult lr;
 	{
@@ -192,7 +194,7 @@ UpdateService::Enqueue(const char *path, bool discard)
 		if (db2 == nullptr)
 			throw std::runtime_error("Cannot update this type of database");
 
-		if (lr.rest == nullptr) {
+		if (lr.rest.data() == nullptr) {
 			storage2 = storage.GetMount(path);
 			path = "";
 		} else {

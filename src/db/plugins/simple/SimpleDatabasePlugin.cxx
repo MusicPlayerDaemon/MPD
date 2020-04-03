@@ -211,8 +211,10 @@ SimpleDatabase::GetSong(const char *uri) const
 		/* pass the request to the mounted database */
 		protect.unlock();
 
+		/* note: r.rest.data() is actually null-terminated
+		   because it points inside the "uri" parameter */
 		const LightSong *song =
-			r.directory->mounted_database->GetSong(r.rest);
+			r.directory->mounted_database->GetSong(r.rest.data());
 		if (song == nullptr)
 			return nullptr;
 
@@ -222,12 +224,12 @@ SimpleDatabase::GetSong(const char *uri) const
 		return prefixed_light_song;
 	}
 
-	if (r.rest == nullptr)
+	if (r.rest.data() == nullptr)
 		/* it's a directory */
 		throw DatabaseError(DatabaseErrorCode::NOT_FOUND,
 				    "No such song");
 
-	if (strchr(r.rest, '/') != nullptr)
+	if (r.rest.find('/') != std::string_view::npos)
 		/* refers to a URI "below" the actual song */
 		throw DatabaseError(DatabaseErrorCode::NOT_FOUND,
 				    "No such song");
@@ -283,14 +285,15 @@ SimpleDatabase::Visit(const DatabaseSelection &selection,
 {
 	ScopeDatabaseLock protect;
 
-	auto r = root->LookupDirectory(selection.uri.c_str());
+	auto r = root->LookupDirectory(selection.uri);
 
 	if (r.directory->IsMount()) {
 		/* pass the request and the remaining uri to the mounted database */
 		protect.unlock();
 
 		WalkMount(r.uri, *(r.directory->mounted_database),
-			  (r.rest == nullptr)?"":r.rest, selection,
+			  r.rest,
+			  selection,
 			  visit_directory, visit_song, visit_playlist);
 
 		return;
@@ -298,7 +301,7 @@ SimpleDatabase::Visit(const DatabaseSelection &selection,
 
 	DatabaseVisitorHelper helper(CheckSelection(selection), visit_song);
 
-	if (r.rest == nullptr) {
+	if (r.rest.data() == nullptr) {
 		/* it's a directory */
 
 		if (selection.recursive && visit_directory)
@@ -311,7 +314,7 @@ SimpleDatabase::Visit(const DatabaseSelection &selection,
 		return;
 	}
 
-	if (strchr(r.rest, '/') == nullptr) {
+	if (r.rest.find('/') == std::string_view::npos) {
 		if (visit_song) {
 			Song *song = r.directory->FindSong(r.rest);
 			if (song != nullptr) {
@@ -402,11 +405,11 @@ SimpleDatabase::Mount(const char *uri, DatabasePtr db)
 	ScopeDatabaseLock protect;
 
 	auto r = root->LookupDirectory(uri);
-	if (r.rest == nullptr)
+	if (r.rest.data() == nullptr)
 		throw DatabaseError(DatabaseErrorCode::CONFLICT,
 				    "Already exists");
 
-	if (strchr(r.rest, '/') != nullptr)
+	if (r.rest.find('/') != std::string_view::npos)
 		throw DatabaseError(DatabaseErrorCode::NOT_FOUND,
 				    "Parent not found");
 
@@ -461,7 +464,7 @@ SimpleDatabase::LockUmountSteal(const char *uri) noexcept
 	ScopeDatabaseLock protect;
 
 	auto r = root->LookupDirectory(uri);
-	if (r.rest != nullptr || !r.directory->IsMount())
+	if (r.rest.data() != nullptr || !r.directory->IsMount())
 		return nullptr;
 
 	auto db = std::move(r.directory->mounted_database);
