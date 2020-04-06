@@ -106,8 +106,6 @@ LocalStorage::MapUTF8(std::string_view uri_utf8) const noexcept
 AllocatedPath
 LocalStorage::MapFSOrThrow(std::string_view uri_utf8) const
 {
-	assert(uri_utf8 != nullptr);
-
 	if (uri_utf8.empty())
 		return base_fs;
 

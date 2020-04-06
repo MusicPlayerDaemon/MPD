@@ -332,7 +332,7 @@ CompositeStorage::MapToRelativeUTF8(std::string_view uri) const noexcept
 	}
 
 	if (!root.MapToRelativeUTF8(relative_buffer, uri))
-		return nullptr;
+		return {};
 
 	return relative_buffer;
 }
