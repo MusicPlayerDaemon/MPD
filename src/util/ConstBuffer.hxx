@@ -44,11 +44,11 @@ struct ConstBuffer;
 template<>
 struct ConstBuffer<void> {
 	typedef std::size_t size_type;
-	typedef void value_type;
-	typedef const void *pointer;
-	typedef pointer const_pointer;
-	typedef pointer iterator;
-	typedef pointer const_iterator;
+	using value_type = void;
+	using pointer = const void *;
+	using const_pointer = pointer;
+	using iterator = pointer;
+	using const_iterator = pointer;
 
 	pointer data;
 	size_type size;
@@ -91,14 +91,14 @@ struct ConstBuffer<void> {
  */
 template<typename T>
 struct ConstBuffer {
-	typedef std::size_t size_type;
-	typedef T value_type;
-	typedef const T &reference;
-	typedef reference const_reference;
-	typedef const T *pointer;
-	typedef pointer const_pointer;
-	typedef pointer iterator;
-	typedef pointer const_iterator;
+	using size_type = std::size_t;
+	using value_type = T;
+	using reference = const T &;
+	using const_reference = reference;
+	using pointer = const T *;
+	using const_pointer = pointer;
+	using iterator = pointer;
+	using const_iterator = pointer;
 
 	pointer data;
 	size_type size;

@@ -45,11 +45,11 @@ struct WritableBuffer;
 template<>
 struct WritableBuffer<void> {
 	typedef std::size_t size_type;
-	typedef void value_type;
-	typedef void *pointer;
-	typedef const void *const_pointer;
-	typedef pointer iterator;
-	typedef const_pointer const_iterator;
+	using value_type = void;
+	using pointer = void *;
+	using const_pointer = const void *;
+	using iterator = pointer;
+	using const_iterator = const_pointer;
 
 	pointer data;
 	size_type size;
@@ -90,14 +90,14 @@ struct WritableBuffer<void> {
  */
 template<typename T>
 struct WritableBuffer {
-	typedef std::size_t size_type;
-	typedef T value_type;
-	typedef T &reference;
-	typedef const T &const_reference;
-	typedef T *pointer;
-	typedef const T *const_pointer;
-	typedef pointer iterator;
-	typedef const_pointer const_iterator;
+	using size_type = std::size_t;
+	using value_type = T;
+	using reference = T &;
+	using const_reference = const T &;
+	using pointer = T *;
+	using const_pointer = const T *;
+	using iterator = pointer;
+	using const_iterator = const_pointer;
 
 	pointer data;
 	size_type size;

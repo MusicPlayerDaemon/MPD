@@ -39,19 +39,19 @@ template<typename T, std::size_t CAPACITY>
 class BasicStringBuffer {
 public:
 	typedef T value_type;
-	typedef T &reference;
-	typedef T *pointer;
-	typedef const T *const_pointer;
-	typedef std::size_t size_type;
+	using reference = T &;
+	using pointer = T *;
+	using const_pointer = const T *;
+	using size_type = std::size_t;
 
 	static constexpr value_type SENTINEL = '\0';
 
 protected:
-	typedef std::array<value_type, CAPACITY> Array;
+	using Array = std::array<value_type, CAPACITY>;
 	Array the_data;
 
 public:
-	typedef typename Array::const_iterator const_iterator;
+	using const_iterator = typename Array::const_iterator;
 
 	constexpr size_type capacity() const noexcept {
 		return CAPACITY;
