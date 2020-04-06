@@ -130,4 +130,12 @@ ToLowerASCII(char ch) noexcept
 		: ch;
 }
 
+constexpr bool
+IsHexDigit(char ch) noexcept
+{
+	return IsDigitASCII(ch) ||
+		(ch >= 'a' && ch <= 'f') ||
+		(ch >= 'A' && ch <= 'F');
+}
+
 #endif
