@@ -154,11 +154,7 @@ TagBuilder::CommitNew() noexcept
 bool
 TagBuilder::HasType(TagType type) const noexcept
 {
-	for (auto i : items)
-		if (i->type == type)
-			return true;
-
-	return false;
+	return std::any_of(items.begin(), items.end(), [type](const auto &i) { return i->type == type; });
 }
 
 void

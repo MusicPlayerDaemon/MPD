@@ -127,12 +127,7 @@ gcc_pure
 static bool
 IsValidValue(const StringView s) noexcept
 {
-	for (const char ch : s) {
-		if ((unsigned char)ch < 0x20)
-			return false;
-	}
-
-	return true;
+	return std::none_of(s.begin(), s.end(), [](const auto &ch) { return (unsigned char)ch < 0x20; });
 }
 
 class PrintCommentHandler final : public NullTagHandler {

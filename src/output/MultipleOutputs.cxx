@@ -258,11 +258,8 @@ MultipleOutputs::Open(const AudioFormat audio_format)
 bool
 MultipleOutputs::IsChunkConsumed(const MusicChunk *chunk) const noexcept
 {
-	for (const auto &ao : outputs)
-		if (!ao->LockIsChunkConsumed(*chunk))
-			return false;
-
-	return true;
+	return std::all_of(outputs.begin(), outputs.end(), [chunk](const auto &ao) {
+		return ao->LockIsChunkConsumed(*chunk); });
 }
 
 unsigned
