@@ -30,6 +30,8 @@
 #ifndef MATH_HXX
 #define MATH_HXX
 
+#include <cmath>
+
 /*
  * C99 math can be optionally omitted with gcc's libstdc++.
  * Use boost if unavailable.
@@ -38,7 +40,6 @@
 #include <boost/math/special_functions/round.hpp>
 using boost::math::lround;
 #else
-#include <cmath>
 using std::lround;
 #endif
 
