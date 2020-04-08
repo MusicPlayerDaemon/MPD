@@ -33,7 +33,8 @@ InputPlugin::SupportsUri(const char *uri) const noexcept
 			if (StringStartsWithIgnoreCase(uri, *i))
 				return true;
 	} else {
-		return std::any_of(protocols().begin(), protocols().end(), [uri](const auto &schema)
+		const auto p = protocols();
+		return std::any_of(p.begin(), p.end(), [uri](const auto &schema)
 			{ return StringStartsWithIgnoreCase(uri, schema.c_str()); } );
 	}
 	return false;
