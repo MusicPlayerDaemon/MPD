@@ -121,10 +121,11 @@ ParseLine(Directory &directory, const char *line)
 }
 
 static Directory *
-directory_load_subdir(TextFile &file, Directory &parent, const char *name)
+directory_load_subdir(TextFile &file, Directory &parent, std::string_view name)
 {
 	if (parent.FindChild(name) != nullptr)
-		throw FormatRuntimeError("Duplicate subdirectory '%s'", name);
+		throw FormatRuntimeError("Duplicate subdirectory '%.*s'",
+					 int(name.size()), name.data());
 
 	Directory *directory = parent.CreateChild(name);
 
