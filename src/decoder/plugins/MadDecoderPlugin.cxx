@@ -889,8 +889,6 @@ inline bool
 MadDecoder::HandleCurrentFrame() noexcept
 {
 	switch (mute_frame) {
-		DecoderCommand cmd;
-
 	case MadDecoderMuteFrame::SKIP:
 		mute_frame = MadDecoderMuteFrame::NONE;
 		break;
@@ -900,6 +898,8 @@ MadDecoder::HandleCurrentFrame() noexcept
 		UpdateTimerNextFrame();
 		break;
 	case MadDecoderMuteFrame::NONE:
+		DecoderCommand cmd;
+
 		cmd = SynthAndSubmit();
 		UpdateTimerNextFrame();
 		if (cmd == DecoderCommand::SEEK) {

@@ -157,8 +157,6 @@ MyAvahiClientCallback(AvahiClient *c, AvahiClientState state,
 	FormatDebug(avahi_domain, "Client changed to state %d", state);
 
 	switch (state) {
-		int reason;
-
 	case AVAHI_CLIENT_S_RUNNING:
 		LogDebug(avahi_domain, "Client is RUNNING");
 
@@ -169,6 +167,8 @@ MyAvahiClientCallback(AvahiClient *c, AvahiClientState state,
 		break;
 
 	case AVAHI_CLIENT_FAILURE:
+		int reason;
+
 		reason = avahi_client_errno(c);
 		if (reason == AVAHI_ERR_DISCONNECTED) {
 			LogDefault(avahi_domain,
