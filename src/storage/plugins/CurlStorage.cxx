@@ -402,7 +402,7 @@ private:
 			break;
 
 		case State::HREF:
-			response.href.assign(s, len);
+			response.href.append(s, len);
 			break;
 
 		case State::STATUS:
