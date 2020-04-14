@@ -482,7 +482,7 @@ class HttpListDirectoryOperation final : public PropfindOperation {
 public:
 	HttpListDirectoryOperation(CurlGlobal &curl, const char *uri)
 		:PropfindOperation(curl, uri, 1),
-		 base_path(UriPathOrSlash(uri)) {}
+		 base_path(CurlUnescape(GetEasy(), UriPathOrSlash(uri))) {}
 
 	std::unique_ptr<StorageDirectoryReader> Perform() {
 		DeferStart();
@@ -507,8 +507,7 @@ private:
 
 		/* kludge: ignoring case in this comparison to avoid
 		   false negatives if the web server uses a different
-		   case in hex digits in escaped characters; TODO:
-		   implement properly */
+		   case */
 		path = StringAfterPrefixIgnoreCase(path, base_path.c_str());
 		if (path == nullptr || *path == 0)
 			return nullptr;
@@ -531,11 +530,12 @@ protected:
 		if (r.status != 200)
 			return;
 
-		const auto escaped_name = HrefToEscapedName(r.href.c_str());
-		if (escaped_name.IsNull())
+		std::string href = CurlUnescape(GetEasy(), r.href.c_str());
+		const auto name = HrefToEscapedName(href.c_str());
+		if (name.IsNull())
 			return;
 
-		entries.emplace_front(CurlUnescape(GetEasy(), escaped_name));
+		entries.emplace_front(std::string(name.data, name.size));
 
 		auto &info = entries.front().info;
 		info = StorageFileInfo(r.collection
