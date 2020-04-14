@@ -27,6 +27,7 @@
 #include "event/FullyBufferedSocket.hxx"
 #include "event/TimerEvent.hxx"
 #include "util/Compiler.h"
+#include "client/ClientTraits.hxx"
 
 #include <boost/intrusive/link_mode.hpp>
 #include <boost/intrusive/list_hook.hpp>
@@ -112,6 +113,8 @@ private:
 	 * #BackgroundCommand will be cancelled.
 	 */
 	std::unique_ptr<BackgroundCommand> background_command;
+
+	ClientTraits m_client_traits;
 
 public:
 	Client(EventLoop &loop, Partition &partition,
@@ -259,6 +262,14 @@ public:
 
 	gcc_pure
 	const Storage *GetStorage() const noexcept;
+
+	const ClientTraits& GetTraits() const noexcept {
+		return m_client_traits;
+	} 
+
+	ClientTraits& GetTraits() noexcept {
+		return m_client_traits;
+	} 
 
 private:
 	CommandResult ProcessCommandList(bool list_ok,

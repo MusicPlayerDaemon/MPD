@@ -92,6 +92,7 @@ enum class ConfigBlockOption {
 	AUDIO_FILTER,
 	DATABASE,
 	NEIGHBORS,
+	TRAITS,
 	MAX
 };
 

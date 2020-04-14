@@ -34,6 +34,7 @@
 #include "ClientCommands.hxx"
 #include "PartitionCommands.hxx"
 #include "FingerprintCommands.hxx"
+#include "ClientTraitsCommands.hxx"
 #include "OtherCommands.hxx"
 #include "Permission.hxx"
 #include "tag/Type.h"
@@ -203,6 +204,7 @@ static constexpr struct command commands[] = {
 	{ "swapid", PERMISSION_CONTROL, 2, 2, handle_swapid },
 	{ "tagtypes", PERMISSION_READ, 0, -1, handle_tagtypes },
 	{ "toggleoutput", PERMISSION_ADMIN, 1, 1, handle_toggleoutput },
+	{ "traits", PERMISSION_CONTROL, 1, 3, handle_client_traits },
 #ifdef ENABLE_DATABASE
 	{ "unmount", PERMISSION_ADMIN, 1, 1, handle_unmount },
 #endif

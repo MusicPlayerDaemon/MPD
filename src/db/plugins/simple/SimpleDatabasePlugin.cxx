@@ -330,11 +330,19 @@ SimpleDatabase::Visit(const DatabaseSelection &selection,
 			    "No such directory");
 }
 
-RecursiveMap<std::string>
-SimpleDatabase::CollectUniqueTags(const DatabaseSelection &selection,
+RecursiveStringMapCS
+SimpleDatabase::CollectUniqueTagsCS(const DatabaseSelection &selection,
 				  ConstBuffer<TagType> tag_types) const
 {
-	return ::CollectUniqueTags(*this, selection, tag_types);
+	RecursiveStringMapCS result;
+	return ::CollectUniqueTags<RecursiveStringMapCS>(*this, selection, tag_types, result);
+}
+
+RecursiveStringMapCI
+SimpleDatabase::CollectUniqueTagsCI(const DatabaseSelection &selection,
+							    ConstBuffer<TagType> tag_types) const {
+	RecursiveStringMapCI result;
+	return ::CollectUniqueTags<RecursiveStringMapCI>(*this, selection, tag_types, result);
 }
 
 DatabaseStats

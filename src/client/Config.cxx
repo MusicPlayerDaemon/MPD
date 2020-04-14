@@ -19,6 +19,7 @@
 
 #include "Config.hxx"
 #include "config/Data.hxx"
+#include "ClientTraits.hxx"
 
 #define CLIENT_TIMEOUT_DEFAULT			(60)
 #define CLIENT_MAX_COMMAND_LIST_DEFAULT		(2048*1024)
@@ -44,4 +45,6 @@ client_manager_init(const ConfigData &config)
 		config.GetPositive(ConfigOption::MAX_OUTPUT_BUFFER_SIZE,
 				   CLIENT_MAX_OUTPUT_BUFFER_SIZE_DEFAULT / 1024)
 		* 1024;
+
+	ClientTraits::configure(config);
 }

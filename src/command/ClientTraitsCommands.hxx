@@ -17,24 +17,17 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_DB_UNIQUE_TAGS_HXX
-#define MPD_DB_UNIQUE_TAGS_HXX
+#ifndef MPD_CLIENT_TRAITS_COMMANDS_HXX
+#define MPD_CLIENT_TRAITS_COMMANDS_HXX
 
-#include "tag/Type.h"
+#include "CommandResult.hxx"
 
-#include <string>
+class Client;
+class Request;
+class Response;
 
-class Database;
-struct DatabaseSelection;
-template<typename Key, typename Compare> class RecursiveMap;
-template<typename T> struct ConstBuffer;
+CommandResult
+handle_client_traits(Client &client, Request request, Response &response);
 
-/**
- * Walk the database and collect unique tag values.
- */
-template <typename RecursiveMap_T>
-RecursiveMap_T& CollectUniqueTags(const Database &db, const DatabaseSelection &selection,
-		  ConstBuffer<TagType> tag_types,
-		  RecursiveMap_T& result);
+#endif /* MPD_CLIENT_TRAITS_COMMANDS_HXX */
 
-#endif

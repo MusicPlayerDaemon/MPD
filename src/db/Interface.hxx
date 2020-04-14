@@ -23,6 +23,7 @@
 #include "Visitor.hxx"
 #include "tag/Type.h"
 #include "util/Compiler.h"
+#include "util/RecursiveMap.hxx"
 
 #include <chrono>
 #include <string>
@@ -31,7 +32,7 @@ struct DatabasePlugin;
 struct DatabaseStats;
 struct DatabaseSelection;
 struct LightSong;
-template<typename Key> class RecursiveMap;
+//template<typename Key, typename Compare> class RecursiveMap;
 template<typename T> struct ConstBuffer;
 
 class Database {
@@ -111,7 +112,10 @@ public:
 	 *
 	 * Throws on error.
 	 */
-	virtual RecursiveMap<std::string> CollectUniqueTags(const DatabaseSelection &selection,
+	virtual RecursiveStringMapCS CollectUniqueTagsCS(const DatabaseSelection &selection,
+							    ConstBuffer<TagType> tag_types) const = 0;
+								
+	virtual RecursiveStringMapCI CollectUniqueTagsCI(const DatabaseSelection &selection,
 							    ConstBuffer<TagType> tag_types) const = 0;
 
 	/**

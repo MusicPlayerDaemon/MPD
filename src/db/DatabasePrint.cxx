@@ -22,6 +22,8 @@
 #include "SongPrint.hxx"
 #include "TimePrint.hxx"
 #include "client/Response.hxx"
+#include "client/Client.hxx"
+#include "client/ClientTraits.hxx"
 #include "Partition.hxx"
 #include "song/LightSong.hxx"
 #include "tag/Tag.hxx"
@@ -181,9 +183,10 @@ PrintSongUris(Response &r, Partition &partition,
 	db.Visit(selection, f);
 }
 
+template<typename RecursiveMap_T>
 static void
 PrintUniqueTags(Response &r, ConstBuffer<TagType> tag_types,
-		const RecursiveMap<std::string> &map) noexcept
+		const RecursiveMap_T &map) noexcept
 {
 	const char *const name = tag_item_names[tag_types.front()];
 	tag_types.pop_front();
@@ -205,6 +208,14 @@ PrintUniqueTags(Response &r, Partition &partition,
 
 	const DatabaseSelection selection("", true, filter);
 
-	PrintUniqueTags(r, tag_types,
-			db.CollectUniqueTags(selection, tag_types));
+	ClientTraits::ListsSortTypeValue sort_type = r.GetClient().GetTraits().get_lists_sort_type();
+
+	if (sort_type == ClientTraits::ListsSortTypeValue::CaseInsensitive) {
+		PrintUniqueTags(r, tag_types,
+					    db.CollectUniqueTagsCI(selection, tag_types));
+	}
+	else {
+		PrintUniqueTags(r, tag_types,
+					    db.CollectUniqueTagsCS(selection, tag_types));
+	}
 }

@@ -24,8 +24,9 @@
 #include "util/ConstBuffer.hxx"
 #include "util/RecursiveMap.hxx"
 
+template <typename Compare>
 static void
-CollectUniqueTags(RecursiveMap<std::string> &result,
+CollectUniqueTags(RecursiveMap<std::string, Compare> &result,
 		  const Tag &tag,
 		  ConstBuffer<TagType> tag_types) noexcept
 {
@@ -39,15 +40,38 @@ CollectUniqueTags(RecursiveMap<std::string> &result,
 		});
 }
 
-RecursiveMap<std::string>
+template <typename Compare>
+RecursiveMap<std::string, Compare>
 CollectUniqueTags(const Database &db, const DatabaseSelection &selection,
 		  ConstBuffer<TagType> tag_types)
 {
-	RecursiveMap<std::string> result;
+	RecursiveMap<std::string, Compare> result;
 
 	db.Visit(selection, [&result, tag_types](const LightSong &song){
-			CollectUniqueTags(result, song.tag, tag_types);
+			CollectUniqueTags<Compare>(result, song.tag, tag_types);
 		});
 
+	return result;
+}
+
+// case sensitive
+template<>
+RecursiveStringMapCS& CollectUniqueTags(const Database &db, const DatabaseSelection &selection,
+		  ConstBuffer<TagType> tag_types,
+		  RecursiveStringMapCS& result) {
+	db.Visit(selection, [&result, tag_types](const LightSong &song){
+			CollectUniqueTags<RecursiveStringMapCS::key_compare>(result, song.tag, tag_types);
+		});
+	return result;
+}
+
+// case insensitive
+template<>
+RecursiveStringMapCI& CollectUniqueTags(const Database &db, const DatabaseSelection &selection,
+		  ConstBuffer<TagType> tag_types,
+		  RecursiveStringMapCI& result) {
+	db.Visit(selection, [&result, tag_types](const LightSong &song){
+			CollectUniqueTags<RecursiveStringMapCI::key_compare>(result, song.tag, tag_types);
+		});
 	return result;
 }

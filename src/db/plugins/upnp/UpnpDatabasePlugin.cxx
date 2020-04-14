@@ -96,7 +96,10 @@ public:
 		   VisitSong visit_song,
 		   VisitPlaylist visit_playlist) const override;
 
-	[[nodiscard]] RecursiveMap<std::string> CollectUniqueTags(const DatabaseSelection &selection,
+	[[nodiscard]] RecursiveStringMapCS CollectUniqueTagsCS(const DatabaseSelection &selection,
+						    ConstBuffer<TagType> tag_types) const override;
+
+	[[nodiscard]] RecursiveStringMapCI CollectUniqueTagsCI(const DatabaseSelection &selection,
 						    ConstBuffer<TagType> tag_types) const override;
 
 	[[nodiscard]] DatabaseStats GetStats(const DatabaseSelection &selection) const override;
@@ -621,11 +624,19 @@ UpnpDatabase::Visit(const DatabaseSelection &selection,
 	helper.Commit();
 }
 
-RecursiveMap<std::string>
-UpnpDatabase::CollectUniqueTags(const DatabaseSelection &selection,
+RecursiveStringMapCS
+UpnpDatabase::CollectUniqueTagsCS(const DatabaseSelection &selection,
 				ConstBuffer<TagType> tag_types) const
 {
-	return ::CollectUniqueTags(*this, selection, tag_types);
+	RecursiveStringMapCS result;
+	return ::CollectUniqueTags<RecursiveStringMapCS>(*this, selection, tag_types, result);
+}
+
+RecursiveStringMapCI
+UpnpDatabase::CollectUniqueTagsCI(const DatabaseSelection &selection,
+							    ConstBuffer<TagType> tag_types) const {
+	RecursiveStringMapCI result;
+	return ::CollectUniqueTags<RecursiveStringMapCI>(*this, selection, tag_types, result);
 }
 
 DatabaseStats

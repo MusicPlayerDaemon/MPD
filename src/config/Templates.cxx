@@ -93,6 +93,7 @@ const ConfigTemplate config_block_templates[] = {
 	{ "filter", true },
 	{ "database" },
 	{ "neighbors", true },
+	{ "traits" },
 };
 
 static constexpr unsigned n_config_block_templates =

@@ -129,7 +129,10 @@ public:
 		   VisitSong visit_song,
 		   VisitPlaylist visit_playlist) const override;
 
-	RecursiveMap<std::string> CollectUniqueTags(const DatabaseSelection &selection,
+	RecursiveStringMapCS CollectUniqueTagsCS(const DatabaseSelection &selection,
+						    ConstBuffer<TagType> tag_types) const override;
+
+	RecursiveStringMapCI CollectUniqueTagsCI(const DatabaseSelection &selection,
 						    ConstBuffer<TagType> tag_types) const override;
 
 	DatabaseStats GetStats(const DatabaseSelection &selection) const override;
@@ -152,6 +155,12 @@ private:
 
 	/* virtual methods from IdleMonitor */
 	void OnIdle() noexcept override;
+
+	template<typename RecursivceMap_T>
+	RecursivceMap_T&
+	CollectUniqueTags(const DatabaseSelection &selection,
+					  ConstBuffer<TagType> tag_types,
+					  RecursivceMap_T& result) const;
 };
 
 static constexpr struct {
@@ -994,9 +1003,11 @@ ProxyDatabase::Visit(const DatabaseSelection &selection,
 	helper.Commit();
 }
 
-RecursiveMap<std::string>
+template<typename RecursiveMap_T>
+RecursiveMap_T&
 ProxyDatabase::CollectUniqueTags(const DatabaseSelection &selection,
-				 ConstBuffer<TagType> tag_types) const
+								 ConstBuffer<TagType> tag_types,
+								 RecursiveMap_T& result) const
 try {
 	// TODO: eliminate the const_cast
 	const_cast<ProxyDatabase *>(this)->EnsureConnected();
@@ -1016,8 +1027,7 @@ try {
 	if (!mpd_search_commit(connection))
 		ThrowError(connection);
 
-	RecursiveMap<std::string> result;
-	std::vector<RecursiveMap<std::string> *> position;
+	std::vector<RecursiveMap_T *> position;
 	position.emplace_back(&result);
 
 	while (auto *pair = mpd_recv_pair(connection)) {
@@ -1054,6 +1064,24 @@ try {
 		mpd_search_cancel(connection);
 
 	throw;
+}
+
+RecursiveStringMapCS
+ProxyDatabase::CollectUniqueTagsCS(const DatabaseSelection &selection,
+				 				 ConstBuffer<TagType> tag_types) const
+{
+	RecursiveStringMapCS result;
+
+	return CollectUniqueTags(selection, tag_types, result);
+}
+
+RecursiveStringMapCI
+ProxyDatabase::CollectUniqueTagsCI(const DatabaseSelection &selection,
+							       ConstBuffer<TagType> tag_types) const
+{
+	RecursiveStringMapCI result;
+
+	return CollectUniqueTags(selection, tag_types, result);
 }
 
 DatabaseStats
