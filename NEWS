@@ -1,4 +1,6 @@
 ver 0.21.23 (not yet released)
+* output
+  - alsa: implement channel mapping for 5.0 and 7.0
 * player
   - drain outputs at end of song in "single" mode
 
