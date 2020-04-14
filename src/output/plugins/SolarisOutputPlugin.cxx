@@ -44,6 +44,7 @@
 #define I_FLUSH 0
 #endif
 
+#define AUDIO_INITINFO(v)
 #define AUDIO_GETINFO 0
 #define AUDIO_SETINFO 0
 #define AUDIO_ENCODING_LINEAR 0
@@ -94,6 +95,8 @@ SolarisOutput::Open(AudioFormat &audio_format)
 	struct audio_info info;
 	int ret;
 
+	AUDIO_INITINFO(&info);
+
 	/* support only 16 bit mono/stereo for now; nothing else has
 	   been tested */
 	audio_format.format = SampleFormat::S16;
@@ -107,15 +110,6 @@ SolarisOutput::Open(AudioFormat &audio_format)
 	/* restore blocking mode */
 
 	fd.SetBlocking();
-
-	/* configure the audio device */
-
-	ret = ioctl(fd.Get(), AUDIO_GETINFO, &info);
-	if (ret < 0) {
-		const int e = errno;
-		fd.Close();
-		throw MakeErrno(e, "AUDIO_GETINFO failed");
-	}
 
 	info.play.sample_rate = audio_format.sample_rate;
 	info.play.channels = audio_format.channels;
