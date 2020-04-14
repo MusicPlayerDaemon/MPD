@@ -1,4 +1,6 @@
 ver 0.21.23 (not yet released)
+* player
+  - drain outputs at end of song in "single" mode
 
 ver 0.21.22 (2020/04/02)
 * database
