@@ -97,10 +97,6 @@ SolarisOutput::Open(AudioFormat &audio_format)
 
 	AUDIO_INITINFO(&info);
 
-	/* support only 16 bit mono/stereo for now; nothing else has
-	   been tested */
-	audio_format.format = SampleFormat::S16;
-
 	/* open the device in non-blocking mode */
 
 	if (!fd.Open(device, O_WRONLY|O_NONBLOCK))
@@ -111,10 +107,23 @@ SolarisOutput::Open(AudioFormat &audio_format)
 
 	fd.SetBlocking();
 
+	/* configure the audio device */
+
 	info.play.sample_rate = audio_format.sample_rate;
 	info.play.channels = audio_format.channels;
-	info.play.precision = 16;
 	info.play.encoding = AUDIO_ENCODING_LINEAR;
+	switch (audio_format.format) {
+	case SampleFormat::S8:
+		info.play.precision = 8;
+		break;
+	case SampleFormat::S16:
+		info.play.precision = 16;
+		break;
+	default:
+		info.play.precision = 32;
+		audio_format.format = SampleFormat::S32;
+		break;
+	}
 
 	ret = ioctl(fd.Get(), AUDIO_SETINFO, &info);
 	if (ret < 0) {
