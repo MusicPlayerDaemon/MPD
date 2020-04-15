@@ -84,11 +84,11 @@ struct TwoPointers {
         TwoPointers<V> &ToAlsa70() noexcept {
 	        *dest++ = src[0]; // front left
 		*dest++ = src[1]; // front right
-		*dest++ = src[3]; // surround left
-		*dest++ = src[4]; // surround right
+		*dest++ = src[5]; // side left
+		*dest++ = src[6]; // side right
 		*dest++ = src[2]; // front center	 
-		*dest++ = src[6]; // surround right
-		*dest++ = src[7]; // front center	 
+		*dest++ = src[3]; // LFE
+		*dest++ = src[4]; // back center	 
 		src += 7;
 		return *this;
 	}
