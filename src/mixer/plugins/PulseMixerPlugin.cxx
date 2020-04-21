@@ -214,7 +214,7 @@ PulseMixer::GetVolume()
 int
 PulseMixer::GetVolumeInternal()
 {
-	pa_volume_t max_pa_volume = pa_volume_t(volume_scale_factor * PA_VOLUME_NORM);
+	auto max_pa_volume = pa_volume_t(volume_scale_factor * PA_VOLUME_NORM);
 	return online ?
 		(int)((100 * (pa_cvolume_avg(&volume) + 1)) / max_pa_volume)
 		: -1;
@@ -228,7 +228,7 @@ PulseMixer::SetVolume(unsigned new_volume)
 	if (!online)
 		throw std::runtime_error("disconnected");
 
-	pa_volume_t max_pa_volume = pa_volume_t(volume_scale_factor * PA_VOLUME_NORM);
+	auto max_pa_volume = pa_volume_t(volume_scale_factor * PA_VOLUME_NORM);
 
 	struct pa_cvolume cvolume;
 	pa_cvolume_set(&cvolume, volume.channels,
