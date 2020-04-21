@@ -68,9 +68,9 @@ public:
 
 	std::unique_ptr<StorageDirectoryReader> OpenDirectory(std::string_view uri_utf8) override;
 
-	std::string MapUTF8(std::string_view uri_utf8) const noexcept override;
+	[[nodiscard]] std::string MapUTF8(std::string_view uri_utf8) const noexcept override;
 
-	std::string_view MapToRelativeUTF8(std::string_view uri_utf8) const noexcept override;
+	[[nodiscard]] std::string_view MapToRelativeUTF8(std::string_view uri_utf8) const noexcept override;
 };
 
 std::string

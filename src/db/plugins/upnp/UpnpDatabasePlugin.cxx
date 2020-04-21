@@ -88,7 +88,7 @@ public:
 
 	void Open() override;
 	void Close() noexcept override;
-	const LightSong *GetSong(std::string_view uri_utf8) const override;
+	[[nodiscard]] const LightSong *GetSong(std::string_view uri_utf8) const override;
 	void ReturnSong(const LightSong *song) const noexcept override;
 
 	void Visit(const DatabaseSelection &selection,
