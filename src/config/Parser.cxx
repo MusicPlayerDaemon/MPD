@@ -34,7 +34,7 @@ ParseBool(const char *value)
 	if (StringArrayContainsCase(f, value))
 		return false;
 
-	throw FormatRuntimeError("Not a valid boolean (\"yes\" or \"no\"): \"%s\"", value);
+	throw FormatRuntimeError(R"(Not a valid boolean ("yes" or "no"): "%s")", value);
 }
 
 template<size_t OPERAND>
