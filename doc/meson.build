@@ -1,5 +1,3 @@
-install_man(['mpd.1', 'mpd.conf.5'])
-
 if not get_option('html_manual')
   subdir_done()
 endif
@@ -38,4 +36,17 @@ if get_option('html_manual')
       '--exclude=*',
     ],
   )
+endif
+
+if get_option('manpages')
+  manpages = custom_target(
+    'Manpage documentation',
+    output: 'man',
+    input: ['mpd.1.rst', 'mpd.conf.5.rst', 'conf.py'],
+    command: [sphinx, '-q', '-b', 'man', '-d', '@OUTDIR@/man_doctrees', meson.current_source_dir(), '@OUTPUT@'],
+    build_by_default: true,
+  )
+
+  install_data(join_paths(manpages.full_path(), 'mpd.1'), install_dir: join_paths(get_option('mandir'), 'man1'))
+  install_data(join_paths(manpages.full_path(), 'mpd.conf.5'), install_dir: join_paths(get_option('mandir'), 'man5'))
 endif

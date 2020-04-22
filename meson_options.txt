@@ -1,5 +1,6 @@
 option('documentation', type: 'feature', description: 'Build documentation')
 option('html_manual', type: 'boolean', value: true, description: 'Build the HTML manual')
+option('manpages', type: 'boolean', value: true, description: 'Build manual pages')
 
 option('test', type: 'boolean', value: false, description: 'Build the unit tests and debug programs')
 
