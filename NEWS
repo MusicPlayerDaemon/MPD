@@ -6,6 +6,8 @@ ver 0.21.23 (not yet released)
   - alsa: implement channel mapping for 5.0 and 7.0
 * player
   - drain outputs at end of song in "single" mode
+* Windows
+  - fix case insensitive search
 
 ver 0.21.22 (2020/04/02)
 * database
