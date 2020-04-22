@@ -38,12 +38,12 @@ public:
 
 	IcuCompare(const IcuCompare &src) noexcept
 		:needle(src
-			? AllocatedString<>::Duplicate(src.needle.c_str())
+			? src.needle.Clone()
 			: nullptr) {}
 
 	IcuCompare &operator=(const IcuCompare &src) noexcept {
 		needle = src
-			? AllocatedString<>::Duplicate(src.needle.c_str())
+			? src.needle.Clone()
 			: nullptr;
 		return *this;
 	}
