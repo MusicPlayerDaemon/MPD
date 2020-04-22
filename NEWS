@@ -2,6 +2,8 @@ ver 0.21.23 (not yet released)
 * storage
   - curl: fix corrupt "href" values in the presence of XML entities
   - curl: unescape "href" values
+* decoder
+  - gme: adapt to API change in the upcoming version 0.7.0
 * output
   - alsa: implement channel mapping for 5.0 and 7.0
 * player
