@@ -1,4 +1,6 @@
 ver 0.21.23 (not yet released)
+* protocol
+  - add tag fallback for AlbumSort
 * storage
   - curl: fix corrupt "href" values in the presence of XML entities
   - curl: unescape "href" values
