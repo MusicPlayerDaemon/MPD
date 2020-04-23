@@ -109,7 +109,7 @@ public:
 	}
 
 	bool ScheduleRead() noexcept {
-		return Schedule(GetScheduledFlags() | READ | HANGUP | ERROR);
+		return Schedule(GetScheduledFlags() | READ);
 	}
 
 	bool ScheduleWrite() noexcept {
@@ -117,7 +117,7 @@ public:
 	}
 
 	void CancelRead() noexcept {
-		Schedule(GetScheduledFlags() & ~(READ|HANGUP|ERROR));
+		Schedule(GetScheduledFlags() & ~READ);
 	}
 
 	void CancelWrite() noexcept {
