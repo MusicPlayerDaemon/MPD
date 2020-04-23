@@ -180,13 +180,10 @@ NfsFileReader::OnNfsConnectionDisconnected(std::exception_ptr e) noexcept
 inline void
 NfsFileReader::OpenCallback(nfsfh *_fh) noexcept
 {
-	assert(state == State::OPEN);
 	assert(connection != nullptr);
 	assert(_fh != nullptr);
 
 	fh = _fh;
-
-	state = State::IDLE;
 
 	try {
 		connection->Stat(fh, *this);
@@ -201,12 +198,9 @@ NfsFileReader::OpenCallback(nfsfh *_fh) noexcept
 inline void
 NfsFileReader::StatCallback(const struct stat *st) noexcept
 {
-	assert(state == State::STAT);
 	assert(connection != nullptr);
 	assert(fh != nullptr);
 	assert(st != nullptr);
-
-	state = State::IDLE;
 
 	if (!S_ISREG(st->st_mode)) {
 		OnNfsFileError(std::make_exception_ptr(std::runtime_error("Not a regular file")));
@@ -219,7 +213,7 @@ NfsFileReader::StatCallback(const struct stat *st) noexcept
 void
 NfsFileReader::OnNfsCallback(unsigned status, void *data) noexcept
 {
-	switch (state) {
+	switch (std::exchange(state, State::IDLE)) {
 	case State::INITIAL:
 	case State::DEFER:
 	case State::MOUNT:
@@ -236,7 +230,6 @@ NfsFileReader::OnNfsCallback(unsigned status, void *data) noexcept
 		break;
 
 	case State::READ:
-		state = State::IDLE;
 		OnNfsFileRead(data, status);
 		break;
 	}
