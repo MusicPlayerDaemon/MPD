@@ -23,8 +23,8 @@
 
 #include "PollGroupWinSelect.hxx"
 
-constexpr int EVENT_READ = 0;
-constexpr int EVENT_WRITE = 1;
+static constexpr int EVENT_READ = 0;
+static constexpr int EVENT_WRITE = 1;
 
 static constexpr
 bool HasEvent(unsigned events, int event_id) noexcept

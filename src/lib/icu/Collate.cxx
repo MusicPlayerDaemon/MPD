@@ -108,7 +108,7 @@ IcuCollate(std::string_view a, std::string_view b) noexcept
 	}
 
 	auto result = CompareStringEx(LOCALE_NAME_INVARIANT,
-				      LINGUISTIC_IGNORECASE,
+				      NORM_IGNORECASE,
 				      wa.c_str(), -1,
 				      wb.c_str(), -1,
 				      nullptr, nullptr, 0);

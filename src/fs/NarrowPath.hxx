@@ -90,6 +90,11 @@ public:
 	constexpr
 #endif
 	operator Path() const noexcept {
+#ifdef _UNICODE
+		if (value.IsNull())
+			return nullptr;
+#endif
+
 		return value;
 	}
 };

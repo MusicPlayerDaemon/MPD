@@ -34,12 +34,6 @@
 #include <algorithm>
 #endif
 
-#ifdef _WIN32
-#include "Win32.hxx"
-#include <windows.h>
-#endif
-
-#include <cassert>
 #include <memory>
 
 #include <string.h>
@@ -64,27 +58,6 @@ try {
 
 	folded.SetSize(folded_length);
 	return UCharToUTF8({folded.begin(), folded.size()});
-
-#elif defined(_WIN32)
-	const auto u = MultiByteToWideChar(CP_UTF8, src);
-
-	const int size = LCMapStringEx(LOCALE_NAME_INVARIANT,
-				       LCMAP_SORTKEY|LINGUISTIC_IGNORECASE,
-				       u.c_str(), -1, nullptr, 0,
-				       nullptr, nullptr, 0);
-	if (size <= 0)
-		return AllocatedString<>::Duplicate(src);
-
-	std::unique_ptr<wchar_t[]> buffer(new wchar_t[size]);
-	int result = LCMapStringEx(LOCALE_NAME_INVARIANT,
-				   LCMAP_SORTKEY|LINGUISTIC_IGNORECASE,
-				   u.c_str(), -1, buffer.get(), size,
-				   nullptr, nullptr, 0);
-	if (result <= 0)
-		return AllocatedString<>::Duplicate(src);
-
-	return WideCharToMultiByte(CP_UTF8,
-				   {buffer.get(), size_t(result - 1)});
 
 #else
 #error not implemented

@@ -22,7 +22,7 @@
 
 #include "config.h"
 
-#if defined(HAVE_ICU) || defined(_WIN32)
+#ifdef HAVE_ICU
 #define HAVE_ICU_CASE_FOLD
 
 #include <string_view>

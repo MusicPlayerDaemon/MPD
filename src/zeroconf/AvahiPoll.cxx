@@ -26,9 +26,7 @@ static unsigned
 FromAvahiWatchEvent(AvahiWatchEvent e)
 {
 	return (e & AVAHI_WATCH_IN ? SocketMonitor::READ : 0) |
-		(e & AVAHI_WATCH_OUT ? SocketMonitor::WRITE : 0) |
-		(e & AVAHI_WATCH_ERR ? SocketMonitor::ERROR : 0) |
-		(e & AVAHI_WATCH_HUP ? SocketMonitor::HANGUP : 0);
+		(e & AVAHI_WATCH_OUT ? SocketMonitor::WRITE : 0);
 }
 
 static AvahiWatchEvent

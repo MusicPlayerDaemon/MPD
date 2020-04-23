@@ -180,7 +180,6 @@ NfsFileReader::OnNfsConnectionDisconnected(std::exception_ptr e) noexcept
 inline void
 NfsFileReader::OpenCallback(nfsfh *_fh) noexcept
 {
-	assert(state == State::OPEN);
 	assert(connection != nullptr);
 	assert(_fh != nullptr);
 
@@ -197,19 +196,25 @@ NfsFileReader::OpenCallback(nfsfh *_fh) noexcept
 }
 
 inline void
-NfsFileReader::StatCallback(const struct stat *st) noexcept
+NfsFileReader::StatCallback(const struct stat *_st) noexcept
 {
-	assert(state == State::STAT);
 	assert(connection != nullptr);
 	assert(fh != nullptr);
-	assert(st != nullptr);
+	assert(_st != nullptr);
+
+#if defined(_WIN32) && !defined(_WIN64)
+	/* on 32-bit Windows, libnfs enables -D_FILE_OFFSET_BITS=64,
+	   but MPD (Meson) doesn't - to work around this mismatch, we
+	   cast explicitly to "struct stat64" */
+	const auto *st = (const struct stat64 *)_st;
+#else
+	const auto *st = _st;
+#endif
 
 	if (!S_ISREG(st->st_mode)) {
 		OnNfsFileError(std::make_exception_ptr(std::runtime_error("Not a regular file")));
 		return;
 	}
-
-	state = State::IDLE;
 
 	OnNfsFileOpen(st->st_size);
 }
@@ -217,7 +222,7 @@ NfsFileReader::StatCallback(const struct stat *st) noexcept
 void
 NfsFileReader::OnNfsCallback(unsigned status, void *data) noexcept
 {
-	switch (state) {
+	switch (std::exchange(state, State::IDLE)) {
 	case State::INITIAL:
 	case State::DEFER:
 	case State::MOUNT:
@@ -234,7 +239,6 @@ NfsFileReader::OnNfsCallback(unsigned status, void *data) noexcept
 		break;
 
 	case State::READ:
-		state = State::IDLE;
 		OnNfsFileRead(data, status);
 		break;
 	}
