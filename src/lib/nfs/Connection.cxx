@@ -450,8 +450,7 @@ NfsConnection::ScheduleSocket() noexcept
 		SocketMonitor::Open(_fd);
 	}
 
-	SocketMonitor::Schedule(libnfs_to_events(which_events)
-				| SocketMonitor::HANGUP);
+	SocketMonitor::Schedule(libnfs_to_events(which_events));
 }
 
 inline int
