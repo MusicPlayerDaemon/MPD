@@ -186,6 +186,8 @@ NfsFileReader::OpenCallback(nfsfh *_fh) noexcept
 
 	fh = _fh;
 
+	state = State::IDLE;
+
 	try {
 		connection->Stat(fh, *this);
 	} catch (...) {
@@ -204,12 +206,12 @@ NfsFileReader::StatCallback(const struct stat *st) noexcept
 	assert(fh != nullptr);
 	assert(st != nullptr);
 
+	state = State::IDLE;
+
 	if (!S_ISREG(st->st_mode)) {
 		OnNfsFileError(std::make_exception_ptr(std::runtime_error("Not a regular file")));
 		return;
 	}
-
-	state = State::IDLE;
 
 	OnNfsFileOpen(st->st_size);
 }
