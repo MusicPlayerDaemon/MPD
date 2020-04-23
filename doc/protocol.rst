@@ -1090,8 +1090,8 @@ access NFS and SMB servers.
 Multiple storages can be "mounted" together, similar to the
 `mount` command on many operating
 systems, but without cooperation from the kernel.  No
-superuser privileges are necessary, beause this mapping exists
-only inside the :program:`MPD` process
+superuser privileges are necessary, because this mapping exists
+only inside the :program:`MPD` process.
 
 .. _command_mount:
 
