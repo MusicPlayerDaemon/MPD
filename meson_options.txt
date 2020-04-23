@@ -1,5 +1,7 @@
 option('documentation', type: 'boolean', value: false, description: 'Build documentation')
 
+option('manpages', type: 'boolean', value: true, description: 'Build manual pages')
+
 option('test', type: 'boolean', value: false, description: 'Build the unit tests and debug programs')
 
 option('syslog', type: 'feature', description: 'syslog support')

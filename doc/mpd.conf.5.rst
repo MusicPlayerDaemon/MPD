@@ -1,12 +1,6 @@
 ========
 mpd.conf
 ========
----------------------------------------
-Music Player Daemon configuration file
----------------------------------------
-
-:Manual section: 5
-:Manual group: File Formats Manual
 
 
 DESCRIPTION

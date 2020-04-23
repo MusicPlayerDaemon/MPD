@@ -531,6 +531,10 @@ if get_option('documentation')
   subdir('doc')
 endif
 
+if get_option('manpages')
+  subdir('doc')
+endif
+
 if get_option('test')
   subdir('test')
 endif

@@ -2,13 +2,6 @@
 mpd
 ===
 
---------------------------
-A daemon for playing music
---------------------------
-
-:Manual section: 1
-:Manual group: General Commands Manual
-
 SYNOPSIS
 --------
 
@@ -61,10 +54,3 @@ mpd.conf(5), mpc(1)
 BUGS
 ----
 If you find a bug, please report it at ``<https://github.com/MusicPlayerDaemon/MPD/issues/>``.
-
-AUTHORS
--------
-
-Max Kellermann <max.kellermann@gmail.com>
-
-Special thanks to all the people that provided feedback and patches.

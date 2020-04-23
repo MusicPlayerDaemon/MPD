@@ -212,3 +212,7 @@ html_static_path = ['_static']
 # implements a search results scorer. If empty, the default will be used.
 #
 # html_search_scorer = 'scorer.js'
+man_pages = [
+        ('mpd.1', 'mpd', 'MPD documentation', [author], 1),
+        ('mpd.conf.5', 'mpd.conf', 'mpd.conf documentation', [author], 5)
+]
