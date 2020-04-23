@@ -191,7 +191,9 @@ static constexpr int
 events_to_libnfs(unsigned i) noexcept
 {
 	return ((i & SocketMonitor::READ) ? POLLIN : 0) |
-		((i & SocketMonitor::WRITE) ? POLLOUT : 0);
+		((i & SocketMonitor::WRITE) ? POLLOUT : 0) |
+		((i & SocketMonitor::HANGUP) ? POLLHUP : 0) |
+		((i & SocketMonitor::ERROR) ? POLLERR : 0);
 }
 
 NfsConnection::~NfsConnection() noexcept
