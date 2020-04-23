@@ -196,11 +196,20 @@ NfsFileReader::OpenCallback(nfsfh *_fh) noexcept
 }
 
 inline void
-NfsFileReader::StatCallback(const struct stat *st) noexcept
+NfsFileReader::StatCallback(const struct stat *_st) noexcept
 {
 	assert(connection != nullptr);
 	assert(fh != nullptr);
-	assert(st != nullptr);
+	assert(_st != nullptr);
+
+#if defined(_WIN32) && !defined(_WIN64)
+	/* on 32-bit Windows, libnfs enables -D_FILE_OFFSET_BITS=64,
+	   but MPD (Meson) doesn't - to work around this mismatch, we
+	   cast explicitly to "struct stat64" */
+	const auto *st = (const struct stat64 *)_st;
+#else
+	const auto *st = _st;
+#endif
 
 	if (!S_ISREG(st->st_mode)) {
 		OnNfsFileError(std::make_exception_ptr(std::runtime_error("Not a regular file")));
