@@ -20,6 +20,10 @@
 #include "SocketMonitor.hxx"
 #include "Loop.hxx"
 
+#ifdef USE_EPOLL
+#include <cerrno>
+#endif
+
 #include <assert.h>
 
 #ifdef _WIN32
@@ -86,6 +90,21 @@ SocketMonitor::Schedule(unsigned flags) noexcept
 
 	if (success)
 		scheduled_flags = flags;
+#ifdef USE_EPOLL
+	else if (errno == EBADF || errno == ENOENT)
+		/* the socket was probably closed by somebody else
+		   (EBADF) or a new file descriptor with the same
+		   number was created but not registered already
+		   (ENOENT) - we can assume that there are no
+		   scheduled events */
+		/* note that when this happens, we're actually lucky
+		   that it has failed - imagine another thread may
+		   meanwhile have created something on the same file
+		   descriptor number, and has registered it; the
+		   epoll_ctl() call above would then have succeeded,
+		   but broke the other thread's epoll registration */
+		scheduled_flags = 0;
+#endif
 
 	return success;
 }

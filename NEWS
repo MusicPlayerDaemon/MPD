@@ -6,6 +6,7 @@ ver 0.21.23 (not yet released)
   - curl: unescape "href" values
 * input
   - nfs: fix crash bug
+  - nfs: fix freeze bug on reconnect
 * decoder
   - gme: adapt to API change in the upcoming version 0.7.0
 * output
