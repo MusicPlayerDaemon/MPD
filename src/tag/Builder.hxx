@@ -54,7 +54,9 @@ public:
 	/**
 	 * Create an empty tag.
 	 */
-	TagBuilder() = default;
+	TagBuilder() noexcept {
+		items.reserve(64);
+	}
 
 	~TagBuilder() noexcept {
 		Clear();
