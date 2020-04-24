@@ -24,6 +24,7 @@
 #include "Item.hxx" // IWYU pragma: export
 #include "Chrono.hxx"
 #include "util/Compiler.h"
+#include "util/DereferenceIterator.hxx"
 
 #include <memory>
 #include <utility>
@@ -151,50 +152,8 @@ struct Tag {
 	gcc_pure gcc_returns_nonnull
 	const char *GetSortValue(TagType type) const noexcept;
 
-	class const_iterator {
-		friend struct Tag;
-		const TagItem *const*cursor;
-
-		constexpr const_iterator(const TagItem *const*_cursor) noexcept
-			:cursor(_cursor) {}
-
-	public:
-		constexpr const TagItem &operator*() const noexcept {
-			return **cursor;
-		}
-
-		constexpr const TagItem *operator->() const noexcept {
-			return *cursor;
-		}
-
-		const_iterator &operator++() noexcept {
-			++cursor;
-			return *this;
-		}
-
-		const_iterator operator++(int) noexcept {
-			auto result = cursor++;
-			return const_iterator{result};
-		}
-
-		const_iterator &operator--() noexcept {
-			--cursor;
-			return *this;
-		}
-
-		const_iterator operator--(int) noexcept {
-			auto result = cursor--;
-			return const_iterator{result};
-		}
-
-		constexpr bool operator==(const_iterator other) const noexcept {
-			return cursor == other.cursor;
-		}
-
-		constexpr bool operator!=(const_iterator other) const noexcept {
-			return cursor != other.cursor;
-		}
-	};
+	using const_iterator = DereferenceIterator<TagItem *const*,
+						   const TagItem>;
 
 	const_iterator begin() const noexcept {
 		return const_iterator{items};
