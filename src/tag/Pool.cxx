@@ -114,7 +114,10 @@ tag_pool_get_item(TagType type, StringView value) noexcept
 	auto slot_p = tag_value_slot_p(type, value);
 	for (auto slot = *slot_p; slot != nullptr; slot = slot->next) {
 		if (slot->item.type == type &&
-		    value.Equals(slot->item.value) &&
+		    /* strncmp() only works if there are no null
+		       bytes, which FixTagString() has already ensured
+		       at this point */
+		    strncmp(value.data, slot->item.value, value.size) == 0 &&
 		    slot->ref < TagPoolSlot::MAX_REF) {
 			assert(slot->ref > 0);
 			++slot->ref;
