@@ -19,6 +19,7 @@
 
 #include "Type.h"
 
+#include <cstdlib>
 #include <map>
 #include <string_view>
 
