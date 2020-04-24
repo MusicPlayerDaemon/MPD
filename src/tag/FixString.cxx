@@ -19,6 +19,7 @@
 
 #include "FixString.hxx"
 #include "util/Alloc.hxx"
+#include "util/CharUtil.hxx"
 #include "util/WritableBuffer.hxx"
 #include "util/StringView.hxx"
 #include "util/UTF8.hxx"
@@ -84,17 +85,11 @@ fix_utf8(StringView p)
 	return patch_utf8(p, invalid);
 }
 
-static bool
-char_is_non_printable(unsigned char ch)
-{
-	return ch < 0x20;
-}
-
 static const char *
 find_non_printable(StringView p)
 {
 	for (const char &ch : p)
-		if (char_is_non_printable(ch))
+		if (!IsPrintableASCII(ch))
 			return &ch;
 
 	return nullptr;
@@ -114,7 +109,7 @@ clear_non_printable(StringView src)
 	char *dest = (char *)xmemdup(src.data, src.size);
 
 	for (size_t i = first - src.data; i < src.size; ++i)
-		if (char_is_non_printable(dest[i]))
+		if (!IsPrintableASCII(dest[i]))
 			dest[i] = ' ';
 
 	return { dest, src.size };
