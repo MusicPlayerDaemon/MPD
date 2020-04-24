@@ -24,6 +24,7 @@
 #include "util/StringView.hxx"
 #include "util/UTF8.hxx"
 
+#include <algorithm>
 #include <cassert>
 
 #include <stdlib.h>
@@ -115,9 +116,23 @@ clear_non_printable(StringView src)
 	return { dest, src.size };
 }
 
+gcc_pure
+static bool
+IsSafe(StringView s) noexcept
+{
+	return std::all_of(s.begin(), s.end(),
+			   [](char ch){
+				   return IsASCII(ch) && IsPrintableASCII(ch);
+			   });
+}
+
 WritableBuffer<char>
 FixTagString(StringView p)
 {
+	if (IsSafe(p))
+		/* optimistic optimization for the common case */
+		return nullptr;
+
 	auto utf8 = fix_utf8(p);
 	if (!utf8.IsNull())
 		p = {utf8.data, utf8.size};
