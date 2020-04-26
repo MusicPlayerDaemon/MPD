@@ -173,10 +173,16 @@ gme_file_decode(DecoderClient &client, Path path_fs)
 	}
 
 	const int length = ti->play_length;
+#if GME_VERSION >= 0x000700
+	const int fade   = ti->fade_length;
+#else
+	const int fade   = -1;
+#endif
 	gme_free_info(ti);
 
 	const SignedSongTime song_len = length > 0
-		? SignedSongTime::FromMS(length + gme_default_fade)
+		? SignedSongTime::FromMS(length +
+			(fade == -1 ? gme_default_fade : fade))
 		: SignedSongTime::Negative();
 
 	/* initialize the MPD decoder */
@@ -191,10 +197,10 @@ gme_file_decode(DecoderClient &client, Path path_fs)
 	if (gme_err != nullptr)
 		LogWarning(gme_domain, gme_err);
 
-	if (length > 0)
+	if (length > 0 && fade != 0)
 		gme_set_fade(emu, length
 #if GME_VERSION >= 0x000700
-			     , gme_default_fade
+			     , fade == -1 ? gme_default_fade : fade
 #endif
 			     );
 
@@ -229,7 +235,11 @@ ScanGmeInfo(const gme_info_t &info, unsigned song_num, int track_count,
 	    TagHandler &handler) noexcept
 {
 	if (info.play_length > 0)
-		handler.OnDuration(SongTime::FromMS(info.play_length + gme_default_fade));
+		handler.OnDuration(SongTime::FromMS(info.play_length
+#if GME_VERSION >= 0x000700
+			+ (info.fade_length == -1 ? gme_default_fade : info.fade_length)
+#endif
+			));
 
 	if (track_count > 1)
 		handler.OnTag(TAG_TRACK, StringFormat<16>("%u", song_num + 1).c_str());
