@@ -391,6 +391,8 @@ Video game music file emulator based on `game-music-emu <https://bitbucket.org/m
      - Description
    * - **accuracy yes|no**
      - Enable more accurate sound emulation.
+   * - **default_fade**
+     - The default fade-out time, in seconds. Used by songs that don't specify their own fade-out time.
 
 hybrid_dsd
 ----------
