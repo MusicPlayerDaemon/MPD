@@ -389,7 +389,9 @@ Querying :program:`MPD`'s status
 
 :command:`currentsong`
     Displays the song info of the current song (same song that
-    is identified in status).
+    is identified in status). Information about the current song
+    is represented by key-value pairs, one on each line. The first
+    pair must be the `file` key-value pair.
 
 .. _command_idle:
 
