@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2011-2020 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -62,10 +62,28 @@ IsWhitespaceFast(const wchar_t ch) noexcept
 	return IsWhitespaceOrNull(ch);
 }
 
+/**
+ * Is this a non-printable ASCII character?  Returns false for
+ * non-ASCII characters.
+ *
+ * Note that this is not the opposide of IsNonPrintableASCII().
+ */
 constexpr bool
 IsPrintableASCII(wchar_t ch) noexcept
 {
 	return IsASCII(ch) && ch >= 0x20;
+}
+
+/**
+ * Is this a non-printable character?  Returns false for non-ASCII
+ * characters.
+ *
+ * Note that this is not the opposide of IsPrintableASCII()
+ */
+constexpr bool
+IsNonPrintableASCII(wchar_t ch) noexcept
+{
+	return (unsigned)ch < 0x20;
 }
 
 constexpr bool
