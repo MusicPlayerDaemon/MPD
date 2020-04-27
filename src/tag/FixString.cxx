@@ -90,7 +90,7 @@ static const char *
 find_non_printable(StringView p)
 {
 	for (const char &ch : p)
-		if (!IsPrintableASCII(ch))
+		if (IsNonPrintableASCII(ch))
 			return &ch;
 
 	return nullptr;
@@ -110,7 +110,7 @@ clear_non_printable(StringView src)
 	char *dest = (char *)xmemdup(src.data, src.size);
 
 	for (size_t i = first - src.data; i < src.size; ++i)
-		if (!IsPrintableASCII(dest[i]))
+		if (IsNonPrintableASCII(dest[i]))
 			dest[i] = ' ';
 
 	return { dest, src.size };
