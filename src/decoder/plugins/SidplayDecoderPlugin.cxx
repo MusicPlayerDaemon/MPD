@@ -219,11 +219,24 @@ get_song_length(T &tune) noexcept
 	if (sidplay_global->songlength_database == nullptr)
 		return SignedSongTime::Negative();
 
-	const auto length = sidplay_global->songlength_database->length(tune);
-	if (length < 0)
+#if LIBSIDPLAYFP_VERSION_MAJ >= 2
+	const auto lengthms =
+		sidplay_global->songlength_database->lengthMs(tune);
+	/* check for new song length format since HVSC#68 or later */
+	if (lengthms < 0)
+	{
+#endif
+		/* old song lenghth format */
+		const auto length =
+			sidplay_global->songlength_database->length(tune);
+		if (length >= 0)
+			return SignedSongTime::FromS(length);
 		return SignedSongTime::Negative();
 
-	return SignedSongTime::FromS(length);
+#if LIBSIDPLAYFP_VERSION_MAJ >= 2
+	}
+	return SignedSongTime::FromMS(lengthms);
+#endif
 }
 
 static void
