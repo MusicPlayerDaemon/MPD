@@ -1,4 +1,6 @@
 ver 0.21.24 (not yet released)
+* protocol
+  - "tagtypes" requires no permissions
 * fix unit test failure
 
 ver 0.21.23 (2020/04/23)
