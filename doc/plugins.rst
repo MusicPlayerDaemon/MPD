@@ -475,7 +475,7 @@ C64 SID decoder based on `libsidplayfp <https://sourceforge.net/projects/sidplay
    * - Setting
      - Description
    * - **songlength_database PATH**
-     - Location of your songlengths file, as distributed with the HVSC. The sidplay plugin checks this for matching MD5 fingerprints. See http://www.hvsc.c64.org/download/C64Music/DOCUMENTS/Songlengths.faq.
+     - Location of your songlengths file, as distributed with the HVSC. The sidplay plugin checks this for matching MD5 fingerprints. See http://www.hvsc.c64.org/download/C64Music/DOCUMENTS/Songlengths.faq. New songlength format support requires libsidplayfp 2.0 or later.
    * - **default_songlength SECONDS**
      - This is the default playing time in seconds for songs not in the songlength database, or in case you're not using a database. A value of 0 means play indefinitely.
    * - **default_genre GENRE**

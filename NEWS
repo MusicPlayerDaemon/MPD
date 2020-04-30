@@ -19,6 +19,7 @@ ver 0.22 (not yet released)
   - mad: remove option "gapless", always do gapless
   - sidplay: add option "default_genre"
   - sidplay: map SID name field to "Album" tag
+  - sidplay: add support for new song length format with libsidplayfp 2.0
   - vorbis, opus: improve seeking accuracy
 * playlist
   - flac: support reading CUE sheets from remote FLAC files
