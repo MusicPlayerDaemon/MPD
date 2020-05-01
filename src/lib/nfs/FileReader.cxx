@@ -25,10 +25,10 @@
 #include "util/ASCII.hxx"
 
 #include <cassert>
+#include <cstring>
 #include <stdexcept>
 #include <utility>
 
-#include <string.h>
 #include <fcntl.h>
 
 NfsFileReader::NfsFileReader() noexcept
@@ -97,7 +97,7 @@ NfsFileReader::Open(const char *uri)
 
 	uri += 6;
 
-	const char *slash = strchr(uri, '/');
+	const char *slash = std::strchr(uri, '/');
 	if (slash == nullptr)
 		throw std::runtime_error("Malformed nfs:// URI");
 
@@ -112,7 +112,7 @@ NfsFileReader::Open(const char *uri)
 			new_path = "/";
 		path = new_path;
 	} else {
-		slash = strrchr(uri + 1, '/');
+		slash = std::strrchr(uri + 1, '/');
 		if (slash == nullptr || slash[1] == 0)
 			throw std::runtime_error("Malformed nfs:// URI");
 

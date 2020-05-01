@@ -30,14 +30,14 @@
 #ifndef TEXT_FILE_HXX
 #define TEXT_FILE_HXX
 
-#include <string.h>
+#include <cstring>
 
 template<typename B>
 char *
 ReadBufferedLine(B &buffer)
 {
 	auto r = buffer.Read();
-	char *newline = reinterpret_cast<char*>(memchr(r.data, '\n', r.size));
+	char *newline = reinterpret_cast<char*>(std::memchr(r.data, '\n', r.size));
 	if (newline == nullptr)
 		return nullptr;
 

@@ -65,7 +65,7 @@ ai_is_passive(const struct addrinfo *ai)
 static void
 FindAndResolveInterfaceName(char *host, size_t size)
 {
-	char *percent = strchr(host, '%');
+	char *percent = std::strchr(host, '%');
 	if (percent == nullptr || percent + 64 > host + size)
 		return;
 

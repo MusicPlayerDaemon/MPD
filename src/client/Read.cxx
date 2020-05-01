@@ -23,7 +23,7 @@
 #include "Instance.hxx"
 #include "util/StringStrip.hxx"
 
-#include <string.h>
+#include <cstring>
 
 BufferedSocket::InputResult
 Client::OnSocketInput(void *data, size_t length) noexcept
@@ -32,7 +32,7 @@ Client::OnSocketInput(void *data, size_t length) noexcept
 		return InputResult::PAUSE;
 
 	char *p = (char *)data;
-	char *newline = (char *)memchr(p, '\n', length);
+	char *newline = (char *)std::memchr(p, '\n', length);
 	if (newline == nullptr)
 		return InputResult::MORE;
 

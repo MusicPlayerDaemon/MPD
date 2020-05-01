@@ -357,7 +357,7 @@ CreateUdisksStorageURI(EventLoop &event_loop, const char *base_uri)
 
 	std::string id;
 
-	const char *relative_path = strchr(id_begin, '/');
+	const char *relative_path = std::strchr(id_begin, '/');
 	if (relative_path == nullptr) {
 		id = id_begin;
 		relative_path = "";

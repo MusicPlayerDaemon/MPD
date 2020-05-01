@@ -148,7 +148,7 @@ WatchDirectory::GetUriFS() const noexcept
 static bool skip_path(const char *path)
 {
 	return PathTraitsFS::IsSpecialFilename(path) ||
-		strchr(path, '\n') != nullptr;
+		std::strchr(path, '\n') != nullptr;
 }
 
 static void

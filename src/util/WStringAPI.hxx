@@ -32,7 +32,7 @@
 
 #include "Compiler.h"
 
-#include <wchar.h>
+#include <cwchar>
 
 gcc_pure gcc_nonnull_all
 static inline size_t
@@ -52,14 +52,14 @@ gcc_pure gcc_nonnull_all
 static inline const wchar_t *
 StringFind(const wchar_t *haystack, wchar_t needle, size_t size) noexcept
 {
-	return wmemchr(haystack, needle, size);
+	return std::wmemchr(haystack, needle, size);
 }
 
 gcc_pure gcc_nonnull_all
 static inline wchar_t *
 StringFind(wchar_t *haystack, wchar_t needle, size_t size) noexcept
 {
-	return wmemchr(haystack, needle, size);
+	return std::wmemchr(haystack, needle, size);
 }
 
 gcc_pure gcc_nonnull_all

@@ -55,7 +55,7 @@ void
 UpdateWalk::UpdateArchiveTree(ArchiveFile &archive, Directory &directory,
 			      const char *name) noexcept
 {
-	const char *tmp = strchr(name, '/');
+	const char *tmp = std::strchr(name, '/');
 	if (tmp) {
 		const std::string_view child_name(name, tmp - name);
 		//add dir is not there already

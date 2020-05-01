@@ -124,7 +124,7 @@ uri_get_path(std::string_view uri) noexcept
 const char *
 uri_get_suffix(const char *uri) noexcept
 {
-	const char *suffix = strrchr(uri, '.');
+	const char *suffix = std::strrchr(uri, '.');
 	if (suffix == nullptr || suffix == uri ||
 	    suffix[-1] == '/' || suffix[-1] == '\\')
 		return nullptr;
@@ -144,7 +144,7 @@ uri_get_suffix(const char *uri, UriSuffixBuffer &buffer) noexcept
 	if (suffix == nullptr)
 		return nullptr;
 
-	const char *q = strchr(suffix, '?');
+	const char *q = std::strchr(suffix, '?');
 	if (q != nullptr && size_t(q - suffix) < sizeof(buffer.data)) {
 		memcpy(buffer.data, suffix, q - suffix);
 		buffer.data[q - suffix] = 0;
@@ -157,7 +157,7 @@ uri_get_suffix(const char *uri, UriSuffixBuffer &buffer) noexcept
 const char *
 uri_get_fragment(const char *uri) noexcept
 {
-	const char *fragment = strchr(uri, '#');
+	const char *fragment = std::strchr(uri, '#');
 	if (fragment == nullptr)
 		return nullptr;
 

@@ -35,6 +35,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <cstring>
 
 #ifdef _WIN32
 #include <ws2tcpip.h>
@@ -48,8 +49,6 @@
 #ifdef HAVE_UN
 #include <sys/un.h>
 #endif
-
-#include <string.h>
 
 #ifdef HAVE_UN
 
@@ -104,7 +103,7 @@ ToString(SocketAddress address) noexcept
 		return "unknown";
 
 #ifdef HAVE_IPV6
-	if (strchr(host, ':') != nullptr) {
+	if (std::strchr(host, ':') != nullptr) {
 		std::string result("[");
 		result.append(host);
 		result.append("]:");

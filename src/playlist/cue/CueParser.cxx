@@ -24,8 +24,8 @@
 #include "util/CharUtil.hxx"
 
 #include <cassert>
+#include <cstring>
 
-#include <string.h>
 #include <stdlib.h>
 
 static const char *
@@ -49,7 +49,7 @@ cue_next_quoted(char *p, char **pp)
 	assert(p >= *pp);
 	assert(p[-1] == '"');
 
-	char *end = strchr(p, '"');
+	char *end = std::strchr(p, '"');
 	if (end == nullptr) {
 		/* syntax error - ignore it silently */
 		*pp = p + strlen(p);

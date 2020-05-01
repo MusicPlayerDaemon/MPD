@@ -25,7 +25,8 @@
 #include "util/StringStrip.hxx"
 #include "util/RuntimeError.hxx"
 
-#include <string.h>
+#include <cstring>
+
 #include <stdlib.h>
 
 void
@@ -49,8 +50,8 @@ playlist_metadata_load(TextFile &file, PlaylistVector &pv, const char *name)
 	const char *value;
 
 	while ((line = file.ReadLine()) != nullptr &&
-	       strcmp(line, "playlist_end") != 0) {
-		colon = strchr(line, ':');
+	       std::strcmp(line, "playlist_end") != 0) {
+		colon = std::strchr(line, ':');
 		if (colon == nullptr || colon == line)
 			throw FormatRuntimeError("unknown line in db: %s",
 						 line);
@@ -58,7 +59,7 @@ playlist_metadata_load(TextFile &file, PlaylistVector &pv, const char *name)
 		*colon++ = 0;
 		value = StripLeft(colon);
 
-		if (strcmp(line, "mtime") == 0)
+		if (std::strcmp(line, "mtime") == 0)
 			pm.mtime = std::chrono::system_clock::from_time_t(strtol(value, nullptr, 10));
 		else
 			throw FormatRuntimeError("unknown line in db: %s",

@@ -44,7 +44,7 @@ gcc_pure
 static bool
 skip_path(const char *name_utf8) noexcept
 {
-	return strchr(name_utf8, '\n') != nullptr;
+	return std::strchr(name_utf8, '\n') != nullptr;
 }
 
 #if defined(_WIN32) && GCC_CHECK_VERSION(4,6)
@@ -185,7 +185,7 @@ handle_mount(Client &client, Request args, Response &r)
 		return CommandResult::ERROR;
 	}
 
-	if (strchr(local_uri, '/') != nullptr) {
+	if (std::strchr(local_uri, '/') != nullptr) {
 		/* allow only top-level mounts for now */
 		/* TODO: eliminate this limitation after ensuring that
 		   UpdateQueue::Erase() really gets called for every
