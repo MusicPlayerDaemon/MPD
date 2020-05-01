@@ -20,12 +20,12 @@
 #include "DivideString.hxx"
 #include "StringStrip.hxx"
 
-#include <string.h>
+#include <cstring>
 
 DivideString::DivideString(const char *s, char separator, bool strip) noexcept
 	:first(nullptr)
 {
-	const char *x = strchr(s, separator);
+	const char *x = std::strchr(s, separator);
 	if (x == nullptr)
 		return;
 

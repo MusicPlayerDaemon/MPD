@@ -29,11 +29,10 @@
 #include "util/Math.hxx"
 #include "Log.hxx"
 
-#include <neaacdec.h>
-
 #include <cassert>
+#include <cstring>
 
-#include <string.h>
+#include <neaacdec.h>
 
 static const unsigned adts_sample_rates[] =
     { 96000, 88200, 64000, 48000, 44100, 32000, 24000, 22050,
@@ -72,8 +71,7 @@ adts_find_frame(DecoderBuffer &buffer)
 			return 0;
 
 		/* find the 0xff marker */
-		const auto *p = (const uint8_t *)
-			memchr(data.data, 0xff, data.size);
+		auto p = (const uint8_t *)std::memchr(data.data, 0xff, data.size);
 		if (p == nullptr) {
 			/* no marker - discard the buffer */
 			buffer.Clear();

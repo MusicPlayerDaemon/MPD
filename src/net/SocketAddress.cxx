@@ -84,7 +84,7 @@ SocketAddress::GetLocalPath() const noexcept
 		/* must be null-terminated */
 		raw.back() == 0 &&
 		/* there must not be any other null byte */
-		memchr(raw.data, 0, raw.size - 1) == nullptr
+		std::memchr(raw.data, 0, raw.size - 1) == nullptr
 		? raw.data
 		: nullptr;
 }

@@ -44,7 +44,7 @@ SongPtr
 Song::LoadFile(Storage &storage, const char *path_utf8, Directory &parent)
 {
 	assert(!uri_has_scheme(path_utf8));
-	assert(strchr(path_utf8, '\n') == nullptr);
+	assert(std::strchr(path_utf8, '\n') == nullptr);
 
 	auto song = std::make_unique<Song>(path_utf8, parent);
 	if (!song->UpdateFile(storage))
@@ -95,7 +95,7 @@ Song::LoadFromArchive(ArchiveFile &archive, const char *name_utf8,
 		      Directory &parent) noexcept
 {
 	assert(!uri_has_scheme(name_utf8));
-	assert(strchr(name_utf8, '\n') == nullptr);
+	assert(std::strchr(name_utf8, '\n') == nullptr);
 
 	auto song = std::make_unique<Song>(name_utf8, parent);
 	if (!song->UpdateFileInArchive(archive))

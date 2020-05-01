@@ -175,7 +175,7 @@ static unsigned
 ParseStatus(const char *s)
 {
 	/* skip the "HTTP/1.1" prefix */
-	const char *space = strchr(s, ' ');
+	const char *space = std::strchr(s, ' ');
 	if (space == nullptr)
 		return 0;
 

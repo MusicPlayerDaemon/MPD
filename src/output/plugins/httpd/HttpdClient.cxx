@@ -28,8 +28,8 @@
 #include "Log.hxx"
 
 #include <cassert>
+#include <cstring>
 
-#include <string.h>
 #include <stdio.h>
 
 HttpdClient::~HttpdClient() noexcept
@@ -95,7 +95,7 @@ HttpdClient::HandleLine(const char *line) noexcept
 			should_reject = true;
 		}
 
-		line = strchr(line, ' ');
+		line = std::strchr(line, ' ');
 		if (line == nullptr || strncmp(line + 1, "HTTP/", 5) != 0) {
 			/* HTTP/0.9 without request headers */
 
@@ -413,7 +413,7 @@ HttpdClient::OnSocketInput(void *data, size_t length) noexcept
 	}
 
 	char *line = (char *)data;
-	char *newline = (char *)memchr(line, '\n', length);
+	char *newline = (char *)std::memchr(line, '\n', length);
 	if (newline == nullptr)
 		return InputResult::MORE;
 

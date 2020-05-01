@@ -196,7 +196,7 @@ struct PathTraitsUTF8 {
 		assert(p != nullptr);
 #endif
 
-		return strrchr(p, SEPARATOR);
+		return std::strrchr(p, SEPARATOR);
 	}
 
 #ifdef _WIN32

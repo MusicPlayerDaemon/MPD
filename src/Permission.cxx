@@ -27,11 +27,10 @@
 #include "util/StringView.hxx"
 
 #include <cassert>
+#include <cstring>
 #include <map>
 #include <string>
 #include <utility>
-
-#include <string.h>
 
 static constexpr char PERMISSION_PASSWORD_CHAR = '@';
 static constexpr char PERMISSION_SEPARATOR = ',';
@@ -89,7 +88,7 @@ initPermissions(const ConfigData &config)
 		permission_default = 0;
 
 		param.With([](const char *value){
-			const char *separator = strchr(value,
+			const char *separator = std::strchr(value,
 						       PERMISSION_PASSWORD_CHAR);
 
 			if (separator == nullptr)

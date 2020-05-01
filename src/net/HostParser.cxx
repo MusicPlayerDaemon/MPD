@@ -124,7 +124,7 @@ ExtractHost(const char *src) noexcept
 		/* "[hostname]:port" (IPv6?) */
 
 		hostname = ++src;
-		const char *end = strchr(hostname, ']');
+		const char *end = std::strchr(hostname, ']');
 		if (end == nullptr || end == hostname)
 			/* failed, return nullptr */
 			return result;

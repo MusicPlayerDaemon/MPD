@@ -96,7 +96,7 @@ song_load(TextFile &file, const char *uri,
 	char *line;
 	while ((line = file.ReadLine()) != nullptr &&
 	       !StringIsEqual(line, SONG_END)) {
-		char *colon = strchr(line, ':');
+		char *colon = std::strchr(line, ':');
 		if (colon == nullptr || colon == line) {
 			throw FormatRuntimeError("unknown line in db: %s", line);
 		}

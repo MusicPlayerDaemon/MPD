@@ -164,7 +164,7 @@ ParseConfigLine(char *line, const char *dir_name, AllocatedPath &result_dir)
 	char *line_end;
 	// find end of the string
 	if (quoted) {
-		line_end = strrchr(line, '"');
+		line_end = std::strrchr(line, '"');
 		if (line_end == nullptr)
 			return true;
 	} else {

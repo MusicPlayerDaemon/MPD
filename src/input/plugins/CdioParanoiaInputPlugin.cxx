@@ -133,7 +133,7 @@ parse_cdio_uri(const char *src)
 		return dest;
 	}
 
-	const char *slash = strrchr(src, '/');
+	const char *slash = std::strrchr(src, '/');
 	if (slash == nullptr) {
 		/* play the whole CD in the specified drive */
 		CopyTruncateString(dest.device, src, sizeof(dest.device));

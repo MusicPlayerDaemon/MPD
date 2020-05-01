@@ -103,7 +103,7 @@ ParsePath(const char *path)
 
 			++path;
 		} else {
-			const char *slash = strchr(path, '/');
+			const char *slash = std::strchr(path, '/');
 			const char *end = slash == nullptr
 					? path + strlen(path)
 					: slash;

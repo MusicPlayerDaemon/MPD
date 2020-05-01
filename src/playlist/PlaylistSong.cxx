@@ -78,7 +78,7 @@ playlist_check_translate_song(DetachedSong &song, std::string_view base_uri,
 	const char *uri = song.GetURI();
 
 #ifdef _WIN32
-	if (!PathTraitsUTF8::IsAbsolute(uri) && strchr(uri, '\\') != nullptr) {
+	if (!PathTraitsUTF8::IsAbsolute(uri) && std::strchr(uri, '\\') != nullptr) {
 		/* Windows uses the backslash as path separator, but
 		   the MPD protocol uses the (forward) slash by
 		   definition; to allow backslashes in relative URIs

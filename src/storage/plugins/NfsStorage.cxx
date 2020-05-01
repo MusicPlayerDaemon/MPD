@@ -412,7 +412,7 @@ CreateNfsStorageURI(EventLoop &event_loop, const char *base)
 	if (p == nullptr)
 		return nullptr;
 
-	const char *mount = strchr(p, '/');
+	const char *mount = std::strchr(p, '/');
 	if (mount == nullptr)
 		throw std::runtime_error("Malformed nfs:// URI");
 

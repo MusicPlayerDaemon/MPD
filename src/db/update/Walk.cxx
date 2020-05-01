@@ -191,7 +191,7 @@ UpdateWalk::UpdateDirectoryChild(Directory &directory,
 				 const ExcludeList &exclude_list,
 				 const char *name, const StorageFileInfo &info) noexcept
 try {
-	assert(strchr(name, '/') == nullptr);
+	assert(std::strchr(name, '/') == nullptr);
 
 	if (info.IsRegular()) {
 		UpdateRegularFile(directory, name, info);
@@ -223,7 +223,7 @@ gcc_pure
 static bool
 skip_path(const char *name_utf8) noexcept
 {
-	return strchr(name_utf8, '\n') != nullptr;
+	return std::strchr(name_utf8, '\n') != nullptr;
 }
 
 gcc_pure
