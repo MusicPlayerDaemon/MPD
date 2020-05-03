@@ -28,5 +28,7 @@ const struct tag_table xiph_tags[] = {
 	{ "tracknumber", TAG_TRACK },
 	{ "discnumber", TAG_DISC },
 	{ "description", TAG_COMMENT },
+	{ "movementname", TAG_MOVEMENT },
+	{ "movement", TAG_MOVEMENTNUMBER },
 	{ nullptr, TAG_NUM_OF_ITEM_TYPES }
 };

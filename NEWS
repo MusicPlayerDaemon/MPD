@@ -5,6 +5,8 @@ ver 0.23 (not yet released)
 * output
   - pipewire: new plugin
   - snapcast: new plugin
+* tags
+  - new tags "ComposerSort", "Ensemble", "Movement", "MovementNumber", and "Location"
 
 ver 0.22.7 (not yet released)
 * protocol
