@@ -75,10 +75,9 @@ GetStats(const Database &db, const DatabaseSelection &selection)
 	stats.Clear();
 
 	StringSet artists, albums;
-	using namespace std::placeholders;
-	const auto f = std::bind(StatsVisitSong,
-				 std::ref(stats), std::ref(artists),
-				 std::ref(albums), _1);
+	const auto f = [&](const auto &song)
+		{ return StatsVisitSong(stats, artists, albums, song); };
+
 	db.Visit(selection, f);
 
 	stats.artist_count = artists.size();

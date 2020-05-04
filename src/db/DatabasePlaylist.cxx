@@ -38,7 +38,6 @@ search_add_to_playlist(const Database &db, const Storage *storage,
 		       const char *playlist_path_utf8,
 		       const DatabaseSelection &selection)
 {
-	using namespace std::placeholders;
 	const auto f = [=](auto && arg1) { return AddSong(storage, playlist_path_utf8, arg1); };
 	db.Visit(selection, f);
 }

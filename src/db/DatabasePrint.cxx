@@ -146,16 +146,23 @@ db_selection_print(Response &r, Partition &partition,
 {
 	const Database &db = partition.GetDatabaseOrThrow();
 
-	using namespace std::placeholders;
 	const auto d = selection.filter == nullptr
-		? std::bind(full ? PrintDirectoryFull : PrintDirectoryBrief,
-			    std::ref(r), base, _1)
+		? [&,base](const auto &dir)
+			{ return full ?
+				PrintDirectoryFull(r, base, dir) :
+				PrintDirectoryBrief(r, base, dir); }
 		: VisitDirectory();
-	VisitSong s = std::bind(full ? PrintSongFull : PrintSongBrief,
-				std::ref(r), base, _1);
+
+	VisitSong s = [&,base](const auto &song)
+		{ return full ?
+			PrintSongFull(r, base, song) :
+			PrintSongBrief(r, base, song); };
+
 	const auto p = selection.filter == nullptr
-		? std::bind(full ? PrintPlaylistFull : PrintPlaylistBrief,
-			    std::ref(r), base, _1, _2)
+		? [&,base](const auto &playlist, const auto &dir)
+			{ return full ?
+				PrintPlaylistFull(r, base, playlist, dir) :
+				PrintPlaylistBrief(r, base, playlist, dir); }
 		: VisitPlaylist();
 
 	db.Visit(selection, d, s, p);
@@ -175,9 +182,9 @@ PrintSongUris(Response &r, Partition &partition,
 
 	const DatabaseSelection selection("", true, filter);
 
-	using namespace std::placeholders;
-	const auto f = std::bind(PrintSongURIVisitor,
-				 std::ref(r), _1);
+	const auto f = [&](const auto &song)
+		{ return PrintSongURIVisitor(r, song); };
+
 	db.Visit(selection, f);
 }
 

@@ -183,11 +183,9 @@ decoder_run_stream_locked(DecoderBridge &bridge, InputStream &is,
 	UriSuffixBuffer suffix_buffer;
 	const char *const suffix = uri_get_suffix(uri, suffix_buffer);
 
-	using namespace std::placeholders;
-	const auto f = std::bind(decoder_run_stream_plugin,
-				 std::ref(bridge), std::ref(is), std::ref(lock),
-				 suffix,
-				 _1, std::ref(tried_r));
+	const auto f = [&,suffix](const auto &plugin)
+		{ return decoder_run_stream_plugin(bridge, is, lock, suffix, plugin, tried_r); };
+
 	return decoder_plugins_try(f);
 }
 
