@@ -62,7 +62,7 @@ mixramp_interpolate(const char *ramp_list, float required_db) noexcept
 			++ramp_list;
 
 		/* Check for exact match. */
-		if (db >= required_db) {
+		if (db == required_db) {
 			return duration;
 		}
 
