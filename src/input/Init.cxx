@@ -30,9 +30,18 @@
 #include <cassert>
 #include <stdexcept>
 
+#include "io/uring/Features.h"
+#ifdef HAVE_URING
+#include "plugins/UringInputPlugin.hxx"
+#endif
+
 void
 input_stream_global_init(const ConfigData &config, EventLoop &event_loop)
 {
+#ifdef HAVE_URING
+	InitUringInputPlugin(event_loop);
+#endif
+
 	const ConfigBlock empty;
 
 	for (unsigned i = 0; input_plugins[i] != nullptr; ++i) {

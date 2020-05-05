@@ -37,6 +37,7 @@
 #include "fs/Traits.hxx"
 #include "fs/FileSystem.hxx"
 #include "fs/StandardDirectory.hxx"
+#include "io/uring/Features.h"
 #include "util/Domain.hxx"
 #include "util/OptionDef.hxx"
 #include "util/OptionParser.hxx"
@@ -203,6 +204,9 @@ static void version()
 	       "\n"
 	       "Input plugins:\n"
 	       " file"
+#ifdef HAVE_URING
+	       " io_uring"
+#endif
 #ifdef ENABLE_ARCHIVE
 	       " archive"
 #endif

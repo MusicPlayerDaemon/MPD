@@ -2,6 +2,10 @@ input_plugins_sources = [
   'FileInputPlugin.cxx',
 ]
 
+if uring_dep.found()
+  input_plugins_sources += 'UringInputPlugin.cxx'
+endif
+
 if alsa_dep.found()
   input_plugins_sources += 'AlsaInputPlugin.cxx'
 endif

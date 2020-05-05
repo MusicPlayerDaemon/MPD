@@ -22,6 +22,11 @@
 #include "plugins/FileInputPlugin.hxx"
 #include "config.h"
 
+#include "io/uring/Features.h"
+#ifdef HAVE_URING
+#include "plugins/UringInputPlugin.hxx"
+#endif
+
 #ifdef ENABLE_ARCHIVE
 #include "plugins/ArchiveInputPlugin.hxx"
 #endif
@@ -39,6 +44,12 @@ OpenLocalInputStream(Path path, Mutex &mutex)
 #ifdef ENABLE_ARCHIVE
 	try {
 #endif
+#ifdef HAVE_URING
+		is = OpenUringInputStream(path.c_str(), mutex);
+		if (is)
+			return is;
+#endif
+
 		is = OpenFileInputStream(path, mutex);
 #ifdef ENABLE_ARCHIVE
 	} catch (const std::system_error &e) {

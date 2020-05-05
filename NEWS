@@ -11,6 +11,7 @@ ver 0.22 (not yet released)
 * input
   - curl: support "charset" parameter in URI fragment
   - ffmpeg: allow partial reads
+  - io_uring: new plugin for local files on Linux (using liburing)
 * archive
   - iso9660: support seeking
 * playlist
