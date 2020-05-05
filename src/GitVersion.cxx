@@ -19,4 +19,4 @@
 
 #include "GitVersion.hxx"
 
-char GIT_VERSION[] = "@VCS_TAG@";
+const char GIT_VERSION[] = "@VCS_TAG@";

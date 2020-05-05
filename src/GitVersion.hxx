@@ -20,6 +20,6 @@
 #ifndef MPD_GIT_VERSION_HXX
 #define MPD_GIT_VERSION_HXX
 
-extern char GIT_VERSION[];
+extern const char GIT_VERSION[];
 
 #endif
