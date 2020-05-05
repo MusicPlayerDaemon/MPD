@@ -1,3 +1,9 @@
+event_sources = []
+
+if uring_dep.found()
+  event_sources += 'UringManager.cxx'
+endif
+
 event = static_library(
   'event',
   'PollGroupPoll.cxx',
@@ -15,10 +21,12 @@ event = static_library(
   'Call.cxx',
   'Thread.cxx',
   'Loop.cxx',
+  event_sources,
   include_directories: inc,
   dependencies: [
     boost_dep,
     log_dep,
+    uring_dep,
   ],
 )
 
@@ -29,5 +37,6 @@ event_dep = declare_dependency(
     net_dep,
     system_dep,
     boost_dep,
+    uring_dep,
   ],
 )
