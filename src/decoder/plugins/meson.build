@@ -136,7 +136,7 @@ if wildmidi_dep.found()
 endif
 
 if not get_option('sidplay').disabled()
-  libsidplayfp_dep = dependency('libsidplayfp', required: false)
+  libsidplayfp_dep = dependency('libsidplayfp', version: '>= 1.8', required: false)
   conf.set('HAVE_SIDPLAYFP', libsidplayfp_dep.found())
 
   if libsidplayfp_dep.found()
