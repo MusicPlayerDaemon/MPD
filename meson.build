@@ -334,6 +334,7 @@ endif
 subdir('src/util')
 subdir('src/time')
 subdir('src/io')
+subdir('src/io/uring')
 subdir('src/system')
 subdir('src/thread')
 subdir('src/net')
