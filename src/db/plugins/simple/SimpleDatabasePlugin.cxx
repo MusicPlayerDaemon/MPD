@@ -449,12 +449,7 @@ SimpleDatabase::Mount(const char *local_uri, const char *storage_uri)
 
 	// TODO: update the new database instance?
 
-	try {
-		Mount(local_uri, std::move(db));
-	} catch (...) {
-		db->Close();
-		throw;
-	}
+	Mount(local_uri, std::move(db));
 }
 
 inline DatabasePtr
