@@ -27,6 +27,7 @@
 #include "fs/Charset.hxx"
 #include "util/StringCompare.hxx"
 #include "util/RuntimeError.hxx"
+#include "Version.h"
 
 #include <string.h>
 #include <stdlib.h>

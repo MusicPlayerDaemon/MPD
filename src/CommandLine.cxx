@@ -40,6 +40,7 @@
 #include "util/Domain.hxx"
 #include "util/OptionDef.hxx"
 #include "util/OptionParser.hxx"
+#include "Version.h"
 
 #ifdef _WIN32
 #include "system/Error.hxx"

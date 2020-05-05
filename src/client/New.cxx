@@ -28,6 +28,7 @@
 #include "net/SocketAddress.hxx"
 #include "net/ToString.hxx"
 #include "Log.hxx"
+#include "Version.h"
 
 #include <cassert>
 

@@ -21,6 +21,7 @@
 #include "Log.hxx"
 #include "util/Domain.hxx"
 #include "util/StringStrip.hxx"
+#include "Version.h"
 #include "config.h"
 
 #include <cassert>

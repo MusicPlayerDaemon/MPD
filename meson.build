@@ -21,11 +21,14 @@ elif compiler.get_id() == 'clang' and compiler.version().version_compare('<4')
   warning('Your clang version is too old.  You need at least version 4.')
 endif
 
+version_conf = configuration_data()
+version_conf.set_quoted('PACKAGE', meson.project_name())
+version_conf.set_quoted('PACKAGE_NAME', meson.project_name())
+version_conf.set_quoted('VERSION', meson.project_version())
+version_conf.set_quoted('PROTOCOL_VERSION', '0.22.0')
+configure_file(output: 'Version.h', configuration: version_conf)
+
 conf = configuration_data()
-conf.set_quoted('PACKAGE', meson.project_name())
-conf.set_quoted('PACKAGE_NAME', meson.project_name())
-conf.set_quoted('VERSION', meson.project_version())
-conf.set_quoted('PROTOCOL_VERSION', '0.22.0')
 conf.set_quoted('SYSTEM_CONFIG_FILE_LOCATION', join_paths(get_option('prefix'), get_option('sysconfdir'), 'mpd.conf'))
 
 common_cppflags = [

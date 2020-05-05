@@ -26,6 +26,7 @@
 #include "util/RuntimeError.hxx"
 #include "util/StringView.hxx"
 #include "Log.hxx"
+#include "Version.h"
 
 #include <mikmod.h>
 

@@ -36,6 +36,7 @@
 #include "util/StringStrip.hxx"
 #include "util/StringView.hxx"
 #include "util/CharUtil.hxx"
+#include "Version.h"
 
 #include <curl/curl.h>
 
