@@ -1,7 +1,5 @@
 system_sources = [
   'FatalError.cxx',
-  'FileDescriptor.cxx',
-  'Open.cxx',
   'EventPipe.cxx',
   'Clock.cxx',
 ]
@@ -29,6 +27,7 @@ endif
 system_dep = declare_dependency(
   link_with: system,
   dependencies: [
+    io_dep,
     winsock_dep,
   ],
 )

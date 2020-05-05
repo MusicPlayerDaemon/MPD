@@ -19,7 +19,7 @@
 
 #include "mixer/MixerInternal.hxx"
 #include "config/Block.hxx"
-#include "system/FileDescriptor.hxx"
+#include "io/FileDescriptor.hxx"
 #include "system/Error.hxx"
 #include "util/ASCII.hxx"
 #include "util/Domain.hxx"

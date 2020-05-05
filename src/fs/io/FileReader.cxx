@@ -30,7 +30,7 @@
 #include "FileReader.hxx"
 #include "fs/FileInfo.hxx"
 #include "system/Error.hxx"
-#include "system/Open.hxx"
+#include "io/Open.hxx"
 
 #include <cassert>
 

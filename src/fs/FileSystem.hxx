@@ -21,7 +21,7 @@
 #define MPD_FS_FILESYSTEM_HXX
 
 #include "Path.hxx"
-#include "system/UniqueFileDescriptor.hxx"
+#include "io/UniqueFileDescriptor.hxx"
 
 #ifdef _WIN32
 #include <fileapi.h>

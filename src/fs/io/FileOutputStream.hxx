@@ -35,7 +35,7 @@
 #include "util/Compiler.h"
 
 #ifndef _WIN32
-#include "system/FileDescriptor.hxx"
+#include "io/FileDescriptor.hxx"
 #endif
 
 #include <cassert>

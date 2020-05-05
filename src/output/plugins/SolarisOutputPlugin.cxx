@@ -19,7 +19,7 @@
 
 #include "SolarisOutputPlugin.hxx"
 #include "../OutputAPI.hxx"
-#include "system/FileDescriptor.hxx"
+#include "io/FileDescriptor.hxx"
 #include "system/Error.hxx"
 
 #include <cerrno>

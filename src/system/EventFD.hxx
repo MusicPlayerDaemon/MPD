@@ -30,7 +30,7 @@
 #ifndef EVENT_FD_HXX
 #define EVENT_FD_HXX
 
-#include "UniqueFileDescriptor.hxx"
+#include "io/UniqueFileDescriptor.hxx"
 
 /**
  * A class that wraps eventfd().

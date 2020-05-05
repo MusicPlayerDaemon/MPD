@@ -22,7 +22,7 @@
 #include "fs/Path.hxx"
 #include "fs/FileInfo.hxx"
 #include "fs/io/FileReader.hxx"
-#include "system/FileDescriptor.hxx"
+#include "io/FileDescriptor.hxx"
 #include "util/RuntimeError.hxx"
 
 #include <sys/stat.h>

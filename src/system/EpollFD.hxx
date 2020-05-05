@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2019 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2013-2020 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -30,7 +30,7 @@
 #ifndef EPOLL_FD_HXX
 #define EPOLL_FD_HXX
 
-#include "UniqueFileDescriptor.hxx"
+#include "io/UniqueFileDescriptor.hxx"
 
 #include <cstdint>
 

@@ -28,7 +28,7 @@
 #include "pcm/Volume.hxx"
 #include "mixer/MixerControl.hxx"
 #include "system/Error.hxx"
-#include "system/FileDescriptor.hxx"
+#include "io/FileDescriptor.hxx"
 #include "util/ConstBuffer.hxx"
 #include "util/StringBuffer.hxx"
 #include "util/RuntimeError.hxx"

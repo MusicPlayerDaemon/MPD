@@ -30,7 +30,7 @@
 #ifndef SIGNAL_FD_HXX
 #define SIGNAL_FD_HXX
 
-#include "UniqueFileDescriptor.hxx"
+#include "io/UniqueFileDescriptor.hxx"
 
 #include <csignal>
 

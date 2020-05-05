@@ -28,8 +28,8 @@
  */
 
 #include "Open.hxx"
-#include "Error.hxx"
 #include "UniqueFileDescriptor.hxx"
+#include "system/Error.hxx"
 
 #include <fcntl.h>
 

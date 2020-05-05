@@ -48,6 +48,7 @@ fs = static_library(
 fs_dep = declare_dependency(
   link_with: fs,
   dependencies: [
+    io_dep,
     system_dep,
     icu_dep,
     shlwapi_dep,

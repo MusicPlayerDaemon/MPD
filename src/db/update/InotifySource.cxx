@@ -19,7 +19,7 @@
 
 #include "InotifySource.hxx"
 #include "InotifyDomain.hxx"
-#include "system/FileDescriptor.hxx"
+#include "io/FileDescriptor.hxx"
 #include "system/FatalError.hxx"
 #include "system/Error.hxx"
 #include "Log.hxx"

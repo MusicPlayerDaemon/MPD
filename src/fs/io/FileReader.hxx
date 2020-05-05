@@ -37,7 +37,7 @@
 #ifdef _WIN32
 #include <windows.h>
 #else
-#include "system/UniqueFileDescriptor.hxx"
+#include "io/UniqueFileDescriptor.hxx"
 #endif
 
 class Path;
