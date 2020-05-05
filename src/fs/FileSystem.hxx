@@ -20,7 +20,6 @@
 #ifndef MPD_FS_FILESYSTEM_HXX
 #define MPD_FS_FILESYSTEM_HXX
 
-#include "Traits.hxx"
 #include "Path.hxx"
 #include "system/UniqueFileDescriptor.hxx"
 
@@ -30,23 +29,8 @@
 
 #include <sys/stat.h>
 #include <unistd.h>
-#include <stdio.h>
-
 
 class AllocatedPath;
-
-/**
- * Wrapper for fopen() that uses #Path names.
- */
-static inline FILE *
-FOpen(Path file, PathTraitsFS::const_pointer mode)
-{
-#ifdef _WIN32
-	return _tfopen(file.c_str(), mode);
-#else
-	return fopen(file.c_str(), mode);
-#endif
-}
 
 /**
  * Wrapper for open_cloexec() that uses #Path names.
