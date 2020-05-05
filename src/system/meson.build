@@ -6,6 +6,7 @@ system_sources = [
 
 if host_machine.system() == 'linux'
   system_sources += [
+    'KernelVersion.cxx',
     'EventFD.cxx',
     'SignalFD.cxx',
     'EpollFD.cxx',
