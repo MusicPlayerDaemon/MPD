@@ -143,13 +143,13 @@ public:
 	void Break() noexcept;
 
 	bool AddFD(int _fd, unsigned flags, SocketMonitor &m) noexcept {
-		assert(IsInside());
+		assert(!IsAlive() || IsInside());
 
 		return poll_group.Add(_fd, flags, &m);
 	}
 
 	bool ModifyFD(int _fd, unsigned flags, SocketMonitor &m) noexcept {
-		assert(IsInside());
+		assert(!IsAlive() || IsInside());
 
 		return poll_group.Modify(_fd, flags, &m);
 	}

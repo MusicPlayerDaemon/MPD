@@ -55,7 +55,7 @@ EventLoop::Break() noexcept
 bool
 EventLoop::Abandon(int _fd, SocketMonitor &m)  noexcept
 {
-	assert(IsInside());
+	assert(!IsAlive() || IsInside());
 
 	poll_result.Clear(&m);
 	return poll_group.Abandon(_fd);
@@ -64,7 +64,7 @@ EventLoop::Abandon(int _fd, SocketMonitor &m)  noexcept
 bool
 EventLoop::RemoveFD(int _fd, SocketMonitor &m) noexcept
 {
-	assert(IsInside());
+	assert(!IsAlive() || IsInside());
 
 	poll_result.Clear(&m);
 	return poll_group.Remove(_fd);
