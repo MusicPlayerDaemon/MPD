@@ -1,3 +1,5 @@
+output_features = configuration_data()
+
 output_api = static_library(
   'output_api',
   'Interface.cxx',
@@ -44,3 +46,5 @@ output_glue_dep = declare_dependency(
   ],
 )
 
+
+configure_file(output: 'Features.h', configuration: output_features)

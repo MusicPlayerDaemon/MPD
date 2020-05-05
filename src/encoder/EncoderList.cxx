@@ -20,6 +20,7 @@
 #include "config.h"
 #include "EncoderList.hxx"
 #include "EncoderPlugin.hxx"
+#include "encoder/Features.h"
 #include "plugins/NullEncoderPlugin.hxx"
 #include "plugins/WaveEncoderPlugin.hxx"
 #include "plugins/VorbisEncoderPlugin.hxx"
@@ -28,6 +29,7 @@
 #include "plugins/ShineEncoderPlugin.hxx"
 #include "plugins/LameEncoderPlugin.hxx"
 #include "plugins/TwolameEncoderPlugin.hxx"
+#include "decoder/Features.h"
 
 #include <string.h>
 

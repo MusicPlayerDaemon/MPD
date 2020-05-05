@@ -1,3 +1,5 @@
+playlist_features = configuration_data()
+
 playlist_api = static_library(
   'playlist_api',
   'PlaylistPlugin.cxx',
@@ -23,3 +25,5 @@ playlist_glue_dep = declare_dependency(
     playlist_plugins_dep,
   ],
 )
+
+configure_file(output: 'Features.h', configuration: playlist_features)

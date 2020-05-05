@@ -18,6 +18,7 @@
  */
 
 #include "mixer/MixerInternal.hxx"
+#include "output/Features.h"
 #include "output/OutputAPI.hxx"
 #include "output/plugins/WinmmOutputPlugin.hxx"
 #include "util/Math.hxx"

@@ -20,6 +20,7 @@
 #include "config.h"
 #include "DecoderList.hxx"
 #include "DecoderPlugin.hxx"
+#include "decoder/Features.h"
 #include "PluginUnavailable.hxx"
 #include "Log.hxx"
 #include "config/Data.hxx"

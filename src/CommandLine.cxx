@@ -57,6 +57,7 @@
 #include "neighbor/NeighborPlugin.hxx"
 #endif
 
+#include "encoder/Features.h"
 #ifdef ENABLE_ENCODER
 #include "encoder/EncoderList.hxx"
 #include "encoder/EncoderPlugin.hxx"

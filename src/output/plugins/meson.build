@@ -16,13 +16,13 @@ if alsa_dep.found()
 endif
 
 libao_dep = dependency('ao', required: get_option('ao'))
-conf.set('ENABLE_AO', libao_dep.found())
+output_features.set('ENABLE_AO', libao_dep.found())
 if libao_dep.found()
   output_plugins_sources += 'AoOutputPlugin.cxx'
 endif
 
 enable_fifo_output = get_option('fifo') and not is_windows
-conf.set('HAVE_FIFO', enable_fifo_output)
+output_features.set('HAVE_FIFO', enable_fifo_output)
 if enable_fifo_output
   output_plugins_sources += 'FifoOutputPlugin.cxx'
 endif
@@ -31,7 +31,7 @@ if is_haiku
   output_plugins_sources += 'HaikuOutputPlugin.cxx'
 endif
 
-conf.set('ENABLE_HTTPD_OUTPUT', get_option('httpd'))
+output_features.set('ENABLE_HTTPD_OUTPUT', get_option('httpd'))
 if get_option('httpd')
   output_plugins_sources += [
     'httpd/IcyMetaDataServer.cxx',
@@ -44,10 +44,10 @@ if get_option('httpd')
 endif
 
 libjack_dep = dependency('jack', version: '>= 0.100', required: get_option('jack'))
-conf.set('ENABLE_JACK', libjack_dep.found())
+output_features.set('ENABLE_JACK', libjack_dep.found())
 if libjack_dep.found()
   output_plugins_sources += 'JackOutputPlugin.cxx'
-  conf.set('HAVE_JACK_SET_INFO_FUNCTION', compiler.has_header_symbol('jack/jack.h', 'jack_set_info_function'))
+  output_features.set('HAVE_JACK_SET_INFO_FUNCTION', compiler.has_header_symbol('jack/jack.h', 'jack_set_info_function'))
 endif
 
 openal_dep = dependency('', required: false)
@@ -66,7 +66,7 @@ if not get_option('openal').disabled()
     error('OpenAL not available')
   endif
 endif
-conf.set('HAVE_OPENAL', openal_dep.found())
+output_features.set('HAVE_OPENAL', openal_dep.found())
 
 if enable_oss
   output_plugins_sources += 'OssOutputPlugin.cxx'
@@ -85,10 +85,10 @@ if is_darwin
 else
   audiounit_dep = dependency('', required: false)
 endif
-conf.set('HAVE_OSX', is_darwin)
+output_features.set('HAVE_OSX', is_darwin)
 
 enable_pipe_output = get_option('pipe') and not is_windows
-conf.set('ENABLE_PIPE_OUTPUT', enable_pipe_output)
+output_features.set('ENABLE_PIPE_OUTPUT', enable_pipe_output)
 if enable_pipe_output
   output_plugins_sources += 'PipeOutputPlugin.cxx'
 endif
@@ -97,14 +97,14 @@ if pulse_dep.found()
   output_plugins_sources += 'PulseOutputPlugin.cxx'
 endif
 
-conf.set('ENABLE_RECORDER_OUTPUT', get_option('recorder'))
+output_features.set('ENABLE_RECORDER_OUTPUT', get_option('recorder'))
 if get_option('recorder')
   output_plugins_sources += 'RecorderOutputPlugin.cxx'
   need_encoder = true
 endif
 
 libshout_dep = dependency('shout', required: get_option('shout'))
-conf.set('HAVE_SHOUT', libshout_dep.found())
+output_features.set('HAVE_SHOUT', libshout_dep.found())
 if libshout_dep.found()
   output_plugins_sources += 'ShoutOutputPlugin.cxx'
   need_encoder = true
@@ -127,12 +127,12 @@ if enable_solaris_output.auto()
 else
   enable_solaris_output = enable_solaris_output.enabled()
 endif
-conf.set('ENABLE_SOLARIS_OUTPUT', enable_solaris_output)
+output_features.set('ENABLE_SOLARIS_OUTPUT', enable_solaris_output)
 if enable_solaris_output
   output_plugins_sources += 'SolarisOutputPlugin.cxx'
 endif
 
-conf.set('ENABLE_WINMM_OUTPUT', is_windows)
+output_features.set('ENABLE_WINMM_OUTPUT', is_windows)
 if is_windows
   output_plugins_sources += 'WinmmOutputPlugin.cxx'
   winmm_dep = c_compiler.find_library('winmm')

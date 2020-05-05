@@ -27,7 +27,7 @@
 #include "tag/ReplayGain.hxx"
 #include "ReplayGainInfo.hxx"
 #include "util/StringView.hxx"
-#include "config.h"
+#include "decoder/Features.h"
 
 #ifndef HAVE_TREMOR
 #include <vorbis/codec.h>

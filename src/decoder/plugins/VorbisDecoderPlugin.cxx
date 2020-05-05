@@ -17,7 +17,6 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "config.h"
 #include "VorbisDecoderPlugin.h"
 #include "OggDecoder.hxx"
 #include "lib/xiph/VorbisComments.hxx"
@@ -25,6 +24,7 @@
 #include "lib/xiph/OggFind.hxx"
 #include "VorbisDomain.hxx"
 #include "../DecoderAPI.hxx"
+#include "decoder/Features.h"
 #include "input/InputStream.hxx"
 #include "input/Reader.hxx"
 #include "OggCodec.hxx"

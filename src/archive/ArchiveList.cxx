@@ -17,9 +17,9 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "config.h"
 #include "ArchiveList.hxx"
 #include "ArchivePlugin.hxx"
+#include "archive/Features.h"
 #include "util/StringUtil.hxx"
 #include "plugins/Bzip2ArchivePlugin.hxx"
 #include "plugins/Iso9660ArchivePlugin.hxx"

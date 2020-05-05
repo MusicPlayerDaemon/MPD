@@ -19,6 +19,7 @@
 
 #include "Registry.hxx"
 #include "InputPlugin.hxx"
+#include "input/Features.h"
 #include "plugins/TidalInputPlugin.hxx"
 #include "plugins/QobuzInputPlugin.hxx"
 #include "config.h"

@@ -1,3 +1,5 @@
+decoder_features = configuration_data()
+
 decoder_api = static_library(
   'decoder_api',
   'DecoderAPI.cxx',
@@ -34,3 +36,5 @@ decoder_glue_dep = declare_dependency(
     decoder_plugins_dep,
   ],
 )
+
+configure_file(output: 'Features.h', configuration: decoder_features)

@@ -9,7 +9,7 @@ playlist_plugins_deps = [
   flac_dep,
 ]
 
-conf.set('ENABLE_CUE', get_option('cue'))
+playlist_features.set('ENABLE_CUE', get_option('cue'))
 if get_option('cue')
   playlist_plugins_sources += [
     '../cue/CueParser.cxx',
@@ -39,7 +39,7 @@ else
     error('SoundCloud requires CURL and libyajl')
   endif
 endif
-conf.set('ENABLE_SOUNDCLOUD', enable_soundcloud)
+playlist_features.set('ENABLE_SOUNDCLOUD', enable_soundcloud)
 if enable_soundcloud
   playlist_plugins_sources += 'SoundCloudPlaylistPlugin.cxx'
   playlist_plugins_deps += yajl_dep

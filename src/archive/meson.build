@@ -1,3 +1,5 @@
+archive_features = configuration_data()
+
 archive_api = static_library(
   'archive_api',
   'ArchiveList.cxx',
@@ -9,6 +11,8 @@ archive_api_dep = declare_dependency(
 )
 
 subdir('plugins')
+
+configure_file(output: 'Features.h', configuration: archive_features)
 
 conf.set('ENABLE_ARCHIVE', found_archive_plugin)
 if not found_archive_plugin
