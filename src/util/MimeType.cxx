@@ -45,8 +45,8 @@ ParseMimeTypeParameters(const char *s) noexcept
 		if (eq == i.npos)
 			continue;
 
-		result.insert(std::make_pair(std::string(&i.front(), eq),
-					     std::string(&i[eq + 1])));
+		result.insert(std::make_pair(i.substr(0, eq),
+					     i.substr(eq + 1)));
 	}
 
 	return result;
