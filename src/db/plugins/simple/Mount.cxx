@@ -70,22 +70,20 @@ WalkMount(std::string_view base, const Database &db,
 	  const VisitDirectory &visit_directory, const VisitSong &visit_song,
 	  const VisitPlaylist &visit_playlist)
 {
-	using namespace std::placeholders;
-
 	VisitDirectory vd;
 	if (visit_directory)
-		vd = std::bind(PrefixVisitDirectory,
-			       base, std::ref(visit_directory), _1);
+		vd = [base,&visit_directory](const auto &dir)
+			{ return PrefixVisitDirectory(base, visit_directory, dir); };
 
 	VisitSong vs;
 	if (visit_song)
-		vs = std::bind(PrefixVisitSong,
-			       base, std::ref(visit_song), _1);
+		vs = [base,&visit_song](const auto &song)
+			{ return PrefixVisitSong(base, visit_song, song); };
 
 	VisitPlaylist vp;
 	if (visit_playlist)
-		vp = std::bind(PrefixVisitPlaylist,
-			       base, std::ref(visit_playlist), _1, _2);
+		vp = [base,&visit_playlist](const auto &playlist, const auto &dir)
+			{ return PrefixVisitPlaylist(base, visit_playlist, playlist, dir); };
 
 	DatabaseSelection selection(old_selection);
 	selection.uri = uri;

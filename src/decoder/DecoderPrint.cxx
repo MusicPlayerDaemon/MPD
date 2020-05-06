@@ -47,7 +47,7 @@ decoder_plugin_print(Response &r,
 void
 decoder_list_print(Response &r)
 {
-	using namespace std::placeholders;
-	const auto f = std::bind(decoder_plugin_print, std::ref(r), _1);
+	const auto f = [&](const auto &plugin)
+		{ return decoder_plugin_print(r, plugin); };
 	decoder_plugins_for_each_enabled(f);
 }
