@@ -26,7 +26,7 @@ android_abis = {
         'ndk_arch': 'arm',
         'toolchain_arch': 'arm-linux-androideabi',
         'llvm_triple': 'armv7-linux-androideabi',
-        'cflags': '-march=armv7-a -mfpu=vfp -mfloat-abi=softfp',
+        'cflags': '-march=armv7-a -mfpu=vfpv3-d16 -mfloat-abi=softfp',
     },
 
     'arm64-v8a': {
