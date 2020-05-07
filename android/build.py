@@ -26,7 +26,7 @@ android_abis = {
         'ndk_arch': 'arm',
         'toolchain_arch': 'arm-linux-androideabi',
         'llvm_triple': 'armv7-linux-androideabi',
-        'cflags': '-march=armv7-a -mfpu=vfpv3-d16 -mfloat-abi=softfp',
+        'cflags': '-fpic -march=armv7-a -mfpu=vfpv3-d16 -mfloat-abi=softfp',
     },
 
     'arm64-v8a': {
@@ -34,7 +34,7 @@ android_abis = {
         'ndk_arch': 'arm64',
         'toolchain_arch': 'aarch64-linux-android',
         'llvm_triple': 'aarch64-linux-android',
-        'cflags': '',
+        'cflags': '-fpic',
     },
 
     'x86': {
@@ -42,7 +42,7 @@ android_abis = {
         'ndk_arch': 'x86',
         'toolchain_arch': 'x86',
         'llvm_triple': 'i686-linux-android',
-        'cflags': '-march=i686 -mtune=intel -mssse3 -mfpmath=sse -m32',
+        'cflags': '-fPIC -march=i686 -mtune=intel -mssse3 -mfpmath=sse -m32',
     },
 
     'x86_64': {
@@ -50,7 +50,7 @@ android_abis = {
         'ndk_arch': 'x86_64',
         'toolchain_arch': 'x86_64',
         'llvm_triple': 'x86_64-linux-android',
-        'cflags': '-m64',
+        'cflags': '-fPIC -m64',
     },
 }
 
@@ -97,7 +97,6 @@ class AndroidNdkToolchain:
         llvm_triple = abi_info['llvm_triple'] + android_api_level
 
         common_flags = '-Os -g'
-        common_flags += ' -fPIC'
         common_flags += ' ' + abi_info['cflags']
 
         toolchain_bin = os.path.join(toolchain_path, 'bin')
