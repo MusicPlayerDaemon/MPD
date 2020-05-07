@@ -22,12 +22,12 @@
 
 #include "Error.hxx"
 
+#include <new>
+#include <utility>
+
 extern "C" {
 #include <libavfilter/avfilter.h>
 }
-
-#include <new>
-#include <utility>
 
 struct AudioFormat;
 
