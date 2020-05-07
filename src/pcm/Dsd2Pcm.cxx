@@ -130,24 +130,17 @@ CalculateCtableValue(size_t t, int k, int e) noexcept
 	return float(acc);
 }
 
-/* this needs to be a struct because GCC 6 doesn't have constexpr
-   lambdas (C++17) */
-struct GenerateCtableValue {
-	size_t t;
-	int k;
-
-	constexpr auto operator()(int e) const noexcept {
-		return CalculateCtableValue(t, k, e);
-	}
-};
-
 static constexpr auto
 GenerateCtable(int t) noexcept
 {
 	int k = HTAPS - t*8;
 	if (k>8) k=8;
 
-	return GenerateArray<256>(GenerateCtableValue{CTABLES - 1 - t, k});
+	const size_t t_ = CTABLES - 1 - t;
+
+	return GenerateArray<256>([t_, k](int e){
+		return CalculateCtableValue(t_, k, e);
+	});
 }
 
 static constexpr auto ctables = GenerateArray<CTABLES>(GenerateCtable);
