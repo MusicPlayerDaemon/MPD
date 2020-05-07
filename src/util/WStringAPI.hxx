@@ -32,7 +32,7 @@
 
 #include "Compiler.h"
 
-#include <wchar.h>
+#include <cwchar>
 
 gcc_pure gcc_nonnull_all
 static inline size_t
