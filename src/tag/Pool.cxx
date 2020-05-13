@@ -26,6 +26,7 @@
 #include <cassert>
 #include <cstdint>
 #include <limits>
+#include <numeric>
 
 #include <string.h>
 #include <stdlib.h>
@@ -69,12 +70,8 @@ static TagPoolSlot *slots[NUM_SLOTS];
 static inline unsigned
 calc_hash(TagType type, StringView p) noexcept
 {
-	unsigned hash = 5381;
-
-	for (auto ch : p)
-		hash = (hash << 5) + hash + ch;
-
-	return hash ^ type;
+	return std::accumulate(p.begin(), p.end(), 5381, [](auto h, auto ch)
+		{ return (h << 5) + ch; }) ^ type;
 }
 
 static inline unsigned
@@ -85,7 +82,7 @@ calc_hash(TagType type, const char *p) noexcept
 	assert(p != nullptr);
 
 	while (*p != 0)
-		hash = (hash << 5) + hash + *p++;
+		hash += (hash << 5) + *p++;
 
 	return hash ^ type;
 }
