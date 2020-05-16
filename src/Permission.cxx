@@ -29,6 +29,7 @@
 #include <cassert>
 #include <cstring>
 #include <map>
+#include <numeric>
 #include <string>
 #include <utility>
 
@@ -69,13 +70,11 @@ static unsigned parsePermissions(const char *string)
 {
 	assert(string != nullptr);
 
-	unsigned permission = 0;
-
-	for (const auto i : IterableSplitString(string, PERMISSION_SEPARATOR))
-		if (!i.empty())
-			permission |= ParsePermission(i);
-
-	return permission;
+	auto perms = IterableSplitString(string, PERMISSION_SEPARATOR);
+	return std::accumulate(perms.begin(), perms.end(), 0,
+			       [](const auto &perm, const auto &i) {
+				       return perm | ParsePermission(i);
+			       });
 }
 
 void
