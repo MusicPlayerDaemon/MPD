@@ -337,10 +337,14 @@ UPnPDeviceDirectory::GetServer(std::string_view friendly_name)
 		if (device.friendlyName != friendly_name)
 			continue;
 
-		for (const auto &service : device.services)
-			if (isCDService(service.serviceType.c_str()))
-				return ContentDirectoryService(device,
-							       service);
+		auto it = std::find_if(device.services.begin(), device.services.end(),
+				       [](const auto &service) {
+					       return isCDService(
+						       service.serviceType.c_str());
+				       });
+		if (it != device.services.end()) {
+			return ContentDirectoryService(device, *it);
+		}
 	}
 
 	throw std::runtime_error("Server not found");

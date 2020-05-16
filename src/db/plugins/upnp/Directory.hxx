@@ -23,6 +23,7 @@
 #include "Object.hxx"
 #include "util/Compiler.h"
 
+#include <algorithm>
 #include <string>
 #include <vector>
 
@@ -41,11 +42,9 @@ public:
 
 	gcc_pure
 	UPnPDirObject *FindObject(std::string_view name) noexcept {
-		for (auto &o : objects)
-			if (o.name == name)
-				return &o;
-
-		return nullptr;
+		auto it = std::find_if(objects.begin(), objects.end(),
+				       [=](const auto &o) { return o.name == name; });
+		return it != objects.end() ? &(*it) : nullptr;
 	}
 
 	/**

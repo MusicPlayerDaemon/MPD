@@ -102,11 +102,14 @@ Directory::FindChild(std::string_view name) const noexcept
 {
 	assert(holding_db_lock());
 
-	for (const auto &child : children)
-		if (name.compare(child.GetName()) == 0)
-			return &child;
+	if (children.empty())
+		return nullptr;
 
-	return nullptr;
+	auto it = std::find_if(children.begin(), children.end(), [=](const auto &child) {
+		return name.compare(child.GetName()) == 0;
+	});
+
+	return it != children.end() ? &(*it) : nullptr;
 }
 
 void

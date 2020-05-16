@@ -120,11 +120,11 @@ MultipleOutputs::Configure(EventLoop &event_loop,
 AudioOutputControl *
 MultipleOutputs::FindByName(const char *name) noexcept
 {
-	for (const auto &i : outputs)
-		if (StringIsEqual(i->GetName(), name))
-			return i.get();
+	auto it = std::find_if(outputs.begin(), outputs.end(), [=](const auto &output) {
+		return StringIsEqual(output->GetName(), name);
+	});
 
-	return nullptr;
+	return it != outputs.end() ? it->get() : nullptr;
 }
 
 void

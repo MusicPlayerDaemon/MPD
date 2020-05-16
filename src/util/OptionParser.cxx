@@ -22,6 +22,8 @@
 #include "util/RuntimeError.hxx"
 #include "util/StringCompare.hxx"
 
+#include <algorithm>
+
 inline const char *
 OptionParser::CheckShiftValue(const char *s, const OptionDef &option)
 {
@@ -61,12 +63,14 @@ OptionParser::IdentifyOption(const char *s)
 			return {int(&i - options.data), value};
 		}
 	} else if (s[1] != 0 && s[2] == 0) {
-		const char ch = s[1];
-		for (const auto &i : options) {
-			if (i.HasShortOption() && ch == i.GetShortOption()) {
-				const char *value = CheckShiftValue(s, i);
-				return {int(&i - options.data), value};
-			}
+		auto it = std::find_if(options.begin(), options.end(),
+				       [=](const auto &option) {
+					       return option.HasShortOption() &&
+						      (s[1] == option.GetShortOption());
+				       });
+		if (it != options.end()) {
+			const char *value = CheckShiftValue(s, *it);
+			return {int(it - options.data), value};
 		}
 	}
 

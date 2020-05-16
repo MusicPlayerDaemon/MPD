@@ -80,11 +80,14 @@ Instance::OnStateModified() noexcept
 Partition *
 Instance::FindPartition(const char *name) noexcept
 {
-	for (auto &partition : partitions)
-		if (partition.name == name)
-			return &partition;
+	if (partitions.empty())
+		return nullptr;
 
-	return nullptr;
+	auto it = std::find_if(
+		partitions.begin(), partitions.end(),
+		[=](const auto &partition) { return partition.name == name; });
+
+	return it != partitions.end() ? &(*it) : nullptr;
 }
 
 void

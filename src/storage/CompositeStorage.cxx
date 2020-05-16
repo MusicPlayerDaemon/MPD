@@ -23,6 +23,7 @@
 #include "util/IterableSplitString.hxx"
 #include "util/StringCompare.hxx"
 
+#include <algorithm>
 #include <set>
 #include <stdexcept>
 
@@ -169,13 +170,15 @@ CompositeStorage::Directory::MapToRelativeUTF8(std::string &buffer,
 		}
 	}
 
-	for (const auto &i : children) {
-		if (i.second.MapToRelativeUTF8(buffer, uri)) {
-			buffer.insert(buffer.begin(), '/');
-			buffer.insert(buffer.begin(),
-				      i.first.begin(), i.first.end());
-			return true;
-		}
+	auto it = std::find_if(children.begin(), children.end(),
+			       [&buffer, uri](const auto &child) {
+				       return child.second.MapToRelativeUTF8(buffer, uri);
+			       });
+
+	if (it != children.end()) {
+		buffer.insert(buffer.begin(), '/');
+		buffer.insert(buffer.begin(), it->first.begin(), it->first.end());
+		return true;
 	}
 
 	return false;

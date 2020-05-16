@@ -23,6 +23,8 @@
 #include "fs/AllocatedPath.hxx"
 #include "util/RuntimeError.hxx"
 
+#include <algorithm>
+
 #include <stdlib.h>
 
 void
@@ -80,11 +82,15 @@ BlockParam::GetBoolValue() const
 const BlockParam *
 ConfigBlock::GetBlockParam(const char *name) const noexcept
 {
-	for (const auto &i : block_params) {
-		if (i.name == name) {
-			i.used = true;
-			return &i;
-		}
+	if (block_params.empty())
+		return nullptr;
+
+	auto it = std::find_if(block_params.begin(), block_params.end(),
+			       [=](const auto &block) { return block.name == name; });
+
+	if (it != block_params.end()) {
+		it->used = true;
+		return &(*it);
 	}
 
 	return nullptr;
