@@ -96,6 +96,8 @@ thirdparty_libs = [
     zlib,
     libid3tag,
     liblame,
+    libmodplug,
+    wildmidi,
     ffmpeg,
     curl,
     libexpat,
