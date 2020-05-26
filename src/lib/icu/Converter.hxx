@@ -34,6 +34,7 @@
 #ifdef HAVE_ICU_CONVERTER
 
 #include <memory>
+#include <string_view>
 
 #ifdef HAVE_ICU
 struct UConverter;
