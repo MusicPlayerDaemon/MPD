@@ -205,10 +205,8 @@ TEST(PcmTest, ExportDsdU16)
 
 	/* no output, 2/4 remains */
 	static constexpr uint8_t src2[] = { 0x11, 0x22 };
-	static constexpr uint16_t expected2[] = {};
 	dest = e.Export({src2, sizeof(src2)});
-	EXPECT_EQ(sizeof(expected2), dest.size);
-	EXPECT_TRUE(memcmp(dest.data, expected2, dest.size) == 0);
+	EXPECT_TRUE(dest.empty());
 
 	/* one full frame and 2/4 remains */
 	static constexpr uint8_t src3[] = { 0x33, 0x44, 0x55, 0x66 };
@@ -267,10 +265,8 @@ TEST(PcmTest, ExportDsdU32)
 
 	/* no output, 4/8 remains */
 	static constexpr uint8_t src2[] = { 0x11, 0x22, 0x33, 0x44 };
-	static constexpr uint32_t expected2[] = {};
 	dest = e.Export({src2, sizeof(src2)});
-	EXPECT_EQ(sizeof(expected2), dest.size);
-	EXPECT_TRUE(memcmp(dest.data, expected2, dest.size) == 0);
+	EXPECT_TRUE(dest.empty());
 
 	/* one full frame and 4/8 remains */
 	static constexpr uint8_t src3[] = { 0x55, 0x66, 0x77, 0x88, 0x99, 0xaa, 0xbb, 0xcc };
@@ -327,17 +323,13 @@ TEST(PcmTest, ExportDop)
 
 	/* not enough data: 2/8 */
 	static constexpr uint8_t src2[] = { 0x12, 0x34 };
-	static constexpr uint32_t expected2[] = {};
 	dest = e.Export({src2, sizeof(src2)});
-	ASSERT_EQ(sizeof(expected2), dest.size);
-	ASSERT_TRUE(memcmp(dest.data, expected2, dest.size) == 0);
+	ASSERT_EQ(dest.size, 0u);
 
 	/* not enough data: 6/8 */
 	static constexpr uint8_t src3[] = { 0x56, 0x78, 0x9a, 0xbc };
-	static constexpr uint32_t expected3[] = {};
 	dest = e.Export({src3, sizeof(src3)});
-	ASSERT_EQ(sizeof(expected3), dest.size);
-	ASSERT_TRUE(memcmp(dest.data, expected3, dest.size) == 0);
+	ASSERT_EQ(dest.size, 0u);
 
 	/* just enough data: 8/8 */
 	static constexpr uint8_t src4[] = { 0xde, 0xf0 };
@@ -348,10 +340,8 @@ TEST(PcmTest, ExportDop)
 
 	/* not enough data: 6/8 */
 	static constexpr uint8_t src5[] = { 0x11, 0x22, 0x33, 0x44, 0x55, 0x66 };
-	static constexpr uint32_t expected5[] = {};
 	dest = e.Export({src5, sizeof(src5)});
-	ASSERT_EQ(sizeof(expected5), dest.size);
-	ASSERT_TRUE(memcmp(dest.data, expected5, dest.size) == 0);
+	ASSERT_TRUE(dest.empty());
 
 	/* two quads returned, not enough data for more: 2/8 */
 	static constexpr uint8_t src6[] = { 0x77, 0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff, 0x00, 0x10, 0x20 };
