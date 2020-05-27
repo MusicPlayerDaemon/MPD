@@ -84,12 +84,18 @@ if enable_tidal
   ]
 endif
 
-enable_youtube = get_option('youtube').enabled() and ffmpeg_dep.found()
+youtube_feature = get_option('youtube')
+if youtube_feature.disabled()
+  enable_youtube = false
+else
+  enable_youtube = curl_dep.found()
+  if not enable_youtube and youtube_feature.enabled()
+    error('Youtube requires CURL')
+  endif
+endif
 input_features.set('ENABLE_YOUTUBE', enable_youtube)
 if enable_youtube
-  input_plugins_sources += [
-    'YoutubeInputPlugin.cxx',
-  ]
+  input_plugins_sources += 'YoutubeInputPlugin.cxx'
 endif
 
 input_plugins = static_library(

@@ -17,9 +17,6 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-/* necessary because libavutil/common.h uses UINT64_C */
-#define __STDC_CONSTANT_MACROS
-
 #include "YoutubeInputPlugin.hxx"
 #include "CurlInputPlugin.hxx"
 #include "PluginUnavailable.hxx"
@@ -47,9 +44,7 @@ input_youtube_init(EventLoop &, const ConfigBlock &)
 static InputStreamPtr
 input_youtube_open(const char *uri, Mutex &mutex)
 {
-	if(!StringEqualsCaseASCII(uri, "https://www.youtube.com", 19))
-		return nullptr;
-
+	// TODO fix command injection
 	char *cmd = xstrcatdup("youtube-dl --extract-audio --get-url --youtube-skip-dash-manifest ", uri);
 	FILE *stream = popen(cmd, "r");
 	free(cmd);
