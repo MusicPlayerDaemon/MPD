@@ -20,9 +20,8 @@
 #ifndef _UPNPDIR_HXX_INCLUDED_
 #define _UPNPDIR_HXX_INCLUDED_
 
+#include "Compat.hxx"
 #include "util/Compiler.h"
-
-#include <upnp.h>
 
 #include <string>
 #include <forward_list>

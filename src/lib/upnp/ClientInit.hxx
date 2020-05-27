@@ -20,7 +20,7 @@
 #ifndef MPD_UPNP_CLIENT_INIT_HXX
 #define MPD_UPNP_CLIENT_INIT_HXX
 
-#include <upnp.h>
+#include "Compat.hxx"
 
 UpnpClient_Handle
 UpnpClientGlobalInit();

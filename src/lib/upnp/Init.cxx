@@ -18,10 +18,10 @@
  */
 
 #include "Init.hxx"
+#include "Compat.hxx"
 #include "thread/Mutex.hxx"
 #include "util/RuntimeError.hxx"
 
-#include <upnp.h>
 #include <upnptools.h>
 #include <ixml.h>
 

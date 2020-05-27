@@ -20,6 +20,16 @@
 #ifndef MPD_UPNP_COMPAT_HXX
 #define MPD_UPNP_COMPAT_HXX
 
+#ifdef __clang__
+/* libupnp versions until 1.10.1 redefine "bool" and "true" */
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wkeyword-macro"
+#endif
+
 #include <upnp.h>
+
+#ifdef __clang__
+#pragma GCC diagnostic pop
+#endif
 
 #endif

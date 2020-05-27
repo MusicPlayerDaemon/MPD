@@ -29,8 +29,6 @@
 #include "thread/Mutex.hxx"
 #include "event/DeferEvent.hxx"
 
-#include <upnp.h>
-
 #include <boost/intrusive/list.hpp>
 
 #include <list>
