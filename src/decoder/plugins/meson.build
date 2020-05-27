@@ -129,7 +129,12 @@ if wavpack_dep.found()
   decoder_plugins_sources += 'WavpackDecoderPlugin.cxx'
 endif
 
-wildmidi_dep = c_compiler.find_library('WildMidi', required: get_option('wildmidi'))
+if not get_option('wildmidi').disabled()
+  wildmidi_dep = dependency('wildmidi', required: get_option('wildmidi'))
+endif
+if not wildmidi_dep.found()
+  wildmidi_dep = c_compiler.find_library('WildMidi', required: get_option('wildmidi'))
+endif
 conf.set('ENABLE_WILDMIDI', wildmidi_dep.found())
 if wildmidi_dep.found()
   decoder_plugins_sources += 'WildmidiDecoderPlugin.cxx'
