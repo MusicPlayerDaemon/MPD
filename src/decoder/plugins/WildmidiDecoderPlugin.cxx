@@ -29,6 +29,12 @@
 #include "Log.hxx"
 #include "PluginUnavailable.hxx"
 
+#ifdef _WIN32
+/* assume WildMidi is built as static library on Windows; without
+   this, linking to the static library would fail */
+#define WILDMIDI_STATIC
+#endif
+
 extern "C" {
 #include <wildmidi_lib.h>
 }
