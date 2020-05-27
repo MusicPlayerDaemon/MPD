@@ -66,6 +66,9 @@ const InputPlugin *const input_plugins[] = {
 #ifdef ENABLE_QOBUZ
 	&qobuz_input_plugin,
 #endif
+#ifdef ENABLE_YOUTUBE
+    &input_plugin_youtube,
+#endif
 #ifdef ENABLE_CURL
 	&input_plugin_curl,
 #endif
@@ -83,9 +86,6 @@ const InputPlugin *const input_plugins[] = {
 #endif
 #ifdef ENABLE_CDIO_PARANOIA
 	&input_plugin_cdio_paranoia,
-#endif
-#ifdef ENABLE_YOUTUBE
-    &input_plugin_youtube,
 #endif
 	nullptr
 };

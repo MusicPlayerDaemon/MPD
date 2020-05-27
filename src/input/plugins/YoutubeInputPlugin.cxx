@@ -33,7 +33,7 @@
 #include <cstdlib>
 
 static const char *input_youtube_prefixes[] = {
-	"youtube",
+	"https",
 	nullptr
 };
 
@@ -43,7 +43,7 @@ static size_t url_length = 0;
 static void
 input_youtube_init(EventLoop &, const ConfigBlock &)
 {
-	if(WEXITSTATUS(system("which youtube-dl")) != 0)
+	if(WEXITSTATUS(system("youtube-dl --version > /dev/null")) != 0)
 		throw PluginUnavailable("youtube-dl not found");
 }
 
@@ -57,10 +57,10 @@ input_youtube_finish()
 static InputStreamPtr
 input_youtube_open(const char *uri, Mutex &mutex)
 {
-	assert(StringEqualsCaseASCII(uri, "youtube://", 10));
-	uri += 10;
+	if(!StringEqualsCaseASCII(uri, "https://www.youtube.com", 19))
+		return nullptr;
 
-	char *cmd = xstrcatdup("youtube-dl --extract-audio --get-url --youtube-skip-dash-manifest https://", uri);
+	char *cmd = xstrcatdup("youtube-dl --extract-audio --get-url --youtube-skip-dash-manifest ", uri);
 	FILE *stream = popen(cmd, "r");
 	free(cmd);
 
