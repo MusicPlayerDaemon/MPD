@@ -1,0 +1,17 @@
+BasedOnStyle: LLVM
+AccessModifierOffset: -8
+AllowAllConstructorInitializersOnNextLine: false
+AlwaysBreakTemplateDeclarations: Yes
+BraceWrapping:
+  AfterFunction: true
+  SplitEmptyFunction: true
+BreakConstructorInitializers: BeforeColon
+ColumnLimit: 90
+ConstructorInitializerIndentWidth: 0
+ContinuationIndentWidth: 8
+IndentCaseLabels: false
+IndentPPDirectives: AfterHash
+IndentWidth: 8
+Standard: c++17
+TabWidth: 8
+UseTab: Always
