@@ -5,6 +5,7 @@ ver 0.21.24 (not yet released)
   - simple: fix crash when mounting twice
 * decoder
   - wildmidi: attempt to detect WildMidi using pkg-config
+  - wildmidi: fix Windows build failure
 * Android
   - fix build failure with Android NDK r21
 * Windows
