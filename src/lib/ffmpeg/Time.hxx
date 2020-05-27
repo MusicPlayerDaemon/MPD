@@ -45,7 +45,7 @@ FfmpegTimeToDouble(int64_t t, const AVRational time_base) noexcept
 {
 	assert(t != (int64_t)AV_NOPTS_VALUE);
 
-	return FloatDuration(av_rescale_q(t, time_base, (AVRational){1, 1024}))
+	return FloatDuration(av_rescale_q(t, time_base, {1, 1024}))
 		/ 1024;
 }
 
@@ -69,7 +69,7 @@ FromFfmpegTime(int64_t t, const AVRational time_base) noexcept
 	assert(t != (int64_t)AV_NOPTS_VALUE);
 
 	return SongTime::FromMS(av_rescale_q(t, time_base,
-					     (AVRational){1, 1000}));
+					     {1, 1000}));
 }
 
 /**
