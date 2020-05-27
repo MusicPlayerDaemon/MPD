@@ -121,6 +121,6 @@ namespace TemplateString {
 
 	template<>
 	struct Concat<> : Empty {};
-};
+}
 
 #endif
