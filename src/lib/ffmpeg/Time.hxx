@@ -36,6 +36,13 @@ extern "C" {
 #undef SampleFormat
 #endif
 
+/* redefine AV_TIME_BASE_Q because libavutil's macro definition is a
+   compound literal, which is illegal in C++ */
+#ifdef AV_TIME_BASE_Q
+#undef AV_TIME_BASE_Q
+#endif
+static constexpr AVRational AV_TIME_BASE_Q{1, AV_TIME_BASE};
+
 /**
  * Convert a FFmpeg time stamp to a floating point value (in seconds).
  */
