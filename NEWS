@@ -43,8 +43,17 @@ ver 0.21.24 (not yet released)
   - "tagtypes" requires no permissions
 * database
   - simple: fix crash when mounting twice
+* decoder
+  - modplug: fix Windows build failure
+  - wildmidi: attempt to detect WildMidi using pkg-config
+  - wildmidi: fix Windows build failure
+* Android
+  - enable the decoder plugins ModPlug and WildMidi
+  - fix build failure with Android NDK r21
+* Windows
+  - enable the decoder plugins ModPlug and WildMidi
+  - work around Meson bug breaking the Windows build with GCC 10
 * fix unit test failure
-* fix build failure with Android NDK r21
 
 ver 0.21.23 (2020/04/23)
 * protocol

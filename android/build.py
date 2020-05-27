@@ -168,6 +168,8 @@ thirdparty_libs = [
     opus,
     flac,
     libid3tag,
+    libmodplug,
+    wildmidi,
     ffmpeg,
     curl,
     libexpat,

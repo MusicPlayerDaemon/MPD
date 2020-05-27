@@ -129,7 +129,16 @@ if wavpack_dep.found()
   decoder_plugins_sources += 'WavpackDecoderPlugin.cxx'
 endif
 
-wildmidi_dep = c_compiler.find_library('WildMidi', required: get_option('wildmidi'))
+wildmidi_required = get_option('wildmidi')
+if wildmidi_required.enabled()
+  # if the user has force-enabled WildMidi, allow the pkg-config test
+  # to fail; after that, the find_library() check must succeed
+  wildmidi_required = false
+endif
+wildmidi_dep = dependency('wildmidi', required: wildmidi_required)
+if not wildmidi_dep.found()
+  wildmidi_dep = c_compiler.find_library('WildMidi', required: get_option('wildmidi'))
+endif
 decoder_features.set('ENABLE_WILDMIDI', wildmidi_dep.found())
 if wildmidi_dep.found()
   decoder_plugins_sources += 'WildmidiDecoderPlugin.cxx'

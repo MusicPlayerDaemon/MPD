@@ -25,7 +25,14 @@
 #include "fs/AllocatedPath.hxx"
 #include "fs/FileSystem.hxx"
 #include "fs/Path.hxx"
+#include "fs/NarrowPath.hxx"
 #include "PluginUnavailable.hxx"
+
+#ifdef _WIN32
+/* assume WildMidi is built as static library on Windows; without
+   this, linking to the static library would fail */
+#define WILDMIDI_STATIC
+#endif
 
 extern "C" {
 #include <wildmidi_lib.h>
@@ -52,7 +59,8 @@ wildmidi_init(const ConfigBlock &block)
 	AtScopeExit() { WildMidi_ClearError(); };
 #endif
 
-	if (WildMidi_Init(path.c_str(), wildmidi_audio_format.sample_rate,
+	if (WildMidi_Init(NarrowPath(path),
+			  wildmidi_audio_format.sample_rate,
 			  0) != 0) {
 #ifdef LIBWILDMIDI_VERSION
 		/* WildMidi_GetError() requires libwildmidi 0.4 */
@@ -95,7 +103,7 @@ wildmidi_file_decode(DecoderClient &client, Path path_fs)
 	midi *wm;
 	const struct _WM_Info *info;
 
-	wm = WildMidi_Open(path_fs.c_str());
+	wm = WildMidi_Open(NarrowPath(path_fs));
 	if (wm == nullptr)
 		return;
 
@@ -135,7 +143,7 @@ wildmidi_file_decode(DecoderClient &client, Path path_fs)
 static bool
 wildmidi_scan_file(Path path_fs, TagHandler &handler) noexcept
 {
-	midi *wm = WildMidi_Open(path_fs.c_str());
+	midi *wm = WildMidi_Open(NarrowPath(path_fs));
 	if (wm == nullptr)
 		return false;
 

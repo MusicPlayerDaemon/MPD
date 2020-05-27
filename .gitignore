@@ -6,3 +6,6 @@
 /output/
 
 __pycache__/
+
+/.clangd/
+/compile_commands.json

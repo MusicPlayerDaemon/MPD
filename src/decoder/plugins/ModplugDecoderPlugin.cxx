@@ -27,6 +27,12 @@
 #include "util/StringView.hxx"
 #include "Log.hxx"
 
+#ifdef _WIN32
+/* assume ModPlug is built as static library on Windows; without
+   this, linking to the static library would fail */
+#define MODPLUG_STATIC
+#endif
+
 #include <libmodplug/modplug.h>
 
 #include <cassert>

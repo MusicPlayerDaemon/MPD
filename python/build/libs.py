@@ -4,6 +4,7 @@ from os.path import abspath
 from build.project import Project
 from build.zlib import ZlibProject
 from build.meson import MesonProject
+from build.cmake import CmakeProject
 from build.autotools import AutotoolsProject
 from build.ffmpeg import FfmpegProject
 from build.boost import BoostProject
@@ -111,9 +112,32 @@ liblame = AutotoolsProject(
     ],
 )
 
+libmodplug = AutotoolsProject(
+    'https://downloads.sourceforge.net/modplug-xmms/libmodplug/0.8.9.0/libmodplug-0.8.9.0.tar.gz',
+    '457ca5a6c179656d66c01505c0d95fafaead4329b9dbaa0f997d00a3508ad9de',
+    'lib/libmodplug.a',
+    [
+        '--disable-shared', '--enable-static',
+    ],
+)
+
+wildmidi = CmakeProject(
+    'https://codeload.github.com/Mindwerks/wildmidi/tar.gz/wildmidi-0.4.3',
+    '498e5a96455bb4b91b37188ad6dcb070824e92c44f5ed452b90adbaec8eef3c5',
+    'lib/libWildMidi.a',
+    [
+        '-DBUILD_SHARED_LIBS=OFF',
+        '-DWANT_PLAYER=OFF',
+        '-DWANT_STATIC=ON',
+    ],
+    base='wildmidi-wildmidi-0.4.3',
+    name='wildmidi',
+    version='0.4.3',
+)
+
 ffmpeg = FfmpegProject(
-    'http://ffmpeg.org/releases/ffmpeg-4.2.2.tar.xz',
-    'cb754255ab0ee2ea5f66f8850e1bd6ad5cac1cd855d0a2f4990fb8c668b0d29c',
+    'http://ffmpeg.org/releases/ffmpeg-4.2.3.tar.xz',
+    '9df6c90aed1337634c1fb026fb01c154c29c82a64ea71291ff2da9aacb9aad31',
     'lib/libavcodec.a',
     [
         '--disable-shared', '--enable-static',
