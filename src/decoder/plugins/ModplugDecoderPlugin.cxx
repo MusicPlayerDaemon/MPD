@@ -26,8 +26,13 @@
 #include "util/RuntimeError.hxx"
 #include "Log.hxx"
 
-#include <libmodplug/modplug.h>
+#ifdef _WIN32
+/* assume ModPlug is built as static library on Windows; without
+   this, linking to the static library would fail */
+#define MODPLUG_STATIC
+#endif
 
+#include <libmodplug/modplug.h>
 
 #include <assert.h>
 

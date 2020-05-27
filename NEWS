@@ -4,6 +4,7 @@ ver 0.21.24 (not yet released)
 * database
   - simple: fix crash when mounting twice
 * decoder
+  - modplug: fix Windows build failure
   - wildmidi: attempt to detect WildMidi using pkg-config
   - wildmidi: fix Windows build failure
 * Android
