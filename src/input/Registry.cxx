@@ -52,6 +52,10 @@
 #include "plugins/CdioParanoiaInputPlugin.hxx"
 #endif
 
+#ifdef ENABLE_YOUTUBE
+#include "plugins/YoutubeInputPlugin.hxx"
+#endif
+
 const InputPlugin *const input_plugins[] = {
 #ifdef ENABLE_ALSA
 	&input_plugin_alsa,
@@ -79,6 +83,9 @@ const InputPlugin *const input_plugins[] = {
 #endif
 #ifdef ENABLE_CDIO_PARANOIA
 	&input_plugin_cdio_paranoia,
+#endif
+#ifdef ENABLE_YOUTUBE
+    &input_plugin_youtube,
 #endif
 	nullptr
 };

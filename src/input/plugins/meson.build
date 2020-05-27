@@ -84,6 +84,14 @@ if enable_tidal
   ]
 endif
 
+enable_youtube = get_option('youtube').enabled() and ffmpeg_dep.found()
+input_features.set('ENABLE_YOUTUBE', enable_youtube)
+if enable_youtube
+  input_plugins_sources += [
+    'YoutubeInputPlugin.cxx',
+  ]
+endif
+
 input_plugins = static_library(
   'input_plugins',
   input_plugins_sources,

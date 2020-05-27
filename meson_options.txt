@@ -88,6 +88,7 @@ option('curl', type: 'feature', description: 'HTTP client using CURL')
 option('mms', type: 'feature', description: 'MMS protocol support using libmms')
 option('nfs', type: 'feature', description: 'NFS protocol support using libnfs')
 option('smbclient', type: 'feature', description: 'SMB support using libsmbclient')
+option('youtube', type: 'feature', description: 'Youtube support')
 
 #
 # Commercial services
