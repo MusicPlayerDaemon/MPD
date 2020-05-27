@@ -6,7 +6,7 @@ project(
   default_options: [
     'c_std=c99',
     'cpp_std=c++17',
-    'warning_level=2',
+    'warning_level=3',
   ],
   license: 'GPLv2+',
 )
