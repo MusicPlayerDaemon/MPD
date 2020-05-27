@@ -37,21 +37,11 @@ static const char *input_youtube_prefixes[] = {
 	nullptr
 };
 
-static char *video_url = nullptr;
-static size_t url_length = 0;
-
 static void
 input_youtube_init(EventLoop &, const ConfigBlock &)
 {
 	if(WEXITSTATUS(system("youtube-dl --version > /dev/null")) != 0)
 		throw PluginUnavailable("youtube-dl not found");
-}
-
-static void
-input_youtube_finish()
-{
-	free(video_url);
-	video_url = nullptr;
 }
 
 static InputStreamPtr
@@ -65,6 +55,10 @@ input_youtube_open(const char *uri, Mutex &mutex)
 	free(cmd);
 
 	if(!stream) return nullptr;
+
+	char *video_url = nullptr;
+	size_t url_length = 0;
+	AtScopeExit(video_url) { free(video_url); };
 
 	ssize_t read = getline(&video_url, &url_length, stream);
 	int   status = WEXITSTATUS(pclose(stream));
@@ -82,7 +76,7 @@ const InputPlugin input_plugin_youtube = {
 	"youtube",
 	input_youtube_prefixes,
 	input_youtube_init,
-	input_youtube_finish,
+	nullptr,
 	input_youtube_open,
 	nullptr
 };
