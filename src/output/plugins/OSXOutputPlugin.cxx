@@ -197,7 +197,7 @@ int
 OSXOutput::GetVolume()
 {
 	Float32 vol;
-	AudioObjectPropertyAddress aopa = {
+	static constexpr AudioObjectPropertyAddress aopa = {
 		kAudioHardwareServiceDeviceProperty_VirtualMasterVolume,
 		kAudioObjectPropertyScopeOutput,
 		kAudioObjectPropertyElementMaster,
@@ -223,7 +223,7 @@ void
 OSXOutput::SetVolume(unsigned new_volume)
 {
 	Float32 vol = new_volume / 100.0;
-	AudioObjectPropertyAddress aopa = {
+	static constexpr AudioObjectPropertyAddress aopa = {
 		kAudioHardwareServiceDeviceProperty_VirtualMasterVolume,
 		kAudioObjectPropertyScopeOutput,
 		kAudioObjectPropertyElementMaster
@@ -549,7 +549,7 @@ static void
 osx_output_hog_device(AudioDeviceID dev_id, bool hog)
 {
 	pid_t hog_pid;
-	AudioObjectPropertyAddress aopa = {
+	static constexpr AudioObjectPropertyAddress aopa = {
 		kAudioDevicePropertyHogMode,
 		kAudioObjectPropertyScopeOutput,
 		kAudioObjectPropertyElementMaster
