@@ -135,7 +135,8 @@ jobs:
             - chromaprint
             - libsamplerate
             - libsoxr
-            - libzzip
+            # libzzip appears to be broken on Homebrew: "ld: library not found for -lzzip"
+            #- libzzip
             - flac
             - opus
             - libvorbis
