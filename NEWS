@@ -14,6 +14,8 @@ ver 0.22 (not yet released)
   - io_uring: new plugin for local files on Linux (using liburing)
 * archive
   - iso9660: support seeking
+* database
+  - upnp: drop support for libupnp versions older than 1.8
 * playlist
   - cue: integrate contents in database
 * decoder

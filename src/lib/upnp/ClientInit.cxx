@@ -33,10 +33,7 @@ static UpnpClient_Handle upnp_client_handle;
 
 static int
 UpnpClientCallback(Upnp_EventType et,
-#if UPNP_VERSION >= 10800
-		   const
-#endif
-		   void *evp,
+		   const void *evp,
 		   void *cookie) noexcept
 {
 	if (cookie == nullptr)

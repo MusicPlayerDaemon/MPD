@@ -38,10 +38,6 @@
 #include <string>
 #include <chrono>
 
-#if UPNP_VERSION < 10800
-#define UpnpDiscovery Upnp_Discovery
-#endif
-
 class ContentDirectoryService;
 
 class UPnPDiscoveryListener {

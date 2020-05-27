@@ -1,4 +1,4 @@
-upnp_dep = dependency('libupnp', required: get_option('upnp'))
+upnp_dep = dependency('libupnp', version: '>= 1.8', required: get_option('upnp'))
 conf.set('ENABLE_UPNP', upnp_dep.found())
 if not upnp_dep.found()
   subdir_done()
