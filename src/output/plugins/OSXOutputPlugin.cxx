@@ -197,9 +197,9 @@ OSXOutput::GetVolume()
 {
 	Float32 vol;
 	AudioObjectPropertyAddress aopa = {
-		.mSelector	= kAudioHardwareServiceDeviceProperty_VirtualMasterVolume,
-		.mScope		= kAudioObjectPropertyScopeOutput,
-		.mElement	= kAudioObjectPropertyElementMaster,
+		kAudioHardwareServiceDeviceProperty_VirtualMasterVolume,
+		kAudioObjectPropertyScopeOutput,
+		kAudioObjectPropertyElementMaster,
 	};
 	UInt32 size = sizeof(vol);
 	OSStatus status = AudioObjectGetPropertyData(dev_id,
@@ -223,9 +223,9 @@ OSXOutput::SetVolume(unsigned new_volume)
 {
 	Float32 vol = new_volume / 100.0;
 	AudioObjectPropertyAddress aopa = {
-		.mSelector	= kAudioHardwareServiceDeviceProperty_VirtualMasterVolume,
-		.mScope		= kAudioObjectPropertyScopeOutput,
-		.mElement	= kAudioObjectPropertyElementMaster
+		kAudioHardwareServiceDeviceProperty_VirtualMasterVolume,
+		kAudioObjectPropertyScopeOutput,
+		kAudioObjectPropertyElementMaster
 	};
 	UInt32 size = sizeof(vol);
 	OSStatus status = AudioObjectSetPropertyData(dev_id,
