@@ -673,20 +673,14 @@ osx_output_set_device(OSXOutput *oo)
 		status = AudioObjectGetPropertyData(deviceids[i], &aopa_name,
 						    0, nullptr,
 						    &size, &cfname);
-		if (status != noErr) {
-			char errormsg[1024];
-			osx_os_status_to_cstring(status, errormsg, sizeof(errormsg));
-			throw FormatRuntimeError("Unable to determine OS X device name "
-						 "(device %u): %s",
-						 (unsigned int) deviceids[i],
-						 errormsg);
-		}
+		if (status != noErr)
+			continue;
 
 		const Apple::StringRef cfname_(cfname);
 
 		char name[256];
 		if (!cfname_.GetCString(name, sizeof(name)))
-			throw std::runtime_error("Unable to convert device name from CFStringRef to char*");
+			continue;
 
 		if (StringIsEqual(oo->device_name, name)) {
 			FormatDebug(osx_output_domain,
