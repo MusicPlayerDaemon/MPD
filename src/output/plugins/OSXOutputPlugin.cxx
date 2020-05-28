@@ -17,9 +17,10 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "apple/StringRef.hxx"
 #include "config.h"
 #include "OSXOutputPlugin.hxx"
+#include "apple/ErrorRef.hxx"
+#include "apple/StringRef.hxx"
 #include "../OutputAPI.hxx"
 #include "mixer/MixerList.hxx"
 #include "util/RuntimeError.hxx"
@@ -111,14 +112,12 @@ static constexpr Domain osx_output_domain("osx_output");
 static void
 osx_os_status_to_cstring(OSStatus status, char *str, size_t size)
 {
-	CFErrorRef cferr = CFErrorCreate(nullptr, kCFErrorDomainOSStatus, status, nullptr);
-	const Apple::StringRef cfstr(CFErrorCopyDescription(cferr));
+	Apple::ErrorRef cferr(nullptr, kCFErrorDomainOSStatus, status, nullptr);
+	const Apple::StringRef cfstr(cferr.CopyDescription());
 	if (!cfstr.GetCString(str, size)) {
 		/* conversion failed, return empty string */
 		*str = '\0';
 	}
-	if (cferr)
-		CFRelease(cferr);
 }
 
 static bool
