@@ -29,6 +29,9 @@
 #else
 #include <OpenAL/al.h>
 #include <OpenAL/alc.h>
+/* on macOS, OpenAL is deprecated, but since the user asked to enable
+   this plugin, let's ignore the compiler warnings */
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #endif
 
 class OpenALOutput final : AudioOutput {
