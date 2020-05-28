@@ -19,8 +19,8 @@
 
 #include "config.h"
 #include "OSXOutputPlugin.hxx"
-#include "apple/ErrorRef.hxx"
 #include "apple/StringRef.hxx"
+#include "apple/Throw.hxx"
 #include "../OutputAPI.hxx"
 #include "mixer/MixerList.hxx"
 #include "util/RuntimeError.hxx"
@@ -108,17 +108,6 @@ private:
 };
 
 static constexpr Domain osx_output_domain("osx_output");
-
-static void
-osx_os_status_to_cstring(OSStatus status, char *str, size_t size)
-{
-	Apple::ErrorRef cferr(nullptr, kCFErrorDomainOSStatus, status, nullptr);
-	const Apple::StringRef cfstr(cferr.CopyDescription());
-	if (!cfstr.GetCString(str, size)) {
-		/* conversion failed, return empty string */
-		*str = '\0';
-	}
-}
 
 static bool
 osx_output_test_default_device()
@@ -209,11 +198,8 @@ OSXOutput::GetVolume()
 						     &size,
 						     &vol);
 
-	if (status != noErr) {
-		char errormsg[1024];
-		osx_os_status_to_cstring(status, errormsg, sizeof(errormsg));
-		throw FormatRuntimeError("unable to get volume: %s", errormsg);
-	}
+	if (status != noErr)
+		Apple::ThrowOSStatus(status);
 
 	return static_cast<int>(vol * 100.0);
 }
@@ -235,12 +221,8 @@ OSXOutput::SetVolume(unsigned new_volume)
 						     size,
 						     &vol);
 
-	if (status != noErr) {
-		char errormsg[1024];
-		osx_os_status_to_cstring(status, errormsg, sizeof(errormsg));
-		throw FormatRuntimeError( "unable to set new volume %u: %s",
-				new_volume, errormsg);
-	}
+	if (status != noErr)
+		Apple::ThrowOSStatus(status);
 }
 
 static void
@@ -304,12 +286,9 @@ osx_output_set_channel_map(OSXOutput *oo)
 		0,
 		&desc,
 		&size);
-	if (status != noErr) {
-		char errormsg[1024];
-		osx_os_status_to_cstring(status, errormsg, sizeof(errormsg));
-		throw FormatRuntimeError("%s: unable to get number of output device channels: %s",
-					 oo->device_name, errormsg);
-	}
+	if (status != noErr)
+		Apple::ThrowOSStatus(status,
+				     "unable to get number of output device channels");
 
 	UInt32 num_channels = desc.mChannelsPerFrame;
 	std::unique_ptr<SInt32[]> channel_map(new SInt32[num_channels]);
@@ -325,11 +304,8 @@ osx_output_set_channel_map(OSXOutput *oo)
 		0,
 		channel_map.get(),
 		size);
-	if (status != noErr) {
-		char errormsg[1024];
-		osx_os_status_to_cstring(status, errormsg, sizeof(errormsg));
-		throw FormatRuntimeError("%s: unable to set channel map: %s", oo->device_name, errormsg);
-	}
+	if (status != noErr)
+		Apple::ThrowOSStatus(status, "unable to set channel map");
 }
 
 
@@ -639,12 +615,8 @@ osx_output_set_device(OSXOutput *oo)
 
 	status = AudioObjectGetPropertyDataSize(kAudioObjectSystemObject,
 						&aopa_hw_devices, 0, nullptr, &size);
-	if (status != noErr) {
-		char errormsg[1024];
-		osx_os_status_to_cstring(status, errormsg, sizeof(errormsg));
-		throw FormatRuntimeError("Unable to determine number of OS X audio devices: %s",
-					 errormsg);
-	}
+	if (status != noErr)
+		Apple::ThrowOSStatus(status);
 
 	/* what are the available audio device IDs? */
 	numdevices = size / sizeof(AudioDeviceID);
@@ -652,12 +624,8 @@ osx_output_set_device(OSXOutput *oo)
 	status = AudioObjectGetPropertyData(kAudioObjectSystemObject,
 					    &aopa_hw_devices, 0, nullptr,
 					    &size, deviceids.get());
-	if (status != noErr) {
-		char errormsg[1024];
-		osx_os_status_to_cstring(status, errormsg, sizeof(errormsg));
-		throw FormatRuntimeError("Unable to determine OS X audio device IDs: %s",
-					 errormsg);
-	}
+	if (status != noErr)
+		Apple::ThrowOSStatus(status);
 
 	/* which audio device matches oo->device_name? */
 	static constexpr AudioObjectPropertyAddress aopa_name{
@@ -700,12 +668,9 @@ osx_output_set_device(OSXOutput *oo)
 				      0,
 				      &(deviceids[i]),
 				      sizeof(AudioDeviceID));
-	if (status != noErr) {
-		char errormsg[1024];
-		osx_os_status_to_cstring(status, errormsg, sizeof(errormsg));
-		throw FormatRuntimeError("Unable to set OS X audio output device: %s",
-					 errormsg);
-	}
+	if (status != noErr)
+		Apple::ThrowOSStatus(status,
+				     "Unable to set OS X audio output device");
 
 	oo->dev_id = deviceids[i];
 	FormatDebug(osx_output_domain,
@@ -756,12 +721,9 @@ OSXOutput::Enable()
 		throw std::runtime_error("Error finding OS X component");
 
 	OSStatus status = AudioComponentInstanceNew(comp, &au);
-	if (status != noErr) {
-		char errormsg[1024];
-		osx_os_status_to_cstring(status, errormsg, sizeof(errormsg));
-		throw FormatRuntimeError("Unable to open OS X component: %s",
-					 errormsg);
-	}
+	if (status != noErr)
+		Apple::ThrowOSStatus(status, "Unable to open OS X component");
+
 #ifdef ENABLE_DSD
 	pcm_export.Construct();
 #endif
@@ -881,21 +843,13 @@ OSXOutput::Open(AudioFormat &audio_format)
 	}
 
 	status = AudioUnitInitialize(au);
-	if (status != noErr) {
-		char errormsg[1024];
-		osx_os_status_to_cstring(status, errormsg, sizeof(errormsg));
-		throw FormatRuntimeError("Unable to initialize OS X audio unit: %s",
-					 errormsg);
-	}
+	if (status != noErr)
+		Apple::ThrowOSStatus(status, "Unable to initialize OS X audio unit");
 
 	UInt32 buffer_frame_size = 1;
 	status = osx_output_set_buffer_size(au, asbd, &buffer_frame_size);
-	if (status != noErr) {
-		char errormsg[1024];
-		osx_os_status_to_cstring(status, errormsg, sizeof(errormsg));
-		throw FormatRuntimeError("Unable to set frame size: %s",
-					 errormsg);
-	}
+	if (status != noErr)
+		Apple::ThrowOSStatus(status, "Unable to set frame size");
 
 	size_t ring_buffer_size = std::max<size_t>(buffer_frame_size,
 						   MPD_OSX_BUFFER_TIME_MS * audio_format.GetFrameSize() * audio_format.sample_rate / 1000);
@@ -910,13 +864,9 @@ OSXOutput::Open(AudioFormat &audio_format)
 	ring_buffer = new boost::lockfree::spsc_queue<uint8_t>(ring_buffer_size);
 
 	status = AudioOutputUnitStart(au);
-	if (status != 0) {
-		AudioUnitUninitialize(au);
-		char errormsg[1024];
-		osx_os_status_to_cstring(status, errormsg, sizeof(errormsg));
-		throw FormatRuntimeError("Unable to start audio output: %s",
-					 errormsg);
-	}
+	if (status != 0)
+		Apple::ThrowOSStatus(status, "Unable to start audio output");
+
 	pause = false;
 }
 

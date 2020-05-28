@@ -73,7 +73,10 @@ if enable_oss
 endif
 
 if is_darwin
-  output_plugins_sources += 'OSXOutputPlugin.cxx'
+  output_plugins_sources += [
+    'OSXOutputPlugin.cxx',
+    '../../apple/Throw.cxx',
+  ]
   audiounit_dep = declare_dependency(
     link_args: [
       '-framework', 'AudioUnit', '-framework', 'CoreAudio', '-framework', 'CoreServices',
