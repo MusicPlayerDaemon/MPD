@@ -41,9 +41,6 @@ common_cxxflags = [
 ]
 
 test_common_flags = [
-  '-Wall',
-  '-Wextra',
-
   '-fvisibility=hidden',
 
   '-ffast-math',
