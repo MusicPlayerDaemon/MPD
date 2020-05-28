@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "OSXOutputPlugin.hxx"
+#include "apple/AudioUnit.hxx"
 #include "apple/StringRef.hxx"
 #include "apple/Throw.hxx"
 #include "../OutputAPI.hxx"
@@ -184,22 +185,14 @@ OSXOutput::Create(EventLoop &, const ConfigBlock &block)
 int
 OSXOutput::GetVolume()
 {
-	Float32 vol;
 	static constexpr AudioObjectPropertyAddress aopa = {
 		kAudioHardwareServiceDeviceProperty_VirtualMasterVolume,
 		kAudioObjectPropertyScopeOutput,
 		kAudioObjectPropertyElementMaster,
 	};
-	UInt32 size = sizeof(vol);
-	OSStatus status = AudioObjectGetPropertyData(dev_id,
-						     &aopa,
-						     0,
-						     NULL,
-						     &size,
-						     &vol);
 
-	if (status != noErr)
-		Apple::ThrowOSStatus(status);
+	const auto vol = AudioObjectGetPropertyDataT<Float32>(dev_id,
+							      aopa);
 
 	return static_cast<int>(vol * 100.0);
 }
@@ -386,65 +379,27 @@ osx_output_set_device_format(AudioDeviceID dev_id,
 		kAudioObjectPropertyElementMaster
 	};
 
-	UInt32 property_size;
-	OSStatus err = AudioObjectGetPropertyDataSize(dev_id,
-						      &aopa_device_streams,
-						      0, NULL, &property_size);
-	if (err != noErr)
-		throw FormatRuntimeError("Cannot get number of streams: %d", err);
+	OSStatus err;
 
-	const size_t n_streams = property_size / sizeof(AudioStreamID);
-	static constexpr size_t MAX_STREAMS = 64;
-	if (n_streams > MAX_STREAMS)
-		throw std::runtime_error("Too many streams");
-
-	AudioStreamID streams[MAX_STREAMS];
-	err = AudioObjectGetPropertyData(dev_id, &aopa_device_streams, 0, NULL,
-					 &property_size, streams);
-	if (err != noErr)
-		throw FormatRuntimeError("Cannot get streams: %d", err);
+	const auto streams =
+		AudioObjectGetPropertyDataArray<AudioStreamID>(dev_id,
+							       aopa_device_streams);
 
 	bool format_found = false;
 	int output_stream;
 	AudioStreamBasicDescription output_format;
 
-	for (size_t i = 0; i < n_streams; i++) {
-		UInt32 direction;
-		AudioStreamID stream = streams[i];
-		property_size = sizeof(direction);
-		err = AudioObjectGetPropertyData(stream,
-						 &aopa_stream_direction,
-						 0,
-						 NULL,
-						 &property_size,
-						 &direction);
-		if (err != noErr)
-			throw FormatRuntimeError("Cannot get streams direction: %d",
-						 err);
-
+	for (const auto stream : streams) {
+		const auto direction =
+			AudioObjectGetPropertyDataT<UInt32>(stream,
+							    aopa_stream_direction);
 		if (direction != 0)
 			continue;
 
-		err = AudioObjectGetPropertyDataSize(stream,
-						     &aopa_stream_phys_formats,
-						     0, NULL, &property_size);
-		if (err != noErr)
-			throw FormatRuntimeError("Unable to get format size s for stream %d. Error = %s",
-						 streams[i], err);
-
-		const size_t format_count = property_size / sizeof(AudioStreamRangedDescription);
-		static constexpr size_t MAX_FORMATS = 256;
-		if (format_count > MAX_FORMATS)
-			throw std::runtime_error("Too many formats");
-
-		AudioStreamRangedDescription format_list[MAX_FORMATS];
-		err = AudioObjectGetPropertyData(stream,
-						 &aopa_stream_phys_formats,
-						 0, NULL,
-						 &property_size, format_list);
-		if (err != noErr)
-			throw FormatRuntimeError("Unable to get available formats for stream %d. Error = %s",
-						 streams[i], err);
+		const auto format_list =
+			AudioObjectGetPropertyDataArray<AudioStreamRangedDescription>(stream,
+										      aopa_stream_phys_formats);
+		const size_t format_count = format_list.size();
 
 		float output_score = 0;
 		for (size_t j = 0; j < format_count; j++) {
@@ -542,26 +497,14 @@ osx_output_set_buffer_size(AudioUnit au, AudioStreamBasicDescription desc,
 static void
 osx_output_hog_device(AudioDeviceID dev_id, bool hog)
 {
-	pid_t hog_pid;
 	static constexpr AudioObjectPropertyAddress aopa = {
 		kAudioDevicePropertyHogMode,
 		kAudioObjectPropertyScopeOutput,
 		kAudioObjectPropertyElementMaster
 	};
-	UInt32 size = sizeof(hog_pid);
-	OSStatus err = AudioObjectGetPropertyData(dev_id,
-						  &aopa,
-						  0,
-						  NULL,
-						  &size,
-						  &hog_pid);
-	if (err != noErr) {
-		FormatDebug(osx_output_domain,
-			    "Cannot get hog information: %d",
-			    err);
-		return;
-	}
 
+	pid_t hog_pid = AudioObjectGetPropertyDataT<pid_t>(dev_id,
+							   aopa);
 	if (hog) {
 		if (hog_pid != -1) {
 			FormatDebug(osx_output_domain,
@@ -577,7 +520,8 @@ osx_output_hog_device(AudioDeviceID dev_id, bool hog)
 	}
 
 	hog_pid = hog ? getpid() : -1;
-	size = sizeof(hog_pid);
+	UInt32 size = sizeof(hog_pid);
+	OSStatus err;
 	err = AudioObjectSetPropertyData(dev_id,
 					 &aopa,
 					 0,
@@ -601,31 +545,21 @@ static void
 osx_output_set_device(OSXOutput *oo)
 {
 	OSStatus status;
-	UInt32 size, numdevices;
+	UInt32 size;
 
 	if (oo->component_subtype != kAudioUnitSubType_HALOutput)
 		return;
 
-	/* how many audio devices are there? */
+	/* what are the available audio device IDs? */
 	static constexpr AudioObjectPropertyAddress aopa_hw_devices{
 		kAudioHardwarePropertyDevices,
 		kAudioObjectPropertyScopeGlobal,
 		kAudioObjectPropertyElementMaster,
 	};
 
-	status = AudioObjectGetPropertyDataSize(kAudioObjectSystemObject,
-						&aopa_hw_devices, 0, nullptr, &size);
-	if (status != noErr)
-		Apple::ThrowOSStatus(status);
-
-	/* what are the available audio device IDs? */
-	numdevices = size / sizeof(AudioDeviceID);
-	std::unique_ptr<AudioDeviceID[]> deviceids(new AudioDeviceID[numdevices]);
-	status = AudioObjectGetPropertyData(kAudioObjectSystemObject,
-					    &aopa_hw_devices, 0, nullptr,
-					    &size, deviceids.get());
-	if (status != noErr)
-		Apple::ThrowOSStatus(status);
+	const auto deviceids =
+		AudioObjectGetPropertyDataArray<AudioDeviceID>(kAudioObjectSystemObject,
+							       aopa_hw_devices);
 
 	/* which audio device matches oo->device_name? */
 	static constexpr AudioObjectPropertyAddress aopa_name{
@@ -634,6 +568,7 @@ osx_output_set_device(OSXOutput *oo)
 		kAudioObjectPropertyElementMaster,
 	};
 
+	const unsigned numdevices = deviceids.size();
 	unsigned i;
 	size = sizeof(CFStringRef);
 	for (i = 0; i < numdevices; i++) {
