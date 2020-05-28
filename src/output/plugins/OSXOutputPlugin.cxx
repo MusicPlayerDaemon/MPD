@@ -67,8 +67,8 @@ struct OSXOutput final : AudioOutput {
 	OSType component_subtype;
 	/* only applicable with kAudioUnitSubType_HALOutput */
 	const char *device_name;
-	const char *channel_map;
-	bool hog_device;
+	const char *const channel_map;
+	const bool hog_device;
 	bool pause;
 #ifdef ENABLE_DSD
 	/**
@@ -76,7 +76,7 @@ struct OSXOutput final : AudioOutput {
 	 *
 	 * @see http://dsd-guide.com/dop-open-standard
 	 */
-	bool dop_setting;
+	const bool dop_setting;
 	bool dop_enabled;
 	Manual<PcmExport> pcm_export;
 #endif
@@ -132,7 +132,12 @@ osx_output_test_default_device()
 }
 
 OSXOutput::OSXOutput(const ConfigBlock &block)
-	:AudioOutput(FLAG_ENABLE_DISABLE|FLAG_PAUSE)
+	:AudioOutput(FLAG_ENABLE_DISABLE|FLAG_PAUSE),
+	 channel_map(block.GetBlockValue("channel_map")),
+	 hog_device(block.GetBlockValue("hog_device", false))
+#ifdef ENABLE_DSD
+	, dop_setting(block.GetBlockValue("dop", false))
+#endif
 {
 	const char *device = block.GetBlockValue("device");
 
@@ -149,12 +154,6 @@ OSXOutput::OSXOutput(const ConfigBlock &block)
 		/* XXX am I supposed to strdup() this? */
 		device_name = device;
 	}
-
-	channel_map = block.GetBlockValue("channel_map");
-	hog_device = block.GetBlockValue("hog_device", false);
-#ifdef ENABLE_DSD
-	dop_setting = block.GetBlockValue("dop", false);
-#endif
 }
 
 AudioOutput *
