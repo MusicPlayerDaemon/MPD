@@ -400,11 +400,11 @@ osx_output_set_device_format(AudioDeviceID dev_id,
 		const auto format_list =
 			AudioObjectGetPropertyDataArray<AudioStreamRangedDescription>(stream,
 										      aopa_stream_phys_formats);
-		const size_t format_count = format_list.size();
 
 		float output_score = 0;
-		for (size_t j = 0; j < format_count; j++) {
-			AudioStreamBasicDescription format_desc = format_list[j].mFormat;
+
+		for (const auto &format : format_list) {
+			AudioStreamBasicDescription format_desc = format.mFormat;
 			std::string format_string;
 
 			// for devices with kAudioStreamAnyRate
