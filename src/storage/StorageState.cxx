@@ -33,8 +33,15 @@
 #include "Instance.hxx"
 #include "Log.hxx"
 
-#include <set>
+#ifdef __clang__
+/* ignore -Wcomma due to strange code in boost/array.hpp (in Boost
+   1.72) */
+#pragma GCC diagnostic ignored "-Wcomma"
+#endif
+
 #include <boost/crc.hpp>
+
+#include <set>
 
 #define MOUNT_STATE_BEGIN        "mount_begin"
 #define MOUNT_STATE_END          "mount_end"
