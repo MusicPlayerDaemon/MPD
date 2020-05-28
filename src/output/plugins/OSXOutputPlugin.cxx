@@ -17,11 +17,11 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include "apple/StringRef.hxx"
 #include "config.h"
 #include "OSXOutputPlugin.hxx"
 #include "../OutputAPI.hxx"
 #include "mixer/MixerList.hxx"
-#include "util/ScopeExit.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/Domain.hxx"
 #include "util/Manual.hxx"
@@ -112,15 +112,13 @@ static void
 osx_os_status_to_cstring(OSStatus status, char *str, size_t size)
 {
 	CFErrorRef cferr = CFErrorCreate(nullptr, kCFErrorDomainOSStatus, status, nullptr);
-	CFStringRef cfstr = CFErrorCopyDescription(cferr);
-	if (!CFStringGetCString(cfstr, str, size, kCFStringEncodingUTF8)) {
+	const Apple::StringRef cfstr(CFErrorCopyDescription(cferr));
+	if (!cfstr.GetCString(str, size)) {
 		/* conversion failed, return empty string */
 		*str = '\0';
 	}
 	if (cferr)
 		CFRelease(cferr);
-	if (cfstr)
-		CFRelease(cfstr);
 }
 
 static bool
@@ -629,12 +627,6 @@ osx_output_set_device(OSXOutput *oo)
 {
 	OSStatus status;
 	UInt32 size, numdevices;
-	CFStringRef cfname = nullptr;
-
-	AtScopeExit(&cfname) {
-		if (cfname)
-			CFRelease(cfname);
-	};
 
 	if (oo->component_subtype != kAudioUnitSubType_HALOutput)
 		return;
@@ -678,6 +670,7 @@ osx_output_set_device(OSXOutput *oo)
 	unsigned i;
 	size = sizeof(CFStringRef);
 	for (i = 0; i < numdevices; i++) {
+		CFStringRef cfname = nullptr;
 		status = AudioObjectGetPropertyData(deviceids[i], &aopa_name,
 						    0, nullptr,
 						    &size, &cfname);
@@ -690,9 +683,10 @@ osx_output_set_device(OSXOutput *oo)
 						 errormsg);
 		}
 
+		const Apple::StringRef cfname_(cfname);
+
 		char name[256];
-		if (!CFStringGetCString(cfname, name, sizeof(name),
-					kCFStringEncodingUTF8))
+		if (!cfname_.GetCString(name, sizeof(name)))
 			throw std::runtime_error("Unable to convert device name from CFStringRef to char*");
 
 		if (StringIsEqual(oo->device_name, name)) {
