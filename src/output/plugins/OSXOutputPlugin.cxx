@@ -44,6 +44,7 @@
 #include <boost/lockfree/spsc_queue.hpp>
 
 #include <memory>
+#include <optional>
 
 static constexpr unsigned MPD_OSX_BUFFER_TIME_MS = 100;
 
@@ -540,16 +541,36 @@ osx_output_hog_device(AudioDeviceID dev_id, bool hog)
 	}
 }
 
-
-static void
-osx_output_set_device(OSXOutput *oo)
+gcc_pure
+static bool
+IsAudioDeviceName(AudioDeviceID id, const char *expected_name) noexcept
 {
-	OSStatus status;
-	UInt32 size;
+	static constexpr AudioObjectPropertyAddress aopa_name{
+		kAudioObjectPropertyName,
+		kAudioObjectPropertyScopeGlobal,
+		kAudioObjectPropertyElementMaster,
+	};
 
-	if (oo->component_subtype != kAudioUnitSubType_HALOutput)
-		return;
+	CFStringRef cfname;
+	UInt32 size = sizeof(cfname);
 
+	if (AudioObjectGetPropertyData(id, &aopa_name,
+				       0, nullptr,
+				       &size, &cfname) != noErr)
+		return false;
+
+	const Apple::StringRef cfname_(cfname);
+
+	char actual_name[256];
+	if (!cfname_.GetCString(actual_name, sizeof(actual_name)))
+		return false;
+
+	return StringIsEqual(actual_name, expected_name);
+}
+
+static std::optional<AudioDeviceID>
+FindAudioDeviceByName(const char *name)
+{
 	/* what are the available audio device IDs? */
 	static constexpr AudioObjectPropertyAddress aopa_hw_devices{
 		kAudioHardwarePropertyDevices,
@@ -557,60 +578,48 @@ osx_output_set_device(OSXOutput *oo)
 		kAudioObjectPropertyElementMaster,
 	};
 
-	const auto deviceids =
+	const auto ids =
 		AudioObjectGetPropertyDataArray<AudioDeviceID>(kAudioObjectSystemObject,
 							       aopa_hw_devices);
 
-	/* which audio device matches oo->device_name? */
-	static constexpr AudioObjectPropertyAddress aopa_name{
-		kAudioObjectPropertyName,
-		kAudioObjectPropertyScopeGlobal,
-		kAudioObjectPropertyElementMaster,
-	};
-
-	const unsigned numdevices = deviceids.size();
-	unsigned i;
-	size = sizeof(CFStringRef);
-	for (i = 0; i < numdevices; i++) {
-		CFStringRef cfname = nullptr;
-		status = AudioObjectGetPropertyData(deviceids[i], &aopa_name,
-						    0, nullptr,
-						    &size, &cfname);
-		if (status != noErr)
-			continue;
-
-		const Apple::StringRef cfname_(cfname);
-
-		char name[256];
-		if (!cfname_.GetCString(name, sizeof(name)))
-			continue;
-
-		if (StringIsEqual(oo->device_name, name)) {
-			FormatDebug(osx_output_domain,
-				    "found matching device: ID=%u, name=%s",
-				    (unsigned)deviceids[i], name);
-			break;
-		}
+	for (const auto id : ids) {
+		if (IsAudioDeviceName(id, name))
+			return id;
 	}
 
-	if (i == numdevices)
-		throw FormatRuntimeError("Found no audio device with name '%s' ",
-			      oo->device_name);
+	return {};
+}
 
+static void
+osx_output_set_device(OSXOutput *oo)
+{
+	if (oo->component_subtype != kAudioUnitSubType_HALOutput)
+		return;
+
+	const auto id = FindAudioDeviceByName(oo->device_name);
+	if (!id.has_value())
+		throw FormatRuntimeError("Found no audio device with name '%s' ",
+					 oo->device_name);
+
+	FormatDebug(osx_output_domain,
+		    "found matching device: ID=%u, name=%s",
+		    (unsigned)id.value(), oo->device_name);
+
+	OSStatus status;
 	status = AudioUnitSetProperty(oo->au,
 				      kAudioOutputUnitProperty_CurrentDevice,
 				      kAudioUnitScope_Global,
 				      0,
-				      &(deviceids[i]),
-				      sizeof(AudioDeviceID));
+				      &id.value(),
+				      sizeof(id.value()));
 	if (status != noErr)
 		Apple::ThrowOSStatus(status,
 				     "Unable to set OS X audio output device");
 
-	oo->dev_id = deviceids[i];
+	oo->dev_id = id.value();
 	FormatDebug(osx_output_domain,
 		    "set OS X audio output device ID=%u, name=%s",
-		    (unsigned)deviceids[i], oo->device_name);
+		    (unsigned)id.value(), oo->device_name);
 
 	if (oo->channel_map)
 		osx_output_set_channel_map(oo);
