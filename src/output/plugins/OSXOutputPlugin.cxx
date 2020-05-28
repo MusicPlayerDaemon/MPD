@@ -160,25 +160,28 @@ AudioOutput *
 OSXOutput::Create(EventLoop &, const ConfigBlock &block)
 {
 	OSXOutput *oo = new OSXOutput(block);
-	AudioObjectPropertyAddress aopa;
 	AudioDeviceID dev_id = kAudioDeviceUnknown;
 	UInt32 dev_id_size = sizeof(dev_id);
 
-	if (oo->component_subtype == kAudioUnitSubType_SystemOutput)
+	static constexpr AudioObjectPropertyAddress default_system_output_device{
+		kAudioHardwarePropertyDefaultSystemOutputDevice,
+		kAudioObjectPropertyScopeOutput,
+		kAudioObjectPropertyElementMaster,
+	};
+
+	static constexpr AudioObjectPropertyAddress default_output_device{
+		kAudioHardwarePropertyDefaultOutputDevice,
+		kAudioObjectPropertyScopeOutput,
+		kAudioObjectPropertyElementMaster
+	};
+
+	const auto &aopa =
+		oo->component_subtype == kAudioUnitSubType_SystemOutput
 		// get system output dev_id if configured
-		aopa = {
-			kAudioHardwarePropertyDefaultSystemOutputDevice,
-			kAudioObjectPropertyScopeOutput,
-			kAudioObjectPropertyElementMaster
-		};
-	else
+		? default_system_output_device
 		/* fallback to default device initially (can still be
 		   changed by osx_output_set_device) */
-		aopa = {
-			kAudioHardwarePropertyDefaultOutputDevice,
-			kAudioObjectPropertyScopeOutput,
-			kAudioObjectPropertyElementMaster
-		};
+		: default_output_device;
 
 	AudioObjectGetPropertyData(kAudioObjectSystemObject,
 				   &aopa,
@@ -386,14 +389,34 @@ static Float64
 osx_output_set_device_format(AudioDeviceID dev_id,
 			     const AudioStreamBasicDescription &target_format)
 {
-	AudioObjectPropertyAddress aopa = {
+	static constexpr AudioObjectPropertyAddress aopa_device_streams = {
 		kAudioDevicePropertyStreams,
 		kAudioObjectPropertyScopeOutput,
 		kAudioObjectPropertyElementMaster
 	};
 
+	static constexpr AudioObjectPropertyAddress aopa_stream_direction = {
+		kAudioStreamPropertyDirection,
+		kAudioObjectPropertyScopeOutput,
+		kAudioObjectPropertyElementMaster
+	};
+
+	static constexpr AudioObjectPropertyAddress aopa_stream_phys_formats = {
+		kAudioStreamPropertyAvailablePhysicalFormats,
+		kAudioObjectPropertyScopeOutput,
+		kAudioObjectPropertyElementMaster
+	};
+
+	static constexpr AudioObjectPropertyAddress aopa_stream_phys_format = {
+		kAudioStreamPropertyPhysicalFormat,
+		kAudioObjectPropertyScopeOutput,
+		kAudioObjectPropertyElementMaster
+	};
+
 	UInt32 property_size;
-	OSStatus err = AudioObjectGetPropertyDataSize(dev_id, &aopa, 0, NULL, &property_size);
+	OSStatus err = AudioObjectGetPropertyDataSize(dev_id,
+						      &aopa_device_streams,
+						      0, NULL, &property_size);
 	if (err != noErr)
 		throw FormatRuntimeError("Cannot get number of streams: %d\n", err);
 
@@ -403,7 +426,8 @@ osx_output_set_device_format(AudioDeviceID dev_id,
 		throw std::runtime_error("Too many streams");
 
 	AudioStreamID streams[MAX_STREAMS];
-	err = AudioObjectGetPropertyData(dev_id, &aopa, 0, NULL, &property_size, streams);
+	err = AudioObjectGetPropertyData(dev_id, &aopa_device_streams, 0, NULL,
+					 &property_size, streams);
 	if (err != noErr)
 		throw FormatRuntimeError("Cannot get streams: %d\n", err);
 
@@ -414,10 +438,9 @@ osx_output_set_device_format(AudioDeviceID dev_id,
 	for (size_t i = 0; i < n_streams; i++) {
 		UInt32 direction;
 		AudioStreamID stream = streams[i];
-		aopa.mSelector = kAudioStreamPropertyDirection;
 		property_size = sizeof(direction);
 		err = AudioObjectGetPropertyData(stream,
-						 &aopa,
+						 &aopa_stream_direction,
 						 0,
 						 NULL,
 						 &property_size,
@@ -429,9 +452,9 @@ osx_output_set_device_format(AudioDeviceID dev_id,
 		if (direction != 0)
 			continue;
 
-		aopa.mSelector = kAudioStreamPropertyAvailablePhysicalFormats;
-		err = AudioObjectGetPropertyDataSize(stream, &aopa, 0, NULL,
-						     &property_size);
+		err = AudioObjectGetPropertyDataSize(stream,
+						     &aopa_stream_phys_formats,
+						     0, NULL, &property_size);
 		if (err != noErr)
 			throw FormatRuntimeError("Unable to get format size s for stream %d. Error = %s",
 						 streams[i], err);
@@ -442,7 +465,10 @@ osx_output_set_device_format(AudioDeviceID dev_id,
 			throw std::runtime_error("Too many formats");
 
 		AudioStreamRangedDescription format_list[MAX_FORMATS];
-		err = AudioObjectGetPropertyData(stream, &aopa, 0, NULL, &property_size, format_list);
+		err = AudioObjectGetPropertyData(stream,
+						 &aopa_stream_phys_formats,
+						 0, NULL,
+						 &property_size, format_list);
 		if (err != noErr)
 			throw FormatRuntimeError("Unable to get available formats for stream %d. Error = %s",
 						 streams[i], err);
@@ -474,9 +500,8 @@ osx_output_set_device_format(AudioDeviceID dev_id,
 	}
 
 	if (format_found) {
-		aopa.mSelector = kAudioStreamPropertyPhysicalFormat;
 		err = AudioObjectSetPropertyData(output_stream,
-						 &aopa,
+						 &aopa_stream_phys_format,
 						 0,
 						 NULL,
 						 sizeof(output_format),
@@ -604,7 +629,6 @@ osx_output_set_device(OSXOutput *oo)
 {
 	OSStatus status;
 	UInt32 size, numdevices;
-	AudioObjectPropertyAddress propaddr;
 	CFStringRef cfname = nullptr;
 	char errormsg[1024];
 	char name[256];
@@ -619,11 +643,14 @@ osx_output_set_device(OSXOutput *oo)
 		return;
 
 	/* how many audio devices are there? */
-	propaddr = { kAudioHardwarePropertyDevices,
-		     kAudioObjectPropertyScopeGlobal,
-		     kAudioObjectPropertyElementMaster };
+	static constexpr AudioObjectPropertyAddress aopa_hw_devices{
+		kAudioHardwarePropertyDevices,
+		kAudioObjectPropertyScopeGlobal,
+		kAudioObjectPropertyElementMaster,
+	};
+
 	status = AudioObjectGetPropertyDataSize(kAudioObjectSystemObject,
-						&propaddr, 0, nullptr, &size);
+						&aopa_hw_devices, 0, nullptr, &size);
 	if (status != noErr) {
 		osx_os_status_to_cstring(status, errormsg, sizeof(errormsg));
 		throw FormatRuntimeError("Unable to determine number of OS X audio devices: %s",
@@ -634,7 +661,7 @@ osx_output_set_device(OSXOutput *oo)
 	numdevices = size / sizeof(AudioDeviceID);
 	std::unique_ptr<AudioDeviceID[]> deviceids(new AudioDeviceID[numdevices]);
 	status = AudioObjectGetPropertyData(kAudioObjectSystemObject,
-					    &propaddr, 0, nullptr,
+					    &aopa_hw_devices, 0, nullptr,
 					    &size, deviceids.get());
 	if (status != noErr) {
 		osx_os_status_to_cstring(status, errormsg, sizeof(errormsg));
@@ -643,12 +670,15 @@ osx_output_set_device(OSXOutput *oo)
 	}
 
 	/* which audio device matches oo->device_name? */
-	propaddr = { kAudioObjectPropertyName,
-		     kAudioObjectPropertyScopeGlobal,
-		     kAudioObjectPropertyElementMaster };
+	static constexpr AudioObjectPropertyAddress aopa_name{
+		kAudioObjectPropertyName,
+		kAudioObjectPropertyScopeGlobal,
+		kAudioObjectPropertyElementMaster,
+	};
+
 	size = sizeof(CFStringRef);
 	for (i = 0; i < numdevices; i++) {
-		status = AudioObjectGetPropertyData(deviceids[i], &propaddr,
+		status = AudioObjectGetPropertyData(deviceids[i], &aopa_name,
 						    0, nullptr,
 						    &size, &cfname);
 		if (status != noErr) {
