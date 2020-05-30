@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2020 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,26 +17,28 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-/** \file
- *
- * This header provides "extern" declarations for all mixer plugins.
- */
+#ifndef MPD_WASAPI_OUTPUT_PLUGIN_HXX
+#define MPD_WASAPI_OUTPUT_PLUGIN_HXX
 
-#ifndef MPD_MIXER_LIST_HXX
-#define MPD_MIXER_LIST_HXX
+#include "output/Features.h"
 
-struct MixerPlugin;
+#include "../OutputAPI.hxx"
+#include "util/Compiler.h"
+#include "win32/ComPtr.hxx"
 
-extern const MixerPlugin null_mixer_plugin;
-extern const MixerPlugin software_mixer_plugin;
-extern const MixerPlugin android_mixer_plugin;
-extern const MixerPlugin alsa_mixer_plugin;
-extern const MixerPlugin haiku_mixer_plugin;
-extern const MixerPlugin oss_mixer_plugin;
-extern const MixerPlugin osx_mixer_plugin;
-extern const MixerPlugin pulse_mixer_plugin;
-extern const MixerPlugin winmm_mixer_plugin;
-extern const MixerPlugin wasapi_mixer_plugin;
-extern const MixerPlugin sndio_mixer_plugin;
+#include <audioclient.h>
+#include <mmdeviceapi.h>
+
+extern const struct AudioOutputPlugin wasapi_output_plugin;
+
+class WasapiOutput;
+
+gcc_pure WasapiOutput &wasapi_output_downcast(AudioOutput &output) noexcept;
+
+gcc_pure bool wasapi_is_exclusive(WasapiOutput &output) noexcept;
+
+gcc_pure IMMDevice *wasapi_output_get_device(WasapiOutput &output) noexcept;
+
+gcc_pure IAudioClient *wasapi_output_get_client(WasapiOutput &output) noexcept;
 
 #endif

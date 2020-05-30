@@ -39,7 +39,7 @@ if get_option('httpd')
     'httpd/HttpdClient.cxx',
     'httpd/HttpdOutputPlugin.cxx',
   ]
-  output_plugins_deps += [ event_dep, net_dep ]
+  output_plugins_deps += [ event_dep, net_dep, boost_dep ]
   need_encoder = true
 endif
 
@@ -143,6 +143,19 @@ else
   winmm_dep = dependency('', required: false)
 endif
 
+output_features.set('ENABLE_WASAPI_OUTPUT', is_windows)
+if is_windows
+  output_plugins_sources += [
+    'WasapiOutputPlugin.cxx',
+  ]
+  wasapi_dep = [
+    c_compiler.find_library('ksuser', required: true),
+    c_compiler.find_library('ole32', required: true),
+  ]
+else
+  wasapi_dep = dependency('', required: false)
+endif
+
 output_plugins = static_library(
   'output_plugins',
   output_plugins_sources,
@@ -158,6 +171,8 @@ output_plugins = static_library(
     openal_dep,
     sles_dep,
     winmm_dep,
+    wasapi_dep,
+    boost_dep,
   ],
 )
 
