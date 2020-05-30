@@ -294,6 +294,20 @@ input {
 ##	mixer_type	"hardware"	# optional
 #}
 #
+# An example of a wasapi output (Windows multimedia API).
+#
+#audio_output {
+#	type		"wasapi"
+#	name		"My WASAPI output"
+##	device		"Digital Audio (S/PDIF) (High Definition Audio Device)" # optional
+#		or
+##	device		"0"		# optional
+## Exclusive mode blocks all other audio source, and get best audio quality without resampling.
+##	exclusive	"no"		# optional
+## Enumerate all devices in log.
+##	enumerate	"no"		# optional
+#}
+#
 # An example of an openal output.
 #
 #audio_output {

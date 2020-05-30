@@ -1086,6 +1086,25 @@ The "Solaris" plugin runs only on SUN Solaris, and plays via /dev/audio.
      - Sets the path of the audio device, defaults to /dev/audio.
 
 
+wasapi
+------
+
+The `Windows Audio Session API <https://docs.microsoft.com/en-us/windows/win32/coreaudio/wasapi>`_ plugin uses WASAPI, which is supported started from Windows Vista. It is recommended if you are using Windows.
+
+.. list-table::
+   :widths: 20 80
+   :header-rows: 1
+
+   * - Setting
+     - Description
+   * - **device NAME**
+     - Sets the device which should be used. This can be any valid audio device name, or index number. The default value is "", which makes WASAPI choose the default output device.
+   * - **enumerate yes|no**
+     - Enumerate all devices in log while playing started. Useful for device configuration. The default value is "no".
+   * - **exclusive yes|no**
+     - Exclusive mode blocks all other audio source, and get best audio quality without resampling. Stopping playing release the exclusive control of the output device. The default value is "no".
+
+
 .. _filter_plugins:
 
 Filter plugins
