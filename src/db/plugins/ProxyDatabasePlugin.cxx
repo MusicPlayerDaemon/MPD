@@ -494,9 +494,13 @@ ProxyDatabase::Connect()
 	try {
 		CheckError(connection);
 
-		if (mpd_connection_cmp_server_version(connection, 0, 19, 0) < 0)
-			throw FormatRuntimeError("Connect to MPD %s, but this plugin requires at least version 0.19",
-						 mpd_connection_get_server_version(connection));
+		if (mpd_connection_cmp_server_version(connection, 0, 19, 0) < 0) {
+			const unsigned *version =
+				mpd_connection_get_server_version(connection);
+			throw FormatRuntimeError("Connect to MPD %u.%u.%u, but this "
+						 "plugin requires at least version 0.19",
+						 version[0], version[1], version[2]);
+		}
 
 		if (!password.empty() &&
 		    !mpd_run_password(connection, password.c_str()))
