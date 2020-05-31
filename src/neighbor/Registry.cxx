@@ -24,7 +24,7 @@
 #include "plugins/UpnpNeighborPlugin.hxx"
 #include "plugins/UdisksNeighborPlugin.hxx"
 
-#include <string.h>
+#include <cstring>
 
 const NeighborPlugin *const neighbor_plugins[] = {
 #ifdef ENABLE_SMBCLIENT

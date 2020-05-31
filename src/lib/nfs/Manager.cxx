@@ -22,7 +22,7 @@
 #include "Log.hxx"
 #include "util/DeleteDisposer.hxx"
 
-#include <string.h>
+#include <cstring>
 
 void
 NfsManager::ManagedConnection::OnNfsConnectionError(std::exception_ptr &&e) noexcept

@@ -28,9 +28,8 @@
 #include "Log.hxx"
 
 #include <cassert>
+#include <cstdio>
 #include <cstring>
-
-#include <stdio.h>
 
 HttpdClient::~HttpdClient() noexcept
 {

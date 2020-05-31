@@ -8,7 +8,7 @@
 
 #include <gtest/gtest.h>
 
-#include <string.h>
+#include <cstring>
 
 class StringInputStream final : public InputStream {
 	const char *data;

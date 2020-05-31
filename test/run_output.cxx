@@ -32,12 +32,12 @@
 #include "util/PrintException.hxx"
 
 #include <cassert>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <memory>
 
-#include <string.h>
 #include <unistd.h>
-#include <stdlib.h>
-#include <stdio.h>
 
 static std::unique_ptr<AudioOutput>
 LoadAudioOutput(const ConfigData &config, EventLoop &event_loop,

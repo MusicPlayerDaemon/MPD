@@ -24,7 +24,7 @@
 #include "plugins/ProxyDatabasePlugin.hxx"
 #include "plugins/upnp/UpnpDatabasePlugin.hxx"
 
-#include <string.h>
+#include <cstring>
 
 const DatabasePlugin *const database_plugins[] = {
 	&simple_db_plugin,

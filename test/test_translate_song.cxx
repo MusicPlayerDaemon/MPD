@@ -21,8 +21,8 @@
 
 #include <gtest/gtest.h>
 
-#include <string.h>
-#include <stdio.h>
+#include <cstdio>
+#include <cstring>
 
 void
 Log(LogLevel, const Domain &domain, const char *msg) noexcept

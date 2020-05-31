@@ -32,9 +32,8 @@
 
 #include <cdio/iso9660.h>
 
-#include <stdlib.h>
-#include <string.h>
-
+#include <cstdlib>
+#include <cstring>
 #include <utility>
 
 static constexpr size_t

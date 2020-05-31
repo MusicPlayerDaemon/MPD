@@ -29,11 +29,11 @@
 #include "archive/ArchiveList.hxx"
 #endif
 
+#include <cstdio>
+#include <cstdlib>
 #include <stdexcept>
 
 #include <unistd.h>
-#include <stdio.h>
-#include <stdlib.h>
 
 class GlobalInit {
 	EventThread io_thread;

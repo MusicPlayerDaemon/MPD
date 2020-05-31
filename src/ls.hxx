@@ -22,7 +22,7 @@
 
 #include "util/Compiler.h"
 
-#include <stdio.h>
+#include <cstdio>
 
 class Response;
 

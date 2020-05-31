@@ -32,7 +32,7 @@
 #include "IPv6Address.hxx"
 #include "util/StringView.hxx"
 
-#include <string.h>
+#include <cstring>
 
 #ifdef HAVE_UN
 #include <sys/un.h>

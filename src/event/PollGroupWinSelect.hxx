@@ -23,9 +23,8 @@
 #include "PollResultGeneric.hxx"
 
 #include <cassert>
+#include <cstring>
 #include <unordered_map>
-
-#include <string.h>
 
 #include <windows.h>
 #include <winsock2.h>

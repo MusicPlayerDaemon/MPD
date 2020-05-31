@@ -31,9 +31,8 @@
 #include "Convert.hxx"
 
 #include <cassert>
+#include <ctime>
 #include <stdexcept>
-
-#include <time.h>
 
 std::chrono::system_clock::time_point
 ParseTimePoint(const char *s, const char *format)

@@ -28,9 +28,8 @@
 #include "util/StringCompare.hxx"
 #include "Log.hxx"
 
+#include <cstdlib>
 #include <exception>
-
-#include <stdlib.h>
 
 #define PRIO_LABEL "Prio: "
 

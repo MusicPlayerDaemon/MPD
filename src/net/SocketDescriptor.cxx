@@ -43,8 +43,7 @@
 #endif
 
 #include <cerrno>
-
-#include <string.h>
+#include <cstring>
 
 int
 SocketDescriptor::GetType() const noexcept

@@ -40,10 +40,9 @@
 #endif
 
 #include <cassert>
-
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 
 static constexpr unsigned long FRAMES_CUSHION = 2000;
 

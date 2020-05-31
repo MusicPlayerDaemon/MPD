@@ -32,9 +32,9 @@
 
 #include "Convert.hxx"
 
+#include <ctime>
 #include <stdexcept>
 
-#include <time.h>
 #include <sys/time.h> /* for struct timeval */
 
 struct tm

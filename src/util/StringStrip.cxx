@@ -30,7 +30,7 @@
 #include "StringStrip.hxx"
 #include "CharUtil.hxx"
 
-#include <string.h>
+#include <cstring>
 
 const char *
 StripLeft(const char *p) noexcept

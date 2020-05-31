@@ -25,10 +25,9 @@
 
 #include <cassert>
 #include <cstdint>
+#include <cstdlib>
+#include <cstring>
 #include <limits>
-
-#include <string.h>
-#include <stdlib.h>
 
 Mutex tag_pool_lock;
 

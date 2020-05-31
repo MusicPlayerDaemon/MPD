@@ -27,9 +27,8 @@
 #include <ogg/ogg.h>
 
 #include <cassert>
+#include <cstdlib>
 #include <stdexcept>
-
-#include <stdlib.h>
 
 namespace {
 

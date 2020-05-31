@@ -29,8 +29,8 @@
 #include "util/RuntimeError.hxx"
 #include "Version.h"
 
-#include <string.h>
-#include <stdlib.h>
+#include <cstdlib>
+#include <cstring>
 
 #define DIRECTORY_INFO_BEGIN "info_begin"
 #define DIRECTORY_INFO_END "info_end"

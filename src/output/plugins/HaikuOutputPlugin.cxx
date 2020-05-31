@@ -38,7 +38,7 @@
 #include <StringList.h>
 #include <SoundPlayer.h>
 
-#include <string.h>
+#include <cstring>
 
 #define UTF8_PLAY "\xE2\x96\xB6"
 

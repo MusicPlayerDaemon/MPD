@@ -28,8 +28,8 @@
 #include "util/Compiler.h"
 
 #include <climits>
+#include <cstring>
 
-#include <string.h>
 #include <unistd.h>
 
 #ifndef HOST_NAME_MAX

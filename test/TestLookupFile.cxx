@@ -3,8 +3,8 @@
 
 #include <gtest/gtest.h>
 
-#include <string.h>
-#include <stdlib.h>
+#include <cstdlib>
+#include <cstring>
 
 TEST(ArchiveTest, Lookup)
 {

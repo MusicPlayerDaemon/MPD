@@ -20,8 +20,7 @@
 #include "Base.hxx"
 
 #include <cassert>
-
-#include <string.h>
+#include <cstring>
 
 static char nfs_base_server[64];
 static char nfs_base_export_name[256];

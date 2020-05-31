@@ -20,9 +20,8 @@
 #include "ReplayGainMode.hxx"
 
 #include <cassert>
+#include <cstring>
 #include <stdexcept>
-
-#include <string.h>
 
 const char *
 ToString(ReplayGainMode mode) noexcept

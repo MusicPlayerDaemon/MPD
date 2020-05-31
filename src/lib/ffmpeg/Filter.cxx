@@ -22,7 +22,7 @@
 #include "pcm/AudioFormat.hxx"
 #include "util/RuntimeError.hxx"
 
-#include <stdio.h>
+#include <cstdio>
 
 namespace Ffmpeg {
 

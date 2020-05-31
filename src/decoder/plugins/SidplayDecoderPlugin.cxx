@@ -55,10 +55,9 @@
 #include <sidplay/utils/SidDatabase.h>
 #endif
 
+#include <cstring>
 #include <iterator>
 #include <memory>
-
-#include <string.h>
 
 #define SUBTUNE_PREFIX "tune_"
 

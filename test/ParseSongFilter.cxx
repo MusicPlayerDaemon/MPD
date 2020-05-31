@@ -26,10 +26,9 @@
 #include "util/ConstBuffer.hxx"
 #include "util/PrintException.hxx"
 
+#include <cstdio>
+#include <cstdlib>
 #include <stdexcept>
-
-#include <stdio.h>
-#include <stdlib.h>
 
 int main(int argc, char **argv)
 try {

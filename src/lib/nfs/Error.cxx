@@ -38,8 +38,7 @@ extern "C" {
 }
 
 #include <cassert>
-
-#include <string.h>
+#include <cstring>
 
 static StringBuffer<256>
 FormatNfsClientError(struct nfs_context *nfs, const char *msg) noexcept

@@ -19,7 +19,7 @@
 
 #include "Client.hxx"
 
-#include <string.h>
+#include <cstring>
 
 bool
 Client::Write(const void *data, size_t length) noexcept

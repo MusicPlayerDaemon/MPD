@@ -31,9 +31,8 @@
 #include "util/StringAPI.hxx"
 
 #include <cassert>
+#include <cstring>
 #include <stdexcept>
-
-#include <string.h>
 
 MultipleOutputs::MultipleOutputs(AudioOutputClient &_client,
 				 MixerListener &_mixer_listener) noexcept

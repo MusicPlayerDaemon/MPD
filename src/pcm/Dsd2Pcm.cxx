@@ -36,9 +36,8 @@ or implied, of Sebastian Gesemann.
 #include "util/GenerateArray.hxx"
 
 #include <cassert>
-
-#include <stdlib.h>
-#include <string.h>
+#include <cstdlib>
+#include <cstring>
 
 /** number of FIR constants */
 static constexpr size_t HTAPS = 48;

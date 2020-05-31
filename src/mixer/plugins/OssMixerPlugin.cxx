@@ -27,11 +27,11 @@
 #include "Log.hxx"
 
 #include <cassert>
+#include <cstdlib>
+#include <cstring>
 
-#include <string.h>
-#include <sys/ioctl.h>
 #include <fcntl.h>
-#include <stdlib.h>
+#include <sys/ioctl.h>
 #include <unistd.h>
 
 #if defined(__OpenBSD__) || defined(__NetBSD__)

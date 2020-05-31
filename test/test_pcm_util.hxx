@@ -23,9 +23,8 @@
 
 #include <array>
 #include <random>
-
-#include <stddef.h>
-#include <stdint.h>
+#include <cstddef>
+#include <cstdint>
 
 template<typename T>
 struct RandomInt {

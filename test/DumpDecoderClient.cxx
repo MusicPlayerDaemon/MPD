@@ -23,8 +23,9 @@
 #include "util/StringBuffer.hxx"
 #include "util/Compiler.h"
 
+#include <cstdio>
+
 #include <unistd.h>
-#include <stdio.h>
 
 void
 DumpDecoderClient::Ready(const AudioFormat audio_format,

@@ -42,8 +42,7 @@
 
 #include <algorithm>
 #include <cassert>
-
-#include <string.h>
+#include <cstring>
 
 CurlRequest::CurlRequest(CurlGlobal &_global,
 			 CurlResponseHandler &_handler)

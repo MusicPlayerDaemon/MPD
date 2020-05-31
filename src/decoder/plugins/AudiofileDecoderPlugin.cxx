@@ -30,10 +30,9 @@
 #include <af_vfs.h>
 
 #include <cassert>
+#include <cstdio>
+#include <cstdlib>
 #include <exception>
-
-#include <stdio.h>
-#include <stdlib.h>
 
 static constexpr Domain audiofile_domain("audiofile");
 

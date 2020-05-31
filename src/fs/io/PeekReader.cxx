@@ -21,8 +21,7 @@
 
 #include <algorithm>
 #include <cassert>
-
-#include <string.h>
+#include <cstring>
 
 const void *
 PeekReader::Peek(size_t size)

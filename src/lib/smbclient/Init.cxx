@@ -24,7 +24,7 @@
 
 #include <libsmbclient.h>
 
-#include <string.h>
+#include <cstring>
 
 static void
 mpd_smbc_get_auth_data([[maybe_unused]] const char *srv,

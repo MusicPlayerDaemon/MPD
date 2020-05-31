@@ -24,8 +24,7 @@
 
 #include <cassert>
 #include <cstdint>
-
-#include <string.h>
+#include <cstring>
 
 static size_t
 ReadPage(const ogg_page &page, void *_buffer, size_t size) noexcept

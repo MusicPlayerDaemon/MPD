@@ -22,10 +22,9 @@
 #include "util/ByteOrder.hxx"
 
 #include <cstdint>
+#include <cstring>
 #include <limits>
 #include <stdexcept>
-
-#include <string.h>
 
 struct aiff_header {
 	char id[4];

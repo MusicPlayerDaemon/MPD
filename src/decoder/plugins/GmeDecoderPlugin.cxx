@@ -38,9 +38,8 @@
 #include <gme/gme.h>
 
 #include <cassert>
-
-#include <stdlib.h>
-#include <string.h>
+#include <cstdlib>
+#include <cstring>
 
 #define SUBTUNE_PREFIX "tune_"
 

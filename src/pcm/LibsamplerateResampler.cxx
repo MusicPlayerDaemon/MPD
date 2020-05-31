@@ -25,9 +25,8 @@
 #include "Log.hxx"
 
 #include <cassert>
-
-#include <stdlib.h>
-#include <string.h>
+#include <cstdlib>
+#include <cstring>
 
 static constexpr Domain libsamplerate_domain("libsamplerate");
 

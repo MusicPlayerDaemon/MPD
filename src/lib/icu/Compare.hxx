@@ -26,7 +26,7 @@
 #include <string_view>
 
 #ifdef _WIN32
-#include <wchar.h>
+#include <cwchar>
 #endif
 
 /**

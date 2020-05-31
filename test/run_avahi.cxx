@@ -21,7 +21,7 @@
 #include "ShutdownHandler.hxx"
 #include "zeroconf/ZeroconfAvahi.hxx"
 
-#include <stdlib.h>
+#include <cstdlib>
 
 unsigned listen_port = 1234;
 

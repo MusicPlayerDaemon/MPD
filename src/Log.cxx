@@ -22,9 +22,8 @@
 #include "util/Exception.hxx"
 
 #include <cerrno>
-
-#include <stdio.h>
-#include <string.h>
+#include <cstdio>
+#include <cstring>
 
 static constexpr Domain exception_domain("exception");
 

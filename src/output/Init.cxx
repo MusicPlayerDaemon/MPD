@@ -40,9 +40,8 @@
 #include "Log.hxx"
 
 #include <cassert>
+#include <cstring>
 #include <stdexcept>
-
-#include <string.h>
 
 #define AUDIO_OUTPUT_TYPE	"type"
 #define AUDIO_OUTPUT_NAME	"name"

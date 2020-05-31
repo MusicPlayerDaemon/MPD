@@ -28,8 +28,8 @@
 
 #include <upnptools.h>
 
-#include <stdlib.h>
-#include <string.h>
+#include <cstdlib>
+#include <cstring>
 
 UPnPDeviceDirectory::Downloader::Downloader(UPnPDeviceDirectory &_parent,
 					    const UpnpDiscovery &disco)

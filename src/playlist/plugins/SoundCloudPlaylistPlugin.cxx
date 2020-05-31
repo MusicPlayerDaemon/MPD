@@ -33,10 +33,9 @@
 #include "util/ScopeExit.hxx"
 #include "Log.hxx"
 
+#include <cstdlib>
+#include <cstring>
 #include <string>
-
-#include <string.h>
-#include <stdlib.h>
 
 static struct {
 	std::string apikey;

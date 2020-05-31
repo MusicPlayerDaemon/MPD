@@ -26,10 +26,9 @@
 #include "util/StringCompare.hxx"
 
 #include <array>
+#include <cstdlib>
+#include <cstring>
 #include <iterator>
-
-#include <stdlib.h>
-#include <string.h>
 
 struct WinmmBuffer {
 	PcmBuffer buffer;

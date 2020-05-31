@@ -28,8 +28,8 @@
 #include "input/TextInputStream.hxx"
 #include "input/InputStream.hxx"
 
-#include <string.h>
-#include <stdlib.h>
+#include <cstdlib>
+#include <cstring>
 
 class ExtM3uPlaylist final : public SongEnumerator {
 	TextInputStream tis;

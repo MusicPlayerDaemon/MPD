@@ -34,8 +34,9 @@
 #include "thread/Cond.hxx"
 #include "util/PrintException.hxx"
 
+#include <cstdlib>
+
 #include <unistd.h>
-#include <stdlib.h>
 
 static void
 tag_save(FILE *file, const Tag &tag)

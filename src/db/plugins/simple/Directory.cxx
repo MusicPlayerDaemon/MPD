@@ -35,9 +35,8 @@
 #include "util/StringView.hxx"
 
 #include <cassert>
-
-#include <string.h>
-#include <stdlib.h>
+#include <cstdlib>
+#include <cstring>
 
 Directory::Directory(std::string &&_path_utf8, Directory *_parent) noexcept
 	:parent(_parent),

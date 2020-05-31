@@ -25,10 +25,9 @@
 #include <unicode/ustring.h>
 
 #include <cassert>
+#include <cstring>
 #include <memory>
 #include <stdexcept>
-
-#include <string.h>
 
 AllocatedArray<UChar>
 UCharFromUTF8(std::string_view src)

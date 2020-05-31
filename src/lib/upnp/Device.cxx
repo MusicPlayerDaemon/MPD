@@ -21,7 +21,7 @@
 #include "Util.hxx"
 #include "lib/expat/ExpatParser.hxx"
 
-#include <string.h>
+#include <cstring>
 
 /* this destructor exists here just so it won't get inlined */
 UPnPDevice::~UPnPDevice() noexcept = default;

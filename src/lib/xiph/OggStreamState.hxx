@@ -24,8 +24,7 @@
 
 #include <cassert>
 #include <cstdint>
-
-#include <string.h>
+#include <cstring>
 
 class OggStreamState {
 	ogg_stream_state state;

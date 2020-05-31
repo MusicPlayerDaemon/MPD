@@ -26,7 +26,7 @@ extern "C" {
 #include <libavfilter/buffersink.h>
 }
 
-#include <string.h>
+#include <cstring>
 
 FfmpegFilter::FfmpegFilter(const AudioFormat &in_audio_format,
 			   const AudioFormat &_out_audio_format,

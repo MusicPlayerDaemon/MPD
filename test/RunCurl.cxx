@@ -24,7 +24,7 @@
 #include "event/Loop.hxx"
 #include "util/PrintException.hxx"
 
-#include <stdio.h>
+#include <cstdio>
 
 class MyHandler final : public CurlResponseHandler {
 	EventLoop &event_loop;

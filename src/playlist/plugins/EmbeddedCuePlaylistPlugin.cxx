@@ -35,9 +35,8 @@
 #include "fs/AllocatedPath.hxx"
 #include "util/StringView.hxx"
 
+#include <cstring>
 #include <memory>
-
-#include <string.h>
 
 class EmbeddedCuePlaylist final : public SongEnumerator {
 public:

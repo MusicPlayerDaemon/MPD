@@ -27,7 +27,7 @@
 #include "util/ConstBuffer.hxx"
 #include "util/RuntimeError.hxx"
 
-#include <string.h>
+#include <cstring>
 
 AudioOutputSource::AudioOutputSource() noexcept
 {

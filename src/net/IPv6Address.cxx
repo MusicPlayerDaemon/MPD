@@ -31,8 +31,7 @@
 #include "IPv4Address.hxx"
 
 #include <cassert>
-
-#include <string.h>
+#include <cstring>
 
 static const struct sockaddr_in6 *
 CastToIPv6(const struct sockaddr *p) noexcept

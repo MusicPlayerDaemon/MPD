@@ -26,7 +26,7 @@
 #include "util/StaticFifoBuffer.hxx"
 #include "Log.hxx"
 
-#include <string.h>
+#include <cstring>
 
 static constexpr Domain hybrid_dsd_domain("hybrid_dsd");
 

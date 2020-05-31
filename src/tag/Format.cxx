@@ -25,9 +25,8 @@
 #include "util/TruncateString.hxx"
 
 #include <algorithm>
-
-#include <string.h>
-#include <time.h>
+#include <cstring>
+#include <ctime>
 
 struct FormatTagContext {
 	const Tag &tag;

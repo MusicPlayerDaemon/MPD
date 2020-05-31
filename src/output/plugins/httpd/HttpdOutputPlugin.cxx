@@ -33,8 +33,7 @@
 #include "config/Net.hxx"
 
 #include <cassert>
-
-#include <string.h>
+#include <cstring>
 
 const Domain httpd_output_domain("httpd_output");
 

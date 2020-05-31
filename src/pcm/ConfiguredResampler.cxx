@@ -35,8 +35,7 @@
 #endif
 
 #include <cassert>
-
-#include <string.h>
+#include <cstring>
 
 enum class SelectedResampler {
 	FALLBACK,

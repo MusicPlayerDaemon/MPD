@@ -37,8 +37,8 @@
 #include "util/NumberParser.hxx"
 #include "Log.hxx"
 
-#include <string.h>
-#include <stdlib.h>
+#include <cstdlib>
+#include <cstring>
 
 #define PLAYLIST_STATE_FILE_STATE		"state: "
 #define PLAYLIST_STATE_FILE_RANDOM		"random: "

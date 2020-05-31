@@ -54,10 +54,9 @@
 
 #include <array>
 #include <cstdint>
+#include <cstdlib>
+#include <cstring>
 #include <stdexcept>
-
-#include <string.h>
-#include <stdlib.h>
 
 class RouteFilter final : public Filter {
 	/**

@@ -23,9 +23,8 @@
 #include "util/AllocatedString.hxx"
 #include "util/TruncateString.hxx"
 
+#include <cstring>
 #include <iterator>
-
-#include <string.h>
 
 AllocatedString<>
 icy_server_metadata_header(const char *name,

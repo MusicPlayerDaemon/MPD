@@ -37,11 +37,11 @@
 #include "LogBackend.hxx"
 
 #include <cassert>
+#include <cstddef>
+#include <cstdio>
+#include <cstdlib>
 #include <stdexcept>
 
-#include <stddef.h>
-#include <stdlib.h>
-#include <stdio.h>
 #include <unistd.h>
 
 struct CommandLine {

@@ -28,9 +28,8 @@
 #include "util/StringStrip.hxx"
 #include "util/DivideString.hxx"
 
+#include <cstdlib>
 #include <string>
-
-#include <stdlib.h>
 
 static bool
 FindPlaylistSection(TextInputStream &is)

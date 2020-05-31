@@ -26,9 +26,8 @@
 #include "util/UriExtract.hxx"
 
 #include <algorithm>
+#include <cstring>
 #include <string>
-
-#include <string.h>
 
 static void
 merge_song_metadata(DetachedSong &add, const DetachedSong &base) noexcept

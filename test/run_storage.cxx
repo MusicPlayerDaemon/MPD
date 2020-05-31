@@ -25,14 +25,14 @@
 #include "time/ChronoUtil.hxx"
 #include "util/PrintException.hxx"
 
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <ctime>
 #include <memory>
 #include <stdexcept>
 
 #include <unistd.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <time.h>
 
 static std::unique_ptr<Storage>
 MakeStorage(EventLoop &event_loop, const char *uri)

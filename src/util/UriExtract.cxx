@@ -31,7 +31,7 @@
 #include "CharUtil.hxx"
 #include "StringView.hxx"
 
-#include <string.h>
+#include <cstring>
 
 static constexpr bool
 IsValidSchemeStart(char ch)

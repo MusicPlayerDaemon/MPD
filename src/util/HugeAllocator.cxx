@@ -35,7 +35,7 @@
 #include <sys/mman.h>
 #include <unistd.h>
 #else
-#include <stdlib.h>
+#include <cstdlib>
 #endif
 
 #ifdef __linux__

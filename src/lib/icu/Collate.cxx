@@ -43,10 +43,9 @@
 #endif
 
 #include <cassert>
+#include <cstring>
 #include <memory>
 #include <stdexcept>
-
-#include <string.h>
 
 #ifdef HAVE_ICU
 static UCollator *collator;

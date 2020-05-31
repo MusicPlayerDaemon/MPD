@@ -32,9 +32,8 @@
 #include "util/TextFile.hxx"
 
 #include <cstdint>
+#include <cstring>
 #include <stdexcept>
-
-#include <string.h>
 
 bool
 BufferedReader::Fill(bool need_more)

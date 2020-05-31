@@ -24,7 +24,7 @@
 #include "OggCodec.hxx"
 #include "../DecoderAPI.hxx"
 
-#include <string.h>
+#include <cstring>
 
 enum ogg_codec
 ogg_codec_detect(DecoderClient *client, InputStream &is)

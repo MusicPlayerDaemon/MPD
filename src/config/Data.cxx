@@ -23,7 +23,7 @@
 #include "util/RuntimeError.hxx"
 #include "util/StringAPI.hxx"
 
-#include <stdlib.h>
+#include <cstdlib>
 
 void
 ConfigData::Clear()

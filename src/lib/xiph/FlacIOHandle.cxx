@@ -23,8 +23,7 @@
 #include "system/Error.hxx"
 
 #include <cerrno>
-
-#include <stdio.h>
+#include <cstdio>
 
 static size_t
 FlacIORead(void *ptr, size_t size, size_t nmemb, FLAC__IOHandle handle)

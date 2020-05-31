@@ -28,7 +28,7 @@
 #include <windows.h>
 #include <shlobj.h>
 #else
-#include <stdlib.h>
+#include <cstdlib>
 #include <unistd.h>
 #include <pwd.h>
 #endif
@@ -37,7 +37,7 @@
 #include "util/StringStrip.hxx"
 #include "util/StringCompare.hxx"
 #include "io/TextFile.hxx"
-#include <string.h>
+#include <cstring>
 #include <utility>
 #endif
 

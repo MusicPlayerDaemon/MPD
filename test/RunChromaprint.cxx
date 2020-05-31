@@ -35,11 +35,11 @@
 #include "LogBackend.hxx"
 
 #include <cassert>
+#include <cstdio>
+#include <cstdlib>
 #include <stdexcept>
 
 #include <unistd.h>
-#include <stdlib.h>
-#include <stdio.h>
 
 struct CommandLine {
 	const char *decoder = nullptr;

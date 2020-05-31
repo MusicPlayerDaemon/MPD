@@ -27,9 +27,8 @@
 #include <lame/lame.h>
 
 #include <cassert>
+#include <cstring>
 #include <stdexcept>
-
-#include <string.h>
 
 class LameEncoder final : public Encoder {
 	const AudioFormat audio_format;

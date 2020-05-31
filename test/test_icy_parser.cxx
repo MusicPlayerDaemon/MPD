@@ -9,9 +9,8 @@
 
 #include <gtest/gtest.h>
 
+#include <cstring>
 #include <string>
-
-#include <string.h>
 
 static std::unique_ptr<Tag>
 icy_parse_tag(const char *p)

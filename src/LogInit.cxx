@@ -31,14 +31,14 @@
 #include "system/Error.hxx"
 
 #include <cassert>
+#include <cstdio>
+#include <cstring>
 
 #ifdef ENABLE_SYSTEMD_DAEMON
 #include <systemd/sd-daemon.h>
 #endif
 
-#include <string.h>
 #include <fcntl.h>
-#include <stdio.h>
 #include <unistd.h>
 
 #define LOG_LEVEL_SECURE LogLevel::INFO

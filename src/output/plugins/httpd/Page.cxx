@@ -19,7 +19,7 @@
 
 #include "Page.hxx"
 
-#include <string.h>
+#include <cstring>
 
 Page::Page(const void *data, size_t size) noexcept
 	:buffer(size)

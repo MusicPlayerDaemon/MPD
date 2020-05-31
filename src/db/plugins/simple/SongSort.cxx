@@ -22,7 +22,7 @@
 #include "tag/Tag.hxx"
 #include "lib/icu/Collate.hxx"
 
-#include <stdlib.h>
+#include <cstdlib>
 
 static int
 compare_utf8_string(const char *a, const char *b) noexcept

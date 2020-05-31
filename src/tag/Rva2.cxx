@@ -23,8 +23,7 @@
 #include <id3tag.h>
 
 #include <cstdint>
-
-#include <string.h>
+#include <cstring>
 
 enum class Rva2Channel : uint8_t {
 	OTHER = 0x00,

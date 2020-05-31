@@ -45,9 +45,8 @@
 #endif
 
 #include <cerrno>
-
-#include <string.h>
-#include <stdio.h>
+#include <cstdio>
+#include <cstring>
 
 static inline bool
 ai_is_passive(const struct addrinfo *ai)

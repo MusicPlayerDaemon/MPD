@@ -20,9 +20,8 @@
 #include "SingleMode.hxx"
 
 #include <cassert>
+#include <cstring>
 #include <stdexcept>
-
-#include <string.h>
 
 const char *
 SingleToString(SingleMode mode) noexcept

@@ -20,7 +20,7 @@
 #include "ExpatParser.hxx"
 #include "util/ASCII.hxx"
 
-#include <string.h>
+#include <cstring>
 
 void
 ExpatParser::Parse(const char *data, size_t length, bool is_final)

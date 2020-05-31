@@ -51,10 +51,9 @@
 #include "thread/Name.hxx"
 #include "Log.hxx"
 
+#include <cstring>
 #include <exception>
 #include <memory>
-
-#include <string.h>
 
 static constexpr Domain player_domain("player");
 

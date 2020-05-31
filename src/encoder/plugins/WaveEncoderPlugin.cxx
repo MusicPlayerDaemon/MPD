@@ -23,8 +23,7 @@
 #include "util/DynamicFifoBuffer.hxx"
 
 #include <cassert>
-
-#include <string.h>
+#include <cstring>
 
 static constexpr uint16_t WAVE_FORMAT_PCM = 1;
 

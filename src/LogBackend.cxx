@@ -25,10 +25,9 @@
 #include "config.h"
 
 #include <cassert>
-
-#include <stdio.h>
-#include <string.h>
-#include <time.h>
+#include <cstdio>
+#include <cstring>
+#include <ctime>
 
 #ifdef HAVE_SYSLOG
 #include <syslog.h>

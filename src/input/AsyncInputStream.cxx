@@ -24,9 +24,8 @@
 #include "event/Loop.hxx"
 
 #include <cassert>
+#include <cstring>
 #include <stdexcept>
-
-#include <string.h>
 
 AsyncInputStream::AsyncInputStream(EventLoop &event_loop, const char *_url,
 				   Mutex &_mutex,

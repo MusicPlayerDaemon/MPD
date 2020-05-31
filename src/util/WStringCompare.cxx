@@ -29,7 +29,7 @@
 
 #include "WStringCompare.hxx"
 
-#include <string.h>
+#include <cstring>
 
 bool
 StringEndsWith(const wchar_t *haystack, const wchar_t *needle) noexcept

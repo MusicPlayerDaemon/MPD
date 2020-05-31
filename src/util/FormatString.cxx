@@ -20,8 +20,8 @@
 #include "FormatString.hxx"
 #include "AllocatedString.hxx"
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 
 AllocatedString<>
 FormatStringV(const char *fmt, std::va_list args) noexcept

@@ -25,7 +25,7 @@
 
 #include <gtest/gtest.h>
 
-#include <string.h>
+#include <cstring>
 
 TEST(PcmTest, ExportShift8)
 {

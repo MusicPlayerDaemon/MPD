@@ -21,7 +21,7 @@
 
 #include <alsa/asoundlib.h>
 
-#include <stdlib.h>
+#include <cstdlib>
 
 gcc_pure
 static uint_least32_t

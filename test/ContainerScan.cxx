@@ -30,11 +30,11 @@
 #include "util/UriExtract.hxx"
 
 #include <cassert>
+#include <cstdio>
+#include <cstdlib>
 #include <stdexcept>
 
 #include <unistd.h>
-#include <stdlib.h>
-#include <stdio.h>
 
 static const DecoderPlugin *
 FindContainerDecoderPlugin(const char *suffix)

@@ -23,9 +23,8 @@
 #include "plugins/ChainFilterPlugin.hxx"
 
 #include <algorithm>
+#include <cstring>
 #include <string>
-
-#include <string.h>
 
 static void
 filter_chain_append_new(PreparedFilter &chain, FilterFactory &factory,

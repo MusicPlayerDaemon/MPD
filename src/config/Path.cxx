@@ -25,8 +25,7 @@
 #include "util/RuntimeError.hxx"
 
 #include <cassert>
-
-#include <string.h>
+#include <cstring>
 
 #ifndef _WIN32
 #include <pwd.h>

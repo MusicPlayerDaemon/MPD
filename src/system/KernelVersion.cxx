@@ -32,8 +32,8 @@
 
 #include "KernelVersion.hxx"
 
+#include <cstdio>
 #include <sys/utsname.h>
-#include <stdio.h>
 
 gcc_const
 static KernelVersionCode

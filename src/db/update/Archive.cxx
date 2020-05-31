@@ -32,10 +32,9 @@
 #include "util/StringCompare.hxx"
 #include "Log.hxx"
 
-#include <string>
+#include <cstring>
 #include <exception>
-
-#include <string.h>
+#include <string>
 
 static Directory *
 LockMakeChild(Directory &directory, std::string_view name) noexcept

@@ -28,8 +28,7 @@
 #include <algorithm>
 #include <array>
 #include <cassert>
-
-#include <stdlib.h>
+#include <cstdlib>
 
 TagBuilder::TagBuilder(const Tag &other) noexcept
 	:duration(other.duration), has_playlist(other.has_playlist)

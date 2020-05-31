@@ -37,7 +37,7 @@
 #include <opus.h>
 #include <ogg/ogg.h>
 
-#include <string.h>
+#include <cstring>
 
 namespace {
 

@@ -31,7 +31,7 @@
 #include "plugins/TwolameEncoderPlugin.hxx"
 #include "decoder/Features.h"
 
-#include <string.h>
+#include <cstring>
 
 const EncoderPlugin *const encoder_plugins[] = {
 	&null_encoder_plugin,

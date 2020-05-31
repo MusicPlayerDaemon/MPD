@@ -29,12 +29,11 @@
 
 #include <id3tag.h>
 
-#ifdef HAVE_LOCALE_H
-#include <locale.h>
+#include <cstdlib>
+#include <cstdio>
+#ifdef HAVE_CLOCALE
+#include <clocale>
 #endif
-
-#include <stdlib.h>
-#include <stdio.h>
 
 static void
 DumpReplayGainTuple(const char *name, const ReplayGainTuple &tuple)
@@ -53,7 +52,7 @@ DumpReplayGainInfo(const ReplayGainInfo &info)
 
 int main(int argc, char **argv)
 try {
-#ifdef HAVE_LOCALE_H
+#ifdef HAVE_CLOCALE
 	/* initialize locale */
 	setlocale(LC_CTYPE,"");
 #endif

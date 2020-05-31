@@ -23,9 +23,8 @@
 #include "song/LightSong.hxx"
 #include "tag/Tag.hxx"
 
+#include <cstring>
 #include <set>
-
-#include <string.h>
 
 struct StringLess {
 	gcc_pure

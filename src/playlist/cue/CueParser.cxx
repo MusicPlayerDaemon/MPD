@@ -24,9 +24,8 @@
 #include "util/CharUtil.hxx"
 
 #include <cassert>
+#include <cstdlib>
 #include <cstring>
-
-#include <stdlib.h>
 
 static const char *
 cue_next_word(char *p, char **pp)

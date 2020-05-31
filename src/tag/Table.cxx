@@ -21,7 +21,7 @@
 #include "util/ASCII.hxx"
 #include "util/StringView.hxx"
 
-#include <string.h>
+#include <cstring>
 
 /**
  * Looks up a string in a tag translation table (case sensitive).

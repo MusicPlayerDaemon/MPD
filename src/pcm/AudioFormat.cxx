@@ -21,8 +21,7 @@
 #include "util/StringBuffer.hxx"
 
 #include <cassert>
-
-#include <stdio.h>
+#include <cstdio>
 
 void
 AudioFormat::ApplyMask(AudioFormat mask) noexcept

@@ -19,7 +19,7 @@
 
 #include "Interleave.hxx"
 
-#include <string.h>
+#include <cstring>
 
 static void
 GenericPcmInterleave(uint8_t *gcc_restrict dest,

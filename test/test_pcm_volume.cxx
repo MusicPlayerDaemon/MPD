@@ -25,8 +25,7 @@
 #include <gtest/gtest.h>
 
 #include <algorithm>
-
-#include <string.h>
+#include <cstring>
 
 template<SampleFormat F, class Traits=SampleTraits<F>,
 	 typename G=RandomInt<typename Traits::value_type>>

@@ -21,8 +21,7 @@
 #include "ProxyInputStream.hxx"
 
 #include <cassert>
-
-#include <string.h>
+#include <cstring>
 
 class RewindInputStream final : public ProxyInputStream {
 	/**

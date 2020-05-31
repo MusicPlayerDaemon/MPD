@@ -38,8 +38,7 @@
 
 #include <cassert>
 #include <cmath>
-
-#include <string.h>
+#include <cstring>
 
 DecoderBridge::DecoderBridge(DecoderControl &_dc, bool _initial_seek_pending,
 			     std::unique_ptr<Tag> _tag) noexcept

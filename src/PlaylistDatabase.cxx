@@ -25,9 +25,8 @@
 #include "util/StringStrip.hxx"
 #include "util/RuntimeError.hxx"
 
+#include <cstdlib>
 #include <cstring>
-
-#include <stdlib.h>
 
 void
 playlist_vector_save(BufferedOutputStream &os, const PlaylistVector &pv)

@@ -26,9 +26,8 @@
 #include "plugins/ZzipArchivePlugin.hxx"
 
 #include <cassert>
+#include <cstring>
 #include <iterator>
-
-#include <string.h>
 
 const ArchivePlugin *const archive_plugins[] = {
 #ifdef ENABLE_BZ2

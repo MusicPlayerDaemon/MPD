@@ -22,8 +22,7 @@
 #include "thread/Name.hxx"
 
 #include <cassert>
-
-#include <string.h>
+#include <cstring>
 
 ThreadInputStream::ThreadInputStream(const char *_plugin,
 				     const char *_uri,

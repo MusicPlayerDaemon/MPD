@@ -34,9 +34,8 @@
 #include <algorithm>
 #endif
 
+#include <cstring>
 #include <memory>
-
-#include <string.h>
 
 AllocatedString<>
 IcuCaseFold(std::string_view src) noexcept

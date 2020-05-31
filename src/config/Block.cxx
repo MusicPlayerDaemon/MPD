@@ -23,7 +23,7 @@
 #include "fs/AllocatedPath.hxx"
 #include "util/RuntimeError.hxx"
 
-#include <stdlib.h>
+#include <cstdlib>
 
 void
 BlockParam::ThrowWithNested() const

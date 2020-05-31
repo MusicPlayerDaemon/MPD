@@ -19,9 +19,8 @@
 
 #include "SocketError.hxx"
 
+#include <cstring>
 #include <iterator>
-
-#include <string.h>
 
 #ifdef _WIN32
 

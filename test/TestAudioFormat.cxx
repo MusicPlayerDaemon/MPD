@@ -23,7 +23,7 @@
 
 #include <gtest/gtest.h>
 
-#include <string.h>
+#include <cstring>
 
 struct AudioFormatStringTest {
 	AudioFormat af;

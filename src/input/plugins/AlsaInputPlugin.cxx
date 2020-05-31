@@ -44,8 +44,7 @@
 #include <alsa/asoundlib.h>
 
 #include <cassert>
-
-#include <string.h>
+#include <cstring>
 
 static constexpr Domain alsa_input_domain("alsa");
 

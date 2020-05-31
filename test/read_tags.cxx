@@ -35,15 +35,14 @@
 #include "util/PrintException.hxx"
 
 #include <cassert>
+#include <cstdio>
+#include <cstdlib>
 #include <stdexcept>
+#ifdef HAVE_CLOCALE
+#include <clocale>
+#endif
 
 #include <unistd.h>
-#include <stdlib.h>
-#include <stdio.h>
-
-#ifdef HAVE_LOCALE_H
-#include <locale.h>
-#endif
 
 class DumpTagHandler final : public NullTagHandler {
 	bool empty = true;
@@ -87,7 +86,7 @@ try {
 	const char *decoder_name;
 	const struct DecoderPlugin *plugin;
 
-#ifdef HAVE_LOCALE_H
+#ifdef HAVE_CLOCALE
 	/* initialize locale */
 	setlocale(LC_CTYPE,"");
 #endif

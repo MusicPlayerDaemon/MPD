@@ -35,12 +35,11 @@
 #include "util/PrintException.hxx"
 
 #include <cassert>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <memory>
 #include <stdexcept>
-
-#include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
 
 void
 mixer_set_volume([[maybe_unused]] Mixer *mixer,

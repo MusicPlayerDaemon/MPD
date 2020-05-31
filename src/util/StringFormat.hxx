@@ -32,7 +32,7 @@
 
 #include "StringBuffer.hxx"
 
-#include <stdio.h>
+#include <cstdio>
 
 template<typename... Args>
 static inline void

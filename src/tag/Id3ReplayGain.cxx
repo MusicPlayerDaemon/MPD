@@ -24,7 +24,7 @@
 
 #include <id3tag.h>
 
-#include <stdlib.h>
+#include <cstdlib>
 
 bool
 Id3ToReplayGainInfo(ReplayGainInfo &rgi, const struct id3_tag *tag) noexcept

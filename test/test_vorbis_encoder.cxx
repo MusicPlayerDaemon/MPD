@@ -29,9 +29,8 @@
 #include "util/PrintException.hxx"
 
 #include <cassert>
+#include <cstddef>
 #include <memory>
-
-#include <stddef.h>
 
 static uint8_t zero[256];
 

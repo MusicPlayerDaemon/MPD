@@ -27,7 +27,7 @@
 #include "util/StringView.hxx"
 #include "lib/expat/ExpatParser.hxx"
 
-#include <string.h>
+#include <cstring>
 
 /**
  * This is the state object for our XML parser.

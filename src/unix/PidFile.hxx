@@ -25,10 +25,10 @@
 #include "system/Error.hxx"
 
 #include <cassert>
+#include <cstdlib>
+#include <cstring>
 
-#include <string.h>
 #include <unistd.h>
-#include <stdlib.h>
 #include <fcntl.h>
 
 class PidFile {

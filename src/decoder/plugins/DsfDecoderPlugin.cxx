@@ -37,7 +37,7 @@
 #include "DsdLib.hxx"
 #include "tag/Handler.hxx"
 
-#include <string.h>
+#include <cstring>
 
 static constexpr unsigned DSF_BLOCK_SIZE = 4096;
 

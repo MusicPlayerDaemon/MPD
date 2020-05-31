@@ -38,8 +38,7 @@
 #include "util/UriUtil.hxx"
 
 #include <cassert>
-
-#include <stdlib.h>
+#include <cstdlib>
 
 #define LOCATE_TAG_FILE_KEY     "file"
 #define LOCATE_TAG_FILE_KEY_OLD "filename"

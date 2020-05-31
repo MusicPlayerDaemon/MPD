@@ -29,13 +29,13 @@
 
 #include <cassert>
 #include <cerrno>
+#include <cstdlib>
 #include <iterator>
 #include <stdexcept>
 
 #include <sys/stat.h>
 #include <sys/ioctl.h>
 #include <fcntl.h>
-#include <stdlib.h>
 #include <unistd.h>
 
 #if defined(__OpenBSD__) || defined(__NetBSD__)

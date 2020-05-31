@@ -32,7 +32,7 @@
 
 #include "StringView.hxx"
 
-#include <wchar.h>
+#include <cwchar>
 
 struct WStringView : BasicStringView<wchar_t> {
 	using BasicStringView::BasicStringView;

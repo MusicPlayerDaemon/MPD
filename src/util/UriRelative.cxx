@@ -33,8 +33,7 @@
 #include "StringCompare.hxx"
 
 #include <cassert>
-
-#include <string.h>
+#include <cstring>
 
 bool
 uri_is_child(const char *parent, const char *child) noexcept

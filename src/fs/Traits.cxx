@@ -20,7 +20,7 @@
 #include "Traits.hxx"
 #include "util/StringCompare.hxx"
 
-#include <string.h>
+#include <cstring>
 
 template<typename Traits>
 typename Traits::string

@@ -32,7 +32,7 @@
 
 #include "PrintException.hxx"
 
-#include <stdio.h>
+#include <cstdio>
 
 void
 PrintException(const std::exception &e) noexcept

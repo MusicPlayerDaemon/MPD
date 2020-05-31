@@ -26,7 +26,7 @@
 #include "AudioCompress/compress.h"
 #include "util/ConstBuffer.hxx"
 
-#include <string.h>
+#include <cstring>
 
 class NormalizeFilter final : public Filter {
 	Compressor *const compressor;

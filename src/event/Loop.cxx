@@ -26,7 +26,7 @@
 #ifdef HAVE_URING
 #include "UringManager.hxx"
 #include "util/PrintException.hxx"
-#include <stdio.h>
+#include <cstdio>
 #endif
 
 EventLoop::EventLoop(ThreadId _thread)

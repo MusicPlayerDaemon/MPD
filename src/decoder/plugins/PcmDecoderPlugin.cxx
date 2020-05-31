@@ -36,9 +36,8 @@
 #include "pcm/AudioParser.hxx"
 #endif
 
+#include <cstring>
 #include <exception>
-
-#include <string.h>
 
 static constexpr Domain pcm_decoder_domain("pcm_decoder");
 

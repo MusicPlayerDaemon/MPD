@@ -49,9 +49,8 @@
 #include "plugins/SidplayDecoderPlugin.hxx"
 #include "util/RuntimeError.hxx"
 
+#include <cstring>
 #include <iterator>
-
-#include <string.h>
 
 const struct DecoderPlugin *const decoder_plugins[] = {
 #ifdef ENABLE_MAD

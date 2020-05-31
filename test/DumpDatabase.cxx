@@ -34,13 +34,13 @@
 #include "util/ScopeExit.hxx"
 #include "util/PrintException.hxx"
 
-#include <stdexcept>
+#include <cstdlib>
 #include <iostream>
+#include <stdexcept>
+
 using std::cout;
 using std::cerr;
 using std::endl;
-
-#include <stdlib.h>
 
 class GlobalInit {
 	EventThread io_thread;

@@ -32,10 +32,9 @@
 
 #include "util/Compiler.h"
 
+#include <cstdio>
 #include <system_error>
 #include <utility>
-
-#include <stdio.h>
 
 template<typename... Args>
 static inline std::system_error
@@ -93,8 +92,7 @@ FormatLastError(const char *fmt, Args&&... args) noexcept
 #endif /* _WIN32 */
 
 #include <cerrno>
-
-#include <string.h>
+#include <cstring>
 
 /**
  * Returns the error_category to be used to wrap errno values.  The

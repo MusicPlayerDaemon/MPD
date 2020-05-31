@@ -19,11 +19,10 @@
 
 #include "Type.h"
 
+#include <cstdio>
 #include <cstdlib>
 #include <map>
 #include <string_view>
-
-#include <stdio.h>
 
 /*
 
@@ -48,8 +47,8 @@ main(int argc, char **argv)
 	fprintf(out,
 		"#include \"ParseName.hxx\"\n"
 		"\n"
-		"#include <assert.h>\n"
-		"#include <string.h>\n"
+		"#include <cassert>\n"
+		"#include <cstring>\n"
 		"\n"
 		"TagType\n"
 		"tag_name_parse(const char *name) noexcept\n"

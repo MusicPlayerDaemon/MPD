@@ -26,8 +26,7 @@
 
 #include <algorithm>
 #include <cassert>
-
-#include <stdlib.h>
+#include <cstdlib>
 
 gcc_pure
 static const char *

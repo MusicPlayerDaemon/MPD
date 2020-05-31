@@ -22,8 +22,7 @@
 #include "util/Compiler.h"
 
 #include <cassert>
-
-#include <string.h>
+#include <cstring>
 
 FullyBufferedSocket::ssize_t
 FullyBufferedSocket::DirectWrite(const void *data, size_t length) noexcept

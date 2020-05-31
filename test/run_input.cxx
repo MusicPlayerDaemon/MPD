@@ -44,10 +44,10 @@
 #include "archive/ArchiveList.hxx"
 #endif
 
+#include <cstdlib>
 #include <stdexcept>
 
 #include <unistd.h>
-#include <stdlib.h>
 
 struct CommandLine {
 	const char *uri = nullptr;

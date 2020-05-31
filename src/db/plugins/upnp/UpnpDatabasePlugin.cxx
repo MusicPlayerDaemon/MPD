@@ -41,10 +41,9 @@
 #include "util/SplitString.hxx"
 
 #include <cassert>
+#include <cstring>
 #include <string>
 #include <utility>
-
-#include <string.h>
 
 static const char *const rootid = "0";
 

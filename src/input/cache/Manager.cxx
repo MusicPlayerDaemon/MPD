@@ -25,7 +25,7 @@
 #include "fs/Traits.hxx"
 #include "util/DeleteDisposer.hxx"
 
-#include <string.h>
+#include <cstring>
 
 inline bool
 InputCacheManager::ItemCompare::operator()(const InputCacheItem &a,

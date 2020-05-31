@@ -53,8 +53,7 @@ extern "C" {
 }
 
 #include <cassert>
-
-#include <string.h>
+#include <cstring>
 
 /**
  * Muxer options to be passed to avformat_open_input().

@@ -20,7 +20,7 @@
 #include "CommandListBuilder.hxx"
 #include "client/Config.hxx"
 
-#include <string.h>
+#include <cstring>
 
 void
 CommandListBuilder::Reset()

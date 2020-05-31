@@ -30,7 +30,7 @@
 #ifndef WCHAR_UTIL_HXX
 #define WCHAR_UTIL_HXX
 
-#include <wchar.h>
+#include <cwchar>
 
 constexpr bool
 IsASCII(const wchar_t ch) noexcept

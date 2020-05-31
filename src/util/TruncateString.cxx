@@ -30,8 +30,7 @@
 #include "TruncateString.hxx"
 
 #include <algorithm>
-
-#include <string.h>
+#include <cstring>
 
 char *
 CopyTruncateString(char *gcc_restrict dest, const char *gcc_restrict src,

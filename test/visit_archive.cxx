@@ -29,11 +29,11 @@
 #include "fs/Path.hxx"
 #include "util/PrintException.hxx"
 
+#include <cstdio>
+#include <cstdlib>
 #include <stdexcept>
 
 #include <unistd.h>
-#include <stdlib.h>
-#include <stdio.h>
 
 class GlobalInit {
 	EventThread io_thread;

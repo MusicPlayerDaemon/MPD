@@ -21,7 +21,7 @@
 #include "InputStream.hxx"
 #include "thread/Name.hxx"
 
-#include <string.h>
+#include <cstring>
 
 BufferingInputStream::BufferingInputStream(InputStreamPtr _input)
 	:input(std::move(_input)),

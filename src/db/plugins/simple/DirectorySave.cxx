@@ -31,7 +31,7 @@
 #include "util/NumberParser.hxx"
 #include "util/RuntimeError.hxx"
 
-#include <string.h>
+#include <cstring>
 
 #define DIRECTORY_DIR "directory: "
 #define DIRECTORY_TYPE "type: "

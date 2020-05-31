@@ -49,9 +49,8 @@
 #endif
 
 #include <cassert>
+#include <cstring>
 #include <iterator>
-
-#include <string.h>
 
 /*
  * The most we ever use is for search/find, and that limits it to the

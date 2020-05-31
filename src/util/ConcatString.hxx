@@ -31,8 +31,7 @@
 #define CONCAT_STRING_HXX
 
 #include <algorithm>
-
-#include <string.h>
+#include <cstring>
 
 template<typename... Args>
 size_t

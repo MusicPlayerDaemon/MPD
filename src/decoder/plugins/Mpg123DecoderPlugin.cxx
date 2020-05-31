@@ -32,7 +32,7 @@
 
 #include <mpg123.h>
 
-#include <stdio.h>
+#include <cstdio>
 
 static constexpr Domain mpg123_domain("mpg123");
 

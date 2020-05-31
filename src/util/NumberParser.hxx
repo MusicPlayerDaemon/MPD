@@ -33,8 +33,7 @@
 
 #include <cassert>
 #include <cstdint>
-
-#include <stdlib.h>
+#include <cstdlib>
 
 struct StringView;
 

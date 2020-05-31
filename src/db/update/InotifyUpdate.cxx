@@ -28,12 +28,12 @@
 #include "Log.hxx"
 
 #include <cassert>
+#include <cstring>
 #include <forward_list>
 #include <map>
 #include <string>
 
 #include <sys/inotify.h>
-#include <string.h>
 #include <dirent.h>
 
 static constexpr unsigned IN_MASK =

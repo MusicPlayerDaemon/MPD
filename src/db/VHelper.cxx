@@ -24,10 +24,9 @@
 
 #include <algorithm>
 #include <cassert>
+#include <cstdlib>
+#include <cstring>
 #include <utility>
-
-#include <stdlib.h>
-#include <string.h>
 
 DatabaseVisitorHelper::DatabaseVisitorHelper(DatabaseSelection _selection,
 					     VisitSong &visit_song) noexcept

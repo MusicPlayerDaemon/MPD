@@ -30,7 +30,7 @@
 #include "song/DetachedSong.hxx"
 #include "SongLoader.hxx"
 
-#include <stdlib.h>
+#include <cstdlib>
 
 void
 playlist::OnModified() noexcept

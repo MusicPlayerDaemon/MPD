@@ -34,9 +34,8 @@
 #include "Features.hxx"
 #include "util/Compiler.h"
 
+#include <cstdlib>
 #include <utility>
-
-#include <stdlib.h>
 
 struct sockaddr;
 

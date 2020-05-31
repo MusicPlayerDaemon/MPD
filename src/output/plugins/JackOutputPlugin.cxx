@@ -31,13 +31,13 @@
 
 #include <atomic>
 #include <cassert>
+#include <cstdlib>
 
 #include <jack/jack.h>
 #include <jack/types.h>
 #include <jack/ringbuffer.h>
 
 #include <unistd.h> /* for usleep() */
-#include <stdlib.h>
 
 static constexpr unsigned MAX_PORTS = 16;
 

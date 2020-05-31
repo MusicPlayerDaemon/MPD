@@ -31,8 +31,8 @@
 
 #include <id3tag.h>
 
-#include <string.h>
-#include <stdlib.h>
+#include <cstdlib>
+#include <cstring>
 
 #ifndef ID3_FRAME_COMPOSER
 #define ID3_FRAME_COMPOSER "TCOM"

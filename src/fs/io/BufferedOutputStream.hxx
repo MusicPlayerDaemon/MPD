@@ -36,7 +36,7 @@
 #include <cstddef>
 
 #ifdef _UNICODE
-#include <wchar.h>
+#include <cwchar>
 #endif
 
 class OutputStream;

@@ -24,8 +24,7 @@
 
 #include <algorithm>
 #include <cstdint>
-
-#include <string.h>
+#include <cstring>
 
 class OpusReader {
 	const uint8_t *p, *const end;

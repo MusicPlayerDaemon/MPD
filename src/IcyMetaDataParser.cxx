@@ -24,8 +24,7 @@
 
 #include <algorithm>
 #include <cassert>
-
-#include <string.h>
+#include <cstring>
 
 #ifdef HAVE_ICU_CONVERTER
 

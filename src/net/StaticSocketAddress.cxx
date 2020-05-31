@@ -33,8 +33,7 @@
 #include "util/StringView.hxx"
 
 #include <algorithm>
-
-#include <string.h>
+#include <cstring>
 
 StaticSocketAddress &
 StaticSocketAddress::operator=(SocketAddress other) noexcept

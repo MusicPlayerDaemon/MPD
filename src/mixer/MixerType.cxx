@@ -20,9 +20,8 @@
 #include "MixerType.hxx"
 
 #include <cassert>
+#include <cstring>
 #include <stdexcept>
-
-#include <string.h>
 
 MixerType
 mixer_type_parse(const char *input)

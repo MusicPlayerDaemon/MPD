@@ -29,8 +29,7 @@
 
 #include <cassert>
 #include <cstdint>
-
-#include <string.h>
+#include <cstring>
 
 #if GCC_OLDER_THAN(8,0)
 /* GCC 6.3 emits this bogus warning in PcmVolumeConvert() because it

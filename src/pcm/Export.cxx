@@ -26,8 +26,7 @@
 #include "util/WritableBuffer.hxx"
 
 #include <cassert>
-
-#include <string.h>
+#include <cstring>
 
 void
 PcmExport::Open(SampleFormat sample_format, unsigned _channels,

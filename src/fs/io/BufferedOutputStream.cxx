@@ -31,9 +31,8 @@
 #include "OutputStream.hxx"
 
 #include <cstdarg>
-
-#include <string.h>
-#include <stdio.h>
+#include <cstdio>
+#include <cstring>
 
 #ifdef _UNICODE
 #include "system/Error.hxx"

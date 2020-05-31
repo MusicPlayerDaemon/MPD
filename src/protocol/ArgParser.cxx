@@ -23,7 +23,7 @@
 #include "Chrono.hxx"
 #include "util/NumberParser.hxx"
 
-#include <stdlib.h>
+#include <cstdlib>
 
 uint32_t
 ParseCommandArgU32(const char *s)

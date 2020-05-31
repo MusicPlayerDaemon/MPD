@@ -30,10 +30,9 @@
 #ifndef RUNTIME_ERROR_HXX
 #define RUNTIME_ERROR_HXX
 
+#include <cstdio>
 #include <stdexcept>
 #include <utility>
-
-#include <stdio.h>
 
 template<typename... Args>
 static inline std::runtime_error

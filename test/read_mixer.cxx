@@ -26,8 +26,7 @@
 #include "util/PrintException.hxx"
 
 #include <cassert>
-
-#include <stdlib.h>
+#include <cstdlib>
 
 const FilterPlugin *
 filter_plugin_by_name([[maybe_unused]] const char *name) noexcept

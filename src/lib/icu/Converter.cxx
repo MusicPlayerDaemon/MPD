@@ -23,10 +23,9 @@
 #include "util/FormatString.hxx"
 #include "config.h"
 
+#include <cstring>
 #include <iterator>
 #include <stdexcept>
-
-#include <string.h>
 
 #ifdef HAVE_ICU
 #include "Util.hxx"

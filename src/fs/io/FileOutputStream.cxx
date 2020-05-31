@@ -168,7 +168,7 @@ FileOutputStream::Cancel() noexcept
 /* supported since Linux 3.11 */
 #define __O_TMPFILE 020000000
 #define O_TMPFILE (__O_TMPFILE | O_DIRECTORY)
-#include <stdio.h>
+#include <cstdio>
 #endif
 
 /**

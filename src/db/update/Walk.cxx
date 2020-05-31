@@ -40,11 +40,10 @@
 
 #include <cassert>
 #include <cerrno>
+#include <cstdlib>
+#include <cstring>
 #include <exception>
 #include <memory>
-
-#include <string.h>
-#include <stdlib.h>
 
 UpdateWalk::UpdateWalk(const UpdateConfig &_config,
 		       EventLoop &_loop, DatabaseListener &_listener,

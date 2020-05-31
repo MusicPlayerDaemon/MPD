@@ -27,9 +27,8 @@
 #include "util/RuntimeError.hxx"
 
 #include <cassert>
-
-#include <string.h>
-#include <stdlib.h>
+#include <cstdlib>
+#include <cstring>
 
 static uint32_t
 ParseSampleRate(const char *src, bool mask, const char **endptr_r)

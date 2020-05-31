@@ -6,7 +6,7 @@
 
 #include <gtest/gtest.h>
 
-#include <string.h>
+#include <cstring>
 
 TEST(MixRamp, Interpolate)
 {

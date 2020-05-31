@@ -23,10 +23,9 @@
 #include "net/SocketAddress.hxx"
 #include "util/PrintException.hxx"
 
+#include <cstdio>
+#include <cstdlib>
 #include <exception>
-
-#include <stdio.h>
-#include <stdlib.h>
 
 int main(int argc, char **argv)
 try {

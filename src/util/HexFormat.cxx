@@ -29,7 +29,7 @@
 
 #include "HexFormat.hxx"
 
-#include <stdio.h>
+#include <cstdio>
 
 char *
 HexFormat(char *dest, ConstBuffer<uint8_t> src) noexcept

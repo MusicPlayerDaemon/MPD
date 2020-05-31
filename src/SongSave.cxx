@@ -34,7 +34,7 @@
 #include "util/RuntimeError.hxx"
 #include "util/NumberParser.hxx"
 
-#include <stdlib.h>
+#include <cstdlib>
 
 #define SONG_MTIME "mtime"
 #define SONG_END "song_end"

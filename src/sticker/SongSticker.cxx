@@ -25,8 +25,8 @@
 #include "util/Alloc.hxx"
 #include "util/ScopeExit.hxx"
 
-#include <string.h>
-#include <stdlib.h>
+#include <cstdlib>
+#include <cstring>
 
 std::string
 sticker_song_get_value(StickerDatabase &db,

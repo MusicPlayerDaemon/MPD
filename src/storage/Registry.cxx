@@ -27,7 +27,7 @@
 #include "plugins/CurlStorage.hxx"
 #include "config.h"
 
-#include <string.h>
+#include <cstring>
 
 const StoragePlugin *const storage_plugins[] = {
 	&local_storage_plugin,

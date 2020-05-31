@@ -27,8 +27,7 @@
 #include "Log.hxx"
 
 #include <cassert>
-
-#include <stdlib.h>
+#include <cstdlib>
 
 #define SW_VOLUME_STATE                         "sw_volume: "
 

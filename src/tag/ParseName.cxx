@@ -22,8 +22,7 @@
 #include "util/StringView.hxx"
 
 #include <cassert>
-
-#include <string.h>
+#include <cstring>
 
 TagType
 tag_name_parse(StringView name) noexcept

@@ -34,9 +34,8 @@
 #include "WStringAPI.hxx"
 #include "Compiler.h"
 
+#include <cwchar>
 #include <string_view>
-
-#include <wchar.h>
 
 gcc_pure gcc_nonnull_all
 static inline bool

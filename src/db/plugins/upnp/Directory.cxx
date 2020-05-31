@@ -26,9 +26,8 @@
 #include "util/StringView.hxx"
 
 #include <algorithm>
+#include <cstring>
 #include <string>
-
-#include <string.h>
 
 /* this destructor exists here just so it won't get inlined */
 UPnPDirContent::~UPnPDirContent() = default;

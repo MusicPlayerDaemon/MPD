@@ -22,7 +22,7 @@
 #include "SampleFormat.hxx"
 #include "util/WritableBuffer.hxx"
 
-#include <string.h>
+#include <cstring>
 
 void
 PcmSilence(WritableBuffer<void> dest, SampleFormat format) noexcept

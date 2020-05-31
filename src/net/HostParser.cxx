@@ -33,7 +33,7 @@
 #include "HostParser.hxx"
 #include "util/CharUtil.hxx"
 
-#include <string.h>
+#include <cstring>
 
 static inline bool
 IsValidHostnameChar(char ch) noexcept

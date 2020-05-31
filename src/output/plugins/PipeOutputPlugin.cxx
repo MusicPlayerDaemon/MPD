@@ -21,10 +21,9 @@
 #include "../OutputAPI.hxx"
 #include "system/Error.hxx"
 
-#include <string>
+#include <cstdio>
 #include <stdexcept>
-
-#include <stdio.h>
+#include <string>
 
 class PipeOutput final : AudioOutput {
 	const std::string cmd;

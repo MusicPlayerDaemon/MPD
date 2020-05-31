@@ -22,7 +22,7 @@
 #include "ReplayGain.hxx"
 #include "util/StringView.hxx"
 
-#include <string.h>
+#include <cstring>
 
 static bool
 replay_gain_ape_callback(unsigned long flags, const char *key,

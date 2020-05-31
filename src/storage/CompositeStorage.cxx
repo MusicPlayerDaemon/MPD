@@ -23,10 +23,9 @@
 #include "util/IterableSplitString.hxx"
 #include "util/StringCompare.hxx"
 
+#include <cstring>
 #include <set>
 #include <stdexcept>
-
-#include <string.h>
 
 /**
  * Combines the directory entries of another #StorageDirectoryReader

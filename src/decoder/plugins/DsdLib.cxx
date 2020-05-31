@@ -33,8 +33,8 @@
 #include <id3tag.h>
 #endif
 
-#include <string.h>
-#include <stdlib.h>
+#include <cstdlib>
+#include <cstring>
 
 bool
 DsdId::Equals(const char *s) const noexcept

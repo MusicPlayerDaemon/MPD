@@ -33,7 +33,7 @@
 #include "OutputStream.hxx"
 #include "util/Compiler.h"
 
-#include <stdio.h>
+#include <cstdio>
 
 class StdioOutputStream final : public OutputStream {
 	FILE *const file;

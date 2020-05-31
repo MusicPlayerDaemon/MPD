@@ -42,7 +42,7 @@
 #endif
 
 #ifdef _WIN32
-#include <wchar.h>
+#include <cwchar>
 #endif
 
 /**

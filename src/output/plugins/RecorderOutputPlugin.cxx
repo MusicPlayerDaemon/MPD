@@ -31,10 +31,9 @@
 #include "util/ScopeExit.hxx"
 
 #include <cassert>
+#include <cstdlib>
 #include <memory>
 #include <stdexcept>
-
-#include <stdlib.h>
 
 static constexpr Domain recorder_domain("recorder");
 

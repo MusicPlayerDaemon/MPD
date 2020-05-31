@@ -19,7 +19,7 @@
 
 #include "BufferedInputStream.hxx"
 
-#include <string.h>
+#include <cstring>
 
 BufferedInputStream::BufferedInputStream(InputStreamPtr _input)
 	:InputStream(_input->GetURI(), _input->mutex),

@@ -26,7 +26,7 @@
 #include "plugins/HdcdFilterPlugin.hxx"
 #include "config.h"
 
-#include <string.h>
+#include <cstring>
 
 static const FilterPlugin *const filter_plugins[] = {
 	&null_filter_plugin,

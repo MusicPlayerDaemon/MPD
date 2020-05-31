@@ -30,8 +30,7 @@
 #include "Log.hxx"
 
 #include <cassert>
-
-#include <string.h>
+#include <cstring>
 
 void
 AudioOutputControl::CommandFinished() noexcept

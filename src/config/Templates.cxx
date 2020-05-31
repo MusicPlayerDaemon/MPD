@@ -20,9 +20,8 @@
 #include "Templates.hxx"
 #include "Option.hxx"
 
+#include <cstring>
 #include <iterator>
-
-#include <string.h>
 
 const ConfigTemplate config_param_templates[] = {
 	{ "music_directory" },

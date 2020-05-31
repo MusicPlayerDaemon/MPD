@@ -27,11 +27,10 @@
 #include "util/StringView.hxx"
 #include "util/PrintException.hxx"
 
-#include <stdlib.h>
-#include <stdio.h>
-
-#ifdef HAVE_LOCALE_H
-#include <locale.h>
+#include <cstdio>
+#include <cstdlib>
+#ifdef HAVE_CLOCALE
+#include <clocale>
 #endif
 
 static bool
@@ -49,7 +48,7 @@ MyApeTagCallback([[maybe_unused]] unsigned long flags,
 int
 main(int argc, char **argv)
 try {
-#ifdef HAVE_LOCALE_H
+#ifdef HAVE_CLOCALE
 	/* initialize locale */
 	setlocale(LC_CTYPE,"");
 #endif

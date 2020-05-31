@@ -52,8 +52,7 @@
 
 #include <cassert>
 #include <cinttypes>
-
-#include <string.h>
+#include <cstring>
 
 #include <curl/curl.h>
 
