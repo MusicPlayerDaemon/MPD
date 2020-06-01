@@ -90,7 +90,7 @@ uri_remove_auth(const char *uri) noexcept
 
 	const char *slash = std::strchr(auth, '/');
 	if (slash == nullptr)
-		slash = auth + strlen(auth);
+		slash = auth + std::strlen(auth);
 
 	const char *at = (const char *)std::memchr(auth, '@', slash - auth);
 	if (at == nullptr)

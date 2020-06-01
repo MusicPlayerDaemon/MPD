@@ -90,7 +90,7 @@ sticker_song_find_cb(const char *uri, const char *value, void *user_data)
 	auto *data =
 		(struct sticker_song_find_data *)user_data;
 
-	if (memcmp(uri, data->base_uri, data->base_uri_length) != 0)
+	if (std::memcmp(uri, data->base_uri, data->base_uri_length) != 0)
 		/* should not happen, ignore silently */
 		return;
 
@@ -126,9 +126,9 @@ sticker_song_find(StickerDatabase &sticker_database, const Database &db,
 		/* searching in root directory - no trailing slash */
 		allocated = nullptr;
 
-	AtScopeExit(allocated) { free(allocated); };
+	AtScopeExit(allocated) { std::free(allocated); };
 
-	data.base_uri_length = strlen(data.base_uri);
+	data.base_uri_length = std::strlen(data.base_uri);
 
 	sticker_database.Find("song", data.base_uri, name, op, value,
 			      sticker_song_find_cb, &data);

@@ -42,7 +42,7 @@ try {
 	ssize_t nbytes;
 
 	if (argc > 2) {
-		fprintf(stderr, "Usage: software_volume [FORMAT] <IN >OUT\n");
+		std::fprintf(stderr, "Usage: software_volume [FORMAT] <IN >OUT\n");
 		return EXIT_FAILURE;
 	}
 
@@ -54,7 +54,7 @@ try {
 	const auto out_sample_format = pv.Open(audio_format.format, false);
 
 	if (out_sample_format != audio_format.format)
-		fprintf(stderr, "Converting to %s\n",
+		std::fprintf(stderr, "Converting to %s\n",
 			sample_format_to_string(out_sample_format));
 
 	while ((nbytes = read(0, buffer, sizeof(buffer))) > 0) {

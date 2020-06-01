@@ -71,10 +71,10 @@ HttpdClient::HandleLine(const char *line) noexcept
 	assert(state != State::RESPONSE);
 
 	if (state == State::REQUEST) {
-		if (strncmp(line, "HEAD /", 6) == 0) {
+		if (std::strncmp(line, "HEAD /", 6) == 0) {
 			line += 6;
 			head_method = true;
-		} else if (strncmp(line, "GET /", 5) == 0) {
+		} else if (std::strncmp(line, "GET /", 5) == 0) {
 			line += 5;
 		} else {
 			/* only GET is supported */
@@ -84,18 +84,18 @@ HttpdClient::HandleLine(const char *line) noexcept
 		}
 
 		/* blacklist some well-known request paths */
-		if ((strncmp(line, "favicon.ico", 11) == 0 &&
+		if ((std::strncmp(line, "favicon.ico", 11) == 0 &&
 		     (line[11] == '\0' || line[11] == ' ')) ||
-		    (strncmp(line, "robots.txt", 10) == 0 &&
+		    (std::strncmp(line, "robots.txt", 10) == 0 &&
 		     (line[10] == '\0' || line[10] == ' ')) ||
-		    (strncmp(line, "sitemap.xml", 11) == 0 &&
+		    (std::strncmp(line, "sitemap.xml", 11) == 0 &&
 		     (line[11] == '\0' || line[11] == ' ')) ||
-		    (strncmp(line, ".well-known/", 12) == 0)) {
+		    (std::strncmp(line, ".well-known/", 12) == 0)) {
 			should_reject = true;
 		}
 
 		line = std::strchr(line, ' ');
-		if (line == nullptr || strncmp(line + 1, "HTTP/", 5) != 0) {
+		if (line == nullptr || std::strncmp(line + 1, "HTTP/", 5) != 0) {
 			/* HTTP/0.9 without request headers */
 
 			if (head_method)
@@ -155,7 +155,7 @@ HttpdClient::SendResponse() noexcept
 						   metaint);
 		response = allocated.c_str();
 	} else { /* revert to a normal HTTP request */
-		snprintf(buffer, sizeof(buffer),
+		std::snprintf(buffer, sizeof(buffer),
 			 "HTTP/1.1 200 OK\r\n"
 			 "Content-Type: %s\r\n"
 			 "Connection: close\r\n"
@@ -166,7 +166,7 @@ HttpdClient::SendResponse() noexcept
 		response = buffer;
 	}
 
-	ssize_t nbytes = GetSocket().Write(response, strlen(response));
+	ssize_t nbytes = GetSocket().Write(response, std::strlen(response));
 	if (gcc_unlikely(nbytes < 0)) {
 		const SocketErrorMessage msg;
 		FormatWarning(httpd_output_domain,

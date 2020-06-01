@@ -73,7 +73,7 @@ soxr_parse_quality(const char *quality) noexcept
 		return SOXR_DEFAULT_RECIPE;
 
 	for (const auto *i = soxr_quality_table; i->name != nullptr; ++i)
-		if (strcmp(i->name, quality) == 0)
+		if (std::strcmp(i->name, quality) == 0)
 			return i->recipe;
 
 	return SOXR_INVALID_RECIPE;

@@ -39,7 +39,7 @@
 #include <unistd.h>
 
 static void
-tag_save(FILE *file, const Tag &tag)
+tag_save(std::FILE *file, const Tag &tag)
 {
 	StdioOutputStream sos(file);
 	BufferedOutputStream bos(sos);
@@ -52,7 +52,7 @@ try {
 	const char *uri;
 
 	if (argc != 3) {
-		fprintf(stderr, "Usage: dump_playlist CONFIG URI\n");
+		std::fprintf(stderr, "Usage: dump_playlist CONFIG URI\n");
 		return EXIT_FAILURE;
 	}
 
@@ -85,7 +85,7 @@ try {
 
 		playlist = playlist_list_open_stream(std::move(is), uri);
 		if (playlist == nullptr) {
-			fprintf(stderr, "Failed to open playlist\n");
+			std::fprintf(stderr, "Failed to open playlist\n");
 			return 2;
 		}
 	}
@@ -94,19 +94,19 @@ try {
 
 	std::unique_ptr<DetachedSong> song;
 	while ((song = playlist->NextSong()) != nullptr) {
-		printf("%s\n", song->GetURI());
+		std::printf("%s\n", song->GetURI());
 
 		const unsigned start_ms = song->GetStartTime().ToMS();
 		const unsigned end_ms = song->GetEndTime().ToMS();
 
 		if (end_ms > 0)
-			printf("range: %u:%02u..%u:%02u\n",
+			std::printf("range: %u:%02u..%u:%02u\n",
 			       start_ms / 60000,
 			       (start_ms / 1000) % 60,
 			       end_ms / 60000,
 			       (end_ms / 1000) % 60);
 		else if (start_ms > 0)
-			printf("range: %u:%02u..\n",
+			std::printf("range: %u:%02u..\n",
 			       start_ms / 60000,
 			       (start_ms / 1000) % 60);
 

@@ -38,7 +38,7 @@ SocketErrorMessage::SocketErrorMessage(socket_error_t code) noexcept
 				     nullptr, code, 0,
 				     buffer, std::size(msg), nullptr);
 	if (nbytes == 0) {
-		strcpy(msg, "Unknown error");
+		std::strcpy(msg, "Unknown error");
 		return;
 	}
 
@@ -47,7 +47,7 @@ SocketErrorMessage::SocketErrorMessage(socket_error_t code) noexcept
 					  msg, std::size(msg),
 					  nullptr, nullptr);
 	if (length <= 0) {
-		strcpy(msg, "WideCharToMultiByte() error");
+		std::strcpy(msg, "WideCharToMultiByte() error");
 		return;
 	}
 #endif

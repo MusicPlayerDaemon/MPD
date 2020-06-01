@@ -38,14 +38,14 @@ gcc_pure gcc_nonnull_all
 static inline size_t
 StringLength(const wchar_t *p) noexcept
 {
-	return wcslen(p);
+	return std::wcslen(p);
 }
 
 gcc_pure gcc_nonnull_all
 static inline const wchar_t *
 StringFind(const wchar_t *haystack, const wchar_t *needle) noexcept
 {
-	return wcsstr(haystack, needle);
+	return std::wcsstr(haystack, needle);
 }
 
 gcc_pure gcc_nonnull_all
@@ -66,28 +66,28 @@ gcc_pure gcc_nonnull_all
 static inline const wchar_t *
 StringFind(const wchar_t *haystack, wchar_t needle) noexcept
 {
-	return wcschr(haystack, needle);
+	return std::wcschr(haystack, needle);
 }
 
 gcc_pure gcc_nonnull_all
 static inline wchar_t *
 StringFind(wchar_t *haystack, wchar_t needle) noexcept
 {
-	return wcschr(haystack, needle);
+	return std::wcschr(haystack, needle);
 }
 
 gcc_pure gcc_nonnull_all
 static inline const wchar_t *
 StringFindLast(const wchar_t *haystack, wchar_t needle) noexcept
 {
-	return wcsrchr(haystack, needle);
+	return std::wcsrchr(haystack, needle);
 }
 
 gcc_pure gcc_nonnull_all
 static inline wchar_t *
 StringFindLast(wchar_t *haystack, wchar_t needle) noexcept
 {
-	return wcsrchr(haystack, needle);
+	return std::wcsrchr(haystack, needle);
 }
 
 gcc_pure gcc_nonnull_all
@@ -109,14 +109,14 @@ gcc_pure gcc_nonnull_all
 static inline const wchar_t *
 StringFindAny(const wchar_t *haystack, const wchar_t *accept) noexcept
 {
-	return wcspbrk(haystack, accept);
+	return std::wcspbrk(haystack, accept);
 }
 
 gcc_nonnull_all
 static inline void
 UnsafeCopyString(wchar_t *dest, const wchar_t *src) noexcept
 {
-	wcscpy(dest, src);
+	std::wcscpy(dest, src);
 }
 
 gcc_returns_nonnull gcc_nonnull_all
@@ -138,14 +138,14 @@ gcc_pure gcc_nonnull_all
 static inline int
 StringCompare(const wchar_t *a, const wchar_t *b) noexcept
 {
-	return wcscmp(a, b);
+	return std::wcscmp(a, b);
 }
 
 gcc_pure gcc_nonnull_all
 static inline int
 StringCompare(const wchar_t *a, const wchar_t *b, size_t n) noexcept
 {
-	return wcsncmp(a, b, n);
+	return std::wcsncmp(a, b, n);
 }
 
 /**
@@ -168,7 +168,7 @@ gcc_pure gcc_nonnull_all
 static inline bool
 StringIsEqual(const wchar_t *a, const wchar_t *b, size_t length) noexcept
 {
-	return wcsncmp(a, b, length) == 0;
+	return std::wcsncmp(a, b, length) == 0;
 }
 
 gcc_pure gcc_nonnull_all
@@ -198,7 +198,7 @@ gcc_pure gcc_nonnull_all
 static inline int
 StringCollate(const wchar_t *a, const wchar_t *b) noexcept
 {
-	return wcscoll(a, b);
+	return std::wcscoll(a, b);
 }
 
 gcc_malloc gcc_returns_nonnull gcc_nonnull_all

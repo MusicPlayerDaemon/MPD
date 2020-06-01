@@ -28,7 +28,7 @@ GenericPcmInterleave(uint8_t *gcc_restrict dest,
 {
 	for (size_t frame = 0; frame < n_frames; ++frame) {
 		for (size_t channel = 0; channel < src.size; ++channel) {
-			memcpy(dest, src[channel] + frame * sample_size,
+			std::memcpy(dest, src[channel] + frame * sample_size,
 			       sample_size);
 			dest += sample_size;
 		}

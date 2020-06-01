@@ -191,7 +191,7 @@ static void
 InterleaveDsfBlockMono(uint8_t *gcc_restrict dest,
 		       const uint8_t *gcc_restrict src)
 {
-	memcpy(dest, src, DSF_BLOCK_SIZE);
+	std::memcpy(dest, src, DSF_BLOCK_SIZE);
 }
 
 /**

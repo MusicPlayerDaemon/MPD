@@ -104,9 +104,9 @@ input_cdio_init(EventLoop &, const ConfigBlock &block)
 {
 	const char *value = block.GetBlockValue("default_byte_order");
 	if (value != nullptr) {
-		if (strcmp(value, "little_endian") == 0)
+		if (std::strcmp(value, "little_endian") == 0)
 			default_reverse_endian = IsBigEndian();
-		else if (strcmp(value, "big_endian") == 0)
+		else if (std::strcmp(value, "big_endian") == 0)
 			default_reverse_endian = IsLittleEndian();
 		else
 			throw FormatRuntimeError("Unrecognized 'default_byte_order' setting: %s",
@@ -144,13 +144,13 @@ parse_cdio_uri(const char *src)
 	if (device_length >= sizeof(dest.device))
 		device_length = sizeof(dest.device) - 1;
 
-	memcpy(dest.device, src, device_length);
+	std::memcpy(dest.device, src, device_length);
 	dest.device[device_length] = 0;
 
 	const char *track = slash + 1;
 
 	char *endptr;
-	dest.track = strtoul(track, &endptr, 10);
+	dest.track = std::strtoul(track, &endptr, 10);
 	if (*endptr != 0)
 		throw std::runtime_error("Malformed track number");
 
@@ -306,7 +306,7 @@ CdioParanoiaInputStream::Read(std::unique_lock<Mutex> &,
 			}
 
 			//store current buffer
-			memcpy(buffer, rbuf, CDIO_CD_FRAMESIZE_RAW);
+			std::memcpy(buffer, rbuf, CDIO_CD_FRAMESIZE_RAW);
 			buffer_lsn = lsn_relofs;
 		} else {
 			//use cached sector
@@ -322,7 +322,7 @@ CdioParanoiaInputStream::Read(std::unique_lock<Mutex> &,
 		const size_t len = (length < maxwrite? length : maxwrite);
 
 		//skip diff bytes from this lsn
-		memcpy(wptr, ((const char *)rbuf) + diff, len);
+		std::memcpy(wptr, ((const char *)rbuf) + diff, len);
 		//update pointer
 		wptr += len;
 		nbytes += len;

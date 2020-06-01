@@ -30,13 +30,13 @@ ParseAlsaVersion(const char *p) noexcept
 	char *endptr;
 	unsigned long major, minor = 0, subminor = 0;
 
-	major = strtoul(p, &endptr, 10);
+	major = std::strtoul(p, &endptr, 10);
 	if (*endptr == '.') {
 		p = endptr + 1;
-		minor = strtoul(p, &endptr, 10);
+		minor = std::strtoul(p, &endptr, 10);
 		if (*endptr == '.') {
 			p = endptr + 1;
-			subminor = strtoul(p, nullptr, 10);
+			subminor = std::strtoul(p, nullptr, 10);
 		}
 	}
 

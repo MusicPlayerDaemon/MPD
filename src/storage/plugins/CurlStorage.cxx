@@ -179,7 +179,7 @@ ParseStatus(const char *s)
 	if (space == nullptr)
 		return 0;
 
-	return strtoul(space + 1, nullptr, 10);
+	return std::strtoul(space + 1, nullptr, 10);
 }
 
 static unsigned
@@ -208,7 +208,7 @@ ParseTimeStamp(const char *s, size_t length)
 static uint64_t
 ParseU64(const char *s)
 {
-	return strtoull(s, nullptr, 10);
+	return std::strtoull(s, nullptr, 10);
 }
 
 static uint64_t
@@ -316,25 +316,25 @@ private:
 			  [[maybe_unused]] const XML_Char **attrs) final {
 		switch (state) {
 		case State::ROOT:
-			if (strcmp(name, "DAV:|response") == 0)
+			if (std::strcmp(name, "DAV:|response") == 0)
 				state = State::RESPONSE;
 			break;
 
 		case State::RESPONSE:
-			if (strcmp(name, "DAV:|href") == 0)
+			if (std::strcmp(name, "DAV:|href") == 0)
 				state = State::HREF;
-			else if (strcmp(name, "DAV:|status") == 0)
+			else if (std::strcmp(name, "DAV:|status") == 0)
 				state = State::STATUS;
-			else if (strcmp(name, "DAV:|resourcetype") == 0)
+			else if (std::strcmp(name, "DAV:|resourcetype") == 0)
 				state = State::TYPE;
-			else if (strcmp(name, "DAV:|getlastmodified") == 0)
+			else if (std::strcmp(name, "DAV:|getlastmodified") == 0)
 				state = State::MTIME;
-			else if (strcmp(name, "DAV:|getcontentlength") == 0)
+			else if (std::strcmp(name, "DAV:|getcontentlength") == 0)
 				state = State::LENGTH;
 			break;
 
 		case State::TYPE:
-			if (strcmp(name, "DAV:|collection") == 0)
+			if (std::strcmp(name, "DAV:|collection") == 0)
 				response.collection = true;
 			break;
 
@@ -352,7 +352,7 @@ private:
 			break;
 
 		case State::RESPONSE:
-			if (strcmp(name, "DAV:|response") == 0) {
+			if (std::strcmp(name, "DAV:|response") == 0) {
 				FinishResponse();
 				state = State::ROOT;
 			}
@@ -360,27 +360,27 @@ private:
 			break;
 
 		case State::HREF:
-			if (strcmp(name, "DAV:|href") == 0)
+			if (std::strcmp(name, "DAV:|href") == 0)
 				state = State::RESPONSE;
 			break;
 
 		case State::STATUS:
-			if (strcmp(name, "DAV:|status") == 0)
+			if (std::strcmp(name, "DAV:|status") == 0)
 				state = State::RESPONSE;
 			break;
 
 		case State::TYPE:
-			if (strcmp(name, "DAV:|resourcetype") == 0)
+			if (std::strcmp(name, "DAV:|resourcetype") == 0)
 				state = State::RESPONSE;
 			break;
 
 		case State::MTIME:
-			if (strcmp(name, "DAV:|getlastmodified") == 0)
+			if (std::strcmp(name, "DAV:|getlastmodified") == 0)
 				state = State::RESPONSE;
 			break;
 
 		case State::LENGTH:
-			if (strcmp(name, "DAV:|getcontentlength") == 0)
+			if (std::strcmp(name, "DAV:|getcontentlength") == 0)
 				state = State::RESPONSE;
 			break;
 		}

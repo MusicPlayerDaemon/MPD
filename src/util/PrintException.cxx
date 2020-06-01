@@ -37,15 +37,15 @@
 void
 PrintException(const std::exception &e) noexcept
 {
-	fprintf(stderr, "%s\n", e.what());
+	std::fprintf(stderr, "%s\n", e.what());
 	try {
 		std::rethrow_if_nested(e);
 	} catch (const std::exception &nested) {
 		PrintException(nested);
 	} catch (const char *s) {
-		fprintf(stderr, "%s\n", s);
+		std::fprintf(stderr, "%s\n", s);
 	} catch (...) {
-		fprintf(stderr, "Unrecognized nested exception\n");
+		std::fprintf(stderr, "Unrecognized nested exception\n");
 	}
 }
 
@@ -57,8 +57,8 @@ PrintException(const std::exception_ptr &ep) noexcept
 	} catch (const std::exception &e) {
 		PrintException(e);
 	} catch (const char *s) {
-		fprintf(stderr, "%s\n", s);
+		std::fprintf(stderr, "%s\n", s);
 	} catch (...) {
-		fprintf(stderr, "Unrecognized exception\n");
+		std::fprintf(stderr, "Unrecognized exception\n");
 	}
 }

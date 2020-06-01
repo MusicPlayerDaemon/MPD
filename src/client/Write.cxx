@@ -31,5 +31,5 @@ Client::Write(const void *data, size_t length) noexcept
 bool
 Client::Write(const char *data) noexcept
 {
-	return Write(data, strlen(data));
+	return Write(data, std::strlen(data));
 }

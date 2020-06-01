@@ -121,7 +121,7 @@ try {
 
 	const DecoderPlugin *plugin = decoder_plugin_from_name(c.decoder);
 	if (plugin == nullptr) {
-		fprintf(stderr, "No such decoder: %s\n", c.decoder);
+		std::fprintf(stderr, "No such decoder: %s\n", c.decoder);
 		return EXIT_FAILURE;
 	}
 
@@ -138,12 +138,12 @@ try {
 		} catch (StopDecoder) {
 		}
 	} else {
-		fprintf(stderr, "Decoder plugin is not usable\n");
+		std::fprintf(stderr, "Decoder plugin is not usable\n");
 		return EXIT_FAILURE;
 	}
 
 	client.Finish();
-	printf("%s\n", client.GetFingerprint().c_str());
+	std::printf("%s\n", client.GetFingerprint().c_str());
 	return EXIT_SUCCESS;
 } catch (...) {
 	PrintException(std::current_exception());

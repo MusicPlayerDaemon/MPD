@@ -111,7 +111,7 @@ CrossFadeSettings::Calculate(SignedSongTime total_time,
 
 	if (mixramp_delay <= FloatDuration::zero() ||
 	    !mixramp_start || !mixramp_prev_end) {
-		chunks = lround(duration / chunk_duration);
+		chunks = std::lround(duration / chunk_duration);
 	} else {
 		/* Calculate mixramp overlap. */
 		const auto mixramp_overlap_current =
@@ -126,7 +126,7 @@ CrossFadeSettings::Calculate(SignedSongTime total_time,
 		if (mixramp_overlap_current >= FloatDuration::zero() &&
 		    mixramp_overlap_prev >= FloatDuration::zero() &&
 		    mixramp_delay <= mixramp_overlap) {
-			chunks = lround((mixramp_overlap - mixramp_delay)
+			chunks = std::lround((mixramp_overlap - mixramp_delay)
 					/ chunk_duration);
 			FormatDebug(cross_fade_domain,
 				    "will overlap %d chunks, %fs", chunks,

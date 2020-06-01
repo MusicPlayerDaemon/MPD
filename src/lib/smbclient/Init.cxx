@@ -34,9 +34,9 @@ mpd_smbc_get_auth_data([[maybe_unused]] const char *srv,
 		       char *pw, [[maybe_unused]] int pwlen)
 {
 	// TODO: implement
-	strcpy(wg, "WORKGROUP");
-	strcpy(un, "");
-	strcpy(pw, "");
+	std::strcpy(wg, "WORKGROUP");
+	std::strcpy(un, "");
+	std::strcpy(pw, "");
 }
 
 void

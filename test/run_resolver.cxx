@@ -30,12 +30,12 @@
 int main(int argc, char **argv)
 try {
 	if (argc != 2) {
-		fprintf(stderr, "Usage: run_resolver HOST\n");
+		std::fprintf(stderr, "Usage: run_resolver HOST\n");
 		return EXIT_FAILURE;
 	}
 
 	for (const auto &i : Resolve(argv[1], 80, AI_PASSIVE, SOCK_STREAM)) {
-		printf("%s\n", ToString(i).c_str());
+		std::printf("%s\n", ToString(i).c_str());
 	}
 
 	return EXIT_SUCCESS;

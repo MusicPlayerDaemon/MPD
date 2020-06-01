@@ -25,7 +25,7 @@
 #include <cstddef>
 
 /**
- * Allocate memory.  Use free() to free it.
+ * Allocate memory.  Use std::free() to free it.
  *
  * This function never fails; in out-of-memory situations, it aborts
  * the process.
@@ -35,7 +35,7 @@ void *
 xalloc(size_t size);
 
 /**
- * Duplicate memory.  Use free() to free it.
+ * Duplicate memory.  Use std::free() to free it.
  *
  * This function never fails; in out-of-memory situations, it aborts
  * the process.
@@ -45,7 +45,7 @@ void *
 xmemdup(const void *s, size_t size);
 
 /**
- * Duplicate a string.  Use free() to free it.
+ * Duplicate a string.  Use std::free() to free it.
  *
  * This function never fails; in out-of-memory situations, it aborts
  * the process.
@@ -55,7 +55,7 @@ char *
 xstrdup(const char *s);
 
 /**
- * Duplicate a string.  Use free() to free it.
+ * Duplicate a string.  Use std::free() to free it.
  *
  * This function never fails; in out-of-memory situations, it aborts
  * the process.
@@ -65,7 +65,7 @@ char *
 xstrndup(const char *s, size_t n);
 
 /**
- * Concatenate two strings, returning a new allocation.  Use free() to
+ * Concatenate two strings, returning a new allocation.  Use std::free() to
  * free it.
  *
  * This function never fails; in out-of-memory situations, it aborts

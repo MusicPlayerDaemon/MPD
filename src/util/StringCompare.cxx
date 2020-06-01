@@ -36,7 +36,7 @@ StringEndsWith(const char *haystack, const char *needle) noexcept
 	const size_t needle_length = StringLength(needle);
 
 	return haystack_length >= needle_length &&
-		memcmp(haystack + haystack_length - needle_length,
+		std::memcmp(haystack + haystack_length - needle_length,
 		       needle, needle_length) == 0;
 }
 
@@ -61,7 +61,7 @@ FindStringSuffix(const char *p, const char *suffix) noexcept
 		return nullptr;
 
 	const char *q = p + p_length - suffix_length;
-	return memcmp(q, suffix, suffix_length) == 0
+	return std::memcmp(q, suffix, suffix_length) == 0
 		? q
 		: nullptr;
 }

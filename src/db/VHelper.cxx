@@ -61,8 +61,8 @@ gcc_pure
 static bool
 CompareNumeric(const char *a, const char *b) noexcept
 {
-	long a_value = strtol(a, nullptr, 10);
-	long b_value = strtol(b, nullptr, 10);
+	long a_value = std::strtol(a, nullptr, 10);
+	long b_value = std::strtol(b, nullptr, 10);
 
 	return a_value < b_value;
 }
@@ -85,7 +85,7 @@ CompareTags(TagType type, bool descending, const Tag &a, const Tag &b) noexcept
 		return CompareNumeric(a_value, b_value);
 
 	default:
-		return strcmp(a_value, b_value) < 0;
+		return std::strcmp(a_value, b_value) < 0;
 	}
 }
 

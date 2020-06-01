@@ -204,7 +204,7 @@ QobuzClient::MakeSignedUrl(const char *object, const char *method,
 
 	q(uri, "app_id", app_id);
 
-	const auto request_ts = std::to_string(time(nullptr));
+	const auto request_ts = std::to_string(std::time(nullptr));
 	q(uri, "request_ts", request_ts.c_str());
 	concatenated_query += request_ts;
 

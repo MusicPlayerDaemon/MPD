@@ -73,7 +73,7 @@ run_output(AudioOutput &ao, AudioFormat audio_format)
 	ao.Open(audio_format);
 	AtScopeExit(&ao) { ao.Close(); };
 
-	fprintf(stderr, "audio_format=%s\n",
+	std::fprintf(stderr, "audio_format=%s\n",
 		ToString(audio_format).c_str());
 
 	size_t frame_size = audio_format.GetFrameSize();
@@ -100,7 +100,7 @@ run_output(AudioOutput &ao, AudioFormat audio_format)
 			assert(consumed % frame_size == 0);
 
 			length -= consumed;
-			memmove(buffer, buffer + consumed, length);
+			std::memmove(buffer, buffer + consumed, length);
 		}
 	}
 }
@@ -108,7 +108,7 @@ run_output(AudioOutput &ao, AudioFormat audio_format)
 int main(int argc, char **argv)
 try {
 	if (argc < 3 || argc > 4) {
-		fprintf(stderr, "Usage: run_output CONFIG NAME [FORMAT] <IN\n");
+		std::fprintf(stderr, "Usage: run_output CONFIG NAME [FORMAT] <IN\n");
 		return EXIT_FAILURE;
 	}
 

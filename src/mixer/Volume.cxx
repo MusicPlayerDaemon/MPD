@@ -101,7 +101,7 @@ read_sw_volume_state(const char *line, MultipleOutputs &outputs)
 	if (line == nullptr)
 		return false;
 
-	sv = strtol(line, &end, 10);
+	sv = std::strtol(line, &end, 10);
 	if (*end == 0 && sv >= 0 && sv <= 100)
 		software_volume_change(outputs, sv);
 	else

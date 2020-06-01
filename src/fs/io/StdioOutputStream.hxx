@@ -36,14 +36,14 @@
 #include <cstdio>
 
 class StdioOutputStream final : public OutputStream {
-	FILE *const file;
+	std::FILE *const file;
 
 public:
-	explicit StdioOutputStream(FILE *_file) noexcept:file(_file) {}
+	explicit StdioOutputStream(std::FILE *_file) noexcept:file(_file) {}
 
 	/* virtual methods from class OutputStream */
 	void Write(const void *data, size_t size) override {
-		fwrite(data, 1, size, file);
+		std::fwrite(data, 1, size, file);
 
 		/* this class is debug-only and ignores errors */
 	}

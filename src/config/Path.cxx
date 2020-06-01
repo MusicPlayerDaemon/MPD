@@ -104,7 +104,7 @@ ParsePath(const char *path)
 		} else {
 			const char *slash = std::strchr(path, '/');
 			const char *end = slash == nullptr
-					? path + strlen(path)
+					? path + std::strlen(path)
 					: slash;
 			const std::string user(path, end);
 			home = GetHome(user.c_str());

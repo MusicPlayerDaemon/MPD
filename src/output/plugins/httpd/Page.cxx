@@ -24,5 +24,5 @@
 Page::Page(const void *data, size_t size) noexcept
 	:buffer(size)
 {
-	memcpy(&buffer.front(), data, size);
+	std::memcpy(&buffer.front(), data, size);
 }

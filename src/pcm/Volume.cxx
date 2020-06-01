@@ -211,7 +211,7 @@ PcmVolume::Apply(ConstBuffer<void> src) noexcept
 	void *data = buffer.Get(dest_size);
 
 	if (volume == 0) {
-		/* optimized special case: 0% volume = memset(0) */
+		/* optimized special case: 0% volume = std::memset(0) */
 		PcmSilence({data, dest_size}, format);
 		return { data, dest_size };
 	}

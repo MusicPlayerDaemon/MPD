@@ -128,7 +128,7 @@ audiofile_file_seek(AFvirtualfile *vfile, AFfileoffset _offset,
 static AFvirtualfile *
 setup_virtual_fops(AudioFileInputStream &afis) noexcept
 {
-	auto vf = (AFvirtualfile *)malloc(sizeof(AFvirtualfile));
+	auto vf = (AFvirtualfile *)std::malloc(sizeof(AFvirtualfile));
 	vf->closure = &afis;
 	vf->write = nullptr;
 	vf->read    = audiofile_file_read;

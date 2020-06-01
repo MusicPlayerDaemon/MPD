@@ -71,18 +71,18 @@ Ls(Storage &storage, const char *path)
 		char mtime_buffer[32];
 		const char *mtime = "          ";
 		if (!IsNegative(info.mtime)) {
-			time_t t = std::chrono::system_clock::to_time_t(info.mtime);
-			strftime(mtime_buffer, sizeof(mtime_buffer),
+			std::time_t t = std::chrono::system_clock::to_time_t(info.mtime);
+			std::strftime(mtime_buffer, sizeof(mtime_buffer),
 #ifdef _WIN32
 				 "%Y-%m-%d",
 #else
 				 "%F",
 #endif
-				 gmtime(&t));
+				 std::gmtime(&t));
 			mtime = mtime_buffer;
 		}
 
-		printf("%s %10llu %s %s\n",
+		std::printf("%s %10llu %s %s\n",
 		       type, (unsigned long long)info.size,
 		       mtime, name);
 	}
@@ -96,19 +96,19 @@ Stat(Storage &storage, const char *path)
 	const auto info = storage.GetInfo(path, false);
 	switch (info.type) {
 	case StorageFileInfo::Type::OTHER:
-		printf("other\n");
+		std::printf("other\n");
 		break;
 
 	case StorageFileInfo::Type::REGULAR:
-		printf("regular\n");
+		std::printf("regular\n");
 		break;
 
 	case StorageFileInfo::Type::DIRECTORY:
-		printf("directory\n");
+		std::printf("directory\n");
 		break;
 	}
 
-	printf("size: %llu\n", (unsigned long long)info.size);
+	std::printf("size: %llu\n", (unsigned long long)info.size);
 
 	return EXIT_SUCCESS;
 }
@@ -117,7 +117,7 @@ int
 main(int argc, char **argv)
 try {
 	if (argc < 3) {
-		fprintf(stderr, "Usage: run_storage COMMAND URI ...\n");
+		std::fprintf(stderr, "Usage: run_storage COMMAND URI ...\n");
 		return EXIT_FAILURE;
 	}
 
@@ -128,9 +128,9 @@ try {
 	EventThread io_thread;
 	io_thread.Start();
 
-	if (strcmp(command, "ls") == 0) {
+	if (std::strcmp(command, "ls") == 0) {
 		if (argc != 4) {
-			fprintf(stderr, "Usage: run_storage ls URI PATH\n");
+			std::fprintf(stderr, "Usage: run_storage ls URI PATH\n");
 			return EXIT_FAILURE;
 		}
 
@@ -140,9 +140,9 @@ try {
 					   storage_uri);
 
 		return Ls(*storage, path);
-	} else if (strcmp(command, "stat") == 0) {
+	} else if (std::strcmp(command, "stat") == 0) {
 		if (argc != 4) {
-			fprintf(stderr, "Usage: run_storage stat URI PATH\n");
+			std::fprintf(stderr, "Usage: run_storage stat URI PATH\n");
 			return EXIT_FAILURE;
 		}
 
@@ -153,7 +153,7 @@ try {
 
 		return Stat(*storage, path);
 	} else {
-		fprintf(stderr, "Unknown command\n");
+		std::fprintf(stderr, "Unknown command\n");
 		return EXIT_FAILURE;
 	}
 

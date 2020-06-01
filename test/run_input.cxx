@@ -121,7 +121,7 @@ public:
 };
 
 static void
-tag_save(FILE *file, const Tag &tag)
+tag_save(std::FILE *file, const Tag &tag)
 {
 	StdioOutputStream sos(file);
 	BufferedOutputStream bos(sos);
@@ -137,7 +137,7 @@ dump_input_stream(InputStream *is)
 	/* print meta data */
 
 	if (is->HasMimeType())
-		fprintf(stderr, "MIME type: %s\n", is->GetMimeType());
+		std::fprintf(stderr, "MIME type: %s\n", is->GetMimeType());
 
 	/* read data and tags from the stream */
 
@@ -145,7 +145,7 @@ dump_input_stream(InputStream *is)
 		{
 			auto tag = is->ReadTag();
 			if (tag) {
-				fprintf(stderr, "Received a tag:\n");
+				std::fprintf(stderr, "Received a tag:\n");
 				tag_save(stderr, *tag);
 			}
 		}
@@ -208,7 +208,7 @@ Scan(const char *uri)
 
 	auto scanner = InputScanTags(uri, handler);
 	if (!scanner) {
-		fprintf(stderr, "Unsupported URI\n");
+		std::fprintf(stderr, "Unsupported URI\n");
 		return EXIT_FAILURE;
 	}
 

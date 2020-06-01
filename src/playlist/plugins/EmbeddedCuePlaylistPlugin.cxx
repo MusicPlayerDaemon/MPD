@@ -120,7 +120,7 @@ EmbeddedCuePlaylist::NextSong()
 
 	while (*next != 0) {
 		const char *line = next;
-		char *eol = strpbrk(next, "\r\n");
+		char *eol = std::strpbrk(next, "\r\n");
 		if (eol != nullptr) {
 			/* null-terminate the line */
 			*eol = 0;
@@ -128,7 +128,7 @@ EmbeddedCuePlaylist::NextSong()
 		} else
 			/* last line; put the "next" pointer to the
 			   end of the buffer */
-			next += strlen(line);
+			next += std::strlen(line);
 
 		parser->Feed(line);
 		song = parser->Get();

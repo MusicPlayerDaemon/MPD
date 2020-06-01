@@ -32,7 +32,7 @@ CommandListBuilder::Reset()
 bool
 CommandListBuilder::Add(const char *cmd)
 {
-	size_t len = strlen(cmd) + 1;
+	size_t len = std::strlen(cmd) + 1;
 	size += len;
 	if (size > client_max_command_list_size)
 		return false;

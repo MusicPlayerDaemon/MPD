@@ -329,7 +329,7 @@ SlesOutput::Play(const void *chunk, size_t size)
 	});
 
 	size_t nbytes = std::min(BUFFER_SIZE - filled, size);
-	memcpy(buffers[next] + filled, chunk, nbytes);
+	std::memcpy(buffers[next] + filled, chunk, nbytes);
 	filled += nbytes;
 	if (filled < BUFFER_SIZE)
 		return nbytes;

@@ -49,7 +49,7 @@ PeekReader::Read(void *data, size_t size)
 	size_t buffer_remaining = buffer_size - buffer_position;
 	if (buffer_remaining > 0) {
 		size_t nbytes = std::min(buffer_remaining, size);
-		memcpy(data, buffer + buffer_position, nbytes);
+		std::memcpy(data, buffer + buffer_position, nbytes);
 		buffer_position += nbytes;
 		return nbytes;
 	}

@@ -43,14 +43,14 @@ public:
 	/* virtual methods from CurlResponseHandler */
 	void OnHeaders(unsigned status,
 		       std::multimap<std::string, std::string> &&headers) override {
-		fprintf(stderr, "status: %u\n", status);
+		std::fprintf(stderr, "status: %u\n", status);
 		for (const auto &i : headers)
-			fprintf(stderr, "%s: %s\n",
+			std::fprintf(stderr, "%s: %s\n",
 				i.first.c_str(), i.second.c_str());
 	}
 
 	void OnData(ConstBuffer<void> data) override {
-		if (fwrite(data.data, data.size, 1, stdout) != 1)
+		if (std::fwrite(data.data, data.size, 1, stdout) != 1)
 			throw std::runtime_error("Failed to write");
 	}
 
@@ -68,7 +68,7 @@ int
 main(int argc, char **argv) noexcept
 try {
 	if (argc != 2) {
-		fprintf(stderr, "Usage: RunCurl URI\n");
+		std::fprintf(stderr, "Usage: RunCurl URI\n");
 		return EXIT_FAILURE;
 	}
 

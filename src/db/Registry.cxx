@@ -41,7 +41,7 @@ const DatabasePlugin *
 GetDatabasePluginByName(const char *name) noexcept
 {
 	for (auto i = database_plugins; *i != nullptr; ++i)
-		if (strcmp((*i)->name, name) == 0)
+		if (std::strcmp((*i)->name, name) == 0)
 			return *i;
 
 	return nullptr;

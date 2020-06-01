@@ -264,7 +264,7 @@ wavpack_decode(DecoderClient &client, WavpackContext *wpc, bool can_seek)
 		if (samples_got == 0)
 			break;
 
-		int bitrate = lround(WavpackGetInstantBitrate(wpc) / 1000);
+		int bitrate = std::lround(WavpackGetInstantBitrate(wpc) / 1000);
 		format_samples(chunk, samples_got * audio_format.channels);
 
 		cmd = client.SubmitData(nullptr, chunk,
@@ -517,7 +517,7 @@ wavpack_open_wvc(DecoderClient &client, const char *uri)
 
 	char *wvc_url = xstrcatdup(uri, "c");
 	AtScopeExit(wvc_url) {
-		free(wvc_url);
+		std::free(wvc_url);
 	};
 
 	try {

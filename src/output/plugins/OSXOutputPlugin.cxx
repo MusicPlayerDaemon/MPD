@@ -43,6 +43,7 @@
 #include <CoreServices/CoreServices.h>
 #include <boost/lockfree/spsc_queue.hpp>
 
+#include <cmath>
 #include <memory>
 #include <optional>
 
@@ -243,7 +244,7 @@ osx_output_parse_channel_map(const char *device_name,
 			(std::isdigit(*channel_map_str) || *channel_map_str == '-')
 		) {
 			char *endptr;
-			channel_map[inserted_channels] = strtol(channel_map_str, &endptr, 10);
+			channel_map[inserted_channels] = std::strtol(channel_map_str, &endptr, 10);
 			if (channel_map[inserted_channels] < -1)
 				throw FormatRuntimeError("%s: channel map value %d not allowed (must be -1 or greater)",
 							 device_name, channel_map[inserted_channels]);
@@ -273,7 +274,7 @@ osx_output_set_channel_map(OSXOutput *oo)
 
 	AudioStreamBasicDescription desc;
 	UInt32 size = sizeof(desc);
-	memset(&desc, 0, size);
+	std::memset(&desc, 0, size);
 	status = AudioUnitGetProperty(oo->au,
 		kAudioUnitProperty_StreamFormat,
 		kAudioUnitScope_Output,
@@ -308,7 +309,7 @@ osx_output_score_sample_rate(Float64 destination_rate, unsigned source_rate)
 {
 	float score = 0;
 	double int_portion;
-	double frac_portion = modf(source_rate / destination_rate, &int_portion);
+	double frac_portion = std::modf(source_rate / destination_rate, &int_portion);
 	// prefer sample rates that are multiples of the source sample rate
 	score += (1 - frac_portion) * 1000;
 	// prefer exact matches over other multiples
@@ -715,7 +716,7 @@ OSXOutput::Open(AudioFormat &audio_format)
 	bool dop = dop_setting;
 #endif
 
-	memset(&asbd, 0, sizeof(asbd));
+	std::memset(&asbd, 0, sizeof(asbd));
 	asbd.mFormatID = kAudioFormatLinearPCM;
 	if (audio_format.format == SampleFormat::FLOAT) {
 		asbd.mFormatFlags = kLinearPCMFormatFlagIsFloat;

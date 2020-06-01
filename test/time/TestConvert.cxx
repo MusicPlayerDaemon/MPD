@@ -34,7 +34,7 @@
 
 #include <gtest/gtest.h>
 
-static constexpr time_t times[] = {
+static constexpr std::time_t times[] = {
 	1234567890,
 	1580566807,
 	1585750807,

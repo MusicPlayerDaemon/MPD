@@ -36,7 +36,7 @@ char *
 CopyTruncateString(char *gcc_restrict dest, const char *gcc_restrict src,
 		   size_t size) noexcept
 {
-	size_t length = strlen(src);
+	size_t length = std::strlen(src);
 	if (length >= size)
 		length = size - 1;
 

@@ -58,7 +58,7 @@ FfmpegFilter::FilterPCM(ConstBuffer<void> src)
 
 	frame.GetBuffer();
 
-	memcpy(frame.GetData(0), src.data, src.size);
+	std::memcpy(frame.GetData(0), src.data, src.size);
 
 	int err = av_buffersrc_add_frame(buffer_src.get(), frame.get());
 	if (err < 0)

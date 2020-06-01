@@ -87,7 +87,7 @@ RewindInputStream::Read(std::unique_lock<Mutex> &lock,
 		if (read_size > tail - head)
 			read_size = tail - head;
 
-		memcpy(ptr, buffer + head, read_size);
+		std::memcpy(ptr, buffer + head, read_size);
 		head += read_size;
 		offset += read_size;
 
@@ -103,7 +103,7 @@ RewindInputStream::Read(std::unique_lock<Mutex> &lock,
 		else if (tail == (size_t)offset) {
 			/* append to buffer */
 
-			memcpy(buffer + tail, ptr, nbytes);
+			std::memcpy(buffer + tail, ptr, nbytes);
 			tail += nbytes;
 
 			assert(tail == (size_t)input->GetOffset());

@@ -40,8 +40,8 @@ ReadPage(const ogg_page &page, void *_buffer, size_t size) noexcept
 		body_len = size - header_len;
 
 	uint8_t *buffer = (uint8_t *)_buffer;
-	memcpy(buffer, page.header, header_len);
-	memcpy(buffer + header_len, page.body, body_len);
+	std::memcpy(buffer, page.header, header_len);
+	std::memcpy(buffer + header_len, page.body, body_len);
 
 	return header_len + body_len;
 }

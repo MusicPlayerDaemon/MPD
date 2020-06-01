@@ -42,7 +42,7 @@ ParseUnsigned(const char *p, char **endptr=nullptr, int base=10) noexcept
 {
 	assert(p != nullptr);
 
-	return (unsigned)strtoul(p, endptr, base);
+	return (unsigned)std::strtoul(p, endptr, base);
 }
 
 static inline int
@@ -50,7 +50,7 @@ ParseInt(const char *p, char **endptr=nullptr, int base=10) noexcept
 {
 	assert(p != nullptr);
 
-	return (int)strtol(p, endptr, base);
+	return (int)std::strtol(p, endptr, base);
 }
 
 static inline uint64_t

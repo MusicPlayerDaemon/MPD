@@ -19,7 +19,7 @@ public:
 			  Mutex &_mutex,
 			  const char *_data)
 		:InputStream(_uri, _mutex),
-		 data(_data), remaining(strlen(data)) {
+		 data(_data), remaining(std::strlen(data)) {
 		SetReady();
 	}
 
@@ -31,7 +31,7 @@ public:
 	size_t Read(std::unique_lock<Mutex> &,
 		    void *ptr, size_t read_size) override {
 		size_t nbytes = std::min(remaining, read_size);
-		memcpy(ptr, data, nbytes);
+		std::memcpy(ptr, data, nbytes);
 		data += nbytes;
 		remaining -= nbytes;
 		offset += nbytes;

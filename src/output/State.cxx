@@ -59,7 +59,7 @@ audio_output_state_read(const char *line, MultipleOutputs &outputs)
 	if (line == nullptr)
 		return false;
 
-	value = strtol(line, &endptr, 10);
+	value = std::strtol(line, &endptr, 10);
 	if (*endptr != ':' || (value != 0 && value != 1))
 		return false;
 

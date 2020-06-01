@@ -70,7 +70,7 @@ ZeroconfInit(const ConfigData &config, [[maybe_unused]] EventLoop &loop)
 				       SERVICE_NAME);
 
 	/* replace "%h" with the host name */
-	const char *h = strstr(serviceName, "%h");
+	const char *h = std::strstr(serviceName, "%h");
 	std::string buffer;
 	if (h != nullptr) {
 		char hostname[HOST_NAME_MAX+1];

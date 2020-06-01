@@ -74,7 +74,7 @@ public:
 			return std::string(msg);
 		}
 		char buffer[11]; // "0x12345678\0"
-		int size = snprintf(buffer, sizeof(buffer), "0x%1x", Errcode);
+		int size = std::snprintf(buffer, sizeof(buffer), "0x%1x", Errcode);
 		assert(2 <= size && size <= 10);
 		return std::string(buffer, size);
 	}
@@ -93,12 +93,12 @@ gcc_printf(2, 3) static inline std::runtime_error
 	va_start(args1, fmt);
 	va_copy(args2, args1);
 
-	const int size = vsnprintf(nullptr, 0, fmt, args1);
+	const int size = std::vsnprintf(nullptr, 0, fmt, args1);
 	va_end(args1);
 	assert(size >= 0);
 
 	auto buffer = std::make_unique<char[]>(size + 1);
-	vsprintf(buffer.get(), fmt, args2);
+	std::vsprintf(buffer.get(), fmt, args2);
 	va_end(args2);
 
 	return std::system_error(std::error_code(result, hresult_category()),

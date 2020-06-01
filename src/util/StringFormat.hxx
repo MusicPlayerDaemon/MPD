@@ -39,7 +39,7 @@ static inline void
 StringFormat(char *buffer, std::size_t size,
 	     const char *fmt, Args&&... args) noexcept
 {
-	snprintf(buffer, size, fmt, args...);
+	std::snprintf(buffer, size, fmt, args...);
 }
 
 template<std::size_t CAPACITY, typename... Args>
@@ -63,7 +63,7 @@ template<typename... Args>
 static inline void
 StringFormatUnsafe(char *buffer, const char *fmt, Args&&... args) noexcept
 {
-	sprintf(buffer, fmt, args...);
+	std::sprintf(buffer, fmt, args...);
 }
 
 #endif

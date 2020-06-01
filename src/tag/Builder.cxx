@@ -205,7 +205,7 @@ TagBuilder::AddItemInternal(TagType type, StringView value) noexcept
 
 	AddItemUnchecked(type, value);
 
-	free(f.data);
+	std::free(f.data);
 }
 
 void

@@ -31,5 +31,5 @@ PcmSilence(WritableBuffer<void> dest, SampleFormat format) noexcept
 	if (format == SampleFormat::DSD)
 		pattern = SampleTraits<SampleFormat::DSD>::SILENCE;
 
-	memset(dest.data, pattern, dest.size);
+	std::memset(dest.data, pattern, dest.size);
 }

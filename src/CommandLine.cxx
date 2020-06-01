@@ -110,7 +110,7 @@ static constexpr Domain cmdline_domain("cmdline");
 [[noreturn]]
 static void version()
 {
-	printf("Music Player Daemon " VERSION " (%s)"
+	std::printf("Music Player Daemon " VERSION " (%s)"
 	       "\n"
 	       "Copyright 2003-2007 Warren Dukes <warren.dukes@gmail.com>\n"
 	       "Copyright 2008-2018 Max Kellermann <max.kellermann@gmail.com>\n"
@@ -119,45 +119,45 @@ static void version()
 	       GIT_VERSION);
 
 #ifdef ENABLE_DATABASE
-	printf("\n"
+	std::printf("\n"
 	       "Database plugins:\n");
 
 	for (auto i = database_plugins; *i != nullptr; ++i)
-		printf(" %s", (*i)->name);
+		std::printf(" %s", (*i)->name);
 
-	printf("\n\n"
+	std::printf("\n\n"
 	       "Storage plugins:\n");
 
 	for (auto i = storage_plugins; *i != nullptr; ++i)
-		printf(" %s", (*i)->name);
+		std::printf(" %s", (*i)->name);
 
-	printf("\n");
+	std::printf("\n");
 #endif
 
 #ifdef ENABLE_NEIGHBOR_PLUGINS
-	printf("\n"
+	std::printf("\n"
 	       "Neighbor plugins:\n");
 	for (auto i = neighbor_plugins; *i != nullptr; ++i)
-		printf(" %s", (*i)->name);
+		std::printf(" %s", (*i)->name);
 
 #endif
 
-	printf("\n"
+	std::printf("\n"
 	       "\n"
 	       "Decoders plugins:\n");
 
 	decoder_plugins_for_each([](const DecoderPlugin &plugin){
-			printf(" [%s]", plugin.name);
+			std::printf(" [%s]", plugin.name);
 
 			const char *const*suffixes = plugin.suffixes;
 			if (suffixes != nullptr)
 				for (; *suffixes != nullptr; ++suffixes)
-					printf(" %s", *suffixes);
+					std::printf(" %s", *suffixes);
 
-			printf("\n");
+			std::printf("\n");
 		});
 
-	printf("\n"
+	std::printf("\n"
 	       "Filters:\n"
 #ifdef ENABLE_LIBSAMPLERATE
 	       " libsamplerate"
@@ -173,32 +173,32 @@ static void version()
 	       "\n\n"
 	       "Output plugins:\n");
 	audio_output_plugins_for_each(plugin)
-		printf(" %s", plugin->name);
-	printf("\n"
+		std::printf(" %s", plugin->name);
+	std::printf("\n"
 
 #ifdef ENABLE_ENCODER
 	       "\n"
 	       "Encoder plugins:\n");
 	encoder_plugins_for_each(plugin)
-		printf(" %s", plugin->name);
-	printf("\n"
+		std::printf(" %s", plugin->name);
+	std::printf("\n"
 #endif
 
 #ifdef ENABLE_ARCHIVE
 	       "\n"
 	       "Archive plugins:\n");
 	archive_plugins_for_each(plugin) {
-		printf(" [%s]", plugin->name);
+		std::printf(" [%s]", plugin->name);
 
 		const char *const*suffixes = plugin->suffixes;
 		if (suffixes != nullptr)
 			for (; *suffixes != nullptr; ++suffixes)
-				printf(" %s", *suffixes);
+				std::printf(" %s", *suffixes);
 
-		printf("\n");
+		std::printf("\n");
 	}
 
-	printf(""
+	std::printf(""
 #endif
 
 	       "\n"
@@ -212,18 +212,18 @@ static void version()
 #endif
 	       );
 	input_plugins_for_each(plugin)
-		printf(" %s", plugin->name);
+		std::printf(" %s", plugin->name);
 
-	printf("\n\n"
+	std::printf("\n\n"
 	       "Playlist plugins:\n");
 	playlist_plugins_for_each(plugin)
-		printf(" %s", plugin->name);
+		std::printf(" %s", plugin->name);
 
-	printf("\n\n"
+	std::printf("\n\n"
 	       "Protocols:\n");
 	print_supported_uri_schemes_to_fp(stdout);
 
-	printf("\n"
+	std::printf("\n"
 	       "Other features:\n"
 #ifdef HAVE_AVAHI
 	       " avahi"
@@ -266,12 +266,12 @@ static void version()
 static void PrintOption(const OptionDef &opt)
 {
 	if (opt.HasShortOption())
-		printf("  -%c, --%-12s%s\n",
+		std::printf("  -%c, --%-12s%s\n",
 		       opt.GetShortOption(),
 		       opt.GetLongOption(),
 		       opt.GetDescription());
 	else
-		printf("  --%-16s%s\n",
+		std::printf("  --%-16s%s\n",
 		       opt.GetLongOption(),
 		       opt.GetDescription());
 }
@@ -279,7 +279,7 @@ static void PrintOption(const OptionDef &opt)
 [[noreturn]]
 static void help()
 {
-	printf("Usage:\n"
+	std::printf("Usage:\n"
 	       "  mpd [OPTION...] [path/to/mpd.conf]\n"
 	       "\n"
 	       "Music Player Daemon - a daemon for playing music.\n"

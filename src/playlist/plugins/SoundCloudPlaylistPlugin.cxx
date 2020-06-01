@@ -61,7 +61,7 @@ soundcloud_init(const ConfigBlock &block)
 /**
  * Construct a full soundcloud resolver URL from the given fragment.
  * @param uri uri of a soundcloud page (or just the path)
- * @return Constructed URL. Must be freed with free().
+ * @return Constructed URL. Must be freed with std::free().
  */
 static char *
 soundcloud_resolve(const char* uri)
@@ -80,7 +80,7 @@ soundcloud_resolve(const char* uri)
 	ru = xstrcatdup("https://api.soundcloud.com/resolve.json?url=",
 			u, "&client_id=",
 			soundcloud_config.apikey.c_str());
-	free(u);
+	std::free(u);
 
 	return ru;
 }
@@ -240,34 +240,34 @@ soundcloud_open_uri(const char *uri, Mutex &mutex)
 	uri += 13;
 
 	char *u = nullptr;
-	if (strncmp(uri, "track/", 6) == 0) {
+	if (std::strncmp(uri, "track/", 6) == 0) {
 		const char *rest = uri + 6;
 		u = xstrcatdup("https://api.soundcloud.com/tracks/",
 			       rest, ".json?client_id=",
 			       soundcloud_config.apikey.c_str());
-	} else if (strncmp(uri, "playlist/", 9) == 0) {
+	} else if (std::strncmp(uri, "playlist/", 9) == 0) {
 		const char *rest = uri + 9;
 		u = xstrcatdup("https://api.soundcloud.com/playlists/",
 			       rest, ".json?client_id=",
 			       soundcloud_config.apikey.c_str());
-	} else if (strncmp(uri, "user/", 5) == 0) {
+	} else if (std::strncmp(uri, "user/", 5) == 0) {
 		const char *rest = uri + 5;
 		u = xstrcatdup("https://api.soundcloud.com/users/",
 			       rest, "/tracks.json?client_id=",
 			       soundcloud_config.apikey.c_str());
-	} else if (strncmp(uri, "search/", 7) == 0) {
+	} else if (std::strncmp(uri, "search/", 7) == 0) {
 		const char *rest = uri + 7;
 		u = xstrcatdup("https://api.soundcloud.com/tracks.json?q=",
 			       rest, "&client_id=",
 			       soundcloud_config.apikey.c_str());
-	} else if (strncmp(uri, "url/", 4) == 0) {
+	} else if (std::strncmp(uri, "url/", 4) == 0) {
 		const char *rest = uri + 4;
 		/* Translate to soundcloud resolver call. libcurl will automatically
 		   follow the redirect to the right resource. */
 		u = soundcloud_resolve(rest);
 	}
 
-	AtScopeExit(u) { free(u); };
+	AtScopeExit(u) { std::free(u); };
 
 	if (u == nullptr) {
 		LogWarning(soundcloud_domain, "unknown soundcloud URI");

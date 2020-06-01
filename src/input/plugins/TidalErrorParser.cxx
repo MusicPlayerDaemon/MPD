@@ -55,10 +55,10 @@ TidalErrorParser::OnEnd()
 	char what[1024];
 
 	if (!message.empty())
-		snprintf(what, sizeof(what), "Error from Tidal: %s",
+		std::snprintf(what, sizeof(what), "Error from Tidal: %s",
 			 message.c_str());
 	else
-		snprintf(what, sizeof(what), "Status %u from Tidal", status);
+		std::snprintf(what, sizeof(what), "Status %u from Tidal", status);
 
 	throw TidalError(status, sub_status, what);
 }

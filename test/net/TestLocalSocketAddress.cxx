@@ -30,8 +30,9 @@
 #include "net/AllocatedSocketAddress.hxx"
 #include "net/ToString.hxx"
 
-#include <gtest/gtest.h>
+#include <cstring>
 
+#include <gtest/gtest.h>
 #include <sys/un.h>
 
 TEST(LocalSocketAddress, Path)
@@ -46,7 +47,7 @@ TEST(LocalSocketAddress, Path)
 
 	const auto &sun = *(const struct sockaddr_un *)a.GetAddress();
 	EXPECT_STREQ(sun.sun_path, path);
-	EXPECT_EQ(sun.sun_path + strlen(path) + 1, (const char *)a.GetAddress() + a.GetSize());
+	EXPECT_EQ(sun.sun_path + std::strlen(path) + 1, (const char *)a.GetAddress() + a.GetSize());
 }
 
 #ifdef __linux__
@@ -67,8 +68,8 @@ TEST(LocalSocketAddress, Abstract)
 	EXPECT_EQ(sun.sun_path[0], 0);
 
 	/* ... but are not null-terminated */
-	EXPECT_EQ(memcmp(sun.sun_path + 1, path + 1, strlen(path) - 1), 0);
-	EXPECT_EQ(sun.sun_path + strlen(path), (const char *)a.GetAddress() + a.GetSize());
+	EXPECT_EQ(std::memcmp(sun.sun_path + 1, path + 1, std::strlen(path) - 1), 0);
+	EXPECT_EQ(sun.sun_path + std::strlen(path), (const char *)a.GetAddress() + a.GetSize());
 }
 
 #endif

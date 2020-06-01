@@ -141,7 +141,7 @@ daemonize_begin(bool detach)
 
 	/* flush all file handles before duplicating the buffers */
 
-	fflush(nullptr);
+	std::fflush(nullptr);
 
 	/* create a pipe to synchronize the parent and the child */
 
@@ -250,7 +250,7 @@ daemonize_finish()
 		pidfile = nullptr;
 	}
 
-	free(user_name);
+	std::free(user_name);
 }
 
 #endif

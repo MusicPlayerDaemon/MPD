@@ -45,7 +45,7 @@ public:
 
 	SocketSet(const SocketSet &other) noexcept {
 		set.fd_count = other.set.fd_count;
-		memcpy(set.fd_array,
+		std::memcpy(set.fd_array,
 		       other.set.fd_array,
 		       sizeof (SOCKET) * set.fd_count);
 	}

@@ -289,7 +289,7 @@ command_init() noexcept
 #ifndef NDEBUG
 	/* ensure that the command list is sorted */
 	for (unsigned i = 0; i < num_commands - 1; ++i)
-		assert(strcmp(commands[i].cmd, commands[i + 1].cmd) < 0);
+		assert(std::strcmp(commands[i].cmd, commands[i + 1].cmd) < 0);
 #endif
 }
 
@@ -303,7 +303,7 @@ command_lookup(const char *name) noexcept
 	do {
 		i = (a + b) / 2;
 
-		const auto cmp = strcmp(name, commands[i].cmd);
+		const auto cmp = std::strcmp(name, commands[i].cmd);
 		if (cmp == 0)
 			return &commands[i];
 		else if (cmp < 0)

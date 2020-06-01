@@ -33,7 +33,7 @@
 int main(int argc, char **argv)
 try {
 	if (argc < 2) {
-		fprintf(stderr, "Usage: ParseSongFilter FILTER ...\n");
+		std::fprintf(stderr, "Usage: ParseSongFilter FILTER ...\n");
 		return 1;
 	}
 
@@ -41,7 +41,7 @@ try {
 	filter.Parse(ConstBuffer<const char *>(argv + 1, argc - 1));
 	filter.Optimize();
 
-	puts(filter.ToExpression().c_str());
+	std::puts(filter.ToExpression().c_str());
 	return EXIT_SUCCESS;
 } catch (...) {
 	PrintException(std::current_exception());

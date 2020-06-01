@@ -39,11 +39,11 @@ inline bool
 NfsManager::Compare::operator()(const LookupKey a,
 				const ManagedConnection &b) const noexcept
 {
-	int result = strcmp(a.server, b.GetServer());
+	int result = std::strcmp(a.server, b.GetServer());
 	if (result != 0)
 		return result < 0;
 
-	result = strcmp(a.export_name, b.GetExportName());
+	result = std::strcmp(a.export_name, b.GetExportName());
 	return result < 0;
 }
 
@@ -51,11 +51,11 @@ inline bool
 NfsManager::Compare::operator()(const ManagedConnection &a,
 				const LookupKey b) const noexcept
 {
-	int result = strcmp(a.GetServer(), b.server);
+	int result = std::strcmp(a.GetServer(), b.server);
 	if (result != 0)
 		return result < 0;
 
-	result = strcmp(a.GetExportName(), b.export_name);
+	result = std::strcmp(a.GetExportName(), b.export_name);
 	return result < 0;
 }
 
@@ -63,11 +63,11 @@ inline bool
 NfsManager::Compare::operator()(const ManagedConnection &a,
 				const ManagedConnection &b) const noexcept
 {
-	int result = strcmp(a.GetServer(), b.GetServer());
+	int result = std::strcmp(a.GetServer(), b.GetServer());
 	if (result != 0)
 		return result < 0;
 
-	result = strcmp(a.GetExportName(), b.GetExportName());
+	result = std::strcmp(a.GetExportName(), b.GetExportName());
 	return result < 0;
 }
 

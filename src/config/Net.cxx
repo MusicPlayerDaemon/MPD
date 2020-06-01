@@ -25,7 +25,7 @@
 void
 ServerSocketAddGeneric(ServerSocket &server_socket, const char *address, unsigned int port)
 {
-	if (address == nullptr || 0 == strcmp(address, "any")) {
+	if (address == nullptr || 0 == std::strcmp(address, "any")) {
 		server_socket.AddPort(port);
 	} else if (address[0] == '/' || address[0] == '~') {
 		server_socket.AddPath(ParsePath(address));

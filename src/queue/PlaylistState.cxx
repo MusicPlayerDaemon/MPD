@@ -141,9 +141,9 @@ playlist_state_restore(const StateFileConfig &config,
 		return false;
 
 	PlayerState state;
-	if (strcmp(line, PLAYLIST_STATE_FILE_STATE_PLAY) == 0)
+	if (std::strcmp(line, PLAYLIST_STATE_FILE_STATE_PLAY) == 0)
 		state = PlayerState::PLAY;
-	else if (strcmp(line, PLAYLIST_STATE_FILE_STATE_PAUSE) == 0)
+	else if (std::strcmp(line, PLAYLIST_STATE_FILE_STATE_PAUSE) == 0)
 		state = PlayerState::PAUSE;
 	else
 		state = PlayerState::STOP;
@@ -159,7 +159,7 @@ playlist_state_restore(const StateFileConfig &config,
 		} else if ((p = StringAfterPrefix(line, PLAYLIST_STATE_FILE_CONSUME))) {
 			playlist.SetConsume(StringIsEqual(p, "1"));
 		} else if ((p = StringAfterPrefix(line, PLAYLIST_STATE_FILE_CROSSFADE))) {
-			pc.SetCrossFade(FloatDuration(atoi(p)));
+			pc.SetCrossFade(FloatDuration(std::atoi(p)));
 		} else if ((p = StringAfterPrefix(line, PLAYLIST_STATE_FILE_MIXRAMPDB))) {
 			pc.SetMixRampDb(ParseFloat(p));
 		} else if ((p = StringAfterPrefix(line, PLAYLIST_STATE_FILE_MIXRAMPDELAY))) {
@@ -170,7 +170,7 @@ playlist_state_restore(const StateFileConfig &config,
 		} else if ((p = StringAfterPrefix(line, PLAYLIST_STATE_FILE_RANDOM))) {
 			random_mode = StringIsEqual(p, "1");
 		} else if ((p = StringAfterPrefix(line, PLAYLIST_STATE_FILE_CURRENT))) {
-			current = atoi(p);
+			current = std::atoi(p);
 		} else if (StringStartsWith(line,
 					    PLAYLIST_STATE_FILE_PLAYLIST_BEGIN)) {
 			playlist_state_load(file, song_loader, playlist);

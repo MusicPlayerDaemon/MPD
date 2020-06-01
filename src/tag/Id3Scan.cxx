@@ -86,7 +86,7 @@ import_id3_string(const id3_ucs4_t *ucs4)
 	if (gcc_unlikely(utf8 == nullptr))
 		return nullptr;
 
-	AtScopeExit(utf8) { free(utf8); };
+	AtScopeExit(utf8) { std::free(utf8); };
 
 	return (id3_utf8_t *)xstrdup(Strip((char *)utf8));
 }
@@ -132,7 +132,7 @@ tag_id3_import_text_frame(const struct id3_frame *frame,
 		if (utf8 == nullptr)
 			continue;
 
-		AtScopeExit(utf8) { free(utf8); };
+		AtScopeExit(utf8) { std::free(utf8); };
 
 		handler.OnTag(type, (const char *)utf8);
 	}
@@ -182,7 +182,7 @@ tag_id3_import_comment_frame(const struct id3_frame *frame, TagType type,
 	if (utf8 == nullptr)
 		return;
 
-	AtScopeExit(utf8) { free(utf8); };
+	AtScopeExit(utf8) { std::free(utf8); };
 
 	handler.OnTag(type, (const char *)utf8);
 }
@@ -230,13 +230,13 @@ tag_id3_import_musicbrainz(const struct id3_tag *id3_tag,
 		if (name == nullptr)
 			continue;
 
-		AtScopeExit(name) { free(name); };
+		AtScopeExit(name) { std::free(name); };
 
 		id3_utf8_t *value = tag_id3_getstring(frame, 2);
 		if (value == nullptr)
 			continue;
 
-		AtScopeExit(value) { free(value); };
+		AtScopeExit(value) { std::free(value); };
 
 		handler.OnPair((const char *)name, (const char *)value);
 
@@ -265,7 +265,7 @@ tag_id3_import_ufid(const struct id3_tag *id3_tag,
 
 		const id3_latin1_t *name = id3_field_getlatin1(field);
 		if (name == nullptr ||
-		    strcmp((const char *)name, "http://musicbrainz.org") != 0)
+		    std::strcmp((const char *)name, "http://musicbrainz.org") != 0)
 			continue;
 
 		field = id3_frame_field(frame, 1);

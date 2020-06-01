@@ -124,13 +124,13 @@ song_load(TextFile &file, const char *uri,
 		} else if (StringIsEqual(line, "Playlist")) {
 			tag.SetHasPlaylist(StringIsEqual(value, "yes"));
 		} else if (StringIsEqual(line, SONG_MTIME)) {
-			song.SetLastModified(std::chrono::system_clock::from_time_t(atoi(value)));
+			song.SetLastModified(std::chrono::system_clock::from_time_t(std::atoi(value)));
 		} else if (StringIsEqual(line, "Range")) {
 			char *endptr;
 
-			unsigned start_ms = strtoul(value, &endptr, 10);
+			unsigned start_ms = std::strtoul(value, &endptr, 10);
 			unsigned end_ms = *endptr == '-'
-				? strtoul(endptr + 1, nullptr, 10)
+				? std::strtoul(endptr + 1, nullptr, 10)
 				: 0;
 
 			song.SetStartTime(SongTime::FromMS(start_ms));

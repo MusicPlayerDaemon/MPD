@@ -195,7 +195,7 @@ WaveEncoder::Write(const void *src, size_t length)
 		case 8:
 		case 16:
 		case 32:// optimized cases
-			memcpy(dst, src, length);
+			std::memcpy(dst, src, length);
 			break;
 		case 24:
 			length = pcm24_to_wave(dst, (const uint32_t *)src, length);
@@ -204,7 +204,7 @@ WaveEncoder::Write(const void *src, size_t length)
 	} else {
 		switch (bits) {
 		case 8:
-			memcpy(dst, src, length);
+			std::memcpy(dst, src, length);
 			break;
 		case 16:
 			length = pcm16_to_wave((uint16_t *)dst,

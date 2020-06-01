@@ -31,21 +31,21 @@ inline bool
 InputCacheManager::ItemCompare::operator()(const InputCacheItem &a,
 					   const char *b) const noexcept
 {
-	return strcmp(a.GetUri(), b) < 0;
+	return std::strcmp(a.GetUri(), b) < 0;
 }
 
 inline bool
 InputCacheManager::ItemCompare::operator()(const char *a,
 					   const InputCacheItem &b) const noexcept
 {
-	return strcmp(a, b.GetUri()) < 0;
+	return std::strcmp(a, b.GetUri()) < 0;
 }
 
 inline bool
 InputCacheManager::ItemCompare::operator()(const InputCacheItem &a,
 					   const InputCacheItem &b) const noexcept
 {
-	return strcmp(a.GetUri(), b.GetUri()) < 0;
+	return std::strcmp(a.GetUri(), b.GetUri()) < 0;
 }
 
 InputCacheManager::InputCacheManager(const InputCacheConfig &config) noexcept

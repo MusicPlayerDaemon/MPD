@@ -44,6 +44,6 @@ void print_supported_uri_schemes(Response &r);
 /**
  * Send a list of supported URI schemes to a file pointer.
  */
-void print_supported_uri_schemes_to_fp(FILE *fp);
+void print_supported_uri_schemes_to_fp(std::FILE *fp);
 
 #endif

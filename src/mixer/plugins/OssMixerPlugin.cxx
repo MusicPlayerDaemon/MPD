@@ -70,7 +70,7 @@ static int
 oss_find_mixer(const char *name)
 {
 	const char *labels[SOUND_MIXER_NRDEVICES] = SOUND_DEVICE_LABELS;
-	size_t name_length = strlen(name);
+	size_t name_length = std::strlen(name);
 
 	for (unsigned i = 0; i < SOUND_MIXER_NRDEVICES; i++) {
 		if (StringEqualsCaseASCII(name, labels[i], name_length) &&

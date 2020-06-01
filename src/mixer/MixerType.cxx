@@ -28,13 +28,13 @@ mixer_type_parse(const char *input)
 {
 	assert(input != nullptr);
 
-	if (strcmp(input, "none") == 0 || strcmp(input, "disabled") == 0)
+	if (std::strcmp(input, "none") == 0 || std::strcmp(input, "disabled") == 0)
 		return MixerType::NONE;
-	else if (strcmp(input, "hardware") == 0)
+	else if (std::strcmp(input, "hardware") == 0)
 		return MixerType::HARDWARE;
-	else if (strcmp(input, "software") == 0)
+	else if (std::strcmp(input, "software") == 0)
 		return MixerType::SOFTWARE;
-	else if (strcmp(input, "null") == 0)
+	else if (std::strcmp(input, "null") == 0)
 		return MixerType::NULL_;
 	else
 		throw std::runtime_error("Unrecognized mixer type");

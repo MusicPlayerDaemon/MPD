@@ -35,8 +35,8 @@ Copy(OutputStream &dest, int src)
 		uint8_t buffer[8192];
 		ssize_t nbytes = read(src, buffer, sizeof(buffer));
 		if (nbytes < 0) {
-			fprintf(stderr, "Failed to read from stdin: %s\n",
-				strerror(errno));
+			std::fprintf(stderr, "Failed to read from stdin: %s\n",
+				std::strerror(errno));
 			return false;
 		}
 
@@ -51,7 +51,7 @@ int
 main(int argc, char **argv)
 try {
 	if (argc != 2) {
-		fprintf(stderr, "Usage: WriteFile PATH\n");
+		std::fprintf(stderr, "Usage: WriteFile PATH\n");
 		return EXIT_FAILURE;
 	}
 

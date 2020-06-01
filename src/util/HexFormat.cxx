@@ -35,7 +35,7 @@ char *
 HexFormat(char *dest, ConstBuffer<uint8_t> src) noexcept
 {
 	for (auto i : src) {
-		sprintf(dest, "%02x", i);
+		std::sprintf(dest, "%02x", i);
 		dest += 2;
 	}
 

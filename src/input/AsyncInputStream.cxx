@@ -192,7 +192,7 @@ AsyncInputStream::Read(std::unique_lock<Mutex> &lock,
 	}
 
 	const size_t nbytes = std::min(read_size, r.size);
-	memcpy(ptr, r.data, nbytes);
+	std::memcpy(ptr, r.data, nbytes);
 	buffer.Consume(nbytes);
 
 	offset += (offset_type)nbytes;
@@ -221,7 +221,7 @@ AsyncInputStream::AppendToBuffer(const void *data, size_t append_size) noexcept
 	assert(!w.empty());
 
 	size_t nbytes = std::min(w.size, append_size);
-	memcpy(w.data, data, nbytes);
+	std::memcpy(w.data, data, nbytes);
 	buffer.Append(nbytes);
 
 	const size_t remaining = append_size - nbytes;
@@ -230,7 +230,7 @@ AsyncInputStream::AppendToBuffer(const void *data, size_t append_size) noexcept
 		assert(!w.empty());
 		assert(w.size >= remaining);
 
-		memcpy(w.data, (const uint8_t *)data + nbytes, remaining);
+		std::memcpy(w.data, (const uint8_t *)data + nbytes, remaining);
 		buffer.Append(remaining);
 	}
 

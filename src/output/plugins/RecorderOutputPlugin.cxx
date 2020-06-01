@@ -287,12 +287,12 @@ RecorderOutput::SendTag(const Tag &tag)
 		if (p == nullptr || *p == 0) {
 			/* no path could be composed with this tag:
 			   don't write a file */
-			free(p);
+			std::free(p);
 			FinishFormat();
 			return;
 		}
 
-		AtScopeExit(p) { free(p); };
+		AtScopeExit(p) { std::free(p); };
 
 		AllocatedPath new_path = nullptr;
 

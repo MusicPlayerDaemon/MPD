@@ -78,7 +78,7 @@ ListenXdgRuntimeDir(ClientListener &listener) noexcept
 		   use $XDG_RUNTIME_DIR */
 		return false;
 
-	Path xdg_runtime_dir = Path::FromFS(getenv("XDG_RUNTIME_DIR"));
+	Path xdg_runtime_dir = Path::FromFS(std::getenv("XDG_RUNTIME_DIR"));
 	if (xdg_runtime_dir.IsNull())
 		return false;
 

@@ -70,10 +70,10 @@ locate_parse_type(const char *str) noexcept
 	if (StringEqualsCaseASCII(str, LOCATE_TAG_ANY_KEY))
 		return LOCATE_TAG_ANY_TYPE;
 
-	if (strcmp(str, "base") == 0)
+	if (std::strcmp(str, "base") == 0)
 		return LOCATE_TAG_BASE_TYPE;
 
-	if (strcmp(str, "modified-since") == 0)
+	if (std::strcmp(str, "modified-since") == 0)
 		return LOCATE_TAG_MODIFIED_SINCE;
 
 	if (StringEqualsCaseASCII(str, "AudioFormat"))
@@ -109,10 +109,10 @@ ParseTimeStamp(const char *s)
 		return ParseISO8601(s).first;
 	} catch (...) {
 		char *endptr;
-		unsigned long long value = strtoull(s, &endptr, 10);
+		unsigned long long value = std::strtoull(s, &endptr, 10);
 		if (*endptr == 0 && endptr > s)
 			/* it's an integral UNIX time stamp */
-			return std::chrono::system_clock::from_time_t((time_t)value);
+			return std::chrono::system_clock::from_time_t((std::time_t)value);
 
 		/* rethrow the ParseISO8601() error */
 		throw;

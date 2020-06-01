@@ -31,7 +31,7 @@
 int main(int argc, char **argv)
 try {
 	if (argc != 3) {
-		fprintf(stderr, "Usage: read_conf FILE SETTING\n");
+		std::fprintf(stderr, "Usage: read_conf FILE SETTING\n");
 		return EXIT_FAILURE;
 	}
 
@@ -49,7 +49,7 @@ try {
 	if (param == nullptr)
 		throw FormatRuntimeError("No such setting: %s", name);
 
-	printf("%s\n", param->value.c_str());
+	std::printf("%s\n", param->value.c_str());
 	return EXIT_SUCCESS;
 } catch (...) {
 	PrintException(std::current_exception());

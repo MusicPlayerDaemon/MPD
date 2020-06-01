@@ -64,7 +64,7 @@ FormatNfsClientError(int err, struct nfs_context *nfs, void *data,
 	if (data == nullptr || *(const char *)data == 0) {
 		msg2 = nfs_get_error(nfs);
 		if (msg2 == nullptr)
-			msg2 = strerror(-err);
+			msg2 = std::strerror(-err);
 	}
 
 	return StringFormat<256>("%s: %s", msg, msg2);

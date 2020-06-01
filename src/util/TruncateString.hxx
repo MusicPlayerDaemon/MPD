@@ -36,7 +36,7 @@
 
 /**
  * Copy a string.  If the buffer is too small, then the string is
- * truncated.  This is a safer version of strncpy().
+ * truncated.  This is a safer version of std::strncpy().
  *
  * @param size the size of the destination buffer (including the null
  * terminator)

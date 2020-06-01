@@ -131,7 +131,7 @@ uri_get_suffix(const char *uri) noexcept
 
 	++suffix;
 
-	if (strpbrk(suffix, "/\\") != nullptr)
+	if (std::strpbrk(suffix, "/\\") != nullptr)
 		return nullptr;
 
 	return suffix;
@@ -146,7 +146,7 @@ uri_get_suffix(const char *uri, UriSuffixBuffer &buffer) noexcept
 
 	const char *q = std::strchr(suffix, '?');
 	if (q != nullptr && size_t(q - suffix) < sizeof(buffer.data)) {
-		memcpy(buffer.data, suffix, q - suffix);
+		std::memcpy(buffer.data, suffix, q - suffix);
 		buffer.data[q - suffix] = 0;
 		suffix = buffer.data;
 	}

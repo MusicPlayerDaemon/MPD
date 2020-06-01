@@ -76,7 +76,7 @@ FindAndResolveInterfaceName(char *host, size_t size)
 	if (i == 0)
 		throw FormatRuntimeError("No such interface: %s", interface);
 
-	sprintf(interface, "%u", i);
+	std::sprintf(interface, "%u", i);
 }
 
 #endif
@@ -103,7 +103,7 @@ Resolve(const char *host_and_port, int default_port,
 #endif
 		}
 
-		memcpy(buffer, eh.host.data, eh.host.size);
+		std::memcpy(buffer, eh.host.data, eh.host.size);
 		buffer[eh.host.size] = 0;
 		host = buffer;
 
@@ -117,16 +117,16 @@ Resolve(const char *host_and_port, int default_port,
 			++port;
 		} else if (*port == 0) {
 			/* no port specified */
-			snprintf(port_string, sizeof(port_string), "%d", default_port);
+			std::snprintf(port_string, sizeof(port_string), "%d", default_port);
 			port = port_string;
 		} else
 			throw std::runtime_error("Garbage after host name");
 
-		if (ai_is_passive(hints) && strcmp(host, "*") == 0)
+		if (ai_is_passive(hints) && std::strcmp(host, "*") == 0)
 			host = nullptr;
 	} else {
 		host = nullptr;
-		snprintf(port_string, sizeof(port_string), "%d", default_port);
+		std::snprintf(port_string, sizeof(port_string), "%d", default_port);
 		port = port_string;
 	}
 

@@ -537,7 +537,7 @@ DecoderBridge::SubmitData(InputStream *is,
 
 		/* copy the buffer */
 
-		memcpy(dest.data, data, nbytes);
+		std::memcpy(dest.data, data, nbytes);
 
 		/* expand the music pipe chunk */
 

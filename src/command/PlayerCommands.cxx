@@ -154,7 +154,7 @@ handle_status(Client &client, [[maybe_unused]] Request args, Response &r)
 
 	if (pc.GetCrossFade() > FloatDuration::zero())
 		r.Format(COMMAND_STATUS_CROSSFADE ": %lu\n",
-			 lround(pc.GetCrossFade().count()));
+			 std::lround(pc.GetCrossFade().count()));
 
 	if (pc.GetMixRampDelay() > FloatDuration::zero())
 		r.Format(COMMAND_STATUS_MIXRAMPDELAY ": %f\n",

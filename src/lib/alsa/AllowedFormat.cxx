@@ -42,7 +42,7 @@ AllowedFormat::AllowedFormat(StringView s)
 	if (s.size >= sizeof(buffer))
 		throw std::invalid_argument("Failed to parse audio format");
 
-	memcpy(buffer, s.data, s.size);
+	std::memcpy(buffer, s.data, s.size);
 	buffer[s.size] = 0;
 
 	format = ParseAudioFormat(buffer, true);

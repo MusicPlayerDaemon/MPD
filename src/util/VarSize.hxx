@@ -78,7 +78,7 @@ DeleteVarSize(T *instance)
 	instance->T::~T();
 
 	/* free memory */
-	free(instance);
+	std::free(instance);
 }
 
 #endif

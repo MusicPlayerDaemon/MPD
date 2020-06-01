@@ -63,7 +63,7 @@ const EncoderPlugin *
 encoder_plugin_get(const char *name)
 {
 	encoder_plugins_for_each(plugin)
-		if (strcmp(plugin->name, name) == 0)
+		if (std::strcmp(plugin->name, name) == 0)
 			return plugin;
 
 	return nullptr;

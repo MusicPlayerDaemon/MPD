@@ -356,7 +356,7 @@ shout_tag_to_metadata(const Tag &tag, char *dest, size_t size)
 	const char *artist = tag.GetValue(TAG_ARTIST);
 	const char *title = tag.GetValue(TAG_TITLE);
 
-	snprintf(dest, size, "%s - %s",
+	std::snprintf(dest, size, "%s - %s",
 		 artist != nullptr ? artist : "",
 		 title != nullptr ? title : "");
 }

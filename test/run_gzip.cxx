@@ -53,7 +53,7 @@ CopyGzip(OutputStream &_dest, int src)
 }
 
 static void
-CopyGzip(FILE *_dest, int src)
+CopyGzip(std::FILE *_dest, int src)
 {
 	StdioOutputStream dest(_dest);
 	CopyGzip(dest, src);
@@ -63,7 +63,7 @@ int
 main(int argc, [[maybe_unused]] char **argv)
 try {
 	if (argc != 1) {
-		fprintf(stderr, "Usage: run_gzip\n");
+		std::fprintf(stderr, "Usage: run_gzip\n");
 		return EXIT_FAILURE;
 	}
 

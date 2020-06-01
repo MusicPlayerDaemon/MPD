@@ -694,7 +694,7 @@ Visit(struct mpd_connection *connection,
 
 	std::chrono::system_clock::time_point mtime =
 		std::chrono::system_clock::time_point::min();
-	time_t _mtime = mpd_directory_get_last_modified(directory);
+	std::time_t _mtime = mpd_directory_get_last_modified(directory);
 	if (_mtime > 0)
 		mtime = std::chrono::system_clock::from_time_t(_mtime);
 
@@ -733,7 +733,7 @@ Visit(const struct mpd_playlist *playlist,
 	if (!visit_playlist)
 		return;
 
-	time_t mtime = mpd_playlist_get_last_modified(playlist);
+	std::time_t mtime = mpd_playlist_get_last_modified(playlist);
 
 	PlaylistInfo p(mpd_playlist_get_path(playlist),
 		       mtime > 0

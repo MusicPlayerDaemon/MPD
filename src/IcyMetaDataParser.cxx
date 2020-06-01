@@ -91,7 +91,7 @@ icy_parse_tag_item(TagBuilder &tag,
 #endif
 		   const char *name, const char *value) noexcept
 {
-	if (strcmp(name, "StreamTitle") == 0) {
+	if (std::strcmp(name, "StreamTitle") == 0) {
 #ifdef HAVE_ICU_CONVERTER
 		if (icu_converter != nullptr) {
 			try {
@@ -224,7 +224,7 @@ IcyMetaDataParser::Meta(const void *data, size_t length) noexcept
 	if (length > meta_size - meta_position)
 		length = meta_size - meta_position;
 
-	memcpy(meta_data + meta_position, p, length);
+	std::memcpy(meta_data + meta_position, p, length);
 	meta_position += length;
 
 	if (p != data)
@@ -260,7 +260,7 @@ IcyMetaDataParser::ParseInPlace(void *data, size_t length) noexcept
 	while (length > 0) {
 		size_t chunk = Data(length);
 		if (chunk > 0) {
-			memmove(dest, src, chunk);
+			std::memmove(dest, src, chunk);
 			dest += chunk;
 			src += chunk;
 			length -= chunk;

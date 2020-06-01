@@ -53,14 +53,14 @@ gcc_pure
 bool
 IsOpusHead(const ogg_packet &packet) noexcept
 {
-	return packet.bytes >= 8 && memcmp(packet.packet, "OpusHead", 8) == 0;
+	return packet.bytes >= 8 && std::memcmp(packet.packet, "OpusHead", 8) == 0;
 }
 
 gcc_pure
 bool
 IsOpusTags(const ogg_packet &packet) noexcept
 {
-	return packet.bytes >= 8 && memcmp(packet.packet, "OpusTags", 8) == 0;
+	return packet.bytes >= 8 && std::memcmp(packet.packet, "OpusTags", 8) == 0;
 }
 
 bool

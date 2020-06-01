@@ -43,7 +43,7 @@ const NeighborPlugin *
 GetNeighborPluginByName(const char *name) noexcept
 {
 	for (auto i = neighbor_plugins; *i != nullptr; ++i)
-		if (strcmp((*i)->name, name) == 0)
+		if (std::strcmp((*i)->name, name) == 0)
 			return *i;
 
 	return nullptr;

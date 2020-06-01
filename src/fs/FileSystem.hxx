@@ -44,7 +44,7 @@ OpenFile(Path file, int flags, int mode)
 }
 
 /*
- * Wrapper for rename() that uses #Path names.
+ * Wrapper for std::rename() that uses #Path names.
  *
  * Throws std::system_error on error.
  */

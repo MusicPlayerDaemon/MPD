@@ -223,7 +223,7 @@ TwolameEncoder::Read(void *dest, size_t length) noexcept
 	if (length > remainning)
 		length = remainning;
 
-	memcpy(dest, output_buffer + output_buffer_position, length);
+	std::memcpy(dest, output_buffer + output_buffer_position, length);
 
 	output_buffer_position += length;
 

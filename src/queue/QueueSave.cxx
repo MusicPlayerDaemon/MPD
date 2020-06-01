@@ -82,7 +82,7 @@ LoadQueueSong(TextFile &file, const char *line)
 		return song_load(file, uri);
 	} else {
 		char *endptr;
-		long ret = strtol(line, &endptr, 10);
+		long ret = std::strtol(line, &endptr, 10);
 		if (ret < 0 || *endptr != ':' || endptr[1] == 0)
 			throw std::runtime_error("Malformed playlist line in state file");
 
@@ -102,7 +102,7 @@ queue_load_song(TextFile &file, const SongLoader &loader,
 	uint8_t priority = 0;
 	const char *p;
 	if ((p = StringAfterPrefix(line, PRIO_LABEL))) {
-		priority = strtoul(p, nullptr, 10);
+		priority = std::strtoul(p, nullptr, 10);
 
 		line = file.ReadLine();
 		if (line == nullptr)

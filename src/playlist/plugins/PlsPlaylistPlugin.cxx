@@ -85,7 +85,7 @@ ParsePls(TextInputStream &is, std::forward_list<DetachedSong> &songs)
 		const char *const value = ds.GetSecond();
 
 		if (StringEqualsCaseASCII(name, "NumberOfEntries")) {
-			n_entries = strtoul(value, nullptr, 10);
+			n_entries = std::strtoul(value, nullptr, 10);
 			if (n_entries == 0)
 				/* empty file - nothing remains to be
 				   done */
@@ -95,25 +95,25 @@ ParsePls(TextInputStream &is, std::forward_list<DetachedSong> &songs)
 				n_entries = MAX_ENTRIES;
 			entries.resize(n_entries);
 		} else if (StringEqualsCaseASCII(name, "File", 4)) {
-			unsigned i = strtoul(name + 4, nullptr, 10);
+			unsigned i = std::strtoul(name + 4, nullptr, 10);
 			if (i >= 1 && i <= (n_entries > 0 ? n_entries : MAX_ENTRIES)) {
 				if (entries.size() < i)
 					entries.resize(i);
 				entries[i - 1].file = value;
 			}
 		} else if (StringEqualsCaseASCII(name, "Title", 5)) {
-			unsigned i = strtoul(name + 5, nullptr, 10);
+			unsigned i = std::strtoul(name + 5, nullptr, 10);
 			if (i >= 1 && i <= (n_entries > 0 ? n_entries : MAX_ENTRIES)) {
 				if (entries.size() < i)
 					entries.resize(i);
 				entries[i - 1].title = value;
 			}
 		} else if (StringEqualsCaseASCII(name, "Length", 6)) {
-			unsigned i = strtoul(name + 6, nullptr, 10);
+			unsigned i = std::strtoul(name + 6, nullptr, 10);
 			if (i >= 1 && i <= (n_entries > 0 ? n_entries : MAX_ENTRIES)) {
 				if (entries.size() < i)
 					entries.resize(i);
-				entries[i - 1].length = atoi(value);
+				entries[i - 1].length = std::atoi(value);
 			}
 		}
 	}

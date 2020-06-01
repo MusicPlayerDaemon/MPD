@@ -237,7 +237,7 @@ MadDecoder::FillBuffer() noexcept
 
 	if (stream.next_frame != nullptr) {
 		rest_size = stream.bufend - stream.next_frame;
-		memmove(input_buffer, stream.next_frame, rest_size);
+		std::memmove(input_buffer, stream.next_frame, rest_size);
 		dest += rest_size;
 		max_read_size -= rest_size;
 	}
@@ -255,7 +255,7 @@ MadDecoder::FillBuffer() noexcept
 
 		was_eof = true;
 		nbytes = MAD_BUFFER_GUARD;
-		memset(dest, 0, nbytes);
+		std::memset(dest, 0, nbytes);
 	}
 
 	mad_stream_buffer(&stream, input_buffer, rest_size + nbytes);
@@ -285,8 +285,8 @@ parse_id3_mixramp(struct id3_tag *tag) noexcept
 
 		ParseMixRampTag(result, key, value);
 
-		free(key);
-		free(value);
+		std::free(key);
+		std::free(value);
 	}
 
 	return result;
@@ -307,7 +307,7 @@ MadDecoder::ParseId3(size_t tagsize, Tag *mpd_tag) noexcept
 		mad_stream_skip(&(stream), tagsize);
 	} else {
 		allocated.reset(new id3_byte_t[tagsize]);
-		memcpy(allocated.get(), stream.this_frame, count);
+		std::memcpy(allocated.get(), stream.this_frame, count);
 		mad_stream_skip(&(stream), count);
 
 		if (!decoder_read_full(client, input_stream,
@@ -366,7 +366,7 @@ id3_tag_query(const void *p0, size_t length) noexcept
 {
 	const char *p = (const char *)p0;
 
-	return length >= 10 && memcmp(p, "ID3", 3) == 0
+	return length >= 10 && std::memcmp(p, "ID3", 3) == 0
 		? (p[8] << 7) + p[9] + 10
 		: 0;
 }

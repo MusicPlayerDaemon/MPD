@@ -43,6 +43,6 @@ DivideString::DivideString(const char *s, char separator, bool strip) noexcept
 	}
 
 	first = new char[length + 1];
-	memcpy(first, s, length);
+	std::memcpy(first, s, length);
 	first[length] = 0;
 }

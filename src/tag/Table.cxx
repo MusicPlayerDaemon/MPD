@@ -32,7 +32,7 @@ TagType
 tag_table_lookup(const struct tag_table *table, const char *name) noexcept
 {
 	for (; table->name != nullptr; ++table)
-		if (strcmp(name, table->name) == 0)
+		if (std::strcmp(name, table->name) == 0)
 			return table->type;
 
 	return TAG_NUM_OF_ITEM_TYPES;

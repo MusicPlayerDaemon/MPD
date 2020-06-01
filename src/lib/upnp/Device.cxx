@@ -48,31 +48,31 @@ protected:
 
 		switch (name[0]) {
 		case 'c':
-			if (strcmp(name, "controlURL") == 0)
+			if (std::strcmp(name, "controlURL") == 0)
 				value = &m_tservice.controlURL;
 			break;
 		case 'd':
-			if (strcmp(name, "deviceType") == 0)
+			if (std::strcmp(name, "deviceType") == 0)
 				value = &m_device.deviceType;
 			break;
 		case 'f':
-			if (strcmp(name, "friendlyName") == 0)
+			if (std::strcmp(name, "friendlyName") == 0)
 				value = &m_device.friendlyName;
 			break;
 		case 'm':
-			if (strcmp(name, "manufacturer") == 0)
+			if (std::strcmp(name, "manufacturer") == 0)
 				value = &m_device.manufacturer;
-			else if (strcmp(name, "modelName") == 0)
+			else if (std::strcmp(name, "modelName") == 0)
 				value = &m_device.modelName;
 			break;
 		case 's':
-			if (strcmp(name, "serviceType") == 0)
+			if (std::strcmp(name, "serviceType") == 0)
 				value = &m_tservice.serviceType;
 			break;
 		case 'U':
-			if (strcmp(name, "UDN") == 0)
+			if (std::strcmp(name, "UDN") == 0)
 				value = &m_device.UDN;
-			else if (strcmp(name, "URLBase") == 0)
+			else if (std::strcmp(name, "URLBase") == 0)
 				value = &m_device.URLBase;
 			break;
 		}
@@ -82,7 +82,7 @@ protected:
 		if (value != nullptr) {
 			trimstring(*value);
 			value = nullptr;
-		} else if (!strcmp(name, "service")) {
+		} else if (!std::strcmp(name, "service")) {
 			m_device.services.emplace_back(std::move(m_tservice));
 			m_tservice = {};
 		}
@@ -99,7 +99,7 @@ UPnPDevice::Parse(const std::string &url, const char *description)
 {
 	{
 		UPnPDeviceParser mparser(*this);
-		mparser.Parse(description, strlen(description), true);
+		mparser.Parse(description, std::strlen(description), true);
 	}
 
 	if (URLBase.empty()) {

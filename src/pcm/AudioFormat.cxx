@@ -51,21 +51,21 @@ ToString(const AudioFormat af) noexcept
 	    af.sample_rate % 44100 == 0) {
 		/* use shortcuts such as "dsd64" which implies the
 		   sample rate */
-		p += sprintf(p, "dsd%u:", af.sample_rate * 8 / 44100);
+		p += std::sprintf(p, "dsd%u:", af.sample_rate * 8 / 44100);
 	} else {
 		const char *sample_format = af.format != SampleFormat::UNDEFINED
 			? sample_format_to_string(af.format)
 			: "*";
 
 		if (af.sample_rate > 0)
-			p += sprintf(p, "%u:%s:", af.sample_rate,
+			p += std::sprintf(p, "%u:%s:", af.sample_rate,
 				     sample_format);
 		else
-			p += sprintf(p, "*:%s:", sample_format);
+			p += std::sprintf(p, "*:%s:", sample_format);
 	}
 
 	if (af.channels > 0)
-		p += sprintf(p, "%u", af.channels);
+		p += std::sprintf(p, "%u", af.channels);
 	else {
 		*p++ = '*';
 		*p = 0;

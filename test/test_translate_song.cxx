@@ -27,13 +27,13 @@
 void
 Log(LogLevel, const Domain &domain, const char *msg) noexcept
 {
-	fprintf(stderr, "[%s] %s\n", domain.GetName(), msg);
+	std::fprintf(stderr, "[%s] %s\n", domain.GetName(), msg);
 }
 
 bool
 uri_supported_scheme(const char *uri) noexcept
 {
-	return strncmp(uri, "http://", 7) == 0;
+	return std::strncmp(uri, "http://", 7) == 0;
 }
 
 static constexpr auto music_directory = PATH_LITERAL("/music");
@@ -89,7 +89,7 @@ DatabaseDetachSong([[maybe_unused]] const Database &db,
 		   [[maybe_unused]] const Storage *_storage,
 		   const char *uri)
 {
-	if (strcmp(uri, uri2) == 0)
+	if (std::strcmp(uri, uri2) == 0)
 		return DetachedSong(uri, MakeTag2a());
 
 	throw std::runtime_error("No such song");

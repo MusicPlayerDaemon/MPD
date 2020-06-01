@@ -51,7 +51,7 @@ cue_next_quoted(char *p, char **pp)
 	char *end = std::strchr(p, '"');
 	if (end == nullptr) {
 		/* syntax error - ignore it silently */
-		*pp = p + strlen(p);
+		*pp = p + std::strlen(p);
 		return p;
 	}
 
@@ -120,17 +120,17 @@ static int
 cue_parse_position(const char *p)
 {
 	char *endptr;
-	unsigned long minutes = strtoul(p, &endptr, 10);
+	unsigned long minutes = std::strtoul(p, &endptr, 10);
 	if (endptr == p || *endptr != ':')
 		return -1;
 
 	p = endptr + 1;
-	unsigned long seconds = strtoul(p, &endptr, 10);
+	unsigned long seconds = std::strtoul(p, &endptr, 10);
 	if (endptr == p || *endptr != ':')
 		return -1;
 
 	p = endptr + 1;
-	unsigned long frames = strtoul(p, &endptr, 10);
+	unsigned long frames = std::strtoul(p, &endptr, 10);
 	if (endptr == p || *endptr != 0)
 		return -1;
 
@@ -166,11 +166,11 @@ CueParser::Feed2(char *p) noexcept
 	if (command == nullptr)
 		return;
 
-	if (strcmp(command, "REM") == 0) {
+	if (std::strcmp(command, "REM") == 0) {
 		TagBuilder *tag = GetCurrentTag();
 		if (tag != nullptr)
 			cue_parse_rem(p, *tag);
-	} else if (strcmp(command, "PERFORMER") == 0) {
+	} else if (std::strcmp(command, "PERFORMER") == 0) {
 		/* MPD knows a "performer" tag, but it is not a good
 		   match for this CUE tag; from the Hydrogenaudio
 		   Knowledgebase: "At top-level this will specify the
@@ -184,12 +184,12 @@ CueParser::Feed2(char *p) noexcept
 		TagBuilder *tag = GetCurrentTag();
 		if (tag != nullptr)
 			cue_add_tag(*tag, type, p);
-	} else if (strcmp(command, "TITLE") == 0) {
+	} else if (std::strcmp(command, "TITLE") == 0) {
 		if (state == HEADER)
 			cue_add_tag(header_tag, TAG_ALBUM, p);
 		else if (state == TRACK)
 			cue_add_tag(song_tag, TAG_TITLE, p);
-	} else if (strcmp(command, "FILE") == 0) {
+	} else if (std::strcmp(command, "FILE") == 0) {
 		Commit();
 
 		const char *new_filename = cue_next_value(&p);
@@ -200,10 +200,10 @@ CueParser::Feed2(char *p) noexcept
 		if (type == nullptr)
 			return;
 
-		if (strcmp(type, "WAVE") != 0 &&
-		    strcmp(type, "FLAC") != 0 && /* non-standard */
-		    strcmp(type, "MP3") != 0 &&
-		    strcmp(type, "AIFF") != 0) {
+		if (std::strcmp(type, "WAVE") != 0 &&
+		    std::strcmp(type, "FLAC") != 0 && /* non-standard */
+		    std::strcmp(type, "MP3") != 0 &&
+		    std::strcmp(type, "AIFF") != 0) {
 			state = IGNORE_FILE;
 			return;
 		}
@@ -212,7 +212,7 @@ CueParser::Feed2(char *p) noexcept
 		filename = new_filename;
 	} else if (state == IGNORE_FILE) {
 		return;
-	} else if (strcmp(command, "TRACK") == 0) {
+	} else if (std::strcmp(command, "TRACK") == 0) {
 		Commit();
 
 		const char *nr = cue_next_token(&p);
@@ -223,7 +223,7 @@ CueParser::Feed2(char *p) noexcept
 		if (type == nullptr)
 			return;
 
-		if (strcmp(type, "AUDIO") != 0) {
+		if (std::strcmp(type, "AUDIO") != 0) {
 			state = IGNORE_TRACK;
 			return;
 		}
@@ -238,7 +238,7 @@ CueParser::Feed2(char *p) noexcept
 
 	} else if (state == IGNORE_TRACK) {
 		return;
-	} else if (state == TRACK && strcmp(command, "INDEX") == 0) {
+	} else if (state == TRACK && std::strcmp(command, "INDEX") == 0) {
 		if (ignore_index)
 			return;
 
@@ -258,7 +258,7 @@ CueParser::Feed2(char *p) noexcept
 			previous->SetEndTime(SongTime::FromMS(position_ms));
 
 		current->SetStartTime(SongTime::FromMS(position_ms));
-		if(strcmp(nr, "00") != 0 || previous == nullptr)
+		if(std::strcmp(nr, "00") != 0 || previous == nullptr)
 			ignore_index = true;
 	}
 }
@@ -271,7 +271,7 @@ CueParser::Feed(const char *line) noexcept
 
 	char *allocated = xstrdup(line);
 	Feed2(allocated);
-	free(allocated);
+	std::free(allocated);
 }
 
 void

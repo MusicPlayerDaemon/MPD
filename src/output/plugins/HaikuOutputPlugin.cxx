@@ -170,7 +170,7 @@ HaikuOutput::FillBuffer(void* _buffer, size_t size,
 	}
 	
 	if (buffer_filled < buffer_size) {
-		memset(buffer + buffer_filled, 0,
+		std::memset(buffer + buffer_filled, 0,
 			buffer_size - buffer_filled);
 		FormatDebug(haiku_output_domain,
 			"haiku:fill_buffer filled %d size %d clearing remainder\n",
@@ -278,7 +278,7 @@ HaikuOutput::Play(const void *chunk, size_t size)
 
 		const size_t copyBytes = std::min(bytesLeft, buffer_size
 			- buffer_filled);
-		memcpy(buffer + buffer_filled, data,
+		std::memcpy(buffer + buffer_filled, data,
 			copyBytes);
 		buffer_filled += copyBytes;
 		data += copyBytes;
@@ -347,7 +347,7 @@ HaikuOutput::SendTag(const Tag &tag)
 	unsigned seconds = 0;
 	if (!tag.duration.IsNegative()) {
 		seconds = tag.duration.ToS();
-		snprintf(timebuf, sizeof(timebuf), "%02u:%02u:%02u",
+		std::snprintf(timebuf, sizeof(timebuf), "%02u:%02u:%02u",
 			 seconds / 3600, (seconds % 3600) / 60, seconds % 60);
 	}
 
@@ -436,7 +436,7 @@ haiku_output_get_volume(HaikuOutput &haiku)
 	if (soundPlayer == NULL || soundPlayer->InitCheck() != B_OK)
 		return 0;
 
-	return lround(soundPlayer->Volume() * 100);
+	return std::lround(soundPlayer->Volume() * 100);
 }
 
 bool

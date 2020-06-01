@@ -49,7 +49,7 @@ CopyGunzip(OutputStream &dest, Reader &_src)
 }
 
 static void
-CopyGunzip(FILE *_dest, Path src_path)
+CopyGunzip(std::FILE *_dest, Path src_path)
 {
 	StdioOutputStream dest(_dest);
 	FileReader src(src_path);
@@ -60,7 +60,7 @@ int
 main(int argc, [[maybe_unused]] char **argv)
 try {
 	if (argc != 2) {
-		fprintf(stderr, "Usage: run_gunzip PATH\n");
+		std::fprintf(stderr, "Usage: run_gunzip PATH\n");
 		return EXIT_FAILURE;
 	}
 

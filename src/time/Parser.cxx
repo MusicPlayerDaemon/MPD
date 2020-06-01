@@ -46,7 +46,7 @@ ParseTimePoint(const char *s, const char *format)
 	(void)format;
 	throw std::runtime_error("Time parsing not implemented on Windows");
 #else
-	struct tm tm{};
+	std::tm tm{};
 	const char *end = strptime(s, format, &tm);
 	if (end == nullptr || *end != 0)
 		throw std::runtime_error("Failed to parse time stamp");

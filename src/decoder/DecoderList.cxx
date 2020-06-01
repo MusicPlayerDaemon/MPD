@@ -127,7 +127,7 @@ const struct DecoderPlugin *
 decoder_plugin_from_name(const char *name) noexcept
 {
 	return decoder_plugins_find([=](const DecoderPlugin &plugin){
-			return strcmp(plugin.name, name) == 0;
+			return std::strcmp(plugin.name, name) == 0;
 		});
 }
 

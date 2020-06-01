@@ -78,18 +78,18 @@ MigrateResamplerConfig(const ConfigParam &param, ConfigBlock &block) noexcept
 	block.line = param.line;
 
 	const char *converter = param.value.c_str();
-	if (*converter == 0 || strcmp(converter, "internal") == 0) {
+	if (*converter == 0 || std::strcmp(converter, "internal") == 0) {
 		block.AddBlockParam("plugin", "internal");
 		return &block;
 	}
 
 #ifdef ENABLE_SOXR
-	if (strcmp(converter, "soxr") == 0) {
+	if (std::strcmp(converter, "soxr") == 0) {
 		block.AddBlockParam("plugin", "soxr");
 		return &block;
 	}
 
-	if (memcmp(converter, "soxr ", 5) == 0) {
+	if (std::memcmp(converter, "soxr ", 5) == 0) {
 		block.AddBlockParam("plugin", "soxr");
 		block.AddBlockParam("quality", converter + 5);
 		return &block;
@@ -139,15 +139,15 @@ pcm_resampler_global_init(const ConfigData &config)
 		throw FormatRuntimeError("'plugin' missing in line %d",
 					 block->line);
 
-	if (strcmp(plugin_name, "internal") == 0) {
+	if (std::strcmp(plugin_name, "internal") == 0) {
 		selected_resampler = SelectedResampler::FALLBACK;
 #ifdef ENABLE_SOXR
-	} else if (strcmp(plugin_name, "soxr") == 0) {
+	} else if (std::strcmp(plugin_name, "soxr") == 0) {
 		selected_resampler = SelectedResampler::SOXR;
 		pcm_resample_soxr_global_init(*block);
 #endif
 #ifdef ENABLE_LIBSAMPLERATE
-	} else if (strcmp(plugin_name, "libsamplerate") == 0) {
+	} else if (std::strcmp(plugin_name, "libsamplerate") == 0) {
 		selected_resampler = SelectedResampler::LIBSAMPLERATE;
 		pcm_resample_lsr_global_init(*block);
 #endif

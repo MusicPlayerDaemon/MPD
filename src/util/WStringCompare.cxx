@@ -63,7 +63,7 @@ FindStringSuffix(const wchar_t *p, const wchar_t *suffix) noexcept
 		return nullptr;
 
 	const auto *q = p + p_length - suffix_length;
-	return memcmp(q, suffix, suffix_length * sizeof(*suffix)) == 0
+	return std::memcmp(q, suffix, suffix_length * sizeof(*suffix)) == 0
 		? q
 		: nullptr;
 }

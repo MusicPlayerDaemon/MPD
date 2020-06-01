@@ -119,7 +119,7 @@ ReadFrames(FileDescriptor fd, void *_buffer, size_t size, size_t frame_size)
 int main(int argc, char **argv)
 try {
 	if (argc < 3 || argc > 4) {
-		fprintf(stderr, "Usage: run_filter CONFIG NAME [FORMAT] <IN\n");
+		std::fprintf(stderr, "Usage: run_filter CONFIG NAME [FORMAT] <IN\n");
 		return EXIT_FAILURE;
 	}
 
@@ -148,7 +148,7 @@ try {
 
 	const AudioFormat out_audio_format = filter->GetOutAudioFormat();
 
-	fprintf(stderr, "audio_format=%s\n",
+	std::fprintf(stderr, "audio_format=%s\n",
 		ToString(out_audio_format).c_str());
 
 	/* play */

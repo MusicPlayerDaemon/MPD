@@ -105,16 +105,16 @@ Iso9660ArchiveFile::Visit(char *path, size_t length, size_t capacity,
 			/* skip special names like "." and ".." */
 			continue;
 
-		size_t filename_length = strlen(filename);
+		size_t filename_length = std::strlen(filename);
 		if (length + filename_length + 1 >= capacity)
 			/* file name is too long */
 			continue;
 
-		memcpy(path + length, filename, filename_length + 1);
+		std::memcpy(path + length, filename, filename_length + 1);
 		size_t new_length = length + filename_length;
 
 		if (iso9660_stat_s::_STAT_DIR == statbuf->type ) {
-			memcpy(path + new_length, "/", 2);
+			std::memcpy(path + new_length, "/", 2);
 			Visit(path, new_length + 1, capacity, visitor);
 		} else {
 			//remove leading /
@@ -162,7 +162,7 @@ public:
 	}
 
 	~Iso9660InputStream() override {
-		free(statbuf);
+		std::free(statbuf);
 	}
 
 	/* virtual methods from InputStream */

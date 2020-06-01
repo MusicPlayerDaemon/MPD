@@ -29,7 +29,7 @@ uint32_t
 ParseCommandArgU32(const char *s)
 {
 	char *test;
-	auto value = strtoul(s, &test, 10);
+	auto value = std::strtoul(s, &test, 10);
 	if (test == s || *test != '\0')
 		throw FormatProtocolError(ACK_ERROR_ARG,
 					  "Integer expected: %s", s);
@@ -41,7 +41,7 @@ int
 ParseCommandArgInt(const char *s, int min_value, int max_value)
 {
 	char *test;
-	auto value = strtol(s, &test, 10);
+	auto value = std::strtol(s, &test, 10);
 	if (test == s || *test != '\0')
 		throw FormatProtocolError(ACK_ERROR_ARG,
 					  "Integer expected: %s", s);
@@ -65,7 +65,7 @@ RangeArg
 ParseCommandArgRange(const char *s)
 {
 	char *test, *test2;
-	auto value = strtol(s, &test, 10);
+	auto value = std::strtol(s, &test, 10);
 	if (test == s || (*test != '\0' && *test != ':'))
 		throw FormatProtocolError(ACK_ERROR_ARG,
 					  "Integer or range expected: %s", s);
@@ -87,7 +87,7 @@ ParseCommandArgRange(const char *s)
 	range.start = (unsigned)value;
 
 	if (*test == ':') {
-		value = strtol(++test, &test2, 10);
+		value = std::strtol(++test, &test2, 10);
 		if (*test2 != '\0')
 			throw FormatProtocolError(ACK_ERROR_ARG,
 						  "Integer or range expected: %s",
@@ -117,7 +117,7 @@ unsigned
 ParseCommandArgUnsigned(const char *s, unsigned max_value)
 {
 	char *endptr;
-	auto value = strtoul(s, &endptr, 10);
+	auto value = std::strtoul(s, &endptr, 10);
 	if (endptr == s || *endptr != 0)
 		throw FormatProtocolError(ACK_ERROR_ARG,
 					  "Integer expected: %s", s);
@@ -140,7 +140,7 @@ bool
 ParseCommandArgBool(const char *s)
 {
 	char *endptr;
-	auto value = strtol(s, &endptr, 10);
+	auto value = std::strtol(s, &endptr, 10);
 	if (endptr == s || *endptr != 0 || (value != 0 && value != 1))
 		throw FormatProtocolError(ACK_ERROR_ARG,
 					  "Boolean (0/1) expected: %s", s);

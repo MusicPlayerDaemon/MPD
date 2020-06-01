@@ -47,7 +47,7 @@ public:
 
 	bool Expect(const void *value, size_t length) {
 		const void *data = Read(length);
-		return data != nullptr && memcmp(value, data, length) == 0;
+		return data != nullptr && std::memcmp(value, data, length) == 0;
 	}
 
 	bool ReadByte(uint8_t &value_r) {

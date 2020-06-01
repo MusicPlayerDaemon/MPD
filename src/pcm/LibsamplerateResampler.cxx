@@ -41,13 +41,13 @@ lsr_parse_converter(const char *s)
 		return true;
 
 	char *endptr;
-	long l = strtol(s, &endptr, 10);
+	long l = std::strtol(s, &endptr, 10);
 	if (*endptr == 0 && src_get_name(l) != nullptr) {
 		lsr_converter = l;
 		return true;
 	}
 
-	size_t length = strlen(s);
+	size_t length = std::strlen(s);
 	for (int i = 0;; ++i) {
 		const char *name = src_get_name(i);
 		if (name == nullptr)
@@ -94,7 +94,7 @@ LibsampleratePcmResampler::Open(AudioFormat &af, unsigned new_sample_rate)
 		throw FormatRuntimeError("libsamplerate initialization has failed: %s",
 					 src_strerror(src_error));
 
-	memset(&data, 0, sizeof(data));
+	std::memset(&data, 0, sizeof(data));
 
 	data.src_ratio = double(new_sample_rate) / double(af.sample_rate);
 	FormatDebug(libsamplerate_domain,

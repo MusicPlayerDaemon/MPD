@@ -16,12 +16,12 @@ static std::unique_ptr<Tag>
 icy_parse_tag(const char *p)
 {
 	char *q = strdup(p);
-	AtScopeExit(q) { free(q); };
+	AtScopeExit(q) { std::free(q); };
 	return icy_parse_tag(
 #ifdef HAVE_ICU_CONVERTER
 			     nullptr,
 #endif
-			     q, q + strlen(q));
+			     q, q + std::strlen(q));
 }
 
 static void

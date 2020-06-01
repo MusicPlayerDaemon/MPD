@@ -92,7 +92,7 @@ ConfigData::GetUnsigned(ConfigOption option, unsigned default_value) const
 		return default_value;
 
 	const char *const s = param->value.c_str();
-	value = strtol(s, &endptr, 0);
+	value = std::strtol(s, &endptr, 0);
 	if (endptr == s || *endptr != 0 || value < 0)
 		throw FormatRuntimeError("Not a valid non-negative number in line %i",
 					 param->line);
@@ -111,7 +111,7 @@ ConfigData::GetPositive(ConfigOption option, unsigned default_value) const
 		return default_value;
 
 	const char *const s = param->value.c_str();
-	value = strtol(s, &endptr, 0);
+	value = std::strtol(s, &endptr, 0);
 	if (endptr == s || *endptr != 0)
 		throw FormatRuntimeError("Not a valid number in line %i",
 					 param->line);

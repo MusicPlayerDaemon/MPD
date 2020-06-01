@@ -16,51 +16,51 @@ TEST(MixRamp, Interpolate)
 	EXPECT_NEAR(double(0),
 		    mixramp_interpolate(foo, 0).count(),
 		    0.05);
-	free(foo);
+	std::free(foo);
 
 	foo = strdup(input);
 	EXPECT_NEAR(float(0),
 		    mixramp_interpolate(foo, 1).count(),
 		    0.005);
-	free(foo);
+	std::free(foo);
 
 	foo = strdup(input);
 	EXPECT_NEAR(float(0.1),
 		    mixramp_interpolate(foo, 3).count(),
 		    0.005);
-	free(foo);
+	std::free(foo);
 
 	foo = strdup(input);
 	EXPECT_NEAR(float(2.5),
 		    mixramp_interpolate(foo, 6).count(),
 		    0.01);
-	free(foo);
+	std::free(foo);
 
 	foo = strdup(input);
 	EXPECT_LT(mixramp_interpolate(foo, 6.1), FloatDuration::zero());
-	free(foo);
+	std::free(foo);
 
 	foo = strdup(input);
 	EXPECT_NEAR(float(0.05),
 		    mixramp_interpolate(foo, 2).count(),
 		    0.05);
-	free(foo);
+	std::free(foo);
 
 	foo = strdup(input);
 	EXPECT_NEAR(float(1.3),
 		    mixramp_interpolate(foo, 4.5).count(),
 		    0.05);
-	free(foo);
+	std::free(foo);
 
 	foo = strdup(input);
 	EXPECT_NEAR(float(0.9),
 		    mixramp_interpolate(foo, 4).count(),
 		    0.05);
-	free(foo);
+	std::free(foo);
 
 	foo = strdup(input);
 	EXPECT_NEAR(float(1.7),
 		    mixramp_interpolate(foo, 5).count(),
 		    0.05);
-	free(foo);
+	std::free(foo);
 }

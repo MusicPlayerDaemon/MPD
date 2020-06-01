@@ -118,7 +118,7 @@ IsAlphaNumericASCII(wchar_t ch) noexcept
 
 /**
  * Convert the specified ASCII character (0x00..0x7f) to upper case.
- * Unlike toupper(), it ignores the system locale.
+ * Unlike std::toupper(), it ignores the system locale.
  */
 constexpr wchar_t
 ToUpperASCII(wchar_t ch) noexcept
@@ -130,7 +130,7 @@ ToUpperASCII(wchar_t ch) noexcept
 
 /**
  * Convert the specified ASCII character (0x00..0x7f) to lower case.
- * Unlike tolower(), it ignores the system locale.
+ * Unlike std::tolower(), it ignores the system locale.
  */
 constexpr wchar_t
 ToLowerASCII(wchar_t ch) noexcept

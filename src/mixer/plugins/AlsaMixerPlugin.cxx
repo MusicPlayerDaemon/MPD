@@ -273,7 +273,7 @@ AlsaMixer::GetVolume()
 		throw FormatRuntimeError("snd_mixer_handle_events() failed: %s",
 					 snd_strerror(err));
 
-	return lround(100 * get_normalized_playback_volume(elem, SND_MIXER_SCHN_FRONT_LEFT));
+	return std::lround(100 * get_normalized_playback_volume(elem, SND_MIXER_SCHN_FRONT_LEFT));
 }
 
 void
@@ -282,7 +282,7 @@ AlsaMixer::SetVolume(unsigned volume)
 	assert(handle != nullptr);
 
 	double cur = get_normalized_playback_volume(elem, SND_MIXER_SCHN_FRONT_LEFT);
-	int delta = volume - lround(100.*cur);
+	int delta = volume - std::lround(100.*cur);
 	int err = set_normalized_playback_volume(elem, cur + 0.01*delta, delta);
 	if (err < 0)
 		throw FormatRuntimeError("failed to set ALSA volume: %s",

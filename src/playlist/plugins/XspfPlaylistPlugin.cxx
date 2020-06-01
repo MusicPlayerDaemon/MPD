@@ -86,19 +86,19 @@ xspf_start_element(void *user_data, const XML_Char *element_name,
 
 	switch (parser->state) {
 	case XspfParser::ROOT:
-		if (strcmp(element_name, "playlist") == 0)
+		if (std::strcmp(element_name, "playlist") == 0)
 			parser->state = XspfParser::PLAYLIST;
 
 		break;
 
 	case XspfParser::PLAYLIST:
-		if (strcmp(element_name, "trackList") == 0)
+		if (std::strcmp(element_name, "trackList") == 0)
 			parser->state = XspfParser::TRACKLIST;
 
 		break;
 
 	case XspfParser::TRACKLIST:
-		if (strcmp(element_name, "track") == 0) {
+		if (std::strcmp(element_name, "track") == 0) {
 			parser->state = XspfParser::TRACK;
 			parser->location.clear();
 		}
@@ -106,7 +106,7 @@ xspf_start_element(void *user_data, const XML_Char *element_name,
 		break;
 
 	case XspfParser::TRACK:
-		if (strcmp(element_name, "location") == 0)
+		if (std::strcmp(element_name, "location") == 0)
 			parser->state = XspfParser::LOCATION;
 		else if (!parser->location.empty()) {
 			parser->tag_type = tag_table_lookup(xspf_tag_elements,
@@ -133,19 +133,19 @@ xspf_end_element(void *user_data, const XML_Char *element_name)
 		break;
 
 	case XspfParser::PLAYLIST:
-		if (strcmp(element_name, "playlist") == 0)
+		if (std::strcmp(element_name, "playlist") == 0)
 			parser->state = XspfParser::ROOT;
 
 		break;
 
 	case XspfParser::TRACKLIST:
-		if (strcmp(element_name, "tracklist") == 0)
+		if (std::strcmp(element_name, "tracklist") == 0)
 			parser->state = XspfParser::PLAYLIST;
 
 		break;
 
 	case XspfParser::TRACK:
-		if (strcmp(element_name, "track") == 0) {
+		if (std::strcmp(element_name, "track") == 0) {
 			if (!parser->location.empty())
 				parser->songs.emplace_front(std::move(parser->location),
 							    parser->tag_builder.Commit());

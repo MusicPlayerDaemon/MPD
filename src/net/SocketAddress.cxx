@@ -50,7 +50,7 @@
 bool
 SocketAddress::operator==(SocketAddress other) const noexcept
 {
-	return size == other.size && memcmp(address, other.address, size) == 0;
+	return size == other.size && std::memcmp(address, other.address, size) == 0;
 }
 
 #ifdef HAVE_UN

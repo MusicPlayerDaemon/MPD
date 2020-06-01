@@ -81,7 +81,7 @@ UnicodeToUTF8(unsigned ch, char *buffer) noexcept;
 
 /**
  * Returns the number of characters in the string.  This is different
- * from strlen(), which counts the number of bytes.
+ * from std::strlen(), which counts the number of bytes.
  */
 gcc_pure gcc_nonnull_all
 size_t

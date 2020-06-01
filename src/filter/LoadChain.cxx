@@ -39,7 +39,7 @@ filter_chain_parse(PreparedFilter &chain,
 		   FilterFactory &factory,
 		   const char *spec)
 {
-	const char *const end = spec + strlen(spec);
+	const char *const end = spec + std::strlen(spec);
 
 	while (true) {
 		const char *comma = std::find(spec, end, ',');

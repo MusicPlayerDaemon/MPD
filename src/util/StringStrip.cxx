@@ -71,7 +71,7 @@ StripRight(const char *p, size_t length) noexcept
 void
 StripRight(char *p) noexcept
 {
-	size_t old_length = strlen(p);
+	size_t old_length = std::strlen(p);
 	size_t new_length = StripRight(p, old_length);
 	p[new_length] = 0;
 }

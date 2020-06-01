@@ -56,28 +56,28 @@ public:
 	}
 
 	void OnDuration(SongTime duration) noexcept override {
-		printf("duration=%f\n", duration.ToDoubleS());
+		std::printf("duration=%f\n", duration.ToDoubleS());
 	}
 
 	void OnTag(TagType type, StringView value) noexcept override {
-		printf("[%s]=%.*s\n", tag_item_names[type],
+		std::printf("[%s]=%.*s\n", tag_item_names[type],
 		       int(value.size), value.data);
 		empty = false;
 	}
 
 	void OnPair(StringView key, StringView value) noexcept override {
-		printf("\"%.*s\"=%.*s\n",
+		std::printf("\"%.*s\"=%.*s\n",
 		       int(key.size), key.data,
 		       int(value.size), value.data);
 	}
 
 	void OnAudioFormat(AudioFormat af) noexcept override {
-		printf("%s\n", ToString(af).c_str());
+		std::printf("%s\n", ToString(af).c_str());
 	}
 
 	void OnPicture(const char *mime_type,
 		       ConstBuffer<void> buffer) noexcept override {
-		printf("picture mime='%s' size=%zu\n", mime_type, buffer.size);
+		std::printf("picture mime='%s' size=%zu\n", mime_type, buffer.size);
 	}
 };
 
@@ -88,11 +88,11 @@ try {
 
 #ifdef HAVE_CLOCALE
 	/* initialize locale */
-	setlocale(LC_CTYPE,"");
+	std::setlocale(LC_CTYPE,"");
 #endif
 
 	if (argc != 3) {
-		fprintf(stderr, "Usage: read_tags DECODER FILE\n");
+		std::fprintf(stderr, "Usage: read_tags DECODER FILE\n");
 		return EXIT_FAILURE;
 	}
 
@@ -109,7 +109,7 @@ try {
 
 	plugin = decoder_plugin_from_name(decoder_name);
 	if (plugin == nullptr) {
-		fprintf(stderr, "No such decoder: %s\n", decoder_name);
+		std::fprintf(stderr, "No such decoder: %s\n", decoder_name);
 		return EXIT_FAILURE;
 	}
 
@@ -131,7 +131,7 @@ try {
 	}
 
 	if (!success) {
-		fprintf(stderr, "Failed to read tags\n");
+		std::fprintf(stderr, "Failed to read tags\n");
 		return EXIT_FAILURE;
 	}
 

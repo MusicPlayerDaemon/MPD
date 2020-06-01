@@ -54,8 +54,8 @@ compare_string_tag_item(const Tag &a, const Tag &b, TagType type) noexcept
 static int
 compare_number_string(const char *a, const char *b) noexcept
 {
-	long ai = a == nullptr ? 0 : strtol(a, nullptr, 10);
-	long bi = b == nullptr ? 0 : strtol(b, nullptr, 10);
+	long ai = a == nullptr ? 0 : std::strtol(a, nullptr, 10);
+	long bi = b == nullptr ? 0 : std::strtol(b, nullptr, 10);
 
 	if (ai <= 0)
 		return bi <= 0 ? 0 : -1;

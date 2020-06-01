@@ -36,7 +36,7 @@ extern "C" {
  * @param format the format string
  * @param object the object
  * @param getter a getter function that extracts a value from the object
- * @return the resulting string to be freed by free(); NULL if
+ * @return the resulting string to be freed by std::free(); NULL if
  * no format string group produced any output
  */
 gcc_malloc

@@ -44,7 +44,7 @@ template<>
 size_t
 FillLengths(size_t *lengths, const char *a)
 {
-	return *lengths = strlen(a);
+	return *lengths = std::strlen(a);
 }
 
 template<typename... Args>

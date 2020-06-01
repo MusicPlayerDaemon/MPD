@@ -55,7 +55,7 @@ public:
 class MyArchiveVisitor final : public ArchiveVisitor {
 public:
 	void VisitArchiveEntry(const char *path_utf8) override {
-		printf("%s\n", path_utf8);
+		std::printf("%s\n", path_utf8);
 	}
 };
 
@@ -63,7 +63,7 @@ int
 main(int argc, char **argv)
 try {
 	if (argc != 3) {
-		fprintf(stderr, "Usage: visit_archive PLUGIN PATH\n");
+		std::fprintf(stderr, "Usage: visit_archive PLUGIN PATH\n");
 		return EXIT_FAILURE;
 	}
 
@@ -78,7 +78,7 @@ try {
 
 	const ArchivePlugin *plugin = archive_plugin_from_name(plugin_name);
 	if (plugin == nullptr) {
-		fprintf(stderr, "No such plugin: %s\n", plugin_name);
+		std::fprintf(stderr, "No such plugin: %s\n", plugin_name);
 		return EXIT_FAILURE;
 	}
 

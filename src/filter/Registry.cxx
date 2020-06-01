@@ -43,7 +43,7 @@ const FilterPlugin *
 filter_plugin_by_name(const char *name) noexcept
 {
 	for (unsigned i = 0; filter_plugins[i] != nullptr; ++i)
-		if (strcmp(filter_plugins[i]->name, name) == 0)
+		if (std::strcmp(filter_plugins[i]->name, name) == 0)
 			return filter_plugins[i];
 
 	return nullptr;

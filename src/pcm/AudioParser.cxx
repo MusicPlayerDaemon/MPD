@@ -41,7 +41,7 @@ ParseSampleRate(const char *src, bool mask, const char **endptr_r)
 		return 0;
 	}
 
-	value = strtoul(src, &endptr, 10);
+	value = std::strtoul(src, &endptr, 10);
 	if (endptr == src) {
 		throw std::invalid_argument("Failed to parse the sample rate");
 	} else if (!audio_valid_sample_rate(value))
@@ -68,12 +68,12 @@ ParseSampleFormat(const char *src, bool mask, const char **endptr_r)
 		return SampleFormat::FLOAT;
 	}
 
-	if (memcmp(src, "dsd", 3) == 0) {
+	if (std::memcmp(src, "dsd", 3) == 0) {
 		*endptr_r = src + 3;
 		return SampleFormat::DSD;
 	}
 
-	value = strtoul(src, &endptr, 10);
+	value = std::strtoul(src, &endptr, 10);
 	if (endptr == src)
 		throw std::invalid_argument("Failed to parse the sample format");
 
@@ -87,7 +87,7 @@ ParseSampleFormat(const char *src, bool mask, const char **endptr_r)
 		break;
 
 	case 24:
-		if (memcmp(endptr, "_3", 2) == 0)
+		if (std::memcmp(endptr, "_3", 2) == 0)
 			/* for backwards compatibility */
 			endptr += 2;
 
@@ -120,7 +120,7 @@ ParseChannelCount(const char *src, bool mask, const char **endptr_r)
 		return 0;
 	}
 
-	value = strtoul(src, &endptr, 10);
+	value = std::strtoul(src, &endptr, 10);
 	if (endptr == src)
 		throw std::invalid_argument("Failed to parse the channel count");
 	else if (!audio_valid_channel_count(value))
@@ -137,12 +137,12 @@ ParseAudioFormat(const char *src, bool mask)
 	AudioFormat dest;
 	dest.Clear();
 
-	if (strncmp(src, "dsd", 3) == 0) {
+	if (std::strncmp(src, "dsd", 3) == 0) {
 		/* allow format specifications such as "dsd64" which
 		   implies the sample rate */
 
 		char *endptr;
-		auto dsd = strtoul(src + 3, &endptr, 10);
+		auto dsd = std::strtoul(src + 3, &endptr, 10);
 		if (endptr > src + 3 && *endptr == ':' &&
 		    dsd >= 32 && dsd <= 4096 && dsd % 2 == 0) {
 			dest.sample_rate = dsd * 44100 / 8;

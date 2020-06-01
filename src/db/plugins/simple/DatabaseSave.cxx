@@ -73,17 +73,17 @@ db_load_internal(TextFile &file, Directory &music_root)
 
 	/* get initial info */
 	line = file.ReadLine();
-	if (line == nullptr || strcmp(DIRECTORY_INFO_BEGIN, line) != 0)
+	if (line == nullptr || std::strcmp(DIRECTORY_INFO_BEGIN, line) != 0)
 		throw std::runtime_error("Database corrupted");
 
-	memset(tags, false, sizeof(tags));
+	std::memset(tags, false, sizeof(tags));
 
 	while ((line = file.ReadLine()) != nullptr &&
-	       strcmp(line, DIRECTORY_INFO_END) != 0) {
+	       std::strcmp(line, DIRECTORY_INFO_END) != 0) {
 		const char *p;
 
 		if ((p = StringAfterPrefix(line, DB_FORMAT_PREFIX))) {
-			format = atoi(p);
+			format = std::atoi(p);
 		} else if (StringStartsWith(line, DIRECTORY_MPD_VERSION)) {
 			if (found_version)
 				throw std::runtime_error("Duplicate version line");
@@ -98,7 +98,7 @@ db_load_internal(TextFile &file, Directory &music_root)
 			const char *new_charset = p;
 			const char *const old_charset = GetFSCharset();
 			if (*old_charset != 0
-			    && strcmp(new_charset, old_charset) != 0)
+			    && std::strcmp(new_charset, old_charset) != 0)
 				throw FormatRuntimeError("Existing database has charset "
 							 "\"%s\" instead of \"%s\"; "
 							 "discarding database file",

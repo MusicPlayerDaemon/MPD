@@ -49,7 +49,7 @@ try {
 	is.Seek(lock, is.GetSize() - sizeof(footer));
 	is.ReadFull(lock, &footer, sizeof(footer));
 
-	if (memcmp(footer.id, "APETAGEX", sizeof(footer.id)) != 0 ||
+	if (std::memcmp(footer.id, "APETAGEX", sizeof(footer.id)) != 0 ||
 	    FromLE32(footer.version) != 2000)
 		return false;
 

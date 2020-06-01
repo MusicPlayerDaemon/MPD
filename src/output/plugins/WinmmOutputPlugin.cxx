@@ -114,7 +114,7 @@ get_device_id(const char *device_name)
 
 	/* check for device id */
 	char *endptr;
-	UINT id = strtoul(device_name, &endptr, 0);
+	UINT id = std::strtoul(device_name, &endptr, 0);
 	if (endptr > device_name && *endptr == 0) {
 		if (id >= numdevs)
 			throw FormatRuntimeError("device \"%s\" is not found",
@@ -216,9 +216,9 @@ winmm_set_buffer(HWAVEOUT handle, WinmmBuffer *buffer,
 	void *dest = buffer->buffer.Get(size);
 	assert(dest != nullptr);
 
-	memcpy(dest, data, size);
+	std::memcpy(dest, data, size);
 
-	memset(&buffer->hdr, 0, sizeof(buffer->hdr));
+	std::memset(&buffer->hdr, 0, sizeof(buffer->hdr));
 	buffer->hdr.lpData = (LPSTR)dest;
 	buffer->hdr.dwBufferLength = size;
 

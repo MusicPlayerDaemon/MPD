@@ -28,15 +28,15 @@ FormatStringV(const char *fmt, std::va_list args) noexcept
 {
 	std::va_list tmp;
 	va_copy(tmp, args);
-	const int length = vsnprintf(nullptr, 0, fmt, tmp);
+	const int length = std::vsnprintf(nullptr, 0, fmt, tmp);
 	va_end(tmp);
 
 	if (length <= 0)
 		/* wtf.. */
-		abort();
+		std::abort();
 
 	char *buffer = new char[length + 1];
-	vsnprintf(buffer, length + 1, fmt, args);
+	std::vsnprintf(buffer, length + 1, fmt, args);
 	return AllocatedString<>::Donate(buffer);
 }
 

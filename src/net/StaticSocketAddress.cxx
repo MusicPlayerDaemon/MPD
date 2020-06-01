@@ -39,7 +39,7 @@ StaticSocketAddress &
 StaticSocketAddress::operator=(SocketAddress other) noexcept
 {
 	size = std::min(other.GetSize(), GetCapacity());
-	memcpy(&address, other.GetAddress(), size);
+	std::memcpy(&address, other.GetAddress(), size);
 	return *this;
 }
 

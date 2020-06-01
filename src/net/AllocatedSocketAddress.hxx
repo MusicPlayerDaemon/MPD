@@ -68,7 +68,7 @@ public:
 	}
 
 	~AllocatedSocketAddress() {
-		free(address);
+		std::free(address);
 	}
 
 	AllocatedSocketAddress &operator=(SocketAddress src) noexcept;
@@ -134,7 +134,7 @@ public:
 	}
 
 	void Clear() noexcept {
-		free(address);
+		std::free(address);
 		address = nullptr;
 		size = 0;
 	}

@@ -27,7 +27,7 @@
 
 class PipeOutput final : AudioOutput {
 	const std::string cmd;
-	FILE *fh;
+	std::FILE *fh;
 
 	explicit PipeOutput(const ConfigBlock &block);
 
@@ -66,7 +66,7 @@ PipeOutput::Open([[maybe_unused]] AudioFormat &audio_format)
 inline size_t
 PipeOutput::Play(const void *chunk, size_t size)
 {
-	size_t nbytes = fwrite(chunk, 1, size, fh);
+	size_t nbytes = std::fwrite(chunk, 1, size, fh);
 	if (nbytes == 0)
 		throw MakeErrno("Write error on pipe");
 

@@ -36,7 +36,7 @@
 
 static constexpr struct {
 	const char *s;
-	time_t t;
+	std::time_t t;
 	std::chrono::system_clock::duration d;
 } parse_tests[] = {
 	/* full ISO8601 */

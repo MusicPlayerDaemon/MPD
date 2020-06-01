@@ -96,11 +96,11 @@ log_init_file(int line)
 static inline LogLevel
 parse_log_level(const char *value)
 {
-	if (0 == strcmp(value, "default"))
+	if (0 == std::strcmp(value, "default"))
 		return LogLevel::DEFAULT;
-	if (0 == strcmp(value, "secure"))
+	if (0 == std::strcmp(value, "secure"))
 		return LOG_LEVEL_SECURE;
-	else if (0 == strcmp(value, "verbose"))
+	else if (0 == std::strcmp(value, "verbose"))
 		return LogLevel::DEBUG;
 	else
 		throw FormatRuntimeError("unknown log level \"%s\"", value);
@@ -115,7 +115,7 @@ log_early_init(bool verbose) noexcept
 	(void)verbose;
 #else
 	/* force stderr to be line-buffered */
-	setvbuf(stderr, nullptr, _IOLBF, 0);
+	std::setvbuf(stderr, nullptr, _IOLBF, 0);
 
 	if (verbose)
 		SetLogThreshold(LogLevel::DEBUG);
@@ -148,7 +148,7 @@ log_init(const ConfigData &config, bool verbose, bool use_stdout)
 			   available) */
 #ifdef ENABLE_SYSTEMD_DAEMON
 			if (sd_booted() &&
-			    getenv("NOTIFY_SOCKET") != nullptr) {
+			    std::getenv("NOTIFY_SOCKET") != nullptr) {
 				/* if MPD was started as a systemd
 				   service, default to journal (which
 				   is connected to fd=2) */
@@ -160,7 +160,7 @@ log_init(const ConfigData &config, bool verbose, bool use_stdout)
 			throw std::runtime_error("config parameter 'log_file' not found");
 #endif
 #ifdef HAVE_SYSLOG
-		} else if (strcmp(param->value.c_str(), "syslog") == 0) {
+		} else if (std::strcmp(param->value.c_str(), "syslog") == 0) {
 			LogInitSysLog();
 #endif
 		} else {
@@ -198,7 +198,7 @@ void setup_log_output()
 	if (out_fd == STDOUT_FILENO)
 		return;
 
-	fflush(nullptr);
+	std::fflush(nullptr);
 
 	if (out_fd < 0) {
 #ifdef _WIN32

@@ -330,7 +330,7 @@ SocketDescriptor::SetV6Only(bool value) noexcept
 bool
 SocketDescriptor::SetBindToDevice(const char *name) noexcept
 {
-	return SetOption(SOL_SOCKET, SO_BINDTODEVICE, name, strlen(name));
+	return SetOption(SOL_SOCKET, SO_BINDTODEVICE, name, std::strlen(name));
 }
 
 #ifdef TCP_FASTOPEN

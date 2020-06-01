@@ -140,7 +140,7 @@ PreparedRouteFilter::PreparedRouteFilter(const ConfigBlock &block)
 	/* TODO:
 	 * With a more clever way of marking "don't copy to output N",
 	 * This could easily be merged into a single loop with some
-	 * dynamic realloc() instead of one count run and one malloc().
+	 * dynamic std::realloc() instead of one count run and one std::malloc().
 	 */
 
 	sources.fill(-1);
@@ -154,7 +154,7 @@ PreparedRouteFilter::PreparedRouteFilter(const ConfigBlock &block)
 		routes = StripLeft(routes);
 
 		char *endptr;
-		const unsigned source = strtoul(routes, &endptr, 10);
+		const unsigned source = std::strtoul(routes, &endptr, 10);
 		endptr = StripLeft(endptr);
 		if (endptr == routes || *endptr != '>')
 			throw std::runtime_error("Malformed 'routes' specification");
@@ -168,7 +168,7 @@ PreparedRouteFilter::PreparedRouteFilter(const ConfigBlock &block)
 
 		routes = StripLeft(endptr + 1);
 
-		unsigned dest = strtoul(routes, &endptr, 10);
+		unsigned dest = std::strtoul(routes, &endptr, 10);
 		endptr = StripLeft(endptr);
 		if (endptr == routes)
 			throw std::runtime_error("Malformed 'routes' specification");
@@ -254,7 +254,7 @@ RouteFilter::FilterPCM(ConstBuffer<void> src)
 				// and copy it to the output
 				const uint8_t *data = base_source +
 					(sources[c] * bytes_per_frame_per_channel);
-				memcpy(chan_destination,
+				std::memcpy(chan_destination,
 					  data,
 					  bytes_per_frame_per_channel);
 			}

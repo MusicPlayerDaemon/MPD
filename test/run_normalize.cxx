@@ -43,7 +43,7 @@ try {
 	ssize_t nbytes;
 
 	if (argc > 2) {
-		fprintf(stderr, "Usage: run_normalize [FORMAT] <IN >OUT\n");
+		std::fprintf(stderr, "Usage: run_normalize [FORMAT] <IN >OUT\n");
 		return 1;
 	}
 

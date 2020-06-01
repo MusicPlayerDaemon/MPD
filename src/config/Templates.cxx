@@ -107,7 +107,7 @@ ParseConfigTemplateName(const ConfigTemplate templates[], unsigned count,
 {
 	unsigned i = 0;
 	for (; i < count; ++i)
-		if (strcmp(templates[i].name, name) == 0)
+		if (std::strcmp(templates[i].name, name) == 0)
 			break;
 
 	return i;

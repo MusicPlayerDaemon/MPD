@@ -130,7 +130,7 @@ protected:
 
 		switch (name[0]) {
 		case 'c':
-			if (!strcmp(name, "container")) {
+			if (!std::strcmp(name, "container")) {
 				object.Clear();
 				object.type = UPnPDirObject::Type::CONTAINER;
 
@@ -145,7 +145,7 @@ protected:
 			break;
 
 		case 'i':
-			if (!strcmp(name, "item")) {
+			if (!std::strcmp(name, "item")) {
 				object.Clear();
 				object.type = UPnPDirObject::Type::ITEM;
 
@@ -160,7 +160,7 @@ protected:
 			break;
 
 		case 'r':
-			if (!strcmp(name, "res")) {
+			if (!std::strcmp(name, "res")) {
 				// <res protocolInfo="http-get:*:audio/mpeg:*" size="5171496"
 				// bitrate="24576" duration="00:03:35" sampleFrequency="44100"
 				// nrAudioChannels="2">
@@ -176,7 +176,7 @@ protected:
 			break;
 
 		case 'u':
-			if (strcmp(name, "upnp:class") == 0)
+			if (std::strcmp(name, "upnp:class") == 0)
 				state = CLASS;
 		}
 	}
@@ -196,7 +196,7 @@ protected:
 			return;
 		}
 
-		if ((!strcmp(name, "container") || !strcmp(name, "item")) &&
+		if ((!std::strcmp(name, "container") || !std::strcmp(name, "item")) &&
 		    object.Check()) {
 			tag.Commit(object.tag);
 			directory.objects.emplace_back(std::move(object));
@@ -233,5 +233,5 @@ void
 UPnPDirContent::Parse(const char *input)
 {
 	UPnPDirParser parser(*this);
-	parser.Parse(input, strlen(input), true);
+	parser.Parse(input, std::strlen(input), true);
 }

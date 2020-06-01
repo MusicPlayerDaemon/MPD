@@ -28,10 +28,10 @@
 
 #include <string>
 
-void print_supported_uri_schemes_to_fp(FILE *fp)
+void print_supported_uri_schemes_to_fp(std::FILE *fp)
 {
 #ifdef HAVE_UN
-	fprintf(fp, " file://");
+	std::fprintf(fp, " file://");
 #endif
 	std::set<std::string> protocols;
 	input_plugins_for_each(plugin)
@@ -40,9 +40,9 @@ void print_supported_uri_schemes_to_fp(FILE *fp)
 		});
 
 	for (const auto& protocol : protocols) {
-		fprintf(fp, " %s", protocol.c_str());
+		std::fprintf(fp, " %s", protocol.c_str());
 	}
-	fprintf(fp,"\n");
+	std::fprintf(fp,"\n");
 }
 
 void

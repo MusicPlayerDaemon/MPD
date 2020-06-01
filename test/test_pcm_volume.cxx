@@ -45,12 +45,12 @@ TestVolume(G g=G())
 	pv.SetVolume(0);
 	auto dest = pv.Apply(src);
 	EXPECT_EQ(src.size, dest.size);
-	EXPECT_EQ(0, memcmp(dest.data, zero, sizeof(zero)));
+	EXPECT_EQ(0, std::memcmp(dest.data, zero, sizeof(zero)));
 
 	pv.SetVolume(PCM_VOLUME_1);
 	dest = pv.Apply(src);
 	EXPECT_EQ(src.size, dest.size);
-	EXPECT_EQ(0, memcmp(dest.data, src.data, src.size));
+	EXPECT_EQ(0, std::memcmp(dest.data, src.data, src.size));
 
 	pv.SetVolume(PCM_VOLUME_1 / 2);
 	dest = pv.Apply(src);
@@ -93,7 +93,7 @@ TEST(PcmTest, Volume16to32)
 	pv.SetVolume(0);
 	auto dest = pv.Apply(src);
 	EXPECT_EQ(src.size * 2, dest.size);
-	EXPECT_EQ(0, memcmp(dest.data, zero, sizeof(zero)));
+	EXPECT_EQ(0, std::memcmp(dest.data, zero, sizeof(zero)));
 
 	pv.SetVolume(PCM_VOLUME_1);
 	dest = pv.Apply(src);
@@ -140,12 +140,12 @@ TEST(PcmTest, VolumeFloat)
 	pv.SetVolume(0);
 	auto dest = pv.Apply(src);
 	EXPECT_EQ(src.size, dest.size);
-	EXPECT_EQ(0, memcmp(dest.data, zero, sizeof(zero)));
+	EXPECT_EQ(0, std::memcmp(dest.data, zero, sizeof(zero)));
 
 	pv.SetVolume(PCM_VOLUME_1);
 	dest = pv.Apply(src);
 	EXPECT_EQ(src.size, dest.size);
-	EXPECT_EQ(0, memcmp(dest.data, src.data, src.size));
+	EXPECT_EQ(0, std::memcmp(dest.data, src.data, src.size));
 
 	pv.SetVolume(PCM_VOLUME_1 / 2);
 	dest = pv.Apply(src);

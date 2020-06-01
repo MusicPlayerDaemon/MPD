@@ -57,8 +57,8 @@ ThrowOSStatus(OSStatus status, const char *_msg)
 	const Apple::StringRef cfstr(cferr.CopyDescription());
 
 	char msg[1024];
-	strcpy(msg, _msg);
-	size_t length = strlen(msg);
+	std::strcpy(msg, _msg);
+	size_t length = std::strlen(msg);
 
 	cfstr.GetCString(msg + length, sizeof(msg) - length);
 	throw std::runtime_error(msg);

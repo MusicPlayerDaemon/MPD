@@ -33,12 +33,12 @@ class MyNeighborListener final : public NeighborListener {
  public:
 	/* virtual methods from class NeighborListener */
 	void FoundNeighbor(const NeighborInfo &info) noexcept override {
-		printf("found '%s' (%s)\n",
+		std::printf("found '%s' (%s)\n",
 		       info.display_name.c_str(), info.uri.c_str());
 	}
 
 	void LostNeighbor(const NeighborInfo &info) noexcept override {
-		printf("lost '%s' (%s)\n",
+		std::printf("lost '%s' (%s)\n",
 		       info.display_name.c_str(), info.uri.c_str());
 	}
 };
@@ -47,7 +47,7 @@ int
 main(int argc, char **argv)
 try {
 	if (argc != 2) {
-		fprintf(stderr, "Usage: run_neighbor_explorer CONFIG\n");
+		std::fprintf(stderr, "Usage: run_neighbor_explorer CONFIG\n");
 		return EXIT_FAILURE;
 	}
 
@@ -72,7 +72,7 @@ try {
 	/* dump initial list */
 
 	for (const auto &info : neighbor.GetList())
-		printf("have '%s' (%s)\n",
+		std::printf("have '%s' (%s)\n",
 		       info.display_name.c_str(), info.uri.c_str());
 
 	/* run */

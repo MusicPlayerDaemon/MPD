@@ -137,7 +137,7 @@ ParseConfigLine(char *line, const char *dir_name, AllocatedPath &result_dir)
 	// check if current setting is for requested dir
 	if (!StringStartsWith(line, dir_name))
 		return false;
-	line += strlen(dir_name);
+	line += std::strlen(dir_name);
 
 	// strip equals sign and spaces around it
 	line = StripLeft(line);
@@ -156,7 +156,7 @@ ParseConfigLine(char *line, const char *dir_name, AllocatedPath &result_dir)
 	// check if path is relative to $HOME
 	bool home_relative = false;
 	if (StringStartsWith(line, home_prefix)) {
-		line += strlen(home_prefix);
+		line += std::strlen(home_prefix);
 		home_relative = true;
 	}
 
@@ -168,7 +168,7 @@ ParseConfigLine(char *line, const char *dir_name, AllocatedPath &result_dir)
 		if (line_end == nullptr)
 			return true;
 	} else {
-		line_end = StripRight(line, line + strlen(line));
+		line_end = StripRight(line, line + std::strlen(line));
 	}
 
 	// check for empty result
@@ -224,7 +224,7 @@ GetUserConfigDir() noexcept
 	return GetStandardDir(CSIDL_LOCAL_APPDATA);
 #elif defined(USE_XDG)
 	// Check for $XDG_CONFIG_HOME
-	auto config_home = getenv("XDG_CONFIG_HOME");
+	auto config_home = std::getenv("XDG_CONFIG_HOME");
 	if (IsValidPathString(config_home) && IsValidDir(config_home))
 		return AllocatedPath::FromFS(config_home);
 

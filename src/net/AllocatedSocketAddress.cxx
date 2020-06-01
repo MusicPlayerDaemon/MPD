@@ -45,7 +45,7 @@ AllocatedSocketAddress::operator=(SocketAddress src) noexcept
 		Clear();
 	} else {
 		SetSize(src.GetSize());
-		memcpy(address, src.GetAddress(), size);
+		std::memcpy(address, src.GetAddress(), size);
 	}
 
 	return *this;
@@ -57,9 +57,9 @@ AllocatedSocketAddress::SetSize(size_type new_size) noexcept
 	if (size == new_size)
 		return;
 
-	free(address);
+	std::free(address);
 	size = new_size;
-	address = (struct sockaddr *)malloc(size);
+	address = (struct sockaddr *)std::malloc(size);
 }
 
 #ifdef HAVE_UN
@@ -77,13 +77,13 @@ AllocatedSocketAddress::SetLocal(const char *path) noexcept
 
 	/* sun_path must be null-terminated unless it's an abstract
 	   socket */
-	const size_t path_length = strlen(path) + !is_abstract;
+	const size_t path_length = std::strlen(path) + !is_abstract;
 
 	struct sockaddr_un *sun;
 	SetSize(sizeof(*sun) - sizeof(sun->sun_path) + path_length);
 	sun = (struct sockaddr_un *)address;
 	sun->sun_family = AF_LOCAL;
-	memcpy(sun->sun_path, path, path_length);
+	std::memcpy(sun->sun_path, path, path_length);
 
 	if (is_abstract)
 		sun->sun_path[0] = 0;

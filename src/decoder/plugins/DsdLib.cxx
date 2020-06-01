@@ -40,9 +40,9 @@ bool
 DsdId::Equals(const char *s) const noexcept
 {
 	assert(s != nullptr);
-	assert(strlen(s) == sizeof(value));
+	assert(std::strlen(s) == sizeof(value));
 
-	return memcmp(value, s, sizeof(value)) == 0;
+	return std::memcmp(value, s, sizeof(value)) == 0;
 }
 
 /**

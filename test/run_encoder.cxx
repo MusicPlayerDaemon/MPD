@@ -42,7 +42,7 @@ try {
 	/* parse command line */
 
 	if (argc > 3) {
-		fprintf(stderr,
+		std::fprintf(stderr,
 			"Usage: run_encoder [ENCODER] [FORMAT] <IN >OUT\n");
 		return EXIT_FAILURE;
 	}
@@ -56,7 +56,7 @@ try {
 
 	const auto plugin = encoder_plugin_get(encoder_name);
 	if (plugin == nullptr) {
-		fprintf(stderr, "No such encoder: %s\n", encoder_name);
+		std::fprintf(stderr, "No such encoder: %s\n", encoder_name);
 		return EXIT_FAILURE;
 	}
 

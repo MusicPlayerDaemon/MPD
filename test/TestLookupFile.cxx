@@ -16,7 +16,7 @@ TEST(ArchiveTest, Lookup)
 
 	EXPECT_THROW(LookupFile(Path::FromFS("src/foo/bar")), std::system_error);
 
-	fclose(fopen("dummy", "w"));
+	std::fclose(std::fopen("dummy", "w"));
 
 	auto result = LookupFile(Path::FromFS("dummy/foo/bar"));
 	EXPECT_TRUE(result);

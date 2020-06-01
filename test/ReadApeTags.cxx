@@ -39,9 +39,9 @@ MyApeTagCallback([[maybe_unused]] unsigned long flags,
 {
 	if ((flags & (0x3 << 1)) == 0)
 		// UTF-8
-		printf("\"%s\"=\"%.*s\"\n", key, (int)value.size, value.data);
+		std::printf("\"%s\"=\"%.*s\"\n", key, (int)value.size, value.data);
 	else
-		printf("\"%s\"=0x%lx\n", key, flags);
+		std::printf("\"%s\"=0x%lx\n", key, flags);
 	return true;
 }
 
@@ -50,11 +50,11 @@ main(int argc, char **argv)
 try {
 #ifdef HAVE_CLOCALE
 	/* initialize locale */
-	setlocale(LC_CTYPE,"");
+	std::setlocale(LC_CTYPE,"");
 #endif
 
 	if (argc != 2) {
-		fprintf(stderr, "Usage: ReadApeTags FILE\n");
+		std::fprintf(stderr, "Usage: ReadApeTags FILE\n");
 		return EXIT_FAILURE;
 	}
 
@@ -65,7 +65,7 @@ try {
 	auto is = OpenLocalInputStream(path, mutex);
 
 	if (!tag_ape_scan(*is, MyApeTagCallback)) {
-		fprintf(stderr, "error\n");
+		std::fprintf(stderr, "error\n");
 		return EXIT_FAILURE;
 	}
 

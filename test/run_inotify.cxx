@@ -37,7 +37,7 @@ static void
 my_inotify_callback([[maybe_unused]] int wd, unsigned mask,
 		    const char *name, [[maybe_unused]] void *ctx)
 {
-	printf("mask=0x%x name='%s'\n", mask, name);
+	std::printf("mask=0x%x name='%s'\n", mask, name);
 }
 
 int main(int argc, char **argv)
@@ -45,7 +45,7 @@ try {
 	const char *path;
 
 	if (argc != 2) {
-		fprintf(stderr, "Usage: run_inotify PATH\n");
+		std::fprintf(stderr, "Usage: run_inotify PATH\n");
 		return EXIT_FAILURE;
 	}
 

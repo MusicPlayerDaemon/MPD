@@ -60,7 +60,7 @@ FindContainerDecoderPlugin(Path path)
 int main(int argc, char **argv)
 try {
 	if (argc != 2) {
-		fprintf(stderr, "Usage: ContainerScan PATH\n");
+		std::fprintf(stderr, "Usage: ContainerScan PATH\n");
 		return EXIT_FAILURE;
 	}
 
@@ -70,13 +70,13 @@ try {
 
 	const auto *plugin = FindContainerDecoderPlugin(path);
 	if (plugin == nullptr) {
-		fprintf(stderr, "No decoder found for this file\n");
+		std::fprintf(stderr, "No decoder found for this file\n");
 		return EXIT_FAILURE;
 	}
 
 	const auto v = plugin->container_scan(path);
 	if (v.empty()) {
-		fprintf(stderr, "File is not a container\n");
+		std::fprintf(stderr, "File is not a container\n");
 		return EXIT_FAILURE;
 	}
 

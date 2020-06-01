@@ -49,7 +49,7 @@ public:
 			return tis.StealInputStream();
 
 		StripRight(line);
-		if (strcmp(line, "#EXTM3U") != 0)
+		if (std::strcmp(line, "#EXTM3U") != 0)
 			return tis.StealInputStream();
 
 		return nullptr;
@@ -84,7 +84,7 @@ extm3u_parse_tag(const char *line)
 	char *endptr;
 	const char *name;
 
-	duration = strtol(line, &endptr, 10);
+	duration = std::strtol(line, &endptr, 10);
 	if (endptr[0] != ',')
 		/* malformed line */
 		return Tag();

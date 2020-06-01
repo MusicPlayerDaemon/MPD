@@ -35,7 +35,7 @@ DumpDecoderClient::Ready(const AudioFormat audio_format,
 	assert(!initialized);
 	assert(audio_format.IsValid());
 
-	fprintf(stderr, "audio_format=%s duration=%f seekable=%d\n",
+	std::fprintf(stderr, "audio_format=%s duration=%f seekable=%d\n",
 		ToString(audio_format).c_str(),
 		duration.ToDoubleS(), seekable);
 
@@ -98,7 +98,7 @@ DumpDecoderClient::SubmitData([[maybe_unused]] InputStream *is,
 {
 	if (kbit_rate != prev_kbit_rate) {
 		prev_kbit_rate = kbit_rate;
-		fprintf(stderr, "%u kbit/s\n", kbit_rate);
+		std::fprintf(stderr, "%u kbit/s\n", kbit_rate);
 	}
 
 	[[maybe_unused]] ssize_t nbytes = write(STDOUT_FILENO, data, datalen);
@@ -109,10 +109,10 @@ DecoderCommand
 DumpDecoderClient::SubmitTag([[maybe_unused]] InputStream *is,
 			     Tag &&tag) noexcept
 {
-	fprintf(stderr, "TAG: duration=%f\n", tag.duration.ToDoubleS());
+	std::fprintf(stderr, "TAG: duration=%f\n", tag.duration.ToDoubleS());
 
 	for (const auto &i : tag)
-		fprintf(stderr, "  %s=%s\n", tag_item_names[i.type], i.value);
+		std::fprintf(stderr, "  %s=%s\n", tag_item_names[i.type], i.value);
 
 	return GetCommand();
 }
@@ -121,7 +121,7 @@ static void
 DumpReplayGainTuple(const char *name, const ReplayGainTuple &tuple) noexcept
 {
 	if (tuple.IsDefined())
-		fprintf(stderr, "replay_gain[%s]: gain=%f peak=%f\n",
+		std::fprintf(stderr, "replay_gain[%s]: gain=%f peak=%f\n",
 			name, (double)tuple.gain, (double)tuple.peak);
 }
 
@@ -142,6 +142,6 @@ DumpDecoderClient::SubmitReplayGain(const ReplayGainInfo *rgi) noexcept
 void
 DumpDecoderClient::SubmitMixRamp([[maybe_unused]] MixRampInfo &&mix_ramp) noexcept
 {
-	fprintf(stderr, "MixRamp: start='%s' end='%s'\n",
+	std::fprintf(stderr, "MixRamp: start='%s' end='%s'\n",
 		mix_ramp.GetStart(), mix_ramp.GetEnd());
 }

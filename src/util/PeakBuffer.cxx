@@ -89,7 +89,7 @@ AppendTo(DynamicFifoBuffer<uint8_t> &buffer,
 			break;
 
 		const size_t nbytes = std::min(length, p.size);
-		memcpy(p.data, data, nbytes);
+		std::memcpy(p.data, data, nbytes);
 		buffer.Append(nbytes);
 
 		data = (const uint8_t *)data + nbytes;

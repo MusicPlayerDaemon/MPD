@@ -39,7 +39,7 @@ static void
 DumpReplayGainTuple(const char *name, const ReplayGainTuple &tuple)
 {
 	if (tuple.IsDefined())
-		fprintf(stderr, "replay_gain[%s]: gain=%f peak=%f\n",
+		std::fprintf(stderr, "replay_gain[%s]: gain=%f peak=%f\n",
 			name, tuple.gain, tuple.peak);
 }
 
@@ -54,11 +54,11 @@ int main(int argc, char **argv)
 try {
 #ifdef HAVE_CLOCALE
 	/* initialize locale */
-	setlocale(LC_CTYPE,"");
+	std::setlocale(LC_CTYPE,"");
 #endif
 
 	if (argc != 2) {
-		fprintf(stderr, "Usage: read_rva2 FILE\n");
+		std::fprintf(stderr, "Usage: read_rva2 FILE\n");
 		return EXIT_FAILURE;
 	}
 
@@ -70,7 +70,7 @@ try {
 
 	const auto tag = tag_id3_load(*is);
 	if (tag == nullptr) {
-		fprintf(stderr, "No ID3 tag found\n");
+		std::fprintf(stderr, "No ID3 tag found\n");
 		return EXIT_FAILURE;
 	}
 
@@ -79,7 +79,7 @@ try {
 
 	bool success = tag_rva2_parse(tag.get(), replay_gain);
 	if (!success) {
-		fprintf(stderr, "No RVA2 tag found\n");
+		std::fprintf(stderr, "No RVA2 tag found\n");
 		return EXIT_FAILURE;
 	}
 

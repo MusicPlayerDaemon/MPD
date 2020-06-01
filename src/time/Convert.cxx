@@ -37,14 +37,14 @@
 
 #include <sys/time.h> /* for struct timeval */
 
-struct tm
+std::tm
 GmTime(std::chrono::system_clock::time_point tp)
 {
-	const time_t t = std::chrono::system_clock::to_time_t(tp);
+	const std::time_t t = std::chrono::system_clock::to_time_t(tp);
 #ifdef _WIN32
-	const struct tm *tm = gmtime(&t);
+	const std::tm *tm = std::gmtime(&t);
 #else
-	struct tm buffer, *tm = gmtime_r(&t, &buffer);
+	struct std::tm buffer, *tm = gmtime_r(&t, &buffer);
 #endif
 	if (tm == nullptr)
 		throw std::runtime_error("gmtime_r() failed");
@@ -52,14 +52,14 @@ GmTime(std::chrono::system_clock::time_point tp)
 	return *tm;
 }
 
-struct tm
+std::tm
 LocalTime(std::chrono::system_clock::time_point tp)
 {
-	const time_t t = std::chrono::system_clock::to_time_t(tp);
+	const std::time_t t = std::chrono::system_clock::to_time_t(tp);
 #ifdef _WIN32
-	const struct tm *tm = localtime(&t);
+	const std::tm *tm = localtime(&t);
 #else
-	struct tm buffer, *tm = localtime_r(&t, &buffer);
+	std::tm buffer, *tm = localtime_r(&t, &buffer);
 #endif
 	if (tm == nullptr)
 		throw std::runtime_error("localtime_r() failed");
@@ -73,16 +73,16 @@ LocalTime(std::chrono::system_clock::time_point tp)
  * Determine the time zone offset in a portable way.
  */
 gcc_const
-static time_t
+static std::time_t
 GetTimeZoneOffset() noexcept
 {
-	time_t t = 1234567890;
+	std::time_t t = 1234567890;
 #ifdef _WIN32
-	struct tm *p = gmtime(&t);
+	std::tm *p = std::gmtime(&t);
 #else
-	struct tm tm;
+	std::tm tm;
 	tm.tm_isdst = 0;
-	struct tm *p = &tm;
+	std::tm *p = &tm;
 	gmtime_r(&t, p);
 #endif
 	return t - mktime(p);
@@ -91,7 +91,7 @@ GetTimeZoneOffset() noexcept
 #endif /* !__GLIBC__ */
 
 std::chrono::system_clock::time_point
-TimeGm(struct tm &tm) noexcept
+TimeGm(std::tm &tm) noexcept
 {
 #ifdef __GLIBC__
 	/* timegm() is a GNU extension */
@@ -105,7 +105,7 @@ TimeGm(struct tm &tm) noexcept
 }
 
 std::chrono::system_clock::time_point
-MakeTime(struct tm &tm) noexcept
+MakeTime(std::tm &tm) noexcept
 {
 	return std::chrono::system_clock::from_time_t(mktime(&tm));
 }

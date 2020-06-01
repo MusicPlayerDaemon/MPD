@@ -83,7 +83,7 @@ BufferingInputStream::Read(std::unique_lock<Mutex> &lock, size_t offset,
 		if (r.HasData()) {
 			/* yay, we have some data */
 			size_t nbytes = std::min(s, r.defined_buffer.size);
-			memcpy(ptr, r.defined_buffer.data, nbytes);
+			std::memcpy(ptr, r.defined_buffer.data, nbytes);
 			return nbytes;
 		}
 

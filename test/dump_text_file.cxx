@@ -57,7 +57,7 @@ dump_text_file(TextInputStream &is)
 {
 	const char *line;
 	while ((line = is.ReadLine()) != nullptr)
-		printf("'%s'\n", line);
+		std::printf("'%s'\n", line);
 }
 
 static int
@@ -77,7 +77,7 @@ dump_input_stream(InputStreamPtr &&is)
 int main(int argc, char **argv)
 try {
 	if (argc != 2) {
-		fprintf(stderr, "Usage: run_input URI\n");
+		std::fprintf(stderr, "Usage: run_input URI\n");
 		return EXIT_FAILURE;
 	}
 

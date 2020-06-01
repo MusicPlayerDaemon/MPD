@@ -49,13 +49,13 @@ FromString(const char *s)
 {
 	assert(s != nullptr);
 
-	if (strcmp(s, "off") == 0)
+	if (std::strcmp(s, "off") == 0)
 		return ReplayGainMode::OFF;
-	else if (strcmp(s, "track") == 0)
+	else if (std::strcmp(s, "track") == 0)
 		return ReplayGainMode::TRACK;
-	else if (strcmp(s, "album") == 0)
+	else if (std::strcmp(s, "album") == 0)
 		return ReplayGainMode::ALBUM;
-	else if (strcmp(s, "auto") == 0)
+	else if (std::strcmp(s, "auto") == 0)
 		return ReplayGainMode::AUTO;
 	else
 		throw std::invalid_argument("Unrecognized replay gain mode");

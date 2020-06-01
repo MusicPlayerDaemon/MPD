@@ -70,7 +70,7 @@ const ArchivePlugin *
 archive_plugin_from_name(const char *name) noexcept
 {
 	archive_plugins_for_each_enabled(plugin)
-		if (strcmp(plugin->name, name) == 0)
+		if (std::strcmp(plugin->name, name) == 0)
 			return plugin;
 
 	return nullptr;

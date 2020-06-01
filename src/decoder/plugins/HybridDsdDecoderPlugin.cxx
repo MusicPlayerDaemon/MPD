@@ -113,7 +113,7 @@ FindHybridDsdData(DecoderClient &client, InputStream &input)
 			throw UnsupportedFile();
 
 		size_t remaining = header_size - sizeof(header);
-		if (memcmp(header.type, "bphv", 4) == 0) {
+		if (std::memcmp(header.type, "bphv", 4) == 0) {
 			/* version; this plugin knows only version
 			   1 */
 			if (remaining != 4 || ReadBE32(client, input) != 1)
@@ -121,7 +121,7 @@ FindHybridDsdData(DecoderClient &client, InputStream &input)
 			remaining -= 4;
 
 			found_version = true;
-		} else if (memcmp(header.type, "bphc", 4) == 0) {
+		} else if (std::memcmp(header.type, "bphc", 4) == 0) {
 			/* channel count */
 			if (remaining != 4)
 				throw UnsupportedFile();
@@ -133,7 +133,7 @@ FindHybridDsdData(DecoderClient &client, InputStream &input)
 				throw UnsupportedFile();
 
 			audio_format.channels = channels;
-		} else if (memcmp(header.type, "bphr", 4) == 0) {
+		} else if (std::memcmp(header.type, "bphr", 4) == 0) {
 			/* (bit) sample rate */
 
 			if (remaining != 4)
@@ -146,7 +146,7 @@ FindHybridDsdData(DecoderClient &client, InputStream &input)
 				throw UnsupportedFile();
 
 			audio_format.sample_rate = sample_rate;
-		} else if (memcmp(header.type, "bphf", 4) == 0) {
+		} else if (std::memcmp(header.type, "bphf", 4) == 0) {
 			/* format: 0 = plain DSD; 1 = DST compressed
 			   (only plain DSD is understood by this
 			   plugin) */
@@ -155,7 +155,7 @@ FindHybridDsdData(DecoderClient &client, InputStream &input)
 			remaining -= 4;
 
 			audio_format.format = SampleFormat::DSD;
-		} else if (memcmp(header.type, "bphd", 4) == 0) {
+		} else if (std::memcmp(header.type, "bphd", 4) == 0) {
 			/* the actual DSD data */
 			if (!found_version || !audio_format.IsValid())
 				throw UnsupportedFile();

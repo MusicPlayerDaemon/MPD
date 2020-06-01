@@ -51,7 +51,7 @@ GetStoragePluginByName(const char *name) noexcept
 {
 	for (auto i = storage_plugins; *i != nullptr; ++i) {
 		const StoragePlugin &plugin = **i;
-		if (strcmp(plugin.name, name) == 0)
+		if (std::strcmp(plugin.name, name) == 0)
 			return *i;
 	}
 

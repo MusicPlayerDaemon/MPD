@@ -198,7 +198,7 @@ AudioOutputSource::FilterChunk(const MusicChunk &chunk)
 			mix_ratio = 1.0f - mix_ratio;
 
 		void *dest = cross_fade_buffer.Get(other_data.size);
-		memcpy(dest, other_data.data, other_data.size);
+		std::memcpy(dest, other_data.data, other_data.size);
 		if (!pcm_mix(cross_fade_dither, dest, data.data, data.size,
 			     in_audio_format.format,
 			     mix_ratio))

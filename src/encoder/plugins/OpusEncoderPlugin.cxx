@@ -92,13 +92,13 @@ PreparedOpusEncoder::PreparedOpusEncoder(const ConfigBlock &block)
 	:chaining(block.GetBlockValue("opustags", false))
 {
 	const char *value = block.GetBlockValue("bitrate", "auto");
-	if (strcmp(value, "auto") == 0)
+	if (std::strcmp(value, "auto") == 0)
 		bitrate = OPUS_AUTO;
-	else if (strcmp(value, "max") == 0)
+	else if (std::strcmp(value, "max") == 0)
 		bitrate = OPUS_BITRATE_MAX;
 	else {
 		char *endptr;
-		bitrate = strtoul(value, &endptr, 10);
+		bitrate = std::strtoul(value, &endptr, 10);
 		if (endptr == value || *endptr != 0 ||
 		    bitrate < 500 || bitrate > 512000)
 			throw std::runtime_error("Invalid bit rate");
@@ -109,11 +109,11 @@ PreparedOpusEncoder::PreparedOpusEncoder(const ConfigBlock &block)
 		throw std::runtime_error("Invalid complexity");
 
 	value = block.GetBlockValue("signal", "auto");
-	if (strcmp(value, "auto") == 0)
+	if (std::strcmp(value, "auto") == 0)
 		signal = OPUS_AUTO;
-	else if (strcmp(value, "voice") == 0)
+	else if (std::strcmp(value, "voice") == 0)
 		signal = OPUS_SIGNAL_VOICE;
-	else if (strcmp(value, "music") == 0)
+	else if (std::strcmp(value, "music") == 0)
 		signal = OPUS_SIGNAL_MUSIC;
 	else
 		throw std::runtime_error("Invalid signal");
@@ -219,7 +219,7 @@ OpusEncoder::DoEncode(bool eos)
 void
 OpusEncoder::End()
 {
-	memset(buffer + buffer_position, 0,
+	std::memset(buffer + buffer_position, 0,
 	       buffer_size - buffer_position);
 	DoEncode(true);
 	Flush();
@@ -235,7 +235,7 @@ OpusEncoder::WriteSilence(unsigned fill_frames)
 		if (nbytes > fill_bytes)
 			nbytes = fill_bytes;
 
-		memset(buffer + buffer_position, 0, nbytes);
+		std::memset(buffer + buffer_position, 0, nbytes);
 		buffer_position += nbytes;
 		fill_bytes -= nbytes;
 
@@ -264,7 +264,7 @@ OpusEncoder::Write(const void *_data, size_t length)
 		if (nbytes > length)
 			nbytes = length;
 
-		memcpy(buffer + buffer_position, data, nbytes);
+		std::memcpy(buffer + buffer_position, data, nbytes);
 		data += nbytes;
 		length -= nbytes;
 		buffer_position += nbytes;
@@ -285,7 +285,7 @@ void
 OpusEncoder::GenerateHead() noexcept
 {
 	unsigned char header[19];
-	memcpy(header, "OpusHead", 8);
+	std::memcpy(header, "OpusHead", 8);
 	header[8] = 1;
 	header[9] = audio_format.channels;
 	*(uint16_t *)(header + 10) = ToLE16(lookahead);
@@ -309,7 +309,7 @@ void
 OpusEncoder::GenerateTags(const Tag *tag) noexcept
 {
 	const char *version = opus_get_version_string();
-	size_t version_length = strlen(version);
+	size_t version_length = std::strlen(version);
 
 	// len("OpusTags") + 4 byte version length + len(version) + 4 byte tag count
 	size_t comments_size = 8 + 4 + version_length + 4;
@@ -318,31 +318,31 @@ OpusEncoder::GenerateTags(const Tag *tag) noexcept
 		for (const auto &item: *tag) {
 			++tag_count;
 			// 4 byte length + len(tagname) + len('=') + len(value)
-			comments_size += 4 + strlen(tag_item_names[item.type]) + 1 + strlen(item.value);
+			comments_size += 4 + std::strlen(tag_item_names[item.type]) + 1 + std::strlen(item.value);
 		}
 	}
 
 	auto *comments = new unsigned char[comments_size];
 	unsigned char *p = comments;
 
-	memcpy(comments, "OpusTags", 8);
+	std::memcpy(comments, "OpusTags", 8);
 	*(uint32_t *)(comments + 8) = ToLE32(version_length);
 	p += 12;
 
-	memcpy(p, version, version_length);
+	std::memcpy(p, version, version_length);
 	p += version_length;
 
 	tag_count = ToLE32(tag_count);
-	memcpy(p, &tag_count, 4);
+	std::memcpy(p, &tag_count, 4);
 	p += 4;
 
 	if (tag) {
 		for (const auto &item: *tag) {
-			size_t tag_name_len = strlen(tag_item_names[item.type]);
-			size_t tag_val_len = strlen(item.value);
+			size_t tag_name_len = std::strlen(tag_item_names[item.type]);
+			size_t tag_val_len = std::strlen(item.value);
 			uint32_t tag_len_le = ToLE32(tag_name_len + 1 + tag_val_len);
 
-			memcpy(p, &tag_len_le, 4);
+			std::memcpy(p, &tag_len_le, 4);
 			p += 4;
 
 			ToUpperASCII((char *)p, tag_item_names[item.type], tag_name_len + 1);
@@ -350,7 +350,7 @@ OpusEncoder::GenerateTags(const Tag *tag) noexcept
 
 			*p++ = '=';
 
-			memcpy(p, item.value, tag_val_len);
+			std::memcpy(p, item.value, tag_val_len);
 			p += tag_val_len;
 		}
 	}

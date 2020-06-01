@@ -80,9 +80,9 @@ rva2_apply_data(ReplayGainInfo &rgi,
 
 	float volume_adjustment = rva2_float_volume_adjustment(data);
 
-	if (strcmp((const char *)id, "album") == 0)  {
+	if (std::strcmp((const char *)id, "album") == 0)  {
 		rgi.album.gain = volume_adjustment;
-	} else if (strcmp((const char *)id, "track") == 0) {
+	} else if (std::strcmp((const char *)id, "track") == 0) {
 		rgi.track.gain = volume_adjustment;
 	} else {
 		rgi.album.gain = volume_adjustment;

@@ -104,7 +104,7 @@ IcuCompare::IsIn(const char *haystack) const noexcept
 	return strcasestr(haystack, needle.c_str()) != nullptr;
 #else
 	/* poor man's strcasestr() */
-	for (const size_t length = strlen(needle.c_str());
+	for (const size_t length = std::strlen(needle.c_str());
 	     *haystack != 0; ++haystack)
 		if (strncasecmp(haystack, needle.c_str(), length) == 0)
 			return true;

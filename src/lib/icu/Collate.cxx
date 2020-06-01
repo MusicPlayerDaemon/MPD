@@ -121,6 +121,6 @@ IcuCollate(std::string_view a, std::string_view b) noexcept
 #else
 	/* need to duplicate for the fallback because std::string_view
 	   is not null-terminated */
-	return strcoll(std::string(a).c_str(), std::string(b).c_str());
+	return std::strcoll(std::string(a).c_str(), std::string(b).c_str());
 #endif
 }

@@ -40,7 +40,7 @@ try {
 	int volume;
 
 	if (argc != 2) {
-		fprintf(stderr, "Usage: read_mixer PLUGIN\n");
+		std::fprintf(stderr, "Usage: read_mixer PLUGIN\n");
 		return EXIT_FAILURE;
 	}
 
@@ -65,11 +65,11 @@ try {
 	assert(volume >= -1 && volume <= 100);
 
 	if (volume < 0) {
-		fprintf(stderr, "failed to read volume\n");
+		std::fprintf(stderr, "failed to read volume\n");
 		return EXIT_FAILURE;
 	}
 
-	printf("%d\n", volume);
+	std::printf("%d\n", volume);
 	return 0;
 } catch (...) {
 	PrintException(std::current_exception());

@@ -47,7 +47,7 @@ ToUint64(FILETIME ft) noexcept
 	return ConstructUint64(ft.dwLowDateTime, ft.dwHighDateTime);
 }
 
-constexpr time_t
+constexpr std::time_t
 FileTimeToTimeT(FILETIME ft) noexcept
 {
 	return (ToUint64(ft) - 116444736000000000) / 10000000;
@@ -56,7 +56,7 @@ FileTimeToTimeT(FILETIME ft) noexcept
 inline std::chrono::system_clock::time_point
 FileTimeToChrono(FILETIME ft) noexcept
 {
-	// TODO: eliminate the time_t roundtrip, preserve sub-second resolution
+	// TODO: eliminate the std::time_t roundtrip, preserve sub-second resolution
 	return std::chrono::system_clock::from_time_t(FileTimeToTimeT(ft));
 }
 

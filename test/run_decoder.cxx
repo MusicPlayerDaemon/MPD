@@ -81,7 +81,7 @@ ParseCommandLine(int argc, char **argv)
 			break;
 
 		case OPTION_SEEK:
-			c.seek_where = SongTime::FromS(strtod(o.value, nullptr));
+			c.seek_where = SongTime::FromS(std::strtod(o.value, nullptr));
 			break;
 		}
 	}
@@ -199,7 +199,7 @@ try {
 
 	const DecoderPlugin *plugin = decoder_plugin_from_name(c.decoder);
 	if (plugin == nullptr) {
-		fprintf(stderr, "No such decoder: %s\n", c.decoder);
+		std::fprintf(stderr, "No such decoder: %s\n", c.decoder);
 		return EXIT_FAILURE;
 	}
 
@@ -216,7 +216,7 @@ try {
 		} catch (StopDecoder) {
 		}
 	} else {
-		fprintf(stderr, "Decoder plugin is not usable\n");
+		std::fprintf(stderr, "Decoder plugin is not usable\n");
 		return EXIT_FAILURE;
 	}
 

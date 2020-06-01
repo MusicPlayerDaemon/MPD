@@ -84,8 +84,8 @@ TagGetter(const void *object, const char *name) noexcept
 	const auto &_ctx = *(const FormatTagContext *)object;
 	auto &ctx = const_cast<FormatTagContext &>(_ctx);
 
-	if (strcmp(name, "iso8601") == 0) {
-		struct tm tm;
+	if (std::strcmp(name, "iso8601") == 0) {
+		struct std::tm tm;
 
 		try {
 			tm = GmTime(std::chrono::system_clock::now());
@@ -93,7 +93,7 @@ TagGetter(const void *object, const char *name) noexcept
 			return "";
 		}
 
-		strftime(ctx.buffer, sizeof(ctx.buffer),
+		std::strftime(ctx.buffer, sizeof(ctx.buffer),
 #ifdef _WIN32
 			 /* kludge: use underscore instead of colon on
 			    Windows because colons are not allowed in

@@ -58,7 +58,7 @@ EventLoop::GetUring() noexcept
 		try {
 			uring = std::make_unique<Uring::Manager>(*this);
 		} catch (...) {
-			fprintf(stderr, "Failed to initialize io_uring: ");
+			std::fprintf(stderr, "Failed to initialize io_uring: ");
 			PrintException(std::current_exception());
 		}
 	}

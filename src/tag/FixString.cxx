@@ -140,7 +140,7 @@ FixTagString(StringView p)
 	if (cleared.IsNull())
 		cleared = utf8;
 	else
-		free(utf8.data);
+		std::free(utf8.data);
 
 	return cleared;
 }

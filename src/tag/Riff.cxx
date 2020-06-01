@@ -46,7 +46,7 @@ riff_seek_id3(InputStream &is, std::unique_lock<Mutex> &lock)
 
 	riff_header header;
 	is.ReadFull(lock, &header, sizeof(header));
-	if (memcmp(header.id, "RIFF", 4) != 0 ||
+	if (std::memcmp(header.id, "RIFF", 4) != 0 ||
 	    (is.KnownSize() && FromLE32(header.size) > is.GetSize()))
 		throw std::runtime_error("Not a RIFF file");
 
@@ -62,8 +62,8 @@ riff_seek_id3(InputStream &is, std::unique_lock<Mutex> &lock)
 			   underflow when casting to off_t */
 			throw std::runtime_error("RIFF chunk is too large");
 
-		if (memcmp(chunk.id, "id3 ", 4) == 0 ||
-		    memcmp(chunk.id, "ID3 ", 4) == 0)
+		if (std::memcmp(chunk.id, "id3 ", 4) == 0 ||
+		    std::memcmp(chunk.id, "ID3 ", 4) == 0)
 			/* found it! */
 			return size;
 

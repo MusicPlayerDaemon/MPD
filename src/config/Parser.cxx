@@ -52,7 +52,7 @@ size_t
 ParseSize(const char *s, size_t default_factor)
 {
 	char *endptr;
-	size_t value = strtoul(s, &endptr, 10);
+	size_t value = std::strtoul(s, &endptr, 10);
 	if (endptr == s)
 		throw std::runtime_error("Failed to parse integer");
 

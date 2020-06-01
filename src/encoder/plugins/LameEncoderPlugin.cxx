@@ -199,7 +199,7 @@ LameEncoder::Read(void *dest, size_t length) noexcept
 	if (length > remainning)
 		length = remainning;
 
-	memcpy(dest, begin, length);
+	std::memcpy(dest, begin, length);
 
 	output_begin = begin + length;
 	return length;

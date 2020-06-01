@@ -85,7 +85,7 @@ pcm_stream_decode(DecoderClient &client, InputStream &is)
 
 	const bool reverse_endian = (l16 && IsLittleEndian()) ||
 		(mime != nullptr &&
-		 strcmp(mime, "audio/x-mpd-cdda-pcm-reverse") == 0);
+		 std::strcmp(mime, "audio/x-mpd-cdda-pcm-reverse") == 0);
 
 	if (is_float)
 		audio_format.format = SampleFormat::FLOAT;

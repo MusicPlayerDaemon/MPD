@@ -48,12 +48,12 @@ TEST(PcmTest, ExportShift8)
 
 	auto dest = e.Export({src, sizeof(src)});
 	EXPECT_EQ(sizeof(expected), dest.size);
-	EXPECT_TRUE(memcmp(dest.data, expected, dest.size) == 0);
+	EXPECT_TRUE(std::memcmp(dest.data, expected, dest.size) == 0);
 
 	const auto silence = e.GetSilence();
 	constexpr uint8_t expected_silence[8]{};
 	EXPECT_EQ(silence.size, sizeof(expected_silence));
-	EXPECT_EQ(memcmp(silence.data, expected_silence,
+	EXPECT_EQ(std::memcmp(silence.data, expected_silence,
 			 sizeof(expected_silence)), 0);
 }
 
@@ -97,12 +97,12 @@ TEST(PcmTest, ExportPack24)
 
 	auto dest = e.Export({src, sizeof(src)});
 	EXPECT_EQ(expected_size, dest.size);
-	EXPECT_TRUE(memcmp(dest.data, expected, dest.size) == 0);
+	EXPECT_TRUE(std::memcmp(dest.data, expected, dest.size) == 0);
 
 	const auto silence = e.GetSilence();
 	constexpr uint8_t expected_silence[6]{};
 	EXPECT_EQ(silence.size, sizeof(expected_silence));
-	EXPECT_EQ(memcmp(silence.data, expected_silence,
+	EXPECT_EQ(std::memcmp(silence.data, expected_silence,
 			 sizeof(expected_silence)), 0);
 }
 
@@ -136,7 +136,7 @@ TEST(PcmTest, ExportReverseEndian)
 
 	auto dest = e.Export({src, sizeof(src)});
 	EXPECT_EQ(sizeof(src), dest.size);
-	EXPECT_TRUE(memcmp(dest.data, src, dest.size) == 0);
+	EXPECT_TRUE(std::memcmp(dest.data, src, dest.size) == 0);
 
 	e.Open(SampleFormat::S16, 2, params);
 
@@ -147,7 +147,7 @@ TEST(PcmTest, ExportReverseEndian)
 
 	dest = e.Export({src, sizeof(src)});
 	EXPECT_EQ(sizeof(expected2), dest.size);
-	EXPECT_TRUE(memcmp(dest.data, expected2, dest.size) == 0);
+	EXPECT_TRUE(std::memcmp(dest.data, expected2, dest.size) == 0);
 
 	e.Open(SampleFormat::S32, 2, params);
 
@@ -158,12 +158,12 @@ TEST(PcmTest, ExportReverseEndian)
 
 	dest = e.Export({src, sizeof(src)});
 	EXPECT_EQ(sizeof(expected4), dest.size);
-	EXPECT_TRUE(memcmp(dest.data, expected4, dest.size) == 0);
+	EXPECT_TRUE(std::memcmp(dest.data, expected4, dest.size) == 0);
 
 	const auto silence = e.GetSilence();
 	constexpr uint8_t expected_silence[8]{};
 	EXPECT_EQ(silence.size, sizeof(expected_silence));
-	EXPECT_EQ(memcmp(silence.data, expected_silence,
+	EXPECT_EQ(std::memcmp(silence.data, expected_silence,
 			 sizeof(expected_silence)), 0);
 }
 
@@ -201,7 +201,7 @@ TEST(PcmTest, ExportDsdU16)
 
 	auto dest = e.Export({src, sizeof(src)});
 	EXPECT_EQ(sizeof(expected), dest.size);
-	EXPECT_TRUE(memcmp(dest.data, expected, dest.size) == 0);
+	EXPECT_TRUE(std::memcmp(dest.data, expected, dest.size) == 0);
 
 	/* no output, 2/4 remains */
 	static constexpr uint8_t src2[] = { 0x11, 0x22 };
@@ -213,19 +213,19 @@ TEST(PcmTest, ExportDsdU16)
 	static constexpr uint16_t expected3[] = { 0x1133, 0x2244 };
 	dest = e.Export({src3, sizeof(src3)});
 	EXPECT_EQ(sizeof(expected3), dest.size);
-	EXPECT_TRUE(memcmp(dest.data, expected3, dest.size) == 0);
+	EXPECT_TRUE(std::memcmp(dest.data, expected3, dest.size) == 0);
 
 	/* two full frames and 2/4 remains again */
 	static constexpr uint8_t src4[] = { 0x77, 0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee };
 	static constexpr uint16_t expected4[] = { 0x5577, 0x6688, 0x99bb, 0xaacc };
 	dest = e.Export({src4, sizeof(src4)});
 	EXPECT_EQ(sizeof(expected4), dest.size);
-	EXPECT_TRUE(memcmp(dest.data, expected4, dest.size) == 0);
+	EXPECT_TRUE(std::memcmp(dest.data, expected4, dest.size) == 0);
 
 	const auto silence = e.GetSilence();
 	constexpr uint8_t expected_silence[]{0x69, 0x69, 0x69, 0x69};
 	EXPECT_EQ(silence.size, sizeof(expected_silence));
-	EXPECT_EQ(memcmp(silence.data, expected_silence,
+	EXPECT_EQ(std::memcmp(silence.data, expected_silence,
 			 sizeof(expected_silence)), 0);
 }
 
@@ -261,7 +261,7 @@ TEST(PcmTest, ExportDsdU32)
 
 	auto dest = e.Export({src, sizeof(src)});
 	EXPECT_EQ(sizeof(expected), dest.size);
-	EXPECT_TRUE(memcmp(dest.data, expected, dest.size) == 0);
+	EXPECT_TRUE(std::memcmp(dest.data, expected, dest.size) == 0);
 
 	/* no output, 4/8 remains */
 	static constexpr uint8_t src2[] = { 0x11, 0x22, 0x33, 0x44 };
@@ -273,19 +273,19 @@ TEST(PcmTest, ExportDsdU32)
 	static constexpr uint32_t expected3[] = { 0x11335577, 0x22446688 };
 	dest = e.Export({src3, sizeof(src3)});
 	EXPECT_EQ(sizeof(expected3), dest.size);
-	EXPECT_TRUE(memcmp(dest.data, expected3, dest.size) == 0);
+	EXPECT_TRUE(std::memcmp(dest.data, expected3, dest.size) == 0);
 
 	/* two full frames and 2/4 remains again */
 	static constexpr uint8_t src4[] = { 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08 };
 	static constexpr uint32_t expected4[] = { 0x99bb0103, 0xaacc0204 };
 	dest = e.Export({src4, sizeof(src4)});
 	EXPECT_EQ(sizeof(expected4), dest.size);
-	EXPECT_TRUE(memcmp(dest.data, expected4, dest.size) == 0);
+	EXPECT_TRUE(std::memcmp(dest.data, expected4, dest.size) == 0);
 
 	const auto silence = e.GetSilence();
 	constexpr uint8_t expected_silence[]{0x69, 0x69, 0x69, 0x69, 0x69, 0x69, 0x69, 0x69};
 	EXPECT_EQ(silence.size, sizeof(expected_silence));
-	EXPECT_EQ(memcmp(silence.data, expected_silence,
+	EXPECT_EQ(std::memcmp(silence.data, expected_silence,
 			 sizeof(expected_silence)), 0);
 }
 
@@ -319,7 +319,7 @@ TEST(PcmTest, ExportDop)
 
 	auto dest = e.Export({src, sizeof(src)});
 	EXPECT_EQ(sizeof(expected), dest.size);
-	EXPECT_TRUE(memcmp(dest.data, expected, dest.size) == 0);
+	EXPECT_TRUE(std::memcmp(dest.data, expected, dest.size) == 0);
 
 	/* not enough data: 2/8 */
 	static constexpr uint8_t src2[] = { 0x12, 0x34 };
@@ -336,7 +336,7 @@ TEST(PcmTest, ExportDop)
 	static constexpr uint32_t expected4[] = { 0xff051256, 0xff053478, 0xfffa9ade, 0xfffabcf0 };
 	dest = e.Export({src4, sizeof(src4)});
 	ASSERT_EQ(sizeof(expected4), dest.size);
-	ASSERT_TRUE(memcmp(dest.data, expected4, dest.size) == 0);
+	ASSERT_TRUE(std::memcmp(dest.data, expected4, dest.size) == 0);
 
 	/* not enough data: 6/8 */
 	static constexpr uint8_t src5[] = { 0x11, 0x22, 0x33, 0x44, 0x55, 0x66 };
@@ -348,12 +348,12 @@ TEST(PcmTest, ExportDop)
 	static constexpr uint32_t expected6[] = { 0xff051133, 0xff052244, 0xfffa5577, 0xfffa6688, 0xff0599bb, 0xff05aacc, 0xfffaddff, 0xfffaee00 };
 	dest = e.Export({src6, sizeof(src6)});
 	ASSERT_EQ(sizeof(expected6), dest.size);
-	ASSERT_TRUE(memcmp(dest.data, expected6, dest.size) == 0);
+	ASSERT_TRUE(std::memcmp(dest.data, expected6, dest.size) == 0);
 
 	const auto silence = e.GetSilence();
 	constexpr uint32_t expected_silence[]{0xff056969, 0xff056969, 0xfffa6969, 0xfffa6969};
 	EXPECT_EQ(silence.size, sizeof(expected_silence));
-	EXPECT_EQ(memcmp(silence.data, expected_silence,
+	EXPECT_EQ(std::memcmp(silence.data, expected_silence,
 			 sizeof(expected_silence)), 0);
 }
 
@@ -386,7 +386,7 @@ TestAlsaChannelOrder51()
 
 	auto dest = e.Export({src, sizeof(src)});
 	EXPECT_EQ(sizeof(expected), dest.size);
-	EXPECT_TRUE(memcmp(dest.data, expected, dest.size) == 0);
+	EXPECT_TRUE(std::memcmp(dest.data, expected, dest.size) == 0);
 }
 
 template<SampleFormat F, class Traits=SampleTraits<F>>
@@ -416,12 +416,12 @@ TestAlsaChannelOrder71()
 
 	auto dest = e.Export({src, sizeof(src)});
 	EXPECT_EQ(sizeof(expected), dest.size);
-	EXPECT_TRUE(memcmp(dest.data, expected, dest.size) == 0);
+	EXPECT_TRUE(std::memcmp(dest.data, expected, dest.size) == 0);
 
 	const auto silence = e.GetSilence();
 	constexpr value_type expected_silence[8]{};
 	EXPECT_EQ(silence.size, sizeof(expected_silence));
-	EXPECT_EQ(memcmp(silence.data, expected_silence,
+	EXPECT_EQ(std::memcmp(silence.data, expected_silence,
 			 sizeof(expected_silence)), 0);
 }
 

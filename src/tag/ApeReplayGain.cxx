@@ -37,7 +37,7 @@ replay_gain_ape_callback(unsigned long flags, const char *key,
 	if (_value.size >= sizeof(value))
 		return false;
 
-	memcpy(value, _value.data, _value.size);
+	std::memcpy(value, _value.data, _value.size);
 	value[_value.size] = 0;
 
 	return ParseReplayGainTag(info, key, value);

@@ -390,7 +390,7 @@ UpnpDatabase::BuildPath(const ContentDirectoryService &server,
 {
 	const char *pid = idirent.id.c_str();
 	std::string path;
-	while (strcmp(pid, rootid) != 0) {
+	while (std::strcmp(pid, rootid) != 0) {
 		auto dirent = ReadNode(server, pid);
 		pid = dirent.parent_id.c_str();
 

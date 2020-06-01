@@ -100,7 +100,7 @@ PcmExport::Open(SampleFormat sample_format, unsigned _channels,
 	auto s = Export({buffer, buffer_size});
 	assert(s.size < sizeof(silence_buffer));
 	silence_size = s.size;
-	memcpy(silence_buffer, s.data, s.size);
+	std::memcpy(silence_buffer, s.data, s.size);
 }
 
 void

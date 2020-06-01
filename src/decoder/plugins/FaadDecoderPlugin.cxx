@@ -167,7 +167,7 @@ faad_song_duration(DecoderBuffer &buffer, InputStream &is)
 		return SignedSongTime::Negative();
 
 	size_t tagsize = 0;
-	if (data.size >= 10 && !memcmp(data.data, "ID3", 3)) {
+	if (data.size >= 10 && !std::memcmp(data.data, "ID3", 3)) {
 		/* skip the ID3 tag */
 
 		tagsize = (data.data[6] << 21) | (data.data[7] << 14) |
@@ -199,7 +199,7 @@ faad_song_duration(DecoderBuffer &buffer, InputStream &is)
 		buffer.Clear();
 
 		return song_length;
-	} else if (data.size >= 5 && memcmp(data.data, "ADIF", 4) == 0) {
+	} else if (data.size >= 5 && std::memcmp(data.data, "ADIF", 4) == 0) {
 		/* obtain the duration from the ADIF header */
 
 		if (!is.KnownSize())
@@ -383,7 +383,7 @@ faad_stream_decode(DecoderClient &client, InputStream &is,
 		/* update bit rate and position */
 
 		if (frame_info.samples > 0) {
-			bit_rate = lround(frame_info.bytesconsumed * 8.0 *
+			bit_rate = std::lround(frame_info.bytesconsumed * 8.0 *
 					  frame_info.channels * audio_format.sample_rate /
 					  frame_info.samples / 1000);
 		}

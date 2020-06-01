@@ -126,7 +126,7 @@ stats_print(Response &r, const Partition &partition)
 	r.Format("uptime: %u\n"
 		 "playtime: %lu\n",
 		 (unsigned)std::chrono::duration_cast<std::chrono::seconds>(uptime).count(),
-		 lround(partition.pc.GetTotalPlayTime().count()));
+		 std::lround(partition.pc.GetTotalPlayTime().count()));
 
 #ifdef ENABLE_DATABASE
 	const Database *db = partition.instance.GetDatabase();

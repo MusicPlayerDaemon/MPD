@@ -59,7 +59,7 @@ playlist_metadata_load(TextFile &file, PlaylistVector &pv, const char *name)
 		value = StripLeft(colon);
 
 		if (std::strcmp(line, "mtime") == 0)
-			pm.mtime = std::chrono::system_clock::from_time_t(strtol(value, nullptr, 10));
+			pm.mtime = std::chrono::system_clock::from_time_t(std::strtol(value, nullptr, 10));
 		else
 			throw FormatRuntimeError("unknown line in db: %s",
 						 line);

@@ -48,8 +48,8 @@ Id3ToReplayGainInfo(ReplayGainInfo &rgi, const struct id3_tag *tag) noexcept
 		if (ParseReplayGainTag(rgi, key, value))
 			found = true;
 
-		free(key);
-		free(value);
+		std::free(key);
+		std::free(value);
 	}
 
 	return found ||
