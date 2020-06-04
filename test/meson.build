@@ -22,8 +22,9 @@ if compiler.get_id() == 'clang' and compiler.version().version_compare('>=9')
   ]
 endif
 
+gtest_main_dep = dependency('gtest', main: true, fallback: ['gtest', 'gtest_main_dep'])
 gtest_dep = declare_dependency(
-  dependencies: [dependency('gtest', main: true)],
+  dependencies: [gtest_main_dep],
   compile_args: gtest_compile_args,
 )
 
