@@ -15,6 +15,10 @@ if compiler.get_id() == 'clang' and compiler.version().version_compare('>=9')
     # work around clang warning caused by GTest's wrong "-lpthread"
     # compiler flag
     '-Wno-unused-command-line-argument',
+
+    # work around "error: 'ScopedTrace' was marked unused but was
+    # used"
+    '-Wno-used-but-marked-unused',
   ]
 endif
 
