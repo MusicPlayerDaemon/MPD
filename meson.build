@@ -7,6 +7,10 @@ project(
     'c_std=c99',
     'cpp_std=c++17',
     'warning_level=3',
+
+    # This is only here to build subprojects as static libraries; MPD
+    # itself doesn't ship any libraries.
+    'default_library=static',
   ],
   license: 'GPLv2+',
 )
