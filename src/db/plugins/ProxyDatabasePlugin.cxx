@@ -50,6 +50,7 @@
 #include <mpd/async.h>
 
 #include <cassert>
+#include <ctime>
 #include <list>
 #include <string>
 #include <utility>

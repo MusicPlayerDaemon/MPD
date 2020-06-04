@@ -33,6 +33,7 @@
 #include "Features.hxx"
 #include "io/FileDescriptor.hxx"
 
+#include <cstddef>
 #include <type_traits>
 
 class SocketAddress;

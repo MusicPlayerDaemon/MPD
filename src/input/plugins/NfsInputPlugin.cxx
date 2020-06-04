@@ -23,6 +23,13 @@
 #include "lib/nfs/Glue.hxx"
 #include "lib/nfs/FileReader.hxx"
 
+#include <algorithm>
+#include <cstddef>
+#include <cstdint>
+#include <exception>
+#include <mutex>
+#include <utility>
+
 /**
  * Do not buffer more than this number of bytes.  It should be a
  * reasonable limit that doesn't make low-end machines suffer too

@@ -21,6 +21,7 @@
 #define MPD_SONG_SAVE_HXX
 
 #include <memory>
+#include <string>
 
 #define SONG_BEGIN "song_begin: "
 

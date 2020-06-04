@@ -22,6 +22,7 @@
 #include "util/Exception.hxx"
 
 #include <cerrno>
+#include <cstdarg>
 #include <cstdio>
 #include <cstring>
 

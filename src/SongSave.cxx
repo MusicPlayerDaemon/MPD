@@ -35,6 +35,7 @@
 #include "util/NumberParser.hxx"
 
 #include <cstdlib>
+#include <cstring>
 
 #define SONG_MTIME "mtime"
 #define SONG_END "song_end"

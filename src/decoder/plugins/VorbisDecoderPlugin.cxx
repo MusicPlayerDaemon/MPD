@@ -40,8 +40,10 @@
 #include <tremor/ivorbiscodec.h>
 #endif /* HAVE_TREMOR */
 
+#include <algorithm>
 #include <iterator>
 #include <stdexcept>
+#include <utility>
 
 class VorbisDecoder final : public OggDecoder {
 #ifdef HAVE_TREMOR

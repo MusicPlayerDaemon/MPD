@@ -34,6 +34,7 @@
 
 #include <chrono>
 #include <cstdint>
+#include <ctime>
 
 constexpr uint64_t
 ConstructUint64(DWORD lo, DWORD hi) noexcept

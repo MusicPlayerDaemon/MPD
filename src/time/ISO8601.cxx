@@ -35,8 +35,11 @@
 #include "util/StringBuffer.hxx"
 
 #include <cassert>
+#include <chrono>
 #include <cstdlib>
+#include <cstring>
 #include <stdexcept>
+#include <utility>
 
 StringBuffer<64>
 FormatISO8601(const std::tm &tm) noexcept

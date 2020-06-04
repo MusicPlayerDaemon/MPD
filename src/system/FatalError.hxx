@@ -23,7 +23,7 @@
 #include "util/Compiler.h"
 
 #ifdef _WIN32
-#include <windef.h>
+#include <windows.h>
 #endif
 
 /**

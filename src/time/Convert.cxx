@@ -32,6 +32,7 @@
 
 #include "Convert.hxx"
 
+#include <chrono>
 #include <ctime>
 #include <stdexcept>
 

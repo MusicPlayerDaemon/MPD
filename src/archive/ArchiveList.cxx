@@ -25,6 +25,7 @@
 #include "plugins/Iso9660ArchivePlugin.hxx"
 #include "plugins/ZzipArchivePlugin.hxx"
 
+#include <algorithm>
 #include <cassert>
 #include <cstring>
 #include <iterator>
