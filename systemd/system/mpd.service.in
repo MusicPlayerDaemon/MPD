@@ -16,6 +16,9 @@ ExecStart=@prefix@/bin/mpd --no-daemon
 LimitRTPRIO=40
 LimitRTTIME=infinity
 
+# for io_uring
+LimitMEMLOCK=64M
+
 # disallow writing to /usr, /bin, /sbin, ...
 ProtectSystem=yes
 
