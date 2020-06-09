@@ -66,7 +66,9 @@ DecoderBridge::OpenLocal(Path path_fs, const char *uri_utf8)
 		}
 	}
 
-	return OpenLocalInputStream(path_fs, dc.mutex);
+	auto is = OpenLocalInputStream(path_fs, dc.mutex);
+	is->SetHandler(&dc);
+	return is;
 }
 
 bool
