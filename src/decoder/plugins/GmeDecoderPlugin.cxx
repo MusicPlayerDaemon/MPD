@@ -27,6 +27,7 @@
 #include "fs/Path.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "fs/FileSystem.hxx"
+#include "fs/NarrowPath.hxx"
 #include "util/ScopeExit.hxx"
 #include "util/StringCompare.hxx"
 #include "util/StringFormat.hxx"
@@ -96,7 +97,7 @@ ParseContainerPath(Path path_fs)
 	const Path base = path_fs.GetBase();
 	unsigned track;
 	if (base.IsNull() ||
-	    (track = ParseSubtuneName(base.c_str())) < 1)
+	    (track = ParseSubtuneName(NarrowPath(base))) < 1)
 		return { AllocatedPath(path_fs), 0 };
 
 	return { path_fs.GetDirectoryName(), track - 1 };
@@ -120,20 +121,21 @@ LoadGmeAndM3u(GmeContainerPath container) {
 
 	Music_Emu *emu;
 	const char *gme_err =
-		gme_open_file(container.path.c_str(), &emu, GME_SAMPLE_RATE);
+		gme_open_file(NarrowPath(container.path), &emu, GME_SAMPLE_RATE);
 	if (gme_err != nullptr) {
 		LogWarning(gme_domain, gme_err);
 		return nullptr;
 	}
 
-	const auto m3u_path = ReplaceSuffix(container.path, "m3u");
+	const auto m3u_path = ReplaceSuffix(container.path,
+					    PATH_LITERAL("m3u"));
     /*
      * Some GME formats lose metadata if you attempt to
      * load a non-existant M3U file, so check that one
      * exists before loading.
      */
 	if (!m3u_path.IsNull() && FileExists(m3u_path))
-		gme_load_m3u(emu, m3u_path.c_str());
+		gme_load_m3u(emu, NarrowPath(m3u_path));
 
 	return emu;
 }
