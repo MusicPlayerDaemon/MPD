@@ -22,7 +22,7 @@
 
 #include "util/Compiler.h"
 
-#include <forward_list>
+#include <forward_list>  // IWYU pragma: export
 
 struct ConfigBlock;
 class InputStream;

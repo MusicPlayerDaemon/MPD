@@ -30,7 +30,7 @@
 #ifndef STRING_FORMAT_HXX
 #define STRING_FORMAT_HXX
 
-#include "StringBuffer.hxx"
+#include "StringBuffer.hxx" // IWYU pragma: export
 
 #include <stdio.h>
 
