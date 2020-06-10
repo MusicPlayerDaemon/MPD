@@ -57,7 +57,7 @@ CurlRequest::CurlRequest(CurlGlobal &_global,
 	easy.SetUserAgent("Music Player Daemon " VERSION);
 	easy.SetHeaderFunction(_HeaderFunction, this);
 	easy.SetWriteFunction(WriteFunction, this);
-#ifndef ANDROID
+#if !defined(ANDROID) && !defined(_WIN32)
 	easy.SetOption(CURLOPT_NETRC, 1L);
 #endif
 	easy.SetErrorBuffer(error_buffer);

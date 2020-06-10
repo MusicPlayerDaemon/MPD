@@ -20,8 +20,8 @@
 #ifndef MPD_AUDIO_FORMAT_HXX
 #define MPD_AUDIO_FORMAT_HXX
 
-#include "pcm/SampleFormat.hxx"
-#include "pcm/ChannelDefs.hxx"
+#include "pcm/SampleFormat.hxx" // IWYU pragma: export
+#include "pcm/ChannelDefs.hxx" // IWYU pragma: export
 #include "util/Compiler.h"
 
 #include <cstddef>

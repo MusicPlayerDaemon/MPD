@@ -112,6 +112,12 @@ private:
 public:
 	bool seek_error;
 	bool seekable;
+
+	/**
+	 * @see #DecoderBridge::initial_seek_essential
+	 */
+	bool initial_seek_essential;
+
 	SongTime seek_time;
 
 private:
@@ -383,12 +389,15 @@ public:
 	 * owned and freed by the decoder
 	 * @param start_time see #DecoderControl
 	 * @param end_time see #DecoderControl
+	 * @param initial_seek_essential see
+	 * #DecoderBridge::initial_seek_essential
 	 * @param pipe the pipe which receives the decoded chunks (owned by
 	 * the caller)
 	 */
 	void Start(std::unique_lock<Mutex> &lock,
 		   std::unique_ptr<DetachedSong> song,
 		   SongTime start_time, SongTime end_time,
+		   bool initial_seek_essential,
 		   MusicBuffer &buffer,
 		   std::shared_ptr<MusicPipe> pipe) noexcept;
 

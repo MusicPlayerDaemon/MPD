@@ -170,6 +170,7 @@ thirdparty_libs = [
     libid3tag,
     libmodplug,
     wildmidi,
+    gme,
     ffmpeg,
     curl,
     libexpat,

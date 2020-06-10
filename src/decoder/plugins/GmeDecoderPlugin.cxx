@@ -27,11 +27,11 @@
 #include "fs/Path.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "fs/FileSystem.hxx"
+#include "fs/NarrowPath.hxx"
 #include "util/ScopeExit.hxx"
 #include "util/StringCompare.hxx"
 #include "util/StringFormat.hxx"
 #include "util/StringView.hxx"
-#include "util/UriExtract.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
 
@@ -40,7 +40,6 @@
 #include <cassert>
 
 #include <stdlib.h>
-#include <string.h>
 
 #define SUBTUNE_PREFIX "tune_"
 
@@ -83,10 +82,9 @@ gcc_pure
 static unsigned
 ParseSubtuneName(const char *base) noexcept
 {
-	if (memcmp(base, SUBTUNE_PREFIX, sizeof(SUBTUNE_PREFIX) - 1) != 0)
+	base = StringAfterPrefix(base, SUBTUNE_PREFIX);
+	if (base == nullptr)
 		return 0;
-
-	base += sizeof(SUBTUNE_PREFIX) - 1;
 
 	char *endptr;
 	auto track = strtoul(base, &endptr, 10);
@@ -106,41 +104,46 @@ ParseContainerPath(Path path_fs)
 	const Path base = path_fs.GetBase();
 	unsigned track;
 	if (base.IsNull() ||
-	    (track = ParseSubtuneName(base.c_str())) < 1)
+	    (track = ParseSubtuneName(NarrowPath(base))) < 1)
 		return { AllocatedPath(path_fs), 0 };
 
 	return { path_fs.GetDirectoryName(), track - 1 };
 }
 
+static AllocatedPath
+ReplaceSuffix(Path src,
+	      const PathTraitsFS::const_pointer new_suffix) noexcept
+{
+	const auto *old_suffix = src.GetSuffix();
+	if (old_suffix == nullptr)
+		return nullptr;
+
+	PathTraitsFS::string s(src.c_str(), old_suffix);
+	s += new_suffix;
+	return AllocatedPath::FromFS(std::move(s));
+}
+
 static Music_Emu*
 LoadGmeAndM3u(const GmeContainerPath& container) {
 
-	const char *path = container.path.c_str();
-	const char *suffix = uri_get_suffix(path);
-
 	Music_Emu *emu;
 	const char *gme_err =
-		gme_open_file(path, &emu, GME_SAMPLE_RATE);
+		gme_open_file(NarrowPath(container.path), &emu, GME_SAMPLE_RATE);
 	if (gme_err != nullptr) {
 		LogWarning(gme_domain, gme_err);
 		return nullptr;
 	}
 
-	if(suffix == nullptr) {
-		return emu;
-	}
-
-	std::string m3u_path(path,suffix);
-	m3u_path += "m3u";
-
+	const auto m3u_path = ReplaceSuffix(container.path,
+					    PATH_LITERAL("m3u"));
     /*
      * Some GME formats lose metadata if you attempt to
      * load a non-existant M3U file, so check that one
      * exists before loading.
      */
-	if(FileExists(Path::FromFS(m3u_path.c_str()))) {
-		gme_load_m3u(emu,m3u_path.c_str());
-	}
+	if (!m3u_path.IsNull() && FileExists(m3u_path))
+		gme_load_m3u(emu, NarrowPath(m3u_path));
+
 	return emu;
 }
 
@@ -320,7 +323,7 @@ gme_container_scan(Path path_fs)
 	if (num_songs < 2)
 		return list;
 
-	const char *subtune_suffix = uri_get_suffix(path_fs.c_str());
+	const auto *subtune_suffix = path_fs.GetSuffix();
 
 	TagBuilder tag_builder;
 

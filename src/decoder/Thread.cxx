@@ -422,6 +422,7 @@ decoder_run_song(DecoderControl &dc,
 		dc.start_time = dc.seek_time;
 
 	DecoderBridge bridge(dc, dc.start_time.IsPositive(),
+			     dc.initial_seek_essential,
 			     /* pass the song tag only if it's
 				authoritative, i.e. if it's a local
 				file - tags on "stream" songs are just

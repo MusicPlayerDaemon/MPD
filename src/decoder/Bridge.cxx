@@ -38,14 +38,18 @@
 
 #include <cassert>
 #include <cmath>
+#include <stdexcept>
 
 #include <string.h>
 
 DecoderBridge::DecoderBridge(DecoderControl &_dc, bool _initial_seek_pending,
+			     bool _initial_seek_essential,
 			     std::unique_ptr<Tag> _tag) noexcept
 	:dc(_dc),
 	 initial_seek_pending(_initial_seek_pending),
+	 initial_seek_essential(_initial_seek_essential),
 	 song_tag(std::move(_tag)) {}
+
 
 DecoderBridge::~DecoderBridge() noexcept
 {
@@ -364,6 +368,10 @@ DecoderBridge::SeekError() noexcept
 		/* d'oh, we can't seek to the sub-song start position,
 		   what now? - no idea, ignoring the problem for now. */
 		initial_seek_running = false;
+
+		if (initial_seek_essential)
+			error = std::make_exception_ptr(std::runtime_error("Decoder failed to seek"));
+
 		return;
 	}
 
