@@ -13,6 +13,7 @@ ver 0.21.24 (not yet released)
   - enable the decoder plugins GME, ModPlug and WildMidi
   - fix build failure with Android NDK r21
 * Windows
+  - fix stream playback
   - enable the decoder plugins GME, ModPlug and WildMidi
   - work around Meson bug breaking the Windows build with GCC 10
 * fix unit test failure
