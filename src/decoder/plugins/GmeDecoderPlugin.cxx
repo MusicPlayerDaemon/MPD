@@ -37,7 +37,6 @@
 
 #include <assert.h>
 #include <stdlib.h>
-#include <string.h>
 
 #define SUBTUNE_PREFIX "tune_"
 
@@ -75,10 +74,9 @@ gcc_pure
 static unsigned
 ParseSubtuneName(const char *base) noexcept
 {
-	if (memcmp(base, SUBTUNE_PREFIX, sizeof(SUBTUNE_PREFIX) - 1) != 0)
+	base = StringAfterPrefix(base, SUBTUNE_PREFIX);
+	if (base == nullptr)
 		return 0;
-
-	base += sizeof(SUBTUNE_PREFIX) - 1;
 
 	char *endptr;
 	auto track = strtoul(base, &endptr, 10);
