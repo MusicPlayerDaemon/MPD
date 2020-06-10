@@ -98,6 +98,7 @@ thirdparty_libs = [
     liblame,
     libmodplug,
     wildmidi,
+    gme,
     ffmpeg,
     curl,
     libexpat,

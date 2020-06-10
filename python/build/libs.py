@@ -135,6 +135,18 @@ wildmidi = CmakeProject(
     version='0.4.3',
 )
 
+gme = CmakeProject(
+    'https://bitbucket.org/mpyne/game-music-emu/downloads/game-music-emu-0.6.3.tar.xz',
+    'aba34e53ef0ec6a34b58b84e28bf8cfbccee6585cebca25333604c35db3e051d',
+    'lib/libgme.a',
+    [
+        '-DBUILD_SHARED_LIBS=OFF',
+        '-DENABLE_UBSAN=OFF',
+        '-DZLIB_INCLUDE_DIR=OFF',
+        '-DSDL2_DIR=OFF',
+    ],
+)
+
 ffmpeg = FfmpegProject(
     'http://ffmpeg.org/releases/ffmpeg-4.2.3.tar.xz',
     '9df6c90aed1337634c1fb026fb01c154c29c82a64ea71291ff2da9aacb9aad31',
