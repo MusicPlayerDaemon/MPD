@@ -285,6 +285,11 @@ public:
 	bool IsAbsolute() const noexcept {
 		return Traits::IsAbsolute(c_str());
 	}
+
+	gcc_pure
+	const_pointer_type GetSuffix() const noexcept {
+		return ((Path)*this).GetSuffix();
+	}
 };
 
 #endif
