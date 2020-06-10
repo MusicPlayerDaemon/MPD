@@ -7,6 +7,8 @@ ver 0.21.24 (not yet released)
   - modplug: fix Windows build failure
   - wildmidi: attempt to detect WildMidi using pkg-config
   - wildmidi: fix Windows build failure
+* player
+  - don't restart current song if seeking beyond end
 * Android
   - enable the decoder plugins ModPlug and WildMidi
   - fix build failure with Android NDK r21

@@ -33,6 +33,8 @@
 #include "util/ConstBuffer.hxx"
 #include "util/StringBuffer.hxx"
 
+#include <stdexcept>
+
 #include <assert.h>
 #include <string.h>
 #include <math.h>
@@ -344,6 +346,10 @@ DecoderBridge::SeekError()
 		/* d'oh, we can't seek to the sub-song start position,
 		   what now? - no idea, ignoring the problem for now. */
 		initial_seek_running = false;
+
+		if (initial_seek_essential)
+			error = std::make_exception_ptr(std::runtime_error("Decoder failed to seek"));
+
 		return;
 	}
 

@@ -63,6 +63,11 @@ public:
 	bool initial_seek_pending;
 
 	/**
+	 * Are initial seek failures fatal?
+	 */
+	const bool initial_seek_essential;
+
+	/**
 	 * Is the initial seek currently running?  During this time,
 	 * the decoder command is SEEK.  This flag is set by
 	 * decoder_get_virtual_command(), when the virtual SEEK
@@ -107,9 +112,11 @@ public:
 	std::exception_ptr error;
 
 	DecoderBridge(DecoderControl &_dc, bool _initial_seek_pending,
+		      bool _initial_seek_essential,
 		      std::unique_ptr<Tag> _tag)
 		:dc(_dc),
 		 initial_seek_pending(_initial_seek_pending),
+		 initial_seek_essential(_initial_seek_essential),
 		 song_tag(std::move(_tag)) {}
 
 	~DecoderBridge();

@@ -223,7 +223,8 @@ private:
 	 *
 	 * Caller must lock the mutex.
 	 */
-	void StartDecoder(std::shared_ptr<MusicPipe> pipe) noexcept;
+	void StartDecoder(std::shared_ptr<MusicPipe> pipe,
+			  bool initial_seek_essential) noexcept;
 
 	/**
 	 * The decoder has acknowledged the "START" command (see
@@ -364,7 +365,8 @@ public:
 };
 
 void
-Player::StartDecoder(std::shared_ptr<MusicPipe> _pipe) noexcept
+Player::StartDecoder(std::shared_ptr<MusicPipe> _pipe,
+		     bool initial_seek_essential) noexcept
 {
 	assert(queued || pc.command == PlayerCommand::SEEK);
 	assert(pc.next_song != nullptr);
@@ -376,6 +378,7 @@ Player::StartDecoder(std::shared_ptr<MusicPipe> _pipe) noexcept
 
 	dc.Start(std::make_unique<DetachedSong>(*pc.next_song),
 		 start_time, pc.next_song->GetEndTime(),
+		 initial_seek_essential,
 		 buffer, std::move(_pipe));
 }
 
@@ -633,7 +636,7 @@ Player::SeekDecoder() noexcept
 		pipe->Clear();
 
 		/* re-start the decoder */
-		StartDecoder(pipe);
+		StartDecoder(pipe, true);
 		ActivateDecoder();
 
 		pc.seeking = true;
@@ -711,7 +714,7 @@ Player::ProcessCommand() noexcept
 		pc.CommandFinished();
 
 		if (dc.IsIdle())
-			StartDecoder(std::make_shared<MusicPipe>());
+			StartDecoder(std::make_shared<MusicPipe>(), false);
 
 		break;
 
@@ -982,7 +985,7 @@ Player::Run() noexcept
 
 	const std::lock_guard<Mutex> lock(pc.mutex);
 
-	StartDecoder(pipe);
+	StartDecoder(pipe, true);
 	ActivateDecoder();
 
 	pc.state = PlayerState::PLAY;
@@ -1022,7 +1025,7 @@ Player::Run() noexcept
 
 			assert(dc.pipe == nullptr || dc.pipe == pipe);
 
-			StartDecoder(std::make_shared<MusicPipe>());
+			StartDecoder(std::make_shared<MusicPipe>(), false);
 		}
 
 		if (/* no cross-fading if MPD is going to pause at the
