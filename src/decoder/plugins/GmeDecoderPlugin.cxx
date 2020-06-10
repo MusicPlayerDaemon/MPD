@@ -30,7 +30,6 @@
 #include "util/ScopeExit.hxx"
 #include "util/StringCompare.hxx"
 #include "util/StringFormat.hxx"
-#include "util/UriUtil.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
 
@@ -109,7 +108,7 @@ static Music_Emu*
 LoadGmeAndM3u(GmeContainerPath container) {
 
 	const char *path = container.path.c_str();
-	const char *suffix = uri_get_suffix(path);
+	const auto *suffix = container.path.GetSuffix();
 
 	Music_Emu *emu;
 	const char *gme_err =
@@ -303,7 +302,7 @@ gme_container_scan(Path path_fs)
 	if (num_songs < 2)
 		return list;
 
-	const char *subtune_suffix = uri_get_suffix(path_fs.c_str());
+	const auto *subtune_suffix = path_fs.GetSuffix();
 
 	TagBuilder tag_builder;
 
