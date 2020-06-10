@@ -102,35 +102,39 @@ ParseContainerPath(Path path_fs)
 	return { path_fs.GetDirectoryName(), track - 1 };
 }
 
+static AllocatedPath
+ReplaceSuffix(Path src,
+	      const PathTraitsFS::const_pointer_type new_suffix) noexcept
+{
+	const auto *old_suffix = src.GetSuffix();
+	if (old_suffix == nullptr)
+		return nullptr;
+
+	PathTraitsFS::string s(src.c_str(), old_suffix);
+	s += new_suffix;
+	return AllocatedPath::FromFS(std::move(s));
+}
+
 static Music_Emu*
 LoadGmeAndM3u(GmeContainerPath container) {
 
-	const char *path = container.path.c_str();
-	const auto *suffix = container.path.GetSuffix();
-
 	Music_Emu *emu;
 	const char *gme_err =
-		gme_open_file(path, &emu, GME_SAMPLE_RATE);
+		gme_open_file(container.path.c_str(), &emu, GME_SAMPLE_RATE);
 	if (gme_err != nullptr) {
 		LogWarning(gme_domain, gme_err);
 		return nullptr;
 	}
 
-	if(suffix == nullptr) {
-		return emu;
-	}
-
-	std::string m3u_path(path,suffix);
-	m3u_path += "m3u";
-
+	const auto m3u_path = ReplaceSuffix(container.path, "m3u");
     /*
      * Some GME formats lose metadata if you attempt to
      * load a non-existant M3U file, so check that one
      * exists before loading.
      */
-	if(FileExists(Path::FromFS(m3u_path.c_str()))) {
-		gme_load_m3u(emu,m3u_path.c_str());
-	}
+	if (!m3u_path.IsNull() && FileExists(m3u_path))
+		gme_load_m3u(emu, m3u_path.c_str());
+
 	return emu;
 }
 
