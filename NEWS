@@ -1,6 +1,8 @@
 ver 0.21.25 (not yet released)
 * protocol:
   - fix crash when using "rangeid" while playing
+* input
+  - smbclient: don't send credentials to MPD clients
 
 ver 0.21.24 (2020/06/10)
 * protocol

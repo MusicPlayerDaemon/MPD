@@ -170,6 +170,7 @@ SkipUriScheme(const char *uri) noexcept
 	static const char *const schemes[] = {
 		"http://", "https://",
 		"ftp://",
+		"smb://",
 	};
 
 	for (auto scheme : schemes) {
