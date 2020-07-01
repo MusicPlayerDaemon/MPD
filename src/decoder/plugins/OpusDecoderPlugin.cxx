@@ -75,6 +75,8 @@ class MPDOpusDecoder final : public OggDecoder {
 	OpusDecoder *opus_decoder = nullptr;
 	opus_int16 *output_buffer = nullptr;
 
+	unsigned pre_skip, skip;
+
 	/**
 	 * If non-zero, then a previous Opus stream has been found
 	 * already with this number of channels.  If opus_decoder is
@@ -136,10 +138,12 @@ MPDOpusDecoder::OnOggBeginning(const ogg_packet &packet)
 	if (opus_decoder != nullptr || !IsOpusHead(packet))
 		throw std::runtime_error("BOS packet must be OpusHead");
 
-	unsigned channels, pre_skip;
+	unsigned channels;
 	if (!ScanOpusHeader(packet.packet, packet.bytes, channels, pre_skip) ||
 	    !audio_valid_channel_count(channels))
 		throw std::runtime_error("Malformed BOS packet");
+
+	skip = pre_skip;
 
 	assert(opus_decoder == nullptr);
 	assert(IsInitialized() == (output_buffer != nullptr));
@@ -236,15 +240,25 @@ MPDOpusDecoder::HandleAudio(const ogg_packet &packet)
 					 opus_strerror(nframes));
 
 	if (nframes > 0) {
+		if (skip >= (unsigned)nframes) {
+			skip -= nframes;
+			return;
+		}
+
+		const opus_int16 *data = output_buffer;
+		data += skip * previous_channels;
+		nframes -= skip;
+		skip = 0;
+
 		const size_t nbytes = nframes * frame_size;
 		auto cmd = client.SubmitData(input_stream,
-					     output_buffer, nbytes,
+					     data, nbytes,
 					     0);
 		if (cmd != DecoderCommand::NONE)
 			throw cmd;
 
 		if (packet.granulepos > 0)
-			client.SubmitTimestamp(FloatDuration(packet.granulepos)
+			client.SubmitTimestamp(FloatDuration(packet.granulepos - pre_skip)
 					       / opus_sample_rate);
 	}
 }
@@ -260,6 +274,7 @@ MPDOpusDecoder::Seek(uint64_t where_frame)
 
 	try {
 		SeekGranulePos(where_granulepos);
+		skip = pre_skip;
 		return true;
 	} catch (...) {
 		return false;
@@ -302,10 +317,9 @@ mpd_opus_stream_decode(DecoderClient &client,
 
 static bool
 ReadAndParseOpusHead(OggSyncState &sync, OggStreamState &stream,
-		     unsigned &channels)
+		     unsigned &channels, unsigned &pre_skip)
 {
 	ogg_packet packet;
-	unsigned pre_skip;
 
 	return OggReadPacket(sync, stream, packet) && packet.b_o_s &&
 		IsOpusHead(packet) &&
@@ -329,11 +343,12 @@ ReadAndVisitOpusTags(OggSyncState &sync, OggStreamState &stream,
 
 static void
 VisitOpusDuration(InputStream &is, OggSyncState &sync, OggStreamState &stream,
-		  TagHandler &handler)
+		  ogg_int64_t pre_skip, TagHandler &handler)
 {
 	ogg_packet packet;
 
-	if (OggSeekFindEOS(sync, stream, packet, is)) {
+	if (OggSeekFindEOS(sync, stream, packet, is) &&
+	    packet.granulepos >= pre_skip) {
 		const auto duration =
 			SongTime::FromScale<uint64_t>(packet.granulepos,
 						      opus_sample_rate);
@@ -353,15 +368,15 @@ mpd_opus_scan_stream(InputStream &is, TagHandler &handler) noexcept
 
 	OggStreamState os(first_page);
 
-	unsigned channels;
-	if (!ReadAndParseOpusHead(oy, os, channels) ||
+	unsigned channels, pre_skip;
+	if (!ReadAndParseOpusHead(oy, os, channels, pre_skip) ||
 	    !ReadAndVisitOpusTags(oy, os, handler))
 		return false;
 
 	handler.OnAudioFormat(AudioFormat(opus_sample_rate,
 					  SampleFormat::S16, channels));
 
-	VisitOpusDuration(is, oy, os, handler);
+	VisitOpusDuration(is, oy, os, pre_skip, handler);
 	return true;
 }
 
