@@ -5,7 +5,9 @@ project(
   meson_version: '>= 0.49.0',
   default_options: [
     'c_std=c99',
+    'build.c_std=c99',
     'cpp_std=c++17',
+    'build.cpp_std=c++17',
     'warning_level=3',
 
     # This is only here to build subprojects as static libraries; MPD
