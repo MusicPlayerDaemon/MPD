@@ -342,7 +342,8 @@ osx_output_score_sample_rate(Float64 destination_rate, unsigned source_rate)
 	double int_portion;
 	double frac_portion = modf(source_rate / destination_rate, &int_portion);
 	// prefer sample rates that are multiples of the source sample rate
-	score += (1 - frac_portion) * 1000;
+	if (frac_portion < 0.01 || frac_portion >= 0.99)
+		score += 1000;
 	// prefer exact matches over other multiples
 	score += (int_portion == 1.0) ? 500 : 0;
 	if (source_rate == destination_rate)
