@@ -27,29 +27,71 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef APPLE_AUDIO_UNIT_HXX
-#define APPLE_AUDIO_UNIT_HXX
+#ifndef APPLE_AUDIO_OBJECT_HXX
+#define APPLE_AUDIO_OBJECT_HXX
 
 #include "Throw.hxx"
+#include "util/AllocatedArray.hxx"
 
-#include <AudioUnit/AudioUnit.h>
+#include <CoreAudio/AudioHardware.h>
+
+#include <cstddef>
+
+std::size_t
+AudioObjectGetPropertyDataSize(AudioObjectID inObjectID,
+			       const AudioObjectPropertyAddress &inAddress)
+{
+	UInt32 size;
+	OSStatus status = AudioObjectGetPropertyDataSize(inObjectID,
+							 &inAddress,
+							 0, nullptr, &size);
+	if (status != noErr)
+		Apple::ThrowOSStatus(status);
+
+	return size;
+}
 
 template<typename T>
 T
-AudioUnitGetPropertyT(AudioUnit inUnit, AudioUnitPropertyID inID,
-		      AudioUnitScope inScope,
-		      AudioUnitElement inElement)
+AudioObjectGetPropertyDataT(AudioObjectID inObjectID,
+			    const AudioObjectPropertyAddress &inAddress)
 {
+	OSStatus status;
 	UInt32 size = sizeof(T);
 	T value;
 
-	OSStatus status = AudioUnitGetProperty(inUnit, inID, inScope,
-					       inElement,
-					       &value, &size);
+	status = AudioObjectGetPropertyData(inObjectID, &inAddress,
+					    0, nullptr,
+					    &size, &value);
 	if (status != noErr)
 		Apple::ThrowOSStatus(status);
 
 	return value;
+}
+
+template<typename T>
+AllocatedArray<T>
+AudioObjectGetPropertyDataArray(AudioObjectID inObjectID,
+			       const AudioObjectPropertyAddress &inAddress)
+{
+	OSStatus status;
+	UInt32 size;
+
+	status = AudioObjectGetPropertyDataSize(inObjectID,
+						&inAddress,
+						0, nullptr, &size);
+	if (status != noErr)
+		Apple::ThrowOSStatus(status);
+
+	AllocatedArray<T> result(size / sizeof(T));
+
+	status = AudioObjectGetPropertyData(inObjectID, &inAddress,
+					    0, nullptr,
+					    &size, result.begin());
+	if (status != noErr)
+		Apple::ThrowOSStatus(status);
+
+	return result;
 }
 
 #endif
