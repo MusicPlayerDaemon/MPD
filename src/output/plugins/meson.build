@@ -13,6 +13,7 @@ need_encoder = false
 
 if alsa_dep.found()
   output_plugins_sources += 'AlsaOutputPlugin.cxx'
+  output_plugins_deps += event_dep
 endif
 
 libao_dep = dependency('ao', required: get_option('ao'))
