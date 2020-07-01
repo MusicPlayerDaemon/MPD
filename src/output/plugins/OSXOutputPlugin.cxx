@@ -20,6 +20,7 @@
 #include "config.h"
 #include "OSXOutputPlugin.hxx"
 #include "apple/AudioObject.hxx"
+#include "apple/AudioUnit.hxx"
 #include "apple/StringRef.hxx"
 #include "apple/Throw.hxx"
 #include "../OutputAPI.hxx"
@@ -266,32 +267,29 @@ osx_output_parse_channel_map(const char *device_name,
 					 device_name, num_channels);
 }
 
+static UInt32
+AudioUnitGetChannelsPerFrame(AudioUnit inUnit)
+{
+	const auto desc = AudioUnitGetPropertyT<AudioStreamBasicDescription>(inUnit,
+									     kAudioUnitProperty_StreamFormat,
+									     kAudioUnitScope_Output,
+									     0);
+	return desc.mChannelsPerFrame;
+}
+
 static void
 osx_output_set_channel_map(OSXOutput *oo)
 {
 	OSStatus status;
 
-	AudioStreamBasicDescription desc;
-	UInt32 size = sizeof(desc);
-	memset(&desc, 0, size);
-	status = AudioUnitGetProperty(oo->au,
-		kAudioUnitProperty_StreamFormat,
-		kAudioUnitScope_Output,
-		0,
-		&desc,
-		&size);
-	if (status != noErr)
-		Apple::ThrowOSStatus(status,
-				     "unable to get number of output device channels");
-
-	UInt32 num_channels = desc.mChannelsPerFrame;
+	const UInt32 num_channels = AudioUnitGetChannelsPerFrame(oo->au);
 	std::unique_ptr<SInt32[]> channel_map(new SInt32[num_channels]);
 	osx_output_parse_channel_map(oo->device_name,
 				     oo->channel_map,
 				     channel_map.get(),
 				     num_channels);
 
-	size = num_channels * sizeof(SInt32);
+	UInt32 size = num_channels * sizeof(SInt32);
 	status = AudioUnitSetProperty(oo->au,
 		kAudioOutputUnitProperty_ChannelMap,
 		kAudioUnitScope_Input,
@@ -444,22 +442,16 @@ osx_output_set_device_format(AudioDeviceID dev_id,
 	return output_format.mSampleRate;
 }
 
-static OSStatus
-osx_output_set_buffer_size(AudioUnit au, AudioStreamBasicDescription desc,
-			   UInt32 *frame_size)
+static UInt32
+osx_output_set_buffer_size(AudioUnit au, AudioStreamBasicDescription desc)
 {
-	AudioValueRange value_range = {0, 0};
-	UInt32 property_size = sizeof(AudioValueRange);
-	OSStatus err = AudioUnitGetProperty(au,
-					    kAudioDevicePropertyBufferFrameSizeRange,
-					    kAudioUnitScope_Global,
-					    0,
-					    &value_range,
-					    &property_size);
-	if (err != noErr)
-		return err;
+	const auto value_range = AudioUnitGetPropertyT<AudioValueRange>(au,
+									kAudioDevicePropertyBufferFrameSizeRange,
+									kAudioUnitScope_Global,
+									0);
 
 	UInt32 buffer_frame_size = value_range.mMaximum;
+	OSStatus err;
 	err = AudioUnitSetProperty(au,
 				   kAudioDevicePropertyBufferFrameSize,
 				   kAudioUnitScope_Global,
@@ -471,29 +463,20 @@ osx_output_set_buffer_size(AudioUnit au, AudioStreamBasicDescription desc,
 			      "Failed to set maximum buffer size: %d",
 			      err);
 
-	property_size = sizeof(buffer_frame_size);
-	err = AudioUnitGetProperty(au,
-				   kAudioDevicePropertyBufferFrameSize,
-				   kAudioUnitScope_Global,
-				   0,
-				   &buffer_frame_size,
-				   &property_size);
-	if (err != noErr) {
-		FormatWarning(osx_output_domain,
-			      "Cannot get the buffer frame size: %d",
-			      err);
-		return err;
-	}
+	buffer_frame_size = AudioUnitGetPropertyT<UInt32>(au,
+							  kAudioDevicePropertyBufferFrameSize,
+							  kAudioUnitScope_Global,
+							  0);
 
 	buffer_frame_size *= desc.mBytesPerFrame;
 
 	// We set the frame size to a power of two integer that
 	// is larger than buffer_frame_size.
-	while (*frame_size < buffer_frame_size + 1) {
-		*frame_size <<= 1;
-	}
+	UInt32 frame_size = 1;
+	while (frame_size < buffer_frame_size + 1)
+		frame_size <<= 1;
 
-	return noErr;
+	return frame_size;
 }
 
 static void
@@ -789,10 +772,7 @@ OSXOutput::Open(AudioFormat &audio_format)
 	if (status != noErr)
 		Apple::ThrowOSStatus(status, "Unable to initialize OS X audio unit");
 
-	UInt32 buffer_frame_size = 1;
-	status = osx_output_set_buffer_size(au, asbd, &buffer_frame_size);
-	if (status != noErr)
-		Apple::ThrowOSStatus(status, "Unable to set frame size");
+	UInt32 buffer_frame_size = osx_output_set_buffer_size(au, asbd);
 
 	size_t ring_buffer_size = std::max<size_t>(buffer_frame_size,
 						   MPD_OSX_BUFFER_TIME_MS * audio_format.GetFrameSize() * audio_format.sample_rate / 1000);
