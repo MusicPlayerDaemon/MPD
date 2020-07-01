@@ -46,6 +46,11 @@ ver 0.21.25 (not yet released)
 * input
   - file: detect premature end of file
   - smbclient: don't send credentials to MPD clients
+* decoder
+  - opus: apply pre-skip and end trimming
+  - opus: fix memory leak
+* output
+  - osx: improve sample rate selection
 * Windows/Android:
   - fix Boost detection after breaking change in Meson 0.54
 
