@@ -32,6 +32,7 @@
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
 #include "util/ByteOrder.hxx"
+#include "util/CharUtil.hxx"
 #include "util/StringAPI.hxx"
 #include "util/StringBuffer.hxx"
 #include "util/StringFormat.hxx"
@@ -239,7 +240,7 @@ osx_output_parse_channel_map(const char *device_name,
 		}
 
 		if (want_number &&
-			(isdigit(*channel_map_str) || *channel_map_str == '-')
+			(IsDigitASCII(*channel_map_str) || *channel_map_str == '-')
 		) {
 			char *endptr;
 			channel_map[inserted_channels] = strtol(channel_map_str, &endptr, 10);
