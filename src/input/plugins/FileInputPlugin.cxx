@@ -25,6 +25,8 @@
 #include "io/FileDescriptor.hxx"
 #include "util/RuntimeError.hxx"
 
+#include <cinttypes> // for PRIu64 (PRIoffset)
+
 #include <sys/stat.h>
 #include <fcntl.h>
 
@@ -96,6 +98,11 @@ FileInputStream::Read(std::unique_lock<Mutex> &,
 		const ScopeUnlock unlock(mutex);
 		nbytes = reader.Read(ptr, read_size);
 	}
+
+	if (nbytes == 0 && !IsEOF())
+		throw FormatRuntimeError("Unexpected end of file %s"
+					 " at %" PRIoffset " of %" PRIoffset,
+					 GetURI(), GetOffset(), GetSize());
 
 	offset += nbytes;
 	return nbytes;

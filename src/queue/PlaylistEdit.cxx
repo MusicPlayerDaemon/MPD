@@ -430,6 +430,8 @@ playlist::SetSongIdRange(PlayerControl &pc, unsigned id,
 	if (position < 0)
 		throw PlaylistError::NoSuchSong();
 
+	bool was_queued = false;
+
 	if (playing) {
 		if (position == current)
 			throw PlaylistError(PlaylistResult::DENIED,
@@ -441,6 +443,10 @@ playlist::SetSongIdRange(PlayerControl &pc, unsigned id,
 			   already; cancel that */
 			pc.LockCancel();
 			queued = -1;
+
+			/* schedule a call to UpdateQueuedSong() to
+			   re-queue the song with its new range */
+			was_queued = true;
 		}
 	}
 
@@ -463,7 +469,8 @@ playlist::SetSongIdRange(PlayerControl &pc, unsigned id,
 	song.SetEndTime(end);
 
 	/* announce the change to all interested subsystems */
-	UpdateQueuedSong(pc, nullptr);
+	if (was_queued)
+		UpdateQueuedSong(pc, nullptr);
 	queue.ModifyAtPosition(position);
 	OnModified();
 }
