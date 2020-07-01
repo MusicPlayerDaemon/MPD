@@ -98,6 +98,13 @@ class MPDOpusDecoder final : public OggDecoder {
 
 	size_t frame_size;
 
+	/**
+	 * The granulepos of the next sample to be submitted to
+	 * DecoderClient::SubmitData().  Negative if unkown.
+	 * Initialized by OnOggBeginning().
+	 */
+	ogg_int64_t granulepos;
+
 public:
 	explicit MPDOpusDecoder(DecoderReader &reader)
 		:OggDecoder(reader) {}
@@ -114,6 +121,13 @@ public:
 	bool Seek(uint64_t where_frame);
 
 private:
+	void AddGranulepos(ogg_int64_t n) noexcept {
+		assert(n >= 0);
+
+		if (granulepos >= 0)
+			granulepos += n;
+	}
+
 	void HandleTags(const ogg_packet &packet);
 	void HandleAudio(const ogg_packet &packet);
 
@@ -154,6 +168,7 @@ MPDOpusDecoder::OnOggBeginning(const ogg_packet &packet)
 	    !audio_valid_channel_count(channels))
 		throw std::runtime_error("Malformed BOS packet");
 
+	granulepos = 0;
 	skip = pre_skip;
 
 	assert(opus_decoder == nullptr);
@@ -261,12 +276,14 @@ MPDOpusDecoder::HandleAudio(const ogg_packet &packet)
 	/* apply the "skip" value */
 	if (skip >= (unsigned)nframes) {
 		skip -= nframes;
+		AddGranulepos(nframes);
 		return;
 	}
 
 	const opus_int16 *data = output_buffer;
 	data += skip * previous_channels;
 	nframes -= skip;
+	AddGranulepos(skip);
 	skip = 0;
 
 	/* submit decoded samples to the DecoderClient */
@@ -277,9 +294,12 @@ MPDOpusDecoder::HandleAudio(const ogg_packet &packet)
 	if (cmd != DecoderCommand::NONE)
 		throw cmd;
 
-	if (packet.granulepos > 0)
-		client.SubmitTimestamp(FloatDuration(packet.granulepos - pre_skip)
+	if (packet.granulepos > 0) {
+		granulepos = packet.granulepos;
+		client.SubmitTimestamp(FloatDuration(granulepos - pre_skip)
 				       / opus_sample_rate);
+	} else
+		AddGranulepos(nframes);
 }
 
 bool
@@ -290,6 +310,11 @@ MPDOpusDecoder::Seek(uint64_t where_frame)
 	assert(input_stream.KnownSize());
 
 	const ogg_int64_t where_granulepos(where_frame);
+
+	/* we don't know the exact granulepos after seeking, so let's
+	   set it to -1 - it will be set after the next packet which
+	   declares its granulepos */
+	granulepos = -1;
 
 	try {
 		SeekGranulePos(where_granulepos);
