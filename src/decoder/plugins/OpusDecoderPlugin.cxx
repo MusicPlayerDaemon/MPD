@@ -250,34 +250,36 @@ MPDOpusDecoder::HandleAudio(const ogg_packet &packet)
 				  packet.bytes,
 				  output_buffer, opus_output_buffer_frames,
 				  0);
-	if (nframes < 0)
-		throw FormatRuntimeError("libopus error: %s",
-					 opus_strerror(nframes));
-
-	if (nframes > 0) {
-		/* apply the "skip" value */
-		if (skip >= (unsigned)nframes) {
-			skip -= nframes;
+	if (gcc_unlikely(nframes <= 0)) {
+		if (nframes < 0)
+			throw FormatRuntimeError("libopus error: %s",
+						 opus_strerror(nframes));
+		else
 			return;
-		}
-
-		const opus_int16 *data = output_buffer;
-		data += skip * previous_channels;
-		nframes -= skip;
-		skip = 0;
-
-		/* submit decoded samples to the DecoderClient */
-		const size_t nbytes = nframes * frame_size;
-		auto cmd = client.SubmitData(input_stream,
-					     data, nbytes,
-					     0);
-		if (cmd != DecoderCommand::NONE)
-			throw cmd;
-
-		if (packet.granulepos > 0)
-			client.SubmitTimestamp(FloatDuration(packet.granulepos - pre_skip)
-					       / opus_sample_rate);
 	}
+
+	/* apply the "skip" value */
+	if (skip >= (unsigned)nframes) {
+		skip -= nframes;
+		return;
+	}
+
+	const opus_int16 *data = output_buffer;
+	data += skip * previous_channels;
+	nframes -= skip;
+	skip = 0;
+
+	/* submit decoded samples to the DecoderClient */
+	const size_t nbytes = nframes * frame_size;
+	auto cmd = client.SubmitData(input_stream,
+				     data, nbytes,
+				     0);
+	if (cmd != DecoderCommand::NONE)
+		throw cmd;
+
+	if (packet.granulepos > 0)
+		client.SubmitTimestamp(FloatDuration(packet.granulepos - pre_skip)
+				       / opus_sample_rate);
 }
 
 bool
