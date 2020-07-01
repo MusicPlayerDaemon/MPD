@@ -568,6 +568,7 @@ executable(
   dependencies: [
     output_glue_dep,
     encoder_glue_dep,
+    event_dep,
   ],
 )
 
