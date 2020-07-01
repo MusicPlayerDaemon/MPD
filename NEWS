@@ -6,6 +6,7 @@ ver 0.21.25 (not yet released)
   - smbclient: don't send credentials to MPD clients
 * decoder
   - opus: apply pre-skip
+  - opus: fix memory leak
 * output
   - osx: improve sample rate selection
 * Windows/Android:

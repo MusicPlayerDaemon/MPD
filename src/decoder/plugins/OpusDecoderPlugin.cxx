@@ -192,8 +192,12 @@ MPDOpusDecoder::OnOggBeginning(const ogg_packet &packet)
 	client.Ready(audio_format, eos_granulepos > 0, duration);
 	frame_size = audio_format.GetFrameSize();
 
-	output_buffer = new opus_int16[opus_output_buffer_frames
-				       * audio_format.channels];
+	if (output_buffer == nullptr)
+		/* note: if we ever support changing the channel count
+		   in chained streams, we need to reallocate this
+		   buffer instead of keeping it */
+		output_buffer = new opus_int16[opus_output_buffer_frames
+					       * audio_format.channels];
 
 	auto cmd = client.GetCommand();
 	if (cmd != DecoderCommand::NONE)
