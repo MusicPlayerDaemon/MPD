@@ -286,6 +286,23 @@ MPDOpusDecoder::HandleAudio(const ogg_packet &packet)
 	AddGranulepos(skip);
 	skip = 0;
 
+	if (packet.e_o_s && packet.granulepos > 0 && granulepos >= 0) {
+		/* End Trimming (RFC7845 4.4): "The page with the 'end
+		   of stream' flag set MAY have a granule position
+		   that indicates the page contains less audio data
+		   than would normally be returned by decoding up
+		   through the final packet.  This is used to end the
+		   stream somewhere other than an even frame
+		   boundary. [...] The remaining samples are
+		   discarded. */
+		ogg_int64_t remaining = packet.granulepos - granulepos;
+		if (remaining <= 0)
+			return;
+
+		if (remaining < nframes)
+			nframes = remaining;
+	}
+
 	/* submit decoded samples to the DecoderClient */
 	const size_t nbytes = nframes * frame_size;
 	auto cmd = client.SubmitData(input_stream,
