@@ -18,6 +18,7 @@
  */
 
 #include "OpusHead.hxx"
+#include "util/ByteOrder.hxx"
 
 #include <stdint.h>
 
@@ -31,12 +32,14 @@ struct OpusHead {
 };
 
 bool
-ScanOpusHeader(const void *data, size_t size, unsigned &channels_r)
+ScanOpusHeader(const void *data, size_t size, unsigned &channels_r,
+	       unsigned &pre_skip_r)
 {
 	const OpusHead *h = (const OpusHead *)data;
 	if (size < 19 || (h->version & 0xf0) != 0)
 		return false;
 
 	channels_r = h->channels;
+	pre_skip_r = FromLE16(h->pre_skip);
 	return true;
 }

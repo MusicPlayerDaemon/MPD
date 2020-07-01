@@ -23,6 +23,7 @@
 #include <stddef.h>
 
 bool
-ScanOpusHeader(const void *data, size_t size, unsigned &channels_r);
+ScanOpusHeader(const void *data, size_t size, unsigned &channels_r,
+	       unsigned &pre_skip_r);
 
 #endif

@@ -136,8 +136,8 @@ MPDOpusDecoder::OnOggBeginning(const ogg_packet &packet)
 	if (opus_decoder != nullptr || !IsOpusHead(packet))
 		throw std::runtime_error("BOS packet must be OpusHead");
 
-	unsigned channels;
-	if (!ScanOpusHeader(packet.packet, packet.bytes, channels) ||
+	unsigned channels, pre_skip;
+	if (!ScanOpusHeader(packet.packet, packet.bytes, channels, pre_skip) ||
 	    !audio_valid_channel_count(channels))
 		throw std::runtime_error("Malformed BOS packet");
 
@@ -305,10 +305,12 @@ ReadAndParseOpusHead(OggSyncState &sync, OggStreamState &stream,
 		     unsigned &channels)
 {
 	ogg_packet packet;
+	unsigned pre_skip;
 
 	return OggReadPacket(sync, stream, packet) && packet.b_o_s &&
 		IsOpusHead(packet) &&
-		ScanOpusHeader(packet.packet, packet.bytes, channels) &&
+		ScanOpusHeader(packet.packet, packet.bytes, channels,
+			       pre_skip) &&
 		audio_valid_channel_count(channels);
 }
 
