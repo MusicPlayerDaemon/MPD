@@ -75,7 +75,18 @@ class MPDOpusDecoder final : public OggDecoder {
 	OpusDecoder *opus_decoder = nullptr;
 	opus_int16 *output_buffer = nullptr;
 
-	unsigned pre_skip, skip;
+	/**
+	 * The pre-skip value from the Opus header.  Initialized by
+	 * OnOggBeginning().
+	 */
+	unsigned pre_skip;
+
+	/**
+	 * The number of decoded samples which shall be skipped.  At
+	 * the beginning of the file, this gets set to #pre_skip (by
+	 * OnOggBeginning()), and may also be set while seeking.
+	 */
+	unsigned skip;
 
 	/**
 	 * If non-zero, then a previous Opus stream has been found
@@ -240,6 +251,7 @@ MPDOpusDecoder::HandleAudio(const ogg_packet &packet)
 					 opus_strerror(nframes));
 
 	if (nframes > 0) {
+		/* apply the "skip" value */
 		if (skip >= (unsigned)nframes) {
 			skip -= nframes;
 			return;
@@ -250,6 +262,7 @@ MPDOpusDecoder::HandleAudio(const ogg_packet &packet)
 		nframes -= skip;
 		skip = 0;
 
+		/* submit decoded samples to the DecoderClient */
 		const size_t nbytes = nframes * frame_size;
 		auto cmd = client.SubmitData(input_stream,
 					     data, nbytes,
@@ -274,6 +287,12 @@ MPDOpusDecoder::Seek(uint64_t where_frame)
 
 	try {
 		SeekGranulePos(where_granulepos);
+
+		/* since all frame numbers are offset by the file's
+		   pre-skip value, we need to apply it here as well;
+		   we could just seek to "where_frame+pre_skip" as
+		   well, but I think by decoding those samples and
+		   discard them, we're safer */
 		skip = pre_skip;
 		return true;
 	} catch (...) {
