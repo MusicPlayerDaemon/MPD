@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "OSXOutputPlugin.hxx"
-#include "apple/AudioUnit.hxx"
+#include "apple/AudioObject.hxx"
 #include "apple/StringRef.hxx"
 #include "apple/Throw.hxx"
 #include "../OutputAPI.hxx"
