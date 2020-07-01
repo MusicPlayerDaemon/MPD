@@ -628,9 +628,9 @@ osx_output_set_device(OSXOutput *oo)
  */
 static OSStatus
 osx_render(void *vdata,
-	   gcc_unused AudioUnitRenderActionFlags *io_action_flags,
-	   gcc_unused const AudioTimeStamp *in_timestamp,
-	   gcc_unused UInt32 in_bus_number,
+	   [[maybe_unused]] AudioUnitRenderActionFlags *io_action_flags,
+	   [[maybe_unused]] const AudioTimeStamp *in_timestamp,
+	   [[maybe_unused]] UInt32 in_bus_number,
 	   UInt32 in_number_frames,
 	   AudioBufferList *buffer_list)
 {
