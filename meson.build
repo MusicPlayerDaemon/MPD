@@ -350,6 +350,8 @@ subdir('src/thread')
 subdir('src/net')
 subdir('src/event')
 
+subdir('src/apple')
+
 subdir('src/lib/dbus')
 subdir('src/lib/icu')
 subdir('src/lib/smbclient')

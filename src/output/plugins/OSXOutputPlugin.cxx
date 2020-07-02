@@ -73,7 +73,14 @@ struct OSXOutput final : AudioOutput {
 	const char *device_name;
 	const char *const channel_map;
 	const bool hog_device;
+
 	bool pause;
+
+	/**
+	 * Is the audio unit "started", i.e. was AudioOutputUnitStart() called?
+	 */
+	bool started;
+
 #ifdef ENABLE_DSD
 	/**
 	 * Enable DSD over PCM according to the DoP standard?
@@ -450,24 +457,14 @@ osx_output_set_buffer_size(AudioUnit au, AudioStreamBasicDescription desc)
 									kAudioUnitScope_Global,
 									0);
 
-	UInt32 buffer_frame_size = value_range.mMaximum;
-	OSStatus err;
-	err = AudioUnitSetProperty(au,
-				   kAudioDevicePropertyBufferFrameSize,
-				   kAudioUnitScope_Global,
-				   0,
-				   &buffer_frame_size,
-				   sizeof(buffer_frame_size));
-	if (err != noErr)
-		FormatWarning(osx_output_domain,
-			      "Failed to set maximum buffer size: %d",
-			      err);
+	try {
+		AudioUnitSetBufferFrameSize(au, value_range.mMaximum);
+	} catch (...) {
+		LogError(std::current_exception(),
+			 "Failed to set maximum buffer size");
+	}
 
-	buffer_frame_size = AudioUnitGetPropertyT<UInt32>(au,
-							  kAudioDevicePropertyBufferFrameSize,
-							  kAudioUnitScope_Global,
-							  0);
-
+	auto buffer_frame_size = AudioUnitGetBufferFrameSize(au);
 	buffer_frame_size *= desc.mBytesPerFrame;
 
 	// We set the frame size to a power of two integer that
@@ -535,19 +532,15 @@ IsAudioDeviceName(AudioDeviceID id, const char *expected_name) noexcept
 		kAudioObjectPropertyElementMaster,
 	};
 
-	CFStringRef cfname;
-	UInt32 size = sizeof(cfname);
-
-	if (AudioObjectGetPropertyData(id, &aopa_name,
-				       0, nullptr,
-				       &size, &cfname) != noErr)
-		return false;
-
-	const Apple::StringRef cfname_(cfname);
-
 	char actual_name[256];
-	if (!cfname_.GetCString(actual_name, sizeof(actual_name)))
+
+	try {
+		auto cfname = AudioObjectGetStringProperty(id, aopa_name);
+		if (!cfname.GetCString(actual_name, sizeof(actual_name)))
+			return false;
+	} catch (...) {
 		return false;
+	}
 
 	return StringIsEqual(actual_name, expected_name);
 }
@@ -587,15 +580,7 @@ osx_output_set_device(OSXOutput *oo)
 		    "found matching device: ID=%u, name=%s",
 		    (unsigned)id, oo->device_name);
 
-	OSStatus status;
-	status = AudioUnitSetProperty(oo->au,
-				      kAudioOutputUnitProperty_CurrentDevice,
-				      kAudioUnitScope_Global,
-				      0,
-				      &id, sizeof(id));
-	if (status != noErr)
-		Apple::ThrowOSStatus(status,
-				     "Unable to set OS X audio output device");
+	AudioUnitSetCurrentDevice(oo->au, id);
 
 	oo->dev_id = id;
 	FormatDebug(osx_output_domain,
@@ -682,7 +667,8 @@ OSXOutput::Disable() noexcept
 void
 OSXOutput::Close() noexcept
 {
-	AudioOutputUnitStop(au);
+	if (started)
+		AudioOutputUnitStop(au);
 	AudioUnitUninitialize(au);
 	delete ring_buffer;
 }
@@ -745,29 +731,15 @@ OSXOutput::Open(AudioFormat &audio_format)
 	dop_enabled = params.dsd_mode == PcmExport::DsdMode::DOP;
 #endif
 
-	OSStatus status =
-		AudioUnitSetProperty(au, kAudioUnitProperty_StreamFormat,
-				     kAudioUnitScope_Input, 0,
-				     &asbd,
-				     sizeof(asbd));
-	if (status != noErr)
-		throw std::runtime_error("Unable to set format on OS X device");
+	AudioUnitSetInputStreamFormat(au, asbd);
 
 	AURenderCallbackStruct callback;
 	callback.inputProc = osx_render;
 	callback.inputProcRefCon = this;
 
-	status =
-		AudioUnitSetProperty(au,
-				     kAudioUnitProperty_SetRenderCallback,
-				     kAudioUnitScope_Input, 0,
-				     &callback, sizeof(callback));
-	if (status != noErr) {
-		AudioComponentInstanceDispose(au);
-		throw std::runtime_error("Unable to set callback for OS X audio unit");
-	}
+	AudioUnitSetInputRenderCallback(au, callback);
 
-	status = AudioUnitInitialize(au);
+	OSStatus status = AudioUnitInitialize(au);
 	if (status != noErr)
 		Apple::ThrowOSStatus(status, "Unable to initialize OS X audio unit");
 
@@ -785,36 +757,43 @@ OSXOutput::Open(AudioFormat &audio_format)
 #endif
 	ring_buffer = new boost::lockfree::spsc_queue<uint8_t>(ring_buffer_size);
 
-	status = AudioOutputUnitStart(au);
-	if (status != 0)
-		Apple::ThrowOSStatus(status, "Unable to start audio output");
-
 	pause = false;
+	started = false;
 }
 
 size_t
 OSXOutput::Play(const void *chunk, size_t size)
 {
 	assert(size > 0);
-	if (pause) {
-		pause = false;
-		OSStatus status = AudioOutputUnitStart(au);
-		if (status != 0) {
-			AudioUnitUninitialize(au);
-			throw std::runtime_error("Unable to restart audio output after pause");
-		}
-	}
+
+	pause = false;
+
+	ConstBuffer<uint8_t> input((const uint8_t *)chunk, size);
+
 #ifdef ENABLE_DSD
 	if (dop_enabled) {
-		const auto e = pcm_export->Export({chunk, size});
-		if (e.empty())
+		input = ConstBuffer<uint8_t>::FromVoid(pcm_export->Export(input.ToVoid()));
+		if (input.empty())
 			return size;
-
-		size_t bytes_written = ring_buffer->push((const uint8_t *)e.data, e.size);
-		return pcm_export->CalcInputSize(bytes_written);
 	}
 #endif
-	return ring_buffer->push((const uint8_t *)chunk, size);
+
+	size_t bytes_written = ring_buffer->push(input.data, input.size);
+
+	if (!started) {
+		OSStatus status = AudioOutputUnitStart(au);
+		if (status != noErr)
+			throw std::runtime_error("Unable to restart audio output after pause");
+
+		started = true;
+	}
+
+#ifdef ENABLE_DSD
+	if (dop_enabled)
+		bytes_written = pcm_export->CalcInputSize(bytes_written);
+#endif
+
+	return bytes_written;
 }
 
 std::chrono::steady_clock::duration
@@ -827,22 +806,30 @@ OSXOutput::Delay() const noexcept
 
 bool OSXOutput::Pause()
 {
-	if (!pause) {
-		pause = true;
+	pause = true;
+
+	if (started) {
 		AudioOutputUnitStop(au);
+		started = false;
 	}
+
 	return true;
 }
 
 void
 OSXOutput::Cancel() noexcept
 {
-	AudioOutputUnitStop(au);
+	if (started) {
+		AudioOutputUnitStop(au);
+		started = false;
+	}
+
 	ring_buffer->reset();
 #ifdef ENABLE_DSD
 	pcm_export->Reset();
 #endif
-	AudioOutputUnitStart(au);
+
+	/* the AudioUnit will be restarted by the next Play() call */
 }
 
 int

@@ -37,7 +37,11 @@
 
 #include <cstddef>
 
-std::size_t
+namespace Apple {
+class StringRef;
+}
+
+inline std::size_t
 AudioObjectGetPropertyDataSize(AudioObjectID inObjectID,
 			       const AudioObjectPropertyAddress &inAddress)
 {
@@ -68,6 +72,10 @@ AudioObjectGetPropertyDataT(AudioObjectID inObjectID,
 
 	return value;
 }
+
+Apple::StringRef
+AudioObjectGetStringProperty(AudioObjectID inObjectID,
+			     const AudioObjectPropertyAddress &inAddress);
 
 template<typename T>
 AllocatedArray<T>
