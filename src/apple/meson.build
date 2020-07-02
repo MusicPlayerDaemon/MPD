@@ -12,6 +12,7 @@ audiounit_dep = declare_dependency(
 
 apple = static_library(
   'apple',
+  'AudioObject.cxx',
   'Throw.cxx',
   include_directories: inc,
   dependencies: [

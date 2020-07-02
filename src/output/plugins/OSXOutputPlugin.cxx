@@ -535,19 +535,15 @@ IsAudioDeviceName(AudioDeviceID id, const char *expected_name) noexcept
 		kAudioObjectPropertyElementMaster,
 	};
 
-	CFStringRef cfname;
-	UInt32 size = sizeof(cfname);
-
-	if (AudioObjectGetPropertyData(id, &aopa_name,
-				       0, nullptr,
-				       &size, &cfname) != noErr)
-		return false;
-
-	const Apple::StringRef cfname_(cfname);
-
 	char actual_name[256];
-	if (!cfname_.GetCString(actual_name, sizeof(actual_name)))
+
+	try {
+		auto cfname = AudioObjectGetStringProperty(id, aopa_name);
+		if (!cfname.GetCString(actual_name, sizeof(actual_name)))
+			return false;
+	} catch (...) {
 		return false;
+	}
 
 	return StringIsEqual(actual_name, expected_name);
 }
