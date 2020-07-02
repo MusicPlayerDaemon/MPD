@@ -9,6 +9,7 @@ ver 0.21.25 (not yet released)
   - opus: fix memory leak
 * output
   - osx: improve sample rate selection
+  - osx: fix noise while stopping
 * Windows/Android:
   - fix Boost detection after breaking change in Meson 0.54
 

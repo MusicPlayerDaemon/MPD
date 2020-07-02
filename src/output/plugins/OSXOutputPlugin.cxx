@@ -831,7 +831,8 @@ OSXOutput::Cancel() noexcept
 #ifdef ENABLE_DSD
 	pcm_export->Reset();
 #endif
-	AudioOutputUnitStart(au);
+
+	/* the AudioUnit will be restarted by the next Play() call */
 }
 
 int
