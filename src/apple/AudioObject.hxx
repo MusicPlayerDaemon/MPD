@@ -37,7 +37,7 @@
 
 #include <cstddef>
 
-std::size_t
+inline std::size_t
 AudioObjectGetPropertyDataSize(AudioObjectID inObjectID,
 			       const AudioObjectPropertyAddress &inAddress)
 {
