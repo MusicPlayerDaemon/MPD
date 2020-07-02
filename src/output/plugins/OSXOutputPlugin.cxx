@@ -776,23 +776,31 @@ OSXOutput::Play(const void *chunk, size_t size)
 
 		started = true;
 	}
+
+	ConstBuffer<uint8_t> input((const uint8_t *)chunk, size);
+
 #ifdef ENABLE_DSD
 	if (dop_enabled) {
-		const auto e = pcm_export->Export({chunk, size});
+		input = ConstBuffer<uint8_t>::FromVoid(pcm_export->Export(input.ToVoid()));
 		/* the DoP (DSD over PCM) filter converts two frames
 		   at a time and ignores the last odd frame; if there
 		   was only one frame (e.g. the last frame in the
 		   file), the result is empty; to avoid an endless
 		   loop, bail out here, and pretend the one frame has
 		   been played */
-		if (e.empty())
+		if (input.empty())
 			return size;
-
-		size_t bytes_written = ring_buffer->push((const uint8_t *)e.data, e.size);
-		return pcm_export->CalcSourceSize(bytes_written);
 	}
 #endif
-	return ring_buffer->push((const uint8_t *)chunk, size);
+
+	size_t bytes_written = ring_buffer->push(input.data, input.size);
+
+#ifdef ENABLE_DSD
+	if (dop_enabled)
+		bytes_written = pcm_export->CalcSourceSize(bytes_written);
+#endif
+
+	return bytes_written;
 }
 
 std::chrono::steady_clock::duration
