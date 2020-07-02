@@ -450,24 +450,14 @@ osx_output_set_buffer_size(AudioUnit au, AudioStreamBasicDescription desc)
 									kAudioUnitScope_Global,
 									0);
 
-	UInt32 buffer_frame_size = value_range.mMaximum;
-	OSStatus err;
-	err = AudioUnitSetProperty(au,
-				   kAudioDevicePropertyBufferFrameSize,
-				   kAudioUnitScope_Global,
-				   0,
-				   &buffer_frame_size,
-				   sizeof(buffer_frame_size));
-	if (err != noErr)
-		FormatWarning(osx_output_domain,
-			      "Failed to set maximum buffer size: %d",
-			      err);
+	try {
+		AudioUnitSetBufferFrameSize(au, value_range.mMaximum);
+	} catch (...) {
+		LogError(std::current_exception(),
+			 "Failed to set maximum buffer size");
+	}
 
-	buffer_frame_size = AudioUnitGetPropertyT<UInt32>(au,
-							  kAudioDevicePropertyBufferFrameSize,
-							  kAudioUnitScope_Global,
-							  0);
-
+	auto buffer_frame_size = AudioUnitGetBufferFrameSize(au);
 	buffer_frame_size *= desc.mBytesPerFrame;
 
 	// We set the frame size to a power of two integer that
@@ -583,15 +573,7 @@ osx_output_set_device(OSXOutput *oo)
 		    "found matching device: ID=%u, name=%s",
 		    (unsigned)id, oo->device_name);
 
-	OSStatus status;
-	status = AudioUnitSetProperty(oo->au,
-				      kAudioOutputUnitProperty_CurrentDevice,
-				      kAudioUnitScope_Global,
-				      0,
-				      &id, sizeof(id));
-	if (status != noErr)
-		Apple::ThrowOSStatus(status,
-				     "Unable to set OS X audio output device");
+	AudioUnitSetCurrentDevice(oo->au, id);
 
 	oo->dev_id = id;
 	FormatDebug(osx_output_domain,
@@ -742,29 +724,15 @@ OSXOutput::Open(AudioFormat &audio_format)
 	dop_enabled = params.dop;
 #endif
 
-	OSStatus status =
-		AudioUnitSetProperty(au, kAudioUnitProperty_StreamFormat,
-				     kAudioUnitScope_Input, 0,
-				     &asbd,
-				     sizeof(asbd));
-	if (status != noErr)
-		throw std::runtime_error("Unable to set format on OS X device");
+	AudioUnitSetInputStreamFormat(au, asbd);
 
 	AURenderCallbackStruct callback;
 	callback.inputProc = osx_render;
 	callback.inputProcRefCon = this;
 
-	status =
-		AudioUnitSetProperty(au,
-				     kAudioUnitProperty_SetRenderCallback,
-				     kAudioUnitScope_Input, 0,
-				     &callback, sizeof(callback));
-	if (status != noErr) {
-		AudioComponentInstanceDispose(au);
-		throw std::runtime_error("Unable to set callback for OS X audio unit");
-	}
+	AudioUnitSetInputRenderCallback(au, callback);
 
-	status = AudioUnitInitialize(au);
+	OSStatus status = AudioUnitInitialize(au);
 	if (status != noErr)
 		Apple::ThrowOSStatus(status, "Unable to initialize OS X audio unit");
 
