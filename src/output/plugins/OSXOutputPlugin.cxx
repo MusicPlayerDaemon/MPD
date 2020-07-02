@@ -762,12 +762,12 @@ OSXOutput::Play(const void *chunk, size_t size)
 {
 	assert(size > 0);
 	if (pause) {
-		pause = false;
 		OSStatus status = AudioOutputUnitStart(au);
 		if (status != 0) {
 			AudioUnitUninitialize(au);
 			throw std::runtime_error("Unable to restart audio output after pause");
 		}
+		pause = false;
 	}
 #ifdef ENABLE_DSD
 	if (dop_enabled) {
