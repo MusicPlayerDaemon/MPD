@@ -758,12 +758,8 @@ OSXOutput::Open(AudioFormat &audio_format)
 #endif
 	ring_buffer = new boost::lockfree::spsc_queue<uint8_t>(ring_buffer_size);
 
-	status = AudioOutputUnitStart(au);
-	if (status != 0)
-		Apple::ThrowOSStatus(status, "Unable to start audio output");
-
 	pause = false;
-	started = true;
+	started = false;
 }
 
 size_t
