@@ -667,7 +667,8 @@ OSXOutput::Disable() noexcept
 void
 OSXOutput::Close() noexcept
 {
-	AudioOutputUnitStop(au);
+	if (started)
+		AudioOutputUnitStop(au);
 	AudioUnitUninitialize(au);
 	delete ring_buffer;
 }
@@ -821,7 +822,11 @@ bool OSXOutput::Pause()
 void
 OSXOutput::Cancel() noexcept
 {
-	AudioOutputUnitStop(au);
+	if (started) {
+		AudioOutputUnitStop(au);
+		started = false;
+	}
+
 	ring_buffer->reset();
 #ifdef ENABLE_DSD
 	pcm_export->Reset();
