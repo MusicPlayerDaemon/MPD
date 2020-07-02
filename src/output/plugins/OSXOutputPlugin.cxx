@@ -769,14 +769,6 @@ OSXOutput::Play(const void *chunk, size_t size)
 
 	pause = false;
 
-	if (!started) {
-		OSStatus status = AudioOutputUnitStart(au);
-		if (status != noErr)
-			throw std::runtime_error("Unable to restart audio output after pause");
-
-		started = true;
-	}
-
 	ConstBuffer<uint8_t> input((const uint8_t *)chunk, size);
 
 #ifdef ENABLE_DSD
@@ -794,6 +786,14 @@ OSXOutput::Play(const void *chunk, size_t size)
 #endif
 
 	size_t bytes_written = ring_buffer->push(input.data, input.size);
+
+	if (!started) {
+		OSStatus status = AudioOutputUnitStart(au);
+		if (status != noErr)
+			throw std::runtime_error("Unable to restart audio output after pause");
+
+		started = true;
+	}
 
 #ifdef ENABLE_DSD
 	if (dop_enabled)
