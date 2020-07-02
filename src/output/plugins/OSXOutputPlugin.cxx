@@ -73,7 +73,14 @@ struct OSXOutput final : AudioOutput {
 	const char *device_name;
 	const char *const channel_map;
 	const bool hog_device;
+
 	bool pause;
+
+	/**
+	 * Is the audio unit "started", i.e. was AudioOutputUnitStart() called?
+	 */
+	bool started;
+
 #ifdef ENABLE_DSD
 	/**
 	 * Enable DSD over PCM according to the DoP standard?
@@ -755,18 +762,22 @@ OSXOutput::Open(AudioFormat &audio_format)
 		Apple::ThrowOSStatus(status, "Unable to start audio output");
 
 	pause = false;
+	started = true;
 }
 
 size_t
 OSXOutput::Play(const void *chunk, size_t size)
 {
 	assert(size > 0);
-	if (pause) {
+
+	pause = false;
+
+	if (!started) {
 		OSStatus status = AudioOutputUnitStart(au);
 		if (status != noErr)
 			throw std::runtime_error("Unable to restart audio output after pause");
 
-		pause = false;
+		started = true;
 	}
 #ifdef ENABLE_DSD
 	if (dop_enabled) {
@@ -797,10 +808,13 @@ OSXOutput::Delay() const noexcept
 
 bool OSXOutput::Pause()
 {
-	if (!pause) {
-		pause = true;
+	pause = true;
+
+	if (started) {
 		AudioOutputUnitStop(au);
+		started = false;
 	}
+
 	return true;
 }
 
