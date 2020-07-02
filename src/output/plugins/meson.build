@@ -74,18 +74,7 @@ endif
 if is_darwin
   output_plugins_sources += [
     'OSXOutputPlugin.cxx',
-    '../../apple/Throw.cxx',
   ]
-  audiounit_dep = declare_dependency(
-    link_args: [
-      '-framework', 'AudioUnit', '-framework', 'CoreAudio', '-framework', 'CoreServices',
-    ],
-    dependencies: [
-      boost_dep,
-    ],
-  )
-else
-  audiounit_dep = dependency('', required: false)
 endif
 conf.set('HAVE_OSX', is_darwin)
 
@@ -148,7 +137,7 @@ output_plugins = static_library(
   include_directories: inc,
   dependencies: [
     alsa_dep,
-    audiounit_dep,
+    apple_dep,
     libao_dep,
     libjack_dep,
     pulse_dep,
