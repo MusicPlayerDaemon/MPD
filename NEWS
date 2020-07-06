@@ -1,4 +1,4 @@
-ver 0.21.25 (not yet released)
+ver 0.21.25 (2020/07/06)
 * protocol:
   - fix crash when using "rangeid" while playing
 * database
