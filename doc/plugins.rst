@@ -74,7 +74,9 @@ Load music files from a SMB/CIFS server. It is used when
 nfs
 ---
 
-Load music files from a NFS server. It is used when :code:`music_directory` contains a nfs:// URI according to RFC2224, for example :samp:`nfs://servername/path`.
+Load music files from a NFS server.  It is used when
+:code:`music_directory` contains a ``nfs://`` URI according to
+RFC2224, for example :samp:`nfs://servername/path`.
 
 This plugin uses libnfs, which supports only NFS version 3. Since
 :program:`MPD` is not allowed to bind to "privileged ports", the NFS
