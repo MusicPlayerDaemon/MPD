@@ -101,6 +101,15 @@ public:
 	Storage *GetMount(const char *uri) noexcept;
 
 	/**
+         * Is the given URI a mount point, i.e. is something already
+         * mounted on this path?
+	 */
+	gcc_pure gcc_nonnull_all
+	bool IsMountPoint(const char *uri) noexcept {
+		return GetMount(uri) != nullptr;
+	}
+
+	/**
 	 * Call the given function for each mounted storage, including
 	 * the root storage.  Passes mount point URI and the a const
 	 * Storage reference to the function.

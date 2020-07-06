@@ -206,6 +206,7 @@ CompositeStorage::Mount(const char *uri, std::unique_ptr<Storage> storage)
 	const std::lock_guard<Mutex> protect(mutex);
 
 	Directory &directory = root.Make(uri);
+	assert(!directory.storage);
 	directory.storage = std::move(storage);
 }
 

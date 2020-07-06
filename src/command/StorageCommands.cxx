@@ -198,6 +198,11 @@ handle_mount(Client &client, Request args, Response &r)
 		return CommandResult::ERROR;
 	}
 
+	if (composite.IsMountPoint(local_uri)) {
+		r.Error(ACK_ERROR_ARG, "Mount point busy");
+		return CommandResult::ERROR;
+	}
+
 	auto &event_loop = instance.io_thread.GetEventLoop();
 	auto storage = CreateStorageURI(event_loop, remote_uri);
 	if (storage == nullptr) {

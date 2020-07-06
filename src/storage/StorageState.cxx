@@ -106,6 +106,12 @@ storage_state_restore(const char *line, TextFile &file, Instance &instance)
 
 	FormatDebug(storage_domain, "Restoring mount %s => %s", uri.c_str(), url.c_str());
 
+	auto &composite_storage = *(CompositeStorage *)instance.storage;
+	if (composite_storage.IsMountPoint(uri.c_str())) {
+		LogError(storage_domain, "Mount point busy");
+		return true;
+	}
+
 	auto &event_loop = instance.io_thread.GetEventLoop();
 	auto storage = CreateStorageURI(event_loop, url.c_str());
 	if (storage == nullptr) {
@@ -124,8 +130,7 @@ storage_state_restore(const char *line, TextFile &file, Instance &instance)
 		}
 	}
 
-	((CompositeStorage*)instance.storage)->Mount(uri.c_str(),
-						     std::move(storage));
+	composite_storage.Mount(uri.c_str(), std::move(storage));
 
 	return true;
 }

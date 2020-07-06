@@ -2,6 +2,7 @@ ver 0.21.25 (not yet released)
 * protocol:
   - fix crash when using "rangeid" while playing
 * storage
+  - fix disappearing mounts after mounting twice
   - udisks: fix reading ".mpdignore"
 * input
   - file: detect premature end of file
