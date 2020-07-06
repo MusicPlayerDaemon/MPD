@@ -78,19 +78,7 @@ Load music files from a NFS server.  It is used when
 :code:`music_directory` contains a ``nfs://`` URI according to
 RFC2224, for example :samp:`nfs://servername/path`.
 
-This plugin uses libnfs, which supports only NFS version 3. Since
-:program:`MPD` is not allowed to bind to "privileged ports", the NFS
-server needs to enable the ``insecure`` setting; example
-:file:`/etc/exports`:
-
-.. code-block:: none
-
-    /srv/mp3 192.168.1.55(ro,insecure)
-
-Don't fear: ``insecure`` does not mean that your NFS server is
-insecure. A few decades ago, people thought the concept of "privileged
-ports" would make network services "secure", which was a fallacy. The
-absence of this obsolete "security" measure means little.
+See :ref:`input_nfs` for more information.
 
 udisks
 ------
@@ -211,25 +199,33 @@ mms
 
 Plays streams with the MMS protocol using `libmms <https://launchpad.net/libmms>`_.
 
+.. _input_nfs:
+
 nfs
 ---
 
-Allows :program:`MPD` to access files on NFSv3 servers without
-actually mounting them (i.e. in userspace, without help from the
-kernel's VFS layer). All URIs with the ``nfs://`` scheme are used
-according to RFC2224. Example:
+Allows :program:`MPD` to access files on NFS servers without actually
+mounting them (i.e. with :program:`libnfs` in userspace, without help
+from the kernel's VFS layer). All URIs with the ``nfs://`` scheme are
+used according to RFC2224. Example:
 
 .. code-block:: none
 
      mpc add nfs://servername/path/filename.ogg
 
-Note that this usually requires enabling the ``insecure`` flag in the
-server's /etc/exports file, because :program:`MPD` cannot bind to
-so-called "privileged" ports. Don't fear: this will not make your file
-server insecure; the flag was named in a time long ago when privileged
-ports were thought to be meaningful for security. By today's
-standards, NFSv3 is not secure at all, and if you believe it is,
-you're already doomed.
+This plugin uses :program:`libnfs`, which supports only NFS version 3.
+Since :program:`MPD` is not allowed to bind to so-called "privileged
+ports", the NFS server needs to enable the ``insecure`` setting;
+example :file:`/etc/exports`:
+
+.. code-block:: none
+
+    /srv/mp3 192.168.1.55(ro,insecure)
+
+Don't fear: this will not make your file server insecure; the flag was
+named a time long ago when privileged ports were thought to be
+meaningful for security. By today's standards, NFSv3 is not secure at
+all, and if you believe it is, you're already doomed.
 
 smbclient
 ---------
