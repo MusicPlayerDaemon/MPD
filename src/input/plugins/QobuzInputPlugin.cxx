@@ -133,11 +133,11 @@ InitQobuzInput(EventLoop &event_loop, const ConfigBlock &block)
 
 	const char *app_id = block.GetBlockValue("app_id");
 	if (app_id == nullptr)
-		throw PluginUnavailable("No Qobuz app_id configured");
+		throw PluginUnconfigured("No Qobuz app_id configured");
 
 	const char *app_secret = block.GetBlockValue("app_secret");
 	if (app_secret == nullptr)
-		throw PluginUnavailable("No Qobuz app_secret configured");
+		throw PluginUnconfigured("No Qobuz app_secret configured");
 
 	const char *device_manufacturer_id = block.GetBlockValue("device_manufacturer_id",
 								 "df691fdc-fa36-11e7-9718-635337d7df8f");
@@ -145,11 +145,11 @@ InitQobuzInput(EventLoop &event_loop, const ConfigBlock &block)
 	const char *username = block.GetBlockValue("username");
 	const char *email = block.GetBlockValue("email");
 	if (username == nullptr && email == nullptr)
-		throw PluginUnavailable("No Qobuz username configured");
+		throw PluginUnconfigured("No Qobuz username configured");
 
 	const char *password = block.GetBlockValue("password");
 	if (password == nullptr)
-		throw PluginUnavailable("No Qobuz password configured");
+		throw PluginUnconfigured("No Qobuz password configured");
 
 	const char *format_id = block.GetBlockValue("format_id", "5");
 
