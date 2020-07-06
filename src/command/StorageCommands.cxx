@@ -220,8 +220,10 @@ handle_mount(Client &client, Request args, Response &r)
 
 #ifdef ENABLE_DATABASE
 	if (auto *db = dynamic_cast<SimpleDatabase *>(instance.GetDatabase())) {
+		bool need_update;
+
 		try {
-			db->Mount(local_uri, remote_uri);
+			need_update = !db->Mount(local_uri, remote_uri);
 		} catch (...) {
 			composite.Unmount(local_uri);
 			throw;
@@ -230,6 +232,12 @@ handle_mount(Client &client, Request args, Response &r)
 		// TODO: call Instance::OnDatabaseModified()?
 		// TODO: trigger database update?
 		instance.EmitIdle(IDLE_DATABASE);
+
+		if (need_update) {
+			UpdateService *update = client.GetInstance().update;
+			if (update != nullptr)
+				update->Enqueue(local_uri, false);
+		}
 	}
 #endif
 

@@ -1,6 +1,8 @@
 ver 0.21.25 (not yet released)
 * protocol:
   - fix crash when using "rangeid" while playing
+* database
+  - simple: automatically scan new mounts
 * storage
   - fix disappearing mounts after mounting twice
   - udisks: fix reading ".mpdignore"
