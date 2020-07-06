@@ -67,18 +67,22 @@ struct DecoderPlugin {
 	void (*file_decode)(DecoderClient &client, Path path_fs);
 
 	/**
-	 * Scan metadata of a file.
+         * Scan metadata of a file.
+         *
+	 * Throws on I/O error.
 	 *
-	 * @return false if the operation has failed
+	 * @return false if the file was not recognized
 	 */
-	bool (*scan_file)(Path path_fs, TagHandler &handler) noexcept;
+	bool (*scan_file)(Path path_fs, TagHandler &handler);
 
 	/**
-	 * Scan metadata of a file.
+	 * Scan metadata of a stream.
+         *
+	 * Throws on I/O error.
 	 *
-	 * @return false if the operation has failed
+	 * @return false if the stream was not recognized
 	 */
-	bool (*scan_stream)(InputStream &is, TagHandler &handler) noexcept;
+	bool (*scan_stream)(InputStream &is, TagHandler &handler);
 
 	/**
 	 * @brief Return a "virtual" filename for subtracks in
@@ -135,7 +139,7 @@ struct DecoderPlugin {
 	 * Read the tag of a file.
 	 */
 	template<typename P>
-	bool ScanFile(P path_fs, TagHandler &handler) const noexcept {
+	bool ScanFile(P path_fs, TagHandler &handler) const {
 		return scan_file != nullptr
 			? scan_file(path_fs, handler)
 			: false;
@@ -144,7 +148,7 @@ struct DecoderPlugin {
 	/**
 	 * Read the tag of a stream.
 	 */
-	bool ScanStream(InputStream &is, TagHandler &handler) const noexcept {
+	bool ScanStream(InputStream &is, TagHandler &handler) const {
 		return scan_stream != nullptr
 			? scan_stream(is, handler)
 			: false;

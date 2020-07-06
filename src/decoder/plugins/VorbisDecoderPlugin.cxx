@@ -370,7 +370,7 @@ VisitVorbisDuration(InputStream &is,
 }
 
 static bool
-vorbis_scan_stream(InputStream &is, TagHandler &handler) noexcept
+vorbis_scan_stream(InputStream &is, TagHandler &handler)
 {
 	/* initialize libogg */
 

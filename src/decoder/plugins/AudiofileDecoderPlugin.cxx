@@ -241,7 +241,7 @@ audiofile_stream_decode(DecoderClient &client, InputStream &is)
 }
 
 static bool
-audiofile_scan_stream(InputStream &is, TagHandler &handler) noexcept
+audiofile_scan_stream(InputStream &is, TagHandler &handler)
 {
 	if (!is.IsSeekable() || !is.KnownSize())
 		return false;

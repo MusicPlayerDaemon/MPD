@@ -326,7 +326,7 @@ dsf_stream_decode(DecoderClient &client, InputStream &is)
 }
 
 static bool
-dsf_scan_stream(InputStream &is, TagHandler &handler) noexcept
+dsf_scan_stream(InputStream &is, TagHandler &handler)
 {
 	/* check DSF metadata */
 	DsfMetaData metadata;

@@ -79,17 +79,22 @@ Song::UpdateFile(Storage &storage) noexcept
 	TagBuilder tag_builder;
 	auto new_audio_format = AudioFormat::Undefined();
 
-	const auto path_fs = storage.MapFS(relative_uri.c_str());
-	if (path_fs.IsNull()) {
-		const auto absolute_uri =
-			storage.MapUTF8(relative_uri.c_str());
-		if (!tag_stream_scan(absolute_uri.c_str(), tag_builder,
-				     &new_audio_format))
-			return false;
-	} else {
-		if (!ScanFileTagsWithGeneric(path_fs, tag_builder,
+	try {
+		const auto path_fs = storage.MapFS(relative_uri.c_str());
+		if (path_fs.IsNull()) {
+			const auto absolute_uri =
+				storage.MapUTF8(relative_uri.c_str());
+			if (!tag_stream_scan(absolute_uri.c_str(), tag_builder,
 					     &new_audio_format))
-			return false;
+				return false;
+		} else {
+			if (!ScanFileTagsWithGeneric(path_fs, tag_builder,
+						     &new_audio_format))
+				return false;
+		}
+	} catch (...) {
+		// TODO: log or propagate I/O errors?
+		return false;
 	}
 
 	mtime = info.mtime;
@@ -153,8 +158,14 @@ DetachedSong::LoadFile(Path path) noexcept
 		return false;
 
 	TagBuilder tag_builder;
-	if (!ScanFileTagsWithGeneric(path, tag_builder))
+
+	try {
+		if (!ScanFileTagsWithGeneric(path, tag_builder))
+			return false;
+	} catch (...) {
+		// TODO: log or propagate I/O errors?
 		return false;
+	}
 
 	mtime = fi.GetModificationTime();
 	tag_builder.Commit(tag);
@@ -173,8 +184,14 @@ DetachedSong::Update() noexcept
 		return LoadFile(path_fs);
 	} else if (IsRemote()) {
 		TagBuilder tag_builder;
-		if (!tag_stream_scan(uri.c_str(), tag_builder))
+
+		try {
+			if (!tag_stream_scan(uri.c_str(), tag_builder))
+				return false;
+		} catch (...) {
+			// TODO: log or propagate I/O errors?
 			return false;
+		}
 
 		mtime = std::chrono::system_clock::time_point::min();
 		tag_builder.Commit(tag);

@@ -1051,7 +1051,7 @@ MadDecoder::RunScan(TagHandler &handler) noexcept
 }
 
 static bool
-mad_decoder_scan_stream(InputStream &is, TagHandler &handler) noexcept
+mad_decoder_scan_stream(InputStream &is, TagHandler &handler)
 {
 	MadDecoder data(nullptr, is);
 	return data.RunScan(handler);

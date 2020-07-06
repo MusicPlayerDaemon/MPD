@@ -45,7 +45,7 @@ CheckDecoderPlugin(const DecoderPlugin &plugin,
 }
 
 bool
-tag_stream_scan(InputStream &is, TagHandler &handler) noexcept
+tag_stream_scan(InputStream &is, TagHandler &handler)
 {
 	assert(is.IsReady());
 
@@ -73,19 +73,17 @@ tag_stream_scan(InputStream &is, TagHandler &handler) noexcept
 }
 
 bool
-tag_stream_scan(const char *uri, TagHandler &handler) noexcept
-try {
+tag_stream_scan(const char *uri, TagHandler &handler)
+{
 	Mutex mutex;
 
 	auto is = InputStream::OpenReady(uri, mutex);
 	return tag_stream_scan(*is, handler);
-} catch (const std::exception &e) {
-	return false;
 }
 
 bool
 tag_stream_scan(InputStream &is, TagBuilder &builder,
-		AudioFormat *audio_format) noexcept
+		AudioFormat *audio_format)
 {
 	assert(is.IsReady());
 
@@ -102,12 +100,10 @@ tag_stream_scan(InputStream &is, TagBuilder &builder,
 
 bool
 tag_stream_scan(const char *uri, TagBuilder &builder,
-		AudioFormat *audio_format) noexcept
-try {
+		AudioFormat *audio_format)
+{
 	Mutex mutex;
 
 	auto is = InputStream::OpenReady(uri, mutex);
 	return tag_stream_scan(*is, builder, audio_format);
-} catch (const std::exception &e) {
-	return false;
 }

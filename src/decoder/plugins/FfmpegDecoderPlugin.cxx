@@ -646,8 +646,7 @@ ffmpeg_decode(DecoderClient &client, InputStream &input)
 }
 
 static bool
-FfmpegScanStream(AVFormatContext &format_context,
-		 TagHandler &handler) noexcept
+FfmpegScanStream(AVFormatContext &format_context, TagHandler &handler)
 {
 	const int find_result =
 		avformat_find_stream_info(&format_context, nullptr);
@@ -680,7 +679,7 @@ FfmpegScanStream(AVFormatContext &format_context,
 }
 
 static bool
-ffmpeg_scan_stream(InputStream &is, TagHandler &handler) noexcept
+ffmpeg_scan_stream(InputStream &is, TagHandler &handler)
 {
 	AvioStream stream(nullptr, is);
 	if (!stream.Open())

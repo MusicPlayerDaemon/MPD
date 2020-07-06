@@ -7,6 +7,8 @@ ver 0.21.25 (not yet released)
 * decoder
   - opus: apply pre-skip and end trimming
   - opus: fix memory leak
+  - opus: fix crash bug
+  - vorbis: fix crash bug
 * output
   - osx: improve sample rate selection
   - osx: fix noise while stopping

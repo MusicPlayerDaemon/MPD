@@ -449,7 +449,7 @@ dsdiff_stream_decode(DecoderClient &client, InputStream &is)
 }
 
 static bool
-dsdiff_scan_stream(InputStream &is, TagHandler &handler) noexcept
+dsdiff_scan_stream(InputStream &is, TagHandler &handler)
 {
 	DsdiffMetaData metadata;
 	DsdiffChunkHeader chunk_header;
