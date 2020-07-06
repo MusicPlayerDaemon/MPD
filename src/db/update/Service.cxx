@@ -196,8 +196,7 @@ UpdateService::Enqueue(std::string_view path, bool discard)
 			storage2 = storage.GetMount(path);
 			path = "";
 		} else {
-			const std::string mountpoint(lr.uri);
-			storage2 = storage.GetMount(mountpoint.c_str());
+			storage2 = storage.GetMount(lr.uri);
 			path = lr.rest;
 		}
 	} else {
