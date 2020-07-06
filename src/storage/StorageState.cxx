@@ -112,6 +112,11 @@ storage_state_restore(const char *line, TextFile &file, Instance &instance)
 		return true;
 	}
 
+	if (composite_storage.IsMounted(url.c_str())) {
+		LogError(storage_domain, "This storage is already mounted");
+		return true;
+	}
+
 	auto &event_loop = instance.io_thread.GetEventLoop();
 	auto storage = CreateStorageURI(event_loop, url.c_str());
 	if (storage == nullptr) {

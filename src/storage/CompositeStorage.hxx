@@ -121,6 +121,15 @@ public:
 		VisitMounts(uri, root, t);
 	}
 
+	/**
+	 * Is a storage with the given URI already mounted?
+	 */
+	gcc_pure gcc_nonnull_all
+	bool IsMounted(const char *storage_uri) const noexcept {
+		const std::lock_guard<Mutex> protect(mutex);
+		return IsMounted(root, storage_uri);
+	}
+
 	void Mount(const char *uri, std::unique_ptr<Storage> storage);
 	bool Unmount(const char *uri);
 
@@ -153,6 +162,22 @@ private:
 
 			VisitMounts(uri, i.second, t);
 		}
+	}
+
+	gcc_pure gcc_nonnull_all
+	static bool IsMounted(const Directory &directory,
+			      const char *storage_uri) noexcept {
+		if (directory.storage) {
+			const auto uri = directory.storage->MapUTF8("");
+			if (uri == storage_uri)
+				return true;
+		}
+
+		for (const auto &i : directory.children)
+			if (IsMounted(i.second, storage_uri))
+				return true;
+
+		return false;
 	}
 
 	/**

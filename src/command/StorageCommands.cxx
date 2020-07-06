@@ -203,6 +203,11 @@ handle_mount(Client &client, Request args, Response &r)
 		return CommandResult::ERROR;
 	}
 
+	if (composite.IsMounted(remote_uri)) {
+		r.Error(ACK_ERROR_ARG, "This storage is already mounted");
+		return CommandResult::ERROR;
+	}
+
 	auto &event_loop = instance.io_thread.GetEventLoop();
 	auto storage = CreateStorageURI(event_loop, remote_uri);
 	if (storage == nullptr) {
