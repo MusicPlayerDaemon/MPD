@@ -67,18 +67,22 @@ struct DecoderPlugin {
 	void (*file_decode)(DecoderClient &client, Path path_fs) = nullptr;
 
 	/**
-	 * Scan metadata of a file.
+         * Scan metadata of a file.
+         *
+	 * Throws on I/O error.
 	 *
-	 * @return false if the operation has failed
+	 * @return false if the file was not recognized
 	 */
-	bool (*scan_file)(Path path_fs, TagHandler &handler) noexcept = nullptr;
+	bool (*scan_file)(Path path_fs, TagHandler &handler) = nullptr;
 
 	/**
-	 * Scan metadata of a file.
+	 * Scan metadata of a stream.
+         *
+	 * Throws on I/O error.
 	 *
-	 * @return false if the operation has failed
+	 * @return false if the stream was not recognized
 	 */
-	bool (*scan_stream)(InputStream &is, TagHandler &handler) noexcept = nullptr;
+	bool (*scan_stream)(InputStream &is, TagHandler &handler) = nullptr;
 
 	/**
 	 * @brief Return a "virtual" filename for subtracks in
@@ -99,14 +103,14 @@ struct DecoderPlugin {
 				void (*_file_decode)(DecoderClient &client,
 						     Path path_fs),
 				bool (*_scan_file)(Path path_fs,
-						   TagHandler &handler) noexcept) noexcept
+						   TagHandler &handler)) noexcept
 		:name(_name),
 		 file_decode(_file_decode), scan_file(_scan_file) {}
 
 	constexpr DecoderPlugin(const char *_name,
 				void (*_stream_decode)(DecoderClient &client,
 						       InputStream &is),
-				bool (*_scan_stream)(InputStream &is, TagHandler &handler) noexcept) noexcept
+				bool (*_scan_stream)(InputStream &is, TagHandler &handler)) noexcept
 		:name(_name),
 		 stream_decode(_stream_decode),
 		 scan_stream(_scan_stream) {}
@@ -114,11 +118,11 @@ struct DecoderPlugin {
 	constexpr DecoderPlugin(const char *_name,
 				void (*_stream_decode)(DecoderClient &client,
 						       InputStream &is),
-				bool (*_scan_stream)(InputStream &is, TagHandler &handler) noexcept,
+				bool (*_scan_stream)(InputStream &is, TagHandler &handler),
 				void (*_file_decode)(DecoderClient &client,
 						     Path path_fs),
 				bool (*_scan_file)(Path path_fs,
-						   TagHandler &handler) noexcept) noexcept
+						   TagHandler &handler)) noexcept
 		:name(_name),
 		 stream_decode(_stream_decode),
 		 file_decode(_file_decode),
@@ -191,7 +195,7 @@ struct DecoderPlugin {
 	 * Read the tag of a file.
 	 */
 	template<typename P>
-	bool ScanFile(P path_fs, TagHandler &handler) const noexcept {
+	bool ScanFile(P path_fs, TagHandler &handler) const {
 		return scan_file != nullptr
 			? scan_file(path_fs, handler)
 			: false;
@@ -200,7 +204,7 @@ struct DecoderPlugin {
 	/**
 	 * Read the tag of a stream.
 	 */
-	bool ScanStream(InputStream &is, TagHandler &handler) const noexcept {
+	bool ScanStream(InputStream &is, TagHandler &handler) const {
 		return scan_stream != nullptr
 			? scan_stream(is, handler)
 			: false;

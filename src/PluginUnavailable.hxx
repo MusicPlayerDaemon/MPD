@@ -29,9 +29,7 @@
  */
 class PluginUnavailable : public std::runtime_error {
 public:
-	template<typename M>
-	explicit PluginUnavailable(M &&msg) noexcept
-		:std::runtime_error(std::forward<M>(msg)) {}
+	using std::runtime_error::runtime_error;
 };
 
 /**
@@ -42,9 +40,7 @@ public:
  */
 class PluginUnconfigured : public PluginUnavailable {
 public:
-	template<typename M>
-	explicit PluginUnconfigured(M &&msg) noexcept
-		:PluginUnavailable(std::forward<M>(msg)) {}
+	using PluginUnavailable::PluginUnavailable;
 };
 
 #endif

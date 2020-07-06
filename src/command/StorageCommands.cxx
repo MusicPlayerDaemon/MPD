@@ -195,6 +195,16 @@ handle_mount(Client &client, Request args, Response &r)
 		return CommandResult::ERROR;
 	}
 
+	if (composite.IsMountPoint(local_uri)) {
+		r.Error(ACK_ERROR_ARG, "Mount point busy");
+		return CommandResult::ERROR;
+	}
+
+	if (composite.IsMounted(remote_uri)) {
+		r.Error(ACK_ERROR_ARG, "This storage is already mounted");
+		return CommandResult::ERROR;
+	}
+
 	auto &event_loop = instance.io_thread.GetEventLoop();
 	auto storage = CreateStorageURI(event_loop, remote_uri);
 	if (storage == nullptr) {
@@ -207,8 +217,10 @@ handle_mount(Client &client, Request args, Response &r)
 
 #ifdef ENABLE_DATABASE
 	if (auto *db = dynamic_cast<SimpleDatabase *>(instance.GetDatabase())) {
+		bool need_update;
+
 		try {
-			db->Mount(local_uri, remote_uri);
+			need_update = !db->Mount(local_uri, remote_uri);
 		} catch (...) {
 			composite.Unmount(local_uri);
 			throw;
@@ -217,6 +229,12 @@ handle_mount(Client &client, Request args, Response &r)
 		// TODO: call Instance::OnDatabaseModified()?
 		// TODO: trigger database update?
 		instance.EmitIdle(IDLE_DATABASE);
+
+		if (need_update) {
+			UpdateService *update = client.GetInstance().update;
+			if (update != nullptr)
+				update->Enqueue(local_uri, false);
+		}
 	}
 #endif
 

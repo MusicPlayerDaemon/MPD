@@ -43,7 +43,7 @@ CheckDecoderPlugin(const DecoderPlugin &plugin,
 }
 
 bool
-tag_stream_scan(InputStream &is, TagHandler &handler) noexcept
+tag_stream_scan(InputStream &is, TagHandler &handler)
 {
 	assert(is.IsReady());
 
@@ -81,7 +81,7 @@ tag_stream_scan(const char *uri, TagHandler &handler)
 
 bool
 tag_stream_scan(InputStream &is, TagBuilder &builder,
-		AudioFormat *audio_format) noexcept
+		AudioFormat *audio_format)
 {
 	assert(is.IsReady());
 

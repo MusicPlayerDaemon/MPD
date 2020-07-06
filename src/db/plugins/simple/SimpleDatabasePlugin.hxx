@@ -103,9 +103,11 @@ public:
 
 	/**
 	 * Throws #std::runtime_error on error.
+	 *
+	 * @return false if the mounted database needs to be updated
 	 */
 	gcc_nonnull_all
-	void Mount(const char *local_uri, const char *storage_uri);
+	bool Mount(const char *local_uri, const char *storage_uri);
 
 	gcc_nonnull_all
 	bool Unmount(const char *uri) noexcept;

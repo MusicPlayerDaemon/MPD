@@ -423,8 +423,8 @@ VisitOpusDuration(InputStream &is, OggSyncState &sync, OggStreamState &stream,
 	}
 }
 
-bool
-mpd_opus_scan_stream(InputStream &is, TagHandler &handler) noexcept
+static bool
+mpd_opus_scan_stream(InputStream &is, TagHandler &handler)
 {
 	InputStreamReader reader(is);
 	OggSyncState oy(reader);

@@ -60,25 +60,25 @@ The default plugin which gives :program:`MPD` access to local files. It is used 
 curl
 ----
 
-A WebDAV client using libcurl. It is used when :code:`music_directory` contains a http:// or https:// URI, for example :samp:`https://the.server/dav/`.
+A WebDAV client using libcurl. It is used when :code:`music_directory`
+contains a ``http://`` or ``https://`` URI, for example
+:samp:`https://the.server/dav/`.
 
 smbclient
 ---------
 
-Load music files from a SMB/CIFS server. It is used when :code:`music_directory` contains a smb:// URI, for example :samp:`smb://myfileserver/Music`.
+Load music files from a SMB/CIFS server. It is used when
+:code:`music_directory` contains a ``smb://`` URI, for example
+:samp:`smb://myfileserver/Music`.
 
 nfs
 ---
 
-Load music files from a NFS server. It is used when :code:`music_directory` contains a nfs:// URI according to RFC2224, for example :samp:`nfs://servername/path`.
+Load music files from a NFS server.  It is used when
+:code:`music_directory` contains a ``nfs://`` URI according to
+RFC2224, for example :samp:`nfs://servername/path`.
 
-This plugin uses libnfs, which supports only NFS version 3. Since :program:`MPD` is not allowed to bind to "privileged ports", the NFS server needs to enable the "insecure" setting; example :file:`/etc/exports`:
-
-.. code-block:: none
-
-    /srv/mp3 192.168.1.55(ro,insecure)
-
-Don't fear: "insecure" does not mean that your NFS server is insecure. A few decades ago, people thought the concept of "privileged ports" would make network services "secure", which was a fallacy. The absence of this obsolete "security" measure means little.
+See :ref:`input_nfs` for more information.
 
 udisks
 ------
@@ -186,7 +186,10 @@ curl
 
 Opens remote files or streams over HTTP using libcurl.
 
-Note that unless overridden by the below settings (e.g. by setting them to a blank value), general curl configuration from environment variables such as http_proxy or specified in :file:`~/.curlrc` will be in effect.
+Note that unless overridden by the below settings (e.g. by setting
+them to a blank value), general curl configuration from environment
+variables such as ``http_proxy`` or specified in :file:`~/.curlrc`
+will be in effect.
 
 .. list-table::
    :widths: 20 80
@@ -206,7 +209,9 @@ Note that unless overridden by the below settings (e.g. by setting them to a bla
 ffmpeg
 ------
 
-Access to various network protocols implemented by the FFmpeg library: gopher://, rtp://, rtsp://, rtmp://, rtmpt://, rtmps://
+Access to various network protocols implemented by the FFmpeg library:
+``gopher://``, ``rtp://``, ``rtsp://``, ``rtmp://``, ``rtmpt://``,
+``rtmps://``
 
 file
 ----
@@ -218,30 +223,51 @@ mms
 
 Plays streams with the MMS protocol using `libmms <https://launchpad.net/libmms>`_.
 
+.. _input_nfs:
+
 nfs
 ---
 
-Allows :program:`MPD` to access files on NFSv3 servers without actually mounting them (i.e. in userspace, without help from the kernel's VFS layer). All URIs with the nfs:// scheme are used according to RFC2224. Example:
+Allows :program:`MPD` to access files on NFS servers without actually
+mounting them (i.e. with :program:`libnfs` in userspace, without help
+from the kernel's VFS layer). All URIs with the ``nfs://`` scheme are
+used according to RFC2224. Example:
 
 .. code-block:: none
 
      mpc add nfs://servername/path/filename.ogg
 
-Note that this usually requires enabling the "insecure" flag in the server's /etc/exports file, because :program:`MPD` cannot bind to so-called "privileged" ports. Don't fear: this will not make your file server insecure; the flag was named in a time long ago when privileged ports were thought to be meaningful for security. By today's standards, NFSv3 is not secure at all, and if you believe it is, you're already doomed.
+This plugin uses :program:`libnfs`, which supports only NFS version 3.
+Since :program:`MPD` is not allowed to bind to so-called "privileged
+ports", the NFS server needs to enable the ``insecure`` setting;
+example :file:`/etc/exports`:
+
+.. code-block:: none
+
+    /srv/mp3 192.168.1.55(ro,insecure)
+
+Don't fear: this will not make your file server insecure; the flag was
+named a time long ago when privileged ports were thought to be
+meaningful for security. By today's standards, NFSv3 is not secure at
+all, and if you believe it is, you're already doomed.
 
 smbclient
 ---------
 
-Allows :program:`MPD` to access files on SMB/CIFS servers (e.g. Samba or Microsoft Windows). All URIs with the smb:// scheme are used. Example:
+Allows :program:`MPD` to access files on SMB/CIFS servers (e.g. Samba
+or Microsoft Windows). All URIs with the ``smb://`` scheme are
+used.  Example:
 
 .. code-block:: none
 
     mpc add smb://servername/sharename/filename.ogg
+    mpc add smb://username:password@servername/sharename/filename.ogg
 
 qobuz
 -----
 
-Play songs from the commercial streaming service Qobuz. It plays URLs in the form qobuz://track/ID, e.g.:
+Play songs from the commercial streaming service Qobuz. It plays URLs
+in the form ``qobuz://track/ID``, e.g.:
 
 .. code-block:: none
 
@@ -267,7 +293,9 @@ Play songs from the commercial streaming service Qobuz. It plays URLs in the for
 tidal
 -----
 
-Play songs from the commercial streaming service `Tidal <http://tidal.com/>`_. It plays URLs in the form tidal://track/ID, e.g.:
+Play songs from the commercial streaming service `Tidal
+<http://tidal.com/>`_. It plays URLs in the form ``tidal://track/ID``,
+e.g.:
 
 .. warning::
 

@@ -427,7 +427,7 @@ IsUnsafeChar(char ch)
 	return !IsSafeChar(ch);
 }
 
-void
+bool
 SimpleDatabase::Mount(const char *local_uri, const char *storage_uri)
 {
 	if (cache_path.IsNull())
@@ -446,9 +446,11 @@ SimpleDatabase::Mount(const char *local_uri, const char *storage_uri)
 						   compress);
 	db->Open();
 
-	// TODO: update the new database instance?
+	bool exists = db->FileExists();
 
 	Mount(local_uri, std::move(db));
+
+	return exists;
 }
 
 inline DatabasePtr

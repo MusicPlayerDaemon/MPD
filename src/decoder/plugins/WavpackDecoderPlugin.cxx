@@ -612,7 +612,7 @@ wavpack_scan_file(Path path_fs, TagHandler &handler) noexcept
 }
 
 static bool
-wavpack_scan_stream(InputStream &is, TagHandler &handler) noexcept
+wavpack_scan_stream(InputStream &is, TagHandler &handler)
 {
 	WavpackInput isp(nullptr, is);
 
