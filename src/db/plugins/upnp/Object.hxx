@@ -90,8 +90,17 @@ public:
 	}
 
 	gcc_pure
+	bool IsRoot() const noexcept {
+		return type == Type::CONTAINER && id == "0";
+	}
+
+	gcc_pure
 	bool Check() const noexcept {
-		return !id.empty() && !parent_id.empty() && !name.empty() &&
+		return !id.empty() &&
+			/* root nodes don't need a parent id and a
+			   name */
+			(IsRoot() || (!parent_id.empty() &&
+				      !name.empty())) &&
 			(type != UPnPDirObject::Type::ITEM ||
 			 item_class != UPnPDirObject::ItemClass::UNKNOWN);
 	}
