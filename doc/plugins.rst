@@ -239,6 +239,7 @@ used.  Example:
 .. code-block:: none
 
     mpc add smb://servername/sharename/filename.ogg
+    mpc add smb://username:password@servername/sharename/filename.ogg
 
 qobuz
 -----
