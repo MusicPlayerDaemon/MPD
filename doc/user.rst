@@ -329,7 +329,7 @@ configuration file:
 This allocates a cache of 1 GB.  If the cache grows larger than that,
 older files will be evicted.
 
-You flush the cache at any time by sending ``SIGHUP`` to the
+You can flush the cache at any time by sending ``SIGHUP`` to the
 :program:`MPD` process, see :ref:`signals`.
 
 
@@ -416,7 +416,7 @@ The following table lists the audio_output options valid for all plugins:
        :ref:`oss_plugin` and PulseAudio :ref:`pulse_plugin`), the
        software mixer, the ":samp:`null`" mixer (allows setting the
        volume, but with no effect; this can be used as a trick to
-       implement an external mixer :ref:`external_mixer`) or no mixer
+       implement an external mixer, see :ref:`external_mixer`) or no mixer
        (:samp:`none`). By default, the hardware mixer is used for
        devices which support it, and none for the others.
    * - **filters "name,...**"
@@ -766,7 +766,7 @@ Real-Time Scheduling
 
 On Linux, :program:`MPD` attempts to configure real-time scheduling for some threads that benefit from it.
 
-This is only possible you allow :program:`MPD` to do it. This privilege is controlled by :envvar:`RLIMIT_RTPRIO` :envvar:`RLIMIT_RTTIME`. You can configure this privilege with :command:`ulimit` before launching :program:`MPD`:
+This is only possible if you allow :program:`MPD` to do it. This privilege is controlled by :envvar:`RLIMIT_RTPRIO` :envvar:`RLIMIT_RTTIME`. You can configure this privilege with :command:`ulimit` before launching :program:`MPD`:
 
 .. code-block:: none
 

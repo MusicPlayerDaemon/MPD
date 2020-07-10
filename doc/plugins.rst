@@ -27,7 +27,7 @@ The default plugin. Stores a copy of the database in memory. A file is used for 
 proxy
 -----
 
-Provides access to the database of another :program:`MPD` instance using libmpdclient. This is useful when you run mount the music directory via NFS/SMB, and the file server already runs a :program:`MPD` instance. Only the file server needs to update the database.
+Provides access to the database of another :program:`MPD` instance using libmpdclient. This is useful when you mount the music directory via NFS/SMB, and the file server already runs a :program:`MPD` instance. Only the file server needs to update the database.
 
 .. list-table::
    :widths: 20 80                     
@@ -116,7 +116,7 @@ Provides a list of SMB/CIFS servers on the local network.
 udisks
 ------
 
-Queries the udisks2 daemon via D-Bus and obtain a list of file systems (e.g. USB sticks or other removable media).
+Queries the udisks2 daemon via D-Bus and obtains a list of file systems (e.g. USB sticks or other removable media).
 
 upnp
 ----
@@ -152,7 +152,7 @@ Allows :program:`MPD` on Linux to play audio directly from a soundcard using the
    * - Setting
      - Description
    * - **default_device NAME**
-     - The alsa device id to use to none is specified in the uri.
+     - The alsa device id to use when none is specified in the URI.
    * - **default_format F**
      - The sampling rate, size and channels to use. Wildcards are not allowed.
 
@@ -427,7 +427,7 @@ hybrid_dsd
 
 `Hybrid-DSD
 <http://dsdmaster.blogspot.de/p/bitperfect-introduces-hybrid-dsd-file.html>`_
-is a MP4 container file (:file:`*.m4a`) which contains both ALAC and
+is an MP4 container file (:file:`*.m4a`) which contains both ALAC and
 DSD data. It is disabled by default, and works only if you explicitly
 enable it. Without this plugin, the ALAC parts gets handled by the
 `FFmpeg decoder plugin
@@ -489,7 +489,7 @@ Decodes Opus files using `libopus <http://www.opus-codec.org/>`_.
 pcm
 ---
 
-Read raw PCM samples. It understands the "audio/L16" MIME type with parameters "rate" and "channels" according to RFC 2586. It also understands the MPD-specific MIME type "audio/x-mpd-float".
+Reads raw PCM samples. It understands the "audio/L16" MIME type with parameters "rate" and "channels" according to RFC 2586. It also understands the MPD-specific MIME type "audio/x-mpd-float".
 
 sidplay
 -------

@@ -172,7 +172,7 @@ syntax::
 
  find EXPRESSION
 
-``EXPRESSION`` is a string enclosed in parantheses which can be one
+``EXPRESSION`` is a string enclosed in parentheses which can be one
 of:
 
 - ``(TAG == 'VALUE')``: match a tag value; if there are multiple
@@ -218,12 +218,12 @@ of:
   or more attributes may be ``*``).
 
 - ``(!EXPRESSION)``: negate an expression.  Note that each expression
-  must be enclosed in parantheses, e.g. :code:`(!(artist == 'VALUE'))`
+  must be enclosed in parentheses, e.g. :code:`(!(artist == 'VALUE'))`
   (which is equivalent to :code:`(artist != 'VALUE')`)
 
 - ``(EXPRESSION1 AND EXPRESSION2 ...)``: combine two or
   more expressions with logical "and".  Note that each expression must
-  be enclosed in parantheses, e.g. :code:`((artist == 'FOO') AND
+  be enclosed in parentheses, e.g. :code:`((artist == 'FOO') AND
   (album == 'BAR'))`
 
 The :command:`find` commands are case sensitive, while
@@ -419,7 +419,7 @@ Querying :program:`MPD`'s status
     - ``mount``: the mount list has changed
 
     Change events accumulate, even while the connection is not in
-    "idle" mode; no events gets lost while the client is doing
+    "idle" mode; no events get lost while the client is doing
     something else with the connection.  If an event had already
     occurred since the last call, the new :ref:`idle <command_idle>`
     command will return immediately.
@@ -536,7 +536,7 @@ Playback options
     ``auto``
     .
     Changing the mode during playback may take several
-    seconds, because the new settings does not affect the
+    seconds, because the new settings do not affect the
     buffered data.
     This command triggers the
     ``options`` idle event.
@@ -868,8 +868,8 @@ The music database
      count group artist
      count title Echoes group artist
 
-    A group with an empty value contains counts of matching song which
-    don't this group tag.  It exists only if at least one such song is
+    A group with an empty value contains counts of matching songs which
+    don't have this group tag.  It exists only if at least one such song is
     found.
 
 :command:`getfingerprint {URI}`
