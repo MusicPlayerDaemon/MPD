@@ -59,7 +59,7 @@ input_stream_global_init(const ConfigData &config, EventLoop &event_loop)
 				plugin->init(event_loop, *block);
 			input_plugins_enabled[i] = true;
 		} catch (const PluginUnconfigured &e) {
-			LogFormat(LogLevel::INFO, e,
+			LogFormat(LogLevel::DEBUG, e,
 				  "Input plugin '%s' is not configured",
 				  plugin->name);
 			continue;
