@@ -90,8 +90,11 @@ input_smbclient_open(const char *uri,
 		throw MakeErrno("smbc_open() failed");
 
 	struct stat st;
-	if (ctx.Stat(handle, st) < 0)
-		throw MakeErrno("smbc_fstat() failed");
+	if (ctx.Stat(handle, st) < 0) {
+		const int e = errno;
+		ctx.Close(handle);
+		throw MakeErrno(e, "smbc_fstat() failed");
+	}
 
 	return std::make_unique<MaybeBufferedInputStream>
 		(std::make_unique<SmbclientInputStream>(uri, mutex,
