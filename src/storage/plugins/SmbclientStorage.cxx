@@ -22,6 +22,7 @@
 #include "storage/StorageInterface.hxx"
 #include "storage/FileInfo.hxx"
 #include "lib/smbclient/Init.hxx"
+#include "lib/smbclient/Context.hxx"
 #include "lib/smbclient/Mutex.hxx"
 #include "fs/Traits.hxx"
 #include "thread/Mutex.hxx"
@@ -52,16 +53,11 @@ public:
 class SmbclientStorage final : public Storage {
 	const std::string base;
 
-	SMBCCTX *const ctx;
+	SmbclientContext ctx = SmbclientContext::New();
 
 public:
-	SmbclientStorage(const char *_base, SMBCCTX *_ctx)
-		:base(_base), ctx(_ctx) {}
-
-	~SmbclientStorage() override {
-		const std::lock_guard<Mutex> lock(smbclient_mutex);
-		smbc_free_context(ctx, 1);
-	}
+	explicit SmbclientStorage(const char *_base)
+		:base(_base) {}
 
 	/* virtual methods from class Storage */
 	StorageFileInfo GetInfo(std::string_view uri_utf8, bool follow) override;
@@ -184,18 +180,7 @@ CreateSmbclientStorageURI([[maybe_unused]] EventLoop &event_loop, const char *ba
 
 	SmbclientInit();
 
-	const std::lock_guard<Mutex> protect(smbclient_mutex);
-	SMBCCTX *ctx = smbc_new_context();
-	if (ctx == nullptr)
-		throw MakeErrno("smbc_new_context() failed");
-
-	SMBCCTX *ctx2 = smbc_init_context(ctx);
-	if (ctx2 == nullptr) {
-		AtScopeExit(ctx) { smbc_free_context(ctx, 1); };
-		throw MakeErrno("smbc_new_context() failed");
-	}
-
-	return std::make_unique<SmbclientStorage>(base, ctx2);
+	return std::make_unique<SmbclientStorage>(base);
 }
 
 const StoragePlugin smbclient_storage_plugin = {

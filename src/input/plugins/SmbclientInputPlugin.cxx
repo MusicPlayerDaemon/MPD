@@ -19,6 +19,7 @@
 
 #include "SmbclientInputPlugin.hxx"
 #include "lib/smbclient/Init.hxx"
+#include "lib/smbclient/Context.hxx"
 #include "lib/smbclient/Mutex.hxx"
 #include "../InputStream.hxx"
 #include "../InputPlugin.hxx"
@@ -29,15 +30,17 @@
 #include <libsmbclient.h>
 
 class SmbclientInputStream final : public InputStream {
-	SMBCCTX *ctx;
+	SmbclientContext ctx;
 	int fd;
 
 public:
 	SmbclientInputStream(const char *_uri,
 			     Mutex &_mutex,
-			     SMBCCTX *_ctx, int _fd, const struct stat &st)
+			     SmbclientContext &&_ctx,
+			     int _fd, const struct stat &st)
 		:InputStream(_uri, _mutex),
-		 ctx(_ctx), fd(_fd) {
+		 ctx(std::move(_ctx)), fd(_fd)
+	{
 		seekable = true;
 		size = st.st_size;
 		SetReady();
@@ -46,7 +49,6 @@ public:
 	~SmbclientInputStream() override {
 		const std::lock_guard<Mutex> lock(smbclient_mutex);
 		smbc_close(fd);
-		smbc_free_context(ctx, 1);
 	}
 
 	/* virtual methods from InputStream */
@@ -83,38 +85,22 @@ static InputStreamPtr
 input_smbclient_open(const char *uri,
 		     Mutex &mutex)
 {
+	auto ctx = SmbclientContext::New();
+
 	const std::lock_guard<Mutex> protect(smbclient_mutex);
 
-	SMBCCTX *ctx = smbc_new_context();
-	if (ctx == nullptr)
-		throw MakeErrno("smbc_new_context() failed");
-
-	SMBCCTX *ctx2 = smbc_init_context(ctx);
-	if (ctx2 == nullptr) {
-		int e = errno;
-		smbc_free_context(ctx, 1);
-		throw MakeErrno(e, "smbc_init_context() failed");
-	}
-
-	ctx = ctx2;
-
 	int fd = smbc_open(uri, O_RDONLY, 0);
-	if (fd < 0) {
-		int e = errno;
-		smbc_free_context(ctx, 1);
-		throw MakeErrno(e, "smbc_open() failed");
-	}
+	if (fd < 0)
+		throw MakeErrno("smbc_open() failed");
 
 	struct stat st;
-	if (smbc_fstat(fd, &st) < 0) {
-		int e = errno;
-		smbc_free_context(ctx, 1);
-		throw MakeErrno(e, "smbc_fstat() failed");
-	}
+	if (smbc_fstat(fd, &st) < 0)
+		throw MakeErrno("smbc_fstat() failed");
 
 	return std::make_unique<MaybeBufferedInputStream>
 		(std::make_unique<SmbclientInputStream>(uri, mutex,
-							ctx, fd, st));
+							std::move(ctx),
+							fd, st));
 }
 
 size_t

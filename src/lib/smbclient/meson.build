@@ -9,6 +9,7 @@ smbclient = static_library(
   'Domain.cxx',
   'Mutex.cxx',
   'Init.cxx',
+  'Context.cxx',
   include_directories: inc,
   dependencies: [
     smbclient_dep,
