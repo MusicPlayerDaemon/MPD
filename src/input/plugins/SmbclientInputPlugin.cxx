@@ -31,15 +31,15 @@
 
 class SmbclientInputStream final : public InputStream {
 	SmbclientContext ctx;
-	int fd;
+	SMBCFILE *const handle;
 
 public:
 	SmbclientInputStream(const char *_uri,
 			     Mutex &_mutex,
 			     SmbclientContext &&_ctx,
-			     int _fd, const struct stat &st)
+			     SMBCFILE *_handle, const struct stat &st)
 		:InputStream(_uri, _mutex),
-		 ctx(std::move(_ctx)), fd(_fd)
+		 ctx(std::move(_ctx)), handle(_handle)
 	{
 		seekable = true;
 		size = st.st_size;
@@ -48,7 +48,7 @@ public:
 
 	~SmbclientInputStream() override {
 		const std::lock_guard<Mutex> lock(smbclient_mutex);
-		smbc_close(fd);
+		ctx.Close(handle);
 	}
 
 	/* virtual methods from InputStream */
@@ -89,18 +89,18 @@ input_smbclient_open(const char *uri,
 
 	const std::lock_guard<Mutex> protect(smbclient_mutex);
 
-	int fd = smbc_open(uri, O_RDONLY, 0);
-	if (fd < 0)
+	SMBCFILE *handle = ctx.OpenReadOnly(uri);
+	if (handle == nullptr)
 		throw MakeErrno("smbc_open() failed");
 
 	struct stat st;
-	if (smbc_fstat(fd, &st) < 0)
+	if (ctx.Stat(handle, st) < 0)
 		throw MakeErrno("smbc_fstat() failed");
 
 	return std::make_unique<MaybeBufferedInputStream>
 		(std::make_unique<SmbclientInputStream>(uri, mutex,
 							std::move(ctx),
-							fd, st));
+							handle, st));
 }
 
 size_t
@@ -112,7 +112,7 @@ SmbclientInputStream::Read(std::unique_lock<Mutex> &,
 	{
 		const ScopeUnlock unlock(mutex);
 		const std::lock_guard<Mutex> lock(smbclient_mutex);
-		nbytes = smbc_read(fd, ptr, read_size);
+		nbytes = ctx.Read(handle, ptr, read_size);
 	}
 
 	if (nbytes < 0)
@@ -131,7 +131,7 @@ SmbclientInputStream::Seek(std::unique_lock<Mutex> &,
 	{
 		const ScopeUnlock unlock(mutex);
 		const std::lock_guard<Mutex> lock(smbclient_mutex);
-		result = smbc_lseek(fd, new_offset, SEEK_SET);
+		result = ctx.Seek(handle, new_offset);
 	}
 
 	if (result < 0)

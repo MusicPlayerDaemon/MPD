@@ -34,14 +34,17 @@
 #include <libsmbclient.h>
 
 class SmbclientDirectoryReader final : public StorageDirectoryReader {
+	SmbclientContext &ctx;
 	const std::string base;
-	const unsigned handle;
+	SMBCFILE *const handle;
 
 	const char *name;
 
 public:
-	SmbclientDirectoryReader(std::string &&_base, unsigned _handle)
-		:base(std::move(_base)), handle(_handle) {}
+	SmbclientDirectoryReader(SmbclientContext &_ctx,
+				 std::string &&_base,
+				 SMBCFILE *_handle) noexcept
+		:ctx(_ctx), base(std::move(_base)), handle(_handle) {}
 
 	~SmbclientDirectoryReader() override;
 
@@ -85,13 +88,13 @@ SmbclientStorage::MapToRelativeUTF8(std::string_view uri_utf8) const noexcept
 }
 
 static StorageFileInfo
-GetInfo(const char *path)
+GetInfo(SmbclientContext &ctx, const char *path)
 {
 	struct stat st;
 
 	{
 		const std::lock_guard<Mutex> protect(smbclient_mutex);
-		if (smbc_stat(path, &st) != 0)
+		if (ctx.Stat(path, st) != 0)
 			throw MakeErrno("Failed to access file");
 	}
 
@@ -114,7 +117,7 @@ StorageFileInfo
 SmbclientStorage::GetInfo(std::string_view uri_utf8, [[maybe_unused]] bool follow)
 {
 	const std::string mapped = MapUTF8(uri_utf8);
-	return ::GetInfo(mapped.c_str());
+	return ::GetInfo(ctx, mapped.c_str());
 }
 
 std::unique_ptr<StorageDirectoryReader>
@@ -122,16 +125,17 @@ SmbclientStorage::OpenDirectory(std::string_view uri_utf8)
 {
 	std::string mapped = MapUTF8(uri_utf8);
 
-	int handle;
+	SMBCFILE *handle;
 
 	{
 		const std::lock_guard<Mutex> protect(smbclient_mutex);
-		handle = smbc_opendir(mapped.c_str());
-		if (handle < 0)
+		handle = ctx.OpenDirectory(mapped.c_str());
+		if (handle == nullptr)
 			throw MakeErrno("Failed to open directory");
 	}
 
-	return std::make_unique<SmbclientDirectoryReader>(std::move(mapped),
+	return std::make_unique<SmbclientDirectoryReader>(ctx,
+							  std::move(mapped),
 							  handle);
 }
 
@@ -147,7 +151,7 @@ SkipNameFS(const char *name) noexcept
 SmbclientDirectoryReader::~SmbclientDirectoryReader()
 {
 	const std::lock_guard<Mutex> lock(smbclient_mutex);
-	smbc_close(handle);
+	ctx.CloseDirectory(handle);
 }
 
 const char *
@@ -155,8 +159,7 @@ SmbclientDirectoryReader::Read() noexcept
 {
 	const std::lock_guard<Mutex> protect(smbclient_mutex);
 
-	struct smbc_dirent *e;
-	while ((e = smbc_readdir(handle)) != nullptr) {
+	while (auto e = ctx.ReadDirectory(handle)) {
 		name = e->name;
 		if (!SkipNameFS(name))
 			return name;
@@ -169,7 +172,7 @@ StorageFileInfo
 SmbclientDirectoryReader::GetInfo([[maybe_unused]] bool follow)
 {
 	const std::string path = PathTraitsUTF8::Build(base, name);
-	return ::GetInfo(path.c_str());
+	return ::GetInfo(ctx, path.c_str());
 }
 
 static std::unique_ptr<Storage>

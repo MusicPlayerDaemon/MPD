@@ -12,6 +12,7 @@ ver 0.22 (not yet released)
   - curl: support "charset" parameter in URI fragment
   - ffmpeg: allow partial reads
   - io_uring: new plugin for local files on Linux (using liburing)
+  - smbclient: close unused SMB/CIFS connections
 * archive
   - iso9660: support seeking
 * database
