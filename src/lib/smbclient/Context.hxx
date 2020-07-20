@@ -20,6 +20,8 @@
 #ifndef MPD_SMBCLIENT_CONTEXT_HXX
 #define MPD_SMBCLIENT_CONTEXT_HXX
 
+#include "thread/Mutex.hxx"
+
 #include <libsmbclient.h>
 
 #include <utility>
@@ -28,6 +30,14 @@
  * Wrapper for `SMBCCTX*`.
  */
 class SmbclientContext {
+	/**
+	 * This mutex protects the libsmbclient functions
+	 * smbc_new_context() and smbc_free_context() which need to be
+	 * serialized.  We need to do this because we can't use
+	 * smbc_thread_posix(), which is not exported by libsmbclient.
+	 */
+	static Mutex global_mutex;
+
 	SMBCCTX *ctx = nullptr;
 
 	explicit SmbclientContext(SMBCCTX *_ctx) noexcept
@@ -37,8 +47,10 @@ public:
 	SmbclientContext() = default;
 
 	~SmbclientContext() noexcept {
-		if (ctx != nullptr)
+		if (ctx != nullptr) {
+			const std::lock_guard<Mutex> protect(global_mutex);
 			smbc_free_context(ctx, 1);
+		}
 	}
 
 	SmbclientContext(SmbclientContext &&src) noexcept

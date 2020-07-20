@@ -24,6 +24,8 @@
 
 #include <string.h>
 
+Mutex SmbclientContext::global_mutex;
+
 static void
 mpd_smbc_get_auth_data([[maybe_unused]] const char *srv,
 		       [[maybe_unused]] const char *shr,
@@ -40,7 +42,13 @@ mpd_smbc_get_auth_data([[maybe_unused]] const char *srv,
 SmbclientContext
 SmbclientContext::New()
 {
-	SMBCCTX *ctx = smbc_new_context();
+	SMBCCTX *ctx;
+
+	{
+		const std::lock_guard<Mutex> protect(global_mutex);
+		ctx = smbc_new_context();
+	}
+
 	if (ctx == nullptr)
 		throw MakeErrno("smbc_new_context() failed");
 
