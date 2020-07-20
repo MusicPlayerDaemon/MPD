@@ -20,7 +20,6 @@
 #include "SmbclientInputPlugin.hxx"
 #include "lib/smbclient/Init.hxx"
 #include "lib/smbclient/Context.hxx"
-#include "lib/smbclient/Mutex.hxx"
 #include "../InputStream.hxx"
 #include "../InputPlugin.hxx"
 #include "../MaybeBufferedInputStream.hxx"
@@ -47,7 +46,6 @@ public:
 	}
 
 	~SmbclientInputStream() override {
-		const std::lock_guard<Mutex> lock(smbclient_mutex);
 		ctx.Close(handle);
 	}
 
@@ -87,8 +85,6 @@ input_smbclient_open(const char *uri,
 {
 	auto ctx = SmbclientContext::New();
 
-	const std::lock_guard<Mutex> protect(smbclient_mutex);
-
 	SMBCFILE *handle = ctx.OpenReadOnly(uri);
 	if (handle == nullptr)
 		throw MakeErrno("smbc_open() failed");
@@ -111,7 +107,6 @@ SmbclientInputStream::Read(std::unique_lock<Mutex> &,
 
 	{
 		const ScopeUnlock unlock(mutex);
-		const std::lock_guard<Mutex> lock(smbclient_mutex);
 		nbytes = ctx.Read(handle, ptr, read_size);
 	}
 
@@ -130,7 +125,6 @@ SmbclientInputStream::Seek(std::unique_lock<Mutex> &,
 
 	{
 		const ScopeUnlock unlock(mutex);
-		const std::lock_guard<Mutex> lock(smbclient_mutex);
 		result = ctx.Seek(handle, new_offset);
 	}
 
