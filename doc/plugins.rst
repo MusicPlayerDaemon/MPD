@@ -1072,7 +1072,8 @@ sles
 
 Plugin using the `OpenSL ES <https://www.khronos.org/opensles/>`__
 audio API.  Its primary use is local playback on Android, where
-:ref:`ALSA <alsa_plugin>` is not available.
+:ref:`ALSA <alsa_plugin>` is not available.  It supports 16 bit and
+floating point samples.
 
 
 solaris
