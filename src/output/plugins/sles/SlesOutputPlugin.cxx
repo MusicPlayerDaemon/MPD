@@ -188,6 +188,25 @@ SlesOutput::Open(AudioFormat &audio_format)
 		? SL_BYTEORDER_LITTLEENDIAN
 		: SL_BYTEORDER_BIGENDIAN;
 
+	switch (audio_format.format) {
+		/* note: Android doesn't support
+		   SL_PCMSAMPLEFORMAT_FIXED_24 and
+		   SL_PCMSAMPLEFORMAT_FIXED_32, so let's not bother
+		   implement it here; SL_PCMSAMPLEFORMAT_FIXED_8
+		   appears to be unsigned, so not usable for us (and
+		   converting S8 to U8 is not worth the trouble) */
+
+	case SampleFormat::S16:
+		/* bitsPerSample and containerSize already set for 16
+		   bit */
+		break;
+
+	default:
+		/* fall back to 16 bit */
+		audio_format.format = SampleFormat::S16;
+		break;
+	}
+
 	SLDataSource audioSrc = { &loc_bufq, &format_pcm };
 
 	SLDataLocator_OutputMix loc_outmix = {
@@ -291,9 +310,6 @@ SlesOutput::Open(AudioFormat &audio_format)
 	n_queued = 0;
 	next = 0;
 	filled = 0;
-
-	// TODO: support other sample formats
-	audio_format.format = SampleFormat::S16;
 }
 
 void
