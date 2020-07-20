@@ -103,11 +103,6 @@ NeighborExplorer::List
 SmbclientNeighborExplorer::GetList() const noexcept
 {
 	const std::lock_guard<Mutex> protect(mutex);
-	/*
-	List list;
-	for (const auto &i : servers)
-		list.emplace_front(i.Export());
-	*/
 	return list;
 }
 
