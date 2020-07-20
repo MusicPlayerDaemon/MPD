@@ -33,18 +33,20 @@
 
 #include <libsmbclient.h>
 
+class SmbclientStorage;
+
 class SmbclientDirectoryReader final : public StorageDirectoryReader {
-	SmbclientContext &ctx;
+	SmbclientStorage &storage;
 	const std::string base;
 	SMBCFILE *const handle;
 
 	const char *name;
 
 public:
-	SmbclientDirectoryReader(SmbclientContext &_ctx,
+	SmbclientDirectoryReader(SmbclientStorage &_storage,
 				 std::string &&_base,
 				 SMBCFILE *_handle) noexcept
-		:ctx(_ctx), base(std::move(_base)), handle(_handle) {}
+		:storage(_storage), base(std::move(_base)), handle(_handle) {}
 
 	~SmbclientDirectoryReader() override;
 
@@ -54,6 +56,8 @@ public:
 };
 
 class SmbclientStorage final : public Storage {
+	friend class SmbclientDirectoryReader;
+
 	const std::string base;
 
 	SmbclientContext ctx = SmbclientContext::New();
@@ -134,7 +138,7 @@ SmbclientStorage::OpenDirectory(std::string_view uri_utf8)
 			throw MakeErrno("Failed to open directory");
 	}
 
-	return std::make_unique<SmbclientDirectoryReader>(ctx,
+	return std::make_unique<SmbclientDirectoryReader>(*this,
 							  std::move(mapped),
 							  handle);
 }
@@ -151,7 +155,7 @@ SkipNameFS(const char *name) noexcept
 SmbclientDirectoryReader::~SmbclientDirectoryReader()
 {
 	const std::lock_guard<Mutex> lock(smbclient_mutex);
-	ctx.CloseDirectory(handle);
+	storage.ctx.CloseDirectory(handle);
 }
 
 const char *
@@ -159,7 +163,7 @@ SmbclientDirectoryReader::Read() noexcept
 {
 	const std::lock_guard<Mutex> protect(smbclient_mutex);
 
-	while (auto e = ctx.ReadDirectory(handle)) {
+	while (auto e = storage.ctx.ReadDirectory(handle)) {
 		name = e->name;
 		if (!SkipNameFS(name))
 			return name;
@@ -172,7 +176,7 @@ StorageFileInfo
 SmbclientDirectoryReader::GetInfo([[maybe_unused]] bool follow)
 {
 	const std::string path = PathTraitsUTF8::Build(base, name);
-	return ::GetInfo(ctx, path.c_str());
+	return ::GetInfo(storage.ctx, path.c_str());
 }
 
 static std::unique_ptr<Storage>
