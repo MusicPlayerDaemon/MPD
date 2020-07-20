@@ -21,7 +21,6 @@
 #include "lib/smbclient/Init.hxx"
 #include "lib/smbclient/Context.hxx"
 #include "lib/smbclient/Domain.hxx"
-#include "lib/smbclient/Mutex.hxx"
 #include "neighbor/NeighborPlugin.hxx"
 #include "neighbor/Explorer.hxx"
 #include "neighbor/Listener.hxx"
@@ -180,7 +179,6 @@ static NeighborExplorer::List
 DetectServers(SmbclientContext &ctx) noexcept
 {
 	NeighborExplorer::List list;
-	const std::lock_guard<Mutex> protect(smbclient_mutex);
 	ReadServers(ctx, "smb://", list);
 	return list;
 }
