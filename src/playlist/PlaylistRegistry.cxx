@@ -32,6 +32,7 @@
 #include "plugins/FlacPlaylistPlugin.hxx"
 #include "plugins/CuePlaylistPlugin.hxx"
 #include "plugins/EmbeddedCuePlaylistPlugin.hxx"
+#include "plugins/YoutubePlaylistPlugin.hxx"
 #include "decoder/Features.h"
 #include "input/InputStream.hxx"
 #include "util/MimeType.hxx"
@@ -61,6 +62,9 @@ const PlaylistPlugin *const playlist_plugins[] = {
 #ifdef ENABLE_CUE
 	&cue_playlist_plugin,
 	&embcue_playlist_plugin,
+#endif
+#ifdef ENABLE_YOUTUBE
+	&youtube_playlist_plugin,
 #endif
 	nullptr
 };

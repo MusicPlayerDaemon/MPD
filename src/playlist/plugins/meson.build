@@ -45,6 +45,20 @@ if enable_soundcloud
   playlist_plugins_deps += yajl_dep
 endif
 
+youtube_feature = get_option('youtube')
+if youtube_feature.disabled()
+  enable_youtube = false
+else
+  enable_youtube = curl_dep.found()
+  if not enable_youtube and youtube_feature.enabled()
+    error('Youtube requires CURL')
+  endif
+endif
+playlist_features.set('ENABLE_YOUTUBE', enable_youtube)
+if enable_youtube
+  playlist_plugins_sources += 'YoutubePlaylistPlugin.cxx'
+endif
+
 playlist_plugins = static_library(
   'playlist_plugins',
   playlist_plugins_sources,
