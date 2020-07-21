@@ -24,7 +24,10 @@
 #include "util/Alloc.hxx"
 #include "util/ScopeExit.hxx"
 
+#include <cstdio>
+#include <cstdlib>
 #include <cstring>
+
 #include <string>
 #include <forward_list>
 #include <utility>
@@ -37,8 +40,15 @@ static bool playlist_youtube_init(const ConfigBlock &block)
 static std::unique_ptr<SongEnumerator>
 playlist_youtube_open(const char *uri, Mutex &mutex)
 {
-	// TODO fix command injection
-	char *cmd = xstrcatdup("youtube-dl --flat-playlist --ignore-errors --get-id ", uri);
+
+	/* lazy way to prevent command injection */
+	for(size_t i = 0; i < strlen(uri); i++) {
+		if(uri[i] == '\'') {
+			return nullptr;
+		}
+	}
+
+	char *cmd = xstrcatdup("youtube-dl --flat-playlist --ignore-errors --get-id '", uri, "'");
 	FILE *stream = popen(cmd, "r");
 	free(cmd);
 

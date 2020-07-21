@@ -28,6 +28,7 @@
 
 #include <cstdio>
 #include <cstdlib>
+#include <cstring>
 
 static const char *input_youtube_prefixes[] = {
 	"https",
@@ -44,8 +45,14 @@ input_youtube_init(EventLoop &, const ConfigBlock &)
 static InputStreamPtr
 input_youtube_open(const char *uri, Mutex &mutex)
 {
-	// TODO fix command injection
-	char *cmd = xstrcatdup("youtube-dl --extract-audio --get-url --youtube-skip-dash-manifest ", uri);
+	/* lazy way to prevent command injection */
+	for(size_t i = 0; i < strlen(uri); i++) {
+		if(uri[i] == '\'') {
+			return nullptr;
+		}
+	}
+
+	char *cmd = xstrcatdup("youtube-dl --no-playlist --extract-audio --get-url --youtube-skip-dash-manifest '", uri, "'");
 	FILE *stream = popen(cmd, "r");
 	free(cmd);
 
