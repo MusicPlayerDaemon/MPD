@@ -74,7 +74,7 @@ IsWhitespaceFast(const char ch) noexcept
  * Is this a non-printable ASCII character?  Returns false for
  * non-ASCII characters.
  *
- * Note that this is not the opposide of IsNonPrintableASCII().
+ * Note that this is not the opposite of IsNonPrintableASCII().
  */
 constexpr bool
 IsPrintableASCII(char ch) noexcept
@@ -85,7 +85,7 @@ IsPrintableASCII(char ch) noexcept
 /**
  * Is this a non-printable character?  Returns false for non-ASCII characters.
  *
- * Note that this is not the opposide of IsPrintableASCII()
+ * Note that this is not the opposite of IsPrintableASCII()
  */
 constexpr bool
 IsNonPrintableASCII(char ch) noexcept
