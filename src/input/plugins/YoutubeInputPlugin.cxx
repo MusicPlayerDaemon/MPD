@@ -22,6 +22,10 @@
 #include "PluginUnavailable.hxx"
 #include "../InputPlugin.hxx"
 #include "../InputStream.hxx"
+#include "../ProxyInputStream.hxx"
+#include "Log.hxx"
+#include "tag/Builder.hxx"
+#include "tag/Tag.hxx"
 #include "util/ASCII.hxx"
 #include "util/Alloc.hxx"
 #include "util/ScopeExit.hxx"
@@ -29,6 +33,62 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <stdexcept>
+
+class YoutubeInputStream final : public ProxyInputStream {
+	std::string stream_name;
+
+public:
+	YoutubeInputStream(const char *_uri, Mutex &_mutex) :
+		ProxyInputStream(_uri, _mutex)
+	{
+		/* lazy way to prevent command injection */
+		if(strchr(_uri, '\'')) {
+			throw std::runtime_error("Invalid url");
+		}
+
+		char *cmd = xstrcatdup("youtube-dl --no-playlist --extract-audio --get-url --get-title --youtube-skip-dash-manifest '", _uri, "'");
+		FILE *stream = popen(cmd, "r");
+		free(cmd);
+
+		if(!stream) {
+			throw std::runtime_error("Can't start youtube-dl");
+		}
+
+		char *line = nullptr;
+		size_t line_size = 0;
+		ssize_t read = 0;
+		AtScopeExit(line) { free(line); };
+
+		/* 1st line is song name */
+		read = getline(&line, &line_size, stream);
+		if(read > 0 && line[read-1] == '\n') line[read-1] = '\0';
+		stream_name.assign(line);
+
+		/* 2nd line is stream url */
+		read = getline(&line, &line_size, stream);
+		if(read > 0 && line[read-1] == '\n') line[read-1] = '\0';
+
+		int status = WEXITSTATUS(pclose(stream));
+		if(status != 0) {
+			throw std::runtime_error("youtube-dl error");
+		}
+
+		SetInput(OpenCurlInputStream(line, {}, mutex));
+	}
+
+	std::unique_ptr<Tag> ReadTag() noexcept override {
+		TagBuilder builder;
+
+		auto input_tag = ProxyInputStream::ReadTag();
+		if(input_tag) {
+			builder = std::move(*input_tag.release());
+		}
+
+		builder.AddItem(TAG_NAME, stream_name.c_str());
+		return builder.CommitNew();
+	}
+};
 
 static const char *input_youtube_prefixes[] = {
 	"https",
@@ -45,33 +105,12 @@ input_youtube_init(EventLoop &, const ConfigBlock &)
 static InputStreamPtr
 input_youtube_open(const char *uri, Mutex &mutex)
 {
-	/* lazy way to prevent command injection */
-	for(size_t i = 0; i < strlen(uri); i++) {
-		if(uri[i] == '\'') {
-			return nullptr;
-		}
+	try {
+		return std::make_unique<YoutubeInputStream>(uri, mutex);
+	} catch(std::runtime_error &e) {
+		Log(LogLevel::ERROR, e);
+		return nullptr;
 	}
-
-	char *cmd = xstrcatdup("youtube-dl --no-playlist --extract-audio --get-url --youtube-skip-dash-manifest '", uri, "'");
-	FILE *stream = popen(cmd, "r");
-	free(cmd);
-
-	if(!stream) return nullptr;
-
-	char *video_url = nullptr;
-	size_t url_length = 0;
-	AtScopeExit(video_url) { free(video_url); };
-
-	ssize_t read = getline(&video_url, &url_length, stream);
-	int   status = WEXITSTATUS(pclose(stream));
-
-	if(status != 0 || read < 0) return nullptr;
-
-	/* Remove newline from the url */
-	if(video_url[url_length-2] == '\n')
-		video_url[url_length-2] = '\0';
-
-	return OpenCurlInputStream(video_url, {}, mutex);
 }
 
 const InputPlugin input_plugin_youtube = {
@@ -82,5 +121,3 @@ const InputPlugin input_plugin_youtube = {
 	input_youtube_open,
 	nullptr
 };
-
-// vim: set noexpandtab

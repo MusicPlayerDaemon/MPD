@@ -20,6 +20,8 @@
 #include "YoutubePlaylistPlugin.hxx"
 #include "../PlaylistPlugin.hxx"
 #include "../MemorySongEnumerator.hxx"
+#include "tag/Builder.hxx"
+#include "tag/Tag.hxx"
 #include "song/DetachedSong.hxx"
 #include "util/Alloc.hxx"
 #include "util/ScopeExit.hxx"
@@ -42,13 +44,11 @@ playlist_youtube_open(const char *uri, Mutex &mutex)
 {
 
 	/* lazy way to prevent command injection */
-	for(size_t i = 0; i < strlen(uri); i++) {
-		if(uri[i] == '\'') {
-			return nullptr;
-		}
+	if(strchr(uri, '\'')) {
+		return nullptr;
 	}
 
-	char *cmd = xstrcatdup("youtube-dl --flat-playlist --ignore-errors --get-id '", uri, "'");
+	char *cmd = xstrcatdup("youtube-dl --flat-playlist --ignore-errors --get-id --get-title '", uri, "'");
 	FILE *stream = popen(cmd, "r");
 	free(cmd);
 
@@ -57,23 +57,27 @@ playlist_youtube_open(const char *uri, Mutex &mutex)
 	std::forward_list<DetachedSong> songs;
 	std::string video_url;
 
-	char *video_id = nullptr;
-	size_t allocated_size = 0;
-	AtScopeExit(video_id) { free(video_id); };
+	char *line = nullptr;
+	size_t line_size = 0;
+	AtScopeExit(line) { free(line); };
 
 	while(true) {
-		ssize_t read = getline(&video_id, &allocated_size, stream);
+		/* Get song title */
+		ssize_t read = getline(&line, &line_size, stream);
+		if(read > 0 && line[read-1] == '\n') line[read-1] = '\0';
 
-		/* Construct url from id and remove newline */
-		video_url = "?v=";
-		video_url += video_id;
-		if(video_url[video_url.size()-1] == '\n') {
-			video_url.pop_back();
-		}
+		TagBuilder tag_builder;
+		tag_builder.AddItem(TAG_NAME, line);
 
-		songs.emplace_front(video_url.c_str());
-
+		/* Construct url from id */
+		read = getline(&line, &line_size, stream);
 		if(read < 0) break;
+		if(read > 0 && line[read-1] == '\n') line[read-1] = '\0';
+
+		video_url = "watch?v=";
+		video_url += line;
+
+		songs.emplace_front(video_url, tag_builder.Commit());
 	}
 
 	if(WEXITSTATUS(pclose(stream)) != 0) {
