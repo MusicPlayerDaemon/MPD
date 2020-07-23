@@ -36,9 +36,9 @@
 #include <cstddef>
 
 #ifdef _WIN32
-#include <winsock2.h>
+#include <winsock2.h> // IWYU pragma: export
 #else
-#include <sys/socket.h>
+#include <sys/socket.h> // IWYU pragma: export
 #endif
 
 template<typename T> struct ConstBuffer;

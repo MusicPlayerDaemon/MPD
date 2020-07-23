@@ -42,6 +42,7 @@
 #include <netinet/tcp.h>
 #endif
 
+#include <cassert>
 #include <cerrno>
 
 #include <string.h>

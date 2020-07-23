@@ -36,6 +36,8 @@
 #include "Iter.hxx"
 #include "Values.hxx"
 
+#include <stdexcept>
+
 namespace ODBus {
 
 class AppendMessageIter : public MessageIter {

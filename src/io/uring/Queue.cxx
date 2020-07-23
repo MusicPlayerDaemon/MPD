@@ -32,10 +32,7 @@
 
 #include "Queue.hxx"
 #include "CancellableOperation.hxx"
-#include "Operation.hxx"
 #include "util/DeleteDisposer.hxx"
-
-#include <cassert>
 
 namespace Uring {
 

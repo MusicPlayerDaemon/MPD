@@ -33,6 +33,8 @@
 #include "Operation.hxx"
 #include "CancellableOperation.hxx"
 
+#include <utility>
+
 namespace Uring {
 
 void

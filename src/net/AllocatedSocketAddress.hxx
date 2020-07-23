@@ -30,7 +30,7 @@
 #ifndef ALLOCATED_SOCKET_ADDRESS_HXX
 #define ALLOCATED_SOCKET_ADDRESS_HXX
 
-#include "SocketAddress.hxx"
+#include "SocketAddress.hxx" // IWYU pragma: export
 #include "Features.hxx"
 #include "util/Compiler.h"
 

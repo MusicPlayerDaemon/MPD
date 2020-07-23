@@ -29,6 +29,8 @@
 
 #include "StringCompare.hxx"
 
+#include <string.h>
+
 bool
 StringEndsWith(const char *haystack, const char *needle) noexcept
 {
