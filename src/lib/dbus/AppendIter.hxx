@@ -74,6 +74,10 @@ public:
 		return AppendBasic(DBUS_TYPE_UINT32, &value);
 	}
 
+	AppendMessageIter &Append(const uint64_t &value) {
+		return AppendBasic(DBUS_TYPE_UINT64, &value);
+	}
+
 	AppendMessageIter &AppendFixedArray(int element_type,
 					    const void *value,
 					    int n_elements) {
