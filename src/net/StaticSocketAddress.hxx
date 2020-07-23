@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2019 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2012-2020 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -30,11 +30,13 @@
 #ifndef STATIC_SOCKET_ADDRESS_HXX
 #define STATIC_SOCKET_ADDRESS_HXX
 
-#include "SocketAddress.hxx"
+#include "SocketAddress.hxx" // IWYU pragma: export
 #include "Features.hxx"
 #include "util/Compiler.h"
 
 #include <cassert>
+
+struct StringView;
 
 /**
  * An OO wrapper for struct sockaddr_storage.
