@@ -746,6 +746,25 @@ Valid quality values for libsoxr:
 * "medium"
 * "low"
 * "quick"
+* "custom"
+
+If the quality is set to custom also the following settings are available:
+
+   * - Name
+     - Description
+   * - **precision**
+     - The precision in bits. Valid values 16,20,24,28 and 32  bits.
+   * - **phase_response**
+     - Between the 0-100, Where 0=MINIMUM_PHASE and 50=LINEAR_PHASE.
+   * - **passband_end**
+     - The % of source bandwidth where to start filtering. Typical between the 90-99.7.
+   * - **stopband_begin**
+     - The % of the source bandwidth Where the anti aliasing filter start. Value 100+.
+   * - **attenuation**
+     - Reduction in dB's to prevent clipping from the resampling process.
+   * - **flags**
+     - Bitmask with additional option see soxr documentation for specific flags.
+
 
 .. _output_plugins:
 
