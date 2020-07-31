@@ -29,6 +29,7 @@ util = static_library(
   'ByteReverse.cxx',
   'format.c',
   'BitReverse.cxx',
+  'ExecOpen.cxx',
   include_directories: inc,
 )
 

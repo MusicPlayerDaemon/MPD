@@ -20,19 +20,25 @@
 #include "YoutubePlaylistPlugin.hxx"
 #include "../PlaylistPlugin.hxx"
 #include "../MemorySongEnumerator.hxx"
+#include "Log.hxx"
 #include "tag/Builder.hxx"
 #include "tag/Tag.hxx"
 #include "song/DetachedSong.hxx"
 #include "util/Alloc.hxx"
 #include "util/ScopeExit.hxx"
+#include "util/ExecOpen.hxx"
+#include "util/Domain.hxx"
 
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
+#include <yajl/yajl_tree.h>
+
+#include <stdlib.h>
+#include <string.h>
 
 #include <string>
 #include <forward_list>
 #include <utility>
+
+static Domain youtube_domain("youtube");
 
 static bool playlist_youtube_init(const ConfigBlock &block)
 {
@@ -43,45 +49,102 @@ static std::unique_ptr<SongEnumerator>
 playlist_youtube_open(const char *uri, Mutex &mutex)
 {
 
-	/* lazy way to prevent command injection */
-	if(strchr(uri, '\'')) {
+	const char *args[] = {
+		"youtube-dl",
+		"--yes-playlist",
+		"--ignore-errors",
+		"--dump-single-json",
+		uri,
+		nullptr
+	};
+
+	int pid;
+	FILE *stream = exec_open(&pid, "youtube-dl", args);
+	if(!stream) {
+		LogErrno(youtube_domain, "Can't spawn youtube-dl");
 		return nullptr;
 	}
 
-	char *cmd = xstrcatdup("youtube-dl --flat-playlist --ignore-errors --get-id --get-title '", uri, "'");
-	FILE *stream = popen(cmd, "r");
-	free(cmd);
+	/* Read youtube-dl output */
+	std::string json;
+	char buf[512];
+	ssize_t size = 0;
+	while(true) {
+		size = fread(buf, sizeof(char), 512, stream);
+		if(size > 0)
+			json.append(buf, size);
+		else
+			break;
+	}
 
-	if(!stream) return nullptr;
+	fclose(stream);
+	int status = exec_wait(pid);
+	if(status != 0) {
+		FormatError(youtube_domain, "youtube-dl returned %d", status);
+		return nullptr;
+	}
 
+	/* Parse json */
+	yajl_val root = yajl_tree_parse(json.c_str(), nullptr, 0);
+
+	if(!root) {
+		LogError(youtube_domain, "Failed to parse youtube-dl output");
+		return nullptr;
+	}
+
+	AtScopeExit(root) {
+		yajl_tree_free(root);
+	};
+
+	/* Get songs */
 	std::forward_list<DetachedSong> songs;
 	std::string video_url;
 
-	char *line = nullptr;
-	size_t line_size = 0;
-	AtScopeExit(line) { free(line); };
+	const char *entries_path[] = { "entries", nullptr };
+	auto *entries = YAJL_GET_ARRAY(yajl_tree_get(root, entries_path, yajl_t_array));
 
-	while(true) {
-		/* Get song title */
-		ssize_t read = getline(&line, &line_size, stream);
-		if(read > 0 && line[read-1] == '\n') line[read-1] = '\0';
-
-		TagBuilder tag_builder;
-		tag_builder.AddItem(TAG_NAME, line);
-
-		/* Construct url from id */
-		read = getline(&line, &line_size, stream);
-		if(read < 0) break;
-		if(read > 0 && line[read-1] == '\n') line[read-1] = '\0';
-
-		video_url = "watch?v=";
-		video_url += line;
-
-		songs.emplace_front(video_url, tag_builder.Commit());
+	if(!entries) {
+		LogError(youtube_domain, "Can't get entries");
+		return nullptr;
 	}
 
-	if(WEXITSTATUS(pclose(stream)) != 0) {
-		return nullptr;
+	for(size_t i = 0; i < entries->len; i++) {
+		yajl_val entry = entries->values[i];
+
+		TagBuilder tag_builder;
+
+		/* Get song title */
+		{
+			const char *path[] = { "title", nullptr };
+			char *name = YAJL_GET_STRING(yajl_tree_get(entry, path, yajl_t_string));
+
+			if(name) {
+				tag_builder.AddItem(TAG_NAME, name);
+			}
+		}
+
+		/* Get song duration */
+		{
+			const char *path[] = { "duration", nullptr };
+
+			yajl_val duration = yajl_tree_get(entry, path, yajl_t_number);
+
+			if(YAJL_IS_NUMBER(duration)) {
+				tag_builder.SetDuration(
+					SignedSongTime(std::chrono::seconds(YAJL_GET_INTEGER(duration)))
+				);
+			}
+		}
+
+		/* Get webpage url */
+		{
+			const char *path[] = { "webpage_url", nullptr };
+			char *url = YAJL_GET_STRING(yajl_tree_get(entry, path, yajl_t_string));
+
+			if(url) {
+				songs.emplace_front(url, tag_builder.Commit());
+			}
+		}
 	}
 
 	songs.reverse();

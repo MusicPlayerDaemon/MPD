@@ -22,73 +22,21 @@
 #include "PluginUnavailable.hxx"
 #include "../InputPlugin.hxx"
 #include "../InputStream.hxx"
-#include "../ProxyInputStream.hxx"
+#include "../TaggedInputStream.hxx"
+#include "Chrono.hxx"
 #include "Log.hxx"
 #include "tag/Builder.hxx"
-#include "tag/Tag.hxx"
-#include "util/ASCII.hxx"
-#include "util/Alloc.hxx"
 #include "util/ScopeExit.hxx"
+#include "util/ExecOpen.hxx"
+#include "util/Domain.hxx"
 
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
-#include <stdexcept>
+#include <yajl/yajl_tree.h>
 
-class YoutubeInputStream final : public ProxyInputStream {
-	std::string stream_name;
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-public:
-	YoutubeInputStream(const char *_uri, Mutex &_mutex) :
-		ProxyInputStream(_uri, _mutex)
-	{
-		/* lazy way to prevent command injection */
-		if(strchr(_uri, '\'')) {
-			throw std::runtime_error("Invalid url");
-		}
-
-		char *cmd = xstrcatdup("youtube-dl --no-playlist --extract-audio --get-url --get-title --youtube-skip-dash-manifest '", _uri, "'");
-		FILE *stream = popen(cmd, "r");
-		free(cmd);
-
-		if(!stream) {
-			throw std::runtime_error("Can't start youtube-dl");
-		}
-
-		char *line = nullptr;
-		size_t line_size = 0;
-		ssize_t read = 0;
-		AtScopeExit(line) { free(line); };
-
-		/* 1st line is song name */
-		read = getline(&line, &line_size, stream);
-		if(read > 0 && line[read-1] == '\n') line[read-1] = '\0';
-		stream_name.assign(line);
-
-		/* 2nd line is stream url */
-		read = getline(&line, &line_size, stream);
-		if(read > 0 && line[read-1] == '\n') line[read-1] = '\0';
-
-		int status = WEXITSTATUS(pclose(stream));
-		if(status != 0) {
-			throw std::runtime_error("youtube-dl error");
-		}
-
-		SetInput(OpenCurlInputStream(line, {}, mutex));
-	}
-
-	std::unique_ptr<Tag> ReadTag() noexcept override {
-		TagBuilder builder;
-
-		auto input_tag = ProxyInputStream::ReadTag();
-		if(input_tag) {
-			builder = std::move(*input_tag.release());
-		}
-
-		builder.AddItem(TAG_NAME, stream_name.c_str());
-		return builder.CommitNew();
-	}
-};
+static Domain youtube_domain("youtube");
 
 static const char *input_youtube_prefixes[] = {
 	"https",
@@ -105,12 +53,123 @@ input_youtube_init(EventLoop &, const ConfigBlock &)
 static InputStreamPtr
 input_youtube_open(const char *uri, Mutex &mutex)
 {
-	try {
-		return std::make_unique<YoutubeInputStream>(uri, mutex);
-	} catch(std::runtime_error &e) {
-		Log(LogLevel::ERROR, e);
+	const char *args[] = {
+		"youtube-dl",
+		"--no-playlist",
+		"--format=bestaudio",
+		"--dump-single-json",
+		uri,
+		nullptr
+	};
+
+	int pid;
+	FILE *stream = exec_open(&pid, "youtube-dl", args);
+	if(!stream) {
+		LogErrno(youtube_domain, "Can't spawn youtube-dl");
 		return nullptr;
 	}
+
+	/* Read youtube-dl output */
+	std::string json;
+	char buf[512];
+	ssize_t size = 0;
+	while(true) {
+		size = fread(buf, sizeof(char), 512, stream);
+		if(size > 0)
+			json.append(buf, size);
+		else
+			break;
+	}
+
+	fclose(stream);
+	int status = exec_wait(pid);
+	if(status != 0) {
+		FormatError(youtube_domain, "youtube-dl returned %d", status);
+		return nullptr;
+	}
+
+	/* Parse json */
+	yajl_val root = yajl_tree_parse(json.c_str(), nullptr, 0);
+
+	if(!root) {
+		LogError(youtube_domain, "Failed to parse youtube-dl output");
+		return nullptr;
+	}
+
+	AtScopeExit(root) {
+		yajl_tree_free(root);
+	};
+
+	TagBuilder tag_builder;
+
+	/* Get song name */
+	{
+		const char *path[] = { "title", nullptr };
+		char *name = YAJL_GET_STRING(yajl_tree_get(root, path, yajl_t_string));
+
+		if(name) {
+			tag_builder.AddItem(TAG_NAME, name);
+		}
+	}
+
+	/* Get duration */
+	{
+		const char *path[] = { "duration", nullptr };
+
+		yajl_val duration = yajl_tree_get(root, path, yajl_t_number);
+
+		if(YAJL_IS_NUMBER(duration)) {
+			tag_builder.SetDuration(
+				SignedSongTime(std::chrono::seconds(YAJL_GET_INTEGER(duration)))
+			);
+		}
+	}
+
+	/* Get url */
+	/* get format id first */
+	const char *format = nullptr;
+	{
+		const char *path[] = { "format_id", nullptr };
+		format = YAJL_GET_STRING(yajl_tree_get(root, path, yajl_t_string));
+
+		if(!format) {
+			LogError(youtube_domain, "Can't get format id");
+			return nullptr;
+		}
+	}
+
+	/* then get url using format id */
+	const char *song_url = nullptr;
+	{
+		const char
+			*formats_path[] = { "formats", nullptr },
+			*format_path[]  = { "format_id", nullptr },
+			*url_path[]     = { "url", nullptr };
+
+		auto *format_arr = YAJL_GET_ARRAY(yajl_tree_get(root, formats_path, yajl_t_array));
+		if(!format_arr) {
+			LogError(youtube_domain, "Can't get formats");
+			return nullptr;
+		}
+
+		for(size_t i = 0; i < format_arr->len; i++) {
+			char *val_format = YAJL_GET_STRING(yajl_tree_get(format_arr->values[i], format_path, yajl_t_string));
+			if(val_format && strcmp(val_format, format)) {
+				song_url = YAJL_GET_STRING(yajl_tree_get(format_arr->values[i], url_path, yajl_t_string));
+				break;
+			}
+		}
+
+		if(!song_url) {
+			LogError(youtube_domain, "Can't get url");
+			return nullptr;
+		}
+	}
+
+	return std::make_unique<TaggedInputStream>(
+		OpenCurlInputStream(song_url, {}, mutex),
+		std::unique_ptr<Tag>(tag_builder.CommitNew())
+	);
 }
 
 const InputPlugin input_plugin_youtube = {
