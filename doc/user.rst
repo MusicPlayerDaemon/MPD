@@ -219,6 +219,13 @@ another file; the given file name is relative to the current file:
 
   include "other.conf"
 
+You can use :code:`include_optional` instead if you want the included file
+to be optional; the directive will be ignored if the file does not exist:
+
+.. code-block:: none
+
+  include_optional "may_not_exist.conf"
+
 Configuring the music directory
 -------------------------------
 
