@@ -350,6 +350,8 @@ faad
 
 Decodes AAC files using libfaad.
 
+.. _decoder_ffmpeg:
+
 ffmpeg
 ------
 
@@ -430,8 +432,7 @@ hybrid_dsd
 is an MP4 container file (:file:`*.m4a`) which contains both ALAC and
 DSD data. It is disabled by default, and works only if you explicitly
 enable it. Without this plugin, the ALAC parts gets handled by the
-`FFmpeg decoder plugin
-<https://www.musicpd.org/doc/user/decoder_plugins.html#ffmpeg_decoder>`_. This
+:ref:`FFmpeg decoder plugin <decoder_ffmpeg>`. This
 plugin should be enabled only if you have a bit-perfect playback path
 to a DSD-capable DAC; for everybody else, playing back the ALAC copy
 of the file is better.
