@@ -1,6 +1,10 @@
 install_man(['mpd.1', 'mpd.conf.5'])
 
-sphinx = find_program('sphinx-build')
+sphinx = find_program('sphinx-build', required: get_option('documentation'))
+if not sphinx.found()
+  subdir_done()
+endif
+
 sphinx_output = custom_target(
   'HTML documentation',
   output: 'html',

@@ -543,9 +543,7 @@ install_data(
   install_dir: join_paths(get_option('datadir'), 'doc', meson.project_name()),
 )
 
-if get_option('documentation')
-  subdir('doc')
-endif
+subdir('doc')
 
 if get_option('test')
   subdir('test')

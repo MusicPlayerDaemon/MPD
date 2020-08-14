@@ -1,4 +1,4 @@
-option('documentation', type: 'boolean', value: false, description: 'Build documentation')
+option('documentation', type: 'feature', description: 'Build documentation')
 
 option('test', type: 'boolean', value: false, description: 'Build the unit tests and debug programs')
 
