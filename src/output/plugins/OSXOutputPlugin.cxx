@@ -477,7 +477,7 @@ osx_output_set_buffer_size(AudioUnit au, AudioStreamBasicDescription desc)
 }
 
 static void
-osx_output_hog_device(AudioDeviceID dev_id, bool hog)
+osx_output_hog_device(AudioDeviceID dev_id, bool hog) noexcept
 {
 	static constexpr AudioObjectPropertyAddress aopa = {
 		kAudioDevicePropertyHogMode,
@@ -485,8 +485,16 @@ osx_output_hog_device(AudioDeviceID dev_id, bool hog)
 		kAudioObjectPropertyElementMaster
 	};
 
-	pid_t hog_pid = AudioObjectGetPropertyDataT<pid_t>(dev_id,
-							   aopa);
+	pid_t hog_pid;
+
+	try {
+		hog_pid = AudioObjectGetPropertyDataT<pid_t>(dev_id, aopa);
+	} catch (...) {
+		Log(LogLevel::DEBUG, std::current_exception(),
+		    "Failed to query HogMode");
+		return;
+	}
+
 	if (hog) {
 		if (hog_pid != -1) {
 			FormatDebug(osx_output_domain,
