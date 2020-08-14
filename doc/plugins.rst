@@ -1250,3 +1250,19 @@ Download playlist from SoundCloud. It accepts URIs starting with soundcloud://.
 xspf
 ----
 Reads XSPF playlist files. 
+
+
+Archive plugins
+===============
+
+bz2
+---
+Allows to load single bzip2 compressed files using `libbz2 <https://www.sourceware.org/bzip2/>`_. Does not support seeking.
+
+zzip
+----
+Allows to load music files from ZIP archives using `zziplib <http://zziplib.sourceforge.net/>`_.
+
+iso
+---
+Allows to load music files from ISO 9660 images using `libcdio <https://www.gnu.org/software/libcdio/>`_.
