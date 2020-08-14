@@ -47,6 +47,6 @@ if get_option('manpages')
     build_by_default: true,
   )
 
-  install_data(join_paths(manpages.full_path(), 'mpd.1'), install_dir: join_paths(get_option('mandir'), 'man1'))
-  install_data(join_paths(manpages.full_path(), 'mpd.conf.5'), install_dir: join_paths(get_option('mandir'), 'man5'))
+  install_man(join_paths(manpages.full_path(), 'mpd.1'),
+              join_paths(manpages.full_path(), 'mpd.conf.5'))
 endif
