@@ -80,7 +80,7 @@ public:
 		});
 	}
 
-	~UringInputStream() override {
+	~UringInputStream() noexcept override {
 		BlockingCall(GetEventLoop(), [this](){
 			CancelUring();
 		});
