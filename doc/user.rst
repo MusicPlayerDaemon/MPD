@@ -1081,7 +1081,7 @@ Sometimes, it is helpful to run :program:`MPD` in a terminal and follow what hap
 
 .. code-block:: none
 
-    mpd --stdout --no-daemon --verbose
+    mpd --stderr --no-daemon --verbose
 
 Support
 -------
@@ -1161,7 +1161,7 @@ You can extract the backtrace from a core dump, or by running :program:`MPD` in 
 
 .. code-block:: none
 
-    gdb --args mpd --stdout --no-daemon --verbose
+    gdb --args mpd --stderr --no-daemon --verbose
     run
 
 As soon as you have reproduced the crash, type ":command:`bt`" on the
