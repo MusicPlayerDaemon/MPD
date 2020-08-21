@@ -29,7 +29,7 @@ OPTIONS
   Don't detach from console.
 
 --stderr
-  Print messages stderr.
+  Print messages to stderr.
 
 --verbose
   Verbose logging.
