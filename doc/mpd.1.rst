@@ -25,6 +25,9 @@ OPTIONS
 --kill
   Kill the currently running mpd session. The pid_file parameter must be specified in the config file for this to work.
 
+--no-config
+  Don't read from the configuration file.
+
 --no-daemon
   Don't detach from console.
 
