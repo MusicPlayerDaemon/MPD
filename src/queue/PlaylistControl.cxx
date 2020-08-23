@@ -276,8 +276,6 @@ playlist::SeekCurrent(PlayerControl &pc,
 			throw PlaylistError::NotPlaying();
 
 		seek_time += status.elapsed_time;
-		if (seek_time.IsNegative())
-			seek_time = SignedSongTime::zero();
 	}
 
 	if (seek_time.IsNegative())
