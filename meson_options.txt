@@ -62,7 +62,10 @@ option('dsd', type: 'boolean', value: true, description: 'Support the DSD audio 
 #
 
 option('database', type: 'boolean', value: true, description: 'enable support for the music database')
-option('upnp', type: 'feature', description: 'UPnP client support')
+option('upnp', type: 'combo',
+       choices: ['auto', 'pupnp', 'npupnp', 'disabled'],
+       value: 'auto',
+       description: 'UPnP client support')
 option('libmpdclient', type: 'feature', description: 'libmpdclient support (for the proxy database plugin)')
 
 #

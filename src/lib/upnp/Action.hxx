@@ -38,6 +38,7 @@ CountNameValuePairs([[maybe_unused]] const char *name, [[maybe_unused]] const ch
 	return 1 + CountNameValuePairs(args...);
 }
 
+#ifdef USING_PUPNP
 /**
  * A wrapper for UpnpMakeAction() that counts the number of name/value
  * pairs and adds the nullptr sentinel.
@@ -52,5 +53,6 @@ MakeActionHelper(const char *action_name, const char *service_type,
 			      args...,
 			      nullptr, nullptr);
 }
+#endif
 
 #endif
