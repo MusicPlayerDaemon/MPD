@@ -436,11 +436,11 @@ static constexpr unsigned IN_MAGIC = (('I' << 8) | 'n');
 static constexpr unsigned FO_MAGIC = (('f' << 8) | 'o');
 
 struct xing {
-	long flags;             /* valid fields (see below) */
-	unsigned long frames;   /* total number of frames */
-	unsigned long bytes;    /* total number of bytes */
-	unsigned char toc[100]; /* 100-point seek table */
-	long scale;             /* VBR quality */
+	long flags;                         /* valid fields (see below) */
+	unsigned long frames;               /* total number of frames */
+	unsigned long bytes;                /* total number of bytes */
+	std::array<unsigned char, 100> toc; /* 100-point seek table */
+	long scale;                         /* VBR quality */
 };
 
 static constexpr unsigned XING_FRAMES = 1;
@@ -517,8 +517,7 @@ parse_xing(struct xing *xing, struct mad_bitptr *ptr, int *oldbitlen) noexcept
 	if (xing->flags & XING_TOC) {
 		if (bitlen < 800)
 			return false;
-		for (unsigned char & i : xing->toc)
-			i = mad_bit_read(ptr, 8);
+		std::fill(xing->toc.begin(), xing->toc.end(), mad_bit_read(ptr, 8));
 		bitlen -= 800;
 	}
 
