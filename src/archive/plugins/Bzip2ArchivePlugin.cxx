@@ -136,13 +136,13 @@ Bzip2InputStream::FillBuffer()
 size_t
 Bzip2InputStream::Read(void *ptr, size_t length)
 {
+	if (eof)
+		return 0;
+
 	const ScopeUnlock unlock(mutex);
 
 	int bz_result;
 	size_t nbytes = 0;
-
-	if (eof)
-		return 0;
 
 	bzstream.next_out = (char *)ptr;
 	bzstream.avail_out = length;
