@@ -142,21 +142,19 @@ Iso9660ArchiveFile::Visit(ArchiveVisitor &visitor)
 class Iso9660InputStream final : public InputStream {
 	std::shared_ptr<Iso9660> iso;
 
-	iso9660_stat_t *statbuf;
+	const lsn_t lsn;
 
 public:
 	Iso9660InputStream(const std::shared_ptr<Iso9660> &_iso,
 			   const char *_uri,
 			   Mutex &_mutex,
-			   iso9660_stat_t *_statbuf)
+			   lsn_t _lsn, offset_type _size)
 		:InputStream(_uri, _mutex),
-		 iso(_iso), statbuf(_statbuf) {
-		size = statbuf->size;
+		 iso(_iso),
+		 lsn(_lsn)
+	{
+		size = _size;
 		SetReady();
-	}
-
-	~Iso9660InputStream() {
-		free(statbuf);
 	}
 
 	/* virtual methods from InputStream */
@@ -173,8 +171,12 @@ Iso9660ArchiveFile::OpenStream(const char *pathname,
 		throw FormatRuntimeError("not found in the ISO file: %s",
 					 pathname);
 
+	const lsn_t lsn = statbuf->lsn;
+	const offset_type size = statbuf->size;
+	free(statbuf);
+
 	return std::make_unique<Iso9660InputStream>(iso, pathname, mutex,
-						    statbuf);
+						    lsn, size);
 }
 
 size_t
@@ -184,7 +186,7 @@ Iso9660InputStream::Read(void *ptr, size_t read_size)
 
 	int readed = 0;
 	int no_blocks, cur_block;
-	size_t left_bytes = statbuf->size - offset;
+	size_t left_bytes = size - offset;
 
 	if (left_bytes < read_size) {
 		no_blocks = CEILING(left_bytes, ISO_BLOCKSIZE);
@@ -197,7 +199,7 @@ Iso9660InputStream::Read(void *ptr, size_t read_size)
 
 	cur_block = offset / ISO_BLOCKSIZE;
 
-	readed = iso->SeekRead(ptr, statbuf->lsn + cur_block, no_blocks);
+	readed = iso->SeekRead(ptr, lsn + cur_block, no_blocks);
 
 	if (readed != no_blocks * ISO_BLOCKSIZE)
 		throw FormatRuntimeError("error reading ISO file at lsn %lu",
