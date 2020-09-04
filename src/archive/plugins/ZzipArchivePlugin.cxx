@@ -32,6 +32,8 @@
 
 #include <zzip/zzip.h>
 
+#include <inttypes.h> /* for PRIoffset (PRIu64) */
+
 struct ZzipDir {
 	ZZIP_DIR *const dir;
 
@@ -150,6 +152,11 @@ ZzipInputStream::Read(void *ptr, size_t read_size)
 	zzip_ssize_t nbytes = zzip_file_read(file, ptr, read_size);
 	if (nbytes < 0)
 		throw std::runtime_error("zzip_file_read() has failed");
+
+	if (nbytes == 0 && !IsEOF())
+		throw FormatRuntimeError("Unexpected end of file %s"
+					 " at %" PRIoffset " of %" PRIoffset,
+					 GetURI(), GetOffset(), GetSize());
 
 	offset = zzip_tell(file);
 	return nbytes;

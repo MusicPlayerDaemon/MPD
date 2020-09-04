@@ -2,6 +2,8 @@ ver 0.21.26 (not yet released)
 * output
   - osx: fix crash bug
   - sles: support floating point samples
+* archive
+  - zzip: fix crash on corrupt ZIP file
 * decoder
   - sndfile: fix lost samples at end of file
 
