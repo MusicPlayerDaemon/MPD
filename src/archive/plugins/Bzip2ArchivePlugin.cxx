@@ -68,7 +68,7 @@ public:
 	Bzip2InputStream(const std::shared_ptr<InputStream> &_input,
 			 const char *uri,
 			 Mutex &mutex);
-	~Bzip2InputStream();
+	~Bzip2InputStream() noexcept override;
 
 	/* virtual methods from InputStream */
 	bool IsEOF() noexcept override;
@@ -119,7 +119,7 @@ Bzip2InputStream::Bzip2InputStream(const std::shared_ptr<InputStream> &_input,
 	Open();
 }
 
-Bzip2InputStream::~Bzip2InputStream()
+Bzip2InputStream::~Bzip2InputStream() noexcept
 {
 	BZ2_bzDecompressEnd(&bzstream);
 }
