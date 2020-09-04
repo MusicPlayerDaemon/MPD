@@ -47,9 +47,7 @@ struct SndfileInputStream {
 	size_t Read(void *buffer, size_t size) {
 		/* libsndfile chokes on partial reads; therefore
 		   always force full reads */
-		return decoder_read_full(client, is, buffer, size)
-			? size
-			: 0;
+		return decoder_read_much(client, is, buffer, size);
 	}
 };
 

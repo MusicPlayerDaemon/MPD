@@ -10,8 +10,8 @@ from build.ffmpeg import FfmpegProject
 from build.boost import BoostProject
 
 libmpdclient = MesonProject(
-    'https://www.musicpd.org/download/libmpdclient/2/libmpdclient-2.18.tar.xz',
-    '4cb01e1f567e0169aca94875fb6e1200e7f5ce35b63a4df768ec1591fb1081fa',
+    'https://www.musicpd.org/download/libmpdclient/2/libmpdclient-2.19.tar.xz',
+    '158aad4c2278ab08e76a3f2b0166c99b39fae00ee17231bd225c5a36e977a189',
     'lib/libmpdclient.a',
 )
 
@@ -25,8 +25,8 @@ libogg = AutotoolsProject(
 )
 
 libvorbis = AutotoolsProject(
-    'http://downloads.xiph.org/releases/vorbis/libvorbis-1.3.6.tar.xz',
-    'af00bb5a784e7c9e69f56823de4637c350643deedaf333d0fa86ecdba6fcb415',
+    'http://downloads.xiph.org/releases/vorbis/libvorbis-1.3.7.tar.xz',
+    'b33cc4934322bcbf6efcbacf49e3ca01aadbea4114ec9589d1b1e9d20f72954b',
     'lib/libvorbis.a',
     [
         '--disable-shared', '--enable-static',
@@ -148,8 +148,8 @@ gme = CmakeProject(
 )
 
 ffmpeg = FfmpegProject(
-    'http://ffmpeg.org/releases/ffmpeg-4.2.3.tar.xz',
-    '9df6c90aed1337634c1fb026fb01c154c29c82a64ea71291ff2da9aacb9aad31',
+    'http://ffmpeg.org/releases/ffmpeg-4.3.1.tar.xz',
+    'ad009240d46e307b4e03a213a0f49c11b650e445b1f8be0dda2a9212b34d2ffb',
     'lib/libavcodec.a',
     [
         '--disable-shared', '--enable-static',
@@ -377,8 +377,8 @@ ffmpeg = FfmpegProject(
 )
 
 curl = AutotoolsProject(
-    'http://curl.haxx.se/download/curl-7.70.0.tar.xz',
-    '032f43f2674008c761af19bf536374128c16241fb234699a55f9fb603fcfbae7',
+    'http://curl.haxx.se/download/curl-7.72.0.tar.xz',
+    '0ded0808c4d85f2ee0db86980ae610cc9d165e9ca9da466196cc73c346513713',
     'lib/libcurl.a',
     [
         '--disable-shared', '--enable-static',
@@ -433,7 +433,7 @@ libnfs = AutotoolsProject(
 )
 
 boost = BoostProject(
-    'https://dl.bintray.com/boostorg/release/1.73.0/source/boost_1_73_0.tar.bz2',
-    '4eb3b8d442b426dc35346235c8733b5ae35ba431690e38c6a8263dce9fcbb402',
+    'https://dl.bintray.com/boostorg/release/1.74.0/source/boost_1_74_0.tar.bz2',
+    '83bfc1507731a0906e387fc28b7ef5417d591429e51e788417fe9ff025e116b1',
     'include/boost/version.hpp',
 )
