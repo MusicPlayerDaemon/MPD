@@ -76,6 +76,18 @@ decoder_read(DecoderClient &decoder, InputStream &is,
 
 /**
  * Blocking read from the input stream.  Attempts to fill the buffer
+ * as much as possible, until either end-of-file is reached or an
+ * error occurs.
+ *
+ * @return the number of bytes read, or 0 if one of the following
+ * occurs: end of file; error; command (like SEEK or STOP).
+ */
+size_t
+decoder_read_much(DecoderClient *decoder, InputStream &is,
+		  void *buffer, size_t size) noexcept;
+
+/**
+ * Blocking read from the input stream.  Attempts to fill the buffer
  * completely; there is no partial result.
  *
  * @return true on success, false on error or command or not enough
