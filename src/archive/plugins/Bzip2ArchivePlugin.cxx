@@ -58,9 +58,9 @@ public:
 class Bzip2InputStream final : public InputStream {
 	std::shared_ptr<InputStream> input;
 
-	bool eof = false;
-
 	bz_stream bzstream;
+
+	bool eof = false;
 
 	char buffer[5000];
 
