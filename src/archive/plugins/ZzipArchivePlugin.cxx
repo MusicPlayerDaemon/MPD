@@ -147,12 +147,12 @@ ZzipInputStream::Read(void *ptr, size_t read_size)
 {
 	const ScopeUnlock unlock(mutex);
 
-	int ret = zzip_file_read(file, ptr, read_size);
-	if (ret < 0)
+	zzip_ssize_t nbytes = zzip_file_read(file, ptr, read_size);
+	if (nbytes < 0)
 		throw std::runtime_error("zzip_file_read() has failed");
 
 	offset = zzip_tell(file);
-	return ret;
+	return nbytes;
 }
 
 bool
