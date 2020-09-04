@@ -79,25 +79,6 @@ private:
 	bool FillBuffer();
 };
 
-/* single archive handling allocation helpers */
-
-inline void
-Bzip2InputStream::Open()
-{
-	bzstream.bzalloc = nullptr;
-	bzstream.bzfree = nullptr;
-	bzstream.opaque = nullptr;
-
-	bzstream.next_in = (char *)buffer;
-	bzstream.avail_in = 0;
-
-	int ret = BZ2_bzDecompressInit(&bzstream, 0, 0);
-	if (ret != BZ_OK)
-		throw std::runtime_error("BZ2_bzDecompressInit() has failed");
-
-	SetReady();
-}
-
 /* archive open && listing routine */
 
 static std::unique_ptr<ArchiveFile>
@@ -116,7 +97,18 @@ Bzip2InputStream::Bzip2InputStream(const std::shared_ptr<InputStream> &_input,
 	:InputStream(_uri, _mutex),
 	 input(_input)
 {
-	Open();
+	bzstream.bzalloc = nullptr;
+	bzstream.bzfree = nullptr;
+	bzstream.opaque = nullptr;
+
+	bzstream.next_in = (char *)buffer;
+	bzstream.avail_in = 0;
+
+	int ret = BZ2_bzDecompressInit(&bzstream, 0, 0);
+	if (ret != BZ_OK)
+		throw std::runtime_error("BZ2_bzDecompressInit() has failed");
+
+	SetReady();
 }
 
 Bzip2InputStream::~Bzip2InputStream() noexcept
