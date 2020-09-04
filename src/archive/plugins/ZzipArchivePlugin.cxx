@@ -54,8 +54,9 @@ class ZzipArchiveFile final : public ArchiveFile {
 	std::shared_ptr<ZzipDir> dir;
 
 public:
-	explicit ZzipArchiveFile(std::shared_ptr<ZzipDir> &&_dir) noexcept
-		:dir(std::move(_dir)) {}
+	template<typename D>
+	explicit ZzipArchiveFile(D &&_dir) noexcept
+		:dir(std::forward<D>(_dir)) {}
 
 	virtual void Visit(ArchiveVisitor &visitor) override;
 
@@ -91,11 +92,12 @@ class ZzipInputStream final : public InputStream {
 	ZZIP_FILE *const file;
 
 public:
-	ZzipInputStream(const std::shared_ptr<ZzipDir> _dir, const char *_uri,
+	template<typename D>
+	ZzipInputStream(D &&_dir, const char *_uri,
 			Mutex &_mutex,
 			ZZIP_FILE *_file)
 		:InputStream(_uri, _mutex),
-		 dir(_dir), file(_file) {
+		 dir(std::forward<D>(_dir)), file(_file) {
 		//we are seekable (but its not recommendent to do so)
 		seekable = true;
 
