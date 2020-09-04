@@ -26,7 +26,7 @@
 size_t
 decoder_read(DecoderClient *client,
 	     InputStream &is,
-	     void *buffer, size_t length)
+	     void *buffer, size_t length) noexcept
 {
 	assert(buffer != nullptr);
 
@@ -44,7 +44,7 @@ decoder_read(DecoderClient *client,
 
 bool
 decoder_read_full(DecoderClient *client, InputStream &is,
-		  void *_buffer, size_t size)
+		  void *_buffer, size_t size) noexcept
 {
 	uint8_t *buffer = (uint8_t *)_buffer;
 
@@ -61,7 +61,7 @@ decoder_read_full(DecoderClient *client, InputStream &is,
 }
 
 bool
-decoder_skip(DecoderClient *client, InputStream &is, size_t size)
+decoder_skip(DecoderClient *client, InputStream &is, size_t size) noexcept
 {
 	while (size > 0) {
 		char buffer[1024];
