@@ -58,7 +58,7 @@ public:
 	explicit ZzipArchiveFile(D &&_dir) noexcept
 		:dir(std::forward<D>(_dir)) {}
 
-	virtual void Visit(ArchiveVisitor &visitor) override;
+	void Visit(ArchiveVisitor &visitor) override;
 
 	InputStreamPtr OpenStream(const char *path,
 				  Mutex &mutex) override;
@@ -108,7 +108,7 @@ public:
 		SetReady();
 	}
 
-	~ZzipInputStream() {
+	~ZzipInputStream() noexcept override {
 		zzip_file_close(file);
 	}
 
