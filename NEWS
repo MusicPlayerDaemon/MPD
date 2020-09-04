@@ -2,6 +2,8 @@ ver 0.21.26 (not yet released)
 * output
   - osx: fix crash bug
   - sles: support floating point samples
+* decoder
+  - sndfile: fix lost samples at end of file
 
 ver 0.21.25 (2020/07/06)
 * protocol:
