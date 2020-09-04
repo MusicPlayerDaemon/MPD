@@ -58,7 +58,7 @@ public:
 class Bzip2InputStream final : public InputStream {
 	std::shared_ptr<InputStream> input;
 
-	bz_stream bzstream;
+	bz_stream bzstream{};
 
 	bool eof = false;
 
@@ -97,12 +97,7 @@ Bzip2InputStream::Bzip2InputStream(const std::shared_ptr<InputStream> &_input,
 	:InputStream(_uri, _mutex),
 	 input(_input)
 {
-	bzstream.bzalloc = nullptr;
-	bzstream.bzfree = nullptr;
-	bzstream.opaque = nullptr;
-
 	bzstream.next_in = (char *)buffer;
-	bzstream.avail_in = 0;
 
 	int ret = BZ2_bzDecompressInit(&bzstream, 0, 0);
 	if (ret != BZ_OK)
