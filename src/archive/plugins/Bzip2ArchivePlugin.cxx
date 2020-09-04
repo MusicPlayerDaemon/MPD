@@ -141,16 +141,13 @@ Bzip2InputStream::Read(void *ptr, size_t length)
 
 	const ScopeUnlock unlock(mutex);
 
-	int bz_result;
-	size_t nbytes = 0;
-
 	bzstream.next_out = (char *)ptr;
 	bzstream.avail_out = length;
 
 	do {
 		const bool had_input = FillBuffer();
 
-		bz_result = BZ2_bzDecompress(&bzstream);
+		const int bz_result = BZ2_bzDecompress(&bzstream);
 
 		if (bz_result == BZ_STREAM_END) {
 			eof = true;
@@ -164,7 +161,7 @@ Bzip2InputStream::Read(void *ptr, size_t length)
 			throw std::runtime_error("Unexpected end of bzip2 file");
 	} while (bzstream.avail_out == length);
 
-	nbytes = length - bzstream.avail_out;
+	const size_t nbytes = length - bzstream.avail_out;
 	offset += nbytes;
 
 	return nbytes;
