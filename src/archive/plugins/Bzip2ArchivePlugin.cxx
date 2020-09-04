@@ -148,8 +148,7 @@ Bzip2InputStream::Read(void *ptr, size_t length)
 	bzstream.avail_out = length;
 
 	do {
-		if (!FillBuffer())
-			return 0;
+		const bool had_input = FillBuffer();
 
 		bz_result = BZ2_bzDecompress(&bzstream);
 
@@ -160,6 +159,9 @@ Bzip2InputStream::Read(void *ptr, size_t length)
 
 		if (bz_result != BZ_OK)
 			throw std::runtime_error("BZ2_bzDecompress() has failed");
+
+		if (!had_input && bzstream.avail_out == length)
+			throw std::runtime_error("Unexpected end of bzip2 file");
 	} while (bzstream.avail_out == length);
 
 	nbytes = length - bzstream.avail_out;
