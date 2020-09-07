@@ -130,7 +130,7 @@ tag_save(FILE *file, const Tag &tag)
 }
 
 static int
-dump_input_stream(InputStream &is)
+dump_input_stream(InputStream &is, FileDescriptor out)
 {
 	const std::lock_guard<Mutex> protect(is.mutex);
 
@@ -155,9 +155,7 @@ dump_input_stream(InputStream &is)
 		if (num_read == 0)
 			break;
 
-		ssize_t num_written = write(1, buffer, num_read);
-		if (num_written <= 0)
-			break;
+		out.FullWrite(buffer, num_read);
 	}
 
 	is.Check();
@@ -234,7 +232,7 @@ try {
 
 	Mutex mutex;
 	auto is = InputStream::OpenReady(c.uri, mutex);
-	return dump_input_stream(*is);
+	return dump_input_stream(*is, FileDescriptor(STDOUT_FILENO));
 } catch (...) {
 	PrintException(std::current_exception());
 	return EXIT_FAILURE;
