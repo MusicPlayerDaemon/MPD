@@ -56,8 +56,9 @@ class BufferedOutputStream {
 	DynamicFifoBuffer<char> buffer;
 
 public:
-	explicit BufferedOutputStream(OutputStream &_os) noexcept
-		:os(_os), buffer(32768) {}
+	explicit BufferedOutputStream(OutputStream &_os,
+				      size_t buffer_size=32768) noexcept
+		:os(_os), buffer(buffer_size) {}
 
 	/**
 	 * Write the contents of a buffer.
