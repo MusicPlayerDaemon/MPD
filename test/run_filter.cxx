@@ -71,34 +71,6 @@ ReadOrThrow(FileDescriptor fd, void *buffer, size_t size)
 }
 
 static size_t
-WriteOrThrow(FileDescriptor fd, const void *buffer, size_t size)
-{
-	auto nbytes = fd.Write(buffer, size);
-	if (nbytes < 0)
-		throw MakeErrno("Write failed");
-
-	return nbytes;
-}
-
-static void
-FullWrite(FileDescriptor fd, ConstBuffer<uint8_t> src)
-{
-	while (!src.empty()) {
-		size_t nbytes = WriteOrThrow(fd, src.data, src.size);
-		if (nbytes == 0)
-			throw std::runtime_error("Write failed");
-
-		src.skip_front(nbytes);
-	}
-}
-
-static void
-FullWrite(FileDescriptor fd, ConstBuffer<void> src)
-{
-	FullWrite(fd, ConstBuffer<uint8_t>::FromVoid(src));
-}
-
-static size_t
 ReadFrames(FileDescriptor fd, void *_buffer, size_t size, size_t frame_size)
 {
 	auto buffer = (uint8_t *)_buffer;
@@ -166,14 +138,14 @@ try {
 			break;
 
 		auto dest = filter->FilterPCM({(const void *)buffer, (size_t)nbytes});
-		FullWrite(output_fd, dest);
+		output_fd.FullWrite(dest.data, dest.size);
 	}
 
 	while (true) {
 		auto dest = filter->Flush();
 		if (dest.IsNull())
 			break;
-		FullWrite(output_fd, dest);
+		output_fd.FullWrite(dest.data, dest.size);
 	}
 
 	/* cleanup and exit */
