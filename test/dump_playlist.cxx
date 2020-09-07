@@ -41,9 +41,9 @@ static void
 tag_save(FILE *file, const Tag &tag)
 {
 	StdioOutputStream sos(file);
-	BufferedOutputStream bos(sos);
-	tag_save(bos, tag);
-	bos.Flush();
+	WithBufferedOutputStream(sos, [&](auto &bos){
+		tag_save(bos, tag);
+	});
 }
 
 int main(int argc, char **argv)

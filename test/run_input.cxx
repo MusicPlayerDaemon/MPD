@@ -124,26 +124,26 @@ static void
 tag_save(FILE *file, const Tag &tag)
 {
 	StdioOutputStream sos(file);
-	BufferedOutputStream bos(sos);
-	tag_save(bos, tag);
-	bos.Flush();
+	WithBufferedOutputStream(sos, [&](auto &bos){
+		tag_save(bos, tag);
+	});
 }
 
 static int
-dump_input_stream(InputStream *is)
+dump_input_stream(InputStream &is, FileDescriptor out)
 {
-	std::unique_lock<Mutex> lock(is->mutex);
+	std::unique_lock<Mutex> lock(is.mutex);
 
 	/* print meta data */
 
-	if (is->HasMimeType())
-		fprintf(stderr, "MIME type: %s\n", is->GetMimeType());
+	if (is.HasMimeType())
+		fprintf(stderr, "MIME type: %s\n", is.GetMimeType());
 
 	/* read data and tags from the stream */
 
-	while (!is->IsEOF()) {
+	while (!is.IsEOF()) {
 		{
-			auto tag = is->ReadTag();
+			auto tag = is.ReadTag();
 			if (tag) {
 				fprintf(stderr, "Received a tag:\n");
 				tag_save(stderr, *tag);
@@ -151,16 +151,14 @@ dump_input_stream(InputStream *is)
 		}
 
 		char buffer[4096];
-		size_t num_read = is->Read(lock, buffer, sizeof(buffer));
+		size_t num_read = is.Read(lock, buffer, sizeof(buffer));
 		if (num_read == 0)
 			break;
 
-		ssize_t num_written = write(1, buffer, num_read);
-		if (num_written <= 0)
-			break;
+		out.FullWrite(buffer, num_read);
 	}
 
-	is->Check();
+	is.Check();
 
 	return 0;
 }
@@ -233,7 +231,7 @@ try {
 
 	Mutex mutex;
 	auto is = InputStream::OpenReady(c.uri, mutex);
-	return dump_input_stream(is.get());
+	return dump_input_stream(*is, FileDescriptor(STDOUT_FILENO));
 } catch (...) {
 	PrintException(std::current_exception());
 	return EXIT_FAILURE;
