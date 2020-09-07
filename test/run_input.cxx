@@ -49,10 +49,14 @@
 #include <unistd.h>
 #include <stdlib.h>
 
+static constexpr std::size_t MAX_CHUNK_SIZE = 16384;
+
 struct CommandLine {
 	const char *uri = nullptr;
 
 	FromNarrowPath config_path;
+
+	std::size_t chunk_size = MAX_CHUNK_SIZE;
 
 	bool verbose = false;
 
@@ -63,13 +67,26 @@ enum Option {
 	OPTION_CONFIG,
 	OPTION_VERBOSE,
 	OPTION_SCAN,
+	OPTION_CHUNK_SIZE,
 };
 
 static constexpr OptionDef option_defs[] = {
 	{"config", 0, true, "Load a MPD configuration file"},
 	{"verbose", 'v', false, "Verbose logging"},
 	{"scan", 0, false, "Scan tags instead of reading raw data"},
+	{"chunk-size", 0, true, "Read this number of bytes at a time"},
 };
+
+static std::size_t
+ParseSize(const char *s)
+{
+	char *endptr;
+	std::size_t value = std::strtoul(s, &endptr, 10);
+	if (endptr == s)
+		throw std::runtime_error("Failed to parse integer");
+
+	return value;
+}
 
 static CommandLine
 ParseCommandLine(int argc, char **argv)
@@ -89,6 +106,12 @@ ParseCommandLine(int argc, char **argv)
 
 		case OPTION_SCAN:
 			c.scan = true;
+			break;
+
+		case OPTION_CHUNK_SIZE:
+			c.chunk_size = ParseSize(o.value);
+			if (c.chunk_size <= 0 || c.chunk_size > MAX_CHUNK_SIZE)
+				throw std::runtime_error("Invalid chunk size");
 			break;
 		}
 	}
@@ -130,7 +153,7 @@ tag_save(FILE *file, const Tag &tag)
 }
 
 static int
-dump_input_stream(InputStream &is, FileDescriptor out)
+dump_input_stream(InputStream &is, FileDescriptor out, size_t chunk_size)
 {
 	std::unique_lock<Mutex> lock(is.mutex);
 
@@ -150,8 +173,9 @@ dump_input_stream(InputStream &is, FileDescriptor out)
 			}
 		}
 
-		char buffer[4096];
-		size_t num_read = is.Read(lock, buffer, sizeof(buffer));
+		char buffer[MAX_CHUNK_SIZE];
+		assert(chunk_size <= sizeof(buffer));
+		size_t num_read = is.Read(lock, buffer, chunk_size);
 		if (num_read == 0)
 			break;
 
@@ -231,7 +255,8 @@ try {
 
 	Mutex mutex;
 	auto is = InputStream::OpenReady(c.uri, mutex);
-	return dump_input_stream(*is, FileDescriptor(STDOUT_FILENO));
+	return dump_input_stream(*is, FileDescriptor(STDOUT_FILENO),
+				 c.chunk_size);
 } catch (...) {
 	PrintException(std::current_exception());
 	return EXIT_FAILURE;

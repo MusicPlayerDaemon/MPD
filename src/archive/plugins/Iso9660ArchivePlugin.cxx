@@ -29,8 +29,11 @@
 #include "fs/Path.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/StringCompare.hxx"
+#include "util/WritableBuffer.hxx"
 
 #include <cdio/iso9660.h>
+
+#include <array>
 
 #include <stdlib.h>
 #include <string.h>
@@ -150,6 +153,47 @@ class Iso9660InputStream final : public InputStream {
 
 	const lsn_t lsn;
 
+	/**
+	 * libiso9660 can only read whole sectors at a time, and this
+	 * buffer is used to store one whole sector and allow Read()
+	 * to handle partial sector reads.
+	 */
+	class BlockBuffer {
+		size_t position = 0, fill = 0;
+
+		std::array<uint8_t, ISO_BLOCKSIZE> data;
+
+	public:
+		ConstBuffer<uint8_t> Read() const noexcept {
+			assert(fill <= data.size());
+			assert(position <= fill);
+
+			return {&data[position], &data[fill]};
+		}
+
+		void Consume(size_t nbytes) noexcept {
+			assert(nbytes <= Read().size);
+
+			position += nbytes;
+		}
+
+		WritableBuffer<uint8_t> Write() noexcept {
+			assert(Read().empty());
+
+			return {data.data(), data.size()};
+		}
+
+		void Append(size_t nbytes) noexcept {
+			assert(Read().empty());
+			assert(nbytes <= data.size());
+
+			fill = nbytes;
+			position = 0;
+		}
+	};
+
+	BlockBuffer buffer;
+
 public:
 	Iso9660InputStream(std::shared_ptr<Iso9660> _iso,
 			   const char *_uri,
@@ -170,6 +214,9 @@ public:
 		    void *ptr, size_t size) override;
 
 	void Seek(std::unique_lock<Mutex> &, offset_type new_offset) override {
+		if (new_offset > size)
+			throw std::runtime_error("Invalid seek offset");
+
 		offset = new_offset;
 	}
 };
@@ -195,35 +242,56 @@ size_t
 Iso9660InputStream::Read(std::unique_lock<Mutex> &,
 			 void *ptr, size_t read_size)
 {
-	const ScopeUnlock unlock(mutex);
-
-	int readed = 0;
-	int no_blocks, cur_block;
-	size_t left_bytes = size - offset;
-
-	if (left_bytes < read_size) {
-		no_blocks = CEILING(left_bytes, ISO_BLOCKSIZE);
-	} else {
-		no_blocks = read_size / ISO_BLOCKSIZE;
-	}
-
-	if (no_blocks == 0)
+	const offset_type remaining = size - offset;
+	if (remaining == 0)
 		return 0;
 
-	cur_block = offset / ISO_BLOCKSIZE;
+	if (offset_type(read_size) > remaining)
+		read_size = remaining;
 
-	readed = iso->SeekRead(ptr, lsn + cur_block, no_blocks);
+	auto r = buffer.Read();
 
-	if (readed != no_blocks * ISO_BLOCKSIZE)
-		throw FormatRuntimeError("error reading ISO file at lsn %lu",
-					 (unsigned long)cur_block);
+	if (r.empty()) {
+		/* the buffer is empty - read more data from the ISO file */
 
-	if (left_bytes < read_size) {
-		readed = left_bytes;
+		assert(offset % ISO_BLOCKSIZE == 0);
+
+		const ScopeUnlock unlock(mutex);
+
+		const lsn_t read_lsn = lsn + offset / ISO_BLOCKSIZE;
+
+		if (read_size >= ISO_BLOCKSIZE) {
+			/* big read - read right into the caller's buffer */
+
+			auto nbytes = iso->SeekRead(ptr, read_lsn,
+						    read_size / ISO_BLOCKSIZE);
+			if (nbytes <= 0)
+				throw std::runtime_error("Failed to read ISO9660 file");
+
+			offset += nbytes;
+			return nbytes;
+		}
+
+		/* fill the buffer */
+
+		auto w = buffer.Write();
+		auto nbytes = iso->SeekRead(w.data, read_lsn,
+					    w.size / ISO_BLOCKSIZE);
+		if (nbytes <= 0)
+			throw std::runtime_error("Failed to read ISO9660 file");
+
+		buffer.Append(nbytes);
+
+		r = buffer.Read();
 	}
 
-	offset += readed;
-	return readed;
+	assert(!r.empty());
+
+	size_t nbytes = std::min(read_size, r.size);
+	memcpy(ptr, r.data, nbytes);
+	buffer.Consume(nbytes);
+	offset += nbytes;
+	return nbytes;
 }
 
 bool

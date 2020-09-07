@@ -13,8 +13,6 @@ ver 0.22 (not yet released)
   - ffmpeg: allow partial reads
   - io_uring: new plugin for local files on Linux (using liburing)
   - smbclient: close unused SMB/CIFS connections
-* archive
-  - iso9660: support seeking
 * database
   - upnp: drop support for libupnp versions older than 1.8
 * playlist
@@ -48,6 +46,8 @@ ver 0.21.26 (not yet released)
 * archive
   - bzip2: fix crash on corrupt bzip2 file
   - bzip2: flush output at end of input file
+  - iso9660: fix unaligned reads
+  - iso9660: support seeking
   - zzip: fix crash on corrupt ZIP file
 * decoder
   - sndfile: fix lost samples at end of file
