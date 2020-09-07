@@ -130,20 +130,20 @@ tag_save(FILE *file, const Tag &tag)
 }
 
 static int
-dump_input_stream(InputStream *is)
+dump_input_stream(InputStream &is)
 {
-	const std::lock_guard<Mutex> protect(is->mutex);
+	const std::lock_guard<Mutex> protect(is.mutex);
 
 	/* print meta data */
 
-	if (is->HasMimeType())
-		fprintf(stderr, "MIME type: %s\n", is->GetMimeType());
+	if (is.HasMimeType())
+		fprintf(stderr, "MIME type: %s\n", is.GetMimeType());
 
 	/* read data and tags from the stream */
 
-	while (!is->IsEOF()) {
+	while (!is.IsEOF()) {
 		{
-			auto tag = is->ReadTag();
+			auto tag = is.ReadTag();
 			if (tag) {
 				fprintf(stderr, "Received a tag:\n");
 				tag_save(stderr, *tag);
@@ -151,7 +151,7 @@ dump_input_stream(InputStream *is)
 		}
 
 		char buffer[4096];
-		size_t num_read = is->Read(buffer, sizeof(buffer));
+		size_t num_read = is.Read(buffer, sizeof(buffer));
 		if (num_read == 0)
 			break;
 
@@ -160,7 +160,7 @@ dump_input_stream(InputStream *is)
 			break;
 	}
 
-	is->Check();
+	is.Check();
 
 	return 0;
 }
@@ -234,7 +234,7 @@ try {
 
 	Mutex mutex;
 	auto is = InputStream::OpenReady(c.uri, mutex);
-	return dump_input_stream(is.get());
+	return dump_input_stream(*is);
 } catch (...) {
 	PrintException(std::current_exception());
 	return EXIT_FAILURE;
