@@ -36,6 +36,9 @@ namespace Uring {
 
 class CancellableOperation;
 
+/**
+ * An asynchronous I/O operation to be queued in a #Queue instance.
+ */
 class Operation {
 	friend class CancellableOperation;
 
@@ -46,12 +49,26 @@ public:
 		CancelUring();
 	}
 
+	/**
+	 * Are we waiting for the operation to complete?
+	 */
 	bool IsUringPending() const noexcept {
 		return cancellable != nullptr;
 	}
 
+	/**
+	 * Cancel the operation.  OnUringCompletion() will not be
+	 * invoked.  This is a no-op if none is pending.
+	 */
 	void CancelUring() noexcept;
 
+	/**
+	 * This method is called when the operation completes.
+	 *
+	 * @param res the result code; the meaning is specific to the
+	 * operation, but negative values usually mean an error has
+	 * occurred
+	 */
 	virtual void OnUringCompletion(int res) noexcept = 0;
 };
 
