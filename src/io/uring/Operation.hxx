@@ -63,6 +63,12 @@ public:
 	void CancelUring() noexcept;
 
 	/**
+	 * Replace this pending operation with a new one.  This method
+	 * is only legal if IsUringPending().
+	 */
+	void ReplaceUring(Operation &new_operation) noexcept;
+
+	/**
 	 * This method is called when the operation completes.
 	 *
 	 * @param res the result code; the meaning is specific to the

@@ -67,6 +67,16 @@ public:
 		// TODO: io_uring_prep_cancel()
 	}
 
+	void Replace(Operation &old_operation,
+		     Operation &new_operation) noexcept {
+		assert(operation == &old_operation);
+		assert(old_operation.cancellable == this);
+
+		old_operation.cancellable = nullptr;
+		operation = &new_operation;
+		new_operation.cancellable = this;
+	}
+
 	void OnUringCompletion(int res) noexcept {
 		if (operation == nullptr)
 			return;
