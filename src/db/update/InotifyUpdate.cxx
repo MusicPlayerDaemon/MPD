@@ -23,8 +23,10 @@
 #include "InotifyDomain.hxx"
 #include "storage/StorageInterface.hxx"
 #include "fs/AllocatedPath.hxx"
+#include "fs/DirectoryReader.hxx"
 #include "fs/FileInfo.hxx"
 #include "fs/Traits.hxx"
+#include "util/Compiler.h"
 #include "Log.hxx"
 
 #include <cassert>
@@ -145,19 +147,18 @@ WatchDirectory::GetUriFS() const noexcept
 }
 
 /* we don't look at "." / ".." nor files with newlines in their name */
-static bool skip_path(const char *path)
+gcc_pure
+static bool
+SkipFilename(Path name) noexcept
 {
-	return PathTraitsFS::IsSpecialFilename(path) ||
-		std::strchr(path, '\n') != nullptr;
+	return PathTraitsFS::IsSpecialFilename(name.c_str()) ||
+		name.HasNewline();
 }
 
 static void
 recursive_watch_subdirectories(WatchDirectory &parent,
 			       const AllocatedPath &path_fs, unsigned depth)
-{
-	DIR *dir;
-	struct dirent *ent;
-
+try {
 	assert(depth <= inotify_max_depth);
 	assert(!path_fs.IsNull());
 
@@ -166,20 +167,14 @@ recursive_watch_subdirectories(WatchDirectory &parent,
 	if (depth > inotify_max_depth)
 		return;
 
-	dir = opendir(path_fs.c_str());
-	if (dir == nullptr) {
-		FormatErrno(inotify_domain,
-			    "Failed to open directory %s", path_fs.c_str());
-		return;
-	}
-
-	while ((ent = readdir(dir))) {
+	DirectoryReader dir(path_fs);
+	while (dir.ReadEntry()) {
 		int ret;
 
-		if (skip_path(ent->d_name))
+		const Path name_fs = dir.GetEntry();
+		if (SkipFilename(name_fs))
 			continue;
 
-		const auto name_fs = Path::FromFS(ent->d_name);
 		const auto child_path_fs = path_fs / name_fs;
 
 		FileInfo fi;
@@ -217,8 +212,8 @@ recursive_watch_subdirectories(WatchDirectory &parent,
 
 		recursive_watch_subdirectories(*child, child_path_fs, depth);
 	}
-
-	closedir(dir);
+} catch (...) {
+	LogError(std::current_exception());
 }
 
 gcc_pure
