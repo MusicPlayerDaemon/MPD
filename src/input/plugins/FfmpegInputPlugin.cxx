@@ -140,7 +140,6 @@ FfmpegInputStream::Seek(offset_type new_offset)
 static constexpr const char *ffmpeg_prefixes[] = {
 	"gopher://",
 	"rtp://",
-	"rtsp://",
 	"rtmp://",
 	"rtmpt://",
 	"rtmps://",
