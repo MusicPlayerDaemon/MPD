@@ -27,13 +27,13 @@
 #include "fs/Traits.hxx"
 #include "Log.hxx"
 
-#include <string>
-#include <map>
+#include <cassert>
+#include <cstring>
 #include <forward_list>
+#include <map>
+#include <string>
 
-#include <assert.h>
 #include <sys/inotify.h>
-#include <string.h>
 #include <dirent.h>
 
 static constexpr unsigned IN_MASK =
@@ -148,7 +148,7 @@ WatchDirectory::GetUriFS() const noexcept
 static bool skip_path(const char *path)
 {
 	return PathTraitsFS::IsSpecialFilename(path) ||
-		strchr(path, '\n') != nullptr;
+		std::strchr(path, '\n') != nullptr;
 }
 
 static void

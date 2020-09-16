@@ -20,8 +20,6 @@
 #ifndef MPD_INOTIFY_UPDATE_HXX
 #define MPD_INOTIFY_UPDATE_HXX
 
-#include "util/Compiler.h"
-
 class EventLoop;
 class Storage;
 class UpdateService;

@@ -24,11 +24,11 @@
 #include "system/Error.hxx"
 #include "Log.hxx"
 
+#include <cerrno>
+#include <climits>
+#include <cstdint>
+
 #include <sys/inotify.h>
-#include <unistd.h>
-#include <errno.h>
-#include <stdint.h>
-#include <limits.h>
 
 bool
 InotifySource::OnSocketReady(gcc_unused unsigned flags) noexcept
