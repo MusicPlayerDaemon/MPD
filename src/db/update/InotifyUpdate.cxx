@@ -21,11 +21,15 @@
 #include "InotifySource.hxx"
 #include "InotifyQueue.hxx"
 #include "InotifyDomain.hxx"
+#include "ExcludeList.hxx"
 #include "storage/StorageInterface.hxx"
+#include "input/InputStream.hxx"
+#include "input/Error.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "fs/DirectoryReader.hxx"
 #include "fs/FileInfo.hxx"
 #include "fs/Traits.hxx"
+#include "thread/Mutex.hxx"
 #include "util/Compiler.h"
 #include "Log.hxx"
 
@@ -52,6 +56,8 @@ struct WatchDirectory {
 
 	int descriptor;
 
+	ExcludeList exclude_list;
+
 	std::forward_list<WatchDirectory> children;
 
 	template<typename N>
@@ -64,10 +70,13 @@ struct WatchDirectory {
 	WatchDirectory(WatchDirectory &_parent, N &&_name,
 		       int _descriptor)
 		:parent(&_parent), name(std::forward<N>(_name)),
-		 descriptor(_descriptor) {}
+		 descriptor(_descriptor),
+		 exclude_list(_parent.exclude_list) {}
 
 	WatchDirectory(const WatchDirectory &) = delete;
 	WatchDirectory &operator=(const WatchDirectory &) = delete;
+
+	void LoadExcludeList(Path directory_path) noexcept;
 
 	gcc_pure
 	unsigned GetDepth() const noexcept;
@@ -75,6 +84,18 @@ struct WatchDirectory {
 	gcc_pure
 	AllocatedPath GetUriFS() const noexcept;
 };
+
+void
+WatchDirectory::LoadExcludeList(Path directory_path) noexcept
+try {
+	Mutex mutex;
+	auto is = InputStream::OpenReady((directory_path / Path::FromFS(".mpdignore")).c_str(),
+					 mutex);
+	exclude_list.Load(std::move(is));
+} catch (...) {
+	if (!IsFileNotFound(std::current_exception()))
+		LogError(std::current_exception());
+}
 
 static InotifySource *inotify_source;
 static InotifyQueue *inotify_queue;
@@ -163,7 +184,8 @@ SkipFilename(Path name) noexcept
 
 static void
 recursive_watch_subdirectories(WatchDirectory &parent,
-			       const AllocatedPath &path_fs, unsigned depth)
+			       const AllocatedPath &path_fs,
+			       unsigned depth)
 try {
 	assert(depth <= inotify_max_depth);
 	assert(!path_fs.IsNull());
@@ -179,6 +201,9 @@ try {
 
 		const Path name_fs = dir.GetEntry();
 		if (SkipFilename(name_fs))
+			continue;
+
+		if (parent.exclude_list.Check(name_fs))
 			continue;
 
 		const auto child_path_fs = path_fs / name_fs;
@@ -213,6 +238,7 @@ try {
 					      name_fs,
 					      ret);
 		child = &parent.children.front();
+		child->LoadExcludeList(child_path_fs);
 
 		tree_add_watch_directory(child);
 
@@ -317,6 +343,7 @@ mpd_inotify_init(EventLoop &loop, Storage &storage, UpdateService &update,
 	}
 
 	inotify_root = new WatchDirectory(path, descriptor);
+	inotify_root->LoadExcludeList(path);
 
 	tree_add_watch_directory(inotify_root);
 
