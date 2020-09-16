@@ -1169,6 +1169,11 @@ try {
 			{
 				const ScopeUnlock unlock(mutex);
 				do_play(*this, dc, buffer);
+
+				/* give the main thread a chance to
+				   queue another song, just in case
+				   we've stopped playback
+				   spuriously */
 				listener.OnPlayerSync();
 			}
 
