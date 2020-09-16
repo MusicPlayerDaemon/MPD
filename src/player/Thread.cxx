@@ -681,6 +681,12 @@ Player::SeekDecoder() noexcept
 	/* re-fill the buffer after seeking */
 	buffering = true;
 
+	{
+		/* call syncPlaylistWithQueue() in the main thread */
+		const ScopeUnlock unlock(pc.mutex);
+		pc.listener.OnPlayerSync();
+	}
+
 	return true;
 }
 
