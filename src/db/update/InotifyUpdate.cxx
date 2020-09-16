@@ -240,8 +240,6 @@ mpd_inotify_callback(int wd, unsigned mask,
 {
 	WatchDirectory *directory;
 
-	/*FormatDebug(inotify_domain, "wd=%d mask=0x%x name='%s'", wd, mask, name);*/
-
 	directory = tree_find_watch_directory(wd);
 	if (directory == nullptr)
 		return;
