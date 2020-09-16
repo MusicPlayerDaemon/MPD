@@ -152,13 +152,12 @@ static bool skip_path(const char *path)
 }
 
 static void
-recursive_watch_subdirectories(WatchDirectory *directory,
+recursive_watch_subdirectories(WatchDirectory &parent,
 			       const AllocatedPath &path_fs, unsigned depth)
 {
 	DIR *dir;
 	struct dirent *ent;
 
-	assert(directory != nullptr);
 	assert(depth <= inotify_max_depth);
 	assert(!path_fs.IsNull());
 
@@ -209,14 +208,14 @@ recursive_watch_subdirectories(WatchDirectory *directory,
 			/* already being watched */
 			continue;
 
-		directory->children.emplace_front(directory,
-						  name_fs,
-						  ret);
-		child = &directory->children.front();
+		parent.children.emplace_front(&parent,
+					      name_fs,
+					      ret);
+		child = &parent.children.front();
 
 		tree_add_watch_directory(child);
 
-		recursive_watch_subdirectories(child, child_path_fs, depth);
+		recursive_watch_subdirectories(*child, child_path_fs, depth);
 	}
 
 	closedir(dir);
@@ -261,7 +260,7 @@ mpd_inotify_callback(int wd, unsigned mask,
 			? root
 			: (root / uri_fs);
 
-		recursive_watch_subdirectories(directory, path_fs,
+		recursive_watch_subdirectories(*directory, path_fs,
 					       directory->GetDepth());
 	}
 
@@ -320,7 +319,7 @@ mpd_inotify_init(EventLoop &loop, Storage &storage, UpdateService &update,
 
 	tree_add_watch_directory(inotify_root);
 
-	recursive_watch_subdirectories(inotify_root, path, 0);
+	recursive_watch_subdirectories(*inotify_root, path, 0);
 
 	inotify_queue = new InotifyQueue(loop, update);
 
