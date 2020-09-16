@@ -61,7 +61,7 @@ ToAndroidLogLevel(LogLevel log_level) noexcept
 
 #else
 
-static LogLevel log_threshold = LogLevel::INFO;
+static LogLevel log_threshold = LogLevel::DEFAULT;
 
 static bool enable_timestamp;
 
