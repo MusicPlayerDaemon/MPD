@@ -10,6 +10,7 @@ ver 0.21.26 (not yet released)
   - zzip: fix crash on corrupt ZIP file
 * decoder
   - ffmpeg: remove "rtsp://" from the list of supported protocols
+  - ffmpeg: add "hls+http://" to the list of supported protocols
   - sndfile: fix lost samples at end of file
 
 ver 0.21.25 (2020/07/06)
