@@ -55,9 +55,15 @@ struct WatchDirectory {
 	std::forward_list<WatchDirectory> children;
 
 	template<typename N>
-	WatchDirectory(WatchDirectory *_parent, N &&_name,
+	WatchDirectory(N &&_name,
 		       int _descriptor)
-		:parent(_parent), name(std::forward<N>(_name)),
+		:parent(nullptr), name(std::forward<N>(_name)),
+		 descriptor(_descriptor) {}
+
+	template<typename N>
+	WatchDirectory(WatchDirectory &_parent, N &&_name,
+		       int _descriptor)
+		:parent(&_parent), name(std::forward<N>(_name)),
 		 descriptor(_descriptor) {}
 
 	WatchDirectory(const WatchDirectory &) = delete;
@@ -203,7 +209,7 @@ try {
 			/* already being watched */
 			continue;
 
-		parent.children.emplace_front(&parent,
+		parent.children.emplace_front(parent,
 					      name_fs,
 					      ret);
 		child = &parent.children.front();
@@ -310,7 +316,7 @@ mpd_inotify_init(EventLoop &loop, Storage &storage, UpdateService &update,
 		return;
 	}
 
-	inotify_root = new WatchDirectory(nullptr, path, descriptor);
+	inotify_root = new WatchDirectory(path, descriptor);
 
 	tree_add_watch_directory(inotify_root);
 
