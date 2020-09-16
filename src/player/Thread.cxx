@@ -440,7 +440,7 @@ Player::ActivateDecoder() noexcept
 	pc.audio_format.Clear();
 
 	{
-		/* call syncPlaylistWithQueue() in the main thread */
+		/* call playlist::SyncWithPlayer() in the main thread */
 		const ScopeUnlock unlock(pc.mutex);
 		pc.listener.OnPlayerSync();
 	}
