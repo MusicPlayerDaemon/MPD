@@ -21,19 +21,25 @@
 #include "InotifySource.hxx"
 #include "InotifyQueue.hxx"
 #include "InotifyDomain.hxx"
+#include "ExcludeList.hxx"
 #include "storage/StorageInterface.hxx"
+#include "input/InputStream.hxx"
+#include "input/Error.hxx"
 #include "fs/AllocatedPath.hxx"
+#include "fs/DirectoryReader.hxx"
 #include "fs/FileInfo.hxx"
 #include "fs/Traits.hxx"
+#include "thread/Mutex.hxx"
+#include "util/Compiler.h"
 #include "Log.hxx"
 
 #include <cassert>
+#include <cstring>
 #include <forward_list>
 #include <map>
 #include <string>
 
 #include <sys/inotify.h>
-#include <string.h>
 #include <dirent.h>
 
 static constexpr unsigned IN_MASK =
@@ -50,16 +56,27 @@ struct WatchDirectory {
 
 	int descriptor;
 
+	ExcludeList exclude_list;
+
 	std::forward_list<WatchDirectory> children;
 
 	template<typename N>
-	WatchDirectory(WatchDirectory *_parent, N &&_name,
+	WatchDirectory(N &&_name,
 		       int _descriptor)
-		:parent(_parent), name(std::forward<N>(_name)),
+		:parent(nullptr), name(std::forward<N>(_name)),
 		 descriptor(_descriptor) {}
+
+	template<typename N>
+	WatchDirectory(WatchDirectory &_parent, N &&_name,
+		       int _descriptor)
+		:parent(&_parent), name(std::forward<N>(_name)),
+		 descriptor(_descriptor),
+		 exclude_list(_parent.exclude_list) {}
 
 	WatchDirectory(const WatchDirectory &) = delete;
 	WatchDirectory &operator=(const WatchDirectory &) = delete;
+
+	void LoadExcludeList(Path directory_path) noexcept;
 
 	[[nodiscard]] gcc_pure
 	unsigned GetDepth() const noexcept;
@@ -67,6 +84,18 @@ struct WatchDirectory {
 	[[nodiscard]] gcc_pure
 	AllocatedPath GetUriFS() const noexcept;
 };
+
+void
+WatchDirectory::LoadExcludeList(Path directory_path) noexcept
+try {
+	Mutex mutex;
+	auto is = InputStream::OpenReady((directory_path / Path::FromFS(".mpdignore")).c_str(),
+					 mutex);
+	exclude_list.Load(std::move(is));
+} catch (...) {
+	if (!IsFileNotFound(std::current_exception()))
+		LogError(std::current_exception());
+}
 
 static InotifySource *inotify_source;
 static InotifyQueue *inotify_queue;
@@ -145,20 +174,19 @@ WatchDirectory::GetUriFS() const noexcept
 }
 
 /* we don't look at "." / ".." nor files with newlines in their name */
-static bool skip_path(const char *path)
+gcc_pure
+static bool
+SkipFilename(Path name) noexcept
 {
-	return PathTraitsFS::IsSpecialFilename(path) ||
-		std::strchr(path, '\n') != nullptr;
+	return PathTraitsFS::IsSpecialFilename(name.c_str()) ||
+		name.HasNewline();
 }
 
 static void
-recursive_watch_subdirectories(WatchDirectory *directory,
-			       const AllocatedPath &path_fs, unsigned depth)
-{
-	DIR *dir;
-	struct dirent *ent;
-
-	assert(directory != nullptr);
+recursive_watch_subdirectories(WatchDirectory &parent,
+			       const Path path_fs,
+			       unsigned depth)
+try {
 	assert(depth <= inotify_max_depth);
 	assert(!path_fs.IsNull());
 
@@ -167,20 +195,17 @@ recursive_watch_subdirectories(WatchDirectory *directory,
 	if (depth > inotify_max_depth)
 		return;
 
-	dir = opendir(path_fs.c_str());
-	if (dir == nullptr) {
-		FormatErrno(inotify_domain,
-			    "Failed to open directory %s", path_fs.c_str());
-		return;
-	}
-
-	while ((ent = readdir(dir))) {
+	DirectoryReader dir(path_fs);
+	while (dir.ReadEntry()) {
 		int ret;
 
-		if (skip_path(ent->d_name))
+		const Path name_fs = dir.GetEntry();
+		if (SkipFilename(name_fs))
 			continue;
 
-		const auto name_fs = Path::FromFS(ent->d_name);
+		if (parent.exclude_list.Check(name_fs))
+			continue;
+
 		const auto child_path_fs = path_fs / name_fs;
 
 		FileInfo fi;
@@ -209,17 +234,18 @@ recursive_watch_subdirectories(WatchDirectory *directory,
 			/* already being watched */
 			continue;
 
-		directory->children.emplace_front(directory,
-						  name_fs,
-						  ret);
-		child = &directory->children.front();
+		parent.children.emplace_front(parent,
+					      name_fs,
+					      ret);
+		child = &parent.children.front();
+		child->LoadExcludeList(child_path_fs);
 
 		tree_add_watch_directory(child);
 
-		recursive_watch_subdirectories(child, child_path_fs, depth);
+		recursive_watch_subdirectories(*child, child_path_fs, depth);
 	}
-
-	closedir(dir);
+} catch (...) {
+	LogError(std::current_exception());
 }
 
 gcc_pure
@@ -239,8 +265,6 @@ mpd_inotify_callback(int wd, unsigned mask,
 		     [[maybe_unused]] const char *name, [[maybe_unused]] void *ctx)
 {
 	WatchDirectory *directory;
-
-	/*FormatDebug(inotify_domain, "wd=%d mask=0x%x name='%s'", wd, mask, name);*/
 
 	directory = tree_find_watch_directory(wd);
 	if (directory == nullptr)
@@ -263,7 +287,7 @@ mpd_inotify_callback(int wd, unsigned mask,
 			? root
 			: (root / uri_fs);
 
-		recursive_watch_subdirectories(directory, path_fs,
+		recursive_watch_subdirectories(*directory, path_fs,
 					       directory->GetDepth());
 	}
 
@@ -318,11 +342,12 @@ mpd_inotify_init(EventLoop &loop, Storage &storage, UpdateService &update,
 		return;
 	}
 
-	inotify_root = new WatchDirectory(nullptr, path, descriptor);
+	inotify_root = new WatchDirectory(path, descriptor);
+	inotify_root->LoadExcludeList(path);
 
 	tree_add_watch_directory(inotify_root);
 
-	recursive_watch_subdirectories(inotify_root, path, 0);
+	recursive_watch_subdirectories(*inotify_root, path, 0);
 
 	inotify_queue = new InotifyQueue(loop, update);
 

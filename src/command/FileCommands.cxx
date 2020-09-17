@@ -50,9 +50,7 @@ gcc_pure
 static bool
 SkipNameFS(PathTraitsFS::const_pointer name_fs) noexcept
 {
-	return name_fs[0] == '.' &&
-		(name_fs[1] == 0 ||
-		 (name_fs[1] == '.' && name_fs[2] == 0));
+	return PathTraitsFS::IsSpecialFilename(name_fs);
 }
 
 gcc_pure

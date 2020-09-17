@@ -40,6 +40,8 @@ ver 0.22 (not yet released)
   - GCC 7 or clang 4 (or newer) recommended
 
 ver 0.21.26 (not yet released)
+* database
+  - inotify: obey ".mpdignore" files
 * output
   - osx: fix crash bug
   - sles: support floating point samples
@@ -50,7 +52,11 @@ ver 0.21.26 (not yet released)
   - iso9660: support seeking
   - zzip: fix crash on corrupt ZIP file
 * decoder
+  - ffmpeg: remove "rtsp://" from the list of supported protocols
+  - ffmpeg: add "hls+http://" to the list of supported protocols
   - sndfile: fix lost samples at end of file
+* fix "single" mode bug after resuming playback
+* the default log_level is "default", not "info"
 
 ver 0.21.25 (2020/07/06)
 * protocol:
