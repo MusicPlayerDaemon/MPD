@@ -184,7 +184,7 @@ SkipFilename(Path name) noexcept
 
 static void
 recursive_watch_subdirectories(WatchDirectory &parent,
-			       const AllocatedPath &path_fs,
+			       const Path path_fs,
 			       unsigned depth)
 try {
 	assert(depth <= inotify_max_depth);
