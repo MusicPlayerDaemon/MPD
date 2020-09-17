@@ -69,9 +69,7 @@ ContentDirectoryService::getSearchCapabilities(UpnpClient_Handle hdl) const
 	const char *s = ixmlwrap::getFirstElementValue(response.get(),
 						       "SearchCaps");
 	if (s == nullptr || *s == 0)
-		/* we could just "return {}" here, but GCC 5 doesn't
-		   understand that */
-		return std::forward_list<std::string>();
+		return {};
 
 	std::forward_list<std::string> result;
 	for (const auto &i : IterableSplitString(s, ','))
