@@ -53,7 +53,7 @@ ScanOneOpusTag(const char *name, const char *value,
 		char *endptr;
 		long l = strtol(value, &endptr, 10);
 		if (endptr > value && *endptr == 0)
-			rgi->track.gain = float(l) / 256.0f;
+			rgi->track.gain += float(l) / 256.0f;
 	} else if (rgi != nullptr &&
 		   StringEqualsCaseASCII(name, "R128_ALBUM_GAIN")) {
 		/* R128_ALBUM_GAIN is a Q7.8 fixed point number in
@@ -62,7 +62,7 @@ ScanOneOpusTag(const char *name, const char *value,
 		char *endptr;
 		long l = strtol(value, &endptr, 10);
 		if (endptr > value && *endptr == 0)
-			rgi->album.gain = float(l) / 256.0f;
+			rgi->album.gain += float(l) / 256.0f;
 	}
 
 	handler.OnPair(name, value);

@@ -33,11 +33,14 @@ struct OpusHead {
 
 bool
 ScanOpusHeader(const void *data, size_t size, unsigned &channels_r,
-	       unsigned &pre_skip_r)
+	       signed &output_gain_r, unsigned &pre_skip_r)
 {
 	const OpusHead *h = (const OpusHead *)data;
 	if (size < 19 || (h->version & 0xf0) != 0)
 		return false;
+
+	uint16_t gain_bits = FromLE16(h->output_gain);
+	output_gain_r = (gain_bits & 0x8000) ? gain_bits - 0x10000 : gain_bits;
 
 	channels_r = h->channels;
 	pre_skip_r = FromLE16(h->pre_skip);

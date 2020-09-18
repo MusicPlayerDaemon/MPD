@@ -76,6 +76,12 @@ class MPDOpusDecoder final : public OggDecoder {
 	opus_int16 *output_buffer = nullptr;
 
 	/**
+	 * The output gain from the Opus header. Initialized by
+	 * OnOggBeginning().
+	 */
+	signed output_gain;
+
+	/**
 	 * The pre-skip value from the Opus header.  Initialized by
 	 * OnOggBeginning().
 	 */
@@ -164,7 +170,7 @@ MPDOpusDecoder::OnOggBeginning(const ogg_packet &packet)
 		throw std::runtime_error("BOS packet must be OpusHead");
 
 	unsigned channels;
-	if (!ScanOpusHeader(packet.packet, packet.bytes, channels, pre_skip) ||
+	if (!ScanOpusHeader(packet.packet, packet.bytes, channels, output_gain, pre_skip) ||
 	    !audio_valid_channel_count(channels))
 		throw std::runtime_error("Malformed BOS packet");
 
@@ -238,6 +244,15 @@ MPDOpusDecoder::HandleTags(const ogg_packet &packet)
 {
 	ReplayGainInfo rgi;
 	rgi.Clear();
+
+	/**
+	 * Output gain is a Q7.8 fixed point number in dB that should be,
+	 * applied unconditionally, but is often used specifically for
+	 * ReplayGain. Add 5dB to compensate for the different
+	 * reference levels between ReplayGain (89dB) and EBU R128 (-23 LUFS).
+	 */
+	rgi.track.gain = float(output_gain) / 256.0f + 5;
+	rgi.album.gain = float(output_gain) / 256.0f + 5;
 
 	TagBuilder tag_builder;
 	AddTagHandler h(tag_builder);
@@ -384,14 +399,14 @@ mpd_opus_stream_decode(DecoderClient &client,
 
 static bool
 ReadAndParseOpusHead(OggSyncState &sync, OggStreamState &stream,
-		     unsigned &channels, unsigned &pre_skip)
+		     unsigned &channels, signed &output_gain, unsigned &pre_skip)
 {
 	ogg_packet packet;
 
 	return OggReadPacket(sync, stream, packet) && packet.b_o_s &&
 		IsOpusHead(packet) &&
 		ScanOpusHeader(packet.packet, packet.bytes, channels,
-			       pre_skip) &&
+			       output_gain, pre_skip) &&
 		audio_valid_channel_count(channels);
 }
 
@@ -436,7 +451,8 @@ mpd_opus_scan_stream(InputStream &is, TagHandler &handler)
 	OggStreamState os(first_page);
 
 	unsigned channels, pre_skip;
-	if (!ReadAndParseOpusHead(oy, os, channels, pre_skip) ||
+	signed output_gain;
+	if (!ReadAndParseOpusHead(oy, os, channels, output_gain, pre_skip) ||
 	    !ReadAndVisitOpusTags(oy, os, handler))
 		return false;
 
