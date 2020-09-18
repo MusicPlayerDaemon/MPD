@@ -27,19 +27,20 @@ struct OpusHead {
 	uint8_t version, channels;
 	uint16_t pre_skip;
 	uint32_t sample_rate;
-	uint16_t output_gain;
+	int16_t output_gain;
 	uint8_t channel_mapping;
 };
 
 bool
 ScanOpusHeader(const void *data, size_t size, unsigned &channels_r,
-	       unsigned &pre_skip_r)
+	       signed &output_gain_r, unsigned &pre_skip_r)
 {
 	const auto *h = (const OpusHead *)data;
 	if (size < 19 || (h->version & 0xf0) != 0)
 		return false;
 
 	channels_r = h->channels;
+	output_gain_r = h->output_gain;
 	pre_skip_r = FromLE16(h->pre_skip);
 	return true;
 }
