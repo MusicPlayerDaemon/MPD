@@ -27,7 +27,7 @@ struct OpusHead {
 	uint8_t version, channels;
 	uint16_t pre_skip;
 	uint32_t sample_rate;
-	int16_t output_gain;
+	uint16_t output_gain;
 	uint8_t channel_mapping;
 };
 
@@ -39,8 +39,10 @@ ScanOpusHeader(const void *data, size_t size, unsigned &channels_r,
 	if (size < 19 || (h->version & 0xf0) != 0)
 		return false;
 
+	uint16_t gain_bits = FromLE16(h->output_gain);
+	output_gain_r = (gain_bits & 0x8000) ? gain_bits - 0x10000 : gain_bits;
+
 	channels_r = h->channels;
-	output_gain_r = h->output_gain;
 	pre_skip_r = FromLE16(h->pre_skip);
 	return true;
 }
