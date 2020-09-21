@@ -34,11 +34,10 @@
 #include <cdio/iso9660.h>
 
 #include <array>
+#include <utility>
 
 #include <stdlib.h>
 #include <string.h>
-
-#include <utility>
 
 struct Iso9660 {
 	iso9660_t *const iso;
