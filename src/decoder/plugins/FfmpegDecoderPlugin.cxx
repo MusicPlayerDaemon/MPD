@@ -207,7 +207,7 @@ PtsToPcmFrame(uint64_t pts, const AVStream &stream,
  * #AVFrame.
  */
 static DecoderCommand
-FfmpegSendFrame(DecoderClient &client, InputStream &is,
+FfmpegSendFrame(DecoderClient &client, InputStream *is,
 		AVCodecContext &codec_context,
 		const AVFrame &frame,
 		size_t &skip_bytes,
@@ -234,7 +234,7 @@ FfmpegSendFrame(DecoderClient &client, InputStream &is,
 }
 
 static DecoderCommand
-FfmpegReceiveFrames(DecoderClient &client, InputStream &is,
+FfmpegReceiveFrames(DecoderClient &client, InputStream *is,
 		    AVCodecContext &codec_context,
 		    AVFrame &frame,
 		    size_t &skip_bytes,
@@ -286,7 +286,7 @@ FfmpegReceiveFrames(DecoderClient &client, InputStream &is,
  * desired time stamp has been reached
  */
 static DecoderCommand
-ffmpeg_send_packet(DecoderClient &client, InputStream &is,
+ffmpeg_send_packet(DecoderClient &client, InputStream *is,
 		   const AVPacket &packet,
 		   AVCodecContext &codec_context,
 		   const AVStream &stream,
@@ -444,7 +444,7 @@ FfmpegScanTag(const AVFormatContext &format_context, int audio_stream,
  * DecoderClient::SubmitTag().
  */
 static void
-FfmpegCheckTag(DecoderClient &client, InputStream &is,
+FfmpegCheckTag(DecoderClient &client, InputStream *is,
 	       AVFormatContext &format_context, int audio_stream)
 {
 	AVStream &stream = *format_context.streams[audio_stream];
@@ -462,7 +462,7 @@ FfmpegCheckTag(DecoderClient &client, InputStream &is,
 }
 
 static void
-FfmpegDecode(DecoderClient &client, InputStream &input,
+FfmpegDecode(DecoderClient &client, InputStream *input,
 	     AVFormatContext &format_context)
 {
 	const int find_result =
@@ -515,7 +515,11 @@ FfmpegDecode(DecoderClient &client, InputStream &input,
 		? FromFfmpegTimeChecked(av_stream.duration, av_stream.time_base)
 		: FromFfmpegTimeChecked(format_context.duration, AV_TIME_BASE_Q);
 
-	client.Ready(audio_format, input.IsSeekable(), total_time);
+	client.Ready(audio_format,
+		     input
+		     ? input->IsSeekable()
+		     : (format_context.ctx_flags & AVFMTCTX_UNSEEKABLE) != 0,
+		     total_time);
 
 	FfmpegParseMetaData(client, format_context, audio_stream);
 
@@ -587,7 +591,7 @@ ffmpeg_decode(DecoderClient &client, InputStream &input)
 	FormatDebug(ffmpeg_domain, "detected input format '%s' (%s)",
 		    input_format->name, input_format->long_name);
 
-	FfmpegDecode(client, input, *format_context);
+	FfmpegDecode(client, &input, *format_context);
 }
 
 static bool
