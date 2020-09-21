@@ -23,6 +23,8 @@
 #include "util/Compiler.h"
 
 #include <forward_list>  // IWYU pragma: export
+#include <set>
+#include <string>
 
 struct ConfigBlock;
 class InputStream;
@@ -49,6 +51,16 @@ struct DecoderPlugin {
 	 * successfully.  Optional method.
 	 */
 	void (*finish)() noexcept = nullptr;
+
+	/**
+	 * Return a set of supported protocols.
+	 */
+	std::set<std::string> (*protocols)() noexcept = nullptr;
+
+	/**
+	 * Decode an URI with a protocol listed in protocols().
+	 */
+	void (*uri_decode)(DecoderClient &client, const char *uri) = nullptr;
 
 	/**
 	 * Decode a stream (data read from an #InputStream object).
@@ -143,6 +155,14 @@ struct DecoderPlugin {
 		return copy;
 	}
 
+	constexpr auto WithProtocols(std::set<std::string> (*_protocols)() noexcept,
+				     void (*_uri_decode)(DecoderClient &client, const char *uri)) noexcept {
+		auto copy = *this;
+		copy.protocols = _protocols;
+		copy.uri_decode = _uri_decode;
+		return copy;
+	}
+
 	constexpr auto WithSuffixes(const char *const*_suffixes) noexcept {
 		auto copy = *this;
 		copy.suffixes = _suffixes;
@@ -184,6 +204,13 @@ struct DecoderPlugin {
 	}
 
 	/**
+	 * Decode an URI which is supported (check SupportsUri()).
+	 */
+	void UriDecode(DecoderClient &client, const char *uri) const {
+		uri_decode(client, uri);
+	}
+
+	/**
 	 * Decode a file.
 	 */
 	template<typename P>
@@ -217,6 +244,9 @@ struct DecoderPlugin {
 	char *ContainerScan(P path, const unsigned int tnum) const {
 		return container_scan(path, tnum);
 	}
+
+	gcc_pure
+	bool SupportsUri(const char *uri) const noexcept;
 
 	/**
 	 * Does the plugin announce the specified file name suffix?

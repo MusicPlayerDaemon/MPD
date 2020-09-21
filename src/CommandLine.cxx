@@ -154,6 +154,10 @@ static void version()
 			for (; *suffixes != nullptr; ++suffixes)
 				printf(" %s", *suffixes);
 
+		if (plugin.protocols != nullptr)
+			for (const auto &i : plugin.protocols())
+				printf(" %s", i.c_str());
+
 		printf("\n");
 	});
 

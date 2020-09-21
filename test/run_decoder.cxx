@@ -204,7 +204,12 @@ try {
 	}
 
 	MyDecoderClient client(c.seek_where);
-	if (plugin->file_decode != nullptr) {
+	if (plugin->SupportsUri(c.uri)) {
+		try {
+			plugin->UriDecode(client, c.uri);
+		} catch (StopDecoder) {
+		}
+	} else if (plugin->file_decode != nullptr) {
 		try {
 			plugin->FileDecode(client, FromNarrowPath(c.uri));
 		} catch (StopDecoder) {

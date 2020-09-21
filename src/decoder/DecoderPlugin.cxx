@@ -18,9 +18,23 @@
  */
 
 #include "DecoderPlugin.hxx"
+#include "util/StringCompare.hxx"
 #include "util/StringUtil.hxx"
 
+#include <algorithm>
 #include <cassert>
+
+bool
+DecoderPlugin::SupportsUri(const char *uri) const noexcept
+{
+	if (protocols != nullptr) {
+		const auto p = protocols();
+		return std::any_of(p.begin(), p.end(), [uri](const auto &schema)
+			{ return StringStartsWithIgnoreCase(uri, schema.c_str()); } );
+	}
+
+	return false;
+}
 
 bool
 DecoderPlugin::SupportsSuffix(const char *suffix) const noexcept
