@@ -158,7 +158,7 @@ InitQobuzInput(EventLoop &event_loop, const ConfigBlock &block)
 }
 
 static void
-FinishQobuzInput()
+FinishQobuzInput() noexcept
 {
 	delete qobuz_client;
 }

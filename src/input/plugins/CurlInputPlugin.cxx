@@ -516,7 +516,8 @@ input_curl_open(const char *url, Mutex &mutex)
 }
 
 static std::set<std::string>
-input_curl_protocols() {
+input_curl_protocols() noexcept
+{
 	std::set<std::string> protocols;
 	auto version_info = curl_version_info(CURLVERSION_FIRST);
 	for (auto proto_ptr = version_info->protocols; *proto_ptr != nullptr; proto_ptr++) {

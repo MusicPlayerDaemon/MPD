@@ -63,7 +63,8 @@ constexpr static const char *whitelist[] = {
 };
 
 bool
-protocol_is_whitelisted(const char *proto) {
+protocol_is_whitelisted(const char *proto) noexcept
+{
 	auto begin = std::begin(whitelist);
 	auto end = std::end(whitelist);
 	return std::binary_search(begin, end, proto, [](const char* a, const char* b) {

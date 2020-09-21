@@ -73,7 +73,8 @@ input_ffmpeg_init(EventLoop &, const ConfigBlock &)
 }
 
 static std::set<std::string>
-input_ffmpeg_protocols() {
+input_ffmpeg_protocols() noexcept
+{
 	void *opaque = nullptr;
 	const char* protocol;
 	std::set<std::string> protocols;

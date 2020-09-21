@@ -189,7 +189,7 @@ InitTidalInput(EventLoop &event_loop, const ConfigBlock &block)
 }
 
 static void
-FinishTidalInput()
+FinishTidalInput() noexcept
 {
 	delete tidal_session;
 }
