@@ -147,15 +147,15 @@ static void version()
 	       "Decoders plugins:\n");
 
 	decoder_plugins_for_each([](const DecoderPlugin &plugin){
-			printf(" [%s]", plugin.name);
+		printf(" [%s]", plugin.name);
 
-			const char *const*suffixes = plugin.suffixes;
-			if (suffixes != nullptr)
-				for (; *suffixes != nullptr; ++suffixes)
-					printf(" %s", *suffixes);
+		const char *const*suffixes = plugin.suffixes;
+		if (suffixes != nullptr)
+			for (; *suffixes != nullptr; ++suffixes)
+				printf(" %s", *suffixes);
 
-			printf("\n");
-		});
+		printf("\n");
+	});
 
 	printf("\n"
 	       "Filters:\n"
