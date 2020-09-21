@@ -26,6 +26,7 @@
 #include "Chrono.hxx"
 #include "Log.hxx"
 #include "tag/Builder.hxx"
+#include "tag/Tag.hxx"
 #include "util/ScopeExit.hxx"
 #include "util/ExecOpen.hxx"
 #include "util/Domain.hxx"

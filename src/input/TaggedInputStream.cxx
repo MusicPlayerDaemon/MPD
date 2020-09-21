@@ -17,25 +17,20 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_TAGGED_INPUTSTREAM
-#define MPD_TAGGED_INPUTSTREAM
+#include "TaggedInputStream.hxx"
+#include "tag/Tag.hxx"
 
-#include "ProxyInputStream.hxx"
+TaggedInputStream::TaggedInputStream(InputStreamPtr _input, std::unique_ptr<Tag> &&_tag) :
+	ProxyInputStream(std::move(_input)), tag(std::move(_tag))
+{}
 
-class ProxyInputStream;
+std::unique_ptr<Tag> TaggedInputStream::ReadTag() noexcept {
+	auto inner_tag = ProxyInputStream::ReadTag();
 
-/**
- * Wrapper stream that provides tags for the inner stream.  If the inner
- * stream also has tags, it merges them.  The tag entries from the inner
- * stream are overwrited by the outer tag entries.
- */
-class TaggedInputStream final : public ProxyInputStream {
-	std::unique_ptr<Tag> tag;
-
-public:
-	TaggedInputStream(InputStreamPtr _input, std::unique_ptr<Tag> &&_tag);
-
-	std::unique_ptr<Tag> ReadTag() noexcept override;
-};
-
-#endif
+	if(!inner_tag)
+		return std::exchange(tag, nullptr);
+	else if(!tag)
+		return inner_tag;
+	else
+		return Tag::Merge(std::exchange(tag, nullptr), std::move(inner_tag));
+}
