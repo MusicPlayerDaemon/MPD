@@ -1,4 +1,4 @@
-ver 0.21.26 (not yet released)
+ver 0.21.26 (2020/09/21)
 * database
   - inotify: obey ".mpdignore" files
 * output
