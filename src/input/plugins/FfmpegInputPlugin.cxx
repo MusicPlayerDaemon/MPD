@@ -26,6 +26,7 @@
 #include "../InputStream.hxx"
 #include "PluginUnavailable.hxx"
 #include "../InputPlugin.hxx"
+#include "util/StringAPI.hxx"
 
 class FfmpegInputStream final : public InputStream {
 	Ffmpeg::IOContext io;
@@ -79,6 +80,14 @@ input_ffmpeg_protocols() noexcept
 	const char* protocol;
 	std::set<std::string> protocols;
 	while ((protocol = avio_enum_protocols(&opaque, 0))) {
+		if (StringIsEqual(protocol, "hls")) {
+			/* just "hls://" doesn't work, but these do
+			   work: */
+			protocols.emplace("hls+http://");
+			protocols.emplace("hls+https://");
+			continue;
+		}
+
 		if (protocol_is_whitelisted(protocol)) {
 			std::string schema(protocol);
 			schema.append("://");
