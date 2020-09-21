@@ -36,7 +36,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-static Domain youtube_domain("youtube");
+static const Domain youtube_domain("youtube");
 
 static const char *input_youtube_prefixes[] = {
 	"https",

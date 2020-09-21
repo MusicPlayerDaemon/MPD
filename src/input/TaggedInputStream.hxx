@@ -23,8 +23,11 @@
 #include "../ProxyInputStream.hxx"
 #include "tag/Tag.hxx"
 
-#include <memory>
-
+/**
+ * Wrapper stream that provides tags for the inner stream.  If the inner
+ * stream also has tags, it merges them.  The tag entries from the inner
+ * stream are overwrited by the outer tag entries.
+ */
 class TaggedInputStream final : public ProxyInputStream {
 	std::unique_ptr<Tag> tag;
 
@@ -34,7 +37,14 @@ public:
 	{}
 
 	std::unique_ptr<Tag> ReadTag() noexcept override {
-		return std::exchange(tag, nullptr);
+		auto inner_tag = ProxyInputStream::ReadTag();
+
+		if(!inner_tag)
+			return std::exchange(tag, nullptr);
+		else if(!tag)
+			return inner_tag;
+		else
+			return Tag::Merge(std::exchange(tag, nullptr), std::move(inner_tag));
 	}
 };
 
