@@ -54,6 +54,7 @@ ver 0.21.26 (not yet released)
 * decoder
   - ffmpeg: remove "rtsp://" from the list of supported protocols
   - ffmpeg: add "hls+http://" to the list of supported protocols
+  - opus: support the gain value from the Opus header
   - sndfile: fix lost samples at end of file
 * fix "single" mode bug after resuming playback
 * the default log_level is "default", not "info"

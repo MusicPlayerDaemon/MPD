@@ -27,6 +27,7 @@
 #include "Dither.cxx" // including the .cxx file to get inlined templates
 
 #include <cassert>
+#include <cmath>
 
 template<SampleFormat F, class Traits=SampleTraits<F>>
 static typename Traits::value_type

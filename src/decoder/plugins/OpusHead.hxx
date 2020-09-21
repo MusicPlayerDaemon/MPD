@@ -24,6 +24,6 @@
 
 bool
 ScanOpusHeader(const void *data, size_t size, unsigned &channels_r,
-	       unsigned &pre_skip_r);
+	       signed &output_gain_r, unsigned &pre_skip_r);
 
 #endif
