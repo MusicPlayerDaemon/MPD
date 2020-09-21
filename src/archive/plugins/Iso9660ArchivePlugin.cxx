@@ -182,9 +182,20 @@ class Iso9660InputStream final : public InputStream {
 			fill = nbytes;
 			position = 0;
 		}
+
+		void Clear() noexcept {
+			position = fill = 0;
+		}
 	};
 
 	BlockBuffer buffer;
+
+	/**
+	 * Skip this number of bytes of the first sector after filling
+	 * the buffer next time.  This is used for seeking into the
+	 * middle of a sector.
+	 */
+	size_t skip = 0;
 
 public:
 	Iso9660InputStream(const std::shared_ptr<Iso9660> &_iso,
@@ -208,7 +219,9 @@ public:
 		if (new_offset > size)
 			throw std::runtime_error("Invalid seek offset");
 
-		offset = new_offset;
+		skip = new_offset % ISO_BLOCKSIZE;
+		offset = new_offset - skip;
+		buffer.Clear();
 	}
 };
 
@@ -273,9 +286,20 @@ Iso9660InputStream::Read(void *ptr, size_t read_size)
 		buffer.Append(nbytes);
 
 		r = buffer.Read();
+
+		if (skip > 0) {
+			if (skip >= r.size)
+				throw std::runtime_error("Premature end of ISO9660 track");
+
+			buffer.Consume(skip);
+			skip = 0;
+
+			r = buffer.Read();
+		}
 	}
 
 	assert(!r.empty());
+	assert(skip == 0);
 
 	size_t nbytes = std::min(read_size, r.size);
 	memcpy(ptr, r.data, nbytes);
