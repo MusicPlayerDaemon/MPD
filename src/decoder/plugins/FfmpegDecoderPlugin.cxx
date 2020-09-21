@@ -42,6 +42,7 @@
 #include "pcm/CheckAudioFormat.hxx"
 #include "util/ScopeExit.hxx"
 #include "util/ConstBuffer.hxx"
+#include "util/StringAPI.hxx"
 #include "LogV.hxx"
 
 extern "C" {
@@ -638,6 +639,37 @@ ffmpeg_scan_stream(InputStream &is, TagHandler &handler)
 	return FfmpegScanStream(*f, handler);
 }
 
+static void
+ffmpeg_uri_decode(DecoderClient &client, const char *uri)
+{
+	auto format_context =
+		FfmpegOpenInput(nullptr, uri, nullptr);
+
+	const auto *input_format = format_context->iformat;
+	FormatDebug(ffmpeg_domain, "detected input format '%s' (%s)",
+		    input_format->name, input_format->long_name);
+
+	FfmpegDecode(client, nullptr, *format_context);
+}
+
+static std::set<std::string>
+ffmpeg_protocols() noexcept
+{
+	std::set<std::string> protocols;
+
+	const AVInputFormat *format = nullptr;
+	void *opaque = nullptr;
+	while ((format = av_demuxer_iterate(&opaque)) != nullptr) {
+		if (StringIsEqual(format->name, "rtsp")) {
+			protocols.emplace("rtsp://");
+			protocols.emplace("rtsps://");
+		} else if (StringIsEqual(format->name, "rtp"))
+			protocols.emplace("rtp://");
+	}
+
+	return protocols;
+}
+
 /**
  * A list of extensions found for the formats supported by ffmpeg.
  * This list is current as of 02-23-09; To find out if there are more
@@ -761,5 +793,6 @@ static const char *const ffmpeg_mime_types[] = {
 constexpr DecoderPlugin ffmpeg_decoder_plugin =
 	DecoderPlugin("ffmpeg", ffmpeg_decode, ffmpeg_scan_stream)
 	.WithInit(ffmpeg_init, ffmpeg_finish)
+	.WithProtocols(ffmpeg_protocols, ffmpeg_uri_decode)
 	.WithSuffixes(ffmpeg_suffixes)
 	.WithMimeTypes(ffmpeg_mime_types);
