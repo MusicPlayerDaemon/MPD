@@ -38,8 +38,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define CEILING(x, y) ((x+(y-1))/y)
-
 struct Iso9660 {
 	iso9660_t *const iso;
 
