@@ -39,8 +39,7 @@ ScanOpusHeader(const void *data, size_t size, unsigned &channels_r,
 	if (size < 19 || (h->version & 0xf0) != 0)
 		return false;
 
-	uint16_t gain_bits = FromLE16(h->output_gain);
-	output_gain_r = (gain_bits & 0x8000) ? gain_bits - 0x10000 : gain_bits;
+	output_gain_r = FromLE16S(h->output_gain);
 
 	channels_r = h->channels;
 	pre_skip_r = FromLE16(h->pre_skip);
