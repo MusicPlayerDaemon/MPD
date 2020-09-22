@@ -82,7 +82,8 @@ IsSocketErrorClosed(socket_error_t code) noexcept
  */
 class SocketErrorMessage {
 #ifdef _WIN32
-	char msg[256];
+	static constexpr unsigned msg_size = 256;
+	char msg[msg_size];
 #else
 	const char *const msg;
 #endif

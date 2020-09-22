@@ -28,7 +28,7 @@
 SocketErrorMessage::SocketErrorMessage(socket_error_t code) noexcept
 {
 #ifdef _UNICODE
-	wchar_t buffer[std::size(msg)];
+	wchar_t buffer[msg_size];
 #else
 	auto *buffer = msg;
 #endif
@@ -37,7 +37,7 @@ SocketErrorMessage::SocketErrorMessage(socket_error_t code) noexcept
 				     FORMAT_MESSAGE_IGNORE_INSERTS |
 				     FORMAT_MESSAGE_MAX_WIDTH_MASK,
 				     nullptr, code, 0,
-				     buffer, std::size(msg), nullptr);
+				     buffer, msg_size, nullptr);
 	if (nbytes == 0) {
 		strcpy(msg, "Unknown error");
 		return;
