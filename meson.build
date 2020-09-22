@@ -50,6 +50,7 @@ common_cxxflags = [
 
 test_common_flags = [
   '-Wvla',
+  '-Wdouble-promotion',
 
   '-fvisibility=hidden',
 

@@ -41,7 +41,7 @@ DumpReplayGainTuple(const char *name, const ReplayGainTuple &tuple)
 {
 	if (tuple.IsDefined())
 		fprintf(stderr, "replay_gain[%s]: gain=%f peak=%f\n",
-			name, tuple.gain, tuple.peak);
+			name, (double)tuple.gain, (double)tuple.peak);
 }
 
 static void
