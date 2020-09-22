@@ -556,10 +556,10 @@ Controlling playback
 :command:`next`
     Plays next song in the playlist.
 
-:command:`pause {PAUSE}`
-    Toggles pause/resumes playing, ``PAUSE`` is 0 or 1.
-
-    The use of pause command without the PAUSE argument is deprecated.
+:command:`pause {STATE}`
+    Pause or resume playback.  Pass :samp:`1` to pause playback or
+    :samp:`0` to resume playback.  Without the parameter, the pause
+    state is toggled.
 
 :command:`play [SONGPOS]`
     Begins playing the playlist at song number
