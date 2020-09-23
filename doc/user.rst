@@ -44,7 +44,7 @@ ALSA is not available on Android; only the :ref:`OpenSL ES
 Compiling from source
 ---------------------
 
-Download the source tarball from the `MPD home page <https://musicpd.org>`_ and unpack it:
+`Download the source tarball <https://www.musicpd.org/download.html>`_ and unpack it:
 
 .. code-block:: none
 
