@@ -89,10 +89,8 @@
 #
 #port				"6600"
 #
-# This setting controls the type of information which is logged. Available 
-# setting arguments are "default", "secure" or "verbose". The "verbose" setting
-# argument is recommended for troubleshooting, though can quickly stretch
-# available resources on limited hardware storage.
+# Suppress all messages below the given threshold.  Use "verbose" for
+# troubleshooting.
 #
 #log_level			"default"
 #

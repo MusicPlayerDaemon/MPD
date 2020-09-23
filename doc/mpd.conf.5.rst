@@ -78,10 +78,15 @@ port <port>
    This specifies the port that mpd listens on. The default is 6600.
 
 log_level <default, secure, or verbose>
-   This specifies how verbose logs are. "default" is minimal logging, "secure"
-   reports from what address a connection is opened, and when it is closed, and
-   "verbose" records excessive amounts of information for debugging purposes.
-   The default is "default".
+   Suppress all messages below the given threshold.  The following
+   log levels are available:
+
+   - :samp:`default`: interesting informational messages
+   - :samp:`secure`: unimportant informational messages
+   - :samp:`verbose`: debug messages (for developers and for
+     troubleshooting)
+
+   The default is :samp:`default`.
 
 follow_outside_symlinks <yes or no>
   Control if MPD will follow symbolic links pointing outside the music dir. You
