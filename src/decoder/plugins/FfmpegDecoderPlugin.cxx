@@ -121,6 +121,49 @@ ffmpeg_find_audio_stream(const AVFormatContext &format_context) noexcept
 	return -1;
 }
 
+gcc_pure
+static bool
+IsPicture(const AVStream &stream) noexcept
+{
+	return stream.codecpar->codec_type == AVMEDIA_TYPE_VIDEO &&
+		(stream.disposition & AV_DISPOSITION_ATTACHED_PIC) != 0 &&
+		stream.attached_pic.size > 0;
+}
+
+static const AVStream *
+FindPictureStream(const AVFormatContext &format_context) noexcept
+{
+	for (unsigned i = 0; i < format_context.nb_streams; ++i)
+		if (IsPicture(*format_context.streams[i]))
+			return format_context.streams[i];
+
+	return nullptr;
+}
+
+static const char *
+GetMimeType(const AVCodecDescriptor &codec) noexcept
+{
+	return codec.mime_types != nullptr
+		? *codec.mime_types
+		: nullptr;
+}
+
+static const char *
+GetMimeType(const AVStream &stream) noexcept
+{
+	const auto *codec = avcodec_descriptor_get(stream.codecpar->codec_id);
+	if (codec != nullptr)
+		return GetMimeType(*codec);
+
+	return nullptr;
+}
+
+static ConstBuffer<void>
+ToConstBuffer(const AVPacket &packet) noexcept
+{
+	return {packet.data, size_t(packet.size)};
+}
+
 /**
  * Accessor for AVStream::start_time that replaces AV_NOPTS_VALUE with
  * zero.  We can't use AV_NOPTS_VALUE in calculations, and we simply
@@ -624,6 +667,13 @@ FfmpegScanStream(AVFormatContext &format_context, TagHandler &handler)
 	}
 
 	FfmpegScanMetadata(format_context, audio_stream, handler);
+
+	if (handler.WantPicture()) {
+		const auto *picture_stream = FindPictureStream(format_context);
+		if (picture_stream != nullptr)
+			handler.OnPicture(GetMimeType(*picture_stream),
+					  ToConstBuffer(picture_stream->attached_pic));
+	}
 
 	return true;
 }
