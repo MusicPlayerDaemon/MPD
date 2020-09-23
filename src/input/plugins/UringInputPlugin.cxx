@@ -24,7 +24,7 @@
 #include "system/Error.hxx"
 #include "io/Open.hxx"
 #include "io/UniqueFileDescriptor.hxx"
-#include "io/uring/Operation.hxx"
+#include "io/uring/ReadOperation.hxx"
 #include "io/uring/Queue.hxx"
 #include "util/RuntimeError.hxx"
 
@@ -50,14 +50,14 @@ static const size_t URING_RESUME_AT = 384 * 1024;
 static EventLoop *uring_input_event_loop;
 static Uring::Queue *uring_input_queue;
 
-class UringInputStream final : public AsyncInputStream, Uring::Operation {
+class UringInputStream final : public AsyncInputStream, Uring::ReadHandler {
 	Uring::Queue &uring;
 
 	UniqueFileDescriptor fd;
 
 	uint64_t next_offset = 0;
 
-	struct iovec iov;
+	std::unique_ptr<Uring::ReadOperation> read_operation;
 
 public:
 	UringInputStream(EventLoop &event_loop, Uring::Queue &_uring,
@@ -82,12 +82,17 @@ public:
 
 	~UringInputStream() noexcept override {
 		BlockingCall(GetEventLoop(), [this](){
-			CancelUring();
+			CancelRead();
 		});
 	}
 
 private:
 	void SubmitRead() noexcept;
+
+	void CancelRead() noexcept {
+		if (read_operation)
+			read_operation.release()->Cancel();
+	}
 
 protected:
 	/* virtual methods from AsyncInputStream */
@@ -96,13 +101,15 @@ protected:
 
 private:
 	/* virtual methods from class Uring::Operation */
-	void OnUringCompletion(int res) noexcept override;
+	void OnRead(std::unique_ptr<std::byte[]> buffer,
+		    std::size_t size) noexcept override;
+	void OnReadError(int error) noexcept override;
 };
 
 void
 UringInputStream::SubmitRead() noexcept
 {
-	assert(!IsUringPending());
+	assert(!read_operation);
 
 	int64_t remaining = size - next_offset;
 	if (remaining <= 0)
@@ -114,16 +121,10 @@ UringInputStream::SubmitRead() noexcept
 		return;
 	}
 
-	auto *s = uring.GetSubmitEntry();
-	assert(s != nullptr); // TODO: what if the submit queue is full?
-
-	iov.iov_base = w.data;
-	iov.iov_len = std::min<size_t>(std::min<uint64_t>(remaining,
-							  URING_MAX_READ),
-				       w.size);
-
-	io_uring_prep_readv(s, fd.Get(), &iov, 1, next_offset);
-	uring.Push(*s, *this);
+	read_operation = std::make_unique<Uring::ReadOperation>();
+	read_operation->Start(uring, fd, next_offset,
+			      std::min(w.size, URING_MAX_READ),
+			      *this);
 }
 
 void
@@ -135,7 +136,7 @@ UringInputStream::DoResume()
 void
 UringInputStream::DoSeek(offset_type new_offset)
 {
-	CancelUring();
+	CancelRead();
 
 	next_offset = offset = new_offset;
 	SeekDone();
@@ -143,29 +144,36 @@ UringInputStream::DoSeek(offset_type new_offset)
 }
 
 void
-UringInputStream::OnUringCompletion(int res) noexcept
+UringInputStream::OnRead(std::unique_ptr<std::byte[]> data,
+			 std::size_t nbytes) noexcept
 {
+	read_operation.reset();
+
 	const std::lock_guard<Mutex> protect(mutex);
-	assert(!IsBufferFull());
-	assert(IsBufferFull() == (GetBufferSpace() == 0));
 
-	if (res <= 0) {
-		try {
-			if (res == 0)
-				throw std::runtime_error("Premature end of file");
-			else
-				throw MakeErrno(-res, "Read failed");
-		} catch (...) {
-			postponed_exception = std::current_exception();
-		}
-
+	if (nbytes == 0) {
+		postponed_exception = std::make_exception_ptr(std::runtime_error("Premature end of file"));
 		InvokeOnAvailable();
 		return;
 	}
 
-	CommitWriteBuffer(res);
-	next_offset += res;
+	auto w = PrepareWriteBuffer();
+	assert(w.size >= nbytes);
+	memcpy(w.data, data.get(), nbytes);
+	CommitWriteBuffer(nbytes);
+	next_offset += nbytes;
 	SubmitRead();
+}
+
+void
+UringInputStream::OnReadError(int error) noexcept
+{
+	read_operation.reset();
+
+	const std::lock_guard<Mutex> protect(mutex);
+
+	postponed_exception = std::make_exception_ptr(MakeErrno(error, "Read failed"));
+	InvokeOnAvailable();
 }
 
 InputStreamPtr
