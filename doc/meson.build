@@ -39,16 +39,13 @@ if get_option('html_manual')
 endif
 
 if get_option('manpages')
-  # This installs all manpages in the "man1" subdirectory.  Due to
-  # https://github.com/mesonbuild/meson/issues/1550 there appears to
-  # be no good solution with Meson.  Sigh.
   custom_target(
     'Manpage documentation',
-    output: 'man1',
+    output: ['mpd.1', 'mpd.conf.5'],
     input: ['mpd.1.rst', 'conf.py'],
-    command: [sphinx, '-q', '-b', 'man', '-d', '@OUTDIR@/man_doctrees', meson.current_source_dir(), '@OUTPUT@'],
+    command: [sphinx, '-q', '-b', 'man', '-d', '@OUTDIR@/man_doctrees', meson.current_source_dir(), '@OUTDIR@'],
     build_by_default: true,
     install: true,
-    install_dir: get_option('mandir'),
+    install_dir: [join_paths(get_option('mandir'), 'man1'), join_paths(get_option('mandir'), 'man5')],
   )
 endif
