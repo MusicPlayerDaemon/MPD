@@ -1,3 +1,5 @@
+ver 0.22.1 (not yet released)
+
 ver 0.22 (2020/09/23)
 * protocol
   - "findadd"/"searchadd"/"searchaddpl" support the "sort" and
