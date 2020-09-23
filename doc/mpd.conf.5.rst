@@ -81,6 +81,8 @@ log_level <default, secure, or verbose>
    Suppress all messages below the given threshold.  The following
    log levels are available:
 
+   - :samp:`error`: errors
+   - :samp:`warning`: warnings
    - :samp:`default`: interesting informational messages
    - :samp:`info`: unimportant informational messages
    - :samp:`verbose`: debug messages (for developers and for

@@ -103,6 +103,10 @@ parse_log_level(const char *value)
 		return LogLevel::INFO;
 	else if (StringIsEqual(value, "verbose"))
 		return LogLevel::DEBUG;
+	else if (StringIsEqual(value, "warning"))
+		return LogLevel::WARNING;
+	else if (StringIsEqual(value, "error"))
+		return LogLevel::ERROR;
 	else
 		throw FormatRuntimeError("unknown log level \"%s\"", value);
 }
