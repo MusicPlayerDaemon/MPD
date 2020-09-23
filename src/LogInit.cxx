@@ -42,8 +42,6 @@
 #include <stdio.h>
 #include <unistd.h>
 
-#define LOG_LEVEL_SECURE LogLevel::INFO
-
 #define LOG_DATE_BUF_SIZE 16
 #define LOG_DATE_LEN (LOG_DATE_BUF_SIZE - 1)
 
@@ -99,8 +97,10 @@ parse_log_level(const char *value)
 {
 	if (StringIsEqual(value, "default"))
 		return LogLevel::DEFAULT;
-	if (StringIsEqual(value, "secure"))
-		return LOG_LEVEL_SECURE;
+	else if (StringIsEqual(value, "info") ||
+		 /* deprecated since MPD 0.22: */
+		 StringIsEqual(value, "secure"))
+		return LogLevel::INFO;
 	else if (StringIsEqual(value, "verbose"))
 		return LogLevel::DEBUG;
 	else

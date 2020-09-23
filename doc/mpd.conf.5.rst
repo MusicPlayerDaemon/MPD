@@ -82,7 +82,7 @@ log_level <default, secure, or verbose>
    log levels are available:
 
    - :samp:`default`: interesting informational messages
-   - :samp:`secure`: unimportant informational messages
+   - :samp:`info`: unimportant informational messages
    - :samp:`verbose`: debug messages (for developers and for
      troubleshooting)
 
