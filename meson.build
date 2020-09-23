@@ -77,11 +77,6 @@ test_cxxflags = test_common_flags + [
   '-Wused-but-marked-unused',
 
   '-Wno-non-virtual-dtor',
-
-  # work around bogus GCC7 warning "mangled name for ... will change
-  # in C++17 because the exception specification is part of a function
-  # type"
-  '-Wno-noexcept-type',
 ]
 
 if compiler.get_id() == 'clang'
