@@ -47,7 +47,7 @@ ToAndroidLogLevel(LogLevel log_level) noexcept
 		return ANDROID_LOG_DEBUG;
 
 	case LogLevel::INFO:
-	case LogLevel::DEFAULT:
+	case LogLevel::NOTICE:
 		return ANDROID_LOG_INFO;
 
 	case LogLevel::WARNING:
@@ -63,7 +63,7 @@ ToAndroidLogLevel(LogLevel log_level) noexcept
 
 #else
 
-static LogLevel log_threshold = LogLevel::DEFAULT;
+static LogLevel log_threshold = LogLevel::NOTICE;
 
 static bool enable_timestamp;
 
@@ -122,7 +122,7 @@ ToSysLogLevel(LogLevel log_level) noexcept
 	case LogLevel::INFO:
 		return LOG_INFO;
 
-	case LogLevel::DEFAULT:
+	case LogLevel::NOTICE:
 		return LOG_NOTICE;
 
 	case LogLevel::WARNING:

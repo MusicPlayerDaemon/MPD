@@ -82,8 +82,8 @@ UpdateWalk::UpdateArchiveTree(ArchiveFile &archive, Directory &directory,
 				}
 
 				modified = true;
-				FormatDefault(update_domain, "added %s/%s",
-					      directory.GetPath(), name);
+				FormatNotice(update_domain, "added %s/%s",
+					     directory.GetPath(), name);
 			}
 		} else {
 			if (!song->UpdateFileInArchive(archive)) {

@@ -41,7 +41,7 @@ UpdateRemoveService::RunDeferred() noexcept
 	}
 
 	for (const auto &uri : copy) {
-		FormatDefault(update_domain, "removing %s", uri.c_str());
+		FormatNotice(update_domain, "removing %s", uri.c_str());
 		listener.OnDatabaseSongRemoved(uri.c_str());
 	}
 

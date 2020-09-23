@@ -83,12 +83,12 @@ log_level <default, secure, or verbose>
 
    - :samp:`error`: errors
    - :samp:`warning`: warnings
-   - :samp:`default`: interesting informational messages
+   - :samp:`notice`: interesting informational messages
    - :samp:`info`: unimportant informational messages
    - :samp:`verbose`: debug messages (for developers and for
      troubleshooting)
 
-   The default is :samp:`default`.
+   The default is :samp:`notice`.
 
 follow_outside_symlinks <yes or no>
   Control if MPD will follow symbolic links pointing outside the music dir. You

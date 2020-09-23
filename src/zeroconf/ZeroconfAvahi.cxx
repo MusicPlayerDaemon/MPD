@@ -59,9 +59,9 @@ AvahiGroupCallback(AvahiEntryGroup *g,
 	switch (state) {
 	case AVAHI_ENTRY_GROUP_ESTABLISHED:
 		/* The entry group has been established successfully */
-		FormatDefault(avahi_domain,
-			      "Service '%s' successfully established.",
-			      avahi_name);
+		FormatNotice(avahi_domain,
+			     "Service '%s' successfully established.",
+			     avahi_name);
 		break;
 
 	case AVAHI_ENTRY_GROUP_COLLISION:
@@ -72,9 +72,9 @@ AvahiGroupCallback(AvahiEntryGroup *g,
 			avahi_name = n;
 		}
 
-		FormatDefault(avahi_domain,
-			      "Service name collision, renaming service to '%s'",
-			      avahi_name);
+		FormatNotice(avahi_domain,
+			     "Service name collision, renaming service to '%s'",
+			     avahi_name);
 
 		/* And recreate the services */
 		AvahiRegisterService(avahi_entry_group_get_client(g));
@@ -171,8 +171,8 @@ MyAvahiClientCallback(AvahiClient *c, AvahiClientState state,
 	case AVAHI_CLIENT_FAILURE:
 		reason = avahi_client_errno(c);
 		if (reason == AVAHI_ERR_DISCONNECTED) {
-			LogDefault(avahi_domain,
-				   "Client Disconnected, will reconnect shortly");
+			LogNotice(avahi_domain,
+				  "Client Disconnected, will reconnect shortly");
 			if (avahi_group != nullptr) {
 				avahi_entry_group_free(avahi_group);
 				avahi_group = nullptr;

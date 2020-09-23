@@ -65,11 +65,11 @@ FormatInfo(const Domain &domain, const char *fmt, ...) noexcept
 }
 
 void
-FormatDefault(const Domain &domain, const char *fmt, ...) noexcept
+FormatNotice(const Domain &domain, const char *fmt, ...) noexcept
 {
 	std::va_list ap;
 	va_start(ap, fmt);
-	LogFormatV(LogLevel::DEFAULT, domain, fmt, ap);
+	LogFormatV(LogLevel::NOTICE, domain, fmt, ap);
 	va_end(ap);
 }
 

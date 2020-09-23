@@ -92,7 +92,7 @@
 # Suppress all messages below the given threshold.  Use "verbose" for
 # troubleshooting.
 #
-#log_level			"default"
+#log_level			"notice"
 #
 # Setting "restore_paused" to "yes" puts MPD into pause mode instead
 # of starting playback after startup.

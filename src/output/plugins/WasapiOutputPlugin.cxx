@@ -322,8 +322,8 @@ void WasapiOutput::Enable() {
 
 	if (enumerate_devices && SafeTry([this]() { EnumerateDevices(); })) {
 		for (const auto &desc : device_desc) {
-			FormatDefault(wasapi_output_domain, "Device \"%u\" \"%s\"",
-				      desc.first, desc.second.c_str());
+			FormatNotice(wasapi_output_domain, "Device \"%u\" \"%s\"",
+				     desc.first, desc.second.c_str());
 		}
 	}
 

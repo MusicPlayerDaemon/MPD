@@ -95,8 +95,10 @@ log_init_file(int line)
 static inline LogLevel
 parse_log_level(const char *value)
 {
-	if (StringIsEqual(value, "default"))
-		return LogLevel::DEFAULT;
+	if (StringIsEqual(value, "notice") ||
+	    /* deprecated name: */
+	    StringIsEqual(value, "default"))
+		return LogLevel::NOTICE;
 	else if (StringIsEqual(value, "info") ||
 		 /* deprecated since MPD 0.22: */
 		 StringIsEqual(value, "secure"))
@@ -141,7 +143,7 @@ log_init(const ConfigData &config, bool verbose, bool use_stdout)
 		SetLogThreshold(config.With(ConfigOption::LOG_LEVEL, [](const char *s){
 			return s != nullptr
 				? parse_log_level(s)
-				: LogLevel::DEFAULT;
+				: LogLevel::NOTICE;
 		}));
 
 	if (use_stdout) {

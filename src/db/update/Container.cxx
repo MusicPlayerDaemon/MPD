@@ -75,9 +75,9 @@ UpdateWalk::UpdateContainerFile(Directory &directory,
 			// shouldn't be necessary but it's there..
 			song->mtime = info.mtime;
 
-			FormatDefault(update_domain, "added %s/%s",
-				      contdir->GetPath(),
-				      song->filename.c_str());
+			FormatNotice(update_domain, "added %s/%s",
+				     contdir->GetPath(),
+				     song->filename.c_str());
 
 			{
 				const ScopeDatabaseLock protect;

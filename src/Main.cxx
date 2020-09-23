@@ -194,16 +194,16 @@ glue_db_init_and_load(Instance &instance, const ConfigData &config)
 			    config);
 
 		if (instance.storage == nullptr) {
-			LogDefault(config_domain,
-				   "Found database setting without "
-				   "music_directory - disabling database");
+			LogNotice(config_domain,
+				  "Found database setting without "
+				  "music_directory - disabling database");
 			return true;
 		}
 	} else {
 		if (IsStorageConfigured(config))
-			LogDefault(config_domain,
-				   "Ignoring the storage configuration "
-				   "because the database does not need it");
+			LogNotice(config_domain,
+				  "Ignoring the storage configuration "
+				  "because the database does not need it");
 	}
 
 	try {

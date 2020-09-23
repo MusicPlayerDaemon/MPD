@@ -364,17 +364,17 @@ faad_stream_decode(DecoderClient &client, InputStream &is,
 		}
 
 		if (frame_info.channels != audio_format.channels) {
-			FormatDefault(faad_decoder_domain,
-				      "channel count changed from %u to %u",
-				      audio_format.channels, frame_info.channels);
+			FormatNotice(faad_decoder_domain,
+				     "channel count changed from %u to %u",
+				     audio_format.channels, frame_info.channels);
 			break;
 		}
 
 		if (frame_info.samplerate != audio_format.sample_rate) {
-			FormatDefault(faad_decoder_domain,
-				      "sample rate changed from %u to %lu",
-				      audio_format.sample_rate,
-				      (unsigned long)frame_info.samplerate);
+			FormatNotice(faad_decoder_domain,
+				     "sample rate changed from %u to %lu",
+				     audio_format.sample_rate,
+				     (unsigned long)frame_info.samplerate);
 			break;
 		}
 

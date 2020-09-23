@@ -964,7 +964,7 @@ Player::SongBorder() noexcept
 	{
 		const ScopeUnlock unlock(pc.mutex);
 
-		FormatDefault(player_domain, "played \"%s\"", song->GetURI());
+		FormatNotice(player_domain, "played \"%s\"", song->GetURI());
 
 		ReplacePipe(dc.pipe);
 
@@ -1135,7 +1135,7 @@ Player::Run() noexcept
 	cross_fade_tag.reset();
 
 	if (song != nullptr) {
-		FormatDefault(player_domain, "played \"%s\"", song->GetURI());
+		FormatNotice(player_domain, "played \"%s\"", song->GetURI());
 		song.reset();
 	}
 

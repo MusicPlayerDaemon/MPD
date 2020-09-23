@@ -42,7 +42,7 @@ enum class LogLevel {
 	/**
 	 * Interesting informational message.
 	 */
-	DEFAULT,
+	NOTICE,
 
 	/**
 	 * Warning: something may be wrong.

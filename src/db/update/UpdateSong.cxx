@@ -76,11 +76,11 @@ try {
 		}
 
 		modified = true;
-		FormatDefault(update_domain, "added %s/%s",
-			      directory.GetPath(), name);
+		FormatNotice(update_domain, "added %s/%s",
+			     directory.GetPath(), name);
 	} else if (info.mtime != song->mtime || walk_discard) {
-		FormatDefault(update_domain, "updating %s/%s",
-			      directory.GetPath(), name);
+		FormatNotice(update_domain, "updating %s/%s",
+			     directory.GetPath(), name);
 		if (!song->UpdateFile(storage)) {
 			FormatDebug(update_domain,
 				    "deleting unrecognized file %s/%s",
