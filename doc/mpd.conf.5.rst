@@ -6,16 +6,21 @@ mpd.conf
 DESCRIPTION
 ------------
 
-``mpd.conf`` is the configuration file for mpd(1). If not specified on the command line, MPD first searches for it at ``$XDG_CONFIG_HOME/mpd/mpd.conf`` then at ``~/.mpdconf`` then at ``~/.mpd/mpd.conf`` and then in ``/etc/mpd.conf``.
+:file:`mpd.conf` is the configuration file for :manpage:`mpd(1)`. If
+not specified on the command line, MPD first searches for it at
+:file:`$XDG_CONFIG_HOME/mpd/mpd.conf` then at :file:`~/.mpdconf` then
+at :file:`~/.mpd/mpd.conf` and then in :file:`/etc/mpd.conf`.
 
-Lines beginning with a "#" character are comments. All other non-empty lines
-specify parameters and their values. These lines contain the parameter name and
-parameter value (surrounded by double quotes) separated by whitespace (either
-tabs or spaces). For example:
+Lines beginning with a :samp:`#` character are comments. All other
+non-empty lines specify parameters and their values. These lines
+contain the parameter name and parameter value (surrounded by double
+quotes) separated by whitespace (either tabs or spaces).  For
+example::
 
-parameter "value"
+   parameter "value"
 
-The exception to this rule is the audio_output parameter, which is of theform::
+The exception to this rule is the audio_output parameter, which is of
+the form::
 
    audio_output {
    	parameter1 "value"
@@ -25,11 +30,12 @@ The exception to this rule is the audio_output parameter, which is of theform::
 
 Parameters that take a file or directory as an argument should use absolute paths.
 
-See ``docs/mpdconf.example`` in the source tarball for an example configuration file.
+See :file:`docs/mpdconf.example` in the source tarball for an example
+configuration file.
 
 This manual is not complete, it lists only the most important options.
 Please read the MPD user manual for a complete configuration guide:
-``<http://www.musicpd.org/doc/user/>``
+http://www.musicpd.org/doc/user/
 
 
 REQUIRED PARAMETERS
@@ -62,7 +68,7 @@ playlist_directory <directory>
 state_file <file>
    This specifies if a state file is used and where it is located. The state of
    mpd will be saved to this file when mpd is terminated by a TERM signal or by
-   the "kill" command. When mpd is restarted, it will read the state file and
+   the :program:`kill` command. When mpd is restarted, it will read the state file and
    restore the state of mpd (including the playlist).
 
 restore_paused <yes or no>
@@ -117,7 +123,7 @@ audio_output
 
 replaygain <off or album or track or auto>
   If specified, mpd will adjust the volume of songs played using ReplayGain
-  tags (see ``<http://www.replaygain.org/>``). Setting this to "album" will
+  tags (see http://www.replaygain.org/). Setting this to "album" will
   adjust volume using the album's ReplayGain tags, while setting it to "track"
   will adjust it using the track ReplayGain tags. "auto" uses the track
   ReplayGain tags if random play is activated otherwise the album ReplayGain
@@ -154,7 +160,7 @@ REQUIRED AUDIO OUTPUT PARAMETERS
 
 type <type>
   This specifies the audio output type. See the list of supported outputs in
-  mpd --version for possible values.
+  ``mpd --version`` for possible values.
 
 name <name>
   This specifies a unique name for the audio output.
@@ -184,13 +190,13 @@ mixer_type <hardware, software or none>
 FILES
 -----
 
-~/.mpdconf
+:file:`~/.mpdconf`
   User configuration file.
 
-/etc/mpd.conf
+:file:`/etc/mpd.conf`
   Global configuration file.
 
 SEE ALSO
 --------
 
-  mpd(1), mpc(1)
+:manpage:`mpd(1)`, :manpage:`mpc(1)`
