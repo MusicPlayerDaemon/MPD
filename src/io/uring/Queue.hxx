@@ -33,10 +33,9 @@
 #pragma once
 
 #include "Ring.hxx"
+#include "util/IntrusiveList.hxx"
 
 #include <liburing.h>
-
-#include <boost/intrusive/list.hpp>
 
 namespace Uring {
 
@@ -50,9 +49,7 @@ class CancellableOperation;
 class Queue {
 	Ring ring;
 
-	boost::intrusive::list<CancellableOperation,
-			       boost::intrusive::base_hook<boost::intrusive::list_base_hook<boost::intrusive::link_mode<boost::intrusive::normal_link>>>,
-			       boost::intrusive::constant_time_size<false>> operations;
+	IntrusiveList<CancellableOperation> operations;
 
 public:
 	Queue(unsigned entries, unsigned flags);
