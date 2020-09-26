@@ -120,8 +120,7 @@ CompositeStorage::Directory::Make(std::string_view uri)
 		if (name.empty())
 			continue;
 
-		auto i = directory->children.emplace(std::move(name),
-						     Directory());
+		auto i = directory->children.emplace(name, Directory());
 		directory = &i.first->second;
 	}
 
