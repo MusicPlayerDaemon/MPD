@@ -29,10 +29,7 @@
 
 #include <string.h>
 
-AudioOutputSource::AudioOutputSource() noexcept
-{
-}
-
+AudioOutputSource::AudioOutputSource() noexcept = default;
 AudioOutputSource::~AudioOutputSource() noexcept = default;
 
 AudioFormat
