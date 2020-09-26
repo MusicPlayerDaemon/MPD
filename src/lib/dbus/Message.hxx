@@ -48,6 +48,8 @@ class Message {
 public:
 	Message() noexcept = default;
 
+	Message(const Message &src) = default;
+
 	Message(Message &&src) noexcept
 		:msg(std::exchange(src.msg, nullptr)) {}
 
