@@ -98,7 +98,7 @@ flac_playlist_open_stream(InputStreamPtr &&is)
 	return nullptr;
 }
 
-static const char *const flac_playlist_suffixes[] = {
+static constexpr const char *flac_playlist_suffixes[] = {
 	"flac",
 	nullptr
 };

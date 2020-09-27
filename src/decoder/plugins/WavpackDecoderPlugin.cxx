@@ -632,12 +632,12 @@ wavpack_scan_stream(InputStream &is, TagHandler &handler)
 	return true;
 }
 
-static char const *const wavpack_suffixes[] = {
+static constexpr const char *wavpack_suffixes[] = {
 	"wv",
 	nullptr
 };
 
-static char const *const wavpack_mime_types[] = {
+static constexpr const char *wavpack_mime_types[] = {
 	"audio/x-wavpack",
 	nullptr
 };

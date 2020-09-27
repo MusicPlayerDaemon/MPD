@@ -180,7 +180,7 @@ Bzip2InputStream::IsEOF() const noexcept
 
 /* exported structures */
 
-static const char *const bz2_extensions[] = {
+static constexpr const char *bz2_extensions[] = {
 	"bz2",
 	nullptr
 };

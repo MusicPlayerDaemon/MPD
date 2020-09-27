@@ -319,7 +319,7 @@ Iso9660InputStream::IsEOF() const noexcept
 
 /* exported structures */
 
-static const char *const iso9660_archive_extensions[] = {
+static constexpr const char * iso9660_archive_extensions[] = {
 	"iso",
 	nullptr
 };

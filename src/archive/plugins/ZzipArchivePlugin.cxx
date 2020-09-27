@@ -188,7 +188,7 @@ ZzipInputStream::Seek(std::unique_lock<Mutex> &, offset_type new_offset)
 
 /* exported structures */
 
-static const char *const zzip_archive_extensions[] = {
+static constexpr const char *zzip_archive_extensions[] = {
 	"zip",
 	nullptr
 };

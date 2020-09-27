@@ -156,14 +156,14 @@ handle_read_comments(Client &client, Request args, Response &r)
 static InputStreamPtr
 find_stream_art(std::string_view directory, Mutex &mutex)
 {
-	static constexpr char const * art_names[] = {
+	static constexpr auto art_names = std::array {
 		"cover.png",
 		"cover.jpg",
 		"cover.tiff",
-		"cover.bmp"
+		"cover.bmp",
 	};
 
-	for(const auto name: art_names) {
+	for(const auto name : art_names) {
 		std::string art_file = PathTraitsUTF8::Build(directory, name);
 
 		try {

@@ -153,12 +153,12 @@ rss_open_stream(InputStreamPtr &&is)
 	return std::make_unique<MemorySongEnumerator>(std::move(parser.songs));
 }
 
-static const char *const rss_suffixes[] = {
+static constexpr const char *rss_suffixes[] = {
 	"rss",
 	nullptr
 };
 
-static const char *const rss_mime_types[] = {
+static constexpr const char *rss_mime_types[] = {
 	"application/rss+xml",
 	"application/xml",
 	"text/xml",

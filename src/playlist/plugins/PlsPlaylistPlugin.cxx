@@ -162,12 +162,12 @@ pls_open_stream(InputStreamPtr &&is)
 	return std::make_unique<MemorySongEnumerator>(std::move(songs));
 }
 
-static const char *const pls_suffixes[] = {
+static constexpr const char *pls_suffixes[] = {
 	"pls",
 	nullptr
 };
 
-static const char *const pls_mime_types[] = {
+static constexpr const char *pls_mime_types[] = {
 	"audio/x-scpls",
 	nullptr
 };

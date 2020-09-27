@@ -213,12 +213,12 @@ xspf_open_stream(InputStreamPtr &&is)
 	return std::make_unique<MemorySongEnumerator>(std::move(parser.songs));
 }
 
-static const char *const xspf_suffixes[] = {
+static constexpr const char *xspf_suffixes[] = {
 	"xspf",
 	nullptr
 };
 
-static const char *const xspf_mime_types[] = {
+static constexpr const char *xspf_mime_types[] = {
 	"application/xspf+xml",
 	nullptr
 };

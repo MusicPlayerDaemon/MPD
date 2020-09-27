@@ -45,7 +45,7 @@ enum sticker_sql {
 	STICKER_SQL_COUNT
 };
 
-static const char *const sticker_sql[] = {
+static constexpr auto sticker_sql = std::array {
 	//[STICKER_SQL_GET] =
 	"SELECT value FROM sticker WHERE type=? AND uri=? AND name=?",
 	//[STICKER_SQL_LIST] =
@@ -71,7 +71,7 @@ static const char *const sticker_sql[] = {
 	"SELECT uri,value FROM sticker WHERE type=? AND uri LIKE (? || '%') AND name=? AND value>?",
 };
 
-static const char sticker_sql_create[] =
+static constexpr const char sticker_sql_create[] =
 	"CREATE TABLE IF NOT EXISTS sticker("
 	"  type VARCHAR NOT NULL, "
 	"  uri VARCHAR NOT NULL, "
@@ -99,7 +99,7 @@ StickerDatabase::StickerDatabase(Path path)
 
 	/* prepare the statements we're going to use */
 
-	for (unsigned i = 0; i < std::size(sticker_sql); ++i) {
+	for (size_t i = 0; i < sticker_sql.size(); ++i) {
 		assert(sticker_sql[i] != nullptr);
 
 		stmt[i] = Prepare(db, sticker_sql[i]);
@@ -110,10 +110,10 @@ StickerDatabase::~StickerDatabase() noexcept
 {
 	assert(db != nullptr);
 
-	for (unsigned i = 0; i < std::size(stmt); ++i) {
-		assert(stmt[i] != nullptr);
+	for (const auto &sticker : stmt) {
+		assert(sticker != nullptr);
 
-		sqlite3_finalize(stmt[i]);
+		sqlite3_finalize(sticker);
 	}
 }
 

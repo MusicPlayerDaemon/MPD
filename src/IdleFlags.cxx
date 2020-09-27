@@ -27,7 +27,7 @@
 
 #include <cassert>
 
-static const char *const idle_names[] = {
+static constexpr const char * idle_names[] = {
 	"database",
 	"stored_playlist",
 	"playlist",
@@ -42,7 +42,7 @@ static const char *const idle_names[] = {
 	"neighbor",
 	"mount",
 	"partition",
-	nullptr
+	nullptr,
 };
 
 const char*const*
