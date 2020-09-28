@@ -35,7 +35,7 @@
  * Offset the given pointer by the specified number of bytes.
  */
 constexpr void *
-OffsetPointer(void *p, ptrdiff_t offset) noexcept
+OffsetPointer(void *p, std::ptrdiff_t offset) noexcept
 {
 	return (char *)p + offset;
 }
@@ -44,7 +44,7 @@ OffsetPointer(void *p, ptrdiff_t offset) noexcept
  * Offset the given pointer by the specified number of bytes.
  */
 constexpr const void *
-OffsetPointer(const void *p, ptrdiff_t offset) noexcept
+OffsetPointer(const void *p, std::ptrdiff_t offset) noexcept
 {
 	return (const char *)p + offset;
 }
