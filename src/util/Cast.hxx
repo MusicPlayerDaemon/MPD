@@ -31,7 +31,6 @@
 #define CAST_HXX
 
 #include "OffsetPointer.hxx"
-#include "Compiler.h"
 
 #include <cstddef>
 
