@@ -111,7 +111,7 @@
 
 #include <climits>
 
-#ifdef HAVE_CLOCALE
+#ifndef ANDROID
 #include <clocale>
 #endif
 
@@ -358,11 +358,9 @@ MainConfigured(const struct options &options, const ConfigData &raw_config)
 #endif
 
 #ifndef ANDROID
-#ifdef HAVE_CLOCALE
 	/* initialize locale */
 	std::setlocale(LC_CTYPE,"");
 	std::setlocale(LC_COLLATE, "");
-#endif
 #endif
 
 	const ScopeIcuInit icu_init;
