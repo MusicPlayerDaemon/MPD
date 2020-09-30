@@ -1,4 +1,4 @@
-if not get_option('html_manual')
+if not get_option('html_manual') and not get_option('manpages')
   subdir_done()
 endif
 
