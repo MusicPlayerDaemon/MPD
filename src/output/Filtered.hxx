@@ -216,6 +216,8 @@ public:
 	 */
 	void CloseSoftwareMixer() noexcept;
 
+	void Interrupt() noexcept;
+
 	gcc_pure
 	std::chrono::steady_clock::duration Delay() noexcept;
 

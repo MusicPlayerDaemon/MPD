@@ -197,6 +197,15 @@ class AudioOutputControl {
 	bool allow_play = true;
 
 	/**
+	 * Was an #AudioOutputInterrupted caught?  In this case,
+	 * playback is suspended, and the output thread waits for a
+	 * command.
+	 *
+	 * This field is only valid while the output is open.
+	 */
+	bool caught_interrupted;
+
+	/**
 	 * True while the OutputThread is inside ao_play().  This
 	 * means the PlayerThread does not need to wake up the
 	 * OutputThread when new chunks are added to the MusicPipe,

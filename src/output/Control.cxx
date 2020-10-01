@@ -359,6 +359,9 @@ AudioOutputControl::LockPauseAsync() noexcept
 		   mixer_auto_close()) */
 		mixer_auto_close(output->mixer);
 
+	if (output)
+		output->Interrupt();
+
 	const std::lock_guard<Mutex> protect(mutex);
 
 	assert(allow_play);
@@ -379,6 +382,9 @@ AudioOutputControl::LockDrainAsync() noexcept
 void
 AudioOutputControl::LockCancelAsync() noexcept
 {
+	if (output)
+		output->Interrupt();
+
 	const std::lock_guard<Mutex> protect(mutex);
 
 	if (IsOpen()) {
@@ -403,6 +409,8 @@ AudioOutputControl::LockRelease() noexcept
 	if (!output)
 		return;
 
+	output->Interrupt();
+
 	if (output->mixer != nullptr &&
 	    (!always_on || !output->SupportsPause()))
 		/* the device has no pause mode: close the mixer,
@@ -426,6 +434,9 @@ AudioOutputControl::LockCloseWait() noexcept
 {
 	assert(!open || !fail_timer.IsDefined());
 
+	if (output)
+		output->Interrupt();
+
 	std::unique_lock<Mutex> lock(mutex);
 	CloseWait(lock);
 }
@@ -434,6 +445,9 @@ void
 AudioOutputControl::BeginDestroy() noexcept
 {
 	if (thread.IsDefined()) {
+		if (output)
+			output->Interrupt();
+
 		const std::lock_guard<Mutex> protect(mutex);
 		if (!killed) {
 			killed = true;

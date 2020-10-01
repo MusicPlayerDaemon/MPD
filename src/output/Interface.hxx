@@ -127,6 +127,24 @@ public:
 	}
 
 	/**
+	 * Interrupt a blocking operation inside the plugin.  This
+	 * method will be called from outside the output thread (and
+	 * therefore the method must be thread-safe), to make the
+	 * output thread ready for receiving a command.  For example,
+	 * it will be called to prepare for an upcoming Close(),
+	 * Cancel() or Pause() call.
+	 *
+	 * This method can be called any time, even if the output is
+	 * not open or disabled.
+	 *
+	 * Implementations usually send some kind of message/signal to
+	 * the output thread to wake it up and return to the output
+	 * thread loop (e.g. by throwing #AudioOutputInterrupted),
+	 * where the incoming command will be handled and dispatched.
+	 */
+	virtual void Interrupt() noexcept {}
+
+	/**
 	 * Returns a positive number if the output thread shall further
 	 * delay the next call to Play() or Pause(), which will happen
 	 * until this function returns 0.  This should be implemented
@@ -142,6 +160,11 @@ public:
 	/**
 	 * Display metadata for the next chunk.  Optional method,
 	 * because not all devices can display metadata.
+	 *
+	 * Throws on error.
+	 *
+	 * May throw #AudioOutputInterrupted after Interrupt() has
+	 * been called.
 	 */
 	virtual void SendTag(const Tag &) {}
 
@@ -150,6 +173,9 @@ public:
 	 * least one audio frame is consumed.
 	 *
 	 * Throws on error.
+	 *
+	 * May throw #AudioOutputInterrupted after Interrupt() has
+	 * been called.
 	 *
 	 * @return the number of bytes played (must be a multiple of
 	 * the frame size)
@@ -176,6 +202,9 @@ public:
 	 * silence during pause, so their clients won't be
 	 * disconnected.  Plugins which do not support pausing will
 	 * simply be closed, and have to be reopened when unpaused.
+	 *
+	 * May throw #AudioOutputInterrupted after Interrupt() has
+	 * been called.
 	 *
 	 * @return false on error (output will be closed by caller),
 	 * true for continue to pause

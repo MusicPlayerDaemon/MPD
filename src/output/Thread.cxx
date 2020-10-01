@@ -18,6 +18,7 @@
  */
 
 #include "Control.hxx"
+#include "Error.hxx"
 #include "Filtered.hxx"
 #include "Client.hxx"
 #include "Domain.hxx"
@@ -135,6 +136,7 @@ AudioOutputControl::InternalOpen(const AudioFormat in_audio_format,
 
 	last_error = nullptr;
 	fail_timer.Reset();
+	caught_interrupted = false;
 	skip_delay = true;
 
 	AudioFormat f;
@@ -243,6 +245,9 @@ AudioOutputControl::PlayChunk(std::unique_lock<Mutex> &lock) noexcept
 		const ScopeUnlock unlock(mutex);
 		try {
 			output->SendTag(*tag);
+		} catch (AudioOutputInterrupted) {
+			caught_interrupted = true;
+			return false;
 		} catch (...) {
 			FormatError(std::current_exception(),
 				    "Failed to send tag to %s",
@@ -267,6 +272,9 @@ AudioOutputControl::PlayChunk(std::unique_lock<Mutex> &lock) noexcept
 			nbytes = output->Play(data.data, data.size);
 			assert(nbytes > 0);
 			assert(nbytes <= data.size);
+		} catch (AudioOutputInterrupted) {
+			caught_interrupted = true;
+			return false;
 		} catch (...) {
 			FormatError(std::current_exception(),
 				    "Failed to play on %s", GetLogName());
@@ -342,6 +350,7 @@ AudioOutputControl::InternalPause(std::unique_lock<Mutex> &lock) noexcept
 		try {
 			const ScopeUnlock unlock(mutex);
 			success = output->IteratePause();
+		} catch (AudioOutputInterrupted) {
 		} catch (...) {
 			FormatError(std::current_exception(),
 				    "Failed to pause %s",
@@ -425,7 +434,8 @@ AudioOutputControl::Task() noexcept
 			/* no pending command: play (or wait for a
 			   command) */
 
-			if (open && allow_play && InternalPlay(lock))
+			if (open && allow_play && !caught_interrupted &&
+			    InternalPlay(lock))
 				/* don't wait for an event if there
 				   are more chunks in the pipe */
 				continue;
@@ -463,6 +473,8 @@ AudioOutputControl::Task() noexcept
 				break;
 			}
 
+			caught_interrupted = false;
+
 			InternalPause(lock);
 			break;
 
@@ -474,6 +486,8 @@ AudioOutputControl::Task() noexcept
 				CommandFinished();
 				break;
 			}
+
+			caught_interrupted = false;
 
 			if (always_on) {
 				/* in "always_on" mode, the output is
@@ -499,6 +513,8 @@ AudioOutputControl::Task() noexcept
 			break;
 
 		case Command::CANCEL:
+			caught_interrupted = false;
+
 			source.Cancel();
 
 			if (open) {

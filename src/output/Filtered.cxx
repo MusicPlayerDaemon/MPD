@@ -184,6 +184,12 @@ FilteredAudioOutput::Drain()
 }
 
 void
+FilteredAudioOutput::Interrupt() noexcept
+{
+	output->Interrupt();
+}
+
+void
 FilteredAudioOutput::Cancel() noexcept
 {
 	output->Cancel();
