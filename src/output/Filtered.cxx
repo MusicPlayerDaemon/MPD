@@ -196,13 +196,7 @@ FilteredAudioOutput::BeginPause() noexcept
 }
 
 bool
-FilteredAudioOutput::IteratePause() noexcept
+FilteredAudioOutput::IteratePause()
 {
-	try {
-		return output->Pause();
-	} catch (...) {
-		FormatError(std::current_exception(), "Failed to pause %s",
-			    GetLogName());
-		return false;
-	}
+	return output->Pause();
 }

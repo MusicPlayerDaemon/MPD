@@ -338,10 +338,14 @@ AudioOutputControl::InternalPause(std::unique_lock<Mutex> &lock) noexcept
 		if (!WaitForDelay(lock))
 			break;
 
-		bool success;
-		{
+		bool success = false;
+		try {
 			const ScopeUnlock unlock(mutex);
 			success = output->IteratePause();
+		} catch (...) {
+			FormatError(std::current_exception(),
+				    "Failed to pause %s",
+				    GetLogName());
 		}
 
 		if (!success) {

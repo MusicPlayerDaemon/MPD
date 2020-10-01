@@ -227,7 +227,7 @@ public:
 	void Cancel() noexcept;
 
 	void BeginPause() noexcept;
-	bool IteratePause() noexcept;
+	bool IteratePause();
 
 	void EndPause() noexcept{
 	}
