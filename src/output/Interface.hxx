@@ -41,21 +41,21 @@ protected:
 	static constexpr unsigned FLAG_NEED_FULLY_DEFINED_AUDIO_FORMAT = 0x4;
 
 public:
-	explicit AudioOutput(unsigned _flags):flags(_flags) {}
-	virtual ~AudioOutput() = default;
+	explicit AudioOutput(unsigned _flags) noexcept:flags(_flags) {}
+	virtual ~AudioOutput() noexcept = default;
 
 	AudioOutput(const AudioOutput &) = delete;
 	AudioOutput &operator=(const AudioOutput &) = delete;
 
-	bool SupportsEnableDisable() const {
+	bool SupportsEnableDisable() const noexcept {
 		return flags & FLAG_ENABLE_DISABLE;
 	}
 
-	bool SupportsPause() const {
+	bool SupportsPause() const noexcept {
 		return flags & FLAG_PAUSE;
 	}
 
-	bool GetNeedFullyDefinedAudioFormat() const {
+	bool GetNeedFullyDefinedAudioFormat() const noexcept {
 		return flags & FLAG_NEED_FULLY_DEFINED_AUDIO_FORMAT;
 	}
 
