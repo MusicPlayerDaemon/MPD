@@ -25,6 +25,7 @@
 #include "lib/alsa/PeriodBuffer.hxx"
 #include "lib/alsa/Version.hxx"
 #include "../OutputAPI.hxx"
+#include "../Error.hxx"
 #include "mixer/MixerList.hxx"
 #include "pcm/Export.hxx"
 #include "system/PeriodClock.hxx"
@@ -178,6 +179,15 @@ class AlsaOutput final
 	bool drain;
 
 	/**
+	 * Was Interrupt() called?  This will unblock
+	 * LockWaitWriteAvailable().  It will be reset by Cancel() and
+	 * Pause(), as documented by the #AudioOutput interface.
+	 *
+	 * Only initialized while the output is open.
+	 */
+	bool interrupted;
+
+	/**
 	 * This buffer gets allocated after opening the ALSA device.
 	 * It contains silence samples, enough to fill one period (see
 	 * #period_frames).
@@ -237,9 +247,12 @@ private:
 	void Open(AudioFormat &audio_format) override;
 	void Close() noexcept override;
 
+	void Interrupt() noexcept override;
+
 	size_t Play(const void *chunk, size_t size) override;
 	void Drain() override;
 	void Cancel() noexcept override;
+	bool Pause() noexcept override;
 
 	/**
 	 * Set up the snd_pcm_t object which was opened by the caller.
@@ -728,6 +741,7 @@ AlsaOutput::Open(AudioFormat &audio_format)
 	out_frame_size = pcm_export->GetOutputFrameSize();
 
 	drain = false;
+	interrupted = false;
 
 	size_t period_size = period_frames * out_frame_size;
 	ring_buffer = new boost::lockfree::spsc_queue<uint8_t>(period_size * 4);
@@ -739,6 +753,18 @@ AlsaOutput::Open(AudioFormat &audio_format)
 	must_prepare = false;
 	written = false;
 	error = {};
+}
+
+void
+AlsaOutput::Interrupt() noexcept
+{
+	std::unique_lock<Mutex> lock(mutex);
+
+	/* the "interrupted" flag will prevent
+	   LockWaitWriteAvailable() from actually waiting, and will
+	   instead throw AudioOutputInterrupted */
+	interrupted = true;
+	cond.notify_one();
 }
 
 inline int
@@ -912,6 +938,11 @@ AlsaOutput::CancelInternal() noexcept
 void
 AlsaOutput::Cancel() noexcept
 {
+	{
+		std::unique_lock<Mutex> lock(mutex);
+		interrupted = false;
+	}
+
 	if (!LockIsActive()) {
 		/* early cancel, quick code path without thread
 		   synchronization */
@@ -926,6 +957,17 @@ AlsaOutput::Cancel() noexcept
 	BlockingCall(GetEventLoop(), [this](){
 			CancelInternal();
 		});
+}
+
+bool
+AlsaOutput::Pause() noexcept
+{
+	std::unique_lock<Mutex> lock(mutex);
+	interrupted = false;
+
+	/* not implemented - this override exists only to reset the
+	   "interrupted" flag */
+	return false;
 }
 
 void
@@ -955,6 +997,11 @@ AlsaOutput::LockWaitWriteAvailable()
 	while (true) {
 		if (error)
 			std::rethrow_exception(error);
+
+		if (interrupted)
+			/* a CANCEL command is in flight - don't block
+			   here */
+			throw AudioOutputInterrupted{};
 
 		size_t write_available = ring_buffer->write_available();
 		if (write_available >= min_available) {
