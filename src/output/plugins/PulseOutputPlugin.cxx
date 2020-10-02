@@ -22,6 +22,7 @@
 #include "lib/pulse/LogError.hxx"
 #include "lib/pulse/LockGuard.hxx"
 #include "../OutputAPI.hxx"
+#include "../Error.hxx"
 #include "mixer/MixerList.hxx"
 #include "mixer/plugins/PulseMixerPlugin.hxx"
 #include "util/ScopeExit.hxx"
@@ -56,6 +57,15 @@ class PulseOutput final : AudioOutput {
 	size_t writable;
 
 	bool pause;
+
+	/**
+	 * Was Interrupt() called?  This will unblock Play().  It will
+	 * be reset by Cancel() and Pause(), as documented by the
+	 * #AudioOutput interface.
+	 *
+	 * Only initialized while the output is open.
+	 */
+	bool interrupted;
 
 	explicit PulseOutput(const ConfigBlock &block);
 
@@ -98,6 +108,8 @@ public:
 
 	void Open(AudioFormat &audio_format) override;
 	void Close() noexcept override;
+
+	void Interrupt() noexcept override;
 
 	[[nodiscard]] std::chrono::steady_clock::duration Delay() const noexcept override;
 	size_t Play(const void *chunk, size_t size) override;
@@ -677,6 +689,7 @@ PulseOutput::Open(AudioFormat &audio_format)
 	}
 
 	pause = false;
+	interrupted = false;
 }
 
 void
@@ -705,6 +718,21 @@ PulseOutput::Close() noexcept
 }
 
 void
+PulseOutput::Interrupt() noexcept
+{
+	if (mainloop == nullptr)
+		return;
+
+	const Pulse::LockGuard lock(mainloop);
+
+	/* the "interrupted" flag will prevent Play() from blocking,
+	   and will instead throw AudioOutputInterrupted */
+	interrupted = true;
+
+	Signal();
+}
+
+void
 PulseOutput::WaitStream()
 {
 	while (true) {
@@ -719,6 +747,9 @@ PulseOutput::WaitStream()
 					     "failed to connect the stream");
 
 		case PA_STREAM_CREATING:
+			if (interrupted)
+				throw AudioOutputInterrupted{};
+
 			pa_threaded_mainloop_wait(mainloop);
 			break;
 		}
@@ -784,6 +815,9 @@ PulseOutput::Play(const void *chunk, size_t size)
 		if (pa_stream_is_suspended(stream))
 			throw std::runtime_error("suspended");
 
+		if (interrupted)
+			throw AudioOutputInterrupted{};
+
 		pa_threaded_mainloop_wait(mainloop);
 
 		if (pa_stream_get_state(stream) != PA_STREAM_READY)
@@ -813,6 +847,7 @@ PulseOutput::Cancel() noexcept
 	assert(stream != nullptr);
 
 	Pulse::LockGuard lock(mainloop);
+	interrupted = false;
 
 	if (pa_stream_get_state(stream) != PA_STREAM_READY) {
 		/* no need to flush when the stream isn't connected
@@ -842,6 +877,7 @@ PulseOutput::Pause()
 	Pulse::LockGuard lock(mainloop);
 
 	pause = true;
+	interrupted = false;
 
 	/* check if the stream is (already/still) connected */
 
