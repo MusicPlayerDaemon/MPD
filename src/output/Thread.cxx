@@ -422,6 +422,16 @@ AudioOutputControl::Task() noexcept
 	while (true) {
 		switch (command) {
 		case Command::NONE:
+			/* no pending command: play (or wait for a
+			   command) */
+
+			if (open && allow_play && InternalPlay(lock))
+				/* don't wait for an event if there
+				   are more chunks in the pipe */
+				continue;
+
+			woken_for_play = false;
+			wake_cond.wait(lock);
 			break;
 
 		case Command::ENABLE:
@@ -454,11 +464,7 @@ AudioOutputControl::Task() noexcept
 			}
 
 			InternalPause(lock);
-			/* don't "break" here: this might cause
-			   Play() to be called when command==CLOSE
-			   ends the paused state - "continue" checks
-			   the new command first */
-			continue;
+			break;
 
 		case Command::RELEASE:
 			if (!open) {
@@ -483,18 +489,14 @@ AudioOutputControl::Task() noexcept
 				CommandFinished();
 			}
 
-			/* don't "break" here: this might cause
-			   Play() to be called when command==CLOSE
-			   ends the paused state - "continue" checks
-			   the new command first */
-			continue;
+			break;
 
 		case Command::DRAIN:
 			if (open)
 				InternalDrain();
 
 			CommandFinished();
-			continue;
+			break;
 
 		case Command::CANCEL:
 			source.Cancel();
@@ -505,23 +507,13 @@ AudioOutputControl::Task() noexcept
 			}
 
 			CommandFinished();
-			continue;
+			break;
 
 		case Command::KILL:
 			InternalDisable();
 			source.Cancel();
 			CommandFinished();
 			return;
-		}
-
-		if (open && allow_play && InternalPlay(lock))
-			/* don't wait for an event if there are more
-			   chunks in the pipe */
-			continue;
-
-		if (command == Command::NONE) {
-			woken_for_play = false;
-			wake_cond.wait(lock);
 		}
 	}
 }
