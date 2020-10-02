@@ -20,6 +20,7 @@
 #include "config.h"
 #include "JackOutputPlugin.hxx"
 #include "../OutputAPI.hxx"
+#include "../Error.hxx"
 #include "output/Features.h"
 #include "thread/Mutex.hxx"
 #include "util/ScopeExit.hxx"
@@ -78,6 +79,15 @@ class JackOutput final : public AudioOutput {
 	 * silence.
 	 */
 	std::atomic_bool pause;
+
+	/**
+	 * Was Interrupt() called?  This will unblock Play().  It will
+	 * be reset by Cancel() and Pause(), as documented by the
+	 * #AudioOutput interface.
+	 *
+	 * Only initialized while the output is open.
+	 */
+	bool interrupted;
 
 	/**
 	 * Protects #error.
@@ -156,6 +166,8 @@ public:
 		Stop();
 	}
 
+	void Interrupt() noexcept override;
+
 	std::chrono::steady_clock::duration Delay() const noexcept override {
 		return pause && !LockWasShutdown()
 			? std::chrono::seconds(1)
@@ -164,6 +176,7 @@ public:
 
 	size_t Play(const void *chunk, size_t size) override;
 
+	void Cancel() noexcept override;
 	bool Pause() override;
 
 private:
@@ -613,7 +626,19 @@ JackOutput::Open(AudioFormat &new_audio_format)
 	new_audio_format.format = SampleFormat::FLOAT;
 	audio_format = new_audio_format;
 
+	interrupted = false;
+
 	Start();
+}
+
+void
+JackOutput::Interrupt() noexcept
+{
+	const std::unique_lock<Mutex> lock(mutex);
+
+	/* the "interrupted" flag will prevent Play() from waiting,
+	   and will instead throw AudioOutputInterrupted */
+	interrupted = true;
 }
 
 inline size_t
@@ -671,6 +696,9 @@ JackOutput::Play(const void *chunk, size_t size)
 			const std::lock_guard<Mutex> lock(mutex);
 			if (error)
 				std::rethrow_exception(error);
+
+			if (interrupted)
+				throw AudioOutputInterrupted{};
 		}
 
 		size_t frames_written =
@@ -684,11 +712,19 @@ JackOutput::Play(const void *chunk, size_t size)
 	}
 }
 
+void
+JackOutput::Cancel() noexcept
+{
+	const std::unique_lock<Mutex> lock(mutex);
+	interrupted = false;
+}
+
 inline bool
 JackOutput::Pause()
 {
 	{
 		const std::lock_guard<Mutex> lock(mutex);
+		interrupted = false;
 		if (error)
 			std::rethrow_exception(error);
 	}
