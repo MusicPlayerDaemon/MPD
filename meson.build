@@ -112,6 +112,13 @@ if get_option('buildtype') != 'debug'
   ]
 endif
 
+if get_option('fuzzer')
+  fuzzer_flags = ['-fsanitize=fuzzer,address,undefined']
+  add_global_arguments(fuzzer_flags, language: 'cpp')
+  add_global_arguments(fuzzer_flags, language: 'c')
+  add_global_link_arguments(fuzzer_flags, language: 'cpp')
+endif
+
 add_global_arguments(common_cxxflags + compiler.get_supported_arguments(test_cxxflags), language: 'cpp')
 add_global_arguments(common_cflags + c_compiler.get_supported_arguments(test_cflags), language: 'c')
 add_global_link_arguments(compiler.get_supported_link_arguments(test_ldflags), language: 'cpp')
@@ -502,6 +509,7 @@ mpd = build_target(
     chromaprint_dep,
   ],
   link_args: link_args,
+  build_by_default: not get_option('fuzzer'),
   install: not is_android and not is_haiku,
 )
 
@@ -541,4 +549,8 @@ subdir('doc')
 
 if get_option('test')
   subdir('test')
+endif
+
+if get_option('fuzzer')
+  subdir('test/fuzzer')
 endif

@@ -17,6 +17,7 @@ option('systemd_user_unit_dir', type: 'string', description: 'systemd user servi
 #
 
 option('test', type: 'boolean', value: false, description: 'Build the unit tests and debug programs')
+option('fuzzer', type: 'boolean', value: false, description: 'Build fuzzers (requires libFuzzer)')
 
 #
 # Android
