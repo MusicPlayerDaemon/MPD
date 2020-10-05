@@ -262,7 +262,9 @@ CueParser::Feed2(char *p) noexcept
 		if (previous != nullptr && previous->GetStartTime().ToMS() < (unsigned)position_ms)
 			previous->SetEndTime(SongTime::FromMS(position_ms));
 
-		current->SetStartTime(SongTime::FromMS(position_ms));
+		if (current != nullptr)
+			current->SetStartTime(SongTime::FromMS(position_ms));
+
 		if(strcmp(nr, "00") != 0 || previous == nullptr)
 			ignore_index = true;
 	}
