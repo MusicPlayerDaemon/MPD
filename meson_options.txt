@@ -2,8 +2,6 @@ option('documentation', type: 'feature', description: 'Build documentation')
 option('html_manual', type: 'boolean', value: true, description: 'Build the HTML manual')
 option('manpages', type: 'boolean', value: true, description: 'Build manual pages')
 
-option('test', type: 'boolean', value: false, description: 'Build the unit tests and debug programs')
-
 option('syslog', type: 'feature', description: 'syslog support')
 option('inotify', type: 'boolean', value: true, description: 'inotify support (for automatic database update)')
 option('io_uring', type: 'feature', description: 'Linux io_uring support using liburing')
@@ -13,6 +11,12 @@ option('systemd', type: 'feature', description: 'systemd support')
 
 option('systemd_system_unit_dir', type: 'string', description: 'systemd system service directory')
 option('systemd_user_unit_dir', type: 'string', description: 'systemd user service directory')
+
+#
+# Options for developers
+#
+
+option('test', type: 'boolean', value: false, description: 'Build the unit tests and debug programs')
 
 #
 # Android
