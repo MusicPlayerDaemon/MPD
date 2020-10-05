@@ -32,7 +32,7 @@ cue_next_word(StringView &src) noexcept
 	assert(!IsWhitespaceNotNull(src.front()));
 
 	auto end = std::find_if(src.begin(), src.end(),
-				IsWhitespaceOrNull);
+				[](char ch){ return IsWhitespaceOrNull(ch); });
 	StringView word(src.begin(), end);
 	src = src.substr(end);
 	return word;
