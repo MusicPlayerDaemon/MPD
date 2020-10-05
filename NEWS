@@ -2,6 +2,8 @@ ver 0.22.1 (not yet released)
 * output
   - alsa: don't deadlock when the ALSA driver is buggy
   - jack, pulse: reduce the delay when stopping or pausing playback
+* playlist
+  - cue: fix crash bug
 
 ver 0.22 (2020/09/23)
 * protocol

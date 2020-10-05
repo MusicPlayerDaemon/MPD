@@ -38,8 +38,12 @@ cue_next_word(char *p, char **pp)
 	while (!IsWhitespaceOrNull(*p))
 		++p;
 
-	*p = 0;
-	*pp = p + 1;
+	if (*p != 0) {
+		*p = 0;
+		*pp = p + 1;
+	} else
+		*pp = p;
+
 	return word;
 }
 
