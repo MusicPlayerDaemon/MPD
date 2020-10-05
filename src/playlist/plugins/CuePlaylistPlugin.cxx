@@ -22,6 +22,7 @@
 #include "../SongEnumerator.hxx"
 #include "../cue/CueParser.hxx"
 #include "input/TextInputStream.hxx"
+#include "util/StringView.hxx"
 
 class CuePlaylist final : public SongEnumerator {
 	TextInputStream tis;

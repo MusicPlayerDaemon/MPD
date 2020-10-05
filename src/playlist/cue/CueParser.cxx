@@ -21,6 +21,7 @@
 #include "tag/ParseName.hxx"
 #include "util/Alloc.hxx"
 #include "util/StringStrip.hxx"
+#include "util/StringView.hxx"
 #include "util/CharUtil.hxx"
 
 #include <cassert>
@@ -271,12 +272,11 @@ CueParser::Feed2(char *p) noexcept
 }
 
 void
-CueParser::Feed(const char *line) noexcept
+CueParser::Feed(StringView line) noexcept
 {
 	assert(!end);
-	assert(line != nullptr);
 
-	char *allocated = xstrdup(line);
+	char *allocated = xstrndup(line.data, line.size);
 	Feed2(allocated);
 	free(allocated);
 }
