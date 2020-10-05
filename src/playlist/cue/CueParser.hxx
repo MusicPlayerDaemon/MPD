@@ -134,8 +134,6 @@ private:
 	 * song's start time).
 	 */
 	void Commit() noexcept;
-
-	void Feed2(char *p) noexcept;
 };
 
 #endif

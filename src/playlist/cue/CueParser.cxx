@@ -19,96 +19,83 @@
 
 #include "CueParser.hxx"
 #include "tag/ParseName.hxx"
-#include "util/Alloc.hxx"
-#include "util/StringStrip.hxx"
 #include "util/StringView.hxx"
 #include "util/CharUtil.hxx"
 
+#include <algorithm>
 #include <cassert>
-#include <cstring>
 
-#include <stdlib.h>
-
-static const char *
-cue_next_word(char *p, char **pp) noexcept
+static StringView
+cue_next_word(StringView &src) noexcept
 {
-	assert(p >= *pp);
-	assert(!IsWhitespaceNotNull(*p));
+	assert(!src.empty());
+	assert(!IsWhitespaceNotNull(src.front()));
 
-	const char *word = p;
-	while (!IsWhitespaceOrNull(*p))
-		++p;
-
-	if (*p != 0) {
-		*p = 0;
-		*pp = p + 1;
-	} else
-		*pp = p;
-
+	auto end = std::find_if(src.begin(), src.end(),
+				IsWhitespaceOrNull);
+	StringView word(src.begin(), end);
+	src = src.substr(end);
 	return word;
 }
 
-static const char *
-cue_next_quoted(char *p, char **pp) noexcept
+static StringView
+cue_next_quoted(StringView &src) noexcept
 {
-	assert(p >= *pp);
-	assert(p[-1] == '"');
+	assert(src.data[-1] == '"');
 
-	char *end = std::strchr(p, '"');
-	if (end == nullptr) {
+	auto end = src.Find('"');
+	if (end == nullptr)
 		/* syntax error - ignore it silently */
-		*pp = p + strlen(p);
-		return p;
-	}
+		return std::exchange(src, nullptr);
 
-	*end = 0;
-	*pp = end + 1;
-
-	return p;
+	StringView value(src.data, end);
+	src = src.substr(end + 1);
+	return value;
 }
 
-static const char *
-cue_next_token(char **pp) noexcept
+static StringView
+cue_next_token(StringView &src) noexcept
 {
-	char *p = StripLeft(*pp);
-	if (*p == 0)
+	src.StripLeft();
+	if (src.empty())
 		return nullptr;
 
-	return cue_next_word(p, pp);
+	return cue_next_word(src);
 }
 
-static const char *
-cue_next_value(char **pp) noexcept
+static const StringView
+cue_next_value(StringView &src) noexcept
 {
-	char *p = StripLeft(*pp);
-	if (*p == 0)
+	src.StripLeft();
+	if (src.empty())
 		return nullptr;
 
-	if (*p == '"')
-		return cue_next_quoted(p + 1, pp);
-	else
-		return cue_next_word(p, pp);
+	if (src.front() == '"') {
+		src.pop_front();
+		return cue_next_quoted(src);
+	} else
+		return cue_next_word(src);
 }
 
 static void
-cue_add_tag(TagBuilder &tag, TagType type, char *p) noexcept
+cue_add_tag(TagBuilder &tag, TagType type, StringView src) noexcept
 {
-	const char *value = cue_next_value(&p);
+	auto value = cue_next_value(src);
 	if (value != nullptr)
 		tag.AddItem(type, value);
 
 }
 
 static void
-cue_parse_rem(char *p, TagBuilder &tag) noexcept
+cue_parse_rem(StringView src, TagBuilder &tag) noexcept
 {
-	const char *type = cue_next_token(&p);
+	auto type = cue_next_token(src);
 	if (type == nullptr)
 		return;
 
 	TagType type2 = tag_name_parse_i(type);
 	if (type2 != TAG_NUM_OF_ITEM_TYPES)
-		cue_add_tag(tag, type2, p);
+		cue_add_tag(tag, type2, src);
 }
 
 TagBuilder *
@@ -122,22 +109,47 @@ CueParser::GetCurrentTag() noexcept
 		return nullptr;
 }
 
-static int
-cue_parse_position(const char *p) noexcept
+static bool
+IsDigit(StringView s) noexcept
 {
-	char *endptr;
-	unsigned long minutes = strtoul(p, &endptr, 10);
-	if (endptr == p || *endptr != ':')
+	return !s.empty() && IsDigitASCII(s.front());
+}
+
+static unsigned
+cue_next_unsigned(StringView &src) noexcept
+{
+	if (!IsDigit(src)) {
+		src = nullptr;
+		return 0;
+	}
+
+	unsigned value = 0;
+
+	do {
+		char ch = src.front();
+		src.pop_front();
+
+		value = value * 10u + unsigned(ch - '0');
+	} while (IsDigit(src));
+
+	return value;
+}
+
+static int
+cue_parse_position(StringView src) noexcept
+{
+	unsigned minutes = cue_next_unsigned(src);
+	if (src.empty() || src.front() != ':')
 		return -1;
 
-	p = endptr + 1;
-	unsigned long seconds = strtoul(p, &endptr, 10);
-	if (endptr == p || *endptr != ':')
+	src.pop_front();
+	unsigned seconds = cue_next_unsigned(src);
+	if (src.empty() || src.front() != ':')
 		return -1;
 
-	p = endptr + 1;
-	unsigned long frames = strtoul(p, &endptr, 10);
-	if (endptr == p || *endptr != 0)
+	src.pop_front();
+	unsigned long frames = cue_next_unsigned(src);
+	if (src == nullptr || !src.empty())
 		return -1;
 
 	return minutes * 60000 + seconds * 1000 + frames * 1000 / 75;
@@ -163,20 +175,19 @@ CueParser::Commit() noexcept
 }
 
 void
-CueParser::Feed2(char *p) noexcept
+CueParser::Feed(StringView src) noexcept
 {
 	assert(!end);
-	assert(p != nullptr);
 
-	const char *command = cue_next_token(&p);
+	auto command = cue_next_token(src);
 	if (command == nullptr)
 		return;
 
-	if (strcmp(command, "REM") == 0) {
+	if (command.Equals("REM")) {
 		TagBuilder *tag = GetCurrentTag();
 		if (tag != nullptr)
-			cue_parse_rem(p, *tag);
-	} else if (strcmp(command, "PERFORMER") == 0) {
+			cue_parse_rem(src, *tag);
+	} else if (command.Equals("PERFORMER")) {
 		/* MPD knows a "performer" tag, but it is not a good
 		   match for this CUE tag; from the Hydrogenaudio
 		   Knowledgebase: "At top-level this will specify the
@@ -189,27 +200,27 @@ CueParser::Feed2(char *p) noexcept
 
 		TagBuilder *tag = GetCurrentTag();
 		if (tag != nullptr)
-			cue_add_tag(*tag, type, p);
-	} else if (strcmp(command, "TITLE") == 0) {
+			cue_add_tag(*tag, type, src);
+	} else if (command.Equals("TITLE")) {
 		if (state == HEADER)
-			cue_add_tag(header_tag, TAG_ALBUM, p);
+			cue_add_tag(header_tag, TAG_ALBUM, src);
 		else if (state == TRACK)
-			cue_add_tag(song_tag, TAG_TITLE, p);
-	} else if (strcmp(command, "FILE") == 0) {
+			cue_add_tag(song_tag, TAG_TITLE, src);
+	} else if (command.Equals("FILE")) {
 		Commit();
 
-		const char *new_filename = cue_next_value(&p);
+		const auto new_filename = cue_next_value(src);
 		if (new_filename == nullptr)
 			return;
 
-		const char *type = cue_next_token(&p);
+		const auto type = cue_next_token(src);
 		if (type == nullptr)
 			return;
 
-		if (strcmp(type, "WAVE") != 0 &&
-		    strcmp(type, "FLAC") != 0 && /* non-standard */
-		    strcmp(type, "MP3") != 0 &&
-		    strcmp(type, "AIFF") != 0) {
+		if (!type.Equals("WAVE") &&
+		    !type.Equals("FLAC") && /* non-standard */
+		    !type.Equals("MP3") &&
+		    !type.Equals("AIFF")) {
 			state = IGNORE_FILE;
 			return;
 		}
@@ -218,18 +229,18 @@ CueParser::Feed2(char *p) noexcept
 		filename = new_filename;
 	} else if (state == IGNORE_FILE) {
 		return;
-	} else if (strcmp(command, "TRACK") == 0) {
+	} else if (command.Equals("TRACK")) {
 		Commit();
 
-		const char *nr = cue_next_token(&p);
+		const auto nr = cue_next_token(src);
 		if (nr == nullptr)
 			return;
 
-		const char *type = cue_next_token(&p);
+		const auto type = cue_next_token(src);
 		if (type == nullptr)
 			return;
 
-		if (strcmp(type, "AUDIO") != 0) {
+		if (!type.Equals("AUDIO")) {
 			state = IGNORE_TRACK;
 			return;
 		}
@@ -244,15 +255,15 @@ CueParser::Feed2(char *p) noexcept
 
 	} else if (state == IGNORE_TRACK) {
 		return;
-	} else if (state == TRACK && strcmp(command, "INDEX") == 0) {
+	} else if (state == TRACK && command.Equals("INDEX")) {
 		if (ignore_index)
 			return;
 
-		const char *nr = cue_next_token(&p);
+		const auto nr = cue_next_token(src);
 		if (nr == nullptr)
 			return;
 
-		const char *position = cue_next_token(&p);
+		const auto position = cue_next_token(src);
 		if (position == nullptr)
 			return;
 
@@ -266,19 +277,9 @@ CueParser::Feed2(char *p) noexcept
 		if (current != nullptr)
 			current->SetStartTime(SongTime::FromMS(position_ms));
 
-		if(strcmp(nr, "00") != 0 || previous == nullptr)
+		if (!nr.Equals("00") || previous == nullptr)
 			ignore_index = true;
 	}
-}
-
-void
-CueParser::Feed(StringView line) noexcept
-{
-	assert(!end);
-
-	char *allocated = xstrndup(line.data, line.size);
-	Feed2(allocated);
-	free(allocated);
 }
 
 void
