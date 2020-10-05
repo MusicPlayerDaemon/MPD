@@ -29,7 +29,7 @@
 #include <stdlib.h>
 
 static const char *
-cue_next_word(char *p, char **pp)
+cue_next_word(char *p, char **pp) noexcept
 {
 	assert(p >= *pp);
 	assert(!IsWhitespaceNotNull(*p));
@@ -48,7 +48,7 @@ cue_next_word(char *p, char **pp)
 }
 
 static const char *
-cue_next_quoted(char *p, char **pp)
+cue_next_quoted(char *p, char **pp) noexcept
 {
 	assert(p >= *pp);
 	assert(p[-1] == '"');
@@ -67,7 +67,7 @@ cue_next_quoted(char *p, char **pp)
 }
 
 static const char *
-cue_next_token(char **pp)
+cue_next_token(char **pp) noexcept
 {
 	char *p = StripLeft(*pp);
 	if (*p == 0)
@@ -77,7 +77,7 @@ cue_next_token(char **pp)
 }
 
 static const char *
-cue_next_value(char **pp)
+cue_next_value(char **pp) noexcept
 {
 	char *p = StripLeft(*pp);
 	if (*p == 0)
@@ -90,7 +90,7 @@ cue_next_value(char **pp)
 }
 
 static void
-cue_add_tag(TagBuilder &tag, TagType type, char *p)
+cue_add_tag(TagBuilder &tag, TagType type, char *p) noexcept
 {
 	const char *value = cue_next_value(&p);
 	if (value != nullptr)
@@ -99,7 +99,7 @@ cue_add_tag(TagBuilder &tag, TagType type, char *p)
 }
 
 static void
-cue_parse_rem(char *p, TagBuilder &tag)
+cue_parse_rem(char *p, TagBuilder &tag) noexcept
 {
 	const char *type = cue_next_token(&p);
 	if (type == nullptr)
@@ -122,7 +122,7 @@ CueParser::GetCurrentTag() noexcept
 }
 
 static int
-cue_parse_position(const char *p)
+cue_parse_position(const char *p) noexcept
 {
 	char *endptr;
 	unsigned long minutes = strtoul(p, &endptr, 10);
