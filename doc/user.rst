@@ -770,6 +770,8 @@ The :code:`music_directory` setting tells :program:`MPD` to read files from the 
 
 The database setting tells :program:`MPD` to pass all database queries on to the :program:`MPD` instance running on the file server (using the proxy plugin).
 
+.. _realtime:
+
 Real-Time Scheduling
 --------------------
 
@@ -1095,6 +1097,25 @@ The :program:`MPD` project runs a `forum <https://forum.musicpd.org/>`_ and an I
 
 Common Problems
 ^^^^^^^^^^^^^^^
+
+Startup
+"""""""
+
+Error "could not get realtime scheduling"
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+See :ref:`realtime`.  You can safely ignore this, but you won't
+benefit from real-time scheduling.  This only makes a difference if
+your computer runs programs other than MPD.
+
+Error "bind to '0.0.0.0:6600' failed (continuing anyway, because binding to '[::]:6600' succeeded)"
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This happens on Linux when :file:`/proc/sys/net/ipv6/bindv6only` is
+disabled.  MPD first binds to IPv6, and this automatically binds to
+IPv4 as well; after that, MPD binds to IPv4, but that fails.  You can
+safely ignore this, because MPD works on both IPv4 and IPv6.
+
 
 Database
 """"""""
