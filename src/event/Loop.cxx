@@ -55,6 +55,7 @@ Uring::Queue *
 EventLoop::GetUring() noexcept
 {
 	if (!uring_initialized) {
+		uring_initialized = true;
 		try {
 			uring = std::make_unique<Uring::Manager>(*this);
 		} catch (...) {
