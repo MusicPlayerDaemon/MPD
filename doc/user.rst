@@ -1096,8 +1096,8 @@ The :program:`MPD` project runs a `forum <https://forum.musicpd.org/>`_ and an I
 Common Problems
 ^^^^^^^^^^^^^^^
 
-1. Database
-"""""""""""
+Database
+""""""""
 
 Question: I can't see my music in the MPD database!
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1112,8 +1112,8 @@ Question: MPD doesn't read ID3 tags!
 
 * You probably compiled :program:`MPD` without libid3tag. :command:`mpd --version` will tell you.
 
-2. Playback
-"""""""""""
+Playback
+""""""""
 
 Question: I can't hear music on my client!
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
