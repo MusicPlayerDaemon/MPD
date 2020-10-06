@@ -1108,6 +1108,19 @@ See :ref:`realtime`.  You can safely ignore this, but you won't
 benefit from real-time scheduling.  This only makes a difference if
 your computer runs programs other than MPD.
 
+Error "Failed to initialize io_uring"
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Linux specific: the io_uring subsystem could not be initialized.  This
+is not a critical error - MPD will fall back to "classic" blocking
+disk I/O.  You can safely ignore this error, but you won't benefit
+from io_uring's advantages.
+
+* "Cannot allocate memory" usually means that your memlock limit
+  (``ulimit -l`` in bash or ``LimitMEMLOCK`` in systemd) is too low.
+  64 MB is a reasonable value for this limit.
+* Your Linux kernel might be too old and does not support io_uring.
+
 Error "bind to '0.0.0.0:6600' failed (continuing anyway, because binding to '[::]:6600' succeeded)"
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
