@@ -1099,31 +1099,31 @@ Common Problems
 Database
 """"""""
 
-Question: I can't see my music in the MPD database!
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+I can't see my music in the MPD database
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Check your :code:`music_directory` setting. 
 * Does the MPD user have read permission on all music files, and read+execute permission on all music directories (and all of their parent directories)? 
 * Did you update the database? (mpc update) 
 * Did you enable all relevant decoder plugins at compile time? :command:`mpd --version` will tell you. 
 
-Question: MPD doesn't read ID3 tags!
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+MPD doesn't read ID3 tags!
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * You probably compiled :program:`MPD` without libid3tag. :command:`mpd --version` will tell you.
 
 Playback
 """"""""
 
-Question: I can't hear music on my client!
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+I can't hear music on my client
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * That problem usually follows a misunderstanding of the nature of :program:`MPD`. :program:`MPD` is a remote-controlled music player, not a music distribution system. Usually, the speakers are connected to the box where :program:`MPD` runs, and the :program:`MPD` client only sends control commands, but the client does not actually play your music.
 
   :program:`MPD` has output plugins which allow hearing music on a remote host (such as httpd), but that is not :program:`MPD`'s primary design goal. 
 
-Question: "Device or resource busy"
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Error "Device or resource busy"
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 *  This ALSA error means that another program uses your sound hardware exclusively. You can stop that program to allow :program:`MPD` to use it.
 
