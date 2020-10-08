@@ -84,43 +84,21 @@ ConfigData::GetPath(ConfigOption option) const
 unsigned
 ConfigData::GetUnsigned(ConfigOption option, unsigned default_value) const
 {
-	const auto *param = GetParam(option);
-	long value;
-	char *endptr;
-
-	if (param == nullptr)
-		return default_value;
-
-	const char *const s = param->value.c_str();
-	value = strtol(s, &endptr, 0);
-	if (endptr == s || *endptr != 0 || value < 0)
-		throw FormatRuntimeError("Not a valid non-negative number in line %i",
-					 param->line);
-
-	return (unsigned)value;
+	return With(option, [default_value](const char *s){
+		return s != nullptr
+			? ParseUnsigned(s)
+			: default_value;
+	});
 }
 
 unsigned
 ConfigData::GetPositive(ConfigOption option, unsigned default_value) const
 {
-	const auto *param = GetParam(option);
-	long value;
-	char *endptr;
-
-	if (param == nullptr)
-		return default_value;
-
-	const char *const s = param->value.c_str();
-	value = strtol(s, &endptr, 0);
-	if (endptr == s || *endptr != 0)
-		throw FormatRuntimeError("Not a valid number in line %i",
-					 param->line);
-
-	if (value <= 0)
-		throw FormatRuntimeError("Not a positive number in line %i",
-					 param->line);
-
-	return (unsigned)value;
+	return With(option, [default_value](const char *s){
+		return s != nullptr
+			? ParsePositive(s)
+			: default_value;
+	});
 }
 
 bool

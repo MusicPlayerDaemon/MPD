@@ -29,6 +29,24 @@ bool
 ParseBool(const char *value);
 
 /**
+ * Throws on error.
+ */
+long
+ParseLong(const char *s);
+
+/**
+ * Throws on error.
+ */
+unsigned
+ParseUnsigned(const char *s);
+
+/**
+ * Throws on error.
+ */
+unsigned
+ParsePositive(const char *s);
+
+/**
  * Parse a string as a byte size.
  *
  * Throws on error.

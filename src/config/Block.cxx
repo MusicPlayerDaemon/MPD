@@ -47,28 +47,13 @@ BlockParam::GetIntValue() const
 unsigned
 BlockParam::GetUnsignedValue() const
 {
-	const char *const s = value.c_str();
-	char *endptr;
-	unsigned long value2 = strtoul(s, &endptr, 0);
-	if (endptr == s || *endptr != 0)
-		throw FormatRuntimeError("Not a valid number in line %i", line);
-
-	return (unsigned)value2;
+	return With(ParseUnsigned);
 }
 
 unsigned
 BlockParam::GetPositiveValue() const
 {
-	const char *const s = value.c_str();
-	char *endptr;
-	unsigned long value2 = strtoul(s, &endptr, 0);
-	if (endptr == s || *endptr != 0)
-		throw FormatRuntimeError("Not a valid number in line %i", line);
-
-	if (value2 <= 0)
-		throw FormatRuntimeError("Number in line %i must be positive", line);
-
-	return (unsigned)value2;
+	return With(ParsePositive);
 }
 
 bool

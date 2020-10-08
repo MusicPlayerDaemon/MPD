@@ -22,6 +22,8 @@
 #include "util/StringStrip.hxx"
 #include "util/StringUtil.hxx"
 
+#include <cstdlib>
+
 bool
 ParseBool(const char *value)
 {
@@ -35,6 +37,37 @@ ParseBool(const char *value)
 		return false;
 
 	throw FormatRuntimeError(R"(Not a valid boolean ("yes" or "no"): "%s")", value);
+}
+
+long
+ParseLong(const char *s)
+{
+	char *endptr;
+	long value = strtol(s, &endptr, 10);
+	if (endptr == s || *endptr != 0)
+		throw std::runtime_error("Failed to parse number");
+
+	return value;
+}
+
+unsigned
+ParseUnsigned(const char *s)
+{
+	auto value = ParseLong(s);
+	if (value < 0)
+		throw std::runtime_error("Value must not be negative");
+
+	return (unsigned)value;
+}
+
+unsigned
+ParsePositive(const char *s)
+{
+	auto value = ParseLong(s);
+	if (value <= 0)
+		throw std::runtime_error("Value must be positive");
+
+	return (unsigned)value;
 }
 
 template<size_t OPERAND>
