@@ -64,28 +64,31 @@ class EventLoop final : SocketMonitor
 		}
 	};
 
-	typedef boost::intrusive::multiset<TimerEvent,
+	using TimerSet =
+		boost::intrusive::multiset<TimerEvent,
 					   boost::intrusive::member_hook<TimerEvent,
 									 TimerEvent::TimerSetHook,
 									 &TimerEvent::timer_set_hook>,
 					   boost::intrusive::compare<TimerCompare>,
-					   boost::intrusive::constant_time_size<false>> TimerSet;
+					   boost::intrusive::constant_time_size<false>>;
 	TimerSet timers;
 
-	typedef boost::intrusive::list<IdleMonitor,
+	using IdleList =
+		boost::intrusive::list<IdleMonitor,
 				       boost::intrusive::member_hook<IdleMonitor,
 								     IdleMonitor::ListHook,
 								     &IdleMonitor::list_hook>,
-				       boost::intrusive::constant_time_size<false>> IdleList;
+				       boost::intrusive::constant_time_size<false>>;
 	IdleList idle;
 
 	Mutex mutex;
 
-	typedef boost::intrusive::list<DeferEvent,
+	using DeferredList =
+		boost::intrusive::list<DeferEvent,
 				       boost::intrusive::member_hook<DeferEvent,
 								     DeferEvent::ListHook,
 								     &DeferEvent::list_hook>,
-				       boost::intrusive::constant_time_size<false>> DeferredList;
+				       boost::intrusive::constant_time_size<false>>;
 	DeferredList deferred;
 
 #ifdef HAVE_URING
