@@ -57,6 +57,12 @@ public:
 	static constexpr unsigned ERROR = PollGroup::ERROR;
 	static constexpr unsigned HANGUP = PollGroup::HANGUP;
 
+	/**
+	 * These flags are always reported by epoll_wait() and don't
+	 * need to be registered with epoll_ctl().
+	 */
+	static constexpr unsigned IMPLICIT_FLAGS = ERROR|HANGUP;
+
 	typedef std::make_signed<size_t>::type ssize_t;
 
 	explicit SocketMonitor(EventLoop &_loop) noexcept

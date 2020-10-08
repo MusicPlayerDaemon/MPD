@@ -30,7 +30,7 @@
 void
 SocketMonitor::Dispatch(unsigned flags) noexcept
 {
-	flags &= GetScheduledFlags();
+	flags &= GetScheduledFlags() | IMPLICIT_FLAGS;
 
 	if (flags != 0)
 		OnSocketReady(flags);
