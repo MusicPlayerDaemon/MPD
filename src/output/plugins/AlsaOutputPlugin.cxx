@@ -119,7 +119,7 @@ class AlsaOutput final
 	 */
 	snd_pcm_uframes_t period_frames;
 
-	std::chrono::steady_clock::duration effective_period_duration;
+	Event::Duration effective_period_duration;
 
 	/**
 	 * If snd_pcm_avail() goes above this value and no more data
@@ -398,7 +398,7 @@ private:
 	}
 
 	/* virtual methods from class MultiSocketMonitor */
-	std::chrono::steady_clock::duration PrepareSockets() noexcept override;
+	Event::Duration PrepareSockets() noexcept override;
 	void DispatchSockets() noexcept override;
 };
 
@@ -1052,12 +1052,12 @@ AlsaOutput::Play(const void *chunk, size_t size)
 	return size;
 }
 
-std::chrono::steady_clock::duration
+Event::Duration
 AlsaOutput::PrepareSockets() noexcept
 {
 	if (!LockIsActiveAndNotWaiting()) {
 		ClearSocketList();
-		return std::chrono::steady_clock::duration(-1);
+		return Event::Duration(-1);
 	}
 
 	try {
@@ -1065,7 +1065,7 @@ AlsaOutput::PrepareSockets() noexcept
 	} catch (...) {
 		ClearSocketList();
 		LockCaughtError();
-		return std::chrono::steady_clock::duration(-1);
+		return Event::Duration(-1);
 	}
 }
 

@@ -122,7 +122,7 @@ EventLoop::RemoveIdle(IdleMonitor &i) noexcept
 }
 
 void
-EventLoop::AddTimer(TimerEvent &t, std::chrono::steady_clock::duration d) noexcept
+EventLoop::AddTimer(TimerEvent &t, Event::Duration d) noexcept
 {
 	assert(IsInside());
 
@@ -131,10 +131,10 @@ EventLoop::AddTimer(TimerEvent &t, std::chrono::steady_clock::duration d) noexce
 	again = true;
 }
 
-inline std::chrono::steady_clock::duration
+inline Event::Duration
 EventLoop::HandleTimers() noexcept
 {
-	std::chrono::steady_clock::duration timeout;
+	Event::Duration timeout;
 
 	while (!quit) {
 		auto i = timers.begin();
@@ -151,7 +151,7 @@ EventLoop::HandleTimers() noexcept
 		t.Run();
 	}
 
-	return std::chrono::steady_clock::duration(-1);
+	return Event::Duration(-1);
 }
 
 /**
@@ -160,7 +160,7 @@ EventLoop::HandleTimers() noexcept
  * value (= never times out) is translated to the magic value -1.
  */
 static constexpr int
-ExportTimeoutMS(std::chrono::steady_clock::duration timeout)
+ExportTimeoutMS(Event::Duration timeout)
 {
 	return timeout >= timeout.zero()
 		/* round up (+1) to avoid unnecessary wakeups */

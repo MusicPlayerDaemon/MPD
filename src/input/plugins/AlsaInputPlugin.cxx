@@ -127,7 +127,7 @@ private:
 	int Recover(int err);
 
 	/* virtual methods from class MultiSocketMonitor */
-	std::chrono::steady_clock::duration PrepareSockets() noexcept override;
+	Event::Duration PrepareSockets() noexcept override;
 	void DispatchSockets() noexcept override;
 };
 
@@ -219,12 +219,12 @@ AlsaInputStream::Create(EventLoop &event_loop, const char *uri,
 	return std::make_unique<AlsaInputStream>(event_loop, mutex, spec);
 }
 
-std::chrono::steady_clock::duration
+Event::Duration
 AlsaInputStream::PrepareSockets() noexcept
 {
 	if (IsPaused()) {
 		ClearSocketList();
-		return std::chrono::steady_clock::duration(-1);
+		return Event::Duration(-1);
 	}
 
 	return non_block.PrepareSockets(*this, capture_handle);

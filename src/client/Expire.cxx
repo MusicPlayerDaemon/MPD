@@ -34,7 +34,7 @@ Client::SetExpired() noexcept
 	}
 
 	FullyBufferedSocket::Close();
-	timeout_event.Schedule(std::chrono::steady_clock::duration::zero());
+	timeout_event.Schedule(Event::Duration::zero());
 }
 
 void

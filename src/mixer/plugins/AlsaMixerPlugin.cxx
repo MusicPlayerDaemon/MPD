@@ -64,7 +64,7 @@ public:
 	}
 
 private:
-	std::chrono::steady_clock::duration PrepareSockets() noexcept override;
+	Event::Duration PrepareSockets() noexcept override;
 	void DispatchSockets() noexcept override;
 };
 
@@ -99,12 +99,12 @@ public:
 
 static constexpr Domain alsa_mixer_domain("alsa_mixer");
 
-std::chrono::steady_clock::duration
+Event::Duration
 AlsaMixerMonitor::PrepareSockets() noexcept
 {
 	if (mixer == nullptr) {
 		ClearSocketList();
-		return std::chrono::steady_clock::duration(-1);
+		return Event::Duration(-1);
 	}
 
 	return non_block.PrepareSockets(*this, mixer);

@@ -226,7 +226,7 @@ protected:
 	 *
 	 * @return timeout or a negative value for no timeout
 	 */
-	virtual std::chrono::steady_clock::duration PrepareSockets() noexcept = 0;
+	virtual Event::Duration PrepareSockets() noexcept = 0;
 
 	/**
 	 * At least one socket is ready or the timeout has expired.

@@ -20,6 +20,7 @@
 #ifndef MPD_EVENT_LOOP_HXX
 #define MPD_EVENT_LOOP_HXX
 
+#include "Chrono.hxx"
 #include "PollGroup.hxx"
 #include "WakeFD.hxx"
 #include "SocketMonitor.hxx"
@@ -91,7 +92,7 @@ class EventLoop final : SocketMonitor
 	std::unique_ptr<Uring::Manager> uring;
 #endif
 
-	std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
+	Event::Clock::time_point now = Event::Clock::now();
 
 	/**
 	 * Is this #EventLoop alive, i.e. can events be scheduled?
@@ -140,9 +141,9 @@ public:
 	~EventLoop() noexcept;
 
 	/**
-	 * A caching wrapper for std::chrono::steady_clock::now().
+	 * A caching wrapper for Event::Clock::now().
 	 */
-	std::chrono::steady_clock::time_point GetTime() const {
+	auto GetTime() const {
 		assert(IsInside());
 
 		return now;
@@ -184,8 +185,7 @@ public:
 	void AddIdle(IdleMonitor &i) noexcept;
 	void RemoveIdle(IdleMonitor &i) noexcept;
 
-	void AddTimer(TimerEvent &t,
-		      std::chrono::steady_clock::duration d) noexcept;
+	void AddTimer(TimerEvent &t, Event::Duration d) noexcept;
 
 	/**
 	 * Schedule a call to DeferEvent::RunDeferred().
@@ -221,7 +221,7 @@ private:
 	 * duration until the next timer expires.  Returns a negative
 	 * duration if there is no timeout.
 	 */
-	std::chrono::steady_clock::duration HandleTimers() noexcept;
+	Event::Duration HandleTimers() noexcept;
 
 	bool OnSocketReady(unsigned flags) noexcept override;
 

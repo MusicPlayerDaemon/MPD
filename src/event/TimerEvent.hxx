@@ -20,11 +20,10 @@
 #ifndef MPD_TIMER_EVENT_HXX
 #define MPD_TIMER_EVENT_HXX
 
+#include "Chrono.hxx"
 #include "util/BindMethod.hxx"
 
 #include <boost/intrusive/set_hook.hpp>
-
-#include <chrono>
 
 class EventLoop;
 
@@ -50,7 +49,7 @@ class TimerEvent final
 	 * When is this timer due?  This is only valid if IsActive()
 	 * returns true.
 	 */
-	std::chrono::steady_clock::time_point due;
+	Event::Clock::time_point due;
 
 public:
 	TimerEvent(EventLoop &_loop, Callback _callback) noexcept
@@ -65,7 +64,7 @@ public:
 		return is_linked();
 	}
 
-	void Schedule(std::chrono::steady_clock::duration d) noexcept;
+	void Schedule(Event::Duration d) noexcept;
 
 	void Cancel() noexcept {
 		unlink();

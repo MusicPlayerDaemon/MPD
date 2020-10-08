@@ -37,7 +37,7 @@ extern "C" {
 #include <poll.h> /* for POLLIN, POLLOUT */
 #endif
 
-static constexpr std::chrono::steady_clock::duration NFS_MOUNT_TIMEOUT =
+static constexpr Event::Duration NFS_MOUNT_TIMEOUT =
 	std::chrono::minutes(1);
 
 inline void

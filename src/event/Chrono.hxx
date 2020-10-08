@@ -17,18 +17,20 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_CLIENT_CONFIG_HXX
-#define MPD_CLIENT_CONFIG_HXX
+#ifndef MPD_EVENT_CHRONO_HXX
+#define MPD_EVENT_CHRONO_HXX
 
-#include "event/Chrono.hxx"
+#include <chrono>
 
-struct ConfigData;
+namespace Event {
 
-extern Event::Duration client_timeout;
-extern size_t client_max_command_list_size;
-extern size_t client_max_output_buffer_size;
+/**
+ * The clock used by class #EventLoop and class #TimerEvent.
+ */
+using Clock = std::chrono::steady_clock;
 
-void
-client_manager_init(const ConfigData &config);
+using Duration = Clock::duration;
 
-#endif
+} // namespace Event
+
+#endif /* MAIN_NOTIFY_H */

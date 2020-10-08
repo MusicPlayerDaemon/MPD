@@ -29,7 +29,7 @@
  * UpdateService::Enqueue().  This increases the probability that
  * updates can be bundled.
  */
-static constexpr std::chrono::steady_clock::duration INOTIFY_UPDATE_DELAY =
+static constexpr Event::Duration INOTIFY_UPDATE_DELAY =
 	std::chrono::seconds(5);
 
 void

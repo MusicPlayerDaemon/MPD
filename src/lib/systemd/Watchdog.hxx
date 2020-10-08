@@ -42,7 +42,7 @@ namespace Systemd {
 class Watchdog {
 	TimerEvent timer;
 
-	std::chrono::steady_clock::duration interval;
+	Event::Duration interval;
 
 public:
 	explicit Watchdog(EventLoop &_loop) noexcept;

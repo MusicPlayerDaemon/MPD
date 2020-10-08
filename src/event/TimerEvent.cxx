@@ -21,7 +21,7 @@
 #include "Loop.hxx"
 
 void
-TimerEvent::Schedule(std::chrono::steady_clock::duration d) noexcept
+TimerEvent::Schedule(Event::Duration d) noexcept
 {
 	Cancel();
 
