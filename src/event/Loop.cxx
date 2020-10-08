@@ -18,6 +18,7 @@
  */
 
 #include "Loop.hxx"
+#include "TimerEvent.hxx"
 #include "SocketMonitor.hxx"
 #include "IdleMonitor.hxx"
 #include "DeferEvent.hxx"
@@ -28,6 +29,13 @@
 #include "util/PrintException.hxx"
 #include <stdio.h>
 #endif
+
+constexpr bool
+EventLoop::TimerCompare::operator()(const TimerEvent &a,
+				    const TimerEvent &b) const noexcept
+{
+	return a.due < b.due;
+}
 
 EventLoop::EventLoop(ThreadId _thread)
 	:SocketMonitor(*this),

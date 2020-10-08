@@ -27,7 +27,6 @@
 #include "thread/Mutex.hxx"
 #include "WakeFD.hxx"
 #include "SocketMonitor.hxx"
-#include "TimerEvent.hxx"
 #include "IdleMonitor.hxx"
 #include "DeferEvent.hxx"
 
@@ -44,6 +43,8 @@
 namespace Uring { class Queue; class Manager; }
 #endif
 
+class TimerEvent;
+
 /**
  * An event loop that polls for events on file/socket descriptors.
  *
@@ -59,9 +60,7 @@ class EventLoop final : SocketMonitor
 
 	struct TimerCompare {
 		constexpr bool operator()(const TimerEvent &a,
-					  const TimerEvent &b) const {
-			return a.due < b.due;
-		}
+					  const TimerEvent &b) const noexcept;
 	};
 
 	using TimerSet =
