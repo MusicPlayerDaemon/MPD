@@ -20,15 +20,14 @@
 #ifndef MPD_EVENT_LOOP_HXX
 #define MPD_EVENT_LOOP_HXX
 
-#include "thread/Id.hxx"
-#include "util/Compiler.h"
-
 #include "PollGroup.hxx"
-#include "thread/Mutex.hxx"
 #include "WakeFD.hxx"
 #include "SocketMonitor.hxx"
 #include "IdleMonitor.hxx"
 #include "DeferEvent.hxx"
+#include "thread/Id.hxx"
+#include "thread/Mutex.hxx"
+#include "util/Compiler.h"
 
 #include <boost/intrusive/set.hpp>
 #include <boost/intrusive/list.hpp>

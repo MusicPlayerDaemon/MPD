@@ -23,6 +23,14 @@
 #include <cstddef>
 #include <vector>
 
+#ifdef _WIN32
+#include <windows.h>
+/* damn you, windows.h! */
+#ifdef GetObject
+#undef GetObject
+#endif
+#endif
+
 class PollResultGeneric
 {
 	struct Item
