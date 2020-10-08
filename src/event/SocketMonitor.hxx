@@ -23,6 +23,8 @@
 #include "PollGroup.hxx"
 #include "net/SocketDescriptor.hxx"
 
+#include <boost/intrusive/list_hook.hpp>
+
 #include <cassert>
 #include <cstddef>
 #include <type_traits>
@@ -43,13 +45,26 @@ class EventLoop;
  * as thread-safe.
  */
 class SocketMonitor {
+	friend class EventLoop;
+
+	using ReadyListHook = boost::intrusive::list_member_hook<boost::intrusive::link_mode<boost::intrusive::auto_unlink>>;
+	ReadyListHook ready_siblings;
+
 	SocketDescriptor fd = SocketDescriptor::Undefined();
 	EventLoop &loop;
 
 	/**
-	 * A bit mask of events that is currently registered in the EventLoop.
+	 * A bit mask of events that is currently registered in the
+	 * #EventLoop.
 	 */
 	unsigned scheduled_flags = 0;
+
+	/**
+	 * A bit mask of events which have been reported as "ready" by
+	 * epoll_wait().  If non-zero, then the #EventLoop will call
+	 * Dispatch() soon.
+	 */
+	unsigned ready_flags = 0;
 
 public:
 	static constexpr unsigned READ = PollGroup::READ;
@@ -103,6 +118,10 @@ public:
 		return scheduled_flags;
 	}
 
+	void SetReadyFlags(unsigned flags) noexcept {
+		ready_flags = flags;
+	}
+
 	/**
 	 * @return true on success, false on error (with errno set if
 	 * USE_EPOLL is defined)
@@ -136,7 +155,7 @@ protected:
 	virtual bool OnSocketReady(unsigned flags) noexcept = 0;
 
 public:
-	void Dispatch(unsigned flags) noexcept;
+	void Dispatch() noexcept;
 };
 
 #endif

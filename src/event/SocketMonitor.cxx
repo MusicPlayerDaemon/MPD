@@ -28,9 +28,10 @@
 #endif
 
 void
-SocketMonitor::Dispatch(unsigned flags) noexcept
+SocketMonitor::Dispatch() noexcept
 {
-	flags &= GetScheduledFlags() | IMPLICIT_FLAGS;
+	const unsigned flags = std::exchange(ready_flags, 0) &
+		(GetScheduledFlags() | IMPLICIT_FLAGS);
 
 	if (flags != 0)
 		OnSocketReady(flags);
@@ -79,7 +80,7 @@ SocketMonitor::Schedule(unsigned flags) noexcept
 	if (scheduled_flags == 0)
 		success = loop.AddFD(fd.Get(), flags, *this);
 	else if (flags == 0)
-		success = loop.RemoveFD(fd.Get(), *this);
+		success = loop.RemoveFD(fd.Get());
 	else
 		success = loop.ModifyFD(fd.Get(), flags, *this);
 

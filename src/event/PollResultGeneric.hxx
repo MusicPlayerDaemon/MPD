@@ -57,16 +57,6 @@ public:
 		return items[i].obj;
 	}
 
-	void Reset() noexcept {
-		items.clear();
-	}
-
-	void Clear(void *obj) noexcept {
-		for (auto i = items.begin(); i != items.end(); ++i)
-			if (i->obj == obj)
-				i->events = 0;
-	}
-
 	void Add(unsigned events, void *obj) noexcept {
 		items.emplace_back(events, obj);
 	}

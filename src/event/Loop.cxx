@@ -87,20 +87,18 @@ EventLoop::Break() noexcept
 }
 
 bool
-EventLoop::Abandon(int _fd, SocketMonitor &m)  noexcept
+EventLoop::Abandon(int _fd)  noexcept
 {
 	assert(!IsAlive() || IsInside());
 
-	poll_result.Clear(&m);
 	return poll_group.Abandon(_fd);
 }
 
 bool
-EventLoop::RemoveFD(int _fd, SocketMonitor &m) noexcept
+EventLoop::RemoveFD(int _fd) noexcept
 {
 	assert(!IsAlive() || IsInside());
 
-	poll_result.Clear(&m);
 	return poll_group.Remove(_fd);
 }
 
@@ -230,7 +228,15 @@ EventLoop::Run() noexcept
 
 		/* wait for new event */
 
+		PollResult poll_result;
 		poll_group.ReadEvents(poll_result, ExportTimeoutMS(timeout));
+
+		ready_sockets.clear();
+		for (size_t i = 0; i < poll_result.GetSize(); ++i) {
+			auto &sm = *(SocketMonitor *)poll_result.GetObject(i);
+			sm.SetReadyFlags(poll_result.GetEvents(i));
+			ready_sockets.push_back(sm);
+		}
 
 		now = std::chrono::steady_clock::now();
 
@@ -240,19 +246,12 @@ EventLoop::Run() noexcept
 		}
 
 		/* invoke sockets */
-		for (size_t i = 0; i < poll_result.GetSize(); ++i) {
-			auto events = poll_result.GetEvents(i);
-			if (events != 0) {
-				if (quit)
-					break;
+		while (!ready_sockets.empty() && !quit) {
+			auto &sm = ready_sockets.front();
+			ready_sockets.pop_front();
 
-				auto m = (SocketMonitor *)poll_result.GetObject(i);
-				m->Dispatch(events);
-			}
+			sm.Dispatch();
 		}
-
-		poll_result.Reset();
-
 	} while (!quit);
 
 #ifndef NDEBUG

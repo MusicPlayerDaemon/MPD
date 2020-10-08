@@ -45,16 +45,6 @@ public:
 	void *GetObject(size_t i) const noexcept {
 		return events[i].data.ptr;
 	}
-
-	void Reset() noexcept {
-		n_events = 0;
-	}
-
-	void Clear(void *obj) noexcept {
-		for (size_t i = 0; i < n_events; ++i)
-			if (events[i].data.ptr == obj)
-				events[i].events = 0;
-	}
 };
 
 class PollGroupEpoll

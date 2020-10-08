@@ -88,6 +88,19 @@ class EventLoop final : SocketMonitor
 				       boost::intrusive::constant_time_size<false>>;
 	DeferredList deferred;
 
+	using ReadySocketList =
+		boost::intrusive::list<SocketMonitor,
+				       boost::intrusive::member_hook<SocketMonitor,
+								     SocketMonitor::ReadyListHook,
+								     &SocketMonitor::ready_siblings>,
+				       boost::intrusive::constant_time_size<false>>;
+
+	/**
+	 * A linked list of #SocketMonitor instances which have a
+	 * non-zero "ready_flags" field, and need to be dispatched.
+	 */
+	ReadySocketList ready_sockets;
+
 #ifdef HAVE_URING
 	std::unique_ptr<Uring::Manager> uring;
 #endif
@@ -123,7 +136,6 @@ class EventLoop final : SocketMonitor
 #endif
 
 	PollGroup poll_group;
-	PollResult poll_result;
 
 	/**
 	 * A reference to the thread that is currently inside Run().
@@ -178,9 +190,9 @@ public:
 	 * has been closed.  This is like RemoveFD(), but does not
 	 * attempt to use #EPOLL_CTL_DEL.
 	 */
-	bool Abandon(int fd, SocketMonitor &m) noexcept;
+	bool Abandon(int fd) noexcept;
 
-	bool RemoveFD(int fd, SocketMonitor &m) noexcept;
+	bool RemoveFD(int fd) noexcept;
 
 	void AddIdle(IdleMonitor &i) noexcept;
 	void RemoveIdle(IdleMonitor &i) noexcept;
