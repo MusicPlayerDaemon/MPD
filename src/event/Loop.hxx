@@ -66,9 +66,7 @@ class EventLoop final : SocketMonitor
 
 	using TimerSet =
 		boost::intrusive::multiset<TimerEvent,
-					   boost::intrusive::member_hook<TimerEvent,
-									 TimerEvent::TimerSetHook,
-									 &TimerEvent::timer_set_hook>,
+					   boost::intrusive::base_hook<boost::intrusive::set_base_hook<>>,
 					   boost::intrusive::compare<TimerCompare>,
 					   boost::intrusive::constant_time_size<false>>;
 	TimerSet timers;

@@ -36,11 +36,10 @@ class EventLoop;
  * thread that runs the #EventLoop, except where explicitly documented
  * as thread-safe.
  */
-class TimerEvent final {
+class TimerEvent final
+	: public boost::intrusive::set_base_hook<>
+{
 	friend class EventLoop;
-
-	typedef boost::intrusive::set_member_hook<> TimerSetHook;
-	TimerSetHook timer_set_hook;
 
 	EventLoop &loop;
 
@@ -67,7 +66,7 @@ public:
 	}
 
 	bool IsActive() const noexcept {
-		return timer_set_hook.is_linked();
+		return is_linked();
 	}
 
 	void Schedule(std::chrono::steady_clock::duration d) noexcept;
