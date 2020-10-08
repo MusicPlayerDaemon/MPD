@@ -21,8 +21,6 @@
 #include "Connection.hxx"
 #include "event/Call.hxx"
 
-constexpr std::chrono::steady_clock::duration BlockingNfsOperation::timeout;
-
 void
 BlockingNfsOperation::Run()
 {

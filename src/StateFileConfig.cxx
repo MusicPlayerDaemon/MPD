@@ -24,8 +24,6 @@
 #include "fs/StandardDirectory.hxx"
 #endif
 
-constexpr std::chrono::steady_clock::duration StateFileConfig::DEFAULT_INTERVAL;
-
 StateFileConfig::StateFileConfig(const ConfigData &config)
 	:path(config.GetPath(ConfigOption::STATE_FILE)),
 	 interval(config.GetUnsigned(ConfigOption::STATE_FILE_INTERVAL,
