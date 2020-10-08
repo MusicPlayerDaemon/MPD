@@ -131,14 +131,6 @@ EventLoop::AddTimer(TimerEvent &t, std::chrono::steady_clock::duration d) noexce
 	again = true;
 }
 
-void
-EventLoop::CancelTimer(TimerEvent &t) noexcept
-{
-	assert(IsInside());
-
-	timers.erase(timers.iterator_to(t));
-}
-
 inline std::chrono::steady_clock::duration
 EventLoop::HandleTimers() noexcept
 {

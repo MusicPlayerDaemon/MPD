@@ -64,7 +64,7 @@ class EventLoop final : SocketMonitor
 
 	using TimerSet =
 		boost::intrusive::multiset<TimerEvent,
-					   boost::intrusive::base_hook<boost::intrusive::set_base_hook<>>,
+					   boost::intrusive::base_hook<boost::intrusive::set_base_hook<boost::intrusive::link_mode<boost::intrusive::auto_unlink>>>,
 					   boost::intrusive::compare<TimerCompare>,
 					   boost::intrusive::constant_time_size<false>>;
 	TimerSet timers;
@@ -186,7 +186,6 @@ public:
 
 	void AddTimer(TimerEvent &t,
 		      std::chrono::steady_clock::duration d) noexcept;
-	void CancelTimer(TimerEvent &t) noexcept;
 
 	/**
 	 * Schedule a call to DeferEvent::RunDeferred().

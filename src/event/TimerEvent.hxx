@@ -37,7 +37,7 @@ class EventLoop;
  * as thread-safe.
  */
 class TimerEvent final
-	: public boost::intrusive::set_base_hook<>
+	: public boost::intrusive::set_base_hook<boost::intrusive::link_mode<boost::intrusive::auto_unlink>>
 {
 	friend class EventLoop;
 
@@ -57,10 +57,6 @@ public:
 		:loop(_loop), callback(_callback) {
 	}
 
-	~TimerEvent() noexcept {
-		Cancel();
-	}
-
 	auto &GetEventLoop() const noexcept {
 		return loop;
 	}
@@ -70,7 +66,10 @@ public:
 	}
 
 	void Schedule(std::chrono::steady_clock::duration d) noexcept;
-	void Cancel() noexcept;
+
+	void Cancel() noexcept {
+		unlink();
+	}
 
 private:
 	void Run() noexcept {
