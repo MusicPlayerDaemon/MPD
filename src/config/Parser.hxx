@@ -51,7 +51,7 @@ ParsePositive(const char *s);
  *
  * Throws on error.
  */
-size_t
-ParseSize(const char *s, size_t default_factor=1);
+std::size_t
+ParseSize(const char *s, std::size_t default_factor=1);
 
 #endif
