@@ -20,6 +20,7 @@
 #ifndef MPD_CONFIG_PARSER_HXX
 #define MPD_CONFIG_PARSER_HXX
 
+#include <chrono>
 #include <cstddef>
 
 /**
@@ -53,5 +54,11 @@ ParsePositive(const char *s);
  */
 std::size_t
 ParseSize(const char *s, std::size_t default_factor=1);
+
+/**
+ * Throws on error.
+ */
+std::chrono::steady_clock::duration
+ParseDuration(const char *s);
 
 #endif

@@ -4,6 +4,7 @@ ver 0.22.1 (not yet released)
   - jack, pulse: reduce the delay when stopping or pausing playback
 * playlist
   - cue: fix two crash bugs
+* state_file: fix the state_file_interval setting
 
 ver 0.22 (2020/09/23)
 * protocol

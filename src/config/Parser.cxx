@@ -135,3 +135,11 @@ ParseSize(const char *s, std::size_t default_factor)
 
 	return value;
 }
+
+std::chrono::steady_clock::duration
+ParseDuration(const char *s)
+{
+	// TODO: allow unit suffixes
+	const std::chrono::seconds seconds(ParseLong(s));
+	return std::chrono::duration_cast<std::chrono::steady_clock::duration>(seconds);
+}

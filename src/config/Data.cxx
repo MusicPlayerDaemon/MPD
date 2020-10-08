@@ -101,6 +101,38 @@ ConfigData::GetPositive(ConfigOption option, unsigned default_value) const
 	});
 }
 
+std::chrono::steady_clock::duration
+ConfigData::GetUnsigned(ConfigOption option,
+			std::chrono::steady_clock::duration default_value) const
+{
+	return With(option, [default_value](const char *s){
+		if (s == nullptr)
+			return default_value;
+
+		auto value = ParseDuration(s);
+		if (value < std::chrono::steady_clock::duration{})
+			throw std::runtime_error("Value must not be negative");
+
+		return value;
+	});
+}
+
+std::chrono::steady_clock::duration
+ConfigData::GetPositive(ConfigOption option,
+			std::chrono::steady_clock::duration default_value) const
+{
+	return With(option, [default_value](const char *s){
+		if (s == nullptr)
+			return default_value;
+
+		auto value = ParseDuration(s);
+		if (value <= std::chrono::steady_clock::duration{})
+			throw std::runtime_error("Value must be positive");
+
+		return value;
+	});
+}
+
 bool
 ConfigData::GetBool(ConfigOption option, bool default_value) const
 {
