@@ -64,13 +64,10 @@ bool
 WinSelectBackend::Add(SOCKET fd, unsigned events, void *obj) noexcept
 {
 	assert(items.find(fd) == items.end());
-	auto i = items.emplace(fd, Item{}).first;
+	auto i = items.emplace(std::piecewise_construct,
+			       std::forward_as_tuple(fd),
+			       std::forward_as_tuple(obj)).first;
 	auto &item = i->second;
-
-	item.index[EVENT_READ] = -1;
-	item.index[EVENT_WRITE] = -1;
-	item.obj = obj;
-	item.events = 0;
 
 	if (!CanModify(item, events, EVENT_READ)) {
 		items.erase(i);

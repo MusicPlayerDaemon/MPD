@@ -91,9 +91,15 @@ class WinSelectBackend
 {
 	struct Item
 	{
-		int index[2];
+		int index[2]{-1, -1};
 		void *obj;
-		unsigned events;
+		unsigned events = 0;
+
+		explicit constexpr Item(void *_obj) noexcept
+			:obj(_obj) {}
+
+		Item(const Item &) = delete;
+		Item &operator=(const Item &) = delete;
 	};
 
 	SocketSet event_set[2];
