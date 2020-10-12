@@ -17,10 +17,6 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "config.h"
-
-#ifdef USE_POLL
-
 #include "PollGroupPoll.hxx"
 
 #include <cassert>
@@ -89,5 +85,3 @@ PollGroupPoll::ReadEvents(PollResultGeneric &result, int timeout_ms) noexcept
 		}
 	}
 }
-
-#endif

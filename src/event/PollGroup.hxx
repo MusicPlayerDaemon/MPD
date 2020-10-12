@@ -22,22 +22,24 @@
 
 #include "config.h"
 
-#ifdef USE_EPOLL
-#include "PollGroupEpoll.hxx"
-typedef PollResultEpoll PollResult;
-typedef PollGroupEpoll PollGroup;
-#endif
+#ifdef _WIN32
 
-#ifdef USE_WINSELECT
 #include "PollGroupWinSelect.hxx"
 typedef PollResultGeneric  PollResult;
 typedef PollGroupWinSelect PollGroup;
-#endif
 
-#ifdef USE_POLL
+#elif defined(USE_EPOLL)
+
+#include "PollGroupEpoll.hxx"
+typedef PollResultEpoll PollResult;
+typedef PollGroupEpoll PollGroup;
+
+#else
+
 #include "PollGroupPoll.hxx"
 typedef PollResultGeneric PollResult;
 typedef PollGroupPoll     PollGroup;
+
 #endif
 
 #endif

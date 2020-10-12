@@ -4,10 +4,16 @@ if uring_dep.found()
   event_sources += 'UringManager.cxx'
 endif
 
+if is_windows
+  event_sources += 'PollGroupWinSelect.cxx'
+elif is_linux and get_option('epoll')
+  # epoll support is header-only
+else
+  event_sources += 'PollGroupPoll.cxx'
+endif
+
 event = static_library(
   'event',
-  'PollGroupPoll.cxx',
-  'PollGroupWinSelect.cxx',
   'SignalMonitor.cxx',
   'TimerEvent.cxx',
   'IdleMonitor.cxx',

@@ -172,12 +172,8 @@ conf.set('HAVE_PRCTL', is_linux)
 conf.set('USE_EVENTFD', is_linux and get_option('eventfd'))
 conf.set('USE_SIGNALFD', is_linux and get_option('signalfd'))
 
-if is_windows
-  conf.set('USE_WINSELECT', true)
-elif is_linux and get_option('epoll')
+if is_linux and get_option('epoll')
   conf.set('USE_EPOLL', true)
-else
-  conf.set('USE_POLL', true)
 endif
 
 if not get_option('syslog').disabled()

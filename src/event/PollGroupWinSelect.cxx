@@ -17,10 +17,6 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "config.h"
-
-#ifdef USE_WINSELECT
-
 #include "PollGroupWinSelect.hxx"
 
 static constexpr int EVENT_READ = 0;
@@ -165,5 +161,3 @@ PollGroupWinSelect::ReadEvents(PollResultGeneric &result,
 			i.second.events = 0;
 		}
 }
-
-#endif
