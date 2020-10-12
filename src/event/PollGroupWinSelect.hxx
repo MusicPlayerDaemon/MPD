@@ -52,7 +52,7 @@ public:
 	}
 
 	fd_set *GetPtr() noexcept {
-		return &set;
+		return IsEmpty() ? nullptr : &set;
 	}
 
 	size_t Size() const noexcept {

@@ -142,9 +142,9 @@ PollGroupWinSelect::ReadEvents(PollResultGeneric &result,
 	}
 
 	int ret = select(0,
-			 read_set.IsEmpty() ? nullptr : read_set.GetPtr(),
-			 write_set.IsEmpty() ? nullptr : write_set.GetPtr(),
-			 except_set.IsEmpty() ? nullptr : except_set.GetPtr(),
+			 read_set.GetPtr(),
+			 write_set.GetPtr(),
+			 except_set.GetPtr(),
 			 timeout_ms < 0 ? nullptr : &tv);
 
 	if (ret == 0 || ret == SOCKET_ERROR)
