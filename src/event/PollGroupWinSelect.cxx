@@ -45,7 +45,7 @@ PollGroupWinSelect::CanModify(PollGroupWinSelect::Item &item,
 }
 
 void
-PollGroupWinSelect::Modify(PollGroupWinSelect::Item &item, int fd,
+PollGroupWinSelect::Modify(PollGroupWinSelect::Item &item, SOCKET fd,
 			   unsigned events, int event_id) noexcept
 {
 	int index = item.index[event_id];
@@ -64,7 +64,7 @@ PollGroupWinSelect::Modify(PollGroupWinSelect::Item &item, int fd,
 }
 
 bool
-PollGroupWinSelect::Add(int fd, unsigned events, void *obj) noexcept
+PollGroupWinSelect::Add(SOCKET fd, unsigned events, void *obj) noexcept
 {
 	assert(items.find(fd) == items.end());
 	auto &item = items[fd];
@@ -89,7 +89,7 @@ PollGroupWinSelect::Add(int fd, unsigned events, void *obj) noexcept
 }
 
 bool
-PollGroupWinSelect::Modify(int fd, unsigned events, void *obj) noexcept
+PollGroupWinSelect::Modify(SOCKET fd, unsigned events, void *obj) noexcept
 {
 	auto item_iter = items.find(fd);
 	assert(item_iter != items.end());
@@ -107,7 +107,7 @@ PollGroupWinSelect::Modify(int fd, unsigned events, void *obj) noexcept
 }
 
 bool
-PollGroupWinSelect::Remove(int fd) noexcept
+PollGroupWinSelect::Remove(SOCKET fd) noexcept
 {
 	auto item_iter = items.find(fd);
 	assert(item_iter != items.end());

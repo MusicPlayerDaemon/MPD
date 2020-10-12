@@ -67,12 +67,12 @@ public:
 		return set.fd_count == FD_SETSIZE;
 	}
 
-	int operator[](size_t index) const noexcept {
+	SOCKET operator[](size_t index) const noexcept {
 		assert(index < set.fd_count);
 		return set.fd_array[index];
 	}
 
-	size_t Add(int fd) noexcept {
+	size_t Add(SOCKET fd) noexcept {
 		assert(!IsFull());
 		set.fd_array[set.fd_count] = fd;
 		return set.fd_count++;
@@ -103,7 +103,7 @@ class PollGroupWinSelect
 
 	bool CanModify(Item &item, unsigned events,
 		       int event_id) const noexcept;
-	void Modify(Item &item, int fd, unsigned events,
+	void Modify(Item &item, SOCKET fd, unsigned events,
 		    int event_id) noexcept;
 
 	PollGroupWinSelect(PollGroupWinSelect &) = delete;
@@ -118,10 +118,10 @@ public:
 	~PollGroupWinSelect() noexcept;
 
 	void ReadEvents(PollResultGeneric &result, int timeout_ms) noexcept;
-	bool Add(int fd, unsigned events, void *obj) noexcept;
-	bool Modify(int fd, unsigned events, void *obj) noexcept;
-	bool Remove(int fd) noexcept;
-	bool Abandon(int fd) noexcept {
+	bool Add(SOCKET fd, unsigned events, void *obj) noexcept;
+	bool Modify(SOCKET fd, unsigned events, void *obj) noexcept;
+	bool Remove(SOCKET fd) noexcept;
+	bool Abandon(SOCKET fd) noexcept {
 		return Remove(fd);
 	}
 };
