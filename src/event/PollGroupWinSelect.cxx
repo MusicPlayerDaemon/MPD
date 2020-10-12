@@ -150,19 +150,19 @@ PollGroupWinSelect::ReadEvents(PollResultGeneric &result,
 	if (ret == 0 || ret == SOCKET_ERROR)
 		return;
 
-	for (size_t i = 0; i < read_set.Size(); ++i)
-		items[read_set[i]].events |= READ;
+	for (const auto i : read_set)
+		items[i].events |= READ;
 
-	for (size_t i = 0; i < write_set.Size(); ++i)
-		items[write_set[i]].events |= WRITE;
+	for (const auto i : write_set)
+		items[i].events |= WRITE;
 
-	for (size_t i = 0; i < except_set.Size(); ++i)
-		items[except_set[i]].events |= WRITE;
+	for (const auto i : except_set)
+		items[i].events |= WRITE;
 
-	for (auto i = items.begin(); i != items.end(); ++i)
-		if (i->second.events != 0) {
-			result.Add(i->second.events, i->second.obj);
-			i->second.events = 0;
+	for (auto &i : items)
+		if (i.second.events != 0) {
+			result.Add(i.second.events, i.second.obj);
+			i.second.events = 0;
 		}
 }
 

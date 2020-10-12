@@ -84,6 +84,14 @@ public:
 		assert(!IsEmpty());
 		--set.fd_count;
 	}
+
+	const auto *begin() const noexcept {
+		return set.fd_array;
+	}
+
+	const auto *end() const noexcept {
+		return set.fd_array + set.fd_count;
+	}
 };
 
 class PollGroupWinSelect
