@@ -22,10 +22,9 @@
 
 #include "PollResultGeneric.hxx"
 
+#include <algorithm>
 #include <cassert>
 #include <unordered_map>
-
-#include <string.h>
 
 #include <windows.h>
 #include <winsock2.h>
@@ -46,9 +45,7 @@ public:
 
 	SocketSet(const SocketSet &other) noexcept {
 		set.fd_count = other.set.fd_count;
-		memcpy(set.fd_array,
-		       other.set.fd_array,
-		       sizeof (SOCKET) * set.fd_count);
+		std::copy_n(other.set.fd_array, set.fd_count, set.fd_array);
 	}
 
 	fd_set *GetPtr() noexcept {
