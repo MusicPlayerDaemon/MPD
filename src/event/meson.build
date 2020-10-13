@@ -2,6 +2,7 @@ event_features = configuration_data()
 event_features.set('USE_EVENTFD', is_linux and get_option('eventfd'))
 event_features.set('USE_SIGNALFD', is_linux and get_option('signalfd'))
 event_features.set('USE_EPOLL', is_linux and get_option('epoll'))
+event_features.set('HAVE_THREADED_EVENT_LOOP', true)
 configure_file(output: 'Features.h', configuration: event_features)
 
 event_sources = []

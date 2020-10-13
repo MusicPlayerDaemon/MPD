@@ -37,18 +37,27 @@ EventLoop::TimerCompare::operator()(const TimerEvent &a,
 	return a.due < b.due;
 }
 
-EventLoop::EventLoop(ThreadId _thread)
-	:SocketMonitor(*this),
+EventLoop::EventLoop(
+#ifdef HAVE_THREADED_EVENT_LOOP
+		     ThreadId _thread
+#endif
+		     )
+	:
+#ifdef HAVE_THREADED_EVENT_LOOP
+	SocketMonitor(*this),
+	 thread(_thread),
 	 /* if this instance is hosted by an EventThread (no ThreadId
 	    known yet) then we're not yet alive until the thread is
 	    started; for the main EventLoop instance, we assume it's
 	    already alive, because nobody but EventThread will call
 	    SetAlive() */
 	 alive(!_thread.IsNull()),
-	 quit(false),
-	 thread(_thread)
+#endif
+	 quit(false)
 {
+#ifdef HAVE_THREADED_EVENT_LOOP
 	SocketMonitor::Open(SocketDescriptor(wake_fd.Get()));
+#endif
 }
 
 EventLoop::~EventLoop() noexcept
@@ -83,13 +92,17 @@ EventLoop::Break() noexcept
 	if (quit.exchange(true))
 		return;
 
+#ifdef HAVE_THREADED_EVENT_LOOP
 	wake_fd.Write();
+#endif
 }
 
 bool
 EventLoop::Abandon(int _fd)  noexcept
 {
+#ifdef HAVE_THREADED_EVENT_LOOP
 	assert(!IsAlive() || IsInside());
+#endif
 
 	return poll_group.Abandon(_fd);
 }
@@ -97,7 +110,9 @@ EventLoop::Abandon(int _fd)  noexcept
 bool
 EventLoop::RemoveFD(int _fd) noexcept
 {
+#ifdef HAVE_THREADED_EVENT_LOOP
 	assert(!IsAlive() || IsInside());
+#endif
 
 	return poll_group.Remove(_fd);
 }
@@ -169,15 +184,19 @@ ExportTimeoutMS(Event::Duration timeout)
 void
 EventLoop::Run() noexcept
 {
+#ifdef HAVE_THREADED_EVENT_LOOP
 	if (thread.IsNull())
 		thread = ThreadId::GetCurrent();
+#endif
 
 	assert(IsInside());
 	assert(!quit);
+#ifdef HAVE_THREADED_EVENT_LOOP
 	assert(alive);
 	assert(busy);
 
 	SocketMonitor::Schedule(SocketMonitor::READ);
+#endif
 	AtScopeExit(this) {
 #ifdef HAVE_URING
 		/* make sure that the Uring::Manager gets destructed
@@ -188,7 +207,9 @@ EventLoop::Run() noexcept
 		uring_initialized = false;
 #endif
 
+#ifdef HAVE_THREADED_EVENT_LOOP
 		SocketMonitor::Cancel();
+#endif
 	};
 
 	do {
@@ -212,6 +233,7 @@ EventLoop::Run() noexcept
 				return;
 		}
 
+#ifdef HAVE_THREADED_EVENT_LOOP
 		/* try to handle DeferEvents without WakeFD
 		   overhead */
 		{
@@ -225,6 +247,7 @@ EventLoop::Run() noexcept
 				   new timeout */
 				continue;
 		}
+#endif
 
 		/* wait for new event */
 
@@ -240,10 +263,12 @@ EventLoop::Run() noexcept
 
 		now = std::chrono::steady_clock::now();
 
+#ifdef HAVE_THREADED_EVENT_LOOP
 		{
 			const std::lock_guard<Mutex> lock(mutex);
 			busy = true;
 		}
+#endif
 
 		/* invoke sockets */
 		while (!ready_sockets.empty() && !quit) {
@@ -254,10 +279,14 @@ EventLoop::Run() noexcept
 		}
 	} while (!quit);
 
+#ifdef HAVE_THREADED_EVENT_LOOP
 #ifndef NDEBUG
 	assert(thread.IsInside());
 #endif
+#endif
 }
+
+#ifdef HAVE_THREADED_EVENT_LOOP
 
 void
 EventLoop::AddDeferred(DeferEvent &d) noexcept
@@ -316,3 +345,5 @@ EventLoop::OnSocketReady([[maybe_unused]] unsigned flags) noexcept
 
 	return true;
 }
+
+#endif
