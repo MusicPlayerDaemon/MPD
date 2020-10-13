@@ -20,7 +20,7 @@
 #ifndef MPD_EVENT_POLLGROUP_HXX
 #define MPD_EVENT_POLLGROUP_HXX
 
-#include "config.h"
+#include "event/Features.h"
 
 #ifdef _WIN32
 

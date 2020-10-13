@@ -169,13 +169,6 @@ conf.set('HAVE_STRCASESTR', compiler.has_function('strcasestr'))
 
 conf.set('HAVE_PRCTL', is_linux)
 
-conf.set('USE_EVENTFD', is_linux and get_option('eventfd'))
-conf.set('USE_SIGNALFD', is_linux and get_option('signalfd'))
-
-if is_linux and get_option('epoll')
-  conf.set('USE_EPOLL', true)
-endif
-
 if not get_option('syslog').disabled()
   if compiler.has_function('syslog')
     conf.set('HAVE_SYSLOG', true)

@@ -37,6 +37,7 @@
 #include "fs/Traits.hxx"
 #include "fs/FileSystem.hxx"
 #include "fs/StandardDirectory.hxx"
+#include "event/Features.h"
 #include "io/uring/Features.h"
 #include "util/Domain.hxx"
 #include "util/OptionDef.hxx"

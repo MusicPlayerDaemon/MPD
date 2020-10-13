@@ -20,7 +20,7 @@
 #ifndef MPD_WAKE_FD_HXX
 #define MPD_WAKE_FD_HXX
 
-#include "config.h"
+#include "event/Features.h"
 
 #ifdef USE_EVENTFD
 #include "system/EventFD.hxx"

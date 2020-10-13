@@ -23,6 +23,7 @@
 #include "IdleMonitor.hxx"
 #include "TimerEvent.hxx"
 #include "SocketMonitor.hxx"
+#include "event/Features.h"
 
 #include <cassert>
 #include <forward_list>

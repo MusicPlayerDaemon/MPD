@@ -18,7 +18,7 @@
  */
 
 #include "SignalMonitor.hxx"
-#include "config.h"
+#include "event/Features.h"
 
 #ifndef _WIN32
 
