@@ -26,7 +26,7 @@
 #include <signal.h>
 
 static void
-HandleShutdownSignal(void *ctx)
+HandleShutdownSignal(void *ctx) noexcept
 {
 	auto &loop = *(EventLoop *)ctx;
 	loop.Break();
