@@ -29,16 +29,6 @@
 #endif
 
 void
-SocketEvent::Dispatch() noexcept
-{
-	const unsigned flags = std::exchange(ready_flags, 0) &
-		(GetScheduledFlags() | IMPLICIT_FLAGS);
-
-	if (flags != 0)
-		callback(flags);
-}
-
-void
 SocketEvent::Open(SocketDescriptor _fd) noexcept
 {
 	assert(!fd.IsDefined());
@@ -98,4 +88,14 @@ SocketEvent::Schedule(unsigned flags) noexcept
 #endif
 
 	return success;
+}
+
+void
+SocketEvent::Dispatch() noexcept
+{
+	const unsigned flags = std::exchange(ready_flags, 0) &
+		(GetScheduledFlags() | IMPLICIT_FLAGS);
+
+	if (flags != 0)
+		callback(flags);
 }
