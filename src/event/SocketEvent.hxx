@@ -59,7 +59,7 @@ class SocketEvent {
 	SocketDescriptor fd;
 
 	/**
-	 * A bit mask of events that is currently registered in the
+	 * A bit mask of events that are currently registered in the
 	 * #EventLoop.
 	 */
 	unsigned scheduled_flags = 0;
