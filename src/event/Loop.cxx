@@ -200,20 +200,23 @@ EventLoop::Run() noexcept
 
 	SocketMonitor::Schedule(SocketMonitor::READ);
 #endif
-	AtScopeExit(this) {
+
 #ifdef HAVE_URING
+	AtScopeExit(this) {
 		/* make sure that the Uring::Manager gets destructed
 		   from within the EventThread, or else its
 		   destruction in another thread will cause assertion
 		   failures */
 		uring.reset();
 		uring_initialized = false;
+	};
 #endif
 
 #ifdef HAVE_THREADED_EVENT_LOOP
+	AtScopeExit(this) {
 		SocketMonitor::Cancel();
-#endif
 	};
+#endif
 
 	do {
 		now = std::chrono::steady_clock::now();
