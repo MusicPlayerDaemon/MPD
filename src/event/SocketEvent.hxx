@@ -91,7 +91,9 @@ public:
 		 callback(_callback),
 		 fd(_fd) {}
 
-	~SocketEvent() noexcept;
+	~SocketEvent() noexcept {
+		Cancel();
+	}
 
 	auto &GetEventLoop() const noexcept {
 		return loop;

@@ -38,12 +38,6 @@ SocketEvent::Dispatch() noexcept
 		callback(flags);
 }
 
-SocketEvent::~SocketEvent() noexcept
-{
-	if (IsDefined())
-		Cancel();
-}
-
 void
 SocketEvent::Open(SocketDescriptor _fd) noexcept
 {
@@ -72,10 +66,10 @@ SocketEvent::Close() noexcept
 bool
 SocketEvent::Schedule(unsigned flags) noexcept
 {
-	assert(IsDefined());
-
 	if (flags == GetScheduledFlags())
 		return true;
+
+	assert(IsDefined());
 
 	bool success;
 	if (scheduled_flags == 0)
