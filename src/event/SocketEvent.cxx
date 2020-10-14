@@ -17,7 +17,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "SocketMonitor.hxx"
+#include "SocketEvent.hxx"
 #include "Loop.hxx"
 #include "event/Features.h"
 
@@ -29,23 +29,23 @@
 #endif
 
 void
-SocketMonitor::Dispatch() noexcept
+SocketEvent::Dispatch() noexcept
 {
 	const unsigned flags = std::exchange(ready_flags, 0) &
 		(GetScheduledFlags() | IMPLICIT_FLAGS);
 
 	if (flags != 0)
-		OnSocketReady(flags);
+		callback(flags);
 }
 
-SocketMonitor::~SocketMonitor() noexcept
+SocketEvent::~SocketEvent() noexcept
 {
 	if (IsDefined())
 		Cancel();
 }
 
 void
-SocketMonitor::Open(SocketDescriptor _fd) noexcept
+SocketEvent::Open(SocketDescriptor _fd) noexcept
 {
 	assert(!fd.IsDefined());
 	assert(_fd.IsDefined());
@@ -54,7 +54,7 @@ SocketMonitor::Open(SocketDescriptor _fd) noexcept
 }
 
 SocketDescriptor
-SocketMonitor::Steal() noexcept
+SocketEvent::Steal() noexcept
 {
 	assert(IsDefined());
 
@@ -64,13 +64,13 @@ SocketMonitor::Steal() noexcept
 }
 
 void
-SocketMonitor::Close() noexcept
+SocketEvent::Close() noexcept
 {
 	Steal().Close();
 }
 
 bool
-SocketMonitor::Schedule(unsigned flags) noexcept
+SocketEvent::Schedule(unsigned flags) noexcept
 {
 	assert(IsDefined());
 

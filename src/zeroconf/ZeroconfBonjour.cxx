@@ -20,7 +20,7 @@
 #include "ZeroconfBonjour.hxx"
 #include "ZeroconfInternal.hxx"
 #include "Listen.hxx"
-#include "event/SocketMonitor.hxx"
+#include "event/SocketEvent.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
 #include "util/Compiler.h"
@@ -31,15 +31,19 @@
 
 static constexpr Domain bonjour_domain("bonjour");
 
-class BonjourMonitor final : public SocketMonitor {
+class BonjourMonitor final {
 	DNSServiceRef service_ref;
+
+	SocketEvent socket_event;
 
 public:
 	BonjourMonitor(EventLoop &_loop, DNSServiceRef _service_ref)
-		:SocketMonitor(SocketDescriptor(DNSServiceRefSockFD(_service_ref)),
-			       _loop),
-		 service_ref(_service_ref) {
-		ScheduleRead();
+		:service_ref(_service_ref),
+		 socket_event(SocketDescriptor(DNSServiceRefSockFD(service_ref)),
+			      BIND_THIS_METHOD(OnSocketReady),
+			      _loop)
+	{
+		socket_event.ScheduleRead();
 	}
 
 	~BonjourMonitor() {
@@ -48,9 +52,8 @@ public:
 
 protected:
 	/* virtual methods from class SocketMonitor */
-	bool OnSocketReady([[maybe_unused]] unsigned flags) noexcept override {
+	void OnSocketReady([[maybe_unused]] unsigned flags) noexcept override {
 		DNSServiceProcessResult(service_ref);
-		return true;
 	}
 };
 

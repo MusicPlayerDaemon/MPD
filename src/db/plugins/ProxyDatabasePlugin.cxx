@@ -42,7 +42,7 @@
 #include "util/ScopeExit.hxx"
 #include "util/RuntimeError.hxx"
 #include "protocol/Ack.hxx"
-#include "event/SocketMonitor.hxx"
+#include "event/SocketEvent.hxx"
 #include "event/IdleEvent.hxx"
 #include "Log.hxx"
 
@@ -85,7 +85,8 @@ public:
 	}
 };
 
-class ProxyDatabase final : public Database, SocketMonitor {
+class ProxyDatabase final : public Database {
+	SocketEvent socket_event;
 	IdleEvent idle_event;
 
 	DatabaseListener &listener;
@@ -149,10 +150,8 @@ private:
 
 	void Disconnect() noexcept;
 
+	void OnSocketReady(unsigned flags) noexcept;
 	void OnIdle() noexcept;
-
-	/* virtual methods from SocketMonitor */
-	bool OnSocketReady(unsigned flags) noexcept override;
 };
 
 static constexpr struct {
@@ -446,7 +445,7 @@ SendGroup(mpd_connection *connection, ConstBuffer<TagType> group)
 ProxyDatabase::ProxyDatabase(EventLoop &_loop, DatabaseListener &_listener,
 			     const ConfigBlock &block)
 	:Database(proxy_db_plugin),
-	 SocketMonitor(_loop),
+	 socket_event(_loop, BIND_THIS_METHOD(OnSocketReady)),
 	 idle_event(_loop, BIND_THIS_METHOD(OnIdle)),
 	 listener(_listener),
 	 host(block.GetBlockValue("host", "")),
@@ -527,7 +526,7 @@ ProxyDatabase::Connect()
 	idle_received = ~0U;
 	is_idle = false;
 
-	SocketMonitor::Open(SocketDescriptor(mpd_async_get_fd(mpd_connection_get_async(connection))));
+	socket_event.Open(SocketDescriptor(mpd_async_get_fd(mpd_connection_get_async(connection))));
 	idle_event.Schedule();
 }
 
@@ -574,13 +573,13 @@ ProxyDatabase::Disconnect() noexcept
 	assert(connection != nullptr);
 
 	idle_event.Cancel();
-	SocketMonitor::Steal();
+	socket_event.Steal();
 
 	mpd_connection_free(connection);
 	connection = nullptr;
 }
 
-bool
+void
 ProxyDatabase::OnSocketReady([[maybe_unused]] unsigned flags) noexcept
 {
 	assert(connection != nullptr);
@@ -588,8 +587,8 @@ ProxyDatabase::OnSocketReady([[maybe_unused]] unsigned flags) noexcept
 	if (!is_idle) {
 		// TODO: can this happen?
 		idle_event.Schedule();
-		SocketMonitor::Cancel();
-		return true;
+		socket_event.Cancel();
+		return;
 	}
 
 	auto idle = (unsigned)mpd_recv_idle(connection, false);
@@ -599,7 +598,7 @@ ProxyDatabase::OnSocketReady([[maybe_unused]] unsigned flags) noexcept
 		} catch (...) {
 			LogError(std::current_exception());
 			Disconnect();
-			return false;
+			return;
 		}
 	}
 
@@ -607,8 +606,7 @@ ProxyDatabase::OnSocketReady([[maybe_unused]] unsigned flags) noexcept
 	idle_received |= idle;
 	is_idle = false;
 	idle_event.Schedule();
-	SocketMonitor::Cancel();
-	return true;
+	socket_event.Cancel();
 }
 
 void
@@ -636,14 +634,14 @@ ProxyDatabase::OnIdle() noexcept
 			LogError(std::current_exception());
 		}
 
-		SocketMonitor::Steal();
+		socket_event.Steal();
 		mpd_connection_free(connection);
 		connection = nullptr;
 		return;
 	}
 
 	is_idle = true;
-	SocketMonitor::ScheduleRead();
+	socket_event.ScheduleRead();
 }
 
 const LightSong *

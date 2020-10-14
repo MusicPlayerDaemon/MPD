@@ -216,7 +216,7 @@ HttpdClient::CancelQueue() noexcept
 	ClearQueue();
 
 	if (current_page == nullptr)
-		CancelWrite();
+		event.CancelWrite();
 }
 
 ssize_t
@@ -259,7 +259,7 @@ HttpdClient::TryWrite() noexcept
 			/* another thread has removed the event source
 			   while this thread was waiting for
 			   httpd.mutex */
-			CancelWrite();
+			event.CancelWrite();
 			return true;
 		}
 
@@ -354,7 +354,7 @@ HttpdClient::TryWrite() noexcept
 			if (pages.empty())
 				/* all pages are sent: remove the
 				   event source */
-				CancelWrite();
+				event.CancelWrite();
 		}
 	}
 
@@ -377,7 +377,7 @@ HttpdClient::PushPage(PagePtr page) noexcept
 	queue_size += page->GetSize();
 	pages.emplace(std::move(page));
 
-	ScheduleWrite();
+	event.ScheduleWrite();
 }
 
 void
@@ -389,17 +389,14 @@ HttpdClient::PushMetaData(PagePtr page) noexcept
 	metadata_sent = false;
 }
 
-bool
+void
 HttpdClient::OnSocketReady(unsigned flags) noexcept
 {
-	if (!BufferedSocket::OnSocketReady(flags))
-		return false;
-
-	if (flags & WRITE)
+	if (flags & SocketEvent::WRITE)
 		if (!TryWrite())
-			return false;
+			return;
 
-	return true;
+	BufferedSocket::OnSocketReady(flags);
 }
 
 BufferedSocket::InputResult

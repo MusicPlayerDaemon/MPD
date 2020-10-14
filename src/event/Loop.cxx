@@ -19,7 +19,7 @@
 
 #include "Loop.hxx"
 #include "TimerEvent.hxx"
-#include "SocketMonitor.hxx"
+#include "SocketEvent.hxx"
 #include "IdleEvent.hxx"
 #include "util/ScopeExit.hxx"
 
@@ -47,7 +47,7 @@ EventLoop::EventLoop(
 		     )
 	:
 #ifdef HAVE_THREADED_EVENT_LOOP
-	SocketMonitor(*this),
+	wake_event(*this, BIND_THIS_METHOD(OnSocketReady)),
 	 thread(_thread),
 	 /* if this instance is hosted by an EventThread (no ThreadId
 	    known yet) then we're not yet alive until the thread is
@@ -59,7 +59,7 @@ EventLoop::EventLoop(
 	 quit(false)
 {
 #ifdef HAVE_THREADED_EVENT_LOOP
-	SocketMonitor::Open(SocketDescriptor(wake_fd.Get()));
+	wake_event.Open(SocketDescriptor(wake_fd.Get()));
 #endif
 }
 
@@ -198,7 +198,7 @@ EventLoop::Run() noexcept
 	assert(alive);
 	assert(busy);
 
-	SocketMonitor::Schedule(SocketMonitor::READ);
+	wake_event.Schedule(SocketEvent::READ);
 #endif
 
 #ifdef HAVE_URING
@@ -214,7 +214,7 @@ EventLoop::Run() noexcept
 
 #ifdef HAVE_THREADED_EVENT_LOOP
 	AtScopeExit(this) {
-		SocketMonitor::Cancel();
+		wake_event.Cancel();
 	};
 #endif
 
@@ -262,9 +262,9 @@ EventLoop::Run() noexcept
 
 		ready_sockets.clear();
 		for (size_t i = 0; i < poll_result.GetSize(); ++i) {
-			auto &sm = *(SocketMonitor *)poll_result.GetObject(i);
-			sm.SetReadyFlags(poll_result.GetEvents(i));
-			ready_sockets.push_back(sm);
+			auto &s = *(SocketEvent *)poll_result.GetObject(i);
+			s.SetReadyFlags(poll_result.GetEvents(i));
+			ready_sockets.push_back(s);
 		}
 
 		now = std::chrono::steady_clock::now();
@@ -339,7 +339,7 @@ EventLoop::HandleDeferred() noexcept
 	}
 }
 
-bool
+void
 EventLoop::OnSocketReady([[maybe_unused]] unsigned flags) noexcept
 {
 	assert(IsInside());
@@ -348,8 +348,6 @@ EventLoop::OnSocketReady([[maybe_unused]] unsigned flags) noexcept
 
 	const std::lock_guard<Mutex> lock(mutex);
 	HandleDeferred();
-
-	return true;
 }
 
 #endif

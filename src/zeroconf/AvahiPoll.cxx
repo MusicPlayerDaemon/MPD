@@ -18,28 +18,29 @@
  */
 
 #include "AvahiPoll.hxx"
-#include "event/SocketMonitor.hxx"
+#include "event/SocketEvent.hxx"
 #include "event/TimerEvent.hxx"
 #include "time/Convert.hxx"
 
 static unsigned
 FromAvahiWatchEvent(AvahiWatchEvent e)
 {
-	return (e & AVAHI_WATCH_IN ? SocketMonitor::READ : 0) |
-		(e & AVAHI_WATCH_OUT ? SocketMonitor::WRITE : 0);
+	return (e & AVAHI_WATCH_IN ? SocketEvent::READ : 0) |
+		(e & AVAHI_WATCH_OUT ? SocketEvent::WRITE : 0);
 }
 
 static AvahiWatchEvent
 ToAvahiWatchEvent(unsigned e)
 {
-	return AvahiWatchEvent((e & SocketMonitor::READ ? AVAHI_WATCH_IN : 0) |
-			       (e & SocketMonitor::WRITE ? AVAHI_WATCH_OUT : 0) |
-			       (e & SocketMonitor::ERROR ? AVAHI_WATCH_ERR : 0) |
-			       (e & SocketMonitor::HANGUP ? AVAHI_WATCH_HUP : 0));
+	return AvahiWatchEvent((e & SocketEvent::READ ? AVAHI_WATCH_IN : 0) |
+			       (e & SocketEvent::WRITE ? AVAHI_WATCH_OUT : 0) |
+			       (e & SocketEvent::ERROR ? AVAHI_WATCH_ERR : 0) |
+			       (e & SocketEvent::HANGUP ? AVAHI_WATCH_HUP : 0));
 }
 
-struct AvahiWatch final : private SocketMonitor {
-private:
+struct AvahiWatch final {
+	SocketEvent event;
+
 	const AvahiWatchCallback callback;
 	void *const userdata;
 
@@ -49,14 +50,14 @@ public:
 	AvahiWatch(SocketDescriptor _fd, AvahiWatchEvent _event,
 		   AvahiWatchCallback _callback, void *_userdata,
 		   EventLoop &_loop)
-		:SocketMonitor(_fd, _loop),
+		:event(_loop, BIND_THIS_METHOD(OnSocketReady), _fd),
 		 callback(_callback), userdata(_userdata),
 		 received(AvahiWatchEvent(0)) {
-		Schedule(FromAvahiWatchEvent(_event));
+		event.Schedule(FromAvahiWatchEvent(_event));
 	}
 
 	static void WatchUpdate(AvahiWatch *w, AvahiWatchEvent event) {
-		w->Schedule(FromAvahiWatchEvent(event));
+		w->event.Schedule(FromAvahiWatchEvent(event));
 	}
 
 	static AvahiWatchEvent WatchGetEvents(AvahiWatch *w) {
@@ -68,12 +69,10 @@ public:
 	}
 
 private:
-	/* virtual methods from class SocketMonitor */
-	bool OnSocketReady(unsigned flags) noexcept override {
+	void OnSocketReady(unsigned flags) noexcept {
 		received = ToAvahiWatchEvent(flags);
-		callback(this, GetSocket().Get(), received, userdata);
+		callback(this, event.GetSocket().Get(), received, userdata);
 		received = AvahiWatchEvent(0);
-		return true;
 	}
 };
 

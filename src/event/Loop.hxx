@@ -22,7 +22,7 @@
 
 #include "Chrono.hxx"
 #include "PollGroup.hxx"
-#include "SocketMonitor.hxx"
+#include "SocketEvent.hxx"
 #include "event/Features.h"
 #include "util/Compiler.h"
 
@@ -56,15 +56,13 @@ class DeferEvent;
  * thread that runs it, except where explicitly documented as
  * thread-safe.
  *
- * @see SocketMonitor, MultiSocketMonitor, TimerEvent, IdleEvent
+ * @see SocketEvent, MultiSocketMonitor, TimerEvent, IdleEvent
  */
 class EventLoop final
-#ifdef HAVE_THREADED_EVENT_LOOP
-	: SocketMonitor
-#endif
 {
 #ifdef HAVE_THREADED_EVENT_LOOP
 	WakeFD wake_fd;
+	SocketEvent wake_event;
 #endif
 
 	struct TimerCompare {
@@ -96,14 +94,14 @@ class EventLoop final
 #endif
 
 	using ReadySocketList =
-		boost::intrusive::list<SocketMonitor,
-				       boost::intrusive::member_hook<SocketMonitor,
-								     SocketMonitor::ReadyListHook,
-								     &SocketMonitor::ready_siblings>,
+		boost::intrusive::list<SocketEvent,
+				       boost::intrusive::member_hook<SocketEvent,
+								     SocketEvent::ReadyListHook,
+								     &SocketEvent::ready_siblings>,
 				       boost::intrusive::constant_time_size<false>>;
 
 	/**
-	 * A linked list of #SocketMonitor instances which have a
+	 * A linked list of #SocketEvent instances which have a
 	 * non-zero "ready_flags" field, and need to be dispatched.
 	 */
 	ReadySocketList ready_sockets;
@@ -190,7 +188,7 @@ public:
 	 */
 	void Break() noexcept;
 
-	bool AddFD(int _fd, unsigned flags, SocketMonitor &m) noexcept {
+	bool AddFD(int _fd, unsigned flags, SocketEvent &m) noexcept {
 #ifdef HAVE_THREADED_EVENT_LOOP
 		assert(!IsAlive() || IsInside());
 #endif
@@ -198,7 +196,7 @@ public:
 		return poll_group.Add(_fd, flags, &m);
 	}
 
-	bool ModifyFD(int _fd, unsigned flags, SocketMonitor &m) noexcept {
+	bool ModifyFD(int _fd, unsigned flags, SocketEvent &m) noexcept {
 #ifdef HAVE_THREADED_EVENT_LOOP
 		assert(!IsAlive() || IsInside());
 #endif
@@ -207,7 +205,7 @@ public:
 	}
 
 	/**
-	 * Remove the given #SocketMonitor after the file descriptor
+	 * Remove the given #SocketEvent after the file descriptor
 	 * has been closed.  This is like RemoveFD(), but does not
 	 * attempt to use #EPOLL_CTL_DEL.
 	 */
@@ -261,7 +259,7 @@ private:
 	Event::Duration HandleTimers() noexcept;
 
 #ifdef HAVE_THREADED_EVENT_LOOP
-	bool OnSocketReady(unsigned flags) noexcept override;
+	void OnSocketReady(unsigned flags) noexcept;
 #endif
 
 public:

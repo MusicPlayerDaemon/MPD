@@ -69,7 +69,7 @@ BufferedSocket::ResumeInput() noexcept
 	while (true) {
 		const auto buffer = input.Read();
 		if (buffer.empty()) {
-			ScheduleRead();
+			event.ScheduleRead();
 			return true;
 		}
 
@@ -81,11 +81,11 @@ BufferedSocket::ResumeInput() noexcept
 				return false;
 			}
 
-			ScheduleRead();
+			event.ScheduleRead();
 			return true;
 
 		case InputResult::PAUSE:
-			CancelRead();
+			event.CancelRead();
 			return true;
 
 		case InputResult::AGAIN:
@@ -97,25 +97,23 @@ BufferedSocket::ResumeInput() noexcept
 	}
 }
 
-bool
+void
 BufferedSocket::OnSocketReady(unsigned flags) noexcept
 {
 	assert(IsDefined());
 
-	if (gcc_unlikely(flags & (ERROR|HANGUP))) {
+	if (gcc_unlikely(flags & (SocketEvent::ERROR|SocketEvent::HANGUP))) {
 		OnSocketClosed();
-		return false;
+		return;
 	}
 
-	if (flags & READ) {
+	if (flags & SocketEvent::READ) {
 		assert(!input.IsFull());
 
 		if (!ReadToBuffer() || !ResumeInput())
-			return false;
+			return;
 
 		if (!input.IsFull())
-			ScheduleRead();
+			event.ScheduleRead();
 	}
-
-	return true;
 }

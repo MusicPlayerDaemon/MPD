@@ -31,7 +31,7 @@
 #include "Request.hxx"
 #include "Log.hxx"
 #include "event/Loop.hxx"
-#include "event/SocketMonitor.hxx"
+#include "event/SocketEvent.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/Domain.hxx"
 
@@ -42,12 +42,15 @@ static constexpr Domain curlm_domain("curlm");
 /**
  * Monitor for one socket created by CURL.
  */
-class CurlSocket final : SocketMonitor {
+class CurlSocket final {
 	CurlGlobal &global;
+
+	SocketEvent socket_event;
 
 public:
 	CurlSocket(CurlGlobal &_global, EventLoop &_loop, SocketDescriptor _fd)
-		:SocketMonitor(_fd, _loop), global(_global) {}
+		:global(_global),
+		 socket_event(_loop, BIND_THIS_METHOD(OnSocketReady), _fd) {}
 
 	~CurlSocket() noexcept {
 		/* TODO: sometimes, CURL uses CURL_POLL_REMOVE after
@@ -59,6 +62,10 @@ public:
 		   better solution? */
 	}
 
+	auto &GetEventLoop() const noexcept {
+		return socket_event.GetEventLoop();
+	}
+
 	/**
 	 * Callback function for CURLMOPT_SOCKETFUNCTION.
 	 */
@@ -66,13 +73,17 @@ public:
 				  curl_socket_t s, int action,
 				  void *userp, void *socketp) noexcept;
 
-	bool OnSocketReady(unsigned flags) noexcept override;
-
 private:
+	SocketDescriptor GetSocket() const noexcept {
+		return socket_event.GetSocket();
+	}
+
+	void OnSocketReady(unsigned flags) noexcept;
+
 	static constexpr int FlagsToCurlCSelect(unsigned flags) noexcept {
-		return (flags & (READ | HANGUP) ? CURL_CSELECT_IN : 0) |
-			(flags & WRITE ? CURL_CSELECT_OUT : 0) |
-			(flags & ERROR ? CURL_CSELECT_ERR : 0);
+		return (flags & (SocketEvent::READ | SocketEvent::HANGUP) ? CURL_CSELECT_IN : 0) |
+			(flags & SocketEvent::WRITE ? CURL_CSELECT_OUT : 0) |
+			(flags & SocketEvent::ERROR ? CURL_CSELECT_ERR : 0);
 	}
 
 	gcc_const
@@ -82,13 +93,13 @@ private:
 			return 0;
 
 		case CURL_POLL_IN:
-			return READ;
+			return SocketEvent::READ;
 
 		case CURL_POLL_OUT:
-			return WRITE;
+			return SocketEvent::WRITE;
 
 		case CURL_POLL_INOUT:
-			return READ|WRITE;
+			return SocketEvent::READ|SocketEvent::WRITE;
 		}
 
 		assert(false);
@@ -130,17 +141,16 @@ CurlSocket::SocketFunction([[maybe_unused]] CURL *easy,
 
 	unsigned flags = CurlPollToFlags(action);
 	if (flags != 0)
-		cs->Schedule(flags);
+		cs->socket_event.Schedule(flags);
 	return 0;
 }
 
-bool
+void
 CurlSocket::OnSocketReady(unsigned flags) noexcept
 {
 	assert(GetEventLoop().IsInside());
 
 	global.SocketAction(GetSocket().Get(), FlagsToCurlCSelect(flags));
-	return true;
 }
 
 void

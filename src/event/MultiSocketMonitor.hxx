@@ -22,7 +22,7 @@
 
 #include "IdleEvent.hxx"
 #include "TimerEvent.hxx"
-#include "SocketMonitor.hxx"
+#include "SocketEvent.hxx"
 #include "event/Features.h"
 
 #include <cassert>
@@ -36,35 +36,43 @@ struct pollfd;
 class EventLoop;
 
 /**
- * Similar to #SocketMonitor, but monitors multiple sockets.  To use
+ * Similar to #SocketEvent, but monitors multiple sockets.  To use
  * it, implement the methods PrepareSockets() and DispatchSockets().
  * In PrepareSockets(), use UpdateSocketList() and AddSocket().
  * DispatchSockets() will be called if at least one socket is ready.
  */
 class MultiSocketMonitor
 {
-	class SingleFD final : public SocketMonitor {
+	class SingleFD final {
 		MultiSocketMonitor &multi;
+
+		SocketEvent event;
 
 		unsigned revents;
 
 	public:
 		SingleFD(MultiSocketMonitor &_multi,
 			 SocketDescriptor _fd) noexcept
-			:SocketMonitor(_fd, _multi.GetEventLoop()),
-			multi(_multi), revents(0) {}
+			:multi(_multi),
+			 event(multi.GetEventLoop(),
+			       BIND_THIS_METHOD(OnSocketReady), _fd),
+			 revents(0) {}
 
 		SocketDescriptor GetSocket() const noexcept {
-			return SocketMonitor::GetSocket();
+			return event.GetSocket();
 		}
 
 		unsigned GetEvents() const noexcept {
-			return SocketMonitor::GetScheduledFlags();
+			return event.GetScheduledFlags();
 		}
 
 		void SetEvents(unsigned _events) noexcept {
 			revents &= _events;
-			SocketMonitor::Schedule(_events);
+			event.Schedule(_events);
+		}
+
+		bool Schedule(unsigned events) noexcept {
+			return event.Schedule(events);
 		}
 
 		unsigned GetReturnedEvents() const noexcept {
@@ -75,11 +83,10 @@ class MultiSocketMonitor
 			revents = 0;
 		}
 
-	protected:
-		bool OnSocketReady(unsigned flags) noexcept override {
+	private:
+		void OnSocketReady(unsigned flags) noexcept {
 			revents = flags;
 			multi.SetReady();
-			return true;
 		}
 	};
 
@@ -119,11 +126,6 @@ class MultiSocketMonitor
 #endif
 
 public:
-	static constexpr unsigned READ = SocketMonitor::READ;
-	static constexpr unsigned WRITE = SocketMonitor::WRITE;
-	static constexpr unsigned ERROR = SocketMonitor::ERROR;
-	static constexpr unsigned HANGUP = SocketMonitor::HANGUP;
-
 	MultiSocketMonitor(EventLoop &_loop) noexcept;
 
 	EventLoop &GetEventLoop() const noexcept {

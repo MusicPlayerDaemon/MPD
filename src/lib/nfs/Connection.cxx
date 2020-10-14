@@ -183,17 +183,17 @@ NfsConnection::CancellableCallback::Callback(int err,
 static constexpr unsigned
 libnfs_to_events(int i) noexcept
 {
-	return ((i & POLLIN) ? SocketMonitor::READ : 0) |
-		((i & POLLOUT) ? SocketMonitor::WRITE : 0);
+	return ((i & POLLIN) ? SocketEvent::READ : 0) |
+		((i & POLLOUT) ? SocketEvent::WRITE : 0);
 }
 
 static constexpr int
 events_to_libnfs(unsigned i) noexcept
 {
-	return ((i & SocketMonitor::READ) ? POLLIN : 0) |
-		((i & SocketMonitor::WRITE) ? POLLOUT : 0) |
-		((i & SocketMonitor::HANGUP) ? POLLHUP : 0) |
-		((i & SocketMonitor::ERROR) ? POLLERR : 0);
+	return ((i & SocketEvent::READ) ? POLLIN : 0) |
+		((i & SocketEvent::WRITE) ? POLLOUT : 0) |
+		((i & SocketEvent::HANGUP) ? POLLHUP : 0) |
+		((i & SocketEvent::ERROR) ? POLLERR : 0);
 }
 
 NfsConnection::~NfsConnection() noexcept
@@ -403,8 +403,8 @@ NfsConnection::DestroyContext() noexcept
 	   new leases */
 	defer_new_lease.Cancel();
 
-	if (SocketMonitor::IsDefined())
-		SocketMonitor::Steal();
+	if (socket_event.IsDefined())
+		socket_event.Steal();
 
 	callbacks.ForEach([](CancellableCallback &c){
 			c.PrepareDestroyContext();
@@ -434,25 +434,25 @@ NfsConnection::ScheduleSocket() noexcept
 
 	const int which_events = nfs_which_events(context);
 
-	if (which_events == POLLOUT && SocketMonitor::IsDefined())
+	if (which_events == POLLOUT && socket_event.IsDefined())
 		/* kludge: if libnfs asks only for POLLOUT, it means
 		   that it is currently waiting for the connect() to
 		   finish - rpc_reconnect_requeue() may have been
 		   called from inside nfs_service(); we must now
 		   unregister the old socket and register the new one
 		   instead */
-		SocketMonitor::Steal();
+		socket_event.Steal();
 
-	if (!SocketMonitor::IsDefined()) {
+	if (!socket_event.IsDefined()) {
 		SocketDescriptor _fd(nfs_get_fd(context));
 		if (!_fd.IsDefined())
 			return;
 
 		_fd.EnableCloseOnExec();
-		SocketMonitor::Open(_fd);
+		socket_event.Open(_fd);
 	}
 
-	SocketMonitor::Schedule(libnfs_to_events(which_events));
+	socket_event.Schedule(libnfs_to_events(which_events));
 }
 
 inline int
@@ -480,16 +480,14 @@ NfsConnection::Service(unsigned flags) noexcept
 	return result;
 }
 
-bool
+void
 NfsConnection::OnSocketReady(unsigned flags) noexcept
 {
 	assert(GetEventLoop().IsInside());
 	assert(deferred_close.empty());
 
-	bool closed = false;
-
 	const bool was_mounted = mount_finished;
-	if (!mount_finished || (flags & SocketMonitor::HANGUP) != 0)
+	if (!mount_finished || (flags & SocketEvent::HANGUP) != 0)
 		/* until the mount is finished, the NFS client may use
 		   various sockets, therefore we unregister and
 		   re-register it each time */
@@ -497,7 +495,7 @@ NfsConnection::OnSocketReady(unsigned flags) noexcept
 		   which is a sure sign that libnfs will close the
 		   socket, which can lead to a race condition if
 		   epoll_ctl() is called later */
-		SocketMonitor::Steal();
+		socket_event.Steal();
 
 	const int result = Service(flags);
 
@@ -509,7 +507,6 @@ NfsConnection::OnSocketReady(unsigned flags) noexcept
 	if (!was_mounted && mount_finished) {
 		if (postponed_mount_error) {
 			DestroyContext();
-			closed = true;
 			BroadcastMountError(std::move(postponed_mount_error));
 		} else if (result == 0)
 			BroadcastMountSuccess();
@@ -521,7 +518,6 @@ NfsConnection::OnSocketReady(unsigned flags) noexcept
 		BroadcastError(std::make_exception_ptr(e));
 
 		DestroyContext();
-		closed = true;
 	} else if (nfs_get_fd(context) < 0) {
 		/* this happens when rpc_reconnect_requeue() is called
 		   after the connection broke, but autoreconnect was
@@ -535,7 +531,6 @@ NfsConnection::OnSocketReady(unsigned flags) noexcept
 		BroadcastError(std::make_exception_ptr(e));
 
 		DestroyContext();
-		closed = true;
 	}
 
 	assert(context == nullptr || nfs_get_fd(context) >= 0);
@@ -547,8 +542,6 @@ NfsConnection::OnSocketReady(unsigned flags) noexcept
 
 	if (context != nullptr)
 		ScheduleSocket();
-
-	return !closed;
 }
 
 inline void

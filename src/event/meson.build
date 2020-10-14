@@ -26,7 +26,7 @@ event = static_library(
   'IdleEvent.cxx',
   'DeferEvent.cxx',
   'MaskMonitor.cxx',
-  'SocketMonitor.cxx',
+  'SocketEvent.cxx',
   'BufferedSocket.cxx',
   'FullyBufferedSocket.cxx',
   'MultiSocketMonitor.cxx',

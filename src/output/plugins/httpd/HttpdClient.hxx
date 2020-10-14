@@ -196,8 +196,8 @@ private:
 	void ClearQueue() noexcept;
 
 protected:
-	/* virtual methods from class SocketMonitor */
-	bool OnSocketReady(unsigned flags) noexcept override;
+	/* virtual methods from class BufferedSocket */
+	void OnSocketReady(unsigned flags) noexcept override;
 
 	InputResult OnSocketInput(void *data, size_t length) noexcept override;
 	void OnSocketError(std::exception_ptr ep) noexcept override;

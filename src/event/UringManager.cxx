@@ -22,15 +22,13 @@
 
 namespace Uring {
 
-bool
+void
 Manager::OnSocketReady(unsigned) noexcept
 {
 	try {
 		DispatchCompletions();
-		return true;
 	} catch (...) {
 		PrintException(std::current_exception());
-		return false;
 	}
 }
 

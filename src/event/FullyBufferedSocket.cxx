@@ -35,7 +35,7 @@ FullyBufferedSocket::DirectWrite(const void *data, size_t length) noexcept
 			return 0;
 
 		idle_event.Cancel();
-		BufferedSocket::Cancel();
+		event.Cancel();
 
 		if (IsSocketErrorClosed(code))
 			OnSocketClosed();
@@ -54,7 +54,7 @@ FullyBufferedSocket::Flush() noexcept
 	const auto data = output.Read();
 	if (data.empty()) {
 		idle_event.Cancel();
-		CancelWrite();
+		event.CancelWrite();
 		return true;
 	}
 
@@ -66,7 +66,7 @@ FullyBufferedSocket::Flush() noexcept
 
 	if (output.empty()) {
 		idle_event.Cancel();
-		CancelWrite();
+		event.CancelWrite();
 	}
 
 	return true;
@@ -92,23 +92,23 @@ FullyBufferedSocket::Write(const void *data, size_t length) noexcept
 	return true;
 }
 
-bool
+void
 FullyBufferedSocket::OnSocketReady(unsigned flags) noexcept
 {
-	if (flags & WRITE) {
+	if (flags & SocketEvent::WRITE) {
 		assert(!output.empty());
 		assert(!idle_event.IsActive());
 
 		if (!Flush())
-			return false;
+			return;
 	}
 
-	return BufferedSocket::OnSocketReady(flags);
+	BufferedSocket::OnSocketReady(flags);
 }
 
 void
 FullyBufferedSocket::OnIdle() noexcept
 {
 	if (Flush() && !output.empty())
-		ScheduleWrite();
+		event.ScheduleWrite();
 }

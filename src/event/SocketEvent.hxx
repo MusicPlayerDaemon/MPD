@@ -17,11 +17,12 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_SOCKET_MONITOR_HXX
-#define MPD_SOCKET_MONITOR_HXX
+#ifndef MPD_SOCKET_EVENT_HXX
+#define MPD_SOCKET_EVENT_HXX
 
 #include "PollGroup.hxx"
 #include "net/SocketDescriptor.hxx"
+#include "util/BindMethod.hxx"
 
 #include <boost/intrusive/list_hook.hpp>
 
@@ -34,8 +35,8 @@ class EventLoop;
 /**
  * Monitor events on a socket.  Call Schedule() to announce events
  * you're interested in, or Cancel() to cancel your subscription.  The
- * #EventLoop will invoke virtual method OnSocketReady() as soon as
- * any of the subscribed events are ready.
+ * #EventLoop will invoke the callback as soon as any of the
+ * subscribed events are ready.
  *
  * This class does not feel responsible for closing the socket.  Call
  * Close() to do it manually.
@@ -44,14 +45,18 @@ class EventLoop;
  * thread that runs the #EventLoop, except where explicitly documented
  * as thread-safe.
  */
-class SocketMonitor {
+class SocketEvent {
 	friend class EventLoop;
+
+	EventLoop &loop;
 
 	using ReadyListHook = boost::intrusive::list_member_hook<boost::intrusive::link_mode<boost::intrusive::auto_unlink>>;
 	ReadyListHook ready_siblings;
 
+	using Callback = BoundMethod<void(unsigned events) noexcept>;
+	const Callback callback;
+
 	SocketDescriptor fd = SocketDescriptor::Undefined();
-	EventLoop &loop;
 
 	/**
 	 * A bit mask of events that is currently registered in the
@@ -80,13 +85,13 @@ public:
 
 	typedef std::make_signed<size_t>::type ssize_t;
 
-	explicit SocketMonitor(EventLoop &_loop) noexcept
-		:loop(_loop) {}
+	SocketEvent(EventLoop &_loop, Callback _callback,
+		    SocketDescriptor _fd=SocketDescriptor::Undefined()) noexcept
+		:loop(_loop),
+		 callback(_callback),
+		 fd(_fd) {}
 
-	SocketMonitor(SocketDescriptor _fd, EventLoop &_loop) noexcept
-		:fd(_fd), loop(_loop) {}
-
-	~SocketMonitor() noexcept;
+	~SocketEvent() noexcept;
 
 	auto &GetEventLoop() const noexcept {
 		return loop;
@@ -147,12 +152,6 @@ public:
 	void CancelWrite() noexcept {
 		Schedule(GetScheduledFlags() & ~WRITE);
 	}
-
-protected:
-	/**
-	 * @return false if the socket has been closed
-	 */
-	virtual bool OnSocketReady(unsigned flags) noexcept = 0;
 
 public:
 	void Dispatch() noexcept;

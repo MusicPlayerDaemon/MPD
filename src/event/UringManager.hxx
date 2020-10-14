@@ -19,23 +19,24 @@
 
 #pragma once
 
-#include "SocketMonitor.hxx"
+#include "SocketEvent.hxx"
 #include "IdleEvent.hxx"
 #include "io/uring/Queue.hxx"
 
 namespace Uring {
 
-class Manager final : public Queue, SocketMonitor {
+class Manager final : public Queue {
+	SocketEvent event;
 	IdleEvent idle_event;
 
 public:
 	explicit Manager(EventLoop &event_loop)
 		:Queue(1024, 0),
-		 SocketMonitor(SocketDescriptor::FromFileDescriptor(GetFileDescriptor()),
-			       event_loop),
+		 event(event_loop, BIND_THIS_METHOD(OnSocketReady),
+		       SocketDescriptor::FromFileDescriptor(GetFileDescriptor())),
 		 idle_event(event_loop, BIND_THIS_METHOD(OnIdle))
 	{
-		SocketMonitor::ScheduleRead();
+		event.ScheduleRead();
 	}
 
 	void Push(struct io_uring_sqe &sqe,
@@ -45,7 +46,7 @@ public:
 	}
 
 private:
-	bool OnSocketReady(unsigned flags) noexcept override;
+	void OnSocketReady(unsigned flags) noexcept;
 	void OnIdle() noexcept;
 };
 
