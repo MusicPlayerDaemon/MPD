@@ -50,6 +50,9 @@ SocketEvent::Steal() noexcept
 void
 SocketEvent::Close() noexcept
 {
+	if (!fd.IsDefined())
+		return;
+
 	Steal().Close();
 }
 

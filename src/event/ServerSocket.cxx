@@ -75,8 +75,7 @@ public:
 	OneServerSocket &operator=(const OneServerSocket &other) = delete;
 
 	~OneServerSocket() noexcept {
-		if (IsDefined())
-			Close();
+		Close();
 	}
 
 	[[nodiscard]] unsigned GetSerial() const noexcept {
