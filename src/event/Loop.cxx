@@ -21,8 +21,11 @@
 #include "TimerEvent.hxx"
 #include "SocketMonitor.hxx"
 #include "IdleEvent.hxx"
-#include "DeferEvent.hxx"
 #include "util/ScopeExit.hxx"
+
+#ifdef HAVE_THREADED_EVENT_LOOP
+#include "DeferEvent.hxx"
+#endif
 
 #ifdef HAVE_URING
 #include "UringManager.hxx"
