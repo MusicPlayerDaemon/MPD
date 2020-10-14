@@ -56,7 +56,7 @@ class SocketEvent {
 	using Callback = BoundMethod<void(unsigned events) noexcept>;
 	const Callback callback;
 
-	SocketDescriptor fd = SocketDescriptor::Undefined();
+	SocketDescriptor fd;
 
 	/**
 	 * A bit mask of events that is currently registered in the
