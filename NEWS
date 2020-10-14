@@ -1,3 +1,5 @@
+ver 0.23 (not yet released)
+
 ver 0.22.1 (not yet released)
 * output
   - alsa: don't deadlock when the ALSA driver is buggy
