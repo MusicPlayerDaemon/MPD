@@ -24,8 +24,6 @@
 #include "PollGroup.hxx"
 #include "WakeFD.hxx"
 #include "SocketMonitor.hxx"
-#include "IdleEvent.hxx"
-#include "DeferEvent.hxx"
 #include "thread/Id.hxx"
 #include "thread/Mutex.hxx"
 #include "util/Compiler.h"
@@ -44,6 +42,8 @@ namespace Uring { class Queue; class Manager; }
 #endif
 
 class TimerEvent;
+class IdleEvent;
+class DeferEvent;
 
 /**
  * An event loop that polls for events on file/socket descriptors.
