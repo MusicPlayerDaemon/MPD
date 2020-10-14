@@ -64,6 +64,14 @@ public:
 		return *this;
 	}
 
+	/**
+	 * Release ownership and return the descriptor as an unmanaged
+	 * #FileDescriptor instance.
+	 */
+	FileDescriptor Release() noexcept {
+		return std::exchange(*(FileDescriptor *)this, Undefined());
+	}
+
 protected:
 	void Set(int _fd) noexcept {
 		assert(!IsDefined());
