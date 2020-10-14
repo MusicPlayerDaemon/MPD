@@ -53,7 +53,8 @@ SocketEvent::Close() noexcept
 	if (!fd.IsDefined())
 		return;
 
-	loop.AbandonFD(fd.Get());
+	if (std::exchange(scheduled_flags, 0) != 0)
+		loop.AbandonFD(fd.Get());
 	fd.Close();
 }
 
