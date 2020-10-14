@@ -17,8 +17,10 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_SOCKET_IDLE_MONITOR_HXX
-#define MPD_SOCKET_IDLE_MONITOR_HXX
+#ifndef MPD_SOCKET_IDLE_EVENT_HXX
+#define MPD_SOCKET_IDLE_EVENT_HXX
+
+#include "util/BindMethod.hxx"
 
 #include <boost/intrusive/list_hook.hpp>
 
@@ -32,19 +34,22 @@ class EventLoop;
  * thread that runs the #EventLoop, except where explicitly documented
  * as thread-safe.
  */
-class IdleMonitor {
+class IdleEvent {
 	friend class EventLoop;
 
-	typedef boost::intrusive::list_member_hook<> ListHook;
+	using ListHook = boost::intrusive::list_member_hook<>;
 	ListHook list_hook;
 
 	EventLoop &loop;
 
-public:
-	explicit IdleMonitor(EventLoop &_loop) noexcept
-		:loop(_loop) {}
+	using Callback = BoundMethod<void() noexcept>;
+	const Callback callback;
 
-	~IdleMonitor() noexcept {
+public:
+	IdleEvent(EventLoop &_loop, Callback _callback) noexcept
+		:loop(_loop), callback(_callback) {}
+
+	~IdleEvent() noexcept {
 #ifndef NDEBUG
 		/* this check is redundant, it is only here to avoid
 		   the assertion in Cancel() */
@@ -63,9 +68,6 @@ public:
 
 	void Schedule() noexcept;
 	void Cancel() noexcept;
-
-protected:
-	virtual void OnIdle() noexcept = 0;
 
 private:
 	void Run() noexcept;

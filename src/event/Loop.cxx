@@ -20,7 +20,7 @@
 #include "Loop.hxx"
 #include "TimerEvent.hxx"
 #include "SocketMonitor.hxx"
-#include "IdleMonitor.hxx"
+#include "IdleEvent.hxx"
 #include "DeferEvent.hxx"
 #include "util/ScopeExit.hxx"
 
@@ -103,7 +103,7 @@ EventLoop::RemoveFD(int _fd) noexcept
 }
 
 void
-EventLoop::AddIdle(IdleMonitor &i) noexcept
+EventLoop::AddIdle(IdleEvent &i) noexcept
 {
 	assert(IsInside());
 
@@ -112,7 +112,7 @@ EventLoop::AddIdle(IdleMonitor &i) noexcept
 }
 
 void
-EventLoop::RemoveIdle(IdleMonitor &i) noexcept
+EventLoop::RemoveIdle(IdleEvent &i) noexcept
 {
 	assert(IsInside());
 
@@ -204,7 +204,7 @@ EventLoop::Run() noexcept
 		/* invoke idle */
 
 		while (!idle.empty()) {
-			IdleMonitor &m = idle.front();
+			IdleEvent &m = idle.front();
 			idle.pop_front();
 			m.Run();
 
@@ -221,7 +221,7 @@ EventLoop::Run() noexcept
 
 			if (again)
 				/* re-evaluate timers because one of
-				   the IdleMonitors may have added a
+				   the IdleEvents may have added a
 				   new timeout */
 				continue;
 		}

@@ -21,19 +21,22 @@
 #define MPD_FULLY_BUFFERED_SOCKET_HXX
 
 #include "BufferedSocket.hxx"
-#include "IdleMonitor.hxx"
+#include "IdleEvent.hxx"
 #include "util/PeakBuffer.hxx"
 
 /**
  * A #BufferedSocket specialization that adds an output buffer.
  */
-class FullyBufferedSocket : protected BufferedSocket, private IdleMonitor {
+class FullyBufferedSocket : protected BufferedSocket {
+	IdleEvent idle_event;
+
 	PeakBuffer output;
 
 public:
 	FullyBufferedSocket(SocketDescriptor _fd, EventLoop &_loop,
 			    size_t normal_size, size_t peak_size=0) noexcept
-		:BufferedSocket(_fd, _loop), IdleMonitor(_loop),
+		:BufferedSocket(_fd, _loop),
+		 idle_event(_loop, BIND_THIS_METHOD(OnIdle)),
 		 output(normal_size, peak_size) {
 	}
 
@@ -41,7 +44,7 @@ public:
 	using BufferedSocket::IsDefined;
 
 	void Close() noexcept {
-		IdleMonitor::Cancel();
+		idle_event.Cancel();
 		BufferedSocket::Close();
 	}
 
@@ -69,7 +72,7 @@ protected:
 	/* virtual methods from class SocketMonitor */
 	bool OnSocketReady(unsigned flags) noexcept override;
 
-	void OnIdle() noexcept override;
+	void OnIdle() noexcept;
 };
 
 #endif

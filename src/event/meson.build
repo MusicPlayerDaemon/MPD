@@ -22,7 +22,7 @@ event = static_library(
   'event',
   'SignalMonitor.cxx',
   'TimerEvent.cxx',
-  'IdleMonitor.cxx',
+  'IdleEvent.cxx',
   'DeferEvent.cxx',
   'MaskMonitor.cxx',
   'SocketMonitor.cxx',

@@ -20,7 +20,7 @@
 #ifndef MPD_MULTI_SOCKET_MONITOR_HXX
 #define MPD_MULTI_SOCKET_MONITOR_HXX
 
-#include "IdleMonitor.hxx"
+#include "IdleEvent.hxx"
 #include "TimerEvent.hxx"
 #include "SocketMonitor.hxx"
 #include "event/Features.h"
@@ -41,7 +41,7 @@ class EventLoop;
  * In PrepareSockets(), use UpdateSocketList() and AddSocket().
  * DispatchSockets() will be called if at least one socket is ready.
  */
-class MultiSocketMonitor : IdleMonitor
+class MultiSocketMonitor
 {
 	class SingleFD final : public SocketMonitor {
 		MultiSocketMonitor &multi;
@@ -82,6 +82,8 @@ class MultiSocketMonitor : IdleMonitor
 			return true;
 		}
 	};
+
+	IdleEvent idle_event;
 
 	TimerEvent timeout_event;
 
@@ -124,7 +126,9 @@ public:
 
 	MultiSocketMonitor(EventLoop &_loop) noexcept;
 
-	using IdleMonitor::GetEventLoop;
+	EventLoop &GetEventLoop() const noexcept {
+		return idle_event.GetEventLoop();
+	}
 
 	/**
 	 * Clear the socket list and disable all #EventLoop
@@ -149,7 +153,7 @@ public:
 	 */
 	void InvalidateSockets() noexcept {
 		refresh = true;
-		IdleMonitor::Schedule();
+		idle_event.Schedule();
 	}
 
 	/**
@@ -238,7 +242,7 @@ protected:
 private:
 	void SetReady() noexcept {
 		ready = true;
-		IdleMonitor::Schedule();
+		idle_event.Schedule();
 	}
 
 	void Prepare() noexcept;
@@ -247,7 +251,7 @@ private:
 		SetReady();
 	}
 
-	virtual void OnIdle() noexcept final;
+	void OnIdle() noexcept;
 };
 
 #endif

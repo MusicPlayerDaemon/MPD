@@ -31,7 +31,7 @@
 #endif
 
 MultiSocketMonitor::MultiSocketMonitor(EventLoop &_loop) noexcept
-	:IdleMonitor(_loop),
+	:idle_event(_loop, BIND_THIS_METHOD(OnIdle)),
 	 timeout_event(_loop, BIND_THIS_METHOD(OnTimeout)) {
 }
 
@@ -44,7 +44,7 @@ MultiSocketMonitor::Reset() noexcept
 #ifdef USE_EPOLL
 	always_ready_fds.clear();
 #endif
-	IdleMonitor::Cancel();
+	idle_event.Cancel();
 	timeout_event.Cancel();
 	ready = refresh = false;
 }

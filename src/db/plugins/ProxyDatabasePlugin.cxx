@@ -43,7 +43,7 @@
 #include "util/RuntimeError.hxx"
 #include "protocol/Ack.hxx"
 #include "event/SocketMonitor.hxx"
-#include "event/IdleMonitor.hxx"
+#include "event/IdleEvent.hxx"
 #include "Log.hxx"
 
 #include <mpd/client.h>
@@ -85,7 +85,9 @@ public:
 	}
 };
 
-class ProxyDatabase final : public Database, SocketMonitor, IdleMonitor {
+class ProxyDatabase final : public Database, SocketMonitor {
+	IdleEvent idle_event;
+
 	DatabaseListener &listener;
 
 	const std::string host;
@@ -147,11 +149,10 @@ private:
 
 	void Disconnect() noexcept;
 
+	void OnIdle() noexcept;
+
 	/* virtual methods from SocketMonitor */
 	bool OnSocketReady(unsigned flags) noexcept override;
-
-	/* virtual methods from IdleMonitor */
-	void OnIdle() noexcept override;
 };
 
 static constexpr struct {
@@ -445,7 +446,8 @@ SendGroup(mpd_connection *connection, ConstBuffer<TagType> group)
 ProxyDatabase::ProxyDatabase(EventLoop &_loop, DatabaseListener &_listener,
 			     const ConfigBlock &block)
 	:Database(proxy_db_plugin),
-	 SocketMonitor(_loop), IdleMonitor(_loop),
+	 SocketMonitor(_loop),
+	 idle_event(_loop, BIND_THIS_METHOD(OnIdle)),
 	 listener(_listener),
 	 host(block.GetBlockValue("host", "")),
 	 password(block.GetBlockValue("password", "")),
@@ -526,7 +528,7 @@ ProxyDatabase::Connect()
 	is_idle = false;
 
 	SocketMonitor::Open(SocketDescriptor(mpd_async_get_fd(mpd_connection_get_async(connection))));
-	IdleMonitor::Schedule();
+	idle_event.Schedule();
 }
 
 void
@@ -553,7 +555,7 @@ ProxyDatabase::CheckConnection()
 
 		idle_received |= idle;
 		is_idle = false;
-		IdleMonitor::Schedule();
+		idle_event.Schedule();
 	}
 }
 
@@ -571,7 +573,7 @@ ProxyDatabase::Disconnect() noexcept
 {
 	assert(connection != nullptr);
 
-	IdleMonitor::Cancel();
+	idle_event.Cancel();
 	SocketMonitor::Steal();
 
 	mpd_connection_free(connection);
@@ -585,7 +587,7 @@ ProxyDatabase::OnSocketReady([[maybe_unused]] unsigned flags) noexcept
 
 	if (!is_idle) {
 		// TODO: can this happen?
-		IdleMonitor::Schedule();
+		idle_event.Schedule();
 		SocketMonitor::Cancel();
 		return true;
 	}
@@ -604,7 +606,7 @@ ProxyDatabase::OnSocketReady([[maybe_unused]] unsigned flags) noexcept
 	/* let OnIdle() handle this */
 	idle_received |= idle;
 	is_idle = false;
-	IdleMonitor::Schedule();
+	idle_event.Schedule();
 	SocketMonitor::Cancel();
 	return true;
 }

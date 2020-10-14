@@ -17,13 +17,13 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "IdleMonitor.hxx"
+#include "IdleEvent.hxx"
 #include "Loop.hxx"
 
 #include <cassert>
 
 void
-IdleMonitor::Cancel() noexcept
+IdleEvent::Cancel() noexcept
 {
 	assert(loop.IsInside());
 
@@ -34,7 +34,7 @@ IdleMonitor::Cancel() noexcept
 }
 
 void
-IdleMonitor::Schedule() noexcept
+IdleEvent::Schedule() noexcept
 {
 	assert(loop.IsInside());
 
@@ -46,9 +46,9 @@ IdleMonitor::Schedule() noexcept
 }
 
 void
-IdleMonitor::Run() noexcept
+IdleEvent::Run() noexcept
 {
 	assert(loop.IsInside());
 
-	OnIdle();
+	callback();
 }

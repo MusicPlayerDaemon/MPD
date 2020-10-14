@@ -24,7 +24,7 @@
 #include "PollGroup.hxx"
 #include "WakeFD.hxx"
 #include "SocketMonitor.hxx"
-#include "IdleMonitor.hxx"
+#include "IdleEvent.hxx"
 #include "DeferEvent.hxx"
 #include "thread/Id.hxx"
 #include "thread/Mutex.hxx"
@@ -52,7 +52,7 @@ class TimerEvent;
  * thread that runs it, except where explicitly documented as
  * thread-safe.
  *
- * @see SocketMonitor, MultiSocketMonitor, TimerEvent, IdleMonitor
+ * @see SocketMonitor, MultiSocketMonitor, TimerEvent, IdleEvent
  */
 class EventLoop final : SocketMonitor
 {
@@ -71,10 +71,10 @@ class EventLoop final : SocketMonitor
 	TimerSet timers;
 
 	using IdleList =
-		boost::intrusive::list<IdleMonitor,
-				       boost::intrusive::member_hook<IdleMonitor,
-								     IdleMonitor::ListHook,
-								     &IdleMonitor::list_hook>,
+		boost::intrusive::list<IdleEvent,
+				       boost::intrusive::member_hook<IdleEvent,
+								     IdleEvent::ListHook,
+								     &IdleEvent::list_hook>,
 				       boost::intrusive::constant_time_size<false>>;
 	IdleList idle;
 
@@ -194,8 +194,8 @@ public:
 
 	bool RemoveFD(int fd) noexcept;
 
-	void AddIdle(IdleMonitor &i) noexcept;
-	void RemoveIdle(IdleMonitor &i) noexcept;
+	void AddIdle(IdleEvent &i) noexcept;
+	void RemoveIdle(IdleEvent &i) noexcept;
 
 	void AddTimer(TimerEvent &t, Event::Duration d) noexcept;
 

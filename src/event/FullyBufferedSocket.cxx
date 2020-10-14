@@ -34,7 +34,7 @@ FullyBufferedSocket::DirectWrite(const void *data, size_t length) noexcept
 		if (IsSocketErrorAgain(code))
 			return 0;
 
-		IdleMonitor::Cancel();
+		idle_event.Cancel();
 		BufferedSocket::Cancel();
 
 		if (IsSocketErrorClosed(code))
@@ -53,7 +53,7 @@ FullyBufferedSocket::Flush() noexcept
 
 	const auto data = output.Read();
 	if (data.empty()) {
-		IdleMonitor::Cancel();
+		idle_event.Cancel();
 		CancelWrite();
 		return true;
 	}
@@ -65,7 +65,7 @@ FullyBufferedSocket::Flush() noexcept
 	output.Consume(nbytes);
 
 	if (output.empty()) {
-		IdleMonitor::Cancel();
+		idle_event.Cancel();
 		CancelWrite();
 	}
 
@@ -88,7 +88,7 @@ FullyBufferedSocket::Write(const void *data, size_t length) noexcept
 	}
 
 	if (was_empty)
-		IdleMonitor::Schedule();
+		idle_event.Schedule();
 	return true;
 }
 
@@ -97,7 +97,7 @@ FullyBufferedSocket::OnSocketReady(unsigned flags) noexcept
 {
 	if (flags & WRITE) {
 		assert(!output.empty());
-		assert(!IdleMonitor::IsActive());
+		assert(!idle_event.IsActive());
 
 		if (!Flush())
 			return false;
