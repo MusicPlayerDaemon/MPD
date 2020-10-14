@@ -120,8 +120,6 @@ public:
 	void Close() noexcept;
 
 	unsigned GetScheduledFlags() const noexcept {
-		assert(IsDefined());
-
 		return scheduled_flags;
 	}
 
