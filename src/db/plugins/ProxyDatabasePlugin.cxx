@@ -356,11 +356,9 @@ SendConstraints(mpd_connection *connection, const SongFilter &filter)
 						 filter.ToExpression().c_str());
 #endif
 
-	for (const auto &i : filter.GetItems())
-		if (!SendConstraints(connection, *i))
-			return false;
-
-	return true;
+	return std::all_of(
+		filter.GetItems().begin(), filter.GetItems().end(),
+		[=](const auto &item) { return SendConstraints(connection, *item); });
 }
 
 static bool
@@ -896,11 +894,8 @@ IsFilterFullySupported(const SongFilter &filter,
 	(void)connection;
 #endif
 
-	for (const auto &i : filter.GetItems())
-		if (!IsFilterSupported(*i))
-			return false;
-
-	return true;
+	return std::all_of(filter.GetItems().begin(), filter.GetItems().end(),
+			   [](const auto &item) { return IsFilterSupported(*item); });
 }
 
 gcc_pure

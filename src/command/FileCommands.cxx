@@ -113,12 +113,9 @@ IsValidName(const StringView s) noexcept
 	if (s.empty() || !IsAlphaASCII(s.front()))
 		return false;
 
-	for (const char ch : s) {
-		if (!IsAlphaASCII(ch) && ch != '_' && ch != '-')
-			return false;
-	}
-
-	return true;
+	return std::none_of(s.begin(), s.end(), [=](const auto &ch) {
+		return !IsAlphaASCII(ch) && ch != '_' && ch != '-';
+	});
 }
 
 gcc_pure
