@@ -204,14 +204,14 @@ public:
 		return poll_group.Modify(_fd, flags, &m);
 	}
 
+	bool RemoveFD(int fd) noexcept;
+
 	/**
 	 * Remove the given #SocketEvent after the file descriptor
 	 * has been closed.  This is like RemoveFD(), but does not
 	 * attempt to use #EPOLL_CTL_DEL.
 	 */
-	bool Abandon(int fd) noexcept;
-
-	bool RemoveFD(int fd) noexcept;
+	bool AbandonFD(int fd) noexcept;
 
 	void AddIdle(IdleEvent &i) noexcept;
 	void RemoveIdle(IdleEvent &i) noexcept;

@@ -101,7 +101,7 @@ EventLoop::Break() noexcept
 }
 
 bool
-EventLoop::Abandon(int _fd)  noexcept
+EventLoop::AbandonFD(int _fd)  noexcept
 {
 #ifdef HAVE_THREADED_EVENT_LOOP
 	assert(!IsAlive() || IsInside());
