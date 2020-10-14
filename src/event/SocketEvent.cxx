@@ -53,7 +53,8 @@ SocketEvent::Close() noexcept
 	if (!fd.IsDefined())
 		return;
 
-	Steal().Close();
+	loop.AbandonFD(fd.Get());
+	fd.Close();
 }
 
 bool
