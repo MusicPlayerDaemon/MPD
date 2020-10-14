@@ -72,9 +72,7 @@ class EventLoop final : SocketMonitor
 
 	using IdleList =
 		boost::intrusive::list<IdleEvent,
-				       boost::intrusive::member_hook<IdleEvent,
-								     IdleEvent::ListHook,
-								     &IdleEvent::list_hook>,
+				       boost::intrusive::base_hook<boost::intrusive::list_base_hook<>>,
 				       boost::intrusive::constant_time_size<false>>;
 	IdleList idle;
 
@@ -82,9 +80,7 @@ class EventLoop final : SocketMonitor
 
 	using DeferredList =
 		boost::intrusive::list<DeferEvent,
-				       boost::intrusive::member_hook<DeferEvent,
-								     DeferEvent::ListHook,
-								     &DeferEvent::list_hook>,
+				       boost::intrusive::base_hook<boost::intrusive::list_base_hook<>>,
 				       boost::intrusive::constant_time_size<false>>;
 	DeferredList deferred;
 

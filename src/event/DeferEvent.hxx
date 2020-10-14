@@ -31,11 +31,10 @@ class EventLoop;
  *
  * This class is thread-safe.
  */
-class DeferEvent final {
+class DeferEvent final
+	: public boost::intrusive::list_base_hook<>
+{
 	friend class EventLoop;
-
-	typedef boost::intrusive::list_member_hook<> ListHook;
-	ListHook list_hook;
 
 	EventLoop &loop;
 
@@ -59,7 +58,7 @@ public:
 
 private:
 	bool IsPending() const noexcept {
-		return list_hook.is_linked();
+		return is_linked();
 	}
 
 	void RunDeferred() noexcept {

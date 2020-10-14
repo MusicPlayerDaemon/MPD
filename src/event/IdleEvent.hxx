@@ -34,11 +34,10 @@ class EventLoop;
  * thread that runs the #EventLoop, except where explicitly documented
  * as thread-safe.
  */
-class IdleEvent {
+class IdleEvent
+	: public boost::intrusive::list_base_hook<>
+{
 	friend class EventLoop;
-
-	using ListHook = boost::intrusive::list_member_hook<>;
-	ListHook list_hook;
 
 	EventLoop &loop;
 
@@ -63,7 +62,7 @@ public:
 	}
 
 	bool IsActive() const noexcept {
-		return list_hook.is_linked();
+		return is_linked();
 	}
 
 	void Schedule() noexcept;
