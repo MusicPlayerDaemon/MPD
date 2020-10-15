@@ -86,6 +86,15 @@ SocketEvent::Schedule(unsigned flags) noexcept
 }
 
 void
+SocketEvent::Abandon() noexcept
+{
+	if (std::exchange(scheduled_flags, 0) != 0)
+		loop.AbandonFD(fd.Get());
+
+	fd = SocketDescriptor::Undefined();
+}
+
+void
 SocketEvent::Dispatch() noexcept
 {
 	const unsigned flags = std::exchange(ready_flags, 0) &
