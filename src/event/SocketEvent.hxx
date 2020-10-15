@@ -109,13 +109,12 @@ public:
 		return fd;
 	}
 
-	void Open(SocketDescriptor _fd) noexcept;
+	SocketDescriptor ReleaseSocket() noexcept {
+		Cancel();
+		return std::exchange(fd, SocketDescriptor::Undefined());
+	}
 
-	/**
-	 * "Steal" the socket descriptor.  This abandons the socket
-	 * and returns it.
-	 */
-	SocketDescriptor Steal() noexcept;
+	void Open(SocketDescriptor _fd) noexcept;
 
 	void Close() noexcept;
 

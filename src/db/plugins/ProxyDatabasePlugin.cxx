@@ -573,7 +573,7 @@ ProxyDatabase::Disconnect() noexcept
 	assert(connection != nullptr);
 
 	idle_event.Cancel();
-	socket_event.Steal();
+	socket_event.ReleaseSocket();
 
 	mpd_connection_free(connection);
 	connection = nullptr;
@@ -634,7 +634,7 @@ ProxyDatabase::OnIdle() noexcept
 			LogError(std::current_exception());
 		}
 
-		socket_event.Steal();
+		socket_event.ReleaseSocket();
 		mpd_connection_free(connection);
 		connection = nullptr;
 		return;

@@ -403,8 +403,7 @@ NfsConnection::DestroyContext() noexcept
 	   new leases */
 	defer_new_lease.Cancel();
 
-	if (socket_event.IsDefined())
-		socket_event.Steal();
+	socket_event.ReleaseSocket();
 
 	callbacks.ForEach([](CancellableCallback &c){
 			c.PrepareDestroyContext();
@@ -434,14 +433,14 @@ NfsConnection::ScheduleSocket() noexcept
 
 	const int which_events = nfs_which_events(context);
 
-	if (which_events == POLLOUT && socket_event.IsDefined())
+	if (which_events == POLLOUT)
 		/* kludge: if libnfs asks only for POLLOUT, it means
 		   that it is currently waiting for the connect() to
 		   finish - rpc_reconnect_requeue() may have been
 		   called from inside nfs_service(); we must now
 		   unregister the old socket and register the new one
 		   instead */
-		socket_event.Steal();
+		socket_event.ReleaseSocket();
 
 	if (!socket_event.IsDefined()) {
 		SocketDescriptor _fd(nfs_get_fd(context));
@@ -495,7 +494,7 @@ NfsConnection::OnSocketReady(unsigned flags) noexcept
 		   which is a sure sign that libnfs will close the
 		   socket, which can lead to a race condition if
 		   epoll_ctl() is called later */
-		socket_event.Steal();
+		socket_event.ReleaseSocket();
 
 	const int result = Service(flags);
 

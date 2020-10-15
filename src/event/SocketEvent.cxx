@@ -37,16 +37,6 @@ SocketEvent::Open(SocketDescriptor _fd) noexcept
 	fd = _fd;
 }
 
-SocketDescriptor
-SocketEvent::Steal() noexcept
-{
-	assert(IsDefined());
-
-	Cancel();
-
-	return std::exchange(fd, SocketDescriptor::Undefined());
-}
-
 void
 SocketEvent::Close() noexcept
 {
