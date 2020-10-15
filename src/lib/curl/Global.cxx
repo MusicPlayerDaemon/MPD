@@ -29,15 +29,10 @@
 
 #include "Global.hxx"
 #include "Request.hxx"
-#include "Log.hxx"
 #include "event/Loop.hxx"
 #include "event/SocketEvent.hxx"
-#include "util/RuntimeError.hxx"
-#include "util/Domain.hxx"
 
 #include <cassert>
-
-static constexpr Domain curlm_domain("curlm");
 
 /**
  * Monitor for one socket created by CURL.
@@ -208,10 +203,7 @@ CurlGlobal::SocketAction(curl_socket_t fd, int ev_bitmask) noexcept
 	int running_handles;
 	CURLMcode mcode = curl_multi_socket_action(multi.Get(), fd, ev_bitmask,
 						   &running_handles);
-	if (mcode != CURLM_OK)
-		FormatError(curlm_domain,
-			    "curl_multi_socket_action() failed: %s",
-			    curl_multi_strerror(mcode));
+	(void)mcode;
 
 	defer_read_info.Schedule();
 }
