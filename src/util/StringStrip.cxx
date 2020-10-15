@@ -59,8 +59,8 @@ StripRight(const char *p, const char *end) noexcept
 	return end;
 }
 
-size_t
-StripRight(const char *p, size_t length) noexcept
+std::size_t
+StripRight(const char *p, std::size_t length) noexcept
 {
 	while (length > 0 && IsWhitespaceOrNull(p[length - 1]))
 		--length;
@@ -71,8 +71,8 @@ StripRight(const char *p, size_t length) noexcept
 void
 StripRight(char *p) noexcept
 {
-	size_t old_length = strlen(p);
-	size_t new_length = StripRight(p, old_length);
+	std::size_t old_length = strlen(p);
+	std::size_t new_length = StripRight(p, old_length);
 	p[new_length] = 0;
 }
 

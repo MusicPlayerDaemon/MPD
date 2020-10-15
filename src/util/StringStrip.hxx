@@ -82,8 +82,8 @@ StripRight(char *p, char *end) noexcept
  * side.
  */
 gcc_pure gcc_nonnull_all
-size_t
-StripRight(const char *p, size_t length) noexcept;
+std::size_t
+StripRight(const char *p, std::size_t length) noexcept;
 
 /**
  * Strip trailing whitespace by null-terminating the string.
