@@ -116,6 +116,9 @@ public:
 
 	void Open(SocketDescriptor _fd) noexcept;
 
+	/**
+	 * Close the socket (and cancel all scheduled events).
+	 */
 	void Close() noexcept;
 
 	unsigned GetScheduledFlags() const noexcept {
