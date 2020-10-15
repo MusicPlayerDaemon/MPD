@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2018 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2009-2020 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -30,7 +30,7 @@
 #include "StringStrip.hxx"
 #include "CharUtil.hxx"
 
-#include <string.h>
+#include <cstring>
 
 const char *
 StripLeft(const char *p) noexcept
@@ -71,7 +71,7 @@ StripRight(const char *p, std::size_t length) noexcept
 void
 StripRight(char *p) noexcept
 {
-	std::size_t old_length = strlen(p);
+	std::size_t old_length = std::strlen(p);
 	std::size_t new_length = StripRight(p, old_length);
 	p[new_length] = 0;
 }
