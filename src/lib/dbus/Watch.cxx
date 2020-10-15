@@ -32,6 +32,8 @@
 
 #include "Watch.hxx"
 
+#include <cassert>
+
 namespace ODBus {
 
 WatchManager::Watch::Watch(EventLoop &event_loop,
