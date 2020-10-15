@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2019 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2008-2020 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -78,7 +78,7 @@ private:
 		return socket_event.GetSocket();
 	}
 
-	void OnSocketReady(unsigned flags) noexcept;
+	void OnSocketReady(unsigned events) noexcept;
 
 	static constexpr int FlagsToCurlCSelect(unsigned flags) noexcept {
 		return (flags & (SocketEvent::READ | SocketEvent::HANGUP) ? CURL_CSELECT_IN : 0) |
