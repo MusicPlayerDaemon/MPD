@@ -258,6 +258,14 @@ private:
 	 */
 	Event::Duration HandleTimers() noexcept;
 
+	/**
+	 * Call epoll_wait() and pass all returned events to
+	 * SocketEvent::SetReadyFlags().
+	 *
+	 * @return true if one or more sockets have become ready
+	 */
+	bool Wait(Event::Duration timeout) noexcept;
+
 #ifdef HAVE_THREADED_EVENT_LOOP
 	void OnSocketReady(unsigned flags) noexcept;
 #endif

@@ -184,6 +184,22 @@ ExportTimeoutMS(Event::Duration timeout)
 		: -1;
 }
 
+inline bool
+EventLoop::Wait(Event::Duration timeout) noexcept
+{
+	const auto poll_result =
+		poll_group.ReadEvents(ExportTimeoutMS(timeout));
+
+	ready_sockets.clear();
+	for (size_t i = 0; i < poll_result.GetSize(); ++i) {
+		auto &s = *(SocketEvent *)poll_result.GetObject(i);
+		s.SetReadyFlags(poll_result.GetEvents(i));
+		ready_sockets.push_back(s);
+	}
+
+	return poll_result.GetSize() > 0;
+}
+
 void
 EventLoop::Run() noexcept
 {
@@ -257,15 +273,7 @@ EventLoop::Run() noexcept
 
 		/* wait for new event */
 
-		const auto poll_result =
-			poll_group.ReadEvents(ExportTimeoutMS(timeout));
-
-		ready_sockets.clear();
-		for (size_t i = 0; i < poll_result.GetSize(); ++i) {
-			auto &s = *(SocketEvent *)poll_result.GetObject(i);
-			s.SetReadyFlags(poll_result.GetEvents(i));
-			ready_sockets.push_back(s);
-		}
+		Wait(timeout);
 
 		now = std::chrono::steady_clock::now();
 
