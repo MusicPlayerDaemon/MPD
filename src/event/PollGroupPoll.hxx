@@ -50,7 +50,7 @@ public:
 	PollGroupPoll() noexcept;
 	~PollGroupPoll() noexcept;
 
-	void ReadEvents(PollResultGeneric &result, int timeout_ms) noexcept;
+	PollResultGeneric ReadEvents(int timeout_ms) noexcept;
 	bool Add(int fd, unsigned events, void *obj) noexcept;
 	bool Modify(int fd, unsigned events, void *obj) noexcept;
 	bool Remove(int fd) noexcept;

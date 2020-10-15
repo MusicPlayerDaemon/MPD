@@ -61,10 +61,12 @@ public:
 
 	PollGroupEpoll() = default;
 
-	void ReadEvents(PollResultEpoll &result, int timeout_ms) noexcept {
+	auto ReadEvents(int timeout_ms) noexcept {
+		PollResultEpoll result;
 		int ret = epoll.Wait(result.events.data(), result.events.size(),
 				     timeout_ms);
 		result.n_events = std::max(0, ret);
+		return result;
 	}
 
 	bool Add(int fd, unsigned events, void *obj) noexcept {

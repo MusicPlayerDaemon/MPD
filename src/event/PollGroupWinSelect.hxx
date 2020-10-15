@@ -122,7 +122,7 @@ public:
 	PollGroupWinSelect() noexcept;
 	~PollGroupWinSelect() noexcept;
 
-	void ReadEvents(PollResultGeneric &result, int timeout_ms) noexcept;
+	PollResultGeneric ReadEvents(int timeout_ms) noexcept;
 	bool Add(SOCKET fd, unsigned events, void *obj) noexcept;
 	bool Modify(SOCKET fd, unsigned events, void *obj) noexcept;
 	bool Remove(SOCKET fd) noexcept;

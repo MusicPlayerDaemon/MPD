@@ -115,9 +115,8 @@ PollGroupWinSelect::Remove(SOCKET fd) noexcept
 	return true;
 }
 
-void
-PollGroupWinSelect::ReadEvents(PollResultGeneric &result,
-			       int timeout_ms) noexcept
+PollResultGeneric
+PollGroupWinSelect::ReadEvents(int timeout_ms) noexcept
 {
 	bool use_sleep = event_set[EVENT_READ].IsEmpty() &&
 			 event_set[EVENT_WRITE].IsEmpty();
@@ -143,8 +142,9 @@ PollGroupWinSelect::ReadEvents(PollResultGeneric &result,
 			 except_set.GetPtr(),
 			 timeout_ms < 0 ? nullptr : &tv);
 
+	PollResultGeneric result;
 	if (ret == 0 || ret == SOCKET_ERROR)
-		return;
+		return result;
 
 	for (const auto i : read_set)
 		items[i].events |= READ;
@@ -160,4 +160,6 @@ PollGroupWinSelect::ReadEvents(PollResultGeneric &result,
 			result.Add(i.second.events, i.second.obj);
 			i.second.events = 0;
 		}
+
+	return result;
 }

@@ -25,19 +25,16 @@
 #ifdef _WIN32
 
 #include "PollGroupWinSelect.hxx"
-typedef PollResultGeneric  PollResult;
 typedef PollGroupWinSelect PollGroup;
 
 #elif defined(USE_EPOLL)
 
 #include "PollGroupEpoll.hxx"
-typedef PollResultEpoll PollResult;
 typedef PollGroupEpoll PollGroup;
 
 #else
 
 #include "PollGroupPoll.hxx"
-typedef PollResultGeneric PollResult;
 typedef PollGroupPoll     PollGroup;
 
 #endif

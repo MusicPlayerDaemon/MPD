@@ -71,12 +71,13 @@ PollGroupPoll::Remove(int fd) noexcept
 	return true;
 }
 
-void
-PollGroupPoll::ReadEvents(PollResultGeneric &result, int timeout_ms) noexcept
+PollResultGeneric
+PollGroupPoll::ReadEvents(int timeout_ms) noexcept
 {
 	int n = poll(poll_events.empty() ? nullptr : &poll_events[0],
 		     poll_events.size(), timeout_ms);
 
+	PollResultGeneric result;
 	for (size_t i = 0; n > 0 && i < poll_events.size(); ++i) {
 		const auto &e = poll_events[i];
 		if (e.revents != 0) {
@@ -84,4 +85,6 @@ PollGroupPoll::ReadEvents(PollResultGeneric &result, int timeout_ms) noexcept
 			--n;
 		}
 	}
+
+	return result;
 }

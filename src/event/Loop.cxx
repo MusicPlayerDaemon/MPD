@@ -257,8 +257,8 @@ EventLoop::Run() noexcept
 
 		/* wait for new event */
 
-		PollResult poll_result;
-		poll_group.ReadEvents(poll_result, ExportTimeoutMS(timeout));
+		const auto poll_result =
+			poll_group.ReadEvents(ExportTimeoutMS(timeout));
 
 		ready_sockets.clear();
 		for (size_t i = 0; i < poll_result.GetSize(); ++i) {
