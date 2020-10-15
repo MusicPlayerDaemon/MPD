@@ -167,6 +167,21 @@ public:
 		Schedule(GetScheduledFlags() & ~WRITE);
 	}
 
+	/**
+	 * Schedule only the #IMPLICIT_FLAGS without #READ and #WRITE.
+	 * This is not possible with Schedule(), and no other
+	 * ScheduleX()/CancelX() method may be called on this object.
+	 */
+	void ScheduleImplicit() noexcept;
+
+	bool IsReadPending() const noexcept {
+		return GetScheduledFlags() & READ;
+	}
+
+	bool IsWritePending() const noexcept {
+		return GetScheduledFlags() & WRITE;
+	}
+
 public:
 	void Dispatch() noexcept;
 };
