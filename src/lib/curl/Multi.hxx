@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2018 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2016-2020 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -32,6 +32,7 @@
 
 #include <curl/curl.h>
 
+#include <chrono>
 #include <utility>
 #include <stdexcept>
 #include <cstddef>
@@ -86,6 +87,44 @@ public:
 		auto code = curl_multi_setopt(handle, option, value);
 		if (code != CURLM_OK)
 			throw std::runtime_error(curl_multi_strerror(code));
+	}
+
+	void Add(CURL *easy_handle) {
+		auto code = curl_multi_add_handle(handle, easy_handle);
+		if (code != CURLM_OK)
+			throw std::runtime_error(curl_multi_strerror(code));
+	}
+
+	void Remove(CURL *easy_handle) {
+		auto code = curl_multi_remove_handle(handle, easy_handle);
+		if (code != CURLM_OK)
+			throw std::runtime_error(curl_multi_strerror(code));
+	}
+
+	CURLMsg *InfoRead() {
+		int msgs_in_queue;
+		return curl_multi_info_read(handle, &msgs_in_queue);
+	}
+
+	unsigned Perform() {
+		int running_handles;
+		auto code = curl_multi_perform(handle, &running_handles);
+		if (code != CURLM_OK)
+			throw std::runtime_error(curl_multi_strerror(code));
+		return running_handles;
+	}
+
+	unsigned Wait(int timeout=-1) {
+		int numfds;
+		auto code = curl_multi_wait(handle, nullptr, 0, timeout,
+					    &numfds);
+		if (code != CURLM_OK)
+			throw std::runtime_error(curl_multi_strerror(code));
+		return numfds;
+	}
+
+	unsigned Wait(std::chrono::milliseconds timeout) {
+		return Wait(timeout.count());
 	}
 };
 

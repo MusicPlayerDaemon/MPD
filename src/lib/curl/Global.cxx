@@ -158,10 +158,7 @@ CurlGlobal::Add(CurlRequest &r)
 {
 	assert(GetEventLoop().IsInside());
 
-	CURLMcode mcode = curl_multi_add_handle(multi.Get(), r.Get());
-	if (mcode != CURLM_OK)
-		throw FormatRuntimeError("curl_multi_add_handle() failed: %s",
-					 curl_multi_strerror(mcode));
+	multi.Add(r.Get());
 
 	InvalidateSockets();
 }
@@ -171,7 +168,7 @@ CurlGlobal::Remove(CurlRequest &r) noexcept
 {
 	assert(GetEventLoop().IsInside());
 
-	curl_multi_remove_handle(multi.Get(), r.Get());
+	multi.Remove(r.Get());
 }
 
 /**
@@ -195,10 +192,8 @@ CurlGlobal::ReadInfo() noexcept
 	assert(GetEventLoop().IsInside());
 
 	CURLMsg *msg;
-	int msgs_in_queue;
 
-	while ((msg = curl_multi_info_read(multi.Get(),
-					   &msgs_in_queue)) != nullptr) {
+	while ((msg = multi.InfoRead()) != nullptr) {
 		if (msg->msg == CURLMSG_DONE) {
 			auto *request = ToRequest(msg->easy_handle);
 			if (request != nullptr)
