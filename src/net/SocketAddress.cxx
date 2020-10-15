@@ -34,8 +34,7 @@
 #include "util/StringView.hxx"
 
 #include <cassert>
-
-#include <string.h>
+#include <cstring>
 
 #ifdef HAVE_UN
 #include <sys/un.h>

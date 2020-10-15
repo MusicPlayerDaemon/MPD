@@ -203,7 +203,7 @@ OSXOutput::GetVolume()
 	const auto vol = AudioObjectGetPropertyDataT<Float32>(dev_id,
 							      aopa);
 
-	return static_cast<int>(vol * 100.0);
+	return static_cast<int>(vol * 100.0f);
 }
 
 void
@@ -420,10 +420,11 @@ osx_output_set_device_format(AudioDeviceID dev_id,
 			float score = osx_output_score_format(format_desc, target_format);
 
 			// print all (linear pcm) formats and their rating
-			if (score > 0.0)
+			if (score > 0.0f)
 				FormatDebug(osx_output_domain,
 					    "Format: %s rated %f",
-					    StreamDescriptionToString(format_desc).c_str(), score);
+					    StreamDescriptionToString(format_desc).c_str(),
+					    (double)score);
 
 			if (score > output_score) {
 				output_score  = score;
