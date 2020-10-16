@@ -79,7 +79,7 @@ class MPDOpusDecoder final : public OggDecoder {
 	 * The output gain from the Opus header. Initialized by
 	 * OnOggBeginning().
 	 */
-	signed output_gain;
+	float output_gain;
 
 	/**
 	 * The pre-skip value from the Opus header.  Initialized by
@@ -170,9 +170,13 @@ MPDOpusDecoder::OnOggBeginning(const ogg_packet &packet)
 		throw std::runtime_error("BOS packet must be OpusHead");
 
 	unsigned channels;
-	if (!ScanOpusHeader(packet.packet, packet.bytes, channels, output_gain, pre_skip) ||
+	signed output_gain_i;
+	if (!ScanOpusHeader(packet.packet, packet.bytes, channels, output_gain_i, pre_skip) ||
 	    !audio_valid_channel_count(channels))
 		throw std::runtime_error("Malformed BOS packet");
+
+	/* convert Q7.8 fixed-point to float */
+	output_gain = float(output_gain_i) / 256.0f;
 
 	granulepos = 0;
 	skip = pre_skip;
@@ -251,8 +255,8 @@ MPDOpusDecoder::HandleTags(const ogg_packet &packet)
 	 * ReplayGain. Add 5dB to compensate for the different
 	 * reference levels between ReplayGain (89dB) and EBU R128 (-23 LUFS).
 	 */
-	rgi.track.gain = float(output_gain) / 256.0f + 5;
-	rgi.album.gain = float(output_gain) / 256.0f + 5;
+	rgi.track.gain = output_gain + 5;
+	rgi.album.gain = output_gain + 5;
 
 	TagBuilder tag_builder;
 	AddTagHandler h(tag_builder);
