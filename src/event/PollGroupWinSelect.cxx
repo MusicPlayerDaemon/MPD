@@ -121,9 +121,10 @@ PollGroupWinSelect::ReadEvents(int timeout_ms) noexcept
 	bool use_sleep = event_set[EVENT_READ].IsEmpty() &&
 			 event_set[EVENT_WRITE].IsEmpty();
 
+	PollResultGeneric result;
 	if (use_sleep) {
 		Sleep(timeout_ms < 0 ? INFINITE : (DWORD) timeout_ms);
-		return;
+		return result;
 	}
 
 	SocketSet read_set(event_set[EVENT_READ]);
@@ -142,7 +143,6 @@ PollGroupWinSelect::ReadEvents(int timeout_ms) noexcept
 			 except_set.GetPtr(),
 			 timeout_ms < 0 ? nullptr : &tv);
 
-	PollResultGeneric result;
 	if (ret == 0 || ret == SOCKET_ERROR)
 		return result;
 
