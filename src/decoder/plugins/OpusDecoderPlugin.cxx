@@ -76,8 +76,9 @@ class MPDOpusDecoder final : public OggDecoder {
 	opus_int16 *output_buffer = nullptr;
 
 	/**
-	 * The output gain from the Opus header. Initialized by
-	 * OnOggBeginning().
+	 * The output gain from the Opus header in dB that should be
+	 * applied unconditionally, but is often used specifically for
+	 * ReplayGain.  Initialized by OnOggBeginning().
 	 */
 	float output_gain;
 
@@ -250,9 +251,7 @@ MPDOpusDecoder::HandleTags(const ogg_packet &packet)
 	rgi.Clear();
 
 	/**
-	 * Output gain is a Q7.8 fixed point number in dB that should be,
-	 * applied unconditionally, but is often used specifically for
-	 * ReplayGain. Add 5dB to compensate for the different
+	 * Add 5dB to compensate for the different
 	 * reference levels between ReplayGain (89dB) and EBU R128 (-23 LUFS).
 	 */
 	rgi.track.gain = output_gain + 5;
