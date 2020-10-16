@@ -268,7 +268,6 @@ MPDOpusDecoder::HandleTags(const ogg_packet &packet)
 {
 	ReplayGainInfo rgi;
 	rgi.Clear();
-	rgi.track.gain = rgi.album.gain = EbuR128ToReplayGain(output_gain);
 
 	TagBuilder tag_builder;
 	AddTagHandler h(tag_builder);
@@ -276,8 +275,16 @@ MPDOpusDecoder::HandleTags(const ogg_packet &packet)
 	if (!ScanOpusTags(packet.packet, packet.bytes, &rgi, h))
 		return;
 
-	client.SubmitReplayGain(&rgi);
-	submitted_replay_gain = true;
+	if (rgi.IsDefined()) {
+		/* submit all valid EBU R128 values with output_gain
+		   applied */
+		if (rgi.track.IsDefined())
+			rgi.track.gain += EbuR128ToReplayGain(output_gain);
+		if (rgi.album.IsDefined())
+			rgi.album.gain += EbuR128ToReplayGain(output_gain);
+		client.SubmitReplayGain(&rgi);
+		submitted_replay_gain = true;
+	}
 
 	if (!tag_builder.empty()) {
 		Tag tag = tag_builder.Commit();

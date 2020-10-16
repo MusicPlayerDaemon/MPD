@@ -1,6 +1,7 @@
 ver 0.22.1 (not yet released)
 * decoder
   - opus: apply the OpusHead output gain even if there is no EBU R128 tag
+  - opus: fix track/album ReplayGain fallback
 * output
   - alsa: don't deadlock when the ALSA driver is buggy
   - jack, pulse: reduce the delay when stopping or pausing playback
