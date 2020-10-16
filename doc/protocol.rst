@@ -522,6 +522,16 @@ Playback options
     Sets volume to ``VOL``, the range of
     volume is 0-100.
 
+:command:`getvol`
+
+    Read the volume.  The result is a ``volume:`` line like in
+    :ref:`status <command_status>`.  If there is no mixer, MPD will
+    emit an empty response.  Example::
+
+      getvol
+      volume: 42
+      OK
+
 :command:`single {STATE}` [#since_0_15]_
     Sets single state to ``STATE``,
     ``STATE`` should be ``0``, ``1`` or ``oneshot`` [#since_0_20]_.

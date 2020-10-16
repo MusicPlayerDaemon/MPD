@@ -319,6 +319,18 @@ handle_rescan(Client &client, Request args, Response &r)
 }
 
 CommandResult
+handle_getvol(Client &client, Request, Response &r)
+{
+	auto &partition = client.GetPartition();
+
+	const auto volume = volume_level_get(partition.outputs);
+	if (volume >= 0)
+		r.Format("volume: %i\n", volume);
+
+	return CommandResult::OK;
+}
+
+CommandResult
 handle_setvol(Client &client, Request args, Response &r)
 {
 	unsigned level = args.ParseUnsigned(0, 100);
