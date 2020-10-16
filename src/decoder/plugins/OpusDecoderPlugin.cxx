@@ -123,6 +123,14 @@ class MPDOpusDecoder final : public OggDecoder {
 	 */
 	ogg_int64_t granulepos;
 
+	/**
+	 * Was DecoderClient::SubmitReplayGain() called?  We need to
+	 * keep track of this, because it will usually be called by
+	 * HandleTags(), but if there is no OpusTags packet, we need
+	 * to submit our #output_gain value from the OpusHead.
+	 */
+	bool submitted_replay_gain = false;
+
 public:
 	explicit MPDOpusDecoder(DecoderReader &reader)
 		:OggDecoder(reader) {}
@@ -269,6 +277,7 @@ MPDOpusDecoder::HandleTags(const ogg_packet &packet)
 		return;
 
 	client.SubmitReplayGain(&rgi);
+	submitted_replay_gain = true;
 
 	if (!tag_builder.empty()) {
 		Tag tag = tag_builder.Commit();
@@ -282,6 +291,18 @@ inline void
 MPDOpusDecoder::HandleAudio(const ogg_packet &packet)
 {
 	assert(opus_decoder != nullptr);
+
+	if (!submitted_replay_gain) {
+		/* if we didn't see an OpusTags packet with EBU R128
+		   values, we still need to apply the output gain
+		   value from the OpusHead packet; submit it as "track
+		   gain" value */
+		ReplayGainInfo rgi;
+		rgi.Clear();
+		rgi.track.gain = EbuR128ToReplayGain(output_gain);
+		client.SubmitReplayGain(&rgi);
+		submitted_replay_gain = true;
+	}
 
 	int nframes = opus_decode(opus_decoder,
 				  (const unsigned char*)packet.packet,
