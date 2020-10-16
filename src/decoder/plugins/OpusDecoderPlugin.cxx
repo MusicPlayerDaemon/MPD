@@ -63,6 +63,17 @@ IsOpusTags(const ogg_packet &packet) noexcept
 	return packet.bytes >= 8 && memcmp(packet.packet, "OpusTags", 8) == 0;
 }
 
+/**
+ * Convert an EBU R128 value to ReplayGain.
+ */
+constexpr float
+EbuR128ToReplayGain(float ebu_r128) noexcept
+{
+	/* add 5dB to compensate for the different reference levels
+	   between ReplayGain (89dB) and EBU R128 (-23 LUFS) */
+	return ebu_r128 + 5;
+}
+
 bool
 mpd_opus_init([[maybe_unused]] const ConfigBlock &block)
 {
@@ -249,13 +260,7 @@ MPDOpusDecoder::HandleTags(const ogg_packet &packet)
 {
 	ReplayGainInfo rgi;
 	rgi.Clear();
-
-	/**
-	 * Add 5dB to compensate for the different
-	 * reference levels between ReplayGain (89dB) and EBU R128 (-23 LUFS).
-	 */
-	rgi.track.gain = output_gain + 5;
-	rgi.album.gain = output_gain + 5;
+	rgi.track.gain = rgi.album.gain = EbuR128ToReplayGain(output_gain);
 
 	TagBuilder tag_builder;
 	AddTagHandler h(tag_builder);
