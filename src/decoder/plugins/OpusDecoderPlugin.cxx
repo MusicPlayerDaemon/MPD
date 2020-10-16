@@ -63,6 +63,17 @@ IsOpusTags(const ogg_packet &packet) noexcept
 	return packet.bytes >= 8 && memcmp(packet.packet, "OpusTags", 8) == 0;
 }
 
+/**
+ * Convert an EBU R128 value to ReplayGain.
+ */
+constexpr float
+EbuR128ToReplayGain(float ebu_r128) noexcept
+{
+	/* add 5dB to compensate for the different reference levels
+	   between ReplayGain (89dB) and EBU R128 (-23 LUFS) */
+	return ebu_r128 + 5;
+}
+
 bool
 mpd_opus_init([[maybe_unused]] const ConfigBlock &block)
 {
@@ -76,10 +87,11 @@ class MPDOpusDecoder final : public OggDecoder {
 	opus_int16 *output_buffer = nullptr;
 
 	/**
-	 * The output gain from the Opus header. Initialized by
-	 * OnOggBeginning().
+	 * The output gain from the Opus header in dB that should be
+	 * applied unconditionally, but is often used specifically for
+	 * ReplayGain.  Initialized by OnOggBeginning().
 	 */
-	signed output_gain;
+	float output_gain;
 
 	/**
 	 * The pre-skip value from the Opus header.  Initialized by
@@ -110,6 +122,14 @@ class MPDOpusDecoder final : public OggDecoder {
 	 * Initialized by OnOggBeginning().
 	 */
 	ogg_int64_t granulepos;
+
+	/**
+	 * Was DecoderClient::SubmitReplayGain() called?  We need to
+	 * keep track of this, because it will usually be called by
+	 * HandleTags(), but if there is no OpusTags packet, we need
+	 * to submit our #output_gain value from the OpusHead.
+	 */
+	bool submitted_replay_gain = false;
 
 public:
 	explicit MPDOpusDecoder(DecoderReader &reader)
@@ -170,9 +190,13 @@ MPDOpusDecoder::OnOggBeginning(const ogg_packet &packet)
 		throw std::runtime_error("BOS packet must be OpusHead");
 
 	unsigned channels;
-	if (!ScanOpusHeader(packet.packet, packet.bytes, channels, output_gain, pre_skip) ||
+	signed output_gain_i;
+	if (!ScanOpusHeader(packet.packet, packet.bytes, channels, output_gain_i, pre_skip) ||
 	    !audio_valid_channel_count(channels))
 		throw std::runtime_error("Malformed BOS packet");
+
+	/* convert Q7.8 fixed-point to float */
+	output_gain = float(output_gain_i) / 256.0f;
 
 	granulepos = 0;
 	skip = pre_skip;
@@ -245,22 +269,22 @@ MPDOpusDecoder::HandleTags(const ogg_packet &packet)
 	ReplayGainInfo rgi;
 	rgi.Clear();
 
-	/**
-	 * Output gain is a Q7.8 fixed point number in dB that should be,
-	 * applied unconditionally, but is often used specifically for
-	 * ReplayGain. Add 5dB to compensate for the different
-	 * reference levels between ReplayGain (89dB) and EBU R128 (-23 LUFS).
-	 */
-	rgi.track.gain = float(output_gain) / 256.0f + 5;
-	rgi.album.gain = float(output_gain) / 256.0f + 5;
-
 	TagBuilder tag_builder;
 	AddTagHandler h(tag_builder);
 
 	if (!ScanOpusTags(packet.packet, packet.bytes, &rgi, h))
 		return;
 
-	client.SubmitReplayGain(&rgi);
+	if (rgi.IsDefined()) {
+		/* submit all valid EBU R128 values with output_gain
+		   applied */
+		if (rgi.track.IsDefined())
+			rgi.track.gain += EbuR128ToReplayGain(output_gain);
+		if (rgi.album.IsDefined())
+			rgi.album.gain += EbuR128ToReplayGain(output_gain);
+		client.SubmitReplayGain(&rgi);
+		submitted_replay_gain = true;
+	}
 
 	if (!tag_builder.empty()) {
 		Tag tag = tag_builder.Commit();
@@ -274,6 +298,18 @@ inline void
 MPDOpusDecoder::HandleAudio(const ogg_packet &packet)
 {
 	assert(opus_decoder != nullptr);
+
+	if (!submitted_replay_gain) {
+		/* if we didn't see an OpusTags packet with EBU R128
+		   values, we still need to apply the output gain
+		   value from the OpusHead packet; submit it as "track
+		   gain" value */
+		ReplayGainInfo rgi;
+		rgi.Clear();
+		rgi.track.gain = EbuR128ToReplayGain(output_gain);
+		client.SubmitReplayGain(&rgi);
+		submitted_replay_gain = true;
+	}
 
 	int nframes = opus_decode(opus_decoder,
 				  (const unsigned char*)packet.packet,
