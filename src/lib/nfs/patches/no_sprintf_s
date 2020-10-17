@@ -1,0 +1,14 @@
+Index: libnfs-libnfs-4.0.0/include/win32/win32_compat.h
+===================================================================
+--- libnfs-libnfs-4.0.0.orig/include/win32/win32_compat.h
++++ libnfs-libnfs-4.0.0/include/win32/win32_compat.h
+@@ -133,7 +133,9 @@ struct pollfd {
+ 
+ /* Wrapper macros to call misc. functions win32 is missing */
+ #define poll(x, y, z)        win32_poll(x, y, z)
++#ifndef __MINGW32__
+ #define snprintf             sprintf_s
++#endif
+ #define inet_pton(x,y,z)     win32_inet_pton(x,y,z)
+ #define open(x, y, z)        _open(x, y, z)
+ #ifndef lseek

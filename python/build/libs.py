@@ -429,6 +429,7 @@ libnfs = AutotoolsProject(
         '--disable-utils', '--disable-examples',
     ],
     base='libnfs-libnfs-4.0.0',
+    patches='src/lib/nfs/patches',
     autoreconf=True,
 )
 
