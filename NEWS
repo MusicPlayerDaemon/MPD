@@ -2,7 +2,7 @@ ver 0.23 (not yet released)
 * protocol
   - new command "getvol"
 
-ver 0.22.1 (not yet released)
+ver 0.22.1 (2020/10/17)
 * decoder
   - opus: apply the OpusHead output gain even if there is no EBU R128 tag
   - opus: fix track/album ReplayGain fallback
