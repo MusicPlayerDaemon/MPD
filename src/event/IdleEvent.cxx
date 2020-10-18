@@ -23,17 +23,6 @@
 #include <cassert>
 
 void
-IdleEvent::Cancel() noexcept
-{
-	assert(loop.IsInside());
-
-	if (!IsActive())
-		return;
-
-	loop.RemoveIdle(*this);
-}
-
-void
 IdleEvent::Schedule() noexcept
 {
 	assert(loop.IsInside());

@@ -25,6 +25,7 @@
 #include "SocketEvent.hxx"
 #include "event/Features.h"
 #include "util/Compiler.h"
+#include "util/IntrusiveList.hxx"
 
 #ifdef HAVE_THREADED_EVENT_LOOP
 #include "WakeFD.hxx"
@@ -77,10 +78,7 @@ class EventLoop final
 					   boost::intrusive::constant_time_size<false>>;
 	TimerSet timers;
 
-	using IdleList =
-		boost::intrusive::list<IdleEvent,
-				       boost::intrusive::base_hook<boost::intrusive::list_base_hook<>>,
-				       boost::intrusive::constant_time_size<false>>;
+	using IdleList = IntrusiveList<IdleEvent>;
 	IdleList idle;
 
 #ifdef HAVE_THREADED_EVENT_LOOP
@@ -214,7 +212,6 @@ public:
 	bool AbandonFD(int fd) noexcept;
 
 	void AddIdle(IdleEvent &i) noexcept;
-	void RemoveIdle(IdleEvent &i) noexcept;
 
 	void AddTimer(TimerEvent &t, Event::Duration d) noexcept;
 

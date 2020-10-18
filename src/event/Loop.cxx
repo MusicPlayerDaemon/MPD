@@ -130,14 +130,6 @@ EventLoop::AddIdle(IdleEvent &i) noexcept
 }
 
 void
-EventLoop::RemoveIdle(IdleEvent &i) noexcept
-{
-	assert(IsInside());
-
-	idle.erase(idle.iterator_to(i));
-}
-
-void
 EventLoop::AddTimer(TimerEvent &t, Event::Duration d) noexcept
 {
 	assert(IsInside());

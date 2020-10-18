@@ -21,8 +21,7 @@
 #define MPD_SOCKET_IDLE_EVENT_HXX
 
 #include "util/BindMethod.hxx"
-
-#include <boost/intrusive/list_hook.hpp>
+#include "util/IntrusiveList.hxx"
 
 class EventLoop;
 
@@ -34,10 +33,9 @@ class EventLoop;
  * thread that runs the #EventLoop, except where explicitly documented
  * as thread-safe.
  */
-class IdleEvent
-	: public boost::intrusive::list_base_hook<>
-{
+class IdleEvent final : public AutoUnlinkIntrusiveListHook {
 	friend class EventLoop;
+	friend class IntrusiveList<IdleEvent>;
 
 	EventLoop &loop;
 
@@ -51,15 +49,6 @@ public:
 	IdleEvent(const IdleEvent &) = delete;
 	IdleEvent &operator=(const IdleEvent &) = delete;
 
-	~IdleEvent() noexcept {
-#ifndef NDEBUG
-		/* this check is redundant, it is only here to avoid
-		   the assertion in Cancel() */
-		if (IsActive())
-#endif
-			Cancel();
-	}
-
 	auto &GetEventLoop() const noexcept {
 		return loop;
 	}
@@ -69,7 +58,11 @@ public:
 	}
 
 	void Schedule() noexcept;
-	void Cancel() noexcept;
+
+	void Cancel() noexcept {
+		if (IsActive())
+			unlink();
+	}
 
 private:
 	void Run() noexcept;
