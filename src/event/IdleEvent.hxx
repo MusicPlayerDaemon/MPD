@@ -48,6 +48,9 @@ public:
 	IdleEvent(EventLoop &_loop, Callback _callback) noexcept
 		:loop(_loop), callback(_callback) {}
 
+	IdleEvent(const IdleEvent &) = delete;
+	IdleEvent &operator=(const IdleEvent &) = delete;
+
 	~IdleEvent() noexcept {
 #ifndef NDEBUG
 		/* this check is redundant, it is only here to avoid
