@@ -23,8 +23,7 @@
 #include "PollGroup.hxx"
 #include "net/SocketDescriptor.hxx"
 #include "util/BindMethod.hxx"
-
-#include <boost/intrusive/list_hook.hpp>
+#include "util/IntrusiveList.hxx"
 
 #include <cassert>
 #include <cstddef>
@@ -45,8 +44,9 @@ class EventLoop;
  * thread that runs the #EventLoop, except where explicitly documented
  * as thread-safe.
  */
-class SocketEvent final : public boost::intrusive::list_base_hook<boost::intrusive::link_mode<boost::intrusive::auto_unlink>> {
+class SocketEvent final : IntrusiveListHook {
 	friend class EventLoop;
+	friend class IntrusiveList<SocketEvent>;
 
 	EventLoop &loop;
 

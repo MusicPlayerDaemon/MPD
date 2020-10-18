@@ -91,10 +91,7 @@ class EventLoop final
 	DeferredList deferred;
 #endif
 
-	using SocketList =
-		boost::intrusive::list<SocketEvent,
-				       boost::intrusive::base_hook<boost::intrusive::list_base_hook<boost::intrusive::link_mode<boost::intrusive::auto_unlink>>>,
-				       boost::intrusive::constant_time_size<false>>;
+	using SocketList = IntrusiveList<SocketEvent>;
 
 	/**
 	 * A list of scheduled #SocketEvent instances, without those
