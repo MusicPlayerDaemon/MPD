@@ -92,6 +92,9 @@ public:
 		Cancel();
 	}
 
+	SocketEvent(const SocketEvent &) = delete;
+	SocketEvent &operator=(const SocketEvent &) = delete;
+
 	auto &GetEventLoop() const noexcept {
 		return loop;
 	}
