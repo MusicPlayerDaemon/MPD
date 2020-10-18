@@ -186,22 +186,8 @@ public:
 	 */
 	void Break() noexcept;
 
-	bool AddFD(int _fd, unsigned flags, SocketEvent &m) noexcept {
-#ifdef HAVE_THREADED_EVENT_LOOP
-		assert(!IsAlive() || IsInside());
-#endif
-
-		return poll_group.Add(_fd, flags, &m);
-	}
-
-	bool ModifyFD(int _fd, unsigned flags, SocketEvent &m) noexcept {
-#ifdef HAVE_THREADED_EVENT_LOOP
-		assert(!IsAlive() || IsInside());
-#endif
-
-		return poll_group.Modify(_fd, flags, &m);
-	}
-
+	bool AddFD(int fd, unsigned events, SocketEvent &event) noexcept;
+	bool ModifyFD(int fd, unsigned events, SocketEvent &event) noexcept;
 	bool RemoveFD(int fd) noexcept;
 
 	/**

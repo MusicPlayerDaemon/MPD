@@ -111,13 +111,33 @@ EventLoop::AbandonFD(int _fd)  noexcept
 }
 
 bool
-EventLoop::RemoveFD(int _fd) noexcept
+EventLoop::AddFD(int fd, unsigned events, SocketEvent &event) noexcept
 {
 #ifdef HAVE_THREADED_EVENT_LOOP
 	assert(!IsAlive() || IsInside());
 #endif
 
-	return poll_group.Remove(_fd);
+	return poll_group.Add(fd, events, &event);
+}
+
+bool
+EventLoop::ModifyFD(int fd, unsigned events, SocketEvent &event) noexcept
+{
+#ifdef HAVE_THREADED_EVENT_LOOP
+	assert(!IsAlive() || IsInside());
+#endif
+
+	return poll_group.Modify(fd, events, &event);
+}
+
+bool
+EventLoop::RemoveFD(int fd) noexcept
+{
+#ifdef HAVE_THREADED_EVENT_LOOP
+	assert(!IsAlive() || IsInside());
+#endif
+
+	return poll_group.Remove(fd);
 }
 
 void
