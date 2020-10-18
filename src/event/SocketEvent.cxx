@@ -69,7 +69,7 @@ SocketEvent::Schedule(unsigned flags) noexcept
 	if (scheduled_flags == 0)
 		success = loop.AddFD(fd.Get(), flags, *this);
 	else if (flags == 0)
-		success = loop.RemoveFD(fd.Get());
+		success = loop.RemoveFD(fd.Get(), *this);
 	else
 		success = loop.ModifyFD(fd.Get(), flags, *this);
 

@@ -67,6 +67,8 @@ EventLoop::~EventLoop() noexcept
 {
 	assert(idle.empty());
 	assert(timers.empty());
+	assert(sockets.empty());
+	assert(ready_sockets.empty());
 }
 
 #ifdef HAVE_URING
@@ -117,7 +119,11 @@ EventLoop::AddFD(int fd, unsigned events, SocketEvent &event) noexcept
 	assert(!IsAlive() || IsInside());
 #endif
 
-	return poll_group.Add(fd, events, &event);
+	if (!poll_group.Add(fd, events, &event))
+		return false;
+
+	sockets.push_back(event);
+	return true;
 }
 
 bool
@@ -131,12 +137,13 @@ EventLoop::ModifyFD(int fd, unsigned events, SocketEvent &event) noexcept
 }
 
 bool
-EventLoop::RemoveFD(int fd) noexcept
+EventLoop::RemoveFD(int fd, SocketEvent &event) noexcept
 {
 #ifdef HAVE_THREADED_EVENT_LOOP
 	assert(!IsAlive() || IsInside());
 #endif
 
+	event.unlink();
 	return poll_group.Remove(fd);
 }
 
@@ -213,11 +220,13 @@ EventLoop::Wait(Event::Duration timeout) noexcept
 	const auto poll_result =
 		poll_group.ReadEvents(ExportTimeoutMS(timeout));
 
-	ready_sockets.clear();
 	for (size_t i = 0; i < poll_result.GetSize(); ++i) {
-		auto &s = *(SocketEvent *)poll_result.GetObject(i);
-		s.SetReadyFlags(poll_result.GetEvents(i));
-		ready_sockets.push_back(s);
+		auto &socket_event = *(SocketEvent *)poll_result.GetObject(i);
+		socket_event.SetReadyFlags(poll_result.GetEvents(i));
+
+		/* move from "sockets" to "ready_sockets" */
+		socket_event.unlink();
+		ready_sockets.push_back(socket_event);
 	}
 
 	return poll_result.GetSize() > 0;
@@ -309,10 +318,13 @@ EventLoop::Run() noexcept
 
 		/* invoke sockets */
 		while (!ready_sockets.empty() && !quit) {
-			auto &sm = ready_sockets.front();
-			ready_sockets.pop_front();
+			auto &socket_event = ready_sockets.front();
 
-			sm.Dispatch();
+			/* move from "ready_sockets" back to "sockets" */
+			socket_event.unlink();
+			sockets.push_back(socket_event);
+
+			socket_event.Dispatch();
 		}
 	} while (!quit);
 

@@ -45,13 +45,10 @@ class EventLoop;
  * thread that runs the #EventLoop, except where explicitly documented
  * as thread-safe.
  */
-class SocketEvent {
+class SocketEvent final : public boost::intrusive::list_base_hook<boost::intrusive::link_mode<boost::intrusive::auto_unlink>> {
 	friend class EventLoop;
 
 	EventLoop &loop;
-
-	using ReadyListHook = boost::intrusive::list_member_hook<boost::intrusive::link_mode<boost::intrusive::auto_unlink>>;
-	ReadyListHook ready_siblings;
 
 	using Callback = BoundMethod<void(unsigned events) noexcept>;
 	const Callback callback;

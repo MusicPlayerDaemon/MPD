@@ -91,18 +91,22 @@ class EventLoop final
 	DeferredList deferred;
 #endif
 
-	using ReadySocketList =
+	using SocketList =
 		boost::intrusive::list<SocketEvent,
-				       boost::intrusive::member_hook<SocketEvent,
-								     SocketEvent::ReadyListHook,
-								     &SocketEvent::ready_siblings>,
+				       boost::intrusive::base_hook<boost::intrusive::list_base_hook<boost::intrusive::link_mode<boost::intrusive::auto_unlink>>>,
 				       boost::intrusive::constant_time_size<false>>;
+
+	/**
+	 * A list of scheduled #SocketEvent instances, without those
+	 * which are ready (these are in #ready_sockets).
+	 */
+	SocketList sockets;
 
 	/**
 	 * A linked list of #SocketEvent instances which have a
 	 * non-zero "ready_flags" field, and need to be dispatched.
 	 */
-	ReadySocketList ready_sockets;
+	SocketList ready_sockets;
 
 #ifdef HAVE_URING
 	std::unique_ptr<Uring::Manager> uring;
@@ -188,7 +192,7 @@ public:
 
 	bool AddFD(int fd, unsigned events, SocketEvent &event) noexcept;
 	bool ModifyFD(int fd, unsigned events, SocketEvent &event) noexcept;
-	bool RemoveFD(int fd) noexcept;
+	bool RemoveFD(int fd, SocketEvent &event) noexcept;
 
 	/**
 	 * Remove the given #SocketEvent after the file descriptor
