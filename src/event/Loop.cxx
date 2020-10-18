@@ -118,6 +118,7 @@ EventLoop::AddFD(int fd, unsigned events, SocketEvent &event) noexcept
 #ifdef HAVE_THREADED_EVENT_LOOP
 	assert(!IsAlive() || IsInside());
 #endif
+	assert(events != 0);
 
 	if (!poll_group.Add(fd, events, &event))
 		return false;
@@ -132,6 +133,7 @@ EventLoop::ModifyFD(int fd, unsigned events, SocketEvent &event) noexcept
 #ifdef HAVE_THREADED_EVENT_LOOP
 	assert(!IsAlive() || IsInside());
 #endif
+	assert(events != 0);
 
 	return poll_group.Modify(fd, events, &event);
 }
