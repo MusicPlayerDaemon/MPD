@@ -65,8 +65,8 @@ EventLoop::EventLoop(
 
 EventLoop::~EventLoop() noexcept
 {
-	assert(idle.empty());
 	assert(timers.empty());
+	assert(idle.empty());
 	assert(sockets.empty());
 	assert(ready_sockets.empty());
 }
