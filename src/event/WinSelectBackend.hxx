@@ -17,8 +17,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_EVENT_POLLGROUP_WINSELECT_HXX
-#define MPD_EVENT_POLLGROUP_WINSELECT_HXX
+#ifndef EVENT_WINSELECT_BACKEND_HXX
+#define EVENT_WINSELECT_BACKEND_HXX
 
 #include "PollResultGeneric.hxx"
 
@@ -87,7 +87,7 @@ public:
 	}
 };
 
-class PollGroupWinSelect
+class WinSelectBackend
 {
 	struct Item
 	{
@@ -104,11 +104,11 @@ class PollGroupWinSelect
 	void Modify(Item &item, SOCKET fd, unsigned events,
 		    int event_id) noexcept;
 
-	PollGroupWinSelect(PollGroupWinSelect &) = delete;
-	PollGroupWinSelect &operator=(PollGroupWinSelect &) = delete;
+	WinSelectBackend(WinSelectBackend &) = delete;
+	WinSelectBackend &operator=(WinSelectBackend &) = delete;
 public:
-	PollGroupWinSelect() noexcept;
-	~PollGroupWinSelect() noexcept;
+	WinSelectBackend() noexcept;
+	~WinSelectBackend() noexcept;
 
 	PollResultGeneric ReadEvents(int timeout_ms) noexcept;
 	bool Add(SOCKET fd, unsigned events, void *obj) noexcept;

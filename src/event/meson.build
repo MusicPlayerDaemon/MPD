@@ -12,11 +12,11 @@ if uring_dep.found()
 endif
 
 if is_windows
-  event_sources += 'PollGroupWinSelect.cxx'
+  event_sources += 'WinSelectBackend.cxx'
 elif is_linux and get_option('epoll')
   # epoll support is header-only
 else
-  event_sources += 'PollGroupPoll.cxx'
+  event_sources += 'PollBackend.cxx'
 endif
 
 event = static_library(

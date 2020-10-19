@@ -21,7 +21,7 @@
 #define MPD_EVENT_LOOP_HXX
 
 #include "Chrono.hxx"
-#include "PollGroup.hxx"
+#include "Backend.hxx"
 #include "SocketEvent.hxx"
 #include "event/Features.h"
 #include "util/Compiler.h"
@@ -130,7 +130,7 @@ class EventLoop final
 
 	/**
 	 * True when the object has been modified and another check is
-	 * necessary before going to sleep via PollGroup::ReadEvents().
+	 * necessary before going to sleep via EventPollBackend::ReadEvents().
 	 */
 	bool again;
 
@@ -148,7 +148,7 @@ class EventLoop final
 	bool uring_initialized = false;
 #endif
 
-	PollGroup poll_group;
+	EventPollBackend poll_backend;
 
 public:
 	/**

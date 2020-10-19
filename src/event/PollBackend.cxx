@@ -17,15 +17,15 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "PollGroupPoll.hxx"
+#include "PollBackend.hxx"
 
 #include <cassert>
 
-PollGroupPoll::PollGroupPoll() noexcept = default;
-PollGroupPoll::~PollGroupPoll() noexcept = default;
+PollBackend::PollBackend() noexcept = default;
+PollBackend::~PollBackend() noexcept = default;
 
 bool
-PollGroupPoll::Add(int fd, unsigned events, void *obj) noexcept
+PollBackend::Add(int fd, unsigned events, void *obj) noexcept
 {
 	assert(items.find(fd) == items.end());
 
@@ -42,7 +42,7 @@ PollGroupPoll::Add(int fd, unsigned events, void *obj) noexcept
 }
 
 bool
-PollGroupPoll::Modify(int fd, unsigned events, void *obj) noexcept
+PollBackend::Modify(int fd, unsigned events, void *obj) noexcept
 {
 	auto item_iter = items.find(fd);
 	assert(item_iter != items.end());
@@ -55,7 +55,7 @@ PollGroupPoll::Modify(int fd, unsigned events, void *obj) noexcept
 }
 
 bool
-PollGroupPoll::Remove(int fd) noexcept
+PollBackend::Remove(int fd) noexcept
 {
 	auto item_iter = items.find(fd);
 	assert(item_iter != items.end());
@@ -72,7 +72,7 @@ PollGroupPoll::Remove(int fd) noexcept
 }
 
 PollResultGeneric
-PollGroupPoll::ReadEvents(int timeout_ms) noexcept
+PollBackend::ReadEvents(int timeout_ms) noexcept
 {
 	int n = poll(poll_events.empty() ? nullptr : &poll_events[0],
 		     poll_events.size(), timeout_ms);

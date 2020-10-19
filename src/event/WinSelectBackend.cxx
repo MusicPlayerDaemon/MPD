@@ -17,7 +17,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "PollGroupWinSelect.hxx"
+#include "WinSelectBackend.hxx"
 #include "WinSelectEvents.hxx"
 
 static constexpr int EVENT_READ = 0;
@@ -29,12 +29,12 @@ bool HasEvent(unsigned events, int event_id) noexcept
 	return (events & (1 << event_id)) != 0;
 }
 
-PollGroupWinSelect::PollGroupWinSelect() noexcept = default;
-PollGroupWinSelect::~PollGroupWinSelect() noexcept = default;
+WinSelectBackend::WinSelectBackend() noexcept = default;
+WinSelectBackend::~WinSelectBackend() noexcept = default;
 
 bool
-PollGroupWinSelect::CanModify(PollGroupWinSelect::Item &item,
-			      unsigned events, int event_id) const noexcept
+WinSelectBackend::CanModify(WinSelectBackend::Item &item,
+			    unsigned events, int event_id) const noexcept
 {
 	if (item.index[event_id] < 0 && HasEvent(events, event_id))
 		return !event_set[event_id].IsFull();
@@ -42,8 +42,8 @@ PollGroupWinSelect::CanModify(PollGroupWinSelect::Item &item,
 }
 
 void
-PollGroupWinSelect::Modify(PollGroupWinSelect::Item &item, SOCKET fd,
-			   unsigned events, int event_id) noexcept
+WinSelectBackend::Modify(WinSelectBackend::Item &item, SOCKET fd,
+			 unsigned events, int event_id) noexcept
 {
 	int index = item.index[event_id];
 	auto &set = event_set[event_id];
@@ -61,7 +61,7 @@ PollGroupWinSelect::Modify(PollGroupWinSelect::Item &item, SOCKET fd,
 }
 
 bool
-PollGroupWinSelect::Add(SOCKET fd, unsigned events, void *obj) noexcept
+WinSelectBackend::Add(SOCKET fd, unsigned events, void *obj) noexcept
 {
 	assert(items.find(fd) == items.end());
 	auto &item = items[fd];
@@ -86,7 +86,7 @@ PollGroupWinSelect::Add(SOCKET fd, unsigned events, void *obj) noexcept
 }
 
 bool
-PollGroupWinSelect::Modify(SOCKET fd, unsigned events, void *obj) noexcept
+WinSelectBackend::Modify(SOCKET fd, unsigned events, void *obj) noexcept
 {
 	auto item_iter = items.find(fd);
 	assert(item_iter != items.end());
@@ -104,7 +104,7 @@ PollGroupWinSelect::Modify(SOCKET fd, unsigned events, void *obj) noexcept
 }
 
 bool
-PollGroupWinSelect::Remove(SOCKET fd) noexcept
+WinSelectBackend::Remove(SOCKET fd) noexcept
 {
 	auto item_iter = items.find(fd);
 	assert(item_iter != items.end());
@@ -117,7 +117,7 @@ PollGroupWinSelect::Remove(SOCKET fd) noexcept
 }
 
 PollResultGeneric
-PollGroupWinSelect::ReadEvents(int timeout_ms) noexcept
+WinSelectBackend::ReadEvents(int timeout_ms) noexcept
 {
 	bool use_sleep = event_set[EVENT_READ].IsEmpty() &&
 			 event_set[EVENT_WRITE].IsEmpty();

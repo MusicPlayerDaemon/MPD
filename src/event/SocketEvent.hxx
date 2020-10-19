@@ -44,7 +44,7 @@ class EventLoop;
  * thread that runs the #EventLoop, except where explicitly documented
  * as thread-safe.
  */
-class SocketEvent final : IntrusiveListHook, public PollBackendEvents {
+class SocketEvent final : IntrusiveListHook, public EventPollBackendEvents {
 	friend class EventLoop;
 	friend class IntrusiveList<SocketEvent>;
 

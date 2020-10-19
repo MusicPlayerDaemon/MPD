@@ -25,17 +25,17 @@
 #ifdef _WIN32
 
 #include "WinSelectEvents.hxx"
-using PollBackendEvents = WinSelectEvents;
+using EventPollBackendEvents = WinSelectEvents;
 
 #elif defined(USE_EPOLL)
 
 #include "EpollEvents.hxx"
-using PollBackendEvents = EpollEvents;
+using EventPollBackendEvents = EpollEvents;
 
 #else
 
 #include "PollEvents.hxx"
-using PollBackendEvents = PollEvents;
+using EventPollBackendEvents = PollEvents;
 
 #endif
 

@@ -17,8 +17,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_EVENT_POLLGROUP_EPOLL_HXX
-#define MPD_EVENT_POLLGROUP_EPOLL_HXX
+#ifndef EVENT_EPOLL_BACKEND_HXX
+#define EVENT_EPOLL_BACKEND_HXX
 
 #include "util/Compiler.h"
 #include "system/EpollFD.hxx"
@@ -26,9 +26,9 @@
 #include <array>
 #include <algorithm>
 
-class PollResultEpoll
+class EpollBackendResult
 {
-	friend class PollGroupEpoll;
+	friend class EpollBackend;
 
 	std::array<epoll_event, 16> events;
 	size_t n_events = 0;
@@ -47,17 +47,17 @@ public:
 	}
 };
 
-class PollGroupEpoll
+class EpollBackend
 {
 	EpollFD epoll;
 
-	PollGroupEpoll(PollGroupEpoll &) = delete;
-	PollGroupEpoll &operator=(PollGroupEpoll &) = delete;
+	EpollBackend(EpollBackend &) = delete;
+	EpollBackend &operator=(EpollBackend &) = delete;
 public:
-	PollGroupEpoll() = default;
+	EpollBackend() = default;
 
 	auto ReadEvents(int timeout_ms) noexcept {
-		PollResultEpoll result;
+		EpollBackendResult result;
 		int ret = epoll.Wait(result.events.data(), result.events.size(),
 				     timeout_ms);
 		result.n_events = std::max(0, ret);

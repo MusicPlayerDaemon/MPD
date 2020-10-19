@@ -109,7 +109,7 @@ EventLoop::AbandonFD(int _fd)  noexcept
 	assert(!IsAlive() || IsInside());
 #endif
 
-	return poll_group.Abandon(_fd);
+	return poll_backend.Abandon(_fd);
 }
 
 bool
@@ -120,7 +120,7 @@ EventLoop::AddFD(int fd, unsigned events, SocketEvent &event) noexcept
 #endif
 	assert(events != 0);
 
-	if (!poll_group.Add(fd, events, &event))
+	if (!poll_backend.Add(fd, events, &event))
 		return false;
 
 	sockets.push_back(event);
@@ -135,7 +135,7 @@ EventLoop::ModifyFD(int fd, unsigned events, SocketEvent &event) noexcept
 #endif
 	assert(events != 0);
 
-	return poll_group.Modify(fd, events, &event);
+	return poll_backend.Modify(fd, events, &event);
 }
 
 bool
@@ -146,7 +146,7 @@ EventLoop::RemoveFD(int fd, SocketEvent &event) noexcept
 #endif
 
 	event.unlink();
-	return poll_group.Remove(fd);
+	return poll_backend.Remove(fd);
 }
 
 void
@@ -220,7 +220,7 @@ inline bool
 EventLoop::Wait(Event::Duration timeout) noexcept
 {
 	const auto poll_result =
-		poll_group.ReadEvents(ExportTimeoutMS(timeout));
+		poll_backend.ReadEvents(ExportTimeoutMS(timeout));
 
 	for (size_t i = 0; i < poll_result.GetSize(); ++i) {
 		auto &socket_event = *(SocketEvent *)poll_result.GetObject(i);
