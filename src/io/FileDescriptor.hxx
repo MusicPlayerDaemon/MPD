@@ -178,7 +178,7 @@ public:
 	 * Duplicate the file descriptor onto the given file descriptor.
 	 */
 	bool Duplicate(FileDescriptor new_fd) const noexcept {
-		return ::dup2(Get(), new_fd.Get()) == 0;
+		return ::dup2(Get(), new_fd.Get()) != -1;
 	}
 
 	/**
