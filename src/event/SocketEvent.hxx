@@ -20,7 +20,7 @@
 #ifndef MPD_SOCKET_EVENT_HXX
 #define MPD_SOCKET_EVENT_HXX
 
-#include "PollGroup.hxx"
+#include "BackendEvents.hxx"
 #include "net/SocketDescriptor.hxx"
 #include "util/BindMethod.hxx"
 #include "util/IntrusiveList.hxx"
@@ -44,7 +44,7 @@ class EventLoop;
  * thread that runs the #EventLoop, except where explicitly documented
  * as thread-safe.
  */
-class SocketEvent final : IntrusiveListHook {
+class SocketEvent final : IntrusiveListHook, public PollBackendEvents {
 	friend class EventLoop;
 	friend class IntrusiveList<SocketEvent>;
 
@@ -69,11 +69,6 @@ class SocketEvent final : IntrusiveListHook {
 	unsigned ready_flags = 0;
 
 public:
-	static constexpr unsigned READ = PollGroup::READ;
-	static constexpr unsigned WRITE = PollGroup::WRITE;
-	static constexpr unsigned ERROR = PollGroup::ERROR;
-	static constexpr unsigned HANGUP = PollGroup::HANGUP;
-
 	/**
 	 * These flags are always reported by epoll_wait() and don't
 	 * need to be registered with epoll_ctl().

@@ -26,14 +26,7 @@
 #include <cassert>
 #include <unordered_map>
 
-#include <windows.h>
 #include <winsock2.h>
-
-/* ERROR is a WIN32 macro that poisons our namespace; this is a kludge
-   to allow us to use it anyway */
-#ifdef ERROR
-#undef ERROR
-#endif
 
 class SocketSet
 {
@@ -114,11 +107,6 @@ class PollGroupWinSelect
 	PollGroupWinSelect(PollGroupWinSelect &) = delete;
 	PollGroupWinSelect &operator=(PollGroupWinSelect &) = delete;
 public:
-	static constexpr unsigned READ = 1;
-	static constexpr unsigned WRITE = 2;
-	static constexpr unsigned ERROR = 0;
-	static constexpr unsigned HANGUP = 0;
-
 	PollGroupWinSelect() noexcept;
 	~PollGroupWinSelect() noexcept;
 

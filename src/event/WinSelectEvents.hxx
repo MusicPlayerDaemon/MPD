@@ -17,41 +17,22 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_EVENT_POLLGROUP_POLL_HXX
-#define MPD_EVENT_POLLGROUP_POLL_HXX
+#ifndef EVENT_WINSELECT_EVENTS_HXX
+#define EVENT_WINSELECT_EVENTS_HXX
 
-#include "PollResultGeneric.hxx"
+#include <windows.h>
 
-#include <cstddef>
-#include <vector>
-#include <unordered_map>
+/* ERROR is a WIN32 macro that poisons our namespace; this is a kludge
+   to allow us to use it anyway */
+#ifdef ERROR
+#undef ERROR
+#endif
 
-#include <sys/poll.h>
-
-class PollGroupPoll
-{
-	struct Item
-	{
-		size_t index;
-		void *obj;
-	};
-
-	std::vector<pollfd> poll_events;
-	std::unordered_map<int, Item> items;
-
-	PollGroupPoll(PollGroupPoll &) = delete;
-	PollGroupPoll &operator=(PollGroupPoll &) = delete;
-public:
-	PollGroupPoll() noexcept;
-	~PollGroupPoll() noexcept;
-
-	PollResultGeneric ReadEvents(int timeout_ms) noexcept;
-	bool Add(int fd, unsigned events, void *obj) noexcept;
-	bool Modify(int fd, unsigned events, void *obj) noexcept;
-	bool Remove(int fd) noexcept;
-	bool Abandon(int fd) noexcept {
-		return Remove(fd);
-	}
+struct WinSelectEvents {
+	static constexpr unsigned READ = 1;
+	static constexpr unsigned WRITE = 2;
+	static constexpr unsigned ERROR = 0;
+	static constexpr unsigned HANGUP = 0;
 };
 
 #endif

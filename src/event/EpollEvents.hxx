@@ -17,41 +17,16 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_EVENT_POLLGROUP_POLL_HXX
-#define MPD_EVENT_POLLGROUP_POLL_HXX
+#ifndef EVENT_EPOLL_EVENTS_HXX
+#define EVENT_EPOLL_EVENTS_HXX
 
-#include "PollResultGeneric.hxx"
+#include <sys/epoll.h>
 
-#include <cstddef>
-#include <vector>
-#include <unordered_map>
-
-#include <sys/poll.h>
-
-class PollGroupPoll
-{
-	struct Item
-	{
-		size_t index;
-		void *obj;
-	};
-
-	std::vector<pollfd> poll_events;
-	std::unordered_map<int, Item> items;
-
-	PollGroupPoll(PollGroupPoll &) = delete;
-	PollGroupPoll &operator=(PollGroupPoll &) = delete;
-public:
-	PollGroupPoll() noexcept;
-	~PollGroupPoll() noexcept;
-
-	PollResultGeneric ReadEvents(int timeout_ms) noexcept;
-	bool Add(int fd, unsigned events, void *obj) noexcept;
-	bool Modify(int fd, unsigned events, void *obj) noexcept;
-	bool Remove(int fd) noexcept;
-	bool Abandon(int fd) noexcept {
-		return Remove(fd);
-	}
+struct EpollEvents {
+	static constexpr unsigned READ = EPOLLIN;
+	static constexpr unsigned WRITE = EPOLLOUT;
+	static constexpr unsigned ERROR = EPOLLERR;
+	static constexpr unsigned HANGUP = EPOLLHUP;
 };
 
 #endif

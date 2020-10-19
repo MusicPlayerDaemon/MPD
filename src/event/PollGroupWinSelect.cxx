@@ -18,6 +18,7 @@
  */
 
 #include "PollGroupWinSelect.hxx"
+#include "WinSelectEvents.hxx"
 
 static constexpr int EVENT_READ = 0;
 static constexpr int EVENT_WRITE = 1;
@@ -147,13 +148,13 @@ PollGroupWinSelect::ReadEvents(int timeout_ms) noexcept
 		return result;
 
 	for (const auto i : read_set)
-		items[i].events |= READ;
+		items[i].events |= WinSelectEvents::READ;
 
 	for (const auto i : write_set)
-		items[i].events |= WRITE;
+		items[i].events |= WinSelectEvents::WRITE;
 
 	for (const auto i : except_set)
-		items[i].events |= WRITE;
+		items[i].events |= WinSelectEvents::WRITE;
 
 	for (auto &i : items)
 		if (i.second.events != 0) {

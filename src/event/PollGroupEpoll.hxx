@@ -54,11 +54,6 @@ class PollGroupEpoll
 	PollGroupEpoll(PollGroupEpoll &) = delete;
 	PollGroupEpoll &operator=(PollGroupEpoll &) = delete;
 public:
-	static constexpr unsigned READ = EPOLLIN;
-	static constexpr unsigned WRITE = EPOLLOUT;
-	static constexpr unsigned ERROR = EPOLLERR;
-	static constexpr unsigned HANGUP = EPOLLHUP;
-
 	PollGroupEpoll() = default;
 
 	auto ReadEvents(int timeout_ms) noexcept {
