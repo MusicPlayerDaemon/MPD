@@ -138,12 +138,9 @@ Directory::LookupDirectory(std::string_view _uri) noexcept
 
 	Directory *d = this;
 	do {
-		auto s = uri.Split(PathTraitsUTF8::SEPARATOR);
-		if (s.first.empty())
+		auto [name, rest] = uri.Split(PathTraitsUTF8::SEPARATOR);
+		if (name.empty())
 			break;
-
-		const auto name = s.first;
-		const auto rest = s.second;
 
 		Directory *tmp = d->FindChild(name);
 		if (tmp == nullptr)

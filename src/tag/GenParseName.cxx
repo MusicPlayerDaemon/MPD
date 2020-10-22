@@ -60,10 +60,7 @@ main(int argc, char **argv)
 
 	char first = 0;
 
-	for (const auto &i : names) {
-		const std::string_view name = i.first;
-		const TagType tag = i.second;
-
+	for (const auto &[name, tag] : names) {
 		if (name.front() != first) {
 			if (first != 0)
 				fprintf(out, "    break;\n\n");

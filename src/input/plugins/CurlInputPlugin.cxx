@@ -395,8 +395,8 @@ CurlInputStream::CurlInputStream(EventLoop &event_loop, const char *_url,
 {
 	request_headers.Append("Icy-Metadata: 1");
 
-	for (const auto &i : headers)
-		request_headers.Append((i.first + ":" + i.second).c_str());
+	for (const auto &[key, header] : headers)
+		request_headers.Append((key + ":" + header).c_str());
 }
 
 CurlInputStream::~CurlInputStream() noexcept
