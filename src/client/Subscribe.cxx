@@ -34,8 +34,7 @@ Client::Subscribe(const char *channel) noexcept
 	if (num_subscriptions >= MAX_SUBSCRIPTIONS)
 		return Client::SubscribeResult::FULL;
 
-	auto r = subscriptions.insert(channel);
-	if (!r.second)
+	if (!subscriptions.insert(channel).second)
 		return Client::SubscribeResult::ALREADY;
 
 	++num_subscriptions;

@@ -31,6 +31,6 @@ sticker_print_value(Response &r,
 void
 sticker_print(Response &r, const Sticker &sticker)
 {
-	for (const auto &i : sticker.table)
-		sticker_print_value(r, i.first.c_str(), i.second.c_str());
+	for (const auto &[name, val] : sticker.table)
+		sticker_print_value(r, name.c_str(), val.c_str());
 }

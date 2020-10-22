@@ -182,8 +182,8 @@ UdisksNeighborExplorer::GetList() const noexcept
 
 	NeighborExplorer::List result;
 
-	for (const auto &i : by_uri)
-		result.emplace_front(i.second);
+	for (const auto &[t, r] : by_uri)
+		result.emplace_front(r);
 	return result;
 }
 
