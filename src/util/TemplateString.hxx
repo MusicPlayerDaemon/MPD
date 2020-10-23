@@ -40,7 +40,7 @@ namespace TemplateString {
 template<char... _value>
 struct Construct {
 	static constexpr char value[] = {_value..., 0};
-	static constexpr size_t size = sizeof...(_value);
+	static constexpr std::size_t size = sizeof...(_value);
 };
 
 template<char... _value>
@@ -62,14 +62,14 @@ struct CharAsString : Construct<ch> {};
  * as variadic arguments.
  */
 template<template<char...> class F,
-	 const char *src, size_t length, size_t i,
+	 const char *src, std::size_t length, std::size_t i,
 	 char... _value>
 struct VariadicChars : VariadicChars<F, src, length - 1, i + 1, _value..., src[i]> {
 	static_assert(length > 0, "Wrong length");
 };
 
 template<template<char...> class F,
-	 const char *src, size_t length,
+	 const char *src, std::size_t length,
 	 char... _value>
 struct VariadicChars<F, src, 0, length, _value...> : F<_value...> {};
 
@@ -77,7 +77,7 @@ struct VariadicChars<F, src, 0, length, _value...> : F<_value...> {};
  * Like #VariadicChars, but pass an additional argument to #F.
  */
 template<template<typename Arg, char...> class F, typename Arg,
-	 const char *src, size_t length, size_t i,
+	 const char *src, std::size_t length, std::size_t i,
 	 char... _value>
 struct VariadicChars1 : VariadicChars1<F, Arg,
 				       src, length - 1, i + 1, _value..., src[i]> {
@@ -85,11 +85,11 @@ struct VariadicChars1 : VariadicChars1<F, Arg,
 };
 
 template<template<typename Arg, char...> class F, typename Arg,
-	 const char *src, size_t length,
+	 const char *src, std::size_t length,
 	 char... _value>
 struct VariadicChars1<F, Arg, src, 0, length, _value...> : F<Arg, _value...> {};
 
-template<const char *src, size_t length, char... value>
+template<const char *src, std::size_t length, char... value>
 struct _BuildString : VariadicChars<Construct, src, length, 0,
 				    value...> {};
 
