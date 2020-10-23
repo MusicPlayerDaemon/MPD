@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 Content Management AG
+ * Copyright 2007-2020 CM4all GmbH
  * All rights reserved.
  *
  * author: Max Kellermann <mk@cm4all.com>
@@ -42,7 +42,7 @@ namespace ODBus {
 template<int type>
 struct BasicTypeTraits {
 	static constexpr int TYPE = type;
-	typedef TemplateString::CharAsString<TYPE> TypeAsString;
+	using TypeAsString = TemplateString::CharAsString<TYPE>;
 };
 
 template<typename T>
@@ -70,20 +70,23 @@ using BooleanTypeTraits = BasicTypeTraits<DBUS_TYPE_BOOLEAN>;
 
 template<typename T>
 struct ArrayTypeTraits {
-	typedef T ContainedTraits;
+	using ContainedTraits = T;
 
 	static constexpr int TYPE = DBUS_TYPE_ARRAY;
-	typedef TemplateString::InsertBefore<TYPE, typename ContainedTraits::TypeAsString> TypeAsString;
+	using TypeAsString =
+		TemplateString::InsertBefore<TYPE,
+					     typename ContainedTraits::TypeAsString>;
 };
 
 template<typename KeyT, typename ValueT>
 struct DictEntryTypeTraits {
 	static constexpr int TYPE = DBUS_TYPE_DICT_ENTRY;
 
-	typedef TemplateString::Concat<TemplateString::CharAsString<DBUS_DICT_ENTRY_BEGIN_CHAR>,
+	using TypeAsString =
+		TemplateString::Concat<TemplateString::CharAsString<DBUS_DICT_ENTRY_BEGIN_CHAR>,
 				       typename KeyT::TypeAsString,
 				       typename ValueT::TypeAsString,
-				       TemplateString::CharAsString<DBUS_DICT_ENTRY_END_CHAR>> TypeAsString;
+				       TemplateString::CharAsString<DBUS_DICT_ENTRY_END_CHAR>>;
 };
 
 using VariantTypeTraits = BasicTypeTraits<DBUS_TYPE_VARIANT>;
@@ -103,9 +106,10 @@ template<typename... ContainedTraits>
 struct StructTypeTraits {
 	static constexpr int TYPE = DBUS_TYPE_STRUCT;
 
-	typedef TemplateString::Concat<TemplateString::CharAsString<DBUS_STRUCT_BEGIN_CHAR>,
+	using TypeAsString =
+		TemplateString::Concat<TemplateString::CharAsString<DBUS_STRUCT_BEGIN_CHAR>,
 				       ConcatTypeAsString<ContainedTraits...>,
-				       TemplateString::CharAsString<DBUS_STRUCT_END_CHAR>> TypeAsString;
+				       TemplateString::CharAsString<DBUS_STRUCT_END_CHAR>>;
 };
 
 } /* namespace ODBus */
