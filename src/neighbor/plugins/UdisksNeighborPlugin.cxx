@@ -245,7 +245,7 @@ UdisksNeighborExplorer::HandleMessage(DBusConnection *, DBusMessage *message) no
 
 	if (dbus_message_is_signal(message, DBUS_OM_INTERFACE,
 				   "InterfacesAdded") &&
-	    dbus_message_has_signature(message, InterfacesAddedType::as_string.value)) {
+	    dbus_message_has_signature(message, InterfacesAddedType::as_string)) {
 		RecurseInterfaceDictEntry(ReadMessageIter(*message), [this](const char *path, auto &&i){
 				UDisks2::Object o(path);
 				UDisks2::ParseObject(o, std::forward<decltype(i)>(i));
@@ -256,7 +256,7 @@ UdisksNeighborExplorer::HandleMessage(DBusConnection *, DBusMessage *message) no
 		return DBUS_HANDLER_RESULT_HANDLED;
 	} else if (dbus_message_is_signal(message, DBUS_OM_INTERFACE,
 					  "InterfacesRemoved") &&
-		   dbus_message_has_signature(message, InterfacesRemovedType::as_string.value)) {
+		   dbus_message_has_signature(message, InterfacesRemovedType::as_string)) {
 		Remove(ReadMessageIter(*message).GetString());
 		return DBUS_HANDLER_RESULT_HANDLED;
 	} else

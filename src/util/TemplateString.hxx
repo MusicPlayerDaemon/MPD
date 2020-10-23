@@ -32,6 +32,7 @@
 
 #include <array> // for std::size()
 #include <cstddef>
+#include <string_view>
 
 namespace TemplateString {
 
@@ -39,6 +40,14 @@ template<std::size_t _size>
 struct Buffer {
 	static constexpr std::size_t size = _size;
 	char value[size + 1];
+
+	constexpr operator const char *() const noexcept {
+		return value;
+	}
+
+	constexpr operator std::string_view() const noexcept {
+		return {value, size};
+	}
 };
 
 /**
