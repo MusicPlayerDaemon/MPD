@@ -110,7 +110,7 @@ static WrapFixedArray<T> FixedArray(const T *_data,
 
 template<typename... T>
 struct WrapStruct {
-	using Traits = StructTypeTraits<T...>;
+	using Traits = StructTypeTraits<typename T::Traits...>;
 
 	std::tuple<const T&...> values;
 
