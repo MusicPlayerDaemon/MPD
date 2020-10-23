@@ -44,7 +44,7 @@ namespace ODBus {
 
 template<typename T>
 struct BasicValue {
-	typedef TypeTraits<T> Traits;
+	using Traits = TypeTraits<T>;
 	const T &value;
 
 	explicit constexpr BasicValue(const T &_value) noexcept
