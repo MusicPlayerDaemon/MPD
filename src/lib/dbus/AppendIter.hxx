@@ -103,7 +103,7 @@ public:
 	template<typename T>
 	AppendMessageIter &AppendEmptyArray() {
 		return AppendMessageIter(*this, DBUS_TYPE_ARRAY,
-					 T::TypeAsString::value)
+					 T::as_string.value)
 			.CloseContainer(*this);
 	}
 
@@ -120,7 +120,7 @@ public:
 	AppendMessageIter &AppendVariant(const T &value) {
 		typedef VariantTypeTraits Traits;
 		return AppendMessageIter(*this, Traits::TYPE,
-					 Traits::TypeAsString::value)
+					 Traits::as_string.value)
 			.Append(value)
 			.CloseContainer(*this);
 	}
@@ -146,7 +146,7 @@ public:
 		typedef typename W::ContainedTraits ContainedTraits;
 
 		return AppendMessageIter(*this, Traits::TYPE,
-					 ContainedTraits::TypeAsString::value)
+					 ContainedTraits::as_string.value)
 			.Append(value.value)
 			.CloseContainer(*this);
 	}
@@ -158,7 +158,7 @@ public:
 		typedef typename W::ContainedTraits ContainedTraits;
 
 		return AppendMessageIter(*this, Traits::TYPE,
-					 ContainedTraits::TypeAsString::value)
+					 ContainedTraits::as_string.value)
 			.AppendFixedArray(value.value)
 			.CloseContainer(*this);
 	}

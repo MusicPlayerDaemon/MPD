@@ -42,7 +42,7 @@ namespace ODBus {
 template<int type>
 struct BasicTypeTraits {
 	static constexpr int TYPE = type;
-	using TypeAsString = TemplateString::CharAsString<TYPE>;
+	static constexpr auto as_string = TemplateString::CharAsString(TYPE);
 };
 
 template<typename T>
@@ -73,20 +73,20 @@ struct ArrayTypeTraits {
 	using ContainedTraits = T;
 
 	static constexpr int TYPE = DBUS_TYPE_ARRAY;
-	using TypeAsString =
-		TemplateString::InsertBefore<TYPE,
-					     typename ContainedTraits::TypeAsString>;
+	static constexpr auto as_string =
+		TemplateString::Concat(TemplateString::CharAsString(TYPE),
+				       ContainedTraits::as_string);
 };
 
 template<typename KeyT, typename ValueT>
 struct DictEntryTypeTraits {
 	static constexpr int TYPE = DBUS_TYPE_DICT_ENTRY;
 
-	using TypeAsString =
-		TemplateString::Concat<TemplateString::CharAsString<DBUS_DICT_ENTRY_BEGIN_CHAR>,
-				       typename KeyT::TypeAsString,
-				       typename ValueT::TypeAsString,
-				       TemplateString::CharAsString<DBUS_DICT_ENTRY_END_CHAR>>;
+	static constexpr auto as_string =
+		TemplateString::Concat(TemplateString::CharAsString(DBUS_DICT_ENTRY_BEGIN_CHAR),
+				       KeyT::as_string,
+				       ValueT::as_string,
+				       TemplateString::CharAsString(DBUS_DICT_ENTRY_END_CHAR));
 };
 
 using VariantTypeTraits = BasicTypeTraits<DBUS_TYPE_VARIANT>;
@@ -95,21 +95,25 @@ using VariantTypeTraits = BasicTypeTraits<DBUS_TYPE_VARIANT>;
  * Concatenate all TypeAsString members to one string.
  */
 template<typename T, typename... ContainedTraits>
-struct ConcatTypeAsString
-	: TemplateString::Concat<typename T::TypeAsString,
-				 ConcatTypeAsString<ContainedTraits...>> {};
+struct ConcatTypeAsString {
+	static constexpr auto as_string =
+		TemplateString::Concat(T::as_string,
+				       ConcatTypeAsString<ContainedTraits...>::as_string);
+};
 
 template<typename T>
-struct ConcatTypeAsString<T> : T::TypeAsString {};
+struct ConcatTypeAsString<T> {
+	static constexpr auto as_string = T::as_string;
+};
 
 template<typename... ContainedTraits>
 struct StructTypeTraits {
 	static constexpr int TYPE = DBUS_TYPE_STRUCT;
 
-	using TypeAsString =
-		TemplateString::Concat<TemplateString::CharAsString<DBUS_STRUCT_BEGIN_CHAR>,
-				       ConcatTypeAsString<ContainedTraits...>,
-				       TemplateString::CharAsString<DBUS_STRUCT_END_CHAR>>;
+	static constexpr auto as_string =
+		TemplateString::Concat(TemplateString::CharAsString(DBUS_STRUCT_BEGIN_CHAR),
+				       ConcatTypeAsString<ContainedTraits...>::as_string,
+				       TemplateString::CharAsString(DBUS_STRUCT_END_CHAR));
 };
 
 } /* namespace ODBus */

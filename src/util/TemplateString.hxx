@@ -30,95 +30,93 @@
 #ifndef TEMPLATE_STRING_HXX
 #define TEMPLATE_STRING_HXX
 
+#include <array> // for std::size()
 #include <cstddef>
 
 namespace TemplateString {
 
-/**
- * Construct a null-terminated string from a list of chars.
- */
-template<char... _value>
-struct Construct {
-	static constexpr char value[] = {_value..., 0};
-	static constexpr std::size_t size = sizeof...(_value);
+template<std::size_t _size>
+struct Buffer {
+	static constexpr std::size_t size = _size;
+	char value[size + 1];
 };
 
 /**
  * An empty string.
  */
-struct Empty : Construct<> {};
+constexpr auto
+Empty() noexcept
+{
+	return Buffer<0>{};
+}
 
 /**
  * A string consisting of a single character.
  */
-template<char ch>
-struct CharAsString : Construct<ch> {};
+constexpr auto
+CharAsString(char ch) noexcept
+{
+	Buffer<1> result{};
+	result.value[0] = ch;
+	return result;
+}
 
-/**
- * Invoke #F, pass all characters in #src from #i to #length
- * as variadic arguments.
- */
-template<template<char...> class F,
-	 const char *src, std::size_t length, std::size_t i,
-	 char... _value>
-struct VariadicChars : VariadicChars<F, src, length - 1, i + 1, _value..., src[i]> {
-	static_assert(length > 0, "Wrong length");
-};
+namespace detail {
 
-template<template<char...> class F,
-	 const char *src, std::size_t length,
-	 char... _value>
-struct VariadicChars<F, src, 0, length, _value...> : F<_value...> {};
+constexpr auto
+size(const char &) noexcept
+{
+	return 1;
+}
 
-/**
- * Like #VariadicChars, but pass an additional argument to #F.
- */
-template<template<typename Arg, char...> class F, typename Arg,
-	 const char *src, std::size_t length, std::size_t i,
-	 char... _value>
-struct VariadicChars1 : VariadicChars1<F, Arg,
-				       src, length - 1, i + 1, _value..., src[i]> {
-	static_assert(length > 0, "Wrong length");
-};
+constexpr const char *
+data(const char &ch) noexcept
+{
+	return &ch;
+}
 
-template<template<typename Arg, char...> class F, typename Arg,
-	 const char *src, std::size_t length,
-	 char... _value>
-struct VariadicChars1<F, Arg, src, 0, length, _value...> : F<Arg, _value...> {};
+template<std::size_t s>
+constexpr auto
+size(const Buffer<s> &b) noexcept
+{
+	return b.size;
+}
 
-template<const char *src, std::size_t length, char... value>
-struct _BuildString : VariadicChars<Construct, src, length, 0,
-				    value...> {};
+template<std::size_t size>
+constexpr const char *
+data(const Buffer<size> &b) noexcept
+{
+	return b.value;
+}
 
-template<char ch, typename S>
-struct InsertBefore : _BuildString<S::value, S::size, ch> {};
+constexpr char *
+copy_n(const char *src, std::size_t n, char *dest) noexcept
+{
+	for (std::size_t i = 0; i < n; ++i)
+		dest[i] = src[i];
+	return dest + n;
+}
 
-/**
- * Concatenate several strings.
- */
-template<typename... Args>
-struct Concat;
-
-template<typename First, typename Second, typename... Args>
-struct _Concat : Concat<Concat<First, Second>, Args...> {};
+}
 
 template<typename... Args>
-struct Concat : _Concat<Args...> {};
+constexpr auto
+Concat(Args... args) noexcept
+{
+	using std::size;
+	using std::data;
+	using detail::size;
+	using detail::data;
+	using detail::copy_n;
 
-template<typename Second, char... _value>
-struct _Concat2 : _BuildString<Second::value, Second::size,
-			       _value...> {};
+	constexpr std::size_t total_size = (std::size_t(0) + ... + size(args));
+	Buffer<total_size> result{};
 
-template<typename First, typename Second>
-struct Concat<First, Second>
-	:VariadicChars1<_Concat2, Second,
-			First::value, First::size, 0> {};
+	char *p = result.value;
+	((p = copy_n(data(args), size(args), p)), ...);
 
-template<typename First>
-struct Concat<First> : First {};
-
-template<>
-struct Concat<> : Empty {};
+	return result;
+}
 
 } // namespace TemplateString
 
