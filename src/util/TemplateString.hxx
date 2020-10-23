@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2016 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2015-2020 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -33,94 +33,96 @@
 #include <cstddef>
 
 namespace TemplateString {
-	/**
-	 * Construct a null-terminated string from a list of chars.
-	 */
-	template<char... _value>
-	struct Construct {
-		static constexpr char value[] = {_value..., 0};
-		static constexpr size_t size = sizeof...(_value);
-	};
 
-	template<char... _value>
-	constexpr char Construct<_value...>::value[];
+/**
+ * Construct a null-terminated string from a list of chars.
+ */
+template<char... _value>
+struct Construct {
+	static constexpr char value[] = {_value..., 0};
+	static constexpr size_t size = sizeof...(_value);
+};
 
-	/**
-	 * An empty string.
-	 */
-	struct Empty : Construct<> {};
+template<char... _value>
+constexpr char Construct<_value...>::value[];
 
-	/**
-	 * A string consisting of a single character.
-	 */
-	template<char ch>
-	struct CharAsString : Construct<ch> {};
+/**
+ * An empty string.
+ */
+struct Empty : Construct<> {};
 
-	/**
-	 * Invoke #F, pass all characters in #src from #i to #length
-	 * as variadic arguments.
-	 */
-	template<template<char...> class F,
-		 const char *src, size_t length, size_t i,
-		 char... _value>
-	struct VariadicChars : VariadicChars<F, src, length - 1, i + 1, _value..., src[i]> {
-		static_assert(length > 0, "Wrong length");
-	};
+/**
+ * A string consisting of a single character.
+ */
+template<char ch>
+struct CharAsString : Construct<ch> {};
 
-	template<template<char...> class F,
-		 const char *src, size_t length,
-		 char... _value>
-	struct VariadicChars<F, src, 0, length, _value...> : F<_value...> {};
+/**
+ * Invoke #F, pass all characters in #src from #i to #length
+ * as variadic arguments.
+ */
+template<template<char...> class F,
+	 const char *src, size_t length, size_t i,
+	 char... _value>
+struct VariadicChars : VariadicChars<F, src, length - 1, i + 1, _value..., src[i]> {
+	static_assert(length > 0, "Wrong length");
+};
 
-	/**
-	 * Like #VariadicChars, but pass an additional argument to #F.
-	 */
-	template<template<typename Arg, char...> class F, typename Arg,
-		 const char *src, size_t length, size_t i,
-		 char... _value>
-	struct VariadicChars1 : VariadicChars1<F, Arg,
-					       src, length - 1, i + 1, _value..., src[i]> {
-		static_assert(length > 0, "Wrong length");
-	};
+template<template<char...> class F,
+	 const char *src, size_t length,
+	 char... _value>
+struct VariadicChars<F, src, 0, length, _value...> : F<_value...> {};
 
-	template<template<typename Arg, char...> class F, typename Arg,
-		 const char *src, size_t length,
-		 char... _value>
-	struct VariadicChars1<F, Arg, src, 0, length, _value...> : F<Arg, _value...> {};
+/**
+ * Like #VariadicChars, but pass an additional argument to #F.
+ */
+template<template<typename Arg, char...> class F, typename Arg,
+	 const char *src, size_t length, size_t i,
+	 char... _value>
+struct VariadicChars1 : VariadicChars1<F, Arg,
+				       src, length - 1, i + 1, _value..., src[i]> {
+	static_assert(length > 0, "Wrong length");
+};
 
-	template<const char *src, size_t length, char... value>
-	struct _BuildString : VariadicChars<Construct, src, length, 0,
-					    value...> {};
+template<template<typename Arg, char...> class F, typename Arg,
+	 const char *src, size_t length,
+	 char... _value>
+struct VariadicChars1<F, Arg, src, 0, length, _value...> : F<Arg, _value...> {};
 
-	template<char ch, typename S>
-	struct InsertBefore : _BuildString<S::value, S::size, ch> {};
+template<const char *src, size_t length, char... value>
+struct _BuildString : VariadicChars<Construct, src, length, 0,
+				    value...> {};
 
-	/**
-	 * Concatenate several strings.
-	 */
-	template<typename... Args>
-	struct Concat;
+template<char ch, typename S>
+struct InsertBefore : _BuildString<S::value, S::size, ch> {};
 
-	template<typename First, typename Second, typename... Args>
-	struct _Concat : Concat<Concat<First, Second>, Args...> {};
+/**
+ * Concatenate several strings.
+ */
+template<typename... Args>
+struct Concat;
 
-	template<typename... Args>
-	struct Concat : _Concat<Args...> {};
+template<typename First, typename Second, typename... Args>
+struct _Concat : Concat<Concat<First, Second>, Args...> {};
 
-	template<typename Second, char... _value>
-	struct _Concat2 : _BuildString<Second::value, Second::size,
-				      _value...> {};
+template<typename... Args>
+struct Concat : _Concat<Args...> {};
 
-	template<typename First, typename Second>
-	struct Concat<First, Second>
-		:VariadicChars1<_Concat2, Second,
-				First::value, First::size, 0> {};
+template<typename Second, char... _value>
+struct _Concat2 : _BuildString<Second::value, Second::size,
+			       _value...> {};
 
-	template<typename First>
-	struct Concat<First> : First {};
+template<typename First, typename Second>
+struct Concat<First, Second>
+	:VariadicChars1<_Concat2, Second,
+			First::value, First::size, 0> {};
 
-	template<>
-	struct Concat<> : Empty {};
-}
+template<typename First>
+struct Concat<First> : First {};
+
+template<>
+struct Concat<> : Empty {};
+
+} // namespace TemplateString
 
 #endif
