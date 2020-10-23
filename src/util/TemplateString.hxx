@@ -43,9 +43,6 @@ struct Construct {
 	static constexpr std::size_t size = sizeof...(_value);
 };
 
-template<char... _value>
-constexpr char Construct<_value...>::value[];
-
 /**
  * An empty string.
  */
