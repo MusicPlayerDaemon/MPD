@@ -108,6 +108,18 @@ copy_n(const char *src, std::size_t n, char *dest) noexcept
 
 }
 
+/**
+ * A string consisting of a single character.
+ */
+template<std::size_t size>
+constexpr auto
+FromLiteral(const char (&src)[size]) noexcept
+{
+	Buffer<size - 1> result{};
+	detail::copy_n(src, result.size, result.value);
+	return result;
+}
+
 template<typename... Args>
 constexpr auto
 Concat(Args... args) noexcept
