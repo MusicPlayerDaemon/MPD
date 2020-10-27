@@ -88,6 +88,14 @@ struct PathTraitsFS {
 #endif
 	}
 
+	gcc_pure
+	static const_pointer GetFilenameSuffix(const_pointer filename) noexcept {
+		const_pointer dot = StringFindLast(filename, '.');
+		return dot != nullptr && dot > filename && dot[1] != 0
+			? dot + 1
+			: nullptr;
+	}
+
 #ifdef _WIN32
 	gcc_pure gcc_nonnull_all
 	static constexpr bool IsDrive(const_pointer p) noexcept {
@@ -197,6 +205,14 @@ struct PathTraitsUTF8 {
 #endif
 
 		return std::strrchr(p, SEPARATOR);
+	}
+
+	gcc_pure
+	static const_pointer GetFilenameSuffix(const_pointer filename) noexcept {
+		const_pointer dot = StringFindLast(filename, '.');
+		return dot != nullptr && dot > filename && dot[1] != 0
+			? dot + 1
+			: nullptr;
 	}
 
 #ifdef _WIN32
