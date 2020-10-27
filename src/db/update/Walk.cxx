@@ -69,46 +69,46 @@ UpdateWalk::RemoveExcludedFromDirectory(Directory &directory,
 	const ScopeDatabaseLock protect;
 
 	directory.ForEachChildSafe([&](Directory &child){
-			const auto name_fs =
-				AllocatedPath::FromUTF8(child.GetName());
+		const auto name_fs =
+			AllocatedPath::FromUTF8(child.GetName());
 
-			if (name_fs.IsNull() || exclude_list.Check(name_fs)) {
-				editor.DeleteDirectory(&child);
-				modified = true;
-			}
-		});
+		if (name_fs.IsNull() || exclude_list.Check(name_fs)) {
+			editor.DeleteDirectory(&child);
+			modified = true;
+		}
+	});
 
 	directory.ForEachSongSafe([&](Song &song){
-			assert(&song.parent == &directory);
+		assert(&song.parent == &directory);
 
-			const auto name_fs = AllocatedPath::FromUTF8(song.filename);
-			if (name_fs.IsNull() || exclude_list.Check(name_fs)) {
-				editor.DeleteSong(directory, &song);
-				modified = true;
-			}
-		});
+		const auto name_fs = AllocatedPath::FromUTF8(song.filename);
+		if (name_fs.IsNull() || exclude_list.Check(name_fs)) {
+			editor.DeleteSong(directory, &song);
+			modified = true;
+		}
+	});
 }
 
 inline void
 UpdateWalk::PurgeDeletedFromDirectory(Directory &directory) noexcept
 {
 	directory.ForEachChildSafe([&](Directory &child){
-			if (child.IsMount() || DirectoryExists(storage, child))
-				return;
+		if (child.IsMount() || DirectoryExists(storage, child))
+			return;
 
-			editor.LockDeleteDirectory(&child);
+		editor.LockDeleteDirectory(&child);
 
-			modified = true;
-		});
+		modified = true;
+	});
 
 	directory.ForEachSongSafe([&](Song &song){
-			if (!directory_child_is_regular(storage, directory,
-							song.filename)) {
-				editor.LockDeleteSong(directory, &song);
+		if (!directory_child_is_regular(storage, directory,
+						song.filename)) {
+			editor.LockDeleteSong(directory, &song);
 
-				modified = true;
-			}
-		});
+			modified = true;
+		}
+	});
 
 	for (auto i = directory.playlists.begin(),
 		     end = directory.playlists.end();
