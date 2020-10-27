@@ -93,7 +93,11 @@ inline void
 UpdateWalk::PurgeDeletedFromDirectory(Directory &directory) noexcept
 {
 	directory.ForEachChildSafe([&](Directory &child){
-		if (child.IsMount() || DirectoryExists(storage, child))
+		if (child.IsMount())
+			return;
+
+		if (DirectoryExists(storage, child) &&
+		    child.IsPluginAvailable())
 			return;
 
 		editor.LockDeleteDirectory(&child);
