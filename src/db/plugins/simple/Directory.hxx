@@ -133,6 +133,14 @@ public:
 	}
 
 	/**
+	 * Checks whether this is a "special" directory
+	 * (e.g. #DEVICE_PLAYLIST) and whether the underlying plugin
+	 * is available.
+	 */
+	gcc_pure
+	bool IsPluginAvailable() const noexcept;
+
+	/**
 	 * Remove this #Directory object from its parent and free it.  This
 	 * must not be called with the root Directory.
 	 *

@@ -5,6 +5,7 @@ endif
 
 yajl = static_library(
   'yajl',
+  'Handle.cxx',
   'ResponseParser.cxx',
   'ParseInputStream.cxx',
   include_directories: inc,

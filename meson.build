@@ -213,7 +213,6 @@ log_dep = declare_dependency(
 sources = [
   version_cxx,
   'src/Main.cxx',
-  'src/protocol/Ack.cxx',
   'src/protocol/ArgParser.cxx',
   'src/protocol/Result.cxx',
   'src/command/CommandError.cxx',

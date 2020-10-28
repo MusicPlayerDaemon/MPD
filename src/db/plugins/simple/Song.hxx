@@ -108,6 +108,16 @@ struct Song {
 
 	Song(DetachedSong &&other, Directory &_parent) noexcept;
 
+	gcc_pure
+	const char *GetFilenameSuffix() const noexcept;
+
+	/**
+	 * Checks whether the decoder plugin for this song is
+	 * available.
+	 */
+	gcc_pure
+	bool IsPluginAvailable() const noexcept;
+
 	/**
 	 * allocate a new song structure with a local file name and attempt to
 	 * load its metadata.  If all decoder plugin fail to read its meta

@@ -86,7 +86,7 @@ For example, the following installs a fairly complete list of build dependencies
       libpulse-dev libshout3-dev \
       libsndio-dev \
       libmpdclient-dev \
-      libnfs-dev libsmbclient-dev \
+      libnfs-dev \
       libupnp-dev \
       libavahi-client-dev \
       libsqlite3-dev \

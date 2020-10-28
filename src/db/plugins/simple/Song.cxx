@@ -34,6 +34,14 @@ Song::Song(DetachedSong &&other, Directory &_parent) noexcept
 {
 }
 
+const char *
+Song::GetFilenameSuffix() const noexcept
+{
+	return target.empty()
+		? PathTraitsUTF8::GetFilenameSuffix(filename.c_str())
+		: PathTraitsUTF8::GetPathSuffix(target.c_str());
+}
+
 std::string
 Song::GetURI() const noexcept
 {

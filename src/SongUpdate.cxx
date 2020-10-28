@@ -23,6 +23,7 @@
 #include "db/plugins/simple/Directory.hxx"
 #include "storage/StorageInterface.hxx"
 #include "storage/FileInfo.hxx"
+#include "decoder/DecoderList.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "fs/FileInfo.hxx"
 #include "tag/Builder.hxx"
@@ -39,6 +40,14 @@
 #include <string.h>
 
 #ifdef ENABLE_DATABASE
+
+bool
+Song::IsPluginAvailable() const noexcept
+{
+	const char *suffix = GetFilenameSuffix();
+	return suffix != nullptr &&
+		decoder_plugins_supports_suffix(suffix);
+}
 
 SongPtr
 Song::LoadFile(Storage &storage, const char *path_utf8, Directory &parent)

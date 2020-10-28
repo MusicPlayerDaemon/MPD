@@ -92,7 +92,11 @@ option('cdio_paranoia', type: 'feature', description: 'libcdio_paranoia input pl
 option('curl', type: 'feature', description: 'HTTP client using CURL')
 option('mms', type: 'feature', description: 'MMS protocol support using libmms')
 option('nfs', type: 'feature', description: 'NFS protocol support using libnfs')
-option('smbclient', type: 'feature', description: 'SMB support using libsmbclient')
+
+# The "smbclient" plugin is disabled by default because libsmbclient
+# has a serious bug which crashes MPD very quickly:
+# https://bugzilla.samba.org/show_bug.cgi?id=11413
+option('smbclient', type: 'feature', value: 'disabled', description: 'SMB support using libsmbclient')
 
 #
 # Commercial services

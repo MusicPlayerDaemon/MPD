@@ -31,6 +31,7 @@ db_glue_sources = [
   'update/Remove.cxx',
   'update/ExcludeList.cxx',
   'update/VirtualDirectory.cxx',
+  'update/SpecialDirectory.cxx',
   'DatabaseGlue.cxx',
   'Configured.cxx',
   'DatabaseSong.cxx',

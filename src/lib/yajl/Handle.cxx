@@ -27,60 +27,41 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef YAJL_HANDLE_HXX
-#define YAJL_HANDLE_HXX
+#include "Handle.hxx"
+#include "util/RuntimeError.hxx"
+#include "util/ScopeExit.hxx"
+#include "util/StringStrip.hxx"
 
-#include <yajl/yajl_parse.h>
+#include <cstring>
 
-#include <algorithm>
+/**
+ * Strip whitespace at the beginning and end and replace newline
+ * characters which are illegal in the MPD protocol.
+ */
+static const char *
+StripErrorMessage(char *s) noexcept
+{
+	s = Strip(s);
+
+	while (auto newline = std::strchr(s, '\n'))
+		*newline = ';';
+
+	return s;
+}
 
 namespace Yajl {
 
-/**
- * OO wrapper for "struct curl_slist *".
- */
-class Handle {
-	yajl_handle handle = nullptr;
+void
+Handle::ThrowError()
+{
+	unsigned char *str = yajl_get_error(handle, false,
+					    nullptr, 0);
+	AtScopeExit(this, str) {
+		yajl_free_error(handle, str);
+	};
 
-public:
-	Handle() = default;
-
-	Handle(const yajl_callbacks *callbacks,
-	       yajl_alloc_funcs *afs,
-	       void *ctx) noexcept
-		:handle(yajl_alloc(callbacks, afs, ctx)) {}
-
-	Handle(Handle &&src) noexcept
-		:handle(std::exchange(src.handle, nullptr)) {}
-
-	~Handle() noexcept {
-		if (handle != nullptr)
-			yajl_free(handle);
-	}
-
-	Handle &operator=(Handle &&src) noexcept {
-		std::swap(handle, src.handle);
-		return *this;
-	}
-
-	void Parse(const unsigned char *jsonText, size_t jsonTextLength) {
-		HandleStatus(yajl_parse(handle, jsonText, jsonTextLength));
-	}
-
-	void CompleteParse() {
-		HandleStatus(yajl_complete_parse(handle));
-	}
-
-private:
-	void HandleStatus(yajl_status status) {
-		if (status == yajl_status_error)
-			ThrowError();
-	}
-
-	[[noreturn]]
-	void ThrowError();
-};
+	throw FormatRuntimeError("Failed to parse JSON: %s",
+				 StripErrorMessage((char *)str));
+}
 
 } // namespace Yajl
-
-#endif
