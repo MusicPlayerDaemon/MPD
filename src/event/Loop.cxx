@@ -110,6 +110,8 @@ EventLoop::AbandonFD(SocketEvent &event)  noexcept
 #endif
 	assert(event.IsDefined());
 
+	event.unlink();
+
 	return poll_backend.Abandon(event.GetSocket().Get());
 }
 
