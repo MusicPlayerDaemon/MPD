@@ -1,4 +1,4 @@
-ver 0.22.2 (not yet released)
+ver 0.22.2 (2020/10/28)
 * database
   - simple: purge songs and virtual directories for unavailable plugins
     on update
