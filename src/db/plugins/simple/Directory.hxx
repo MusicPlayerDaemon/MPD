@@ -137,6 +137,7 @@ public:
 	 * (e.g. #DEVICE_PLAYLIST) and whether the underlying plugin
 	 * is available.
 	 */
+	gcc_pure
 	bool IsPluginAvailable() const noexcept;
 
 	/**
