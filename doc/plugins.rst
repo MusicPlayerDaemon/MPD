@@ -71,6 +71,11 @@ Load music files from a SMB/CIFS server. It is used when
 :code:`music_directory` contains a ``smb://`` URI, for example
 :samp:`smb://myfileserver/Music`.
 
+Note that :file:`libsmbclient` has a serious bug which causes MPD to
+crash, and therefore this plugin is disabled by default and should not
+be used until the bug is fixed:
+https://bugzilla.samba.org/show_bug.cgi?id=11413
+
 nfs
 ---
 

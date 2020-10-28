@@ -4,6 +4,7 @@ ver 0.22.2 (not yet released)
     on update
 * input
   - qobuz/tidal: fix protocol errors due to newlines in error messages
+  - smbclient: disable by default due to libsmbclient crash bug
 * playlist
   - soundcloud: fix protocol errors due to newlines in error messages
 * state_file: save on shutdown
