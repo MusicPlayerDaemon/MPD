@@ -264,7 +264,6 @@ if enable_database
   executable(
     'DumpDatabase',
     'DumpDatabase.cxx',
-    '../src/protocol/Ack.cxx',
     '../src/db/Registry.cxx',
     '../src/db/Selection.cxx',
     '../src/db/PlaylistVector.cxx',
