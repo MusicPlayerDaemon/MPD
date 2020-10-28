@@ -30,6 +30,24 @@
 #include "Handle.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/ScopeExit.hxx"
+#include "util/StringStrip.hxx"
+
+#include <cstring>
+
+/**
+ * Strip whitespace at the beginning and end and replace newline
+ * characters which are illegal in the MPD protocol.
+ */
+static const char *
+StripErrorMessage(char *s) noexcept
+{
+	s = Strip(s);
+
+	while (auto newline = std::strchr(s, '\n'))
+		*newline = ';';
+
+	return s;
+}
 
 namespace Yajl {
 
@@ -41,7 +59,9 @@ Handle::ThrowError()
 	AtScopeExit(this, str) {
 		yajl_free_error(handle, str);
 	};
-	throw FormatRuntimeError("Failed to parse JSON: %s", str);
+
+	throw FormatRuntimeError("Failed to parse JSON: %s",
+				 StripErrorMessage((char *)str));
 }
 
 } // namespace Yajl
