@@ -73,7 +73,6 @@ public:
 	 * Throws #std::runtime_error on error.
 	 *
 	 * @param port the TCP port
-	 * @param error location to store the error occurring
 	 */
 	void AddPort(unsigned port);
 
@@ -85,7 +84,6 @@ public:
 	 *
 	 * @param hostname the host name to be resolved
 	 * @param port the TCP port
-	 * @param error location to store the error occurring
 	 */
 	void AddHost(const char *hostname, unsigned port);
 
@@ -95,7 +93,6 @@ public:
 	 * Throws #std::runtime_error on error.
 	 *
 	 * @param path the absolute socket path
-	 * @param error location to store the error occurring
 	 */
 	void AddPath(AllocatedPath &&path);
 
