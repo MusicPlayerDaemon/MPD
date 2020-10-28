@@ -96,6 +96,11 @@ struct PathTraitsFS {
 			: nullptr;
 	}
 
+	gcc_pure
+	static const_pointer GetPathSuffix(const_pointer path) noexcept {
+		return GetFilenameSuffix(GetBase(path));
+	}
+
 #ifdef _WIN32
 	gcc_pure gcc_nonnull_all
 	static constexpr bool IsDrive(const_pointer p) noexcept {
@@ -213,6 +218,11 @@ struct PathTraitsUTF8 {
 		return dot != nullptr && dot > filename && dot[1] != 0
 			? dot + 1
 			: nullptr;
+	}
+
+	gcc_pure
+	static const_pointer GetPathSuffix(const_pointer path) noexcept {
+		return GetFilenameSuffix(GetBase(path));
 	}
 
 #ifdef _WIN32
