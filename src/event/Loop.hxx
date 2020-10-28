@@ -196,7 +196,7 @@ public:
 	 * has been closed.  This is like RemoveFD(), but does not
 	 * attempt to use #EPOLL_CTL_DEL.
 	 */
-	bool AbandonFD(int fd) noexcept;
+	bool AbandonFD(SocketEvent &event) noexcept;
 
 	void AddIdle(IdleEvent &i) noexcept;
 

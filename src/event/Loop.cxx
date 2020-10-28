@@ -103,13 +103,14 @@ EventLoop::Break() noexcept
 }
 
 bool
-EventLoop::AbandonFD(int _fd)  noexcept
+EventLoop::AbandonFD(SocketEvent &event)  noexcept
 {
 #ifdef HAVE_THREADED_EVENT_LOOP
 	assert(!IsAlive() || IsInside());
 #endif
+	assert(event.IsDefined());
 
-	return poll_backend.Abandon(_fd);
+	return poll_backend.Abandon(event.GetSocket().Get());
 }
 
 bool
