@@ -94,11 +94,15 @@ UpdateWalk::PurgeDeletedFromDirectory(Directory &directory) noexcept
 {
 	directory.ForEachChildSafe([&](Directory &child){
 		if (child.IsMount())
+			/* mount points are always preserved */
 			return;
 
 		if (DirectoryExists(storage, child) &&
 		    child.IsPluginAvailable())
 			return;
+
+		/* the directory was deleted (or the plugin which
+		   handles this "virtual" directory is unavailable) */
 
 		editor.LockDeleteDirectory(&child);
 
