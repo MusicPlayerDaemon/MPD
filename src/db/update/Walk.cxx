@@ -111,7 +111,11 @@ UpdateWalk::PurgeDeletedFromDirectory(Directory &directory) noexcept
 
 	directory.ForEachSongSafe([&](Song &song){
 		if (!directory_child_is_regular(storage, directory,
-						song.filename)) {
+						song.filename) ||
+		    !song.IsPluginAvailable()) {
+			/* the song file was deleted (or the decoder
+			   plugin is unavailable) */
+
 			editor.LockDeleteSong(directory, &song);
 
 			modified = true;
