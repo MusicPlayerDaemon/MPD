@@ -533,6 +533,9 @@ MainConfigured(const struct options &options, const ConfigData &raw_config)
 
 	/* cleanup */
 
+	if (instance.state_file)
+		instance.state_file->Write();
+
 	instance.BeginShutdownUpdate();
 
 	ZeroconfDeinit();

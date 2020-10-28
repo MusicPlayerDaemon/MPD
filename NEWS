@@ -2,6 +2,7 @@ ver 0.22.2 (not yet released)
 * database
   - simple: purge songs and virtual directories for unavailable plugins
     on update
+* state_file: save on shutdown
 
 ver 0.22.1 (2020/10/17)
 * decoder
