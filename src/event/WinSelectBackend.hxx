@@ -119,6 +119,8 @@ private:
 		       int event_id) const noexcept;
 	void Modify(Item &item, SOCKET fd, unsigned events,
 		    int event_id) noexcept;
+
+	void ApplyReady(const SocketSet &src, unsigned events) noexcept;
 };
 
 #endif

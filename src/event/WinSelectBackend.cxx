@@ -117,6 +117,14 @@ WinSelectBackend::Remove(SOCKET fd) noexcept
 	return true;
 }
 
+void
+WinSelectBackend::ApplyReady(const SocketSet &src, unsigned events) noexcept
+{
+	for (const auto i : src) {
+		items[i].events |= events;
+	}
+}
+
 PollResultGeneric
 WinSelectBackend::ReadEvents(int timeout_ms) noexcept
 {
@@ -148,14 +156,9 @@ WinSelectBackend::ReadEvents(int timeout_ms) noexcept
 	if (ret == 0 || ret == SOCKET_ERROR)
 		return result;
 
-	for (const auto i : read_set)
-		items[i].events |= WinSelectEvents::READ;
-
-	for (const auto i : write_set)
-		items[i].events |= WinSelectEvents::WRITE;
-
-	for (const auto i : except_set)
-		items[i].events |= WinSelectEvents::WRITE;
+	ApplyReady(read_set, WinSelectEvents::READ);
+	ApplyReady(write_set, WinSelectEvents::WRITE);
+	ApplyReady(except_set, WinSelectEvents::WRITE);
 
 	for (auto &i : items)
 		if (i.second.events != 0) {
