@@ -53,7 +53,7 @@ WinSelectBackend::Modify(WinSelectBackend::Item &item, SOCKET fd,
 	else if (index >= 0 && !HasEvent(events, event_id)) {
 		if (size_t(index) != set.Size() - 1) {
 			set.MoveToEnd(index);
-			items[set[index]].index[event_id] = index;
+			items.find(set[index])->second.index[event_id] = index;
 		}
 		set.RemoveLast();
 		item.index[event_id] = -1;
@@ -121,7 +121,10 @@ void
 WinSelectBackend::ApplyReady(const SocketSet &src, unsigned events) noexcept
 {
 	for (const auto i : src) {
-		items[i].events |= events;
+		auto it = items.find(i);
+		assert(it != items.end());
+
+		it->second.events |= events;
 	}
 }
 
