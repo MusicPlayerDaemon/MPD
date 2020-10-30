@@ -64,7 +64,8 @@ bool
 WinSelectBackend::Add(SOCKET fd, unsigned events, void *obj) noexcept
 {
 	assert(items.find(fd) == items.end());
-	auto &item = items[fd];
+	auto i = items.emplace(fd, Item{}).first;
+	auto &item = i->second;
 
 	item.index[EVENT_READ] = -1;
 	item.index[EVENT_WRITE] = -1;
@@ -72,11 +73,11 @@ WinSelectBackend::Add(SOCKET fd, unsigned events, void *obj) noexcept
 	item.events = 0;
 
 	if (!CanModify(item, events, EVENT_READ)) {
-		items.erase(fd);
+		items.erase(i);
 		return false;
 	}
 	if (!CanModify(item, events, EVENT_WRITE)) {
-		items.erase(fd);
+		items.erase(i);
 		return false;
 	}
 
