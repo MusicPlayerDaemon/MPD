@@ -66,7 +66,7 @@ PollBackend::Remove(int fd) noexcept
 	std::size_t last_index = poll_events.size() - 1;
 	if (index != last_index) {
 		std::swap(poll_events[index], poll_events[last_index]);
-		items[poll_events[index].fd].index = index;
+		items.find(poll_events[index].fd)->second.index = index;
 	}
 	poll_events.pop_back();
 	items.erase(item_iter);
@@ -83,7 +83,11 @@ PollBackend::ReadEvents(int timeout_ms) noexcept
 	for (std::size_t i = 0; n > 0 && i < poll_events.size(); ++i) {
 		const auto &e = poll_events[i];
 		if (e.revents != 0) {
-			result.Add(e.revents, items[e.fd].obj);
+			auto it = items.find(e.fd);
+			assert(it != items.end());
+			assert(it->second.index == i);
+
+			result.Add(e.revents, it->second.obj);
 			--n;
 		}
 	}
