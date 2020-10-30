@@ -24,17 +24,22 @@
 PollBackend::PollBackend() noexcept = default;
 PollBackend::~PollBackend() noexcept = default;
 
+static constexpr auto
+MakePollfd(int fd, short events) noexcept
+{
+	struct pollfd pfd{};
+	pfd.fd = fd;
+	pfd.events = events;
+	return pfd;
+}
+
 bool
 PollBackend::Add(int fd, unsigned events, void *obj) noexcept
 {
 	assert(items.find(fd) == items.end());
 
 	const std::size_t index = poll_events.size();
-	poll_events.resize(index + 1);
-	auto &e = poll_events[index];
-	e.fd = fd;
-	e.events = events;
-	e.revents = 0;
+	poll_events.push_back(MakePollfd(fd, events));
 
 	items.emplace(std::piecewise_construct,
 		      std::forward_as_tuple(fd),
