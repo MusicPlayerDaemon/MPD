@@ -35,7 +35,9 @@ PollBackend::Add(int fd, unsigned events, void *obj) noexcept
 	e.fd = fd;
 	e.events = events;
 	e.revents = 0;
-	auto &item = items[fd];
+
+	auto i = items.emplace(fd, Item{}).first;
+	auto &item = i->second;
 	item.index = index;
 	item.obj = obj;
 	return true;
