@@ -99,16 +99,12 @@ class WinSelectBackend
 	SocketSet event_set[2];
 	std::unordered_map<SOCKET, Item> items;
 
-	bool CanModify(Item &item, unsigned events,
-		       int event_id) const noexcept;
-	void Modify(Item &item, SOCKET fd, unsigned events,
-		    int event_id) noexcept;
-
-	WinSelectBackend(WinSelectBackend &) = delete;
-	WinSelectBackend &operator=(WinSelectBackend &) = delete;
 public:
 	WinSelectBackend() noexcept;
 	~WinSelectBackend() noexcept;
+
+	WinSelectBackend(WinSelectBackend &) = delete;
+	WinSelectBackend &operator=(WinSelectBackend &) = delete;
 
 	PollResultGeneric ReadEvents(int timeout_ms) noexcept;
 	bool Add(SOCKET fd, unsigned events, void *obj) noexcept;
@@ -117,6 +113,12 @@ public:
 	bool Abandon(SOCKET fd) noexcept {
 		return Remove(fd);
 	}
+
+private:
+	bool CanModify(Item &item, unsigned events,
+		       int event_id) const noexcept;
+	void Modify(Item &item, SOCKET fd, unsigned events,
+		    int event_id) noexcept;
 };
 
 #endif
