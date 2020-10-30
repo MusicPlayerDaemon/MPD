@@ -103,8 +103,8 @@ public:
 	WinSelectBackend() noexcept;
 	~WinSelectBackend() noexcept;
 
-	WinSelectBackend(WinSelectBackend &) = delete;
-	WinSelectBackend &operator=(WinSelectBackend &) = delete;
+	WinSelectBackend(const WinSelectBackend &) = delete;
+	WinSelectBackend &operator=(const WinSelectBackend &) = delete;
 
 	PollResultGeneric ReadEvents(int timeout_ms) noexcept;
 	bool Add(SOCKET fd, unsigned events, void *obj) noexcept;
