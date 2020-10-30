@@ -97,7 +97,7 @@ class WinSelectBackend
 	};
 
 	SocketSet event_set[2];
-	std::unordered_map<int, Item> items;
+	std::unordered_map<SOCKET, Item> items;
 
 	bool CanModify(Item &item, unsigned events,
 		       int event_id) const noexcept;
