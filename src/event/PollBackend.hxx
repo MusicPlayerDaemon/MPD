@@ -32,7 +32,7 @@ class PollBackend
 {
 	struct Item
 	{
-		size_t index;
+		std::size_t index;
 		void *obj;
 	};
 

@@ -29,7 +29,7 @@ PollBackend::Add(int fd, unsigned events, void *obj) noexcept
 {
 	assert(items.find(fd) == items.end());
 
-	const size_t index = poll_events.size();
+	const std::size_t index = poll_events.size();
 	poll_events.resize(index + 1);
 	auto &e = poll_events[index];
 	e.fd = fd;
@@ -60,8 +60,8 @@ PollBackend::Remove(int fd) noexcept
 	auto item_iter = items.find(fd);
 	assert(item_iter != items.end());
 	const auto &item = item_iter->second;
-	size_t index = item.index;
-	size_t last_index = poll_events.size() - 1;
+	std::size_t index = item.index;
+	std::size_t last_index = poll_events.size() - 1;
 	if (index != last_index) {
 		std::swap(poll_events[index], poll_events[last_index]);
 		items[poll_events[index].fd].index = index;
@@ -78,7 +78,7 @@ PollBackend::ReadEvents(int timeout_ms) noexcept
 		     poll_events.size(), timeout_ms);
 
 	PollResultGeneric result;
-	for (size_t i = 0; n > 0 && i < poll_events.size(); ++i) {
+	for (std::size_t i = 0; n > 0 && i < poll_events.size(); ++i) {
 		const auto &e = poll_events[i];
 		if (e.revents != 0) {
 			result.Add(e.revents, items[e.fd].obj);
