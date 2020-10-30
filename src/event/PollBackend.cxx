@@ -36,10 +36,9 @@ PollBackend::Add(int fd, unsigned events, void *obj) noexcept
 	e.events = events;
 	e.revents = 0;
 
-	auto i = items.emplace(fd, Item{}).first;
-	auto &item = i->second;
-	item.index = index;
-	item.obj = obj;
+	items.emplace(std::piecewise_construct,
+		      std::forward_as_tuple(fd),
+		      std::forward_as_tuple(index, obj));
 	return true;
 }
 

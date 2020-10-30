@@ -34,6 +34,12 @@ class PollBackend
 	{
 		std::size_t index;
 		void *obj;
+
+		constexpr Item(std::size_t _index, void *_obj) noexcept
+			:index(_index), obj(_obj) {}
+
+		Item(const Item &) = delete;
+		Item &operator=(const Item &) = delete;
 	};
 
 	std::vector<pollfd> poll_events;
