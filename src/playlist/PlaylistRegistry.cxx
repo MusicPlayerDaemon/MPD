@@ -215,23 +215,12 @@ playlist_list_open_stream_mime2(InputStreamPtr &&is, StringView mime)
 	return nullptr;
 }
 
-/**
- * Extract the "main" part of a MIME type string, i.e. the portion
- * before the semicolon (if one exists).
- */
-gcc_pure
-static StringView
-ExtractMimeTypeMainPart(StringView s) noexcept
-{
-	return s.Split(';').first;
-}
-
 static std::unique_ptr<SongEnumerator>
-playlist_list_open_stream_mime(InputStreamPtr &&is, std::string_view full_mime)
+playlist_list_open_stream_mime(InputStreamPtr &&is, std::string_view mime)
 {
 	/* probe only the portion before the semicolon*/
 	return playlist_list_open_stream_mime2(std::move(is),
-					       ExtractMimeTypeMainPart(full_mime));
+					       mime);
 }
 
 std::unique_ptr<SongEnumerator>
