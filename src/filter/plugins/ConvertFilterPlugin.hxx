@@ -29,7 +29,7 @@ struct AudioFormat;
 std::unique_ptr<PreparedFilter>
 convert_filter_prepare() noexcept;
 
-Filter *
+std::unique_ptr<Filter>
 convert_filter_new(AudioFormat in_audio_format,
 		   AudioFormat out_audio_format);
 

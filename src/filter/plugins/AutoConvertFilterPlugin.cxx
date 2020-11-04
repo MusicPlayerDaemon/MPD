@@ -85,8 +85,8 @@ PreparedAutoConvertFilter::Open(AudioFormat &in_audio_format)
 	if (in_audio_format != child_audio_format) {
 		/* yes - create a convert_filter */
 
-		convert.reset(convert_filter_new(in_audio_format,
-						 child_audio_format));
+		convert = convert_filter_new(in_audio_format,
+					     child_audio_format);
 	}
 
 	return std::make_unique<AutoConvertFilter>(std::move(new_filter),
