@@ -189,8 +189,8 @@ UpdateWalk::UpdateRegularFile(Directory &directory,
 			      const char *name,
 			      const StorageFileInfo &info) noexcept
 {
-	const char *suffix = uri_get_suffix(name);
-	if (suffix == nullptr)
+	const auto suffix = uri_get_suffix(name);
+	if (suffix.empty())
 		return false;
 
 	return UpdateSongFile(directory, name, suffix, info) ||

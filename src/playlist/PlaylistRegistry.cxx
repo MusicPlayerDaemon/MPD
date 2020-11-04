@@ -157,9 +157,8 @@ playlist_list_open_uri_suffix(const char *uri, Mutex &mutex,
 {
 	assert(uri != nullptr);
 
-	UriSuffixBuffer suffix_buffer;
-	const char *const suffix = uri_get_suffix(uri, suffix_buffer);
-	if (suffix == nullptr)
+	const auto suffix = uri_get_suffix(uri);
+	if (suffix.empty())
 		return nullptr;
 
 	for (unsigned i = 0; playlist_plugins[i] != nullptr; ++i) {
@@ -272,15 +271,14 @@ playlist_list_open_stream(InputStreamPtr &&is, const char *uri)
 			return playlist;
 	}
 
-	UriSuffixBuffer suffix_buffer;
-	const char *suffix = uri != nullptr
-		? uri_get_suffix(uri, suffix_buffer)
-		: nullptr;
-	if (suffix != nullptr) {
-		auto playlist = playlist_list_open_stream_suffix(std::move(is),
-								 suffix);
-		if (playlist != nullptr)
-			return playlist;
+	if (uri != nullptr) {
+		const auto suffix = uri_get_suffix(uri);
+		if (!suffix.empty()) {
+			auto playlist = playlist_list_open_stream_suffix(std::move(is),
+									 suffix);
+			if (playlist != nullptr)
+				return playlist;
+		}
 	}
 
 	return nullptr;

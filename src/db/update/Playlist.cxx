@@ -88,7 +88,7 @@ UpdateWalk::UpdatePlaylistFile(Directory &parent, std::string_view name,
 
 bool
 UpdateWalk::UpdatePlaylistFile(Directory &directory,
-			       std::string_view name, const char *suffix,
+			       std::string_view name, std::string_view suffix,
 			       const StorageFileInfo &info) noexcept
 {
 	const auto *const plugin = FindPlaylistPluginBySuffix(suffix);

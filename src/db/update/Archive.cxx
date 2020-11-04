@@ -157,7 +157,7 @@ UpdateWalk::UpdateArchiveFile(Directory &parent, std::string_view name,
 
 bool
 UpdateWalk::UpdateArchiveFile(Directory &directory,
-			      std::string_view name, const char *suffix,
+			      std::string_view name, std::string_view suffix,
 			      const StorageFileInfo &info) noexcept
 {
 	const ArchivePlugin *plugin = archive_plugin_from_suffix(suffix);

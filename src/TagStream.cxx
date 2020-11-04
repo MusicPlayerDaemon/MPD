@@ -36,10 +36,10 @@
 gcc_pure
 static bool
 CheckDecoderPlugin(const DecoderPlugin &plugin,
-		   const char *suffix, const char *mime) noexcept
+		   std::string_view suffix, const char *mime) noexcept
 {
 	return (mime != nullptr && plugin.SupportsMimeType(mime)) ||
-		(suffix != nullptr && plugin.SupportsSuffix(suffix));
+		(!suffix.empty() && plugin.SupportsSuffix(suffix));
 }
 
 bool
@@ -47,11 +47,10 @@ tag_stream_scan(InputStream &is, TagHandler &handler)
 {
 	assert(is.IsReady());
 
-	UriSuffixBuffer suffix_buffer;
-	const char *const suffix = uri_get_suffix(is.GetURI(), suffix_buffer);
+	const auto suffix = uri_get_suffix(is.GetURI());
 	const char *mime = is.GetMimeType();
 
-	if (suffix == nullptr && mime == nullptr)
+	if (suffix.empty() && mime == nullptr)
 		return false;
 
 	std::string mime_base;

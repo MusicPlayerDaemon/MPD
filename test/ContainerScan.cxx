@@ -37,7 +37,7 @@
 #include <stdio.h>
 
 static const DecoderPlugin *
-FindContainerDecoderPlugin(const char *suffix)
+FindContainerDecoderPlugin(std::string_view suffix)
 {
 	return decoder_plugins_find([suffix](const DecoderPlugin &plugin){
 			return plugin.container_scan != nullptr &&
@@ -48,10 +48,8 @@ FindContainerDecoderPlugin(const char *suffix)
 static const DecoderPlugin *
 FindContainerDecoderPlugin(Path path)
 {
-	UriSuffixBuffer suffix_buffer;
-	const char *const suffix = uri_get_suffix(path.ToUTF8Throw().c_str(),
-						  suffix_buffer);
-	if (suffix == nullptr)
+	const auto suffix = uri_get_suffix(path.ToUTF8Throw().c_str());
+	if (suffix.empty())
 		return nullptr;
 
 	return FindContainerDecoderPlugin(suffix);
