@@ -17,31 +17,33 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_CONVERT_FILTER_PLUGIN_HXX
-#define MPD_CONVERT_FILTER_PLUGIN_HXX
+#ifndef MPD_WITH_CONVERT_FILTER_HXX
+#define MPD_WITH_CONVERT_FILTER_HXX
+
+#include "filter/Filter.hxx"
 
 #include <memory>
 
-class PreparedFilter;
-class Filter;
-struct AudioFormat;
-
-std::unique_ptr<PreparedFilter>
-convert_filter_prepare() noexcept;
-
-std::unique_ptr<Filter>
-convert_filter_new(AudioFormat in_audio_format,
-		   AudioFormat out_audio_format);
-
 /**
- * Sets the output audio format for the specified filter.  You must
- * call this after the filter has been opened.  Since this audio
- * format switch is a violation of the filter API, this filter must be
- * the last in a chain.
- *
- * Throws on error.
+ * A #Filter implementation which chains two other filters.
  */
-void
-convert_filter_set(Filter *filter, AudioFormat out_audio_format);
+class TwoFilters final : public Filter {
+	std::unique_ptr<Filter> first, second;
+
+public:
+	template<typename F, typename S>
+	TwoFilters(F &&_first, S &&_second) noexcept
+		:Filter(_second->GetOutAudioFormat()),
+		 first(std::forward<F>(_first)),
+		 second(std::forward<S>(_second)) {}
+
+	void Reset() noexcept override {
+		first->Reset();
+		second->Reset();
+	}
+
+	ConstBuffer<void> FilterPCM(ConstBuffer<void> src) override;
+	ConstBuffer<void> Flush() override;
+};
 
 #endif

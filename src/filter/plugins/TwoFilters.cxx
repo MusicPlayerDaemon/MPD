@@ -17,31 +17,23 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_CONVERT_FILTER_PLUGIN_HXX
-#define MPD_CONVERT_FILTER_PLUGIN_HXX
+#include "TwoFilters.hxx"
+#include "util/ConstBuffer.hxx"
 
-#include <memory>
+ConstBuffer<void>
+TwoFilters::FilterPCM(ConstBuffer<void> src)
+{
+	return second->FilterPCM(first->FilterPCM(src));
+}
 
-class PreparedFilter;
-class Filter;
-struct AudioFormat;
+ConstBuffer<void>
+TwoFilters::Flush()
+{
+	auto result = first->Flush();
+	if (!result.IsNull())
+		/* Flush() output from the first Filter must be
+		   filtered by the second Filter */
+		return second->FilterPCM(result);
 
-std::unique_ptr<PreparedFilter>
-convert_filter_prepare() noexcept;
-
-std::unique_ptr<Filter>
-convert_filter_new(AudioFormat in_audio_format,
-		   AudioFormat out_audio_format);
-
-/**
- * Sets the output audio format for the specified filter.  You must
- * call this after the filter has been opened.  Since this audio
- * format switch is a violation of the filter API, this filter must be
- * the last in a chain.
- *
- * Throws on error.
- */
-void
-convert_filter_set(Filter *filter, AudioFormat out_audio_format);
-
-#endif
+	return second->Flush();
+}

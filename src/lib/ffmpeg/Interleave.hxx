@@ -17,31 +17,24 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_CONVERT_FILTER_PLUGIN_HXX
-#define MPD_CONVERT_FILTER_PLUGIN_HXX
+#ifndef MPD_FFMPEG_INTERLEAVE_HXX
+#define MPD_FFMPEG_INTERLEAVE_HXX
 
-#include <memory>
+struct AVFrame;
+template<typename T> struct ConstBuffer;
+class FfmpegBuffer;
 
-class PreparedFilter;
-class Filter;
-struct AudioFormat;
-
-std::unique_ptr<PreparedFilter>
-convert_filter_prepare() noexcept;
-
-std::unique_ptr<Filter>
-convert_filter_new(AudioFormat in_audio_format,
-		   AudioFormat out_audio_format);
+namespace Ffmpeg {
 
 /**
- * Sets the output audio format for the specified filter.  You must
- * call this after the filter has been opened.  Since this audio
- * format switch is a violation of the filter API, this filter must be
- * the last in a chain.
+ * Return interleaved data from the given non-empty #AVFrame.  If the
+ * data is planar, then the data is copied to a buffer.
  *
  * Throws on error.
  */
-void
-convert_filter_set(Filter *filter, AudioFormat out_audio_format);
+ConstBuffer<void>
+InterleaveFrame(const AVFrame &frame, FfmpegBuffer &buffer);
+
+} // namespace Ffmpeg
 
 #endif

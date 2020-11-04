@@ -95,7 +95,7 @@ UpdateWalk::UpdatePlaylistFile(Directory &directory,
 	if (plugin == nullptr)
 		return false;
 
-	if (plugin->as_folder)
+	if (GetPlaylistPluginAsFolder(*plugin))
 		UpdatePlaylistFile(directory, name, info, *plugin);
 
 	PlaylistInfo pi(name, info.mtime);

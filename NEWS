@@ -2,6 +2,14 @@ ver 0.23 (not yet released)
 * protocol
   - new command "getvol"
 
+ver 0.22.3 (not yet released)
+* playlist
+  - add option "as_directory", making CUE file expansion optional
+* filter
+  - fix garbage after "Audio format not supported by filter" message
+  - ffmpeg: support planar output
+  - ffmpeg: support sample formats other than 16 bit
+
 ver 0.22.2 (2020/10/28)
 * database
   - simple: purge songs and virtual directories for unavailable plugins

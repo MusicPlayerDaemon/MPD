@@ -1229,23 +1229,25 @@ Playlist plugins
 asx
 ---
 
-Reads .asx playlist files.
+Reads :file:`.asx` playlist files.
+
+.. _cue_playlist:
 
 cue
 ---
-Reads .cue files.
+Reads :file:`.cue` files.
 
 embcue
 ------
-Reads CUE sheets from the "CUESHEET" tag of song files.
+Reads CUE sheets from the ``CUESHEET`` tag of song files.
 
 m3u
 ---
-Reads .m3u playlist files.
+Reads :file:`.m3u` playlist files.
 
 extm3u
 ------
-Reads extended .m3u playlist files.
+Reads extended :file:`.m3u` playlist files.
 
 flac
 ----
@@ -1253,11 +1255,11 @@ Reads the cuesheet metablock from a FLAC file.
 
 pls
 ---
-Reads .pls playlist files.
+Reads :file:`.pls` playlist files.
 
 rss
 ---
-Reads music links from .rss files.
+Reads music links from :file:`.rss` files.
 
 soundcloud
 ----------

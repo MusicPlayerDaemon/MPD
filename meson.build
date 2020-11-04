@@ -4,8 +4,8 @@ project(
   version: '0.23~git',
   meson_version: '>= 0.49.0',
   default_options: [
-    'c_std=c99',
-    'build.c_std=c99',
+    'c_std=c11',
+    'build.c_std=c11',
     'cpp_std=c++17',
     'build.cpp_std=c++17',
     'warning_level=3',
@@ -96,6 +96,11 @@ test_cflags = test_common_flags + [
 ]
 
 test_ldflags = [
+  # make relocations read-only (hardening)
+  '-Wl,-z,relro',
+
+  # no lazy binding, please - not worth it for a daemon
+  '-Wl,-z,now',
 ]
 
 if get_option('buildtype') != 'debug'

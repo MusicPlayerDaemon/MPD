@@ -14,6 +14,7 @@ filter_plugins = static_library(
   'filter_plugins',
   '../../AudioCompress/compress.c',
   'NullFilterPlugin.cxx',
+  'TwoFilters.cxx',
   'ChainFilterPlugin.cxx',
   'AutoConvertFilterPlugin.cxx',
   'ConvertFilterPlugin.cxx',

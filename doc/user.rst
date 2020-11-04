@@ -413,7 +413,7 @@ The following table lists the audio_output options valid for all plugins:
    * - **format samplerate:bits:channels**
      -  Always open the audio output with the specified audio format, regardless of the format of the input file. This is optional for most plugins.
         See :ref:`audio_output_format` for a detailed description of the value.
-   * - **enabed yes|no**
+   * - **enabled yes|no**
      - Specifies whether this audio output is enabled when :program:`MPD` is started. By default, all audio outputs are enabled. This is just the default setting when there is no state file; with a state file, the previous state is restored.
    * - **tags yes|no**
      - If set to no, then :program:`MPD` will not send tags to this output. This is only useful for output plugins that can receive tags, for example the httpd output plugin.
@@ -500,6 +500,11 @@ The following table lists the playlist_plugin options valid for all plugins:
      - The name of the plugin
    * - **enabled yes|no**
      - Allows you to disable a playlist plugin without recompiling. By default, all plugins are enabled.
+   * - **as_directory yes|no**
+     - With this option, a playlist file of this type is parsed during
+       database update and converted to a virtual directory, allowing
+       MPD clients to access individual entries.  By default, this is
+       only enabled for the :ref:`cue plugin <cue_playlist>`.
 
 More information can be found in the :ref:`playlist_plugins`
 reference.

@@ -52,7 +52,16 @@ static bool
 HavePlaylistPluginForFilename(const char *filename) noexcept
 {
 	const char *suffix = PathTraitsUTF8::GetFilenameSuffix(filename);
-	return suffix != nullptr && playlist_suffix_supported(suffix);
+	if (suffix == nullptr)
+		return false;
+
+	const auto plugin = FindPlaylistPluginBySuffix(suffix);
+	if (plugin == nullptr)
+		return false;
+
+	/* discard the special directory if the user disables the
+	   plugin's "as_directory" setting */
+	return GetPlaylistPluginAsFolder(*plugin);
 }
 
 bool

@@ -26,6 +26,7 @@ endif
 ffmpeg = static_library(
   'ffmpeg',
   'Init.cxx',
+  'Interleave.cxx',
   'LogError.cxx',
   'LogCallback.cxx',
   'Error.cxx',
