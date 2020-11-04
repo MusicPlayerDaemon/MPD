@@ -207,11 +207,7 @@ gcc_pure
 static StringView
 ExtractMimeTypeMainPart(StringView s) noexcept
 {
-	const auto separator = s.Find(';');
-	if (separator != nullptr)
-		s.SetEnd(separator);
-
-	return s;
+	return s.Split(';').first;
 }
 
 static std::unique_ptr<SongEnumerator>
