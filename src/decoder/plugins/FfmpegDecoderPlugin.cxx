@@ -25,6 +25,7 @@
 #include "lib/ffmpeg/Domain.hxx"
 #include "lib/ffmpeg/Error.hxx"
 #include "lib/ffmpeg/Init.hxx"
+#include "lib/ffmpeg/Interleave.hxx"
 #include "lib/ffmpeg/Buffer.hxx"
 #include "lib/ffmpeg/Frame.hxx"
 #include "lib/ffmpeg/Format.hxx"
@@ -177,47 +178,6 @@ start_time_fallback(const AVStream &stream)
 }
 
 /**
- * Copy PCM data from a non-empty AVFrame to an interleaved buffer.
- *
- * Throws #std::exception on error.
- */
-static ConstBuffer<void>
-copy_interleave_frame(const AVFrame &frame, FfmpegBuffer &global_buffer)
-{
-	assert(frame.nb_samples > 0);
-
-	const AVSampleFormat format = AVSampleFormat(frame.format);
-	const unsigned channels = frame.channels;
-	const std::size_t n_frames = frame.nb_samples;
-
-	int plane_size;
-	const int data_size =
-		av_samples_get_buffer_size(&plane_size, channels,
-					   n_frames, format, 1);
-	assert(data_size != 0);
-	if (data_size < 0)
-		throw MakeFfmpegError(data_size);
-
-	void *output_buffer;
-	if (av_sample_fmt_is_planar(format) && channels > 1) {
-		output_buffer = global_buffer.GetT<uint8_t>(data_size);
-		if (output_buffer == nullptr)
-			/* Not enough memory - shouldn't happen */
-			throw std::bad_alloc();
-
-		PcmInterleave(output_buffer,
-			      ConstBuffer<const void *>((const void *const*)frame.extended_data,
-							channels),
-			      n_frames,
-			      av_get_bytes_per_sample(format));
-	} else {
-		output_buffer = frame.extended_data[0];
-	}
-
-	return { output_buffer, (size_t)data_size };
-}
-
-/**
  * Convert AVPacket::pts to a stream-relative time stamp (still in
  * AVStream::time_base units).  Returns a negative value on error.
  */
@@ -256,7 +216,8 @@ FfmpegSendFrame(DecoderClient &client, InputStream *is,
 		size_t &skip_bytes,
 		FfmpegBuffer &buffer)
 {
-	ConstBuffer<void> output_buffer = copy_interleave_frame(frame, buffer);
+	ConstBuffer<void> output_buffer =
+		Ffmpeg::InterleaveFrame(frame, buffer);
 
 	if (skip_bytes > 0) {
 		if (skip_bytes >= output_buffer.size) {
