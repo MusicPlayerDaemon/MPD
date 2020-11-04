@@ -37,6 +37,9 @@ public:
 		av_free(data);
 	}
 
+	FfmpegBuffer(const FfmpegBuffer &) = delete;
+	FfmpegBuffer &operator=(const FfmpegBuffer &) = delete;
+
 	gcc_malloc
 	void *Get(size_t min_size) noexcept {
 		av_fast_malloc(&data, &size, min_size);
