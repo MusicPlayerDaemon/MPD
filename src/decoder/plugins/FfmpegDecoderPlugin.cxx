@@ -182,25 +182,24 @@ start_time_fallback(const AVStream &stream)
  * Throws #std::exception on error.
  */
 static ConstBuffer<void>
-copy_interleave_frame(const AVCodecContext &codec_context,
-		      const AVFrame &frame,
-		      FfmpegBuffer &global_buffer)
+copy_interleave_frame(const AVFrame &frame, FfmpegBuffer &global_buffer)
 {
 	assert(frame.nb_samples > 0);
 
+	const AVSampleFormat format = AVSampleFormat(frame.format);
+	const unsigned channels = frame.channels;
+	const std::size_t n_frames = frame.nb_samples;
+
 	int plane_size;
 	const int data_size =
-		av_samples_get_buffer_size(&plane_size,
-					   codec_context.channels,
-					   frame.nb_samples,
-					   codec_context.sample_fmt, 1);
+		av_samples_get_buffer_size(&plane_size, channels,
+					   n_frames, format, 1);
 	assert(data_size != 0);
 	if (data_size < 0)
 		throw MakeFfmpegError(data_size);
 
 	void *output_buffer;
-	if (av_sample_fmt_is_planar(codec_context.sample_fmt) &&
-	    codec_context.channels > 1) {
+	if (av_sample_fmt_is_planar(format) && channels > 1) {
 		output_buffer = global_buffer.GetT<uint8_t>(data_size);
 		if (output_buffer == nullptr)
 			/* Not enough memory - shouldn't happen */
@@ -208,9 +207,9 @@ copy_interleave_frame(const AVCodecContext &codec_context,
 
 		PcmInterleave(output_buffer,
 			      ConstBuffer<const void *>((const void *const*)frame.extended_data,
-							codec_context.channels),
-			      frame.nb_samples,
-			      av_get_bytes_per_sample(codec_context.sample_fmt));
+							channels),
+			      n_frames,
+			      av_get_bytes_per_sample(format));
 	} else {
 		output_buffer = frame.extended_data[0];
 	}
@@ -257,8 +256,7 @@ FfmpegSendFrame(DecoderClient &client, InputStream *is,
 		size_t &skip_bytes,
 		FfmpegBuffer &buffer)
 {
-	ConstBuffer<void> output_buffer =
-		copy_interleave_frame(codec_context, frame, buffer);
+	ConstBuffer<void> output_buffer = copy_interleave_frame(frame, buffer);
 
 	if (skip_bytes > 0) {
 		if (skip_bytes >= output_buffer.size) {
