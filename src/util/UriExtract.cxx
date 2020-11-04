@@ -120,11 +120,19 @@ uri_get_path(std::string_view uri) noexcept
 	return uri;
 }
 
+gcc_pure
+static StringView
+UriWithoutQueryString(StringView uri) noexcept
+{
+	return uri.Split('?').first;
+}
+
 /* suffixes should be ascii only characters */
 std::string_view
 uri_get_suffix(std::string_view _uri) noexcept
 {
-	StringView uri(_uri);
+	const auto uri = UriWithoutQueryString(_uri);
+
 	const char *dot = uri.FindLast('.');
 	if (dot == nullptr || dot == uri.data ||
 	    dot[-1] == '/' || dot[-1] == '\\')
@@ -135,8 +143,7 @@ uri_get_suffix(std::string_view _uri) noexcept
 		/* this was not the last path segment */
 		return {};
 
-	/* remove the query string */
-	return suffix.Split('?').first;
+	return suffix;
 }
 
 const char *
