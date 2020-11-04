@@ -4,6 +4,7 @@ ver 0.22.3 (not yet released)
 * filter
   - fix garbage after "Audio format not supported by filter" message
   - ffmpeg: support planar output
+  - ffmpeg: support sample formats other than 16 bit
 
 ver 0.22.2 (2020/10/28)
 * database

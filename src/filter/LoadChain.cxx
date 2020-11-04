@@ -20,6 +20,7 @@
 #include "LoadChain.hxx"
 #include "Factory.hxx"
 #include "Prepared.hxx"
+#include "plugins/AutoConvertFilterPlugin.hxx"
 #include "plugins/ChainFilterPlugin.hxx"
 #include "util/IterableSplitString.hxx"
 
@@ -29,11 +30,14 @@ static void
 filter_chain_append_new(PreparedFilter &chain, FilterFactory &factory,
 			std::string_view template_name)
 {
+	/* using the AutoConvert filter just in case the specified
+	   filter plugin does not support the exact input format */
+
 	filter_chain_append(chain, template_name,
 			    /* unfortunately, MakeFilter() wants a
 			       null-terminated string, so we need to
 			       copy it here */
-			    factory.MakeFilter(std::string(template_name).c_str()));
+			    autoconvert_filter_new(factory.MakeFilter(std::string(template_name).c_str())));
 }
 
 void
