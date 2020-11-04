@@ -238,10 +238,8 @@ playlist_list_open_stream_mime(InputStreamPtr &&is, const char *full_mime)
 }
 
 std::unique_ptr<SongEnumerator>
-playlist_list_open_stream_suffix(InputStreamPtr &&is, const char *suffix)
+playlist_list_open_stream_suffix(InputStreamPtr &&is, std::string_view suffix)
 {
-	assert(suffix != nullptr);
-
 	playlist_plugins_for_each_enabled(plugin) {
 		if (plugin->open_stream != nullptr &&
 		    plugin->SupportsSuffix(suffix)) {
@@ -289,10 +287,8 @@ playlist_list_open_stream(InputStreamPtr &&is, const char *uri)
 }
 
 const PlaylistPlugin *
-FindPlaylistPluginBySuffix(const char *suffix) noexcept
+FindPlaylistPluginBySuffix(std::string_view suffix) noexcept
 {
-	assert(suffix != nullptr);
-
 	playlist_plugins_for_each_enabled(plugin) {
 		if (plugin->SupportsSuffix(suffix))
 			return plugin;

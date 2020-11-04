@@ -175,7 +175,7 @@ decoder_plugin_deinit_all() noexcept
 }
 
 bool
-decoder_plugins_supports_suffix(const char *suffix) noexcept
+decoder_plugins_supports_suffix(std::string_view suffix) noexcept
 {
 	return decoder_plugins_try([suffix](const DecoderPlugin &plugin){
 			return plugin.SupportsSuffix(suffix);

@@ -29,7 +29,7 @@ PlaylistPlugin::SupportsScheme(StringView scheme) const noexcept
 }
 
 bool
-PlaylistPlugin::SupportsSuffix(const char *suffix) const noexcept
+PlaylistPlugin::SupportsSuffix(StringView suffix) const noexcept
 {
 	return suffixes != nullptr &&
 		StringArrayContainsCase(suffixes, suffix);

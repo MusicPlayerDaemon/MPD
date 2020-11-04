@@ -37,25 +37,15 @@ DecoderPlugin::SupportsUri(const char *uri) const noexcept
 }
 
 bool
-DecoderPlugin::SupportsSuffix(const char *suffix) const noexcept
+DecoderPlugin::SupportsSuffix(std::string_view suffix) const noexcept
 {
-#if !CLANG_CHECK_VERSION(3,6)
-	/* disabled on clang due to -Wtautological-pointer-compare */
-	assert(suffix != nullptr);
-#endif
-
 	return suffixes != nullptr &&
 		StringArrayContainsCase(suffixes, suffix);
 }
 
 bool
-DecoderPlugin::SupportsMimeType(const char *mime_type) const noexcept
+DecoderPlugin::SupportsMimeType(std::string_view mime_type) const noexcept
 {
-#if !CLANG_CHECK_VERSION(3,6)
-	/* disabled on clang due to -Wtautological-pointer-compare */
-	assert(mime_type != nullptr);
-#endif
-
 	return mime_types != nullptr &&
 		StringArrayContainsCase(mime_types, mime_type);
 }

@@ -22,6 +22,8 @@
 
 #include "util/Compiler.h"
 
+#include <string_view>
+
 struct ConfigData;
 struct DecoderPlugin;
 
@@ -98,6 +100,6 @@ decoder_plugins_for_each_enabled(F f)
  */
 gcc_pure gcc_nonnull_all
 bool
-decoder_plugins_supports_suffix(const char *suffix) noexcept;
+decoder_plugins_supports_suffix(std::string_view suffix) noexcept;
 
 #endif

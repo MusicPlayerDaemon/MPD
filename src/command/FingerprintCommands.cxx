@@ -124,7 +124,7 @@ decoder_check_plugin_mime(const DecoderPlugin &plugin,
 
 	const char *mime_type = is.GetMimeType();
 	return mime_type != nullptr &&
-		plugin.SupportsMimeType(GetMimeTypeBase(mime_type).c_str());
+		plugin.SupportsMimeType(GetMimeTypeBase(mime_type));
 }
 
 gcc_pure

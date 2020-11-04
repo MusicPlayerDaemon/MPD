@@ -25,6 +25,7 @@
 #include <forward_list>  // IWYU pragma: export
 #include <set>
 #include <string>
+#include <string_view>
 
 struct ConfigBlock;
 class InputStream;
@@ -252,15 +253,15 @@ struct DecoderPlugin {
 	 * Does the plugin announce the specified file name suffix?
 	 */
 	gcc_pure gcc_nonnull_all
-	bool SupportsSuffix(const char *suffix) const noexcept;
+	bool SupportsSuffix(std::string_view suffix) const noexcept;
 
 	/**
 	 * Does the plugin announce the specified MIME type?
 	 */
 	gcc_pure gcc_nonnull_all
-	bool SupportsMimeType(const char *mime_type) const noexcept;
+	bool SupportsMimeType(std::string_view mime_type) const noexcept;
 
-	bool SupportsContainerSuffix(const char *suffix) const noexcept {
+	bool SupportsContainerSuffix(std::string_view suffix) const noexcept {
 		return container_scan != nullptr && SupportsSuffix(suffix);
 	}
 };

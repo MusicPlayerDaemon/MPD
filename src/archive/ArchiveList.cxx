@@ -55,10 +55,8 @@ static bool archive_plugins_enabled[std::max(n_archive_plugins, std::size_t(1))]
 		if (archive_plugins_enabled[archive_plugin_iterator - archive_plugins])
 
 const ArchivePlugin *
-archive_plugin_from_suffix(const char *suffix) noexcept
+archive_plugin_from_suffix(std::string_view suffix) noexcept
 {
-	assert(suffix != nullptr);
-
 	archive_plugins_for_each_enabled(plugin)
 		if (plugin->suffixes != nullptr &&
 		    StringArrayContainsCase(plugin->suffixes, suffix))
