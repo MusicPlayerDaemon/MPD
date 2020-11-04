@@ -500,6 +500,11 @@ The following table lists the playlist_plugin options valid for all plugins:
      - The name of the plugin
    * - **enabled yes|no**
      - Allows you to disable a playlist plugin without recompiling. By default, all plugins are enabled.
+   * - **as_directory yes|no**
+     - With this option, a playlist file of this type is parsed during
+       database update and converted to a virtual directory, allowing
+       MPD clients to access individual entries.  By default, this is
+       only enabled for the :ref:`cue plugin <cue_playlist>`.
 
 More information can be found in the :ref:`playlist_plugins`
 reference.

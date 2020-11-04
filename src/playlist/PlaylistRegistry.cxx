@@ -71,6 +71,9 @@ static constexpr unsigned n_playlist_plugins =
 /** which plugins have been initialized successfully? */
 static bool playlist_plugins_enabled[n_playlist_plugins];
 
+/** which plugins have the "as_folder" option enabled? */
+static bool playlist_plugins_as_folder[n_playlist_plugins];
+
 #define playlist_plugins_for_each_enabled(plugin) \
 	playlist_plugins_for_each(plugin) \
 		if (playlist_plugins_enabled[playlist_plugin_iterator - playlist_plugins])
@@ -96,6 +99,10 @@ playlist_list_global_init(const ConfigData &config)
 
 		playlist_plugins_enabled[i] =
 			playlist_plugin_init(playlist_plugins[i], *param);
+
+		playlist_plugins_as_folder[i] =
+			param->GetBlockValue("as_directory",
+					     playlist_plugins[i]->as_folder);
 	}
 }
 
@@ -104,6 +111,16 @@ playlist_list_global_finish() noexcept
 {
 	playlist_plugins_for_each_enabled(plugin)
 		playlist_plugin_finish(plugin);
+}
+
+bool
+GetPlaylistPluginAsFolder(const PlaylistPlugin &plugin) noexcept
+{
+	/* this loop has no end condition because it must finish when
+	   the plugin was found */
+	for (std::size_t i = 0;; ++i)
+		if (playlist_plugins[i] == &plugin)
+			return playlist_plugins_as_folder[i];
 }
 
 static std::unique_ptr<SongEnumerator>

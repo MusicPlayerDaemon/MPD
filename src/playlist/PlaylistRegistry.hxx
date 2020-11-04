@@ -60,6 +60,14 @@ public:
 };
 
 /**
+ * Shall this playlists supported by this plugin be represented as
+ * directories in the database?
+ */
+gcc_const
+bool
+GetPlaylistPluginAsFolder(const PlaylistPlugin &plugin) noexcept;
+
+/**
  * Opens a playlist by its URI.
  */
 std::unique_ptr<SongEnumerator>

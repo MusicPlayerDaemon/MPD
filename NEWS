@@ -6,6 +6,7 @@ ver 0.22.2 (2020/10/28)
   - qobuz/tidal: fix protocol errors due to newlines in error messages
   - smbclient: disable by default due to libsmbclient crash bug
 * playlist
+  - add option "as_directory", making CUE file expansion optional
   - soundcloud: fix protocol errors due to newlines in error messages
 * state_file: save on shutdown
 

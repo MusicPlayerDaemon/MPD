@@ -1231,6 +1231,8 @@ asx
 
 Reads :file:`.asx` playlist files.
 
+.. _cue_playlist:
+
 cue
 ---
 Reads :file:`.cue` files.
