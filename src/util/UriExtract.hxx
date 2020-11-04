@@ -63,7 +63,7 @@ uri_get_path(std::string_view uri) noexcept;
 
 gcc_pure
 std::string_view
-uri_get_suffix(const char *uri) noexcept;
+uri_get_suffix(std::string_view uri) noexcept;
 
 /**
  * Returns the URI fragment, i.e. the portion after the '#', but

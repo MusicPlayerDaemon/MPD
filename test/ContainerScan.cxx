@@ -48,7 +48,8 @@ FindContainerDecoderPlugin(std::string_view suffix)
 static const DecoderPlugin *
 FindContainerDecoderPlugin(Path path)
 {
-	const auto suffix = uri_get_suffix(path.ToUTF8Throw().c_str());
+	const auto path_utf8 = path.ToUTF8Throw();
+	const auto suffix = uri_get_suffix(path_utf8);
 	if (suffix.empty())
 		return nullptr;
 

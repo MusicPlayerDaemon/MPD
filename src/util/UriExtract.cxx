@@ -122,20 +122,21 @@ uri_get_path(std::string_view uri) noexcept
 
 /* suffixes should be ascii only characters */
 std::string_view
-uri_get_suffix(const char *uri) noexcept
+uri_get_suffix(std::string_view _uri) noexcept
 {
-	const char *suffix = std::strrchr(uri, '.');
-	if (suffix == nullptr || suffix == uri ||
-	    suffix[-1] == '/' || suffix[-1] == '\\')
+	StringView uri(_uri);
+	const char *dot = uri.FindLast('.');
+	if (dot == nullptr || dot == uri.data ||
+	    dot[-1] == '/' || dot[-1] == '\\')
 		return {};
 
-	++suffix;
-
-	if (strpbrk(suffix, "/\\") != nullptr)
+	auto suffix = uri.substr(dot + 1);
+	if (suffix.Find('/') != nullptr || suffix.Find('\\') != nullptr)
+		/* this was not the last path segment */
 		return {};
 
 	/* remove the query string */
-	return StringView(suffix).Split('?').first;
+	return suffix.Split('?').first;
 }
 
 const char *

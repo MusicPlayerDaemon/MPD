@@ -164,7 +164,7 @@ GetChromaprintCommand::DecodeStream(InputStream &is,
 inline void
 GetChromaprintCommand::DecodeStream(InputStream &is)
 {
-	const auto suffix = uri_get_suffix(uri.c_str());
+	const auto suffix = uri_get_suffix(uri);
 
 	decoder_plugins_try([this, &is, suffix](const DecoderPlugin &plugin){
 		return DecodeStream(is, suffix, plugin);
@@ -222,7 +222,7 @@ GetChromaprintCommand::DecodeFile(std::string_view suffix, InputStream &is,
 inline void
 GetChromaprintCommand::DecodeFile()
 {
-	const auto suffix = uri_get_suffix(uri.c_str());
+	const auto suffix = uri_get_suffix(uri);
 	if (suffix.empty())
 		return;
 
