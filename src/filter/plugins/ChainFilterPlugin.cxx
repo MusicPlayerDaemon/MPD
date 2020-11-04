@@ -31,12 +31,10 @@
 
 class ChainFilter final : public Filter {
 	struct Child {
-		const char *name;
 		std::unique_ptr<Filter> filter;
 
-		Child(const char *_name,
-		      std::unique_ptr<Filter> _filter) noexcept
-			:name(_name), filter(std::move(_filter)) {}
+		explicit Child(std::unique_ptr<Filter> &&_filter) noexcept
+			:filter(std::move(_filter)) {}
 	};
 
 	std::list<Child> children;
@@ -50,13 +48,12 @@ public:
 	explicit ChainFilter(AudioFormat _audio_format)
 		:Filter(_audio_format) {}
 
-	void Append(const char *name,
-		    std::unique_ptr<Filter> filter) noexcept {
+	void Append(std::unique_ptr<Filter> filter) noexcept {
 		assert(out_audio_format.IsValid());
 		out_audio_format = filter->GetOutAudioFormat();
 		assert(out_audio_format.IsValid());
 
-		children.emplace_back(name, std::move(filter));
+		children.emplace_back(std::move(filter));
 
 		RewindFlush();
 	}
@@ -121,7 +118,7 @@ PreparedChainFilter::Open(AudioFormat &in_audio_format)
 
 	for (auto &child : children) {
 		AudioFormat audio_format = chain->GetOutAudioFormat();
-		chain->Append(child.name, child.Open(audio_format));
+		chain->Append(child.Open(audio_format));
 	}
 
 	return chain;
