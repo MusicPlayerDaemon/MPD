@@ -28,6 +28,7 @@
 #include <cassert>
 #include <list>
 #include <memory>
+#include <string>
 
 class ChainFilter final : public Filter {
 	struct Child {
@@ -72,7 +73,7 @@ private:
 
 class PreparedChainFilter final : public PreparedFilter {
 	struct Child {
-		const char *name;
+		const std::string name;
 		std::unique_ptr<PreparedFilter> filter;
 
 		Child(const char *_name,
@@ -105,7 +106,7 @@ PreparedChainFilter::Child::Open(const AudioFormat &prev_audio_format)
 
 	if (conv_audio_format != prev_audio_format)
 		throw FormatRuntimeError("Audio format not supported by filter '%s': %s",
-					 name,
+					 name.c_str(),
 					 ToString(prev_audio_format).c_str());
 
 	return new_filter;

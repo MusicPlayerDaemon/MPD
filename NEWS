@@ -1,6 +1,8 @@
 ver 0.22.3 (not yet released)
 * playlist
   - add option "as_directory", making CUE file expansion optional
+* filter
+  - fix garbage after "Audio format not supported by filter" message
 
 ver 0.22.2 (2020/10/28)
 * database
