@@ -21,11 +21,9 @@
 #include "Factory.hxx"
 #include "Prepared.hxx"
 #include "plugins/ChainFilterPlugin.hxx"
+#include "util/IterableSplitString.hxx"
 
-#include <algorithm>
 #include <string>
-
-#include <string.h>
 
 static void
 filter_chain_append_new(PreparedFilter &chain, FilterFactory &factory,
@@ -40,18 +38,11 @@ filter_chain_parse(PreparedFilter &chain,
 		   FilterFactory &factory,
 		   const char *spec)
 {
-	const char *const end = spec + strlen(spec);
+	for (const std::string_view i : IterableSplitString(spec, ',')) {
+		if (i.empty())
+			continue;
 
-	while (true) {
-		const char *comma = std::find(spec, end, ',');
-		if (comma > spec) {
-			const std::string name(spec, comma);
-			filter_chain_append_new(chain, factory, name.c_str());
-		}
-
-		if (comma == end)
-			break;
-
-		spec = comma + 1;
+		const std::string name(i);
+		filter_chain_append_new(chain, factory, name.c_str());
 	}
 }
