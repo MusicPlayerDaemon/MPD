@@ -36,9 +36,9 @@
 gcc_pure
 static bool
 CheckDecoderPlugin(const DecoderPlugin &plugin,
-		   std::string_view suffix, const char *mime) noexcept
+		   std::string_view suffix, std::string_view mime) noexcept
 {
-	return (mime != nullptr && plugin.SupportsMimeType(mime)) ||
+	return (!mime.empty() && plugin.SupportsMimeType(mime)) ||
 		(!suffix.empty() && plugin.SupportsSuffix(suffix));
 }
 
@@ -48,23 +48,23 @@ tag_stream_scan(InputStream &is, TagHandler &handler)
 	assert(is.IsReady());
 
 	const auto suffix = uri_get_suffix(is.GetURI());
-	const char *mime = is.GetMimeType();
+	const char *full_mime = is.GetMimeType();
 
-	if (suffix.empty() && mime == nullptr)
+	if (suffix.empty() && full_mime == nullptr)
 		return false;
 
-	std::string mime_base;
-	if (mime != nullptr)
-		mime = (mime_base = GetMimeTypeBase(mime)).c_str();
+	std::string_view mime_base{};
+	if (full_mime != nullptr)
+		mime_base = GetMimeTypeBase(full_mime);
 
-	return decoder_plugins_try([suffix, mime, &is,
+	return decoder_plugins_try([suffix, mime_base, &is,
 				    &handler](const DecoderPlugin &plugin){
 			try {
 				is.LockRewind();
 			} catch (...) {
 			}
 
-			return CheckDecoderPlugin(plugin, suffix, mime) &&
+			return CheckDecoderPlugin(plugin, suffix, mime_base) &&
 				plugin.ScanStream(is, handler);
 		});
 }

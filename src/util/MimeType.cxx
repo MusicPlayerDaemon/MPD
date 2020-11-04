@@ -19,16 +19,12 @@
 
 #include "MimeType.hxx"
 #include "SplitString.hxx"
+#include "StringView.hxx"
 
-#include <cstring>
-
-std::string
-GetMimeTypeBase(const char *s) noexcept
+std::string_view
+GetMimeTypeBase(std::string_view s) noexcept
 {
-	const char *semicolon = std::strchr(s, ';');
-	return semicolon != nullptr
-		? std::string(s, semicolon)
-		: std::string(s);
+	return StringView(s).Split(';').first;
 }
 
 std::map<std::string, std::string>

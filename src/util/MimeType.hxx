@@ -20,7 +20,10 @@
 #ifndef MPD_MIME_TYPE_HXX
 #define MPD_MIME_TYPE_HXX
 
+#include "util/Compiler.h"
+
 #include <string>
+#include <string_view>
 #include <map>
 
 /**
@@ -28,8 +31,9 @@
  * part before the semicolon.  If there is no semicolon, it returns
  * the string as-is.
  */
-std::string
-GetMimeTypeBase(const char *s) noexcept;
+gcc_pure
+std::string_view
+GetMimeTypeBase(std::string_view s) noexcept;
 
 /**
  * Parse the parameters from a MIME type string.  Parameters are

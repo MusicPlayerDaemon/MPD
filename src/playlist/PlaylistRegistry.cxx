@@ -227,10 +227,8 @@ ExtractMimeTypeMainPart(StringView s) noexcept
 }
 
 static std::unique_ptr<SongEnumerator>
-playlist_list_open_stream_mime(InputStreamPtr &&is, const char *full_mime)
+playlist_list_open_stream_mime(InputStreamPtr &&is, std::string_view full_mime)
 {
-	assert(full_mime != nullptr);
-
 	/* probe only the portion before the semicolon*/
 	return playlist_list_open_stream_mime2(std::move(is),
 					       ExtractMimeTypeMainPart(full_mime));
@@ -266,7 +264,7 @@ playlist_list_open_stream(InputStreamPtr &&is, const char *uri)
 	const char *const mime = is->GetMimeType();
 	if (mime != nullptr) {
 		auto playlist = playlist_list_open_stream_mime(std::move(is),
-							       GetMimeTypeBase(mime).c_str());
+							       GetMimeTypeBase(mime));
 		if (playlist != nullptr)
 			return playlist;
 	}
