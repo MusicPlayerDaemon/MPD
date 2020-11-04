@@ -76,7 +76,7 @@ class PreparedChainFilter final : public PreparedFilter {
 		const std::string name;
 		std::unique_ptr<PreparedFilter> filter;
 
-		Child(const char *_name,
+		Child(std::string_view _name,
 		      std::unique_ptr<PreparedFilter> _filter)
 			:name(_name), filter(std::move(_filter)) {}
 
@@ -89,7 +89,7 @@ class PreparedChainFilter final : public PreparedFilter {
 	std::list<Child> children;
 
 public:
-	void Append(const char *name,
+	void Append(std::string_view name,
 		    std::unique_ptr<PreparedFilter> filter) noexcept {
 		children.emplace_back(name, std::move(filter));
 	}
@@ -175,7 +175,7 @@ filter_chain_new() noexcept
 }
 
 void
-filter_chain_append(PreparedFilter &_chain, const char *name,
+filter_chain_append(PreparedFilter &_chain, std::string_view name,
 		    std::unique_ptr<PreparedFilter> filter) noexcept
 {
 	auto &chain = (PreparedChainFilter &)_chain;

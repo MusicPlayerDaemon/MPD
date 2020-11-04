@@ -27,10 +27,13 @@
 
 static void
 filter_chain_append_new(PreparedFilter &chain, FilterFactory &factory,
-			const char *template_name)
+			std::string_view template_name)
 {
 	filter_chain_append(chain, template_name,
-			    factory.MakeFilter(template_name));
+			    /* unfortunately, MakeFilter() wants a
+			       null-terminated string, so we need to
+			       copy it here */
+			    factory.MakeFilter(std::string(template_name).c_str()));
 }
 
 void
@@ -42,7 +45,6 @@ filter_chain_parse(PreparedFilter &chain,
 		if (i.empty())
 			continue;
 
-		const std::string name(i);
-		filter_chain_append_new(chain, factory, name.c_str());
+		filter_chain_append_new(chain, factory, i);
 	}
 }
