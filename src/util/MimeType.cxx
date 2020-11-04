@@ -18,7 +18,7 @@
  */
 
 #include "MimeType.hxx"
-#include "SplitString.hxx"
+#include "IterableSplitString.hxx"
 #include "StringView.hxx"
 
 std::string_view
@@ -28,21 +28,17 @@ GetMimeTypeBase(std::string_view s) noexcept
 }
 
 std::map<std::string, std::string>
-ParseMimeTypeParameters(const char *s) noexcept
+ParseMimeTypeParameters(std::string_view mime_type) noexcept
 {
+	/* discard the first segment (the base MIME type) */
+	const auto params = StringView(mime_type).Split(';').second;
+
 	std::map<std::string, std::string> result;
-
-	auto l = SplitString(s, ';', true);
-	if (!l.empty())
-		l.pop_front();
-
-	for (const auto &i : l) {
-		const auto eq = i.find('=');
-		if (eq == i.npos)
-			continue;
-
-		result.insert(std::make_pair(i.substr(0, eq),
-					     i.substr(eq + 1)));
+	for (auto i : IterableSplitString(params, ';')) {
+		i.Strip();
+		auto s = i.Split('=');
+		if (!s.second.IsNull())
+			result.emplace(s);
 	}
 
 	return result;
