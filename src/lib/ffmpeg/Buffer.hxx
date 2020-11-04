@@ -20,6 +20,8 @@
 #ifndef MPD_FFMPEG_BUFFER_HXX
 #define MPD_FFMPEG_BUFFER_HXX
 
+#include "util/Compiler.h"
+
 extern "C" {
 #include <libavutil/mem.h>
 }
