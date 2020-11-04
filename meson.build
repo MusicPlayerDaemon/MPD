@@ -96,6 +96,11 @@ test_cflags = test_common_flags + [
 ]
 
 test_ldflags = [
+  # make relocations read-only (hardening)
+  '-Wl,-z,relro',
+
+  # no lazy binding, please - not worth it for a daemon
+  '-Wl,-z,now',
 ]
 
 if get_option('buildtype') != 'debug'
