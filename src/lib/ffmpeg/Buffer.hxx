@@ -26,11 +26,6 @@ extern "C" {
 
 #include <cstddef>
 
-/* suppress the ffmpeg compatibility macro */
-#ifdef SampleFormat
-#undef SampleFormat
-#endif
-
 class FfmpegBuffer {
 	void *data;
 	unsigned size;

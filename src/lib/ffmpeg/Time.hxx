@@ -31,11 +31,6 @@ extern "C" {
 #include <cassert>
 #include <cstdint>
 
-/* suppress the ffmpeg compatibility macro */
-#ifdef SampleFormat
-#undef SampleFormat
-#endif
-
 /* redefine AV_TIME_BASE_Q because libavutil's macro definition is a
    compound literal, which is illegal in C++ */
 #ifdef AV_TIME_BASE_Q
