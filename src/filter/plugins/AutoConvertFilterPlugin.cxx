@@ -47,9 +47,7 @@ public:
 
 	void Reset() noexcept override {
 		filter->Reset();
-
-		if (convert)
-			convert->Reset();
+		convert->Reset();
 	}
 
 	ConstBuffer<void> FilterPCM(ConstBuffer<void> src) override;
@@ -81,13 +79,14 @@ PreparedAutoConvertFilter::Open(AudioFormat &in_audio_format)
 
 	/* need to convert? */
 
-	std::unique_ptr<Filter> convert;
-	if (in_audio_format != child_audio_format) {
-		/* yes - create a convert_filter */
+	if (in_audio_format == child_audio_format)
+		/* no */
+		return new_filter;
 
-		convert = convert_filter_new(in_audio_format,
-					     child_audio_format);
-	}
+	/* yes - create a convert_filter */
+
+	auto convert = convert_filter_new(in_audio_format,
+					  child_audio_format);
 
 	return std::make_unique<AutoConvertFilter>(std::move(new_filter),
 						   std::move(convert));
@@ -96,20 +95,16 @@ PreparedAutoConvertFilter::Open(AudioFormat &in_audio_format)
 ConstBuffer<void>
 AutoConvertFilter::FilterPCM(ConstBuffer<void> src)
 {
-	if (convert != nullptr)
-		src = convert->FilterPCM(src);
-
+	src = convert->FilterPCM(src);
 	return filter->FilterPCM(src);
 }
 
 ConstBuffer<void>
 AutoConvertFilter::Flush()
 {
-	if (convert != nullptr) {
-		auto result = convert->Flush();
-		if (!result.IsNull())
-			return filter->FilterPCM(result);
-	}
+	auto result = convert->Flush();
+	if (!result.IsNull())
+		return filter->FilterPCM(result);
 
 	return filter->Flush();
 }
