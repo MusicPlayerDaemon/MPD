@@ -227,8 +227,7 @@ try {
 						  DBUS_OM_INTERFACE,
 						  "GetManagedObjects");
 		list_request.Send(connection, *msg.Get(),
-				  std::bind(&UdisksStorage::OnListReply,
-					    this, std::placeholders::_1));
+				  [this](auto o) { return OnListReply(std::move(o)); });
 		return;
 	}
 
@@ -239,8 +238,7 @@ try {
 	AppendMessageIter(*msg.Get()).AppendEmptyArray<DictEntryTypeTraits<StringTypeTraits, VariantTypeTraits>>();
 
 	mount_request.Send(connection, *msg.Get(),
-			   std::bind(&UdisksStorage::OnMountNotify,
-				     this, std::placeholders::_1));
+			   [this](auto o) { return OnMountNotify(std::move(o)); });
 } catch (...) {
 	const std::lock_guard<Mutex> lock(mutex);
 	mount_error = std::current_exception();
@@ -297,8 +295,7 @@ try {
 	AppendMessageIter(*msg.Get()).AppendEmptyArray<DictEntryTypeTraits<StringTypeTraits, VariantTypeTraits>>();
 
 	mount_request.Send(connection, *msg.Get(),
-			   std::bind(&UdisksStorage::OnUnmountNotify,
-				     this, std::placeholders::_1));
+			   [this](auto u) { return OnUnmountNotify(std::move(u)); });
 } catch (...) {
 	const std::lock_guard<Mutex> lock(mutex);
 	mount_error = std::current_exception();
