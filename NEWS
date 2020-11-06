@@ -1,6 +1,8 @@
 ver 0.22.3 (not yet released)
 * playlist
   - add option "as_directory", making CUE file expansion optional
+* storage
+  - curl: fix crash bug
 * filter
   - fix garbage after "Audio format not supported by filter" message
   - ffmpeg: support planar output
