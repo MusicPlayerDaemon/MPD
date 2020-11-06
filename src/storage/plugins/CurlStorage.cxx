@@ -80,7 +80,7 @@ std::string_view
 CurlStorage::MapToRelativeUTF8(std::string_view uri_utf8) const noexcept
 {
 	return PathTraitsUTF8::Relative(base,
-					CurlUnescape(uri_utf8).c_str());
+					CurlUnescape(uri_utf8));
 }
 
 class BlockingHttpRequest : protected CurlResponseHandler {
