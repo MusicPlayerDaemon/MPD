@@ -90,7 +90,8 @@
 #port				"6600"
 #
 # Suppress all messages below the given threshold.  Use "verbose" for
-# troubleshooting.
+# troubleshooting. Available setting arguments are "notice", "info", "verbose",
+# "warning" and "error".
 #
 #log_level			"notice"
 #
