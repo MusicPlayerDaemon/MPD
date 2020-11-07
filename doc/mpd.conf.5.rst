@@ -11,24 +11,34 @@ not specified on the command line, MPD first searches for it at
 :file:`$XDG_CONFIG_HOME/mpd/mpd.conf` then at :file:`~/.mpdconf` then
 at :file:`~/.mpd/mpd.conf` and then in :file:`/etc/mpd.conf`.
 
-Lines beginning with a :samp:`#` character are comments. All other
-non-empty lines specify parameters and their values. These lines
-contain the parameter name and parameter value (surrounded by double
-quotes) separated by whitespace (either tabs or spaces).  For
-example::
+Each line in the configuration file contains a setting name and its value, e.g.:
 
-   parameter "value"
+:code:`connection_timeout "5"`
 
-The exception to this rule is the audio_output parameter, which is of
-the form::
+For settings which specify a filesystem path, the tilde is expanded:
+
+:code:`music_directory "~/Music"`
+
+Some of the settings are grouped in blocks with curly braces, e.g. per-plugin settings:
+
+.. code-block:: none
 
    audio_output {
-   	parameter1 "value"
-   	parameter2 "value"
+       type "alsa"
+       name "My ALSA output"
+       device "iec958:CARD=Intel,DEV=0"
+       mixer_control "PCM"
    }
 
+The :code:`include` directive can be used to include settings from
+another file; the given file name is relative to the current file:
 
-Parameters that take a file or directory as an argument should use absolute paths.
+:code:`include "other.conf"`
+
+You can use include_optional instead if you want the included file to be
+optional; the directive will be ignored if the file does not exist:
+
+:code:`include_optional "may_not_exist.conf"`
 
 See :file:`docs/mpdconf.example` in the source tarball for an example
 configuration file.
@@ -38,7 +48,7 @@ Please read the MPD user manual for a complete configuration guide:
 http://www.musicpd.org/doc/user/
 
 
-REQUIRED PARAMETERS
+OPTIONAL PARAMETERS
 -------------------
 
 db_file <file>
@@ -46,9 +56,6 @@ db_file <file>
 
 log_file <file>
    This specifies where the log file should be located. The special value "syslog" makes MPD use the local syslog daemon.
-
-OPTIONAL PARAMETERS
--------------------
 
 sticker_file <file>
    The location of the sticker database. This is a database which manages
@@ -83,7 +90,7 @@ user <username>
 port <port>
    This specifies the port that mpd listens on. The default is 6600.
 
-log_level <default, secure, or verbose>
+log_level <level>
    Suppress all messages below the given threshold.  The following
    log levels are available:
 
@@ -190,8 +197,8 @@ mixer_type <hardware, software or none>
 FILES
 -----
 
-:file:`~/.mpdconf`
-  User configuration file.
+:file:`$XDG_CONFIG_HOME/mpd/mpd.conf`
+  User configuration file (usually :file:`~/.config/mpd/mpd.conf`).
 
 :file:`/etc/mpd.conf`
   Global configuration file.
