@@ -173,7 +173,18 @@
 
 # Database #######################################################################
 #
-
+# An example of a database section instead of the old 'db_file' setting.
+# It enables mounting other storages into the music directory.
+#
+#database {
+#       plugin "simple"
+#       path "~/.local/share/mpd/db
+#       cache_directory "~/.local/share/mpd/cache"
+#}
+#
+# An example of database config for a sattelite setup
+#
+#music_directory "nfs://fileserver.local/srv/mp3"
 #database {
 #       plugin "proxy"
 #       host "other.mpd.host"
@@ -182,7 +193,6 @@
 
 # Input #######################################################################
 #
-
 input {
         plugin "curl"
 #       proxy "proxy.isp.com:8080"
