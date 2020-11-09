@@ -47,8 +47,18 @@ SocketEvent::Close() noexcept
 	/* closing the socket automatically unregisters it from epoll,
 	   so we can omit the epoll_ctl(EPOLL_CTL_DEL) call and save
 	   one system call */
-	if (std::exchange(scheduled_flags, 0) != 0)
+	if (std::exchange(scheduled_flags, 0) != 0) {
+#ifdef HAVE_THREADED_EVENT_LOOP
+		/* can't use this optimization in multi-threaded
+		   programs, because all file descriptors get
+		   duplicated in forked processes, leaving them
+		   registered in epoll, which could cause the parent
+		   to crash */
+		loop.RemoveFD(fd.Get(), *this);
+#else
 		loop.AbandonFD(*this);
+#endif
+	}
 	fd.Close();
 }
 
