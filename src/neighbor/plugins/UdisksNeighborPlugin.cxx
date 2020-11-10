@@ -128,9 +128,9 @@ UdisksNeighborExplorer::DoOpen()
 								  UDISKS2_PATH,
 								  DBUS_OM_INTERFACE,
 								  "GetManagedObjects");
-				list_request.Send(connection, *msg.Get(),
-						  std::bind(&UdisksNeighborExplorer::OnListNotify,
-							    this, std::placeholders::_1));
+				list_request.Send(connection, *msg.Get(), [this](auto o) {
+					return OnListNotify(std::move(o));
+				});
 			} catch (...) {
 				dbus_connection_remove_filter(connection,
 							      HandleMessage,
@@ -229,9 +229,8 @@ inline void
 UdisksNeighborExplorer::OnListNotify(ODBus::Message reply) noexcept
 {
 	try{
-		ParseObjects(reply,
-			     std::bind(&UdisksNeighborExplorer::Insert,
-				       this, std::placeholders::_1));
+		UDisks2::ParseObjects(reply,
+				      [this](auto p) { return Insert(std::move(p)); });
 	} catch (...) {
 		LogError(std::current_exception(),
 			 "Failed to parse GetManagedObjects reply");
