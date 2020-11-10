@@ -55,6 +55,17 @@ struct DsdiffChunkHeader {
 	uint64_t GetSize() const {
 		return size.Read();
 	}
+
+	/**
+	 * Applies padding to GetSize(), according to the DSDIFF
+	 * specification
+	 * (http://www.sonicstudio.com/pdf/dsd/DSDIFF_1.5_Spec.pdf)
+	 * section 2.3.
+	 */
+	[[nodiscard]] constexpr
+	uint64_t GetPaddedSize() const noexcept {
+		return (GetSize() + 1) & ~uint64_t(1);
+	}
 };
 
 /** struct for DSDIFF native Artist and Title tags */
@@ -117,7 +128,7 @@ dsdiff_read_prop_snd(DecoderClient *client, InputStream &is,
 			return false;
 
 		offset_type chunk_end_offset = is.GetOffset()
-			+ header.GetSize();
+			+ header.GetPaddedSize();
 		if (chunk_end_offset > end_offset)
 			return false;
 
