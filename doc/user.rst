@@ -1032,12 +1032,20 @@ Check list for bit-perfect playback:
   :code:`format`, :ref:`audio_output_format <audio_output_format>`).
 * Verify that you are really doing bit-perfect playback using :program:`MPD`'s verbose log and :file:`/proc/asound/card*/pcm*p/sub*/hw_params`. Some DACs can also indicate the audio format.
 
+.. _dsd:
+
 Direct Stream Digital (DSD)
 ---------------------------
 
-DSD (`Direct Stream Digital <https://en.wikipedia.org/wiki/Direct_Stream_Digital>`_) is a digital format that stores audio as a sequence of single-bit values at a very high sampling rate.
+DSD (`Direct Stream Digital
+<https://en.wikipedia.org/wiki/Direct_Stream_Digital>`_) is a digital
+format that stores audio as a sequence of single-bit values at a very
+high sampling rate.  It is the sample format used on `Super Audio CDs
+<https://en.wikipedia.org/wiki/Super_Audio_CD>`_.
 
-:program:`MPD` understands the file formats dff and dsf. There are three ways to play back DSD:
+:program:`MPD` understands the file formats :ref:`DSDIFF
+<decoder_dsdiff>` and :ref:`DSF <decoder_dsf>`.  There are three ways
+to play back DSD:
 
 * Native DSD playback. Requires ALSA 1.0.27.1 or later, a sound driver/chip that supports DSD and of course a DAC that supports DSD.
 
