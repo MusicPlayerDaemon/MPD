@@ -763,6 +763,10 @@ Valid quality values for libsoxr:
 
 If the quality is set to custom also the following settings are available:
 
+.. list-table::
+   :widths: 20 80
+   :header-rows: 1
+
    * - Name
      - Description
    * - **precision**
