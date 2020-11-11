@@ -378,10 +378,14 @@ flac
 
 Decodes FLAC files using libFLAC.
 
+.. _decoder_dsdiff:
+
 dsdiff
 ------
 
-Decodes DFF files containing DSDIFF data (e.g. SACD rips).
+Decodes DSDIFF (`Direct Stream Digital Interchange File Format
+<http://www.sonicstudio.com/pdf/dsd/DSDIFF_1.5_Spec.pdf>`_) files
+(:file:`*.dff`).  These contain :ref:`DSD <dsd>` instead of PCM.
 
 .. list-table::
    :widths: 20 80
@@ -392,10 +396,14 @@ Decodes DFF files containing DSDIFF data (e.g. SACD rips).
    * - **lsbitfirst yes|no**
      - Decode the least significant bit first. Default is no.
 
+.. _decoder_dsf:
+
 dsf
 ---
 
-Decodes DSF files containing DSDIFF data (e.g. SACD rips).
+Decodes DSF
+(<https://dsd-guide.com/sites/default/files/white-papers/DSFFileFormatSpec_E.pdf>)
+files (:file:`*.dsf`).  These contain :ref:`DSD <dsd>` instead of PCM.
 
 fluidsynth
 ----------
@@ -754,6 +762,10 @@ Valid quality values for libsoxr:
 * "custom"
 
 If the quality is set to custom also the following settings are available:
+
+.. list-table::
+   :widths: 20 80
+   :header-rows: 1
 
    * - Name
      - Description
