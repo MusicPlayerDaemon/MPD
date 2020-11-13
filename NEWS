@@ -1,6 +1,8 @@
 ver 0.22.4 (not yet released)
 * decoder
   - dsdiff: apply padding to odd-sized chunks
+* output
+  - moveoutput: fix always_on and tag lost on move
 
 ver 0.22.3 (2020/11/06)
 * playlist
