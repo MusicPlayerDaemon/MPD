@@ -23,6 +23,7 @@
 #include "filter/Filter.hxx"
 #include "filter/Prepared.hxx"
 #include "lib/ffmpeg/Filter.hxx"
+#include "lib/ffmpeg/DetectFilterFormat.hxx"
 #include "config/Block.hxx"
 
 class PreparedFfmpegFilter final : public PreparedFilter {
@@ -60,7 +61,9 @@ PreparedFfmpegFilter::Open(AudioFormat &in_audio_format)
 
 	graph.CheckAndConfigure();
 
-	auto out_audio_format = in_audio_format; // TODO
+	const auto out_audio_format =
+		Ffmpeg::DetectFilterOutputFormat(in_audio_format, *buffer_src,
+						 *buffer_sink);
 
 	return std::make_unique<FfmpegFilter>(in_audio_format,
 					      out_audio_format,
