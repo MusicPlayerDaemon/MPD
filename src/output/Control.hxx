@@ -245,6 +245,9 @@ public:
 	AudioOutputControl(std::unique_ptr<FilteredAudioOutput> _output,
 			   AudioOutputClient &_client) noexcept;
 
+	AudioOutputControl(AudioOutputControl *_outputControl,
+			   AudioOutputClient &_client) noexcept;
+
 	~AudioOutputControl() noexcept;
 
 	AudioOutputControl(const AudioOutputControl &) = delete;

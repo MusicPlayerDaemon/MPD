@@ -141,6 +141,19 @@ MultipleOutputs::Add(std::unique_ptr<FilteredAudioOutput> output,
 }
 
 void
+MultipleOutputs::AddCopy(AudioOutputControl *outputControl,
+		     bool enable) noexcept
+{
+	// TODO: this operation needs to be protected with a mutex
+	outputs.emplace_back(std::make_unique<AudioOutputControl>(outputControl,
+								  client));
+
+	outputs.back()->LockSetEnabled(enable);
+
+	client.ApplyEnabled();
+}
+
+void
 MultipleOutputs::EnableDisable()
 {
 	/* parallel execution */

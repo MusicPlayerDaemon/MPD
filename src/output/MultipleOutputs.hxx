@@ -128,6 +128,10 @@ public:
 	void Add(std::unique_ptr<FilteredAudioOutput> output,
 		 bool enable) noexcept;
 
+	void AddCopy(AudioOutputControl *outputControl,
+		     bool enable) noexcept;
+
+
 	void SetReplayGainMode(ReplayGainMode mode) noexcept;
 
 	/**
