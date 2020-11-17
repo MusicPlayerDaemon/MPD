@@ -148,6 +148,14 @@ public:
 		return buffer.size;
 	}
 
+	pointer data() noexcept {
+		return buffer.data;
+	}
+
+	const_pointer data() const noexcept {
+		return buffer.data;
+	}
+
 	reference front() noexcept {
 		return buffer.front();
 	}
