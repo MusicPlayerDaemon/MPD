@@ -48,6 +48,8 @@ public:
 	using size_type = typename Buffer::size_type;
 	using reference = typename Buffer::reference;
 	using const_reference = typename Buffer::const_reference;
+	using pointer = typename Buffer::pointer;
+	using const_pointer = typename Buffer::const_pointer;
 	using iterator = typename Buffer::iterator;
 	using const_iterator = typename Buffer::const_iterator;
 
