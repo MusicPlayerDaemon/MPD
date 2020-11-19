@@ -70,6 +70,9 @@ public:
 		std::copy_n(src.data, src.size, buffer.data);
 	}
 
+	AllocatedArray(std::nullptr_t n) noexcept
+		:buffer(n) {}
+
 	explicit AllocatedArray(const AllocatedArray &other) noexcept
 		:AllocatedArray(other.buffer) {}
 
