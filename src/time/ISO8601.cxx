@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2019 Content Management AG
+ * Copyright 2007-2020 CM4all GmbH
  * All rights reserved.
  *
  * author: Max Kellermann <mk@cm4all.com>
@@ -32,6 +32,7 @@
 
 #include "ISO8601.hxx"
 #include "Convert.hxx"
+#include "Math.hxx"
 #include "util/StringBuffer.hxx"
 
 #include <cassert>
@@ -169,6 +170,13 @@ ParseTimeOfDay(const char *s, struct tm &tm,
 	return end;
 }
 
+static bool
+StrptimeFull(const char *s, const char *fmt, struct tm *tm) noexcept
+{
+	const char *end = strptime(s, fmt, tm);
+	return end != nullptr && *end == 0;
+}
+
 #endif
 
 std::pair<std::chrono::system_clock::time_point,
@@ -183,6 +191,15 @@ ParseISO8601(const char *s)
 	throw std::runtime_error("Time parsing not implemented on Windows");
 #else
 	struct tm tm{};
+
+	if (StrptimeFull(s, "%Y-%m", &tm)) {
+		/* full month */
+		tm.tm_mday = 1;
+		const auto start = TimeGm(tm);
+		EndOfMonth(tm);
+		const auto end = TimeGm(tm);
+		return {start, end - start};
+	}
 
 	/* parse the date */
 	const char *end = strptime(s, "%F", &tm);
