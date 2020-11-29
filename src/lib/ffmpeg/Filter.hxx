@@ -20,6 +20,9 @@
 #ifndef MPD_FFMPEG_FILTER_HXX
 #define MPD_FFMPEG_FILTER_HXX
 
+/* necessary because libavutil/common.h uses UINT64_C */
+#define __STDC_CONSTANT_MACROS
+
 #include "Error.hxx"
 
 extern "C" {
