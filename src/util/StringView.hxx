@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2019 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2013-2020 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -35,6 +35,7 @@
 #include "Compiler.h"
 
 #include <utility>
+#include <cstddef>
 
 #if __cplusplus >= 201703L && !GCC_OLDER_THAN(7,0)
 #include <string_view>
@@ -120,6 +121,20 @@ struct BasicStringView : ConstBuffer<T> {
 	gcc_pure
 	std::pair<BasicStringView<T>, BasicStringView<T>> Split(value_type ch) const noexcept {
 		const auto separator = Find(ch);
+		if (separator == nullptr)
+			return {*this, nullptr};
+
+		return {{begin(), separator}, {separator + 1, end()}};
+	}
+
+	/**
+	 * Split the string at the last occurrence of the given
+	 * character.  If the character is not found, then the first
+	 * value is the whole string and the second value is nullptr.
+	 */
+	gcc_pure
+	std::pair<BasicStringView<T>, BasicStringView<T>> SplitLast(value_type ch) const noexcept {
+		const auto separator = FindLast(ch);
 		if (separator == nullptr)
 			return {*this, nullptr};
 
