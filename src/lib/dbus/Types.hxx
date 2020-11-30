@@ -42,7 +42,7 @@ namespace ODBus {
 template<int type>
 struct BasicTypeTraits {
 	static constexpr int TYPE = type;
-	static constexpr auto as_string = TemplateString::CharAsString(TYPE);
+	static constexpr auto as_string = TemplateString::FromChar(TYPE);
 };
 
 template<typename T>
@@ -74,7 +74,7 @@ struct ArrayTypeTraits {
 
 	static constexpr int TYPE = DBUS_TYPE_ARRAY;
 	static constexpr auto as_string =
-		TemplateString::Concat(TemplateString::CharAsString(TYPE),
+		TemplateString::Concat(TemplateString::FromChar(TYPE),
 				       ContainedTraits::as_string);
 };
 
@@ -83,10 +83,10 @@ struct DictEntryTypeTraits {
 	static constexpr int TYPE = DBUS_TYPE_DICT_ENTRY;
 
 	static constexpr auto as_string =
-		TemplateString::Concat(TemplateString::CharAsString(DBUS_DICT_ENTRY_BEGIN_CHAR),
+		TemplateString::Concat(TemplateString::FromChar(DBUS_DICT_ENTRY_BEGIN_CHAR),
 				       KeyT::as_string,
 				       ValueT::as_string,
-				       TemplateString::CharAsString(DBUS_DICT_ENTRY_END_CHAR));
+				       TemplateString::FromChar(DBUS_DICT_ENTRY_END_CHAR));
 };
 
 using VariantTypeTraits = BasicTypeTraits<DBUS_TYPE_VARIANT>;
@@ -111,9 +111,9 @@ struct StructTypeTraits {
 	static constexpr int TYPE = DBUS_TYPE_STRUCT;
 
 	static constexpr auto as_string =
-		TemplateString::Concat(TemplateString::CharAsString(DBUS_STRUCT_BEGIN_CHAR),
+		TemplateString::Concat(TemplateString::FromChar(DBUS_STRUCT_BEGIN_CHAR),
 				       ConcatTypeAsString<ContainedTraits...>::as_string,
-				       TemplateString::CharAsString(DBUS_STRUCT_END_CHAR));
+				       TemplateString::FromChar(DBUS_STRUCT_END_CHAR));
 };
 
 } /* namespace ODBus */

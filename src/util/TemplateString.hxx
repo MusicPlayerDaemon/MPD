@@ -63,7 +63,7 @@ Empty() noexcept
  * A string consisting of a single character.
  */
 constexpr auto
-CharAsString(char ch) noexcept
+FromChar(char ch) noexcept
 {
 	Buffer<1> result{};
 	result.value[0] = ch;
