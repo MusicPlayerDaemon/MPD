@@ -68,6 +68,19 @@ public:
 		return (const struct sockaddr *)(const void *)&address;
 	}
 
+	/**
+	 * Cast the "sockaddr" pointer to a different address type,
+	 * e.g. "sockaddr_in".  This is only legal after checking
+	 * GetFamily().
+	 */
+	template<typename T>
+	constexpr const T &CastTo() const noexcept {
+		/* cast through void to work around the bogus
+		   alignment warning */
+		const void *q = reinterpret_cast<const void *>(&address);
+		return *reinterpret_cast<const T *>(q);
+	}
+
 	constexpr size_type GetCapacity() const noexcept {
 		return sizeof(address);
 	}

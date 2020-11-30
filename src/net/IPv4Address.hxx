@@ -171,9 +171,7 @@ public:
 	 * only legal after verifying SocketAddress::GetFamily().
 	 */
 	static constexpr const IPv4Address &Cast(const SocketAddress src) noexcept {
-		/* this reinterpret_cast works because this class is
-		   just a wrapper for struct sockaddr_in */
-		return *(const IPv4Address *)(const void *)src.GetAddress();
+		return Cast(src.CastTo<struct sockaddr_in>());
 	}
 
 	constexpr operator SocketAddress() const noexcept {

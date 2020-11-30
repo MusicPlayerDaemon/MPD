@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2019 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2012-2020 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -63,7 +63,7 @@ SocketAddress::GetLocalRaw() const noexcept
 		/* not applicable */
 		return nullptr;
 
-	const auto sun = (const struct sockaddr_un *)GetAddress();
+	const auto *sun = &CastTo<struct sockaddr_un>();
 	const auto start = (const char *)sun;
 	const auto path = sun->sun_path;
 	const size_t header_size = path - start;
@@ -159,10 +159,10 @@ SocketAddress::GetSteadyPart() const noexcept
 
 #ifdef HAVE_TCP
 	case AF_INET:
-		return ::GetSteadyPart(*(const struct sockaddr_in *)(const void *)GetAddress());
+		return ::GetSteadyPart(CastTo<struct sockaddr_in>());
 
 	case AF_INET6:
-		return ::GetSteadyPart(*(const struct sockaddr_in6 *)(const void *)GetAddress());
+		return ::GetSteadyPart(CastTo<struct sockaddr_in6>());
 #endif
 
 	default:

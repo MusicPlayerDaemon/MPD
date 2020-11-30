@@ -140,9 +140,7 @@ public:
 	 * only legal after verifying SocketAddress::GetFamily().
 	 */
 	static constexpr const IPv6Address &Cast(const SocketAddress src) noexcept {
-		/* this reinterpret_cast works because this class is
-		   just a wrapper for struct sockaddr_in6 */
-		return *(const IPv6Address *)(const void *)src.GetAddress();
+		return Cast(src.CastTo<struct sockaddr_in6>());
 	}
 
 	constexpr operator SocketAddress() const noexcept {
