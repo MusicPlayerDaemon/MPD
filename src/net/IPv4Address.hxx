@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2019 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2012-2020 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -155,6 +155,15 @@ public:
 				 ? 0
 				 : (~uint32_t(0)) << (32 - prefix_length),
 				 ~uint16_t(0));
+	}
+
+	/**
+	 * Cast a #sockaddr_in6 reference to an IPv6Address reference.
+	 */
+	static constexpr const IPv4Address &Cast(const struct sockaddr_in &src) noexcept {
+		/* this reinterpret_cast works because this class is
+		   just a wrapper for struct sockaddr_in6 */
+		return *(const IPv4Address *)(const void *)&src;
 	}
 
 	/**
