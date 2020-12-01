@@ -31,7 +31,17 @@ public:
 	COM() {
 		if (HRESULT result = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
 		    FAILED(result)) {
-			throw FormatHResultError(result, "Unable to initialize COM");
+			throw FormatHResultError(
+				result,
+				"Unable to initialize COM with COINIT_MULTITHREADED");
+		}
+	}
+	COM(bool) {
+		if (HRESULT result = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
+		    FAILED(result)) {
+			throw FormatHResultError(
+				result,
+				"Unable to initialize COM with COINIT_APARTMENTTHREADED");
 		}
 	}
 	~COM() noexcept { CoUninitialize(); }
