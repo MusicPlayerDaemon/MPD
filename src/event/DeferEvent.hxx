@@ -21,8 +21,7 @@
 #define MPD_DEFER_EVENT_HXX
 
 #include "util/BindMethod.hxx"
-
-#include <boost/intrusive/list_hook.hpp>
+#include "util/IntrusiveList.hxx"
 
 class EventLoop;
 
@@ -34,10 +33,10 @@ class EventLoop;
  * This class is not thread-safe, all methods must be called from the
  * thread that runs the #EventLoop.
  */
-class DeferEvent final
-	: public boost::intrusive::list_base_hook<>
+class DeferEvent final : AutoUnlinkIntrusiveListHook
 {
 	friend class EventLoop;
+	friend class IntrusiveList<DeferEvent>;
 
 	EventLoop &loop;
 
@@ -51,23 +50,23 @@ public:
 	DeferEvent(const DeferEvent &) = delete;
 	DeferEvent &operator=(const DeferEvent &) = delete;
 
-	~DeferEvent() noexcept {
-		Cancel();
-	}
-
-	EventLoop &GetEventLoop() const noexcept {
+	auto &GetEventLoop() const noexcept {
 		return loop;
 	}
 
-	void Schedule() noexcept;
-	void Cancel() noexcept;
-
-private:
 	bool IsPending() const noexcept {
 		return is_linked();
 	}
 
-	void RunDeferred() noexcept {
+	void Schedule() noexcept;
+
+	void Cancel() noexcept {
+		if (IsPending())
+			unlink();
+	}
+
+private:
+	void Run() noexcept {
 		callback();
 	}
 };

@@ -21,13 +21,10 @@
 #include "Loop.hxx"
 
 void
-DeferEvent::Cancel() noexcept
-{
-	loop.RemoveDeferred(*this);
-}
-
-void
 DeferEvent::Schedule() noexcept
 {
-	loop.AddDeferred(*this);
+	if (!IsPending())
+		loop.AddDeferred(*this);
+
+	assert(IsPending());
 }

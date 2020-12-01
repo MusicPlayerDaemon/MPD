@@ -79,11 +79,9 @@ class EventLoop final
 					   boost::intrusive::constant_time_size<false>>;
 	TimerSet timers;
 
-	using DeferList =
-		boost::intrusive::list<DeferEvent,
-				       boost::intrusive::base_hook<boost::intrusive::list_base_hook<>>,
-				       boost::intrusive::constant_time_size<false>>;
-	DeferList deferred;
+	using DeferList = IntrusiveList<DeferEvent>;
+
+	DeferList defer;
 
 	using IdleList = IntrusiveList<IdleEvent>;
 	IdleList idle;
@@ -213,12 +211,6 @@ public:
 	 * Schedule a call to DeferEvent::RunDeferred().
 	 */
 	void AddDeferred(DeferEvent &d) noexcept;
-
-	/**
-	 * Cancel a pending call to DeferEvent::RunDeferred().
-	 * However after returning, the call may still be running.
-	 */
-	void RemoveDeferred(DeferEvent &d) noexcept;
 
 #ifdef HAVE_THREADED_EVENT_LOOP
 	/**

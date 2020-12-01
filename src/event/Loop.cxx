@@ -198,29 +198,17 @@ EventLoop::HandleTimers() noexcept
 void
 EventLoop::AddDeferred(DeferEvent &d) noexcept
 {
-	if (d.IsPending())
-		return;
-
-	deferred.push_back(d);
+	defer.push_back(d);
 	again = true;
-}
-
-void
-EventLoop::RemoveDeferred(DeferEvent &d) noexcept
-{
-	if (d.IsPending())
-		deferred.erase(deferred.iterator_to(d));
 }
 
 void
 EventLoop::RunDeferred() noexcept
 {
-	while (!deferred.empty() && !quit) {
-		auto &m = deferred.front();
-		assert(m.IsPending());
-
-		deferred.pop_front();
-		m.RunDeferred();
+	while (!defer.empty() && !quit) {
+		defer.pop_front_and_dispose([](DeferEvent *e){
+			e->Run();
+		});
 	}
 }
 
