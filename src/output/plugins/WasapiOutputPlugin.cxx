@@ -24,6 +24,7 @@
 #include "mixer/MixerList.hxx"
 #include "thread/Cond.hxx"
 #include "thread/Mutex.hxx"
+#include "thread/Name.hxx"
 #include "thread/Thread.hxx"
 #include "util/AllocatedString.hxx"
 #include "util/Domain.hxx"
@@ -231,6 +232,7 @@ IAudioClient *wasapi_output_get_client(WasapiOutput &output) noexcept {
 }
 
 void WasapiOutputThread::Work() noexcept {
+	SetThreadName("Wasapi Output Worker");
 	FormatDebug(wasapi_output_domain, "Working thread started");
 	try {
 		com.emplace();
