@@ -22,6 +22,7 @@
 #include "WasapiOutputPlugin.hxx"
 #include "lib/icu/Win32.hxx"
 #include "mixer/MixerList.hxx"
+#include "output/Error.hxx"
 #include "thread/Cond.hxx"
 #include "thread/Mutex.hxx"
 #include "thread/Name.hxx"
@@ -30,6 +31,7 @@
 #include "util/Domain.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/ScopeExit.hxx"
+#include "util/StringBuffer.hxx"
 #include "win32/Com.hxx"
 #include "win32/ComHeapPtr.hxx"
 #include "win32/ComWorker.hxx"
@@ -129,7 +131,7 @@ public:
 	void Finish() noexcept { return SetStatus(Status::FINISH); }
 	void Play() noexcept { return SetStatus(Status::PLAY); }
 	void Pause() noexcept { return SetStatus(Status::PAUSE); }
-	void WaitDataPoped() noexcept { data_poped.Wait(200); }
+	void WaitDataPoped() noexcept { data_poped.Wait(INFINITE); }
 	void CheckException() {
 		if (error.occur.load()) {
 			auto err = std::exchange(error.ptr, nullptr);
@@ -183,6 +185,7 @@ public:
 	size_t Play(const void *chunk, size_t size) override;
 	void Drain() override;
 	bool Pause() override;
+	void Interrupt() noexcept override;
 
 	constexpr bool Exclusive() const { return is_exclusive; }
 	constexpr size_t FrameSize() const { return device_format.Format.nBlockAlign; }
@@ -191,6 +194,7 @@ public:
 	}
 
 private:
+	std::atomic_flag not_interrupted = true;
 	bool is_started = false;
 	bool is_exclusive;
 	bool enumerate_devices;
@@ -486,12 +490,17 @@ std::chrono::steady_clock::duration WasapiOutput::Delay() const noexcept {
 size_t WasapiOutput::Play(const void *chunk, size_t size) {
 	assert(thread);
 
+	not_interrupted.test_and_set();
+
 	do {
 		const size_t consumed_size =
 			thread->spsc_buffer.push(static_cast<const BYTE *>(chunk), size);
 		if (consumed_size == 0) {
 			assert(is_started);
 			thread->WaitDataPoped();
+			if (!not_interrupted.test_and_set()) {
+				throw AudioOutputInterrupted{};
+			}
 			continue;
 		}
 
@@ -534,6 +543,13 @@ bool WasapiOutput::Pause() {
 	thread->CheckException();
 
 	return true;
+}
+
+void WasapiOutput::Interrupt() noexcept {
+	if (thread) {
+		not_interrupted.clear();
+		thread->data_poped.Set();
+	}
 }
 
 void WasapiOutput::Drain() {
