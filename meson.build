@@ -322,6 +322,7 @@ sources = [
 if is_windows
   sources += [
     'src/win32/Win32Main.cxx',
+    'src/win32/ComWorker.cxx',
   ]
 endif
 
