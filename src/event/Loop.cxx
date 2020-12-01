@@ -105,19 +105,6 @@ EventLoop::Break() noexcept
 }
 
 bool
-EventLoop::AbandonFD(SocketEvent &event)  noexcept
-{
-#ifdef HAVE_THREADED_EVENT_LOOP
-	assert(!IsAlive() || IsInside());
-#endif
-	assert(event.IsDefined());
-
-	event.unlink();
-
-	return poll_backend.Abandon(event.GetSocket().Get());
-}
-
-bool
 EventLoop::AddFD(int fd, unsigned events, SocketEvent &event) noexcept
 {
 #ifdef HAVE_THREADED_EVENT_LOOP
@@ -152,6 +139,19 @@ EventLoop::RemoveFD(int fd, SocketEvent &event) noexcept
 
 	event.unlink();
 	return poll_backend.Remove(fd);
+}
+
+bool
+EventLoop::AbandonFD(SocketEvent &event)  noexcept
+{
+#ifdef HAVE_THREADED_EVENT_LOOP
+	assert(!IsAlive() || IsInside());
+#endif
+	assert(event.IsDefined());
+
+	event.unlink();
+
+	return poll_backend.Abandon(event.GetSocket().Get());
 }
 
 void
