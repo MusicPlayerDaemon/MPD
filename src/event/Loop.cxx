@@ -242,7 +242,7 @@ duration_cast_round_up(std::chrono::duration<Rep, Period> d) noexcept
  * value (= never times out) is translated to the magic value -1.
  */
 static constexpr int
-ExportTimeoutMS(Event::Duration timeout)
+ExportTimeoutMS(Event::Duration timeout) noexcept
 {
 	return timeout >= timeout.zero()
 		? int(duration_cast_round_up<std::chrono::milliseconds>(timeout).count())
