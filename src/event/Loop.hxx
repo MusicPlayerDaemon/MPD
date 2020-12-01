@@ -17,8 +17,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_EVENT_LOOP_HXX
-#define MPD_EVENT_LOOP_HXX
+#ifndef EVENT_LOOP_HXX
+#define EVENT_LOOP_HXX
 
 #include "Chrono.hxx"
 #include "Backend.hxx"
@@ -169,6 +169,9 @@ public:
 #endif
 
 	~EventLoop() noexcept;
+
+	EventLoop(const EventLoop &other) = delete;
+	EventLoop &operator=(const EventLoop &other) = delete;
 
 	/**
 	 * A caching wrapper for Event::Clock::now().
