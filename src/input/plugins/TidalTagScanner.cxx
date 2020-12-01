@@ -23,6 +23,8 @@
 #include "tag/Builder.hxx"
 #include "tag/Tag.hxx"
 
+#include <cassert>
+
 using Wrapper = Yajl::CallbacksWrapper<TidalTagScanner::ResponseParser>;
 static constexpr yajl_callbacks parse_callbacks = {
 	nullptr,
