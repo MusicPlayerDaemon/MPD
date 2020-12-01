@@ -97,7 +97,7 @@ FullyBufferedSocket::OnSocketReady(unsigned flags) noexcept
 {
 	if (flags & SocketEvent::WRITE) {
 		assert(!output.empty());
-		assert(!idle_event.IsActive());
+		assert(!idle_event.IsPending());
 
 		if (!Flush())
 			return;

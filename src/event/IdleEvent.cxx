@@ -18,26 +18,3 @@
  */
 
 #include "IdleEvent.hxx"
-#include "Loop.hxx"
-
-#include <cassert>
-
-void
-IdleEvent::Schedule() noexcept
-{
-	assert(loop.IsInside());
-
-	if (IsActive())
-		/* already scheduled */
-		return;
-
-	loop.AddIdle(*this);
-}
-
-void
-IdleEvent::Run() noexcept
-{
-	assert(loop.IsInside());
-
-	callback();
-}

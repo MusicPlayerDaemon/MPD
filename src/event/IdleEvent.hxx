@@ -20,8 +20,7 @@
 #ifndef MPD_SOCKET_IDLE_EVENT_HXX
 #define MPD_SOCKET_IDLE_EVENT_HXX
 
-#include "util/BindMethod.hxx"
-#include "util/IntrusiveList.hxx"
+#include "DeferEvent.hxx"
 
 class EventLoop;
 
@@ -33,39 +32,30 @@ class EventLoop;
  * thread that runs the #EventLoop, except where explicitly documented
  * as thread-safe.
  */
-class IdleEvent final : public AutoUnlinkIntrusiveListHook {
-	friend class EventLoop;
-	friend class IntrusiveList<IdleEvent>;
-
-	EventLoop &loop;
+class IdleEvent final {
+	DeferEvent event;
 
 	using Callback = BoundMethod<void() noexcept>;
-	const Callback callback;
 
 public:
 	IdleEvent(EventLoop &_loop, Callback _callback) noexcept
-		:loop(_loop), callback(_callback) {}
-
-	IdleEvent(const IdleEvent &) = delete;
-	IdleEvent &operator=(const IdleEvent &) = delete;
+		:event(_loop, _callback) {}
 
 	auto &GetEventLoop() const noexcept {
-		return loop;
+		return event.GetEventLoop();
 	}
 
-	bool IsActive() const noexcept {
-		return is_linked();
+	bool IsPending() const noexcept {
+		return event.IsPending();
 	}
 
-	void Schedule() noexcept;
+	void Schedule() noexcept {
+		event.ScheduleIdle();
+	}
 
 	void Cancel() noexcept {
-		if (IsActive())
-			unlink();
+		event.Cancel();
 	}
-
-private:
-	void Run() noexcept;
 };
 
 #endif

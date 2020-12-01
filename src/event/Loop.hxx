@@ -47,7 +47,6 @@ namespace Uring { class Queue; class Manager; }
 #endif
 
 class TimerEvent;
-class IdleEvent;
 class DeferEvent;
 class InjectEvent;
 
@@ -58,7 +57,7 @@ class InjectEvent;
  * thread that runs it, except where explicitly documented as
  * thread-safe.
  *
- * @see SocketEvent, MultiSocketMonitor, TimerEvent, IdleEvent
+ * @see SocketEvent, MultiSocketMonitor, TimerEvent, DeferEvent, InjectEvent
  */
 class EventLoop final
 {
@@ -83,8 +82,10 @@ class EventLoop final
 
 	DeferList defer;
 
-	using IdleList = IntrusiveList<IdleEvent>;
-	IdleList idle;
+	/**
+	 * This is like #defer, but gets invoked when the loop is idle.
+	 */
+	DeferList idle;
 
 #ifdef HAVE_THREADED_EVENT_LOOP
 	Mutex mutex;
@@ -203,14 +204,13 @@ public:
 	 */
 	bool AbandonFD(SocketEvent &event) noexcept;
 
-	void AddIdle(IdleEvent &i) noexcept;
-
 	void AddTimer(TimerEvent &t, Event::Duration d) noexcept;
 
 	/**
 	 * Schedule a call to DeferEvent::RunDeferred().
 	 */
 	void AddDeferred(DeferEvent &d) noexcept;
+	void AddIdle(DeferEvent &e) noexcept;
 
 #ifdef HAVE_THREADED_EVENT_LOOP
 	/**
@@ -237,6 +237,13 @@ public:
 
 private:
 	void RunDeferred() noexcept;
+
+	/**
+	 * Invoke one "idle" #DeferEvent.
+	 *
+	 * @return false if there was no such event
+	 */
+	bool RunOneIdle() noexcept;
 
 #ifdef HAVE_THREADED_EVENT_LOOP
 	/**

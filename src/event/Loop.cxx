@@ -154,15 +154,6 @@ EventLoop::RemoveFD(int fd, SocketEvent &event) noexcept
 }
 
 void
-EventLoop::AddIdle(IdleEvent &i) noexcept
-{
-	assert(IsInside());
-
-	idle.push_back(i);
-	again = true;
-}
-
-void
 EventLoop::AddTimer(TimerEvent &t, Event::Duration d) noexcept
 {
 	assert(IsInside());
@@ -203,6 +194,13 @@ EventLoop::AddDeferred(DeferEvent &d) noexcept
 }
 
 void
+EventLoop::AddIdle(DeferEvent &e) noexcept
+{
+	idle.push_front(e);
+	again = true;
+}
+
+void
 EventLoop::RunDeferred() noexcept
 {
 	while (!defer.empty() && !quit) {
@@ -210,6 +208,19 @@ EventLoop::RunDeferred() noexcept
 			e->Run();
 		});
 	}
+}
+
+bool
+EventLoop::RunOneIdle() noexcept
+{
+	if (idle.empty())
+		return false;
+
+	idle.pop_front_and_dispose([](DeferEvent *e){
+		e->Run();
+	});
+
+	return true;
 }
 
 template<class ToDuration, class Rep, class Period>
@@ -301,16 +312,12 @@ EventLoop::Run() noexcept
 
 		RunDeferred();
 
-		/* invoke idle */
-
-		while (!idle.empty()) {
-			IdleEvent &m = idle.front();
-			idle.pop_front();
-			m.Run();
-
-			if (quit)
-				return;
-		}
+		if (RunOneIdle())
+			/* check for other new events after each
+			   "idle" invocation to ensure that the other
+			   "idle" events are really invoked at the
+			   very end */
+			continue;
 
 #ifdef HAVE_THREADED_EVENT_LOOP
 		/* try to handle DeferEvents without WakeFD
