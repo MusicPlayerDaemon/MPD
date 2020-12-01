@@ -8,6 +8,7 @@ ver 0.22.7 (not yet released)
 * output
   - wasapi: add algorithm for finding usable audio format
   - wasapi: use default device only if none was configured
+  - wasapi: add DoP support
 
 ver 0.22.6 (2021/02/16)
 * fix missing tags on songs in queue
