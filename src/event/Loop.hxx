@@ -63,7 +63,7 @@ class EventLoop final
 {
 #ifdef HAVE_THREADED_EVENT_LOOP
 	WakeFD wake_fd;
-	SocketEvent wake_event;
+	SocketEvent wake_event{*this, BIND_THIS_METHOD(OnSocketReady)};
 #endif
 
 	struct TimerCompare {
@@ -132,7 +132,7 @@ class EventLoop final
 	bool alive;
 #endif
 
-	std::atomic_bool quit;
+	std::atomic_bool quit{false};
 
 	/**
 	 * True when the object has been modified and another check is

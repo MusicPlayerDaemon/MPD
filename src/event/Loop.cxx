@@ -46,18 +46,15 @@ EventLoop::EventLoop(
 		     ThreadId _thread
 #endif
 		     )
-	:
 #ifdef HAVE_THREADED_EVENT_LOOP
-	wake_event(*this, BIND_THIS_METHOD(OnSocketReady)),
-	 thread(_thread),
+	:thread(_thread),
 	 /* if this instance is hosted by an EventThread (no ThreadId
 	    known yet) then we're not yet alive until the thread is
 	    started; for the main EventLoop instance, we assume it's
 	    already alive, because nobody but EventThread will call
 	    SetAlive() */
-	 alive(!_thread.IsNull()),
+	 alive(!_thread.IsNull())
 #endif
-	 quit(false)
 {
 #ifdef HAVE_THREADED_EVENT_LOOP
 	wake_event.Open(SocketDescriptor(wake_fd.Get()));
