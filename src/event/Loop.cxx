@@ -330,14 +330,13 @@ EventLoop::Run() noexcept
 			const std::lock_guard<Mutex> lock(mutex);
 			HandleInject();
 			busy = false;
-
-			if (again)
-				/* re-evaluate timers because one of
-				   the IdleEvents may have added a
-				   new timeout */
-				continue;
 		}
 #endif
+
+		if (again)
+			/* re-evaluate timers because one of the
+			   DeferEvents may have added a new timeout */
+			continue;
 
 		/* wait for new event */
 
