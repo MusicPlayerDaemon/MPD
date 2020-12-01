@@ -17,46 +17,53 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_EVENT_MASK_MONITOR_HXX
-#define MPD_EVENT_MASK_MONITOR_HXX
+#ifndef MPD_INJECT_EVENT_HXX
+#define MPD_INJECT_EVENT_HXX
 
-#include "InjectEvent.hxx"
 #include "util/BindMethod.hxx"
 
-#include <atomic>
+#include <boost/intrusive/list_hook.hpp>
+
+class EventLoop;
 
 /**
- * Manage a bit mask of events that have occurred.  Every time the
- * mask becomes non-zero, OnMask() is called in #EventLoop's thread.
+ * Invoke a method call in the #EventLoop.
  *
  * This class is thread-safe.
  */
-class MaskMonitor final {
-	InjectEvent event;
+class InjectEvent final
+	: public boost::intrusive::list_base_hook<>
+{
+	friend class EventLoop;
 
-	typedef BoundMethod<void(unsigned) noexcept> Callback;
+	EventLoop &loop;
+
+	using Callback = BoundMethod<void() noexcept>;
 	const Callback callback;
 
-	std::atomic_uint pending_mask;
-
 public:
-	MaskMonitor(EventLoop &_loop, Callback _callback) noexcept
-		:event(_loop, BIND_THIS_METHOD(RunDeferred)),
-		 callback(_callback), pending_mask(0) {}
+	InjectEvent(EventLoop &_loop, Callback _callback) noexcept
+		:loop(_loop), callback(_callback) {}
 
-	auto &GetEventLoop() const noexcept {
-		return event.GetEventLoop();
+	~InjectEvent() noexcept {
+		Cancel();
 	}
 
-	void Cancel() noexcept {
-		event.Cancel();
+	EventLoop &GetEventLoop() const noexcept {
+		return loop;
 	}
 
-	void OrMask(unsigned new_mask) noexcept;
+	void Schedule() noexcept;
+	void Cancel() noexcept;
 
-protected:
-	/* InjectEvent callback */
-	void RunDeferred() noexcept;
+private:
+	bool IsPending() const noexcept {
+		return is_linked();
+	}
+
+	void Run() noexcept {
+		callback();
+	}
 };
 
 #endif

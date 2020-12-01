@@ -22,7 +22,7 @@
 #include "mixer/Listener.hxx"
 #include "output/OutputAPI.hxx"
 #include "event/MultiSocketMonitor.hxx"
-#include "event/DeferEvent.hxx"
+#include "event/InjectEvent.hxx"
 #include "event/Call.hxx"
 #include "util/ASCII.hxx"
 #include "util/Domain.hxx"
@@ -41,7 +41,7 @@ extern "C" {
 static constexpr unsigned VOLUME_MIXER_ALSA_INDEX_DEFAULT = 0;
 
 class AlsaMixerMonitor final : MultiSocketMonitor {
-	DeferEvent defer_invalidate_sockets;
+	InjectEvent defer_invalidate_sockets;
 
 	snd_mixer_t *mixer;
 

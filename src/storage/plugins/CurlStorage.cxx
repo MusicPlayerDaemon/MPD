@@ -31,7 +31,7 @@
 #include "lib/curl/Escape.hxx"
 #include "lib/expat/ExpatParser.hxx"
 #include "fs/Traits.hxx"
-#include "event/DeferEvent.hxx"
+#include "event/InjectEvent.hxx"
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
 #include "time/Parser.hxx"
@@ -84,7 +84,7 @@ CurlStorage::MapToRelativeUTF8(std::string_view uri_utf8) const noexcept
 }
 
 class BlockingHttpRequest : protected CurlResponseHandler {
-	DeferEvent defer_start;
+	InjectEvent defer_start;
 
 	std::exception_ptr postponed_error;
 
@@ -136,7 +136,7 @@ protected:
 	}
 
 private:
-	/* DeferEvent callback */
+	/* InjectEvent callback */
 	void OnDeferredStart() noexcept {
 		assert(!done);
 

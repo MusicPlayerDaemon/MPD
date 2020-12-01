@@ -21,7 +21,7 @@
 #define MPD_THREAD_BACKGROUND_COMMAND_HXX
 
 #include "BackgroundCommand.hxx"
-#include "event/DeferEvent.hxx"
+#include "event/InjectEvent.hxx"
 #include "thread/Thread.hxx"
 
 #include <exception>
@@ -34,7 +34,7 @@ class Response;
  */
 class ThreadBackgroundCommand : public BackgroundCommand {
 	Thread thread;
-	DeferEvent defer_finish;
+	InjectEvent defer_finish;
 	Client &client;
 
 	/**

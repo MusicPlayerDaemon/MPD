@@ -39,7 +39,7 @@
 #include "pcm/AudioFormat.hxx"
 #include "Log.hxx"
 #include "event/MultiSocketMonitor.hxx"
-#include "event/DeferEvent.hxx"
+#include "event/InjectEvent.hxx"
 
 #include <alsa/asoundlib.h>
 
@@ -80,7 +80,7 @@ class AlsaInputStream final
 
 	AlsaNonBlockPcm non_block;
 
-	DeferEvent defer_invalidate_sockets;
+	InjectEvent defer_invalidate_sockets;
 
 public:
 

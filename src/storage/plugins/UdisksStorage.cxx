@@ -33,7 +33,7 @@
 #include "thread/Cond.hxx"
 #include "thread/SafeSingleton.hxx"
 #include "event/Call.hxx"
-#include "event/DeferEvent.hxx"
+#include "event/InjectEvent.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "util/StringCompare.hxx"
 #include "util/RuntimeError.hxx"
@@ -62,7 +62,7 @@ class UdisksStorage final : public Storage {
 
 	std::exception_ptr mount_error;
 
-	DeferEvent defer_mount, defer_unmount;
+	InjectEvent defer_mount, defer_unmount;
 
 public:
 	template<typename B, typename I, typename IP>

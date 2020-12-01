@@ -49,6 +49,7 @@ namespace Uring { class Queue; class Manager; }
 class TimerEvent;
 class IdleEvent;
 class DeferEvent;
+class InjectEvent;
 
 /**
  * An event loop that polls for events on file/socket descriptors.
@@ -78,17 +79,23 @@ class EventLoop final
 					   boost::intrusive::constant_time_size<false>>;
 	TimerSet timers;
 
+	using DeferList =
+		boost::intrusive::list<DeferEvent,
+				       boost::intrusive::base_hook<boost::intrusive::list_base_hook<>>,
+				       boost::intrusive::constant_time_size<false>>;
+	DeferList deferred;
+
 	using IdleList = IntrusiveList<IdleEvent>;
 	IdleList idle;
 
 #ifdef HAVE_THREADED_EVENT_LOOP
 	Mutex mutex;
 
-	using DeferredList =
-		boost::intrusive::list<DeferEvent,
+	using InjectList =
+		boost::intrusive::list<InjectEvent,
 				       boost::intrusive::base_hook<boost::intrusive::list_base_hook<>>,
 				       boost::intrusive::constant_time_size<false>>;
-	DeferredList deferred;
+	InjectList inject;
 #endif
 
 	using SocketList = IntrusiveList<SocketEvent>;
@@ -202,21 +209,32 @@ public:
 
 	void AddTimer(TimerEvent &t, Event::Duration d) noexcept;
 
-#ifdef HAVE_THREADED_EVENT_LOOP
 	/**
 	 * Schedule a call to DeferEvent::RunDeferred().
-	 *
-	 * This method is thread-safe.
 	 */
 	void AddDeferred(DeferEvent &d) noexcept;
 
 	/**
 	 * Cancel a pending call to DeferEvent::RunDeferred().
 	 * However after returning, the call may still be running.
+	 */
+	void RemoveDeferred(DeferEvent &d) noexcept;
+
+#ifdef HAVE_THREADED_EVENT_LOOP
+	/**
+	 * Schedule a call to the InjectEvent.
 	 *
 	 * This method is thread-safe.
 	 */
-	void RemoveDeferred(DeferEvent &d) noexcept;
+	void AddInject(InjectEvent &d) noexcept;
+
+	/**
+	 * Cancel a pending call to the InjectEvent.
+	 * However after returning, the call may still be running.
+	 *
+	 * This method is thread-safe.
+	 */
+	void RemoveInject(InjectEvent &d) noexcept;
 #endif
 
 	/**
@@ -226,13 +244,15 @@ public:
 	void Run() noexcept;
 
 private:
+	void RunDeferred() noexcept;
+
 #ifdef HAVE_THREADED_EVENT_LOOP
 	/**
-	 * Invoke all pending DeferEvents.
+	 * Invoke all pending InjectEvents.
 	 *
 	 * Caller must lock the mutex.
 	 */
-	void HandleDeferred() noexcept;
+	void HandleInject() noexcept;
 #endif
 
 	/**

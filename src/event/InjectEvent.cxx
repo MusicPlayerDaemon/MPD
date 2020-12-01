@@ -17,19 +17,17 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "MaskMonitor.hxx"
+#include "InjectEvent.hxx"
+#include "Loop.hxx"
 
 void
-MaskMonitor::OrMask(unsigned new_mask) noexcept
+InjectEvent::Cancel() noexcept
 {
-	if (pending_mask.fetch_or(new_mask) == 0)
-		event.Schedule();
+	loop.RemoveInject(*this);
 }
 
 void
-MaskMonitor::RunDeferred() noexcept
+InjectEvent::Schedule() noexcept
 {
-	const unsigned mask = pending_mask.exchange(0);
-	if (mask != 0)
-		callback(mask);
+	loop.AddInject(*this);
 }

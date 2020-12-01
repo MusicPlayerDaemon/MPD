@@ -27,9 +27,12 @@
 class EventLoop;
 
 /**
- * Invoke a method call in the #EventLoop.
+ * Defer execution until the next event loop iteration.  Use this to
+ * move calls out of the current stack frame, to avoid surprising side
+ * effects for callers up in the call chain.
  *
- * This class is thread-safe.
+ * This class is not thread-safe, all methods must be called from the
+ * thread that runs the #EventLoop.
  */
 class DeferEvent final
 	: public boost::intrusive::list_base_hook<>

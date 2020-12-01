@@ -70,7 +70,7 @@ ThreadBackgroundCommand::Cancel() noexcept
 	CancelThread();
 	thread.Join();
 
-	/* cancel the DeferEvent, just in case the Thread has
+	/* cancel the InjectEvent, just in case the Thread has
 	   meanwhile finished execution */
 	defer_finish.Cancel();
 }

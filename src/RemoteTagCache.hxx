@@ -22,7 +22,7 @@
 
 #include "input/RemoteTagScanner.hxx"
 #include "tag/Tag.hxx"
-#include "event/DeferEvent.hxx"
+#include "event/InjectEvent.hxx"
 #include "thread/Mutex.hxx"
 
 #include <boost/intrusive/list.hpp>
@@ -40,7 +40,7 @@ class RemoteTagCache final {
 
 	RemoteTagCacheHandler &handler;
 
-	DeferEvent defer_invoke_handler;
+	InjectEvent defer_invoke_handler;
 
 	Mutex mutex;
 

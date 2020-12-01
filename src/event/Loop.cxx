@@ -19,12 +19,13 @@
 
 #include "Loop.hxx"
 #include "TimerEvent.hxx"
+#include "DeferEvent.hxx"
 #include "SocketEvent.hxx"
 #include "IdleEvent.hxx"
 #include "util/ScopeExit.hxx"
 
 #ifdef HAVE_THREADED_EVENT_LOOP
-#include "DeferEvent.hxx"
+#include "InjectEvent.hxx"
 #endif
 
 #ifdef HAVE_URING
@@ -194,6 +195,35 @@ EventLoop::HandleTimers() noexcept
 	return Event::Duration(-1);
 }
 
+void
+EventLoop::AddDeferred(DeferEvent &d) noexcept
+{
+	if (d.IsPending())
+		return;
+
+	deferred.push_back(d);
+	again = true;
+}
+
+void
+EventLoop::RemoveDeferred(DeferEvent &d) noexcept
+{
+	if (d.IsPending())
+		deferred.erase(deferred.iterator_to(d));
+}
+
+void
+EventLoop::RunDeferred() noexcept
+{
+	while (!deferred.empty() && !quit) {
+		auto &m = deferred.front();
+		assert(m.IsPending());
+
+		deferred.pop_front();
+		m.RunDeferred();
+	}
+}
+
 template<class ToDuration, class Rep, class Period>
 static constexpr ToDuration
 duration_cast_round_up(std::chrono::duration<Rep, Period> d) noexcept
@@ -281,6 +311,8 @@ EventLoop::Run() noexcept
 		if (quit)
 			break;
 
+		RunDeferred();
+
 		/* invoke idle */
 
 		while (!idle.empty()) {
@@ -297,7 +329,7 @@ EventLoop::Run() noexcept
 		   overhead */
 		{
 			const std::lock_guard<Mutex> lock(mutex);
-			HandleDeferred();
+			HandleInject();
 			busy = false;
 
 			if (again)
@@ -343,7 +375,7 @@ EventLoop::Run() noexcept
 #ifdef HAVE_THREADED_EVENT_LOOP
 
 void
-EventLoop::AddDeferred(DeferEvent &d) noexcept
+EventLoop::AddInject(InjectEvent &d) noexcept
 {
 	bool must_wake;
 
@@ -353,10 +385,10 @@ EventLoop::AddDeferred(DeferEvent &d) noexcept
 			return;
 
 		/* we don't need to wake up the EventLoop if another
-		   DeferEvent has already done it */
-		must_wake = !busy && deferred.empty();
+		   InjectEvent has already done it */
+		must_wake = !busy && inject.empty();
 
-		deferred.push_back(d);
+		inject.push_back(d);
 		again = true;
 	}
 
@@ -365,25 +397,25 @@ EventLoop::AddDeferred(DeferEvent &d) noexcept
 }
 
 void
-EventLoop::RemoveDeferred(DeferEvent &d) noexcept
+EventLoop::RemoveInject(InjectEvent &d) noexcept
 {
 	const std::lock_guard<Mutex> protect(mutex);
 
 	if (d.IsPending())
-		deferred.erase(deferred.iterator_to(d));
+		inject.erase(inject.iterator_to(d));
 }
 
 void
-EventLoop::HandleDeferred() noexcept
+EventLoop::HandleInject() noexcept
 {
-	while (!deferred.empty() && !quit) {
-		auto &m = deferred.front();
+	while (!inject.empty() && !quit) {
+		auto &m = inject.front();
 		assert(m.IsPending());
 
-		deferred.pop_front();
+		inject.pop_front();
 
 		const ScopeUnlock unlock(mutex);
-		m.RunDeferred();
+		m.Run();
 	}
 }
 
@@ -395,7 +427,7 @@ EventLoop::OnSocketReady([[maybe_unused]] unsigned flags) noexcept
 	wake_fd.Read();
 
 	const std::lock_guard<Mutex> lock(mutex);
-	HandleDeferred();
+	HandleInject();
 }
 
 #endif

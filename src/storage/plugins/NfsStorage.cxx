@@ -32,7 +32,7 @@
 #include "thread/Cond.hxx"
 #include "event/Loop.hxx"
 #include "event/Call.hxx"
-#include "event/DeferEvent.hxx"
+#include "event/InjectEvent.hxx"
 #include "event/TimerEvent.hxx"
 #include "util/ASCII.hxx"
 #include "util/StringCompare.hxx"
@@ -61,7 +61,7 @@ class NfsStorage final
 
 	NfsConnection *connection;
 
-	DeferEvent defer_connect;
+	InjectEvent defer_connect;
 	TimerEvent reconnect_timer;
 
 	Mutex mutex;
@@ -115,7 +115,7 @@ public:
 		reconnect_timer.Schedule(std::chrono::seconds(5));
 	}
 
-	/* DeferEvent callback */
+	/* InjectEvent callback */
 	void OnDeferredConnect() noexcept {
 		if (state == State::INITIAL)
 			Connect();
