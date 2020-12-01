@@ -261,6 +261,7 @@ sources = [
   'src/LogInit.cxx',
   'src/ls.cxx',
   'src/Instance.cxx',
+  'src/win32/ComWorker.cxx',
   'src/win32/Win32Main.cxx',
   'src/MusicBuffer.cxx',
   'src/MusicPipe.cxx',
