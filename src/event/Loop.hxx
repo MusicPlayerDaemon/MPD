@@ -38,7 +38,6 @@
 
 #include <atomic>
 #include <cassert>
-#include <chrono>
 
 #include "io/uring/Features.h"
 #ifdef HAVE_URING
