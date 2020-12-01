@@ -159,7 +159,7 @@ EventLoop::AddTimer(TimerEvent &t, Event::Duration d) noexcept
 {
 	assert(IsInside());
 
-	t.due = now + d;
+	t.due = SteadyNow() + d;
 	timers.insert(t);
 	again = true;
 }
@@ -167,6 +167,8 @@ EventLoop::AddTimer(TimerEvent &t, Event::Duration d) noexcept
 inline Event::Duration
 EventLoop::HandleTimers() noexcept
 {
+	const auto now = SteadyNow();
+
 	Event::Duration timeout;
 
 	while (!quit) {
@@ -301,8 +303,9 @@ EventLoop::Run() noexcept
 	};
 #endif
 
+	steady_clock_cache.flush();
+
 	do {
-		now = std::chrono::steady_clock::now();
 		again = false;
 
 		/* invoke timers */
@@ -340,7 +343,7 @@ EventLoop::Run() noexcept
 
 		Wait(timeout);
 
-		now = std::chrono::steady_clock::now();
+		steady_clock_cache.flush();
 
 #ifdef HAVE_THREADED_EVENT_LOOP
 		{

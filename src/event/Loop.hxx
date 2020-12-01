@@ -24,6 +24,7 @@
 #include "Backend.hxx"
 #include "SocketEvent.hxx"
 #include "event/Features.h"
+#include "time/ClockCache.hxx"
 #include "util/Compiler.h"
 #include "util/IntrusiveList.hxx"
 
@@ -114,8 +115,6 @@ class EventLoop final
 	std::unique_ptr<Uring::Manager> uring;
 #endif
 
-	Event::Clock::time_point now = Event::Clock::now();
-
 #ifdef HAVE_THREADED_EVENT_LOOP
 	/**
 	 * A reference to the thread that is currently inside Run().
@@ -155,6 +154,8 @@ class EventLoop final
 
 	EventPollBackend poll_backend;
 
+	ClockCache<std::chrono::steady_clock> steady_clock_cache;
+
 public:
 	/**
 	 * Throws on error.
@@ -172,15 +173,23 @@ public:
 	EventLoop(const EventLoop &other) = delete;
 	EventLoop &operator=(const EventLoop &other) = delete;
 
+	const auto &GetSteadyClockCache() const noexcept {
+		return steady_clock_cache;
+	}
+
 	/**
-	 * A caching wrapper for Event::Clock::now().
+	 * Caching wrapper for std::chrono::steady_clock::now().  The
+	 * real clock is queried at most once per event loop
+	 * iteration, because it is assumed that the event loop runs
+	 * for a negligible duration.
 	 */
-	auto GetTime() const {
+	gcc_pure
+	const auto &SteadyNow() const noexcept {
 #ifdef HAVE_THREADED_EVENT_LOOP
 		assert(IsInside());
 #endif
 
-		return now;
+		return steady_clock_cache.now();
 	}
 
 #ifdef HAVE_URING
