@@ -23,6 +23,8 @@
 #include "lib/curl/Form.hxx"
 #include "lib/yajl/Callbacks.hxx"
 
+#include <cassert>
+
 using Wrapper = Yajl::CallbacksWrapper<QobuzLoginRequest::ResponseParser>;
 static constexpr yajl_callbacks parse_callbacks = {
 	nullptr,

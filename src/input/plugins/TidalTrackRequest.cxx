@@ -21,6 +21,8 @@
 #include "TidalErrorParser.hxx"
 #include "lib/yajl/Callbacks.hxx"
 
+#include <cassert>
+
 using Wrapper = Yajl::CallbacksWrapper<TidalTrackRequest::ResponseParser>;
 static constexpr yajl_callbacks parse_callbacks = {
 	nullptr,

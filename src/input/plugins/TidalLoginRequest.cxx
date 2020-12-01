@@ -23,6 +23,8 @@
 #include "lib/yajl/Callbacks.hxx"
 #include "lib/yajl/ResponseParser.hxx"
 
+#include <cassert>
+
 using Wrapper = Yajl::CallbacksWrapper<TidalLoginRequest::ResponseParser>;
 static constexpr yajl_callbacks parse_callbacks = {
 	nullptr,
