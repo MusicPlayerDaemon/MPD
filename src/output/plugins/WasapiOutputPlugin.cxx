@@ -129,15 +129,11 @@ public:
 	void Finish() noexcept { return SetStatus(Status::FINISH); }
 	void Play() noexcept { return SetStatus(Status::PLAY); }
 	void Pause() noexcept { return SetStatus(Status::PAUSE); }
-	void WaitWrite() noexcept {
-		std::unique_lock<Mutex> lock(write.mutex);
-		write.cond.wait(lock);
-	}
+	void WaitDataPoped() noexcept { data_poped.Wait(200); }
 	void CheckException() {
-		std::unique_lock<Mutex> lock(error.mutex);
-		if (error.error_ptr) {
-			std::exception_ptr err = std::exchange(error.error_ptr, nullptr);
-			error.cond.notify_all();
+		if (error.occur.load()) {
+			auto err = std::exchange(error.ptr, nullptr);
+			error.thrown.Set();
 			std::rethrow_exception(err);
 		}
 	}
@@ -145,6 +141,7 @@ public:
 private:
 	friend class WasapiOutput;
 	WinEvent event;
+	WinEvent data_poped;
 	IAudioClient *client;
 	ComPtr<IAudioRenderClient> render_client;
 	const UINT32 frame_size;
@@ -153,14 +150,10 @@ private:
 	alignas(BOOST_LOCKFREE_CACHELINE_BYTES) std::atomic<Status> status =
 		Status::PAUSE;
 	alignas(BOOST_LOCKFREE_CACHELINE_BYTES) struct {
-		Mutex mutex;
-		Cond cond;
-	} write{};
-	alignas(BOOST_LOCKFREE_CACHELINE_BYTES) struct {
-		Mutex mutex;
-		Cond cond;
-		std::exception_ptr error_ptr = nullptr;
-	} error{};
+		std::atomic_bool occur = false;
+		std::exception_ptr ptr = nullptr;
+		WinEvent thrown;
+	} error;
 	boost::lockfree::spsc_queue<BYTE> spsc_buffer;
 
 	void SetStatus(Status s) noexcept {
@@ -256,8 +249,6 @@ void WasapiOutputThread::Work() noexcept {
 				return;
 			}
 
-			AtScopeExit(&) { write.cond.notify_all(); };
-
 			HRESULT result;
 			UINT32 data_in_frames;
 			result = client->GetCurrentPadding(&data_in_frames);
@@ -296,11 +287,11 @@ void WasapiOutputThread::Work() noexcept {
 					    "Working thread paused");
 			}
 			std::fill_n(data + new_data_size, write_size - new_data_size, 0);
+			data_poped.Set();
 		} catch (...) {
-			std::unique_lock<Mutex> lock(error.mutex);
-			error.error_ptr = std::current_exception();
-			error.cond.wait(lock);
-			assert(error.error_ptr == nullptr);
+			error.ptr = std::current_exception();
+			error.occur.store(true);
+			error.thrown.Wait(INFINITE);
 		}
 	}
 }
@@ -489,7 +480,7 @@ size_t WasapiOutput::Play(const void *chunk, size_t size) {
 			thread->spsc_buffer.push(static_cast<const BYTE *>(chunk), size);
 		if (consumed_size == 0) {
 			assert(is_started);
-			thread->WaitWrite();
+			thread->WaitDataPoped();
 			continue;
 		}
 
