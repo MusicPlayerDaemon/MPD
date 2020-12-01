@@ -45,6 +45,9 @@ public:
 	DeferEvent(EventLoop &_loop, Callback _callback) noexcept
 		:loop(_loop), callback(_callback) {}
 
+	DeferEvent(const DeferEvent &) = delete;
+	DeferEvent &operator=(const DeferEvent &) = delete;
+
 	~DeferEvent() noexcept {
 		Cancel();
 	}
