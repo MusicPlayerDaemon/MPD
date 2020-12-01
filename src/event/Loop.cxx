@@ -67,7 +67,11 @@ EventLoop::EventLoop(
 EventLoop::~EventLoop() noexcept
 {
 	assert(timers.empty());
+	assert(defer.empty());
 	assert(idle.empty());
+#ifdef HAVE_THREADED_EVENT_LOOP
+	assert(inject.empty());
+#endif
 	assert(sockets.empty());
 	assert(ready_sockets.empty());
 }
