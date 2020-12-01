@@ -24,7 +24,7 @@ void
 DeferEvent::Schedule() noexcept
 {
 	if (!IsPending())
-		loop.AddDeferred(*this);
+		loop.AddDefer(*this);
 
 	assert(IsPending());
 }

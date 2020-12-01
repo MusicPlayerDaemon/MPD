@@ -187,7 +187,7 @@ EventLoop::HandleTimers() noexcept
 }
 
 void
-EventLoop::AddDeferred(DeferEvent &d) noexcept
+EventLoop::AddDefer(DeferEvent &d) noexcept
 {
 	defer.push_back(d);
 	again = true;
