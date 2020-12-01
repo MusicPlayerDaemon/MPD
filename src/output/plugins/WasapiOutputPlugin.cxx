@@ -333,6 +333,15 @@ void WasapiOutput::DoOpen(AudioFormat &audio_format) {
 
 	client.reset();
 
+	DWORD state;
+	if (HRESULT result = device->GetState(&state); FAILED(result)) {
+		throw FormatHResultError(result, "Unable to get device status");
+	}
+	if (state != DEVICE_STATE_ACTIVE) {
+		device.reset();
+		OpenDevice();
+	}
+
 	HRESULT result;
 	result = device->Activate(__uuidof(IAudioClient), CLSCTX_ALL, nullptr,
 				  client.AddressCast());
