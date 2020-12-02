@@ -6,6 +6,7 @@ test(
     'TestDivideString.cxx',
     'TestMimeType.cxx',
     'TestSplitString.cxx',
+    'TestTemplateString.cxx',
     'TestUriExtract.cxx',
     'TestUriQueryParser.cxx',
     'TestUriRelative.cxx',
