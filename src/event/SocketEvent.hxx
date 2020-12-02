@@ -44,7 +44,8 @@ class EventLoop;
  * thread that runs the #EventLoop, except where explicitly documented
  * as thread-safe.
  */
-class SocketEvent final : IntrusiveListHook, public EventPollBackendEvents {
+class SocketEvent final : IntrusiveListHook, public EventPollBackendEvents
+{
 	friend class EventLoop;
 	friend class IntrusiveList<SocketEvent>;
 
@@ -177,7 +178,7 @@ public:
 		return GetScheduledFlags() & WRITE;
 	}
 
-public:
+private:
 	void Dispatch() noexcept;
 };
 
