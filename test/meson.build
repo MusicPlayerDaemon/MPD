@@ -28,6 +28,7 @@ gtest_dep = declare_dependency(
   compile_args: gtest_compile_args,
 )
 
+subdir('util')
 subdir('net')
 subdir('time')
 
@@ -39,24 +40,6 @@ executable(
     config_dep,
   ],
 )
-
-test('TestUtil', executable(
-  'TestUtil',
-  'TestCircularBuffer.cxx',
-  'TestDivideString.cxx',
-  'TestMimeType.cxx',
-  'TestSplitString.cxx',
-  'TestUriExtract.cxx',
-  'TestUriQueryParser.cxx',
-  'TestUriRelative.cxx',
-  'TestUriUtil.cxx',
-  'test_byte_reverse.cxx',
-  include_directories: inc,
-  dependencies: [
-    util_dep,
-    gtest_dep,
-  ],
-))
 
 test('TestRewindInputStream', executable(
   'TestRewindInputStream',
