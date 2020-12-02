@@ -179,6 +179,9 @@ public:
 	}
 
 private:
+	/**
+	 * Dispatch the events that were passed to SetReadyFlags().
+	 */
 	void Dispatch() noexcept;
 };
 
