@@ -4,6 +4,7 @@ test(
     'TestUtil',
     'TestCircularBuffer.cxx',
     'TestDivideString.cxx',
+    'TestException.cxx',
     'TestMimeType.cxx',
     'TestSplitString.cxx',
     'TestTemplateString.cxx',
