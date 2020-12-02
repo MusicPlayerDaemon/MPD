@@ -60,8 +60,6 @@ SocketEvent::Abandon() noexcept
 bool
 SocketEvent::Schedule(unsigned flags) noexcept
 {
-	assert((flags & IMPLICIT_FLAGS) == 0);
-
 	if (flags == GetScheduledFlags())
 		return true;
 
