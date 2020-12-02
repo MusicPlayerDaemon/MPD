@@ -59,7 +59,7 @@ public:
 		return loop;
 	}
 
-	bool IsActive() const noexcept {
+	bool IsPending() const noexcept {
 		return is_linked();
 	}
 

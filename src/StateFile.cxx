@@ -148,7 +148,7 @@ try {
 void
 StateFile::CheckModified() noexcept
 {
-	if (!timer_event.IsActive() && IsModified())
+	if (!timer_event.IsPending() && IsModified())
 		timer_event.Schedule(config.interval);
 }
 
