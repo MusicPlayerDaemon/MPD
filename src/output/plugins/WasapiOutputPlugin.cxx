@@ -130,6 +130,13 @@ std::vector<WAVEFORMATEXTENSIBLE> GetFormats(const AudioFormat &audio_format) no
 	return Result;
 }
 
+#ifdef ENABLE_DSD
+void SetDSDFallback(AudioFormat &audio_format) noexcept {
+	audio_format.format = SampleFormat::FLOAT;
+	audio_format.sample_rate = 384000;
+}
+#endif
+
 inline constexpr const unsigned int kErrorId = -1;
 
 } // namespace
@@ -370,6 +377,12 @@ void WasapiOutput::DoOpen(AudioFormat &audio_format) {
 	if (audio_format.channels > 8) {
 		audio_format.channels = 8;
 	}
+
+#ifdef ENABLE_DSD
+	if (audio_format.format == SampleFormat::DSD) {
+		SetDSDFallback(audio_format);
+	}
+#endif
 
 	if (Exclusive()) {
 		FindExclusiveFormatSupported(audio_format);
