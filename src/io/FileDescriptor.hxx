@@ -248,7 +248,7 @@ public:
 	 * Write until all of the given buffer has been written.
 	 * Throws on error.
 	 */
-	void FullWrite(const void *buffer, size_t length);
+	void FullWrite(const void *buffer, std::size_t length);
 
 #ifndef _WIN32
 	int Poll(short events, int timeout) const noexcept;
