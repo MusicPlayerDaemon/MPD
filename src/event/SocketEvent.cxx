@@ -60,6 +60,9 @@ SocketEvent::Abandon() noexcept
 bool
 SocketEvent::Schedule(unsigned flags) noexcept
 {
+	if (flags != 0)
+		flags |= IMPLICIT_FLAGS;
+
 	if (flags == GetScheduledFlags())
 		return true;
 
@@ -95,20 +98,10 @@ SocketEvent::Schedule(unsigned flags) noexcept
 }
 
 void
-SocketEvent::ScheduleImplicit() noexcept
-{
-	assert(IsDefined());
-	assert(scheduled_flags == 0);
-
-	scheduled_flags = IMPLICIT_FLAGS;
-	loop.AddFD(fd.Get(), scheduled_flags, *this);
-}
-
-void
 SocketEvent::Dispatch() noexcept
 {
 	const unsigned flags = std::exchange(ready_flags, 0) &
-		(GetScheduledFlags() | IMPLICIT_FLAGS);
+		GetScheduledFlags();
 
 	if (flags != 0)
 		callback(flags);
