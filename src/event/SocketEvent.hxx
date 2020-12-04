@@ -25,7 +25,6 @@
 #include "util/BindMethod.hxx"
 #include "util/IntrusiveList.hxx"
 
-#include <cassert>
 #include <cstddef>
 #include <type_traits>
 
@@ -100,8 +99,6 @@ public:
 	}
 
 	SocketDescriptor GetSocket() const noexcept {
-		assert(IsDefined());
-
 		return fd;
 	}
 
@@ -110,7 +107,7 @@ public:
 		return std::exchange(fd, SocketDescriptor::Undefined());
 	}
 
-	void Open(SocketDescriptor _fd) noexcept;
+	void Open(SocketDescriptor fd) noexcept;
 
 	/**
 	 * Close the socket (and cancel all scheduled events).
