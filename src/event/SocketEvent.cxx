@@ -44,6 +44,9 @@ SocketEvent::Close() noexcept
 	if (!fd.IsDefined())
 		return;
 
+	/* closing the socket automatically unregisters it from epoll,
+	   so we can omit the epoll_ctl(EPOLL_CTL_DEL) call and save
+	   one system call */
 	if (std::exchange(scheduled_flags, 0) != 0)
 		loop.AbandonFD(*this);
 	fd.Close();
