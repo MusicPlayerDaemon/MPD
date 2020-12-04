@@ -130,6 +130,22 @@ public:
 		easy.SetURL(url);
 	}
 
+	void SetRequestHeaders(struct curl_slist *request_headers) {
+		easy.SetRequestHeaders(request_headers);
+	}
+
+	void SetNoBody(bool value=true) {
+		easy.SetNoBody(value);
+	}
+
+	void SetPost(bool value=true) {
+		easy.SetPost(value);
+	}
+
+	void SetRequestBody(const void *data, size_t size) {
+		easy.SetRequestBody(data, size);
+	}
+
 	/**
 	 * CurlResponseHandler::OnData() shall throw this to pause the
 	 * stream.  Call Resume() to resume the transfer.
