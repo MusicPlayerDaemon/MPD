@@ -54,7 +54,7 @@ DbusToLibevent(unsigned flags) noexcept
 void
 WatchManager::Watch::Toggled() noexcept
 {
-	event.Cancel();
+	event.ReleaseSocket();
 
 	if (dbus_watch_get_enabled(&watch)) {
 		event.Open(SocketDescriptor(dbus_watch_get_unix_fd(&watch)));
