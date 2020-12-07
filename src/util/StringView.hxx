@@ -155,6 +155,16 @@ struct BasicStringView : ConstBuffer<T> {
 	}
 
 	gcc_pure
+	bool StartsWith(value_type ch) const noexcept {
+		return !empty() && front() == ch;
+	}
+
+	gcc_pure
+	bool EndsWith(value_type ch) const noexcept {
+		return !empty() && back() == ch;
+	}
+
+	gcc_pure
 	int Compare(BasicStringView<T> other) const noexcept {
 		if (size < other.size) {
 			int result = StringCompare(data, other.data, size);
