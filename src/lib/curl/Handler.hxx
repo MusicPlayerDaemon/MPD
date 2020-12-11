@@ -59,7 +59,7 @@ public:
 	/**
 	 * Response body data has been received.
 	 *
-	 * May throw #Pause.
+	 * May throw #Pause (but nothing else).
 	 */
 	virtual void OnData(ConstBuffer<void> data) = 0;
 
