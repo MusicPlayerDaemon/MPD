@@ -44,6 +44,13 @@
 class CurlResponseHandler {
 public:
 	/**
+	 * OnData() shall throw this to pause the stream.  Call
+	 * CurlEasy::Unpause() or CurlRequest::Resume() to resume the
+	 * transfer.
+	 */
+	struct Pause {};
+
+	/**
 	 * Status line and headers have been received.
 	 */
 	virtual void OnHeaders(unsigned status,
@@ -51,6 +58,8 @@ public:
 
 	/**
 	 * Response body data has been received.
+	 *
+	 * May throw #Pause.
 	 */
 	virtual void OnData(ConstBuffer<void> data) = 0;
 

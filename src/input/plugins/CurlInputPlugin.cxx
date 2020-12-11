@@ -309,7 +309,7 @@ CurlInputStream::OnData(ConstBuffer<void> data)
 
 	if (data.size > GetBufferSpace()) {
 		AsyncInputStream::Pause();
-		throw CurlRequest::Pause();
+		throw CurlResponseHandler::Pause{};
 	}
 
 	AppendToBuffer(data.data, data.size);

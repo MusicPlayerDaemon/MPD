@@ -241,7 +241,7 @@ CurlRequest::DataReceived(const void *ptr, size_t received_size) noexcept
 		FinishHeaders();
 		handler.OnData({ptr, received_size});
 		return received_size;
-	} catch (Pause) {
+	} catch (CurlResponseHandler::Pause) {
 		return CURL_WRITEFUNC_PAUSE;
 	} catch (...) {
 		state = State::CLOSED;
