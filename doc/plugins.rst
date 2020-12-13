@@ -133,6 +133,8 @@ Provides a list of UPnP servers on the local network.
 Input plugins
 =============
 
+Note that all input plugins are *enabled* by default, but some plugins require additional configuration to work. In a typical default installation, you might see errors indicating that some of these plugins failed to start. If you do not want to use a plugin, you need to specifically set ``enabled "false"``.
+
 alsa
 ----
 
