@@ -39,7 +39,7 @@ Glue::ConnectIndirect()
 }
 
 void
-Glue::DisconnectIndirect()
+Glue::DisconnectIndirect() noexcept
 {
 	BlockingCall(GetEventLoop(), [this](){ Disconnect(); });
 }
@@ -53,7 +53,7 @@ Glue::Connect()
 }
 
 void
-Glue::Disconnect()
+Glue::Disconnect() noexcept
 {
 	GetConnection().Close();
 

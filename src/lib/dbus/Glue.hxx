@@ -62,10 +62,10 @@ public:
 
 private:
 	void ConnectIndirect();
-	void DisconnectIndirect();
+	void DisconnectIndirect() noexcept;
 
 	void Connect();
-	void Disconnect();
+	void Disconnect() noexcept;
 
 	/* virtual methods from class ODBus::WatchManagerObserver */
 	void OnDBusClosed() noexcept override;
