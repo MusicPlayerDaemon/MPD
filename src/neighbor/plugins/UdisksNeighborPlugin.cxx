@@ -21,6 +21,7 @@
 #include "lib/dbus/Connection.hxx"
 #include "lib/dbus/Error.hxx"
 #include "lib/dbus/Glue.hxx"
+#include "lib/dbus/FilterHelper.hxx"
 #include "lib/dbus/Message.hxx"
 #include "lib/dbus/AsyncRequest.hxx"
 #include "lib/dbus/ReadIter.hxx"
@@ -56,6 +57,8 @@ class UdisksNeighborExplorer final
 	EventLoop &event_loop;
 
 	Manual<SafeSingleton<ODBus::Glue>> dbus_glue;
+
+	ODBus::FilterHelper filter_helper;
 
 	ODBus::AsyncRequest list_request;
 
@@ -97,9 +100,6 @@ private:
 
 	DBusHandlerResult HandleMessage(DBusConnection *dbus_connection,
 					DBusMessage *message) noexcept;
-	static DBusHandlerResult HandleMessage(DBusConnection *dbus_connection,
-					       DBusMessage *message,
-					       void *user_data) noexcept;
 };
 
 inline void
@@ -119,9 +119,8 @@ UdisksNeighborExplorer::DoOpen()
 		error.CheckThrow("DBus AddMatch error");
 
 		try {
-			dbus_connection_add_filter(connection,
-						   HandleMessage, this,
-						   nullptr);
+			filter_helper.Add(connection,
+					  BIND_THIS_METHOD(HandleMessage));
 
 			try {
 				auto msg = Message::NewMethodCall(UDISKS2_INTERFACE,
@@ -132,9 +131,7 @@ UdisksNeighborExplorer::DoOpen()
 					return OnListNotify(std::move(o));
 				});
 			} catch (...) {
-				dbus_connection_remove_filter(connection,
-							      HandleMessage,
-							      this);
+				filter_helper.Remove();
 				throw;
 			}
 		} catch (...) {
@@ -163,7 +160,7 @@ UdisksNeighborExplorer::DoClose() noexcept
 
 	auto &connection = GetConnection();
 
-	dbus_connection_remove_filter(connection, HandleMessage, this);
+	filter_helper.Remove();
 	dbus_bus_remove_match(connection, udisks_neighbor_match, nullptr);
 
 	dbus_glue.Destruct();
@@ -261,16 +258,6 @@ UdisksNeighborExplorer::HandleMessage(DBusConnection *, DBusMessage *message) no
 		return DBUS_HANDLER_RESULT_HANDLED;
 	} else
 		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
-}
-
-DBusHandlerResult
-UdisksNeighborExplorer::HandleMessage(DBusConnection *connection,
-				      DBusMessage *message,
-				      void *user_data) noexcept
-{
-	auto &agent = *(UdisksNeighborExplorer *)user_data;
-
-	return agent.HandleMessage(connection, message);
 }
 
 static std::unique_ptr<NeighborExplorer>
