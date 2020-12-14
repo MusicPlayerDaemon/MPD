@@ -48,7 +48,9 @@ static constexpr unsigned
 DbusToLibevent(unsigned flags) noexcept
 {
 	return ((flags & DBUS_WATCH_READABLE) != 0) * SocketEvent::READ |
-		((flags & DBUS_WATCH_WRITABLE) != 0) * SocketEvent::WRITE;
+		((flags & DBUS_WATCH_WRITABLE) != 0) * SocketEvent::WRITE |
+		((flags & DBUS_WATCH_ERROR) != 0) * SocketEvent::ERROR |
+		((flags & DBUS_WATCH_HANGUP) != 0) * SocketEvent::HANGUP;
 }
 
 void
@@ -66,7 +68,9 @@ static constexpr unsigned
 LibeventToDbus(unsigned flags) noexcept
 {
 	return ((flags & SocketEvent::READ) != 0) * DBUS_WATCH_READABLE |
-		((flags & SocketEvent::WRITE) != 0) * DBUS_WATCH_WRITABLE;
+		((flags & SocketEvent::WRITE) != 0) * DBUS_WATCH_WRITABLE |
+		((flags & SocketEvent::ERROR) != 0) * DBUS_WATCH_ERROR |
+		((flags & SocketEvent::HANGUP) != 0) * DBUS_WATCH_HANGUP;
 }
 
 void
