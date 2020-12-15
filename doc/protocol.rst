@@ -384,9 +384,13 @@ Command reference
 Querying :program:`MPD`'s status
 ================================
 
+.. _command_clearerror:
+
 :command:`clearerror`
     Clears the current error message in status (this is also
     accomplished by any command that starts playback).
+
+.. _command_currentsong:
 
 :command:`currentsong`
     Displays the song info of the current song (same song that
@@ -478,6 +482,8 @@ Querying :program:`MPD`'s status
     :program:`MPD` versions used to have a "magic" value for
     "unknown", e.g. ":samp:`volume: -1`".
 
+.. _command_stats:
+
 :command:`stats`
     Displays statistics.
 
@@ -493,16 +499,24 @@ Querying :program:`MPD`'s status
 Playback options
 ================
 
+.. _command_consume:
+
 :command:`consume {STATE}` [#since_0_15]_
     Sets consume state to ``STATE``,
     ``STATE`` should be 0 or 1.
     When consume is activated, each song played is removed from playlist.
 
+.. _command_crossfade:
+
 :command:`crossfade {SECONDS}`
     Sets crossfading between songs.
 
+.. _command_mixrampdb:
+
 :command:`mixrampdb {deciBels}`
     Sets the threshold at which songs will be overlapped. Like crossfading but doesn't fade the track volume, just overlaps. The songs need to have MixRamp tags added by an external tool. 0dB is the normalized maximum volume so use negative values, I prefer -17dB. In the absence of mixramp tags crossfading will be used. See http://sourceforge.net/projects/mixramp
+
+.. _command_mixrampdelay:
 
 :command:`mixrampdelay {SECONDS}`
     Additional time subtracted from the overlap calculated by mixrampdb. A value of "nan" disables MixRamp overlapping and falls back to crossfading.
@@ -512,6 +526,8 @@ Playback options
 :command:`random {STATE}`
     Sets random state to ``STATE``,
     ``STATE`` should be 0 or 1.
+
+.. _command_repeat:
 
 :command:`repeat {STATE}`
     Sets repeat state to ``STATE``,
@@ -523,11 +539,15 @@ Playback options
     Sets volume to ``VOL``, the range of
     volume is 0-100.
 
+.. _command_single:
+
 :command:`single {STATE}` [#since_0_15]_
     Sets single state to ``STATE``,
     ``STATE`` should be ``0``, ``1`` or ``oneshot`` [#since_0_20]_.
     When single is activated, playback is stopped after current song, or
     song is repeated if the 'repeat' mode is enabled.
+
+.. _command_replay_gain_mode:
 
 :command:`replay_gain_mode {MODE}` [#since_0_16]_
     Sets the replay gain mode.  One of
@@ -542,10 +562,14 @@ Playback options
     This command triggers the
     ``options`` idle event.
 
+.. _command_replay_gain_status:
+
 :command:`replay_gain_status`
     Prints replay gain options.  Currently, only the
     variable ``replay_gain_mode`` is
     returned.
+
+.. _command_volume:
 
 :command:`volume {CHANGE}`
     Changes volume by amount ``CHANGE``.
@@ -554,40 +578,58 @@ Playback options
 Controlling playback
 ====================
 
+.. _command_next:
+
 :command:`next`
     Plays next song in the playlist.
+
+.. _command_pause:
 
 :command:`pause {STATE}`
     Pause or resume playback.  Pass :samp:`1` to pause playback or
     :samp:`0` to resume playback.  Without the parameter, the pause
     state is toggled.
 
+.. _command_play:
+
 :command:`play [SONGPOS]`
     Begins playing the playlist at song number
     ``SONGPOS``.
+
+.. _command_playid:
 
 :command:`playid [SONGID]`
     Begins playing the playlist at song
     ``SONGID``.
 
+.. _command_previous:
+
 :command:`previous`
     Plays previous song in the playlist.
+
+.. _command_seek:
 
 :command:`seek {SONGPOS} {TIME}`
     Seeks to the position ``TIME`` (in
     seconds; fractions allowed) of entry
     ``SONGPOS`` in the playlist.
 
+.. _command_seekid:
+
 :command:`seekid {SONGID} {TIME}`
     Seeks to the position ``TIME`` (in
     seconds; fractions allowed) of song
     ``SONGID``.
+
+.. _command_seekcur:
 
 :command:`seekcur {TIME}`
     Seeks to the position ``TIME`` (in
     seconds; fractions allowed) within the current song.  If
     prefixed by ``+`` or ``-``, then the time is relative to the
     current playing position.
+
+.. _command_stop:
 
 :command:`stop`
     Stops playing.
@@ -623,10 +665,14 @@ client can always be sure the correct song is being used.
 Many commands come in two flavors, one for each address type.
 Whenever possible, ids should be used.
 
+.. _command_add:
+
 :command:`add {URI}`
     Adds the file ``URI`` to the playlist
     (directories add recursively). ``URI``
     can also be a single file.
+
+.. _command_addid:
 
 :command:`addid {URI} [POSITION]`
     Adds a song to the playlist (non-recursive) and returns the
@@ -636,6 +682,8 @@ Whenever possible, ids should be used.
      Id: 999
      OK
 
+.. _command_clear:
+
 :command:`clear`
     Clears the queue.
 
@@ -644,14 +692,20 @@ Whenever possible, ids should be used.
 :command:`delete [{POS} | {START:END}]`
     Deletes a song from the playlist.
 
+.. _command_deleteid:
+
 :command:`deleteid {SONGID}`
     Deletes the song ``SONGID`` from the
     playlist
+
+.. _command_move:
 
 :command:`move [{FROM} | {START:END}] {TO}`
     Moves the song at ``FROM`` or range of songs
     at ``START:END`` [#since_0_15]_ to ``TO``
     in the playlist.
+
+.. _command_moveid:
 
 :command:`moveid {FROM} {TO}`
     Moves the song with ``FROM`` (songid) to
@@ -660,6 +714,8 @@ Whenever possible, ids should be used.
     is relative to the current song in the playlist (if
     there is one).
 
+.. _command_playlist:
+
 :command:`playlist`
 
     Displays the queue.
@@ -667,9 +723,13 @@ Whenever possible, ids should be used.
     Do not use this, instead use :ref:`playlistinfo
     <command_playlistinfo>`.
 
+.. _command_playlistfind:
+
 :command:`playlistfind {TAG} {NEEDLE}`
     Finds songs in the queue with strict
     matching.
+
+.. _command_playlistid:
 
 :command:`playlistid {SONGID}`
     Displays a list of songs in the playlist.
@@ -684,9 +744,13 @@ Whenever possible, ids should be used.
     ``SONGPOS`` or the range of songs
     ``START:END`` [#since_0_15]_
 
+.. _command_playlistsearch:
+
 :command:`playlistsearch {TAG} {NEEDLE}`
     Searches case-insensitively for partial matches in the
     queue.
+
+.. _command_plchanges:
 
 :command:`plchanges {VERSION} [START:END]`
     Displays changed songs currently in the playlist since
@@ -696,6 +760,8 @@ Whenever possible, ids should be used.
 
     To detect songs that were deleted at the end of the
     playlist, use playlistlength returned by status command.
+
+.. _command_plchangesposid:
 
 :command:`plchangesposid {VERSION} [START:END]`
     Displays changed songs currently in the playlist since
@@ -722,6 +788,8 @@ Whenever possible, ids should be used.
     Same as :ref:`priod <command_prio>`,
     but address the songs with their id.
 
+.. _command_rangeid:
+
 :command:`rangeid {ID} {START:END}` [#since_0_19]_
     Since :program:`MPD`
     0.19 Specifies the portion of the
@@ -732,18 +800,26 @@ Whenever possible, ids should be used.
     range, play everything".  A song that is currently
     playing cannot be manipulated this way.
 
+.. _command_shuffle:
+
 :command:`shuffle [START:END]`
     Shuffles the queue.
     ``START:END`` is optional and specifies
     a range of songs.
 
+.. _command_swap:
+
 :command:`swap {SONG1} {SONG2}`
     Swaps the positions of ``SONG1`` and
     ``SONG2``.
 
+.. _command_swapid:
+
 :command:`swapid {SONG1} {SONG2}`
     Swaps the positions of ``SONG1`` and
     ``SONG2`` (both song ids).
+
+.. _command_addtagid:
 
 :command:`addtagid {SONGID} {TAG} {VALUE}`
     Adds a tag to the specified song.  Editing song tags is
@@ -751,6 +827,8 @@ Whenever possible, ids should be used.
     volatile: it may be overwritten by tags received from
     the server, and the data is gone when the song gets
     removed from the queue.
+
+.. _command_cleartagid:
 
 :command:`cleartagid {SONGID} [TAG]`
     Removes tags from the specified song.  If
@@ -773,13 +851,19 @@ playlists in arbitrary location (absolute path including the suffix;
 allowed only for clients that are connected via local socket), or
 remote playlists (absolute URI with a supported scheme).
 
+.. _command_listplaylist:
+
 :command:`listplaylist {NAME}`
     Lists the songs in the playlist.  Playlist plugins are
     supported.
 
+.. _command_listplaylistinfo:
+
 :command:`listplaylistinfo {NAME}`
     Lists the songs with metadata in the playlist.  Playlist
     plugins are supported.
+
+.. _command_listplaylists:
 
 :command:`listplaylists`
     Prints a list of the playlist directory.
@@ -796,26 +880,38 @@ remote playlists (absolute URI with a supported scheme).
     plugins are supported.  A range may be specified to load
     only a part of the playlist.
 
+.. _command_playlistadd:
+
 :command:`playlistadd {NAME} {URI}`
     Adds ``URI`` to the playlist
     `NAME.m3u`.
     `NAME.m3u` will be created if it does
     not exist.
 
+.. _command_playlistclear:
+
 :command:`playlistclear {NAME}`
     Clears the playlist `NAME.m3u`.
+
+.. _command_playlistdelete:
 
 :command:`playlistdelete {NAME} {SONGPOS}`
     Deletes ``SONGPOS`` from the
     playlist `NAME.m3u`.
+
+.. _command_playlistmove:
 
 :command:`playlistmove {NAME} {FROM} {TO}`
     Moves the song at position ``FROM`` in
     the playlist `NAME.m3u` to the
     position ``TO``.
 
+.. _command_rename:
+
 :command:`rename {NAME} {NEW_NAME}`
     Renames the playlist `NAME.m3u` to `NEW_NAME.m3u`.
+
+.. _command_rm:
 
 :command:`rm {NAME}`
     Removes the playlist `NAME.m3u` from
@@ -829,6 +925,8 @@ remote playlists (absolute URI with a supported scheme).
 
 The music database
 ==================
+
+.. _command_albumart:
 
 :command:`albumart {URI} {OFFSET}`
     Locate album art for the given song and return a chunk of an album
@@ -851,6 +949,8 @@ The music database
      <8192 bytes>
      OK
 
+.. _command_count:
+
 :command:`count {FILTER} [group {GROUPTYPE}]`
     Count the number of songs and their total playtime in
     the database matching ``FILTER`` (see
@@ -872,6 +972,8 @@ The music database
     A group with an empty value contains counts of matching songs which
     don't have this group tag.  It exists only if at least one such song is
     found.
+
+.. _command_getfingerprint:
 
 :command:`getfingerprint {URI}`
 
@@ -963,6 +1065,8 @@ The music database
     :program:`MPD` whenever you need
     something.
 
+.. _command_listfiles:
+
 :command:`listfiles {URI}`
     Lists the contents of the directory
     ``URI``, including files are not
@@ -999,6 +1103,8 @@ The music database
     use this command to read the tags of an arbitrary local
     file (URI is an absolute path).
 
+.. _command_readcomments:
+
 :command:`readcomments {URI}`
     Read "comments" (i.e. key-value pairs) from the file
     specified by "URI".  This "URI" can be a path relative
@@ -1014,6 +1120,8 @@ The music database
     The meaning of these depends on the codec, and not all
     decoder plugins support it.  For example, on Ogg files,
     this lists the Vorbis comments.
+
+.. _command_readpicture:
 
 :command:`readpicture {URI} {OFFSET}`
     Locate a picture for the given song and return a chunk of the
@@ -1056,6 +1164,8 @@ The music database
 
     Parameters have the same meaning as for :ref:`search <command_search>`.
 
+.. _command_searchaddpl:
+
 :command:`searchaddpl {NAME} {FILTER} [sort {TYPE}] [window {START:END}]`
     Search the database for songs matching
     ``FILTER`` (see :ref:`Filters <filter_syntax>`) and add them to
@@ -1080,6 +1190,8 @@ The music database
     identifying the update job.  You can read the current
     job id in the :ref:`status <command_status>`
     response.
+
+.. _command_rescan:
 
 :command:`rescan [URI]`
     Same as :ref:`update <command_update>`,
@@ -1107,10 +1219,14 @@ only inside the :program:`MPD` process.
 
      mount foo nfs://192.168.1.4/export/mp3
 
+.. _command_unmount:
+
 :command:`unmount {PATH}`
     Unmounts the specified path.  Example::
 
      unmount foo
+
+.. _command_listmounts:
 
 :command:`listmounts`
     Queries a list of all mounts.  By default, this contains
@@ -1123,6 +1239,8 @@ only inside the :program:`MPD` process.
      mount: foo
      storage: nfs://192.168.1.4/export/mp3
      OK
+
+.. _command_listneighbors:
 
 :command:`listneighbors`
     Queries a list of "neighbors" (e.g. accessible file
@@ -1159,27 +1277,39 @@ Objects which may have stickers are addressed by their object
 type ("song" for song objects) and their URI (the path within
 the database for songs).
 
+.. _command_sticker_get:
+
 :command:`sticker get {TYPE} {URI} {NAME}`
     Reads a sticker value for the specified object.
+
+.. _command_sticker_set:
 
 :command:`sticker set {TYPE} {URI} {NAME} {VALUE}`
     Adds a sticker value to the specified object.  If a
     sticker item with that name already exists, it is
     replaced.
 
+.. _command_sticker_delete:
+
 :command:`sticker delete {TYPE} {URI} [NAME]`
     Deletes a sticker value from the specified object.  If
     you do not specify a sticker name, all sticker values
     are deleted.
 
+.. _command_sticker_list:
+
 :command:`sticker list {TYPE} {URI}`
     Lists the stickers for the specified object.
+
+.. _command_sticker_find:
 
 :command:`sticker find {TYPE} {URI} {NAME}`
     Searches the sticker database for stickers with the
     specified name, below the specified directory (URI).
     For each matching song, it prints the URI and that one
     sticker's value.
+
+.. _command_sticker_find_value:
 
 :command:`sticker find {TYPE} {URI} {NAME} = {VALUE}`
     Searches for stickers with the given value.
@@ -1189,6 +1319,8 @@ the database for songs).
 
 Connection settings
 ===================
+
+.. _command_close:
 
 :command:`close`
     Closes the connection to :program:`MPD`.
@@ -1200,6 +1332,8 @@ Connection settings
     Clients should not use this command; instead, they should just
     close the socket.
 
+.. _command_kill:
+
 :command:`kill`
     Kills :program:`MPD`.
 
@@ -1207,13 +1341,19 @@ Connection settings
     instead, or better: let your service manager handle :program:`MPD`
     shutdown (e.g. :command:`systemctl stop mpd`).
 
+.. _command_password:
+
 :command:`password {PASSWORD}`
     This is used for authentication with the server.
     ``PASSWORD`` is simply the plaintext
     password.
 
+.. _command_ping:
+
 :command:`ping`
     Does nothing but return "OK".
+
+.. _command_tagtypes:
 
 :command:`tagtypes`
     Shows a list of available tag types.  It is an
@@ -1227,20 +1367,28 @@ Connection settings
     ``tagtypes`` sub commands configure this
     list.
 
+.. _command_tagtypes_disable:
+
 :command:`tagtypes disable {NAME...}`
     Remove one or more tags from the list of tag types the
     client is interested in.  These will be omitted from
     responses to this client.
+
+.. _command_tagtypes_enable:
 
 :command:`tagtypes enable {NAME...}`
     Re-enable one or more tags from the list of tag types
     for this client.  These will no longer be hidden from
     responses to this client.
 
+.. _command_tagtypes_clear:
+
 :command:`tagtypes clear`
     Clear the list of tag types this client is interested
     in.  This means that :program:`MPD` will
     not send any tags to this client.
+
+.. _command_tagtypes_all:
 
 :command:`tagtypes all`
     Announce that this client is interested in all tag
@@ -1256,8 +1404,12 @@ These commands allow a client to inspect and manage
 MPD process: it has separate queue, player and outputs.  A
 client is assigned to one partition at a time.
 
+.. _command_partition:
+
 :command:`partition {NAME}`
     Switch the client to a different partition.
+
+.. _command_listpartitions:
 
 :command:`listpartitions`
     Print a list of partitions.  Each partition starts with
@@ -1265,12 +1417,18 @@ client is assigned to one partition at a time.
     partition's name, followed by information about the
     partition.
 
+.. _command_newpartition:
+
 :command:`newpartition {NAME}`
     Create a new partition.
+
+.. _command_delpartition:
 
 :command:`delpartition {NAME}`
     Delete a partition.  The partition must be empty (no connected
     clients and no outputs).
+
+.. _command_moveoutput:
 
 :command:`moveoutput {OUTPUTNAME}`
     Move an output to the current partition.
@@ -1278,11 +1436,17 @@ client is assigned to one partition at a time.
 Audio output devices
 ====================
 
+.. _command_disableoutput:
+
 :command:`disableoutput {ID}`
     Turns an output off.
 
+.. _command_enableoutput:
+
 :command:`enableoutput {ID}`
     Turns an output on.
+
+.. _command_toggleoutput:
 
 :command:`toggleoutput {ID}`
     Turns an output on or off, depending on the current
@@ -1292,7 +1456,7 @@ Audio output devices
 
 :command:`outputs`
     Shows information about all outputs.
-    
+
     ::
 
         outputid: 0
@@ -1308,6 +1472,8 @@ Audio output devices
     - ``outputname``: Name of the output. It can be any.
     - ``outputenabled``: Status of the output. 0 if disabled, 1 if enabled.
 
+.. _command_outputset:
+
 :command:`outputset {ID} {NAME} {VALUE}`
     Set a runtime attribute.  These are specific to the
     output plugin, and supported values are usually printed
@@ -1316,6 +1482,8 @@ Audio output devices
 
 Reflection
 ==========
+
+.. _command_config:
 
 :command:`config`
     Dumps configuration values that may be interesting for
@@ -1326,15 +1494,23 @@ Reflection
 
     - ``music_directory``: The absolute path of the music directory.
 
+.. _command_commands:
+
 :command:`commands`
     Shows which commands the current user has access to.
+
+.. _command_notcommands:
 
 :command:`notcommands`
     Shows which commands the current user does not have
     access to.
 
+.. _command_urlhandlers:
+
 :command:`urlhandlers`
     Gets a list of available URL handlers.
+
+.. _command_decoders:
 
 :command:`decoders`
     Print a list of decoder plugins, followed by their
@@ -1367,11 +1543,15 @@ idle event.
 If your MPD instance has multiple partitions, note that
 client-to-client messages are local to the current partition.
 
+.. _command_subscribe:
+
 :command:`subscribe {NAME}`
     Subscribe to a channel.  The channel is created if it
     does not exist already.  The name may consist of
     alphanumeric ASCII characters plus underscore, dash, dot
     and colon.
+
+.. _command_unsubscribe:
 
 :command:`unsubscribe {NAME}`
     Unsubscribe from a channel.
@@ -1382,9 +1562,13 @@ client-to-client messages are local to the current partition.
     Obtain a list of all channels.  The response is a list
     of "channel:" lines.
 
+.. _command_readmessages:
+
 :command:`readmessages`
     Reads messages for this client.  The response is a list
     of "channel:" and "message:" lines.
+
+.. _command_sendmessage:
 
 :command:`sendmessage {CHANNEL} {TEXT}`
     Send a message to the specified channel.
