@@ -281,6 +281,7 @@ The following tags are supported by :program:`MPD`:
 * **name**: a name for this song. This is not the song title. The exact meaning of this tag is not well-defined. It is often used by badly configured internet radio stations with broken tags to squeeze both the artist name and the song title in one tag.
 * **genre**: the music genre.
 * **date**: the song's release date. This is usually a 4-digit year.
+* **originaldate**: the song's original release date.
 * **composer**: the artist who composed the song.
 * **performer**: the artist who performed the song.
 * **conductor**: the conductor who conducted the song.
