@@ -412,7 +412,9 @@ Querying :program:`MPD`'s status
     - ``update``: a database update has started or finished.  If the database was modified during the update, the ``database`` event is also emitted.
     - ``stored_playlist``: a stored playlist has been modified, renamed, created or deleted
     - ``playlist``: the queue (i.e. the current playlist) has been modified
-    - ``player``: the player has been started, stopped or seeked
+    - ``player``: the player has been started, stopped or seeked or
+      tags of the currently playing song have changed (e.g. received
+      from stream)
     - ``mixer``: the volume has been changed
     - ``output``: an audio output has been added, removed or modified (e.g. renamed, enabled or disabled)
     - ``options``: options like repeat, random, crossfade, replay gain
@@ -555,7 +557,7 @@ Playback options
 
 :command:`single {STATE}` [#since_0_15]_
     Sets single state to ``STATE``,
-    ``STATE`` should be ``0``, ``1`` or ``oneshot`` [#since_0_20]_.
+    ``STATE`` should be ``0``, ``1`` or ``oneshot`` [#since_0_21]_.
     When single is activated, playback is stopped after current song, or
     song is repeated if the 'repeat' mode is enabled.
 
@@ -1590,6 +1592,6 @@ client-to-client messages are local to the current partition.
 .. [#since_0_14] Since :program:`MPD` 0.14
 .. [#since_0_15] Since :program:`MPD` 0.15
 .. [#since_0_16] Since :program:`MPD` 0.16
-.. [#since_0_19] Since :program:`MPD` 0.20
+.. [#since_0_19] Since :program:`MPD` 0.19
 .. [#since_0_20] Since :program:`MPD` 0.20
 .. [#since_0_21] Since :program:`MPD` 0.21
