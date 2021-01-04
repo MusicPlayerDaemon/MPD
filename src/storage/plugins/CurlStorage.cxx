@@ -243,6 +243,7 @@ class PropfindOperation : BlockingHttpRequest, CommonExpatParser {
 	enum class State {
 		ROOT,
 		RESPONSE,
+		PROPSTAT,
 		HREF,
 		STATUS,
 		TYPE,
@@ -322,9 +323,13 @@ private:
 			break;
 
 		case State::RESPONSE:
-			if (strcmp(name, "DAV:|href") == 0)
+			if (strcmp(name, "DAV:|propstat") == 0)
+				state = State::PROPSTAT;
+			else if (strcmp(name, "DAV:|href") == 0)
 				state = State::HREF;
-			else if (strcmp(name, "DAV:|status") == 0)
+			break;
+		case State::PROPSTAT:
+			if (strcmp(name, "DAV:|status") == 0)
 				state = State::STATUS;
 			else if (strcmp(name, "DAV:|resourcetype") == 0)
 				state = State::TYPE;
@@ -354,8 +359,14 @@ private:
 
 		case State::RESPONSE:
 			if (strcmp(name, "DAV:|response") == 0) {
-				FinishResponse();
 				state = State::ROOT;
+			}
+			break;
+
+		case State::PROPSTAT:
+			if (strcmp(name, "DAV:|propstat") == 0) {
+				FinishResponse();
+				state = State::RESPONSE;
 			}
 
 			break;
@@ -367,22 +378,22 @@ private:
 
 		case State::STATUS:
 			if (strcmp(name, "DAV:|status") == 0)
-				state = State::RESPONSE;
+				state = State::PROPSTAT;
 			break;
 
 		case State::TYPE:
 			if (strcmp(name, "DAV:|resourcetype") == 0)
-				state = State::RESPONSE;
+				state = State::PROPSTAT;
 			break;
 
 		case State::MTIME:
 			if (strcmp(name, "DAV:|getlastmodified") == 0)
-				state = State::RESPONSE;
+				state = State::PROPSTAT;
 			break;
 
 		case State::LENGTH:
 			if (strcmp(name, "DAV:|getcontentlength") == 0)
-				state = State::RESPONSE;
+				state = State::PROPSTAT;
 			break;
 		}
 	}
@@ -390,6 +401,7 @@ private:
 	void CharacterData(const XML_Char *s, int len) final {
 		switch (state) {
 		case State::ROOT:
+		case State::PROPSTAT:
 		case State::RESPONSE:
 		case State::TYPE:
 			break;
