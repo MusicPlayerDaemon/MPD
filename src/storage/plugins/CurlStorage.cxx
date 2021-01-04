@@ -262,18 +262,19 @@ public:
 		request.SetOption(CURLOPT_MAXREDIRS, 1L);
 
 		request_headers.Append(StringFormat<40>("depth: %u", depth));
+		request_headers.Append("content-type: text/xml");
 
 		request.SetOption(CURLOPT_HTTPHEADER, request_headers.Get());
 
 		request.SetOption(CURLOPT_POSTFIELDS,
 				  "<?xml version=\"1.0\"?>\n"
 				  "<a:propfind xmlns:a=\"DAV:\">"
-				  "<a:prop><a:resourcetype/></a:prop>"
-				  "<a:prop><a:getcontenttype/></a:prop>"
-				  "<a:prop><a:getcontentlength/></a:prop>"
+				  "<a:prop>"
+				  "<a:resourcetype/>"
+				  "<a:getcontenttype/>"
+				  "<a:getcontentlength/>"
+				  "</a:prop>"
 				  "</a:propfind>");
-
-		// TODO: send request body
 	}
 
 	using BlockingHttpRequest::GetEasy;
