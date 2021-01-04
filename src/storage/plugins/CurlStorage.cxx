@@ -468,11 +468,19 @@ CurlStorage::GetInfo(std::string_view uri_utf8, [[maybe_unused]] bool follow)
 
 gcc_pure
 static std::string_view
-UriPathOrSlash(const char *uri) noexcept
+UriPathOrSlash(const char *uri, bool relative) noexcept
 {
 	auto path = uri_get_path(uri);
 	if (path.data() == nullptr)
 		path = "/";
+	else if (relative) {
+		// search after first slash
+		path = path.substr(1);
+		auto slash = path.find('/');
+		if (slash != std::string_view::npos)
+			path = path.substr(slash);
+	}
+
 	return path;
 }
 
@@ -481,13 +489,15 @@ UriPathOrSlash(const char *uri) noexcept
  */
 class HttpListDirectoryOperation final : public PropfindOperation {
 	const std::string base_path;
+	const std::string base_path_relative;
 
 	MemoryStorageDirectoryReader::List entries;
 
 public:
 	HttpListDirectoryOperation(CurlGlobal &curl, const char *uri)
 		:PropfindOperation(curl, uri, 1),
-		 base_path(CurlUnescape(GetEasy(), UriPathOrSlash(uri))) {}
+		 base_path(CurlUnescape(GetEasy(), UriPathOrSlash(uri, false))),
+		 base_path_relative(CurlUnescape(GetEasy(), UriPathOrSlash(uri, true))) {}
 
 	std::unique_ptr<StorageDirectoryReader> Perform() {
 		DeferStart();
@@ -506,6 +516,7 @@ private:
 	 */
 	gcc_pure
 	StringView HrefToEscapedName(const char *href) const noexcept {
+		StringView relative_path;
 		StringView path = uri_get_path(href);
 		if (path == nullptr)
 			return nullptr;
@@ -513,17 +524,23 @@ private:
 		/* kludge: ignoring case in this comparison to avoid
 		   false negatives if the web server uses a different
 		   case */
-		path = StringAfterPrefixIgnoreCase(path, base_path.c_str());
-		if (path == nullptr || path.empty())
-			return nullptr;
+		relative_path = StringAfterPrefixIgnoreCase(path, base_path.c_str());
+		if (relative_path == nullptr || relative_path.empty()) {
+			// try relative base path
+			relative_path = StringAfterPrefixIgnoreCase(path, base_path_relative.c_str());
+		}
 
-		const char *slash = path.Find('/');
+		if (relative_path == nullptr || relative_path.empty()) {
+			return nullptr;
+		}
+
+		const char *slash = relative_path.Find('/');
 		if (slash == nullptr)
 			/* regular file */
-			return path;
-		else if (slash == &path.back())
+			return relative_path;
+		else if (slash == &relative_path.back())
 			/* trailing slash: collection; strip the slash */
-			return {path.data, slash};
+			return {relative_path.data, slash};
 		else
 			/* strange, better ignore it */
 			return nullptr;
