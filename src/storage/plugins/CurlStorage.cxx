@@ -516,7 +516,6 @@ private:
 	 */
 	gcc_pure
 	StringView HrefToEscapedName(const char *href) const noexcept {
-		StringView relative_path;
 		StringView path = uri_get_path(href);
 		if (path == nullptr)
 			return nullptr;
@@ -524,23 +523,23 @@ private:
 		/* kludge: ignoring case in this comparison to avoid
 		   false negatives if the web server uses a different
 		   case */
-		relative_path = StringAfterPrefixIgnoreCase(path, base_path.c_str());
-		if (relative_path == nullptr || relative_path.empty()) {
-			// try relative base path
-			relative_path = StringAfterPrefixIgnoreCase(path, base_path_relative.c_str());
+		if (uri_has_scheme(path)) {
+			path = StringAfterPrefixIgnoreCase(path, base_path.c_str());
+		} else {
+			path = StringAfterPrefixIgnoreCase(path, base_path_relative.c_str());
 		}
 
-		if (relative_path == nullptr || relative_path.empty()) {
+		if (path == nullptr || path.empty()) {
 			return nullptr;
 		}
 
-		const char *slash = relative_path.Find('/');
+		const char *slash = path.Find('/');
 		if (slash == nullptr)
 			/* regular file */
-			return relative_path;
-		else if (slash == &relative_path.back())
+			return path;
+		else if (slash == &path.back())
 			/* trailing slash: collection; strip the slash */
-			return {relative_path.data, slash};
+			return {path.data, slash};
 		else
 			/* strange, better ignore it */
 			return nullptr;
