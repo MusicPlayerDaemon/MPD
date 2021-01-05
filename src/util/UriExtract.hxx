@@ -40,7 +40,7 @@
  */
 gcc_pure
 bool
-uri_has_scheme(const char *uri) noexcept;
+uri_has_scheme(std::string_view uri) noexcept;
 
 /**
  * Returns the scheme name of the specified URI, or an empty string.

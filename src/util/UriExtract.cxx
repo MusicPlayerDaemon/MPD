@@ -85,7 +85,7 @@ uri_after_scheme(std::string_view uri) noexcept
 }
 
 bool
-uri_has_scheme(const char *uri) noexcept
+uri_has_scheme(std::string_view uri) noexcept
 {
 	return !uri_get_scheme(uri).empty();
 }
