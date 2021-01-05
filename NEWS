@@ -1,4 +1,6 @@
 ver 0.22.4 (not yet released)
+* storage
+  - curl: fix several WebDAV protocol bugs
 * decoder
   - dsdiff: apply padding to odd-sized chunks
 * filter

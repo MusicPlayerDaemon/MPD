@@ -243,6 +243,7 @@ class PropfindOperation : BlockingHttpRequest, CommonExpatParser {
 	enum class State {
 		ROOT,
 		RESPONSE,
+		PROPSTAT,
 		HREF,
 		STATUS,
 		TYPE,
@@ -262,18 +263,19 @@ public:
 		request.SetOption(CURLOPT_MAXREDIRS, 1L);
 
 		request_headers.Append(StringFormat<40>("depth: %u", depth));
+		request_headers.Append("content-type: text/xml");
 
 		request.SetOption(CURLOPT_HTTPHEADER, request_headers.Get());
 
 		request.SetOption(CURLOPT_POSTFIELDS,
 				  "<?xml version=\"1.0\"?>\n"
 				  "<a:propfind xmlns:a=\"DAV:\">"
-				  "<a:prop><a:resourcetype/></a:prop>"
-				  "<a:prop><a:getcontenttype/></a:prop>"
-				  "<a:prop><a:getcontentlength/></a:prop>"
+				  "<a:prop>"
+				  "<a:resourcetype/>"
+				  "<a:getcontenttype/>"
+				  "<a:getcontentlength/>"
+				  "</a:prop>"
 				  "</a:propfind>");
-
-		// TODO: send request body
 	}
 
 	using BlockingHttpRequest::GetEasy;
@@ -321,9 +323,13 @@ private:
 			break;
 
 		case State::RESPONSE:
-			if (strcmp(name, "DAV:|href") == 0)
+			if (strcmp(name, "DAV:|propstat") == 0)
+				state = State::PROPSTAT;
+			else if (strcmp(name, "DAV:|href") == 0)
 				state = State::HREF;
-			else if (strcmp(name, "DAV:|status") == 0)
+			break;
+		case State::PROPSTAT:
+			if (strcmp(name, "DAV:|status") == 0)
 				state = State::STATUS;
 			else if (strcmp(name, "DAV:|resourcetype") == 0)
 				state = State::TYPE;
@@ -353,8 +359,14 @@ private:
 
 		case State::RESPONSE:
 			if (strcmp(name, "DAV:|response") == 0) {
-				FinishResponse();
 				state = State::ROOT;
+			}
+			break;
+
+		case State::PROPSTAT:
+			if (strcmp(name, "DAV:|propstat") == 0) {
+				FinishResponse();
+				state = State::RESPONSE;
 			}
 
 			break;
@@ -366,22 +378,22 @@ private:
 
 		case State::STATUS:
 			if (strcmp(name, "DAV:|status") == 0)
-				state = State::RESPONSE;
+				state = State::PROPSTAT;
 			break;
 
 		case State::TYPE:
 			if (strcmp(name, "DAV:|resourcetype") == 0)
-				state = State::RESPONSE;
+				state = State::PROPSTAT;
 			break;
 
 		case State::MTIME:
 			if (strcmp(name, "DAV:|getlastmodified") == 0)
-				state = State::RESPONSE;
+				state = State::PROPSTAT;
 			break;
 
 		case State::LENGTH:
 			if (strcmp(name, "DAV:|getcontentlength") == 0)
-				state = State::RESPONSE;
+				state = State::PROPSTAT;
 			break;
 		}
 	}
@@ -389,6 +401,7 @@ private:
 	void CharacterData(const XML_Char *s, int len) final {
 		switch (state) {
 		case State::ROOT:
+		case State::PROPSTAT:
 		case State::RESPONSE:
 		case State::TYPE:
 			break;
@@ -455,11 +468,19 @@ CurlStorage::GetInfo(std::string_view uri_utf8, [[maybe_unused]] bool follow)
 
 gcc_pure
 static std::string_view
-UriPathOrSlash(const char *uri) noexcept
+UriPathOrSlash(const char *uri, bool relative) noexcept
 {
 	auto path = uri_get_path(uri);
 	if (path.data() == nullptr)
 		path = "/";
+	else if (relative) {
+		// search after first slash
+		path = path.substr(1);
+		auto slash = path.find('/');
+		if (slash != std::string_view::npos)
+			path = path.substr(slash);
+	}
+
 	return path;
 }
 
@@ -468,13 +489,15 @@ UriPathOrSlash(const char *uri) noexcept
  */
 class HttpListDirectoryOperation final : public PropfindOperation {
 	const std::string base_path;
+	const std::string base_path_relative;
 
 	MemoryStorageDirectoryReader::List entries;
 
 public:
 	HttpListDirectoryOperation(CurlGlobal &curl, const char *uri)
 		:PropfindOperation(curl, uri, 1),
-		 base_path(CurlUnescape(GetEasy(), UriPathOrSlash(uri))) {}
+		 base_path(CurlUnescape(GetEasy(), UriPathOrSlash(uri, false))),
+		 base_path_relative(CurlUnescape(GetEasy(), UriPathOrSlash(uri, true))) {}
 
 	std::unique_ptr<StorageDirectoryReader> Perform() {
 		DeferStart();
@@ -500,9 +523,15 @@ private:
 		/* kludge: ignoring case in this comparison to avoid
 		   false negatives if the web server uses a different
 		   case */
-		path = StringAfterPrefixIgnoreCase(path, base_path.c_str());
-		if (path == nullptr || path.empty())
+		if (uri_has_scheme(path)) {
+			path = StringAfterPrefixIgnoreCase(path, base_path.c_str());
+		} else {
+			path = StringAfterPrefixIgnoreCase(path, base_path_relative.c_str());
+		}
+
+		if (path == nullptr || path.empty()) {
 			return nullptr;
+		}
 
 		const char *slash = path.Find('/');
 		if (slash == nullptr)
