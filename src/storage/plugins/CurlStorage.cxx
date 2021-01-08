@@ -468,19 +468,11 @@ CurlStorage::GetInfo(std::string_view uri_utf8, [[maybe_unused]] bool follow)
 
 gcc_pure
 static std::string_view
-UriPathOrSlash(const char *uri, bool relative) noexcept
+UriPathOrSlash(const char *uri) noexcept
 {
 	auto path = uri_get_path(uri);
 	if (path.data() == nullptr)
 		path = "/";
-	else if (relative) {
-		// search after first slash
-		path = path.substr(1);
-		auto slash = path.find('/');
-		if (slash != std::string_view::npos)
-			path = path.substr(slash);
-	}
-
 	return path;
 }
 
@@ -489,15 +481,13 @@ UriPathOrSlash(const char *uri, bool relative) noexcept
  */
 class HttpListDirectoryOperation final : public PropfindOperation {
 	const std::string base_path;
-	const std::string base_path_relative;
 
 	MemoryStorageDirectoryReader::List entries;
 
 public:
 	HttpListDirectoryOperation(CurlGlobal &curl, const char *uri)
 		:PropfindOperation(curl, uri, 1),
-		 base_path(CurlUnescape(GetEasy(), UriPathOrSlash(uri, false))),
-		 base_path_relative(CurlUnescape(GetEasy(), UriPathOrSlash(uri, true))) {}
+		 base_path(CurlUnescape(GetEasy(), UriPathOrSlash(uri))) {}
 
 	std::unique_ptr<StorageDirectoryReader> Perform() {
 		DeferStart();
@@ -523,15 +513,9 @@ private:
 		/* kludge: ignoring case in this comparison to avoid
 		   false negatives if the web server uses a different
 		   case */
-		if (uri_has_scheme(path)) {
-			path = StringAfterPrefixIgnoreCase(path, base_path.c_str());
-		} else {
-			path = StringAfterPrefixIgnoreCase(path, base_path_relative.c_str());
-		}
-
-		if (path == nullptr || path.empty()) {
+		path = StringAfterPrefixIgnoreCase(path, base_path.c_str());
+		if (path == nullptr || path.empty())
 			return nullptr;
-		}
 
 		const char *slash = path.Find('/');
 		if (slash == nullptr)
