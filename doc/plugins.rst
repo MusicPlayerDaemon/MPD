@@ -643,11 +643,15 @@ Encodes into `Ogg Opus <http://www.opus-codec.org/>`_.
    * - Setting
      - Description
    * - **bitrate**
-     - Sets the data rate in bit per second. The special value "auto" lets libopus choose a rate (which is the default), and "max" uses the maximum possible data rate.
+     - Sets the data rate in bits per second. The special value "auto" lets libopus choose a rate (which is the default), and "max" uses the maximum possible data rate.
    * - **complexity**
      - Sets the `Opus complexity <https://wiki.xiph.org/OpusFAQ#What_is_the_complexity_of_Opus.3F>`_.
    * - **signal**
      - Sets the Opus signal type. Valid values are "auto" (the default), "voice" and "music".
+   * - **vbr yes|no|constrained**
+     - Sets the vbr mode. Setting to "yes" (default) enables variable bitrate, "no" forces constant bitrate and frame sizes, "constrained" uses constant bitrate analogous to CBR in AAC and MP3.
+   * - **packet_loss**
+     - Sets the expected packet loss percentage. This value can be increased from the default "0" for a more redundant stream at the expense of quality.
    * - **opustags yes|no**
      - Configures how metadata is interleaved into the stream. If set to yes, then metadata is inserted using ogg stream chaining, as specified in :rfc:`7845`. If set to no (the default), then ogg stream chaining is avoided and other output-dependent method is used, if available.
 

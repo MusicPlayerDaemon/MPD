@@ -76,6 +76,9 @@ class PreparedOpusEncoder final : public PreparedEncoder {
 	opus_int32 bitrate;
 	int complexity;
 	int signal;
+	int packet_loss;
+	int vbr;
+	int vbr_constraint;
 	const bool chaining;
 
 public:
@@ -118,6 +121,23 @@ PreparedOpusEncoder::PreparedOpusEncoder(const ConfigBlock &block)
 		signal = OPUS_SIGNAL_MUSIC;
 	else
 		throw std::runtime_error("Invalid signal");
+
+	value = block.GetBlockValue("vbr", "yes");
+	if (strcmp(value, "yes") == 0) {
+		vbr = 1U;
+		vbr_constraint = 0U;
+	} else if (strcmp(value, "no") == 0) {
+		vbr = 0U;
+		vbr_constraint = 0U;
+	} else if (strcmp(value, "constrained") == 0) {
+		vbr = 1U;
+		vbr_constraint = 1U;
+	} else
+		throw std::runtime_error("Invalid vbr");
+
+	packet_loss = block.GetBlockValue("packet_loss", 0U);
+	if (packet_loss > 100)
+		throw std::runtime_error("Invalid packet loss");
 }
 
 PreparedEncoder *
@@ -173,6 +193,9 @@ PreparedOpusEncoder::Open(AudioFormat &audio_format)
 	opus_encoder_ctl(enc, OPUS_SET_BITRATE(bitrate));
 	opus_encoder_ctl(enc, OPUS_SET_COMPLEXITY(complexity));
 	opus_encoder_ctl(enc, OPUS_SET_SIGNAL(signal));
+	opus_encoder_ctl(enc, OPUS_SET_VBR(vbr));
+	opus_encoder_ctl(enc, OPUS_SET_VBR_CONSTRAINT(vbr_constraint));
+	opus_encoder_ctl(enc, OPUS_SET_PACKET_LOSS_PERC(packet_loss));
 
 	return new OpusEncoder(audio_format, enc, chaining);
 }
