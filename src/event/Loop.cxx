@@ -57,7 +57,7 @@ EventLoop::EventLoop(
 #endif
 {
 #ifdef HAVE_THREADED_EVENT_LOOP
-	wake_event.Open(SocketDescriptor(wake_fd.Get()));
+	wake_event.Open(wake_fd.GetSocket());
 #endif
 }
 

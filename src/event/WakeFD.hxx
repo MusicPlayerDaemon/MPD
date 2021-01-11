@@ -20,14 +20,34 @@
 #ifndef MPD_WAKE_FD_HXX
 #define MPD_WAKE_FD_HXX
 
+#include "net/SocketDescriptor.hxx"
 #include "event/Features.h"
 
 #ifdef USE_EVENTFD
 #include "system/EventFD.hxx"
-#define WakeFD EventFD
 #else
 #include "system/EventPipe.hxx"
-#define WakeFD EventPipe
 #endif
+
+class WakeFD {
+#ifdef USE_EVENTFD
+	EventFD fd;
+#else
+	EventPipe fd;
+#endif
+
+public:
+	SocketDescriptor GetSocket() const noexcept {
+		return SocketDescriptor(fd.Get());
+	}
+
+	bool Read() noexcept {
+		return fd.Read();
+	}
+
+	void Write() noexcept {
+		fd.Write();
+	}
+};
 
 #endif
