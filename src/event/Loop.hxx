@@ -63,7 +63,7 @@ class EventLoop final
 {
 #ifdef HAVE_THREADED_EVENT_LOOP
 	WakeFD wake_fd;
-	SocketEvent wake_event{*this, BIND_THIS_METHOD(OnSocketReady)};
+	SocketEvent wake_event{*this, BIND_THIS_METHOD(OnSocketReady), wake_fd.GetSocket()};
 #endif
 
 	struct TimerCompare {

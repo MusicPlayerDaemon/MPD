@@ -56,9 +56,6 @@ EventLoop::EventLoop(
 	 alive(!_thread.IsNull())
 #endif
 {
-#ifdef HAVE_THREADED_EVENT_LOOP
-	wake_event.Open(wake_fd.GetSocket());
-#endif
 }
 
 EventLoop::~EventLoop() noexcept
