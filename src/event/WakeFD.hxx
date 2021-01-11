@@ -38,10 +38,10 @@ class WakeFD {
 
 public:
 	SocketDescriptor GetSocket() const noexcept {
-#ifdef USE_EVENTFD
-		return SocketDescriptor::FromFileDescriptor(fd.Get());
+#ifdef _WIN32
+		return fd.Get();
 #else
-		return SocketDescriptor(fd.Get());
+		return SocketDescriptor::FromFileDescriptor(fd.Get());
 #endif
 	}
 

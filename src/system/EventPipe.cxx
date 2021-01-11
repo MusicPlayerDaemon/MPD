@@ -34,59 +34,39 @@
 #endif
 
 #ifdef _WIN32
-static void PoorSocketPair(int fd[2]);
+static void PoorSocketPair(UniqueSocketDescriptor &socket0,
+			   UniqueSocketDescriptor &socket01);
 #endif
 
 EventPipe::EventPipe()
 {
 #ifdef _WIN32
-	PoorSocketPair(fds);
+	PoorSocketPair(r, w);
 #else
-	FileDescriptor r, w;
-	if (!FileDescriptor::CreatePipeNonBlock(r, w))
+	if (!UniqueFileDescriptor::CreatePipeNonBlock(r, w))
 		throw MakeErrno("pipe() has failed");
-
-	fds[0] = r.Steal();
-	fds[1] = w.Steal();
 #endif
 }
 
-EventPipe::~EventPipe() noexcept
-{
-#ifdef _WIN32
-	closesocket(fds[0]);
-	closesocket(fds[1]);
-#else
-	close(fds[0]);
-	close(fds[1]);
-#endif
-}
+EventPipe::~EventPipe() noexcept = default;
 
 bool
 EventPipe::Read() noexcept
 {
-	assert(fds[0] >= 0);
-	assert(fds[1] >= 0);
+	assert(r.IsDefined());
+	assert(w.IsDefined());
 
 	char buffer[256];
-#ifdef _WIN32
-	return recv(fds[0], buffer, sizeof(buffer), 0) > 0;
-#else
-	return read(fds[0], buffer, sizeof(buffer)) > 0;
-#endif
+	return r.Read(buffer, sizeof(buffer)) > 0;
 }
 
 void
 EventPipe::Write() noexcept
 {
-	assert(fds[0] >= 0);
-	assert(fds[1] >= 0);
+	assert(r.IsDefined());
+	assert(w.IsDefined());
 
-#ifdef _WIN32
-	send(fds[1], "", 1, 0);
-#else
-	[[maybe_unused]] ssize_t nbytes = write(fds[1], "", 1);
-#endif
+	w.Write("", 1);
 }
 
 #ifdef _WIN32
@@ -97,10 +77,8 @@ EventPipe::Write() noexcept
  * rather than wide-available API.
  */
 static void
-PoorSocketPair(int fd[2])
+PoorSocketPair(UniqueSocketDescriptor &socket0, UniqueSocketDescriptor &socket1)
 {
-	assert (fd != nullptr);
-
 	UniqueSocketDescriptor listen_socket;
 	if (!listen_socket.Create(AF_INET, SOCK_STREAM, IPPROTO_TCP))
 		throw MakeSocketError("Failed to create socket");
@@ -111,7 +89,6 @@ PoorSocketPair(int fd[2])
 	if (!listen_socket.Listen(1))
 		throw MakeSocketError("Failed to listen on socket");
 
-	UniqueSocketDescriptor socket0;
 	if (!socket0.Create(AF_INET, SOCK_STREAM, IPPROTO_TCP))
 		throw MakeSocketError("Failed to create socket");
 
@@ -120,12 +97,9 @@ PoorSocketPair(int fd[2])
 
 	socket0.SetNonBlocking();
 
-	auto socket1 = listen_socket.AcceptNonBlock();
+	socket1 = listen_socket.AcceptNonBlock();
 	if (!socket1.IsDefined())
 		throw MakeSocketError("Failed to accept connection");
-
-	fd[0] = socket0.Steal();
-	fd[1] = socket1.Steal();
 }
 
 #endif
