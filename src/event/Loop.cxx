@@ -326,14 +326,18 @@ EventLoop::Run() noexcept
 		{
 			const std::lock_guard<Mutex> lock(mutex);
 			HandleInject();
+#endif
+
+			if (again)
+				/* re-evaluate timers because one of
+				   the DeferEvents may have added a
+				   new timeout */
+				continue;
+
+#ifdef HAVE_THREADED_EVENT_LOOP
 			busy = false;
 		}
 #endif
-
-		if (again)
-			/* re-evaluate timers because one of the
-			   DeferEvents may have added a new timeout */
-			continue;
 
 		/* wait for new event */
 
