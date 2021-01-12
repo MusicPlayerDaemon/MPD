@@ -36,6 +36,14 @@
 class AddressInfoList;
 
 /**
+ * Thin wrapper for getaddrinfo() which throws on error and returns a
+ * RAII object.
+ */
+AddressInfoList
+Resolve(const char *node, const char *service,
+	const struct addrinfo *hints);
+
+/**
  * Resolve the given host name (which may include a port), and fall
  * back to the given default port.
  *

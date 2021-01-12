@@ -49,6 +49,21 @@
 
 #include <stdio.h>
 
+AddressInfoList
+Resolve(const char *node, const char *service,
+	const struct addrinfo *hints)
+{
+	struct addrinfo *ai;
+	int error = getaddrinfo(node, service, hints, &ai);
+	if (error != 0)
+		throw FormatRuntimeError("Failed to resolve '%s':'%s': %s",
+					 node == nullptr ? "" : node,
+					 service == nullptr ? "" : service,
+					 gai_strerror(error));
+
+	return AddressInfoList(ai);
+}
+
 static inline bool
 ai_is_passive(const struct addrinfo *ai)
 {
@@ -82,10 +97,9 @@ FindAndResolveInterfaceName(char *host, size_t size)
 
 #endif
 
-static int
+AddressInfoList
 Resolve(const char *host_and_port, int default_port,
-	const struct addrinfo *hints,
-	struct addrinfo **ai_r)
+	const struct addrinfo *hints)
 {
 	const char *host, *port;
 	char buffer[256], port_string[16];
@@ -93,16 +107,10 @@ Resolve(const char *host_and_port, int default_port,
 	if (host_and_port != nullptr) {
 		const auto eh = ExtractHost(host_and_port);
 		if (eh.HasFailed())
-			return EAI_NONAME;
+			throw std::runtime_error("Failed to extract host name");
 
-		if (eh.host.size >= sizeof(buffer)) {
-#ifdef _WIN32
-			return EAI_MEMORY;
-#else
-			errno = ENAMETOOLONG;
-			return EAI_SYSTEM;
-#endif
-		}
+		if (eh.host.size >= sizeof(buffer))
+			throw std::runtime_error("Host name too long");
 
 		memcpy(buffer, eh.host.data, eh.host.size);
 		buffer[eh.host.size] = 0;
@@ -131,20 +139,7 @@ Resolve(const char *host_and_port, int default_port,
 		port = port_string;
 	}
 
-	return getaddrinfo(host, port, hints, ai_r);
-}
-
-AddressInfoList
-Resolve(const char *host_and_port, int default_port,
-	const struct addrinfo *hints)
-{
-	struct addrinfo *ai;
-	int result = Resolve(host_and_port, default_port, hints, &ai);
-	if (result != 0)
-		throw FormatRuntimeError("Failed to resolve '%s': %s",
-					 host_and_port, gai_strerror(result));
-
-	return AddressInfoList(ai);
+	return Resolve(host, port, hints);
 }
 
 AddressInfoList
