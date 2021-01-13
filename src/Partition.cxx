@@ -91,11 +91,14 @@ Partition::PrefetchQueue() noexcept
 
 	auto &cache = *instance.input_cache;
 
-	int next = playlist.GetNextPosition(1);
-	if (next >= 0)
-		PrefetchSong(cache, playlist.queue.Get(next));
-
-	// TODO: prefetch more songs
+	// TODO: Find better way to guess how many songs to try to prefetch, this implementation could flush a cached file that is needed earlier when the most recent cached file.
+	for (int i = 1; i < 5; i++) {
+		int next = playlist.GetNextPosition(i);
+		if (next >= 0)
+			PrefetchSong(cache, playlist.queue.Get(next));
+		else
+			break;
+	}
 }
 
 void
@@ -225,6 +228,7 @@ Partition::OnIdleMonitor(unsigned mask) noexcept
 void
 Partition::OnGlobalEvent(unsigned mask) noexcept
 {
+	// TODO This doesn't seam to trigger when the random property of the queue is changed, this is needed for the pre caching
 	if ((mask & SYNC_WITH_PLAYER) != 0)
 		SyncWithPlayer();
 
