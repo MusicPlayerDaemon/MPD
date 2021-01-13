@@ -80,7 +80,7 @@ PrefetchSong(InputCacheManager &cache, const char *uri) noexcept
 static void
 PrefetchSong(InputCacheManager &cache, const DetachedSong &song) noexcept
 {
-	PrefetchSong(cache, song.GetURI());
+	PrefetchSong(cache, song.GetRealURI());
 }
 
 inline void
