@@ -205,7 +205,7 @@ handle_status(Client &client, [[maybe_unused]] Request args, Response &r)
 			 GetFullMessage(std::current_exception()).c_str());
 	}
 
-	song = playlist.GetNextPosition();
+	song = playlist.GetNextPosition(1);
 	if (song >= 0)
 		r.Format(COMMAND_STATUS_NEXTSONG ": %i\n"
 			 COMMAND_STATUS_NEXTSONGID ": %u\n",

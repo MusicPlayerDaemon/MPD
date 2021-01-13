@@ -91,7 +91,7 @@ Partition::PrefetchQueue() noexcept
 
 	auto &cache = *instance.input_cache;
 
-	int next = playlist.GetNextPosition();
+	int next = playlist.GetNextPosition(1);
 	if (next >= 0)
 		PrefetchSong(cache, playlist.queue.Get(next));
 
