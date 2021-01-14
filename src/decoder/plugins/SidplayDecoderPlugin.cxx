@@ -469,7 +469,7 @@ Windows1252ToUTF8(const char *s) noexcept
 	 * Fallback to not transcoding windows-1252 to utf-8, that may result
 	 * in invalid utf-8 unless nonprintable characters are replaced.
 	 */
-	auto t = AllocatedString::Duplicate(s);
+	AllocatedString t(s);
 
 	for (size_t i = 0; t[i] != AllocatedString::SENTINEL; i++)
 		if (!IsPrintableASCII(t[i]))
