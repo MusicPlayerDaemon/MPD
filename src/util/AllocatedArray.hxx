@@ -110,6 +110,12 @@ public:
 		return *this;
 	}
 
+	AllocatedArray &operator=(std::nullptr_t n) noexcept {
+		delete[] buffer.data;
+		buffer = n;
+		return *this;
+	}
+
 	operator ConstBuffer<T>() const noexcept {
 		return buffer;
 	}
