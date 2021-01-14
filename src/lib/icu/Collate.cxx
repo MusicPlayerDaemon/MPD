@@ -88,7 +88,7 @@ IcuCollate(std::string_view a, std::string_view b) noexcept
 				     b.data(), b.size(), &code);
 
 #elif defined(_WIN32)
-	AllocatedString<wchar_t> wa = nullptr, wb = nullptr;
+	BasicAllocatedString<wchar_t> wa = nullptr, wb = nullptr;
 
 	try {
 		wa = MultiByteToWideChar(CP_UTF8, a);

@@ -25,7 +25,7 @@
 #include <string_view>
 
 template<typename T> class AllocatedArray;
-template<typename T> class AllocatedString;
+class AllocatedString;
 
 /**
  * Wrapper for u_strFromUTF8().
@@ -40,7 +40,7 @@ UCharFromUTF8(std::string_view src);
  *
  * Throws std::runtime_error on error.
  */
-AllocatedString<char>
+AllocatedString
 UCharToUTF8(std::basic_string_view<UChar> src);
 
 #endif

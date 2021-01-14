@@ -24,20 +24,20 @@
 
 #include <cstdarg>
 
-template<typename T> class AllocatedString;
+class AllocatedString;
 
 /**
  * Format into an #AllocatedString.
  */
 gcc_nonnull_all
-AllocatedString<char>
+AllocatedString
 FormatStringV(const char *fmt, std::va_list args) noexcept;
 
 /**
  * Format into an #AllocatedString.
  */
 gcc_nonnull(1) gcc_printf(1,2)
-AllocatedString<char>
+AllocatedString
 FormatString(const char *fmt, ...) noexcept;
 
 #endif

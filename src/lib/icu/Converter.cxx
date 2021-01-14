@@ -77,7 +77,7 @@ IcuConverter::Create(const char *charset)
 #ifdef HAVE_ICU
 #elif defined(HAVE_ICONV)
 
-static AllocatedString<char>
+static AllocatedString
 DoConvert(iconv_t conv, std::string_view src)
 {
 	// TODO: dynamic buffer?
@@ -95,12 +95,12 @@ DoConvert(iconv_t conv, std::string_view src)
 	if (in_left > 0)
 		throw std::runtime_error("Charset conversion failed");
 
-	return AllocatedString<>::Duplicate({buffer, sizeof(buffer) - out_left});
+	return AllocatedString::Duplicate({buffer, sizeof(buffer) - out_left});
 }
 
 #endif
 
-AllocatedString<char>
+AllocatedString
 IcuConverter::ToUTF8(std::string_view s) const
 {
 #ifdef HAVE_ICU
@@ -128,7 +128,7 @@ IcuConverter::ToUTF8(std::string_view s) const
 #endif
 }
 
-AllocatedString<char>
+AllocatedString
 IcuConverter::FromUTF8(std::string_view s) const
 {
 #ifdef HAVE_ICU
@@ -151,7 +151,7 @@ IcuConverter::FromUTF8(std::string_view s) const
 		throw std::runtime_error(FormatString("Failed to convert from Unicode: %s",
 						      u_errorName(code)).c_str());
 
-	return AllocatedString<>::Duplicate({buffer, size_t(target - buffer)});
+	return AllocatedString::Duplicate({buffer, size_t(target - buffer)});
 
 #elif defined(HAVE_ICONV)
 	return DoConvert(from_utf8, s);

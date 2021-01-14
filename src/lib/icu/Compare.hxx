@@ -38,9 +38,9 @@ class IcuCompare {
 #ifdef _WIN32
 	/* Windows API functions work with wchar_t strings, so let's
 	   cache the MultiByteToWideChar() result for performance */
-	AllocatedString<wchar_t> needle;
+	BasicAllocatedString<wchar_t> needle;
 #else
-	AllocatedString<> needle;
+	AllocatedString needle;
 #endif
 
 public:

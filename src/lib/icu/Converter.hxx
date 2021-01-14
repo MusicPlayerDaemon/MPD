@@ -40,7 +40,7 @@
 struct UConverter;
 #endif
 
-template<typename T> class AllocatedString;
+class AllocatedString;
 
 /**
  * This class can convert strings with a certain character set to and
@@ -85,7 +85,7 @@ public:
 	 * Throws std::runtime_error on error.
 	 */
 	gcc_nonnull_all
-	AllocatedString<char> ToUTF8(std::string_view s) const;
+	AllocatedString ToUTF8(std::string_view s) const;
 
 	/**
 	 * Convert the string from UTF-8.
@@ -93,7 +93,7 @@ public:
 	 * Throws std::runtime_error on error.
 	 */
 	gcc_nonnull_all
-	AllocatedString<char> FromUTF8(std::string_view s) const;
+	AllocatedString FromUTF8(std::string_view s) const;
 };
 
 #endif

@@ -27,7 +27,7 @@
 
 #include <string.h>
 
-AllocatedString<>
+AllocatedString
 icy_server_metadata_header(const char *name,
 			   const char *genre, const char *url,
 			   const char *content_type, int metaint) noexcept
@@ -54,7 +54,7 @@ icy_server_metadata_header(const char *name,
 			    content_type);
 }
 
-static AllocatedString<>
+static AllocatedString
 icy_server_metadata_string(const char *stream_title,
 			   const char* stream_url) noexcept
 {
