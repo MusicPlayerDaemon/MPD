@@ -136,7 +136,7 @@ bool
 HttpdClient::SendResponse() noexcept
 {
 	char buffer[1024];
-	AllocatedString allocated = nullptr;
+	AllocatedString allocated;
 	const char *response;
 
 	assert(state == State::RESPONSE);

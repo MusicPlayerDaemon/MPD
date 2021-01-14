@@ -55,12 +55,13 @@ public:
 	static constexpr value_type SENTINEL = '\0';
 
 private:
-	pointer value;
+	pointer value = nullptr;
 
 	explicit BasicAllocatedString(pointer _value) noexcept
 		:value(_value) {}
 
 public:
+	BasicAllocatedString() noexcept = default;
 	BasicAllocatedString(std::nullptr_t n) noexcept
 		:value(n) {}
 
@@ -145,6 +146,7 @@ class AllocatedString : public BasicAllocatedString<char> {
 public:
 	using BasicAllocatedString::BasicAllocatedString;
 
+	AllocatedString() noexcept = default;
 	AllocatedString(BasicAllocatedString<value_type> &&src) noexcept
 		:BasicAllocatedString(std::move(src)) {}
 };
