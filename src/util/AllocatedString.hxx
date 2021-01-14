@@ -65,7 +65,10 @@ public:
 	BasicAllocatedString(std::nullptr_t n) noexcept
 		:value(n) {}
 
-	explicit BasicAllocatedString(string_view src) noexcept
+	explicit BasicAllocatedString(string_view src)
+		:value(Duplicate(src)) {}
+
+	explicit BasicAllocatedString(const_pointer src)
 		:value(Duplicate(src)) {}
 
 	BasicAllocatedString(BasicAllocatedString &&src) noexcept
@@ -143,6 +146,12 @@ private:
 		auto p = new value_type[src.size() + 1];
 		*std::copy_n(src.data(), src.size(), p) = SENTINEL;
 		return p;
+	}
+
+	static pointer Duplicate(const_pointer src) {
+		return src != nullptr
+			? Duplicate(std::string_view(src))
+			: nullptr;
 	}
 };
 
