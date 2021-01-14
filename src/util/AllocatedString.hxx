@@ -71,6 +71,9 @@ public:
 	explicit BasicAllocatedString(const_pointer src)
 		:value(Duplicate(src)) {}
 
+	BasicAllocatedString(const BasicAllocatedString &src) noexcept
+		:BasicAllocatedString(Duplicate(src.value)) {}
+
 	BasicAllocatedString(BasicAllocatedString &&src) noexcept
 		:value(src.Steal()) {}
 
@@ -137,10 +140,6 @@ public:
 		return std::exchange(value, nullptr);
 	}
 
-	BasicAllocatedString Clone() const {
-		return BasicAllocatedString(Duplicate(*this));
-	}
-
 private:
 	static pointer Duplicate(string_view src) {
 		auto p = new value_type[src.size() + 1];
@@ -150,7 +149,7 @@ private:
 
 	static pointer Duplicate(const_pointer src) {
 		return src != nullptr
-			? Duplicate(std::string_view(src))
+			? Duplicate(string_view(src))
 			: nullptr;
 	}
 };
