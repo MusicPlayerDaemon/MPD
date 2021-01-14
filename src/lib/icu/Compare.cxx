@@ -46,7 +46,7 @@ IcuCompare::IcuCompare(std::string_view _needle) noexcept
 #else
 
 IcuCompare::IcuCompare(std::string_view _needle) noexcept
-	:needle(AllocatedString<>::Duplicate(_needle)) {}
+	:needle(AllocatedString::Duplicate(_needle)) {}
 
 #endif
 

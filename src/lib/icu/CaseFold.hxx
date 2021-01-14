@@ -27,9 +27,9 @@
 
 #include <string_view>
 
-template<typename T> class AllocatedString;
+class AllocatedString;
 
-AllocatedString<char>
+AllocatedString
 IcuCaseFold(std::string_view src) noexcept;
 
 #endif

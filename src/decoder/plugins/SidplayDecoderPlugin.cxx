@@ -456,7 +456,7 @@ sidplay_file_decode(DecoderClient &client, Path path_fs)
 	} while (cmd != DecoderCommand::STOP);
 }
 
-static AllocatedString<char>
+static AllocatedString
 Windows1252ToUTF8(const char *s) noexcept
 {
 #ifdef HAVE_ICU_CONVERTER
@@ -469,9 +469,9 @@ Windows1252ToUTF8(const char *s) noexcept
 	 * Fallback to not transcoding windows-1252 to utf-8, that may result
 	 * in invalid utf-8 unless nonprintable characters are replaced.
 	 */
-	auto t = AllocatedString<char>::Duplicate(s);
+	auto t = AllocatedString::Duplicate(s);
 
-	for (size_t i = 0; t[i] != AllocatedString<char>::SENTINEL; i++)
+	for (size_t i = 0; t[i] != AllocatedString::SENTINEL; i++)
 		if (!IsPrintableASCII(t[i]))
 			t[i] = '?';
 
@@ -479,7 +479,7 @@ Windows1252ToUTF8(const char *s) noexcept
 }
 
 gcc_pure
-static AllocatedString<char>
+static AllocatedString
 GetInfoString(const SidTuneInfo &info, unsigned i) noexcept
 {
 #ifdef HAVE_SIDPLAYFP
@@ -496,7 +496,7 @@ GetInfoString(const SidTuneInfo &info, unsigned i) noexcept
 }
 
 gcc_pure
-static AllocatedString<char>
+static AllocatedString
 GetDateString(const SidTuneInfo &info) noexcept
 {
 	/*
@@ -507,12 +507,12 @@ GetDateString(const SidTuneInfo &info) noexcept
 	 * author or group> may be for example Rob Hubbard. A full field
 	 * may be for example "1987 Rob Hubbard".
 	 */
-	AllocatedString<char> release = GetInfoString(info, 2);
+	AllocatedString release = GetInfoString(info, 2);
 
 	/* Keep the <year> part only for the date. */
-	for (size_t i = 0; release[i] != AllocatedString<char>::SENTINEL; i++)
+	for (size_t i = 0; release[i] != AllocatedString::SENTINEL; i++)
 		if (std::isspace(release[i])) {
-			release[i] = AllocatedString<char>::SENTINEL;
+			release[i] = AllocatedString::SENTINEL;
 			break;
 		}
 

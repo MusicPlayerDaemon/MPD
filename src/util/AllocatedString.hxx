@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2020 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2015-2021 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -41,8 +41,8 @@
  *
  * Unlike std::string, this object can hold a "nullptr" special value.
  */
-template<typename T=char>
-class AllocatedString {
+template<typename T>
+class BasicAllocatedString {
 public:
 	using value_type = typename StringPointer<T>::value_type;
 	using reference = typename StringPointer<T>::reference;
@@ -57,41 +57,41 @@ public:
 private:
 	pointer value;
 
-	explicit AllocatedString(pointer _value) noexcept
+	explicit BasicAllocatedString(pointer _value) noexcept
 		:value(_value) {}
 
 public:
-	AllocatedString(std::nullptr_t n) noexcept
+	BasicAllocatedString(std::nullptr_t n) noexcept
 		:value(n) {}
 
-	AllocatedString(AllocatedString &&src) noexcept
+	BasicAllocatedString(BasicAllocatedString &&src) noexcept
 		:value(src.Steal()) {}
 
-	~AllocatedString() noexcept {
+	~BasicAllocatedString() noexcept {
 		delete[] value;
 	}
 
-	static AllocatedString Donate(pointer value) noexcept {
-		return AllocatedString(value);
+	static BasicAllocatedString Donate(pointer value) noexcept {
+		return BasicAllocatedString(value);
 	}
 
-	static AllocatedString Null() noexcept {
+	static BasicAllocatedString Null() noexcept {
 		return nullptr;
 	}
 
-	static AllocatedString Empty() {
+	static BasicAllocatedString Empty() {
 		auto p = new value_type[1];
 		p[0] = SENTINEL;
 		return Donate(p);
 	}
 
-	static AllocatedString Duplicate(string_view src) {
+	static BasicAllocatedString Duplicate(string_view src) {
 		auto p = new value_type[src.size() + 1];
 		*std::copy_n(src.data(), src.size(), p) = SENTINEL;
 		return Donate(p);
 	}
 
-	AllocatedString &operator=(AllocatedString &&src) noexcept {
+	BasicAllocatedString &operator=(BasicAllocatedString &&src) noexcept {
 		std::swap(value, src.value);
 		return *this;
 	}
@@ -136,9 +136,17 @@ public:
 		return std::exchange(value, nullptr);
 	}
 
-	AllocatedString Clone() const {
+	BasicAllocatedString Clone() const {
 		return Duplicate(*this);
 	}
+};
+
+class AllocatedString : public BasicAllocatedString<char> {
+public:
+	using BasicAllocatedString::BasicAllocatedString;
+
+	AllocatedString(BasicAllocatedString<value_type> &&src) noexcept
+		:BasicAllocatedString(std::move(src)) {}
 };
 
 #endif

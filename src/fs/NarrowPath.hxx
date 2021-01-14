@@ -36,7 +36,7 @@
  */
 class NarrowPath {
 #ifdef _UNICODE
-	using Value = AllocatedString<>;
+	using Value = AllocatedString;
 #else
 	using Value = StringPointer<>;
 #endif

@@ -194,7 +194,7 @@ private:
 	bool is_exclusive;
 	bool enumerate_devices;
 	std::string device_config;
-	std::vector<std::pair<unsigned int, AllocatedString<char>>> device_desc;
+	std::vector<std::pair<unsigned int, AllocatedString>> device_desc;
 	std::shared_ptr<WinEvent> event;
 	std::optional<COM> com;
 	ComPtr<IMMDeviceEnumerator> enumerator;
