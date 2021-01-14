@@ -38,10 +38,10 @@ class IcuCompare {
 #ifdef _WIN32
 	/* Windows API functions work with wchar_t strings, so let's
 	   cache the MultiByteToWideChar() result for performance */
-	BasicAllocatedString<wchar_t> needle;
-#else
-	AllocatedString needle;
+	using AllocatedString = BasicAllocatedString<wchar_t>;
 #endif
+
+	AllocatedString needle;
 
 public:
 	IcuCompare():needle(nullptr) {}
@@ -50,12 +50,12 @@ public:
 
 	IcuCompare(const IcuCompare &src) noexcept
 		:needle(src
-			? src.needle.Clone()
+			? AllocatedString(src.needle)
 			: nullptr) {}
 
 	IcuCompare &operator=(const IcuCompare &src) noexcept {
 		needle = src
-			? src.needle.Clone()
+			? AllocatedString(src.needle)
 			: nullptr;
 		return *this;
 	}
