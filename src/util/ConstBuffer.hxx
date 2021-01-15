@@ -32,11 +32,8 @@
 
 #include "Compiler.h"
 
-#include <cstddef>
-
-#ifndef NDEBUG
 #include <cassert>
-#endif
+#include <cstddef>
 
 template<typename T>
 struct ConstBuffer;
@@ -139,9 +136,7 @@ struct ConstBuffer {
 	 */
 	constexpr static ConstBuffer<T> FromVoid(ConstBuffer<void> other) noexcept {
 		static_assert(sizeof(T) > 0, "Empty base type");
-#ifndef NDEBUG
 		assert(other.size % sizeof(T) == 0);
-#endif
 		return FromVoidFloor(other);
 	}
 
@@ -192,9 +187,7 @@ struct ConstBuffer {
 	}
 
 	constexpr reference operator[](size_type i) const noexcept {
-#ifndef NDEBUG
 		assert(i < size);
-#endif
 
 		return data[i];
 	}
@@ -204,9 +197,7 @@ struct ConstBuffer {
 	 * be empty.
 	 */
 	constexpr reference front() const noexcept {
-#ifndef NDEBUG
 		assert(!empty());
-#endif
 		return data[0];
 	}
 
@@ -215,9 +206,7 @@ struct ConstBuffer {
 	 * be empty.
 	 */
 	constexpr reference back() const noexcept {
-#ifndef NDEBUG
 		assert(!empty());
-#endif
 		return data[size - 1];
 	}
 
@@ -226,9 +215,7 @@ struct ConstBuffer {
 	 * not actually modify the buffer).  Buffer must not be empty.
 	 */
 	constexpr void pop_front() noexcept {
-#ifndef NDEBUG
 		assert(!empty());
-#endif
 
 		++data;
 		--size;
@@ -239,9 +226,7 @@ struct ConstBuffer {
 	 * not actually modify the buffer).  Buffer must not be empty.
 	 */
 	constexpr void pop_back() noexcept {
-#ifndef NDEBUG
 		assert(!empty());
-#endif
 
 		--size;
 	}
@@ -257,9 +242,7 @@ struct ConstBuffer {
 	}
 
 	constexpr void skip_front(size_type n) noexcept {
-#ifndef NDEBUG
 		assert(size >= n);
-#endif
 
 		data += n;
 		size -= n;
@@ -270,10 +253,8 @@ struct ConstBuffer {
 	 * size attribute to retain the old end address.
 	 */
 	void MoveFront(pointer new_data) noexcept {
-#ifndef NDEBUG
 		assert(IsNull() == (new_data == nullptr));
 		assert(new_data <= end());
-#endif
 
 		size = end() - new_data;
 		data = new_data;
@@ -284,10 +265,8 @@ struct ConstBuffer {
 	 * size).
 	 */
 	void SetEnd(pointer new_end) noexcept {
-#ifndef NDEBUG
 		assert(IsNull() == (new_end == nullptr));
 		assert(new_end >= begin());
-#endif
 
 		size = new_end - data;
 	}

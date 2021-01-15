@@ -33,11 +33,8 @@
 #include "ConstBuffer.hxx"
 #include "Compiler.h"
 
-#include <cstddef>
-
-#ifndef NDEBUG
 #include <cassert>
-#endif
+#include <cstddef>
 
 template<typename T>
 struct WritableBuffer;
@@ -140,14 +137,9 @@ struct WritableBuffer {
 	 * the assertion below ensures that the size is a multiple of
 	 * sizeof(T).
 	 */
-#ifdef NDEBUG
-	constexpr
-#endif
-	static WritableBuffer<T> FromVoid(WritableBuffer<void> other) noexcept {
+	static constexpr WritableBuffer<T> FromVoid(WritableBuffer<void> other) noexcept {
 		static_assert(sizeof(T) > 0, "Empty base type");
-#ifndef NDEBUG
 		assert(other.size % sizeof(T) == 0);
-#endif
 		return FromVoidFloor(other);
 	}
 
@@ -189,9 +181,7 @@ struct WritableBuffer {
 	}
 
 	constexpr reference operator[](size_type i) const noexcept {
-#ifndef NDEBUG
 		assert(i < size);
-#endif
 
 		return data[i];
 	}
@@ -201,9 +191,7 @@ struct WritableBuffer {
 	 * be empty.
 	 */
 	constexpr reference front() const noexcept {
-#ifndef NDEBUG
 		assert(!empty());
-#endif
 		return data[0];
 	}
 
@@ -212,9 +200,7 @@ struct WritableBuffer {
 	 * be empty.
 	 */
 	constexpr reference back() const noexcept {
-#ifndef NDEBUG
 		assert(!empty());
-#endif
 		return data[size - 1];
 	}
 
@@ -250,9 +236,7 @@ struct WritableBuffer {
 	}
 
 	constexpr void skip_front(size_type n) noexcept {
-#ifndef NDEBUG
 		assert(size >= n);
-#endif
 
 		data += n;
 		size -= n;
@@ -263,10 +247,8 @@ struct WritableBuffer {
 	 * size attribute to retain the old end address.
 	 */
 	void MoveFront(pointer new_data) noexcept {
-#ifndef NDEBUG
 		assert(IsNull() == (new_data == nullptr));
 		assert(new_data <= end());
-#endif
 
 		size = end() - new_data;
 		data = new_data;
@@ -277,10 +259,8 @@ struct WritableBuffer {
 	 * size).
 	 */
 	void SetEnd(pointer new_end) noexcept {
-#ifndef NDEBUG
 		assert(IsNull() == (new_end == nullptr));
 		assert(new_end >= begin());
-#endif
 
 		size = new_end - data;
 	}
