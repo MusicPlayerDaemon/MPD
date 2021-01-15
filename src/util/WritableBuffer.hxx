@@ -188,10 +188,7 @@ struct WritableBuffer {
 		return data + size;
 	}
 
-#ifdef NDEBUG
-	constexpr
-#endif
-	reference operator[](size_type i) const noexcept {
+	constexpr reference operator[](size_type i) const noexcept {
 #ifndef NDEBUG
 		assert(i < size);
 #endif
@@ -203,10 +200,7 @@ struct WritableBuffer {
 	 * Returns a reference to the first element.  Buffer must not
 	 * be empty.
 	 */
-#ifdef NDEBUG
-	constexpr
-#endif
-	reference front() const noexcept {
+	constexpr reference front() const noexcept {
 #ifndef NDEBUG
 		assert(!empty());
 #endif
@@ -217,10 +211,7 @@ struct WritableBuffer {
 	 * Returns a reference to the last element.  Buffer must not
 	 * be empty.
 	 */
-#ifdef NDEBUG
-	constexpr
-#endif
-	reference back() const noexcept {
+	constexpr reference back() const noexcept {
 #ifndef NDEBUG
 		assert(!empty());
 #endif
@@ -231,7 +222,7 @@ struct WritableBuffer {
 	 * Remove the first element (by moving the head pointer, does
 	 * not actually modify the buffer).  Buffer must not be empty.
 	 */
-	void pop_front() noexcept {
+	constexpr void pop_front() noexcept {
 		assert(!empty());
 
 		++data;
@@ -242,7 +233,7 @@ struct WritableBuffer {
 	 * Remove the last element (by moving the tail pointer, does
 	 * not actually modify the buffer).  Buffer must not be empty.
 	 */
-	void pop_back() noexcept {
+	constexpr void pop_back() noexcept {
 		assert(!empty());
 
 		--size;
@@ -252,13 +243,13 @@ struct WritableBuffer {
 	 * Remove the first element and return a reference to it.
 	 * Buffer must not be empty.
 	 */
-	reference shift() noexcept {
+	constexpr reference shift() noexcept {
 		reference result = front();
 		pop_front();
 		return result;
 	}
 
-	void skip_front(size_type n) noexcept {
+	constexpr void skip_front(size_type n) noexcept {
 #ifndef NDEBUG
 		assert(size >= n);
 #endif

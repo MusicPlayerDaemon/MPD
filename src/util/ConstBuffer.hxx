@@ -137,10 +137,7 @@ struct ConstBuffer {
 	 * the assertion below ensures that the size is a multiple of
 	 * sizeof(T).
 	 */
-#ifdef NDEBUG
-	constexpr
-#endif
-	static ConstBuffer<T> FromVoid(ConstBuffer<void> other) noexcept {
+	constexpr static ConstBuffer<T> FromVoid(ConstBuffer<void> other) noexcept {
 		static_assert(sizeof(T) > 0, "Empty base type");
 #ifndef NDEBUG
 		assert(other.size % sizeof(T) == 0);
@@ -170,8 +167,7 @@ struct ConstBuffer {
 	}
 
 	template<typename U>
-	gcc_pure
-	bool Contains(U &&u) const noexcept {
+	constexpr bool Contains(U &&u) const noexcept {
 		for (const auto &i : *this)
 			if (u == i)
 				return true;
@@ -195,10 +191,7 @@ struct ConstBuffer {
 		return data + size;
 	}
 
-#ifdef NDEBUG
-	constexpr
-#endif
-	reference operator[](size_type i) const noexcept {
+	constexpr reference operator[](size_type i) const noexcept {
 #ifndef NDEBUG
 		assert(i < size);
 #endif
@@ -210,10 +203,7 @@ struct ConstBuffer {
 	 * Returns a reference to the first element.  Buffer must not
 	 * be empty.
 	 */
-#ifdef NDEBUG
-	constexpr
-#endif
-	reference front() const noexcept {
+	constexpr reference front() const noexcept {
 #ifndef NDEBUG
 		assert(!empty());
 #endif
@@ -224,10 +214,7 @@ struct ConstBuffer {
 	 * Returns a reference to the last element.  Buffer must not
 	 * be empty.
 	 */
-#ifdef NDEBUG
-	constexpr
-#endif
-	reference back() const noexcept {
+	constexpr reference back() const noexcept {
 #ifndef NDEBUG
 		assert(!empty());
 #endif
@@ -238,7 +225,7 @@ struct ConstBuffer {
 	 * Remove the first element (by moving the head pointer, does
 	 * not actually modify the buffer).  Buffer must not be empty.
 	 */
-	void pop_front() noexcept {
+	constexpr void pop_front() noexcept {
 #ifndef NDEBUG
 		assert(!empty());
 #endif
@@ -251,7 +238,7 @@ struct ConstBuffer {
 	 * Remove the last element (by moving the tail pointer, does
 	 * not actually modify the buffer).  Buffer must not be empty.
 	 */
-	void pop_back() noexcept {
+	constexpr void pop_back() noexcept {
 #ifndef NDEBUG
 		assert(!empty());
 #endif
@@ -263,13 +250,13 @@ struct ConstBuffer {
 	 * Remove the first element and return a reference to it.
 	 * Buffer must not be empty.
 	 */
-	reference shift() noexcept {
+	constexpr reference shift() noexcept {
 		reference result = front();
 		pop_front();
 		return result;
 	}
 
-	void skip_front(size_type n) noexcept {
+	constexpr void skip_front(size_type n) noexcept {
 #ifndef NDEBUG
 		assert(size >= n);
 #endif
