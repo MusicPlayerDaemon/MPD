@@ -727,7 +727,7 @@ Whenever possible, ids should be used.
 
 .. _command_playlistfind:
 
-:command:`playlistfind {TAG} {NEEDLE}`
+:command:`playlistfind {FILTER}`
     Finds songs in the queue with strict
     matching.
 
@@ -748,7 +748,7 @@ Whenever possible, ids should be used.
 
 .. _command_playlistsearch:
 
-:command:`playlistsearch {TAG} {NEEDLE}`
+:command:`playlistsearch {FILTER}`
     Searches case-insensitively for partial matches in the
     queue.
 
