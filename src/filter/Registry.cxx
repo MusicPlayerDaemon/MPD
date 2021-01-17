@@ -28,7 +28,7 @@
 
 #include <string.h>
 
-static const FilterPlugin *const filter_plugins[] = {
+static constexpr const FilterPlugin *filter_plugins[] = {
 	&null_filter_plugin,
 	&route_filter_plugin,
 	&normalize_filter_plugin,

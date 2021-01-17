@@ -29,7 +29,7 @@
 
 #include <string.h>
 
-const StoragePlugin *const storage_plugins[] = {
+constexpr const StoragePlugin *storage_plugins[] = {
 	&local_storage_plugin,
 #ifdef ENABLE_SMBCLIENT
 	&smbclient_storage_plugin,

@@ -33,7 +33,7 @@
 
 #include <string.h>
 
-const EncoderPlugin *const encoder_plugins[] = {
+constexpr const EncoderPlugin *encoder_plugins[] = {
 	&null_encoder_plugin,
 #ifdef ENABLE_VORBISENC
 	&vorbis_encoder_plugin,

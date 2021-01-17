@@ -170,7 +170,7 @@ CreateLocalStorage(Path base_fs)
 	return std::make_unique<LocalStorage>(base_fs);
 }
 
-const StoragePlugin local_storage_plugin = {
+constexpr StoragePlugin local_storage_plugin = {
 	"local",
 	nullptr,
 };

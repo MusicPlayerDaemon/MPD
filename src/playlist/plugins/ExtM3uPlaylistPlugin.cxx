@@ -147,7 +147,7 @@ static const char *const extm3u_mime_types[] = {
 	nullptr
 };
 
-const PlaylistPlugin extm3u_playlist_plugin =
+constexpr PlaylistPlugin extm3u_playlist_plugin =
 	PlaylistPlugin("extm3u", extm3u_open_stream)
 	.WithSuffixes(extm3u_suffixes)
 	.WithMimeTypes(extm3u_mime_types);

@@ -43,7 +43,7 @@
 #include <cassert>
 #include <iterator>
 
-const PlaylistPlugin *const playlist_plugins[] = {
+constexpr const PlaylistPlugin *playlist_plugins[] = {
 	&extm3u_playlist_plugin,
 	&m3u_playlist_plugin,
 	&pls_playlist_plugin,

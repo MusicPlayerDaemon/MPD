@@ -53,7 +53,7 @@
 
 #include <string.h>
 
-const struct DecoderPlugin *const decoder_plugins[] = {
+constexpr const struct DecoderPlugin *decoder_plugins[] = {
 #ifdef ENABLE_MAD
 	&mad_decoder_plugin,
 #endif

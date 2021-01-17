@@ -1181,7 +1181,7 @@ try {
 	LockCaughtError();
 }
 
-const struct AudioOutputPlugin alsa_output_plugin = {
+constexpr struct AudioOutputPlugin alsa_output_plugin = {
 	"alsa",
 	alsa_test_default_device,
 	&AlsaOutput::Create,

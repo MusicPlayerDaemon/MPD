@@ -46,7 +46,7 @@
 #endif
 #include "util/StringAPI.hxx"
 
-const AudioOutputPlugin *const audio_output_plugins[] = {
+constexpr const AudioOutputPlugin *audio_output_plugins[] = {
 #ifdef HAVE_SHOUT
 	&shout_output_plugin,
 #endif

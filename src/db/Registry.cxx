@@ -26,7 +26,7 @@
 
 #include <string.h>
 
-const DatabasePlugin *const database_plugins[] = {
+constexpr const DatabasePlugin *database_plugins[] = {
 	&simple_db_plugin,
 #ifdef ENABLE_LIBMPDCLIENT
 	&proxy_db_plugin,

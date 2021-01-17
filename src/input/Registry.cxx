@@ -52,7 +52,7 @@
 #include "plugins/CdioParanoiaInputPlugin.hxx"
 #endif
 
-const InputPlugin *const input_plugins[] = {
+constexpr const InputPlugin *input_plugins[] = {
 #ifdef ENABLE_ALSA
 	&input_plugin_alsa,
 #endif

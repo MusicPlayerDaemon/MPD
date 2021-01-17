@@ -479,7 +479,7 @@ SimpleDatabase::Unmount(const char *uri) noexcept
 	return true;
 }
 
-const DatabasePlugin simple_db_plugin = {
+constexpr DatabasePlugin simple_db_plugin = {
 	"simple",
 	DatabasePlugin::FLAG_REQUIRE_STORAGE,
 	SimpleDatabase::Create,

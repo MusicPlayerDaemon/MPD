@@ -30,7 +30,7 @@
 
 #include <string.h>
 
-const ArchivePlugin *const archive_plugins[] = {
+constexpr const ArchivePlugin *archive_plugins[] = {
 #ifdef ENABLE_BZ2
 	&bz2_archive_plugin,
 #endif

@@ -913,7 +913,7 @@ pulse_output_test_default_device()
 	return PulseOutput::TestDefaultDevice();
 }
 
-const struct AudioOutputPlugin pulse_output_plugin = {
+constexpr struct AudioOutputPlugin pulse_output_plugin = {
 	"pulse",
 	pulse_output_test_default_device,
 	PulseOutput::Create,
