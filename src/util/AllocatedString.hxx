@@ -125,7 +125,9 @@ public:
 	}
 
 	operator string_view() const noexcept {
-		return value;
+		return value != nullptr
+			? string_view(value)
+			: string_view();
 	}
 
 	constexpr const_pointer c_str() const noexcept {
