@@ -434,7 +434,7 @@ libnfs = AutotoolsProject(
 )
 
 boost = BoostProject(
-    'https://dl.bintray.com/boostorg/release/1.74.0/source/boost_1_74_0.tar.bz2',
-    '83bfc1507731a0906e387fc28b7ef5417d591429e51e788417fe9ff025e116b1',
+    'https://dl.bintray.com/boostorg/release/1.75.0/source/boost_1_75_0.tar.bz2',
+    '953db31e016db7bb207f11432bef7df100516eeb746843fa0486a222e3fd49cb',
     'include/boost/version.hpp',
 )
