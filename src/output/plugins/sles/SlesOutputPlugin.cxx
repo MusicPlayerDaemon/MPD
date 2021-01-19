@@ -33,6 +33,7 @@
 #include <SLES/OpenSLES.h>
 #include <SLES/OpenSLES_Android.h>
 
+#include <cassert>
 #include <iterator>
 #include <stdexcept>
 
