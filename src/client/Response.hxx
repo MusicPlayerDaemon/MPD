@@ -75,6 +75,8 @@ public:
 	bool Write(const void *data, size_t length) noexcept;
 	bool Write(const char *data) noexcept;
 	bool FormatV(const char *fmt, std::va_list args) noexcept;
+
+	gcc_printf(2,3)
 	bool Format(const char *fmt, ...) noexcept;
 
 	static constexpr size_t MAX_BINARY_SIZE = 8192;
