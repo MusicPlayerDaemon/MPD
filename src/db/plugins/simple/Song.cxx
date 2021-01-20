@@ -18,6 +18,7 @@
  */
 
 #include "Song.hxx"
+#include "ExportedSong.hxx"
 #include "Directory.hxx"
 #include "tag/Tag.hxx"
 #include "song/DetachedSong.hxx"
@@ -53,10 +54,10 @@ Song::GetURI() const noexcept
 	}
 }
 
-LightSong
+ExportedSong
 Song::Export() const noexcept
 {
-	LightSong dest(filename.c_str(), tag);
+	ExportedSong dest(filename.c_str(), tag);
 	if (!parent.IsRoot())
 		dest.directory = parent.GetPath();
 	if (!target.empty())

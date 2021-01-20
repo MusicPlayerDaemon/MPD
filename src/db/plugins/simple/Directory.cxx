@@ -18,11 +18,11 @@
  */
 
 #include "Directory.hxx"
+#include "ExportedSong.hxx"
 #include "SongSort.hxx"
 #include "Song.hxx"
 #include "Mount.hxx"
 #include "db/LightDirectory.hxx"
-#include "song/LightSong.hxx"
 #include "db/Uri.hxx"
 #include "db/DatabaseLock.hxx"
 #include "db/Interface.hxx"
@@ -234,7 +234,7 @@ Directory::Walk(bool recursive, const SongFilter *filter,
 
 	if (visit_song) {
 		for (auto &song : songs){
-			const LightSong song2 = song.Export();
+			const auto song2 = song.Export();
 			if (filter == nullptr || filter->Match(song2))
 				visit_song(song2);
 		}
