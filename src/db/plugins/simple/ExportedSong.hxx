@@ -21,6 +21,7 @@
 #define MPD_DB_SIMPLE_EXPORTED_SONG_HXX
 
 #include "song/LightSong.hxx"
+#include "tag/Tag.hxx"
 
 /**
  * The return type for Song::Export().  In addition to implementing
@@ -28,8 +29,14 @@
  * a #LightSong, e.g. a merged #Tag.
  */
 class ExportedSong : public LightSong {
+	Tag tag_buffer;
+
 public:
 	using LightSong::LightSong;
+
+	ExportedSong(const char *_uri, Tag &&_tag) noexcept
+		:LightSong(_uri, tag_buffer),
+		 tag_buffer(std::move(_tag)) {}
 };
 
 #endif
