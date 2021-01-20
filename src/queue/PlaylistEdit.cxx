@@ -323,7 +323,8 @@ void
 playlist::MoveRange(PlayerControl &pc,
 		    unsigned start, unsigned end, int to)
 {
-	if (!queue.IsValidPosition(start) || !queue.IsValidPosition(end - 1))
+	end = GetLength() < end ? GetLength() : end;
+	if (!queue.IsValidPosition(start))
 		throw PlaylistError::BadRange();
 
 	if ((to >= 0 && to + end - start - 1 >= GetLength()) ||
