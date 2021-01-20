@@ -296,7 +296,7 @@ public:
 			return;
 		}
 
-		response.Format("size: %" PRIoffset "\n", buffer.size);
+		response.Format("size: %zu\n", buffer.size);
 
 		if (mime_type != nullptr)
 			response.Format("type: %s\n", mime_type);
