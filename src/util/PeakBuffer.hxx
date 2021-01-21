@@ -55,6 +55,10 @@ public:
 	PeakBuffer(const PeakBuffer &) = delete;
 	PeakBuffer &operator=(const PeakBuffer &) = delete;
 
+	std::size_t max_size() const noexcept {
+		return normal_size + peak_size;
+	}
+
 	gcc_pure
 	bool empty() const noexcept;
 
