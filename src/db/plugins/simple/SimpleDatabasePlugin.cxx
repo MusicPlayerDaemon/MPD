@@ -233,12 +233,12 @@ SimpleDatabase::GetSong(std::string_view uri) const
 				    "No such song");
 
 	const Song *song = r.directory->FindSong(r.rest);
-	protect.unlock();
 	if (song == nullptr)
 		throw DatabaseError(DatabaseErrorCode::NOT_FOUND,
 				    "No such song");
 
 	exported_song.Construct(song->Export());
+	protect.unlock();
 
 #ifndef NDEBUG
 	++borrowed_song_count;

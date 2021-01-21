@@ -21,9 +21,12 @@
 #include "ExportedSong.hxx"
 #include "Directory.hxx"
 #include "tag/Tag.hxx"
+#include "tag/Builder.hxx"
 #include "song/DetachedSong.hxx"
 #include "song/LightSong.hxx"
 #include "fs/Traits.hxx"
+#include "time/ChronoUtil.hxx"
+#include "util/IterableSplitString.hxx"
 
 Song::Song(DetachedSong &&other, Directory &_parent) noexcept
 	:tag(std::move(other.WritableTag())),
@@ -54,17 +57,87 @@ Song::GetURI() const noexcept
 	}
 }
 
+/**
+ * Path name traversal of a #Directory.
+ */
+gcc_pure
+static const Directory *
+FindTargetDirectory(const Directory &base, StringView path) noexcept
+{
+	const auto *directory = &base;
+	for (const StringView name : IterableSplitString(path, '/')) {
+		if (name.empty() || name.Equals("."))
+			continue;
+
+		directory = name.Equals("..")
+			? directory->parent
+			: directory->FindChild(name);
+		if (directory == nullptr)
+			break;
+	}
+
+	return directory;
+}
+
+/**
+ * Path name traversal of a #Song.
+ */
+gcc_pure
+static const Song *
+FindTargetSong(const Directory &_directory, StringView target) noexcept
+{
+	auto [path, last] = target.SplitLast('/');
+	if (last == nullptr) {
+		last = path;
+		path = nullptr;
+	}
+
+	if (last.empty())
+		return nullptr;
+
+	const auto *directory = FindTargetDirectory(_directory, path);
+	if (directory == nullptr)
+		return nullptr;
+
+	return directory->FindSong(last);
+}
+
 ExportedSong
 Song::Export() const noexcept
 {
-	ExportedSong dest(filename.c_str(), tag);
+	const auto *target_song = !target.empty()
+		? FindTargetSong(parent, (std::string_view)target)
+		: nullptr;
+
+	Tag merged_tag;
+	if (target_song != nullptr) {
+		/* if we found the target song (which may be the
+		   underlying song file of a CUE file), merge the tags
+		   from that song with this song's tags (from the CUE
+		   file) */
+		TagBuilder builder(tag);
+		builder.Complement(target_song->tag);
+		merged_tag = builder.Commit();
+	}
+
+	ExportedSong dest = merged_tag.IsDefined()
+		? ExportedSong(filename.c_str(), std::move(merged_tag))
+		: ExportedSong(filename.c_str(), tag);
 	if (!parent.IsRoot())
 		dest.directory = parent.GetPath();
 	if (!target.empty())
 		dest.real_uri = target.c_str();
-	dest.mtime = mtime;
-	dest.start_time = start_time;
-	dest.end_time = end_time;
-	dest.audio_format = audio_format;
+	dest.mtime = IsNegative(mtime) && target_song != nullptr
+		? target_song->mtime
+		: mtime;
+	dest.start_time = start_time.IsZero() && target_song != nullptr
+		? target_song->start_time
+		: start_time;
+	dest.end_time = end_time.IsZero() && target_song != nullptr
+		? target_song->end_time
+		: end_time;
+	dest.audio_format = audio_format.IsDefined() || target_song == nullptr
+		? audio_format
+		: target_song->audio_format;
 	return dest;
 }
