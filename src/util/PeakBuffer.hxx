@@ -23,7 +23,6 @@
 #include "Compiler.h"
 
 #include <cstddef>
-#include <cstdint>
 
 template<typename T> struct WritableBuffer;
 template<typename T> class DynamicFifoBuffer;
@@ -36,7 +35,7 @@ template<typename T> class DynamicFifoBuffer;
 class PeakBuffer {
 	std::size_t normal_size, peak_size;
 
-	DynamicFifoBuffer<uint8_t> *normal_buffer, *peak_buffer;
+	DynamicFifoBuffer<std::byte> *normal_buffer, *peak_buffer;
 
 public:
 	PeakBuffer(std::size_t _normal_size, std::size_t _peak_size) noexcept

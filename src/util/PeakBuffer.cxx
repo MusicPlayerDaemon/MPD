@@ -76,7 +76,7 @@ PeakBuffer::Consume(std::size_t length) noexcept
 }
 
 static std::size_t
-AppendTo(DynamicFifoBuffer<uint8_t> &buffer,
+AppendTo(DynamicFifoBuffer<std::byte> &buffer,
 	 const void *data, size_t length) noexcept
 {
 	assert(data != nullptr);
@@ -93,7 +93,7 @@ AppendTo(DynamicFifoBuffer<uint8_t> &buffer,
 		memcpy(p.data, data, nbytes);
 		buffer.Append(nbytes);
 
-		data = (const uint8_t *)data + nbytes;
+		data = (const std::byte *)data + nbytes;
 		length -= nbytes;
 		total += nbytes;
 	} while (length > 0);
@@ -113,11 +113,11 @@ PeakBuffer::Append(const void *data, std::size_t length)
 	}
 
 	if (normal_buffer == nullptr)
-		normal_buffer = new DynamicFifoBuffer<uint8_t>(normal_size);
+		normal_buffer = new DynamicFifoBuffer<std::byte>(normal_size);
 
 	std::size_t nbytes = AppendTo(*normal_buffer, data, length);
 	if (nbytes > 0) {
-		data = (const uint8_t *)data + nbytes;
+		data = (const std::byte *)data + nbytes;
 		length -= nbytes;
 		if (length == 0)
 			return true;
@@ -125,7 +125,7 @@ PeakBuffer::Append(const void *data, std::size_t length)
 
 	if (peak_buffer == nullptr) {
 		if (peak_size > 0)
-			peak_buffer = new DynamicFifoBuffer<uint8_t>(peak_size);
+			peak_buffer = new DynamicFifoBuffer<std::byte>(peak_size);
 		if (peak_buffer == nullptr)
 			return false;
 	}
