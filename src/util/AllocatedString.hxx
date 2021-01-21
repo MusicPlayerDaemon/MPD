@@ -102,7 +102,7 @@ public:
 		return *this;
 	}
 
-	BasicAllocatedString &operator=(const char *src) noexcept {
+	BasicAllocatedString &operator=(const_pointer src) noexcept {
 		delete[] std::exchange(value, nullptr);
 		value = src != nullptr ? Duplicate(src) : nullptr;
 		return *this;
