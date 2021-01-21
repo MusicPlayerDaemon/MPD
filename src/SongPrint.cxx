@@ -91,7 +91,14 @@ song_print_info(Response &r, const LightSong &song, bool base) noexcept
 	if (song.audio_format.IsDefined())
 		r.Format("Format: %s\n", ToString(song.audio_format).c_str());
 
-	tag_print(r, song.tag);
+	tag_print_values(r, song.tag);
+
+	const auto duration = song.GetDuration();
+	if (!duration.IsNegative())
+		r.Format("Time: %i\n"
+			 "duration: %1.3f\n",
+			 duration.RoundS(),
+			 duration.ToDoubleS());
 }
 
 void

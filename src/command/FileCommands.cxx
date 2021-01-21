@@ -43,6 +43,7 @@
 #include "thread/Mutex.hxx"
 #include "Log.hxx"
 
+#include <algorithm>
 #include <cassert>
 #include <cinttypes> /* for PRIu64 */
 
@@ -202,17 +203,26 @@ read_stream_art(Response &r, const char *uri, size_t offset)
 
 	const offset_type art_file_size = is->GetSize();
 
-	uint8_t buffer[Response::MAX_BINARY_SIZE];
-	size_t read_size;
+	if (offset > art_file_size) {
+		r.Error(ACK_ERROR_ARG, "Offset too large");
+		return CommandResult::ERROR;
+	}
 
-	{
+	std::size_t buffer_size =
+		std::min<offset_type>(art_file_size - offset,
+				      r.GetClient().binary_limit);
+
+	std::unique_ptr<std::byte[]> buffer(new std::byte[buffer_size]);
+
+	std::size_t read_size = 0;
+	if (buffer_size > 0) {
 		std::unique_lock<Mutex> lock(mutex);
 		is->Seek(lock, offset);
-		read_size = is->Read(lock, &buffer, sizeof(buffer));
+		read_size = is->Read(lock, buffer.get(), buffer_size);
 	}
 
 	r.Format("size: %" PRIoffset "\n", art_file_size);
-	r.WriteBinary({buffer, read_size});
+	r.WriteBinary({buffer.get(), read_size});
 
 	return CommandResult::OK;
 }
@@ -293,14 +303,16 @@ public:
 			return;
 		}
 
-		response.Format("size: %" PRIoffset "\n", buffer.size);
+		response.Format("size: %zu\n", buffer.size);
 
 		if (mime_type != nullptr)
 			response.Format("type: %s\n", mime_type);
 
 		buffer.size -= offset;
-		if (buffer.size > Response::MAX_BINARY_SIZE)
-			buffer.size = Response::MAX_BINARY_SIZE;
+
+		const std::size_t binary_limit = response.GetClient().binary_limit;
+		if (buffer.size > binary_limit)
+			buffer.size = binary_limit;
 		buffer.data = OffsetPointer(buffer.data, offset);
 
 		response.WriteBinary(buffer);

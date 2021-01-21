@@ -7,6 +7,7 @@ from build.meson import MesonProject
 from build.cmake import CmakeProject
 from build.autotools import AutotoolsProject
 from build.ffmpeg import FfmpegProject
+from build.openssl import OpenSSLProject
 from build.boost import BoostProject
 
 libmpdclient = MesonProject(
@@ -376,9 +377,15 @@ ffmpeg = FfmpegProject(
     ],
 )
 
+openssl = OpenSSLProject(
+    'https://www.openssl.org/source/openssl-3.0.0-alpha10.tar.gz',
+    'b1699acf2148db31f12edf5ebfdf12a92bfd3f0e60538d169710408a3cd3b138',
+    'include/openssl/ossl_typ.h',
+)
+
 curl = AutotoolsProject(
-    'http://curl.haxx.se/download/curl-7.73.0.tar.xz',
-    '7c4c7ca4ea88abe00fea4740dcf81075c031b1d0bb23aff2d5efde20a3c2408a',
+    'http://curl.haxx.se/download/curl-7.74.0.tar.xz',
+    '999d5f2c403cf6e25d58319fdd596611e455dd195208746bc6e6d197a77e878b',
     'lib/libcurl.a',
     [
         '--disable-shared', '--enable-static',
@@ -399,7 +406,7 @@ curl = AutotoolsProject(
         '--disable-netrc',
         '--disable-progress-meter',
         '--disable-alt-svc',
-        '--without-ssl', '--without-gnutls', '--without-nss', '--without-libssh2',
+        '--without-gnutls', '--without-nss', '--without-libssh2',
     ],
 
     patches='src/lib/curl/patches',
@@ -434,7 +441,7 @@ libnfs = AutotoolsProject(
 )
 
 boost = BoostProject(
-    'https://dl.bintray.com/boostorg/release/1.74.0/source/boost_1_74_0.tar.bz2',
-    '83bfc1507731a0906e387fc28b7ef5417d591429e51e788417fe9ff025e116b1',
+    'https://dl.bintray.com/boostorg/release/1.75.0/source/boost_1_75_0.tar.bz2',
+    '953db31e016db7bb207f11432bef7df100516eeb746843fa0486a222e3fd49cb',
     'include/boost/version.hpp',
 )

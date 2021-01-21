@@ -32,8 +32,8 @@
 #include <string>
 
 struct StringView;
-struct LightSong;
 struct Directory;
+class ExportedSong;
 class DetachedSong;
 class Storage;
 class ArchiveFile;
@@ -153,7 +153,7 @@ struct Song {
 	std::string GetURI() const noexcept;
 
 	gcc_pure
-	LightSong Export() const noexcept;
+	ExportedSong Export() const noexcept;
 };
 
 typedef boost::intrusive::list<Song,

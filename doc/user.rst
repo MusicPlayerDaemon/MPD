@@ -167,7 +167,7 @@ Compiling for Android
 You need:
 
 * Android SDK
-* Android NDK 
+* `Android NDK r22 <https://developer.android.com/ndk/downloads>`_
 
 Just like with the native build, unpack the :program:`MPD` source
 tarball and change into the directory.  Then, instead of

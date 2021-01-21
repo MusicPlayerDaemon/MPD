@@ -130,7 +130,8 @@ audio_output
 
 replaygain <off or album or track or auto>
   If specified, mpd will adjust the volume of songs played using ReplayGain
-  tags (see http://www.replaygain.org/). Setting this to "album" will
+  tags (see https://wiki.hydrogenaud.io/index.php?title=Replaygain).
+  Setting this to "album" will
   adjust volume using the album's ReplayGain tags, while setting it to "track"
   will adjust it using the track ReplayGain tags. "auto" uses the track
   ReplayGain tags if random play is activated otherwise the album ReplayGain

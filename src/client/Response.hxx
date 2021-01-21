@@ -75,9 +75,9 @@ public:
 	bool Write(const void *data, size_t length) noexcept;
 	bool Write(const char *data) noexcept;
 	bool FormatV(const char *fmt, std::va_list args) noexcept;
-	bool Format(const char *fmt, ...) noexcept;
 
-	static constexpr size_t MAX_BINARY_SIZE = 8192;
+	gcc_printf(2,3)
+	bool Format(const char *fmt, ...) noexcept;
 
 	/**
 	 * Write a binary chunk; this writes the "binary" line, the

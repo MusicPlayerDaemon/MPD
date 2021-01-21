@@ -41,6 +41,21 @@ handle_ping([[maybe_unused]] Client &client, [[maybe_unused]] Request args,
 }
 
 CommandResult
+handle_binary_limit(Client &client, Request args,
+		    [[maybe_unused]] Response &r)
+{
+	size_t value = args.ParseUnsigned(0, client.GetOutputMaxSize() - 4096);
+	if (value < 64) {
+		r.Error(ACK_ERROR_ARG, "Value too small");
+		return CommandResult::ERROR;
+	}
+
+	client.binary_limit = value;
+
+	return CommandResult::OK;
+}
+
+CommandResult
 handle_password(Client &client, Request args, Response &r)
 {
 	unsigned permission = 0;

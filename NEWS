@@ -2,7 +2,11 @@ ver 0.23 (not yet released)
 * protocol
   - new command "getvol"
 
-ver 0.22.4 (not yet released)
+ver 0.22.4 (2021/01/21)
+* protocol
+  - add command "binarylimit" to allow larger chunk sizes
+  - fix "readpicture" on 32 bit machines
+  - show duration and tags of songs in virtual playlist (CUE) folders
 * storage
   - curl: fix several WebDAV protocol bugs
 * decoder
@@ -11,6 +15,8 @@ ver 0.22.4 (not yet released)
   - ffmpeg: detect the output sample format
 * output
   - moveoutput: fix always_on and tag lost on move
+* Android
+  - enable https:// support (via OpenSSL)
 
 ver 0.22.3 (2020/11/06)
 * playlist

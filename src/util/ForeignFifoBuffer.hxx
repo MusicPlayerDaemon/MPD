@@ -235,7 +235,7 @@ public:
 			w = Write();
 		}
 
-		size_t n = std::min(r.size, w.size);
+		const auto n = std::min(r.size, w.size);
 
 		std::move(r.data, r.data + n, w.data);
 		Append(n);

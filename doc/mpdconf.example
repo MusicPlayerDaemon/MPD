@@ -372,7 +372,8 @@ input {
 # the argument "off", "album", "track" or "auto". "auto" is a special mode that
 # chooses between "track" and "album" depending on the current state of
 # random playback. If random playback is enabled then "track" mode is used.
-# See <http://www.replaygain.org> for more details about ReplayGain.
+# See <https://wiki.hydrogenaud.io/index.php?title=Replaygain> for
+# more details about ReplayGain.
 # This setting is off by default.
 #
 #replaygain			"album"

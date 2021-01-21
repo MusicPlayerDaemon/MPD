@@ -17,28 +17,26 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_CLIENT_COMMANDS_HXX
-#define MPD_CLIENT_COMMANDS_HXX
+#ifndef MPD_DB_SIMPLE_EXPORTED_SONG_HXX
+#define MPD_DB_SIMPLE_EXPORTED_SONG_HXX
 
-#include "CommandResult.hxx"
+#include "song/LightSong.hxx"
+#include "tag/Tag.hxx"
 
-class Client;
-class Request;
-class Response;
+/**
+ * The return type for Song::Export().  In addition to implementing
+ * #LightSong, it hold allocations necessary to represent the #Song as
+ * a #LightSong, e.g. a merged #Tag.
+ */
+class ExportedSong : public LightSong {
+	Tag tag_buffer;
 
-CommandResult
-handle_close(Client &client, Request request, Response &response);
+public:
+	using LightSong::LightSong;
 
-CommandResult
-handle_ping(Client &client, Request request, Response &response);
-
-CommandResult
-handle_binary_limit(Client &client, Request request, Response &response);
-
-CommandResult
-handle_password(Client &client, Request request, Response &response);
-
-CommandResult
-handle_tagtypes(Client &client, Request request, Response &response);
+	ExportedSong(const char *_uri, Tag &&_tag) noexcept
+		:LightSong(_uri, tag_buffer),
+		 tag_buffer(std::move(_tag)) {}
+};
 
 #endif

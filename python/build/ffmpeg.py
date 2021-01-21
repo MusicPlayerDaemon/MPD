@@ -10,11 +10,6 @@ class FfmpegProject(Project):
         self.configure_args = configure_args
         self.cppflags = cppflags
 
-    def _filter_cflags(self, flags):
-        # FFmpeg expects the GNU as syntax
-        flags = flags.replace(' -integrated-as ', ' -no-integrated-as ')
-        return flags
-
     def build(self, toolchain):
         src = self.unpack(toolchain)
         build = self.make_build_path(toolchain)
@@ -36,8 +31,8 @@ class FfmpegProject(Project):
             '--cc=' + toolchain.cc,
             '--cxx=' + toolchain.cxx,
             '--nm=' + toolchain.nm,
-            '--extra-cflags=' + self._filter_cflags(toolchain.cflags) + ' ' + toolchain.cppflags + ' ' + self.cppflags,
-            '--extra-cxxflags=' + self._filter_cflags(toolchain.cxxflags) + ' ' + toolchain.cppflags + ' ' + self.cppflags,
+            '--extra-cflags=' + toolchain.cflags + ' ' + toolchain.cppflags + ' ' + self.cppflags,
+            '--extra-cxxflags=' + toolchain.cxxflags + ' ' + toolchain.cppflags + ' ' + self.cppflags,
             '--extra-ldflags=' + toolchain.ldflags,
             '--extra-libs=' + toolchain.libs,
             '--ar=' + toolchain.ar,

@@ -40,6 +40,13 @@
 
 #include <array>
 
+#if GCC_CHECK_VERSION(11,0)
+#pragma GCC diagnostic push
+/* bogus GCC 11 warning "ovector may be used uninitialized" in the
+   ovector.size() call */
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#endif
+
 class RegexPointer {
 protected:
 	pcre *re = nullptr;
@@ -62,5 +69,9 @@ public:
 				 0, 0, &ovector.front(), ovector.size()) >= 0;
 	}
 };
+
+#if GCC_CHECK_VERSION(11,0)
+#pragma GCC diagnostic pop
+#endif
 
 #endif
