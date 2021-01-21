@@ -85,10 +85,6 @@ public:
 		return BasicAllocatedString(value);
 	}
 
-	static BasicAllocatedString Null() noexcept {
-		return nullptr;
-	}
-
 	static BasicAllocatedString Empty() {
 		auto p = new value_type[1];
 		p[0] = SENTINEL;
@@ -118,10 +114,6 @@ public:
 
 	constexpr bool operator!=(std::nullptr_t) const noexcept {
 		return value != nullptr;
-	}
-
-	constexpr bool IsNull() const noexcept {
-		return value == nullptr;
 	}
 
 	operator string_view() const noexcept {

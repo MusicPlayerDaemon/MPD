@@ -56,7 +56,7 @@ IcuCompare::operator==(const char *haystack) const noexcept
 #ifdef HAVE_ICU_CASE_FOLD
 	return StringIsEqual(IcuCaseFold(haystack).c_str(), needle.c_str());
 #elif defined(_WIN32)
-	if (needle.IsNull())
+	if (needle == nullptr)
 		/* the MultiByteToWideChar() call in the constructor
 		   has failed, so let's always fail the comparison */
 		return false;
@@ -83,7 +83,7 @@ IcuCompare::IsIn(const char *haystack) const noexcept
 	return StringFind(IcuCaseFold(haystack).c_str(),
 			  needle.c_str()) != nullptr;
 #elif defined(_WIN32)
-	if (needle.IsNull())
+	if (needle == nullptr)
 		/* the MultiByteToWideChar() call in the constructor
 		   has failed, so let's always fail the comparison */
 		return false;

@@ -110,7 +110,7 @@ icy_server_metadata_page(const Tag &tag, const TagType *types) noexcept
 
 	const auto icy_string = icy_server_metadata_string(stream_title, "");
 
-	if (icy_string.IsNull())
+	if (icy_string == nullptr)
 		return nullptr;
 
 	return std::make_shared<Page>(icy_string.c_str(),
