@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2020 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2015-2021 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -30,6 +30,8 @@
 #ifndef STRING_POINTER_HXX
 #define STRING_POINTER_HXX
 
+#include <cstddef>
+
 /**
  * Simple OO wrapper for a const string pointer.
  */
@@ -51,6 +53,14 @@ public:
 	StringPointer() = default;
 	constexpr StringPointer(const_pointer _value) noexcept
 		:value(_value) {}
+
+	constexpr bool operator==(std::nullptr_t) const noexcept {
+		return value == nullptr;
+	}
+
+	constexpr bool operator!=(std::nullptr_t) const noexcept {
+		return value != nullptr;
+	}
 
 	/**
 	 * Check if this is a "nulled" instance.  A "nulled" instance
