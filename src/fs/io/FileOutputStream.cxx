@@ -176,7 +176,7 @@ FileOutputStream::Cancel() noexcept
  */
 static bool
 OpenTempFile(FileDescriptor directory_fd,
-	     FileDescriptor &fd, Path path)
+	     FileDescriptor &fd, Path path) noexcept
 {
 	if (directory_fd != FileDescriptor(AT_FDCWD))
 		return fd.Open(directory_fd, ".", O_TMPFILE|O_WRONLY, 0666);
