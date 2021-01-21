@@ -52,14 +52,79 @@ GetSocketError() noexcept
 #endif
 }
 
-gcc_const
-static inline bool
-IsSocketErrorAgain(socket_error_t code) noexcept
+constexpr bool
+IsSocketErrorInProgress(socket_error_t code) noexcept
 {
 #ifdef _WIN32
 	return code == WSAEINPROGRESS;
 #else
-	return code == EAGAIN;
+	return code == EINPROGRESS;
+#endif
+}
+
+constexpr bool
+IsSocketErrorWouldBlock(socket_error_t code) noexcept
+{
+#ifdef _WIN32
+	return code == WSAEWOULDBLOCK;
+#else
+	return code == EWOULDBLOCK;
+#endif
+}
+
+constexpr bool
+IsSocketErrorConnectWouldBlock(socket_error_t code) noexcept
+{
+#if defined(_WIN32) || defined(__linux__)
+	/* on Windows, WSAEINPROGRESS is for blocking sockets and
+	   WSAEWOULDBLOCK for non-blocking sockets */
+	/* on Linux, EAGAIN==EWOULDBLOCK is for local sockets and
+	   EINPROGRESS is for all other sockets */
+	return IsSocketErrorInProgress(code) || IsSocketErrorWouldBlock(code);
+#else
+	/* on all other operating systems, there's just EINPROGRESS */
+	return IsSocketErrorInProgress(code);
+#endif
+}
+
+constexpr bool
+IsSocketErrorSendWouldBlock(socket_error_t code) noexcept
+{
+#ifdef _WIN32
+	/* on Windows, WSAEINPROGRESS is for blocking sockets and
+	   WSAEWOULDBLOCK for non-blocking sockets */
+	return IsSocketErrorInProgress(code) || IsSocketErrorWouldBlock(code);
+#else
+	/* on all other operating systems, there's just EAGAIN==EWOULDBLOCK */
+	return IsSocketErrorWouldBlock(code);
+#endif
+}
+
+constexpr bool
+IsSocketErrorReceiveWouldBlock(socket_error_t code) noexcept
+{
+#ifdef _WIN32
+	/* on Windows, WSAEINPROGRESS is for blocking sockets and
+	   WSAEWOULDBLOCK for non-blocking sockets */
+	return IsSocketErrorInProgress(code) || IsSocketErrorWouldBlock(code);
+#else
+	/* on all other operating systems, there's just
+	   EAGAIN==EWOULDBLOCK */
+	return IsSocketErrorWouldBlock(code);
+#endif
+}
+
+constexpr bool
+IsSocketErrorAcceptWouldBlock(socket_error_t code) noexcept
+{
+#ifdef _WIN32
+	/* on Windows, WSAEINPROGRESS is for blocking sockets and
+	   WSAEWOULDBLOCK for non-blocking sockets */
+	return IsSocketErrorInProgress(code) || IsSocketErrorWouldBlock(code);
+#else
+	/* on all other operating systems, there's just
+	   EAGAIN==EWOULDBLOCK */
+	return IsSocketErrorWouldBlock(code);
 #endif
 }
 

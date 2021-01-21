@@ -278,7 +278,7 @@ HttpdClient::TryWrite() noexcept
 						      metadata_current_position);
 			if (nbytes < 0) {
 				auto e = GetSocketError();
-				if (IsSocketErrorAgain(e))
+				if (IsSocketErrorSendWouldBlock(e))
 					return true;
 
 				if (!IsSocketErrorClosed(e)) {
@@ -305,7 +305,7 @@ HttpdClient::TryWrite() noexcept
 			ssize_t nbytes = GetSocket().Write(&empty_data, 1);
 			if (nbytes < 0) {
 				auto e = GetSocketError();
-				if (IsSocketErrorAgain(e))
+				if (IsSocketErrorSendWouldBlock(e))
 					return true;
 
 				if (!IsSocketErrorClosed(e)) {
@@ -328,7 +328,7 @@ HttpdClient::TryWrite() noexcept
 				      bytes_to_write);
 		if (nbytes < 0) {
 			auto e = GetSocketError();
-			if (IsSocketErrorAgain(e))
+			if (IsSocketErrorSendWouldBlock(e))
 				return true;
 
 			if (!IsSocketErrorClosed(e)) {
