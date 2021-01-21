@@ -25,7 +25,7 @@
 
 #include <string.h>
 
-PeakBuffer::~PeakBuffer()
+PeakBuffer::~PeakBuffer() noexcept
 {
 	delete normal_buffer;
 	delete peak_buffer;
