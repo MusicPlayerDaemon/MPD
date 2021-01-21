@@ -45,6 +45,10 @@ public:
 		BufferedSocket::Close();
 	}
 
+	std::size_t GetOutputMaxSize() const noexcept {
+		return output.max_size();
+	}
+
 private:
 	/**
 	 * @return the number of bytes written to the socket, 0 if the
