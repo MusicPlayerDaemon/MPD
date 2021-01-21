@@ -1,6 +1,7 @@
 ver 0.22.4 (not yet released)
 * protocol
   - fix "readpicture" on 32 bit machines
+  - show duration of songs in virtual playlist (CUE) folders
 * storage
   - curl: fix several WebDAV protocol bugs
 * decoder
