@@ -1,4 +1,4 @@
-ver 0.22.4 (not yet released)
+ver 0.22.4 (2021/01/21)
 * protocol
   - add command "binarylimit" to allow larger chunk sizes
   - fix "readpicture" on 32 bit machines
