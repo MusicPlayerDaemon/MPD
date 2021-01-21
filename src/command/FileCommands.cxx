@@ -205,6 +205,17 @@ read_stream_art(Response &r, const char *uri, size_t offset)
 
 	const offset_type art_file_size = is->GetSize();
 
+	if (offset >= art_file_size) {
+		if (offset > art_file_size) {
+			r.Error(ACK_ERROR_ARG, "Offset too large");
+			return CommandResult::ERROR;
+		} else {
+			r.Format("size: %" PRIoffset "\n", art_file_size);
+			r.WriteBinary(nullptr);
+			return CommandResult::OK;
+		}
+	}
+
 	uint8_t buffer[Response::MAX_BINARY_SIZE];
 	size_t read_size;
 
