@@ -34,12 +34,12 @@ template<typename T> class DynamicFifoBuffer;
  * kernel when it has been consumed.
  */
 class PeakBuffer {
-	size_t normal_size, peak_size;
+	std::size_t normal_size, peak_size;
 
 	DynamicFifoBuffer<uint8_t> *normal_buffer, *peak_buffer;
 
 public:
-	PeakBuffer(size_t _normal_size, size_t _peak_size)
+	PeakBuffer(std::size_t _normal_size, std::size_t _peak_size)
 		:normal_size(_normal_size), peak_size(_peak_size),
 		 normal_buffer(nullptr), peak_buffer(nullptr) {}
 
@@ -62,9 +62,9 @@ public:
 	gcc_pure
 	WritableBuffer<void> Read() const noexcept;
 
-	void Consume(size_t length) noexcept;
+	void Consume(std::size_t length) noexcept;
 
-	bool Append(const void *data, size_t length);
+	bool Append(const void *data, std::size_t length);
 };
 
 #endif
