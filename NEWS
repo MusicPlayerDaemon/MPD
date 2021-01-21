@@ -1,4 +1,6 @@
 ver 0.22.5 (not yet released)
+* output
+  - httpd: error handling on Windows improved
 
 ver 0.22.4 (2021/01/21)
 * protocol

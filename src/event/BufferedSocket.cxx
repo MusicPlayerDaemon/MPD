@@ -36,7 +36,7 @@ BufferedSocket::DirectRead(void *data, size_t length) noexcept
 	}
 
 	const auto code = GetSocketError();
-	if (IsSocketErrorAgain(code))
+	if (IsSocketErrorReceiveWouldBlock(code))
 		return 0;
 
 	if (IsSocketErrorClosed(code))

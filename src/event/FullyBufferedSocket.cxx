@@ -31,7 +31,7 @@ FullyBufferedSocket::DirectWrite(const void *data, size_t length) noexcept
 	const auto nbytes = GetSocket().Write((const char *)data, length);
 	if (gcc_unlikely(nbytes < 0)) {
 		const auto code = GetSocketError();
-		if (IsSocketErrorAgain(code))
+		if (IsSocketErrorSendWouldBlock(code))
 			return 0;
 
 		IdleMonitor::Cancel();
