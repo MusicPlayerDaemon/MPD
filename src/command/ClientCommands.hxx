@@ -33,6 +33,9 @@ CommandResult
 handle_ping(Client &client, Request request, Response &response);
 
 CommandResult
+handle_binary_limit(Client &client, Request request, Response &response);
+
+CommandResult
 handle_password(Client &client, Request request, Response &response);
 
 CommandResult

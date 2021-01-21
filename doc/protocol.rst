@@ -69,11 +69,14 @@ that, the specified number of bytes of binary data follows, then a
 newline, and finally the ``OK`` line.
 
 If the object to be transmitted is large, the server may choose a
-reasonable chunk size and transmit only a portion.  Usually, the
-response also contains a ``size`` line which specifies the total
-(uncropped) size, and the command usually has a way to specify an
-offset into the object; this way, the client can copy the whole file
-without blocking the connection for too long.
+reasonable chunk size and transmit only a portion.  The maximum chunk
+size can be changed by clients with the :ref:`binarylimit
+<command_binarylimit>` command.
+
+Usually, the response also contains a ``size`` line which specifies
+the total (uncropped) size, and the command usually has a way to
+specify an offset into the object; this way, the client can copy the
+whole file without blocking the connection for too long.
 
 Example::
 
@@ -1355,6 +1358,17 @@ Connection settings
 :command:`ping`
     Does nothing but return "OK".
 
+.. _command_binarylimit:
+
+:command:`binarylimit SIZE` [#since_0_22_4]_
+
+    Set the maximum :ref:`binary response <binary>` size for the
+    current connection to the specified number of bytes.
+
+    A bigger value means less overhead for transmitting large
+    entities, but it also means that the connection is blocked for a
+    longer time.
+
 .. _command_tagtypes:
 
 :command:`tagtypes`
@@ -1583,3 +1597,4 @@ client-to-client messages are local to the current partition.
 .. [#since_0_19] Since :program:`MPD` 0.19
 .. [#since_0_20] Since :program:`MPD` 0.20
 .. [#since_0_21] Since :program:`MPD` 0.21
+.. [#since_0_22_4] Since :program:`MPD` 0.22.4

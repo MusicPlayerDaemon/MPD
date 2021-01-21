@@ -59,7 +59,7 @@ Response::Format(const char *fmt, ...) noexcept
 bool
 Response::WriteBinary(ConstBuffer<void> payload) noexcept
 {
-	assert(payload.size <= MAX_BINARY_SIZE);
+	assert(payload.size <= client.binary_limit);
 
 	return Format("binary: %zu\n", payload.size) &&
 		Write(payload.data, payload.size) &&
