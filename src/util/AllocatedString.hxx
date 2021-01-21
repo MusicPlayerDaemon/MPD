@@ -96,7 +96,7 @@ public:
 		return *this;
 	}
 
-	BasicAllocatedString &operator=(std::string_view src) noexcept {
+	BasicAllocatedString &operator=(string_view src) noexcept {
 		delete[] std::exchange(value, nullptr);
 		value = Duplicate(src);
 		return *this;
