@@ -29,7 +29,7 @@
 NarrowPath::NarrowPath(Path _path) noexcept
 	:value(WideCharToMultiByte(CP_ACP, _path.c_str()))
 {
-	if (value.IsNull())
+	if (value == nullptr)
 		/* fall back to empty string */
 		value = Value::Empty();
 }

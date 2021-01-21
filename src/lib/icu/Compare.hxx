@@ -65,7 +65,7 @@ public:
 
 	gcc_pure
 	operator bool() const noexcept {
-		return !needle.IsNull();
+		return needle != nullptr;
 	}
 
 	gcc_pure
