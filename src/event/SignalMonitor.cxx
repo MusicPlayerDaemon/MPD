@@ -57,7 +57,7 @@ public:
 	explicit SignalMonitor(EventLoop &_loop)
 		:event(_loop, BIND_THIS_METHOD(OnSocketReady)) {
 #ifndef USE_SIGNALFD
-		event.Open(SocketDescriptor(fd.Get()));
+		event.Open(fd.GetSocket());
 		event.ScheduleRead();
 #endif
 	}
