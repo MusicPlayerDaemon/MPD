@@ -172,6 +172,7 @@ thirdparty_libs = [
     wildmidi,
     gme,
     ffmpeg,
+    openssl,
     curl,
     libexpat,
     libnfs,

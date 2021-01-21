@@ -7,6 +7,7 @@ from build.meson import MesonProject
 from build.cmake import CmakeProject
 from build.autotools import AutotoolsProject
 from build.ffmpeg import FfmpegProject
+from build.openssl import OpenSSLProject
 from build.boost import BoostProject
 
 libmpdclient = MesonProject(
@@ -376,6 +377,12 @@ ffmpeg = FfmpegProject(
     ],
 )
 
+openssl = OpenSSLProject(
+    'https://www.openssl.org/source/openssl-3.0.0-alpha10.tar.gz',
+    'b1699acf2148db31f12edf5ebfdf12a92bfd3f0e60538d169710408a3cd3b138',
+    'include/openssl/ossl_typ.h',
+)
+
 curl = AutotoolsProject(
     'http://curl.haxx.se/download/curl-7.74.0.tar.xz',
     '999d5f2c403cf6e25d58319fdd596611e455dd195208746bc6e6d197a77e878b',
@@ -399,7 +406,7 @@ curl = AutotoolsProject(
         '--disable-netrc',
         '--disable-progress-meter',
         '--disable-alt-svc',
-        '--without-ssl', '--without-gnutls', '--without-nss', '--without-libssh2',
+        '--without-gnutls', '--without-nss', '--without-libssh2',
     ],
 
     patches='src/lib/curl/patches',

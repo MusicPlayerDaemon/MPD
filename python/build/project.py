@@ -20,7 +20,7 @@ class Project:
             self.base = base
 
         if name is None or version is None:
-            m = re.match(r'^([-\w]+)-(\d[\d.]*[a-z]?[\d.]*)$', self.base)
+            m = re.match(r'^([-\w]+)-(\d[\d.]*[a-z]?[\d.]*(?:-alpha\d+)?)$', self.base)
             if name is None: name = m.group(1)
             if version is None: version = m.group(2)
 
