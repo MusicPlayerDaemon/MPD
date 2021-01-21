@@ -2,10 +2,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           package="org.musicpd"
           android:installLocation="auto"
-          android:versionCode="51"
-          android:versionName="0.22.1">
+          android:versionCode="53"
+          android:versionName="0.22.5">
 
-  <uses-sdk android:minSdkVersion="21" android:targetSdkVersion="28"/>
+  <uses-sdk android:minSdkVersion="21" android:targetSdkVersion="29"/>
 
   <uses-feature android:name="android.software.leanback"
                 android:required="false" />
