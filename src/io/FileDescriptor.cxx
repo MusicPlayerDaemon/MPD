@@ -31,7 +31,6 @@
 #include "system/Error.hxx"
 
 #include <cassert>
-#include <cstdint>
 #include <stdexcept>
 
 #include <sys/stat.h>
@@ -292,7 +291,7 @@ FileDescriptor::GetSize() const noexcept
 void
 FileDescriptor::FullRead(void *_buffer, std::size_t length)
 {
-	auto buffer = (uint8_t *)_buffer;
+	auto buffer = (std::byte *)_buffer;
 
 	while (length > 0) {
 		ssize_t nbytes = Read(buffer, length);
@@ -310,7 +309,7 @@ FileDescriptor::FullRead(void *_buffer, std::size_t length)
 void
 FileDescriptor::FullWrite(const void *_buffer, std::size_t length)
 {
-	auto buffer = (const uint8_t *)_buffer;
+	auto buffer = (const std::byte *)_buffer;
 
 	while (length > 0) {
 		ssize_t nbytes = Write(buffer, length);
