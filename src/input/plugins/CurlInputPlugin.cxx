@@ -432,8 +432,8 @@ CurlInputStream::InitEasy()
 				   StringFormat<1024>("%s:%s", proxy_user,
 						      proxy_password).c_str());
 
-	request->SetOption(CURLOPT_SSL_VERIFYPEER, verify_peer ? 1L : 0L);
-	request->SetOption(CURLOPT_SSL_VERIFYHOST, verify_host ? 2L : 0L);
+	request->SetVerifyPeer(verify_peer);
+	request->SetVerifyHost(verify_host);
 	request->SetOption(CURLOPT_HTTPHEADER, request_headers.Get());
 }
 

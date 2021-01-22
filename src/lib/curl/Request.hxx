@@ -120,6 +120,14 @@ public:
 		easy.SetRequestHeaders(request_headers);
 	}
 
+	void SetVerifyHost(bool value) {
+		easy.SetVerifyHost(value);
+	}
+
+	void SetVerifyPeer(bool value) {
+		easy.SetVerifyPeer(value);
+	}
+
 	void SetNoBody(bool value=true) {
 		easy.SetNoBody(value);
 	}
