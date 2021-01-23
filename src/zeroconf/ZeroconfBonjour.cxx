@@ -40,8 +40,8 @@ public:
 	BonjourMonitor(EventLoop &_loop, DNSServiceRef _service_ref)
 		:service_ref(_service_ref),
 		 socket_event(_loop,
-			    	  BIND_THIS_METHOD(OnSocketReady),
-					  SocketDescriptor(DNSServiceRefSockFD(service_ref)))
+			      BIND_THIS_METHOD(OnSocketReady),
+			      SocketDescriptor(DNSServiceRefSockFD(service_ref)))
 	{
 		socket_event.ScheduleRead();
 	}
