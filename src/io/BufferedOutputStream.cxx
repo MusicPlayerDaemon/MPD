@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2018 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2014-2021 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -88,7 +88,7 @@ BufferedOutputStream::Format(const char *fmt, ...)
 	/* format into the buffer */
 	std::va_list ap;
 	va_start(ap, fmt);
-	std::size_t size = vsnprintf(r.data, r.size, fmt, ap);
+	std::size_t size = vsnprintf((char *)r.data, r.size, fmt, ap);
 	va_end(ap);
 
 	if (gcc_unlikely(size >= r.size)) {
@@ -108,7 +108,7 @@ BufferedOutputStream::Format(const char *fmt, ...)
 
 		/* format into the new buffer */
 		va_start(ap, fmt);
-		size = vsnprintf(r.data, r.size, fmt, ap);
+		size = vsnprintf((char *)r.data, r.size, fmt, ap);
 		va_end(ap);
 
 		/* this time, it must fit */
@@ -140,7 +140,8 @@ BufferedOutputStream::WriteWideToUTF8(const wchar_t *src,
 	}
 
 	int length = WideCharToMultiByte(CP_UTF8, 0, src, src_length,
-					 r.data, r.size, nullptr, nullptr);
+					 (char *)r.data, r.size,
+					 nullptr, nullptr);
 	if (length <= 0) {
 		const auto error = GetLastError();
 		if (error != ERROR_INSUFFICIENT_BUFFER)
