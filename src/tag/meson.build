@@ -2,6 +2,7 @@ generate_parse_name = executable(
   'GenParseName',
   'GenParseName.cxx',
   'Names.c',
+  link_language: 'cpp',
   native: true,
 )
 
