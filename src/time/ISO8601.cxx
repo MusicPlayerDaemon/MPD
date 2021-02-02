@@ -77,14 +77,14 @@ ParseTimeZoneOffsetRaw(const char *&s)
 			++s;
 			minutes = std::strtoul(s, &endptr, 10);
 			if (endptr != s + 2)
-				throw std::runtime_error("Failed to parse time zone offset");
+				throw std::invalid_argument("Failed to parse time zone offset");
 
 			s = endptr;
 		}
 
 		return std::make_pair(hours, minutes);
 	} else
-		throw std::runtime_error("Failed to parse time zone offset");
+		throw std::invalid_argument("Failed to parse time zone offset");
 }
 
 static std::chrono::system_clock::duration
@@ -97,10 +97,10 @@ ParseTimeZoneOffset(const char *&s)
 
 	auto raw = ParseTimeZoneOffsetRaw(s);
 	if (raw.first > 13)
-		throw std::runtime_error("Time offset hours out of range");
+		throw std::invalid_argument("Time offset hours out of range");
 
 	if (raw.second >= 60)
-		throw std::runtime_error("Time offset minutes out of range");
+		throw std::invalid_argument("Time offset minutes out of range");
 
 	std::chrono::system_clock::duration d = std::chrono::hours(raw.first);
 	d += std::chrono::minutes(raw.second);
@@ -207,7 +207,7 @@ ParseISO8601(const char *s)
 		/* try without field separators */
 		end = strptime(s, "%Y%m%d", &tm);
 		if (end == nullptr)
-			throw std::runtime_error("Failed to parse date");
+			throw std::invalid_argument("Failed to parse date");
 	}
 
 	s = end;
@@ -220,7 +220,7 @@ ParseISO8601(const char *s)
 
 		s = ParseTimeOfDay(s, tm, precision);
 		if (s == nullptr)
-			throw std::runtime_error("Failed to parse time of day");
+			throw std::invalid_argument("Failed to parse time of day");
 	}
 
 	auto tp = TimeGm(tm);
@@ -232,7 +232,7 @@ ParseISO8601(const char *s)
 		tp -= ParseTimeZoneOffset(s);
 
 	if (*s != 0)
-		throw std::runtime_error("Garbage at end of time stamp");
+		throw std::invalid_argument("Garbage at end of time stamp");
 
 	return std::make_pair(tp, precision);
 #endif /* !_WIN32 */
