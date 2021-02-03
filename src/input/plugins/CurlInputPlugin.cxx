@@ -377,7 +377,7 @@ input_curl_init(EventLoop &event_loop, const ConfigBlock &block)
 #else
 	constexpr bool default_verify = true;
 #endif
-        cacert = block.GetBlockValue("cacert");
+	cacert = block.GetBlockValue("cacert");
 	verify_peer = block.GetBlockValue("verify_peer", default_verify);
 	verify_host = block.GetBlockValue("verify_host", default_verify);
 }
@@ -434,8 +434,8 @@ CurlInputStream::InitEasy()
 				   StringFormat<1024>("%s:%s", proxy_user,
 						      proxy_password).c_str());
 
-        if (cacert != nullptr)
-            request->SetOption(CURLOPT_CAINFO, cacert);
+	if (cacert != nullptr)
+		request->SetOption(CURLOPT_CAINFO, cacert);
 	request->SetVerifyPeer(verify_peer);
 	request->SetVerifyHost(verify_host);
 	request->SetOption(CURLOPT_HTTPHEADER, request_headers.Get());
