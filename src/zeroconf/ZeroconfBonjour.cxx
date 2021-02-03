@@ -39,9 +39,9 @@ class BonjourMonitor final {
 public:
 	BonjourMonitor(EventLoop &_loop, DNSServiceRef _service_ref)
 		:service_ref(_service_ref),
-		 socket_event(SocketDescriptor(DNSServiceRefSockFD(service_ref)),
+		 socket_event(_loop,
 			      BIND_THIS_METHOD(OnSocketReady),
-			      _loop)
+			      SocketDescriptor(DNSServiceRefSockFD(service_ref)))
 	{
 		socket_event.ScheduleRead();
 	}
@@ -50,9 +50,13 @@ public:
 		DNSServiceRefDeallocate(service_ref);
 	}
 
+	void Cancel() noexcept {
+		socket_event.Cancel();
+	}
+
 protected:
 	/* virtual methods from class SocketMonitor */
-	void OnSocketReady([[maybe_unused]] unsigned flags) noexcept override {
+	void OnSocketReady([[maybe_unused]] unsigned flags) noexcept {
 		DNSServiceProcessResult(service_ref);
 	}
 };

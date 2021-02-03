@@ -4,9 +4,7 @@ libavahi_client_dep = dependency('', required: false)
 
 if zeroconf_option == 'auto'
   if is_darwin
-    # Bonjour disabled for now because its build is broken
-    #zeroconf_option = 'bonjour'
-    zeroconf_option = 'disabled'
+    zeroconf_option = 'bonjour'
   elif is_android or is_windows
     zeroconf_option = 'disabled'
   elif dbus_dep.found()
@@ -31,10 +29,12 @@ if zeroconf_option == 'bonjour'
     error('dns_sd.h not found')
   endif
 
-  if is_darwin
-    bonjour_dep = declare_dependency(link_args: ['-framework', 'dnssd'])
-  else
-    bonjour_dep = declare_dependency(link_args: ['-ldns_sd'])
+  bonjour_deps = [
+    log_dep,
+  ]
+
+  if not is_darwin
+    bonjour_deps += declare_dependency(link_args: ['-ldns_sd'])
   endif
   conf.set('HAVE_BONJOUR', true)
 
@@ -47,10 +47,7 @@ if zeroconf_option == 'bonjour'
 
   zeroconf_dep = declare_dependency(
     link_with: zeroconf,
-    dependencies: [
-      bonjour_dep,
-      log_dep,
-    ],
+    dependencies: bonjour_deps,
   )
 else
   if not libavahi_client_dep.found()

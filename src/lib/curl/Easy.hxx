@@ -136,6 +136,14 @@ public:
 		SetOption(CURLOPT_FAILONERROR, (long)value);
 	}
 
+	void SetVerifyHost(bool value) {
+		SetOption(CURLOPT_SSL_VERIFYHOST, value ? 2L : 0L);
+	}
+
+	void SetVerifyPeer(bool value) {
+		SetOption(CURLOPT_SSL_VERIFYPEER, (long)value);
+	}
+
 	void SetConnectTimeout(long timeout) {
 		SetOption(CURLOPT_CONNECTTIMEOUT, timeout);
 	}
