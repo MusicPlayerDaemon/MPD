@@ -311,7 +311,7 @@ CurlInputStream::OnData(ConstBuffer<void> data)
 
 	if (data.size > GetBufferSpace()) {
 		AsyncInputStream::Pause();
-		throw CurlRequest::Pause();
+		throw CurlResponseHandler::Pause{};
 	}
 
 	AppendToBuffer(data.data, data.size);
@@ -377,10 +377,9 @@ input_curl_init(EventLoop &event_loop, const ConfigBlock &block)
 #else
 	constexpr bool default_verify = true;
 #endif
-
+        cacert = block.GetBlockValue("cacert");
 	verify_peer = block.GetBlockValue("verify_peer", default_verify);
 	verify_host = block.GetBlockValue("verify_host", default_verify);
-        cacert = block.GetBlockValue("cacert");
 }
 
 static void
@@ -434,11 +433,11 @@ CurlInputStream::InitEasy()
 		request->SetOption(CURLOPT_PROXYUSERPWD,
 				   StringFormat<1024>("%s:%s", proxy_user,
 						      proxy_password).c_str());
+
         if (cacert != nullptr)
             request->SetOption(CURLOPT_CAINFO, cacert);
-
-	request->SetOption(CURLOPT_SSL_VERIFYPEER, verify_peer ? 1L : 0L);
-	request->SetOption(CURLOPT_SSL_VERIFYHOST, verify_host ? 2L : 0L);
+	request->SetVerifyPeer(verify_peer);
+	request->SetVerifyHost(verify_host);
 	request->SetOption(CURLOPT_HTTPHEADER, request_headers.Get());
 }
 
