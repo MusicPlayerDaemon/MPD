@@ -1,5 +1,8 @@
 /*
- * Copyright 2008-2020 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2007-2021 CM4all GmbH
+ * All rights reserved.
+ *
+ * author: Max Kellermann <mk@cm4all.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -27,60 +30,19 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CURL_GLOBAL_HXX
-#define CURL_GLOBAL_HXX
+#pragma once
 
-#include "Multi.hxx"
-#include "event/CoarseTimerEvent.hxx"
-#include "event/DeferEvent.hxx"
-
-class CurlSocket;
-class CurlRequest;
+#include "FineTimerEvent.hxx"
 
 /**
- * Manager for the global CURLM object.
+ * A coarse timer event which schedules far into the future.  Use this
+ * when you need a coarse resolution, but the supported time span of
+ * #CoarseTimerEvent is not enough.  For example, a good use case is
+ * timers which fire only every few minutes and do periodic cleanup.
+ *
+ * Right now, this is just an alias for #FineTimerEvent.  This class
+ * supports arbitrary time spans, but uses a high-resolution timer.
+ * Eventually, we may turn this into a timer wheel with minute
+ * resolution.
  */
-class CurlGlobal final {
-	CurlMulti multi;
-
-	DeferEvent defer_read_info;
-
-	CoarseTimerEvent timeout_event;
-
-public:
-	explicit CurlGlobal(EventLoop &_loop);
-
-	auto &GetEventLoop() const noexcept {
-		return timeout_event.GetEventLoop();
-	}
-
-	void Add(CurlRequest &r);
-	void Remove(CurlRequest &r) noexcept;
-
-	void Assign(curl_socket_t fd, CurlSocket &cs) noexcept {
-		curl_multi_assign(multi.Get(), fd, &cs);
-	}
-
-	void SocketAction(curl_socket_t fd, int ev_bitmask) noexcept;
-
-	void InvalidateSockets() noexcept {
-		SocketAction(CURL_SOCKET_TIMEOUT, 0);
-	}
-
-private:
-	/**
-	 * Check for finished HTTP responses.
-	 *
-	 * Runs in the I/O thread.  The caller must not hold locks.
-	 */
-	void ReadInfo() noexcept;
-
-	void UpdateTimeout(long timeout_ms) noexcept;
-	static int TimerFunction(CURLM *multi, long timeout_ms,
-				 void *userp) noexcept;
-
-	/* callback for #timeout_event */
-	void OnTimeout() noexcept;
-};
-
-#endif
+using FarTimerEvent = FineTimerEvent;

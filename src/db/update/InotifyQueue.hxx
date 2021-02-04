@@ -20,7 +20,7 @@
 #ifndef MPD_INOTIFY_QUEUE_HXX
 #define MPD_INOTIFY_QUEUE_HXX
 
-#include "event/TimerEvent.hxx"
+#include "event/CoarseTimerEvent.hxx"
 
 #include <list>
 #include <string>
@@ -32,7 +32,7 @@ class InotifyQueue final {
 
 	std::list<std::string> queue;
 
-	TimerEvent delay_event;
+	CoarseTimerEvent delay_event;
 
 public:
 	InotifyQueue(EventLoop &_loop, UpdateService &_update) noexcept

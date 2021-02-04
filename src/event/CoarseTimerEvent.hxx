@@ -1,5 +1,8 @@
 /*
- * Copyright 2008-2020 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2007-2021 CM4all GmbH
+ * All rights reserved.
+ *
+ * author: Max Kellermann <mk@cm4all.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -27,60 +30,22 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CURL_GLOBAL_HXX
-#define CURL_GLOBAL_HXX
+#pragma once
 
-#include "Multi.hxx"
-#include "event/CoarseTimerEvent.hxx"
-#include "event/DeferEvent.hxx"
-
-class CurlSocket;
-class CurlRequest;
+#include "TimerEvent.hxx"
 
 /**
- * Manager for the global CURLM object.
+ * This class invokes a callback function after a certain amount of
+ * time.  Use Schedule() to start the timer or Cancel() to cancel it.
+ *
+ * Unlike #FineTimerEvent, this class has a granularity of about 1
+ * second, and is optimized for timeouts between 1 and 60 seconds
+ * which are often canceled before they expire (i.e. optimized for
+ * fast insertion and deletion, at the cost of granularity).
+ *
+ * This class is not thread-safe, all methods must be called from the
+ * thread that runs the #EventLoop, except where explicitly documented
+ * as thread-safe.
  */
-class CurlGlobal final {
-	CurlMulti multi;
-
-	DeferEvent defer_read_info;
-
-	CoarseTimerEvent timeout_event;
-
-public:
-	explicit CurlGlobal(EventLoop &_loop);
-
-	auto &GetEventLoop() const noexcept {
-		return timeout_event.GetEventLoop();
-	}
-
-	void Add(CurlRequest &r);
-	void Remove(CurlRequest &r) noexcept;
-
-	void Assign(curl_socket_t fd, CurlSocket &cs) noexcept {
-		curl_multi_assign(multi.Get(), fd, &cs);
-	}
-
-	void SocketAction(curl_socket_t fd, int ev_bitmask) noexcept;
-
-	void InvalidateSockets() noexcept {
-		SocketAction(CURL_SOCKET_TIMEOUT, 0);
-	}
-
-private:
-	/**
-	 * Check for finished HTTP responses.
-	 *
-	 * Runs in the I/O thread.  The caller must not hold locks.
-	 */
-	void ReadInfo() noexcept;
-
-	void UpdateTimeout(long timeout_ms) noexcept;
-	static int TimerFunction(CURLM *multi, long timeout_ms,
-				 void *userp) noexcept;
-
-	/* callback for #timeout_event */
-	void OnTimeout() noexcept;
-};
-
-#endif
+using CoarseTimerEvent = TimerEvent;
+// TODO: implement

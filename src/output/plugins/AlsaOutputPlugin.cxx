@@ -38,6 +38,7 @@
 #include "util/StringView.hxx"
 #include "event/MultiSocketMonitor.hxx"
 #include "event/InjectEvent.hxx"
+#include "event/FineTimerEvent.hxx"
 #include "event/Call.hxx"
 #include "Log.hxx"
 
@@ -64,7 +65,7 @@ class AlsaOutput final
 	 * generating silence if Play() doesn't get called soon enough
 	 * to avoid the xrun.
 	 */
-	TimerEvent silence_timer;
+	FineTimerEvent silence_timer;
 
 	PeriodClock throttle_silence_log;
 

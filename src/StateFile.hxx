@@ -21,7 +21,7 @@
 #define MPD_STATE_FILE_HXX
 
 #include "StateFileConfig.hxx"
-#include "event/TimerEvent.hxx"
+#include "event/FarTimerEvent.hxx"
 #include "util/Compiler.h"
 #include "config.h"
 
@@ -36,7 +36,7 @@ class StateFile final {
 
 	const std::string path_utf8;
 
-	TimerEvent timer_event;
+	FarTimerEvent timer_event;
 
 	Partition &partition;
 

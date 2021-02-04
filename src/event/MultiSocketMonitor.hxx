@@ -21,7 +21,7 @@
 #define MPD_MULTI_SOCKET_MONITOR_HXX
 
 #include "IdleEvent.hxx"
-#include "TimerEvent.hxx"
+#include "FineTimerEvent.hxx"
 #include "SocketEvent.hxx"
 #include "event/Features.h"
 
@@ -92,7 +92,8 @@ class MultiSocketMonitor
 
 	IdleEvent idle_event;
 
-	TimerEvent timeout_event;
+	// TODO: switch to CoarseTimerEvent?  ... not yet because the ALSA plugin needs exact timeouts
+	FineTimerEvent timeout_event;
 
 	/**
 	 * DispatchSockets() should be called.

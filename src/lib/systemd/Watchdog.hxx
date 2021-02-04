@@ -30,7 +30,7 @@
 #ifndef SYSTEMD_WATCHDOG_HXX
 #define SYSTEMD_WATCHDOG_HXX
 
-#include "event/TimerEvent.hxx"
+#include "event/FineTimerEvent.hxx"
 
 namespace Systemd {
 
@@ -40,7 +40,7 @@ namespace Systemd {
  * not enabled, this class does nothing.
  */
 class Watchdog {
-	TimerEvent timer;
+	FineTimerEvent timer;
 
 	Event::Duration interval;
 

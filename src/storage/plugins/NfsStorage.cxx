@@ -33,7 +33,7 @@
 #include "event/Loop.hxx"
 #include "event/Call.hxx"
 #include "event/InjectEvent.hxx"
-#include "event/TimerEvent.hxx"
+#include "event/CoarseTimerEvent.hxx"
 #include "util/ASCII.hxx"
 #include "util/StringCompare.hxx"
 
@@ -62,7 +62,7 @@ class NfsStorage final
 	NfsConnection *connection;
 
 	InjectEvent defer_connect;
-	TimerEvent reconnect_timer;
+	CoarseTimerEvent reconnect_timer;
 
 	Mutex mutex;
 	Cond cond;
