@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2020 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2013-2021 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -29,8 +29,6 @@
 
 #ifndef CONST_BUFFER_HXX
 #define CONST_BUFFER_HXX
-
-#include "Compiler.h"
 
 #include <cassert>
 #include <cstddef>
