@@ -204,7 +204,7 @@ public:
 	 */
 	bool AbandonFD(SocketEvent &event) noexcept;
 
-	void Insert(TimerEvent &t) noexcept;
+	void Insert(FineTimerEvent &t) noexcept;
 
 	/**
 	 * Schedule a call to DeferEvent::RunDeferred().

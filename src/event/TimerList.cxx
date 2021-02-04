@@ -31,11 +31,11 @@
  */
 
 #include "Loop.hxx"
-#include "TimerEvent.hxx"
+#include "FineTimerEvent.hxx"
 
 constexpr bool
-TimerList::Compare::operator()(const TimerEvent &a,
-			       const TimerEvent &b) const noexcept
+TimerList::Compare::operator()(const FineTimerEvent &a,
+			       const FineTimerEvent &b) const noexcept
 {
 	return a.due < b.due;
 }
@@ -48,7 +48,7 @@ TimerList::~TimerList() noexcept
 }
 
 void
-TimerList::Insert(TimerEvent &t) noexcept
+TimerList::Insert(FineTimerEvent &t) noexcept
 {
 	timers.insert(t);
 }
@@ -61,7 +61,7 @@ TimerList::Run(const Event::Clock::time_point now) noexcept
 		if (i == timers.end())
 			break;
 
-		TimerEvent &t = *i;
+		auto &t = *i;
 		const auto timeout = t.due - now;
 		if (timeout > timeout.zero())
 			return timeout;

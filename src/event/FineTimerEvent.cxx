@@ -30,46 +30,30 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#pragma once
+#include "FineTimerEvent.hxx"
+#include "Loop.hxx"
 
-#include "Chrono.hxx"
-#include "util/IntrusiveList.hxx"
+void
+FineTimerEvent::Schedule(Event::Duration d) noexcept
+{
+	Cancel();
 
-#include <boost/intrusive/set.hpp>
+	due = loop.SteadyNow() + d;
+	loop.Insert(*this);
+}
 
-class FineTimerEvent;
+void
+FineTimerEvent::ScheduleEarlier(Event::Duration d) noexcept
+{
+	const auto new_due = loop.SteadyNow() + d;
 
-/**
- * A list of #FineTimerEvent instances sorted by due time point.
- */
-class TimerList final {
-	struct Compare {
-		constexpr bool operator()(const FineTimerEvent &a,
-					  const FineTimerEvent &b) const noexcept;
-	};
+	if (IsPending()) {
+		if (new_due >= due)
+			return;
 
-	boost::intrusive::multiset<FineTimerEvent,
-				   boost::intrusive::base_hook<boost::intrusive::set_base_hook<boost::intrusive::link_mode<boost::intrusive::auto_unlink>>>,
-				   boost::intrusive::compare<Compare>,
-				   boost::intrusive::constant_time_size<false>> timers;
-
-public:
-	TimerList();
-	~TimerList() noexcept;
-
-	TimerList(const TimerList &other) = delete;
-	TimerList &operator=(const TimerList &other) = delete;
-
-	bool IsEmpty() const noexcept {
-		return timers.empty();
+		Cancel();
 	}
 
-	void Insert(FineTimerEvent &t) noexcept;
-
-	/**
-	 * Invoke all expired #FineTimerEvent instances and return the
-	 * duration until the next timer expires.  Returns a negative
-	 * duration if there is no timeout.
-	 */
-	Event::Duration Run(Event::Clock::time_point now) noexcept;
-};
+	due = new_due;
+	loop.Insert(*this);
+}

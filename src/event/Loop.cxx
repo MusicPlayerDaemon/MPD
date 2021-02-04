@@ -18,7 +18,6 @@
  */
 
 #include "Loop.hxx"
-#include "TimerEvent.hxx"
 #include "DeferEvent.hxx"
 #include "SocketEvent.hxx"
 #include "IdleEvent.hxx"
@@ -144,7 +143,7 @@ EventLoop::AbandonFD(SocketEvent &event)  noexcept
 }
 
 void
-EventLoop::Insert(TimerEvent &t) noexcept
+EventLoop::Insert(FineTimerEvent &t) noexcept
 {
 	assert(IsInside());
 
