@@ -61,7 +61,7 @@ public:
 	}
 
 	pointer operator->() const noexcept {
-		return static_cast<pointer>(*original.IT::operator->());
+		return static_cast<pointer>(&**original);
 	}
 
 	auto &operator++() noexcept {
