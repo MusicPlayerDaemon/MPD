@@ -25,12 +25,22 @@ TimerEvent::Schedule(Event::Duration d) noexcept
 {
 	Cancel();
 
-	loop.AddTimer(*this, d);
+	due = loop.SteadyNow() + d;
+	loop.Insert(*this);
 }
 
 void
 TimerEvent::ScheduleEarlier(Event::Duration d) noexcept
 {
-	if (!IsPending() || loop.SteadyNow() + d < due)
-		Schedule(d);
+	const auto new_due = loop.SteadyNow() + d;
+
+	if (IsPending()) {
+		if (new_due >= due)
+			return;
+
+		Cancel();
+	}
+
+	due = new_due;
+	loop.Insert(*this);
 }
