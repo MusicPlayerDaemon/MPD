@@ -25,7 +25,6 @@
 #include "SocketEvent.hxx"
 #include "event/Features.h"
 #include "time/ClockCache.hxx"
-#include "util/Compiler.h"
 #include "util/IntrusiveList.hxx"
 
 #ifdef HAVE_THREADED_EVENT_LOOP
@@ -183,7 +182,7 @@ public:
 	 * iteration, because it is assumed that the event loop runs
 	 * for a negligible duration.
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	const auto &SteadyNow() const noexcept {
 #ifdef HAVE_THREADED_EVENT_LOOP
 		assert(IsInside());
@@ -193,7 +192,7 @@ public:
 	}
 
 #ifdef HAVE_URING
-	gcc_pure
+	[[gnu::pure]]
 	Uring::Queue *GetUring() noexcept;
 #endif
 
@@ -298,7 +297,7 @@ public:
 	/**
 	 * Are we currently running inside this EventLoop's thread?
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	bool IsInside() const noexcept {
 #ifdef HAVE_THREADED_EVENT_LOOP
 		return thread.IsInside();

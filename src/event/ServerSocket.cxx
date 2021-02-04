@@ -100,7 +100,7 @@ public:
 		event.Close();
 	}
 
-	[[nodiscard]] gcc_pure
+	[[nodiscard]] [[gnu::pure]]
 	std::string ToString() const noexcept {
 		return ::ToString(address);
 	}
@@ -328,7 +328,7 @@ ServerSocket::AddPortIPv6(unsigned port) noexcept
 /**
  * Is IPv6 supported by the kernel?
  */
-gcc_pure
+[[gnu::pure]]
 static bool
 SupportsIPv6() noexcept
 {
