@@ -38,7 +38,7 @@ class EventLoop;
 class TimerEvent final
 	: public boost::intrusive::set_base_hook<boost::intrusive::link_mode<boost::intrusive::auto_unlink>>
 {
-	friend class EventLoop;
+	friend class TimerList;
 
 	EventLoop &loop;
 
@@ -57,6 +57,10 @@ public:
 
 	auto &GetEventLoop() const noexcept {
 		return loop;
+	}
+
+	constexpr auto GetDue() const noexcept {
+		return due;
 	}
 
 	bool IsPending() const noexcept {

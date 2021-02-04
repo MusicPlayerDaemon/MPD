@@ -21,6 +21,7 @@
 #define EVENT_LOOP_HXX
 
 #include "Chrono.hxx"
+#include "TimerList.hxx"
 #include "Backend.hxx"
 #include "SocketEvent.hxx"
 #include "event/Features.h"
@@ -45,7 +46,6 @@
 namespace Uring { class Queue; class Manager; }
 #endif
 
-class TimerEvent;
 class DeferEvent;
 class InjectEvent;
 
@@ -65,17 +65,7 @@ class EventLoop final
 	SocketEvent wake_event{*this, BIND_THIS_METHOD(OnSocketReady), wake_fd.GetSocket()};
 #endif
 
-	struct TimerCompare {
-		constexpr bool operator()(const TimerEvent &a,
-					  const TimerEvent &b) const noexcept;
-	};
-
-	using TimerSet =
-		boost::intrusive::multiset<TimerEvent,
-					   boost::intrusive::base_hook<boost::intrusive::set_base_hook<boost::intrusive::link_mode<boost::intrusive::auto_unlink>>>,
-					   boost::intrusive::compare<TimerCompare>,
-					   boost::intrusive::constant_time_size<false>>;
-	TimerSet timers;
+	TimerList timers;
 
 	using DeferList = IntrusiveList<DeferEvent>;
 
