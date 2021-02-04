@@ -143,6 +143,13 @@ EventLoop::AbandonFD(SocketEvent &event)  noexcept
 }
 
 void
+EventLoop::Insert(CoarseTimerEvent &t) noexcept
+{
+	coarse_timers.Insert(t);
+	again = true;
+}
+
+void
 EventLoop::Insert(FineTimerEvent &t) noexcept
 {
 	assert(IsInside());
@@ -154,7 +161,15 @@ EventLoop::Insert(FineTimerEvent &t) noexcept
 inline Event::Duration
 EventLoop::HandleTimers() noexcept
 {
-	return timers.Run(SteadyNow());
+	const auto now = SteadyNow();
+
+	auto fine_timeout = timers.Run(now);
+	auto coarse_timeout = coarse_timers.Run(now);
+
+	return fine_timeout.count() < 0 ||
+		(coarse_timeout.count() >= 0 && coarse_timeout < fine_timeout)
+		? coarse_timeout
+		: fine_timeout;
 }
 
 void

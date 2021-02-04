@@ -32,7 +32,11 @@
 
 #pragma once
 
-#include "TimerEvent.hxx"
+#include "Chrono.hxx"
+#include "util/BindMethod.hxx"
+#include "util/IntrusiveList.hxx"
+
+class EventLoop;
 
 /**
  * This class invokes a callback function after a certain amount of
@@ -47,5 +51,53 @@
  * thread that runs the #EventLoop, except where explicitly documented
  * as thread-safe.
  */
-using CoarseTimerEvent = TimerEvent;
-// TODO: implement
+class CoarseTimerEvent final : AutoUnlinkIntrusiveListHook
+{
+	friend class TimerWheel;
+	friend class IntrusiveList<CoarseTimerEvent>;
+
+	EventLoop &loop;
+
+	using Callback = BoundMethod<void() noexcept>;
+	const Callback callback;
+
+	/**
+	 * When is this timer due?  This is only valid if IsPending()
+	 * returns true.
+	 */
+	Event::TimePoint due;
+
+public:
+	CoarseTimerEvent(EventLoop &_loop, Callback _callback) noexcept
+		:loop(_loop), callback(_callback) {}
+
+	auto &GetEventLoop() const noexcept {
+		return loop;
+	}
+
+	constexpr auto GetDue() const noexcept {
+		return due;
+	}
+
+	bool IsPending() const noexcept {
+		return is_linked();
+	}
+
+	void Schedule(Event::Duration d) noexcept;
+
+	/**
+	 * Like Schedule(), but is a no-op if there is a due time
+	 * earlier than the given one.
+	 */
+	void ScheduleEarlier(Event::Duration d) noexcept;
+
+	void Cancel() noexcept {
+		if (IsPending())
+			unlink();
+	}
+
+private:
+	void Run() noexcept {
+		callback();
+	}
+};

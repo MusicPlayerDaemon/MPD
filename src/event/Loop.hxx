@@ -21,6 +21,7 @@
 #define EVENT_LOOP_HXX
 
 #include "Chrono.hxx"
+#include "TimerWheel.hxx"
 #include "TimerList.hxx"
 #include "Backend.hxx"
 #include "SocketEvent.hxx"
@@ -65,6 +66,7 @@ class EventLoop final
 	SocketEvent wake_event{*this, BIND_THIS_METHOD(OnSocketReady), wake_fd.GetSocket()};
 #endif
 
+	TimerWheel coarse_timers;
 	TimerList timers;
 
 	using DeferList = IntrusiveList<DeferEvent>;
@@ -204,6 +206,7 @@ public:
 	 */
 	bool AbandonFD(SocketEvent &event) noexcept;
 
+	void Insert(CoarseTimerEvent &t) noexcept;
 	void Insert(FineTimerEvent &t) noexcept;
 
 	/**
