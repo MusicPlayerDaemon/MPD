@@ -75,7 +75,7 @@ public:
 	 */
 	static constexpr unsigned IMPLICIT_FLAGS = ERROR|HANGUP;
 
-	typedef std::make_signed<size_t>::type ssize_t;
+	using ssize_t = std::make_signed<size_t>::type;
 
 	SocketEvent(EventLoop &_loop, Callback _callback,
 		    SocketDescriptor _fd=SocketDescriptor::Undefined()) noexcept

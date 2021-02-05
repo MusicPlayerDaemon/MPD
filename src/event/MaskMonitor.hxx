@@ -34,7 +34,7 @@
 class MaskMonitor final {
 	InjectEvent event;
 
-	typedef BoundMethod<void(unsigned) noexcept> Callback;
+	using Callback = BoundMethod<void(unsigned) noexcept>;
 	const Callback callback;
 
 	std::atomic_uint pending_mask;
