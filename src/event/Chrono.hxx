@@ -30,6 +30,7 @@ namespace Event {
 using Clock = std::chrono::steady_clock;
 
 using Duration = Clock::duration;
+using TimePoint = Clock::time_point;
 
 } // namespace Event
 

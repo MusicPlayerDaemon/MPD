@@ -64,7 +64,7 @@ class FineTimerEvent final
 	 * When is this timer due?  This is only valid if IsPending()
 	 * returns true.
 	 */
-	Event::Clock::time_point due;
+	Event::TimePoint due;
 
 public:
 	FineTimerEvent(EventLoop &_loop, Callback _callback) noexcept
