@@ -1188,6 +1188,34 @@ Your bug report should contain:
 * relevant portions of the log file (:option:`--verbose`)
 * be clear about what you expect MPD to do, and what is actually happening
 
+.. _profiler:
+
+Too Much CPU Usage
+^^^^^^^^^^^^^^^^^^
+
+If you believe MPD consumes too much CPU, `write a bug report
+<https://github.com/MusicPlayerDaemon/MPD/issues>`_ with a profiling
+information.
+
+On Linux, this can be obtained with :program:`perf` (on Debian,
+installed the package :file:`linux-perf`), for example::
+
+ perf record -p `pidof mpd`
+
+Run this command while MPD consumes much CPU, let it run for a minute
+or so, and stop it by pressing ``Ctrl-C``.  Then type::
+
+ perf report >mpd_perf.txt
+
+Upload the output file to the bug report.
+
+.. note::
+
+   This requires having debug symbols for MPD and all relevant
+   libraries.  See :ref:`crash` for details.
+
+.. _crash:
+
 MPD crashes
 ^^^^^^^^^^^
 
