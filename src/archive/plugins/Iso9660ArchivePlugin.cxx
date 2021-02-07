@@ -266,7 +266,7 @@ Iso9660InputStream::Read(std::unique_lock<Mutex> &,
 
 		const lsn_t read_lsn = lsn + offset / ISO_BLOCKSIZE;
 
-		if (read_size >= ISO_BLOCKSIZE) {
+		if (read_size >= ISO_BLOCKSIZE && skip == 0) {
 			/* big read - read right into the caller's buffer */
 
 			auto nbytes = iso->SeekRead(ptr, read_lsn,
