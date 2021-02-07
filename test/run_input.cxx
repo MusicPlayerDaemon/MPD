@@ -118,7 +118,7 @@ ParseCommandLine(int argc, char **argv)
 
 	auto args = option_parser.GetRemaining();
 	if (args.size != 1)
-		throw std::runtime_error("Usage: run_input [--verbose] [--config=FILE] URI");
+		throw std::runtime_error("Usage: run_input [--verbose] [--config=FILE] [--scan] [--chunk-size=BYTES] URI");
 
 	c.uri = args.front();
 	return c;
