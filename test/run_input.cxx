@@ -56,6 +56,8 @@ struct CommandLine {
 
 	FromNarrowPath config_path;
 
+	std::size_t seek = 0;
+
 	std::size_t chunk_size = MAX_CHUNK_SIZE;
 
 	bool verbose = false;
@@ -67,6 +69,7 @@ enum Option {
 	OPTION_CONFIG,
 	OPTION_VERBOSE,
 	OPTION_SCAN,
+	OPTION_SEEK,
 	OPTION_CHUNK_SIZE,
 };
 
@@ -74,6 +77,7 @@ static constexpr OptionDef option_defs[] = {
 	{"config", 0, true, "Load a MPD configuration file"},
 	{"verbose", 'v', false, "Verbose logging"},
 	{"scan", 0, false, "Scan tags instead of reading raw data"},
+	{"seek", 0, true, "Start reading at this position"},
 	{"chunk-size", 0, true, "Read this number of bytes at a time"},
 };
 
@@ -106,6 +110,10 @@ ParseCommandLine(int argc, char **argv)
 
 		case OPTION_SCAN:
 			c.scan = true;
+			break;
+
+		case OPTION_SEEK:
+			c.seek = ParseSize(o.value);
 			break;
 
 		case OPTION_CHUNK_SIZE:
@@ -153,9 +161,13 @@ tag_save(FILE *file, const Tag &tag)
 }
 
 static int
-dump_input_stream(InputStream &is, FileDescriptor out, size_t chunk_size)
+dump_input_stream(InputStream &is, FileDescriptor out,
+		  offset_type seek, size_t chunk_size)
 {
 	std::unique_lock<Mutex> lock(is.mutex);
+
+	if (seek > 0)
+		is.Seek(lock, seek);
 
 	/* print meta data */
 
@@ -256,7 +268,7 @@ try {
 	Mutex mutex;
 	auto is = InputStream::OpenReady(c.uri, mutex);
 	return dump_input_stream(*is, FileDescriptor(STDOUT_FILENO),
-				 c.chunk_size);
+				 c.seek, c.chunk_size);
 } catch (...) {
 	PrintException(std::current_exception());
 	return EXIT_FAILURE;
