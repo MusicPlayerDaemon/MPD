@@ -5,6 +5,8 @@ ver 0.22.5 (not yet released)
   - iso9660: another fix for unaligned reads
 * output
   - httpd: error handling on Windows improved
+* Windows:
+  - enable https:// support (via Schannel)
 
 ver 0.22.4 (2021/01/21)
 * protocol

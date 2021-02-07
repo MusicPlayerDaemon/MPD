@@ -407,6 +407,9 @@ curl = AutotoolsProject(
         '--disable-progress-meter',
         '--disable-alt-svc',
         '--without-gnutls', '--without-nss', '--without-libssh2',
+
+        # native Windows SSL/TLS support, option ignored on non-Windows builds
+        '--with-schannel',
     ],
 
     patches='src/lib/curl/patches',
