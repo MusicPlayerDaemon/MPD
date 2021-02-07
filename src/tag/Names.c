@@ -48,4 +48,17 @@ const char *const tag_item_names[TAG_NUM_OF_ITEM_TYPES] = {
 	[TAG_MUSICBRAINZ_TRACKID] = "MUSICBRAINZ_TRACKID",
 	[TAG_MUSICBRAINZ_RELEASETRACKID] = "MUSICBRAINZ_RELEASETRACKID",
 	[TAG_MUSICBRAINZ_WORKID] = "MUSICBRAINZ_WORKID",
+	/* Additional ID3v2 Tags*/
+	[TAG_BPM] = "BPM",
+	[TAG_COMPOSER_SORT] = "ComposerSort",
+	[TAG_ENCODER_SETTINGS] = "EncoderSettings",
+	[TAG_FILE_OWNER] = "FileOwner",
+	[TAG_FILE_TYPE] = "FileType",
+	[TAG_INITIAL_KEY] = "InitialKey",
+	[TAG_LYRICIST] = "Lyricist",
+	[TAG_MEDIA_TYPE] = "MediaType",
+	[TAG_ORIGINAL_ALBUM] = "OriginalAlbum",
+	[TAG_ORIGINAL_ARTIST] = "OriginalArtist",
+	[TAG_PUBLISHER] = "Publisher",
+	[TAG_SUB_TITLE] = "SubTitle",
 };

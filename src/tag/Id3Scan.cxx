@@ -38,6 +38,10 @@
 #define ID3_FRAME_COMPOSER "TCOM"
 #endif
 
+#ifndef ID3_FRAME_COMPOSER_SORT
+#define ID3_FRAME_COMPOSER_SORT "TSOC"
+#endif
+
 #ifndef ID3_FRAME_DISC
 #define ID3_FRAME_DISC "TPOS"
 #endif
@@ -50,6 +54,10 @@
 #define ID3_FRAME_ALBUM_ARTIST_SORT "TSO2" /* this one is unofficial, introduced by Itunes */
 #endif
 
+#ifndef ID3_FRAME_ALBUM_SORT
+#define ID3_FRAME_ALBUM_SORT "TSOA"
+#endif
+
 #ifndef ID3_FRAME_ALBUM_ARTIST
 #define ID3_FRAME_ALBUM_ARTIST "TPE2"
 #endif
@@ -60,6 +68,63 @@
 
 #ifndef ID3_FRAME_LABEL
 #define ID3_FRAME_LABEL "TPUB"
+#endif
+
+#ifndef ID3_FRAME_CONDUCTOR
+#define ID3_FRAME_CONDUCTOR "TPE3"
+#endif
+
+#ifndef ID3_FRAME_PERFORMER
+#define ID3_FRAME_PERFORMER "TPE4"
+#endif
+
+#ifndef ID3_TAG_GROUPING
+#define ID3_TAG_GROUPING "TIT1"
+#endif
+
+#ifndef ID3_FRAME_BPM
+#define ID3_FRAME_BPM "TBPM"
+#endif
+
+#ifndef ID3_FRAME_ENCODER_SETTINGS
+#define ID3_FRAME_ENCODER_SETTINGS "TSSE"
+#endif
+
+#ifndef ID3_FRAME_FILE_OWNER
+#define ID3_FRAME_FILE_OWNER "TOWN"
+#endif
+
+#ifndef ID3_FRAME_FILE_TYPE
+#define ID3_FRAME_FILE_TYPE "TFLT"
+#endif
+
+#ifndef ID3_FRAME_INITIAL_KEY
+#define ID3_FRAME_INITIAL_KEY "TKEY"
+#endif
+
+#ifndef ID3_FRAME_LYRICIST
+#define ID3_FRAME_LYRICIST "TEXT"
+#endif
+
+#ifndef ID3_FRAME_MEDIA_TYPE
+#define ID3_FRAME_MEDIA_TYPE "TMED"
+#endif
+
+#ifndef ID3_FRAME_ORIGINAL_ALBUM
+#define ID3_FRAME_ORIGINAL_ALBUM "TOAL"
+#endif
+
+#ifndef ID3_FRAME_ORIGINAL_ARTIST
+#define ID3_FRAME_ORIGINAL_ARTIST "TOPE"
+#endif
+
+#ifndef ID3_FRAME_SUB_TITLE
+#define ID3_FRAME_SUB_TITLE "TIT3"
+#endif
+
+
+#ifndef ID3_FRAME_PUBLISHER
+#define ID3_FRAME_PUBLISHER "TPUB"
 #endif
 
 gcc_pure
@@ -334,7 +399,7 @@ scan_id3_tag(const struct id3_tag *tag, TagHandler &handler) noexcept
 	tag_id3_import_text(tag, ID3_FRAME_ARTIST_SORT,
 			    TAG_ARTIST_SORT, handler);
 
-	tag_id3_import_text(tag, "TSOA", TAG_ALBUM_SORT, handler);
+	tag_id3_import_text(tag, ID3_FRAME_ALBUM_SORT, TAG_ALBUM_SORT, handler);
 
 	tag_id3_import_text(tag, ID3_FRAME_ALBUM_ARTIST_SORT,
 			    TAG_ALBUM_ARTIST_SORT, handler);
@@ -352,15 +417,40 @@ scan_id3_tag(const struct id3_tag *tag, TagHandler &handler) noexcept
 			    handler);
 	tag_id3_import_text(tag, ID3_FRAME_COMPOSER, TAG_COMPOSER,
 			    handler);
-	tag_id3_import_text(tag, "TPE3", TAG_CONDUCTOR,
+	tag_id3_import_text(tag, ID3_FRAME_COMPOSER_SORT, TAG_COMPOSER_SORT,
 			    handler);
-	tag_id3_import_text(tag, "TPE4", TAG_PERFORMER, handler);
-	tag_id3_import_text(tag, "TIT1", TAG_GROUPING, handler);
+	tag_id3_import_text(tag, ID3_FRAME_CONDUCTOR, TAG_CONDUCTOR,
+			    handler);
+	tag_id3_import_text(tag, ID3_FRAME_PERFORMER, TAG_PERFORMER, handler);
+	tag_id3_import_text(tag, ID3_TAG_GROUPING, TAG_GROUPING, handler);
 	tag_id3_import_comment(tag, ID3_FRAME_COMMENT, TAG_COMMENT,
 			       handler);
 	tag_id3_import_text(tag, ID3_FRAME_DISC, TAG_DISC,
 			    handler);
 	tag_id3_import_text(tag, ID3_FRAME_LABEL, TAG_LABEL,
+			    handler);
+
+	tag_id3_import_text(tag, ID3_FRAME_BPM, TAG_BPM,
+			    handler);
+	tag_id3_import_text(tag, ID3_FRAME_ENCODER_SETTINGS, TAG_ENCODER_SETTINGS,
+			    handler);
+	tag_id3_import_text(tag, ID3_FRAME_FILE_OWNER, TAG_FILE_OWNER,
+			    handler);
+	tag_id3_import_text(tag, ID3_FRAME_FILE_TYPE, TAG_FILE_TYPE,
+			    handler);
+	tag_id3_import_text(tag, ID3_FRAME_INITIAL_KEY, TAG_INITIAL_KEY,
+			    handler);
+	tag_id3_import_text(tag, ID3_FRAME_LYRICIST, TAG_LYRICIST,
+			    handler);
+	tag_id3_import_text(tag, ID3_FRAME_MEDIA_TYPE, TAG_MEDIA_TYPE,
+			    handler);
+	tag_id3_import_text(tag, ID3_FRAME_ORIGINAL_ALBUM, TAG_ORIGINAL_ALBUM,
+			    handler);
+	tag_id3_import_text(tag, ID3_FRAME_ORIGINAL_ARTIST, TAG_ORIGINAL_ARTIST,
+			    handler);
+	tag_id3_import_text(tag, ID3_FRAME_PUBLISHER, TAG_PUBLISHER,
+			    handler);
+	tag_id3_import_text(tag, ID3_FRAME_SUB_TITLE, TAG_SUB_TITLE,
 			    handler);
 
 	tag_id3_import_musicbrainz(tag, handler);
