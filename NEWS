@@ -1,6 +1,8 @@
 ver 0.22.5 (not yet released)
 * tags
   - id: translate TPE3 to Conductor, not Performer
+* archive
+  - iso9660: another fix for unaligned reads
 * output
   - httpd: error handling on Windows improved
 

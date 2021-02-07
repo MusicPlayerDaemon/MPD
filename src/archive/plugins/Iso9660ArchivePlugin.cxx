@@ -221,8 +221,8 @@ public:
 		if (new_offset > size)
 			throw std::runtime_error("Invalid seek offset");
 
+		offset = new_offset;
 		skip = new_offset % ISO_BLOCKSIZE;
-		offset = new_offset - skip;
 		buffer.Clear();
 	}
 };
@@ -260,7 +260,7 @@ Iso9660InputStream::Read(std::unique_lock<Mutex> &,
 	if (r.empty()) {
 		/* the buffer is empty - read more data from the ISO file */
 
-		assert(offset % ISO_BLOCKSIZE == 0);
+		assert((offset - skip) % ISO_BLOCKSIZE == 0);
 
 		const ScopeUnlock unlock(mutex);
 
