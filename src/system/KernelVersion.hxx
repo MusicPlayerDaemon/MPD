@@ -32,8 +32,6 @@
 
 #pragma once
 
-#include "util/Compiler.h"
-
 class KernelVersionCode {
 	unsigned value = 0;
 
@@ -53,6 +51,6 @@ public:
 /**
  * Is the currently running Linux kernel at least the given version?
  */
-gcc_const
+[[gnu::const]]
 bool
 IsKernelVersionOrNewer(KernelVersionCode v) noexcept;

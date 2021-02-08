@@ -47,7 +47,7 @@ public:
 	ClockCache(const ClockCache &) = delete;
 	ClockCache &operator=(const ClockCache &) = delete;
 
-	gcc_pure
+	[[gnu::pure]]
 	const auto &now() const noexcept {
 		if (value <= value_type())
 			value = Clock::now();

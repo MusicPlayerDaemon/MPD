@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2020 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2016-2021 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -31,7 +31,6 @@
 #define NET_ADDRESS_INFO_HXX
 
 #include "SocketAddress.hxx"
-#include "util/Compiler.h"
 
 #include <utility>
 
@@ -109,7 +108,7 @@ public:
 	 * to an IPv6 wildcard address also allows accepting IPv4
 	 * connections.
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	const AddressInfo &GetBest() const;
 
 	class const_iterator {

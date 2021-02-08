@@ -32,8 +32,6 @@
 
 #pragma once
 
-#include "util/Compiler.h"
-
 #include <chrono>
 
 struct tm;
@@ -42,7 +40,7 @@ struct tm;
  * Calculates the preceding midnight time point in the current time
  * zone.
  */
-gcc_const
+[[gnu::const]]
 std::chrono::system_clock::time_point
 PrecedingMidnightLocal(std::chrono::system_clock::time_point t) noexcept;
 

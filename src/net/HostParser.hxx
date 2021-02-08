@@ -34,7 +34,6 @@
 #define NET_HOST_PARSER_HXX
 
 #include "util/StringView.hxx"
-#include "util/Compiler.h"
 
 /**
  * Result type for ExtractHost().
@@ -69,7 +68,7 @@ struct ExtractHostResult {
  *
  * @param src the input string
  */
-gcc_pure
+[[gnu::pure]]
 ExtractHostResult
 ExtractHost(const char *src) noexcept;
 

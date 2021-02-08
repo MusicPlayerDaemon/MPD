@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2020 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2012-2021 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -32,7 +32,6 @@
 
 #include "SocketAddress.hxx" // IWYU pragma: export
 #include "Features.hxx"
-#include "util/Compiler.h"
 
 #include <cassert>
 
@@ -120,7 +119,7 @@ public:
 	/**
 	 * @see SocketAddress::GetLocalRaw()
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	StringView GetLocalRaw() const noexcept;
 #endif
 
@@ -128,7 +127,7 @@ public:
 	/**
 	 * Extract the port number.  Returns 0 if not applicable.
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	unsigned GetPort() const noexcept {
 		return ((SocketAddress)*this).GetPort();
 	}
@@ -140,7 +139,7 @@ public:
 	bool SetPort(unsigned port) noexcept;
 #endif
 
-	gcc_pure
+	[[gnu::pure]]
 	bool operator==(SocketAddress other) const noexcept {
 		return (SocketAddress)*this == other;
 	}

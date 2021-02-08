@@ -32,7 +32,6 @@
 
 #include "SocketAddress.hxx"
 #include "util/ByteOrder.hxx"
-#include "util/Compiler.h"
 
 #include <cstdint>
 
@@ -179,7 +178,7 @@ public:
 	/**
 	 * Is this the IPv6 wildcard address (in6addr_any)?
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	bool IsAny() const noexcept;
 
 	/**
@@ -195,14 +194,14 @@ public:
 	/**
 	 * Convert "::ffff:127.0.0.1" to "127.0.0.1".
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	IPv4Address UnmapV4() const noexcept;
 
 	/**
 	 * Bit-wise AND of two addresses.  This is useful for netmask
 	 * calculations.
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	IPv6Address operator&(const IPv6Address &other) const;
 
 private:

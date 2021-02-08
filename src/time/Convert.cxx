@@ -72,7 +72,7 @@ LocalTime(std::chrono::system_clock::time_point tp)
 /**
  * Determine the time zone offset in a portable way.
  */
-gcc_const
+[[gnu::const]]
 static time_t
 GetTimeZoneOffset() noexcept
 {
