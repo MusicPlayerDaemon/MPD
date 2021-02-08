@@ -30,8 +30,6 @@
 #ifndef MIME_TYPE_HXX
 #define MIME_TYPE_HXX
 
-#include "util/Compiler.h"
-
 #include <string>
 #include <string_view>
 #include <map>
@@ -41,7 +39,7 @@
  * part before the semicolon.  If there is no semicolon, it returns
  * the string as-is.
  */
-gcc_pure
+[[gnu::pure]]
 std::string_view
 GetMimeTypeBase(std::string_view s) noexcept;
 
