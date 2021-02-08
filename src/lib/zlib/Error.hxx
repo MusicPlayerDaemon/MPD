@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2018 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2014-2021 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -36,9 +36,9 @@ class ZlibError final : public std::exception {
 	int code;
 
 public:
-	explicit ZlibError(int _code):code(_code) {}
+	explicit ZlibError(int _code) noexcept:code(_code) {}
 
-	int GetCode() const {
+	int GetCode() const noexcept {
 		return code;
 	}
 
