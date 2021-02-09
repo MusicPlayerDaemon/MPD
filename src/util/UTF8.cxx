@@ -167,7 +167,7 @@ ValidateUTF8(const char *p) noexcept
 	return true;
 }
 
-size_t
+std::size_t
 SequenceLengthUTF8(char ch) noexcept
 {
 	if (IsASCII(ch))
@@ -194,7 +194,7 @@ SequenceLengthUTF8(char ch) noexcept
 
 }
 
-template<size_t L>
+template<std::size_t L>
 struct CheckSequenceUTF8 {
 	gcc_pure
 	bool operator()(const char *p) const noexcept {
@@ -209,9 +209,9 @@ struct CheckSequenceUTF8<0U> {
 	}
 };
 
-template<size_t L>
+template<std::size_t L>
 gcc_pure
-static size_t
+static std::size_t
 InnerSequenceLengthUTF8(const char *p) noexcept
 {
 	return CheckSequenceUTF8<L>()(p)
@@ -219,7 +219,7 @@ InnerSequenceLengthUTF8(const char *p) noexcept
 		: 0U;
 }
 
-size_t
+std::size_t
 SequenceLengthUTF8(const char *p) noexcept
 {
 	const uint8_t ch = *p++;
@@ -258,14 +258,14 @@ FindNonASCIIOrZero(const char *p) noexcept
 
 const char *
 Latin1ToUTF8(const char *gcc_restrict src, char *gcc_restrict buffer,
-	     size_t buffer_size) noexcept
+	     std::size_t buffer_size) noexcept
 {
 	const char *p = FindNonASCIIOrZero(src);
 	if (*p == 0)
 		/* everything is plain ASCII, we don't need to convert anything */
 		return src;
 
-	if ((size_t)(p - src) >= buffer_size)
+	if ((std::size_t)(p - src) >= buffer_size)
 		/* buffer too small */
 		return nullptr;
 
@@ -332,14 +332,14 @@ UnicodeToUTF8(unsigned ch, char *q) noexcept
   return q;
 }
 
-size_t
+std::size_t
 LengthUTF8(const char *p) noexcept
 {
 	/* this is a very naive implementation: it does not do any
 	   verification, it just counts the bytes that are not a UTF-8
 	   continuation */
 
-	size_t n = 0;
+	std::size_t n = 0;
 	for (; *p != 0; ++p)
 		if (!IsContinuation(*p))
 			++n;

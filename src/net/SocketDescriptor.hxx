@@ -159,8 +159,8 @@ public:
 	/**
 	 * @return the value size or 0 on error
 	 */
-	size_t GetOption(int level, int name,
-			 void *value, size_t size) const noexcept;
+	std::size_t GetOption(int level, int name,
+			      void *value, std::size_t size) const noexcept;
 
 #ifdef HAVE_STRUCT_UCRED
 	/**
@@ -172,7 +172,7 @@ public:
 #endif
 
 	bool SetOption(int level, int name,
-		       const void *value, size_t size) noexcept;
+		       const void *value, std::size_t size) noexcept;
 
 	bool SetBoolOption(int level, int name, bool _value) noexcept {
 		const int value = _value;
@@ -232,8 +232,8 @@ public:
 	[[gnu::pure]]
 	StaticSocketAddress GetPeerAddress() const noexcept;
 
-	ssize_t Read(void *buffer, size_t length) noexcept;
-	ssize_t Write(const void *buffer, size_t length) noexcept;
+	ssize_t Read(void *buffer, std::size_t length) noexcept;
+	ssize_t Write(const void *buffer, std::size_t length) noexcept;
 
 #ifdef _WIN32
 	int WaitReadable(int timeout_ms) const noexcept;
@@ -247,13 +247,13 @@ public:
 	/**
 	 * Receive a datagram and return the source address.
 	 */
-	ssize_t Read(void *buffer, size_t length,
+	ssize_t Read(void *buffer, std::size_t length,
 		     StaticSocketAddress &address) noexcept;
 
 	/**
 	 * Send a datagram to the specified address.
 	 */
-	ssize_t Write(const void *buffer, size_t length,
+	ssize_t Write(const void *buffer, std::size_t length,
 		      SocketAddress address) noexcept;
 
 #ifndef _WIN32

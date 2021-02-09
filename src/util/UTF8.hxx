@@ -47,7 +47,7 @@ ValidateUTF8(const char *p) noexcept;
  * character, or 0 if the character is not a valid start byte
  */
 gcc_const
-size_t
+std::size_t
 SequenceLengthUTF8(char ch) noexcept;
 
 /**
@@ -55,7 +55,7 @@ SequenceLengthUTF8(char ch) noexcept;
  * if the sequence is malformed
  */
 gcc_pure
-size_t
+std::size_t
 SequenceLengthUTF8(const char *p) noexcept;
 
 /**
@@ -67,7 +67,7 @@ SequenceLengthUTF8(const char *p) noexcept;
  */
 gcc_pure  gcc_nonnull_all
 const char *
-Latin1ToUTF8(const char *src, char *buffer, size_t buffer_size) noexcept;
+Latin1ToUTF8(const char *src, char *buffer, std::size_t buffer_size) noexcept;
 
 /**
  * Convert the specified Unicode character to UTF-8 and write it to
@@ -84,7 +84,7 @@ UnicodeToUTF8(unsigned ch, char *buffer) noexcept;
  * from strlen(), which counts the number of bytes.
  */
 gcc_pure gcc_nonnull_all
-size_t
+std::size_t
 LengthUTF8(const char *p) noexcept;
 
 #endif

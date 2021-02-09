@@ -225,9 +225,9 @@ SocketDescriptor::GetError() noexcept
 		: errno;
 }
 
-size_t
+std::size_t
 SocketDescriptor::GetOption(int level, int name,
-			    void *value, size_t size) const noexcept
+			    void *value, std::size_t size) const noexcept
 {
 	assert(IsDefined());
 
@@ -264,7 +264,7 @@ SocketDescriptor::SetNonBlocking() noexcept
 
 bool
 SocketDescriptor::SetOption(int level, int name,
-			    const void *value, size_t size) noexcept
+			    const void *value, std::size_t size) noexcept
 {
 	assert(IsDefined());
 
@@ -431,7 +431,7 @@ SocketDescriptor::GetPeerAddress() const noexcept
 }
 
 ssize_t
-SocketDescriptor::Read(void *buffer, size_t length) noexcept
+SocketDescriptor::Read(void *buffer, std::size_t length) noexcept
 {
 	int flags = 0;
 #ifndef _WIN32
@@ -442,7 +442,7 @@ SocketDescriptor::Read(void *buffer, size_t length) noexcept
 }
 
 ssize_t
-SocketDescriptor::Write(const void *buffer, size_t length) noexcept
+SocketDescriptor::Write(const void *buffer, std::size_t length) noexcept
 {
 	int flags = 0;
 #ifdef __linux__
@@ -495,7 +495,7 @@ SocketDescriptor::WaitWritable(int timeout_ms) const noexcept
 #endif
 
 ssize_t
-SocketDescriptor::Read(void *buffer, size_t length,
+SocketDescriptor::Read(void *buffer, std::size_t length,
 		       StaticSocketAddress &address) noexcept
 {
 	int flags = 0;
@@ -513,7 +513,7 @@ SocketDescriptor::Read(void *buffer, size_t length,
 }
 
 ssize_t
-SocketDescriptor::Write(const void *buffer, size_t length,
+SocketDescriptor::Write(const void *buffer, std::size_t length,
 			SocketAddress address) noexcept
 {
 	int flags = 0;
