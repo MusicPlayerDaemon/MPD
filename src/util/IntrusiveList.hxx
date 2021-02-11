@@ -125,7 +125,7 @@ class IntrusiveList {
 	}
 
 public:
-	IntrusiveList() = default;
+	IntrusiveList() noexcept = default;
 
 	IntrusiveList(IntrusiveList &&src) noexcept {
 		if (src.empty())
