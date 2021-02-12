@@ -35,7 +35,14 @@
 
 #include <cassert>
 
-TimerWheel::TimerWheel() noexcept = default;
+TimerWheel::TimerWheel() noexcept
+{
+	/* cannot use "=default" due to bug in GCC9 and older
+	   ("defaulted on its redeclaration with an
+	   exception-specification that differs from the implicit
+	   exception-specification") */
+}
+
 TimerWheel::~TimerWheel() noexcept = default;
 
 void
