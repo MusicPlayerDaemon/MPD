@@ -90,6 +90,56 @@ struct RangeArg {
 	constexpr unsigned Count() const noexcept {
 		return end - start;
 	}
+
+	/**
+	 * Make sure that both start and end are within the given
+	 * count.
+	 */
+	constexpr void ClipRelaxed(unsigned count) noexcept {
+		if (end > count)
+			end = count;
+
+		if (start > end)
+			start = end;
+	}
+
+	/**
+	 * Check if the start index is valid and clip the end of the
+	 * range.
+	 *
+	 * @return false if the start is out of range
+	 */
+	[[nodiscard]]
+	constexpr bool CheckClip(unsigned count) noexcept {
+		if (start > count)
+			return false;
+
+		if (end > count)
+			end = count;
+
+		return true;
+	}
+
+	/**
+	 * Check if start and end index are valid and adjust the end if this
+	 * is an open-ended range.
+	 *
+	 * @return false if start or end is out of range
+	 */
+	[[nodiscard]]
+	constexpr bool CheckAdjustEnd(unsigned count) noexcept {
+		if (start > count)
+			return false;
+
+		if (end > count) {
+			if (!IsOpenEnded())
+				return false;
+
+			end = count;
+		}
+
+		return true;
+	}
 };
 
 #endif
