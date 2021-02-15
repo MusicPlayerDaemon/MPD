@@ -37,6 +37,15 @@ public:
 	ExportedSong(const char *_uri, Tag &&_tag) noexcept
 		:LightSong(_uri, tag_buffer),
 		 tag_buffer(std::move(_tag)) {}
+
+	/* this custom move constructor is necessary so LightSong::tag
+	   points to this instance's #Tag field instead of leaving a
+	   dangling reference to the source object's #Tag field */
+	ExportedSong(ExportedSong &&src) noexcept
+		:LightSong(src, tag_buffer),
+		 tag_buffer(std::move(src.tag_buffer)) {}
+
+	ExportedSong &operator=(ExportedSong &&) = delete;
 };
 
 #endif
