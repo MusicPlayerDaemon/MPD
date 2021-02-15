@@ -110,6 +110,10 @@ ParseCommandArgRange(const char *s)
 		return RangeArg::Single(range.start);
 	}
 
+	if (!range.IsWellFormed())
+		throw FormatProtocolError(ACK_ERROR_ARG,
+					  "Malformed range: %s", s);
+
 	return range;
 }
 
