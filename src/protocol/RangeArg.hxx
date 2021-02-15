@@ -44,6 +44,10 @@ struct RangeArg {
 		return !(*this == other);
 	}
 
+	constexpr bool IsOpenEnded() const noexcept {
+		return end == All().end;
+	}
+
 	constexpr bool IsAll() const noexcept {
 		return *this == All();
 	}
