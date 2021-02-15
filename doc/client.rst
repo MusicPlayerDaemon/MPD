@@ -38,7 +38,7 @@ Instead, do::
 This way, the library can choose the best defaults, maybe derived from
 environment variables, so all MPD clients use the same settings.
 
-If you need to reimmeplemt those defaults (or if you are developing a
+If you need to reimplement those defaults (or if you are developing a
 client library), this is a good set of addresses to attempt to connect
 to:
 
