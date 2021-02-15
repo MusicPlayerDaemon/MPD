@@ -111,6 +111,7 @@ public:
 
 	[[nodiscard]] std::chrono::steady_clock::duration Delay() const noexcept override;
 	size_t Play(const void *chunk, size_t size) override;
+	void Drain() override;
 	void Cancel() noexcept override;
 	bool Pause() override;
 
@@ -696,17 +697,6 @@ PulseOutput::Close() noexcept
 
 	Pulse::LockGuard lock(mainloop);
 
-	if (pa_stream_get_state(stream) == PA_STREAM_READY) {
-		pa_operation *o =
-			pa_stream_drain(stream,
-					pulse_output_stream_success_cb, this);
-		if (o == nullptr) {
-			LogPulseError(context,
-				      "pa_stream_drain() has failed");
-		} else
-			pulse_wait_for_operation(mainloop, o);
-	}
-
 	DeleteStream();
 
 	if (context != nullptr &&
@@ -833,6 +823,23 @@ PulseOutput::Play(const void *chunk, size_t size)
 		throw MakePulseError(context, "pa_stream_write() failed");
 
 	return size;
+}
+
+void
+PulseOutput::Drain()
+{
+	Pulse::LockGuard lock(mainloop);
+
+	if (pa_stream_get_state(stream) != PA_STREAM_READY)
+		return;
+
+	pa_operation *o =
+		pa_stream_drain(stream,
+				pulse_output_stream_success_cb, this);
+	if (o == nullptr)
+		throw MakePulseError(context, "pa_stream_drain() failed");
+
+	pulse_wait_for_operation(mainloop, o);
 }
 
 void
