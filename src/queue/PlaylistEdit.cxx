@@ -141,12 +141,12 @@ playlist::SwapPositions(PlayerControl &pc, unsigned song1, unsigned song2)
 
 		queue.SwapOrders(queue.PositionToOrder(song1),
 				 queue.PositionToOrder(song2));
-	} else {
+	} else if (current >= 0){
 		/* correct the "current" song order */
 
-		if (current == (int)song1)
+		if (unsigned(current) == song1)
 			current = song2;
-		else if (current == (int)song2)
+		else if (unsigned(current) == song2)
 			current = song1;
 	}
 
@@ -357,13 +357,15 @@ playlist::MoveRange(PlayerControl &pc,
 
 	queue.MoveRange(start, end, to);
 
-	if (!queue.random) {
-		/* update current/queued */
-		if ((int)start <= current && (unsigned)current < end)
-			current += to - start;
-		else if (current >= (int)end && current <= to)
+	if (!queue.random && current >= 0) {
+		/* update current */
+		if (start <= unsigned(current) && unsigned(current) < end)
+			current += unsigned(to) - start;
+		else if (unsigned(current) >= end &&
+			 unsigned(current) <= unsigned(to))
 			current -= end - start;
-		else if (current >= to && current < (int)start)
+		else if (unsigned(current) >= unsigned(to) &&
+			 unsigned(current) < start)
 			current += end - start;
 	}
 
