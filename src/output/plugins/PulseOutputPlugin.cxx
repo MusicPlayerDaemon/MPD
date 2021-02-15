@@ -830,7 +830,9 @@ PulseOutput::Drain()
 {
 	Pulse::LockGuard lock(mainloop);
 
-	if (pa_stream_get_state(stream) != PA_STREAM_READY)
+	if (pa_stream_get_state(stream) != PA_STREAM_READY ||
+	    pa_stream_is_suspended(stream) ||
+	    pa_stream_is_corked(stream))
 		return;
 
 	pa_operation *o =

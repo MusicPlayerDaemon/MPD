@@ -5,6 +5,7 @@ ver 0.22.5 (not yet released)
   - iso9660: another fix for unaligned reads
 * output
   - httpd: error handling on Windows improved
+  - pulse: fix deadlock with "always_on"
 * Windows:
   - enable https:// support (via Schannel)
 
