@@ -25,7 +25,7 @@
 struct RangeArg {
 	unsigned start, end;
 
-	static constexpr RangeArg All() {
+	static constexpr RangeArg All() noexcept {
 		return { 0, std::numeric_limits<unsigned>::max() };
 	}
 
