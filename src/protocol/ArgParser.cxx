@@ -94,7 +94,7 @@ ParseCommandArgRange(const char *s)
 						  s);
 
 		if (test == test2)
-			value = std::numeric_limits<int>::max();
+			return RangeArg::OpenEnded(range.start);
 
 		if (value < 0)
 			throw FormatProtocolError(ACK_ERROR_ARG,

@@ -25,8 +25,15 @@
 struct RangeArg {
 	unsigned start, end;
 
+	/**
+	 * Construct an open-ended range starting at the given index.
+	 */
+	static constexpr RangeArg OpenEnded(unsigned start) noexcept {
+		return { start, std::numeric_limits<unsigned>::max() };
+	}
+
 	static constexpr RangeArg All() noexcept {
-		return { 0, std::numeric_limits<unsigned>::max() };
+		return OpenEnded(0);
 	}
 
 	constexpr bool operator==(RangeArg other) const noexcept {
