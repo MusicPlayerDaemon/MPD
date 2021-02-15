@@ -10,6 +10,8 @@ ver 0.22.5 (not yet released)
   - pulse: fix deadlock with "always_on"
 * Windows:
   - enable https:// support (via Schannel)
+* Android
+  - work around "Permission denied" on mpd.conf
 
 ver 0.22.4 (2021/01/21)
 * protocol
