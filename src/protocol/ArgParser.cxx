@@ -107,7 +107,7 @@ ParseCommandArgRange(const char *s)
 
 		range.end = (unsigned)value;
 	} else {
-		range.end = (unsigned)value + 1;
+		return RangeArg::Single(range.start);
 	}
 
 	return range;

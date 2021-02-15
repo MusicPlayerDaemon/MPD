@@ -36,6 +36,13 @@ struct RangeArg {
 		return OpenEnded(0);
 	}
 
+	/**
+	 * Construct an instance describing exactly one index.
+	 */
+	static constexpr RangeArg Single(unsigned i) noexcept {
+		return { i, i + 1 };
+	}
+
 	constexpr bool operator==(RangeArg other) const noexcept {
 		return start == other.start && end == other.end;
 	}
