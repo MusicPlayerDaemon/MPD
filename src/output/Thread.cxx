@@ -53,7 +53,7 @@ AudioOutputControl::InternalOpen2(const AudioFormat in_audio_format)
 	if (open && cf != output->filter_audio_format)
 		/* if the filter's output format changes, the output
 		   must be reopened as well */
-		InternalCloseOutput(true);
+		InternalCloseOutput(playing);
 
 	output->filter_audio_format = cf;
 
@@ -64,6 +64,7 @@ AudioOutputControl::InternalOpen2(const AudioFormat in_audio_format)
 		}
 
 		open = true;
+		playing = false;
 	} else if (in_audio_format != output->out_audio_format) {
 		/* reconfigure the final ConvertFilter for its new
 		   input AudioFormat */
@@ -285,6 +286,9 @@ AudioOutputControl::PlayChunk(std::unique_lock<Mutex> &lock) noexcept
 		assert(nbytes % output->out_audio_format.GetFrameSize() == 0);
 
 		source.ConsumeData(nbytes);
+
+		/* there's data to be drained from now on */
+		playing = true;
 	}
 
 	return true;
@@ -371,6 +375,9 @@ AudioOutputControl::InternalPause(std::unique_lock<Mutex> &lock) noexcept
 	}
 
 	skip_delay = true;
+
+	/* ignore drain commands until we got something new to play */
+	playing = false;
 }
 
 static void
@@ -390,6 +397,10 @@ PlayFull(FilteredAudioOutput &output, ConstBuffer<void> _buffer)
 inline void
 AudioOutputControl::InternalDrain() noexcept
 {
+	/* after this method finishes, there's nothing left to be
+	   drained */
+	playing = false;
+
 	try {
 		/* flush the filter and play its remaining output */
 
@@ -518,6 +529,7 @@ AudioOutputControl::Task() noexcept
 			source.Cancel();
 
 			if (open) {
+				playing = false;
 				const ScopeUnlock unlock(mutex);
 				output->Cancel();
 			}

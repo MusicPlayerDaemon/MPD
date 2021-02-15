@@ -182,6 +182,14 @@ class AudioOutputControl {
 	bool open = false;
 
 	/**
+	 * Is the device currently playing, i.e. is its buffer
+	 * (likely) non-empty?  If not, then it will never be drained.
+	 *
+	 * This field is only valid while the output is open.
+	 */
+	bool playing;
+
+	/**
 	 * Is the device paused?  i.e. the output thread is in the
 	 * ao_pause() loop.
 	 */
