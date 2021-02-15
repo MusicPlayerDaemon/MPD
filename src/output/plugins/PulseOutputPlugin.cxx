@@ -56,8 +56,6 @@ class PulseOutput final : AudioOutput {
 
 	size_t writable;
 
-	bool pause;
-
 	/**
 	 * Was Interrupt() called?  This will unblock Play().  It will
 	 * be reset by Cancel() and Pause(), as documented by the
@@ -688,7 +686,6 @@ PulseOutput::Open(AudioFormat &audio_format)
 				     "pa_stream_connect_playback() has failed");
 	}
 
-	pause = false;
 	interrupted = false;
 }
 
@@ -780,7 +777,7 @@ PulseOutput::Delay() const noexcept
 	Pulse::LockGuard lock(mainloop);
 
 	auto result = std::chrono::steady_clock::duration::zero();
-	if (pause && pa_stream_is_corked(stream) &&
+	if (pa_stream_is_corked(stream) &&
 	    pa_stream_get_state(stream) == PA_STREAM_READY)
 		/* idle while paused */
 		result = std::chrono::seconds(1);
@@ -795,8 +792,6 @@ PulseOutput::Play(const void *chunk, size_t size)
 	assert(stream != nullptr);
 
 	Pulse::LockGuard lock(mainloop);
-
-	pause = false;
 
 	/* check if the stream is (already) connected */
 
@@ -876,7 +871,6 @@ PulseOutput::Pause()
 
 	Pulse::LockGuard lock(mainloop);
 
-	pause = true;
 	interrupted = false;
 
 	/* check if the stream is (already/still) connected */
