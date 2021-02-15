@@ -677,6 +677,11 @@ Whenever possible, ids should be used.
     (directories add recursively). ``URI``
     can also be a single file.
 
+    Clients that are connected via local socket may add arbitrary
+    local files (URI is an absolute path).  Exmaple::
+
+     add "/home/foo/Music/bar.ogg"
+
 .. _command_addid:
 
 :command:`addid {URI} [POSITION]`
