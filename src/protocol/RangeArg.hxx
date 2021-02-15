@@ -59,8 +59,36 @@ struct RangeArg {
 		return *this == All();
 	}
 
+	constexpr bool IsWellFormed() const noexcept {
+		return start <= end;
+	}
+
+	/**
+	 * Is this range empty?  A malformed range also counts as
+	 * "empty" for this method.
+	 */
+	constexpr bool IsEmpty() const noexcept {
+		return start >= end;
+	}
+
+	/**
+	 * Check if the range contains at least this number of items.
+	 * Unlike Count(), this allows the object to be malformed.
+	 */
+	constexpr bool HasAtLeast(unsigned n) const noexcept {
+		return start + n <= end;
+	}
+
 	constexpr bool Contains(unsigned i) const noexcept {
 		return i >= start && i < end;
+	}
+
+	/**
+	 * Count the number of items covered by this range.  This requires the
+	 * object to be well-formed.
+	 */
+	constexpr unsigned Count() const noexcept {
+		return end - start;
 	}
 };
 
