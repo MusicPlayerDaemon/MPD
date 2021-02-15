@@ -76,12 +76,7 @@ queue_print_changes_info(Response &r, const Queue &queue,
 			 unsigned start, unsigned end)
 {
 	assert(start <= end);
-
-	if (start >= queue.GetLength())
-		return;
-
-	if (end > queue.GetLength())
-		end = queue.GetLength();
+	assert(end <= queue.GetLength());
 
 	for (unsigned i = start; i < end; i++)
 		if (queue.IsNewerAtPosition(i, version))
@@ -94,12 +89,7 @@ queue_print_changes_position(Response &r, const Queue &queue,
 			     unsigned start, unsigned end)
 {
 	assert(start <= end);
-
-	if (start >= queue.GetLength())
-		return;
-
-	if (end > queue.GetLength())
-		end = queue.GetLength();
+	assert(end <= queue.GetLength());
 
 	for (unsigned i = start; i < end; i++)
 		if (queue.IsNewerAtPosition(i, version))

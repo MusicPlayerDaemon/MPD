@@ -26,6 +26,7 @@
 
 enum TagType : uint8_t;
 struct Tag;
+struct RangeArg;
 class PlayerControl;
 class DetachedSong;
 class Database;
@@ -240,7 +241,7 @@ public:
 	 * @param start the position of the first song to delete
 	 * @param end the position after the last song to delete
 	 */
-	void DeleteRange(PlayerControl &pc, unsigned start, unsigned end);
+	void DeleteRange(PlayerControl &pc, RangeArg range);
 
 	/**
 	 * Mark the given song as "stale", i.e. as not being available
@@ -250,10 +251,9 @@ public:
 	 */
 	void StaleSong(PlayerControl &pc, const char *uri) noexcept;
 
-	void Shuffle(PlayerControl &pc, unsigned start, unsigned end) noexcept;
+	void Shuffle(PlayerControl &pc, RangeArg range);
 
-	void MoveRange(PlayerControl &pc, unsigned start,
-		       unsigned end, int to);
+	void MoveRange(PlayerControl &pc, RangeArg range, int to);
 
 	void MoveId(PlayerControl &pc, unsigned id, int to);
 
@@ -262,7 +262,7 @@ public:
 	void SwapIds(PlayerControl &pc, unsigned id1, unsigned id2);
 
 	void SetPriorityRange(PlayerControl &pc,
-			      unsigned start_position, unsigned end_position,
+			      RangeArg position_range,
 			      uint8_t priority);
 
 	void SetPriorityId(PlayerControl &pc,
