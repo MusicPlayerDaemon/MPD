@@ -326,6 +326,11 @@ CommandResult
 handle_move(Client &client, Request args, [[maybe_unused]] Response &r)
 {
 	RangeArg range = args.ParseRange(0);
+	if (range.IsOpenEnded()) {
+		r.Error(ACK_ERROR_ARG, "Open-ended range not supported");
+		return CommandResult::ERROR;
+	}
+
 	int to = args.ParseInt(1);
 	client.GetPartition().MoveRange(range.start, range.end, to);
 	return CommandResult::OK;
