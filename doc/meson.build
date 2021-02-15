@@ -14,6 +14,7 @@ if get_option('html_manual')
     input: [
       'index.rst', 'user.rst', 'developer.rst',
       'plugins.rst',
+      'client.rst',
       'protocol.rst',
       'conf.py',
     ],
