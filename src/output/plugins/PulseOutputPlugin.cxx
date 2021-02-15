@@ -56,8 +56,6 @@ class PulseOutput final : AudioOutput {
 
 	size_t writable;
 
-	bool pause;
-
 	/**
 	 * Was Interrupt() called?  This will unblock Play().  It will
 	 * be reset by Cancel() and Pause(), as documented by the
@@ -113,6 +111,7 @@ public:
 
 	[[nodiscard]] std::chrono::steady_clock::duration Delay() const noexcept override;
 	size_t Play(const void *chunk, size_t size) override;
+	void Drain() override;
 	void Cancel() noexcept override;
 	bool Pause() override;
 
@@ -688,7 +687,6 @@ PulseOutput::Open(AudioFormat &audio_format)
 				     "pa_stream_connect_playback() has failed");
 	}
 
-	pause = false;
 	interrupted = false;
 }
 
@@ -698,17 +696,6 @@ PulseOutput::Close() noexcept
 	assert(mainloop != nullptr);
 
 	Pulse::LockGuard lock(mainloop);
-
-	if (pa_stream_get_state(stream) == PA_STREAM_READY) {
-		pa_operation *o =
-			pa_stream_drain(stream,
-					pulse_output_stream_success_cb, this);
-		if (o == nullptr) {
-			LogPulseError(context,
-				      "pa_stream_drain() has failed");
-		} else
-			pulse_wait_for_operation(mainloop, o);
-	}
 
 	DeleteStream();
 
@@ -780,7 +767,7 @@ PulseOutput::Delay() const noexcept
 	Pulse::LockGuard lock(mainloop);
 
 	auto result = std::chrono::steady_clock::duration::zero();
-	if (pause && pa_stream_is_corked(stream) &&
+	if (pa_stream_is_corked(stream) &&
 	    pa_stream_get_state(stream) == PA_STREAM_READY)
 		/* idle while paused */
 		result = std::chrono::seconds(1);
@@ -795,8 +782,6 @@ PulseOutput::Play(const void *chunk, size_t size)
 	assert(stream != nullptr);
 
 	Pulse::LockGuard lock(mainloop);
-
-	pause = false;
 
 	/* check if the stream is (already) connected */
 
@@ -841,6 +826,25 @@ PulseOutput::Play(const void *chunk, size_t size)
 }
 
 void
+PulseOutput::Drain()
+{
+	Pulse::LockGuard lock(mainloop);
+
+	if (pa_stream_get_state(stream) != PA_STREAM_READY ||
+	    pa_stream_is_suspended(stream) ||
+	    pa_stream_is_corked(stream))
+		return;
+
+	pa_operation *o =
+		pa_stream_drain(stream,
+				pulse_output_stream_success_cb, this);
+	if (o == nullptr)
+		throw MakePulseError(context, "pa_stream_drain() failed");
+
+	pulse_wait_for_operation(mainloop, o);
+}
+
+void
 PulseOutput::Cancel() noexcept
 {
 	assert(mainloop != nullptr);
@@ -876,7 +880,6 @@ PulseOutput::Pause()
 
 	Pulse::LockGuard lock(mainloop);
 
-	pause = true;
 	interrupted = false;
 
 	/* check if the stream is (already/still) connected */

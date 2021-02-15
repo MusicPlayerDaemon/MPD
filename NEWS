@@ -2,13 +2,23 @@ ver 0.23 (not yet released)
 * protocol
   - new command "getvol"
 
-ver 0.22.5 (not yet released)
+ver 0.22.5 (2021/02/15)
+* protocol
+  - error for malformed ranges instead of ignoring silently
+  - better error message for open-ended range with "move"
+* database
+  - simple: fix missing CUE sheet metadata in "addid" command
 * tags
   - id: translate TPE3 to Conductor, not Performer
 * archive
   - iso9660: another fix for unaligned reads
 * output
   - httpd: error handling on Windows improved
+  - pulse: fix deadlock with "always_on"
+* Windows:
+  - enable https:// support (via Schannel)
+* Android
+  - work around "Permission denied" on mpd.conf
 
 ver 0.22.4 (2021/01/21)
 * protocol

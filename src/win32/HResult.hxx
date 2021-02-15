@@ -59,6 +59,7 @@ case x:                                                                         
 		C(E_INVALIDARG);
 		C(E_OUTOFMEMORY);
 		C(E_POINTER);
+		C(NO_ERROR);
 #undef C
 	}
 	return std::string_view();

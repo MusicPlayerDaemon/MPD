@@ -112,6 +112,6 @@ template <typename T>
 void swap(ComPtr<T> &lhs, ComPtr<T> &rhs) noexcept {
 	lhs.swap(rhs);
 }
-}
+} // namespace std
 
 #endif

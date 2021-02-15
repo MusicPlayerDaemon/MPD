@@ -68,11 +68,11 @@ There are two active branches in the git repository:
 
 - the "unstable" branch called ``master`` where new features are
   merged.  This will become the next major release eventually.
-- the "stable" branch (currently called ``v0.21.x``) where only bug
+- the "stable" branch (currently called ``v0.22.x``) where only bug
   fixes are merged.
 
-Once :program:`MPD` 0.22 is released, a new branch called ``v0.22.x``
-will be created for 0.22 bug-fix releases; after that, ``v0.21.x``
+Once :program:`MPD` 0.23 is released, a new branch called ``v0.23.x``
+will be created for 0.23 bug-fix releases; after that, ``v0.22.x``
 will eventually cease to be maintained.
 
 After bug fixes have been added to the "stable" branch, it will be
