@@ -1,4 +1,4 @@
-ver 0.22.5 (not yet released)
+ver 0.22.5 (2021/02/15)
 * protocol
   - error for malformed ranges instead of ignoring silently
   - better error message for open-ended range with "move"
