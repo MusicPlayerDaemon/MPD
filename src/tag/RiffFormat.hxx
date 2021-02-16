@@ -22,13 +22,13 @@
 
 #include <cstdint>
 
-struct riff_header {
+struct RiffFileHeader {
 	char id[4];
 	uint32_t size;
 	char format[4];
 };
 
-struct riff_chunk_header {
+struct RiffChunkHeader {
 	char id[4];
 	uint32_t size;
 };

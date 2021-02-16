@@ -34,7 +34,7 @@ riff_seek_id3(InputStream &is, std::unique_lock<Mutex> &lock)
 
 	is.Rewind(lock);
 
-	riff_header header;
+	RiffFileHeader header;
 	is.ReadFull(lock, &header, sizeof(header));
 	if (memcmp(header.id, "RIFF", 4) != 0 ||
 	    (is.KnownSize() && FromLE32(header.size) > is.GetSize()))
@@ -43,7 +43,7 @@ riff_seek_id3(InputStream &is, std::unique_lock<Mutex> &lock)
 	while (true) {
 		/* read the chunk header */
 
-		riff_chunk_header chunk;
+		RiffChunkHeader chunk;
 		is.ReadFull(lock, &chunk, sizeof(chunk));
 
 		size_t size = FromLE32(chunk.size);
