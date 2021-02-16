@@ -1146,6 +1146,29 @@ audio API.  Its primary use is local playback on Android, where
 floating point samples.
 
 
+snapcast
+--------
+
+Snapcast is a multiroom client-server audio player.  This plugin
+allows MPD to acts as a `Snapcast
+<https://github.com/badaix/snapcast>`__ server.  Snapcast clients
+connect to it and receive audio data from MPD.
+
+.. list-table::
+   :widths: 20 80
+   :header-rows: 1
+
+   * - Setting
+     - Description
+   * - **port P**
+     - Binds the Snapcast server to the specified port.  The default
+       port is :samp:`1704`.
+   * - **bind_to_address ADDR**
+     - Binds the Snapcast server to the specified address.  Multiple
+       addresses in parallel are not supported.  The default is to
+       bind on all addresses on port :samp:`1704`.
+
+
 solaris
 -------
 The "Solaris" plugin runs only on SUN Solaris, and plays via /dev/audio.

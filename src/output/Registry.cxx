@@ -25,6 +25,7 @@
 #include "plugins/AoOutputPlugin.hxx"
 #include "plugins/FifoOutputPlugin.hxx"
 #include "plugins/SndioOutputPlugin.hxx"
+#include "plugins/snapcast/SnapcastOutputPlugin.hxx"
 #include "plugins/httpd/HttpdOutputPlugin.hxx"
 #include "plugins/HaikuOutputPlugin.hxx"
 #include "plugins/JackOutputPlugin.hxx"
@@ -92,6 +93,9 @@ constexpr const AudioOutputPlugin *audio_output_plugins[] = {
 #endif
 #ifdef ENABLE_HTTPD_OUTPUT
 	&httpd_output_plugin,
+#endif
+#ifdef ENABLE_SNAPCAST_OUTPUT
+	&snapcast_output_plugin,
 #endif
 #ifdef ENABLE_RECORDER_OUTPUT
 	&recorder_output_plugin,

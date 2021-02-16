@@ -177,6 +177,7 @@ option('pipe', type: 'boolean', value: true, description: 'Pipe output plugin')
 option('pulse', type: 'feature', description: 'PulseAudio support')
 option('recorder', type: 'boolean', value: true, description: 'Recorder output plugin')
 option('shout', type: 'feature', description: 'Shoutcast streaming support using libshout')
+option('snapcast', type: 'boolean', value: true, description: 'Snapcast output plugin')
 option('sndio', type: 'feature', description: 'sndio output plugin')
 option('solaris_output', type: 'feature', description: 'Solaris /dev/audio support')
 

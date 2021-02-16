@@ -1,6 +1,8 @@
 ver 0.23 (not yet released)
 * protocol
   - new command "getvol"
+* output
+  - snapcast: new plugin
 
 ver 0.22.6 (2021/02/16)
 * fix missing tags on songs in queue
