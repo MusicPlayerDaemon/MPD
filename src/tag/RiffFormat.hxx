@@ -37,4 +37,17 @@ struct RiffChunkHeader {
 
 static_assert(sizeof(RiffChunkHeader) == 8);
 
+struct RiffFmtChunk {
+	static constexpr uint16_t TAG_PCM = 1;
+
+	uint16_t tag;
+	uint16_t channels;
+	uint32_t sample_rate;
+	uint32_t byte_rate;
+	uint16_t block_align;
+	uint16_t bits_per_sample;
+};
+
+static_assert(sizeof(RiffFmtChunk) == 16);
+
 #endif
