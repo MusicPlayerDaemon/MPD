@@ -29,6 +29,12 @@
  * a #LightSong, e.g. a merged #Tag.
  */
 class ExportedSong : public LightSong {
+	/**
+	 * A reference target for LightSong::tag, but it is only used
+	 * if this instance "owns" the #Tag.  For instances referring
+	 * to a foreign #Tag instance (e.g. a Song::tag), this field
+	 * is not used (and empty).
+	 */
 	Tag tag_buffer;
 
 public:
@@ -42,10 +48,20 @@ public:
 	   points to this instance's #Tag field instead of leaving a
 	   dangling reference to the source object's #Tag field */
 	ExportedSong(ExportedSong &&src) noexcept
-		:LightSong(src, tag_buffer),
+		:LightSong(src,
+			   /* refer to tag_buffer only if the
+			      moved-from instance also owned the Tag
+			      which its LightSong::tag field refers
+			      to */
+			   OwnsTag() ? tag_buffer : src.tag),
 		 tag_buffer(std::move(src.tag_buffer)) {}
 
 	ExportedSong &operator=(ExportedSong &&) = delete;
+
+private:
+	bool OwnsTag() const noexcept {
+		return &tag == &tag_buffer;
+	}
 };
 
 #endif
