@@ -28,9 +28,13 @@ struct RiffFileHeader {
 	char format[4];
 };
 
+static_assert(sizeof(RiffFileHeader) == 12);
+
 struct RiffChunkHeader {
 	char id[4];
 	uint32_t size;
 };
+
+static_assert(sizeof(RiffChunkHeader) == 8);
 
 #endif
