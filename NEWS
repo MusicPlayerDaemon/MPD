@@ -2,6 +2,9 @@ ver 0.23 (not yet released)
 * protocol
   - new command "getvol"
 
+ver 0.22.6 (2021/02/16)
+* fix missing tags on songs in queue
+
 ver 0.22.5 (2021/02/15)
 * protocol
   - error for malformed ranges instead of ignoring silently
