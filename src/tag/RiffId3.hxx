@@ -22,8 +22,8 @@
  * A parser for the RIFF file format (e.g. WAV).
  */
 
-#ifndef MPD_RIFF_HXX
-#define MPD_RIFF_HXX
+#ifndef MPD_RIFF_ID3_HXX
+#define MPD_RIFF_ID3_HXX
 
 #include "thread/Mutex.hxx"
 

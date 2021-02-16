@@ -17,26 +17,15 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "Riff.hxx"
+#include "RiffId3.hxx"
+#include "RiffFormat.hxx"
 #include "input/InputStream.hxx"
 #include "util/ByteOrder.hxx"
 
-#include <cstdint>
 #include <limits>
 #include <stdexcept>
 
 #include <string.h>
-
-struct riff_header {
-	char id[4];
-	uint32_t size;
-	char format[4];
-};
-
-struct riff_chunk_header {
-	char id[4];
-	uint32_t size;
-};
 
 size_t
 riff_seek_id3(InputStream &is, std::unique_lock<Mutex> &lock)
