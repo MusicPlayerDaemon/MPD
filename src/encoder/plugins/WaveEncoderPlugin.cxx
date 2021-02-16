@@ -71,30 +71,34 @@ struct WaveHeader {
 	uint32_t data_size;
 };
 
-static void
-fill_wave_header(WaveHeader *header, int channels, int bits,
-		int freq, int block_size) noexcept
+static constexpr WaveHeader
+MakeWaveHeader(int channels, int bits,
+	       int freq, int block_size) noexcept
 {
+	WaveHeader header{};
+
 	int data_size = 0x0FFFFFFF;
 
 	/* constants */
-	header->id_riff = ToLE32(0x46464952);
-	header->id_wave = ToLE32(0x45564157);
-	header->id_fmt = ToLE32(0x20746d66);
-	header->id_data = ToLE32(0x61746164);
+	header.id_riff = ToLE32(0x46464952);
+	header.id_wave = ToLE32(0x45564157);
+	header.id_fmt = ToLE32(0x20746d66);
+	header.id_data = ToLE32(0x61746164);
 
 	/* wave format */
-	header->format = ToLE16(WAVE_FORMAT_PCM);
-	header->channels = ToLE16(channels);
-	header->bits = ToLE16(bits);
-	header->freq = ToLE32(freq);
-	header->blocksize = ToLE16(block_size);
-	header->byterate = ToLE32(freq * block_size);
+	header.format = ToLE16(WAVE_FORMAT_PCM);
+	header.channels = ToLE16(channels);
+	header.bits = ToLE16(bits);
+	header.freq = ToLE32(freq);
+	header.blocksize = ToLE16(block_size);
+	header.byterate = ToLE32(freq * block_size);
 
 	/* chunk sizes (fake data length) */
-	header->fmt_size = ToLE32(16);
-	header->data_size = ToLE32(data_size);
-	header->riff_size = ToLE32(4 + (8 + 16) + (8 + data_size));
+	header.fmt_size = ToLE32(16);
+	header.data_size = ToLE32(data_size);
+	header.riff_size = ToLE32(4 + (8 + 16) + (8 + data_size));
+
+	return header;
 }
 
 static PreparedEncoder *
@@ -137,11 +141,10 @@ WaveEncoder::WaveEncoder(AudioFormat &audio_format) noexcept
 	auto *header = (WaveHeader *)range.data;
 
 	/* create PCM wave header in initial buffer */
-	fill_wave_header(header,
-			 audio_format.channels,
-			 bits,
-			 audio_format.sample_rate,
-			 (bits / 8) * audio_format.channels);
+	*header = MakeWaveHeader(audio_format.channels,
+				 bits,
+				 audio_format.sample_rate,
+				 (bits / 8) * audio_format.channels);
 
 	buffer.Append(sizeof(*header));
 }
