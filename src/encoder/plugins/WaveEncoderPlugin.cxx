@@ -71,6 +71,8 @@ struct WaveHeader {
 	uint32_t data_size;
 };
 
+static_assert(sizeof(WaveHeader) == 44);
+
 static constexpr WaveHeader
 MakeWaveHeader(int channels, int bits,
 	       int freq, int block_size) noexcept
