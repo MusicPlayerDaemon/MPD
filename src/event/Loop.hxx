@@ -33,10 +33,9 @@
 #include "WakeFD.hxx"
 #include "thread/Id.hxx"
 #include "thread/Mutex.hxx"
-#endif
 
-#include <boost/intrusive/set.hpp>
 #include <boost/intrusive/list.hpp>
+#endif
 
 #include <atomic>
 #include <cassert>
