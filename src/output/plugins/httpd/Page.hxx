@@ -23,7 +23,6 @@
 #include "util/AllocatedArray.hxx"
 
 #include <cstddef>
-#include <cstdint>
 #include <memory>
 
 /**
@@ -32,11 +31,11 @@
  * several instances hold references to one buffer.
  */
 class Page {
-	AllocatedArray<uint8_t> buffer;
+	AllocatedArray<std::byte> buffer;
 
 public:
 	explicit Page(size_t _size) noexcept:buffer(_size) {}
-	explicit Page(AllocatedArray<uint8_t> &&_buffer) noexcept
+	explicit Page(AllocatedArray<std::byte> &&_buffer) noexcept
 		:buffer(std::move(_buffer)) {}
 
 	Page(const void *data, size_t size) noexcept;
@@ -45,7 +44,7 @@ public:
 		return buffer.size();
 	}
 
-	const uint8_t *GetData() const noexcept {
+	const std::byte *GetData() const noexcept {
 		return &buffer.front();
 	}
 };
