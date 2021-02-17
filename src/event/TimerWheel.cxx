@@ -54,6 +54,8 @@ TimerWheel::Insert(CoarseTimerEvent &t) noexcept
 	const auto due = std::max(t.GetDue(), last_time);
 
 	buckets[BucketIndexAt(due)].push_back(t);
+
+	empty = false;
 }
 
 void
@@ -99,10 +101,15 @@ TimerWheel::GetNextDue(const std::size_t bucket_index,
 inline Event::Duration
 TimerWheel::GetSleep(Event::TimePoint now) const noexcept
 {
+	if (empty)
+		return Event::Duration(-1);
+
 	auto t = GetNextDue(BucketIndexAt(now), GetBucketStartTime(now));
 	assert(t > now);
-	if (t == Event::TimePoint::max())
+	if (t == Event::TimePoint::max()) {
+		empty = true;
 		return Event::Duration(-1);
+	}
 
 	return t - now;
 }

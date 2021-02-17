@@ -72,6 +72,16 @@ class TimerWheel final {
 	 */
 	Event::TimePoint last_time{};
 
+	/**
+	 * If this flag is true, then all buckets are guaranteed to be
+	 * empty.  If it is false, the buckets may or may not be
+	 * empty; if so, the next full scan will set it back to true.
+	 *
+	 * This field is "mutable" so the "const" method GetSleep()
+	 * can update it.
+	 */
+	mutable bool empty = true;
+
 public:
 	TimerWheel() noexcept;
 	~TimerWheel() noexcept;
