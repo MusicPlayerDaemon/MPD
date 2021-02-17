@@ -1150,7 +1150,7 @@ snapcast
 --------
 
 Snapcast is a multiroom client-server audio player.  This plugin
-allows MPD to acts as a `Snapcast
+allows MPD to act as a `Snapcast
 <https://github.com/badaix/snapcast>`__ server.  Snapcast clients
 connect to it and receive audio data from MPD.
 
