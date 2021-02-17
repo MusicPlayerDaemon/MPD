@@ -690,7 +690,7 @@ Whenever possible, ids should be used.
     can also be a single file.
 
     Clients that are connected via local socket may add arbitrary
-    local files (URI is an absolute path).  Exmaple::
+    local files (URI is an absolute path).  Example::
 
      add "/home/foo/Music/bar.ogg"
 
