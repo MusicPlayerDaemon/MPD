@@ -36,7 +36,6 @@ output_features.set('ENABLE_HTTPD_OUTPUT', get_option('httpd'))
 if get_option('httpd')
   output_plugins_sources += [
     'httpd/IcyMetaDataServer.cxx',
-    'httpd/Page.cxx',
     'httpd/HttpdClient.cxx',
     'httpd/HttpdOutputPlugin.cxx',
   ]

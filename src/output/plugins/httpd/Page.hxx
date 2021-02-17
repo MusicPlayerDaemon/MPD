@@ -30,24 +30,7 @@
  * reference-counted buffers around (using std::shared_ptr), when
  * several instances hold references to one buffer.
  */
-class Page {
-	AllocatedArray<std::byte> buffer;
-
-public:
-	explicit Page(size_t _size) noexcept:buffer(_size) {}
-	explicit Page(AllocatedArray<std::byte> &&_buffer) noexcept
-		:buffer(std::move(_buffer)) {}
-
-	Page(const void *data, size_t size) noexcept;
-
-	size_t GetSize() const noexcept {
-		return buffer.size();
-	}
-
-	const std::byte *GetData() const noexcept {
-		return &buffer.front();
-	}
-};
+using Page = AllocatedArray<std::byte>;
 
 typedef std::shared_ptr<Page> PagePtr;
 

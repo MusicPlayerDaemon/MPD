@@ -143,7 +143,7 @@ private:
 	 * A temporary buffer for the httpd_output_read_page()
 	 * function.
 	 */
-	char buffer[32768];
+	std::byte buffer[32768];
 
 	/**
 	 * The maximum and current number of clients connected

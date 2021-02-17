@@ -197,8 +197,8 @@ HttpdClient::ClearQueue() noexcept
 	while (!pages.empty()) {
 #ifndef NDEBUG
 		auto &page = pages.front();
-		assert(queue_size >= page->GetSize());
-		queue_size -= page->GetSize();
+		assert(queue_size >= page->size());
+		queue_size -= page->size();
 #endif
 
 		pages.pop();
@@ -222,10 +222,10 @@ HttpdClient::CancelQueue() noexcept
 ssize_t
 HttpdClient::TryWritePage(const Page &page, size_t position) noexcept
 {
-	assert(position < page.GetSize());
+	assert(position < page.size());
 
-	return GetSocket().Write(page.GetData() + position,
-				 page.GetSize() - position);
+	return GetSocket().Write(page.data() + position,
+				 page.size() - position);
 }
 
 ssize_t
@@ -233,7 +233,7 @@ HttpdClient::TryWritePageN(const Page &page,
 			   size_t position, ssize_t n) noexcept
 {
 	return n >= 0
-		? GetSocket().Write(page.GetData() + position, n)
+		? GetSocket().Write(page.data() + position, n)
 		: TryWritePage(page, position);
 }
 
@@ -241,7 +241,7 @@ ssize_t
 HttpdClient::GetBytesTillMetaData() const noexcept
 {
 	if (metadata_requested &&
-	    current_page->GetSize() - current_position > metaint - metadata_fill)
+	    current_page->size() - current_position > metaint - metadata_fill)
 		return metaint - metadata_fill;
 
 	return -1;
@@ -267,8 +267,8 @@ HttpdClient::TryWrite() noexcept
 		pages.pop();
 		current_position = 0;
 
-		assert(queue_size >= current_page->GetSize());
-		queue_size -= current_page->GetSize();
+		assert(queue_size >= current_page->size());
+		queue_size -= current_page->size();
 	}
 
 	const ssize_t bytes_to_write = GetBytesTillMetaData();
@@ -294,7 +294,7 @@ HttpdClient::TryWrite() noexcept
 
 			metadata_current_position += nbytes;
 
-			if (metadata->GetSize() - metadata_current_position == 0) {
+			if (metadata->size() - metadata_current_position == 0) {
 				metadata_fill = 0;
 				metadata_current_position = 0;
 				metadata_sent = true;
@@ -343,12 +343,12 @@ HttpdClient::TryWrite() noexcept
 		}
 
 		current_position += nbytes;
-		assert(current_position <= current_page->GetSize());
+		assert(current_position <= current_page->size());
 
 		if (metadata_requested)
 			metadata_fill += nbytes;
 
-		if (current_position >= current_page->GetSize()) {
+		if (current_position >= current_page->size()) {
 			current_page.reset();
 
 			if (pages.empty())
@@ -374,7 +374,7 @@ HttpdClient::PushPage(PagePtr page) noexcept
 		ClearQueue();
 	}
 
-	queue_size += page->GetSize();
+	queue_size += page->size();
 	pages.emplace(std::move(page));
 
 	event.ScheduleWrite();
