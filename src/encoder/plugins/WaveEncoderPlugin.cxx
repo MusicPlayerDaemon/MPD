@@ -63,7 +63,7 @@ struct WaveHeader {
 
 static_assert(sizeof(WaveHeader) == 44);
 
-static constexpr WaveHeader
+static WaveHeader
 MakeWaveHeader(int channels, int bits,
 	       int freq, int block_size) noexcept
 {
