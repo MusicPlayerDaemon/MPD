@@ -312,6 +312,10 @@ public:
 		return {&t};
 	}
 
+	void erase(iterator i) noexcept {
+		IntrusiveListHook(*i).unlink();
+	}
+
 	void push_front(T &t) noexcept {
 		auto &new_node = ToNode(t);
 		head.next->prev = &new_node;
