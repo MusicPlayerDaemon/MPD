@@ -33,9 +33,12 @@
 #pragma once
 
 #include "Chrono.hxx"
+#include "event/Features.h"
 #include "util/IntrusiveList.hxx"
 
+#ifndef NO_BOOST
 #include <boost/intrusive/set.hpp>
+#endif
 
 class FineTimerEvent;
 
@@ -48,10 +51,17 @@ class TimerList final {
 					  const FineTimerEvent &b) const noexcept;
 	};
 
+#ifdef NO_BOOST
+	/* when building without Boost, then this is just a sorted
+	   doubly-linked list - this doesn't scale well, but is good
+	   enough for most programs */
+	IntrusiveList<FineTimerEvent> timers;
+#else
 	boost::intrusive::multiset<FineTimerEvent,
 				   boost::intrusive::base_hook<boost::intrusive::set_base_hook<boost::intrusive::link_mode<boost::intrusive::auto_unlink>>>,
 				   boost::intrusive::compare<Compare>,
 				   boost::intrusive::constant_time_size<false>> timers;
+#endif
 
 public:
 	TimerList();

@@ -33,9 +33,14 @@
 #pragma once
 
 #include "Chrono.hxx"
+#include "event/Features.h"
 #include "util/BindMethod.hxx"
 
+#ifdef NO_BOOST
+#include "util/IntrusiveList.hxx"
+#else
 #include <boost/intrusive/set_hook.hpp>
+#endif
 
 class EventLoop;
 
@@ -50,10 +55,17 @@ class EventLoop;
  * thread that runs the #EventLoop, except where explicitly documented
  * as thread-safe.
  */
-class FineTimerEvent final
-	: public boost::intrusive::set_base_hook<boost::intrusive::link_mode<boost::intrusive::auto_unlink>>
+class FineTimerEvent final :
+#ifdef NO_BOOST
+	AutoUnlinkIntrusiveListHook
+#else
+	public boost::intrusive::set_base_hook<boost::intrusive::link_mode<boost::intrusive::auto_unlink>>
+#endif
 {
 	friend class TimerList;
+#ifdef NO_BOOST
+	friend class IntrusiveList<FineTimerEvent>;
+#endif
 
 	EventLoop &loop;
 
@@ -91,7 +103,10 @@ public:
 	void ScheduleEarlier(Event::Duration d) noexcept;
 
 	void Cancel() noexcept {
-		unlink();
+#ifdef NO_BOOST
+		if (IsPending())
+#endif
+			unlink();
 	}
 
 private:
