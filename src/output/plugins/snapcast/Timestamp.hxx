@@ -25,7 +25,7 @@
 #include <chrono>
 
 template<typename TimePoint>
-static constexpr SnapcastTimestamp
+constexpr SnapcastTimestamp
 ToSnapcastTimestamp(TimePoint t) noexcept
 {
 	using Clock = typename TimePoint::clock;
