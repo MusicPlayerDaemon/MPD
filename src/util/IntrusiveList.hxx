@@ -317,18 +317,20 @@ public:
 	}
 
 	void push_front(T &t) noexcept {
-		auto &new_node = ToNode(t);
-		head.next->prev = &new_node;
-		new_node.next = head.next;
-		head.next = &new_node;
-		new_node.prev = &head;
+		insert(begin(), t);
 	}
 
 	void push_back(T &t) noexcept {
+		insert(end(), t);
+	}
+
+	void insert(iterator p, T &t) noexcept {
+		auto &existing_node = ToNode(*p);
 		auto &new_node = ToNode(t);
-		head.prev->next = &new_node;
-		new_node.prev = head.prev;
-		head.prev = &new_node;
-		new_node.next = &head;
+
+		existing_node.prev->next = &new_node;
+		new_node.prev = existing_node.prev;
+		existing_node.prev = &new_node;
+		new_node.next = &existing_node;
 	}
 };
