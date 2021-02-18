@@ -80,17 +80,17 @@ class DetachedSong {
 	SongTime end_time = SongTime::zero();
 
 public:
-	explicit DetachedSong(const char *_uri)
+	explicit DetachedSong(const char *_uri) noexcept
 		:uri(_uri) {}
 
-	explicit DetachedSong(const std::string &_uri)
+	explicit DetachedSong(const std::string &_uri) noexcept
 		:uri(_uri) {}
 
-	explicit DetachedSong(std::string &&_uri)
+	explicit DetachedSong(std::string &&_uri) noexcept
 		:uri(std::move(_uri)) {}
 
 	template<typename U>
-	DetachedSong(U &&_uri, Tag &&_tag)
+	DetachedSong(U &&_uri, Tag &&_tag) noexcept
 		:uri(std::forward<U>(_uri)),
 		 tag(std::move(_tag)) {}
 
@@ -99,10 +99,10 @@ public:
 	 * call DatabaseDetachSong() instead, which initializes
 	 * #real_uri properly using Storage::MapUTF8().
 	 */
-	explicit DetachedSong(const LightSong &other);
+	explicit DetachedSong(const LightSong &other) noexcept;
 
 	gcc_noinline
-	~DetachedSong() = default;
+	~DetachedSong() noexcept = default;
 
 	/* these are declared because the user-defined destructor
 	   above prevents them from being generated implicitly */
@@ -119,7 +119,7 @@ public:
 	}
 
 	template<typename T>
-	void SetURI(T &&_uri) {
+	void SetURI(T &&_uri) noexcept {
 		uri = std::forward<T>(_uri);
 	}
 
@@ -142,7 +142,7 @@ public:
 	}
 
 	template<typename T>
-	void SetRealURI(T &&_uri) {
+	void SetRealURI(T &&_uri) noexcept {
 		real_uri = std::forward<T>(_uri);
 	}
 
@@ -184,15 +184,15 @@ public:
 		return tag;
 	}
 
-	void SetTag(const Tag &_tag) {
+	void SetTag(const Tag &_tag) noexcept {
 		tag = Tag(_tag);
 	}
 
-	void SetTag(Tag &&_tag) {
+	void SetTag(Tag &&_tag) noexcept {
 		tag = std::move(_tag);
 	}
 
-	void MoveTagFrom(DetachedSong &&other) {
+	void MoveTagFrom(DetachedSong &&other) noexcept {
 		tag = std::move(other.tag);
 	}
 
@@ -200,31 +200,31 @@ public:
 	 * Similar to the MoveTagFrom(), but move only the #TagItem
 	 * array.
 	 */
-	void MoveTagItemsFrom(DetachedSong &&other) {
+	void MoveTagItemsFrom(DetachedSong &&other) noexcept {
 		tag.MoveItemsFrom(std::move(other.tag));
 	}
 
-	std::chrono::system_clock::time_point GetLastModified() const {
+	std::chrono::system_clock::time_point GetLastModified() const noexcept {
 		return mtime;
 	}
 
-	void SetLastModified(std::chrono::system_clock::time_point _value) {
+	void SetLastModified(std::chrono::system_clock::time_point _value) noexcept {
 		mtime = _value;
 	}
 
-	SongTime GetStartTime() const {
+	SongTime GetStartTime() const noexcept {
 		return start_time;
 	}
 
-	void SetStartTime(SongTime _value) {
+	void SetStartTime(SongTime _value) noexcept {
 		start_time = _value;
 	}
 
-	SongTime GetEndTime() const {
+	SongTime GetEndTime() const noexcept {
 		return end_time;
 	}
 
-	void SetEndTime(SongTime _value) {
+	void SetEndTime(SongTime _value) noexcept {
 		end_time = _value;
 	}
 
