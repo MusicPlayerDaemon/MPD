@@ -28,7 +28,8 @@ DetachedSong::DetachedSong(const LightSong &other) noexcept
 	 tag(other.tag),
 	 mtime(other.mtime),
 	 start_time(other.start_time),
-	 end_time(other.end_time) {}
+	 end_time(other.end_time),
+	 audio_format(other.audio_format) {}
 
 DetachedSong::operator LightSong() const noexcept
 {

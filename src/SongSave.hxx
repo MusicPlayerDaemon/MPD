@@ -44,7 +44,6 @@ song_save(BufferedOutputStream &os, const DetachedSong &song);
  */
 DetachedSong
 song_load(TextFile &file, const char *uri,
-	  std::string *target_r=nullptr,
-	  AudioFormat *audio_format_r=nullptr);
+	  std::string *target_r=nullptr);
 
 #endif

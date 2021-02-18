@@ -1,6 +1,7 @@
 ver 0.23 (not yet released)
 * protocol
   - new command "getvol"
+  - show the audio format in "playlistinfo"
 * output
   - snapcast: new plugin
 

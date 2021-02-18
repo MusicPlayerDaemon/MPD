@@ -153,9 +153,10 @@ DetachedSong::LoadFile(Path path)
 		return false;
 
 	TagBuilder tag_builder;
+	auto new_audio_format = AudioFormat::Undefined();
 
 	try {
-		if (!ScanFileTagsWithGeneric(path, tag_builder))
+		if (!ScanFileTagsWithGeneric(path, tag_builder, &new_audio_format))
 			return false;
 	} catch (...) {
 		// TODO: log or propagate I/O errors?
@@ -163,6 +164,7 @@ DetachedSong::LoadFile(Path path)
 	}
 
 	mtime = fi.GetModificationTime();
+	audio_format = new_audio_format;
 	tag_builder.Commit(tag);
 	return true;
 }
@@ -177,9 +179,11 @@ DetachedSong::Update()
 		return LoadFile(path_fs);
 	} else if (IsRemote()) {
 		TagBuilder tag_builder;
+		auto new_audio_format = AudioFormat::Undefined();
 
 		try {
-			if (!tag_stream_scan(uri.c_str(), tag_builder))
+			if (!tag_stream_scan(uri.c_str(), tag_builder,
+					     &new_audio_format))
 				return false;
 		} catch (...) {
 			// TODO: log or propagate I/O errors?
@@ -187,6 +191,7 @@ DetachedSong::Update()
 		}
 
 		mtime = std::chrono::system_clock::time_point::min();
+		audio_format = new_audio_format;
 		tag_builder.Commit(tag);
 		return true;
 	} else

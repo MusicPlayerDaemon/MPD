@@ -34,6 +34,7 @@ Song::Song(DetachedSong &&other, Directory &_parent) noexcept
 	 mtime(other.GetLastModified()),
 	 start_time(other.GetStartTime()),
 	 end_time(other.GetEndTime()),
+	 audio_format(other.GetAudioFormat()),
 	 filename(other.GetURI())
 {
 }

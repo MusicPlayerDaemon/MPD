@@ -111,6 +111,9 @@ song_print_info(Response &r, const DetachedSong &song, bool base) noexcept
 	if (!IsNegative(song.GetLastModified()))
 		time_print(r, "Last-Modified", song.GetLastModified());
 
+	if (const auto &f = song.GetAudioFormat(); f.IsDefined())
+		r.Format("Format: %s\n", ToString(f).c_str());
+
 	tag_print_values(r, song.GetTag());
 
 	const auto duration = song.GetDuration();

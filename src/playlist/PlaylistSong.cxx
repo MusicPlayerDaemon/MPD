@@ -47,6 +47,9 @@ merge_song_metadata(DetachedSong &add, const DetachedSong &base) noexcept
 	if (add.GetEndTime().IsZero()) {
 		add.SetEndTime(base.GetEndTime());
 	}
+
+	if (!add.GetAudioFormat().IsDefined())
+		add.SetAudioFormat(base.GetAudioFormat());
 }
 
 static bool

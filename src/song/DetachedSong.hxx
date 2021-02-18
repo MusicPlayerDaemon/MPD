@@ -21,6 +21,7 @@
 #define MPD_DETACHED_SONG_HXX
 
 #include "tag/Tag.hxx"
+#include "pcm/AudioFormat.hxx"
 #include "Chrono.hxx"
 #include "util/Compiler.h"
 
@@ -78,6 +79,12 @@ class DetachedSong {
 	 * Unused if zero.
 	 */
 	SongTime end_time = SongTime::zero();
+
+	/**
+	 * The audio format of the song, if given by the decoder
+	 * plugin.  May be undefined if unknown.
+	 */
+	AudioFormat audio_format = AudioFormat::Undefined();
 
 public:
 	explicit DetachedSong(const char *_uri) noexcept
@@ -230,6 +237,14 @@ public:
 
 	gcc_pure
 	SignedSongTime GetDuration() const noexcept;
+
+	const AudioFormat &GetAudioFormat() const noexcept {
+		return audio_format;
+	}
+
+	void SetAudioFormat(const AudioFormat &src) noexcept {
+		audio_format = src;
+	}
 
 	/**
 	 * Update the #tag and #mtime.
