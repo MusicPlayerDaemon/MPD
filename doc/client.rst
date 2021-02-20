@@ -62,6 +62,5 @@ The following environment variables should be obeyed by all clients
   ``password@@socket``).
 - :envvar:`MPD_PORT`: the port number; defaults to 6600.
 - :envvar:`MPD_TIMEOUT`: timeout for connecting to MPD and for waiting
-  for MPD's response in milliseconds.  A good default is 30 seconds
-  (i.e. 30.000 ms).
+  for MPD's response in seconds.  A good default is 30 seconds.
 
