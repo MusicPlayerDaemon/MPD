@@ -57,7 +57,9 @@ The following environment variables should be obeyed by all clients
 
 - :envvar:`MPD_HOST`: the host (or local socket path) to connect to;
   on Linux, this may start with a ``@`` to connect to an abstract
-  socket.
+  socket.  To use a password with MPD, set :envvar:`MPD_HOST` to
+  ``password@host`` (then abstract socket requires double ``@``:
+  ``password@@socket``).
 - :envvar:`MPD_PORT`: the port number; defaults to 6600.
 - :envvar:`MPD_TIMEOUT`: timeout for connecting to MPD and for waiting
   for MPD's response in milliseconds.  A good default is 30 seconds
