@@ -30,6 +30,9 @@ class MyAvahiPoll final : public AvahiPoll {
 public:
 	MyAvahiPoll(EventLoop &_loop);
 
+	MyAvahiPoll(const MyAvahiPoll &) = delete;
+	MyAvahiPoll &operator=(const MyAvahiPoll &) = delete;
+
 private:
 	static AvahiWatch *WatchNew(const AvahiPoll *api, int fd,
 				    AvahiWatchEvent event,
