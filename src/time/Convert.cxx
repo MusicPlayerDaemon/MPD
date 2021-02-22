@@ -35,7 +35,12 @@
 #include <stdexcept>
 
 #include <time.h>
-#include <sys/time.h> /* for struct timeval */
+
+#ifdef _WIN32
+#include <winsock.h>  /* for struct timeval */
+#else
+#include <sys/time.h>  /* for struct timeval */
+#endif
 
 struct tm
 GmTime(std::chrono::system_clock::time_point tp)
