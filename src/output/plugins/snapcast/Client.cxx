@@ -58,11 +58,49 @@ SnapcastClient::LockClose() noexcept
 }
 
 void
+SnapcastClient::Push(SnapcastChunkPtr chunk) noexcept
+{
+	if (!active)
+		return;
+
+	chunks.emplace(std::move(chunk));
+	event.ScheduleWrite();
+}
+
+SnapcastChunkPtr
+SnapcastClient::LockPopQueue() noexcept
+{
+	const std::lock_guard<Mutex> protect(output.mutex);
+	if (chunks.empty())
+		return nullptr;
+
+	auto chunk = std::move(chunks.front());
+	chunks.pop();
+	return chunk;
+}
+
+void
 SnapcastClient::OnSocketReady(unsigned flags) noexcept
 {
-	if (flags & SocketEvent::WRITE)
-		// TODO
-		{}
+	if (flags & SocketEvent::WRITE) {
+		constexpr auto max_age = std::chrono::milliseconds(500);
+		const auto min_time = GetEventLoop().SteadyNow() - max_age;
+
+		while (auto chunk = LockPopQueue()) {
+			if (chunk->time < min_time)
+				/* discard old chunks */
+				continue;
+
+			const ConstBuffer<std::byte> payload = chunk->payload;
+			if (!SendWireChunk(payload.ToVoid(), chunk->time)) {
+				// TODO: handle EAGAIN
+				LockClose();
+				return;
+			}
+		}
+
+		event.CancelWrite();
+	}
 
 	BufferedSocket::OnSocketReady(flags);
 }
@@ -187,12 +225,11 @@ SendWireChunk(SocketDescriptor s, const PackedBE16 id,
 	return SendT(s, base) && SendT(s, hdr) && Send(s, payload);
 }
 
-void
+bool
 SnapcastClient::SendWireChunk(ConstBuffer<void> payload,
 			      std::chrono::steady_clock::time_point t) noexcept
 {
-	if (active)
-		::SendWireChunk(GetSocket(), next_id++, payload, t);
+	return ::SendWireChunk(GetSocket(), next_id++, payload, t);
 }
 
 BufferedSocket::InputResult

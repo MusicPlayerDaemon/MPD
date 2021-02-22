@@ -20,10 +20,12 @@
 #ifndef MPD_OUTPUT_SNAPCAST_INTERNAL_HXX
 #define MPD_OUTPUT_SNAPCAST_INTERNAL_HXX
 
+#include "Chunk.hxx"
 #include "output/Interface.hxx"
 #include "output/Timer.hxx"
 #include "thread/Mutex.hxx"
 #include "event/ServerSocket.hxx"
+#include "event/InjectEvent.hxx"
 #include "util/AllocatedArray.hxx"
 #include "util/IntrusiveList.hxx"
 
@@ -40,6 +42,8 @@ class SnapcastOutput final : AudioOutput, ServerSocket {
 	 * connections.
 	 */
 	bool open;
+
+	InjectEvent inject_event;
 
 	/**
 	 * The configured encoder plugin.
@@ -69,10 +73,12 @@ class SnapcastOutput final : AudioOutput, ServerSocket {
 	 */
 	IntrusiveList<SnapcastClient> clients;
 
+	SnapcastChunkQueue chunks;
+
 public:
 	/**
-	 * This mutex protects the listener socket and the client
-	 * list.
+	 * This mutex protects the listener socket, the #clients list
+	 * and the #chunks queue.
 	 */
 	mutable Mutex mutex;
 
@@ -161,8 +167,7 @@ public:
 	bool Pause() override;
 
 private:
-	void BroadcastWireChunk(ConstBuffer<void> payload,
-				std::chrono::steady_clock::time_point t) noexcept;
+	void OnInject() noexcept;
 
 	/* virtual methods from class ServerSocket */
 	void OnAccept(UniqueSocketDescriptor fd,

@@ -20,6 +20,7 @@
 #ifndef MPD_OUTPUT_SNAPCAST_CLIENT_HXX
 #define MPD_OUTPUT_SNAPCAST_CLIENT_HXX
 
+#include "Chunk.hxx"
 #include "event/BufferedSocket.hxx"
 #include "util/IntrusiveList.hxx"
 
@@ -34,6 +35,11 @@ class UniqueSocketDescriptor;
 class SnapcastClient final : BufferedSocket, public IntrusiveListHook
 {
 	SnapcastOutput &output;
+
+	/**
+	 * A queue of #Page objects to be sent to the client.
+	 */
+	SnapcastChunkQueue chunks;
 
 	uint16_t next_id = 1;
 
@@ -54,10 +60,24 @@ public:
 
 	void LockClose() noexcept;
 
-	void SendWireChunk(ConstBuffer<void> payload,
-			   std::chrono::steady_clock::time_point t) noexcept;
+	/**
+	 * Caller must lock the mutex.
+	 */
+	void Push(SnapcastChunkPtr chunk) noexcept;
+
+	/**
+	 * Caller must lock the mutex.
+	 */
+	void Cancel() noexcept {
+		ClearQueue(chunks);
+	}
 
 private:
+	SnapcastChunkPtr LockPopQueue() noexcept;
+
+	bool SendWireChunk(ConstBuffer<void> payload,
+			   std::chrono::steady_clock::time_point t) noexcept;
+
 	bool SendServerSettings(const SnapcastBase &request) noexcept;
 	bool SendCodecHeader(const SnapcastBase &request) noexcept;
 	bool SendTime(const SnapcastBase &request_header,
