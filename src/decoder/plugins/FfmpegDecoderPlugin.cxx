@@ -464,6 +464,12 @@ FfmpegCheckTag(DecoderClient &client, InputStream *is,
 		client.SubmitTag(is, tag.Commit());
 }
 
+static bool
+IsSeekable(const AVFormatContext &format_context) noexcept
+{
+	return (format_context.ctx_flags & AVFMTCTX_UNSEEKABLE) != 0;
+}
+
 static void
 FfmpegDecode(DecoderClient &client, InputStream *input,
 	     AVFormatContext &format_context)
@@ -521,7 +527,7 @@ FfmpegDecode(DecoderClient &client, InputStream *input,
 	client.Ready(audio_format,
 		     input
 		     ? input->IsSeekable()
-		     : (format_context.ctx_flags & AVFMTCTX_UNSEEKABLE) != 0,
+		     : IsSeekable(format_context),
 		     total_time);
 
 	FfmpegParseMetaData(client, format_context, audio_stream);
