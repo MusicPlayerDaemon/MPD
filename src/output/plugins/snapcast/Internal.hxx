@@ -165,7 +165,7 @@ public:
 
 	std::chrono::steady_clock::duration Delay() const noexcept override;
 
-	// TODO: void SendTag(const Tag &tag) override;
+	void SendTag(const Tag &tag) override;
 
 	size_t Play(const void *chunk, size_t size) override;
 

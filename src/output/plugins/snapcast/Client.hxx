@@ -60,6 +60,8 @@ public:
 
 	void LockClose() noexcept;
 
+	void SendStreamTags(ConstBuffer<void> payload) noexcept;
+
 	/**
 	 * Caller must lock the mutex.
 	 */

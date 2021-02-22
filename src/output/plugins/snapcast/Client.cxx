@@ -236,6 +236,27 @@ SnapcastClient::SendWireChunk(ConstBuffer<void> payload,
 	return ::SendWireChunk(GetSocket(), next_id++, payload, t);
 }
 
+static bool
+SendStreamTags(SocketDescriptor s, const PackedBE16 id,
+	       const ConstBuffer<void> payload) noexcept
+{
+	const PackedLE32 payload_size = payload.size;
+
+	SnapcastBase base{};
+	base.type = uint16_t(SnapcastMessageType::STREAM_TAGS);
+	base.id = id;
+	base.sent = ToSnapcastTimestamp(std::chrono::steady_clock::now());
+	base.size = sizeof(payload_size) + payload.size;
+
+	return SendT(s, base) && SendT(s, payload_size) && Send(s, payload);
+}
+
+void
+SnapcastClient::SendStreamTags(ConstBuffer<void> payload) noexcept
+{
+	::SendStreamTags(GetSocket(), next_id++, payload);
+}
+
 BufferedSocket::InputResult
 SnapcastClient::OnSocketInput(void *data, size_t length) noexcept
 {

@@ -21,6 +21,7 @@
 #include "Internal.hxx"
 #include "Client.hxx"
 #include "output/OutputAPI.hxx"
+#include "output/Features.h"
 #include "encoder/EncoderInterface.hxx"
 #include "encoder/Configured.hxx"
 #include "encoder/plugins/WaveEncoderPlugin.hxx"
@@ -30,6 +31,10 @@
 #include "util/Domain.hxx"
 #include "util/DeleteDisposer.hxx"
 #include "config/Net.hxx"
+
+#ifdef HAVE_YAJL
+#include "lib/yajl/Gen.hxx"
+#endif
 
 #include <cassert>
 
@@ -205,6 +210,79 @@ SnapcastOutput::Delay() const noexcept
 	return timer->IsStarted()
 		? timer->GetDelay()
 		: std::chrono::steady_clock::duration::zero();
+}
+
+#ifdef HAVE_YAJL
+
+static constexpr struct {
+	TagType type;
+	const char *name;
+} snapcast_tags[] = {
+	/* these tags are mentioned in an example in
+	   snapcast/common/message/stream_tags.hpp */
+	{ TAG_ARTIST, "artist" },
+	{ TAG_ALBUM, "album" },
+	{ TAG_TITLE, "track" },
+	{ TAG_MUSICBRAINZ_TRACKID, "musicbrainzid" },
+};
+
+static bool
+TranslateTagType(Yajl::Gen &gen, const Tag &tag, TagType type,
+		 const char *name) noexcept
+{
+	// TODO: support multiple values?
+	const char *value = tag.GetValue(type);
+	if (value == nullptr)
+		return false;
+
+	gen.String(name);
+	gen.String(value);
+	return true;
+}
+
+static std::string
+ToJson(const Tag &tag) noexcept
+{
+	Yajl::Gen gen(nullptr);
+	gen.OpenMap();
+
+	bool empty = true;
+
+	for (const auto [type, name] : snapcast_tags)
+		if (TranslateTagType(gen, tag, type, name))
+			empty = false;
+
+	if (empty)
+		return {};
+
+	gen.CloseMap();
+
+	const auto result = gen.GetBuffer();
+	return {(const char *)result.data, result.size};
+}
+
+#endif
+
+void
+SnapcastOutput::SendTag(const Tag &tag)
+{
+#ifdef HAVE_YAJL
+	if (!LockHasClients())
+		return;
+
+	const auto json = ToJson(tag);
+	if (json.empty())
+		return;
+
+	const ConstBuffer payload(json.data(), json.size());
+
+	const std::lock_guard<Mutex> protect(mutex);
+	// TODO: enqueue StreamTags, don't send directly
+	for (auto &client : clients)
+		client.SendStreamTags(payload.ToVoid());
+#else
+	(void)tag;
+#endif
 }
 
 size_t
