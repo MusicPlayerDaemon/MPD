@@ -44,15 +44,14 @@ struct AvahiWatch final {
 	const AvahiWatchCallback callback;
 	void *const userdata;
 
-	AvahiWatchEvent received;
+	AvahiWatchEvent received = AvahiWatchEvent(0);
 
 public:
 	AvahiWatch(EventLoop &_loop,
 		   SocketDescriptor _fd, AvahiWatchEvent _event,
 		   AvahiWatchCallback _callback, void *_userdata) noexcept
 		:event(_loop, BIND_THIS_METHOD(OnSocketReady), _fd),
-		 callback(_callback), userdata(_userdata),
-		 received(AvahiWatchEvent(0)) {
+		 callback(_callback), userdata(_userdata) {
 		event.Schedule(FromAvahiWatchEvent(_event));
 	}
 
