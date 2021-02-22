@@ -464,6 +464,16 @@ FfmpegCheckTag(DecoderClient &client, InputStream *is,
 		client.SubmitTag(is, tag.Commit());
 }
 
+static bool
+IsSeekable(const AVFormatContext &format_context) noexcept
+{
+#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(58, 6, 100)
+	return (format_context.ctx_flags & AVFMTCTX_UNSEEKABLE) != 0;
+#else
+	return false;
+#endif
+}
+
 static void
 FfmpegDecode(DecoderClient &client, InputStream *input,
 	     AVFormatContext &format_context)
@@ -521,7 +531,7 @@ FfmpegDecode(DecoderClient &client, InputStream *input,
 	client.Ready(audio_format,
 		     input
 		     ? input->IsSeekable()
-		     : (format_context.ctx_flags & AVFMTCTX_UNSEEKABLE) != 0,
+		     : IsSeekable(format_context),
 		     total_time);
 
 	FfmpegParseMetaData(client, format_context, audio_stream);
