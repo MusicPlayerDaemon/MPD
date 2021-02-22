@@ -1,4 +1,6 @@
 ver 0.22.7 (not yet released)
+* decoder
+  - ffmpeg: fix build problem with FFmpeg 3.4
 
 ver 0.22.6 (2021/02/16)
 * fix missing tags on songs in queue
