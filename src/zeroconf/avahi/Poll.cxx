@@ -78,7 +78,7 @@ private:
 };
 
 struct AvahiTimeout final {
-	CoarseTimerEvent timer;
+	CoarseTimerEvent event;
 
 	const AvahiTimeoutCallback callback;
 	void *const userdata;
@@ -87,18 +87,18 @@ public:
 	AvahiTimeout(const struct timeval *tv,
 		     AvahiTimeoutCallback _callback, void *_userdata,
 		     EventLoop &_loop) noexcept
-		:timer(_loop, BIND_THIS_METHOD(OnTimeout)),
+		:event(_loop, BIND_THIS_METHOD(OnTimeout)),
 		 callback(_callback), userdata(_userdata) {
 		if (tv != nullptr)
-			timer.Schedule(ToSteadyClockDuration(*tv));
+			event.Schedule(ToSteadyClockDuration(*tv));
 	}
 
 	static void TimeoutUpdate(AvahiTimeout *t,
 				  const struct timeval *tv) noexcept {
 		if (tv != nullptr)
-			t->timer.Schedule(ToSteadyClockDuration(*tv));
+			t->event.Schedule(ToSteadyClockDuration(*tv));
 		else
-			t->timer.Cancel();
+			t->event.Cancel();
 	}
 
 	static void TimeoutFree(AvahiTimeout *t) noexcept {
