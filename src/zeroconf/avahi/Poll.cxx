@@ -56,8 +56,8 @@ public:
 	}
 
 	static void WatchUpdate(AvahiWatch *w,
-				AvahiWatchEvent event) noexcept {
-		w->event.Schedule(FromAvahiWatchEvent(event));
+				AvahiWatchEvent _event) noexcept {
+		w->event.Schedule(FromAvahiWatchEvent(_event));
 	}
 
 	static AvahiWatchEvent WatchGetEvents(AvahiWatch *w) noexcept {
@@ -69,8 +69,8 @@ public:
 	}
 
 private:
-	void OnSocketReady(unsigned flags) noexcept {
-		received = ToAvahiWatchEvent(flags);
+	void OnSocketReady(unsigned events) noexcept {
+		received = ToAvahiWatchEvent(events);
 		callback(this, event.GetSocket().Get(), received, userdata);
 		received = AvahiWatchEvent(0);
 	}
