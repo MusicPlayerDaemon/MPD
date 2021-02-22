@@ -22,14 +22,14 @@
 #include "event/CoarseTimerEvent.hxx"
 #include "time/Convert.hxx"
 
-static unsigned
+static constexpr unsigned
 FromAvahiWatchEvent(AvahiWatchEvent e) noexcept
 {
 	return (e & AVAHI_WATCH_IN ? SocketEvent::READ : 0) |
 		(e & AVAHI_WATCH_OUT ? SocketEvent::WRITE : 0);
 }
 
-static AvahiWatchEvent
+static constexpr AvahiWatchEvent
 ToAvahiWatchEvent(unsigned e) noexcept
 {
 	return AvahiWatchEvent((e & SocketEvent::READ ? AVAHI_WATCH_IN : 0) |
