@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2020 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2018-2021 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -37,7 +37,7 @@
 namespace Yajl {
 
 /**
- * OO wrapper for "struct curl_slist *".
+ * OO wrapper for a #yajl_handle.
  */
 class Handle {
 	yajl_handle handle = nullptr;
