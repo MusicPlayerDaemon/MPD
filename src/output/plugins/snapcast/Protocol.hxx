@@ -35,6 +35,21 @@ enum class SnapcastMessageType : uint16_t {
 
 struct SnapcastTimestamp {
 	PackedLE32 sec, usec;
+
+	constexpr SnapcastTimestamp operator-(SnapcastTimestamp other) const noexcept {
+		const uint32_t a_sec = sec, a_usec = usec;
+		const uint32_t b_sec = other.sec, b_usec = other.usec;
+
+		uint32_t result_sec = a_sec - b_sec;
+		uint32_t result_usec = a_usec - b_usec;
+
+		if (a_usec < b_usec) {
+			--result_sec;
+			result_usec += 1'000'0000;
+		}
+
+		return {result_sec, result_usec};
+	}
 };
 
 struct SnapcastBase {

@@ -22,6 +22,7 @@
 #include "Timestamp.hxx"
 #include "Internal.hxx"
 #include "tag/RiffFormat.hxx"
+#include "event/Loop.hxx"
 #include "net/SocketError.hxx"
 #include "net/UniqueSocketDescriptor.hxx"
 #include "util/StringView.hxx"
@@ -146,7 +147,8 @@ SendTime(SocketDescriptor s, const PackedBE16 id,
 	 const SnapcastBase &request_header,
 	 const SnapcastTime &request_payload) noexcept
 {
-	SnapcastTime payload = request_payload; // TODO
+	SnapcastTime payload = request_payload;
+	payload.latency = request_header.received - request_header.sent;
 
 	SnapcastBase base{};
 	base.type = uint16_t(SnapcastMessageType::TIME);
@@ -196,11 +198,13 @@ SnapcastClient::SendWireChunk(ConstBuffer<void> payload,
 BufferedSocket::InputResult
 SnapcastClient::OnSocketInput(void *data, size_t length) noexcept
 {
-	const auto &base = *(const SnapcastBase *)data;
+	auto &base = *(SnapcastBase *)data;
 
 	if (length < sizeof(base) ||
 	    length < sizeof(base) + base.size)
 		return InputResult::MORE;
+
+	base.received = ToSnapcastTimestamp(GetEventLoop().SteadyNow());
 
 	ConsumeInput(sizeof(base) + base.size);
 
