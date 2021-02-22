@@ -105,7 +105,7 @@ test('TestIcu', executable(
   ],
 ))
 
-if libavahi_client_dep.found()
+if avahi_dep.found()
   executable(
     'run_avahi',
     'run_avahi.cxx',

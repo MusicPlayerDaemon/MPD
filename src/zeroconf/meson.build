@@ -1,6 +1,6 @@
 zeroconf_option = get_option('zeroconf')
 
-libavahi_client_dep = dependency('', required: false)
+avahi_dep = dependency('', required: false)
 
 if zeroconf_option == 'auto'
   if is_darwin
@@ -8,12 +8,7 @@ if zeroconf_option == 'auto'
   elif is_android or is_windows
     zeroconf_option = 'disabled'
   elif dbus_dep.found()
-    libavahi_client_dep = dependency('avahi-client', required: false)
-    if libavahi_client_dep.found()
-      zeroconf_option = 'avahi'
-    else
-      zeroconf_option = 'disabled'
-    endif
+    zeroconf_option = 'avahi'
   else
     zeroconf_option = 'disabled'
   endif
@@ -50,8 +45,11 @@ if zeroconf_option == 'bonjour'
     dependencies: bonjour_deps,
   )
 else
-  if not libavahi_client_dep.found()
-    libavahi_client_dep = dependency('avahi-client')
+  subdir('avahi')
+
+  if not avahi_dep.found()
+    zeroconf_dep = dependency('', required: false)
+    subdir_done()
   endif
 
   conf.set('HAVE_AVAHI', true)
@@ -60,10 +58,9 @@ else
     'zeroconf_bonjour',
     'ZeroconfGlue.cxx',
     'ZeroconfAvahi.cxx',
-    'AvahiPoll.cxx',
     include_directories: inc,
     dependencies: [
-      libavahi_client_dep,
+      avahi_dep,
       dbus_dep,
       time_dep,
       log_dep,

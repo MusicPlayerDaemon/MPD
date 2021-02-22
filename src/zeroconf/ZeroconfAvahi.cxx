@@ -18,7 +18,7 @@
  */
 
 #include "ZeroconfAvahi.hxx"
-#include "AvahiPoll.hxx"
+#include "avahi/Poll.hxx"
 #include "ZeroconfInternal.hxx"
 #include "Listen.hxx"
 #include "util/Domain.hxx"
