@@ -181,6 +181,9 @@ SnapcastOutput::RemoveClient(SnapcastClient &client) noexcept
 
 	client.unlink();
 	delete &client;
+
+	if (clients.empty())
+		drain_cond.notify_one();
 }
 
 std::chrono::steady_clock::duration
@@ -259,6 +262,26 @@ SnapcastOutput::Pause()
 	//pause = true;
 
 	return true;
+}
+
+inline bool
+SnapcastOutput::IsDrained() const noexcept
+{
+	if (!chunks.empty())
+		return false;
+
+	for (const auto &client : clients)
+		if (!client.IsDrained())
+			return false;
+
+	return true;
+}
+
+void
+SnapcastOutput::Drain()
+{
+	std::unique_lock<Mutex> protect(mutex);
+	drain_cond.wait(protect, [this]{ return IsDrained(); });
 }
 
 void

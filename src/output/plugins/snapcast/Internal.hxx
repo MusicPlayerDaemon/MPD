@@ -24,6 +24,7 @@
 #include "output/Interface.hxx"
 #include "output/Timer.hxx"
 #include "thread/Mutex.hxx"
+#include "thread/Cond.hxx"
 #include "event/ServerSocket.hxx"
 #include "event/InjectEvent.hxx"
 #include "util/AllocatedArray.hxx"
@@ -81,6 +82,12 @@ public:
 	 * and the #chunks queue.
 	 */
 	mutable Mutex mutex;
+
+	/**
+	 * This cond is signalled when a #SnapcastClient has an empty
+	 * queue.
+	 */
+	Cond drain_cond;
 
 	SnapcastOutput(EventLoop &_loop, const ConfigBlock &block);
 	~SnapcastOutput() noexcept override;
@@ -162,12 +169,18 @@ public:
 
 	size_t Play(const void *chunk, size_t size) override;
 
-	// TODO: void Drain() override;
+	void Drain() override;
 	void Cancel() noexcept override;
 	bool Pause() override;
 
 private:
 	void OnInject() noexcept;
+
+	/**
+	 * Caller must lock the mutex.
+	 */
+	[[gnu::pure]]
+	bool IsDrained() const noexcept;
 
 	/* virtual methods from class ServerSocket */
 	void OnAccept(UniqueSocketDescriptor fd,

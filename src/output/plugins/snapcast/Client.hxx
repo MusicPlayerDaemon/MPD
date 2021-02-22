@@ -68,6 +68,13 @@ public:
 	/**
 	 * Caller must lock the mutex.
 	 */
+	bool IsDrained() const noexcept {
+		return chunks.empty();
+	}
+
+	/**
+	 * Caller must lock the mutex.
+	 */
 	void Cancel() noexcept {
 		ClearQueue(chunks);
 	}

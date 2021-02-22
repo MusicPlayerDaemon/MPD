@@ -76,6 +76,10 @@ SnapcastClient::LockPopQueue() noexcept
 
 	auto chunk = std::move(chunks.front());
 	chunks.pop();
+
+	if (chunks.empty())
+		output.drain_cond.notify_one();
+
 	return chunk;
 }
 
