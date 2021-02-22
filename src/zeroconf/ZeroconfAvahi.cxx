@@ -18,7 +18,9 @@
  */
 
 #include "ZeroconfAvahi.hxx"
-#include "avahi/Poll.hxx"
+#include "avahi/Client.hxx"
+#include "avahi/ConnectionListener.hxx"
+#include "avahi/ErrorHandler.hxx"
 #include "ZeroconfInternal.hxx"
 #include "Listen.hxx"
 #include "util/Domain.hxx"
@@ -35,17 +37,34 @@
 
 static constexpr Domain avahi_domain("avahi");
 
-class AvahiGlue final {
+class AvahiGlue final : Avahi::ErrorHandler, Avahi::ConnectionListener {
 public:
-	Avahi::Poll poll;
+	Avahi::Client client;
 
 	explicit AvahiGlue(EventLoop &event_loop)
-		:poll(event_loop) {}
+		:client(event_loop, *this)
+	{
+		client.AddListener(*this);
+	}
+
+	~AvahiGlue() noexcept {
+		client.RemoveListener(*this);
+	}
+
+	/* virtual methods from class AvahiConnectionListener */
+	void OnAvahiConnect(AvahiClient *client) noexcept override;
+	void OnAvahiDisconnect() noexcept override;
+	void OnAvahiChanged() noexcept override;
+
+	/* virtual methods from class Avahi::ErrorHandler */
+	bool OnAvahiError(std::exception_ptr e) noexcept override {
+		LogError(e);
+		return true;
+	}
 };
 
 static char *avahi_name;
 static AvahiGlue *avahi_glue;
-static AvahiClient *avahi_client;
 static AvahiEntryGroup *avahi_group;
 
 static void
@@ -154,90 +173,31 @@ AvahiRegisterService(AvahiClient *c)
 	}
 }
 
-/* Callback when avahi changes state */
-static void
-MyAvahiClientCallback(AvahiClient *c, AvahiClientState state,
-		      [[maybe_unused]] void *userdata)
+void
+AvahiGlue::OnAvahiConnect(AvahiClient *c) noexcept
 {
-	assert(c != nullptr);
+	if (avahi_group == nullptr)
+		AvahiRegisterService(c);
+}
 
-	/* Called whenever the client or server state changes */
-	FormatDebug(avahi_domain, "Client changed to state %d", state);
-
-	switch (state) {
-		int reason;
-
-	case AVAHI_CLIENT_S_RUNNING:
-		LogDebug(avahi_domain, "Client is RUNNING");
-
-		/* The server has startup successfully and registered its host
-		 * name on the network, so it's time to create our services */
-		if (avahi_group == nullptr)
-			AvahiRegisterService(c);
-		break;
-
-	case AVAHI_CLIENT_FAILURE:
-		reason = avahi_client_errno(c);
-		if (reason == AVAHI_ERR_DISCONNECTED) {
-			LogNotice(avahi_domain,
-				  "Client Disconnected, will reconnect shortly");
-			if (avahi_group != nullptr) {
-				avahi_entry_group_free(avahi_group);
-				avahi_group = nullptr;
-			}
-
-			if (avahi_client != nullptr)
-				avahi_client_free(avahi_client);
-			avahi_client =
-			    avahi_client_new(&avahi_glue->poll,
-					     AVAHI_CLIENT_NO_FAIL,
-					     MyAvahiClientCallback, nullptr,
-					     &reason);
-			if (avahi_client == nullptr)
-				FormatWarning(avahi_domain,
-					      "Could not reconnect: %s",
-					      avahi_strerror(reason));
-		} else {
-			FormatWarning(avahi_domain,
-				      "Client failure: %s (terminal)",
-				      avahi_strerror(reason));
-		}
-
-		break;
-
-	case AVAHI_CLIENT_S_COLLISION:
-		LogDebug(avahi_domain, "Client is COLLISION");
-
-		/* Let's drop our registered services. When the server
-		   is back in AVAHI_SERVER_RUNNING state we will
-		   register them again with the new host name. */
-		if (avahi_group != nullptr) {
-			LogDebug(avahi_domain, "Resetting group");
-			avahi_entry_group_reset(avahi_group);
-		}
-
-		break;
-
-	case AVAHI_CLIENT_S_REGISTERING:
-		LogDebug(avahi_domain, "Client is REGISTERING");
-
-		/* The server records are now being established. This
-		 * might be caused by a host name change. We need to wait
-		 * for our own records to register until the host name is
-		 * properly esatblished. */
-
-		if (avahi_group != nullptr) {
-			LogDebug(avahi_domain, "Resetting group");
-			avahi_entry_group_reset(avahi_group);
-		}
-
-		break;
-
-	case AVAHI_CLIENT_CONNECTING:
-		LogDebug(avahi_domain, "Client is CONNECTING");
-		break;
+void
+AvahiGlue::OnAvahiDisconnect() noexcept
+{
+	if (avahi_group != nullptr) {
+		avahi_entry_group_free(avahi_group);
+		avahi_group = nullptr;
 	}
 }
+
+void
+AvahiGlue::OnAvahiChanged() noexcept
+{
+	if (avahi_group != nullptr) {
+		LogDebug(avahi_domain, "Resetting group");
+		avahi_entry_group_reset(avahi_group);
+	}
+}
+
 
 void
 AvahiInit(EventLoop &loop, const char *serviceName)
@@ -250,16 +210,6 @@ AvahiInit(EventLoop &loop, const char *serviceName)
 	avahi_name = avahi_strdup(serviceName);
 
 	avahi_glue = new AvahiGlue(loop);
-
-	int error;
-	avahi_client = avahi_client_new(&avahi_glue->poll, AVAHI_CLIENT_NO_FAIL,
-					MyAvahiClientCallback, nullptr,
-					&error);
-	if (avahi_client == nullptr) {
-		FormatError(avahi_domain, "Failed to create client: %s",
-			    avahi_strerror(error));
-		AvahiDeinit();
-	}
 }
 
 void
@@ -270,11 +220,6 @@ AvahiDeinit()
 	if (avahi_group != nullptr) {
 		avahi_entry_group_free(avahi_group);
 		avahi_group = nullptr;
-	}
-
-	if (avahi_client != nullptr) {
-		avahi_client_free(avahi_client);
-		avahi_client = nullptr;
 	}
 
 	delete avahi_glue;

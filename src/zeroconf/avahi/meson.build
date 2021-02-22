@@ -6,6 +6,8 @@ endif
 
 avahi = static_library(
   'avahi',
+  'Client.cxx',
+  'Error.cxx',
   'Poll.cxx',
   include_directories: inc,
   dependencies: [
