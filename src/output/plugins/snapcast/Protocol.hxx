@@ -41,8 +41,8 @@ struct SnapcastBase {
 	PackedLE16 type;
 	PackedLE16 id;
 	PackedLE16 refers_to;
-	SnapcastTimestamp received;
 	SnapcastTimestamp sent;
+	SnapcastTimestamp received;
 	PackedLE32 size;
 };
 
