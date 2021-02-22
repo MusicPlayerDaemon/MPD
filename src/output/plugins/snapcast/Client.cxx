@@ -222,7 +222,6 @@ SnapcastClient::OnSocketInput(void *data, size_t length) noexcept
 		break;
 
 	case SnapcastMessageType::TIME:
-		// TODO: implement this properly
 		if (payload.size >= sizeof(SnapcastTime))
 			SendTime(base, *(const SnapcastTime *)payload.data);
 		break;
