@@ -35,8 +35,16 @@
 
 static constexpr Domain avahi_domain("avahi");
 
+class AvahiGlue final {
+public:
+	Avahi::Poll poll;
+
+	explicit AvahiGlue(EventLoop &event_loop)
+		:poll(event_loop) {}
+};
+
 static char *avahi_name;
-static Avahi::Poll *avahi_poll;
+static AvahiGlue *avahi_glue;
 static AvahiClient *avahi_client;
 static AvahiEntryGroup *avahi_group;
 
@@ -181,7 +189,7 @@ MyAvahiClientCallback(AvahiClient *c, AvahiClientState state,
 			if (avahi_client != nullptr)
 				avahi_client_free(avahi_client);
 			avahi_client =
-			    avahi_client_new(avahi_poll,
+			    avahi_client_new(&avahi_glue->poll,
 					     AVAHI_CLIENT_NO_FAIL,
 					     MyAvahiClientCallback, nullptr,
 					     &reason);
@@ -241,10 +249,10 @@ AvahiInit(EventLoop &loop, const char *serviceName)
 
 	avahi_name = avahi_strdup(serviceName);
 
-	avahi_poll = new Avahi::Poll(loop);
+	avahi_glue = new AvahiGlue(loop);
 
 	int error;
-	avahi_client = avahi_client_new(avahi_poll, AVAHI_CLIENT_NO_FAIL,
+	avahi_client = avahi_client_new(&avahi_glue->poll, AVAHI_CLIENT_NO_FAIL,
 					MyAvahiClientCallback, nullptr,
 					&error);
 	if (avahi_client == nullptr) {
@@ -269,8 +277,7 @@ AvahiDeinit()
 		avahi_client = nullptr;
 	}
 
-	delete avahi_poll;
-	avahi_poll = nullptr;
+	delete avahi_glue;
 
 	avahi_free(avahi_name);
 	avahi_name = nullptr;
