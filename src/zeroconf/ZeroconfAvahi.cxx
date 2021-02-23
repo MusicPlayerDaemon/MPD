@@ -36,7 +36,7 @@
 static constexpr Domain avahi_domain("avahi");
 
 static char *avahi_name;
-static MyAvahiPoll *avahi_poll;
+static Avahi::Poll *avahi_poll;
 static AvahiClient *avahi_client;
 static AvahiEntryGroup *avahi_group;
 
@@ -241,7 +241,7 @@ AvahiInit(EventLoop &loop, const char *serviceName)
 
 	avahi_name = avahi_strdup(serviceName);
 
-	avahi_poll = new MyAvahiPoll(loop);
+	avahi_poll = new Avahi::Poll(loop);
 
 	int error;
 	avahi_client = avahi_client_new(avahi_poll, AVAHI_CLIENT_NO_FAIL,

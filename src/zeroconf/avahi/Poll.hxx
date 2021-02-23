@@ -24,14 +24,16 @@
 
 class EventLoop;
 
-class MyAvahiPoll final : public AvahiPoll {
+namespace Avahi {
+
+class Poll final : public AvahiPoll {
 	EventLoop &event_loop;
 
 public:
-	explicit MyAvahiPoll(EventLoop &_loop) noexcept;
+	explicit Poll(EventLoop &_loop) noexcept;
 
-	MyAvahiPoll(const MyAvahiPoll &) = delete;
-	MyAvahiPoll &operator=(const MyAvahiPoll &) = delete;
+	Poll(const Poll &) = delete;
+	Poll &operator=(const Poll &) = delete;
 
 	EventLoop &GetEventLoop() const noexcept {
 		return event_loop;
@@ -48,5 +50,7 @@ private:
 					AvahiTimeoutCallback callback,
 					void *userdata) noexcept;
 };
+
+} // namespace Avahi
 
 #endif
