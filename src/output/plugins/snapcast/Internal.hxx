@@ -30,14 +30,21 @@
 #include "util/AllocatedArray.hxx"
 #include "util/IntrusiveList.hxx"
 
+#include "config.h" // for HAVE_ZEROCONF
+
 #include <memory>
 
 struct ConfigBlock;
 class SnapcastClient;
 class PreparedEncoder;
 class Encoder;
+class ZeroconfHelper;
 
 class SnapcastOutput final : AudioOutput, ServerSocket {
+#ifdef HAVE_ZEROCONF
+	unsigned zeroconf_port = 0;
+#endif
+
 	/**
 	 * True if the audio output is open and accepts client
 	 * connections.
@@ -45,6 +52,10 @@ class SnapcastOutput final : AudioOutput, ServerSocket {
 	bool open;
 
 	InjectEvent inject_event;
+
+#ifdef HAVE_ZEROCONF
+	std::unique_ptr<ZeroconfHelper> zeroconf_helper;
+#endif
 
 	/**
 	 * The configured encoder plugin.

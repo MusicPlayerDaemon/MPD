@@ -119,7 +119,7 @@ if get_option('snapcast')
     'snapcast/SnapcastOutputPlugin.cxx',
     'snapcast/Client.cxx',
   ]
-  output_plugins_deps += [ event_dep, net_dep, yajl_dep ]
+  output_plugins_deps += [ event_dep, net_dep, yajl_dep, zeroconf_dep ]
 
   output_features.set('HAVE_YAJL', yajl_dep.found())
 

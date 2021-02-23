@@ -32,6 +32,10 @@
 #include "util/DeleteDisposer.hxx"
 #include "config/Net.hxx"
 
+#ifdef HAVE_ZEROCONF
+#include "zeroconf/Helper.hxx"
+#endif
+
 #ifdef HAVE_YAJL
 #include "lib/yajl/Gen.hxx"
 #endif
@@ -49,8 +53,14 @@ SnapcastOutput::SnapcastOutput(EventLoop &_loop, const ConfigBlock &block)
 	 // TODO: support other encoder plugins?
 	 prepared_encoder(encoder_init(wave_encoder_plugin, block))
 {
+	const unsigned port = block.GetBlockValue("port", 1704U);
 	ServerSocketAddGeneric(*this, block.GetBlockValue("bind_to_address"),
-			       block.GetBlockValue("port", 1704U));
+			       port);
+
+#ifdef HAVE_ZEROCONF
+	if (block.GetBlockValue("zeroconf", true))
+		zeroconf_port = port;
+#endif
 }
 
 SnapcastOutput::~SnapcastOutput() noexcept = default;
@@ -62,6 +72,13 @@ SnapcastOutput::Bind()
 
 	BlockingCall(GetEventLoop(), [this](){
 		ServerSocket::Open();
+
+#ifdef HAVE_ZEROCONF
+		if (zeroconf_port > 0)
+			zeroconf_helper = std::make_unique<ZeroconfHelper>
+				(GetEventLoop(), "Music Player Daemon",
+				 "_snapcast._tcp", zeroconf_port);
+#endif
 	});
 
 	// TODO: Zeroconf integration
@@ -73,6 +90,8 @@ SnapcastOutput::Unbind() noexcept
 	assert(!open);
 
 	BlockingCall(GetEventLoop(), [this](){
+		zeroconf_helper.reset();
+
 		ServerSocket::Close();
 	});
 }

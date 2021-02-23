@@ -369,6 +369,8 @@ subdir('src/lib/yajl')
 
 subdir('src/lib/crypto')
 
+subdir('src/zeroconf')
+
 subdir('src/fs')
 subdir('src/config')
 subdir('src/tag')
@@ -384,7 +386,6 @@ subdir('src/decoder')
 subdir('src/encoder')
 subdir('src/song')
 subdir('src/playlist')
-subdir('src/zeroconf')
 
 if curl_dep.found()
   sources += 'src/RemoteTagCache.cxx'

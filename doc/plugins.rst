@@ -1167,6 +1167,9 @@ connect to it and receive audio data from MPD.
      - Binds the Snapcast server to the specified address.  Multiple
        addresses in parallel are not supported.  The default is to
        bind on all addresses on port :samp:`1704`.
+   * - **zeroconf yes|no**
+     - Publish the Snapcast server as service type ``_snapcast._tcp``
+       via Zeroconf (Avahi or Bonjour).  Default is :samp:`yes`.
 
 
 solaris
