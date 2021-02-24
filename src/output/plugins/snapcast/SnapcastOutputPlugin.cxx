@@ -80,8 +80,6 @@ SnapcastOutput::Bind()
 				 "_snapcast._tcp", zeroconf_port);
 #endif
 	});
-
-	// TODO: Zeroconf integration
 }
 
 inline void
