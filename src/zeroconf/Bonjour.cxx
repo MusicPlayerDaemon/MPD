@@ -30,13 +30,13 @@
 
 static constexpr Domain bonjour_domain("bonjour");
 
-class BonjourMonitor final {
+class BonjourHelper final {
 	DNSServiceRef service_ref;
 
 	SocketEvent socket_event;
 
 public:
-	BonjourMonitor(EventLoop &_loop, DNSServiceRef _service_ref)
+	BonjourHelper(EventLoop &_loop, DNSServiceRef _service_ref)
 		:service_ref(_service_ref),
 		 socket_event(_loop,
 			      BIND_THIS_METHOD(OnSocketReady),
@@ -45,7 +45,7 @@ public:
 		socket_event.ScheduleRead();
 	}
 
-	~BonjourMonitor() {
+	~BonjourHelper() {
 		DNSServiceRefDeallocate(service_ref);
 	}
 
@@ -60,7 +60,7 @@ protected:
 	}
 };
 
-static BonjourMonitor *bonjour_monitor;
+static BonjourHelper *bonjour_monitor;
 
 static void
 dnsRegisterCallback([[maybe_unused]] DNSServiceRef sdRef,
@@ -100,7 +100,7 @@ BonjourInit(EventLoop &loop, const char *service_name, unsigned port)
 		return;
 	}
 
-	bonjour_monitor = new BonjourMonitor(loop, dnsReference);
+	bonjour_monitor = new BonjourHelper(loop, dnsReference);
 }
 
 void
