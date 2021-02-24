@@ -33,7 +33,7 @@
 static constexpr Domain bonjour_domain("bonjour");
 
 class BonjourHelper final {
-	DNSServiceRef service_ref;
+	const DNSServiceRef service_ref;
 
 	SocketEvent socket_event;
 
