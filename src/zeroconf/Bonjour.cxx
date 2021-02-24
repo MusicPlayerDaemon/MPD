@@ -19,7 +19,6 @@
 
 #include "Bonjour.hxx"
 #include "Internal.hxx"
-#include "event/SocketEvent.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
 #include "util/Compiler.h"
@@ -31,38 +30,6 @@
 #include <arpa/inet.h>
 
 static constexpr Domain bonjour_domain("bonjour");
-
-class BonjourHelper final {
-	const DNSServiceRef service_ref;
-
-	SocketEvent socket_event;
-
-public:
-	BonjourHelper(EventLoop &_loop, const char *name, unsigned port);
-
-	~BonjourHelper() {
-		DNSServiceRefDeallocate(service_ref);
-	}
-
-	BonjourHelper(const BonjourHelper &) = delete;
-	BonjourHelper &operator=(const BonjourHelper &) = delete;
-
-	void Cancel() noexcept {
-		socket_event.Cancel();
-	}
-
-	static void Callback(DNSServiceRef sdRef, DNSServiceFlags flags,
-			     DNSServiceErrorType errorCode, const char *name,
-			     const char *regtype,
-			     const char *domain,
-			     void *context) noexcept;
-
-protected:
-	/* virtual methods from class SocketMonitor */
-	void OnSocketReady([[maybe_unused]] unsigned flags) noexcept {
-		DNSServiceProcessResult(service_ref);
-	}
-};
 
 /**
  * A wrapper for DNSServiceRegister() which returns the DNSServiceRef
@@ -96,8 +63,6 @@ BonjourHelper::BonjourHelper(EventLoop &_loop, const char *name, unsigned port)
 	socket_event.ScheduleRead();
 }
 
-static BonjourHelper *bonjour_monitor;
-
 void
 BonjourHelper::Callback([[maybe_unused]] DNSServiceRef sdRef,
 			[[maybe_unused]] DNSServiceFlags flags,
@@ -120,14 +85,8 @@ BonjourHelper::Callback([[maybe_unused]] DNSServiceRef sdRef,
 	}
 }
 
-void
+std::unique_ptr<BonjourHelper>
 BonjourInit(EventLoop &loop, const char *service_name, unsigned port)
 {
-	bonjour_monitor = new BonjourHelper(loop, service_name, port);
-}
-
-void
-BonjourDeinit()
-{
-	delete bonjour_monitor;
+	return std::make_unique<BonjourHelper>(loop, service_name, port);
 }

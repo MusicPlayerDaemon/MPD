@@ -19,13 +19,16 @@
 
 #include "Glue.hxx"
 #include "avahi/Init.hxx"
-#include "Bonjour.hxx"
 #include "config/Data.hxx"
 #include "config/Option.hxx"
 #include "Listen.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
 #include "util/Compiler.h"
+
+#ifdef HAVE_BONJOUR
+#include "Bonjour.hxx"
+#endif
 
 #include <climits>
 
@@ -48,6 +51,10 @@ static constexpr Domain zeroconf_domain("zeroconf");
 #define DEFAULT_ZEROCONF_ENABLED 1
 
 static int zeroconfEnabled;
+
+#ifdef HAVE_BONJOUR
+static std::unique_ptr<BonjourHelper> bonjour_helper;
+#endif
 
 void
 ZeroconfInit(const ConfigData &config, [[maybe_unused]] EventLoop &loop)
@@ -86,21 +93,21 @@ ZeroconfInit(const ConfigData &config, [[maybe_unused]] EventLoop &loop)
 #endif
 
 #ifdef HAVE_BONJOUR
-	BonjourInit(loop, serviceName, listen_port);
+	bonjour_helper = BonjourInit(loop, serviceName, listen_port);
 #endif
 }
 
 void
 ZeroconfDeinit() noexcept
 {
+#ifdef HAVE_BONJOUR
+	bonjour_helper.reset();
+#endif
+
 	if (!zeroconfEnabled)
 		return;
 
 #ifdef HAVE_AVAHI
 	AvahiDeinit();
 #endif /* HAVE_AVAHI */
-
-#ifdef HAVE_BONJOUR
-	BonjourDeinit();
-#endif
 }
