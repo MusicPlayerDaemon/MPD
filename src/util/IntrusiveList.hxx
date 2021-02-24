@@ -226,7 +226,7 @@ public:
 			:cursor(_cursor) {}
 
 	public:
-		iterator() = default;
+		iterator() noexcept = default;
 
 		constexpr bool operator==(const iterator &other) const noexcept {
 			return cursor == other.cursor;
@@ -273,7 +273,7 @@ public:
 			:cursor(_cursor) {}
 
 	public:
-		const_iterator() = default;
+		const_iterator() noexcept = default;
 
 		const_iterator(iterator src) noexcept
 			:cursor(src.cursor) {}
