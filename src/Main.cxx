@@ -40,6 +40,7 @@
 #include "input/cache/Config.hxx"
 #include "input/cache/Manager.hxx"
 #include "event/Loop.hxx"
+#include "event/Call.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "fs/Config.hxx"
 #include "playlist/PlaylistRegistry.hxx"
@@ -480,7 +481,10 @@ MainConfigured(const struct options &options, const ConfigData &raw_config)
 #ifdef HAVE_ZEROCONF
 	std::unique_ptr<ZeroconfHelper> zeroconf;
 	try {
-		zeroconf = ZeroconfInit(raw_config, instance.event_loop);
+		auto &event_loop = instance.io_thread.GetEventLoop();
+		BlockingCall(event_loop, [&](){
+			zeroconf = ZeroconfInit(raw_config, event_loop);
+		});
 	} catch (...) {
 		LogError(std::current_exception(),
 			 "Zeroconf initialization failed");
@@ -548,7 +552,12 @@ MainConfigured(const struct options &options, const ConfigData &raw_config)
 	instance.BeginShutdownUpdate();
 
 #ifdef HAVE_ZEROCONF
-	zeroconf.reset();
+	if (zeroconf) {
+		auto &event_loop = instance.io_thread.GetEventLoop();
+		BlockingCall(event_loop, [&](){
+			zeroconf.reset();
+		});
+	}
 #endif
 
 	instance.BeginShutdownPartitions();
