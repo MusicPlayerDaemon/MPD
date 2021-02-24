@@ -239,7 +239,7 @@ public:
  * Throws on error.
  */
 std::unique_ptr<FilteredAudioOutput>
-audio_output_new(EventLoop &event_loop,
+audio_output_new(EventLoop &event_loop, EventLoop &rt_event_loop,
 		 const ReplayGainConfig &replay_gain_config,
 		 const ConfigBlock &block,
 		 const AudioOutputDefaults &defaults,

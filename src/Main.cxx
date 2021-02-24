@@ -441,7 +441,8 @@ MainConfigured(const struct options &options, const ConfigData &raw_config)
 	command_init();
 
 	for (auto &partition : instance.partitions) {
-		partition.outputs.Configure(instance.rtio_thread.GetEventLoop(),
+		partition.outputs.Configure(instance.io_thread.GetEventLoop(),
+					    instance.rtio_thread.GetEventLoop(),
 					    raw_config,
 					    config.replay_gain);
 		partition.UpdateEffectiveReplayGainMode();

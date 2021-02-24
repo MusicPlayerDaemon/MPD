@@ -74,7 +74,7 @@ public:
 			MixerListener &_mixer_listener) noexcept;
 	~MultipleOutputs() noexcept;
 
-	void Configure(EventLoop &event_loop,
+	void Configure(EventLoop &event_loop, EventLoop &rt_event_loop,
 		       const ConfigData &config,
 		       const ReplayGainConfig &replay_gain_config);
 

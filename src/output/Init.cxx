@@ -264,7 +264,7 @@ FilteredAudioOutput::Setup(EventLoop &event_loop,
 }
 
 std::unique_ptr<FilteredAudioOutput>
-audio_output_new(EventLoop &event_loop,
+audio_output_new(EventLoop &normal_event_loop, EventLoop &rt_event_loop,
 		 const ReplayGainConfig &replay_gain_config,
 		 const ConfigBlock &block,
 		 const AudioOutputDefaults &defaults,
@@ -293,6 +293,14 @@ audio_output_new(EventLoop &event_loop,
 			     "Successfully detected a %s audio device",
 			     plugin->name);
 	}
+
+	/* use the real-time I/O thread only for the ALSA plugin;
+	   other plugins like httpd don't need real-time so badly,
+	   because they have larger buffers */
+	// TODO: don't hard-code the plugin name
+	auto &event_loop = StringIsEqual(plugin->name, "alsa")
+		? rt_event_loop
+		: normal_event_loop;
 
 	std::unique_ptr<AudioOutput> ao(ao_plugin_init(event_loop, *plugin,
 						       block));
