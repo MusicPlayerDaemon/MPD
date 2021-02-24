@@ -39,7 +39,7 @@ class ZeroconfHelper final {
 
 public:
 	ZeroconfHelper(EventLoop &event_loop, const char *name,
-		       unsigned port);
+		       const char *service_type, unsigned port);
 
 	~ZeroconfHelper() noexcept;
 };

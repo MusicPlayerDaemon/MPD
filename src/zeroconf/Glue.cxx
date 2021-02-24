@@ -52,6 +52,9 @@ static constexpr Domain zeroconf_domain("zeroconf");
  */
 #define SERVICE_NAME		"Music Player @ %h"
 
+/* The dns-sd service type qualifier to publish */
+#define SERVICE_TYPE		"_mpd._tcp"
+
 #define DEFAULT_ZEROCONF_ENABLED 1
 
 std::unique_ptr<ZeroconfHelper>
@@ -84,5 +87,6 @@ ZeroconfInit(const ConfigData &config, [[maybe_unused]] EventLoop &loop)
 		}
 	}
 
-	return std::make_unique<ZeroconfHelper>(loop, serviceName, listen_port);
+	return std::make_unique<ZeroconfHelper>(loop, serviceName,
+						SERVICE_TYPE, listen_port);
 }

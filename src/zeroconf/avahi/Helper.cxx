@@ -22,7 +22,6 @@
 #include "ErrorHandler.hxx"
 #include "Publisher.hxx"
 #include "Service.hxx"
-#include "../Internal.hxx"
 #include "util/RuntimeError.hxx"
 #include "Log.hxx"
 
@@ -53,7 +52,8 @@ AvahiHelper::AvahiHelper(std::shared_ptr<SharedAvahiClient> _client,
 AvahiHelper::~AvahiHelper() noexcept = default;
 
 std::unique_ptr<AvahiHelper>
-AvahiInit(EventLoop &event_loop, const char *service_name, unsigned port)
+AvahiInit(EventLoop &event_loop, const char *service_name,
+	  const char *service_type, unsigned port)
 {
 	if (!avahi_is_valid_service_name(service_name))
 		throw FormatRuntimeError("Invalid zeroconf_name \"%s\"",
@@ -67,7 +67,7 @@ AvahiInit(EventLoop &event_loop, const char *service_name, unsigned port)
 	std::forward_list<Avahi::Service> services;
 	services.emplace_front(AVAHI_IF_UNSPEC,
 			       AVAHI_PROTO_UNSPEC,
-			       SERVICE_TYPE, port);
+			       service_type, port);
 
 	auto publisher = std::make_unique<Avahi::Publisher>(client->client,
 							    service_name,

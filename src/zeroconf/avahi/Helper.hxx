@@ -38,6 +38,7 @@ public:
 };
 
 std::unique_ptr<AvahiHelper>
-AvahiInit(EventLoop &event_loop, const char *service_name, unsigned port);
+AvahiInit(EventLoop &event_loop, const char *service_name,
+	  const char *service_type, unsigned port);
 
 #endif

@@ -34,7 +34,8 @@ class BonjourHelper final {
 	SocketEvent socket_event;
 
 public:
-	BonjourHelper(EventLoop &_loop, const char *name, unsigned port);
+	BonjourHelper(EventLoop &_loop, const char *name,
+		      const char *service_name, unsigned port);
 
 	~BonjourHelper() noexcept {
 		DNSServiceRefDeallocate(service_ref);
@@ -64,6 +65,7 @@ private:
  * Throws on error.
  */
 std::unique_ptr<BonjourHelper>
-BonjourInit(EventLoop &loop, const char *service_name, unsigned port);
+BonjourInit(EventLoop &loop, const char *name,
+	    const char *service_type, unsigned port);
 
 #endif

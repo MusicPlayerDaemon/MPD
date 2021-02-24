@@ -30,7 +30,7 @@
 #endif
 
 ZeroconfHelper::ZeroconfHelper(EventLoop &event_loop, const char *name,
-			       unsigned port)
-	:helper(CreateHelper(event_loop, name, port)) {}
+			       const char *service_type, unsigned port)
+	:helper(CreateHelper(event_loop, name, service_type, port)) {}
 
 ZeroconfHelper::~ZeroconfHelper() noexcept = default;

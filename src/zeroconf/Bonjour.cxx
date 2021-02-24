@@ -18,7 +18,6 @@
  */
 
 #include "Bonjour.hxx"
-#include "Internal.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
 #include "util/Compiler.h"
@@ -53,8 +52,9 @@ RegisterBonjour(const char *name, const char *type, unsigned port,
 	return ref;
 }
 
-BonjourHelper::BonjourHelper(EventLoop &_loop, const char *name, unsigned port)
-	:service_ref(RegisterBonjour(name, SERVICE_TYPE, port,
+BonjourHelper::BonjourHelper(EventLoop &_loop, const char *name,
+			     const char *service_type, unsigned port)
+	:service_ref(RegisterBonjour(name, service_type, port,
 				     Callback, this)),
 	 socket_event(_loop,
 		      BIND_THIS_METHOD(OnSocketReady),
@@ -86,7 +86,8 @@ BonjourHelper::Callback([[maybe_unused]] DNSServiceRef sdRef,
 }
 
 std::unique_ptr<BonjourHelper>
-BonjourInit(EventLoop &loop, const char *service_name, unsigned port)
+BonjourInit(EventLoop &loop, const char *name,
+	    const char *service_type, unsigned port)
 {
-	return std::make_unique<BonjourHelper>(loop, service_name, port);
+	return std::make_unique<BonjourHelper>(loop, name, service_type, port);
 }
