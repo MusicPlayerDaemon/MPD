@@ -56,6 +56,12 @@ public:
 		socket_event.Cancel();
 	}
 
+	static void Callback(DNSServiceRef sdRef, DNSServiceFlags flags,
+			     DNSServiceErrorType errorCode, const char *name,
+			     const char *regtype,
+			     const char *domain,
+			     void *context) noexcept;
+
 protected:
 	/* virtual methods from class SocketMonitor */
 	void OnSocketReady([[maybe_unused]] unsigned flags) noexcept {
@@ -65,13 +71,13 @@ protected:
 
 static BonjourHelper *bonjour_monitor;
 
-static void
-dnsRegisterCallback([[maybe_unused]] DNSServiceRef sdRef,
-		    [[maybe_unused]] DNSServiceFlags flags,
-		    DNSServiceErrorType errorCode, const char *name,
-		    [[maybe_unused]] const char *regtype,
-		    [[maybe_unused]] const char *domain,
-		    [[maybe_unused]] void *context)
+void
+BonjourHelper::Callback([[maybe_unused]] DNSServiceRef sdRef,
+			[[maybe_unused]] DNSServiceFlags flags,
+			DNSServiceErrorType errorCode, const char *name,
+			[[maybe_unused]] const char *regtype,
+			[[maybe_unused]] const char *domain,
+			[[maybe_unused]] void *context) noexcept
 {
 	if (errorCode != kDNSServiceErr_NoError) {
 		LogError(bonjour_domain,
@@ -94,7 +100,7 @@ BonjourInit(EventLoop &loop, const char *service_name, unsigned port)
 						       SERVICE_TYPE, nullptr, nullptr,
 						       htons(port), 0,
 						       nullptr,
-						       dnsRegisterCallback,
+						       BonjourHelper::Callback,
 						       nullptr);
 
 	if (error != kDNSServiceErr_NoError) {
