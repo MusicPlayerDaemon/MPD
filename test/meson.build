@@ -105,10 +105,10 @@ test('TestIcu', executable(
   ],
 ))
 
-if avahi_dep.found()
+if zeroconf_dep.found()
   executable(
-    'run_avahi',
-    'run_avahi.cxx',
+    'RunZeroconf',
+    'RunZeroconf.cxx',
     'ShutdownHandler.cxx',
     include_directories: inc,
     dependencies: [
