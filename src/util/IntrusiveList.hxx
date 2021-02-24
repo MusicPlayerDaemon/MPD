@@ -65,19 +65,13 @@ private:
 };
 
 /**
- * A variant of #IntrusiveListHook which auto-unlinks itself from the
- * list upon destruction.  As a side effect, it has an is_linked()
- * method.
+ * A variant of #IntrusiveListHook which keeps track of whether it is
+ * currently in a list.
  */
-class AutoUnlinkIntrusiveListHook : public IntrusiveListHook {
+class SafeLinkIntrusiveListHook : public IntrusiveListHook {
 public:
-	AutoUnlinkIntrusiveListHook() noexcept {
+	SafeLinkIntrusiveListHook() noexcept {
 		siblings.next = nullptr;
-	}
-
-	~AutoUnlinkIntrusiveListHook() noexcept {
-		if (is_linked())
-			unlink();
 	}
 
 	void unlink() noexcept {
@@ -87,6 +81,19 @@ public:
 
 	bool is_linked() const noexcept {
 		return siblings.next != nullptr;
+	}
+};
+
+/**
+ * A variant of #IntrusiveListHook which auto-unlinks itself from the
+ * list upon destruction.  As a side effect, it has an is_linked()
+ * method.
+ */
+class AutoUnlinkIntrusiveListHook : public SafeLinkIntrusiveListHook {
+public:
+	~AutoUnlinkIntrusiveListHook() noexcept {
+		if (is_linked())
+			unlink();
 	}
 };
 
@@ -140,7 +147,7 @@ public:
 	}
 
 	~IntrusiveList() noexcept {
-		if constexpr (std::is_base_of<AutoUnlinkIntrusiveListHook, T>::value)
+		if constexpr (std::is_base_of<SafeLinkIntrusiveListHook, T>::value)
 			clear();
 	}
 
@@ -151,8 +158,8 @@ public:
 	}
 
 	void clear() noexcept {
-		if constexpr (std::is_base_of<AutoUnlinkIntrusiveListHook, T>::value) {
-			/* for AutoUnlinkIntrusiveListHook, we need to
+		if constexpr (std::is_base_of<SafeLinkIntrusiveListHook, T>::value) {
+			/* for SafeLinkIntrusiveListHook, we need to
 			   remove each item manually, or else its
 			   is_linked() method will not work */
 			while (!empty())
