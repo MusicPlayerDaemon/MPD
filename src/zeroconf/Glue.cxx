@@ -84,13 +84,5 @@ ZeroconfInit(const ConfigData &config, [[maybe_unused]] EventLoop &loop)
 		}
 	}
 
-#ifdef HAVE_AVAHI
-	return std::make_unique<ZeroconfHelper>(AvahiInit(loop, serviceName,
-							  listen_port));
-#endif
-
-#ifdef HAVE_BONJOUR
-	return std::make_unique<ZeroconfHelper>(BonjourInit(loop, serviceName,
-							    listen_port));
-#endif
+	return std::make_unique<ZeroconfHelper>(loop, serviceName, listen_port);
 }

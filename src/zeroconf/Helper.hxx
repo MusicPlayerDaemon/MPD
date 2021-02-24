@@ -24,6 +24,7 @@
 
 #include <memory>
 
+class EventLoop;
 class AvahiHelper;
 class BonjourHelper;
 
@@ -37,9 +38,8 @@ class ZeroconfHelper final {
 #endif
 
 public:
-	template<typename T>
-	ZeroconfHelper(T &&_helper) noexcept
-		:helper(std::forward<T>(_helper)) {}
+	ZeroconfHelper(EventLoop &event_loop, const char *name,
+		       unsigned port);
 
 	~ZeroconfHelper() noexcept;
 };

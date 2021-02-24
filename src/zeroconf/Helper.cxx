@@ -21,10 +21,16 @@
 
 #ifdef HAVE_AVAHI
 #include "avahi/Helper.hxx"
+#define CreateHelper AvahiInit
 #endif
 
 #ifdef HAVE_BONJOUR
 #include "Bonjour.hxx"
+#define CreateHelper BonjourInit
 #endif
+
+ZeroconfHelper::ZeroconfHelper(EventLoop &event_loop, const char *name,
+			       unsigned port)
+	:helper(CreateHelper(event_loop, name, port)) {}
 
 ZeroconfHelper::~ZeroconfHelper() noexcept = default;
