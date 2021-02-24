@@ -43,7 +43,7 @@
 #include "fs/AllocatedPath.hxx"
 #include "fs/Config.hxx"
 #include "playlist/PlaylistRegistry.hxx"
-#include "zeroconf/ZeroconfGlue.hxx"
+#include "zeroconf/Glue.hxx"
 #include "decoder/DecoderList.hxx"
 #include "pcm/AudioParser.hxx"
 #include "pcm/Convert.hxx"

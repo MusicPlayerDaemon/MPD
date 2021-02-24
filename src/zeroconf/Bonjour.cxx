@@ -17,8 +17,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "ZeroconfBonjour.hxx"
-#include "ZeroconfInternal.hxx"
+#include "Bonjour.hxx"
+#include "Internal.hxx"
 #include "event/SocketEvent.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"

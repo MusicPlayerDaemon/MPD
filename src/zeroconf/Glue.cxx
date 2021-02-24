@@ -17,9 +17,9 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "ZeroconfGlue.hxx"
-#include "ZeroconfAvahi.hxx"
-#include "ZeroconfBonjour.hxx"
+#include "Glue.hxx"
+#include "avahi/Init.hxx"
+#include "Bonjour.hxx"
 #include "config/Data.hxx"
 #include "config/Option.hxx"
 #include "Listen.hxx"

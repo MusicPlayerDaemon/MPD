@@ -17,13 +17,13 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "ZeroconfAvahi.hxx"
-#include "avahi/Client.hxx"
-#include "avahi/ConnectionListener.hxx"
-#include "avahi/ErrorHandler.hxx"
-#include "avahi/Publisher.hxx"
-#include "avahi/Service.hxx"
-#include "ZeroconfInternal.hxx"
+#include "Init.hxx"
+#include "../Internal.hxx"
+#include "Client.hxx"
+#include "ConnectionListener.hxx"
+#include "ErrorHandler.hxx"
+#include "Publisher.hxx"
+#include "Service.hxx"
 #include "util/RuntimeError.hxx"
 #include "Log.hxx"
 

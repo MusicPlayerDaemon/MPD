@@ -19,7 +19,7 @@
 
 #include "event/Loop.hxx"
 #include "ShutdownHandler.hxx"
-#include "zeroconf/ZeroconfAvahi.hxx"
+#include "zeroconf/avahi/Init.hxx"
 
 #include <stdlib.h>
 
