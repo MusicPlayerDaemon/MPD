@@ -49,6 +49,9 @@ public:
 		DNSServiceRefDeallocate(service_ref);
 	}
 
+	BonjourHelper(const BonjourHelper &) = delete;
+	BonjourHelper &operator=(const BonjourHelper &) = delete;
+
 	void Cancel() noexcept {
 		socket_event.Cancel();
 	}
