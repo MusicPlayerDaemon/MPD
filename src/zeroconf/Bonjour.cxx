@@ -97,11 +97,6 @@ BonjourInit(EventLoop &loop, const char *service_name, unsigned port)
 	if (error != kDNSServiceErr_NoError) {
 		LogError(bonjour_domain,
 			 "Failed to register zeroconf service");
-
-		if (dnsReference) {
-			DNSServiceRefDeallocate(dnsReference);
-			dnsReference = nullptr;
-		}
 		return;
 	}
 
