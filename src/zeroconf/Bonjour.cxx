@@ -26,6 +26,8 @@
 
 #include <dns_sd.h>
 
+#include <stdexcept>
+
 #include <arpa/inet.h>
 
 static constexpr Domain bonjour_domain("bonjour");
@@ -36,14 +38,7 @@ class BonjourHelper final {
 	SocketEvent socket_event;
 
 public:
-	BonjourHelper(EventLoop &_loop, DNSServiceRef _service_ref)
-		:service_ref(_service_ref),
-		 socket_event(_loop,
-			      BIND_THIS_METHOD(OnSocketReady),
-			      SocketDescriptor(DNSServiceRefSockFD(service_ref)))
-	{
-		socket_event.ScheduleRead();
-	}
+	BonjourHelper(EventLoop &_loop, const char *name, unsigned port);
 
 	~BonjourHelper() {
 		DNSServiceRefDeallocate(service_ref);
@@ -68,6 +63,38 @@ protected:
 		DNSServiceProcessResult(service_ref);
 	}
 };
+
+/**
+ * A wrapper for DNSServiceRegister() which returns the DNSServiceRef
+ * and throws on error.
+ */
+static DNSServiceRef
+RegisterBonjour(const char *name, const char *type, unsigned port,
+		DNSServiceRegisterReply callback, void *ctx)
+{
+	DNSServiceRef ref;
+	DNSServiceErrorType error = DNSServiceRegister(&ref,
+						       0, 0, name, type,
+						       nullptr, nullptr,
+						       htons(port), 0,
+						       nullptr,
+						       callback, ctx);
+
+	if (error != kDNSServiceErr_NoError)
+		throw std::runtime_error("DNSServiceRegister() failed");
+
+	return ref;
+}
+
+BonjourHelper::BonjourHelper(EventLoop &_loop, const char *name, unsigned port)
+	:service_ref(RegisterBonjour(name, SERVICE_TYPE, port,
+				     Callback, nullptr)),
+	 socket_event(_loop,
+		      BIND_THIS_METHOD(OnSocketReady),
+		      SocketDescriptor(DNSServiceRefSockFD(service_ref)))
+{
+	socket_event.ScheduleRead();
+}
 
 static BonjourHelper *bonjour_monitor;
 
@@ -94,22 +121,7 @@ BonjourHelper::Callback([[maybe_unused]] DNSServiceRef sdRef,
 void
 BonjourInit(EventLoop &loop, const char *service_name, unsigned port)
 {
-	DNSServiceRef dnsReference;
-	DNSServiceErrorType error = DNSServiceRegister(&dnsReference,
-						       0, 0, service_name,
-						       SERVICE_TYPE, nullptr, nullptr,
-						       htons(port), 0,
-						       nullptr,
-						       BonjourHelper::Callback,
-						       nullptr);
-
-	if (error != kDNSServiceErr_NoError) {
-		LogError(bonjour_domain,
-			 "Failed to register zeroconf service");
-		return;
-	}
-
-	bonjour_monitor = new BonjourHelper(loop, dnsReference);
+	bonjour_monitor = new BonjourHelper(loop, service_name, port);
 }
 
 void

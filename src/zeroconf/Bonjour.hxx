@@ -22,6 +22,9 @@
 
 class EventLoop;
 
+/**
+ * Throws on error.
+ */
 void
 BonjourInit(EventLoop &loop, const char *service_name, unsigned port);
 
