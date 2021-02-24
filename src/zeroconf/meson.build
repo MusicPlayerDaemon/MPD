@@ -38,6 +38,9 @@ if zeroconf_option == 'bonjour'
     'Glue.cxx',
     'Bonjour.cxx',
     include_directories: inc,
+    dependencies: [
+      event_dep,
+    ],
   )
 
   zeroconf_dep = declare_dependency(
