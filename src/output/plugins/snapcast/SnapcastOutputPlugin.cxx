@@ -90,7 +90,9 @@ SnapcastOutput::Unbind() noexcept
 	assert(!open);
 
 	BlockingCall(GetEventLoop(), [this](){
+#ifdef HAVE_ZEROCONF
 		zeroconf_helper.reset();
+#endif
 
 		ServerSocket::Close();
 	});
