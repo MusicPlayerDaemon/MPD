@@ -36,6 +36,7 @@ if zeroconf_option == 'bonjour'
   zeroconf = static_library(
     'zeroconf_bonjour',
     'Glue.cxx',
+    'Helper.cxx',
     'Bonjour.cxx',
     include_directories: inc,
     dependencies: [
@@ -60,6 +61,7 @@ else
   zeroconf = static_library(
     'zeroconf_bonjour',
     'Glue.cxx',
+    'Helper.cxx',
     include_directories: inc,
     dependencies: [
       avahi_dep,

@@ -476,12 +476,15 @@ MainConfigured(const struct options &options, const ConfigData &raw_config)
 	};
 #endif
 
+#ifdef HAVE_ZEROCONF
+	std::unique_ptr<ZeroconfHelper> zeroconf;
 	try {
-		ZeroconfInit(raw_config, instance.event_loop);
+		zeroconf = ZeroconfInit(raw_config, instance.event_loop);
 	} catch (...) {
 		LogError(std::current_exception(),
 			 "Zeroconf initialization failed");
 	}
+#endif
 
 #ifdef ENABLE_DATABASE
 	if (create_db) {
@@ -543,7 +546,9 @@ MainConfigured(const struct options &options, const ConfigData &raw_config)
 
 	instance.BeginShutdownUpdate();
 
-	ZeroconfDeinit();
+#ifdef HAVE_ZEROCONF
+	zeroconf.reset();
+#endif
 
 	instance.BeginShutdownPartitions();
 }

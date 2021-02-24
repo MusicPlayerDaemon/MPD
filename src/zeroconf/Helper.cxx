@@ -17,26 +17,14 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_ZEROCONF_GLUE_HXX
-#define MPD_ZEROCONF_GLUE_HXX
-
 #include "Helper.hxx"
-#include "config.h"
 
-#include <memory>
-
-struct ConfigData;
-class EventLoop;
-class ZeroconfHelper;
-
-#ifdef HAVE_ZEROCONF
-
-/**
- * Throws on error.
- */
-std::unique_ptr<ZeroconfHelper>
-ZeroconfInit(const ConfigData &config, EventLoop &loop);
-
-#endif /* ! HAVE_ZEROCONF */
-
+#ifdef HAVE_AVAHI
+#include "avahi/Helper.hxx"
 #endif
+
+#ifdef HAVE_BONJOUR
+#include "Bonjour.hxx"
+#endif
+
+ZeroconfHelper::~ZeroconfHelper() noexcept = default;

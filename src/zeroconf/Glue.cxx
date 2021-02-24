@@ -18,6 +18,7 @@
  */
 
 #include "Glue.hxx"
+#include "Helper.hxx"
 #include "config/Data.hxx"
 #include "config/Option.hxx"
 #include "Listen.hxx"
@@ -53,31 +54,19 @@ static constexpr Domain zeroconf_domain("zeroconf");
 
 #define DEFAULT_ZEROCONF_ENABLED 1
 
-static int zeroconfEnabled;
-
-#ifdef HAVE_AVAHI
-static std::unique_ptr<AvahiHelper> avahi_helper;
-#endif
-
-#ifdef HAVE_BONJOUR
-static std::unique_ptr<BonjourHelper> bonjour_helper;
-#endif
-
-void
+std::unique_ptr<ZeroconfHelper>
 ZeroconfInit(const ConfigData &config, [[maybe_unused]] EventLoop &loop)
 {
 	const char *serviceName;
 
-	zeroconfEnabled = config.GetBool(ConfigOption::ZEROCONF_ENABLED,
-					 DEFAULT_ZEROCONF_ENABLED);
-	if (!zeroconfEnabled)
-		return;
+	if (!config.GetBool(ConfigOption::ZEROCONF_ENABLED,
+			    DEFAULT_ZEROCONF_ENABLED))
+		return nullptr;
 
 	if (listen_port <= 0) {
 		LogWarning(zeroconf_domain,
 			   "No global port, disabling zeroconf");
-		zeroconfEnabled = false;
-		return;
+		return nullptr;
 	}
 
 	serviceName = config.GetString(ConfigOption::ZEROCONF_NAME,
@@ -96,22 +85,12 @@ ZeroconfInit(const ConfigData &config, [[maybe_unused]] EventLoop &loop)
 	}
 
 #ifdef HAVE_AVAHI
-	avahi_helper = AvahiInit(loop, serviceName, listen_port);
+	return std::make_unique<ZeroconfHelper>(AvahiInit(loop, serviceName,
+							  listen_port));
 #endif
 
 #ifdef HAVE_BONJOUR
-	bonjour_helper = BonjourInit(loop, serviceName, listen_port);
-#endif
-}
-
-void
-ZeroconfDeinit() noexcept
-{
-#ifdef HAVE_AVAHI
-	avahi_helper.reset();
-#endif
-
-#ifdef HAVE_BONJOUR
-	bonjour_helper.reset();
+	return std::make_unique<ZeroconfHelper>(BonjourInit(loop, serviceName,
+							    listen_port));
 #endif
 }
