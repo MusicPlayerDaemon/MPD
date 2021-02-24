@@ -91,7 +91,7 @@ ZeroconfInit(const ConfigData &config, [[maybe_unused]] EventLoop &loop)
 }
 
 void
-ZeroconfDeinit()
+ZeroconfDeinit() noexcept
 {
 	if (!zeroconfEnabled)
 		return;

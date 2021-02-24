@@ -34,7 +34,7 @@ void
 ZeroconfInit(const ConfigData &config, EventLoop &loop);
 
 void
-ZeroconfDeinit();
+ZeroconfDeinit() noexcept;
 
 #else /* ! HAVE_ZEROCONF */
 
@@ -43,7 +43,7 @@ ZeroconfInit(const ConfigData &, EventLoop &)
 {}
 
 static inline void
-ZeroconfDeinit()
+ZeroconfDeinit() noexcept
 {}
 
 #endif /* ! HAVE_ZEROCONF */
