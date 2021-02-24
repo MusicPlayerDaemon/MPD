@@ -125,7 +125,7 @@ class IntrusiveList {
 	}
 
 public:
-	IntrusiveList() noexcept = default;
+	constexpr IntrusiveList() noexcept = default;
 
 	IntrusiveList(IntrusiveList &&src) noexcept {
 		if (src.empty())
@@ -140,7 +140,7 @@ public:
 	}
 
 	~IntrusiveList() noexcept {
-		if (std::is_base_of<AutoUnlinkIntrusiveListHook, T>::value)
+		if constexpr (std::is_base_of<AutoUnlinkIntrusiveListHook, T>::value)
 			clear();
 	}
 
@@ -151,7 +151,7 @@ public:
 	}
 
 	void clear() noexcept {
-		if (std::is_base_of<AutoUnlinkIntrusiveListHook, T>::value) {
+		if constexpr (std::is_base_of<AutoUnlinkIntrusiveListHook, T>::value) {
 			/* for AutoUnlinkIntrusiveListHook, we need to
 			   remove each item manually, or else its
 			   is_linked() method will not work */
