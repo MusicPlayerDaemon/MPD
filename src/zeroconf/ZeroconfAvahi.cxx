@@ -24,13 +24,10 @@
 #include "avahi/Publisher.hxx"
 #include "avahi/Service.hxx"
 #include "ZeroconfInternal.hxx"
-#include "util/Domain.hxx"
 #include "util/RuntimeError.hxx"
 #include "Log.hxx"
 
 #include <avahi-common/domain.h>
-
-static constexpr Domain avahi_domain("avahi");
 
 class AvahiGlue final : Avahi::ErrorHandler {
 public:
@@ -56,8 +53,6 @@ static AvahiGlue *avahi_glue;
 void
 AvahiInit(EventLoop &loop, const char *serviceName, unsigned port)
 {
-	LogDebug(avahi_domain, "Initializing interface");
-
 	if (!avahi_is_valid_service_name(serviceName))
 		throw FormatRuntimeError("Invalid zeroconf_name \"%s\"", serviceName);
 
@@ -72,7 +67,5 @@ AvahiInit(EventLoop &loop, const char *serviceName, unsigned port)
 void
 AvahiDeinit()
 {
-	LogDebug(avahi_domain, "Shutting down interface");
-
 	delete avahi_glue;
 }
