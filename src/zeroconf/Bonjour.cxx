@@ -88,7 +88,7 @@ RegisterBonjour(const char *name, const char *type, unsigned port,
 
 BonjourHelper::BonjourHelper(EventLoop &_loop, const char *name, unsigned port)
 	:service_ref(RegisterBonjour(name, SERVICE_TYPE, port,
-				     Callback, nullptr)),
+				     Callback, this)),
 	 socket_event(_loop,
 		      BIND_THIS_METHOD(OnSocketReady),
 		      SocketDescriptor(DNSServiceRefSockFD(service_ref)))
@@ -106,11 +106,13 @@ BonjourHelper::Callback([[maybe_unused]] DNSServiceRef sdRef,
 			[[maybe_unused]] const char *domain,
 			[[maybe_unused]] void *context) noexcept
 {
+	auto &helper = *(BonjourHelper *)context;
+
 	if (errorCode != kDNSServiceErr_NoError) {
 		LogError(bonjour_domain,
 			 "Failed to register zeroconf service");
 
-		bonjour_monitor->Cancel();
+		helper.Cancel();
 	} else {
 		FormatDebug(bonjour_domain,
 			    "Registered zeroconf service with name '%s'",
