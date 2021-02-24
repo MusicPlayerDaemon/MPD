@@ -23,7 +23,7 @@
 class EventLoop;
 
 void
-BonjourInit(EventLoop &loop, const char *service_name);
+BonjourInit(EventLoop &loop, const char *service_name, unsigned port);
 
 void
 BonjourDeinit();

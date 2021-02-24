@@ -19,7 +19,6 @@
 
 #include "ZeroconfBonjour.hxx"
 #include "ZeroconfInternal.hxx"
-#include "Listen.hxx"
 #include "event/SocketEvent.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
@@ -84,13 +83,13 @@ dnsRegisterCallback([[maybe_unused]] DNSServiceRef sdRef,
 }
 
 void
-BonjourInit(EventLoop &loop, const char *service_name)
+BonjourInit(EventLoop &loop, const char *service_name, unsigned port)
 {
 	DNSServiceRef dnsReference;
 	DNSServiceErrorType error = DNSServiceRegister(&dnsReference,
 						       0, 0, service_name,
 						       SERVICE_TYPE, nullptr, nullptr,
-						       htons(listen_port), 0,
+						       htons(port), 0,
 						       nullptr,
 						       dnsRegisterCallback,
 						       nullptr);

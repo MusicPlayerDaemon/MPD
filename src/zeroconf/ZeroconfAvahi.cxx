@@ -24,7 +24,6 @@
 #include "avahi/Publisher.hxx"
 #include "avahi/Service.hxx"
 #include "ZeroconfInternal.hxx"
-#include "Listen.hxx"
 #include "util/Domain.hxx"
 #include "util/RuntimeError.hxx"
 #include "Log.hxx"
@@ -55,7 +54,7 @@ public:
 static AvahiGlue *avahi_glue;
 
 void
-AvahiInit(EventLoop &loop, const char *serviceName)
+AvahiInit(EventLoop &loop, const char *serviceName, unsigned port)
 {
 	LogDebug(avahi_domain, "Initializing interface");
 
@@ -65,7 +64,7 @@ AvahiInit(EventLoop &loop, const char *serviceName)
 	std::forward_list<Avahi::Service> services;
 	services.emplace_front(AVAHI_IF_UNSPEC,
 			       AVAHI_PROTO_UNSPEC,
-			       SERVICE_TYPE, listen_port);
+			       SERVICE_TYPE, port);
 
 	avahi_glue = new AvahiGlue(loop, serviceName, std::move(services));
 }

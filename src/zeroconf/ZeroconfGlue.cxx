@@ -82,11 +82,11 @@ ZeroconfInit(const ConfigData &config, [[maybe_unused]] EventLoop &loop)
 	}
 
 #ifdef HAVE_AVAHI
-	AvahiInit(loop, serviceName);
+	AvahiInit(loop, serviceName, listen_port);
 #endif
 
 #ifdef HAVE_BONJOUR
-	BonjourInit(loop, serviceName);
+	BonjourInit(loop, serviceName, listen_port);
 #endif
 }
 

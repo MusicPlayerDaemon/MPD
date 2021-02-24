@@ -23,7 +23,7 @@
 class EventLoop;
 
 void
-AvahiInit(EventLoop &loop, const char *service_name);
+AvahiInit(EventLoop &loop, const char *service_name, unsigned port);
 
 void
 AvahiDeinit();
