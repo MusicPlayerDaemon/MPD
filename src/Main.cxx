@@ -476,7 +476,12 @@ MainConfigured(const struct options &options, const ConfigData &raw_config)
 	};
 #endif
 
-	ZeroconfInit(raw_config, instance.event_loop);
+	try {
+		ZeroconfInit(raw_config, instance.event_loop);
+	} catch (...) {
+		LogError(std::current_exception(),
+			 "Zeroconf initialization failed");
+	}
 
 #ifdef ENABLE_DATABASE
 	if (create_db) {

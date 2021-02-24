@@ -27,6 +27,9 @@ class EventLoop;
 
 #ifdef HAVE_ZEROCONF
 
+/**
+ * Throws on error.
+ */
 void
 ZeroconfInit(const ConfigData &config, EventLoop &loop);
 
