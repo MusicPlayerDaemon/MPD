@@ -17,29 +17,23 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "Init.hxx"
-#include "../Internal.hxx"
+#include "Helper.hxx"
 #include "Client.hxx"
-#include "ConnectionListener.hxx"
 #include "ErrorHandler.hxx"
 #include "Publisher.hxx"
 #include "Service.hxx"
+#include "../Internal.hxx"
 #include "util/RuntimeError.hxx"
 #include "Log.hxx"
 
 #include <avahi-common/domain.h>
 
-class AvahiGlue final : Avahi::ErrorHandler {
+class SharedAvahiClient : public Avahi::ErrorHandler {
 public:
 	Avahi::Client client;
-	Avahi::Publisher publisher;
 
-	AvahiGlue(EventLoop &event_loop,
-		  const char *name, std::forward_list<Avahi::Service> services)
-		:client(event_loop, *this),
-		 publisher(client, name, std::move(services), *this)
-	{
-	}
+	SharedAvahiClient(EventLoop &event_loop)
+		:client(event_loop, *this) {}
 
 	/* virtual methods from class Avahi::ErrorHandler */
 	bool OnAvahiError(std::exception_ptr e) noexcept override {
@@ -48,24 +42,38 @@ public:
 	}
 };
 
-static AvahiGlue *avahi_glue;
+static std::weak_ptr<SharedAvahiClient> shared_avahi_client;
 
-void
-AvahiInit(EventLoop &loop, const char *serviceName, unsigned port)
+inline
+AvahiHelper::AvahiHelper(std::shared_ptr<SharedAvahiClient> _client,
+			 std::unique_ptr<Avahi::Publisher> _publisher)
+	:client(std::move(_client)),
+	 publisher(std::move(_publisher)) {}
+
+AvahiHelper::~AvahiHelper() noexcept = default;
+
+std::unique_ptr<AvahiHelper>
+AvahiInit(EventLoop &event_loop, const char *service_name, unsigned port)
 {
-	if (!avahi_is_valid_service_name(serviceName))
-		throw FormatRuntimeError("Invalid zeroconf_name \"%s\"", serviceName);
+	if (!avahi_is_valid_service_name(service_name))
+		throw FormatRuntimeError("Invalid zeroconf_name \"%s\"",
+					 service_name);
+
+	auto client = shared_avahi_client.lock();
+	if (!client)
+		shared_avahi_client = client =
+			std::make_shared<SharedAvahiClient>(event_loop);
 
 	std::forward_list<Avahi::Service> services;
 	services.emplace_front(AVAHI_IF_UNSPEC,
 			       AVAHI_PROTO_UNSPEC,
 			       SERVICE_TYPE, port);
 
-	avahi_glue = new AvahiGlue(loop, serviceName, std::move(services));
-}
+	auto publisher = std::make_unique<Avahi::Publisher>(client->client,
+							    service_name,
+							    std::move(services),
+							    *client);
 
-void
-AvahiDeinit()
-{
-	delete avahi_glue;
+	return std::make_unique<AvahiHelper>(std::move(client),
+					     std::move(publisher));
 }

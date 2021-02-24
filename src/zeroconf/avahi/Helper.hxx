@@ -17,15 +17,27 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_ZEROCONF_AVAHI_HXX
-#define MPD_ZEROCONF_AVAHI_HXX
+#ifndef MPD_ZEROCONF_AVAHI_HELPER_HXX
+#define MPD_ZEROCONF_AVAHI_HELPER_HXX
+
+#include <memory>
 
 class EventLoop;
+namespace Avahi { class Publisher; }
 
-void
-AvahiInit(EventLoop &loop, const char *service_name, unsigned port);
+class SharedAvahiClient;
 
-void
-AvahiDeinit();
+class AvahiHelper final {
+	std::shared_ptr<SharedAvahiClient> client;
+	std::unique_ptr<Avahi::Publisher> publisher;
+
+public:
+	AvahiHelper(std::shared_ptr<SharedAvahiClient> _client,
+		    std::unique_ptr<Avahi::Publisher> _publisher);
+	~AvahiHelper() noexcept;
+};
+
+std::unique_ptr<AvahiHelper>
+AvahiInit(EventLoop &event_loop, const char *service_name, unsigned port);
 
 #endif

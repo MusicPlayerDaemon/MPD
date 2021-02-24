@@ -6,7 +6,7 @@ endif
 
 avahi = static_library(
   'avahi',
-  'Init.cxx',
+  'Helper.cxx',
   'Client.cxx',
   'Error.cxx',
   'Poll.cxx',

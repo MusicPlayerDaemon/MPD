@@ -19,7 +19,7 @@
 
 #include "event/Loop.hxx"
 #include "ShutdownHandler.hxx"
-#include "zeroconf/avahi/Init.hxx"
+#include "zeroconf/avahi/Helper.hxx"
 
 #include <stdlib.h>
 
@@ -29,11 +29,9 @@ main([[maybe_unused]] int argc, [[maybe_unused]] char **argv)
 	EventLoop event_loop;
 	const ShutdownHandler shutdown_handler(event_loop);
 
-	AvahiInit(event_loop, "test", 1234);
+	const auto helper = AvahiInit(event_loop, "test", 1234);
 
 	event_loop.Run();
-
-	AvahiDeinit();
 
 	return EXIT_SUCCESS;
 }
