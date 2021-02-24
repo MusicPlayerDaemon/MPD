@@ -49,8 +49,8 @@ void
 UPnPDeviceDirectory::Downloader::Destroy() noexcept
 {
 	const std::lock_guard<Mutex> protect(parent.mutex);
-	parent.downloaders.erase_and_dispose(parent.downloaders.iterator_to(*this),
-					     DeleteDisposer());
+	unlink();
+	delete this;
 }
 
 void
