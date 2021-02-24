@@ -31,6 +31,7 @@
 #include "lib/icu/Collate.hxx"
 #include "fs/Traits.hxx"
 #include "util/DeleteDisposer.hxx"
+#include "util/SortList.hxx"
 #include "util/StringCompare.hxx"
 #include "util/StringSplit.hxx"
 
@@ -220,7 +221,7 @@ Directory::Sort() noexcept
 {
 	assert(holding_db_lock());
 
-	children.sort(directory_cmp);
+	SortList(children, directory_cmp);
 	song_list_sort(songs);
 
 	for (auto &child : children)

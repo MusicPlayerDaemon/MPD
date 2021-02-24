@@ -24,9 +24,7 @@
 #include "db/Visitor.hxx"
 #include "db/PlaylistVector.hxx"
 #include "db/Ptr.hxx"
-#include "Song.hxx"
-
-#include <boost/intrusive/list.hpp>
+#include "util/IntrusiveList.hxx"
 
 #include <string>
 #include <string_view>
@@ -52,25 +50,12 @@ static constexpr unsigned DEVICE_PLAYLIST = -3;
 
 class SongFilter;
 
-struct Directory {
-	static constexpr auto link_mode = boost::intrusive::normal_link;
-	typedef boost::intrusive::link_mode<link_mode> LinkMode;
-	typedef boost::intrusive::list_member_hook<LinkMode> Hook;
+struct Directory : IntrusiveListHook {
+	/* Note: the #IntrusiveListHook is protected with the global
+	   #db_mutex.  Read access in the update thread does not need
+	   protection. */
 
-	/**
-	 * Pointers to the siblings of this directory within the
-	 * parent directory.  It is unused (undefined) in the root
-	 * directory.
-	 *
-	 * This attribute is protected with the global #db_mutex.
-	 * Read access in the update thread does not need protection.
-	 */
-	Hook siblings;
-
-	typedef boost::intrusive::member_hook<Directory, Hook,
-					      &Directory::siblings> SiblingsHook;
-	typedef boost::intrusive::list<Directory, SiblingsHook,
-				       boost::intrusive::constant_time_size<false>> List;
+	using List = IntrusiveList<Directory>;
 
 	/**
 	 * A doubly linked list of child directories.
@@ -86,7 +71,7 @@ struct Directory {
 	 * This attribute is protected with the global #db_mutex.
 	 * Read access in the update thread does not need protection.
 	 */
-	SongList songs;
+	IntrusiveList<Song> songs;
 
 	PlaylistVector playlists;
 

@@ -20,9 +20,11 @@
 #ifndef MPD_SONG_SORT_HXX
 #define MPD_SONG_SORT_HXX
 
-#include "Song.hxx"
+#include "util/IntrusiveList.hxx"
+
+struct Song;
 
 void
-song_list_sort(SongList &songs) noexcept;
+song_list_sort(IntrusiveList<Song> &songs) noexcept;
 
 #endif

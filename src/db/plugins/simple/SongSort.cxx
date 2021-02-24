@@ -21,6 +21,8 @@
 #include "Song.hxx"
 #include "tag/Tag.hxx"
 #include "lib/icu/Collate.hxx"
+#include "util/IntrusiveList.hxx"
+#include "util/SortList.hxx"
 
 #include <stdlib.h>
 
@@ -100,7 +102,7 @@ song_cmp(const Song &a, const Song &b) noexcept
 }
 
 void
-song_list_sort(SongList &songs) noexcept
+song_list_sort(IntrusiveList<Song> &songs) noexcept
 {
-	songs.sort(song_cmp);
+	SortList(songs, song_cmp);
 }

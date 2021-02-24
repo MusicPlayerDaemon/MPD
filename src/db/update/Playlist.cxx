@@ -22,6 +22,7 @@
 #include "db/DatabaseLock.hxx"
 #include "db/PlaylistVector.hxx"
 #include "db/plugins/simple/Directory.hxx"
+#include "db/plugins/simple/Song.hxx"
 #include "lib/fmt/ExceptionFormatter.hxx"
 #include "song/DetachedSong.hxx"
 #include "input/InputStream.hxx"

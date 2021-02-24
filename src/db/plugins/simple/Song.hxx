@@ -24,9 +24,8 @@
 #include "Chrono.hxx"
 #include "tag/Tag.hxx"
 #include "pcm/AudioFormat.hxx"
+#include "util/IntrusiveList.hxx"
 #include "config.h"
-
-#include <boost/intrusive/list.hpp>
 
 #include <string>
 
@@ -40,20 +39,10 @@ class ArchiveFile;
  * A song file inside the configured music directory.  Internal
  * #SimpleDatabase class.
  */
-struct Song {
-	static constexpr auto link_mode = boost::intrusive::normal_link;
-	typedef boost::intrusive::link_mode<link_mode> LinkMode;
-	typedef boost::intrusive::list_member_hook<LinkMode> Hook;
-
-	/**
-	 * Pointers to the siblings of this directory within the
-	 * parent directory.  It is unused (undefined) if this song is
-	 * not in the database.
-	 *
-	 * This attribute is protected with the global #db_mutex.
-	 * Read access in the update thread does not need protection.
-	 */
-	Hook siblings;
+struct Song : IntrusiveListHook {
+	/* Note: the #IntrusiveListHook is protected with the global
+	   #db_mutex.  Read access in the update thread does not need
+	   protection. */
 
 	/**
 	 * The #Directory that contains this song.
@@ -159,10 +148,5 @@ struct Song {
 	[[gnu::pure]]
 	ExportedSong Export() const noexcept;
 };
-
-typedef boost::intrusive::list<Song,
-			       boost::intrusive::member_hook<Song, Song::Hook,
-							     &Song::siblings>,
-			       boost::intrusive::constant_time_size<false>> SongList;
 
 #endif
