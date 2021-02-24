@@ -28,7 +28,7 @@
 
 #include <avahi-common/domain.h>
 
-class SharedAvahiClient : public Avahi::ErrorHandler {
+class SharedAvahiClient final : public Avahi::ErrorHandler {
 public:
 	Avahi::Client client;
 
