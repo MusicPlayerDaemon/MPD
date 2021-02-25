@@ -325,6 +325,13 @@ public:
 		return result;
 	}
 
+	template<typename D>
+	iterator erase_and_dispose(iterator i, D &&disposer) noexcept {
+		auto result = erase(i);
+		disposer(&*i);
+		return result;
+	}
+
 	void push_front(T &t) noexcept {
 		insert(begin(), t);
 	}
