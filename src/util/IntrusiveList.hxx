@@ -99,28 +99,42 @@ public:
 
 template<typename T>
 class IntrusiveList {
+	/**
+	 * Detect the hook type; this is important because
+	 * SafeLinkIntrusiveListHook::unlink() needs to clear the
+	 * "next" pointer.  This is a template to postpone the type
+	 * checks, to allow forward-declared types.
+	 */
+	template<typename U>
+	struct HookDetection {
+		static_assert(std::is_base_of_v<IntrusiveListHook, U>);
+
+		using type = std::conditional_t<std::is_base_of_v<SafeLinkIntrusiveListHook, U>,
+						SafeLinkIntrusiveListHook,
+						IntrusiveListHook>;
+	};
+
+	template<typename U>
+	using Hook = typename HookDetection<U>::type;
+
 	IntrusiveListNode head{&head, &head};
 
 	static constexpr T *Cast(IntrusiveListNode *node) noexcept {
-		static_assert(std::is_base_of<IntrusiveListHook, T>::value);
-		auto *hook = &IntrusiveListHook::Cast(*node);
+		auto *hook = &Hook<T>::Cast(*node);
 		return static_cast<T *>(hook);
 	}
 
 	static constexpr const T *Cast(const IntrusiveListNode *node) noexcept {
-		static_assert(std::is_base_of<IntrusiveListHook, T>::value);
-		const auto *hook = &IntrusiveListHook::Cast(*node);
+		const auto *hook = &Hook<T>::Cast(*node);
 		return static_cast<const T *>(hook);
 	}
 
-	static constexpr IntrusiveListHook &ToHook(T &t) noexcept {
-		static_assert(std::is_base_of<IntrusiveListHook, T>::value);
-		return t;
+	static constexpr auto &ToHook(T &t) noexcept {
+		return static_cast<Hook<T> &>(t);
 	}
 
-	static constexpr const IntrusiveListHook &ToHook(const T &t) noexcept {
-		static_assert(std::is_base_of<IntrusiveListHook, T>::value);
-		return t;
+	static constexpr const auto &ToHook(const T &t) noexcept {
+		return static_cast<const Hook<T> &>(t);
 	}
 
 	static constexpr IntrusiveListNode &ToNode(T &t) noexcept {
