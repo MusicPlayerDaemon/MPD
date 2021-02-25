@@ -319,8 +319,10 @@ public:
 		return {&t};
 	}
 
-	void erase(iterator i) noexcept {
+	iterator erase(iterator i) noexcept {
+		auto result = std::next(i);
 		ToHook(*i).unlink();
+		return result;
 	}
 
 	void push_front(T &t) noexcept {
