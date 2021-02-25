@@ -320,7 +320,7 @@ public:
 	}
 
 	void erase(iterator i) noexcept {
-		IntrusiveListHook(*i).unlink();
+		ToHook(*i).unlink();
 	}
 
 	void push_front(T &t) noexcept {
