@@ -266,7 +266,7 @@ public:
 	}
 
 	static constexpr iterator iterator_to(T &t) noexcept {
-		return {&t};
+		return {&ToNode(t)};
 	}
 
 	class const_iterator final
