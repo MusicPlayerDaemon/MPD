@@ -193,7 +193,7 @@ ParseTimeStamp(const char *s)
 {
 	try {
 		// TODO: make this more robust
-		return ParseTimePoint(s, "%a, %d %b %Y %T %Z");
+		return ParseTimePoint(s, "%a, %d %b %Y %T");
 	} catch (...) {
 		return std::chrono::system_clock::time_point::min();
 	}
