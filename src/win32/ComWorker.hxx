@@ -23,10 +23,10 @@
 
 #include <boost/lockfree/spsc_queue.hpp>
 #include <condition_variable>
-#include <future>
 #include <mutex>
 #include <optional>
 
+#include "thread/Future.hxx"
 #include "thread/Thread.hxx"
 #include "win32/WinEvent.hxx"
 #include <objbase.h>
@@ -79,7 +79,7 @@ public:
 	static auto Async(Function &&function, Args &&...args) {
 		using R = std::invoke_result_t<std::decay_t<Function>,
 					       std::decay_t<Args>...>;
-		auto promise = std::make_shared<std::promise<R>>();
+		auto promise = std::make_shared<Promise<R>>();
 		auto future = promise->get_future();
 		thread->Push([function = std::forward<Function>(function),
 			      args = std::make_tuple(std::forward<Args>(args)...),
