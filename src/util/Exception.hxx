@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2020 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2016-2021 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -85,7 +85,7 @@ NestException(std::exception_ptr ep, T &&t) noexcept
 
 /**
  * Find an instance of #T in the nested exception chain, and rethrow
- * it.  Does nothing of no such instance was found.
+ * it.  Does nothing if no such instance was found.
  */
 template<typename T>
 inline void
