@@ -65,6 +65,13 @@ class TimerWheel final {
 	std::array<List, N_BUCKETS> buckets;
 
 	/**
+	 * A list of timers which are already ready.  This can happen
+	 * if they are scheduled with a zero duration or scheduled in
+	 * the past.
+	 */
+	List ready;
+
+	/**
 	 * The last time Run() was invoked.  This is needed to
 	 * determine the range of buckets to be checked, because we
 	 * can't rely on getting a caller for every bucket; there may
@@ -87,13 +94,15 @@ public:
 	~TimerWheel() noexcept;
 
 	bool IsEmpty() const noexcept {
-		return std::all_of(buckets.begin(), buckets.end(),
-				   [](const auto &list){
-					   return list.empty();
-				   });
+		return ready.empty() &&
+			std::all_of(buckets.begin(), buckets.end(),
+				    [](const auto &list){
+					    return list.empty();
+				    });
 	}
 
-	void Insert(CoarseTimerEvent &t) noexcept;
+	void Insert(CoarseTimerEvent &t,
+		    Event::TimePoint now) noexcept;
 
 	/**
 	 * Invoke all expired #CoarseTimerEvent instances and return

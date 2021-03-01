@@ -46,14 +46,18 @@ TimerWheel::TimerWheel() noexcept
 TimerWheel::~TimerWheel() noexcept = default;
 
 void
-TimerWheel::Insert(CoarseTimerEvent &t) noexcept
+TimerWheel::Insert(CoarseTimerEvent &t,
+		   Event::TimePoint now) noexcept
 {
-	/* if this timer's due time is already in the past, don't
-	   insert it into an older bucket because Run() won't look at
-	   it in this iteration */
-	const auto due = std::max(t.GetDue(), last_time);
+	assert(now >= last_time);
 
-	buckets[BucketIndexAt(due)].push_back(t);
+	auto &list = t.GetDue() > now
+		? buckets[BucketIndexAt(t.GetDue())]
+		/* if this timer is already due, insert it into the
+		   "ready" list to be invoked without delay */
+		: ready;
+
+	list.push_back(t);
 
 	empty = false;
 }
@@ -101,6 +105,10 @@ TimerWheel::GetNextDue(const std::size_t bucket_index,
 inline Event::Duration
 TimerWheel::GetSleep(Event::TimePoint now) const noexcept
 {
+	/* note: not checking the "ready" list here because this
+	   method gets called only from Run() after the "ready" list
+	   has been processed already */
+
 	if (empty)
 		return Event::Duration(-1);
 
@@ -117,6 +125,11 @@ TimerWheel::GetSleep(Event::TimePoint now) const noexcept
 Event::Duration
 TimerWheel::Run(const Event::TimePoint now) noexcept
 {
+	/* invoke the "ready" list unconditionally */
+	ready.clear_and_dispose([&](auto *t){
+		t->Run();
+	});
+
 	/* check all buckets between the last time we were invoked and
 	   now */
 	const std::size_t start_bucket = BucketIndexAt(last_time);

@@ -145,7 +145,7 @@ EventLoop::AbandonFD(SocketEvent &event)  noexcept
 void
 EventLoop::Insert(CoarseTimerEvent &t) noexcept
 {
-	coarse_timers.Insert(t);
+	coarse_timers.Insert(t, SteadyNow());
 	again = true;
 }
 
