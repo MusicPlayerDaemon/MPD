@@ -49,3 +49,116 @@ TEST(ExceptionTest, DerivedError)
 
 	ASSERT_EQ(GetFullMessage(std::make_exception_ptr(DerivedError("Foo"))), "Foo");
 }
+
+template<typename T>
+static bool
+CheckFindRetrowNested(std::exception_ptr e) noexcept
+{
+	try {
+		FindRetrowNested<T>(e);
+	} catch (const T &) {
+		return true;
+	}
+
+	return false;
+}
+
+TEST(ExceptionTest, FindRetrowNestedDirect)
+{
+	struct Foo {};
+	struct Bar {};
+	struct Derived : Foo {};
+
+	try {
+		throw Foo{};
+	} catch (...) {
+		EXPECT_TRUE(CheckFindRetrowNested<Foo>(std::current_exception()));
+	}
+
+	try {
+		throw Bar{};
+	} catch (...) {
+		EXPECT_FALSE(CheckFindRetrowNested<Foo>(std::current_exception()));
+	}
+
+	try {
+		throw Derived{};
+	} catch (...) {
+		EXPECT_TRUE(CheckFindRetrowNested<Foo>(std::current_exception()));
+	}
+}
+
+TEST(ExceptionTest, FindRetrowNestedIndirect)
+{
+	struct Foo {};
+	struct Bar {};
+	struct Derived : Foo {};
+	struct Outer {};
+
+	try {
+		throw Foo{};
+	} catch (...) {
+		try {
+			std::throw_with_nested(Outer{});
+		} catch (...) {
+			EXPECT_TRUE(CheckFindRetrowNested<Foo>(std::current_exception()));
+		}
+	}
+
+	try {
+		throw Bar{};
+	} catch (...) {
+		try {
+			std::throw_with_nested(Outer{});
+		} catch (...) {
+			EXPECT_FALSE(CheckFindRetrowNested<Foo>(std::current_exception()));
+		}
+	}
+
+	try {
+		throw Derived{};
+	} catch (...) {
+		try {
+			std::throw_with_nested(Outer{});
+		} catch (...) {
+			EXPECT_TRUE(CheckFindRetrowNested<Foo>(std::current_exception()));
+		}
+	}
+}
+
+TEST(ExceptionTest, FindRetrowNestedIndirectRuntimeError)
+{
+	struct Foo {};
+	struct Bar {};
+	struct Derived : Foo {};
+
+	try {
+		throw Foo{};
+	} catch (...) {
+		try {
+			std::throw_with_nested(std::runtime_error("X"));
+		} catch (...) {
+			EXPECT_TRUE(CheckFindRetrowNested<Foo>(std::current_exception()));
+		}
+	}
+
+	try {
+		throw Bar{};
+	} catch (...) {
+		try {
+			std::throw_with_nested(std::runtime_error("X"));
+		} catch (...) {
+			EXPECT_FALSE(CheckFindRetrowNested<Foo>(std::current_exception()));
+		}
+	}
+
+	try {
+		throw Derived{};
+	} catch (...) {
+		try {
+			std::throw_with_nested(std::runtime_error("X"));
+		} catch (...) {
+			EXPECT_TRUE(CheckFindRetrowNested<Foo>(std::current_exception()));
+		}
+	}
+}
