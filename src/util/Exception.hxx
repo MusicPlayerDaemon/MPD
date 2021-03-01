@@ -95,12 +95,6 @@ FindRetrowNested(std::exception_ptr ep)
 		std::rethrow_exception(ep);
 	} catch (const T &t) {
 		throw;
-	} catch (const std::exception &e) {
-		try {
-			std::rethrow_if_nested(e);
-		} catch (...) {
-			FindRetrowNested<T>(std::current_exception());
-		}
 	} catch (const std::nested_exception &ne) {
 		FindRetrowNested<T>(ne.nested_ptr());
 	} catch (...) {
