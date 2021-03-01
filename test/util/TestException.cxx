@@ -50,6 +50,75 @@ TEST(ExceptionTest, DerivedError)
 	ASSERT_EQ(GetFullMessage(std::make_exception_ptr(DerivedError("Foo"))), "Foo");
 }
 
+TEST(ExceptionTest, FindNestedDirect)
+{
+	struct Foo {};
+	struct Bar {};
+	struct Derived : Foo {};
+
+	try {
+		throw Foo{};
+	} catch (...) {
+		EXPECT_NE(FindNested<Foo>(std::current_exception()),
+			  nullptr);
+	}
+
+	try {
+		throw Bar{};
+	} catch (...) {
+		EXPECT_EQ(FindNested<Foo>(std::current_exception()),
+			  nullptr);
+	}
+
+	try {
+		throw Derived{};
+	} catch (...) {
+		EXPECT_NE(FindNested<Foo>(std::current_exception()),
+			  nullptr);
+	}
+}
+
+TEST(ExceptionTest, FindNestedIndirect)
+{
+	struct Foo {};
+	struct Bar {};
+	struct Derived : Foo {};
+	struct Outer {};
+
+	try {
+		throw Foo{};
+	} catch (...) {
+		try {
+			std::throw_with_nested(Outer{});
+		} catch (...) {
+			EXPECT_NE(FindNested<Foo>(std::current_exception()),
+				  nullptr);
+		}
+	}
+
+	try {
+		throw Bar{};
+	} catch (...) {
+		try {
+			std::throw_with_nested(Outer{});
+		} catch (...) {
+			EXPECT_EQ(FindNested<Foo>(std::current_exception()),
+				  nullptr);
+		}
+	}
+
+	try {
+		throw Derived{};
+	} catch (...) {
+		try {
+			std::throw_with_nested(Outer{});
+		} catch (...) {
+			EXPECT_NE(FindNested<Foo>(std::current_exception()),
+				  nullptr);
+		}
+	}
+}
+
 template<typename T>
 static bool
 CheckFindRetrowNested(std::exception_ptr e) noexcept
