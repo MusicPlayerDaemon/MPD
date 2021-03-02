@@ -132,3 +132,47 @@ TEST(IntrusiveList, SafeLink)
 
 	ASSERT_FALSE(a.is_linked());
 }
+
+TEST(IntrusiveList, AutoUnlink)
+{
+	struct Item final : AutoUnlinkIntrusiveListHook {};
+
+	Item a;
+	ASSERT_FALSE(a.is_linked());
+
+	IntrusiveList<Item> list;
+
+	Item b;
+	ASSERT_FALSE(b.is_linked());
+
+	{
+		Item c;
+
+		list.push_back(a);
+		list.push_back(b);
+		list.push_back(c);
+
+		ASSERT_TRUE(a.is_linked());
+		ASSERT_TRUE(b.is_linked());
+		ASSERT_TRUE(c.is_linked());
+
+		auto i = list.begin();
+		ASSERT_EQ(&*i, &a);
+		++i;
+		ASSERT_EQ(&*i, &b);
+		++i;
+		ASSERT_EQ(&*i, &c);
+		++i;
+		ASSERT_EQ(i, list.end());
+	}
+
+	auto i = list.begin();
+	ASSERT_EQ(&*i, &a);
+	++i;
+	ASSERT_EQ(&*i, &b);
+	++i;
+	ASSERT_EQ(i, list.end());
+
+	ASSERT_TRUE(a.is_linked());
+	ASSERT_TRUE(b.is_linked());
+}
