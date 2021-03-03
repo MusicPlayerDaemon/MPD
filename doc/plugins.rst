@@ -1054,6 +1054,21 @@ The pipe plugin starts a program and writes raw PCM data into its standard input
    * - **command CMD**
      - This command is invoked with the shell.
 
+pipewire
+--------
+
+Connect to a `PipeWire <https://pipewire.org/>``_ server.  Requires
+``libpipewire``.
+
+.. list-table::
+   :widths: 20 80
+   :header-rows: 1
+
+   * - Setting
+     - Description
+   * - **target ID**
+     - Link to the given target id.
+
 .. _pulse_plugin:
 
 pulse

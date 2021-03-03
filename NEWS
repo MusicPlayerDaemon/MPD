@@ -3,6 +3,7 @@ ver 0.23 (not yet released)
   - new command "getvol"
   - show the audio format in "playlistinfo"
 * output
+  - pipewire: new plugin
   - snapcast: new plugin
 
 ver 0.22.7 (not yet released)

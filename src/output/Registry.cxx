@@ -34,6 +34,7 @@
 #include "plugins/OssOutputPlugin.hxx"
 #include "plugins/OSXOutputPlugin.hxx"
 #include "plugins/PipeOutputPlugin.hxx"
+#include "plugins/PipeWireOutputPlugin.hxx"
 #include "plugins/PulseOutputPlugin.hxx"
 #include "plugins/RecorderOutputPlugin.hxx"
 #include "plugins/ShoutOutputPlugin.hxx"
@@ -84,6 +85,9 @@ constexpr const AudioOutputPlugin *audio_output_plugins[] = {
 #endif
 #ifdef ENABLE_SOLARIS_OUTPUT
 	&solaris_output_plugin,
+#endif
+#ifdef ENABLE_PIPEWIRE
+	&pipewire_output_plugin,
 #endif
 #ifdef ENABLE_PULSE
 	&pulse_output_plugin,

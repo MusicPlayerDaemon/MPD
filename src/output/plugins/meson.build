@@ -85,6 +85,10 @@ if enable_pipe_output
   output_plugins_sources += 'PipeOutputPlugin.cxx'
 endif
 
+if pipewire_dep.found()
+  output_plugins_sources += 'PipeWireOutputPlugin.cxx'
+endif
+
 if pulse_dep.found()
   output_plugins_sources += 'PulseOutputPlugin.cxx'
 endif
@@ -169,6 +173,7 @@ output_plugins = static_library(
     apple_dep,
     libao_dep,
     libjack_dep,
+    pipewire_dep,
     pulse_dep,
     libshout_dep,
     libsndio_dep,
