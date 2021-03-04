@@ -195,11 +195,11 @@ PrintUniqueTags(Response &r, ConstBuffer<TagType> tag_types,
 	const char *const name = tag_item_names[tag_types.front()];
 	tag_types.pop_front();
 
-	for (const auto &i : map) {
-		r.Format("%s: %s\n", name, i.first.c_str());
+	for (const auto &[key, tag] : map) {
+		r.Format("%s: %s\n", name, key.c_str());
 
 		if (!tag_types.empty())
-			PrintUniqueTags(r, tag_types, i.second);
+			PrintUniqueTags(r, tag_types, tag);
 	}
 }
 

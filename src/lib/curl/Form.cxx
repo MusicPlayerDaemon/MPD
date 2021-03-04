@@ -36,16 +36,16 @@ EncodeForm(CURL *curl,
 {
 	std::string result;
 
-	for (const auto &i : fields) {
+	for (const auto &[key, field] : fields) {
 		if (!result.empty())
 			result.push_back('&');
 
-		result.append(i.first);
+		result.append(key);
 		result.push_back('=');
 
-		if (!i.second.empty()) {
-			CurlString value(curl_easy_escape(curl, i.second.data(),
-							  i.second.length()));
+		if (!field.empty()) {
+			CurlString value(
+				curl_easy_escape(curl, field.data(), field.length()));
 			if (value)
 				result.append(value);
 		}

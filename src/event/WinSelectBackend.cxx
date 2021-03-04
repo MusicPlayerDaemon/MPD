@@ -160,10 +160,10 @@ WinSelectBackend::ReadEvents(int timeout_ms) noexcept
 	ApplyReady(write_set, WinSelectEvents::WRITE);
 	ApplyReady(except_set, WinSelectEvents::WRITE);
 
-	for (auto &i : items)
-		if (i.second.events != 0) {
-			result.Add(i.second.events, i.second.obj);
-			i.second.events = 0;
+	for (auto &[key, item] : items)
+		if (item.events != 0) {
+			result.Add(item.events, item.obj);
+			item.events = 0;
 		}
 
 	return result;
