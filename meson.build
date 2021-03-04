@@ -272,7 +272,6 @@ sources = [
   'src/LogInit.cxx',
   'src/ls.cxx',
   'src/Instance.cxx',
-  'src/win32/Win32Main.cxx',
   'src/MusicBuffer.cxx',
   'src/MusicPipe.cxx',
   'src/MusicChunk.cxx',
@@ -319,6 +318,12 @@ sources = [
   'src/mixer/Volume.cxx',
   'src/PlaylistFile.cxx',
 ]
+
+if is_windows
+  sources += [
+    'src/win32/Win32Main.cxx',
+  ]
+endif
 
 if not is_android
   sources += [

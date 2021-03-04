@@ -18,9 +18,6 @@
  */
 
 #include "Main.hxx"
-
-#ifdef _WIN32
-
 #include "util/Compiler.h"
 #include "Instance.hxx"
 #include "system/FatalError.hxx"
@@ -155,5 +152,3 @@ void win32_app_stopping()
 	else
 		running.store(false);
 }
-
-#endif
