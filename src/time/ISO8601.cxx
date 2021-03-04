@@ -202,7 +202,7 @@ ParseISO8601(const char *s)
 	}
 
 	/* parse the date */
-	const char *end = strptime(s, "%F", &tm);
+	const char *end = strptime(s, "%Y-%m-%d", &tm);
 	if (end == nullptr) {
 		/* try without field separators */
 		end = strptime(s, "%Y%m%d", &tm);

@@ -22,16 +22,21 @@
 #include "WasapiOutputPlugin.hxx"
 #include "lib/icu/Win32.hxx"
 #include "mixer/MixerList.hxx"
+#include "output/Error.hxx"
+#include "pcm/Export.hxx"
 #include "thread/Cond.hxx"
 #include "thread/Mutex.hxx"
 #include "thread/Name.hxx"
 #include "thread/Thread.hxx"
 #include "util/AllocatedString.hxx"
+#include "util/ConstBuffer.hxx"
 #include "util/Domain.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/ScopeExit.hxx"
+#include "util/StringBuffer.hxx"
 #include "win32/Com.hxx"
 #include "win32/ComHeapPtr.hxx"
+#include "win32/ComWorker.hxx"
 #include "win32/HResult.hxx"
 #include "win32/WinEvent.hxx"
 
@@ -91,24 +96,46 @@ inline bool SafeSilenceTry(Functor &&functor) {
 	}
 }
 
-inline void SetFormat(WAVEFORMATEXTENSIBLE &device_format,
-		      const AudioFormat &audio_format) noexcept {
-	device_format.dwChannelMask = GetChannelMask(audio_format.channels);
-	device_format.Format.wFormatTag = WAVE_FORMAT_EXTENSIBLE;
-	device_format.Format.nChannels = audio_format.channels;
-	device_format.Format.nSamplesPerSec = audio_format.sample_rate;
-	device_format.Format.nBlockAlign = audio_format.GetFrameSize();
-	device_format.Format.nAvgBytesPerSec =
-		audio_format.sample_rate * audio_format.GetFrameSize();
-	device_format.Format.wBitsPerSample = audio_format.GetSampleSize() * 8;
-	device_format.Format.cbSize = sizeof(WAVEFORMATEXTENSIBLE) - sizeof(WAVEFORMATEX);
-	device_format.Samples.wValidBitsPerSample = audio_format.GetSampleSize() * 8;
-	if (audio_format.format == SampleFormat::FLOAT) {
-		device_format.SubFormat = KSDATAFORMAT_SUBTYPE_IEEE_FLOAT;
+std::vector<WAVEFORMATEXTENSIBLE> GetFormats(const AudioFormat &audio_format) noexcept {
+	std::vector<WAVEFORMATEXTENSIBLE> Result;
+	if (audio_format.format == SampleFormat::S24_P32) {
+		Result.resize(2);
+		Result[0].Format.wBitsPerSample = 24;
+		Result[0].Samples.wValidBitsPerSample = 24;
+		Result[1].Format.wBitsPerSample = 32;
+		Result[1].Samples.wValidBitsPerSample = 24;
 	} else {
-		device_format.SubFormat = KSDATAFORMAT_SUBTYPE_PCM;
+		Result.resize(1);
+		Result[0].Format.wBitsPerSample = audio_format.GetSampleSize() * 8;
+		Result[0].Samples.wValidBitsPerSample = audio_format.GetSampleSize() * 8;
 	}
+	const DWORD mask = GetChannelMask(audio_format.channels);
+	const GUID guid = audio_format.format == SampleFormat::FLOAT
+				  ? KSDATAFORMAT_SUBTYPE_IEEE_FLOAT
+				  : KSDATAFORMAT_SUBTYPE_PCM;
+	for (auto &device_format : Result) {
+		device_format.dwChannelMask = mask;
+		device_format.Format.wFormatTag = WAVE_FORMAT_EXTENSIBLE;
+		device_format.Format.nChannels = audio_format.channels;
+		device_format.Format.nSamplesPerSec = audio_format.sample_rate;
+		device_format.Format.cbSize =
+			sizeof(WAVEFORMATEXTENSIBLE) - sizeof(WAVEFORMATEX);
+		device_format.SubFormat = guid;
+		device_format.Format.nBlockAlign = device_format.Format.nChannels *
+						   device_format.Format.wBitsPerSample /
+						   8;
+		device_format.Format.nAvgBytesPerSec =
+			audio_format.sample_rate * device_format.Format.nBlockAlign;
+	}
+	return Result;
 }
+
+#ifdef ENABLE_DSD
+void SetDSDFallback(AudioFormat &audio_format) noexcept {
+	audio_format.format = SampleFormat::FLOAT;
+	audio_format.sample_rate = 384000;
+}
+#endif
 
 inline constexpr const unsigned int kErrorId = -1;
 
@@ -117,55 +144,47 @@ inline constexpr const unsigned int kErrorId = -1;
 class WasapiOutputThread : public Thread {
 public:
 	enum class Status : uint32_t { FINISH, PLAY, PAUSE };
-	WasapiOutputThread(std::shared_ptr<WinEvent> _event, ComPtr<IAudioClient> _client,
+	WasapiOutputThread(IAudioClient *_client,
 			   ComPtr<IAudioRenderClient> &&_render_client,
 			   const UINT32 _frame_size, const UINT32 _buffer_size_in_frames,
-			   bool _is_exclusive,
-			   boost::lockfree::spsc_queue<BYTE> &_spsc_buffer)
-	: Thread(BIND_THIS_METHOD(Work)), event(std::move(_event)),
-	  client(std::move(_client)), render_client(std::move(_render_client)),
-	  frame_size(_frame_size), buffer_size_in_frames(_buffer_size_in_frames),
-	  is_exclusive(_is_exclusive), spsc_buffer(_spsc_buffer) {}
+			   bool _is_exclusive)
+	: Thread(BIND_THIS_METHOD(Work)), client(_client),
+	  render_client(std::move(_render_client)), frame_size(_frame_size),
+	  buffer_size_in_frames(_buffer_size_in_frames), is_exclusive(_is_exclusive),
+	  spsc_buffer(_buffer_size_in_frames * 4 * _frame_size) {}
 	void Finish() noexcept { return SetStatus(Status::FINISH); }
 	void Play() noexcept { return SetStatus(Status::PLAY); }
 	void Pause() noexcept { return SetStatus(Status::PAUSE); }
-	void WaitWrite() noexcept {
-		std::unique_lock<Mutex> lock(write.mutex);
-		write.cond.wait(lock);
-	}
+	void WaitDataPoped() noexcept { data_poped.Wait(INFINITE); }
 	void CheckException() {
-		std::unique_lock<Mutex> lock(error.mutex);
-		if (error.error_ptr) {
-			std::exception_ptr err = std::exchange(error.error_ptr, nullptr);
-			error.cond.notify_all();
+		if (error.occur.load()) {
+			auto err = std::exchange(error.ptr, nullptr);
+			error.thrown.Set();
 			std::rethrow_exception(err);
 		}
 	}
 
 private:
-	std::shared_ptr<WinEvent> event;
-	std::optional<COM> com;
-	ComPtr<IAudioClient> client;
+	friend class WasapiOutput;
+	WinEvent event;
+	WinEvent data_poped;
+	IAudioClient *client;
 	ComPtr<IAudioRenderClient> render_client;
 	const UINT32 frame_size;
 	const UINT32 buffer_size_in_frames;
 	bool is_exclusive;
-	boost::lockfree::spsc_queue<BYTE> &spsc_buffer;
 	alignas(BOOST_LOCKFREE_CACHELINE_BYTES) std::atomic<Status> status =
 		Status::PAUSE;
 	alignas(BOOST_LOCKFREE_CACHELINE_BYTES) struct {
-		Mutex mutex;
-		Cond cond;
-	} write{};
-	alignas(BOOST_LOCKFREE_CACHELINE_BYTES) struct {
-		Mutex mutex;
-		Cond cond;
-		std::exception_ptr error_ptr = nullptr;
-	} error{};
+		std::atomic_bool occur = false;
+		std::exception_ptr ptr = nullptr;
+		WinEvent thrown;
+	} error;
+	boost::lockfree::spsc_queue<BYTE> spsc_buffer;
 
 	void SetStatus(Status s) noexcept {
 		status.store(s);
-		event->Set();
+		event.Set();
 	}
 	void Work() noexcept;
 };
@@ -174,14 +193,23 @@ class WasapiOutput final : public AudioOutput {
 public:
 	static AudioOutput *Create(EventLoop &, const ConfigBlock &block);
 	WasapiOutput(const ConfigBlock &block);
-	void Enable() override;
-	void Disable() noexcept override;
-	void Open(AudioFormat &audio_format) override;
+	void Enable() override {
+		COMWorker::Aquire();
+		COMWorker::Async([&]() { OpenDevice(); }).get();
+	}
+	void Disable() noexcept override {
+		COMWorker::Async([&]() { DoDisable(); }).get();
+		COMWorker::Release();
+	}
+	void Open(AudioFormat &audio_format) override {
+		COMWorker::Async([&]() { DoOpen(audio_format); }).get();
+	}
 	void Close() noexcept override;
 	std::chrono::steady_clock::duration Delay() const noexcept override;
 	size_t Play(const void *chunk, size_t size) override;
 	void Drain() override;
 	bool Pause() override;
+	void Interrupt() noexcept override;
 
 	constexpr bool Exclusive() const { return is_exclusive; }
 	constexpr size_t FrameSize() const { return device_format.Format.nBlockAlign; }
@@ -190,25 +218,29 @@ public:
 	}
 
 private:
+	std::atomic_flag not_interrupted = true;
 	bool is_started = false;
 	bool is_exclusive;
 	bool enumerate_devices;
 	std::string device_config;
 	std::vector<std::pair<unsigned int, AllocatedString>> device_desc;
-	std::shared_ptr<WinEvent> event;
-	std::optional<COM> com;
 	ComPtr<IMMDeviceEnumerator> enumerator;
 	ComPtr<IMMDevice> device;
 	ComPtr<IAudioClient> client;
 	WAVEFORMATEXTENSIBLE device_format;
-	std::unique_ptr<WasapiOutputThread> thread;
-	std::unique_ptr<boost::lockfree::spsc_queue<BYTE>> spsc_buffer;
+	std::optional<WasapiOutputThread> thread;
 	std::size_t watermark;
+	std::optional<PcmExport> pcm_export;
 
 	friend bool wasapi_is_exclusive(WasapiOutput &output) noexcept;
 	friend IMMDevice *wasapi_output_get_device(WasapiOutput &output) noexcept;
 	friend IAudioClient *wasapi_output_get_client(WasapiOutput &output) noexcept;
 
+	void DoDisable() noexcept;
+	void DoOpen(AudioFormat &audio_format);
+
+	void OpenDevice();
+	bool TryFormatExclusive(const AudioFormat &audio_format);
 	void FindExclusiveFormatSupported(AudioFormat &audio_format);
 	void FindSharedFormatSupported(AudioFormat &audio_format);
 	void EnumerateDevices();
@@ -234,18 +266,10 @@ IAudioClient *wasapi_output_get_client(WasapiOutput &output) noexcept {
 void WasapiOutputThread::Work() noexcept {
 	SetThreadName("Wasapi Output Worker");
 	FormatDebug(wasapi_output_domain, "Working thread started");
-	try {
-		com.emplace();
-	} catch (...) {
-		std::unique_lock<Mutex> lock(error.mutex);
-		error.error_ptr = std::current_exception();
-		error.cond.wait(lock);
-		assert(error.error_ptr == nullptr);
-		return;
-	}
+	COM com{true};
 	while (true) {
 		try {
-			event->Wait(INFINITE);
+			event.Wait(INFINITE);
 
 			Status current_state = status.load();
 			if (current_state == Status::FINISH) {
@@ -254,51 +278,51 @@ void WasapiOutputThread::Work() noexcept {
 				return;
 			}
 
-			AtScopeExit(&) { write.cond.notify_all(); };
-
-			HRESULT result;
-			UINT32 data_in_frames;
-			result = client->GetCurrentPadding(&data_in_frames);
-			if (FAILED(result)) {
-				throw FormatHResultError(result,
-							 "Failed to get current padding");
-			}
-
 			UINT32 write_in_frames = buffer_size_in_frames;
 			if (!is_exclusive) {
+				UINT32 data_in_frames;
+				if (HRESULT result =
+					    client->GetCurrentPadding(&data_in_frames);
+				    FAILED(result)) {
+					throw FormatHResultError(
+						result, "Failed to get current padding");
+				}
+
 				if (data_in_frames >= buffer_size_in_frames) {
 					continue;
 				}
 				write_in_frames -= data_in_frames;
-			} else if (data_in_frames >= buffer_size_in_frames * 2) {
-				continue;
 			}
 
 			BYTE *data;
+			DWORD mode = 0;
 
-			result = render_client->GetBuffer(write_in_frames, &data);
-			if (FAILED(result)) {
+			if (HRESULT result =
+				    render_client->GetBuffer(write_in_frames, &data);
+			    FAILED(result)) {
 				throw FormatHResultError(result, "Failed to get buffer");
 			}
 
 			AtScopeExit(&) {
-				render_client->ReleaseBuffer(write_in_frames, 0);
+				render_client->ReleaseBuffer(write_in_frames, mode);
 			};
 
-			const UINT32 write_size = write_in_frames * frame_size;
-			UINT32 new_data_size = 0;
 			if (current_state == Status::PLAY) {
+				const UINT32 write_size = write_in_frames * frame_size;
+				UINT32 new_data_size = 0;
 				new_data_size = spsc_buffer.pop(data, write_size);
+				std::fill_n(data + new_data_size,
+					    write_size - new_data_size, 0);
+				data_poped.Set();
 			} else {
+				mode = AUDCLNT_BUFFERFLAGS_SILENT;
 				FormatDebug(wasapi_output_domain,
 					    "Working thread paused");
 			}
-			std::fill_n(data + new_data_size, write_size - new_data_size, 0);
 		} catch (...) {
-			std::unique_lock<Mutex> lock(error.mutex);
-			error.error_ptr = std::current_exception();
-			error.cond.wait(lock);
-			assert(error.error_ptr == nullptr);
+			error.ptr = std::current_exception();
+			error.occur.store(true);
+			error.thrown.Wait(INFINITE);
 		}
 	}
 }
@@ -313,14 +337,299 @@ WasapiOutput::WasapiOutput(const ConfigBlock &block)
   enumerate_devices(block.GetBlockValue("enumerate", false)),
   device_config(block.GetBlockValue("device", "")) {}
 
-void WasapiOutput::Enable() {
-	com.emplace();
-	event = std::make_shared<WinEvent>();
+/// run inside COMWorkerThread
+void WasapiOutput::DoDisable() noexcept {
+	if (thread) {
+		try {
+			thread->Finish();
+			thread->Join();
+		} catch (std::exception &err) {
+			FormatError(wasapi_output_domain, "exception while disabling: %s",
+				    err.what());
+		}
+		thread.reset();
+		client.reset();
+	}
+	device.reset();
+	enumerator.reset();
+}
+
+/// run inside COMWorkerThread
+void WasapiOutput::DoOpen(AudioFormat &audio_format) {
+	client.reset();
+
+	DWORD state;
+	if (HRESULT result = device->GetState(&state); FAILED(result)) {
+		throw FormatHResultError(result, "Unable to get device status");
+	}
+	if (state != DEVICE_STATE_ACTIVE) {
+		device.reset();
+		OpenDevice();
+	}
+
+	if (HRESULT result = device->Activate(__uuidof(IAudioClient), CLSCTX_ALL, nullptr,
+					      client.AddressCast());
+	    FAILED(result)) {
+		throw FormatHResultError(result, "Unable to activate audio client");
+	}
+
+	if (audio_format.channels > 8) {
+		audio_format.channels = 8;
+	}
+
+#ifdef ENABLE_DSD
+	if (audio_format.format == SampleFormat::DSD) {
+		SetDSDFallback(audio_format);
+	}
+#endif
+
+	if (Exclusive()) {
+		FindExclusiveFormatSupported(audio_format);
+	} else {
+		FindSharedFormatSupported(audio_format);
+	}
+	bool require_export = audio_format.format == SampleFormat::S24_P32;
+	if (require_export) {
+		PcmExport::Params params;
+		params.dsd_mode = PcmExport::DsdMode::NONE;
+		params.shift8 = false;
+		params.pack24 = false;
+		if (device_format.Format.wBitsPerSample == 32 &&
+		    device_format.Samples.wValidBitsPerSample == 24) {
+			params.shift8 = true;
+		}
+		if (device_format.Format.wBitsPerSample == 24) {
+			params.pack24 = true;
+		}
+		FormatDebug(wasapi_output_domain, "Packing data: shift8=%d pack24=%d",
+			    int(params.shift8), int(params.pack24));
+		pcm_export.emplace();
+		pcm_export->Open(audio_format.format, audio_format.channels, params);
+	}
+
+	using s = std::chrono::seconds;
+	using ms = std::chrono::milliseconds;
+	using ns = std::chrono::nanoseconds;
+	using hundred_ns = std::chrono::duration<uint64_t, std::ratio<1, 10000000>>;
+
+	// The unit in REFERENCE_TIME is hundred nanoseconds
+	REFERENCE_TIME default_device_period, min_device_period;
+
+	if (HRESULT result =
+		    client->GetDevicePeriod(&default_device_period, &min_device_period);
+	    FAILED(result)) {
+		throw FormatHResultError(result, "Unable to get device period");
+	}
+	FormatDebug(wasapi_output_domain,
+		    "Default device period: %I64u ns, Minimum device period: "
+		    "%I64u ns",
+		    ns(hundred_ns(default_device_period)).count(),
+		    ns(hundred_ns(min_device_period)).count());
+
+	REFERENCE_TIME buffer_duration;
+	if (Exclusive()) {
+		buffer_duration = default_device_period;
+	} else {
+		const REFERENCE_TIME align = hundred_ns(ms(50)).count();
+		buffer_duration = (align / default_device_period) * default_device_period;
+	}
+	FormatDebug(wasapi_output_domain, "Buffer duration: %I64u ns",
+		    size_t(ns(hundred_ns(buffer_duration)).count()));
+
+	if (Exclusive()) {
+		if (HRESULT result = client->Initialize(
+			    AUDCLNT_SHAREMODE_EXCLUSIVE,
+			    AUDCLNT_STREAMFLAGS_EVENTCALLBACK, buffer_duration,
+			    buffer_duration,
+			    reinterpret_cast<WAVEFORMATEX *>(&device_format), nullptr);
+		    FAILED(result)) {
+			if (result == AUDCLNT_E_BUFFER_SIZE_NOT_ALIGNED) {
+				// https://docs.microsoft.com/en-us/windows/win32/api/audioclient/nf-audioclient-iaudioclient-initialize
+				UINT32 buffer_size_in_frames = 0;
+				result = client->GetBufferSize(&buffer_size_in_frames);
+				if (FAILED(result)) {
+					throw FormatHResultError(
+						result,
+						"Unable to get audio client buffer size");
+				}
+				buffer_duration =
+					std::ceil(double(buffer_size_in_frames *
+							 hundred_ns(s(1)).count()) /
+						  SampleRate());
+				FormatDebug(
+					wasapi_output_domain,
+					"Aligned buffer duration: %I64u ns",
+					size_t(ns(hundred_ns(buffer_duration)).count()));
+				client.reset();
+				result = device->Activate(__uuidof(IAudioClient),
+							  CLSCTX_ALL, nullptr,
+							  client.AddressCast());
+				if (FAILED(result)) {
+					throw FormatHResultError(
+						result,
+						"Unable to activate audio client");
+				}
+				result = client->Initialize(
+					AUDCLNT_SHAREMODE_EXCLUSIVE,
+					AUDCLNT_STREAMFLAGS_EVENTCALLBACK,
+					buffer_duration, buffer_duration,
+					reinterpret_cast<WAVEFORMATEX *>(&device_format),
+					nullptr);
+			}
+
+			if (FAILED(result)) {
+				throw FormatHResultError(
+					result, "Unable to initialize audio client");
+			}
+		}
+	} else {
+		if (HRESULT result = client->Initialize(
+			    AUDCLNT_SHAREMODE_SHARED, AUDCLNT_STREAMFLAGS_EVENTCALLBACK,
+			    buffer_duration, 0,
+			    reinterpret_cast<WAVEFORMATEX *>(&device_format), nullptr);
+		    FAILED(result)) {
+			throw FormatHResultError(result,
+						 "Unable to initialize audio client");
+		}
+	}
+
+	ComPtr<IAudioRenderClient> render_client;
+	if (HRESULT result = client->GetService(IID_PPV_ARGS(render_client.Address()));
+	    FAILED(result)) {
+		throw FormatHResultError(result, "Unable to get new render client");
+	}
+
+	UINT32 buffer_size_in_frames;
+	if (HRESULT result = client->GetBufferSize(&buffer_size_in_frames);
+	    FAILED(result)) {
+		throw FormatHResultError(result,
+					 "Unable to get audio client buffer size");
+	}
+
+	watermark = buffer_size_in_frames * 3 * FrameSize();
+	thread.emplace(client.get(), std::move(render_client), FrameSize(),
+		       buffer_size_in_frames, is_exclusive);
+
+	if (HRESULT result = client->SetEventHandle(thread->event.handle());
+	    FAILED(result)) {
+		throw FormatHResultError(result, "Unable to set event handler");
+	}
+
+	thread->Start();
+}
+
+void WasapiOutput::Close() noexcept {
+	assert(thread);
+
+	try {
+		COMWorker::Async([&]() {
+			if (HRESULT result = client->Stop(); FAILED(result)) {
+				throw FormatHResultError(result, "Failed to stop client");
+			}
+		}).get();
+		thread->CheckException();
+	} catch (std::exception &err) {
+		FormatError(wasapi_output_domain, "exception while stoping: %s",
+			    err.what());
+	}
+	is_started = false;
+	thread->Finish();
+	thread->Join();
+	COMWorker::Async([&]() {
+		thread.reset();
+		client.reset();
+	}).get();
+	pcm_export.reset();
+}
+
+std::chrono::steady_clock::duration WasapiOutput::Delay() const noexcept {
+	if (!is_started) {
+		// idle while paused
+		return std::chrono::seconds(1);
+	}
+
+	assert(thread);
+
+	const size_t data_size = thread->spsc_buffer.read_available();
+	const size_t delay_size = std::max(data_size, watermark) - watermark;
+
+	using s = std::chrono::seconds;
+	using duration = std::chrono::steady_clock::duration;
+	auto result = duration(s(delay_size)) / device_format.Format.nAvgBytesPerSec;
+	return result;
+}
+
+size_t WasapiOutput::Play(const void *chunk, size_t size) {
+	assert(thread);
+
+	not_interrupted.test_and_set();
+
+	ConstBuffer<void> input(chunk, size);
+	if (pcm_export) {
+		input = pcm_export->Export(input);
+	}
+	if (input.empty())
+		return size;
+
+	do {
+		const size_t consumed_size = thread->spsc_buffer.push(
+			static_cast<const BYTE *>(input.data), input.size);
+		if (consumed_size == 0) {
+			assert(is_started);
+			thread->WaitDataPoped();
+			if (!not_interrupted.test_and_set()) {
+				throw AudioOutputInterrupted{};
+			}
+			continue;
+		}
+
+		if (!is_started) {
+			is_started = true;
+			thread->Play();
+			COMWorker::Async([&]() {
+				if (HRESULT result = client->Start(); FAILED(result)) {
+					throw FormatHResultError(
+						result, "Failed to start client");
+				}
+			}).wait();
+		}
+
+		thread->CheckException();
+
+		if (pcm_export) {
+			return pcm_export->CalcInputSize(consumed_size);
+		}
+		return consumed_size;
+	} while (true);
+}
+
+bool WasapiOutput::Pause() {
+	if (is_started) {
+		thread->Pause();
+		is_started = false;
+	}
+	thread->CheckException();
+	return true;
+}
+
+void WasapiOutput::Interrupt() noexcept {
+	if (thread) {
+		not_interrupted.clear();
+		thread->data_poped.Set();
+	}
+}
+
+void WasapiOutput::Drain() {
+	assert(thread);
+
+	thread->spsc_buffer.consume_all([](auto &&) {});
+	thread->CheckException();
+}
+
+/// run inside COMWorkerThread
+void WasapiOutput::OpenDevice() {
 	enumerator.CoCreateInstance(__uuidof(MMDeviceEnumerator), nullptr,
 				    CLSCTX_INPROC_SERVER);
-
-	device_desc.clear();
-	device.reset();
 
 	if (enumerate_devices && SafeTry([this]() { EnumerateDevices(); })) {
 		for (const auto &[device, desc] : device_desc) {
@@ -349,297 +658,73 @@ void WasapiOutput::Enable() {
 	device_desc.clear();
 }
 
-void WasapiOutput::Disable() noexcept {
-	if (thread) {
-		try {
-			thread->Finish();
-			thread->Join();
-		} catch (std::exception &err) {
-			FormatError(wasapi_output_domain, "exception while disabling: %s",
-				    err.what());
-		}
-		thread.reset();
-		spsc_buffer.reset();
-		client.reset();
-	}
-	device.reset();
-	enumerator.reset();
-	com.reset();
-	event.reset();
-}
-
-void WasapiOutput::Open(AudioFormat &audio_format) {
-	if (audio_format.channels == 0) {
-		throw FormatInvalidArgument("channels should > 0");
-	}
-
-	client.reset();
-
-	HRESULT result;
-	result = device->Activate(__uuidof(IAudioClient), CLSCTX_ALL, nullptr,
-				  client.AddressCast());
-	if (FAILED(result)) {
-		throw FormatHResultError(result, "Unable to activate audio client");
-	}
-
-	if (audio_format.format == SampleFormat::S24_P32) {
-		audio_format.format = SampleFormat::S32;
-	}
-	if (audio_format.channels > 8) {
-		audio_format.channels = 8;
-	}
-
-	if (Exclusive()) {
-		FindExclusiveFormatSupported(audio_format);
-	} else {
-		FindSharedFormatSupported(audio_format);
-	}
-
-	using s = std::chrono::seconds;
-	using ms = std::chrono::milliseconds;
-	using ns = std::chrono::nanoseconds;
-	using hundred_ns = std::chrono::duration<uint64_t, std::ratio<1, 10000000>>;
-
-	// The unit in REFERENCE_TIME is hundred nanoseconds
-	REFERENCE_TIME device_period;
-	result = client->GetDevicePeriod(&device_period, nullptr);
-	if (FAILED(result)) {
-		throw FormatHResultError(result, "Unable to get device period");
-	}
-	FormatDebug(wasapi_output_domain, "Device period: %I64u ns",
-		    size_t(ns(hundred_ns(device_period)).count()));
-
-	REFERENCE_TIME buffer_duration = device_period;
-	if (!Exclusive()) {
-		const REFERENCE_TIME align = hundred_ns(ms(50)).count();
-		buffer_duration = (align / device_period) * device_period;
-	}
-	FormatDebug(wasapi_output_domain, "Buffer duration: %I64u ns",
-		    size_t(ns(hundred_ns(buffer_duration)).count()));
-
-	if (Exclusive()) {
-		result = client->Initialize(
+/// run inside COMWorkerThread
+bool WasapiOutput::TryFormatExclusive(const AudioFormat &audio_format) {
+	for (auto test_format : GetFormats(audio_format)) {
+		HRESULT result = client->IsFormatSupported(
 			AUDCLNT_SHAREMODE_EXCLUSIVE,
-			AUDCLNT_STREAMFLAGS_NOPERSIST | AUDCLNT_STREAMFLAGS_EVENTCALLBACK,
-			buffer_duration, buffer_duration,
-			reinterpret_cast<WAVEFORMATEX *>(&device_format), nullptr);
-		if (result == AUDCLNT_E_BUFFER_SIZE_NOT_ALIGNED) {
-			// https://docs.microsoft.com/en-us/windows/win32/api/audioclient/nf-audioclient-iaudioclient-initialize
-			UINT32 buffer_size_in_frames = 0;
-			result = client->GetBufferSize(&buffer_size_in_frames);
-			if (FAILED(result)) {
-				throw FormatHResultError(
-					result, "Unable to get audio client buffer size");
-			}
-			buffer_duration = std::ceil(
-				double(buffer_size_in_frames * hundred_ns(s(1)).count()) /
-				SampleRate());
-			FormatDebug(wasapi_output_domain,
-				    "Aligned buffer duration: %I64u ns",
-				    size_t(ns(hundred_ns(buffer_duration)).count()));
-			client.reset();
-			result = device->Activate(__uuidof(IAudioClient), CLSCTX_ALL,
-						  nullptr, client.AddressCast());
-			if (FAILED(result)) {
-				throw FormatHResultError(
-					result, "Unable to activate audio client");
-			}
-			result = client->Initialize(
-				AUDCLNT_SHAREMODE_EXCLUSIVE,
-				AUDCLNT_STREAMFLAGS_NOPERSIST |
-					AUDCLNT_STREAMFLAGS_EVENTCALLBACK,
-				buffer_duration, buffer_duration,
-				reinterpret_cast<WAVEFORMATEX *>(&device_format),
-				nullptr);
+			reinterpret_cast<WAVEFORMATEX *>(&test_format), nullptr);
+		const auto format_string = ToString(audio_format);
+		const auto result_string = std::string(HRESULTToString(result));
+		FormatDebug(wasapi_output_domain, "Trying %s %lu %u-%u (exclusive) -> %s",
+			    format_string.c_str(), test_format.Format.nSamplesPerSec,
+			    test_format.Format.wBitsPerSample,
+			    test_format.Samples.wValidBitsPerSample,
+			    result_string.c_str());
+		if (SUCCEEDED(result)) {
+			device_format = test_format;
+			return true;
 		}
-	} else {
-		result = client->Initialize(
-			AUDCLNT_SHAREMODE_SHARED,
-			AUDCLNT_STREAMFLAGS_NOPERSIST | AUDCLNT_STREAMFLAGS_EVENTCALLBACK,
-			buffer_duration, 0,
-			reinterpret_cast<WAVEFORMATEX *>(&device_format), nullptr);
 	}
-
-	if (FAILED(result)) {
-		throw FormatHResultError(result, "Unable to initialize audio client");
-	}
-
-	ComPtr<IAudioRenderClient> render_client;
-	result = client->GetService(IID_PPV_ARGS(render_client.Address()));
-	if (FAILED(result)) {
-		throw FormatHResultError(result, "Unable to get new render client");
-	}
-
-	result = client->SetEventHandle(event->handle());
-	if (FAILED(result)) {
-		throw FormatHResultError(result, "Unable to set event handler");
-	}
-
-	UINT32 buffer_size_in_frames;
-	result = client->GetBufferSize(&buffer_size_in_frames);
-	if (FAILED(result)) {
-		throw FormatHResultError(result,
-					 "Unable to get audio client buffer size");
-	}
-
-	watermark = buffer_size_in_frames * 3 * FrameSize();
-	spsc_buffer = std::make_unique<boost::lockfree::spsc_queue<BYTE>>(
-		buffer_size_in_frames * 4 * FrameSize());
-	thread = std::make_unique<WasapiOutputThread>(
-		event, client, std::move(render_client), FrameSize(),
-		buffer_size_in_frames, is_exclusive, *spsc_buffer);
-	thread->Start();
+	return false;
 }
 
-void WasapiOutput::Close() noexcept {
-	assert(client && thread);
-	Pause();
-	thread->Finish();
-	thread->Join();
-	thread.reset();
-	spsc_buffer.reset();
-	client.reset();
-}
-
-std::chrono::steady_clock::duration WasapiOutput::Delay() const noexcept {
-	if (!client || !is_started) {
-		return std::chrono::steady_clock::duration::zero();
-	}
-
-	const size_t data_size = spsc_buffer->read_available();
-	const size_t delay_size = std::max(data_size, watermark) - watermark;
-
-	using s = std::chrono::seconds;
-	using duration = std::chrono::steady_clock::duration;
-	auto result = duration(s(delay_size)) / device_format.Format.nAvgBytesPerSec;
-	return result;
-}
-
-size_t WasapiOutput::Play(const void *chunk, size_t size) {
-	if (!client || !thread) {
-		return 0;
-	}
-
-	do {
-		const size_t consumed_size =
-			spsc_buffer->push(static_cast<const BYTE *>(chunk), size);
-		if (consumed_size == 0) {
-			assert(is_started);
-			thread->WaitWrite();
-			continue;
-		}
-
-		if (!is_started) {
-			is_started = true;
-
-			thread->Play();
-
-			HRESULT result;
-			result = client->Start();
-			if (FAILED(result)) {
-				throw FormatHResultError(result,
-							 "Failed to start client");
-			}
-		}
-
-		thread->CheckException();
-
-		return consumed_size;
-	} while (true);
-}
-
-void WasapiOutput::Drain() {
-	spsc_buffer->consume_all([](auto &&) {});
-	thread->CheckException();
-}
-
-bool WasapiOutput::Pause() {
-	if (!client || !thread) {
-		return false;
-	}
-	if (!is_started) {
-		return true;
-	}
-
-	HRESULT result;
-	result = client->Stop();
-	if (FAILED(result)) {
-		throw FormatHResultError(result, "Failed to stop client");
-	}
-
-	is_started = false;
-	thread->Pause();
-	thread->CheckException();
-
-	return true;
-}
-
+/// run inside COMWorkerThread
 void WasapiOutput::FindExclusiveFormatSupported(AudioFormat &audio_format) {
-	SetFormat(device_format, audio_format);
-
-	do {
-		HRESULT result;
-		result = client->IsFormatSupported(
-			AUDCLNT_SHAREMODE_EXCLUSIVE,
-			reinterpret_cast<WAVEFORMATEX *>(&device_format), nullptr);
-
-		switch (result) {
-		case S_OK:
-			return;
-		case AUDCLNT_E_UNSUPPORTED_FORMAT:
-			break;
-		default:
-			throw FormatHResultError(result, "IsFormatSupported failed");
-		}
-
-		// Trying PCM fallback.
-		if (audio_format.format == SampleFormat::FLOAT) {
-			audio_format.format = SampleFormat::S32;
+	for (uint8_t channels : {0, 2, 6, 8, 7, 1, 4, 5, 3}) {
+		if (audio_format.channels == channels) {
 			continue;
 		}
-
-		// Trying sample rate fallback.
-		if (audio_format.sample_rate > 96000) {
-			audio_format.sample_rate = 96000;
-			continue;
+		if (channels == 0) {
+			channels = audio_format.channels;
 		}
-
-		if (audio_format.sample_rate > 88200) {
-			audio_format.sample_rate = 88200;
-			continue;
+		auto old_channels = std::exchange(audio_format.channels, channels);
+		for (uint32_t rate : {0, 384000, 352800, 192000, 176400, 96000, 88200,
+				      48000, 44100, 32000, 22050, 16000, 11025, 8000}) {
+			if (audio_format.sample_rate <= rate) {
+				continue;
+			}
+			if (rate == 0) {
+				rate = audio_format.sample_rate;
+			}
+			auto old_rate = std::exchange(audio_format.sample_rate, rate);
+			for (SampleFormat format : {
+				     SampleFormat::UNDEFINED,
+				     SampleFormat::S32,
+				     SampleFormat::S24_P32,
+				     SampleFormat::S16,
+				     SampleFormat::S8,
+			     }) {
+				if (audio_format.format == format) {
+					continue;
+				}
+				if (format == SampleFormat::UNDEFINED) {
+					format = audio_format.format;
+				}
+				auto old_format =
+					std::exchange(audio_format.format, format);
+				if (TryFormatExclusive(audio_format)) {
+					return;
+				}
+				audio_format.format = old_format;
+			}
+			audio_format.sample_rate = old_rate;
 		}
-
-		if (audio_format.sample_rate > 64000) {
-			audio_format.sample_rate = 64000;
-			continue;
-		}
-
-		if (audio_format.sample_rate > 48000) {
-			audio_format.sample_rate = 48000;
-			continue;
-		}
-
-		// Trying 2 channels fallback.
-		if (audio_format.channels > 2) {
-			audio_format.channels = 2;
-			continue;
-		}
-
-		// Trying S16 fallback.
-		if (audio_format.format == SampleFormat::S32) {
-			audio_format.format = SampleFormat::S16;
-			continue;
-		}
-
-		if (audio_format.sample_rate > 41100) {
-			audio_format.sample_rate = 41100;
-			continue;
-		}
-
-		throw FormatHResultError(result, "Format is not supported");
-	} while (true);
+		audio_format.channels = old_channels;
+	}
 }
 
+/// run inside COMWorkerThread
 void WasapiOutput::FindSharedFormatSupported(AudioFormat &audio_format) {
 	HRESULT result;
 	ComHeapPtr<WAVEFORMATEX> mixer_format;
@@ -649,15 +734,23 @@ void WasapiOutput::FindSharedFormatSupported(AudioFormat &audio_format) {
 	if (FAILED(result)) {
 		throw FormatHResultError(result, "GetMixFormat failed");
 	}
-	audio_format.sample_rate = device_format.Format.nSamplesPerSec;
-
-	SetFormat(device_format, audio_format);
+	audio_format.sample_rate = mixer_format->nSamplesPerSec;
+	device_format = GetFormats(audio_format).front();
 
 	ComHeapPtr<WAVEFORMATEXTENSIBLE> closest_format;
 	result = client->IsFormatSupported(
 		AUDCLNT_SHAREMODE_SHARED,
 		reinterpret_cast<WAVEFORMATEX *>(&device_format),
 		closest_format.AddressCast<WAVEFORMATEX>());
+	{
+		const auto format_string = ToString(audio_format);
+		const auto result_string = std::string(HRESULTToString(result));
+		FormatDebug(wasapi_output_domain, "Trying %s %lu %u-%u (shared) -> %s",
+			    format_string.c_str(), device_format.Format.nSamplesPerSec,
+			    device_format.Format.wBitsPerSample,
+			    device_format.Samples.wValidBitsPerSample,
+			    result_string.c_str());
+	}
 
 	if (FAILED(result) && result != AUDCLNT_E_UNSUPPORTED_FORMAT) {
 		throw FormatHResultError(result, "IsFormatSupported failed");
@@ -671,12 +764,23 @@ void WasapiOutput::FindSharedFormatSupported(AudioFormat &audio_format) {
 		// Trying channels fallback.
 		audio_format.channels = mixer_format->nChannels;
 
-		SetFormat(device_format, audio_format);
+		device_format = GetFormats(audio_format).front();
 
 		result = client->IsFormatSupported(
 			AUDCLNT_SHAREMODE_SHARED,
 			reinterpret_cast<WAVEFORMATEX *>(&device_format),
 			closest_format.AddressCast<WAVEFORMATEX>());
+		{
+			const auto format_string = ToString(audio_format);
+			const auto result_string = std::string(HRESULTToString(result));
+			FormatDebug(wasapi_output_domain,
+				    "Trying %s %lu %u-%u (shared) -> %s",
+				    format_string.c_str(),
+				    device_format.Format.nSamplesPerSec,
+				    device_format.Format.wBitsPerSample,
+				    device_format.Samples.wValidBitsPerSample,
+				    result_string.c_str());
+		}
 		if (FAILED(result)) {
 			throw FormatHResultError(result, "Format is not supported");
 		}
@@ -715,7 +819,10 @@ void WasapiOutput::FindSharedFormatSupported(AudioFormat &audio_format) {
 			audio_format.format = SampleFormat::S16;
 			break;
 		case 32:
-			audio_format.format = SampleFormat::S32;
+			audio_format.format =
+				device_format.Samples.wValidBitsPerSample == 32
+					? SampleFormat::S32
+					: SampleFormat::S24_P32;
 			break;
 		}
 	} else if (device_format.SubFormat == KSDATAFORMAT_SUBTYPE_IEEE_FLOAT) {
@@ -723,6 +830,7 @@ void WasapiOutput::FindSharedFormatSupported(AudioFormat &audio_format) {
 	}
 }
 
+/// run inside COMWorkerThread
 void WasapiOutput::EnumerateDevices() {
 	if (!device_desc.empty()) {
 		return;
@@ -775,6 +883,7 @@ void WasapiOutput::EnumerateDevices() {
 	}
 }
 
+/// run inside COMWorkerThread
 void WasapiOutput::GetDevice(unsigned int index) {
 	HRESULT result;
 
@@ -791,6 +900,7 @@ void WasapiOutput::GetDevice(unsigned int index) {
 	}
 }
 
+/// run inside COMWorkerThread
 unsigned int WasapiOutput::SearchDevice(std::string_view name) {
 	if (!SafeTry([this]() { EnumerateDevices(); })) {
 		return kErrorId;
@@ -808,6 +918,7 @@ unsigned int WasapiOutput::SearchDevice(std::string_view name) {
 	return iter->first;
 }
 
+/// run inside COMWorkerThread
 void WasapiOutput::GetDefaultDevice() {
 	HRESULT result;
 	result = enumerator->GetDefaultAudioEndpoint(eRender, eMultimedia,

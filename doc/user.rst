@@ -141,6 +141,15 @@ Basically, there are two ways to compile :program:`MPD` for Windows:
 
 This section is about the latter.
 
+You need:
+
+* `mingw-w64 <http://mingw-w64.org/doku.php>`__
+* `Meson 0.49.0 <http://mesonbuild.com/>`__ and `Ninja
+  <https://ninja-build.org/>`__
+* cmake
+* pkg-config
+* quilt
+
 Just like with the native build, unpack the :program:`MPD` source
 tarball and change into the directory.  Then, instead of
 :program:`meson`, type:
@@ -168,6 +177,11 @@ You need:
 
 * Android SDK
 * `Android NDK r22 <https://developer.android.com/ndk/downloads>`_
+* `Meson 0.49.0 <http://mesonbuild.com/>`__ and `Ninja
+  <https://ninja-build.org/>`__
+* cmake
+* pkg-config
+* quilt
 
 Just like with the native build, unpack the :program:`MPD` source
 tarball and change into the directory.  Then, instead of
