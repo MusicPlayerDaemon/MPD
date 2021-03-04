@@ -29,8 +29,8 @@
 class COM {
 public:
 	COM() {
-		HRESULT result = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
-		if (FAILED(result)) {
+		if (HRESULT result = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+		    FAILED(result)) {
 			throw FormatHResultError(result, "Unable to initialize COM");
 		}
 	}
