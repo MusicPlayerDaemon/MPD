@@ -275,6 +275,7 @@ void WasapiOutputThread::Work() noexcept {
 			}
 
 			BYTE *data;
+			DWORD mode = 0;
 
 			result = render_client->GetBuffer(write_in_frames, &data);
 			if (FAILED(result)) {
@@ -282,18 +283,20 @@ void WasapiOutputThread::Work() noexcept {
 			}
 
 			AtScopeExit(&) {
-				render_client->ReleaseBuffer(write_in_frames, 0);
+				render_client->ReleaseBuffer(write_in_frames, mode);
 			};
 
-			const UINT32 write_size = write_in_frames * frame_size;
-			UINT32 new_data_size = 0;
 			if (current_state == Status::PLAY) {
+				const UINT32 write_size = write_in_frames * frame_size;
+				UINT32 new_data_size = 0;
 				new_data_size = spsc_buffer.pop(data, write_size);
+				std::fill_n(data + new_data_size,
+					    write_size - new_data_size, 0);
 			} else {
+				mode = AUDCLNT_BUFFERFLAGS_SILENT;
 				FormatDebug(wasapi_output_domain,
 					    "Working thread paused");
 			}
-			std::fill_n(data + new_data_size, write_size - new_data_size, 0);
 		} catch (...) {
 			std::unique_lock<Mutex> lock(error.mutex);
 			error.error_ptr = std::current_exception();
