@@ -20,24 +20,16 @@
 #include "ComWorker.hxx"
 #include "Com.hxx"
 #include "thread/Name.hxx"
-#include "util/Domain.hxx"
-#include "Log.hxx"
-
-namespace {
-static constexpr Domain com_worker_domain("com_worker");
-}
 
 Mutex COMWorker::mutex;
 unsigned int COMWorker::reference_count = 0;
 std::optional<COMWorker::COMWorkerThread> COMWorker::thread;
 
 void COMWorker::COMWorkerThread::Work() noexcept {
-	FormatDebug(com_worker_domain, "Working thread started");
 	SetThreadName("COM Worker");
 	COM com{true};
 	while (true) {
 		if (!running_flag.test_and_set()) {
-			FormatDebug(com_worker_domain, "Working thread ended");
 			return;
 		}
 		while (!spsc_buffer.empty()) {
