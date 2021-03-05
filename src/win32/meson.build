@@ -1,5 +1,5 @@
 if not is_windows
-  win32_dep = declare_dependency('', required: false)
+  win32_dep = dependency('', required: false)
   subdir_done()
 endif
 
