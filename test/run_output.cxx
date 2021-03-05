@@ -39,6 +39,31 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+struct CommandLine {
+	FromNarrowPath config_path;
+
+	const char *output_name = nullptr;
+
+	AudioFormat audio_format{44100, SampleFormat::S16, 2};
+};
+
+static CommandLine
+ParseCommandLine(int argc, char **argv)
+{
+	CommandLine c;
+
+	if (argc < 3 || argc > 4)
+		throw std::runtime_error("Usage: run_output CONFIG NAME [FORMAT] <IN");
+
+	c.config_path = argv[1];
+	c.output_name = argv[2];
+
+	if (argc > 3)
+		c.audio_format = ParseAudioFormat(argv[3], false);
+
+	return c;
+}
+
 static std::unique_ptr<AudioOutput>
 LoadAudioOutput(const ConfigData &config, EventLoop &event_loop,
 		const char *name)
@@ -107,34 +132,23 @@ run_output(AudioOutput &ao, AudioFormat audio_format)
 
 int main(int argc, char **argv)
 try {
-	if (argc < 3 || argc > 4) {
-		fprintf(stderr, "Usage: run_output CONFIG NAME [FORMAT] <IN\n");
-		return EXIT_FAILURE;
-	}
-
-	const FromNarrowPath config_path = argv[1];
-
-	AudioFormat audio_format(44100, SampleFormat::S16, 2);
+	const auto c = ParseCommandLine(argc, argv);
 
 	/* read configuration file (mpd.conf) */
 
-	const auto config = AutoLoadConfigFile(config_path);
+	const auto config = AutoLoadConfigFile(c.config_path);
 
 	EventThread io_thread;
 	io_thread.Start();
 
 	/* initialize the audio output */
 
-	auto ao = LoadAudioOutput(config, io_thread.GetEventLoop(), argv[2]);
-
-	/* parse the audio format */
-
-	if (argc > 3)
-		audio_format = ParseAudioFormat(argv[3], false);
+	auto ao = LoadAudioOutput(config, io_thread.GetEventLoop(),
+				  c.output_name);
 
 	/* do it */
 
-	run_output(*ao, audio_format);
+	run_output(*ao, c.audio_format);
 
 	/* cleanup and exit */
 
