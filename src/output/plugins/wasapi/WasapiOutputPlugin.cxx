@@ -642,6 +642,9 @@ bool WasapiOutput::TryFormatExclusive(const AudioFormat &audio_format) {
 			device_format = test_format;
 			return true;
 		}
+
+		if (result == AUDCLNT_E_EXCLUSIVE_MODE_NOT_ALLOWED)
+			throw std::runtime_error("Exclusive mode not allowed");
 	}
 	return false;
 }
