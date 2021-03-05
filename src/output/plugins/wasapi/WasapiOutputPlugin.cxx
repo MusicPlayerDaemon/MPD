@@ -804,8 +804,6 @@ void WasapiOutput::EnumerateDevices() {
 		return;
 	}
 
-	HRESULT result;
-
 	const auto device_collection = EnumAudioEndpoints(*enumerator);
 
 	const UINT count = GetCount(*device_collection);
@@ -838,20 +836,19 @@ WasapiOutput::GetDevice(unsigned int index)
 ComPtr<IMMDevice>
 WasapiOutput::SearchDevice(std::string_view name)
 {
-	if (!SafeTry([this]() { EnumerateDevices(); })) {
-		return nullptr;
+	const auto device_collection = EnumAudioEndpoints(*enumerator);
+
+	const UINT count = GetCount(*device_collection);
+	for (UINT i = 0; i < count; ++i) {
+		auto d = Item(*device_collection, i);
+
+		const auto property_store = OpenPropertyStore(*d);
+		auto n = GetString(*property_store, PKEY_Device_FriendlyName);
+		if (n != nullptr && name.compare(n) == 0)
+			return d;
 	}
-	auto iter =
-		std::find_if(device_desc.cbegin(), device_desc.cend(),
-			     [&name](const auto &desc) { return desc.second == name; });
-	if (iter == device_desc.cend()) {
-		FormatError(wasapi_output_domain, "Device %.*s not founded.",
-			    int(name.size()), name.data());
-		return nullptr;
-	}
-	FormatInfo(wasapi_output_domain, "Select device \"%u\" \"%s\"", iter->first,
-		   iter->second.c_str());
-	return GetDevice(iter->first);
+
+	return nullptr;
 }
 
 static bool wasapi_output_test_default_device() { return true; }
