@@ -17,14 +17,16 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "mixer/MixerInternal.hxx"
 #include "output/plugins/wasapi/WasapiOutputPlugin.hxx"
+#include "mixer/MixerInternal.hxx"
+#include "win32/ComPtr.hxx"
 #include "win32/ComWorker.hxx"
 #include "win32/HResult.hxx"
 
 #include <cmath>
-#include <endpointvolume.h>
 #include <optional>
+
+#include <endpointvolume.h>
 
 class WasapiMixer final : public Mixer {
 	WasapiOutput &output;

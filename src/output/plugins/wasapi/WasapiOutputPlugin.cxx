@@ -16,9 +16,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-#include <initguid.h>
 
-#include "Log.hxx"
 #include "WasapiOutputPlugin.hxx"
 #include "lib/icu/Win32.hxx"
 #include "mixer/MixerList.hxx"
@@ -36,18 +34,23 @@
 #include "util/StringBuffer.hxx"
 #include "win32/Com.hxx"
 #include "win32/ComHeapPtr.hxx"
+#include "win32/ComPtr.hxx"
 #include "win32/ComWorker.hxx"
 #include "win32/HResult.hxx"
 #include "win32/WinEvent.hxx"
+#include "Log.hxx"
 #include "config.h"
 
-#include <algorithm>
 #include <boost/lockfree/spsc_queue.hpp>
+
+#include <algorithm>
 #include <cinttypes>
 #include <cmath>
-#include <functiondiscoverykeys_devpkey.h>
 #include <optional>
 #include <variant>
+
+#include <initguid.h>
+#include <functiondiscoverykeys_devpkey.h>
 
 namespace {
 static constexpr Domain wasapi_output_domain("wasapi_output");

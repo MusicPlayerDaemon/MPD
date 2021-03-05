@@ -20,11 +20,8 @@
 #ifndef MPD_WASAPI_OUTPUT_PLUGIN_HXX
 #define MPD_WASAPI_OUTPUT_PLUGIN_HXX
 
-#include "output/Features.h"
-
 #include "output/OutputAPI.hxx"
 #include "util/Compiler.h"
-#include "win32/ComPtr.hxx"
 
 #include <audioclient.h>
 #include <mmdeviceapi.h>
