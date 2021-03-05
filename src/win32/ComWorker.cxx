@@ -16,11 +16,12 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
+
 #include "ComWorker.hxx"
-#include "Log.hxx"
+#include "Com.hxx"
 #include "thread/Name.hxx"
 #include "util/Domain.hxx"
-#include "win32/Com.hxx"
+#include "Log.hxx"
 
 namespace {
 static constexpr Domain com_worker_domain("com_worker");
