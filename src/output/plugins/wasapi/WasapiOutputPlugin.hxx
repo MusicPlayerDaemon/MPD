@@ -21,7 +21,6 @@
 #define MPD_WASAPI_OUTPUT_PLUGIN_HXX
 
 #include "output/OutputAPI.hxx"
-#include "util/Compiler.h"
 
 #include <audioclient.h>
 #include <mmdeviceapi.h>
@@ -30,12 +29,20 @@ extern const struct AudioOutputPlugin wasapi_output_plugin;
 
 class WasapiOutput;
 
-gcc_pure WasapiOutput &wasapi_output_downcast(AudioOutput &output) noexcept;
+[[gnu::pure]]
+WasapiOutput &
+wasapi_output_downcast(AudioOutput &output) noexcept;
 
-gcc_pure bool wasapi_is_exclusive(WasapiOutput &output) noexcept;
+[[gnu::pure]]
+bool
+wasapi_is_exclusive(WasapiOutput &output) noexcept;
 
-gcc_pure IMMDevice *wasapi_output_get_device(WasapiOutput &output) noexcept;
+[[gnu::pure]]
+IMMDevice *
+wasapi_output_get_device(WasapiOutput &output) noexcept;
 
-gcc_pure IAudioClient *wasapi_output_get_client(WasapiOutput &output) noexcept;
+[[gnu::pure]]
+IAudioClient *
+wasapi_output_get_client(WasapiOutput &output) noexcept;
 
 #endif
