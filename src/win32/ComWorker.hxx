@@ -21,7 +21,6 @@
 #define MPD_WIN32_COM_WORKER_HXX
 
 #include <boost/lockfree/spsc_queue.hpp>
-#include <condition_variable>
 #include <mutex>
 #include <optional>
 
@@ -29,7 +28,6 @@
 #include "thread/Mutex.hxx"
 #include "thread/Thread.hxx"
 #include "win32/WinEvent.hxx"
-#include <objbase.h>
 #include <windows.h>
 
 // Worker thread for all COM operation
