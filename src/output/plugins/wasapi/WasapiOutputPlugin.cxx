@@ -261,7 +261,7 @@ private:
 	void FindSharedFormatSupported(AudioFormat &audio_format);
 	void EnumerateDevices();
 	ComPtr<IMMDevice> GetDevice(unsigned int index);
-	unsigned int SearchDevice(std::string_view name);
+	ComPtr<IMMDevice> SearchDevice(std::string_view name);
 };
 
 WasapiOutput &wasapi_output_downcast(AudioOutput &output) noexcept {
@@ -616,13 +616,12 @@ void WasapiOutput::OpenDevice() {
 	unsigned int id = kErrorId;
 	if (!device_config.empty()) {
 		if (!SafeSilenceTry([this, &id]() { id = std::stoul(device_config); })) {
-			id = SearchDevice(device_config);
-			if (id == kErrorId)
+			device = SearchDevice(device_config);
+			if (!device)
 				throw FormatRuntimeError("Device '%s' not found",
 							 device_config.c_str());
-		}
-
-		device = GetDevice(id);
+		} else
+			device = GetDevice(id);
 	} else {
 		device = GetDefaultAudioEndpoint(*enumerator);
 	}
@@ -836,9 +835,11 @@ WasapiOutput::GetDevice(unsigned int index)
 }
 
 /// run inside COMWorkerThread
-unsigned int WasapiOutput::SearchDevice(std::string_view name) {
+ComPtr<IMMDevice>
+WasapiOutput::SearchDevice(std::string_view name)
+{
 	if (!SafeTry([this]() { EnumerateDevices(); })) {
-		return kErrorId;
+		return nullptr;
 	}
 	auto iter =
 		std::find_if(device_desc.cbegin(), device_desc.cend(),
@@ -846,11 +847,11 @@ unsigned int WasapiOutput::SearchDevice(std::string_view name) {
 	if (iter == device_desc.cend()) {
 		FormatError(wasapi_output_domain, "Device %.*s not founded.",
 			    int(name.size()), name.data());
-		return kErrorId;
+		return nullptr;
 	}
 	FormatInfo(wasapi_output_domain, "Select device \"%u\" \"%s\"", iter->first,
 		   iter->second.c_str());
-	return iter->first;
+	return GetDevice(iter->first);
 }
 
 static bool wasapi_output_test_default_device() { return true; }
