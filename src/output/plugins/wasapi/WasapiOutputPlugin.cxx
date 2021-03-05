@@ -19,6 +19,9 @@
 
 #include "WasapiOutputPlugin.hxx"
 #include "ForMixer.hxx"
+#include "AudioClient.hxx"
+#include "Device.hxx"
+#include "PropertyStore.hxx"
 #include "output/OutputAPI.hxx"
 #include "lib/icu/Win32.hxx"
 #include "mixer/MixerList.hxx"
@@ -35,7 +38,6 @@
 #include "util/ScopeExit.hxx"
 #include "util/StringBuffer.hxx"
 #include "win32/Com.hxx"
-#include "win32/ComHeapPtr.hxx"
 #include "win32/ComPtr.hxx"
 #include "win32/ComWorker.hxx"
 #include "win32/HResult.hxx"
@@ -254,7 +256,6 @@ private:
 	void EnumerateDevices();
 	void GetDevice(unsigned int index);
 	unsigned int SearchDevice(std::string_view name);
-	void GetDefaultDevice();
 };
 
 WasapiOutput &wasapi_output_downcast(AudioOutput &output) noexcept {
@@ -288,13 +289,8 @@ void WasapiOutputThread::Work() noexcept {
 
 			UINT32 write_in_frames = buffer_size_in_frames;
 			if (!is_exclusive) {
-				UINT32 data_in_frames;
-				if (HRESULT result =
-					    client->GetCurrentPadding(&data_in_frames);
-				    FAILED(result)) {
-					throw FormatHResultError(
-						result, "Failed to get current padding");
-				}
+				UINT32 data_in_frames =
+					GetCurrentPaddingFrames(*client);
 
 				if (data_in_frames >= buffer_size_in_frames) {
 					continue;
@@ -366,20 +362,12 @@ void WasapiOutput::DoDisable() noexcept {
 void WasapiOutput::DoOpen(AudioFormat &audio_format) {
 	client.reset();
 
-	DWORD state;
-	if (HRESULT result = device->GetState(&state); FAILED(result)) {
-		throw FormatHResultError(result, "Unable to get device status");
-	}
-	if (state != DEVICE_STATE_ACTIVE) {
+	if (GetState(*device) != DEVICE_STATE_ACTIVE) {
 		device.reset();
 		OpenDevice();
 	}
 
-	if (HRESULT result = device->Activate(__uuidof(IAudioClient), CLSCTX_ALL, nullptr,
-					      client.AddressCast());
-	    FAILED(result)) {
-		throw FormatHResultError(result, "Unable to activate audio client");
-	}
+	client = Activate<IAudioClient>(*device);
 
 	if (audio_format.channels > 8) {
 		audio_format.channels = 8;
@@ -453,13 +441,8 @@ void WasapiOutput::DoOpen(AudioFormat &audio_format) {
 		    FAILED(result)) {
 			if (result == AUDCLNT_E_BUFFER_SIZE_NOT_ALIGNED) {
 				// https://docs.microsoft.com/en-us/windows/win32/api/audioclient/nf-audioclient-iaudioclient-initialize
-				UINT32 buffer_size_in_frames = 0;
-				result = client->GetBufferSize(&buffer_size_in_frames);
-				if (FAILED(result)) {
-					throw FormatHResultError(
-						result,
-						"Unable to get audio client buffer size");
-				}
+				UINT32 buffer_size_in_frames =
+					GetBufferSizeInFrames(*client);
 				buffer_duration =
 					std::ceil(double(buffer_size_in_frames *
 							 hundred_ns(s(1)).count()) /
@@ -469,14 +452,7 @@ void WasapiOutput::DoOpen(AudioFormat &audio_format) {
 					"Aligned buffer duration: %I64u ns",
 					size_t(ns(hundred_ns(buffer_duration)).count()));
 				client.reset();
-				result = device->Activate(__uuidof(IAudioClient),
-							  CLSCTX_ALL, nullptr,
-							  client.AddressCast());
-				if (FAILED(result)) {
-					throw FormatHResultError(
-						result,
-						"Unable to activate audio client");
-				}
+				client = Activate<IAudioClient>(*device);
 				result = client->Initialize(
 					AUDCLNT_SHAREMODE_EXCLUSIVE,
 					AUDCLNT_STREAMFLAGS_EVENTCALLBACK,
@@ -501,27 +477,15 @@ void WasapiOutput::DoOpen(AudioFormat &audio_format) {
 		}
 	}
 
-	ComPtr<IAudioRenderClient> render_client;
-	if (HRESULT result = client->GetService(IID_PPV_ARGS(render_client.Address()));
-	    FAILED(result)) {
-		throw FormatHResultError(result, "Unable to get new render client");
-	}
+	auto render_client = GetService<IAudioRenderClient>(*client);
 
-	UINT32 buffer_size_in_frames;
-	if (HRESULT result = client->GetBufferSize(&buffer_size_in_frames);
-	    FAILED(result)) {
-		throw FormatHResultError(result,
-					 "Unable to get audio client buffer size");
-	}
+	const UINT32 buffer_size_in_frames = GetBufferSizeInFrames(*client);
 
 	watermark = buffer_size_in_frames * 3 * FrameSize();
 	thread.emplace(client.get(), std::move(render_client), FrameSize(),
 		       buffer_size_in_frames, is_exclusive);
 
-	if (HRESULT result = client->SetEventHandle(thread->event.handle());
-	    FAILED(result)) {
-		throw FormatHResultError(result, "Unable to set event handler");
-	}
+	SetEventHandle(*client, thread->event.handle());
 
 	thread->Start();
 }
@@ -531,9 +495,7 @@ void WasapiOutput::Close() noexcept {
 
 	try {
 		COMWorker::Async([&]() {
-			if (HRESULT result = client->Stop(); FAILED(result)) {
-				throw FormatHResultError(result, "Failed to stop client");
-			}
+			Stop(*client);
 		}).get();
 		thread->CheckException();
 	} catch (std::exception &err) {
@@ -595,10 +557,7 @@ size_t WasapiOutput::Play(const void *chunk, size_t size) {
 			is_started = true;
 			thread->Play();
 			COMWorker::Async([&]() {
-				if (HRESULT result = client->Start(); FAILED(result)) {
-					throw FormatHResultError(
-						result, "Failed to start client");
-				}
+				Start(*client);
 			}).wait();
 		}
 
@@ -660,7 +619,7 @@ void WasapiOutput::OpenDevice() {
 	}
 
 	if (!device) {
-		GetDefaultDevice();
+		device = GetDefaultAudioEndpoint(*enumerator);
 	}
 
 	device_desc.clear();
@@ -735,13 +694,10 @@ void WasapiOutput::FindExclusiveFormatSupported(AudioFormat &audio_format) {
 /// run inside COMWorkerThread
 void WasapiOutput::FindSharedFormatSupported(AudioFormat &audio_format) {
 	HRESULT result;
-	ComHeapPtr<WAVEFORMATEX> mixer_format;
 
 	// In shared mode, different sample rate is always unsupported.
-	result = client->GetMixFormat(mixer_format.Address());
-	if (FAILED(result)) {
-		throw FormatHResultError(result, "GetMixFormat failed");
-	}
+	auto mixer_format = GetMixFormat(*client);
+
 	audio_format.sample_rate = mixer_format->nSamplesPerSec;
 	device_format = GetFormats(audio_format).front();
 
@@ -846,66 +802,30 @@ void WasapiOutput::EnumerateDevices() {
 
 	HRESULT result;
 
-	ComPtr<IMMDeviceCollection> device_collection;
-	result = enumerator->EnumAudioEndpoints(eRender, DEVICE_STATE_ACTIVE,
-						device_collection.Address());
-	if (FAILED(result)) {
-		throw FormatHResultError(result, "Unable to enumerate devices");
-	}
+	const auto device_collection = EnumAudioEndpoints(*enumerator);
 
-	UINT count;
-	result = device_collection->GetCount(&count);
-	if (FAILED(result)) {
-		throw FormatHResultError(result, "Collection->GetCount failed");
-	}
+	const UINT count = GetCount(*device_collection);
 
 	device_desc.reserve(count);
 	for (UINT i = 0; i < count; ++i) {
-		ComPtr<IMMDevice> enumerated_device;
-		result = device_collection->Item(i, enumerated_device.Address());
-		if (FAILED(result)) {
-			throw FormatHResultError(result, "Collection->Item failed");
-		}
+		const auto enumerated_device = Item(*device_collection, i);
 
-		ComPtr<IPropertyStore> property_store;
-		result = enumerated_device->OpenPropertyStore(STGM_READ,
-							      property_store.Address());
-		if (FAILED(result)) {
-			throw FormatHResultError(result,
-						 "Device->OpenPropertyStore failed");
-		}
+		const auto property_store =
+			OpenPropertyStore(*enumerated_device);
 
-		PROPVARIANT var_name;
-		PropVariantInit(&var_name);
-		AtScopeExit(&) { PropVariantClear(&var_name); };
+		auto name = GetString(*property_store,
+				      PKEY_Device_FriendlyName);
+		if (name == nullptr)
+			continue;
 
-		result = property_store->GetValue(PKEY_Device_FriendlyName, &var_name);
-		if (FAILED(result)) {
-			throw FormatHResultError(result,
-						 "PropertyStore->GetValue failed");
-		}
-
-		device_desc.emplace_back(
-			i, WideCharToMultiByte(CP_UTF8,
-					       std::wstring_view(var_name.pwszVal)));
+		device_desc.emplace_back(i, std::move(name));
 	}
 }
 
 /// run inside COMWorkerThread
 void WasapiOutput::GetDevice(unsigned int index) {
-	HRESULT result;
-
-	ComPtr<IMMDeviceCollection> device_collection;
-	result = enumerator->EnumAudioEndpoints(eRender, DEVICE_STATE_ACTIVE,
-						device_collection.Address());
-	if (FAILED(result)) {
-		throw FormatHResultError(result, "Unable to enumerate devices");
-	}
-
-	result = device_collection->Item(index, device.Address());
-	if (FAILED(result)) {
-		throw FormatHResultError(result, "Collection->Item failed");
-	}
+	const auto device_collection = EnumAudioEndpoints(*enumerator);
+	device = Item(*device_collection, index);
 }
 
 /// run inside COMWorkerThread
@@ -924,17 +844,6 @@ unsigned int WasapiOutput::SearchDevice(std::string_view name) {
 	FormatInfo(wasapi_output_domain, "Select device \"%u\" \"%s\"", iter->first,
 		   iter->second.c_str());
 	return iter->first;
-}
-
-/// run inside COMWorkerThread
-void WasapiOutput::GetDefaultDevice() {
-	HRESULT result;
-	result = enumerator->GetDefaultAudioEndpoint(eRender, eMultimedia,
-						     device.Address());
-	if (FAILED(result)) {
-		throw FormatHResultError(result,
-					 "Unable to get default device for multimedia");
-	}
 }
 
 static bool wasapi_output_test_default_device() { return true; }

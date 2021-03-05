@@ -18,6 +18,8 @@
  */
 
 #include "output/plugins/wasapi/ForMixer.hxx"
+#include "output/plugins/wasapi/AudioClient.hxx"
+#include "output/plugins/wasapi/Device.hxx"
 #include "mixer/MixerInternal.hxx"
 #include "win32/ComPtr.hxx"
 #include "win32/ComWorker.hxx"
@@ -47,15 +49,8 @@ public:
 			float volume_level;
 
 			if (wasapi_is_exclusive(output)) {
-				ComPtr<IAudioEndpointVolume> endpoint_volume;
-				result = wasapi_output_get_device(output)->Activate(
-					__uuidof(IAudioEndpointVolume), CLSCTX_ALL,
-					nullptr, endpoint_volume.AddressCast());
-				if (FAILED(result)) {
-					throw FormatHResultError(result,
-								 "Unable to get device "
-								 "endpoint volume");
-				}
+				auto endpoint_volume =
+					Activate<IAudioEndpointVolume>(*wasapi_output_get_device(output));
 
 				result = endpoint_volume->GetMasterVolumeLevelScalar(
 					&volume_level);
@@ -65,15 +60,8 @@ public:
 								 "volume level");
 				}
 			} else {
-				ComPtr<ISimpleAudioVolume> session_volume;
-				result = wasapi_output_get_client(output)->GetService(
-					__uuidof(ISimpleAudioVolume),
-					session_volume.AddressCast<void>());
-				if (FAILED(result)) {
-					throw FormatHResultError(result,
-								 "Unable to get client "
-								 "session volume");
-				}
+				auto session_volume =
+					GetService<ISimpleAudioVolume>(*wasapi_output_get_client(output));
 
 				result = session_volume->GetMasterVolume(&volume_level);
 				if (FAILED(result)) {
@@ -93,15 +81,8 @@ public:
 			const float volume_level = volume / 100.0f;
 
 			if (wasapi_is_exclusive(output)) {
-				ComPtr<IAudioEndpointVolume> endpoint_volume;
-				result = wasapi_output_get_device(output)->Activate(
-					__uuidof(IAudioEndpointVolume), CLSCTX_ALL,
-					nullptr, endpoint_volume.AddressCast());
-				if (FAILED(result)) {
-					throw FormatHResultError(
-						result,
-						"Unable to get device endpoint volume");
-				}
+				auto endpoint_volume =
+					Activate<IAudioEndpointVolume>(*wasapi_output_get_device(output));
 
 				result = endpoint_volume->SetMasterVolumeLevelScalar(
 					volume_level, nullptr);
@@ -111,15 +92,8 @@ public:
 						"Unable to set master volume level");
 				}
 			} else {
-				ComPtr<ISimpleAudioVolume> session_volume;
-				result = wasapi_output_get_client(output)->GetService(
-					__uuidof(ISimpleAudioVolume),
-					session_volume.AddressCast<void>());
-				if (FAILED(result)) {
-					throw FormatHResultError(
-						result,
-						"Unable to get client session volume");
-				}
+				auto session_volume =
+					GetService<ISimpleAudioVolume>(*wasapi_output_get_client(output));
 
 				result = session_volume->SetMasterVolume(volume_level,
 									 nullptr);
