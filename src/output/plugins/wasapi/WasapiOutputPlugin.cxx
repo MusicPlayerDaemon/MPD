@@ -260,7 +260,7 @@ private:
 	void FindExclusiveFormatSupported(AudioFormat &audio_format);
 	void FindSharedFormatSupported(AudioFormat &audio_format);
 	void EnumerateDevices();
-	void GetDevice(unsigned int index);
+	ComPtr<IMMDevice> GetDevice(unsigned int index);
 	unsigned int SearchDevice(std::string_view name);
 };
 
@@ -622,7 +622,7 @@ void WasapiOutput::OpenDevice() {
 							 device_config.c_str());
 		}
 
-		GetDevice(id);
+		device = GetDevice(id);
 	} else {
 		device = GetDefaultAudioEndpoint(*enumerator);
 	}
@@ -828,9 +828,11 @@ void WasapiOutput::EnumerateDevices() {
 }
 
 /// run inside COMWorkerThread
-void WasapiOutput::GetDevice(unsigned int index) {
+ComPtr<IMMDevice>
+WasapiOutput::GetDevice(unsigned int index)
+{
 	const auto device_collection = EnumAudioEndpoints(*enumerator);
-	device = Item(*device_collection, index);
+	return Item(*device_collection, index);
 }
 
 /// run inside COMWorkerThread
