@@ -239,7 +239,6 @@ private:
 	bool is_exclusive;
 	bool enumerate_devices;
 	std::string device_config;
-	std::vector<std::pair<unsigned int, AllocatedString>> device_desc;
 	ComPtr<IMMDeviceEnumerator> enumerator;
 	ComPtr<IMMDevice> device;
 	ComPtr<IAudioClient> client;
@@ -604,12 +603,11 @@ void WasapiOutput::OpenDevice() {
 	enumerator.CoCreateInstance(__uuidof(MMDeviceEnumerator), nullptr,
 				    CLSCTX_INPROC_SERVER);
 
-	if (enumerate_devices && SafeTry([this]() { EnumerateDevices(); })) {
-		for (const auto &[device, desc] : device_desc) {
-			FormatNotice(wasapi_output_domain,
-				     "Device \"%u\" \"%s\"",
-				     device,
-				     desc.c_str());
+	if (enumerate_devices) {
+		try {
+			EnumerateDevices();
+		} catch (...) {
+			LogError(std::current_exception());
 		}
 	}
 
@@ -625,8 +623,6 @@ void WasapiOutput::OpenDevice() {
 	} else {
 		device = GetDefaultAudioEndpoint(*enumerator);
 	}
-
-	device_desc.clear();
 }
 
 /// run inside COMWorkerThread
@@ -800,15 +796,9 @@ void WasapiOutput::FindSharedFormatSupported(AudioFormat &audio_format) {
 
 /// run inside COMWorkerThread
 void WasapiOutput::EnumerateDevices() {
-	if (!device_desc.empty()) {
-		return;
-	}
-
 	const auto device_collection = EnumAudioEndpoints(*enumerator);
 
 	const UINT count = GetCount(*device_collection);
-
-	device_desc.reserve(count);
 	for (UINT i = 0; i < count; ++i) {
 		const auto enumerated_device = Item(*device_collection, i);
 
@@ -820,7 +810,8 @@ void WasapiOutput::EnumerateDevices() {
 		if (name == nullptr)
 			continue;
 
-		device_desc.emplace_back(i, std::move(name));
+		FormatNotice(wasapi_output_domain,
+			     "Device \"%u\" \"%s\"", i, name.c_str());
 	}
 }
 
