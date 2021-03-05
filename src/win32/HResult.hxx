@@ -23,7 +23,6 @@
 #include "util/Compiler.h"
 
 #include <cassert>
-#include <cstdarg>
 #include <cstdio>
 #include <string_view>
 #include <system_error>
@@ -86,22 +85,7 @@ static inline const std::error_category &hresult_category() noexcept {
 	return hresult_category_instance;
 }
 
-gcc_printf(2, 3) static inline std::system_error
-	FormatHResultError(HRESULT result, const char *fmt, ...) noexcept {
-	std::va_list args1, args2;
-	va_start(args1, fmt);
-	va_copy(args2, args1);
-
-	const int size = vsnprintf(nullptr, 0, fmt, args1);
-	va_end(args1);
-	assert(size >= 0);
-
-	auto buffer = std::make_unique<char[]>(size + 1);
-	vsprintf(buffer.get(), fmt, args2);
-	va_end(args2);
-
-	return std::system_error(std::error_code(result, hresult_category()),
-				 std::string(buffer.get(), size));
-}
+gcc_printf(2, 3) std::system_error
+FormatHResultError(HRESULT result, const char *fmt, ...) noexcept;
 
 #endif

@@ -6,6 +6,7 @@ endif
 win32 = static_library(
   'win32',
   'ComWorker.cxx',
+  'HResult.cxx',
   include_directories: inc,
 )
 
