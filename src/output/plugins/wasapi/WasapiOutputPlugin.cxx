@@ -18,6 +18,7 @@
  */
 
 #include "WasapiOutputPlugin.hxx"
+#include "ForMixer.hxx"
 #include "output/OutputAPI.hxx"
 #include "lib/icu/Win32.hxx"
 #include "mixer/MixerList.hxx"

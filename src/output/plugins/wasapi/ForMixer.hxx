@@ -17,9 +17,28 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_WASAPI_OUTPUT_PLUGIN_HXX
-#define MPD_WASAPI_OUTPUT_PLUGIN_HXX
+#ifndef MPD_WASAPI_OUTPUT_FOR_MIXER_HXX
+#define MPD_WASAPI_OUTPUT_FOR_MIXER_HXX
 
-extern const struct AudioOutputPlugin wasapi_output_plugin;
+struct IMMDevice;
+struct IAudioClient;
+class AudioOutput;
+class WasapiOutput;
+
+[[gnu::pure]]
+WasapiOutput &
+wasapi_output_downcast(AudioOutput &output) noexcept;
+
+[[gnu::pure]]
+bool
+wasapi_is_exclusive(WasapiOutput &output) noexcept;
+
+[[gnu::pure]]
+IMMDevice *
+wasapi_output_get_device(WasapiOutput &output) noexcept;
+
+[[gnu::pure]]
+IAudioClient *
+wasapi_output_get_client(WasapiOutput &output) noexcept;
 
 #endif

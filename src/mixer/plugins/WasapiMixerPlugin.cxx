@@ -17,7 +17,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "output/plugins/wasapi/WasapiOutputPlugin.hxx"
+#include "output/plugins/wasapi/ForMixer.hxx"
 #include "mixer/MixerInternal.hxx"
 #include "win32/ComPtr.hxx"
 #include "win32/ComWorker.hxx"
