@@ -22,8 +22,6 @@
 
 #include "util/Compiler.h"
 
-#include <cassert>
-#include <cstdio>
 #include <string_view>
 #include <system_error>
 
@@ -66,16 +64,7 @@ static inline const std::error_category &hresult_category() noexcept;
 class HResultCategory : public std::error_category {
 public:
 	const char *name() const noexcept override { return "HRESULT"; }
-	std::string message(int Errcode) const override {
-		const auto msg = HRESULTToString(Errcode);
-		if (!msg.empty()) {
-			return std::string(msg);
-		}
-		char buffer[11]; // "0x12345678\0"
-		int size = snprintf(buffer, sizeof(buffer), "0x%1x", Errcode);
-		assert(2 <= size && size <= 10);
-		return std::string(buffer, size);
-	}
+	std::string message(int Errcode) const override;
 	std::error_condition default_error_condition(int code) const noexcept override {
 		return std::error_condition(code, hresult_category());
 	}

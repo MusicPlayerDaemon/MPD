@@ -19,8 +19,23 @@
 
 #include "HResult.hxx"
 
+#include <cassert>
 #include <cstdarg>
+#include <cstdio>
 #include <memory>
+
+std::string
+HResultCategory::message(int Errcode) const
+{
+	const auto msg = HRESULTToString(Errcode);
+	if (!msg.empty())
+		return std::string(msg);
+
+	char buffer[11]; // "0x12345678\0"
+	int size = snprintf(buffer, sizeof(buffer), "0x%1x", Errcode);
+	assert(2 <= size && size <= 10);
+	return std::string(buffer, size);
+}
 
 std::system_error
 FormatHResultError(HRESULT result, const char *fmt, ...) noexcept
