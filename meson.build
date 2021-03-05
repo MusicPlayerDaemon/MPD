@@ -311,7 +311,6 @@ sources = [
 if is_windows
   sources += [
     'src/win32/Win32Main.cxx',
-    'src/win32/ComWorker.cxx',
   ]
 endif
 
@@ -349,6 +348,7 @@ subdir('src/system')
 subdir('src/thread')
 subdir('src/net')
 subdir('src/event')
+subdir('src/win32')
 
 subdir('src/apple')
 

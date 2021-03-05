@@ -22,13 +22,8 @@
 
 #include "util/Compiler.h"
 
-#include <cassert>
-#include <cstdarg>
-#include <cstdio>
-#include <stdexcept>
 #include <string_view>
 #include <system_error>
-#include <vector>
 
 #include <audiopolicy.h>
 
@@ -69,16 +64,7 @@ static inline const std::error_category &hresult_category() noexcept;
 class HResultCategory : public std::error_category {
 public:
 	const char *name() const noexcept override { return "HRESULT"; }
-	std::string message(int Errcode) const override {
-		const auto msg = HRESULTToString(Errcode);
-		if (!msg.empty()) {
-			return std::string(msg);
-		}
-		char buffer[11]; // "0x12345678\0"
-		int size = snprintf(buffer, sizeof(buffer), "0x%1x", Errcode);
-		assert(2 <= size && size <= 10);
-		return std::string(buffer, size);
-	}
+	std::string message(int Errcode) const override;
 	std::error_condition default_error_condition(int code) const noexcept override {
 		return std::error_condition(code, hresult_category());
 	}
@@ -88,22 +74,7 @@ static inline const std::error_category &hresult_category() noexcept {
 	return hresult_category_instance;
 }
 
-gcc_printf(2, 3) static inline std::runtime_error
-	FormatHResultError(HRESULT result, const char *fmt, ...) noexcept {
-	std::va_list args1, args2;
-	va_start(args1, fmt);
-	va_copy(args2, args1);
-
-	const int size = vsnprintf(nullptr, 0, fmt, args1);
-	va_end(args1);
-	assert(size >= 0);
-
-	auto buffer = std::make_unique<char[]>(size + 1);
-	vsprintf(buffer.get(), fmt, args2);
-	va_end(args2);
-
-	return std::system_error(std::error_code(result, hresult_category()),
-				 std::string(buffer.get(), size));
-}
+gcc_printf(2, 3) std::system_error
+FormatHResultError(HRESULT result, const char *fmt, ...) noexcept;
 
 #endif

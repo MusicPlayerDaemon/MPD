@@ -155,7 +155,7 @@ public:
 	void Finish() noexcept { return SetStatus(Status::FINISH); }
 	void Play() noexcept { return SetStatus(Status::PLAY); }
 	void Pause() noexcept { return SetStatus(Status::PAUSE); }
-	void WaitDataPoped() noexcept { data_poped.Wait(INFINITE); }
+	void WaitDataPoped() noexcept { data_poped.Wait(); }
 	void CheckException() {
 		if (error.occur.load()) {
 			auto err = std::exchange(error.ptr, nullptr);
@@ -269,7 +269,7 @@ void WasapiOutputThread::Work() noexcept {
 	COM com{true};
 	while (true) {
 		try {
-			event.Wait(INFINITE);
+			event.Wait();
 
 			Status current_state = status.load();
 			if (current_state == Status::FINISH) {
@@ -322,7 +322,7 @@ void WasapiOutputThread::Work() noexcept {
 		} catch (...) {
 			error.ptr = std::current_exception();
 			error.occur.store(true);
-			error.thrown.Wait(INFINITE);
+			error.thrown.Wait();
 		}
 	}
 }

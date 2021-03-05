@@ -20,7 +20,6 @@
 #ifndef MPD_WIN32_WINEVENT_HXX
 #define MPD_WIN32_WINEVENT_HXX
 
-#include "system/Error.hxx"
 #include <windows.h>
 
 // RAII for Windows unnamed event object
@@ -28,11 +27,11 @@
 
 class WinEvent {
 public:
-	WinEvent() : event(CreateEventW(nullptr, false, false, nullptr)) {
-		if (!event) {
-			throw FormatLastError("Error creating events");
-		}
-	}
+	/**
+	 * Throws on error.
+	 */
+	WinEvent();
+
 	~WinEvent() noexcept { CloseHandle(event); }
 	WinEvent(WinEvent &&) = delete;
 	WinEvent(const WinEvent &) = delete;
@@ -41,7 +40,7 @@ public:
 
 	HANDLE handle() noexcept { return event; }
 
-	DWORD Wait(DWORD milliseconds) noexcept {
+	DWORD Wait(DWORD milliseconds=INFINITE) noexcept {
 		return WaitForSingleObject(event, milliseconds);
 	}
 

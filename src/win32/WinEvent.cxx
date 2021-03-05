@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 The Music Player Daemon Project
+ * Copyright 2020-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,26 +17,12 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "ComWorker.hxx"
-#include "Com.hxx"
-#include "thread/Name.hxx"
+#include "WinEvent.hxx"
+#include "system/Error.hxx"
 
-Mutex COMWorker::mutex;
-unsigned int COMWorker::reference_count = 0;
-std::optional<COMWorker::COMWorkerThread> COMWorker::thread;
-
-void COMWorker::COMWorkerThread::Work() noexcept {
-	SetThreadName("COM Worker");
-	COM com{true};
-	while (true) {
-		if (!running_flag.test_and_set()) {
-			return;
-		}
-		while (!spsc_buffer.empty()) {
-			std::function<void()> function;
-			spsc_buffer.pop(function);
-			function();
-		}
-		event.Wait(200);
-	}
+WinEvent::WinEvent()
+	:event(CreateEventW(nullptr, false, false, nullptr))
+{
+	if (!event)
+		throw FormatLastError("Error creating events");
 }

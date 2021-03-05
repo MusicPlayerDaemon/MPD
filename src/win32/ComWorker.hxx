@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 The Music Player Daemon Project
+ * Copyright 2020-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -20,16 +20,15 @@
 #ifndef MPD_WIN32_COM_WORKER_HXX
 #define MPD_WIN32_COM_WORKER_HXX
 
-#include <boost/lockfree/spsc_queue.hpp>
-#include <condition_variable>
-#include <mutex>
-#include <optional>
-
+#include "WinEvent.hxx"
 #include "thread/Future.hxx"
 #include "thread/Mutex.hxx"
 #include "thread/Thread.hxx"
-#include "win32/WinEvent.hxx"
-#include <objbase.h>
+
+#include <boost/lockfree/spsc_queue.hpp>
+#include <mutex>
+#include <optional>
+
 #include <windows.h>
 
 // Worker thread for all COM operation
