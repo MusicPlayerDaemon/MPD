@@ -1218,6 +1218,8 @@ The `Windows Audio Session API <https://docs.microsoft.com/en-us/windows/win32/c
      - Enumerate all devices in log while playing started. Useful for device configuration. The default value is "no".
    * - **exclusive yes|no**
      - Exclusive mode blocks all other audio source, and get best audio quality without resampling. Stopping playing release the exclusive control of the output device. The default value is "no".
+   * - **dop yes|no**
+     - Enable DSD over PCM. Require exclusive mode. The default value is "no".
 
 
 .. _filter_plugins:

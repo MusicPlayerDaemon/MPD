@@ -107,6 +107,17 @@ inline bool SafeSilenceTry(Functor &&functor) {
 }
 
 std::vector<WAVEFORMATEXTENSIBLE> GetFormats(const AudioFormat &audio_format) noexcept {
+#ifdef ENABLE_DSD
+	if (audio_format.format == SampleFormat::DSD) {
+		AudioFormat dop_format = audio_format;
+		PcmExport::Params params;
+		params.dsd_mode = PcmExport::DsdMode::DOP;
+		dop_format.sample_rate =
+			params.CalcOutputSampleRate(audio_format.sample_rate);
+		dop_format.format = SampleFormat::S24_P32;
+		return GetFormats(dop_format);
+	}
+#endif
 	std::vector<WAVEFORMATEXTENSIBLE> Result;
 	if (audio_format.format == SampleFormat::S24_P32) {
 		Result.resize(2);
@@ -238,6 +249,9 @@ private:
 	bool is_started = false;
 	bool is_exclusive;
 	bool enumerate_devices;
+#ifdef ENABLE_DSD
+	bool dop_setting;
+#endif
 	std::string device_config;
 	ComPtr<IMMDeviceEnumerator> enumerator;
 	ComPtr<IMMDevice> device;
@@ -344,7 +358,11 @@ WasapiOutput::WasapiOutput(const ConfigBlock &block)
 : AudioOutput(FLAG_ENABLE_DISABLE | FLAG_PAUSE),
   is_exclusive(block.GetBlockValue("exclusive", false)),
   enumerate_devices(block.GetBlockValue("enumerate", false)),
-  device_config(block.GetBlockValue("device", "")) {}
+#ifdef ENABLE_DSD
+  dop_setting(block.GetBlockValue("dop", false)),
+#endif
+  device_config(block.GetBlockValue("device", "")) {
+}
 
 /// run inside COMWorkerThread
 void WasapiOutput::DoDisable() noexcept {
@@ -379,20 +397,27 @@ void WasapiOutput::DoOpen(AudioFormat &audio_format) {
 	}
 
 #ifdef ENABLE_DSD
-	if (audio_format.format == SampleFormat::DSD) {
+	if (!dop_setting && audio_format.format == SampleFormat::DSD) {
 		SetDSDFallback(audio_format);
 	}
 #endif
-
 	if (Exclusive()) {
 		FindExclusiveFormatSupported(audio_format);
 	} else {
 		FindSharedFormatSupported(audio_format);
 	}
 	bool require_export = audio_format.format == SampleFormat::S24_P32;
+#ifdef ENABLE_DSD
+	require_export |= audio_format.format == SampleFormat::DSD;
+#endif
 	if (require_export) {
 		PcmExport::Params params;
 		params.dsd_mode = PcmExport::DsdMode::NONE;
+#ifdef ENABLE_DSD
+		if (audio_format.format == SampleFormat::DSD) {
+			params.dsd_mode = PcmExport::DsdMode::DOP;
+		}
+#endif
 		params.shift8 = false;
 		params.pack24 = false;
 		if (device_format.Format.wBitsPerSample == 32 &&
@@ -659,6 +684,16 @@ void WasapiOutput::FindExclusiveFormatSupported(AudioFormat &audio_format) {
 			channels = audio_format.channels;
 		}
 		auto old_channels = std::exchange(audio_format.channels, channels);
+#ifdef ENABLE_DSD
+		bool was_dsd = false;
+		if (audio_format.format == SampleFormat::DSD) {
+			if (dop_setting && TryFormatExclusive(audio_format)) {
+				return;
+			}
+			was_dsd = true;
+			SetDSDFallback(audio_format);
+		}
+#endif
 		for (uint32_t rate : {0, 384000, 352800, 192000, 176400, 96000, 88200,
 				      48000, 44100, 32000, 22050, 16000, 11025, 8000}) {
 			if (audio_format.sample_rate <= rate) {
@@ -690,6 +725,11 @@ void WasapiOutput::FindExclusiveFormatSupported(AudioFormat &audio_format) {
 			}
 			audio_format.sample_rate = old_rate;
 		}
+#ifdef ENABLE_DSD
+		if (was_dsd) {
+			audio_format.format = SampleFormat::DSD;
+		}
+#endif
 		audio_format.channels = old_channels;
 	}
 }
