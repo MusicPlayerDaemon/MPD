@@ -88,7 +88,7 @@ static inline const std::error_category &hresult_category() noexcept {
 	return hresult_category_instance;
 }
 
-gcc_printf(2, 3) static inline std::runtime_error
+gcc_printf(2, 3) static inline std::system_error
 	FormatHResultError(HRESULT result, const char *fmt, ...) noexcept {
 	std::va_list args1, args2;
 	va_start(args1, fmt);
