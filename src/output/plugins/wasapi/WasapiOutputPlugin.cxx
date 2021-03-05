@@ -18,6 +18,7 @@
  */
 
 #include "WasapiOutputPlugin.hxx"
+#include "output/OutputAPI.hxx"
 #include "lib/icu/Win32.hxx"
 #include "mixer/MixerList.hxx"
 #include "output/Error.hxx"
@@ -49,8 +50,10 @@
 #include <optional>
 #include <variant>
 
+#include <audioclient.h>
 #include <initguid.h>
 #include <functiondiscoverykeys_devpkey.h>
+#include <mmdeviceapi.h>
 
 namespace {
 static constexpr Domain wasapi_output_domain("wasapi_output");

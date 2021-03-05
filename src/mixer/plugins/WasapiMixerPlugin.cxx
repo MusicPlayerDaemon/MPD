@@ -26,7 +26,9 @@
 #include <cmath>
 #include <optional>
 
+#include <audioclient.h>
 #include <endpointvolume.h>
+#include <mmdeviceapi.h>
 
 class WasapiMixer final : public Mixer {
 	WasapiOutput &output;

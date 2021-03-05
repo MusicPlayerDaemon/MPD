@@ -20,13 +20,11 @@
 #ifndef MPD_WASAPI_OUTPUT_PLUGIN_HXX
 #define MPD_WASAPI_OUTPUT_PLUGIN_HXX
 
-#include "output/OutputAPI.hxx"
-
-#include <audioclient.h>
-#include <mmdeviceapi.h>
-
 extern const struct AudioOutputPlugin wasapi_output_plugin;
 
+struct IMMDevice;
+struct IAudioClient;
+class AudioOutput;
 class WasapiOutput;
 
 [[gnu::pure]]
