@@ -22,7 +22,7 @@
 
 #include "CriticalSection.hxx"
 #include "WindowsCond.hxx"
-#include <atomic>
+
 #include <memory>
 #include <variant>
 
