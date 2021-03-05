@@ -40,7 +40,7 @@ public:
 
 	HANDLE handle() noexcept { return event; }
 
-	DWORD Wait(DWORD milliseconds) noexcept {
+	DWORD Wait(DWORD milliseconds=INFINITE) noexcept {
 		return WaitForSingleObject(event, milliseconds);
 	}
 
