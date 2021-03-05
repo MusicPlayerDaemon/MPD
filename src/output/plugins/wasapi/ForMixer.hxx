@@ -17,28 +17,28 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_WASAPI_OUTPUT_PLUGIN_HXX
-#define MPD_WASAPI_OUTPUT_PLUGIN_HXX
+#ifndef MPD_WASAPI_OUTPUT_FOR_MIXER_HXX
+#define MPD_WASAPI_OUTPUT_FOR_MIXER_HXX
 
-#include "output/Features.h"
-
-#include "../OutputAPI.hxx"
-#include "util/Compiler.h"
-#include "win32/ComPtr.hxx"
-
-#include <audioclient.h>
-#include <mmdeviceapi.h>
-
-extern const struct AudioOutputPlugin wasapi_output_plugin;
-
+struct IMMDevice;
+struct IAudioClient;
+class AudioOutput;
 class WasapiOutput;
 
-gcc_pure WasapiOutput &wasapi_output_downcast(AudioOutput &output) noexcept;
+[[gnu::pure]]
+WasapiOutput &
+wasapi_output_downcast(AudioOutput &output) noexcept;
 
-gcc_pure bool wasapi_is_exclusive(WasapiOutput &output) noexcept;
+[[gnu::pure]]
+bool
+wasapi_is_exclusive(WasapiOutput &output) noexcept;
 
-gcc_pure IMMDevice *wasapi_output_get_device(WasapiOutput &output) noexcept;
+[[gnu::pure]]
+IMMDevice *
+wasapi_output_get_device(WasapiOutput &output) noexcept;
 
-gcc_pure IAudioClient *wasapi_output_get_client(WasapiOutput &output) noexcept;
+[[gnu::pure]]
+IAudioClient *
+wasapi_output_get_client(WasapiOutput &output) noexcept;
 
 #endif

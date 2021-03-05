@@ -32,6 +32,7 @@ template <typename T>
 class ComPtr {
 public:
 	using pointer = T *;
+	using reference = T &;
 	using element_type = T;
 
 	constexpr ComPtr() noexcept : ptr(nullptr) {}
@@ -75,7 +76,7 @@ public:
 	pointer get() const noexcept { return ptr; }
 	explicit operator bool() const noexcept { return ptr; }
 
-	auto operator*() const { return *ptr; }
+	reference operator*() const noexcept { return *ptr; }
 	pointer operator->() const noexcept { return ptr; }
 
 	void CoCreateInstance(REFCLSID class_id, LPUNKNOWN unknown_outer = nullptr,
