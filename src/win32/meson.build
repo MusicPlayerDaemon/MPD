@@ -7,6 +7,7 @@ win32 = static_library(
   'win32',
   'ComWorker.cxx',
   'HResult.cxx',
+  'WinEvent.cxx',
   include_directories: inc,
 )
 
