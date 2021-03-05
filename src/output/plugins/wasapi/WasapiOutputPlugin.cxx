@@ -90,8 +90,8 @@ inline bool SafeTry(Functor &&functor) {
 	try {
 		functor();
 		return true;
-	} catch (std::runtime_error &err) {
-		FormatError(wasapi_output_domain, "%s", err.what());
+	} catch (...) {
+		FormatError(std::current_exception(), "%s");
 		return false;
 	}
 }
@@ -101,7 +101,7 @@ inline bool SafeSilenceTry(Functor &&functor) {
 	try {
 		functor();
 		return true;
-	} catch (std::runtime_error &err) {
+	} catch (...) {
 		return false;
 	}
 }
