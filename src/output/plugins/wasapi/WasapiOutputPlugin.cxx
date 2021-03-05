@@ -39,6 +39,7 @@
 #include "win32/ComWorker.hxx"
 #include "win32/HResult.hxx"
 #include "win32/WinEvent.hxx"
+#include "config.h"
 
 #include <algorithm>
 #include <boost/lockfree/spsc_queue.hpp>
