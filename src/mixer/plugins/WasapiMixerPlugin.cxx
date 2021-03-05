@@ -18,7 +18,7 @@
  */
 
 #include "mixer/MixerInternal.hxx"
-#include "output/plugins/WasapiOutputPlugin.hxx"
+#include "output/plugins/wasapi/WasapiOutputPlugin.hxx"
 #include "win32/ComWorker.hxx"
 #include "win32/HResult.hxx"
 

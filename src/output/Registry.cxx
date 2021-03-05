@@ -42,7 +42,7 @@
 #include "plugins/WinmmOutputPlugin.hxx"
 #endif
 #ifdef ENABLE_WASAPI_OUTPUT
-#include "plugins/WasapiOutputPlugin.hxx"
+#include "plugins/wasapi/WasapiOutputPlugin.hxx"
 #endif
 #include "util/StringAPI.hxx"
 

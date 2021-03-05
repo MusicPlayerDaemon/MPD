@@ -22,7 +22,7 @@
 
 #include "output/Features.h"
 
-#include "../OutputAPI.hxx"
+#include "output/OutputAPI.hxx"
 #include "util/Compiler.h"
 #include "win32/ComPtr.hxx"
 
