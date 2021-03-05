@@ -205,7 +205,13 @@ public:
 	WasapiOutput(const ConfigBlock &block);
 	void Enable() override {
 		COMWorker::Aquire();
-		COMWorker::Async([&]() { OpenDevice(); }).get();
+
+		try {
+			COMWorker::Async([&]() { OpenDevice(); }).get();
+		} catch (...) {
+			COMWorker::Release();
+			throw;
+		}
 	}
 	void Disable() noexcept override {
 		COMWorker::Async([&]() { DoDisable(); }).get();
