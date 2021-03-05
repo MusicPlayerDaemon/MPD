@@ -617,14 +617,13 @@ void WasapiOutput::OpenDevice() {
 	if (!device_config.empty()) {
 		if (!SafeSilenceTry([this, &id]() { id = std::stoul(device_config); })) {
 			id = SearchDevice(device_config);
+			if (id == kErrorId)
+				throw FormatRuntimeError("Device '%s' not found",
+							 device_config.c_str());
 		}
-	}
 
-	if (id != kErrorId) {
-		SafeTry([this, id]() { GetDevice(id); });
-	}
-
-	if (!device) {
+		GetDevice(id);
+	} else {
 		device = GetDefaultAudioEndpoint(*enumerator);
 	}
 
