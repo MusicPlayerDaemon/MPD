@@ -26,10 +26,13 @@
 #include "fs/NarrowPath.hxx"
 #include "pcm/AudioParser.hxx"
 #include "pcm/AudioFormat.hxx"
+#include "util/OptionDef.hxx"
+#include "util/OptionParser.hxx"
 #include "util/StringBuffer.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/ScopeExit.hxx"
 #include "util/PrintException.hxx"
+#include "LogBackend.hxx"
 
 #include <cassert>
 #include <memory>
@@ -45,6 +48,16 @@ struct CommandLine {
 	const char *output_name = nullptr;
 
 	AudioFormat audio_format{44100, SampleFormat::S16, 2};
+
+	bool verbose = false;
+};
+
+enum Option {
+	OPTION_VERBOSE,
+};
+
+static constexpr OptionDef option_defs[] = {
+	{"verbose", 'v', false, "Verbose logging"},
 };
 
 static CommandLine
@@ -52,14 +65,24 @@ ParseCommandLine(int argc, char **argv)
 {
 	CommandLine c;
 
-	if (argc < 3 || argc > 4)
+	OptionParser option_parser(option_defs, argc, argv);
+	while (auto o = option_parser.Next()) {
+		switch (Option(o.index)) {
+		case OPTION_VERBOSE:
+			c.verbose = true;
+			break;
+		}
+	}
+
+	auto args = option_parser.GetRemaining();
+	if (args.size < 2 || args.size > 3)
 		throw std::runtime_error("Usage: run_output CONFIG NAME [FORMAT] <IN");
 
-	c.config_path = argv[1];
-	c.output_name = argv[2];
+	c.config_path = args[0];
+	c.output_name = args[1];
 
-	if (argc > 3)
-		c.audio_format = ParseAudioFormat(argv[3], false);
+	if (args.size > 2)
+		c.audio_format = ParseAudioFormat(args[2], false);
 
 	return c;
 }
@@ -82,6 +105,8 @@ LoadAudioOutput(const ConfigData &config, EventLoop &event_loop,
 	if (plugin == nullptr)
 		throw FormatRuntimeError("No such audio output plugin: %s",
 					 plugin_name);
+#include "util/OptionDef.hxx"
+#include "util/OptionParser.hxx"
 
 	return std::unique_ptr<AudioOutput>(ao_plugin_init(event_loop, *plugin,
 							   *block));
@@ -133,6 +158,7 @@ run_output(AudioOutput &ao, AudioFormat audio_format)
 int main(int argc, char **argv)
 try {
 	const auto c = ParseCommandLine(argc, argv);
+	SetLogThreshold(c.verbose ? LogLevel::DEBUG : LogLevel::INFO);
 
 	/* read configuration file (mpd.conf) */
 
