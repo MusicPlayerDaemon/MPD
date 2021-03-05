@@ -28,6 +28,7 @@
 #include "pcm/AudioFormat.hxx"
 #include "pcm/Convert.hxx"
 #include "fs/Path.hxx"
+#include "fs/NarrowPath.hxx"
 #include "util/ConstBuffer.hxx"
 #include "util/StaticFifoBuffer.hxx"
 #include "util/OptionDef.hxx"
@@ -47,7 +48,7 @@
 struct CommandLine {
 	AudioFormat in_audio_format, out_audio_format;
 
-	Path config_path = nullptr;
+	FromNarrowPath config_path;
 
 	bool verbose = false;
 };
@@ -71,7 +72,7 @@ ParseCommandLine(int argc, char **argv)
 	while (auto o = option_parser.Next()) {
 		switch (Option(o.index)) {
 		case OPTION_CONFIG:
-			c.config_path = Path::FromFS(o.value);
+			c.config_path = o.value;
 			break;
 
 		case OPTION_VERBOSE:
