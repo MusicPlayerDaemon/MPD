@@ -25,10 +25,8 @@
 #include <cassert>
 #include <cstdarg>
 #include <cstdio>
-#include <stdexcept>
 #include <string_view>
 #include <system_error>
-#include <vector>
 
 #include <audiopolicy.h>
 
