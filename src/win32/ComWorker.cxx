@@ -21,10 +21,6 @@
 #include "Com.hxx"
 #include "thread/Name.hxx"
 
-Mutex COMWorker::mutex;
-unsigned int COMWorker::reference_count = 0;
-std::optional<COMWorker::COMWorkerThread> COMWorker::thread;
-
 void COMWorker::COMWorkerThread::Work() noexcept {
 	SetThreadName("COM Worker");
 	COM com{true};

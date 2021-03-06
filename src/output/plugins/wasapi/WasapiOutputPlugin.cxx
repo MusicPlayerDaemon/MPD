@@ -214,22 +214,28 @@ class WasapiOutput final : public AudioOutput {
 public:
 	static AudioOutput *Create(EventLoop &, const ConfigBlock &block);
 	WasapiOutput(const ConfigBlock &block);
+
+	auto GetComWorker() noexcept {
+		// TODO: protect access to the shard_ptr
+		return com_worker;
+	}
+
 	void Enable() override {
-		COMWorker::Aquire();
+		com_worker = std::make_shared<COMWorker>();
 
 		try {
-			COMWorker::Async([&]() { OpenDevice(); }).get();
+			com_worker->Async([&]() { OpenDevice(); }).get();
 		} catch (...) {
-			COMWorker::Release();
+			com_worker.reset();
 			throw;
 		}
 	}
 	void Disable() noexcept override {
-		COMWorker::Async([&]() { DoDisable(); }).get();
-		COMWorker::Release();
+		com_worker->Async([&]() { DoDisable(); }).get();
+		com_worker.reset();
 	}
 	void Open(AudioFormat &audio_format) override {
-		COMWorker::Async([&]() { DoOpen(audio_format); }).get();
+		com_worker->Async([&]() { DoOpen(audio_format); }).get();
 	}
 	void Close() noexcept override;
 	std::chrono::steady_clock::duration Delay() const noexcept override;
@@ -253,6 +259,7 @@ private:
 	bool dop_setting;
 #endif
 	std::string device_config;
+	std::shared_ptr<COMWorker> com_worker;
 	ComPtr<IMMDeviceEnumerator> enumerator;
 	ComPtr<IMMDevice> device;
 	ComPtr<IAudioClient> client;
@@ -282,6 +289,12 @@ WasapiOutput &wasapi_output_downcast(AudioOutput &output) noexcept {
 }
 
 bool wasapi_is_exclusive(WasapiOutput &output) noexcept { return output.is_exclusive; }
+
+std::shared_ptr<COMWorker>
+wasapi_output_get_com_worker(WasapiOutput &output) noexcept
+{
+	return output.GetComWorker();
+}
 
 IMMDevice *wasapi_output_get_device(WasapiOutput &output) noexcept {
 	return output.device.get();
@@ -524,7 +537,7 @@ void WasapiOutput::Close() noexcept {
 	assert(thread);
 
 	try {
-		COMWorker::Async([&]() {
+		com_worker->Async([&]() {
 			Stop(*client);
 		}).get();
 		thread->CheckException();
@@ -535,7 +548,7 @@ void WasapiOutput::Close() noexcept {
 	is_started = false;
 	thread->Finish();
 	thread->Join();
-	COMWorker::Async([&]() {
+	com_worker->Async([&]() {
 		thread.reset();
 		client.reset();
 	}).get();
@@ -586,7 +599,7 @@ size_t WasapiOutput::Play(const void *chunk, size_t size) {
 		if (!is_started) {
 			is_started = true;
 			thread->Play();
-			COMWorker::Async([&]() {
+			com_worker->Async([&]() {
 				Start(*client);
 			}).wait();
 		}

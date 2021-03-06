@@ -44,7 +44,11 @@ public:
 	void Close() noexcept override {}
 
 	int GetVolume() override {
-		auto future = COMWorker::Async([&]() -> int {
+		auto com_worker = wasapi_output_get_com_worker(output);
+		if (!com_worker)
+			return -1;
+
+		auto future = com_worker->Async([&]() -> int {
 			HRESULT result;
 			float volume_level;
 
@@ -76,7 +80,11 @@ public:
 	}
 
 	void SetVolume(unsigned volume) override {
-		COMWorker::Async([&]() {
+		auto com_worker = wasapi_output_get_com_worker(output);
+		if (!com_worker)
+			throw std::runtime_error("Cannot set WASAPI volume");
+
+		com_worker->Async([&]() {
 			HRESULT result;
 			const float volume_level = volume / 100.0f;
 

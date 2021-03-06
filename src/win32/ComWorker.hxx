@@ -22,12 +22,9 @@
 
 #include "WinEvent.hxx"
 #include "thread/Future.hxx"
-#include "thread/Mutex.hxx"
 #include "thread/Thread.hxx"
 
 #include <boost/lockfree/spsc_queue.hpp>
-#include <mutex>
-#include <optional>
 
 #include <windows.h>
 
@@ -56,31 +53,25 @@ private:
 	};
 
 public:
-	static void Aquire() {
-		std::unique_lock locker(mutex);
-		if (reference_count == 0) {
-			thread.emplace();
-			thread->Start();
-		}
-		++reference_count;
-	}
-	static void Release() noexcept {
-		std::unique_lock locker(mutex);
-		--reference_count;
-		if (reference_count == 0) {
-			thread->Finish();
-			thread->Join();
-			thread.reset();
-		}
+	COMWorker() {
+		thread.Start();
 	}
 
+	~COMWorker() noexcept {
+		thread.Finish();
+		thread.Join();
+	}
+
+	COMWorker(const COMWorker &) = delete;
+	COMWorker &operator=(const COMWorker &) = delete;
+
 	template <typename Function, typename... Args>
-	static auto Async(Function &&function, Args &&...args) {
+	auto Async(Function &&function, Args &&...args) {
 		using R = std::invoke_result_t<std::decay_t<Function>,
 					       std::decay_t<Args>...>;
 		auto promise = std::make_shared<Promise<R>>();
 		auto future = promise->get_future();
-		thread->Push([function = std::forward<Function>(function),
+		thread.Push([function = std::forward<Function>(function),
 			      args = std::make_tuple(std::forward<Args>(args)...),
 			      promise = std::move(promise)]() mutable {
 			try {
@@ -101,9 +92,7 @@ public:
 	}
 
 private:
-	static Mutex mutex;
-	static unsigned int reference_count;
-	static std::optional<COMWorkerThread> thread;
+	COMWorkerThread thread;
 };
 
 #endif
