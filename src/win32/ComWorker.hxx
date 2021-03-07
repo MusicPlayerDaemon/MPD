@@ -30,27 +30,11 @@
 
 // Worker thread for all COM operation
 class COMWorker {
-private:
-	class COMWorkerThread : public Thread {
-	public:
-		COMWorkerThread() : Thread{BIND_THIS_METHOD(Work)} {}
+	Thread thread{BIND_THIS_METHOD(Work)};
 
-	private:
-		friend class COMWorker;
-		void Work() noexcept;
-		void Finish() noexcept {
-			running_flag.clear();
-			event.Set();
-		}
-		void Push(const std::function<void()> &function) {
-			spsc_buffer.push(function);
-			event.Set();
-		}
-
-		boost::lockfree::spsc_queue<std::function<void()>> spsc_buffer{32};
-		std::atomic_flag running_flag = true;
-		WinEvent event{};
-	};
+	boost::lockfree::spsc_queue<std::function<void()>> spsc_buffer{32};
+	std::atomic_flag running_flag = true;
+	WinEvent event{};
 
 public:
 	COMWorker() {
@@ -58,7 +42,7 @@ public:
 	}
 
 	~COMWorker() noexcept {
-		thread.Finish();
+		Finish();
 		thread.Join();
 	}
 
@@ -70,7 +54,7 @@ public:
 		using R = std::invoke_result_t<std::decay_t<Function>>;
 		auto promise = std::make_shared<Promise<R>>();
 		auto future = promise->get_future();
-		thread.Push([function = std::forward<Function>(function),
+		Push([function = std::forward<Function>(function),
 			      promise = std::move(promise)]() mutable {
 			try {
 				if constexpr (std::is_void_v<R>) {
@@ -87,7 +71,17 @@ public:
 	}
 
 private:
-	COMWorkerThread thread;
+	void Finish() noexcept {
+		running_flag.clear();
+		event.Set();
+	}
+
+	void Push(const std::function<void()> &function) {
+		spsc_buffer.push(function);
+		event.Set();
+	}
+
+	void Work() noexcept;
 };
 
 #endif

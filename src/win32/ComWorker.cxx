@@ -21,7 +21,9 @@
 #include "Com.hxx"
 #include "thread/Name.hxx"
 
-void COMWorker::COMWorkerThread::Work() noexcept {
+void
+COMWorker::Work() noexcept
+{
 	SetThreadName("COM Worker");
 	COM com{true};
 	while (true) {
