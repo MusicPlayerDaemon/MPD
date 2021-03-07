@@ -65,24 +65,19 @@ public:
 	COMWorker(const COMWorker &) = delete;
 	COMWorker &operator=(const COMWorker &) = delete;
 
-	template <typename Function, typename... Args>
-	auto Async(Function &&function, Args &&...args) {
-		using R = std::invoke_result_t<std::decay_t<Function>,
-					       std::decay_t<Args>...>;
+	template<typename Function>
+	auto Async(Function &&function) {
+		using R = std::invoke_result_t<std::decay_t<Function>>;
 		auto promise = std::make_shared<Promise<R>>();
 		auto future = promise->get_future();
 		thread.Push([function = std::forward<Function>(function),
-			      args = std::make_tuple(std::forward<Args>(args)...),
 			      promise = std::move(promise)]() mutable {
 			try {
 				if constexpr (std::is_void_v<R>) {
-					std::apply(std::forward<Function>(function),
-						   std::move(args));
+					std::invoke(std::forward<Function>(function));
 					promise->set_value();
 				} else {
-					promise->set_value(std::apply(
-						std::forward<Function>(function),
-						std::move(args)));
+					promise->set_value(std::invoke(std::forward<Function>(function)));
 				}
 			} catch (...) {
 				promise->set_exception(std::current_exception());
