@@ -189,7 +189,11 @@ public:
 		SetEventHandle(client, event.handle());
 	}
 
-	void Finish() noexcept { return SetStatus(Status::FINISH); }
+	void Finish() noexcept {
+		SetStatus(Status::FINISH);
+		Join();
+	}
+
 	void Play() noexcept { return SetStatus(Status::PLAY); }
 	void Pause() noexcept { return SetStatus(Status::PAUSE); }
 	void WaitDataPoped() noexcept { data_poped.Wait(); }
@@ -551,7 +555,6 @@ WasapiOutput::Close() noexcept
 	}
 	is_started = false;
 	thread->Finish();
-	thread->Join();
 	com_worker->Async([&]() {
 		thread.reset();
 		client.reset();
