@@ -172,7 +172,15 @@ FileDescriptor::CreatePipe(FileDescriptor &r, FileDescriptor &w) noexcept
 #endif
 }
 
-#ifndef _WIN32
+#ifdef _WIN32
+
+void
+FileDescriptor::SetBinaryMode() noexcept
+{
+	_setmode(fd, _O_BINARY);
+}
+
+#else // !_WIN32
 
 bool
 FileDescriptor::CreatePipeNonBlock(FileDescriptor &r,
