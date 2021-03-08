@@ -168,6 +168,8 @@ class WasapiOutputThread {
 	const UINT32 buffer_size_in_frames;
 	const bool is_exclusive;
 
+	bool started = false;
+
 	enum class Status : uint32_t { FINISH, PLAY, PAUSE };
 	alignas(BOOST_LOCKFREE_CACHELINE_BYTES) std::atomic<Status> status =
 		Status::PAUSE;
@@ -332,6 +334,17 @@ try {
 	SetThreadName("Wasapi Output Worker");
 	FormatDebug(wasapi_output_domain, "Working thread started");
 	COM com;
+
+	AtScopeExit(this) {
+		if (started) {
+			try {
+				Stop(client);
+			} catch (...) {
+				LogError(std::current_exception());
+			}
+		}
+	};
+
 	while (true) {
 		event.Wait();
 
@@ -342,11 +355,21 @@ try {
 			return;
 		}
 
+		if (!started) {
+			if (current_state != Status::PLAY)
+				/* don't bother starting the
+				   IAudioClient if we're
+				   paused */
+				continue;
+
+			Start(client);
+			started = true;
+		}
+
 		UINT32 write_in_frames = buffer_size_in_frames;
 		if (!is_exclusive) {
 			UINT32 data_in_frames =
 				GetCurrentPaddingFrames(client);
-
 			if (data_in_frames >= buffer_size_in_frames) {
 				continue;
 			}
@@ -557,9 +580,6 @@ WasapiOutput::Close() noexcept
 	assert(thread);
 
 	try {
-		com_worker->Async([&]() {
-			Stop(*client);
-		}).get();
 		thread->CheckException();
 	} catch (...) {
 		FormatError(std::current_exception(),
@@ -623,9 +643,6 @@ WasapiOutput::Play(const void *chunk, size_t size)
 		if (!is_started) {
 			is_started = true;
 			thread->Play();
-			com_worker->Async([&]() {
-				Start(*client);
-			}).wait();
 		}
 
 		thread->CheckException();
