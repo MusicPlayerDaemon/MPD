@@ -173,7 +173,6 @@ class WasapiOutputThread : public Thread {
 	alignas(BOOST_LOCKFREE_CACHELINE_BYTES) struct {
 		std::atomic_bool occur = false;
 		std::exception_ptr ptr = nullptr;
-		WinEvent thrown;
 	} error;
 	boost::lockfree::spsc_queue<BYTE> spsc_buffer;
 
@@ -197,7 +196,6 @@ public:
 	void CheckException() {
 		if (error.occur.load()) {
 			auto err = std::exchange(error.ptr, nullptr);
-			error.thrown.Set();
 			std::rethrow_exception(err);
 		}
 	}
@@ -371,7 +369,6 @@ try {
 } catch (...) {
 	error.ptr = std::current_exception();
 	error.occur.store(true);
-	error.thrown.Wait();
 }
 
 AudioOutput *
