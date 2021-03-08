@@ -106,7 +106,7 @@ static void
 RunConvert(PcmConvert &convert, size_t in_frame_size,
 	   FileDescriptor in_fd, FileDescriptor out_fd)
 {
-	StaticFifoBuffer<uint8_t, 4096> buffer;
+	StaticFifoBuffer<std::byte, 4096> buffer;
 
 	while (true) {
 		{
