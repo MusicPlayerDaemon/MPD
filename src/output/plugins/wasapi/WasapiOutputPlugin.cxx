@@ -391,17 +391,8 @@ WasapiOutput::WasapiOutput(const ConfigBlock &block)
 void
 WasapiOutput::DoDisable() noexcept
 {
-	if (thread) {
-		try {
-			thread->Finish();
-			thread->Join();
-		} catch (...) {
-			LogError(std::current_exception(),
-				 "exception while disabling");
-		}
-		thread.reset();
-		client.reset();
-	}
+	assert(!thread);
+
 	device.reset();
 	enumerator.reset();
 }
