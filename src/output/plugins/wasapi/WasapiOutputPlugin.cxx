@@ -198,7 +198,15 @@ public:
 
 	void Play() noexcept { return SetStatus(Status::PLAY); }
 	void Pause() noexcept { return SetStatus(Status::PAUSE); }
-	void WaitDataPoped() noexcept { data_poped.Wait(); }
+
+	/**
+	 * Wait for the thread to finish some work (e.g. until some
+	 * buffer space becomes available).
+	 */
+	void Wait() noexcept {
+		data_poped.Wait();
+	}
+
 	void CheckException() {
 		if (error.occur.load()) {
 			std::rethrow_exception(error.ptr);
@@ -600,7 +608,7 @@ WasapiOutput::Play(const void *chunk, size_t size)
 			static_cast<const BYTE *>(input.data), input.size);
 		if (consumed_size == 0) {
 			assert(is_started);
-			thread->WaitDataPoped();
+			thread->Wait();
 			if (!not_interrupted.test_and_set()) {
 				throw AudioOutputInterrupted{};
 			}
