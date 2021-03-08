@@ -31,6 +31,7 @@
 #include "util/StringBuffer.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/ScopeExit.hxx"
+#include "util/StaticFifoBuffer.hxx"
 #include "util/PrintException.hxx"
 #include "LogBackend.hxx"
 
@@ -127,32 +128,37 @@ RunOutput(AudioOutput &ao, AudioFormat audio_format,
 	fprintf(stderr, "audio_format=%s\n",
 		ToString(audio_format).c_str());
 
-	size_t frame_size = audio_format.GetFrameSize();
+	const size_t in_frame_size = audio_format.GetFrameSize();
 
 	/* play */
 
-	size_t length = 0;
-	char buffer[4096];
+	StaticFifoBuffer<std::byte, 4096> buffer;
+
 	while (true) {
-		if (length < sizeof(buffer)) {
-			ssize_t nbytes = in_fd.Read(buffer + length,
-						    sizeof(buffer) - length);
+		{
+			const auto dest = buffer.Write();
+			assert(!dest.empty());
+
+			ssize_t nbytes = in_fd.Read(dest.data, dest.size);
 			if (nbytes <= 0)
 				break;
 
-			length += (size_t)nbytes;
+			buffer.Append(nbytes);
 		}
 
-		size_t play_length = (length / frame_size) * frame_size;
-		if (play_length > 0) {
-			size_t consumed = ao.Play(buffer, play_length);
+		auto src = buffer.Read();
+		assert(!src.empty());
 
-			assert(consumed <= length);
-			assert(consumed % frame_size == 0);
+		src.size -= src.size % in_frame_size;
+		if (src.empty())
+			continue;
 
-			length -= consumed;
-			memmove(buffer, buffer + consumed, length);
-		}
+		size_t consumed = ao.Play(src.data, src.size);
+
+		assert(consumed <= src.size);
+		assert(consumed % in_frame_size == 0);
+
+		buffer.Consume(consumed);
 	}
 }
 
