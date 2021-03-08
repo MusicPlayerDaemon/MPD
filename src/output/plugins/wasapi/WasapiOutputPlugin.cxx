@@ -158,7 +158,6 @@ SetDSDFallback(AudioFormat &audio_format) noexcept
 } // namespace
 
 class WasapiOutputThread {
-	friend class WasapiOutput;
 	Thread thread{BIND_THIS_METHOD(Work)};
 	WinEvent event;
 	WinEvent data_poped;
@@ -203,6 +202,11 @@ public:
 
 	void Play() noexcept { return SetStatus(Status::PLAY); }
 	void Pause() noexcept { return SetStatus(Status::PAUSE); }
+
+	std::size_t Push(ConstBuffer<void> input) noexcept {
+		return spsc_buffer.push(static_cast<const BYTE *>(input.data),
+					input.size);
+	}
 
 	/**
 	 * Instruct the thread to discard the buffer (and wait for
@@ -672,8 +676,7 @@ WasapiOutput::Play(const void *chunk, size_t size)
 		return size;
 
 	do {
-		const size_t consumed_size = thread->spsc_buffer.push(
-			static_cast<const BYTE *>(input.data), input.size);
+		const size_t consumed_size = thread->Push({chunk, size});
 
 		if (!is_started) {
 			is_started = true;
