@@ -382,6 +382,10 @@ try {
 } catch (...) {
 	error.ptr = std::current_exception();
 	error.occur.store(true);
+
+	/* wake up the client thread which may be inside
+	   WaitDataPoped() */
+	data_poped.Set();
 }
 
 AudioOutput *
@@ -609,6 +613,7 @@ WasapiOutput::Play(const void *chunk, size_t size)
 		if (consumed_size == 0) {
 			assert(is_started);
 			thread->Wait();
+			thread->CheckException();
 			if (!not_interrupted.test_and_set()) {
 				throw AudioOutputInterrupted{};
 			}
