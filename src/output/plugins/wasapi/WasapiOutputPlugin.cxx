@@ -307,7 +307,7 @@ IAudioClient *wasapi_output_get_client(WasapiOutput &output) noexcept {
 void WasapiOutputThread::Work() noexcept {
 	SetThreadName("Wasapi Output Worker");
 	FormatDebug(wasapi_output_domain, "Working thread started");
-	COM com{true};
+	COM com;
 	while (true) {
 		try {
 			event.Wait();

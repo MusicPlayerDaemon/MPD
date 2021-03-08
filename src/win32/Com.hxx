@@ -28,7 +28,7 @@
 // https://docs.microsoft.com/en-us/windows/win32/api/_com/
 class COM {
 public:
-	COM(bool) {
+	COM() {
 		if (HRESULT result = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
 		    FAILED(result)) {
 			throw MakeHResultError(

@@ -25,7 +25,7 @@ void
 COMWorker::Work() noexcept
 {
 	SetThreadName("COM Worker");
-	COM com{true};
+	COM com;
 	while (true) {
 		if (!running_flag.test_and_set()) {
 			return;
