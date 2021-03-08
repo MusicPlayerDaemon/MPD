@@ -258,6 +258,7 @@ public:
 	std::chrono::steady_clock::duration Delay() const noexcept override;
 	size_t Play(const void *chunk, size_t size) override;
 	void Drain() override;
+	void Cancel() noexcept override;
 	bool Pause() override;
 	void Interrupt() noexcept override;
 
@@ -662,6 +663,14 @@ WasapiOutput::Drain()
 
 	thread->spsc_buffer.consume_all([](auto &&) {});
 	thread->CheckException();
+}
+
+void
+WasapiOutput::Cancel() noexcept
+{
+	assert(thread);
+
+	thread->spsc_buffer.consume_all([](auto &&) {});
 }
 
 /// run inside COMWorkerThread
