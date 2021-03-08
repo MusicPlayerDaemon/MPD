@@ -113,7 +113,8 @@ LoadAudioOutput(const ConfigData &config, EventLoop &event_loop,
 }
 
 static void
-run_output(AudioOutput &ao, AudioFormat audio_format)
+RunOutput(AudioOutput &ao, AudioFormat audio_format,
+	  FileDescriptor in_fd)
 {
 	/* open the audio output */
 
@@ -134,8 +135,8 @@ run_output(AudioOutput &ao, AudioFormat audio_format)
 	char buffer[4096];
 	while (true) {
 		if (length < sizeof(buffer)) {
-			ssize_t nbytes = read(0, buffer + length,
-					      sizeof(buffer) - length);
+			ssize_t nbytes = in_fd.Read(buffer + length,
+						    sizeof(buffer) - length);
 			if (nbytes <= 0)
 				break;
 
@@ -174,7 +175,7 @@ try {
 
 	/* do it */
 
-	run_output(*ao, c.audio_format);
+	RunOutput(*ao, c.audio_format, FileDescriptor(STDIN_FILENO));
 
 	/* cleanup and exit */
 
