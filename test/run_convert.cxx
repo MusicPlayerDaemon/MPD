@@ -106,6 +106,9 @@ static void
 RunConvert(PcmConvert &convert, size_t in_frame_size,
 	   FileDescriptor in_fd, FileDescriptor out_fd)
 {
+	in_fd.SetBinaryMode();
+	out_fd.SetBinaryMode();
+
 	StaticFifoBuffer<std::byte, 4096> buffer;
 
 	while (true) {

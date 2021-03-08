@@ -117,6 +117,8 @@ static void
 RunOutput(AudioOutput &ao, AudioFormat audio_format,
 	  FileDescriptor in_fd)
 {
+	in_fd.SetBinaryMode();
+
 	/* open the audio output */
 
 	ao.Enable();
