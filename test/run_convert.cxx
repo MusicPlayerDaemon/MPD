@@ -101,18 +101,9 @@ public:
 	}
 };
 
-int
-main(int argc, char **argv)
-try {
-	const auto c = ParseCommandLine(argc, argv);
-
-	SetLogThreshold(c.verbose ? LogLevel::DEBUG : LogLevel::INFO);
-	const GlobalInit init(c.config_path);
-
-	const size_t in_frame_size = c.in_audio_format.GetFrameSize();
-
-	PcmConvert state(c.in_audio_format, c.out_audio_format);
-
+static void
+RunConvert(PcmConvert &convert, size_t in_frame_size)
+{
 	StaticFifoBuffer<uint8_t, 4096> buffer;
 
 	while (true) {
@@ -136,20 +127,32 @@ try {
 
 		buffer.Consume(src.size);
 
-		auto output = state.Convert({src.data, src.size});
+		auto output = convert.Convert({src.data, src.size});
 
 		[[maybe_unused]] ssize_t ignored = write(1, output.data,
 						   output.size);
 	}
 
 	while (true) {
-		auto output = state.Flush();
+		auto output = convert.Flush();
 		if (output.IsNull())
 			break;
 
 		[[maybe_unused]] ssize_t ignored = write(1, output.data,
 						   output.size);
 	}
+}
+
+int
+main(int argc, char **argv)
+try {
+	const auto c = ParseCommandLine(argc, argv);
+
+	SetLogThreshold(c.verbose ? LogLevel::DEBUG : LogLevel::INFO);
+	const GlobalInit init(c.config_path);
+
+	PcmConvert state(c.in_audio_format, c.out_audio_format);
+	RunConvert(state, c.in_audio_format.GetFrameSize());
 
 	return EXIT_SUCCESS;
 } catch (...) {
