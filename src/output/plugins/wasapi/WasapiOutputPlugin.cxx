@@ -161,7 +161,7 @@ class WasapiOutputThread : public Thread {
 	friend class WasapiOutput;
 	WinEvent event;
 	WinEvent data_poped;
-	IAudioClient *client;
+	IAudioClient &client;
 	ComPtr<IAudioRenderClient> render_client;
 	const UINT32 frame_size;
 	const UINT32 buffer_size_in_frames;
@@ -178,7 +178,7 @@ class WasapiOutputThread : public Thread {
 	boost::lockfree::spsc_queue<BYTE> spsc_buffer;
 
 public:
-	WasapiOutputThread(IAudioClient *_client,
+	WasapiOutputThread(IAudioClient &_client,
 			   ComPtr<IAudioRenderClient> &&_render_client,
 			   const UINT32 _frame_size, const UINT32 _buffer_size_in_frames,
 			   bool _is_exclusive)
@@ -187,7 +187,7 @@ public:
 		 buffer_size_in_frames(_buffer_size_in_frames), is_exclusive(_is_exclusive),
 		 spsc_buffer(_buffer_size_in_frames * 4 * _frame_size)
 	{
-		SetEventHandle(*client, event.handle());
+		SetEventHandle(client, event.handle());
 	}
 
 	void Finish() noexcept { return SetStatus(Status::FINISH); }
@@ -334,7 +334,7 @@ WasapiOutputThread::Work() noexcept
 			UINT32 write_in_frames = buffer_size_in_frames;
 			if (!is_exclusive) {
 				UINT32 data_in_frames =
-					GetCurrentPaddingFrames(*client);
+					GetCurrentPaddingFrames(client);
 
 				if (data_in_frames >= buffer_size_in_frames) {
 					continue;
@@ -543,7 +543,7 @@ WasapiOutput::DoOpen(AudioFormat &audio_format)
 	const UINT32 buffer_size_in_frames = GetBufferSizeInFrames(*client);
 
 	watermark = buffer_size_in_frames * 3 * FrameSize();
-	thread.emplace(client.get(), std::move(render_client), FrameSize(),
+	thread.emplace(*client, std::move(render_client), FrameSize(),
 		       buffer_size_in_frames, is_exclusive);
 
 	thread->Start();
