@@ -59,9 +59,9 @@ public:
 				result = endpoint_volume->GetMasterVolumeLevelScalar(
 					&volume_level);
 				if (FAILED(result)) {
-					throw FormatHResultError(result,
-								 "Unable to get master "
-								 "volume level");
+					throw MakeHResultError(result,
+							       "Unable to get master "
+							       "volume level");
 				}
 			} else {
 				auto session_volume =
@@ -69,7 +69,7 @@ public:
 
 				result = session_volume->GetMasterVolume(&volume_level);
 				if (FAILED(result)) {
-					throw FormatHResultError(
+					throw MakeHResultError(
 						result, "Unable to get master volume");
 				}
 			}
@@ -95,7 +95,7 @@ public:
 				result = endpoint_volume->SetMasterVolumeLevelScalar(
 					volume_level, nullptr);
 				if (FAILED(result)) {
-					throw FormatHResultError(
+					throw MakeHResultError(
 						result,
 						"Unable to set master volume level");
 				}
@@ -106,7 +106,7 @@ public:
 				result = session_volume->SetMasterVolume(volume_level,
 									 nullptr);
 				if (FAILED(result)) {
-					throw FormatHResultError(
+					throw MakeHResultError(
 						result, "Unable to set master volume");
 				}
 			}

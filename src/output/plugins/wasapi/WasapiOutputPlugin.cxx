@@ -336,7 +336,7 @@ void WasapiOutputThread::Work() noexcept {
 			if (HRESULT result =
 				    render_client->GetBuffer(write_in_frames, &data);
 			    FAILED(result)) {
-				throw FormatHResultError(result, "Failed to get buffer");
+				throw MakeHResultError(result, "Failed to get buffer");
 			}
 
 			AtScopeExit(&) {
@@ -457,7 +457,7 @@ void WasapiOutput::DoOpen(AudioFormat &audio_format) {
 	if (HRESULT result =
 		    client->GetDevicePeriod(&default_device_period, &min_device_period);
 	    FAILED(result)) {
-		throw FormatHResultError(result, "Unable to get device period");
+		throw MakeHResultError(result, "Unable to get device period");
 	}
 	FormatDebug(wasapi_output_domain,
 		    "Default device period: %I64u ns, Minimum device period: "
@@ -505,8 +505,7 @@ void WasapiOutput::DoOpen(AudioFormat &audio_format) {
 			}
 
 			if (FAILED(result)) {
-				throw FormatHResultError(
-					result, "Unable to initialize audio client");
+				throw MakeHResultError(result, "Unable to initialize audio client");
 			}
 		}
 	} else {
@@ -515,8 +514,8 @@ void WasapiOutput::DoOpen(AudioFormat &audio_format) {
 			    buffer_duration, 0,
 			    reinterpret_cast<WAVEFORMATEX *>(&device_format), nullptr);
 		    FAILED(result)) {
-			throw FormatHResultError(result,
-						 "Unable to initialize audio client");
+			throw MakeHResultError(result,
+					       "Unable to initialize audio client");
 		}
 	}
 
@@ -773,7 +772,7 @@ void WasapiOutput::FindSharedFormatSupported(AudioFormat &audio_format) {
 	}
 
 	if (FAILED(result) && result != AUDCLNT_E_UNSUPPORTED_FORMAT) {
-		throw FormatHResultError(result, "IsFormatSupported failed");
+		throw MakeHResultError(result, "IsFormatSupported failed");
 	}
 
 	switch (result) {
@@ -802,7 +801,7 @@ void WasapiOutput::FindSharedFormatSupported(AudioFormat &audio_format) {
 				    result_string.c_str());
 		}
 		if (FAILED(result)) {
-			throw FormatHResultError(result, "Format is not supported");
+			throw MakeHResultError(result, "Format is not supported");
 		}
 		break;
 	case S_FALSE:

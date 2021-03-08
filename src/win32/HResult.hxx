@@ -74,6 +74,13 @@ static inline const std::error_category &hresult_category() noexcept {
 	return hresult_category_instance;
 }
 
+inline std::system_error
+MakeHResultError(HRESULT result, const char *msg) noexcept
+{
+	return std::system_error(std::error_code(result, hresult_category()),
+				 msg);
+}
+
 gcc_printf(2, 3) std::system_error
 FormatHResultError(HRESULT result, const char *fmt, ...) noexcept;
 

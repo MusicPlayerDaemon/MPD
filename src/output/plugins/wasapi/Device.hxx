@@ -33,8 +33,8 @@ GetDefaultAudioEndpoint(IMMDeviceEnumerator &e)
 	HRESULT result = e.GetDefaultAudioEndpoint(eRender, eMultimedia,
 						   &device);
 	if (FAILED(result))
-		throw FormatHResultError(result,
-					 "Unable to get default device for multimedia");
+		throw MakeHResultError(result,
+				       "Unable to get default device for multimedia");
 
 	return ComPtr{device};
 }
@@ -47,7 +47,7 @@ EnumAudioEndpoints(IMMDeviceEnumerator &e)
 	HRESULT result = e.EnumAudioEndpoints(eRender, DEVICE_STATE_ACTIVE,
 					      &dc);
 	if (FAILED(result))
-		throw FormatHResultError(result, "Unable to enumerate devices");
+		throw MakeHResultError(result, "Unable to enumerate devices");
 
 	return ComPtr{dc};
 }
@@ -59,7 +59,7 @@ GetCount(IMMDeviceCollection &dc)
 
 	HRESULT result = dc.GetCount(&count);
 	if (FAILED(result))
-		throw FormatHResultError(result, "Collection->GetCount failed");
+		throw MakeHResultError(result, "Collection->GetCount failed");
 
 	return count;
 }
@@ -71,7 +71,7 @@ Item(IMMDeviceCollection &dc, UINT i)
 
 	auto result = dc.Item(i, &device);
 	if (FAILED(result))
-		throw FormatHResultError(result, "Collection->Item failed");
+		throw MakeHResultError(result, "Collection->Item failed");
 
 	return ComPtr{device};
 }
@@ -83,7 +83,7 @@ GetState(IMMDevice &device)
 
 	HRESULT result = device.GetState(&state);;
 	if (FAILED(result))
-		throw FormatHResultError(result, "Unable to get device status");
+		throw MakeHResultError(result, "Unable to get device status");
 
 	return state;
 }
@@ -96,7 +96,7 @@ Activate(IMMDevice &device)
 	HRESULT result = device.Activate(__uuidof(T), CLSCTX_ALL,
 					 nullptr, (void **)&p);
 	if (FAILED(result))
-		throw FormatHResultError(result, "Unable to activate device");
+		throw MakeHResultError(result, "Unable to activate device");
 
 	return ComPtr{p};
 }
@@ -108,8 +108,8 @@ OpenPropertyStore(IMMDevice &device)
 
 	HRESULT result = device.OpenPropertyStore(STGM_READ, &property_store);
 	if (FAILED(result))
-		throw FormatHResultError(result,
-					 "Device->OpenPropertyStore failed");
+		throw MakeHResultError(result,
+				       "Device->OpenPropertyStore failed");
 
 	return ComPtr{property_store};
 }
