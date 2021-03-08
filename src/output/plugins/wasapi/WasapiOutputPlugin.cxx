@@ -661,7 +661,8 @@ WasapiOutput::Drain()
 {
 	assert(thread);
 
-	thread->spsc_buffer.consume_all([](auto &&) {});
+	// TODO implement
+
 	thread->CheckException();
 }
 
