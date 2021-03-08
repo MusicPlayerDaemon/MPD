@@ -61,7 +61,9 @@
 namespace {
 static constexpr Domain wasapi_output_domain("wasapi_output");
 
-gcc_const constexpr uint32_t GetChannelMask(const uint8_t channels) noexcept {
+constexpr uint32_t
+GetChannelMask(const uint8_t channels) noexcept
+{
 	switch (channels) {
 	case 1:
 		return KSAUDIO_SPEAKER_MONO;
@@ -86,7 +88,9 @@ gcc_const constexpr uint32_t GetChannelMask(const uint8_t channels) noexcept {
 }
 
 template <typename Functor>
-inline bool SafeSilenceTry(Functor &&functor) {
+inline bool
+SafeSilenceTry(Functor &&functor) noexcept
+{
 	try {
 		functor();
 		return true;
@@ -95,7 +99,9 @@ inline bool SafeSilenceTry(Functor &&functor) {
 	}
 }
 
-std::vector<WAVEFORMATEXTENSIBLE> GetFormats(const AudioFormat &audio_format) noexcept {
+std::vector<WAVEFORMATEXTENSIBLE>
+GetFormats(const AudioFormat &audio_format) noexcept
+{
 #ifdef ENABLE_DSD
 	if (audio_format.format == SampleFormat::DSD) {
 		AudioFormat dop_format = audio_format;
@@ -141,7 +147,9 @@ std::vector<WAVEFORMATEXTENSIBLE> GetFormats(const AudioFormat &audio_format) no
 }
 
 #ifdef ENABLE_DSD
-void SetDSDFallback(AudioFormat &audio_format) noexcept {
+void
+SetDSDFallback(AudioFormat &audio_format) noexcept
+{
 	audio_format.format = SampleFormat::FLOAT;
 	audio_format.sample_rate = 384000;
 }
@@ -150,16 +158,37 @@ void SetDSDFallback(AudioFormat &audio_format) noexcept {
 } // namespace
 
 class WasapiOutputThread : public Thread {
-public:
+	friend class WasapiOutput;
+	WinEvent event;
+	WinEvent data_poped;
+	IAudioClient *client;
+	ComPtr<IAudioRenderClient> render_client;
+	const UINT32 frame_size;
+	const UINT32 buffer_size_in_frames;
+	bool is_exclusive;
+
 	enum class Status : uint32_t { FINISH, PLAY, PAUSE };
+	alignas(BOOST_LOCKFREE_CACHELINE_BYTES) std::atomic<Status> status =
+		Status::PAUSE;
+	alignas(BOOST_LOCKFREE_CACHELINE_BYTES) struct {
+		std::atomic_bool occur = false;
+		std::exception_ptr ptr = nullptr;
+		WinEvent thrown;
+	} error;
+	boost::lockfree::spsc_queue<BYTE> spsc_buffer;
+
+public:
 	WasapiOutputThread(IAudioClient *_client,
 			   ComPtr<IAudioRenderClient> &&_render_client,
 			   const UINT32 _frame_size, const UINT32 _buffer_size_in_frames,
 			   bool _is_exclusive)
-	: Thread(BIND_THIS_METHOD(Work)), client(_client),
-	  render_client(std::move(_render_client)), frame_size(_frame_size),
-	  buffer_size_in_frames(_buffer_size_in_frames), is_exclusive(_is_exclusive),
-	  spsc_buffer(_buffer_size_in_frames * 4 * _frame_size) {}
+		:Thread(BIND_THIS_METHOD(Work)), client(_client),
+		 render_client(std::move(_render_client)), frame_size(_frame_size),
+		 buffer_size_in_frames(_buffer_size_in_frames), is_exclusive(_is_exclusive),
+		 spsc_buffer(_buffer_size_in_frames * 4 * _frame_size)
+	{
+	}
+
 	void Finish() noexcept { return SetStatus(Status::FINISH); }
 	void Play() noexcept { return SetStatus(Status::PLAY); }
 	void Pause() noexcept { return SetStatus(Status::PAUSE); }
@@ -173,23 +202,6 @@ public:
 	}
 
 private:
-	friend class WasapiOutput;
-	WinEvent event;
-	WinEvent data_poped;
-	IAudioClient *client;
-	ComPtr<IAudioRenderClient> render_client;
-	const UINT32 frame_size;
-	const UINT32 buffer_size_in_frames;
-	bool is_exclusive;
-	alignas(BOOST_LOCKFREE_CACHELINE_BYTES) std::atomic<Status> status =
-		Status::PAUSE;
-	alignas(BOOST_LOCKFREE_CACHELINE_BYTES) struct {
-		std::atomic_bool occur = false;
-		std::exception_ptr ptr = nullptr;
-		WinEvent thrown;
-	} error;
-	boost::lockfree::spsc_queue<BYTE> spsc_buffer;
-
 	void SetStatus(Status s) noexcept {
 		status.store(s);
 		event.Set();
@@ -198,6 +210,23 @@ private:
 };
 
 class WasapiOutput final : public AudioOutput {
+	std::atomic_flag not_interrupted = true;
+	bool is_started = false;
+	bool is_exclusive;
+	bool enumerate_devices;
+#ifdef ENABLE_DSD
+	bool dop_setting;
+#endif
+	std::string device_config;
+	std::shared_ptr<COMWorker> com_worker;
+	ComPtr<IMMDeviceEnumerator> enumerator;
+	ComPtr<IMMDevice> device;
+	ComPtr<IAudioClient> client;
+	WAVEFORMATEXTENSIBLE device_format;
+	std::optional<WasapiOutputThread> thread;
+	std::size_t watermark;
+	std::optional<PcmExport> pcm_export;
+
 public:
 	static AudioOutput *Create(EventLoop &, const ConfigBlock &block);
 	WasapiOutput(const ConfigBlock &block);
@@ -238,23 +267,6 @@ public:
 	}
 
 private:
-	std::atomic_flag not_interrupted = true;
-	bool is_started = false;
-	bool is_exclusive;
-	bool enumerate_devices;
-#ifdef ENABLE_DSD
-	bool dop_setting;
-#endif
-	std::string device_config;
-	std::shared_ptr<COMWorker> com_worker;
-	ComPtr<IMMDeviceEnumerator> enumerator;
-	ComPtr<IMMDevice> device;
-	ComPtr<IAudioClient> client;
-	WAVEFORMATEXTENSIBLE device_format;
-	std::optional<WasapiOutputThread> thread;
-	std::size_t watermark;
-	std::optional<PcmExport> pcm_export;
-
 	friend bool wasapi_is_exclusive(WasapiOutput &output) noexcept;
 	friend IMMDevice *wasapi_output_get_device(WasapiOutput &output) noexcept;
 	friend IAudioClient *wasapi_output_get_client(WasapiOutput &output) noexcept;
@@ -271,11 +283,17 @@ private:
 	ComPtr<IMMDevice> SearchDevice(std::string_view name);
 };
 
-WasapiOutput &wasapi_output_downcast(AudioOutput &output) noexcept {
+WasapiOutput &
+wasapi_output_downcast(AudioOutput &output) noexcept
+{
 	return static_cast<WasapiOutput &>(output);
 }
 
-bool wasapi_is_exclusive(WasapiOutput &output) noexcept { return output.is_exclusive; }
+bool
+wasapi_is_exclusive(WasapiOutput &output) noexcept
+{
+	return output.is_exclusive;
+}
 
 std::shared_ptr<COMWorker>
 wasapi_output_get_com_worker(WasapiOutput &output) noexcept
@@ -283,15 +301,21 @@ wasapi_output_get_com_worker(WasapiOutput &output) noexcept
 	return output.GetComWorker();
 }
 
-IMMDevice *wasapi_output_get_device(WasapiOutput &output) noexcept {
+IMMDevice *
+wasapi_output_get_device(WasapiOutput &output) noexcept
+{
 	return output.device.get();
 }
 
-IAudioClient *wasapi_output_get_client(WasapiOutput &output) noexcept {
+IAudioClient *
+wasapi_output_get_client(WasapiOutput &output) noexcept
+{
 	return output.client.get();
 }
 
-void WasapiOutputThread::Work() noexcept {
+void
+WasapiOutputThread::Work() noexcept
+{
 	SetThreadName("Wasapi Output Worker");
 	FormatDebug(wasapi_output_domain, "Working thread started");
 	COM com;
@@ -350,22 +374,27 @@ void WasapiOutputThread::Work() noexcept {
 	}
 }
 
-AudioOutput *WasapiOutput::Create(EventLoop &, const ConfigBlock &block) {
+AudioOutput *
+WasapiOutput::Create(EventLoop &, const ConfigBlock &block)
+{
 	return new WasapiOutput(block);
 }
 
 WasapiOutput::WasapiOutput(const ConfigBlock &block)
-: AudioOutput(FLAG_ENABLE_DISABLE | FLAG_PAUSE),
-  is_exclusive(block.GetBlockValue("exclusive", false)),
-  enumerate_devices(block.GetBlockValue("enumerate", false)),
+	:AudioOutput(FLAG_ENABLE_DISABLE | FLAG_PAUSE),
+	 is_exclusive(block.GetBlockValue("exclusive", false)),
+	 enumerate_devices(block.GetBlockValue("enumerate", false)),
 #ifdef ENABLE_DSD
-  dop_setting(block.GetBlockValue("dop", false)),
+	 dop_setting(block.GetBlockValue("dop", false)),
 #endif
-  device_config(block.GetBlockValue("device", "")) {
+	 device_config(block.GetBlockValue("device", ""))
+{
 }
 
 /// run inside COMWorkerThread
-void WasapiOutput::DoDisable() noexcept {
+void
+WasapiOutput::DoDisable() noexcept
+{
 	if (thread) {
 		try {
 			thread->Finish();
@@ -382,7 +411,9 @@ void WasapiOutput::DoDisable() noexcept {
 }
 
 /// run inside COMWorkerThread
-void WasapiOutput::DoOpen(AudioFormat &audio_format) {
+void
+WasapiOutput::DoOpen(AudioFormat &audio_format)
+{
 	client.reset();
 
 	if (GetState(*device) != DEVICE_STATE_ACTIVE) {
@@ -519,7 +550,9 @@ void WasapiOutput::DoOpen(AudioFormat &audio_format) {
 	thread->Start();
 }
 
-void WasapiOutput::Close() noexcept {
+void
+WasapiOutput::Close() noexcept
+{
 	assert(thread);
 
 	try {
@@ -541,7 +574,9 @@ void WasapiOutput::Close() noexcept {
 	pcm_export.reset();
 }
 
-std::chrono::steady_clock::duration WasapiOutput::Delay() const noexcept {
+std::chrono::steady_clock::duration
+WasapiOutput::Delay() const noexcept
+{
 	if (!is_started) {
 		// idle while paused
 		return std::chrono::seconds(1);
@@ -558,7 +593,9 @@ std::chrono::steady_clock::duration WasapiOutput::Delay() const noexcept {
 	return result;
 }
 
-size_t WasapiOutput::Play(const void *chunk, size_t size) {
+size_t
+WasapiOutput::Play(const void *chunk, size_t size)
+{
 	assert(thread);
 
 	not_interrupted.test_and_set();
@@ -599,7 +636,9 @@ size_t WasapiOutput::Play(const void *chunk, size_t size) {
 	} while (true);
 }
 
-bool WasapiOutput::Pause() {
+bool
+WasapiOutput::Pause()
+{
 	if (is_started) {
 		thread->Pause();
 		is_started = false;
@@ -608,14 +647,18 @@ bool WasapiOutput::Pause() {
 	return true;
 }
 
-void WasapiOutput::Interrupt() noexcept {
+void
+WasapiOutput::Interrupt() noexcept
+{
 	if (thread) {
 		not_interrupted.clear();
 		thread->data_poped.Set();
 	}
 }
 
-void WasapiOutput::Drain() {
+void
+WasapiOutput::Drain()
+{
 	assert(thread);
 
 	thread->spsc_buffer.consume_all([](auto &&) {});
@@ -623,7 +666,9 @@ void WasapiOutput::Drain() {
 }
 
 /// run inside COMWorkerThread
-void WasapiOutput::OpenDevice() {
+void
+WasapiOutput::OpenDevice()
+{
 	enumerator.CoCreateInstance(__uuidof(MMDeviceEnumerator), nullptr,
 				    CLSCTX_INPROC_SERVER);
 
@@ -650,7 +695,9 @@ void WasapiOutput::OpenDevice() {
 }
 
 /// run inside COMWorkerThread
-bool WasapiOutput::TryFormatExclusive(const AudioFormat &audio_format) {
+bool
+WasapiOutput::TryFormatExclusive(const AudioFormat &audio_format)
+{
 	for (auto test_format : GetFormats(audio_format)) {
 		HRESULT result = client->IsFormatSupported(
 			AUDCLNT_SHAREMODE_EXCLUSIVE,
@@ -674,7 +721,9 @@ bool WasapiOutput::TryFormatExclusive(const AudioFormat &audio_format) {
 }
 
 /// run inside COMWorkerThread
-void WasapiOutput::FindExclusiveFormatSupported(AudioFormat &audio_format) {
+void
+WasapiOutput::FindExclusiveFormatSupported(AudioFormat &audio_format)
+{
 	for (uint8_t channels : {0, 2, 6, 8, 7, 1, 4, 5, 3}) {
 		if (audio_format.channels == channels) {
 			continue;
@@ -734,7 +783,9 @@ void WasapiOutput::FindExclusiveFormatSupported(AudioFormat &audio_format) {
 }
 
 /// run inside COMWorkerThread
-void WasapiOutput::FindSharedFormatSupported(AudioFormat &audio_format) {
+void
+WasapiOutput::FindSharedFormatSupported(AudioFormat &audio_format)
+{
 	HRESULT result;
 
 	// In shared mode, different sample rate is always unsupported.
@@ -837,7 +888,9 @@ void WasapiOutput::FindSharedFormatSupported(AudioFormat &audio_format) {
 }
 
 /// run inside COMWorkerThread
-void WasapiOutput::EnumerateDevices() {
+void
+WasapiOutput::EnumerateDevices()
+{
 	const auto device_collection = EnumAudioEndpoints(*enumerator);
 
 	const UINT count = GetCount(*device_collection);
@@ -884,7 +937,11 @@ WasapiOutput::SearchDevice(std::string_view name)
 	return nullptr;
 }
 
-static bool wasapi_output_test_default_device() { return true; }
+static bool
+wasapi_output_test_default_device()
+{
+	return true;
+}
 
 const struct AudioOutputPlugin wasapi_output_plugin = {
 	"wasapi",
