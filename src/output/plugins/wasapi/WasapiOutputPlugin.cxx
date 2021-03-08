@@ -157,8 +157,9 @@ SetDSDFallback(AudioFormat &audio_format) noexcept
 
 } // namespace
 
-class WasapiOutputThread : public Thread {
+class WasapiOutputThread {
 	friend class WasapiOutput;
+	Thread thread{BIND_THIS_METHOD(Work)};
 	WinEvent event;
 	WinEvent data_poped;
 	IAudioClient &client;
@@ -181,18 +182,18 @@ public:
 			   ComPtr<IAudioRenderClient> &&_render_client,
 			   const UINT32 _frame_size, const UINT32 _buffer_size_in_frames,
 			   bool _is_exclusive)
-		:Thread(BIND_THIS_METHOD(Work)), client(_client),
+		:client(_client),
 		 render_client(std::move(_render_client)), frame_size(_frame_size),
 		 buffer_size_in_frames(_buffer_size_in_frames), is_exclusive(_is_exclusive),
 		 spsc_buffer(_buffer_size_in_frames * 4 * _frame_size)
 	{
 		SetEventHandle(client, event.handle());
-		Start();
+		thread.Start();
 	}
 
 	void Finish() noexcept {
 		SetStatus(Status::FINISH);
-		Join();
+		thread.Join();
 	}
 
 	void Play() noexcept { return SetStatus(Status::PLAY); }
