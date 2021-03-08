@@ -29,6 +29,7 @@
 #include "pcm/Convert.hxx"
 #include "fs/Path.hxx"
 #include "fs/NarrowPath.hxx"
+#include "io/FileDescriptor.hxx"
 #include "util/ConstBuffer.hxx"
 #include "util/StaticFifoBuffer.hxx"
 #include "util/OptionDef.hxx"
@@ -102,7 +103,8 @@ public:
 };
 
 static void
-RunConvert(PcmConvert &convert, size_t in_frame_size)
+RunConvert(PcmConvert &convert, size_t in_frame_size,
+	   FileDescriptor in_fd, FileDescriptor out_fd)
 {
 	StaticFifoBuffer<uint8_t, 4096> buffer;
 
@@ -111,7 +113,7 @@ RunConvert(PcmConvert &convert, size_t in_frame_size)
 			const auto dest = buffer.Write();
 			assert(!dest.empty());
 
-			ssize_t nbytes = read(0, dest.data, dest.size);
+			ssize_t nbytes = in_fd.Read(dest.data, dest.size);
 			if (nbytes <= 0)
 				break;
 
@@ -128,9 +130,7 @@ RunConvert(PcmConvert &convert, size_t in_frame_size)
 		buffer.Consume(src.size);
 
 		auto output = convert.Convert({src.data, src.size});
-
-		[[maybe_unused]] ssize_t ignored = write(1, output.data,
-						   output.size);
+		out_fd.FullWrite(output.data, output.size);
 	}
 
 	while (true) {
@@ -138,8 +138,7 @@ RunConvert(PcmConvert &convert, size_t in_frame_size)
 		if (output.IsNull())
 			break;
 
-		[[maybe_unused]] ssize_t ignored = write(1, output.data,
-						   output.size);
+		out_fd.FullWrite(output.data, output.size);
 	}
 }
 
@@ -152,7 +151,9 @@ try {
 	const GlobalInit init(c.config_path);
 
 	PcmConvert state(c.in_audio_format, c.out_audio_format);
-	RunConvert(state, c.in_audio_format.GetFrameSize());
+	RunConvert(state, c.in_audio_format.GetFrameSize(),
+		   FileDescriptor(STDIN_FILENO),
+		   FileDescriptor(STDOUT_FILENO));
 
 	return EXIT_SUCCESS;
 } catch (...) {
