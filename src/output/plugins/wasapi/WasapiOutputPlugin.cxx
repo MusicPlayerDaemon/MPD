@@ -314,7 +314,7 @@ wasapi_output_get_client(WasapiOutput &output) noexcept
 	return output.client.get();
 }
 
-void
+inline void
 WasapiOutputThread::Work() noexcept
 {
 	SetThreadName("Wasapi Output Worker");
