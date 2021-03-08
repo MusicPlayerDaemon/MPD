@@ -355,16 +355,10 @@ try {
 			return;
 		}
 
-		if (!started) {
-			if (current_state != Status::PLAY)
-				/* don't bother starting the
-				   IAudioClient if we're
-				   paused */
-				continue;
-
-			Start(client);
-			started = true;
-		}
+		if (!started && current_state != Status::PLAY)
+			/* don't bother starting the IAudioClient if
+			   we're paused */
+			continue;
 
 		UINT32 write_in_frames = buffer_size_in_frames;
 		if (!is_exclusive) {
@@ -387,6 +381,11 @@ try {
 
 		AtScopeExit(&) {
 			render_client->ReleaseBuffer(write_in_frames, mode);
+
+			if (!started) {
+				Start(client);
+				started = true;
+			}
 		};
 
 		if (current_state == Status::PLAY) {
