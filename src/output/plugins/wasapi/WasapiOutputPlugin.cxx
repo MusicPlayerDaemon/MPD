@@ -165,7 +165,7 @@ class WasapiOutputThread : public Thread {
 	ComPtr<IAudioRenderClient> render_client;
 	const UINT32 frame_size;
 	const UINT32 buffer_size_in_frames;
-	bool is_exclusive;
+	const bool is_exclusive;
 
 	enum class Status : uint32_t { FINISH, PLAY, PAUSE };
 	alignas(BOOST_LOCKFREE_CACHELINE_BYTES) std::atomic<Status> status =
