@@ -147,8 +147,6 @@ void SetDSDFallback(AudioFormat &audio_format) noexcept {
 }
 #endif
 
-inline constexpr const unsigned int kErrorId = -1;
-
 } // namespace
 
 class WasapiOutputThread : public Thread {
@@ -637,8 +635,8 @@ void WasapiOutput::OpenDevice() {
 		}
 	}
 
-	unsigned int id = kErrorId;
 	if (!device_config.empty()) {
+		unsigned int id;
 		if (!SafeSilenceTry([this, &id]() { id = std::stoul(device_config); })) {
 			device = SearchDevice(device_config);
 			if (!device)
