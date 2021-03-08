@@ -18,6 +18,7 @@
  */
 
 #include "HResult.hxx"
+#include "system/Error.hxx"
 
 #include <cassert>
 #include <cstdarg>
@@ -27,11 +28,21 @@
 std::string
 HResultCategory::message(int Errcode) const
 {
+	char buffer[256];
+
+	/* FormatMessage() supports some HRESULT values (depending on
+	   the Windows version) */
+	if (FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM |
+			   FORMAT_MESSAGE_IGNORE_INSERTS,
+			   nullptr, Errcode, 0,
+			   buffer, sizeof(buffer),
+			   nullptr))
+		return buffer;
+
 	const auto msg = HRESULTToString(Errcode);
 	if (!msg.empty())
 		return std::string(msg);
 
-	char buffer[11]; // "0x12345678\0"
 	int size = snprintf(buffer, sizeof(buffer), "0x%1x", Errcode);
 	assert(2 <= size && size <= 10);
 	return std::string(buffer, size);
