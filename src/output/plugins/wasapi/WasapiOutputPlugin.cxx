@@ -317,63 +317,61 @@ wasapi_output_get_client(WasapiOutput &output) noexcept
 
 inline void
 WasapiOutputThread::Work() noexcept
-{
+try {
 	SetThreadName("Wasapi Output Worker");
 	FormatDebug(wasapi_output_domain, "Working thread started");
 	COM com;
 	while (true) {
-		try {
-			event.Wait();
+		event.Wait();
 
-			Status current_state = status.load();
-			if (current_state == Status::FINISH) {
-				FormatDebug(wasapi_output_domain,
-					    "Working thread stopped");
-				return;
+		Status current_state = status.load();
+		if (current_state == Status::FINISH) {
+			FormatDebug(wasapi_output_domain,
+				    "Working thread stopped");
+			return;
+		}
+
+		UINT32 write_in_frames = buffer_size_in_frames;
+		if (!is_exclusive) {
+			UINT32 data_in_frames =
+				GetCurrentPaddingFrames(client);
+
+			if (data_in_frames >= buffer_size_in_frames) {
+				continue;
 			}
+			write_in_frames -= data_in_frames;
+		}
 
-			UINT32 write_in_frames = buffer_size_in_frames;
-			if (!is_exclusive) {
-				UINT32 data_in_frames =
-					GetCurrentPaddingFrames(client);
+		BYTE *data;
+		DWORD mode = 0;
 
-				if (data_in_frames >= buffer_size_in_frames) {
-					continue;
-				}
-				write_in_frames -= data_in_frames;
-			}
+		if (HRESULT result =
+		    render_client->GetBuffer(write_in_frames, &data);
+		    FAILED(result)) {
+			throw MakeHResultError(result, "Failed to get buffer");
+		}
 
-			BYTE *data;
-			DWORD mode = 0;
+		AtScopeExit(&) {
+			render_client->ReleaseBuffer(write_in_frames, mode);
+		};
 
-			if (HRESULT result =
-				    render_client->GetBuffer(write_in_frames, &data);
-			    FAILED(result)) {
-				throw MakeHResultError(result, "Failed to get buffer");
-			}
-
-			AtScopeExit(&) {
-				render_client->ReleaseBuffer(write_in_frames, mode);
-			};
-
-			if (current_state == Status::PLAY) {
-				const UINT32 write_size = write_in_frames * frame_size;
-				UINT32 new_data_size = 0;
-				new_data_size = spsc_buffer.pop(data, write_size);
-				std::fill_n(data + new_data_size,
-					    write_size - new_data_size, 0);
-				data_poped.Set();
-			} else {
-				mode = AUDCLNT_BUFFERFLAGS_SILENT;
-				FormatDebug(wasapi_output_domain,
-					    "Working thread paused");
-			}
-		} catch (...) {
-			error.ptr = std::current_exception();
-			error.occur.store(true);
-			error.thrown.Wait();
+		if (current_state == Status::PLAY) {
+			const UINT32 write_size = write_in_frames * frame_size;
+			UINT32 new_data_size = 0;
+			new_data_size = spsc_buffer.pop(data, write_size);
+			std::fill_n(data + new_data_size,
+				    write_size - new_data_size, 0);
+			data_poped.Set();
+		} else {
+			mode = AUDCLNT_BUFFERFLAGS_SILENT;
+			FormatDebug(wasapi_output_domain,
+				    "Working thread paused");
 		}
 	}
+} catch (...) {
+	error.ptr = std::current_exception();
+	error.occur.store(true);
+	error.thrown.Wait();
 }
 
 AudioOutput *
