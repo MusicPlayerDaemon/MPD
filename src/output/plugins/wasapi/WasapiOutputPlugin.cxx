@@ -86,17 +86,6 @@ gcc_const constexpr uint32_t GetChannelMask(const uint8_t channels) noexcept {
 }
 
 template <typename Functor>
-inline bool SafeTry(Functor &&functor) {
-	try {
-		functor();
-		return true;
-	} catch (...) {
-		FormatError(std::current_exception(), "%s");
-		return false;
-	}
-}
-
-template <typename Functor>
 inline bool SafeSilenceTry(Functor &&functor) {
 	try {
 		functor();
