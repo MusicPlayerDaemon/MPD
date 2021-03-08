@@ -401,9 +401,9 @@ WasapiOutput::DoDisable() noexcept
 		try {
 			thread->Finish();
 			thread->Join();
-		} catch (std::exception &err) {
-			FormatError(wasapi_output_domain, "exception while disabling: %s",
-				    err.what());
+		} catch (...) {
+			LogError(std::current_exception(),
+				 "exception while disabling");
 		}
 		thread.reset();
 		client.reset();
@@ -560,9 +560,9 @@ WasapiOutput::Close() noexcept
 			Stop(*client);
 		}).get();
 		thread->CheckException();
-	} catch (std::exception &err) {
-		FormatError(wasapi_output_domain, "exception while stoping: %s",
-			    err.what());
+	} catch (...) {
+		FormatError(std::current_exception(),
+			    "exception while stopping");
 	}
 	is_started = false;
 	thread->Finish();
