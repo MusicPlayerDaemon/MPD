@@ -29,7 +29,7 @@
 class COM {
 public:
 	COM() {
-		if (HRESULT result = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
+		if (HRESULT result = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED|COINIT_DISABLE_OLE1DDE);
 		    FAILED(result)) {
 			throw MakeHResultError(
 				result,
