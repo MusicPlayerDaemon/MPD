@@ -187,6 +187,7 @@ public:
 		 buffer_size_in_frames(_buffer_size_in_frames), is_exclusive(_is_exclusive),
 		 spsc_buffer(_buffer_size_in_frames * 4 * _frame_size)
 	{
+		SetEventHandle(*client, event.handle());
 	}
 
 	void Finish() noexcept { return SetStatus(Status::FINISH); }
@@ -544,8 +545,6 @@ WasapiOutput::DoOpen(AudioFormat &audio_format)
 	watermark = buffer_size_in_frames * 3 * FrameSize();
 	thread.emplace(client.get(), std::move(render_client), FrameSize(),
 		       buffer_size_in_frames, is_exclusive);
-
-	SetEventHandle(*client, thread->event.handle());
 
 	thread->Start();
 }
