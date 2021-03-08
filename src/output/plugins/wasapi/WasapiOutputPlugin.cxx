@@ -195,8 +195,7 @@ public:
 	void WaitDataPoped() noexcept { data_poped.Wait(); }
 	void CheckException() {
 		if (error.occur.load()) {
-			auto err = std::exchange(error.ptr, nullptr);
-			std::rethrow_exception(err);
+			std::rethrow_exception(error.ptr);
 		}
 	}
 
