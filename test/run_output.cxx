@@ -162,6 +162,8 @@ RunOutput(AudioOutput &ao, AudioFormat audio_format,
 
 		buffer.Consume(consumed);
 	}
+
+	ao.Drain();
 }
 
 int main(int argc, char **argv)
