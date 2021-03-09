@@ -6,6 +6,7 @@ ver 0.22.7 (not yet released)
 * storage
   - curl: don't use glibc extension
 * output
+  - httpd: send header "Access-Control-Allow-Origin: *"
   - wasapi: add algorithm for finding usable audio format
   - wasapi: use default device only if none was configured
   - wasapi: add DoP support

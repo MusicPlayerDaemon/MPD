@@ -45,6 +45,7 @@ icy_server_metadata_header(const char *name,
 			    "Connection: close\r\n"
 			    "Pragma: no-cache\r\n"
 			    "Cache-Control: no-cache, no-store\r\n"
+			    "Access-Control-Allow-Origin: *\r\n"
 			    "\r\n",
 			    name,
 			    genre,
