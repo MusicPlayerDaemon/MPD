@@ -239,6 +239,11 @@ class WasapiOutput final : public AudioOutput {
 	 */
 	bool is_started;
 
+	/**
+	 * Only valid if the output is open.
+	 */
+	bool paused;
+
 	std::atomic_flag not_interrupted = true;
 
 	const std::string device_config;
@@ -276,6 +281,7 @@ public:
 	}
 	void Open(AudioFormat &audio_format) override {
 		com_worker->Async([&]() { DoOpen(audio_format); }).get();
+		paused = false;
 	}
 	void Close() noexcept override;
 	std::chrono::steady_clock::duration Delay() const noexcept override;
@@ -589,6 +595,7 @@ WasapiOutput::DoOpen(AudioFormat &audio_format)
 		       buffer_size_in_frames, is_exclusive);
 
 	is_started = false;
+	paused = false;
 }
 
 void
@@ -613,7 +620,7 @@ WasapiOutput::Close() noexcept
 std::chrono::steady_clock::duration
 WasapiOutput::Delay() const noexcept
 {
-	if (!is_started) {
+	if (paused) {
 		// idle while paused
 		return std::chrono::seconds(1);
 	}
@@ -625,6 +632,8 @@ size_t
 WasapiOutput::Play(const void *chunk, size_t size)
 {
 	assert(thread);
+
+	paused = false;
 
 	not_interrupted.test_and_set();
 
@@ -665,6 +674,7 @@ WasapiOutput::Play(const void *chunk, size_t size)
 bool
 WasapiOutput::Pause()
 {
+	paused = true;
 	if (is_started) {
 		thread->Pause();
 		is_started = false;
