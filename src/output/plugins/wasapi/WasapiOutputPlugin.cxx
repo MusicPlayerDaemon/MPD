@@ -253,7 +253,7 @@ public:
 		com_worker = std::make_shared<COMWorker>();
 
 		try {
-			com_worker->Async([&]() { OpenDevice(); }).get();
+			com_worker->Async([&]() { ChooseDevice(); }).get();
 		} catch (...) {
 			com_worker.reset();
 			throw;
@@ -288,7 +288,7 @@ private:
 	void DoDisable() noexcept;
 	void DoOpen(AudioFormat &audio_format);
 
-	void OpenDevice();
+	void ChooseDevice();
 	bool TryFormatExclusive(const AudioFormat &audio_format);
 	void FindExclusiveFormatSupported(AudioFormat &audio_format);
 	void FindSharedFormatSupported(AudioFormat &audio_format);
@@ -445,7 +445,7 @@ WasapiOutput::DoOpen(AudioFormat &audio_format)
 
 	if (GetState(*device) != DEVICE_STATE_ACTIVE) {
 		device.reset();
-		OpenDevice();
+		ChooseDevice();
 	}
 
 	client = Activate<IAudioClient>(*device);
@@ -693,7 +693,7 @@ WasapiOutput::Cancel() noexcept
 
 /// run inside COMWorkerThread
 void
-WasapiOutput::OpenDevice()
+WasapiOutput::ChooseDevice()
 {
 	ComPtr<IMMDeviceEnumerator> enumerator;
 	enumerator.CoCreateInstance(__uuidof(MMDeviceEnumerator), nullptr,
