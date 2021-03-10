@@ -181,6 +181,8 @@ class WasapiOutputThread {
 
 	std::atomic_bool cancel = false;
 
+	std::atomic_bool empty = true;
+
 	enum class Status : uint32_t { FINISH, PLAY, PAUSE };
 
 	alignas(BOOST_LOCKFREE_CACHELINE_BYTES) std::atomic<Status> status =
@@ -224,6 +226,8 @@ public:
 	}
 
 	std::size_t Push(ConstBuffer<void> input) noexcept {
+		empty.store(false);
+
 		std::size_t consumed =
 			spsc_buffer.push(static_cast<const BYTE *>(input.data),
 					 input.size);
@@ -234,6 +238,24 @@ public:
 		}
 
 		return consumed;
+	}
+
+	/**
+	 * Check if the buffer is empty, and if not, wait a bit.
+	 *
+	 * Throws on error.
+	 *
+	 * @return true if the buffer is now empty
+	 */
+	bool Drain() {
+		if (empty)
+			return true;
+
+		CheckException();
+		Wait();
+		CheckException();
+
+		return empty;
 	}
 
 	/**
@@ -417,6 +439,7 @@ try {
 		if (cancel.load()) {
 			spsc_buffer.consume_all([](auto &&) {});
 			cancel.store(false);
+			empty.store(true);
 			InterruptWaiter();
 		}
 
@@ -475,6 +498,9 @@ try {
 		const UINT32 write_size = write_in_frames * frame_size;
 		UINT32 new_data_size = 0;
 		new_data_size = spsc_buffer.pop(data, write_size);
+		if (new_data_size == 0)
+			empty.store(true);
+
 		std::fill_n(data + new_data_size,
 			    write_size - new_data_size, 0);
 		InterruptWaiter();
@@ -741,9 +767,15 @@ WasapiOutput::Drain()
 {
 	assert(thread);
 
-	// TODO implement
+	not_interrupted.test_and_set();
 
-	thread->CheckException();
+	while (!thread->Drain()) {
+		if (!not_interrupted.test_and_set())
+			throw AudioOutputInterrupted{};
+	}
+
+	/* TODO: this needs to wait until the hardware has really
+	   finished playing */
 }
 
 void
