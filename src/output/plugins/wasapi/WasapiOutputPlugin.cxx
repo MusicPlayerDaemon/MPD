@@ -170,7 +170,10 @@ class WasapiOutputThread {
 
 	bool started = false;
 
+	std::atomic_bool cancel = false;
+
 	enum class Status : uint32_t { FINISH, PLAY, PAUSE };
+
 	alignas(BOOST_LOCKFREE_CACHELINE_BYTES) std::atomic<Status> status =
 		Status::PAUSE;
 	alignas(BOOST_LOCKFREE_CACHELINE_BYTES) struct {
@@ -200,6 +203,24 @@ public:
 
 	void Play() noexcept { return SetStatus(Status::PLAY); }
 	void Pause() noexcept { return SetStatus(Status::PAUSE); }
+
+	/**
+	 * Instruct the thread to discard the buffer (and wait for
+	 * completion).  This needs to be done inside this thread,
+	 * because only the consumer thread is allowed to do that.
+	 */
+	void Cancel() noexcept {
+		cancel.store(true);
+		event.Set();
+
+		while (cancel.load() && !error.occur.load())
+			Wait();
+
+		/* not rethrowing the exception here via
+		   CheckException() because this method must be
+		   "noexcept"; the next WasapiOutput::Play() call will
+		   throw */
+	}
 
 	/**
 	 * Wait for the thread to finish some work (e.g. until some
@@ -365,6 +386,12 @@ try {
 
 	while (true) {
 		event.Wait();
+
+		if (cancel.load()) {
+			spsc_buffer.consume_all([](auto &&) {});
+			cancel.store(false);
+			InterruptWaiter();
+		}
 
 		Status current_state = status.load();
 		switch (current_state) {
@@ -707,7 +734,7 @@ WasapiOutput::Cancel() noexcept
 {
 	assert(thread);
 
-	thread->spsc_buffer.consume_all([](auto &&) {});
+	thread->Cancel();
 }
 
 /// run inside COMWorkerThread
