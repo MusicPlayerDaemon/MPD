@@ -233,7 +233,6 @@ class WasapiOutput final : public AudioOutput {
 #endif
 	std::string device_config;
 	std::shared_ptr<COMWorker> com_worker;
-	ComPtr<IMMDeviceEnumerator> enumerator;
 	ComPtr<IMMDevice> device;
 	ComPtr<IAudioClient> client;
 	WAVEFORMATEXTENSIBLE device_format;
@@ -293,9 +292,11 @@ private:
 	bool TryFormatExclusive(const AudioFormat &audio_format);
 	void FindExclusiveFormatSupported(AudioFormat &audio_format);
 	void FindSharedFormatSupported(AudioFormat &audio_format);
-	void EnumerateDevices();
-	ComPtr<IMMDevice> GetDevice(unsigned int index);
-	ComPtr<IMMDevice> SearchDevice(std::string_view name);
+	static void EnumerateDevices(IMMDeviceEnumerator &enumerator);
+	static ComPtr<IMMDevice> GetDevice(IMMDeviceEnumerator &enumerator,
+					   unsigned index);
+	static ComPtr<IMMDevice> SearchDevice(IMMDeviceEnumerator &enumerator,
+					      std::string_view name);
 };
 
 WasapiOutput &
@@ -434,7 +435,6 @@ WasapiOutput::DoDisable() noexcept
 	assert(!thread);
 
 	device.reset();
-	enumerator.reset();
 }
 
 /// run inside COMWorkerThread
@@ -695,12 +695,13 @@ WasapiOutput::Cancel() noexcept
 void
 WasapiOutput::OpenDevice()
 {
+	ComPtr<IMMDeviceEnumerator> enumerator;
 	enumerator.CoCreateInstance(__uuidof(MMDeviceEnumerator), nullptr,
 				    CLSCTX_INPROC_SERVER);
 
 	if (enumerate_devices) {
 		try {
-			EnumerateDevices();
+			EnumerateDevices(*enumerator);
 		} catch (...) {
 			LogError(std::current_exception());
 		}
@@ -709,12 +710,12 @@ WasapiOutput::OpenDevice()
 	if (!device_config.empty()) {
 		unsigned int id;
 		if (!SafeSilenceTry([this, &id]() { id = std::stoul(device_config); })) {
-			device = SearchDevice(device_config);
+			device = SearchDevice(*enumerator, device_config);
 			if (!device)
 				throw FormatRuntimeError("Device '%s' not found",
 							 device_config.c_str());
 		} else
-			device = GetDevice(id);
+			device = GetDevice(*enumerator, id);
 	} else {
 		device = GetDefaultAudioEndpoint(*enumerator);
 	}
@@ -915,9 +916,9 @@ WasapiOutput::FindSharedFormatSupported(AudioFormat &audio_format)
 
 /// run inside COMWorkerThread
 void
-WasapiOutput::EnumerateDevices()
+WasapiOutput::EnumerateDevices(IMMDeviceEnumerator &enumerator)
 {
-	const auto device_collection = EnumAudioEndpoints(*enumerator);
+	const auto device_collection = EnumAudioEndpoints(enumerator);
 
 	const UINT count = GetCount(*device_collection);
 	for (UINT i = 0; i < count; ++i) {
@@ -938,17 +939,18 @@ WasapiOutput::EnumerateDevices()
 
 /// run inside COMWorkerThread
 ComPtr<IMMDevice>
-WasapiOutput::GetDevice(unsigned int index)
+WasapiOutput::GetDevice(IMMDeviceEnumerator &enumerator, unsigned index)
 {
-	const auto device_collection = EnumAudioEndpoints(*enumerator);
+	const auto device_collection = EnumAudioEndpoints(enumerator);
 	return Item(*device_collection, index);
 }
 
 /// run inside COMWorkerThread
 ComPtr<IMMDevice>
-WasapiOutput::SearchDevice(std::string_view name)
+WasapiOutput::SearchDevice(IMMDeviceEnumerator &enumerator,
+			   std::string_view name)
 {
-	const auto device_collection = EnumAudioEndpoints(*enumerator);
+	const auto device_collection = EnumAudioEndpoints(enumerator);
 
 	const UINT count = GetCount(*device_collection);
 	for (UINT i = 0; i < count; ++i) {
