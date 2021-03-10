@@ -230,10 +230,10 @@ private:
 class WasapiOutput final : public AudioOutput {
 	std::atomic_flag not_interrupted = true;
 	bool is_started = false;
-	bool is_exclusive;
-	bool enumerate_devices;
+	const bool is_exclusive;
+	const bool enumerate_devices;
 #ifdef ENABLE_DSD
-	bool dop_setting;
+	const bool dop_setting;
 #endif
 	std::string device_config;
 	std::shared_ptr<COMWorker> com_worker;
