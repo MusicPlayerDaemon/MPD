@@ -209,6 +209,10 @@ public:
 		data_poped.Wait();
 	}
 
+	void InterruptWaiter() noexcept {
+		data_poped.Set();
+	}
+
 	void CheckException() {
 		if (error.occur.load()) {
 			std::rethrow_exception(error.ptr);
@@ -395,7 +399,7 @@ try {
 			new_data_size = spsc_buffer.pop(data, write_size);
 			std::fill_n(data + new_data_size,
 				    write_size - new_data_size, 0);
-			data_poped.Set();
+			InterruptWaiter();
 		} else {
 			mode = AUDCLNT_BUFFERFLAGS_SILENT;
 			FormatDebug(wasapi_output_domain,
@@ -406,9 +410,8 @@ try {
 	error.ptr = std::current_exception();
 	error.occur.store(true);
 
-	/* wake up the client thread which may be inside
-	   WaitDataPoped() */
-	data_poped.Set();
+	/* wake up the client thread which may be inside Wait() */
+	InterruptWaiter();
 }
 
 AudioOutput *
@@ -661,7 +664,7 @@ WasapiOutput::Interrupt() noexcept
 {
 	if (thread) {
 		not_interrupted.clear();
-		thread->data_poped.Set();
+		thread->InterruptWaiter();
 	}
 }
 
