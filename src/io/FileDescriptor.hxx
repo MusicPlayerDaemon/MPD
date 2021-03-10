@@ -147,9 +147,12 @@ public:
 #ifdef _WIN32
 	void EnableCloseOnExec() noexcept {}
 	void DisableCloseOnExec() noexcept {}
+	void SetBinaryMode() noexcept;
 #else
 	static bool CreatePipeNonBlock(FileDescriptor &r,
 				       FileDescriptor &w) noexcept;
+
+	void SetBinaryMode() noexcept {}
 
 	/**
 	 * Enable non-blocking mode on this file descriptor.

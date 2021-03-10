@@ -29,17 +29,9 @@
 class COM {
 public:
 	COM() {
-		if (HRESULT result = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+		if (HRESULT result = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED|COINIT_DISABLE_OLE1DDE);
 		    FAILED(result)) {
-			throw FormatHResultError(
-				result,
-				"Unable to initialize COM with COINIT_MULTITHREADED");
-		}
-	}
-	COM(bool) {
-		if (HRESULT result = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
-		    FAILED(result)) {
-			throw FormatHResultError(
+			throw MakeHResultError(
 				result,
 				"Unable to initialize COM with COINIT_APARTMENTTHREADED");
 		}

@@ -164,6 +164,8 @@ static int
 dump_input_stream(InputStream &is, FileDescriptor out,
 		  offset_type seek, size_t chunk_size)
 {
+	out.SetBinaryMode();
+
 	std::unique_lock<Mutex> lock(is.mutex);
 
 	if (seek > 0)

@@ -50,6 +50,8 @@ case x:                                                                         
 		C(AUDCLNT_E_SERVICE_NOT_RUNNING);
 		C(AUDCLNT_E_UNSUPPORTED_FORMAT);
 		C(AUDCLNT_E_WRONG_ENDPOINT_TYPE);
+		C(AUDCLNT_E_NOT_INITIALIZED);
+		C(AUDCLNT_E_NOT_STOPPED);
 		C(CO_E_NOTINITIALIZED);
 		C(E_INVALIDARG);
 		C(E_OUTOFMEMORY);
@@ -72,6 +74,13 @@ public:
 static inline const std::error_category &hresult_category() noexcept {
 	static const HResultCategory hresult_category_instance{};
 	return hresult_category_instance;
+}
+
+inline std::system_error
+MakeHResultError(HRESULT result, const char *msg) noexcept
+{
+	return std::system_error(std::error_code(result, hresult_category()),
+				 msg);
 }
 
 gcc_printf(2, 3) std::system_error

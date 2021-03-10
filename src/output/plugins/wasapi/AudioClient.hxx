@@ -33,8 +33,8 @@ GetBufferSizeInFrames(IAudioClient &client)
 
 	HRESULT result = client.GetBufferSize(&buffer_size_in_frames);
 	if (FAILED(result))
-		throw FormatHResultError(result,
-					 "Unable to get audio client buffer size");
+		throw MakeHResultError(result,
+				       "Unable to get audio client buffer size");
 
 	return buffer_size_in_frames;
 }
@@ -46,8 +46,8 @@ GetCurrentPaddingFrames(IAudioClient &client)
 
 	HRESULT result = client.GetCurrentPadding(&padding_frames);
 	if (FAILED(result))
-		throw FormatHResultError(result,
-					 "Failed to get current padding");
+		throw MakeHResultError(result,
+				       "Failed to get current padding");
 
 	return padding_frames;
 }
@@ -59,7 +59,7 @@ GetMixFormat(IAudioClient &client)
 
 	HRESULT result = client.GetMixFormat(&f);
 	if (FAILED(result))
-		throw FormatHResultError(result, "GetMixFormat failed");
+		throw MakeHResultError(result, "GetMixFormat failed");
 
 	return ComHeapPtr{f};
 }
@@ -69,7 +69,7 @@ Start(IAudioClient &client)
 {
 	HRESULT result = client.Start();
 	if (FAILED(result))
-		throw FormatHResultError(result, "Failed to start client");
+		throw MakeHResultError(result, "Failed to start client");
 }
 
 inline void
@@ -77,7 +77,7 @@ Stop(IAudioClient &client)
 {
 	HRESULT result = client.Stop();
 	if (FAILED(result))
-		throw FormatHResultError(result, "Failed to stop client");
+		throw MakeHResultError(result, "Failed to stop client");
 }
 
 inline void
@@ -85,7 +85,7 @@ SetEventHandle(IAudioClient &client, HANDLE h)
 {
 	HRESULT result = client.SetEventHandle(h);
 	if (FAILED(result))
-		throw FormatHResultError(result, "Unable to set event handle");
+		throw MakeHResultError(result, "Unable to set event handle");
 }
 
 template<typename T>
@@ -95,7 +95,7 @@ GetService(IAudioClient &client)
 	T *p = nullptr;
 	HRESULT result = client.GetService(IID_PPV_ARGS(&p));
 	if (FAILED(result))
-		throw FormatHResultError(result, "Unable to get service");
+		throw MakeHResultError(result, "Unable to get service");
 
 	return ComPtr{p};
 }

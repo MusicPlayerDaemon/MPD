@@ -44,7 +44,11 @@ public:
 	void Close() noexcept override {}
 
 	int GetVolume() override {
-		auto future = COMWorker::Async([&]() -> int {
+		auto com_worker = wasapi_output_get_com_worker(output);
+		if (!com_worker)
+			return -1;
+
+		auto future = com_worker->Async([&]() -> int {
 			HRESULT result;
 			float volume_level;
 
@@ -55,9 +59,9 @@ public:
 				result = endpoint_volume->GetMasterVolumeLevelScalar(
 					&volume_level);
 				if (FAILED(result)) {
-					throw FormatHResultError(result,
-								 "Unable to get master "
-								 "volume level");
+					throw MakeHResultError(result,
+							       "Unable to get master "
+							       "volume level");
 				}
 			} else {
 				auto session_volume =
@@ -65,7 +69,7 @@ public:
 
 				result = session_volume->GetMasterVolume(&volume_level);
 				if (FAILED(result)) {
-					throw FormatHResultError(
+					throw MakeHResultError(
 						result, "Unable to get master volume");
 				}
 			}
@@ -76,7 +80,11 @@ public:
 	}
 
 	void SetVolume(unsigned volume) override {
-		COMWorker::Async([&]() {
+		auto com_worker = wasapi_output_get_com_worker(output);
+		if (!com_worker)
+			throw std::runtime_error("Cannot set WASAPI volume");
+
+		com_worker->Async([&]() {
 			HRESULT result;
 			const float volume_level = volume / 100.0f;
 
@@ -87,7 +95,7 @@ public:
 				result = endpoint_volume->SetMasterVolumeLevelScalar(
 					volume_level, nullptr);
 				if (FAILED(result)) {
-					throw FormatHResultError(
+					throw MakeHResultError(
 						result,
 						"Unable to set master volume level");
 				}
@@ -98,7 +106,7 @@ public:
 				result = session_volume->SetMasterVolume(volume_level,
 									 nullptr);
 				if (FAILED(result)) {
-					throw FormatHResultError(
+					throw MakeHResultError(
 						result, "Unable to set master volume");
 				}
 			}

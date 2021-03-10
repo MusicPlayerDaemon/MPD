@@ -22,76 +22,46 @@
 
 #include "WinEvent.hxx"
 #include "thread/Future.hxx"
-#include "thread/Mutex.hxx"
 #include "thread/Thread.hxx"
 
 #include <boost/lockfree/spsc_queue.hpp>
-#include <mutex>
-#include <optional>
 
 #include <windows.h>
 
 // Worker thread for all COM operation
 class COMWorker {
-private:
-	class COMWorkerThread : public Thread {
-	public:
-		COMWorkerThread() : Thread{BIND_THIS_METHOD(Work)} {}
+	Thread thread{BIND_THIS_METHOD(Work)};
 
-	private:
-		friend class COMWorker;
-		void Work() noexcept;
-		void Finish() noexcept {
-			running_flag.clear();
-			event.Set();
-		}
-		void Push(const std::function<void()> &function) {
-			spsc_buffer.push(function);
-			event.Set();
-		}
-
-		boost::lockfree::spsc_queue<std::function<void()>> spsc_buffer{32};
-		std::atomic_flag running_flag = true;
-		WinEvent event{};
-	};
+	boost::lockfree::spsc_queue<std::function<void()>> spsc_buffer{32};
+	std::atomic_flag running_flag = true;
+	WinEvent event{};
 
 public:
-	static void Aquire() {
-		std::unique_lock locker(mutex);
-		if (reference_count == 0) {
-			thread.emplace();
-			thread->Start();
-		}
-		++reference_count;
-	}
-	static void Release() noexcept {
-		std::unique_lock locker(mutex);
-		--reference_count;
-		if (reference_count == 0) {
-			thread->Finish();
-			thread->Join();
-			thread.reset();
-		}
+	COMWorker() {
+		thread.Start();
 	}
 
-	template <typename Function, typename... Args>
-	static auto Async(Function &&function, Args &&...args) {
-		using R = std::invoke_result_t<std::decay_t<Function>,
-					       std::decay_t<Args>...>;
+	~COMWorker() noexcept {
+		Finish();
+		thread.Join();
+	}
+
+	COMWorker(const COMWorker &) = delete;
+	COMWorker &operator=(const COMWorker &) = delete;
+
+	template<typename Function>
+	auto Async(Function &&function) {
+		using R = std::invoke_result_t<std::decay_t<Function>>;
 		auto promise = std::make_shared<Promise<R>>();
 		auto future = promise->get_future();
-		thread->Push([function = std::forward<Function>(function),
-			      args = std::make_tuple(std::forward<Args>(args)...),
+		Push([function = std::forward<Function>(function),
 			      promise = std::move(promise)]() mutable {
 			try {
 				if constexpr (std::is_void_v<R>) {
-					std::apply(std::forward<Function>(function),
-						   std::move(args));
+					std::invoke(std::forward<Function>(function));
 					promise->set_value();
 				} else {
-					promise->set_value(std::apply(
-						std::forward<Function>(function),
-						std::move(args)));
+					promise->set_value(std::invoke(std::forward<Function>(function)));
 				}
 			} catch (...) {
 				promise->set_exception(std::current_exception());
@@ -101,9 +71,17 @@ public:
 	}
 
 private:
-	static Mutex mutex;
-	static unsigned int reference_count;
-	static std::optional<COMWorkerThread> thread;
+	void Finish() noexcept {
+		running_flag.clear();
+		event.Set();
+	}
+
+	void Push(const std::function<void()> &function) {
+		spsc_buffer.push(function);
+		event.Set();
+	}
+
+	void Work() noexcept;
 };
 
 #endif

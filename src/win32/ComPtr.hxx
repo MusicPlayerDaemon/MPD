@@ -85,7 +85,7 @@ public:
 			::CoCreateInstance(class_id, unknown_outer, class_context,
 					   __uuidof(T), reinterpret_cast<void **>(&ptr));
 		if (FAILED(result)) {
-			throw FormatHResultError(result, "Unable to create instance");
+			throw MakeHResultError(result, "Unable to create instance");
 		}
 	}
 
