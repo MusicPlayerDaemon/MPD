@@ -633,19 +633,19 @@ WasapiOutput::Play(const void *chunk, size_t size)
 	do {
 		const size_t consumed_size = thread->spsc_buffer.push(
 			static_cast<const BYTE *>(input.data), input.size);
+
+		if (!is_started) {
+			is_started = true;
+			thread->Play();
+		}
+
 		if (consumed_size == 0) {
-			assert(is_started);
 			thread->Wait();
 			thread->CheckException();
 			if (!not_interrupted.test_and_set()) {
 				throw AudioOutputInterrupted{};
 			}
 			continue;
-		}
-
-		if (!is_started) {
-			is_started = true;
-			thread->Play();
 		}
 
 		thread->CheckException();
