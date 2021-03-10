@@ -167,6 +167,16 @@ class WasapiOutputThread {
 	const UINT32 buffer_size_in_frames;
 	const bool is_exclusive;
 
+	/**
+	 * This flag is only used by the calling thread
+	 * (i.e. #OutputThread), and specifies whether the
+	 * WasapiOutputThread has been told to play via Play().  This
+	 * variable is somewhat redundant because we already have
+	 * "state", but using this variable saves some overhead for
+	 * atomic operations.
+	 */
+	bool playing = false;
+
 	bool started = false;
 
 	std::atomic_bool cancel = false;
@@ -200,12 +210,30 @@ public:
 		thread.Join();
 	}
 
-	void Play() noexcept { return SetStatus(Status::PLAY); }
-	void Pause() noexcept { return SetStatus(Status::PAUSE); }
+	void Play() noexcept {
+		playing = true;
+		SetStatus(Status::PLAY);
+	}
+
+	void Pause() noexcept {
+		if (!playing)
+			return;
+
+		playing = false;
+		SetStatus(Status::PAUSE);
+	}
 
 	std::size_t Push(ConstBuffer<void> input) noexcept {
-		return spsc_buffer.push(static_cast<const BYTE *>(input.data),
-					input.size);
+		std::size_t consumed =
+			spsc_buffer.push(static_cast<const BYTE *>(input.data),
+					 input.size);
+
+		if (!playing) {
+			playing = true;
+			Play();
+		}
+
+		return consumed;
 	}
 
 	/**
@@ -258,11 +286,6 @@ class WasapiOutput final : public AudioOutput {
 #ifdef ENABLE_DSD
 	const bool dop_setting;
 #endif
-
-	/**
-	 * Only valid if the output is open.
-	 */
-	bool is_started;
 
 	/**
 	 * Only valid if the output is open.
@@ -625,7 +648,6 @@ WasapiOutput::DoOpen(AudioFormat &audio_format)
 	thread.emplace(*client, std::move(render_client), FrameSize(),
 		       buffer_size_in_frames, is_exclusive);
 
-	is_started = false;
 	paused = false;
 }
 
@@ -678,11 +700,6 @@ WasapiOutput::Play(const void *chunk, size_t size)
 	do {
 		const size_t consumed_size = thread->Push({chunk, size});
 
-		if (!is_started) {
-			is_started = true;
-			thread->Play();
-		}
-
 		if (consumed_size == 0) {
 			thread->Wait();
 			thread->CheckException();
@@ -705,10 +722,7 @@ bool
 WasapiOutput::Pause()
 {
 	paused = true;
-	if (is_started) {
-		thread->Pause();
-		is_started = false;
-	}
+	thread->Pause();
 	thread->CheckException();
 	return true;
 }
