@@ -354,16 +354,23 @@ try {
 		event.Wait();
 
 		Status current_state = status.load();
-		if (current_state == Status::FINISH) {
+		switch (current_state) {
+		case Status::FINISH:
 			FormatDebug(wasapi_output_domain,
 				    "Working thread stopped");
 			return;
-		}
 
-		if (!started && current_state != Status::PLAY)
-			/* don't bother starting the IAudioClient if
-			   we're paused */
-			continue;
+		case Status::PAUSE:
+			if (!started)
+				/* don't bother starting the
+				   IAudioClient if we're paused */
+				continue;
+
+			break;
+
+		case Status::PLAY:
+			break;
+		}
 
 		UINT32 write_in_frames = buffer_size_in_frames;
 		if (!is_exclusive) {
