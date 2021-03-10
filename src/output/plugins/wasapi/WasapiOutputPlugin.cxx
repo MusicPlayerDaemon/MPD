@@ -234,7 +234,11 @@ class WasapiOutput final : public AudioOutput {
 	const bool dop_setting;
 #endif
 
-	bool is_started = false;
+	/**
+	 * Only valid if the output is open.
+	 */
+	bool is_started;
+
 	std::atomic_flag not_interrupted = true;
 
 	const std::string device_config;
@@ -583,6 +587,8 @@ WasapiOutput::DoOpen(AudioFormat &audio_format)
 	watermark = buffer_size_in_frames * 3 * FrameSize();
 	thread.emplace(*client, std::move(render_client), FrameSize(),
 		       buffer_size_in_frames, is_exclusive);
+
+	is_started = false;
 }
 
 void
@@ -596,7 +602,6 @@ WasapiOutput::Close() noexcept
 		FormatError(std::current_exception(),
 			    "exception while stopping");
 	}
-	is_started = false;
 	thread->Finish();
 	com_worker->Async([&]() {
 		thread.reset();
