@@ -601,15 +601,7 @@ WasapiOutput::Delay() const noexcept
 		return std::chrono::seconds(1);
 	}
 
-	assert(thread);
-
-	const size_t data_size = thread->spsc_buffer.read_available();
-	const size_t delay_size = std::max(data_size, watermark) - watermark;
-
-	using s = std::chrono::seconds;
-	using duration = std::chrono::steady_clock::duration;
-	auto result = duration(s(delay_size)) / device_format.Format.nAvgBytesPerSec;
-	return result;
+	return std::chrono::steady_clock::duration::zero();
 }
 
 size_t
