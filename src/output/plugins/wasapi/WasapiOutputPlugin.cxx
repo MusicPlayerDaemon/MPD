@@ -366,7 +366,12 @@ try {
 				   IAudioClient if we're paused */
 				continue;
 
-			break;
+			/* stop the IAudioClient while paused; it will
+			   be restarted as soon as we're asked to
+			   resume playback */
+			Stop(client);
+			started = false;
+			continue;
 
 		case Status::PLAY:
 			break;
@@ -400,18 +405,12 @@ try {
 			}
 		};
 
-		if (current_state == Status::PLAY) {
-			const UINT32 write_size = write_in_frames * frame_size;
-			UINT32 new_data_size = 0;
-			new_data_size = spsc_buffer.pop(data, write_size);
-			std::fill_n(data + new_data_size,
-				    write_size - new_data_size, 0);
-			InterruptWaiter();
-		} else {
-			mode = AUDCLNT_BUFFERFLAGS_SILENT;
-			FormatDebug(wasapi_output_domain,
-				    "Working thread paused");
-		}
+		const UINT32 write_size = write_in_frames * frame_size;
+		UINT32 new_data_size = 0;
+		new_data_size = spsc_buffer.pop(data, write_size);
+		std::fill_n(data + new_data_size,
+			    write_size - new_data_size, 0);
+		InterruptWaiter();
 	}
 } catch (...) {
 	error.ptr = std::current_exception();
