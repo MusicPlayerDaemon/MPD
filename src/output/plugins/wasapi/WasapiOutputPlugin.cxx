@@ -237,7 +237,8 @@ class WasapiOutput final : public AudioOutput {
 	bool is_started = false;
 	std::atomic_flag not_interrupted = true;
 
-	std::string device_config;
+	const std::string device_config;
+
 	std::shared_ptr<COMWorker> com_worker;
 	ComPtr<IMMDevice> device;
 	ComPtr<IAudioClient> client;
