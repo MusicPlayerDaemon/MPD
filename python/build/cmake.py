@@ -29,14 +29,19 @@ def configure(toolchain, src, build, args=()):
 
 class CmakeProject(Project):
     def __init__(self, url, md5, installed, configure_args=[],
+                 windows_configure_args=[],
                  **kwargs):
         Project.__init__(self, url, md5, installed, **kwargs)
         self.configure_args = configure_args
+        self.windows_configure_args = windows_configure_args
 
     def configure(self, toolchain):
         src = self.unpack(toolchain)
         build = self.make_build_path(toolchain)
-        configure(toolchain, src, build, self.configure_args)
+        configure_args = self.configure_args
+        if toolchain.is_windows:
+            configure_args = configure_args + self.windows_configure_args
+        configure(toolchain, src, build, configure_args)
         return build
 
     def build(self, toolchain):
