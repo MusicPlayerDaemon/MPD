@@ -3,6 +3,7 @@ ver 0.22.7 (not yet released)
   - don't use glibc extension to parse time stamps
 * decoder
   - ffmpeg: fix build problem with FFmpeg 3.4
+  - gme: support RSN files
 * storage
   - curl: don't use glibc extension
 * output
