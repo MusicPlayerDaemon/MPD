@@ -724,7 +724,7 @@ WasapiOutput::Play(const void *chunk, size_t size)
 		return size;
 
 	do {
-		const size_t consumed_size = thread->Push({chunk, size});
+		const size_t consumed_size = thread->Push({input.data, input.size});
 
 		if (consumed_size == 0) {
 			thread->Wait();
