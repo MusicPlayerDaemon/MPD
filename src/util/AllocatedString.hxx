@@ -71,6 +71,18 @@ public:
 	explicit BasicAllocatedString(const_pointer src)
 		:value(Duplicate(src)) {}
 
+	/**
+	 * Concatenate several strings.
+	 */
+	BasicAllocatedString(std::initializer_list<string_view> src)
+		:value(new value_type[TotalSize(src) + 1])
+	{
+		auto *p = value;
+		for (const auto i : src)
+			p = std::copy(i.begin(), i.end(), p);
+		*p = SENTINEL;
+	}
+
 	BasicAllocatedString(const BasicAllocatedString &src) noexcept
 		:BasicAllocatedString(Duplicate(src.value)) {}
 
@@ -157,6 +169,13 @@ private:
 		return src != nullptr
 			? Duplicate(string_view(src))
 			: nullptr;
+	}
+
+	static constexpr std::size_t TotalSize(std::initializer_list<string_view> src) noexcept {
+		std::size_t size = 0;
+		for (std::string_view i : src)
+			size += i.size();
+		return size;
 	}
 };
 
