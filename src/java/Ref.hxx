@@ -49,6 +49,7 @@ class LocalRef {
 
 public:
 	LocalRef() noexcept = default;
+	LocalRef(std::nullptr_t) noexcept {}
 
 	/**
 	 * The local reference is obtained by the caller.  May
