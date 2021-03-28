@@ -62,7 +62,8 @@ namespace Java {
 			 value(std::exchange(src.value, nullptr)) {}
 
 		~LocalRef() noexcept {
-			env->DeleteLocalRef(value);
+			if (value != nullptr)
+				env->DeleteLocalRef(value);
 		}
 
 		LocalRef(const LocalRef &other) = delete;
