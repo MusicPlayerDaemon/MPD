@@ -31,6 +31,7 @@
 #define JAVA_FILE_HXX
 
 #include "Object.hxx"
+#include "String.hxx"
 
 #include <jni.h>
 
@@ -51,9 +52,17 @@ public:
 	static void Initialise(JNIEnv *env) noexcept;
 
 	gcc_nonnull_all
-	static jstring getAbsolutePath(JNIEnv *env, jobject file) noexcept {
+	static jstring GetAbsolutePath(JNIEnv *env, jobject file) noexcept {
 		return (jstring)env->CallObjectMethod(file,
 						      getAbsolutePath_method);
+	}
+
+	String GetAbsolutePath() const noexcept {
+		return {GetEnv(), GetAbsolutePath(GetEnv(), Get())};
+	}
+
+	String GetAbsolutePathChecked() const noexcept {
+		return *this ? GetAbsolutePath() : nullptr;
 	}
 
 	/**
