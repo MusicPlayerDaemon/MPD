@@ -68,8 +68,12 @@ namespace Java {
 				env->DeleteLocalRef(value);
 		}
 
-		LocalRef(const LocalRef &other) = delete;
-		LocalRef &operator=(const LocalRef &other) = delete;
+		LocalRef &operator=(LocalRef &&src) noexcept {
+			using std::swap;
+			swap(env, src.env);
+			swap(value, src.value);
+			return *this;
+		}
 
 		JNIEnv *GetEnv() const noexcept {
 			return env;
