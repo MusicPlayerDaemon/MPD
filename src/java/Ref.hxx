@@ -43,10 +43,12 @@ namespace Java {
 	 */
 	template<typename T>
 	class LocalRef {
-		JNIEnv *const env;
-		const T value;
+		JNIEnv *env;
+		T value = nullptr;
 
 	public:
+		LocalRef() noexcept = default;
+
 		/**
 		 * The local reference is obtained by the caller.  May
 		 * be nullptr.
