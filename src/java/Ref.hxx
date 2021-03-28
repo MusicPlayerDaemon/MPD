@@ -85,6 +85,14 @@ public:
 		return value != nullptr;
 	}
 
+	bool operator==(std::nullptr_t n) const noexcept {
+		return value == n;
+	}
+
+	bool operator!=(std::nullptr_t n) const noexcept {
+		return !(*this == n);
+	}
+
 	T Get() const noexcept {
 		return value;
 	}
