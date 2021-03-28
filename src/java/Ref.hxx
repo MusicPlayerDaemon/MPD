@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2018 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2010-2021 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -38,170 +38,172 @@
 #include <utility>
 
 namespace Java {
-	/**
-	 * Hold a local reference on a JNI object.
-	 */
-	template<typename T>
-	class LocalRef {
-		JNIEnv *env;
-		T value = nullptr;
 
-	public:
-		LocalRef() noexcept = default;
+/**
+ * Hold a local reference on a JNI object.
+ */
+template<typename T>
+class LocalRef {
+	JNIEnv *env;
+	T value = nullptr;
 
-		/**
-		 * The local reference is obtained by the caller.  May
-		 * be nullptr.
-		 */
-		LocalRef(JNIEnv *_env, T _value) noexcept
-			:env(_env), value(_value)
-		{
-			assert(env != nullptr);
-		}
-
-		LocalRef(LocalRef &&src) noexcept
-			:env(src.env),
-			 value(std::exchange(src.value, nullptr)) {}
-
-		~LocalRef() noexcept {
-			if (value != nullptr)
-				env->DeleteLocalRef(value);
-		}
-
-		LocalRef &operator=(LocalRef &&src) noexcept {
-			using std::swap;
-			swap(env, src.env);
-			swap(value, src.value);
-			return *this;
-		}
-
-		JNIEnv *GetEnv() const noexcept {
-			return env;
-		}
-
-		operator bool() const noexcept {
-			return value != nullptr;
-		}
-
-		T Get() const noexcept {
-			return value;
-		}
-
-		operator T() const noexcept {
-			return value;
-		}
-	};
+public:
+	LocalRef() noexcept = default;
 
 	/**
-	 * Hold a global reference on a JNI object.
+	 * The local reference is obtained by the caller.  May
+	 * be nullptr.
 	 */
-	template<typename T>
-	class GlobalRef {
-		T value;
+	LocalRef(JNIEnv *_env, T _value) noexcept
+		:env(_env), value(_value)
+	{
+		assert(env != nullptr);
+	}
 
-	public:
-		/**
-		 * Constructs an uninitialized object.  The method
-		 * set() must be called before it is destructed.
-		 */
-		GlobalRef() = default;
+	LocalRef(LocalRef &&src) noexcept
+		:env(src.env),
+		 value(std::exchange(src.value, nullptr)) {}
 
-		GlobalRef(JNIEnv *env, T _value) noexcept
-			:value(_value)
-		{
-			assert(env != nullptr);
-			assert(value != nullptr);
+	~LocalRef() noexcept {
+		if (value != nullptr)
+			env->DeleteLocalRef(value);
+	}
 
-			value = (T)env->NewGlobalRef(value);
-		}
+	LocalRef &operator=(LocalRef &&src) noexcept {
+		using std::swap;
+		swap(env, src.env);
+		swap(value, src.value);
+		return *this;
+	}
 
-		~GlobalRef() noexcept {
-			GetEnv()->DeleteGlobalRef(value);
-		}
+	JNIEnv *GetEnv() const noexcept {
+		return env;
+	}
 
-		GlobalRef(const GlobalRef &other) = delete;
-		GlobalRef &operator=(const GlobalRef &other) = delete;
+	operator bool() const noexcept {
+		return value != nullptr;
+	}
 
-		/**
-		 * Sets the object, ignoring the previous value.  This
-		 * is only allowed once after the default constructor
-		 * was used.
-		 */
-		void Set(JNIEnv *env, T _value) noexcept {
-			assert(_value != nullptr);
+	T Get() const noexcept {
+		return value;
+	}
 
-			value = (T)env->NewGlobalRef(_value);
-		}
+	operator T() const noexcept {
+		return value;
+	}
+};
 
-		T Get() const noexcept {
-			return value;
-		}
+/**
+ * Hold a global reference on a JNI object.
+ */
+template<typename T>
+class GlobalRef {
+	T value;
 
-		operator T() const noexcept {
-			return value;
-		}
-	};
+public:
+	/**
+	 * Constructs an uninitialized object.  The method
+	 * set() must be called before it is destructed.
+	 */
+	GlobalRef() = default;
+
+	GlobalRef(JNIEnv *env, T _value) noexcept
+		:value(_value)
+	{
+		assert(env != nullptr);
+		assert(value != nullptr);
+
+		value = (T)env->NewGlobalRef(value);
+	}
+
+	~GlobalRef() noexcept {
+		GetEnv()->DeleteGlobalRef(value);
+	}
+
+	GlobalRef(const GlobalRef &other) = delete;
+	GlobalRef &operator=(const GlobalRef &other) = delete;
 
 	/**
-	 * Container for a global reference to a JNI object that gets
-	 * initialised and deinitialised explicitly.  Since there is
-	 * no implicit initialisation in the default constructor, this
-	 * is a trivial C++ class.  It should only be used for global
-	 * variables that are implicitly initialised with zeroes.
+	 * Sets the object, ignoring the previous value.  This
+	 * is only allowed once after the default constructor
+	 * was used.
 	 */
-	template<typename T>
-	class TrivialRef {
-		T value;
+	void Set(JNIEnv *env, T _value) noexcept {
+		assert(_value != nullptr);
 
-	public:
-		TrivialRef() = default;
+		value = (T)env->NewGlobalRef(_value);
+	}
 
-		TrivialRef(const TrivialRef &other) = delete;
-		TrivialRef &operator=(const TrivialRef &other) = delete;
+	T Get() const noexcept {
+		return value;
+	}
 
-		bool IsDefined() const noexcept {
-			return value != nullptr;
-		}
+	operator T() const noexcept {
+		return value;
+	}
+};
 
-		/**
-		 * Obtain a global reference on the specified object
-		 * and store it.  This object must not be set already.
-		 */
-		void Set(JNIEnv *env, T _value) noexcept {
-			assert(value == nullptr);
-			assert(_value != nullptr);
+/**
+ * Container for a global reference to a JNI object that gets
+ * initialised and deinitialised explicitly.  Since there is
+ * no implicit initialisation in the default constructor, this
+ * is a trivial C++ class.  It should only be used for global
+ * variables that are implicitly initialised with zeroes.
+ */
+template<typename T>
+class TrivialRef {
+	T value;
 
-			value = (T)env->NewGlobalRef(_value);
-		}
+public:
+	TrivialRef() = default;
 
-		/**
-		 * Release the global reference and clear this object.
-		 */
-		void Clear(JNIEnv *env) noexcept {
-			assert(value != nullptr);
+	TrivialRef(const TrivialRef &other) = delete;
+	TrivialRef &operator=(const TrivialRef &other) = delete;
 
-			env->DeleteGlobalRef(value);
-			value = nullptr;
-		}
+	bool IsDefined() const noexcept {
+		return value != nullptr;
+	}
 
-		/**
-		 * Release the global reference and clear this object.
-		 * It is allowed to call this method without ever
-		 * calling Set().
-		 */
-		void ClearOptional(JNIEnv *env) noexcept {
-			if (value != nullptr)
-				Clear(env);
-		}
+	/**
+	 * Obtain a global reference on the specified object
+	 * and store it.  This object must not be set already.
+	 */
+	void Set(JNIEnv *env, T _value) noexcept {
+		assert(value == nullptr);
+		assert(_value != nullptr);
 
-		T Get() const noexcept {
-			return value;
-		}
+		value = (T)env->NewGlobalRef(_value);
+	}
 
-		operator T() const noexcept {
-			return value;
-		}
-	};
-}
+	/**
+	 * Release the global reference and clear this object.
+	 */
+	void Clear(JNIEnv *env) noexcept {
+		assert(value != nullptr);
+
+		env->DeleteGlobalRef(value);
+		value = nullptr;
+	}
+
+	/**
+	 * Release the global reference and clear this object.
+	 * It is allowed to call this method without ever
+	 * calling Set().
+	 */
+	void ClearOptional(JNIEnv *env) noexcept {
+		if (value != nullptr)
+			Clear(env);
+	}
+
+	T Get() const noexcept {
+		return value;
+	}
+
+	operator T() const noexcept {
+		return value;
+	}
+};
+
+} // namespace Java
 
 #endif

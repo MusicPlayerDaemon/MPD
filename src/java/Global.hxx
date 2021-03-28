@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2018 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2010-2021 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -35,24 +35,26 @@
 #include <jni.h>
 
 namespace Java {
-	extern JavaVM *jvm;
 
-	void Init(JNIEnv *env) noexcept;
+extern JavaVM *jvm;
 
-	static inline void
-	DetachCurrentThread() noexcept
-	{
-		if (jvm != nullptr)
-			jvm->DetachCurrentThread();
-	}
+void Init(JNIEnv *env) noexcept;
 
-	static inline gcc_pure
-	JNIEnv *GetEnv() noexcept
-	{
-		JNIEnv *env;
-		jvm->AttachCurrentThread(&env, nullptr);
-		return env;
-	}
+static inline void
+DetachCurrentThread() noexcept
+{
+	if (jvm != nullptr)
+		jvm->DetachCurrentThread();
 }
+
+static inline gcc_pure
+JNIEnv *GetEnv() noexcept
+{
+	JNIEnv *env;
+	jvm->AttachCurrentThread(&env, nullptr);
+	return env;
+}
+
+} // namespace Java
 
 #endif
