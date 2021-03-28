@@ -39,11 +39,9 @@ Java::Exception::Exception(JNIEnv *env, jthrowable e) noexcept
 void
 Java::RethrowException(JNIEnv *env)
 {
-	jthrowable exception = env->ExceptionOccurred();
-	if (exception == nullptr)
+	LocalRef<jthrowable> exception{env, env->ExceptionOccurred()};
+	if (!exception)
 		return;
-
-	LocalRef<jthrowable> ref(env, exception);
 
 	env->ExceptionClear();
 	throw Exception(env, exception);
