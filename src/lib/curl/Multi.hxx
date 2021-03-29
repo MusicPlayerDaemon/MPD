@@ -69,13 +69,13 @@ public:
 			curl_multi_cleanup(handle);
 	}
 
-	operator bool() const noexcept {
-		return handle != nullptr;
-	}
-
 	CurlMulti &operator=(CurlMulti &&src) noexcept {
 		std::swap(handle, src.handle);
 		return *this;
+	}
+
+	operator bool() const noexcept {
+		return handle != nullptr;
 	}
 
 	CURLM *Get() noexcept {
