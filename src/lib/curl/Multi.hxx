@@ -47,7 +47,7 @@ public:
 	/**
 	 * Allocate a new CURLM*.
 	 *
-	 * Throws std::runtime_error on error.
+	 * Throws on error.
 	 */
 	CurlMulti()
 		:handle(curl_multi_init())
