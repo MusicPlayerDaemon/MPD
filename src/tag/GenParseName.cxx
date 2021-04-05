@@ -21,7 +21,14 @@
 
 #include <cstdlib>
 #include <map>
+
+#if __has_include("<string_view>")
 #include <string_view>
+using std::string_view;
+#else
+#include <boost/utility/string_view.hpp>
+using boost::string_view;
+#endif
 
 #include <stdio.h>
 
@@ -41,7 +48,7 @@ main(int argc, char **argv)
 
 	FILE *out = fopen(argv[1], "w");
 
-	std::map<std::string_view, TagType> names;
+	std::map<string_view, TagType> names;
 	for (unsigned i = 0; i < unsigned(TAG_NUM_OF_ITEM_TYPES); ++i)
 		names[tag_item_names[i]] = TagType(i);
 
