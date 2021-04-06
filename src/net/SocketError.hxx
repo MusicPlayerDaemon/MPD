@@ -171,7 +171,7 @@ public:
 };
 
 [[gnu::pure]]
-static inline std::system_error
+static inline auto
 MakeSocketError(socket_error_t code, const char *msg) noexcept
 {
 #ifdef _WIN32
@@ -182,7 +182,7 @@ MakeSocketError(socket_error_t code, const char *msg) noexcept
 }
 
 [[gnu::pure]]
-static inline std::system_error
+static inline auto
 MakeSocketError(const char *msg) noexcept
 {
 	return MakeSocketError(GetSocketError(), msg);
