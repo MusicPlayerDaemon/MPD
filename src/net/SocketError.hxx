@@ -127,8 +127,7 @@ IsSocketErrorAcceptWouldBlock(socket_error_t code) noexcept
 #endif
 }
 
-[[gnu::const]]
-static inline bool
+constexpr bool
 IsSocketErrorInterruped(socket_error_t code) noexcept
 {
 #ifdef _WIN32
@@ -138,8 +137,7 @@ IsSocketErrorInterruped(socket_error_t code) noexcept
 #endif
 }
 
-[[gnu::const]]
-static inline bool
+constexpr bool
 IsSocketErrorClosed(socket_error_t code) noexcept
 {
 #ifdef _WIN32
