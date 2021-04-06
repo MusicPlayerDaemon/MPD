@@ -170,7 +170,7 @@ public:
 	}
 };
 
-[[gnu::const]]
+[[gnu::pure]]
 static inline std::system_error
 MakeSocketError(socket_error_t code, const char *msg) noexcept
 {
