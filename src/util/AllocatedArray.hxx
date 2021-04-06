@@ -32,7 +32,6 @@
 
 #include "ConstBuffer.hxx"
 #include "WritableBuffer.hxx"
-#include "Compiler.h"
 
 #include <algorithm>
 #include <cassert>
