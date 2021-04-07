@@ -21,3 +21,8 @@ class BoostProject(Project):
         dest = os.path.join(includedir, 'boost')
         shutil.rmtree(dest, ignore_errors=True)
         shutil.copytree(os.path.join(src, 'boost'), dest)
+
+        # touch the boost/version.hpp file to ensure it's newer than
+        # the downloaded Boost tarball, to avoid reinstalling Boost on
+        # every run
+        os.utime(os.path.join(toolchain.install_prefix, self.installed))
