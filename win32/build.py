@@ -108,6 +108,7 @@ thirdparty_libs = [
     curl,
     libexpat,
     libnfs,
+    jack,
     boost,
 ]
 
