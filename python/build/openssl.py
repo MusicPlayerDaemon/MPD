@@ -17,6 +17,12 @@ class OpenSSLProject(MakeProject):
             'build_libs',
         ]
 
+    def get_make_install_args(self, toolchain):
+        # OpenSSL's Makefile runs "ranlib" during installation
+        return MakeProject.get_make_install_args(self, toolchain) + [
+            'RANLIB=' + toolchain.ranlib,
+        ]
+
     def build(self, toolchain):
         src = self.unpack(toolchain, out_of_tree=False)
 
