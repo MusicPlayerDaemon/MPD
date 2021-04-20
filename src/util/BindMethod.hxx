@@ -30,8 +30,6 @@
 #ifndef BIND_METHOD_HXX
 #define BIND_METHOD_HXX
 
-#include "Compiler.h"
-
 #include <type_traits>
 #include <utility>
 
@@ -45,21 +43,11 @@
 template<typename S=void()>
 class BoundMethod;
 
-#if GCC_OLDER_THAN(7,0)
-static constexpr bool NoExcept = false;
-#endif
-
 template<typename R,
-#if !GCC_OLDER_THAN(7,0)
 	bool NoExcept,
-#endif
 	typename... Args>
 class BoundMethod<R(Args...) noexcept(NoExcept)> {
-	typedef R (*function_pointer)(void *instance, Args... args)
-#if !GCC_OLDER_THAN(7,0)
-		noexcept(NoExcept)
-#endif
-		;
+	typedef R (*function_pointer)(void *instance, Args... args) noexcept(NoExcept);
 
 	void *instance_;
 	function_pointer function;
@@ -106,20 +94,10 @@ template<typename T, typename S>
 struct MethodWithSignature;
 
 template<typename T,
-#if !GCC_OLDER_THAN(7,0)
 	 bool NoExcept,
-#endif
 	 typename R, typename... Args>
-struct MethodWithSignature<T, R(Args...)
-#if !GCC_OLDER_THAN(7,0)
-			   noexcept(NoExcept)
-#endif
-			   > {
-	typedef R (T::*method_pointer)(Args...)
-#if !GCC_OLDER_THAN(7,0)
-		noexcept(NoExcept)
-#endif
-		;
+struct MethodWithSignature<T, R(Args...) noexcept(NoExcept)> {
+	typedef R (T::*method_pointer)(Args...) noexcept(NoExcept);
 };
 
 /**
@@ -130,11 +108,7 @@ struct MethodWithSignature<T, R(Args...)
 template<typename M>
 struct MethodSignatureHelper;
 
-template<typename R,
-#if !GCC_OLDER_THAN(7,0)
-	 bool NoExcept,
-#endif
-	 typename T, typename... Args>
+template<typename R, bool NoExcept, typename T, typename... Args>
 struct MethodSignatureHelper<R (T::*)(Args...) noexcept(NoExcept)> {
 	/**
 	 * The class which contains the given method (signature).
@@ -145,11 +119,7 @@ struct MethodSignatureHelper<R (T::*)(Args...) noexcept(NoExcept)> {
 	 * A function type which describes the "plain" function
 	 * signature.
 	 */
-	typedef R plain_signature(Args...)
-#if !GCC_OLDER_THAN(7,0)
-		noexcept(NoExcept)
-#endif
-		;
+	typedef R plain_signature(Args...) noexcept(NoExcept);
 };
 
 /**
@@ -159,17 +129,10 @@ struct MethodSignatureHelper<R (T::*)(Args...) noexcept(NoExcept)> {
 template<typename S>
 struct MethodWrapperWithSignature;
 
-template<typename R,
-#if !GCC_OLDER_THAN(7,0)
-	 bool NoExcept,
-#endif
-	 typename... Args>
+template<typename R, bool NoExcept, typename... Args>
 struct MethodWrapperWithSignature<R(Args...) noexcept(NoExcept)> {
-	typedef R (*function_pointer)(void *instance, Args...)
-#if !GCC_OLDER_THAN(7,0)
-		noexcept(NoExcept)
-#endif
-		;
+	typedef R (*function_pointer)(void *instance,
+				      Args...) noexcept(NoExcept);
 };
 
 /**
@@ -201,10 +164,7 @@ struct BindMethodWrapperGenerator2 {
 template<typename T, typename M, M method, typename S>
 struct BindMethodWrapperGenerator;
 
-template<typename T,
-#if !GCC_OLDER_THAN(7,0)
-	 bool NoExcept,
-#endif
+template<typename T, bool NoExcept,
 	 typename M, M method, typename R, typename... Args>
 struct BindMethodWrapperGenerator<T, M, method, R(Args...) noexcept(NoExcept)>
 	: BindMethodWrapperGenerator2<T, NoExcept, M, method, R, Args...> {
@@ -226,31 +186,19 @@ MakeBindMethodWrapper() noexcept
 template<typename S>
 struct FunctionTraits;
 
-template<typename R,
-#if !GCC_OLDER_THAN(7,0)
-	 bool NoExcept,
-#endif
-	 typename... Args>
+template<typename R, bool NoExcept, typename... Args>
 struct FunctionTraits<R(Args...) noexcept(NoExcept)> {
 	/**
 	 * A function type which describes the "plain" function
 	 * signature.
 	 */
-	typedef R function_type(Args...)
-#if !GCC_OLDER_THAN(7,0)
-		noexcept(NoExcept)
-#endif
-		;
+	typedef R function_type(Args...) noexcept(NoExcept);
 
 	/**
 	 * A function pointer type which describes the "plain"
 	 * function signature.
 	 */
-	typedef R (*pointer)(Args...)
-#if !GCC_OLDER_THAN(7,0)
-		noexcept(NoExcept)
-#endif
-		;
+	typedef R (*pointer)(Args...) noexcept(NoExcept);
 };
 
 /**
@@ -280,11 +228,7 @@ struct BindFunctionWrapperGenerator2 {
 template<typename S, typename P, P function>
 struct BindFunctionWrapperGenerator;
 
-template<typename P, P function,
-#if !GCC_OLDER_THAN(7,0)
-	 bool NoExcept,
-#endif
-	 typename R, typename... Args>
+template<typename P, P function, bool NoExcept, typename R, typename... Args>
 struct BindFunctionWrapperGenerator<R(Args...) noexcept(NoExcept), P, function>
 	: BindFunctionWrapperGenerator2<NoExcept, P, function, R, Args...> {
 };
