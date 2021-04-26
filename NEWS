@@ -9,6 +9,7 @@ ver 0.22.7 (not yet released)
 * database
   - simple: fix database corruption bug
 * output
+  - fix crash when pausing with multiple partitions
   - httpd: send header "Access-Control-Allow-Origin: *"
   - wasapi: add algorithm for finding usable audio format
   - wasapi: use default device only if none was configured
