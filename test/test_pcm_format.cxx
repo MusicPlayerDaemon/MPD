@@ -79,8 +79,8 @@ TEST(PcmTest, FormatFloat16)
 	EXPECT_EQ(N, f.size);
 
 	for (size_t i = 0; i != f.size; ++i) {
-		EXPECT_GE(f[i], -1.);
-		EXPECT_LE(f[i], 1.);
+		EXPECT_GE(f[i], -1.f);
+		EXPECT_LE(f[i], 1.f);
 	}
 
 	PcmDither dither;
