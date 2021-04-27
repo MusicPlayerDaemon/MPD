@@ -67,6 +67,7 @@ jobs:
           packages:
             - ccache
             - meson
+            - googletest
             - icu4c
             - ffmpeg
             - libnfs
@@ -101,11 +102,6 @@ before_install:
   - eval "${MATRIX_EVAL}"
 
 install:
-  # Work around "Target /usr/local/lib/libgtest.a is a symlink
-  # belonging to nss. You can unlink it" during gtest install
-  - test "$TRAVIS_OS_NAME" != "osx" || brew unlink nss
-
-  - test "$TRAVIS_OS_NAME" != "osx" || brew install https://gist.githubusercontent.com/Kronuz/96ac10fbd8472eb1e7566d740c4034f8/raw/gtest.rb
 
 before_script:
   - ccache -s
