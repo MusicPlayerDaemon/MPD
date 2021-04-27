@@ -2,70 +2,37 @@ language: cpp
 
 jobs:
   include:
-    # Ubuntu Bionic (18.04) with GCC 7
+    # Ubuntu Focal (20.04) with GCC 9.3
     - os: linux
-      dist: bionic
+      dist: focal
       addons:
         apt:
-          sources:
-            - sourceline: 'ppa:deadsnakes/ppa' # for Python 3.7 (required by Meson)
           packages:
+            - meson
             - libgtest-dev
             - libboost-dev
-            - python3.6
-            - python3-urllib3
-            - ninja-build
-      before_install:
-        - wget https://bootstrap.pypa.io/get-pip.py
-        - /usr/bin/python3.6 get-pip.py --user --no-cache-dir
-      install:
-        - /usr/bin/python3.6 $HOME/.local/bin/pip install --user meson --no-cache-dir
-      env:
-        - MATRIX_EVAL="export PATH=\$HOME/.local/bin:\$PATH"
 
-    # Ubuntu Bionic (18.04) with GCC 7 on big-endian
+    # Ubuntu Focal (20.04) with GCC 9.3 on big-endian
     - os: linux
       arch: s390x
-      dist: bionic
+      dist: focal
       addons:
         apt:
-          sources:
-            - sourceline: 'ppa:deadsnakes/ppa' # for Python 3.7 (required by Meson)
           packages:
+            - meson
             - libgtest-dev
             - libboost-dev
-            - python3.6
-            - python3-urllib3
-            - ninja-build
-      before_install:
-        - wget https://bootstrap.pypa.io/get-pip.py
-        - /usr/bin/python3.6 get-pip.py --user --no-cache-dir
-      install:
-        - /usr/bin/python3.6 $HOME/.local/bin/pip install --user meson --no-cache-dir
-      env:
-        - MATRIX_EVAL="export PATH=\$HOME/.local/bin:\$PATH"
 
-    # Ubuntu Bionic (18.04) with GCC 7 on ARM64
+    # Ubuntu Focal (20.04) with GCC 9.3 on ARM64
     - os: linux
       arch: arm64
-      dist: bionic
+      dist: focal
       addons:
         apt:
-          sources:
-            - sourceline: 'ppa:deadsnakes/ppa' # for Python 3.7 (required by Meson)
           packages:
+            - meson
             - libgtest-dev
             - libboost-dev
-            - python3.6
-            - python3-urllib3
-            - ninja-build
-      before_install:
-        - wget https://bootstrap.pypa.io/get-pip.py
-        - /usr/bin/python3.6 get-pip.py --user --no-cache-dir
-      install:
-        - /usr/bin/python3.6 $HOME/.local/bin/pip install --user meson --no-cache-dir
-      env:
-        - MATRIX_EVAL="export PATH=\$HOME/.local/bin:\$PATH"
 
     # Ubuntu Trusty (16.04) with GCC 8
     - os: linux
