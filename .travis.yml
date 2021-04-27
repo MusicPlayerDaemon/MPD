@@ -75,7 +75,7 @@ jobs:
           sources:
             - ubuntu-toolchain-r-test
             - sourceline: 'ppa:mhier/libboost-latest'
-            - sourceline: 'ppa:mstipicevic/ninja-build-1-7-2'
+            - sourceline: 'ppa:ricotz/toolchain'
             - sourceline: 'ppa:deadsnakes/ppa' # for Python 3.7 (required by Meson)
           packages:
             - g++-8
