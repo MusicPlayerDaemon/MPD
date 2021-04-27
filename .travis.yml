@@ -61,7 +61,7 @@ jobs:
         - MATRIX_EVAL="export CC='ccache gcc-8' CXX='ccache g++-8' LDFLAGS=-fuse-ld=gold PATH=\$HOME/.local/bin:\$PATH"
 
     - os: osx
-      osx_image: xcode10.3
+      osx_image: xcode11.6
       addons:
         homebrew:
           packages:
@@ -85,7 +85,6 @@ jobs:
             - faad2
             - wavpack
             - libmpdclient
-          update: true
       env:
         - MATRIX_EVAL="export PATH=/usr/local/opt/ccache/libexec:$PATH HOMEBREW_NO_ANALYTICS=1"
 
