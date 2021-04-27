@@ -134,8 +134,6 @@ before_install:
   - eval "${MATRIX_EVAL}"
 
 install:
-  # C++14
-
   # Work around "Target /usr/local/lib/libgtest.a is a symlink
   # belonging to nss. You can unlink it" during gtest install
   - test "$TRAVIS_OS_NAME" != "osx" || brew unlink nss
