@@ -1,7 +1,9 @@
 import os, shutil, subprocess
 
-def untar(tarball_path, parent_path, base):
+def untar(tarball_path, parent_path, base, lazy=False):
     path = os.path.join(parent_path, base)
+    if lazy and os.path.isdir(path):
+        return path
     try:
         shutil.rmtree(path)
     except FileNotFoundError:

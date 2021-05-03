@@ -55,8 +55,8 @@ class Project:
             parent_path = toolchain.src_path
         else:
             parent_path = toolchain.build_path
-        path = untar(self.download(toolchain), parent_path, self.base)
-
+        path = untar(self.download(toolchain), parent_path, self.base,
+                     lazy=out_of_tree and self.patches is None)
         if self.patches is not None:
             push_all(toolchain, path, self.patches)
 
