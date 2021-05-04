@@ -72,8 +72,10 @@ class Project:
 
         return path
 
-    def make_build_path(self, toolchain):
+    def make_build_path(self, toolchain, lazy=False):
         path = os.path.join(toolchain.build_path, self.base)
+        if lazy and os.path.isdir(path):
+            return path
         try:
             shutil.rmtree(path)
         except FileNotFoundError:
