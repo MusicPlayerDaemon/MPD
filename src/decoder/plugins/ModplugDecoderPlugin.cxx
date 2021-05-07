@@ -44,10 +44,25 @@ static constexpr size_t MODPLUG_PREALLOC_BLOCK = 256 * 1024;
 static constexpr offset_type MODPLUG_FILE_LIMIT = 100 * 1024 * 1024;
 
 static int modplug_loop_count;
+static unsigned char modplug_resampling_mode;
 
 static bool
 modplug_decoder_init(const ConfigBlock &block)
 {
+	const char* modplug_resampling_mode_value = block.GetBlockValue("resampling_mode", "fir");
+	if (strcmp(modplug_resampling_mode_value, "nearest") == 0) {
+		modplug_resampling_mode = MODPLUG_RESAMPLE_NEAREST;
+	} else if (strcmp(modplug_resampling_mode_value, "linear") == 0) {
+		modplug_resampling_mode = MODPLUG_RESAMPLE_LINEAR;
+	} else if (strcmp(modplug_resampling_mode_value, "spline") == 0) {
+		modplug_resampling_mode = MODPLUG_RESAMPLE_SPLINE;
+	} else if (strcmp(modplug_resampling_mode_value, "fir") == 0) {
+		modplug_resampling_mode = MODPLUG_RESAMPLE_FIR;
+	} else {
+		throw FormatRuntimeError("Invalid resampling mode in line %d: %s",
+				block.line, modplug_resampling_mode_value);
+	}
+
 	modplug_loop_count = block.GetBlockValue("loop_count", 0);
 	if (modplug_loop_count < -1)
 		throw FormatRuntimeError("Invalid loop count in line %d: %i",
@@ -139,7 +154,7 @@ mod_decode(DecoderClient &client, InputStream &is)
 
 	ModPlug_GetSettings(&settings);
 	/* alter setting */
-	settings.mResamplingMode = MODPLUG_RESAMPLE_FIR; /* RESAMP */
+	settings.mResamplingMode = modplug_resampling_mode;
 	settings.mChannels = 2;
 	settings.mBits = 16;
 	settings.mFrequency = 44100;

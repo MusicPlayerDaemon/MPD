@@ -484,6 +484,8 @@ Module player based on MODPlug.
 
    * - Setting
      - Description
+   * - **resampling_mode nearest|linear|spline|fir**
+     - Sets the resampling mode. "nearest" disables interpolation (good for chiptunes). "linear" makes modplug use linear interpolation (fast, good quality). "spline" makes modplug use cubic spline interpolation (high quality). "fir" makes modplug use 8-tap fir filter (extremely high quality). Defaults to "fir".
    * - **loop_count**
      - Number of times to loop the module if it uses backward loops. Default is 0 which prevents looping. -1 loops forever.
 
