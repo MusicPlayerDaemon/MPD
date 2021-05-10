@@ -123,6 +123,15 @@ libmodplug = AutotoolsProject(
     ],
 )
 
+libopenmpt = AutotoolsProject(
+    'https://lib.openmpt.org/files/libopenmpt/src/libopenmpt-0.5.8+release.autotools.tar.gz',
+    '61de7cc0c011b10472ca16adcc123689',
+    'lib/libopenmpt.a',
+    [
+        '--disable-shared', '--enable-static'
+    ],
+)
+
 wildmidi = CmakeProject(
     'https://codeload.github.com/Mindwerks/wildmidi/tar.gz/wildmidi-0.4.3',
     '498e5a96455bb4b91b37188ad6dcb070824e92c44f5ed452b90adbaec8eef3c5',
