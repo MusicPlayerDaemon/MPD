@@ -102,7 +102,10 @@ endif
 libmodplug_dep = dependency('libmodplug', required: get_option('modplug'))
 decoder_features.set('ENABLE_MODPLUG', libmodplug_dep.found())
 if libmodplug_dep.found()
-  decoder_plugins_sources += 'ModplugDecoderPlugin.cxx'
+  decoder_plugins_sources += [
+    'ModplugDecoderPlugin.cxx',
+    'ModCommon.cxx'
+  ]
 endif
 
 libmpcdec_dep = c_compiler.find_library('mpcdec', required: get_option('mpcdec'))

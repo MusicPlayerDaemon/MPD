@@ -18,6 +18,7 @@
  */
 
 #include "ModplugDecoderPlugin.hxx"
+#include "ModCommon.hxx"
 #include "../DecoderAPI.hxx"
 #include "input/InputStream.hxx"
 #include "tag/Handler.hxx"
@@ -40,8 +41,6 @@
 static constexpr Domain modplug_domain("modplug");
 
 static constexpr size_t MODPLUG_FRAME_SIZE = 4096;
-static constexpr size_t MODPLUG_PREALLOC_BLOCK = 256 * 1024;
-static constexpr offset_type MODPLUG_FILE_LIMIT = 100 * 1024 * 1024;
 
 static int modplug_loop_count;
 static unsigned char modplug_resampling_mode;
@@ -71,70 +70,10 @@ modplug_decoder_init(const ConfigBlock &block)
 	return true;
 }
 
-static WritableBuffer<uint8_t>
-mod_loadfile(DecoderClient *client, InputStream &is)
-{
-	//known/unknown size, preallocate array, lets read in chunks
-
-	const bool is_stream = !is.KnownSize();
-
-	WritableBuffer<uint8_t> buffer;
-	if (is_stream)
-		buffer.size = MODPLUG_PREALLOC_BLOCK;
-	else {
-		const auto size = is.GetSize();
-
-		if (size == 0) {
-			LogWarning(modplug_domain, "file is empty");
-			return nullptr;
-		}
-
-		if (size > MODPLUG_FILE_LIMIT) {
-			LogWarning(modplug_domain, "file too large");
-			return nullptr;
-		}
-
-		buffer.size = size;
-	}
-
-	buffer.data = new uint8_t[buffer.size];
-
-	uint8_t *const end = buffer.end();
-	uint8_t *p = buffer.begin();
-
-	while (true) {
-		size_t ret = decoder_read(client, is, p, end - p);
-		if (ret == 0) {
-			if (is.LockIsEOF())
-				/* end of file */
-				break;
-
-			/* I/O error - skip this song */
-			delete[] buffer.data;
-			buffer.data = nullptr;
-			return buffer;
-		}
-
-		p += ret;
-		if (p == end) {
-			if (!is_stream)
-				break;
-
-			LogWarning(modplug_domain, "stream too large");
-			delete[] buffer.data;
-			buffer.data = nullptr;
-			return buffer;
-		}
-	}
-
-	buffer.size = p - buffer.data;
-	return buffer;
-}
-
 static ModPlugFile *
 LoadModPlugFile(DecoderClient *client, InputStream &is)
 {
-	const auto buffer = mod_loadfile(client, is);
+	const auto buffer = mod_loadfile(&modplug_domain, client, is);
 	if (buffer.IsNull()) {
 		LogWarning(modplug_domain, "could not load stream");
 		return nullptr;
