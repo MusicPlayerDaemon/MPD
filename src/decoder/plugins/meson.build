@@ -111,7 +111,10 @@ endif
 libopenmpt_dep = dependency('libopenmpt', required: get_option('openmpt'))
 decoder_features.set('ENABLE_OPENMPT', libopenmpt_dep.found())
 if libopenmpt_dep.found()
-  decoder_plugins_sources += 'OpenmptDecoderPlugin.cxx'
+  decoder_plugins_sources += [
+    'OpenmptDecoderPlugin.cxx',
+    'ModCommon.cxx'
+  ]
 endif
 
 libmpcdec_dep = c_compiler.find_library('mpcdec', required: get_option('mpcdec'))

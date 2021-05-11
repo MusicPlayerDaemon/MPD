@@ -18,6 +18,7 @@
  */
 
 #include "OpenmptDecoderPlugin.hxx"
+#include "ModCommon.hxx"
 #include "../DecoderAPI.hxx"
 #include "input/InputStream.hxx"
 #include "tag/Handler.hxx"
@@ -35,7 +36,6 @@
 static constexpr Domain openmpt_domain("openmpt");
 
 static constexpr size_t OPENMPT_FRAME_SIZE = 4096;
-static constexpr size_t OPENMPT_PREALLOC_BLOCK = 256 * 1024;
 static constexpr int32_t OPENMPT_SAMPLE_RATE = 48000;
 
 static int openmpt_stereo_separation;
@@ -60,68 +60,13 @@ openmpt_decoder_init(const ConfigBlock &block)
 	return true;
 }
 
-static WritableBuffer<uint8_t>
-mod_loadfile(DecoderClient *client, InputStream &is)
-{
-	//known/unknown size, preallocate array, lets read in chunks
-
-	const bool is_stream = !is.KnownSize();
-
-	WritableBuffer<uint8_t> buffer;
-	if (is_stream)
-		buffer.size = OPENMPT_PREALLOC_BLOCK;
-	else {
-		const auto size = is.GetSize();
-
-		if (size == 0) {
-			LogWarning(openmpt_domain, "file is empty");
-			return nullptr;
-		}
-
-		buffer.size = size;
-	}
-
-		buffer.data = new uint8_t[buffer.size];
-
-		uint8_t *const end = buffer.end();
-		uint8_t *p = buffer.begin();
-
-	while (true) {
-		size_t ret = decoder_read(client, is, p, end - p);
-		if (ret == 0) {
-			if (is.LockIsEOF())
-				/* end of file */
-				break;
-
-			/* I/O error - skip this song */
-			delete[] buffer.data;
-			buffer.data = nullptr;
-			return buffer;
-		}
-
-		p += ret;
-		if (p == end) {
-			if (!is_stream)
-				break;
-
-			LogWarning(openmpt_domain, "stream too large");
-			delete[] buffer.data;
-			buffer.data = nullptr;
-			return buffer;
-		}
-	}
-
-	buffer.size = p - buffer.data;
-	return buffer;
-}
-
 static void
 mod_decode(DecoderClient &client, InputStream &is)
 {
 	int ret;
 	char audio_buffer[OPENMPT_FRAME_SIZE];
 
-	const auto buffer = mod_loadfile(&client, is);
+	const auto buffer = mod_loadfile(&openmpt_domain, &client, is);
 	if (buffer.IsNull()) {
 		LogWarning(openmpt_domain, "could not load stream");
 		return;
@@ -171,7 +116,7 @@ mod_decode(DecoderClient &client, InputStream &is)
 static bool
 openmpt_scan_stream(InputStream &is, TagHandler &handler) noexcept
 {
-	const auto buffer = mod_loadfile(nullptr, is);
+	const auto buffer = mod_loadfile(&openmpt_domain, nullptr, is);
 	if (buffer.IsNull()) {
 		LogWarning(openmpt_domain, "could not load stream");
 		return false;
