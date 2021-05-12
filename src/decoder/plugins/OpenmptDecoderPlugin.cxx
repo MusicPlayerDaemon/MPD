@@ -23,7 +23,6 @@
 #include "input/InputStream.hxx"
 #include "tag/Handler.hxx"
 #include "tag/Type.h"
-#include "util/WritableBuffer.hxx"
 #include "util/Domain.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/StringView.hxx"
@@ -72,8 +71,7 @@ mod_decode(DecoderClient &client, InputStream &is)
 		return;
 	}
 
-	openmpt::module mod(buffer.data, buffer.size);
-	delete[] buffer.data;
+	openmpt::module mod(buffer.data(), buffer.size());
 
 	/* alter settings */
 	mod.set_render_param(mod.RENDER_STEREOSEPARATION_PERCENT, openmpt_stereo_separation);
@@ -122,8 +120,7 @@ openmpt_scan_stream(InputStream &is, TagHandler &handler) noexcept
 		return false;
 	}
 
-	openmpt::module mod(buffer.data, buffer.size);
-	delete[] buffer.data;
+	openmpt::module mod(buffer.data(), buffer.size());
 
 	handler.OnDuration(SongTime::FromS(mod.get_duration_seconds()));
 
