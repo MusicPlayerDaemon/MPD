@@ -22,7 +22,6 @@
 #include "../DecoderAPI.hxx"
 #include "input/InputStream.hxx"
 #include "tag/Handler.hxx"
-#include "util/WritableBuffer.hxx"
 #include "util/Domain.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/StringView.hxx"
@@ -79,8 +78,7 @@ LoadModPlugFile(DecoderClient *client, InputStream &is)
 		return nullptr;
 	}
 
-	ModPlugFile *f = ModPlug_Load(buffer.data, buffer.size);
-	delete[] buffer.data;
+	ModPlugFile *f = ModPlug_Load(buffer.data(), buffer.size());
 	return f;
 }
 

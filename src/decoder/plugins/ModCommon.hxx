@@ -22,9 +22,9 @@
 
 #include "../DecoderAPI.hxx"
 #include "input/InputStream.hxx"
-#include "util/WritableBuffer.hxx"
+#include "util/AllocatedArray.hxx"
 #include "util/Domain.hxx"
 
-WritableBuffer<uint8_t> mod_loadfile(const Domain *domain, DecoderClient *client, InputStream &is);
+AllocatedArray<std::byte> mod_loadfile(const Domain *domain, DecoderClient *client, InputStream &is);
 
 #endif

@@ -23,16 +23,16 @@
 static constexpr size_t MOD_PREALLOC_BLOCK = 256 * 1024;
 static constexpr offset_type MOD_FILE_LIMIT = 100 * 1024 * 1024;
 
-WritableBuffer<uint8_t>
+AllocatedArray<std::byte>
 mod_loadfile(const Domain *domain, DecoderClient *client, InputStream &is)
 {
 	//known/unknown size, preallocate array, lets read in chunks
 
 	const bool is_stream = !is.KnownSize();
+	size_t buffer_size;
 
-	WritableBuffer<uint8_t> buffer;
-	if (is_stream)
-		buffer.size = MOD_PREALLOC_BLOCK;
+	if (is_stream) 
+		buffer_size = MOD_PREALLOC_BLOCK;
 	else {
 		const auto size = is.GetSize();
 
@@ -46,13 +46,13 @@ mod_loadfile(const Domain *domain, DecoderClient *client, InputStream &is)
 			return nullptr;
 		}
 
-		buffer.size = size;
+		buffer_size = size;
 	}
 
-	buffer.data = new uint8_t[buffer.size];
+	auto buffer = AllocatedArray<std::byte>(buffer_size);
 
-	uint8_t *const end = buffer.end();
-	uint8_t *p = buffer.begin();
+	std::byte *const end = buffer.end();
+	std::byte *p = buffer.begin();
 
 	while (true) {
 		size_t ret = decoder_read(client, is, p, end - p);
@@ -62,8 +62,6 @@ mod_loadfile(const Domain *domain, DecoderClient *client, InputStream &is)
 				break;
 
 			/* I/O error - skip this song */
-			delete[] buffer.data;
-			buffer.data = nullptr;
 			return buffer;
 		}
 
@@ -73,13 +71,11 @@ mod_loadfile(const Domain *domain, DecoderClient *client, InputStream &is)
 				break;
 
 			LogWarning(*domain, "stream too large");
-			delete[] buffer.data;
-			buffer.data = nullptr;
 			return buffer;
 		}
 	}
-
-	buffer.size = p - buffer.data;
+	
+	buffer.SetSize(p - buffer.data());
 	return buffer;
 }
 
