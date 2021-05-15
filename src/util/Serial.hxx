@@ -17,30 +17,13 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "OggSerial.hxx"
-#include "util/Compiler.h"
+#ifndef MPD_SERIAL_HXX
+#define MPD_SERIAL_HXX
 
-#include <atomic>
-#include <chrono>
-
-static std::atomic_uint next_ogg_serial;
-
+/**
+ * Generate the next pseudo-random serial.
+ */
 int
-GenerateOggSerial() noexcept
-{
-	unsigned serial = ++next_ogg_serial;
-	if (gcc_unlikely(serial < 16)) {
-		/* first-time initialization: seed with a clock value,
-		   which is random enough for our use */
+GenerateSerial() noexcept;
 
-		/* this code is not race-free, but good enough */
-		using namespace std::chrono;
-		const auto now = steady_clock::now().time_since_epoch();
-		const auto now_ms = duration_cast<milliseconds>(now);
-		const unsigned seed = now_ms.count();
-		next_ogg_serial = serial = seed;
-	}
-
-	return serial;
-}
-
+#endif

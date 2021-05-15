@@ -23,7 +23,7 @@
 #include "../EncoderAPI.hxx"
 #include "lib/xiph/OggStreamState.hxx"
 #include "lib/xiph/OggPage.hxx"
-#include "lib/xiph/OggSerial.hxx"
+#include "util/Serial.hxx"
 
 #include <ogg/ogg.h>
 
@@ -42,7 +42,7 @@ protected:
 public:
 	OggEncoder(bool _implements_tag)
 		:Encoder(_implements_tag),
-		 stream(GenerateOggSerial()) {
+		 stream(GenerateSerial()) {
 	}
 
 	/* virtual methods from class Encoder */
