@@ -583,6 +583,10 @@ Encodes into `FLAC <https://xiph.org/flac/>`_ (lossless).
      - Description
    * - **compression**
      - Sets the libFLAC compression level. The levels range from 0 (fastest, least compression) to 8 (slowest, most compression).
+   * - **oggflac yes|no**
+     - Configures if the stream should be Ogg FLAC versus native FLAC. Defaults to "no" (use native FLAC).
+   * - **oggchaining yes|no**
+     - Configures if the stream should use Ogg Chaining for in-stream metadata. Defaults to "no". Setting this to "yes" also enables Ogg FLAC.
 
 lame
 ----
