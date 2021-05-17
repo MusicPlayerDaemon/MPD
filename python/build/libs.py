@@ -385,8 +385,8 @@ openssl = OpenSSLProject(
 )
 
 curl = AutotoolsProject(
-    'http://curl.haxx.se/download/curl-7.74.0.tar.xz',
-    '999d5f2c403cf6e25d58319fdd596611e455dd195208746bc6e6d197a77e878b',
+    'https://curl.se/download/curl-7.76.1.tar.xz',
+    '64bb5288c39f0840c07d077e30d9052e1cbb9fa6c2dc52523824cc859e679145',
     'lib/libcurl.a',
     [
         '--disable-shared', '--enable-static',
