@@ -421,6 +421,10 @@ CurlInputStream::InitEasy()
 	request->SetOption(CURLOPT_MAXREDIRS, 5L);
 	request->SetOption(CURLOPT_FAILONERROR, 1L);
 
+	/* this option eliminates the probe request when
+	   username/password are specified */
+	request->SetOption(CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+
 	if (proxy != nullptr)
 		request->SetOption(CURLOPT_PROXY, proxy);
 

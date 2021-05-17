@@ -262,6 +262,10 @@ public:
 		request.SetOption(CURLOPT_FOLLOWLOCATION, 1L);
 		request.SetOption(CURLOPT_MAXREDIRS, 1L);
 
+		/* this option eliminates the probe request when
+		   username/password are specified */
+		request.SetOption(CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+
 		request_headers.Append(StringFormat<40>("depth: %u", depth));
 		request_headers.Append("content-type: text/xml");
 
