@@ -118,7 +118,7 @@ AudioOutputControl::GetLogName() const noexcept
 {
 	assert(!IsDummy());
 
-	return output->GetLogName();
+	return output ? output->GetLogName() : name.c_str();
 }
 
 Mixer *
@@ -364,7 +364,7 @@ AudioOutputControl::LockPlay() noexcept
 void
 AudioOutputControl::LockPauseAsync() noexcept
 {
-	if (output->mixer != nullptr && !output->SupportsPause())
+	if (output && output->mixer != nullptr && !output->SupportsPause())
 		/* the device has no pause mode: close the mixer,
 		   unless its "global" flag is set (checked by
 		   mixer_auto_close()) */

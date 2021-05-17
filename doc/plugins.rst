@@ -918,6 +918,10 @@ jack
 
 The jack plugin connects to a `JACK server <http://jackaudio.org/>`_.
 
+On Windows, this plugin loads :file:`libjack64.dll` at runtime.  This
+means you need to `download and install the JACK windows build
+<https://jackaudio.org/downloads/>`_.
+
 .. list-table::
    :widths: 20 80
    :header-rows: 1

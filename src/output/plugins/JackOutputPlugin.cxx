@@ -44,6 +44,10 @@ static constexpr unsigned MAX_PORTS = 16;
 
 static constexpr size_t jack_sample_size = sizeof(jack_default_audio_sample_t);
 
+#ifdef DYNAMIC_JACK
+#include "lib/jack/Dynamic.hxx"
+#endif // _WIN32
+
 class JackOutput final : public AudioOutput {
 	/**
 	 * libjack options passed to jack_client_open().
@@ -463,6 +467,10 @@ JackOutput::Disable() noexcept
 static AudioOutput *
 mpd_jack_init(EventLoop &, const ConfigBlock &block)
 {
+#ifdef DYNAMIC_JACK
+	LoadJackLibrary();
+#endif
+
 	jack_set_error_function(mpd_jack_error);
 
 #ifdef HAVE_JACK_SET_INFO_FUNCTION

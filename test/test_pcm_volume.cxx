@@ -154,7 +154,7 @@ TEST(PcmTest, VolumeFloat)
 
 	const auto _dest = ConstBuffer<float>::FromVoid(dest);
 	for (unsigned i = 0; i < N; ++i)
-		EXPECT_NEAR(_src[i] / 2, _dest[i], 1);
+		EXPECT_NEAR((double)_src[i] / 2., (double)_dest[i], 1.);
 
 	pv.Close();
 }

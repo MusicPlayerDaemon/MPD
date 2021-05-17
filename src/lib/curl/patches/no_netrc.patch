@@ -1,19 +1,20 @@
-diff -ur curl-7.63.0.orig/lib/url.c curl-7.63.0/lib/url.c
---- curl-7.63.0.orig/lib/url.c	2019-01-21 10:15:51.368019445 +0100
-+++ curl-7.63.0/lib/url.c	2019-01-21 10:19:16.307523984 +0100
-@@ -3057,6 +3057,7 @@
+Index: curl-7.71.1/lib/url.c
+===================================================================
+--- curl-7.71.1.orig/lib/url.c
++++ curl-7.71.1/lib/url.c
+@@ -2871,6 +2871,7 @@
    }
  
    conn->bits.netrc = FALSE;
 +#ifndef __BIONIC__
-   if(data->set.use_netrc != CURL_NETRC_IGNORED &&
-       (!*userp || !**userp || !*passwdp || !**passwdp)) {
+   if(data->set.use_netrc && !data->set.str[STRING_USERNAME]) {
      bool netrc_user_changed = FALSE;
-@@ -3090,6 +3091,7 @@
-       }
+     bool netrc_passwd_changed = FALSE;
+@@ -2895,6 +2896,7 @@
+       conn->bits.user_passwd = TRUE; /* enable user+password */
      }
    }
 +#endif
  
    /* for updated strings, we update them in the URL */
-   if(user_changed) {
+   if(*userp) {

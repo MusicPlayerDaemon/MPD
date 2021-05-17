@@ -23,20 +23,6 @@ if get_option('html_manual')
     install: true,
     install_dir: join_paths(get_option('datadir'), 'doc', meson.project_name()),
   )
-
-  custom_target(
-    'upload',
-    input: sphinx_output,
-    output: 'upload',
-    build_always_stale: true,
-    command: [
-      'rsync', '-vpruz', '--delete', meson.current_build_dir() + '/',
-      'www.musicpd.org:/var/www/mpd/doc/',
-      '--chmod=Dug+rwx,Do+rx,Fug+rw,Fo+r',
-      '--include=html', '--include=html/**',
-      '--exclude=*',
-    ],
-  )
 endif
 
 if get_option('manpages')

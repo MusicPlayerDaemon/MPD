@@ -11,12 +11,18 @@ ver 0.23 (not yet released)
 ver 0.22.7 (not yet released)
 * protocol
   - don't use glibc extension to parse time stamps
+* input
+  - curl: send user/password in the first request, save one roundtrip
 * decoder
   - ffmpeg: fix build problem with FFmpeg 3.4
   - gme: support RSN files
 * storage
   - curl: don't use glibc extension
+* database
+  - simple: fix database corruption bug
 * output
+  - fix crash when pausing with multiple partitions
+  - jack: enable on Windows
   - httpd: send header "Access-Control-Allow-Origin: *"
   - wasapi: add algorithm for finding usable audio format
   - wasapi: use default device only if none was configured

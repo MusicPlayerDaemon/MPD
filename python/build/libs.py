@@ -9,6 +9,7 @@ from build.autotools import AutotoolsProject
 from build.ffmpeg import FfmpegProject
 from build.openssl import OpenSSLProject
 from build.boost import BoostProject
+from build.jack import JackProject
 
 libmpdclient = MesonProject(
     'https://www.musicpd.org/download/libmpdclient/2/libmpdclient-2.19.tar.xz',
@@ -149,8 +150,8 @@ gme = CmakeProject(
 )
 
 ffmpeg = FfmpegProject(
-    'http://ffmpeg.org/releases/ffmpeg-4.3.1.tar.xz',
-    'ad009240d46e307b4e03a213a0f49c11b650e445b1f8be0dda2a9212b34d2ffb',
+    'http://ffmpeg.org/releases/ffmpeg-4.4.tar.xz',
+    '06b10a183ce5371f915c6bb15b7b1fffbe046e8275099c96affc29e17645d909',
     'lib/libavcodec.a',
     [
         '--disable-shared', '--enable-static',
@@ -378,14 +379,14 @@ ffmpeg = FfmpegProject(
 )
 
 openssl = OpenSSLProject(
-    'https://www.openssl.org/source/openssl-3.0.0-alpha10.tar.gz',
-    'b1699acf2148db31f12edf5ebfdf12a92bfd3f0e60538d169710408a3cd3b138',
+    'https://www.openssl.org/source/openssl-3.0.0-alpha16.tar.gz',
+    '08ce8244b59d75f40f91170dfcb012bf25309cdcb1fef9502e39d694f883d1d1',
     'include/openssl/ossl_typ.h',
 )
 
 curl = AutotoolsProject(
-    'http://curl.haxx.se/download/curl-7.74.0.tar.xz',
-    '999d5f2c403cf6e25d58319fdd596611e455dd195208746bc6e6d197a77e878b',
+    'https://curl.se/download/curl-7.76.1.tar.xz',
+    '64bb5288c39f0840c07d077e30d9052e1cbb9fa6c2dc52523824cc859e679145',
     'lib/libcurl.a',
     [
         '--disable-shared', '--enable-static',
@@ -443,8 +444,14 @@ libnfs = AutotoolsProject(
     autoreconf=True,
 )
 
+jack = JackProject(
+    'https://github.com/jackaudio/jack2/archive/v1.9.17.tar.gz',
+    '38f674bbc57852a8eb3d9faa1f96a0912d26f7d5df14c11005ad499c8ae352f2',
+    'lib/pkgconfig/jack.pc',
+)
+
 boost = BoostProject(
-    'https://dl.bintray.com/boostorg/release/1.75.0/source/boost_1_75_0.tar.bz2',
-    '953db31e016db7bb207f11432bef7df100516eeb746843fa0486a222e3fd49cb',
+    'https://boostorg.jfrog.io/artifactory/main/release/1.76.0/source/boost_1_76_0.tar.bz2',
+    'f0397ba6e982c4450f27bf32a2a83292aba035b827a5623a14636ea583318c41',
     'include/boost/version.hpp',
 )
