@@ -379,8 +379,8 @@ ffmpeg = FfmpegProject(
 )
 
 openssl = OpenSSLProject(
-    'https://www.openssl.org/source/openssl-3.0.0-alpha10.tar.gz',
-    'b1699acf2148db31f12edf5ebfdf12a92bfd3f0e60538d169710408a3cd3b138',
+    'https://www.openssl.org/source/openssl-3.0.0-alpha16.tar.gz',
+    '08ce8244b59d75f40f91170dfcb012bf25309cdcb1fef9502e39d694f883d1d1',
     'include/openssl/ossl_typ.h',
 )
 
