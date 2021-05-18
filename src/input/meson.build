@@ -8,6 +8,7 @@ input_api = static_library(
   'ThreadInputStream.cxx',
   'AsyncInputStream.cxx',
   'ProxyInputStream.cxx',
+  'LastInputStream.cxx',
   include_directories: inc,
   dependencies: [
     boost_dep,
