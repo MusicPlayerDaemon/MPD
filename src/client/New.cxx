@@ -44,7 +44,8 @@ Client::Client(EventLoop &_loop, Partition &_partition,
 	 partition(&_partition),
 	 permission(_permission),
 	 uid(_uid),
-	 num(_num)
+	 num(_num),
+	 last_album_art(_loop)
 {
 	timeout_event.Schedule(client_timeout);
 }
