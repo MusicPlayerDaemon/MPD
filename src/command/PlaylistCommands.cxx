@@ -92,7 +92,7 @@ handle_load(Client &client, Request args, [[maybe_unused]] Response &r)
 	auto &instance = client.GetInstance();
 	const unsigned new_size = playlist.GetLength();
 	for (unsigned i = old_size; i < new_size; ++i)
-		instance.LookupRemoteTag(playlist.queue.Get(i).GetURI());
+		instance.LookupRemoteTag(playlist.queue.Get(i).GetRealURI());
 
 	return CommandResult::OK;
 }

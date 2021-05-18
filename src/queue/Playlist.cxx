@@ -44,13 +44,13 @@ playlist::TagModified(DetachedSong &&song) noexcept
 }
 
 void
-playlist::TagModified(const char *uri, const Tag &tag) noexcept
+playlist::TagModified(const char *real_uri, const Tag &tag) noexcept
 {
 	bool modified = false;
 
 	for (unsigned i = 0; i < queue.length; ++i) {
 		auto &song = *queue.items[i].song;
-		if (song.IsURI(uri)) {
+		if (song.IsRealURI(real_uri)) {
 			song.SetTag(tag);
 			queue.ModifyAtPosition(i);
 			modified = true;
