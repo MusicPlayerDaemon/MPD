@@ -169,6 +169,11 @@ public:
 		return uri == other_uri;
 	}
 
+	gcc_pure gcc_nonnull_all
+	bool IsRealURI(const char *other_uri) const noexcept {
+		return (HasRealURI() ? real_uri : uri) == other_uri;
+	}
+
 	gcc_pure
 	bool IsRemote() const noexcept;
 

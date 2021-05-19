@@ -188,9 +188,16 @@ read_stream_art(Response &r, const char *uri, size_t offset)
 {
 	const auto art_directory = PathTraitsUTF8::GetParent(uri);
 
-	Mutex mutex;
+	// TODO: eliminate this const_cast
+	auto &client = const_cast<Client &>(r.GetClient());
 
-	InputStreamPtr is = find_stream_art(art_directory, mutex);
+	/* to avoid repeating the search for each chunk request by the
+	   same client, use the #LastInputStream class to cache the
+	   #InputStream instance */
+	auto *is = client.last_album_art.Open(art_directory, [](std::string_view directory,
+								Mutex &mutex){
+		return find_stream_art(directory, mutex);
+	});
 
 	if (is == nullptr) {
 		r.Error(ACK_ERROR_NO_EXIST, "No file exists");
@@ -216,7 +223,7 @@ read_stream_art(Response &r, const char *uri, size_t offset)
 
 	std::size_t read_size = 0;
 	if (buffer_size > 0) {
-		std::unique_lock<Mutex> lock(mutex);
+		std::unique_lock<Mutex> lock(is->mutex);
 		is->Seek(lock, offset);
 		read_size = is->Read(lock, buffer.get(), buffer_size);
 	}

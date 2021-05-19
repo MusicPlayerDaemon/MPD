@@ -197,7 +197,12 @@ public:
 	 * the song matches.
 	 */
 	void TagModified(DetachedSong &&song) noexcept;
-	void TagModified(const char *uri, const Tag &tag) noexcept;
+
+	/**
+	 * @param real_uri the song's "real uri" (see
+	 * DetachedSong::GetRealURI(), DetachedSong::IsRealURI())
+	 */
+	void TagModified(const char *real_uri, const Tag &tag) noexcept;
 
 #ifdef ENABLE_DATABASE
 	/**

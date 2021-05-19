@@ -23,6 +23,7 @@
 #include "Message.hxx"
 #include "command/CommandResult.hxx"
 #include "command/CommandListBuilder.hxx"
+#include "input/LastInputStream.hxx"
 #include "tag/Mask.hxx"
 #include "event/FullyBufferedSocket.hxx"
 #include "event/CoarseTimerEvent.hxx"
@@ -89,6 +90,13 @@ public:
 	 * response.  Can be changed with the "binarylimit" command.
 	 */
 	size_t binary_limit = 8192;
+
+	/**
+	 * This caches the last "albumart" InputStream instance, to
+	 * avoid repeating the search for each chunk requested by this
+	 * client.
+	 */
+	LastInputStream last_album_art;
 
 private:
 	static constexpr size_t MAX_SUBSCRIPTIONS = 16;
