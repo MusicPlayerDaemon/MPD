@@ -37,7 +37,7 @@
 
 #ifdef _UNICODE
 #include "system/Error.hxx"
-#include <windows.h>
+#include <stringapiset.h>
 #endif
 
 bool
