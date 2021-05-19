@@ -46,8 +46,8 @@ public:
 	explicit Glob(const char *_pattern)
 		:pattern(_pattern) {}
 
-	Glob(Glob &&other)
-		:pattern(std::move(other.pattern)) {}
+	Glob(Glob &&other) noexcept = default;
+	Glob &operator=(Glob &&other) noexcept = default;
 
 	gcc_pure
 	bool Check(const char *name_fs) const noexcept {
