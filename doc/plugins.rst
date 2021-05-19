@@ -31,8 +31,8 @@ Provides access to the database of another :program:`MPD` instance
 using `libmpdclient
 <https://www.musicpd.org/libs/libmpdclient/>`_. This is useful when
 you mount the music directory via NFS/SMB, and the file server already
-runs a :program:`MPD` instance. Only the file server needs to update
-the database.
+runs a :program:`MPD` (0.20 or newer) instance. Only the file server
+needs to update the database.
 
 .. list-table::
    :widths: 20 80                     
