@@ -372,7 +372,8 @@ SendConstraints(mpd_connection *connection, const SongFilter &filter)
 }
 
 static bool
-SendConstraints(mpd_connection *connection, const DatabaseSelection &selection)
+SendConstraints(mpd_connection *connection, const DatabaseSelection &selection,
+		const RangeArg &window)
 {
 	if (!selection.uri.empty() &&
 	    !mpd_search_add_base_constraint(connection,
@@ -406,9 +407,8 @@ SendConstraints(mpd_connection *connection, const DatabaseSelection &selection)
 #endif
 	}
 
-	if (selection.window != RangeArg::All() &&
-	    !mpd_search_add_window(connection, selection.window.start,
-				   selection.window.end))
+	if (window != RangeArg::All() &&
+	    !mpd_search_add_window(connection, window.start, window.end))
 		return false;
 
 	return true;
@@ -826,7 +826,7 @@ try {
 		!selection.filter->HasFoldCase();
 
 	if (!mpd_search_db_songs(connection, exact) ||
-	    !SendConstraints(connection, selection) ||
+	    !SendConstraints(connection, selection, selection.window) ||
 	    !mpd_search_commit(connection))
 		ThrowError(connection);
 
@@ -994,7 +994,7 @@ try {
 	group.pop_back();
 
 	if (!mpd_search_db_tags(connection, tag_type2) ||
-	    !SendConstraints(connection, selection) ||
+	    !SendConstraints(connection, selection, selection.window) ||
 	    !SendGroup(connection, group))
 		ThrowError(connection);
 
