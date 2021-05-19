@@ -12,6 +12,7 @@ ver 0.23 (not yet released)
   - snapcast: new plugin
 * tags
   - new tags "ComposerSort", "Ensemble", "Movement", "MovementNumber", and "Location"
+* new build-time dependency: libfmt
 
 ver 0.22.8 (2021/05/22)
 * fix crash bug in "albumart" command (0.22.7 regression)

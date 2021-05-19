@@ -11,6 +11,7 @@ jobs:
             - meson
             - libgtest-dev
             - libboost-dev
+            - libfmt-dev
 
     # Ubuntu Focal (20.04) with GCC 9.3 on big-endian
     - os: linux
@@ -22,6 +23,7 @@ jobs:
             - meson
             - libgtest-dev
             - libboost-dev
+            - libfmt-dev
 
     # Ubuntu Focal (20.04) with GCC 9.3 on ARM64
     - os: linux
@@ -33,6 +35,7 @@ jobs:
             - meson
             - libgtest-dev
             - libboost-dev
+            - libfmt-dev
 
     # Ubuntu Trusty (16.04) with GCC 8
     - os: linux
@@ -67,6 +70,7 @@ jobs:
           packages:
             - ccache
             - meson
+            - fmt
             - googletest
             - icu4c
             - ffmpeg

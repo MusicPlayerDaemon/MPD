@@ -69,6 +69,7 @@ For example, the following installs a fairly complete list of build dependencies
 .. code-block:: none
 
     apt install meson g++ \
+      libfmt-dev \
       libpcre3-dev \
       libmad0-dev libmpg123-dev libid3tag0-dev \
       libflac-dev libvorbis-dev libopus-dev libogg-dev \

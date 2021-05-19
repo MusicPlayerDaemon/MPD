@@ -223,6 +223,8 @@ if boost_dep.version() == '1.67'
   warning('Your Boost version 1.67 is known to be buggy, and the MPD build will fail. Please upgrade to Boost 1.68 or later.')
 endif
 
+fmt_dep = dependency('fmt')
+
 log = static_library(
   'log',
   'src/Log.cxx',
@@ -527,6 +529,7 @@ mpd = build_target(
     zeroconf_dep,
     more_deps,
     chromaprint_dep,
+    fmt_dep,
   ],
   link_args: link_args,
   build_by_default: not get_option('fuzzer'),
