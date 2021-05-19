@@ -72,7 +72,6 @@ if libogg_dep.found()
   ogg = static_library(
     'ogg',
     'OggVisitor.cxx',
-    'OggSerial.cxx',
     'OggSyncState.cxx',
     'OggFind.cxx',
     'OggPacket.cxx',

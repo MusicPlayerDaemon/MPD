@@ -405,7 +405,7 @@ OpusEncoder::PreTag()
 void
 OpusEncoder::SendTag(const Tag &tag)
 {
-	stream.Reinitialize(GenerateOggSerial());
+	stream.Reinitialize(GenerateSerial());
 	opus_encoder_ctl(enc, OPUS_GET_LOOKAHEAD(&lookahead));
 	GenerateHeaders(&tag);
 }

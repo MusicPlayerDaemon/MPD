@@ -225,7 +225,7 @@ VorbisEncoder::SendTag(const Tag &tag)
 
 	/* reset ogg_stream_state and begin a new stream */
 
-	stream.Reinitialize(GenerateOggSerial());
+	stream.Reinitialize(GenerateSerial());
 
 	/* send that vorbis_comment to the ogg_stream_state */
 
