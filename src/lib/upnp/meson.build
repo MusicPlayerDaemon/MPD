@@ -1,6 +1,16 @@
 upnp_option = get_option('upnp')
 
 if upnp_option == 'auto'
+  if not curl_dep.found()
+    warning('No UPnP because CURL is not enabled')
+    upnp_option = 'disabled'
+  elif not expat_dep.found()
+    warning('No UPnP because expat is not enabled')
+    upnp_option = 'disabled'
+  endif
+endif
+
+if upnp_option == 'auto'
   upnp_dep = dependency('libupnp', version: '>= 1.8', required: false)
   conf.set('USING_PUPNP', upnp_dep.found())
   if not upnp_dep.found()
