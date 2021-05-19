@@ -24,34 +24,30 @@
 
 #ifdef HAVE_FNMATCH
 #define HAVE_CLASS_GLOB
-#include <string>
 #include <fnmatch.h>
 #elif defined(_WIN32)
 #define HAVE_CLASS_GLOB
-#include <string>
 #include <shlwapi.h>
 #endif
 
 #ifdef HAVE_CLASS_GLOB
 #include "util/Compiler.h"
 
+#include <string>
+
 /**
  * A pattern that matches file names.  It may contain shell wildcards
  * (asterisk and question mark).
  */
 class Glob {
-#if defined(HAVE_FNMATCH) || defined(_WIN32)
 	std::string pattern;
-#endif
 
 public:
-#if defined(HAVE_FNMATCH) || defined(_WIN32)
 	explicit Glob(const char *_pattern)
 		:pattern(_pattern) {}
 
 	Glob(Glob &&other)
 		:pattern(std::move(other.pattern)) {}
-#endif
 
 	gcc_pure
 	bool Check(const char *name_fs) const noexcept {
