@@ -27,7 +27,9 @@
 #include <cstring>
 
 #ifdef _WIN32
-#include <windows.h>
+#include <errhandlingapi.h> // for GetLastError()
+#include <windef.h> // for HWND (needed by winbase.h)
+#include <winbase.h> // for FormatMessageA()
 #else
 #include <cerrno>
 #endif

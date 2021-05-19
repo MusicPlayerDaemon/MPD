@@ -28,6 +28,10 @@
 #include <array>
 #include <iterator>
 
+#include <handleapi.h>
+#include <synchapi.h>
+#include <winbase.h> // for INFINITE
+
 #include <stdlib.h>
 #include <string.h>
 

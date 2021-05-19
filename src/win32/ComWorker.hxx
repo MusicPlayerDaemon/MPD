@@ -26,8 +26,6 @@
 
 #include <boost/lockfree/spsc_queue.hpp>
 
-#include <windows.h>
-
 // Worker thread for all COM operation
 class COMWorker {
 	Thread thread{BIND_THIS_METHOD(Work)};

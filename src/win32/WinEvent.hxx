@@ -20,7 +20,10 @@
 #ifndef MPD_WIN32_WINEVENT_HXX
 #define MPD_WIN32_WINEVENT_HXX
 
-#include <windows.h>
+#include <handleapi.h>
+#include <synchapi.h>
+#include <windef.h> // for HWND (needed by winbase.h)
+#include <winbase.h> // for INFINITE
 
 // RAII for Windows unnamed event object
 // https://docs.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-createeventw

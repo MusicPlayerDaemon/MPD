@@ -23,7 +23,7 @@
 #include "util/Compiler.h"
 
 #ifdef _WIN32
-#include <windows.h>
+#include <processthreadsapi.h>
 #else
 #include <pthread.h>
 #endif

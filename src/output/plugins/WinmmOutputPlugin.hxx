@@ -26,7 +26,7 @@
 
 #include "util/Compiler.h"
 
-#include <windows.h>
+#include <windef.h>
 #include <mmsystem.h>
 
 struct WinmmOutput;
