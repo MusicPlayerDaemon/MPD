@@ -6,6 +6,7 @@ ver 0.23 (not yet released)
   - proxy: require MPD 0.20 or later
   - proxy: require libmpdclient 2.11 or later
   - proxy: split search into chunks to avoid exceeding the output buffer
+  - upnp: support libnpupnp instead of libupnp
 * output
   - pipewire: new plugin
   - snapcast: new plugin

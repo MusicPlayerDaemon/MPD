@@ -1,4 +1,22 @@
-upnp_dep = dependency('libupnp', version: '>= 1.8', required: get_option('upnp'))
+upnp_option = get_option('upnp')
+
+if upnp_option == 'auto'
+  upnp_dep = dependency('libupnp', version: '>= 1.8', required: false)
+  conf.set('USING_PUPNP', upnp_dep.found())
+  if not upnp_dep.found()
+    upnp_dep = dependency('libnpupnp', version: '>= 1.8', required: false)
+  endif
+elif upnp_option == 'pupnp'
+  upnp_dep = dependency('libupnp', version: '>= 1.8', required: true)
+  conf.set('USING_PUPNP', true)
+elif upnp_option == 'npupnp'
+  upnp_dep = dependency('libnpupnp', required: true)
+  conf.set('USING_PUPNP', false)
+elif upnp_option == 'disabled'
+  upnp_dep = dependency('', required: false)
+  subdir_done()
+endif
+
 conf.set('ENABLE_UPNP', upnp_dep.found())
 if not upnp_dep.found()
   subdir_done()
