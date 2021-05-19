@@ -2,6 +2,8 @@ ver 0.23 (not yet released)
 * protocol
   - new command "getvol"
   - show the audio format in "playlistinfo"
+* database
+  - proxy: require MPD 0.20 or later
 * output
   - pipewire: new plugin
   - snapcast: new plugin

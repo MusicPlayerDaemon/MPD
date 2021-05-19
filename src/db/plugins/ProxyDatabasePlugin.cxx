@@ -414,7 +414,6 @@ SendConstraints(mpd_connection *connection, const DatabaseSelection &selection)
 
 #if LIBMPDCLIENT_CHECK_VERSION(2, 10, 0)
 	if (selection.window != RangeArg::All() &&
-	    mpd_connection_cmp_server_version(connection, 0, 20, 0) >= 0 &&
 	    !mpd_search_add_window(connection, selection.window.start,
 				   selection.window.end))
 		return false;
@@ -507,11 +506,11 @@ ProxyDatabase::Connect()
 	try {
 		CheckError(connection);
 
-		if (mpd_connection_cmp_server_version(connection, 0, 19, 0) < 0) {
+		if (mpd_connection_cmp_server_version(connection, 0, 20, 0) < 0) {
 			const unsigned *version =
 				mpd_connection_get_server_version(connection);
 			throw FormatRuntimeError("Connect to MPD %u.%u.%u, but this "
-						 "plugin requires at least version 0.19",
+						 "plugin requires at least version 0.20",
 						 version[0], version[1], version[2]);
 		}
 
