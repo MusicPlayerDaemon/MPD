@@ -42,7 +42,10 @@
 #include <cstdint>
 
 #ifdef _WIN32
-#include <windows.h>
+#include <fileapi.h>
+#include <windef.h> // for HWND (needed by winbase.h)
+#include <handleapi.h> // for INVALID_HANDLE_VALUE
+#include <winbase.h> // for FILE_END
 #endif
 
 #if defined(__linux__) && !defined(ANDROID)

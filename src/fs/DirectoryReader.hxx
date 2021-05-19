@@ -24,7 +24,7 @@
 
 #ifdef _WIN32
 
-#include <windows.h>
+#include <fileapi.h>
 #include <tchar.h>
 
 /**

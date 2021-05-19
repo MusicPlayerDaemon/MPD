@@ -21,10 +21,12 @@
 #define MPD_WIN32_COMPTR_HXX
 
 #include "win32/HResult.hxx"
+
 #include <cstddef>
 #include <objbase.h>
 #include <utility>
-#include <windows.h>
+
+#include <combaseapi.h>
 
 // RAII for Object in Microsoft Component Object Model(COM)
 // https://docs.microsoft.com/zh-tw/windows/win32/api/_com/

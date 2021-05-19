@@ -228,7 +228,12 @@ read_stream_art(Response &r, const char *uri, size_t offset)
 		read_size = is->Read(lock, buffer.get(), buffer_size);
 	}
 
+#ifdef _WIN32
+	r.Format("size: %lu\n", (unsigned long)art_file_size);
+#else
 	r.Format("size: %" PRIoffset "\n", art_file_size);
+#endif
+
 	r.WriteBinary({buffer.get(), read_size});
 
 	return CommandResult::OK;
@@ -310,7 +315,11 @@ public:
 			return;
 		}
 
+#ifdef _WIN32
+		response.Format("size: %lu\n", (unsigned long)buffer.size);
+#else
 		response.Format("size: %zu\n", buffer.size);
+#endif
 
 		if (mime_type != nullptr)
 			response.Format("type: %s\n", mime_type);

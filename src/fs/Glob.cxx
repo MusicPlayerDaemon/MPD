@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,26 +17,20 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#undef NOUSER // COM needs the "MSG" typedef
+#ifdef _WIN32
+// COM needs the "MSG" typedef, and shlwapi.h includes COM headers
+#undef NOUSER
+#endif
 
-#include "ComWorker.hxx"
-#include "Com.hxx"
-#include "thread/Name.hxx"
+#include "Glob.hxx"
 
-void
-COMWorker::Work() noexcept
+#ifdef _WIN32
+#include <shlwapi.h>
+
+bool
+Glob::Check(const char *name_fs) const noexcept
 {
-	SetThreadName("COM Worker");
-	COM com;
-	while (true) {
-		if (!running_flag.test_and_set()) {
-			return;
-		}
-		while (!spsc_buffer.empty()) {
-			std::function<void()> function;
-			spsc_buffer.pop(function);
-			function();
-		}
-		event.Wait(200);
-	}
+	return PathMatchSpecA(name_fs, pattern.c_str());
 }
+
+#endif

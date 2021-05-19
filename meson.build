@@ -140,10 +140,29 @@ endif
 
 if is_windows
   common_cppflags += [
-    '-DWIN32_LEAN_AND_MEAN',
+    # enable Windows Vista APIs
     '-DWINVER=0x0600', '-D_WIN32_WINNT=0x0600',
-    '-DSTRICT',
+
+    # enable Unicode support (TCHAR=wchar_t) in the Windows API (macro
+    # "UNICODE) and the C library (macro "_UNICODE")
     '-DUNICODE', '-D_UNICODE',
+
+    # enable strict type checking in the Windows API headers
+    '-DSTRICT',
+
+    # reduce header bloat by disabling obscure and obsolete Windows
+    # APIs
+    '-DWIN32_LEAN_AND_MEAN',
+
+    # disable more Windows APIs which are not used by MPD
+    '-DNOGDI', '-DNOBITMAP', '-DNOCOMM',
+    '-DNOUSER',
+
+    # reduce COM header bloat
+    '-DCOM_NO_WINDOWS_H',
+
+    # disable Internet Explorer specific APIs
+    '-D_WIN32_IE=0',
   ]
 
   subdir('win32')

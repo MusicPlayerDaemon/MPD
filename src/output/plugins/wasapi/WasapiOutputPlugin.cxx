@@ -17,6 +17,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#undef NOUSER // COM needs the "MSG" typedef
+
 #include "WasapiOutputPlugin.hxx"
 #include "ForMixer.hxx"
 #include "AudioClient.hxx"
@@ -607,10 +609,10 @@ WasapiOutput::DoOpen(AudioFormat &audio_format)
 		throw MakeHResultError(result, "Unable to get device period");
 	}
 	FormatDebug(wasapi_output_domain,
-		    "Default device period: %I64u ns, Minimum device period: "
-		    "%I64u ns",
-		    ns(hundred_ns(default_device_period)).count(),
-		    ns(hundred_ns(min_device_period)).count());
+		    "Default device period: %lu ns, Minimum device period: "
+		    "%lu ns",
+		    (unsigned long)ns(hundred_ns(default_device_period)).count(),
+		    (unsigned long)ns(hundred_ns(min_device_period)).count());
 
 	REFERENCE_TIME buffer_duration;
 	if (Exclusive()) {
@@ -619,8 +621,8 @@ WasapiOutput::DoOpen(AudioFormat &audio_format)
 		const REFERENCE_TIME align = hundred_ns(ms(50)).count();
 		buffer_duration = (align / default_device_period) * default_device_period;
 	}
-	FormatDebug(wasapi_output_domain, "Buffer duration: %I64u ns",
-		    size_t(ns(hundred_ns(buffer_duration)).count()));
+	FormatDebug(wasapi_output_domain, "Buffer duration: %lu ns",
+		    (unsigned long)ns(hundred_ns(buffer_duration)).count());
 
 	if (Exclusive()) {
 		if (HRESULT result = client->Initialize(
@@ -639,8 +641,8 @@ WasapiOutput::DoOpen(AudioFormat &audio_format)
 						  SampleRate());
 				FormatDebug(
 					wasapi_output_domain,
-					"Aligned buffer duration: %I64u ns",
-					size_t(ns(hundred_ns(buffer_duration)).count()));
+					"Aligned buffer duration: %lu ns",
+					(unsigned long)ns(hundred_ns(buffer_duration)).count());
 				client.reset();
 				client = Activate<IAudioClient>(*device);
 				result = client->Initialize(

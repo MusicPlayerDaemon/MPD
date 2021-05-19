@@ -17,6 +17,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#undef NOUSER // COM needs the "MSG" typedef
+
 #include "output/plugins/wasapi/ForMixer.hxx"
 #include "output/plugins/wasapi/AudioClient.hxx"
 #include "output/plugins/wasapi/Device.hxx"

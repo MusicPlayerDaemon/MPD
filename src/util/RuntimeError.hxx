@@ -35,6 +35,12 @@
 
 #include <stdio.h>
 
+#ifdef __clang__
+#pragma GCC diagnostic push
+// TODO: fix this warning properly
+#pragma GCC diagnostic ignored "-Wformat-security"
+#endif
+
 template<typename... Args>
 static inline std::runtime_error
 FormatRuntimeError(const char *fmt, Args&&... args) noexcept
@@ -52,5 +58,9 @@ FormatInvalidArgument(const char *fmt, Args&&... args) noexcept
 	snprintf(buffer, sizeof(buffer), fmt, std::forward<Args>(args)...);
 	return std::invalid_argument(buffer);
 }
+
+#ifdef __clang__
+#pragma GCC diagnostic pop
+#endif
 
 #endif

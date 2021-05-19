@@ -32,6 +32,9 @@
 
 #include "CriticalSection.hxx"
 
+#include <windef.h> // for HWND (needed by winbase.h)
+#include <winbase.h> // for INFINITE
+
 #include <chrono>
 #include <mutex>
 

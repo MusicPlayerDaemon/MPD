@@ -23,7 +23,8 @@
 #include <cstddef>
 #include <objbase.h>
 #include <utility>
-#include <windows.h>
+
+#include <combaseapi.h>
 
 // RAII for CoTaskMemAlloc and CoTaskMemFree
 // https://docs.microsoft.com/zh-tw/windows/win32/api/combaseapi/nf-combaseapi-cotaskmemalloc
