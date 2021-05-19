@@ -825,26 +825,48 @@ try {
 	const bool exact = selection.filter == nullptr ||
 		!selection.filter->HasFoldCase();
 
-	if (!mpd_search_db_songs(connection, exact) ||
-	    !SendConstraints(connection, selection, selection.window) ||
-	    !mpd_search_commit(connection))
-		ThrowError(connection);
+	/* request only this number of songs at a time to avoid
+	   blowing the server's max_output_buffer_size limit */
+	constexpr unsigned LIMIT = 4096;
 
-	while (auto *song = mpd_recv_song(connection)) {
-		AllocatedProxySong song2(song);
+	auto remaining_window = selection.window;
 
-		if (Match(selection.filter, song2)) {
-			try {
-				visit_song(song2);
-			} catch (...) {
-				mpd_response_finish(connection);
-				throw;
+	while (remaining_window.start < remaining_window.end) {
+		auto window = remaining_window;
+		if (window.end - window.start > LIMIT)
+			window.end = window.start + LIMIT;
+
+		if (!mpd_search_db_songs(connection, exact) ||
+		    !SendConstraints(connection, selection, window) ||
+		    !mpd_search_commit(connection))
+			ThrowError(connection);
+
+		while (auto *song = mpd_recv_song(connection)) {
+			++window.start;
+
+			AllocatedProxySong song2(song);
+
+			if (Match(selection.filter, song2)) {
+				try {
+					visit_song(song2);
+				} catch (...) {
+					mpd_response_finish(connection);
+					throw;
+				}
 			}
 		}
-	}
 
-	if (!mpd_response_finish(connection))
-		ThrowError(connection);
+		if (!mpd_response_finish(connection))
+			ThrowError(connection);
+
+		if (window.start != window.end)
+			/* the other MPD has given us less than we
+			   requested - this means there's no more
+			   data */
+			break;
+
+		remaining_window.start = window.end;
+	}
 } catch (...) {
 	if (connection != nullptr)
 		mpd_search_cancel(connection);
