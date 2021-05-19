@@ -27,7 +27,12 @@ The default plugin. Stores a copy of the database in memory. A file is used for 
 proxy
 -----
 
-Provides access to the database of another :program:`MPD` instance using libmpdclient. This is useful when you mount the music directory via NFS/SMB, and the file server already runs a :program:`MPD` instance. Only the file server needs to update the database.
+Provides access to the database of another :program:`MPD` instance
+using `libmpdclient
+<https://www.musicpd.org/libs/libmpdclient/>`_. This is useful when
+you mount the music directory via NFS/SMB, and the file server already
+runs a :program:`MPD` instance. Only the file server needs to update
+the database.
 
 .. list-table::
    :widths: 20 80                     
