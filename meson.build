@@ -153,6 +153,12 @@ if is_windows
     # reduce header bloat by disabling obscure and obsolete Windows
     # APIs
     '-DWIN32_LEAN_AND_MEAN',
+
+    # disable more Windows APIs which are not used by MPD
+    '-DNOGDI', '-DNOBITMAP', '-DNOCOMM',
+
+    # disable Internet Explorer specific APIs
+    '-D_WIN32_IE=0',
   ]
 
   subdir('win32')
