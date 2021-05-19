@@ -17,6 +17,11 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#ifdef _WIN32
+// COM needs the "MSG" typedef, and shlwapi.h includes COM headers
+#undef NOUSER
+#endif
+
 #include "Glob.hxx"
 
 #ifdef _WIN32

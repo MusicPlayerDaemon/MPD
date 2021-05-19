@@ -17,6 +17,11 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#ifdef _WIN32
+// COM needs the "MSG" typedef, and audiopolicy.h includes COM headers
+#undef NOUSER
+#endif
+
 #include "HResult.hxx"
 #include "system/Error.hxx"
 
@@ -25,6 +30,7 @@
 #include <cstdio>
 #include <memory>
 
+#include <combaseapi.h> // needed by audiopolicy.h if COM_NO_WINDOWS_H is defined
 #include <audiopolicy.h>
 
 std::string_view

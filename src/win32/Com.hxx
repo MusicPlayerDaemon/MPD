@@ -23,6 +23,7 @@
 #include "HResult.hxx"
 
 #include <combaseapi.h>
+#include <objbase.h> // for COINIT_APARTMENTTHREADED
 
 // RAII for Microsoft Component Object Model(COM)
 // https://docs.microsoft.com/en-us/windows/win32/api/_com/

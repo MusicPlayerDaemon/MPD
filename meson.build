@@ -156,6 +156,10 @@ if is_windows
 
     # disable more Windows APIs which are not used by MPD
     '-DNOGDI', '-DNOBITMAP', '-DNOCOMM',
+    '-DNOUSER',
+
+    # reduce COM header bloat
+    '-DCOM_NO_WINDOWS_H',
 
     # disable Internet Explorer specific APIs
     '-D_WIN32_IE=0',
