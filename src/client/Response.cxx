@@ -61,7 +61,12 @@ Response::WriteBinary(ConstBuffer<void> payload) noexcept
 {
 	assert(payload.size <= client.binary_limit);
 
-	return Format("binary: %zu\n", payload.size) &&
+	return
+#ifdef _WIN32
+		Format("binary: %lu\n", (unsigned long)payload.size) &&
+#else
+		Format("binary: %zu\n", payload.size) &&
+#endif
 		Write(payload.data, payload.size) &&
 		Write("\n");
 }
