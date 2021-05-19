@@ -4,6 +4,7 @@ ver 0.23 (not yet released)
   - show the audio format in "playlistinfo"
 * database
   - proxy: require MPD 0.20 or later
+  - proxy: require libmpdclient 2.11 or later
 * output
   - pipewire: new plugin
   - snapcast: new plugin

@@ -178,14 +178,10 @@ static constexpr struct {
 	{ TAG_MUSICBRAINZ_ALBUMARTISTID,
 	  MPD_TAG_MUSICBRAINZ_ALBUMARTISTID },
 	{ TAG_MUSICBRAINZ_TRACKID, MPD_TAG_MUSICBRAINZ_TRACKID },
-#if LIBMPDCLIENT_CHECK_VERSION(2,10,0)
 	{ TAG_MUSICBRAINZ_RELEASETRACKID,
 	  MPD_TAG_MUSICBRAINZ_RELEASETRACKID },
-#endif
-#if LIBMPDCLIENT_CHECK_VERSION(2,11,0)
 	{ TAG_ARTIST_SORT, MPD_TAG_ARTIST_SORT },
 	{ TAG_ALBUM_ARTIST_SORT, MPD_TAG_ALBUM_ARTIST_SORT },
-#endif
 #if LIBMPDCLIENT_CHECK_VERSION(2,12,0)
 	{ TAG_ALBUM_SORT, MPD_TAG_ALBUM_SORT },
 #endif
@@ -388,7 +384,6 @@ SendConstraints(mpd_connection *connection, const DatabaseSelection &selection)
 	    !SendConstraints(connection, *selection.filter))
 		return false;
 
-#if LIBMPDCLIENT_CHECK_VERSION(2, 11, 0)
 	if (selection.sort != TAG_NUM_OF_ITEM_TYPES &&
 	    mpd_connection_cmp_server_version(connection, 0, 21, 0) >= 0) {
 #if LIBMPDCLIENT_CHECK_VERSION(2, 15, 0)
@@ -410,14 +405,11 @@ SendConstraints(mpd_connection *connection, const DatabaseSelection &selection)
 		}
 #endif
 	}
-#endif
 
-#if LIBMPDCLIENT_CHECK_VERSION(2, 10, 0)
 	if (selection.window != RangeArg::All() &&
 	    !mpd_search_add_window(connection, selection.window.start,
 				   selection.window.end))
 		return false;
-#endif
 
 	return true;
 }
@@ -527,12 +519,7 @@ ProxyDatabase::Connect()
 							    host.c_str()));
 	}
 
-#if LIBMPDCLIENT_CHECK_VERSION(2, 10, 0)
 	mpd_connection_set_keepalive(connection, keepalive);
-#else
-	// suppress -Wunused-private-field
-	(void)keepalive;
-#endif
 
 	idle_received = ~0U;
 	is_idle = false;
@@ -865,8 +852,6 @@ try {
 	throw;
 }
 
-#if LIBMPDCLIENT_CHECK_VERSION(2, 10, 0)
-
 gcc_pure
 static bool
 IsFilterSupported(const ISongFilter &f) noexcept
@@ -920,10 +905,6 @@ IsFilterFullySupported(const SongFilter *filter,
 		IsFilterFullySupported(*filter, connection);
 }
 
-#endif
-
-#if LIBMPDCLIENT_CHECK_VERSION(2, 11, 0)
-
 gcc_pure
 static bool
 IsSortSupported(TagType tag_type,
@@ -946,8 +927,6 @@ IsSortSupported(TagType tag_type,
 	return Convert(tag_type) != MPD_TAG_COUNT;
 }
 
-#endif
-
 gcc_pure
 static DatabaseSelection
 CheckSelection(DatabaseSelection selection,
@@ -956,23 +935,17 @@ CheckSelection(DatabaseSelection selection,
 	selection.uri.clear();
 	selection.filter = nullptr;
 
-#if LIBMPDCLIENT_CHECK_VERSION(2, 11, 0)
 	if (selection.sort != TAG_NUM_OF_ITEM_TYPES &&
 	    IsSortSupported(selection.sort, connection))
 		/* we can forward the "sort" parameter to the other
 		   MPD */
 		selection.sort = TAG_NUM_OF_ITEM_TYPES;
-#endif
 
-#if LIBMPDCLIENT_CHECK_VERSION(2, 10, 0)
 	if (selection.window != RangeArg::All() &&
 	    IsFilterFullySupported(selection.filter, connection))
 		/* we can forward the "window" parameter to the other
 		   MPD */
 		selection.window = RangeArg::All();
-#else
-	(void)connection;
-#endif
 
 	return selection;
 }
