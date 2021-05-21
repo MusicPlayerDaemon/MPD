@@ -69,7 +69,8 @@ public:
 
 		is = open(new_uri, mutex);
 		uri = std::forward<U>(new_uri);
-		ScheduleClose();
+		if (is)
+			ScheduleClose();
 		return is.get();
 	}
 
