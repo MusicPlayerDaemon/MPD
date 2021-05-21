@@ -19,7 +19,7 @@
 
 #include "Poll.hxx"
 #include "event/SocketEvent.hxx"
-#include "event/CoarseTimerEvent.hxx"
+#include "event/FineTimerEvent.hxx"
 #include "time/Convert.hxx"
 
 static constexpr unsigned
@@ -78,7 +78,11 @@ private:
 };
 
 struct AvahiTimeout final {
-	CoarseTimerEvent event;
+	/* note: cannot use CoarseTimerEvent because libavahi-client
+	   sometimes schedules events immediately, and
+	   CoarseTimerEvent may delay the timer callback for too
+	   long, causing timeouts */
+	FineTimerEvent event;
 
 	const AvahiTimeoutCallback callback;
 	void *const userdata;
