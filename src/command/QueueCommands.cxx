@@ -39,6 +39,8 @@
 #include "util/StringAPI.hxx"
 #include "util/NumberParser.hxx"
 
+#include <fmt/format.h>
+
 #include <limits>
 
 static void
@@ -127,7 +129,7 @@ handle_addid(Client &client, Request args, Response &r)
 		}
 	}
 
-	r.Format("Id: %u\n", added_id);
+	r.Fmt(FMT_STRING("Id: {}\n"), added_id);
 	return CommandResult::OK;
 }
 

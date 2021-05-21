@@ -21,11 +21,13 @@
 #include "Sticker.hxx"
 #include "client/Response.hxx"
 
+#include <fmt/format.h>
+
 void
 sticker_print_value(Response &r,
 		    const char *name, const char *value)
 {
-	r.Format("sticker: %s=%s\n", name, value);
+	r.Fmt(FMT_STRING("sticker: {}={}\n"), name, value);
 }
 
 void

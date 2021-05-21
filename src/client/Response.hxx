@@ -23,6 +23,11 @@
 #include "protocol/Ack.hxx"
 #include "util/Compiler.h"
 
+#include <fmt/core.h>
+#if FMT_VERSION < 70000
+#include <fmt/format.h>
+#endif
+
 #include <cstdarg>
 #include <cstddef>
 
@@ -78,6 +83,21 @@ public:
 
 	gcc_printf(2,3)
 	bool Format(const char *fmt, ...) noexcept;
+
+	bool VFmt(fmt::string_view format_str, fmt::format_args args) noexcept;
+
+	template<typename S, typename... Args>
+	bool Fmt(const S &format_str, Args&&... args) noexcept {
+#if FMT_VERSION >= 70000
+		return VFmt(fmt::to_string_view(format_str),
+			    fmt::make_args_checked<Args...>(format_str,
+							    args...));
+#else
+		/* expensive fallback for older libfmt versions */
+		const auto result = fmt::format(format_str, args...);
+		return Write(result.data(), result.size());
+#endif
+	}
 
 	/**
 	 * Write a binary chunk; this writes the "binary" line, the

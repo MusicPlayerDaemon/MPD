@@ -37,6 +37,8 @@
 #include "util/MimeType.hxx"
 #include "util/UriExtract.hxx"
 
+#include <fmt/format.h>
+
 class GetChromaprintCommand final
 	: public ThreadBackgroundCommand, ChromaprintDecoderClient, InputStreamHandler
 {
@@ -60,8 +62,8 @@ protected:
 	void Run() override;
 
 	void SendResponse(Response &r) noexcept override {
-		r.Format("chromaprint: %s\n",
-			 GetFingerprint().c_str());
+		r.Fmt(FMT_STRING("chromaprint: {}\n"),
+		      GetFingerprint());
 	}
 
 	void CancelThread() noexcept override {

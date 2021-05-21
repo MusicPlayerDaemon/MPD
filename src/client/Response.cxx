@@ -22,6 +22,8 @@
 #include "util/FormatString.hxx"
 #include "util/AllocatedString.hxx"
 
+#include <fmt/format.h>
+
 TagMask
 Response::GetTagMask() const noexcept
 {
@@ -57,16 +59,20 @@ Response::Format(const char *fmt, ...) noexcept
 }
 
 bool
+Response::VFmt(fmt::string_view format_str, fmt::format_args args) noexcept
+{
+	fmt::memory_buffer buffer;
+	fmt::vformat_to(buffer, format_str, args);
+	return Write(buffer.data(), buffer.size());
+}
+
+bool
 Response::WriteBinary(ConstBuffer<void> payload) noexcept
 {
 	assert(payload.size <= client.binary_limit);
 
 	return
-#ifdef _WIN32
-		Format("binary: %lu\n", (unsigned long)payload.size) &&
-#else
-		Format("binary: %zu\n", payload.size) &&
-#endif
+		Fmt("binary: {}\n", payload.size) &&
 		Write(payload.data, payload.size) &&
 		Write("\n");
 }

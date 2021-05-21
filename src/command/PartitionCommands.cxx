@@ -27,6 +27,8 @@
 #include "client/Response.hxx"
 #include "util/CharUtil.hxx"
 
+#include <fmt/format.h>
+
 CommandResult
 handle_partition(Client &client, Request request, Response &response)
 {
@@ -46,7 +48,7 @@ CommandResult
 handle_listpartitions(Client &client, Request, Response &r)
 {
 	for (const auto &partition : client.GetInstance().partitions) {
-		r.Format("partition: %s\n", partition.name.c_str());
+		r.Fmt(FMT_STRING("partition: {}\n"), partition.name);
 	}
 
 	return CommandResult::OK;

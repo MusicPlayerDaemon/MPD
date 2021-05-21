@@ -38,6 +38,8 @@
 #include "db/update/Service.hxx"
 #endif
 
+#include <fmt/format.h>
+
 #define COMMAND_STATUS_STATE            "state"
 #define COMMAND_STATUS_REPEAT           "repeat"
 #define COMMAND_STATUS_SINGLE           "single"
@@ -131,60 +133,60 @@ handle_status(Client &client, [[maybe_unused]] Request args, Response &r)
 
 	const auto volume = volume_level_get(partition.outputs);
 	if (volume >= 0)
-		r.Format("volume: %i\n", volume);
+		r.Fmt(FMT_STRING("volume: {}\n"), volume);
 
-	r.Format(COMMAND_STATUS_REPEAT ": %i\n"
-		 COMMAND_STATUS_RANDOM ": %i\n"
-		 COMMAND_STATUS_SINGLE ": %s\n"
-		 COMMAND_STATUS_CONSUME ": %i\n"
-		 "partition: %s\n"
-		 COMMAND_STATUS_PLAYLIST ": %li\n"
-		 COMMAND_STATUS_PLAYLIST_LENGTH ": %i\n"
-		 COMMAND_STATUS_MIXRAMPDB ": %f\n"
-		 COMMAND_STATUS_STATE ": %s\n",
-		 playlist.GetRepeat(),
-		 playlist.GetRandom(),
-		 SingleToString(playlist.GetSingle()),
-		 playlist.GetConsume(),
-		 partition.name.c_str(),
-		 (unsigned long)playlist.GetVersion(),
-		 playlist.GetLength(),
-		 (double)pc.GetMixRampDb(),
-		 state);
+	r.Fmt(FMT_STRING(COMMAND_STATUS_REPEAT ": {}\n"
+			 COMMAND_STATUS_RANDOM ": {}\n"
+			 COMMAND_STATUS_SINGLE ": {}\n"
+			 COMMAND_STATUS_CONSUME ": {}\n"
+			 "partition: {}\n"
+			 COMMAND_STATUS_PLAYLIST ": {}\n"
+			 COMMAND_STATUS_PLAYLIST_LENGTH ": {}\n"
+			 COMMAND_STATUS_MIXRAMPDB ": {}\n"
+			 COMMAND_STATUS_STATE ": {}\n"),
+	      playlist.GetRepeat(),
+	      playlist.GetRandom(),
+	      SingleToString(playlist.GetSingle()),
+	      playlist.GetConsume(),
+	      partition.name.c_str(),
+	      playlist.GetVersion(),
+	      playlist.GetLength(),
+	      pc.GetMixRampDb(),
+	      state);
 
 	if (pc.GetCrossFade() > FloatDuration::zero())
-		r.Format(COMMAND_STATUS_CROSSFADE ": %lu\n",
-			 lround(pc.GetCrossFade().count()));
+		r.Fmt(FMT_STRING(COMMAND_STATUS_CROSSFADE ": {}\n"),
+		      lround(pc.GetCrossFade().count()));
 
 	if (pc.GetMixRampDelay() > FloatDuration::zero())
-		r.Format(COMMAND_STATUS_MIXRAMPDELAY ": %f\n",
-			 pc.GetMixRampDelay().count());
+		r.Fmt(FMT_STRING(COMMAND_STATUS_MIXRAMPDELAY ": {}\n"),
+		      pc.GetMixRampDelay().count());
 
 	song = playlist.GetCurrentPosition();
 	if (song >= 0) {
-		r.Format(COMMAND_STATUS_SONG ": %i\n"
-			 COMMAND_STATUS_SONGID ": %u\n",
-			 song, playlist.PositionToId(song));
+		r.Fmt(FMT_STRING(COMMAND_STATUS_SONG ": {}\n"
+				 COMMAND_STATUS_SONGID ": {}\n"),
+		      song, playlist.PositionToId(song));
 	}
 
 	if (player_status.state != PlayerState::STOP) {
-		r.Format(COMMAND_STATUS_TIME ": %i:%i\n"
-			 "elapsed: %1.3f\n"
-			 COMMAND_STATUS_BITRATE ": %u\n",
-			 player_status.elapsed_time.RoundS(),
-			 player_status.total_time.IsNegative()
-			 ? 0U
-			 : unsigned(player_status.total_time.RoundS()),
-			 player_status.elapsed_time.ToDoubleS(),
-			 player_status.bit_rate);
+		r.Fmt(FMT_STRING(COMMAND_STATUS_TIME ": {}:{}\n"
+				 "elapsed: {:1.3}\n"
+				 COMMAND_STATUS_BITRATE ": {}\n"),
+		      player_status.elapsed_time.RoundS(),
+		      player_status.total_time.IsNegative()
+		      ? 0U
+		      : unsigned(player_status.total_time.RoundS()),
+		      player_status.elapsed_time.ToDoubleS(),
+		      player_status.bit_rate);
 
 		if (!player_status.total_time.IsNegative())
-			r.Format("duration: %1.3f\n",
+			r.Fmt(FMT_STRING("duration: {:1.3}\n"),
 				 player_status.total_time.ToDoubleS());
 
 		if (player_status.audio_format.IsDefined())
-			r.Format(COMMAND_STATUS_AUDIO ": %s\n",
-				 ToString(player_status.audio_format).c_str());
+			r.Fmt(FMT_STRING(COMMAND_STATUS_AUDIO ": {}\n"),
+			      ToString(player_status.audio_format));
 	}
 
 #ifdef ENABLE_DATABASE
@@ -193,23 +195,23 @@ handle_status(Client &client, [[maybe_unused]] Request args, Response &r)
 		? update_service->GetId()
 		: 0;
 	if (updateJobId != 0) {
-		r.Format(COMMAND_STATUS_UPDATING_DB ": %i\n",
-			 updateJobId);
+		r.Fmt(FMT_STRING(COMMAND_STATUS_UPDATING_DB ": {}\n"),
+		      updateJobId);
 	}
 #endif
 
 	try {
 		pc.LockCheckRethrowError();
 	} catch (...) {
-		r.Format(COMMAND_STATUS_ERROR ": %s\n",
-			 GetFullMessage(std::current_exception()).c_str());
+		r.Fmt(FMT_STRING(COMMAND_STATUS_ERROR ": {}\n"),
+		      GetFullMessage(std::current_exception()));
 	}
 
 	song = playlist.GetNextPosition();
 	if (song >= 0)
-		r.Format(COMMAND_STATUS_NEXTSONG ": %i\n"
-			 COMMAND_STATUS_NEXTSONGID ": %u\n",
-			 song, playlist.PositionToId(song));
+		r.Fmt(FMT_STRING(COMMAND_STATUS_NEXTSONG ": {}\n"
+				 COMMAND_STATUS_NEXTSONGID ": {}\n"),
+		      song, playlist.PositionToId(song));
 
 	return CommandResult::OK;
 }
@@ -351,7 +353,7 @@ CommandResult
 handle_replay_gain_status(Client &client, [[maybe_unused]] Request args,
 			  Response &r)
 {
-	r.Format("replay_gain_mode: %s\n",
-		 ToString(client.GetPartition().replay_gain_mode));
+	r.Fmt(FMT_STRING("replay_gain_mode: {}\n"),
+	      ToString(client.GetPartition().replay_gain_mode));
 	return CommandResult::OK;
 }

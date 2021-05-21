@@ -42,6 +42,8 @@
 #include "util/UriExtract.hxx"
 #include "LocateUri.hxx"
 
+#include <fmt/format.h>
+
 bool
 playlist_commands_available() noexcept
 {
@@ -52,7 +54,7 @@ static void
 print_spl_list(Response &r, const PlaylistVector &list)
 {
 	for (const auto &i : list) {
-		r.Format("playlist: %s\n", i.name.c_str());
+		r.Fmt(FMT_STRING("playlist: {}\n"), i.name);
 
 		if (!IsNegative(i.mtime))
 			time_print(r, "Last-Modified", i.mtime);

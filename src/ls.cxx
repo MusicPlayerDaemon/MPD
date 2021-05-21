@@ -26,8 +26,9 @@
 #include "client/Response.hxx"
 #include "util/UriExtract.hxx"
 
-#include <cassert>
+#include <fmt/format.h>
 
+#include <cassert>
 #include <string>
 
 void print_supported_uri_schemes_to_fp(FILE *fp)
@@ -67,7 +68,7 @@ print_supported_uri_schemes(Response &r)
 	});
 
 	for (const auto& protocol : protocols) {
-		r.Format("handler: %s\n", protocol.c_str());
+		r.Fmt(FMT_STRING("handler: {}\n"), protocol);
 	}
 }
 

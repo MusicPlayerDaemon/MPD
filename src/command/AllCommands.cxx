@@ -48,6 +48,8 @@
 #include "StickerCommands.hxx"
 #endif
 
+#include <fmt/format.h>
+
 #include <cassert>
 #include <iterator>
 
@@ -253,7 +255,7 @@ PrintAvailableCommands(Response &r, const Partition &partition,
 
 		if (cmd->permission == (permission & cmd->permission) &&
 		    command_available(partition, cmd))
-			r.Format("command: %s\n", cmd->cmd);
+			r.Fmt(FMT_STRING("command: {}\n"), cmd->cmd);
 	}
 
 	return CommandResult::OK;
@@ -266,7 +268,7 @@ PrintUnavailableCommands(Response &r, unsigned permission) noexcept
 		const struct command *cmd = &i;
 
 		if (cmd->permission != (permission & cmd->permission))
-			r.Format("command: %s\n", cmd->cmd);
+			r.Fmt(FMT_STRING("command: {}\n"), cmd->cmd);
 	}
 
 	return CommandResult::OK;

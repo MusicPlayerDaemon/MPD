@@ -35,6 +35,9 @@ output_glue = static_library(
   'Finish.cxx',
   'Init.cxx',
   include_directories: inc,
+  dependencies: [
+    fmt_dep,
+  ],
 )
 
 output_glue_dep = declare_dependency(

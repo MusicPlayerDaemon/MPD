@@ -17,8 +17,6 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#define __STDC_FORMAT_MACROS /* for PRIu64 */
-
 #include "config.h"
 #include "FileCommands.hxx"
 #include "Request.hxx"
@@ -43,9 +41,10 @@
 #include "thread/Mutex.hxx"
 #include "Log.hxx"
 
+#include <fmt/format.h>
+
 #include <algorithm>
 #include <cassert>
-#include <cinttypes> /* for PRIu64 */
 
 gcc_pure
 static bool
@@ -60,13 +59,6 @@ skip_path(Path name_fs) noexcept
 {
 	return name_fs.HasNewline();
 }
-
-#if defined(_WIN32) && GCC_CHECK_VERSION(4,6)
-/* PRIu64 causes bogus compiler warning */
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wformat"
-#pragma GCC diagnostic ignored "-Wformat-extra-args"
-#endif
 
 CommandResult
 handle_listfiles_local(Response &r, Path path_fs)
@@ -88,12 +80,12 @@ handle_listfiles_local(Response &r, Path path_fs)
 			continue;
 
 		if (fi.IsRegular())
-			r.Format("file: %s\n"
-				 "size: %" PRIu64 "\n",
-				 name_utf8.c_str(),
-				 fi.GetSize());
+			r.Fmt(FMT_STRING("file: {}\n"
+					 "size: {}\n"),
+			      name_utf8,
+			      fi.GetSize());
 		else if (fi.IsDirectory())
-			r.Format("directory: %s\n", name_utf8.c_str());
+			r.Fmt(FMT_STRING("directory: {}\n"), name_utf8);
 		else
 			continue;
 
@@ -135,9 +127,7 @@ public:
 
 	void OnPair(StringView key, StringView value) noexcept override {
 		if (IsValidName(key) && IsValidValue(value))
-			response.Format("%.*s: %.*s\n",
-					int(key.size), key.data,
-					int(value.size), value.data);
+			response.Fmt(FMT_STRING("{}: {}\n"), key, value);
 	}
 };
 
@@ -228,11 +218,7 @@ read_stream_art(Response &r, const char *uri, size_t offset)
 		read_size = is->Read(lock, buffer.get(), buffer_size);
 	}
 
-#ifdef _WIN32
-	r.Format("size: %lu\n", (unsigned long)art_file_size);
-#else
-	r.Format("size: %" PRIoffset "\n", art_file_size);
-#endif
+	r.Fmt(FMT_STRING("size: {}\n"), art_file_size);
 
 	r.WriteBinary({buffer.get(), read_size});
 
@@ -315,14 +301,10 @@ public:
 			return;
 		}
 
-#ifdef _WIN32
-		response.Format("size: %lu\n", (unsigned long)buffer.size);
-#else
-		response.Format("size: %zu\n", buffer.size);
-#endif
+		response.Fmt(FMT_STRING("size: {}\n"), buffer.size);
 
 		if (mime_type != nullptr)
-			response.Format("type: %s\n", mime_type);
+			response.Fmt(FMT_STRING("type: {}\n"), mime_type);
 
 		buffer.size -= offset;
 

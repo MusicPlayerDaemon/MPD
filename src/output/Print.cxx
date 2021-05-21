@@ -26,21 +26,24 @@
 #include "MultipleOutputs.hxx"
 #include "client/Response.hxx"
 
+#include <fmt/format.h>
+
 void
 printAudioDevices(Response &r, const MultipleOutputs &outputs)
 {
 	for (unsigned i = 0, n = outputs.Size(); i != n; ++i) {
 		const auto &ao = outputs.Get(i);
 
-		r.Format("outputid: %u\n"
-			 "outputname: %s\n"
-			 "plugin: %s\n"
-			 "outputenabled: %i\n",
-			 i,
-			 ao.GetName(), ao.GetPluginName(),
-			 ao.IsEnabled());
+		r.Fmt(FMT_STRING("outputid: {}\n"
+				 "outputname: {}\n"
+				 "plugin: {}\n"
+				 "outputenabled: {}\n"),
+		      i,
+		      ao.GetName(), ao.GetPluginName(),
+		      ao.IsEnabled());
 
 		for (const auto &[attribute, value] : ao.GetAttributes())
-			r.Format("attribute: %s=%s\n", attribute.c_str(), value.c_str());
+			r.Fmt(FMT_STRING("attribute: {}={}\n"),
+			      attribute, value);
 	}
 }

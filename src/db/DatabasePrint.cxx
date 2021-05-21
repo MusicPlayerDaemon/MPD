@@ -32,6 +32,8 @@
 #include "time/ChronoUtil.hxx"
 #include "util/RecursiveMap.hxx"
 
+#include <fmt/format.h>
+
 #include <functional>
 
 gcc_pure
@@ -47,8 +49,8 @@ static void
 PrintDirectoryURI(Response &r, bool base,
 		  const LightDirectory &directory) noexcept
 {
-	r.Format("directory: %s\n",
-		 ApplyBaseFlag(directory.GetPath(), base));
+	r.Fmt(FMT_STRING("directory: {}\n"),
+	      ApplyBaseFlag(directory.GetPath(), base));
 }
 
 static void
@@ -77,11 +79,11 @@ print_playlist_in_directory(Response &r, bool base,
 			    const char *name_utf8) noexcept
 {
 	if (base || directory == nullptr)
-		r.Format("playlist: %s\n",
-			 ApplyBaseFlag(name_utf8, base));
+		r.Fmt(FMT_STRING("playlist: {}\n"),
+		      ApplyBaseFlag(name_utf8, base));
 	else
-		r.Format("playlist: %s/%s\n",
-			 directory, name_utf8);
+		r.Fmt(FMT_STRING("playlist: {}/{}\n"),
+		      directory, name_utf8);
 }
 
 static void
@@ -90,10 +92,10 @@ print_playlist_in_directory(Response &r, bool base,
 			    const char *name_utf8) noexcept
 {
 	if (base || directory == nullptr || directory->IsRoot())
-		r.Format("playlist: %s\n", name_utf8);
+		r.Fmt(FMT_STRING("playlist: {}\n"), name_utf8);
 	else
-		r.Format("playlist: %s/%s\n",
-			 directory->GetPath(), name_utf8);
+		r.Fmt(FMT_STRING("playlist: {}/{}\n"),
+		      directory->GetPath(), name_utf8);
 }
 
 static void
@@ -196,7 +198,7 @@ PrintUniqueTags(Response &r, ConstBuffer<TagType> tag_types,
 	tag_types.pop_front();
 
 	for (const auto &[key, tag] : map) {
-		r.Format("%s: %s\n", name, key.c_str());
+		r.Fmt(FMT_STRING("{}: {}\n"), name, key);
 
 		if (!tag_types.empty())
 			PrintUniqueTags(r, tag_types, tag);

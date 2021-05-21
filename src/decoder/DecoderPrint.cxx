@@ -22,6 +22,8 @@
 #include "DecoderPlugin.hxx"
 #include "client/Response.hxx"
 
+#include <fmt/format.h>
+
 #include <cassert>
 #include <functional>
 
@@ -33,15 +35,15 @@ decoder_plugin_print(Response &r,
 
 	assert(plugin.name != nullptr);
 
-	r.Format("plugin: %s\n", plugin.name);
+	r.Fmt(FMT_STRING("plugin: {}\n"), plugin.name);
 
 	if (plugin.suffixes != nullptr)
 		for (p = plugin.suffixes; *p != nullptr; ++p)
-			r.Format("suffix: %s\n", *p);
+			r.Fmt(FMT_STRING("suffix: {}\n"), *p);
 
 	if (plugin.mime_types != nullptr)
 		for (p = plugin.mime_types; *p != nullptr; ++p)
-			r.Format("mime_type: %s\n", *p);
+			r.Fmt(FMT_STRING("mime_type: {}\n"), *p);
 }
 
 void
