@@ -1,3 +1,5 @@
+ver 0.22.8 (not yet released)
+
 ver 0.22.7 (2021/05/19)
 * protocol
   - don't use glibc extension to parse time stamps
