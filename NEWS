@@ -13,6 +13,9 @@ ver 0.23 (not yet released)
 * tags
   - new tags "ComposerSort", "Ensemble", "Movement", "MovementNumber", and "Location"
 
+ver 0.22.8 (2021/05/22)
+* fix crash bug in "albumart" command (0.22.7 regression)
+
 ver 0.22.7 (2021/05/19)
 * protocol
   - don't use glibc extension to parse time stamps
