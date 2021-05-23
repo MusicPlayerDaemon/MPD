@@ -35,7 +35,7 @@
 
 #include <stdio.h>
 
-#ifdef __clang__
+#if defined(__clang__) || defined(__GNUC__)
 #pragma GCC diagnostic push
 // TODO: fix this warning properly
 #pragma GCC diagnostic ignored "-Wformat-security"
@@ -59,7 +59,7 @@ FormatInvalidArgument(const char *fmt, Args&&... args) noexcept
 	return std::invalid_argument(buffer);
 }
 
-#ifdef __clang__
+#if defined(__clang__) || defined(__GNUC__)
 #pragma GCC diagnostic pop
 #endif
 
