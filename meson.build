@@ -118,7 +118,10 @@ if get_option('buildtype') != 'debug'
 endif
 
 if get_option('fuzzer')
-  fuzzer_flags = ['-fsanitize=fuzzer,address,undefined']
+  fuzzer_flags = ['-fsanitize=fuzzer']
+  if get_option('b_sanitize') == 'none'
+    fuzzer_flags += ['-fsanitize=address,undefined']
+  endif
   add_global_arguments(fuzzer_flags, language: 'cpp')
   add_global_arguments(fuzzer_flags, language: 'c')
   add_global_link_arguments(fuzzer_flags, language: 'cpp')
