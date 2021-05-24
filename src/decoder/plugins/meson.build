@@ -110,6 +110,7 @@ endif
 
 libopenmpt_dep = dependency('libopenmpt', required: get_option('openmpt'))
 decoder_features.set('ENABLE_OPENMPT', libopenmpt_dep.found())
+decoder_features.set('HAVE_LIBOPENMPT_VERSION_0_5', libopenmpt_dep.version().version_compare('>= 0.5'))
 if libopenmpt_dep.found()
   decoder_plugins_sources += [
     'OpenmptDecoderPlugin.cxx',
