@@ -42,12 +42,6 @@ common_cppflags = [
   '-D_GNU_SOURCE',
 ]
 
-common_cflags = [
-]
-
-common_cxxflags = [
-]
-
 test_common_flags = [
   '-Wvla',
   '-Wdouble-promotion',
@@ -120,8 +114,8 @@ if get_option('fuzzer')
   add_global_link_arguments(fuzzer_flags, language: 'cpp')
 endif
 
-add_global_arguments(common_cxxflags + compiler.get_supported_arguments(test_cxxflags), language: 'cpp')
-add_global_arguments(common_cflags + c_compiler.get_supported_arguments(test_cflags), language: 'c')
+add_global_arguments(compiler.get_supported_arguments(test_cxxflags), language: 'cpp')
+add_global_arguments(c_compiler.get_supported_arguments(test_cflags), language: 'c')
 add_global_link_arguments(compiler.get_supported_link_arguments(test_ldflags), language: 'cpp')
 
 is_linux = host_machine.system() == 'linux'
