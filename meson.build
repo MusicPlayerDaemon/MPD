@@ -65,10 +65,17 @@ test_cxxflags = test_common_flags + [
   '-fmerge-all-constants',
 
   '-Wcast-qual',
+  '-Wcomma-subscript',
   '-Wextra-semi',
+  '-Wmismatched-tags',
   '-Wmissing-declarations',
+  '-Woverloaded-virtual',
   '-Wshadow',
+  '-Wsign-promo',
+  '-Wsuggest-override',
   '-Wunused',
+  '-Wvolatile',
+  '-Wvirtual-inheritance',
   '-Wwrite-strings',
 
   # a vtable without a dtor is just fine
@@ -78,7 +85,7 @@ test_cxxflags = test_common_flags + [
   '-Wcomma',
   '-Wheader-hygiene',
   '-Winconsistent-missing-destructor-override',
-  '-Wunreachable-code-break',
+  '-Wunreachable-code-aggressive',
   '-Wused-but-marked-unused',
 ]
 
