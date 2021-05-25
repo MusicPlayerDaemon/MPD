@@ -458,6 +458,28 @@ UpdateWalk::DirectoryMakeUriParentChecked(Directory &root,
 	return directory;
 }
 
+static void
+LoadExcludeLists(std::forward_list<ExcludeList> &lists,
+		 const Storage &storage, const Directory &directory) noexcept
+{
+	assert(!lists.empty());
+
+	if (!directory.IsRoot())
+		LoadExcludeLists(lists, storage, *directory.parent);
+
+	lists.emplace_front();
+	LoadExcludeListOrLog(storage, directory, lists.front());
+}
+
+static auto
+LoadExcludeLists(const Storage &storage, const Directory &directory) noexcept
+{
+	std::forward_list<ExcludeList> lists;
+	lists.emplace_front();
+	LoadExcludeLists(lists, storage, directory);
+	return lists;
+}
+
 inline void
 UpdateWalk::UpdateUri(Directory &root, const char *uri) noexcept
 try {
@@ -478,9 +500,8 @@ try {
 		return;
 	}
 
-	ExcludeList exclude_list;
-
-	UpdateDirectoryChild(*parent, exclude_list, name, info);
+	const auto exclude_lists = LoadExcludeLists(storage, *parent);
+	UpdateDirectoryChild(*parent, exclude_lists.front(), name, info);
 } catch (...) {
 	LogError(std::current_exception());
 }
