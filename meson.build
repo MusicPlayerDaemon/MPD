@@ -64,13 +64,12 @@ test_cxxflags = test_common_flags + [
   '-fno-threadsafe-statics',
   '-fmerge-all-constants',
 
+  '-Wcast-qual',
+  '-Wextra-semi',
   '-Wmissing-declarations',
   '-Wshadow',
-  '-Wcast-qual',
-  '-Wwrite-strings',
-
-  '-Wextra-semi',
   '-Wunused',
+  '-Wwrite-strings',
 
   # a vtable without a dtor is just fine
   '-Wno-non-virtual-dtor',
@@ -84,10 +83,10 @@ test_cxxflags = test_common_flags + [
 ]
 
 test_cflags = test_common_flags + [
+  '-Wcast-qual',
   '-Wmissing-prototypes',
   '-Wshadow',
   '-Wstrict-prototypes',
-  '-Wcast-qual',
   '-Wwrite-strings',
 ]
 
