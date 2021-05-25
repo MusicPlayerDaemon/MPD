@@ -68,15 +68,18 @@ test_cxxflags = test_common_flags + [
   '-Wshadow',
   '-Wcast-qual',
   '-Wwrite-strings',
-  '-Wcomma',
+
   '-Wextra-semi',
+  '-Wunused',
+
+  '-Wno-non-virtual-dtor',
+
+  # clang specific warning options:
+  '-Wcomma',
   '-Wheader-hygiene',
   '-Winconsistent-missing-destructor-override',
   '-Wunreachable-code-break',
-  '-Wunused',
   '-Wused-but-marked-unused',
-
-  '-Wno-non-virtual-dtor',
 ]
 
 test_cflags = test_common_flags + [
