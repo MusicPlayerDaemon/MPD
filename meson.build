@@ -24,8 +24,8 @@ c_compiler = meson.get_compiler('c')
 
 if compiler.get_id() == 'gcc' and compiler.version().version_compare('<8')
   warning('Your GCC version is too old.  You need at least version 8.')
-elif compiler.get_id() == 'clang' and compiler.version().version_compare('<5')
-  warning('Your clang version is too old.  You need at least version 5.')
+elif compiler.get_id() == 'clang' and compiler.version().version_compare('<7')
+  warning('Your clang version is too old.  You need at least version 7.')
 endif
 
 version_conf = configuration_data()
@@ -78,12 +78,6 @@ test_cxxflags = test_common_flags + [
 
   '-Wno-non-virtual-dtor',
 ]
-
-if compiler.get_id() == 'clang'
-  # Workaround for clang bug
-  # https://bugs.llvm.org/show_bug.cgi?id=32611
-  test_cxxflags += '-funwind-tables'
-endif
 
 test_cflags = test_common_flags + [
   '-Wmissing-prototypes',
