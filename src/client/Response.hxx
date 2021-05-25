@@ -105,7 +105,23 @@ public:
 	bool WriteBinary(ConstBuffer<void> payload) noexcept;
 
 	void Error(enum ack code, const char *msg) noexcept;
-	void FormatError(enum ack code, const char *fmt, ...) noexcept;
+
+	void VFmtError(enum ack code,
+		       fmt::string_view format_str, fmt::format_args args) noexcept;
+
+	template<typename S, typename... Args>
+	void FmtError(enum ack code,
+		      const S &format_str, Args&&... args) noexcept {
+#if FMT_VERSION >= 70000
+		return VFmtError(code, fmt::to_string_view(format_str),
+				 fmt::make_args_checked<Args...>(format_str,
+								 args...));
+#else
+		/* expensive fallback for older libfmt versions */
+		const auto result = fmt::format(format_str, args...);
+		return Error(code, result.c_str());
+#endif
+	}
 };
 
 #endif

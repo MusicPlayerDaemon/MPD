@@ -407,8 +407,9 @@ handle_idle(Client &client, Request args, Response &r)
 	for (const char *i : args) {
 		unsigned event = idle_parse_name(i);
 		if (event == 0) {
-			r.FormatError(ACK_ERROR_ARG,
-				      "Unrecognized idle event: %s", i);
+			r.FmtError(ACK_ERROR_ARG,
+				   FMT_STRING("Unrecognized idle event: {}"),
+				   i);
 			return CommandResult::ERROR;
 		}
 

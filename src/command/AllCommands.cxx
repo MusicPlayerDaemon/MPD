@@ -325,9 +325,9 @@ command_check_request(const struct command *cmd, Response &r,
 		      unsigned permission, Request args) noexcept
 {
 	if (cmd->permission != (permission & cmd->permission)) {
-		r.FormatError(ACK_ERROR_PERMISSION,
-			      "you don't have permission for \"%s\"",
-			      cmd->cmd);
+		r.FmtError(ACK_ERROR_PERMISSION,
+			   FMT_STRING("you don't have permission for \"{}\""),
+			   cmd->cmd);
 		return false;
 	}
 
@@ -338,17 +338,19 @@ command_check_request(const struct command *cmd, Response &r,
 		return true;
 
 	if (min == max && unsigned(max) != args.size) {
-		r.FormatError(ACK_ERROR_ARG,
-			      "wrong number of arguments for \"%s\"",
-			      cmd->cmd);
+		r.FmtError(ACK_ERROR_ARG,
+			   FMT_STRING("wrong number of arguments for \"{}\""),
+			   cmd->cmd);
 		return false;
 	} else if (args.size < unsigned(min)) {
-		r.FormatError(ACK_ERROR_ARG,
-			      "too few arguments for \"%s\"", cmd->cmd);
+		r.FmtError(ACK_ERROR_ARG,
+			   FMT_STRING("too few arguments for \"{}\""),
+			   cmd->cmd);
 		return false;
 	} else if (max >= 0 && args.size > unsigned(max)) {
-		r.FormatError(ACK_ERROR_ARG,
-			      "too many arguments for \"%s\"", cmd->cmd);
+		r.FmtError(ACK_ERROR_ARG,
+			   FMT_STRING("too many arguments for \"{}\""),
+			   cmd->cmd);
 		return false;
 	} else
 		return true;
@@ -360,8 +362,8 @@ command_checked_lookup(Response &r, unsigned permission,
 {
 	const struct command *cmd = command_lookup(cmd_name);
 	if (cmd == nullptr) {
-		r.FormatError(ACK_ERROR_UNKNOWN,
-			      "unknown command \"%s\"", cmd_name);
+		r.FmtError(ACK_ERROR_UNKNOWN,
+			   FMT_STRING("unknown command \"{}\""), cmd_name);
 		return nullptr;
 	}
 

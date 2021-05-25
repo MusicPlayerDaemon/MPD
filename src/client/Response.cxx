@@ -70,19 +70,17 @@ Response::WriteBinary(ConstBuffer<void> payload) noexcept
 void
 Response::Error(enum ack code, const char *msg) noexcept
 {
-	FormatError(code, "%s", msg);
+	FmtError(code, FMT_STRING("{}"), msg);
 }
 
 void
-Response::FormatError(enum ack code, const char *fmt, ...) noexcept
+Response::VFmtError(enum ack code,
+		    fmt::string_view format_str, fmt::format_args args) noexcept
 {
 	Fmt(FMT_STRING("ACK [{}@{}] {{{}}} "),
 	    (int)code, list_index, command);
 
-	std::va_list args;
-	va_start(args, fmt);
-	FormatV(fmt, args);
-	va_end(args);
+	VFmt(format_str, std::move(args));
 
 	Write("\n");
 }
