@@ -889,8 +889,6 @@ inline bool
 MadDecoder::HandleCurrentFrame() noexcept
 {
 	switch (mute_frame) {
-		DecoderCommand cmd;
-
 	case MadDecoderMuteFrame::SKIP:
 		mute_frame = MadDecoderMuteFrame::NONE;
 		break;
@@ -899,8 +897,8 @@ MadDecoder::HandleCurrentFrame() noexcept
 			mute_frame = MadDecoderMuteFrame::NONE;
 		UpdateTimerNextFrame();
 		break;
-	case MadDecoderMuteFrame::NONE:
-		cmd = SynthAndSubmit();
+	case MadDecoderMuteFrame::NONE: {
+		const auto cmd = SynthAndSubmit();
 		UpdateTimerNextFrame();
 		if (cmd == DecoderCommand::SEEK) {
 			assert(input_stream.IsSeekable());
@@ -921,6 +919,7 @@ MadDecoder::HandleCurrentFrame() noexcept
 			}
 		} else if (cmd != DecoderCommand::NONE)
 			return false;
+	}
 	}
 
 	return true;
