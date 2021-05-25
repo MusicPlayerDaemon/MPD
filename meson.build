@@ -72,7 +72,6 @@ test_cxxflags = test_common_flags + [
   '-Woverloaded-virtual',
   '-Wshadow',
   '-Wsign-promo',
-  '-Wsuggest-override',
   '-Wunused',
   '-Wvolatile',
   '-Wvirtual-inheritance',
@@ -88,6 +87,12 @@ test_cxxflags = test_common_flags + [
   '-Wunreachable-code-aggressive',
   '-Wused-but-marked-unused',
 ]
+
+if compiler.get_id() != 'gcc' or compiler.version().version_compare('>=9')
+  # The GCC 8 implementation of this flag is buggy: it complains even
+  # if "final" is present, which implies "override".
+  test_cxxflags += '-Wsuggest-override'
+endif
 
 test_cflags = test_common_flags + [
   '-Wcast-qual',
