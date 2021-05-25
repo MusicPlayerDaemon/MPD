@@ -312,6 +312,29 @@ UpdateWalk::SkipSymlink(const Directory *directory,
 #endif
 }
 
+static void
+LoadExcludeListOrThrow(const Storage &storage, const Directory &directory,
+		       ExcludeList &exclude_list)
+{
+	Mutex mutex;
+	auto is = InputStream::OpenReady(storage.MapUTF8(PathTraitsUTF8::Build(directory.GetPath(),
+									       ".mpdignore")).c_str(),
+					 mutex);
+	exclude_list.Load(std::move(is));
+}
+
+static void
+LoadExcludeListOrLog(const Storage &storage, const Directory &directory,
+		     ExcludeList &exclude_list) noexcept
+{
+	try {
+		LoadExcludeListOrThrow(storage, directory, exclude_list);
+	} catch (...) {
+		if (!IsFileNotFound(std::current_exception()))
+			LogError(std::current_exception());
+	}
+}
+
 bool
 UpdateWalk::UpdateDirectory(Directory &directory,
 			    const ExcludeList &exclude_list,
@@ -331,17 +354,7 @@ UpdateWalk::UpdateDirectory(Directory &directory,
 	}
 
 	ExcludeList child_exclude_list(exclude_list);
-
-	try {
-		Mutex mutex;
-		auto is = InputStream::OpenReady(storage.MapUTF8(PathTraitsUTF8::Build(directory.GetPath(),
-										       ".mpdignore")).c_str(),
-						 mutex);
-		child_exclude_list.Load(std::move(is));
-	} catch (...) {
-		if (!IsFileNotFound(std::current_exception()))
-			LogError(std::current_exception());
-	}
+	LoadExcludeListOrLog(storage, directory, child_exclude_list);
 
 	if (!child_exclude_list.IsEmpty())
 		RemoveExcludedFromDirectory(directory, child_exclude_list);
