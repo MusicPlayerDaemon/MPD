@@ -72,6 +72,7 @@ test_cxxflags = test_common_flags + [
   '-Wextra-semi',
   '-Wunused',
 
+  # a vtable without a dtor is just fine
   '-Wno-non-virtual-dtor',
 
   # clang specific warning options:
