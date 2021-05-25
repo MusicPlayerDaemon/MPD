@@ -66,10 +66,8 @@ test_cxxflags = test_common_flags + [
 
   '-Wmissing-declarations',
   '-Wshadow',
-  '-Wpointer-arith',
   '-Wcast-qual',
   '-Wwrite-strings',
-  '-Wsign-compare',
   '-Wcomma',
   '-Wextra-semi',
   '-Wheader-hygiene',
@@ -84,7 +82,6 @@ test_cxxflags = test_common_flags + [
 test_cflags = test_common_flags + [
   '-Wmissing-prototypes',
   '-Wshadow',
-  '-Wpointer-arith',
   '-Wstrict-prototypes',
   '-Wcast-qual',
   '-Wwrite-strings',
