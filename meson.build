@@ -42,14 +42,22 @@ common_cppflags = [
   '-D_GNU_SOURCE',
 ]
 
+test_global_common_flags = [
+  '-fvisibility=hidden',
+]
+
 test_common_flags = [
   '-Wvla',
   '-Wdouble-promotion',
 
-  '-fvisibility=hidden',
-
   '-ffast-math',
   '-ftree-vectorize',
+]
+
+test_global_cxxflags = test_global_common_flags + [
+]
+
+test_global_cflags = test_global_common_flags + [
 ]
 
 test_cxxflags = test_common_flags + [
@@ -91,11 +99,11 @@ test_ldflags = [
 ]
 
 if get_option('buildtype') != 'debug'
-  test_cxxflags += [
+  test_global_cxxflags += [
     '-ffunction-sections',
     '-fdata-sections',
   ]
-  test_cflags += [
+  test_global_cflags += [
     '-ffunction-sections',
     '-fdata-sections',
   ]
@@ -114,9 +122,11 @@ if get_option('fuzzer')
   add_global_link_arguments(fuzzer_flags, language: 'cpp')
 endif
 
-add_global_arguments(compiler.get_supported_arguments(test_cxxflags), language: 'cpp')
-add_global_arguments(c_compiler.get_supported_arguments(test_cflags), language: 'c')
-add_global_link_arguments(compiler.get_supported_link_arguments(test_ldflags), language: 'cpp')
+add_global_arguments(compiler.get_supported_arguments(test_global_cxxflags), language: 'cpp')
+add_global_arguments(c_compiler.get_supported_arguments(test_global_cflags), language: 'c')
+add_project_arguments(compiler.get_supported_arguments(test_cxxflags), language: 'cpp')
+add_project_arguments(c_compiler.get_supported_arguments(test_cflags), language: 'c')
+add_project_link_arguments(compiler.get_supported_link_arguments(test_ldflags), language: 'cpp')
 
 is_linux = host_machine.system() == 'linux'
 is_android = get_option('android_ndk') != ''
