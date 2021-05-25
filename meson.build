@@ -92,7 +92,6 @@ test_cflags = test_common_flags + [
   '-Wstrict-prototypes',
   '-Wcast-qual',
   '-Wwrite-strings',
-  '-pedantic',
 ]
 
 test_ldflags = [
