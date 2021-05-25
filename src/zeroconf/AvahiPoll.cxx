@@ -90,12 +90,12 @@ public:
 		:event(_loop, BIND_THIS_METHOD(OnTimeout)),
 		 callback(_callback), userdata(_userdata) {
 		if (tv != nullptr)
-			event.Schedule(ToSteadyClockDuration(*tv));
+			Schedule(*tv);
 	}
 
 	static void TimeoutUpdate(AvahiTimeout *t, const struct timeval *tv) {
 		if (tv != nullptr)
-			t->event.Schedule(ToSteadyClockDuration(*tv));
+			t->Schedule(*tv);
 		else
 			t->event.Cancel();
 	}
@@ -105,6 +105,10 @@ public:
 	}
 
 private:
+	void Schedule(const struct timeval &tv) noexcept {
+		event.Schedule(ToSteadyClockDuration(tv));
+	}
+
 	void OnTimeout() noexcept {
 		callback(this, userdata);
 	}
