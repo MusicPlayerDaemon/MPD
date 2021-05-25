@@ -21,4 +21,7 @@ sqlite = static_library(
 
 sqlite_dep = declare_dependency(
   link_with: sqlite,
+  dependencies: [
+    sqlite_dep,
+  ],
 )
