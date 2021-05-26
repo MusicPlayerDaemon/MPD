@@ -312,6 +312,29 @@ UpdateWalk::SkipSymlink(const Directory *directory,
 #endif
 }
 
+static void
+LoadExcludeListOrThrow(const Storage &storage, const Directory &directory,
+		       ExcludeList &exclude_list)
+{
+	Mutex mutex;
+	auto is = InputStream::OpenReady(storage.MapUTF8(PathTraitsUTF8::Build(directory.GetPath(),
+									       ".mpdignore")).c_str(),
+					 mutex);
+	exclude_list.Load(std::move(is));
+}
+
+static void
+LoadExcludeListOrLog(const Storage &storage, const Directory &directory,
+		     ExcludeList &exclude_list) noexcept
+{
+	try {
+		LoadExcludeListOrThrow(storage, directory, exclude_list);
+	} catch (...) {
+		if (!IsFileNotFound(std::current_exception()))
+			LogError(std::current_exception());
+	}
+}
+
 bool
 UpdateWalk::UpdateDirectory(Directory &directory,
 			    const ExcludeList &exclude_list,
@@ -331,17 +354,7 @@ UpdateWalk::UpdateDirectory(Directory &directory,
 	}
 
 	ExcludeList child_exclude_list(exclude_list);
-
-	try {
-		Mutex mutex;
-		auto is = InputStream::OpenReady(storage.MapUTF8(PathTraitsUTF8::Build(directory.GetPath(),
-										       ".mpdignore")).c_str(),
-						 mutex);
-		child_exclude_list.Load(std::move(is));
-	} catch (...) {
-		if (!IsFileNotFound(std::current_exception()))
-			LogError(std::current_exception());
-	}
+	LoadExcludeListOrLog(storage, directory, child_exclude_list);
 
 	if (!child_exclude_list.IsEmpty())
 		RemoveExcludedFromDirectory(directory, child_exclude_list);
@@ -445,6 +458,28 @@ UpdateWalk::DirectoryMakeUriParentChecked(Directory &root,
 	return directory;
 }
 
+static void
+LoadExcludeLists(std::forward_list<ExcludeList> &lists,
+		 const Storage &storage, const Directory &directory) noexcept
+{
+	assert(!lists.empty());
+
+	if (!directory.IsRoot())
+		LoadExcludeLists(lists, storage, *directory.parent);
+
+	lists.emplace_front();
+	LoadExcludeListOrLog(storage, directory, lists.front());
+}
+
+static auto
+LoadExcludeLists(const Storage &storage, const Directory &directory) noexcept
+{
+	std::forward_list<ExcludeList> lists;
+	lists.emplace_front();
+	LoadExcludeLists(lists, storage, directory);
+	return lists;
+}
+
 inline void
 UpdateWalk::UpdateUri(Directory &root, const char *uri) noexcept
 try {
@@ -465,9 +500,8 @@ try {
 		return;
 	}
 
-	ExcludeList exclude_list;
-
-	UpdateDirectoryChild(*parent, exclude_list, name, info);
+	const auto exclude_lists = LoadExcludeLists(storage, *parent);
+	UpdateDirectoryChild(*parent, exclude_lists.front(), name, info);
 } catch (...) {
 	LogError(std::current_exception());
 }

@@ -30,11 +30,22 @@ extern "C" {
 #include <libavutil/dict.h>
 }
 
+/**
+ * FFmpeg specific tag name mappings, as supported by
+ * libavformat/id3v2.c, libavformat/mov.c and others.
+ */
 static constexpr struct tag_table ffmpeg_tags[] = {
-	{ "year", TAG_DATE },
-	{ "author-sort", TAG_ARTIST_SORT },
+	/* from libavformat/id3v2.c, libavformat/mov.c */
 	{ "album_artist", TAG_ALBUM_ARTIST },
-	{ "album_artist-sort", TAG_ALBUM_ARTIST_SORT },
+
+	/* from libavformat/id3v2.c */
+	{ "album-sort", TAG_ALBUM_SORT },
+	{ "artist-sort", TAG_ARTIST_SORT },
+
+	/* from libavformat/mov.c */
+	{ "sort_album_artist", TAG_ALBUM_ARTIST_SORT },
+	{ "sort_album", TAG_ALBUM_SORT },
+	{ "sort_artist", TAG_ARTIST_SORT },
 
 	/* sentinel */
 	{ nullptr, TAG_NUM_OF_ITEM_TYPES }

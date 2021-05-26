@@ -15,6 +15,10 @@ ver 0.23 (not yet released)
 * new build-time dependency: libfmt
 
 ver 0.22.9 (not yet released)
+* database
+  - simple: load all .mpdignore files of all parent directories
+* decoder
+  - ffmpeg: support the tags "sort_album", "album-sort", "artist-sort"
 * Windows
   - fix build failure with SQLite
 
