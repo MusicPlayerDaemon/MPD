@@ -32,9 +32,9 @@ extern "C" {
 
 static constexpr struct tag_table ffmpeg_tags[] = {
 	{ "year", TAG_DATE },
-	{ "author-sort", TAG_ARTIST_SORT },
 	{ "album_artist", TAG_ALBUM_ARTIST },
-	{ "album_artist-sort", TAG_ALBUM_ARTIST_SORT },
+	{ "sort_album_artist", TAG_ALBUM_ARTIST_SORT },
+	{ "sort_artist", TAG_ARTIST_SORT },
 
 	/* sentinel */
 	{ nullptr, TAG_NUM_OF_ITEM_TYPES }
