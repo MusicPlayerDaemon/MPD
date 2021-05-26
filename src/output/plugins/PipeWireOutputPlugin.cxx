@@ -285,8 +285,6 @@ PipeWireOutput::Play(const void *chunk, size_t size)
 
 		usleep(1000); // TODO
 	}
-
-	return size;
 }
 
 const struct AudioOutputPlugin pipewire_output_plugin = {
