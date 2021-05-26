@@ -38,6 +38,10 @@ static constexpr struct tag_table ffmpeg_tags[] = {
 	/* from libavformat/id3v2.c, libavformat/mov.c */
 	{ "album_artist", TAG_ALBUM_ARTIST },
 
+	/* from libavformat/id3v2.c */
+	{ "album-sort", TAG_ALBUM_SORT },
+	{ "artist-sort", TAG_ARTIST_SORT },
+
 	/* from libavformat/mov.c */
 	{ "sort_album_artist", TAG_ALBUM_ARTIST_SORT },
 	{ "sort_album", TAG_ALBUM_SORT },
