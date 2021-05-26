@@ -38,6 +38,7 @@ static constexpr Domain openmpt_domain("openmpt");
 static constexpr size_t OPENMPT_FRAME_SIZE = 4096;
 static constexpr int32_t OPENMPT_SAMPLE_RATE = 48000;
 
+static int openmpt_repeat_count;
 static int openmpt_stereo_separation;
 static int openmpt_interpolation_filter;
 static bool openmpt_override_mptm_interp_filter;
@@ -51,6 +52,7 @@ static std::string_view openmpt_emulate_amiga_type;
 static bool
 openmpt_decoder_init(const ConfigBlock &block)
 {
+	openmpt_repeat_count = block.GetBlockValue("repeat_count", 0);
 	openmpt_stereo_separation = block.GetBlockValue("stereo_separation", 100);
 	openmpt_interpolation_filter = block.GetBlockValue("interpolation_filter", 0);
 	openmpt_override_mptm_interp_filter = block.GetBlockValue("override_mptm_interp_filter", false);
@@ -79,6 +81,7 @@ mod_decode(DecoderClient &client, InputStream &is)
 	openmpt::module mod(buffer.data(), buffer.size());
 
 	/* alter settings */
+	mod.set_repeat_count(openmpt_repeat_count);
 	mod.set_render_param(mod.RENDER_STEREOSEPARATION_PERCENT, openmpt_stereo_separation);
 	mod.set_render_param(mod.RENDER_INTERPOLATIONFILTER_LENGTH, openmpt_interpolation_filter);
 	if (!openmpt_override_mptm_interp_filter && mod.get_metadata("type") == "mptm") {

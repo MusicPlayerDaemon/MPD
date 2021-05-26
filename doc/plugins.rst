@@ -505,6 +505,8 @@ Module player based on `libopenmpt <https://lib.openmpt.org>`_.
 
    * - Setting
      - Description
+   * - **repeat_count**
+     - Set how many times the module repeats. -1: repeat forever. 0: play once, repeat zero times (the default). n>0: play once and repeat n times after that.
    * - **stereo_separation**
      - Sets the stereo separation. The supported value range is [0,200]. Defaults to 100.
    * - **interpolation_filter 0|1|2|4|8**
