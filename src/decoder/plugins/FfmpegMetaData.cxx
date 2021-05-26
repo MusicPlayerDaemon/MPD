@@ -31,7 +31,6 @@ extern "C" {
 }
 
 static constexpr struct tag_table ffmpeg_tags[] = {
-	{ "year", TAG_DATE },
 	{ "album_artist", TAG_ALBUM_ARTIST },
 	{ "sort_album_artist", TAG_ALBUM_ARTIST_SORT },
 	{ "sort_artist", TAG_ARTIST_SORT },
