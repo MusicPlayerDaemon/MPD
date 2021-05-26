@@ -21,6 +21,7 @@
 #include "Sticker.hxx"
 #include "lib/sqlite/Util.hxx"
 #include "fs/Path.hxx"
+#include "fs/NarrowPath.hxx"
 #include "Idle.hxx"
 #include "util/StringCompare.hxx"
 #include "util/ScopeExit.hxx"
@@ -82,7 +83,7 @@ static const char sticker_sql_create[] =
 	"";
 
 StickerDatabase::StickerDatabase(Path path)
-	:db(path.c_str())
+	:db(NarrowPath(path))
 {
 	assert(!path.IsNull());
 

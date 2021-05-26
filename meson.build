@@ -24,8 +24,8 @@ c_compiler = meson.get_compiler('c')
 
 if compiler.get_id() == 'gcc' and compiler.version().version_compare('<8')
   warning('Your GCC version is too old.  You need at least version 8.')
-elif compiler.get_id() == 'clang' and compiler.version().version_compare('<5')
-  warning('Your clang version is too old.  You need at least version 5.')
+elif compiler.get_id() == 'clang' and compiler.version().version_compare('<7')
+  warning('Your clang version is too old.  You need at least version 7.')
 endif
 
 version_conf = configuration_data()
@@ -42,57 +42,64 @@ common_cppflags = [
   '-D_GNU_SOURCE',
 ]
 
-common_cflags = [
-]
-
-common_cxxflags = [
+test_global_common_flags = [
+  '-fvisibility=hidden',
 ]
 
 test_common_flags = [
   '-Wvla',
   '-Wdouble-promotion',
 
-  '-fvisibility=hidden',
-
   '-ffast-math',
   '-ftree-vectorize',
+]
+
+test_global_cxxflags = test_global_common_flags + [
+]
+
+test_global_cflags = test_global_common_flags + [
 ]
 
 test_cxxflags = test_common_flags + [
   '-fno-threadsafe-statics',
   '-fmerge-all-constants',
 
-  '-Wmissing-declarations',
-  '-Wshadow',
-  '-Wpointer-arith',
   '-Wcast-qual',
-  '-Wwrite-strings',
-  '-Wsign-compare',
-  '-Wcomma',
+  '-Wcomma-subscript',
   '-Wextra-semi',
+  '-Wmismatched-tags',
+  '-Wmissing-declarations',
+  '-Woverloaded-virtual',
+  '-Wshadow',
+  '-Wsign-promo',
+  '-Wunused',
+  '-Wvolatile',
+  '-Wvirtual-inheritance',
+  '-Wwrite-strings',
+
+  # a vtable without a dtor is just fine
+  '-Wno-non-virtual-dtor',
+
+  # clang specific warning options:
+  '-Wcomma',
   '-Wheader-hygiene',
   '-Winconsistent-missing-destructor-override',
-  '-Wunreachable-code-break',
-  '-Wunused',
+  '-Wunreachable-code-aggressive',
   '-Wused-but-marked-unused',
-
-  '-Wno-non-virtual-dtor',
 ]
 
-if compiler.get_id() == 'clang'
-  # Workaround for clang bug
-  # https://bugs.llvm.org/show_bug.cgi?id=32611
-  test_cxxflags += '-funwind-tables'
+if compiler.get_id() != 'gcc' or compiler.version().version_compare('>=9')
+  # The GCC 8 implementation of this flag is buggy: it complains even
+  # if "final" is present, which implies "override".
+  test_cxxflags += '-Wsuggest-override'
 endif
 
 test_cflags = test_common_flags + [
+  '-Wcast-qual',
   '-Wmissing-prototypes',
   '-Wshadow',
-  '-Wpointer-arith',
   '-Wstrict-prototypes',
-  '-Wcast-qual',
   '-Wwrite-strings',
-  '-pedantic',
 ]
 
 test_ldflags = [
@@ -104,11 +111,11 @@ test_ldflags = [
 ]
 
 if get_option('buildtype') != 'debug'
-  test_cxxflags += [
+  test_global_cxxflags += [
     '-ffunction-sections',
     '-fdata-sections',
   ]
-  test_cflags += [
+  test_global_cflags += [
     '-ffunction-sections',
     '-fdata-sections',
   ]
@@ -127,9 +134,11 @@ if get_option('fuzzer')
   add_global_link_arguments(fuzzer_flags, language: 'cpp')
 endif
 
-add_global_arguments(common_cxxflags + compiler.get_supported_arguments(test_cxxflags), language: 'cpp')
-add_global_arguments(common_cflags + c_compiler.get_supported_arguments(test_cflags), language: 'c')
-add_global_link_arguments(compiler.get_supported_link_arguments(test_ldflags), language: 'cpp')
+add_global_arguments(compiler.get_supported_arguments(test_global_cxxflags), language: 'cpp')
+add_global_arguments(c_compiler.get_supported_arguments(test_global_cflags), language: 'c')
+add_project_arguments(compiler.get_supported_arguments(test_cxxflags), language: 'cpp')
+add_project_arguments(c_compiler.get_supported_arguments(test_cflags), language: 'c')
+add_project_link_arguments(compiler.get_supported_link_arguments(test_ldflags), language: 'cpp')
 
 is_linux = host_machine.system() == 'linux'
 is_android = get_option('android_ndk') != ''
