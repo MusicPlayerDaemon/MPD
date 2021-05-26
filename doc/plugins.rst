@@ -520,7 +520,7 @@ Module player based on `libopenmpt <https://lib.openmpt.org>`_.
    * - **emulate_amiga yes|no**
      - Enables the Amiga resampler for Amiga modules. This emulates the sound characteristics of the Paula chip and overrides the selected interpolation filter. Non-Amiga module formats are not affected by this setting. Defaults to yes.
    * - **emulate_amiga_type**
-     - Configures the filter type to use for the Amiga resampler. Supported values are: "auto": Filter type is chosen by the library and might change. This is the default. "a500": Amiga A500 filter. "a1200": Amiga A1200 filter. "unfiltered": BLEP synthesis without model-specific filters. The LED filter is ignored by this setting. This filter mode is considered to be experimental and might change in the future. Defaults to "auto".
+     - Configures the filter type to use for the Amiga resampler. Supported values are: "auto": Filter type is chosen by the library and might change. This is the default. "a500": Amiga A500 filter. "a1200": Amiga A1200 filter. "unfiltered": BLEP synthesis without model-specific filters. The LED filter is ignored by this setting. This filter mode is considered to be experimental and might change in the future. Defaults to "auto". Requires libopenmpt 0.5 or higher.
 
 mpcdec
 ------
