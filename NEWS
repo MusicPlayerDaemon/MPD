@@ -1,6 +1,8 @@
 ver 0.22.9 (not yet released)
 * database
   - simple: load all .mpdignore files of all parent directories
+* decoder
+  - ffmpeg: support the "sort_album" tag
 * Windows
   - fix build failure with SQLite
 
