@@ -20,8 +20,6 @@
 #include "LogListener.hxx"
 #include "java/Class.hxx"
 #include "java/String.hxx"
-#include "util/AllocatedString.hxx"
-#include "util/FormatString.hxx"
 
 LogListener::LogListener(JNIEnv *env, jobject obj) noexcept
 	:Java::GlobalObject(env, obj)
@@ -33,16 +31,10 @@ LogListener::LogListener(JNIEnv *env, jobject obj) noexcept
 }
 
 void
-LogListener::OnLog(JNIEnv *env, int priority,
-		   const char *fmt, ...) const noexcept
+LogListener::OnLog(JNIEnv *env, int priority, const char *msg) const noexcept
 {
 	assert(env != nullptr);
 
-	std::va_list args;
-	va_start(args, fmt);
-	const auto log = FormatStringV(fmt, args);
-	va_end(args);
-
 	env->CallVoidMethod(Get(), onLogMethod, priority,
-			    Java::String(env, log.c_str()).Get());
+			    Java::String(env, msg).Get());
 }

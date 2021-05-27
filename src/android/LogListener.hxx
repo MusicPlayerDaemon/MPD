@@ -28,8 +28,7 @@ class LogListener : public Java::GlobalObject {
 public:
 	LogListener(JNIEnv *env, jobject obj) noexcept;
 
-	void OnLog(JNIEnv *env, int priority,
-		   const char *fmt, ...) const noexcept;
+	void OnLog(JNIEnv *env, int priority, const char *msg) const noexcept;
 };
 
 #endif

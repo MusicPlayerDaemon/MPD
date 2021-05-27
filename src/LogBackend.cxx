@@ -183,9 +183,14 @@ Log(LogLevel level, const Domain &domain, const char *msg) noexcept
 #ifdef ANDROID
 	__android_log_print(ToAndroidLogLevel(level), "MPD",
 			    "%s: %s", domain.GetName(), msg);
-	if (logListener != nullptr)
+	if (logListener != nullptr) {
+		char buffer[1024];
+		snprintf(buffer, sizeof(buffer), "%s: %s",
+			 domain.GetName(), msg);
+
 		logListener->OnLog(Java::GetEnv(), ToAndroidLogLevel(level),
-				   "%s: %s", domain.GetName(), msg);
+				   buffer);
+	}
 #else
 
 	if (level < log_threshold)
