@@ -86,8 +86,8 @@ Response::Error(enum ack code, const char *msg) noexcept
 void
 Response::FormatError(enum ack code, const char *fmt, ...) noexcept
 {
-	Format("ACK [%i@%u] {%s} ",
-	       (int)code, list_index, command);
+	Fmt(FMT_STRING("ACK [{}@{}] {{{}}} "),
+	    (int)code, list_index, command);
 
 	std::va_list args;
 	va_start(args, fmt);
