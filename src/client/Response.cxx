@@ -43,12 +43,6 @@ Response::Write(const char *data) noexcept
 }
 
 bool
-Response::FormatV(const char *fmt, std::va_list args) noexcept
-{
-	return Write(FormatStringV(fmt, args).c_str());
-}
-
-bool
 Response::VFmt(fmt::string_view format_str, fmt::format_args args) noexcept
 {
 	fmt::memory_buffer buffer;

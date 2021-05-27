@@ -28,7 +28,6 @@
 #include <fmt/format.h>
 #endif
 
-#include <cstdarg>
 #include <cstddef>
 
 template<typename T> struct ConstBuffer;
@@ -79,7 +78,6 @@ public:
 
 	bool Write(const void *data, size_t length) noexcept;
 	bool Write(const char *data) noexcept;
-	bool FormatV(const char *fmt, std::va_list args) noexcept;
 
 	bool VFmt(fmt::string_view format_str, fmt::format_args args) noexcept;
 
