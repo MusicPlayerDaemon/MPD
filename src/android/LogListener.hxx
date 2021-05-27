@@ -23,6 +23,8 @@
 #include "java/Object.hxx"
 
 class LogListener : public Java::GlobalObject {
+	jmethodID onLogMethod;
+
 public:
 	LogListener(JNIEnv *env, jobject obj) noexcept;
 

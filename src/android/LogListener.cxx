@@ -26,6 +26,10 @@
 LogListener::LogListener(JNIEnv *env, jobject obj) noexcept
 	:Java::GlobalObject(env, obj)
 {
+	Java::Class cls(env, env->GetObjectClass(Get()));
+
+	onLogMethod = env->GetMethodID(cls, "onLog", "(ILjava/lang/String;)V");
+	assert(onLogMethod);
 }
 
 void
@@ -34,18 +38,11 @@ LogListener::OnLog(JNIEnv *env, int priority,
 {
 	assert(env != nullptr);
 
-	Java::Class cls(env, env->GetObjectClass(Get()));
-
-	jmethodID method = env->GetMethodID(cls, "onLog",
-					    "(ILjava/lang/String;)V");
-
-	assert(method);
-
 	std::va_list args;
 	va_start(args, fmt);
 	const auto log = FormatStringV(fmt, args);
 	va_end(args);
 
-	env->CallVoidMethod(Get(), method, priority,
+	env->CallVoidMethod(Get(), onLogMethod, priority,
 			    Java::String(env, log.c_str()).Get());
 }
