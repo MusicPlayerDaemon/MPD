@@ -21,7 +21,6 @@
 #define MPD_RESPONSE_HXX
 
 #include "protocol/Ack.hxx"
-#include "util/Compiler.h"
 
 #include <fmt/core.h>
 #if FMT_VERSION < 70000
@@ -69,7 +68,7 @@ public:
 	 * Accessor for Client::tag_mask.  Can be used if caller wants
 	 * to avoid including Client.hxx.
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	TagMask GetTagMask() const noexcept;
 
 	void SetCommand(const char *_command) noexcept {

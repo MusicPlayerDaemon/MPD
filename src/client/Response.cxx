@@ -19,8 +19,6 @@
 
 #include "Response.hxx"
 #include "Client.hxx"
-#include "util/FormatString.hxx"
-#include "util/AllocatedString.hxx"
 
 #include <fmt/format.h>
 
