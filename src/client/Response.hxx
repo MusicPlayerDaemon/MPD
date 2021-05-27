@@ -81,9 +81,6 @@ public:
 	bool Write(const char *data) noexcept;
 	bool FormatV(const char *fmt, std::va_list args) noexcept;
 
-	gcc_printf(2,3)
-	bool Format(const char *fmt, ...) noexcept;
-
 	bool VFmt(fmt::string_view format_str, fmt::format_args args) noexcept;
 
 	template<typename S, typename... Args>

@@ -49,16 +49,6 @@ Response::FormatV(const char *fmt, std::va_list args) noexcept
 }
 
 bool
-Response::Format(const char *fmt, ...) noexcept
-{
-	std::va_list args;
-	va_start(args, fmt);
-	bool success = FormatV(fmt, args);
-	va_end(args);
-	return success;
-}
-
-bool
 Response::VFmt(fmt::string_view format_str, fmt::format_args args) noexcept
 {
 	fmt::memory_buffer buffer;
