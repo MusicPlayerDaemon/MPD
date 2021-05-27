@@ -31,6 +31,7 @@ icu = static_library(
   include_directories: inc,
   dependencies: [
     icu_dep,
+    fmt_dep,
   ],
 )
 
