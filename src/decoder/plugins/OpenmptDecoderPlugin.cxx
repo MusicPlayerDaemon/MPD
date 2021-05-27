@@ -96,8 +96,8 @@ mod_decode(DecoderClient &client, InputStream &is)
 	mod.ctl_set_boolean("render.resampler.emulate_amiga", openmpt_emulate_amiga);
 	mod.ctl_set_text("render.resampler.emulate_amiga_type", openmpt_emulate_amiga_type);
 #else
-	mod.ctl_set("seek.sync_samples", std::to_string(openmpt_sync_samples));
-	mod.ctl_set("render.resampler.emulate_amiga", std::to_string(openmpt_emulate_amiga));
+	mod.ctl_set("seek.sync_samples", std::to_string((unsigned)openmpt_sync_samples));
+	mod.ctl_set("render.resampler.emulate_amiga", std::to_string((unsigned)openmpt_emulate_amiga));
 #endif
 
 	static constexpr AudioFormat audio_format(OPENMPT_SAMPLE_RATE, SampleFormat::FLOAT, 2);
