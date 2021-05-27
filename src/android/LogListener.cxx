@@ -23,6 +23,11 @@
 #include "util/AllocatedString.hxx"
 #include "util/FormatString.hxx"
 
+LogListener::LogListener(JNIEnv *env, jobject obj) noexcept
+	:Java::GlobalObject(env, obj)
+{
+}
+
 void
 LogListener::OnLog(JNIEnv *env, int priority,
 		   const char *fmt, ...) const noexcept
