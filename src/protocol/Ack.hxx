@@ -20,8 +20,6 @@
 #ifndef MPD_ACK_H
 #define MPD_ACK_H
 
-#include "util/StringFormat.hxx"
-
 #include <stdexcept>
 #include <utility>
 
@@ -53,14 +51,5 @@ public:
 		return code;
 	}
 };
-
-template<typename... Args>
-static inline ProtocolError
-FormatProtocolError(enum ack code, const char *fmt, Args&&... args) noexcept
-{
-	return ProtocolError(code,
-			     StringFormat<256>(fmt,
-					       std::forward<Args>(args)...));
-}
 
 #endif

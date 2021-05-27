@@ -25,6 +25,7 @@
 #include "client/Response.hxx"
 #include "fs/Traits.hxx"
 #include "time/ChronoUtil.hxx"
+#include "util/StringBuffer.hxx"
 #include "util/UriUtil.hxx"
 
 #include <fmt/format.h>

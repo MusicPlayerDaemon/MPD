@@ -20,6 +20,7 @@
 #include "TimePrint.hxx"
 #include "client/Response.hxx"
 #include "time/ISO8601.hxx"
+#include "util/StringBuffer.hxx"
 
 #include <fmt/format.h>
 
