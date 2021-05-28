@@ -40,7 +40,7 @@ printAudioDevices(Response &r, const MultipleOutputs &outputs)
 				 "outputenabled: {}\n"),
 		      i,
 		      ao.GetName(), ao.GetPluginName(),
-		      ao.IsEnabled());
+		      (unsigned)ao.IsEnabled());
 
 		for (const auto &[attribute, value] : ao.GetAttributes())
 			r.Fmt(FMT_STRING("attribute: {}={}\n"),

@@ -144,10 +144,10 @@ handle_status(Client &client, [[maybe_unused]] Request args, Response &r)
 			 COMMAND_STATUS_PLAYLIST_LENGTH ": {}\n"
 			 COMMAND_STATUS_MIXRAMPDB ": {}\n"
 			 COMMAND_STATUS_STATE ": {}\n"),
-	      playlist.GetRepeat(),
-	      playlist.GetRandom(),
+	      (unsigned)playlist.GetRepeat(),
+	      (unsigned)playlist.GetRandom(),
 	      SingleToString(playlist.GetSingle()),
-	      playlist.GetConsume(),
+	      (unsigned)playlist.GetConsume(),
 	      partition.name.c_str(),
 	      playlist.GetVersion(),
 	      playlist.GetLength(),
