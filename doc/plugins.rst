@@ -494,6 +494,34 @@ Module player based on MODPlug.
    * - **loop_count**
      - Number of times to loop the module if it uses backward loops. Default is 0 which prevents looping. -1 loops forever.
 
+openmpt
+-------
+
+Module player based on `libopenmpt <https://lib.openmpt.org>`_.
+
+.. list-table::
+   :widths: 20 80
+   :header-rows: 1
+
+   * - Setting
+     - Description
+   * - **repeat_count**
+     - Set how many times the module repeats. -1: repeat forever. 0: play once, repeat zero times (the default). n>0: play once and repeat n times after that.
+   * - **stereo_separation**
+     - Sets the stereo separation. The supported value range is [0,200]. Defaults to 100.
+   * - **interpolation_filter 0|1|2|4|8**
+     - Sets the interpolation filter. 0: internal default. 1: no interpolation (zero order hold). 2: linear interpolation. 4: cubic interpolation. 8: windowed sinc with 8 taps. Defaults to 0.
+   * - **override_mptm_interp_filter yes|no**
+     - If `interpolation_filter` has been changed, setting this to yes will force all MPTM modules to use that interpolation filter. If set to no, MPTM modules will play with their own interpolation filter regardless of the value of `interpolation_filter`. Defaults to no.
+   * - **volume_ramping**
+     - Sets the amount of volume ramping done by the libopenmpt mixer. The default value is -1, which indicates a recommended default value. The meaningful value range is [-1..10]. A value of 0 completely disables volume ramping. This might cause clicks in sound output. Higher values imply slower/softer volume ramps.
+   * - **sync_samples yes|no**
+     - Syncs sample playback when seeking. Defaults to yes.
+   * - **emulate_amiga yes|no**
+     - Enables the Amiga resampler for Amiga modules. This emulates the sound characteristics of the Paula chip and overrides the selected interpolation filter. Non-Amiga module formats are not affected by this setting. Defaults to yes.
+   * - **emulate_amiga_type**
+     - Configures the filter type to use for the Amiga resampler. Supported values are: "auto": Filter type is chosen by the library and might change. This is the default. "a500": Amiga A500 filter. "a1200": Amiga A1200 filter. "unfiltered": BLEP synthesis without model-specific filters. The LED filter is ignored by this setting. This filter mode is considered to be experimental and might change in the future. Defaults to "auto". Requires libopenmpt 0.5 or higher.
+
 mpcdec
 ------
 

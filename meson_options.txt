@@ -138,6 +138,7 @@ option('gme', type: 'feature', description: 'Game Music Emulator decoder plugin'
 option('mad', type: 'feature', description: 'MP3 decoder using libmad')
 option('mikmod', type: 'feature', description: 'MikMod decoder plugin')
 option('modplug', type: 'feature', description: 'Modplug decoder plugin')
+option('openmpt', type: 'feature', description: 'OpenMPT decoder plugin')
 option('mpcdec', type: 'feature', description: 'Musepack decoder plugin')
 option('mpg123', type: 'feature', description: 'MP3 decoder using libmpg123')
 option('opus', type: 'feature', description: 'Opus decoder plugin')
