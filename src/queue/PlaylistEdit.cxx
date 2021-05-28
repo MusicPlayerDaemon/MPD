@@ -384,7 +384,7 @@ playlist::Shuffle(PlayerControl &pc, RangeArg range)
 	if (!range.CheckClip(GetLength()))
 		throw PlaylistError::BadRange();
 
-	if (range.HasAtLeast(2))
+	if (!range.HasAtLeast(2))
 		/* needs at least two entries. */
 		return;
 
