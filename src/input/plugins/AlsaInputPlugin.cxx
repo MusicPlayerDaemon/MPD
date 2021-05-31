@@ -99,6 +99,9 @@ public:
 		snd_pcm_close(capture_handle);
 	}
 
+	AlsaInputStream(const AlsaInputStream &) = delete;
+	AlsaInputStream &operator=(const AlsaInputStream &) = delete;
+
 	static InputStreamPtr Create(EventLoop &event_loop, const char *uri,
 				     Mutex &mutex);
 

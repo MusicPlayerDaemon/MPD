@@ -80,6 +80,9 @@ public:
 		DeinitVorbis();
 	}
 
+	VorbisDecoder(const VorbisDecoder &) = delete;
+	VorbisDecoder &operator=(const VorbisDecoder &) = delete;
+
 	bool Seek(uint64_t where_frame);
 
 	static AudioFormat CheckAudioFormat(const vorbis_info &vi) {

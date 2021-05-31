@@ -56,6 +56,9 @@ public:
 	OpusEncoder(AudioFormat &_audio_format, ::OpusEncoder *_enc, bool _chaining);
 	~OpusEncoder() noexcept override;
 
+	OpusEncoder(const OpusEncoder &) = delete;
+	OpusEncoder &operator=(const OpusEncoder &) = delete;
+
 	/* virtual methods from class Encoder */
 	void End() override;
 	void Write(const void *data, size_t length) override;

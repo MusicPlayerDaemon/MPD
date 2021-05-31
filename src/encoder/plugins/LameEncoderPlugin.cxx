@@ -47,6 +47,9 @@ public:
 
 	~LameEncoder() noexcept override;
 
+	LameEncoder(const LameEncoder &) = delete;
+	LameEncoder &operator=(const LameEncoder &) = delete;
+
 	/* virtual methods from class Encoder */
 	void Write(const void *data, size_t length) override;
 	size_t Read(void *dest, size_t length) noexcept override;

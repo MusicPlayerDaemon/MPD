@@ -138,6 +138,9 @@ public:
 	MadDecoder(DecoderClient *client, InputStream &input_stream) noexcept;
 	~MadDecoder() noexcept;
 
+	MadDecoder(const MadDecoder &) = delete;
+	MadDecoder &operator=(const MadDecoder &) = delete;
+
 	void RunDecoder() noexcept;
 	bool RunScan(TagHandler &handler) noexcept;
 

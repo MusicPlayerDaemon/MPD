@@ -93,6 +93,9 @@ public:
 		}
 	}
 
+	UdisksStorage(const UdisksStorage &) = delete;
+	UdisksStorage &operator=(const UdisksStorage &) = delete;
+
 	EventLoop &GetEventLoop() const noexcept {
 		return defer_mount.GetEventLoop();
 	}

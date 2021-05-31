@@ -71,6 +71,9 @@ public:
 			 Mutex &mutex);
 	~Bzip2InputStream() noexcept override;
 
+	Bzip2InputStream(const Bzip2InputStream &) = delete;
+	Bzip2InputStream &operator=(const Bzip2InputStream &) = delete;
+
 	/* virtual methods from InputStream */
 	[[nodiscard]] bool IsEOF() const noexcept override;
 	size_t Read(std::unique_lock<Mutex> &lock,

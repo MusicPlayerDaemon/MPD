@@ -44,6 +44,9 @@ public:
 		vorbis_info_clear(&vi);
 	}
 
+	VorbisEncoder(const VorbisEncoder &) = delete;
+	VorbisEncoder &operator=(const VorbisEncoder &) = delete;
+
 	/* virtual methods from class Encoder */
 	void End() override {
 		PreTag();

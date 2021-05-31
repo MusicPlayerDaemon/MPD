@@ -43,6 +43,9 @@ public:
 		observer.proxy = nullptr;
 	}
 
+	PreparedProxy(const PreparedProxy &) = delete;
+	PreparedProxy &operator=(const PreparedProxy &) = delete;
+
 	void Clear([[maybe_unused]] Proxy *_child) noexcept {
 		assert(child == _child);
 		child = nullptr;
@@ -66,6 +69,9 @@ public:
 	~Proxy() noexcept override {
 		parent.Clear(this);
 	}
+
+	Proxy(const Proxy &) = delete;
+	Proxy &operator=(const Proxy &) = delete;
 
 	Filter *Get() noexcept {
 		return filter.get();

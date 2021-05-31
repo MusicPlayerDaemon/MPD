@@ -116,6 +116,9 @@ public:
 		zzip_file_close(file);
 	}
 
+	ZzipInputStream(const ZzipInputStream &) = delete;
+	ZzipInputStream &operator=(const ZzipInputStream &) = delete;
+
 	/* virtual methods from InputStream */
 	[[nodiscard]] bool IsEOF() const noexcept override;
 	size_t Read(std::unique_lock<Mutex> &lock,

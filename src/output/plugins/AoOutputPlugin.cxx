@@ -42,6 +42,9 @@ public:
 	~AoInit() noexcept {
 		ao_shutdown();
 	}
+
+	AoInit(const AoInit &) = delete;
+	AoInit &operator=(const AoInit &) = delete;
 };
 
 class AoOutput final : AudioOutput, SafeSingleton<AoInit> {
@@ -54,6 +57,9 @@ class AoOutput final : AudioOutput, SafeSingleton<AoInit> {
 
 	explicit AoOutput(const ConfigBlock &block);
 	~AoOutput() override;
+
+	AoOutput(const AoOutput &) = delete;
+	AoOutput &operator=(const AoOutput &) = delete;
 
 public:
 	static AudioOutput *Create(EventLoop &, const ConfigBlock &block) {

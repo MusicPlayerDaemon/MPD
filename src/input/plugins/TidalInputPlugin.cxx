@@ -70,6 +70,9 @@ public:
 		tidal_session->RemoveLoginHandler(*this);
 	}
 
+	TidalInputStream(const TidalInputStream &) = delete;
+	TidalInputStream &operator=(const TidalInputStream &) = delete;
+
 	/* virtual methods from InputStream */
 
 	void Check() override {

@@ -42,6 +42,10 @@ public:
 		Compressor_delete(compressor);
 	}
 
+
+	NormalizeFilter(const NormalizeFilter &) = delete;
+	NormalizeFilter &operator=(const NormalizeFilter &) = delete;
+
 	/* virtual methods from class Filter */
 	ConstBuffer<void> FilterPCM(ConstBuffer<void> src) override;
 };

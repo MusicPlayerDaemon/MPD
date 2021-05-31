@@ -55,6 +55,9 @@ public:
 
 	~PulseMixer() override;
 
+	PulseMixer(const PulseMixer &) = delete;
+	PulseMixer &operator=(const PulseMixer &) = delete;
+
 	void Offline();
 	void VolumeCallback(const pa_sink_input_info *i, int eol);
 	void Update(pa_context *context, pa_stream *stream);

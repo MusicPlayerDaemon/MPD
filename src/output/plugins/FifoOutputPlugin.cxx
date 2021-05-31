@@ -49,6 +49,9 @@ public:
 		CloseFifo();
 	}
 
+	FifoOutput(const FifoOutput &) = delete;
+	FifoOutput &operator=(const FifoOutput &) = delete;
+
 	static AudioOutput *Create(EventLoop &,
 				   const ConfigBlock &block) {
 		return new FifoOutput(block);

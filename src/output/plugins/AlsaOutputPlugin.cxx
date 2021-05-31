@@ -226,6 +226,9 @@ public:
 		snd_config_update_free_global();
 	}
 
+	AlsaOutput(const AlsaOutput &) = delete;
+	AlsaOutput &operator=(const AlsaOutput &) = delete;
+
 	using MultiSocketMonitor::GetEventLoop;
 
 	gcc_pure

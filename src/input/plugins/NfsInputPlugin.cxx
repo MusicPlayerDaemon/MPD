@@ -51,6 +51,9 @@ public:
 		DeferClose();
 	}
 
+	NfsInputStream(const NfsInputStream &) = delete;
+	NfsInputStream &operator=(const NfsInputStream &) = delete;
+
 	void Open() {
 		assert(!IsReady());
 

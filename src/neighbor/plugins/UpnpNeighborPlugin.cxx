@@ -38,6 +38,7 @@ class UpnpNeighborExplorer final
 			:name(std::move(_name)), comment(std::move(_comment)),
 			 alive(true) {}
 		Server(const Server &) = delete;
+		Server &operator=(const Server &) = delete;
 
 		gcc_pure
 		bool operator==(const Server &other) const noexcept {

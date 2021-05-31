@@ -63,6 +63,9 @@ public:
 			});
 	}
 
+	AlsaMixerMonitor(const AlsaMixerMonitor &) = delete;
+	AlsaMixerMonitor &operator=(const AlsaMixerMonitor &) = delete;
+
 private:
 	Event::Duration PrepareSockets() noexcept override;
 	void DispatchSockets() noexcept override;
@@ -86,6 +89,9 @@ public:
 		 event_loop(_event_loop) {}
 
 	~AlsaMixer() override;
+
+	AlsaMixer(const AlsaMixer &) = delete;
+	AlsaMixer &operator=(const AlsaMixer &) = delete;
 
 	void Configure(const ConfigBlock &block);
 	void Setup();

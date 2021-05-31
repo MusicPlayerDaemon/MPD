@@ -83,6 +83,9 @@ public:
 	~AllocatedProxySong() {
 		mpd_song_free(song);
 	}
+
+	AllocatedProxySong(const AllocatedProxySong &) = delete;
+	AllocatedProxySong &operator=(const AllocatedProxySong &) = delete;
 };
 
 class ProxyDatabase final : public Database {

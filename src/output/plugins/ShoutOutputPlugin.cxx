@@ -51,6 +51,9 @@ struct ShoutOutput final : AudioOutput {
 	explicit ShoutOutput(const ConfigBlock &block);
 	~ShoutOutput() override;
 
+	ShoutOutput(const ShoutOutput &) = delete;
+	ShoutOutput &operator=(const ShoutOutput &) = delete;
+
 	static AudioOutput *Create(EventLoop &event_loop,
 				   const ConfigBlock &block);
 

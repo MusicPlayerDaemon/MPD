@@ -57,6 +57,9 @@ public:
 		qobuz_client->RemoveLoginHandler(*this);
 	}
 
+	QobuzInputStream(const QobuzInputStream &) = delete;
+	QobuzInputStream &operator=(const QobuzInputStream &) = delete;
+
 	/* virtual methods from InputStream */
 
 	void Check() override {

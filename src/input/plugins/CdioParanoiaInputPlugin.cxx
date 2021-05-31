@@ -88,6 +88,9 @@ class CdioParanoiaInputStream final : public InputStream {
 		cdio_destroy(cdio);
 	}
 
+	CdioParanoiaInputStream(const CdioParanoiaInputStream &) = delete;
+	CdioParanoiaInputStream &operator=(const CdioParanoiaInputStream &) = delete;
+
 	/* virtual methods from InputStream */
 	[[nodiscard]] bool IsEOF() const noexcept override;
 	size_t Read(std::unique_lock<Mutex> &lock,

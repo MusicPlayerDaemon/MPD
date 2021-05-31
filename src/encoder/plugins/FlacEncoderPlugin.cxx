@@ -54,6 +54,9 @@ public:
 		FLAC__stream_encoder_delete(fse);
 	}
 
+	FlacEncoder(const FlacEncoder &) = delete;
+	FlacEncoder &operator=(const FlacEncoder &) = delete;
+
 	/* virtual methods from class Encoder */
 	void End() override {
 		(void) FLAC__stream_encoder_finish(fse);

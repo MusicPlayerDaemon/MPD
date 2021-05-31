@@ -107,6 +107,9 @@ public:
 	 */
 	virtual ~InputStream() noexcept;
 
+	InputStream(const InputStream &) = delete;
+	InputStream &operator=(const InputStream &) = delete;
+
 	/**
 	 * Opens a new input stream.  You may not access it until the "ready"
 	 * flag is set.

@@ -85,6 +85,9 @@ public:
 		nfs_finish();
 	}
 
+	NfsStorage(const NfsStorage &) = delete;
+	NfsStorage &operator=(const NfsStorage &) = delete;
+
 	/* virtual methods from class Storage */
 	StorageFileInfo GetInfo(std::string_view uri_utf8, bool follow) override;
 

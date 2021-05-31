@@ -41,6 +41,9 @@ public:
 		Stop();
 	}
 
+	MmsInputStream(const MmsInputStream &) = delete;
+	MmsInputStream &operator=(const MmsInputStream &) = delete;
+
 protected:
 	void Open() override;
 	size_t ThreadRead(void *ptr, size_t size) override;

@@ -137,6 +137,9 @@ public:
 
 	~MPDOpusDecoder();
 
+	MPDOpusDecoder(const MPDOpusDecoder &) = delete;
+	MPDOpusDecoder &operator=(const MPDOpusDecoder &) = delete;
+
 	/**
 	 * Has DecoderClient::Ready() been called yet?
 	 */
