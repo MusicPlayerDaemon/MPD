@@ -424,6 +424,7 @@ SendGroup(mpd_connection *connection, TagType group)
 	return mpd_search_add_group_tag(connection, tag);
 #else
 	(void)connection;
+	(void)group;
 
 	throw std::runtime_error("Grouping requires libmpdclient 2.12");
 #endif
