@@ -49,7 +49,7 @@ public:
 	/**
 	 * Free instance data.
          */
-	virtual ~NeighborExplorer() noexcept {}
+	virtual ~NeighborExplorer() noexcept = default;
 
 	/**
          * Start exploring the neighborhood.

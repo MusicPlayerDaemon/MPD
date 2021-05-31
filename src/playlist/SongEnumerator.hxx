@@ -30,7 +30,7 @@ class DetachedSong;
  */
 class SongEnumerator {
 public:
-	virtual ~SongEnumerator() noexcept {}
+	virtual ~SongEnumerator() noexcept = default;
 
 	/**
 	 * Obtain the next song.  Returns nullptr if there are no more

@@ -31,7 +31,7 @@ using ISongFilterPtr = std::unique_ptr<ISongFilter>;
 
 class ISongFilter {
 public:
-	virtual ~ISongFilter() noexcept {}
+	virtual ~ISongFilter() noexcept = default;
 
 	virtual ISongFilterPtr Clone() const noexcept = 0;
 

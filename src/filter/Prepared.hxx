@@ -27,7 +27,7 @@ class Filter;
 
 class PreparedFilter {
 public:
-	virtual ~PreparedFilter() {}
+	virtual ~PreparedFilter() = default;
 
 	/**
 	 * Opens the filter, preparing it for FilterPCM().

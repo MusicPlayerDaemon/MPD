@@ -31,7 +31,7 @@ struct AudioFormat;
  */
 class PcmResampler {
 public:
-	virtual ~PcmResampler() {}
+	virtual ~PcmResampler() = default;
 
 	/**
 	 * Opens the resampler, preparing it for Resample().

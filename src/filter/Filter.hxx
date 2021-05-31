@@ -36,7 +36,7 @@ protected:
 	}
 
 public:
-	virtual ~Filter() noexcept {}
+	virtual ~Filter() noexcept = default;
 
 	/**
 	 * Returns the #AudioFormat produced by FilterPCM().

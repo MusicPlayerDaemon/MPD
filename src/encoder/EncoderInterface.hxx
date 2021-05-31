@@ -35,7 +35,7 @@ class Encoder {
 public:
 	explicit Encoder(bool _implements_tag) noexcept
 		:implements_tag(_implements_tag) {}
-	virtual ~Encoder() noexcept {}
+	virtual ~Encoder() noexcept = default;
 
 	bool ImplementsTag() const noexcept {
 		return implements_tag;
@@ -111,7 +111,7 @@ public:
 
 class PreparedEncoder {
 public:
-	virtual ~PreparedEncoder() noexcept {}
+	virtual ~PreparedEncoder() noexcept = default;
 
 	/**
 	 * Opens the object.  You must call this prior to using it.

@@ -57,7 +57,7 @@ public:
 
 	Mixer(const Mixer &) = delete;
 
-	virtual ~Mixer() {}
+	virtual ~Mixer() = default;
 
 	bool IsPlugin(const MixerPlugin &other) const noexcept {
 		return &plugin == &other;
