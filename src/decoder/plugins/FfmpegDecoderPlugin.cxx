@@ -659,6 +659,8 @@ ffmpeg_scan_stream(InputStream &is, TagHandler &handler)
 	return FfmpegScanStream(*f, handler);
 }
 
+#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(58, 9, 100)
+
 static void
 ffmpeg_uri_decode(DecoderClient &client, const char *uri)
 {
@@ -689,6 +691,8 @@ ffmpeg_protocols() noexcept
 
 	return protocols;
 }
+
+#endif
 
 /**
  * A list of extensions found for the formats supported by ffmpeg.
@@ -813,6 +817,8 @@ static const char *const ffmpeg_mime_types[] = {
 constexpr DecoderPlugin ffmpeg_decoder_plugin =
 	DecoderPlugin("ffmpeg", ffmpeg_decode, ffmpeg_scan_stream)
 	.WithInit(ffmpeg_init, ffmpeg_finish)
+#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(58, 9, 100)
 	.WithProtocols(ffmpeg_protocols, ffmpeg_uri_decode)
+#endif
 	.WithSuffixes(ffmpeg_suffixes)
 	.WithMimeTypes(ffmpeg_mime_types);
