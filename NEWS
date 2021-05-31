@@ -4,6 +4,8 @@ ver 0.22.9 (not yet released)
 * decoder
   - ffmpeg: support the tags "sort_album", "album-sort", "artist-sort"
   - ffmpeg: fix build failure with FFmpeg 3.4
+* Android
+  - fix auto-start on boot in Android 8 or later
 * Windows
   - fix build failure with SQLite
 
