@@ -470,6 +470,7 @@ IsSeekable(const AVFormatContext &format_context) noexcept
 #if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(58, 6, 100)
 	return (format_context.ctx_flags & AVFMTCTX_UNSEEKABLE) != 0;
 #else
+	(void)format_context;
 	return false;
 #endif
 }
