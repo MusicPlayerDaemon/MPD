@@ -62,9 +62,9 @@ mikmod_mpd_is_present()
 	return true;
 }
 
-static char drv_name[] = PACKAGE_NAME;
-static char drv_version[] = VERSION;
-static char drv_alias[] = PACKAGE;
+static constexpr char drv_name[] = PACKAGE_NAME;
+static constexpr char drv_version[] = VERSION;
+static constexpr char drv_alias[] = PACKAGE;
 
 static MDRIVER drv_mpd = {
 	nullptr,
