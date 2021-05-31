@@ -185,7 +185,7 @@ SndioOutput::RegisterMixerListener(Mixer *_mixer, MixerListener *_listener) {
 	listener = _listener;
 }
 
-const struct AudioOutputPlugin sndio_output_plugin = {
+constexpr struct AudioOutputPlugin sndio_output_plugin = {
 	"sndio",
 	sndio_test_default_device,
 	SndioOutput::Create,

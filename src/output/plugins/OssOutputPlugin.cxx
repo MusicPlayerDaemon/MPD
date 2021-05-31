@@ -634,7 +634,7 @@ OssOutput::Play(const void *chunk, size_t size)
 	}
 }
 
-const struct AudioOutputPlugin oss_output_plugin = {
+constexpr struct AudioOutputPlugin oss_output_plugin = {
 	"oss",
 	oss_output_test_default_device,
 	OssOutput::Create,

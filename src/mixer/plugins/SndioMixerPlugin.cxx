@@ -53,7 +53,7 @@ sndio_mixer_init([[maybe_unused]] EventLoop &event_loop,
 	return new SndioMixer((SndioOutput &)ao, listener);
 }
 
-const MixerPlugin sndio_mixer_plugin = {
+constexpr MixerPlugin sndio_mixer_plugin = {
 	sndio_mixer_init,
 	false,
 };

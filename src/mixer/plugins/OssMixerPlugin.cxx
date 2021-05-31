@@ -175,7 +175,7 @@ OssMixer::SetVolume(unsigned volume)
 		throw MakeErrno("failed to set OSS volume");
 }
 
-const MixerPlugin oss_mixer_plugin = {
+constexpr MixerPlugin oss_mixer_plugin = {
 	oss_mixer_init,
 	true,
 };
