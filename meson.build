@@ -47,8 +47,11 @@ test_global_common_flags = [
 ]
 
 test_common_flags = [
-  '-Wvla',
+  '-Wcast-qual',
   '-Wdouble-promotion',
+  '-Wshadow',
+  '-Wvla',
+  '-Wwrite-strings',
 
   '-ffast-math',
   '-ftree-vectorize',
@@ -64,18 +67,15 @@ test_cxxflags = test_common_flags + [
   '-fno-threadsafe-statics',
   '-fmerge-all-constants',
 
-  '-Wcast-qual',
   '-Wcomma-subscript',
   '-Wextra-semi',
   '-Wmismatched-tags',
   '-Wmissing-declarations',
   '-Woverloaded-virtual',
-  '-Wshadow',
   '-Wsign-promo',
   '-Wunused',
   '-Wvolatile',
   '-Wvirtual-inheritance',
-  '-Wwrite-strings',
 
   # a vtable without a dtor is just fine
   '-Wno-non-virtual-dtor',
@@ -95,11 +95,8 @@ if compiler.get_id() != 'gcc' or compiler.version().version_compare('>=9')
 endif
 
 test_cflags = test_common_flags + [
-  '-Wcast-qual',
   '-Wmissing-prototypes',
-  '-Wshadow',
   '-Wstrict-prototypes',
-  '-Wwrite-strings',
 ]
 
 test_ldflags = [
