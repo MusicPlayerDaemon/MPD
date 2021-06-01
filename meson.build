@@ -47,14 +47,20 @@ test_global_common_flags = [
 ]
 
 test_common_flags = [
+  '-ffast-math',
+  '-ftree-vectorize',
+
   '-Wcast-qual',
   '-Wdouble-promotion',
+  '-Wmissing-declarations',
   '-Wshadow',
+  '-Wunused',
   '-Wvla',
   '-Wwrite-strings',
 
-  '-ffast-math',
-  '-ftree-vectorize',
+  # clang specific warning options:
+  '-Wunreachable-code-aggressive',
+  '-Wused-but-marked-unused',
 ]
 
 test_global_cxxflags = test_global_common_flags + [
@@ -70,10 +76,8 @@ test_cxxflags = test_common_flags + [
   '-Wcomma-subscript',
   '-Wextra-semi',
   '-Wmismatched-tags',
-  '-Wmissing-declarations',
   '-Woverloaded-virtual',
   '-Wsign-promo',
-  '-Wunused',
   '-Wvolatile',
   '-Wvirtual-inheritance',
 
@@ -84,8 +88,6 @@ test_cxxflags = test_common_flags + [
   '-Wcomma',
   '-Wheader-hygiene',
   '-Winconsistent-missing-destructor-override',
-  '-Wunreachable-code-aggressive',
-  '-Wused-but-marked-unused',
 ]
 
 if compiler.get_id() != 'gcc' or compiler.version().version_compare('>=9')
