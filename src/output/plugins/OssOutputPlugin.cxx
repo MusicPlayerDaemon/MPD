@@ -786,12 +786,14 @@ OssOutput::Play(const void *chunk, size_t size) {
     size = e.size;
 #endif
 #ifdef ENABLE_DSD
-    const auto e = pcm_export->Export({chunk, size});
-    if (e.empty())
-        return size;
+    if (dop_active) {
+        const auto e = pcm_export->Export({chunk, size});
+        if (e.empty())
+            return size;
 
-    chunk = e.data;
-    size = e.size;
+        chunk = e.data;
+        size = e.size;
+    }
 
 #endif
 
