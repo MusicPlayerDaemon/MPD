@@ -19,12 +19,8 @@
 
 #include "config.h"
 
-#include "util/RuntimeError.hxx"
-#include "util/StringBuffer.hxx"
-#include "pcm/AudioFormat.hxx"
-
 #ifdef ENABLE_DSD
-#include "src/pcm/Dop.hxx"
+#undef AFMT_S24_PACKED
 #include "pcm/Export.hxx"
 #include "util/Manual.hxx"
 #endif
@@ -49,8 +45,6 @@
 #include <fcntl.h>
 #include <stdlib.h>
 #include <unistd.h>
-
-const Domain oss_domain("oss");
 
 #if defined(__OpenBSD__) || defined(__NetBSD__)
 # include <soundcard.h>
@@ -91,6 +85,9 @@ class OssOutput final : AudioOutput {
     PcmExport::Params params;
     Manual<PcmExport> pcm_export;
 #endif
+
+
+    const Domain oss_domain("oss");
 
     FileDescriptor fd = FileDescriptor::Undefined();
     const char *device;
