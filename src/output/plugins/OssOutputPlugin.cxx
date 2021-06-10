@@ -20,7 +20,6 @@
 #include "config.h"
 
 #ifdef ENABLE_DSD
-#undef AFMT_S24_PACKED
 #include "pcm/Export.hxx"
 #include "util/Manual.hxx"
 #endif
@@ -83,7 +82,7 @@ class OssOutput final : AudioOutput {
     bool dop_active = false;
 
     PcmExport::Params params;
-    Manual<PcmExport> pcm_export;
+    Manual<PcmExport> pcm_export_dop;
 #endif
 
 
@@ -721,7 +720,7 @@ try {
     Setup(_audio_format);
 #ifdef ENABLE_DSD
     if (dop_setting) {
-        pcm_export.Construct();
+        pcm_export_dop.Construct();
 
         params.alsa_channel_order = true;
         params.dsd_mode = PcmExport::DsdMode::DOP;
@@ -729,7 +728,7 @@ try {
         params.shift8 = true;
         params.reverse_endian = !IsLittleEndian();
 
-        pcm_export->Open(SampleFormat::DSD, _audio_format.channels, params);
+        pcm_export_dop->Open(SampleFormat::DSD, _audio_format.channels, params);
 
     }
     if (dop_active) {
@@ -741,7 +740,7 @@ try {
 
 } catch (...) {
 #ifdef ENABLE_DSD
-    pcm_export.Destruct();
+    pcm_export_dop.Destruct();
 #endif
     DoClose();
     throw;
@@ -756,7 +755,7 @@ OssOutput::Cancel() noexcept
     }
 
 #ifdef ENABLE_DSD
-    pcm_export.Destruct();
+    pcm_export_dop.Destruct();
 #endif
 
 #ifdef AFMT_S24_PACKED
@@ -784,7 +783,7 @@ OssOutput::Play(const void *chunk, size_t size) {
 #endif
 #ifdef ENABLE_DSD
     if (dop_active) {
-        const auto e = pcm_export->Export({chunk, size});
+        const auto e = pcm_export_dop->Export({chunk, size});
         if (e.empty())
             return size;
 
@@ -803,7 +802,7 @@ OssOutput::Play(const void *chunk, size_t size) {
 #endif
 #ifdef ENABLE_DSD
             if (dop_active) {
-                ret = pcm_export->CalcInputSize(ret);
+                ret = pcm_export_dop->CalcInputSize(ret);
             }
 #endif
             return ret;
