@@ -689,6 +689,8 @@ The State File
      - Specify the state file location. The parent directory must be writable by the :program:`MPD` user (+wx).
    * - **state_file_interval SECONDS**
      - Auto-save the state file this number of seconds after each state change. Defaults to 120 (2 minutes).
+   * - **restore_paused yes|no**
+     - If set to :samp:`yes`, then :program:`MPD` is put into pause mode instead of starting playback after startup. Default is :samp:`no`.
 
 The Sticker Database
 ^^^^^^^^^^^^^^^^^^^^
