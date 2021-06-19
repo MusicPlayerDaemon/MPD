@@ -715,7 +715,7 @@ A resampler using `libsamplerate <http://www.mega-nerd.com/SRC/>`_ a.k.a. Secret
    * - Name
      - Description
    * - **type**
-     - The interpolator type. See below for a list of known types.
+     - The interpolator type. Defaults to :samp:`2`. See below for a list of known types.
 
 The following converter types are provided by libsamplerate:
 
