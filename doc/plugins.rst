@@ -1100,7 +1100,7 @@ The pipe plugin starts a program and writes raw PCM data into its standard input
 pipewire
 --------
 
-Connect to a `PipeWire <https://pipewire.org/>``_ server.  Requires
+Connect to a `PipeWire <https://pipewire.org/>`_ server.  Requires
 ``libpipewire``.
 
 .. list-table::
