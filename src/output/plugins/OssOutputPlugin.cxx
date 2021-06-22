@@ -259,11 +259,24 @@ oss_open_default(
 AudioOutput *
 OssOutput::Create(EventLoop &, const ConfigBlock &block)
 {
+#ifdef ENABLE_DSD
+    bool dop = block.GetBlockValue("dop", false);
+    if (dop) LogInfo(oss_domain, "experimental oss-dop enabled");
+#endif
+
 	const char *device = block.GetBlockValue("device");
 	if (device != nullptr)
-		return new OssOutput(device);
+		return new OssOutput(device
+#ifdef ENABLE_DSD
+                dop,
+#endif
+		);
 
-	return oss_open_default();
+	return oss_open_default(
+#ifdef ENABLE_DSD
+    dop
+#endif
+    );
 }
 
 void
