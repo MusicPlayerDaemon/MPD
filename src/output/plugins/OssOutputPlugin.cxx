@@ -90,6 +90,8 @@ class OssOutput final : AudioOutput {
 
     PcmExport::Params dop_params;
     Manual<PcmExport> dop_export;
+
+    bool dop_satisfied(const AudioFormat &_audio_format);
 #endif
 
 	FileDescriptor fd = FileDescriptor::Undefined();
@@ -698,26 +700,46 @@ try {
 	throw;
 }
 
-// TODO: implement working check for dop-parameters
-// 1: calculate required samplerate for dop (requested rate / 2) * channels
-// 2: probe oss-device for support of that samplerate
+// this expects the original input samplerate, not the already dop'ed half samplerate
+// requires fd to be open
+bool
+OssOutput::dop_satisfied(const AudioFormat &_audio_format) {
+    const int required_sample_rate = (_audio_format.sample_rate / 4) * _audio_format.channels;
+    int probe_sample_rate = required_sample_rate;
+
+    const char *const msg = "Failed to set sample rate";
+    if (oss_try_ioctl_r(fd, SNDCTL_DSP_SPEED, &probe_sample_rate, msg) &&
+        audio_valid_sample_rate(required_sample_rate))
+    {
+        if (probe_sample_rate == required_sample_rate) return true;
+    }
+
+    return false;
+}
 
 void
 OssOutput::Open(AudioFormat &_audio_format)
 try {
+    if (!fd.Open(device, O_WRONLY))
+        throw FormatErrno("Error opening OSS device \"%s\"", device);
+
 #ifdef ENABLE_DSD
     const auto old_srate = _audio_format.sample_rate;
 
     if (dop_setting && _audio_format.format == SampleFormat::DSD) {
-        dop_active = true;
-        LogInfo(oss_domain, "DOP active for current playback.");
+        if (dop_satisfied(_audio_format)) {
+            dop_active = true;
+            LogInfo(oss_domain, "DOP active for current playback.");
+        }
+        else {
+            dop_active = false;
+            LogInfo(oss_domain, "Tried enabling DOP but required samplerate was not supported by device. Fallback to conversion.");
+            _audio_format.format = SampleFormat::S32;
+        }
     }
 
     if (_audio_format.format != SampleFormat::DSD && dop_active) dop_active = false;
 #endif
-
-	if (!fd.Open(device, O_WRONLY))
-		throw FormatErrno("Error opening OSS device \"%s\"", device);
 
 	Setup(_audio_format);
 
@@ -732,6 +754,7 @@ try {
         dop_export->Open(SampleFormat::DSD, _audio_format.channels, dop_params);
     }
     if (dop_active) {
+        // when dop is being used, restore the old samplerate to prevent conversion
         _audio_format.sample_rate = old_srate;
     }
 #endif
