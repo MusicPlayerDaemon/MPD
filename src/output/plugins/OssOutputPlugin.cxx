@@ -366,10 +366,22 @@ oss_setup_channels(FileDescriptor fd, AudioFormat &audio_format)
  * Throws on error.
  */
 static void
-oss_setup_sample_rate(FileDescriptor fd, AudioFormat &audio_format)
+oss_setup_sample_rate(FileDescriptor fd, AudioFormat &audio_format
+#ifdef ENABLE_DSD
+        , bool dop
+#endif
+)
 {
 	const char *const msg = "Failed to set sample rate";
 	int sample_rate = audio_format.sample_rate;
+
+#ifdef ENABLE_DSD
+    if (dop) {
+        /* DoP packs two 8-bit "samples" in one 24-bit
+               "sample" */
+        sample_rate /= 2;
+    }
+#endif
 
 	if (oss_try_ioctl_r(fd, SNDCTL_DSP_SPEED, &sample_rate, msg) &&
 	    audio_valid_sample_rate(sample_rate)) {
