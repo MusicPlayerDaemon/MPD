@@ -211,15 +211,22 @@ oss_output_test_default_device() noexcept
 }
 
 static OssOutput *
-oss_open_default()
-{
+oss_open_default(
+#ifdef ENABLE_DSD
+        bool dop
+#endif
+) {
 	int err[std::size(default_devices)];
 	enum oss_stat ret[std::size(default_devices)];
 
 	for (int i = std::size(default_devices); --i >= 0; ) {
 		ret[i] = oss_stat_device(default_devices[i], &err[i]);
 		if (ret[i] == OSS_STAT_NO_ERROR)
-			return new OssOutput(default_devices[i]);
+			return new OssOutput(default_devices[i]
+#ifdef ENABLE_DSD
+                    dop,
+#endif
+			);
 	}
 
 	for (int i = std::size(default_devices); --i >= 0; ) {
