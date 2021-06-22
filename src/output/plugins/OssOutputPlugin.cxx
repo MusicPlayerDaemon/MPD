@@ -17,7 +17,6 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#define ENABLE_DSD
 #define AFMT_S32_NE
 
 #include "OssOutputPlugin.hxx"
