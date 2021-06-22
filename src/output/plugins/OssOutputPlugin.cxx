@@ -24,6 +24,7 @@
 #include "pcm/Export.hxx"
 #include "util/Manual.hxx"
 #endif
+#endif
 
 #include "OssOutputPlugin.hxx"
 #include "../OutputAPI.hxx"
