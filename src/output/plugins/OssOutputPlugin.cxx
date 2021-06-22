@@ -86,6 +86,8 @@ class OssOutput final : AudioOutput {
     Manual<PcmExport> dop_export;
 #endif
 
+    const Domain oss_domain("oss");
+
 	FileDescriptor fd = FileDescriptor::Undefined();
 	const char *device;
 
