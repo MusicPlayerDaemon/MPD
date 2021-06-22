@@ -411,13 +411,26 @@ oss_setup_sample_rate(FileDescriptor fd, AudioFormat &audio_format
  */
 gcc_const
 static int
-sample_format_to_oss(SampleFormat format) noexcept
+sample_format_to_oss(SampleFormat format
+#ifdef ENABLE_DSD
+        , bool dop
+#endif
+) noexcept
 {
 	switch (format) {
 	case SampleFormat::UNDEFINED:
 	case SampleFormat::FLOAT:
 	case SampleFormat::DSD:
+#ifdef ENABLE_DSD
+#ifdef AFMT_S32_NE
+        if (dop) return AFMT_S32_NE;
+        else return AFMT_QUERRY;
+#else
 		return AFMT_QUERY;
+#endif
+#else
+        return AFMT_QUERY;
+#endif
 
 	case SampleFormat::S8:
 		return AFMT_S8;
