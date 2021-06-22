@@ -749,6 +749,9 @@ OssOutput::Cancel() noexcept
 #ifdef AFMT_S24_PACKED
 	pcm_export->Reset();
 #endif
+#ifdef ENABLE_DSD
+    dop_export->Reset();
+#endif
 }
 
 size_t
