@@ -18,6 +18,9 @@
  */
 
 #ifdef ENABLE_DSD
+#ifndef AFMT_S32_NE
+#undef ENABLE_DSD
+#elif
 #include "pcm/Export.hxx"
 #include "util/Manual.hxx"
 #endif
@@ -422,12 +425,8 @@ sample_format_to_oss(SampleFormat format
 	case SampleFormat::FLOAT:
 	case SampleFormat::DSD:
 #ifdef ENABLE_DSD
-#ifdef AFMT_S32_NE
         if (dop) return AFMT_S32_NE;
         else return AFMT_QUERRY;
-#else
-		return AFMT_QUERY;
-#endif
 #else
         return AFMT_QUERY;
 #endif
@@ -668,14 +667,24 @@ try {
 			   audio_format.channels, msg1))
 		throw std::runtime_error(msg1);
 
+	auto samplerate = audio_format.sample_rate;
+#ifdef ENABLE_DSD
+    if (dop_active) samplerate /= 2;
+#endif
+
 	const char *const msg2 = "Failed to set sample rate";
 	if (!oss_try_ioctl(fd, SNDCTL_DSP_SPEED,
-			   audio_format.sample_rate, msg2))
+			   samplerate, msg2))
 		throw std::runtime_error(msg2);
+
+	auto samplesize = oss_format;
+#ifdef ENABLE_DSD
+    if (dop_active) samplesize = AFMT_S32_NE;
+#endif
 
 	const char *const msg3 = "Failed to set sample format";
 	if (!oss_try_ioctl(fd, SNDCTL_DSP_SAMPLESIZE,
-			   oss_format, msg3))
+			   samplesize, msg3))
 		throw std::runtime_error(msg3);
 } catch (...) {
 	DoClose();
