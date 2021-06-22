@@ -637,8 +637,15 @@ inline void
 OssOutput::Setup(AudioFormat &_audio_format)
 {
 	oss_setup_channels(fd, _audio_format);
-	oss_setup_sample_rate(fd, _audio_format);
+	oss_setup_sample_rate(fd, _audio_format
+#ifdef ENABLE_DSD
+            , dop_active
+#endif
+	);
 	oss_setup_sample_format(fd, _audio_format, &oss_format
+#ifdef ENABLE_DSD
+            , dop_active
+#endif
 #ifdef AFMT_S24_PACKED
 				, pcm_export
 #endif
