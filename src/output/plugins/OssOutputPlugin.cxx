@@ -17,14 +17,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifdef ENABLE_DSD
-#ifndef AFMT_S32_NE
-#undef ENABLE_DSD
-#elif
-#include "pcm/Export.hxx"
-#include "util/Manual.hxx"
-#endif
-#endif
+#define ENABLE_DSD
+#define AFMT_S32_NE
 
 #include "OssOutputPlugin.hxx"
 #include "../OutputAPI.hxx"
@@ -67,7 +61,16 @@
 #include "util/Manual.hxx"
 #endif
 
-const Domain oss_domain("oss");
+#ifdef ENABLE_DSD
+#ifndef AFMT_S32_NE
+#undef ENABLE_DSD
+#else
+#include "pcm/Export.hxx"
+#include "util/Manual.hxx"
+#endif
+#endif
+
+static constexpr Domain oss_domain("oss");
 
 class OssOutput final : AudioOutput {
 #ifdef AFMT_S24_PACKED
@@ -111,10 +114,11 @@ class OssOutput final : AudioOutput {
 #endif
 
 public:
-	explicit OssOutput(const char *_device=nullptr)
+	explicit OssOutput(const char *_device=nullptr
 #ifdef ENABLE_DSD
-    bool dop,
+    ,bool dop = false
 #endif
+    )
 		:AudioOutput(oss_flags),
 		 device(_device)
 	{
@@ -230,7 +234,7 @@ oss_open_default(
 		if (ret[i] == OSS_STAT_NO_ERROR)
 			return new OssOutput(default_devices[i]
 #ifdef ENABLE_DSD
-                    dop,
+                , dop
 #endif
 			);
 	}
@@ -274,7 +278,7 @@ OssOutput::Create(EventLoop &, const ConfigBlock &block)
 	if (device != nullptr)
 		return new OssOutput(device
 #ifdef ENABLE_DSD
-                dop,
+                , dop
 #endif
 		);
 
@@ -429,7 +433,7 @@ sample_format_to_oss(SampleFormat format
 	case SampleFormat::DSD:
 #ifdef ENABLE_DSD
         if (dop) return AFMT_S32_NE;
-        else return AFMT_QUERRY;
+        else return AFMT_QUERY;
 #else
         return AFMT_QUERY;
 #endif
@@ -694,6 +698,10 @@ try {
 	throw;
 }
 
+// TODO: implement working check for dop-parameters
+// 1: calculate required samplerate for dop (requested rate / 2) * channels
+// 2: probe oss-device for support of that samplerate
+
 void
 OssOutput::Open(AudioFormat &_audio_format)
 try {
@@ -711,19 +719,7 @@ try {
 	if (!fd.Open(device, O_WRONLY))
 		throw FormatErrno("Error opening OSS device \"%s\"", device);
 
-#ifdef ENABLE_DSD
-	if (dop_active) {
-        try {
-	        Setup(_audio_format);
-        } catch (std::exception& e) {
-	        LogInfo(oss_domain, "Failed to set up oss-device with parameters required for DOP. Falling back to conversion.");
-            _audio_format.format = SampleFormat::S32;
-            Setup(_audio_format);
-        }
-	}
-#else
 	Setup(_audio_format);
-#endif
 
 #ifdef ENABLE_DSD
     if (dop_setting) {
