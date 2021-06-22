@@ -67,6 +67,8 @@
 #include "util/Manual.hxx"
 #endif
 
+const Domain oss_domain("oss");
+
 class OssOutput final : AudioOutput {
 #ifdef AFMT_S24_PACKED
 	Manual<PcmExport> pcm_export;
@@ -86,8 +88,6 @@ class OssOutput final : AudioOutput {
     PcmExport::Params dop_params;
     Manual<PcmExport> dop_export;
 #endif
-
-    const Domain oss_domain("oss");
 
 	FileDescriptor fd = FileDescriptor::Undefined();
 	const char *device;
