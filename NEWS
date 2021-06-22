@@ -10,6 +10,7 @@ ver 0.23 (not yet released)
 * decoder
   - openmpt: new plugin
 * output
+  - oss: support DSD over PCM
   - pipewire: new plugin
   - snapcast: new plugin
 * tags

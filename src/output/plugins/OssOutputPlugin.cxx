@@ -55,8 +55,23 @@
 #undef AFMT_S24_NE
 #endif
 
+#if defined(ENABLE_DSD) && defined(AFMT_S32_NE)
+#define ENABLE_OSS_DSD
+#endif
+
 class OssOutput final : AudioOutput {
 	Manual<PcmExport> pcm_export;
+
+#ifdef ENABLE_OSS_DSD
+	/**
+	 * Enable DSD over PCM according to the DoP standard?
+	 *
+	 * @see http://dsd-guide.com/dop-open-standard
+	 *
+	 * this is default in oss as no other dsd-method is known to man
+	 */
+	const bool dop_setting;
+#endif
 
 	FileDescriptor fd = FileDescriptor::Undefined();
 	const char *device;
@@ -70,9 +85,18 @@ class OssOutput final : AudioOutput {
 	static constexpr unsigned oss_flags = FLAG_ENABLE_DISABLE;
 
 public:
-	explicit OssOutput(const char *_device=nullptr)
+	explicit OssOutput(const char *_device=nullptr
+#ifdef ENABLE_OSS_DSD
+			   , bool dop = false
+#endif
+			   )
 		:AudioOutput(oss_flags),
-		 device(_device) {}
+#ifdef ENABLE_OSS_DSD
+		 dop_setting(dop),
+#endif
+		 device(_device)
+	{
+	}
 
 	static AudioOutput *Create(EventLoop &event_loop,
 				   const ConfigBlock &block);
@@ -99,6 +123,12 @@ private:
 	 * Sets up the OSS device which was opened before.
 	 */
 	void Setup(AudioFormat &audio_format);
+
+#ifdef ENABLE_OSS_DSD
+	void SetupDop(const AudioFormat &audio_format);
+#endif
+
+	void SetupOrDop(AudioFormat &audio_format);
 
 	/**
 	 * Reopen the device with the saved audio_format, without any probing.
@@ -165,7 +195,11 @@ oss_output_test_default_device() noexcept
 }
 
 static OssOutput *
-oss_open_default()
+oss_open_default(
+#ifdef ENABLE_OSS_DSD
+		 bool dop
+#endif
+		 )
 {
 	int err[std::size(default_devices)];
 	enum oss_stat ret[std::size(default_devices)];
@@ -173,7 +207,11 @@ oss_open_default()
 	for (int i = std::size(default_devices); --i >= 0; ) {
 		ret[i] = oss_stat_device(default_devices[i], &err[i]);
 		if (ret[i] == OSS_STAT_NO_ERROR)
-			return new OssOutput(default_devices[i]);
+			return new OssOutput(default_devices[i]
+#ifdef ENABLE_OSS_DSD
+					     , dop
+#endif
+					     );
 	}
 
 	for (int i = std::size(default_devices); --i >= 0; ) {
@@ -206,11 +244,23 @@ oss_open_default()
 AudioOutput *
 OssOutput::Create(EventLoop &, const ConfigBlock &block)
 {
+#ifdef ENABLE_OSS_DSD
+	bool dop = block.GetBlockValue("dop", false);
+#endif
+
 	const char *device = block.GetBlockValue("device");
 	if (device != nullptr)
-		return new OssOutput(device);
+		return new OssOutput(device
+#ifdef ENABLE_OSS_DSD
+				     , dop
+#endif
+				     );
 
-	return oss_open_default();
+	return oss_open_default(
+#ifdef ENABLE_OSS_DSD
+				dop
+#endif
+				);
 }
 
 void
@@ -450,6 +500,7 @@ oss_probe_sample_format(FileDescriptor fd, SampleFormat sample_format,
 		return false;
 
 	sample_format = sample_format_from_oss(oss_format);
+
 	if (sample_format == SampleFormat::UNDEFINED)
 		return false;
 
@@ -523,6 +574,67 @@ OssOutput::Setup(AudioFormat &_audio_format)
 				pcm_export);
 }
 
+#ifdef ENABLE_OSS_DSD
+
+void
+OssOutput::SetupDop(const AudioFormat &audio_format)
+{
+	assert(audio_format.format == SampleFormat::DSD);
+
+	effective_channels = audio_format.channels;
+
+	/* DoP packs two 8-bit "samples" in one 24-bit "sample" */
+	effective_speed = audio_format.sample_rate / 2;
+
+	effective_samplesize = AFMT_S32_NE;
+
+	OssIoctlExact(fd, SNDCTL_DSP_CHANNELS, effective_channels,
+		      "Failed to set channel count");
+	OssIoctlExact(fd, SNDCTL_DSP_SPEED, effective_speed,
+		      "Failed to set sample rate");
+	OssIoctlExact(fd, SNDCTL_DSP_SAMPLESIZE, effective_samplesize,
+		      "Failed to set sample format");
+
+	PcmExport::Params params;
+	params.alsa_channel_order = true;
+	params.dsd_mode = PcmExport::DsdMode::DOP;
+	params.shift8 = true;
+
+	pcm_export->Open(audio_format.format, audio_format.channels, params);
+}
+
+#endif
+
+void
+OssOutput::SetupOrDop(AudioFormat &audio_format)
+{
+#ifdef ENABLE_OSS_DSD
+	std::exception_ptr dop_error;
+	if (dop_setting && audio_format.format == SampleFormat::DSD) {
+		try {
+			SetupDop(audio_format);
+			return;
+		} catch (...) {
+			dop_error = std::current_exception();
+		}
+	}
+
+	try {
+#endif
+		Setup(audio_format);
+#ifdef ENABLE_OSS_DSD
+	} catch (...) {
+		if (dop_error)
+			/* if DoP was attempted, prefer returning the
+			   original DoP error instead of the fallback
+			   error */
+			std::rethrow_exception(dop_error);
+		else
+			throw;
+	}
+#endif
+}
+
 /**
  * Reopen the device with the saved audio_format, without any probing.
  */
@@ -551,7 +663,7 @@ try {
 	if (!fd.Open(device, O_WRONLY))
 		throw FormatErrno("Error opening OSS device \"%s\"", device);
 
-	Setup(_audio_format);
+	SetupOrDop(_audio_format);
 } catch (...) {
 	DoClose();
 	throw;

@@ -1004,6 +1004,8 @@ On Linux, OSS has been superseded by ALSA. Use the ALSA output plugin :ref:`alsa
      - Description
    * - **device PATH**
      - Sets the path of the PCM device. If not specified, then MPD will attempt to open /dev/sound/dsp and /dev/dsp.
+   * - **dop yes|no**
+     - If set to yes, then DSD over PCM according to the `DoP standard <http://dsd-guide.com/dop-open-standard>`_ is enabled. This wraps DSD samples in fake 24 bit PCM, and is understood by some DSD capable products, but may be harmful to other hardware. Therefore, the default is no and you can enable the option at your own risk.
 
 The according hardware mixer plugin understands the following settings:
 
