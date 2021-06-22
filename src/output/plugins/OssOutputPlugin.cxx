@@ -773,12 +773,27 @@ OssOutput::Play(const void *chunk, size_t size)
 	chunk = e.data;
 	size = e.size;
 #endif
+#ifdef ENABLE_DSD
+    if (dop_active) {
+    const auto e = dop_export->Export({chunk, size});
+    if (e.empty())
+        return size;
+
+    chunk = e.data;
+    size = e.size;
+    }
+#endif
 
 	while (true) {
 		ret = fd.Write(chunk, size);
 		if (ret > 0) {
 #ifdef AFMT_S24_PACKED
 			ret = pcm_export->CalcInputSize(ret);
+#endif
+#ifdef ENABLE_DSD
+            if (dop_active) {
+                ret = dop_export->CalcInputSize(ret);
+            }
 #endif
 			return ret;
 		}
