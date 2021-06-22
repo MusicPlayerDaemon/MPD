@@ -510,12 +510,19 @@ static bool
 oss_probe_sample_format(FileDescriptor fd, SampleFormat sample_format,
 			SampleFormat *sample_format_r,
 			int *oss_format_r
+#ifdef ENABLE_DSD
+        , bool dop
+#endif
 #ifdef AFMT_S24_PACKED
 			, PcmExport &pcm_export
 #endif
 			)
 {
-	int oss_format = sample_format_to_oss(sample_format);
+	int oss_format = sample_format_to_oss(sample_format
+#ifdef ENABLE_DSD
+    , dop
+#endif
+    );
 	if (oss_format == AFMT_QUERY)
 		return false;
 
@@ -538,7 +545,12 @@ oss_probe_sample_format(FileDescriptor fd, SampleFormat sample_format,
 	if (!success)
 		return false;
 
-	sample_format = sample_format_from_oss(oss_format);
+	sample_format = sample_format_from_oss(oss_format
+#ifdef ENABLE_DSD
+            , dop
+#endif
+	);
+
 	if (sample_format == SampleFormat::UNDEFINED)
 		return false;
 
@@ -565,6 +577,9 @@ oss_probe_sample_format(FileDescriptor fd, SampleFormat sample_format,
 static void
 oss_setup_sample_format(FileDescriptor fd, AudioFormat &audio_format,
 			int *oss_format_r
+#ifdef ENABLE_DSD
+        , bool dop
+#endif
 #ifdef AFMT_S24_PACKED
 			, PcmExport &pcm_export
 #endif
@@ -573,6 +588,9 @@ oss_setup_sample_format(FileDescriptor fd, AudioFormat &audio_format,
 	SampleFormat mpd_format;
 	if (oss_probe_sample_format(fd, audio_format.format,
 				    &mpd_format, oss_format_r
+#ifdef ENABLE_DSD
+            , dop
+#endif
 #ifdef AFMT_S24_PACKED
 				    , pcm_export
 #endif
@@ -600,6 +618,9 @@ oss_setup_sample_format(FileDescriptor fd, AudioFormat &audio_format,
 
 		if (oss_probe_sample_format(fd, mpd_format,
 					    &mpd_format, oss_format_r
+#ifdef ENABLE_DSD
+                , dop
+#endif
 #ifdef AFMT_S24_PACKED
 					    , pcm_export
 #endif
