@@ -17,6 +17,11 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#ifdef ENABLE_DSD
+#include "pcm/Export.hxx"
+#include "util/Manual.hxx"
+#endif
+
 #include "OssOutputPlugin.hxx"
 #include "../OutputAPI.hxx"
 #include "mixer/MixerList.hxx"
