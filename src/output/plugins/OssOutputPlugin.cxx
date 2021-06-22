@@ -697,17 +697,11 @@ void
 OssOutput::Open(AudioFormat &_audio_format)
 try {
 #ifdef ENABLE_DSD
+    const auto old_srate = _audio_format.sample_rate;
+
     if (dop_setting && _audio_format.format == SampleFormat::DSD) {
-        const uint32_t required_samplerate = (_audio_format.sample_rate / 2) * _audio_format.channels;
-        // TODO: determine max-samplerate and dont use the highest possible
-        if (required_samplerate > 768000) {
-            LogInfo(oss_domain, "Tried playing DSD256 or higher through DoP which does not work, falling back to conversion");
-            _audio_format.format = SampleFormat::S32;
-        }
-        else {
-            dop_active = true;
-            LogInfo(oss_domain, "oss-dop active for current playback");
-        }
+        dop_active = true;
+        LogInfo(oss_domain, "DOP active for current playback.");
     }
 
     if (_audio_format.format != SampleFormat::DSD && dop_active) dop_active = false;
@@ -716,7 +710,19 @@ try {
 	if (!fd.Open(device, O_WRONLY))
 		throw FormatErrno("Error opening OSS device \"%s\"", device);
 
+#ifdef ENABLE_DSD
+	if (dop_active) {
+        try {
+	        Setup(_audio_format);
+        } catch (std::exception& e) {
+	        LogInfo(oss_domain, "Failed to set up oss-device with parameters required for DOP. Falling back to conversion.");
+            _audio_format.format = SampleFormat::S32;
+            Setup(_audio_format);
+        }
+	}
+#else
 	Setup(_audio_format);
+#endif
 
 #ifdef ENABLE_DSD
     if (dop_setting) {
