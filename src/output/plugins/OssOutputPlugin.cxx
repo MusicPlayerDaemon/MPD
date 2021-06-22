@@ -106,8 +106,17 @@ class OssOutput final : AudioOutput {
 
 public:
 	explicit OssOutput(const char *_device=nullptr)
+#ifdef ENABLE_DSD
+    bool dop,
+#endif
 		:AudioOutput(oss_flags),
-		 device(_device) {}
+		 device(_device)
+	{
+#ifdef ENABLE_DSD
+        dop_setting = dop;
+        dop_export.Construct();
+#endif
+	}
 
 	static AudioOutput *Create(EventLoop &event_loop,
 				   const ConfigBlock &block);
