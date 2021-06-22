@@ -68,6 +68,21 @@ class OssOutput final : AudioOutput {
 	Manual<PcmExport> pcm_export;
 #endif
 
+#ifdef ENABLE_DSD
+    /**
+     * Enable DSD over PCM according to the DoP standard?
+     *
+     * @see http://dsd-guide.com/dop-open-standard
+     *
+     * this is default in oss as no other dsd-method is known to man
+     */
+    bool dop_setting = false;
+    bool dop_active = false;
+
+    PcmExport::Params dop_params;
+    Manual<PcmExport> dop_export;
+#endif
+
 	FileDescriptor fd = FileDescriptor::Undefined();
 	const char *device;
 
