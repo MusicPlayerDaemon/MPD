@@ -463,7 +463,11 @@ sample_format_to_oss(SampleFormat format
  */
 gcc_const
 static SampleFormat
-sample_format_from_oss(int format) noexcept
+sample_format_from_oss(int format
+#ifdef ENABLE_DSD
+        , bool dop
+#endif
+) noexcept
 {
 	switch (format) {
 	case AFMT_S8:
@@ -484,6 +488,9 @@ sample_format_from_oss(int format) noexcept
 
 #ifdef AFMT_S32_NE
 	case AFMT_S32_NE:
+#ifdef ENABLE_DSD
+        if (dop) return SampleFormat::DSD;
+#endif
 		return SampleFormat::S32;
 #endif
 
