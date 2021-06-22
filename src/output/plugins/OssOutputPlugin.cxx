@@ -697,10 +697,10 @@ void
 OssOutput::Open(AudioFormat &_audio_format)
 try {
 #ifdef ENABLE_DSD
-
     if (dop_setting && _audio_format.format == SampleFormat::DSD) {
-        // TODO: use channels, samplerate and highest available samplerate to determine if dop is insufficient to play the requested file
-        if (_audio_format.sample_rate > 705600) {
+        const uint32_t required_samplerate = (_audio_format.sample_rate / 2) * _audio_format.channels;
+        // TODO: determine max-samplerate and dont use the highest possible
+        if (required_samplerate > 768000) {
             LogInfo(oss_domain, "Tried playing DSD256 or higher through DoP which does not work, falling back to conversion");
             _audio_format.format = SampleFormat::S32;
         }
@@ -727,7 +727,6 @@ try {
         dop_params.reverse_endian = !IsLittleEndian();
 
         dop_export->Open(SampleFormat::DSD, _audio_format.channels, dop_params);
-
     }
     if (dop_active) {
         _audio_format.sample_rate = old_srate;
