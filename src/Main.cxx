@@ -477,6 +477,7 @@ MainConfigured(const struct options &options, const ConfigData &raw_config)
 #endif
 
 	ZeroconfInit(raw_config, instance.event_loop);
+	AtScopeExit() { ZeroconfDeinit(); };
 
 #ifdef ENABLE_DATABASE
 	if (create_db) {
@@ -537,9 +538,6 @@ MainConfigured(const struct options &options, const ConfigData &raw_config)
 		instance.state_file->Write();
 
 	instance.BeginShutdownUpdate();
-
-	ZeroconfDeinit();
-
 	instance.BeginShutdownPartitions();
 }
 
