@@ -69,8 +69,8 @@ TagBuilder::operator=(const TagBuilder &other) noexcept
 
 	/* increment the tag pool refcounters */
 	const std::lock_guard<Mutex> protect(tag_pool_lock);
-	for (auto i : items)
-		tag_pool_dup_item(i);
+	for (auto &i : items)
+		i = tag_pool_dup_item(i);
 
 	return *this;
 }
@@ -80,6 +80,8 @@ TagBuilder::operator=(TagBuilder &&other) noexcept
 {
 	duration = other.duration;
 	has_playlist = other.has_playlist;
+
+	RemoveAll();
 	items = std::move(other.items);
 
 	return *this;
