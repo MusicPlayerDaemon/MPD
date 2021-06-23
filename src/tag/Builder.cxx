@@ -63,6 +63,8 @@ TagBuilder::operator=(const TagBuilder &other) noexcept
 	/* copy all attributes */
 	duration = other.duration;
 	has_playlist = other.has_playlist;
+
+	RemoveAll();
 	items = other.items;
 
 	/* increment the tag pool refcounters */
