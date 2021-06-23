@@ -92,7 +92,7 @@ TagBuilder::operator=(Tag &&other) noexcept
 	/* move all TagItem pointers from the Tag object; we don't
 	   need to contact the tag pool, because all we do is move
 	   references */
-	items.clear();
+	RemoveAll();
 	items.reserve(other.num_items);
 	std::copy_n(other.items, other.num_items, std::back_inserter(items));
 
