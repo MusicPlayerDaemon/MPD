@@ -21,12 +21,23 @@
 #include "util/Domain.hxx"
 #include "util/Exception.hxx"
 
+#include <fmt/format.h>
+
 #include <cerrno>
 
 #include <stdio.h>
 #include <string.h>
 
 static constexpr Domain exception_domain("exception");
+
+void
+LogVFmt(LogLevel level, const Domain &domain,
+	fmt::string_view format_str, fmt::format_args args) noexcept
+{
+	fmt::memory_buffer buffer;
+	fmt::vformat_to(buffer, format_str, args);
+	Log(level, domain, {buffer.data(), buffer.size()});
+}
 
 void
 LogFormatV(LogLevel level, const Domain &domain,

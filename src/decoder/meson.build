@@ -28,6 +28,9 @@ decoder_glue = static_library(
   'decoder_glue',
   'DecoderList.cxx',
   include_directories: inc,
+  dependencies: [
+    log_dep,
+  ],
 )
 
 decoder_glue_dep = declare_dependency(

@@ -208,6 +208,7 @@ decoder_plugins = static_library(
     ogg_dep,
     wavpack_dep,
     wildmidi_dep,
+    log_dep,
   ],
 )
 

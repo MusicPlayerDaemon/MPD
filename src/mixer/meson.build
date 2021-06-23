@@ -8,6 +8,9 @@ mixer_glue = static_library(
   'MixerType.cxx',
   'MixerAll.cxx',
   include_directories: inc,
+  dependencies: [
+    log_dep,
+  ],
 )
 
 mixer_glue_dep = declare_dependency(

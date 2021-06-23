@@ -16,6 +16,7 @@ nfs = static_library(
   include_directories: inc,
   dependencies: [
     nfs_dep,
+    log_dep,
   ],
 )
 

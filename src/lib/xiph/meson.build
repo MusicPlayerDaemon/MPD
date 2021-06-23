@@ -124,6 +124,7 @@ if libflac_dep.found()
     include_directories: inc,
     dependencies: [
       libflac_dep,
+      log_dep,
     ],
   )
 

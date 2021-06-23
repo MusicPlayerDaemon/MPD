@@ -241,10 +241,12 @@ log = static_library(
   'src/Log.cxx',
   'src/LogBackend.cxx',
   include_directories: inc,
+  dependencies: fmt_dep,
 )
 
 log_dep = declare_dependency(
   link_with: log,
+  dependencies: fmt_dep,
 )
 
 sources = [

@@ -17,6 +17,9 @@ system = static_library(
   'system',
   system_sources,
   include_directories: inc,
+  dependencies: [
+    log_dep,
+  ],
 )
 
 if is_windows

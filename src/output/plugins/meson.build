@@ -183,6 +183,7 @@ output_plugins = static_library(
     winmm_dep,
     wasapi_dep,
     boost_dep,
+    output_plugins_deps,
   ],
 )
 

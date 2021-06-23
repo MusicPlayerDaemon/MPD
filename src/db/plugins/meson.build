@@ -36,6 +36,7 @@ db_plugins = static_library(
   dependencies: [
     upnp_dep,
     libmpdclient_dep,
+    log_dep,
   ],
 )
 

@@ -1,5 +1,5 @@
 filter_plugins_sources = []
-filter_plugins_deps = []
+filter_plugins_deps = [fmt_dep]
 
 if libavfilter_dep.found()
   filter_plugins_sources += [

@@ -23,6 +23,11 @@
 #include "LogLevel.hxx"
 #include "util/Compiler.h"
 
+#include <fmt/core.h>
+#if FMT_VERSION < 70000
+#include <fmt/format.h>
+#endif
+
 #include <exception>
 #include <string_view>
 
@@ -30,6 +35,66 @@ class Domain;
 
 void
 Log(LogLevel level, const Domain &domain, std::string_view msg) noexcept;
+
+void
+LogVFmt(LogLevel level, const Domain &domain,
+	fmt::string_view format_str, fmt::format_args args) noexcept;
+
+template<typename S, typename... Args>
+void
+LogFmt(LogLevel level, const Domain &domain,
+       const S &format_str, Args&&... args) noexcept
+{
+#if FMT_VERSION >= 70000
+	return LogVFmt(level, domain, fmt::to_string_view(format_str),
+		       fmt::make_args_checked<Args...>(format_str,
+						       args...));
+#else
+	/* expensive fallback for older libfmt versions */
+	const auto result = fmt::format(format_str, args...);
+	return Log(level, domain, result);
+#endif
+}
+
+template<typename S, typename... Args>
+void
+FmtDebug(const Domain &domain,
+	 const S &format_str, Args&&... args) noexcept
+{
+	LogFmt(LogLevel::DEBUG, domain, format_str, args...);
+}
+
+template<typename S, typename... Args>
+void
+FmtInfo(const Domain &domain,
+	const S &format_str, Args&&... args) noexcept
+{
+	LogFmt(LogLevel::INFO, domain, format_str, args...);
+}
+
+template<typename S, typename... Args>
+void
+FmtNotice(const Domain &domain,
+	  const S &format_str, Args&&... args) noexcept
+{
+	LogFmt(LogLevel::NOTICE, domain, format_str, args...);
+}
+
+template<typename S, typename... Args>
+void
+FmtWarning(const Domain &domain,
+	   const S &format_str, Args&&... args) noexcept
+{
+	LogFmt(LogLevel::WARNING, domain, format_str, args...);
+}
+
+template<typename S, typename... Args>
+void
+FmtError(const Domain &domain,
+	 const S &format_str, Args&&... args) noexcept
+{
+	LogFmt(LogLevel::ERROR, domain, format_str, args...);
+}
 
 gcc_printf(3,4)
 void
@@ -64,6 +129,9 @@ LogDebug(const Domain &domain, const char *msg) noexcept
 }
 
 gcc_printf(2,3)
+void
+FormatDebug(const Domain &domain, const char *fmt, ...) noexcept;
+
 void
 FormatDebug(const Domain &domain, const char *fmt, ...) noexcept;
 

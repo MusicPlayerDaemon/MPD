@@ -41,6 +41,7 @@ ffmpeg = static_library(
     libavcodec_dep,
     libavfilter_dep,
     libavutil_dep,
+    log_dep,
   ],
 )
 
