@@ -1,6 +1,8 @@
 ver 0.22.9 (not yet released)
 * database
   - simple: load all .mpdignore files of all parent directories
+* tags
+  - fix "readcomments" and "readpicture" on remote files with ID3 tags
 * decoder
   - ffmpeg: support the tags "sort_album", "album-sort", "artist-sort"
   - ffmpeg: fix build failure with FFmpeg 3.4
