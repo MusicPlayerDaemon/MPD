@@ -489,6 +489,15 @@ MainConfigured(const struct options &options, const ConfigData &raw_config)
 		LogError(std::current_exception(),
 			 "Zeroconf initialization failed");
 	}
+
+	AtScopeExit(&zeroconf, &instance) {
+		if (zeroconf) {
+			auto &event_loop = instance.io_thread.GetEventLoop();
+			BlockingCall(event_loop, [&](){
+				zeroconf.reset();
+			});
+		}
+	};
 #endif
 
 #ifdef ENABLE_DATABASE
@@ -550,16 +559,6 @@ MainConfigured(const struct options &options, const ConfigData &raw_config)
 		instance.state_file->Write();
 
 	instance.BeginShutdownUpdate();
-
-#ifdef HAVE_ZEROCONF
-	if (zeroconf) {
-		auto &event_loop = instance.io_thread.GetEventLoop();
-		BlockingCall(event_loop, [&](){
-			zeroconf.reset();
-		});
-	}
-#endif
-
 	instance.BeginShutdownPartitions();
 }
 

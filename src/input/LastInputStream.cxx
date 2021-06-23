@@ -32,6 +32,7 @@ LastInputStream::~LastInputStream() noexcept = default;
 void
 LastInputStream::Close() noexcept
 {
+	uri.clear();
 	is.reset();
 	close_timer.Cancel();
 }

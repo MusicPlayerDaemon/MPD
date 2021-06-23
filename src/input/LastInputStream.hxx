@@ -64,8 +64,7 @@ public:
 			return is.get();
 		}
 
-		is.reset();
-		close_timer.Cancel();
+		Close();
 
 		is = open(new_uri, mutex);
 		uri = std::forward<U>(new_uri);

@@ -414,6 +414,15 @@ public class Main extends Service implements Runnable {
 	 * start Main service without any callback
 	 */
 	public static void start(Context context, boolean wakelock) {
-		context.startService(new Intent(context, Main.class).putExtra("wakelock", wakelock));
+		Intent intent = new Intent(context, Main.class)
+			.putExtra("wakelock", wakelock);
+
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+			/* in Android 8+, we need to use this method
+			   or else we'll get "IllegalStateException:
+			   app is in background" */
+			context.startForegroundService(intent);
+		else
+			context.startService(intent);
 	}
 }

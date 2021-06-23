@@ -16,11 +16,16 @@ ver 0.23 (not yet released)
   - new tags "ComposerSort", "Ensemble", "Movement", "MovementNumber", and "Location"
 * new build-time dependency: libfmt
 
-ver 0.22.9 (not yet released)
+ver 0.22.9 (2021/06/23)
 * database
   - simple: load all .mpdignore files of all parent directories
+* tags
+  - fix "readcomments" and "readpicture" on remote files with ID3 tags
 * decoder
   - ffmpeg: support the tags "sort_album", "album-sort", "artist-sort"
+  - ffmpeg: fix build failure with FFmpeg 3.4
+* Android
+  - fix auto-start on boot in Android 8 or later
 * Windows
   - fix build failure with SQLite
 
