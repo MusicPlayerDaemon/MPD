@@ -24,11 +24,12 @@
 #include "util/Compiler.h"
 
 #include <exception>
+#include <string_view>
 
 class Domain;
 
 void
-Log(LogLevel level, const Domain &domain, const char *msg) noexcept;
+Log(LogLevel level, const Domain &domain, std::string_view msg) noexcept;
 
 gcc_printf(3,4)
 void

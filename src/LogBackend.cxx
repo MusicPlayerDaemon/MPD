@@ -103,10 +103,9 @@ log_date() noexcept
  * characters.
  */
 static int
-chomp_length(const char *p) noexcept
+chomp_length(std::string_view p) noexcept
 {
-	size_t length = strlen(p);
-	return StripRight(p, length);
+	return StripRight(p.data(), p.size());
 }
 
 #ifdef HAVE_SYSLOG
@@ -137,11 +136,11 @@ ToSysLogLevel(LogLevel log_level) noexcept
 }
 
 static void
-SysLog(const Domain &domain, LogLevel log_level, const char *message) noexcept
+SysLog(const Domain &domain, LogLevel log_level, std::string_view message) noexcept
 {
 	syslog(ToSysLogLevel(log_level), "%s: %.*s",
 	       domain.GetName(),
-	       chomp_length(message), message);
+	       chomp_length(message), message.data());
 }
 
 void
@@ -161,12 +160,12 @@ LogFinishSysLog() noexcept
 #endif
 
 static void
-FileLog(const Domain &domain, const char *message) noexcept
+FileLog(const Domain &domain, std::string_view message) noexcept
 {
 	fprintf(stderr, "%s%s: %.*s\n",
 		enable_timestamp ? log_date() : "",
 		domain.GetName(),
-		chomp_length(message), message);
+		chomp_length(message), message.data());
 
 #ifdef _WIN32
 	/* force-flush the log file, because setvbuf() does not seem
@@ -178,15 +177,16 @@ FileLog(const Domain &domain, const char *message) noexcept
 #endif /* !ANDROID */
 
 void
-Log(LogLevel level, const Domain &domain, const char *msg) noexcept
+Log(LogLevel level, const Domain &domain, std::string_view msg) noexcept
 {
 #ifdef ANDROID
 	__android_log_print(ToAndroidLogLevel(level), "MPD",
-			    "%s: %s", domain.GetName(), msg);
+			    "%s: %.*s", domain.GetName(),
+			    (int)msg.size(), msg.data());
 	if (logListener != nullptr) {
 		char buffer[1024];
-		snprintf(buffer, sizeof(buffer), "%s: %s",
-			 domain.GetName(), msg);
+		snprintf(buffer, sizeof(buffer), "%s: %.*s",
+			 domain.GetName(), (int)msg.size(), msg.data());
 
 		logListener->OnLog(Java::GetEnv(), ToAndroidLogLevel(level),
 				   buffer);
