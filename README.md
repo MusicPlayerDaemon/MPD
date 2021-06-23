@@ -14,7 +14,7 @@ For basic installation instructions
 
 - [Manual](http://www.musicpd.org/doc/user/)
 - [Forum](http://forum.musicpd.org/)
-- [IRC](irc://chat.freenode.net/#mpd)
+- [IRC](ircs://irc.libera.chat:6697/#mpd)
 - [Bug tracker](https://github.com/MusicPlayerDaemon/MPD/issues/)
 
 # Developers

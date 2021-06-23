@@ -1120,7 +1120,7 @@ Support
 Getting Help
 ^^^^^^^^^^^^
 
-The :program:`MPD` project runs a `forum <https://forum.musicpd.org/>`_ and an IRC channel (#mpd on Freenode) for requesting help. Visit the MPD help page for details on how to get help.
+The :program:`MPD` project runs a `forum <https://forum.musicpd.org/>`_ and an IRC channel (#mpd on Libera.Chat) for requesting help. Visit the MPD help page for details on how to get help.
 
 Common Problems
 ^^^^^^^^^^^^^^^
