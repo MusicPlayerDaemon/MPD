@@ -67,38 +67,11 @@ FormatDebug(const Domain &domain, const char *fmt, ...) noexcept
 }
 
 void
-FormatInfo(const Domain &domain, const char *fmt, ...) noexcept
-{
-	std::va_list ap;
-	va_start(ap, fmt);
-	LogFormatV(LogLevel::INFO, domain, fmt, ap);
-	va_end(ap);
-}
-
-void
-FormatNotice(const Domain &domain, const char *fmt, ...) noexcept
-{
-	std::va_list ap;
-	va_start(ap, fmt);
-	LogFormatV(LogLevel::NOTICE, domain, fmt, ap);
-	va_end(ap);
-}
-
-void
 FormatWarning(const Domain &domain, const char *fmt, ...) noexcept
 {
 	std::va_list ap;
 	va_start(ap, fmt);
 	LogFormatV(LogLevel::WARNING, domain, fmt, ap);
-	va_end(ap);
-}
-
-void
-FormatError(const Domain &domain, const char *fmt, ...) noexcept
-{
-	std::va_list ap;
-	va_start(ap, fmt);
-	LogFormatV(LogLevel::ERROR, domain, fmt, ap);
 	va_end(ap);
 }
 

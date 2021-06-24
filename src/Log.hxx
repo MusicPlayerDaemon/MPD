@@ -141,19 +141,11 @@ LogInfo(const Domain &domain, const char *msg) noexcept
 	Log(LogLevel::INFO, domain, msg);
 }
 
-gcc_printf(2,3)
-void
-FormatInfo(const Domain &domain, const char *fmt, ...) noexcept;
-
 static inline void
 LogNotice(const Domain &domain, const char *msg) noexcept
 {
 	Log(LogLevel::NOTICE, domain, msg);
 }
-
-gcc_printf(2,3)
-void
-FormatNotice(const Domain &domain, const char *fmt, ...) noexcept;
 
 static inline void
 LogWarning(const Domain &domain, const char *msg) noexcept
@@ -209,10 +201,6 @@ FormatError(const std::exception_ptr &ep,
 {
 	LogFormat(LogLevel::ERROR, ep, fmt, std::forward<Args>(args)...);
 }
-
-gcc_printf(2,3)
-void
-FormatError(const Domain &domain, const char *fmt, ...) noexcept;
 
 void
 LogErrno(const Domain &domain, int e, const char *msg) noexcept;
