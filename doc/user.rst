@@ -628,7 +628,8 @@ By default, all clients are unauthenticated and have a full set of permissions. 
    * - **control**
      - Allows all other player and playlist manipulations.
    * - **admin**
-     - Allows database updates and allows shutting down :program:`MPD`.
+     - Allows manipulating outputs, stickers and partitions,
+       mounting/unmounting storage and shutting down :program:`MPD`.
 
 :code:`local_permissions` may be used to assign other permissions to clients connecting on a local socket.
 
