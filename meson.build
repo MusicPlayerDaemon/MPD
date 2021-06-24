@@ -269,7 +269,6 @@ sources = [
   'src/command/CommandListBuilder.cxx',
   'src/Idle.cxx',
   'src/IdleFlags.cxx',
-  'src/decoder/Domain.cxx',
   'src/decoder/Thread.cxx',
   'src/decoder/Control.cxx',
   'src/decoder/Bridge.cxx',

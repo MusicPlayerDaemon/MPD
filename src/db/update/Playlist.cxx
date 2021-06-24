@@ -22,6 +22,7 @@
 #include "db/DatabaseLock.hxx"
 #include "db/PlaylistVector.hxx"
 #include "db/plugins/simple/Directory.hxx"
+#include "lib/fmt/ExceptionFormatter.hxx"
 #include "song/DetachedSong.hxx"
 #include "input/InputStream.hxx"
 #include "playlist/PlaylistPlugin.hxx"
@@ -49,7 +50,7 @@ UpdateWalk::UpdatePlaylistFile(Directory &parent, std::string_view name,
 
 	const auto uri_utf8 = storage.MapUTF8(directory->GetPath());
 
-	FormatDebug(update_domain, "scanning playlist '%s'", uri_utf8.c_str());
+	FmtDebug(update_domain, "scanning playlist '{}'", uri_utf8);
 
 	try {
 		Mutex mutex;
@@ -80,8 +81,9 @@ UpdateWalk::UpdatePlaylistFile(Directory &parent, std::string_view name,
 			}
 		}
 	} catch (...) {
-		FormatError(std::current_exception(),
-			    "Failed to scan playlist '%s'", uri_utf8.c_str());
+		FmtError(update_domain,
+			 "Failed to scan playlist '{}': {}",
+			 uri_utf8, std::current_exception());
 		editor.LockDeleteDirectory(directory);
 	}
 }

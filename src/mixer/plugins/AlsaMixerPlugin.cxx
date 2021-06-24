@@ -125,9 +125,9 @@ AlsaMixerMonitor::DispatchSockets() noexcept
 
 	int err = snd_mixer_handle_events(mixer);
 	if (err < 0) {
-		FormatError(alsa_mixer_domain,
-			    "snd_mixer_handle_events() failed: %s",
-			    snd_strerror(err));
+		FmtError(alsa_mixer_domain,
+			 "snd_mixer_handle_events() failed: {}",
+			 snd_strerror(err));
 
 		if (err == -ENODEV) {
 			/* the sound device was unplugged; disable

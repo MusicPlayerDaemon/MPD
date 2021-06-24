@@ -83,7 +83,7 @@ FatalSystemError(const char *msg)
 	FatalSystemError(msg, GetLastError());
 #else
 	auto system_error = std::strerror(errno);
-	FormatError(fatal_error_domain, "%s: %s", msg, system_error);
+	FmtError(fatal_error_domain, "{}: {}", msg, system_error);
 	Abort();
 #endif
 }

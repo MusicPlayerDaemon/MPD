@@ -498,9 +498,9 @@ alsa_test_default_device()
 	int ret = snd_pcm_open(&handle, default_device,
 			       SND_PCM_STREAM_PLAYBACK, SND_PCM_NONBLOCK);
 	if (ret) {
-		FormatError(alsa_output_domain,
-			    "Error opening default ALSA device: %s",
-			    snd_strerror(-ret));
+		FmtError(alsa_output_domain,
+			 "Error opening default ALSA device: {}",
+			 snd_strerror(-ret));
 		return false;
 	} else
 		snd_pcm_close(handle);
@@ -548,13 +548,13 @@ AlsaOutput::Setup(AudioFormat &audio_format,
 					     buffer_time, period_time,
 					     audio_format, params);
 
-	FormatDebug(alsa_output_domain, "format=%s (%s)",
-		    snd_pcm_format_name(hw_result.format),
-		    snd_pcm_format_description(hw_result.format));
+	FmtDebug(alsa_output_domain, "format={} ({})",
+		 snd_pcm_format_name(hw_result.format),
+		 snd_pcm_format_description(hw_result.format));
 
-	FormatDebug(alsa_output_domain, "buffer_size=%u period_size=%u",
-		    (unsigned)hw_result.buffer_size,
-		    (unsigned)hw_result.period_size);
+	FmtDebug(alsa_output_domain, "buffer_size={} period_size={}",
+		 hw_result.buffer_size,
+		 hw_result.period_size);
 
 	AlsaSetupSw(pcm, hw_result.buffer_size - hw_result.period_size,
 		    hw_result.period_size);
@@ -708,9 +708,9 @@ AlsaOutput::Open(AudioFormat &audio_format)
 		throw FormatRuntimeError("Failed to open ALSA device \"%s\": %s",
 					 GetDevice(), snd_strerror(err));
 
-	FormatDebug(alsa_output_domain, "opened %s type=%s",
-		    snd_pcm_name(pcm),
-		    snd_pcm_type_name(snd_pcm_type(pcm)));
+	FmtDebug(alsa_output_domain, "opened {} type={}",
+		 snd_pcm_name(pcm),
+		 snd_pcm_type_name(snd_pcm_type(pcm)));
 
 	PcmExport::Params params;
 	params.alsa_channel_order = true;
@@ -734,7 +734,7 @@ AlsaOutput::Open(AudioFormat &audio_format)
 
 #ifdef ENABLE_DSD
 	if (params.dsd_mode == PcmExport::DsdMode::DOP)
-		FormatDebug(alsa_output_domain, "DoP (DSD over PCM) enabled");
+		LogDebug(alsa_output_domain, "DoP (DSD over PCM) enabled");
 #endif
 
 	pcm_export->Open(audio_format.format,
@@ -775,13 +775,13 @@ inline int
 AlsaOutput::Recover(int err) noexcept
 {
 	if (err == -EPIPE) {
-		FormatDebug(alsa_output_domain,
-			    "Underrun on ALSA device \"%s\"",
-			    GetDevice());
+		FmtDebug(alsa_output_domain,
+			 "Underrun on ALSA device \"{}\"",
+			 GetDevice());
 	} else if (err == -ESTRPIPE) {
-		FormatDebug(alsa_output_domain,
-			    "ALSA device \"%s\" was suspended",
-			    GetDevice());
+		FmtDebug(alsa_output_domain,
+			 "ALSA device \"{}\" was suspended",
+			 GetDevice());
 	}
 
 	switch (snd_pcm_state(pcm)) {
@@ -1158,7 +1158,7 @@ try {
 		}
 
 		if (throttle_silence_log.CheckUpdate(std::chrono::seconds(5)))
-			FormatWarning(alsa_output_domain, "Decoder is too slow; playing silence to avoid xrun");
+			LogWarning(alsa_output_domain, "Decoder is too slow; playing silence to avoid xrun");
 
 		/* insert some silence if the buffer has not enough
 		   data yet, to avoid ALSA xrun */

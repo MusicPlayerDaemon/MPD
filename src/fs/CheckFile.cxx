@@ -19,6 +19,7 @@
 
 #include "CheckFile.hxx"
 #include "Log.hxx"
+#include "lib/fmt/PathFormatter.hxx"
 #include "config/Domain.hxx"
 #include "FileInfo.hxx"
 #include "Path.hxx"
@@ -31,8 +32,7 @@ CheckDirectoryReadable(Path path_fs)
 try {
 	const FileInfo fi(path_fs);
 	if (!fi.IsDirectory()) {
-		FormatError(config_domain,
-			    "Not a directory: %s", path_fs.ToUTF8().c_str());
+		FmtError(config_domain, "Not a directory: {}", path_fs);
 		return;
 	}
 
@@ -42,9 +42,9 @@ try {
 		const FileInfo fi2(x);
 	} catch (const std::system_error &e) {
 		if (IsAccessDenied(e))
-			FormatError(config_domain,
-				    "No permission to traverse (\"execute\") directory: %s",
-				    path_fs.ToUTF8().c_str());
+			FmtError(config_domain,
+				 "No permission to traverse (\"execute\") directory: {}",
+				 path_fs);
 	}
 #endif
 
@@ -52,9 +52,9 @@ try {
 		const DirectoryReader reader(path_fs);
 	} catch (const std::system_error &e) {
 		if (IsAccessDenied(e))
-			FormatError(config_domain,
-				    "No permission to read directory: %s",
-				    path_fs.ToUTF8().c_str());
+			FmtError(config_domain,
+				 "No permission to read directory: {}",
+				 path_fs);
 	}
 } catch (...) {
 	LogError(std::current_exception());

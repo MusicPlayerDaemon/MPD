@@ -422,7 +422,7 @@ inline void
 WasapiOutputThread::Work() noexcept
 try {
 	SetThreadName("Wasapi Output Worker");
-	FormatDebug(wasapi_output_domain, "Working thread started");
+	LogDebug(wasapi_output_domain, "Working thread started");
 	COM com;
 
 	AtScopeExit(this) {
@@ -448,8 +448,8 @@ try {
 		Status current_state = status.load();
 		switch (current_state) {
 		case Status::FINISH:
-			FormatDebug(wasapi_output_domain,
-				    "Working thread stopped");
+			LogDebug(wasapi_output_domain,
+				 "Working thread stopped");
 			return;
 
 		case Status::PAUSE:
@@ -589,8 +589,8 @@ WasapiOutput::DoOpen(AudioFormat &audio_format)
 		if (device_format.Format.wBitsPerSample == 24) {
 			params.pack24 = true;
 		}
-		FormatDebug(wasapi_output_domain, "Packing data: shift8=%d pack24=%d",
-			    int(params.shift8), int(params.pack24));
+		FmtDebug(wasapi_output_domain, "Packing data: shift8={} pack24={}",
+			 params.shift8, params.pack24);
 		pcm_export.emplace();
 		pcm_export->Open(audio_format.format, audio_format.channels, params);
 	}
@@ -608,11 +608,11 @@ WasapiOutput::DoOpen(AudioFormat &audio_format)
 	    FAILED(result)) {
 		throw MakeHResultError(result, "Unable to get device period");
 	}
-	FormatDebug(wasapi_output_domain,
-		    "Default device period: %lu ns, Minimum device period: "
-		    "%lu ns",
-		    (unsigned long)ns(hundred_ns(default_device_period)).count(),
-		    (unsigned long)ns(hundred_ns(min_device_period)).count());
+	FmtDebug(wasapi_output_domain,
+		 "Default device period: {} ns, Minimum device period: "
+		 "{} ns",
+		 ns(hundred_ns(default_device_period)).count(),
+		 ns(hundred_ns(min_device_period)).count());
 
 	REFERENCE_TIME buffer_duration;
 	if (Exclusive()) {
@@ -621,8 +621,8 @@ WasapiOutput::DoOpen(AudioFormat &audio_format)
 		const REFERENCE_TIME align = hundred_ns(ms(50)).count();
 		buffer_duration = (align / default_device_period) * default_device_period;
 	}
-	FormatDebug(wasapi_output_domain, "Buffer duration: %lu ns",
-		    (unsigned long)ns(hundred_ns(buffer_duration)).count());
+	FmtDebug(wasapi_output_domain, "Buffer duration: {} ns",
+		 ns(hundred_ns(buffer_duration)).count());
 
 	if (Exclusive()) {
 		if (HRESULT result = client->Initialize(
@@ -639,10 +639,9 @@ WasapiOutput::DoOpen(AudioFormat &audio_format)
 					std::ceil(double(buffer_size_in_frames *
 							 hundred_ns(s(1)).count()) /
 						  SampleRate());
-				FormatDebug(
-					wasapi_output_domain,
-					"Aligned buffer duration: %lu ns",
-					(unsigned long)ns(hundred_ns(buffer_duration)).count());
+				FmtDebug(wasapi_output_domain,
+					 "Aligned buffer duration: {} ns",
+					 ns(hundred_ns(buffer_duration)).count());
 				client.reset();
 				client = Activate<IAudioClient>(*device);
 				result = client->Initialize(
@@ -687,8 +686,7 @@ WasapiOutput::Close() noexcept
 	try {
 		thread->CheckException();
 	} catch (...) {
-		FormatError(std::current_exception(),
-			    "exception while stopping");
+		LogError(wasapi_output_domain, "exception while stopping");
 	}
 	thread->Finish();
 	com_worker->Async([&]() {
@@ -1029,8 +1027,8 @@ WasapiOutput::EnumerateDevices(IMMDeviceEnumerator &enumerator)
 		if (name == nullptr)
 			continue;
 
-		FormatNotice(wasapi_output_domain,
-			     "Device \"%u\" \"%s\"", i, name.c_str());
+		FmtNotice(wasapi_output_domain,
+			  "Device \"{}\" \"{}\"", i, name);
 	}
 }
 

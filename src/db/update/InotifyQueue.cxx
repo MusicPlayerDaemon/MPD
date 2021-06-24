@@ -20,9 +20,11 @@
 #include "InotifyQueue.hxx"
 #include "InotifyDomain.hxx"
 #include "Service.hxx"
-#include "Log.hxx"
+#include "UpdateDomain.hxx"
+#include "lib/fmt/ExceptionFormatter.hxx"
 #include "protocol/Ack.hxx" // for class ProtocolError
 #include "util/StringCompare.hxx"
+#include "Log.hxx"
 
 /**
  * Wait this long after the last change before calling
@@ -53,14 +55,15 @@ InotifyQueue::OnDelay() noexcept
 				throw;
 			}
 		} catch (...) {
-			FormatError(std::current_exception(),
-				    "Failed to enqueue '%s'", uri_utf8);
+			FmtError(update_domain,
+				 "Failed to enqueue '{}': {}",
+				 uri_utf8, std::current_exception());
 			queue.pop_front();
 			continue;
 		}
 
-		FormatDebug(inotify_domain, "updating '%s' job=%u",
-			    uri_utf8, id);
+		FmtDebug(inotify_domain, "updating '{}' job={}",
+			 uri_utf8, id);
 
 		queue.pop_front();
 	}

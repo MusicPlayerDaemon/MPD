@@ -60,8 +60,8 @@ sndio_test_default_device()
 {
 	auto *hdl = sio_open(SIO_DEVANY, SIO_PLAY, 0);
 	if (!hdl) {
-		FormatError(sndio_output_domain,
-			    "Error opening default sndio device");
+		LogError(sndio_output_domain,
+			 "Error opening default sndio device");
 		return false;
 	}
 

@@ -270,9 +270,9 @@ FfmpegReceiveFrames(DecoderClient &client, InputStream *is,
 			{
 				char msg[256];
 				av_strerror(err, msg, sizeof(msg));
-				FormatWarning(ffmpeg_domain,
-					      "avcodec_send_packet() failed: %s",
-					      msg);
+				FmtWarning(ffmpeg_domain,
+					   "avcodec_send_packet() failed: {}",
+					   msg);
 			}
 
 			return DecoderCommand::STOP;
@@ -326,8 +326,8 @@ ffmpeg_send_packet(DecoderClient &client, InputStream *is,
 		{
 			char msg[256];
 			av_strerror(err, msg, sizeof(msg));
-			FormatWarning(ffmpeg_domain,
-				      "avcodec_send_packet() failed: %s", msg);
+			FmtWarning(ffmpeg_domain,
+				   "avcodec_send_packet() failed: {}", msg);
 		}
 
 		return DecoderCommand::NONE;
@@ -355,13 +355,13 @@ ffmpeg_sample_format(enum AVSampleFormat sample_fmt) noexcept
 	const char *name = av_get_sample_fmt_string(buffer, sizeof(buffer),
 						    sample_fmt);
 	if (name != nullptr)
-		FormatError(ffmpeg_domain,
-			    "Unsupported libavcodec SampleFormat value: %s (%d)",
-			    name, sample_fmt);
+		FmtError(ffmpeg_domain,
+			 "Unsupported libavcodec SampleFormat value: {} ({})",
+			 name, sample_fmt);
 	else
-		FormatError(ffmpeg_domain,
-			    "Unsupported libavcodec SampleFormat value: %d",
-			    sample_fmt);
+		FmtError(ffmpeg_domain,
+			 "Unsupported libavcodec SampleFormat value: {}",
+			 sample_fmt);
 	return SampleFormat::UNDEFINED;
 }
 
@@ -499,8 +499,8 @@ FfmpegDecode(DecoderClient &client, InputStream *input,
 	const AVCodecDescriptor *codec_descriptor =
 		avcodec_descriptor_get(codec_params.codec_id);
 	if (codec_descriptor != nullptr)
-		FormatDebug(ffmpeg_domain, "codec '%s'",
-			    codec_descriptor->name);
+		FmtDebug(ffmpeg_domain, "codec '{}'",
+			 codec_descriptor->name);
 
 	AVCodec *codec = avcodec_find_decoder(codec_params.codec_id);
 
@@ -602,8 +602,8 @@ ffmpeg_decode(DecoderClient &client, InputStream &input)
 		FfmpegOpenInput(stream.io, input.GetURI(), nullptr);
 
 	const auto *input_format = format_context->iformat;
-	FormatDebug(ffmpeg_domain, "detected input format '%s' (%s)",
-		    input_format->name, input_format->long_name);
+	FmtDebug(ffmpeg_domain, "detected input format '{}' ({})",
+		 input_format->name, input_format->long_name);
 
 	FfmpegDecode(client, &input, *format_context);
 }
@@ -668,8 +668,8 @@ ffmpeg_uri_decode(DecoderClient &client, const char *uri)
 		FfmpegOpenInput(nullptr, uri, nullptr);
 
 	const auto *input_format = format_context->iformat;
-	FormatDebug(ffmpeg_domain, "detected input format '%s' (%s)",
-		    input_format->name, input_format->long_name);
+	FmtDebug(ffmpeg_domain, "detected input format '{}' ({})",
+		 input_format->name, input_format->long_name);
 
 	FfmpegDecode(client, nullptr, *format_context);
 }

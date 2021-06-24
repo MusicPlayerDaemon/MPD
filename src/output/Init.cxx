@@ -22,6 +22,7 @@
 #include "Domain.hxx"
 #include "OutputAPI.hxx"
 #include "Defaults.hxx"
+#include "lib/fmt/ExceptionFormatter.hxx"
 #include "pcm/AudioParser.hxx"
 #include "mixer/MixerList.hxx"
 #include "mixer/MixerType.hxx"
@@ -68,9 +69,9 @@ audio_output_detect()
 		if (plugin->test_default_device == nullptr)
 			continue;
 
-		FormatInfo(output_domain,
-			   "Attempting to detect a %s audio device",
-			   plugin->name);
+		FmtInfo(output_domain,
+			"Attempting to detect a {} audio device",
+			plugin->name);
 		if (ao_plugin_test_default_device(plugin))
 			return plugin;
 	}
@@ -188,9 +189,9 @@ FilteredAudioOutput::Configure(const ConfigBlock &block,
 		/* It's not really fatal - Part of the filter chain
 		   has been set up already and even an empty one will
 		   work (if only with unexpected behaviour) */
-		FormatError(std::current_exception(),
-			    "Failed to initialize filter chain for '%s'",
-			    name);
+		FmtError(output_domain,
+			 "Failed to initialize filter chain for '{}': {}",
+			 name, std::current_exception());
 	}
 }
 
@@ -238,9 +239,9 @@ FilteredAudioOutput::Setup(EventLoop &event_loop,
 						*prepared_filter,
 						mixer_listener);
 	} catch (...) {
-		FormatError(std::current_exception(),
-			    "Failed to initialize hardware mixer for '%s'",
-			    name);
+		FmtError(output_domain,
+			 "Failed to initialize hardware mixer for '{}': {}",
+			 name, std::current_exception());
 	}
 
 	/* use the hardware mixer for replay gain? */
@@ -250,8 +251,8 @@ FilteredAudioOutput::Setup(EventLoop &event_loop,
 			replay_gain_filter_set_mixer(*prepared_replay_gain_filter,
 						     mixer, 100);
 		else
-			FormatError(output_domain,
-				    "No such mixer for output '%s'", name);
+			FmtError(output_domain,
+				 "No such mixer for output '{}'", name);
 	} else if (!StringIsEqual(replay_gain_handler, "software") &&
 		   prepared_replay_gain_filter != nullptr) {
 		throw std::runtime_error("Invalid \"replay_gain_handler\" value");
@@ -289,9 +290,9 @@ audio_output_new(EventLoop &normal_event_loop, EventLoop &rt_event_loop,
 
 		plugin = audio_output_detect();
 
-		FormatNotice(output_domain,
-			     "Successfully detected a %s audio device",
-			     plugin->name);
+		FmtNotice(output_domain,
+			  "Successfully detected a {} audio device",
+			  plugin->name);
 	}
 
 	/* use the real-time I/O thread only for the ALSA plugin;

@@ -48,8 +48,8 @@ SetFSCharset(const char *charset)
 	fs_converter = IcuConverter::Create(charset);
 	assert(fs_converter != nullptr);
 
-	FormatDebug(path_domain,
-		    "SetFSCharset: fs charset is: %s", fs_charset.c_str());
+	FmtDebug(path_domain,
+		 "SetFSCharset: fs charset is {}", fs_charset);
 }
 
 #endif

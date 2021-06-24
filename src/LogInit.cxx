@@ -240,16 +240,16 @@ cycle_log_files() noexcept
 	fd = open_log_file();
 	if (fd < 0) {
 		const std::string out_path_utf8 = out_path.ToUTF8();
-		FormatError(log_domain,
-			    "error re-opening log file: %s",
-			    out_path_utf8.c_str());
+		FmtError(log_domain,
+			 "error re-opening log file: {}",
+			 out_path_utf8);
 		return -1;
 	}
 
 	redirect_logs(fd);
 	close(fd);
 
-	FormatDebug(log_domain, "Done cycling log files");
+	LogDebug(log_domain, "Done cycling log files");
 	return 0;
 #endif
 }

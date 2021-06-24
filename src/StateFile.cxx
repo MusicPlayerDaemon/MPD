@@ -93,8 +93,8 @@ StateFile::Write(OutputStream &os)
 void
 StateFile::Write()
 {
-	FormatDebug(state_file_domain,
-		    "Saving state file %s", path_utf8.c_str());
+	FmtDebug(state_file_domain,
+		 "Saving state file {}", path_utf8);
 
 	try {
 		FileOutputStream fos(config.path);
@@ -112,7 +112,7 @@ StateFile::Read()
 try {
 	bool success;
 
-	FormatDebug(state_file_domain, "Loading state file %s", path_utf8.c_str());
+	FmtDebug(state_file_domain, "Loading state file {}", path_utf8);
 
 	TextFile file(config.path);
 
@@ -135,9 +135,9 @@ try {
 #endif
 
 		if (!success)
-			FormatError(state_file_domain,
-				    "Unrecognized line in state file: %s",
-				    line);
+			FmtError(state_file_domain,
+				 "Unrecognized line in state file: {}",
+				 line);
 	}
 
 	RememberVersions();

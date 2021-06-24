@@ -18,12 +18,14 @@
  */
 
 #include "Client.hxx"
+#include "Domain.hxx"
+#include "lib/fmt/ExceptionFormatter.hxx"
 #include "Log.hxx"
 
 void
 Client::OnSocketError(std::exception_ptr ep) noexcept
 {
-	FormatError(ep, "error on client %d", num);
+	FmtError(client_domain, "error on client {}: {}", num, ep);
 
 	SetExpired();
 }

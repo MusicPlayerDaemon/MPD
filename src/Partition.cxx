@@ -21,6 +21,7 @@
 #include "Partition.hxx"
 #include "Instance.hxx"
 #include "Log.hxx"
+#include "lib/fmt/ExceptionFormatter.hxx"
 #include "song/DetachedSong.hxx"
 #include "mixer/Volume.hxx"
 #include "IdleFlags.hxx"
@@ -67,13 +68,14 @@ PrefetchSong(InputCacheManager &cache, const char *uri) noexcept
 	if (cache.Contains(uri))
 		return;
 
-	FormatDebug(cache_domain, "Prefetch '%s'", uri);
+	FmtDebug(cache_domain, "Prefetch '{}'", uri);
 
 	try {
 		cache.Prefetch(uri);
 	} catch (...) {
-		FormatError(std::current_exception(),
-			    "Prefetch '%s' failed", uri);
+		FmtError(cache_domain,
+			 "Prefetch '{}' failed: {}",
+			 uri, std::current_exception());
 	}
 }
 

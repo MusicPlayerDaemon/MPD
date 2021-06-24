@@ -287,9 +287,8 @@ initialize_decoder_and_player(Instance &instance,
 							 "positive integer", s);
 
 			if (result < MIN_BUFFER_SIZE) {
-				FormatWarning(config_domain, "buffer size %lu is too small, using %lu bytes instead",
-					      (unsigned long)result,
-					      (unsigned long)MIN_BUFFER_SIZE);
+				FmtWarning(config_domain, "buffer size {} is too small, using {} bytes instead",
+					   result, MIN_BUFFER_SIZE);
 				result = MIN_BUFFER_SIZE;
 			}
 
@@ -521,8 +520,8 @@ MainConfigured(const struct options &options, const ConfigData &raw_config)
 					 raw_config.GetUnsigned(ConfigOption::AUTO_UPDATE_DEPTH,
 								INT_MAX));
 #else
-		FormatWarning(config_domain,
-			      "inotify: auto_update was disabled. enable during compilation phase");
+		LogWarning(config_domain,
+			   "inotify: auto_update was disabled. enable during compilation phase");
 #endif
 	}
 #endif

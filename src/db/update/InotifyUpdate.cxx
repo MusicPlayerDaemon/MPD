@@ -22,6 +22,8 @@
 #include "InotifyQueue.hxx"
 #include "InotifyDomain.hxx"
 #include "ExcludeList.hxx"
+#include "lib/fmt/ExceptionFormatter.hxx"
+#include "lib/fmt/PathFormatter.hxx"
 #include "storage/StorageInterface.hxx"
 #include "input/InputStream.hxx"
 #include "input/Error.hxx"
@@ -223,9 +225,9 @@ try {
 			ret = inotify_source->Add(child_path_fs.c_str(),
 						  IN_MASK);
 		} catch (...) {
-			FormatError(std::current_exception(),
-				    "Failed to register %s",
-				    child_path_fs.c_str());
+			FmtError(inotify_domain,
+				 "Failed to register %s: {}",
+				 child_path_fs, std::current_exception());
 			continue;
 		}
 

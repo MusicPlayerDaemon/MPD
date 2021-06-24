@@ -27,10 +27,10 @@
 #include "input/ProxyInputStream.hxx"
 #include "input/FailingInputStream.hxx"
 #include "input/InputPlugin.hxx"
+#include "lib/fmt/ExceptionFormatter.hxx"
 #include "config/Block.hxx"
 #include "thread/Mutex.hxx"
 #include "util/Domain.hxx"
-#include "util/Exception.hxx"
 #include "util/StringCompare.hxx"
 #include "Log.hxx"
 
@@ -117,8 +117,8 @@ TidalInputStream::OnTidalSession() noexcept
 void
 TidalInputStream::OnTidalTrackSuccess(std::string url) noexcept
 {
-	FormatDebug(tidal_domain, "Tidal track '%s' resolves to %s",
-		    track_id.c_str(), url.c_str());
+	FmtDebug(tidal_domain, "Tidal track '{}' resolves to {}",
+		 track_id, url);
 
 	const std::lock_guard<Mutex> protect(mutex);
 
@@ -154,8 +154,8 @@ TidalInputStream::OnTidalTrackError(std::exception_ptr e) noexcept
 		/* the session has expired - obtain a new session id
 		   by logging in again */
 
-		FormatInfo(tidal_domain, "Session expired ('%s'), retrying to log in",
-			   GetFullMessage(e).c_str());
+		FmtInfo(tidal_domain,
+			"Session expired ('{}'), retrying to log in", e);
 
 		retry_login = false;
 		tidal_session->AddLoginHandler(*this);

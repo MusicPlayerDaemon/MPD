@@ -223,8 +223,8 @@ try {
 		if (!UpdateDirectory(*subdir, exclude_list, info))
 			editor.LockDeleteDirectory(subdir);
 	} else {
-		FormatDebug(update_domain,
-			    "%s is not a directory, archive or music", name);
+		FmtDebug(update_domain,
+			 "{} is not a directory, archive or music", name);
 	}
 } catch (...) {
 	LogError(std::current_exception());
@@ -520,8 +520,8 @@ UpdateWalk::Walk(Directory &root, const char *path, bool discard) noexcept
 			return false;
 
 		if (!info.IsDirectory()) {
-			FormatError(update_domain, "Not a directory: %s",
-				    storage.MapUTF8("").c_str());
+			FmtError(update_domain, "Not a directory: {}",
+				 storage.MapUTF8(""));
 			return false;
 		}
 

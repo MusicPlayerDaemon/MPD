@@ -65,9 +65,9 @@ mpd_mpg123_open(mpg123_handle *handle, const char *path_fs,
 {
 	int error = mpg123_open(handle, path_fs);
 	if (error != MPG123_OK) {
-		FormatWarning(mpg123_domain,
-			      "libmpg123 failed to open %s: %s",
-			      path_fs, mpg123_plain_strerror(error));
+		FmtWarning(mpg123_domain,
+			   "libmpg123 failed to open {}: {}",
+			   path_fs, mpg123_plain_strerror(error));
 		return false;
 	}
 
@@ -77,17 +77,17 @@ mpd_mpg123_open(mpg123_handle *handle, const char *path_fs,
 	int channels, encoding;
 	error = mpg123_getformat(handle, &rate, &channels, &encoding);
 	if (error != MPG123_OK) {
-		FormatWarning(mpg123_domain,
-			      "mpg123_getformat() failed: %s",
-			      mpg123_plain_strerror(error));
+		FmtWarning(mpg123_domain,
+			   "mpg123_getformat() failed: {}",
+			   mpg123_plain_strerror(error));
 		return false;
 	}
 
 	if (encoding != MPG123_ENC_SIGNED_16) {
 		/* other formats not yet implemented */
-		FormatWarning(mpg123_domain,
-			      "expected MPG123_ENC_SIGNED_16, got %d",
-			      encoding);
+		FmtWarning(mpg123_domain,
+			   "expected MPG123_ENC_SIGNED_16, got {}",
+			   encoding);
 		return false;
 	}
 
@@ -187,9 +187,9 @@ mpd_mpg123_file_decode(DecoderClient &client, Path path_fs)
 	int error;
 	mpg123_handle *const handle = mpg123_new(nullptr, &error);
 	if (handle == nullptr) {
-		FormatError(mpg123_domain,
-			    "mpg123_new() failed: %s",
-			    mpg123_plain_strerror(error));
+		FmtError(mpg123_domain,
+			 "mpg123_new() failed: {}",
+			 mpg123_plain_strerror(error));
 		return;
 	}
 
@@ -238,9 +238,9 @@ mpd_mpg123_file_decode(DecoderClient &client, Path path_fs)
 		error = mpg123_read(handle, buffer, sizeof(buffer), &nbytes);
 		if (error != MPG123_OK) {
 			if (error != MPG123_DONE)
-				FormatWarning(mpg123_domain,
-					      "mpg123_read() failed: %s",
-					      mpg123_plain_strerror(error));
+				FmtWarning(mpg123_domain,
+					   "mpg123_read() failed: {}",
+					   mpg123_plain_strerror(error));
 			break;
 		}
 
@@ -277,9 +277,9 @@ mpd_mpg123_scan_file(Path path_fs, TagHandler &handler) noexcept
 	int error;
 	mpg123_handle *const handle = mpg123_new(nullptr, &error);
 	if (handle == nullptr) {
-		FormatError(mpg123_domain,
-			    "mpg123_new() failed: %s",
-			    mpg123_plain_strerror(error));
+		FmtError(mpg123_domain,
+			 "mpg123_new() failed: {}",
+			 mpg123_plain_strerror(error));
 		return false;
 	}
 

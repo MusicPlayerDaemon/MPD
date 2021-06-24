@@ -33,9 +33,9 @@ Check(const ConfigBlock &block)
 
 	for (const auto &i : block.block_params) {
 		if (!i.used)
-			FormatWarning(config_domain,
-				      "option '%s' on line %i was not recognized",
-				      i.name.c_str(), i.line);
+			FmtWarning(config_domain,
+				   "option '{}' on line {} was not recognized",
+				   i.name, i.line);
 	}
 }
 

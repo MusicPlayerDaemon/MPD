@@ -23,6 +23,7 @@
  */
 
 #include "StorageState.hxx"
+#include "lib/fmt/ExceptionFormatter.hxx"
 #include "fs/io/TextFile.hxx"
 #include "fs/io/BufferedOutputStream.hxx"
 #include "storage/Registry.hxx"
@@ -90,7 +91,9 @@ storage_state_restore(const char *line, TextFile &file, Instance &instance)
 		else if ((value = StringAfterPrefix(line, MOUNT_STATE_STORAGE_URI)))
 			uri = value;
 		else
-			FormatError(storage_domain, "Unrecognized line in mountpoint state: %s", line);
+			FmtError(storage_domain,
+				 "Unrecognized line in mountpoint state: {}",
+				 line);
 	}
 
 	if (instance.storage == nullptr)
@@ -104,7 +107,7 @@ storage_state_restore(const char *line, TextFile &file, Instance &instance)
 		return true;
 	}
 
-	FormatDebug(storage_domain, "Restoring mount %s => %s", uri.c_str(), url.c_str());
+	FmtDebug(storage_domain, "Restoring mount {} => {}", uri, url);
 
 	auto &composite_storage = *(CompositeStorage *)instance.storage;
 	if (composite_storage.IsMountPoint(uri.c_str())) {
@@ -120,7 +123,7 @@ storage_state_restore(const char *line, TextFile &file, Instance &instance)
 	auto &event_loop = instance.io_thread.GetEventLoop();
 	auto storage = CreateStorageURI(event_loop, url.c_str());
 	if (storage == nullptr) {
-		FormatError(storage_domain, "Unrecognized storage URI: %s", url.c_str());
+		FmtError(storage_domain, "Unrecognized storage URI: {}", url);
 		return true;
 	}
 
@@ -128,9 +131,9 @@ storage_state_restore(const char *line, TextFile &file, Instance &instance)
 		try {
 			db->Mount(uri.c_str(), url.c_str());
 		} catch (...) {
-			FormatError(std::current_exception(),
-				    "Failed to restore mount to %s",
-				    url.c_str());
+			FmtError(storage_domain,
+				 "Failed to restore mount to {}: {}",
+				 url, std::current_exception());
 			return true;
 		}
 	}

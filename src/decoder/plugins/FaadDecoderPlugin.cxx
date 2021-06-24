@@ -357,24 +357,24 @@ faad_stream_decode(DecoderClient &client, InputStream &is,
 			faad_decoder_decode(decoder, buffer, &frame_info);
 
 		if (frame_info.error > 0) {
-			FormatWarning(faad_decoder_domain,
-				      "error decoding AAC stream: %s",
-				      NeAACDecGetErrorMessage(frame_info.error));
+			FmtWarning(faad_decoder_domain,
+				   "error decoding AAC stream: {}",
+				   NeAACDecGetErrorMessage(frame_info.error));
 			break;
 		}
 
 		if (frame_info.channels != audio_format.channels) {
-			FormatNotice(faad_decoder_domain,
-				     "channel count changed from %u to %u",
-				     audio_format.channels, frame_info.channels);
+			FmtNotice(faad_decoder_domain,
+				  "channel count changed from {} to {}",
+				  audio_format.channels, frame_info.channels);
 			break;
 		}
 
 		if (frame_info.samplerate != audio_format.sample_rate) {
-			FormatNotice(faad_decoder_domain,
-				     "sample rate changed from %u to %lu",
-				     audio_format.sample_rate,
-				     (unsigned long)frame_info.samplerate);
+			FmtNotice(faad_decoder_domain,
+				  "sample rate changed from {} to {}",
+				  audio_format.sample_rate,
+				  frame_info.samplerate);
 			break;
 		}
 

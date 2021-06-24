@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "ServerSocket.hxx"
+#include "lib/fmt/ExceptionFormatter.hxx"
 #include "net/IPv4Address.hxx"
 #include "net/IPv6Address.hxx"
 #include "net/StaticSocketAddress.hxx"
@@ -150,16 +151,16 @@ ServerSocket::OneServerSocket::Accept() noexcept
 	UniqueSocketDescriptor peer_fd(event.GetSocket().AcceptNonBlock(peer_address));
 	if (!peer_fd.IsDefined()) {
 		const SocketErrorMessage msg;
-		FormatError(server_socket_domain,
-			    "accept() failed: %s", (const char *)msg);
+		FmtError(server_socket_domain,
+			 "accept() failed: {}", (const char *)msg);
 		return;
 	}
 
 	if (!peer_fd.SetKeepAlive()) {
 		const SocketErrorMessage msg;
-		FormatError(server_socket_domain,
-			    "Could not set TCP keepalive option: %s",
-			    (const char *)msg);
+		FmtError(server_socket_domain,
+			 "Could not set TCP keepalive option: {}",
+			 (const char *)msg);
 	}
 
 	const auto uid = get_remote_uid(peer_fd.Get());
@@ -227,12 +228,13 @@ ServerSocket::Open()
 			if (good != nullptr && good->GetSerial() == i.GetSerial()) {
 				const auto address_string = i.ToString();
 				const auto good_string = good->ToString();
-				FormatError(std::current_exception(),
-					    "bind to '%s' failed "
-					    "(continuing anyway, because "
-					    "binding to '%s' succeeded)",
-					    address_string.c_str(),
-					    good_string.c_str());
+				FmtError(server_socket_domain,
+					 "bind to '{}' failed "
+					 "(continuing anyway, because "
+					 "binding to '{}' succeeded): {}",
+					 address_string,
+					 good_string,
+					 std::current_exception());
 			} else if (bad == nullptr) {
 				bad = &i;
 

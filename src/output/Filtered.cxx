@@ -20,12 +20,14 @@
 #include "Filtered.hxx"
 #include "Interface.hxx"
 #include "Domain.hxx"
-#include "Log.hxx"
+#include "lib/fmt/AudioFormatFormatter.hxx"
+#include "lib/fmt/ExceptionFormatter.hxx"
 #include "mixer/MixerInternal.hxx"
 #include "mixer/plugins/SoftwareMixerPlugin.hxx"
 #include "filter/plugins/ConvertFilterPlugin.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/StringBuffer.hxx"
+#include "Log.hxx"
 
 bool
 FilteredAudioOutput::SupportsEnableDisable() const noexcept
@@ -91,10 +93,9 @@ FilteredAudioOutput::OpenOutputAndConvert(AudioFormat desired_audio_format)
 							  GetLogName()));
 	}
 
-	FormatDebug(output_domain,
-		    "opened %s audio_format=%s",
-		    GetLogName(),
-		    ToString(out_audio_format).c_str());
+	FmtDebug(output_domain,
+		 "opened {} audio_format={}",
+		 GetLogName(), out_audio_format);
 
 	try {
 		ConfigureConvertFilter();
@@ -109,7 +110,7 @@ FilteredAudioOutput::OpenOutputAndConvert(AudioFormat desired_audio_format)
 			   DSD and fall back to PCM */
 
 			LogError(std::current_exception());
-			FormatError(output_domain, "Retrying without DSD");
+			LogError(output_domain, "Retrying without DSD");
 
 			desired_audio_format.format = SampleFormat::FLOAT;
 			OpenOutputAndConvert(desired_audio_format);
@@ -127,8 +128,9 @@ FilteredAudioOutput::CloseOutput(bool drain) noexcept
 		try {
 			Drain();
 		} catch (...) {
-			FormatError(std::current_exception(),
-				    "Failed to drain %s", GetLogName());
+			FmtError(output_domain,
+				 "Failed to drain {}: {}",
+				 GetLogName(), std::current_exception());
 		}
 	} else
 		Cancel();
@@ -156,7 +158,7 @@ FilteredAudioOutput::Close(bool drain) noexcept
 	CloseOutput(drain);
 	CloseSoftwareMixer();
 
-	FormatDebug(output_domain, "closed %s", GetLogName());
+	FmtDebug(output_domain, "closed {}", GetLogName());
 }
 
 std::chrono::steady_clock::duration

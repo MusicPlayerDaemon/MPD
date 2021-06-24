@@ -38,5 +38,5 @@ LogFfmpegError(int errnum, const char *prefix)
 {
 	char msg[256];
 	av_strerror(errnum, msg, sizeof(msg));
-	FormatError(ffmpeg_domain, "%s: %s", prefix, msg);
+	FmtError(ffmpeg_domain, "{}: {}", prefix, msg);
 }

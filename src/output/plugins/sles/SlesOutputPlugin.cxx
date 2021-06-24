@@ -391,12 +391,12 @@ SlesOutput::Cancel() noexcept
 
 	SLresult result = play.SetPlayState(SL_PLAYSTATE_PAUSED);
 	if (result != SL_RESULT_SUCCESS)
-		FormatError(sles_domain,  "Play.SetPlayState(PAUSED) failed");
+		LogError(sles_domain,  "Play.SetPlayState(PAUSED) failed");
 
 	result = queue.Clear();
 	if (result != SL_RESULT_SUCCESS)
-		FormatWarning(sles_domain,
-			      "AndroidSimpleBufferQueue.Clear() failed");
+		LogWarning(sles_domain,
+			   "AndroidSimpleBufferQueue.Clear() failed");
 
 	const std::lock_guard<Mutex> protect(mutex);
 	n_queued = 0;

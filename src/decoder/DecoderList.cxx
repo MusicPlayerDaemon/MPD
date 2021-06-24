@@ -20,9 +20,9 @@
 #include "config.h"
 #include "DecoderList.hxx"
 #include "DecoderPlugin.hxx"
+#include "Domain.hxx"
 #include "decoder/Features.h"
-#include "PluginUnavailable.hxx"
-#include "Log.hxx"
+#include "lib/fmt/ExceptionFormatter.hxx"
 #include "config/Data.hxx"
 #include "config/Block.hxx"
 #include "plugins/AudiofileDecoderPlugin.hxx"
@@ -49,6 +49,8 @@
 #include "plugins/FluidsynthDecoderPlugin.hxx"
 #include "plugins/SidplayDecoderPlugin.hxx"
 #include "util/RuntimeError.hxx"
+#include "Log.hxx"
+#include "PluginUnavailable.hxx"
 
 #include <iterator>
 
@@ -160,9 +162,9 @@ decoder_plugin_init_all(const ConfigData &config)
 			if (plugin.Init(*param))
 				decoder_plugins_enabled[i] = true;
 		} catch (const PluginUnavailable &e) {
-			FormatError(e,
-				    "Decoder plugin '%s' is unavailable",
-				    plugin.name);
+			FmtError(decoder_domain,
+				 "Decoder plugin '{}' is unavailable: {}",
+				 plugin.name, std::current_exception());
 		} catch (...) {
 			std::throw_with_nested(FormatRuntimeError("Failed to initialize decoder plugin '%s'",
 								  plugin.name));

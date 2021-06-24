@@ -3,6 +3,7 @@ decoder_features = configuration_data()
 decoder_api = static_library(
   'decoder_api',
   'DecoderAPI.cxx',
+  'Domain.cxx',
   'Reader.cxx',
   'DecoderBuffer.cxx',
   'DecoderPlugin.cxx',
