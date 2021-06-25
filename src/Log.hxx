@@ -24,7 +24,7 @@
 #include "util/Compiler.h"
 
 #include <fmt/core.h>
-#if FMT_VERSION < 70000
+#if FMT_VERSION < 70000 || FMT_VERSION >= 80000
 #include <fmt/format.h>
 #endif
 
