@@ -12,6 +12,7 @@ pulse = static_library(
   include_directories: inc,
   dependencies: [
     pulse_dep,
+    log_dep,
   ],
 )
 

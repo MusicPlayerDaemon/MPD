@@ -49,6 +49,7 @@ mixer_plugins = static_library(
     alsa_dep,
     pulse_dep,
     libsndio_dep,
+    log_dep,
   ]
 )
 
