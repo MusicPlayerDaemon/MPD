@@ -96,7 +96,7 @@ initialize_application()
 	// TODO: actually Run() it and handle B_QUIT_REQUESTED
 	// TODO: use some locking?
 	if (be_app == NULL) {
-		FormatDebug(haiku_output_domain, "creating be_app\n");
+		LogDebug(haiku_output_domain, "creating be_app");
 		new BApplication("application/x-vnd.MusicPD");
 	}
 }
@@ -107,7 +107,7 @@ finalize_application()
 	// TODO: use some locking?
 	delete be_app;
 	be_app = NULL;
-	FormatDebug(haiku_output_domain, "deleting be_app\n");
+	LogDebug(haiku_output_domain, "deleting be_app");
 }
 
 static bool
@@ -163,19 +163,18 @@ HaikuOutput::FillBuffer(void* _buffer, size_t size,
 	release_sem(new_buffer);
 	acquire_sem(buffer_done);
 	bigtime_t w = system_time() - start;
-	
+
 	if (w > 5000LL) {
-		FormatDebug(haiku_output_domain,
-			"haiku:fill_buffer waited %Ldus\n", w);
+		FmtDebug(haiku_output_domain,
+			"haiku:fill_buffer waited {}us", w);
 	}
-	
+
 	if (buffer_filled < buffer_size) {
 		memset(buffer + buffer_filled, 0,
 			buffer_size - buffer_filled);
-		FormatDebug(haiku_output_domain,
-			"haiku:fill_buffer filled %d size %d clearing remainder\n",
-			(int)buffer_filled, (int)buffer_size);
-
+		FmtDebug(haiku_output_domain,
+			 "haiku:fill_buffer filled {} size {} clearing remainder",
+			 buffer_filled, buffer_size);
 	}
 }
 
@@ -222,12 +221,12 @@ HaikuOutput::Open(AudioFormat &audio_format)
 			format.channel_count, format.format,
 			format.frame_rate, B_UNKNOWN_BUS) * 2;
 
-	FormatDebug(haiku_output_domain,
-		"using haiku driver ad: bs: %d ws: %d "
-		"channels %d rate %f fmt %08lx bs %d\n",
-			(int)buffer_size, (int)write_size,
-			(int)format.channel_count, format.frame_rate,
-			format.format, (int)format.buffer_size);
+	FmtDebug(haiku_output_domain,
+		 "using haiku driver ad: bs: {} ws: {} "
+		 "channels {} rate {} fmt {:08x} bs {}",
+		 buffer_size, write_size,
+		 format.channel_count, format.frame_rate,
+		 format.format, format.buffer_size);
 
 	sound_player = new BSoundPlayer(&format, "MPD Output",
 		HaikuOutput::_FillBuffer, NULL, this);
@@ -247,8 +246,7 @@ HaikuOutput::Open(AudioFormat &audio_format)
 	buffer_delay *= 1000 / format.frame_rate;
 	// half of the total buffer play time
 	buffer_delay /= 2;
-	FormatDebug(haiku_output_domain,
-		"buffer delay: %d ms\n", buffer_delay);
+	FmtDebug(haiku_output_domain, "buffer delay: {} ms", buffer_delay);
 
 	new_buffer = create_sem(0, "New buffer request");
 	buffer_done = create_sem(0, "Buffer done");
@@ -303,8 +301,8 @@ HaikuOutput::Delay() const noexcept
 {
 	unsigned delay = buffer_filled ? 0 : buffer_delay;
 
-	//FormatDebug(haiku_output_domain,
-	//		"delay=%d\n", delay / 2);
+	//FmtDebug(haiku_output_domain,
+	//		"delay={}", delay / 2);
 	// XXX: doesn't work
 	//return (delay / 2) ? 1 : 0;
 	(void)delay;
@@ -393,8 +391,9 @@ HaikuOutput::SendTag(const Tag &tag)
 		case TAG_MUSICBRAINZ_ALBUMARTISTID:
 		case TAG_MUSICBRAINZ_TRACKID:
 		default:
-			FormatDebug(haiku_output_domain,
-				"tag item: type %d value '%s'\n", item.type, item.value);
+			FmtDebug(haiku_output_domain,
+				 "tag item: type {} value '{}'\n",
+				 item.type, item.value);
 			break;
 		}
 	}

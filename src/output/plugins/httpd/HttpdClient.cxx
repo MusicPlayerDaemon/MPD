@@ -171,9 +171,9 @@ HttpdClient::SendResponse() noexcept
 	ssize_t nbytes = GetSocket().Write(response, strlen(response));
 	if (gcc_unlikely(nbytes < 0)) {
 		const SocketErrorMessage msg;
-		FormatWarning(httpd_output_domain,
-			      "failed to write to client: %s",
-			      (const char *)msg);
+		FmtWarning(httpd_output_domain,
+			   "failed to write to client: {}",
+			   (const char *)msg);
 		LockClose();
 		return false;
 	}
@@ -284,9 +284,9 @@ HttpdClient::TryWrite() noexcept
 
 				if (!IsSocketErrorClosed(e)) {
 					SocketErrorMessage msg(e);
-					FormatWarning(httpd_output_domain,
-						      "failed to write to client: %s",
-						      (const char *)msg);
+					FmtWarning(httpd_output_domain,
+						   "failed to write to client: {}",
+						   (const char *)msg);
 				}
 
 				Close();
@@ -311,9 +311,9 @@ HttpdClient::TryWrite() noexcept
 
 				if (!IsSocketErrorClosed(e)) {
 					SocketErrorMessage msg(e);
-					FormatWarning(httpd_output_domain,
-						      "failed to write to client: %s",
-						      (const char *)msg);
+					FmtWarning(httpd_output_domain,
+						   "failed to write to client: {}",
+						   (const char *)msg);
 				}
 
 				Close();
@@ -334,9 +334,9 @@ HttpdClient::TryWrite() noexcept
 
 			if (!IsSocketErrorClosed(e)) {
 				SocketErrorMessage msg(e);
-				FormatWarning(httpd_output_domain,
-					      "failed to write to client: %s",
-					      (const char *)msg);
+				FmtWarning(httpd_output_domain,
+					   "failed to write to client: {}",
+					   (const char *)msg);
 			}
 
 			Close();
@@ -370,8 +370,8 @@ HttpdClient::PushPage(PagePtr page) noexcept
 		return;
 
 	if (queue_size > 256 * 1024) {
-		FormatDebug(httpd_output_domain,
-			    "client is too slow, flushing its queue");
+		LogDebug(httpd_output_domain,
+			 "client is too slow, flushing its queue");
 		ClearQueue();
 	}
 

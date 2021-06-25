@@ -73,9 +73,9 @@ flac_scan_file(Path path_fs, TagHandler &handler)
 {
 	FlacMetadataChain chain;
 	if (!chain.Read(NarrowPath(path_fs))) {
-		FormatDebug(flac_domain,
-			    "Failed to read FLAC tags: %s",
-			    chain.GetStatusString());
+		FmtDebug(flac_domain,
+			 "Failed to read FLAC tags: {}",
+			 chain.GetStatusString());
 		return false;
 	}
 
@@ -88,9 +88,9 @@ flac_scan_stream(InputStream &is, TagHandler &handler)
 {
 	FlacMetadataChain chain;
 	if (!chain.Read(is)) {
-		FormatDebug(flac_domain,
-			    "Failed to read FLAC tags: %s",
-			    chain.GetStatusString());
+		FmtDebug(flac_domain,
+			 "Failed to read FLAC tags: {}",
+			 chain.GetStatusString());
 		return false;
 	}
 
@@ -317,9 +317,9 @@ oggflac_scan_file(Path path_fs, TagHandler &handler)
 {
 	FlacMetadataChain chain;
 	if (!chain.ReadOgg(NarrowPath(path_fs))) {
-		FormatDebug(flac_domain,
-			    "Failed to read OggFLAC tags: %s",
-			    chain.GetStatusString());
+		FmtDebug(flac_domain,
+			 "Failed to read OggFLAC tags: {}",
+			 chain.GetStatusString());
 		return false;
 	}
 
@@ -332,9 +332,9 @@ oggflac_scan_stream(InputStream &is, TagHandler &handler)
 {
 	FlacMetadataChain chain;
 	if (!chain.ReadOgg(is)) {
-		FormatDebug(flac_domain,
-			    "Failed to read OggFLAC tags: %s",
-			    chain.GetStatusString());
+		FmtDebug(flac_domain,
+			 "Failed to read OggFLAC tags: {}",
+			 chain.GetStatusString());
 		return false;
 	}
 

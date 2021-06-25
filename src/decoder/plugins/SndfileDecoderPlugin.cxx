@@ -203,8 +203,8 @@ sndfile_stream_decode(DecoderClient &client, InputStream &is)
 	SNDFILE *const sf = sf_open_virtual(const_cast<SF_VIRTUAL_IO *>(&vio),
 					    SFM_READ, &info, &sis);
 	if (sf == nullptr) {
-		FormatWarning(sndfile_domain, "sf_open_virtual() failed: %s",
-			      sf_strerror(nullptr));
+		FmtWarning(sndfile_domain, "sf_open_virtual() failed: {}",
+			   sf_strerror(nullptr));
 		return;
 	}
 
@@ -281,8 +281,8 @@ sndfile_scan_stream(InputStream &is, TagHandler &handler)
 	AtScopeExit(sf) { sf_close(sf); };
 
 	if (!audio_valid_sample_rate(info.samplerate)) {
-		FormatWarning(sndfile_domain,
-			      "Invalid sample rate in %s", is.GetURI());
+		FmtWarning(sndfile_domain,
+			   "Invalid sample rate in {}", is.GetURI());
 		return false;
 	}
 

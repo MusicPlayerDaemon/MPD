@@ -26,6 +26,7 @@
 #include "PropertyStore.hxx"
 #include "output/OutputAPI.hxx"
 #include "lib/icu/Win32.hxx"
+#include "lib/fmt/AudioFormatFormatter.hxx"
 #include "mixer/MixerList.hxx"
 #include "output/Error.hxx"
 #include "pcm/Export.hxx"
@@ -824,13 +825,12 @@ WasapiOutput::TryFormatExclusive(const AudioFormat &audio_format)
 		HRESULT result = client->IsFormatSupported(
 			AUDCLNT_SHAREMODE_EXCLUSIVE,
 			reinterpret_cast<WAVEFORMATEX *>(&test_format), nullptr);
-		const auto format_string = ToString(audio_format);
 		const auto result_string = std::string(HRESULTToString(result));
-		FormatDebug(wasapi_output_domain, "Trying %s %lu %u-%u (exclusive) -> %s",
-			    format_string.c_str(), test_format.Format.nSamplesPerSec,
-			    test_format.Format.wBitsPerSample,
-			    test_format.Samples.wValidBitsPerSample,
-			    result_string.c_str());
+		FmtDebug(wasapi_output_domain, "Trying {} {} {}-{} (exclusive) -> {}",
+			 audio_format, test_format.Format.nSamplesPerSec,
+			 test_format.Format.wBitsPerSample,
+			 test_format.Samples.wValidBitsPerSample,
+			 result_string);
 		if (SUCCEEDED(result)) {
 			device_format = test_format;
 			return true;
@@ -922,13 +922,12 @@ WasapiOutput::FindSharedFormatSupported(AudioFormat &audio_format)
 		reinterpret_cast<WAVEFORMATEX *>(&device_format),
 		closest_format.AddressCast<WAVEFORMATEX>());
 	{
-		const auto format_string = ToString(audio_format);
 		const auto result_string = std::string(HRESULTToString(result));
-		FormatDebug(wasapi_output_domain, "Trying %s %lu %u-%u (shared) -> %s",
-			    format_string.c_str(), device_format.Format.nSamplesPerSec,
-			    device_format.Format.wBitsPerSample,
-			    device_format.Samples.wValidBitsPerSample,
-			    result_string.c_str());
+		FmtDebug(wasapi_output_domain, "Trying {} {} {}-{} (shared) -> {}",
+			 audio_format, device_format.Format.nSamplesPerSec,
+			 device_format.Format.wBitsPerSample,
+			 device_format.Samples.wValidBitsPerSample,
+			 result_string);
 	}
 
 	if (FAILED(result) && result != AUDCLNT_E_UNSUPPORTED_FORMAT) {
@@ -950,15 +949,14 @@ WasapiOutput::FindSharedFormatSupported(AudioFormat &audio_format)
 			reinterpret_cast<WAVEFORMATEX *>(&device_format),
 			closest_format.AddressCast<WAVEFORMATEX>());
 		{
-			const auto format_string = ToString(audio_format);
 			const auto result_string = std::string(HRESULTToString(result));
-			FormatDebug(wasapi_output_domain,
-				    "Trying %s %lu %u-%u (shared) -> %s",
-				    format_string.c_str(),
-				    device_format.Format.nSamplesPerSec,
-				    device_format.Format.wBitsPerSample,
-				    device_format.Samples.wValidBitsPerSample,
-				    result_string.c_str());
+			FmtDebug(wasapi_output_domain,
+				 "Trying {} {} {}-{} (shared) -> {}",
+				 audio_format,
+				 device_format.Format.nSamplesPerSec,
+				 device_format.Format.wBitsPerSample,
+				 device_format.Samples.wValidBitsPerSample,
+				 result_string);
 		}
 		if (FAILED(result)) {
 			throw MakeHResultError(result, "Format is not supported");

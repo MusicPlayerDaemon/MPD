@@ -242,9 +242,9 @@ JackOutput::JackOutput(const ConfigBlock &block)
 		/* compatibility with MPD < 0.16 */
 		value = block.GetBlockValue("ports", nullptr);
 		if (value != nullptr)
-			FormatWarning(jack_output_domain,
-				      "deprecated option 'ports' in line %d",
-				      block.line);
+			FmtWarning(jack_output_domain,
+				   "deprecated option 'ports' in line {}",
+				   block.line);
 	}
 
 	if (value != nullptr) {
@@ -258,11 +258,11 @@ JackOutput::JackOutput(const ConfigBlock &block)
 
 	if (num_destination_ports > 0 &&
 	    num_destination_ports != num_source_ports)
-		FormatWarning(jack_output_domain,
-			      "number of source ports (%u) mismatches the "
-			      "number of destination ports (%u) in line %d",
-			      num_source_ports, num_destination_ports,
-			      block.line);
+		FmtWarning(jack_output_domain,
+			   "number of source ports ({}) mismatches the "
+			   "number of destination ports ({}) in line {}",
+			   num_source_ports, num_destination_ports,
+			   block.line);
 
 	ringbuffer_size = block.GetPositiveValue("ringbuffer_size", 32768U);
 }
@@ -543,10 +543,9 @@ JackOutput::Start()
 		for (num_dports = 0; num_dports < MAX_PORTS &&
 			     jports[num_dports] != nullptr;
 		     ++num_dports) {
-			FormatDebug(jack_output_domain,
-				    "destination_port[%u] = '%s'\n",
-				    num_dports,
-				    jports[num_dports]);
+			FmtDebug(jack_output_domain,
+				 "destination_port[{}] = '{}'\n",
+				 num_dports, jports[num_dports]);
 			dports[num_dports] = jports[num_dports];
 		}
 	} else {

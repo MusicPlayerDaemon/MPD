@@ -168,8 +168,8 @@ audiofile_setup_sample_format(AFfilehandle af_fp) noexcept
 
 	afGetSampleFormat(af_fp, AF_DEFAULT_TRACK, &fs, &bits);
 	if (!audio_valid_sample_format(audiofile_bits_to_sample_format(bits))) {
-		FormatDebug(audiofile_domain,
-			    "input file has %d bit samples, converting to 16",
+		FmtDebug(audiofile_domain,
+			    "input file has {} bit samples, converting to 16",
 			    bits);
 		bits = 16;
 	}

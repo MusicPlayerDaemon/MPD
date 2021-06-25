@@ -258,9 +258,10 @@ osx_output_parse_channel_map(const char *device_name,
 
 			channel_map_str = endptr;
 			want_number = false;
-			FormatDebug(osx_output_domain,
-				"%s: channel_map[%u] = %d",
-				device_name, inserted_channels, channel_map[inserted_channels]);
+			FmtDebug(osx_output_domain,
+				 "{}: channel_map[{}] = {}",
+				 device_name, inserted_channels,
+				 channel_map[inserted_channels]);
 			++inserted_channels;
 			continue;
 		}
@@ -421,10 +422,10 @@ osx_output_set_device_format(AudioDeviceID dev_id,
 
 			// print all (linear pcm) formats and their rating
 			if (score > 0.0f)
-				FormatDebug(osx_output_domain,
-					    "Format: %s rated %f",
-					    StreamDescriptionToString(format_desc).c_str(),
-					    (double)score);
+				FmtDebug(osx_output_domain,
+					 "Format: {} rated {}",
+					 StreamDescriptionToString(format_desc).c_str(),
+					 score);
 
 			if (score > output_score) {
 				output_score  = score;
@@ -498,14 +499,14 @@ osx_output_hog_device(AudioDeviceID dev_id, bool hog) noexcept
 
 	if (hog) {
 		if (hog_pid != -1) {
-			FormatDebug(osx_output_domain,
-				    "Device is already hogged.");
+			LogDebug(osx_output_domain,
+				 "Device is already hogged");
 			return;
 		}
 	} else {
 		if (hog_pid != getpid()) {
-			FormatDebug(osx_output_domain,
-				    "Device is not owned by this process.");
+			FmtDebug(osx_output_domain,
+				 "Device is not owned by this process");
 			return;
 		}
 	}
@@ -520,9 +521,8 @@ osx_output_hog_device(AudioDeviceID dev_id, bool hog) noexcept
 					 size,
 					 &hog_pid);
 	if (err != noErr) {
-		FormatDebug(osx_output_domain,
-			    "Cannot hog the device: %d",
-			    err);
+		FmtDebug(osx_output_domain,
+			 "Cannot hog the device: {}", err);
 	} else {
 		LogDebug(osx_output_domain,
 			 hog_pid == -1
@@ -585,16 +585,16 @@ osx_output_set_device(OSXOutput *oo)
 
 	const auto id = FindAudioDeviceByName(oo->device_name);
 
-	FormatDebug(osx_output_domain,
-		    "found matching device: ID=%u, name=%s",
-		    (unsigned)id, oo->device_name);
+	FmtDebug(osx_output_domain,
+		 "found matching device: ID={}, name={}",
+		 id, oo->device_name);
 
 	AudioUnitSetCurrentDevice(oo->au, id);
 
 	oo->dev_id = id;
-	FormatDebug(osx_output_domain,
-		    "set OS X audio output device ID=%u, name=%s",
-		    (unsigned)id, oo->device_name);
+	FmtDebug(osx_output_domain,
+		 "set OS X audio output device ID={}, name={}",
+		 id, oo->device_name);
 
 	if (oo->channel_map)
 		osx_output_set_channel_map(oo);

@@ -235,9 +235,9 @@ SetupHw(snd_pcm_t *pcm,
 	unsigned buffer_time_min, buffer_time_max;
 	snd_pcm_hw_params_get_buffer_time_min(hwparams, &buffer_time_min, nullptr);
 	snd_pcm_hw_params_get_buffer_time_max(hwparams, &buffer_time_max, nullptr);
-	FormatDebug(alsa_output_domain, "buffer: size=%u..%u time=%u..%u",
-		    (unsigned)buffer_size_min, (unsigned)buffer_size_max,
-		    buffer_time_min, buffer_time_max);
+	FmtDebug(alsa_output_domain, "buffer: size={}..{} time={}..{}",
+		 buffer_size_min, buffer_size_max,
+		 buffer_time_min, buffer_time_max);
 
 	snd_pcm_uframes_t period_size_min, period_size_max;
 	snd_pcm_hw_params_get_period_size_min(hwparams, &period_size_min, nullptr);
@@ -245,9 +245,9 @@ SetupHw(snd_pcm_t *pcm,
 	unsigned period_time_min, period_time_max;
 	snd_pcm_hw_params_get_period_time_min(hwparams, &period_time_min, nullptr);
 	snd_pcm_hw_params_get_period_time_max(hwparams, &period_time_max, nullptr);
-	FormatDebug(alsa_output_domain, "period: size=%u..%u time=%u..%u",
-		    (unsigned)period_size_min, (unsigned)period_size_max,
-		    period_time_min, period_time_max);
+	FmtDebug(alsa_output_domain, "period: size={}..{} time={}..{}",
+		 period_size_min, period_size_max,
+		 period_time_min, period_time_max);
 
 	if (buffer_time > 0) {
 		err = snd_pcm_hw_params_set_buffer_time_near(pcm, hwparams,
@@ -265,9 +265,9 @@ SetupHw(snd_pcm_t *pcm,
 	if (period_time_ro == 0 && buffer_time >= 10000) {
 		period_time_ro = period_time = buffer_time / 4;
 
-		FormatDebug(alsa_output_domain,
-			    "default period_time = buffer_time/4 = %u/4 = %u",
-			    buffer_time, period_time);
+		FmtDebug(alsa_output_domain,
+			 "default period_time = buffer_time/4 = {}/4 = {}",
+			 buffer_time, period_time);
 	}
 
 	if (period_time_ro > 0) {

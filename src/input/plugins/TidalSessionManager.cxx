@@ -81,7 +81,7 @@ TidalSessionManager::AddLoginHandler(TidalSessionHandler &h) noexcept
 void
 TidalSessionManager::OnTidalLoginSuccess(std::string _session) noexcept
 {
-	FormatDebug(tidal_domain, "Login successful, session=%s", _session.c_str());
+	FmtDebug(tidal_domain, "Login successful, session={}", _session);
 
 	{
 		const std::lock_guard<Mutex> protect(mutex);

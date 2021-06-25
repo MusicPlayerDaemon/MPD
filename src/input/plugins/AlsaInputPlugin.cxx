@@ -270,15 +270,15 @@ AlsaInputStream::Recover(int err)
 {
 	switch(err) {
 	case -EPIPE:
-		FormatDebug(alsa_input_domain,
-			    "Overrun on ALSA capture device \"%s\"",
-			    device.c_str());
+		FmtDebug(alsa_input_domain,
+			 "Overrun on ALSA capture device \"{}\"",
+			 device);
 		break;
 
 	case -ESTRPIPE:
-		FormatDebug(alsa_input_domain,
-			    "ALSA capture device \"%s\" was suspended",
-			    device.c_str());
+		FmtDebug(alsa_input_domain,
+			 "ALSA capture device \"{}\" was suspended",
+			 device);
 		break;
 	}
 
@@ -361,9 +361,9 @@ AlsaInputStream::ConfigureCapture(AudioFormat audio_format)
 	unsigned buffer_time_min, buffer_time_max;
 	snd_pcm_hw_params_get_buffer_time_min(hw_params, &buffer_time_min, nullptr);
 	snd_pcm_hw_params_get_buffer_time_max(hw_params, &buffer_time_max, nullptr);
-	FormatDebug(alsa_input_domain, "buffer: size=%u..%u time=%u..%u",
-		    (unsigned)buffer_size_min, (unsigned)buffer_size_max,
-		    buffer_time_min, buffer_time_max);
+	FmtDebug(alsa_input_domain, "buffer: size={}..{} time={}..{}",
+		 buffer_size_min, buffer_size_max,
+		 buffer_time_min, buffer_time_max);
 
 	snd_pcm_uframes_t period_size_min, period_size_max;
 	snd_pcm_hw_params_get_period_size_min(hw_params, &period_size_min, nullptr);
@@ -371,9 +371,9 @@ AlsaInputStream::ConfigureCapture(AudioFormat audio_format)
 	unsigned period_time_min, period_time_max;
 	snd_pcm_hw_params_get_period_time_min(hw_params, &period_time_min, nullptr);
 	snd_pcm_hw_params_get_period_time_max(hw_params, &period_time_max, nullptr);
-	FormatDebug(alsa_input_domain, "period: size=%u..%u time=%u..%u",
-		    (unsigned)period_size_min, (unsigned)period_size_max,
-		    period_time_min, period_time_max);
+	FmtDebug(alsa_input_domain, "period: size={}..{} time={}..{}",
+		 period_size_min, period_size_max,
+		 period_time_min, period_time_max);
 
 	/* choose the maximum possible buffer_size ... */
 	snd_pcm_hw_params_set_buffer_size(capture_handle, hw_params,
@@ -409,8 +409,8 @@ AlsaInputStream::ConfigureCapture(AudioFormat audio_format)
 		throw FormatRuntimeError("snd_pcm_hw_params_get_period_size() failed: %s",
 					 snd_strerror(-err));
 
-	FormatDebug(alsa_input_domain, "buffer_size=%u period_size=%u",
-		    (unsigned)alsa_buffer_size, (unsigned)alsa_period_size);
+	FmtDebug(alsa_input_domain, "buffer_size={} period_size={}",
+		 alsa_buffer_size, alsa_period_size);
 
 	snd_pcm_sw_params_t *sw_params;
 	snd_pcm_sw_params_alloca(&sw_params);

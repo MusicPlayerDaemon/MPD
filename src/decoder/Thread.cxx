@@ -61,7 +61,7 @@ DecoderUriDecode(const DecoderPlugin &plugin,
 	assert(uri != nullptr);
 	assert(bridge.dc.state == DecoderState::START);
 
-	FormatDebug(decoder_thread_domain, "probing plugin %s", plugin.name);
+	FmtDebug(decoder_thread_domain, "probing plugin {}", plugin.name);
 
 	if (bridge.dc.command == DecoderCommand::STOP)
 		throw StopDecoder();
@@ -99,7 +99,7 @@ decoder_stream_decode(const DecoderPlugin &plugin,
 	assert(input_stream.IsReady());
 	assert(bridge.dc.state == DecoderState::START);
 
-	FormatDebug(decoder_thread_domain, "probing plugin %s", plugin.name);
+	FmtDebug(decoder_thread_domain, "probing plugin {}", plugin.name);
 
 	if (bridge.dc.command == DecoderCommand::STOP)
 		throw StopDecoder();
@@ -142,7 +142,7 @@ decoder_file_decode(const DecoderPlugin &plugin,
 	assert(path.IsAbsolute());
 	assert(bridge.dc.state == DecoderState::START);
 
-	FormatDebug(decoder_thread_domain, "probing plugin %s", plugin.name);
+	FmtDebug(decoder_thread_domain, "probing plugin {}", plugin.name);
 
 	if (bridge.dc.command == DecoderCommand::STOP)
 		throw StopDecoder();

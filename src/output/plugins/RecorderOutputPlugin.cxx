@@ -19,6 +19,7 @@
 
 #include "RecorderOutputPlugin.hxx"
 #include "../OutputAPI.hxx"
+#include "lib/fmt/PathFormatter.hxx"
 #include "tag/Format.hxx"
 #include "encoder/ToOutputStream.hxx"
 #include "encoder/EncoderInterface.hxx"
@@ -276,8 +277,7 @@ RecorderOutput::ReopenFormat(AllocatedPath &&new_path)
 	path = std::move(new_path);
 	file = new_file;
 
-	FormatDebug(recorder_domain, "Recording to \"%s\"",
-		    path.ToUTF8().c_str());
+	FmtDebug(recorder_domain, "Recording to \"{}\"", path);
 }
 
 void

@@ -26,6 +26,7 @@ filter_plugins = static_library(
   include_directories: inc,
   dependencies: [
     filter_plugins_deps,
+    log_dep,
   ],
 )
 

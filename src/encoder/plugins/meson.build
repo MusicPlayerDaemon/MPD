@@ -53,6 +53,7 @@ encoder_plugins = static_library(
     liblame_dep,
     libtwolame_dep,
     libshine_dep,
+    log_dep,
   ],
 )
 

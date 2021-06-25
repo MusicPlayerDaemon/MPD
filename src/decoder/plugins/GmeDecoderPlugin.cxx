@@ -160,8 +160,8 @@ gme_file_decode(DecoderClient &client, Path path_fs)
 
 	AtScopeExit(emu) { gme_delete(emu); };
 
-	FormatDebug(gme_domain, "emulator type '%s'\n",
-		    gme_type_system(gme_type(emu)));
+	FmtDebug(gme_domain, "emulator type '{}'",
+		 gme_type_system(gme_type(emu)));
 
 #if GME_VERSION >= 0x000600
 	if (gme_accuracy >= 0)

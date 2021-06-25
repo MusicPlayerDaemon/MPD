@@ -183,7 +183,8 @@ InitTidalInput(EventLoop &event_loop, const ConfigBlock &block)
 	if (password == nullptr)
 		throw PluginUnconfigured("No Tidal password configured");
 
-	FormatWarning(tidal_domain, "The Tidal input plugin is deprecated because Tidal has changed the protocol and doesn't share documentation");
+	LogWarning(tidal_domain,
+		   "The Tidal input plugin is deprecated because Tidal has changed the protocol and doesn't share documentation");
 
 	tidal_audioquality = block.GetBlockValue("audioquality", "HIGH");
 

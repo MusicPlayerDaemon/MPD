@@ -153,9 +153,9 @@ OssMixer::GetVolume()
 	right = (level & 0xff00) >> 8;
 
 	if (left != right) {
-		FormatWarning(oss_mixer_domain,
-			      "volume for left and right is not the same, \"%i\" and "
-			      "\"%i\"\n", left, right);
+		FmtWarning(oss_mixer_domain,
+			   "volume for left and right is not the same, \"{}\" and "
+			   "\"{}\"\n", left, right);
 	}
 
 	return left;

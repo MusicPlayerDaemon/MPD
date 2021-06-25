@@ -234,7 +234,7 @@ cycle_log_files() noexcept
 	if (out_path.IsNull())
 		return 0;
 
-	FormatDebug(log_domain, "Cycling log files");
+	LogDebug(log_domain, "Cycling log files");
 	close_log_files();
 
 	fd = open_log_file();

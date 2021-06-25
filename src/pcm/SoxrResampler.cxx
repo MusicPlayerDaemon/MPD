@@ -200,9 +200,8 @@ pcm_resample_soxr_global_init(const ConfigBlock &block)
 		soxr_quality = soxr_quality_spec(recipe, 0);
 	}
 
-	FormatDebug(soxr_domain,
-		    "soxr converter '%s'",
-		    soxr_quality_name(recipe));
+	FmtDebug(soxr_domain, "soxr converter '{}'",
+		 soxr_quality_name(recipe));
 
 	const unsigned n_threads = block.GetBlockValue("threads", 1);
 	soxr_runtime = soxr_runtime_spec(n_threads);
@@ -226,7 +225,7 @@ SoxrPcmResampler::Open(AudioFormat &af, unsigned new_sample_rate)
 		throw FormatRuntimeError("soxr initialization has failed: %s",
 					 e);
 
-	FormatDebug(soxr_domain, "soxr engine '%s'", soxr_engine(soxr));
+	FmtDebug(soxr_domain, "soxr engine '{}'", soxr_engine(soxr));
 	if (soxr_use_custom_recipe)
 		FormatDebug(soxr_domain,
 			    "soxr precision=%0.0f, phase_response=%0.2f, "

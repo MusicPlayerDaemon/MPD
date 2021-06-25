@@ -382,9 +382,9 @@ RecoverFrameError(const struct mad_stream &stream) noexcept
 	if (MAD_RECOVERABLE(stream.error))
 		return MadDecoderAction::SKIP;
 
-	FormatWarning(mad_domain,
-		      "unrecoverable frame level error: %s",
-		      mad_stream_errorstr(&stream));
+	FmtWarning(mad_domain,
+		   "unrecoverable frame level error: {}",
+		   mad_stream_errorstr(&stream));
 	return MadDecoderAction::BREAK;
 }
 
@@ -571,8 +571,8 @@ parse_lame(struct lame *lame, struct mad_bitptr *ptr, int *bitlen) noexcept
 	           &lame->version.major, &lame->version.minor) != 2)
 		return false;
 
-	FormatDebug(mad_domain, "detected LAME version %i.%i (\"%s\")",
-		    lame->version.major, lame->version.minor, lame->encoder);
+	FmtDebug(mad_domain, "detected LAME version {}.{} (\"{}\")",
+		 lame->version.major, lame->version.minor, lame->encoder);
 
 	/* The reference volume was changed from the 83dB used in the
 	 * ReplayGain spec to 89dB in lame 3.95.1.  Bump the gain for older
@@ -589,7 +589,7 @@ parse_lame(struct lame *lame, struct mad_bitptr *ptr, int *bitlen) noexcept
 	mad_bit_skip(ptr, 16);
 
 	lame->peak = MAD_F(mad_bit_read(ptr, 32) << 5); /* peak */
-	FormatDebug(mad_domain, "LAME peak found: %f", double(lame->peak));
+	FmtDebug(mad_domain, "LAME peak found: {}", lame->peak);
 
 	lame->track_gain = 0;
 	unsigned name = mad_bit_read(ptr, 3); /* gain name */
@@ -598,8 +598,8 @@ parse_lame(struct lame *lame, struct mad_bitptr *ptr, int *bitlen) noexcept
 	int gain = mad_bit_read(ptr, 9); /* gain*10 */
 	if (gain && name == 1 && orig != 0) {
 		lame->track_gain = ((sign ? -gain : gain) / 10.0f) + adj;
-		FormatDebug(mad_domain, "LAME track gain found: %f",
-			    double(lame->track_gain));
+		FmtDebug(mad_domain, "LAME track gain found: {}",
+			 lame->track_gain);
 	}
 
 	/* tmz reports that this isn't currently written by any version of lame
@@ -614,8 +614,8 @@ parse_lame(struct lame *lame, struct mad_bitptr *ptr, int *bitlen) noexcept
 	gain = mad_bit_read(ptr, 9); /* gain*10 */
 	if (gain && name == 2 && orig != 0) {
 		lame->album_gain = ((sign ? -gain : gain) / 10.0) + adj;
-		FormatDebug(mad_domain, "LAME album gain found: %f",
-			    double(lame->track_gain));
+		FmtDebug(mad_domain, "LAME album gain found: {}",
+			 lame->track_gain);
 	}
 #else
 	mad_bit_skip(ptr, 16);
@@ -626,8 +626,8 @@ parse_lame(struct lame *lame, struct mad_bitptr *ptr, int *bitlen) noexcept
 	lame->encoder_delay = mad_bit_read(ptr, 12);
 	lame->encoder_padding = mad_bit_read(ptr, 12);
 
-	FormatDebug(mad_domain, "encoder delay is %i, encoder padding is %i",
-		    lame->encoder_delay, lame->encoder_padding);
+	FmtDebug(mad_domain, "encoder delay is {}, encoder padding is {}",
+		 lame->encoder_delay, lame->encoder_padding);
 
 	mad_bit_skip(ptr, 80);
 
@@ -763,9 +763,9 @@ MadDecoder::DecodeFirstFrame(Tag *tag) noexcept
 		return false;
 
 	if (max_frames > 8 * 1024 * 1024) {
-		FormatWarning(mad_domain,
-			      "mp3 file header indicates too many frames: %zu",
-			      max_frames);
+		FmtWarning(mad_domain,
+			   "mp3 file header indicates too many frames: {}",
+			   max_frames);
 		return false;
 	}
 

@@ -38,8 +38,8 @@ static unsigned sample_rate;
 static bool
 adplug_init(const ConfigBlock &block)
 {
-	FormatDebug(adplug_domain, "adplug %s",
-		    CAdPlug::get_version().c_str());
+	FmtDebug(adplug_domain, "adplug {}",
+		 CAdPlug::get_version());
 
 	sample_rate = block.GetPositiveValue("sample_rate", 48000U);
 	CheckSampleRate(sample_rate);

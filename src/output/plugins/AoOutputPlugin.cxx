@@ -123,8 +123,8 @@ AoOutput::AoOutput(const ConfigBlock &block)
 	if (ai == nullptr)
 		throw std::runtime_error("problems getting driver info");
 
-	FormatDebug(ao_output_domain, "using ao driver \"%s\" for \"%s\"\n",
-		    ai->short_name, block.GetBlockValue("name", nullptr));
+	FmtDebug(ao_output_domain, "using ao driver \"{}\" for \"{}\"\n",
+		 ai->short_name, block.GetBlockValue("name", nullptr));
 
 	value = block.GetBlockValue("options", nullptr);
 	if (value != nullptr) {

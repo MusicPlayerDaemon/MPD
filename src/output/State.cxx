@@ -70,8 +70,8 @@ audio_output_state_read(const char *line, MultipleOutputs &outputs)
 	name = endptr + 1;
 	auto *ao = outputs.FindByName(name);
 	if (ao == nullptr) {
-		FormatDebug(output_domain,
-			    "Ignoring device state for '%s'", name);
+		FmtDebug(output_domain,
+			 "Ignoring device state for '{}'", name);
 		return true;
 	}
 

@@ -128,9 +128,9 @@ CrossFadeSettings::Calculate(SignedSongTime total_time,
 		    mixramp_delay <= mixramp_overlap) {
 			chunks = lround((mixramp_overlap - mixramp_delay)
 					/ chunk_duration);
-			FormatDebug(cross_fade_domain,
-				    "will overlap %d chunks, %fs", chunks,
-				    (mixramp_overlap - mixramp_delay).count());
+			FmtDebug(cross_fade_domain,
+				 "will overlap {} chunks, {}s", chunks,
+				 (mixramp_overlap - mixramp_delay).count());
 		}
 	}
 

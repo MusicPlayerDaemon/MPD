@@ -90,8 +90,8 @@ FifoOutput::FifoOutput(const ConfigBlock &block)
 inline void
 FifoOutput::Delete()
 {
-	FormatDebug(fifo_output_domain,
-		    "Removing FIFO \"%s\"", path_utf8.c_str());
+	FmtDebug(fifo_output_domain,
+		 "Removing FIFO \"{}\"", path_utf8);
 
 	try {
 		RemoveFile(path);

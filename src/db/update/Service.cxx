@@ -113,8 +113,7 @@ UpdateService::Task() noexcept
 	SetThreadName("update");
 
 	if (!next.path_utf8.empty())
-		FormatDebug(update_domain, "starting: %s",
-			    next.path_utf8.c_str());
+		FmtDebug(update_domain, "starting: {}", next.path_utf8);
 	else
 		LogDebug(update_domain, "starting");
 
@@ -133,8 +132,7 @@ UpdateService::Task() noexcept
 	}
 
 	if (!next.path_utf8.empty())
-		FormatDebug(update_domain, "finished: %s",
-			    next.path_utf8.c_str());
+		FmtDebug(update_domain, "finished: {}", next.path_utf8);
 	else
 		LogDebug(update_domain, "finished");
 
@@ -155,8 +153,8 @@ UpdateService::StartThread(UpdateQueueItem &&i)
 
 	update_thread.Start();
 
-	FormatDebug(update_domain,
-		    "spawned thread for update job id %i", next.id);
+	FmtDebug(update_domain,
+		 "spawned thread for update job id {}", next.id);
 }
 
 unsigned

@@ -281,10 +281,7 @@ CurlInputStream::OnHeaders(unsigned status,
 
 		if (i != headers.end()) {
 			size_t icy_metaint = ParseUint64(i->second.c_str());
-#ifndef _WIN32
-			/* Windows doesn't know "%z" */
-			FormatDebug(curl_domain, "icy-metaint=%zu", icy_metaint);
-#endif
+			FmtDebug(curl_domain, "icy-metaint={}", icy_metaint);
 
 			if (icy_metaint > 0) {
 				icy->Start(icy_metaint);
@@ -358,10 +355,10 @@ input_curl_init(EventLoop &event_loop, const ConfigBlock &block)
 
 	const auto version_info = curl_version_info(CURLVERSION_FIRST);
 	if (version_info != nullptr) {
-		FormatDebug(curl_domain, "version %s", version_info->version);
+		FmtDebug(curl_domain, "version {}", version_info->version);
 		if (version_info->features & CURL_VERSION_SSL)
-			FormatDebug(curl_domain, "with %s",
-				    version_info->ssl_version);
+			FmtDebug(curl_domain, "with {}",
+				 version_info->ssl_version);
 	}
 
 	http_200_aliases = curl_slist_append(http_200_aliases, "ICY 200 OK");

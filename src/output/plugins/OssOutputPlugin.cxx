@@ -200,16 +200,16 @@ oss_open_default()
 			/* never reached */
 			break;
 		case OSS_STAT_DOESN_T_EXIST:
-			FormatWarning(oss_output_domain,
-				      "%s not found", dev);
+			FmtWarning(oss_output_domain,
+				   "{} not found", dev);
 			break;
 		case OSS_STAT_NOT_CHAR_DEV:
-			FormatWarning(oss_output_domain,
-				      "%s is not a character device", dev);
+			FmtWarning(oss_output_domain,
+				   "{} is not a character device", dev);
 			break;
 		case OSS_STAT_NO_PERMS:
-			FormatWarning(oss_output_domain,
-				      "%s: permission denied", dev);
+			FmtWarning(oss_output_domain,
+				   "{}: permission denied", dev);
 			break;
 		case OSS_STAT_OTHER:
 			FormatErrno(oss_output_domain, err[i],

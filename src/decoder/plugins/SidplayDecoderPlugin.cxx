@@ -254,8 +254,7 @@ sidplay_file_decode(DecoderClient &client, Path path_fs)
 #else
 		const char *error = tune.getInfo().statusString;
 #endif
-		FormatWarning(sidplay_domain, "failed to load file: %s",
-			      error);
+		FmtWarning(sidplay_domain, "failed to load file: {}", error);
 		return;
 	}
 
@@ -283,8 +282,8 @@ sidplay_file_decode(DecoderClient &client, Path path_fs)
 	bool error = player.load(&tune) < 0;
 #endif
 	if (error) {
-		FormatWarning(sidplay_domain,
-			      "sidplay2.load() failed: %s", player.error());
+		FmtWarning(sidplay_domain,
+			   "sidplay2.load() failed: {}", player.error());
 		return;
 	}
 
@@ -293,25 +292,25 @@ sidplay_file_decode(DecoderClient &client, Path path_fs)
 #ifdef HAVE_SIDPLAYFP
 	ReSIDfpBuilder builder("ReSID");
 	if (!builder.getStatus()) {
-		FormatWarning(sidplay_domain,
-			      "failed to initialize ReSIDfpBuilder: %s",
-			      builder.error());
+		FmtWarning(sidplay_domain,
+			   "failed to initialize ReSIDfpBuilder: {}",
+			   builder.error());
 		return;
 	}
 
 	builder.create(player.info().maxsids());
 	if (!builder.getStatus()) {
-		FormatWarning(sidplay_domain,
-			      "ReSIDfpBuilder.create() failed: %s",
-			      builder.error());
+		FmtWarning(sidplay_domain,
+			   "ReSIDfpBuilder.create() failed: {}",
+			   builder.error());
 		return;
 	}
 #else
 	ReSIDBuilder builder("ReSID");
 	builder.create(player.info().maxsids);
 	if (!builder) {
-		FormatWarning(sidplay_domain, "ReSIDBuilder.create() failed: %s",
-			      builder.error());
+		FmtWarning(sidplay_domain, "ReSIDBuilder.create() failed: {}",
+			   builder.error());
 		return;
 	}
 #endif
@@ -319,15 +318,15 @@ sidplay_file_decode(DecoderClient &client, Path path_fs)
 	builder.filter(sidplay_global->filter_setting);
 #ifdef HAVE_SIDPLAYFP
 	if (!builder.getStatus()) {
-		FormatWarning(sidplay_domain,
-			      "ReSIDfpBuilder.filter() failed: %s",
-			      builder.error());
+		FmtWarning(sidplay_domain,
+			   "ReSIDfpBuilder.filter() failed: {}",
+			   builder.error());
 		return;
 	}
 #else
 	if (!builder) {
-		FormatWarning(sidplay_domain, "ReSIDBuilder.filter() failed: %s",
-			      builder.error());
+		FmtWarning(sidplay_domain, "ReSIDBuilder.filter() failed: {}",
+			   builder.error());
 		return;
 	}
 #endif
@@ -388,8 +387,8 @@ sidplay_file_decode(DecoderClient &client, Path path_fs)
 	error = player.config(config) < 0;
 #endif
 	if (error) {
-		FormatWarning(sidplay_domain,
-			      "sidplay2.config() failed: %s", player.error());
+		FmtWarning(sidplay_domain,
+			   "sidplay2.config() failed: {}", player.error());
 		return;
 	}
 
