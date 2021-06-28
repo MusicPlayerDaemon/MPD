@@ -76,7 +76,7 @@ public:
 		:AllocatedArray(other.buffer) {}
 
 	AllocatedArray(AllocatedArray &&other) noexcept
-		:buffer(std::exchange(other.buffer, nullptr)) {}
+		:buffer(other.release()) {}
 
 	~AllocatedArray() noexcept {
 		delete[] buffer.data;
@@ -258,6 +258,13 @@ public:
 		assert(_size <= buffer.size);
 
 		buffer.size = _size;
+	}
+
+	/**
+	 * Give up ownership of the allocated buffer and return it.
+	 */
+	Buffer release() noexcept {
+		return std::exchange(buffer, nullptr);
 	}
 };
 
