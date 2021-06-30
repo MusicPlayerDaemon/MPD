@@ -25,6 +25,7 @@
 #include <expat.h>
 
 #include <stdexcept>
+#include <utility>
 
 class InputStream;
 
