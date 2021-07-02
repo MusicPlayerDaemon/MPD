@@ -20,8 +20,7 @@
 #include "Call.hxx"
 #include "Loop.hxx"
 #include "InjectEvent.hxx"
-#include "thread/Mutex.hxx"
-#include "thread/Cond.hxx"
+#include "thread/AsyncWaiter.hxx"
 
 #include <cassert>
 #include <exception>
@@ -32,45 +31,27 @@ class BlockingCallMonitor final
 
 	const std::function<void()> f;
 
-	Mutex mutex;
-	Cond cond;
-
-	bool done;
-
-	std::exception_ptr exception;
+	AsyncWaiter waiter;
 
 public:
-	BlockingCallMonitor(EventLoop &_loop, std::function<void()> &&_f)
+	BlockingCallMonitor(EventLoop &_loop,
+			    std::function<void()> &&_f) noexcept
 		:event(_loop, BIND_THIS_METHOD(RunDeferred)),
-		 f(std::move(_f)), done(false) {}
+		 f(std::move(_f)) {}
 
 	void Run() {
-		assert(!done);
-
 		event.Schedule();
-
-		{
-			std::unique_lock<Mutex> lock(mutex);
-			cond.wait(lock, [this]{ return done; });
-		}
-
-		if (exception)
-			std::rethrow_exception(exception);
+		waiter.Wait();
 	}
 
 private:
 	void RunDeferred() noexcept {
-		assert(!done);
-
 		try {
 			f();
+			waiter.SetDone();
 		} catch (...) {
-			exception = std::current_exception();
+			waiter.SetError(std::current_exception());
 		}
-
-		const std::scoped_lock<Mutex> lock(mutex);
-		done = true;
-		cond.notify_one();
 	}
 };
 
