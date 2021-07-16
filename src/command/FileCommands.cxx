@@ -187,10 +187,9 @@ find_stream_art(std::string_view directory, Mutex &mutex)
 }
 
 static CommandResult
-read_stream_art(Response &r, const char *uri, size_t offset)
+read_stream_art(Response &r, const std::string_view art_directory,
+		size_t offset)
 {
-	const auto art_directory = PathTraitsUTF8::GetParent(uri);
-
 	// TODO: eliminate this const_cast
 	auto &client = const_cast<Client &>(r.GetClient());
 
@@ -252,7 +251,8 @@ read_db_art(Client &client, Response &r, const char *uri, const uint64_t offset)
 		return CommandResult::ERROR;
 	}
 	std::string uri2 = storage->MapUTF8(uri);
-	return read_stream_art(r, uri2.c_str(), offset);
+	return read_stream_art(r, PathTraitsUTF8::GetParent(uri2.c_str()),
+			       offset);
 }
 #endif
 
@@ -273,7 +273,10 @@ handle_album_art(Client &client, Request args, Response &r)
 	switch (located_uri.type) {
 	case LocatedUri::Type::ABSOLUTE:
 	case LocatedUri::Type::PATH:
-		return read_stream_art(r, located_uri.canonical_uri, offset);
+		return read_stream_art(r,
+				       PathTraitsUTF8::GetParent(located_uri.canonical_uri),
+				       offset);
+
 	case LocatedUri::Type::RELATIVE:
 #ifdef ENABLE_DATABASE
 		return read_db_art(client, r, located_uri.canonical_uri, offset);
