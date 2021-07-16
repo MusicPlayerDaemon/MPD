@@ -27,11 +27,15 @@
 #include "client/Response.hxx"
 #include "util/CharUtil.hxx"
 #include "util/OffsetPointer.hxx"
+#include "util/ScopeExit.hxx"
+#include "util/StringCompare.hxx"
 #include "util/StringView.hxx"
 #include "util/UriExtract.hxx"
 #include "tag/Handler.hxx"
 #include "tag/Generic.hxx"
 #include "TagAny.hxx"
+#include "db/Interface.hxx"
+#include "song/LightSong.hxx"
 #include "storage/StorageInterface.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "fs/FileInfo.hxx"
@@ -242,6 +246,41 @@ read_stream_art(Response &r, const std::string_view art_directory,
 }
 
 #ifdef ENABLE_DATABASE
+
+/**
+ * Attempt to locate the "real" directory where the given song is
+ * stored.  This attempts to resolve "virtual" directories/songs,
+ * e.g. expanded CUE sheet contents.
+ */
+[[gnu::pure]]
+static std::string_view
+RealDirectoryOfSong(Client &client, const char *song_uri,
+		    std::string_view directory_uri) noexcept
+try {
+	const auto *db = client.GetDatabase();
+	if (db == nullptr)
+		return directory_uri;
+
+	const auto *song = db->GetSong(song_uri);
+	if (song == nullptr)
+		return directory_uri;
+
+	AtScopeExit(db, song) { db->ReturnSong(song); };
+
+	const char *real_uri = song->real_uri;
+
+	/* this is a simplification which is just enough for CUE
+	   sheets (but may be incomplete): for each "../", go one
+	   level up */
+	while ((real_uri = StringAfterPrefix(real_uri, "../")) != nullptr)
+		directory_uri = PathTraitsUTF8::GetParent(directory_uri);
+
+	return directory_uri;
+} catch (...) {
+	/* ignore all exceptions from Database::GetSong() */
+	return directory_uri;
+}
+
 static CommandResult
 read_db_art(Client &client, Response &r, const char *uri, const uint64_t offset)
 {
@@ -251,8 +290,13 @@ read_db_art(Client &client, Response &r, const char *uri, const uint64_t offset)
 		return CommandResult::ERROR;
 	}
 	std::string uri2 = storage->MapUTF8(uri);
-	return read_stream_art(r, PathTraitsUTF8::GetParent(uri2.c_str()),
-			       offset);
+
+	std::string_view directory_uri =
+		RealDirectoryOfSong(client,
+				    uri,
+				    PathTraitsUTF8::GetParent(uri2.c_str()));
+
+	return read_stream_art(r, directory_uri, offset);
 }
 #endif
 
