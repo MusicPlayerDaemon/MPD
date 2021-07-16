@@ -1,3 +1,5 @@
+ver 0.22.10 (not yet released)
+
 ver 0.22.9 (2021/06/23)
 * database
   - simple: load all .mpdignore files of all parent directories
