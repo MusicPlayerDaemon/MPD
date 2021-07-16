@@ -88,6 +88,18 @@ struct PathTraitsFS {
 #endif
 	}
 
+	[[gnu::pure]]
+	static const_pointer FindLastSeparator(string_view p) noexcept {
+#ifdef _WIN32
+		const_pointer pos = p.data() + p.size();
+		while (p.data() != pos && !IsSeparator(*pos))
+			--pos;
+		return IsSeparator(*pos) ? pos : nullptr;
+#else
+		return StringFindLast(p.data(), SEPARATOR, p.size());
+#endif
+	}
+
 	gcc_pure
 	static const_pointer GetFilenameSuffix(const_pointer filename) noexcept {
 		const_pointer dot = StringFindLast(filename, '.');
@@ -105,6 +117,10 @@ struct PathTraitsFS {
 	gcc_pure gcc_nonnull_all
 	static constexpr bool IsDrive(const_pointer p) noexcept {
 		return IsAlphaASCII(p[0]) && p[1] == ':';
+	}
+
+	static constexpr bool IsDrive(string_view p) noexcept {
+		return p.size() >= 2 && IsAlphaASCII(p[0]) && p[1] == ':';
 	}
 #endif
 
@@ -152,6 +168,9 @@ struct PathTraitsFS {
 	 */
 	gcc_pure gcc_nonnull_all
 	static string_view GetParent(const_pointer p) noexcept;
+
+	[[gnu::pure]]
+	static string_view GetParent(string_view p) noexcept;
 
 	/**
 	 * Determine the relative part of the given path to this
@@ -212,6 +231,11 @@ struct PathTraitsUTF8 {
 		return std::strrchr(p, SEPARATOR);
 	}
 
+	[[gnu::pure]]
+	static const_pointer FindLastSeparator(string_view p) noexcept {
+		return StringFindLast(p.data(), SEPARATOR, p.size());
+	}
+
 	gcc_pure
 	static const_pointer GetFilenameSuffix(const_pointer filename) noexcept {
 		const_pointer dot = StringFindLast(filename, '.');
@@ -229,6 +253,10 @@ struct PathTraitsUTF8 {
 	gcc_pure gcc_nonnull_all
 	static constexpr bool IsDrive(const_pointer p) noexcept {
 		return IsAlphaASCII(p[0]) && p[1] == ':';
+	}
+
+	static constexpr bool IsDrive(string_view p) noexcept {
+		return p.size() >= 2 && IsAlphaASCII(p[0]) && p[1] == ':';
 	}
 #endif
 
@@ -276,6 +304,9 @@ struct PathTraitsUTF8 {
 	 */
 	gcc_pure gcc_nonnull_all
 	static string_view GetParent(const_pointer p) noexcept;
+
+	[[gnu::pure]]
+	static string_view GetParent(string_view p) noexcept;
 
 	/**
 	 * Determine the relative part of the given path to this
