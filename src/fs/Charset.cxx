@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -48,8 +48,8 @@ SetFSCharset(const char *charset)
 	fs_converter = IcuConverter::Create(charset);
 	assert(fs_converter != nullptr);
 
-	FormatDebug(path_domain,
-		    "SetFSCharset: fs charset is: %s", fs_charset.c_str());
+	FmtDebug(path_domain,
+		 "SetFSCharset: fs charset is {}", fs_charset);
 }
 
 #endif

@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -101,6 +101,15 @@ public:
 	Storage *GetMount(std::string_view uri) noexcept;
 
 	/**
+         * Is the given URI a mount point, i.e. is something already
+         * mounted on this path?
+	 */
+	gcc_pure gcc_nonnull_all
+	bool IsMountPoint(const char *uri) noexcept {
+		return GetMount(uri) != nullptr;
+	}
+
+	/**
 	 * Call the given function for each mounted storage, including
 	 * the root storage.  Passes mount point URI and the a const
 	 * Storage reference to the function.
@@ -110,6 +119,15 @@ public:
 		const std::lock_guard<Mutex> protect(mutex);
 		std::string uri;
 		VisitMounts(uri, root, t);
+	}
+
+	/**
+	 * Is a storage with the given URI already mounted?
+	 */
+	gcc_pure gcc_nonnull_all
+	bool IsMounted(const char *storage_uri) const noexcept {
+		const std::lock_guard<Mutex> protect(mutex);
+		return IsMounted(root, storage_uri);
 	}
 
 	void Mount(const char *uri, std::unique_ptr<Storage> storage);
@@ -144,6 +162,22 @@ private:
 
 			VisitMounts(uri, i.second, t);
 		}
+	}
+
+	gcc_pure gcc_nonnull_all
+	static bool IsMounted(const Directory &directory,
+			      const char *storage_uri) noexcept {
+		if (directory.storage) {
+			const auto uri = directory.storage->MapUTF8("");
+			if (uri == storage_uri)
+				return true;
+		}
+
+		for (const auto &i : directory.children)
+			if (IsMounted(i.second, storage_uri))
+				return true;
+
+		return false;
 	}
 
 	/**

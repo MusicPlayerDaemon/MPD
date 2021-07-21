@@ -54,7 +54,7 @@ Java::File::ToAbsolutePath(JNIEnv *env, jobject _file) noexcept
 
 	LocalObject file(env, _file);
 
-	const jstring path = getAbsolutePath(env, file);
+	const jstring path = GetAbsolutePath(env, file);
 	if (DiscardException(env) || path == nullptr)
 		return nullptr;
 

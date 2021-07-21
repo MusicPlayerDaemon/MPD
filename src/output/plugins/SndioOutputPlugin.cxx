@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -60,8 +60,8 @@ sndio_test_default_device()
 {
 	auto *hdl = sio_open(SIO_DEVANY, SIO_PLAY, 0);
 	if (!hdl) {
-		FormatError(sndio_output_domain,
-			    "Error opening default sndio device");
+		LogError(sndio_output_domain,
+			 "Error opening default sndio device");
 		return false;
 	}
 
@@ -185,7 +185,7 @@ SndioOutput::RegisterMixerListener(Mixer *_mixer, MixerListener *_listener) {
 	listener = _listener;
 }
 
-const struct AudioOutputPlugin sndio_output_plugin = {
+constexpr struct AudioOutputPlugin sndio_output_plugin = {
 	"sndio",
 	sndio_test_default_device,
 	SndioOutput::Create,

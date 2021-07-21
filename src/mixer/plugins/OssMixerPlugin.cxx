@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -153,9 +153,9 @@ OssMixer::GetVolume()
 	right = (level & 0xff00) >> 8;
 
 	if (left != right) {
-		FormatWarning(oss_mixer_domain,
-			      "volume for left and right is not the same, \"%i\" and "
-			      "\"%i\"\n", left, right);
+		FmtWarning(oss_mixer_domain,
+			   "volume for left and right is not the same, \"{}\" and "
+			   "\"{}\"\n", left, right);
 	}
 
 	return left;
@@ -175,7 +175,7 @@ OssMixer::SetVolume(unsigned volume)
 		throw MakeErrno("failed to set OSS volume");
 }
 
-const MixerPlugin oss_mixer_plugin = {
+constexpr MixerPlugin oss_mixer_plugin = {
 	oss_mixer_init,
 	true,
 };

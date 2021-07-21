@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -81,7 +81,7 @@ TidalSessionManager::AddLoginHandler(TidalSessionHandler &h) noexcept
 void
 TidalSessionManager::OnTidalLoginSuccess(std::string _session) noexcept
 {
-	FormatDebug(tidal_domain, "Login successful, session=%s", _session.c_str());
+	FmtDebug(tidal_domain, "Login successful, session={}", _session);
 
 	{
 		const std::lock_guard<Mutex> protect(mutex);

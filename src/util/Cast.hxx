@@ -31,33 +31,32 @@
 #define CAST_HXX
 
 #include "OffsetPointer.hxx"
-#include "Compiler.h"
 
 #include <cstddef>
 
 template<typename T, typename U>
 constexpr T *
-OffsetCast(U *p, ptrdiff_t offset)
+OffsetCast(U *p, std::ptrdiff_t offset)
 {
 	return reinterpret_cast<T *>(OffsetPointer(p, offset));
 }
 
 template<typename T, typename U>
 constexpr T *
-OffsetCast(const U *p, ptrdiff_t offset)
+OffsetCast(const U *p, std::ptrdiff_t offset)
 {
 	return reinterpret_cast<const T *>(OffsetPointer(p, offset));
 }
 
 template<class C, class A>
-constexpr ptrdiff_t
+constexpr std::ptrdiff_t
 ContainerAttributeOffset(const C *null_c, const A C::*p)
 {
-	return ptrdiff_t((const char *)&(null_c->*p) - (const char *)null_c);
+	return std::ptrdiff_t((const char *)&(null_c->*p) - (const char *)null_c);
 }
 
 template<class C, class A>
-constexpr ptrdiff_t
+constexpr std::ptrdiff_t
 ContainerAttributeOffset(const A C::*p)
 {
 	return ContainerAttributeOffset<C, A>(nullptr, p);

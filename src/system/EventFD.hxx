@@ -44,8 +44,8 @@ public:
 	 */
 	EventFD();
 
-	int Get() const noexcept {
-		return fd.Get();
+	FileDescriptor Get() const noexcept {
+		return fd;
 	}
 
 	/**

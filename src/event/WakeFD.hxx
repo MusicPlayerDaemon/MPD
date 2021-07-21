@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -20,14 +20,38 @@
 #ifndef MPD_WAKE_FD_HXX
 #define MPD_WAKE_FD_HXX
 
-#include "config.h"
+#include "net/SocketDescriptor.hxx"
+#include "event/Features.h"
 
 #ifdef USE_EVENTFD
 #include "system/EventFD.hxx"
-#define WakeFD EventFD
 #else
 #include "system/EventPipe.hxx"
-#define WakeFD EventPipe
 #endif
+
+class WakeFD {
+#ifdef USE_EVENTFD
+	EventFD fd;
+#else
+	EventPipe fd;
+#endif
+
+public:
+	SocketDescriptor GetSocket() const noexcept {
+#ifdef _WIN32
+		return fd.Get();
+#else
+		return SocketDescriptor::FromFileDescriptor(fd.Get());
+#endif
+	}
+
+	bool Read() noexcept {
+		return fd.Read();
+	}
+
+	void Write() noexcept {
+		fd.Write();
+	}
+};
 
 #endif

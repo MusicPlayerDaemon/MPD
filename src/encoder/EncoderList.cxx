@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -33,7 +33,7 @@
 
 #include <string.h>
 
-const EncoderPlugin *const encoder_plugins[] = {
+constexpr const EncoderPlugin *encoder_plugins[] = {
 	&null_encoder_plugin,
 #ifdef ENABLE_VORBISENC
 	&vorbis_encoder_plugin,

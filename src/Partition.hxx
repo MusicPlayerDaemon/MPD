@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -27,6 +27,7 @@
 #include "mixer/Listener.hxx"
 #include "player/Control.hxx"
 #include "player/Listener.hxx"
+#include "protocol/RangeArg.hxx"
 #include "ReplayGainMode.hxx"
 #include "SingleMode.hxx"
 #include "Chrono.hxx"
@@ -38,6 +39,7 @@
 #include <memory>
 
 struct Instance;
+struct RangeArg;
 class MultipleOutputs;
 class SongLoader;
 class ClientListener;
@@ -133,20 +135,20 @@ struct Partition final : QueueListener, PlayerListener, MixerListener {
 	 * @param start the position of the first song to delete
 	 * @param end the position after the last song to delete
 	 */
-	void DeleteRange(unsigned start, unsigned end) {
-		playlist.DeleteRange(pc, start, end);
+	void DeleteRange(RangeArg range) {
+		playlist.DeleteRange(pc, range);
 	}
 
 	void StaleSong(const char *uri) noexcept {
 		playlist.StaleSong(pc, uri);
 	}
 
-	void Shuffle(unsigned start, unsigned end) noexcept {
-		playlist.Shuffle(pc, start, end);
+	void Shuffle(RangeArg range) {
+		playlist.Shuffle(pc, range);
 	}
 
-	void MoveRange(unsigned start, unsigned end, int to) {
-		playlist.MoveRange(pc, start, end, to);
+	void MoveRange(RangeArg range, int to) {
+		playlist.MoveRange(pc, range, to);
 	}
 
 	void MoveId(unsigned id, int to) {
@@ -161,10 +163,8 @@ struct Partition final : QueueListener, PlayerListener, MixerListener {
 		playlist.SwapIds(pc, id1, id2);
 	}
 
-	void SetPriorityRange(unsigned start_position, unsigned end_position,
-			      uint8_t priority) {
-		playlist.SetPriorityRange(pc, start_position, end_position,
-					  priority);
+	void SetPriorityRange(RangeArg position_range, uint8_t priority) {
+		playlist.SetPriorityRange(pc, position_range, priority);
 	}
 
 	void SetPriorityId(unsigned song_id, uint8_t priority) {

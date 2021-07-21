@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -116,9 +116,9 @@ ReadConfigBlock(ConfigData &config_data, BufferedReader &reader,
 	const ConfigTemplate &option = config_block_templates[i];
 
 	if (option.deprecated)
-		FormatWarning(config_file_domain,
-			      "config parameter \"%s\" on line %u is deprecated",
-			      name, reader.GetLineNumber());
+		FmtWarning(config_file_domain,
+			   "config parameter \"{}\" on line {} is deprecated",
+			   name, reader.GetLineNumber());
 
 	if (!option.repeatable)
 		if (const auto *block = config_data.GetBlock(o))
@@ -148,9 +148,9 @@ ReadConfigParam(ConfigData &config_data, BufferedReader &reader,
 	const ConfigTemplate &option = config_param_templates[i];
 
 	if (option.deprecated)
-		FormatWarning(config_file_domain,
-			      "config parameter \"%s\" on line %u is deprecated",
-			      name, reader.GetLineNumber());
+		FmtWarning(config_file_domain,
+			   "config parameter \"{}\" on line {} is deprecated",
+			   name, reader.GetLineNumber());
 
 	if (!option.repeatable)
 		/* if the option is not repeatable, override the old
@@ -238,7 +238,7 @@ ReadConfigFile(ConfigData &config_data, Path path)
 	assert(!path.IsNull());
 	const std::string path_utf8 = path.ToUTF8();
 
-	FormatDebug(config_file_domain, "loading file %s", path_utf8.c_str());
+	FmtDebug(config_file_domain, "loading file {}", path_utf8);
 
 	FileReader file(path);
 

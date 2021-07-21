@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -24,6 +24,8 @@
 #include "client/Response.hxx"
 #include "util/ConstBuffer.hxx"
 #include "Partition.hxx"
+
+#include <fmt/format.h>
 
 #include <cassert>
 #include <set>
@@ -85,7 +87,7 @@ handle_channels(Client &client, [[maybe_unused]] Request args, Response &r)
 	}
 
 	for (const auto &channel : channels)
-		r.Format("channel: %s\n", channel.c_str());
+		r.Fmt(FMT_STRING("channel: {}\n"), channel);
 
 	return CommandResult::OK;
 }
@@ -97,8 +99,8 @@ handle_read_messages(Client &client,
 	assert(args.empty());
 
 	client.ConsumeMessages([&r](const auto &msg){
-		r.Format("channel: %s\nmessage: %s\n",
-			 msg.GetChannel(), msg.GetMessage());
+		r.Fmt(FMT_STRING("channel: {}\nmessage: {}\n"),
+		      msg.GetChannel(), msg.GetMessage());
 	});
 
 	return CommandResult::OK;

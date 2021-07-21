@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -168,8 +168,8 @@ audiofile_setup_sample_format(AFfilehandle af_fp) noexcept
 
 	afGetSampleFormat(af_fp, AF_DEFAULT_TRACK, &fs, &bits);
 	if (!audio_valid_sample_format(audiofile_bits_to_sample_format(bits))) {
-		FormatDebug(audiofile_domain,
-			    "input file has %d bit samples, converting to 16",
+		FmtDebug(audiofile_domain,
+			    "input file has {} bit samples, converting to 16",
 			    bits);
 		bits = 16;
 	}
@@ -241,7 +241,7 @@ audiofile_stream_decode(DecoderClient &client, InputStream &is)
 }
 
 static bool
-audiofile_scan_stream(InputStream &is, TagHandler &handler) noexcept
+audiofile_scan_stream(InputStream &is, TagHandler &handler)
 {
 	if (!is.IsSeekable() || !is.KnownSize())
 		return false;

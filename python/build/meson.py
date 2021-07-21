@@ -91,7 +91,12 @@ def configure(toolchain, src, build, args=()):
         '--cross-file', cross_file,
     ] + args
 
-    subprocess.check_call(configure, env=toolchain.env)
+    env = toolchain.env.copy()
+
+    # Meson 0.54 requires the BOOST_ROOT environment variable
+    env['BOOST_ROOT'] = toolchain.install_prefix
+
+    subprocess.check_call(configure, env=env)
 
 class MesonProject(Project):
     def __init__(self, url, md5, installed, configure_args=[],

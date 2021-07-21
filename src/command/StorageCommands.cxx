@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -16,8 +16,6 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-
-#define __STDC_FORMAT_MACROS /* for PRIu64 */
 
 #include "config.h"
 #include "StorageCommands.hxx"
@@ -37,7 +35,8 @@
 #include "TimePrint.hxx"
 #include "IdleFlags.hxx"
 
-#include <cinttypes> /* for PRIu64 */
+#include <fmt/format.h>
+
 #include <memory>
 
 gcc_pure
@@ -46,13 +45,6 @@ skip_path(const char *name_utf8) noexcept
 {
 	return std::strchr(name_utf8, '\n') != nullptr;
 }
-
-#if defined(_WIN32) && GCC_CHECK_VERSION(4,6)
-/* PRIu64 causes bogus compiler warning */
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wformat"
-#pragma GCC diagnostic ignored "-Wformat-extra-args"
-#endif
 
 static void
 handle_listfiles_storage(Response &r, StorageDirectoryReader &reader)
@@ -75,14 +67,14 @@ handle_listfiles_storage(Response &r, StorageDirectoryReader &reader)
 			continue;
 
 		case StorageFileInfo::Type::REGULAR:
-			r.Format("file: %s\n"
-				 "size: %" PRIu64 "\n",
-				 name_utf8,
-				 info.size);
+			r.Fmt(FMT_STRING("file: {}\n"
+					 "size: {}\n"),
+			      name_utf8,
+			      info.size);
 			break;
 
 		case StorageFileInfo::Type::DIRECTORY:
-			r.Format("directory: %s\n", name_utf8);
+			r.Fmt(FMT_STRING("directory: {}\n"), name_utf8);
 			break;
 		}
 
@@ -139,7 +131,7 @@ print_storage_uri(Client &client, Response &r, const Storage &storage)
 			uri = std::move(allocated);
 	}
 
-	r.Format("storage: %s\n", uri.c_str());
+	r.Fmt(FMT_STRING("storage: {}\n"), uri);
 }
 
 CommandResult
@@ -155,7 +147,7 @@ handle_listmounts(Client &client, [[maybe_unused]] Request args, Response &r)
 
 	const auto visitor = [&client, &r](const char *mount_uri,
 					   const Storage &storage){
-		r.Format("mount: %s\n", mount_uri);
+		r.Fmt(FMT_STRING("mount: {}\n"), mount_uri);
 		print_storage_uri(client, r, storage);
 	};
 
@@ -195,6 +187,16 @@ handle_mount(Client &client, Request args, Response &r)
 		return CommandResult::ERROR;
 	}
 
+	if (composite.IsMountPoint(local_uri)) {
+		r.Error(ACK_ERROR_ARG, "Mount point busy");
+		return CommandResult::ERROR;
+	}
+
+	if (composite.IsMounted(remote_uri)) {
+		r.Error(ACK_ERROR_ARG, "This storage is already mounted");
+		return CommandResult::ERROR;
+	}
+
 	auto &event_loop = instance.io_thread.GetEventLoop();
 	auto storage = CreateStorageURI(event_loop, remote_uri);
 	if (storage == nullptr) {
@@ -207,8 +209,10 @@ handle_mount(Client &client, Request args, Response &r)
 
 #ifdef ENABLE_DATABASE
 	if (auto *db = dynamic_cast<SimpleDatabase *>(instance.GetDatabase())) {
+		bool need_update;
+
 		try {
-			db->Mount(local_uri, remote_uri);
+			need_update = !db->Mount(local_uri, remote_uri);
 		} catch (...) {
 			composite.Unmount(local_uri);
 			throw;
@@ -217,6 +221,12 @@ handle_mount(Client &client, Request args, Response &r)
 		// TODO: call Instance::OnDatabaseModified()?
 		// TODO: trigger database update?
 		instance.EmitIdle(IDLE_DATABASE);
+
+		if (need_update) {
+			UpdateService *update = client.GetInstance().update;
+			if (update != nullptr)
+				update->Enqueue(local_uri, false);
+		}
 	}
 #endif
 

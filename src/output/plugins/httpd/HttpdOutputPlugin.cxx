@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -164,7 +164,7 @@ HttpdOutput::ReadPage()
 	if (size == 0)
 		return nullptr;
 
-	return std::make_shared<Page>(buffer, size);
+	return std::make_shared<Page>(ConstBuffer{buffer, size});
 }
 
 inline void
@@ -239,9 +239,9 @@ HttpdOutput::Delay() const noexcept
 {
 	if (!LockHasClients() && pause) {
 		/* if there's no client and this output is paused,
-		   then httpd_output_pause() will not do anything, it
-		   will not fill the buffer and it will not update the
-		   timer; therefore, we reset the timer here */
+		   then Pause() will not do anything, it will not fill
+		   the buffer and it will not update the timer;
+		   therefore, we reset the timer here */
 		timer->Reset();
 
 		/* some arbitrary delay that is long enough to avoid

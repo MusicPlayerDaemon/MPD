@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -28,6 +28,7 @@
 #define MPD_FILTER_CHAIN_HXX
 
 #include <memory>
+#include <string_view>
 
 class PreparedFilter;
 
@@ -45,7 +46,7 @@ filter_chain_new() noexcept;
  * @param filter the filter to be appended to #chain
  */
 void
-filter_chain_append(PreparedFilter &chain, const char *name,
+filter_chain_append(PreparedFilter &chain, std::string_view name,
 		    std::unique_ptr<PreparedFilter> filter) noexcept;
 
 #endif

@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -43,6 +43,9 @@ public:
 		vorbis_dsp_clear(&vd);
 		vorbis_info_clear(&vi);
 	}
+
+	VorbisEncoder(const VorbisEncoder &) = delete;
+	VorbisEncoder &operator=(const VorbisEncoder &) = delete;
 
 	/* virtual methods from class Encoder */
 	void End() override {
@@ -225,7 +228,7 @@ VorbisEncoder::SendTag(const Tag &tag)
 
 	/* reset ogg_stream_state and begin a new stream */
 
-	stream.Reinitialize(GenerateOggSerial());
+	stream.Reinitialize(GenerateSerial());
 
 	/* send that vorbis_comment to the ogg_stream_state */
 

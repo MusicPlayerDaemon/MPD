@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -27,7 +27,7 @@
 
 #include <string.h>
 
-AllocatedString<>
+AllocatedString
 icy_server_metadata_header(const char *name,
 			   const char *genre, const char *url,
 			   const char *content_type, int metaint) noexcept
@@ -45,6 +45,7 @@ icy_server_metadata_header(const char *name,
 			    "Connection: close\r\n"
 			    "Pragma: no-cache\r\n"
 			    "Cache-Control: no-cache, no-store\r\n"
+			    "Access-Control-Allow-Origin: *\r\n"
 			    "\r\n",
 			    name,
 			    genre,
@@ -54,7 +55,7 @@ icy_server_metadata_header(const char *name,
 			    content_type);
 }
 
-static AllocatedString<>
+static AllocatedString
 icy_server_metadata_string(const char *stream_title,
 			   const char* stream_url) noexcept
 {
@@ -110,9 +111,8 @@ icy_server_metadata_page(const Tag &tag, const TagType *types) noexcept
 
 	const auto icy_string = icy_server_metadata_string(stream_title, "");
 
-	if (icy_string.IsNull())
+	if (icy_string == nullptr)
 		return nullptr;
 
-	return std::make_shared<Page>(icy_string.c_str(),
-				      uint8_t(icy_string[0]) * 16 + 1);
+	return std::make_shared<Page>(ConstBuffer<std::byte>{(const std::byte *)icy_string.c_str(), uint8_t(icy_string[0]) * 16U + 1U});
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2019 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2012-2020 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -32,7 +32,6 @@
 
 #include "SocketAddress.hxx"
 #include "util/ByteOrder.hxx"
-#include "util/Compiler.h"
 
 #include <cstdint>
 
@@ -127,13 +126,20 @@ public:
 	}
 
 	/**
+	 * Cast a #sockaddr_in6 reference to an IPv6Address reference.
+	 */
+	static constexpr const IPv6Address &Cast(const struct sockaddr_in6 &src) noexcept {
+		/* this reinterpret_cast works because this class is
+		   just a wrapper for struct sockaddr_in6 */
+		return *(const IPv6Address *)(const void *)&src;
+	}
+
+	/**
 	 * Return a downcasted reference to the address.  This call is
 	 * only legal after verifying SocketAddress::GetFamily().
 	 */
-	static constexpr const IPv6Address &Cast(const SocketAddress &src) noexcept {
-		/* this reinterpret_cast works because this class is
-		   just a wrapper for struct sockaddr_in6 */
-		return *(const IPv6Address *)(const void *)src.GetAddress();
+	static constexpr const IPv6Address &Cast(const SocketAddress src) noexcept {
+		return Cast(src.CastTo<struct sockaddr_in6>());
 	}
 
 	constexpr operator SocketAddress() const noexcept {
@@ -172,13 +178,13 @@ public:
 	/**
 	 * Is this the IPv6 wildcard address (in6addr_any)?
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	bool IsAny() const noexcept;
 
 	/**
 	 * Is this an IPv4 address mapped inside struct sockaddr_in6?
 	 */
-#if defined(__linux__) && !GCC_OLDER_THAN(5,0)
+#if defined(__linux__)
 	constexpr
 #endif
 	bool IsV4Mapped() const noexcept {
@@ -188,14 +194,14 @@ public:
 	/**
 	 * Convert "::ffff:127.0.0.1" to "127.0.0.1".
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	IPv4Address UnmapV4() const noexcept;
 
 	/**
 	 * Bit-wise AND of two addresses.  This is useful for netmask
 	 * calculations.
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	IPv6Address operator&(const IPv6Address &other) const;
 
 private:

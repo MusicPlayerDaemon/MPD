@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2019 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2012-2021 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -90,13 +90,13 @@ public:
 	 * Determine the socket type, i.e. SOCK_STREAM, SOCK_DGRAM or
 	 * SOCK_SEQPACKET.  Returns -1 on error.
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	int GetType() const noexcept;
 
 	/**
 	 * Is this a stream socket?
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	bool IsStream() const noexcept;
 
 	using FileDescriptor::Get;
@@ -159,20 +159,20 @@ public:
 	/**
 	 * @return the value size or 0 on error
 	 */
-	size_t GetOption(int level, int name,
-			 void *value, size_t size) const noexcept;
+	std::size_t GetOption(int level, int name,
+			      void *value, std::size_t size) const noexcept;
 
 #ifdef HAVE_STRUCT_UCRED
 	/**
 	 * Receive peer credentials (SO_PEERCRED).  On error, the pid
 	 * is -1.
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	struct ucred GetPeerCredentials() const noexcept;
 #endif
 
 	bool SetOption(int level, int name,
-		       const void *value, size_t size) noexcept;
+		       const void *value, std::size_t size) noexcept;
 
 	bool SetBoolOption(int level, int name, bool _value) noexcept {
 		const int value = _value;
@@ -226,14 +226,14 @@ public:
 
 	bool Connect(SocketAddress address) noexcept;
 
-	gcc_pure
+	[[gnu::pure]]
 	StaticSocketAddress GetLocalAddress() const noexcept;
 
-	gcc_pure
+	[[gnu::pure]]
 	StaticSocketAddress GetPeerAddress() const noexcept;
 
-	ssize_t Read(void *buffer, size_t length) noexcept;
-	ssize_t Write(const void *buffer, size_t length) noexcept;
+	ssize_t Read(void *buffer, std::size_t length) noexcept;
+	ssize_t Write(const void *buffer, std::size_t length) noexcept;
 
 #ifdef _WIN32
 	int WaitReadable(int timeout_ms) const noexcept;
@@ -247,13 +247,13 @@ public:
 	/**
 	 * Receive a datagram and return the source address.
 	 */
-	ssize_t Read(void *buffer, size_t length,
+	ssize_t Read(void *buffer, std::size_t length,
 		     StaticSocketAddress &address) noexcept;
 
 	/**
 	 * Send a datagram to the specified address.
 	 */
-	ssize_t Write(const void *buffer, size_t length,
+	ssize_t Write(const void *buffer, std::size_t length,
 		      SocketAddress address) noexcept;
 
 #ifndef _WIN32

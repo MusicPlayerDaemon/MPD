@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -16,8 +16,6 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-
-#define __STDC_FORMAT_MACROS /* for PRIu64 */
 
 #include "config.h"
 #include "FileCommands.hxx"
@@ -43,16 +41,16 @@
 #include "thread/Mutex.hxx"
 #include "Log.hxx"
 
+#include <fmt/format.h>
+
+#include <algorithm>
 #include <cassert>
-#include <cinttypes> /* for PRIu64 */
 
 gcc_pure
 static bool
 SkipNameFS(PathTraitsFS::const_pointer name_fs) noexcept
 {
-	return name_fs[0] == '.' &&
-		(name_fs[1] == 0 ||
-		 (name_fs[1] == '.' && name_fs[2] == 0));
+	return PathTraitsFS::IsSpecialFilename(name_fs);
 }
 
 gcc_pure
@@ -61,13 +59,6 @@ skip_path(Path name_fs) noexcept
 {
 	return name_fs.HasNewline();
 }
-
-#if defined(_WIN32) && GCC_CHECK_VERSION(4,6)
-/* PRIu64 causes bogus compiler warning */
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wformat"
-#pragma GCC diagnostic ignored "-Wformat-extra-args"
-#endif
 
 CommandResult
 handle_listfiles_local(Response &r, Path path_fs)
@@ -89,12 +80,12 @@ handle_listfiles_local(Response &r, Path path_fs)
 			continue;
 
 		if (fi.IsRegular())
-			r.Format("file: %s\n"
-				 "size: %" PRIu64 "\n",
-				 name_utf8.c_str(),
-				 fi.GetSize());
+			r.Fmt(FMT_STRING("file: {}\n"
+					 "size: {}\n"),
+			      name_utf8,
+			      fi.GetSize());
 		else if (fi.IsDirectory())
-			r.Format("directory: %s\n", name_utf8.c_str());
+			r.Fmt(FMT_STRING("directory: {}\n"), name_utf8);
 		else
 			continue;
 
@@ -115,12 +106,9 @@ IsValidName(const StringView s) noexcept
 	if (s.empty() || !IsAlphaASCII(s.front()))
 		return false;
 
-	for (const char ch : s) {
-		if (!IsAlphaASCII(ch) && ch != '_' && ch != '-')
-			return false;
-	}
-
-	return true;
+	return std::none_of(s.begin(), s.end(), [=](const auto &ch) {
+		return !IsAlphaASCII(ch) && ch != '_' && ch != '-';
+	});
 }
 
 gcc_pure
@@ -139,9 +127,7 @@ public:
 
 	void OnPair(StringView key, StringView value) noexcept override {
 		if (IsValidName(key) && IsValidValue(value))
-			response.Format("%.*s: %.*s\n",
-					int(key.size), key.data,
-					int(value.size), value.data);
+			response.Fmt(FMT_STRING("{}: {}\n"), key, value);
 	}
 };
 
@@ -192,9 +178,16 @@ read_stream_art(Response &r, const char *uri, size_t offset)
 {
 	const auto art_directory = PathTraitsUTF8::GetParent(uri);
 
-	Mutex mutex;
+	// TODO: eliminate this const_cast
+	auto &client = const_cast<Client &>(r.GetClient());
 
-	InputStreamPtr is = find_stream_art(art_directory, mutex);
+	/* to avoid repeating the search for each chunk request by the
+	   same client, use the #LastInputStream class to cache the
+	   #InputStream instance */
+	auto *is = client.last_album_art.Open(art_directory, [](std::string_view directory,
+								Mutex &mutex){
+		return find_stream_art(directory, mutex);
+	});
 
 	if (is == nullptr) {
 		r.Error(ACK_ERROR_NO_EXIST, "No file exists");
@@ -207,17 +200,27 @@ read_stream_art(Response &r, const char *uri, size_t offset)
 
 	const offset_type art_file_size = is->GetSize();
 
-	uint8_t buffer[Response::MAX_BINARY_SIZE];
-	size_t read_size;
-
-	{
-		std::unique_lock<Mutex> lock(mutex);
-		is->Seek(lock, offset);
-		read_size = is->Read(lock, &buffer, sizeof(buffer));
+	if (offset > art_file_size) {
+		r.Error(ACK_ERROR_ARG, "Offset too large");
+		return CommandResult::ERROR;
 	}
 
-	r.Format("size: %" PRIoffset "\n", art_file_size);
-	r.WriteBinary({buffer, read_size});
+	std::size_t buffer_size =
+		std::min<offset_type>(art_file_size - offset,
+				      r.GetClient().binary_limit);
+
+	std::unique_ptr<std::byte[]> buffer(new std::byte[buffer_size]);
+
+	std::size_t read_size = 0;
+	if (buffer_size > 0) {
+		std::unique_lock<Mutex> lock(is->mutex);
+		is->Seek(lock, offset);
+		read_size = is->Read(lock, buffer.get(), buffer_size);
+	}
+
+	r.Fmt(FMT_STRING("size: {}\n"), art_file_size);
+
+	r.WriteBinary({buffer.get(), read_size});
 
 	return CommandResult::OK;
 }
@@ -298,14 +301,16 @@ public:
 			return;
 		}
 
-		response.Format("size: %" PRIoffset "\n", buffer.size);
+		response.Fmt(FMT_STRING("size: {}\n"), buffer.size);
 
 		if (mime_type != nullptr)
-			response.Format("type: %s\n", mime_type);
+			response.Fmt(FMT_STRING("type: {}\n"), mime_type);
 
 		buffer.size -= offset;
-		if (buffer.size > Response::MAX_BINARY_SIZE)
-			buffer.size = Response::MAX_BINARY_SIZE;
+
+		const std::size_t binary_limit = response.GetClient().binary_limit;
+		if (buffer.size > binary_limit)
+			buffer.size = binary_limit;
 		buffer.data = OffsetPointer(buffer.data, offset);
 
 		response.WriteBinary(buffer);

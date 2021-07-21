@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -23,6 +23,7 @@
 #include <cstdint>
 
 struct playlist;
+struct RangeArg;
 class SongFilter;
 class Response;
 
@@ -41,8 +42,7 @@ playlist_print_uris(Response &r, const playlist &playlist);
  * Throws #PlaylistError if the range is invalid.
  */
 void
-playlist_print_info(Response &r, const playlist &playlist,
-		    unsigned start, unsigned end);
+playlist_print_info(Response &r, const playlist &playlist, RangeArg range);
 
 /**
  * Sends the song with the specified id to the client.
@@ -73,7 +73,7 @@ playlist_print_find(Response &r, const playlist &playlist,
 void
 playlist_print_changes_info(Response &r, const playlist &playlist,
 			    uint32_t version,
-			    unsigned start, unsigned end);
+			    RangeArg range);
 
 /**
  * Print changes since the specified playlist version, position only.
@@ -82,6 +82,6 @@ void
 playlist_print_changes_position(Response &r,
 				const playlist &playlist,
 				uint32_t version,
-				unsigned start, unsigned end);
+				RangeArg range);
 
 #endif

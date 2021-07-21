@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -23,7 +23,9 @@
 #include "util/RuntimeError.hxx"
 
 #include <upnptools.h>
-#include <ixml.h>
+#ifdef USING_PUPNP
+#	include <ixml.h>
+#endif
 
 #include <cassert>
 
@@ -44,8 +46,10 @@ DoInit()
 
 	UpnpSetMaxContentLength(2000*1024);
 
+#ifdef USING_PUPNP
 	// Servers sometimes make error (e.g.: minidlna returns bad utf-8)
 	ixmlRelaxParser(1);
+#endif
 }
 
 void

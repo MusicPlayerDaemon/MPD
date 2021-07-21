@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -21,8 +21,8 @@
 #define MPD_NFS_CONNECTION_HXX
 
 #include "Cancellable.hxx"
-#include "event/SocketMonitor.hxx"
-#include "event/TimerEvent.hxx"
+#include "event/SocketEvent.hxx"
+#include "event/CoarseTimerEvent.hxx"
 #include "event/DeferEvent.hxx"
 #include "util/Compiler.h"
 
@@ -40,7 +40,7 @@ class NfsLease;
 /**
  * An asynchronous connection to a NFS server.
  */
-class NfsConnection : SocketMonitor {
+class NfsConnection {
 	class CancellableCallback : public CancellablePointer<NfsCallback> {
 		NfsConnection &connection;
 
@@ -93,8 +93,9 @@ class NfsConnection : SocketMonitor {
 		void Callback(int err, void *data) noexcept;
 	};
 
+	SocketEvent socket_event;
 	DeferEvent defer_new_lease;
-	TimerEvent mount_timeout_event;
+	CoarseTimerEvent mount_timeout_event;
 
 	std::string server, export_name;
 
@@ -141,7 +142,7 @@ public:
 	gcc_nonnull_all
 	NfsConnection(EventLoop &_loop,
 		      const char *_server, const char *_export_name) noexcept
-		:SocketMonitor(_loop),
+		:socket_event(_loop, BIND_THIS_METHOD(OnSocketReady)),
 		 defer_new_lease(_loop, BIND_THIS_METHOD(RunDeferred)),
 		 mount_timeout_event(_loop, BIND_THIS_METHOD(OnMountTimeout)),
 		 server(_server), export_name(_export_name),
@@ -152,6 +153,10 @@ public:
 	 */
 	~NfsConnection() noexcept;
 
+	auto &GetEventLoop() const noexcept {
+		return socket_event.GetEventLoop();
+	}
+
 	gcc_pure
 	const char *GetServer() const noexcept {
 		return server.c_str();
@@ -161,8 +166,6 @@ public:
 	const char *GetExportName() const noexcept {
 		return export_name.c_str();
 	}
-
-	using SocketMonitor::GetEventLoop;
 
 	/**
 	 * Ensure that the connection is established.  The connection
@@ -231,8 +234,7 @@ private:
 	 */
 	int Service(unsigned flags) noexcept;
 
-	/* virtual methods from SocketMonitor */
-	bool OnSocketReady(unsigned flags) noexcept override;
+	void OnSocketReady(unsigned flags) noexcept;
 
 	/* callback for #mount_timeout_event */
 	void OnMountTimeout() noexcept;

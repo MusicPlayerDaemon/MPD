@@ -3,6 +3,7 @@ decoder_features = configuration_data()
 decoder_api = static_library(
   'decoder_api',
   'DecoderAPI.cxx',
+  'Domain.cxx',
   'Reader.cxx',
   'DecoderBuffer.cxx',
   'DecoderPlugin.cxx',
@@ -28,6 +29,9 @@ decoder_glue = static_library(
   'decoder_glue',
   'DecoderList.cxx',
   include_directories: inc,
+  dependencies: [
+    log_dep,
+  ],
 )
 
 decoder_glue_dep = declare_dependency(

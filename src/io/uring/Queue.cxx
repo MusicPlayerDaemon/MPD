@@ -32,10 +32,7 @@
 
 #include "Queue.hxx"
 #include "CancellableOperation.hxx"
-#include "Operation.hxx"
 #include "util/DeleteDisposer.hxx"
-
-#include <cassert>
 
 namespace Uring {
 
@@ -65,8 +62,8 @@ Queue::DispatchOneCompletion(struct io_uring_cqe &cqe) noexcept
 	if (data != nullptr) {
 		auto *c = (CancellableOperation *)data;
 		c->OnUringCompletion(cqe.res);
-		operations.erase_and_dispose(operations.iterator_to(*c),
-					     DeleteDisposer{});
+		c->unlink();
+		delete c;
 	}
 
 	ring.SeenCompletion(cqe);

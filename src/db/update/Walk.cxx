@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -69,46 +69,58 @@ UpdateWalk::RemoveExcludedFromDirectory(Directory &directory,
 	const ScopeDatabaseLock protect;
 
 	directory.ForEachChildSafe([&](Directory &child){
-			const auto name_fs =
-				AllocatedPath::FromUTF8(child.GetName());
+		const auto name_fs =
+			AllocatedPath::FromUTF8(child.GetName());
 
-			if (name_fs.IsNull() || exclude_list.Check(name_fs)) {
-				editor.DeleteDirectory(&child);
-				modified = true;
-			}
-		});
+		if (name_fs.IsNull() || exclude_list.Check(name_fs)) {
+			editor.DeleteDirectory(&child);
+			modified = true;
+		}
+	});
 
 	directory.ForEachSongSafe([&](Song &song){
-			assert(&song.parent == &directory);
+		assert(&song.parent == &directory);
 
-			const auto name_fs = AllocatedPath::FromUTF8(song.filename);
-			if (name_fs.IsNull() || exclude_list.Check(name_fs)) {
-				editor.DeleteSong(directory, &song);
-				modified = true;
-			}
-		});
+		const auto name_fs = AllocatedPath::FromUTF8(song.filename);
+		if (name_fs.IsNull() || exclude_list.Check(name_fs)) {
+			editor.DeleteSong(directory, &song);
+			modified = true;
+		}
+	});
 }
 
 inline void
 UpdateWalk::PurgeDeletedFromDirectory(Directory &directory) noexcept
 {
 	directory.ForEachChildSafe([&](Directory &child){
-			if (child.IsMount() || DirectoryExists(storage, child))
-				return;
+		if (child.IsMount())
+			/* mount points are always preserved */
+			return;
 
-			editor.LockDeleteDirectory(&child);
+		if (DirectoryExists(storage, child) &&
+		    child.IsPluginAvailable())
+			return;
 
-			modified = true;
-		});
+		/* the directory was deleted (or the plugin which
+		   handles this "virtual" directory is unavailable) */
+
+		editor.LockDeleteDirectory(&child);
+
+		modified = true;
+	});
 
 	directory.ForEachSongSafe([&](Song &song){
-			if (!directory_child_is_regular(storage, directory,
-							song.filename)) {
-				editor.LockDeleteSong(directory, &song);
+		if (!directory_child_is_regular(storage, directory,
+						song.filename) ||
+		    !song.IsPluginAvailable()) {
+			/* the song file was deleted (or the decoder
+			   plugin is unavailable) */
 
-				modified = true;
-			}
-		});
+			editor.LockDeleteSong(directory, &song);
+
+			modified = true;
+		}
+	});
 
 	for (auto i = directory.playlists.begin(),
 		     end = directory.playlists.end();
@@ -177,8 +189,8 @@ UpdateWalk::UpdateRegularFile(Directory &directory,
 			      const char *name,
 			      const StorageFileInfo &info) noexcept
 {
-	const char *suffix = uri_get_suffix(name);
-	if (suffix == nullptr)
+	const auto suffix = uri_get_suffix(name);
+	if (suffix.empty())
 		return false;
 
 	return UpdateSongFile(directory, name, suffix, info) ||
@@ -211,8 +223,8 @@ try {
 		if (!UpdateDirectory(*subdir, exclude_list, info))
 			editor.LockDeleteDirectory(subdir);
 	} else {
-		FormatDebug(update_domain,
-			    "%s is not a directory, archive or music", name);
+		FmtDebug(update_domain,
+			 "{} is not a directory, archive or music", name);
 	}
 } catch (...) {
 	LogError(std::current_exception());
@@ -300,6 +312,29 @@ UpdateWalk::SkipSymlink(const Directory *directory,
 #endif
 }
 
+static void
+LoadExcludeListOrThrow(const Storage &storage, const Directory &directory,
+		       ExcludeList &exclude_list)
+{
+	Mutex mutex;
+	auto is = InputStream::OpenReady(storage.MapUTF8(PathTraitsUTF8::Build(directory.GetPath(),
+									       ".mpdignore")).c_str(),
+					 mutex);
+	exclude_list.Load(std::move(is));
+}
+
+static void
+LoadExcludeListOrLog(const Storage &storage, const Directory &directory,
+		     ExcludeList &exclude_list) noexcept
+{
+	try {
+		LoadExcludeListOrThrow(storage, directory, exclude_list);
+	} catch (...) {
+		if (!IsFileNotFound(std::current_exception()))
+			LogError(std::current_exception());
+	}
+}
+
 bool
 UpdateWalk::UpdateDirectory(Directory &directory,
 			    const ExcludeList &exclude_list,
@@ -319,17 +354,7 @@ UpdateWalk::UpdateDirectory(Directory &directory,
 	}
 
 	ExcludeList child_exclude_list(exclude_list);
-
-	try {
-		Mutex mutex;
-		auto is = InputStream::OpenReady(PathTraitsUTF8::Build(storage.MapUTF8(directory.GetPath()),
-								       ".mpdignore").c_str(),
-						 mutex);
-		child_exclude_list.Load(std::move(is));
-	} catch (...) {
-		if (!IsFileNotFound(std::current_exception()))
-			LogError(std::current_exception());
-	}
+	LoadExcludeListOrLog(storage, directory, child_exclude_list);
 
 	if (!child_exclude_list.IsEmpty())
 		RemoveExcludedFromDirectory(directory, child_exclude_list);
@@ -415,24 +440,44 @@ UpdateWalk::DirectoryMakeUriParentChecked(Directory &root,
 	StringView uri(_uri);
 
 	while (true) {
-		auto s = uri.Split('/');
-		const std::string_view name = s.first;
-		const auto rest = s.second;
+		auto [name, rest] = uri.Split('/');
 		if (rest == nullptr)
 			break;
 
 		if (!name.empty()) {
 			directory = DirectoryMakeChildChecked(*directory,
 							      std::string(name).c_str(),
-							      s.first);
+							      name);
 			if (directory == nullptr)
 				break;
 		}
 
-		uri = s.second;
+		uri = rest;
 	}
 
 	return directory;
+}
+
+static void
+LoadExcludeLists(std::forward_list<ExcludeList> &lists,
+		 const Storage &storage, const Directory &directory) noexcept
+{
+	assert(!lists.empty());
+
+	if (!directory.IsRoot())
+		LoadExcludeLists(lists, storage, *directory.parent);
+
+	lists.emplace_front();
+	LoadExcludeListOrLog(storage, directory, lists.front());
+}
+
+static auto
+LoadExcludeLists(const Storage &storage, const Directory &directory) noexcept
+{
+	std::forward_list<ExcludeList> lists;
+	lists.emplace_front();
+	LoadExcludeLists(lists, storage, directory);
+	return lists;
 }
 
 inline void
@@ -455,9 +500,8 @@ try {
 		return;
 	}
 
-	ExcludeList exclude_list;
-
-	UpdateDirectoryChild(*parent, exclude_list, name, info);
+	const auto exclude_lists = LoadExcludeLists(storage, *parent);
+	UpdateDirectoryChild(*parent, exclude_lists.front(), name, info);
 } catch (...) {
 	LogError(std::current_exception());
 }
@@ -476,8 +520,8 @@ UpdateWalk::Walk(Directory &root, const char *path, bool discard) noexcept
 			return false;
 
 		if (!info.IsDirectory()) {
-			FormatError(update_domain, "Not a directory: %s",
-				    storage.MapUTF8("").c_str());
+			FmtError(update_domain, "Not a directory: {}",
+				 storage.MapUTF8(""));
 			return false;
 		}
 

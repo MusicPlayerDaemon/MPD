@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -40,6 +40,9 @@ public:
 	~MmsInputStream() noexcept override {
 		Stop();
 	}
+
+	MmsInputStream(const MmsInputStream &) = delete;
+	MmsInputStream &operator=(const MmsInputStream &) = delete;
 
 protected:
 	void Open() override;

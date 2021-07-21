@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -20,6 +20,7 @@
 #include "config.h"
 #include "MikmodDecoderPlugin.hxx"
 #include "../DecoderAPI.hxx"
+#include "lib/fmt/PathFormatter.hxx"
 #include "tag/Handler.hxx"
 #include "fs/Path.hxx"
 #include "util/Domain.hxx"
@@ -126,9 +127,9 @@ mikmod_decoder_init(const ConfigBlock &block)
 		   DMODE_16BITS);
 
 	if (MikMod_Init(params)) {
-		FormatError(mikmod_domain,
-			    "Could not init MikMod: %s",
-			    MikMod_strerror(MikMod_errno));
+		FmtError(mikmod_domain,
+			 "Could not init MikMod: {}",
+			 MikMod_strerror(MikMod_errno));
 		return false;
 	}
 
@@ -155,8 +156,7 @@ mikmod_decoder_file_decode(DecoderClient &client, Path path_fs)
 	handle = Player_Load(path2, 128, 0);
 
 	if (handle == nullptr) {
-		FormatError(mikmod_domain,
-			    "failed to open mod: %s", path_fs.c_str());
+		FmtError(mikmod_domain, "failed to open mod: {}", path_fs);
 		return;
 	}
 
@@ -189,8 +189,7 @@ mikmod_decoder_scan_file(Path path_fs, TagHandler &handler) noexcept
 	MODULE *handle = Player_Load(path2, 128, 0);
 
 	if (handle == nullptr) {
-		FormatDebug(mikmod_domain,
-			    "Failed to open file: %s", path_fs.c_str());
+		FmtDebug(mikmod_domain, "Failed to open file: {}", path_fs);
 		return false;
 	}
 

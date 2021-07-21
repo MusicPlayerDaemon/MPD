@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -46,7 +46,7 @@ IcuCompare::IcuCompare(std::string_view _needle) noexcept
 #else
 
 IcuCompare::IcuCompare(std::string_view _needle) noexcept
-	:needle(AllocatedString<>::Duplicate(_needle)) {}
+	:needle(_needle) {}
 
 #endif
 
@@ -56,7 +56,7 @@ IcuCompare::operator==(const char *haystack) const noexcept
 #ifdef HAVE_ICU_CASE_FOLD
 	return StringIsEqual(IcuCaseFold(haystack).c_str(), needle.c_str());
 #elif defined(_WIN32)
-	if (needle.IsNull())
+	if (needle == nullptr)
 		/* the MultiByteToWideChar() call in the constructor
 		   has failed, so let's always fail the comparison */
 		return false;
@@ -83,7 +83,7 @@ IcuCompare::IsIn(const char *haystack) const noexcept
 	return StringFind(IcuCaseFold(haystack).c_str(),
 			  needle.c_str()) != nullptr;
 #elif defined(_WIN32)
-	if (needle.IsNull())
+	if (needle == nullptr)
 		/* the MultiByteToWideChar() call in the constructor
 		   has failed, so let's always fail the comparison */
 		return false;

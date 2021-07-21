@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -19,14 +19,13 @@
 
 #include "WaveEncoderPlugin.hxx"
 #include "../EncoderAPI.hxx"
+#include "tag/RiffFormat.hxx"
 #include "util/ByteOrder.hxx"
 #include "util/DynamicFifoBuffer.hxx"
 
 #include <cassert>
 
 #include <string.h>
-
-static constexpr uint16_t WAVE_FORMAT_PCM = 1;
 
 class WaveEncoder final : public Encoder {
 	unsigned bits;
@@ -56,45 +55,44 @@ class PreparedWaveEncoder final : public PreparedEncoder {
 };
 
 struct WaveHeader {
-	uint32_t id_riff;
-	uint32_t riff_size;
-	uint32_t id_wave;
-	uint32_t id_fmt;
-	uint32_t fmt_size;
-	uint16_t format;
-	uint16_t channels;
-	uint32_t freq;
-	uint32_t byterate;
-	uint16_t blocksize;
-	uint16_t bits;
-	uint32_t id_data;
-	uint32_t data_size;
+	RiffFileHeader file_header;
+	RiffChunkHeader fmt_header;
+	RiffFmtChunk fmt;
+	RiffChunkHeader data_header;
 };
 
-static void
-fill_wave_header(WaveHeader *header, int channels, int bits,
-		int freq, int block_size) noexcept
+static_assert(sizeof(WaveHeader) == 44);
+
+static WaveHeader
+MakeWaveHeader(int channels, int bits,
+	       int freq, int block_size) noexcept
 {
+	WaveHeader header{};
+
 	int data_size = 0x0FFFFFFF;
 
 	/* constants */
-	header->id_riff = ToLE32(0x46464952);
-	header->id_wave = ToLE32(0x45564157);
-	header->id_fmt = ToLE32(0x20746d66);
-	header->id_data = ToLE32(0x61746164);
+	memcpy(header.file_header.id, "RIFF", 4);
+	memcpy(header.file_header.format, "WAVE", 4);
+	memcpy(header.fmt_header.id, "fmt ", 4);
+	memcpy(header.data_header.id, "data", 4);
 
 	/* wave format */
-	header->format = ToLE16(WAVE_FORMAT_PCM);
-	header->channels = ToLE16(channels);
-	header->bits = ToLE16(bits);
-	header->freq = ToLE32(freq);
-	header->blocksize = ToLE16(block_size);
-	header->byterate = ToLE32(freq * block_size);
+	header.fmt.tag = ToLE16(RiffFmtChunk::TAG_PCM);
+	header.fmt.channels = ToLE16(channels);
+	header.fmt.bits_per_sample = ToLE16(bits);
+	header.fmt.sample_rate = ToLE32(freq);
+	header.fmt.block_align = ToLE16(block_size);
+	header.fmt.byte_rate = ToLE32(freq * block_size);
 
 	/* chunk sizes (fake data length) */
-	header->fmt_size = ToLE32(16);
-	header->data_size = ToLE32(data_size);
-	header->riff_size = ToLE32(4 + (8 + 16) + (8 + data_size));
+	header.fmt_header.size = ToLE32(sizeof(header.fmt));
+	header.data_header.size = ToLE32(data_size);
+	header.file_header.size = ToLE32(4 +
+					 sizeof(header.fmt_header) + sizeof(header.fmt) +
+					 sizeof(header.data_header) + data_size);
+
+	return header;
 }
 
 static PreparedEncoder *
@@ -137,11 +135,10 @@ WaveEncoder::WaveEncoder(AudioFormat &audio_format) noexcept
 	auto *header = (WaveHeader *)range.data;
 
 	/* create PCM wave header in initial buffer */
-	fill_wave_header(header,
-			 audio_format.channels,
-			 bits,
-			 audio_format.sample_rate,
-			 (bits / 8) * audio_format.channels);
+	*header = MakeWaveHeader(audio_format.channels,
+				 bits,
+				 audio_format.sample_rate,
+				 (bits / 8) * audio_format.channels);
 
 	buffer.Append(sizeof(*header));
 }

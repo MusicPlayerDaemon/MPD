@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,10 +18,10 @@
  */
 
 #include "ModplugDecoderPlugin.hxx"
+#include "ModCommon.hxx"
 #include "../DecoderAPI.hxx"
 #include "input/InputStream.hxx"
 #include "tag/Handler.hxx"
-#include "util/WritableBuffer.hxx"
 #include "util/Domain.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/StringView.hxx"
@@ -40,14 +40,27 @@
 static constexpr Domain modplug_domain("modplug");
 
 static constexpr size_t MODPLUG_FRAME_SIZE = 4096;
-static constexpr size_t MODPLUG_PREALLOC_BLOCK = 256 * 1024;
-static constexpr offset_type MODPLUG_FILE_LIMIT = 100 * 1024 * 1024;
 
 static int modplug_loop_count;
+static unsigned char modplug_resampling_mode;
 
 static bool
 modplug_decoder_init(const ConfigBlock &block)
 {
+	const char* modplug_resampling_mode_value = block.GetBlockValue("resampling_mode", "fir");
+	if (strcmp(modplug_resampling_mode_value, "nearest") == 0) {
+		modplug_resampling_mode = MODPLUG_RESAMPLE_NEAREST;
+	} else if (strcmp(modplug_resampling_mode_value, "linear") == 0) {
+		modplug_resampling_mode = MODPLUG_RESAMPLE_LINEAR;
+	} else if (strcmp(modplug_resampling_mode_value, "spline") == 0) {
+		modplug_resampling_mode = MODPLUG_RESAMPLE_SPLINE;
+	} else if (strcmp(modplug_resampling_mode_value, "fir") == 0) {
+		modplug_resampling_mode = MODPLUG_RESAMPLE_FIR;
+	} else {
+		throw FormatRuntimeError("Invalid resampling mode in line %d: %s",
+				block.line, modplug_resampling_mode_value);
+	}
+
 	modplug_loop_count = block.GetBlockValue("loop_count", 0);
 	if (modplug_loop_count < -1)
 		throw FormatRuntimeError("Invalid loop count in line %d: %i",
@@ -56,77 +69,16 @@ modplug_decoder_init(const ConfigBlock &block)
 	return true;
 }
 
-static WritableBuffer<uint8_t>
-mod_loadfile(DecoderClient *client, InputStream &is)
-{
-	//known/unknown size, preallocate array, lets read in chunks
-
-	const bool is_stream = !is.KnownSize();
-
-	WritableBuffer<uint8_t> buffer;
-	if (is_stream)
-		buffer.size = MODPLUG_PREALLOC_BLOCK;
-	else {
-		const auto size = is.GetSize();
-
-		if (size == 0) {
-			LogWarning(modplug_domain, "file is empty");
-			return nullptr;
-		}
-
-		if (size > MODPLUG_FILE_LIMIT) {
-			LogWarning(modplug_domain, "file too large");
-			return nullptr;
-		}
-
-		buffer.size = size;
-	}
-
-	buffer.data = new uint8_t[buffer.size];
-
-	uint8_t *const end = buffer.end();
-	uint8_t *p = buffer.begin();
-
-	while (true) {
-		size_t ret = decoder_read(client, is, p, end - p);
-		if (ret == 0) {
-			if (is.LockIsEOF())
-				/* end of file */
-				break;
-
-			/* I/O error - skip this song */
-			delete[] buffer.data;
-			buffer.data = nullptr;
-			return buffer;
-		}
-
-		p += ret;
-		if (p == end) {
-			if (!is_stream)
-				break;
-
-			LogWarning(modplug_domain, "stream too large");
-			delete[] buffer.data;
-			buffer.data = nullptr;
-			return buffer;
-		}
-	}
-
-	buffer.size = p - buffer.data;
-	return buffer;
-}
-
 static ModPlugFile *
 LoadModPlugFile(DecoderClient *client, InputStream &is)
 {
-	const auto buffer = mod_loadfile(client, is);
+	const auto buffer = mod_loadfile(&modplug_domain, client, is);
 	if (buffer.IsNull()) {
 		LogWarning(modplug_domain, "could not load stream");
 		return nullptr;
 	}
 
-	ModPlugFile *f = ModPlug_Load(buffer.data, buffer.size);
-	delete[] buffer.data;
+	ModPlugFile *f = ModPlug_Load(buffer.data(), buffer.size());
 	return f;
 }
 
@@ -139,7 +91,7 @@ mod_decode(DecoderClient &client, InputStream &is)
 
 	ModPlug_GetSettings(&settings);
 	/* alter setting */
-	settings.mResamplingMode = MODPLUG_RESAMPLE_FIR; /* RESAMP */
+	settings.mResamplingMode = modplug_resampling_mode;
 	settings.mChannels = 2;
 	settings.mBits = 16;
 	settings.mFrequency = 44100;

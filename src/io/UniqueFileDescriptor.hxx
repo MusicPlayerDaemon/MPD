@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2018 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2012-2020 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -30,7 +30,7 @@
 #ifndef UNIQUE_FILE_DESCRIPTOR_HXX
 #define UNIQUE_FILE_DESCRIPTOR_HXX
 
-#include "FileDescriptor.hxx"
+#include "FileDescriptor.hxx" // IWYU pragma: export
 
 #include <cassert>
 #include <utility>
@@ -62,6 +62,14 @@ public:
 		using std::swap;
 		swap(fd, other.fd);
 		return *this;
+	}
+
+	/**
+	 * Release ownership and return the descriptor as an unmanaged
+	 * #FileDescriptor instance.
+	 */
+	FileDescriptor Release() noexcept {
+		return std::exchange(*(FileDescriptor *)this, Undefined());
 	}
 
 protected:

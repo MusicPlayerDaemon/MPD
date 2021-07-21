@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -38,10 +38,10 @@ class IcuCompare {
 #ifdef _WIN32
 	/* Windows API functions work with wchar_t strings, so let's
 	   cache the MultiByteToWideChar() result for performance */
-	AllocatedString<wchar_t> needle;
-#else
-	AllocatedString<> needle;
+	using AllocatedString = BasicAllocatedString<wchar_t>;
 #endif
+
+	AllocatedString needle;
 
 public:
 	IcuCompare():needle(nullptr) {}
@@ -50,12 +50,12 @@ public:
 
 	IcuCompare(const IcuCompare &src) noexcept
 		:needle(src
-			? src.needle.Clone()
+			? AllocatedString(src.needle)
 			: nullptr) {}
 
 	IcuCompare &operator=(const IcuCompare &src) noexcept {
 		needle = src
-			? src.needle.Clone()
+			? AllocatedString(src.needle)
 			: nullptr;
 		return *this;
 	}
@@ -65,7 +65,7 @@ public:
 
 	gcc_pure
 	operator bool() const noexcept {
-		return !needle.IsNull();
+		return needle != nullptr;
 	}
 
 	gcc_pure

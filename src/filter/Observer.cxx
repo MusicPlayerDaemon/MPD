@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -43,6 +43,9 @@ public:
 		observer.proxy = nullptr;
 	}
 
+	PreparedProxy(const PreparedProxy &) = delete;
+	PreparedProxy &operator=(const PreparedProxy &) = delete;
+
 	void Clear([[maybe_unused]] Proxy *_child) noexcept {
 		assert(child == _child);
 		child = nullptr;
@@ -66,6 +69,9 @@ public:
 	~Proxy() noexcept override {
 		parent.Clear(this);
 	}
+
+	Proxy(const Proxy &) = delete;
+	Proxy &operator=(const Proxy &) = delete;
 
 	Filter *Get() noexcept {
 		return filter.get();

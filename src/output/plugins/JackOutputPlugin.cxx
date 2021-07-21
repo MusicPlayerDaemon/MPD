@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -20,6 +20,7 @@
 #include "config.h"
 #include "JackOutputPlugin.hxx"
 #include "../OutputAPI.hxx"
+#include "../Error.hxx"
 #include "output/Features.h"
 #include "thread/Mutex.hxx"
 #include "util/ScopeExit.hxx"
@@ -42,6 +43,10 @@
 static constexpr unsigned MAX_PORTS = 16;
 
 static constexpr size_t jack_sample_size = sizeof(jack_default_audio_sample_t);
+
+#ifdef DYNAMIC_JACK
+#include "lib/jack/Dynamic.hxx"
+#endif // _WIN32
 
 class JackOutput final : public AudioOutput {
 	/**
@@ -78,6 +83,15 @@ class JackOutput final : public AudioOutput {
 	 * silence.
 	 */
 	std::atomic_bool pause;
+
+	/**
+	 * Was Interrupt() called?  This will unblock Play().  It will
+	 * be reset by Cancel() and Pause(), as documented by the
+	 * #AudioOutput interface.
+	 *
+	 * Only initialized while the output is open.
+	 */
+	bool interrupted;
 
 	/**
 	 * Protects #error.
@@ -156,6 +170,8 @@ public:
 		Stop();
 	}
 
+	void Interrupt() noexcept override;
+
 	std::chrono::steady_clock::duration Delay() const noexcept override {
 		return pause && !LockWasShutdown()
 			? std::chrono::seconds(1)
@@ -164,6 +180,7 @@ public:
 
 	size_t Play(const void *chunk, size_t size) override;
 
+	void Cancel() noexcept override;
 	bool Pause() override;
 
 private:
@@ -225,9 +242,9 @@ JackOutput::JackOutput(const ConfigBlock &block)
 		/* compatibility with MPD < 0.16 */
 		value = block.GetBlockValue("ports", nullptr);
 		if (value != nullptr)
-			FormatWarning(jack_output_domain,
-				      "deprecated option 'ports' in line %d",
-				      block.line);
+			FmtWarning(jack_output_domain,
+				   "deprecated option 'ports' in line {}",
+				   block.line);
 	}
 
 	if (value != nullptr) {
@@ -241,11 +258,11 @@ JackOutput::JackOutput(const ConfigBlock &block)
 
 	if (num_destination_ports > 0 &&
 	    num_destination_ports != num_source_ports)
-		FormatWarning(jack_output_domain,
-			      "number of source ports (%u) mismatches the "
-			      "number of destination ports (%u) in line %d",
-			      num_source_ports, num_destination_ports,
-			      block.line);
+		FmtWarning(jack_output_domain,
+			   "number of source ports ({}) mismatches the "
+			   "number of destination ports ({}) in line {}",
+			   num_source_ports, num_destination_ports,
+			   block.line);
 
 	ringbuffer_size = block.GetPositiveValue("ringbuffer_size", 32768U);
 }
@@ -376,7 +393,7 @@ mpd_jack_error(const char *msg)
 static void
 mpd_jack_info(const char *msg)
 {
-	LogDefault(jack_output_domain, msg);
+	LogNotice(jack_output_domain, msg);
 }
 #endif
 
@@ -450,6 +467,10 @@ JackOutput::Disable() noexcept
 static AudioOutput *
 mpd_jack_init(EventLoop &, const ConfigBlock &block)
 {
+#ifdef DYNAMIC_JACK
+	LoadJackLibrary();
+#endif
+
 	jack_set_error_function(mpd_jack_error);
 
 #ifdef HAVE_JACK_SET_INFO_FUNCTION
@@ -522,10 +543,9 @@ JackOutput::Start()
 		for (num_dports = 0; num_dports < MAX_PORTS &&
 			     jports[num_dports] != nullptr;
 		     ++num_dports) {
-			FormatDebug(jack_output_domain,
-				    "destination_port[%u] = '%s'\n",
-				    num_dports,
-				    jports[num_dports]);
+			FmtDebug(jack_output_domain,
+				 "destination_port[{}] = '{}'\n",
+				 num_dports, jports[num_dports]);
 			dports[num_dports] = jports[num_dports];
 		}
 	} else {
@@ -613,7 +633,19 @@ JackOutput::Open(AudioFormat &new_audio_format)
 	new_audio_format.format = SampleFormat::FLOAT;
 	audio_format = new_audio_format;
 
+	interrupted = false;
+
 	Start();
+}
+
+void
+JackOutput::Interrupt() noexcept
+{
+	const std::unique_lock<Mutex> lock(mutex);
+
+	/* the "interrupted" flag will prevent Play() from waiting,
+	   and will instead throw AudioOutputInterrupted */
+	interrupted = true;
 }
 
 inline size_t
@@ -671,6 +703,9 @@ JackOutput::Play(const void *chunk, size_t size)
 			const std::lock_guard<Mutex> lock(mutex);
 			if (error)
 				std::rethrow_exception(error);
+
+			if (interrupted)
+				throw AudioOutputInterrupted{};
 		}
 
 		size_t frames_written =
@@ -684,11 +719,19 @@ JackOutput::Play(const void *chunk, size_t size)
 	}
 }
 
+void
+JackOutput::Cancel() noexcept
+{
+	const std::unique_lock<Mutex> lock(mutex);
+	interrupted = false;
+}
+
 inline bool
 JackOutput::Pause()
 {
 	{
 		const std::lock_guard<Mutex> lock(mutex);
+		interrupted = false;
 		if (error)
 			std::rethrow_exception(error);
 	}

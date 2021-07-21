@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -27,6 +27,7 @@
 #include "Dither.cxx" // including the .cxx file to get inlined templates
 
 #include <cassert>
+#include <cmath>
 
 template<SampleFormat F, class Traits=SampleTraits<F>>
 static typename Traits::value_type

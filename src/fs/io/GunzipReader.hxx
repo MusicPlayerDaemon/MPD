@@ -50,6 +50,8 @@ class GunzipReader final : public Reader {
 public:
 	/**
 	 * Construct the filter.
+	 *
+	 * Throws on error.
 	 */
 	explicit GunzipReader(Reader &_next);
 

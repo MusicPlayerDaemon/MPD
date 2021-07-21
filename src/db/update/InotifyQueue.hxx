@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -20,7 +20,7 @@
 #ifndef MPD_INOTIFY_QUEUE_HXX
 #define MPD_INOTIFY_QUEUE_HXX
 
-#include "event/TimerEvent.hxx"
+#include "event/CoarseTimerEvent.hxx"
 
 #include <list>
 #include <string>
@@ -32,7 +32,7 @@ class InotifyQueue final {
 
 	std::list<std::string> queue;
 
-	TimerEvent delay_event;
+	CoarseTimerEvent delay_event;
 
 public:
 	InotifyQueue(EventLoop &_loop, UpdateService &_update) noexcept

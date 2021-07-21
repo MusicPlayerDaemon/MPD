@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -42,6 +42,8 @@
 #include "util/UriExtract.hxx"
 #include "LocateUri.hxx"
 
+#include <fmt/format.h>
+
 bool
 playlist_commands_available() noexcept
 {
@@ -52,7 +54,7 @@ static void
 print_spl_list(Response &r, const PlaylistVector &list)
 {
 	for (const auto &i : list) {
-		r.Format("playlist: %s\n", i.name.c_str());
+		r.Fmt(FMT_STRING("playlist: {}\n"), i.name);
 
 		if (!IsNegative(i.mtime))
 			time_print(r, "Last-Modified", i.mtime);
@@ -92,7 +94,7 @@ handle_load(Client &client, Request args, [[maybe_unused]] Response &r)
 	auto &instance = client.GetInstance();
 	const unsigned new_size = playlist.GetLength();
 	for (unsigned i = old_size; i < new_size; ++i)
-		instance.LookupRemoteTag(playlist.queue.Get(i).GetURI());
+		instance.LookupRemoteTag(playlist.queue.Get(i).GetRealURI());
 
 	return CommandResult::OK;
 }

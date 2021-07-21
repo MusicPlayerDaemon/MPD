@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2018 Content Management AG
+ * Copyright 2007-2020 CM4all GmbH
  * All rights reserved.
  *
  * author: Max Kellermann <mk@cm4all.com>
@@ -34,6 +34,14 @@
 #define NET_RESOLVER_HXX
 
 class AddressInfoList;
+
+/**
+ * Thin wrapper for getaddrinfo() which throws on error and returns a
+ * RAII object.
+ */
+AddressInfoList
+Resolve(const char *node, const char *service,
+	const struct addrinfo *hints);
 
 /**
  * Resolve the given host name (which may include a port), and fall

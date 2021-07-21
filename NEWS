@@ -1,4 +1,128 @@
-ver 0.22 (not yet released)
+ver 0.23 (not yet released)
+* protocol
+  - new command "getvol"
+  - show the audio format in "playlistinfo"
+* database
+  - proxy: require MPD 0.20 or later
+  - proxy: require libmpdclient 2.11 or later
+  - proxy: split search into chunks to avoid exceeding the output buffer
+  - upnp: support libnpupnp instead of libupnp
+* decoder
+  - openmpt: new plugin
+* output
+  - pipewire: new plugin
+  - snapcast: new plugin
+* tags
+  - new tags "ComposerSort", "Ensemble", "Movement", "MovementNumber", and "Location"
+* new build-time dependency: libfmt
+
+ver 0.22.9 (2021/06/23)
+* database
+  - simple: load all .mpdignore files of all parent directories
+* tags
+  - fix "readcomments" and "readpicture" on remote files with ID3 tags
+* decoder
+  - ffmpeg: support the tags "sort_album", "album-sort", "artist-sort"
+  - ffmpeg: fix build failure with FFmpeg 3.4
+* Android
+  - fix auto-start on boot in Android 8 or later
+* Windows
+  - fix build failure with SQLite
+
+ver 0.22.8 (2021/05/22)
+* fix crash bug in "albumart" command (0.22.7 regression)
+
+ver 0.22.7 (2021/05/19)
+* protocol
+  - don't use glibc extension to parse time stamps
+  - optimize the "albumart" command
+* input
+  - curl: send user/password in the first request, save one roundtrip
+* decoder
+  - ffmpeg: fix build problem with FFmpeg 3.4
+  - gme: support RSN files
+* storage
+  - curl: don't use glibc extension
+* database
+  - simple: fix database corruption bug
+* output
+  - fix crash when pausing with multiple partitions
+  - jack: enable on Windows
+  - httpd: send header "Access-Control-Allow-Origin: *"
+  - wasapi: add algorithm for finding usable audio format
+  - wasapi: use default device only if none was configured
+  - wasapi: add DoP support
+
+ver 0.22.6 (2021/02/16)
+* fix missing tags on songs in queue
+
+ver 0.22.5 (2021/02/15)
+* protocol
+  - error for malformed ranges instead of ignoring silently
+  - better error message for open-ended range with "move"
+* database
+  - simple: fix missing CUE sheet metadata in "addid" command
+* tags
+  - id: translate TPE3 to Conductor, not Performer
+* archive
+  - iso9660: another fix for unaligned reads
+* output
+  - httpd: error handling on Windows improved
+  - pulse: fix deadlock with "always_on"
+* Windows:
+  - enable https:// support (via Schannel)
+* Android
+  - work around "Permission denied" on mpd.conf
+
+ver 0.22.4 (2021/01/21)
+* protocol
+  - add command "binarylimit" to allow larger chunk sizes
+  - fix "readpicture" on 32 bit machines
+  - show duration and tags of songs in virtual playlist (CUE) folders
+* storage
+  - curl: fix several WebDAV protocol bugs
+* decoder
+  - dsdiff: apply padding to odd-sized chunks
+* filter
+  - ffmpeg: detect the output sample format
+* output
+  - moveoutput: fix always_on and tag lost on move
+* Android
+  - enable https:// support (via OpenSSL)
+
+ver 0.22.3 (2020/11/06)
+* playlist
+  - add option "as_directory", making CUE file expansion optional
+* storage
+  - curl: fix crash bug
+* filter
+  - fix garbage after "Audio format not supported by filter" message
+  - ffmpeg: support planar output
+  - ffmpeg: support sample formats other than 16 bit
+
+ver 0.22.2 (2020/10/28)
+* database
+  - simple: purge songs and virtual directories for unavailable plugins
+    on update
+* input
+  - qobuz/tidal: fix protocol errors due to newlines in error messages
+  - smbclient: disable by default due to libsmbclient crash bug
+* playlist
+  - soundcloud: fix protocol errors due to newlines in error messages
+* state_file: save on shutdown
+
+ver 0.22.1 (2020/10/17)
+* decoder
+  - opus: apply the OpusHead output gain even if there is no EBU R128 tag
+  - opus: fix track/album ReplayGain fallback
+* output
+  - alsa: don't deadlock when the ALSA driver is buggy
+  - jack, pulse: reduce the delay when stopping or pausing playback
+* playlist
+  - cue: fix two crash bugs
+* state_file: fix the state_file_interval setting
+
+ver 0.22 (2020/09/23)
 * protocol
   - "findadd"/"searchadd"/"searchaddpl" support the "sort" and
     "window" parameters
@@ -12,13 +136,13 @@ ver 0.22 (not yet released)
   - curl: support "charset" parameter in URI fragment
   - ffmpeg: allow partial reads
   - io_uring: new plugin for local files on Linux (using liburing)
-* archive
-  - iso9660: support seeking
+  - smbclient: close unused SMB/CIFS connections
 * database
   - upnp: drop support for libupnp versions older than 1.8
 * playlist
   - cue: integrate contents in database
 * decoder
+  - ffmpeg: support RTSP
   - mad: remove option "gapless", always do gapless
   - sidplay: add option "default_genre"
   - sidplay: map SID name field to "Album" tag
@@ -38,7 +162,52 @@ ver 0.22 (not yet released)
   - solaris: support S8 and S32
 * lower the real-time priority from 50 to 40
 * switch to C++17
-  - GCC 7 or clang 4 (or newer) recommended
+  - GCC 8 or clang 5 (or newer) recommended
+
+ver 0.21.26 (2020/09/21)
+* database
+  - inotify: obey ".mpdignore" files
+* output
+  - osx: fix crash bug
+  - sles: support floating point samples
+* archive
+  - bzip2: fix crash on corrupt bzip2 file
+  - bzip2: flush output at end of input file
+  - iso9660: fix unaligned reads
+  - iso9660: support seeking
+  - zzip: fix crash on corrupt ZIP file
+* decoder
+  - ffmpeg: remove "rtsp://" from the list of supported protocols
+  - ffmpeg: add "hls+http://" to the list of supported protocols
+  - opus: support the gain value from the Opus header
+  - sndfile: fix lost samples at end of file
+* fix "single" mode bug after resuming playback
+* the default log_level is "default", not "info"
+
+ver 0.21.25 (2020/07/06)
+* protocol:
+  - fix crash when using "rangeid" while playing
+* database
+  - simple: automatically scan new mounts
+  - upnp: fix compatibility with Plex DLNA
+* storage
+  - fix disappearing mounts after mounting twice
+  - udisks: fix reading ".mpdignore"
+* input
+  - file: detect premature end of file
+  - smbclient: don't send credentials to MPD clients
+* decoder
+  - opus: apply pre-skip and end trimming
+  - opus: fix memory leak
+  - opus: fix crash bug
+  - vorbis: fix crash bug
+* output
+  - osx: improve sample rate selection
+  - osx: fix noise while stopping
+* neighbor
+  - upnp: fix crash during shutdown
+* Windows/Android:
+  - fix Boost detection after breaking change in Meson 0.54
 
 ver 0.21.24 (2020/06/10)
 * protocol

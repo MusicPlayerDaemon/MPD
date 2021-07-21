@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -131,6 +131,14 @@ public:
 	bool IsMount() const noexcept {
 		return mounted_database != nullptr;
 	}
+
+	/**
+	 * Checks whether this is a "special" directory
+	 * (e.g. #DEVICE_PLAYLIST) and whether the underlying plugin
+	 * is available.
+	 */
+	gcc_pure
+	bool IsPluginAvailable() const noexcept;
 
 	/**
 	 * Remove this #Directory object from its parent and free it.  This

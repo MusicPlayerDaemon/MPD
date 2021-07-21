@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2019 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2016-2021 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -35,9 +35,9 @@
 #include <utility>
 
 #ifdef _WIN32
-#include <ws2tcpip.h>
+#include <ws2tcpip.h> // IWYU pragma: export
 #else
-#include <netdb.h>
+#include <netdb.h> // IWYU pragma: export
 #endif
 
 constexpr struct addrinfo
@@ -108,7 +108,7 @@ public:
 	 * to an IPv6 wildcard address also allows accepting IPv4
 	 * connections.
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	const AddressInfo &GetBest() const;
 
 	class const_iterator {

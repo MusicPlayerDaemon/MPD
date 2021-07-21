@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -48,6 +48,8 @@
 #include "StickerCommands.hxx"
 #endif
 
+#include <fmt/format.h>
+
 #include <cassert>
 #include <iterator>
 
@@ -87,6 +89,7 @@ static constexpr struct command commands[] = {
 	{ "addid", PERMISSION_ADD, 1, 2, handle_addid },
 	{ "addtagid", PERMISSION_ADD, 3, 3, handle_addtagid },
 	{ "albumart", PERMISSION_READ, 2, 2, handle_album_art },
+	{ "binarylimit", PERMISSION_NONE, 1, 1, handle_binary_limit },
 	{ "channels", PERMISSION_READ, 0, 0, handle_channels },
 	{ "clear", PERMISSION_CONTROL, 0, 0, handle_clear },
 	{ "clearerror", PERMISSION_CONTROL, 0, 0, handle_clearerror },
@@ -113,6 +116,7 @@ static constexpr struct command commands[] = {
 #ifdef ENABLE_CHROMAPRINT
 	{ "getfingerprint", PERMISSION_READ, 1, 1, handle_getfingerprint },
 #endif
+	{ "getvol", PERMISSION_READ, 0, 0, handle_getvol },
 	{ "idle", PERMISSION_READ, 0, -1, handle_idle },
 	{ "kill", PERMISSION_ADMIN, -1, -1, handle_kill },
 #ifdef ENABLE_DATABASE
@@ -251,7 +255,7 @@ PrintAvailableCommands(Response &r, const Partition &partition,
 
 		if (cmd->permission == (permission & cmd->permission) &&
 		    command_available(partition, cmd))
-			r.Format("command: %s\n", cmd->cmd);
+			r.Fmt(FMT_STRING("command: {}\n"), cmd->cmd);
 	}
 
 	return CommandResult::OK;
@@ -264,7 +268,7 @@ PrintUnavailableCommands(Response &r, unsigned permission) noexcept
 		const struct command *cmd = &i;
 
 		if (cmd->permission != (permission & cmd->permission))
-			r.Format("command: %s\n", cmd->cmd);
+			r.Fmt(FMT_STRING("command: {}\n"), cmd->cmd);
 	}
 
 	return CommandResult::OK;
@@ -321,9 +325,9 @@ command_check_request(const struct command *cmd, Response &r,
 		      unsigned permission, Request args) noexcept
 {
 	if (cmd->permission != (permission & cmd->permission)) {
-		r.FormatError(ACK_ERROR_PERMISSION,
-			      "you don't have permission for \"%s\"",
-			      cmd->cmd);
+		r.FmtError(ACK_ERROR_PERMISSION,
+			   FMT_STRING("you don't have permission for \"{}\""),
+			   cmd->cmd);
 		return false;
 	}
 
@@ -334,17 +338,19 @@ command_check_request(const struct command *cmd, Response &r,
 		return true;
 
 	if (min == max && unsigned(max) != args.size) {
-		r.FormatError(ACK_ERROR_ARG,
-			      "wrong number of arguments for \"%s\"",
-			      cmd->cmd);
+		r.FmtError(ACK_ERROR_ARG,
+			   FMT_STRING("wrong number of arguments for \"{}\""),
+			   cmd->cmd);
 		return false;
 	} else if (args.size < unsigned(min)) {
-		r.FormatError(ACK_ERROR_ARG,
-			      "too few arguments for \"%s\"", cmd->cmd);
+		r.FmtError(ACK_ERROR_ARG,
+			   FMT_STRING("too few arguments for \"{}\""),
+			   cmd->cmd);
 		return false;
 	} else if (max >= 0 && args.size > unsigned(max)) {
-		r.FormatError(ACK_ERROR_ARG,
-			      "too many arguments for \"%s\"", cmd->cmd);
+		r.FmtError(ACK_ERROR_ARG,
+			   FMT_STRING("too many arguments for \"{}\""),
+			   cmd->cmd);
 		return false;
 	} else
 		return true;
@@ -356,8 +362,8 @@ command_checked_lookup(Response &r, unsigned permission,
 {
 	const struct command *cmd = command_lookup(cmd_name);
 	if (cmd == nullptr) {
-		r.FormatError(ACK_ERROR_UNKNOWN,
-			      "unknown command \"%s\"", cmd_name);
+		r.FmtError(ACK_ERROR_UNKNOWN,
+			   FMT_STRING("unknown command \"{}\""), cmd_name);
 		return nullptr;
 	}
 

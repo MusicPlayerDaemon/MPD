@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -21,17 +21,16 @@
 #define MPD_STATE_FILE_CONFIG_HXX
 
 #include "fs/AllocatedPath.hxx"
-
-#include <chrono>
+#include "event/Chrono.hxx"
 
 struct ConfigData;
 
 struct StateFileConfig {
-	static constexpr std::chrono::steady_clock::duration DEFAULT_INTERVAL = std::chrono::minutes(2);
+	static constexpr Event::Duration DEFAULT_INTERVAL = std::chrono::minutes(2);
 
 	AllocatedPath path;
 
-	std::chrono::steady_clock::duration interval;
+	Event::Duration interval;
 
 	bool restore_paused;
 

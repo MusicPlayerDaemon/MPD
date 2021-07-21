@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -20,7 +20,7 @@
 #ifndef MPD_EVENT_MASK_MONITOR_HXX
 #define MPD_EVENT_MASK_MONITOR_HXX
 
-#include "DeferEvent.hxx"
+#include "InjectEvent.hxx"
 #include "util/BindMethod.hxx"
 
 #include <atomic>
@@ -32,30 +32,30 @@
  * This class is thread-safe.
  */
 class MaskMonitor final {
-	DeferEvent defer;
+	InjectEvent event;
 
-	typedef BoundMethod<void(unsigned) noexcept> Callback;
+	using Callback = BoundMethod<void(unsigned) noexcept>;
 	const Callback callback;
 
 	std::atomic_uint pending_mask;
 
 public:
 	MaskMonitor(EventLoop &_loop, Callback _callback) noexcept
-		:defer(_loop, BIND_THIS_METHOD(RunDeferred)),
+		:event(_loop, BIND_THIS_METHOD(RunDeferred)),
 		 callback(_callback), pending_mask(0) {}
 
 	auto &GetEventLoop() const noexcept {
-		return defer.GetEventLoop();
+		return event.GetEventLoop();
 	}
 
 	void Cancel() noexcept {
-		defer.Cancel();
+		event.Cancel();
 	}
 
 	void OrMask(unsigned new_mask) noexcept;
 
 protected:
-	/* DeferEvent callback */
+	/* InjectEvent callback */
 	void RunDeferred() noexcept;
 };
 

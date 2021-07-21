@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2019 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2012-2020 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -158,13 +158,20 @@ public:
 	}
 
 	/**
+	 * Cast a #sockaddr_in6 reference to an IPv6Address reference.
+	 */
+	static constexpr const IPv4Address &Cast(const struct sockaddr_in &src) noexcept {
+		/* this reinterpret_cast works because this class is
+		   just a wrapper for struct sockaddr_in6 */
+		return *(const IPv4Address *)(const void *)&src;
+	}
+
+	/**
 	 * Return a downcasted reference to the address.  This call is
 	 * only legal after verifying SocketAddress::GetFamily().
 	 */
-	static constexpr const IPv4Address &Cast(const SocketAddress &src) noexcept {
-		/* this reinterpret_cast works because this class is
-		   just a wrapper for struct sockaddr_in */
-		return *(const IPv4Address *)(const void *)src.GetAddress();
+	static constexpr const IPv4Address &Cast(const SocketAddress src) noexcept {
+		return Cast(src.CastTo<struct sockaddr_in>());
 	}
 
 	constexpr operator SocketAddress() const noexcept {

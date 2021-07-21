@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -22,7 +22,7 @@
 
 #include "input/RemoteTagScanner.hxx"
 #include "tag/Tag.hxx"
-#include "event/DeferEvent.hxx"
+#include "event/InjectEvent.hxx"
 #include "thread/Mutex.hxx"
 
 #include <boost/intrusive/list.hpp>
@@ -40,7 +40,7 @@ class RemoteTagCache final {
 
 	RemoteTagCacheHandler &handler;
 
-	DeferEvent defer_invoke_handler;
+	InjectEvent defer_invoke_handler;
 
 	Mutex mutex;
 

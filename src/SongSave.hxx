@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -44,7 +44,6 @@ song_save(BufferedOutputStream &os, const DetachedSong &song);
  */
 DetachedSong
 song_load(TextFile &file, const char *uri,
-	  std::string *target_r=nullptr,
-	  AudioFormat *audio_format_r=nullptr);
+	  std::string *target_r=nullptr);
 
 #endif

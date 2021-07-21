@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -22,6 +22,8 @@
 #include "Response.hxx"
 #include "Idle.hxx"
 
+#include <fmt/format.h>
+
 #include <cassert>
 
 static void
@@ -30,7 +32,7 @@ WriteIdleResponse(Response &r, unsigned flags) noexcept
 	const char *const*idle_names = idle_get_names();
 	for (unsigned i = 0; idle_names[i]; ++i) {
 		if (flags & (1 << i))
-			r.Format("changed: %s\n", idle_names[i]);
+			r.Fmt(FMT_STRING("changed: {}\n"), idle_names[i]);
 	}
 
 	r.Write("OK\n");

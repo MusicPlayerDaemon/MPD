@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -20,11 +20,10 @@
 #ifndef MPD_ALSA_NON_BLOCK_HXX
 #define MPD_ALSA_NON_BLOCK_HXX
 
+#include "event/Chrono.hxx"
 #include "util/ReusableArray.hxx"
 
 #include <alsa/asoundlib.h>
-
-#include <chrono>
 
 class MultiSocketMonitor;
 
@@ -39,8 +38,8 @@ public:
 	/**
 	 * Throws on error.
 	 */
-	std::chrono::steady_clock::duration PrepareSockets(MultiSocketMonitor &m,
-							   snd_pcm_t *pcm);
+	Event::Duration PrepareSockets(MultiSocketMonitor &m,
+				       snd_pcm_t *pcm);
 
 	/**
 	 * Wrapper for snd_pcm_poll_descriptors_revents(), to be
@@ -59,8 +58,8 @@ class AlsaNonBlockMixer {
 	ReusableArray<pollfd> pfd_buffer;
 
 public:
-	std::chrono::steady_clock::duration PrepareSockets(MultiSocketMonitor &m,
-							   snd_mixer_t *mixer) noexcept;
+	Event::Duration PrepareSockets(MultiSocketMonitor &m,
+				       snd_mixer_t *mixer) noexcept;
 
 	/**
 	 * Wrapper for snd_mixer_poll_descriptors_revents(), to be

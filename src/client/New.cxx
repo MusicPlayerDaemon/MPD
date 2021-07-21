@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -44,7 +44,8 @@ Client::Client(EventLoop &_loop, Partition &_partition,
 	 partition(&_partition),
 	 permission(_permission),
 	 uid(_uid),
-	 num(_num)
+	 num(_num),
+	 last_album_art(_loop)
 {
 	timeout_event.Schedule(client_timeout);
 }
@@ -75,8 +76,8 @@ client_new(EventLoop &loop, Partition &partition,
 	client_list.Add(*client);
 	partition.clients.push_back(*client);
 
-	FormatInfo(client_domain, "[%u] opened from %s",
-		   num, remote.c_str());
+	FmtInfo(client_domain, "[{}] opened from {}",
+		num, remote);
 }
 
 void
@@ -88,6 +89,6 @@ Client::Close() noexcept
 	if (FullyBufferedSocket::IsDefined())
 		FullyBufferedSocket::Close();
 
-	FormatInfo(client_domain, "[%u] closed", num);
+	FmtInfo(client_domain, "[{}] closed", num);
 	delete this;
 }

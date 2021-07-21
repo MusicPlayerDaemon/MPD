@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -38,6 +38,8 @@
 #include "util/Exception.hxx"
 #include "util/StringAPI.hxx"
 #include "util/NumberParser.hxx"
+
+#include <fmt/format.h>
 
 #include <limits>
 
@@ -127,7 +129,7 @@ handle_addid(Client &client, Request args, Response &r)
 		}
 	}
 
-	r.Format("Id: %u\n", added_id);
+	r.Fmt(FMT_STRING("Id: {}\n"), added_id);
 	return CommandResult::OK;
 }
 
@@ -182,7 +184,7 @@ CommandResult
 handle_delete(Client &client, Request args, [[maybe_unused]] Response &r)
 {
 	RangeArg range = args.ParseRange(0);
-	client.GetPartition().DeleteRange(range.start, range.end);
+	client.GetPartition().DeleteRange(range);
 	return CommandResult::OK;
 }
 
@@ -205,7 +207,7 @@ CommandResult
 handle_shuffle([[maybe_unused]] Client &client, Request args, [[maybe_unused]] Response &r)
 {
 	RangeArg range = args.ParseOptional(0, RangeArg::All());
-	client.GetPartition().Shuffle(range.start, range.end);
+	client.GetPartition().Shuffle(range);
 	return CommandResult::OK;
 }
 
@@ -221,8 +223,7 @@ handle_plchanges(Client &client, Request args, Response &r)
 {
 	uint32_t version = ParseCommandArgU32(args.front());
 	RangeArg range = args.ParseOptional(1, RangeArg::All());
-	playlist_print_changes_info(r, client.GetPlaylist(), version,
-				    range.start, range.end);
+	playlist_print_changes_info(r, client.GetPlaylist(), version, range);
 	return CommandResult::OK;
 }
 
@@ -232,7 +233,7 @@ handle_plchangesposid(Client &client, Request args, Response &r)
 	uint32_t version = ParseCommandArgU32(args.front());
 	RangeArg range = args.ParseOptional(1, RangeArg::All());
 	playlist_print_changes_position(r, client.GetPlaylist(), version,
-					range.start, range.end);
+					range);
 	return CommandResult::OK;
 }
 
@@ -241,8 +242,7 @@ handle_playlistinfo(Client &client, Request args, Response &r)
 {
 	RangeArg range = args.ParseOptional(0, RangeArg::All());
 
-	playlist_print_info(r, client.GetPlaylist(),
-			    range.start, range.end);
+	playlist_print_info(r, client.GetPlaylist(), range);
 	return CommandResult::OK;
 }
 
@@ -253,8 +253,7 @@ handle_playlistid(Client &client, Request args, Response &r)
 		unsigned id = args.ParseUnsigned(0);
 		playlist_print_id(r, client.GetPlaylist(), id);
 	} else {
-		playlist_print_info(r, client.GetPlaylist(),
-				    0, std::numeric_limits<unsigned>::max());
+		playlist_print_info(r, client.GetPlaylist(), RangeArg::All());
 	}
 
 	return CommandResult::OK;
@@ -300,7 +299,7 @@ handle_prio(Client &client, Request args, [[maybe_unused]] Response &r)
 
 	for (const char *i : args) {
 		RangeArg range = ParseCommandArgRange(i);
-		partition.SetPriorityRange(range.start, range.end, priority);
+		partition.SetPriorityRange(range, priority);
 	}
 
 	return CommandResult::OK;
@@ -326,8 +325,13 @@ CommandResult
 handle_move(Client &client, Request args, [[maybe_unused]] Response &r)
 {
 	RangeArg range = args.ParseRange(0);
+	if (range.IsOpenEnded()) {
+		r.Error(ACK_ERROR_ARG, "Open-ended range not supported");
+		return CommandResult::ERROR;
+	}
+
 	int to = args.ParseInt(1);
-	client.GetPartition().MoveRange(range.start, range.end, to);
+	client.GetPartition().MoveRange(range, to);
 	return CommandResult::OK;
 }
 

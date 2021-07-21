@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -39,9 +39,9 @@ Client::ProcessCommandList(bool list_ok,
 	for (auto &&i : list) {
 		char *cmd = &*i.begin();
 
-		FormatDebug(client_domain, "process command \"%s\"", cmd);
+		FmtDebug(client_domain, "process command \"{}\"", cmd);
 		auto ret = command_process(*this, n++, cmd);
-		FormatDebug(client_domain, "command returned %i", int(ret));
+		FmtDebug(client_domain, "command returned {}", unsigned(ret));
 		if (IsExpired())
 			return CommandResult::CLOSE;
 		else if (ret != CommandResult::OK)
@@ -62,9 +62,9 @@ Client::ProcessLine(char *line) noexcept
 		/* all valid MPD commands begin with a lower case
 		   letter; this could be a badly routed HTTP
 		   request */
-		FormatWarning(client_domain,
-			      "[%u] malformed command \"%s\"",
-			      num, line);
+		FmtWarning(client_domain,
+			   "[{}] malformed command \"{}\"",
+			   num, line);
 		return CommandResult::CLOSE;
 	}
 
@@ -83,9 +83,9 @@ Client::ProcessLine(char *line) noexcept
 	} else if (idle_waiting) {
 		/* during idle mode, clients must not send anything
 		   except "noidle" */
-		FormatWarning(client_domain,
-			      "[%u] command \"%s\" during idle",
-			      num, line);
+		FmtWarning(client_domain,
+			   "[{}] command \"{}\" during idle",
+			   num, line);
 		return CommandResult::CLOSE;
 	}
 
@@ -93,9 +93,9 @@ Client::ProcessLine(char *line) noexcept
 		if (StringIsEqual(line, CLIENT_LIST_MODE_END)) {
 			const unsigned id = num;
 
-			FormatDebug(client_domain,
-				    "[%u] process command list",
-				    id);
+			FmtDebug(client_domain,
+				 "[{}] process command list",
+				 id);
 
 			const bool ok_mode = cmd_list.IsOKMode();
 			auto list = cmd_list.Commit();
@@ -103,9 +103,9 @@ Client::ProcessLine(char *line) noexcept
 
 			auto ret = ProcessCommandList(ok_mode,
 						      std::move(list));
-			FormatDebug(client_domain,
-				    "[%u] process command "
-				    "list returned %i", id, int(ret));
+			FmtDebug(client_domain,
+				 "[{}] process command "
+				 "list returned {}", id, unsigned(ret));
 
 			if (ret == CommandResult::OK)
 				command_success(*this);
@@ -113,11 +113,10 @@ Client::ProcessLine(char *line) noexcept
 			return ret;
 		} else {
 			if (!cmd_list.Add(line)) {
-				FormatWarning(client_domain,
-					      "[%u] command list size "
-					      "is larger than the max (%lu)",
-					      num,
-					      (unsigned long)client_max_command_list_size);
+				FmtWarning(client_domain,
+					   "[{}] command list size "
+					   "is larger than the max ({})",
+					   num, client_max_command_list_size);
 				return CommandResult::CLOSE;
 			}
 
@@ -133,13 +132,13 @@ Client::ProcessLine(char *line) noexcept
 		} else {
 			const unsigned id = num;
 
-			FormatDebug(client_domain,
-				    "[%u] process command \"%s\"",
-				    id, line);
+			FmtDebug(client_domain,
+				 "[{}] process command \"{}\"",
+				 id, line);
 			auto ret = command_process(*this, 0, line);
-			FormatDebug(client_domain,
-				    "[%u] command returned %i",
-				    id, int(ret));
+			FmtDebug(client_domain,
+				 "[{}] command returned {}",
+				 id, unsigned(ret));
 
 			if (IsExpired())
 				return CommandResult::CLOSE;

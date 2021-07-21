@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -25,14 +25,21 @@
 
 #include <stdlib.h>
 
+static inline ProtocolError
+MakeArgError(const char *msg, const char *value) noexcept
+{
+	char buffer[256];
+	snprintf(buffer, sizeof(buffer), "%s: %s", msg, value);
+	return ProtocolError(ACK_ERROR_ARG, buffer);
+}
+
 uint32_t
 ParseCommandArgU32(const char *s)
 {
 	char *test;
 	auto value = strtoul(s, &test, 10);
 	if (test == s || *test != '\0')
-		throw FormatProtocolError(ACK_ERROR_ARG,
-					  "Integer expected: %s", s);
+		throw MakeArgError("Integer expected", s);
 
 	return value;
 }
@@ -43,12 +50,10 @@ ParseCommandArgInt(const char *s, int min_value, int max_value)
 	char *test;
 	auto value = strtol(s, &test, 10);
 	if (test == s || *test != '\0')
-		throw FormatProtocolError(ACK_ERROR_ARG,
-					  "Integer expected: %s", s);
+		throw MakeArgError("Integer expected", s);
 
 	if (value < min_value || value > max_value)
-		throw FormatProtocolError(ACK_ERROR_ARG,
-					  "Number too large: %s", s);
+		throw MakeArgError("Number too large", s);
 
 	return (int)value;
 }
@@ -67,8 +72,7 @@ ParseCommandArgRange(const char *s)
 	char *test, *test2;
 	auto value = strtol(s, &test, 10);
 	if (test == s || (*test != '\0' && *test != ':'))
-		throw FormatProtocolError(ACK_ERROR_ARG,
-					  "Integer or range expected: %s", s);
+		throw MakeArgError("Integer or range expected", s);
 
 	if (value == -1 && *test == 0)
 		/* compatibility with older MPD versions: specifying
@@ -76,12 +80,10 @@ ParseCommandArgRange(const char *s)
 		return RangeArg::All();
 
 	if (value < 0)
-		throw FormatProtocolError(ACK_ERROR_ARG,
-					  "Number is negative: %s", s);
+		throw MakeArgError("Number is negative", s);
 
 	if (value > std::numeric_limits<int>::max())
-		throw FormatProtocolError(ACK_ERROR_ARG,
-					  "Number too large: %s", s);
+		throw MakeArgError("Number too large", s);
 
 	RangeArg range;
 	range.start = (unsigned)value;
@@ -89,26 +91,25 @@ ParseCommandArgRange(const char *s)
 	if (*test == ':') {
 		value = strtol(++test, &test2, 10);
 		if (*test2 != '\0')
-			throw FormatProtocolError(ACK_ERROR_ARG,
-						  "Integer or range expected: %s",
-						  s);
+			throw MakeArgError("Integer or range expected", s);
 
 		if (test == test2)
-			value = std::numeric_limits<int>::max();
+			return RangeArg::OpenEnded(range.start);
 
 		if (value < 0)
-			throw FormatProtocolError(ACK_ERROR_ARG,
-						  "Number is negative: %s", s);
+			throw MakeArgError("Number is negative", s);
 
 
 		if (value > std::numeric_limits<int>::max())
-			throw FormatProtocolError(ACK_ERROR_ARG,
-						  "Number too large: %s", s);
+			throw MakeArgError("Number too large", s);
 
 		range.end = (unsigned)value;
 	} else {
-		range.end = (unsigned)value + 1;
+		return RangeArg::Single(range.start);
 	}
+
+	if (!range.IsWellFormed())
+		throw MakeArgError("Malformed range", s);
 
 	return range;
 }
@@ -119,12 +120,10 @@ ParseCommandArgUnsigned(const char *s, unsigned max_value)
 	char *endptr;
 	auto value = strtoul(s, &endptr, 10);
 	if (endptr == s || *endptr != 0)
-		throw FormatProtocolError(ACK_ERROR_ARG,
-					  "Integer expected: %s", s);
+		throw MakeArgError("Integer expected", s);
 
 	if (value > max_value)
-		throw FormatProtocolError(ACK_ERROR_ARG,
-					  "Number too large: %s", s);
+		throw MakeArgError("Number too large", s);
 
 	return (unsigned)value;
 }
@@ -142,8 +141,7 @@ ParseCommandArgBool(const char *s)
 	char *endptr;
 	auto value = strtol(s, &endptr, 10);
 	if (endptr == s || *endptr != 0 || (value != 0 && value != 1))
-		throw FormatProtocolError(ACK_ERROR_ARG,
-					  "Boolean (0/1) expected: %s", s);
+		throw MakeArgError("Boolean (0/1) expected", s);
 
 	return !!value;
 }
@@ -154,8 +152,7 @@ ParseCommandArgFloat(const char *s)
 	char *endptr;
 	auto value = ParseFloat(s, &endptr);
 	if (endptr == s || *endptr != 0)
-		throw FormatProtocolError(ACK_ERROR_ARG,
-					  "Float expected: %s", s);
+		throw MakeArgError("Float expected", s);
 
 	return value;
 }
@@ -165,8 +162,7 @@ ParseCommandArgSongTime(const char *s)
 {
 	auto value = ParseCommandArgFloat(s);
 	if (value < 0)
-		throw FormatProtocolError(ACK_ERROR_ARG,
-					  "Negative value not allowed: %s", s);
+		throw MakeArgError("Negative value not allowed", s);
 
 	return SongTime::FromS(value);
 }

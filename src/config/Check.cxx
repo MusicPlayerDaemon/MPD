@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -33,9 +33,9 @@ Check(const ConfigBlock &block)
 
 	for (const auto &i : block.block_params) {
 		if (!i.used)
-			FormatWarning(config_domain,
-				      "option '%s' on line %i was not recognized",
-				      i.name.c_str(), i.line);
+			FmtWarning(config_domain,
+				   "option '{}' on line {} was not recognized",
+				   i.name, i.line);
 	}
 }
 

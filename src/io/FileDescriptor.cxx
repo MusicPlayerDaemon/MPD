@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2019 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2012-2020 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -31,7 +31,7 @@
 #include "system/Error.hxx"
 
 #include <cassert>
-#include <cstdint>
+#include <stdexcept>
 
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -172,7 +172,15 @@ FileDescriptor::CreatePipe(FileDescriptor &r, FileDescriptor &w) noexcept
 #endif
 }
 
-#ifndef _WIN32
+#ifdef _WIN32
+
+void
+FileDescriptor::SetBinaryMode() noexcept
+{
+	_setmode(fd, _O_BINARY);
+}
+
+#else // !_WIN32
 
 bool
 FileDescriptor::CreatePipeNonBlock(FileDescriptor &r,
@@ -289,9 +297,9 @@ FileDescriptor::GetSize() const noexcept
 }
 
 void
-FileDescriptor::FullRead(void *_buffer, size_t length)
+FileDescriptor::FullRead(void *_buffer, std::size_t length)
 {
-	auto *buffer = (uint8_t *)_buffer;
+	auto buffer = (std::byte *)_buffer;
 
 	while (length > 0) {
 		ssize_t nbytes = Read(buffer, length);
@@ -299,6 +307,24 @@ FileDescriptor::FullRead(void *_buffer, size_t length)
 			if (nbytes < 0)
 				throw MakeErrno("Failed to read");
 			throw std::runtime_error("Unexpected end of file");
+		}
+
+		buffer += nbytes;
+		length -= nbytes;
+	}
+}
+
+void
+FileDescriptor::FullWrite(const void *_buffer, std::size_t length)
+{
+	auto buffer = (const std::byte *)_buffer;
+
+	while (length > 0) {
+		ssize_t nbytes = Write(buffer, length);
+		if (nbytes <= 0) {
+			if (nbytes < 0)
+				throw MakeErrno("Failed to write");
+			throw std::runtime_error("Failed to write");
 		}
 
 		buffer += nbytes;

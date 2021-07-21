@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2019 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2013-2020 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -35,6 +35,7 @@
 #include "Compiler.h"
 
 #include <utility>
+#include <cstddef>
 
 #if __cplusplus >= 201703L && !GCC_OLDER_THAN(7,0)
 #include <string_view>
@@ -126,6 +127,20 @@ struct BasicStringView : ConstBuffer<T> {
 		return {{begin(), separator}, {separator + 1, end()}};
 	}
 
+	/**
+	 * Split the string at the last occurrence of the given
+	 * character.  If the character is not found, then the first
+	 * value is the whole string and the second value is nullptr.
+	 */
+	gcc_pure
+	std::pair<BasicStringView<T>, BasicStringView<T>> SplitLast(value_type ch) const noexcept {
+		const auto separator = FindLast(ch);
+		if (separator == nullptr)
+			return {*this, nullptr};
+
+		return {{begin(), separator}, {separator + 1, end()}};
+	}
+
 	gcc_pure
 	bool StartsWith(BasicStringView<T> needle) const noexcept {
 		return this->size >= needle.size &&
@@ -137,6 +152,16 @@ struct BasicStringView : ConstBuffer<T> {
 		return this->size >= needle.size &&
 			StringIsEqual(data + this->size - needle.size,
 				      needle.data, needle.size);
+	}
+
+	gcc_pure
+	bool StartsWith(value_type ch) const noexcept {
+		return !empty() && front() == ch;
+	}
+
+	gcc_pure
+	bool EndsWith(value_type ch) const noexcept {
+		return !empty() && back() == ch;
 	}
 
 	gcc_pure

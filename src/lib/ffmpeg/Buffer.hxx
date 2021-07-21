@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -20,36 +20,36 @@
 #ifndef MPD_FFMPEG_BUFFER_HXX
 #define MPD_FFMPEG_BUFFER_HXX
 
+#include "util/Compiler.h"
+
 extern "C" {
 #include <libavutil/mem.h>
 }
 
 #include <cstddef>
 
-/* suppress the ffmpeg compatibility macro */
-#ifdef SampleFormat
-#undef SampleFormat
-#endif
-
 class FfmpegBuffer {
-	void *data;
-	unsigned size;
+	void *data = nullptr;
+	unsigned size = 0;
 
 public:
-	FfmpegBuffer():data(nullptr), size(0) {}
+	FfmpegBuffer() noexcept = default;
 
-	~FfmpegBuffer() {
+	~FfmpegBuffer() noexcept {
 		av_free(data);
 	}
 
+	FfmpegBuffer(const FfmpegBuffer &) = delete;
+	FfmpegBuffer &operator=(const FfmpegBuffer &) = delete;
+
 	gcc_malloc
-	void *Get(size_t min_size) {
+	void *Get(size_t min_size) noexcept {
 		av_fast_malloc(&data, &size, min_size);
 		return data;
 	}
 
 	template<typename T>
-	T *GetT(size_t n) {
+	T *GetT(size_t n) noexcept {
 		return (T *)Get(n * sizeof(T));
 	}
 };

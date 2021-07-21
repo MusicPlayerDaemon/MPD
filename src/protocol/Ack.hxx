@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -20,12 +20,8 @@
 #ifndef MPD_ACK_H
 #define MPD_ACK_H
 
-#include "util/StringFormat.hxx"
-
 #include <stdexcept>
 #include <utility>
-
-class Domain;
 
 enum ack {
 	ACK_ERROR_NOT_LIST = 1,
@@ -43,8 +39,6 @@ enum ack {
 	ACK_ERROR_EXIST = 56,
 };
 
-extern const Domain ack_domain;
-
 class ProtocolError : public std::runtime_error {
 	enum ack code;
 
@@ -57,14 +51,5 @@ public:
 		return code;
 	}
 };
-
-template<typename... Args>
-static inline ProtocolError
-FormatProtocolError(enum ack code, const char *fmt, Args&&... args) noexcept
-{
-	return ProtocolError(code,
-			     StringFormat<256>(fmt,
-					       std::forward<Args>(args)...));
-}
 
 #endif

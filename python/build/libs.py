@@ -7,11 +7,13 @@ from build.meson import MesonProject
 from build.cmake import CmakeProject
 from build.autotools import AutotoolsProject
 from build.ffmpeg import FfmpegProject
+from build.openssl import OpenSSLProject
 from build.boost import BoostProject
+from build.jack import JackProject
 
 libmpdclient = MesonProject(
-    'https://www.musicpd.org/download/libmpdclient/2/libmpdclient-2.18.tar.xz',
-    '4cb01e1f567e0169aca94875fb6e1200e7f5ce35b63a4df768ec1591fb1081fa',
+    'https://www.musicpd.org/download/libmpdclient/2/libmpdclient-2.19.tar.xz',
+    '158aad4c2278ab08e76a3f2b0166c99b39fae00ee17231bd225c5a36e977a189',
     'lib/libmpdclient.a',
 )
 
@@ -25,8 +27,8 @@ libogg = AutotoolsProject(
 )
 
 libvorbis = AutotoolsProject(
-    'http://downloads.xiph.org/releases/vorbis/libvorbis-1.3.6.tar.xz',
-    'af00bb5a784e7c9e69f56823de4637c350643deedaf333d0fa86ecdba6fcb415',
+    'http://downloads.xiph.org/releases/vorbis/libvorbis-1.3.7.tar.xz',
+    'b33cc4934322bcbf6efcbacf49e3ca01aadbea4114ec9589d1b1e9d20f72954b',
     'lib/libvorbis.a',
     [
         '--disable-shared', '--enable-static',
@@ -121,6 +123,15 @@ libmodplug = AutotoolsProject(
     ],
 )
 
+libopenmpt = AutotoolsProject(
+    'https://lib.openmpt.org/files/libopenmpt/src/libopenmpt-0.5.8+release.autotools.tar.gz',
+    '61de7cc0c011b10472ca16adcc123689',
+    'lib/libopenmpt.a',
+    [
+        '--disable-shared', '--enable-static'
+    ],
+)
+
 wildmidi = CmakeProject(
     'https://codeload.github.com/Mindwerks/wildmidi/tar.gz/wildmidi-0.4.3',
     '498e5a96455bb4b91b37188ad6dcb070824e92c44f5ed452b90adbaec8eef3c5',
@@ -148,8 +159,8 @@ gme = CmakeProject(
 )
 
 ffmpeg = FfmpegProject(
-    'http://ffmpeg.org/releases/ffmpeg-4.2.3.tar.xz',
-    '9df6c90aed1337634c1fb026fb01c154c29c82a64ea71291ff2da9aacb9aad31',
+    'http://ffmpeg.org/releases/ffmpeg-4.4.tar.xz',
+    '06b10a183ce5371f915c6bb15b7b1fffbe046e8275099c96affc29e17645d909',
     'lib/libavcodec.a',
     [
         '--disable-shared', '--enable-static',
@@ -376,9 +387,15 @@ ffmpeg = FfmpegProject(
     ],
 )
 
+openssl = OpenSSLProject(
+    'https://www.openssl.org/source/openssl-3.0.0-alpha16.tar.gz',
+    '08ce8244b59d75f40f91170dfcb012bf25309cdcb1fef9502e39d694f883d1d1',
+    'include/openssl/ossl_typ.h',
+)
+
 curl = AutotoolsProject(
-    'http://curl.haxx.se/download/curl-7.70.0.tar.xz',
-    '032f43f2674008c761af19bf536374128c16241fb234699a55f9fb603fcfbae7',
+    'https://curl.se/download/curl-7.76.1.tar.xz',
+    '64bb5288c39f0840c07d077e30d9052e1cbb9fa6c2dc52523824cc859e679145',
     'lib/libcurl.a',
     [
         '--disable-shared', '--enable-static',
@@ -399,7 +416,10 @@ curl = AutotoolsProject(
         '--disable-netrc',
         '--disable-progress-meter',
         '--disable-alt-svc',
-        '--without-ssl', '--without-gnutls', '--without-nss', '--without-libssh2',
+        '--without-gnutls', '--without-nss', '--without-libssh2',
+
+        # native Windows SSL/TLS support, option ignored on non-Windows builds
+        '--with-schannel',
     ],
 
     patches='src/lib/curl/patches',
@@ -429,11 +449,18 @@ libnfs = AutotoolsProject(
         '--disable-utils', '--disable-examples',
     ],
     base='libnfs-libnfs-4.0.0',
+    patches='src/lib/nfs/patches',
     autoreconf=True,
 )
 
+jack = JackProject(
+    'https://github.com/jackaudio/jack2/archive/v1.9.17.tar.gz',
+    '38f674bbc57852a8eb3d9faa1f96a0912d26f7d5df14c11005ad499c8ae352f2',
+    'lib/pkgconfig/jack.pc',
+)
+
 boost = BoostProject(
-    'https://dl.bintray.com/boostorg/release/1.73.0/source/boost_1_73_0.tar.bz2',
-    '4eb3b8d442b426dc35346235c8733b5ae35ba431690e38c6a8263dce9fcbb402',
+    'https://boostorg.jfrog.io/artifactory/main/release/1.76.0/source/boost_1_76_0.tar.bz2',
+    'f0397ba6e982c4450f27bf32a2a83292aba035b827a5623a14636ea583318c41',
     'include/boost/version.hpp',
 )

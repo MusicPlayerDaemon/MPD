@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -63,14 +63,26 @@ class StopDecoder {};
  */
 size_t
 decoder_read(DecoderClient *decoder, InputStream &is,
-	     void *buffer, size_t length);
+	     void *buffer, size_t length) noexcept;
 
 static inline size_t
 decoder_read(DecoderClient &decoder, InputStream &is,
-	     void *buffer, size_t length)
+	     void *buffer, size_t length) noexcept
 {
 	return decoder_read(&decoder, is, buffer, length);
 }
+
+/**
+ * Blocking read from the input stream.  Attempts to fill the buffer
+ * as much as possible, until either end-of-file is reached or an
+ * error occurs.
+ *
+ * @return the number of bytes read, or 0 if one of the following
+ * occurs: end of file; error; command (like SEEK or STOP).
+ */
+size_t
+decoder_read_much(DecoderClient *decoder, InputStream &is,
+		  void *buffer, size_t size) noexcept;
 
 /**
  * Blocking read from the input stream.  Attempts to fill the buffer
@@ -81,7 +93,7 @@ decoder_read(DecoderClient &decoder, InputStream &is,
  */
 bool
 decoder_read_full(DecoderClient *decoder, InputStream &is,
-		  void *buffer, size_t size);
+		  void *buffer, size_t size) noexcept;
 
 /**
  * Skip data on the #InputStream.
@@ -89,6 +101,6 @@ decoder_read_full(DecoderClient *decoder, InputStream &is,
  * @return true on success, false on error or command
  */
 bool
-decoder_skip(DecoderClient *decoder, InputStream &is, size_t size);
+decoder_skip(DecoderClient *decoder, InputStream &is, size_t size) noexcept;
 
 #endif

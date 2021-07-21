@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -22,13 +22,14 @@
 #include "util/UriExtract.hxx"
 #include "fs/Traits.hxx"
 
-DetachedSong::DetachedSong(const LightSong &other)
+DetachedSong::DetachedSong(const LightSong &other) noexcept
 	:uri(other.GetURI()),
 	 real_uri(other.real_uri != nullptr ? other.real_uri : ""),
 	 tag(other.tag),
 	 mtime(other.mtime),
 	 start_time(other.start_time),
-	 end_time(other.end_time) {}
+	 end_time(other.end_time),
+	 audio_format(other.audio_format) {}
 
 DetachedSong::operator LightSong() const noexcept
 {

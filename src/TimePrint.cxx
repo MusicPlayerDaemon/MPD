@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -20,6 +20,9 @@
 #include "TimePrint.hxx"
 #include "client/Response.hxx"
 #include "time/ISO8601.hxx"
+#include "util/StringBuffer.hxx"
+
+#include <fmt/format.h>
 
 void
 time_print(Response &r, const char *name,
@@ -33,5 +36,5 @@ time_print(Response &r, const char *name,
 		return;
 	}
 
-	r.Format("%s: %s\n", name, s.c_str());
+	r.Fmt(FMT_STRING("{}: {}\n"), name, s);
 }

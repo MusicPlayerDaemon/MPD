@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -73,7 +73,6 @@ public:
 	 * Throws #std::runtime_error on error.
 	 *
 	 * @param port the TCP port
-	 * @param error location to store the error occurring
 	 */
 	void AddPort(unsigned port);
 
@@ -85,7 +84,6 @@ public:
 	 *
 	 * @param hostname the host name to be resolved
 	 * @param port the TCP port
-	 * @param error location to store the error occurring
 	 */
 	void AddHost(const char *hostname, unsigned port);
 
@@ -95,7 +93,6 @@ public:
 	 * Throws #std::runtime_error on error.
 	 *
 	 * @param path the absolute socket path
-	 * @param error location to store the error occurring
 	 */
 	void AddPath(AllocatedPath &&path);
 

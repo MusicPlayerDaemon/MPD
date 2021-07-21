@@ -35,7 +35,7 @@
 #include <sys/utsname.h>
 #include <stdio.h>
 
-gcc_const
+[[gnu::const]]
 static KernelVersionCode
 GetKernelVersionCode() noexcept
 {

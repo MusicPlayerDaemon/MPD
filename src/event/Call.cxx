@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -19,7 +19,7 @@
 
 #include "Call.hxx"
 #include "Loop.hxx"
-#include "DeferEvent.hxx"
+#include "InjectEvent.hxx"
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
 
@@ -28,7 +28,7 @@
 
 class BlockingCallMonitor final
 {
-	DeferEvent defer_event;
+	InjectEvent event;
 
 	const std::function<void()> f;
 
@@ -41,13 +41,13 @@ class BlockingCallMonitor final
 
 public:
 	BlockingCallMonitor(EventLoop &_loop, std::function<void()> &&_f)
-		:defer_event(_loop, BIND_THIS_METHOD(RunDeferred)),
+		:event(_loop, BIND_THIS_METHOD(RunDeferred)),
 		 f(std::move(_f)), done(false) {}
 
 	void Run() {
 		assert(!done);
 
-		defer_event.Schedule();
+		event.Schedule();
 
 		{
 			std::unique_lock<Mutex> lock(mutex);

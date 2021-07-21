@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -346,7 +346,8 @@ UpnpDatabase::SearchSongs(const ContentDirectoryService &server,
 	if (!visit_song)
 		return;
 
-	for (auto &dirent : SearchSongs(server, objid, selection).objects) {
+	const auto content = SearchSongs(server, objid, selection);
+	for (auto &dirent : content.objects) {
 		if (dirent.type != UPnPDirObject::Type::ITEM ||
 		    dirent.item_class != UPnPDirObject::ItemClass::MUSIC)
 			continue;
@@ -564,7 +565,8 @@ UpnpDatabase::VisitServer(const ContentDirectoryService &server,
 	/* Target was a a container. Visit it. We could read slices
 	   and loop here, but it's not useful as mpd will only return
 	   data to the client when we're done anyway. */
-	for (const auto &dirent : server.readDir(handle, tdirent.id.c_str()).objects) {
+	const auto contents = server.readDir(handle, tdirent.id.c_str());
+	for (const auto &dirent : contents.objects) {
 		const std::string uri = PathTraitsUTF8::Build(base_uri,
 							      dirent.name.c_str());
 		VisitObject(dirent, uri.c_str(),

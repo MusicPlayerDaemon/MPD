@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2018 Content Management AG
+ * Copyright 2007-2020 CM4all GmbH
  * All rights reserved.
  *
  * author: Max Kellermann <mk@cm4all.com>
@@ -34,7 +34,6 @@
 #define NET_HOST_PARSER_HXX
 
 #include "util/StringView.hxx"
-#include "util/Compiler.h"
 
 /**
  * Result type for ExtractHost().
@@ -69,7 +68,7 @@ struct ExtractHostResult {
  *
  * @param src the input string
  */
-gcc_pure
+[[gnu::pure]]
 ExtractHostResult
 ExtractHost(const char *src) noexcept;
 

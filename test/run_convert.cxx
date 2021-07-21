@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -28,6 +28,8 @@
 #include "pcm/AudioFormat.hxx"
 #include "pcm/Convert.hxx"
 #include "fs/Path.hxx"
+#include "fs/NarrowPath.hxx"
+#include "io/FileDescriptor.hxx"
 #include "util/ConstBuffer.hxx"
 #include "util/StaticFifoBuffer.hxx"
 #include "util/OptionDef.hxx"
@@ -47,7 +49,7 @@
 struct CommandLine {
 	AudioFormat in_audio_format, out_audio_format;
 
-	Path config_path = nullptr;
+	FromNarrowPath config_path;
 
 	bool verbose = false;
 };
@@ -71,7 +73,7 @@ ParseCommandLine(int argc, char **argv)
 	while (auto o = option_parser.Next()) {
 		switch (Option(o.index)) {
 		case OPTION_CONFIG:
-			c.config_path = Path::FromFS(o.value);
+			c.config_path = o.value;
 			break;
 
 		case OPTION_VERBOSE:
@@ -100,26 +102,21 @@ public:
 	}
 };
 
-int
-main(int argc, char **argv)
-try {
-	const auto c = ParseCommandLine(argc, argv);
+static void
+RunConvert(PcmConvert &convert, size_t in_frame_size,
+	   FileDescriptor in_fd, FileDescriptor out_fd)
+{
+	in_fd.SetBinaryMode();
+	out_fd.SetBinaryMode();
 
-	SetLogThreshold(c.verbose ? LogLevel::DEBUG : LogLevel::INFO);
-	const GlobalInit init(c.config_path);
-
-	const size_t in_frame_size = c.in_audio_format.GetFrameSize();
-
-	PcmConvert state(c.in_audio_format, c.out_audio_format);
-
-	StaticFifoBuffer<uint8_t, 4096> buffer;
+	StaticFifoBuffer<std::byte, 4096> buffer;
 
 	while (true) {
 		{
 			const auto dest = buffer.Write();
 			assert(!dest.empty());
 
-			ssize_t nbytes = read(0, dest.data, dest.size);
+			ssize_t nbytes = in_fd.Read(dest.data, dest.size);
 			if (nbytes <= 0)
 				break;
 
@@ -135,20 +132,31 @@ try {
 
 		buffer.Consume(src.size);
 
-		auto output = state.Convert({src.data, src.size});
-
-		[[maybe_unused]] ssize_t ignored = write(1, output.data,
-						   output.size);
+		auto output = convert.Convert({src.data, src.size});
+		out_fd.FullWrite(output.data, output.size);
 	}
 
 	while (true) {
-		auto output = state.Flush();
+		auto output = convert.Flush();
 		if (output.IsNull())
 			break;
 
-		[[maybe_unused]] ssize_t ignored = write(1, output.data,
-						   output.size);
+		out_fd.FullWrite(output.data, output.size);
 	}
+}
+
+int
+main(int argc, char **argv)
+try {
+	const auto c = ParseCommandLine(argc, argv);
+
+	SetLogThreshold(c.verbose ? LogLevel::DEBUG : LogLevel::INFO);
+	const GlobalInit init(c.config_path);
+
+	PcmConvert state(c.in_audio_format, c.out_audio_format);
+	RunConvert(state, c.in_audio_format.GetFrameSize(),
+		   FileDescriptor(STDIN_FILENO),
+		   FileDescriptor(STDOUT_FILENO));
 
 	return EXIT_SUCCESS;
 } catch (...) {

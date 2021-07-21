@@ -34,10 +34,10 @@
 #include <fcntl.h>
 
 UniqueFileDescriptor
-OpenReadOnly(const char *path)
+OpenReadOnly(const char *path, int flags)
 {
 	UniqueFileDescriptor fd;
-	if (!fd.OpenReadOnly(path))
+	if (!fd.Open(path, O_RDONLY|flags))
 		throw FormatErrno("Failed to open '%s'", path);
 
 	return fd;

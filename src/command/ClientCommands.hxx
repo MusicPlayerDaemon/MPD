@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -31,6 +31,9 @@ handle_close(Client &client, Request request, Response &response);
 
 CommandResult
 handle_ping(Client &client, Request request, Response &response);
+
+CommandResult
+handle_binary_limit(Client &client, Request request, Response &response);
 
 CommandResult
 handle_password(Client &client, Request request, Response &response);

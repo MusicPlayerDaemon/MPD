@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -20,11 +20,11 @@
 #ifndef MPD_CLIENT_CONFIG_HXX
 #define MPD_CLIENT_CONFIG_HXX
 
-#include <chrono>
+#include "event/Chrono.hxx"
 
 struct ConfigData;
 
-extern std::chrono::steady_clock::duration client_timeout;
+extern Event::Duration client_timeout;
 extern size_t client_max_command_list_size;
 extern size_t client_max_output_buffer_size;
 

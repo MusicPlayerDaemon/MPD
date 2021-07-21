@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -21,7 +21,7 @@
 #define MPD_ASYNC_INPUT_STREAM_HXX
 
 #include "InputStream.hxx"
-#include "event/DeferEvent.hxx"
+#include "event/InjectEvent.hxx"
 #include "util/HugeAllocator.hxx"
 #include "util/CircularBuffer.hxx"
 
@@ -38,8 +38,8 @@ class AsyncInputStream : public InputStream {
 		NONE, SCHEDULED, PENDING
 	};
 
-	DeferEvent deferred_resume;
-	DeferEvent deferred_seek;
+	InjectEvent deferred_resume;
+	InjectEvent deferred_seek;
 
 	HugeArray<uint8_t> allocation;
 
@@ -166,7 +166,7 @@ protected:
 private:
 	void Resume();
 
-	/* for DeferEvent */
+	/* for InjectEvent */
 	void DeferredResume() noexcept;
 	void DeferredSeek() noexcept;
 };

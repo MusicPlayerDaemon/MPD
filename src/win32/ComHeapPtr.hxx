@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 The Music Player Daemon Project
+ * Copyright 2020-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -23,7 +23,8 @@
 #include <cstddef>
 #include <objbase.h>
 #include <utility>
-#include <windows.h>
+
+#include <combaseapi.h>
 
 // RAII for CoTaskMemAlloc and CoTaskMemFree
 // https://docs.microsoft.com/zh-tw/windows/win32/api/combaseapi/nf-combaseapi-cotaskmemalloc

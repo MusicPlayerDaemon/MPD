@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -42,6 +42,9 @@ public:
 	~AoInit() noexcept {
 		ao_shutdown();
 	}
+
+	AoInit(const AoInit &) = delete;
+	AoInit &operator=(const AoInit &) = delete;
 };
 
 class AoOutput final : AudioOutput, SafeSingleton<AoInit> {
@@ -54,6 +57,9 @@ class AoOutput final : AudioOutput, SafeSingleton<AoInit> {
 
 	explicit AoOutput(const ConfigBlock &block);
 	~AoOutput() override;
+
+	AoOutput(const AoOutput &) = delete;
+	AoOutput &operator=(const AoOutput &) = delete;
 
 public:
 	static AudioOutput *Create(EventLoop &, const ConfigBlock &block) {
@@ -117,8 +123,8 @@ AoOutput::AoOutput(const ConfigBlock &block)
 	if (ai == nullptr)
 		throw std::runtime_error("problems getting driver info");
 
-	FormatDebug(ao_output_domain, "using ao driver \"%s\" for \"%s\"\n",
-		    ai->short_name, block.GetBlockValue("name", nullptr));
+	FmtDebug(ao_output_domain, "using ao driver \"{}\" for \"{}\"\n",
+		 ai->short_name, block.GetBlockValue("name", nullptr));
 
 	value = block.GetBlockValue("options", nullptr);
 	if (value != nullptr) {

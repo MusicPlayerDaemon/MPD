@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -148,6 +148,8 @@ static struct curl_slist *http_200_aliases;
 /** HTTP proxy settings */
 static const char *proxy, *proxy_user, *proxy_password;
 static unsigned proxy_port;
+/** CA CERT settings*/
+static const char *cacert;
 
 static bool verify_peer, verify_host;
 
@@ -279,10 +281,7 @@ CurlInputStream::OnHeaders(unsigned status,
 
 		if (i != headers.end()) {
 			size_t icy_metaint = ParseUint64(i->second.c_str());
-#ifndef _WIN32
-			/* Windows doesn't know "%z" */
-			FormatDebug(curl_domain, "icy-metaint=%zu", icy_metaint);
-#endif
+			FmtDebug(curl_domain, "icy-metaint={}", icy_metaint);
 
 			if (icy_metaint > 0) {
 				icy->Start(icy_metaint);
@@ -309,7 +308,7 @@ CurlInputStream::OnData(ConstBuffer<void> data)
 
 	if (data.size > GetBufferSpace()) {
 		AsyncInputStream::Pause();
-		throw CurlRequest::Pause();
+		throw CurlResponseHandler::Pause{};
 	}
 
 	AppendToBuffer(data.data, data.size);
@@ -356,10 +355,10 @@ input_curl_init(EventLoop &event_loop, const ConfigBlock &block)
 
 	const auto version_info = curl_version_info(CURLVERSION_FIRST);
 	if (version_info != nullptr) {
-		FormatDebug(curl_domain, "version %s", version_info->version);
+		FmtDebug(curl_domain, "version {}", version_info->version);
 		if (version_info->features & CURL_VERSION_SSL)
-			FormatDebug(curl_domain, "with %s",
-				    version_info->ssl_version);
+			FmtDebug(curl_domain, "with {}",
+				 version_info->ssl_version);
 	}
 
 	http_200_aliases = curl_slist_append(http_200_aliases, "ICY 200 OK");
@@ -369,8 +368,15 @@ input_curl_init(EventLoop &event_loop, const ConfigBlock &block)
 	proxy_user = block.GetBlockValue("proxy_user");
 	proxy_password = block.GetBlockValue("proxy_password");
 
-	verify_peer = block.GetBlockValue("verify_peer", true);
-	verify_host = block.GetBlockValue("verify_host", true);
+#ifdef ANDROID
+	// TODO: figure out how to use Android's CA certificates and re-enable verify
+	constexpr bool default_verify = false;
+#else
+	constexpr bool default_verify = true;
+#endif
+	cacert = block.GetBlockValue("cacert");
+	verify_peer = block.GetBlockValue("verify_peer", default_verify);
+	verify_host = block.GetBlockValue("verify_host", default_verify);
 }
 
 static void
@@ -395,8 +401,8 @@ CurlInputStream::CurlInputStream(EventLoop &event_loop, const char *_url,
 {
 	request_headers.Append("Icy-Metadata: 1");
 
-	for (const auto &i : headers)
-		request_headers.Append((i.first + ":" + i.second).c_str());
+	for (const auto &[key, header] : headers)
+		request_headers.Append((key + ":" + header).c_str());
 }
 
 CurlInputStream::~CurlInputStream() noexcept
@@ -414,6 +420,10 @@ CurlInputStream::InitEasy()
 	request->SetOption(CURLOPT_MAXREDIRS, 5L);
 	request->SetOption(CURLOPT_FAILONERROR, 1L);
 
+	/* this option eliminates the probe request when
+	   username/password are specified */
+	request->SetOption(CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+
 	if (proxy != nullptr)
 		request->SetOption(CURLOPT_PROXY, proxy);
 
@@ -425,8 +435,10 @@ CurlInputStream::InitEasy()
 				   StringFormat<1024>("%s:%s", proxy_user,
 						      proxy_password).c_str());
 
-	request->SetOption(CURLOPT_SSL_VERIFYPEER, verify_peer ? 1L : 0L);
-	request->SetOption(CURLOPT_SSL_VERIFYHOST, verify_host ? 2L : 0L);
+	if (cacert != nullptr)
+		request->SetOption(CURLOPT_CAINFO, cacert);
+	request->SetVerifyPeer(verify_peer);
+	request->SetVerifyHost(verify_host);
 	request->SetOption(CURLOPT_HTTPHEADER, request_headers.Get());
 }
 
@@ -516,7 +528,8 @@ input_curl_open(const char *url, Mutex &mutex)
 }
 
 static std::set<std::string>
-input_curl_protocols() {
+input_curl_protocols() noexcept
+{
 	std::set<std::string> protocols;
 	auto version_info = curl_version_info(CURLVERSION_FIRST);
 	for (auto proto_ptr = version_info->protocols; *proto_ptr != nullptr; proto_ptr++) {

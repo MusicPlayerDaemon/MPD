@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -21,6 +21,7 @@
 #include "Sticker.hxx"
 #include "lib/sqlite/Util.hxx"
 #include "fs/Path.hxx"
+#include "fs/NarrowPath.hxx"
 #include "Idle.hxx"
 #include "util/StringCompare.hxx"
 #include "util/ScopeExit.hxx"
@@ -82,7 +83,7 @@ static const char sticker_sql_create[] =
 	"";
 
 StickerDatabase::StickerDatabase(Path path)
-	:db(path.c_str())
+	:db(NarrowPath(path))
 {
 	assert(!path.IsNull());
 

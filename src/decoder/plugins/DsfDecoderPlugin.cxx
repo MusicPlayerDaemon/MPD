@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -325,7 +325,7 @@ dsf_stream_decode(DecoderClient &client, InputStream &is)
 }
 
 static bool
-dsf_scan_stream(InputStream &is, TagHandler &handler) noexcept
+dsf_scan_stream(InputStream &is, TagHandler &handler)
 {
 	/* check DSF metadata */
 	DsfMetaData metadata;

@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -42,9 +42,9 @@ RemoteTagCache::Lookup(const std::string &uri) noexcept
 	std::unique_lock<Mutex> lock(mutex);
 
 	KeyMap::insert_commit_data hint;
-	auto result = map.insert_check(uri, Item::Hash(), Item::Equal(), hint);
-	if (result.second) {
-		auto *item = new Item(*this, uri);
+	auto [tag, value] = map.insert_check(uri, Item::Hash(), Item::Equal(), hint);
+	if (value) {
+		auto item = new Item(*this, uri);
 		map.insert_commit(*item, hint);
 		waiting_list.push_back(*item);
 		lock.unlock();
@@ -70,15 +70,13 @@ RemoteTagCache::Lookup(const std::string &uri) noexcept
 			ItemResolved(*item);
 			return;
 		}
-	} else if (result.first->scanner) {
+	} else if (tag->scanner) {
 		/* already scanning this one - no-op */
 	} else {
 		/* already finished: re-invoke the handler */
 
-		auto &item = *result.first;
-
-		idle_list.erase(waiting_list.iterator_to(item));
-		invoke_list.push_back(item);
+		idle_list.erase(waiting_list.iterator_to(*tag));
+		invoke_list.push_back(*tag);
 
 		ScheduleInvokeHandlers();
 	}

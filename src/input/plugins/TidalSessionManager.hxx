@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -24,8 +24,7 @@
 #include "lib/curl/Init.hxx"
 #include "thread/Mutex.hxx"
 #include "event/DeferEvent.hxx"
-
-#include <boost/intrusive/list.hpp>
+#include "util/IntrusiveList.hxx"
 
 #include <memory>
 #include <string>
@@ -36,7 +35,7 @@
  * Its methods must be thread-safe.
  */
 class TidalSessionHandler
-	: public boost::intrusive::list_base_hook<boost::intrusive::link_mode<boost::intrusive::safe_link>>
+	: public SafeLinkIntrusiveListHook
 {
 public:
 	/**
@@ -84,8 +83,7 @@ class TidalSessionManager final : TidalLoginHandler {
 	 */
 	std::string session;
 
-	typedef boost::intrusive::list<TidalSessionHandler,
-				       boost::intrusive::constant_time_size<false>> LoginHandlerList;
+	using LoginHandlerList = IntrusiveList<TidalSessionHandler>;
 
 	LoginHandlerList handlers;
 
@@ -123,7 +121,7 @@ public:
 	void RemoveLoginHandler(TidalSessionHandler &h) noexcept {
 		const std::lock_guard<Mutex> protect(mutex);
 		if (h.is_linked())
-			handlers.erase(handlers.iterator_to(h));
+			h.unlink();
 	}
 
 	const char *GetToken() const noexcept {

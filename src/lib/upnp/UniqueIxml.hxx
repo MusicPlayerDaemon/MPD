@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -20,9 +20,10 @@
 #ifndef MPD_UPNP_UNIQUE_XML_HXX
 #define MPD_UPNP_UNIQUE_XML_HXX
 
-#include <ixml.h>
+#ifdef USING_PUPNP
+#	include <ixml.h>
 
-#include <memory>
+#	include <memory>
 
 struct UpnpIxmlDeleter {
 	void operator()(IXML_Document *doc) noexcept {
@@ -37,4 +38,5 @@ struct UpnpIxmlDeleter {
 typedef std::unique_ptr<IXML_Document, UpnpIxmlDeleter> UniqueIxmlDocument;
 typedef std::unique_ptr<IXML_NodeList, UpnpIxmlDeleter> UniqueIxmlNodeList;
 
+#endif /* USING_PUPNP */
 #endif

@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -87,6 +87,19 @@ struct LightSong {
 
 	LightSong(const char *_uri, const Tag &_tag) noexcept
 		:uri(_uri), tag(_tag) {}
+
+	/**
+	 * A copy constructor which copies all fields, but only sets
+	 * the tag to a caller-provided reference.  This is used by
+	 * the #ExportedSong move constructor.
+	 */
+	LightSong(const LightSong &src, const Tag &_tag) noexcept
+		:directory(src.directory), uri(src.uri),
+		 real_uri(src.real_uri),
+		 tag(_tag),
+		 mtime(src.mtime),
+		 start_time(src.start_time), end_time(src.end_time),
+		 audio_format(src.audio_format) {}
 
 	gcc_pure
 	std::string GetURI() const noexcept {

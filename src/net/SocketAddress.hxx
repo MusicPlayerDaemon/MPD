@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2019 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2012-2021 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -31,14 +31,13 @@
 #define SOCKET_ADDRESS_HXX
 
 #include "Features.hxx"
-#include "util/Compiler.h"
 
 #include <cstddef>
 
 #ifdef _WIN32
-#include <winsock2.h>
+#include <winsock2.h> // IWYU pragma: export
 #else
-#include <sys/socket.h>
+#include <sys/socket.h> // IWYU pragma: export
 #endif
 
 template<typename T> struct ConstBuffer;
@@ -82,6 +81,19 @@ public:
 		return address;
 	}
 
+	/**
+	 * Cast the "sockaddr" pointer to a different address type,
+	 * e.g. "sockaddr_in".  This is only legal after checking
+	 * !IsNull() and GetFamily().
+	 */
+	template<typename T>
+	constexpr const T &CastTo() const noexcept {
+		/* cast through void to work around the bogus
+		   alignment warning */
+		const void *q = reinterpret_cast<const void *>(address);
+		return *reinterpret_cast<const T *>(q);
+	}
+
 	constexpr size_type GetSize() const noexcept {
 		return size;
 	}
@@ -105,14 +117,14 @@ public:
 	 * "size" attribute includes the null terminator.  Returns
 	 * nullptr if not applicable.
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	StringView GetLocalRaw() const noexcept;
 
 	/**
 	 * Returns the local socket path or nullptr if not applicable
 	 * (or if the path is corrupt).
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	const char *GetLocalPath() const noexcept;
 #endif
 
@@ -120,25 +132,25 @@ public:
 	/**
 	 * Is this the IPv6 wildcard address (in6addr_any)?
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	bool IsV6Any() const noexcept;
 
 	/**
 	 * Is this an IPv4 address mapped inside struct sockaddr_in6?
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	bool IsV4Mapped() const noexcept;
 
 	/**
 	 * Convert "::ffff:127.0.0.1" to "127.0.0.1".
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	IPv4Address UnmapV4() const noexcept;
 
 	/**
 	 * Extract the port number.  Returns 0 if not applicable.
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	unsigned GetPort() const noexcept;
 #endif
 
@@ -149,10 +161,10 @@ public:
 	 * much for anything else.  Returns nullptr if the address is
 	 * not supported.
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	ConstBuffer<void> GetSteadyPart() const noexcept;
 
-	gcc_pure
+	[[gnu::pure]]
 	bool operator==(const SocketAddress other) const noexcept;
 
 	bool operator!=(const SocketAddress other) const noexcept {

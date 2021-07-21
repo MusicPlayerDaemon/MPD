@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -20,6 +20,7 @@
 #ifndef MPD_CONFIG_PARSER_HXX
 #define MPD_CONFIG_PARSER_HXX
 
+#include <chrono>
 #include <cstddef>
 
 /**
@@ -29,11 +30,35 @@ bool
 ParseBool(const char *value);
 
 /**
+ * Throws on error.
+ */
+long
+ParseLong(const char *s);
+
+/**
+ * Throws on error.
+ */
+unsigned
+ParseUnsigned(const char *s);
+
+/**
+ * Throws on error.
+ */
+unsigned
+ParsePositive(const char *s);
+
+/**
  * Parse a string as a byte size.
  *
  * Throws on error.
  */
-size_t
-ParseSize(const char *s, size_t default_factor=1);
+std::size_t
+ParseSize(const char *s, std::size_t default_factor=1);
+
+/**
+ * Throws on error.
+ */
+std::chrono::steady_clock::duration
+ParseDuration(const char *s);
 
 #endif

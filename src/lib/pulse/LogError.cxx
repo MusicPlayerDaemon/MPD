@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -28,5 +28,5 @@ void
 LogPulseError(pa_context *context, const char *prefix) noexcept
 {
 	const int e = pa_context_errno(context);
-	FormatError(pulse_domain, "%s: %s", prefix, pa_strerror(e));
+	FmtError(pulse_domain, "{}: {}", prefix, pa_strerror(e));
 }

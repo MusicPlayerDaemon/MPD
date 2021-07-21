@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -54,6 +54,9 @@ public:
 	}
 
 	~PulseMixer() override;
+
+	PulseMixer(const PulseMixer &) = delete;
+	PulseMixer &operator=(const PulseMixer &) = delete;
 
 	void Offline();
 	void VolumeCallback(const pa_sink_input_info *i, int eol);

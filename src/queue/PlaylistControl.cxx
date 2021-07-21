@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -36,7 +36,7 @@ playlist::Stop(PlayerControl &pc) noexcept
 
 	assert(current >= 0);
 
-	FormatDebug(playlist_domain, "stop");
+	LogDebug(playlist_domain, "stop");
 	pc.LockStop();
 	queued = -1;
 	playing = false;
@@ -276,8 +276,6 @@ playlist::SeekCurrent(PlayerControl &pc,
 			throw PlaylistError::NotPlaying();
 
 		seek_time += status.elapsed_time;
-		if (seek_time.IsNegative())
-			seek_time = SignedSongTime::zero();
 	}
 
 	if (seek_time.IsNegative())

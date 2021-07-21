@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -52,7 +52,7 @@
 #include "plugins/CdioParanoiaInputPlugin.hxx"
 #endif
 
-const InputPlugin *const input_plugins[] = {
+constexpr const InputPlugin *input_plugins[] = {
 #ifdef ENABLE_ALSA
 	&input_plugin_alsa,
 #endif

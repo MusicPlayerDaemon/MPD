@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -30,11 +30,6 @@ extern "C" {
 
 #include <cassert>
 #include <cstdint>
-
-/* suppress the ffmpeg compatibility macro */
-#ifdef SampleFormat
-#undef SampleFormat
-#endif
 
 /* redefine AV_TIME_BASE_Q because libavutil's macro definition is a
    compound literal, which is illegal in C++ */

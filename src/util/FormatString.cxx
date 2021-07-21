@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -23,7 +23,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-AllocatedString<>
+AllocatedString
 FormatStringV(const char *fmt, std::va_list args) noexcept
 {
 	std::va_list tmp;
@@ -37,10 +37,10 @@ FormatStringV(const char *fmt, std::va_list args) noexcept
 
 	char *buffer = new char[length + 1];
 	vsnprintf(buffer, length + 1, fmt, args);
-	return AllocatedString<>::Donate(buffer);
+	return AllocatedString::Donate(buffer);
 }
 
-AllocatedString<>
+AllocatedString
 FormatString(const char *fmt, ...) noexcept
 {
 	std::va_list args;

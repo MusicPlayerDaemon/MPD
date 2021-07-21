@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -21,6 +21,7 @@
 #include "DecoderAPI.hxx"
 #include "Domain.hxx"
 #include "Control.hxx"
+#include "lib/fmt/AudioFormatFormatter.hxx"
 #include "song/DetachedSong.hxx"
 #include "pcm/Convert.hxx"
 #include "MusicPipe.hxx"
@@ -268,9 +269,9 @@ DecoderBridge::Ready(const AudioFormat audio_format,
 	assert(decoder_tag == nullptr);
 	assert(!seeking);
 
-	FormatDebug(decoder_domain, "audio_format=%s, seekable=%s",
-		    ToString(audio_format).c_str(),
-		    seekable ? "true" : "false");
+	FmtDebug(decoder_domain, "audio_format={}, seekable={}",
+		 audio_format,
+		 seekable);
 
 	{
 		const std::lock_guard<Mutex> protect(dc.mutex);
@@ -278,8 +279,8 @@ DecoderBridge::Ready(const AudioFormat audio_format,
 	}
 
 	if (dc.in_audio_format != dc.out_audio_format) {
-		FormatDebug(decoder_domain, "converting to %s",
-			    ToString(dc.out_audio_format).c_str());
+		FmtDebug(decoder_domain, "converting to %s",
+			 dc.out_audio_format);
 
 		try {
 			convert = std::make_unique<PcmConvert>(dc.in_audio_format,

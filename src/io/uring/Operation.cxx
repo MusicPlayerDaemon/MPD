@@ -33,6 +33,9 @@
 #include "Operation.hxx"
 #include "CancellableOperation.hxx"
 
+#include <cassert>
+#include <utility>
+
 namespace Uring {
 
 void
@@ -42,6 +45,16 @@ Operation::CancelUring() noexcept
 		return;
 
 	std::exchange(cancellable, nullptr)->Cancel(*this);
+}
+
+void
+Operation::ReplaceUring(Operation &new_operation) noexcept
+{
+	assert(IsUringPending());
+
+	cancellable->Replace(*this, new_operation);
+
+	assert(cancellable == nullptr);
 }
 
 } // namespace Uring

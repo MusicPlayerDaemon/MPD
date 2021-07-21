@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -21,7 +21,7 @@
 #include "event/MultiSocketMonitor.hxx"
 #include "util/RuntimeError.hxx"
 
-std::chrono::steady_clock::duration
+Event::Duration
 AlsaNonBlockPcm::PrepareSockets(MultiSocketMonitor &m, snd_pcm_t *pcm)
 {
 	int count = snd_pcm_poll_descriptors_count(pcm);
@@ -45,7 +45,7 @@ AlsaNonBlockPcm::PrepareSockets(MultiSocketMonitor &m, snd_pcm_t *pcm)
 	}
 
 	m.ReplaceSocketList(pfds, count);
-	return std::chrono::steady_clock::duration(-1);
+	return Event::Duration(-1);
 }
 
 void
@@ -75,13 +75,13 @@ AlsaNonBlockPcm::DispatchSockets(MultiSocketMonitor &m,
 					 snd_strerror(-err));
 }
 
-std::chrono::steady_clock::duration
+Event::Duration
 AlsaNonBlockMixer::PrepareSockets(MultiSocketMonitor &m, snd_mixer_t *mixer) noexcept
 {
 	int count = snd_mixer_poll_descriptors_count(mixer);
 	if (count <= 0) {
 		m.ClearSocketList();
-		return std::chrono::steady_clock::duration(-1);
+		return Event::Duration(-1);
 	}
 
 	struct pollfd *pfds = pfd_buffer.Get(count);
@@ -91,7 +91,7 @@ AlsaNonBlockMixer::PrepareSockets(MultiSocketMonitor &m, snd_mixer_t *mixer) noe
 		count = 0;
 
 	m.ReplaceSocketList(pfds, count);
-	return std::chrono::steady_clock::duration(-1);
+	return Event::Duration(-1);
 }
 
 void

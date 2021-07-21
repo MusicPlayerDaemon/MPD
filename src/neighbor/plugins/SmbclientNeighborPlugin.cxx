@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -19,8 +19,8 @@
 
 #include "SmbclientNeighborPlugin.hxx"
 #include "lib/smbclient/Init.hxx"
+#include "lib/smbclient/Context.hxx"
 #include "lib/smbclient/Domain.hxx"
-#include "lib/smbclient/Mutex.hxx"
 #include "neighbor/NeighborPlugin.hxx"
 #include "neighbor/Explorer.hxx"
 #include "neighbor/Listener.hxx"
@@ -56,6 +56,8 @@ class SmbclientNeighborExplorer final : public NeighborExplorer {
 		}
 	};
 
+	SmbclientContext ctx = SmbclientContext::New();
+
 	Thread thread;
 
 	mutable Mutex mutex;
@@ -66,7 +68,7 @@ class SmbclientNeighborExplorer final : public NeighborExplorer {
 	bool quit;
 
 public:
-	explicit SmbclientNeighborExplorer(NeighborListener &_listener) noexcept
+	explicit SmbclientNeighborExplorer(NeighborListener &_listener)
 		:NeighborExplorer(_listener),
 		 thread(BIND_THIS_METHOD(ThreadFunc)) {}
 
@@ -107,11 +109,6 @@ NeighborExplorer::List
 SmbclientNeighborExplorer::GetList() const noexcept
 {
 	const std::lock_guard<Mutex> protect(mutex);
-	/*
-	List list;
-	for (const auto &i : servers)
-		list.emplace_front(i.Export());
-	*/
 	return list;
 }
 
@@ -125,21 +122,24 @@ ReadServer(NeighborExplorer::List &list, const smbc_dirent &e) noexcept
 }
 
 static void
-ReadServers(NeighborExplorer::List &list, const char *uri) noexcept;
+ReadServers(SmbclientContext &ctx, const char *uri,
+	    NeighborExplorer::List &list) noexcept;
 
 static void
-ReadWorkgroup(NeighborExplorer::List &list, const std::string &name) noexcept
+ReadWorkgroup(SmbclientContext &ctx, const std::string &name,
+	      NeighborExplorer::List &list) noexcept
 {
 	std::string uri = "smb://" + name;
-	ReadServers(list, uri.c_str());
+	ReadServers(ctx, uri.c_str(), list);
 }
 
 static void
-ReadEntry(NeighborExplorer::List &list, const smbc_dirent &e) noexcept
+ReadEntry(SmbclientContext &ctx, const smbc_dirent &e,
+	  NeighborExplorer::List &list) noexcept
 {
 	switch (e.smbc_type) {
 	case SMBC_WORKGROUP:
-		ReadWorkgroup(list, std::string(e.name, e.namelen));
+		ReadWorkgroup(ctx, std::string(e.name, e.namelen), list);
 		break;
 
 	case SMBC_SERVER:
@@ -149,20 +149,21 @@ ReadEntry(NeighborExplorer::List &list, const smbc_dirent &e) noexcept
 }
 
 static void
-ReadServers(NeighborExplorer::List &list, int fd) noexcept
+ReadServers(SmbclientContext &ctx, SMBCFILE *handle,
+	    NeighborExplorer::List &list) noexcept
 {
-	smbc_dirent *e;
-	while ((e = smbc_readdir(fd)) != nullptr)
-		ReadEntry(list, *e);
+	while (auto e = ctx.ReadDirectory(handle))
+		ReadEntry(ctx, *e, list);
 }
 
 static void
-ReadServers(NeighborExplorer::List &list, const char *uri) noexcept
+ReadServers(SmbclientContext &ctx, const char *uri,
+	    NeighborExplorer::List &list) noexcept
 {
-	int fd = smbc_opendir(uri);
-	if (fd >= 0) {
-		ReadServers(list, fd);
-		smbc_closedir(fd);
+	SMBCFILE *handle = ctx.OpenDirectory(uri);
+	if (handle != nullptr) {
+		ReadServers(ctx, handle, list);
+		ctx.CloseDirectory(handle);
 	} else
 		FormatErrno(smbclient_domain, "smbc_opendir('%s') failed",
 			    uri);
@@ -170,11 +171,10 @@ ReadServers(NeighborExplorer::List &list, const char *uri) noexcept
 
 gcc_pure
 static NeighborExplorer::List
-DetectServers() noexcept
+DetectServers(SmbclientContext &ctx) noexcept
 {
 	NeighborExplorer::List list;
-	const std::lock_guard<Mutex> protect(smbclient_mutex);
-	ReadServers(list, "smb://");
+	ReadServers(ctx, "smb://", list);
 	return list;
 }
 
@@ -198,7 +198,7 @@ SmbclientNeighborExplorer::Run() noexcept
 
 	{
 		const ScopeUnlock unlock(mutex);
-		found = DetectServers();
+		found = DetectServers(ctx);
 	}
 
 	const auto found_before_begin = found.before_begin();

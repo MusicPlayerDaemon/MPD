@@ -53,7 +53,7 @@ protected:
 public:
 	using const_iterator = typename Array::const_iterator;
 
-	constexpr size_type capacity() const noexcept {
+	static constexpr size_type capacity() noexcept {
 		return CAPACITY;
 	}
 

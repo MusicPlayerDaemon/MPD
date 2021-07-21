@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2018-2021 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -30,18 +30,14 @@
 #ifndef YAJL_HANDLE_HXX
 #define YAJL_HANDLE_HXX
 
-#include "util/RuntimeError.hxx"
-#include "util/ScopeExit.hxx"
-
 #include <yajl/yajl_parse.h>
 
-#include <stdexcept>
 #include <algorithm>
 
 namespace Yajl {
 
 /**
- * OO wrapper for "struct curl_slist *".
+ * OO wrapper for a #yajl_handle.
  */
 class Handle {
 	yajl_handle handle = nullptr;
@@ -77,15 +73,12 @@ public:
 
 private:
 	void HandleStatus(yajl_status status) {
-		if (status == yajl_status_error) {
-			unsigned char *str = yajl_get_error(handle, false,
-							    nullptr, 0);
-			AtScopeExit(this, str) {
-				yajl_free_error(handle, str);
-			};
-			throw FormatRuntimeError("Failed to parse JSON: %s", str);
-		}
+		if (status == yajl_status_error)
+			ThrowError();
 	}
+
+	[[noreturn]]
+	void ThrowError();
 };
 
 } // namespace Yajl

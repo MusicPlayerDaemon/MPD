@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,6 +18,7 @@
  */
 
 #include "FfmpegFilter.hxx"
+#include "lib/ffmpeg/Interleave.hxx"
 #include "lib/ffmpeg/SampleFormat.hxx"
 #include "util/ConstBuffer.hxx"
 
@@ -79,5 +80,5 @@ FfmpegFilter::FilterPCM(ConstBuffer<void> src)
 	/* TODO: call av_buffersink_get_frame() repeatedly?  Not
 	   possible with MPD's current Filter API */
 
-	return {frame.GetData(0), frame->nb_samples * GetOutAudioFormat().GetFrameSize()};
+	return Ffmpeg::InterleaveFrame(*frame, interleave_buffer);
 }

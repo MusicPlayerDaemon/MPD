@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -27,6 +27,8 @@
 #include "client/Response.hxx"
 #include "util/CharUtil.hxx"
 
+#include <fmt/format.h>
+
 CommandResult
 handle_partition(Client &client, Request request, Response &response)
 {
@@ -46,7 +48,7 @@ CommandResult
 handle_listpartitions(Client &client, Request, Response &r)
 {
 	for (const auto &partition : client.GetInstance().partitions) {
-		r.Format("partition: %s\n", partition.name.c_str());
+		r.Fmt(FMT_STRING("partition: {}\n"), partition.name);
 	}
 
 	return CommandResult::OK;
@@ -183,9 +185,8 @@ handle_moveoutput(Client &client, Request request, Response &response)
 			existing_output->ReplaceDummy(output->Steal(),
 						      was_enabled);
 		else
-			/* add it to the output list */
-			dest_partition.outputs.Add(output->Steal(),
-						   was_enabled);
+			/* copy the AudioOutputControl and add it to the output list */
+			dest_partition.outputs.AddCopy(output,was_enabled);
 
 		instance.EmitIdle(IDLE_OUTPUT);
 		return CommandResult::OK;

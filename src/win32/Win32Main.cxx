@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,9 +18,6 @@
  */
 
 #include "Main.hxx"
-
-#ifdef _WIN32
-
 #include "util/Compiler.h"
 #include "Instance.hxx"
 #include "system/FatalError.hxx"
@@ -155,5 +152,3 @@ void win32_app_stopping()
 	else
 		running.store(false);
 }
-
-#endif

@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -20,7 +20,7 @@
 #ifndef MPD_BUFFERED_SOCKET_HXX
 #define MPD_BUFFERED_SOCKET_HXX
 
-#include "SocketMonitor.hxx"
+#include "SocketEvent.hxx"
 #include "util/StaticFifoBuffer.hxx"
 
 #include <cassert>
@@ -30,20 +30,37 @@
 class EventLoop;
 
 /**
- * A #SocketMonitor specialization that adds an input buffer.
+ * A #SocketEvent specialization that adds an input buffer.
  */
-class BufferedSocket : protected SocketMonitor {
+class BufferedSocket {
 	StaticFifoBuffer<uint8_t, 8192> input;
 
+protected:
+	SocketEvent event;
+
 public:
+	using ssize_t = SocketEvent::ssize_t;
+
 	BufferedSocket(SocketDescriptor _fd, EventLoop &_loop) noexcept
-		:SocketMonitor(_fd, _loop) {
-		ScheduleRead();
+		:event(_loop, BIND_THIS_METHOD(OnSocketReady), _fd) {
+		event.ScheduleRead();
 	}
 
-	using SocketMonitor::GetEventLoop;
-	using SocketMonitor::IsDefined;
-	using SocketMonitor::Close;
+	auto &GetEventLoop() const noexcept {
+		return event.GetEventLoop();
+	}
+
+	bool IsDefined() const noexcept {
+		return event.IsDefined();
+	}
+
+	auto GetSocket() const noexcept {
+		return event.GetSocket();
+	}
+
+	void Close() noexcept {
+		event.Close();
+	}
 
 private:
 	/**
@@ -116,8 +133,7 @@ protected:
 	virtual void OnSocketError(std::exception_ptr ep) noexcept = 0;
 	virtual void OnSocketClosed() noexcept = 0;
 
-	/* virtual methods from class SocketMonitor */
-	bool OnSocketReady(unsigned flags) noexcept override;
+	virtual void OnSocketReady(unsigned flags) noexcept;
 };
 
 #endif

@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -23,6 +23,7 @@
 #include <cstddef>
 
 bool
-ScanOpusHeader(const void *data, size_t size, unsigned &channels_r);
+ScanOpusHeader(const void *data, size_t size, unsigned &channels_r,
+	       signed &output_gain_r, unsigned &pre_skip_r);
 
 #endif

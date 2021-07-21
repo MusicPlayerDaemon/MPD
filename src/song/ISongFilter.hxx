@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -31,7 +31,7 @@ using ISongFilterPtr = std::unique_ptr<ISongFilter>;
 
 class ISongFilter {
 public:
-	virtual ~ISongFilter() noexcept {}
+	virtual ~ISongFilter() noexcept = default;
 
 	virtual ISongFilterPtr Clone() const noexcept = 0;
 

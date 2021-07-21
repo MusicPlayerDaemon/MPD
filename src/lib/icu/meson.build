@@ -18,7 +18,7 @@ if icu_dep.found()
     'Init.cxx',
   ]
 elif not get_option('iconv').disabled()
-  have_iconv = compiler.has_function('iconv')
+  have_iconv = compiler.has_function('iconv', prefix : '#include <iconv.h>')
   conf.set('HAVE_ICONV', have_iconv)
   if not have_iconv and get_option('iconv').enabled()
     error('iconv() not available')
@@ -31,6 +31,7 @@ icu = static_library(
   include_directories: inc,
   dependencies: [
     icu_dep,
+    fmt_dep,
   ],
 )
 

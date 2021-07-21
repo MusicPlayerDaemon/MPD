@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 The Music Player Daemon Project
+ * Copyright 2020-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -21,17 +21,20 @@
 #define MPD_WIN32_COM_HXX
 
 #include "HResult.hxx"
-#include <objbase.h>
-#include <windows.h>
+
+#include <combaseapi.h>
+#include <objbase.h> // for COINIT_APARTMENTTHREADED
 
 // RAII for Microsoft Component Object Model(COM)
 // https://docs.microsoft.com/en-us/windows/win32/api/_com/
 class COM {
 public:
 	COM() {
-		HRESULT result = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
-		if (FAILED(result)) {
-			throw FormatHResultError(result, "Unable to initialize COM");
+		if (HRESULT result = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED|COINIT_DISABLE_OLE1DDE);
+		    FAILED(result)) {
+			throw MakeHResultError(
+				result,
+				"Unable to initialize COM with COINIT_APARTMENTTHREADED");
 		}
 	}
 	~COM() noexcept { CoUninitialize(); }

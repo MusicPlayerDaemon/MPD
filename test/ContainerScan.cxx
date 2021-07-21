@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -37,7 +37,7 @@
 #include <stdio.h>
 
 static const DecoderPlugin *
-FindContainerDecoderPlugin(const char *suffix)
+FindContainerDecoderPlugin(std::string_view suffix)
 {
 	return decoder_plugins_find([suffix](const DecoderPlugin &plugin){
 			return plugin.container_scan != nullptr &&
@@ -48,10 +48,9 @@ FindContainerDecoderPlugin(const char *suffix)
 static const DecoderPlugin *
 FindContainerDecoderPlugin(Path path)
 {
-	UriSuffixBuffer suffix_buffer;
-	const char *const suffix = uri_get_suffix(path.ToUTF8Throw().c_str(),
-						  suffix_buffer);
-	if (suffix == nullptr)
+	const auto path_utf8 = path.ToUTF8Throw();
+	const auto suffix = uri_get_suffix(path_utf8);
+	if (suffix.empty())
 		return nullptr;
 
 	return FindContainerDecoderPlugin(suffix);

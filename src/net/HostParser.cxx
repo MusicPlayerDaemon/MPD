@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2018 Content Management AG
+ * Copyright 2007-2020 CM4all GmbH
  * All rights reserved.
  *
  * author: Max Kellermann <mk@cm4all.com>
@@ -33,7 +33,7 @@
 #include "HostParser.hxx"
 #include "util/CharUtil.hxx"
 
-#include <string.h>
+#include <cstring>
 
 static inline bool
 IsValidHostnameChar(char ch) noexcept

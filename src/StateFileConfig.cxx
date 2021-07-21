@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -23,8 +23,6 @@
 #ifdef ANDROID
 #include "fs/StandardDirectory.hxx"
 #endif
-
-constexpr std::chrono::steady_clock::duration StateFileConfig::DEFAULT_INTERVAL;
 
 StateFileConfig::StateFileConfig(const ConfigData &config)
 	:path(config.GetPath(ConfigOption::STATE_FILE)),

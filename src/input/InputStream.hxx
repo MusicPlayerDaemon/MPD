@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -106,6 +106,9 @@ public:
 	 * The caller must not lock the mutex.
 	 */
 	virtual ~InputStream() noexcept;
+
+	InputStream(const InputStream &) = delete;
+	InputStream &operator=(const InputStream &) = delete;
 
 	/**
 	 * Opens a new input stream.  You may not access it until the "ready"

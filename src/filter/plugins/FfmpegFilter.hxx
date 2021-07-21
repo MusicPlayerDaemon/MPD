@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -21,6 +21,7 @@
 #define MPD_FFMPEG_FILTER__HXX
 
 #include "filter/Filter.hxx"
+#include "lib/ffmpeg/Buffer.hxx"
 #include "lib/ffmpeg/Filter.hxx"
 #include "lib/ffmpeg/Frame.hxx"
 
@@ -31,6 +32,8 @@ class FfmpegFilter final : public Filter {
 	Ffmpeg::FilterGraph graph;
 	Ffmpeg::FilterContext buffer_src, buffer_sink;
 	Ffmpeg::Frame frame;
+
+	FfmpegBuffer interleave_buffer;
 
 	const int in_format, in_sample_rate, in_channels;
 

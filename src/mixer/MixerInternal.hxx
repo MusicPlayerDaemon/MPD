@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -57,7 +57,7 @@ public:
 
 	Mixer(const Mixer &) = delete;
 
-	virtual ~Mixer() {}
+	virtual ~Mixer() = default;
 
 	bool IsPlugin(const MixerPlugin &other) const noexcept {
 		return &plugin == &other;

@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -38,5 +38,5 @@ LogFfmpegError(int errnum, const char *prefix)
 {
 	char msg[256];
 	av_strerror(errnum, msg, sizeof(msg));
-	FormatError(ffmpeg_domain, "%s: %s", prefix, msg);
+	FmtError(ffmpeg_domain, "{}: {}", prefix, msg);
 }

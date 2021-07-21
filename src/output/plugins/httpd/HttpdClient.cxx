@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -136,7 +136,7 @@ bool
 HttpdClient::SendResponse() noexcept
 {
 	char buffer[1024];
-	AllocatedString<> allocated = nullptr;
+	AllocatedString allocated;
 	const char *response;
 
 	assert(state == State::RESPONSE);
@@ -162,6 +162,7 @@ HttpdClient::SendResponse() noexcept
 			 "Connection: close\r\n"
 			 "Pragma: no-cache\r\n"
 			 "Cache-Control: no-cache, no-store\r\n"
+			 "Access-Control-Allow-Origin: *\r\n"
 			 "\r\n",
 			 httpd.content_type);
 		response = buffer;
@@ -170,9 +171,9 @@ HttpdClient::SendResponse() noexcept
 	ssize_t nbytes = GetSocket().Write(response, strlen(response));
 	if (gcc_unlikely(nbytes < 0)) {
 		const SocketErrorMessage msg;
-		FormatWarning(httpd_output_domain,
-			      "failed to write to client: %s",
-			      (const char *)msg);
+		FmtWarning(httpd_output_domain,
+			   "failed to write to client: {}",
+			   (const char *)msg);
 		LockClose();
 		return false;
 	}
@@ -197,8 +198,8 @@ HttpdClient::ClearQueue() noexcept
 	while (!pages.empty()) {
 #ifndef NDEBUG
 		auto &page = pages.front();
-		assert(queue_size >= page->GetSize());
-		queue_size -= page->GetSize();
+		assert(queue_size >= page->size());
+		queue_size -= page->size();
 #endif
 
 		pages.pop();
@@ -216,16 +217,16 @@ HttpdClient::CancelQueue() noexcept
 	ClearQueue();
 
 	if (current_page == nullptr)
-		CancelWrite();
+		event.CancelWrite();
 }
 
 ssize_t
 HttpdClient::TryWritePage(const Page &page, size_t position) noexcept
 {
-	assert(position < page.GetSize());
+	assert(position < page.size());
 
-	return GetSocket().Write(page.GetData() + position,
-				 page.GetSize() - position);
+	return GetSocket().Write(page.data() + position,
+				 page.size() - position);
 }
 
 ssize_t
@@ -233,7 +234,7 @@ HttpdClient::TryWritePageN(const Page &page,
 			   size_t position, ssize_t n) noexcept
 {
 	return n >= 0
-		? GetSocket().Write(page.GetData() + position, n)
+		? GetSocket().Write(page.data() + position, n)
 		: TryWritePage(page, position);
 }
 
@@ -241,7 +242,7 @@ ssize_t
 HttpdClient::GetBytesTillMetaData() const noexcept
 {
 	if (metadata_requested &&
-	    current_page->GetSize() - current_position > metaint - metadata_fill)
+	    current_page->size() - current_position > metaint - metadata_fill)
 		return metaint - metadata_fill;
 
 	return -1;
@@ -259,7 +260,7 @@ HttpdClient::TryWrite() noexcept
 			/* another thread has removed the event source
 			   while this thread was waiting for
 			   httpd.mutex */
-			CancelWrite();
+			event.CancelWrite();
 			return true;
 		}
 
@@ -267,8 +268,8 @@ HttpdClient::TryWrite() noexcept
 		pages.pop();
 		current_position = 0;
 
-		assert(queue_size >= current_page->GetSize());
-		queue_size -= current_page->GetSize();
+		assert(queue_size >= current_page->size());
+		queue_size -= current_page->size();
 	}
 
 	const ssize_t bytes_to_write = GetBytesTillMetaData();
@@ -278,14 +279,14 @@ HttpdClient::TryWrite() noexcept
 						      metadata_current_position);
 			if (nbytes < 0) {
 				auto e = GetSocketError();
-				if (IsSocketErrorAgain(e))
+				if (IsSocketErrorSendWouldBlock(e))
 					return true;
 
 				if (!IsSocketErrorClosed(e)) {
 					SocketErrorMessage msg(e);
-					FormatWarning(httpd_output_domain,
-						      "failed to write to client: %s",
-						      (const char *)msg);
+					FmtWarning(httpd_output_domain,
+						   "failed to write to client: {}",
+						   (const char *)msg);
 				}
 
 				Close();
@@ -294,7 +295,7 @@ HttpdClient::TryWrite() noexcept
 
 			metadata_current_position += nbytes;
 
-			if (metadata->GetSize() - metadata_current_position == 0) {
+			if (metadata->size() - metadata_current_position == 0) {
 				metadata_fill = 0;
 				metadata_current_position = 0;
 				metadata_sent = true;
@@ -305,14 +306,14 @@ HttpdClient::TryWrite() noexcept
 			ssize_t nbytes = GetSocket().Write(&empty_data, 1);
 			if (nbytes < 0) {
 				auto e = GetSocketError();
-				if (IsSocketErrorAgain(e))
+				if (IsSocketErrorSendWouldBlock(e))
 					return true;
 
 				if (!IsSocketErrorClosed(e)) {
 					SocketErrorMessage msg(e);
-					FormatWarning(httpd_output_domain,
-						      "failed to write to client: %s",
-						      (const char *)msg);
+					FmtWarning(httpd_output_domain,
+						   "failed to write to client: {}",
+						   (const char *)msg);
 				}
 
 				Close();
@@ -328,14 +329,14 @@ HttpdClient::TryWrite() noexcept
 				      bytes_to_write);
 		if (nbytes < 0) {
 			auto e = GetSocketError();
-			if (IsSocketErrorAgain(e))
+			if (IsSocketErrorSendWouldBlock(e))
 				return true;
 
 			if (!IsSocketErrorClosed(e)) {
 				SocketErrorMessage msg(e);
-				FormatWarning(httpd_output_domain,
-					      "failed to write to client: %s",
-					      (const char *)msg);
+				FmtWarning(httpd_output_domain,
+					   "failed to write to client: {}",
+					   (const char *)msg);
 			}
 
 			Close();
@@ -343,18 +344,18 @@ HttpdClient::TryWrite() noexcept
 		}
 
 		current_position += nbytes;
-		assert(current_position <= current_page->GetSize());
+		assert(current_position <= current_page->size());
 
 		if (metadata_requested)
 			metadata_fill += nbytes;
 
-		if (current_position >= current_page->GetSize()) {
+		if (current_position >= current_page->size()) {
 			current_page.reset();
 
 			if (pages.empty())
 				/* all pages are sent: remove the
 				   event source */
-				CancelWrite();
+				event.CancelWrite();
 		}
 	}
 
@@ -369,15 +370,15 @@ HttpdClient::PushPage(PagePtr page) noexcept
 		return;
 
 	if (queue_size > 256 * 1024) {
-		FormatDebug(httpd_output_domain,
-			    "client is too slow, flushing its queue");
+		LogDebug(httpd_output_domain,
+			 "client is too slow, flushing its queue");
 		ClearQueue();
 	}
 
-	queue_size += page->GetSize();
+	queue_size += page->size();
 	pages.emplace(std::move(page));
 
-	ScheduleWrite();
+	event.ScheduleWrite();
 }
 
 void
@@ -389,17 +390,14 @@ HttpdClient::PushMetaData(PagePtr page) noexcept
 	metadata_sent = false;
 }
 
-bool
+void
 HttpdClient::OnSocketReady(unsigned flags) noexcept
 {
-	if (!BufferedSocket::OnSocketReady(flags))
-		return false;
-
-	if (flags & WRITE)
+	if (flags & SocketEvent::WRITE)
 		if (!TryWrite())
-			return false;
+			return;
 
-	return true;
+	BufferedSocket::OnSocketReady(flags);
 }
 
 BufferedSocket::InputResult

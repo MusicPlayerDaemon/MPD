@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -86,15 +86,15 @@ private:
 	void PurgeDeletedFromDirectory(Directory &directory) noexcept;
 
 	void UpdateSongFile2(Directory &directory,
-			     const char *name, const char *suffix,
+			     const char *name, std::string_view suffix,
 			     const StorageFileInfo &info) noexcept;
 
 	bool UpdateSongFile(Directory &directory,
-			    const char *name, const char *suffix,
+			    const char *name, std::string_view suffix,
 			    const StorageFileInfo &info) noexcept;
 
 	bool UpdateContainerFile(Directory &directory,
-				 std::string_view name, const char *suffix,
+				 std::string_view name, std::string_view suffix,
 				 const StorageFileInfo &info) noexcept;
 
 
@@ -103,7 +103,7 @@ private:
 			       const char *name) noexcept;
 
 	bool UpdateArchiveFile(Directory &directory,
-			       std::string_view name, const char *suffix,
+			       std::string_view name, std::string_view suffix,
 			       const StorageFileInfo &info) noexcept;
 
 	void UpdateArchiveFile(Directory &directory, std::string_view name,
@@ -114,7 +114,7 @@ private:
 #else
 	bool UpdateArchiveFile([[maybe_unused]] Directory &directory,
 			       [[maybe_unused]] const char *name,
-			       [[maybe_unused]] const char *suffix,
+			       [[maybe_unused]] std::string_view suffix,
 			       [[maybe_unused]] const StorageFileInfo &info) noexcept {
 		return false;
 	}
@@ -125,7 +125,7 @@ private:
 				const PlaylistPlugin &plugin) noexcept;
 
 	bool UpdatePlaylistFile(Directory &directory,
-				std::string_view name, const char *suffix,
+				std::string_view name, std::string_view suffix,
 				const StorageFileInfo &info) noexcept;
 
 	bool UpdateRegularFile(Directory &directory,

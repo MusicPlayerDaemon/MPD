@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -20,6 +20,8 @@
 #ifndef MPD_ARCHIVE_LIST_HXX
 #define MPD_ARCHIVE_LIST_HXX
 
+#include <string_view>
+
 struct ArchivePlugin;
 
 extern const ArchivePlugin *const archive_plugins[];
@@ -33,7 +35,7 @@ extern const ArchivePlugin *const archive_plugins[];
 /* interface for using plugins */
 
 const ArchivePlugin *
-archive_plugin_from_suffix(const char *suffix) noexcept;
+archive_plugin_from_suffix(std::string_view suffix) noexcept;
 
 const ArchivePlugin *
 archive_plugin_from_name(const char *name) noexcept;

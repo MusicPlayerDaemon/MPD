@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -25,15 +25,14 @@
 #include "lib/curl/Init.hxx"
 #include "thread/Mutex.hxx"
 #include "event/DeferEvent.hxx"
-
-#include <boost/intrusive/list.hpp>
+#include "util/IntrusiveList.hxx"
 
 #include <memory>
 #include <map>
 #include <string>
 
 class QobuzSessionHandler
-	: public boost::intrusive::list_base_hook<boost::intrusive::link_mode<boost::intrusive::safe_link>>
+	: public SafeLinkIntrusiveListHook
 {
 public:
 	virtual void OnQobuzSession() noexcept = 0;
@@ -59,8 +58,7 @@ class QobuzClient final : QobuzLoginHandler {
 
 	std::exception_ptr error;
 
-	typedef boost::intrusive::list<QobuzSessionHandler,
-				       boost::intrusive::constant_time_size<false>> LoginHandlerList;
+	using LoginHandlerList = IntrusiveList<QobuzSessionHandler>;
 
 	LoginHandlerList handlers;
 
@@ -87,7 +85,7 @@ public:
 	void RemoveLoginHandler(QobuzSessionHandler &h) noexcept {
 		const std::lock_guard<Mutex> protect(mutex);
 		if (h.is_linked())
-			handlers.erase(handlers.iterator_to(h));
+			h.unlink();
 	}
 
 	/**

@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -25,7 +25,7 @@
 
 #include <string.h>
 
-PeakBuffer::~PeakBuffer()
+PeakBuffer::~PeakBuffer() noexcept
 {
 	delete normal_buffer;
 	delete peak_buffer;
@@ -57,7 +57,7 @@ PeakBuffer::Read() const noexcept
 }
 
 void
-PeakBuffer::Consume(size_t length) noexcept
+PeakBuffer::Consume(std::size_t length) noexcept
 {
 	if (normal_buffer != nullptr && !normal_buffer->empty()) {
 		normal_buffer->Consume(length);
@@ -75,25 +75,25 @@ PeakBuffer::Consume(size_t length) noexcept
 	}
 }
 
-static size_t
-AppendTo(DynamicFifoBuffer<uint8_t> &buffer,
+static std::size_t
+AppendTo(DynamicFifoBuffer<std::byte> &buffer,
 	 const void *data, size_t length) noexcept
 {
 	assert(data != nullptr);
 	assert(length > 0);
 
-	size_t total = 0;
+	std::size_t total = 0;
 
 	do {
 		const auto p = buffer.Write();
 		if (p.empty())
 			break;
 
-		const size_t nbytes = std::min(length, p.size);
+		const std::size_t nbytes = std::min(length, p.size);
 		memcpy(p.data, data, nbytes);
 		buffer.Append(nbytes);
 
-		data = (const uint8_t *)data + nbytes;
+		data = (const std::byte *)data + nbytes;
 		length -= nbytes;
 		total += nbytes;
 	} while (length > 0);
@@ -102,22 +102,22 @@ AppendTo(DynamicFifoBuffer<uint8_t> &buffer,
 }
 
 bool
-PeakBuffer::Append(const void *data, size_t length)
+PeakBuffer::Append(const void *data, std::size_t length)
 {
 	if (length == 0)
 		return true;
 
 	if (peak_buffer != nullptr && !peak_buffer->empty()) {
-		size_t nbytes = AppendTo(*peak_buffer, data, length);
+		std::size_t nbytes = AppendTo(*peak_buffer, data, length);
 		return nbytes == length;
 	}
 
 	if (normal_buffer == nullptr)
-		normal_buffer = new DynamicFifoBuffer<uint8_t>(normal_size);
+		normal_buffer = new DynamicFifoBuffer<std::byte>(normal_size);
 
-	size_t nbytes = AppendTo(*normal_buffer, data, length);
+	std::size_t nbytes = AppendTo(*normal_buffer, data, length);
 	if (nbytes > 0) {
-		data = (const uint8_t *)data + nbytes;
+		data = (const std::byte *)data + nbytes;
 		length -= nbytes;
 		if (length == 0)
 			return true;
@@ -125,7 +125,7 @@ PeakBuffer::Append(const void *data, size_t length)
 
 	if (peak_buffer == nullptr) {
 		if (peak_size > 0)
-			peak_buffer = new DynamicFifoBuffer<uint8_t>(peak_size);
+			peak_buffer = new DynamicFifoBuffer<std::byte>(peak_size);
 		if (peak_buffer == nullptr)
 			return false;
 	}

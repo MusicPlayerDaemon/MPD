@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2018 Content Management AG
+ * Copyright 2007-2020 CM4all GmbH
  * All rights reserved.
  *
  * author: Max Kellermann <mk@cm4all.com>
@@ -32,12 +32,14 @@
 
 #include "Watch.hxx"
 
+#include <cassert>
+
 namespace ODBus {
 
 WatchManager::Watch::Watch(EventLoop &event_loop,
 			   WatchManager &_parent, DBusWatch &_watch) noexcept
-	:SocketMonitor(event_loop),
-	 parent(_parent), watch(_watch)
+	:parent(_parent), watch(_watch),
+	 event(event_loop, BIND_THIS_METHOD(OnSocketReady))
 {
 	Toggled();
 }
@@ -45,30 +47,33 @@ WatchManager::Watch::Watch(EventLoop &event_loop,
 static constexpr unsigned
 DbusToLibevent(unsigned flags) noexcept
 {
-	return ((flags & DBUS_WATCH_READABLE) != 0) * SocketMonitor::READ |
-		((flags & DBUS_WATCH_WRITABLE) != 0) * SocketMonitor::WRITE;
+	return ((flags & DBUS_WATCH_READABLE) != 0) * SocketEvent::READ |
+		((flags & DBUS_WATCH_WRITABLE) != 0) * SocketEvent::WRITE |
+		((flags & DBUS_WATCH_ERROR) != 0) * SocketEvent::ERROR |
+		((flags & DBUS_WATCH_HANGUP) != 0) * SocketEvent::HANGUP;
 }
 
 void
 WatchManager::Watch::Toggled() noexcept
 {
-	if (SocketMonitor::IsDefined())
-		SocketMonitor::Cancel();
+	event.ReleaseSocket();
 
 	if (dbus_watch_get_enabled(&watch)) {
-		SocketMonitor::Open(SocketDescriptor(dbus_watch_get_unix_fd(&watch)));
-		SocketMonitor::Schedule(DbusToLibevent(dbus_watch_get_flags(&watch)));
+		event.Open(SocketDescriptor(dbus_watch_get_unix_fd(&watch)));
+		event.Schedule(DbusToLibevent(dbus_watch_get_flags(&watch)));
 	}
 }
 
 static constexpr unsigned
 LibeventToDbus(unsigned flags) noexcept
 {
-	return ((flags & SocketMonitor::READ) != 0) * DBUS_WATCH_READABLE |
-		((flags & SocketMonitor::WRITE) != 0) * DBUS_WATCH_WRITABLE;
+	return ((flags & SocketEvent::READ) != 0) * DBUS_WATCH_READABLE |
+		((flags & SocketEvent::WRITE) != 0) * DBUS_WATCH_WRITABLE |
+		((flags & SocketEvent::ERROR) != 0) * DBUS_WATCH_ERROR |
+		((flags & SocketEvent::HANGUP) != 0) * DBUS_WATCH_HANGUP;
 }
 
-bool
+void
 WatchManager::Watch::OnSocketReady(unsigned events) noexcept
 {
 	/* copy the "parent" reference to the stack, because the
@@ -79,7 +84,6 @@ WatchManager::Watch::OnSocketReady(unsigned events) noexcept
 	dbus_watch_handle(&watch, LibeventToDbus(events));
 
 	_parent.ScheduleDispatch();
-	return true;
 }
 
 void

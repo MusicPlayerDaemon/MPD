@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -32,7 +32,7 @@
 
 bool
 UpdateWalk::UpdateContainerFile(Directory &directory,
-				std::string_view name, const char *suffix,
+				std::string_view name, std::string_view suffix,
 				const StorageFileInfo &info) noexcept
 {
 	const DecoderPlugin *_plugin = decoder_plugins_find([suffix](const DecoderPlugin &plugin){
@@ -75,9 +75,9 @@ UpdateWalk::UpdateContainerFile(Directory &directory,
 			// shouldn't be necessary but it's there..
 			song->mtime = info.mtime;
 
-			FormatDefault(update_domain, "added %s/%s",
-				      contdir->GetPath(),
-				      song->filename.c_str());
+			FmtNotice(update_domain, "added {}/{}",
+				  contdir->GetPath(),
+				  song->filename);
 
 			{
 				const ScopeDatabaseLock protect;

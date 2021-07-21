@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -254,8 +254,7 @@ sidplay_file_decode(DecoderClient &client, Path path_fs)
 #else
 		const char *error = tune.getInfo().statusString;
 #endif
-		FormatWarning(sidplay_domain, "failed to load file: %s",
-			      error);
+		FmtWarning(sidplay_domain, "failed to load file: {}", error);
 		return;
 	}
 
@@ -283,8 +282,8 @@ sidplay_file_decode(DecoderClient &client, Path path_fs)
 	bool error = player.load(&tune) < 0;
 #endif
 	if (error) {
-		FormatWarning(sidplay_domain,
-			      "sidplay2.load() failed: %s", player.error());
+		FmtWarning(sidplay_domain,
+			   "sidplay2.load() failed: {}", player.error());
 		return;
 	}
 
@@ -293,25 +292,25 @@ sidplay_file_decode(DecoderClient &client, Path path_fs)
 #ifdef HAVE_SIDPLAYFP
 	ReSIDfpBuilder builder("ReSID");
 	if (!builder.getStatus()) {
-		FormatWarning(sidplay_domain,
-			      "failed to initialize ReSIDfpBuilder: %s",
-			      builder.error());
+		FmtWarning(sidplay_domain,
+			   "failed to initialize ReSIDfpBuilder: {}",
+			   builder.error());
 		return;
 	}
 
 	builder.create(player.info().maxsids());
 	if (!builder.getStatus()) {
-		FormatWarning(sidplay_domain,
-			      "ReSIDfpBuilder.create() failed: %s",
-			      builder.error());
+		FmtWarning(sidplay_domain,
+			   "ReSIDfpBuilder.create() failed: {}",
+			   builder.error());
 		return;
 	}
 #else
 	ReSIDBuilder builder("ReSID");
 	builder.create(player.info().maxsids);
 	if (!builder) {
-		FormatWarning(sidplay_domain, "ReSIDBuilder.create() failed: %s",
-			      builder.error());
+		FmtWarning(sidplay_domain, "ReSIDBuilder.create() failed: {}",
+			   builder.error());
 		return;
 	}
 #endif
@@ -319,15 +318,15 @@ sidplay_file_decode(DecoderClient &client, Path path_fs)
 	builder.filter(sidplay_global->filter_setting);
 #ifdef HAVE_SIDPLAYFP
 	if (!builder.getStatus()) {
-		FormatWarning(sidplay_domain,
-			      "ReSIDfpBuilder.filter() failed: %s",
-			      builder.error());
+		FmtWarning(sidplay_domain,
+			   "ReSIDfpBuilder.filter() failed: {}",
+			   builder.error());
 		return;
 	}
 #else
 	if (!builder) {
-		FormatWarning(sidplay_domain, "ReSIDBuilder.filter() failed: %s",
-			      builder.error());
+		FmtWarning(sidplay_domain, "ReSIDBuilder.filter() failed: {}",
+			   builder.error());
 		return;
 	}
 #endif
@@ -388,8 +387,8 @@ sidplay_file_decode(DecoderClient &client, Path path_fs)
 	error = player.config(config) < 0;
 #endif
 	if (error) {
-		FormatWarning(sidplay_domain,
-			      "sidplay2.config() failed: %s", player.error());
+		FmtWarning(sidplay_domain,
+			   "sidplay2.config() failed: {}", player.error());
 		return;
 	}
 
@@ -456,7 +455,7 @@ sidplay_file_decode(DecoderClient &client, Path path_fs)
 	} while (cmd != DecoderCommand::STOP);
 }
 
-static AllocatedString<char>
+static AllocatedString
 Windows1252ToUTF8(const char *s) noexcept
 {
 #ifdef HAVE_ICU_CONVERTER
@@ -469,9 +468,9 @@ Windows1252ToUTF8(const char *s) noexcept
 	 * Fallback to not transcoding windows-1252 to utf-8, that may result
 	 * in invalid utf-8 unless nonprintable characters are replaced.
 	 */
-	auto t = AllocatedString<char>::Duplicate(s);
+	AllocatedString t(s);
 
-	for (size_t i = 0; t[i] != AllocatedString<char>::SENTINEL; i++)
+	for (size_t i = 0; t[i] != AllocatedString::SENTINEL; i++)
 		if (!IsPrintableASCII(t[i]))
 			t[i] = '?';
 
@@ -479,7 +478,7 @@ Windows1252ToUTF8(const char *s) noexcept
 }
 
 gcc_pure
-static AllocatedString<char>
+static AllocatedString
 GetInfoString(const SidTuneInfo &info, unsigned i) noexcept
 {
 #ifdef HAVE_SIDPLAYFP
@@ -496,7 +495,7 @@ GetInfoString(const SidTuneInfo &info, unsigned i) noexcept
 }
 
 gcc_pure
-static AllocatedString<char>
+static AllocatedString
 GetDateString(const SidTuneInfo &info) noexcept
 {
 	/*
@@ -507,12 +506,12 @@ GetDateString(const SidTuneInfo &info) noexcept
 	 * author or group> may be for example Rob Hubbard. A full field
 	 * may be for example "1987 Rob Hubbard".
 	 */
-	AllocatedString<char> release = GetInfoString(info, 2);
+	AllocatedString release = GetInfoString(info, 2);
 
 	/* Keep the <year> part only for the date. */
-	for (size_t i = 0; release[i] != AllocatedString<char>::SENTINEL; i++)
+	for (size_t i = 0; release[i] != AllocatedString::SENTINEL; i++)
 		if (std::isspace(release[i])) {
-			release[i] = AllocatedString<char>::SENTINEL;
+			release[i] = AllocatedString::SENTINEL;
 			break;
 		}
 

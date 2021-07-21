@@ -77,7 +77,7 @@ void
 HugeDiscard(void *p, size_t size) noexcept;
 
 #elif defined(_WIN32)
-#include <windows.h>
+#include <memoryapi.h>
 
 WritableBuffer<void>
 HugeAllocate(size_t size);

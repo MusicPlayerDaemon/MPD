@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -25,6 +25,8 @@
 #include "neighbor/Glue.hxx"
 #include "neighbor/Info.hxx"
 
+#include <fmt/format.h>
+
 #include <string>
 
 bool
@@ -44,9 +46,9 @@ handle_listneighbors(Client &client, [[maybe_unused]] Request args, Response &r)
 	}
 
 	for (const auto &i : neighbors->GetList())
-		r.Format("neighbor: %s\n"
-			 "name: %s\n",
-			 i.uri.c_str(),
-			 i.display_name.c_str());
+		r.Fmt(FMT_STRING("neighbor: {}\n"
+				 "name: {}\n"),
+		      i.uri,
+		      i.display_name);
 	return CommandResult::OK;
 }

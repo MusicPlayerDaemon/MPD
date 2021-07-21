@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2018 Content Management AG
+ * Copyright 2007-2020 CM4all GmbH
  * All rights reserved.
  *
  * author: Max Kellermann <mk@cm4all.com>
@@ -34,7 +34,7 @@
 #define ODBUS_WATCH_HXX
 
 #include "Connection.hxx"
-#include "event/SocketMonitor.hxx"
+#include "event/SocketEvent.hxx"
 #include "event/DeferEvent.hxx"
 
 #include <dbus/dbus.h>
@@ -58,9 +58,10 @@ class WatchManager {
 
 	Connection connection;
 
-	class Watch final : SocketMonitor {
+	class Watch {
 		WatchManager &parent;
 		DBusWatch &watch;
+		SocketEvent event;
 
 	public:
 		Watch(EventLoop &event_loop, WatchManager &_parent,
@@ -69,7 +70,7 @@ class WatchManager {
 		void Toggled() noexcept;
 
 	private:
-		bool OnSocketReady(unsigned flags) noexcept override;
+		void OnSocketReady(unsigned events) noexcept;
 	};
 
 	std::map<DBusWatch *, Watch> watches;

@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -49,14 +49,14 @@ MultipleOutputs::~MultipleOutputs() noexcept
 }
 
 static std::unique_ptr<FilteredAudioOutput>
-LoadOutput(EventLoop &event_loop,
+LoadOutput(EventLoop &event_loop, EventLoop &rt_event_loop,
 	   const ReplayGainConfig &replay_gain_config,
 	   MixerListener &mixer_listener,
 	   const ConfigBlock &block,
 	   const AudioOutputDefaults &defaults,
 	   FilterFactory *filter_factory)
 try {
-	return audio_output_new(event_loop, replay_gain_config, block,
+	return audio_output_new(event_loop, rt_event_loop, replay_gain_config, block,
 				defaults,
 				filter_factory,
 				mixer_listener);
@@ -69,14 +69,15 @@ try {
 }
 
 static std::unique_ptr<AudioOutputControl>
-LoadOutputControl(EventLoop &event_loop,
+LoadOutputControl(EventLoop &event_loop, EventLoop &rt_event_loop,
 		  const ReplayGainConfig &replay_gain_config,
 		  MixerListener &mixer_listener,
 		  AudioOutputClient &client, const ConfigBlock &block,
 		  const AudioOutputDefaults &defaults,
 		  FilterFactory *filter_factory)
 {
-	auto output = LoadOutput(event_loop, replay_gain_config,
+	auto output = LoadOutput(event_loop, rt_event_loop,
+				 replay_gain_config,
 				 mixer_listener,
 				 block, defaults, filter_factory);
 	auto control = std::make_unique<AudioOutputControl>(std::move(output), client);
@@ -85,7 +86,7 @@ LoadOutputControl(EventLoop &event_loop,
 }
 
 void
-MultipleOutputs::Configure(EventLoop &event_loop,
+MultipleOutputs::Configure(EventLoop &event_loop, EventLoop &rt_event_loop,
 			   const ConfigData &config,
 			   const ReplayGainConfig &replay_gain_config)
 {
@@ -94,7 +95,7 @@ MultipleOutputs::Configure(EventLoop &event_loop,
 
 	for (const auto &block : config.GetBlockList(ConfigBlockOption::AUDIO_OUTPUT)) {
 		block.SetUsed();
-		auto output = LoadOutputControl(event_loop,
+		auto output = LoadOutputControl(event_loop, rt_event_loop,
 						replay_gain_config,
 						mixer_listener,
 						client, block, defaults,
@@ -110,6 +111,7 @@ MultipleOutputs::Configure(EventLoop &event_loop,
 		/* auto-detect device */
 		const ConfigBlock empty;
 		outputs.emplace_back(LoadOutputControl(event_loop,
+						       rt_event_loop,
 						       replay_gain_config,
 						       mixer_listener,
 						       client, empty, defaults,
@@ -133,6 +135,19 @@ MultipleOutputs::Add(std::unique_ptr<FilteredAudioOutput> output,
 {
 	// TODO: this operation needs to be protected with a mutex
 	outputs.emplace_back(std::make_unique<AudioOutputControl>(std::move(output),
+								  client));
+
+	outputs.back()->LockSetEnabled(enable);
+
+	client.ApplyEnabled();
+}
+
+void
+MultipleOutputs::AddCopy(AudioOutputControl *outputControl,
+		     bool enable) noexcept
+{
+	// TODO: this operation needs to be protected with a mutex
+	outputs.emplace_back(std::make_unique<AudioOutputControl>(outputControl,
 								  client));
 
 	outputs.back()->LockSetEnabled(enable);

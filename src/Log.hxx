@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -23,12 +23,79 @@
 #include "LogLevel.hxx"
 #include "util/Compiler.h"
 
+#include <fmt/core.h>
+#if FMT_VERSION < 70000 || FMT_VERSION >= 80000
+#include <fmt/format.h>
+#endif
+
 #include <exception>
+#include <string_view>
+#include <utility>
 
 class Domain;
 
 void
-Log(LogLevel level, const Domain &domain, const char *msg) noexcept;
+Log(LogLevel level, const Domain &domain, std::string_view msg) noexcept;
+
+void
+LogVFmt(LogLevel level, const Domain &domain,
+	fmt::string_view format_str, fmt::format_args args) noexcept;
+
+template<typename S, typename... Args>
+void
+LogFmt(LogLevel level, const Domain &domain,
+       const S &format_str, Args&&... args) noexcept
+{
+#if FMT_VERSION >= 70000
+	return LogVFmt(level, domain, fmt::to_string_view(format_str),
+		       fmt::make_args_checked<Args...>(format_str,
+						       args...));
+#else
+	/* expensive fallback for older libfmt versions */
+	const auto result = fmt::format(format_str, args...);
+	return Log(level, domain, result);
+#endif
+}
+
+template<typename S, typename... Args>
+void
+FmtDebug(const Domain &domain,
+	 const S &format_str, Args&&... args) noexcept
+{
+	LogFmt(LogLevel::DEBUG, domain, format_str, args...);
+}
+
+template<typename S, typename... Args>
+void
+FmtInfo(const Domain &domain,
+	const S &format_str, Args&&... args) noexcept
+{
+	LogFmt(LogLevel::INFO, domain, format_str, args...);
+}
+
+template<typename S, typename... Args>
+void
+FmtNotice(const Domain &domain,
+	  const S &format_str, Args&&... args) noexcept
+{
+	LogFmt(LogLevel::NOTICE, domain, format_str, args...);
+}
+
+template<typename S, typename... Args>
+void
+FmtWarning(const Domain &domain,
+	   const S &format_str, Args&&... args) noexcept
+{
+	LogFmt(LogLevel::WARNING, domain, format_str, args...);
+}
+
+template<typename S, typename... Args>
+void
+FmtError(const Domain &domain,
+	 const S &format_str, Args&&... args) noexcept
+{
+	LogFmt(LogLevel::ERROR, domain, format_str, args...);
+}
 
 gcc_printf(3,4)
 void
@@ -66,25 +133,20 @@ gcc_printf(2,3)
 void
 FormatDebug(const Domain &domain, const char *fmt, ...) noexcept;
 
+void
+FormatDebug(const Domain &domain, const char *fmt, ...) noexcept;
+
 static inline void
 LogInfo(const Domain &domain, const char *msg) noexcept
 {
 	Log(LogLevel::INFO, domain, msg);
 }
 
-gcc_printf(2,3)
-void
-FormatInfo(const Domain &domain, const char *fmt, ...) noexcept;
-
 static inline void
-LogDefault(const Domain &domain, const char *msg) noexcept
+LogNotice(const Domain &domain, const char *msg) noexcept
 {
-	Log(LogLevel::DEFAULT, domain, msg);
+	Log(LogLevel::NOTICE, domain, msg);
 }
-
-gcc_printf(2,3)
-void
-FormatDefault(const Domain &domain, const char *fmt, ...) noexcept;
 
 static inline void
 LogWarning(const Domain &domain, const char *msg) noexcept
@@ -140,10 +202,6 @@ FormatError(const std::exception_ptr &ep,
 {
 	LogFormat(LogLevel::ERROR, ep, fmt, std::forward<Args>(args)...);
 }
-
-gcc_printf(2,3)
-void
-FormatError(const Domain &domain, const char *fmt, ...) noexcept;
 
 void
 LogErrno(const Domain &domain, int e, const char *msg) noexcept;

@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -21,48 +21,58 @@
 #define MPD_DEFER_EVENT_HXX
 
 #include "util/BindMethod.hxx"
-
-#include <boost/intrusive/list_hook.hpp>
+#include "util/IntrusiveList.hxx"
 
 class EventLoop;
 
 /**
- * Invoke a method call in the #EventLoop.
+ * Defer execution until the next event loop iteration.  Use this to
+ * move calls out of the current stack frame, to avoid surprising side
+ * effects for callers up in the call chain.
  *
- * This class is thread-safe.
+ * This class is not thread-safe, all methods must be called from the
+ * thread that runs the #EventLoop.
  */
-class DeferEvent final {
+class DeferEvent final : AutoUnlinkIntrusiveListHook
+{
 	friend class EventLoop;
-
-	typedef boost::intrusive::list_member_hook<> ListHook;
-	ListHook list_hook;
+	friend class IntrusiveList<DeferEvent>;
 
 	EventLoop &loop;
 
-	typedef BoundMethod<void() noexcept> Callback;
+	using Callback = BoundMethod<void() noexcept>;
 	const Callback callback;
 
 public:
 	DeferEvent(EventLoop &_loop, Callback _callback) noexcept
 		:loop(_loop), callback(_callback) {}
 
-	~DeferEvent() noexcept {
-		Cancel();
-	}
+	DeferEvent(const DeferEvent &) = delete;
+	DeferEvent &operator=(const DeferEvent &) = delete;
 
-	EventLoop &GetEventLoop() const noexcept {
+	auto &GetEventLoop() const noexcept {
 		return loop;
 	}
 
-	void Schedule() noexcept;
-	void Cancel() noexcept;
-
-private:
 	bool IsPending() const noexcept {
-		return list_hook.is_linked();
+		return is_linked();
 	}
 
-	void RunDeferred() noexcept {
+	void Schedule() noexcept;
+
+	/**
+	 * Schedule this event, but only after the #EventLoop is idle,
+	 * i.e. before going to sleep.
+	 */
+	void ScheduleIdle() noexcept;
+
+	void Cancel() noexcept {
+		if (IsPending())
+			unlink();
+	}
+
+private:
+	void Run() noexcept {
 		callback();
 	}
 };

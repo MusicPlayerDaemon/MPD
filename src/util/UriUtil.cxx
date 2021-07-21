@@ -73,7 +73,12 @@ gcc_pure
 static const char *
 SkipUriScheme(const char *uri) noexcept
 {
-	const char *const schemes[] = { "http://", "https://", "ftp://" };
+	static const char *const schemes[] = {
+		"http://", "https://",
+		"ftp://",
+		"smb://",
+	};
+
 	for (auto scheme : schemes) {
 		auto result = StringAfterPrefixCaseASCII(uri, scheme);
 		if (result != nullptr)

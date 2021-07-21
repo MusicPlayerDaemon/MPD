@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -49,10 +49,16 @@
 #include <unistd.h>
 #include <stdlib.h>
 
+static constexpr std::size_t MAX_CHUNK_SIZE = 16384;
+
 struct CommandLine {
 	const char *uri = nullptr;
 
 	FromNarrowPath config_path;
+
+	std::size_t seek = 0;
+
+	std::size_t chunk_size = MAX_CHUNK_SIZE;
 
 	bool verbose = false;
 
@@ -63,13 +69,28 @@ enum Option {
 	OPTION_CONFIG,
 	OPTION_VERBOSE,
 	OPTION_SCAN,
+	OPTION_SEEK,
+	OPTION_CHUNK_SIZE,
 };
 
 static constexpr OptionDef option_defs[] = {
 	{"config", 0, true, "Load a MPD configuration file"},
 	{"verbose", 'v', false, "Verbose logging"},
 	{"scan", 0, false, "Scan tags instead of reading raw data"},
+	{"seek", 0, true, "Start reading at this position"},
+	{"chunk-size", 0, true, "Read this number of bytes at a time"},
 };
+
+static std::size_t
+ParseSize(const char *s)
+{
+	char *endptr;
+	std::size_t value = std::strtoul(s, &endptr, 10);
+	if (endptr == s)
+		throw std::runtime_error("Failed to parse integer");
+
+	return value;
+}
 
 static CommandLine
 ParseCommandLine(int argc, char **argv)
@@ -90,12 +111,22 @@ ParseCommandLine(int argc, char **argv)
 		case OPTION_SCAN:
 			c.scan = true;
 			break;
+
+		case OPTION_SEEK:
+			c.seek = ParseSize(o.value);
+			break;
+
+		case OPTION_CHUNK_SIZE:
+			c.chunk_size = ParseSize(o.value);
+			if (c.chunk_size <= 0 || c.chunk_size > MAX_CHUNK_SIZE)
+				throw std::runtime_error("Invalid chunk size");
+			break;
 		}
 	}
 
 	auto args = option_parser.GetRemaining();
 	if (args.size != 1)
-		throw std::runtime_error("Usage: run_input [--verbose] [--config=FILE] URI");
+		throw std::runtime_error("Usage: run_input [--verbose] [--config=FILE] [--scan] [--chunk-size=BYTES] URI");
 
 	c.uri = args.front();
 	return c;
@@ -124,43 +155,48 @@ static void
 tag_save(FILE *file, const Tag &tag)
 {
 	StdioOutputStream sos(file);
-	BufferedOutputStream bos(sos);
-	tag_save(bos, tag);
-	bos.Flush();
+	WithBufferedOutputStream(sos, [&](auto &bos){
+		tag_save(bos, tag);
+	});
 }
 
 static int
-dump_input_stream(InputStream *is)
+dump_input_stream(InputStream &is, FileDescriptor out,
+		  offset_type seek, size_t chunk_size)
 {
-	std::unique_lock<Mutex> lock(is->mutex);
+	out.SetBinaryMode();
+
+	std::unique_lock<Mutex> lock(is.mutex);
+
+	if (seek > 0)
+		is.Seek(lock, seek);
 
 	/* print meta data */
 
-	if (is->HasMimeType())
-		fprintf(stderr, "MIME type: %s\n", is->GetMimeType());
+	if (is.HasMimeType())
+		fprintf(stderr, "MIME type: %s\n", is.GetMimeType());
 
 	/* read data and tags from the stream */
 
-	while (!is->IsEOF()) {
+	while (!is.IsEOF()) {
 		{
-			auto tag = is->ReadTag();
+			auto tag = is.ReadTag();
 			if (tag) {
 				fprintf(stderr, "Received a tag:\n");
 				tag_save(stderr, *tag);
 			}
 		}
 
-		char buffer[4096];
-		size_t num_read = is->Read(lock, buffer, sizeof(buffer));
+		char buffer[MAX_CHUNK_SIZE];
+		assert(chunk_size <= sizeof(buffer));
+		size_t num_read = is.Read(lock, buffer, chunk_size);
 		if (num_read == 0)
 			break;
 
-		ssize_t num_written = write(1, buffer, num_read);
-		if (num_written <= 0)
-			break;
+		out.FullWrite(buffer, num_read);
 	}
 
-	is->Check();
+	is.Check();
 
 	return 0;
 }
@@ -233,7 +269,8 @@ try {
 
 	Mutex mutex;
 	auto is = InputStream::OpenReady(c.uri, mutex);
-	return dump_input_stream(is.get());
+	return dump_input_stream(*is, FileDescriptor(STDOUT_FILENO),
+				 c.seek, c.chunk_size);
 } catch (...) {
 	PrintException(std::current_exception());
 	return EXIT_FAILURE;

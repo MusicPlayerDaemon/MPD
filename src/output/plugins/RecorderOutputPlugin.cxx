@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -19,6 +19,7 @@
 
 #include "RecorderOutputPlugin.hxx"
 #include "../OutputAPI.hxx"
+#include "lib/fmt/PathFormatter.hxx"
 #include "tag/Format.hxx"
 #include "encoder/ToOutputStream.hxx"
 #include "encoder/EncoderInterface.hxx"
@@ -276,8 +277,7 @@ RecorderOutput::ReopenFormat(AllocatedPath &&new_path)
 	path = std::move(new_path);
 	file = new_file;
 
-	FormatDebug(recorder_domain, "Recording to \"%s\"",
-		    path.ToUTF8().c_str());
+	FmtDebug(recorder_domain, "Recording to \"{}\"", path);
 }
 
 void

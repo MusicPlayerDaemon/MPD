@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -23,6 +23,7 @@
 #include "input/InputStream.hxx"
 #include "input/LocalOpen.hxx"
 #include "fs/Path.hxx"
+#include "util/StringView.hxx"
 #include "util/UriExtract.hxx"
 #include "Log.hxx"
 
@@ -39,12 +40,12 @@ try {
 		return nullptr;
 
 	const auto suffix_utf8 = Path::FromFS(suffix).ToUTF8Throw();
-	if (!playlist_suffix_supported(suffix_utf8.c_str()))
+	if (!playlist_suffix_supported(suffix_utf8))
 		return nullptr;
 
 	auto is = OpenLocalInputStream(path, mutex);
 	return playlist_list_open_stream_suffix(std::move(is),
-						suffix_utf8.c_str());
+						suffix_utf8);
 } catch (...) {
 	LogError(std::current_exception());
 	return nullptr;

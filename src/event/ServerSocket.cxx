@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "ServerSocket.hxx"
+#include "lib/fmt/ExceptionFormatter.hxx"
 #include "net/IPv4Address.hxx"
 #include "net/IPv6Address.hxx"
 #include "net/StaticSocketAddress.hxx"
@@ -29,7 +30,7 @@
 #include "net/Resolver.hxx"
 #include "net/AddressInfo.hxx"
 #include "net/ToString.hxx"
-#include "event/SocketMonitor.hxx"
+#include "event/SocketEvent.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/Domain.hxx"
@@ -43,8 +44,10 @@
 #include <sys/stat.h>
 #endif
 
-class ServerSocket::OneServerSocket final : private SocketMonitor {
+class ServerSocket::OneServerSocket final {
 	ServerSocket &parent;
+
+	SocketEvent event;
 
 	const unsigned serial;
 
@@ -59,8 +62,9 @@ public:
 	OneServerSocket(EventLoop &_loop, ServerSocket &_parent,
 			unsigned _serial,
 			A &&_address) noexcept
-		:SocketMonitor(_loop),
-		 parent(_parent), serial(_serial),
+		:parent(_parent),
+		 event(_loop, BIND_THIS_METHOD(OnSocketReady)),
+		 serial(_serial),
 #ifdef HAVE_UN
 		 path(nullptr),
 #endif
@@ -72,8 +76,7 @@ public:
 	OneServerSocket &operator=(const OneServerSocket &other) = delete;
 
 	~OneServerSocket() noexcept {
-		if (IsDefined())
-			Close();
+		Close();
 	}
 
 	[[nodiscard]] unsigned GetSerial() const noexcept {
@@ -88,25 +91,30 @@ public:
 	}
 #endif
 
+	bool IsDefined() const noexcept {
+		return event.IsDefined();
+	}
+
 	void Open();
 
-	using SocketMonitor::IsDefined;
-	using SocketMonitor::Close;
+	void Close() noexcept {
+		event.Close();
+	}
 
-	[[nodiscard]] gcc_pure
+	[[nodiscard]] [[gnu::pure]]
 	std::string ToString() const noexcept {
 		return ::ToString(address);
 	}
 
 	void SetFD(UniqueSocketDescriptor _fd) noexcept {
-		SocketMonitor::Open(_fd.Release());
-		SocketMonitor::ScheduleRead();
+		event.Open(_fd.Release());
+		event.ScheduleRead();
 	}
 
 	void Accept() noexcept;
 
 private:
-	bool OnSocketReady(unsigned flags) noexcept override;
+	void OnSocketReady(unsigned flags) noexcept;
 };
 
 static constexpr Domain server_socket_domain("server_socket");
@@ -140,19 +148,19 @@ inline void
 ServerSocket::OneServerSocket::Accept() noexcept
 {
 	StaticSocketAddress peer_address;
-	UniqueSocketDescriptor peer_fd(GetSocket().AcceptNonBlock(peer_address));
+	UniqueSocketDescriptor peer_fd(event.GetSocket().AcceptNonBlock(peer_address));
 	if (!peer_fd.IsDefined()) {
 		const SocketErrorMessage msg;
-		FormatError(server_socket_domain,
-			    "accept() failed: %s", (const char *)msg);
+		FmtError(server_socket_domain,
+			 "accept() failed: {}", (const char *)msg);
 		return;
 	}
 
 	if (!peer_fd.SetKeepAlive()) {
 		const SocketErrorMessage msg;
-		FormatError(server_socket_domain,
-			    "Could not set TCP keepalive option: %s",
-			    (const char *)msg);
+		FmtError(server_socket_domain,
+			 "Could not set TCP keepalive option: {}",
+			 (const char *)msg);
 	}
 
 	const auto uid = get_remote_uid(peer_fd.Get());
@@ -160,11 +168,10 @@ ServerSocket::OneServerSocket::Accept() noexcept
 	parent.OnAccept(std::move(peer_fd), peer_address, uid);
 }
 
-bool
+void
 ServerSocket::OneServerSocket::OnSocketReady([[maybe_unused]] unsigned flags) noexcept
 {
 	Accept();
-	return true;
 }
 
 inline void
@@ -221,12 +228,13 @@ ServerSocket::Open()
 			if (good != nullptr && good->GetSerial() == i.GetSerial()) {
 				const auto address_string = i.ToString();
 				const auto good_string = good->ToString();
-				FormatError(std::current_exception(),
-					    "bind to '%s' failed "
-					    "(continuing anyway, because "
-					    "binding to '%s' succeeded)",
-					    address_string.c_str(),
-					    good_string.c_str());
+				FmtError(server_socket_domain,
+					 "bind to '{}' failed "
+					 "(continuing anyway, because "
+					 "binding to '{}' succeeded): {}",
+					 address_string,
+					 good_string,
+					 std::current_exception());
 			} else if (bad == nullptr) {
 				bad = &i;
 
@@ -322,7 +330,7 @@ ServerSocket::AddPortIPv6(unsigned port) noexcept
 /**
  * Is IPv6 supported by the kernel?
  */
-gcc_pure
+[[gnu::pure]]
 static bool
 SupportsIPv6() noexcept
 {

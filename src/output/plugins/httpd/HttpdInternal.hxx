@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -31,7 +31,7 @@
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
 #include "event/ServerSocket.hxx"
-#include "event/DeferEvent.hxx"
+#include "event/InjectEvent.hxx"
 #include "util/Cast.hxx"
 #include "util/Compiler.h"
 
@@ -115,7 +115,7 @@ private:
 	 */
 	std::queue<PagePtr, std::list<PagePtr>> pages;
 
-	DeferEvent defer_broadcast;
+	InjectEvent defer_broadcast;
 
  public:
 	/**
@@ -140,14 +140,12 @@ private:
 			       boost::intrusive::constant_time_size<true>> clients;
 
 	/**
-	 * A temporary buffer for the httpd_output_read_page()
-	 * function.
+	 * A temporary buffer for the ReadPage() function.
 	 */
-	char buffer[32768];
+	std::byte buffer[32768];
 
 	/**
-	 * The maximum and current number of clients connected
-	 * at the same time.
+	 * The maximum number of clients connected at the same time.
 	 */
 	unsigned clients_max;
 
@@ -269,7 +267,7 @@ public:
 	bool Pause() override;
 
 private:
-	/* DeferEvent callback */
+	/* InjectEvent callback */
 	void OnDeferredBroadcast() noexcept;
 
 	void OnAccept(UniqueSocketDescriptor fd,

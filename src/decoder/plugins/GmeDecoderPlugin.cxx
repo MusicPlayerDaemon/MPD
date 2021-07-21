@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -160,8 +160,8 @@ gme_file_decode(DecoderClient &client, Path path_fs)
 
 	AtScopeExit(emu) { gme_delete(emu); };
 
-	FormatDebug(gme_domain, "emulator type '%s'\n",
-		    gme_type_system(gme_type(emu)));
+	FmtDebug(gme_domain, "emulator type '{}'",
+		 gme_type_system(gme_type(emu)));
 
 #if GME_VERSION >= 0x000600
 	if (gme_accuracy >= 0)
@@ -344,7 +344,7 @@ gme_container_scan(Path path_fs)
 
 static const char *const gme_suffixes[] = {
 	"ay", "gbs", "gym", "hes", "kss", "nsf",
-	"nsfe", "sap", "spc", "vgm", "vgz",
+	"nsfe", "rsn", "sap", "spc", "vgm", "vgz",
 	nullptr
 };
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -20,9 +20,9 @@
 #include "config.h"
 #include "DecoderList.hxx"
 #include "DecoderPlugin.hxx"
+#include "Domain.hxx"
 #include "decoder/Features.h"
-#include "PluginUnavailable.hxx"
-#include "Log.hxx"
+#include "lib/fmt/ExceptionFormatter.hxx"
 #include "config/Data.hxx"
 #include "config/Block.hxx"
 #include "plugins/AudiofileDecoderPlugin.hxx"
@@ -44,16 +44,19 @@
 #include "plugins/WildmidiDecoderPlugin.hxx"
 #include "plugins/MikmodDecoderPlugin.hxx"
 #include "plugins/ModplugDecoderPlugin.hxx"
+#include "plugins/OpenmptDecoderPlugin.hxx"
 #include "plugins/MpcdecDecoderPlugin.hxx"
 #include "plugins/FluidsynthDecoderPlugin.hxx"
 #include "plugins/SidplayDecoderPlugin.hxx"
 #include "util/RuntimeError.hxx"
+#include "Log.hxx"
+#include "PluginUnavailable.hxx"
 
 #include <iterator>
 
 #include <string.h>
 
-const struct DecoderPlugin *const decoder_plugins[] = {
+constexpr const struct DecoderPlugin *decoder_plugins[] = {
 #ifdef ENABLE_MAD
 	&mad_decoder_plugin,
 #endif
@@ -89,6 +92,9 @@ const struct DecoderPlugin *const decoder_plugins[] = {
 #endif
 #ifdef ENABLE_WAVPACK
 	&wavpack_decoder_plugin,
+#endif
+#ifdef ENABLE_OPENMPT
+	&openmpt_decoder_plugin,
 #endif
 #ifdef ENABLE_MODPLUG
 	&modplug_decoder_plugin,
@@ -156,9 +162,9 @@ decoder_plugin_init_all(const ConfigData &config)
 			if (plugin.Init(*param))
 				decoder_plugins_enabled[i] = true;
 		} catch (const PluginUnavailable &e) {
-			FormatError(e,
-				    "Decoder plugin '%s' is unavailable",
-				    plugin.name);
+			FmtError(decoder_domain,
+				 "Decoder plugin '{}' is unavailable: {}",
+				 plugin.name, std::current_exception());
 		} catch (...) {
 			std::throw_with_nested(FormatRuntimeError("Failed to initialize decoder plugin '%s'",
 								  plugin.name));
@@ -175,7 +181,7 @@ decoder_plugin_deinit_all() noexcept
 }
 
 bool
-decoder_plugins_supports_suffix(const char *suffix) noexcept
+decoder_plugins_supports_suffix(std::string_view suffix) noexcept
 {
 	return decoder_plugins_try([suffix](const DecoderPlugin &plugin){
 			return plugin.SupportsSuffix(suffix);

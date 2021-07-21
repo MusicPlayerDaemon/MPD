@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,12 +18,14 @@
  */
 
 #include "Client.hxx"
+#include "Domain.hxx"
+#include "lib/fmt/ExceptionFormatter.hxx"
 #include "Log.hxx"
 
 void
 Client::OnSocketError(std::exception_ptr ep) noexcept
 {
-	FormatError(ep, "error on client %d", num);
+	FmtError(client_domain, "error on client {}: {}", num, ep);
 
 	SetExpired();
 }

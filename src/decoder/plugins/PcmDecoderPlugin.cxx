@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -101,9 +101,9 @@ pcm_stream_decode(DecoderClient &client, InputStream &is)
 			char *endptr;
 			unsigned value = ParseUnsigned(s, &endptr);
 			if (endptr == s || *endptr != 0) {
-				FormatWarning(pcm_decoder_domain,
-					      "Failed to parse sample rate: %s",
-					      s);
+				FmtWarning(pcm_decoder_domain,
+					   "Failed to parse sample rate: {}",
+					   s);
 				return;
 			}
 
@@ -123,9 +123,9 @@ pcm_stream_decode(DecoderClient &client, InputStream &is)
 			char *endptr;
 			unsigned value = ParseUnsigned(s, &endptr);
 			if (endptr == s || *endptr != 0) {
-				FormatWarning(pcm_decoder_domain,
-					      "Failed to parse sample rate: %s",
-					      s);
+				FmtWarning(pcm_decoder_domain,
+					   "Failed to parse sample rate: {}",
+					   s);
 				return;
 			}
 
@@ -146,9 +146,9 @@ pcm_stream_decode(DecoderClient &client, InputStream &is)
 				const char *s = i->second.c_str();
 				audio_format = ParseAudioFormat(s, false);
 				if (!audio_format.IsFullyDefined()) {
-					FormatWarning(pcm_decoder_domain,
-							  "Invalid audio format specification: %s",
-							  mime);
+					FmtWarning(pcm_decoder_domain,
+						   "Invalid audio format specification: {}",
+						   mime);
 					return;
 				}
 			}
@@ -157,9 +157,9 @@ pcm_stream_decode(DecoderClient &client, InputStream &is)
 	}
 
 	if (audio_format.sample_rate == 0) {
-		FormatWarning(pcm_decoder_domain,
-			      "Missing 'rate' parameter: %s",
-			      mime);
+		FmtWarning(pcm_decoder_domain,
+			   "Missing 'rate' parameter: {}",
+			   mime);
 		return;
 	}
 

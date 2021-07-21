@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -25,6 +25,7 @@
 #include "client/Client.hxx"
 #include "protocol/Ack.hxx"
 #include "fs/AllocatedPath.hxx"
+#include "input/InputStream.hxx"
 #include "util/Compiler.h"
 #include "util/UriExtract.hxx"
 #include "LocateUri.hxx"
@@ -32,8 +33,13 @@
 static void
 TagScanStream(const char *uri, TagHandler &handler)
 {
-	if (!tag_stream_scan(uri, handler))
+	Mutex mutex;
+
+	auto is = InputStream::OpenReady(uri, mutex);
+	if (!tag_stream_scan(*is, handler))
 		throw ProtocolError(ACK_ERROR_NO_EXIST, "Failed to load file");
+
+	ScanGenericTags(*is, handler);
 }
 
 static void

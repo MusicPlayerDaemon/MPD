@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -49,7 +49,7 @@ public:
 	/**
 	 * Free instance data.
          */
-	virtual ~NeighborExplorer() noexcept {}
+	virtual ~NeighborExplorer() noexcept = default;
 
 	/**
          * Start exploring the neighborhood.

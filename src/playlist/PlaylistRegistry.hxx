@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -23,6 +23,8 @@
 #include "input/Ptr.hxx"
 #include "thread/Mutex.hxx"
 #include "util/Compiler.h"
+
+#include <string_view>
 
 struct ConfigData;
 struct PlaylistPlugin;
@@ -60,13 +62,21 @@ public:
 };
 
 /**
+ * Shall this playlists supported by this plugin be represented as
+ * directories in the database?
+ */
+gcc_const
+bool
+GetPlaylistPluginAsFolder(const PlaylistPlugin &plugin) noexcept;
+
+/**
  * Opens a playlist by its URI.
  */
 std::unique_ptr<SongEnumerator>
 playlist_list_open_uri(const char *uri, Mutex &mutex);
 
 std::unique_ptr<SongEnumerator>
-playlist_list_open_stream_suffix(InputStreamPtr &&is, const char *suffix);
+playlist_list_open_stream_suffix(InputStreamPtr &&is, std::string_view suffix);
 
 /**
  * Opens a playlist from an input stream.
@@ -80,7 +90,7 @@ playlist_list_open_stream(InputStreamPtr &&is, const char *uri);
 
 gcc_pure
 const PlaylistPlugin *
-FindPlaylistPluginBySuffix(const char *suffix) noexcept;
+FindPlaylistPluginBySuffix(std::string_view suffix) noexcept;
 
 /**
  * Determines if there is a playlist plugin which can handle the
@@ -88,7 +98,7 @@ FindPlaylistPluginBySuffix(const char *suffix) noexcept;
  */
 gcc_pure
 inline bool
-playlist_suffix_supported(const char *suffix) noexcept
+playlist_suffix_supported(std::string_view suffix) noexcept
 {
 	return FindPlaylistPluginBySuffix(suffix) != nullptr;
 }

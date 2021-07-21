@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -49,6 +49,9 @@ public:
 		CloseFifo();
 	}
 
+	FifoOutput(const FifoOutput &) = delete;
+	FifoOutput &operator=(const FifoOutput &) = delete;
+
 	static AudioOutput *Create(EventLoop &,
 				   const ConfigBlock &block) {
 		return new FifoOutput(block);
@@ -87,8 +90,8 @@ FifoOutput::FifoOutput(const ConfigBlock &block)
 inline void
 FifoOutput::Delete()
 {
-	FormatDebug(fifo_output_domain,
-		    "Removing FIFO \"%s\"", path_utf8.c_str());
+	FmtDebug(fifo_output_domain,
+		 "Removing FIFO \"{}\"", path_utf8);
 
 	try {
 		RemoveFile(path);

@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -44,13 +44,13 @@ playlist::TagModified(DetachedSong &&song) noexcept
 }
 
 void
-playlist::TagModified(const char *uri, const Tag &tag) noexcept
+playlist::TagModified(const char *real_uri, const Tag &tag) noexcept
 {
 	bool modified = false;
 
 	for (unsigned i = 0; i < queue.length; ++i) {
 		auto &song = *queue.items[i].song;
-		if (song.IsURI(uri)) {
+		if (song.IsRealURI(real_uri)) {
 			song.SetTag(tag);
 			queue.ModifyAtPosition(i);
 			modified = true;
@@ -71,8 +71,8 @@ playlist::QueueSongOrder(PlayerControl &pc, unsigned order) noexcept
 
 	const DetachedSong &song = queue.GetOrder(order);
 
-	FormatDebug(playlist_domain, "queue song %i:\"%s\"",
-		    queued, song.GetURI());
+	FmtDebug(playlist_domain, "queue song {}:\"{}\"",
+		 queued, song.GetURI());
 
 	pc.LockEnqueueSong(std::make_unique<DetachedSong>(song));
 }
@@ -178,7 +178,7 @@ playlist::PlayOrder(PlayerControl &pc, unsigned order)
 
 	const DetachedSong &song = queue.GetOrder(order);
 
-	FormatDebug(playlist_domain, "play %u:\"%s\"", order, song.GetURI());
+	FmtDebug(playlist_domain, "play {}:\"{}\"", order, song.GetURI());
 
 	current = order;
 

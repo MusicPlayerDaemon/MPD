@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -23,7 +23,7 @@
 #include "../EncoderAPI.hxx"
 #include "lib/xiph/OggStreamState.hxx"
 #include "lib/xiph/OggPage.hxx"
-#include "lib/xiph/OggSerial.hxx"
+#include "util/Serial.hxx"
 
 #include <ogg/ogg.h>
 
@@ -42,7 +42,7 @@ protected:
 public:
 	OggEncoder(bool _implements_tag)
 		:Encoder(_implements_tag),
-		 stream(GenerateOggSerial()) {
+		 stream(GenerateSerial()) {
 	}
 
 	/* virtual methods from class Encoder */

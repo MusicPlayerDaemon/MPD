@@ -30,9 +30,7 @@
 #ifndef SYSTEM_ERROR_HXX
 #define SYSTEM_ERROR_HXX
 
-#include "util/Compiler.h"
-
-#include <system_error>
+#include <system_error> // IWYU pragma: export
 #include <utility>
 
 #include <stdio.h>
@@ -49,7 +47,9 @@ FormatSystemError(std::error_code code, const char *fmt,
 
 #ifdef _WIN32
 
-#include <windows.h>
+#include <errhandlingapi.h> // for GetLastError()
+#include <windef.h> // for HWND (needed by winbase.h)
+#include <winbase.h> // for FormatMessageA()
 
 static inline std::system_error
 MakeLastError(DWORD code, const char *msg) noexcept
@@ -92,7 +92,7 @@ FormatLastError(const char *fmt, Args&&... args) noexcept
 
 #endif /* _WIN32 */
 
-#include <cerrno>
+#include <cerrno> // IWYU pragma: export
 
 #include <string.h>
 
@@ -160,7 +160,7 @@ FormatFileNotFound(const char *fmt, Args&&... args) noexcept
 #endif
 }
 
-gcc_pure
+[[gnu::pure]]
 inline bool
 IsErrno(const std::system_error &e, int code) noexcept
 {
@@ -168,7 +168,7 @@ IsErrno(const std::system_error &e, int code) noexcept
 		e.code().value() == code;
 }
 
-gcc_pure
+[[gnu::pure]]
 static inline bool
 IsFileNotFound(const std::system_error &e) noexcept
 {
@@ -180,7 +180,7 @@ IsFileNotFound(const std::system_error &e) noexcept
 #endif
 }
 
-gcc_pure
+[[gnu::pure]]
 static inline bool
 IsPathNotFound(const std::system_error &e) noexcept
 {
@@ -192,7 +192,7 @@ IsPathNotFound(const std::system_error &e) noexcept
 #endif
 }
 
-gcc_pure
+[[gnu::pure]]
 static inline bool
 IsAccessDenied(const std::system_error &e) noexcept
 {

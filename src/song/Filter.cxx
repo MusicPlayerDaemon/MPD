@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -429,29 +429,27 @@ SongFilter::Match(const LightSong &song) const noexcept
 bool
 SongFilter::HasFoldCase() const noexcept
 {
-	for (const auto &i : and_filter.GetItems()) {
-		if (auto t = dynamic_cast<const TagSongFilter *>(i.get())) {
-			if (t->GetFoldCase())
-				return true;
-		} else if (auto u = dynamic_cast<const UriSongFilter *>(i.get())) {
-			if (u->GetFoldCase())
-				return true;
-		}
-	}
+	return std::any_of(
+		and_filter.GetItems().begin(), and_filter.GetItems().end(),
+		[](const auto &item) {
+			if (auto t = dynamic_cast<const TagSongFilter *>(item.get()))
+				return t->GetFoldCase();
 
-	return false;
+			if (auto u = dynamic_cast<const UriSongFilter *>(item.get()))
+				return u->GetFoldCase();
+
+			return false;
+		});
 }
 
 bool
 SongFilter::HasOtherThanBase() const noexcept
 {
-	for (const auto &i : and_filter.GetItems()) {
-		const auto *f = dynamic_cast<const BaseSongFilter *>(i.get());
-		if (f == nullptr)
-			return true;
-	}
-
-	return false;
+	return std::any_of(and_filter.GetItems().begin(), and_filter.GetItems().end(),
+			   [=](const auto &item) {
+				   return !dynamic_cast<const BaseSongFilter *>(
+					   item.get());
+			   });
 }
 
 const char *

@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -54,12 +54,12 @@ public:
 		return ParseCommandArgInt(data[idx], min_value, max_value);
 	}
 
-	int ParseUnsigned(unsigned idx) const {
+	unsigned ParseUnsigned(unsigned idx) const {
 		assert(idx < size);
 		return ParseCommandArgUnsigned(data[idx]);
 	}
 
-	int ParseUnsigned(unsigned idx, unsigned max_value) const {
+	unsigned ParseUnsigned(unsigned idx, unsigned max_value) const {
 		assert(idx < size);
 		return ParseCommandArgUnsigned(data[idx], max_value);
 	}

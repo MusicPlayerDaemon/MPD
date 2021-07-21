@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -87,6 +87,9 @@ class CdioParanoiaInputStream final : public InputStream {
 		cdio_cddap_close_no_free_cdio(drv);
 		cdio_destroy(cdio);
 	}
+
+	CdioParanoiaInputStream(const CdioParanoiaInputStream &) = delete;
+	CdioParanoiaInputStream &operator=(const CdioParanoiaInputStream &) = delete;
 
 	/* virtual methods from InputStream */
 	[[nodiscard]] bool IsEOF() const noexcept override;
@@ -204,7 +207,8 @@ input_cdio_open(const char *uri,
 
 	cdio_cddap_verbose_set(drv, CDDA_MESSAGE_FORGETIT, CDDA_MESSAGE_FORGETIT);
 	if (speed > 0) {
-		FormatDebug(cdio_domain,"Attempting to set CD speed to %dx",speed);
+		FmtDebug(cdio_domain, "Attempting to set CD speed to {}x",
+			 speed);
 		cdio_cddap_speed_set(drv,speed);
 	}
 
@@ -298,8 +302,8 @@ CdioParanoiaInputStream::Read(std::unique_lock<Mutex> &,
 			} catch (...) {
 				char *s_err = cdio_cddap_errors(drv);
 				if (s_err) {
-					FormatError(cdio_domain,
-						    "paranoia_read: %s", s_err);
+					FmtError(cdio_domain,
+						 "paranoia_read: {}", s_err);
 					cdio_cddap_free_messages(s_err);
 				}
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -20,9 +20,10 @@
 #ifndef MPD_MULTI_SOCKET_MONITOR_HXX
 #define MPD_MULTI_SOCKET_MONITOR_HXX
 
-#include "IdleMonitor.hxx"
-#include "TimerEvent.hxx"
-#include "SocketMonitor.hxx"
+#include "IdleEvent.hxx"
+#include "FineTimerEvent.hxx"
+#include "SocketEvent.hxx"
+#include "event/Features.h"
 
 #include <cassert>
 #include <forward_list>
@@ -35,35 +36,43 @@ struct pollfd;
 class EventLoop;
 
 /**
- * Similar to #SocketMonitor, but monitors multiple sockets.  To use
+ * Similar to #SocketEvent, but monitors multiple sockets.  To use
  * it, implement the methods PrepareSockets() and DispatchSockets().
  * In PrepareSockets(), use UpdateSocketList() and AddSocket().
  * DispatchSockets() will be called if at least one socket is ready.
  */
-class MultiSocketMonitor : IdleMonitor
+class MultiSocketMonitor
 {
-	class SingleFD final : public SocketMonitor {
+	class SingleFD final {
 		MultiSocketMonitor &multi;
+
+		SocketEvent event;
 
 		unsigned revents;
 
 	public:
 		SingleFD(MultiSocketMonitor &_multi,
 			 SocketDescriptor _fd) noexcept
-			:SocketMonitor(_fd, _multi.GetEventLoop()),
-			multi(_multi), revents(0) {}
+			:multi(_multi),
+			 event(multi.GetEventLoop(),
+			       BIND_THIS_METHOD(OnSocketReady), _fd),
+			 revents(0) {}
 
 		SocketDescriptor GetSocket() const noexcept {
-			return SocketMonitor::GetSocket();
+			return event.GetSocket();
 		}
 
 		unsigned GetEvents() const noexcept {
-			return SocketMonitor::GetScheduledFlags();
+			return event.GetScheduledFlags();
 		}
 
 		void SetEvents(unsigned _events) noexcept {
 			revents &= _events;
-			SocketMonitor::Schedule(_events);
+			event.Schedule(_events);
+		}
+
+		bool Schedule(unsigned events) noexcept {
+			return event.Schedule(events);
 		}
 
 		unsigned GetReturnedEvents() const noexcept {
@@ -74,15 +83,17 @@ class MultiSocketMonitor : IdleMonitor
 			revents = 0;
 		}
 
-	protected:
-		bool OnSocketReady(unsigned flags) noexcept override {
+	private:
+		void OnSocketReady(unsigned flags) noexcept {
 			revents = flags;
 			multi.SetReady();
-			return true;
 		}
 	};
 
-	TimerEvent timeout_event;
+	IdleEvent idle_event;
+
+	// TODO: switch to CoarseTimerEvent?  ... not yet because the ALSA plugin needs exact timeouts
+	FineTimerEvent timeout_event;
 
 	/**
 	 * DispatchSockets() should be called.
@@ -116,14 +127,11 @@ class MultiSocketMonitor : IdleMonitor
 #endif
 
 public:
-	static constexpr unsigned READ = SocketMonitor::READ;
-	static constexpr unsigned WRITE = SocketMonitor::WRITE;
-	static constexpr unsigned ERROR = SocketMonitor::ERROR;
-	static constexpr unsigned HANGUP = SocketMonitor::HANGUP;
-
 	MultiSocketMonitor(EventLoop &_loop) noexcept;
 
-	using IdleMonitor::GetEventLoop;
+	EventLoop &GetEventLoop() const noexcept {
+		return idle_event.GetEventLoop();
+	}
 
 	/**
 	 * Clear the socket list and disable all #EventLoop
@@ -148,7 +156,7 @@ public:
 	 */
 	void InvalidateSockets() noexcept {
 		refresh = true;
-		IdleMonitor::Schedule();
+		idle_event.Schedule();
 	}
 
 	/**
@@ -226,7 +234,7 @@ protected:
 	 *
 	 * @return timeout or a negative value for no timeout
 	 */
-	virtual std::chrono::steady_clock::duration PrepareSockets() noexcept = 0;
+	virtual Event::Duration PrepareSockets() noexcept = 0;
 
 	/**
 	 * At least one socket is ready or the timeout has expired.
@@ -237,7 +245,7 @@ protected:
 private:
 	void SetReady() noexcept {
 		ready = true;
-		IdleMonitor::Schedule();
+		idle_event.Schedule();
 	}
 
 	void Prepare() noexcept;
@@ -246,7 +254,7 @@ private:
 		SetReady();
 	}
 
-	virtual void OnIdle() noexcept final;
+	void OnIdle() noexcept;
 };
 
 #endif

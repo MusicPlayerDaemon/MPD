@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -63,7 +63,8 @@ constexpr static const char *whitelist[] = {
 };
 
 bool
-protocol_is_whitelisted(const char *proto) {
+protocol_is_whitelisted(const char *proto) noexcept
+{
 	auto begin = std::begin(whitelist);
 	auto end = std::end(whitelist);
 	return std::binary_search(begin, end, proto, [](const char* a, const char* b) {

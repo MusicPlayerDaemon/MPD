@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -33,7 +33,7 @@
 #include "thread/Cond.hxx"
 #include "thread/SafeSingleton.hxx"
 #include "event/Call.hxx"
-#include "event/DeferEvent.hxx"
+#include "event/InjectEvent.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "util/StringCompare.hxx"
 #include "util/RuntimeError.hxx"
@@ -62,7 +62,7 @@ class UdisksStorage final : public Storage {
 
 	std::exception_ptr mount_error;
 
-	DeferEvent defer_mount, defer_unmount;
+	InjectEvent defer_mount, defer_unmount;
 
 public:
 	template<typename B, typename I, typename IP>
@@ -92,6 +92,9 @@ public:
 				    base_uri.c_str());
 		}
 	}
+
+	UdisksStorage(const UdisksStorage &) = delete;
+	UdisksStorage &operator=(const UdisksStorage &) = delete;
 
 	EventLoop &GetEventLoop() const noexcept {
 		return defer_mount.GetEventLoop();
@@ -227,8 +230,7 @@ try {
 						  DBUS_OM_INTERFACE,
 						  "GetManagedObjects");
 		list_request.Send(connection, *msg.Get(),
-				  std::bind(&UdisksStorage::OnListReply,
-					    this, std::placeholders::_1));
+				  [this](auto o) { return OnListReply(std::move(o)); });
 		return;
 	}
 
@@ -239,8 +241,7 @@ try {
 	AppendMessageIter(*msg.Get()).AppendEmptyArray<DictEntryTypeTraits<StringTypeTraits, VariantTypeTraits>>();
 
 	mount_request.Send(connection, *msg.Get(),
-			   std::bind(&UdisksStorage::OnMountNotify,
-				     this, std::placeholders::_1));
+			   [this](auto o) { return OnMountNotify(std::move(o)); });
 } catch (...) {
 	const std::lock_guard<Mutex> lock(mutex);
 	mount_error = std::current_exception();
@@ -297,8 +298,7 @@ try {
 	AppendMessageIter(*msg.Get()).AppendEmptyArray<DictEntryTypeTraits<StringTypeTraits, VariantTypeTraits>>();
 
 	mount_request.Send(connection, *msg.Get(),
-			   std::bind(&UdisksStorage::OnUnmountNotify,
-				     this, std::placeholders::_1));
+			   [this](auto u) { return OnUnmountNotify(std::move(u)); });
 } catch (...) {
 	const std::lock_guard<Mutex> lock(mutex);
 	mount_error = std::current_exception();

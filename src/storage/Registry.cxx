@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -29,7 +29,7 @@
 
 #include <string.h>
 
-const StoragePlugin *const storage_plugins[] = {
+constexpr const StoragePlugin *storage_plugins[] = {
 	&local_storage_plugin,
 #ifdef ENABLE_SMBCLIENT
 	&smbclient_storage_plugin,

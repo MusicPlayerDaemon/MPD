@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -20,7 +20,7 @@
 #ifndef MPD_UPDATE_REMOVE_HXX
 #define MPD_UPDATE_REMOVE_HXX
 
-#include "event/DeferEvent.hxx"
+#include "event/InjectEvent.hxx"
 #include "thread/Mutex.hxx"
 
 #include <forward_list>
@@ -39,7 +39,7 @@ class UpdateRemoveService final {
 
 	std::forward_list<std::string> uris;
 
-	DeferEvent defer;
+	InjectEvent defer;
 
 public:
 	UpdateRemoveService(EventLoop &_loop, DatabaseListener &_listener)
@@ -55,7 +55,7 @@ public:
 	void Remove(std::string &&uri);
 
 private:
-	/* DeferEvent callback */
+	/* InjectEvent callback */
 	void RunDeferred() noexcept;
 };
 

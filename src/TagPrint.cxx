@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -23,26 +23,27 @@
 #include "client/Response.hxx"
 #include "util/StringView.hxx"
 
+#include <fmt/format.h>
+
 void
 tag_print_types(Response &r) noexcept
 {
 	const auto tag_mask = global_tag_mask & r.GetTagMask();
 	for (unsigned i = 0; i < TAG_NUM_OF_ITEM_TYPES; i++)
 		if (tag_mask.Test(TagType(i)))
-			r.Format("tagtype: %s\n", tag_item_names[i]);
+			r.Fmt(FMT_STRING("tagtype: {}\n"), tag_item_names[i]);
 }
 
 void
 tag_print(Response &r, TagType type, StringView value) noexcept
 {
-	r.Format("%s: %.*s\n", tag_item_names[type],
-		 int(value.size), value.data);
+	r.Fmt(FMT_STRING("{}: {}\n"), tag_item_names[type], value);
 }
 
 void
 tag_print(Response &r, TagType type, const char *value) noexcept
 {
-	r.Format("%s: %s\n", tag_item_names[type], value);
+	r.Fmt(FMT_STRING("{}: {}\n"), tag_item_names[type], value);
 }
 
 void
@@ -58,10 +59,10 @@ void
 tag_print(Response &r, const Tag &tag) noexcept
 {
 	if (!tag.duration.IsNegative())
-		r.Format("Time: %i\n"
-			 "duration: %1.3f\n",
-			 tag.duration.RoundS(),
-			 tag.duration.ToDoubleS());
+		r.Fmt(FMT_STRING("Time: {}\n"
+				 "duration: {:1.3}\n"),
+		      tag.duration.RoundS(),
+		      tag.duration.ToDoubleS());
 
 	tag_print_values(r, tag);
 }

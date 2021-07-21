@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -74,7 +74,7 @@ public:
 			MixerListener &_mixer_listener) noexcept;
 	~MultipleOutputs() noexcept;
 
-	void Configure(EventLoop &event_loop,
+	void Configure(EventLoop &event_loop, EventLoop &rt_event_loop,
 		       const ConfigData &config,
 		       const ReplayGainConfig &replay_gain_config);
 
@@ -127,6 +127,10 @@ public:
 
 	void Add(std::unique_ptr<FilteredAudioOutput> output,
 		 bool enable) noexcept;
+
+	void AddCopy(AudioOutputControl *outputControl,
+		     bool enable) noexcept;
+
 
 	void SetReplayGainMode(ReplayGainMode mode) noexcept;
 

@@ -32,7 +32,6 @@
 
 #include "ConstBuffer.hxx"
 #include "WritableBuffer.hxx"
-#include "Compiler.h"
 
 #include <algorithm>
 #include <cassert>
@@ -48,6 +47,8 @@ public:
 	using size_type = typename Buffer::size_type;
 	using reference = typename Buffer::reference;
 	using const_reference = typename Buffer::const_reference;
+	using pointer = typename Buffer::pointer;
+	using const_pointer = typename Buffer::const_pointer;
 	using iterator = typename Buffer::iterator;
 	using const_iterator = typename Buffer::const_iterator;
 
@@ -67,6 +68,9 @@ public:
 		buffer = {new T[src.size], src.size};
 		std::copy_n(src.data, src.size, buffer.data);
 	}
+
+	AllocatedArray(std::nullptr_t n) noexcept
+		:buffer(n) {}
 
 	explicit AllocatedArray(const AllocatedArray &other) noexcept
 		:AllocatedArray(other.buffer) {}
@@ -102,6 +106,12 @@ public:
 	AllocatedArray &operator=(AllocatedArray &&other) noexcept {
 		using std::swap;
 		swap(buffer, other.buffer);
+		return *this;
+	}
+
+	AllocatedArray &operator=(std::nullptr_t n) noexcept {
+		delete[] buffer.data;
+		buffer = n;
 		return *this;
 	}
 
@@ -144,6 +154,14 @@ public:
 	 */
 	constexpr size_type capacity() const noexcept {
 		return buffer.size;
+	}
+
+	pointer data() noexcept {
+		return buffer.data;
+	}
+
+	const_pointer data() const noexcept {
+		return buffer.data;
 	}
 
 	reference front() noexcept {

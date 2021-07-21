@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -20,6 +20,8 @@
 #include "TidalTrackRequest.hxx"
 #include "TidalErrorParser.hxx"
 #include "lib/yajl/Callbacks.hxx"
+
+#include <cassert>
 
 using Wrapper = Yajl::CallbacksWrapper<TidalTrackRequest::ResponseParser>;
 static constexpr yajl_callbacks parse_callbacks = {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -50,6 +50,9 @@ struct ShoutOutput final : AudioOutput {
 
 	explicit ShoutOutput(const ConfigBlock &block);
 	~ShoutOutput() override;
+
+	ShoutOutput(const ShoutOutput &) = delete;
+	ShoutOutput &operator=(const ShoutOutput &) = delete;
 
 	static AudioOutput *Create(EventLoop &event_loop,
 				   const ConfigBlock &block);
@@ -279,9 +282,9 @@ ShoutOutput::Close() noexcept
 
 	if (shout_get_connected(shout_conn) != SHOUTERR_UNCONNECTED &&
 	    shout_close(shout_conn) != SHOUTERR_SUCCESS) {
-		FormatWarning(shout_output_domain,
-			      "problem closing connection to shout server: %s",
-			      shout_get_error(shout_conn));
+		FmtWarning(shout_output_domain,
+			   "problem closing connection to shout server: {}",
+			   shout_get_error(shout_conn));
 	}
 }
 

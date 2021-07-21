@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,11 +18,11 @@
  */
 
 #include "Directory.hxx"
+#include "ExportedSong.hxx"
 #include "SongSort.hxx"
 #include "Song.hxx"
 #include "Mount.hxx"
 #include "db/LightDirectory.hxx"
-#include "song/LightSong.hxx"
 #include "db/Uri.hxx"
 #include "db/DatabaseLock.hxx"
 #include "db/Interface.hxx"
@@ -138,12 +138,9 @@ Directory::LookupDirectory(std::string_view _uri) noexcept
 
 	Directory *d = this;
 	do {
-		auto s = uri.Split(PathTraitsUTF8::SEPARATOR);
-		if (s.first.empty())
+		auto [name, rest] = uri.Split(PathTraitsUTF8::SEPARATOR);
+		if (name.empty())
 			break;
-
-		const auto name = s.first;
-		const auto rest = s.second;
 
 		Directory *tmp = d->FindChild(name);
 		if (tmp == nullptr)
@@ -234,7 +231,7 @@ Directory::Walk(bool recursive, const SongFilter *filter,
 
 	if (visit_song) {
 		for (auto &song : songs){
-			const LightSong song2 = song.Export();
+			const auto song2 = song.Export();
 			if (filter == nullptr || filter->Match(song2))
 				visit_song(song2);
 		}

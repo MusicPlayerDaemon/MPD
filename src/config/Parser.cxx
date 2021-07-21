@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -22,6 +22,8 @@
 #include "util/StringStrip.hxx"
 #include "util/StringUtil.hxx"
 
+#include <cstdlib>
+
 bool
 ParseBool(const char *value)
 {
@@ -37,28 +39,59 @@ ParseBool(const char *value)
 	throw FormatRuntimeError(R"(Not a valid boolean ("yes" or "no"): "%s")", value);
 }
 
-template<size_t OPERAND>
-static size_t
-Multiply(size_t value)
+long
+ParseLong(const char *s)
 {
-	static constexpr size_t MAX_VALUE = SIZE_MAX / OPERAND;
+	char *endptr;
+	long value = strtol(s, &endptr, 10);
+	if (endptr == s || *endptr != 0)
+		throw std::runtime_error("Failed to parse number");
+
+	return value;
+}
+
+unsigned
+ParseUnsigned(const char *s)
+{
+	auto value = ParseLong(s);
+	if (value < 0)
+		throw std::runtime_error("Value must not be negative");
+
+	return (unsigned)value;
+}
+
+unsigned
+ParsePositive(const char *s)
+{
+	auto value = ParseLong(s);
+	if (value <= 0)
+		throw std::runtime_error("Value must be positive");
+
+	return (unsigned)value;
+}
+
+template<std::size_t OPERAND>
+static std::size_t
+Multiply(std::size_t value)
+{
+	static constexpr std::size_t MAX_VALUE = SIZE_MAX / OPERAND;
 	if (value > MAX_VALUE)
 		throw std::runtime_error("Value too large");
 
 	return value * OPERAND;
 }
 
-size_t
-ParseSize(const char *s, size_t default_factor)
+std::size_t
+ParseSize(const char *s, std::size_t default_factor)
 {
 	char *endptr;
-	size_t value = strtoul(s, &endptr, 10);
+	std::size_t value = strtoul(s, &endptr, 10);
 	if (endptr == s)
 		throw std::runtime_error("Failed to parse integer");
 
-	static constexpr size_t KILO = 1024;
-	static constexpr size_t MEGA = 1024 * KILO;
-	static constexpr size_t GIGA = 1024 * MEGA;
+	static constexpr std::size_t KILO = 1024;
+	static constexpr std::size_t MEGA = 1024 * KILO;
+	static constexpr std::size_t GIGA = 1024 * MEGA;
 
 	s = StripLeft(endptr);
 
@@ -101,4 +134,12 @@ ParseSize(const char *s, size_t default_factor)
 		value *= default_factor;
 
 	return value;
+}
+
+std::chrono::steady_clock::duration
+ParseDuration(const char *s)
+{
+	// TODO: allow unit suffixes
+	const std::chrono::seconds seconds(ParseLong(s));
+	return std::chrono::duration_cast<std::chrono::steady_clock::duration>(seconds);
 }

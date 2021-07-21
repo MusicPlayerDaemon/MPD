@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,30 +18,34 @@
  */
 
 #include "DecoderPlugin.hxx"
+#include "util/StringCompare.hxx"
 #include "util/StringUtil.hxx"
 
+#include <algorithm>
 #include <cassert>
 
 bool
-DecoderPlugin::SupportsSuffix(const char *suffix) const noexcept
+DecoderPlugin::SupportsUri(const char *uri) const noexcept
 {
-#if !CLANG_CHECK_VERSION(3,6)
-	/* disabled on clang due to -Wtautological-pointer-compare */
-	assert(suffix != nullptr);
-#endif
+	if (protocols != nullptr) {
+		const auto p = protocols();
+		return std::any_of(p.begin(), p.end(), [uri](const auto &schema)
+			{ return StringStartsWithIgnoreCase(uri, schema.c_str()); } );
+	}
 
+	return false;
+}
+
+bool
+DecoderPlugin::SupportsSuffix(std::string_view suffix) const noexcept
+{
 	return suffixes != nullptr &&
 		StringArrayContainsCase(suffixes, suffix);
 }
 
 bool
-DecoderPlugin::SupportsMimeType(const char *mime_type) const noexcept
+DecoderPlugin::SupportsMimeType(std::string_view mime_type) const noexcept
 {
-#if !CLANG_CHECK_VERSION(3,6)
-	/* disabled on clang due to -Wtautological-pointer-compare */
-	assert(mime_type != nullptr);
-#endif
-
 	return mime_types != nullptr &&
 		StringArrayContainsCase(mime_types, mime_type);
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -216,6 +216,8 @@ public:
 	 */
 	void CloseSoftwareMixer() noexcept;
 
+	void Interrupt() noexcept;
+
 	gcc_pure
 	std::chrono::steady_clock::duration Delay() noexcept;
 
@@ -227,7 +229,7 @@ public:
 	void Cancel() noexcept;
 
 	void BeginPause() noexcept;
-	bool IteratePause() noexcept;
+	bool IteratePause();
 
 	void EndPause() noexcept{
 	}
@@ -237,7 +239,7 @@ public:
  * Throws on error.
  */
 std::unique_ptr<FilteredAudioOutput>
-audio_output_new(EventLoop &event_loop,
+audio_output_new(EventLoop &event_loop, EventLoop &rt_event_loop,
 		 const ReplayGainConfig &replay_gain_config,
 		 const ConfigBlock &block,
 		 const AudioOutputDefaults &defaults,

@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2019 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2008-2020 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -31,7 +31,7 @@
 #define CURL_GLOBAL_HXX
 
 #include "Multi.hxx"
-#include "event/TimerEvent.hxx"
+#include "event/CoarseTimerEvent.hxx"
 #include "event/DeferEvent.hxx"
 
 class CurlSocket;
@@ -45,7 +45,7 @@ class CurlGlobal final {
 
 	DeferEvent defer_read_info;
 
-	TimerEvent timeout_event;
+	CoarseTimerEvent timeout_event;
 
 public:
 	explicit CurlGlobal(EventLoop &_loop);

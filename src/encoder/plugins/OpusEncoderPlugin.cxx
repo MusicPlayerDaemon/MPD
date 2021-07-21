@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -56,6 +56,9 @@ public:
 	OpusEncoder(AudioFormat &_audio_format, ::OpusEncoder *_enc, bool _chaining);
 	~OpusEncoder() noexcept override;
 
+	OpusEncoder(const OpusEncoder &) = delete;
+	OpusEncoder &operator=(const OpusEncoder &) = delete;
+
 	/* virtual methods from class Encoder */
 	void End() override;
 	void Write(const void *data, size_t length) override;
@@ -76,6 +79,9 @@ class PreparedOpusEncoder final : public PreparedEncoder {
 	opus_int32 bitrate;
 	int complexity;
 	int signal;
+	int packet_loss;
+	int vbr;
+	int vbr_constraint;
 	const bool chaining;
 
 public:
@@ -118,6 +124,23 @@ PreparedOpusEncoder::PreparedOpusEncoder(const ConfigBlock &block)
 		signal = OPUS_SIGNAL_MUSIC;
 	else
 		throw std::runtime_error("Invalid signal");
+
+	value = block.GetBlockValue("vbr", "yes");
+	if (strcmp(value, "yes") == 0) {
+		vbr = 1U;
+		vbr_constraint = 0U;
+	} else if (strcmp(value, "no") == 0) {
+		vbr = 0U;
+		vbr_constraint = 0U;
+	} else if (strcmp(value, "constrained") == 0) {
+		vbr = 1U;
+		vbr_constraint = 1U;
+	} else
+		throw std::runtime_error("Invalid vbr");
+
+	packet_loss = block.GetBlockValue("packet_loss", 0U);
+	if (packet_loss > 100)
+		throw std::runtime_error("Invalid packet loss");
 }
 
 PreparedEncoder *
@@ -173,6 +196,9 @@ PreparedOpusEncoder::Open(AudioFormat &audio_format)
 	opus_encoder_ctl(enc, OPUS_SET_BITRATE(bitrate));
 	opus_encoder_ctl(enc, OPUS_SET_COMPLEXITY(complexity));
 	opus_encoder_ctl(enc, OPUS_SET_SIGNAL(signal));
+	opus_encoder_ctl(enc, OPUS_SET_VBR(vbr));
+	opus_encoder_ctl(enc, OPUS_SET_VBR_CONSTRAINT(vbr_constraint));
+	opus_encoder_ctl(enc, OPUS_SET_PACKET_LOSS_PERC(packet_loss));
 
 	return new OpusEncoder(audio_format, enc, chaining);
 }
@@ -382,7 +408,7 @@ OpusEncoder::PreTag()
 void
 OpusEncoder::SendTag(const Tag &tag)
 {
-	stream.Reinitialize(GenerateOggSerial());
+	stream.Reinitialize(GenerateSerial());
 	opus_encoder_ctl(enc, OPUS_GET_LOOKAHEAD(&lookahead));
 	GenerateHeaders(&tag);
 }

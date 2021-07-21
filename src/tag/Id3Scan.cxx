@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -352,7 +352,7 @@ scan_id3_tag(const struct id3_tag *tag, TagHandler &handler) noexcept
 			    handler);
 	tag_id3_import_text(tag, ID3_FRAME_COMPOSER, TAG_COMPOSER,
 			    handler);
-	tag_id3_import_text(tag, "TPE3", TAG_PERFORMER,
+	tag_id3_import_text(tag, "TPE3", TAG_CONDUCTOR,
 			    handler);
 	tag_id3_import_text(tag, "TPE4", TAG_PERFORMER, handler);
 	tag_id3_import_text(tag, "TIT1", TAG_GROUPING, handler);

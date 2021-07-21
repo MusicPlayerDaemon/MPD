@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -25,7 +25,10 @@
 #include "client/Response.hxx"
 #include "fs/Traits.hxx"
 #include "time/ChronoUtil.hxx"
+#include "util/StringBuffer.hxx"
 #include "util/UriUtil.hxx"
+
+#include <fmt/format.h>
 
 #define SONG_FILE "file: "
 
@@ -42,14 +45,15 @@ song_print_uri(Response &r, const char *uri, bool base) noexcept
 			uri = allocated.c_str();
 	}
 
-	r.Format(SONG_FILE "%s\n", uri);
+	r.Fmt(FMT_STRING(SONG_FILE "{}\n"), uri);
 }
 
 void
 song_print_uri(Response &r, const LightSong &song, bool base) noexcept
 {
 	if (!base && song.directory != nullptr)
-		r.Format(SONG_FILE "%s/%s\n", song.directory, song.uri);
+		r.Fmt(FMT_STRING(SONG_FILE "{}/{}\n"),
+		      song.directory, song.uri);
 	else
 		song_print_uri(r, song.uri, base);
 }
@@ -67,15 +71,15 @@ PrintRange(Response &r, SongTime start_time, SongTime end_time) noexcept
 	const unsigned end_ms = end_time.ToMS();
 
 	if (end_ms > 0)
-		r.Format("Range: %u.%03u-%u.%03u\n",
-			 start_ms / 1000,
-			 start_ms % 1000,
-			 end_ms / 1000,
-			 end_ms % 1000);
+		r.Fmt(FMT_STRING("Range: {}.{:03}-{}.{:03}\n"),
+		      start_ms / 1000,
+		      start_ms % 1000,
+		      end_ms / 1000,
+		      end_ms % 1000);
 	else if (start_ms > 0)
-		r.Format("Range: %u.%03u-\n",
-			 start_ms / 1000,
-			 start_ms % 1000);
+		r.Fmt(FMT_STRING("Range: {}.{:03}-\n"),
+		      start_ms / 1000,
+		      start_ms % 1000);
 }
 
 void
@@ -89,9 +93,16 @@ song_print_info(Response &r, const LightSong &song, bool base) noexcept
 		time_print(r, "Last-Modified", song.mtime);
 
 	if (song.audio_format.IsDefined())
-		r.Format("Format: %s\n", ToString(song.audio_format).c_str());
+		r.Fmt(FMT_STRING("Format: {}\n"), ToString(song.audio_format));
 
-	tag_print(r, song.tag);
+	tag_print_values(r, song.tag);
+
+	const auto duration = song.GetDuration();
+	if (!duration.IsNegative())
+		r.Fmt(FMT_STRING("Time: {}\n"
+				 "duration: {:1.3}\n"),
+		      duration.RoundS(),
+		      duration.ToDoubleS());
 }
 
 void
@@ -104,12 +115,15 @@ song_print_info(Response &r, const DetachedSong &song, bool base) noexcept
 	if (!IsNegative(song.GetLastModified()))
 		time_print(r, "Last-Modified", song.GetLastModified());
 
+	if (const auto &f = song.GetAudioFormat(); f.IsDefined())
+		r.Fmt(FMT_STRING("Format: {}\n"), ToString(f));
+
 	tag_print_values(r, song.GetTag());
 
 	const auto duration = song.GetDuration();
 	if (!duration.IsNegative())
-		r.Format("Time: %i\n"
-			 "duration: %1.3f\n",
-			 duration.RoundS(),
-			 duration.ToDoubleS());
+		r.Fmt(FMT_STRING("Time: {}\n"
+				 "duration: {:1.3}\n"),
+		      duration.RoundS(),
+		      duration.ToDoubleS());
 }

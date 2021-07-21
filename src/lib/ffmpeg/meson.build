@@ -20,12 +20,16 @@ endif
 
 ffmpeg_sources = []
 if libavfilter_dep.found()
-  ffmpeg_sources += 'Filter.cxx'
+  ffmpeg_sources += [
+    'Filter.cxx',
+    'DetectFilterFormat.cxx',
+  ]
 endif
 
 ffmpeg = static_library(
   'ffmpeg',
   'Init.cxx',
+  'Interleave.cxx',
   'LogError.cxx',
   'LogCallback.cxx',
   'Error.cxx',
@@ -37,6 +41,7 @@ ffmpeg = static_library(
     libavcodec_dep,
     libavfilter_dep,
     libavutil_dep,
+    log_dep,
   ],
 )
 

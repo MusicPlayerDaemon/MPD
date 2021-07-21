@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -23,9 +23,10 @@
 #include "Message.hxx"
 #include "command/CommandResult.hxx"
 #include "command/CommandListBuilder.hxx"
+#include "input/LastInputStream.hxx"
 #include "tag/Mask.hxx"
 #include "event/FullyBufferedSocket.hxx"
-#include "event/TimerEvent.hxx"
+#include "event/CoarseTimerEvent.hxx"
 #include "util/Compiler.h"
 
 #include <boost/intrusive/link_mode.hpp>
@@ -54,7 +55,7 @@ class Client final
 	  public boost::intrusive::list_base_hook<boost::intrusive::tag<Partition>,
 						  boost::intrusive::link_mode<boost::intrusive::normal_link>>,
 	  public boost::intrusive::list_base_hook<boost::intrusive::link_mode<boost::intrusive::normal_link>> {
-	TimerEvent timeout_event;
+	CoarseTimerEvent timeout_event;
 
 	Partition *partition;
 
@@ -83,6 +84,19 @@ public:
 	 * The tags this client is interested in.
 	 */
 	TagMask tag_mask = TagMask::All();
+
+	/**
+	 * The maximum number of bytes transmitted in a binary
+	 * response.  Can be changed with the "binarylimit" command.
+	 */
+	size_t binary_limit = 8192;
+
+	/**
+	 * This caches the last "albumart" InputStream instance, to
+	 * avoid repeating the search for each chunk requested by this
+	 * client.
+	 */
+	LastInputStream last_album_art;
 
 private:
 	static constexpr size_t MAX_SUBSCRIPTIONS = 16;
@@ -122,6 +136,7 @@ public:
 	~Client() noexcept;
 
 	using FullyBufferedSocket::GetEventLoop;
+	using FullyBufferedSocket::GetOutputMaxSize;
 
 	gcc_pure
 	bool IsExpired() const noexcept {

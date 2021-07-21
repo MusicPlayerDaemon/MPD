@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -29,7 +29,7 @@ PlaylistPlugin::SupportsScheme(StringView scheme) const noexcept
 }
 
 bool
-PlaylistPlugin::SupportsSuffix(const char *suffix) const noexcept
+PlaylistPlugin::SupportsSuffix(StringView suffix) const noexcept
 {
 	return suffixes != nullptr &&
 		StringArrayContainsCase(suffixes, suffix);

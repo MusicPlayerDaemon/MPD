@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -233,25 +233,25 @@ SimpleDatabase::GetSong(std::string_view uri) const
 				    "No such song");
 
 	const Song *song = r.directory->FindSong(r.rest);
-	protect.unlock();
 	if (song == nullptr)
 		throw DatabaseError(DatabaseErrorCode::NOT_FOUND,
 				    "No such song");
 
-	light_song.Construct(song->Export());
+	exported_song.Construct(song->Export());
+	protect.unlock();
 
 #ifndef NDEBUG
 	++borrowed_song_count;
 #endif
 
-	return &light_song.Get();
+	return &exported_song.Get();
 }
 
 void
 SimpleDatabase::ReturnSong([[maybe_unused]] const LightSong *song) const noexcept
 {
 	assert(song != nullptr);
-	assert(song == prefixed_light_song || song == &light_song.Get());
+	assert(song == prefixed_light_song || song == &exported_song.Get());
 
 	if (prefixed_light_song != nullptr) {
 		delete prefixed_light_song;
@@ -262,7 +262,7 @@ SimpleDatabase::ReturnSong([[maybe_unused]] const LightSong *song) const noexcep
 		--borrowed_song_count;
 #endif
 
-		light_song.Destruct();
+		exported_song.Destruct();
 	}
 }
 
@@ -316,7 +316,7 @@ SimpleDatabase::Visit(const DatabaseSelection &selection,
 		if (visit_song) {
 			Song *song = r.directory->FindSong(r.rest);
 			if (song != nullptr) {
-				const LightSong song2 = song->Export();
+				const auto song2 = song->Export();
 				if (selection.Match(song2))
 					visit_song(song2);
 
@@ -427,7 +427,7 @@ IsUnsafeChar(char ch)
 	return !IsSafeChar(ch);
 }
 
-void
+bool
 SimpleDatabase::Mount(const char *local_uri, const char *storage_uri)
 {
 	if (cache_path.IsNull())
@@ -446,9 +446,11 @@ SimpleDatabase::Mount(const char *local_uri, const char *storage_uri)
 						   compress);
 	db->Open();
 
-	// TODO: update the new database instance?
+	bool exists = db->FileExists();
 
 	Mount(local_uri, std::move(db));
+
+	return exists;
 }
 
 inline DatabasePtr
@@ -477,7 +479,7 @@ SimpleDatabase::Unmount(const char *uri) noexcept
 	return true;
 }
 
-const DatabasePlugin simple_db_plugin = {
+constexpr DatabasePlugin simple_db_plugin = {
 	"simple",
 	DatabasePlugin::FLAG_REQUIRE_STORAGE,
 	SimpleDatabase::Create,

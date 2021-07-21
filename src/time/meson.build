@@ -3,6 +3,7 @@ time = static_library(
   'Parser.cxx',
   'Convert.cxx',
   'ISO8601.cxx',
+  'Math.cxx',
   include_directories: inc,
 )
 

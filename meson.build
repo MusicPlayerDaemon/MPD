@@ -1,11 +1,13 @@
 project(
   'mpd',
   ['c', 'cpp'],
-  version: '0.22~git',
+  version: '0.23~git',
   meson_version: '>= 0.49.0',
   default_options: [
-    'c_std=c99',
+    'c_std=c11',
+    'build.c_std=c11',
     'cpp_std=c++17',
+    'build.cpp_std=c++17',
     'warning_level=3',
 
     # This is only here to build subprojects as static libraries; MPD
@@ -22,15 +24,15 @@ c_compiler = meson.get_compiler('c')
 
 if compiler.get_id() == 'gcc' and compiler.version().version_compare('<8')
   warning('Your GCC version is too old.  You need at least version 8.')
-elif compiler.get_id() == 'clang' and compiler.version().version_compare('<5')
-  warning('Your clang version is too old.  You need at least version 5.')
+elif compiler.get_id() == 'clang' and compiler.version().version_compare('<7')
+  warning('Your clang version is too old.  You need at least version 7.')
 endif
 
 version_conf = configuration_data()
 version_conf.set_quoted('PACKAGE', meson.project_name())
 version_conf.set_quoted('PACKAGE_NAME', meson.project_name())
 version_conf.set_quoted('VERSION', meson.project_version())
-version_conf.set_quoted('PROTOCOL_VERSION', '0.22.0')
+version_conf.set_quoted('PROTOCOL_VERSION', '0.23.0')
 configure_file(output: 'Version.h', configuration: version_conf)
 
 conf = configuration_data()
@@ -40,72 +42,79 @@ common_cppflags = [
   '-D_GNU_SOURCE',
 ]
 
-common_cflags = [
-]
-
-common_cxxflags = [
+test_global_common_flags = [
+  '-fvisibility=hidden',
 ]
 
 test_common_flags = [
-  '-Wvla',
-
-  '-fvisibility=hidden',
-
   '-ffast-math',
   '-ftree-vectorize',
+
+  '-Wcast-qual',
+  '-Wdouble-promotion',
+  '-Wmissing-declarations',
+  '-Wshadow',
+  '-Wunused',
+  '-Wvla',
+  '-Wwrite-strings',
+
+  # clang specific warning options:
+  '-Wunreachable-code-aggressive',
+  '-Wused-but-marked-unused',
+]
+
+test_global_cxxflags = test_global_common_flags + [
+]
+
+test_global_cflags = test_global_common_flags + [
 ]
 
 test_cxxflags = test_common_flags + [
   '-fno-threadsafe-statics',
   '-fmerge-all-constants',
 
-  '-Wmissing-declarations',
-  '-Wshadow',
-  '-Wpointer-arith',
-  '-Wcast-qual',
-  '-Wwrite-strings',
-  '-Wsign-compare',
-  '-Wcomma',
+  '-Wcomma-subscript',
   '-Wextra-semi',
-  '-Wheader-hygiene',
-  '-Winconsistent-missing-destructor-override',
-  '-Wunreachable-code-break',
-  '-Wunused',
-  '-Wused-but-marked-unused',
+  '-Wmismatched-tags',
+  '-Woverloaded-virtual',
+  '-Wsign-promo',
+  '-Wvolatile',
+  '-Wvirtual-inheritance',
 
+  # a vtable without a dtor is just fine
   '-Wno-non-virtual-dtor',
 
-  # work around bogus GCC7 warning "mangled name for ... will change
-  # in C++17 because the exception specification is part of a function
-  # type"
-  '-Wno-noexcept-type',
+  # clang specific warning options:
+  '-Wcomma',
+  '-Wheader-hygiene',
+  '-Winconsistent-missing-destructor-override',
 ]
 
-if compiler.get_id() == 'clang'
-  # Workaround for clang bug
-  # https://bugs.llvm.org/show_bug.cgi?id=32611
-  test_cxxflags += '-funwind-tables'
+if compiler.get_id() != 'gcc' or compiler.version().version_compare('>=9')
+  # The GCC 8 implementation of this flag is buggy: it complains even
+  # if "final" is present, which implies "override".
+  test_cxxflags += '-Wsuggest-override'
 endif
 
 test_cflags = test_common_flags + [
   '-Wmissing-prototypes',
-  '-Wshadow',
-  '-Wpointer-arith',
   '-Wstrict-prototypes',
-  '-Wcast-qual',
-  '-Wwrite-strings',
-  '-pedantic',
 ]
 
 test_ldflags = [
+  # make relocations read-only (hardening)
+  '-Wl,-z,relro',
+
+  # no lazy binding, please - not worth it for a daemon
+  '-Wl,-z,now',
 ]
 
 if get_option('buildtype') != 'debug'
-  test_cxxflags += [
+  test_global_cxxflags += [
     '-ffunction-sections',
     '-fdata-sections',
   ]
-  test_cflags += [
+  test_global_cflags += [
     '-ffunction-sections',
     '-fdata-sections',
   ]
@@ -114,9 +123,21 @@ if get_option('buildtype') != 'debug'
   ]
 endif
 
-add_global_arguments(common_cxxflags + compiler.get_supported_arguments(test_cxxflags), language: 'cpp')
-add_global_arguments(common_cflags + c_compiler.get_supported_arguments(test_cflags), language: 'c')
-add_global_link_arguments(compiler.get_supported_link_arguments(test_ldflags), language: 'cpp')
+if get_option('fuzzer')
+  fuzzer_flags = ['-fsanitize=fuzzer']
+  if get_option('b_sanitize') == 'none'
+    fuzzer_flags += ['-fsanitize=address,undefined']
+  endif
+  add_global_arguments(fuzzer_flags, language: 'cpp')
+  add_global_arguments(fuzzer_flags, language: 'c')
+  add_global_link_arguments(fuzzer_flags, language: 'cpp')
+endif
+
+add_global_arguments(compiler.get_supported_arguments(test_global_cxxflags), language: 'cpp')
+add_global_arguments(c_compiler.get_supported_arguments(test_global_cflags), language: 'c')
+add_project_arguments(compiler.get_supported_arguments(test_cxxflags), language: 'cpp')
+add_project_arguments(c_compiler.get_supported_arguments(test_cflags), language: 'c')
+add_project_link_arguments(compiler.get_supported_link_arguments(test_ldflags), language: 'cpp')
 
 is_linux = host_machine.system() == 'linux'
 is_android = get_option('android_ndk') != ''
@@ -130,10 +151,29 @@ endif
 
 if is_windows
   common_cppflags += [
-    '-DWIN32_LEAN_AND_MEAN',
+    # enable Windows Vista APIs
     '-DWINVER=0x0600', '-D_WIN32_WINNT=0x0600',
-    '-DSTRICT',
+
+    # enable Unicode support (TCHAR=wchar_t) in the Windows API (macro
+    # "UNICODE) and the C library (macro "_UNICODE")
     '-DUNICODE', '-D_UNICODE',
+
+    # enable strict type checking in the Windows API headers
+    '-DSTRICT',
+
+    # reduce header bloat by disabling obscure and obsolete Windows
+    # APIs
+    '-DWIN32_LEAN_AND_MEAN',
+
+    # disable more Windows APIs which are not used by MPD
+    '-DNOGDI', '-DNOBITMAP', '-DNOCOMM',
+    '-DNOUSER',
+
+    # reduce COM header bloat
+    '-DCOM_NO_WINDOWS_H',
+
+    # disable Internet Explorer specific APIs
+    '-D_WIN32_IE=0',
   ]
 
   subdir('win32')
@@ -149,8 +189,6 @@ add_global_arguments(common_cppflags, language: 'cpp')
 enable_daemon = not is_windows and not is_android and get_option('daemon')
 conf.set('ENABLE_DAEMON', enable_daemon)
 
-conf.set('HAVE_CLOCALE', compiler.has_header('clocale'))
-
 conf.set('HAVE_GETPWNAM_R', compiler.has_function('getpwnam_r'))
 conf.set('HAVE_GETPWUID_R', compiler.has_function('getpwuid_r'))
 conf.set('HAVE_INITGROUPS', compiler.has_function('initgroups'))
@@ -165,17 +203,6 @@ conf.set('HAVE_STRNDUP', not is_windows and compiler.has_function('strndup', pre
 conf.set('HAVE_STRCASESTR', compiler.has_function('strcasestr'))
 
 conf.set('HAVE_PRCTL', is_linux)
-
-conf.set('USE_EVENTFD', is_linux and get_option('eventfd'))
-conf.set('USE_SIGNALFD', is_linux and get_option('signalfd'))
-
-if is_windows
-  conf.set('USE_WINSELECT', true)
-elif is_linux and get_option('epoll')
-  conf.set('USE_EPOLL', true)
-else
-  conf.set('USE_POLL', true)
-endif
 
 if not get_option('syslog').disabled()
   if compiler.has_function('syslog')
@@ -207,21 +234,24 @@ if boost_dep.version() == '1.67'
   warning('Your Boost version 1.67 is known to be buggy, and the MPD build will fail. Please upgrade to Boost 1.68 or later.')
 endif
 
+fmt_dep = dependency('fmt')
+
 log = static_library(
   'log',
   'src/Log.cxx',
   'src/LogBackend.cxx',
   include_directories: inc,
+  dependencies: fmt_dep,
 )
 
 log_dep = declare_dependency(
   link_with: log,
+  dependencies: fmt_dep,
 )
 
 sources = [
   version_cxx,
   'src/Main.cxx',
-  'src/protocol/Ack.cxx',
   'src/protocol/ArgParser.cxx',
   'src/protocol/Result.cxx',
   'src/command/CommandError.cxx',
@@ -239,7 +269,6 @@ sources = [
   'src/command/CommandListBuilder.cxx',
   'src/Idle.cxx',
   'src/IdleFlags.cxx',
-  'src/decoder/Domain.cxx',
   'src/decoder/Thread.cxx',
   'src/decoder/Control.cxx',
   'src/decoder/Bridge.cxx',
@@ -265,7 +294,6 @@ sources = [
   'src/LogInit.cxx',
   'src/ls.cxx',
   'src/Instance.cxx',
-  'src/win32/Win32Main.cxx',
   'src/MusicBuffer.cxx',
   'src/MusicPipe.cxx',
   'src/MusicChunk.cxx',
@@ -313,6 +341,12 @@ sources = [
   'src/PlaylistFile.cxx',
 ]
 
+if is_windows
+  sources += [
+    'src/win32/Win32Main.cxx',
+  ]
+endif
+
 if not is_android
   sources += [
     'src/CommandLine.cxx',
@@ -347,6 +381,9 @@ subdir('src/system')
 subdir('src/thread')
 subdir('src/net')
 subdir('src/event')
+subdir('src/win32')
+
+subdir('src/apple')
 
 subdir('src/lib/dbus')
 subdir('src/lib/icu')
@@ -362,6 +399,7 @@ subdir('src/lib/gcrypt')
 subdir('src/lib/nfs')
 subdir('src/lib/oss')
 subdir('src/lib/pcre')
+subdir('src/lib/pipewire')
 subdir('src/lib/pulse')
 subdir('src/lib/sndio')
 subdir('src/lib/sqlite')
@@ -370,6 +408,8 @@ subdir('src/lib/upnp')
 subdir('src/lib/yajl')
 
 subdir('src/lib/crypto')
+
+subdir('src/zeroconf')
 
 subdir('src/fs')
 subdir('src/config')
@@ -386,7 +426,6 @@ subdir('src/decoder')
 subdir('src/encoder')
 subdir('src/song')
 subdir('src/playlist')
-subdir('src/zeroconf')
 
 if curl_dep.found()
   sources += 'src/RemoteTagCache.cxx'
@@ -502,8 +541,10 @@ mpd = build_target(
     zeroconf_dep,
     more_deps,
     chromaprint_dep,
+    fmt_dep,
   ],
   link_args: link_args,
+  build_by_default: not get_option('fuzzer'),
   install: not is_android and not is_haiku,
 )
 
@@ -539,10 +580,12 @@ install_data(
   install_dir: join_paths(get_option('datadir'), 'doc', meson.project_name()),
 )
 
-if get_option('documentation')
-  subdir('doc')
-endif
+subdir('doc')
 
 if get_option('test')
   subdir('test')
+endif
+
+if get_option('fuzzer')
+  subdir('test/fuzzer')
 endif

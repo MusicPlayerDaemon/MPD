@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -29,7 +29,7 @@ struct AudioFormat;
 std::unique_ptr<PreparedFilter>
 convert_filter_prepare() noexcept;
 
-Filter *
+std::unique_ptr<Filter>
 convert_filter_new(AudioFormat in_audio_format,
 		   AudioFormat out_audio_format);
 

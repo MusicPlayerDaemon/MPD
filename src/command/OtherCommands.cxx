@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -55,13 +55,15 @@
 #include "db/update/Service.hxx"
 #endif
 
+#include <fmt/format.h>
+
 #include <cassert>
 
 static void
 print_spl_list(Response &r, const PlaylistVector &list)
 {
 	for (const auto &i : list) {
-		r.Format("playlist: %s\n", i.name.c_str());
+		r.Fmt(FMT_STRING("playlist: {}\n"), i.name);
 
 		if (!IsNegative(i.mtime))
 			time_print(r, "Last-Modified", i.mtime);
@@ -72,7 +74,7 @@ CommandResult
 handle_urlhandlers(Client &client, [[maybe_unused]] Request args, Response &r)
 {
 	if (client.IsLocal())
-		r.Format("handler: file://\n");
+		r.Write("handler: file://\n");
 	print_supported_uri_schemes(r);
 	return CommandResult::OK;
 }
@@ -248,7 +250,7 @@ handle_update(Response &r, UpdateService &update,
 	      const char *uri_utf8, bool discard)
 {
 	unsigned ret = update.Enqueue(uri_utf8, discard);
-	r.Format("updating_db: %i\n", ret);
+	r.Fmt(FMT_STRING("updating_db: {}\n"), ret);
 	return CommandResult::OK;
 }
 
@@ -258,7 +260,7 @@ handle_update(Response &r, Database &db,
 {
 	unsigned id = db.Update(uri_utf8, discard);
 	if (id > 0) {
-		r.Format("updating_db: %i\n", id);
+		r.Fmt(FMT_STRING("updating_db: {}\n"), id);
 		return CommandResult::OK;
 	} else {
 		/* Database::Update() has returned 0 without setting
@@ -316,6 +318,18 @@ CommandResult
 handle_rescan(Client &client, Request args, Response &r)
 {
 	return handle_update(client, args, r, true);
+}
+
+CommandResult
+handle_getvol(Client &client, Request, Response &r)
+{
+	auto &partition = client.GetPartition();
+
+	const auto volume = volume_level_get(partition.outputs);
+	if (volume >= 0)
+		r.Fmt(FMT_STRING("volume: {}\n"), volume);
+
+	return CommandResult::OK;
 }
 
 CommandResult
@@ -379,7 +393,7 @@ handle_config(Client &client, [[maybe_unused]] Request args, Response &r)
 	const Storage *storage = client.GetStorage();
 	if (storage != nullptr) {
 		const auto path = storage->MapUTF8("");
-		r.Format("music_directory: %s\n", path.c_str());
+		r.Fmt(FMT_STRING("music_directory: {}\n"), path);
 	}
 #endif
 
@@ -393,8 +407,9 @@ handle_idle(Client &client, Request args, Response &r)
 	for (const char *i : args) {
 		unsigned event = idle_parse_name(i);
 		if (event == 0) {
-			r.FormatError(ACK_ERROR_ARG,
-				      "Unrecognized idle event: %s", i);
+			r.FmtError(ACK_ERROR_ARG,
+				   FMT_STRING("Unrecognized idle event: {}"),
+				   i);
 			return CommandResult::ERROR;
 		}
 

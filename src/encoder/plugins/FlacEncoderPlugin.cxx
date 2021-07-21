@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -23,8 +23,11 @@
 #include "pcm/Buffer.hxx"
 #include "util/DynamicFifoBuffer.hxx"
 #include "util/RuntimeError.hxx"
+#include "util/Serial.hxx"
+#include "util/StringUtil.hxx"
 
 #include <FLAC/stream_encoder.h>
+#include <FLAC/metadata.h>
 
 #if !defined(FLAC_API_VERSION_CURRENT) || FLAC_API_VERSION_CURRENT <= 7
 #error libFLAC is too old
@@ -34,6 +37,7 @@ class FlacEncoder final : public Encoder {
 	const AudioFormat audio_format;
 
 	FLAC__StreamEncoder *const fse;
+	const unsigned compression;
 
 	PcmBuffer expand_buffer;
 
@@ -44,11 +48,14 @@ class FlacEncoder final : public Encoder {
 	DynamicFifoBuffer<uint8_t> output_buffer;
 
 public:
-	FlacEncoder(AudioFormat _audio_format, FLAC__StreamEncoder *_fse);
+	FlacEncoder(AudioFormat _audio_format, FLAC__StreamEncoder *_fse, unsigned _compression, bool _oggflac, bool _oggchaining);
 
 	~FlacEncoder() noexcept override {
 		FLAC__stream_encoder_delete(fse);
 	}
+
+	FlacEncoder(const FlacEncoder &) = delete;
+	FlacEncoder &operator=(const FlacEncoder &) = delete;
 
 	/* virtual methods from class Encoder */
 	void End() override {
@@ -56,8 +63,13 @@ public:
 	}
 
 	void Flush() override {
+	}
+
+	void PreTag() override {
 		(void) FLAC__stream_encoder_finish(fse);
 	}
+
+	void SendTag(const Tag &tag) override;
 
 	void Write(const void *data, size_t length) override;
 
@@ -80,6 +92,8 @@ private:
 
 class PreparedFlacEncoder final : public PreparedEncoder {
 	const unsigned compression;
+	const bool oggchaining;
+	const bool oggflac;
 
 public:
 	explicit PreparedFlacEncoder(const ConfigBlock &block);
@@ -88,12 +102,16 @@ public:
 	Encoder *Open(AudioFormat &audio_format) override;
 
 	[[nodiscard]] const char *GetMimeType() const noexcept override {
-		return  "audio/flac";
+		if(oggflac)
+			return  "audio/ogg";
+		return "audio/flac";
 	}
 };
 
 PreparedFlacEncoder::PreparedFlacEncoder(const ConfigBlock &block)
-	:compression(block.GetBlockValue("compression", 5U))
+	:compression(block.GetBlockValue("compression", 5U)),
+	oggchaining(block.GetBlockValue("oggchaining",false)),
+	oggflac(block.GetBlockValue("oggflac",false) || oggchaining)
 {
 }
 
@@ -105,8 +123,23 @@ flac_encoder_init(const ConfigBlock &block)
 
 static void
 flac_encoder_setup(FLAC__StreamEncoder *fse, unsigned compression,
-		   const AudioFormat &audio_format, unsigned bits_per_sample)
+		   const AudioFormat &audio_format)
 {
+	unsigned bits_per_sample;
+
+	switch (audio_format.format) {
+	case SampleFormat::S8:
+		bits_per_sample = 8;
+		break;
+
+	case SampleFormat::S16:
+		bits_per_sample = 16;
+		break;
+
+	default:
+		bits_per_sample = 24;
+	}
+
 	if (!FLAC__stream_encoder_set_compression_level(fse, compression))
 		throw FormatRuntimeError("error setting flac compression to %d",
 					 compression);
@@ -123,16 +156,26 @@ flac_encoder_setup(FLAC__StreamEncoder *fse, unsigned compression,
 						  audio_format.sample_rate))
 		throw FormatRuntimeError("error setting flac sample rate to %d",
 					 audio_format.sample_rate);
+
+	if (!FLAC__stream_encoder_set_ogg_serial_number(fse,
+						  GenerateSerial()))
+		throw FormatRuntimeError("error setting ogg serial number");
 }
 
-FlacEncoder::FlacEncoder(AudioFormat _audio_format, FLAC__StreamEncoder *_fse)
-	:Encoder(false),
+FlacEncoder::FlacEncoder(AudioFormat _audio_format, FLAC__StreamEncoder *_fse, unsigned _compression, bool _oggflac, bool _oggchaining)
+	:Encoder(_oggchaining),
 	 audio_format(_audio_format), fse(_fse),
+	 compression(_compression),
 	 output_buffer(8192)
 {
 	/* this immediately outputs data through callback */
 
-	auto init_status =
+	auto init_status = _oggflac ?
+		FLAC__stream_encoder_init_ogg_stream(fse,
+						     nullptr, WriteCallback,
+						     nullptr, nullptr, nullptr,
+						     this)
+		:
 		FLAC__stream_encoder_init_stream(fse,
 						 WriteCallback,
 						 nullptr, nullptr, nullptr,
@@ -146,24 +189,17 @@ FlacEncoder::FlacEncoder(AudioFormat _audio_format, FLAC__StreamEncoder *_fse)
 Encoder *
 PreparedFlacEncoder::Open(AudioFormat &audio_format)
 {
-	unsigned bits_per_sample;
-
-	/* FIXME: flac should support 32bit as well */
 	switch (audio_format.format) {
 	case SampleFormat::S8:
-		bits_per_sample = 8;
 		break;
 
 	case SampleFormat::S16:
-		bits_per_sample = 16;
 		break;
 
 	case SampleFormat::S24_P32:
-		bits_per_sample = 24;
 		break;
 
 	default:
-		bits_per_sample = 24;
 		audio_format.format = SampleFormat::S24_P32;
 	}
 
@@ -173,15 +209,45 @@ PreparedFlacEncoder::Open(AudioFormat &audio_format)
 		throw std::runtime_error("FLAC__stream_encoder_new() failed");
 
 	try {
-		flac_encoder_setup(fse, compression,
-				   audio_format, bits_per_sample);
+		flac_encoder_setup(fse, compression, audio_format);
 	} catch (...) {
 		FLAC__stream_encoder_delete(fse);
 		throw;
 	}
 
-	return new FlacEncoder(audio_format, fse);
+	return new FlacEncoder(audio_format, fse, compression, oggflac, oggchaining);
 }
+
+void
+FlacEncoder::SendTag(const Tag &tag)
+{
+	/* re-initialize encoder since flac_encoder_finish resets everything */
+	flac_encoder_setup(fse, compression, audio_format);
+
+	FLAC__StreamMetadata *metadata = FLAC__metadata_object_new(FLAC__METADATA_TYPE_VORBIS_COMMENT);
+	FLAC__StreamMetadata_VorbisComment_Entry entry;
+
+	for (const auto &item : tag) {
+		char name[64];
+		ToUpperASCII(name, tag_item_names[item.type], sizeof(name));
+		FLAC__metadata_object_vorbiscomment_entry_from_name_value_pair(&entry, name, item.value);
+		FLAC__metadata_object_vorbiscomment_append_comment(metadata, entry, false);
+	}
+
+	FLAC__stream_encoder_set_metadata(fse,&metadata,1);
+
+	auto init_status = FLAC__stream_encoder_init_ogg_stream(fse,
+							        nullptr, WriteCallback,
+							        nullptr, nullptr, nullptr,
+							        this);
+
+	FLAC__metadata_object_delete(metadata);
+
+	if (init_status != FLAC__STREAM_ENCODER_INIT_STATUS_OK)
+		throw FormatRuntimeError("failed to initialize encoder: %s\n",
+					 FLAC__StreamEncoderInitStatusString[init_status]);
+}
+
 
 static inline void
 pcm8_to_flac(int32_t *out, const int8_t *in, unsigned num_samples) noexcept

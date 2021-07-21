@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -20,27 +20,21 @@
 #include "LogListener.hxx"
 #include "java/Class.hxx"
 #include "java/String.hxx"
-#include "util/AllocatedString.hxx"
-#include "util/FormatString.hxx"
+
+LogListener::LogListener(JNIEnv *env, jobject obj) noexcept
+	:Java::GlobalObject(env, obj)
+{
+	Java::Class cls(env, env->GetObjectClass(Get()));
+
+	onLogMethod = env->GetMethodID(cls, "onLog", "(ILjava/lang/String;)V");
+	assert(onLogMethod);
+}
 
 void
-LogListener::OnLog(JNIEnv *env, int priority,
-		   const char *fmt, ...) const noexcept
+LogListener::OnLog(JNIEnv *env, int priority, const char *msg) const noexcept
 {
 	assert(env != nullptr);
 
-	Java::Class cls(env, env->GetObjectClass(Get()));
-
-	jmethodID method = env->GetMethodID(cls, "onLog",
-					    "(ILjava/lang/String;)V");
-
-	assert(method);
-
-	std::va_list args;
-	va_start(args, fmt);
-	const auto log = FormatStringV(fmt, args);
-	va_end(args);
-
-	env->CallVoidMethod(Get(), method, priority,
-			    Java::String(env, log.c_str()).Get());
+	env->CallVoidMethod(Get(), onLogMethod, priority,
+			    Java::String(env, msg).Get());
 }

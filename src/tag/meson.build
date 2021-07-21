@@ -45,7 +45,7 @@ if libid3tag_dep.found()
     'Id3Scan.cxx',
     'Id3ReplayGain.cxx',
     'Rva2.cxx',
-    'Riff.cxx',
+    'RiffId3.cxx',
     'Aiff.cxx',
   ]
 endif

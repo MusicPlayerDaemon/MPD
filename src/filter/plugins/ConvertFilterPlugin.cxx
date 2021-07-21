@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -117,13 +117,13 @@ convert_filter_prepare() noexcept
 	return std::make_unique<PreparedConvertFilter>();
 }
 
-Filter *
+std::unique_ptr<Filter>
 convert_filter_new(const AudioFormat in_audio_format,
 		   const AudioFormat out_audio_format)
 {
 	std::unique_ptr<ConvertFilter> filter(new ConvertFilter(in_audio_format));
 	filter->Set(out_audio_format);
-	return filter.release();
+	return filter;
 }
 
 void

@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -32,8 +32,8 @@
 #include "thread/Cond.hxx"
 #include "event/Loop.hxx"
 #include "event/Call.hxx"
-#include "event/DeferEvent.hxx"
-#include "event/TimerEvent.hxx"
+#include "event/InjectEvent.hxx"
+#include "event/CoarseTimerEvent.hxx"
 #include "util/ASCII.hxx"
 #include "util/StringCompare.hxx"
 
@@ -61,8 +61,8 @@ class NfsStorage final
 
 	NfsConnection *connection;
 
-	DeferEvent defer_connect;
-	TimerEvent reconnect_timer;
+	InjectEvent defer_connect;
+	CoarseTimerEvent reconnect_timer;
 
 	Mutex mutex;
 	Cond cond;
@@ -84,6 +84,9 @@ public:
 		BlockingCall(GetEventLoop(), [this](){ Disconnect(); });
 		nfs_finish();
 	}
+
+	NfsStorage(const NfsStorage &) = delete;
+	NfsStorage &operator=(const NfsStorage &) = delete;
 
 	/* virtual methods from class Storage */
 	StorageFileInfo GetInfo(std::string_view uri_utf8, bool follow) override;
@@ -115,7 +118,7 @@ public:
 		reconnect_timer.Schedule(std::chrono::seconds(5));
 	}
 
-	/* DeferEvent callback */
+	/* InjectEvent callback */
 	void OnDeferredConnect() noexcept {
 		if (state == State::INITIAL)
 			Connect();
@@ -305,9 +308,7 @@ gcc_pure
 static bool
 SkipNameFS(PathTraitsFS::const_pointer name) noexcept
 {
-	return name[0] == '.' &&
-		(name[1] == 0 ||
-		 (name[1] == '.' && name[2] == 0));
+	return PathTraitsFS::IsSpecialFilename(name);
 }
 
 static void

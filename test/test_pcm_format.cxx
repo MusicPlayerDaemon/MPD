@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -79,8 +79,8 @@ TEST(PcmTest, FormatFloat16)
 	EXPECT_EQ(N, f.size);
 
 	for (size_t i = 0; i != f.size; ++i) {
-		EXPECT_GE(f[i], -1.);
-		EXPECT_LE(f[i], 1.);
+		EXPECT_GE(f[i], -1.f);
+		EXPECT_LE(f[i], 1.f);
 	}
 
 	PcmDither dither;
@@ -125,8 +125,8 @@ TEST(PcmTest, FormatFloat32)
 	EXPECT_EQ(N, f.size);
 
 	for (size_t i = 0; i != f.size; ++i) {
-		EXPECT_GE(f[i], -1.);
-		EXPECT_LE(f[i], 1.);
+		EXPECT_GE(f[i], -1.f);
+		EXPECT_LE(f[i], 1.f);
 	}
 
 	auto d = pcm_convert_to_32(buffer2,

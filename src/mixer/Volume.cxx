@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -106,8 +106,8 @@ read_sw_volume_state(const char *line, MultipleOutputs &outputs)
 	if (*end == 0 && sv >= 0 && sv <= 100)
 		software_volume_change(outputs, sv);
 	else
-		FormatWarning(volume_domain,
-			      "Can't parse software volume: %s", line);
+		FmtWarning(volume_domain,
+			   "Can't parse software volume: {}", line);
 	return true;
 }
 

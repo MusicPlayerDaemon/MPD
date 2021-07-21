@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -38,6 +38,7 @@ class UpnpNeighborExplorer final
 			:name(std::move(_name)), comment(std::move(_comment)),
 			 alive(true) {}
 		Server(const Server &) = delete;
+		Server &operator=(const Server &) = delete;
 
 		gcc_pure
 		bool operator==(const Server &other) const noexcept {

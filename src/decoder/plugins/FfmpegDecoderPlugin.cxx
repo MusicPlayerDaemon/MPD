@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -25,6 +25,7 @@
 #include "lib/ffmpeg/Domain.hxx"
 #include "lib/ffmpeg/Error.hxx"
 #include "lib/ffmpeg/Init.hxx"
+#include "lib/ffmpeg/Interleave.hxx"
 #include "lib/ffmpeg/Buffer.hxx"
 #include "lib/ffmpeg/Frame.hxx"
 #include "lib/ffmpeg/Format.hxx"
@@ -42,6 +43,7 @@
 #include "pcm/CheckAudioFormat.hxx"
 #include "util/ScopeExit.hxx"
 #include "util/ConstBuffer.hxx"
+#include "util/StringAPI.hxx"
 #include "LogV.hxx"
 
 extern "C" {
@@ -120,6 +122,49 @@ ffmpeg_find_audio_stream(const AVFormatContext &format_context) noexcept
 	return -1;
 }
 
+gcc_pure
+static bool
+IsPicture(const AVStream &stream) noexcept
+{
+	return stream.codecpar->codec_type == AVMEDIA_TYPE_VIDEO &&
+		(stream.disposition & AV_DISPOSITION_ATTACHED_PIC) != 0 &&
+		stream.attached_pic.size > 0;
+}
+
+static const AVStream *
+FindPictureStream(const AVFormatContext &format_context) noexcept
+{
+	for (unsigned i = 0; i < format_context.nb_streams; ++i)
+		if (IsPicture(*format_context.streams[i]))
+			return format_context.streams[i];
+
+	return nullptr;
+}
+
+static const char *
+GetMimeType(const AVCodecDescriptor &codec) noexcept
+{
+	return codec.mime_types != nullptr
+		? *codec.mime_types
+		: nullptr;
+}
+
+static const char *
+GetMimeType(const AVStream &stream) noexcept
+{
+	const auto *codec = avcodec_descriptor_get(stream.codecpar->codec_id);
+	if (codec != nullptr)
+		return GetMimeType(*codec);
+
+	return nullptr;
+}
+
+static ConstBuffer<void>
+ToConstBuffer(const AVPacket &packet) noexcept
+{
+	return {packet.data, size_t(packet.size)};
+}
+
 /**
  * Accessor for AVStream::start_time that replaces AV_NOPTS_VALUE with
  * zero.  We can't use AV_NOPTS_VALUE in calculations, and we simply
@@ -130,48 +175,6 @@ static constexpr int64_t
 start_time_fallback(const AVStream &stream)
 {
 	return FfmpegTimestampFallback(stream.start_time, 0);
-}
-
-/**
- * Copy PCM data from a non-empty AVFrame to an interleaved buffer.
- *
- * Throws #std::exception on error.
- */
-static ConstBuffer<void>
-copy_interleave_frame(const AVCodecContext &codec_context,
-		      const AVFrame &frame,
-		      FfmpegBuffer &global_buffer)
-{
-	assert(frame.nb_samples > 0);
-
-	int plane_size;
-	const int data_size =
-		av_samples_get_buffer_size(&plane_size,
-					   codec_context.channels,
-					   frame.nb_samples,
-					   codec_context.sample_fmt, 1);
-	assert(data_size != 0);
-	if (data_size < 0)
-		throw MakeFfmpegError(data_size);
-
-	void *output_buffer;
-	if (av_sample_fmt_is_planar(codec_context.sample_fmt) &&
-	    codec_context.channels > 1) {
-		output_buffer = global_buffer.GetT<uint8_t>(data_size);
-		if (output_buffer == nullptr)
-			/* Not enough memory - shouldn't happen */
-			throw std::bad_alloc();
-
-		PcmInterleave(output_buffer,
-			      ConstBuffer<const void *>((const void *const*)frame.extended_data,
-							codec_context.channels),
-			      frame.nb_samples,
-			      av_get_bytes_per_sample(codec_context.sample_fmt));
-	} else {
-		output_buffer = frame.extended_data[0];
-	}
-
-	return { output_buffer, (size_t)data_size };
 }
 
 /**
@@ -207,14 +210,14 @@ PtsToPcmFrame(uint64_t pts, const AVStream &stream,
  * #AVFrame.
  */
 static DecoderCommand
-FfmpegSendFrame(DecoderClient &client, InputStream &is,
+FfmpegSendFrame(DecoderClient &client, InputStream *is,
 		AVCodecContext &codec_context,
 		const AVFrame &frame,
 		size_t &skip_bytes,
 		FfmpegBuffer &buffer)
 {
 	ConstBuffer<void> output_buffer =
-		copy_interleave_frame(codec_context, frame, buffer);
+		Ffmpeg::InterleaveFrame(frame, buffer);
 
 	if (skip_bytes > 0) {
 		if (skip_bytes >= output_buffer.size) {
@@ -234,7 +237,7 @@ FfmpegSendFrame(DecoderClient &client, InputStream &is,
 }
 
 static DecoderCommand
-FfmpegReceiveFrames(DecoderClient &client, InputStream &is,
+FfmpegReceiveFrames(DecoderClient &client, InputStream *is,
 		    AVCodecContext &codec_context,
 		    AVFrame &frame,
 		    size_t &skip_bytes,
@@ -267,9 +270,9 @@ FfmpegReceiveFrames(DecoderClient &client, InputStream &is,
 			{
 				char msg[256];
 				av_strerror(err, msg, sizeof(msg));
-				FormatWarning(ffmpeg_domain,
-					      "avcodec_send_packet() failed: %s",
-					      msg);
+				FmtWarning(ffmpeg_domain,
+					   "avcodec_send_packet() failed: {}",
+					   msg);
 			}
 
 			return DecoderCommand::STOP;
@@ -286,7 +289,7 @@ FfmpegReceiveFrames(DecoderClient &client, InputStream &is,
  * desired time stamp has been reached
  */
 static DecoderCommand
-ffmpeg_send_packet(DecoderClient &client, InputStream &is,
+ffmpeg_send_packet(DecoderClient &client, InputStream *is,
 		   const AVPacket &packet,
 		   AVCodecContext &codec_context,
 		   const AVStream &stream,
@@ -323,8 +326,8 @@ ffmpeg_send_packet(DecoderClient &client, InputStream &is,
 		{
 			char msg[256];
 			av_strerror(err, msg, sizeof(msg));
-			FormatWarning(ffmpeg_domain,
-				      "avcodec_send_packet() failed: %s", msg);
+			FmtWarning(ffmpeg_domain,
+				   "avcodec_send_packet() failed: {}", msg);
 		}
 
 		return DecoderCommand::NONE;
@@ -352,13 +355,13 @@ ffmpeg_sample_format(enum AVSampleFormat sample_fmt) noexcept
 	const char *name = av_get_sample_fmt_string(buffer, sizeof(buffer),
 						    sample_fmt);
 	if (name != nullptr)
-		FormatError(ffmpeg_domain,
-			    "Unsupported libavcodec SampleFormat value: %s (%d)",
-			    name, sample_fmt);
+		FmtError(ffmpeg_domain,
+			 "Unsupported libavcodec SampleFormat value: {} ({})",
+			 name, sample_fmt);
 	else
-		FormatError(ffmpeg_domain,
-			    "Unsupported libavcodec SampleFormat value: %d",
-			    sample_fmt);
+		FmtError(ffmpeg_domain,
+			 "Unsupported libavcodec SampleFormat value: {}",
+			 sample_fmt);
 	return SampleFormat::UNDEFINED;
 }
 
@@ -444,7 +447,7 @@ FfmpegScanTag(const AVFormatContext &format_context, int audio_stream,
  * DecoderClient::SubmitTag().
  */
 static void
-FfmpegCheckTag(DecoderClient &client, InputStream &is,
+FfmpegCheckTag(DecoderClient &client, InputStream *is,
 	       AVFormatContext &format_context, int audio_stream)
 {
 	AVStream &stream = *format_context.streams[audio_stream];
@@ -461,8 +464,19 @@ FfmpegCheckTag(DecoderClient &client, InputStream &is,
 		client.SubmitTag(is, tag.Commit());
 }
 
+static bool
+IsSeekable(const AVFormatContext &format_context) noexcept
+{
+#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(58, 6, 100)
+	return (format_context.ctx_flags & AVFMTCTX_UNSEEKABLE) != 0;
+#else
+	(void)format_context;
+	return false;
+#endif
+}
+
 static void
-FfmpegDecode(DecoderClient &client, InputStream &input,
+FfmpegDecode(DecoderClient &client, InputStream *input,
 	     AVFormatContext &format_context)
 {
 	const int find_result =
@@ -485,8 +499,8 @@ FfmpegDecode(DecoderClient &client, InputStream &input,
 	const AVCodecDescriptor *codec_descriptor =
 		avcodec_descriptor_get(codec_params.codec_id);
 	if (codec_descriptor != nullptr)
-		FormatDebug(ffmpeg_domain, "codec '%s'",
-			    codec_descriptor->name);
+		FmtDebug(ffmpeg_domain, "codec '{}'",
+			 codec_descriptor->name);
 
 	AVCodec *codec = avcodec_find_decoder(codec_params.codec_id);
 
@@ -515,7 +529,11 @@ FfmpegDecode(DecoderClient &client, InputStream &input,
 		? FromFfmpegTimeChecked(av_stream.duration, av_stream.time_base)
 		: FromFfmpegTimeChecked(format_context.duration, AV_TIME_BASE_Q);
 
-	client.Ready(audio_format, input.IsSeekable(), total_time);
+	client.Ready(audio_format,
+		     input
+		     ? input->IsSeekable()
+		     : IsSeekable(format_context),
+		     total_time);
 
 	FfmpegParseMetaData(client, format_context, audio_stream);
 
@@ -584,15 +602,14 @@ ffmpeg_decode(DecoderClient &client, InputStream &input)
 		FfmpegOpenInput(stream.io, input.GetURI(), nullptr);
 
 	const auto *input_format = format_context->iformat;
-	FormatDebug(ffmpeg_domain, "detected input format '%s' (%s)",
-		    input_format->name, input_format->long_name);
+	FmtDebug(ffmpeg_domain, "detected input format '{}' ({})",
+		 input_format->name, input_format->long_name);
 
-	FfmpegDecode(client, input, *format_context);
+	FfmpegDecode(client, &input, *format_context);
 }
 
 static bool
-FfmpegScanStream(AVFormatContext &format_context,
-		 TagHandler &handler) noexcept
+FfmpegScanStream(AVFormatContext &format_context, TagHandler &handler)
 {
 	const int find_result =
 		avformat_find_stream_info(&format_context, nullptr);
@@ -621,21 +638,61 @@ FfmpegScanStream(AVFormatContext &format_context,
 
 	FfmpegScanMetadata(format_context, audio_stream, handler);
 
+	if (handler.WantPicture()) {
+		const auto *picture_stream = FindPictureStream(format_context);
+		if (picture_stream != nullptr)
+			handler.OnPicture(GetMimeType(*picture_stream),
+					  ToConstBuffer(picture_stream->attached_pic));
+	}
+
 	return true;
 }
 
 static bool
-ffmpeg_scan_stream(InputStream &is, TagHandler &handler) noexcept
-try {
+ffmpeg_scan_stream(InputStream &is, TagHandler &handler)
+{
 	AvioStream stream(nullptr, is);
 	if (!stream.Open())
 		return false;
 
 	auto f = FfmpegOpenInput(stream.io, is.GetURI(), nullptr);
 	return FfmpegScanStream(*f, handler);
-} catch (...) {
-	return false;
 }
+
+#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(58, 9, 100)
+
+static void
+ffmpeg_uri_decode(DecoderClient &client, const char *uri)
+{
+	auto format_context =
+		FfmpegOpenInput(nullptr, uri, nullptr);
+
+	const auto *input_format = format_context->iformat;
+	FmtDebug(ffmpeg_domain, "detected input format '{}' ({})",
+		 input_format->name, input_format->long_name);
+
+	FfmpegDecode(client, nullptr, *format_context);
+}
+
+static std::set<std::string>
+ffmpeg_protocols() noexcept
+{
+	std::set<std::string> protocols;
+
+	const AVInputFormat *format = nullptr;
+	void *opaque = nullptr;
+	while ((format = av_demuxer_iterate(&opaque)) != nullptr) {
+		if (StringIsEqual(format->name, "rtsp")) {
+			protocols.emplace("rtsp://");
+			protocols.emplace("rtsps://");
+		} else if (StringIsEqual(format->name, "rtp"))
+			protocols.emplace("rtp://");
+	}
+
+	return protocols;
+}
+
+#endif
 
 /**
  * A list of extensions found for the formats supported by ffmpeg.
@@ -760,5 +817,8 @@ static const char *const ffmpeg_mime_types[] = {
 constexpr DecoderPlugin ffmpeg_decoder_plugin =
 	DecoderPlugin("ffmpeg", ffmpeg_decode, ffmpeg_scan_stream)
 	.WithInit(ffmpeg_init, ffmpeg_finish)
+#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(58, 9, 100)
+	.WithProtocols(ffmpeg_protocols, ffmpeg_uri_decode)
+#endif
 	.WithSuffixes(ffmpeg_suffixes)
 	.WithMimeTypes(ffmpeg_mime_types);

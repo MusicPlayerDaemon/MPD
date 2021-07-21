@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -32,22 +32,13 @@
 
 #include <string.h>
 
-#if GCC_OLDER_THAN(8,0)
-/* GCC 6.3 emits this bogus warning in PcmVolumeConvert() because it
-   checks an unreachable branch */
-#pragma GCC diagnostic ignored "-Wshift-count-overflow"
-#endif
-
 /**
  * Apply software volume, converting to a different sample type.
  */
 template<SampleFormat SF, SampleFormat DF,
 	 class STraits=SampleTraits<SF>,
 	 class DTraits=SampleTraits<DF>>
-#if !GCC_OLDER_THAN(8,0)
-constexpr
-#endif
-static typename DTraits::value_type
+static constexpr typename DTraits::value_type
 PcmVolumeConvert(typename STraits::value_type _sample, int volume) noexcept
 {
 	typename STraits::long_type sample(_sample);

@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,33 +18,10 @@
  */
 
 #include "Init.hxx"
-#include "Mutex.hxx"
-#include "thread/Mutex.hxx"
-#include "system/Error.hxx"
-
-#include <libsmbclient.h>
-
-#include <string.h>
-
-static void
-mpd_smbc_get_auth_data([[maybe_unused]] const char *srv,
-		       [[maybe_unused]] const char *shr,
-		       char *wg, [[maybe_unused]] int wglen,
-		       char *un, [[maybe_unused]] int unlen,
-		       char *pw, [[maybe_unused]] int pwlen)
-{
-	// TODO: implement
-	strcpy(wg, "WORKGROUP");
-	strcpy(un, "");
-	strcpy(pw, "");
-}
 
 void
 SmbclientInit()
 {
-	const std::lock_guard<Mutex> protect(smbclient_mutex);
-
-	constexpr int debug = 0;
-	if (smbc_init(mpd_smbc_get_auth_data, debug) < 0)
-		throw MakeErrno("smbc_init() failed");
+	/* this is currently a no-op, but one day, we might want to
+	   call smbc_thread_posix() here */
 }

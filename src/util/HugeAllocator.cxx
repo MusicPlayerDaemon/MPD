@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2019 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2013-2021 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -28,6 +28,7 @@
  */
 
 #include "HugeAllocator.hxx"
+#include "Compiler.h"
 
 #include <new>
 

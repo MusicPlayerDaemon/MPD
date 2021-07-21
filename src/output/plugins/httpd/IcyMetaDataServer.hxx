@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -24,9 +24,9 @@
 #include "tag/Type.h"
 
 struct Tag;
-template<typename T> class AllocatedString;
+class AllocatedString;
 
-AllocatedString<char>
+AllocatedString
 icy_server_metadata_header(const char *name,
 			   const char *genre, const char *url,
 			   const char *content_type, int metaint) noexcept;

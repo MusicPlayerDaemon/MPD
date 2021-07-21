@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -23,6 +23,7 @@
 #include "db/plugins/simple/Directory.hxx"
 #include "db/plugins/simple/Song.hxx"
 #include "storage/StorageInterface.hxx"
+#include "lib/fmt/PathFormatter.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "storage/FileInfo.hxx"
 #include "archive/ArchiveList.hxx"
@@ -82,14 +83,14 @@ UpdateWalk::UpdateArchiveTree(ArchiveFile &archive, Directory &directory,
 				}
 
 				modified = true;
-				FormatDefault(update_domain, "added %s/%s",
-					      directory.GetPath(), name);
+				FmtNotice(update_domain, "added {}/{}",
+					  directory.GetPath(), name);
 			}
 		} else {
 			if (!song->UpdateFileInArchive(archive)) {
-				FormatDebug(update_domain,
-					    "deleting unrecognized file %s/%s",
-					    directory.GetPath(), name);
+				FmtDebug(update_domain,
+					 "deleting unrecognized file {}/{}",
+					 directory.GetPath(), name);
 				editor.LockDeleteSong(directory, song);
 			}
 		}
@@ -107,8 +108,8 @@ class UpdateArchiveVisitor final : public ArchiveVisitor {
 		:walk(_walk), archive(_archive), directory(_directory) {}
 
 	void VisitArchiveEntry(const char *path_utf8) override {
-		FormatDebug(update_domain,
-			    "adding archive file: %s", path_utf8);
+		FmtDebug(update_domain,
+			 "adding archive file: {}", path_utf8);
 		walk.UpdateArchiveTree(archive, directory, path_utf8);
 	}
 };
@@ -149,7 +150,7 @@ UpdateWalk::UpdateArchiveFile(Directory &parent, std::string_view name,
 		return;
 	}
 
-	FormatDebug(update_domain, "archive %s opened", path_fs.c_str());
+	FmtDebug(update_domain, "archive {} opened", path_fs);
 
 	UpdateArchiveVisitor visitor(*this, *file, *directory);
 	file->Visit(visitor);
@@ -157,7 +158,7 @@ UpdateWalk::UpdateArchiveFile(Directory &parent, std::string_view name,
 
 bool
 UpdateWalk::UpdateArchiveFile(Directory &directory,
-			      std::string_view name, const char *suffix,
+			      std::string_view name, std::string_view suffix,
 			      const StorageFileInfo &info) noexcept
 {
 	const ArchivePlugin *plugin = archive_plugin_from_suffix(suffix);

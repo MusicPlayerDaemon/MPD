@@ -28,6 +28,7 @@ gtest_dep = declare_dependency(
   compile_args: gtest_compile_args,
 )
 
+subdir('util')
 subdir('net')
 subdir('time')
 
@@ -39,24 +40,6 @@ executable(
     config_dep,
   ],
 )
-
-test('TestUtil', executable(
-  'TestUtil',
-  'TestCircularBuffer.cxx',
-  'TestDivideString.cxx',
-  'TestMimeType.cxx',
-  'TestSplitString.cxx',
-  'TestUriExtract.cxx',
-  'TestUriQueryParser.cxx',
-  'TestUriRelative.cxx',
-  'TestUriUtil.cxx',
-  'test_byte_reverse.cxx',
-  include_directories: inc,
-  dependencies: [
-    util_dep,
-    gtest_dep,
-  ],
-))
 
 test('TestRewindInputStream', executable(
   'TestRewindInputStream',
@@ -122,10 +105,10 @@ test('TestIcu', executable(
   ],
 ))
 
-if libavahi_client_dep.found()
+if zeroconf_dep.found()
   executable(
-    'run_avahi',
-    'run_avahi.cxx',
+    'RunZeroconf',
+    'RunZeroconf.cxx',
     'ShutdownHandler.cxx',
     include_directories: inc,
     dependencies: [
@@ -264,7 +247,6 @@ if enable_database
   executable(
     'DumpDatabase',
     'DumpDatabase.cxx',
-    '../src/protocol/Ack.cxx',
     '../src/db/Registry.cxx',
     '../src/db/Selection.cxx',
     '../src/db/PlaylistVector.cxx',
@@ -568,6 +550,7 @@ executable(
   dependencies: [
     output_glue_dep,
     encoder_glue_dep,
+    event_dep,
   ],
 )
 

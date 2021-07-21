@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -67,7 +67,7 @@ input_stream_global_init(const ConfigData &config, EventLoop &event_loop)
 				plugin->init(event_loop, *block);
 			input_plugins_enabled[i] = true;
 		} catch (const PluginUnconfigured &e) {
-			LogFormat(LogLevel::INFO, e,
+			LogFormat(LogLevel::DEBUG, e,
 				  "Input plugin '%s' is not configured",
 				  plugin->name);
 			continue;

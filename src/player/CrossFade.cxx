@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -128,9 +128,9 @@ CrossFadeSettings::Calculate(SignedSongTime total_time,
 		    mixramp_delay <= mixramp_overlap) {
 			chunks = lround((mixramp_overlap - mixramp_delay)
 					/ chunk_duration);
-			FormatDebug(cross_fade_domain,
-				    "will overlap %d chunks, %fs", chunks,
-				    (mixramp_overlap - mixramp_delay).count());
+			FmtDebug(cross_fade_domain,
+				 "will overlap {} chunks, {}s", chunks,
+				 (mixramp_overlap - mixramp_delay).count());
 		}
 	}
 

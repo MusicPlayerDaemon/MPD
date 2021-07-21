@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -25,6 +25,8 @@
 #include "queue/Playlist.hxx"
 #include "util/ConstBuffer.hxx"
 
+#include <fmt/format.h>
+
 CommandResult
 handle_addtagid(Client &client, Request args, Response &r)
 {
@@ -33,7 +35,8 @@ handle_addtagid(Client &client, Request args, Response &r)
 	const char *const tag_name = args[1];
 	const TagType tag_type = tag_name_parse_i(tag_name);
 	if (tag_type == TAG_NUM_OF_ITEM_TYPES) {
-		r.FormatError(ACK_ERROR_ARG, "Unknown tag type: %s", tag_name);
+		r.FmtError(ACK_ERROR_ARG, FMT_STRING("Unknown tag type: {}"),
+			   tag_name);
 		return CommandResult::ERROR;
 	}
 
@@ -53,8 +56,9 @@ handle_cleartagid(Client &client, Request args, Response &r)
 		const char *const tag_name = args[1];
 		tag_type = tag_name_parse_i(tag_name);
 		if (tag_type == TAG_NUM_OF_ITEM_TYPES) {
-			r.FormatError(ACK_ERROR_ARG,
-				      "Unknown tag type: %s", tag_name);
+			r.FmtError(ACK_ERROR_ARG,
+				   FMT_STRING("Unknown tag type: {}"),
+				   tag_name);
 			return CommandResult::ERROR;
 		}
 	}

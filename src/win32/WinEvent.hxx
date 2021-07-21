@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 The Music Player Daemon Project
+ * Copyright 2020-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -20,19 +20,21 @@
 #ifndef MPD_WIN32_WINEVENT_HXX
 #define MPD_WIN32_WINEVENT_HXX
 
-#include "system/Error.hxx"
-#include <windows.h>
+#include <handleapi.h>
+#include <synchapi.h>
+#include <windef.h> // for HWND (needed by winbase.h)
+#include <winbase.h> // for INFINITE
 
 // RAII for Windows unnamed event object
 // https://docs.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-createeventw
 
 class WinEvent {
 public:
-	WinEvent() : event(CreateEventW(nullptr, false, false, nullptr)) {
-		if (!event) {
-			throw FormatLastError("Error creating events");
-		}
-	}
+	/**
+	 * Throws on error.
+	 */
+	WinEvent();
+
 	~WinEvent() noexcept { CloseHandle(event); }
 	WinEvent(WinEvent &&) = delete;
 	WinEvent(const WinEvent &) = delete;
@@ -41,7 +43,7 @@ public:
 
 	HANDLE handle() noexcept { return event; }
 
-	DWORD Wait(DWORD milliseconds) noexcept {
+	DWORD Wait(DWORD milliseconds=INFINITE) noexcept {
 		return WaitForSingleObject(event, milliseconds);
 	}
 

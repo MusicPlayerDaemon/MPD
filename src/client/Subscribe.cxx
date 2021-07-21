@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -34,8 +34,7 @@ Client::Subscribe(const char *channel) noexcept
 	if (num_subscriptions >= MAX_SUBSCRIPTIONS)
 		return Client::SubscribeResult::FULL;
 
-	auto r = subscriptions.insert(channel);
-	if (!r.second)
+	if (!subscriptions.insert(channel).second)
 		return Client::SubscribeResult::ALREADY;
 
 	++num_subscriptions;

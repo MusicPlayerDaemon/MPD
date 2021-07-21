@@ -60,7 +60,7 @@ ODBus::Message::StealReply(DBusPendingCall &pending)
 }
 
 ODBus::Message
-ODBus::Message::Pop(DBusConnection &connection)
+ODBus::Message::Pop(DBusConnection &connection) noexcept
 {
 	auto *msg = dbus_connection_pop_message(&connection);
 	return Message(msg);

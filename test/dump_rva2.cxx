@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -41,7 +41,7 @@ DumpReplayGainTuple(const char *name, const ReplayGainTuple &tuple)
 {
 	if (tuple.IsDefined())
 		fprintf(stderr, "replay_gain[%s]: gain=%f peak=%f\n",
-			name, tuple.gain, tuple.peak);
+			name, (double)tuple.gain, (double)tuple.peak);
 }
 
 static void

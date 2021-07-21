@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -86,6 +86,19 @@ struct PathTraitsFS {
 #else
 		return StringFindLast(p, SEPARATOR);
 #endif
+	}
+
+	gcc_pure
+	static const_pointer GetFilenameSuffix(const_pointer filename) noexcept {
+		const_pointer dot = StringFindLast(filename, '.');
+		return dot != nullptr && dot > filename && dot[1] != 0
+			? dot + 1
+			: nullptr;
+	}
+
+	gcc_pure
+	static const_pointer GetPathSuffix(const_pointer path) noexcept {
+		return GetFilenameSuffix(GetBase(path));
 	}
 
 #ifdef _WIN32
@@ -197,6 +210,19 @@ struct PathTraitsUTF8 {
 #endif
 
 		return std::strrchr(p, SEPARATOR);
+	}
+
+	gcc_pure
+	static const_pointer GetFilenameSuffix(const_pointer filename) noexcept {
+		const_pointer dot = StringFindLast(filename, '.');
+		return dot != nullptr && dot > filename && dot[1] != 0
+			? dot + 1
+			: nullptr;
+	}
+
+	gcc_pure
+	static const_pointer GetPathSuffix(const_pointer path) noexcept {
+		return GetFilenameSuffix(GetBase(path));
 	}
 
 #ifdef _WIN32

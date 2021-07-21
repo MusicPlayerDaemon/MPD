@@ -1,3 +1,5 @@
 /packagecache/
 
+/fmt-*/
 /googletest-*/
+/sqlite-*/

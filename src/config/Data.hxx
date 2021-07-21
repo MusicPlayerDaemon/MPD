@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -78,22 +78,14 @@ struct ConfigData {
 
 	std::chrono::steady_clock::duration
 	GetUnsigned(ConfigOption option,
-		    std::chrono::steady_clock::duration default_value) const {
-		// TODO: allow unit suffixes
-		auto u = GetUnsigned(option, default_value.count());
-		return std::chrono::steady_clock::duration(u);
-	}
+		    std::chrono::steady_clock::duration default_value) const;
 
 	unsigned GetPositive(ConfigOption option,
 			     unsigned default_value) const;
 
 	std::chrono::steady_clock::duration
 	GetPositive(ConfigOption option,
-		    std::chrono::steady_clock::duration default_value) const {
-		// TODO: allow unit suffixes
-		auto u = GetPositive(option, default_value.count());
-		return std::chrono::steady_clock::duration(u);
-	}
+		    std::chrono::steady_clock::duration default_value) const;
 
 	bool GetBool(ConfigOption option, bool default_value) const;
 

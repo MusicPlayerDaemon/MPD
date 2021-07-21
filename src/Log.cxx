@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -21,12 +21,27 @@
 #include "util/Domain.hxx"
 #include "util/Exception.hxx"
 
+#include <fmt/format.h>
+
 #include <cerrno>
 
 #include <stdio.h>
 #include <string.h>
 
 static constexpr Domain exception_domain("exception");
+
+void
+LogVFmt(LogLevel level, const Domain &domain,
+	fmt::string_view format_str, fmt::format_args args) noexcept
+{
+	fmt::memory_buffer buffer;
+#if FMT_VERSION >= 80000
+	fmt::vformat_to(std::back_inserter(buffer), format_str, args);
+#else
+	fmt::vformat_to(buffer, format_str, args);
+#endif
+	Log(level, domain, {buffer.data(), buffer.size()});
+}
 
 void
 LogFormatV(LogLevel level, const Domain &domain,
@@ -56,38 +71,11 @@ FormatDebug(const Domain &domain, const char *fmt, ...) noexcept
 }
 
 void
-FormatInfo(const Domain &domain, const char *fmt, ...) noexcept
-{
-	std::va_list ap;
-	va_start(ap, fmt);
-	LogFormatV(LogLevel::INFO, domain, fmt, ap);
-	va_end(ap);
-}
-
-void
-FormatDefault(const Domain &domain, const char *fmt, ...) noexcept
-{
-	std::va_list ap;
-	va_start(ap, fmt);
-	LogFormatV(LogLevel::DEFAULT, domain, fmt, ap);
-	va_end(ap);
-}
-
-void
 FormatWarning(const Domain &domain, const char *fmt, ...) noexcept
 {
 	std::va_list ap;
 	va_start(ap, fmt);
 	LogFormatV(LogLevel::WARNING, domain, fmt, ap);
-	va_end(ap);
-}
-
-void
-FormatError(const Domain &domain, const char *fmt, ...) noexcept
-{
-	std::va_list ap;
-	va_start(ap, fmt);
-	LogFormatV(LogLevel::ERROR, domain, fmt, ap);
 	va_end(ap);
 }
 

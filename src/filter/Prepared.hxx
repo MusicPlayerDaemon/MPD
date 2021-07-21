@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -27,7 +27,7 @@ class Filter;
 
 class PreparedFilter {
 public:
-	virtual ~PreparedFilter() {}
+	virtual ~PreparedFilter() = default;
 
 	/**
 	 * Opens the filter, preparing it for FilterPCM().

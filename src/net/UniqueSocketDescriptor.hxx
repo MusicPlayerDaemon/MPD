@@ -42,19 +42,20 @@ class StaticSocketAddress;
  */
 class UniqueSocketDescriptor : public SocketDescriptor {
 public:
-	UniqueSocketDescriptor()
+	UniqueSocketDescriptor() noexcept
 		:SocketDescriptor(SocketDescriptor::Undefined()) {}
 
-	explicit UniqueSocketDescriptor(SocketDescriptor _fd)
+	explicit UniqueSocketDescriptor(SocketDescriptor _fd) noexcept
 		:SocketDescriptor(_fd) {}
-	explicit UniqueSocketDescriptor(FileDescriptor _fd)
+	explicit UniqueSocketDescriptor(FileDescriptor _fd) noexcept
 		:SocketDescriptor(_fd) {}
-	explicit UniqueSocketDescriptor(int _fd):SocketDescriptor(_fd) {}
+	explicit UniqueSocketDescriptor(int _fd) noexcept
+		:SocketDescriptor(_fd) {}
 
-	UniqueSocketDescriptor(UniqueSocketDescriptor &&other)
+	UniqueSocketDescriptor(UniqueSocketDescriptor &&other) noexcept
 		:SocketDescriptor(std::exchange(other.fd, -1)) {}
 
-	~UniqueSocketDescriptor() {
+	~UniqueSocketDescriptor() noexcept {
 		if (IsDefined())
 			Close();
 	}
@@ -63,38 +64,38 @@ public:
 	 * Release ownership and return the descriptor as an unmanaged
 	 * #SocketDescriptor instance.
 	 */
-	SocketDescriptor Release() {
+	SocketDescriptor Release() noexcept {
 		return std::exchange(*(SocketDescriptor *)this, Undefined());
 	}
 
-	UniqueSocketDescriptor &operator=(UniqueSocketDescriptor &&src) {
+	UniqueSocketDescriptor &operator=(UniqueSocketDescriptor &&src) noexcept {
 		using std::swap;
 		swap(fd, src.fd);
 		return *this;
 	}
 
-	bool operator==(const UniqueSocketDescriptor &other) const {
+	bool operator==(const UniqueSocketDescriptor &other) const noexcept {
 		return fd == other.fd;
 	}
 
 	/**
 	 * @return an "undefined" instance on error
 	 */
-	UniqueSocketDescriptor AcceptNonBlock() const {
+	UniqueSocketDescriptor AcceptNonBlock() const noexcept {
 		return UniqueSocketDescriptor(SocketDescriptor::AcceptNonBlock());
 	}
 
 	/**
 	 * @return an "undefined" instance on error
 	 */
-	UniqueSocketDescriptor AcceptNonBlock(StaticSocketAddress &address) const {
+	UniqueSocketDescriptor AcceptNonBlock(StaticSocketAddress &address) const noexcept {
 		return UniqueSocketDescriptor(SocketDescriptor::AcceptNonBlock(address));
 	}
 
 #ifndef _WIN32
 	static bool CreateSocketPair(int domain, int type, int protocol,
 				     UniqueSocketDescriptor &a,
-				     UniqueSocketDescriptor &b) {
+				     UniqueSocketDescriptor &b) noexcept {
 		return SocketDescriptor::CreateSocketPair(domain, type,
 							  protocol,
 							  a, b);
@@ -102,7 +103,7 @@ public:
 
 	static bool CreateSocketPairNonBlock(int domain, int type, int protocol,
 					     UniqueSocketDescriptor &a,
-					     UniqueSocketDescriptor &b) {
+					     UniqueSocketDescriptor &b) noexcept {
 		return SocketDescriptor::CreateSocketPairNonBlock(domain, type,
 								  protocol,
 								  a, b);

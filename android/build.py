@@ -103,7 +103,7 @@ class AndroidNdkToolchain:
         llvm_bin = os.path.join(llvm_path, 'bin')
         self.cc = os.path.join(llvm_bin, 'clang')
         self.cxx = os.path.join(llvm_bin, 'clang++')
-        common_flags += ' -target ' + llvm_triple + ' -integrated-as -gcc-toolchain ' + toolchain_path
+        common_flags += ' -target ' + llvm_triple + ' -gcc-toolchain ' + toolchain_path
 
         common_flags += ' -fvisibility=hidden -fdata-sections -ffunction-sections'
 
@@ -172,6 +172,7 @@ thirdparty_libs = [
     wildmidi,
     gme,
     ffmpeg,
+    openssl,
     curl,
     libexpat,
     libnfs,

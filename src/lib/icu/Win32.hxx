@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -24,20 +24,21 @@
 
 #include <string_view>
 
-template<typename T> class AllocatedString;
+class AllocatedString;
+template<typename T> class BasicAllocatedString;
 
 /**
  * Throws std::system_error on error.
  */
 gcc_pure gcc_nonnull_all
-AllocatedString<char>
+AllocatedString
 WideCharToMultiByte(unsigned code_page, std::wstring_view src);
 
 /**
  * Throws std::system_error on error.
  */
 gcc_pure gcc_nonnull_all
-AllocatedString<wchar_t>
+BasicAllocatedString<wchar_t>
 MultiByteToWideChar(unsigned code_page, std::string_view src);
 
 #endif

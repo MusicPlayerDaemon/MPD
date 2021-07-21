@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -27,6 +27,10 @@
 
 #include <array>
 #include <iterator>
+
+#include <handleapi.h>
+#include <synchapi.h>
+#include <winbase.h> // for INFINITE
 
 #include <stdlib.h>
 #include <string.h>

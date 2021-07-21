@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,13 +17,21 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include "config.h"
+
 #include "ContentDirectoryService.hxx"
-#include "UniqueIxml.hxx"
 #include "Device.hxx"
-#include "ixmlwrap.hxx"
-#include "util/UriRelative.hxx"
-#include "util/RuntimeError.hxx"
+#include "UniqueIxml.hxx"
+#ifdef USING_PUPNP
+#	include "ixmlwrap.hxx"
+#endif
+#include "Action.hxx"
 #include "util/IterableSplitString.hxx"
+#include "util/RuntimeError.hxx"
+#include "util/UriRelative.hxx"
+#include "util/UriUtil.hxx"
+
+#include <algorithm>
 
 #include <upnptools.h>
 
@@ -50,6 +58,7 @@ ContentDirectoryService::~ContentDirectoryService() noexcept = default;
 std::forward_list<std::string>
 ContentDirectoryService::getSearchCapabilities(UpnpClient_Handle hdl) const
 {
+#ifdef USING_PUPNP
 	UniqueIxmlDocument request(UpnpMakeAction("GetSearchCapabilities", m_serviceType.c_str(),
 						  0,
 						  nullptr, nullptr));
@@ -68,10 +77,25 @@ ContentDirectoryService::getSearchCapabilities(UpnpClient_Handle hdl) const
 
 	const char *s = ixmlwrap::getFirstElementValue(response.get(),
 						       "SearchCaps");
+#else
+	std::vector<std::pair<std::string, std::string>> responseData;
+	int errcode;
+	std::string errdesc;
+	auto code = UpnpSendAction(hdl, "", m_actionURL, m_serviceType,
+				   "GetSearchCapabilities", {}, responseData, &errcode,
+				   errdesc);
+	if (code != UPNP_E_SUCCESS)
+		throw FormatRuntimeError("UpnpSendAction() failed: %s",
+					 UpnpGetErrorMessage(code));
+	const char *s{nullptr};
+	for (auto &entry : responseData) {
+		if (entry.first == "SearchCaps") {
+			s = entry.second.c_str();
+		}
+	}
+#endif
 	if (s == nullptr || *s == 0)
-		/* we could just "return {}" here, but GCC 5 doesn't
-		   understand that */
-		return std::forward_list<std::string>();
+		return {};
 
 	std::forward_list<std::string> result;
 	for (const auto &i : IterableSplitString(s, ','))

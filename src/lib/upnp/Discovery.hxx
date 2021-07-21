@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -28,8 +28,7 @@
 #include "lib/curl/Request.hxx"
 #include "thread/Mutex.hxx"
 #include "event/DeferEvent.hxx"
-
-#include <boost/intrusive/list.hpp>
+#include "util/IntrusiveList.hxx"
 
 #include <list>
 #include <vector>
@@ -80,9 +79,8 @@ class UPnPDeviceDirectory final : UpnpCallback {
 	};
 
 	class Downloader final
-		: public boost::intrusive::list_base_hook<boost::intrusive::link_mode<boost::intrusive::normal_link>>,
-		CurlResponseHandler {
-
+		: public IntrusiveListHook, CurlResponseHandler
+	{
 		DeferEvent defer_start_event;
 
 		UPnPDeviceDirectory &parent;
@@ -132,8 +130,7 @@ class UPnPDeviceDirectory final : UpnpCallback {
 	/**
 	 * Protected by #mutex.
 	 */
-	boost::intrusive::list<Downloader,
-			       boost::intrusive::constant_time_size<false>> downloaders;
+	IntrusiveList<Downloader> downloaders;
 
 	/**
 	 * Protected by #mutex.

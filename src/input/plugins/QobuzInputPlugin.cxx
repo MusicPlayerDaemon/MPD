@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -56,6 +56,9 @@ public:
 	~QobuzInputStream() override {
 		qobuz_client->RemoveLoginHandler(*this);
 	}
+
+	QobuzInputStream(const QobuzInputStream &) = delete;
+	QobuzInputStream &operator=(const QobuzInputStream &) = delete;
 
 	/* virtual methods from InputStream */
 
@@ -158,7 +161,7 @@ InitQobuzInput(EventLoop &event_loop, const ConfigBlock &block)
 }
 
 static void
-FinishQobuzInput()
+FinishQobuzInput() noexcept
 {
 	delete qobuz_client;
 }

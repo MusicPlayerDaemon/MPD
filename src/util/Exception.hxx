@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2020 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2016-2021 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -84,8 +84,29 @@ NestException(std::exception_ptr ep, T &&t) noexcept
 }
 
 /**
+ * Find an instance of #T in the nested exception chain, and return a
+ * pointer.  Returns nullptr if no such instance was found.
+ */
+template<typename T>
+[[gnu::pure]]
+inline const T *
+FindNested(std::exception_ptr ep) noexcept
+{
+	try {
+		std::rethrow_exception(ep);
+	} catch (const T &t) {
+		return &t;
+	} catch (const std::nested_exception &ne) {
+		return FindNested<T>(ne.nested_ptr());
+	} catch (...) {
+	}
+
+	return nullptr;
+}
+
+/**
  * Find an instance of #T in the nested exception chain, and rethrow
- * it.  Does nothing of no such instance was found.
+ * it.  Does nothing if no such instance was found.
  */
 template<typename T>
 inline void
@@ -95,12 +116,6 @@ FindRetrowNested(std::exception_ptr ep)
 		std::rethrow_exception(ep);
 	} catch (const T &t) {
 		throw;
-	} catch (const std::exception &e) {
-		try {
-			std::rethrow_if_nested(e);
-		} catch (...) {
-			FindRetrowNested<T>(std::current_exception());
-		}
 	} catch (const std::nested_exception &ne) {
 		FindRetrowNested<T>(ne.nested_ptr());
 	} catch (...) {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -114,10 +114,7 @@ tag_pool_get_item(TagType type, StringView value) noexcept
 	auto slot_p = tag_value_slot_p(type, value);
 	for (auto slot = *slot_p; slot != nullptr; slot = slot->next) {
 		if (slot->item.type == type &&
-		    /* strncmp() only works if there are no null
-		       bytes, which FixTagString() has already ensured
-		       at this point */
-		    strncmp(value.data, slot->item.value, value.size) == 0 &&
+		    value.Equals(slot->item.value) &&
 		    slot->ref < TagPoolSlot::MAX_REF) {
 			assert(slot->ref > 0);
 			++slot->ref;

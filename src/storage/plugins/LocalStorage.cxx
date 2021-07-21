@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -170,7 +170,7 @@ CreateLocalStorage(Path base_fs)
 	return std::make_unique<LocalStorage>(base_fs);
 }
 
-const StoragePlugin local_storage_plugin = {
+constexpr StoragePlugin local_storage_plugin = {
 	"local",
 	nullptr,
 };

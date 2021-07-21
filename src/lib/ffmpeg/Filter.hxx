@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -19,6 +19,9 @@
 
 #ifndef MPD_FFMPEG_FILTER_HXX
 #define MPD_FFMPEG_FILTER_HXX
+
+/* necessary because libavutil/common.h uses UINT64_C */
+#define __STDC_CONSTANT_MACROS
 
 #include "Error.hxx"
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -42,8 +42,8 @@
 #include "util/ScopeExit.hxx"
 #include "util/RuntimeError.hxx"
 #include "protocol/Ack.hxx"
-#include "event/SocketMonitor.hxx"
-#include "event/IdleMonitor.hxx"
+#include "event/SocketEvent.hxx"
+#include "event/IdleEvent.hxx"
 #include "Log.hxx"
 
 #include <mpd/client.h>
@@ -83,9 +83,15 @@ public:
 	~AllocatedProxySong() {
 		mpd_song_free(song);
 	}
+
+	AllocatedProxySong(const AllocatedProxySong &) = delete;
+	AllocatedProxySong &operator=(const AllocatedProxySong &) = delete;
 };
 
-class ProxyDatabase final : public Database, SocketMonitor, IdleMonitor {
+class ProxyDatabase final : public Database {
+	SocketEvent socket_event;
+	IdleEvent idle_event;
+
 	DatabaseListener &listener;
 
 	const std::string host;
@@ -147,11 +153,8 @@ private:
 
 	void Disconnect() noexcept;
 
-	/* virtual methods from SocketMonitor */
-	bool OnSocketReady(unsigned flags) noexcept override;
-
-	/* virtual methods from IdleMonitor */
-	void OnIdle() noexcept override;
+	void OnSocketReady(unsigned flags) noexcept;
+	void OnIdle() noexcept;
 };
 
 static constexpr struct {
@@ -178,16 +181,26 @@ static constexpr struct {
 	{ TAG_MUSICBRAINZ_ALBUMARTISTID,
 	  MPD_TAG_MUSICBRAINZ_ALBUMARTISTID },
 	{ TAG_MUSICBRAINZ_TRACKID, MPD_TAG_MUSICBRAINZ_TRACKID },
-#if LIBMPDCLIENT_CHECK_VERSION(2,10,0)
 	{ TAG_MUSICBRAINZ_RELEASETRACKID,
 	  MPD_TAG_MUSICBRAINZ_RELEASETRACKID },
-#endif
-#if LIBMPDCLIENT_CHECK_VERSION(2,11,0)
 	{ TAG_ARTIST_SORT, MPD_TAG_ARTIST_SORT },
 	{ TAG_ALBUM_ARTIST_SORT, MPD_TAG_ALBUM_ARTIST_SORT },
-#endif
 #if LIBMPDCLIENT_CHECK_VERSION(2,12,0)
 	{ TAG_ALBUM_SORT, MPD_TAG_ALBUM_SORT },
+#endif
+#if LIBMPDCLIENT_CHECK_VERSION(2,17,0)
+	{ TAG_WORK, MPD_TAG_WORK },
+	{ TAG_CONDUCTOR, MPD_TAG_CONDUCTOR },
+	{ TAG_LABEL, MPD_TAG_LABEL },
+	{ TAG_GROUPING, MPD_TAG_GROUPING },
+	{ TAG_MUSICBRAINZ_WORKID, MPD_TAG_MUSICBRAINZ_WORKID },
+#endif
+#if LIBMPDCLIENT_CHECK_VERSION(2,20,0)
+	{ TAG_COMPOSERSORT, MPD_TAG_COMPOSER_SORT },
+	{ TAG_ENSEMBLE, MPD_TAG_ENSEMBLE },
+	{ TAG_MOVEMENT, MPD_TAG_MOVEMENT },
+	{ TAG_MOVEMENTNUMBER, MPD_TAG_MOVEMENTNUMBER },
+	{ TAG_LOCATION, MPD_TAG_LOCATION },
 #endif
 	{ TAG_NUM_OF_ITEM_TYPES, MPD_TAG_COUNT }
 };
@@ -356,15 +369,14 @@ SendConstraints(mpd_connection *connection, const SongFilter &filter)
 						 filter.ToExpression().c_str());
 #endif
 
-	for (const auto &i : filter.GetItems())
-		if (!SendConstraints(connection, *i))
-			return false;
-
-	return true;
+	return std::all_of(
+		filter.GetItems().begin(), filter.GetItems().end(),
+		[=](const auto &item) { return SendConstraints(connection, *item); });
 }
 
 static bool
-SendConstraints(mpd_connection *connection, const DatabaseSelection &selection)
+SendConstraints(mpd_connection *connection, const DatabaseSelection &selection,
+		const RangeArg &window)
 {
 	if (!selection.uri.empty() &&
 	    !mpd_search_add_base_constraint(connection,
@@ -376,7 +388,6 @@ SendConstraints(mpd_connection *connection, const DatabaseSelection &selection)
 	    !SendConstraints(connection, *selection.filter))
 		return false;
 
-#if LIBMPDCLIENT_CHECK_VERSION(2, 11, 0)
 	if (selection.sort != TAG_NUM_OF_ITEM_TYPES &&
 	    mpd_connection_cmp_server_version(connection, 0, 21, 0) >= 0) {
 #if LIBMPDCLIENT_CHECK_VERSION(2, 15, 0)
@@ -398,15 +409,10 @@ SendConstraints(mpd_connection *connection, const DatabaseSelection &selection)
 		}
 #endif
 	}
-#endif
 
-#if LIBMPDCLIENT_CHECK_VERSION(2, 10, 0)
-	if (selection.window != RangeArg::All() &&
-	    mpd_connection_cmp_server_version(connection, 0, 20, 0) >= 0 &&
-	    !mpd_search_add_window(connection, selection.window.start,
-				   selection.window.end))
+	if (window != RangeArg::All() &&
+	    !mpd_search_add_window(connection, window.start, window.end))
 		return false;
-#endif
 
 	return true;
 }
@@ -424,6 +430,7 @@ SendGroup(mpd_connection *connection, TagType group)
 	return mpd_search_add_group_tag(connection, tag);
 #else
 	(void)connection;
+	(void)group;
 
 	throw std::runtime_error("Grouping requires libmpdclient 2.12");
 #endif
@@ -445,7 +452,8 @@ SendGroup(mpd_connection *connection, ConstBuffer<TagType> group)
 ProxyDatabase::ProxyDatabase(EventLoop &_loop, DatabaseListener &_listener,
 			     const ConfigBlock &block)
 	:Database(proxy_db_plugin),
-	 SocketMonitor(_loop), IdleMonitor(_loop),
+	 socket_event(_loop, BIND_THIS_METHOD(OnSocketReady)),
+	 idle_event(_loop, BIND_THIS_METHOD(OnIdle)),
 	 listener(_listener),
 	 host(block.GetBlockValue("host", "")),
 	 password(block.GetBlockValue("password", "")),
@@ -494,11 +502,11 @@ ProxyDatabase::Connect()
 	try {
 		CheckError(connection);
 
-		if (mpd_connection_cmp_server_version(connection, 0, 19, 0) < 0) {
+		if (mpd_connection_cmp_server_version(connection, 0, 20, 0) < 0) {
 			const unsigned *version =
 				mpd_connection_get_server_version(connection);
 			throw FormatRuntimeError("Connect to MPD %u.%u.%u, but this "
-						 "plugin requires at least version 0.19",
+						 "plugin requires at least version 0.20",
 						 version[0], version[1], version[2]);
 		}
 
@@ -515,18 +523,13 @@ ProxyDatabase::Connect()
 							    host.c_str()));
 	}
 
-#if LIBMPDCLIENT_CHECK_VERSION(2, 10, 0)
 	mpd_connection_set_keepalive(connection, keepalive);
-#else
-	// suppress -Wunused-private-field
-	(void)keepalive;
-#endif
 
 	idle_received = ~0U;
 	is_idle = false;
 
-	SocketMonitor::Open(SocketDescriptor(mpd_async_get_fd(mpd_connection_get_async(connection))));
-	IdleMonitor::Schedule();
+	socket_event.Open(SocketDescriptor(mpd_async_get_fd(mpd_connection_get_async(connection))));
+	idle_event.Schedule();
 }
 
 void
@@ -553,7 +556,7 @@ ProxyDatabase::CheckConnection()
 
 		idle_received |= idle;
 		is_idle = false;
-		IdleMonitor::Schedule();
+		idle_event.Schedule();
 	}
 }
 
@@ -571,23 +574,23 @@ ProxyDatabase::Disconnect() noexcept
 {
 	assert(connection != nullptr);
 
-	IdleMonitor::Cancel();
-	SocketMonitor::Steal();
+	idle_event.Cancel();
+	socket_event.ReleaseSocket();
 
 	mpd_connection_free(connection);
 	connection = nullptr;
 }
 
-bool
+void
 ProxyDatabase::OnSocketReady([[maybe_unused]] unsigned flags) noexcept
 {
 	assert(connection != nullptr);
 
 	if (!is_idle) {
 		// TODO: can this happen?
-		IdleMonitor::Schedule();
-		SocketMonitor::Cancel();
-		return true;
+		idle_event.Schedule();
+		socket_event.Cancel();
+		return;
 	}
 
 	auto idle = (unsigned)mpd_recv_idle(connection, false);
@@ -597,16 +600,15 @@ ProxyDatabase::OnSocketReady([[maybe_unused]] unsigned flags) noexcept
 		} catch (...) {
 			LogError(std::current_exception());
 			Disconnect();
-			return false;
+			return;
 		}
 	}
 
 	/* let OnIdle() handle this */
 	idle_received |= idle;
 	is_idle = false;
-	IdleMonitor::Schedule();
-	SocketMonitor::Cancel();
-	return true;
+	idle_event.Schedule();
+	socket_event.Cancel();
 }
 
 void
@@ -634,14 +636,14 @@ ProxyDatabase::OnIdle() noexcept
 			LogError(std::current_exception());
 		}
 
-		SocketMonitor::Steal();
+		socket_event.ReleaseSocket();
 		mpd_connection_free(connection);
 		connection = nullptr;
 		return;
 	}
 
 	is_idle = true;
-	SocketMonitor::ScheduleRead();
+	socket_event.ScheduleRead();
 }
 
 const LightSong *
@@ -827,34 +829,54 @@ try {
 	const bool exact = selection.filter == nullptr ||
 		!selection.filter->HasFoldCase();
 
-	if (!mpd_search_db_songs(connection, exact) ||
-	    !SendConstraints(connection, selection) ||
-	    !mpd_search_commit(connection))
-		ThrowError(connection);
+	/* request only this number of songs at a time to avoid
+	   blowing the server's max_output_buffer_size limit */
+	constexpr unsigned LIMIT = 4096;
 
-	while (auto *song = mpd_recv_song(connection)) {
-		AllocatedProxySong song2(song);
+	auto remaining_window = selection.window;
 
-		if (Match(selection.filter, song2)) {
-			try {
-				visit_song(song2);
-			} catch (...) {
-				mpd_response_finish(connection);
-				throw;
+	while (remaining_window.start < remaining_window.end) {
+		auto window = remaining_window;
+		if (window.end - window.start > LIMIT)
+			window.end = window.start + LIMIT;
+
+		if (!mpd_search_db_songs(connection, exact) ||
+		    !SendConstraints(connection, selection, window) ||
+		    !mpd_search_commit(connection))
+			ThrowError(connection);
+
+		while (auto *song = mpd_recv_song(connection)) {
+			++window.start;
+
+			AllocatedProxySong song2(song);
+
+			if (Match(selection.filter, song2)) {
+				try {
+					visit_song(song2);
+				} catch (...) {
+					mpd_response_finish(connection);
+					throw;
+				}
 			}
 		}
-	}
 
-	if (!mpd_response_finish(connection))
-		ThrowError(connection);
+		if (!mpd_response_finish(connection))
+			ThrowError(connection);
+
+		if (window.start != window.end)
+			/* the other MPD has given us less than we
+			   requested - this means there's no more
+			   data */
+			break;
+
+		remaining_window.start = window.end;
+	}
 } catch (...) {
 	if (connection != nullptr)
 		mpd_search_cancel(connection);
 
 	throw;
 }
-
-#if LIBMPDCLIENT_CHECK_VERSION(2, 10, 0)
 
 gcc_pure
 static bool
@@ -896,11 +918,8 @@ IsFilterFullySupported(const SongFilter &filter,
 	(void)connection;
 #endif
 
-	for (const auto &i : filter.GetItems())
-		if (!IsFilterSupported(*i))
-			return false;
-
-	return true;
+	return std::all_of(filter.GetItems().begin(), filter.GetItems().end(),
+			   [](const auto &item) { return IsFilterSupported(*item); });
 }
 
 gcc_pure
@@ -911,10 +930,6 @@ IsFilterFullySupported(const SongFilter *filter,
 	return filter == nullptr ||
 		IsFilterFullySupported(*filter, connection);
 }
-
-#endif
-
-#if LIBMPDCLIENT_CHECK_VERSION(2, 11, 0)
 
 gcc_pure
 static bool
@@ -938,8 +953,6 @@ IsSortSupported(TagType tag_type,
 	return Convert(tag_type) != MPD_TAG_COUNT;
 }
 
-#endif
-
 gcc_pure
 static DatabaseSelection
 CheckSelection(DatabaseSelection selection,
@@ -948,23 +961,17 @@ CheckSelection(DatabaseSelection selection,
 	selection.uri.clear();
 	selection.filter = nullptr;
 
-#if LIBMPDCLIENT_CHECK_VERSION(2, 11, 0)
 	if (selection.sort != TAG_NUM_OF_ITEM_TYPES &&
 	    IsSortSupported(selection.sort, connection))
 		/* we can forward the "sort" parameter to the other
 		   MPD */
 		selection.sort = TAG_NUM_OF_ITEM_TYPES;
-#endif
 
-#if LIBMPDCLIENT_CHECK_VERSION(2, 10, 0)
 	if (selection.window != RangeArg::All() &&
 	    IsFilterFullySupported(selection.filter, connection))
 		/* we can forward the "window" parameter to the other
 		   MPD */
 		selection.window = RangeArg::All();
-#else
-	(void)connection;
-#endif
 
 	return selection;
 }
@@ -1013,7 +1020,7 @@ try {
 	group.pop_back();
 
 	if (!mpd_search_db_tags(connection, tag_type2) ||
-	    !SendConstraints(connection, selection) ||
+	    !SendConstraints(connection, selection, selection.window) ||
 	    !SendGroup(connection, group))
 		ThrowError(connection);
 

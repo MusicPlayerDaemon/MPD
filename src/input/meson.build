@@ -8,6 +8,7 @@ input_api = static_library(
   'ThreadInputStream.cxx',
   'AsyncInputStream.cxx',
   'ProxyInputStream.cxx',
+  'LastInputStream.cxx',
   include_directories: inc,
   dependencies: [
     boost_dep,
@@ -44,6 +45,7 @@ input_glue = static_library(
   include_directories: inc,
   dependencies: [
     boost_dep,
+    log_dep,
   ],
 )
 

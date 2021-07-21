@@ -36,6 +36,8 @@
 #include "Iter.hxx"
 #include "Values.hxx"
 
+#include <stdexcept>
+
 namespace ODBus {
 
 class AppendMessageIter : public MessageIter {
@@ -72,6 +74,10 @@ public:
 		return AppendBasic(DBUS_TYPE_UINT32, &value);
 	}
 
+	AppendMessageIter &Append(const uint64_t &value) {
+		return AppendBasic(DBUS_TYPE_UINT64, &value);
+	}
+
 	AppendMessageIter &AppendFixedArray(int element_type,
 					    const void *value,
 					    int n_elements) {
@@ -97,7 +103,7 @@ public:
 	template<typename T>
 	AppendMessageIter &AppendEmptyArray() {
 		return AppendMessageIter(*this, DBUS_TYPE_ARRAY,
-					 T::TypeAsString::value)
+					 T::as_string)
 			.CloseContainer(*this);
 	}
 
@@ -114,7 +120,7 @@ public:
 	AppendMessageIter &AppendVariant(const T &value) {
 		typedef VariantTypeTraits Traits;
 		return AppendMessageIter(*this, Traits::TYPE,
-					 Traits::TypeAsString::value)
+					 Traits::as_string)
 			.Append(value)
 			.CloseContainer(*this);
 	}
@@ -140,7 +146,7 @@ public:
 		typedef typename W::ContainedTraits ContainedTraits;
 
 		return AppendMessageIter(*this, Traits::TYPE,
-					 ContainedTraits::TypeAsString::value)
+					 ContainedTraits::as_string)
 			.Append(value.value)
 			.CloseContainer(*this);
 	}
@@ -152,7 +158,7 @@ public:
 		typedef typename W::ContainedTraits ContainedTraits;
 
 		return AppendMessageIter(*this, Traits::TYPE,
-					 ContainedTraits::TypeAsString::value)
+					 ContainedTraits::as_string)
 			.AppendFixedArray(value.value)
 			.CloseContainer(*this);
 	}

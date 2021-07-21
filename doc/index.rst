@@ -8,6 +8,7 @@ Music Player Daemon
    user
    plugins
    developer
+   client
    protocol
 
 

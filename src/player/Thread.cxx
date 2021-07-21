@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -443,7 +443,7 @@ Player::ActivateDecoder() noexcept
 	pc.audio_format.Clear();
 
 	{
-		/* call syncPlaylistWithQueue() in the main thread */
+		/* call playlist::SyncWithPlayer() in the main thread */
 		const ScopeUnlock unlock(pc.mutex);
 		pc.listener.OnPlayerSync();
 	}
@@ -558,10 +558,10 @@ Player::CheckDecoderStartup(std::unique_lock<Mutex> &lock) noexcept
 		}
 
 		if (!paused && !OpenOutput()) {
-			FormatError(player_domain,
-				    "problems opening audio device "
-				    "while playing \"%s\"",
-				    dc.song->GetURI());
+			FmtError(player_domain,
+				 "problems opening audio device "
+				 "while playing \"{}\"",
+				 dc.song->GetURI());
 			return true;
 		}
 
@@ -683,6 +683,12 @@ Player::SeekDecoder(std::unique_lock<Mutex> &lock) noexcept
 
 	/* re-fill the buffer after seeking */
 	buffering = true;
+
+	{
+		/* call syncPlaylistWithQueue() in the main thread */
+		const ScopeUnlock unlock(pc.mutex);
+		pc.listener.OnPlayerSync();
+	}
 
 	return true;
 }
@@ -958,7 +964,7 @@ Player::SongBorder() noexcept
 	{
 		const ScopeUnlock unlock(pc.mutex);
 
-		FormatDefault(player_domain, "played \"%s\"", song->GetURI());
+		FmtNotice(player_domain, "played \"{}\"", song->GetURI());
 
 		ReplacePipe(dc.pipe);
 
@@ -1129,7 +1135,7 @@ Player::Run() noexcept
 	cross_fade_tag.reset();
 
 	if (song != nullptr) {
-		FormatDefault(player_domain, "played \"%s\"", song->GetURI());
+		FmtNotice(player_domain, "played \"{}\"", song->GetURI());
 		song.reset();
 	}
 
@@ -1175,6 +1181,11 @@ try {
 			{
 				const ScopeUnlock unlock(mutex);
 				do_play(*this, dc, buffer);
+
+				/* give the main thread a chance to
+				   queue another song, just in case
+				   we've stopped playback
+				   spuriously */
 				listener.OnPlayerSync();
 			}
 

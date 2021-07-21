@@ -17,6 +17,7 @@ dbus = static_library(
   'dbus',
   'Connection.cxx',
   'Error.cxx',
+  'FilterHelper.cxx',
   'Message.cxx',
   'UDisks2.cxx',
   'ScopeMatch.cxx',

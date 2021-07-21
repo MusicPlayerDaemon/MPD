@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -27,10 +27,10 @@
 #include "input/ProxyInputStream.hxx"
 #include "input/FailingInputStream.hxx"
 #include "input/InputPlugin.hxx"
+#include "lib/fmt/ExceptionFormatter.hxx"
 #include "config/Block.hxx"
 #include "thread/Mutex.hxx"
 #include "util/Domain.hxx"
-#include "util/Exception.hxx"
 #include "util/StringCompare.hxx"
 #include "Log.hxx"
 
@@ -69,6 +69,9 @@ public:
 	~TidalInputStream() override {
 		tidal_session->RemoveLoginHandler(*this);
 	}
+
+	TidalInputStream(const TidalInputStream &) = delete;
+	TidalInputStream &operator=(const TidalInputStream &) = delete;
 
 	/* virtual methods from InputStream */
 
@@ -114,8 +117,8 @@ TidalInputStream::OnTidalSession() noexcept
 void
 TidalInputStream::OnTidalTrackSuccess(std::string url) noexcept
 {
-	FormatDebug(tidal_domain, "Tidal track '%s' resolves to %s",
-		    track_id.c_str(), url.c_str());
+	FmtDebug(tidal_domain, "Tidal track '{}' resolves to {}",
+		 track_id, url);
 
 	const std::lock_guard<Mutex> protect(mutex);
 
@@ -151,8 +154,8 @@ TidalInputStream::OnTidalTrackError(std::exception_ptr e) noexcept
 		/* the session has expired - obtain a new session id
 		   by logging in again */
 
-		FormatInfo(tidal_domain, "Session expired ('%s'), retrying to log in",
-			   GetFullMessage(e).c_str());
+		FmtInfo(tidal_domain,
+			"Session expired ('{}'), retrying to log in", e);
 
 		retry_login = false;
 		tidal_session->AddLoginHandler(*this);
@@ -180,7 +183,8 @@ InitTidalInput(EventLoop &event_loop, const ConfigBlock &block)
 	if (password == nullptr)
 		throw PluginUnconfigured("No Tidal password configured");
 
-	FormatWarning(tidal_domain, "The Tidal input plugin is deprecated because Tidal has changed the protocol and doesn't share documentation");
+	LogWarning(tidal_domain,
+		   "The Tidal input plugin is deprecated because Tidal has changed the protocol and doesn't share documentation");
 
 	tidal_audioquality = block.GetBlockValue("audioquality", "HIGH");
 
@@ -189,7 +193,7 @@ InitTidalInput(EventLoop &event_loop, const ConfigBlock &block)
 }
 
 static void
-FinishTidalInput()
+FinishTidalInput() noexcept
 {
 	delete tidal_session;
 }

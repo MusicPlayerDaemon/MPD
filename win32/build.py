@@ -66,6 +66,11 @@ class CrossGccToolchain:
                        ' -static-libstdc++ -static-libgcc'
         self.libs = ''
 
+        # Explicitly disable _FORTIFY_SOURCE because it is broken with
+        # mingw.  This prevents some libraries such as libFLAC to
+        # enable it.
+        self.cppflags += ' -D_FORTIFY_SOURCE=0'
+
         self.is_arm = arch.startswith('arm')
         self.is_armv7 = self.is_arm and 'armv7' in self.cflags
         self.is_aarch64 = arch == 'aarch64'
@@ -103,6 +108,7 @@ thirdparty_libs = [
     curl,
     libexpat,
     libnfs,
+    jack,
     boost,
 ]
 

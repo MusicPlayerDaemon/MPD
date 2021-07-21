@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -33,9 +33,14 @@ const char *const tag_item_names[TAG_NUM_OF_ITEM_TYPES] = {
 	[TAG_DATE] = "Date",
 	[TAG_ORIGINAL_DATE] = "OriginalDate",
 	[TAG_COMPOSER] = "Composer",
+	[TAG_COMPOSERSORT] = "ComposerSort",
 	[TAG_PERFORMER] = "Performer",
 	[TAG_CONDUCTOR] = "Conductor",
 	[TAG_WORK] = "Work",
+	[TAG_MOVEMENT] = "Movement",
+	[TAG_MOVEMENTNUMBER] = "MovementNumber",
+	[TAG_ENSEMBLE] = "Ensemble",
+	[TAG_LOCATION] = "Location",
 	[TAG_GROUPING] = "Grouping",
 	[TAG_COMMENT] = "Comment",
 	[TAG_DISC] = "Disc",

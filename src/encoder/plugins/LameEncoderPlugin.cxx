@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -46,6 +46,9 @@ public:
 		 audio_format(_audio_format), gfp(_gfp) {}
 
 	~LameEncoder() noexcept override;
+
+	LameEncoder(const LameEncoder &) = delete;
+	LameEncoder &operator=(const LameEncoder &) = delete;
 
 	/* virtual methods from class Encoder */
 	void Write(const void *data, size_t length) override;

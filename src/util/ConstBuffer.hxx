@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2020 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2013-2021 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -30,13 +30,8 @@
 #ifndef CONST_BUFFER_HXX
 #define CONST_BUFFER_HXX
 
-#include "Compiler.h"
-
-#include <cstddef>
-
-#ifndef NDEBUG
 #include <cassert>
-#endif
+#include <cstddef>
 
 template<typename T>
 struct ConstBuffer;
@@ -137,14 +132,9 @@ struct ConstBuffer {
 	 * the assertion below ensures that the size is a multiple of
 	 * sizeof(T).
 	 */
-#ifdef NDEBUG
-	constexpr
-#endif
-	static ConstBuffer<T> FromVoid(ConstBuffer<void> other) noexcept {
+	constexpr static ConstBuffer<T> FromVoid(ConstBuffer<void> other) noexcept {
 		static_assert(sizeof(T) > 0, "Empty base type");
-#ifndef NDEBUG
 		assert(other.size % sizeof(T) == 0);
-#endif
 		return FromVoidFloor(other);
 	}
 
@@ -170,8 +160,7 @@ struct ConstBuffer {
 	}
 
 	template<typename U>
-	gcc_pure
-	bool Contains(U &&u) const noexcept {
+	constexpr bool Contains(U &&u) const noexcept {
 		for (const auto &i : *this)
 			if (u == i)
 				return true;
@@ -195,13 +184,8 @@ struct ConstBuffer {
 		return data + size;
 	}
 
-#ifdef NDEBUG
-	constexpr
-#endif
-	reference operator[](size_type i) const noexcept {
-#ifndef NDEBUG
+	constexpr reference operator[](size_type i) const noexcept {
 		assert(i < size);
-#endif
 
 		return data[i];
 	}
@@ -210,13 +194,8 @@ struct ConstBuffer {
 	 * Returns a reference to the first element.  Buffer must not
 	 * be empty.
 	 */
-#ifdef NDEBUG
-	constexpr
-#endif
-	reference front() const noexcept {
-#ifndef NDEBUG
+	constexpr reference front() const noexcept {
 		assert(!empty());
-#endif
 		return data[0];
 	}
 
@@ -224,13 +203,8 @@ struct ConstBuffer {
 	 * Returns a reference to the last element.  Buffer must not
 	 * be empty.
 	 */
-#ifdef NDEBUG
-	constexpr
-#endif
-	reference back() const noexcept {
-#ifndef NDEBUG
+	constexpr reference back() const noexcept {
 		assert(!empty());
-#endif
 		return data[size - 1];
 	}
 
@@ -238,10 +212,8 @@ struct ConstBuffer {
 	 * Remove the first element (by moving the head pointer, does
 	 * not actually modify the buffer).  Buffer must not be empty.
 	 */
-	void pop_front() noexcept {
-#ifndef NDEBUG
+	constexpr void pop_front() noexcept {
 		assert(!empty());
-#endif
 
 		++data;
 		--size;
@@ -251,10 +223,8 @@ struct ConstBuffer {
 	 * Remove the last element (by moving the tail pointer, does
 	 * not actually modify the buffer).  Buffer must not be empty.
 	 */
-	void pop_back() noexcept {
-#ifndef NDEBUG
+	constexpr void pop_back() noexcept {
 		assert(!empty());
-#endif
 
 		--size;
 	}
@@ -263,16 +233,14 @@ struct ConstBuffer {
 	 * Remove the first element and return a reference to it.
 	 * Buffer must not be empty.
 	 */
-	reference shift() noexcept {
+	constexpr reference shift() noexcept {
 		reference result = front();
 		pop_front();
 		return result;
 	}
 
-	void skip_front(size_type n) noexcept {
-#ifndef NDEBUG
+	constexpr void skip_front(size_type n) noexcept {
 		assert(size >= n);
-#endif
 
 		data += n;
 		size -= n;
@@ -283,10 +251,8 @@ struct ConstBuffer {
 	 * size attribute to retain the old end address.
 	 */
 	void MoveFront(pointer new_data) noexcept {
-#ifndef NDEBUG
 		assert(IsNull() == (new_data == nullptr));
 		assert(new_data <= end());
-#endif
 
 		size = end() - new_data;
 		data = new_data;
@@ -297,10 +263,8 @@ struct ConstBuffer {
 	 * size).
 	 */
 	void SetEnd(pointer new_end) noexcept {
-#ifndef NDEBUG
 		assert(IsNull() == (new_end == nullptr));
 		assert(new_end >= begin());
-#endif
 
 		size = new_end - data;
 	}

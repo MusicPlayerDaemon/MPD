@@ -13,6 +13,7 @@ need_encoder = false
 
 if alsa_dep.found()
   output_plugins_sources += 'AlsaOutputPlugin.cxx'
+  output_plugins_deps += event_dep
 endif
 
 libao_dep = dependency('ao', required: get_option('ao'))
@@ -35,7 +36,6 @@ output_features.set('ENABLE_HTTPD_OUTPUT', get_option('httpd'))
 if get_option('httpd')
   output_plugins_sources += [
     'httpd/IcyMetaDataServer.cxx',
-    'httpd/Page.cxx',
     'httpd/HttpdClient.cxx',
     'httpd/HttpdOutputPlugin.cxx',
   ]
@@ -75,18 +75,7 @@ endif
 if is_darwin
   output_plugins_sources += [
     'OSXOutputPlugin.cxx',
-    '../../apple/Throw.cxx',
   ]
-  audiounit_dep = declare_dependency(
-    link_args: [
-      '-framework', 'AudioUnit', '-framework', 'CoreAudio', '-framework', 'CoreServices',
-    ],
-    dependencies: [
-      boost_dep,
-    ],
-  )
-else
-  audiounit_dep = dependency('', required: false)
 endif
 output_features.set('HAVE_OSX', is_darwin)
 
@@ -94,6 +83,10 @@ enable_pipe_output = get_option('pipe') and not is_windows
 output_features.set('ENABLE_PIPE_OUTPUT', enable_pipe_output)
 if enable_pipe_output
   output_plugins_sources += 'PipeOutputPlugin.cxx'
+endif
+
+if pipewire_dep.found()
+  output_plugins_sources += 'PipeWireOutputPlugin.cxx'
 endif
 
 if pulse_dep.found()
@@ -124,6 +117,21 @@ if libsndio_dep.found()
   output_plugins_sources += 'SndioOutputPlugin.cxx'
 endif
 
+output_features.set('ENABLE_SNAPCAST_OUTPUT', get_option('snapcast'))
+if get_option('snapcast')
+  output_plugins_sources += [
+    'snapcast/SnapcastOutputPlugin.cxx',
+    'snapcast/Client.cxx',
+  ]
+  output_plugins_deps += [ event_dep, net_dep, yajl_dep, zeroconf_dep ]
+
+  output_features.set('HAVE_YAJL', yajl_dep.found())
+
+  # TODO: the Snapcast plugin needs just the "wave" encoder, but this
+  # enables all available encoders
+  need_encoder = true
+endif
+
 enable_solaris_output = get_option('solaris_output')
 if enable_solaris_output.auto()
   enable_solaris_output = host_machine.system() == 'sunos' or host_machine.system() == 'solaris'
@@ -146,11 +154,12 @@ endif
 output_features.set('ENABLE_WASAPI_OUTPUT', is_windows)
 if is_windows
   output_plugins_sources += [
-    'WasapiOutputPlugin.cxx',
+    'wasapi/WasapiOutputPlugin.cxx',
   ]
   wasapi_dep = [
     c_compiler.find_library('ksuser', required: true),
     c_compiler.find_library('ole32', required: true),
+    win32_dep,
   ]
 else
   wasapi_dep = dependency('', required: false)
@@ -162,9 +171,10 @@ output_plugins = static_library(
   include_directories: inc,
   dependencies: [
     alsa_dep,
-    audiounit_dep,
+    apple_dep,
     libao_dep,
     libjack_dep,
+    pipewire_dep,
     pulse_dep,
     libshout_dep,
     libsndio_dep,
@@ -173,6 +183,7 @@ output_plugins = static_library(
     winmm_dep,
     wasapi_dep,
     boost_dep,
+    output_plugins_deps,
   ],
 )
 

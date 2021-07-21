@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -37,6 +37,21 @@ CommandResult
 handle_ping([[maybe_unused]] Client &client, [[maybe_unused]] Request args,
 	    [[maybe_unused]] Response &r)
 {
+	return CommandResult::OK;
+}
+
+CommandResult
+handle_binary_limit(Client &client, Request args,
+		    [[maybe_unused]] Response &r)
+{
+	size_t value = args.ParseUnsigned(0, client.GetOutputMaxSize() - 4096);
+	if (value < 64) {
+		r.Error(ACK_ERROR_ARG, "Value too small");
+		return CommandResult::ERROR;
+	}
+
+	client.binary_limit = value;
+
 	return CommandResult::OK;
 }
 

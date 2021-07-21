@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -88,7 +88,7 @@ IcuCollate(std::string_view a, std::string_view b) noexcept
 				     b.data(), b.size(), &code);
 
 #elif defined(_WIN32)
-	AllocatedString<wchar_t> wa = nullptr, wb = nullptr;
+	BasicAllocatedString<wchar_t> wa, wb;
 
 	try {
 		wa = MultiByteToWideChar(CP_UTF8, a);

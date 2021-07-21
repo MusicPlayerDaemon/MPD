@@ -34,7 +34,7 @@ class FileDescriptor;
 class UniqueFileDescriptor;
 
 UniqueFileDescriptor
-OpenReadOnly(const char *path);
+OpenReadOnly(const char *path, int flags=0);
 
 UniqueFileDescriptor
 OpenWriteOnly(const char *path, int flags=0);

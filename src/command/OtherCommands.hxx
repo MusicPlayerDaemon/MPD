@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -46,6 +46,9 @@ handle_update(Client &client, Request request, Response &response);
 
 CommandResult
 handle_rescan(Client &client, Request request, Response &response);
+
+CommandResult
+handle_getvol(Client &client, Request request, Response &response);
 
 CommandResult
 handle_setvol(Client &client, Request request, Response &response);

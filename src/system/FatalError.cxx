@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -27,7 +27,9 @@
 #include <cstring>
 
 #ifdef _WIN32
-#include <windows.h>
+#include <errhandlingapi.h> // for GetLastError()
+#include <windef.h> // for HWND (needed by winbase.h)
+#include <winbase.h> // for FormatMessageA()
 #else
 #include <cerrno>
 #endif
@@ -81,7 +83,7 @@ FatalSystemError(const char *msg)
 	FatalSystemError(msg, GetLastError());
 #else
 	auto system_error = std::strerror(errno);
-	FormatError(fatal_error_domain, "%s: %s", msg, system_error);
+	FmtError(fatal_error_domain, "{}: {}", msg, system_error);
 	Abort();
 #endif
 }

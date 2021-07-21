@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -40,10 +40,11 @@
 #include "input/cache/Config.hxx"
 #include "input/cache/Manager.hxx"
 #include "event/Loop.hxx"
+#include "event/Call.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "fs/Config.hxx"
 #include "playlist/PlaylistRegistry.hxx"
-#include "zeroconf/ZeroconfGlue.hxx"
+#include "zeroconf/Glue.hxx"
 #include "decoder/DecoderList.hxx"
 #include "pcm/AudioParser.hxx"
 #include "pcm/Convert.hxx"
@@ -111,7 +112,7 @@
 
 #include <climits>
 
-#ifdef HAVE_CLOCALE
+#ifndef ANDROID
 #include <clocale>
 #endif
 
@@ -194,16 +195,16 @@ glue_db_init_and_load(Instance &instance, const ConfigData &config)
 			    config);
 
 		if (instance.storage == nullptr) {
-			LogDefault(config_domain,
-				   "Found database setting without "
-				   "music_directory - disabling database");
+			LogNotice(config_domain,
+				  "Found database setting without "
+				  "music_directory - disabling database");
 			return true;
 		}
 	} else {
 		if (IsStorageConfigured(config))
-			LogDefault(config_domain,
-				   "Ignoring the storage configuration "
-				   "because the database does not need it");
+			LogNotice(config_domain,
+				  "Ignoring the storage configuration "
+				  "because the database does not need it");
 	}
 
 	try {
@@ -286,9 +287,8 @@ initialize_decoder_and_player(Instance &instance,
 							 "positive integer", s);
 
 			if (result < MIN_BUFFER_SIZE) {
-				FormatWarning(config_domain, "buffer size %lu is too small, using %lu bytes instead",
-					      (unsigned long)result,
-					      (unsigned long)MIN_BUFFER_SIZE);
+				FmtWarning(config_domain, "buffer size {} is too small, using {} bytes instead",
+					   result, MIN_BUFFER_SIZE);
 				result = MIN_BUFFER_SIZE;
 			}
 
@@ -358,11 +358,9 @@ MainConfigured(const struct options &options, const ConfigData &raw_config)
 #endif
 
 #ifndef ANDROID
-#ifdef HAVE_CLOCALE
 	/* initialize locale */
 	std::setlocale(LC_CTYPE,"");
 	std::setlocale(LC_COLLATE, "");
-#endif
 #endif
 
 	const ScopeIcuInit icu_init;
@@ -443,7 +441,8 @@ MainConfigured(const struct options &options, const ConfigData &raw_config)
 	command_init();
 
 	for (auto &partition : instance.partitions) {
-		partition.outputs.Configure(instance.rtio_thread.GetEventLoop(),
+		partition.outputs.Configure(instance.io_thread.GetEventLoop(),
+					    instance.rtio_thread.GetEventLoop(),
 					    raw_config,
 					    config.replay_gain);
 		partition.UpdateEffectiveReplayGainMode();
@@ -478,7 +477,27 @@ MainConfigured(const struct options &options, const ConfigData &raw_config)
 	};
 #endif
 
-	ZeroconfInit(raw_config, instance.event_loop);
+#ifdef HAVE_ZEROCONF
+	std::unique_ptr<ZeroconfHelper> zeroconf;
+	try {
+		auto &event_loop = instance.io_thread.GetEventLoop();
+		BlockingCall(event_loop, [&](){
+			zeroconf = ZeroconfInit(raw_config, event_loop);
+		});
+	} catch (...) {
+		LogError(std::current_exception(),
+			 "Zeroconf initialization failed");
+	}
+
+	AtScopeExit(&zeroconf, &instance) {
+		if (zeroconf) {
+			auto &event_loop = instance.io_thread.GetEventLoop();
+			BlockingCall(event_loop, [&](){
+				zeroconf.reset();
+			});
+		}
+	};
+#endif
 
 #ifdef ENABLE_DATABASE
 	if (create_db) {
@@ -501,8 +520,8 @@ MainConfigured(const struct options &options, const ConfigData &raw_config)
 					 raw_config.GetUnsigned(ConfigOption::AUTO_UPDATE_DEPTH,
 								INT_MAX));
 #else
-		FormatWarning(config_domain,
-			      "inotify: auto_update was disabled. enable during compilation phase");
+		LogWarning(config_domain,
+			   "inotify: auto_update was disabled. enable during compilation phase");
 #endif
 	}
 #endif
@@ -535,10 +554,10 @@ MainConfigured(const struct options &options, const ConfigData &raw_config)
 
 	/* cleanup */
 
+	if (instance.state_file)
+		instance.state_file->Write();
+
 	instance.BeginShutdownUpdate();
-
-	ZeroconfDeinit();
-
 	instance.BeginShutdownPartitions();
 }
 

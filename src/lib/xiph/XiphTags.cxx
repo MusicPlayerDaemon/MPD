@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -28,5 +28,7 @@ const struct tag_table xiph_tags[] = {
 	{ "tracknumber", TAG_TRACK },
 	{ "discnumber", TAG_DISC },
 	{ "description", TAG_COMMENT },
+	{ "movementname", TAG_MOVEMENT },
+	{ "movement", TAG_MOVEMENTNUMBER },
 	{ nullptr, TAG_NUM_OF_ITEM_TYPES }
 };

@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -22,6 +22,7 @@
 #include "lib/pulse/LogError.hxx"
 #include "lib/pulse/LockGuard.hxx"
 #include "../OutputAPI.hxx"
+#include "../Error.hxx"
 #include "mixer/MixerList.hxx"
 #include "mixer/plugins/PulseMixerPlugin.hxx"
 #include "util/ScopeExit.hxx"
@@ -55,7 +56,14 @@ class PulseOutput final : AudioOutput {
 
 	size_t writable;
 
-	bool pause;
+	/**
+	 * Was Interrupt() called?  This will unblock Play().  It will
+	 * be reset by Cancel() and Pause(), as documented by the
+	 * #AudioOutput interface.
+	 *
+	 * Only initialized while the output is open.
+	 */
+	bool interrupted;
 
 	explicit PulseOutput(const ConfigBlock &block);
 
@@ -99,8 +107,11 @@ public:
 	void Open(AudioFormat &audio_format) override;
 	void Close() noexcept override;
 
+	void Interrupt() noexcept override;
+
 	[[nodiscard]] std::chrono::steady_clock::duration Delay() const noexcept override;
 	size_t Play(const void *chunk, size_t size) override;
+	void Drain() override;
 	void Cancel() noexcept override;
 	bool Pause() override;
 
@@ -676,7 +687,7 @@ PulseOutput::Open(AudioFormat &audio_format)
 				     "pa_stream_connect_playback() has failed");
 	}
 
-	pause = false;
+	interrupted = false;
 }
 
 void
@@ -686,22 +697,26 @@ PulseOutput::Close() noexcept
 
 	Pulse::LockGuard lock(mainloop);
 
-	if (pa_stream_get_state(stream) == PA_STREAM_READY) {
-		pa_operation *o =
-			pa_stream_drain(stream,
-					pulse_output_stream_success_cb, this);
-		if (o == nullptr) {
-			LogPulseError(context,
-				      "pa_stream_drain() has failed");
-		} else
-			pulse_wait_for_operation(mainloop, o);
-	}
-
 	DeleteStream();
 
 	if (context != nullptr &&
 	    pa_context_get_state(context) != PA_CONTEXT_READY)
 		DeleteContext();
+}
+
+void
+PulseOutput::Interrupt() noexcept
+{
+	if (mainloop == nullptr)
+		return;
+
+	const Pulse::LockGuard lock(mainloop);
+
+	/* the "interrupted" flag will prevent Play() from blocking,
+	   and will instead throw AudioOutputInterrupted */
+	interrupted = true;
+
+	Signal();
 }
 
 void
@@ -719,6 +734,9 @@ PulseOutput::WaitStream()
 					     "failed to connect the stream");
 
 		case PA_STREAM_CREATING:
+			if (interrupted)
+				throw AudioOutputInterrupted{};
+
 			pa_threaded_mainloop_wait(mainloop);
 			break;
 		}
@@ -749,7 +767,7 @@ PulseOutput::Delay() const noexcept
 	Pulse::LockGuard lock(mainloop);
 
 	auto result = std::chrono::steady_clock::duration::zero();
-	if (pause && pa_stream_is_corked(stream) &&
+	if (pa_stream_is_corked(stream) &&
 	    pa_stream_get_state(stream) == PA_STREAM_READY)
 		/* idle while paused */
 		result = std::chrono::seconds(1);
@@ -764,8 +782,6 @@ PulseOutput::Play(const void *chunk, size_t size)
 	assert(stream != nullptr);
 
 	Pulse::LockGuard lock(mainloop);
-
-	pause = false;
 
 	/* check if the stream is (already) connected */
 
@@ -783,6 +799,9 @@ PulseOutput::Play(const void *chunk, size_t size)
 	while (writable == 0) {
 		if (pa_stream_is_suspended(stream))
 			throw std::runtime_error("suspended");
+
+		if (interrupted)
+			throw AudioOutputInterrupted{};
 
 		pa_threaded_mainloop_wait(mainloop);
 
@@ -807,12 +826,32 @@ PulseOutput::Play(const void *chunk, size_t size)
 }
 
 void
+PulseOutput::Drain()
+{
+	Pulse::LockGuard lock(mainloop);
+
+	if (pa_stream_get_state(stream) != PA_STREAM_READY ||
+	    pa_stream_is_suspended(stream) ||
+	    pa_stream_is_corked(stream))
+		return;
+
+	pa_operation *o =
+		pa_stream_drain(stream,
+				pulse_output_stream_success_cb, this);
+	if (o == nullptr)
+		throw MakePulseError(context, "pa_stream_drain() failed");
+
+	pulse_wait_for_operation(mainloop, o);
+}
+
+void
 PulseOutput::Cancel() noexcept
 {
 	assert(mainloop != nullptr);
 	assert(stream != nullptr);
 
 	Pulse::LockGuard lock(mainloop);
+	interrupted = false;
 
 	if (pa_stream_get_state(stream) != PA_STREAM_READY) {
 		/* no need to flush when the stream isn't connected
@@ -841,7 +880,7 @@ PulseOutput::Pause()
 
 	Pulse::LockGuard lock(mainloop);
 
-	pause = true;
+	interrupted = false;
 
 	/* check if the stream is (already/still) connected */
 
@@ -877,7 +916,7 @@ pulse_output_test_default_device()
 	return PulseOutput::TestDefaultDevice();
 }
 
-const struct AudioOutputPlugin pulse_output_plugin = {
+constexpr struct AudioOutputPlugin pulse_output_plugin = {
 	"pulse",
 	pulse_output_test_default_device,
 	PulseOutput::Create,

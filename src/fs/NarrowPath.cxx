@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2018 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -29,7 +29,7 @@
 NarrowPath::NarrowPath(Path _path) noexcept
 	:value(WideCharToMultiByte(CP_ACP, _path.c_str()))
 {
-	if (value.IsNull())
+	if (value == nullptr)
 		/* fall back to empty string */
 		value = Value::Empty();
 }

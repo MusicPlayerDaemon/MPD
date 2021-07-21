@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -48,7 +48,7 @@ UCharFromUTF8(std::string_view src)
 	return dest;
 }
 
-AllocatedString<>
+AllocatedString
 UCharToUTF8(std::basic_string_view<UChar> src)
 {
 	/* worst-case estimate */
@@ -65,5 +65,5 @@ UCharToUTF8(std::basic_string_view<UChar> src)
 		throw std::runtime_error(u_errorName(error_code));
 
 	dest[dest_length] = 0;
-	return AllocatedString<>::Donate(dest.release());
+	return AllocatedString::Donate(dest.release());
 }

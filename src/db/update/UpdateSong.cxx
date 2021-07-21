@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -20,6 +20,7 @@
 #include "Walk.hxx"
 #include "UpdateIO.hxx"
 #include "UpdateDomain.hxx"
+#include "lib/fmt/ExceptionFormatter.hxx"
 #include "db/DatabaseLock.hxx"
 #include "db/plugins/simple/Directory.hxx"
 #include "db/plugins/simple/Song.hxx"
@@ -31,7 +32,7 @@
 
 inline void
 UpdateWalk::UpdateSongFile2(Directory &directory,
-			    const char *name, const char *suffix,
+			    const char *name, std::string_view suffix,
 			    const StorageFileInfo &info) noexcept
 try {
 	Song *song;
@@ -41,9 +42,9 @@ try {
 	}
 
 	if (!directory_child_access(storage, directory, name, R_OK)) {
-		FormatError(update_domain,
-			    "no read permissions on %s/%s",
-			    directory.GetPath(), name);
+		FmtError(update_domain,
+			 "no read permissions on {}/{}",
+			 directory.GetPath(), name);
 		if (song != nullptr)
 			editor.LockDeleteSong(directory, song);
 
@@ -59,14 +60,14 @@ try {
 	}
 
 	if (song == nullptr) {
-		FormatDebug(update_domain, "reading %s/%s",
-			    directory.GetPath(), name);
+		FmtDebug(update_domain, "reading {}/{}",
+			 directory.GetPath(), name);
 
 		auto new_song = Song::LoadFile(storage, name, directory);
 		if (!new_song) {
-			FormatDebug(update_domain,
-				    "ignoring unrecognized file %s/%s",
-				    directory.GetPath(), name);
+			FmtDebug(update_domain,
+				 "ignoring unrecognized file {}/{}",
+				 directory.GetPath(), name);
 			return;
 		}
 
@@ -76,29 +77,29 @@ try {
 		}
 
 		modified = true;
-		FormatDefault(update_domain, "added %s/%s",
-			      directory.GetPath(), name);
+		FmtNotice(update_domain, "added {}/{}",
+			  directory.GetPath(), name);
 	} else if (info.mtime != song->mtime || walk_discard) {
-		FormatDefault(update_domain, "updating %s/%s",
-			      directory.GetPath(), name);
+		FmtNotice(update_domain, "updating {}/{}",
+			  directory.GetPath(), name);
 		if (!song->UpdateFile(storage)) {
-			FormatDebug(update_domain,
-				    "deleting unrecognized file %s/%s",
-				    directory.GetPath(), name);
+			FmtDebug(update_domain,
+				 "deleting unrecognized file {}/{}",
+				 directory.GetPath(), name);
 			editor.LockDeleteSong(directory, song);
 		}
 
 		modified = true;
 	}
 } catch (...) {
-	FormatError(std::current_exception(),
-		    "error reading file %s/%s",
-		    directory.GetPath(), name);
+	FmtError(update_domain,
+		 "error reading file {}/{}: {}",
+		 directory.GetPath(), name, std::current_exception());
 }
 
 bool
 UpdateWalk::UpdateSongFile(Directory &directory,
-			   const char *name, const char *suffix,
+			   const char *name, std::string_view suffix,
 			   const StorageFileInfo &info) noexcept
 {
 	if (!decoder_plugins_supports_suffix(suffix))

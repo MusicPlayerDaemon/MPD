@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -23,7 +23,6 @@
 #include "Compiler.h"
 
 #include <cstddef>
-#include <cstdint>
 
 template<typename T> struct WritableBuffer;
 template<typename T> class DynamicFifoBuffer;
@@ -34,16 +33,16 @@ template<typename T> class DynamicFifoBuffer;
  * kernel when it has been consumed.
  */
 class PeakBuffer {
-	size_t normal_size, peak_size;
+	std::size_t normal_size, peak_size;
 
-	DynamicFifoBuffer<uint8_t> *normal_buffer, *peak_buffer;
+	DynamicFifoBuffer<std::byte> *normal_buffer, *peak_buffer;
 
 public:
-	PeakBuffer(size_t _normal_size, size_t _peak_size)
+	PeakBuffer(std::size_t _normal_size, std::size_t _peak_size) noexcept
 		:normal_size(_normal_size), peak_size(_peak_size),
 		 normal_buffer(nullptr), peak_buffer(nullptr) {}
 
-	PeakBuffer(PeakBuffer &&other)
+	PeakBuffer(PeakBuffer &&other) noexcept
 		:normal_size(other.normal_size), peak_size(other.peak_size),
 		 normal_buffer(other.normal_buffer),
 		 peak_buffer(other.peak_buffer) {
@@ -51,10 +50,14 @@ public:
 		other.peak_buffer = nullptr;
 	}
 
-	~PeakBuffer();
+	~PeakBuffer() noexcept;
 
 	PeakBuffer(const PeakBuffer &) = delete;
 	PeakBuffer &operator=(const PeakBuffer &) = delete;
+
+	std::size_t max_size() const noexcept {
+		return normal_size + peak_size;
+	}
 
 	gcc_pure
 	bool empty() const noexcept;
@@ -62,9 +65,9 @@ public:
 	gcc_pure
 	WritableBuffer<void> Read() const noexcept;
 
-	void Consume(size_t length) noexcept;
+	void Consume(std::size_t length) noexcept;
 
-	bool Append(const void *data, size_t length);
+	bool Append(const void *data, std::size_t length);
 };
 
 #endif

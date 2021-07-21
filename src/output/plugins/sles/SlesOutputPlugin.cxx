@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -33,6 +33,7 @@
 #include <SLES/OpenSLES.h>
 #include <SLES/OpenSLES_Android.h>
 
+#include <cassert>
 #include <iterator>
 #include <stdexcept>
 
@@ -173,12 +174,12 @@ SlesOutput::Open(AudioFormat &audio_format)
 	if (audio_format.channels > 2)
 		audio_format.channels = 1;
 
-	SLDataFormat_PCM format_pcm;
+	SLAndroidDataFormat_PCM_EX format_pcm;
 	format_pcm.formatType = SL_DATAFORMAT_PCM;
 	format_pcm.numChannels = audio_format.channels;
 	/* from the Android NDK docs: "Note that the field samplesPerSec is
 	   actually in units of milliHz, despite the misleading name." */
-	format_pcm.samplesPerSec = audio_format.sample_rate * 1000u;
+	format_pcm.sampleRate = audio_format.sample_rate * 1000u;
 	format_pcm.bitsPerSample = SL_PCMSAMPLEFORMAT_FIXED_16;
 	format_pcm.containerSize = SL_PCMSAMPLEFORMAT_FIXED_16;
 	format_pcm.channelMask = audio_format.channels == 1
@@ -187,6 +188,36 @@ SlesOutput::Open(AudioFormat &audio_format)
 	format_pcm.endianness = IsLittleEndian()
 		? SL_BYTEORDER_LITTLEENDIAN
 		: SL_BYTEORDER_BIGENDIAN;
+	format_pcm.representation = SL_ANDROID_PCM_REPRESENTATION_SIGNED_INT;
+
+	switch (audio_format.format) {
+		/* note: Android doesn't support
+		   SL_PCMSAMPLEFORMAT_FIXED_24 and
+		   SL_PCMSAMPLEFORMAT_FIXED_32, so let's not bother
+		   implement it here; SL_PCMSAMPLEFORMAT_FIXED_8
+		   appears to be unsigned, so not usable for us (and
+		   converting S8 to U8 is not worth the trouble) */
+
+	case SampleFormat::S16:
+		/* bitsPerSample and containerSize already set for 16
+		   bit */
+		break;
+
+	case SampleFormat::FLOAT:
+		/* Android has an OpenSLES extension for floating
+		   point samples:
+		   https://developer.android.com/ndk/guides/audio/opensl/android-extensions */
+		format_pcm.formatType = SL_ANDROID_DATAFORMAT_PCM_EX;
+		format_pcm.bitsPerSample = format_pcm.containerSize =
+			SL_PCMSAMPLEFORMAT_FIXED_32;
+		format_pcm.representation = SL_ANDROID_PCM_REPRESENTATION_FLOAT;
+		break;
+
+	default:
+		/* fall back to 16 bit */
+		audio_format.format = SampleFormat::S16;
+		break;
+	}
 
 	SLDataSource audioSrc = { &loc_bufq, &format_pcm };
 
@@ -291,9 +322,6 @@ SlesOutput::Open(AudioFormat &audio_format)
 	n_queued = 0;
 	next = 0;
 	filled = 0;
-
-	// TODO: support other sample formats
-	audio_format.format = SampleFormat::S16;
 }
 
 void
@@ -363,12 +391,12 @@ SlesOutput::Cancel() noexcept
 
 	SLresult result = play.SetPlayState(SL_PLAYSTATE_PAUSED);
 	if (result != SL_RESULT_SUCCESS)
-		FormatError(sles_domain,  "Play.SetPlayState(PAUSED) failed");
+		LogError(sles_domain,  "Play.SetPlayState(PAUSED) failed");
 
 	result = queue.Clear();
 	if (result != SL_RESULT_SUCCESS)
-		FormatWarning(sles_domain,
-			      "AndroidSimpleBufferQueue.Clear() failed");
+		LogWarning(sles_domain,
+			   "AndroidSimpleBufferQueue.Clear() failed");
 
 	const std::lock_guard<Mutex> protect(mutex);
 	n_queued = 0;

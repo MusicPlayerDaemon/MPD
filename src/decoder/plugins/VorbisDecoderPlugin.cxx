@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -79,6 +79,9 @@ public:
 	~VorbisDecoder() {
 		DeinitVorbis();
 	}
+
+	VorbisDecoder(const VorbisDecoder &) = delete;
+	VorbisDecoder &operator=(const VorbisDecoder &) = delete;
 
 	bool Seek(uint64_t where_frame);
 
@@ -370,7 +373,7 @@ VisitVorbisDuration(InputStream &is,
 }
 
 static bool
-vorbis_scan_stream(InputStream &is, TagHandler &handler) noexcept
+vorbis_scan_stream(InputStream &is, TagHandler &handler)
 {
 	/* initialize libogg */
 

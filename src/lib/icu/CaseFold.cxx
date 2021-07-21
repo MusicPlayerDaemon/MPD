@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -38,13 +38,13 @@
 
 #include <string.h>
 
-AllocatedString<>
+AllocatedString
 IcuCaseFold(std::string_view src) noexcept
 try {
 #ifdef HAVE_ICU
 	const auto u = UCharFromUTF8(src);
 	if (u.IsNull())
-		return AllocatedString<>::Duplicate(src);
+		return AllocatedString(src);
 
 	AllocatedArray<UChar> folded(u.size() * 2U);
 
@@ -54,7 +54,7 @@ try {
 					     U_FOLD_CASE_DEFAULT,
 					     &error_code);
 	if (folded_length == 0 || error_code != U_ZERO_ERROR)
-		return AllocatedString<>::Duplicate(src);
+		return AllocatedString(src);
 
 	folded.SetSize(folded_length);
 	return UCharToUTF8({folded.begin(), folded.size()});
@@ -63,7 +63,7 @@ try {
 #error not implemented
 #endif
 } catch (...) {
-	return AllocatedString<>::Duplicate(src);
+	return AllocatedString(src);
 }
 
 #endif /* HAVE_ICU_CASE_FOLD */

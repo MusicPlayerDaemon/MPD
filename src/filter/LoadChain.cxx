@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -20,19 +20,24 @@
 #include "LoadChain.hxx"
 #include "Factory.hxx"
 #include "Prepared.hxx"
+#include "plugins/AutoConvertFilterPlugin.hxx"
 #include "plugins/ChainFilterPlugin.hxx"
+#include "util/IterableSplitString.hxx"
 
-#include <algorithm>
 #include <string>
-
-#include <string.h>
 
 static void
 filter_chain_append_new(PreparedFilter &chain, FilterFactory &factory,
-			const char *template_name)
+			std::string_view template_name)
 {
+	/* using the AutoConvert filter just in case the specified
+	   filter plugin does not support the exact input format */
+
 	filter_chain_append(chain, template_name,
-			    factory.MakeFilter(template_name));
+			    /* unfortunately, MakeFilter() wants a
+			       null-terminated string, so we need to
+			       copy it here */
+			    autoconvert_filter_new(factory.MakeFilter(std::string(template_name).c_str())));
 }
 
 void
@@ -40,18 +45,10 @@ filter_chain_parse(PreparedFilter &chain,
 		   FilterFactory &factory,
 		   const char *spec)
 {
-	const char *const end = spec + strlen(spec);
+	for (const std::string_view i : IterableSplitString(spec, ',')) {
+		if (i.empty())
+			continue;
 
-	while (true) {
-		const char *comma = std::find(spec, end, ',');
-		if (comma > spec) {
-			const std::string name(spec, comma);
-			filter_chain_append_new(chain, factory, name.c_str());
-		}
-
-		if (comma == end)
-			break;
-
-		spec = comma + 1;
+		filter_chain_append_new(chain, factory, i);
 	}
 }

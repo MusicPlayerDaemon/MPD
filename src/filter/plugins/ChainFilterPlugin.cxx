@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -28,15 +28,14 @@
 #include <cassert>
 #include <list>
 #include <memory>
+#include <string>
 
 class ChainFilter final : public Filter {
 	struct Child {
-		const char *name;
 		std::unique_ptr<Filter> filter;
 
-		Child(const char *_name,
-		      std::unique_ptr<Filter> _filter) noexcept
-			:name(_name), filter(std::move(_filter)) {}
+		explicit Child(std::unique_ptr<Filter> &&_filter) noexcept
+			:filter(std::move(_filter)) {}
 	};
 
 	std::list<Child> children;
@@ -50,13 +49,12 @@ public:
 	explicit ChainFilter(AudioFormat _audio_format)
 		:Filter(_audio_format) {}
 
-	void Append(const char *name,
-		    std::unique_ptr<Filter> filter) noexcept {
+	void Append(std::unique_ptr<Filter> filter) noexcept {
 		assert(out_audio_format.IsValid());
 		out_audio_format = filter->GetOutAudioFormat();
 		assert(out_audio_format.IsValid());
 
-		children.emplace_back(name, std::move(filter));
+		children.emplace_back(std::move(filter));
 
 		RewindFlush();
 	}
@@ -75,10 +73,10 @@ private:
 
 class PreparedChainFilter final : public PreparedFilter {
 	struct Child {
-		const char *name;
+		const std::string name;
 		std::unique_ptr<PreparedFilter> filter;
 
-		Child(const char *_name,
+		Child(std::string_view _name,
 		      std::unique_ptr<PreparedFilter> _filter)
 			:name(_name), filter(std::move(_filter)) {}
 
@@ -91,7 +89,7 @@ class PreparedChainFilter final : public PreparedFilter {
 	std::list<Child> children;
 
 public:
-	void Append(const char *name,
+	void Append(std::string_view name,
 		    std::unique_ptr<PreparedFilter> filter) noexcept {
 		children.emplace_back(name, std::move(filter));
 	}
@@ -108,7 +106,7 @@ PreparedChainFilter::Child::Open(const AudioFormat &prev_audio_format)
 
 	if (conv_audio_format != prev_audio_format)
 		throw FormatRuntimeError("Audio format not supported by filter '%s': %s",
-					 name,
+					 name.c_str(),
 					 ToString(prev_audio_format).c_str());
 
 	return new_filter;
@@ -121,7 +119,7 @@ PreparedChainFilter::Open(AudioFormat &in_audio_format)
 
 	for (auto &child : children) {
 		AudioFormat audio_format = chain->GetOutAudioFormat();
-		chain->Append(child.name, child.Open(audio_format));
+		chain->Append(child.Open(audio_format));
 	}
 
 	return chain;
@@ -177,7 +175,7 @@ filter_chain_new() noexcept
 }
 
 void
-filter_chain_append(PreparedFilter &_chain, const char *name,
+filter_chain_append(PreparedFilter &_chain, std::string_view name,
 		    std::unique_ptr<PreparedFilter> filter) noexcept
 {
 	auto &chain = (PreparedChainFilter &)_chain;

@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -26,22 +26,24 @@
 #include "MultipleOutputs.hxx"
 #include "client/Response.hxx"
 
+#include <fmt/format.h>
+
 void
 printAudioDevices(Response &r, const MultipleOutputs &outputs)
 {
 	for (unsigned i = 0, n = outputs.Size(); i != n; ++i) {
 		const auto &ao = outputs.Get(i);
 
-		r.Format("outputid: %u\n"
-			 "outputname: %s\n"
-			 "plugin: %s\n"
-			 "outputenabled: %i\n",
-			 i,
-			 ao.GetName(), ao.GetPluginName(),
-			 ao.IsEnabled());
+		r.Fmt(FMT_STRING("outputid: {}\n"
+				 "outputname: {}\n"
+				 "plugin: {}\n"
+				 "outputenabled: {}\n"),
+		      i,
+		      ao.GetName(), ao.GetPluginName(),
+		      (unsigned)ao.IsEnabled());
 
-		for (const auto &a : ao.GetAttributes())
-			r.Format("attribute: %s=%s\n",
-				 a.first.c_str(), a.second.c_str());
+		for (const auto &[attribute, value] : ao.GetAttributes())
+			r.Fmt(FMT_STRING("attribute: {}={}\n"),
+			      attribute, value);
 	}
 }

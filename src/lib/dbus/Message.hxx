@@ -72,7 +72,7 @@ public:
 
 	static Message StealReply(DBusPendingCall &pending);
 
-	static Message Pop(DBusConnection &connection);
+	static Message Pop(DBusConnection &connection) noexcept;
 
 	bool IsDefined() const noexcept {
 		return msg != nullptr;

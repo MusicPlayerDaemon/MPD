@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -22,6 +22,7 @@
 #include "Domain.hxx"
 #include "OutputAPI.hxx"
 #include "Defaults.hxx"
+#include "lib/fmt/ExceptionFormatter.hxx"
 #include "pcm/AudioParser.hxx"
 #include "mixer/MixerList.hxx"
 #include "mixer/MixerType.hxx"
@@ -62,15 +63,15 @@ FilteredAudioOutput::FilteredAudioOutput(const char *_plugin_name,
 static const AudioOutputPlugin *
 audio_output_detect()
 {
-	LogDefault(output_domain, "Attempt to detect audio output device");
+	LogInfo(output_domain, "Attempt to detect audio output device");
 
 	audio_output_plugins_for_each(plugin) {
 		if (plugin->test_default_device == nullptr)
 			continue;
 
-		FormatDefault(output_domain,
-			      "Attempting to detect a %s audio device",
-			      plugin->name);
+		FmtInfo(output_domain,
+			"Attempting to detect a {} audio device",
+			plugin->name);
 		if (ao_plugin_test_default_device(plugin))
 			return plugin;
 	}
@@ -188,9 +189,9 @@ FilteredAudioOutput::Configure(const ConfigBlock &block,
 		/* It's not really fatal - Part of the filter chain
 		   has been set up already and even an empty one will
 		   work (if only with unexpected behaviour) */
-		FormatError(std::current_exception(),
-			    "Failed to initialize filter chain for '%s'",
-			    name);
+		FmtError(output_domain,
+			 "Failed to initialize filter chain for '{}': {}",
+			 name, std::current_exception());
 	}
 }
 
@@ -238,9 +239,9 @@ FilteredAudioOutput::Setup(EventLoop &event_loop,
 						*prepared_filter,
 						mixer_listener);
 	} catch (...) {
-		FormatError(std::current_exception(),
-			    "Failed to initialize hardware mixer for '%s'",
-			    name);
+		FmtError(output_domain,
+			 "Failed to initialize hardware mixer for '{}': {}",
+			 name, std::current_exception());
 	}
 
 	/* use the hardware mixer for replay gain? */
@@ -250,8 +251,8 @@ FilteredAudioOutput::Setup(EventLoop &event_loop,
 			replay_gain_filter_set_mixer(*prepared_replay_gain_filter,
 						     mixer, 100);
 		else
-			FormatError(output_domain,
-				    "No such mixer for output '%s'", name);
+			FmtError(output_domain,
+				 "No such mixer for output '{}'", name);
 	} else if (!StringIsEqual(replay_gain_handler, "software") &&
 		   prepared_replay_gain_filter != nullptr) {
 		throw std::runtime_error("Invalid \"replay_gain_handler\" value");
@@ -264,7 +265,7 @@ FilteredAudioOutput::Setup(EventLoop &event_loop,
 }
 
 std::unique_ptr<FilteredAudioOutput>
-audio_output_new(EventLoop &event_loop,
+audio_output_new(EventLoop &normal_event_loop, EventLoop &rt_event_loop,
 		 const ReplayGainConfig &replay_gain_config,
 		 const ConfigBlock &block,
 		 const AudioOutputDefaults &defaults,
@@ -289,10 +290,18 @@ audio_output_new(EventLoop &event_loop,
 
 		plugin = audio_output_detect();
 
-		FormatDefault(output_domain,
-			      "Successfully detected a %s audio device",
-			      plugin->name);
+		FmtNotice(output_domain,
+			  "Successfully detected a {} audio device",
+			  plugin->name);
 	}
+
+	/* use the real-time I/O thread only for the ALSA plugin;
+	   other plugins like httpd don't need real-time so badly,
+	   because they have larger buffers */
+	// TODO: don't hard-code the plugin name
+	auto &event_loop = StringIsEqual(plugin->name, "alsa")
+		? rt_event_loop
+		: normal_event_loop;
 
 	std::unique_ptr<AudioOutput> ao(ao_plugin_init(event_loop, *plugin,
 						       block));

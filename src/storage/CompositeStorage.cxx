@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -120,8 +120,7 @@ CompositeStorage::Directory::Make(std::string_view uri)
 		if (name.empty())
 			continue;
 
-		auto i = directory->children.emplace(std::move(name),
-						     Directory());
+		auto i = directory->children.emplace(name, Directory());
 		directory = &i.first->second;
 	}
 
@@ -211,6 +210,7 @@ CompositeStorage::Mount(const char *uri, std::unique_ptr<Storage> storage)
 	const std::lock_guard<Mutex> protect(mutex);
 
 	Directory &directory = root.Make(uri);
+	assert(!directory.storage);
 	directory.storage = std::move(storage);
 }
 

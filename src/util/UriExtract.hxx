@@ -40,7 +40,7 @@
  */
 gcc_pure
 bool
-uri_has_scheme(const char *uri) noexcept;
+uri_has_scheme(std::string_view uri) noexcept;
 
 /**
  * Returns the scheme name of the specified URI, or an empty string.
@@ -62,19 +62,8 @@ std::string_view
 uri_get_path(std::string_view uri) noexcept;
 
 gcc_pure
-const char *
-uri_get_suffix(const char *uri) noexcept;
-
-struct UriSuffixBuffer {
-	char data[8];
-};
-
-/**
- * Returns the file name suffix, ignoring the query string.
- */
-gcc_pure
-const char *
-uri_get_suffix(const char *uri, UriSuffixBuffer &buffer) noexcept;
+std::string_view
+uri_get_suffix(std::string_view uri) noexcept;
 
 /**
  * Returns the URI fragment, i.e. the portion after the '#', but

@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -612,7 +612,7 @@ wavpack_scan_file(Path path_fs, TagHandler &handler) noexcept
 }
 
 static bool
-wavpack_scan_stream(InputStream &is, TagHandler &handler) noexcept
+wavpack_scan_stream(InputStream &is, TagHandler &handler)
 {
 	WavpackInput isp(nullptr, is);
 

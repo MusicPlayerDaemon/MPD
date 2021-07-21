@@ -33,16 +33,14 @@
 #pragma once
 
 #include "Operation.hxx"
-
-#include <boost/intrusive/list_hook.hpp>
+#include "util/IntrusiveList.hxx"
 
 #include <cassert>
 #include <utility>
 
 namespace Uring {
 
-class CancellableOperation
-	: public boost::intrusive::list_base_hook<boost::intrusive::link_mode<boost::intrusive::normal_link>>
+class CancellableOperation : public IntrusiveListHook
 {
 	Operation *operation;
 
@@ -65,6 +63,16 @@ public:
 		operation = nullptr;
 
 		// TODO: io_uring_prep_cancel()
+	}
+
+	void Replace(Operation &old_operation,
+		     Operation &new_operation) noexcept {
+		assert(operation == &old_operation);
+		assert(old_operation.cancellable == this);
+
+		old_operation.cancellable = nullptr;
+		operation = &new_operation;
+		new_operation.cancellable = this;
 	}
 
 	void OnUringCompletion(int res) noexcept {

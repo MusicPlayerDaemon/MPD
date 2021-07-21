@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -16,6 +16,10 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
+
+#ifdef _WIN32
+#undef NOUSER // COM needs the "MSG" typedef, and shlobj.h includes COM headers
+#endif
 
 #include "StandardDirectory.hxx"
 #include "FileSystem.hxx"

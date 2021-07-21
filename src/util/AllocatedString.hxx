@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2020 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2015-2021 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -41,8 +41,8 @@
  *
  * Unlike std::string, this object can hold a "nullptr" special value.
  */
-template<typename T=char>
-class AllocatedString {
+template<typename T>
+class BasicAllocatedString {
 public:
 	using value_type = typename StringPointer<T>::value_type;
 	using reference = typename StringPointer<T>::reference;
@@ -55,44 +55,68 @@ public:
 	static constexpr value_type SENTINEL = '\0';
 
 private:
-	pointer value;
+	pointer value = nullptr;
 
-	explicit AllocatedString(pointer _value) noexcept
+	explicit BasicAllocatedString(pointer _value) noexcept
 		:value(_value) {}
 
 public:
-	AllocatedString(std::nullptr_t n) noexcept
+	BasicAllocatedString() noexcept = default;
+	BasicAllocatedString(std::nullptr_t n) noexcept
 		:value(n) {}
 
-	AllocatedString(AllocatedString &&src) noexcept
+	explicit BasicAllocatedString(string_view src)
+		:value(Duplicate(src)) {}
+
+	explicit BasicAllocatedString(const_pointer src)
+		:value(Duplicate(src)) {}
+
+	/**
+	 * Concatenate several strings.
+	 */
+	BasicAllocatedString(std::initializer_list<string_view> src)
+		:value(new value_type[TotalSize(src) + 1])
+	{
+		auto *p = value;
+		for (const auto i : src)
+			p = std::copy(i.begin(), i.end(), p);
+		*p = SENTINEL;
+	}
+
+	BasicAllocatedString(const BasicAllocatedString &src) noexcept
+		:BasicAllocatedString(Duplicate(src.value)) {}
+
+	BasicAllocatedString(BasicAllocatedString &&src) noexcept
 		:value(src.Steal()) {}
 
-	~AllocatedString() noexcept {
+	~BasicAllocatedString() noexcept {
 		delete[] value;
 	}
 
-	static AllocatedString Donate(pointer value) noexcept {
-		return AllocatedString(value);
+	static BasicAllocatedString Donate(pointer value) noexcept {
+		return BasicAllocatedString(value);
 	}
 
-	static AllocatedString Null() noexcept {
-		return nullptr;
-	}
-
-	static AllocatedString Empty() {
+	static BasicAllocatedString Empty() {
 		auto p = new value_type[1];
 		p[0] = SENTINEL;
 		return Donate(p);
 	}
 
-	static AllocatedString Duplicate(string_view src) {
-		auto p = new value_type[src.size() + 1];
-		*std::copy_n(src.data(), src.size(), p) = SENTINEL;
-		return Donate(p);
+	BasicAllocatedString &operator=(BasicAllocatedString &&src) noexcept {
+		std::swap(value, src.value);
+		return *this;
 	}
 
-	AllocatedString &operator=(AllocatedString &&src) noexcept {
-		std::swap(value, src.value);
+	BasicAllocatedString &operator=(string_view src) noexcept {
+		delete[] std::exchange(value, nullptr);
+		value = Duplicate(src);
+		return *this;
+	}
+
+	BasicAllocatedString &operator=(const_pointer src) noexcept {
+		delete[] std::exchange(value, nullptr);
+		value = src != nullptr ? Duplicate(src) : nullptr;
 		return *this;
 	}
 
@@ -104,12 +128,10 @@ public:
 		return value != nullptr;
 	}
 
-	constexpr bool IsNull() const noexcept {
-		return value == nullptr;
-	}
-
 	operator string_view() const noexcept {
-		return value;
+		return value != nullptr
+			? string_view(value)
+			: string_view();
 	}
 
 	constexpr const_pointer c_str() const noexcept {
@@ -136,9 +158,36 @@ public:
 		return std::exchange(value, nullptr);
 	}
 
-	AllocatedString Clone() const {
-		return Duplicate(*this);
+private:
+	static pointer Duplicate(string_view src) {
+		auto p = new value_type[src.size() + 1];
+		*std::copy_n(src.data(), src.size(), p) = SENTINEL;
+		return p;
 	}
+
+	static pointer Duplicate(const_pointer src) {
+		return src != nullptr
+			? Duplicate(string_view(src))
+			: nullptr;
+	}
+
+	static constexpr std::size_t TotalSize(std::initializer_list<string_view> src) noexcept {
+		std::size_t size = 0;
+		for (std::string_view i : src)
+			size += i.size();
+		return size;
+	}
+};
+
+class AllocatedString : public BasicAllocatedString<char> {
+public:
+	using BasicAllocatedString::BasicAllocatedString;
+
+	AllocatedString() noexcept = default;
+	AllocatedString(BasicAllocatedString<value_type> &&src) noexcept
+		:BasicAllocatedString(std::move(src)) {}
+
+	using BasicAllocatedString::operator=;
 };
 
 #endif

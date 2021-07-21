@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -21,13 +21,19 @@
 #include "Loop.hxx"
 
 void
-DeferEvent::Cancel() noexcept
+DeferEvent::Schedule() noexcept
 {
-	loop.RemoveDeferred(*this);
+	if (!IsPending())
+		loop.AddDefer(*this);
+
+	assert(IsPending());
 }
 
 void
-DeferEvent::Schedule() noexcept
+DeferEvent::ScheduleIdle() noexcept
 {
-	loop.AddDeferred(*this);
+	if (!IsPending())
+		loop.AddIdle(*this);
+
+	assert(IsPending());
 }

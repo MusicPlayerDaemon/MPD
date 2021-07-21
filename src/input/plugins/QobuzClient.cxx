@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -174,8 +174,8 @@ QobuzClient::MakeUrl(const char *object, const char *method,
 	uri += method;
 
 	QueryStringBuilder q;
-	for (const auto &i : query)
-		q(uri, i.first.c_str(), i.second.c_str());
+	for (const auto &[key, url] : query)
+		q(uri, key.c_str(), url.c_str());
 
 	q(uri, "app_id", app_id);
 	return uri;
@@ -195,11 +195,11 @@ QobuzClient::MakeSignedUrl(const char *object, const char *method,
 	QueryStringBuilder q;
 	std::string concatenated_query(object);
 	concatenated_query += method;
-	for (const auto &i : query) {
-		q(uri, i.first.c_str(), i.second.c_str());
+	for (const auto &[key, url] : query) {
+		q(uri, key.c_str(), url.c_str());
 
-		concatenated_query += i.first;
-		concatenated_query += i.second;
+		concatenated_query += key;
+		concatenated_query += url;
 	}
 
 	q(uri, "app_id", app_id);

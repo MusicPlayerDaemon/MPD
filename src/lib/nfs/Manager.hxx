@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -22,7 +22,7 @@
 
 #include "Connection.hxx"
 #include "util/Compiler.h"
-#include "event/IdleMonitor.hxx"
+#include "event/IdleEvent.hxx"
 
 #include <boost/intrusive/set.hpp>
 #include <boost/intrusive/slist.hpp>
@@ -31,7 +31,7 @@
  * A manager for NFS connections.  Handles multiple connections to
  * multiple NFS servers.
  */
-class NfsManager final : IdleMonitor {
+class NfsManager final {
 	struct LookupKey {
 		const char *server;
 		const char *export_name;
@@ -87,16 +87,20 @@ class NfsManager final : IdleMonitor {
 	 */
 	List garbage;
 
+	IdleEvent idle_event;
+
 public:
 	explicit NfsManager(EventLoop &_loop) noexcept
-		:IdleMonitor(_loop) {}
+		:idle_event(_loop, BIND_THIS_METHOD(OnIdle)) {}
 
 	/**
 	 * Must be run from EventLoop's thread.
 	 */
 	~NfsManager() noexcept;
 
-	using IdleMonitor::GetEventLoop;
+	auto &GetEventLoop() const noexcept {
+		return idle_event.GetEventLoop();
+	}
 
 	gcc_pure
 	NfsConnection &GetConnection(const char *server,
@@ -106,7 +110,7 @@ private:
 	void ScheduleDelete(ManagedConnection &c) noexcept {
 		connections.erase(connections.iterator_to(c));
 		garbage.push_front(c);
-		IdleMonitor::Schedule();
+		idle_event.Schedule();
 	}
 
 	/**
@@ -115,7 +119,7 @@ private:
 	void CollectGarbage() noexcept;
 
 	/* virtual methods from IdleMonitor */
-	void OnIdle() noexcept override;
+	void OnIdle() noexcept;
 };
 
 #endif

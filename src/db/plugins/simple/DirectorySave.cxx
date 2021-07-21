@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -168,15 +168,12 @@ directory_load(TextFile &file, Directory &directory)
 				throw FormatRuntimeError("Duplicate song '%s'", name);
 
 			std::string target;
-			auto audio_format = AudioFormat::Undefined();
 			auto detached_song = song_load(file, name,
-						       &target,
-						       &audio_format);
+						       &target);
 
 			auto song = std::make_unique<Song>(std::move(detached_song),
 							   directory);
 			song->target = std::move(target);
-			song->audio_format = audio_format;
 
 			directory.AddSong(std::move(song));
 		} else if ((p = StringAfterPrefix(line, PLAYLIST_META_BEGIN))) {

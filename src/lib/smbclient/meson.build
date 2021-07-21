@@ -7,8 +7,8 @@ endif
 smbclient = static_library(
   'smbclient',
   'Domain.cxx',
-  'Mutex.cxx',
   'Init.cxx',
+  'Context.cxx',
   include_directories: inc,
   dependencies: [
     smbclient_dep,

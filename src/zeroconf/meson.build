@@ -1,21 +1,14 @@
 zeroconf_option = get_option('zeroconf')
 
-libavahi_client_dep = dependency('', required: false)
+avahi_dep = dependency('', required: false)
 
 if zeroconf_option == 'auto'
   if is_darwin
-    # Bonjour disabled for now because its build is broken
-    #zeroconf_option = 'bonjour'
-    zeroconf_option = 'disabled'
+    zeroconf_option = 'bonjour'
   elif is_android or is_windows
     zeroconf_option = 'disabled'
   elif dbus_dep.found()
-    libavahi_client_dep = dependency('avahi-client', required: false)
-    if libavahi_client_dep.found()
-      zeroconf_option = 'avahi'
-    else
-      zeroconf_option = 'disabled'
-    endif
+    zeroconf_option = 'avahi'
   else
     zeroconf_option = 'disabled'
   endif
@@ -31,42 +24,47 @@ if zeroconf_option == 'bonjour'
     error('dns_sd.h not found')
   endif
 
-  if is_darwin
-    bonjour_dep = declare_dependency(link_args: ['-framework', 'dnssd'])
-  else
-    bonjour_dep = declare_dependency(link_args: ['-ldns_sd'])
+  bonjour_deps = [
+    log_dep,
+  ]
+
+  if not is_darwin
+    bonjour_deps += declare_dependency(link_args: ['-ldns_sd'])
   endif
   conf.set('HAVE_BONJOUR', true)
 
   zeroconf = static_library(
     'zeroconf_bonjour',
-    'ZeroconfGlue.cxx',
-    'ZeroconfBonjour.cxx',
+    'Glue.cxx',
+    'Helper.cxx',
+    'Bonjour.cxx',
     include_directories: inc,
+    dependencies: [
+      event_dep,
+    ],
   )
 
   zeroconf_dep = declare_dependency(
     link_with: zeroconf,
-    dependencies: [
-      bonjour_dep,
-      log_dep,
-    ],
+    dependencies: bonjour_deps,
   )
 else
-  if not libavahi_client_dep.found()
-    libavahi_client_dep = dependency('avahi-client')
+  subdir('avahi')
+
+  if not avahi_dep.found()
+    zeroconf_dep = dependency('', required: false)
+    subdir_done()
   endif
 
   conf.set('HAVE_AVAHI', true)
   
   zeroconf = static_library(
     'zeroconf_bonjour',
-    'ZeroconfGlue.cxx',
-    'ZeroconfAvahi.cxx',
-    'AvahiPoll.cxx',
+    'Glue.cxx',
+    'Helper.cxx',
     include_directories: inc,
     dependencies: [
-      libavahi_client_dep,
+      avahi_dep,
       dbus_dep,
       time_dep,
       log_dep,

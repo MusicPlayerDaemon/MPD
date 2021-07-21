@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -20,8 +20,6 @@
 #include "Blocking.hxx"
 #include "Connection.hxx"
 #include "event/Call.hxx"
-
-constexpr std::chrono::steady_clock::duration BlockingNfsOperation::timeout;
 
 void
 BlockingNfsOperation::Run()

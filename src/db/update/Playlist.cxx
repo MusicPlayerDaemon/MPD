@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -22,6 +22,7 @@
 #include "db/DatabaseLock.hxx"
 #include "db/PlaylistVector.hxx"
 #include "db/plugins/simple/Directory.hxx"
+#include "lib/fmt/ExceptionFormatter.hxx"
 #include "song/DetachedSong.hxx"
 #include "input/InputStream.hxx"
 #include "playlist/PlaylistPlugin.hxx"
@@ -49,7 +50,7 @@ UpdateWalk::UpdatePlaylistFile(Directory &parent, std::string_view name,
 
 	const auto uri_utf8 = storage.MapUTF8(directory->GetPath());
 
-	FormatDebug(update_domain, "scanning playlist '%s'", uri_utf8.c_str());
+	FmtDebug(update_domain, "scanning playlist '{}'", uri_utf8);
 
 	try {
 		Mutex mutex;
@@ -80,22 +81,23 @@ UpdateWalk::UpdatePlaylistFile(Directory &parent, std::string_view name,
 			}
 		}
 	} catch (...) {
-		FormatError(std::current_exception(),
-			    "Failed to scan playlist '%s'", uri_utf8.c_str());
+		FmtError(update_domain,
+			 "Failed to scan playlist '{}': {}",
+			 uri_utf8, std::current_exception());
 		editor.LockDeleteDirectory(directory);
 	}
 }
 
 bool
 UpdateWalk::UpdatePlaylistFile(Directory &directory,
-			       std::string_view name, const char *suffix,
+			       std::string_view name, std::string_view suffix,
 			       const StorageFileInfo &info) noexcept
 {
 	const auto *const plugin = FindPlaylistPluginBySuffix(suffix);
 	if (plugin == nullptr)
 		return false;
 
-	if (plugin->as_folder)
+	if (GetPlaylistPluginAsFolder(*plugin))
 		UpdatePlaylistFile(directory, name, info, *plugin);
 
 	PlaylistInfo pi(name, info.mtime);

@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2019 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2012-2021 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -30,11 +30,12 @@
 #ifndef STATIC_SOCKET_ADDRESS_HXX
 #define STATIC_SOCKET_ADDRESS_HXX
 
-#include "SocketAddress.hxx"
+#include "SocketAddress.hxx" // IWYU pragma: export
 #include "Features.hxx"
-#include "util/Compiler.h"
 
 #include <cassert>
+
+struct StringView;
 
 /**
  * An OO wrapper for struct sockaddr_storage.
@@ -64,6 +65,19 @@ public:
 
 	constexpr operator const struct sockaddr *() const noexcept {
 		return (const struct sockaddr *)(const void *)&address;
+	}
+
+	/**
+	 * Cast the "sockaddr" pointer to a different address type,
+	 * e.g. "sockaddr_in".  This is only legal after checking
+	 * GetFamily().
+	 */
+	template<typename T>
+	constexpr const T &CastTo() const noexcept {
+		/* cast through void to work around the bogus
+		   alignment warning */
+		const void *q = reinterpret_cast<const void *>(&address);
+		return *reinterpret_cast<const T *>(q);
 	}
 
 	constexpr size_type GetCapacity() const noexcept {
@@ -105,7 +119,7 @@ public:
 	/**
 	 * @see SocketAddress::GetLocalRaw()
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	StringView GetLocalRaw() const noexcept;
 #endif
 
@@ -113,7 +127,7 @@ public:
 	/**
 	 * Extract the port number.  Returns 0 if not applicable.
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	unsigned GetPort() const noexcept {
 		return ((SocketAddress)*this).GetPort();
 	}
@@ -125,7 +139,7 @@ public:
 	bool SetPort(unsigned port) noexcept;
 #endif
 
-	gcc_pure
+	[[gnu::pure]]
 	bool operator==(SocketAddress other) const noexcept {
 		return (SocketAddress)*this == other;
 	}

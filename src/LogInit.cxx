@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2020 The Music Player Daemon Project
+ * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -28,6 +28,7 @@
 #include "fs/FileSystem.hxx"
 #include "util/Domain.hxx"
 #include "util/RuntimeError.hxx"
+#include "util/StringAPI.hxx"
 #include "system/Error.hxx"
 
 #include <cassert>
@@ -40,8 +41,6 @@
 #include <fcntl.h>
 #include <stdio.h>
 #include <unistd.h>
-
-#define LOG_LEVEL_SECURE LogLevel::INFO
 
 #define LOG_DATE_BUF_SIZE 16
 #define LOG_DATE_LEN (LOG_DATE_BUF_SIZE - 1)
@@ -96,12 +95,20 @@ log_init_file(int line)
 static inline LogLevel
 parse_log_level(const char *value)
 {
-	if (0 == strcmp(value, "default"))
-		return LogLevel::DEFAULT;
-	if (0 == strcmp(value, "secure"))
-		return LOG_LEVEL_SECURE;
-	else if (0 == strcmp(value, "verbose"))
+	if (StringIsEqual(value, "notice") ||
+	    /* deprecated name: */
+	    StringIsEqual(value, "default"))
+		return LogLevel::NOTICE;
+	else if (StringIsEqual(value, "info") ||
+		 /* deprecated since MPD 0.22: */
+		 StringIsEqual(value, "secure"))
+		return LogLevel::INFO;
+	else if (StringIsEqual(value, "verbose"))
 		return LogLevel::DEBUG;
+	else if (StringIsEqual(value, "warning"))
+		return LogLevel::WARNING;
+	else if (StringIsEqual(value, "error"))
+		return LogLevel::ERROR;
 	else
 		throw FormatRuntimeError("unknown log level \"%s\"", value);
 }
@@ -136,7 +143,7 @@ log_init(const ConfigData &config, bool verbose, bool use_stdout)
 		SetLogThreshold(config.With(ConfigOption::LOG_LEVEL, [](const char *s){
 			return s != nullptr
 				? parse_log_level(s)
-				: LogLevel::DEFAULT;
+				: LogLevel::NOTICE;
 		}));
 
 	if (use_stdout) {
@@ -160,7 +167,7 @@ log_init(const ConfigData &config, bool verbose, bool use_stdout)
 			throw std::runtime_error("config parameter 'log_file' not found");
 #endif
 #ifdef HAVE_SYSLOG
-		} else if (strcmp(param->value.c_str(), "syslog") == 0) {
+		} else if (StringIsEqual(param->value.c_str(), "syslog")) {
 			LogInitSysLog();
 #endif
 		} else {
@@ -227,22 +234,22 @@ cycle_log_files() noexcept
 	if (out_path.IsNull())
 		return 0;
 
-	FormatDebug(log_domain, "Cycling log files");
+	LogDebug(log_domain, "Cycling log files");
 	close_log_files();
 
 	fd = open_log_file();
 	if (fd < 0) {
 		const std::string out_path_utf8 = out_path.ToUTF8();
-		FormatError(log_domain,
-			    "error re-opening log file: %s",
-			    out_path_utf8.c_str());
+		FmtError(log_domain,
+			 "error re-opening log file: {}",
+			 out_path_utf8);
 		return -1;
 	}
 
 	redirect_logs(fd);
 	close(fd);
 
-	FormatDebug(log_domain, "Done cycling log files");
+	LogDebug(log_domain, "Done cycling log files");
 	return 0;
 #endif
 }

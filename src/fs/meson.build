@@ -3,6 +3,7 @@ fs_sources = [
   'Traits.cxx',
   'Config.cxx',
   'Charset.cxx',
+  'Glob.cxx',
   'Path.cxx',
   'Path2.cxx',
   'AllocatedPath.cxx',
