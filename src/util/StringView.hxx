@@ -32,14 +32,10 @@
 
 #include "ConstBuffer.hxx"
 #include "StringAPI.hxx"
-#include "Compiler.h"
 
-#include <utility>
 #include <cstddef>
-
-#if __cplusplus >= 201703L && !GCC_OLDER_THAN(7,0)
 #include <string_view>
-#endif
+#include <utility>
 
 template<typename T>
 struct BasicStringView : ConstBuffer<T> {
@@ -72,14 +68,12 @@ struct BasicStringView : ConstBuffer<T> {
 	constexpr BasicStringView(std::nullptr_t n) noexcept
 		:ConstBuffer<T>(n) {}
 
-#if __cplusplus >= 201703L && !GCC_OLDER_THAN(7,0)
 	constexpr BasicStringView(std::basic_string_view<T> src) noexcept
 		:ConstBuffer<T>(src.data(), src.size()) {}
 
 	constexpr operator std::basic_string_view<T>() const noexcept {
 		return {data, size};
 	}
-#endif
 
 	using ConstBuffer<T>::empty;
 	using ConstBuffer<T>::begin;
