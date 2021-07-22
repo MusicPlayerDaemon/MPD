@@ -39,6 +39,46 @@
 
 namespace Java {
 
+class StringUTFChars {
+	JNIEnv *env;
+	jstring string;
+	const char *chars = nullptr;
+
+public:
+	StringUTFChars() noexcept = default;
+	StringUTFChars(std::nullptr_t) noexcept {}
+
+	StringUTFChars(JNIEnv *_env,
+		       const jstring _string,
+		       const char *const _chars) noexcept
+		:env(_env), string(_string), chars(_chars) {}
+
+	StringUTFChars(StringUTFChars &&src) noexcept
+		:env(src.env), string(src.string),
+		 chars(std::exchange(src.chars, nullptr)) {}
+
+	~StringUTFChars() noexcept {
+		if (chars != nullptr)
+			env->ReleaseStringUTFChars(string, chars);
+	}
+
+	StringUTFChars &operator=(StringUTFChars &&src) noexcept {
+		using std::swap;
+		swap(env, src.env);
+		swap(string, src.string);
+		swap(chars, src.chars);
+		return *this;
+	}
+
+	const char *c_str() const noexcept {
+		return chars;
+	}
+
+	operator bool() const noexcept {
+		return chars != nullptr;
+	}
+};
+
 /**
  * Wrapper for a local "jstring" reference.
  */
@@ -48,6 +88,14 @@ public:
 
 	String(JNIEnv *_env, const char *_value) noexcept
 		:LocalRef<jstring>(_env, _env->NewStringUTF(_value)) {}
+
+	static StringUTFChars GetUTFChars(JNIEnv *env, jstring s) noexcept {
+		return {env, s, env->GetStringUTFChars(s, nullptr)};
+	}
+
+	StringUTFChars GetUTFChars() const noexcept {
+		return GetUTFChars(GetEnv(), Get());
+	}
 
 	/**
 	 * Copy the value to the specified buffer.  Truncates

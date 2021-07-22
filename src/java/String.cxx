@@ -35,13 +35,8 @@ char *
 Java::String::CopyTo(JNIEnv *env, jstring value,
 		     char *buffer, size_t max_size) noexcept
 {
-	const char *p = env->GetStringUTFChars(value, nullptr);
-	if (p == nullptr)
-		return nullptr;
-
-	char *result = CopyTruncateString(buffer, p, max_size);
-	env->ReleaseStringUTFChars(value, p);
-	return result;
+	return CopyTruncateString(buffer, GetUTFChars(env, value).c_str(),
+				  max_size);
 }
 
 std::string
@@ -50,13 +45,5 @@ Java::String::ToString(JNIEnv *env, jstring s) noexcept
 	assert(env != nullptr);
 	assert(s != nullptr);
 
-	const char *p = env->GetStringUTFChars(s, nullptr);
-	if (p == nullptr)
-		return std::string();
-
-	AtScopeExit(env, s, p) {
-		env->ReleaseStringUTFChars(s, p);
-	};
-
-	return std::string(p);
+	return std::string(GetUTFChars(env, s).c_str());
 }
